@@ -129,7 +129,7 @@ char *SMFindBody(char *article, int len) {
 
 /* Open the config file and parse it, generating the policy data */
 static BOOL SMreadconfig(void) {
-    char                path[sizeof(_PATH_NEWSLIB) + sizeof("/storage.ctl") + 16];
+    char                path[sizeof(_PATH_STORAGECTL) + 16];
     FILE                *f;
     char                line[1024];
     int                 i;
@@ -144,7 +144,7 @@ static BOOL SMreadconfig(void) {
     STORAGE_SUB         *sub = NULL;
     STORAGE_SUB         *prev = NULL;
 
-    sprintf(path, "%s/storage.ctl", _PATH_NEWSLIB);
+    sprintf(path, "%s", _PATH_STORAGECTL);
     if ((f = fopen(path, "r")) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "SM Could not open %s: %m", path);
@@ -211,7 +211,7 @@ static BOOL SMreadconfig(void) {
 
 	sub->numpatterns = i;
 	sub->patterns = NEW(char *, i);
-	if (!subscriptions)
+	if (!prev)
 	    subscriptions = sub;
 
 	/* Store the patterns in reverse order since we need to match
@@ -367,7 +367,7 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
 }
 
 ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
-    int                 i;
+    unsigned char       i;
     int                 start;
     ARTHANDLE           *newart;
 
@@ -381,8 +381,11 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
 	return NULL;
     }
 
-    for (i = start, newart = NULL; newart && (i < NUM_STORAGE_METHODS); i++) {
-	newart = storage_methods[start].next(article, amount);
+    for (i = start, newart = NULL; i < NUM_STORAGE_METHODS; i++) {
+	if ((newart = storage_methods[i].next(article, amount)) != (ARTHANDLE *)NULL) {
+	    newart->nextmethod = i;
+	    break;
+	}
     }
 
     return newart;

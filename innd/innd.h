@@ -158,6 +158,9 @@ typedef struct _CHANNEL {
     BOOL		Tracing;
     BUFFER		Sendid;
     HASH                CurrentMessageIDHash;
+#define PRECOMMITCACHESIZE 128
+    struct _WIP         *PrecommitWIP[PRECOMMITCACHESIZE];
+    int                 PrecommitiCachenext;
     int                 XBatchSize;
     int                 LargeArtSize;
     int			Lastch;
@@ -311,6 +314,7 @@ typedef struct _ARTDATA {
     int		PathLength;
     STRING	Replic;
     int		ReplicLength;
+    HASH	*Hash;
     BUFFER	*Headers;
     BUFFER	*Overview;
 } ARTDATA;
@@ -375,6 +379,7 @@ EXTERN BOOL		WireFormat;
 EXTERN BOOL		TimeSpool;
 EXTERN BOOL             WriteLinks;
 EXTERN BOOL             StorageAPI;
+EXTERN int              Overfdcount;
 EXTERN int		SeqNum;
 EXTERN int              TimerInterval;
 EXTERN STRING		path;
@@ -516,6 +521,7 @@ extern CHANNEL		*NCcreate();
 extern void		NGparsefile();
 extern BOOL		NGrenumber();
 
+extern void		NCclearwip(CHANNEL *cp);
 extern void		NCclose();
 extern void		NCsetup();
 
@@ -563,6 +569,7 @@ extern void             TMRstop(TMRTYPE t);
 
 extern void             WIPsetup(void);
 extern WIP              *WIPnew(const char *messageid, CHANNEL *cp);
+extern void             WIPprecomfree(CHANNEL *cp);
 extern void             WIPfree(WIP *wp);
 extern BOOL             WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Add);
 extern WIP              *WIPbyid(const char *mesageid);

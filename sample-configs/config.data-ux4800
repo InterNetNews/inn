@@ -36,7 +36,7 @@ NNTPLIB
 ##  On NetBSD and FreeBSD, you must add the -lcrypt directive here
 ##  -lutil on BSD/OS gives you setproctitle() see HAVE_SETPROCTITLE.
 #### =()<LIBS			@<LIBS>@>()=
-LIBS			-lelf -lnsl -lsocket
+LIBS			-lelf -lsocket -lnsl
 ##  How to make a lint library; pick BSD, SYSV, or NONE.
 #### =()<LINTLIBSTYLE		@<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE		NONE
@@ -191,7 +191,7 @@ LOCK_STYLE		FCNTL
 HAVE_UNISTD		DO
 ##  Do you have setbuffer?  Pick DO or DONT.
 #### =()<HAVE_SETBUFFER		@<HAVE_SETBUFFER>@>()=
-HAVE_SETBUFFER		DO
+HAVE_SETBUFFER		DONT
 ##  Do you have gettimeofday?  Pick DO or DONT.
 #### =()<HAVE_GETTIMEOFDAY	@<HAVE_GETTIMEOFDAY>@>()=
 HAVE_GETTIMEOFDAY	DO
@@ -309,7 +309,7 @@ MISSING_OBJ
 ##
 ##  Use read/write to update the active file, or mmap?  Pick READ or MMAP.
 #### =()<ACT_STYLE		@<ACT_STYLE>@>()=
-ACT_STYLE		READ
+ACT_STYLE		MMAP
 ##  Do you want mail notifications of bad control messages. DO or DONT
 ##  Setting it to do results in a lot of mail with the number of spammers
 ##  out there.
@@ -776,6 +776,12 @@ _PATH_SCHEMA		/var/news/etc/overview.fmt
 ## Location of the MOTD file.
 #### =()<_PATH_MOTD		@<_PATH_MOTD>@>()=
 _PATH_MOTD		/var/news/etc/motd.news
+## Location of the storage control file.
+#### =()<_PATH_STORAGECTL	@<_PATH_STORAGECTL>@>()=
+_PATH_STORAGECTL	/var/news/etc/storage.ctl
+## Location of the unified overview file.
+#### =()<_PATH_OVERVIEWCTL	@<_PATH_OVERVIEWCTL>@>()=
+_PATH_OVERVIEWCTL	/var/news/etc/overview.ctl
 
 
 

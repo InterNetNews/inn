@@ -38,8 +38,8 @@ all:			autoconfig methods libstorage.a
 
 include Make.methods
 
-SOURCES = interface.c methods.c qio.c
-OBJECTS = interface.o methods.o qio.o
+SOURCES = interface.c methods.c qio.c overview.c
+OBJECTS = interface.o methods.o qio.o overview.o
 
 
 methods: 
@@ -99,3 +99,4 @@ depend:		Makefile $(SOURCES)
 
 interface.o: methods.h interface.h
 methods.o: interface.h
+overview.o: overview.h

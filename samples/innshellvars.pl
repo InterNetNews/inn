@@ -167,6 +167,12 @@ $z = ".Z" ;
 ##  =()<$path_motd = "@<_PATH_MOTD>@" ;>()=
 $path_motd = "/var/news/etc/motd.news" ;
 
+##  =()<$path_storagectl = "@<_PATH_STORAGECTL>@" ;>()=
+$path_storagectl = "/var/news/etc/storage.ctl" ;
+
+##  =()<$path_overviewctl = "@<_PATH_OVERVIEWCTL>@" ;>()=
+$path_overviewctl = "/var/news/etc/overview.ctl" ;
+
 ##  =()<$perl_support = ("@<PERL_SUPPORT>@" eq "DO" ? 1 : 0) ;>()=
 $perl_support = ("DONT" eq "DO" ? 1 : 0) ;
 

@@ -203,8 +203,7 @@ STATIC void WriteIndex(int fd, unsigned long offset, char *line)
     }
     if (!offset)
        i = 0;
-    buf[i].artnum = atol(line);
-    buf[i++].offset = offset;
+    buf[i++].artnum = atol(line);
     if (i >= 1023) {
         write(fd, buf, sizeof(OVERINDEX)*i);
         i = 0;

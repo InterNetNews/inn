@@ -325,10 +325,11 @@ NGsplit(p)
 /*
 **  Renumber a group.
 */
+static char		NORENUMBER[] = "%s cant renumber %s %s too wide";
+static char		RENUMBER[] = "%s renumber %s %s from %ld to %ld";
+
 BOOL NGrenumber(NEWSGROUP *ngp)
 {
-    static char		NORENUMBER[] = "%s cant renumber %s %s too wide";
-    static char		RENUMBER[] = "%s renumber %s %s from %ld to %ld";
     DIR	                *dp;
     DIRENTRY	        *ep;
     char	        *f2;
@@ -412,6 +413,39 @@ BOOL NGrenumber(NEWSGROUP *ngp)
 	    return FALSE;
 	}
 	ICDactivedirty++;
+    }
+    return TRUE;
+}
+
+/*
+ * Set the low article count for the given group.
+ * Like NGrenumber(), but we don't scan the spool,
+ * and the himark is ignored.
+ */
+BOOL NGlowmark(NEWSGROUP *ngp, long lomark)
+{
+    long l;
+    char *f2, *f3, *f4;
+    char *start;
+
+    start = ICDreadactive(&f2) + ngp->Start;
+    /* Check the file format. */
+    if ((f2 = strchr(start, ' ')) == NULL
+     || (f3 = strchr(++f2, ' ')) == NULL
+     || (f4 = strchr(++f3, ' ')) == NULL) {
+        syslog(L_ERROR, "%s bad_format active %s",
+            LogName, MaxLength(start, start));
+        return FALSE;
+    }
+    l = atol(f3);
+    if (lomark != l) {
+        if (lomark < l)
+            syslog(L_NOTICE, RENUMBER, LogName, ngp->Name, "lo", l, lomark);
+        if (!FormatLong(f3, lomark, f4 - f3)) {
+            syslog(L_ERROR, NORENUMBER, LogName, ngp->Name, "lo");
+            return FALSE;
+        }
+        ICDactivedirty++;
     }
     return TRUE;
 }

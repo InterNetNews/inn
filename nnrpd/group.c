@@ -404,8 +404,6 @@ STATIC void GRPscandir(char *dir)
 	ARTarraysize = OVERicount;
 	for (i = 0; i < OVERicount; i++) {
 	    UnpackOverIndex((*OVERindex)[i], &index);
-	    if (index.cancelled)
-		continue;
 	    ARTnumbers[ARTsize].ArtNum = index.artnum;
 	    ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
 	}

@@ -14,9 +14,11 @@
 
 #define WIPTABLESIZE        1024
 #define WIP_CHECK             5
+#define WIP_EXPIRE            10
 
 STATIC WIP     *WIPtable[WIPTABLESIZE];      /* Top level of the WIP hash table */
 int            WIPcheck = WIP_CHECK;         /* Amount of time to lock a message id */
+int            WIPexpire = WIP_EXPIRE;       /* Amount of time to expire a message id */
 
 void WIPsetup(void) {
     memset(WIPtable, '\0', sizeof(WIPtable));
@@ -44,10 +46,26 @@ WIP *WIPnew(const char *messageid, CHANNEL *cp) {
     return new; 
 }
 
+void WIPprecomfree(CHANNEL *cp) {
+    WIP *cur;
+    int i;
+    if (cp == NULL)
+	return;
+
+    for (i = 0 ; i < PRECOMMITCACHESIZE ; i++) {
+	cur = cp->PrecommitWIP[i];
+	if (cur != (WIP *)NULL) {
+	    WIPfree(cur);
+	    break;
+	}
+    }
+}
+
 void WIPfree(WIP *wp) {
     unsigned long bucket;
     WIP *cur;
     WIP *prev = NULL;
+    int i;
     /* This is good error checking, but also allows us to
           WIPfree(WIPbymessageid(id))
        without having to check if id exists first */
@@ -58,6 +76,12 @@ void WIPfree(WIP *wp) {
 	   sizeof(bucket) < sizeof(HASH) ? sizeof(bucket) : sizeof(HASH));
     bucket = bucket % WIPTABLESIZE;
 
+    for (i = 0 ; i < PRECOMMITCACHESIZE ; i++) {
+	if (wp->Chan->PrecommitWIP[i] == wp) {
+	    wp->Chan->PrecommitWIP[i] = (WIP *)NULL;
+	    break;
+	}
+    }
     for (cur = WIPtable[bucket]; (cur != NULL) && (cur != wp); prev = cur, cur = cur->Next);
 
     if (cur == NULL)
@@ -74,19 +98,37 @@ void WIPfree(WIP *wp) {
 
 /* Check if the given messageid is being transfered on another channel.  If
    Add is true then add the given message-id to the current channel */
-BOOL WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Add) {
+BOOL WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Precommit) {
     WIP *wp;
+    int i;
     
     if ((wp = WIPbyid(msgid)) != NULL) {
-        if ((Now.time - wp->Timestamp) < WIPcheck)
+	if ((Now.time - wp->Timestamp) < WIPcheck)
 	    return TRUE;
+	if ((Now.time - wp->Timestamp) > WIPexpire) {
+	    for (i = 0 ; i < PRECOMMITCACHESIZE ; i++) {
+		if (wp->Chan->PrecommitWIP[i] == wp) {
+		    wp->Chan->PrecommitWIP[i] = (WIP *)NULL;
+		    break;
+		}
+	    }
+	    WIPfree(wp);
+	    (void)WIPinprogress(msgid, cp, Precommit);
+	    return FALSE;
+	}
 	if (wp->Chan == cp)
 	    return TRUE;
+	return FALSE;
     }
-    if (Add) {
-	wp = WIPnew(msgid, cp);
+    wp = WIPnew(msgid, cp);
+    if (Precommit) {
+	if (cp->PrecommitiCachenext == PRECOMMITCACHESIZE)
+	    cp->PrecommitiCachenext = 0;
+	if (cp->PrecommitWIP[cp->PrecommitiCachenext])
+	    WIPfree(cp->PrecommitWIP[cp->PrecommitiCachenext]);
+	cp->PrecommitWIP[cp->PrecommitiCachenext++] = wp;
+    } else
 	cp->CurrentMessageIDHash = wp->MessageID;
-    }
     return FALSE;
 }
 

@@ -776,6 +776,12 @@ _PATH_SCHEMA		/var/news/etc/overview.fmt
 ## Location of the MOTD file.
 #### =()<_PATH_MOTD		@<_PATH_MOTD>@>()=
 _PATH_MOTD		/var/news/etc/motd.news
+## Location of the storage control file.
+#### =()<_PATH_STORAGECTL	@<_PATH_STORAGECTL>@>()=
+_PATH_STORAGECTL	/var/news/etc/storage.ctl
+## Location of the unified overview file.
+#### =()<_PATH_OVERVIEWCTL	@<_PATH_OVERVIEWCTL>@>()=
+_PATH_OVERVIEWCTL	/var/news/etc/overview.ctl
 
 
 

@@ -126,6 +126,7 @@ EXTERN long	ARTgettime;
 EXTERN long	ARTgetsize;
 EXTERN BOOL     OVERmmap;       /* Whether or not to mmap() overviews */
 EXTERN BOOL     ARTmmap;        /* Whether or not to mmap() articles */
+EXTERN BOOL     StorageAPI;     /* Whether or not to use storage api */
 EXTERN long	OVERcount;	/* number of XOVER commands			*/
 EXTERN long	OVERhit;	/* number of XOVER records found in .overview	*/
 EXTERN long	OVERmiss;	/* number of XOVER records found in articles	*/

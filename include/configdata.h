@@ -379,6 +379,7 @@ typedef int		BOOL;
 #define FEED_MAXFLAGS		20
 #define FEED_BYTESIZE		'b'
 #define FEED_FULLNAME		'f'
+#define FEED_HASH		'h'
 #define FEED_HDR_DISTRIB	'D'
 #define FEED_HDR_NEWSGROUP	'N'
 #define FEED_MESSAGEID		'm'

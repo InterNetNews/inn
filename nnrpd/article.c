@@ -28,6 +28,14 @@ typedef struct _SENDDATA {
     STRING	Item;
 } SENDDATA;
 
+typedef struct _OVERDATA {
+    int		index;
+    char	*addr;
+    long	size;
+    FILE	*fp;
+    int		offset;
+} OVERDATA;
+
 
 /*
 **  Information about the schema of the news overview files.
@@ -184,7 +192,7 @@ void ARTclose(void)
 	if (ARThandle) {
 	    SMfreearticle(ARThandle);
 	} else {
-#if defined(MC_ADVISE) && defined(MADV_DONTNEED)
+#if defined(MC_ADVISE) && defined(MADV_DONTNEED) && !defined(_nec_ews)
 	    madvise(ARTmem, ARTlen, MADV_DONTNEED);
 #endif
 	    munmap(ARTmem, ARTlen);
@@ -255,6 +263,8 @@ STATIC BOOL ARTopen(char *name)
     int                 artnum;
     int                 i;
     OVERINDEX           index;
+    char		*tokentext;
+    TOKEN		token;
 
     /* Re-use article if it's the same one. */
     if (save_artnum == (artnum = atol(name))) {
@@ -270,8 +280,11 @@ STATIC BOOL ARTopen(char *name)
 
     if ((ARTnumbers[i].ArtNum == artnum) && ARTnumbers[i].Index) {
 	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	if (index.token.type != TOKEN_EMPTY) {
-	    if ((ARThandle = SMretrieve(index.token, RETR_ALL)) == NULL) {
+	if ((tokentext = HISgetent(&(index.hash), FALSE)) == (char *)NULL)
+	    return FALSE;
+	token = TextToToken(tokentext);
+	if (token.type != TOKEN_EMPTY && token.index != OVER_NONE && !token.cancelled) {
+	    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL) {
 		return FALSE;
 	    }
 	    ARTmem = ARThandle->data;
@@ -866,30 +879,37 @@ STATIC BOOL OVERopen(void)
     if ((OVERmem != NULL) || (OVERfp != NULL))
 	return TRUE;
 
-    /* Failed here before? */
-    if (OVERopens++)
-	return FALSE;
-
-    OVERarticle = 0;
-    OVERoffset = 0;
-    (void)sprintf(name, "%s/%s/%s", _PATH_OVERVIEWDIR, GRPlast, _PATH_OVERVIEW);
-    if (OVERmmap) {
-	if ((fd = open(name, O_RDONLY)) < 0)
-	    return FALSE;
-	if (fstat(fd, &sb) != 0) {
-	    close(fd);
+    if (StorageAPI) {
+	if (!OVERinit()) {
+	    syslog(L_ERROR, "%s cant initialize unified overview %m", ClientHost);
 	    return FALSE;
 	}
-	OVERlen = sb.st_size;
-	if ((int)(OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
-	    OVERmem = NULL;
-	    close(fd);
-	    return FALSE;
-	}
-	close(fd);
     } else {
-	if ((OVERfp = fopen(name, "r")) == NULL)
+	/* Failed here before? */
+	if (OVERopens++)
 	    return FALSE;
+
+	OVERarticle = 0;
+	OVERoffset = 0;
+	(void)sprintf(name, "%s/%s/%s", _PATH_OVERVIEWDIR, GRPlast, _PATH_OVERVIEW);
+	if (OVERmmap) {
+	    if ((fd = open(name, O_RDONLY)) < 0)
+		return FALSE;
+	    if (fstat(fd, &sb) != 0) {
+		close(fd);
+		return FALSE;
+	    }
+	    OVERlen = sb.st_size;
+	    if ((int)(OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+		OVERmem = NULL;
+		close(fd);
+		return FALSE;
+	    }
+	    close(fd);
+	} else {
+	    if ((OVERfp = fopen(name, "r")) == NULL)
+		return FALSE;
+	}
     }
     return TRUE;
 }
@@ -900,16 +920,21 @@ STATIC BOOL OVERopen(void)
 */
 void OVERclose(void)
 {
-    if (OVERmem != NULL) {
-    	munmap(OVERmem, OVERlen);
-    	OVERmem = NULL;
-    	OVERopens = 0;
-    	OVERlen = 0;
-    }
-    if (OVERfp != NULL) {
-	fclose(OVERfp);
-	OVERfp = NULL;
-	OVERopens = 0;
+    int	i;
+    if (StorageAPI) {
+	(void)OVERshutdown();
+    } else {
+	if (OVERmem != NULL) {
+    	    munmap(OVERmem, OVERlen);
+    	    OVERmem = NULL;
+    	    OVERopens = 0;
+    	    OVERlen = 0;
+	}
+	if (OVERfp != NULL) {
+	    fclose(OVERfp);
+	    OVERfp = NULL;
+	    OVERopens = 0;
+	}
     }
 }
 
@@ -925,11 +950,10 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
     OVERINDEX           index;
     STATIC char         *OVERline = NULL;
     STATIC int          last;
+    char		*tokentext;
+    TOKEN		token;
 
-    if (!OVERmem && !OVERfp)
-	return NULL;
-
-    if (OVERindex != NULL) {
+    if (StorageAPI) {
 	if (((last + 1) < ARTsize) && (ARTnumbers[last + 1].ArtNum == artnum))
 	    i = last + 1;
 	else 
@@ -937,62 +961,43 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 	if ((ARTnumbers[i].ArtNum != artnum) || !ARTnumbers[i].Index)
 	    return NULL;
 	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+	if ((tokentext = HISgetent(&(index.hash), FALSE)) == (char *)NULL)
+	    return NULL;
 	if (index.artnum != artnum)
 	    return NULL;
-	if (OVERmem) {
-	    OVERline = (char *)OVERmem + index.offset;
-	    if ((OVERline >= (OVERmem + OVERlen)) || (OVERline < OVERmem))
-		return NULL;
-	    for (q = OVERline; q < (OVERmem+OVERlen); q++)
-		if ((*q == '\r') || (*q == '\n'))
-		    break;
-	    
-	    *linelen = q - OVERline;
-	} else {
-	    if (OVERoffset != index.offset) {
-		fseek(OVERfp, index.offset, SEEK_SET);
-		OVERoffset = index.offset;
-	    }
-	    if (!OVERline)
-		OVERline = NEW(char, MAXOVERLINE);
-	    if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
-		return NULL;
-	    if ((*linelen = strlen(OVERline)) < 10)
-		return NULL;
-	    if (*linelen  >= MAXOVERLINE) {
-		OVERoffset = -1;
-		*linelen = MAXOVERLINE;
-	    } else {
-		OVERoffset += *linelen;
-	    }
-	    OVERline[*linelen-1] = '\0';
-	}
-	OVERread += *linelen;
+	token = TextToToken(tokentext);
+	if (token.type == TOKEN_EMPTY || token.index == OVER_NONE || token.cancelled)
+	    return NULL;
+	if ((OVERline = OVERretrieve(&token, linelen)) != (char *)NULL)
+	    OVERread += *linelen;
 	return OVERline;
-    }
+    } else {
+	if (!OVERmem && !OVERfp)
+	    return NULL;
 
-    if (OVERmem)
-	return NULL;
+        if (OVERmem)
+	    return NULL;
 
-    if (OVERarticle > artnum) {
-	rewind(OVERfp);
-	OVERarticle = 0;
-	OVERline[0] = '\0';
-	OVERoffset = 0;
-    }
-    for ( ; OVERarticle < artnum; OVERarticle = atol(OVERline)) {
-        if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
-	     return NULL;
-	OVERread += strlen(OVERline);
-    	while ((strlen(OVERline) == MAXOVERLINE) && (OVERline[MAXOVERLINE-1] == '\n'))
-	    if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
+        if (OVERarticle > artnum) {
+	    rewind(OVERfp);
+	    OVERarticle = 0;
+	    OVERline[0] = '\0';
+	    OVERoffset = 0;
+        }
+        for ( ; OVERarticle < artnum; OVERarticle = atol(OVERline)) {
+            if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
 	         return NULL;
-	    else
-	        OVERread += (*linelen = strlen(OVERline));
-    }
-    OVERoffset = -1;
+	    OVERread += strlen(OVERline);
+    	    while ((strlen(OVERline) == MAXOVERLINE) && (OVERline[MAXOVERLINE-1] == '\n'))
+	        if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
+	             return NULL;
+	        else
+	            OVERread += (*linelen = strlen(OVERline));
+        }
+        OVERoffset = -1;
 
-    return OVERarticle == artnum ? OVERline : NULL;
+        return OVERarticle == artnum ? OVERline : NULL;
+    }
 }
 
 
@@ -1282,7 +1287,9 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	if (Opened && (p = OVERfind(i, &linelen)) != NULL) {
 	    OVERhit++;
 	    OVERsize+=linelen;
-	    if (OVERmem) {
+	    if ((StorageAPI && OVERmmap) || OVERmem) {
+		(void)sprintf(buff, "%ld\t", i);
+		SendIOb(buff, strlen(buff));
 		SendIOb(p, linelen);
 		SendIOb("\r\n", 2);
 	    } else {
@@ -1290,7 +1297,10 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    }
 	    continue;
 	}
+	if (StorageAPI)
+	    continue;
 
+	/* This happens with traditional spool */
 	(void)sprintf(buff, "%ld", i);
 	if ((p = OVERgen(buff)) != NULL) {
 	    OVERmiss++;
@@ -1304,7 +1314,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    }
 	}
     }
-    if (OVERmem) {
+    if ((StorageAPI && OVERmmap) || OVERmem) {
 	SendIOb(".\r\n", 3);
 	PushIOb(); 
     } else {

@@ -34,6 +34,7 @@ typedef char ICC_PROTOCOLTYPE ;
 #define SC_GO		'h'
 #define SC_HANGUP	'i'
 #define SC_LOGMODE	'E'
+#define SC_LOWMARK	'L'
 #define SC_MODE		's'
 #define SC_NAME		'j'
 #define SC_NEWGROUP	'k'

@@ -67,6 +67,7 @@ STATIC STRING	CCfilter();
 #if defined(DO_PERL)
 STATIC STRING	CCperl();
 #endif /* defined(DO_PERL) */
+STATIC STRING	CClowmark();
 
 STATIC char		CCpath[] = _PATH_NEWSCONTROL;
 STATIC char		**CCargv;
@@ -118,6 +119,7 @@ STATIC CCDISPATCH	CCcommands[] = {
     {   SC_TIMER,       1, CCtimer      },
     {	SC_TRACE,	2, CCtrace	},
     {	SC_XABORT,	1, CCxabort	},
+    {	SC_LOWMARK,	1, CClowmark	},
     {	SC_XEXEC,	1, CCxexec	}
 };
 
@@ -691,6 +693,21 @@ CCgo(av)
     if (ErrorCount < 0)
 	ErrorCount = IO_ERROR_COUNT;
     HISsetup();
+    if (StorageAPI) {
+	int fdcountold = Overfdcount;
+	if (!OVERinit()) {
+	    syslog(L_FATAL, "%s cant initialize the unified overview %m");
+	    exit(1);
+	}
+	if ((Overfdcount = OVERgetnum()) < 0) {
+            syslog(L_FATAL, "%s cant get config for the unified overview %m");
+            exit(1);
+	}
+	if (fdcountold != Overfdcount) {
+	    MaxOutgoing += Overfdcount - fdcountold;
+            syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
+	}
+    }
     syslog(L_NOTICE, "%s running", LogName);
     if (ICDneedsetup)
 	ICDsetup(TRUE);
@@ -1112,6 +1129,8 @@ CCblock(NewMode, reason)
 
     ICDwrite();
     HISclose();
+    if (StorageAPI)
+	OVERshutdown();
     Mode = NewMode;
     if (ModeReason)
 	DISPOSE(ModeReason);
@@ -1249,8 +1268,25 @@ CCreload(av)
     if (*p == '\0' || EQ(p, "all")) {
 	SITEflushall(FALSE);
 	HISclose();
+	if (StorageAPI)
+	    OVERshutdown();
 	RCreadlist();
 	HISsetup();
+	if (StorageAPI) {  
+	    int fdcountold = Overfdcount;
+	    if (!OVERinit()) {
+		syslog(L_FATAL, "%s cant initialize the unified overview %m");
+		exit(1);
+	    } 
+	    if ((Overfdcount = OVERgetnum()) < 0) {
+		syslog(L_FATAL, "%s cant get config for the unified overview %m");
+		exit(1);
+	    }
+	    if (fdcountold != Overfdcount) {
+		MaxOutgoing += Overfdcount - fdcountold;
+		syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
+	    }   
+	}
 	ICDwrite();
 	ICDsetup(TRUE);
 	if (!ARTreadschema())
@@ -1277,6 +1313,24 @@ CCreload(av)
     else if (EQ(p, "overview.fmt")) {
 	if (!ARTreadschema())
 	    return BADSCHEMA;
+    }
+    else if (EQ(p, "over.ctl")) {
+	if (StorageAPI) {
+	    int fdcountold = Overfdcount;
+	    OVERshutdown();
+	    if (!OVERinit()) {
+		syslog(L_FATAL, "%s cant initialize the unified overview %m");
+		exit(1);
+	    } 
+	    if ((Overfdcount = OVERgetnum()) < 0) {
+		syslog(L_FATAL, "%s cant get config for the unified overview %m");
+		exit(1);
+	    }
+	    if (fdcountold != Overfdcount) {
+		MaxOutgoing += Overfdcount - fdcountold;
+		syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
+	    }   
+	}
     }
 #if defined(DO_TCL)
     else if (EQ(p, "filter.tcl")) {
@@ -1858,4 +1912,52 @@ CCresetup(s)
     (void)signal(s, CCresetup);
     CCclose();
     CCsetup();
+}
+
+# include "qio.h"
+/*
+ * Read a file containing lines of the form "newsgroup lowmark",
+ * and reset the low article number for the specified groups.
+ */
+STATIC STRING CClowmark(char *av[])
+{
+    long lo;
+    char *line, *cp, *ret = NULL;
+    QIOSTATE *qp;
+    NEWSGROUP *ngp;
+
+    if (Mode != OMrunning)
+	return CCnotrunning;
+    if (ICDneedsetup)
+	return "1 Must first reload newsfeeds";
+    if ((qp = QIOopen(av[0])) == NULL) {
+	syslog(L_ERROR, "%s cant open %s %m", LogName, av[0]);
+	return "1 Cannot read input file";
+    }
+    while ((line = QIOread(qp)) != NULL) {
+	if (QIOerror(qp))
+		break;
+	if (QIOtoolong(qp) || (cp = strchr(line, ' ')) == NULL) {
+	    ret = "1 Malformed input line";
+	    break;
+	}
+	*cp++ = '\0';
+	if ((lo = atol(cp)) == 0) {
+	    ret = "1 Malformed input line (missing low mark)";
+	    break;
+	}
+        if ((ngp = NGfind(line)) == NULL) {
+	    /* ret = CCnogroup; break; */
+	    continue;
+	}
+        if (!NGlowmark(ngp, lo)) {
+	    ret = "1 Cannot set low mark - see syslog";
+	    break;
+	}
+    }
+    if (ret == NULL && QIOerror(qp))
+	ret = "1 Error reading input file";
+    QIOclose(qp);
+    ICDwrite();
+    return ret;
 }

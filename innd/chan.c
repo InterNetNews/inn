@@ -154,6 +154,8 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->SaveUsed=0;
     cp->Lastch=0;
     HashClear(&cp->CurrentMessageIDHash);
+    memset(cp->PrecommitWIP, '\0', sizeof(cp->PrecommitWIP));
+    cp->PrecommitiCachenext=0;
 
     /* Make the descriptor close-on-exec and non-blocking. */
     CloseOnExec(fd, TRUE);
@@ -219,12 +221,14 @@ void CHANclose(CHANNEL *cp, char *name)
     if (cp->Type == CTfree)
 	syslog(L_ERROR, "%s internal closing free channel %d", name, cp->fd);
     else {
-	if (cp->Type == CTnntp)
+	if (cp->Type == CTnntp) {
+	    WIPprecomfree(cp);
+	    NCclearwip(cp);
 	    syslog(L_NOTICE,
 		"%s closed seconds %ld accepted %ld refused %ld rejected %ld",
 		name, (long)(Now.time - cp->Started),
 		cp->Received, cp->Refused, cp->Rejected);
-	else if (cp->Type == CTreject)
+	} else if (cp->Type == CTreject)
 	    syslog(L_NOTICE, "%s %ld", name, cp->Rejected);
 	else if (cp->Out.Left)
 	    syslog(L_NOTICE, "%s closed lost %d", name, cp->Out.Left);

@@ -53,8 +53,8 @@ STATIC BOOL GetName(FILE *F, char *buff, BOOL *Againp)
 */
 STATIC BOOL HistorySeek(FILE *F, OFFSET_T offset)
 {
-    register int	c;
-    register int	i;
+    int	c;
+    int	i;
 
     if (fseek(F, offset, SEEK_SET) == -1) {
 	(void)fprintf(stderr, "Can't seek to %ld, %s\n", offset, strerror(errno));
@@ -99,13 +99,11 @@ STATIC void FullLine(FILE *F, OFFSET_T offset)
 **  don't have.  Or, output list of files for ones we DO have.
 */
 STATIC void
-IhaveSendme(History, What)
-    STRING		History;
-    register char	What;
+IhaveSendme(STRING History, char What)
 {
-    register FILE	*F;
-    register char	*p;
-    register char	*q;
+    FILE		*F;
+    char		*p;
+    char		*q;
     HASH		key;
     OFFSET_T            offset;
     struct stat		Sb;
@@ -167,7 +165,7 @@ IhaveSendme(History, What)
 **  Print a usage message and exit.
 */
 STATIC NORETURN
-Usage()
+Usage(void)
 {
     (void)fprintf(stderr, "Usage: grephistory [flags] MessageID\n");
     exit(1);
@@ -175,12 +173,10 @@ Usage()
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
-    register int	i;
-    register FILE	*F;
+    int			i;
+    FILE		*F;
     STRING		History;
     char                *keystr;
     HASH		key;
@@ -244,13 +240,16 @@ main(ac, av)
     }
     
     keystr = av[0];
-    if (*av[0] != '<') {
-	/* Add optional braces. */
-	keystr = NEW(char, 1 + strlen(av[0]) + 1 + 1);
-	(void)sprintf(keystr, "<%s>", av[0]);
+    if (*av[0] == '[') {
+	key = TextToHash(&av[0][1]);
+    } else {
+	if (*av[0] != '<') {
+	    /* Add optional braces. */
+	    keystr = NEW(char, 1 + strlen(av[0]) + 1 + 1);
+	    (void)sprintf(keystr, "<%s>", av[0]);
+	}
+	key = HashMessageID(keystr);
     }
-
-    key = HashMessageID(keystr);
 
     /* Not found. */
     if ((offset = dbzfetch(key)) < 0) {

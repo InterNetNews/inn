@@ -34,7 +34,7 @@
 /*
  * buserr - catch an alignment error
  */
-SIGHANDLER buserr()
+SIGHANDLER buserr(int dummy)
 {
     /* alignment is required */
     printf("#define INN_MUST_ALIGN\n");
@@ -70,7 +70,7 @@ void main()
 	exit(1);
     }
 
-    #if !defined(INN_MUST_ALIGN)
+#if !defined(INN_MUST_ALIGN)
     /* setup to catch alignment bus errors */
     signal(SIGBUS, buserr);
     signal(SIGSEGV, buserr);	/* some systems will generate SEGV instead! */

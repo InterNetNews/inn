@@ -234,7 +234,7 @@ LOCALtoGMT(t)
 */
 char *HISgetent(char *msg_id, BOOL fulldata)
 {
-    static BOOL		setup;
+    static BOOL		setup = FALSE;
     static FILE		*hfp;
     static char		path[BIG_BUFFER];
     char	        *p;
@@ -254,7 +254,10 @@ char *HISgetent(char *msg_id, BOOL fulldata)
     }
 
     /* Set the key value, fetch the entry. */
-    key = HashMessageID(msg_id);
+    if (StorageAPI)
+	key = *(HASH *)msg_id;
+    else
+	key = HashMessageID(msg_id);
     if ((offset = dbzfetch(key)) < 0)
 	return NULL;
 

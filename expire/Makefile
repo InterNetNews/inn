@@ -34,9 +34,11 @@ LIBNEWS	= ../libstorage.a ../libinn.a
 LINTLIB	= ../llib-linn.ln
 
 SOURCES	=	convdate.c expire.c expireover.c fastrm.c grephistory.c \
-		makeactive.c makehistory.c newsrequeue.c prunehistory.c
+		makeactive.c makehistory.c newsrequeue.c prunehistory.c \
+		expireindex.c
 ALL	=	convdate expire expireover fastrm grephistory \
-		makeactive makehistory newsrequeue prunehistory
+		makeactive makehistory newsrequeue prunehistory \
+		expireindex
 
 all:		$(ALL)
 
@@ -44,7 +46,7 @@ install:	$D$(NEWSBIN)/convdate $D$(NEWSBIN)/expire \
 		$D$(NEWSBIN)/expireover $D$(NEWSBIN)/fastrm \
 		$D$(NEWSBIN)/grephistory $D$(NEWSBIN)/makeactive \
 		$D$(NEWSBIN)/makehistory $D$(NEWSBIN)/newsrequeue \
-		$D$(NEWSBIN)/prunehistory
+		$D$(NEWSBIN)/prunehistory $D$(NEWSBIN)/expireindex
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -62,6 +64,9 @@ expire:		$(P) expire.o $(LIBNEWS)
 
 expireover:	$(P) expireover.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ expireover.o $(LIBNEWS) $(LIBS)
+
+expireindex:	$(P) expireindex.o $(LIBNEWS)
+	$(CC) $(LDFLAGS) -o $@ expireindex.o $(LIBNEWS) $(LIBS)
 
 fastrm:	$(P) fastrm.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ fastrm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
@@ -86,6 +91,7 @@ lint:		$(ALL)
 	-lint $(LINTFLAGS) convdate.c     $(LINTLIB) $(LINTFILTER)  >lint
 	-lint $(LINTFLAGS) expire.c       $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) expireover.c   $(LINTLIB) $(LINTFILTER) >>lint
+	-lint $(LINTFLAGS) expireindex.   $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) fastrm.c       $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) grephistory.c  $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) makeactive.c   $(LINTLIB) $(LINTFILTER) >>lint
@@ -126,6 +132,8 @@ $D$(NEWSBIN)/expire:		expire
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(NEWSBIN)/expireover:		expireover
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
+$D$(NEWSBIN)/expireindex:		expireindex
+	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(NEWSBIN)/fastrm:		fastrm
 	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
 $D$(NEWSBIN)/grephistory:	grephistory
@@ -163,6 +171,13 @@ expireover.o:	../include/macros.h
 expireover.o:	../include/mydir.h
 expireover.o:	../include/paths.h
 expireover.o:	../include/qio.h
+expireindex.o:	../include/clibrary.h
+expireindex.o:	../include/configdata.h
+expireindex.o:	../include/libinn.h
+expireindex.o:	../include/macros.h
+expireindex.o:	../include/mydir.h
+expireindex.o:	../include/paths.h
+expireindex.o:	../include/qio.h
 fastrm.o:	../include/clibrary.h
 fastrm.o:	../include/configdata.h
 fastrm.o:	../include/libinn.h

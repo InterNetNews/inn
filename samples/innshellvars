@@ -110,6 +110,10 @@ WATCHPID=/var/news/run/innwatch.pid
 Z=.Z
 ##  =()<PATH_MOTD=@<_PATH_MOTD>@>()=
 PATH_MOTD=/var/news/etc/motd.news
+##  =()<PATH_STORAGECTL=@<_PATH_STORAGECTL>@>()=
+PATH_STORAGECTL=/var/news/etc/storage.ctl
+##  =()<PATH_OVERVIEWCTL=@<_PATH_OVERVIEWCTL>@>()=
+PATH_OVERVIEWCTL=/var/news/etc/overview.ctl
 
 ##  =()<PERL_SUPPORT=@<PERL_SUPPORT>@>()=
 PERL_SUPPORT=DONT

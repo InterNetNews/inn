@@ -442,6 +442,8 @@ JustCleanup()
     ICDclose();
     HISclose();
     ARTclose();
+    if (StorageAPI)
+	OVERshutdown();
 #if defined(DO_TCL)
     TCLclose();
 #endif /* defined(DO_TCL) */
@@ -536,6 +538,7 @@ int main(int ac, char *av[])
     BOOL		ShouldFork;
     BOOL		ShouldRenumber;
     BOOL		ShouldSyntaxCheck;
+    BOOL		val;
     PID_T		pid;
 #if	defined(_DEBUG_MALLOC_INC)
     union malloptarg	m;
@@ -721,6 +724,16 @@ int main(int ac, char *av[])
     WriteLinks = GetBooleanConfigValue(_CONF_WRITELINKS, TRUE);
 
     StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
+    val = FALSE;
+    if (!OVERsetup(OVER_MMAP, &val)) {
+	syslog(L_FATAL, "%s cant setup for the unified overview %m");
+	exit(1);
+    }
+
+    if (StorageAPI && (Overfdcount = OVERgetnum()) < 0) {
+	syslog(L_FATAL, "%s cant get config for the unified overview %m");
+	exit(1);
+    }
 
     /* Get the Path entry. */
     if ((path = GetConfigValue(_CONF_PATHHOST)) == NULL) {
@@ -818,8 +831,8 @@ int main(int ac, char *av[])
     }
     syslog(L_NOTICE, "%s descriptors %d", LogName, i);
     if (MaxOutgoing == 0) {
-	/* getfdcount() - (stdio + dbz + cc + lc + rc + art + fudge) */
-	MaxOutgoing = i - (  3   +  3  +  2 +  1 +  1 +  1  +   2  );
+	/* getfdcount() - (stdio + dbz + cc + lc + rc + art + Overfdcount + fudge) */
+	MaxOutgoing = i - (  3   +  3  +  2 +  1 +  1 +  1  + Overfdcount +  2  );
 	syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
     }
 
@@ -861,6 +874,10 @@ int main(int ac, char *av[])
 	    syslog(L_FATAL, "%s cant initialize the storage subsystem %m");
 	    exit(1);
 	}
+    }
+    if (StorageAPI && !OVERinit()) {
+	syslog(L_FATAL, "%s cant initialize the unified overview %m");
+	exit(1);
     }
 #if	defined(_DEBUG_MALLOC_INC)
     m.i = 1;

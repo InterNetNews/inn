@@ -98,6 +98,10 @@ STATIC COMMAND	Commands[] = {
 	2,	SC_TRACE,	FALSE	},
     {	"xabort",	"text...\t\tAbort the server",
 	1,	SC_XABORT,	TRUE	},
+    { "lowmark",	"filename\t\tReset active file low article marks",
+	1,	SC_LOWMARK,	FALSE	},
+    { "renumberlow",	"filename\t\tReset active file low article marks",
+	1,	SC_LOWMARK,	FALSE	},
     {	"xexec",	"path\t\t\tExec new server",
 	1,	SC_XEXEC,	FALSE	}
 };

@@ -1,22 +1,30 @@
 #ifndef __STORAGE_H__
 #define __STORAGE_H__
+#include <sys/time.h>
 
 #define STORAGE_TOKEN_LENGTH 16
 
 /* This is the type of an empty token.  Tokens with this type will be
    returned when errors occur */
 #define TOKEN_EMPTY     255
+#define OVER_NONE       255
 
 typedef enum {RETR_ALL, RETR_HEAD, RETR_BODY, RETR_STAT} RETRTYPE;
 
 #define NUM_STORAGE_CLASSES 256
 typedef unsigned char STORAGECLASS;
 typedef unsigned char STORAGETYPE;
+typedef unsigned char OVERDATAINDEX;
+typedef unsigned long OVERDATAOFFSET;
+typedef BOOL OVERDATACANCEL;
 
 typedef struct {
     STORAGETYPE         type;
     STORAGECLASS        class;
     char                token[STORAGE_TOKEN_LENGTH];
+    OVERDATAINDEX	index;
+    OVERDATAOFFSET	offset;
+    OVERDATACANCEL	cancelled;
 } TOKEN;
 
 typedef struct {
@@ -27,6 +35,8 @@ typedef struct {
     unsigned char       nextmethod; /* This is the next method to try when
 				       iterating over the spool */
     void                *private;   /* This is a pointer to method specific data */
+    time_t              arrived;    /* This is the time when article arrived */
+    TOKEN               *token;     /* This is a pointer to TOKEN for article */
 } ARTHANDLE;
 
 #define SMERR_NOERROR          0

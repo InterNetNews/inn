@@ -67,6 +67,10 @@ PATH_ACTSYNC_IGN = /var/news/etc/actsync.ign
 PATH_ACTSYNC_CFG = /var/news/etc/actsync.cfg
 ##  =()<PATH_MOTD = @<_PATH_MOTD>@>()=
 PATH_MOTD = /var/news/etc/motd.news
+##  =()<PATH_STORAGECTL = @<_PATH_STORAGECTL>@>()=
+PATH_STORAGECTL = /var/news/etc/storage.ctl
+##  =()<PATH_OVERVIEWCTL = @<_PATH_OVERVIEWCTL>@>()=
+PATH_OVERVIEWCTL = /var/news/etc/overview.ctl
 
 ##  =()<AWK	= @<_PATH_AWK>@>()=
 AWK	= /usr/bin/awk
@@ -87,7 +91,7 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	sendbatch inncheck innstat pgpverify innwatch innreport.pl innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	actsync.cfg actsync.ign scanspool storage.ctl motd.news
+	actsync.cfg actsync.ign scanspool
 
 MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
@@ -113,7 +117,7 @@ REST		= \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
-	sample.control motd.news
+	sample.control motd.news storage.ctl overview.ctl
 
 ALL		= $(MOST) $(REST)
 
@@ -126,7 +130,8 @@ REST_INSTALLED	= \
 	$D$(NEWSLIB)/innreport.conf $D$(NEWSLIB)/innreport_inn.pm \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
-	$D$(CTLBIN)/sample.control $D$(PATH_MOTD)
+	$D$(CTLBIN)/sample.control $D$(PATH_MOTD) $D$(PATH_STORAGECTL) \
+	$D$(PATH_OVERVIEWCTL)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -235,7 +240,8 @@ $D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
 $D$(NEWSBIN)/innreport.pl: innreport.pl	; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
-$D$(NEWSLIB)/storage.ctl: storage.ctl	; $(COPY_RPRI) $? $@
+$D$(PATH_STORAGECTL)/storage.ctl: storage.ctl	; $(COPY_RPRI) $? $@
+$D$(PATH_OVERVIEWCTL)/overview.ctl: overview.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPRI) $? $@
@@ -280,6 +286,7 @@ innreport.pl:	../samples/innreport.pl		; $(COPY) $? $@
 innreport_inn.pm: ../samples/innreport_inn.pm	; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
 storage.ctl:	../samples/storage.ctl		; $(COPY) $? $@
+overview.ctl:	../samples/overview.ctl		; $(COPY) $? $@
 innstat:	../samples/innstat		; $(COPY) $? $@
 innwatch:	../samples/innwatch		; $(COPY) $? $@
 innwatch.ctl:	../samples/innwatch.ctl		; $(COPY) $? $@

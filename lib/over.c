@@ -8,9 +8,7 @@
 
 
 #define OFFSET_ARTNUM      0
-#define OFFSET_OFFSET      4
-#define OFFSET_TOKEN       8
-#define OFFSET_CANCELLED   sizeof(TOKEN) + 8
+#define OFFSET_HASH        4
 
 /* 
 ** Pack the OVERINDEX structure into something more suitable for storing
@@ -27,16 +25,7 @@ void PackOverIndex(OVERINDEX *index, char *result) {
     memcpy(&result[OFFSET_ARTNUM], &i, sizeof(i));
     memmove(&result[OFFSET_ARTNUM], &result[intoverage], 4);
     
-    i = htonl(index->offset & 0xffffffff);
-    memcpy(&result[OFFSET_OFFSET], &i, sizeof(i));
-    memmove(&result[OFFSET_OFFSET],
-	    &result[OFFSET_OFFSET + intoverage], 4);
-
-    memcpy(&result[OFFSET_TOKEN], &index->token, sizeof(TOKEN));
-
-    c = index->cancelled;
-    memcpy(&result[OFFSET_CANCELLED], &c, 1);
-
+    memcpy(&result[OFFSET_HASH], &index->hash, sizeof(HASH));
 }
 
 
@@ -53,14 +42,6 @@ void UnpackOverIndex(char *packedindex, OVERINDEX *index) {
     memcpy(&i, buff, sizeof(i));
     index->artnum = ntohl(i);
 
-    memset(buff, '\0', sizeof(buff));
-    memcpy(&buff[intoverage], &packedindex[OFFSET_OFFSET], 4);
-    memcpy(&i, buff, sizeof(i));
-    index->offset = ntohl(i);
-
-    memcpy(&index->token, &packedindex[OFFSET_TOKEN], sizeof(TOKEN));
-
-    memcpy(&c, &packedindex[OFFSET_CANCELLED], 1);
-    index->cancelled = c;
+    memcpy(&index->hash, &packedindex[OFFSET_HASH], sizeof(HASH));
 }
 

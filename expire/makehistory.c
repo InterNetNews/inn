@@ -26,11 +26,23 @@
 
 
 typedef struct _BUFFER {
+    long	Size;
+    long	Used;
+    long	Left;
     char	*Data;
-    int		Size;
-    int		Used;
 } BUFFER;
 
+/*
+**  Information about the schema of the news overview files.
+*/
+typedef struct _ARTOVERFIELD {
+    char	*Headername;
+    int		HeadernameLength;
+    BOOL	NeedHeadername;
+    char	*Header;
+    int		HeaderLength;
+    BOOL	HasHeader;
+} ARTOVERFIELD;
 
 STATIC char		*ACTIVE = _PATH_ACTIVE;
 STATIC char		SPOOL[] = _PATH_SPOOL;
@@ -39,17 +51,164 @@ STATIC char		HISTORY[] = _PATH_HISTORY;
 STATIC char		MESSAGEID[] = "Message-ID:";
 STATIC char		EXPIRES[] = "Expires:";
 STATIC char		DATE[] = "Date:";
+STATIC char		XREF[] = "Xref:";
 STATIC BOOL		INNDrunning;
 STATIC char		*TextFile;
 STATIC char		Reason[] = "makehistory is running";
 STATIC TIMEINFO		Now;
+STATIC char		*SCHEMA = _PATH_SCHEMA;
+STATIC ARTOVERFIELD	*ARTfields;
+STATIC int		ARTfieldsize;
+STATIC ARTOVERFIELD	*Datep = (ARTOVERFIELD *)NULL;
+STATIC ARTOVERFIELD	*Msgidp = (ARTOVERFIELD *)NULL;
+STATIC ARTOVERFIELD	*Expp = (ARTOVERFIELD *)NULL;
+STATIC ARTOVERFIELD	*Xrefp = (ARTOVERFIELD *)NULL;
+STATIC ARTOVERFIELD	*Missfields;
+STATIC int		Missfieldsize = 0;
+STATIC char		*IndexFile;
+
+/*
+**  Read the overview schema.
+*/
+static void ARTreadschema(BOOL Overview)
+{
+    FILE                        *F;
+    char                        *p;
+    ARTOVERFIELD                *fp;
+    int                         i;
+    char                        buff[SMBUF];
+    int				missing = 0;
+
+    if (Overview) {
+	/* Open file, count lines. */
+	if ((F = fopen(SCHEMA, "r")) == NULL) {
+	    (void)fprintf(stderr, "Can't open %s, %s\n", SCHEMA, strerror(errno));
+	    exit(1);
+	}
+	for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
+	    continue;
+	(void)fseek(F, (OFFSET_T)0, SEEK_SET);
+	ARTfields = NEW(ARTOVERFIELD, i + 1);
+
+	/* Parse each field. */
+	for (fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
+	    /* Ignore blank and comment lines. */
+	    if ((p = strchr(buff, '\n')) != NULL)
+		*p = '\0';
+	    if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
+		*p = '\0';
+	    if (buff[0] == '\0')
+		continue;
+	    if ((p = strchr(buff, ':')) != NULL) {
+		*p++ = '\0';
+		fp->NeedHeadername = EQ(p, "full");
+	    }
+	    else
+		fp->NeedHeadername = FALSE;
+	    fp->Headername = COPY(buff);
+	    fp->HeadernameLength = strlen(buff);
+	    fp->Header = (char *)NULL;
+	    fp->HasHeader = FALSE;
+	    fp->HeaderLength = 0;
+	    if (caseEQn(buff, DATE, STRLEN(DATE)-1))
+		Datep = fp;
+	    if (caseEQn(buff, MESSAGEID, STRLEN(MESSAGEID)-1))
+		Msgidp = fp;
+	    if (caseEQn(buff, EXPIRES, STRLEN(EXPIRES))-1)
+		Expp = fp;
+	    if (caseEQn(buff, XREF, STRLEN(XREF))-1)
+		Xrefp = fp;
+	    fp++;
+	}
+	ARTfieldsize = fp - ARTfields;
+	(void)fclose(F);
+    }
+    if (Msgidp == (ARTOVERFIELD *)NULL)
+	Missfieldsize++;
+    if (Datep == (ARTOVERFIELD *)NULL)
+	Missfieldsize++;
+    if (Expp == (ARTOVERFIELD *)NULL)
+	Missfieldsize++;
+    if (Xrefp == (ARTOVERFIELD *)NULL)
+	Missfieldsize++;
+    if (Missfieldsize > 0) {
+	Missfields = NEW(ARTOVERFIELD, Missfieldsize);
+        fp = Missfields;
+	if (Msgidp == (ARTOVERFIELD *)NULL) {
+	    fp->NeedHeadername = FALSE;
+	    fp->Headername = COPY(MESSAGEID);
+	    fp->HeadernameLength = strlen(MESSAGEID)-1;
+	    fp->Header = (char *)NULL;
+	    fp->HasHeader = FALSE;
+	    fp->HeaderLength = 0;
+	    Msgidp = fp++;
+	}
+	if (Datep == (ARTOVERFIELD *)NULL) {
+	    fp->NeedHeadername = FALSE;
+	    fp->Headername = COPY(DATE);
+	    fp->HeadernameLength = strlen(DATE)-1;
+	    fp->Header = (char *)NULL;
+	    fp->HasHeader = FALSE;
+	    fp->HeaderLength = 0;
+	    Datep = fp++;
+	}
+	if (Expp == (ARTOVERFIELD *)NULL) {
+	    fp->NeedHeadername = FALSE;
+	    fp->Headername = COPY(EXPIRES);
+	    fp->HeadernameLength = strlen(EXPIRES)-1;
+	    fp->Header = (char *)NULL;
+	    fp->HasHeader = FALSE;
+	    fp->HeaderLength = 0;
+	    Expp = fp++;
+	}
+	if (Xrefp == (ARTOVERFIELD *)NULL) {
+	    fp->NeedHeadername = FALSE;
+	    fp->Headername = COPY(XREF);
+	    fp->HeadernameLength = strlen(XREF)-1;
+	    fp->Header = (char *)NULL;
+	    fp->HasHeader = FALSE;
+	    fp->HeaderLength = 0;
+	    Xrefp = fp++;
+	}
+    }
+}
+
+void BUFFset(BUFFER *bp, const char *p, const int length)
+{
+    if ((bp->Left = length) != 0) {
+	/* Need more space? */
+	if (bp->Size < length) {
+	    bp->Size = length;
+	    RENEW(bp->Data, char, bp->Size);
+	}
+
+	/* Try to test for non-overlapping copies. */
+	memmove((POINTER)bp->Data, (POINTER)p, (SIZE_T)length);
+    }
+    bp->Used = 0;
+}
+
+void BUFFappend(BUFFER *bp, const char *p, const int len) {
+    int i;
+
+    if (len == 0)
+	return;
+    /* Note end of buffer, grow it if we need more room */
+    i = bp->Used + bp->Left;
+    if (i + len > bp->Size) {
+	/* Round size up to next 1K */
+	bp-> Size += (len + 0x3FF) & ~0x3FF;
+	RENEW(bp->Data, char, bp->Size);
+    }
+    bp->Left += len;
+    memcpy((POINTER)&bp->Data[i], (POINTER)p, len);
+}
 
 /*
 **  Change to a directory or exit out.
 */
 STATIC void
-xchdir(where)
-    char	*where;
+xchdir(char *where)
 {
     if (chdir(where) < 0) {
 	(void)fprintf(stderr, "Can't change to \"%s\", %s\n",
@@ -63,8 +222,7 @@ xchdir(where)
 **  Remove the DBZ files for the specified base text file.
 */
 STATIC void
-RemoveDBZFiles(p)
-    char	*p;
+RemoveDBZFiles(char *p)
 {
     static char	NOCANDO[] = "Can't remove \"%s\", %s\n";
     char	buff[SMBUF];
@@ -216,8 +374,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 **  Remove a bad article.
 */
 STATIC void
-Removeit(name)
-    char	*name;
+Removeit(char *name)
 {
     char	*p;
 
@@ -236,8 +393,7 @@ Removeit(name)
 **  Check and parse a Message-ID header line.  Return private space.
 */
 static char *
-GetMessageID(p)
-    register char	*p;
+GetMessageID(char *p)
 {
     static BUFFER	B;
     int			length;
@@ -272,8 +428,7 @@ GetMessageID(p)
 **  zero on error.
 */
 static long
-GetaDate(p)
-    register char	*p;
+GetaDate(char *p)
 {
     time_t		t;
 
@@ -289,17 +444,196 @@ GetaDate(p)
 **  Process a single article.
 */
 STATIC void
-DoArticle(qp, Sbp, name, out, RemoveBad, Update)
-    register QIOSTATE	*qp;
-    struct stat		*Sbp;
-    char		*name;
-    FILE		*out;
-    BOOL		RemoveBad;
-    BOOL		Update;
+DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOOL RemoveBad)
+{
+    ARTOVERFIELD		*fp;
+    char			*p, *p1, *p2, *q;
+    static BUFFER 		Buff;
+    static char			SEP[] = "\t";
+    static char			NUL[] = "\0";
+    static char			COLONSPACE[] = ": ";
+    int				i, j;
+    char			*MessageID;
+    time_t			Arrived;
+    time_t			Expires;
+    time_t			Posted;
+    char			*hash;
+
+    /* Set up place to store headers. */
+    for (fp = ARTfields, i = ARTfieldsize; --i >= 0; fp++) {
+	if (fp->HeaderLength) {
+	    fp->Header = 0;
+	}
+	fp->HeaderLength = 0;
+	fp->HasHeader = FALSE;
+    }
+    if (Missfieldsize > 0) {
+	for (fp = Missfields, i = Missfieldsize; --i >= 0; fp++) {
+	    if (fp->HeaderLength) {
+		fp->Header = 0;
+	    }
+	    fp->HeaderLength = 0;
+	    fp->HasHeader = FALSE;
+	}
+    }
+    for (i = ARTfieldsize, fp = ARTfields; --i >= 0;fp++) {
+	if ((fp->Header = (char *)HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
+	    fp->HasHeader = TRUE;
+	    for (p = fp->Header, p1 = p2 = (char *)NULL; p < art->data + art->len; p++) {
+		if (p2 != (char *)NULL && *p2 == '\r' &&
+		    p1 != (char *)NULL && *p1 == '\n' &&
+		    !ISWHITE(*p))
+		    break;
+		p2 = p1;
+		p1 = p;
+	    }
+	    if (p >= art->data + art->len) {
+		/* not found for this header */
+		continue;
+	    }
+            fp->HeaderLength = p2 - fp->Header;
+	}
+    }
+    if (Missfieldsize > 0) {
+	for (i = Missfieldsize, fp = Missfields; --i >= 0;fp++) {
+	    if ((fp->Header = (char *)HeaderFindMem(art->data, art->len, fp->Headername, fp->HeadernameLength)) != (char *)NULL) {
+		fp->HasHeader = TRUE;
+		for (p = fp->Header, p1 = (char *)NULL; p < art->data + art->len; p++) {
+		    if (p1 != (char *)NULL && *p1 == '\n' && !ISWHITE(*p))
+			break;
+		    p1 = p;
+		}
+		if (p == art->data + art->len) {
+		    /* not found for this header */
+		    continue;
+		}
+		fp->HeaderLength = p - fp->Header;
+	    }
+	}
+    }
+
+    MessageID = (char *)NULL;
+    Arrived = art->arrived;
+    Expires = 0;
+    Posted = 0;
+
+    if (!Msgidp->HasHeader) {
+	(void)fprintf(stderr, "No %s in %s\n", MESSAGEID, TokenToText(*art->token));
+	if (RemoveBad)
+	    (void)SMcancel(*art->token);
+	return;
+    }
+    if (Buff.Data == NULL)
+	Buff.Data = NEW(char, 1);
+    BUFFset(&Buff, Msgidp->Header, Msgidp->HeaderLength);
+    BUFFappend(&Buff, NUL, STRLEN(NUL));
+    for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
+	if (*p == '\t' || *p == '\n' || *p == '\r')
+	    *p = ' ';
+    MessageID = GetMessageID(Buff.Data);
+    if (*MessageID == '\0') {
+	(void)fprintf(stderr, "No %s in %s\n", MESSAGEID, TokenToText(*art->token));
+	if (RemoveBad)
+	    (void)SMcancel(*art->token);
+	return;
+    }
+    if (Update) {
+        /* Server already know about this one? */
+	if (dbzexists(HashMessageID(MessageID)))
+	    return;
+    }
+    hash = HashToText(HashMessageID(MessageID));
+
+    if (!Datep->HasHeader) {
+	Posted = Arrived;
+    } else {
+	BUFFset(&Buff, Datep->Header, Datep->HeaderLength);
+	BUFFappend(&Buff, NUL, STRLEN(NUL));
+	for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
+	    if (*p == '\t' || *p == '\n' || *p == '\r')
+		*p = ' ';
+	if ((Posted = GetaDate(Buff.Data)) == 0)
+	    Posted = Arrived;
+    }
+
+    if (Expp->HasHeader) {
+	BUFFset(&Buff, Expp->Header, Expp->HeaderLength);
+	BUFFappend(&Buff, NUL, STRLEN(NUL));
+	for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
+	    if (*p == '\t' || *p == '\n' || *p == '\r')
+		*p = ' ';
+	Expires = GetaDate(Buff.Data);
+    }
+
+    if (Overview) {
+	for (j = ARTfieldsize, fp = ARTfields; --j >= 0;fp++) {
+	    if (fp == ARTfields)
+		BUFFset(&Buff, "", 0);
+	    else
+		BUFFappend(&Buff, SEP, STRLEN(SEP));
+	    if (fp->NeedHeadername) {
+		BUFFappend(&Buff, fp->Headername, fp->HeadernameLength);
+		BUFFappend(&Buff, COLONSPACE, STRLEN(COLONSPACE));
+	    }
+	    i = Buff.Left;
+	    BUFFappend(&Buff, fp->Header, fp->HeaderLength);
+	    for (p = &Buff.Data[i]; i < Buff.Left; p++, i++)
+		if (*p == '\t' || *p == '\n' || *p == '\r')
+		    *p = ' ';
+	}
+	BUFFappend(&Buff, NUL, STRLEN(NUL));
+	if (!OVERstore(art->token, Buff.Data, Buff.Left)) {
+	    (void)fprintf(stderr, "Can't write overview data, %s\n", strerror(errno));
+	    exit(1);
+	}
+	if (index != (FILE *)NULL && Xrefp->HasHeader) {
+	    BUFFset(&Buff, Xrefp->Header, Xrefp->HeaderLength);
+	    BUFFappend(&Buff, NUL, STRLEN(NUL));
+	    for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)
+		if (*p == '\t' || *p == '\n' || *p == '\r')
+		    *p = ' ';
+	    if ((p = strchr(Buff.Data, ' ')) == NULL) {
+		(void)fprintf(stderr, "Can't find Xref content, %s\n", Buff.Data);
+		/* we do not exit */
+	    } else {
+		i = fprintf(index, "[%s] %s\n", hash, ++p);
+		if (i == EOF || ferror(index)) {
+		    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
+		    exit(1);
+		}
+	    }
+	}
+    } else {
+	art->token->index = OVER_NONE;
+    }
+    if (Expires > 0)
+	i = fprintf(out, "[%s]%c%lu%c%lu%c%lu%c%s\n",
+	    hash, HIS_FIELDSEP,
+	    (unsigned long)Arrived, HIS_SUBFIELDSEP,
+	    (unsigned long)Expires,
+	    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
+	    TokenToText(*art->token));
+    else
+	i = fprintf(out, "[%s]%c%lu%c%s%c%lu%c%s\n",
+                    hash, HIS_FIELDSEP,
+                    (unsigned long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
+                    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
+                    TokenToText(*art->token));
+    if (i == EOF || ferror(out)) {
+	(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));
+	exit(1);
+    }
+}
+
+/*
+**  Process a single article.
+*/
+STATIC void
+DoArticle(QIOSTATE *qp, struct stat *Sbp, char *name, FILE *out, BOOL RemoveBad, BOOL Update)
 {
     static char		IGNORE[] = "Ignoring duplicate %s header in %s\n";
     static char		BADHDR[] = "Bad %s header in %s\n";
-    register char	*p;
+    char		*p;
     char		*MessageID;
     time_t		Arrived;
     time_t		Expires;
@@ -406,17 +740,13 @@ DoArticle(qp, Sbp, name, out, RemoveBad, Update)
 **  Process one newsgroup directory.
 */
 STATIC void
-DoNewsgroup(group, out, RemoveBad, Update)
-    char		*group;
-    FILE		*out;
-    BOOL		RemoveBad;
-    BOOL		Update;
+DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update)
 {
-    register DIR	*dp;
-    register DIRENTRY	*ep;
-    register QIOSTATE	*qp;
-    register char	*p;
-    register char	*q;
+    DIR			*dp;
+    DIRENTRY		*ep;
+    QIOSTATE		*qp;
+    char		*p;
+    char		*q;
     struct stat		Sb;
     char		buff[SPOOLNAMEBUFF];
 #if	defined(DO_HAVE_SYMLINK)
@@ -496,9 +826,7 @@ DoNewsgroup(group, out, RemoveBad, Update)
 **  Tell innd to add a history line.
 */
 STATIC BOOL
-AddThis(line, Verbose)
-    register char	*line;
-    BOOL		Verbose;
+AddThis(char *line, BOOL Verbose)
 {
     int			i;
     char		*arrive;
@@ -548,9 +876,7 @@ AddThis(line, Verbose)
 **  Close the server link, and exit.
 */
 STATIC NORETURN
-ErrorExit(Updating, Stopped)
-    BOOL	Updating;
-    BOOL	Stopped;
+ErrorExit(BOOL Updating, BOOL Stopped)
 {
     if (Updating) {
 	if (!INNDrunning && Stopped && ICCgo(Reason) < 0)
@@ -568,26 +894,24 @@ ErrorExit(Updating, Stopped)
 **  Print a usage message and exit.
 */
 STATIC NORETURN
-Usage()
+Usage(void)
 {
     (void)fprintf(stderr,
-	    "Usage: makehistory [ -A file ][ -a file ][ -b ][ -f file ][ -i ][ -n ] [ -o ] [ -T dir ][ -v ][ -f file ][ -r ][ -s size ][ -u ]\n");
+	    "Usage: makehistory [ -A file ][ -a file ][ -b ][ -d overdir ][ -f file ][ -I indexfile ][ -i ][ -n ][ -O ][ -o ][ -T dir ][ -v ][ -f file ][ -r ][ -s size ][ -u ]\n");
     exit(1);
     /* NOTREACHED */
 }
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
-    register QIOSTATE	*qp;
-    register FILE	*out;
-    register char	*line;
-    register char	*p;
-    register char	*q;
-    register long	count;
+    QIOSTATE		*qp;
+    FILE		*out;
+    char		*line;
+    char		*p;
+    char		*q;
+    long		count;
     BUFFER		B;
     long		size;
     int			i;
@@ -598,13 +922,19 @@ main(ac, av)
     BOOL		Update;
     BOOL		RemoveBad;
     BOOL		Verbose;
+    BOOL		Overview;
+    BOOL		Notraditional;
+    BOOL		val;
     char		temp[SMBUF];
     char		*TempTextFile;
     char		*tv[2];
     STRING		tmpdir;
+    STRING		OverPath;
     char		*Tflag;
     char		*mode;
     char		*oldtemp;
+    ARTHANDLE		*art = (ARTHANDLE *)NULL;
+    FILE		*index = (FILE *)NULL;
 
     /* Set defaults. */
     TextFile = HISTORY;
@@ -615,16 +945,20 @@ main(ac, av)
     RemoveBad = FALSE;
     Overwrite = FALSE;
     Verbose = FALSE;
+    IndexFile = NULL;
+    Overview = FALSE;
+    Notraditional = FALSE;
     Tflag = "";
     mode = "w";
     size = 0;
     oldtemp = NULL;
+    OverPath = NULL;
     if ((tmpdir = getenv("TMPDIR")) == NULL)
 	tmpdir = _PATH_TMP;
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "A:a:bf:inors:T:uv")) != EOF)
+    while ((i = getopt(ac, av, "A:a:bd:f:I:inOors:ST:uv")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -639,6 +973,9 @@ main(ac, av)
 	case 'b':
 	    RemoveBad = TRUE;
 	    break;
+	case 'd':
+	    OverPath = optarg;
+	    break;
 	case 'f':
 	    TextFile = optarg;
 	    break;
@@ -648,6 +985,9 @@ main(ac, av)
 	case 'i':
 	    IgnoreOld = TRUE;
 	    break;
+	case 'I':
+	    IndexFile = optarg;
+	    break;
 	case 'n':
 	    DoRebuild = FALSE;
 	    break;
@@ -655,8 +995,14 @@ main(ac, av)
 	    Overwrite = TRUE;
 	    IgnoreOld = TRUE;
 	    break;
+	case 'O':
+	    Overview = TRUE;
+	    break;
 	case 'r':
 	    JustRebuild = TRUE;
+	    break;
+	case 'S':
+	    Notraditional = TRUE;
 	    break;
 	case 'T':
 	    tmpdir = optarg;
@@ -734,30 +1080,61 @@ main(ac, av)
 		strerror(errno));
 	exit(1);
     }
-
-    /* Start scanning the directories. */
-    if ((qp = QIOopen(ACTIVE)) == NULL) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", ACTIVE, strerror(errno));
-	exit(1);
-    }
-    for (count = 1; (line = QIOread(qp)) != NULL; count++) {
-	if ((p = strchr(line, ' ')) == NULL) {
-	    (void)fprintf(stderr, "Bad line %ld, \"%s\"\n", count, line);
-	    continue;
+    ARTreadschema(Overview);
+    if (Overview) {
+	val = FALSE;
+	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
+	    (void)fprintf(stderr, "Can't setup unified overview mmap %m\n",
+		strerror(errno));
 	}
-	*p = '\0';
-	DoNewsgroup(line, out, RemoveBad, Update);
+	if (!OVERsetup(OVER_MODE, (void *)mode)) {
+	    fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
+	    exit(1);
+	}
+	if (OverPath)
+	    if (!OVERsetup(OVER_DIR, (void *)OverPath)) {
+		fprintf(stderr, "Can't setup unified overview path: %s\n", strerror(errno));
+		exit(1);
+	    }
+	if (!OVERinit()) {
+	    (void)fprintf(stderr, "Can't initialize unified overview %m\n",
+		strerror(errno));
+	}
+	if (IndexFile && (index = fopen(IndexFile, "w")) == (FILE *)NULL) {
+	    (void)fprintf(stderr, "Can't open index file, %s\n",
+		strerror(errno));
+	    exit(1);
+	}
     }
-    /* Test error conditions; QIOtoolong shouldn't happen. */
-    if (QIOtoolong(qp)) {
-	(void)fprintf(stderr, "Line %ld is too long\n", count);
-	ErrorExit(Update, DoRebuild);
+
+    if (!Notraditional) {
+	/* Start scanning the directories. */
+	if ((qp = QIOopen(ACTIVE)) == NULL) {
+	    (void)fprintf(stderr, "Can't open %s, %s\n", ACTIVE, strerror(errno));
+	    exit(1);
+	}
+	for (count = 1; (line = QIOread(qp)) != NULL; count++) {
+	    if ((p = strchr(line, ' ')) == NULL) {
+		(void)fprintf(stderr, "Bad line %ld, \"%s\"\n", count, line);
+		continue;
+	    }
+	    *p = '\0';
+	    DoNewsgroup(line, out, RemoveBad, Update);
+	}
+	/* Test error conditions; QIOtoolong shouldn't happen. */
+	if (QIOtoolong(qp)) {
+	    (void)fprintf(stderr, "Line %ld is too long\n", count);
+	    ErrorExit(Update, DoRebuild);
+	}
+	if (QIOerror(qp)) {
+	    (void)fprintf(stderr, "Can't read %s around line %ld, %s\n",
+		    ACTIVE, count, strerror(errno));
+	    ErrorExit(Update, DoRebuild);
+	}
     }
-    if (QIOerror(qp)) {
-	(void)fprintf(stderr, "Can't read %s around line %ld, %s\n",
-		ACTIVE, count, strerror(errno));
-	ErrorExit(Update, DoRebuild);
-    }
+    /* Start scanning articles stored by storage api */
+    while ((art = SMnext(art, RETR_HEAD)) != NULL)
+	DoMemArt(art, Overview, Update, out, index, RemoveBad);
     if (fflush(out) == EOF || ferror(out) || fclose(out) == EOF) {
 	(void)fprintf(stderr, "Can't close history file, %s\n",
 		strerror(errno));

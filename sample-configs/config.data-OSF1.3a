@@ -1,4 +1,4 @@
-## Sample config.data for OSF/1 1.3a
+## Sample config.data for FreeBSD 2.x
 
 ##
 ##  1.  MAKE CONFIG PARAMETERS
@@ -10,25 +10,25 @@ DBZDIR			../dbz
 P			
 ##  C pre-processor flags
 #### =()<DEFS			@<DEFS>@>()=
-DEFS			-I../include
+DEFS			-I../include -Wformat -O -pipe
 ##  C compiler
 #### =()<CC			@<CC>@>()=
 CC			cc
 ##  Does your compiler properly do "char const *"? Pick DO DONT or DUNNO
 #### =()<USE_CHAR_CONST		@<USE_CHAR_CONST>@>()=
-USE_CHAR_CONST		DUNNO
+USE_CHAR_CONST		DO
 ##  C compiler flags
 #### =()<CFLAGS			@<CFLAGS>@>()=
-CFLAGS			$(DEFS) -g -O2
+CFLAGS			$(DEFS)
 ##  C compiler flags to use when compiling dbz
 #### =()<DBZCFLAGS			@<DBZCFLAGS>@>()=
 DBZCFLAGS			$(CFLAGS)
 ##  What flags to use if profiling; -p or -pg, e.g.
 #### =()<PROF			@<PROF>@>()=
-PROF			-p
+PROF			-pg
 ##  Flags for the "cc -o" line; e.g., -Bstatic on SunOS4.x while debugging.
 #### =()<LDFLAGS			@<LDFLAGS>@>()=
-LDFLAGS			-g -O2
+LDFLAGS			
 ##  If you use the standard NNTP way of connecting, where is the library?
 #### =()<NNTPLIB		@<NNTPLIB>@>()=
 NNTPLIB		
@@ -36,13 +36,13 @@ NNTPLIB
 ##  On NetBSD and FreeBSD, you must add the -lcrypt directive here
 ##  -lutil on BSD/OS gives you setproctitle() see HAVE_SETPROCTITLE.
 #### =()<LIBS			@<LIBS>@>()=
-LIBS			
+LIBS			-lgnumalloc
 ##  How to make a lint library; pick BSD, SYSV, or NONE.
 #### =()<LINTLIBSTYLE		@<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE		NONE
 ##  Flags for lint.  AIX wants "-wkD"; it and others don't want "-z".
 #### =()<LINTFLAGS		@<LINTFLAGS>@>()=
-LINTFLAGS		-b -u -x $(DEFS)
+LINTFLAGS		-b -h -z $(DEFS)
 ##  Some lints insist on putting out the filename and other crap.
 ##  Possible values:
 ##	LINTFILTER              | sed -n -f ../sedf.aix
@@ -51,7 +51,7 @@ LINTFLAGS		-b -u -x $(DEFS)
 ##	LINTFILTER              | sed -n -f ../sedf.sysv
 ##	LINTFILTER              
 ####  =()<LINTFILTER		@<LINTFILTER>@>()=
-LINTFILTER		| sed -n -f ../sedf.sysv
+LINTFILTER		| sed -n -f ../sedf.sun
 ##  How to install manpages; pick SOURCE, NROFF-PACK, NROFF-PACK-SCO,
 ##  BSD4.4 or NONE.
 #### =()<MANPAGESTYLE		@<MANPAGESTYLE>@>()=
@@ -137,7 +137,7 @@ GROUPDIR_MODE		0775
 ##  Use stdargs, varargs, or neither?  Pick VARARGS STDARGS or NONE.
 ##  You need vfprintf and vfsprintf if not NONE.
 #### =()<VAR_STYLE		@<VAR_STYLE>@>()=
-VAR_STYLE		VARARGS
+VAR_STYLE		STDARGS
 ##  If you don't have <string.h>, set this to "mystring.h"
 #### =()<STR_HEADER		@<STR_HEADER>@>()=
 STR_HEADER		<string.h>
@@ -149,21 +149,21 @@ MEM_HEADER		<memory.h>
 OFFSET_T		long
 ##  What is the type of an object size? Usually size_t or unsigned int.
 #### =()<SIZE_T			@<SIZE_T>@>()=
-SIZE_T			unsigned long
+SIZE_T			size_t
 ##  What is the type of a passwd uid and gid, for use in chown(2)?
 #### =()<UID_T			@<UID_T>@>()=
-UID_T			int
+UID_T			uid_t
 #### =()<GID_T			@<GID_T>@>()=
-GID_T			int
+GID_T			gid_t
 ##  Type of a pid, for use in kill(2).
 #### =()<PID_T			@<PID_T>@>()=
-PID_T			int
+PID_T			pid_t
 ##  Generic pointer, used by memcpy, malloc, etc.  Usually char or void.
 #### =()<POINTER			@<POINTER>@>()=
 POINTER			void
 ##  Worst-case alignment, in order to shut lint up
 #### =()<ALIGNPTR		@<ALIGNPTR>@>()=
-ALIGNPTR		int 
+ALIGNPTR		int
 ##  What should a signal handler return?  Usually int or void.
 #### =()<SIGHANDLER		@<SIGHANDLER>@>()=
 SIGHANDLER		void
@@ -188,7 +188,7 @@ DIR_STYLE		DIRENT
 LOCK_STYLE		FLOCK
 ##  Do you have <unistd.h>?  Pick DO or DONT
 #### =()<HAVE_UNISTD		@<HAVE_UNISTD>@>()=
-HAVE_UNISTD		DONT
+HAVE_UNISTD		DO
 ##  Do you have setbuffer?  Pick DO or DONT.
 #### =()<HAVE_SETBUFFER		@<HAVE_SETBUFFER>@>()=
 HAVE_SETBUFFER		DO
@@ -204,7 +204,7 @@ HAVE_SETPROCTITLE	DO
 HAVE_FCHMOD		DO
 ##  Do you have setsid()?  Pick DO or DONT.
 #### =()<HAVE_SETSID		@<HAVE_SETSID>@>()=
-HAVE_SETSID		DONT
+HAVE_SETSID		DO
 ##  Does your (struct tm) have a tm_gmtoff field?  Pick DO or DONT.
 #### =()<HAVE_TM_GMTOFF		@<HAVE_TM_GMTOFF>@>()=
 HAVE_TM_GMTOFF		DO
@@ -213,7 +213,7 @@ HAVE_TM_GMTOFF		DO
 HAVE_ST_BLKSIZE		DO
 ##  Use waitpid instead of wait3?  Pick DO or DONT.
 #### =()<HAVE_WAITPID		@<HAVE_WAITPID>@>()=
-HAVE_WAITPID		DONT
+HAVE_WAITPID		DO
 ##  Use "union wait" instead of int?  Pick DO or DONT.
 #### =()<USE_UNION_WAIT		@<USE_UNION_WAIT>@>()=
 USE_UNION_WAIT		DONT
@@ -237,14 +237,14 @@ BIND_USE_SIZEOF		DO
 CLX_STYLE		IOCTL
 ##  How should non-blocking I/O be done?  Pick IOCTL or FCNTL.
 #### =()<NBIO_STYLE		@<NBIO_STYLE>@>()=
-NBIO_STYLE		FCNTL
+NBIO_STYLE		IOCTL
 ##  How should resource-totalling be done?  Pick RUSAGE or TIMES
 #### =()<RES_STYLE		@<RES_STYLE>@>()=
 RES_STYLE		RUSAGE
 ##  How to get number of available descriptors?
 ##  Pick GETDTAB, GETRLIMIT, SYSCONF, ULIMIT, or CONSTANT.
 ####  =()<FDCOUNT_STYLE		@<FDCOUNT_STYLE>@>()=
-FDCOUNT_STYLE		GETDTAB
+FDCOUNT_STYLE		SYSCONF
 ##  If greater than -1, then use [gs]etrlimit to set that many descriptors.
 ##  If -1, then no [gs]etrlimit calls are done.
 #### =()<NOFILE_LIMIT		@<NOFILE_LIMIT>@>()=
@@ -259,16 +259,16 @@ CTYPE			(isascii((c)) && isXXXXX((c)))
 #CTYPE			isXXXXX((c))
 ##  What's the return type of abort?  Usually int or void.
 #### =()<ABORTVAL		@<ABORTVAL>@>()=
-ABORTVAL		int
+ABORTVAL		void
 ##  What's the return type of alarm?  Usually int or unsigned int.
 #### =()<ALARMVAL		@<ALARMVAL>@>()=
 ALARMVAL		unsigned int
 ##  What's the return type of getpid?  Usually int or unsigned int.
 #### =()<GETPIDVAL		@<GETPIDVAL>@>()=
-GETPIDVAL		int
+GETPIDVAL		pid_t
 ##  What's the return type of sleep?  Usually int or unsigned int.
 #### =()<SLEEPVAL		@<SLEEPVAL>@>()=
-SLEEPVAL		unsigned int
+SLEEPVAL		u_int
 ##  What's the return type of  qsort?  Usually int or void.
 #### =()<QSORTVAL		@<QSORTVAL>@>()=
 QSORTVAL		void
@@ -281,10 +281,10 @@ FREEVAL			void
 ##  What's the return type of exit?  Usually int or void.
 ##  (For gcc (not pedantic ANSI) use "volatile void" in EXITVAL and _EXITVAL.)
 #### =()<EXITVAL			@<EXITVAL>@>()=
-EXITVAL			volatile void
+EXITVAL			void
 ##  What's the return type of _exit?  Usually int or void.
 #### =()<_EXITVAL		@<_EXITVAL>@>()=
-_EXITVAL		volatile void
+_EXITVAL		void
 
 
 ##
@@ -535,28 +535,28 @@ _PATH_NEWSBOOT		/usr/news/bin/rc.news
 ##  Where sendmail, or a look-alike, lives.
 ##  The -t is optional and says to read message for recipients
 #### =()<_PATH_SENDMAIL		@<_PATH_SENDMAIL>@>()=
-_PATH_SENDMAIL		/usr/lib/sendmail -t
+_PATH_SENDMAIL		/usr/sbin/sendmail -t
 ##  Where the shell is.
 #### =()<_PATH_SH		@<_PATH_SH>@>()=
 _PATH_SH		/bin/sh
 ##  Where the compress program lives.
 #### =()<_PATH_COMPRESS		@<_PATH_COMPRESS>@>()=
-_PATH_COMPRESS		/usr/local/bin/gzip
+_PATH_COMPRESS		/usr/bin/gzip
 ##  What extension your compress appends
 #### =()<_PATH_COMPRESSEXT	@<_PATH_COMPRESSEXT>@>()=
 _PATH_COMPRESSEXT	.gz
 ##  Where egrep lives (you might need the FSF one; see scanlogs)
 #### =()<_PATH_EGREP		@<_PATH_EGREP>@>()=
-_PATH_EGREP		/usr/local/bin/egrep
+_PATH_EGREP		/usr/bin/egrep
 ##  Where perl lives
 #### =()<_PATH_PERL		@<_PATH_PERL>@>()=
 _PATH_PERL		/usr/bin/perl
 ##  Where awk lives
 #### =()<_PATH_AWK		@<_PATH_AWK>@>()=
-_PATH_AWK		awk
+_PATH_AWK		/usr/bin/awk
 ##  Where sed lives (you might need the FSF one)
 #### =()<_PATH_SED		@<_PATH_SED>@>()=
-_PATH_SED		sed
+_PATH_SED		/usr/bin/sed
 ##  Where sort lives (you may want the FSF one).
 #### =()<_PATH_SORT		@<_PATH_SORT>@>()=
 _PATH_SORT		/usr/bin/sort
@@ -776,6 +776,12 @@ _PATH_SCHEMA		/var/news/etc/overview.fmt
 ## Location of the MOTD file.
 #### =()<_PATH_MOTD		@<_PATH_MOTD>@>()=
 _PATH_MOTD		/var/news/etc/motd.news
+## Location of the storage control file.
+#### =()<_PATH_STORAGECTL	@<_PATH_STORAGECTL>@>()=
+_PATH_STORAGECTL	/var/news/etc/storage.ctl
+## Location of the unified overview file.
+#### =()<_PATH_OVERVIEWCTL	@<_PATH_OVERVIEWCTL>@>()=
+_PATH_OVERVIEWCTL	/var/news/etc/overview.ctl
 
 
 

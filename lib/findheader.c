@@ -22,14 +22,17 @@ const char *HeaderFindMem(const char *Article, const int ArtLen, const char *Hea
 	/* Match first character, then colon, then whitespace (don't
 	 * delete that line -- meet the RFC!) then compare the rest
 	 * of the word. */
-	if (p[HeaderLen] == ':'
+	if (HeaderLen+1<Article+ArtLen-p
+	 && p[HeaderLen] == ':'
 	 && ISWHITE(p[HeaderLen + 1])
 	 && caseEQn(p, Header, (SIZE_T)HeaderLen)) {
-	    for (p += HeaderLen; *++p != '\n' && ISWHITE(*p); )
+	    for (p += HeaderLen; HeaderLen+1<Article+ArtLen-p
+		&& *p != '\r' && *p != '\n' && ISWHITE(*p); p++)
 		continue;
 	    return p;
 	}
-	if ((p = memchr(p, '\n', ArtLen - (p - Article))) == NULL || *++p == '\n')
+	if ((p = memchr(p, '\n', ArtLen - (p - Article))) == NULL ||
+	    ++p >= Article + ArtLen || *p == '\n')
 	    return NULL;
     }
 }

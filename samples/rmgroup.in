@@ -32,7 +32,7 @@ mail)
 esac
 
 ##  Make sure the article is approved and that the group exists.
-${SED} -e '/^$/q' <$ARTICLE >${TEMP}
+${SM} ${ARTICLE} | ${SED} -e '/^$/q' >${TEMP}
 grep '^Approved:' <${TEMP} >/dev/null 2>&1 || {
     ${SM} ${ARTICLE} | ${WRITELOG} ${LOGFILE} "Unapproved rmgroup by ${FROM}"
     rm -f ${TEMP}

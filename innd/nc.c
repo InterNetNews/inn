@@ -84,7 +84,7 @@ STATIC STRING		NCgreeting;
 /*
 ** Clear the WIP entry for the given channel
 */
-STATIC void NCclearwip(CHANNEL *cp) {
+void NCclearwip(CHANNEL *cp) {
     WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
     HashClear(&cp->CurrentMessageIDHash);
 }
@@ -462,7 +462,7 @@ NCihave(cp)
 	cp->Refused++;
 	NCwritereply(cp, NNTP_HAVEIT);
     }
-    else if (WIPinprogress(p, cp, TRUE)) {
+    else if (WIPinprogress(p, cp, FALSE)) {
 	NCwritereply(cp, NNTP_RESENDIT_LATER);
     }
     else {
@@ -612,7 +612,6 @@ NCmode(cp)
 */
 STATIC FUNCTYPE NCquit(CHANNEL *cp)
 {
-    NCclearwip(cp);
     cp->State = CSwritegoodbye;
     NCwritereply(cp, NNTP_GOODBYE_ACK);
 }
@@ -1277,7 +1276,7 @@ NCcheck(cp)
 	cp->Refused++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
-    } else if (WIPinprogress(p, cp, FALSE)) {
+    } else if (WIPinprogress(p, cp, TRUE)) {
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_RESENDID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
     } else {
@@ -1317,6 +1316,7 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
 
     cp->State = CSgetarticle;
     /* set WIP for benefit of later code in NCreader */
-    wp = WIPnew(p, cp);
+    if ((wp = WIPbyid(p)) == (WIP *)NULL)
+	wp = WIPnew(p, cp);
     cp->CurrentMessageIDHash = wp->MessageID;
 }

@@ -348,6 +348,13 @@ STATIC void SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    BUFFappend(bp, "/", 1);
 	    BUFFappend(bp, Data->Name, Data->NameLength);
 	    break;
+	case FEED_HASH:
+	    if (Dirty)
+		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    BUFFappend(bp, "[", 1);
+	    BUFFappend(bp, HashToText(*(Data->Hash)), sizeof(HASH)*2);
+	    BUFFappend(bp, "]", 1);
+	    break;
 	case FEED_HDR_DISTRIB:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));

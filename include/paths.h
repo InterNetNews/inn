@@ -140,6 +140,10 @@
 #define _PATH_XBATCHES	"/var/news/spool/in.coming"
     /* =()<#define _PATH_MOTD	"@<_PATH_MOTD>@">()= */
 #define _PATH_MOTD	"/var/news/etc/motd.news"
+    /* =()<#define _PATH_STORAGECTL	"@<_PATH_STORAGECTL>@">()= */
+#define _PATH_STORAGECTL	"/var/news/etc/storage.ctl"
+    /* =()<#define _PATH_OVERVIEWCTL	"@<_PATH_OVERVIEWCTL>@">()= */
+#define _PATH_OVERVIEWCTL	"/var/news/etc/overview.ctl"
 
 
 

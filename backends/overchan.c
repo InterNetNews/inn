@@ -63,21 +63,43 @@ STATIC BOOL MakeOverDir(char *Name)
 **  Get the lock for the group, then open the data file and append the
 **  new data.  Return FALSE on error.
 */
-STATIC BOOL WriteData(TOKEN Token, char *Dir, char *Art, char *Rest, BOOL Complain)
+STATIC BOOL WriteData(char *Dir, char *Art, char *Rest, BOOL Complain)
 {
     static char		TAB[] = "\t";
     static char		NL[] = "\n";
     struct iovec	iov[4];
     int	                fd;
     char		file[SPOOLNAMEBUFF];
-    int	                ifd;
-    char		ifile[SPOOLNAMEBUFF];
-    OVERINDEX		index;
     int	                i;
-    BOOL	        ok;
     struct stat		Sb;
-    char                packed[OVERINDEXPACKSIZE];
 
+    /* Name the data file. */
+    (void)sprintf(file, "%s/%s", Dir, _PATH_OVERVIEW);
+    /* Open and lock the file. */
+    for ( ; ; ) {
+	if ((fd = open(file, O_WRONLY | O_CREAT | O_APPEND, ARTFILE_MODE)) < 0) {
+	    if (Complain && errno != ENOENT)
+		(void)fprintf(stderr, "overchan cant open %s, %s\n",
+		    file, strerror(errno));
+	    return FALSE;
+	}
+	if (LockFile(fd, FALSE) < 0)
+	    /* Wait for it. */
+	    (void)LockFile(fd, TRUE);
+	else {
+	    /* Got the lock; make sure the file is still there. */
+	    if (fstat(fd, &Sb) < 0) {
+		(void)fprintf(stderr, "overchan cant fstat %s, %s\n",
+		    file, strerror(errno));
+		(void)close(fd);
+		return FALSE;
+	    }
+	    if (Sb.st_nlink > 0)
+		break;
+	}
+	/* Close file -- expireover might have removed it -- and try again. */
+	(void)close(fd);
+    }
     /* Build the I/O vector. */
     i = 0;
     iov[i].iov_base = Art;
@@ -89,16 +111,40 @@ STATIC BOOL WriteData(TOKEN Token, char *Dir, char *Art, char *Rest, BOOL Compla
     iov[i].iov_base = NL;
     iov[i++].iov_len = 1;
 
-    /* Name the data file. */
-    (void)sprintf(file, "%s/%s", Dir, _PATH_OVERVIEW);
-    (void)sprintf(ifile, "%s/%s.index", Dir, _PATH_OVERVIEW);
+    if (xwritev(fd, iov, i) < 0) {
+	(void)fprintf(stderr, "overchan cant write %s %s\n",
+	    file, strerror(errno));
+	close(fd);
+	return FALSE;
+    }
+    if (close(fd) < 0) {
+	(void)fprintf(stderr, "overchan cant close %s %s\n",
+	    file, strerror(errno));
+	return FALSE;
+    }
+    return TRUE;
+}
 
+/*
+**  Get the lock for the group, then open the data file and append the
+**  new data.  Return FALSE on error.
+*/
+STATIC BOOL WriteUnifiedData(HASH *Hash, char *Dir, char *Art)
+{
+    int	                fd;
+    char		file[SPOOLNAMEBUFF];
+    OVERINDEX		index;
+    struct stat		Sb;
+    char                packed[OVERINDEXPACKSIZE];
+
+    /* Name the data file. */
+    (void)sprintf(file, "%s/%s.index", Dir, _PATH_OVERVIEW);
     /* Open and lock the file. */
     for ( ; ; ) {
 	if ((fd = open(file, O_WRONLY | O_CREAT | O_APPEND, ARTFILE_MODE)) < 0) {
-	    if (Complain && errno != ENOENT)
+	    if (errno != ENOENT)
 		(void)fprintf(stderr, "overchan cant open %s, %s\n",
-			file, strerror(errno));
+		    file, strerror(errno));
 	    return FALSE;
 	}
 	if (LockFile(fd, FALSE) < 0)
@@ -108,7 +154,7 @@ STATIC BOOL WriteData(TOKEN Token, char *Dir, char *Art, char *Rest, BOOL Compla
 	    /* Got the lock; make sure the file is still there. */
 	    if (fstat(fd, &Sb) < 0) {
 		(void)fprintf(stderr, "overchan cant fstat %s, %s\n",
-			file, strerror(errno));
+		    file, strerror(errno));
 		(void)close(fd);
 		return FALSE;
 	    }
@@ -118,53 +164,21 @@ STATIC BOOL WriteData(TOKEN Token, char *Dir, char *Art, char *Rest, BOOL Compla
 	/* Close file -- expireover might have removed it -- and try again. */
 	(void)close(fd);
     }
-
-    if ((ifd = open(ifile, O_WRONLY | O_CREAT | O_APPEND, ARTFILE_MODE)) < 0) {
-        (void)fprintf(stderr, "overchan cant open %s, %s\n",
-	    ifile, strerror(errno));
-	(void)close(fd);
-        return FALSE;
-    }
-    ok = TRUE;
-    if ((index.offset = lseek(fd, 0, SEEK_END)) < 0) {
-        (void)fprintf(stderr, "overchan cant get offset %s, %s\n",
-	    file, strerror(errno));
-	(void)close(fd);
-        return FALSE;
-    }
-    
-    if (xwritev(fd, iov, i) < 0) {
-	(void)fprintf(stderr, "overchan cant write %s %s\n",
-		file, strerror(errno));
-	close(fd);
-	close(ifd);
-	return FALSE;
-    }
-    
     index.artnum = atol(Art);
-    index.token = Token;
-    index.cancelled = FALSE;
+    index.hash = *Hash;
     PackOverIndex(&index, packed);
-    if (xwrite(ifd, packed, OVERINDEXPACKSIZE) < 0) {
+    if (xwrite(fd, packed, OVERINDEXPACKSIZE) < 0) {
 	(void)fprintf(stderr, "overchan cant write %s %s\n",
-		ifile, strerror(errno));
+	    file, strerror(errno));
 	close(fd);
-	close(ifd);
 	return FALSE;
     }
-
-    /* Close up and return. */
     if (close(fd) < 0) {
 	(void)fprintf(stderr, "overchan cant close %s %s\n",
-		file, strerror(errno));
-	ok = FALSE;
+	    file, strerror(errno));
+	return FALSE;
     }
-    if (close(ifd) < 0) {
-	(void)fprintf(stderr, "overchan cant close %s %s\n",
-		ifile, strerror(errno));
-	ok = FALSE;
-    }
-    return ok;
+    return TRUE;
 }
 
 
@@ -180,8 +194,9 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
     char                *Data;
     char                *Dir;
     char	        *Art;
-    TOKEN               Token;
+    HASH                Hash;
     char	        *p;
+    BOOL                Unifiedover;
 
     for ( ; ; ) {
 	/* Read the first line of data. */
@@ -195,28 +210,27 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 
 	/* Check if we're handling a token and if so split it out from
 	 * the rest of the data */
-	if (Data[0] == '@') {
-	    p = strchr(Data, '\t');
+	if (Data[0] == '[') {
+	    p = strchr(Data, ' ');
 	    *p = '\0';
-	    if (!IsToken(Data)) {
+	    if (!((p - Data == sizeof(HASH) * 2 + 2) && *(p-1) == ']')) {
 		fprintf(stderr, "overchan malformed token\n");
 		continue;
 	    }
-	    Token = TextToToken(Data);
-	    Data = p + 1;
+	    Hash = TextToHash(&Data[1]);
+	    Xref = p;
+	    Unifiedover = TRUE;
 	}  else {
-	    memset(&Token, '\0', sizeof(TOKEN));
-	    Token.type = TOKEN_EMPTY;
-	}
-
-	/* Find the groups and article numbers. */
-	if ((Xref = strstr(Data, "Xref:")) == NULL) {
-	    fprintf(stderr, "overchan missing xref header\n");
-	    continue;
-	}
-	if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
-	    fprintf(stderr, "overchan malformed xref header\n");
-	    continue;
+	    /* Find the groups and article numbers. */
+	    if ((Xref = strstr(Data, "Xref:")) == NULL) {
+		fprintf(stderr, "overchan missing xref header\n");
+		continue;
+	    }
+	    if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
+		fprintf(stderr, "overchan malformed xref header\n");
+		continue;
+	    }
+	    Unifiedover = FALSE;
 	}
 	Xref = COPY(Xref + 1);
 	for (p = Xref; *p; p++)
@@ -241,10 +255,17 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 	    *Art++ = '\0';
 
 	    /* Write data. */
-	    if (!WriteData(Token, Dir, Art, Data, FALSE)
-	     && (!MakeOverDir(Dir) || !WriteData(Token, Dir, Art, Data, TRUE)))
-		(void)fprintf(stderr, "overchan cant update %s %s\n",
+	    if (Unifiedover) {
+		if (!WriteUnifiedData(&Hash, Dir, Art) &&
+		    (!MakeOverDir(Dir) || !WriteUnifiedData(&Hash, Dir, Art)))
+		    (void)fprintf(stderr, "overchan cant update %s %s\n",
 			Dir, strerror(errno));
+	    } else {
+		if (!WriteData(Dir, Art, Data, FALSE) &&
+		    (!MakeOverDir(Dir) || !WriteData(Dir, Art, Data, TRUE)))
+		    (void)fprintf(stderr, "overchan cant update %s %s\n",
+			Dir, strerror(errno));
+	    }
 	}
     }
     DISPOSE(Xref);

@@ -67,13 +67,23 @@ HASH TextToHash(const char *text);
 int HashCompare(const HASH *h1, const HASH *h2);
 
 /* Overview handling */
-#define OVERINDEXPACKSIZE      (4 + 4 + sizeof(TOKEN) + 1)
+typedef enum {OVER_CTL, OVER_DIR, OVER_NEWDIR, OVER_MODE, OVER_NEWMODE, OVER_MMAP} OVERSETUP;
+#define OVERINDEXPACKSIZE      (4 + sizeof(HASH))
 typedef struct _OVERINDEX {
     unsigned long       artnum;
-    unsigned long       offset;
-    TOKEN               token;
-    BOOL                cancelled;
+    HASH                hash;
 } OVERINDEX;
+
+extern BOOL OVERsetup(OVERSETUP type, void *value);
+extern BOOL OVERinit(void);
+extern BOOL OVERnewinit(void);
+extern BOOL OVERreinit(void);
+extern BOOL OVERreplace(void);
+extern int OVERgetnum(void);
+extern BOOL OVERstore(TOKEN *token, char *Overdata, int Overlen);
+extern char *OVERretrieve(TOKEN *token, int *Overlen);
+extern BOOL OVERcancel(TOKEN *token);
+extern void OVERshutdown(void);
 
 void PackOverIndex(OVERINDEX *index, char *packedindex);
 void UnpackOverIndex(char *packedindex, OVERINDEX *index);

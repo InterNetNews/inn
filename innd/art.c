@@ -1160,7 +1160,7 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 	    *p = '\0';
 
 	if (IsToken(files)) {
-	    if (!SMcancel(TextToToken(files + 1)))
+	    if (!SMcancel(TextToToken(files + 1)) && SMerrno != SMERR_NOENT)
 		syslog(L_ERROR, "%s cant cancel %s", LogName, files);
 	} else {
 	    /* Remove this file, go back for the next one if there's more. */
@@ -1607,7 +1607,7 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list)
 /*
 **  Build up the overview data.
 */
-STATIC void ARTmakeoverview(ARTDATA *Data)
+STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 {
     static char			SEP[] = "\t";
     static char			COLONSPACE[] = ": ";
@@ -1628,16 +1628,19 @@ STATIC void ARTmakeoverview(ARTDATA *Data)
 	Overview.Data = NEW(char, 1);
     Data->Overview = &Overview;
 
-    /* If we're using the Storage API then pass the token to overchan also. */
-    if (StorageAPI) {
-	BUFFset(&Overview, Data->Name, strlen(Data->Name));
-        BUFFappend(&Overview, SEP, STRLEN(SEP));
-    } else {
-	BUFFset(&Overview, "", 0);
+    BUFFset(&Overview, "", 0);
+    /* do not pass the token to overchan. */
+    if (!StorageAPI || Filename) {
+	BUFFappend(&Overview, HDR(_xref) + Path.Used, ARTheaders[_xref].Length - Path.Used);
+	for (i = Overview.Left, p = Overview.Data; --i >= 0; p++)
+	    if (*p == '.' || *p == ':')
+		*p = '/';
     }
 
     /* Write the data, a field at a time. */
     for (fp = ARTfields; fp->Header; fp++) {
+	if (fp != ARTfields)
+	    BUFFappend(&Overview, SEP, STRLEN(SEP));
 	hp = fp->Header;
 	if (!hp->Found)
 	    continue;
@@ -1650,9 +1653,7 @@ STATIC void ARTmakeoverview(ARTDATA *Data)
 	 for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
 	     if (*p == '\t' || *p == '\n' || *p == '\r')
 		 *p = ' ';
-	BUFFappend(&Overview, SEP, STRLEN(SEP));
     }
-    Overview.Used--;
 }
 
 
@@ -1724,6 +1725,7 @@ STRING ARTpost(CHANNEL *cp)
     Data.TimeReceivedLength = strlen(Data.TimeReceived);
 
     hash = HashMessageID(Data.MessageID);
+    Data.Hash = &hash;
     if (HIShavearticle(hash)) {
 	sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
 	ARTlog(&Data, ART_REJECT, buff);
@@ -2135,7 +2137,10 @@ STRING ARTpost(CHANNEL *cp)
 	    return buff;
 	}
 	TMRstop(TMR_ARTWRITE);
-        strcpy(Files.Data, TokenToText(token));
+	ARTmakeoverview(&Data, FALSE);
+	if (!OVERstore(&token, Data.Overview->Data, Data.Overview->Left))
+	    syslog(L_ERROR, "%s cant store overview for %s", LogName, TokenToText(token));
+	strcpy(Files.Data, TokenToText(token));
 	strcpy(Data.Name, Files.Data);
 	Data.NameLength = strlen(Data.Name);
     } else {
@@ -2235,10 +2240,15 @@ STRING ARTpost(CHANNEL *cp)
 	HISsync();
 
     /* We wrote the history, so modify it and save it for output. */
-    for (Data.Replic = Files.Data, p = (char *)Data.Replic; *p; p++)
-	if (*p == ' ')
-	    *p = ',';
-    Data.ReplicLength = p - Data.Replic;
+    if (StorageAPI) {
+	Data.Replic = HDR(_xref) + Path.Used;
+	Data.ReplicLength = ARTheaders[_xref].Length - Path.Used;
+    } else {
+	for (Data.Replic = Files.Data, p = (char *)Data.Replic; *p; p++)
+	    if (*p == ' ')
+		*p = ',';
+	Data.ReplicLength = p - Data.Replic;
+    }
 
     /* Start logging, then propagate the article. */
     ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
@@ -2282,7 +2292,7 @@ STRING ARTpost(CHANNEL *cp)
 
     /* If we need the overview data, write it. */
     if (NeedOverview)
-	ARTmakeoverview(&Data);
+	ARTmakeoverview(&Data, TRUE);
 
     /* And finally, send to everyone who should get it */
     for (sp = Sites, i = nSites; --i >= 0; sp++)

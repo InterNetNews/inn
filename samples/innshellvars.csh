@@ -168,6 +168,12 @@ set inn_z = .Z
 ##  =()<set inn_path_motd = @<_PATH_MOTD>@>()=
 set inn_path_motd = /var/news/etc/motd.news
 
+##  =()<set inn_path_storagectl = @<_PATH_STORAGECTL>@>()=
+set inn_path_storagectl = /var/news/etc/storage.ctl
+
+##  =()<set inn_path_overviewctl = @<_PATH_OVERVIEWCTL>@>()=
+set inn_path_overviewctl = /var/news/etc/overview.ctl
+
 ##  =()<set inn_perl_support = @<PERL_SUPPORT>@>()=
 set inn_perl_support = DONT
 

@@ -9,9 +9,8 @@ if (not defined $inn::top) {
     $top = $inn::top;
 }
 
-$unwanted_log = $inn::most_logs."/unwanted.log";
-$unwanted_old = $unwanted_log.".old";
-$unwanted_new = $unwanted_log.".new";
+$unwanted_log = $inn::most_logs."/OLD/unwanted.log";
+$unwanted_new = $inn::most_logs."/unwanted.log";
 
 sub unwanted_site_sort {
     $unwanted_sites{$b} <=> $unwanted_sites{$a};
@@ -220,7 +219,7 @@ if (keys %bad_header_sites > 0) {
     printf "\n";
 }
 
-open(UNWANTED, $unwanted_old);
+open(UNWANTED, $unwanted_log);
 
 while (<UNWANTED>) {
     chop;
@@ -230,9 +229,7 @@ while (<UNWANTED>) {
 
 close(UNWANTED);
 
-unlink($unwanted_old);
 unlink($unwanted_new);
-link($unwanted_log, $unwanted_old);
 
 open(UNWANTED, "> ".$unwanted_new); 
 chmod(0660, $unwanted_new);
@@ -242,5 +239,3 @@ foreach $site (sort unwanted_newsgroup_sort keys(%unwanted_newsgroup)) {
 }
 
 close(UNWANTED);
-
-system("mv -f $unwanted_new $unwanted_log");

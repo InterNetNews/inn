@@ -569,6 +569,7 @@ main(argc, argv, env)
     char		*Reject;
     char		accesslist[BIG_BUFFER];
     int			timeout;
+    BOOL		val;
 
 #if	!defined(HPUX)
     /* Save start and extent of argv for TITLEset. */
@@ -619,6 +620,15 @@ main(argc, argv, env)
 
     ARTmmap = GetBooleanConfigValue(_CONF_ARTMMAP, TRUE);
     OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
+    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
+    if (OVERmmap)
+	val = TRUE;
+    else
+	val = FALSE;
+    if (!OVERsetup(OVER_MMAP, &val)) {
+	syslog(L_FATAL, "cant setup unified overview %m");
+	ExitWithStats(1);
+    }
 
 #if	NNRP_LOADLIMIT > 0
     if ((load = GetLoadAverage()) > NNRP_LOADLIMIT) {
@@ -668,7 +678,11 @@ main(argc, argv, env)
 	ExitWithStats(1);
     }
 
-    SMinit();
+    if (StorageAPI && !SMinit()) {
+	syslog(L_NOTICE, "%s cant initialize storage method", ClientHost);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1);
+    }
 
 #if defined(DO_PERL)
     /* Load the Perl code */
