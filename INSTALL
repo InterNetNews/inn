@@ -224,10 +224,13 @@ Installing INN
         (but an earlier version may suffice).
 
     --with-python
-        Enables support for Python, allowing you to install filter scripts
-        written in Python.  You will need Python 1.5.2 or later installed on
-        your system to enable this option.  See README.python_hook for all
-        the details.
+        Enables support for Python, allowing you to install filter and
+        authentication scripts written in Python.  You will need Python
+        1.5.2 or later installed on your system to enable this option.  See
+        README.python_hook and README.python_auth_hook for all the details. 
+        Note that there is an incompatibility between INN and Python 2.0
+        when Python is compiled with cycle garbage collection; this problem
+        was reported fixed in Python 2.1a1.
 
     --with-tcl
         Enables support for Tcl, allowing you to install filter scripts
