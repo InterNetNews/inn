@@ -292,21 +292,27 @@ STATIC int ARTfind(ARTNUM i, BOOL needcheck)
             else
                 return ARTcache - ARTnumbers;
         }
-        else if ((++ARTcache <= top) && (ARTcache->ArtNum <= i)) {
-            /* Next article. */
-            if (ARTcache->ArtNum == i) {
-                if (needcheck) {
-                    return ARTinstore(ARTcache - ARTnumbers)
-                        ? (ARTcache - ARTnumbers) : -1;
+        else if (++ARTcache <= top) {
+            if (ARTcache->ArtNum <= i) {
+                /* Next article. */
+                if (ARTcache->ArtNum == i) {
+                    if (needcheck) {
+                        return ARTinstore(ARTcache - ARTnumbers)
+                            ? (ARTcache - ARTnumbers) : -1;
+                    }
+                    else
+                      return ARTcache - ARTnumbers;
                 }
-                else
-                  return ARTcache - ARTnumbers;
+                bottom = ARTcache;
             }
-            bottom = ARTcache;
-        }
-        else if ( (ARTcache->ArtNum > i) && ((--ARTcache)->ArtNum < i) ) {
-            /* Missing article. */
-            return -1;
+            else if ((--ARTcache)->ArtNum < i ) {
+                /* Missing article. */
+                return -1;
+            }
+            else {
+                ARTcache=NULL;
+                bottom = ARTnumbers;
+            }
         }
         else {
             ARTcache=NULL;
