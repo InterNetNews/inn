@@ -1,0 +1,391 @@
+<HTML
+><HEAD
+><TITLE
+>Installing INN&#13;</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.40"><LINK
+REL="HOME"
+HREF="book1.htm"><LINK
+REL="UP"
+TITLE="Welcome to INN 2.3!
+"
+HREF="c4.htm"><LINK
+REL="PREVIOUS"
+TITLE="Unpacking the Distribution
+"
+HREF="x45.htm"><LINK
+REL="NEXT"
+TITLE="Choosing an Article Storage Format
+"
+HREF="x134.htm"></HEAD
+><BODY
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+></TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x45.htm"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 0. Welcome to INN 2.3!</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x134.htm"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-4"
+>Installing INN</A
+></H1
+><P
+></P
+><P
+>Before beginning installation, you should make sure that there is a user on
+your system named <TT
+CLASS="LITERAL"
+>news</TT
+>, and that this user's primary group is set to a group called <TT
+CLASS="LITERAL"
+>news</TT
+>. The home directory of this user should be set to the directory under
+which you wish to install INN (/usr/local/news is the default and is a good
+choice). INN will install itself as this user and group. You can change
+these if you want but these are the defaults and it's easier to stick with
+them on a new installation.
+&#13;</P
+><P
+>As a side note, whenever doing anything with a running news server, first
+log in as this user. That way, you can ensure that all files created by any
+commands you run are created with the right ownership to be readable by the
+server. Particularly avoid doing anything in the news spool itself as root,
+and make sure you fix the ownership of any created files if you have to.
+INN doesn't like files in the news spool owned by a user other than the
+news user.
+&#13;</P
+><P
+>INN 2.3 uses GNU autoconf and a generated configure script to make
+configuration rather painless. Unless you have a rather abnormal setup,
+configure should be able to completely configure INN for your system. If
+you want to change the defaults, you can invoke the configure script with
+one or more command line options. Type:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    ./configure --help</PRE
+>
+&#13;</P
+><P
+>for a full list of supported options. Some of the most commonly used
+options are:
+&#13;</P
+><P
+></P
+><DL
+><DT
+><I
+CLASS="EMPHASIS"
+>--prefix=PATH&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Sets the installation prefix for INN. The default is /usr/local/news. All
+of INN's programs and support files will be installed under this directory.
+You should set this to the home directory of your news user (it will make
+installation and maintenance easier).
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>--with-db-dir=PATH&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Sets the prefix for INN database files. The default is PREFIX/db, where
+PREFIX is /usr/local/news unless overridden with the option above. All of
+the really large files created by INN, including the history file, the
+overview files, and the news spool (for tradspool, timehash, and timecaf
+storage methods) are created under this directory, so it's the most common
+portion of INN to move to a different location on the system (often /news).
+&#13;</P
+><P
+>It's also possible to set the paths for most other sections of the INN
+installation independently; see <TT
+CLASS="LITERAL"
+>./configure --help</TT
+> and look for the
+<I
+CLASS="EMPHASIS"
+>--with-*-dir</I
+>=PATH options.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>--enable-tagged-hash&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Use tagged hash table for the history database. The tagged hash format uses
+much less memory but is somewhat slower. This option is recommended if you
+have less than 256 MB of RAM on your news server. If you install INN
+without tagged hash (the default) and expire takes an excessive amount of
+time, you should make sure the RAM in your system satisfies the following
+formula:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    ram &gt; 10 * tablesize</PRE
+>
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>          ram:  Amount of system RAM
+    tablesize:  3rd field on the 1st line of history.dir</PRE
+>
+&#13;</P
+><P
+>If you don't have at least that much RAM, try rebuilding INN with tagged
+hash enabled.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>--with-perl&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Enables support for embedded Perl, allowing you to install filter scripts
+written in Perl. Highly recommended, because many really good spam filters
+are written in Perl. You will need Perl 5.004 or later installed on your
+system to use this option (otherwise, INN will not compile). See
+README.perl_hook for all the details.
+&#13;</P
+><P
+>Even if you do not use this option, INN still requires Perl to build (but
+an earlier version may suffice).
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>--with-python&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Enables support for Python, allowing you to install filter scripts written
+in Python. You will need Python 1.5.2 or later installed on your system to
+enable this option. See README.python_hook for all the details.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>--with-tcl&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Enables support for Tcl, allowing you to install filter scripts written in
+Tcl. Most available filterse seem to be written in Perl these days, so you
+can safely leave out Tcl support. If you choose to enable this, you will
+need to have a suitable Tcl distribution installed. See README.tcl_hook for
+all the details.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>--disable-uucp-rnews&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>By default, rnews is installed setuid root, owned by group uucp, and mode
+4550. This is so that the UUCP subsystem can run rnews to process UUCP
+batches of news articles (rnews changes UID to the news user right after it
+starts). If you don't plan on using UUCP, and particularly if you don't
+have a uucp group on your system, you probably want to use this option to
+cut down on the number of needless setuid root binaries on your system.
+When this option is used, rnews will only be executable by the news user.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>--disable-setgid-inews&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>By default, inews is installed setgid news so that it can be run by regular
+users and still be able to talk to innd via a Unix domain socket (somewhat
+faster than opening a new network connection). If you are installing a
+standalone news server that won't have regular users (or at least regular
+users who need to run inews), you probably want to use this option to cut
+down on needless setgid binaries. When this option is used, inews will only
+be executable by users in the news group.
+&#13;</P
+></DD
+></DL
+><P
+>For the most common installation, a standalone news server, a suggested set
+of options is:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    ./configure --with-perl --disable-uucp-rnews --disable-setgid-inews</PRE
+>
+&#13;</P
+><P
+>provided that you have the necessary version of Perl installed.
+&#13;</P
+><P
+>If the configure program runs successfully, then you are ready to build the
+distribution. From the root of the INN source tree, type:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    make</PRE
+>
+&#13;</P
+><P
+>At this point you can step away from the computer for a little while and
+have a quick snack while INN compiles. On a decently fast system it should
+only take five or ten minutes at the most to build.
+&#13;</P
+><P
+>Once the build has completed successfully, you are ready to install INN
+into its final home. Type:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    make install</PRE
+>
+&#13;</P
+><P
+>(You will need to run this command as root so that INN can create the
+directories it needs and install a couple of setuid wrapper scripts needed
+to raise resource limits and allow innd to bind to port 119.) This will
+install INN under the install directory (/usr/local/news, unless you
+specified something else to the configure script.) You are now ready for
+the really fun part: configuring your copy of INN!
+&#13;</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x45.htm"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.htm"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x134.htm"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Unpacking the Distribution</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c4.htm"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Choosing an Article Storage Format</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

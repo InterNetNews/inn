@@ -1,0 +1,1164 @@
+<HTML
+><HEAD
+><TITLE
+>Configuring INN&#13;</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.40"><LINK
+REL="HOME"
+HREF="book1.htm"><LINK
+REL="UP"
+TITLE="Welcome to INN 2.3!
+"
+HREF="c4.htm"><LINK
+REL="PREVIOUS"
+TITLE="Choosing an Article Storage Format
+"
+HREF="x134.htm"><LINK
+REL="NEXT"
+TITLE="Creating the Article Spool (CNFS only)
+"
+HREF="x427.htm"></HEAD
+><BODY
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+></TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x134.htm"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 0. Welcome to INN 2.3!</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x427.htm"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-6"
+>Configuring INN</A
+></H1
+><P
+></P
+><P
+>All documentation from this point on assumes that you have set up the news
+user on your system as suggested in <I
+CLASS="EMPHASIS"
+>Installing INN</I
+> so that the root of your INN installation is ~news/. If you've moved things
+around with by using the options to configure, you'll need to adjust the
+instructions to account for that.
+&#13;</P
+><P
+>All of INN's configuration files are located in ~news/etc. Unless noted
+otherwise, any files referred to below are in this directory. When you
+first install INN, samples of each file (containing lots of comments) are
+installed in ~news/etc; refer to them for concrete examples of everything
+discussed in this section.
+&#13;</P
+><P
+>All of INN's configuration files, all of the programs that come with it,
+and some of its library routines have documentation in the form of man
+pages. These man pages were installed in ~news/man as part of the INN
+installation process and are the most complete reference to how INN works.
+You're strongly encouraged to refer to the man pages frequently while
+configuring INN, and for quick reference afterwards. Any detailed questions
+about individual configuration files or the behavior of specific programs
+should be answered in them. You may want to add ~news/man to your MANPATH
+environment variable; otherwise, you may have to use a command like:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    man -M ~news/man inn.conf</PRE
+>
+&#13;</P
+><P
+>to see the man page for inn.conf (for example).
+&#13;</P
+><P
+>Before we begin, it is worth mentioning the wildmat pattern matching syntax
+used in many configuration files. These are simple wildcard matches using
+the asterisk (<TT
+CLASS="LITERAL"
+>*</TT
+>) as the wildcard character, much like the simple wildcard expansion used
+by Unix shells.
+&#13;</P
+><P
+>In many cases, wildmat patterns can be specified in a comma-separated list
+to indicate a list of newsgroups. When used in this fashion, each pattern
+is checked in turn to see if it matches, and the last pattern in the line
+that matches the group name is used. Patterns beginning with <TT
+CLASS="LITERAL"
+>!</TT
+> mean to exclude groups matching that pattern. For example:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    *, !comp.*, comp.os.*</PRE
+>
+&#13;</P
+><P
+>In this case, we're saying we match everything (<TT
+CLASS="LITERAL"
+>*</TT
+>), except that we don't match anything under comp (<TT
+CLASS="LITERAL"
+>!comp.*</TT
+>), unless it is actually under the comp.os hierarchy (<TT
+CLASS="LITERAL"
+>comp.os.*</TT
+>). This is because non-comp groups will match only the first pattern (so we
+want them), comp.os groups will match all three patterns (so we want them
+too, because the third pattern counts in this case), and all other comp
+groups will match the first and second patterns and will be excluded by the
+second pattern.
+&#13;</P
+><P
+>Some uses of wildmat patterns also support ``poison'' patterns (patterns
+starting with <TT
+CLASS="LITERAL"
+>@</TT
+>). These patterns behave just like <TT
+CLASS="LITERAL"
+>!</TT
+> patterns when checked against a single newsgroup name. Where they become
+special is for articles crossposted to multiple newsgroups; normally, such
+an article will be considered to match a pattern if any of the newsgroups
+it is posted to matches the pattern. If any newsgroup the article is posted
+to matches an expression beginning with <TT
+CLASS="LITERAL"
+>@</TT
+>, however, that article will not match the pattern even if other newsgroups
+to which it was posted match other expressions.
+&#13;</P
+><P
+>See <TT
+CLASS="LITERAL"
+>wildmat(5)</TT
+> for full details on wildmat patterns.
+&#13;</P
+><P
+>In most INN configuration files, blank lines and lines beginning with a
+<TT
+CLASS="LITERAL"
+>#</TT
+> symbol are considered comments and are ignored. Any deviations from this
+practice will be noted in the description for that particular file.
+&#13;</P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-6-A"
+>inn.conf (REQUIRED)</A
+></H2
+><P
+></P
+><P
+>The first, and most important file is <I
+CLASS="EMPHASIS"
+>inn.conf</I
+>. This file is organized as a series of parameter-value pairs, one per
+line. The parameter is first, followed by a colon and one or more
+whitespace characters and the value itself. For some parameters the value
+is a string or a number; for others it is ``yes'' or ``no.''
+&#13;</P
+><P
+><I
+CLASS="EMPHASIS"
+>inn.conf</I
+> contains dozens of changeable parameters (see inn.conf(5) for full
+details), but only a few really need to be edited during normal operation:
+&#13;</P
+><P
+></P
+><DL
+><DT
+><I
+CLASS="EMPHASIS"
+>complaints&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Used to set the value of the X-Complaints-To: header which is added to all
+articles posted locally. The usual value would be something like
+<TT
+CLASS="LITERAL"
+>abuse@example.com</TT
+> or <TT
+CLASS="LITERAL"
+>postmaster@example.com</TT
+>. If not specified, the newsmaster email address will be used.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>organization&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Set this to the name of your organization as you want it to appear in the
+Organization: header of all articles posted locally. This will be
+overridden by the value of the ORGANIZATION environment variable (if it
+exists). If neither this parameter nor the environment variable or set then
+no Organization: header will be added.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>pathhost&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>This is the name of your news server as you wish it to appear in the Path:
+header of all postings which travel through your server (this includes
+local posts and incoming posts that you forward out to other sites). If no
+pathhost is specified then the fully-qualified domain name (FQDN) of the
+machine will be used instead. Please use the FQDN of your server or an
+alias for your server unless you have a very good reason not to; a future
+version of the news RFCs may require this.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>allownewnews&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>If set to ``yes'' then INN will support the NEWNEWS command for news
+readers. This will really kill your server performance if clients use it
+heavily, so it is strongly suggested that you set this to ``no'' (the
+default).
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>hiscachesize&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>The size in kilobytes to use for caching recently used history file
+entries. Setting this to 0 disables history caching. History caching can
+greatly increase the number of articles per second that your server is
+capable of processing. A value of 16384 (16 MB) is a good choice if you can
+spare the RAM.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>logipaddr&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>If set to ``yes'' (the default), INN will log the IP address of the remote
+host from which it received an article. If set to ``no'', the trailing
+Path: header entry is logged instead. If you are using controlchan (see
+below) and need to process ihave/sendme control messages (this is very,
+very unlikely, so if you don't know what this means, don't worry about it),
+make sure you set this to ``no''.
+&#13;</P
+><P
+>FIXME: Er... why does controlchan have to figure it out from the logs?
+Can't it retrieve the message and look at the Path header? This doesn't
+make any sense to me....
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>rlimitnofile&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>If set to a non-negative value (the default is -1), INN (both innd and
+innfeed) will try to raise the maximum number of open file descriptors to
+this value when it starts. This may be needed if you have lots of incoming
+and outgoing feeds. Note that the maximum value for this setting is very
+operating-system-dependent, and you may have to reconfigure your system
+(possibly even recompile your kernel) to increase it. See <I
+CLASS="EMPHASIS"
+>File Descriptor Limits</I
+> for complete details.
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>usecontrolchan&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>If set to ``yes'', all control messages except for cancels will be ignored
+by innd so that they can be processed by an external program (controlchan).
+This is <I
+CLASS="EMPHASIS"
+>highly</I
+> recommended, since controlchan will serialize control message processing
+and prevent your system load from exploding when you get a flood of control
+messages. The only reason why it isn't enabled by default is that it
+requires you to set up a special feed in newsfeeds (see below) and requires
+you to run:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    # cd /usr/include
+    # h2ph * sys/*</PRE
+>
+&#13;</P
+><P
+>so that the Sys::Syslog Perl module works correctly. (Otherwise,
+controlchan will log messages to errlog, which probably isn't what you
+want.)
+&#13;</P
+></DD
+><DT
+><I
+CLASS="EMPHASIS"
+>domain&#13;</I
+></DT
+><DD
+><P
+></P
+><P
+>Sets the domain name for your server. Normally this is determined
+automatically by INN, but in some cases it is necessary to set it manually.
+For example, if you are running NIS on a SunOS system <I
+CLASS="EMPHASIS"
+>and</I
+>
+your hostnames are not fully-qualified (ie, your systems are named xxxx
+instead of xxxx.example.com) then you will need to use this option to set
+your domain name manually. If in doubt, leave this option commented out or
+remove it completely.
+&#13;</P
+></DD
+></DL
+><P
+>There are tons of other possible settings; you may want to read through
+inn.conf(5) to get a feel for your options. Don't worry if you don't
+understand the purpose of most of them right now. Some of the settings are
+only needed for very obscure things, and with more experience running your
+news server the rest will make more sense.
+&#13;</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-6-B"
+>newsfeeds (REQUIRED)</A
+></H2
+><P
+></P
+><P
+><I
+CLASS="EMPHASIS"
+>newsfeeds</I
+> determines how incoming articles are redistributed to your peers and to
+other INN processes.  <I
+CLASS="EMPHASIS"
+>newsfeeds</I
+> is very versatile and contains dozens of options; we will touch on just the
+basics here. <TT
+CLASS="LITERAL"
+>newsfeeds(5)</TT
+> contains more detailed
+information.
+&#13;</P
+><P
+><I
+CLASS="EMPHASIS"
+>newsfeeds</I
+> is organized as a series of feed entries. Each feed entry is composed of
+four fields separated by colons. Entries may span multiple lines by using
+the backslash (\) to indicate that the next line is a continuation of the
+current line.
+&#13;</P
+><P
+>The first field in an entry is the name of the feed. It must be unique, and
+for feeds to other news servers it is usually set to the actual hostname of
+the remote server (this makes things easier). The name can optionally be
+followed by a slash and a comma-separated exclude list. If the feed name or
+any of the names in the exclude list appear in the Path line of an article,
+then that article will not be forwarded to the feed as it is assumed that
+it has passed through that site once already. The exclude list is useful
+when a news server's hostname is not the same as what it puts in the Path
+header of its articles, or when you don't want a feed to receive articles
+from a certain source.
+&#13;</P
+><P
+>The second field specifies a set of desired newsgroups and distribution
+lists, given as newsgroup-pattern/distribution-list. The distribution list
+is not described here; <TT
+CLASS="LITERAL"
+>newsfeeds(5)</TT
+> for information
+(it's not used that frequently in practice). The newsgroup pattern is a
+wildmat-style pattern list as described above (supporting <TT
+CLASS="LITERAL"
+>@</TT
+>).
+&#13;</P
+><P
+>The third field is a comma-separated list of flags that determine both the
+type of feed entry and sets certain parameters for the entry. See
+<TT
+CLASS="LITERAL"
+>newsfeeds(5)</TT
+> for information on the flag settings; you
+can do a surprising amount with them. The three most common patterns, and
+the ones mainly used for outgoing news feeds to other sites, are <TT
+CLASS="LITERAL"
+>Tf,Wnm</TT
+> (to write out a batch file of articles to be sent, suitable for processing
+by nntpsend and innxmit), <TT
+CLASS="LITERAL"
+>Tm</TT
+> (to send the article to a funnel feed, used with innfeed), and <TT
+CLASS="LITERAL"
+>Tc,Wnm*</TT
+> (to collect a funnel feed and send it via a channel feed to an external
+program, used to send articles to innfeed).
+&#13;</P
+><P
+>The fourth field is a multi-purpose parameter whose meaning depends on the
+settings of the flags in the third field. To get a feel for it using the
+examples above, for file feeds (<TT
+CLASS="LITERAL"
+>Tf</TT
+>) it's the name of the file to write, for funnel feeds (<TT
+CLASS="LITERAL"
+>Tm</TT
+>) it's the name of the feed entry to funnel into, and for channel feeds (<TT
+CLASS="LITERAL"
+>Tc</TT
+>) it's the name of the program to run and feed references to articles.
+&#13;</P
+><P
+>Now that you have a rough idea of the file layout, we'll begin to add the
+actual feed entries. First we'll set up the special ME entry. This entry is
+required and serves two purposes: the newsgroup pattern specified here is
+prepended to the newsgroup list of all other feeds, and the distribution
+pattern for this entry determines what distributions (from the
+Distribution: header of incoming articles) are accepted from remote sites
+by your server. The example in the sample newsfeeds file is a good starting
+point; if you are going to create a local hierarchy that should not be
+distributed off of your system, make sure to exclude it from the default
+subscription pattern.
+&#13;</P
+><P
+>FIXME: This file originally recommended ME:*,!junk,!local*/!local::, which
+is considerably different than the current sample newsfeeds file. This
+should be reconciled....
+&#13;</P
+><P
+>The ME entry tends to confuse a lot of people, so this point is worth
+repeating: The newsgroup patterns set the default subscription for
+<I
+CLASS="EMPHASIS"
+>outgoing</I
+> feeds, and the distribution patterns set the acceptable Distribution:
+header entries for <I
+CLASS="EMPHASIS"
+>incoming</I
+> articles. This is confusing enough that it may change in later versions of
+INN.
+&#13;</P
+><P
+>There are two basic ways to feed articles to remote sites. The most common
+for large sites and particularly for transit news servers is innfeed, which
+sends articles to remote sites in real time (the article goes out to all
+peers that are supposed to receive it immediately after your server accepts
+it). For smaller sites, particularly sites where the only outgoing messages
+will be locally posted articles, it's more common to batch outgoing
+articles and send them every ten minutes or so from cron using nntpsend and
+innxmit. Batching gives you more control and tends to be extremely stable
+and reliable, but it's much slower and can't handle lots of articles well.
+&#13;</P
+><P
+>Batching outgoing posts is easy to set up; for each peer, add an entry to
+newsfeeds that looks like:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    remote.example.com/news.example.com\
+        :&lt;newsgroups&gt;\
+        :Tf,Wnm:</PRE
+>
+&#13;</P
+><P
+>where &lt;newsgroups&gt; is the wildmat pattern for the newsgroups that site wants.
+In this example, the actual name of the remote site is remote.example.com,
+but it puts news.example.com in the Path: header. If the remote site puts
+its actual hostname in the Path: header, you won't need the <TT
+CLASS="LITERAL"
+>/news.example.com</TT
+> part.
+&#13;</P
+><P
+>This entry will cause innd to write out a file in ~news/db/outgoing named
+remote.example.com and containing the message ID and storage token of each
+message to send to that site. innxmit knows how to read this format of file
+and send those articles to the remote site. For information on setting it
+up to run periodically, see <I
+CLASS="EMPHASIS"
+>Setting Up the Cron Jobs</I
+> below.
+&#13;</P
+><P
+>If instead you want to use innfeed to send outgoing messages (recommended
+for sites with more than a couple of peers), you need some slightly more
+complex magic. You still set up a separate entry for each of your peers,
+but rather than writing out batch files, they all ``funnel'' into a special
+innfeed entry. That special entry collects all of the separate funnel feeds
+and sends the data through a special sort of feed to an external program,
+called a channel feed.
+&#13;</P
+><P
+>First, the special channel feed entry for innfeed that will collect all the
+funnel feeds:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    innfeed!\
+        :!*\
+        :Tc,Wnm*:/usr/local/news/bin/startinnfeed -y</PRE
+>
+&#13;</P
+><P
+>(adjust the path to startinnfeed if you installed it elsewhere). Note that
+we don't feed this entry any articles directly (its newsgroup pattern is <TT
+CLASS="LITERAL"
+>!*</TT
+>). Note also that the name of this entry ends in an exclamation point. This
+is a standard convention for all special feeds; since the delimiter for the
+Path: header is <TT
+CLASS="LITERAL"
+>!</TT
+>, no site name containing that character can match the name of a real site.
+&#13;</P
+><P
+>FIXME: The original entry had an S16384 flag as well. Is that desired?
+&#13;</P
+><P
+>Next, set up entries for each remote site to which you will be feeding
+articles. All of these entries should be of the form:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    remote.example.com/news.example.com\
+        :&lt;newsgroups&gt;\
+        :Tm:innfeed!</PRE
+>
+&#13;</P
+><P
+>specifying that they funnel into the <TT
+CLASS="LITERAL"
+>innfeed!</TT
+> feed. As in the previous example for batching, remote.example.com is the
+actual name of the remote peer, news.example.com is what they put in the
+Path: header (if different than the actual name of the server), and
+&lt;newsgroups&gt; is the wildmat pattern of newsgroups they want.
+&#13;</P
+><P
+>Finally, if you set usecontrolchan to ``yes'' in <I
+CLASS="EMPHASIS"
+>inn.conf</I
+>, you need to set up an entry for the controlchan program. This entry
+should look like:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    controlchan!\
+        :!*,control,control.*,!control.cancel\
+        :Tc,Wnsm:/usr/local/news/bin/controlchan</PRE
+>
+&#13;</P
+><P
+>(modified for the actual path to controlchan if you put it somewhere else).
+You should be able to just uncomment the example entry in the sample
+newsfeeds file, making sure the path is correct.
+&#13;</P
+><P
+>For those of you upgrading from earlier versions of INN, note that the
+functionality of overchan and crosspost is now incorporated into INN and
+neither of those programs are necessary (and running them could cause
+problems). Unfortunately, crosspost currently will not work even with the
+tradspool storage method.
+&#13;</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-6-C"
+>incoming.conf (REQUIRED)</A
+></H2
+><P
+></P
+><P
+>This file specifies which machines are permitted to connect to your host
+and feed it articles. Remote servers you peer with should be listed here.
+Connections from hosts not listed in this file will (if you don't allow
+readers) be rejected or (if you allow readers) be handed off to nnrpd and
+checked against the access restrictions in <I
+CLASS="EMPHASIS"
+>readers.conf</I
+>.
+&#13;</P
+><P
+>Start with the sample <I
+CLASS="EMPHASIS"
+>incoming.conf</I
+> and, for each remote peer, add an entry like:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    peer remote.example.com { }</PRE
+>
+&#13;</P
+><P
+>This uses the default parameters for that feed and allows incoming
+connections from a machine named remote.example.com. If that peer could be
+connecting from several different machines, instead use an entry like:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>     peer remote.example.com {
+        hostname: "remote.example.com, news.example.com"
+     }</PRE
+>
+&#13;</P
+><P
+>This will allow either remote.example.com or news.example.com to feed
+articles to you. (In general, you should add new peer lines for each
+separate remote site you peer with, and list multiple host names using the
+hostname key if one particular remote site uses multiple servers.)
+&#13;</P
+><P
+>You can restrict the newsgroups a remote site is allowed to send you using
+the same sort of pattern that newsfeeds uses. For example, if you want to
+prevent example.com hosts from sending you any articles in the local.*
+hierarchy (even if they're crossposted to other groups), change the above
+to:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    peer remote.example.com {
+        patterns: "*, @local.*"
+        hostname: "remote.example.com, news.example.com"
+    }</PRE
+>
+&#13;</P
+><P
+>There are various other things you can set, including the maximum number of
+connections the remote host will be allowed. See incoming.conf(5) for all
+the details.
+&#13;</P
+><P
+>Note for those familiar with older versions of INN: This file replaces the
+old <I
+CLASS="EMPHASIS"
+>hosts.nntp</I
+> configuration file.
+&#13;</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-6-D"
+>cycbuff.conf (required if CNFS is used)</A
+></H2
+><P
+></P
+><P
+>CNFS stores articles in logical objects called metacycbuffs. Each of the
+metacycbuffs is in turn composed of one or more physical buffers called
+cycbuffs. As articles are written to the metacycbuff each article is
+written to the next cycbuff in the list in a round-robin fashion. This is
+so that you can distribute the individual cycbuffs across multiple physical
+disks and balance the load between them.
+&#13;</P
+><P
+>There are two ways to create your cycbuffs:
+&#13;</P
+><P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>&#13;</P
+><P
+>Use a raw disk partition (best). This will give you the most speed, but it
+required that your OS support <TT
+CLASS="LITERAL"
+>mmap()</TT
+> on a block device.
+Solaris supports this, FreeBSD and Linux do not. Also on many PC-based
+Unixes it is difficult to create more than eight partitions, which may
+limit your options.
+&#13;</P
+></LI
+><LI
+><P
+>&#13;</P
+><P
+>Use a real file on a filesystem. This will be a bit slower than using a raw
+disk partition, but it should work on any Unix system.
+&#13;</P
+></LI
+></OL
+><P
+>If you're having doubts, use option #2.
+&#13;</P
+><P
+>Now you need to decide on the sizes of your cycbuffs and metacycbuffs.
+You'll probably want to separate the heavy-traffic groups (alt.binaries.*
+and maybe a few other things like *.jobs* and news.lists.filters) into
+their own metacycbuff so that they don't overrun the server and push out
+articles on the more useful groups. If you have any local groups that you
+want to stay around for a while then you should put them in their own
+metacycbuff as well, so that they don't get pushed out by other traffic.
+For each metacycbuff, you now need to determine how many cycbuffs will make
+up the metacycbuff, the size of those cycbuffs and where they will be
+stored. Some OSs do not support files larger than 2GB which will force all
+of your cycbuffs to be &lt; 2GB (even if they are stored on raw disk
+partitions). Linux is known to have this limitation, FreeBSD does not. If
+in doubt, keep your cycbuffs smaller than 2GB. Also when laying out your
+cycbuffs, you will want to try to arrange them across as many physical
+disks as possible (or use a striped disk array and put them all on that).
+&#13;</P
+><P
+>For each cycbuff you will be creating, add a line to <I
+CLASS="EMPHASIS"
+>cycbuff.conf</I
+> like the following:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    cycbuff:BUFFNAME:/path/to/buffer:SIZE</PRE
+>
+&#13;</P
+><P
+>BUFFNAME must be unique and must be &lt; 8 characters in length. Something
+simple like ``BUFF00'', ``BUFF01'', etc. is a decent choice, or you may
+want to use something that includes the SCSI target and slice number of the
+partition. SIZE is the buffer size in kilobytes (if you're trying to stay
+under 2GB, keep your sizes below 2097152).
+&#13;</P
+><P
+>Now, you need to tell INN how to group your cycbuffs into metacycbuffs.
+This is similar to creating cycbuff entries:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    metacycbuff:BUFFNAME:CYCBUFF,CYCBUFF,CYCBUFF</PRE
+>
+&#13;</P
+><P
+>BUFFNAME is the name of the metacycbuff, and like cycbuff names must be
+unique and &lt;= 8 characters long. These should be a bit more meaningful
+than the cycbuff names since they will be used in other config files as
+well. Try to name them after what will be stored in them; for example, if
+this metacycbuff will hold alt.binaries postings, ``BINARIES'' would be a
+good choice. The last part of the entry is a comma-separated list of all of
+the cycbuffs that should be used to build this metacycbuff. Each cycbuff
+should only appear in one metacycbuff line, and all metacycbuff lines must
+occur after all cycbuff lines in the file.
+&#13;</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-6-E"
+>storage.conf (REQUIRED)</A
+></H2
+><P
+></P
+><P
+><I
+CLASS="EMPHASIS"
+>storage.conf</I
+> determines where incoming articles will be stored (what storage method, and
+in the case of CNFS, what metacycbuff). Each entry in the file defines a
+storage class for articles. The first matching storage class is used to
+store the article; if no storage class matches, INN will reject that
+article. (This is almost never what you want, so make sure this file ends
+in a catch-all entry that will match everything.)
+&#13;</P
+><P
+>A storage class definition looks like this:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    method &lt;methodname&gt; {
+        newsgroups: &lt;wildmat&gt;
+        class: &lt;storage_class&gt;
+        size: &lt;minsize&gt;[,&lt;maxsize&gt;]
+        expires: &lt;mintime&gt;[,&lt;maxtime&gt;]
+        options: &lt;options&gt;
+    }</PRE
+>
+&#13;</P
+><P
+>&lt;methodname&gt; is the name of the storage method to use to store
+articles in this class (``cnfs'', ``timehash'', ``timecaf'', ``tradspool'',
+or the special method ``trash'' that accepts the article and throws it
+away).
+&#13;</P
+><P
+>The first parameter is a wildmat pattern in the same format used by the
+newsfeeds file, and determines what newsgroups are accepted by this storage
+class.
+&#13;</P
+><P
+>The second parameter is a unique number identifying this storage class and
+should be between 0 and 255. It is used primarily to control article
+expiration. The easiest way to deal with this parameter is to just number
+all storage classes in storage.conf sequentially.
+&#13;</P
+><P
+>The third parameter can be used to accept only articles in a certain size
+range into this storage class. A &lt;maxsize&gt; of zero (or a missing
+&lt;maxsize&gt;) means no upper limit (and of course a &lt;minsize&gt; of 0
+would mean no lower limit, because an article is always great than zero
+bytes long). If you don't want to limit the size of articles accepted by
+this storage class, leave this parameter out entirely.
+&#13;</P
+><P
+>The fourth parameter you probably don't want to use; it lets you assign
+storage classes based on the Expires: header of incoming articles. The
+exact details are in storage.conf(5). It's very easy to use this parameter
+incorrectly; leave it out entirely unless you've read the man page and know
+what you're doing.
+&#13;</P
+><P
+>The fifth parameter is the options parameter. Currently only CNFS uses this
+field; it should contain the name of the metacycbuff used to store articles
+in this storage class.
+&#13;</P
+><P
+>If you're using CNFS exclusively, just create one storage class for each
+metacycbuff that you have defined (in <I
+CLASS="EMPHASIS"
+>cycbuff.conf</I
+>) and set the newsgroups pattern according to what newsgroups should be
+stored in that buffer.
+&#13;</P
+><P
+>If you're using timehash or timecaf, the storage class IDs are used to
+store articles in separate directory trees so that different expiration
+policies can be applied to each storage class. You will need to divide up
+your newsgroups based on how long you want to retain articles in those
+groups, and create a storage class for each such collection of newsgroups.
+Make note of the storage class IDs you assign as they will be needed when
+you edit the <I
+CLASS="EMPHASIS"
+>expire.ctl</I
+> file a bit later.
+&#13;</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-6-F"
+>expire.ctl (REQUIRED)</A
+></H2
+><P
+></P
+><P
+>This file sets the expiration policy for articles stored on the server.
+Only one entry is required for all storage classes; it looks like:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    /remember/:14</PRE
+>
+&#13;</P
+><P
+>This entry says how long to keep the message IDs for articles that have
+already expired in the history file so that the server doesn't accept them
+again. Occasionally, fairly old articles will get regurgitated somewhere
+and offered to you again, so even after you've expired articles from your
+spool, you want to keep them around in your history file for a little while
+to ensure you don't get duplicates.
+&#13;</P
+><P
+>INN will reject any articles more than a certain number of days old (the
+artcutoff parameter in <I
+CLASS="EMPHASIS"
+>inn.conf</I
+>, defaulting to 14); the number on the
+<TT
+CLASS="LITERAL"
+>/remember/</TT
+> line should match that.
+&#13;</P
+><P
+>CNFS makes no further use of <I
+CLASS="EMPHASIS"
+>expire.ctl</I
+>, since articles stored in CNFS buffers expire automatically when the
+buffer runs out of free space. For timehash and timecaf (and currently for
+tradspool), <I
+CLASS="EMPHASIS"
+>expire.ctl</I
+> takes additional entries of the form:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    &lt;storage_class&gt;:&lt;keep&gt;:&lt;default&gt;:&lt;purge&gt;</PRE
+>
+&#13;</P
+><P
+>&lt;storage_class&gt; is the number assigned to a storage class in
+<I
+CLASS="EMPHASIS"
+>storage.conf</I
+>. &lt;default&gt; is the number of days to keep normal articles in that
+storage class (decimal values are allowed). For articles that don't have an
+Expires: header, those are the only two values that matter. For articles
+with an Expires: header, the other two values come into play; the date
+given in the Expires: header of an article will be honored subject to the
+contraints set by &lt;keep&gt; and &lt;purge&gt;. All articles in this
+storage class will be kept for at least &lt;keep&gt; days, regardless of
+their Expires: header, and all articles in this storage class will be
+expired after &lt;purge&gt; days, even if their Expires: headers specify a
+longer life.
+&#13;</P
+><P
+>All three of these fields can also contain the special keyword <TT
+CLASS="LITERAL"
+>never</TT
+>. If &lt;default&gt; is <TT
+CLASS="LITERAL"
+>never</TT
+>, only articles with explicit Expires: headers will ever be expired. If
+&lt;keep&gt; is <TT
+CLASS="LITERAL"
+>never</TT
+>, even those articles will be kept forever. Setting &lt;purge&gt; to <TT
+CLASS="LITERAL"
+>never</TT
+> says to honor Expires: headers even if they specify dates far into the
+future.
+&#13;</P
+><P
+>FIXME: The meaning of <TT
+CLASS="LITERAL"
+>never</TT
+> in various places isn't fully specified in expire.ctl(5); the above is what
+I intuitively think it should mean, but it may not match what the code
+actually does.
+&#13;</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="POD2DOCBOOK-CH-1-SECT-6-G"
+>readers.conf (required if you allow readers)</A
+></H2
+><P
+></P
+><P
+>Provided that noreader is set to false in <I
+CLASS="EMPHASIS"
+>inn.conf</I
+>, any connection from a host that doesn't match an entry in <I
+CLASS="EMPHASIS"
+>incoming.conf</I
+> (and any connection from a host that does match such an entry but that then
+issues a MODE READER command) will be handed off to nnrpd, the part of INN
+that supports newsreading clients. nnrpd uses <I
+CLASS="EMPHASIS"
+>readers.conf</I
+> to determine whether a given connection is allowed to read news, and if so
+what newsgroups they can read and post to.
+&#13;</P
+><P
+>There are a variety of fairly complicated things that one can do with
+<I
+CLASS="EMPHASIS"
+>readers.conf</I
+>, things like run external authentication programs that can query RADIUS
+servers. See readers.conf(5) and the example file for all the gory details.
+Here's an example of probably the simplest reasonable configuration, one
+that only allows clients in the example.com domain to read from the server
+and allows any host in that domain to read and post to all groups:
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    auth "example.com" {
+        hosts: "example.com, *.example.com"
+        default: "&lt;user&gt;"
+        default-domain: "example.com"
+    }</PRE
+>
+&#13;</P
+><P
+><PRE
+CLASS="SCREEN"
+>    access "all" {
+        users: "*@example.com"
+        newsgroups: "*"
+        access: "Read Post"
+    }</PRE
+>
+&#13;</P
+><P
+>If you're running a server for one particular domain, want to allow all
+hosts within that domain to read and post to any group on the server, and
+want to deny access to anyone outside that domain, just use the above and
+change <TT
+CLASS="LITERAL"
+>example.com</TT
+> in the above to your domain and you're all set. Lots of examples of more
+complicated things are in the example file.
+&#13;</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x134.htm"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.htm"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x427.htm"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Choosing an Article Storage Format</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c4.htm"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Creating the Article Spool (CNFS only)</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
