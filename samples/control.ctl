@@ -482,6 +482,14 @@ rmgroup:*:cmi.*:doit
 newgroup:*:cmu.*:drop
 rmgroup:*:cmu.*:doit
 
+## CN (China)
+# *PGP*   See comment at top of file.
+newgroup:*:cn.*:drop
+rmgroup:*:cn.*:drop
+checkgroups:control@bentium.com:cn.*:verify-cn.admin.news.announce
+newgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
+rmgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
+
 ## CUHK (*LOCAL* -- Chinese University of Hong Kong)
 # Contact: shlam@ie.cuhk.edu.hk (Alan S H Lam)
 # For internal use only, contact above address for questions.
