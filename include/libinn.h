@@ -150,6 +150,7 @@ struct conf_vars {
 	int logsitename;	/* log site names? */
 	char *pathhttp;
 	char *nnrpdposthost;
+	int nnrpdpostport;
 	int extendeddbz;
 	int nnrpdoverstats;
 	int storeonxref;	/* Should SMstore() see Xref to detemine class */
