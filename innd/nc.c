@@ -642,8 +642,8 @@ NCmode(cp)
 STATIC FUNCTYPE NCquit(CHANNEL *cp)
 {
     NCclearwip(cp);
-    NCwritereply(cp, NNTP_GOODBYE_ACK);
     cp->State = CSwritegoodbye;
+    NCwritereply(cp, NNTP_GOODBYE_ACK);
 }
 
 
