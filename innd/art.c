@@ -1705,6 +1705,7 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
 
 
 
+#if	defined(DO_KEYWORDS)
 /*
 ** Additional code for sake of manufacturing Keywords: headers out of air
 ** in order to provide better (scorable) XOVER data, containing bits of
@@ -1967,6 +1968,7 @@ out:
     /* We must dispose of the original strdup'd text area. */
     free(orig_text);
 }
+#endif	/* defined(DO_KEYWORDS) */
 
 
 
@@ -1982,8 +1984,10 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
     ARTHEADER		        *hp;
     char		        *p;
     int		                i;
+#if	defined(DO_KEYWORDS)
     char			*key_old_value = NULL;
     int				key_old_length = 0;
+#endif	/* defined(DO_KEYWORDS) */
 
 
     if (ARTfields == NULL) {
@@ -2004,6 +2008,7 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	    BUFFappend(&Overview, SEP, STRLEN(SEP));
 	hp = fp->Header;
 
+#if	defined(DO_KEYWORDS)
 	if (innconf->keywords) {
 	    /* Ensure that there are Keywords: to shovel. */
 	    if (hp == &ARTheaders[_keywords]) {
@@ -2013,6 +2018,7 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 		hp->Found++;	/* now faked, whether present before or not. */
 	    }
 	}
+#endif	/* defined(DO_KEYWORDS) */
 
 	if (!hp->Found)
 	    continue;
@@ -2022,6 +2028,7 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	}
 	i = Overview.Left;
 
+#if	defined(DO_KEYWORDS)
 	if (innconf->keywords) {
 	    if (key_old_value) {
 		if (hp->Value)
@@ -2032,6 +2039,7 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 		key_old_value = NULL;
 	    }
 	}
+#endif	/* defined(DO_KEYWORDS) */
 
 	BUFFappend(&Overview, hp->Value, hp->Length);
 	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
