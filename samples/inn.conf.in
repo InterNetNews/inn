@@ -45,7 +45,7 @@ readertrack:		false
 strippostcc:		false
 status:			0
 timer:			0
-allowreaders:		true
+readerswhenstopped:	true
 extendeddbz:		false
 nnrpdoverstats:		false
 storeonxref:		true
