@@ -144,38 +144,6 @@ script to warn about possibly incorrect configurations.
 
 ------------------------------
 
-  Summary: nnrpd sends a final message on inactivity timeout
- Standard: draft-ietf-nntpext-base-13.txt, section 4
-  Version: 1.0 to CURRENT 2001-07-04
-Reference: nnrpd/nnrpd.c
- Severity: Violates "should"
-
-The standard says, concerning inactivity timeouts:
-
-    When the timer expires, the server should close the TCP connection
-    without sending any response to the client.
-
-nnrpd sends a final message like:
-
-    503 Timeout after 605 seconds, closing connection.
-
-before closing the connection.  It also does this with a timeout during a
-POST command.
-
-Impact:  Unclear.  Could have strange results for the client if it wasn't
-expecting a server response, and may possibly change the handling of the
-close in the TCP stack on the server and the client.
-
-Suggested fix:  Remove that final message.  The general consensus on the
-ietf-nntp list was that sending out-of-order responses was a bad idea on
-general principles, and many other servers (including innd) already just
-drop the connection.
-
-Impact of fix:  If the message is dropped, it's less clear why the
-connection was dropped, particularly when debugging things by hand.
-
-------------------------------
-
   Summary: Reply codes other than x9x used for private extensions
  Standard: draft-ietf-nntpext-base-13.txt, section 4.1
   Version: 1.0 to CURRENT 2001-07-04
@@ -235,32 +203,6 @@ should be allowed without authentication.)  Then eliminate the special
 casing of the state CSgetauth (it may be better to store whether the peer
 has authenticated in the channel rather than in the channel state) and the
 special handling in NCauthinfo.  This should also simplify the code.
-
-------------------------------
-
-  Summary: INN rejects invalid LIST and MODE commands with 500, not 501
- Standard: draft-ietf-nntpext-base-13.txt, section 4.1.1
-  Version: 1.0 to CURRENT 2001-07-04
-Reference: innd/nc.c NClist() and NCmode(), nnrpd/commands.c CMDmode()
- Severity: Violates MUST
-
-The standard says:
-
-    If there is a syntax error in the arguments of a recognized command,
-    the response code 501 MUST be returned.  Note that where a command has
-    variants depending on a keyword (e.g. LIST ACTIVE and LIST
-    NEWSGROUPS), then 501 MUST be used when the requested variant is not
-    implemented but the base command is.
-
-However, innd returns a reply code of 500 for invalid LIST keywords and
-MODE keywords, the same as for any other invalid command.  nnrpd gets LIST
-correct, but has the same problem with MODE.
-
-Impact:  Clients may think that LIST or MODE itself is not implemented.
-
-Suggested fix:  Change NClist() to return 501 for invalid LIST keywords
-and NCmode() to return 501 for invalid MODE keywords.  Change CMDmode()
-likewise.
 
 ------------------------------
 
