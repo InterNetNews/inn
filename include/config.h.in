@@ -206,4 +206,7 @@ typedef char * const    CSTRING;
 /* Mode that directories are created under. */
 #define GROUPDIR_MODE   @DIRMODE@
 
+/* define to compile in Python filter support */
+#@DO_PYTHON@ DO_PYTHON
+
 #endif /* __CONFIG_H__ */
