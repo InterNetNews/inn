@@ -75,9 +75,10 @@ Some parts of the documentation have been rewritten in POD; that
 documentation can be found in F<doc/pod>.  The canonical source for
 F<README>, F<README.perl_hook>, F<INSTALL>, F<NEWS>, and this file are
 also in POD.  In addition, DocBook SGML versions of the POD documentation
-are included and periodically updated both for the use of DocBook
-translators and to make conversion to SGML easier if necessary down the
-road.
+are included in the CVS tree (although not in releases at this time, since
+they're programmatically generated and occasionally of somewhat poor
+quality) and periodically updated both for the use of DocBook translators
+and to make conversion to SGML easier if necessary down the road.
 
 If you're modifying some part of INN's documentation and see that it has a
 POD version in F<doc/pod>, it's preferred if you can make the
@@ -328,3 +329,26 @@ If you use emacs to edit INN code, you may want to put:
     (setq-default indent-tabs-mode nil)
 
 in your ~/.emacs file.
+
+=head1 References
+
+Some additional references that may be hard to find and may be of use to
+people working on INN:
+
+=over 4
+
+=item <http://www.mibsoftware.com/userkt/inn/dev/>
+
+Forrest Cavalier provides several tools for following INN development at
+this page and elsewhere in the Usenet RKT.  Under here is a web-accessible
+checked-out copy of the current INN source tree and pointers to how to use
+CVSup.
+
+=item <http://www.sas.com/standards/large.file/>
+
+The standards for large file support on Unix that are being generally
+implemented by vendors.  INN sort of partially uses these, but a good full
+audit of the code to check them should really be done and there are
+occasional problems.
+
+=back
