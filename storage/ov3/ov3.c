@@ -843,6 +843,9 @@ BOOL ov3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token
 	   no index room for it */
 	return FALSE;
     }
+    if (ie->offset > search->gh->datalen || ie->offset + ie->length > search->gh->datalen)
+	/* index may be corrupted, do not go further */
+	return FALSE;
 
     ie = &ie[search->cur];
     if (artnum)
