@@ -1,10 +1,8 @@
 /*  $Id$
 **
-**  MMap manipulation routines
+**  Manipulation routines for memory-mapped pages.
 **
 **  Written by Alex Kiernan (alex.kiernan@thus.net)
-**
-**  These routines work with mmap()ed memory
 */
 
 #include "config.h"
@@ -15,10 +13,11 @@
 #include "inn/mmap.h"
 
 /*
-**  Figure out what page an address is in and flush those pages
+**  Figure out what page an address is in and call msync on the appropriate
+**  page.  This routine assumes that all pointers fit into a size_t.
 */
 void
-mapcntl(void *p, size_t length, int flags)
+msync_page(void *p, size_t length, int flags)
 {
     int pagesize;
 
@@ -26,11 +25,10 @@ mapcntl(void *p, size_t length, int flags)
     if (pagesize == -1)
         syswarn("getpagesize failed");
     else {
-	char *start, *end;
+        const size_t mask = ~(size_t)(pagesize - 1);
+        const char *start = (char *) ((size_t) p & mask);
+        const char *end = (char *) (((size_t) p + length + pagesize) & mask);
 
-	start = (char *)((size_t)p & ~(size_t)(pagesize - 1));
-	end = (char *)((size_t)((char *)p + length + pagesize) &
-		       ~(size_t)(pagesize - 1));
-	msync(start, end - start, flags);
+        msync(start, end - start, flags);
     }
 }
