@@ -771,6 +771,19 @@ AC_TYPE_PID_T
 AC_CHECK_TYPE(caddr_t, char *)
 AC_CHECK_TYPE(ssize_t, int)
 
+dnl Check for long long int, and define HAVE_LONG_LONG if the compiler
+dnl supports it.
+AC_DEFUN([INN_C_LONG_LONG],
+[AC_CACHE_CHECK(for long long int, inn_cv_c_long_long,
+[AC_TRY_COMPILE(, [long long int i;],
+                inn_cv_c_long_long=yes,
+                inn_cv_c_long_long=no)]
+if test $inn_cv_c_long_long = yes ; then
+    AC_DEFINE(HAVE_LONG_LONG, 1,
+              [Define if the compiler supports long long int.])
+fi)])
+INN_C_LONG_LONG
+
 dnl From Paul D. Smith <psmith@baynetworks.com> on the autoconf mailing
 dnl list, this is a version of AC_CHECK_TYPE that allows specification of
 dnl additional headers.  It's a modified version of the standard autoconf
@@ -1053,6 +1066,50 @@ else
 fi])])
 INN_FUNC_INET_NTOA
 
+dnl Source used by INN_FUNC_SNPRINTF.
+define([_INN_FUNC_SNPRINTF_SOURCE],
+[[#include <stdio.h>
+#include <stdarg.h>
+
+char buf[2];
+
+int
+test (char *format, ...)
+{
+  va_list args;
+  int count;
+
+  va_start (args, format);
+  count = vsnprintf (buf, sizeof buf, format, args);
+  va_end (args);
+  return count;
+}
+
+int
+main ()
+{
+  exit ((test ("%s", "abcd") == 4 && buf[0] == 'a' && buf[1] == '\0'
+         && snprintf(NULL, 0, "%s", "abcd") == 4) ? 0 : 1);
+}]])
+
+dnl Check for a working snprintf.  Some systems have snprintf, but it
+dnl doesn't null-terminate if the buffer isn't large enough or it returns -1
+dnl if the string doesn't fit instead of returning the number of characters
+dnl that would have been formatted.
+AC_DEFUN([INN_FUNC_SNPRINTF],
+[AC_CACHE_CHECK(for working snprintf, inn_cv_func_snprintf_works,
+[AC_TRY_RUN(_INN_FUNC_SNPRINTF_SOURCE(),
+            [inn_cv_func_snprintf_works=yes],
+            [inn_cv_func_snprintf_works=no],
+            [inn_cv_func_snprintf_works=no])
+if test "$inn_cv_func_snprintf_works" = yes ; then
+    AC_DEFINE([HAVE_SNPRINTF], 1,
+        [Define if your system has a working snprintf function.])
+else
+    LIBOBJS="$LIBOBJS snprintf.${ac_objext}"
+fi])])
+INN_FUNC_SNPRINTF
+
 dnl Check for various other functions.
 dnl
 dnl NOTUSED: gethostname mkfifo strcspn strstr
@@ -1063,9 +1120,6 @@ AC_CHECK_FUNCS(atexit fchmod fcntl gethostname getpagesize getrlimit \
                getrusage getspnam gettimeofday mkfifo setbuffer sigaction \
                setrlimit setsid socketpair statvfs strcspn strncasecmp \
                strstr strtoul symlink sysconf waitpid)
-
-dnl We only care if we have setreuid() if we don't have seteuid().
-AC_CHECK_FUNCS(seteuid setreuid, break)
 
 dnl Find a way to get the file descriptor limit.
 if test x"$ac_cv_func_getrlimit" = xno ; then
@@ -1089,7 +1143,7 @@ fi
 
 dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(fseeko ftello getopt hstrerror inet_aton pread pwrite \
-                 strcasecmp strerror strspn setenv)
+                 seteuid strcasecmp strerror strspn setenv)
 
 dnl If replacing fseeko or ftello, see if we can use fsetpos/fgetpos.
 if test "$ac_cv_func_fseeko" = no || test "$ac_cv_func_ftello" = no ; then
@@ -1434,6 +1488,62 @@ if test "$inn_cv_herrno_need_decl" = yes ; then
               [Define if <netdb.h> does not declare h_errno.])
 fi)])
 INN_NEED_HERRNO_DECLARATION
+
+dnl The set of standard includes, used for checking if functions need to be
+dnl declared.
+define([_INN_NEED_DECLARATION_SOURCE],
+[#include <stdio.h>
+#include <sys/types.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# if HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+# if !HAVE_STRCHR
+#  define strchr index
+#  define strrchr rindex
+# endif
+#endif
+#if HAVE_STRING_H
+# if !STDC_HEADERS && HAVE_MEMORY_H
+#  include <memory.h>
+# endif
+# include <string.h>
+#else
+# if HAVE_STRINGS_H
+#  include <strings.h>
+# endif
+#endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif])
+
+dnl See if a given function needs a declaration by seeing if we can access
+dnl a function pointer for that function.  This is done in a really ugly
+dnl way with hacks so that autoheader will pick up the defines properly;
+dnl it's a stop-gap solution until the release of autoconf 2.50 which
+dnl fully supports this.
+AC_DEFUN([INN_NEED_DECLARATION],
+[AC_MSG_CHECKING([whether $1 must be declared])
+AC_CACHE_VAL([inn_cv_decl_needed_$1],
+[AC_TRY_COMPILE(
+_INN_NEED_DECLARATION_SOURCE()
+[$3],
+[char *(*pfn) = (char *(*)) $1],
+[inn_cv_decl_needed_$1=no], [inn_cv_decl_needed_$1=yes])])
+if test $inn_cv_decl_needed_$1 = yes ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE($2, 1, [Define if $1 isn't declared in the system headers.])
+else
+    AC_MSG_RESULT(no)
+fi])
+INN_NEED_DECLARATION(inet_ntoa, [NEED_DECLARATION_INET_NTOA],
+[#include <netinet/in.h>
+#include <arpa/inet.h>])
+INN_NEED_DECLARATION(snprintf, [NEED_DECLARATION_SNPRINTF])
+INN_NEED_DECLARATION(vsnprintf, [NEED_DECLARATION_VSNPRINTF])
 
 dnl Clean up our LIBS, just for grins.
 LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
