@@ -164,7 +164,7 @@ char *QIOread(QIOSTATE *qp)
 	if (qp->handle) {
 	    size = qp->Size - (p - qp->Buffer);
 	    i = (size < (qp->handle->len - qp->Count)) ? size : (qp->handle->len - qp->Count);
-	    memcpy(p, qp->handle->data, i);
+	    memcpy(p, qp->handle->data + qp->Count, i);
 	} else {
 	    i = read(qp->fd, p, (SIZE_T)(&qp->Buffer[qp->Size] - p));
 	    if (i < 0) {
