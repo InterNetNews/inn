@@ -2997,7 +2997,7 @@ Default peer configuration parameters:
       totalsize = procArtsSizeAccepted+procArtsSizeRejected ;
       if (totalsize == 0) totalsize = 1. ;
 
-      fprintf (fp, "   offered: %-5ld\t%6.2f ars/s\n",
+      fprintf (fp, "   offered: %-5ld\t%6.2f art/s\n",
 		procArtsOffered,
 		(double)procArtsOffered/sec) ;
       fprintf (fp, "  accepted: %-5ld\t%6.2f art/s\t%5.1f%%\n",
@@ -3065,9 +3065,9 @@ Default peer configuration parameters:
  *[on_close]: 0       dyn b'log high: 50%          25%-50%: 0.0%
  *[sleeping]: 0       dyn b'log stat: 37%          50%-75%: 0.0%
  * unspooled: 0       dyn b'log fltr: 0.7        75%-<100%: 0.0%
- *  no queue: 1234    avr.cnxs queue: 0.0             full: 0.0%
+ *  no queue: 1234    avr.cxns queue: 0.0             full: 0.0%
  *accpt size: 121.1 MB drop-deferred: false   defer length: 0
- *rejct size: 27.1 MB  min-queue-cnx: false
+ *rejct size: 27.1 MB  min-queue-cxn: false
  *                 backlog low limit: 1000000
  *                backlog high limit: 2000000     (factor 2.0)
  *                 backlog shrinkage: 0 bytes (from current file)
@@ -3153,7 +3153,7 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   host->params->dynBacklogLowWaterMark,
 	   100.0 * host->blQuartile[3] / cnt) ;
 
-  fprintf (fp, "  no queue: %-7ld avr.cnxs queue: %-3.1f             full: %-3.1f%%\n",
+  fprintf (fp, "  no queue: %-7ld avr.cxns queue: %-3.1f             full: %-3.1f%%\n",
 	   (long) host->gNoQueue,
 	   (double) host->gCxnQueue / (host->gArtsOffered ? host->gArtsOffered :1) ,
 	   100.0 * host->blFull / cnt) ;
