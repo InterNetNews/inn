@@ -608,6 +608,7 @@ typedef int             BOOL;
 #define FEED_SITE               's'
 #define FEED_TIMERECEIVED       't'
 #define FEED_TIMEPOSTED         'p'
+#define FEED_TIMEEXPIRED        'e'
 
 /* Maximum number of flags for a feed in newsfeeds.  Only used in innd,
    should be moved there (or made dynamic). */

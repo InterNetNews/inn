@@ -315,9 +315,18 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_SOURCEADDRESS			"sourceaddress"
 #define CONF_VAR_SOURCEADDRESS			97
     { _CONF_SOURCEADDRESS,			"",	1, 1 },
-#define _CONF_OVMMAPTHRESHOLD			"ovmmapthreshold"
-#define CONF_VAR_OVMMAPTHRESHOLD		98
-    { _CONF_OVMMAPTHRESHOLD,			"",	1, 1 }
+#define _CONF_WIPEXPIRE				"wipexpire"
+#define CONF_VAR_WIPEXPIRE			98
+    { _CONF_WIPEXPIRE,				"",	2, 1 },
+#define _CONF_OVGROUPPAT			"ovgrouppat"
+#define CONF_VAR_OVGROUPPAT			99
+    { _CONF_OVGROUPPAT,				"",	1, 1 },
+#define _CONF_GROUPBASEEXPIRY			"groupbaseexpiry"
+#define CONF_VAR_GROUPBASEEXPIRY		101
+    { _CONF_GROUPBASEEXPIRY,			"",	2, 1 },
+#define _CONF_WIPCHECK				"wipcheck"
+#define CONF_VAR_WIPCHECK			102
+    { _CONF_WIPCHECK,				"",	2, 1 }
 };
-#define MAX_CONF_VAR 99
+#define MAX_CONF_VAR 103
 

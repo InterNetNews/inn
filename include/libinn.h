@@ -204,7 +204,10 @@ struct conf_vars {
 	char *ovmethod;
         int useoverchan; /* should innd write overview, or should overchan */
         int immediatecancel;
-	int ovmmapthreshold;
+	char *ovgrouppat;
+        int groupbaseexpiry;
+        int wipcheck;
+        int wipexpire;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
