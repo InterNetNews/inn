@@ -141,9 +141,12 @@ AC_ARG_WITH(innd-port,
 
 AC_ARG_ENABLE(tagged-hash,
     [  --enable-tagged-hash    Use tagged hash table for history],
-    DO_DBZ_TAGGED_HASH=DO
-    AC_DEFINE(DO_TAGGED_HASH),
-    DO_DBZ_TAGGED_HASH=DONT)
+    if test "x$enableval" = xyes ; then
+	DO_DBZ_TAGGED_HASH=DO
+	AC_DEFINE(DO_TAGGED_HASH)
+    else
+	DO_DBZ_TAGGED_HASH=DONT
+    fi)
 AC_SUBST(DO_DBZ_TAGGED_HASH)
 
 INEWSMODE=0550
