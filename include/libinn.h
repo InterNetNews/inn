@@ -10,7 +10,7 @@
 /* Memory allocation. */
     /* Worst-case alignment, in order to shut lint up. */
     /* =()<typedef @<ALIGNPTR>@	*ALIGNPTR;>()= */
-typedef int	*ALIGNPTR;
+typedef long	*ALIGNPTR;
 extern ALIGNPTR	xmalloc(unsigned int i);
 extern ALIGNPTR	xrealloc(char *p, unsigned int i);
 

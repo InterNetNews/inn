@@ -787,10 +787,10 @@
   ||##
   ||##  7.  PATHS TO COMMON PROGRAMS
 [IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where the raison d'etre for this distribution lives.
-  ||##[autoconf]
-  ||#### =()<_PATH_INND		@<_PATH_INND>@>()=
-  ||_PATH_INND		@ac_cv_subst_binpath@/innd
+#  ||##  Where the raison d'etre for this distribution lives.
+#  ||##[autoconf]
+#  ||#### =()<_PATH_INND		@<_PATH_INND>@>()=
+#  ||_PATH_INND		@ac_cv_subst_binpath@/innd
 [IN1.7=@7][WDF=confparam][WOR=yes]
   ||##  Where the optional front-end that exec's innd lives.
   ||##[autoconf]

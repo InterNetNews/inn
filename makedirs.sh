@@ -19,13 +19,13 @@ if [ ${CHOWN} = chown ] ; then
 fi
 
 ##  =()<MAN1=@<MAN1>@>()=
-MAN1=/usr/news/man/man1
+MAN1=/home/staff/news/inn/man/man1
 ##  =()<MAN3=@<MAN3>@>()=
-MAN3=/usr/news/man/man3
+MAN3=/home/staff/news/inn/man/man3
 ##  =()<MAN5=@<MAN5>@>()=
-MAN5=/usr/news/man/man5
+MAN5=/home/staff/news/inn/man/man5
 ##  =()<MAN8=@<MAN8>@>()=
-MAN8=/usr/news/man/man8
+MAN8=/home/staff/news/inn/man/man8
 MAN=`echo $MAN8 | sed -e 's@\(.*\)/[^/]*@\1@'`
 
 ##  =()<SPOOL=@<_PATH_SPOOL>@>()=
@@ -39,7 +39,7 @@ BATCHDIR=/var/news/spool/out.going
 ##  =()<MOST_LOGS=@<_PATH_MOST_LOGS>@>()=
 MOST_LOGS=/var/log/news
 ## =()<PATH_AUTHDIR=@<_PATH_AUTHDIR>@>()=
-PATH_AUTHDIR=/usr/news/bin/auth
+PATH_AUTHDIR=/usr/local/news/bin/auth
 ##  =()<SPOOLNEWS=@<_PATH_SPOOLNEWS>@>()=
 SPOOLNEWS=/var/news/spool/in.coming
 ##  =()<BADNEWS=@<_PATH_BADNEWS>@>()=
@@ -50,11 +50,11 @@ SPOOLTEMP=/var/tmp
 ##  =()<NEWSLIB=@<_PATH_NEWSLIB>@>()=
 NEWSLIB=/var/news/etc
 ##  =()<NEWSBIN=@<_PATH_NEWSBIN>@>()=
-NEWSBIN=/usr/news/bin
+NEWSBIN=/usr/local/news/bin
 ##  =()<CONTROLPROGS=@<_PATH_CONTROLPROGS>@>()=
-CONTROLPROGS=/usr/news/bin/control
+CONTROLPROGS=/usr/local/news/bin/control
 ##  =()<RNEWSPROGS=@<_PATH_RNEWSPROGS>@>()=
-RNEWSPROGS=/usr/news/bin/rnews.libexec
+RNEWSPROGS=/usr/local/news/bin/rnews.libexec
 ##  =()<INNDDIR=@<_PATH_INNDDIR>@>()=
 INNDDIR=/var/news/run
 ##  =()<LOCKSDIR=@<_PATH_LOCKS>@>()=
@@ -65,7 +65,7 @@ MOST_LOGS=/var/log/news
 LOCKS=/var/news/locks
 
 ##  =()<NEWSETC=@<_PATH_NEWSBOOT>@>()=
-NEWSETC=/usr/news/bin/rc.news
+NEWSETC=/usr/local/news/bin/rc.news
 NEWSETC="`dirname ${NEWSETC}`"
 ##  =()<NEWSHIST=@<_PATH_HISTORY>@>()=
 NEWSHIST=/var/news/etc/history
@@ -73,7 +73,7 @@ NEWSHIST="`dirname ${NEWSHIST}`"
 ##  =()<NEWSTMP=@<_PATH_TMP>@>()=
 NEWSTMP=/var/tmp
 ##  =()<NEWSHOME=@<_PATH_NEWSHOME>@>()=
-NEWSHOME=/usr/news
+NEWSHOME=/home/staff/news/inn
 NEWSLBIN=${NEWSHOME}/local
 
 ##  =()<NEWSUSER=@<NEWSUSER>@>()=

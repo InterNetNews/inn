@@ -11,6 +11,8 @@ CFLAGS	= -I../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS	= @LDFLAGS@
 LIBS	= @LIBS@
 
+BINDIR = @prefix@/bin
+
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z -I../include $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
@@ -18,8 +20,6 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 
-##  =()<NEWSBIN	= @<_PATH_NEWSBIN>@>()=
-NEWSBIN	= /usr/news/bin
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 
@@ -40,16 +40,10 @@ ALL	=	archive batcher buffchan cvtbatch filechan \
 
 all:		$(ALL)
 
-install:	$D$(NEWSBIN)/archive $D$(NEWSBIN)/batcher \
-		$D$(NEWSBIN)/buffchan $D$(NEWSBIN)/cvtbatch \
-		$D$(NEWSBIN)/filechan $D$(NEWSBIN)/nntpget \
-		$D$(NEWSBIN)/innxmit $D$(NEWSBIN)/innxbatch \
-		$D$(NEWSBIN)/overchan \
-		$D$(NEWSBIN)/shlock $D$(NEWSBIN)/shrinkfile \
-		$D$(NEWSBIN)/crosspost \
-		$D$(NEWSBIN)/sendxbatches \
-		$D$(NEWSBIN)/actsync $D$(NEWSBIN)/actsyncd \
-		$D$(NEWSBIN)/actmerge
+install:	
+.for i in ${ALL}
+	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD ${i} ${BINDIR}/${i}
+.endfor
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -134,40 +128,6 @@ lint:		$(ALL)
 
 $(LIBNEWS) $(LINTLIB):
 	(cd ../lib ; $(MAKE) install)
-
-##  Low-level install actions.
-$D$(NEWSBIN)/archive:	archive
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/batcher:	batcher
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/buffchan:	buffchan
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/cvtbatch:	cvtbatch
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/filechan:	filechan
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/nntpget:	nntpget
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/innxmit:	innxmit
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/innxbatch:	innxbatch
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/sendxbatches:	sendxbatches
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/crosspost:	crosspost
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/overchan:	overchan
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/shlock:	shlock
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/shrinkfile:	shrinkfile
-	$(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD $? $@
-$D$(NEWSBIN)/actsync:	actsync
-	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD $? $@
-$D$(NEWSBIN)/actsyncd:	actsyncd
-	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD $? $@
-$D$(NEWSBIN)/actmerge:	actmerge
-	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)

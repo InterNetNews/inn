@@ -13,7 +13,7 @@
 **  1.  MAKE CONFIG PARAMETERS
 */
     /* =()<#define @<USE_CHAR_CONST>@_USE_CHAR_CONST>()= */
-#define DUNNO_USE_CHAR_CONST
+#define DO_USE_CHAR_CONST
 #if	defined(DO_USE_CHAR_CONST)
 typedef char const	*STRING;
 typedef char * const	CSTRING;
@@ -57,7 +57,7 @@ typedef char		*CSTRING;
     /* =()<#define NEWSGID		"@<NEWSGROUP>@">()= */
 #define NEWSGID		"news"
     /* =()<#define NEWSMASTER		"@<NEWSMASTER>@">()= */
-#define NEWSMASTER		"usenet"
+#define NEWSMASTER		"news"
     /* =()<#define PATHMASTER		"@<PATHMASTER>@">()= */
 #define PATHMASTER		"not-for-mail"
     /* Umask to set. */
@@ -85,7 +85,7 @@ typedef char		*CSTRING;
 #define LOCK_FLOCK
     /* Does your (struct tm) have a tm_gmtoff field? */
     /* =()<#define @<HAVE_TM_GMTOFF>@_HAVE_TM_GMTOFF>()= */
-#define DONT_HAVE_TM_GMTOFF
+#define DO_HAVE_TM_GMTOFF
     /* Does your (struct stat) have a st_blksize field? */
     /* =()<#define @<HAVE_ST_BLKSIZE>@_HAVE_ST_BLKSIZE>()= */
 #define DO_HAVE_ST_BLKSIZE
@@ -94,7 +94,7 @@ typedef char		*CSTRING;
 #define DONT_USE_UNION_WAIT
     /* How to fork? */
     /* =()<#define FORK()	@<FORK>@()>()= */
-#define FORK()	vfork()
+#define FORK()	fork()
     /* Does your AF_UNIX bind use sizeof for the socket size? */
     /* =()<#define @<BIND_USE_SIZEOF>@_BIND_USE_SIZEOF>()= */
 #define DO_BIND_USE_SIZEOF
@@ -112,7 +112,7 @@ typedef char		*CSTRING;
 #define RES_RUSAGE
     /* How to get number of available descriptors? */
     /* =()<#define FDCOUNT_@<FDCOUNT_STYLE>@>()= */
-#define FDCOUNT_GETRLIMIT
+#define FDCOUNT_SYSCONF
 
     /* If greater than -1, then use [gs]etrlimit to set that many descriptors. */
     /* If -1, then no [gs]etrlimit calls are done. */
@@ -120,7 +120,7 @@ typedef char		*CSTRING;
 #define NOFILE_LIMIT		-1
     /* Do you need <time.h> as well as <sys/time.h>? */
     /* =()<#define @<NEED_TIME>@_NEED_TIME>()= */
-#define DONT_NEED_TIME
+#define DO_NEED_TIME
     /* What predicate, if any, the <ctype.h> macros need. */
     /* =()<#define CTYPE(isXXXXX, c)	(@<CTYPE>@)>()= */
 #define CTYPE(isXXXXX, c)	((isascii((c)) && isXXXXX((c))))
@@ -130,7 +130,7 @@ typedef char		*CSTRING;
 */
     /* Use mmap() to read the active file, or read it in? */
     /* =()<#define ACT_@<ACT_STYLE>@>()= */
-#define ACT_READ
+#define ACT_MMAP
     /* Should the routines that use mmap() also do a msync(). */
     /* =()<#define @<MMAP_SYNC>@_MMAP_SYNC>()= */
 #define DONT_MMAP_SYNC
@@ -219,10 +219,10 @@ typedef char		*CSTRING;
 #define DO_SET_SOCKOPT DO
     /* How your DBZ be compiled? Use tagged-hash or splitted tables */
     /* =()<#define @<DBZ_TAGGED_HASH>@_TAGGED_HASH>()= */
-#define DO_TAGGED_HASH
+#define DONT_TAGGED_HASH
     /* Do you have shadow file? */
     /* =()<#define @<HAVE_SHADOW>@_HAVE_SHADOW @<HAVE_SHADOW>@>()= */
-#define DONT_HAVE_SHADOW DONT
+#define DO_HAVE_SHADOW DO
 
 
     /* Function that returns no value, and a pointer to it. */

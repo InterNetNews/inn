@@ -15,64 +15,40 @@ $newsgroup = 'news';
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
 %paths = (
-## =()<    'active',		'@<_PATH_ACTIVE>@',>()=
-    'active',		'/var/news/etc/active',
+    'active',		'@prefix@/etc/active',
 ## =()<    'archive',		'@<_PATH_ARCHIVEDIR>@',>()=
     'archive',		'/var/news/spool/archive',
 ## =()<    'badnews',		'@<_PATH_BADNEWS>@',>()=
     'badnews',		'/var/news/spool/in.coming/bad',
 ## =()<    'batchdir',		'@<_PATH_BATCHDIR>@',>()=
     'batchdir',		'/var/news/spool/out.going',
-## =()<    'control.ctl',	'@<_PATH_CONTROLCTL>@',>()=
-    'control.ctl',	'/var/news/etc/control.ctl',
-## =()<    'ctlprogs',		'@<_PATH_CONTROLPROGS>@',>()=
-    'ctlprogs',		'/usr/news/bin/control',
-## =()<    'expire.ctl',	'@<_PATH_EXPIRECTL>@',>()=
-    'expire.ctl',	'/var/news/etc/expire.ctl',
-## =()<    'history',	'@<_PATH_HISTORY>@',>()=
-    'history',	'/var/news/etc/history',
-## =()<    'hosts.nntp',	'@<_PATH_INNDHOSTS>@',>()=
-    'hosts.nntp',	'/var/news/etc/hosts.nntp',
-## =()<    'inews',		'@<_PATH_INEWS>@',>()=
-    'inews',		'/usr/news/bin/inews',
-## =()<    'inn.conf',		'@<_PATH_CONFIG>@',>()=
-    'inn.conf',		'/var/news/etc/inn.conf',
-## =()<    'innd',		'@<_PATH_INND>@',>()=
-    'innd',		'/usr/news/bin/innd',
-## =()<    'innddir',		'@<_PATH_INNDDIR>@',>()=
-    'innddir',		'/var/news/run',
-## =()<    'inndstart',	'@<_PATH_INNDSTART>@',>()=
-    'inndstart',	'/usr/news/bin/inndstart',
-## =()<    'moderators',	'@<_PATH_MODERATORS>@',>()=
-    'moderators',	'/var/news/etc/moderators',
+    'control.ctl',	'@prefix@/etc/control.ctl',
+    'ctlprogs',		'@prefix@/bin/control',
+    'expire.ctl',	'@prefix@/etc/expire.ctl',
+    'history',		'@prefix@/etc/history',
+    'hosts.nntp',	'@prefix@/etc/hosts.nntp',
+    'inews',		'@prefix@/bin/inews',
+    'inn.conf',		'@prefix@/etc/inn.conf',
+    'innd',		'@prefix@/bin/innd',
+    'innddir',		'@prefix@/run',
+    'inndstart',	'@prefix@/bin/inndstart',
+    'moderators',	'@prefix@/etc/moderators',
 ## =()<    'most_logs',	'@<_PATH_MOST_LOGS>@',>()=
     'most_logs',	'/var/log/news',
-## =()<    'newsbin',		'@<_PATH_NEWSBIN>@',>()=
-    'newsbin',		'/usr/news/bin',
-## =()<    'newsboot',		'@<_PATH_NEWSBOOT>@',>()=
-    'newsboot',		'/usr/news/bin/rc.news',
-## =()<    'newsfeeds',	'@<_PATH_NEWSFEEDS>@',>()=
-    'newsfeeds',	'/var/news/etc/newsfeeds',
-## =()<    'overview.fmt',	'@<_PATH_SCHEMA>@',>()=
-    'overview.fmt',	'/var/news/etc/overview.fmt',
-## =()<    'newslib',		'@<_PATH_NEWSLIB>@',>()=
-    'newslib',		'/var/news/etc',
-## =()<    'nnrp.access',	'@<_PATH_NNRPACCESS>@',>()=
-    'nnrp.access',	'/var/news/etc/nnrp.access',
-## =()<    'nnrpd',		'@<_PATH_NNRPD>@',>()=
-    'nnrpd',		'/usr/news/bin/nnrpd',
-## =()<    'nntpsend.ctl',	'@<_PATH_NEWSLIB>@/nntpsend.ctl',>()=
-    'nntpsend.ctl',	'/var/news/etc/nntpsend.ctl',
+    'newsbin',		'@prefix@/bin',
+    'newsboot',		'@prefix@/bin/rc.news',
+    'newsfeeds',	'@prefix@/etc/newsfeeds',
+    'overview.fmt',	'@prefix@/etc/overview.fmt',
+    'newslib',		'@prefix@/etc',
+    'nnrp.access',	'@prefix@/etc/nnrp.access',
+    'nnrpd',		'@prefix@/bin/nnrpd',
+    'nntpsend.ctl',	'@prefix@/etc/nntpsend.ctl',
 ## =()<    'oldlogs',		'@<_PATH_MOST_LOGS>@/OLD',>()=
     'oldlogs',		'/var/log/news/OLD',
-## =()<    'parsectl',		'@<_PATH_PARSECTL>@',>()=
-    'parsectl',		'/var/news/etc/parsecontrol',
-## =()<    'passwd.nntp',	'@<_PATH_NNTPPASS>@',>()=
-    'passwd.nntp',	'/var/news/etc/passwd.nntp',
-## =()<    'rnews',		'@<_PATH_RNEWS>@',>()=
-    'rnews',		'/usr/news/bin/rnews',
-## =()<    'rnewsprogs',	'@<_PATH_RNEWSPROGS>@',>()=
-    'rnewsprogs',	'/usr/news/bin/rnews.libexec',
+    'parsectl',		'@prefix@/etc/parsecontrol',
+    'passwd.nntp',	'@prefix@/etc/passwd.nntp',
+    'rnews',		'@prefix@/bin/rnews',
+    'rnewsprogs',	'@prefix@/bin/rnews.libexec',
 ## =()<    'spooltemp',		'@<_PATH_SPOOLTEMP>@',>()=
     'spooltemp',		'/var/tmp',
 ## =()<    'spool',		'@<_PATH_SPOOL>@',>()=

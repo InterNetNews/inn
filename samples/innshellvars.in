@@ -1,0 +1,133 @@
+#! /bin/sh
+##  $Revision$
+##  Set up any and all shell variables that an INN shell script
+##  might need.  Also sets umask.
+
+## NOTE: When adding stuff here, add the corresponding variables to 
+## innshellvars.pl and innshellvars.tcl and innshellvars.csh
+NEWSHOME=@prefix@
+export NEWSHOME
+
+NEWSBIN=${NEWSHOME}/bin
+NEWSLIB=${NEWSHOME}/etc
+INNDDIR=${NEWSHOME}/run
+LOCKS=${NEWSHOME}/locks
+export NEWSBIN NEWSLIB INNDDIR NEWSHOME
+
+ACTIVE=${NEWSLIB}/active
+ACTIVETIMES=${NEWSLIB}/active.times
+CTLFILE=${NEWSLIB}/control.ctl
+CTLWATCH=${NEWSLIB}/innwatch.ctl
+HISTORY=${NEWSLIB}/history
+NEWACTIVE=${NEWSLIB}/active.tmp
+NEWSFEEDS=${NEWSLIB}/newsfeeds
+NEWSGROUPS=${NEWSLIB}/newsgroups
+OLDACTIVE=${NEWSLIB}/active.old
+PATH_MOTD=${NEWSLIB}/motd.news
+PATH_STORAGECTL=${NEWSLIB}/storage.ctl
+PATH_OVERVIEWCTL=${NEWSLIB}/overview.ctl
+EXPIRECTL=${NEWSLIB}/expire.ctl
+
+CONTROLPROGS=${NEWSBIN}/control
+INNCONFVAL=${NEWSBIN}/innconfval
+INND=${NEWSBIN}/innd
+INNDSTART=${NEWSBIN}/inndstart
+INNWATCH=${NEWSBIN}/innwatch
+INEWS=${NEWSBIN}/inews
+RNEWS=${NEWSBIN}/rnews
+PERL_STARTUP_INND=${NEWSBIN}/control/startup_innd.pl
+PERL_FILTER_INND=${NEWSBIN}/control/filter_innd.pl
+PERL_FILTER_NNRPD=${NEWSBIN}/control/filter_nnrpd.pl
+PATH_TCL_STARTUP=${NEWSBIN}/control/startup.tcl
+PATH_TCL_FILTER=${NEWSBIN}/control/filter.tcl
+
+DAILY=${LOCKS}/LOCK.news.daily
+
+NEWSCONTROL=${INNDDIR}/control
+NNTPCONNECT=${INNDDIR}/nntpin
+SERVERPID=${INNDDIR}/innd.pid
+INNWSTATUS=${INNDDIR}/innwatch.status
+TEMPSOCK=`basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
+TEMPSOCKDIR=`echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
+WATCHPID=${INNDDIR}/innwatch.pid
+
+
+
+##  =()<ARCHIVEDIR=@<_PATH_ARCHIVEDIR>@>()=
+ARCHIVEDIR=/var/news/spool/archive
+##  =()<AWK=@<_PATH_AWK>@>()=
+AWK=/usr/bin/awk
+##  =()<BATCH=@<_PATH_BATCHDIR>@>()=
+BATCH=/var/news/spool/out.going
+##  =()<SENDMAIL="@<_PATH_SENDMAIL>@">()=
+SENDMAIL="/usr/lib/sendmail -t"
+##  =()<COMPRESS=@<_PATH_COMPRESS>@>()=
+COMPRESS=/usr/bin/compress
+##  =()<CYCLES=@<LOG_CYCLES>@>()=
+CYCLES=3
+##  =()<INNDF="@<INNWATCH_DF>@">()=
+INNDF="/bin/df"
+##  =()<EGREP=@<_PATH_EGREP>@>()=
+EGREP=/usr/bin/egrep
+##  =()<ERRLOG=@<_PATH_ERRLOG>@>()=
+ERRLOG=/var/log/news/errlog
+##  =()<HAVE_UUSTAT=@<HAVE_UUSTAT>@>()=
+HAVE_UUSTAT=DO
+##  =()<INCOMING=@<_PATH_SPOOLNEWS>@>()=
+INCOMING=/var/news/spool/in.coming
+##  =()<LOG=@<_PATH_LOGFILE>@>()=
+LOG=/var/log/news/news
+##  =()<MAIL_BADCONTROLS=@<MAIL_BADCONTROLS>@>()=
+MAIL_BADCONTROLS=DONT
+##  =()<MAILCMD="@<_PATH_MAILCMD>@">()=
+MAILCMD="/usr/bin/Mail"
+##  =()<MOST_LOGS=@<_PATH_MOST_LOGS>@>()=
+MOST_LOGS=/var/log/news
+##  =()<NEWSMASTER=@<NEWSMASTER>@>()=
+NEWSMASTER=usenet
+##  =()<NEWSUSER=@<NEWSUSER>@>()=
+NEWSUSER=news
+##  =()<PERL=@<_PATH_PERL>@>()=
+PERL=/usr/bin/perl
+##  =()<SED=@<_PATH_SED>@>()=
+SED=/usr/bin/sed
+##  =()<SORT="@<_PATH_SORT>@">()=
+SORT="/usr/bin/sort"
+##  =()<SLEEPTIME=@<INNWATCH_SLEEPTIME>@>()=
+SLEEPTIME=600
+##  =()<SPOOL=@<_PATH_SPOOL>@>()=
+SPOOL=/var/news/spool/articles
+##  =()<OVERVIEWDIR=@<_PATH_OVERVIEWDIR>@>()=
+OVERVIEWDIR=/var/news/spool/over.view
+##  =()<WANT_PGPVERIFY=@<WANT_PGPVERIFY>@>()=
+WANT_PGPVERIFY=DO
+
+##  =()<Z=@<_PATH_COMPRESSEXT>@>()=
+Z=.Z
+
+##  =()<PERL_SUPPORT=@<PERL_SUPPORT>@>()=
+PERL_SUPPORT=DONT
+##  =()<TCL_SUPPORT=@<TCL_SUPPORT>@>()=
+TCL_SUPPORT=DONT
+
+LOCALGROUPS=${NEWSLIB}/localgroups
+
+##  =()<TMPDIR=${TMPDIR-@<_PATH_TMP>@}>()=
+TMPDIR=${TMPDIR-/var/tmp}
+export TMPDIR
+
+##  =()<BADNEWS=@<_PATH_BADNEWS>@>()=
+BADNEWS=/var/news/spool/in.coming/bad
+#### =()<SPOOLNEWS=@<_PATH_SPOOLNEWS>@>()=
+SPOOLNEWS=/var/news/spool/in.coming
+#### =()<SPOOLTEMP=@<_PATH_SPOOLTEMP>@>()=
+SPOOLTEMP=/var/tmp
+
+NEWSLBIN=${NEWSHOME}/local
+export NEWSLBIN
+
+##  =()<umask @<NEWSUMASK>@>()=
+umask 02
+
+PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin:/usr/ucb
+export PATH

@@ -1,18 +1,3 @@
-#define PEER 257
-#define GROUP 258
-#define IVAL 259
-#define RVAL 260
-#define NAME 261
-#define XSTRING 262
-#define SCOPE 263
-#define COLON 264
-#define LBRACE 265
-#define RBRACE 266
-#define TRUEBVAL 267
-#define FALSEBVAL 268
-#define CHAR 269
-#define WORD 270
-#define IP_ADDRESS 271
 typedef union{
     scope *scp ;
     value *val ;
@@ -22,4 +7,21 @@ typedef union{
     char *string ;
     char chr ;
 } YYSTYPE;
+#define	PEER	258
+#define	GROUP	259
+#define	IVAL	260
+#define	RVAL	261
+#define	NAME	262
+#define	XSTRING	263
+#define	SCOPE	264
+#define	COLON	265
+#define	LBRACE	266
+#define	RBRACE	267
+#define	TRUEBVAL	268
+#define	FALSEBVAL	269
+#define	CHAR	270
+#define	WORD	271
+#define	IP_ADDRESS	272
+
+
 extern YYSTYPE yylval;

@@ -5,8 +5,6 @@ DESTDIR	=
 D	= $(DESTDIR)
 ##  =()<P	= @<P>@>()=
 P	= 
-
-
 ##  =()<PERLLIB = @<PERL_LIB>@>()=
 PERLLIB = 
 ##  =()<PERLINC = @<PERL_INC>@>()=
@@ -19,6 +17,8 @@ CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC) $(TCLINC) @CFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 
+BINDIR	= @prefix@/bin
+
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC) $(TCLINC)>()=
 LINTFLAGS	= -b -h -z -I../include $(DEFS) $(PERLINC) $(TCLINC)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
@@ -28,10 +28,6 @@ CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
-##  =()<INND	= @<_PATH_INND>@>()=
-INND	= /usr/news/bin/innd
-##  =()<INNDSTART	= @<_PATH_INNDSTART>@>()=
-INNDSTART	= /usr/news/bin/inndstart
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 ## =()<NEWSGROUP	= @<NEWSGROUP>@>()=
@@ -54,7 +50,20 @@ ALL	= innd inndstart
 
 all:		$(ALL)
 
-install:	$D$(INND) $D$(INNDSTART)
+install:
+	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd ${BINDIR}/innd
+	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart ${BINDIR}/innd
+	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
+	if [ "X$$ME" = Xroot ]; then \
+		echo $@ has been installed setuid root. ;\
+	else\
+		echo "" ; echo "===============================" ;\
+		echo  "NOTE NOTE NOTE NOTE NOTE" ;\
+		ls -l $@ ;\
+		echo $@ needs to be installed setuid root ;\
+		echo "" ; echo "" ;\
+	fi
+
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -93,22 +102,6 @@ inndp:		$(SOURCES)
 ##
 ccenter:	$(SOURCES)
 	#load $(CFLAGS) $(SOURCES) $(LIBNEWS)
-
-##  Low-level install actions.
-$D$(INND):	innd
-	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD $? $@
-$D$(INNDSTART):	inndstart
-	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD $? $@
-	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
-	if [ "X$$ME" = Xroot ]; then \
-		echo $@ has been installed setuid root. ;\
-	else\
-		echo "" ; echo "===============================" ;\
-		echo  "NOTE NOTE NOTE NOTE NOTE" ;\
-		ls -l $@ ;\
-		echo $@ needs to be installed setuid root ;\
-		echo "" ; echo "" ;\
-	fi
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES) ../include/dbz.h

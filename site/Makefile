@@ -15,7 +15,7 @@ P	=
 .csh:
 
 ##  =()<CTLINND		= @<_PATH_NEWSBIN>@/ctlinnd>()=
-CTLINND		= /usr/news/bin/ctlinnd
+CTLINND		= /usr/local/news/bin/ctlinnd
 ##  =()<PATH_CONFIG	= @<_PATH_CONFIG>@>()=
 PATH_CONFIG	= /var/news/etc/inn.conf
 ##  =()<PATH_CONTROLCTL	= @<_PATH_CONTROLCTL>@>()=
@@ -29,7 +29,7 @@ PATH_MODERATORS	= /var/news/etc/moderators
 ##  =()<PATH_DISTPATS	= @<_PATH_DISTPATS>@>()=
 PATH_DISTPATS	= /var/news/etc/distrib.pats
 ##  =()<PATH_NEWSBOOT	= @<_PATH_NEWSBOOT>@>()=
-PATH_NEWSBOOT	= /usr/news/bin/rc.news
+PATH_NEWSBOOT	= /usr/local/news/bin/rc.news
 ##  =()<PATH_NEWSFEEDS	= @<_PATH_NEWSFEEDS>@>()=
 PATH_NEWSFEEDS	= /var/news/etc/newsfeeds
 ##  =()<PATH_NNRPACCESS	= @<_PATH_NNRPACCESS>@>()=
@@ -47,19 +47,19 @@ PATH_SHELLVARS	= /var/news/etc/innshellvars
 ##  =()<PATH_NNTPPASS	= @<_PATH_NNTPPASS>@>()=
 PATH_NNTPPASS	= /var/news/etc/passwd.nntp
 ##  =()<PATH_PARSECTL	= @<_PATH_PARSECTL>@>()=
-PATH_PARSECTL	= /var/news/etc/parsecontrol
+PATH_PARSECTL	= /usr/local/news/bin/parsecontrol
 ##  =()<PATH_CTLWATCH	= @<_PATH_CTLWATCH>@>()=
 PATH_CTLWATCH	= /var/news/etc/innwatch.ctl
 ##  =()<PATH_PERL_STARTUP_INND	= @<_PATH_PERL_STARTUP_INND>@>()=
-PATH_PERL_STARTUP_INND	= /usr/news/bin/control/startup_innd.pl
+PATH_PERL_STARTUP_INND	= /usr/local/news/bin/control/startup_innd.pl
 ##  =()<PATH_PERL_FILTER_INND	= @<_PATH_PERL_FILTER_INND>@>()=
-PATH_PERL_FILTER_INND	= /usr/news/bin/control/filter_innd.pl
+PATH_PERL_FILTER_INND	= /usr/local/news/bin/control/filter_innd.pl
 ##  =()<PATH_PERL_FILTER_NNRPD	= @<_PATH_PERL_FILTER_NNRPD>@>()=
-PATH_PERL_FILTER_NNRPD	= /usr/news/bin/control/filter_nnrpd.pl
+PATH_PERL_FILTER_NNRPD	= /usr/local/news/bin/control/filter_nnrpd.pl
 ##  =()<PATH_TCL_STARTUP	= @<_PATH_TCL_STARTUP>@>()=
-PATH_TCL_STARTUP	= /usr/news/bin/control/startup.tcl
+PATH_TCL_STARTUP	= /usr/local/news/bin/control/startup.tcl
 ##  =()<PATH_TCL_FILTER	= @<_PATH_TCL_FILTER>@>()=
-PATH_TCL_FILTER	= /usr/news/bin/control/filter.tcl
+PATH_TCL_FILTER	= /usr/local/news/bin/control/filter.tcl
 ##  =()<PATH_ACTSYNC_IGN = @<_PATH_ACTSYNC_IGN>@>()=
 PATH_ACTSYNC_IGN = /var/news/etc/actsync.ign
 ##  =()<PATH_ACTSYNC_CFG = @<_PATH_ACTSYNC_CFG>@>()=
@@ -74,11 +74,11 @@ PATH_OVERVIEWCTL = /var/news/etc/overview.ctl
 ##  =()<AWK	= @<_PATH_AWK>@>()=
 AWK	= /usr/bin/awk
 ##  =()<CTLBIN	= @<_PATH_CONTROLPROGS>@>()=
-CTLBIN	= /usr/news/bin/control
+CTLBIN	= /usr/local/news/bin/control
 ##  =()<NEWSLIB	= @<_PATH_NEWSLIB>@>()=
 NEWSLIB	= /var/news/etc
 ##  =()<NEWSBIN	= @<_PATH_NEWSBIN>@>()=
-NEWSBIN	= /usr/news/bin
+NEWSBIN	= /usr/local/news/bin
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 

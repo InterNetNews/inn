@@ -1,0 +1,160 @@
+# 
+# Author:       James Brister <brister@vix.com> -- berkeley-unix --
+# Start Date:   Sat, 24 Aug 1996 22:08:19 +0200
+# Project:      INN 
+# File:         innshellvars.pl
+# RCSId:        $Id$
+# Description:  Set up any and all variables that an INN perl script
+#               might need.
+
+package inn ;
+
+$newshome = "@prefix@" ;
+
+$locks = "${newshome}/locks" ;
+$newsbin = "${newshome}/bin" ;
+$innddir = "${newshome}/run" ;
+$newslib = "${newshome}/etc" ;
+$newslbin = "${newshome}/local" ;
+
+$active = "${newslib}/active" ;
+$activetimes = "${newslib}/active.times" ;
+$ctlfile = "${newslib}/control.ctl" ;
+$ctlwatch = "${newslib}/innwatch.ctl" ;
+$history = "${newslib}/history" ;
+$newactive = "${newslib}/active.tmp" ;
+$newsfeeds = "${newslib}/newsfeeds" ;
+$newsgroups = "${newslib}/newsgroups" ;
+$oldactive = "${newslib}/active.old" ;
+$path_motd = "${newslib}/motd.news" ;
+$path_storagectl = "${newslib}/storage.ctl" ;
+$path_overviewctl = "${newslib}/overview.ctl" ;
+$localgroups = "$newslib/localgroups" ;
+$expirectl = "${newslib}/expire.ctl" ;
+
+$controlprogs = "${newsbin}/control" ;
+$inews = "${newsbin}/inews" ;
+$innconfval = "${newsbin}/innconfval" ;
+$innd = "${newsbin}/innd" ;
+$inndstart = "${newsbin}/inndstart" ;
+$innwatch = "${newsbin}/innwatch" ;
+$rnews = "${newsbin}/rnews" ;
+$perl_startup_innd = "${newsbin}/control/startup_innd.pl" ;
+$perl_filter_innd = "${newsbin}/control/filter_innd.pl" ;
+$perl_filter_nnrpd = "${newsbin}/control/filter_nnrpd.pl" ;
+$path_tcl_startup = "${newsbin}/control/startup.tcl" ;
+$path_tcl_filter = "${newsbin}/control/filter.tcl" ;
+
+$daily = "${locks}/LOCK.news.daily" ;
+
+$newscontrol = "${innddir}/control" ;
+$nntpconnect = "${innddir}/nntpin" ;
+$serverpid = "${innddir}/innd.pid" ;
+$innwstatus = "${innddir}/innwatch.status" ;
+($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
+($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
+$watchpid = "${innddir}/innwatch.pid" ;
+
+
+##  =()<$awk = "@<_PATH_AWK>@" ;>()=
+$awk = "/usr/bin/awk" ;
+
+##  =()<$batch = "@<_PATH_BATCHDIR>@" ;>()=
+$batch = "/var/news/spool/out.going" ;
+
+##  =()<$sendmail = "@<_PATH_SENDMAIL>@" ;>()=
+$sendmail = "/usr/lib/sendmail -t" ;
+
+##  =()<$compress = "@<_PATH_COMPRESS>@" ;>()=
+$compress = "/usr/bin/compress" ;
+
+##  =()<$cycles = @<LOG_CYCLES>@ ;>()=
+$cycles = 3 ;
+
+##  =()<$inndf = "@<INNWATCH_DF>@" ;>()=
+$inndf = "/bin/df" ;
+
+##  =()<$egrep = "@<_PATH_EGREP>@" ;>()=
+$egrep = "/usr/bin/egrep" ;
+
+##  =()<$errlog = "@<_PATH_ERRLOG>@" ;>()=
+$errlog = "/var/log/news/errlog" ;
+
+##  =()<$have_uustat = ("@<HAVE_UUSTAT>@" eq "DO" ? 1 : 0) ;>()=
+$have_uustat = ("DO" eq "DO" ? 1 : 0) ;
+
+##  =()<$incoming = "@<_PATH_SPOOLNEWS>@" ;>()=
+$incoming = "/var/news/spool/in.coming" ;
+
+##  =()<$log = "@<_PATH_LOGFILE>@" ;>()=
+$log = "/var/log/news/news" ;
+
+##  =()<$mail_badcontrols = ("@<MAIL_BADCONTROLS>@" eq "DO" ? 1 : 0) ;>()=
+$mail_badcontrols = ("DONT" eq "DO" ? 1 : 0) ;
+
+##  =()<$mailcmd = "@<_PATH_MAILCMD>@" ;>()=
+$mailcmd = "/usr/bin/Mail" ;
+
+##  =()<$most_logs = "@<_PATH_MOST_LOGS>@" ;>()=
+$most_logs = "/var/log/news" ;
+
+##  =()<$newsmaster = '@<NEWSMASTER>@' ;>()=
+$newsmaster = 'usenet' ;
+
+##  =()<$newsuser = "@<NEWSUSER>@" ;>()=
+$newsuser = "news" ;
+
+##  =()<$perl = "@<_PATH_PERL>@" ;>()=
+$perl = "/usr/bin/perl" ;
+
+##  =()<$sed = "@<_PATH_SED>@" ;>()=
+$sed = "/usr/bin/sed" ;
+
+##  =()<$sort = "@<_PATH_SORT>@" ;>()=
+$sort = "/usr/bin/sort" ;
+
+##  =()<$sleeptime = @<INNWATCH_SLEEPTIME>@ ;>()=
+$sleeptime = 600 ;
+
+##  =()<$spool = "@<_PATH_SPOOL>@" ;>()=
+$spool = "/var/news/spool/articles" ;
+
+##  =()<$overviewdir = "@<_PATH_OVERVIEWDIR>@" ;>()=
+$overviewdir = "/var/news/spool/over.view" ;
+
+##  =()<$want_pgpverify = ("@<WANT_PGPVERIFY>@" eq "DO" ? 1 : 0) ;>()=
+$want_pgpverify = ("DO" eq "DO" ? 1 : 0) ;
+
+##  =()<$z = "@<_PATH_COMPRESSEXT>@" ;>()=
+$z = ".Z" ;
+
+##  =()<$perl_support = ("@<PERL_SUPPORT>@" eq "DO" ? 1 : 0) ;>()=
+$perl_support = ("DONT" eq "DO" ? 1 : 0) ;
+
+##  =()<$tcl_support = ("@<TCL_SUPPORT>@" eq "DO" ? 1 : 0) ;>()=
+$tcl_support = ("DONT" eq "DO" ? 1 : 0) ;
+
+if ( ! defined ($ENV{'TMPDIR'}) ) {
+    ##  =()<	$ENV{'TMPDIR'} = "@<_PATH_TMP>@" ;>()=
+	$ENV{'TMPDIR'} = "/var/tmp" ;
+} 
+$tmpdir = $ENV{'TMPDIR'} ;
+
+##  =()<$archivedir = "@<_PATH_ARCHIVEDIR>@" ;>()=
+$archivedir = "/var/news/spool/archive" ;
+
+##  =()<$badnews = "@<_PATH_BADNEWS>@" ;>()=
+$badnews = "/var/news/spool/in.coming/bad" ;
+
+#### =()<$spoolnews = "@<_PATH_SPOOLNEWS>@" ;>()=
+$spoolnews = "/var/news/spool/in.coming" ;
+
+#### =()<$spooltemp = "@<_PATH_SPOOLTEMP>@" ;>()=
+$spooltemp = "/var/tmp" ;
+
+##  =()<$umask = @<NEWSUMASK>@ ;>()=
+$umask = 02 ;
+
+$ENV{'PATH'} = "${newslbin}:${newsbin}:$ENV{'PATH'}:/bin:/usr/bin:/usr/ucb" ;
+
+1 ;

@@ -387,7 +387,7 @@ struct eqgrp {
  * path to ctlinnd command
  */
 /* =()<#define CTLINND_PATH "@<_PATH_NEWSBIN>@/ctlinnd">()= */
-#define CTLINND_PATH "/usr/news/bin/ctlinnd"
+#define CTLINND_PATH "/usr/local/news/bin/ctlinnd"
 
 #define DEV_NULL "/dev/null"	/* path to the bit bucket */
 #define CTLINND_NAME "ctlinnd"	/* basename of ctlinnd command */
