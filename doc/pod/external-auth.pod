@@ -77,7 +77,7 @@ failure.
 
 =head2 Returning a username and domain
 
-If the program succeeds, it may return a username string (optionally
+If the program succeeds, it must return a username string (optionally
 with a domain appended) by writing to standard output.  The line it
 should write is exactly:
 

@@ -1,10 +1,6 @@
 =head1 Welcome to INN 2.4!
 
-This is the current development version of INN 2.4.  This code is under
-active development and may or may not be stable at any given time.
-Contributions and bug reports are welcome and encouraged.
-
-This work is sponsored by the Internet Software Consortium.
+This work is sponsored by Internet Systems Consortium.
 
 Please see F<INSTALL> for installation instructions, F<NEWS> for what's
 changed from the previous release, and F<LICENSE> for the copyright,
@@ -64,7 +60,7 @@ INN also supports an extremely powerful filtering system that allows the
 server administrator to reject unwanted articles (such as spam and other
 abuses of Usenet).
 
-INN is free software, supported by the Internet Software Consortium and
+INN is free software, supported by Internet Systems Consortium and
 volunteers around the world.  See L<"Supporting the INN Effort"> below.
 
 =head1 Prerequisites
@@ -208,6 +204,9 @@ from the inn-workers mailing list who have dedicated a lot of time and
 effort to getting this new version together.  They deserve a big round of
 applause.  They've certainly got our thanks.
 
+This product includes software developed by UUNET Technologies, Inc. and
+by the University of California, Berkeley and its contributors.
+
 Last, but certainly not least, Rich Salz, the original author of INN
 deserves a lion's share of the credit for writing INN in the first place
 and making it the most popular news server software on the planet (no NNTP
@@ -267,7 +266,7 @@ only, unfortunately.
 
 =item suck
 
-URL: <http://www.sucknews.org/>
+URL: <http://home.comcast.net/~bobyetman/index.html>
 
 suck is a separate package for downloading a news feed via a reading
 connection (rather than via a direct NNTP or UUCP feed) and sending
@@ -289,17 +288,17 @@ other.
 
 =head1 Supporting the INN Effort
 
-Note that INN is supported by the Internet Software Consortium, and
-although it is free for use and redistribution and incorporation into
-vendor products and export and anything else you can think of, it costs
-money to produce.  That money comes from ISPs, hardware and software
-vendors, companies who make extensive use of the software, and generally
-kind-hearted folk such as yourself.
+Note that INN is supported by Internet Systems Consortium, and although it
+is free for use and redistribution and incorporation into vendor products
+and export and anything else you can think of, it costs money to produce.
+That money comes from ISPs, hardware and software vendors, companies who
+make extensive use of the software, and generally kind-hearted folk such
+as yourself.
 
-The Internet Software Consortium has also commissioned a DHCP server
-implementation, handles the official support/release of BIND, and supports
-the Kerberos Version 5 effort at MIT.  You can learn more about the ISC's
-goals and accomplishments from the web page at <http://www.isc.org/>.
+Internet Systems Consortium has also commissioned a DHCP server
+implementation and handles the official support/release of BIND.  You can
+learn more about the ISC's goals and accomplishments from the web page at
+<http://www.isc.org/>.
 
                                         Russ Allbery
                                         Katsuhiro Kondou

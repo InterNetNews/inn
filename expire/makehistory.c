@@ -243,8 +243,7 @@ FlushOverTmpFile(void)
 	    || (r = strchr(q+1, '\t')) == NULL) {
             warn("sorted overview file %s has a bad line at %d",
                  SortedTmpPath, count);
-	    OVclose();
-	    Fork ? _exit(1) : exit(1);
+	    continue;
 	}
 	/* p+1 now points to start of token, q+1 points to start of overline. */
 	if (sorttype == OVNEWSGROUP) {
@@ -257,8 +256,7 @@ FlushOverTmpFile(void)
 	    if ((r = strchr(r, '\t')) == NULL) {
                 warn("sorted overview file %s has a bad line at %d",
                      SortedTmpPath, count);
-		OVclose();
-		Fork ? _exit(1) : exit(1);
+		continue;
 	    }
 	    *r++ = '\0';
 	} else {
@@ -495,7 +493,7 @@ static void
 DoArt(ARTHANDLE *art)
 {
     ARTOVERFIELD		*fp;
-    const char                  *p, *p1;
+    const char                  *p, *end;
     char                        *q;
     static struct buffer        buffer = { 0, 0, 0, NULL };
     static char			SEP[] = "\t";
@@ -540,12 +538,12 @@ DoArt(ARTHANDLE *art)
                peel off the \r\n (we're guaranteed we're dealing with
                wire-format articles. */
             fp->HeaderLength = p - fp->Header - 1;
-	} else if (RetrMode == RETR_ALL && strcmp(fp->Headername, "Bytes") == 0)
-	{
-		snprintf(bytes, sizeof(bytes), "%d", art->len);
-		fp->HasHeader = true;
-		fp->Header = bytes;
-		fp->HeaderLength = strlen(bytes);
+	} else if (RetrMode == RETR_ALL 
+                   && strcmp(fp->Headername, "Bytes") == 0) {
+            snprintf(bytes, sizeof(bytes), "%lu", (unsigned long) art->len);
+	    fp->HasHeader = true;
+	    fp->Header = bytes;
+	    fp->HeaderLength = strlen(bytes);
 	}
     }
     if (Missfieldsize > 0) {
@@ -564,20 +562,23 @@ DoArt(ARTHANDLE *art)
 	if (!SMprobe(SMARTNGNUM, art->token, (void *)&ann)) {
 	    Xrefp->Header = NULL;
 	    Xrefp->HeaderLength = 0;
-	} else
-	    return;
-	if (ann.artnum == 0)
-	    return;
-	len = strlen(XREF) + 2 + strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1 + 16 + 1;
-	if (len > BIG_BUFFER) {
-	    Xrefp->Header = NULL;
-	    Xrefp->HeaderLength = 0;
 	} else {
-	    snprintf(overdata, sizeof(overdata), "%s: %s %s:%lu", XREF,
-                     innconf->pathhost, ann.groupname, ann.artnum);
-	    Xrefp->Header = overdata;
-	    Xrefp->HeaderLength = strlen(overdata);
-	}
+            if (ann.artnum == 0 || ann.groupname == NULL)
+                return;
+            len = strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1
+                + 16 + 1;
+            if (len > BIG_BUFFER) {
+                Xrefp->Header = NULL;
+                Xrefp->HeaderLength = 0;
+            } else {
+                snprintf(overdata, sizeof(overdata), "%s %s:%lu",
+                         innconf->pathhost, ann.groupname, ann.artnum);
+                Xrefp->Header = overdata;
+                Xrefp->HeaderLength = strlen(overdata);
+            }
+            if (ann.groupname != NULL)
+                free(ann.groupname);
+        }
     }
 
     MessageID = (char *)NULL;
@@ -637,15 +638,26 @@ DoArt(ARTHANDLE *art)
                 buffer_set(&buffer, "", 0);
 	    else
                 buffer_append(&buffer, SEP, strlen(SEP));
+            if (fp->HeaderLength == 0)
+                continue;
 	    if (fp->NeedHeadername) {
                 buffer_append(&buffer, fp->Headername, fp->HeadernameLength);
                 buffer_append(&buffer, COLONSPACE, strlen(COLONSPACE));
 	    }
 	    i = buffer.left;
-            buffer_append(&buffer, fp->Header, fp->HeaderLength);
-	    for (q = &buffer.data[i]; i < buffer.left; q++, i++)
-		if (*q == '\t' || *q == '\n' || *q == '\r')
-		    *q = ' ';
+            buffer_resize(&buffer, buffer.left + fp->HeaderLength);
+            end = fp->Header + fp->HeaderLength - 1;
+            for (p = fp->Header, q = &buffer.data[i]; p <= end; p++) {
+                if (*p == '\r' && p < end && p[1] == '\n') {
+                    p++;
+                    continue;
+                }
+                if (*p == '\0' || *p == '\t' || *p == '\n' || *p == '\r')
+                    *q++ = ' ';
+                else
+                    *q++ = *p;
+                buffer.left++;
+            }
 	}
 	WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
 		      buffer.data, buffer.left, Arrived, Expires);
@@ -730,7 +742,8 @@ main(int argc, char **argv)
 {
     ARTHANDLE *art = NULL;
     bool AppendMode;
-    int i, val;
+    int i;
+    bool val;
     char *HistoryDir;
     char *p;
     char *buff;
@@ -855,7 +868,7 @@ main(int argc, char **argv)
 
     /* Initialise the history manager */
     if (!NoHistory) {
-	int flags = HIS_RDWR | HIS_CREAT | HIS_INCORE;
+	int flags = HIS_RDWR | HIS_INCORE;
 
 	if (!AppendMode)
 	    flags |= HIS_CREAT;

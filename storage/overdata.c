@@ -174,7 +174,7 @@ overview_build(ARTNUM number, const char *article, size_t length,
     for (field = 0; field < ARRAY_SIZE(fields); field++) {
         buffer_append(overview, "\t", 1);
         if (field == 5) {
-            snprintf(buffer, sizeof(buffer), "%u", length);
+            snprintf(buffer, sizeof(buffer), "%lu", (unsigned long) length);
             buffer_append(overview, buffer, strlen(buffer));
         } else
             build_header(article, length, fields[field], overview);
@@ -391,7 +391,5 @@ overview_getheader(const struct cvector *vector, int element,
 	len = vector->strings[element + 1] - vector->strings[element] - 1;
     }
     field = xstrndup(p, len);
-
- fail:
     return field;
 }

@@ -50,14 +50,14 @@ if (not -t 2) {
 
 if ($use_syslog) {
     eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
+    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
     openlog('controlchan', 'pid', $inn::syslog_facility);
 }
 logmsg('starting');
 
 # load modules from the control directory #################################
 opendir(CTL, $inn::controlprogs)
-    or logdie("Cannot open $inn::controlprogs", 'crit');
+    or logdie("Cannot open $inn::controlprogs: $!", 'crit');
 foreach (readdir CTL) {
     next if not /^([a-z\.]+\.pl)$/ or not -f "$inn::controlprogs/$_";
     eval { require "$inn::controlprogs/$1" };
@@ -228,7 +228,7 @@ sub readctlfile {
 
     my @ctllist;
     open(CTLFILE, $inn::ctlfile)
-        or logdie("Cannot open $inn::ctlfile", 'crit');
+        or logdie("Cannot open $inn::ctlfile: $!", 'crit');
     while (<CTLFILE>) {
         chop;
         # Not a comment or blank? Convert wildmat to regex

@@ -14,6 +14,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <pwd.h>
 #include <syslog.h>
 #include <sys/stat.h>
 
@@ -261,7 +262,10 @@ static bool Process(char *article)
     /* Get a reply, see if they want the article. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
         free(wirefmt);
-        syswarn("cannot fgets after ihave");
+        if (ferror(FromServer))
+            syswarn("cannot fgets after ihave");
+        else
+            warn("unexpected EOF from server after ihave");
 	return false;
     }
     REMclean(buff);
@@ -312,7 +316,10 @@ static bool Process(char *article)
 
     /* Process server reply code. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
-        syswarn("cant fgets after article");
+        if (ferror(FromServer))
+            syswarn("cannot fgets after article");
+        else
+            warn("unexpected EOF from server after article");
 	return false;
     }
     REMclean(buff);
@@ -677,6 +684,7 @@ Unspool(void)
 	    if (rename(InputFile, badname) < 0)
                 sysdie("cannot rename %s to %s", InputFile, badname);
 	    close(fd);
+            free(badname);
 	    continue;
 	}
 
@@ -822,16 +830,26 @@ int main(int ac, char *av[])
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
 
-    if (setgid(getegid()) < 0)
-        die("cannot setgid to %lu", (unsigned long) getegid());
-    if (setuid(geteuid()) < 0)
-        die("cannot setuid to %lu", (unsigned long) geteuid());
+    /* Make sure that we switch to the news user if we're running as root,
+       since we may spool files and don't want those files owned by root.
+       Don't require that we be running as the news user, though; there are
+       other setups where rnews might be setuid news or be run by other
+       processes in the news group. */
+    if (getuid() == 0 || geteuid() == 0) {
+        struct passwd *pwd;
+
+        pwd = getpwnam(NEWSUSER);
+        if (pwd == NULL)
+            die("can't resolve %s to a UID (account doesn't exist?)",
+                NEWSUSER);
+        setuid(pwd->pw_uid);
+    }
 
     if (!innconf_read(NULL))
         exit(1);
-     UUCPHost = getenv(_ENV_UUCPHOST);
-     PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
-     port = innconf->nnrpdpostport;
+    UUCPHost = getenv(_ENV_UUCPHOST);
+    PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
+    port = innconf->nnrpdpostport;
 
     umask(NEWSUMASK);
 

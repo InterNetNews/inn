@@ -229,16 +229,18 @@ CHANtracing(CHANNEL *cp, bool Flag)
 	    p, cp->BadWrites, cp->BlockedWrites, cp->BadReads);
 	syslog(L_NOTICE, "%s trace address %s lastactive %ld nextlog %ld",
 	    p, sprint_sockaddr((struct sockaddr *)&cp->Address),
-	    cp->LastActive, cp->NextLog);
+	    (long) cp->LastActive, (long) cp->NextLog);
 	if (FD_ISSET(cp->fd, &SCHANmask))
 	    syslog(L_NOTICE, "%s trace sleeping %ld 0x%p",
 		p, (long)cp->Waketime, (void *)cp->Waker);
 	if (FD_ISSET(cp->fd, &RCHANmask))
-	    syslog(L_NOTICE, "%s trace reading %d %s",
-		p, cp->In.used, MaxLength(cp->In.data, cp->In.data));
+	    syslog(L_NOTICE, "%s trace reading %lu %s",
+		p, (unsigned long) cp->In.used,
+		MaxLength(cp->In.data, cp->In.data));
 	if (FD_ISSET(cp->fd, &WCHANmask))
-	    syslog(L_NOTICE, "%s trace writing %d %s",
-		p, cp->Out.left, MaxLength(cp->Out.data, cp->Out.data));
+	    syslog(L_NOTICE, "%s trace writing %lu %s",
+		p, (unsigned long) cp->Out.left,
+		MaxLength(cp->Out.data, cp->Out.data));
     }
 }
 
@@ -311,7 +313,8 @@ CHANclose(CHANNEL *cp, const char *name)
 	} else if (cp->Type == CTreject)
 	    syslog(L_NOTICE, "%s %ld", name, cp->Rejected);
 	else if (cp->Out.left)
-	    syslog(L_NOTICE, "%s closed lost %d", name, cp->Out.left);
+	    syslog(L_NOTICE, "%s closed lost %lu", name,
+                   (unsigned long) cp->Out.left);
 	else
 	    syslog(L_NOTICE, "%s closed", name);
 	WCHANremove(cp);
@@ -390,8 +393,8 @@ CHANname(const CHANNEL *cp)
 
     switch (cp->Type) {
     default:
-	snprintf(buff, sizeof(buff), "?%d(#%d@%d)?", cp->Type, cp->fd,
-                 cp - CHANtable);
+	snprintf(buff, sizeof(buff), "?%d(#%d@%ld)?", cp->Type, cp->fd,
+                 (long) (cp - CHANtable));
 	break;
     case CTany:
 	snprintf(buff, sizeof(buff), "any:%d", cp->fd);
@@ -637,7 +640,7 @@ WCHANsetfrombuffer(CHANNEL *cp, struct buffer *bp)
 int
 CHANreadtext(CHANNEL *cp)
 {
-    int	                i, j;
+    ptrdiff_t           i, j;
     struct buffer       *bp;
     char		*p;
     int			oerrno;
@@ -778,13 +781,13 @@ WCHANflush(CHANNEL *cp)
     for (bp = &cp->Out; bp->left > 0; bp->left -= i, bp->used += i) {
 	i = CHANwrite(cp->fd, &bp->data[bp->used], bp->left);
 	if (i < 0) {
-	    syslog(L_ERROR, "%s cant flush count %d %m",
-		CHANname(cp), bp->left);
+	    syslog(L_ERROR, "%s cant flush count %lu %m",
+		CHANname(cp), (unsigned long) bp->left);
 	    return false;
 	}
 	if (i == 0) {
-	    syslog(L_ERROR, "%s cant flush count %d",
-		CHANname(cp), bp->left);
+	    syslog(L_ERROR, "%s cant flush count %lu",
+		CHANname(cp), (unsigned long) bp->left);
 	    return false;
 	}
     }
@@ -915,7 +918,7 @@ CHANreadloop(void)
 {
     static char		EXITING[] = "INND exiting because of signal\n";
     static int		fd;
-    int			i, j;
+    ptrdiff_t		i, j;
     int			startpoint;
     int			count;
     int			lastfd;

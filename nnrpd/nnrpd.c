@@ -105,8 +105,6 @@ bool   PerlLoaded = false;
 bool PY_use_dynamic = false;
 #endif /* DO_PYTHON */
 
-bool LLOGenable;
-
 static char	CMDfetchhelp[] = "[MessageID|Number]";
 
 static CMDENT	CMDtable[] = {
@@ -656,11 +654,11 @@ void
 Printf(const char *fmt, ...)
 {
     va_list     args;
-    char        buff[2048];
 
 #ifdef HAVE_SSL
     if (tls_conn) {
       int r;
+      char buff[2048];
 
       va_start(args, fmt);
       vsnprintf(buff, sizeof(buff), fmt, args);
@@ -743,7 +741,6 @@ WaitChild(int s NO_SIGACTION_UNUSED)
 
 static void SetupDaemon(void) {
     bool                val;
-    time_t statinterval;
 
     val = true;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {

@@ -46,6 +46,7 @@
 #include "hisv6.h"
 #include "hisv6-private.h"
 #include "dbz.h"
+#include "inn/innconf.h"
 #include "inn/timer.h"
 #include "inn/qio.h"
 #include "inn/sequence.h"
@@ -348,6 +349,17 @@ hisv6_reopen(struct hisv6 *h)
 	    /*opt.pag_incore = INCORE_NO;*/
 	    opt.pag_incore = (h->flags & HIS_MMAP) ? INCORE_MMAP : INCORE_NO;
 	    opt.exists_incore = (h->flags & HIS_MMAP) ? INCORE_MMAP : INCORE_NO;
+
+# if defined(MMAP_NEEDS_MSYNC) && INND_DBZINCORE == 1
+	    /* Systems that have MMAP_NEEDS_MSYNC defined will have their
+	       on-disk copies out of sync with the mmap'ed copies most of
+	       the time.  So if innd is using INCORE_MMAP, then we force
+	       everything else to use it, too (unless we're on NFS) */
+	    if(!innconf->nfsreader) {
+		opt.pag_incore = INCORE_MMAP;
+		opt.exists_incore = INCORE_MMAP;
+	    }
+# endif
 #endif
 	}
 	dbzsetoptions(opt);
@@ -955,7 +967,7 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 				time_t, time_t, time_t,
 				const TOKEN *))
 {
-    bool r;
+    bool r = false;
     QIOSTATE *qp;
     void *p;
     size_t line;

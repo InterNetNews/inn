@@ -766,7 +766,8 @@ ARTparse(CHANNEL *cp)
 {
   struct buffer	*bp = &cp->In;
   ARTDATA	*data = &cp->Data;
-  int		i, limit, hopcount;
+  long          i, limit, fudge, size;
+  int		hopcount;
   char		**hops;
   HDRCONTENT	*hc = data->HdrContent;
 
@@ -824,7 +825,7 @@ ARTparse(CHANNEL *cp)
 	    data->NullHeader = true;
 	    break;
 	  case '\r':
-	    if (data->LastCR >= cp->Start)
+            if (data->LastCR >= cp->Start)
 	      data->CRwithoutLF++;
 	    data->LastCR = i;
 	    break;
@@ -848,7 +849,7 @@ ARTparse(CHANNEL *cp)
 	      }
 	      if (data->LastCRLF + MAXHEADERSIZE < i)
 		snprintf(cp->Error, sizeof(cp->Error),
-                         "%d Too long line in header %d bytes",
+                         "%d Too long line in header %ld bytes",
                          NNTP_REJECTIT_VAL, i - data->LastCRLF);
 	      else if (data->LastCRLF + 2 == i) {
 		/* header ends */
@@ -906,7 +907,7 @@ bodyprocessing:
 	/* rest of the line */
 	switch (bp->data[i]) {
 	  case '\r':
-	    if (data->LastCR >= cp->Start)
+            if (data->LastCR >= cp->Start)
 	      data->CRwithoutLF++;
 	    data->LastCR = i;
 	    break;
@@ -919,10 +920,14 @@ bodyprocessing:
 		if (cp->State == CSeatarticle) {
 		  cp->State = CSgotlargearticle;
 		  cp->Next = ++i;
-		  return;
-		} else
+		  snprintf(cp->Error, sizeof(cp->Error),
+		    "%d Article of %ld bytes exceeds local limit of %ld bytes",
+		    NNTP_REJECTIT_VAL, (unsigned long) i - cp->Start,
+                    innconf->maxartsize);
+		} else {
 		  cp->State = CSgotarticle;
-		i++;
+		  i++;
+		}
 		if (*cp->Error != '\0' && HDR_FOUND(HDR__MESSAGE_ID)) {
 		  HDR_PARSE_START(HDR__MESSAGE_ID);
 		  if (HDR_FOUND(HDR__PATH)) {
@@ -950,6 +955,8 @@ bodyprocessing:
 		  ARTlog(data, ART_REJECT, cp->Error);
 		  HDR_PARSE_END(HDR__MESSAGE_ID);
 		}
+		if (cp->State == CSgotlargearticle)
+		  return;
 		goto sizecheck;
 	      }
 #if 0 /* this may be examined in the future */
@@ -975,11 +982,11 @@ endofline:
     }
   }
 sizecheck:
-  if ((innconf->maxartsize > 0) &&
-    (limit - cp->Next + cp->LargeArtSize > innconf->maxartsize)) {
-    cp->LargeArtSize += limit - cp->Next;
-    cp->State = CSeatarticle;
-  }
+  size = i - cp->Start;
+  fudge = data->HeaderLines + data->Lines + 4;
+  if (innconf->maxartsize > 0)
+    if (size > fudge && size - fudge > innconf->maxartsize)
+        cp->State = CSeatarticle;
   cp->Next = i;
   return;
 }
@@ -1456,7 +1463,7 @@ ARTassignnumbers(ARTDATA *data)
 static bool
 ARTxrefslave(ARTDATA *data)
 {
-  char		*p, *q, *name, *next, c;
+  char		*p, *q, *name, *next, c = 0;
   NEWSGROUP	*ngp;
   int	        i;
   bool		nogroup = true;
@@ -1743,14 +1750,18 @@ ARTmakeoverview(CHANNEL *cp)
     }
     if (overview->used + overview->left + len > overview->size)
         buffer_resize(overview, overview->size + len);
-    for (i = 0, q = &overview->data[overview->left] ; i < len ; p++, q++, i++) {
-      /* we can replace consecutive '\r', '\n' and '\r' with one ' ' here */
-      if (*p == '\t' || *p == '\n' || *p == '\r')
-	*q = ' ';
-      else
-	*q = *p;
+    for (i = 0, q = overview->data + overview->left; i < len; p++, i++) {
+        if (*p == '\r' && i < len - 1 && p[1] == '\n') {
+            p++;
+            i++;
+            continue;
+        }
+        if (*p == '\0' || *p == '\t' || *p == '\n' || *p == '\r')
+            *q++ = ' ';
+        else
+            *q++ = *p;
+        overview->left++;
     }
-    overview->left += len;
 
     /* Patch the old keywords back in. */
     if (DO_KEYWORDS && innconf->keywords) {
@@ -1773,7 +1784,7 @@ ARTmakeoverview(CHANNEL *cp)
 bool
 ARTpost(CHANNEL *cp)
 {
-  char		*p, **groups, ControlWord[SMBUF], tmpbuff[32], **hops;
+  char		*p, **groups, ControlWord[SMBUF], **hops, *controlgroup;
   int		i, j, *isp, hopcount, oerrno, canpost;
   NEWSGROUP	*ngp, **ngptr;
   SITE		*sp;
@@ -1799,11 +1810,10 @@ ARTpost(CHANNEL *cp)
   article = &cp->In;
   artclean = ARTclean(data, cp->Error);
 
-  /* assumes Path header is required header */
-  hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
-  if (!artclean && (!HDR_FOUND(HDR__MESSAGE_ID) || hopcount == 0)) {
+  /* If we don't have Path or Message-ID, we can't continue. */
+  if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID)))
     return false;
-  }
+  hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
             NNTP_REJECTIT_VAL);
@@ -2185,9 +2195,10 @@ ARTpost(CHANNEL *cp)
    * or control. */
   if (IsControl && Accepted && !ToGroup) {
     ControlStore = true;
-    FileGlue(tmpbuff, "control", '.', ControlWord);
-    if ((ngp = NGfind(tmpbuff)) == NULL)
+    controlgroup = concat("control.", ControlWord, (char *) 0);
+    if ((ngp = NGfind(controlgroup)) == NULL)
       ngp = NGfind(ARTctl);
+    free(controlgroup);
     ngp->PostCount = 0;
     ngptr = GroupPointers;
     *ngptr++ = ngp;

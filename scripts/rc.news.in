@@ -43,6 +43,8 @@ Xstop)
     pid=`cat ${SERVERPID} 2>/dev/null`
     if [ "$pid" != "" ]; then
 	waitforpid $pid
+    else
+	printf "\n"
     fi
 
     # Turn off ovdb support procs, and close the DB environment
@@ -66,6 +68,11 @@ Xstop)
     if [ -f ${PATHBIN}/rc.news.local ]; then
         ${PATHBIN}/rc.news.local stop
     fi
+
+    # Delete all of the PID files that we know about to avoid having them
+    # stick around after a fresh start.
+    rm -f ${PATHRUN}/cnfsstat.pid $WATCHPID $SERVERPID
+    rm -f ${PATHRUN}/ovdb_server.pid ${PATHRUN}/ovdb_monitor.pid
 
     exit 0
 ;;
@@ -151,12 +158,12 @@ eval ${WHAT} ${RFLAG} ${INNFLAGS}
 # Gee, looks like lisp, doesn't it?
 ${DOINNWATCH} && {
     echo "Scheduled start of ${INNWATCH}."
-    ( sleep 60 ; ${INNWATCH} ) &
+    ( sleep 60 ; ${INNWATCH} ) > /dev/null &
 }
 
 ${DOCNFSSTAT} && {
     echo "Scheduled start of cnfsstat."
-    ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l -P ) &
+    ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l -P ) > /dev/null &
 }
 
 RMFILE=${MOST_LOGS}/expire.rm

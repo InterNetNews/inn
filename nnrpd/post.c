@@ -13,8 +13,6 @@
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
 #define HEADER_DELTA		20
 
-extern int LLOGenable;
-
 static char     *tmpPtr ;
 static char	Error[SMBUF];
 static char	NGSEPS[] = NG_SEPARATOR;
@@ -630,7 +628,10 @@ MailArticle(char *group, char *article)
     /* Write the headers, a blank line, then the article. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value) {
-	    fprintf(F, "%s: %s\n", hp->Name, hp->Value);
+ 	    if (*hp->Value == ' ' || *hp->Value == '\t')
+                fprintf(F, "%s:%s\n", hp->Name, hp->Value);
+ 	    else
+                fprintf(F, "%s: %s\n", hp->Name, hp->Value);
 	    if (FLUSH_ERROR(F)) {
 		pclose(F);
 		return CANTSEND;
@@ -690,7 +691,15 @@ ValidNewsgroups(char *hdr, char **modgroup)
     if ((p = strtok(groups, NGSEPS)) == NULL)
 	return "Can't parse newsgroups line";
 
+    /* Reject all articles with Approved headers unless the user is allowed to
+       add them, even to unmoderated or local groups.  We want to reject them
+       to unmoderated groups in case there's a disagreement of opinion
+       between various sites as to the moderation status. */
     approved = HDR(HDR__APPROVED) != NULL;
+    if (approved && !PERMaccessconf->allowapproved) {
+        snprintf(Error, sizeof(Error),
+                 "You are not allowed to approve postings");
+    }
 
     Error[0] = '\0';
     FoundOne = false;
@@ -731,12 +740,8 @@ ValidNewsgroups(char *hdr, char **modgroup)
 #endif /* DO_PYTHON */
 	    break;
 	case NF_FLAG_MODERATED:
-	    if (approved && !PERMaccessconf->allowapproved) {
-		snprintf(Error, sizeof(Error),
-                         "You are not allowed to approve postings");
-	    } else if (!approved && modgroup != NULL && !*modgroup) {
+	    if (!approved && modgroup != NULL && !*modgroup)
 		*modgroup = xstrdup(p);
-	    }
 	    break;
 	case NF_FLAG_IGNORE:
 	case NF_FLAG_NOLOCAL:
@@ -760,7 +765,11 @@ ValidNewsgroups(char *hdr, char **modgroup)
                  MaxLength(hdr,hdr));
     if (Error[0]) {
         tmpPtr = DDend(h);
-	free(tmpPtr) ;
+	free(tmpPtr);
+        if (modgroup != NULL && *modgroup != NULL) {
+            free(*modgroup);
+            *modgroup = NULL;
+        }
 	return Error;
     }
 
@@ -1086,6 +1095,9 @@ ARTpost(char *article,
 	return MailArticle(modgroup, article);
     }
 
+    if (idbuff)
+	strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
+
     if (PERMaccessconf->spoolfirst)
 	return Spoolit(article, Error);
 
@@ -1211,8 +1223,6 @@ ARTpost(char *article,
 
     /* Send a quit and close down */
     SendQuit(FromServer, ToServer);
-    if (idbuff)
-	strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
 
     /* Tracking */
     if (PERMaccessconf->readertrack) {

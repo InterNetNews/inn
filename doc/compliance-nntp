@@ -205,62 +205,29 @@ for INN's extensions that specify an extension name (beginning with X).
 
 ------------------------------
 
-  Summary: Articles without Message-ID headers can't be retrieved
- Standard: draft-ietf-nntpext-base-15.txt, section 9.2.1.1
-  Version: 1.0 to CURRENT 2002-12-26
-Reference: nnrpd/article.c CMDfetch()
- Severity: Lack of robustness
-
-The standard says:
-
-    The second parameter is the message-id of the article (within angle
-    brackets).  This is taken from the message-id header line of the
-    article (required by RFC 1036).  If there is no such line, the
-    message-id "<0>" MUST be used instead (without the double quotes).
-
-nnrpd instead returns a 423 error response if the selected article doesn't
-contain a Message-ID header.
-
-Impact:  Articles without Message-ID headers can't be retrieved.  This
-doesn't affect applications for netnews articles, since message IDs are
-required for them, but it's possible to use the NNTP protocol for other
-purposes.
-
-Suggested fix:  Return the article anyway with the above special
-message-id as part of the command return.  The standard doesn't specify
-the same behavior for NEXT and LAST, but it should probably be used there
-as well.
-
-Impact of fix:  An article could be returned that didn't satisfy the
-netnews article format standard, but the rest of INN currently won't
-accept such an article in the first place so if one is in the spool, the
-administrator is already doing something special.
-
-------------------------------
-
-  Summary: nnrpd doesn't return 420 errors when there is no overview info
- Standard: draft-ietf-nntpext-base-15.txt, section 9.5.2.2
-  Version: 1.4 to CURRENT 2002-12-26
+  Summary: nnrpd doesn't return 423 errors when there is no overview info
+ Standard: draft-ietf-nntpext-base-17.txt, section 10.5.1.2
+  Version: 1.4 to CURRENT 2003-05-04
 Reference: nnrpd/article.c CMDxover()
- Severity: Violates a protocol description
+ Severity: Violates a MUST
 
 The standard says:
 
-    If no articles are in the range specified, the server returns a 420
-    error response.
+   If there are no articles in the range specified, a 423 response MUST be
+   returned.
 
 nnrpd (from the beginning of the XOVER command) has always returned a 224
-response with an empty multiline response instead.
+response with an empty multiline response instead.  INN doesn't support
+OVER yet so this isn't actually a bug in INN, but eventually the XOVER
+implementation will also be used for OVER.
 
 Impact:  Less information is communicated to the client about why there
 are no overview records returned.  An error response indicating there are
 no valid articles in that range is possibly more informative.
 
-Suggested fix:  Do nothing for now, as this portion of the draft is still
-being actively discussed.  If this remains the wording of the draft, don't
-print out the initial 224 message until at least one overview entry has
-been found, so that CMDxover() can print a 420 response instead if no
-overview records are found.
+Suggested fix:  Don't print out the initial 224 message until at least one
+overview entry has been found, so that CMDxover() can print a 420 response
+instead if no overview records are found.
 
 Impact of fix:  May confuse some clients that don't expect to get 420
 errors back from overview queries.  It may be necessary to do something
@@ -270,73 +237,31 @@ existing behavior.
 
 ------------------------------
 
-  Summary: innd doesn't generate overview correctly for non-printing chars
- Standard: draft-ietf-nntpext-base-15.txt, section 9.5.2.2
-  Version: 1.4 to CURRENT 2002-12-26
-Reference: innd/art.c ARTmakeoverview() and expire/makehistory.c DoArt()
- Severity: Violates a MUST
-
-The standard says:
-
-    The content of the rest of the fields is formed by taking the original
-    header content (such as the raw subject line from the article),
-    removing all US-ASCII CRLF pairs, and then replacing each remaining
-    US-ASCII NUL, TAB, CR, or LF character with a single US-ASCII space.
-
-innd has always just replaced tabs, newlines, and CRs with spaces in a
-one-to-one fashion (although older versions did, through an accident of
-implementation, collapse CRLF into a single space) and has never collapsed
-consecutive whitespace.
-
-Impact:  The headers are not unfolded properly, resulting in extraneous
-spaces in the overview version of the header that are not properly part of
-the content of the header.  NUL is also not handled correctly, but at
-present INN cannot handle NUL in article headers or bodies, so this is
-only part of a larger issue.
-
-Suggested fix:  Modify ARTmakeoverview() to remove CRLF pairs completely
-(RFC 2822 unfolding) and otherwise do the same as it does now.  The
-overview_build() function does this properly.
-
-Impact of fix:  After an upgrade, overview will have to be rebuilt from
-the spool in order to make all of the overview consistent again for folded
-headers.  This probably isn't significant enough to worry about.
-
-------------------------------
-
   Summary: HDR can return message IDs rather than article numbers
- Standard: draft-ietf-nntpext-base-15.txt, section 9.5.3.1
-  Version: 1.0 to CURRENT 2002-12-26
+ Standard: draft-ietf-nntpext-base-17.txt, section 10.6.1.2
+  Version: 1.0 to CURRENT 2003-05-04
 Reference: nnrpd/article.c CMDpat()
  Severity: Violates a protocol description
 
 The standard says:
 
-    The HDR command is used to retrieve specific headers from specific
-    articles in the currently selected group.
-
-and:
-
-    A successful response consists of a 221 code followed by the output
-    from the command.  The output consists of one line for each article
-    where the relevant header line exists.  The line consists of the
-    article number, a US-ASCII space, and then the contents of the header
-    (without the header name).
-
-This indicates that the first word of any response should be the article
-number in the current group, that HDR can't be used outside the current
-group, and that in the case of a message ID argument, the server is
-required to map that to an article number.
+   The line consists of the article number, a US-ASCII space, and then the
+   contents of the header (without the header name or the colon and space
+   that follow it) or metadata item.  If the article is specified by
+   message-id rather than by article range, the article number is given as
+   "0".
 
 nnrpd instead returns the message ID as the first word of the line when
-HDR is given a message ID argument and allows use of HDR outside of any
-group.
+HDR is given a message ID argument.
 
-Impact:  A client may find having the article number useful for a later
-OVER command.
+Impact:  A client may not be able to parse the output of HDR correctly,
+since the first word is not a number.
 
-Suggested fix:  Do nothing yet, as this section is still in flux in the
-draft and it's not clear that the current text is the intended meaning.
+Suggested fix:  Change the code to return 0 as the first word instead of
+the message ID, per the standard.
+
+Impact of fix:  Clients that are expecting the message ID may be
+confused.
 
 ------------------------------
 

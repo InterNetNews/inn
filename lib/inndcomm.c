@@ -30,10 +30,10 @@
 #define MIN_BUFFER_SIZE		4096
 
 static char			*ICCsockname = NULL;
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
 static struct sockaddr_un	ICCserv;
 static struct sockaddr_un	ICCclient;
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+#endif
 static int			ICCfd;
 static int			ICCtimeout;
 const char			*ICCfailure;
@@ -83,7 +83,8 @@ ICCopen(void)
 	return -1;
     }
 
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+
     /* Make a socket and give it the name. */
     if ((ICCfd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
 	ICCfailure = "socket";
@@ -93,8 +94,7 @@ ICCopen(void)
     ICCclient.sun_family = AF_UNIX;
     strlcpy(ICCclient.sun_path, ICCsockname, sizeof(ICCclient.sun_path));
     mask = umask(0);
-    if (bind(ICCfd, (struct sockaddr *) &ICCclient,
-             SUN_LEN(&ICCclient)) < 0) {
+    if (bind(ICCfd, (struct sockaddr *) &ICCclient, SUN_LEN(&ICCclient)) < 0) {
 	oerrno = errno;
 	umask(mask);
 	errno = oerrno;
@@ -109,7 +109,9 @@ ICCopen(void)
     strlcpy(ICCserv.sun_path, innconf->pathrun, sizeof(ICCserv.sun_path));
     strlcat(ICCserv.sun_path, "/", sizeof(ICCserv.sun_path));
     strlcat(ICCserv.sun_path, _PATH_NEWSCONTROL, sizeof(ICCserv.sun_path));
-#else
+
+#else /* !HAVE_UNIX_DOMAIN_SOCKETS */
+
     /* Make a named pipe and open it. */
     mask = umask(0);
     if (mkfifo(ICCsockname, 0666) < 0) {
@@ -124,7 +126,7 @@ ICCopen(void)
 	ICCfailure = "open";
 	return -1;
     }
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+#endif /* !HAVE_UNIX_DOMAIN_SOCKETS */
 
     ICCfailure = NULL;
     return 0;
@@ -178,9 +180,8 @@ ICCserverpid(void)
 
 
 /*
-**  See if the server is still there.  When in doubt, assume yes.
-**  Cache the pid since a rebooted server won't know about our pending
-**  message.
+**  See if the server is still there.  When in doubt, assume yes.  Cache the
+**  PID since a rebooted server won't know about our pending message.
 */
 static bool
 ICCserveralive(pid_t pid)
@@ -194,12 +195,11 @@ ICCserveralive(pid_t pid)
 /*
 **  Send an arbitrary command to the server.
 **  
-**  The command format is now different. There is a protocol version
-**  (one-byte) on the front of the message, followed by a two byte
-**  length count. The length includes the protocol byte and the length
-**  itself.
+**  There is a protocol version (one-byte) on the front of the message,
+**  followed by a two byte length count.  The length includes the protocol
+**  byte and the length itself.  This differs from the protocol in much
+**  earlier versions of INN.
 */
-
 int
 ICCcommand(char cmd, const char *argv[], char **replyp)
 {
@@ -207,18 +207,18 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     char		*p;
     const char		*q;
     char		save;
-    int			bufsiz;
     int			i ;
-#if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
+#ifndef HAVE_UNIX_DOMAIN_SOCKETS
     int			fd;
     char                *path;
-#endif	/* !defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+#endif
     int			len;
     fd_set		Rmask;
     struct timeval	T;
     pid_t		pid;
-    ICC_MSGLENTYPE      rlen ;
-    ICC_PROTOCOLTYPE   protocol ;
+    ICC_MSGLENTYPE      rlen;
+    ICC_PROTOCOLTYPE    protocol;
+    size_t bufsiz = 64 * 1024 - 1;
 
     /* Is server there? */
     pid = ICCserverpid();
@@ -228,18 +228,13 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     }
 
     /* Get the length of the buffer. */
-    bufsiz = strlen(ICCsockname) + 1 + 1;
-    for (i = 0; (q = argv[i]) != NULL; i++)
-	bufsiz += 1 + strlen(q);
-    bufsiz += HEADER_SIZE ;
-    if (bufsiz < MIN_BUFFER_SIZE)
-	bufsiz = MIN_BUFFER_SIZE;
     buff = xmalloc(bufsiz);
     if (replyp)
 	*replyp = NULL;
 
-    buff += HEADER_SIZE;	/* Advance to leave space for length +
-    bufsiz -= HEADER_SIZE;         protocol version info. */
+    /* Advance to leave space for length + protocol version info. */
+    buff += HEADER_SIZE;
+    bufsiz -= HEADER_SIZE;
 
     /* Format the message. */
     snprintf(buff, bufsiz, "%s%c%c", ICCsockname, SC_SEP, cmd);
@@ -252,29 +247,23 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 
     /* Send message. */
     ICCfailure = NULL;
-    len = p - buff + HEADER_SIZE ;
-    rlen = htons (len) ;
+    len = p - buff + HEADER_SIZE;
+    rlen = htons(len);
 
     /* now stick in the protocol version and the length. */
     buff -= HEADER_SIZE;
+    protocol = ICC_PROTOCOL_1;
+    memcpy(buff, &protocol, sizeof(protocol));
+    memcpy(buff + sizeof(protocol), &rlen, sizeof(rlen));
 
-    protocol = ICC_PROTOCOL_1 ;
-    memcpy (buff,&protocol,sizeof (protocol)) ;
-    buff += sizeof (protocol) ;
-
-    memcpy (buff,&rlen,sizeof (rlen)) ;
-    buff += sizeof (rlen) ;
-
-    buff -= HEADER_SIZE ;
-
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-    if (sendto(ICCfd, buff, len, 0,
-	    (struct sockaddr *)&ICCserv, SUN_LEN(&ICCserv)) < 0) {
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+    if (sendto(ICCfd, buff, len, 0,(struct sockaddr *) &ICCserv,
+               SUN_LEN(&ICCserv)) < 0) {
 	free(buff);
 	ICCfailure = "sendto";
 	return -1;
     }
-#else
+#else /* !HAVE_UNIX_DOMAIN_SOCKETS */
     path = concatpath(innconf->pathrun, _PATH_NEWSCONTROL);
     fd = open(path, O_WRONLY);
     free(path);
@@ -292,7 +281,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 	return -1;
     }
     close(fd);
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+#endif /* !HAVE_UNIX_DOMAIN_SOCKETS */
 
     /* Possibly get a reply. */
     switch (cmd) {
@@ -338,66 +327,66 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 	}
     }
 
-
-#if defined (HAVE_UNIX_DOMAIN_SOCKETS)
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
     
     /* Read the reply. */
-    i = RECVorREAD(ICCfd, buff, bufsiz) ;
-    if ((unsigned int)i < HEADER_SIZE) {
-        free(buff) ;
-        ICCfailure = "read" ;
-        return -1 ;
+    i = RECVorREAD(ICCfd, buff, bufsiz);
+    if ((unsigned int) i < HEADER_SIZE) {
+        free(buff);
+        ICCfailure = "read";
+        return -1;
     }
-    memcpy (&protocol,buff,sizeof (protocol)) ;
-    memcpy (&rlen,buff + sizeof (protocol),sizeof (rlen)) ;
-    rlen = ntohs (rlen) ;
+    memcpy(&protocol, buff, sizeof(protocol));
+    memcpy(&rlen, buff + sizeof(protocol), sizeof(rlen));
+    rlen = ntohs(rlen);
 
     if (i != rlen) {
-        free(buff) ;
-        ICCfailure = "short read" ;
-        return -1 ;
+        free(buff);
+        ICCfailure = "short read";
+        return -1;
     }
 
     if (protocol != ICC_PROTOCOL_1) {
-        free(buff) ;
-        ICCfailure = "protocol mismatch" ;
-        return -1 ;
+        free(buff);
+        ICCfailure = "protocol mismatch";
+        return -1;
     }
 
-    memmove (buff, buff + HEADER_SIZE, rlen - HEADER_SIZE) ;
-    i -= HEADER_SIZE ;
+    memmove(buff, buff + HEADER_SIZE, rlen - HEADER_SIZE);
+    i -= HEADER_SIZE;
 
     buff[i] = '\0';
 
-#else  /* defined (HAVE_UNIX_DOMAIN_SOCKETS) */
+#else /* !HAVE_UNIX_DOMAIN_SOCKETS */
 
-    i = RECVorREAD (ICCfd, buff, HEADER_SIZE) ;
-    if (i != HEADER_SIZE) {
-	return -1 ;
-    }
+    i = RECVorREAD(ICCfd, buff, HEADER_SIZE);
+    if (i != HEADER_SIZE)
+	return -1;
 
-    memcpy (&protocol,buff,sizeof (protocol)) ;
-    memcpy (&rlen,buff + sizeof (protocol),sizeof (rlen)) ;
-    rlen = ntohs (rlen) - HEADER_SIZE ;
+    memcpy(&protocol, buff, sizeof(protocol));
+    memcpy(&rlen, buff + sizeof(protocol), sizeof(rlen));
+    rlen = ntohs(rlen) - HEADER_SIZE;
     
-    i = RECVorREAD(ICCfd, buff, rlen) ;
+    i = RECVorREAD(ICCfd, buff, rlen);
     if (i != rlen) {
-	return -1 ;
+        ICCfailure = "short read";
+	return -1;
     }
 
     buff[i] = '\0';
 
     if (protocol != ICC_PROTOCOL_1) {
-        return -1 ;
+        ICCfailure = "protocol mismatch";
+        return -1;
     }
 
-#endif /* defined (HAVE_UNIX_DOMAIN_SOCKETS) */
+#endif /* !HAVE_UNIX_DOMAIN_SOCKETS */
     
     /* Parse the rest of the reply; expected to be like
        <exitcode><space><text>" */
     i = 0;
-    if (CTYPE(isdigit, (int)buff[0])) {
-	for (p = buff; *p && CTYPE(isdigit, (int)*p); p++)
+    if (CTYPE(isdigit, buff[0])) {
+	for (p = buff; *p && CTYPE(isdigit, *p); p++)
 	    continue;
 	if (*p) {
 	    save = *p;
@@ -406,12 +395,11 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 	    *p = save;
 	}
     }
-    if (replyp) {
-	*replyp = buff ;
-    } else {
+    if (replyp)
+	*replyp = buff;
+    else
 	free(buff);
-    }
-    
+
     return i;
 }
 
@@ -426,7 +414,7 @@ ICCcancel(const char *msgid)
 
     args[0] = msgid;
     args[1] = NULL;
-    return ICCcommand(SC_CANCEL, args, (char **)NULL);
+    return ICCcommand(SC_CANCEL, args, NULL);
 }
 
 
@@ -440,7 +428,7 @@ ICCgo(const char *why)
 
     args[0] = why;
     args[1] = NULL;
-    return ICCcommand(SC_GO, args, (char **)NULL);
+    return ICCcommand(SC_GO, args, NULL);
 }
 
 
@@ -454,7 +442,7 @@ ICCpause(const char *why)
 
     args[0] = why;
     args[1] = NULL;
-    return ICCcommand(SC_PAUSE, args, (char **)NULL);
+    return ICCcommand(SC_PAUSE, args, NULL);
 }
 
 
@@ -468,5 +456,5 @@ ICCreserve(const char *why)
 
     args[0] = why;
     args[1] = NULL;
-    return ICCcommand(SC_RESERVE, args, (char **)NULL);
+    return ICCcommand(SC_RESERVE, args, NULL);
 }

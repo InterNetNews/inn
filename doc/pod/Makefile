@@ -10,15 +10,16 @@ include ../../Makefile.global
 TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 	../hook-python ../external-auth ../checklist
 
-MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/innconfval.1 \
-	../man/innmail.1 ../man/simpleftp.1 ../man/sm.1
+MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/grephistory.1 \
+	../man/inews.1 ../man/innconfval.1 ../man/innmail.1 \
+	../man/simpleftp.1 ../man/sm.1
 
 MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/list.3 ../man/qio.3 \
 	../man/tst.3 ../man/uwildmat.3
 
 MAN5	= ../man/active.5 ../man/active.times.5 ../man/control.ctl.5 \
 	../man/cycbuff.conf.5 ../man/distrib.pats.5 ../man/expire.ctl.5 \
-	../man/inn.conf.5 ../man/newsfeeds.5 ../man/ovdb.5 \
+	../man/inn.conf.5 ../man/motd.news.5 ../man/newsfeeds.5 ../man/ovdb.5 \
 	../man/passwd.nntp.5 ../man/radius.conf.5 ../man/readers.conf.5 \
 	../man/sasl.conf.5 ../man/subscriptions.5
 
@@ -30,7 +31,12 @@ MAN8	= ../man/auth_krb5.8 ../man/auth_smb.8 ../man/ckpasswd.8 \
 	../man/ovdb_stat.8 ../man/radius.8 ../man/rc.news.8 \
 	../man/sendinpaths.8 ../man/tdx-util.8
 
-all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
+ALL	= $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
+
+all: $(ALL)
+
+clean:
+	rm -f $(ALL)
 
 ../../HACKING:		hacking.pod		; $(POD2TEXT) $? > $@
 ../../INSTALL:		install.pod		; $(POD2TEXT) $? > $@
@@ -43,6 +49,8 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
 ../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/fastrm.1:	fastrm.pod		; $(POD2MAN) -s 1 $? > $@
+../man/grephistory.1:	grephistory.pod		; $(POD2MAN) -s 1 $? > $@
+../man/inews.1:		inews.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/innconfval.1:	innconfval.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/innmail.1:	innmail.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/simpleftp.1:	simpleftp.pod		; $(POD2MAN) -s 1 $? > $@
@@ -62,6 +70,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/distrib.pats.5:	distrib.pats.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/expire.ctl.5:	expire.ctl.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
+../man/motd.news.5:	motd.news.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/newsfeeds.5:	newsfeeds.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/passwd.nntp.5:	passwd.nntp.pod		; $(POD2MAN) -s 5 $? > $@

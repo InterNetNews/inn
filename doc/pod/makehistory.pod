@@ -29,10 +29,11 @@ server is running.  Unless the existing overview is deleted, you may end
 up with problems like out-of-order overview entries, excessively large
 overview buffers, and the like.
 
-If I<ovmethod> in F<inn.conf> is C<ovdb>, you should have the ovdb
-processes running while rebuilding overview; otherwise, the Berkeley DB
-transaction logs will be extremely large by the time makehistory finishes.
-You can start them with ovdb_init(8).
+If I<ovmethod> in F<inn.conf> is C<ovdb>, you must have the ovdb processes
+running while rebuilding overview.  ovdb needs them available while
+writing overview entries.  You can start them by hand separate from the
+rest of the server by running B<ovdb_init>; see ovdb_init(8) for more
+details.
 
 =head1 OPTIONS
 

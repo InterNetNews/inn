@@ -1032,9 +1032,9 @@ CCnewgroup(char *av[])
 	if (*who == '\0')
 	    who = NEWSMASTER;
 
-        length = snprintf(NULL, 0, "%s %ld %s\n", Name, Now.time, who) + 1;
+        length = snprintf(NULL, 0, "%s %ld %s\n", Name, (long) Now.time, who) + 1;
         buff = xmalloc(length);
-        snprintf(buff, length, "%s %ld %s\n", Name, Now.time, who);
+        snprintf(buff, length, "%s %ld %s\n", Name, (long) Now.time, who);
 	if (xwrite(fd, buff, strlen(buff)) < 0) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write %s %m", LogName, TIMES);
@@ -1317,9 +1317,11 @@ CCreload(char *av[])
     p = av[0];
     if (*p == '\0' || strcmp(p, "all") == 0) {
 	SITEflushall(false);
-	InndHisClose();
+        if (Mode == OMrunning)
+	    InndHisClose();
 	RCreadlist();
-	InndHisOpen();
+	if (Mode == OMrunning)
+	    InndHisOpen();
 	ICDwrite();
 	ICDsetup(true);
 	if (!ARTreadschema())
@@ -1345,6 +1347,8 @@ CCreload(char *av[])
 	ICDsetup(true);
     }
     else if (strcmp(p, "history") == 0) {
+        if (Mode != OMrunning)
+            return CCnotrunning;
 	InndHisClose();
 	InndHisOpen();
     }

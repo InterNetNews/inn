@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -37,8 +38,11 @@ buffer_size(int fd)
        only use this value for regular files. */
     if (fstat(fd, &st) == 0 && S_ISREG(st.st_mode)) {
         size = st.st_blksize;
-        if (size > (4 * QIO_BUFFERSIZE) || size < (QIO_BUFFERSIZE / 2))
+        if (size > (4 * QIO_BUFFERSIZE) || size == 0)
             size = QIO_BUFFERSIZE;
+	else
+	    while(size < QIO_BUFFERSIZE)
+		size += st.st_blksize;
     }
 #endif /* HAVE_ST_BLKSIZE */
 
@@ -130,6 +134,7 @@ QIOread(QIOSTATE *qp)
     size_t nleft;
 
     /* Loop until we get a result or fill the buffer. */
+    qp->_flag = QIO_ok;
     while (1) {
         nleft = qp->_end - qp->_start;
 
@@ -147,22 +152,25 @@ QIOread(QIOSTATE *qp)
                 qp->_length = p - qp->_start;
                 line = qp->_start;
                 qp->_start = p + 1;
-                qp->_flag = QIO_ok;
-                return line;
+                return (qp->_flag == QIO_long) ? NULL : line;
             }
 
-            /* Not there.  See if our buffer is full. */
+            /* Not there.  See if our buffer is full.  If so, tag as having
+               seen too long of a line.  This will cause us to keep reading
+               as normal until we finally see the end of a line and then
+               return NULL. */
             if (nleft >= qp->_size) {
                 qp->_flag = QIO_long;
                 qp->_start = qp->_end;
-                return NULL;
+                nleft = 0;
             }
 
             /* We need to read more data.  If there's read data in buffer,
                then move the unread data down to the beginning of the buffer
                first. */
             if (qp->_start > qp->_buffer) {
-                memmove(qp->_buffer, qp->_start, nleft);
+                if (nleft > 0)
+                    memmove(qp->_buffer, qp->_start, nleft);
                 qp->_start = qp->_buffer;
                 qp->_end = qp->_buffer + nleft;
             }
@@ -170,9 +178,12 @@ QIOread(QIOSTATE *qp)
 
         /* Read in some more data, and then let the loop try to find the
            newline again or discover that the line is too long. */
-        nread = read(qp->_fd, qp->_end, qp->_size - nleft);
+        do {
+            nread = read(qp->_fd, qp->_end, qp->_size - nleft);
+        } while (nread == -1 && errno == EINTR);
         if (nread <= 0) {
-            qp->_flag = (nread < 0) ? QIO_error : QIO_ok;
+            if (nread < 0)
+                qp->_flag = QIO_error;
             return NULL;
         }
         qp->_count += nread;

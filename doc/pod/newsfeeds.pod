@@ -584,7 +584,9 @@ will be set to the error log (I<pathlog>/errlog).  B<innd> will try to
 avoid spawning a shell if the command has no shell meta-characters; this
 feature can be defeated if necessary for some reason by appending a
 semi-colon to the end of the command.  The full path name of the program
-to be run must be specified unless the command will be run by the shell.
+to be run must be specified unless the command will be run by the shell
+(and it is strongly recommended that the full path name always be
+specified regardless).
 
 If a program feed is the target of a funnel, and if B<W*> appears in the
 flags of the site, a single asterisk may be present in the I<parameter>

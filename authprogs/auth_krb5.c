@@ -42,7 +42,6 @@ static int
 krb5_check_password (char *principal_name, char *password)
 {
    krb5_context      kcontext;
-   krb5_ccache       ccache = NULL;      /* Don't use a cache */
    krb5_creds        creds;
    krb5_principal    user_principal;
    krb5_data         *user_realm;
@@ -203,7 +202,7 @@ main (int argc, char *argv[])
     }
 
     if (krb5_check_password(authinfo->username, authinfo->password)) {
-        printf("User: %s\r\n", authinfo->username);
+        printf("User:%s\r\n", authinfo->username);
         exit(0);
     } else {
         die("failure validating password");

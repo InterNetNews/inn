@@ -1,3 +1,16 @@
+NOTE:  The Tcl support described in this file is disabled.  The code is
+all still there, but you have to define DO_TCL manually while compiling to
+enable it.  Compiling in Tcl filtering was causing random innd segfaults
+even if no Tcl filters were defined, so it's been turned off to prevent
+confusion.
+
+The Tcl code will be removed in the next major release of INN since no one
+appears to be using it and the code is unmaintained and has no champion.
+If you want to resurrect it, it may be better to start from scratch, since
+a lot has changed about INN since the filters were originally written and
+the Perl and Python filters have far more capabilities.
+
+
 Note, you need tcl 7.4. Rumour has it that 7.5 won't work.
 ---------------------------------------------------------------------------
 Subject: TCL-based Filtering for INN 1.5

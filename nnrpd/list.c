@@ -106,6 +106,8 @@ static void
 cmd_list_extensions(LISTINFO *lp)
 {
     Reply("%d %s.\r\n", NNTP_SLAVEOK_VAL, lp->Format);
+    if (PERMauthorized != true)
+        Printf("AUTHINFO USER\r\n");
     Printf("LISTGROUP\r\n");
     Printf(".\r\n");
 }

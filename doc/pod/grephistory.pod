@@ -1,0 +1,85 @@
+=head1 NAME
+
+grephistory - Query the INN history database
+
+=head1 SYNOPSIS
+
+B<grephistory> [B<-eilnqsv>] [B<-f> I<db>] [I<message-id>]
+
+=head1 DESCRIPTION
+
+B<grephistory> queries the INN history database for information about the
+specified message ID.  If no flags are given, the program prints the
+storage API token of the corresponding article, or C</dev/null> if the
+article is listed in the history database but not stored on the server.
+If the message ID cannot be found in the database, B<grephistory> will
+print C<grephistory: not found> and exit with a non-zero status.
+
+Be sure to escape any special characters in the message ID from the shell.
+Single quotes are recommended for this purpose since many message IDs
+contain dollar signs.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-e>
+
+Only print the storage token if the article is stored on the system.  (In
+other words, suppress the C</dev/null> or C<not found> output for missing
+or remembered articles.)
+
+=item B<-f> I<db>
+
+Query the history database I<db> rather than the default history database.
+
+=item B<-i>
+
+Rather than expecting a message ID on the command line, B<grephistory>
+will read a list of message IDs on standard input, one per line.  Leading
+and trailing whitespace is ignored, as are any malformed lines.  It will
+print out standard output those message IDs which are not found in the
+history database.  This is used when processing C<ihave> control messages.
+
+=item B<-l>
+
+Display the entire line from the history database, rather than just the
+storage API token.
+
+=item B<-n>
+
+If the message ID is present in the history database but has no storage
+API token, print C</dev/null> and exit successfully.  This can happen if
+an article has been cancelled or expired, but history information has
+still been retained.  This is the default behavior.
+
+=item B<-q>
+
+Don't print any message, but still exit with the appropriate status.
+
+=item B<-s>
+
+Rather than expecting a message ID on the command line, B<grephistory>
+will read a list of message IDs on standard input, one per line.  Leading
+and trailing whitespace is ignored, as are any malformed lines.  It will
+print on standard output the storage API tokens for any articles that are
+still available, one per line.  This flag is used when processing
+C<sendme> control messages.
+
+=item B<-v>
+
+Print out the hash of the message ID for diagnostic purposes, as well as
+any other requested information.  This flag is not useful with B<-s>.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
+POD by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+history(5), inn.conf(5)
+
+=cut

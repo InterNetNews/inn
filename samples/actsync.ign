@@ -9,7 +9,7 @@ i *
 # sync on the 8 majors
 #
 c comp.*
-c gnu.*
+c humanities.*
 c misc.*
 c news.*
 c rec.*

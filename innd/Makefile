@@ -16,13 +16,27 @@ OBJECTS		= art.o cc.o chan.o icd.o innd.o keywords.o lc.o nc.o \
 		  newsfeeds.o ng.o perl.o proc.o python.o rc.o site.o \
 		  status.o tcl.o util.o wip.o
 
-INSTALLED	= $(D)$(PATHBIN)/innd \
-		  $(D)$(PATHBIN)/inndstart
-
 all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
+
+install: all
+	$(LI_XPRI) innd $D$(PATHBIN)/innd
+	@ME=`$(WHOAMI)` ; \
+	if [ x"$$ME" = xroot ] ; then \
+	    echo $(LI_SPRI) inndstart $D$(PATHBIN)/inndstart ; \
+	    $(LI_SPRI) inndstart $D$(PATHBIN)/inndstart ; \
+	else \
+	    echo $(LI_XPRI) inndstart $D$(PATHBIN)/inndstart ; \
+	    $(LI_XPRI) inndstart $D$(PATHBIN)/inndstart ; \
+	    echo '' ; \
+	    echo '========================' ; \
+	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
+	    ls -l $D$(PATHBIN)/inndstart ; \
+	    echo '$D$(PATHBIN)/inndstart needs to be installed setuid root' ; \
+	    echo '' ; echo ; \
+	fi
 
 clean:
 	rm -f *.o $(ALL) inndp profiled
@@ -38,7 +52,7 @@ tags ctags: $(SOURCES)
 ##  Compilation rules.
 
 INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
-		  $(TCLLIB) $(PYTHONLIB) $(REGEXLIB) $(LIBS) $(PERLLIB)
+		  $(PERLLIB) $(TCLLIB) $(PYTHONLIB) $(REGEXLIB) $(LIBS)
 
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
@@ -48,29 +62,6 @@ innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 
 inndstart: inndstart.o $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ inndstart.o $(LIBINN) $(LIBS)
-
-
-##  Installation rules.  Installation commands set in Makefile.global.
-
-install: $(INSTALLED)
-
-$(D)$(PATHBIN)/innd:	innd	; $(LI_XPRI) $? $@
-
-$(D)$(PATHBIN)/inndstart: inndstart
-	@ME=`$(WHOAMI)` ; \
-	if [ x"$$ME" = xroot ] ; then \
-	    echo $(LI_SPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	    $(LI_SPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	else \
-	    echo $(LI_XPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	    $(LI_XPRI) inndstart $(D)$(PATHBIN)/inndstart ; \
-	    echo '' ; \
-	    echo '========================' ; \
-	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
-	    ls -l $@ ; \
-	    echo '$@ needs to be installed setuid root' ; \
-	    echo '' ; echo ; \
-	fi
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))

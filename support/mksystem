@@ -36,6 +36,7 @@ $1 '
 /^#define HAVE_C99_VAMACROS/    { print save $1 " INN_" $2 " " $3 "\n" }
 /^#define HAVE_GNU_VAMACROS/    { print save $1 " INN_" $2 " " $3 "\n" }
 /^#define HAVE_INTTYPES_H/      { print save $1 " INN_" $2 " " $3 "\n" }
+/^#define HAVE_MSYNC_3_ARG/     { print save $1 " INN_" $2 " " $3 "\n" }
 /^#define HAVE_STDBOOL_H/       { print save $1 " INN_" $2 " " $3 "\n" }
 /^#define HAVE_SYS_BITTYPES_H/  { print save $1 " INN_" $2 " " $3 "\n" }
 

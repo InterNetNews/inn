@@ -69,6 +69,18 @@ B<-H>, B<-i>, or B<-R>.
 
 =back
 
+=head1 EXIT STATUS
+
+If all operations were successful, B<sm> exits with status 0.  If an
+operation on any of the provided tokens fails, B<sm> will exit with status
+1, even if the operations on other tokens were successful.  In other
+words, if twenty tokens are fed to C<sm -r> on stdin, 19 articles were
+successfully removed, but the sixth article couldn't be found, B<sm> will
+still exit with status 1.
+
+This means that if you need to be sure whether a particular operation
+succeeded, you should run sm on one token at a time.
+
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.

@@ -138,6 +138,11 @@ file becomes the value specified by the
 parameter.
 This may be used to make an existing group moderated or unmoderated,
 for example.
+This command can only be used while the server is running (not throttled),
+unlike
+.B newgroup
+or
+.BR rmgroup .
 .TP
 .B checkfile
 Check the syntax of the
@@ -485,7 +490,10 @@ file cannot be reloaded.
 Scan overview database for the specified newsgroup and update the
 low-water mark and hi-water mark in the
 .I active
-file.
+file.  Regardless of the content of the overview database, the hi-water
+mark will not be decreased (decreasing it may cause duplicate article
+numbers to be assigned after a crash, which can cause serious problems
+with the tradspool storage method).
 If
 .I group
 is an empty string then all newsgroups are scanned.

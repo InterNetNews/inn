@@ -24,10 +24,10 @@ overview database during that period, which depending on what the server
 is doing may cause the server to stall until B<tdx-util> completes its
 operation.
 
-The dump operations are B<-g>, which dumps the master index for the
-overview database, B<-i>, which dumps the index for an individual group,
+The dump operations are B<-i>, which dumps the master index for the
+overview database, B<-g>, which dumps the index for an individual group,
 and B<-o>, which dumps the overview information for a particular group
-(including the additional metadata stored in the index).  For B<-i> and
+(including the additional metadata stored in the index).  For B<-g> and
 B<-o>, the B<-n> option must also be given to specify a newsgroup to
 operate on.
 
@@ -147,11 +147,11 @@ the newsgroup on which to act.
 Dump the master index for the overview database in F</news/overview>,
 regardless of the overview path specified in F<inn.conf>:
 
-    tdx-util -g -p /news/overview
+    tdx-util -i -p /news/overview
 
 Dump the group index for example.test:
 
-    tdx-util -i -n example.test
+    tdx-util -g -n example.test
 
 Dump the complete overview information for example.test:
 

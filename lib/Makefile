@@ -32,7 +32,8 @@ all: libinn.$(EXTLIB) perl.o
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-install: all $(D)$(PATHLIB)/libinn.$(EXTLIB)
+install: all
+	$(LI_XPUB) libinn.$(EXTLIB) $D$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean distclean:
 	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate
@@ -80,10 +81,6 @@ libinn$(PROFSUFFIX).a perl$(PROFSUFFIX).o: $(OBJECTS) perl.o
 	mv perl.o perl$(PROFSUFFIX).o
 	$(RANLIB) libinn$(PROFSUFFIX).a
 	rm -f $(OBJECTS)
-
-##  Low-level install actions.
-$(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
-	$(LI_XPUB) libinn.$(EXTLIB) $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
@@ -149,6 +146,8 @@ inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h \
  ../include/portable/socket.h ../include/inn/innconf.h \
  ../include/inndcomm.h ../include/libinn.h ../include/paths.h
+list.o: list.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/list.h
 localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h \
  ../include/nntp.h ../include/paths.h

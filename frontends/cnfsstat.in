@@ -17,6 +17,7 @@
 use vars qw($opt_l $opt_h $opt_a $opt_s);
 use Getopt::Long;
 use Math::BigInt;
+use Math::BigFloat;
 use English;
 
 my($conffile) = "$inn::pathetc/cycbuff.conf";
@@ -62,7 +63,8 @@ if ($opt_s) {
 	    if ($OSNAME eq "dec_osf") {
 		sub Sys::Syslog::_PATH_LOG { "/dev/log" }
             }
-            Sys::Syslog::setlogsock('unix') if $OSNAME =~ /linux|freebsd|dec_osf/;
+            Sys::Syslog::setlogsock('unix')
+                if $OSNAME =~ /linux|freebsd|dec_osf|darwin/;
         }
 	openlog ('cnfsstat', 'pid', $inn::syslog_facility);
     } else {
@@ -277,16 +279,17 @@ sub print_cycbuff_head {
     if ($use_syslog) {
 	($name) = split(/\s/, $name);
 	$name =~ s/\0//g;
-	syslog ('notice', '%s Buffer %s, len: %d  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
-		$logline, $name, $len / (1024 * 1024), $free / (1024 * 1024),
-		100 * $free/$len, $cyclenum);
+	syslog ('notice', '%s Buffer %s, len: %.2f  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
+		$logline, $name, $len / (1024 * 1024),
+		Math::BigFloat->new ($free) / (1024 * 1024),
+		100 * Math::BigFloat->new ($free) / $len, $cyclenum);
 	return 0;
     }
 
     $name =~ s/\0//g;
     print " Buffer $name, size: ", &human_readable($len, 4);
     print ", position: ", &human_readable($free, 4);
-    printf("  %.2f cycles\n", $cyclenum + $free/$len);
+    printf("  %.2f cycles\n", $cyclenum + Math::BigFloat->new ($free) / $len);
     my ($when, $ago) = &make_time($update);
     print "  Newest: $when, $ago ago\n";
 
@@ -324,7 +327,7 @@ sub human_readable {
     my $factor = 1024;
 
     my $unit = -1;
-    my $oldscaled = $val / $base;
+    my $oldscaled = Math::BigFloat->new ($val) / $base;
     my $scaled = $oldscaled;
     while ( ( int($scaled) > 0 ) && ( $unit < $#name ) ) {
 	$oldscaled = $scaled;

@@ -1196,7 +1196,7 @@ sub collect {
   }
   ########
   ## nnrpd
-  if ($prog eq "nnrpd")
+  if ($prog =~ /^nnrpd(?:-ssl)?$/)
   {
     # Fix a small bug of nnrpd (inn 1.4*)
     $left =~ s/^ /\? /o;
@@ -1676,7 +1676,7 @@ sub collect {
     if ($left =~ m|^Class\ (\S+)\ for\ groups\ matching\ \S+
                     (\ article\ size\ min/max:\ \d+/\d+)?
                     \ Buffer\ (\S+),
-                    \ len:\ (\d+)\s+Mbytes,
+                    \ len:\ ([\d.]+)\s+Mbytes,
                     \ used:\ ([\d.]+)\ Mbytes\ \(\s*[\d.]+%\)
                     \s+(\d+)\ cycles\s*
                  $|ox) {

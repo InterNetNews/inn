@@ -22,6 +22,7 @@ PATH_PYTHON_FILTER_INND = ${PATHFILTER}/filter_innd.py
 PATH_PYTHON_INN_MODULE  = ${PATHFILTER}/INN.py
 PATH_NNRPAUTH           = ${PATHFILTER}/nnrpd_auth.pl
 PATH_NNRPYAUTH          = ${PATHFILTER}/nnrpd_auth.py
+PATH_NNRPACCESS         = ${PATHFILTER}/nnrpd_access.pl
 
 PATH_CONFIG		= ${PATHETC}/inn.conf
 PATH_CONTROLCTL		= ${PATHETC}/control.ctl
@@ -49,6 +50,7 @@ PATH_SUBSCRIPTIONS	= ${PATHETC}/subscriptions
 
 PATH_ACTIVE		= ${PATHDB}/active
 PATH_ACTIVE_TIMES	= ${PATHDB}/active.times
+PATH_HISTORY		= ${PATHDB}/history
 PATH_NEWSGROUPS		= ${PATHDB}/newsgroups
 
 ##  Scripts from above, plus site-specific config files.
@@ -83,11 +85,12 @@ REST_INSTALLED	= \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF) \
-	$D$(PATH_SASL_CONF) $D$(PATH_SUBSCRIPTIONS)
+	$D$(PATH_SASL_CONF) $D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
-SPECIAL		= $D$(PATH_ACTIVE) $D$(PATH_ACTIVE_TIMES) $D$(PATH_NEWSGROUPS)
+SPECIAL		= $D$(PATH_ACTIVE) $D$(PATH_ACTIVE_TIMES) \
+		$D$(PATH_NEWSGROUPS) $D$(PATH_HISTORY)
 
 ##  Get new versions of everything from samples directory.
 all:		$(P) $(ALL) config
@@ -125,13 +128,16 @@ update:		all $(MOST_INSTALLED)
 ##  Special rules for files that sould never be overwritten if they are
 ##  already installed.  These are used only for the initial install of a
 ##  brand new server.
-$D$(PATH_ACTIVE): 	; $(CP_RPUB) active.minimal $@
-$D$(PATH_NEWSGROUPS):	; $(CP_RPUB) newsgroups.minimal $@
+$D$(PATH_ACTIVE): 	; $(CP_DATA) active.minimal $@
+$D$(PATH_NEWSGROUPS):	; $(CP_DATA) newsgroups.minimal $@
 $D$(PATH_ACTIVE_TIMES):
 	touch $@
 	chown $(NEWSUSER) $@
 	chgrp $(NEWSGROUP) $@
-	chmod 644 $@
+	chmod $(FILEMODE) $@
+$D$(PATH_HISTORY):
+	touch $@
+	$(PATHBIN)/makedbz -i -o
 
 ##  Remove files that are unchanged from the release version.
 clean:

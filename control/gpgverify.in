@@ -16,8 +16,11 @@ require 5.004_03;
 use strict;
 
 # if you keep your keyring somewhere that is not the default used by gpg,
-# set appropriately the next line.
-my $keyring = ($inn::newsetc ? $inn::newsetc . '/pgp/' : '') . 'pubring.gpg';
+# change the location below.
+my $keyring;
+if ($inn::newsetc && -d "$inn::newsetc/pgp") {
+  $keyring = $inn::newsetc . '/pgp/pubring.gpg';
+}
 
 # If you have INN and the script is able to successfully include your
 # innshellvars.pl file, the value of the next two variables will be

@@ -66,7 +66,7 @@ vector_resize(struct vector *vector, size_t size)
     size_t i;
 
     if (vector->count > size) {
-        for (i = vector->count - 1; i < size; i++)
+        for (i = size; i < vector->count; i++)
             free(vector->strings[i]);
         vector->count = size;
     }

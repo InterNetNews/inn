@@ -21,6 +21,12 @@ include Make.methods
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
+install: all
+	$(LI_XPUB) libstorage.$(EXTLIB) $D$(PATHLIB)/libstorage.$(EXTLIB)
+	for F in $(PROGRAMS) ; do \
+	    $(LI_XPRI) $$F $D$(PATHBIN)/`basename $$F` ; \
+	done
+
 library: libstorage.$(EXTLIB)
 
 programs: $(PROGRAMS)
@@ -84,14 +90,6 @@ libstorage$(PROFSUFFIX).a: $(SOURCES)
 	rm -f $(OBJECTS)
 
 
-##  Low-level install actions.
-
-install: $(D)$(PATHLIB)/libstorage.$(EXTLIB) $(INSTALLED)
-
-$(D)$(PATHLIB)/libstorage.$(EXTLIB): libstorage.$(EXTLIB)
-	$(LI_XPUB) libstorage.$(EXTLIB) $@
-
-
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES) $(EXTRA_SOURCES)
@@ -139,9 +137,10 @@ cnfs/cnfs.o: cnfs/cnfs.c ../include/config.h ../include/inn/defines.h \
 ovdb/ovdb.o: ovdb/ovdb.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
  ../include/portable/time.h ../include/conffile.h \
- ../include/inn/innconf.h ../include/libinn.h ../include/paths.h \
- ../include/storage.h ../include/ov.h ../include/inn/history.h \
- ovinterface.h ovdb/ovdb.h ovdb/ovdb-private.h
+ ../include/inn/innconf.h ../include/inn/messages.h \
+ ../include/libinn.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h ../include/inn/history.h ovinterface.h ovdb/ovdb.h \
+ ovdb/ovdb-private.h
 timecaf/caf.o: timecaf/caf.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h timecaf/caf.h
 timecaf/timecaf.o: timecaf/timecaf.c ../include/config.h \

@@ -67,6 +67,7 @@ struct reader {
     int bufpos;
     void *buf;
     time_t lastactive;
+    void *currentsearch;
 };
 
 static struct reader *readertab;
@@ -172,11 +173,17 @@ do_opensrch(struct reader *r)
 
     /*syslog(LOG_DEBUG, "OVDB: rs: do_opensrch '%s' %d %d", group, cmd->artlo, cmd->arthi);*/
 
-    reply->handle = ovdb_opensearch(group, cmd->artlo, cmd->arthi);
-    if(reply->handle == NULL) {
-    	reply->status = CMD_OPENSRCH | RPLY_ERROR;
+    if(r->currentsearch != NULL) {
+	/* can only open one search at a time */
+	reply->status = CMD_OPENSRCH | RPLY_ERROR;
     } else {
-    	reply->status = CMD_OPENSRCH;
+	reply->handle = ovdb_opensearch(group, cmd->artlo, cmd->arthi);
+	if(reply->handle == NULL) {
+	    reply->status = CMD_OPENSRCH | RPLY_ERROR;
+	} else {
+	    reply->status = CMD_OPENSRCH;
+	}
+	r->currentsearch = reply->handle;
     }
     free(r->buf);
     r->buf = reply;
@@ -226,6 +233,7 @@ do_closesrch(struct reader *r)
     r->buf = NULL;
     r->bufpos = r->buflen = 0;
     r->mode = MODE_READ;
+    r->currentsearch = NULL;
 }
 
 static void
@@ -370,12 +378,17 @@ static void
 newclient(int fd)
 {
     struct reader *r;
+    int i;
 
     nonblocking(fd, 1);
 
     if(numreaders >= readertablen) {
     	readertablen += 50;
         readertab = xrealloc(readertab, readertablen * sizeof(struct reader));
+        for(i = numreaders; i < readertablen; i++) {
+	    readertab[i].mode = MODE_CLOSED;
+	    readertab[i].buf = NULL;
+	}
     }
 
     r = &(readertab[numreaders]);
@@ -387,6 +400,7 @@ newclient(int fd)
     r->bufpos = 0;
     r->buf = xstrdup(OVDB_SERVER_BANNER);
     r->lastactive = now;
+    r->currentsearch = NULL;
 
     handle_write(r);
 }
@@ -402,6 +416,10 @@ delclient(int which)
 
     if(r->buf != NULL) {
     	free(r->buf);
+    }
+    if(r->currentsearch != NULL) {
+	ovdb_closesearch(r->currentsearch);
+	r->currentsearch = NULL;
     }
 
     /* numreaders will get decremented by the calling function */
@@ -432,6 +450,7 @@ serverproc(int me)
     xsignal_norestart(SIGTERM, sigfunc);
     xsignal_norestart(SIGHUP, sigfunc);
     xsignal_norestart(SIGUSR1, childsig);
+    xsignal(SIGPIPE, SIG_IGN);
 
     numreaders = lastnumreaders = 0;
     if(ovdb_conf.maxrsconn) {

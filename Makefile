@@ -10,7 +10,7 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 		$(PATHMAN) $(MAN1) $(MAN3) $(MAN5) $(MAN8) $(PATHSPOOL) \
 		$(PATHTMP) $(PATHARCHIVE) $(PATHARTICLES) $(PATHINCOMING) \
 		$(PATHINBAD) $(PATHTAPE) $(PATHOVERVIEW) $(PATHOUTGOING) \
-		$(PATHLOG) $(PATHLOG)/OLD
+		$(PATHLOG) $(PATHLOG)/OLD $(PATHINCLUDE)
 
 ##  LIBDIRS are built before PROGDIRS, make update runs in all UPDATEDIRS,
 ##  and make install runs in all ALLDIRS.  Nothing runs in test except the
@@ -81,11 +81,10 @@ install: directories
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
 	@echo ''
-	@echo 'Do not forget to update your cron entries, and also run'
-	@echo 'makedbz if you need to.  If this is a first-time installation'
-	@echo 'a minimal active file has been installed.  You will need to'
-	@echo 'touch history and run "makedbz -i" to initialize the history'
-	@echo 'database.  See INSTALL for more information.'
+	@echo 'If this is a first-time installation, a minimal active file and'
+	@echo 'history database have been installed.  Do not forget to update'
+	@echo 'your cron entries and configure INN.  See INSTALL for more'
+	@echo 'information.'
 	@echo ''
 
 directories:
@@ -107,10 +106,13 @@ update:
 cert:
 	$(SSLBIN)/openssl req -new -x509 -nodes \
 	    -out $(PATHLIB)/cert.pem -days 366 \
-	    -keyout $(PATHLIB)/cert.pem
+	    -keyout $(PATHLIB)/key.pem
 	chown $(NEWSUSER) $(PATHLIB)/cert.pem
 	chgrp $(NEWSGROUP) $(PATHLIB)/cert.pem
 	chmod 640 $(PATHLIB)/cert.pem
+	chown $(NEWSUSER) $(PATHLIB)/key.pem
+	chgrp $(NEWSGROUP) $(PATHLIB)/key.pem
+	chmod 600 $(PATHLIB)/key.pem
 
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the

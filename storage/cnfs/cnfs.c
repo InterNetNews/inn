@@ -29,6 +29,19 @@
 #include "cnfs.h"
 #include "cnfs-private.h"
 
+/* Temporary until cnfs_mapcntl is handled like mapcntl.  Make MS_ASYNC
+   disappear on platforms that don't have it. */
+#ifndef MS_ASYNC
+# define MS_ASYNC 0
+#endif
+
+/* We can give a more descriptive error below about not having largefile           support if the platform has EOVERFLOW; on other platforms some other
+ *    errno will be used and so we won't know when to give the descriptive
+ *       error.  Oh well. */
+#ifndef EOVERFLOW
+# define EOVERFLOW 0
+#endif
+
 typedef struct {
     /**** Stuff to be cleaned up when we're done with the article */
     char		*base;		/* Base of mmap()ed art */
@@ -344,8 +357,15 @@ static bool CNFSparse_part_line(char *l) {
   memset(cycbuff->path, '\0', CNFSPASIZ);
   strlcpy(cycbuff->path, l, CNFSPASIZ);
   if (stat(cycbuff->path, &sb) < 0) {
-    syslog(L_ERROR, "%s: file '%s' : %m, ignoring '%s' cycbuff",
-	   LocalLogName, cycbuff->path, cycbuff->name);
+    if (errno == EOVERFLOW) {
+      syslog(L_ERROR, "%s: file '%s' : %s, ignoring '%s' cycbuff",
+	     LocalLogName, cycbuff->path,
+	     "Overflow (probably >2GB without largefile support)",
+	     cycbuff->name);
+    } else {
+      syslog(L_ERROR, "%s: file '%s' : %m, ignoring '%s' cycbuff",
+	     LocalLogName, cycbuff->path, cycbuff->name);
+    }
     free(cycbuff);
     return false;
   }
@@ -355,8 +375,9 @@ static bool CNFSparse_part_line(char *l) {
   len = strtoul(l, NULL, 10) * (off_t)1024;	/* This value in KB in decimal */
   if (S_ISREG(sb.st_mode) && len != sb.st_size) {
     if (sizeof(CYCBUFFEXTERN) > (size_t) sb.st_size) {
-      syslog(L_NOTICE, "%s: length must be at least '%u' for '%s' cycbuff(%ld bytes)",
-	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, sb.st_size);
+      syslog(L_NOTICE, "%s: length must be at least '%lu' for '%s' cycbuff(%lu bytes)",
+	LocalLogName, (unsigned long) sizeof(CYCBUFFEXTERN), cycbuff->name,
+        (unsigned long) sb.st_size);
       free(cycbuff);
       return false;
     }
@@ -632,7 +653,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 
 static bool CNFS_setcurrent(METACYCBUFF *metacycbuff) {
   CYCBUFF	*cycbuff;
-  int		i, currentcycbuff, order = -1;
+  int		i, currentcycbuff = 0, order = -1;
   bool		foundcurrent = false;
   for (i = 0 ; i < metacycbuff->count ; i++) {
     cycbuff = metacycbuff->members[i];
@@ -1103,8 +1124,6 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	  cycbuff->currentbuff = false;
 	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	  if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	  syslog(L_NOTICE, "%s: metacycbuff %s cycbuff is moved to %s remain calm",
-	       LocalLogName, metacycbuff->name, cycbuff->name);
 	  metacycbuff->memb_next = (metacycbuff->memb_next + 1) % metacycbuff->count;
 	  cycbuff = metacycbuff->members[metacycbuff->memb_next];  
 	  if (!SMpreopen && !CNFSinit_disks(cycbuff)) {
@@ -1113,6 +1132,8 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	      token.type = TOKEN_EMPTY;
 	      return token;
 	  }
+	  syslog(L_NOTICE, "%s: metacycbuff %s cycbuff is moved to %s remain calm",
+	       LocalLogName, metacycbuff->name, cycbuff->name);
 	  cycbuff->currentbuff = true;
 	  cycbuff->needflush = true;
 	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
@@ -1458,7 +1479,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     ARTHANDLE           *art;
     CYCBUFF		*cycbuff;
     PRIV_CNFS		priv, *private;
-    off_t               middle, limit;
+    off_t               middle = 0, limit;
     CNFSARTHEADER	cah;
     off_t               offset;
     long		pagefudge, blockfudge;

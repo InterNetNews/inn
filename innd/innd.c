@@ -581,7 +581,8 @@ main(int ac, char *av[])
        it's a slave, so call RCsetup before NCsetup. */
     CHANsetup(i);
     PROCsetup(10);
-    InndHisOpen();
+    if (Mode == OMrunning)
+        InndHisOpen();
     CCsetup();
     LCsetup();
     RCsetup(fd[0]);

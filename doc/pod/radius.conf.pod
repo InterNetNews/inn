@@ -11,8 +11,16 @@ F<radius.conf> in I<pathetc>.
 
 Blank lines and lines beginning with C<#> are ignored, as is anything
 after a C<#> on a line.  All other lines should begin with a parameter
-name followed by a colon and the value of that key.  The available
-parameters are:
+name followed by a colon and the value of that key, except that each
+section of configuration for a particular server should be enclosed in:
+
+    server <name> {
+        # parameters...
+    }
+
+where <name> is just some convenient label for that server.
+
+The available parameters are:
 
 =over 4
 
@@ -40,9 +48,9 @@ connecting to a non-standard port.
 
 =item I<secret>
 
-The shared secret with the RADIUS server.  Be careful not to include a
-C<#> in your secret, since this will be taken to be the beginning of a
-comment rather than part of the secret.  This parameter must be set.
+The shared secret with the RADIUS server.  If your secret includes spaces,
+tabs, or C<#>, be sure to include it in double quotes.  This parameter
+must be set.
 
 =item I<prefix>
 
@@ -78,10 +86,12 @@ authenticating users against radius.example.com and appending
 C<@example.com> to all client-supplied usernames before passing them to
 the RADIUS server:
 
-    radhost: radius.example.com
-    lochost: news.example.com
-    secret: IamARADIUSsecRET
-    suffix: @example.com
+    server example {
+        radhost: radius.example.com
+        lochost: news.example.com
+        secret: IamARADIUSsecRET
+        suffix: @example.com
+    }
 
 The shared secret with the RADIUS server is C<IamARADIUSsecRET>.
 

@@ -50,11 +50,11 @@ To enable ovdb, set the I<ovmethod> parameter in F<inn.conf> to C<ovdb>.
 The ovdb database is stored in the directory specified by the
 I<pathoverview> paramter in F<inn.conf>.  This is the "DB_HOME" directory.
 To start out, this directory should be empty (other than an optional
-F<DB_CONFIG> file, see the DB_CONFIG section for details) and B<innd> (or
+F<DB_CONFIG> file; see L<DB_CONFIG> for details) and B<innd> (or
 B<makehistory>) will create the files as necessary in that directory.
 Make sure the directory is owned by the news user.
 
-Other parameters for configuring ovdb are in the F<ovdb.conf>
+Other parameters for configuring ovdb are in the ovdb.conf(5)
 configuration file.  See also the sample F<ovdb.conf>.
 
 =over 4
@@ -137,7 +137,11 @@ rewriting them.
 If this parameter is set to 0, expireover will compact all newsgroups; if
 set to 1, expireover will not compact any newsgroups; and if set to a
 value greater than one, expireover will only compact groups that have less
-than that number of articles.  Default is 1000.
+than that number of articles.
+
+Experience has shown that compacting has minimal effect (other than
+making expireover take longer) so the default is now 1.  This parameter
+will probably be removed in the future.
 
 =item readserver
 
@@ -170,7 +174,7 @@ umlimited number of connections is allowed.
 
 =back
 
-=head2 DB_CONFIG
+=head1 DB_CONFIG
 
 A file called F<DB_CONFIG> may be placed in the database directory to
 customize where the various database files and transaction logs are
@@ -187,7 +191,35 @@ proper ownership/mode before starting INN, because they won't be created
 automatically.  Also, don't change the DB_CONFIG file while anything that
 uses ovdb is running.
 
-The DB_CONFIG functionality is part of BerkeleyDB itself.
+Another thing that you can do with this file is to split the overview
+database across multiple disks.  In the F<DB_CONFIG> file, you can list
+directories that BerkeleyDB will search when it goes to open a database.
+
+For example, let's say that you have I<pathoverview> set to
+F</mnt/overview> and you have four additional file systems created on
+F</mnt/ov?>.  You would create a file "/mnt/overview/DB_CONFIG" containing
+the following lines:
+
+    set_data_dir /mnt/overview
+    set_data_dir /mnt/ov1
+    set_data_dir /mnt/ov2
+    set_data_dir /mnt/ov3
+    set_data_dir /mnt/ov4
+
+(For BerkeleyDB 2.x, replace C<set_data_dir> with C<DB_DATA_DIR>.)
+
+Distribute your ovNNNNN files into the four filesystems.  (say, 8 each).
+When called upon to open a database file, the db library will look for it
+in each of the specified directories (in order).  If said file is not
+found, one will be created in the first of those directories.
+
+Whenever you change DB_CONFIG or move database files around, make sure all
+news processes that use the database are shut down first (including
+nnrpds).
+
+The DB_CONFIG functionality is part of BerkeleyDB itself, rather than
+something provided by ovdb.  See the BerkeleyDB documentation for complete
+details for the version of BerkeleyDB that you're running.
 
 =head1 RUNNING
 

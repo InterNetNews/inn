@@ -959,7 +959,8 @@ main(int ac, char *av[])
 	break;
     }
 
-    if (port == 0) port = (innconf->port != 0) ? innconf->port : NNTP_PORT;
+    if (port == 0)
+        port = NNTP_PORT;
 
     /* Try to open a connection to the server. */
     if (NNTPremoteopen(port, &FromServer, &ToServer, buff) < 0) {
@@ -1078,7 +1079,7 @@ main(int ac, char *av[])
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
     if (atoi(buff) != NNTP_POSTEDOK_VAL)
-        sysdie("cannot send article to server: %s", buff);
+        die("cannot send article to server: %s", buff);
 
     /* Close up. */
     QuitServer(0);

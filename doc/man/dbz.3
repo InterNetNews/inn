@@ -1,11 +1,7 @@
 .TH DBZ 3 "6 Sep 1997"
 .BY "INN"
 .SH NAME
-dbzinit, dbzfresh, dbzagain, dbzclose \- database routines
-.br
-dbzexists, dbzfetch, dbzstore \- database routines
-.br
-dbzsync, dbzsize, dbzgetoptions, dbzsetoptions, dbzdebug \- database routines
+dbzinit, dbzfresh, dbzagain, dbzclose, dbzexists, dbzfetch, dbzstore, dbzsync, dbzsize, dbzgetoptions, dbzsetoptions, dbzdebug \- database routines
 .SH SYNOPSIS
 .nf
 .B #include <dbz.h>
@@ -34,7 +30,6 @@ dbzsync, dbzsize, dbzgetoptions, dbzsetoptions, dbzdebug \- database routines
 .PP
 .B "void dbzsetoptions(const dbzoptions opt)"
 .PP
-.B "bool dbzdebug(bool newvalue)"
 .SH DESCRIPTION
 These functions provide an indexing system for rapid random access to a
 text file (the
@@ -235,15 +230,6 @@ process will be running for a long time.
 It is a somewhat expensive operation,
 especially
 for an in-memory database.
-.PP
-If
-.I dbz
-has been compiled with debugging facilities available (which makes it
-bigger and a bit slower),
-.I dbzdebug
-alters the value (and returns the previous value) of an internal flag
-which (when 1; default is 0) causes
-verbose and cryptic debugging output on standard output.
 .PP
 Concurrent reading of databases is fairly safe,
 but there is no (inter)locking,

@@ -71,7 +71,7 @@ ProcessLine(char *line)
 int
 main(int argc UNUSED, char *argv[])
 {
-    int 	one = 1;
+    bool 	one = true;
     char	buff[SMBUF];
 
     ME = argv[0];

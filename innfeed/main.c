@@ -3,9 +3,6 @@
 **  Main routines for the innfeed program.
 **
 **  Written by James Brister <brister@vix.com>
-**  Copyright 1996 by the Internet Software Consortium
-**
-**  For license terms, see the end of this file.
 */
 
 #include "innfeed.h"
@@ -350,10 +347,15 @@ int main (int argc, char **argv)
   if (checkConfig)
     {
       if (!rval)
-        fprintf (stderr,"config loading failed.\n") ;
+        {
+          fprintf (stderr,"config loading failed.\n") ;
+          exit (1) ;
+        }
       else
-        fprintf (stderr,"config loading succeeded.\n") ;
-      exit (1) ;
+        {
+          fprintf (stderr,"config loading succeeded.\n") ;
+          exit (0) ;
+        }
     }
   else if (!rval)
     exit (1) ;
@@ -392,7 +394,7 @@ int main (int argc, char **argv)
           close (2) ;
           dup2 (fds[1],1) ;
           dup2 (fds[1],2) ;
-          execlp ("sh","sh", "-c", subProgram, NULL) ;
+          execlp ("sh", "sh", "-c", subProgram, (char *) 0) ;
           perror ("execlp") ;
           exit (1) ;
         }
@@ -600,11 +602,11 @@ static void sigchld (int sig UNUSED)
 static void sigusr (int sig)
 {
   if (sig == SIGUSR1) {
-    notice ("ME increasing logging level to %d", loggingLevel) ;
     loggingLevel++ ;
+    notice ("ME increasing logging level to %d", loggingLevel) ;
   } else if (sig == SIGUSR2 && loggingLevel > 0) {
-    notice ("ME decreasing logging level to %d", loggingLevel) ;
     loggingLevel-- ;
+    notice ("ME decreasing logging level to %d", loggingLevel) ;
   }    
 }
 
@@ -963,20 +965,3 @@ void mainLogStatus (FILE *fp)
            (long)loggingLevel,boolToString(useMMap)) ;
   fprintf (fp,"\n") ;
 }
-
-/*
-**  Copyright 1996 by the Internet Software Consortium
-**
-**  Permission to use, copy, modify, and distribute this software for any
-**  purpose with or without fee is hereby granted, provided that the above
-**  copyright notice and this permission notice appear in all copies.
-**
-**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
-**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
-**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
-**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
-**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
-**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-**  PERFORMANCE OF THIS SOFTWARE.
-*/

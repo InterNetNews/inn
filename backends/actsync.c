@@ -2627,13 +2627,13 @@ exec_cmd(mode, cmd, grp, type, who)
 	p = concatpath(innconf->pathbin, _PATH_CTLINND);
 	if (type == NULL) {
 	    execl(p,
-		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, NULL);
+		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, (char *) 0);
 	} else if (who == NULL) {
 	    execl(p,
-		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, NULL);
+		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, (char *) 0);
 	} else {
 	    execl(p,
-		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, who, NULL);
+		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, who, (char *) 0);
 	}
 
 	/* child exec failed */

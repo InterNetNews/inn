@@ -65,8 +65,7 @@ article for that newsgroup is received from a remote site, and it is not
 crossposted to some other valid group, it will be filed into the C<junk>
 newsgroup instead.  This is different than simply not listing the group,
 since the article will still be accepted and can be propagated to other
-sites that receive the C<junk> group, and the C<junk> group can be made
-available to readers if wished.
+sites, and the C<junk> group can be made available to readers if wished.
 
 If the <flag> field begins with an equal sign, the newsgroup is an alias.
 Articles cannot be posted to that newsgroup, but they can be received from

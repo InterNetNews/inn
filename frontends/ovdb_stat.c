@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <syslog.h>
+#include <time.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -74,7 +75,7 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
     int mode = 0;
     u_int32_t a = 0, b = 0, c = 0, bytes = 0, mbytes = 0, gbytes = 0;
     char *cp = p;
-    char **tmp = NULL;
+    char *tmp = NULL;
     time_t tm = 0;
     size_t sz = 0;
     DB_LSN *dl = NULL;
@@ -167,7 +168,7 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	break;
     case SIZE:	/* 'a' points to size_t */
         memcpy(&sz, cp + tab[i].a, sizeof(sz));
-	sprintf(val, "%d", sz);
+	sprintf(val, "%lu", (unsigned long) sz);
 	break;
     case END:
         break;
@@ -586,13 +587,16 @@ static int display_btree(DB *db)
 {
     DB_BTREE_STAT *sp;
 
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR >= 3 && DB_VERSION_MINOR >= 3)
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
+    if(db->stat(db, NULL, &sp, 0))
+#else
+#if DB_VERSION_MAJOR == 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 3)
     if(db->stat(db, &sp, 0))
-	return 1;
 #else
     if(db->stat(db, &sp, NULL, 0))
-	return 1;
 #endif
+#endif
+	return 1;
 
     display_heading("Btree Statistics");
     display_data(sp, BTREE_tab);
@@ -646,13 +650,16 @@ static int display_hash(DB *db UNUSED)
 #else
     DB_HASH_STAT *sp;
 
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
+    if(db->stat(db, NULL, &sp, 0))
+#else
 #if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
     if(db->stat(db, &sp, NULL, 0))
-	return 1;
 #else
     if(db->stat(db, &sp, 0))
-	return 1;
 #endif
+#endif
+	return 1;
 
     display_heading("Hash Information");
     display_data(sp, HASH_tab);

@@ -223,16 +223,16 @@ typedef struct _ARTDATA {
   struct buffer	  Overview;		/* buffer for overview data */
   int		  CRwithoutLF;		/* counter for '\r' without '\n' */
   int		  LFwithoutCR;		/* counter for '\n' without '\r' */
-  int		  CurHeader;		/* where current header starts.
+  long		  CurHeader;		/* where current header starts.
 					   this is used for folded header
 					   it indicates offset from bp->Data */
   bool		  NullHeader;		/* contains NULL in current header    */
-  int		  LastTerminator;	/* where last '.' exists.  only set if
+  long		  LastTerminator;	/* where last '.' exists.  only set if
 					   it exists at the begining of line
 					   it indicates offset from bp->Data */
-  int		  LastCR;		/* where last CR exists
+  long		  LastCR;		/* where last CR exists
 					   it indicates offset from bp->Data */
-  int		  LastCRLF;		/* where last CRLF exists.
+  long		  LastCRLF;		/* where last CRLF exists.
 					   indicates where last LF exists
 					   it indicates offset from bp->Data */
   HDRCONTENT	  HdrContent[MAX_ARTHEADER];
@@ -358,9 +358,9 @@ typedef struct _CHANNEL {
   int		       HoldTime;
   time_t	       ArtBeg;
   int		       ArtMax;
-  int		       Start;		/* where current cmd/article starts
+  long		       Start;		/* where current cmd/article starts
 					   it indicates offset from bp->Data */
-  int		       Next;		/* next pointer to read
+  long		       Next;		/* next pointer to read
 					   it indicates offset from bp->Data */
   char		       Error[SMBUF];	/* error buffer */
   ARTDATA	       Data;		/* used for processing article */

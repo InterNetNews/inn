@@ -535,7 +535,8 @@ OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups)
         EXPunlinkfile = NULL;
     }
     if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-        fprintf(stderr, "Can't unlink %s\n", TokenToText(token));
+        fprintf(stderr, "Can't unlink %s: %s\n", TokenToText(token),
+                SMerrorstr);
 }
 
 /*

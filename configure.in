@@ -342,9 +342,7 @@ AC_MSG_ERROR([--enable-tagged-hash conflicts with --enable-largefiles.])
     *)   AC_MSG_ERROR(invalid argument to --enable-largefiles) ;;
     esac])
 
-dnl In order to not pick up the wrong path to sendmail, we're conservative
-dnl about which sendmail we're willing to use.  A user-given value is used
-dnl later on.
+dnl Override the automatically detected path to sendmail.  Used later on.
 AC_ARG_WITH(sendmail,
     [  --with-sendmail=PATH    Path to sendmail],
     SENDMAIL=$with_sendmail)
@@ -367,7 +365,7 @@ else
     AC_MSG_CHECKING(for BerkeleyDB location)
     if test x"$BERKELEY_DB_DIR" = xyes ; then
         for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
-                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 ; do
+                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 BerkeleyDB.4.2 BerkeleyDB.4.3 ; do
             for d in $prefix /usr/local /opt /usr ; do
                 if test -d "$d/$v" ; then
                     BERKELEY_DB_DIR="$d/$v"
@@ -377,7 +375,7 @@ else
         done
     fi
     if test x"$BERKELEY_DB_DIR" = xyes ; then
-        for v in db4 db3 db2 ; do
+        for v in db43 db42 db41 db4 db3 db2 ; do
             if test -d "/usr/local/include/$v" ; then
                 BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
                 BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
@@ -387,7 +385,7 @@ else
             fi
         done
         if test x"$BERKELEY_DB_LIB" = x ; then
-            for v in db4 db3 db2 ; do
+            for v in db43 db42 db41 db4 db3 db2 ; do
                 if test -d "/usr/include/$v" ; then
                     BERKELEY_DB_CFLAGS="-I/usr/include/$v"
                     BERKELEY_DB_LIB="-l$v"
@@ -569,34 +567,6 @@ AC_ARG_WITH(python,
     esac],
     DO_PYTHON=DONT)
 
-dnl Tcl support.  For Tcl, the user can supply the path to the Tcl include
-dnl files and libraries (for Perl and Python, this is determined
-dnl automatically from little scripts run by the binary found in the user's
-dnl path).
-dnl
-dnl FIXME: This should really use tclConfig.sh.
-AC_DEFUN([INN_LIB_TCL],
-[AC_ARG_WITH(tcl,
-    [  --with-tcl=PATH         Embedded TCL script support [default=no]],
-    TCL_DIR=$with_tcl,
-    TCL_DIR=no)
-if test x"$TCL_DIR" = xno ; then
-    TCL_INC=
-    TCL_LIB=
-else
-    if test x"$TCL_DIR" = xyes ; then
-        TCL_INC="-I/usr/local/include"
-        TCL_LIB="-L/usr/local/lib -ltcl -lm"
-    else
-        TCL_INC="-I${TCL_DIR}/include"
-        TCL_LIB="-L${TCL_DIR}/lib -ltcl -lm"
-    fi
-    AC_DEFINE(DO_TCL, 1, [Define to compile in TCL script support.])
-fi
-AC_SUBST(TCL_LIB)
-AC_SUBST(TCL_INC)])
-INN_LIB_TCL
-
 dnl Set some configuration file defaults from the machine hostname.
 HOSTNAME=`hostname 2> /dev/null || uname -n`
 AC_SUBST(HOSTNAME)
@@ -742,28 +712,14 @@ else
 fi
 AC_SUBST(UNCOMPRESS)
 
-dnl The sendmail code takes this philosophy:  We assume that there are some
-dnl sites which don't have sendmail in the path for a reason, whatever that
-dnl may be.  And we also assume that there are some of those sites which
-dnl don't want us to automatically pick one from a likely place.  So we
-dnl detect it, then search for it, but then notify the human.
+dnl Search for sendmail, checking the path first and then some common
+dnl locations.  If --with-sendmail was given, that path overrides.
 if test "${with_sendmail+set}" = set ; then
     AC_MSG_CHECKING(for sendmail)
     AC_MSG_RESULT($SENDMAIL)
 else
-    AC_PATH_PROG(SENDMAIL, sendmail)
+    AC_PATH_PROG(SENDMAIL, sendmail, , "/usr/sbin:/usr/lib")
     if test -z "$SENDMAIL" ; then
-        echo ''
-        echo 'No sendmail in path.  Looking in likely places....'
-        echo ''
-        AC_PATH_PROG(SENDMAIL, sendmail, ,
-            $PATH:/usr/sbin:/usr/lib:/usr/ucblib)
-        echo ''
-        if test -n "$SENDMAIL" ; then
-            echo "sendmail was found at $SENDMAIL.  If this is correct, re-run"
-            echo "with --with-sendmail=$SENDMAIL."
-            echo ''
-        fi
         AC_MSG_ERROR(sendmail not found, re-run with --with-sendmail)
     fi
 fi
@@ -826,8 +782,17 @@ INN_SEARCH_AUX_LIBS(crypt, crypt, CRYPT_LIB)
 INN_SEARCH_AUX_LIBS(getspnam, shadow, SHADOW_LIB)
 INN_SEARCH_AUX_LIBS(dbm_open, ndbm dbm, DBM_LIB,
     [AC_DEFINE(HAVE_DBM, 1, [Define if you have a dbm library.])])
-INN_SEARCH_AUX_LIBS(pam_start, pam, PAM_LIB,
-    [AC_DEFINE(HAVE_PAM, 1, [Define if you have PAM.])])
+
+dnl IRIX has a PAM library with the right symbols but no header files suitable
+dnl for use with it, so we have to check the header files first and then only
+dnl if one is found do we check for the library.
+inn_check_pam=1
+AC_CHECK_HEADERS([pam/pam_appl.h], ,
+    [AC_CHECK_HEADER([security/pam_appl.h], , [inn_check_pam=0])])
+if test x"$inn_check_pam" = x1; then
+    INN_SEARCH_AUX_LIBS([pam_start], [pam], [PAM_LIB],
+        [AC_DEFINE([HAVE_PAM], 1, [Define if you have PAM.])])
+fi
 
 dnl If keyword generation support was requested, check for the appropriate
 dnl libraries.
@@ -1098,6 +1063,7 @@ AC_TYPE_SIZE_T
 AC_TYPE_UID_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
+AC_CHECK_TYPE(ptrdiff_t, long)
 AC_CHECK_TYPE(ssize_t, int)
 
 dnl Check for ISO C99 variadic macro support in the compiler.

@@ -347,9 +347,8 @@ upgrade_environment(void)
 	return ret;
     OVDBenv = NULL;
     ret = ovdb_open_berkeleydb(OV_WRITE, 0);
-    if(ret != 0)
-	return ret;
 #endif
+    return ret;
 }
 
 int main(int argc, char **argv)

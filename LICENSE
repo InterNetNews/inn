@@ -2,44 +2,28 @@ INN as a whole and all code contained in it not otherwise marked with
 different licenses and/or copyrights is covered by the following copyright
 and license:
 
+   Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
    Copyright (c) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-       2002, 2003 The Internet Software Consortium and Rich Salz
+       2002, 2003 by The Internet Software Consortium and Rich Salz
 
    This code is derived from software contributed to the Internet Software
-   Consortium by Rich Salz
+   Consortium by Rich Salz.
 
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions
-   are met:
-   1. Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-   2. Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-   3. All advertising materials mentioning features or use of this software
-      must display the following acknowledgement:
-      This product includes software developed by the Internet Software
-        Consortium and its contributors.
-   4. Neither the name of the Internet Software Consortium nor the names
-      of its contributors may be used to endorse or promote products derived
-      from this software without specific prior written permission.
+   Permission to use, copy, modify, and distribute this software for any
+   purpose with or without fee is hereby granted, provided that the above
+   copyright notice and this permission notice appear in all copies.
 
-   THIS SOFTWARE IS PROVIDED BY THE INTERNET SOFTWARE CONSORTIUM AND
-   CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
-   BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-   FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE INTERNET
-   SOFTWARE CONSORTIUM OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+   THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+   REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY
+   SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-Some specific portions of INN are covered by different licenses, usually
-more permissive ones.  Those licenses, if present, will be noted
-prominantly at the top of those source files.  Specifically (but possibly
-not comprehensively):
+Some specific portions of INN are covered by different licenses.  Those
+licenses, if present, will be noted prominantly at the top of those source
+files.  Specifically (but possibly not comprehensively):
 
    authprogs/smbval/*, backends/send-uucp.in, and control/perl-nocem.in
    are under the GNU General Public License.  See doc/GPL for a copy of
@@ -52,13 +36,13 @@ not comprehensively):
    domain.
 
    control/gpgverify.in, control/pgpverify.in and control/signcontrol.in
-   are under a license very similar to the above but with UUNET
+   are under a BSD-style license (with the advertising clause) with UUNET
    Technologies, Inc. as the copyright holder.  See the end of those files
    for details.
 
-   control/controlchan.in and control/modules/*.pl are covered by only the
-   first two license points of the license above; points 3 and 4 do not
-   apply to them.  See the beginning of those files for details.
+   control/controlchan.in and control/modules/*.pl are covered by a
+   two-clause BSD-style license (no advertising clause).  See the
+   beginning of those files for details.
 
    lib/strcasecmp.c, lib/strspn.c, and lib/strtok.c are taken from BSD
    sources and are covered by the standard BSD license.  See those files
@@ -68,25 +52,26 @@ not comprehensively):
    Security.  See the file for more details.
 
    history/his.c and history/hisv6/hisv6.c are under a license very
-   similar to the new BSD license but with Thus plc as the copyright
-   holder.  See those files for details.
+   similar to the new BSD license (no advertising clause) but with Thus
+   plc as the copyright holder.  See those files for details.
 
    lib/tst.c, include/inn/tst.h and doc/pod/tst.pod are derived from from
-   <http://www.octavian.org/cs/tst1.3.tar.gz> and are under the BSD
-   license, but with Peter A. Friend as the copyright holder.
+   <http://www.octavian.org/cs/tst1.3.tar.gz> and are under the new BSD
+   license (no advertising clause), but with Peter A. Friend as the
+   copyright holder.
 
    tests/runtests.c is covered under a license very similar to the MIT/X
    Consortium license (less restrictive than INN's licese).  See the
    beginning of the file for details.
 
 Note that all portions of INN that link with core INN code have to be
-convered by licenses compatible with the license at the top of this file.
-Some portions of this distribution are covered by incompatible licenses,
-but all of that code is completely stand-alone and compiles into a
-separate executable.  (This is why it's permissable to distribute some
-programs covered by the GPL as part of this distribution; they compile to
-stand-alone executables or are stand-alone scripts and therefore fall
-under the "mere aggregation" clause of the GPL.)
+convered by licenses compatible with the license at the top of this file,
+and since INN links with several external libraries if so configured (such
+as OpenSSL), should also be compatible with the licenses of those external
+libraries to be safe.  Some portions of this distribution are covered by
+more restrictive licenses, but all of that code is completely stand-alone,
+either as a standalone script or as code that compiles into a separate
+executable.
 
 Please note that the files in the contrib directory are not properly part
 of INN and may be under widely varying licenses.  Please see each file

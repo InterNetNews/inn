@@ -26,6 +26,7 @@
 #include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
+#include <openssl/rand.h>
 #include <openssl/x509.h>
 #include <openssl/ssl.h>
 
