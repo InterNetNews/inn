@@ -288,7 +288,7 @@ frontends/pullnews.in                 Sucking news feeder
 frontends/rnews.c                     UUCP unbatcher
 frontends/scanspool.in                Scan spool directory for trash
 frontends/sm.c                        Get article or overview data from token
-frontends/sys2nf.c                    Sys file to newsfeeds conversion aide
+frontends/sys2nf.c                    Sys file to newsfeeds conversion aid
 history                               History library routines (Directory)
 history/Make.hismethods               Makefile for history methods
 history/Makefile                      Makefile for history library
