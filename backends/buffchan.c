@@ -15,9 +15,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-
-extern void	MAPread();
-extern char	*MAPname();
+#include "map.h"
 
 /*
 **  Hash functions for hashing sitenames.
@@ -73,7 +71,7 @@ static TIMEINFO	Now;
 **  Set up the site information.  Basically creating empty buckets.
 */
 static void
-SITEsetup()
+SITEsetup(void)
 {
     register SITEHASH	*shp;
 
@@ -89,8 +87,7 @@ SITEsetup()
 **  Close a site
 */
 static void
-SITEclose(sp)
-    register SITE       *sp;
+SITEclose(SITE *sp)
 {
     register FILE	*F;
 
@@ -108,7 +105,7 @@ SITEclose(sp)
 **  Close all open sites.
 */
 static void
-SITEcloseall()
+SITEcloseall(void)
 {
     register SITEHASH	*shp;
     register SITE	*sp;
@@ -159,9 +156,7 @@ static void SITEopen(SITE *sp)
 **  Find a site, possibly create if not found.
 */
 static SITE *
-SITEfind(Name, CanCreate)
-    char		*Name;
-    bool		CanCreate;
+SITEfind(char *Name, bool CanCreate)
 {
     register char	*p;
     register int	i;
@@ -206,8 +201,7 @@ SITEfind(Name, CanCreate)
 **  Flush a site -- close and re-open the file.
 */
 static void
-SITEflush(sp)
-    register SITE	*sp;
+SITEflush(register SITE *sp)
 {
     register FILE	*F;
 
@@ -228,7 +222,7 @@ SITEflush(sp)
 **  Flush all open sites.
 */
 static void
-SITEflushall()
+SITEflushall(void)
 {
     register SITEHASH	*shp;
     register SITE	*sp;
@@ -244,10 +238,7 @@ SITEflushall()
 **  Write data to a site.
 */
 static void
-SITEwrite(name, text, len)
-    register char	*name;
-    register char	*text;
-    register int	len;
+SITEwrite(register char *name, register char *text, register size_t len)
 {
     register SITE	*sp;
 
@@ -289,8 +280,7 @@ SITEwrite(name, text, len)
 **  Handle a command message.
 */
 static void
-Process(p)
-    register char	*p;
+Process(register char *p)
 {
     register SITE	*sp;
 
@@ -305,9 +295,8 @@ Process(p)
 	    SITEflushall();
 	else if ((sp = SITEfind(p, FALSE)) != NULL)
 	    SITEflush(sp);
-	else
-	    /*(void)fprintf(stderr, "buffchan flush %s unknown site\n", p);*/
-	    ;
+	/*else
+	    (void)fprintf(stderr, "buffchan flush %s unknown site\n", p);*/
 	return;
     }
 
@@ -358,9 +347,7 @@ CATCHinterrupt(int s)
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
     register QIOSTATE	*qp;
     register int	i;
@@ -412,7 +399,7 @@ main(ac, av)
 	case 'd':
 	    Directory = optarg;
 	    if (Format == NULL)
-		Format ="%s";
+		Format =COPY("%s");
 	    break;
 	case 'f':
 	    Fields = atoi(optarg);

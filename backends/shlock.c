@@ -22,9 +22,7 @@ static char	CANTOPEN[] = "Can't open \"%s\", %s\n";
 **  sending it a null signal.
 */
 static bool
-ValidLock(name, JustChecking)
-    char		*name;
-    bool		JustChecking;
+ValidLock(char *name, bool JustChecking)
 {
     register int	fd;
     register int	i;
@@ -71,9 +69,7 @@ ValidLock(name, JustChecking)
 **  Unlink a file, print a message on error, and exit.
 */
 static void
-UnlinkAndExit(name, x)
-    char	*name;
-    int		x;
+UnlinkAndExit(char *name, int x)
 {
     if (unlink(name) < 0)
 	(void)fprintf(stderr, CANTUNLINK, name, strerror(errno));
@@ -93,9 +89,7 @@ Usage(void)
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
     register int	i;
     register char	*p;

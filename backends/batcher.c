@@ -46,7 +46,7 @@ static char	*ERRLOG;
 **  Start a batch process.
 */
 static FILE *
-BATCHstart()
+BATCHstart(void)
 {
     FILE	*F;
     char	buff[SMBUF];
@@ -69,8 +69,7 @@ BATCHstart()
 **  Close a batch, return exit status.
 */
 static int
-BATCHclose(F)
-    FILE	*F;
+BATCHclose(FILE *F)
 {
     BATCHopen = FALSE;
     if (F == stdout)
@@ -202,9 +201,7 @@ Usage(void)
 
 
 int
-main(ac, av)
-    int		ac;
-    char	*av[];
+main(int ac, char *av[])
 {
     static char	SKIPPING[] = "batcher %s skipping \"%.40s...\" %s\n";
     bool	Redirect;

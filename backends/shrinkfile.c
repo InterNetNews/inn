@@ -41,7 +41,7 @@ static char *program = NULL;	/* our name */
 **  Open a safe unique temporary file that will go away when closed.
 */
 static FILE *
-OpenTemp()
+OpenTemp(void)
 {
     FILE	*F;
     char	buff[SMBUF];
@@ -71,8 +71,7 @@ OpenTemp()
 **  Does file end with \n?  Assume it does on I/O error, to avoid doing I/O.
 */
 static int
-EndsWithNewline(F)
-    FILE	*F;
+EndsWithNewline(FILE *F)
 {
     int		c;
 
@@ -97,8 +96,7 @@ EndsWithNewline(F)
 **  Add a newline to location of a file.
 */
 static bool
-AppendNewline(name)
-    char	*name;
+AppendNewline(char *name)
 {
     FILE	*F;
 
@@ -150,7 +148,8 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
     struct stat	Sb;
     char	buff[BUFSIZ + 1];
     int		c;
-    int		i;
+    size_t	i;
+    bool	err;
 
     /* Get the file's size. */
     if (fstat((int)fileno(F), &Sb) < 0) {
@@ -217,12 +216,13 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 
     /* Copy rest of file to temp. */
     tmp = OpenTemp();
+    err = false;
     while ((i = fread(buff, 1, sizeof buff, F)) > 0)
 	if (fwrite(buff, 1, i, tmp) != i) {
-	    i = -1;
+	    err = true;
 	    break;
 	}
-    if (i < 0) {
+    if (err) {
 	(void)fprintf(stderr, 
 	  "%s: Can't copy to temp file, %s\n", program, strerror(errno));
 	(void)fclose(F);
@@ -242,10 +242,10 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 
     while ((i = fread(buff, 1, sizeof buff, tmp)) > 0)
 	if (fwrite(buff, 1, i, F) != i) {
-	    i = -1;
+	    err = true;
 	    break;
 	}
-    if (i < 0) {
+    if (err) {
 	(void)fprintf(stderr,
 	  "%s: Can't overwrite file, %s\n", program, strerror(errno));
 	(void)fclose(F);
@@ -267,7 +267,7 @@ static off_t
 ParseSize(char *p)
 {
     off_t	scale;
-    long	str_num;
+    unsigned long	str_num;
     char	*q;
 
     /* Skip leading spaces */
@@ -300,7 +300,7 @@ ParseSize(char *p)
     }
 
     /* Convert string to number. */
-    if (sscanf(p, "%ld", &str_num) != 1)
+    if (sscanf(p, "%lud", &str_num) != 1)
 	return -1;
     if (str_num > MAX_SIZE / scale) {
 	(void)fprintf(stderr, "%s: Size is too big\n", program);
@@ -323,9 +323,7 @@ Usage(void)
 
 
 int
-main(ac, av)
-    int		ac;
-    char	*av[];
+main(int ac, char *av[])
 {
     bool	Changed;
     bool	Verbose;

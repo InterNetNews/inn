@@ -121,7 +121,7 @@ used (if the overview method used supports this query.";
 **  the amount of free space or inodes on that file system.  Returns the
 **  percentage free, which may be printed out by the caller.
 */
-void
+static void
 printspace(const char *path, bool inode, bool fancy)
 {
     df_declare(info);
@@ -164,7 +164,7 @@ printspace(const char *path, bool inode, bool fancy)
     }
 }
 
-void
+static void
 printspace_formatted(const char *path, bool inode)
 {
     printf("%-40s ", path);
@@ -172,7 +172,7 @@ printspace_formatted(const char *path, bool inode)
     printf("\n");
 }
 
-char *
+static char *
 readline(QIOSTATE *qp)
 {
     char *line, *p;

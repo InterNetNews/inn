@@ -61,6 +61,7 @@ backends/inndf.c                      df used for innwatch
 backends/innxbatch.c                  Send batches using XBATCH to remote
 backends/innxmit.c                    Send articles to remote site
 backends/map.c                        Site name to filename mapping routines
+backends/map.h                        Headers for backends/map.c
 backends/mod-active.in                Batch do active file modifications
 backends/news2mail.in                 News to mail gateway
 backends/nntpget.c                    Get articles from remote site

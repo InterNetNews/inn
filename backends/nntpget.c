@@ -55,9 +55,7 @@ static struct history	*History;
 **  Read a line of input, with timeout.
 */
 static bool
-SITEread(sp, start)
-    SITE		*sp;
-    char		*start;
+SITEread(SITE *sp, char *start)
 {
     register char	*p;
     register char	*end;
@@ -112,10 +110,7 @@ SITEread(sp, start)
 **  the remote site already is escaped.
 */
 static bool
-SITEwrite(sp, p, i)
-    SITE		*sp;
-    char		*p;
-    int			i;
+SITEwrite(SITE *sp, const char *p, int i)
 {
     SITEvec[0].iov_base = p;
     SITEvec[0].iov_len = i;
@@ -124,8 +119,7 @@ SITEwrite(sp, p, i)
 
 
 static SITE *
-SITEconnect(host)
-    char	*host;
+SITEconnect(char *host)
 {
     FILE	*From;
     FILE	*To;
@@ -172,8 +166,7 @@ SITEconnect(host)
 **  Send "quit" to a site, and get its reply.
 */
 static void
-SITEquit(sp)
-    SITE	*sp;
+SITEquit(SITE *sp)
 {
     char	buff[NNTP_STRLEN];
 
@@ -183,15 +176,14 @@ SITEquit(sp)
 
 
 static bool
-HIShaveit(mesgid)
-    char		*mesgid;
+HIShaveit(char *mesgid)
 {
     return HIScheck(History, mesgid);
 }
 
 
 static void
-Usage(char *p)
+Usage(const char *p)
 {
     (void)fprintf(stderr, "Usage error:  %s\n", p);
     (void)fprintf(stderr,
@@ -201,9 +193,7 @@ Usage(char *p)
 
 
 int
-main(ac, av)
-    int		ac;
-    char	*av[];
+main(int ac, char *av[])
 {
     char	buff[NNTP_STRLEN];
     char	mesgid[NNTP_STRLEN];

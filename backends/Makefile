@@ -144,13 +144,13 @@ batcher.o: batcher.c ../include/config.h ../include/inn/defines.h \
  ../include/paths.h ../include/storage.h
 buffchan.o: buffchan.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
- ../include/macros.h ../include/paths.h
+ ../include/macros.h ../include/paths.h map.h
 cvtbatch.o: cvtbatch.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h ../include/storage.h
 filechan.o: filechan.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h
+ ../include/paths.h map.h
 inndf.o: inndf.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
  ../include/ov.h ../include/storage.h ../include/inn/history.h \
@@ -164,7 +164,7 @@ innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
  ../include/paths.h ../include/storage.h ../include/inn/history.h
 map.o: map.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h
+ ../include/paths.h map.h
 nntpget.o: nntpget.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h \

@@ -28,7 +28,7 @@ static char	*ERRLOG = NULL;
 **  Return a YYYYMM string that represents the current year/month
 */
 static char *
-DateString()
+DateString(void)
 {
     static char		ds[10];
     time_t		now;
@@ -46,8 +46,7 @@ DateString()
 **  Try to make one directory.  Return FALSE on error.
 */
 static bool
-MakeDir(Name)
-    char		*Name;
+MakeDir(char *Name)
 {
     struct stat		Sb;
 
@@ -64,8 +63,7 @@ MakeDir(Name)
 **  parent directories needed.  Return FALSE on error.
 */
 static bool
-MakeArchiveDirectory(Name)
-    register char	*Name;
+MakeArchiveDirectory(register char *Name)
 {
     register char	*p;
     register char	*save;
@@ -181,7 +179,7 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
     char		*p,*q,*last;
     ARTHANDLE		article;
     size_t		i;
-    char		*mode = "w";
+    const char		*mode = "w";
 
     if (Concat) mode = "a";
 
@@ -263,18 +261,15 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 **  Write an index entry.  Ignore I/O errors; our caller checks for them.
 */
 static void
-WriteArtIndex(art, FullName, ShortName)
-    ARTHANDLE		*art;
-    char		*FullName;
-    char		*ShortName;
+WriteArtIndex(ARTHANDLE *art, char *ShortName)
 {
-    register char	*p;
+    register const char	*p;
     register int	i;
     char		Subject[BUFSIZ];
     char		MessageID[BUFSIZ];
 
     Subject[0] = '\0';		/* default to null string */
-    p = (char *)HeaderFindMem(art->data, art->len, "Subject", 7);
+    p = HeaderFindMem(art->data, art->len, "Subject", 7);
     if (p != NULL) {
 	for (i=0; *p != '\r' && *p != '\n' && *p != '\0'; i++) {
 	    Subject[i] = *p++;
@@ -283,7 +278,7 @@ WriteArtIndex(art, FullName, ShortName)
     }
 
     MessageID[0] = '\0';	/* default to null string */
-    p = (char *)HeaderFindMem(art->data, art->len, "Message-ID", 10);
+    p = HeaderFindMem(art->data, art->len, "Message-ID", 10);
     if (p != NULL) {
 	for (i=0; *p != '\r' && *p != '\n' && *p != '\0'; i++) {
 	    MessageID[i] = *p++;
@@ -316,7 +311,7 @@ Usage(void)
 ** This routine blatantly stolen from tradspool.c
 */
 static char **
-CrackXref(char *xref, unsigned int *lenp) {
+CrackXref(const char *xref, unsigned int *lenp) {
     char *p;
     char **xrefs;
     char *q;
@@ -411,9 +406,7 @@ CrackGroups(char *group, unsigned int *lenp) {
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
     register char	*Name;
     register char	*p;
@@ -428,7 +421,7 @@ main(ac, av)
     char		dest[BUFSIZ];
     char		**groups, *q, *ng;
     char		**xrefs;
-    char		*xrefhdr;
+    const char		*xrefhdr;
     ARTHANDLE		*art;
     TOKEN		token;
     unsigned int	numgroups, numxrefs;
@@ -538,7 +531,7 @@ main(ac, av)
 	    }
 
 	    /* Determine groups from the Xref header */
-    	    xrefhdr = (char *)HeaderFindMem(art->data, art->len, "Xref", 4);
+    	    xrefhdr = HeaderFindMem(art->data, art->len, "Xref", 4);
 	    if (xrefhdr == NULL) {
 		fprintf(stderr, "archive: cant find Xref: header");
 		SMfreearticle(art);
@@ -556,7 +549,7 @@ main(ac, av)
 		DISPOSE(base);
 		base = NULL;
 	    }
-	    for (i=0; i<numxrefs; i++) {
+	    for (i=0; (unsigned)i<numxrefs; i++) {
 		/* Check for group limits... -p flag */
 		if ((p=strchr(xrefs[i], ':')) == NULL) {
 		    fprintf(stderr, "archive: bogus xref '%s'\n", xrefs[i]);
@@ -566,7 +559,7 @@ main(ac, av)
 		    *p = '\0';
 		    ng = xrefs[i];
 		    doit = FALSE;
-		    for (j=0; j<numgroups && !doit; j++) {
+		    for (j=0; (unsigned)j<numgroups && !doit; j++) {
 			if (wildmat(ng, groups[j]) != 0) doit=TRUE;
 		    }
 		}
@@ -634,7 +627,7 @@ main(ac, av)
 
 	            /* Write index. */
 	            if (Index) {
-	                WriteArtIndex(art, dest, Name);
+	                WriteArtIndex(art, Name);
 	                if (ferror(stdout) || fflush(stdout) == EOF)
 		            (void)fprintf(stderr, "Can't write index for \"%s\", %s\n",
 			            Name, strerror(errno));
@@ -646,7 +639,7 @@ main(ac, av)
 	    SMfreearticle(art);
 	    art = NULL;
 	    /* Free up the xrefs storage space */
-	    for ( i=0; i<numxrefs; i++) DISPOSE(xrefs[i]);
+	    for ( i=0; (unsigned)i<numxrefs; i++) DISPOSE(xrefs[i]);
 	    DISPOSE(xrefs);
 	    numxrefs = 0;
 	    xrefs = NULL;

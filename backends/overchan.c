@@ -8,6 +8,7 @@
 #include "portable/time.h"
 #include <errno.h>
 #include <syslog.h>
+#include <sys/stat.h>
 
 #include "inn/qio.h"
 #include "libinn.h"

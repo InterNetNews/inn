@@ -32,7 +32,7 @@ main(int ac, char *av[]) {
     int		i;
     QIOSTATE	*qp;
     char	*line;
-    char	*text;
+    const char	*text;
     char	*format;
     char	*p, *q;
     bool	Dirty;
@@ -45,7 +45,7 @@ main(int ac, char *av[]) {
 
     if (ReadInnConf() < 0) exit(1);
     /* Parse JCL. */
-    format = "nm";
+    format = COPY("nm");
     while ((i = getopt(ac, av, "w:")) != EOF)
 	switch (i) {
 	default:
@@ -92,7 +92,7 @@ main(int ac, char *av[]) {
 	token = TextToToken(line);
 	if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
 	    continue;
-	if ((text = (char *)HeaderFindMem(art->data, art->len, "Message-ID", 10)) == NULL) {
+	if ((text = HeaderFindMem(art->data, art->len, "Message-ID", 10)) == NULL) {
 	    SMfreearticle(art);
 	    continue;
 	}

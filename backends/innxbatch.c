@@ -84,9 +84,7 @@ static unsigned long	STATrejected;
 **  Send a line to the server. \r\n will be appended
 */
 static bool
-REMwrite(fd, p)
-register int	fd;
-register char	*p;
+REMwrite(register int fd, register char *p)
 {
   register int		i;
   register int		err;
@@ -116,8 +114,7 @@ register char	*p;
 **  Print transfer statistics, clean up, and exit.
 */
 static void
-ExitWithStats(x)
-int			x;
+ExitWithStats(int x)
 {
   static char		QUIT[] = "quit";
   TIMEINFO		Now;
@@ -154,8 +151,7 @@ int			x;
 **  Clean up the NNTP escapes from a line.
 */
 static char *
-REMclean(buff)
-    char	*buff;
+REMclean(char *buff)
 {
     char	*p;
 
@@ -219,7 +215,7 @@ REMread(char *start, int size)
 **  Handle the interrupt.
 */
 static void
-Interrupted()
+Interrupted(void)
 {
   (void)fprintf(stderr, "Interrupted\n");
   ExitWithStats(1);
@@ -231,10 +227,7 @@ Interrupted()
 **  REMbuffer & friends
 */
 static bool
-REMsendxbatch(fd, buf, size)
-int fd;
-char *buf;
-int size;
+REMsendxbatch(int fd, char *buf, int size)
 {
   register char	*p;
   int		i;
@@ -312,7 +305,7 @@ CATCHinterrupt(int s)
 */
 /* ARGSUSED0 */
 static RETSIGTYPE
-CATCHalarm(int s)
+CATCHalarm(int s UNUSED)
 {
     GotAlarm = TRUE;
     if (JMPyes)
@@ -337,9 +330,7 @@ Usage(void)
 
 
 int
-main(ac, av)
-int ac;
-char *av[];
+main(int ac, char *av[])
 {
   int			i;
   register char		*p;
@@ -510,6 +501,7 @@ char *av[];
       XBATCHbuffer = NEW(char, XBATCHsize);
     }
 
+    err = 0; /* stupid compiler */
     for (i = XBATCHsize, p = XBATCHbuffer; i; i -= err, p+= err) {
       err = read(fd, p, i);
       if (err < 0) {

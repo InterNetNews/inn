@@ -15,14 +15,10 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-
-extern void	MAPread();
-extern char	*MAPname();
+#include "map.h"
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
     char		buff[2048];
     char                *p;

@@ -1022,7 +1022,7 @@ get_active(host, hostid, len, grp, errs)
 	}
 
 	/* check for long name if requested */
-	if (s_flag > 0 && strlen(cur->name) > s_flag) {
+	if (s_flag > 0 && strlen(cur->name) > (size_t)s_flag) {
 	    if (!QUIET(hostid)) {
 		(void) fprintf(stderr,
 		    "%s: line %d <%s> from %s has a name that is too long\n",
@@ -1221,7 +1221,7 @@ get_active(host, hostid, len, grp, errs)
 
 	/* if an = type, check for long = name if requested */
 	if (cur->type[0] == '=' && s_flag > 0 &&
-	    strlen(&(cur->type[1])) > s_flag) {
+	    strlen(&(cur->type[1])) > (size_t)s_flag) {
 	    if (!QUIET(hostid)) {
 		(void) fprintf(stderr,
 	      "%s: line %d <%s> from %s is equivalenced to a long name: <%s>\n",

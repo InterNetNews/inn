@@ -10,6 +10,8 @@
 #include "macros.h"
 #include "paths.h"
 
+#include "map.h"
+
 
 typedef struct _PAIR {
     char	First;
@@ -25,7 +27,7 @@ static PAIR	*MAPend;
 **  Free the map.
 */
 void
-MAPfree()
+MAPfree(void)
 {
     register PAIR	*mp;
 
@@ -42,8 +44,7 @@ MAPfree()
 **  Read the map file.
 */
 void
-MAPread(name)
-    char		*name;
+MAPread(const char *name)
 {
     register FILE	*F;
     register int	i;
@@ -87,8 +88,7 @@ MAPread(name)
 **  Look up a name in the map, return original value if not found.
 */
 char *
-MAPname(p)
-    register char	*p;
+MAPname(register char *p)
 {
     register PAIR	*mp;
     register char	c;
