@@ -720,6 +720,8 @@ nnrp_access
     input: while ( <IN> ) {
 	next input if &spacious($file, ++$line);
 
+	next input if (/^%DEFINE/);
+
 	unless ( ($host, $perm, $user, $pass, $groups) =
 	    /^([^:])+:([^:]*):([^:]*):([^:]*):([^:]+)$/ ) {
 	    print "$file:$line: malformed line.\n";
