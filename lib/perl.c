@@ -228,14 +228,6 @@ void PerlClose(void)
    PerlFilterActive = FALSE;
 }
 
-extern void xs_init()
-{
-    char * file = __FILE__;
-    dXSUB_SYS;
-
-    newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
-}
-
 /*
 ** Redirects STDOUT/STDERR briefly (otherwise PERL complains to the net connection
 ** for NNRPD and that just won't do) -- dave@jetcafe.org
@@ -300,5 +292,51 @@ void PerlUnSilence(void) {
   }
 }
 
-#endif /* defined(DO_PERL) */
+/*
+**  The remainder of this file consists of XS callbacks usable by either
+**  innd or nnrpd and initialized automatically when the Perl filter is
+**  initialized, as well as the function that initializes them.
+*/
 
+/*
+**  Log a message via syslog.  Only the first letter of the priority
+**  matters, and this function assumes that the controlling program has
+**  already done an openlog().  The argument must be a complete message, not
+**  a printf-style format.
+*/
+XS(XS_INN_syslog)
+{
+    dXSARGS;
+    char *      loglevel;
+    char *      logmsg;
+    int         priority;
+
+    if (items != 2)
+        croak("Usage: INN::syslog(level, message)");
+
+    loglevel = (char *) SvPV(ST(0), PL_na);
+    logmsg = (char *) SvPV(ST(1), PL_na);
+
+    switch (*loglevel) {
+        default:                priority = LOG_NOTICE;
+        case 'a': case 'A':     priority = LOG_ALERT;           break;
+        case 'c': case 'C':     priority = LOG_CRIT;            break;
+        case 'e': case 'E':     priority = LOG_ERR;             break;
+        case 'w': case 'W':     priority = LOG_WARNING;         break;
+        case 'n': case 'N':     priority = LOG_NOTICE;          break;
+        case 'i': case 'I':     priority = LOG_INFO;            break;
+        case 'd': case 'D':     priority = LOG_DEBUG;           break;
+    }
+    syslog(priority, "filter: %s", logmsg);
+    XSRETURN_UNDEF;
+}
+
+extern void
+xs_init()
+{
+    dXSUB_SYS;
+    newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, "perl.c");
+    newXS("INN::syslog", XS_INN_syslog, "perl.c");
+}
+
+#endif /* defined(DO_PERL) */
