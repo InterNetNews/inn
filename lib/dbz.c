@@ -314,7 +314,7 @@ long dbzsize(const long contents) {
 	return DEFSIZE;
     }
     if ((conf.fillpercent > 0) && (conf.fillpercent < 100))
-	n = (contents * conf.fillpercent) / 100;
+	n = (contents * 100) / conf.fillpercent;
     else 
 	n = (contents * 3) / 2;	/* try to keep table at most 2/3 full */
     DEBUG(("dbzsize: final size %ld\n", n));
