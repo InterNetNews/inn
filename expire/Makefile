@@ -1,6 +1,8 @@
 ##  $Revision$
 include ../Makefile.global
 
+CFLAGS	= $(GCFLAGS)
+
 SOURCES	=	convdate.c expire.c expireover.c fastrm.c grephistory.c \
 		makeactive.c makehistory.c newsrequeue.c prunehistory.c \
 		expireindex.c
