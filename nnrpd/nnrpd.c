@@ -660,6 +660,7 @@ Printf(const char *fmt, ...)
 #ifdef HAVE_SSL
     if (tls_conn) {
       int r;
+      char buff[2048];
 
       va_start(args, fmt);
       vsnprintf(buff, sizeof(buff), fmt, args);
