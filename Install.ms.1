@@ -9,7 +9,7 @@
 .el \{\
 \s-1UNIX\s0\\$1\(dg
 .FS
-\(dg \s-1UNIX\s0 is a registered trademark of X/Open Company Ltd.
+\(dg \s-1UNIX\s0 is a registered trademark of The Open Group.
 .FE
 .nr UX 1
 .\}
@@ -62,8 +62,8 @@ There is a book called \fIAdministering Usenet
 New Servers\fP, ISBN 0-201-41967-X, by James McDermott and John E.
 Phillips. Published by Addison-Wesley. It has good INN 1.5.1 coverage.
 .PP 
-In November 1997, there was a new version of \fIManaging Usenet\fP
-(note, no UUCP) about to come out from O'Reilly & Associates. This has a
+In January 1998, there is a new version of \fIManaging Usenet\fP
+(note, no UUCP) from O'Reilly & Associates. This has a
 large section on INN as well as Cnews.
 .PP
 You should know BSD-derived TCP/IP \(em at least be comfortable with host
@@ -131,10 +131,9 @@ If You Are Impatient
 .PP
 If you don't want to follow these directions, do the following:
 .DS
+configure (with some options if you need)
 cd $inn/config
-cp config.dist config.data
-chmod 644 config.data
-vi config.data (or emacs, or whatever)
+vi config.data (if you need)
 cd ..
 make world 
 mkdir -p /usr/news /var/news /var/news/spool
@@ -163,8 +162,6 @@ bulk article transfer).
 Library routines used by all the above.
 .IP \fIinclude\fP 15
 Header files used by all the above.
-.IP \fIdbz\fP 15
-DBZ database package.
 .IP \fIsyslog\fP 15
 Syslog routines for the systems which don't provide proper functions needed
 for INN.
@@ -179,13 +176,16 @@ A place to store edited copies of the files in the \fIsamples\fP directory.
 Manual pages for all the above.
 .IP \fIconfig\fP 15
 Tools to configure the release for your site.
-.IP \fIsample-configs\fP 15
-Sample configuration data for any system.
 .IP \fIauthprogs\fP 15
 Sample program which can be used for an authentication with nnrpd.
+.IP \fIstorage\fP 15
+Library routines for storage api.
+.IP \fIinnfeed\fP 15
+Fast news transfer program for INN.
 .IP \fIcontrib\fP 15
 Contributed programs useful for INN.
 .IP \fIobsolete\fP 15
+Formerly used programs but unused now.
 .IP \fIFAQ\fP 15
 Frequently Asked Questions on INN which is posted at news.software.{b,nntp}
 periodically.
@@ -198,11 +198,13 @@ The distribution copyright.
 InterNetNews is freely redistributable, provided proper credit is given.
 .IP \fIMANIFEST\fP 15
 A one-line description of every file in the distribution.
-.IP \fIBUILD\fP 15
-An interactive script to configure, build, and install INN.
-.IP \fImakedirs.sh\fP 15
-A script to build INN's directories except for the top levels: /usr/news
+.IP \fIBUILD.in\fP 15
+Template file for an interactive script to configure, build, and install INN.
+BUILD is created based on this file.
+.IP \fImakedirs.sh.in\fP 15
+Template file for a script to build INN's directories except for the top levels: /usr/news
 /var/news and /var/news/spool.
+makedirs.sh is created based on this file.
 As long as you have write permission to install the programs, this is
 the only part of the installation that needs to be done as
 root, except that inndstart needs to be installed setuid root, and so doing
@@ -212,6 +214,9 @@ Rules to call the other Makefiles and make distributions.
 .IP \fIInstall.ms\fP 15
 This document.
 It requires the ``\-ms'' nroff/troff macro package.
+.IP \fIMakefile.global.in\fP 15
+Template file for a globally included file for all Makefile.
+Makefile.global is created based on this file.
 .IP \fIMakeLib\fP 15
 Script to build a directory with a replacement of the reference
 implementation's ``clientlib'' routines needed by remote \fIrn\fP.
@@ -225,6 +230,10 @@ Various \fIsed\fP scripts to filter the output of \fIlint\fP.
 A description for PERL filtering.
 .IP \fIREADME.tcl_hook\fP 15
 A description for TCL filtering.
+.IP \fIREADME.pgp\fP 15
+A description for PGP authentication of control message.
+.IP \fIREADME.track\fP 15
+A description for nnrpd tracking.
 .IP \fICONTRIBUTORS\fP 15
 Contributors to INN.
 .IP \fIHISTORY\fP 15
@@ -233,8 +242,16 @@ History until INN 1.4.
 Script that does test(1).
 .IP \fIinstallit.sh\fP 15
 Script that installs programs, scripts and configuration files for INN.
-.IP \fIPGPKEYS\fP 15
-PGP public keys used for control message authentication.
+.IP \fIconfigure\fP 15
+Script that creates configuration files, header files, and etc.
+.IP \fIconfigure.in\fP 15
+For developers file.
+.IP \fIautoconf-inn.readme.htm\fP 15
+For developers file.
+.IP \fIautoinsert.pl\fP 15
+For developers file.
+.IP \fIdevelopconfig.sh\fP 15
+For developers file.
 .NH 1
 Building the System
 .PP

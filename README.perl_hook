@@ -17,15 +17,7 @@ To include Perl support, you need to have perl 5.004. Other Version before
 5.004, you will get link error at compilation time. Go to
 http://www.perl.com/CPAN for the latest Perl goodies.
 
-In config.dist there is a section (#17) devoted to Perl. You must set
-PERL_SUPPORT to DO and PERL_INC and PERL_LIB to the appropriate values for
-your system for the compilation to work properly. For dynamic loading
-support to work properly, you'll need to include the output of:
-
-	perl -MExtUtils::Embed -e ldopts
-
-in the value for PERL_LIB, or you will end up with errors like "ld: fatal
-error: Symbol referencing errors" when compiling.
+To enable Perl support, you need to specify '--with-perl' with configure.
 
 --------------------------------------------------
 
@@ -100,7 +92,9 @@ received via the POST command is given to the ``filter_post'' subroutine in
 exactly the same manner as for filter_art in innd. The return value must be
 a null string to accept the article, anything else will cause the article
 to be rejected and the reason sent back to the client will be the returned
-value of the ``filter_post'' function.
+value of the ``filter_post'' function.  If $modify_headers is set to a
+non-zero value, then all headers in the associative array ``%hdr'' are written
+back to the posted message.
 
 --------------------------------------------------
 

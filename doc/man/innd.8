@@ -529,6 +529,17 @@ The rest of the line may contain other information.
 In other cases, the second word attempts to summarize what change
 has been made, while the rest of the line gives more specific information.
 The word ``internal'' generally indicates an internal logic error.
+.SH SIGNALS
+.I Innd
+will catch SIGTERM and SIGDANGER and then it will shutdown.
+If ``-d'' flag is used, SIGINT also will be catched and
+.I innd
+will shutdown.
+.PP
+.I Innd
+will catch SIGUSR1 signal and recreate the control channel which is typically
+used for 
+.IR ctlinnd (8).
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$
