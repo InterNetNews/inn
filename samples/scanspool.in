@@ -95,6 +95,7 @@
 # perl requirements
 #
 require "getopts.pl";
+require "@prefix@/etc/innshellvars.pl" ;
 
 # setup non-buffered stdout and stderr
 #
@@ -106,12 +107,9 @@ $|=1;
 # global constants
 #
 $prog = $0;			 	# our name
-# =()<$spool = "@<_PATH_SPOOL>@";>()=   # top of where articles are filed
-$spool = "/var/news/spool/articles";
-# =()<$active = "@<_PATH_ACTIVE>@";>()=	# inn active file, list of groups
-$active = "/var/news/etc/active";
-# =()<$ctlinnd = "@<_PATH_NEWSBIN>@/ctlinnd";>()=
-$ctlinnd = "/usr/news/bin/ctlinnd";
+$spool = "$inn::patharticles";
+$active = "$inn::pathdb/active";
+$ctlinnd = "$inn::pathbinctlinnd";
 $reason = "running scanspool";		# throttle reason
 
 # parse args

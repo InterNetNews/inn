@@ -9,12 +9,20 @@
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INNDSTART}
 ##  Set to true or false
-DOINNWATCH=true
+if [ -z "${DOINNWATCH}" -o "${DOINNWATCH}" = "on" -o \
+			"${DOINNWATCH}" = "yes" ]; then
+    DOINNWATCH=true
+else
+    DOINNWATCH=false
+fi
+
 MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
 
-##  RFLAG is set below; set FLAGS as appropriate.
+##  RFLAG is set below; set INNFLAGS in inn.conf(5)
 RFLAG=""
-FLAGS="-i0"
+if [ -z "$INNFLAGS" ]; then
+    INNFLAGS="-i0"
+fi
 
 ##  Clean shutdown?
 if [ -f ${SERVERPID} ] ; then
@@ -63,10 +71,11 @@ rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID}
 
 ##  Start the show.
 echo 'Starting innd.'
-eval ${WHAT} ${RFLAG} ${FLAGS}
+eval ${WHAT} ${RFLAG} ${INNFLAGS}
 
 # Gee, looks like lisp, doesn't it?
 ${DOINNWATCH} && {
+    echo "Scheduled start of $INNWATCH}."
     ( sleep 60 ; ${INNWATCH} ) &
 }
 

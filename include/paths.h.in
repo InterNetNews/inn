@@ -73,9 +73,6 @@
     /* =()<#define _PATH_GZIP	"@<_PATH_GZIP>@">()= */
 #define _PATH_GZIP	"/usr/bin/gzip"
 
-    /* =()<#define _PATH_OVERVIEW		"@<_PATH_OVERVIEW>@">()= */
-#define _PATH_OVERVIEW		".overview"
-
     /* =()<#define _PATH_SPOOLTEMP	"@<_PATH_SPOOLTEMP>@">()= */
 #define _PATH_SPOOLTEMP	"/var/tmp"
     /* =()<#define _PATH_RELBAD		"@<_PATH_RELBAD>@">()= */

@@ -449,6 +449,17 @@ problems with mmap().
 .I clienttimeout
 How long (in seconds) an nnrpd can be inactive before it exits.
 .PP
+The following flags are only used by the startup script ``rc.news''.
+.TP
+.I innflags
+The flags to pass to INN on startup. See the
+.I innd (8)
+man page for details. The default flags are ``-i0''.
+.TP
+.I doinnwatch
+If set to ``no'' then do not start
+.I innwatch (8). Default is to start it.
+.PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE
 .RS
