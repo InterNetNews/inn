@@ -480,6 +480,7 @@ STATIC void ARTsendqio(SENDTYPE what)
 
     gettimeofday(&stv, NULL);
     /* Get the headers. */
+    QIOrewind(ARTqp);
     for ( ; ; ) {
 	p = QIOread(ARTqp);
 	if (p == NULL) {
