@@ -42,6 +42,10 @@
 
 #include <errno.h>
 
+#if defined (__FreeBSD__)
+#include <sys/param.h>
+#endif
+
 #include "buffer.h"
 #include "connection.h"
 #include "endpoint.h"
