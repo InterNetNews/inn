@@ -21,9 +21,10 @@
 
 /* Solaris 8 (at least) prototypes munmap, msync, and madvise as taking char *
    (actually a caddr_t, which is a typedef for a char *) instead of void * as
-   is required by the standard.  This macro adds a cast that silences compiler
+   is required by the standard.  These macros add casts that silences compiler
    warnings on Solaris 8 without adversely affecting other platforms.  (ISO C
    allows macro definitions of this sort; this macro is not recursive.) */
+#define mmap(s, l, p, f, d, o)	(void *) mmap((s), (l), (p), (f), (d), (o))
 #define munmap(p, l)            munmap((void *)(p), (l))
 
 /* On some platforms, msync only takes two arguments.  (ANSI C allows macro
