@@ -6,7 +6,7 @@ CFLAGS  = $(GCFLAGS)
 
 SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
 	concat.c conffile.c date.c dbz.c defdist.c endian.c error.c \
-	findheader.c fseeko.c ftello.c genid.c getconfig.c getdtab.c \
+	fdlimit.c findheader.c fseeko.c ftello.c genid.c getconfig.c \
 	getfqdn.c getmodaddr.c getopt.c gettime.c grpalias.c hash.c \
 	hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
 	lockfile.c makedir.c md5.c memchr.c memcmp.c memmove.c memset.c \
@@ -18,8 +18,8 @@ SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
 
 OBJECTS = $(LIBOBJS) \
 	argparse.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
-	concat.o conffile.o date.o dbz.o defdist.o error.o findheader.o \
-	genid.o getconfig.o getdtab.o getfqdn.o getmodaddr.o gettime.o \
+	concat.o conffile.o date.o dbz.o defdist.o error.o fdlimit.o \
+	findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o gettime.o \
 	grpalias.o hash.o inndcomm.o localopen.o lockfile.o makedir.o md5.o \
 	nonblocking.o parsedate.o qio.o radix32.o readin.o remopen.o \
 	reservedfd.o resource.o rwlock.o sendarticle.o sendpass.o \
