@@ -217,7 +217,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
       }
       break;
     case DP_S_MIN:
-      if (isdigit(ch)) 
+      if (isdigit((unsigned char)ch)) 
       {
 	min = 10*min + char_to_int (ch);
 	ch = *format++;
@@ -241,7 +241,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	state = DP_S_MOD;
       break;
     case DP_S_MAX:
-      if (isdigit(ch)) 
+      if (isdigit((unsigned char)ch)) 
       {
 	if (max < 0)
 	  max = 0;
@@ -446,10 +446,11 @@ static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
   int padlen, strln;     /* amount to pad */
   int cnt = 0;
   int total = 0;
+  char null[] = "<NULL>";
   
   if (value == 0)
   {
-    value = "<NULL>";
+    value = null;
   }
 
   for (strln = 0; value[strln]; ++strln); /* strlen */
@@ -487,7 +488,7 @@ static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
   int signvalue = 0;
   unsigned LLONG uvalue;
   char convert[24];
-  int place = 0;
+  unsigned int place = 0;
   int spadlen = 0; /* amount to space pad */
   int zpadlen = 0; /* amount to zero pad */
   const char *digits;
@@ -526,7 +527,7 @@ static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
   convert[place] = 0;
 
   zpadlen = max - place;
-  spadlen = min - MAX (max, place) - (signvalue ? 1 : 0);
+  spadlen = min - MAX ((unsigned int)max, place) - (signvalue ? 1 : 0);
   if (zpadlen < 0) zpadlen = 0;
   if (spadlen < 0) spadlen = 0;
   if (flags & DP_F_ZERO)
