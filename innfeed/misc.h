@@ -69,7 +69,6 @@ typedef unsigned short u_short ;
 #endif
 
 /* debugging information */
-extern char *program ;
 extern u_int loggingLevel ;     /* if 0 then d_printf is a no-op */
 
 /* the current count of file desccriptors */
@@ -98,9 +97,7 @@ void logOrPrint (int level, FILE *fp, const char *fmt, ...)
   __attribute__ ((__format__ (printf, 3, 4)));
 
 /* Error handling functions for use with warn and die. */
-int log_stderr(int len, const char *format, va_list args, int error);
-int syslog_err(int len, const char *format, va_list args, int error);
-int syslog_warn(int len, const char *format, va_list args, int error);
+void error_log_stderr_date(int len, const char *fmt, va_list args, int err);
 
 /* Do cleanup and then abort, for use with die. */
 int dump_core(void);
