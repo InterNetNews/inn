@@ -144,6 +144,11 @@ check test tests:
 	cd tests && $(MAKE) test
 
 
+##  For maintainers, build the entire source base with warnings enabled.
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
+
+
 ##  Make a release.  We create a release by recreating the directory
 ##  structure and then copying over all files listed in the MANIFEST.  If it
 ##  isn't in the MANIFEST, it doesn't go into the release.  We also update
