@@ -138,6 +138,7 @@ ARTHEADER	ARTheaders[] = {
     {	"X-Newsposter",		HTstd },
     {	"X-Cancelled-By",	HTstd },
     {	"X-Canceled-By",	HTstd },
+    {	"Cancel-Key",		HTstd },
 };
 
 ARTHEADER	*ARTheadersENDOF = ENDOF(ARTheaders);
