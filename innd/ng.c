@@ -6,11 +6,12 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/mman.h>
+#include <dirent.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
-#include <sys/mman.h>
-#include "mydir.h"
+#include "ov3.h"
 
 
 /*
@@ -84,11 +85,7 @@ NGdirname(p)
 **  not to write NUL's into the in-core copy, since we're either mmap(2)'d,
 **  or we want to just blat it out to disk later.
 */
-STATIC BOOL
-NGparseentry(ngp, p, end)
-    register NEWSGROUP		*ngp;
-    register char		*p;
-    register char		*end;
+STATIC BOOL NGparseentry(NEWSGROUP *ngp, char *p, char *end)
 {
     register char		*q;
     register unsigned int	j;
@@ -143,6 +140,9 @@ NGparseentry(ngp, p, end)
 	RENEW(htp->Groups, NEWSGROUP*, htp->Size);
     }
     htp->Groups[htp->Used++] = ngp;
+
+    if (innconf->enableoverview && !OV3groupadd(ngp->Name, ngp->Rest))
+	return FALSE;
 
     return TRUE;
 }
@@ -332,23 +332,16 @@ static char		RENUMBER[] = "%s renumber %s %s from %ld to %ld";
 
 BOOL NGrenumber(NEWSGROUP *ngp)
 {
-    DIR	                *dp;
-    DIRENTRY	        *ep;
+    int			low, high, count,flag;
     char	        *f2;
-    char	        *p;
     char		*f3;
     char		*f4;
     char		*start;
+    long		lomark, himark;
     long		l;
-    long		himark;
-    long		lomark;
     char		*dummy;
-    FILE                *fi;
-    OVERINDEX           index;
-    char                packed[OVERINDEXPACKSIZE];
-    struct stat		sb;
-    char		(*mapped)[][OVERINDEXPACKSIZE];
-    int			count;
+
+    if (!innconf->enableoverview) return TRUE; /* can't do anything w/o overview */
 
     /* Get a valid offset into the active file. */
     if (ICDneedsetup) {
@@ -367,67 +360,14 @@ BOOL NGrenumber(NEWSGROUP *ngp)
     }
     himark = atol(f2);
     lomark = himark + 1;
+    /* note these will be the low and himarks if the group turns out to be empty. */
 
-    if (innconf->storageapi) {
-	p = NEW(char, strlen(innconf->pathoverview) + strlen(ngp->Dir) +
-					strlen(innconf->overviewname) + 32);
-	sprintf(p, "%s/%s/%s.index", innconf->pathoverview, ngp->Dir,
-					innconf->overviewname);
-	if ((fi = Fopen(p, "r", TEMPORARYOPEN)) == NULL) {
-	    DISPOSE(p);
-	} else {
-	    DISPOSE(p);
-	    if (innconf->overviewmmap) {
-		if (fstat(fileno(fi), &sb) < 0) {
-		    Fclose(fi);
-		    return TRUE;
-		}
-		count = sb.st_size / OVERINDEXPACKSIZE;
-		if (count == 0) {
-		    Fclose(fi);
-		    return TRUE;
-		}
-		if ((mapped = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, count * OVERINDEXPACKSIZE,
-		    PROT_READ, MAP__ARG, fileno(fi), 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
-		    Fclose(fi);
-		    return TRUE;
-		}
-		Fclose(fi);
-		/* assumes .overview.index is sorted */
-		UnpackOverIndex((*mapped)[0], &index);
-		if (index.artnum < lomark)
-		    lomark = index.artnum;
-		UnpackOverIndex((*mapped)[count-1], &index);
-		if (index.artnum > himark)
-		    himark = index.artnum;
-		if ((munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE)) < 0)
-		    return TRUE;
-	    } else {
-		while (fread(packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
-		    UnpackOverIndex(packed, &index);
-		    if (index.artnum < lomark)
-			lomark = index.artnum;
-		    if (index.artnum > himark)
-			himark = index.artnum;
-		}
-		Fclose(fi);
-	    }
-	}
-    } else {
-        /* Scan the directory. */
-	if ((dp = opendir(ngp->Dir)) != NULL) {
-	    while ((ep = readdir(dp)) != NULL) {
-		p = ep->d_name;
-		if (!CTYPE(isdigit, p[0]) || strspn(p, "0123456789") != strlen(p)
-		    || (l = atol(p)) == 0)
-		    continue;
-		if (l < lomark)
-		    lomark = l;
-		if (l > himark)
-		    himark = l;
-	    }
-	    (void)closedir(dp);
-	}
+    /* Check overview data for the group. */
+    if (!OV3groupstats(ngp->Name, &low, &high, &count, &flag)) return FALSE;
+    if (count != 0) {
+	/* non-empty group, so set low/himarks from overview. */
+	lomark = low;
+	himark = high;
     }
     l = atol(f2);
     if (himark != l) {

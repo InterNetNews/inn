@@ -5,13 +5,14 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/uio.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
 #include "storage.h"
 #include "dbz.h"
 #include "art.h"
-#include <sys/uio.h>
+#include "ov3.h"
 
 typedef struct iovec	IOVEC;
 
@@ -532,8 +533,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     }
 
         /* Figure out how much space we'll need and get it. */
-    (void)sprintf(bytesbuff, "Bytes: %ld%s\n", 
-        size, innconf->wireformat ? "\r" : "");
+    (void)sprintf(bytesbuff, "Bytes: %ld\r\n", size);
 
     if (Headers.Data == NULL) {
 	Headers.Size = end - artbuff;
@@ -553,201 +553,6 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     DISPOSE(artbuff);
     return result;
 }
-
-/*
-**  Write an article using writev.  The article is split into pieces,
-**  shown below separated by pipe signs.  The items in square brackets are
-**  "inserted" by this routine.
-**	|headers...
-**	Path: |[Path.Data]/[Pathalias.Data]|rest of path...
-**	headers...
-**	|[Lines header, if needed]|
-**	|[Xref header]|
-**
-**	Article body.
-**  Also, the Data->Size field is filled in.
-*/
-STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
-{
-    static char		WHEN[] = "article";
-    static BUFFER	Headers;
-    int                 fd;
-    IOVEC	        *vp;
-    long	        size;
-    char	        *p;
-    IOVEC		iov[10];
-    IOVEC		*end;
-    char		bytesbuff[SMBUF];
-    int			i;
-
-    if ((p = (char *)HeaderFindMem(Article->Data, Article->Used, "Path", 4)) == NULL
-     || p == Article->Data) {
-	/* This should not happen. */
-	syslog(L_ERROR, "%s internal %s no Path header",
-	    Data->MessageID, LogName);
-	return -1;
-    }
-
-    /* Open the file. */
-    if ((fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, ARTFILE_MODE)) < 0) {
-	if (errno != ENOENT)
-	    IOError(WHEN, errno);
-	return -1;
-    }
-
-    /* Set up the scatter/gather vectors. */
-    vp = iov;
-    size = 0;
-    vp->iov_base = Article->Data;
-    vp->iov_len  = p - Article->Data;
-    size += (vp++)->iov_len;
-
-    /* Do not append the same path twice */
-    if (strncmp(Path.Data, p, Path.Used) != 0) {
-	Hassamepath = FALSE;
-        vp->iov_base = Path.Data;
-        vp->iov_len  = Path.Used;
-        size += (vp++)->iov_len;
-	if (AddAlias) {
-	    vp->iov_base = Pathalias.Data;
-	    vp->iov_len  = Pathalias.Used;
-	    size += (vp++)->iov_len;
-	}
-	vp->iov_base = p;
-	vp->iov_len  = Data->Body - p - (innconf->wireformat == 1);
-	size += (vp++)->iov_len;
-    } else {
-	Hassamepath = TRUE;
-	if (AddAlias) {
-            vp->iov_base = Path.Data;
-            vp->iov_len  = Path.Used;
-            size += (vp++)->iov_len;
-	    vp->iov_base = Pathalias.Data;
-	    vp->iov_len  = Pathalias.Used;
-	    size += (vp++)->iov_len;
-	    vp->iov_base = p + Path.Used;
-	    vp->iov_len  = Data->Body - p - Path.Used - (innconf->wireformat == 1);
-	    size += (vp++)->iov_len;
-	} else {
-	    vp->iov_base = p;
-	    vp->iov_len  = Data->Body - p - (innconf->wireformat == 1);
-	    size += (vp++)->iov_len;
-	}
-    }
-
-    if (NeedPath) {
-	Data->Path = p;
-	for (i = Data->Body - p; --i >= 0; p++)
-	    if (*p == '\r' || *p == '\n')
-		break;
-	Data->PathLength = p - Data->Path;
-    }
-
-    if (ARTheaders[_lines].Found == 0) {
-	(void)sprintf(Data->Lines, "Lines: %d%s\n", Data->LinesValue, innconf->wireformat ? "\r" : "");
-	i = strlen(Data->Lines);
-	vp->iov_base = Data->Lines;
-	vp->iov_len = i;
-	size += (vp++)->iov_len;
-	/* Install in header table; STRLEN("Lines: ") == 7. */
-	(void)strcpy(ARTheaders[_lines].Value, Data->Lines + 7);
-	ARTheaders[_lines].Length = i - 7 - (innconf->wireformat ? 2 : 1);
-	ARTheaders[_lines].Found = 1;
-    }
-
-    /* Install in header table; STRLEN("Xref: ") == 6. */
-    vp->iov_base = "Xref: ";
-    vp->iov_len = 6;
-    size += (vp++)->iov_len;
-    vp->iov_base = HDR(_xref);
-    vp->iov_len  = ARTheaders[_xref].Length;
-    size += (vp++)->iov_len;
-    ARTheaders[_xref].Found = 1;
-
-
-    end = vp;
-    vp->iov_base = innconf->wireformat ? "\r\n\r\n" : "\n\n";
-    vp->iov_len  = innconf->wireformat ? 4 : 2;
-    size += (vp++)->iov_len;
-
-    vp->iov_base = Data->Body;
-    vp->iov_len  = &Article->Data[Article->Used] - Data->Body;
-    size += (vp++)->iov_len;
-    
-    if (innconf->wireformat) {
-        vp->iov_base = ".\r\n";
-        vp->iov_len = 3;
-        size += (vp++)->iov_len;
-    }
-    
-    Data->SizeValue = size;
-    (void)sprintf(Data->Size, "%ld", Data->SizeValue);
-    Data->SizeLength = strlen(Data->Size);
-    HDR(_bytes) = Data->Size;
-    ARTheaders[_bytes].Length = Data->SizeLength;
-    ARTheaders[_bytes].Found = 1;
-
-    /* Now do the write. */
-    if (xwritev(fd, iov, vp - iov) < 0) {
-	i = errno;
-	syslog(L_ERROR, "%s cant write %s %m", LogName, name);
-	IOError(WHEN, i);
-	(void)close(fd);
-	if (unlink(name) < 0 && errno != ENOENT) {
-	    i = errno;
-	    syslog(L_ERROR, "%s cant unlink %s %m", LogName, name);
-	    IOError(WHEN, i);
-	}
-	return -1;
-    }
-    if (close(fd) < 0) {
-	i = errno;
-	syslog(L_ERROR, "%s cant close %s %m", LogName, name);
-	IOError(WHEN, i);
-	if (unlink(name) < 0 && errno != ENOENT) {
-	    i = errno;
-	    syslog(L_ERROR, "%s cant unlink %s %m", LogName, name);
-	    IOError(WHEN, i);
-	}
-	return -1;
-    }
-
-    /* Set the owner. */
-    if (AmRoot)
-	xchown(name);
-
-    /* Need the header data? */
-    if (!NeedHeaders)
-	return 0;
-
-    /* Figure out how much space we'll need and get it. */
-    (void)sprintf(bytesbuff, "Bytes: %ld%s\n", 
-        size, innconf->wireformat ? "\r" : "");
-    for (i = strlen(bytesbuff), vp = iov; vp < end; vp++)
-      i += vp->iov_len;
-    i+= ARTheaders[_xref].Length;
-
-    if (Headers.Data == NULL) {
-	Headers.Size = i;
-	Headers.Data = NEW(char, Headers.Size + 1);
-    }
-    else if (Headers.Size <= i) {
-	Headers.Size = i;
-	RENEW(Headers.Data, char, Headers.Size + 1);
-    }
-
-    /* end includes eol for xref and null line, just shorten for eol */
-    end->iov_len  -= innconf->wireformat ? 2 : 1;
-    /* Add the data. */
-    BUFFset(&Headers, bytesbuff, strlen(bytesbuff));
-    for (vp = iov; vp <= end; vp++)
-	BUFFappend(&Headers, vp->iov_base, vp->iov_len);
-    BUFFtrimcr(&Headers);
-    Data->Headers = &Headers;
-
-    return 0;
-}
-
 
 /*
 **  Parse a header that starts at in, copying it to out.  Return pointer to
@@ -850,7 +655,7 @@ STATIC char *ARTparseheader(char *in, char *out, int *deltap, STRING *errorp)
     start[hp->Size] = ':';
 
     /* Copy the header if not too big. */
-    i = (out - 1 - (innconf->wireformat == TRUE)) - p;
+    i = (out - 1 - 1) - p;
     if (i >= MAXHEADERSIZE) {
 	(void)sprintf(buff, "\"%s\" header too long", hp->Name);
 	*errorp = buff;
@@ -980,7 +785,7 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 	if ((p = ARTparseheader(in, out, &delta, &error)) == NULL)
 	    break;
     }
-    Data->Body = out + (innconf->wireformat == TRUE);
+    Data->Body = out + 1;
     in++;
 
     /* Try to set this now, so we can report it in errors. */
@@ -1021,11 +826,8 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 	return buff;
     }
     Article->Used = out - Article->Data;
-    if (innconf->storageapi)
-	Data->LinesValue = (i - 1 < 0) ? 0 : (i - 1);
-    else
-	Data->LinesValue = i;
-
+    Data->LinesValue = (i - 1 < 0) ? 0 : (i - 1);
+    
     if (innconf->linecountfuzz) {
 	p = HDR(_lines);
 	if (*p && (delta = i - atoi(p)) != 0 && abs(delta) >
@@ -2113,7 +1915,6 @@ STRING ARTpost(CHANNEL *cp)
     static BUFFER	Files;
     static BUFFER	Header;
     static char		buff[SPOOLNAMEBUFF];
-    char		dirname[SPOOLNAMEBUFF];
     char	        *p;
     int	                i;
     int	                j;
@@ -2133,7 +1934,6 @@ STRING ARTpost(CHANNEL *cp)
     BOOL		OverviewCreated = FALSE;
     BUFFER		*article;
     HASH                hash;
-    char		linkname[SPOOLNAMEBUFF];
     char		**groups;
     char		**hops;
     int			hopcount;
@@ -2599,8 +2399,7 @@ STRING ARTpost(CHANNEL *cp)
     j++;
 
     /* Allocate exactly enough space for the textual representation */
-    if (innconf->storageapi)
-	j = (sizeof(TOKEN) * 2) + 3;
+    j = (sizeof(TOKEN) * 2) + 3;
 
     /* Make sure the filename buffer has room. */
     if (Files.Data == NULL) {
@@ -2637,111 +2436,43 @@ STRING ARTpost(CHANNEL *cp)
 	ICDwriteactive();
 	ICDactivedirty = 0;
     }
-    if (innconf->storageapi) {
-	TMRstart(TMR_ARTWRITE);
-	for (i = 0; (ngp = GroupPointers[i]) != NULL; i++)
-	    ngp->PostCount = 0;
-
-	token = ARTstore(article, &Data);
-	if (token.type == TOKEN_EMPTY) {
-	    if (SMerrno != SMERR_NOERROR)
-		syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
-	    else
-		syslog(L_ERROR, "%s cant store article: no matching entry in storage.conf", LogName);
-	    sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
-	    ARTlog(&Data, ART_REJECT, buff);
-	    if ((Mode == OMrunning) && !HISremember(hash))
-		syslog(L_ERROR, "%s cant write history %s %m",
-		       LogName, Data.MessageID);
-	    if (distributions)
-		DISPOSE(distributions);
-	    ARTreject(REJECT_OTHER, cp, buff, article);
-	    TMRstop(TMR_ARTWRITE);
-	    return buff;
-	}
+    TMRstart(TMR_ARTWRITE);
+    for (i = 0; (ngp = GroupPointers[i]) != NULL; i++)
+	ngp->PostCount = 0;
+    
+    token = ARTstore(article, &Data);
+    if (token.type == TOKEN_EMPTY) {
+	if (SMerrno != SMERR_NOERROR)
+	    syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
+	else
+	    syslog(L_ERROR, "%s cant store article: no matching entry in storage.conf", LogName);
+	sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
+	ARTlog(&Data, ART_REJECT, buff);
+	if ((Mode == OMrunning) && !HISremember(hash))
+	    syslog(L_ERROR, "%s cant write history %s %m",
+		   LogName, Data.MessageID);
+	if (distributions)
+	    DISPOSE(distributions);
+	ARTreject(REJECT_OTHER, cp, buff, article);
 	TMRstop(TMR_ARTWRITE);
-	ARTmakeoverview(&Data, FALSE);
-	MadeOverview = TRUE;
-	if (!OVERstore(&token, Data.Overview->Data, Data.Overview->Left))
-	    syslog(L_ERROR, "%s cant store overview for %s", LogName, TokenToText(token));
-	strcpy(Files.Data, TokenToText(token));
-	strcpy(Data.Name, Files.Data);
-	Data.NameLength = strlen(Data.Name);
-	if (token.index < OVER_NONE)
-	    OverviewCreated = TRUE;
-    } else {
-	p = Files.Data;
-	*p = '\0';
-	Data.Name[0] = '\0';
-	for (i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
-	    if (!ngp->PostCount)
-		continue;
-	    ngp->PostCount = 0;
-	    
-	    if (Data.Name[0] == '\0') {
-		TMRstart(TMR_ARTWRITE);
-		/* Write the article the first time. */
-		sprintf(Data.Name, "%s/%lu", ngp->Dir, ngp->Filenum);
-		strcpy(dirname, ngp->Dir);
-		if (ARTwrite(Data.Name, article, &Data) < 0
-			&& (!MakeDirectory(dirname, TRUE)
-			|| ARTwrite(Data.Name, article, &Data) < 0)) {
-		    i = errno;
-		    syslog(L_ERROR, "%s cant write %s %m", LogName, Data.Name);
-		    (void)sprintf(buff, "%d cant write article %s, %s",
-				  NNTP_RESENDIT_VAL, Data.Name, strerror(i));
-		    ARTlog(&Data, ART_REJECT, buff);
-		    if (innconf->remembertrash && (Mode == OMrunning) &&
-				!HISremember(hash))
-			syslog(L_ERROR, "%s cant write history %s %m",
-			       LogName, Data.MessageID);
-		    if (distributions)
-			DISPOSE(distributions);
-		    ARTreject(REJECT_OTHER, cp, buff, article);
-		    TMRstop(TMR_ARTWRITE);
-		    return buff;
-		}
-		TMRstop(TMR_ARTWRITE);
-		p += strlen(strcpy(p, Data.Name));
-		Data.NameLength = strlen(Data.Name);
-		if (!innconf->writelinks)
-		    /* need just one file for feeder */
-		    break;
-	    } else {
-		TMRstart(TMR_ARTLINK);
-		/* Link to the main article. */
-		(void)sprintf(linkname, "%s/%lu", ngp->Dir, ngp->Filenum);
-		if (DoLinks && link(Data.Name, linkname) < 0
-		    && (!MakeDirectory(ngp->Dir, TRUE)
-			|| link(Data.Name, linkname) < 0)) {
-#if !defined(HAVE_SYMLINK)
-		    oerrno = errno;
-		    syslog(L_ERROR, "%s cant link %s and %s %m",
-			   LogName, Data.Name, linkname);
-		    IOError("linking article", oerrno);
-		    continue;
-#else
-		    /* Try to make a symbolic link to the full pathname. */
-		    FileGlue(buff, innconf->patharticles, '/', Data.Name);
-		    if (symlink(buff, linkname) < 0
-			&& (!MakeDirectory(ngp->Dir, TRUE)
-			    || symlink(buff, linkname) < 0)) {
-			oerrno = errno;
-			syslog(L_ERROR, "%s cant symlink %s and %s %m",
-			       LogName, buff, linkname);
-			IOError("symlinking article", oerrno);
-			continue;
-		    }
-#endif	/* !defined(HAVE_SYMLINK) */
-		}
-		TMRstop(TMR_ARTLINK);
-		if (innconf->writelinks) {
-		    *p++ = ' ';
-		    p += strlen(strcpy(p, linkname));
-		}
-	    }
-	}
+	return buff;
     }
+    TMRstop(TMR_ARTWRITE);
+    ARTmakeoverview(&Data, FALSE);
+    MadeOverview = TRUE;
+    if (innconf->enableoverview) {
+	TMRstart(TMR_OVERV);
+	if (!OV3add(token, Data.Overview->Data, Data.Overview->Left)) {
+	    syslog(L_ERROR, "%s cant store ov2 for %s", LogName, TokenToText(token));
+	    OverviewCreated = FALSE;
+	} else {
+	    OverviewCreated = TRUE;
+	}
+	TMRstop(TMR_OVERV);
+    }
+    strcpy(Files.Data, TokenToText(token));
+    strcpy(Data.Name, Files.Data);
+    Data.NameLength = strlen(Data.Name);
 
     /* Update history if we didn't get too many I/O errors above. */
     if ((Mode != OMrunning) || !HISwrite(&Data, hash, Files.Data, &token)) {
@@ -2757,16 +2488,9 @@ STRING ARTpost(CHANNEL *cp)
     }
 
     /* We wrote the history, so modify it and save it for output. */
-    if (innconf->storageapi) {
-	Data.Replic = HDR(_xref) + Path.Used;
-	Data.ReplicLength = ARTheaders[_xref].Length - Path.Used;
-    } else {
-	for (Data.Replic = Files.Data, p = (char *)Data.Replic; *p; p++)
-	    if (*p == ' ')
-		*p = ',';
-	Data.ReplicLength = p - Data.Replic;
-    }
-
+    Data.Replic = HDR(_xref) + Path.Used;
+    Data.ReplicLength = ARTheaders[_xref].Length - Path.Used;
+    
     /* Start logging, then propagate the article. */
     ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
     if ((innconf->nntplinklog) &&

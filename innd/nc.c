@@ -669,36 +669,9 @@ STATIC FUNCTYPE NCquit(CHANNEL *cp)
 STATIC FUNCTYPE
 NCxpath(CHANNEL *cp)
 {
-    static BUFFER	Reply;
-    char		*p;
-    int			i;
-
-    if (innconf->storageapi) {
-	/* not available for storageapi */
-	NCwritereply(cp, NNTP_BAD_COMMAND);
-	return;
-    }
-    /* Nip off the Message-ID. */
-    for (p = cp->In.Data + STRLEN("xpath"); ISWHITE(*p); p++)
-	continue;
-    if (NCbadid(cp, p))
-	return;
-
-    if ((p = HISfilesfor(HashMessageID(p))) == NULL) {
-	NCwritereply(cp, NNTP_DONTHAVEIT);
-	return;
-    }
-    i = 3 + 1 + strlen(p);
-    if (Reply.Data == NULL) {
-	Reply.Size = i;
-	Reply.Data = NEW(char, i + 1);
-    }
-    else if (Reply.Size < i) {
-	Reply.Size = i;
-	RENEW(Reply.Data, char, i + 1);
-    }
-    (void)sprintf(Reply.Data, "%d %s", NNTP_NOTHING_FOLLOWS_VAL, p);
-    NCwritereply(cp, Reply.Data);
+    /* not available for storageapi */
+    NCwritereply(cp, NNTP_BAD_COMMAND);
+    return;
 }
 
 /*
@@ -947,8 +920,6 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		DISPOSE(cp->Argument);
 		cp->Argument = NULL;
 	    }
-	    if (!innconf->wireformat)
-  	        NCclean(bp);
 	    NCpostit(cp);
 	    if (cp->State == CSwritegoodbye)
 		break;

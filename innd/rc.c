@@ -1385,9 +1385,6 @@ RCsetup(i)
     register int	i;
 {
     struct sockaddr_in	server;
-    struct hostent	*hp;
-    INADDR		a;
-    char		buff[SMBUF];
 #if	defined(SO_REUSEADDR)
     int			on;
 #endif	/* defined(SO_REUSEADDR) */

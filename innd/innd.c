@@ -9,6 +9,7 @@
 #include "clibrary.h"
 #define DEFINE_DATA
 #include "innd.h"
+#include "ov3.h"
 #include <sys/ioctl.h>
 #include <sys/uio.h>
 #include <sys/resource.h>
@@ -437,10 +438,10 @@ JustCleanup()
     ICDclose();
     HISclose();
     ARTclose();
-    if (innconf->storageapi) {
-	SMshutdown();
-	OVERshutdown();
-    }
+    if (innconf->enableoverview) 
+	OV3close();
+    SMshutdown();
+
 #if defined(DO_TCL)
     TCLclose();
 #endif /* defined(DO_TCL) */
@@ -708,20 +709,13 @@ int main(int ac, char *av[])
 	exit(1);
     }
 
-    val = FALSE;
-    if (!OVERsetup(OVER_MMAP, &val)) {
-	syslog(L_FATAL, "%s cant setup for the unified overview no mmap");
-	exit(1);
-    }
     val = TRUE;
-    if (!OVERsetup(OVER_PREOPEN, &val)) {
-	syslog(L_FATAL, "%s cant setup for the unified overview preopen");
-	exit(1);
-    }
 
-    if (innconf->storageapi && (Overfdcount = OVERgetnum()) < 0) {
-	syslog(L_FATAL, "%s cant get config for the unified overview");
-	exit(1);
+    if (innconf->enableoverview) {
+	if (!OV3open(innconf->overcachesize, OV3_WRITE)) {
+	    syslog(L_FATAL, "%s cant open ov3");
+	    exit(1);
+	}
     }
 
     /* Get the Path entry. */
@@ -871,22 +865,17 @@ int main(int ac, char *av[])
     NCsetup(i);
     ARTsetup();
     ICDsetup(TRUE);
-    if (innconf->storageapi) {
-	innconf->wireformat = TRUE;
-	val = TRUE;
-	if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
-	    syslog(L_FATAL, "%s cant setup the storage subsystem", LogName);
-	    exit(1);
-	}
-	if (!SMinit()) {
-	    syslog(L_FATAL, "%s cant initialize the storage subsystem %s", LogName, SMerrorstr);
-	    exit(1);
-	}
-    }
-    if (innconf->storageapi && !OVERinit()) {
-	syslog(L_FATAL, "%s cant initialize the unified overview", LogName);
+    
+    val = TRUE;
+    if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
+	syslog(L_FATAL, "%s cant setup the storage subsystem", LogName);
 	exit(1);
     }
+    if (!SMinit()) {
+	syslog(L_FATAL, "%s cant initialize the storage subsystem %s", LogName, SMerrorstr);
+	exit(1);
+    }
+
 #if	defined(_DEBUG_MALLOC_INC)
     m.i = 1;
     dbmallopt(MALLOC_CKCHAIN, &m);

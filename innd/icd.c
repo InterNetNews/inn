@@ -5,13 +5,12 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/mman.h>
+#include <sys/uio.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
-#if	defined(ACT_MMAP)
-#include <sys/mman.h>
-#endif	/* defined(ACT_MMAP) */
-#include <sys/uio.h>
+#include "ov3.h"
 
 typedef struct iovec	IOVEC;
 
@@ -233,10 +232,7 @@ STATIC BOOL ICDwritevactive(IOVEC *vp, int vpcount)
 /*
 **  Change the flag on a newsgroup.  Fairly easy.
 */
-BOOL
-ICDchangegroup(ngp, Rest)
-    NEWSGROUP		*ngp;
-    char		*Rest;
+BOOL ICDchangegroup(NEWSGROUP *ngp, char *Rest)
 {
     static char		NEWLINE[] = "\n";
     register int	i;
@@ -259,6 +255,11 @@ ICDchangegroup(ngp, Rest)
     ICDiovrelease(&iov[0]);
     ICDiovrelease(&iov[1]);
     ICDiovrelease(&iov[2]);
+
+    if (ret) {
+	if (innconf->enableoverview && !OV3groupadd(ngp->Name, Rest))
+	    return FALSE;
+    }
     return ret;
 }
 
@@ -266,10 +267,7 @@ ICDchangegroup(ngp, Rest)
 /*
 **  Add a newsgroup.  Append a line to the end of the active file and reload.
 */
-BOOL
-ICDnewgroup(Name, Rest)
-    char		*Name;
-    char		*Rest;
+BOOL ICDnewgroup(char *Name, char *Rest)
 {
     char		buff[SMBUF];
     IOVEC		iov[2];
@@ -287,6 +285,10 @@ ICDnewgroup(Name, Rest)
     ret = ICDwritevactive(iov, 2);
     ICDiovrelease(&iov[0]);
     ICDiovrelease(&iov[1]);
+    if (ret) {
+	if (innconf->enableoverview && !OV3groupadd(Name, Rest))
+	    return FALSE;
+    }
     return ret;
 }
 
@@ -294,9 +296,7 @@ ICDnewgroup(Name, Rest)
 /*
 **  Remove a newsgroup.  Splice the line out of the active file and reload.
 */
-BOOL
-ICDrmgroup(ngp)
-    NEWSGROUP	*ngp;
+BOOL ICDrmgroup(NEWSGROUP *ngp)
 {
     IOVEC	iov[2];
     int		i;
@@ -327,6 +327,10 @@ ICDrmgroup(ngp)
     ret = ICDwritevactive(iov, 2);
     ICDiovrelease(&iov[0]);
     ICDiovrelease(&iov[1]);
+    if (ret) {
+	if (innconf->enableoverview && !OV3groupdel(ngp->Name))
+	    return FALSE;
+    }
     return ret;
 }
 

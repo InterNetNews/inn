@@ -103,6 +103,7 @@ static void dosummary(unsigned secs)
 	case TMR_ARTCNCL:	str = "artcncl";  break;
 	case TMR_HISHAVE:	str = "hishave";  break;
 	case TMR_HISGREP:	str = "hisgrep";  break;
+	case TMR_OVERV:		str = "overv";  break;
 	case TMR_PERL:		str = "perl";  break;
 	}
 	sprintf(buf, "%s %d(%d) ", str, cumulative[i], count[i]);

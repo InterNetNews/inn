@@ -77,7 +77,6 @@ depend:		Makefile $(SOURCES) ../include/dbz.h
 $(OBJECTS):	innd.h ../include/clibrary.h ../include/configdata.h \
 		../include/libinn.h \
 		../include/macros.h ../include/nntp.h ../include/paths.h
-ng.o:		../include/mydir.h
 inndstart.o:	../include/clibrary.h ../include/configdata.h \
 		../include/libinn.h \
 		../include/macros.h ../include/paths.h

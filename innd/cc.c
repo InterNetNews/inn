@@ -17,6 +17,7 @@
 #include "innd.h"
 #include "inndcomm.h"
 #include "qio.h"
+#include "ov3.h"
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
 #endif	
@@ -262,9 +263,8 @@ CCaddhist(av)
 		return "1 Bad Token";
 	    else
 		token = TextToToken(av[4]);
-	} else {
-	    OVERmaketoken(&token, (OFFSET_T)0, OVER_NONE, 0);
-	}
+	} 
+
         hash = TextToHash(&av[0][1]);
 	/* Put something bogus in here.  This should never be referred
 	   to unless someone tries to add a [msgidhash].... history
@@ -647,7 +647,6 @@ STATIC STRING
 CCperl(av)
     char	*av[];
 {
-    char	*p;
     extern int	PerlFilterActive;
 
     switch (av[0][0]) {
@@ -795,21 +794,6 @@ CCgo(av)
     if (ErrorCount < 0)
 	ErrorCount = IO_ERROR_COUNT;
     HISsetup();
-    if (innconf->storageapi) {
-	int fdcountold = Overfdcount;
-	if (!OVERinit()) {
-	    syslog(L_FATAL, "%s cant initialize the unified overview");
-	    exit(1);
-	}
-	if ((Overfdcount = OVERgetnum()) < 0) {
-            syslog(L_FATAL, "%s cant get config for the unified overview");
-            exit(1);
-	}
-	if (fdcountold != Overfdcount) {
-	    MaxOutgoing += Overfdcount - fdcountold;
-            syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
-	}
-    }
     syslog(L_NOTICE, "%s running", LogName);
     if (ICDneedsetup)
 	ICDsetup(TRUE);
@@ -1119,14 +1103,6 @@ CCnewgroup(av)
 	return "1 Failed";
     syslog(L_NOTICE, "%s newgroup %s as %s", LogName, Name, Rest);
 
-    if (*Rest != NF_FLAG_ALIAS) {
-	/* Create the spool directory. */
-	for (p = Name; *p; p++)
-	    if (*p == '.')
-		*p = '/';
-	if (!innconf->storageapi && !MakeDirectory(Name, TRUE))
-	    syslog(L_NOTICE, "%s cant mkdir %s %m", LogName, Name);
-    }
     return NULL;
 }
 
@@ -1257,8 +1233,6 @@ CCblock(NewMode, reason)
 
     ICDwrite();
     HISclose();
-    if (innconf->storageapi)
-	OVERshutdown();
     Mode = NewMode;
     if (ModeReason)
 	DISPOSE(ModeReason);
@@ -1401,25 +1375,8 @@ CCreload(av)
     if (*p == '\0' || EQ(p, "all")) {
 	SITEflushall(FALSE);
 	HISclose();
-	if (innconf->storageapi)
-	    OVERshutdown();
 	RCreadlist();
 	HISsetup();
-	if (innconf->storageapi) {  
-	    int fdcountold = Overfdcount;
-	    if (!OVERinit()) {
-		syslog(L_FATAL, "%s cant initialize the unified overview");
-		exit(1);
-	    } 
-	    if ((Overfdcount = OVERgetnum()) < 0) {
-		syslog(L_FATAL, "%s cant get config for the unified overview");
-		exit(1);
-	    }
-	    if (fdcountold != Overfdcount) {
-		MaxOutgoing += Overfdcount - fdcountold;
-		syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
-	    }   
-	}
 	ICDwrite();
 	ICDsetup(TRUE);
 	if (!ARTreadschema())
@@ -1451,24 +1408,6 @@ CCreload(av)
     else if (EQ(p, "overview.fmt")) {
 	if (!ARTreadschema())
 	    return BADSCHEMA;
-    }
-    else if (EQ(p, "overview.ctl")) {
-	if (innconf->storageapi) {
-	    int fdcountold = Overfdcount;
-	    OVERshutdown();
-	    if (!OVERinit()) {
-		syslog(L_FATAL, "%s cant initialize the unified overview");
-		exit(1);
-	    } 
-	    if ((Overfdcount = OVERgetnum()) < 0) {
-		syslog(L_FATAL, "%s cant get config for the unified overview");
-		exit(1);
-	    }
-	    if (fdcountold != Overfdcount) {
-		MaxOutgoing += Overfdcount - fdcountold;
-		syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
-	    }   
-	}
     }
 #if 0 /* we should check almost all innconf parameter, but the code
          is still incomplete for innd, so just commented out */
@@ -2219,7 +2158,6 @@ XS(XS_INN_newsgroup)
     char*	newsgroup;
     NEWSGROUP*  ngp;
     char*	end;
-    char*	rest;
     int		size;
 
     if (items != 1)
@@ -2277,7 +2215,6 @@ XS(XS_INN_head)
     char*		msgid;
     char*		p;
     char*		q;
-    char*		bufptr;
     QIOSTATE*		qp;
 
     if (items != 1)
@@ -2321,7 +2258,6 @@ XS(XS_INN_article)
     char*		msgid;
     char*		p;
     char*		q;
-    char*		bufptr;
     QIOSTATE*		qp;
 
     if (items != 1)

@@ -192,7 +192,6 @@ char *HISfilesfor(const HASH MessageID)
     int	                i;
 #ifndef DO_TAGGED_HASH
     idxrec		ionevalue;
-    idxrecext		iextvalue;
 #endif
 
     TMRstart(TMR_HISGREP);
@@ -207,19 +206,11 @@ char *HISfilesfor(const HASH MessageID)
 	return NULL;
     }
 #else
-    if (innconf->extendeddbz) {
-	if (!dbzfetch(MessageID, &iextvalue)) {
-	    TMRstop(TMR_HISGREP);
-	    return NULL;
-	}
-	offset = iextvalue.offset[HISTOFFSET];
-    } else {
 	if (!dbzfetch(MessageID, &ionevalue)) {
 	    TMRstop(TMR_HISGREP);
 	    return NULL;
 	}
 	offset = ionevalue.offset;
-    }
 #endif
     TMRstop(TMR_HISGREP);
 
@@ -305,27 +296,6 @@ BOOL HIShavearticle(const HASH MessageID)
 
 
 /*
-**  Turn a history filename entry from slashes to dots.  It's a pity
-**  we have to do this.
-*/
-STATIC void HISslashify(char *p)
-{
-    char	        *last;
-
-    for (last = NULL; *p; p++) {
-	if (*p == '/') {
-	    *p = '.';
-	    last = p;
-	}
-	else if (*p == ' ' && last != NULL)
-	    *last = '/';
-    }
-    if (last)
-	*last = '/';
-}
-
-
-/*
 **  Write a history entry.
 */
 BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
@@ -336,7 +306,6 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 #ifndef DO_TAGGED_HASH
     void		*ivalue;
     idxrec		ionevalue;
-    idxrecext		iextvalue;
 #endif
     
     if (HISwritefp == NULL)
@@ -344,53 +313,24 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 
     TMRstart(TMR_HISWRITE);
     if (paths != NULL && paths[0] != '\0') {
-	if (!innconf->storageapi) HISslashify(paths);
+	/* if (!innconf->storageapi) HISslashify(paths); */
     } else
 	paths = NOPATHS;
 
     offset = ftell(HISwritefp);
-    if (innconf->storageapi) {
-	if (Data->Expires > 0)
-	    i = fprintf(HISwritefp, "[%s]%c%lu%c%lu%c%lu%c%s\n",
-			HashToText(hash), HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Expires, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-	else
-	    i = fprintf(HISwritefp, "[%s]%c%lu%c%s%c%lu%c%s\n",
-		        HashToText(hash), HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			HIS_NOEXP, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-    } else {
-	if (innconf->storemsgid) {
-	    if (Data->Expires > 0)
-		i = fprintf(HISwritefp, "%s%c%lu%c%lu%c%lu%c%s\n",
-			Data->MessageID, HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Expires, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-	    else
-		i = fprintf(HISwritefp, "%s%c%lu%c%s%c%lu%c%s\n",
-			Data->MessageID, HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			HIS_NOEXP, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-	} else {
-	    if (Data->Expires > 0)
-		i = fprintf(HISwritefp, "[%s]%c%lu%c%lu%c%lu%c%s\n",
-			HashToText(hash), HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Expires, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-	    else
-		i = fprintf(HISwritefp, "[%s]%c%lu%c%s%c%lu%c%s\n",
-			HashToText(hash), HIS_FIELDSEP,
-			(unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
-			HIS_NOEXP, HIS_SUBFIELDSEP,
-			(unsigned long)Data->Posted, HIS_FIELDSEP, paths);
-	}
-    }
+    if (Data->Expires > 0)
+	i = fprintf(HISwritefp, "[%s]%c%lu%c%lu%c%lu%c%s\n",
+		    HashToText(hash), HIS_FIELDSEP,
+		    (unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
+		    (unsigned long)Data->Expires, HIS_SUBFIELDSEP,
+		    (unsigned long)Data->Posted, HIS_FIELDSEP, paths);
+    else
+	i = fprintf(HISwritefp, "[%s]%c%lu%c%s%c%lu%c%s\n",
+		    HashToText(hash), HIS_FIELDSEP,
+		    (unsigned long)Data->Arrived, HIS_SUBFIELDSEP,
+		    HIS_NOEXP, HIS_SUBFIELDSEP,
+		    (unsigned long)Data->Posted, HIS_FIELDSEP, paths);
+
     if (i == EOF || fflush(HISwritefp) == EOF) {
 	/* The history line is now an orphan... */
 	i = errno;
@@ -410,14 +350,8 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 	return FALSE;
     }
 #else
-    if (innconf->extendeddbz) {
-        iextvalue.offset[HISTOFFSET] = offset;
-        OVERsetoffset(token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex, &iextvalue.overlen);
-        ivalue = (void *)&iextvalue;
-    } else {
         ionevalue.offset = offset;
         ivalue = (void *)&ionevalue;
-    }
     if (dbzstore(hash, ivalue) == DBZSTORE_ERROR) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
@@ -444,7 +378,6 @@ BOOL HISremember(const HASH hash)
 #ifndef DO_TAGGED_HASH
     void		*ivalue;
     idxrec		ionevalue;
-    idxrecext		iextvalue;
 #endif
 
     TMRstart(TMR_HISWRITE);
@@ -478,15 +411,8 @@ BOOL HISremember(const HASH hash)
 	return FALSE;
     }
 #else
-    if (innconf->extendeddbz) {
-        iextvalue.offset[HISTOFFSET] = offset;
-        iextvalue.offset[OVEROFFSET] = 0;
-	iextvalue.overindex = OVER_NONE;
-        ivalue = (void *)&iextvalue;
-    } else {
         ionevalue.offset = offset;
         ivalue = (void *)&ionevalue;
-    }
     if (dbzstore(hash, ivalue) == DBZSTORE_ERROR) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
