@@ -27,19 +27,32 @@ delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
 
 ## *** Change this to be correct for your site. *** ##
 require "@LIBDIR@/innshellvars.pl" ;
+$inn::newslib = "@LIBDIR@"; # location of docheckgroups
+
+# hackage for pre-2.0 INNs.
+if (!$inn::pathhost) {
+  $inn::pathhost = `$inn::newsbin/innconfval pathhost`;
+  chomp $inn::pathhost;
+}
 
 my $use_syslog = 0;
 ## Comment out this eval line if you don't want to try to syslog
 eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
 
-openlog ('controlchan', 'pid', 'news') if $use_syslog;  
+if ($use_syslog) {
+  if ($] >= 5.00403) {
+    Sys::Syslog::setlogsock('inet') if not Sys::Syslog::setlogsock('unix');
+  }
+  openlog ('controlchan', 'pid', 'news');
+}
+
 logmsg ('notice', 'starting');
 
 my $lastctl = 0;
 my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname,
     @progparams, $pathhost, @ctllist, $action, $logname, $act_log,
     $errmsg, @ctlprogs, $subfind, $SM, $keyowner, $pgpresult, $ArtFH,
-    $sitepath, $newsgrouppats);
+    $sitepath, $newsgrouppats, $kid);
 
 # If we have $newsbin/sm, this must be an INN 2.x installation.
 # Otherwise, we'll fake it on older servers.
@@ -73,8 +86,6 @@ for (@ctlprogs) {
     logmsg ('notice', 'loaded $inn::controlprogs/%s', $1);
   }
 }
-
-$SIG{CHLD} = \&funeral;
 
 CHANITEM:
 while (<STDIN>) {
@@ -300,7 +311,8 @@ sub ctlperm {
   
   if ($action =~ /^verify-(.+)/) {
     $keyowner = $1;
-    if (not $inn::pgpverify or $inn::pgpverify !~ /true|on|yes/i) {
+    if ((!$inn::want_pgpverify) &&
+	(not $inn::pgpverify or $inn::pgpverify !~ /true|on|yes/i)) {
       $action = "mail";
     } else {
       $keyowner =~ s/=.+//;
@@ -339,13 +351,14 @@ sub logger {
     $ArtFH = open_article($token);
     next if (!defined($ArtFH));
     *ARTICLE = $ArtFH;
-    open2(\*R, \*MAIL, $inn::mailcmd, "-s", $message, $inn::newsmaster);
+    $kid = open2(\*R, \*MAIL, $inn::mailcmd, "-s", $message, $inn::newsmaster);
     for (<ARTICLE>) {
       print MAIL ("    ", $_);
     }
     close (ARTICLE);
     close R;
     close MAIL;
+    waitpid($kid, 0);
     return;
   } elsif ($logfile !~ /\//) {
     $logfile = "$inn::most_logs/$logfile.log";
@@ -413,13 +426,6 @@ sub open_article {
 	    $token, $SM, $!);
   }
   return(*ART);
-}
-
-
-# In case mail is sluggish, wait arouind until our kids die.
-sub funeral {
-  wait;
-  $SIG{CHLD} = \&funeral;
 }
 
 

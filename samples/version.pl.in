@@ -23,7 +23,7 @@ sub control_version {
   my $tempfile = "$inn::tmpdir/version.$pid";
   
   my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
-      $ngname, $ngdesc, $modcmd);
+      $ngname, $ngdesc, $modcmd, $kid);
   
   if ($action eq "mail") {
     #    open(TEMPFILE, ">$tempfile");
@@ -54,11 +54,12 @@ sub control_version {
     if (($action eq "doifarg") && ($params[0] ne $inn::pathhost)) {
       logmsg ('notice', 'skipped version %s', $sender);
     } else {
-      open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
+      $kid = open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
 	     "version reply from $inn::pathhost", $replyto);
       print MAIL "InterNetNews $VERSION\n";
       close R;
       close MAIL;
+      waitpid($kid, 0);
       # Now, log what we did.
       if ($logging) {
 	$errmsg = "version $sender to $replyto";

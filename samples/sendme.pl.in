@@ -18,7 +18,7 @@ sub control_sendme {
   my $tempfile = "$inn::tmpdir/sendme.$pid";
   
   my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
-      $ngname, $ngdesc, $modcmd);
+      $ngname, $ngdesc, $modcmd, $kid);
   
   if ($action eq "mail") {
     $artfh = open_article($token);
@@ -26,7 +26,7 @@ sub control_sendme {
     *ARTICLE = $artfh;
     
   SMHEAD: while(<ARTICLE>) { last SMHEAD if /^$/ }
-    open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+    $kid = open2(\*R, \*MAIL, $inn::mailcmd, "-s",
 	  "sendme by $sender", $inn::newsmaster);
     while (<ARTICLE>) {
       s/^~/~~/;
@@ -35,6 +35,7 @@ sub control_sendme {
     close ARTICLE;
     close R;
     close MAIL;
+    waitpid($kid, 0);
   } elsif ($action eq "log") {
     if (!$logging) {
       logmsg ('notice', 'sendme from %s', $sender);

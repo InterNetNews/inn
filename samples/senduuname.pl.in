@@ -20,7 +20,7 @@ sub control_senduuname {
   my $tempfile = "$inn::tmpdir/senduuname.$pid";
   
   my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
-      $ngname, $ngdesc, $modcmd);
+      $ngname, $ngdesc, $modcmd, $kid);
   
   if ($action eq "mail") {
     open (TEMPFILE, ">$tempfile");
@@ -52,12 +52,13 @@ sub control_senduuname {
       logmsg ('notice', 'skipped senduuname %s', $sender);
     } else {
       open UUNAME, "uuname|";
-      open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
+      $kid = open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
 	     "senduuname reply from $inn::pathhost", $replyto);
       print MAIL $_ while <UUNAME>;  
       close UUNAME;
       close R;
       close MAIL;
+      waitpid($kid, 0);
       if ($logging) {
 	$errmsg = "senduuname $sender to $replyto";
 	logger($token, $logging, $errmsg);

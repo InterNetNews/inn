@@ -18,7 +18,7 @@ sub control_ihave {
   my $tempfile = "$inn::tmpdir/ihave.$pid";
   
   my ($errmsg, $status, $nc, @component, @oldgroup, $locktry,
-      $ngname, $ngdesc, $modcmd);
+      $ngname, $ngdesc, $modcmd, $kid);
   
   if ($action eq "mail") {
     
@@ -30,7 +30,7 @@ sub control_ihave {
     while (<ARTICLE>) {
       last IHHEAD if /^$/;
     }
-    open2(\*R, \*MAIL, $inn::mailcmd, "-s",
+    $kid = open2(\*R, \*MAIL, $inn::mailcmd, "-s",
 	  "ihave by $sender", $inn::newsmaster);
     while (<ARTICLE>) {
       s/^~/~~/;
@@ -39,6 +39,7 @@ sub control_ihave {
     close ARTICLE;
     close R;
     close MAIL;
+    waitpid($kid, 0);
   } elsif ($action eq "log") {
     if (!$logging) {
       logmsg ('notice', 'ihave %s', $sender);
@@ -61,7 +62,7 @@ sub control_ihave {
     close(GREPHIST);
     
     if (-s "$tempfile") {
-      open2(\*R, \*INEWS, $inn::inews, "-h");
+      $kid = open2(\*R, \*INEWS, $inn::inews, "-h");
       print INEWS ("Newsgroups: to.$site\n",
 		   "Subject: cmsg sendme $pathhost\n",
 		   "Control: sendme $pathhost\n\n");
@@ -70,6 +71,7 @@ sub control_ihave {
       close R;
       close INEWS;
       close TEMPFILE;
+      waitpid($kid, 0);
     }
     unlink ($tempfile);
   }
