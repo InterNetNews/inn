@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "MAKEHISTORY 8"
-.TH MAKEHISTORY 8 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
+.TH MAKEHISTORY 8 "2003-07-05" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 makehistory \- Initialize or rebuild INN history database
 .SH "SYNOPSIS"
@@ -158,10 +158,11 @@ server is running.  Unless the existing overview is deleted, you may end
 up with problems like out-of-order overview entries, excessively large
 overview buffers, and the like.
 .PP
-If \fIovmethod\fR in \fIinn.conf\fR is \f(CW\*(C`ovdb\*(C'\fR, you should have the ovdb
-processes running while rebuilding overview; otherwise, the Berkeley \s-1DB\s0
-transaction logs will be extremely large by the time makehistory finishes.
-You can start them with \fIovdb_init\fR\|(8).
+If \fIovmethod\fR in \fIinn.conf\fR is \f(CW\*(C`ovdb\*(C'\fR, you must have the ovdb processes
+running while rebuilding overview.  ovdb needs them available while
+writing overview entries.  You can start them by hand separate from the
+rest of the server by running \fBovdb_init\fR; see \fIovdb_init\fR\|(8) for more
+details.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 .IP "\fB\-a\fR" 4
