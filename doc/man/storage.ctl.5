@@ -4,8 +4,10 @@
 storage.ctl \- configuration file for storage manager
 .SH DESCRIPTION
 The file
-.\" =()<.I @<_PATH_STORAGECTL>@>()=
-.I /var/news/etc/storage.ctl
+.I <_PATH_STORAGECTL in config.data>
+(typically
+.\" =()<.I @<typ_PATH_STORAGECTL>@)>()=
+.I /var/news/etc/storage.ctl)
 is required if storage API is used.
 Storage API is turned on if ``storageapi: true'' in
 .IR inn.conf (5).

@@ -56,10 +56,10 @@ The letters ``ICC'' stand for
 .PP
 .I ICCopen
 creates a
-.\" =()<.ie '@<HAVE_UNIX_DOMAIN>@'DO' \{\>()=
-.ie 'DO'DO' \{\
-Unix-domain datagram socket and binds it to the server's control socket.\}
-.el named pipe for communicating with the server.
+Unix-domain datagram socket and binds it to the server's control socket, if
+.I <HAVE_UNIX_DOMAIN in config.data>
+== DO.  Otherwise it creates
+a named pipe for communicating with the server.
 It returns \-1 on failure or zero on success.
 This routine must be called before any other routine.
 .PP
