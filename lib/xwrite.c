@@ -42,12 +42,14 @@ xwrite(int fd, const void *buffer, size_t size)
 
     /* Abort the write if we try ten times with no forward progress. */
     for (total = 0; total < size; total += status) {
-        if (++count > 10) break;
+        if (++count > 10)
+            break;
         status = write(fd, (const char *) buffer + total, size - total);
         if (status > 0)
             count = 0;
         if (status < 0) {
-            if (errno != EINTR) break;
+            if (errno != EINTR)
+                break;
             status = 0;
         }
     }
@@ -67,8 +69,8 @@ xwritev(int fd, const struct iovec iov[], int iovcnt)
         total += iov[i].iov_len;
 
     /* First, try just writing it all out.  Most of the time this will
-       succeed and save us lots of work.  Abort the write if we try ten
-       times with no forward progress. */
+       succeed and save us lots of work.  Abort the write if we try ten times 
+       with no forward progress. */
     count = 0;
     do {
         if (++count > 10)
