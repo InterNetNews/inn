@@ -61,6 +61,7 @@ install-man8:
 	for M in $(SEC8) ; do \
 	    $(COPY) $$M $D$(MAN8)/$$M ; \
 	done
+	cd $(MAN8) && $(LN_S) actsync.8 actsyncd.8
 	if [ x"$(KRB5_AUTH)" != x ] ; then \
 	    $(COPY) auth_krb5.8 $D$(MAN8)/auth_krb5.8 ; \
 	fi

@@ -22,13 +22,14 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/control.ctl.5 \
 	../man/passwd.nntp.5 ../man/radius.conf.5 ../man/readers.conf.5 \
 	../man/sasl.conf.5 ../man/subscriptions.5
 
-MAN8	= ../man/auth_krb5.8 ../man/auth_smb.8 ../man/batcher.8 \
-	../man/ckpasswd.8 ../man/domain.8 ../man/expireover.8 ../man/ident.8 \
-	../man/innd.8 ../man/inndf.8 ../man/nnrpd.8 ../man/innbind.8 \
-	../man/innupgrade.8 ../man/mailpost.8 ../man/makehistory.8 \
-	../man/ninpaths.8 ../man/ovdb_init.8 ../man/ovdb_monitor.8 \
-	../man/ovdb_server.8 ../man/ovdb_stat.8 ../man/radius.8 \
-	../man/rc.news.8 ../man/sendinpaths.8 ../man/tdx-util.8
+MAN8	= ../man/actsync.8 ../man/auth_krb5.8 ../man/auth_smb.8 \
+	../man/batcher.8 ../man/ckpasswd.8 ../man/domain.8 \
+	../man/expireover.8 ../man/ident.8 ../man/innd.8 ../man/inndf.8 \
+	../man/nnrpd.8 ../man/innbind.8 ../man/innupgrade.8 \
+	../man/mailpost.8 ../man/makehistory.8 ../man/ninpaths.8 \
+	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
+	../man/ovdb_stat.8 ../man/radius.8 ../man/rc.news.8 \
+	../man/sendinpaths.8 ../man/tdx-util.8
 
 ALL	= $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
@@ -76,6 +77,7 @@ clean:
 ../man/sasl.conf.5:	sasl.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/subscriptions.5:	subscriptions.pod	; $(POD2MAN) -s 5 $? > $@
 
+../man/actsync.8:	actsync.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/auth_krb5.8:	auth_krb5.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/auth_smb.8:	auth_smb.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/batcher.8:	batcher.pod		; $(POD2MAN) -s 8 $? > $@

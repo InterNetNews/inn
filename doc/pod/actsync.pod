@@ -1,0 +1,768 @@
+=head1 NAME
+
+actsync, actsyncd - Synchronize newsgroups
+
+=head1 SYNOPSIS
+
+B<actsync> [B<-AkmT>] [B<-b> I<hostid>] [B<-d> I<hostid>] [B<-g> I<max>]
+[B<-i> I<ignore-file>] S<[B<-I> I<hostid>]> [B<-l> I<hostid>] [B<-n> I<name>]
+[B<-o> I<format>] [B<-p> I<min-unchanged>] S<[B<-q> I<hostid>]>
+[B<-s> I<size>] [B<-t> I<hostid>] [B<-v> I<verbosity>] [B<-z> I<seconds>]
+[I<host>] I<host>
+
+B<actsyncd> [B<-x>] I<config> [I<debug-level> [I<debug-format>]]
+
+=head1 DESCRIPTION
+
+B<actsync> permits one to synchronize, compare, or merge two F<active>
+files.  With this utility one may add, change, or remove newsgroups on the
+local news server to make it similar to the list the newsgroups found on
+another system or file.  The synchronization need not be exact.  Local
+differences in newsgroup lists may be maintained and preserved.  Certain
+newsgroup errors may be detected and optionally corrected.
+
+There are several reasons to run B<actsync> (or B<actsyncd>) on a periodic
+basis.  Among the reasons are:
+
+=over 2
+
+=item *
+
+A control message to add, change or remove a newsgroup may fail to reach
+your site.
+
+=item *
+
+Your F<control.ctl> may be out of date or incomplete.
+
+=item *
+
+News articles for a new newsgroup may arrive ahead (sometimes days ahead)
+of the control message.
+
+=item *
+
+Control messages may be forged, thus bypassing the restrictions
+found in F<control.ctl> unless you set up PGP authentication (and even
+then, not all hierarchies use PGP authentication).
+
+=item *
+
+Your F<active> file may have been trashed.
+
+=back
+
+If either I<host> argument begins with a "." or "/", it is assumed to be
+the name of a file containing information in the active(5) format.  The
+getlist(1) utility may be used to obtain copy a remote system's active
+file via its NNTP server, or an FTP client program can retrieve such a
+file from an FTP archive (such as
+L<ftp://ftp.isc.org/pub/usenet/CONFIG/active>; see more about this below).
+Newsgroup information from a file may be treated as if it was obtained
+from a host.  In this man page, the I<host> arguments on the command line
+are are called hosts, even though they may be file names.
+
+If a host argument does not begin with "." or "/", it is assumed to be a
+hostname or Internet address.  In this case, B<actsync> will attempt to
+use the NNTP protocol to obtain a copy of the the specified system's
+active file.  If the host argument contains a ":", the right side will be
+considerd the port to connect to on the remote system.  If no port number
+is specified, B<actsync> will connect to port 119.
+
+Regardless how the active file information is obtained, the actions of
+B<actsync> remain the same.
+
+The first host specified is taken to be the local host, the one where any
+changes would be made.  The second host specified is the remote host that
+is being synchronized with.  If only one host is specified, it is assumed
+to be the remote host to synchronize with, and the local host is assumed
+to be the default local NNTP server as specified by the NNTPSERVER
+environment variable or by the I<server> value found in F<inn.conf>.
+
+If either host is specified as C<->, the default server will be used for
+that host, determined as described above.
+
+The newsgroup synchronization, by default, involves all newsgroups found
+on both hosts.  One may also synchronize a subset of newsgroups by
+directing B<actsync> to ignore certain newsgroups from both systems.  Only
+newsgroups with valid names will be synchronized.  To be valid, a
+newsgroup name must consist only of alphanumeric characters, ".", "+",
+"-", and "_".  One may not have two "." characters in a row.  The first
+character must be alphanumeric, as must any character following a ".".
+The name may not end in a "." character.
+
+The B<actsyncd> daemon provides a convenient interface to configure and
+run B<actsync>.  If a host is not initially reachable, the daemon will
+retry up to 9 additional times, waiting 6 minutes before each retry.  This
+daemon runs in the foreground, sending output to standard output and
+standard error.
+
+If the B<-x> flag is given to B<actsyncd>, then C<ctlinnd xexec> will be
+used instead of a C<ctlinnd reload> to load the newly modified active
+file.
+
+The configuration filename for the daemon is given as a commandline
+argument, usually F<actsync.cfg> in I<pathetc>.  The config file can
+contain the following options:
+
+    host=<host>
+    ftppath=<path-to-active>
+    ignore_file=<ignore-file>
+    flags=<actsync-options>
+
+The host, ignore_file, and flags lines are mandatory.  Each keyword must
+start at the beginning of the line, and there may be no whitespace before
+the "=" character.  Blank lines are ignored, as are comment lines that
+start with "#".  Any other lines may produce undefined results.
+
+The <host> setting refers to the second (remote) I<host> parameter to
+B<actsync>.  If <path-to-active> is provided, <host> is accessed as an FTP
+server, retrieving the file named.  If the filename ends in C<.gz> or
+C<.Z>, it will be automatically uncompressed after retrieval.
+<ignore-file> names the ignore file used by B<actsync> (the B<-i> option).
+<flags> contains any other flags that you wish to pass to B<actsync>
+
+Note that one should not include B<-i> or B<-o> options in the flags=
+line; they are automatically taken care of by B<actsyncd>.
+
+One may produce a trial B<actsyncd> run without changing anything on the
+server by supplying the I<debug-level> argument:
+
+    actsyncd <pathetc>/actsync.cfg 2
+
+The I<debug-level> causes B<actsyncd> to run B<actsync> with a B<-v>
+I<debug-level> flag (overriding any B<-v> flag on the flags= line), not
+make any changes to the F<active> file, write a new active file to
+standard output, and write debug messages to standard error.
+
+If the I<debug-format> argument is also given to B<actsyncd>, the data
+written to standard output will be in B<-o> I<debug-format> instead of in
+C<-o a1> format.
+
+INN comes with default values of C<ftp.isc.org> for <host> and
+C</pub/usenet/CONFIG/active> for <path-to-active>.  You can read about the
+policies used for maintaining that active file at
+L<ftp://ftp.isc.org/pub/usenet/CONFIG/README>.  Consider synchronizing
+from this file on a daily basis by using B<cron>.
+
+=head1 OPTIONS
+
+B<actsync> takes the following options.
+
+In all of the following options, the I<hostid> parameter takes one of the
+following values:
+
+    0    neither server
+    1    local default server
+    2    remote server
+    12   both servers
+    21   both servers
+
+In other words, C<1> refers to the local host (the first I<host> argument
+on the B<actsync> command line) and C<2> refers to the remote host (the
+second I<host> argument, or the only one if only one is given).
+
+=over 4
+
+=item B<-A>
+
+B<actsync> tries to authenticate before issuing the LIST command.
+
+=item B<-b> I<hostid>
+
+This flag causes B<actsync> to ignore for synchronization purposes
+newsgroups with "bork.bork.bork" style names (newsgroups whose last 3
+components are identical.  For example, the following newsgroups have bork
+style names:
+
+    alt.helms.dork.dork.dork
+    alt.auto.accident.sue.sue.sue
+    alt.election.vote.vote.vote
+
+The default is C<-b 0>; no newsgroups are ignored because of bork-style
+names.
+
+=item B<-d> I<hostid>
+
+This flag causes B<actsync> to ignore newsgroups that have all numeric
+path components.  For example, the following newsgroups have numeric path
+components:
+
+    alt.prime.chongo.23209
+    391581.times.2.to_the.216193.power.-1
+    99.bottles.of.treacle.on.the.wall
+    linfield.class.envio_bio.101.d
+
+The newsgroups directory of a newsgroups with a all numeric component
+could conflict with an article from another group if stored using the
+tradspool storage method; see storage.conf(5).  For example, the directory
+for the first newsgroup listed above is the same path as article number
+23209 from the newsgroup:
+
+    alt.prime.chongo
+
+The default is C<-d 0>; all numeric newsgroups from both hosts will be
+processed.
+
+=item B<-g> I<max>
+
+Ignore any newsgroup with more than I<max> levels.  For example, C<-g 6>
+would ignore:
+
+    alt.feinstien.votes.to.trash.freedom.of.speech
+    alt.senator.exon.enemy.of.the.internet
+    alt.crypto.export.laws.dumb.dumb.dumb
+
+but would not ignore:
+
+    alt.feinstien.acts.like.a.republican
+    alt.exon.amendment
+    alt.crypto.export.laws
+
+If I<max> is 0, then the max level feature is disabled.
+
+By default, the max level feature is disabled.
+
+=item B<-i> I<ignore-file>
+
+The I<ignore-file>, usually F<actsync.ign> in I<pathetc>, allows one to
+have a fine degree of control over which newsgroups are ignored.  It
+contains a set of rules that specifies which newsgroups will be checked
+and which will be ignored.
+
+By default, these rules apply to both hosts.  This can be modified by
+using the B<-I> flag.
+
+By default, all newsgroups are checked.  If no I<ignore-file> if
+specified, or if the ignore file contains no rule lines, all newsgroups
+will be checked.
+
+Blank lines and text after a C<#> are considered comments and are ignored.
+
+Rule lines consist of tokens separated by whitespace.  Rule lines may be
+one of two forms:
+
+    c <newsgroup> [<type> ...]
+    i <newsgroup> [<type> ...]
+
+If the rule begins with a "c", the rule requests certain newsgroups to be
+checked.  If the rule begins with an "i", the rule requests certain
+newsgroups to be ignored.  The <newsgroup> field may be a specific
+newsgroup, or a uwildmat(3) pattern.
+
+If one or more <type>s are specified, then the rule applies to the
+newsgroup only if is of the specified type.  Types refer to the 4th field
+of the F<active> file; that is, a type may be one of:
+
+    y
+    n
+    m
+    j
+    x
+    =group.name
+
+Unlike active files, the "group.name" in an alias type may be a newsgroup
+name or a uwildmat(3) pattern.  Also, "=" is equivalent to "=*".
+
+On each rule line, no pattern type may not be repeated.  For example, one
+may not have more than one type that begins with "=", per line.  However,
+one may achieve an effect equivalent to using multiple "=" types by using
+multiple rule lines affecting the same newsgroup.
+
+By default, all newsgroups are candidates to be checked.  If an ignore
+file is used, each newsgroup in turn is checked against the ignore file.
+If multiple lines match a given newsgroup, the last line in the ignore
+file is used.
+
+For example, consider the following ignore file lines:
+
+    i *.general
+    c *.general m
+    i nsa.general
+
+The newsgroups ba.general and mod.general would be synchronized if
+moderated and ignored if not moderated.  The newsgroup nsa.general would
+be ignored regardless of moderation status.  All newsgroups not matching
+*.general would be synchronized by default.
+
+=item B<-I> I<hostid>
+
+This flag restricts which hosts are affected by the ignore file.  This
+flag may be useful in conjunction with the B<-m> For example:
+
+    actsync -i actsync.ign -I 2 -m host1 host2
+
+will keep all newsgroups currently on host1.  It will also will only
+compare host1 groups with non-ignored newsgroups from host2.
+
+The default is C<-I 12>; newsgroups from both hosts to be ignored per the
+file specified with B<-i>.
+
+=item B<-k>
+
+By default, any newsgroup on the local host that has an invalid name will
+be considered for removal.  This causes B<actsync> simply ignore such
+newsgroups.  This flag, used in combination with B<-m>, will prevent any
+newsgroup from being scheduled for removal.
+
+=item B<-l> I<hostid>
+
+This flag causes problem newsgroups of type "=" to be considered as
+errors.  Newsgroups of type "=" are newsgroups active entries that have a
+fourth field that begins with "="; i.e., newsgroups that are aliased to
+other newsgroups.  A problem newsgroup is one for which one of the
+following is true:
+
+=over 2
+
+=item *
+
+Aliased to itself.
+
+=item *
+
+In an alias chain that loops around to itself.
+
+=item *
+
+In an alias chain longer than 16 groups.
+
+=item *
+
+Alised to a non-existant newsgroup.
+
+=item *
+
+Aliased to a newsgroup that has an error of some kind.
+
+=back
+
+However, a newsgroup that is equivalent to an ignored newsgroup is not a
+problem.
+
+By default, problem newsgroups from both hosts are marked as errors.
+
+=item B<-m>
+
+Merge newsgroups instead of sync.  By default, if a newsgroup exists on
+the local host but not the remote, it will be scheduled to be removed.
+This flag disables this process, permitting newsgroups unique to the local
+host to be kept.
+
+=item B<-n> I<name>
+
+Depending on B<-o>, the ctlinnd(8) command may be used to create
+newsgroups as necessary.  When this is done, the default creator name used
+is "actsync".  This flag changes the creator name to I<name>.
+
+=item B<-o> I<format>
+
+Determine the output or action format of this utility.  I<format> may be
+one of:
+
+=over 4
+
+=item a
+
+Output in active(5) format.
+
+=item a1
+
+Output in active(5) format and output non-error ignored groups from the
+local host.
+
+=item ak
+
+Output in active(5) format, but use the high and low (2nd and 3rd active
+fields) values from the remote host for any newsgroup being created.
+
+=item aK
+
+Output in active(5) format, but use the high and low (2nd and 3rd active
+fields) values from the remote host all newsgroups found on that host.
+
+=item a1K
+
+Output in active(5) format, but use the high and low (2nd and 3rd active
+fields) values from the remote host for any newsgroup being created and
+output non-error ignored groups from the local host.
+
+=item a1K
+
+Output in active(5) format, but use the high and low (2nd and 3rd active
+fields) values from the remote host for all newsgroups found on that host
+and output non-error ignored groups from the local host.
+
+=item ak1
+
+Same as C<a1k>.
+
+=item aK1
+
+Same as C<a1K>.
+
+=item c
+
+Output as commands to B<ctlinnd>.
+
+=item x
+
+No output.  Instead, directly run B<ctlinnd> commands.
+
+=item xi
+
+No output.  Instead, directly run B<ctlinnd> commands in an interactive
+mode.
+
+=back
+
+The C<a>, C<a1>, C<ak>, C<aK>, C<a1k>, C<a1K>, C<ak1>, and C<aK1> style
+formats allow one to forma new active file instead of producing B<ctlinnd>
+commands.  They use high and low values of 0000000000 and 0000000001
+respectively for newsgroups that are created unless otherwise specified.
+The C<ak> and C<aK> variants change the the high and low values (2nd and
+3rd active fields).  In the case of C<ak>, newsgroups created take their
+high and low values from the remote host.  In the case of C<aK>, all
+newsgroups found on the remote host take their high and low values from
+it.
+
+The C<c> format produces B<ctlinnd> commands.  No actions are taken
+because B<actsync> simply prints B<ctlinnd> commands on standard output.
+This output format is useful to let you see how the local host will be
+affected by the sync (or merge) with the remote host.
+
+The sync (or merge) may be accomplished directly by use of the C<x> or
+C<xi> format.  With this format, B<actsync> uses the execl(2) system call
+to directly execute B<ctlinnd> commands.  The output of such exec calls
+may be seen if the verbosity level is at least 2.
+
+The B<actsync> utility will pause for 4 seconds before each command is
+executed if C<-o x> is selected.  See the B<-z> flag flag below for
+discussion of this delay and how to customize it.
+
+The C<xi> format interactively prompts on standard output and reads
+directives on standard input.  One may pick and choose changes using this
+format.
+
+Care should be taken when producing active(5) formatted output.  One
+should check to be sure that B<actsync> exited with a zero status prior to
+using such output.  Also one should realize that such output will not
+contain lines ignored due to B<-i> even if C<-p 100>
+
+By default, C<-o c> is assumed.
+
+=item B<-p> I<min-unchanged>
+
+By default, the B<actsync> utility has safeguards against performing
+massive changes.  If fewer than I<min-unchanged> percent of the
+non-ignored lines from the local host remain unchanged, no actions
+(output, execution, etc.)  are performed and B<actsync> exits with a
+non-zero exit status.  The I<min-unchanged> value may be a floating point
+value such as 66.667.
+
+A change is a local newsgroup line line that was removed, added, changed,
+or found to be in error.  Changing the 2nd or 3rd active fields via C<-o
+ak> or C<-o aK> are not considered changes by B<-p>.
+
+To force B<actsync> to accept any amount of change, use the C<-p 0>
+option.  To force B<actsync> to reject any changes, use the C<-p 100>
+option.
+
+Care should be taken when producing active(5) formatted output; be sure to
+check that B<actsync> exited with a zero status prior to using such
+output.  Also one should realize that such output will not contain lines
+ignored by the ignore file process even if C<-p 100> is used.
+
+By default, 96% of the lines not ignored in host1 must be unchanged.  That
+is, by default, C<-p 96> is assumed.
+
+=item B<-q> I<hostid>
+
+By default, all newsgroup errors are reported on standard error.  This
+flag quiets errors from the specified I<hostid>.
+
+=item B<-s> I<size>
+
+If I<size> is greater than 0, then ignore newsgroups with names longer
+than I<size> and ignore newsgroups aliased (by following "=" chains) to
+names longer than I<size> Length checking is performed on both the local
+and remote hosts.
+
+By default, I<size> is 0 and thus no length checking is performed.
+
+=item B<-t> I<hostid>
+
+Ignore improper newsgroups consisting of only a top component from the
+specified I<hostid>.  The following newsgroups are considered proper
+newsgroups despite top only names and therefore are exempt from this flag:
+
+    control
+    general
+    junk
+    test
+    to
+
+For example, the following newsgroup names are improper because they only
+contain a top level component:
+
+    dole_for_pres
+    dos
+    microsoft
+    windows95
+
+The default is C<-t 2>; that is, all improper top-level-only newsgroups
+from the remote host are ignored.
+
+=item B<-T>
+
+This flag causes newsgroups on the remote host in new hierarchies to be
+ignored.  Normally a newsgroup which only exists on the remote host,
+chongo.was.here for example, to be created on the local host.  However, if
+this flag is given and the local host does not have any other newsgroups
+in the same hierarchy (chongo.* in this case), the newsgroup in question
+will be ignored and will not be created on the local host.
+
+=item B<-v> I<verbosity>
+
+By default, B<actsync> is not verbose.  This flag controls the verbosity
+level as follows:
+
+=over 2
+
+=item 0Z<>
+
+No debug or status reports (default).
+
+=item 1
+
+Print summary, but only if work was needed or done.
+
+=item 2
+
+Print actions, exec output, and summary, but only if work was needed or
+done.
+
+=item 3
+
+Print actions, exec output, and summary.
+
+=item 4
+
+Full debug output.
+
+=back
+
+=item B<-z> I<seconds>
+
+If C<-o x> is selected, B<actsync> will pause for I<seconds> seconds
+before each command is executed.  This helps prevent B<innd> from being
+busied-out if a large number of B<ctlinnd> commands are needed.  One can
+entirely disable this sleeping by using C<-z 0>.
+
+By default, B<actsync> will pause for 4 seconds before each command is
+executed if C<-o x> is selected.
+
+=back
+
+=head1 EXAMPLES
+
+Determine the difference (but don't change anything) between your
+newsgroup set and uunet's set:
+
+    actsync news.uu.net
+
+Same as above, with full debug and progress reports:
+
+    actsync -v 4 news.uu.net
+
+Force a site to have the same newsgroups some other site:
+
+    actsync -o x master
+
+This may be useful to sync a slave site to its master, or to sync internal
+site to a gateway.
+
+Compare your site with uunet, disregarding local groups and certain local
+differences with uunet.  Produce a report if any differences were
+encountered:
+
+    actsync -v 2 -i actsync.ign news.uu.net
+
+where F<actsync.ign> contains:
+
+    # Don't compare to.* groups as they will differ.
+    #
+    i       to.*
+
+    # These are our local groups that nobody else
+    # (should) carry.  So ignore them for the sake
+    # of the compare.
+    #
+    i       nsa.*
+
+    # These groups are local favorites, so keep them
+    # even if uunet does not carry them.
+    #
+    i       ca.dump.bob.dorman
+    i       ca.keep.bob.dorman
+    i       alt.tv.dinosaurs.barney.die.die.die
+    i       alt.tv.dinosaurs.barney.love.love.love
+    i       alt.sounds.*    =alt.binaries.sounds.*
+
+To interactively sync against news.uu.net, using the same ignore file:
+
+    actsync -o xi -v 2 -i actsync.ign news.uu.net
+
+Based on newsgroups that you decided to keep, one could make changes to
+the F<actsync.ign> file:
+
+    # Don't compare to.* groups as they will differ.
+    #
+    i       to.*
+
+    # These are our local groups that nobody else
+    # (should) carry.  So ignore them for the sake
+    # of the compare.
+    #
+    i       nsa.*
+
+    # These groups are local favorites, so keep them
+    # even if uunet does not carry them.
+    #
+    i       ca.dump.bob.dorman
+    i       alt.tv.dinosaurs.barney.die.die.die
+    i       alt.sounds.*    =alt.binaries.sounds.*
+
+    # Don't sync test groups, except for ones that are
+    # moderated or that are under the gnu hierarchy.
+    i       *.test
+    c       *.test  m       # check moderated test groups
+    c       gnu.*.test
+    c       gnu.test        # just in case it ever exists
+
+Automatic processing may be set up by using the following F<actsync.cfg>
+file:
+
+    # host to sync off of (host2)
+    host=news.uu.net
+
+    # location of the ignore file
+    ignore_file=<pathetc in inn.conf>/actsync.ign
+
+    # where news articles are kept
+    spool=<patharticles in inn.conf>
+
+    # actsync(8) flags
+    #
+    # Automatic execs, report if something was done,
+    #       otherwise don't say anything, don't report
+    #       uunet active file problems, just ignore
+    #       the affected entries.
+    flags=-o x -v 2 -q 2
+
+and then by running B<actsyncd> with the path to the config file:
+
+    actsyncd <pathetc>/actsync.cfg
+
+The command
+
+    actsyncd <pathetc>/actsync.cfg 4 >cmd.log 2>dbg.log
+
+will operate in debug mode, not change the F<active> file, write
+B<ctlinnd> style commands to F<cmd.log>, and write debug statements to
+F<dbg.log>.
+
+To check only the major hierarchies against news.uu,net, use the following
+F<actsync.ign> file:
+
+    # by default, ignore everything
+    i *
+
+    # check the major groups
+    c       comp.*
+    c       gnu.*
+    c       sci.*
+    c       alt.*
+    c       misc.*
+    c       news.*
+    c       rec.*
+    c       soc.*
+    c       talk.*
+
+and the command:
+
+    actsync -i actsync.ign news.uu.net
+
+To determine the differences between your old active and your current
+default server:
+
+    actsync <pathetc>/active.old -
+
+To report but not fix any newsgroup problems with the current active file:
+
+    actsync - -
+
+To detect any newsgroup errors on your local server, and to remove any
+*.bork.bork.bork style silly newsgroup names:
+
+    actsync -b 2 - -
+
+The active file produced by:
+
+    actsync <flags> -o x erehwon.honey.edu
+
+is effectively the same as the active file produced by:
+
+    ctlinnd pause 'running actsync'
+    rm -f active.new
+    actsync <flags> -o a1 erehwon.honey.edu > active.new
+    rm -f active.old
+    ln active active.old
+    mv active.new active
+    ctlinnd reload active 'running actsync'
+    ctlinnd go 'running actsync'
+
+It should be noted that the final method above, pausing the server and
+simply replacing the F<active> file, may be faster if you are making lots
+of changes.
+
+=head1 CAUTION
+
+Careless use of this tool may result in the unintended addition, change,
+or removal of newsgroups.  You should avoid using the C<x> output format
+until you are sure it will do what you want.
+
+=head1 BUGS
+
+If a newsgroup appears multiple times, B<actsync> will treat all copies as
+errors.  However, if the group is marked for removal, only one rmgroup
+will be issued.
+
+The timeout for B<ctlinnd> commands is fixed at 30 seconds when running in
+C<x> or C<xi> output format.  Perhaps the timeout value should be
+controlled via a command line option?
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Updated
+to support ftp fetching by David Lawrence <tale@isc.org>.
+
+$Id$
+
+By: Landon Curt Noll <chongo@toad.com> (chongo was here /\../\)
+
+Copyright (c) Landon Curt Noll, 1993.  All rights reserved.
+
+Permission to use and modify is hereby granted so long as this notice
+remains.  Use at your own risk.  No warranty is implied.
+
+=head1 SEE ALSO
+
+active(5),
+ctlinnd(8),
+getlist(8),
+inn.conf(5),
+mod-active(8),
+simpleftp(1).
+
+=cut
