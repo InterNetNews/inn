@@ -356,7 +356,7 @@ hisv6_reopen(struct hisv6 *h)
 	    /* must only do this once! */
 	    h->flags &= ~HIS_CREAT;
 	    npairs = (h->npairs == -1) ? 0 : h->npairs;
-	    if (!dbzfresh(h->histpath, npairs)) {
+	    if (!dbzfresh(h->histpath, dbzsize(npairs))) {
 		hisv6_seterror(h, concat("can't dbzfresh ", h->histpath, " ",
 					  strerror(errno), NULL));
 		hisv6_closefiles(h);
