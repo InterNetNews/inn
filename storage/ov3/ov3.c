@@ -809,10 +809,8 @@ void *tradindexed_opensearch(char *group, int low, int high) {
 	base = ge->base;
     } while (ge->indexinode != oldinode);
 
-    if (high < base || low < base) { /* Check for corrupted group entry */
+    if (high < base || low < base) { /* return NULL if searching range is out */
       OV3closegroup(gh, FALSE);
-      syslog(L_ERROR, "tradindexed: Group %s has a corrupted group entry", 
-	     group);
       return NULL;
     }
 
