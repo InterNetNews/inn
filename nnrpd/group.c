@@ -159,7 +159,7 @@ GPNAME(GROUPENTRY *gp)
 
     GPBuf[0] = 0;
     if (p && p - gp->Ptr > 0 && p - gp->Ptr < sizeof(GPBuf) - 1) {
-        bcopy(gp->Ptr, GPBuf, p - gp->Ptr);
+        memcpy(GPBuf, gp->Ptr, p - gp->Ptr);
         GPBuf[p - gp->Ptr] = 0;
     }
     return(GPBuf);
