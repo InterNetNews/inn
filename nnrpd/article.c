@@ -825,7 +825,7 @@ static bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 **  Return a field from the overview line or NULL on error.  Return a copy
 **  since we might be re-using the line later.
 */
-char *OVERGetHeader(char *p, int field)
+char *OVERGetHeader(char *p, int len, int field)
 {
     static char		*buff;
     static int		buffsize;
@@ -843,12 +843,16 @@ char *OVERGetHeader(char *p, int field)
     }
 
     /* Skip leading headers. */
-    for ( ; field >= 0 && *p; p++)
-	if ((p = strchr(p, '\t')) == NULL)
+    for ( ; len >= 0 && field >= 0 && *p;) {
+	if ((q = memchr(p, '\t', len)) == NULL)
 	    return NULL;
 	else
 	    field--;
-    if (*p == '\0')
+	q++;
+	len -= q - p;
+	p = q;
+    }
+    if (len <= 0 || *p == '\0')
 	return NULL;
 
     if (fp->NeedsHeader) {		/* find an exact match */
@@ -860,11 +864,17 @@ char *OVERGetHeader(char *p, int field)
     }
 
     /* Figure out length; get space. */
-    if ((next = strpbrk(p, "\n\r\t")) != NULL) {
-	i = next - p;
-    } else {
-	i = strlen(p);
+    next = p;
+    i = len;
+    while (i >= 0 && *next != '\n' && *next != '\r' && *next != '\t') {
+	++next;
+	--i;
     }
+    if (i <= 0) {
+	return NULL;
+    }
+    i = next - p;
+
     if (buffsize == 0) {
 	buffsize = i + VirtualPathlen;
 	buff = NEW(char, buffsize + 1);
@@ -874,15 +884,14 @@ char *OVERGetHeader(char *p, int field)
     }
 
     if ((VirtualPathlen > 0) && ARTxreffield == j) {
-	q = p;
-	if ((q = strchr(q, ' ')) == NULL) {
+	if ((q = memchr(p, ' ', len)) == NULL) {
 	    return NULL;
 	}
 	memcpy(buff, VirtualPath, VirtualPathlen - 1);
 	memcpy(&buff[VirtualPathlen - 1], q, next - q);
 	buff[VirtualPathlen - 1 + next - q] = '\0';
     } else {
-        (void)strncpy(buff, p, i);
+        memcpy(buff, p, i);
         buff[i] = '\0';
     }
 
@@ -995,7 +1004,7 @@ void CMDxover(int ac, char *av[])
 	if (VirtualPathlen > 0) {
 	    /* replace path part */
 	    for (field = ARTxreffield, p = data ; field-- >= 0 && p < data + len; ) {
-		if ((p = strchr(p, '\t')) == NULL)
+		if ((p = memchr(p, '\t', data + len - p)) == NULL)
 		    break;
 		++p;
 	    }
@@ -1009,7 +1018,7 @@ void CMDxover(int ac, char *av[])
 		/* skip spaces */
 		for (; *p && *p == ' ' ; p++);
 	    }
-	    if ((q = strchr(p, ' ')) == NULL)
+	    if ((q = memchr(p, ' ', data + len - p)) == NULL)
 		continue;
 	    if(useIOb) {
 		SendIOb(data, p - data);
@@ -1166,7 +1175,7 @@ void CMDpat(int ac, char *av[])
 	    if (len == 0 || (PERMaccessconf->nnrpdcheckart
 		&& !ARTinstorebytoken(token)))
 		continue;
-	    if ((p = OVERGetHeader(data, Overview)) != NULL) {
+	    if ((p = OVERGetHeader(data, len, Overview)) != NULL) {
 		if (!pattern || wildmat_simple(p, pattern)) {
 		    sprintf(buff, "%lu ", artnum);
 		    SendIOb(buff, strlen(buff));

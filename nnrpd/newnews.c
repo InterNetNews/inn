@@ -299,7 +299,7 @@ void CMDnewnews(int ac, char *av[]) {
 	    SMfreearticle(art);
 	}
 	if (Xref != OVFMT_NOXREF) {
-	  if ((p = OVERGetHeader(data, Xref)) == NULL) {
+	  if ((p = OVERGetHeader(data, len, Xref)) == NULL) {
 	    if (Msgid == OVFMT_NOMSGID)
 	      SMfreearticle(art);
 	    continue;
@@ -321,7 +321,7 @@ void CMDnewnews(int ac, char *av[]) {
 	  continue;
 	}
 	if (Msgid != OVFMT_NOMSGID) {
-	  if ((p = OVERGetHeader(data, Msgid)) == NULL) {
+	  if ((p = OVERGetHeader(data, len, Msgid)) == NULL) {
 	    continue;
 	  }
 	} else {

@@ -211,7 +211,7 @@ extern void		PERMlogin(char *uname, char *pass, char *errorstr);
 extern bool		PERMmatch(char **Pats, char **list);
 extern bool		ParseDistlist(char ***argvp, char *list);
 extern READTYPE		READline(char *start, int size, int timeout);
-extern char		*OVERGetHeader(char *p, int field);
+extern char		*OVERGetHeader(char *p, int len, int field);
 extern void 		SetDefaultAccess(ACCESSGROUP*);
 extern void		Reply(const char *fmt, ...);
 
