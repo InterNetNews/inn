@@ -55,7 +55,7 @@ etags:
 
 clean:
 	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
-	rm -f *~ libinn_p.a llib-linn.ln FILELIST libtool config.log
+	rm -f *~ libinn_p.a llib-linn.ln FILELIST config.log
 
 ##  Common target.
 common:
@@ -91,7 +91,7 @@ clobber realclean:	clean
 	rm -f tags */tags core */core a.out */a.out foo */foo
 	rm -f CHANGES *~
 	rm -fr $(TARDIR)
-	rm -f config.cache config.log 
+	rm -f config.cache config.log libtool
 	rm -f BUILD makedirs.sh config/config.data backends/actmerge.sh
 	rm -f backends/actsyncd.sh backends/sendxbatches.sh include/clibrary.h
 	rm -f include/config.h include/paths.h samples/actsync.cfg
