@@ -30,6 +30,7 @@
 #include "sasl_config.h"
 
 #ifdef HAVE_SSL
+#include <openssl/e_os.h>
 extern SSL *tls_conn;
 int nnrpd_starttls_done = 0;
 #endif 
@@ -622,11 +623,31 @@ Reply(const char *fmt, ...)
 
 #ifdef HAVE_SSL
     if (tls_conn) {
+      int r;
+
       va_start(args, fmt);
       vsnprintf(buff, sizeof(buff), fmt, args);
       va_end(args);
       TMRstart(TMR_NNTPWRITE);
-      SSL_write(tls_conn, buff, strlen(buff));
+Again:
+      r = SSL_write(tls_conn, buff, strlen(buff));
+      switch (SSL_get_error(tls_conn, r)) {
+      case SSL_ERROR_NONE:
+        break;
+      case SSL_ERROR_WANT_WRITE:
+        goto Again;
+        break;
+      case SSL_ERROR_SYSCALL:
+        errno = get_last_socket_error();
+        break;
+      case SSL_ERROR_SSL:
+        SSL_shutdown(tls_conn);
+        tls_conn = NULL;
+        errno = ECONNRESET;
+        break;
+      case SSL_ERROR_ZERO_RETURN:
+        break;
+      }
       TMRstop(TMR_NNTPWRITE);
     } else {
       va_start(args, fmt);
@@ -667,11 +688,31 @@ Printf(const char *fmt, ...)
 
 #ifdef HAVE_SSL
     if (tls_conn) {
+      int r;
+
       va_start(args, fmt);
       vsnprintf(buff, sizeof(buff), fmt, args);
       va_end(args);
       TMRstart(TMR_NNTPWRITE);
-      SSL_write(tls_conn, buff, strlen(buff));
+Again:
+      r = SSL_write(tls_conn, buff, strlen(buff));
+      switch (SSL_get_error(tls_conn, r)) {
+      case SSL_ERROR_NONE:
+        break;
+      case SSL_ERROR_WANT_WRITE:
+        goto Again;
+        break;
+      case SSL_ERROR_SYSCALL:
+        errno = get_last_socket_error();
+        break;
+      case SSL_ERROR_SSL:
+        SSL_shutdown(tls_conn);
+        tls_conn = NULL;
+        errno = ECONNRESET;
+        break;
+      case SSL_ERROR_ZERO_RETURN:
+        break;
+      }
       TMRstop(TMR_NNTPWRITE);
     } else {
 #endif /* HAVE_SSL */

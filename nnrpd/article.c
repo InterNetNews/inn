@@ -19,6 +19,7 @@
 #include "cache.h"
 
 #ifdef HAVE_SSL
+#include <openssl/e_os.h>
 extern SSL *tls_conn;
 #endif 
 
@@ -64,9 +65,29 @@ static void PushIOvHelper(struct iovec* vec, int* countp) {
     int result;
     TMRstart(TMR_NNTPWRITE);
 #ifdef HAVE_SSL
-    result = tls_conn
-	     ? SSL_writev(tls_conn, vec, *countp)
-	     : xwritev(STDOUT_FILENO, vec, *countp);
+    if (tls_conn) {
+Again:
+        result = SSL_writev(tls_conn, vec, *countp);
+        switch (SSL_get_error(tls_conn, result)) {
+        case SSL_ERROR_NONE:
+            break;
+        case SSL_ERROR_WANT_WRITE:
+            goto Again;
+            break;
+        case SSL_ERROR_SYSCALL:
+            errno = get_last_socket_error();
+            break;
+        case SSL_ERROR_SSL:
+            SSL_shutdown(tls_conn);
+            tls_conn = NULL;
+            errno = ECONNRESET;
+            break;
+        case SSL_ERROR_ZERO_RETURN:
+            break;
+        }
+    } else {
+        result = writev(STDOUT_FILENO, vec, *countp);
+    }
 #else
     result = xwritev(STDOUT_FILENO, vec, *countp);
 #endif
@@ -176,11 +197,31 @@ PushIOb(void) {
     fflush(stdout);
 #ifdef HAVE_SSL
     if (tls_conn) {
-      if (SSL_write(tls_conn, _IO_buffer_, highwater) != highwater) {
-	TMRstop(TMR_NNTPWRITE);
-        highwater = 0;
-        return;
-      }
+        int r;
+Again:
+        r = SSL_write(tls_conn, _IO_buffer_, highwater);
+        switch (SSL_get_error(tls_conn, r)) {
+        case SSL_ERROR_NONE:
+            break;
+        case SSL_ERROR_WANT_WRITE:
+            goto Again;
+            break;
+        case SSL_ERROR_SYSCALL:
+            errno = get_last_socket_error();
+            break;
+        case SSL_ERROR_SSL:
+            SSL_shutdown(tls_conn);
+            tls_conn = NULL;
+            errno = ECONNRESET;
+            break;
+        case SSL_ERROR_ZERO_RETURN:
+            break;
+        }
+        if (r != highwater) {
+            TMRstop(TMR_NNTPWRITE);
+            highwater = 0;
+            return;
+        }
     } else {
       if (xwrite(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
 	TMRstop(TMR_NNTPWRITE);
@@ -813,8 +854,6 @@ void CMDxover(int ac, char *av[])
     const char		*p, *q;
     int			len, useIOb = 0;
     TOKEN		token;
-    ARTOVERFIELD	*fp;
-    int	                field;
     struct cvector *vector = NULL;
 
     if (!PERMcanread) {
