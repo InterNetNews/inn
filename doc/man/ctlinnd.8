@@ -511,13 +511,17 @@ The
 file cannot be reloaded.
 .TP
 .BI renumber " group"
-Scan the spool directory for the specified newsgroup and update the
+Scan overview database for the specified newsgroup and update the
 low-water mark and hi-water mark in the
 .I active
 file.
 If
 .I group
 is an empty string then all newsgroups are scanned.
+Renumber never works, unless overview data is created.
+See the description of ``enableoverview'' in
+.IR inn.conf (5)
+for overview creation.
 .TP
 .BI reserve " reason"
 The next ``pause'' or ``throttle'' command must use
