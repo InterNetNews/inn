@@ -35,13 +35,74 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
     int 	        j;
     int			oerrno;
     FILE		*F;
+#ifdef HAVE_INET6
+    struct addrinfo	hints, *ressave, *addr;
+    char		portbuf[16];
+    struct sockaddr_storage client;
+#else
     struct hostent	*hp;
     struct hostent	fakehp;
     struct in_addr	quadaddr;
     struct sockaddr_in	server, client;
+#endif
 
     buff = errbuff ? errbuff : mybuff;
     *buff = '\0';
+
+#ifdef HAVE_INET6
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    sprintf(portbuf, "%d", port);
+    if (getaddrinfo(host, portbuf, &hints, &addr) != 0)
+	return -1;
+
+    for (ressave = addr; addr; addr = addr->ai_next) {
+	if ((i = socket(addr->ai_family, addr->ai_socktype,
+			addr->ai_protocol)) < 0)
+	    continue; /* ignore */
+	/* bind the local (source) address, if requested */
+	memset(&client, 0, sizeof client);
+	if (addr->ai_family == AF_INET && innconf->sourceaddress) {
+	    if (inet_pton(AF_INET, innconf->sourceaddress,
+			&((struct sockaddr_in *)&client)->sin_addr) < 1) {
+		addr = NULL;
+		break;
+	    }
+	    ((struct sockaddr_in *)&client)->sin_family = AF_INET;
+	}
+	if (addr->ai_family == AF_INET6 && innconf->sourceaddress6) {
+	    if (inet_pton(AF_INET6, innconf->sourceaddress6,
+			&((struct sockaddr_in6 *)&client)->sin6_addr) < 1) {
+		addr = NULL;
+		break;
+	    }
+	    ((struct sockaddr_in6 *)&client)->sin6_family = AF_INET6;
+	}
+	if (client.ss_family != 0) {
+	    if (bind(i, (struct sockaddr *)&client, addr->ai_addrlen) < 0) {
+		addr = NULL;
+		break;
+	    }
+	}
+	/* we are ready, try to connect */
+	if (connect(i, addr->ai_addr, addr->ai_addrlen) == 0)
+	    break; /* success */
+	oerrno = errno;
+	close(i);
+	errno = oerrno;
+    }
+    freeaddrinfo(ressave);
+
+    if (addr == NULL) {
+	/* all connect(2) calls failed or some other error has occurred */
+	oerrno = errno;
+	close(i);
+	errno = oerrno;
+	return -1;
+    }
+    {
+#else /* HAVE_INET6 */
     if (inet_aton(host, &quadaddr)) {
 	/* Host was specified as a dotted-quad internet address.  Fill in
 	 * the parts of the hostent struct that we need. */
@@ -104,26 +165,27 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	    errno = oerrno;
 	    continue;
 	}
+#endif /* HAVE_INET6 */
 
 	/* Connected -- now make sure we can post. */
 	if ((F = fdopen(i, "r")) == NULL) {
 	    oerrno = errno;
 	    (void)close(i);
 	    errno = oerrno;
-	    continue;
+	    return -1;
 	}
 	if (fgets(buff, sizeof mybuff, F) == NULL) {
 	    oerrno = errno;
 	    (void)fclose(F);
 	    errno = oerrno;
-	    continue;
+	    return -1;
 	}
 	j = atoi(buff);
 	if (j != NNTP_POSTOK_VAL && j != NNTP_NOPOSTOK_VAL) {
 	    (void)fclose(F);
 	    /* This seems like a reasonable error code to use... */
 	    errno = EPERM;
-	    break;
+	    return -1;
 	}
 
 	*FromServerp = F;
@@ -131,7 +193,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	    oerrno = errno;
 	    (void)fclose(F);
 	    errno = oerrno;
-	    continue;
+	    return -1;
 	}
 	return 0;
     }

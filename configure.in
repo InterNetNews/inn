@@ -228,6 +228,22 @@ AC_ARG_WITH(innd-port,
     AC_DEFINE_UNQUOTED(INND_PORT, $with_innd_port,
                        [Additional valid low-numbered port for inndstart.]))
 
+dnl By default, we omit all IPv6 support.  This option enables it.
+AC_ARG_ENABLE(ipv6,
+    [  --enable-ipv6           Enable IPv6 support],
+    if test "x$enableval" = xyes ; then
+        inn_enable_ipv6_tests=yes
+        AC_DEFINE(HAVE_INET6, 1,
+                  [Define to enable IPv6 support.])
+    fi)
+
+dnl Maximum number of sockets that can be listened on.
+AC_ARG_WITH(max-sockets,
+    [  --with-max-sockets=N    Maximum number of listening sockets in innd],,
+    [with_max_sockets=15])
+AC_DEFINE_UNQUOTED(MAX_SOCKETS, $with_max_sockets,
+	       [Maximum number of sockets that innd can listen on.])
+
 dnl This will eventually be a runtime option rather than a compile-time
 dnl option.
 AC_ARG_ENABLE(tagged-hash,
@@ -1220,6 +1236,108 @@ else
     LIBOBJS="$LIBOBJS inet_ntoa.${ac_objext}"
 fi])
 INN_FUNC_INET_NTOA
+
+dnl Check whether sockaddr structs have sa_len fields
+AC_DEFUN([INN_SOCKADDR_SA_LEN],
+[AC_CACHE_CHECK(whether struct sockaddr has sa_len,
+		inn_cv_struct_sockaddr_sa_len,
+		[AC_TRY_COMPILE(
+			[#include <sys/types.h>
+			#include <sys/socket.h>
+			#include <netinet/in.h>],
+			[struct sockaddr sa; int x = sa.sa_len;],
+			[inn_cv_struct_sockaddr_sa_len=yes],
+			[inn_cv_struct_sockaddr_sa_len=no])])
+if test "$inn_cv_struct_sockaddr_sa_len" = yes ; then
+    AC_DEFINE([HAVE_SOCKADDR_LEN],1,
+	    [Define if your system has a sa_len field in struct sockaddr])
+fi])
+INN_SOCKADDR_SA_LEN
+
+dnl Check whether we have an SA_LEN macro available to us
+AC_DEFUN([INN_SA_LEN_MACRO],
+[AC_CACHE_CHECK(for SA_LEN(s) macro, inn_cv_sa_len_macro,
+		[AC_TRY_LINK(
+			[#include <sys/types.h>
+			#include <sys/socket.h>
+			#include <netinet/in.h>],
+			[struct sockaddr sa; int x = SA_LEN(&sa);],
+			[inn_cv_sa_len_macro=yes],
+			[inn_cv_sa_len_macro=no])])
+if test "$inn_cv_sa_len_macro" = yes ; then
+    AC_DEFINE([HAVE_SA_LEN_MACRO],1,
+	    [Define if your system has a SA_LEN(s) macro])
+fi])
+INN_SA_LEN_MACRO
+
+dnl Check to see how struct sockaddr_storage members are named.
+dnl  *** Called from INN_SOCKADDR_STORAGE
+AC_DEFUN([INN_2553_SS_FAMILY],
+[AC_CACHE_CHECK(for RFC 2553 style sockaddr_storage member names,
+		inn_cv_2553_ss_family,
+		[AC_TRY_COMPILE(
+			[#include <sys/types.h>
+			#include <sys/socket.h>
+			#include <netinet/in.h>],
+			[struct sockaddr_storage ss; int x=ss.ss_family;],
+			[inn_cv_2553_ss_family=no],
+			[inn_cv_2553_ss_family=yes])])
+if test "$inn_cv_2553_ss_family" = yes ; then
+    AC_DEFINE([HAVE_2553_STYLE_SS_FAMILY],1,
+	[Define if your system has sockaddr_storage.__ss_family])
+fi])
+
+dnl Check whether we have struct sockaddr_storage as defined by RFC 2553,
+dnl or whether we should define it ourselves.
+AC_DEFUN([INN_SOCKADDR_STORAGE],
+[AC_CACHE_CHECK(for struct sockaddr_storage, inn_cv_struct_sockaddr_storage,
+		[AC_TRY_COMPILE(
+			[#include <sys/types.h>
+			#include <sys/socket.h>
+			#include <netinet/in.h>],
+			[struct sockaddr_storage ss;],
+			[inn_cv_struct_sockaddr_storage=yes],
+			[inn_cv_struct_sockaddr_storage=no])])
+if test "$inn_cv_struct_sockaddr_storage" = yes ; then
+    AC_DEFINE([HAVE_SOCKADDR_STORAGE],1,
+	[Define if your system has struct sockaddr_storage])
+    INN_2553_SS_FAMILY
+fi])
+INN_SOCKADDR_STORAGE
+
+dnl Source used by INN_IN6_EQ_BROKEN
+dnl Test borrowed from a bug report by tmoestl@gmx.net for glibc
+define([_INN_IN6_EQ_BROKEN_SOURCE],
+[#include <netinet/in.h>
+#include <arpa/inet.h>
+
+int
+main ()
+{
+  struct in6_addr a;
+  struct in6_addr b;
+
+  inet_pton(AF_INET6,"fe80::1234:5678:abcd",&a);
+  inet_pton(AF_INET6,"fe80::1234:5678:abcd",&b);
+  return IN6_ARE_ADDR_EQUAL(&a,&b) ? 0 : 1;
+}])
+
+dnl Checks whether IN6_ARE_ADDR_EQUAL macro is broken (glibc 2.1.3 is)
+dnl *** only run if we're building for IPv6 (--enable-ipv6)
+AC_DEFUN([INN_IN6_EQ_BROKEN],
+[AC_CACHE_CHECK(whether IN6_ARE_ADDR_EQUAL macro is broken,
+		inn_cv_in6_are_addr_equal_broken,
+		[AC_TRY_RUN(_INN_IN6_EQ_BROKEN_SOURCE,
+			inn_cv_in6_are_addr_equal_broken=no,
+			inn_cv_in6_are_addr_equal_broken=yes,
+			inn_cv_in6_are_addr_equal_broken=no)])
+if test "$inn_cv_in6_are_addr_equal_broken" = yes ; then
+    AC_DEFINE([HAVE_BROKEN_IN6_ARE_ADDR_EQUAL],1,
+	[Define if your IN6_ARE_ADDR_EQUAL macro is broken])
+fi])
+if test "$inn_enable_ipv6_tests" = yes ; then
+    INN_IN6_EQ_BROKEN
+fi
 
 dnl Source used by INN_FUNC_SNPRINTF.
 define([_INN_FUNC_SNPRINTF_SOURCE],

@@ -190,8 +190,9 @@ Alex Kiernan:
         other bug fixes.
 
 Marco d'Itri:
-        Wrote gpgverify and overhauled controlchan and its modules.  Has
-        also contributed a variety of bug fixes.
+        Wrote gpgverify and overhauled controlchan and its modules.  Added
+        IPv6 support to innd and inndstart.  Has also contributed a variety
+        of bug fixes.
 
 Jeffrey M. Vinocur:
         Broke parts of the interface with nnrpd for authentication programs
@@ -202,6 +203,9 @@ Jeffrey M. Vinocur:
 Erik Klavon:
         Significantly reworked nnrpd perl hooks to be more useful in
         combination with the readers.conf mechanism.
+
+Nathan Lutchansky:
+        Added IPv6 support to innfeed, nnrpd, and supporting programs.
 
 Also:
 

@@ -236,7 +236,7 @@ hisv6_closefiles(struct hisv6 *h)
 	r = false;
 
     if (h->readfd != -1) {
-	if (close(h->readfd) != 0) {
+	if (close(h->readfd) != 0 && errno != EINTR) {
 	    hisv6_seterror(h, concat("can't close history ",
 				      h->histpath, " ",
 				      strerror(errno),NULL));

@@ -341,6 +341,12 @@ struct conf_rec conf_defaults[] = {
     { _CONF_STATHIST,				"",     1, 0 },
 #define _CONF_HISMETHOD				"hismethod"
 #define CONF_VAR_HISMETHOD			109
-    { _CONF_HISMETHOD,				"",     1, 1 }
+    { _CONF_HISMETHOD,				"",     1, 1 },
+#define _CONF_BINDADDRESS6			"bindaddress6"
+#define CONF_VAR_BINDADDRESS6			110
+    { _CONF_BINDADDRESS6,			"",	1, 0 },
+#define _CONF_SOURCEADDRESS6			"sourceaddress6"
+#define CONF_VAR_SOURCEADDRESS6			111
+    { _CONF_SOURCEADDRESS6,			"",	1, 0 }
 };
-#define MAX_CONF_VAR 110
+#define MAX_CONF_VAR 112

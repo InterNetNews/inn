@@ -254,7 +254,7 @@ static Connection gCxnList = NULL ;
 static u_int gCxnCount = 0 ;
 static u_int max_reconnect_period = MAX_RECON_PER ;
 static u_int init_reconnect_period = INIT_RECON_PER ;
-static u_long bind_addr = INADDR_ANY;
+static struct sockaddr *bind_addr = NULL;
 #if 0
 static bool inited = false ;
 #endif
@@ -398,16 +398,32 @@ int cxnConfigLoadCbk (void *data UNUSED)
 
   if (getString (topScope,"bindaddress",&sv,NO_INHERIT))
     {
+#ifdef HAVE_INET6
+      struct addrinfo *res, hints;
+
+      memset( &hints, 0, sizeof( hints ) );
+      hints.ai_flags = AI_NUMERICHOST;
+      if( getaddrinfo( sv, NULL, &hints, &res ) )
+        {
+	  logOrPrint (LOG_ERR,fp,"innfeed unable to determine bind ip") ;
+	}
+      else
+        {
+	  bind_addr = (struct sockaddr *) MALLOC( res->ai_addrlen );
+	  memcpy( bind_addr, res->ai_addr, res->ai_addrlen );
+        }
+#else
       if (!inet_aton(sv,&addr))
         {
 	  logOrPrint (LOG_ERR,fp,"innfeed unable to determine bind ip") ;
-	  bind_addr = INADDR_ANY;
 	}
       else
-        bind_addr = addr.s_addr;
+        {
+	  bind_addr = (struct sockaddr *) MALLOC( sizeof(struct sockaddr_in) );
+	  make_sin( (struct sockaddr_in *)bind_addr, &addr );
+        }
+#endif
     }
-  else
-    bind_addr = INADDR_ANY;
 
   return rval ;
 }
@@ -524,9 +540,9 @@ Connection newConnection (Host host,
  */
 bool cxnConnect (Connection cxn)
 {
-  struct sockaddr_in cxnAddr, cxnSelf ;
+  struct sockaddr_storage cxnAddr, cxnSelf ;
+  struct sockaddr *retAddr;
   int fd, rval ;
-  struct in_addr *addr = NULL;
   const char *peerName = hostPeerName (cxn->myHost) ;
 
   ASSERT (cxn->myEp == NULL) ;
@@ -549,20 +565,29 @@ bool cxnConnect (Connection cxn)
 
   cxn->state = cxnConnectingS ;
 
-  addr = hostIpAddr (cxn->myHost) ;
+  retAddr = hostIpAddr (cxn->myHost) ;
 
-  if (addr == NULL)
+  if (retAddr == NULL)
     {
       cxnSleepOrDie (cxn) ;
       return false ;
     }
 
-  memset (&cxnAddr, 0, sizeof (cxnAddr)) ;
-  cxnAddr.sin_family = AF_INET ;
-  cxnAddr.sin_port = htons(cxn->port) ;
-  cxnAddr.sin_addr.s_addr = addr->s_addr ;
+  memcpy( &cxnAddr, retAddr, SA_LEN(retAddr) );
 
-  if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0)
+#ifdef HAVE_INET6
+  if( cxnAddr.ss_family == AF_INET6 )
+  {
+    ((struct sockaddr_in6 *)&cxnAddr)->sin6_port = htons(cxn->port) ;
+    fd = socket (PF_INET6, SOCK_STREAM, 0);
+  }
+  else
+#endif
+  {
+    ((struct sockaddr_in *)&cxnAddr)->sin_port = htons(cxn->port) ;
+    fd = socket (PF_INET, SOCK_STREAM, 0);
+  }
+  if (fd < 0)
     {
       syslog (LOG_ERR, SOCKET_CREATE_ERROR, peerName, cxn->ident) ;
       d_printf (1,"Can't get a socket: %m\n") ;
@@ -573,13 +598,11 @@ bool cxnConnect (Connection cxn)
     }
 
   /* bind to a specified virtual host */
-  if (bind_addr != INADDR_ANY)
+  if (bind_addr)
     {
-      memset (&cxnSelf, 0, sizeof (cxnSelf)) ;
-      cxnSelf.sin_family = AF_INET ;
-      cxnSelf.sin_port = 0 ;
-      cxnSelf.sin_addr.s_addr = bind_addr;
-      if (bind (fd, (struct sockaddr *) &cxnSelf,sizeof (cxnSelf)) < 0)
+      memcpy( &cxnSelf, &bind_addr, SA_LEN(bind_addr) );
+      if (bind (fd, (struct sockaddr *) &cxnSelf,
+		  SA_LEN((struct sockaddr *)&cxnAddr)) < 0)
 	{
 	  syslog (LOG_ERR,"bind: %m") ;
 
@@ -611,7 +634,8 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
 
-  rval = connect (fd, (struct sockaddr *) &cxnAddr, sizeof (cxnAddr)) ;
+  rval = connect (fd, (struct sockaddr *) &cxnAddr,
+		  SA_LEN((struct sockaddr *)&cxnAddr)) ;
   if (rval < 0 && errno != EINPROGRESS)
     {
       syslog (LOG_ERR, CONNECT_ERROR, peerName, cxn->ident) ;

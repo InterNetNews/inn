@@ -105,7 +105,7 @@ void hostFlush (Host host) ;
 void hostSendArticle (Host host, Article article) ;
 
 /* return an IP address for the host */
-struct in_addr *hostIpAddr (Host host) ;
+struct sockaddr *hostIpAddr (Host host) ;
 
 /*
  * Functions used by the Connection to indicate Connection state.

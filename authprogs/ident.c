@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
     struct servent *s;
     char buf[2048];
-    struct sockaddr_in sin, loc, cli;
+    struct sockaddr_storage loc, cli;
     int sock;
     int opt;
     int truncate = 0;
@@ -31,21 +31,20 @@ int main(int argc, char *argv[])
     char *iter;
     char *p;
     int got;
+    int lport, cport, identport;
     char *endstr;
     char result = 0;
 
     signal(SIGALRM,out);
     alarm(15);
-    memset(&sin, '\0', sizeof(sin));
-    sin.sin_family = AF_INET;
 
 #define IDENT_PORT 113
 
     s = getservbyname("ident", "tcp");
     if (!s)
-	sin.sin_port = htons(IDENT_PORT);
+	identport = IDENT_PORT;
     else
-	sin.sin_port = s->s_port;
+	identport = ntohs(s->s_port);
 
     while ((opt = getopt(argc, argv, "p:t")) != -1) {
 	switch (opt) {
@@ -59,10 +58,9 @@ int main(int argc, char *argv[])
 		    fprintf(stderr, "ident: can't getservbyname(%s/tcp)\n", optarg);
 		    exit(1);
 		}
-		sin.sin_port = s->s_port;
+		identport = s->s_port;
 	    } else
-		sin.sin_port = atoi(optarg);
-	    sin.sin_port = htons(sin.sin_port);
+		identport = atoi(optarg);
 	    break;
 	case 't':
 	    truncate = 1;
@@ -74,33 +72,44 @@ int main(int argc, char *argv[])
     memset(&loc, '\0', sizeof(loc));
 
     /* read the connection info from stdin */
-    if (get_res(&loc,&cli) != (char) GOT_ALL) {
+    if (get_res((struct sockaddr *)&loc,(struct sockaddr *)&cli) != (char) GOT_ALL) {
 	fprintf(stderr, "ident: didn't get ident parameter\n");
 	exit(1);
     }
-    /* got all the client parameters, create our local socket. */
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+#ifdef HAVE_INET6
+    if( loc.ss_family == AF_INET6 )
+    {
+	lport = ntohs( ((struct sockaddr_in6 *)&loc)->sin6_port );
+	((struct sockaddr_in6 *)&loc)->sin6_port = 0;
+	cport = ntohs( ((struct sockaddr_in6 *)&cli)->sin6_port );
+	((struct sockaddr_in6 *)&cli)->sin6_port = htons( identport );
+	sock = socket(PF_INET6, SOCK_STREAM, 0);
+    } else
+#endif
+    {
+	lport = htons( ((struct sockaddr_in *)&loc)->sin_port );
+	((struct sockaddr_in *)&loc)->sin_port = 0;
+	cport = htons( ((struct sockaddr_in *)&cli)->sin_port );
+	((struct sockaddr_in *)&cli)->sin_port = htons( identport );
+	sock = socket(PF_INET, SOCK_STREAM, 0);
+    }
+    if ( sock < 0 ) {
 	fprintf(stderr, "ident: couldn't create socket: %s\n", strerror(errno));
 	exit(1);
     }
-    opt = loc.sin_port;
-    loc.sin_port = 0;
-    if (bind(sock, (struct sockaddr*) &loc, sizeof(loc)) < 0) {
+    if (bind(sock, (struct sockaddr*) &loc, SA_LEN((struct sockaddr *)&loc)) < 0) {
 	fprintf(stderr, "ident: couldn't bind socket: %s\n", strerror(errno));
 	exit(1);
     }
-    loc.sin_port = opt;
-    sin.sin_addr.s_addr = cli.sin_addr.s_addr;
-    if (connect(sock, (struct sockaddr*) &sin, sizeof(sin)) < 0) {
+    if (connect(sock, (struct sockaddr*) &cli, SA_LEN((struct sockaddr *)&cli)) < 0) {
       if (errno != ECONNREFUSED) {
-	fprintf(stderr, "ident: couldn't connect to %s:%d: %s\n",
-	  inet_ntoa(sin.sin_addr), ntohs(sin.sin_port), strerror(errno));
+	fprintf(stderr, "ident: couldn't connect to ident server: %s\n", strerror(errno));
       }
       exit(1);
     }
 
     /* send the request out */
-    sprintf(buf, "%d , %d\r\n", ntohs(cli.sin_port), ntohs(loc.sin_port));
+    sprintf(buf, "%d , %d\r\n", cport, lport);
     got = 0;
     while (got != strlen(buf)) {
 	opt = write(sock, buf+got, strlen(buf)-got);

@@ -19,6 +19,9 @@
 /* Forward declarations to avoid unnecessary includes. */
 struct stat;
 struct iovec;
+struct sockaddr;
+struct sockaddr_in;
+struct in_addr;
 
 BEGIN_DECLS
 
@@ -211,6 +214,7 @@ struct conf_vars {
     /* Feed Configuration */
     int artcutoff;              /* Max accepted article age */
     char *bindaddress;          /* Which interface IP to bind to */
+    char *bindaddress6;         /* Which interface IPv6 to bind to */
     int hiscachesize;           /* Size of the history cache in kB */
     int ignorenewsgroups;       /* Propagate cmsgs by affected group? */
     int immediatecancel;        /* Immediately cancel timecaf messages? */
@@ -222,6 +226,7 @@ struct conf_vars {
     int refusecybercancels;     /* Reject message IDs with "<cancel."? */
     int remembertrash;          /* Put unwanted article IDs into history */
     char *sourceaddress;        /* Source IP for outgoing NNTP connections */
+    char *sourceaddress6;       /* Source IPv6 for outgoing NNTP connections */
     int verifycancels;          /* Verify cancels against article author */
     int wanttrash;              /* Put unwanted articles in junk */
     int wipcheck;               /* How long to defer other copies of article */
@@ -374,6 +379,8 @@ extern FILE *   xfopena(const char *p);
 extern bool     fdreserve(int fdnum);
 extern FILE *   Fopen(const char *p, const char *type, int fd);
 extern int      Fclose(FILE *fp);
+extern char *	sprint_sockaddr(const struct sockaddr *sa);
+extern void	make_sin(struct sockaddr_in *s, const struct in_addr *src);
 
 extern int      argify(char *line, char ***argvp);
 extern void     freeargify(char ***argvp);

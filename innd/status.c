@@ -16,7 +16,7 @@
 
 typedef struct _STATUS {
     char		name[SMBUF];
-    char		ip_addr[15];
+    char		ip_addr[64];
     bool		can_stream;
     unsigned short	activeCxn;
     unsigned short	sleepingCxns;
@@ -138,7 +138,8 @@ STATUSsummary(void)
   tmp = head = NULL;
   for (i = 0; (cp = CHANiter(&i, CTnntp)) != NULL; ) {
     j = 0;
-    strcpy(TempString, cp->Address.s_addr == 0 ? "localhost" : RChostname(cp));
+    strcpy(TempString,
+	    cp->Address.ss_family == 0 ? "localhost" : RChostname(cp));
     for (status = head ; status != NULL ; status = status->next) {
 	if (strcmp(TempString, status->name) == 0)
 	    break;
@@ -147,7 +148,8 @@ STATUSsummary(void)
       status = NEW(STATUS, 1);
       peers++;                                              /* a new peer */
       strcpy (status->name, TempString);                         /* name */
-      strcpy (status->ip_addr, inet_ntoa(cp->Address));    /* ip address */
+      strcpy (status->ip_addr,
+	sprint_sockaddr((struct sockaddr *)&cp->Address));    /* ip address */
       status->can_stream = cp->Streaming;
       status->seconds = status->Size = status->DuplicateSize = 0;
       status->Ihave = status->Ihave_Duplicate =

@@ -138,8 +138,8 @@ typedef struct host_param_s
 struct host_s 
 {
     InnListener listener ;      /* who created me. */
-    char **ipAddrs ;		/* the ip addresses of the remote */
-    char **nextIpAddr ;		/* the next ip address to hand out */
+    struct sockaddr **ipAddrs ;	/* the ip addresses of the remote */
+    int nextIpAddr ;		/* the next ip address to hand out */
 
     Connection *connections ;   /* NULL-terminated list of all connections */
     bool *cxnActive ;           /* true if the corresponding cxn is active */
@@ -1128,19 +1128,59 @@ Host newHost (InnListener listener, HostParams p)
   return nh ;
 }
 
-struct in_addr *hostIpAddr (Host host)
+struct sockaddr *hostIpAddr (Host host)
 {
   int i ;
-  char *p ;
-  char **newIpAddrs = NULL;
-  struct in_addr ipAddr, *returnAddr ;
-  struct hostent *hostEnt ;
+  struct sockaddr **newIpAddrPtrs = NULL;
+  struct sockaddr_storage *newIpAddrs = NULL;
+  struct sockaddr *returnAddr;
 
   ASSERT(host->params != NULL);
 
   /* check to see if need to look up the host name */
   if (host->nextIpLookup <= theTime())
     {
+#ifdef HAVE_INET6
+      int gai_ret;
+      struct addrinfo *res, *p;
+
+      if(( gai_ret = getaddrinfo(host->params->ipName, NULL, NULL, &res)) != 0
+		      || res == NULL )
+
+	{
+	  syslog (LOG_ERR, HOST_RESOLV_ERROR, host->params->peerName,
+		host->params->ipName, gai_ret == 0 ? "no addresses returned"
+		: gai_strerror(gai_ret)) ;
+	}
+      else
+	{
+	  /* figure number of pointers that need space */
+	  i = 0;
+	  for ( p = res ; p ; p = p->ai_next ) ++i;
+
+	  newIpAddrPtrs = (struct sockaddr **)
+	    MALLOC ( (i + 1) * sizeof(struct sockaddr *) );
+	  ASSERT (newIpAddrPtrs != NULL) ;
+
+	  newIpAddrs = (struct sockaddr_storage *)
+	    MALLOC ( i * sizeof(struct sockaddr_storage) );
+	  ASSERT (newIpAddrs != NULL) ;
+
+	  i = 0;
+	  /* copy the addresses from the getaddrinfo linked list */
+	  for( p = res ; p ; p = p->ai_next )
+	    {
+	      memcpy( &newIpAddrs[i], p->ai_addr, p->ai_addrlen );
+	      newIpAddrPtrs[i] = (struct sockaddr *)(&newIpAddrs[i]);
+	      ++i;
+	    }
+	  newIpAddrPtrs[i] = NULL ;
+	  freeaddrinfo( res );
+	}
+#else
+      struct hostent *hostEnt ;
+      struct in_addr ipAddr;
+
       /* see if the ipName we're given is a dotted quad */
       if ( !inet_aton (host->params->ipName,&ipAddr) )
 	{
@@ -1154,41 +1194,51 @@ struct in_addr *hostIpAddr (Host host)
 	      /* figure number of pointers that need space */
 	      for (i = 0 ; hostEnt->h_addr_list[i] ; i++)
 		;
-	      i++;		
 
-	      newIpAddrs =
-		(char **) MALLOC ( (i * sizeof(char *)) +
-				  ( (i - 1) * hostEnt->h_length) ) ;
+	      newIpAddrPtrs = (struct sockaddr **)
+		MALLOC ( (i + 1) * sizeof(struct sockaddr *) );
+	      ASSERT (newIpAddrPtrs != NULL) ;
+
+	      newIpAddrs = (struct sockaddr_storage *)
+		MALLOC ( i * sizeof( struct sockaddr_storage ) );
 	      ASSERT (newIpAddrs != NULL) ;
 
 	      /* copy the addresses from gethostbyname() static space */
-	      p = (char *)&newIpAddrs [ i ] ;
 	      i = 0;
 	      for (i = 0 ; hostEnt->h_addr_list[i] ; i++)
 		{
-		  newIpAddrs[i] = p;
-		  memcpy (p, hostEnt->h_addr_list[i], hostEnt->h_length) ;
-		  p += hostEnt->h_length ;
+		  make_sin( (struct sockaddr_in *)(&newIpAddrs[i]),
+			(struct in_addr *)(hostEnt->h_addr_list[i]) );
+		  newIpAddrPtrs[i] = (struct sockaddr *)(&newIpAddrs[i]);
 		}
-	      newIpAddrs[i] = NULL ;
+	      newIpAddrPtrs[i] = NULL ;
 	    }
 	}
       else
 	{
-	  newIpAddrs = (char **) MALLOC (2 * sizeof(char *) + sizeof(ipAddr)) ;
+	  newIpAddrPtrs = (struct sockaddr **)
+		  MALLOC( 2 * sizeof( struct sockaddr * ) );
+	  ASSERT (newIpAddrPtrs != NULL) ;
+	  newIpAddrs = (struct sockaddr_storage *)
+		  MALLOC( sizeof( struct sockaddr_storage ) );
 	  ASSERT (newIpAddrs != NULL) ;
-	  p = (char *)&newIpAddrs [ 2 ];
-	  newIpAddrs[0] = p;
-	  memcpy (p, (char *)&ipAddr, sizeof(ipAddr)) ;
-	  newIpAddrs[1] = NULL;
+
+	  make_sin( (struct sockaddr_in *)newIpAddrs, &ipAddr );
+	  newIpAddrPtrs[0] = (struct sockaddr *)newIpAddrs;
+	  newIpAddrPtrs[1] = NULL;
 	}
+#endif
 
       if (newIpAddrs)
 	{
 	  if (host->ipAddrs)
+	  {
+	    if(host->ipAddrs[0])
+	      FREE (host->ipAddrs[0]);
 	    FREE (host->ipAddrs) ;
-	  host->ipAddrs = newIpAddrs ;
-	  host->nextIpAddr = host->ipAddrs ;
+	  }
+	  host->ipAddrs = newIpAddrPtrs ;
+	  host->nextIpAddr = 0 ;
 	  host->nextIpLookup = theTime () + dnsExpPeriod ;
 	}
       else
@@ -1200,9 +1250,9 @@ struct in_addr *hostIpAddr (Host host)
 
   if (host->ipAddrs)
     {
-      returnAddr = (struct in_addr *)(host->nextIpAddr[0]) ;
-      if (*(++host->nextIpAddr) == NULL)
-	host->nextIpAddr = host->ipAddrs ;
+      returnAddr = host->ipAddrs[host->nextIpAddr] ;
+      if (host->ipAddrs[++host->nextIpAddr] == NULL)
+	host->nextIpAddr = 0 ;
     }
   else
     returnAddr = NULL ;
@@ -2694,7 +2744,11 @@ void delHost (Host host)
   FREE (host->params->ipName) ;
 
   if (host->ipAddrs)
+  {
+    if(host->ipAddrs[0])
+      FREE (host->ipAddrs[0]);
     FREE (host->ipAddrs) ;
+  }
 
   FREE (host) ;
   gHostCount-- ;

@@ -53,6 +53,9 @@ static CHANNEL	CHANnull = { CTfree, CSerror, -1 };
 
 #define PRIORITISE_REMCONN
 #ifdef PRIORITISE_REMCONN
+/* FIXME - Russ says these need to become arrays too, but I'm not really sure
+ * how it works, and they're not breaking anything for non-IPv6 installations
+ * or systems with IPv4-mapped addressing like Linux.  -lutchann */
 static int	CHANrcfd;
 static CHANNEL	*CHANrc;
 #endif /* PRIORITISE_REMCONN */
@@ -168,7 +171,7 @@ CHANsetup(int i)
     CHANtable = NEW(CHANNEL, CHANtablesize);
     memset(CHANtable, 0, CHANtablesize * sizeof *CHANtable);
     CHANnull.NextLog = innconf->chaninacttime;
-    CHANnull.Address.s_addr = MyAddress.s_addr;
+    memset( &CHANnull.Address, 0, sizeof( CHANnull.Address ) );
     for (cp = CHANtable; --i >= 0; cp++)
 	*cp = CHANnull;
 }
@@ -278,7 +281,8 @@ CHANtracing(CHANNEL *cp, bool Flag)
 	syslog(L_NOTICE, "%s trace badwrites %d blockwrites %d badreads %d",
 	    p, cp->BadWrites, cp->BlockedWrites, cp->BadReads);
 	syslog(L_NOTICE, "%s trace address %s lastactive %ld nextlog %ld",
-	    p, inet_ntoa(cp->Address), cp->LastActive, cp->NextLog);
+	    p, sprint_sockaddr((struct sockaddr *)&cp->Address),
+	    cp->LastActive, cp->NextLog);
 	if (FD_ISSET(cp->fd, &SCHANmask))
 	    syslog(L_NOTICE, "%s trace sleeping %ld 0x%p",
 		p, (long)cp->Waketime, cp->Waker);
@@ -444,7 +448,7 @@ CHANname(const CHANNEL *cp)
 	break;
     case CTnntp:
 	(void)sprintf(buff, "%s:%d",
-		cp->Address.s_addr == 0 ? "localhost" : RChostname(cp),
+		cp->Address.ss_family == 0 ? "localhost" : RChostname(cp),
 		cp->fd);
 	break;
     case CTlocalconn:

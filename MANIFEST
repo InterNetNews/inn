@@ -128,6 +128,7 @@ control/pgpverify.in                  Verify control messages with PGP
 control/signcontrol.in                PGP control message signing program
 doc                                   Documentation (Directory)
 doc/GPL                               The GNU General Public License 2.0
+doc/IPv6-info                         Nathan Lutchansky's IPv6 notes
 doc/Makefile                          Makefile for documentation
 doc/compliance-nntp                   INN compliance with the NNTP standard
 doc/config-design                     Configuration parser design principles
@@ -450,6 +451,7 @@ lib/sequence.c                        Sequence space arithmetic routines
 lib/setenv.c                          setenv replacement
 lib/seteuid.c                         seteuid replacement
 lib/snprintf.c                        snprintf and vsnprintf replacement
+lib/sockaddr.c                        Manipulation of sockaddr structs
 lib/strcasecmp.c                      Case-insenstive string comparison (BSD)
 lib/strerror.c                        String representation of errno
 lib/strspn.c                          Skip bytes in a string (BSD)

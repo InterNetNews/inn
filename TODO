@@ -40,8 +40,8 @@ Scheduled for INN 2.4:
   file based on stored metainformation.  [Alex Kiernan is working on
   this.]
 
-* Integrate IPv6 support.  [Marco d'Itri has a patch which needs some
-  work on non-Linux.]
+* There are some outstanding issues with the IPv6 that should be examined,
+  see doc/IPv6-info.  Whatever is not fixed should be documented.
 
 * Replace the current innshellvars.pl file with a real INN Perl module for
   Perl programs, and include the necessary glue so that other Perl modules
@@ -303,6 +303,10 @@ Code Cleanup Projects:
   multiple source files to make it easier to understand the logical
   divisions of the code.
 
+* Examine the (mostly socket) code that currently should probably be
+  compiled with -fno-strict-aliasing on gcc and move the relevant casts
+  to within function calls.  [Russ knows about this.]
+
 
 Needed Bug Fixes:
 
@@ -499,6 +503,11 @@ Requested New Features:
 * Somebody should look at keeping the "newsgroups" file more accurate
   (e.g. newgroups for existing groups should change description, better
   checkgroups handling, checking for duplicates)
+
+* The by-domain statistics innreport generates for nnrpd count all local
+  connections (those with no "." in the hostname) in with the errors as
+  just "?".  The host2dom function could be updated to group these as
+  something like "Local".
 
 
 General Projects:

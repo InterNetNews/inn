@@ -1,0 +1,65 @@
+Notes about IPv6 support in INN:
+
+   This is $Revision$, dated $Date$.
+
+   This document contains some notes about the status of IPv6 support in
+   INN (see also the parts of the code marked FIXME):
+
+
+Things that will break if you compile with --enable-ipv6:
+
+    * innd can only be started via inndstart
+    * nnrpd posting backoff is disabled until somebody extends the
+      routines in nnrpd/misc.c to handle IPv6 addresses
+    * IP_OPTIONS are not cleared for any incoming connections to innd even
+      over IPv4
+  
+
+Things that should be fixed but doesn't seem urgent:
+
+    * nnrpd access control can't take IPv6 subnet prefixes (e.g.
+      3ffe:ffff:1234::/48)
+    * CHANrcfd and CHANrc need to be arrays to match the fd array
+    * the "bindaddress" configuration directive doesn't work correctly in
+      innfeed; don't use it if you use both IPv4 and IPv6
+
+
+Outstanding issues:
+
+  * nnrpd -D doesn't listen on an IPv6 socket.  Does this get used?  It
+    will need lots of extra code a la inndstart to listen on two sockets.
+
+
+
+
+Some comments as of the completion of the original patch:
+
+    Date: Wed, 13 Feb 2002 00:10:59 -0500 (EST)
+    From: Nathan Lutchansky <lutchann@litech.org>
+    To: Jeffrey M. Vinocur <jeff@litech.org>
+    Subject: IPv6 patch notes
+
+    The IPv6 patch is based directly on Marco d'Itri's IPv6 patch of
+    2001-03-01 that was posted last year to the inn-workers list.  The
+    patch applied fairly cleanly to a working copy from 2002-02-04, and
+    the resulting tree was used as the basis for my work.
+
+    Modifications by Marco and myself were made so that if IPv6 support is
+    not explicitly enabled with the --enable-ipv6 flag to the configure
+    script, the old networking code won't be used.  Hopefully, nobody will
+    notice any problems with the default configuration, although some
+    changes have been made to data structures even when IPv6 is disabled.
+
+    The original patch added IPv6 support to innd and inndstart, and the
+    auth_pass program.  I have added support to nnrpd, innfeed, and the
+    ident auth program.  There is no IPv6 support for imapfeed and other
+    auxiliary programs like the radius auth backend.
+
+    Marco's patch made use of several preprocessor defines for
+    configuration but the defines were hand-coded, so I added the
+    corresponding tests the the configuration script.  I make no
+    guarantees that the configure script will catch all possible
+    non-portable behavior; the IPv6 API standardization process has left
+    quite a wake of incompatible API implementations over the years.
+    -Nathan
+

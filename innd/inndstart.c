@@ -54,6 +54,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#ifdef HAVE_INET6
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netdb.h>
+#endif
+
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -69,9 +75,14 @@ main(int argc, char *argv[])
     struct group *grp;
     uid_t news_uid, real_uid;
     gid_t news_gid;
-    int port, s, i, j;
+    int snum = 0;
+    int port, s[MAX_SOCKETS + 1], i, j;
+#ifdef HAVE_INET6
+    struct in6_addr address6;
+    bool addr6_specified = false;
+#endif
     struct in_addr address;
-    struct sockaddr_in server;
+    bool addr_specified = false;
     char *p;
     char **innd_argv;
     char pflag[SMBUF];
@@ -126,6 +137,14 @@ main(int argc, char *argv[])
         if (!inet_aton(p, &address))
             die("invalid bindaddress in inn.conf (%s)", p);
     }
+#ifdef HAVE_INET6
+    address6 = in6addr_any;
+    p = innconf->bindaddress6;
+    if (p && !EQ(p, "all") && !EQ(p, "any")) {
+	if (inet_pton(AF_INET6, p, &address6) < 1)
+	    die("invalid bindaddress6 in inn.conf (%s)", p);
+    }
+#endif
 
     /* Parse our command-line options.  The only options we take are -P,
        which specifies what port number to bind to, and -I, which specifies
@@ -145,6 +164,20 @@ main(int argc, char *argv[])
             }
             if (port == 0)
                 die("invalid port %s (must be a number)", argv[i]);
+#ifdef HAVE_INET6
+        } else if (EQn("-6", argv[i], 2)) {
+            if (strlen(argv[i]) > 2) {
+                p = &argv[i][2];
+            } else {
+                i++;
+                if (argv[i] == NULL)
+                    die("missing address after -6");
+                p = argv[i];
+            }
+            if (inet_pton(AF_INET6, p, &address6) < 1)
+                die("invalid address %s", p);
+	    addr6_specified = true;
+#endif
         } else if (EQn("-I", argv[i], 2)) {
             if (strlen(argv[i]) > 2) {
                 p = &argv[i][2];
@@ -156,6 +189,7 @@ main(int argc, char *argv[])
             }
             if (!inet_aton(p, &address))
                 die("invalid address %s", p);
+	    addr_specified = true;
         }
     }
             
@@ -178,20 +212,92 @@ main(int argc, char *argv[])
                 innconf->rlimitnofile);
 
     /* Create a socket and name it. */
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s < 0)
-        sysdie("can't open socket");
+#ifdef HAVE_INET6
+    if( ! (addr_specified || addr6_specified) ) {
+	struct addrinfo hints, *addr, *ressave;
+	char service[16];
+	int error;
+
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_flags = AI_PASSIVE;
+	hints.ai_socktype = SOCK_STREAM;
+	sprintf(service, "%d", port);
+	error = getaddrinfo(NULL, service, &hints, &addr);
+	if (error < 0)
+	    die("getaddrinfo: %s", gai_strerror(error));
+
+	for (ressave = addr; addr; addr = addr->ai_next) {
+	    if ((i = socket(addr->ai_family, addr->ai_socktype,
+			    addr->ai_protocol)) < 0)
+		continue; /* ignore */
+	    if (bind(i, addr->ai_addr, addr->ai_addrlen) < 0) {
+		j = errno;
+		close(i);
+		errno = j;
+		continue; /* ignore */
+	    }
+	    if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, (char *)&i,
+			sizeof i) < 0)
+		syswarn("can't set SO_REUSEADDR");
+	    s[snum++] = i;
+	    if (snum == MAX_SOCKETS)
+		break;
+	}
+	freeaddrinfo(ressave);
+
+	if (snum == 0)
+	    sysdie("can't bind socket");
+    } else {
+	if ( addr6_specified ) {
+	    struct sockaddr_in6 server6;
+
+	    s[snum] = socket(PF_INET6, SOCK_STREAM, 0);
+	    if (s[snum] < 0)
+		sysdie("can't open inet6 socket");
 #ifdef SO_REUSEADDR
-    i = 1;
-    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &i, sizeof i) < 0)
-        syswarn("can't set SO_REUSEADDR");
+	    i = 1;
+	    if (setsockopt(s[snum], SOL_SOCKET, SO_REUSEADDR, (char *)&i,
+			sizeof i) < 0)
+		syswarn("can't set SO_REUSEADDR");
 #endif
-    memset(&server, 0, sizeof server);
-    server.sin_port = htons(port);
-    server.sin_family = AF_INET;
-    server.sin_addr = address;
-    if (bind(s, (struct sockaddr *) &server, sizeof server) < 0)
-        sysdie("can't bind");
+	    memset(&server6, 0, sizeof server6);
+	    server6.sin6_port = htons(port);
+	    server6.sin6_family = AF_INET6;
+	    server6.sin6_addr = address6;
+#ifdef HAVE_SOCKADDR_LEN
+	    server6.sin6_len = sizeof server6;
+#endif
+	    if (bind(s[snum], (struct sockaddr *)&server6, sizeof server6) < 0)
+		sysdie("can't bind inet6 socket");
+	    snum++;
+	}
+	if ( addr_specified )
+#endif /* HAVE_INET6 */
+	{
+	    struct sockaddr_in server;
+
+	    s[snum] = socket(PF_INET, SOCK_STREAM, 0);
+	    if (s[snum] < 0)
+		sysdie("can't open inet socket");
+#ifdef SO_REUSEADDR
+	    i = 1;
+	    if (setsockopt(s[snum], SOL_SOCKET, SO_REUSEADDR, (char *) &i,
+			sizeof i) < 0)
+		syswarn("can't set SO_REUSEADDR");
+#endif
+	    memset(&server, 0, sizeof server);
+	    server.sin_port = htons(port);
+	    server.sin_family = AF_INET;
+	    server.sin_addr = address;
+	    if (bind(s[snum], (struct sockaddr *)&server, sizeof server) < 0)
+		sysdie("can't bind inet socket");
+	    snum++;
+	}
+#ifdef HAVE_INET6
+    }
+#endif
+    s[snum] = -1;
 
     /* Now, permanently drop privileges. */
     if (setgid(news_gid) < 0 || getgid() != news_gid)
@@ -203,13 +309,22 @@ main(int argc, char *argv[])
        what port we just created and bound to for it. */
     innd_argv = xmalloc((1 + argc + 1) * sizeof(char *));
     i = 0;
+    strcpy(pflag, "-p ");
+    for (j = 0; s[j] > 0; j++) {
+	char temp[16];
+
+	sprintf(temp, "%d,", s[j]);
+	strcat(pflag, temp);
+    }
+    /* chop off the trailing , */
+    j = strlen(pflag) - 1;
+    pflag[j] = '\0';
 #ifdef DEBUGGER
     innd_argv[i++] = DEBUGGER;
     innd_argv[i++] = concatpath(innconf->pathbin, "innd");
     innd_argv[i] = 0;
-    printf("When starting innd, use -dp%d\n", s);
+    printf("When starting innd, use -d %s\n", s, pflag);
 #else /* DEBUGGER */
-    sprintf(pflag, "-p%d", s);
     innd_argv[i++] = concatpath(innconf->pathbin, "innd");
     innd_argv[i++] = pflag;
 
@@ -218,7 +333,7 @@ main(int argc, char *argv[])
        -I), skip the next argument too, to support leaving a space between
        the argument and the value. */
     for (j = 1; j < argc; j++) {
-        if (argv[j][0] == '-' && strchr("pPI", argv[j][1])) {
+        if (argv[j][0] == '-' && strchr("pP6I", argv[j][1])) {
             if (strlen(argv[j]) == 2)
                 j++;
             continue;

@@ -7,11 +7,12 @@ Upgrading from 2.3 to 2.4
             hismethod:              hisv6
 
     to inn.conf).  If you are upgrading from a version prior to INN 2.3, see
-    "Upgrading from 2.2 to 2.3".
+    the section on "Upgrading from 2.2 to 2.3".
 
     * If you use Perl authentication for nnrpd (if nnrpdperlauth in inn.conf
-      is true), however, there have been major changes.  See "Changes to
-      Perl Authentication Support for nnrpd" in doc/hook-perl for details.
+      is true), however, there have been major changes.  See the section on
+      "Changes to Perl Authentication Support for nnrpd" in doc/hook-perl
+      for details.
 
 Changes from 2.3 to 2.4
 
@@ -49,6 +50,12 @@ Changes from 2.3 to 2.4
     * Two configure options have changed names:  --with-tmp-path is now
       --with-tmp-dir and --with-largefiles is now --enable-largefiles to
       improve consistency and better match the autoconf option guidelines.
+
+    * Preliminary IPv6 support has been added, it is off by default.  Build
+      with --enable-ipv6 to try it.  Hopefully, nobody will notice any
+      problems with the default configuration, although some changes have
+      been made to data structures even when IPv6 is disabled.  Further
+      information is available in doc/IPv6-info.
 
     * All of the applicable bug fixes from the INN 2.3 STABLE series are
       also included in INN 2.4.

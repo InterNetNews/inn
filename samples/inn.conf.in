@@ -35,6 +35,7 @@ server:
 
 artcutoff:              10
 bindaddress:
+bindaddress6:
 dontrejectfiltered:	false
 hiscachesize:           0
 ignorenewsgroups:       false
@@ -48,6 +49,7 @@ port:                   119
 refusecybercancels:     false
 remembertrash:          true
 sourceaddress:
+sourceaddress6:
 verifycancels:          false
 wanttrash:              false
 wipcheck:               5

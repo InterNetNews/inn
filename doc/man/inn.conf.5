@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2002-01-27" "INN 2.4.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2002-02-02" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -259,6 +259,14 @@ dotted-quad format (nnn.nnn.nnn.nnn).  If set to \f(CW\*(C`all\*(C'\fR or not se
 defaults to listening on all interfaces.  The value of the
 \&\s-1INND_BIND_ADDRESS\s0 environment variable, if set, overrides this setting.
 The default value is unset.
+.IP "\fIbindaddress6\fR" 4
+.IX Item "bindaddress6"
+Like \fIbindaddress\fR but for IPv6 sockets. If only one of the \fIbindaddress\fR
+and \fIbindaddress6\fR parameters is used, then only the socket for the
+corresponding address family is created. If both parameters are used
+then two sockets are created. If none of them is used, the list of
+sockets to listen on will be determined by the system library
+\&\fI\fIgetaddrinfo\fI\|(3)\fR function.
 .IP "\fIhiscachesize\fR" 4
 .IX Item "hiscachesize"
 If set to a value other than \f(CW0\fR, a hash of recently received message IDs
@@ -359,6 +367,9 @@ Which local \s-1IP\s0 address to bind to for outgoing \s-1NNTP\s0 sockets (used 
 (nnn.nnn.nnn.nnn).  If set to \f(CW\*(C`all\*(C'\fR or not set, the operating system will
 choose the source \s-1IP\s0 address for outgoing connections.  The default value
 is unset.
+.IP "\fIsourceaddress6\fR" 4
+.IX Item "sourceaddress6"
+Like \fIsourceaddress\fR but for IPv6 sockets.
 .IP "\fIverifycancels\fR" 4
 .IX Item "verifycancels"
 Set this to true to enable a simplistic check on all cancel messages,

@@ -131,8 +131,15 @@ EXTERN char	**PERMpostlist;
 EXTERN char	ClientHost[SMBUF];
 EXTERN char     ServerHost[SMBUF];
 EXTERN char	Username[SMBUF];
-EXTERN char     ClientIp[20];
-EXTERN char     ServerIp[20];
+#ifdef HAVE_INET6
+EXTERN char     ClientIpString[40];
+EXTERN char     ServerIpString[40];
+#else
+EXTERN char     ClientIpString[20];
+EXTERN char     ServerIpString[20];
+#endif
+EXTERN int	ClientPort;
+EXTERN int	ServerPort;
 EXTERN char	LogName[256] ;
 #ifdef HAVE_SSL
 EXTERN BOOL	ClientSSL;
@@ -174,7 +181,7 @@ EXTERN long	POSTreceived;
 EXTERN long	POSTrejected;
 
 EXTERN bool     BACKOFFenabled;
-EXTERN long     ClientIP;                                 
+EXTERN long     ClientIpAddr;                                 
 EXTERN char	*VirtualPath;
 EXTERN int	VirtualPathlen;
 EXTERN struct history *History;

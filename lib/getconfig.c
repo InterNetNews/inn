@@ -198,6 +198,8 @@ SetDefaults(void)
 	SET_CONFIG(CONF_VAR_BINDADDRESS);
     }
     innconf->sourceaddress = NULL;
+    innconf->bindaddress6 = NULL;
+    innconf->sourceaddress6 = NULL;
     innconf->port = NNTP_PORT;
     innconf->readertrack = FALSE;
     innconf->strippostcc = FALSE;
@@ -279,6 +281,8 @@ ClearInnConf(void)
     if (innconf->mailcmd != NULL) DISPOSE(innconf->mailcmd);
     if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
     if (innconf->sourceaddress != NULL) DISPOSE(innconf->sourceaddress);
+    if (innconf->bindaddress6 != NULL) DISPOSE(innconf->bindaddress6);
+    if (innconf->sourceaddress6 != NULL) DISPOSE(innconf->sourceaddress6);
     if (innconf->nnrpdposthost != NULL) DISPOSE(innconf->nnrpdposthost);
 
     if (innconf->pathnews != NULL) DISPOSE(innconf->pathnews);
@@ -668,6 +672,16 @@ ReadInnConf(void)
 		}
 		SET_CONFIG(CONF_VAR_BINDADDRESS);
 	    } else
+	    if (EQ(ConfigBuff,_CONF_BINDADDRESS6)) {
+		TEST_CONFIG(CONF_VAR_BINDADDRESS6, bit);
+		if (!bit) {
+		if (EQ(p,"all") || EQ(p,"any"))
+		    innconf->bindaddress6 =  NULL;
+		else
+		    innconf->bindaddress6 = COPY(p);
+		}
+		SET_CONFIG(CONF_VAR_BINDADDRESS6);
+	    } else
 	    if (EQ(ConfigBuff,_CONF_PORT)) {
 		TEST_CONFIG(CONF_VAR_PORT, bit);
 		if (!bit) innconf->port = atoi(p);
@@ -892,6 +906,16 @@ ReadInnConf(void)
 		    innconf->sourceaddress = COPY(p);
 		}
 		SET_CONFIG(CONF_VAR_SOURCEADDRESS);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_SOURCEADDRESS6)) {
+		TEST_CONFIG(CONF_VAR_SOURCEADDRESS6, bit);
+		if (!bit) {
+		if (EQ(p,"all") || EQ(p,"any"))
+		    innconf->sourceaddress6 =  NULL;
+		else
+		    innconf->sourceaddress6 = COPY(p);
+		}
+		SET_CONFIG(CONF_VAR_SOURCEADDRESS6);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_NNRPDAUTHSENDER)) {
 		TEST_CONFIG(CONF_VAR_NNRPDAUTHSENDER, bit);

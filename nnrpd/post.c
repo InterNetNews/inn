@@ -506,7 +506,7 @@ ProcessHeaders(int linecount, char *idbuff)
 	if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
 	    p = "unknown";
     sprintf(tracebuff, "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
-	p, (long) t, (long) pid, ClientIp,
+	p, (long) t, (long) pid, ClientIpString,
 	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
 	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR (HDR__XTRACE) = tracebuff ;
@@ -712,7 +712,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	    char    *reply;
 
 	    /* Authorize user at a Python authorization module */
-	    if (PY_authorize(ClientHost, ClientIp, ServerHost, PERMuser, p, TRUE, &reply) < 0) {
+	    if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, p, TRUE, &reply) < 0) {
 	        syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
 	    } else {
 	        if (reply != NULL) {

@@ -368,6 +368,13 @@ InitBackoffConstants()
     !(PERMaccessconf->backoff_k >= 0L && PERMaccessconf->backoff_postfast >= 0L && PERMaccessconf->backoff_postslow >= 1L))
     return;
 
+#ifdef HAVE_INET6
+  /* FIXME - backoff is only disabled because I'm too lazy to figure out the
+     best way to fix it for IPv6 users.  -lutchann */
+  syslog(L_ERROR, "%s backoff is not available with IPv6 build",ClientHost);
+  return;
+#endif
+
   /* Need this database for backing off */
   (void)strncpy(postrec_dir,PERMaccessconf->backoff_db,SMBUF);
   if (stat(postrec_dir, &st) < 0) {

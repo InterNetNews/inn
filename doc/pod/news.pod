@@ -74,6 +74,14 @@ consistency and better match the autoconf option guidelines.
 
 =item *
 
+Preliminary IPv6 support has been added, it is off by default.  Build with
+--enable-ipv6 to try it.  Hopefully, nobody will notice any problems with
+the default configuration, although some changes have been made to data
+structures even when IPv6 is disabled.  Further information is available
+in F<doc/IPv6-info>.
+
+=item *
+
 All of the applicable bug fixes from the INN 2.3 STABLE series are also
 included in INN 2.4.
 

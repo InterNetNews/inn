@@ -290,6 +290,7 @@ incoming_conf
 
     'artcutoff',                0,
     'bindaddress',              0,
+    'bindaddress6',             0,
     'dontrejectfiltered',       0,
     'hiscachesize',             0,
     'ignorenewsgroups',         0,
@@ -303,6 +304,7 @@ incoming_conf
     'refusecybercancels',       0,
     'remembertrash',            0,
     'sourceaddress',            0,
+    'sourceaddress6',           0,
     'verifycancels',            0,
     'wipcheck',                 0,
     'wipexpire',                0,

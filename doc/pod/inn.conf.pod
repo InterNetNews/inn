@@ -144,6 +144,15 @@ defaults to listening on all interfaces.  The value of the
 INND_BIND_ADDRESS environment variable, if set, overrides this setting.
 The default value is unset.
 
+=item I<bindaddress6>
+
+Like I<bindaddress> but for IPv6 sockets. If only one of the I<bindaddress>
+and I<bindaddress6> parameters is used, then only the socket for the
+corresponding address family is created. If both parameters are used
+then two sockets are created. If none of them is used, the list of
+sockets to listen on will be determined by the system library
+I<getaddrinfo(3)> function.
+
 =item I<hiscachesize>
 
 If set to a value other than C<0>, a hash of recently received message IDs
@@ -255,6 +264,10 @@ innxmit(8) among other programs).  This must be in dotted-quad format
 (nnn.nnn.nnn.nnn).  If set to C<all> or not set, the operating system will
 choose the source IP address for outgoing connections.  The default value
 is unset.
+
+=item I<sourceaddress6>
+
+Like I<sourceaddress> but for IPv6 sockets.
 
 =item I<verifycancels>
 

@@ -379,6 +379,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
 {
     char		*p;
     struct hostent	*hp;
+    static char		mismatch_error[] = "reverse lookup validation failed";
 #if	defined(h_addr)
     char		**pp;
 #endif
@@ -404,11 +405,17 @@ Address2Name(INADDR *ap, char *hostname, int i)
 	if (EQn((const char *)&ap->s_addr, *pp, hp->h_length))
 	    break;
     if (*pp == NULL)
+    {
+	HostErrorStr = mismatch_error;
 	return FALSE;
+    }
 #else
     /* We have one address. */
     if (!EQn(&ap->s_addr, hp->h_addr, hp->h_length))
+    {
+	HostErrorStr = mismatch_error;
 	return FALSE;
+    }
 #endif
 
     /* Only needed for misconfigured YP/NIS systems. */
@@ -425,23 +432,128 @@ Address2Name(INADDR *ap, char *hostname, int i)
     return TRUE;
 }
 
+/*
+**  Convert an IPv6 address to a hostname.  Don't trust the reverse lookup,
+**  since anyone can fake .ip6.arpa entries.
+*/
+#ifdef HAVE_INET6
+static bool
+Address2Name6(struct sockaddr *sa, char *hostname, int i)
+{
+    static char		mismatch_error[] = "reverse lookup validation failed";
+    int ret;
+    bool valid = 0;
+    struct addrinfo hints, *res, *res0;
+
+    /* Get the official hostname, store it away. */
+    ret = getnameinfo( sa, SA_LEN( sa ), hostname, i, NULL, 0, NI_NAMEREQD );
+    if( ret != 0 )
+    {
+	HostErrorStr = gai_strerror( ret );
+	return FALSE;
+    }
+
+    /* Get addresses for this host. */
+    memset( &hints, 0, sizeof( hints ) );
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = AF_INET6;
+    if( ( ret = getaddrinfo( hostname, NULL, &hints, &res0 ) ) != 0 )
+    {
+	HostErrorStr = gai_strerror( ret );
+	return FALSE;
+    }
+
+    /* Make sure one of those addresses is the address we got. */
+    for( res = res0; res; res = res->ai_next )
+    {
+#ifdef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
+	if( ! memcmp( &(((struct sockaddr_in6 *)sa)->sin6_addr),
+		    &(((struct sockaddr_in6 *)(res->ai_addr))->sin6_addr),
+		    sizeof( struct in6_addr ) ) )
+#else
+	if( IN6_ARE_ADDR_EQUAL( &(((struct sockaddr_in6 *)sa)->sin6_addr),
+		    &(((struct sockaddr_in6 *)(res->ai_addr))->sin6_addr) ) )
+#endif
+	{
+	    valid = 1;
+	    break;
+	}
+    }
+
+    freeaddrinfo( res0 );
+
+    if( valid ) return TRUE;
+    else
+    {
+	HostErrorStr = mismatch_error;
+	return FALSE;
+    }
+}
+#endif
+
+
+static bool
+Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
+{
+    struct sockaddr_in *sin = (struct sockaddr_in *)sa;
+
+#ifdef HAVE_INET6
+    struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)sa;
+    struct sockaddr_in temp;
+
+    if( sa->sa_family == AF_INET6 )
+    {
+	if( ! IN6_IS_ADDR_V4MAPPED(&sin6->sin6_addr) )
+	{
+	    if( lookup )
+	    {
+		return Address2Name6(sa, string, len);
+	    } else {
+		strncpy( string, sprint_sockaddr( sa ), len );
+		return TRUE;
+	    }
+	} else {
+	    temp.sin_family = AF_INET;
+	    memcpy( &temp.sin_addr, sin6->sin6_addr.s6_addr + 12, 4 );
+	    temp.sin_port = sin6->sin6_port;
+	    sin = &temp;
+	    /* fall through to AF_INET case */
+	}
+    }
+#endif
+    if( lookup ) {
+	return Address2Name(&sin->sin_addr, string, len);
+    } else {
+	strncpy( string, inet_ntoa(sin->sin_addr), len );
+	return TRUE;
+    }
+}
 
 /*
 **  Determine access rights of the client.
 */
 static void StartConnection()
 {
-    struct sockaddr_in	sin;
+    struct sockaddr_storage	ssc, sss;
     socklen_t		length;
     char		buff[SMBUF];
     char		accesslist[BIG_BUFFER];
     int                 code;
     static ACCESSGROUP	*authconf;
     struct in_addr      client_addr;
+    char		*default_host_error = "unknown error";
+
+    ClientIpAddr = 0L;
+    ClientHost[0] = '\0';
+    ClientIpString[0] = '\0';
+    ClientPort = 0;
+    ServerHost[0] = '\0';
+    ServerIpString[0] = '\0';
+    ServerPort = 0;
 
     /* Get the peer's name. */
-    length = sizeof sin;
-    if (getpeername(STDIN_FILENO, (struct sockaddr *)&sin, &length) < 0) {
+    length = sizeof ssc;
+    if (getpeername(STDIN_FILENO, (struct sockaddr *)&ssc, &length) < 0) {
       if (!isatty(STDIN_FILENO)) {
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
             (void)strcpy(ClientHost, "?"); /* so stats generation looks correct. */
@@ -449,68 +561,85 @@ static void StartConnection()
 	    ExitWithStats(1, TRUE);
 	}
 	(void)strcpy(ClientHost, "stdin");
-        ClientIP = 0L;
-	ServerHost[0] = '\0';
     }
 
     else {
-	if (sin.sin_family != AF_INET) {
+#ifdef HAVE_INET6
+	if ( ssc.ss_family != AF_INET && ssc.ss_family != AF_INET6) {
+#else
+	if ( ssc.ss_family != AF_INET ) {
+#endif
 	    syslog(L_ERROR, "%s bad_address_family %ld",
-		"?", (long)sin.sin_family);
+		"?", (long)ssc.ss_family);
 	    Printf("%d Bad address family.  Goodbye.\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
 	}
 
-	/* Get client's name. */
-        if (GetHostByAddr) {
-            HostErrorStr = NULL;
-            if (!Address2Name(&sin.sin_addr, ClientHost, (int)sizeof ClientHost)) {
-                (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
-                if (HostErrorStr == NULL) {
-                    syslog(L_NOTICE,
-                           "? cant gethostbyaddr %s %m -- using IP address for access",
-                           ClientHost);
-                } else {
-                    syslog(L_NOTICE,
-                           "? cant gethostbyaddr %s %s -- using IP address for access",
-                           ClientHost, HostErrorStr);
-                }
-                inet_aton(ClientHost, &client_addr);
-            } else {
-                (void)strcpy(buff, inet_ntoa(sin.sin_addr));
-                inet_aton(buff, &client_addr);
-            }
-        } else {
-            (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
-            inet_aton(ClientHost, &client_addr);
-        }
-        ClientIP = client_addr.s_addr;
-	(void)strncpy(ClientIp, inet_ntoa(sin.sin_addr), sizeof(ClientIp));
-	length = sizeof sin;
-	if (getsockname(STDIN_FILENO, (struct sockaddr *)&sin, &length) < 0) {
+	length = sizeof sss;
+	if (getsockname(STDIN_FILENO, (struct sockaddr *)&sss, &length) < 0) {
 	    syslog(L_NOTICE, "%s can't getsockname %m", ClientHost);
 	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
 	}
-        if (GetHostByAddr) {
-            HostErrorStr = NULL;
-            if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
-                strcpy(ServerHost, inet_ntoa(sin.sin_addr));
-                /* suppress error reason */
-            }
-        } else {
-            strcpy(ServerHost, inet_ntoa(sin.sin_addr));
-        }
-	(void)strncpy(ServerIp, inet_ntoa(sin.sin_addr), sizeof(ServerIp));
+
+	/* figure out client's IP address/hostname */
+	HostErrorStr = default_host_error;
+	if( ! Sock2String( (struct sockaddr *)&ssc, ClientIpString,
+				sizeof( ClientIpString ), FALSE ) ) {
+            syslog(L_NOTICE, "? cant get client numeric address: %s", HostErrorStr);
+	    ExitWithStats(1, TRUE);
+	}
+	if(GetHostByAddr) {
+	    HostErrorStr = default_host_error;
+	    if( ! Sock2String( (struct sockaddr *)&ssc, ClientHost,
+				    sizeof( ClientHost ), TRUE ) ) {
+                syslog(L_NOTICE,
+                       "? reverse lookup for %s failed: %s -- using IP address for access",
+                       ClientIpString, HostErrorStr);
+	        strcpy( ClientHost, ClientIpString );
+	    }
+	} else strcpy( ClientHost, ClientIpString );
+
+	/* figure out server's IP address/hostname */
+	HostErrorStr = default_host_error;
+	if( ! Sock2String( (struct sockaddr *)&sss, ServerIpString,
+				sizeof( ServerIpString ), FALSE ) ) {
+            syslog(L_NOTICE, "? cant get server numeric address: %s", HostErrorStr);
+	    ExitWithStats(1, TRUE);
+	}
+	if(GetHostByAddr) {
+	    HostErrorStr = default_host_error;
+	    if( ! Sock2String( (struct sockaddr *)&sss, ServerHost,
+				    sizeof( ServerHost ), TRUE ) ) {
+                syslog(L_NOTICE,
+                       "? reverse lookup for %s failed: %s -- using IP address for access",
+                       ServerIpString, HostErrorStr);
+	        strcpy( ServerHost, ServerIpString );
+	    }
+	} else strcpy( ServerHost, ServerIpString );
+
+	/* get port numbers */
+	switch( ssc.ss_family ) {
+	    case AF_INET:
+		ClientPort = ntohs( ((struct sockaddr_in *)&ssc)->sin_port );
+		ServerPort = ntohs( ((struct sockaddr_in *)&sss)->sin_port );
+		break;
+#ifdef HAVE_INET6
+	    case AF_INET6:
+		ClientPort = ntohs( ((struct sockaddr_in6 *)&ssc)->sin6_port );
+		ServerPort = ntohs( ((struct sockaddr_in6 *)&sss)->sin6_port );
+		break;
+#endif
+	}
     }
 
     strncpy (LogName,ClientHost,sizeof(LogName) - 1) ;
     LogName[sizeof(LogName) - 1] = '\0';
 
-    syslog(L_NOTICE, "%s connect", ClientHost);
+    syslog(L_NOTICE, "%s (%s) connect", ClientHost, ClientIpString);
 #ifdef DO_PYTHON
     if (innconf->nnrppythonauth) {
-        if ((code = PY_authenticate(ClientHost, ClientIp, ServerHost, NULL, NULL, accesslist)) < 0) {
+        if ((code = PY_authenticate(ClientHost, ClientIpString, ServerHost, NULL, NULL, accesslist)) < 0) {
 	    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
 	} else {
 	    if (code == 502) {

@@ -399,6 +399,12 @@
 /* Additional valid low-numbered port for inndstart. */
 #undef INND_PORT
 
+/* Define to enable IPv6 support. */
+#undef HAVE_INET6
+
+/* Maximum number of sockets that innd can listen on. */
+#undef MAX_SOCKETS
+
 /* Define to use tagged hash for the history file. */
 #undef DO_TAGGED_HASH
 
@@ -425,6 +431,9 @@
 
 /* Define if you have a dbm library. */
 #undef HAVE_DBM
+
+/* Define if you have PAM. */
+#undef HAVE_PAM
 
 /* Some versions of glibc need this defined for pread/pwrite. */
 #undef _GNU_SOURCE
@@ -468,6 +477,21 @@
 /* Define if your system has a working inet_ntoa function. */
 #undef HAVE_INET_NTOA
 
+/* Define if your system has a sa_len field in struct sockaddr */
+#undef HAVE_SOCKADDR_LEN
+
+/* Define if your system has a SA_LEN(s) macro */
+#undef HAVE_SA_LEN_MACRO
+
+/* Define if your system has struct sockaddr_storage */
+#undef HAVE_SOCKADDR_STORAGE
+
+/* Define if your system has sockaddr_storage.__ss_family */
+#undef HAVE_2553_STYLE_SS_FAMILY
+
+/* Define if your IN6_ARE_ADDR_EQUAL macro is broken */
+#undef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
+
 /* Define if your system has a working snprintf function. */
 #undef HAVE_SNPRINTF
 
@@ -492,8 +516,7 @@
 /* Syslog facility to use for INN program logs. */
 #undef LOG_INN_PROG
 
-/* Define if you have PAM */
-#undef HAVE_PAM
+
 
 /*
 **  BUFFER SIZES AND DATA LENGTHS

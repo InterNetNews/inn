@@ -281,10 +281,10 @@ main(int ac, char *av[])
 {
     const char *name, *p;
     char *path;
+    char *t;
     bool flag;
     static char		WHEN[] = "PID file";
-    int			i;
-    int			fd;
+    int			i, j, fd[MAX_SOCKETS + 1];
     char		buff[SMBUF], *q, *path1, *path2;
     FILE		*F;
     bool		ShouldFork;
@@ -335,7 +335,7 @@ main(int ac, char *av[])
     ShouldFork = TRUE;
     ShouldRenumber = FALSE;
     ShouldSyntaxCheck = FALSE;
-    fd = -1;
+    fd[0] = -1;
 
     /* Set some options from inn.conf that can be overridden with
        command-line options if they exist, so read inn.conf first. */
@@ -412,8 +412,18 @@ main(int ac, char *av[])
 	case 'p':
 	    /* Silently ignore multiple -p flags, in case ctlinnd xexec
 	       called inndstart. */
-	    if (fd == -1)
-		fd = atoi(optarg);
+	    if (fd[0] != -1)
+		break;
+	    t = COPY(optarg);
+	    p = strtok(t, ",");
+	    j = 0;
+	    do {
+		fd[j++] = atoi(p);
+		if (j == MAX_SOCKETS)
+		    break;
+	    } while (p = strtok(NULL, ","));
+	    fd[j] = -1;
+	    DISPOSE(t);
 	    break;
 	case 'P':
 	    innconf->port = atoi(optarg);
@@ -563,7 +573,9 @@ main(int ac, char *av[])
     InndHisOpen();
     CCsetup();
     LCsetup();
-    RCsetup(fd);
+    RCsetup(fd[0]);
+    for (i = 1; fd[i] != -1; i++)
+	RCsetup(fd[i]);
     WIPsetup();
     NCsetup();
     ARTsetup();

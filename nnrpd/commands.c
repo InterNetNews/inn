@@ -288,7 +288,7 @@ CMDauthinfo(ac, av)
 
 #ifdef DO_PYTHON
 	    if (innconf->nnrppythonauth) {
-	        if ((code = PY_authenticate(ClientHost, ClientIp, ServerHost, User, Password, accesslist)) < 0) {
+	        if ((code = PY_authenticate(ClientHost, ClientIpString, ServerHost, User, Password, accesslist)) < 0) {
 		    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
 		} else {
 		    if (code == NNTP_AUTH_OK_VAL) {
@@ -748,7 +748,7 @@ CMDpost(int ac, char *av[])
       /* Acquire lock (this could be in RateLimit but that would
        * invoke the spaghetti factor). 
        */
-      if ((path = (char *) PostRecFilename(ClientIP,PERMuser)) == NULL) {
+      if ((path = (char *) PostRecFilename(ClientIpAddr,PERMuser)) == NULL) {
         Reply("%s\r\n", NNTP_CANTPOST);
         return;
       }

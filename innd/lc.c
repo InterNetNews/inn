@@ -40,7 +40,7 @@ LCreader(CHANNEL *cp)
 	return;
     }
     if ((new = NCcreate(fd, FALSE, TRUE)) != NULL) {
-	new->Address.s_addr = MyAddress.s_addr;
+	memset( &new->Address, 0, sizeof( new->Address ) );
 	syslog(L_NOTICE, "%s connected %d", "localhost", new->fd);
 	NCwritereply(new, (char *)NCgreeting);
     }

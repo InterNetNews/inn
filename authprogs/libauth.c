@@ -6,6 +6,9 @@
 
 #include "libauth.h"
 #include <sys/socket.h>
+#ifdef HAVE_INET6
+#include <netdb.h>
+#endif
 
 
 int
@@ -38,35 +41,80 @@ get_auth(char* uname, char* pass)
 
 
 char
-get_res(struct sockaddr_in* loc,
-	struct sockaddr_in* cli)
+get_res(struct sockaddr* loc,
+	struct sockaddr* cli)
 {
     char result = 0;
+    char *c;
     char buf[2048];
+    char cip[2048], sip[2048], cport[2048], sport[2048];
+#ifdef HAVE_INET6
+    struct addrinfo *res, hints;
+    int ret;
+#else
+    struct sockaddr_in *loc_sin = (struct sockaddr_in *)loc;
+    struct sockaddr_in *cli_sin = (struct sockaddr_in *)cli;
+#endif
 
-    cli->sin_family = AF_INET;
-    loc->sin_family = AF_INET;
+    cip[0] = cport[0] = sip[0] = sport[0] = '\0';
 
     /* read the connection info from stdin */
 
     while(fgets(buf, sizeof(buf), stdin) != (char*) 0) {
-	/* strip '\n' */
-	buf[strlen(buf)-1] = '\0';
-
+	if( ( c = strchr( buf, '\n' ) ) ) *c = '\0';
+	if( ( c = strchr( buf, '\r' ) ) ) *c = '\0';
 	if (!strncmp(buf, IPNAME, strlen(IPNAME))) {
-	    cli->sin_addr.s_addr = inet_addr(buf+strlen(IPNAME));
-	    result = result | GOTCLIADDR;
+	    strcpy( cip, buf + strlen( IPNAME ) );
 	} else if (!strncmp(buf, PORTNAME, strlen(PORTNAME))) {
-	    cli->sin_port = htons(atoi(buf+strlen(PORTNAME)));
-	    result = result | GOTCLIPORT;
+	    strcpy( cport, buf + strlen( PORTNAME ) );
 	} else if (!strncmp(buf, LOCIP, strlen(LOCIP))) {
-	    loc->sin_addr.s_addr = inet_addr(buf+strlen(LOCIP));
-	    result = result | GOTLOCADDR;
+	    strcpy( sip, buf + strlen( LOCIP ) );
 	} else if (!strncmp(buf, LOCPORT, strlen(LOCPORT))) {
-	    loc->sin_port = htons(atoi(buf+strlen(LOCPORT)));
-	    result = result | GOTLOCPORT;
+	    strcpy( sport, buf + strlen( LOCPORT ) );
 	}
     }
+
+#ifdef HAVE_INET6
+    memset( &hints, 0, sizeof( hints ) );
+    hints.ai_flags = AI_NUMERICHOST;
+    hints.ai_socktype = SOCK_STREAM;
+
+    hints.ai_family = index( cip, ':' ) != NULL ? PF_INET6 : PF_INET;
+    if( *cip && ! ( ret = getaddrinfo( cip, cport, &hints, &res ) ) )
+    {
+	memcpy( cli, res->ai_addr, SA_LEN( res->ai_addr ) );
+	result = result | GOTCLIADDR;
+	result = result | GOTCLIPORT;
+	freeaddrinfo( res );
+    }
+
+    hints.ai_family = index( sip, ':' ) != NULL ? PF_INET6 : PF_INET;
+    if( *sip && ! ( ret = getaddrinfo( sip, sport, &hints, &res ) ) )
+    {
+	memcpy( loc, res->ai_addr, SA_LEN( res->ai_addr ) );
+	result = result | GOTLOCADDR;
+	result = result | GOTLOCPORT;
+	freeaddrinfo( res );
+    }
+#else
+    cli_sin->sin_family = AF_INET;
+    if( *cip && ( cli_sin->sin_addr.s_addr = inet_addr( cip ) ) != -1 )
+	result = result | GOTCLIADDR;
+    if( *cport )
+    {
+	cli_sin->sin_port = htons( atoi(cport) );
+	result = result | GOTCLIPORT;
+    }
+
+    loc_sin->sin_family = AF_INET;
+    if( *sip && ( loc_sin->sin_addr.s_addr = inet_addr( sip ) ) != -1 )
+	result = result | GOTLOCADDR;
+    if( *sport )
+    {
+	loc_sin->sin_port = htons( atoi(sport) );
+	result = result | GOTLOCPORT;
+    }
+#endif
 
     return(result);
 }

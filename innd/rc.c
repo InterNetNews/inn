@@ -28,7 +28,7 @@
 typedef struct _REMOTEHOST {
     char	*Label;         /* Peer label */
     char	*Name;          /* Hostname */
-    struct in_addr Address;     /* List of ip adresses */
+    struct sockaddr_storage Address;     /* List of ip adresses */
     char	*Password;      /* Optional password */
     char 	*Identd;	/* Optional identd */
     bool	Streaming;      /* Streaming allowed ? */
@@ -51,13 +51,18 @@ typedef struct _REMOTEHOST_DATA {
 } REMOTEHOST_DATA;
 
 typedef struct _REMOTETABLE {
-    struct in_addr Address;
+    struct sockaddr_storage Address;
     time_t         Expires;
 } REMOTETABLE;
 
 static char		*RCslaveflag;
 static char		*RCnnrpd = NULL;
 static char		*RCnntpd = NULL;
+/* FIXME This variable must become an array.
+ * Which is the right way to do this?
+ * Should an index number be passed from innd.c to CHANcreate()
+ * by RCsetup? What about a null-terminated array?
+ */
 static CHANNEL		*RCchan;
 static REMOTEHOST_DATA	*RCpeerlistfile;
 static REMOTEHOST	*RCpeerlist;
@@ -115,70 +120,100 @@ bool
 GoodIdent(int fd, char *identd)
 {
 #define PORT_IDENTD 113
-    char IDENTuser[20];
-    struct sockaddr_in s_ident;
-    struct sockaddr_in s_local;
-    struct sockaddr_in s_distant;
+    char IDENTuser[80];
+    struct sockaddr_storage ss_local;
+    struct sockaddr_storage ss_distant;
+    struct sockaddr *s_local = (struct sockaddr *)&ss_local;
+    struct sockaddr *s_distant = (struct sockaddr *)&ss_distant;
     int ident_fd;
-    socklen_t len = sizeof(struct sockaddr_in);
-    u_short port1,port2;
+    socklen_t len;
+    int port1,port2;
     ssize_t lu;
+    char buf[80], *buf2;
 
     if(identd[0] == '\0') {
          return TRUE;
     }
     
-    IDENTuser[0]='\0';
-    if ((getsockname(fd,(struct sockaddr *)&s_local,&len)) < 0) {
-	 syslog(L_ERROR, "can't do getsockname for identd");
-	 s_local.sin_port=NNTP_PORT;
-	 s_local.sin_family=AF_INET;
-	 s_local.sin_addr.s_addr = htonl(INADDR_ANY);
+    len = sizeof( ss_local );
+    if ((getsockname(fd,s_local,&len)) < 0) {
+	syslog(L_ERROR, "can't do getsockname for identd");
+	return FALSE;
     }
-    if ((getpeername(fd,(struct sockaddr *)&s_distant,&len)) < 0) {
-	 syslog(L_ERROR, "can't do getsockname for identd");
-	 s_distant.sin_port=1024;
-	 s_distant.sin_family=AF_INET;
-	 s_distant.sin_addr.s_addr = htonl(INADDR_ANY);
+    len = sizeof( ss_distant );
+    if ((getpeername(fd,s_distant,&len)) < 0) {
+	syslog(L_ERROR, "can't do getsockname for identd");
+	return FALSE;
     }
-    port1=ntohs(s_local.sin_port);
-    port2=ntohs(s_distant.sin_port);
-    s_local.sin_port=0;
-    memcpy (&s_ident, &s_distant, sizeof(struct sockaddr_in));
-    s_ident.sin_port=htons(PORT_IDENTD);
-    if ((ident_fd=socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-	 syslog(L_ERROR, "can't open socket for identd (%m)");
-    } else /* Je met pas de setsockopt... Tant pis ! */
-    if (bind(ident_fd,(struct sockaddr *)&s_local,len)<0) {
-	 syslog(L_ERROR, "can't bind socket for identd (%m)");
+#ifdef HAVE_INET6
+    if( s_local->sa_family == AF_INET6 )
+    {
+	struct sockaddr_in6 *s_l6 = (struct sockaddr_in6 *)s_local;
+	struct sockaddr_in6 *s_d6 = (struct sockaddr_in6 *)s_distant;
+
+	port1=ntohs(s_l6->sin6_port);
+	port2=ntohs(s_d6->sin6_port);
+	s_l6->sin6_port = 0;
+	s_d6->sin6_port = htons( PORT_IDENTD );
+	ident_fd=socket(PF_INET6, SOCK_STREAM, 0);
     } else
-    if ((connect(ident_fd, (struct sockaddr *)&s_ident,
-		 sizeof(struct sockaddr_in))) < 0) {
-	 syslog(L_ERROR, "can't connect to identd (%m)");
+#endif
+    if( s_local->sa_family == AF_INET )
+    {
+	struct sockaddr_in *s_l = (struct sockaddr_in *)s_local;
+	struct sockaddr_in *s_d = (struct sockaddr_in *)s_distant;
+
+	port1=ntohs(s_l->sin_port);
+	port2=ntohs(s_d->sin_port);
+	s_l->sin_port = 0;
+	s_d->sin_port = htons( PORT_IDENTD );
+	ident_fd=socket(PF_INET, SOCK_STREAM, 0);
     } else
     {
-	 char buf[40], *buf2;
-	 sprintf(buf,"%d,%d\r\n",port2, port1);
-	 write(ident_fd,buf, strlen(buf)+1);
-	 lu=read(ident_fd, buf, 39); /* pas encore parfait */
-	 if (lu>=0) buf[lu]='\0';
-	 if ((lu>0) && (strstr(buf,"ERROR")==NULL) && ((buf2=strrchr(buf,':'))!=NULL)) 
-	 {
-	   buf2++;
-	   while(*buf2 == ' ')
-	    buf2++;
-	   strncpy(IDENTuser,buf2,strlen(buf2)+1);
-	   IDENTuser[39]='\0';
-	   buf2=strchr(IDENTuser,'\r');
-	   if (!buf2) buf2=strchr(IDENTuser,'\n');
-	   if (buf2) *buf2='\0';
-	 } else { 
-	   strncpy(IDENTuser,"UNKNOWN",10);
-	   IDENTuser[10]='\0';
-	 }
-	 close(ident_fd);
+	syslog(L_ERROR, "Bad address family: %d\n", s_local->sa_family );
+	return FALSE;
     }
-    return (EQ(identd, IDENTuser));
+    if (ident_fd < 0) {
+	syslog(L_ERROR, "can't open socket for identd (%m)");
+	return FALSE;
+    }
+    if (bind(ident_fd,s_local,SA_LEN(s_local)) < 0) {
+	syslog(L_ERROR, "can't bind socket for identd (%m)");
+	return FALSE;
+    }
+    if (connect(ident_fd,s_distant,SA_LEN(s_distant)) < 0) {
+	syslog(L_ERROR, "can't connect to identd (%m)");
+	return FALSE;
+    }
+
+    sprintf(buf,"%d,%d\r\n",port2, port1);
+    write(ident_fd,buf, strlen(buf));
+    memset( buf, 0, 80 );
+    lu=read(ident_fd, buf, 79); /* pas encore parfait ("not yet perfect"?) */
+    if (lu<0)
+    {
+	syslog(L_ERROR, "error reading from ident server: %m" );
+	close( ident_fd );
+	return FALSE;
+    }
+    buf[lu]='\0';
+    if ((lu>0) && (strstr(buf,"ERROR")==NULL)
+		    && ((buf2=strrchr(buf,':'))!=NULL)) 
+    {
+	buf2++;
+	while(*buf2 == ' ') buf2++;
+	strncpy(IDENTuser,buf2,strlen(buf2)+1);
+	IDENTuser[79]='\0';
+	buf2=strchr(IDENTuser,'\r');
+	if (!buf2) buf2=strchr(IDENTuser,'\n');
+	if (buf2) *buf2='\0';
+    } else { 
+	strncpy(IDENTuser,"UNKNOWN",10);
+	IDENTuser[10]='\0';
+    }
+    close(ident_fd);
+
+    return EQ(identd, IDENTuser);
 }
 
 /*
@@ -237,7 +272,7 @@ RCCommaSplit(char *text)
 #endif
 
 int
-RCfix_options(int fd, struct sockaddr_in *remote)
+RCfix_options(int fd, struct sockaddr_storage *remote)
 {
 #if IP_OPTIONS
     unsigned char optbuf[BUFSIZ / 3], *cp;
@@ -246,10 +281,25 @@ RCfix_options(int fd, struct sockaddr_in *remote)
     int     ipproto;
     struct protoent *ip;
 
-    if ((ip = getprotobyname("ip")) != 0)
-	ipproto = ip->p_proto;
-    else
-	ipproto = IPPROTO_IP;
+    switch (remote->ss_family) {
+    case AF_INET:
+	if ((ip = getprotobyname("ip")) != 0)
+	    ipproto = ip->p_proto;
+	else
+	    ipproto = IPPROTO_IP;
+	break;
+#ifdef HAVE_INET6
+    case AF_INET6:
+	if ((ip = getprotobyname("ipv6")) != 0)
+	    ipproto = ip->p_proto;
+	else
+	    ipproto = IPPROTO_IPV6;
+	break;
+#endif
+    default:
+	syslog(LOG_ERR, "unknown address family: %d", remote->ss_family);
+	return -1;
+    }
 
     if (getsockopt(fd, ipproto, IP_OPTIONS, (char *) optbuf, &optsize) == 0
 	&& optsize != 0) {
@@ -258,7 +308,7 @@ RCfix_options(int fd, struct sockaddr_in *remote)
 	    sprintf(lp, " %2.2x", *cp);
 	syslog(LOG_NOTICE,
 	       "connect from %s with IP options (ignored):%s",
-	       inet_ntoa(remote->sin_addr), lbuf);
+	       sprint_sockaddr((struct sockaddr *)remote), lbuf);
 	if (setsockopt(fd, ipproto, IP_OPTIONS, (char *) 0, optsize) != 0) {
 	    syslog(LOG_ERR, "setsockopt IP_OPTIONS NULL: %m");
 	    return -1;
@@ -268,6 +318,45 @@ RCfix_options(int fd, struct sockaddr_in *remote)
     return 0;
 }
 
+BOOL
+RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage *rp)
+{
+#ifdef HAVE_INET6
+    struct sockaddr_in	*sin_cp, *sin_rp;
+    struct sockaddr_in6	*sin6_cp, *sin6_rp;
+
+    if (cp->ss_family == AF_INET6 && rp->ss_family == AF_INET) {
+	sin6_cp = (struct sockaddr_in6 *)cp;
+	sin_rp = (struct sockaddr_in *)rp;
+	if (IN6_IS_ADDR_V4MAPPED(&sin6_cp->sin6_addr) &&
+		memcmp(&sin6_cp->sin6_addr.s6_addr[12],
+		    &sin_rp->sin_addr.s_addr, sizeof(struct in_addr)) == 0)
+	    return TRUE;
+    } else if (cp->ss_family == AF_INET && rp->ss_family == AF_INET6) {
+	sin_cp = (struct sockaddr_in *)cp;
+	sin6_rp = (struct sockaddr_in6 *)rp;
+	if (IN6_IS_ADDR_V4MAPPED(&sin6_rp->sin6_addr) &&
+		memcmp(&sin6_rp->sin6_addr.s6_addr[12],
+		    &sin_cp->sin_addr.s_addr, sizeof(struct in_addr)) == 0)
+	    return TRUE;
+    } else if (cp->ss_family == AF_INET6 && rp->ss_family == AF_INET6) {
+#ifdef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
+	if (!memcmp(&((struct sockaddr_in6 *)cp)->sin6_addr,
+		    &((struct sockaddr_in6 *)rp)->sin6_addr,
+		    sizeof(struct in6_addr)))
+#else
+	if (IN6_ARE_ADDR_EQUAL( &((struct sockaddr_in6 *)cp)->sin6_addr,
+				&((struct sockaddr_in6 *)rp)->sin6_addr))
+#endif
+	    return TRUE;
+    } else
+#endif /* INET6 */
+	if (((struct sockaddr_in *)cp)->sin_addr.s_addr ==
+	     ((struct sockaddr_in *)rp)->sin_addr.s_addr)
+	    return TRUE;
+
+    return FALSE;
+}
 
 /*
 **  See if the site properly entered the password.
@@ -279,17 +368,17 @@ RCauthorized(register CHANNEL *cp, char *pass)
     register int	i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (cp->Address.s_addr == rp->Address.s_addr) {
+	if (RCaddressmatch(&cp->Address, &rp->Address)) {
 	    if (rp->Password[0] == '\0' || EQ(pass, rp->Password))
 		return TRUE;
 	    syslog(L_ERROR, "%s (%s) bad_auth", rp->Label,
-		   inet_ntoa(cp->Address));
+		   sprint_sockaddr((struct sockaddr *)&cp->Address));
 	    return FALSE;
 	}
 
     if (!AnyIncoming)
 	/* Not found in our table; this can't happen. */
-	syslog(L_ERROR, "%s not_found", inet_ntoa(cp->Address));
+	syslog(L_ERROR, "%s not_found", sprint_sockaddr((struct sockaddr *)&cp->Address));
 
     /* Anonymous hosts should not authenticate. */
     return FALSE;
@@ -305,7 +394,7 @@ RCnolimit(register CHANNEL *cp)
     register int	i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (cp->Address.s_addr == rp->Address.s_addr)
+	if (RCaddressmatch(&cp->Address, &rp->Address))
             return !rp->MaxCnx;
 
     /* Not found in our table; this can't happen. */
@@ -322,8 +411,8 @@ RClimit(register CHANNEL *cp)
     register int	i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (cp->Address.s_addr == rp->Address.s_addr)
-	    return (rp->MaxCnx);
+	if (RCaddressmatch(&cp->Address, &rp->Address))
+	    return rp->MaxCnx;
     /* Not found in our table; this can't happen. */
     return RemoteLimit;
 }
@@ -336,7 +425,7 @@ static void
 RCrejectreader(CHANNEL *cp)
 {
     syslog(L_ERROR, "%s internal RCrejectreader (%s)", LogName,
-	   inet_ntoa(cp->Address));
+	   sprint_sockaddr((struct sockaddr *)&cp->Address));
 }
 
 
@@ -414,7 +503,7 @@ static void
 RCreader(CHANNEL *cp)
 {
     int			fd;
-    struct sockaddr_in	remote;
+    struct sockaddr_storage	remote;
     socklen_t		size;
     int                 i;
     REMOTEHOST          *rp;
@@ -445,12 +534,15 @@ RCreader(CHANNEL *cp)
     /*
     ** Clear any IP_OPTIONS, including source routing, on the socket
     */
+    /* FIXME RCfix_options breaks IPv6 sockets, at least on Linux -lutchann */
+#ifndef HAVE_INET6
     if (RCfix_options(fd, &remote) != 0) {
 	/* shouldn't happen, but we're bit paranoid at this point */
 	if (close(fd) < 0)
 	    syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
 	return;
     }
+#endif
 
     /*
     ** If RemoteTimer is not zero, then check the limits on incoming
@@ -491,7 +583,7 @@ RCreader(CHANNEL *cp)
     ** Finally, if neither rejection happened, add the entry to the
     ** table, and continue on as a normal connect.
     */
-    tempchan.Address.s_addr = remote.sin_addr.s_addr;
+    memcpy(&tempchan.Address, &remote, SA_LEN((struct sockaddr *)&remote));
     reject_message = NULL;
     if (RemoteTimer != 0) {
 	now = time(NULL);
@@ -505,7 +597,7 @@ RCreader(CHANNEL *cp)
 		i = (i + 1) & (REMOTETABLESIZE - 1);
 		continue;
 	    }
-	    if (remotetable[i].Address.s_addr == remote.sin_addr.s_addr)
+	    if (RCaddressmatch(&remotetable[i].Address, &remote))
 		found++;
 	    i = (i + 1) & (REMOTETABLESIZE - 1);
 	}
@@ -519,7 +611,7 @@ RCreader(CHANNEL *cp)
 	}
 	else {
 	    i = (remotefirst + remotecount) & (REMOTETABLESIZE - 1);
-	    remotetable[i].Address = remote.sin_addr;
+	    memcpy(&remotetable[i].Address, &remote, SA_LEN((struct sockaddr *)&remote));
 	    remotetable[i].Expires = now + RemoteTimer;
 	    remotecount++;
 	}
@@ -532,7 +624,7 @@ RCreader(CHANNEL *cp)
     if (reject_message) {
 	new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
 	    RCrejectwritedone);
-	new->Address.s_addr = remote.sin_addr.s_addr;
+	memcpy(&remotetable[i].Address, &remote, SA_LEN((struct sockaddr *)&remote));
 	new->Rejected = reject_val;
 	RCHANremove(new);
 	WCHANset(new, reject_message, (int)strlen(reject_message));
@@ -543,7 +635,7 @@ RCreader(CHANNEL *cp)
 
     /* See if it's one of our servers. */
     for (name = NULL, rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (rp->Address.s_addr == remote.sin_addr.s_addr) {
+	if (RCaddressmatch(&rp->Address, &remote)) {
 	    name = rp->Name;
 	    break;
 	}
@@ -570,7 +662,7 @@ RCreader(CHANNEL *cp)
             new->Nolist = rp->Nolist;
             new->MaxCnx = rp->MaxCnx;
             new->HoldTime = rp->HoldTime;
-	    new->Address.s_addr = remote.sin_addr.s_addr;
+	    memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
 	    if (new->MaxCnx > 0 && new->HoldTime == 0) {
 		CHANsetActiveCnx(new);
 		if((new->ActiveCnx > new->MaxCnx) && (new->fd > 0)) {
@@ -598,7 +690,7 @@ RCreader(CHANNEL *cp)
 	reject_message = NNTP_ACCESS;
         new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
             RCrejectwritedone);
-        new->Address.s_addr = remote.sin_addr.s_addr;
+	memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
         new->Rejected = reject_val;
         RCHANremove(new);
         WCHANset(new, reject_message, (int)strlen(reject_message));
@@ -608,10 +700,10 @@ RCreader(CHANNEL *cp)
     }
 
     if (new != NULL) {
-	new->Address.s_addr = remote.sin_addr.s_addr;
+	memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
 	syslog(L_NOTICE, "%s connected %d streaming %s",
-           name ? name : inet_ntoa(new->Address), new->fd,
-           (!StreamingOff && new->Streaming) ? "allowed" : "not allowed");
+           name ? name : sprint_sockaddr((struct sockaddr *)&new->Address),
+	   new->fd, (!StreamingOff && new->Streaming) ? "allowed" : "not allowed");
     }
 }
 
@@ -803,7 +895,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp = *list = NEW(REMOTEHOST, 1);
 
 #if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
-    inet_aton(LOOPBACK_HOST, &rp->Address);
+    inet_aton(LOOPBACK_HOST, &addr);
+    make_sin( (struct sockaddr_in *)&rp->Address, &addr );
     rp->Name = COPY("localhost");
     rp->Label = COPY("localhost");
     rp->Email = COPY(NOEMAIL);
@@ -970,6 +1063,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             peer_params.Name = COPY(peer_params.Label);
 
 	  for(r = q = RCCommaSplit(COPY(peer_params.Name)); *q != NULL; q++) {
+#ifdef HAVE_INET6
+	      struct addrinfo *res, *res0, hints;
+	      int gai_ret;
+#endif
 	    (*count)++;
 
 	    /* Grow the array */
@@ -977,9 +1074,51 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    RENEW (*list, REMOTEHOST, *count);
 	    rp = *list + j;
 
+#ifdef HAVE_INET6
+	    memset( &hints, 0, sizeof( hints ) );
+	    hints.ai_socktype = SOCK_STREAM;
+	    hints.ai_family = PF_UNSPEC;
+	    if ((gai_ret = getaddrinfo(*q, NULL, &hints, &res0)) != 0) {
+		syslog(L_ERROR, "%s cant getaddrinfo %s %s", LogName, *q,
+				gai_strerror( gai_ret ) );
+		/* decrement *count, since we never got to add this record. */
+		(*count)--;
+		continue;
+	    }
+	    /* Count the addresses and see if we have to grow the list */
+	    i = 0;
+	    for (res = res0; res != NULL; res = res->ai_next)
+		i++;
+	    /* Grow the array */
+	    j = rp - *list;
+	    *count += i - 1;
+	    RENEW(*list, REMOTEHOST, *count);
+	    rp = *list + j;
+
+	    /* Add all hosts */
+	    for (res = res0; res != NULL; res = res->ai_next) {
+		(void)memcpy(&rp->Address, res->ai_addr, res->ai_addrlen);
+		rp->Name = COPY (*q);
+		rp->Label = COPY (peer_params.Label);
+		rp->Email = COPY(peer_params.Email);
+		rp->Comment = COPY(peer_params.Comment);
+		rp->Streaming = peer_params.Streaming;
+		rp->Skip = peer_params.Skip;
+		rp->NoResendId = peer_params.NoResendId;
+		rp->Nolist = peer_params.Nolist;
+		rp->Password = COPY(peer_params.Password);
+		rp->Identd = COPY(peer_params.Identd);
+		rp->Patterns = peer_params.Pattern != NULL ?
+		    RCCommaSplit(COPY(peer_params.Pattern)) : NULL;
+		rp->MaxCnx = peer_params.MaxCnx;
+		rp->HoldTime = peer_params.HoldTime;
+		rp++;
+	    }
+	    freeaddrinfo(res0);
+#else /* HAVE_INET6 */
 	    /* Was host specified as a dotted quad ? */
-	    if (inet_aton(*q, &rp->Address)) {
-	      /* syslog(LOG_NOTICE, "think it's a dotquad: %s", *q); */
+	    if (inet_aton(*q, &addr)) {
+	      make_sin( (struct sockaddr_in *)&rp->Address, &addr );
 	      rp->Name = COPY (*q);
 	      rp->Label = COPY (peer_params.Label);
 	      rp->Password = COPY(peer_params.Password);
@@ -1027,7 +1166,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		RENEW (*list, REMOTEHOST, *count);
 		rp = *list + j;
 
-		rp->Address = addr;
+		make_sin( (struct sockaddr_in *)&rp->Address, &addr );
 		rp->Name = COPY (*q);
 		rp->Label = COPY (peer_params.Label);
 		rp->Email = COPY(peer_params.Email);
@@ -1047,8 +1186,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      }
 	      if (t == 0) {
 		/* Just one, no need to grow. */
-		memcpy(&rp->Address, hp->h_addr_list[0],
-                       sizeof(struct in_addr));
+		make_sin( (struct sockaddr_in *)&rp->Address,
+				(struct in_addr *)hp->h_addr_list[0] );
 		rp->Name = COPY (*q);
 		rp->Label = COPY (peer_params.Label);
 		rp->Email = COPY(peer_params.Email);
@@ -1075,8 +1214,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 
 	    /* Add all the hosts. */
 	    for (i = 0; hp->h_addr_list[i]; i++) {
-	      memcpy(&rp->Address, hp->h_addr_list[i],
-                     sizeof(struct in_addr));
+	      make_sin( (struct sockaddr_in *)&rp->Address,
+			      (struct in_addr *)hp->h_addr_list[i] );
 	      rp->Name = COPY (*q);
 	      rp->Label = COPY (peer_params.Label);
 	      rp->Email = COPY(peer_params.Email);
@@ -1095,7 +1234,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    }
 #else
 	    /* Old-style, single address, just add it. */
-	    memcpy(&rp->Address, hp->h_addr, sizeof(struct in_addr));
+	    make_sin( (struct sockaddr_in *)&rp->Address,
+			    (struct in_addr *)hp->h_addr );
 	    rp->Name = COPY(*q);
 	    rp->Label = COPY (peer_params.Label);
 	    rp->Email = COPY(peer_params.Email);
@@ -1112,6 +1252,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    rp->HoldTime = peer_params.HoldTime;
 	    rp++;
 #endif	    /* defined(h_addr) */
+#endif /* HAVE_INET6 */
 	  }
 	  DISPOSE(r[0]);
 	  DISPOSE(r);
@@ -1672,9 +1813,9 @@ RChostname(register const CHANNEL *cp)
     register int	i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (cp->Address.s_addr == rp->Address.s_addr)
+	if (RCaddressmatch(&cp->Address, &rp->Address))
 	    return rp->Name;
-    (void)strcpy(buff, inet_ntoa(cp->Address));
+    (void)strcpy(buff, sprint_sockaddr((struct sockaddr *)&cp->Address));
     return buff;
 }
 
@@ -1687,7 +1828,7 @@ RClabelname(CHANNEL *cp) {
     int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
-	if (cp->Address.s_addr == rp->Address.s_addr)
+	if (RCaddressmatch(&cp->Address, &rp->Address))
 	    return rp->Label;
     }
     return NULL;
@@ -1706,8 +1847,12 @@ RCcanpost(CHANNEL *cp, char *group)
     char	        *pat;
     int	                i;
 
+    /* Connections from lc.c are from local nnrpd and should always work */
+    if (cp->Address.ss_family == 0)
+	return 1;
+
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
-	if (cp->Address.s_addr != rp->Address.s_addr)
+	if (!RCaddressmatch(&cp->Address, &rp->Address))
 	    continue;
 	if (rp->Patterns == NULL)
 	    break;
@@ -1734,13 +1879,19 @@ RCcanpost(CHANNEL *cp, char *group)
 void
 RCsetup(register int i)
 {
-    struct sockaddr_in	server;
 #if	defined(SO_REUSEADDR)
     int			on;
 #endif	/* defined(SO_REUSEADDR) */
 
+    /* This code is called only when inndstart is not being used */
     if (i < 0) {
+#ifdef HAVE_INET6
+	syslog(L_FATAL, "%s innd MUST be started with inndstart", LogName);
+	exit(1);
+#else
 	/* Create a socket and name it. */
+	struct sockaddr_in	server;
+
 	if ((i = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 	    syslog(L_FATAL, "%s cant socket RCreader %m", LogName);
 	    exit(1);
@@ -1766,14 +1917,15 @@ RCsetup(register int i)
 	    syslog(L_FATAL, "%s cant bind RCreader %m", LogName);
 	    exit(1);
 	}
+#endif /* HAVE_INET6 */
     }
-    
 
     /* Set it up to wait for connections. */
     if (listen(i, MAXLISTEN) < 0) {
 	syslog(L_FATAL, "%s cant listen RCreader %m", LogName);
 	exit(1);
     }
+
     RCchan = CHANcreate(i, CTremconn, CSwaiting, RCreader, RCwritedone);
     syslog(L_NOTICE, "%s rcsetup %s", LogName, CHANname(RCchan));
     RCHANadd(RCchan);

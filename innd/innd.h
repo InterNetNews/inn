@@ -329,7 +329,7 @@ typedef struct _CHANNEL {
   int		       BadCommands;
   time_t	       LastActive;
   time_t	       NextLog;
-  struct in_addr       Address;
+  struct sockaddr_storage Address;
   innd_callback_t      Reader;
   innd_callback_t      WriteDone;
   time_t	       Waketime;
@@ -571,7 +571,6 @@ EXTERN char	     *  RejectReason;	/* NNTP reject message   */
 EXTERN FILE	     *  Errlog;
 EXTERN FILE	     *  Log;
 extern char		LogName[];
-EXTERN struct in_addr	MyAddress;
 extern int		ErrorCount;
 EXTERN int		ICDactivedirty;
 EXTERN int		KillerSignal;

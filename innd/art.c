@@ -1206,7 +1206,8 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
 
   /* Get stored message and zap them. */
   if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-    syslog(L_ERROR, "%s cant cancel %s", LogName, TokenToText(token));
+    syslog(L_ERROR, "%s cant cancel %s (SMerrno %d)", LogName,
+	TokenToText(token), SMerrno);
   if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELEDART))
     syslog(L_ERROR, "%s cant cancel cached %s", LogName, TokenToText(token));
   (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));

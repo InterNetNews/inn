@@ -1266,8 +1266,8 @@ static void PERMreadfile(char *filename)
 #ifdef HAVE_SSL
 		    && ((curauth->require_ssl == FALSE) || (ClientSSL == TRUE))
 #endif
-		    && MatchHost(curauth->hosts, ClientHost, ClientIp)) {
-		    if (!MatchHost(curauth->localaddress, ServerHost, ServerIp)) {
+		    && MatchHost(curauth->hosts, ClientHost, ClientIpString)) {
+		    if (!MatchHost(curauth->localaddress, ServerHost, ServerIpString)) {
 			syslog(L_TRACE, "Auth strategy '%s' does not match localhost.  Removing.",
 			   curauth->name == NULL ? "(NULL)" : curauth->name);
 			free_authgroup(curauth);
@@ -1508,7 +1508,7 @@ void PERMgetpermissions()
         uname = COPY(PERMuser);
         DISPOSE(args);        
         
-        args = perlAccess(ClientHost, ClientIp, ServerHost, uname);
+        args = perlAccess(ClientHost, ClientIpString, ServerHost, uname);
         p = args[0];
         array_len = atoi(p);
         access_array = args;
@@ -1642,6 +1642,9 @@ static void CompressList(char *list)
     }
     *cpto = '\0';
 }
+
+/* FIXME - MatchHost is totally unaware of IPv6 yet, but it should be not
+   too much work to make it so.  I think.  -lutchann */
 
 static bool MatchHost(char *hostlist, char *host, char *ip)
 {
@@ -1858,25 +1861,19 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
 
 static void GetConnInfo(METHOD *method, char *buf)
 {
-    struct sockaddr_in cli, loc;
-    int gotsin;
     int i;
-    socklen_t j;
 
-    j = sizeof(cli);
-    gotsin = (getpeername(0, (struct sockaddr*)&cli, &j) == 0);
-    if (gotsin)
-	getsockname(0, (struct sockaddr*)&loc, &j);
     buf[0] = '\0';
     if (*ClientHost)
 	sprintf(buf, "ClientHost: %s\r\n", ClientHost);
-    if (*ClientIp)
-	sprintf(buf+strlen(buf), "ClientIP: %s\r\n", ClientIp);
-    if (gotsin) {
-	sprintf(buf+strlen(buf), "ClientPort: %d\r\n", ntohs(cli.sin_port));
-	sprintf(buf+strlen(buf), "LocalIP: %s\r\n", inet_ntoa(loc.sin_addr));
-	sprintf(buf+strlen(buf), "LocalPort: %d\r\n", ntohs(loc.sin_port));
-    }
+    if (*ClientIpString)
+	sprintf(buf+strlen(buf), "ClientIP: %s\r\n", ClientIpString);
+    if (ClientPort)
+	sprintf(buf+strlen(buf), "ClientPort: %d\r\n", ClientPort);
+    if (*ServerIpString)
+	sprintf(buf+strlen(buf), "LocalIP: %s\r\n", ServerIpString);
+    if (ServerPort)
+	sprintf(buf+strlen(buf), "LocalPort: %d\r\n", ServerPort);
     /* handle this here, since we only get here when we're about to exec
      * something. */
     if (method->extra_headers) {
@@ -2129,7 +2126,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
                 free(perl_path);
                 perlAuthInit();
           
-                code = perlAuthenticate(ClientHost, ClientIp, ServerHost, username, password, accesslist, errorstr);
+                code = perlAuthenticate(ClientHost, ClientIpString, ServerHost, username, password, accesslist, errorstr);
                 if (code == NNTP_AUTH_OK_VAL) {
                     syslog(L_NOTICE, "%s user %s", ClientHost, username);
                     if (LLOGenable) {

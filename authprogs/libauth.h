@@ -7,8 +7,8 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include <sys/socket.h>
 #include <netinet/in.h>
-
 #include <arpa/inet.h>
 
 
@@ -51,5 +51,5 @@ get_auth(char* uname, char* pass);
  * if all fields wre found.
  */
 extern char
-get_res(struct sockaddr_in* loc,
-	struct sockaddr_in* cli);
+get_res(struct sockaddr* loc,
+	struct sockaddr* cli);
