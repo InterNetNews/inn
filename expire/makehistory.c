@@ -353,7 +353,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 		if (innconf->extendeddbz) {
 		    iextvalue.offset[HISTOFFSET] = where;
 		    token = TextToToken(save);
-		    OVERsetoffset(&token, (int *)&iextvalue.offset[OVEROFFSET], &iextvalue.overindex); 
+		    OVERsetoffset(&token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex); 
 		    ivalue = (void *)&iextvalue;
 		} else {
 		    ionevalue.offset = where;
@@ -1596,6 +1596,11 @@ main(int ac, char *av[])
 	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
 	    (void)fprintf(stderr, "Can't setup unified overview mmap %s\n",
 		strerror(errno));
+	}
+	val = TRUE;
+	if (!OVERsetup(OVER_BUFFERED, (void *)&val)) {
+	    fprintf(stderr, "Can't setup unified overview buffered: %s\n", strerror(errno));
+	    exit(1);
 	}
 	if (!OVERsetup(OVER_MODE, (void *)mode)) {
 	    fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));

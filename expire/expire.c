@@ -1358,7 +1358,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     if (innconf->extendeddbz) {
 	iextvalue.offset[HISTOFFSET] = where;
 	if (tokenretained)
-	    OVERsetoffset(&token, (int *)&iextvalue.offset[OVEROFFSET], &iextvalue.overindex);
+	    OVERsetoffset(&token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex);
 	else {
 	    iextvalue.offset[OVEROFFSET] = 0;
 	    iextvalue.overindex = OVER_NONE;
@@ -1779,6 +1779,11 @@ int main(int ac, char *av[])
 	val = FALSE;
     if (!OVERsetup(OVER_MMAP, (void *)&val)) {
 	fprintf(stderr, "Can't setup unified overview mmap: %s\n", strerror(errno));
+	exit(1);
+    }
+    val = TRUE;
+    if (!OVERsetup(OVER_BUFFERED, (void *)&val)) {
+	fprintf(stderr, "Can't setup unified overview buffered: %s\n", strerror(errno));
 	exit(1);
     }
     if (!OVERsetup(OVER_MODE, "r")) {
