@@ -113,6 +113,7 @@ sub collect {
     # 437 Unwanted newsgroup "..."
     if ($left =~ /(\S+) <[^>]+> 437 Unwanted newsgroup \"(\S+)\"$/o) {
       my ($server, $group) = ($1, $2);
+      ($group) = split(/,/, $group);
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
       $inn_uw_ng_s{$server}++;
