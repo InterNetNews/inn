@@ -123,21 +123,19 @@ Getting Started
     the man pages for all of the configuration files involved is a very good
     start.
 
-Contacting the Maintainers
+Reporting Bugs
 
     We're interested in all bug reports.  Not just on the programs, but on
     the documentation too.  Please send *all* such reports to
-    inn-bugs@isc.org; even if you post to Usenet, please CC the above
-    address.  If you have patches for INN, either to fix a bug or to
-    implement a new feature, please send them to inn-patches@isc.org.
 
-    If you have any suggestions for new features in INN, you may want to
-    join inn-workers@isc.org, the main mailing list for discussion amongst
-    the developers, and propose them there.  See below for information on
-    how to subscribe to the INN-related mailing lists.
+        inn-bugs@isc.org
 
-    All other INN mail should go to inn@isc.org.  (Please do *not* send bug
-    reports to this address.)
+    Even if you post to Usenet, please CC the above address.  All other INN
+    mail should go to
+
+        inn@isc.org
+
+    (please do *not* send bug reports to this address).
 
     If you have general "how do I do this" questions or problems configuring
     your server that you don't believe are due to a bug in INN, you should
@@ -147,18 +145,49 @@ Contacting the Maintainers
     addresses are specifically for INN, and the INN maintainers usually
     won't have time to answer general questions.
 
-    The above-mentioned lists, plus inn-committers@isc.org which receives
-    notice of every change made to INN, are public mailing lists to which
-    you can subscribe to if you're interested.  To do so, send mail to
-    majordomo@isc.org with:
+Contributing Code
 
-        subscribe LIST
+    If you have a patch or a utility that you'd like to be considered for
+    inclusion into INN, please mail it to
 
-    in the body, where LIST is one of inn-workers, inn-bugs, inn-patches, or
-    inn-committers.  (Again, these lists are specifically for development of
-    INN and are not general help addresses.  If you're interested in asking,
-    reading, and possibly answering general questions about how to set up
-    and maintain INN, read news.software.nntp.)
+        inn-patches@isc.org
+
+    Have fun!
+
+Mailing Lists
+
+    There are various INN-related mailing lists you can join or send
+    messages to if you like.  Some of them you must be a member of before
+    you can send mail to them (thank the Spam gods for that policy), and one
+    of them is read-only (no postings allowed).
+
+    inn-workers@isc.org     Discussion of INN development (postings by
+                            members only).
+
+    inn-patches@isc.org     Where to send patches for consideration for
+                            inclusion into INN (open posting).
+
+    inn-committers@isc.org  CVS commit messages for INN are sent to this
+                            list (no posting allowed).
+
+    inn-bugs@isc.org        Where to send bug reports (open posting).  If
+                            you're an INN expert and have the time to help
+                            out other users, we encourage you to join this
+                            mailing list to answer questions.  (You may also
+                            want to read the newsgroup news.software.nntp,
+                            which gets a lot of INN-related questions.)
+
+    inn-announce@isc.org    Where announcements about INN are set (no
+                            posting allowed).
+
+    To join these lists, send a subscription request to the `-request'
+    address.  The addresses for the above lists are:
+
+       inn-workers-request@isc.org
+       inn-patches-request@isc.org
+       inn-committers-request@isc.org
+       inn-bugs-request@isc.org
+       inn-announce-request@isc.org
 
 Who's Responsible / Who to Thank
 
@@ -187,5 +216,6 @@ Supporting the INN Effort
     the ISC's goals and accomplishments from the web page at
     http://www.isc.org/isc/.
 
-                                            James Brister
-                                            inn@isc.org
+James Brister
+inn@isc.org
+
