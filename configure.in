@@ -1202,7 +1202,6 @@ INN_CHECK_TYPE(uint32_t, unsigned $INN_INT32,
 
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
-AC_FUNC_VFORK
 AC_TYPE_SIGNAL
 
 dnl Source used by INN_FUNC_INET_NTOA
