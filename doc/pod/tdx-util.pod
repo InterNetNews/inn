@@ -62,8 +62,13 @@ error.
 
 =item B<-a> I<article>
 
-The article number to act on.  Only useful in combination with the B<-o>
-option to dump overview information.
+The article number or numbers to act on.  I<article> is a valid NNTP
+range, meaning that it can be either a single article number or a range of
+article numbers (like C<1-5>).  Either the start or the end (or both) of
+the range may be omitted, in which case they will be set to the first or
+last article number in the group.  Passing C<-> for I<article> is
+therefore equivalent to not using the B<-a> option at all.  Only useful in
+combination with the B<-o> option to dump overview information.
 
 =item B<-F>
 
@@ -159,6 +164,10 @@ Dump the group index for example.test:
 Dump the complete overview information for example.test:
 
     tdx-util -o -n example.test
+
+Dump the overview information for articles 45 and higher in example.test:
+
+    tdx-util -o -n example.test -a 45-
 
 Audit the entire overview database for any problems:
 

@@ -91,7 +91,7 @@ dump_group_index(const char *group)
 **  and expires time (if any) in the overview data as additional fields.
 */
 static void
-dump_overview(const char *group, ARTNUM number)
+dump_overview(const char *group, ARTNUM low, ARTNUM high)
 {
     struct group_index *index;
     struct group_data *data;
@@ -115,16 +115,17 @@ dump_overview(const char *group, ARTNUM number)
     }
     data->refcount++;
 
-    if (number != 0)
-        search = tdx_search_open(data, number, number, entry->high);
-    else
-        search = tdx_search_open(data, entry->low, entry->high, entry->high);
+    if (low == 0)
+        low = entry->low;
+    if (high == 0)
+        high = entry->high;
+    search = tdx_search_open(data, low, high, entry->high);
+
     if (search == NULL) {
-        if (number != 0)
+        if (low == high)
             puts("Article not found");
         else
-            warn("cannot open search in %s: %lu - %lu", group, entry->low,
-                 entry->high);
+            warn("cannot open search in %s: %lu - %lu", group, low, high);
         return;
     }
     while (tdx_search(search, &article)) {
@@ -366,6 +367,47 @@ setuid_news(void)
 
 
 /*
+**  Parse an article number or range, returning the low and high values in the
+**  provided arguments.  Returns true if the number or range was parsed
+**  successfully, false otherwise.  Allows such constructs as "-", "20-", or
+**  "-50" and leaves the unspecified ends of the range set to zero.
+**
+**  This code is similar to code in nnrpd and possibly should move into libinn
+**  as common code.
+*/
+static bool
+parse_range(char *range, ARTNUM *low, ARTNUM *high)
+{
+    char *hyphen, *end;
+
+    *low = 0;
+    *high = 0;
+    hyphen = strchr(range, '-');
+    if (hyphen == NULL) {
+        *low = strtoul(range, &end, 10);
+        if (*low == 0 || *end != '\0')
+            return false;
+        *high = *low;
+        return true;
+    } else {
+        *hyphen = '\0';
+        if (*range != '\0') {
+            *low = strtoul(range, &end, 10);
+            if (*low == 0 || *end != '\0')
+                return false;
+        }
+        if (hyphen[1] != '\0') {
+            *high = strtoul(hyphen + 1, &end, 10);
+            if (*high == 0 || *end != '\0')
+                return false;
+        }
+        *hyphen = '-';
+        return true;
+    }
+}
+
+
+/*
 **  Main routine.  Load inn.conf, parse the arguments, and dispatch to the
 **  appropriate function.
 */
@@ -376,7 +418,8 @@ main(int argc, char *argv[])
     char mode = '\0';
     const char *newsgroup = NULL;
     const char *path = NULL;
-    ARTNUM article = 0;
+    ARTNUM artlow = 0;
+    ARTNUM arthigh = 0;
 
     message_program_name = "tdx-util";
 
@@ -388,9 +431,8 @@ main(int argc, char *argv[])
     while ((option = getopt(argc, argv, "a:n:p:AFR:gio")) != EOF) {
         switch (option) {
         case 'a':
-            article = strtoul(optarg, NULL, 10);
-            if (article == 0)
-                die("invalid article number %s", optarg);
+            if (!parse_range(optarg, &artlow, &arthigh))
+                die("invalid article number or range %s", optarg);
             break;
         case 'n':
             newsgroup = optarg;
@@ -459,7 +501,7 @@ main(int argc, char *argv[])
         dump_group_index(newsgroup);
         break;
     case 'o':
-        dump_overview(newsgroup, article);
+        dump_overview(newsgroup, artlow, arthigh);
         break;
     default:
         die("a mode option must be specified");
