@@ -260,7 +260,7 @@ STATIC void ovclosesearch(void *handle, BOOL freeblock);
 STATIC char	*Gib;
 STATIC char	*Gdb;
 
-#ifdef HPUX
+#ifdef MMAP_MISSES_WRITES
 /* With HP/UX, you definitely do not want to mix mmap-accesses of
    a file with read()s and write()s of the same file */
 STATIC OFFSET_T mmapwrite(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset) {
@@ -279,7 +279,7 @@ STATIC OFFSET_T mmapwrite(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset) {
   munmap(addr, len);
   return nbyte;
 }
-#endif /* HPUX */
+#endif /* MMAP_MISSES_WRITES */
 
 STATIC BOOL ovparse_part_line(char *l) {
   char		*p;
@@ -719,7 +719,7 @@ STATIC OVBUFF *getovbuff(OV ov) {
 }
 
 /* just search ov, do not set curindex */
-#ifdef HPUX
+#ifdef MMAP_MISSES_WRITES
 STATIC OV getsrchov(OV ov, ARTNUM artnum, OVINDEXHEAD *ovihp, SRCH type) {
   OVBUFF	*ovbuff;
   OVINDEXHEAD	*ovindexhead;
@@ -786,7 +786,7 @@ STATIC OV getsrchov(OV ov, ARTNUM artnum, OVINDEXHEAD *ovihp, SRCH type) {
   }
   return ovnull;
 }
-#endif /* HPUX */
+#endif /* MMAP_MISSES_WRITES */
 
 #ifdef OV_DEBUG
 STATIC OV ovblocknew(GROUPENTRY *ge) {
@@ -1297,11 +1297,11 @@ STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset) {
     ovblock.ovindexhead.prev = ovnull;
     ovblock.ovindexhead.next = ovnull;
     ovblock.ovindexhead.base = base;
-#ifdef HPUX
+#ifdef MMAP_MISSES_WRITES
     if (mmapwrite(ovbuff->fd, (POINTER)&ovblock, sizeof(ovblock), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(ovblock)) {
 #else
     if (pwrite(ovbuff->fd, (POINTER)&ovblock, sizeof(ovblock), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(ovblock)) {
-#endif /* HPUX */
+#endif /* MMAP_MISSES_WRITES */
       syslog(L_ERROR, "%s: ovsetcurindexblock could not initialize ovbuff block index '%d', blocknum '%d': %m", LocalLogName, ov.index, ov.blocknum);
       return FALSE;
     }
@@ -1413,11 +1413,11 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     abort();
   }
 #endif /* OV_DEBUG */
-#ifdef HPUX
+#ifdef MMAP_MISSES_WRITES
   if (mmapwrite(ovbuff->fd, data, len, ovbuff->base + ge->curdata.blocknum * OV_BLOCKSIZE + ge->curoffset) != len) {
 #else
   if (pwrite(ovbuff->fd, data, len, ovbuff->base + ge->curdata.blocknum * OV_BLOCKSIZE + ge->curoffset) != len) {
-#endif /* HPUX */
+#endif /* MMAP_MISSES_WRITES */
     syslog(L_ERROR, "%s: could not append overview record index '%d', blocknum '%d': %m", LocalLogName, ge->curdata.index, ge->curdata.blocknum);
     return FALSE;
   }
@@ -1448,11 +1448,11 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     abort();
   }
 #endif /* OV_DEBUG */
-#ifdef HPUX
+#ifdef MMAP_MISSES_WRITES
   if (mmapwrite(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE + sizeof(OVINDEXHEAD) + sizeof(ie) * (artnum - ge->baseinblock + baseoffset)) != sizeof(ie)) {
 #else
   if (pwrite(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE + sizeof(OVINDEXHEAD) + sizeof(ie) * (artnum - ge->baseinblock + baseoffset)) != sizeof(ie)) {
-#endif /* HPUX */
+#endif /* MMAP_MISSES_WRITES */
     syslog(L_ERROR, "%s: could not write index record index '%d', blocknum '%d': %m", LocalLogName, ge->curindex.index, ge->curindex.blocknum);
     return TRUE;
   }
@@ -2192,11 +2192,11 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
       ov = ovblks[i].indexov;
       if ((ovbuff = getovbuff(ov)) == NULL)
 	break;
-#ifdef HPUX
+#ifdef MMAP_MISSES_WRITES
       if (mmapwrite(ovbuff->fd, (POINTER)ovblks[i].ovblock, sizeof(OVBLOCK), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(OVBLOCK)) {
 #else
       if (pwrite(ovbuff->fd, (POINTER)ovblks[i].ovblock, sizeof(OVBLOCK), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(OVBLOCK)) {
-#endif /* HPUX */
+#endif /* MMAP_MISSES_WRITES */
 	syslog(L_ERROR, "%s: ovaddblk could not append overview record index '%d', blocknum '%d': %m", LocalLogName, ov.index, ov.blocknum);
 	break;
       }
