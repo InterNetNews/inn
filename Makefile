@@ -16,9 +16,9 @@ SQUASH=gzip
 
 RCSCOFLAGS	= -u
 
-##  The first two directories must be config and lib.
-PROGS	= config lib storage frontends innd nnrpd backends expire doc innfeed authprogs
-DIRS	= $(PROGS) site
+##  The first two directories must be lib and storage.
+PROGS = lib storage frontends innd nnrpd backends expire doc innfeed authprogs
+DIRS  = $(PROGS) site
 
 ##  We invoke an extra process and set this to be what to make.
 WHAT_TO_MAKE	= all
@@ -73,10 +73,6 @@ update:
 	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) install || exit 1 ; cd .. ; \
 	done
 
-##  Build subst (for configuration).
-subst c sh quiet sedtest:
-	cd config ; $(MAKE) $(FLAGS) $@ ; cd ..
-
 ##  Additional cleanups.
 clobber realclean distclean:	clean
 	@echo ""
@@ -86,7 +82,7 @@ clobber realclean distclean:	clean
 	rm -f CHANGES *~
 	rm -fr $(TARDIR)
 	rm -f config.cache config.log config.status libtool
-	rm -f BUILD makedirs.sh config/config.data config/config.data.in
+	rm -f BUILD makedirs.sh
 	rm -f backends/actmerge.sh backends/actsyncd.sh
 	rm -f backends/sendxbatches.sh frontends/c7unbatch.sh
 	rm -f frontends/gunbatch.sh include/autoconfig.h
@@ -118,7 +114,6 @@ clobber realclean distclean:	clean
 
 ##  Configure and compile
 world:
-	cd config ; $(MAKE) $(FLAGS) subst quiet ; cd ..
 	cd lib ; $(MAKE) $(FLAGS) ; cd ..
 
 ##  Make a distribution.
