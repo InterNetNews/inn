@@ -1070,7 +1070,7 @@ ARTreject(buff, article)
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
-STATIC char *ARTcancelverify(ARTDATA *Data, HASH hash)
+STATIC char *ARTcancelverify(ARTDATA *Data, char *MessageID, HASH hash)
 {
     register char	*files;
     register char	*p;
@@ -1096,8 +1096,8 @@ STATIC char *ARTcancelverify(ARTDATA *Data, HASH hash)
     HeaderCleanFrom(p);
     if (!EQ(local, p)) {
 	files = NULL;
-	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by [%s]",
-		p, HashToText(hash), local);
+	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
+		      p, MessageID, local);
 	ARTlog(Data, ART_REJECT, buff);
     }
     DISPOSE(p);
@@ -1171,7 +1171,7 @@ void ARTcancel(ARTDATA *Data, char *MessageID, BOOL Trusted)
 
 #if	defined(DO_VERIFY_CANCELS)
 	files = Trusted ? HISfilesfor(hash)
-			: ARTcancelverify(Data, hash);
+			: ARTcancelverify(Data, MessageID, hash);
 #else
 	files = HISfilesfor(hash);
 #endif	/* !defined(DO_VERIFY_CANCELS) */
