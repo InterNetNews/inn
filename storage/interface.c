@@ -739,7 +739,7 @@ STORAGE_SUB *SMgetsub(const ARTHANDLE article) {
 	}
     }
     errno = 0;
-    SMseterror(SMERR_UNDEFINED, "no matching entry in storage.conf");
+    SMseterror(SMERR_NOMATCH, "no matching entry in storage.conf");
     return NULL;
 }
 
@@ -969,6 +969,9 @@ void SMseterror(int errornum, char *error) {
 	    break;
 	case SMERR_BADTOKEN:
 	    SMerrorstr = "Bad token";
+	    break;
+	case SMERR_NOMATCH:
+	    SMerrorstr = "No matching entry in storage.conf";
 	    break;
 	default:
 	    SMerrorstr = "Undefined error";
