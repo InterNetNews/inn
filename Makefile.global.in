@@ -70,8 +70,12 @@ PROF            = -pg
 ##  they're listed in the gcc manual.  We suppress warnings for long long
 ##  because of lib/snprintf.c; all uses of long long should be hidden behind
 ##  #ifdef HAVE_LONG_LONG.
+##
+##  Add -g because when building with warnings one generally also wants the
+##  debugging information, and add -O because gcc won't find some warnings
+##  without optimization turned on.
 
-WARNINGS        = -pedantic -Wall -W -Wshadow -Wpointer-arith \
+WARNINGS        = -g -O -pedantic -Wall -W -Wshadow -Wpointer-arith \
                   -Wbad-function-cast -Wcast-qual -Wcast-align \
                   -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes \
                   -Wnested-externs -Wno-long-long
