@@ -42,7 +42,6 @@ PATH_ACTSYNC_IGN	= ${PATHETC}/actsync.ign
 PATH_ACTSYNC_CFG	= ${PATHETC}/actsync.cfg
 PATH_MOTD		= ${PATHETC}/motd.news
 PATH_STORAGECONF	= ${PATHETC}/storage.conf
-PATH_OVERVIEWCTL	= ${PATHETC}/overview.ctl
 PATH_CYCBUFFCONFIG	= ${PATHETC}/cycbuff.conf
 PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 
@@ -63,7 +62,7 @@ REST		= \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl overview.fmt \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
-	motd.news storage.conf overview.ctl cycbuff.conf \
+	motd.news storage.conf cycbuff.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
 	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf
@@ -229,7 +228,6 @@ $D$(PATHBIN)/innreport: innreport	; $(COPY_XPRI) $? $@
 $D$(PATHLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_STORAGECONF): storage.conf	; $(COPY_RPRI) $? $@
-$D$(PATH_OVERVIEWCTL): overview.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
@@ -285,7 +283,6 @@ innreport:	../samples/innreport		; $(COPY) $? $@
 innreport_inn.pm: ../samples/innreport_inn.pm	; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
 storage.conf:	../samples/storage.conf		; $(COPY) $? $@
-overview.ctl:	../samples/overview.ctl		; $(COPY) $? $@
 cycbuff.conf:	../samples/cycbuff.conf		; $(COPY) $? $@
 innstat:	../samples/innstat		; $(COPY) $? $@
 innwatch:	../samples/innwatch		; $(COPY) $? $@
