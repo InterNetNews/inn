@@ -163,7 +163,7 @@ filters can be enabled after B<innd> has started with ctlinnd(8).
 
 Whether B<innd> allows (and hands off to B<nnrpd>) reader connections
 while paused or throttled is normally determined by the value of
-I<readerswhenstopped> in F<inn.conf).  This option, if given, overrides
+I<readerswhenstopped> in F<inn.conf>).  This option, if given, overrides
 that value.  If I<flag> is C<n>, B<innd> will not allow readers if it is
 paused or throttled.  If I<flag> is C<y>, readers will be allowed
 regardless of B<innd>'s operating mode.
