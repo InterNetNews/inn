@@ -804,8 +804,6 @@ static int count_records(struct groupinfo *gi)
 static int lockfd = -1;
 BOOL ovdb_getlock(int mode)
 {
-    struct stat Sb;
-
     if(lockfd == -1) {
 	char *lockfn = COPY(cpcatpath(innconf->pathrun, OVDB_LOCKFN));
 	lockfd = open(lockfn,
