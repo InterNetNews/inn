@@ -150,6 +150,7 @@ struct conf_vars {
 	char *nnrpdposthost;
 	int extendeddbz;
 	int nnrpdoverstats;
+	int storeonxref;	/* Should SMstore() see Xref to detemine class */
 	char *decnetdomain;
 	int backoff_auth;
 	char *backoff_db;

@@ -279,6 +279,9 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_PATHUNIOVER				"pathuniover"
 #define CONF_VAR_PATHUNIOVER			85
     { _CONF_PATHUNIOVER,				"",	1, 1 },
+#define _CONF_STOREONXREF				"storeonxref"
+#define CONF_VAR_STOREONXREF			86
+    { _CONF_STOREONXREF,				"",	2, 1 },
 };
-#define MAX_CONF_VAR 86
+#define MAX_CONF_VAR 87
 
