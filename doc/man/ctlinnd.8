@@ -476,7 +476,7 @@ and it is the word ``filter.python'' then the
 file is reloaded.  If a Python method named ``filter_before_reload'' exists,
 it will be called prior to rereading
 .IR filter_innd.py .
-If a Python method named ``filter_after_reload'' exists, it will be called
+If a Python method named ``__init__'' exists, it will be called
 after
 .IR filter_innd.py .
 has been reloaded.  Reloading the Python filter does not enable filtering if
@@ -550,7 +550,13 @@ is sent as a control line to the exploder
 .BI shutdown " reason"
 The server is shut down, with the specified reason recorded in the log
 and sent to all open connections.
+
 It is a good idea to send a ``throttle'' command first.
+
+If
+.I <\-\-with\-python is specified at configure>
+and a Python method named ``filter_close'' exists,
+it will be called just before innd exits.
 .TP
 .BI signal " sig site"
 Signal
