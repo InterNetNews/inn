@@ -450,6 +450,7 @@ serverproc(int me)
     xsignal_norestart(SIGTERM, sigfunc);
     xsignal_norestart(SIGHUP, sigfunc);
     xsignal_norestart(SIGUSR1, childsig);
+    xsignal(SIGPIPE, SIG_IGN);
 
     numreaders = lastnumreaders = 0;
     if(ovdb_conf.maxrsconn) {
