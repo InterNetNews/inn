@@ -1071,7 +1071,6 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
     }
     if (token == NULL) {
 	TMRstop(TMR_ARTCNCL);
-	syslog(L_ERROR, "%s cant cancel %s (not token)", LogName, TokenToText(*token));
 	return;
     }
     
