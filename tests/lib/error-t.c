@@ -136,10 +136,10 @@ static void test16(void) {
     syswarn("warning");
 }
 
-/* Given the test number, intended exit status and message, and the actual
-   exit status and message, print ok or not ok. */
+/* Given the test number, intended exit status and message, and the function
+   to run, print ok or not ok. */
 static void
-ok(int n, int status, const char *output, test_function_t function)
+test_error(int n, int status, const char *output, test_function_t function)
 {
     int real_status;
     char buf[256];
@@ -158,6 +158,20 @@ ok(int n, int status, const char *output, test_function_t function)
     printf("%sok %d\n", succeeded ? "" : "not ", n);
 }
 
+/* Given the test number, intended status, intended message sans the
+   appended strerror output, errno, and the function to run, print ok or not
+   ok. */
+static void
+test_strerror(int n, int status, const char *output, int error,
+              test_function_t function)
+{
+    char *full_output;
+
+    full_output = concat(output, ": ", strerror(error), "\n", END);
+    test_error(n, status, full_output, function);
+    free(full_output);
+}
+
 /* Run the tests. */
 int
 main(void)
@@ -166,30 +180,32 @@ main(void)
 
     puts("16");
 
-    ok(1, 0, "warning\n", test1);
-    ok(2, 1, "fatal\n", test2);
-    ok(3, 0, concat("permissions: ", strerror(EPERM), "\n", END), test3);
-    ok(4, 1, concat("fatal access: ", strerror(EACCES), "\n", END), test4);
-    ok(5, 0, "test5: warning\n", test5);
-    ok(6, 1, "test6: fatal\n", test6);
-    ok(7, 0, concat("test7: perms 7: ", strerror(EPERM), "\n", END), test7);
-    ok(8, 1, concat("test8: fatal: ", strerror(EACCES), "\n", END), test8);
-    ok(9, 10, "fatal\n", test9);
-    ok(10, 10, concat("fatal perm: ", strerror(EPERM), "\n", END), test10);
-    ok(11, 10, concat("1st test11: fatal: ", strerror(EPERM), "\n", END),
-       test11);
-    ok(12, 0, "7 0 warning\n", test12);
-    ok(13, 1, "5 0 fatal\n", test13);
+    test_error(1, 0, "warning\n", test1);
+    test_error(2, 1, "fatal\n", test2);
+    test_strerror(3, 0, "permissions", EPERM, test3);
+    test_strerror(4, 1, "fatal access", EACCES, test4);
+    test_error(5, 0, "test5: warning\n", test5);
+    test_error(6, 1, "test6: fatal\n", test6);
+    test_strerror(7, 0, "test7: perms 7", EPERM, test7);
+    test_strerror(8, 1, "test8: fatal", EACCES, test8);
+    test_error(9, 10, "fatal\n", test9);
+    test_strerror(10, 10, "fatal perm", EPERM, test10);
+    test_strerror(11, 10, "1st test11: fatal", EPERM, test11);
+    test_error(12, 0, "7 0 warning\n", test12);
+    test_error(13, 1, "5 0 fatal\n", test13);
 
     sprintf(buff, "%d", EPERM);
 
-    ok(14, 0, concat("7 ", buff, " warning\n7 ", buff, " warning\n", END),
-       test14);
-    ok(15, 10, concat("5 ", buff, " fatal\n5 ", buff, " fatal\n", END),
-       test15);
-    ok(16, 0, concat("test16: warning: ", strerror(EPERM), "\n7 ", buff,
-                     " warning\n", END),
-       test16);
+    test_error(14, 0,
+               concat("7 ", buff, " warning\n7 ", buff, " warning\n", END),
+               test14);
+    test_error(15, 10,
+               concat("5 ", buff, " fatal\n5 ", buff, " fatal\n", END),
+               test15);
+    test_error(16, 0,
+               concat("test16: warning: ", strerror(EPERM), "\n7 ", buff,
+                      " warning\n", END),
+               test16);
 
     return 0;
 }
