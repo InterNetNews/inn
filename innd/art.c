@@ -2663,6 +2663,7 @@ ARTpost(CHANNEL *cp)
   if (Accepted) {
     if (IsControl) {
       TMRstart(TMR_ARTCTRL);
+      HDR_PARSE_START(_control);
       ARTcontrol(data, HDR(_control), cp);
       TMRstop(TMR_ARTCTRL);
     }
