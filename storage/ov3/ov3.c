@@ -110,7 +110,7 @@ bool tradindexed_open(int mode) {
     int                 flag = 0;
 
     OV3mode = mode;
-    if (OV3mode & OV_READ)
+    if (!(OV3mode & OV_WRITE))
 	CACHEmaxentries = 1;
     else
 	CACHEmaxentries = innconf->overcachesize;
