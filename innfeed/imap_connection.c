@@ -530,7 +530,7 @@ static conn_ret AddToQueue(Q_t *q, void *item,
     }
 
     /* add to the end of our queue */
-    newentry = (article_queue_t *) malloc(sizeof(article_queue_t));
+    newentry = xmalloc(sizeof(article_queue_t));
 
     newentry->type = type;
 
@@ -1275,6 +1275,8 @@ getsecret(sasl_conn_t *conn,
 	  int id,
 	  sasl_secret_t **psecret)
 {
+  size_t passlen;
+
   if (! conn || ! psecret || id != SASL_CB_PASS)
     return SASL_BADPARAM;
 
@@ -1284,12 +1286,13 @@ getsecret(sasl_conn_t *conn,
       return SASL_FAIL;
   }
 
-  *psecret = (sasl_secret_t *) malloc(sizeof(sasl_secret_t)+strlen(deliver_password)+1);
+  passlen = strlen(deliver_password);
+  *psecret = xmalloc(sizeof(sasl_secret_t) + passlen + 1);
   if (! *psecret)
     return SASL_FAIL;
 
-  strcpy((*psecret)->data, deliver_password);
-  (*psecret)->len=strlen(deliver_password);
+  strlcpy((*psecret)->data, deliver_password, passlen + 1);
+  (*psecret)->len = passlen;
 
   return SASL_OK;
 }
@@ -1312,8 +1315,8 @@ static sasl_callback_t saslcallbacks[] = {
 
 static sasl_security_properties_t *make_secprops(int min,int max)
 {
-  sasl_security_properties_t *ret=(sasl_security_properties_t *)
-    malloc(sizeof(sasl_security_properties_t));
+  sasl_security_properties_t *ret=
+    xmalloc(sizeof(sasl_security_properties_t));
 
   ret->maxbufsize=1024;
   ret->min_ssf=min;
@@ -1562,7 +1565,7 @@ static conn_ret SetupLMTPConnection(connection_t *cxn,
     }
 
     if (cxn->lmtp_respBuffer) free(cxn->lmtp_respBuffer);
-    cxn->lmtp_respBuffer = (char *) malloc (4096);
+    cxn->lmtp_respBuffer = xmalloc (4096);
     cxn->lmtp_respBuffer[0]='\0';
 
     /* Free if we had an existing one */
@@ -1653,7 +1656,7 @@ static conn_ret SetupIMAPConnection(connection_t *cxn,
     }
 
     if (cxn->imap_respBuffer) free(cxn->imap_respBuffer);
-    cxn->imap_respBuffer = (char *) malloc (4096);
+    cxn->imap_respBuffer = xmalloc (4096);
     cxn->imap_respBuffer[0]='\0';
 
     /* Free if we had an existing one */
@@ -2153,7 +2156,7 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
         p = concat("AUTH ", mechusing, " =\r\n", (char *) 0);
     } else {
 	/* initial client response - convert to base64 */
-	inbase64 = (char *) malloc(outlen*2+10);
+	inbase64 = xmalloc(outlen*2+10);
 
 	saslresult = sasl_encode64(out, outlen,
 				   inbase64, outlen*2+10,
@@ -2196,7 +2199,7 @@ static imt_stat lmtp_getauthline(char *str, char **line, int *linelen)
 
   str += 4; /* jump past the "334 " */
 
-  *line = (char *) malloc(strlen(str)+30);
+  *line = xmalloc(strlen(str)+30);
   if ((*line)==NULL) {
       return STAT_NO;
   }
@@ -2421,7 +2424,7 @@ static conn_ret imap_sendAuthStep(connection_t *cxn, char *str)
 	return RET_FAIL;
     }
 
-    inbase64 = (char *) malloc(outlen*2+10);
+    inbase64 = xmalloc(outlen * 2 + 10);
 
     /* convert to base64 */
     saslresult = sasl_encode64(out, outlen,
@@ -2430,7 +2433,7 @@ static conn_ret imap_sendAuthStep(connection_t *cxn, char *str)
     if (saslresult != SASL_OK) return RET_FAIL;
 
     /* append endline */
-    strcpy(inbase64 + inbase64len, "\r\n");
+    strlcpy(inbase64 + inbase64len, "\r\n", outlen * 2 + 10 - inbase64len);
     inbase64len+=2;
     
     /* send to server */
@@ -2701,6 +2704,7 @@ static conn_ret imap_ParseCapability(char *string, imap_capabilities_t **caps)
 {
     char *str = string;
     char *start = str;
+    size_t mechlen;
 
     /* allocate the caps structure if it doesn't already exist */
     if ( (*caps) == NULL)
@@ -2732,15 +2736,13 @@ static conn_ret imap_ParseCapability(char *string, imap_capabilities_t **caps)
 	    
 	    if ( (*caps)->saslmechs == NULL)
 	    {
-		(*caps)->saslmechs = (char *) malloc(strlen(start+5)+1);
-		strcpy( (*caps)->saslmechs, start+5);
+                (*caps)->saslmechs = xstrdup (start + 5);
 	    } else {
-
-		(*caps)->saslmechs = (char *) realloc((*caps)->saslmechs, 
-						      strlen((*caps)->saslmechs)+1+strlen(start+5)+1);
-
-		strcat( (*caps)->saslmechs, " ");
-		strcat( (*caps)->saslmechs, start+5);
+                mechlen = strlen((*caps)->saslmechs) + 1;
+                mechlen += strlen(start + 5) + 1;
+		(*caps)->saslmechs = xrealloc((*caps)->saslmechs, mechlen);
+                strlcat((*caps)->saslmechs, " ", mechlen);
+                strlcat((*caps)->saslmechs, start + 5, mechlen);
 	    }
 	}
 	
@@ -3310,12 +3312,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 			       strlen("ENHANCEDSTATUSCODES"))==0) {
 		cxn->lmtp_capabilities->EnhancedStatusCodes = 1;
 	    } else if (strncmp(str+4, "AUTH",4)==0) {
-		cxn->lmtp_capabilities->saslmechs = (char *)
-		    malloc(strlen(str+4+5)+5);
-		ASSERT (cxn->lmtp_capabilities->saslmechs != NULL);
-		
-		/* copy string removing endline */
-		strcpy(cxn->lmtp_capabilities->saslmechs, str+4+5);
+		cxn->lmtp_capabilities->saslmechs = xstrdup(str + 4 + 5);
 	    } else if (strncmp(str+4,"PIPELINING",strlen("PIPELINING"))==0) {
 		cxn->lmtp_capabilities->pipelining = 1;
 	    } else {
@@ -3401,7 +3398,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 		    }
 
 		    /* convert to base64 */
-		    inbase64 = (char *) malloc(outlen*2+10);
+		    inbase64 = xmalloc(outlen*2+10);
 
 		    saslresult = sasl_encode64(out, outlen,
 					       inbase64, outlen*2+10, 
@@ -3418,7 +3415,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 		    }
 
 		    /* add an endline */
-		    strcpy(inbase64 + inbase64len, "\r\n");
+		    strlcpy(inbase64 + inbase64len, "\r\n", outlen * 2 + 10);
 
 		    /* send to server */
 		    result = WriteToWire_lmtpstr(cxn,inbase64, inbase64len+2);
@@ -3638,26 +3635,23 @@ static void addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
     char c;
 
     /* see if we need to grow the string */
-    if (newsize > *outalloc)
-    {
-	(*outalloc)+=200;
-	(*out) = realloc(*out, *outalloc);
-	ASSERT(*out);
+    if (newsize > *outalloc) {
+	(*outalloc) = newsize;
+	(*out) = xrealloc(*out, *outalloc);
     }
 
-    strcpy((*out)+size,"RCPT TO:<");
-    size+=9;
+    strlcpy((*out) + size,"RCPT TO:<", newsize - size);
+    size += 9;
 
-    c=newrcpt[newrcptlen];
-    newrcpt[newrcptlen]='\0';
-    size+=sprintf((*out)+size,deliver_rcpt_to,newrcpt);
-    newrcpt[newrcptlen]=c;
+    c = newrcpt[newrcptlen];
+    newrcpt[newrcptlen] = '\0';
+    size += snprintf((*out) + size, newsize - size, deliver_rcpt_to, newrcpt);
+    newrcpt[newrcptlen] = c;
 
-    strcpy((*out)+size,">\r\n");    
+    strlcpy((*out) + size, ">\r\n", newsize - size);
 
     /* has embedded '\n' */
-    d_printf(2,"Attempting to send to: %s",(*out)+fsize);
-    
+    d_printf(2, "Attempting to send to: %s", (*out) + fsize);
 }
 
 /*
@@ -3671,14 +3665,14 @@ static void addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
 static char *ConvertRcptList(char *in, char *in_end, int *num)
 {
     int retalloc = 400;
-    char *ret = malloc(retalloc);
+    char *ret = xmalloc(retalloc);
     char *str = in;
     char *laststart = in;
 
     (*num) = 0;
 
     /* start it off empty */     
-    strcpy(ret,"");
+    strlcpy(ret, "", retalloc);
     
     while ( str !=  in_end)
     {
@@ -3717,21 +3711,19 @@ static void addto(char *newrcpt, int newrcptlen, const char *sep,
     char c;
 
     /* see if we need to grow the string */
-    if (newsize > *outalloc)
-    {
-	(*outalloc)+=200;
-	(*out) = realloc(*out, *outalloc);
-	ASSERT(*out);
+    if (newsize > *outalloc) {
+	(*outalloc) = newsize;
+	(*out) = xrealloc(*out, *outalloc);
     }
 
-    size+=sprintf((*out)+size,"%s<",sep);
+    size += snprintf((*out) + size, newsize - size, "%s<", sep);
 
     c = newrcpt[newrcptlen];
-    newrcpt[newrcptlen]='\0';
-    size+=sprintf((*out)+size,deliver_to_header,newrcpt);
-    newrcpt[newrcptlen]=c;
+    newrcpt[newrcptlen] = '\0';
+    size += snprintf((*out) + size, newsize - size, deliver_to_header,newrcpt);
+    newrcpt[newrcptlen] = c;
 
-    strcpy((*out)+size,">");    
+    strlcpy((*out) + size, ">", newsize - size);
 }
 
 /*
@@ -3744,13 +3736,13 @@ static void addto(char *newrcpt, int newrcptlen, const char *sep,
 static char *BuildToHeader(char *in, char *in_end)
 {
     int retalloc = 400;
-    char *ret = malloc(retalloc);
+    char *ret = xmalloc(retalloc);
     char *str = in;
     char *laststart = in;
     const char *sep = "";
 
     /* start it off with the header name */     
-    strcpy(ret,"To: ");
+    strlcpy(ret,"To: ", retalloc);
     
     while ( str !=  in_end)
     {
@@ -3778,7 +3770,7 @@ static char *BuildToHeader(char *in, char *in_end)
     }
 
     /* terminate the header */
-    strcat(ret, "\n\r");
+    strlcat(ret, "\n\r", retalloc);
     return ret;
 }
 
@@ -4189,7 +4181,7 @@ static void delConnection (Connection cxn)
       time_t now = theTime () ;
       char dateString [30] ;
 
-      strcpy (dateString,ctime (&now)) ;
+      strlcpy (dateString,ctime (&now),sizeof (dateString)) ;
       dateString [24] = '\0' ;
 
       notice ("ME finishing at %s", dateString) ;
@@ -4239,10 +4231,7 @@ Connection newConnection (Host host,
     cxn = xcalloc (1, sizeof(connection_t)) ;
 
     cxn->ident = ident ;
-
-    cxn->ServerName = malloc( strlen(ipname)+1);
-    strcpy(cxn->ServerName, ipname);
-
+    cxn->ServerName = xstrdup (ipname) ;
     cxn->myHost = host ;
 
     /* setup mailfrom user */
