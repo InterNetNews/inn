@@ -21,18 +21,18 @@ SOURCES = $(MISSING_SRC) \
 	checkart.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
 	conffile.c dbz.c defdist.c findheader.c genid.c getconfig.c getdtab.c \
 	getfqdn.c getmodaddr.c gettime.c hash.c inndcomm.c innvers.c localopen.c \
-	lockfile.c makedir.c md5.c nonblocking.c over.c parsedate.c perl.c radix32.c\
+	lockfile.c makedir.c md5.c nonblocking.c parsedate.c perl.c radix32.c\
 	readin.c remopen.c reservedfd.c resource.c sendarticle.c sendpass.c tempname.c \
 	waitnb.c wildmat.c xfopena.c xmalloc.c xmemerr.c xrealloc.c xwrite.c \
-	xwritev.c
+	xwritev.c grpalias.c rwlock.c argparse.c
 OBJECTS = $(MISSING_OBJ) \
 	checkart.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
 	conffile.o dbz.o defdist.o findheader.o genid.o getconfig.o getdtab.o \
 	getfqdn.o getmodaddr.o gettime.o hash.o inndcomm.o innvers.o localopen.o \
-	lockfile.o makedir.o md5.o over.o nonblocking.o parsedate.o radix32.o\
+	lockfile.o makedir.o md5.o nonblocking.o parsedate.o radix32.o\
 	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o tempname.o \
 	waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o xrealloc.o xwrite.o \
-	xwritev.o
+	xwritev.o pread.o pwrite.o grpalias.o rwlock.o argparse.o
 LOBJECTS	= $(OBJECTS:.o=.lo)
 
 all:			libinn.$(EXTLIB) perl.o ../include/autoconfig.h
@@ -52,6 +52,12 @@ tags ctags:	$(SOURCES)
 libinn.la:		$(P) $(OBJECTS) $(LOBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $(LOBJECTS) \
 		-rpath $(PATHLIB) -version-info 2:0:0
+
+pread.o: pread.c
+	$(CC) -c $(CFLAGS) $(LFS_CFLAGS) -o $@ pread.c
+
+pwrite.o: pwrite.c
+	$(CC) -c $(CFLAGS) $(LFS_CFLAGS) -o $@ pwrite.c
 
 libinn.a:             $(P) $(OBJECTS)
 	ar r $@ $(OBJECTS)
@@ -114,7 +120,6 @@ checkart.o:	../include/nntp.h
 checkart.o:	../include/nntp.h
 cleanfrom.o:	../include/macros.h
 clientactive.o:	../include/paths.h
-clientlib.o:	../include/myserver.h
 clientlib.o:	../include/nntp.h
 clientlib.o:	../include/macros.h
 clientlib.o:	../include/paths.h
@@ -143,7 +148,6 @@ localopen.o:	../include/macros.h
 localopen.o:	../include/nntp.h
 localopen.o:	../include/paths.h
 md5.o:		../include/md5.h ../include/autoconfig.h
-over.o:		../include/configdata.h
 parsedate.o:	../include/macros.h
 qio.o:		../include/macros.h
 qio.o:		../include/qio.h

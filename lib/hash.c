@@ -56,27 +56,21 @@ HASH Hash(const void *value, const size_t len) {
 }
 
 HASH HashMessageID(const char *MessageID) {
-    static char         *new = NULL;
-    static int          newlen = 0;
+    char                *new;
     char                *cip;
     char                *p;
     int                 len;
     HASH                hash;
 
     len = strlen(MessageID);
-    if (newlen <= len) {
-	if (new)
-	    RENEW(new, char, len + 1);
-	else
 	    new = NEW(char, len + 1);
-	newlen = len + 1;
-    }
     strcpy(new, MessageID);
     if ((cip = cipoint(new, len))) {
 	for (p = cip + 1; *p; p++)
 	    *p = tolower(*p);
     }
     hash = Hash(new, len);
+    DISPOSE(new);
     return hash;
 }
 
@@ -104,8 +98,8 @@ void HashClear(HASH *hash) {
 char *HashToText(const HASH hash) {
     STATIC char         hex[] = "0123456789ABCDEF";
     char                *p;
-    STATIC char         hashstr[(sizeof(HASH) * 2) + 1];
     int                 i;
+    STATIC char         hashstr[(sizeof(HASH)*2) + 1];
 
     for (p = (char *)&hash, i = 0; i < sizeof(HASH); i++, p++) {
 	hashstr[i * 2] = hex[(*p & 0xF0) >> 4];

@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
+#include "libinn.h"
 
 #ifdef HAVE_FLOCK
 # include <sys/file.h>
@@ -44,5 +45,30 @@ int LockFile(int fd, BOOL Block)
 
     return fstat(fd, &Sb);
 #endif	
-
 }
+
+#ifdef HAVE_FCNTL
+BOOL LockRange(int fd, LOCKTYPE type, BOOL Block, OFFSET_T offset, OFFSET_T size) {
+    struct flock        fl;
+    int                 ret;
+
+    switch (type) {
+    case LOCK_READ:
+	fl.l_type = F_RDLCK;
+	break;
+    case LOCK_WRITE:
+	fl.l_type = F_WRLCK;
+	break;
+    case LOCK_UNLOCK:
+    default:
+	fl.l_type = F_UNLCK;
+    }
+
+    fl.l_whence = SEEK_SET;
+    fl.l_start = offset;
+    fl.l_len = size;
+
+    ret = fcntl(fd, Block ? F_SETLKW : F_SETLK, &fl);
+    return (ret != -1);
+}
+#endif /* HAVE_FCNTL */

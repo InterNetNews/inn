@@ -9,12 +9,12 @@
 #include "nntp.h"
 #include "paths.h"
 #include "libinn.h"
-#include "myserver.h"
 
 
 FILE	*ser_rd_fp = NULL;
 FILE	*ser_wr_fp = NULL;
 char	ser_line[NNTP_STRLEN + 2];
+void put_server(char *buff);
 
 
 /*
@@ -105,9 +105,7 @@ int handle_server_response(int response, char *host)
 /*
 **  Send a line of text to the server.
 */
-void
-put_server(buff)
-    char	*buff;
+void put_server(char *buff)
 {
     (void)fprintf(ser_wr_fp, "%s\r\n", buff);
     (void)fflush(ser_wr_fp);

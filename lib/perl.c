@@ -42,20 +42,16 @@ int	PerlFilterActive = FALSE;
 
 static PerlInterpreter	*PerlCode;
 CV *perl_filter_cv ;                 /* filter_art or filter_post holder */
-extern char	LogName[];
 
 void PerlSilence();
 void PerlUnSilence();
 
-void
-LogPerl()
+void LogPerl()
 {
-   syslog(L_NOTICE, "%s perl filtering %s", LogName, PerlFilterActive ? "enabled" : "disabled");
+   syslog(L_NOTICE, "SERVER perl filtering %s", PerlFilterActive ? "enabled" : "disabled");
 }
 
-void
-PerlFilter(value)
-  BOOL value ;
+void PerlFilter(BOOL value)
 {
     dSP;
 
@@ -67,8 +63,8 @@ PerlFilter(value)
         if (perl_get_cv("filter_end", FALSE) != NULL) {
             perl_call_argv("filter_end", G_EVAL|G_DISCARD|G_NOARGS, NULL);
             if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
-                syslog (L_ERROR,"%s perl function filter_end died: %s",
-                        LogName, SvPV(GvSV(errgv), na)) ;
+                syslog (L_ERROR,"SERVER perl function filter_end died: %s",
+                        SvPV(GvSV(errgv), na)) ;
                 (void)POPs ;
             }
         } else {
@@ -77,7 +73,7 @@ PerlFilter(value)
         }
     } else if (!PerlFilterActive && value) { /* turning on */
         if (perl_filter_cv == NULL) {
-            syslog (L_ERROR,"%s perl filter not defined", LogName) ;
+            syslog (L_ERROR,"SERVER perl filter not defined") ;
         } else {
             PerlFilterActive = value ;
             LogPerl () ;
@@ -88,8 +84,7 @@ PerlFilter(value)
     LEAVE ;
 }
 
-void
-PerlParse ()
+void PerlParse (void)
 {
     char *argv[] = { "innd",
                      "-e", "sub _load_ { do $_[0] }",
@@ -111,8 +106,7 @@ PerlParse ()
 ** function name that must be defined after the file file is loaded for
 ** filtering to be turned on to start with.
 */
-void PERLsetup (startupfile, filterfile, function)
-    char *startupfile, *filterfile, *function;
+void PERLsetup (char *startupfile, char *filterfile, char *function)
 {
     if (PerlCode == NULL) {
         PerlCode = perl_alloc();
@@ -138,8 +132,8 @@ void PERLsetup (startupfile, filterfile, function)
         SPAGAIN ;
         
         if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
-            syslog (L_ERROR,"%s perl loading %s failed: %s",
-                    LogName, startupfile, SvPV(GvSV(errgv), na)) ;
+            syslog(L_ERROR,"SERVER perl loading %s failed: %s",
+		   startupfile, SvPV(GvSV(errgv), na)) ;
             PerlFilter (FALSE) ;
     
         } else {
@@ -159,9 +153,7 @@ void PERLsetup (startupfile, filterfile, function)
    off. We remember whether the filter function was defined properly so
    that we can catch when the use tries to turn filtering on without the
    the funciton there. */
-int
-PERLreadfilter(filterfile, function)
-  char  *filterfile, *function ;
+int PERLreadfilter(char *filterfile, char *function)
 {
     dSP ;
     char *argv [3] ;
@@ -175,8 +167,8 @@ PERLreadfilter(filterfile, function)
     if (perl_get_cv("filter_before_reload", FALSE) != NULL)    {
         perl_call_argv("filter_before_reload",G_EVAL|G_DISCARD|G_NOARGS,NULL);
         if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
-            syslog (L_ERROR,"%s perl function filter_before_reload died: %s",
-                    LogName, SvPV(GvSV(errgv), na)) ;
+            syslog (L_ERROR,"SERVER perl function filter_before_reload died: %s",
+                    SvPV(GvSV(errgv), na)) ;
             (void)POPs ;
             PerlFilter (FALSE) ;
         }
@@ -187,8 +179,8 @@ PERLreadfilter(filterfile, function)
     PerlUnSilence();
 
     if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
-        syslog (L_ERROR,"%s perl loading %s failed: %s",
-                LogName, filterfile, SvPV(GvSV(errgv), na)) ;
+        syslog (L_ERROR,"SERVER perl loading %s failed: %s",
+                filterfile, SvPV(GvSV(errgv), na)) ;
         PerlFilter (FALSE) ;
         
         /* If the reload failed we don't want the old definition hanging
@@ -198,8 +190,8 @@ PERLreadfilter(filterfile, function)
         perl_call_argv ("_eval_",0,argv) ;
 
         if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
-            syslog (L_ERROR,"%s perl undef &%s failed: %s",
-                    LogName, function, SvPV(GvSV(errgv), na)) ;
+            syslog (L_ERROR,"SERVER perl undef &%s failed: %s",
+                    function, SvPV(GvSV(errgv), na)) ;
         }
         DISPOSE (argv[0]) ;
     } else if ((perl_filter_cv = perl_get_cv(function, FALSE)) == NULL) {
@@ -209,8 +201,8 @@ PERLreadfilter(filterfile, function)
     if (perl_get_cv("filter_after_reload", FALSE) != NULL) {
         perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, NULL);
         if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
-            syslog (L_ERROR,"%s perl function filter_after_reload died: %s",
-                    LogName, SvPV(GvSV(errgv), na)) ;
+            syslog (L_ERROR,"SERVER perl function filter_after_reload died: %s",
+                    SvPV(GvSV(errgv), na)) ;
             (void)POPs ;
             PerlFilter (FALSE) ;
         }
@@ -226,8 +218,7 @@ PERLreadfilter(filterfile, function)
 /*
 ** Stops using the Perl filter
 */
-void
-PerlClose()
+void PerlClose(void)
 {
    perl_destruct(PerlCode);
    perl_free(PerlCode);
@@ -248,19 +239,18 @@ extern void xs_init()
 */
 static int savestdout = 0;
 static int savestderr = 0;
-void
-PerlSilence()
+void PerlSilence(void)
 {
   int newfd;
 
   /* Save the descriptors */
   if ( (savestdout = dup(1)) < 0) {
-    syslog(L_ERROR,"%s perl silence cant redirect stdout: %m",LogName);
+    syslog(L_ERROR,"SERVER perl silence cant redirect stdout: %m");
     savestdout = 0;
     return;
   }
   if ( (savestderr = dup(2)) < 0) {
-    syslog(L_ERROR,"%s perl silence cant redirect stderr: %m",LogName);
+    syslog(L_ERROR,"SERVER perl silence cant redirect stderr: %m");
     savestdout = 0;
     savestderr = 0;
     return;
@@ -268,7 +258,7 @@ PerlSilence()
 
   /* Open /dev/null */
   if ((newfd = open("/dev/null",O_WRONLY)) < 0) {
-    syslog(L_ERROR,"%s perl silence cant open /dev/null: %m",LogName);
+    syslog(L_ERROR,"SERVER perl silence cant open /dev/null: %m");
     savestdout = 0;
     savestderr = 0;
     return;
@@ -276,24 +266,23 @@ PerlSilence()
 
   /* Redirect descriptors */
   if (dup2(newfd,1) < 0) {
-    syslog(L_ERROR,"%s perl silence cant redirect stdout: %m",LogName);
+    syslog(L_ERROR,"SERVER perl silence cant redirect stdout: %m");
     savestdout = 0;
     return;
   }
     
   if (dup2(newfd,2) < 0) {
-    syslog(L_ERROR,"%s perl silence cant redirect stderr: %m",LogName);
+    syslog(L_ERROR,"SERVER perl silence cant redirect stderr: %m");
     savestderr = 0;
     return;
   }
   close(newfd);
 }
 
-void
-PerlUnSilence() {
+void PerlUnSilence(void) {
   if (savestdout != 0) {
     if (dup2(savestdout,1) < 0) {
-      syslog(L_ERROR,"%s perl silence cant restore stdout: %m",LogName);
+      syslog(L_ERROR,"SERVER perl silence cant restore stdout: %m");
     }
     close(savestdout);
     savestdout = 0;
@@ -301,7 +290,7 @@ PerlUnSilence() {
 
   if (savestderr != 0) {
     if (dup2(savestderr,2) < 0) {
-      syslog(L_ERROR,"%s perl silence cant restore stderr: %m",LogName);
+      syslog(L_ERROR,"SERVER perl silence cant restore stderr: %m");
     }
     close(savestderr);
     savestderr = 0;

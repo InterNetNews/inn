@@ -96,9 +96,17 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 
 static int dbzversion = 6;	/* for validating .dir file format */
 
-#define of_t		long
+#ifdef DO_TAGGED_HASH
+/* assume that for tagged hash, we don't want more than 4byte of_t even if
+ * OFFSET_T is 8bytes -- people who use tagged-hash are usually short on 
+ * RAM.
+ */
+#define of_t long
+#else
+#define of_t		OFFSET_T
+#endif
 #define	SOF		(sizeof(of_t))
-#define	NOTFOUND	((OFFSET_T)-1)
+#define	NOTFOUND	((of_t)-1)
 #ifdef	DO_TAGGED_HASH
 
 #define OVERFLOW
@@ -121,7 +129,7 @@ static int dbzversion = 6;	/* for validating .dir file format */
  * painful file initialization.  Note that okayvalue(), if OVERFLOW is
  * defined, knows what value of an offset would cause overflow.
  */
-#define VACANT		((OFFSET_T)0)
+#define VACANT		((of_t)0)
 #define BIAS(o)		((o)+1)		/* make any valid of_t non-VACANT */
 #define UNBIAS(o)	((o)-1)		/* reverse BIAS() effect */
 
@@ -146,16 +154,10 @@ static int dbzversion = 6;	/* for validating .dir file format */
  * read) are essentially never longer than 64 bytes, and the typical stdio
  * buffer is so much larger that it is much more expensive to fill.
  */
-#ifndef SHISTBUF
-#define SHISTBUF	64
-#endif
-#ifdef	_IOFBF
-static char basebuf[SHISTBUF];          /* only needed if _IOFBF exists */
-#endif
 
-static OFFSET_T tagbits;		/* pre-shifted tag mask */
-static OFFSET_T taghere;		/* pre-shifted tag-enable bit */
-static OFFSET_T tagboth;		/* tagbits|taghere */
+static of_t tagbits;		/* pre-shifted tag mask */
+static of_t taghere;		/* pre-shifted tag-enable bit */
+static of_t tagboth;		/* tagbits|taghere */
 static int canttag_warned;		/* flag to control can't tag warning */
 
 #endif	/* DO_TAGGED_HASH */
@@ -231,7 +233,7 @@ static dbzoptions options = {
  * Data structure for recording info about searches.
  */
 typedef struct {
-    OFFSET_T place;		/* current location in file */
+    of_t place;		/* current location in file */
     int tabno;		        /* which table we're in */
     int run;		        /* how long we'll stay in this table */
 #		ifndef MAXRUN
@@ -241,7 +243,7 @@ typedef struct {
     unsigned long shorthash;    /* integer version of the hash, used for
 				   determining the entries location.
 				   Tagged_hash stores the 31-bit hash here */
-    OFFSET_T tag;		/* tag we are looking for */
+    of_t tag;		/* tag we are looking for */
     int aborted;		/* has i/o error aborted search? */
 } searcher;
 #define	FRESH	((searcher *)NULL)
@@ -301,8 +303,8 @@ static BOOL getconf(FILE *df, dbzconfig *cp);
 static int  putconf(FILE *f, dbzconfig *cp);
 static void start(searcher *sp, const HASH hash, searcher *osp);
 #ifdef	DO_TAGGED_HASH
-static OFFSET_T search(searcher *sp);
-static BOOL set_pag(searcher *sp, OFFSET_T value);
+static of_t search(searcher *sp);
+static BOOL set_pag(searcher *sp, of_t value);
 #else
 static BOOL search(searcher *sp);
 #endif
@@ -514,7 +516,7 @@ static BOOL isprime(long x) {
  * contents - size of table (0 means return the default)
  */
 long dbzsize(const OFFSET_T contents) {
-    OFFSET_T            n;
+    of_t            n;
 
     if (contents <= 0) {	/* foulup or default inquiry */
 	DEBUG(("dbzsize: preposterous input (%ld)\n", contents));
@@ -556,7 +558,7 @@ BOOL dbzagain(const char *name, const char *oldname)
     long top;
     FILE *f;
     int newtable;
-    OFFSET_T newsize;
+    of_t newsize;
 #ifdef	DO_TAGGED_HASH
     long vtop;
     struct stat sb;
@@ -726,10 +728,8 @@ static BOOL openbasefile(const char *name) {
 	basefname = NULL;
     if (basef != NULL)
 	CloseOnExec((int)fileno(basef), 1);
-#ifdef _IOFBF
     if (basef != NULL)
-	(void) setvbuf(basef, basebuf, _IOFBF, sizeof(basebuf));
-#endif
+	(void) setvbuf(basef, NULL, _IOFBF, 64);
     return TRUE;
 }
 #endif	/* DO_TAGGED_HASH */
@@ -793,8 +793,7 @@ int dbzinit(const char *name) {
 	Fclose(dirf);
 	return FALSE;
     }
-    if (!openhashtable(name, idx, &idxtab, (innconf->extendeddbz ?
-		sizeof(idxrecext) : sizeof(idxrec)), options.idx_incore)) {
+    if (!openhashtable(name, idx, &idxtab, sizeof(idxrec), options.idx_incore)) {
 	Fclose(dirf);
 	return FALSE;
     }
@@ -945,11 +944,9 @@ OFFSET_T dbzfetch(const HASH key) {
     int keylen, j, nb2r;
     HASH hishash;
     char *keytext = NULL;
-    OFFSET_T offset = NOTFOUND;
+    of_t offset = NOTFOUND;
 #else
-BOOL dbzfetch(const HASH key, void *ivalue) {
-    idxrec	*ionevalue = (idxrec *)ivalue;
-    idxrecext	*iextvalue = (idxrecext *)ivalue;
+BOOL dbzfetch(const HASH key, idxrec *ivalue) {
 #endif
 
     prevp = FRESH;
@@ -978,7 +975,7 @@ BOOL dbzfetch(const HASH key, void *ivalue) {
 	offset <<= conf.dropbits;
 	if (offset)		/* backspace 1 character to read '\n' */
 	    offset--;
-	if (fseek(basef, offset, SEEK_SET) != 0) {
+	if (fseek(basef, (OFFSET_T) offset, SEEK_SET) != 0) {
 	    DEBUG(("fetch: seek failed\n"));
 	    return NOTFOUND;
 	}
@@ -1038,38 +1035,16 @@ BOOL dbzfetch(const HASH key, void *ivalue) {
     if (search(&srch) == TRUE) {
 	/* Actually get the data now */
 	if ((options.idx_incore != INCORE_NO) && (srch.place < conf.tsize)) {
-	    if (innconf->extendeddbz)
-		memcpy(ivalue, &((idxrecext *)idxtab.core)[srch.place], sizeof(idxrecext));
-	    else
 		memcpy(ivalue, &((idxrec *)idxtab.core)[srch.place], sizeof(idxrec));
 	} else {
-	    if (lseek(idxtab.fd, srch.place * idxtab.reclen, SEEK_SET) < 0) {
-		DEBUG(("fetch: seek failed\n"));
-		idxtab.pos = -1;
-		srch.aborted = 1;
-		return FALSE;
-	    }
-	    if (innconf->extendeddbz) {
-		if (read(idxtab.fd, ivalue, sizeof(idxrecext)) != sizeof(idxrecext)) {
-		    DEBUG(("fetch: read failed\n"));
-		    idxtab.pos = -1;
-		    srch.aborted = 1;
-		    return FALSE;
-		}
-	    } else {
-		if (read(idxtab.fd, ivalue, sizeof(idxrec)) != sizeof(idxrec)) {
+	    if (pread(idxtab.fd, ivalue, sizeof(idxrec), srch.place * idxtab.reclen) != sizeof(idxrec)) {
 		    DEBUG(("fetch: read failed\n"));
 		    idxtab.pos = -1;
 		    srch.aborted = 1;
 		    return FALSE;
 		}
 	    }
-	}
-	if (innconf->extendeddbz) {
-	    iextvalue->offset[HISTOFFSET] = ntohl(iextvalue->offset[HISTOFFSET]);
-	    iextvalue->offset[OVEROFFSET] = ntohl(iextvalue->offset[OVEROFFSET]);
-	} else
-	    ionevalue->offset = ntohl(ionevalue->offset);
+	ivalue->offset = ivalue->offset;
 	DEBUG(("fetch: successful\n"));
 	return TRUE;
     }
@@ -1087,11 +1062,9 @@ BOOL dbzfetch(const HASH key, void *ivalue) {
  */
 #ifdef	DO_TAGGED_HASH
 DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data) {
-    OFFSET_T value;
+    of_t value;
 #else
-DBZSTORE_RESULT dbzstore(const HASH key, void *ivalue) {
-    idxrec	*ionevalue = (idxrec *)ivalue;
-    idxrecext	*iextvalue = (idxrecext *)ivalue;
+DBZSTORE_RESULT dbzstore(const HASH key, idxrec *ivalue) {
     erec     evalue;
 #endif
 
@@ -1145,11 +1118,7 @@ DBZSTORE_RESULT dbzstore(const HASH key, void *ivalue) {
     DEBUG(("store: used count %ld\n", conf.used[0]));
     dirty = TRUE;
 
-    if (innconf->extendeddbz) {
-	iextvalue->offset[HISTOFFSET] = htonl(iextvalue->offset[HISTOFFSET]);
-	iextvalue->offset[OVEROFFSET] = htonl(iextvalue->offset[OVEROFFSET]);
-    } else
-	ionevalue->offset = htonl(ionevalue->offset);
+    ivalue->offset = ivalue->offset;
     memcpy(&evalue.hash, &srch.hash,
 	   sizeof(evalue.hash) < sizeof(srch.hash) ? sizeof(evalue.hash) : sizeof(srch.hash));
 
@@ -1179,7 +1148,7 @@ static BOOL getconf(FILE *df, dbzconfig *cp) {
 	    cp->used[i] = 0;
 	for (i = 0; i < NUSEDS; i++)
 	    cp->vused[i] = 0;
-	cp->valuesize = sizeof(OFFSET_T);
+	cp->valuesize = sizeof(of_t);
 	cp->fillpercent = 50;
 	cp->tagenb = TAGENB;
 	cp->tagmask = TAGMASK;
@@ -1199,7 +1168,7 @@ static BOOL getconf(FILE *df, dbzconfig *cp) {
 	DEBUG(("getconf error"));
 	return FALSE;
     }
-    if (cp->valuesize != sizeof(OFFSET_T)) {
+    if (cp->valuesize != sizeof(of_t)) {
 	DEBUG(("getconf: wrong of_t size (%d)\n", cp->valuesize));
 	return FALSE;
     }
@@ -1351,12 +1320,8 @@ static BOOL putcore(hash_table *tab) {
     
     if (tab->incore == INCORE_MEM) {
 	SetNonBlocking(tab->fd, FALSE);
-	if (lseek(tab->fd, (OFFSET_T)0, SEEK_SET) != 0) {
-	    DEBUG(("fseek failure in putcore\n"));
-	    return FALSE;
-	}
 	size = tab->reclen * conf.tsize;
-	if (write(tab->fd, (POINTER)tab->core, size) != size) {
+	if (pwrite(tab->fd, (POINTER)tab->core, size, 0) != size) {
 	    SetNonBlocking(tab->fd, options.nonblock);
 	    return FALSE;
 	}
@@ -1425,10 +1390,10 @@ static void start(searcher *sp, const HASH hash, searcher *osp) {
 /*
  - search - conduct part of a search
  */
-static OFFSET_T			/* NOTFOUND if we hit VACANT or error */
+static of_t			/* NOTFOUND if we hit VACANT or error */
 search(searcher *sp)
 {
-    OFFSET_T value;
+    of_t value;
     unsigned long taboffset = 0;
 
     if (sp->aborted)
@@ -1447,24 +1412,14 @@ search(searcher *sp)
 	/* get the tagged value */
 	if ((options.pag_incore != INCORE_NO) && (sp->place < conf.tsize)) {
 	    DEBUG(("search: in core\n"));
-	    value = ((OFFSET_T *)pagtab.core)[sp->place];
+	    value = ((of_t *)pagtab.core)[sp->place];
 	} else {
 	    OFFSET_T dest;
-	    /* seek, if necessary */
 	    dest = sp->place * SOF;
-	    if (pagtab.pos != dest) {
-		if (lseek(pagtab.fd, dest, SEEK_SET) == -1) {
-		    DEBUG(("search: seek failed\n"));
-		    pagtab.pos = -1;
-		    sp->aborted = 1;
-		    return(NOTFOUND);
-		}
-		pagtab.pos = dest;
-	    }
 
 	    /* read it */
 	    errno = 0;
-	    if (read(pagtab.fd, (POINTER)&value, sizeof(value)) != sizeof(value)) {
+	    if (pread(pagtab.fd, (POINTER)&value, sizeof(value), dest) != sizeof(value)) {
 		if (errno != 0) {
 		    DEBUG(("search: read failed\n"));
 		    pagtab.pos = -1;
@@ -1529,22 +1484,12 @@ static BOOL search(searcher *sp) {
 	    DEBUG(("search: in core\n"));
 	    memcpy(&value, &((erec *)etab.core)[sp->place], sizeof(erec)); 
 	} else {
-	    OFFSET_T dest = 0;
-	    /* seek, if necessary */
+	    OFFSET_T dest;
 	    dest = sp->place * sizeof(erec);
-	    if (etab.pos != dest) {
-		if (lseek(etab.fd, dest, SEEK_SET) == -1) {
-		    DEBUG(("search: seek failed\n"));
-		    etab.pos = -1;
-		    sp->aborted = 1;
-		    return FALSE;
-		}
-		etab.pos = dest;
-	    }
 
 	    /* read it */
 	    errno = 0;
-	    if (read(etab.fd, (POINTER)&value, sizeof(erec)) != sizeof(erec)) {
+	    if (pread(etab.fd, (POINTER)&value, sizeof(erec), dest) != sizeof(erec)) {
 		if (errno != 0) {
 		    DEBUG(("search: read failed\n"));
 		    etab.pos = -1;
@@ -1580,6 +1525,8 @@ static BOOL search(searcher *sp) {
  * Returns:  TRUE success, FALSE failure
  */
 static BOOL set(searcher *sp, hash_table *tab, void *value) {
+    OFFSET_T            offset;
+    
     if (sp->aborted)
 	return FALSE;
 
@@ -1595,22 +1542,10 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
 
     /* seek to spot */
     tab->pos = -1;		/* invalidate position memory */
-    if (lseek(tab->fd, (OFFSET_T)(sp->place * tab->reclen), SEEK_SET) == -1) {
-	DEBUG(("set: seek failed\n"));
-	sp->aborted = 1;
-	return FALSE;
-    }
+    offset = sp->place * tab->reclen;
 
     /* write in data */
-    while (write(tab->fd, (POINTER)value, tab->reclen) != tab->reclen) {
-	if (errno == EINTR) {
-	    if (lseek(tab->fd, (OFFSET_T)(sp->place * tab->reclen), SEEK_SET) == -1) {
-		DEBUG(("set: seek failed\n"));
-		sp->aborted = 1;
-		return FALSE;
-	    }
-	    continue;
-	}
+    while (pwrite(tab->fd, (POINTER)value, tab->reclen, offset) != tab->reclen) {
 	if (errno == EAGAIN) {
 	    fd_set writeset;
 	    
@@ -1618,11 +1553,6 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
 	    FD_SET(tab->fd, &writeset);
 	    if (select(tab->fd + 1, NULL, &writeset, NULL, NULL) < 1) {
 		DEBUG(("set: select failed\n"));
-		sp->aborted = 1;
-		return FALSE;
-	    }
-	    if (lseek(tab->fd, (OFFSET_T)(sp->place * tab->reclen), SEEK_SET) == -1) {
-		DEBUG(("set: seek failed\n"));
 		sp->aborted = 1;
 		return FALSE;
 	    }
@@ -1643,8 +1573,8 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
  -       on the pag table.
  - Returns: TRUE success, FALSE failure
  */
-static BOOL set_pag(searcher *sp, OFFSET_T value) {
-    OFFSET_T v = value;
+static BOOL set_pag(searcher *sp, of_t value) {
+    of_t v = value;
 
     if (CANTAG(v)) {
 	v |= sp->tag | taghere;
@@ -1747,10 +1677,7 @@ char *argv[];
     dbzoptions opt;
     dbz_incore_val incore = INCORE_MEM;
     struct timeval start, end;
-#ifndef DO_TAGGED_HASH
-    idxrec	ionevalue;
-    idxrecext	iextvalue;
-#endif
+    idxrec	ivalue;
 
     for (i=1; i<argc; i++)
 	if (strcmp(argv[i], "-i") == 0)
@@ -1778,11 +1705,7 @@ char *argv[];
     }
 
     dbzgetoptions(&opt);
-#ifdef	DO_TAGGED_HASH
-    opt.pag_incore = incore;
-#else
     opt.idx_incore = incore;
-#endif
     dbzsetoptions(opt);
 
     if (initialize) {
@@ -1827,25 +1750,10 @@ char *argv[];
 		exit(1);
 	    }
 	} else {
-#ifdef	DO_TAGGED_HASH
-	    val = dbzfetch(key);
-	    if (val == NOTFOUND) {
-		fprintf(stderr, "line %d can't fetch %s\n", line, ibuf);
-		exit(1);
-	    }
-#else
-	    if (innconf->extendeddbz) {
-		if (!dbzfetch(key, &iextvalue)) {
+	    if (!dbzfetch(key, &ivalue)) {
 		    fprintf(stderr, "line %d can't fetch %s\n", line, ibuf);
 		    exit(1);
 		}
-	    } else {
-		if (!dbzfetch(key, &ionevalue)) {
-		    fprintf(stderr, "line %d can't fetch %s\n", line, ibuf);
-		    exit(1);
-		}
-	    }
-#endif
 	}
     }
     gettimeofday(&end, NULL);

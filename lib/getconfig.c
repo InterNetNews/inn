@@ -174,16 +174,13 @@ void SetDefaults()
     innconf->mimecontenttype = NULL;
     innconf->mimeencoding = NULL;
     innconf->hiscachesize = 0;
-    innconf->wireformat = FALSE;
     innconf->xrefslave = FALSE;
     innconf->complaints = NULL;
     innconf->spoolfirst = FALSE;
     innconf->writelinks = TRUE;
     innconf->timer = 0;
     innconf->status = 0;
-    innconf->storageapi = FALSE;
     innconf->articlemmap = FALSE;
-    innconf->overviewmmap = TRUE;
     innconf->mta = NULL;
     innconf->mailcmd = NULL;
     innconf->checkincludedtext = FALSE;
@@ -229,6 +226,8 @@ void SetDefaults()
     innconf->nnrpdposthost = NULL;
     innconf->nnrpdpostport = NNTP_PORT;
     innconf->nnrpperlauth = FALSE;
+    innconf->addnntppostinghost = TRUE;
+    innconf->addnntppostingdate = TRUE;
 
     innconf->pathnews = NULL;
     innconf->pathbin = NULL;
@@ -249,7 +248,6 @@ void SetDefaults()
     innconf->pathuniover = NULL;
 
     innconf->logsitename = TRUE;
-    innconf->extendeddbz = FALSE;
     innconf->nnrpdoverstats = FALSE;
     innconf->storeonxref = TRUE;
     innconf->decnetdomain = NULL;
@@ -261,9 +259,6 @@ void SetDefaults()
     innconf->backoff_trigger = 10000L;
     innconf->refusecybercancels = FALSE;
     innconf->nnrpdcheckart = TRUE;
-    innconf->activedenable = FALSE;
-    innconf->activedupdate = 30L;
-    innconf->activedport = 1119;
     innconf->storemsgid = TRUE;
     innconf->nicenewnews = 0;
     innconf->nicennrpd = 0;
@@ -274,6 +269,8 @@ void SetDefaults()
     innconf->cnfscheckfudgesize = 0L;
     innconf->rlimitnofile = -1;
     innconf->ignorenewsgroups = FALSE;
+    innconf->overcachesize = 15;
+    innconf->enableoverview = TRUE;
 }
 
 void ClearInnConf()
@@ -350,8 +347,6 @@ int CheckInnConf()
     if (innconf->overviewname == NULL) 
 	innconf->overviewname = COPY(".overview");
 
-    if (innconf->storageapi != TRUE)
-	innconf->extendeddbz = FALSE;
 
     if (innconf->pathnews == NULL) {
 	syslog(L_FATAL, "Must set 'pathnews' in inn.conf");
@@ -520,13 +515,6 @@ int ReadInnConf()
 		if (!bit) innconf->hiscachesize = atoi(p);
 		SET_CONFIG(CONF_VAR_HISCACHESIZE);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_WIREFORMAT)) {
-		TEST_CONFIG(CONF_VAR_WIREFORMAT, bit);
-		if (!bit) {
-		if (innconf->storageapi != TRUE && boolval != -1) innconf->wireformat = boolval;
-		}
-		SET_CONFIG(CONF_VAR_WIREFORMAT);
-	    } else
 	    if (EQ (ConfigBuff,_CONF_XREFSLAVE)) {
 		TEST_CONFIG(CONF_VAR_XREFSLAVE, bit);
 		if (!bit && boolval != -1) innconf->xrefslave = boolval;
@@ -557,23 +545,10 @@ int ReadInnConf()
 		if (!bit) innconf->status = atoi(p);
 		SET_CONFIG(CONF_VAR_STATUS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_STORAGEAPI)) {
-		TEST_CONFIG(CONF_VAR_STORAGEAPI, bit);
-		if (!bit) {
-		if (boolval != -1) innconf->storageapi = boolval;
-		if (innconf->storageapi == TRUE) innconf->wireformat = TRUE;
-		}
-		SET_CONFIG(CONF_VAR_STORAGEAPI);
-	    } else
 	    if (EQ(ConfigBuff,_CONF_ARTICLEMMAP)) {
 		TEST_CONFIG(CONF_VAR_ARTICLEMMAP, bit);
 		if (!bit && boolval != -1) innconf->articlemmap = boolval;
 		SET_CONFIG(CONF_VAR_ARTICLEMMAP);
-	    } else
-	    if (EQ(ConfigBuff,_CONF_OVERVIEWMMAP)) {
-		TEST_CONFIG(CONF_VAR_OVERVIEWMMAP, bit);
-		if (!bit && boolval != -1) innconf->overviewmmap = boolval;
-		SET_CONFIG(CONF_VAR_OVERVIEWMMAP);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MTA)) {
 		TEST_CONFIG(CONF_VAR_MTA, bit);
@@ -740,6 +715,16 @@ int ReadInnConf()
 		if (!bit && boolval != -1) innconf->nnrpperlauth = boolval;
 		SET_CONFIG(CONF_VAR_NNRPPERLAUTH);
 	    } else
+	    if (EQ(ConfigBuff,_CONF_ADDNNTPPOSTINGHOST)) {
+		TEST_CONFIG(CONF_VAR_ADDNNTPPOSTINGHOST, bit);
+		if (!bit && boolval != -1) innconf->addnntppostinghost = boolval;
+		SET_CONFIG(CONF_VAR_ADDNNTPPOSTINGHOST);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_ADDNNTPPOSTINGDATE)) {
+		TEST_CONFIG(CONF_VAR_ADDNNTPPOSTINGDATE, bit);
+		if (!bit && boolval != -1) innconf->addnntppostingdate = boolval;
+		SET_CONFIG(CONF_VAR_ADDNNTPPOSTINGDATE);
+	    } else
 	    if (EQ(ConfigBuff,_CONF_STRIPPOSTCC)) {
 		TEST_CONFIG(CONF_VAR_STRIPPOSTCC, bit);
 		if (!bit && boolval != -1) innconf->strippostcc = boolval;
@@ -870,11 +855,6 @@ int ReadInnConf()
 		if (!bit) innconf->nnrpdpostport = atol(p);
 		SET_CONFIG(CONF_VAR_NNRPDPOSTPORT);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_EXTENDEDDBZ)) {
-		TEST_CONFIG(CONF_VAR_EXTENDEDDBZ, bit);
-		if (!bit && boolval != -1) innconf->extendeddbz = boolval;
-		SET_CONFIG(CONF_VAR_EXTENDEDDBZ);
-	    } else
 	    if (EQ(ConfigBuff,_CONF_NNRPDOVERSTATS)) {
 		TEST_CONFIG(CONF_VAR_NNRPDOVERSTATS, bit);
 		if (!bit && boolval != -1) innconf->nnrpdoverstats = boolval;
@@ -930,21 +910,6 @@ int ReadInnConf()
 		if (!bit && boolval != -1) innconf->nnrpdcheckart = boolval;
 		SET_CONFIG(CONF_VAR_NNRPDCHECKART);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_ACTIVEDENABLE)) {
-		TEST_CONFIG(CONF_VAR_ACTIVEDENABLE, bit);
-		if (!bit && boolval != -1) innconf->activedenable = boolval;
-		SET_CONFIG(CONF_VAR_ACTIVEDENABLE);
-	    } else 
-	    if (EQ(ConfigBuff,_CONF_ACTIVEDUPDATE)) {
-		TEST_CONFIG(CONF_VAR_ACTIVEDUPDATE, bit);
-		if (!bit) innconf->activedupdate = atol(p);
-		SET_CONFIG(CONF_VAR_ACTIVEDUPDATE);
-	    } else 
-	    if (EQ(ConfigBuff,_CONF_ACTIVEDPORT)) {
-		TEST_CONFIG(CONF_VAR_ACTIVEDPORT, bit);
-		if (!bit) innconf->activedport = atoi(p);
-		SET_CONFIG(CONF_VAR_ACTIVEDPORT);
-	    } else 
 	    if (EQ(ConfigBuff,_CONF_STOREMSGID)) {
 		TEST_CONFIG(CONF_VAR_STOREMSGID, bit);
 		if (!bit && boolval != -1) innconf->storemsgid = boolval;
@@ -1004,6 +969,16 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_IGNORENEWSGROUPS, bit);
 		if (!bit && boolval != -1) innconf->ignorenewsgroups = boolval;
 		SET_CONFIG(CONF_VAR_IGNORENEWSGROUPS);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_OVERCACHESIZE)) {
+		TEST_CONFIG(CONF_VAR_OVERCACHESIZE, bit);
+		if (!bit) innconf->overcachesize = atoi(p);
+		SET_CONFIG(CONF_VAR_OVERCACHESIZE);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_ENABLEOVERVIEW)) {
+		TEST_CONFIG(CONF_VAR_ENABLEOVERVIEW, bit);
+		if (!bit && boolval != -1 ) innconf->enableoverview = boolval;
+		SET_CONFIG(CONF_VAR_ENABLEOVERVIEW);
 	    }
 	}
 	(void)Fclose(F);
