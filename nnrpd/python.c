@@ -55,8 +55,6 @@ PyObject	*PYAuthObject = NULL;
 PyObject	*PYauthinfo = NULL;
 PyObject	**PYauthitem = NULL;
 
-static PyMethodDef nnrpdPyMethods[];
-
 /* Forward declaration */
 static PyObject *PY_set_auth_hook(PyObject *dummy, PyObject *args);
 void PY_load_python(void);
@@ -89,7 +87,6 @@ char*    dynamic_file;
 */
 int PY_authenticate(char* file, char *clientHost, char *clientIpString, char *serverHost, char *Username, char *Password, char *errorstring, char *newUser) {
     PyObject    *result, *item, *proc;
-    char        *type;
     int         authnum;
     int         code, i;
     char        *temp;
@@ -375,7 +372,7 @@ int PY_dynamic(char *clientHost, char *clientIpString, char *serverHost, char *U
     result = PyObject_CallFunction(proc, "O", PYauthinfo);
 
     /* Check the response */
-    if (result == NULL || result != Py_None && !PyString_Check(result))
+    if (result == NULL || (result != Py_None && !PyString_Check(result)))
     {
         syslog(L_ERROR, "python dyanmic method (%s access) returned wrong result: %s", PostFlag ? "post" : "read", result);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
@@ -428,7 +425,7 @@ PY_close_python(void)
 ** Traversal function for PY_close_python
 */
 void
-file_trav(void *data, void* null)
+file_trav(void *data, void* null UNUSED)
 {
     PyFile *fp = data;
     int j;
@@ -451,8 +448,7 @@ file_trav(void *data, void* null)
 **  editor).
 */
 static PyObject *
-PY_syslog(self, args)
-    PyObject *self, *args;
+PY_syslog(PyObject *self UNUSED, PyObject *args)
 {
     char        *loglevel;
     int         levellen;
@@ -499,8 +495,7 @@ static PyMethodDef nnrpdPyMethods[] = {
 **  Called by the external module so it can register itself with nnrpd.
 */
 static PyObject *
-PY_set_auth_hook(dummy, args)
-    PyObject *dummy, *args;
+PY_set_auth_hook(PyObject *dummy UNUSED, PyObject *args)
 {
     PyObject    *result = NULL;
     PyObject    *temp;
@@ -522,8 +517,6 @@ PY_set_auth_hook(dummy, args)
 ** Load the Python interpreter
 */
 void PY_load_python() {
-    int i, authnum;
- 
     if (!PythonLoaded) {
         /* add path for nnrpd module */    
         setenv("PYTHONPATH", innconf->pathfilter, 1);
@@ -634,7 +627,6 @@ PY_setup(int type, int method, char *file)
 {
     int  i;
     PyFile *fp;
-    char *temp;
     PyObject    *result;
 
     /* check to see if this file is in files */
@@ -670,6 +662,7 @@ PY_setup(int type, int method, char *file)
         }
         return fp->procs[type][method];
     }
+    return NULL;
 }
 
 /*
