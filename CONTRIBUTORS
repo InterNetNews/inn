@@ -181,6 +181,9 @@ Sven Paulus:
         Wrote the support for variables in newsfeeds, contributed various
         other patches and bug fixes.
 
+Krischan Jodies:
+        Wrote the SMB authenticator.
+
 Alex Kiernan:
         Generalized the timer code in innd and innfeed into a generic
         timer library, contributed various other bug fixes.
