@@ -1,48 +1,24 @@
-Path: nntp.stanford.edu!newsfeed.stanford.edu!cyclone.bc.net!torn!news-out.cwix.com!newsfeed.cwix.com!205.252.116.205!howland.erols.net!newscore.univie.ac.at!newsmaster-01.vbs.at!tahina.priv.at!news.khms.westfalen.de!khms.westfalen.de!kaih
-Date: 26 Jun 1999 17:59:00 +0200
-From: kaih=7Jbfpa7mw-B@khms.westfalen.de (Kai Henningsen)
-Newsgroups: news.software.nntp
-Message-ID: <7Jbfpa7mw-B@khms.westfalen.de>
-References: <376c68c0.0@hops.entertain.com>
-	<yln1xraykr.fsf@windlord.stanford.edu>
-Subject: Re: Version of pullnews that support authentication?
-X-Newsreader: CrossPoint v3.11 R/C435
-Organization: Organisation? Me?! Are you kidding?
-Lines: 265
-X-No-Junk-Mail: I do not want to get *any* junk mail.
-Comment: Unsolicited commercial mail will incur an US$100 handling fee per received mail.
-X-Fix-Your-Modem: +++ATS2=255&WO1
-Xref: nntp.stanford.edu news.software.nntp:60597
-
-rra@stanford.edu (Russ Allbery)  wrote on 23.06.99 in <yln1xraykr.fsf@windlord.stanford.edu>:
-
-> Ranseus <jknepley@chisp.net> writes:
->
-> > It seems a limitation in the PERL NNTP library prevents pullnews from
-> > connecting to news sites that require authentication.
->
-> pullnews uses Net::NNTP and Net::NNTP definitely can use authentication.
-> I don't think pullnews has been modified to allow for that, though.  I'm
-> sure patches would be accepted if anyone feels like fiddling with it.
-
-Does it need to be pullnews?
-
-I'm appending a script I wrote (called backupfeed.pl for some reason). Hmm  
-... oh, I hereby put that into the public domain. Use as you see fit. If  
-it breaks, you get to keep all the parts.
-
-Needs the newer Net::NNTP versions for the MODE READER fix.
-
-This thing is both faster and uses far less memory than suck. And it  
-inserts a predictable Path: entry (in case the host you pull from  
-doesn't).
-
-It's in production use as a backup to regular feeds, so it specifically  
-fetches only old articles unless you say -p 1 (default is -p 0.6666...).
-
-Here goes:
-
 #! /usr/bin/perl -w
+#
+# Date: 26 Jun 1999 17:59:00 +0200
+# From: kaih=7Jbfpa7mw-B@khms.westfalen.de (Kai Henningsen)
+# Newsgroups: news.software.nntp
+# Message-ID: <7Jbfpa7mw-B@khms.westfalen.de>
+# Subject: Re: Version of pullnews that support authentication?
+#
+# [...]
+# I'm appending a script I wrote (called backupfeed.pl for some reason). Hmm  
+# ... oh, I hereby put that into the public domain. Use as you see fit. If  
+# it breaks, you get to keep all the parts.
+# 
+# Needs the newer Net::NNTP versions for the MODE READER fix.
+# 
+# This thing is both faster and uses far less memory than suck. And it  
+# inserts a predictable Path: entry (in case the host you pull from  
+# doesn't).
+# 
+# It's in production use as a backup to regular feeds, so it specifically  
+# fetches only old articles unless you say -p 1 (default is -p 0.6666...).
 
 use strict;
 use Net::NNTP;
@@ -271,12 +247,3 @@ sub end0
 	unlink $lockf;
 	exit 0;
 }
-
-
-
-Kai
---
-http://www.westfalen.de/private/khms/
-"... by God I *KNOW* what this network is for, and you can't have it."
-  - Russ Allbery (rra@stanford.edu)
-
