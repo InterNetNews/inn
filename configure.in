@@ -355,9 +355,12 @@ else
     else
 	SSL_BIN="${OPENSSL_DIR}/bin"
 	SSL_INC="-I${OPENSSL_DIR}/include"
-	SSL_LIB="-L${OPENSSL_DIR}/lib -lssl -lcrypto"
 	AC_DEFINE(HAVE_SSL, 1, [Define if OpenSSL is available.])
         AC_MSG_RESULT($OPENSSL_DIR)
+	LIB_RSAREF=""
+	AC_CHECK_LIB(rsaref, RSA_PKCS1_RSAref,
+	LIB_RSAREF="-lRSAglue -lrsaref",)
+	SSL_LIB="-L${OPENSSL_DIR}/lib -lssl -lcrypto ${LIB_RSAREF}"
     fi
 fi
 AC_SUBST(SSL_BIN)
