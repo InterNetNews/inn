@@ -1175,22 +1175,20 @@ NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal)
 
     NCclearwip(cp);
 #if defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) 
-#if defined (DO_SET_SOCKOPT)
-    i = 24 * 1024;
-    if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&i, sizeof i) < 0)
-	syslog(L_ERROR, "%s cant setsockopt(SNDBUF) %m", CHANname(cp));
-    if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&i, sizeof i) < 0)
-	syslog(L_ERROR, "%s cant setsockopt(RCVBUF) %m", CHANname(cp));
-#endif
+    if (!IsLocal) {
+	i = 24 * 1024;
+	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&i, sizeof i) < 0)
+	    syslog(L_ERROR, "%s cant setsockopt(SNDBUF) %m", CHANname(cp));
+	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&i, sizeof i) < 0)
+	    syslog(L_ERROR, "%s cant setsockopt(RCVBUF) %m", CHANname(cp));
+    }
 #endif	/* defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) */
 
 #if	defined(SOL_SOCKET) && defined(SO_KEEPALIVE)
-#if defined (DO_SET_SOCKOPT)
     /* Set KEEPALIVE to catch broken socket connections. */
     i = 1;
     if (setsockopt(fd, SOL_SOCKET,  SO_KEEPALIVE, (char *)&i, sizeof i) < 0)
         syslog(L_ERROR, "%s cant setsockopt(KEEPALIVE) %m", CHANname(cp));
-#endif
 #endif /* defined(SOL_SOCKET) && defined(SO_KEEPALIVE) */
 
     /* Now check our operating mode. */
