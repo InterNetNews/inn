@@ -3,7 +3,7 @@ include ../Makefile.global
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
-CFLAGS += $(PERLINC)
+CFLAGS = $(GCFLAGS) $(PERLINC)
 
 
 ##  For OSx systems, get these from the ATT Universe libc.
