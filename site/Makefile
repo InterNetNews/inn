@@ -90,7 +90,7 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	sendbatch inncheck innstat pgpverify innwatch innreport.pl innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	actsync.cfg actsync.ign scanspool
+	actsync.cfg actsync.ign scanspool innmail
 
 MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
@@ -98,7 +98,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL) \
 	$D$(NEWSBIN)/writelog $D$(CTLBIN)/docheckgroups \
 	$D$(NEWSBIN)/news.daily $D$(NEWSBIN)/scanlogs \
-	$D$(NEWSBIN)/expirerm $D$(NEWSBIN)/tally.control \
+	$D$(NEWSBIN)/expirerm $D$(NEWSBIN)/tally.control $D$(NEWSBIN)/innmail \
 	$D$(NEWSBIN)/nntpsend $D$(NEWSLIB)/send-ihave $D$(NEWSLIB)/send-nntp \
 	$D$(NEWSLIB)/send-uucp $D$(NEWSBIN)/sendbatch $D$(NEWSBIN)/inncheck \
 	$D$(NEWSBIN)/innstat $D$(NEWSBIN)/pgpverify $D$(NEWSBIN)/innwatch \
@@ -210,6 +210,7 @@ $D$(CTLBIN)/docheckgroups: docheckgroups ; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/news.daily: news.daily	; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/scanlogs:	scanlogs	; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/expirerm:	expirerm	; $(COPY_XPRI) $? $@
+$D$(NEWSBIN)/innmail:	innmail		; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/tally.control: tally.control ; $(COPY_XPRI) $? $@
 $D$(PATH_EXPIRECTL):	expire.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_CONFIG):	inn.conf	; $(COPY_RPUB) $? $@
@@ -270,6 +271,7 @@ filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
 filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@
 expirerm:	../samples/expirerm		; $(COPY) $? $@
+innmail:	../samples/innmail		; $(COPY) $? $@
 incoming.conf:	../samples/incoming.conf		; $(COPY) $? $@
 ihave:		../samples/ihave		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
