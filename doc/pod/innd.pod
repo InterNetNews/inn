@@ -385,7 +385,8 @@ one of the following formats:
     mon dd hh:mm:ss.mmm ? feed <message-id> reason
 
 There may also be hostname and/or size fields after the message ID
-depending on the settings of I<nntplinklog> and I<logsize> in F<inn.conf>.
+depending on the settings of I<nntplinklog> and I<logartsize> in
+F<inn.conf>.
 
 The first three fields are the date and time to millisecond resolution.
 The fifth field is the site that sent the article (based on the Path
