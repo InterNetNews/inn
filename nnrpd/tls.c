@@ -17,20 +17,15 @@
 
 */
 
-#include <sys/types.h>
 #include "config.h"
-#include "nnrpd.h"
-
-#ifdef HAVE_SSL
-
-/* System library. */
-
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
+#include "clibrary.h"
 #include <syslog.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+
+#include "nnrpd.h"
+
+#ifdef HAVE_SSL
 
 /* taken from lib/parsedate.c */
 #ifndef WRITEV_USE_ALLOCA
@@ -351,27 +346,28 @@ static int tls_dump(const char *s, int len)
 	buf[0] = '\0';				/* start with empty string */
 	ss = buf;
 
-	sprintf(ss, "%04x ", i * DUMP_WIDTH);
+	snprintf(ss, sizeof(buf), "%04x ", i * DUMP_WIDTH);
 	ss += strlen(ss);
 	for (j = 0; j < DUMP_WIDTH; j++) {
 	    if (((i * DUMP_WIDTH) + j) >= len) {
-		strcpy(ss, "   ");
+		strlcpy(ss, "   ", sizeof(buf) - (ss - buf));
 	    } else {
 		ch = ((unsigned char) *((const char *)(s) + i * DUMP_WIDTH + j))
 		    & 0xff;
-		sprintf(ss, "%02x%c", ch, j == 7 ? '|' : ' ');
+		snprintf(ss, sizeof(buf) - (ss - buf), "%02x%c", ch,
+                         j == 7 ? '|' : ' ');
 		ss += 3;
 	    }
 	}
 	ss += strlen(ss);
-	*ss+= ' ';
+	*ss += ' ';
 	for (j = 0; j < DUMP_WIDTH; j++) {
 	    if (((i * DUMP_WIDTH) + j) >= len)
 		break;
 	    ch = ((unsigned char) *((const char *)(s) + i * DUMP_WIDTH + j))
 		& 0xff;
-	    *ss+= (((ch >= ' ') && (ch <= '~')) ? ch : '.');
-	    if (j == 7) *ss+= ' ';
+	    *ss += (((ch >= ' ') && (ch <= '~')) ? ch : '.');
+	    if (j == 7) *ss += ' ';
 	}
 	*ss = 0;
 	/* 
