@@ -231,6 +231,7 @@ include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
 include/configdata.h                  Obsolete header
 include/dbz.h                         Header file for DBZ
+include/inn                           Installed header files (Directory)
 include/innconf.h                     Header file for inn.conf
 include/inndcomm.h                    innd control channel commands
 include/libinn.h                      INN library declarations
@@ -364,6 +365,7 @@ lib/strerror.c                        String representation of errno
 lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
 lib/tempname.c                        Temporary filename generator
+lib/version.c                         INN version constants
 lib/waitnb.c                          Non-blocking wait wrapper
 lib/wildmat.c                         Pattern match routine
 lib/writev.c                          Fake writev for sites without it
@@ -529,8 +531,10 @@ storage/trash/trash.h                 Header file for trash storage
 support                               Tools for building INN (Directory)
 support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
+support/fixlog                        Clean up CVS log messages for cvs2cl
 support/fixscript.in                  Interpreter path fixup script
 support/install-sh                    Installation utility
 support/ltconfig                      Configure libtool
 support/ltmain.sh                     Source for libtool utility
 support/makedepend                    Generate dependencies for C files
+support/mkchangelog                   Generate ChangeLog from CVS
