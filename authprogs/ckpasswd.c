@@ -46,7 +46,7 @@
 #endif
 
 #if HAVE_PAM
-# if HAVE_PAM_PAM_APPL
+# if HAVE_PAM_PAM_APPL_H
 #  include <pam/pam_appl.h>
 # else
 #  include <security/pam_appl.h>
