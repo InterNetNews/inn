@@ -986,6 +986,8 @@ AC_OUTPUT(
 	backends/actmerge.sh
 	backends/actsyncd.sh
 	backends/sendxbatches.sh
+	frontends/c7unbatch.sh
+	frontends/gunbatch.sh
 	include/clibrary.h
 	include/config.h
 	include/paths.h 

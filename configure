@@ -6047,6 +6047,8 @@ trap 'rm -fr `echo "Makefile.global
 	backends/actmerge.sh
 	backends/actsyncd.sh
 	backends/sendxbatches.sh
+	frontends/c7unbatch.sh
+	frontends/gunbatch.sh
 	include/clibrary.h
 	include/config.h
 	include/paths.h 
@@ -6254,6 +6256,8 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	backends/actmerge.sh
 	backends/actsyncd.sh
 	backends/sendxbatches.sh
+	frontends/c7unbatch.sh
+	frontends/gunbatch.sh
 	include/clibrary.h
 	include/config.h
 	include/paths.h 
