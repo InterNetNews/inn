@@ -20,8 +20,6 @@
 #define _PATH_NNRPD		"/usr/news/bin/nnrpd"
     /* =()<#define _PATH_NNTPD          "@<_PATH_NNTPD>@">()= */
 #define _PATH_NNTPD          "/usr/news/bin/nnrpd"
-    /* =()<#define _PATH_NNQRD		"@<_PATH_NNQRD>@">()= */
-#define _PATH_NNQRD		"/usr/news/bin/nnrpd"
     /* =()<#define _PATH_COMPRESS	"@<_PATH_COMPRESS>@">()= */
 #define _PATH_COMPRESS	"/usr/bin/compress"
     /* =()<#define _PATH_RNEWS	"@<_PATH_RNEWS>@">()= */

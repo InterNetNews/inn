@@ -615,8 +615,6 @@ NCmode(cp)
 
     if (caseEQ(p, "reader"))
 	h = HOnnrpd;
-    else if (caseEQ(p, "query"))
-	h = HOnnrqd;
     else if (caseEQ(p, "stream") &&
              (!StreamingOff || (StreamingOff && cp->Streaming))) {
 	char buff[16];

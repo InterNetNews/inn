@@ -85,7 +85,6 @@ typedef struct _BUFFER {
 */
 typedef enum _HANDOFF {
     HOnnrpd,
-    HOnnrqd,
     HOnntpd
 } HANDOFF;
 

@@ -583,9 +583,6 @@ _PATH_NNRPD		/usr/news/bin/nnrpd
 ##  nntpd from the reference implementation.
 #### =()<_PATH_NNTPD		@<_PATH_NNTPD>@>()=
 _PATH_NNTPD		/usr/news/bin/nnrpd
-##  Where the NNQR server lives.  Make same as _PATH_NNRPD for now
-#### =()<_PATH_NNQRD		@<_PATH_NNRPD>@>()=
-_PATH_NNQRD		/usr/news/bin/nnrpd
 ##  Where most other programs live.
 ##  See also _PATH_RNEWSPROGS and _PATH_CONTROLPROGS, below.
 #### =()<_PATH_NEWSBIN		@<_PATH_NEWSBIN>@>()=

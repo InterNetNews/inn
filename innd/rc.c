@@ -46,7 +46,6 @@ STATIC INADDR		*RCmaster;
 STATIC int		RCnmaster;
 STATIC char		*RCslaveflag;
 STATIC char		RCnnrpd[] = _PATH_NNRPD;
-STATIC char		RCnnrqd[] = _PATH_NNQRD;
 STATIC char		RCnntpd[] = _PATH_NNTPD;
 STATIC CHANNEL		*RCchan;
 STATIC REMOTEHOST	*RCpeerlist;
@@ -186,7 +185,6 @@ RChandoff(fd, h)
 	syslog(L_ERROR, "%s internal RChandoff %d type %d", LogName, fd, h);
 	/* FALLTHROUGH */
     case HOnnrpd:	argv[0] = RCnnrpd;	break;
-    case HOnnrqd:	argv[0] = RCnnrqd;	break;
     case HOnntpd:	argv[0] = RCnntpd;	break;
     }
     argv[1] = "-s                                                ";
