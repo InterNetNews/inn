@@ -691,7 +691,15 @@ ValidNewsgroups(char *hdr, char **modgroup)
     if ((p = strtok(groups, NGSEPS)) == NULL)
 	return "Can't parse newsgroups line";
 
+    /* Reject all articles with Approved headers unless the user is allowed to
+       add them, even to unmoderated or local groups.  We want to reject them
+       to unmoderated groups in case there's a disagreement of opinion
+       between various sites as to the moderation status. */
     approved = HDR(HDR__APPROVED) != NULL;
+    if (approved && !PERMaccessconf->allowapproved) {
+        snprintf(Error, sizeof(Error),
+                 "You are not allowed to approve postings");
+    }
 
     Error[0] = '\0';
     FoundOne = false;
@@ -732,12 +740,8 @@ ValidNewsgroups(char *hdr, char **modgroup)
 #endif /* DO_PYTHON */
 	    break;
 	case NF_FLAG_MODERATED:
-	    if (approved && !PERMaccessconf->allowapproved) {
-		snprintf(Error, sizeof(Error),
-                         "You are not allowed to approve postings");
-	    } else if (!approved && modgroup != NULL && !*modgroup) {
+	    if (!approved && modgroup != NULL && !*modgroup)
 		*modgroup = xstrdup(p);
-	    }
 	    break;
 	case NF_FLAG_IGNORE:
 	case NF_FLAG_NOLOCAL:
@@ -761,7 +765,11 @@ ValidNewsgroups(char *hdr, char **modgroup)
                  MaxLength(hdr,hdr));
     if (Error[0]) {
         tmpPtr = DDend(h);
-	free(tmpPtr) ;
+	free(tmpPtr);
+        if (modgroup != NULL && *modgroup != NULL) {
+            free(*modgroup);
+            *modgroup = NULL;
+        }
 	return Error;
     }
 
