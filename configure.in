@@ -15,25 +15,41 @@ test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
 dnl Parse the arguments
 
 AC_ARG_WITH(tcl,
-	[  --with-tcl              TCL script support], 
-	DO_TCL=DO
-	TCL_LIB="-ltcl -lm"
-	TCL_INC="-I/usr/local/include", DO_TCL=DONT
-	TCL_LIB=""
-	TCL_INC="")
+	[  --with-tcl              TCL script support [default=no]], 
+	[case "${withval}" in
+	  yes) DO_TCL=DO ;;
+	  no)  DO_TCL=DONT ;;
+	  *)   AC_MSG_ERROR(invalid argument to --with-tcl or --without-tcl) ;;
+	esac],
+	DO_TCL=DONT)
+if test $DO_TCL = DO ; then
+  TCL_LIB="-ltcl -lm"
+  TCL_INC="-I/usr/local/include"
+else
+  TCL_LIB=""
+  TCL_INC=""
+fi
 AC_SUBST(DO_TCL)
 AC_SUBST(TCL_LIB)
 AC_SUBST(TCL_INC)
 
 AC_ARG_WITH(perl,
-	[  --with-perl             Perl script support], 
-	DO_PERL=DO, 
+	[  --with-perl             Perl script support [default=no]], 
+	[case "${withval}" in
+	  yes) DO_PERL=DO ;;
+	  no)  DO_PERL=DONT ;;
+	  *)   AC_MSG_ERROR(invalid argument to --with-perl or --without-perl) ;;
+	esac],
 	DO_PERL=DONT)
 AC_SUBST(DO_PERL)
 
 AC_ARG_WITH(largefiles,
-	[  --with-largefiles       Support for files greater than 2gb], 
-	DO_LFS=DO, 
+	[  --with-largefiles       Support for files greater than 2gb [default=no]], 
+	[case "${withval}" in
+	  yes) DO_LFS=DO ;;
+	  no)  DO_LFS=DONT ;;
+	  *)   AC_MSG_ERROR(invalid argument to --with-largefiles or --without-largefiles) ;;
+	esac],
 	DO_LFS=DONT)
 AC_SUBST(DO_LFS)
 
