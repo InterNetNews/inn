@@ -490,17 +490,14 @@ samples/active.minimal                Minimal starting active file
 samples/actsync.cfg                   Config file for actsync
 samples/actsync.ign                   Ignore file for actsync
 samples/buffindexed.conf              Buffindexed overview config file
-samples/checkgroups.in                checkgroups handler
 samples/control.ctl                   Access control for control messages
 samples/cycbuff.conf                  Sample cycbuff.conf file
-samples/default.in                    Default control message handler
 samples/distrib.pats                  Default values for Distribution header
 samples/expire.ctl                    Expiration config file
 samples/filter.tcl                    Sample Tcl filter for innd
 samples/filter_innd.pl                Sample Perl filter for innd
 samples/filter_innd.py                Sample Python filter for innd
 samples/filter_nnrpd.pl               Sample Perl filter for nnrpd
-samples/ihave.in                      ihave handler
 samples/incoming.conf                 Permissions for incoming feeds
 samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
@@ -508,7 +505,6 @@ samples/innreport.conf.in             Log summary configuration
 samples/innwatch.ctl.in               INN monitoring configuration
 samples/moderators                    Moderation submission addresses
 samples/motd.news                     Sample MOTD file
-samples/newgroup.in                   newgroup handler
 samples/newsgroups.minimal            Minimal starting newsgroups file
 samples/news2mail.cf                  news2mail config file
 samples/newsfeeds.in                  innd feed configuration
@@ -520,20 +516,14 @@ samples/nnrpd_auth.py.in              Sample nnrpd Python authorization hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
 samples/ovdb.conf                     Berkeley DB overview configuration
 samples/overview.fmt                  Format of news overview database
-samples/parsecontrol.in               Initial parsing of control messages
 samples/passwd.nntp                   Passwords for remote connections
 samples/radius.conf                   Sample config for RADIUS authentication
 samples/readers.conf                  Reader connection configuration
-samples/rmgroup.in                    rmgroup handler
 samples/sasl.conf.in                  SASL configuration
-samples/sendme.in                     sendme handler
-samples/sendsys.in                    sendsys handler
-samples/senduuname.in                 senduuname handler
 samples/startup.tcl.in                Tcl startup code for innd
 samples/startup_innd.pl               Perl startup code for innd
 samples/storage.conf                  Sample storage configuration
 samples/subscriptions                 Sample default subscriptions list
-samples/version.in                    version handler
 scripts                               Various utilities (Directory)
 scripts/Makefile                      Makefile for script files
 scripts/inncheck.in                   Syntax-check INN config files
