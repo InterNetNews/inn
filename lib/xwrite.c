@@ -50,7 +50,7 @@ xwrite(int fd, const void *buffer, size_t size)
             status = 0;
         }
     }
-    return (total < size) ? -1 : total;
+    return (total < size) ? -1 : (ssize_t) total;
 }
 
 ssize_t
