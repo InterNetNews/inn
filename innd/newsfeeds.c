@@ -388,6 +388,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		case FEED_SITE:			/* Site that gave it	*/
 		case FEED_TIMERECEIVED:		/* When received	*/
 		case FEED_TIMEPOSTED:		/* When posted		*/
+		case FEED_TIMEEXPIRED:		/* When will be expired	*/
 		    break;
 		}
 		sp->FileFlags[i++] = *p;

@@ -408,6 +408,12 @@ STATIC void SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    sprintf(pbuff, "%ld", Data->Posted);
 	    BUFFappend(bp, pbuff, strlen(pbuff));
 	    break;
+	case FEED_TIMEEXPIRED:
+	    if (Dirty)
+		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    sprintf(pbuff, "%ld", Data->Expires);
+	    BUFFappend(bp, pbuff, strlen(pbuff));
+	    break;
 	case FEED_MESSAGEID:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));

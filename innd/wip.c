@@ -15,12 +15,8 @@
 #include "dbz.h"
 
 #define WIPTABLESIZE        1024
-#define WIP_CHECK             5
-#define WIP_EXPIRE            10
 
 STATIC WIP     *WIPtable[WIPTABLESIZE];      /* Top level of the WIP hash table */
-int            WIPcheck = WIP_CHECK;         /* Amount of time to lock a message id */
-int            WIPexpire = WIP_EXPIRE;       /* Amount of time to expire a message id */
 
 void WIPsetup(void) {
     memset(WIPtable, '\0', sizeof(WIPtable));
@@ -104,9 +100,9 @@ BOOL WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Precommit) {
     int i;
     
     if ((wp = WIPbyid(msgid)) != NULL) {
-	if ((Now.time - wp->Timestamp) < WIPcheck)
+	if ((Now.time - wp->Timestamp) < innconf->wipcheck)
 	    return TRUE;
-	if ((Now.time - wp->Timestamp) > WIPexpire) {
+	if ((Now.time - wp->Timestamp) > innconf->wipexpire) {
 	    for (i = 0 ; i < PRECOMMITCACHESIZE ; i++) {
 		if (wp->Chan->PrecommitWIP[i] == wp) {
 		    wp->Chan->PrecommitWIP[i] = (WIP *)NULL;

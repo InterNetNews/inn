@@ -2474,7 +2474,7 @@ STRING ARTpost(CHANNEL *cp)
     MadeOverview = TRUE;
     if (innconf->enableoverview && !innconf->useoverchan) {
 	TMRstart(TMR_OVERV);
-	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left, Data.Arrived)) {
+	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left, Data.Arrived, Data.Expires)) {
 	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE)
 		IOError("creating overview", ENOSPC);
 	    else
@@ -2522,7 +2522,7 @@ STRING ARTpost(CHANNEL *cp)
     } else {
 	Data.StoredGroupLength = p - Data.StoredGroup;
     }
-    
+
     /* Start logging, then propagate the article. */
     if (CRwithoutLF > 0 || LFwithoutCR > 0) {
 	if (CRwithoutLF > 0 && LFwithoutCR == 0)
