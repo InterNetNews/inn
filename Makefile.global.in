@@ -127,9 +127,6 @@ SHADOWLIB       = @SHADOW_LIB@
 PERLLIB         = $(builddir)/lib/perl$(LIBSUFFIX).o @PERL_LIB@
 PERLINC         = @PERL_INC@
 
-TCLLIB          = @TCL_LIB@
-TCLINC          = @TCL_INC@
-
 PYTHONLIB       = @PYTHON_LIB@
 PYTHONINC       = @PYTHON_INC@
 
