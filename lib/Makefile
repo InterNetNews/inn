@@ -19,7 +19,7 @@ MISSING_OBJ =
 
 SOURCES = $(MISSING_SRC) \
 	checkart.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
-	dbz.c defdist.c findheader.c genid.c getconfig.c getdtab.c \
+	conffile.c dbz.c defdist.c findheader.c genid.c getconfig.c getdtab.c \
 	getfqdn.c getmodaddr.c gettime.c hash.c inndcomm.c innvers.c localopen.c \
 	lockfile.c makedir.c md5.c nonblocking.c over.c parsedate.c perl.c radix32.c\
 	readin.c remopen.c reservedfd.c resource.c sendarticle.c sendpass.c tempname.c \
@@ -27,7 +27,7 @@ SOURCES = $(MISSING_SRC) \
 	xwritev.c
 OBJECTS = $(MISSING_OBJ) \
 	checkart.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
-	dbz.o defdist.o findheader.o genid.o getconfig.o getdtab.o \
+	conffile.o dbz.o defdist.o findheader.o genid.o getconfig.o getdtab.o \
 	getfqdn.o getmodaddr.o gettime.o hash.o inndcomm.o innvers.o localopen.o \
 	lockfile.o makedir.o md5.o over.o nonblocking.o parsedate.o radix32.o\
 	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o tempname.o \
@@ -118,6 +118,7 @@ clientlib.o:	../include/myserver.h
 clientlib.o:	../include/nntp.h
 clientlib.o:	../include/macros.h
 clientlib.o:	../include/paths.h
+conffile.o:	../include/configdata.h ../include/macros.h
 dbz.o:		../include/dbz.h
 defdist.o:	../include/paths.h
 defdist.o:	../include/macros.h

@@ -265,6 +265,8 @@ void SetDefaults()
     innconf->activedport = 1119;
     innconf->storemsgid = TRUE;
     innconf->nicenewnews = 0;
+    innconf->usecontrolchan = FALSE;
+    innconf->mergetogroups = FALSE;
 }
 
 void ClearInnConf()
@@ -933,6 +935,16 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NICENEWNEWS, bit);
 		if (!bit) innconf->nicenewnews = atoi(p);
 		SET_CONFIG(CONF_VAR_NICENEWNEWS);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_USECONTROLCHAN)) {
+		TEST_CONFIG(CONF_USECONTROLCHAN, bit);
+		if (!bit && boolval != -1) innconf->usecontrolchan = boolval;
+		SET_CONFIG(CONF_USECONTROLCHAN);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_MERGETOGROUPS)) {
+		TEST_CONFIG(CONF_MERGETOGROUPS, bit);
+		if (!bit && boolval != -1) innconf->mergetogroups = boolval;
+		SET_CONFIG(CONF_MERGETOGROUPS);
 	    }
 	}
 	(void)Fclose(F);
