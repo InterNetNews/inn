@@ -2,8 +2,8 @@
 #
 # history database sanity checker
 # David Barr <barr@math.psu.edu>
-# version 1.3
-# for new history format
+# version 1.4
+# w/mods from: hucka@eecs.umich.edu
 # Katsuhiro Kondou <kondou@nec.co.jp>
 # version 1.1
 # Throw away history entries with:
@@ -27,7 +27,7 @@
 # any malformed entries will be output to stderr.
 
 
-$MAXKEYLEN=255;
+$MAXKEYLEN=254;
 $count=0;
 
 while (<>) {
@@ -55,6 +55,11 @@ while (<>) {
 			&tossit();		# malformed msg-ids
 			next;
 		}
+	} else {
+		if ($arts ne "" && ($arts !~ /[^\/]*\/.*/)) {
+			&tossit();		# malformed articles list
+			next;
+		}
 	}
 	if (/[\000-\010\012-\037\177-\237]/) { # non-control chars except tab
 		&tossit();		# illegal chars
@@ -62,7 +67,7 @@ while (<>) {
 	}
 	if ($dates) {
 		if ($dates =~ /[^\d~\-]/) {	# rudimentary check
-			&tossit();
+			&tossit();		# full check would be too slow
 			next;
 		}
 	}
