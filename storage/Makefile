@@ -44,7 +44,7 @@ OBJECTS = interface.o methods.o qio.o
 
 methods: 
 	if [ ! -d objs ] ; then \
-		mkdir -p objs \
+		mkdir objs \
 	fi ;
 	@for D in $(SUBDIR); do \
 	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
