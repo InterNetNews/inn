@@ -41,6 +41,15 @@ for SITE in ${LIST}; do
 	HOST=$SITE
 	;;
     esac
+    case $HOST in
+    *@*)
+        PORT=`expr $HOST : '\(.*\)@.*'` 
+        HOST=`expr $HOST : '.*@\(.*\)'`
+        ;;
+    *)  
+        PORT=119
+        ;;
+    esac
     BATCHFILE=${SITE}.nntp
     LOCK=${LOCKS}/LOCK.${SITE}
     trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
@@ -71,7 +80,7 @@ for SITE in ${LIST}; do
     fi
 
     echo "${PROGNAME}: [$$] begin ${SITE}"
-    time innxmit ${DEBUG} ${HOST} ${BATCH}/${BATCHFILE}
+    time innxmit ${DEBUG} -P ${PORT} ${HOST} ${BATCH}/${BATCHFILE}
     echo "${PROGNAME}: [$$] end ${SITE}"
     rm -f ${LOCK}
 done
