@@ -1752,15 +1752,15 @@ CCreader(CHANNEL *cp)
 
     memcpy (&protocol,buff,sizeof (protocol)) ;
     memcpy (&bufflen,buff + sizeof (protocol),sizeof (bufflen)) ;
-    bufflen = ntohs (bufflen) ;
+    bufflen = ntohs (bufflen);
     
     if (i != bufflen) {
 	syslog(L_ERROR, "%s cant recv CCreader short-read %m", LogName);
 	return;
     }
 
-    i -= HEADER_SIZE ;
-    memmove (buff,buff + HEADER_SIZE,i) ;
+    bufflen -= HEADER_SIZE;
+    memmove(buff, buff + HEADER_SIZE, bufflen);
     buff[i] = '\0';
 
     if (protocol != ICC_PROTOCOL_1) {
