@@ -8,26 +8,26 @@ METHOD_OBJECTS = buffindexed/buffindexed.o cnfs/cnfs.o ov3/ov3.o ovdb/ovdb.o tim
 # methods are built via recursive make rather than using the implicit
 # make rules for building .c files from .o files.
 buffindexed/buffindexed.o:
-	cd buffindexed && make objects
+	cd buffindexed && $(MAKE) objects
 
 cnfs/cnfs.o:
-	cd cnfs && make objects
+	cd cnfs && $(MAKE) objects
 
 ov3/ov3.o:
-	cd ov3 && make objects
+	cd ov3 && $(MAKE) objects
 
 ovdb/ovdb.o:
-	cd ovdb && make objects
+	cd ovdb && $(MAKE) objects
 
 timecaf/caf.o timecaf/timecaf.o:
-	cd timecaf && make objects
+	cd timecaf && $(MAKE) objects
 
 timehash/timehash.o:
-	cd timehash && make objects
+	cd timehash && $(MAKE) objects
 
 tradspool/tradspool.o:
-	cd tradspool && make objects
+	cd tradspool && $(MAKE) objects
 
 trash/trash.o:
-	cd trash && make objects
+	cd trash && $(MAKE) objects
 

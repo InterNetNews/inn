@@ -205,7 +205,7 @@ EOE
         push (@{ $methods{$dir} }, $_);
     }
     for (sort keys %methods) {
-        print MAKE "@{ $methods{$_} }:\n\tcd $_ && make objects\n\n";
+        print MAKE "@{ $methods{$_} }:\n\tcd $_ && \$(MAKE) objects\n\n";
     }
     close MAKE;
     rename ('Make.methods.new', 'Make.methods');
