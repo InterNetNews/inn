@@ -587,13 +587,16 @@ static int display_btree(DB *db)
 {
     DB_BTREE_STAT *sp;
 
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR >= 3 && DB_VERSION_MINOR >= 3)
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
+    if(db->stat(db, NULL, &sp, 0))
+#else
+#if DB_VERSION_MAJOR == 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 3)
     if(db->stat(db, &sp, 0))
-	return 1;
 #else
     if(db->stat(db, &sp, NULL, 0))
-	return 1;
 #endif
+#endif
+	return 1;
 
     display_heading("Btree Statistics");
     display_data(sp, BTREE_tab);
@@ -647,13 +650,16 @@ static int display_hash(DB *db UNUSED)
 #else
     DB_HASH_STAT *sp;
 
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
+    if(db->stat(db, NULL, &sp, 0))
+#else
 #if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
     if(db->stat(db, &sp, NULL, 0))
-	return 1;
 #else
     if(db->stat(db, &sp, 0))
-	return 1;
 #endif
+#endif
+	return 1;
 
     display_heading("Hash Information");
     display_data(sp, HASH_tab);

@@ -557,7 +557,11 @@ void read_ovdb_conf(void)
 
 
 /* Function that db will use to report errors */
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
+static void OVDBerror(const DB_ENV *dbenv UNUSED, const char *db_errpfx UNUSED, const char *buffer)
+#else
 static void OVDBerror(const char *db_errpfx UNUSED, char *buffer)
+#endif
 {
     switch(ovdb_errmode) {
     case OVDB_ERR_SYSLOG:
