@@ -44,9 +44,9 @@ static void strAppend (int ch)
   if (strIdx == strPtrLen)
     {
       if (strPtr == 0)
-        strPtr = malloc (strPtrLen = 50) ;
+        strPtr = xmalloc (strPtrLen = 50) ;
       else
-        strPtr = realloc (strPtr,strPtrLen += 10) ;
+        strPtr = xrealloc (strPtr,strPtrLen += 10) ;
     }
   strPtr [strIdx++] = ch ;
 }
