@@ -1147,7 +1147,7 @@ main(ac, av)
     SIGHANDLER		(*old)();
     unsigned int	ConnectTimeout;
     unsigned int	TotalTimeout;
-    int                 port;
+    int                 port = NNTP_PORT;
 
     /* Set defaults. */
     ConnectTimeout = 0;
