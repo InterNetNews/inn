@@ -229,7 +229,7 @@ char *HISfilesfor(const HASH MessageID)
 }
 
 STATIC void HISlogstats() {
-    syslog(LOG_INFO, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
+    syslog(L_NOTICE, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
 	   HIShitpos, HIShitneg, HISmisses, HISdne);
     HIShitpos = HIShitneg = HISmisses = HISdne = 0;
 }
