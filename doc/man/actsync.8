@@ -1113,15 +1113,15 @@ change or removal of newsgroups that you don't want.
 You should avoid using the \fRx\fP output format until
 you are sure it will do what you want.
 .PP
-A number of
+Be aware that
 .IR innd (8)
-servers will corrupt the active file when
-lots of newgroups and rmgroups are performed.
+servers older than version 1.5 may corrupt the active file when
+multiple rmgroups are performed if the server is paused or throttled.
 This is not a
 .IR actsync (8)
 bug, it is a server bug.
 Using the pause, actsync, reload and go method
-noted above is much more likely to avoid this problem.
+noted above avoids this problem of older servers.
 .SH BUGS
 If a newsgroup appears multiple times,
 .IR actsync (8)
