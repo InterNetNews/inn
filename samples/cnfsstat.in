@@ -465,14 +465,26 @@ sub get_cycbuff_info {
 	while (1) {
 	    $offset += 16384;
 	    seek (BUFF, $cyclenum ? $free + $offset : 0, 0);
-	    
+
+	    $num_tries = 0;
 	    while (<BUFF>) {
 		next unless /^message-id:\s+(<.*>)/i;
+		$num_tries++;
 		
 		# We give up if the article is missing in history, or else
 		# we stand a high risk of checking the whole cycbuff...
 		
-		last do_seek unless $time = &lookup_age ($1);
+		$time = &lookup_age ($1);
+ 		if (!$time) {
+		    if ($num_tries > 10) {
+			$oupdate_str = "beats me";
+			$oago_str = "who knows how long";
+			last do_seek; # give up
+		    } else {
+			next;	# try again
+		    }
+		}
+
 		# Is the article newer than the last update?
 		if ($time > $update) {
 		    $update = $time;
