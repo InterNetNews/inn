@@ -63,8 +63,9 @@ directory.
 The input is taken as a sequence of lines;
 blank lines and lines starting with a number sign (``#'') are ignored.
 All other lines should consist of one or two fields separated by a single space.
-The first field is the name of a file holding an article; if it is not an
-an absolute pathname it is taken relative to
+The first field is either the storage token of an article or the
+name of a file holding an article; if it is not an an absolute
+pathname or storage token, it is taken relative to
 .IR <patharticles\ in\ inn.conf> .
 The second field, if present, specifies the size of the article in bytes.
 .SH OPTIONS
