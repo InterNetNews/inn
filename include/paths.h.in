@@ -9,11 +9,11 @@
 **  PATHS TO FILES AND SOCKETS
 **
 **  Default prefixes can be overridden by defining the constant to a full
-**  path.  That magic is handled by concatpath or cpcatpath.  At some point
-**  all of these defines will change to start with INN_PATH_ instead of
-**  _PATH_ because identifiers beginning with an underscore and an uppercase
-**  letter are reserved by the C standard.  New ones should use INN_PATH_
-**  for this reason, to save eventual work.
+**  path.  That magic is handled by concatpath.  At some point all of these
+**  defines will change to start with INN_PATH_ instead of _PATH_ because
+**  identifiers beginning with an underscore and an uppercase letter are
+**  reserved by the C standard.  New ones should use INN_PATH_ for this
+**  reason, to save eventual work.
 */
 
 /* Default prefix path is pathbin. */
