@@ -68,14 +68,15 @@ printit(char *v, const char *val)
 	    	printf("set inn_%s %s\n", v, val);
 	    else {
                 int i;
+                static const char* unsafe_chars = "$[]{}\"\\";
 
-                printf("set inn_%s [lindex {", v);
+                printf("set inn_%s \"", v);
                 for (i = 0; val[i] != '\0'; i++) {
-                    if (strchr ("\\{}", val[i]) != NULL)
+                    if (strchr (unsafe_chars, val[i]) != NULL)
                         putchar('\\');
                     putchar(val[i]);
                 }
-	    	printf("} 0]\n");
+	    	printf("\"\n");
             }
 	    break;
     }
