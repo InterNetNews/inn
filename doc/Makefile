@@ -24,7 +24,7 @@ SEC5	= active.5 control.ctl.5 distrib.pats.5 expire.ctl.5 history.5 \
 	inn.conf.5 innwatch.ctl.5 moderators.5 newsfeeds.5 nnrpd.track.5 \
 	newslog.5 nnrp.access.5 nntpsend.ctl.5 overview.fmt.5 passwd.nntp.5 \
 	innfeed.conf.5 motd.news.5 overview.ctl.5 storage.ctl.5 storage.conf.5 \
-	cycbuff.conf.5 incoming.conf.5
+	cycbuff.conf.5 incoming.conf.5 readers.conf.5
 SEC8	= actsync.8 actsyncd.8 archive.8 \
 	batcher.8 buffchan.8 crosspost.8 ctlinnd.8 \
 	cvtbatch.8 expire.8 expireover.8 expirerm.8 fastrm.8 filechan.8 \
@@ -60,7 +60,8 @@ INSTALLED_SEC5 =	$D$(MAN5)/active.5 $D$(MAN5)/control.ctl.5 \
 			$D$(MAN5)/passwd.nntp.5 $D$(MAN5)/innfeed.conf.5 \
 			$D$(MAN5)/motd.news.5 $D$(MAN5)/overview.ctl.5 \
 			$D$(MAN5)/storage.ctl.5 $D$(MAN5)/storage.conf.5 \
-			$D$(MAN5)/cycbuff.conf.5 $D$(MAN5)/incoming.conf.5
+			$D$(MAN5)/cycbuff.conf.5 $D$(MAN5)/incoming.conf.5 \
+			$D$(MAN5)/readers.conf.5 $D$(MAN5)/readers.conf.5
 
 INSTALLED_SEC8 =	$D$(MAN8)/actsync.8 $D$(MAN8)/actsyncd.8 \
 			$D$(MAN8)/archive.8 \
@@ -159,6 +160,7 @@ $D$(MAN5)/storage.ctl.5:	storage.ctl.5	   ; $(COPY) $? $@
 $D$(MAN5)/storage.conf.5:	storage.conf.5     ; $(COPY) $? $@
 $D$(MAN5)/cycbuff.conf.5:	cycbuff.conf.5     ; $(COPY) $? $@
 $D$(MAN5)/incoming.conf.5:	incoming.conf.5    ; $(COPY) $? $@
+$D$(MAN5)/readers.conf.5:	readers.conf.5     ; $(COPY) $? $@
 $D$(MAN8)/actsync.8:		actsync.8	   ; $(COPY) $? $@
 $D$(MAN8)/actsyncd.8:		actsyncd.8	   ; $(COPY) $? $@
 $D$(MAN8)/archive.8:		archive.8          ; $(COPY) $? $@
