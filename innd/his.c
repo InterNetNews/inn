@@ -115,7 +115,7 @@ void HISsetup(void)
 		free(HIScache);
 	    HIScachesize = (HIScachesize / sizeof(_HIScache));
 	    HIScache = NEW(_HIScache, HIScachesize);
-	    memset((void *)HIScache, '\0', HIScachesize);
+	    memset((void *)HIScache, '\0', HIScachesize * sizeof(_HIScache));
 	}
     }
     HIShitpos = HIShitneg = HISmisses = HISdne = 0;
