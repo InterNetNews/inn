@@ -43,6 +43,7 @@ PATH_ACTSYNC_CFG	= ${NEWSLIB}/actsync.cfg
 PATH_MOTD		= ${NEWSLIB}/motd.news
 PATH_STORAGECTL		= ${NEWSLIB}/storage.ctl
 PATH_OVERVIEWCTL	= ${NEWSLIB}/overview.ctl
+PATH_CYCBUFFCONFIG	= ${NEWSLIB}/cycbuff.conf
 
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
@@ -77,7 +78,7 @@ REST		= \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
-	sample.control motd.news storage.ctl overview.ctl
+	sample.control motd.news storage.ctl overview.ctl cycbuff.conf
 
 ALL		= $(MOST) $(REST)
 
@@ -90,7 +91,7 @@ REST_INSTALLED	= \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(CTLBIN)/sample.control $D$(PATH_MOTD) $D$(PATH_STORAGECTL) \
-	$D$(PATH_OVERVIEWCTL)
+	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -200,6 +201,7 @@ $D$(NEWSLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_STORAGECTL): storage.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_OVERVIEWCTL): overview.ctl	; $(COPY_RPRI) $? $@
+$D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPRI) $? $@
@@ -245,6 +247,7 @@ innreport_inn.pm: ../samples/innreport_inn.pm	; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
 storage.ctl:	../samples/storage.ctl		; $(COPY) $? $@
 overview.ctl:	../samples/overview.ctl		; $(COPY) $? $@
+cycbuff.conf:	../samples/cycbuff.conf		; $(COPY) $? $@
 innstat:	../samples/innstat		; $(COPY) $? $@
 innwatch:	../samples/innwatch		; $(COPY) $? $@
 innwatch.ctl:	../samples/innwatch.ctl		; $(COPY) $? $@

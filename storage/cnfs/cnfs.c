@@ -334,7 +334,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
 
   /* Length/size of symbolic partition */
   len = atoi(l) * 1024;		/* This value in KB in decimal */
-  if (len != sb.st_size) {
+  if (sb.st_rdev == 0 && len != sb.st_size) {
     syslog(L_ERROR, "%s: bad length '%ld' for '%s' cycbuff(%ld bytes)",
 	   /* Danger... */ LocalLogName, len, cycbuff->name, sb.st_size);
     DISPOSE(cycbuff);
@@ -803,9 +803,9 @@ STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cy
     ** avoid a false negative response, *not* a false positive response.
     */
     if (! (cycnum == cycbuff->cyclenum ||
-	(cycbuff->cyclenum == 0 && cycnum + 1 == cycbuff->cyclenum) ||
+	(cycbuff->cyclenum == 2 && cycnum + 3 == cycbuff->cyclenum) ||
 	(cycnum == cycbuff->cyclenum - 1 && offset > cycbuff->free) ||
-	(cycnum == 0 && cycbuff->cyclenum == 2 && offset > cycbuff->free))) {
+	(cycnum + 1 == 0 && cycbuff->cyclenum == 2 && offset > cycbuff->free))) {
 	/* We've been overwritten */
 	return 0;
     }
@@ -893,8 +893,8 @@ TOKEN cnfs_store(const ARTHANDLE article, STORAGECLASS class) {
 	}
 	cycbuff->free = cycbuff->minartoffset;
 	cycbuff->cyclenum++;
-	if (cycbuff->cyclenum == 1)
-	    cycbuff->cyclenum++;		/* cnfs_next() needs this */
+	if (cycbuff->cyclenum == 0)
+	    cycbuff->cyclenum += 2;		/* cnfs_next() needs this */
 	cycbuff->needflush = TRUE;
 	(void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	syslog(L_NOTICE, "%s: cycbuff %s rollover to cycle 0x%x... remain calm",
@@ -1091,6 +1091,36 @@ void cnfs_freearticle(ARTHANDLE *article) {
 }
 
 BOOL cnfs_cancel(TOKEN token) {
+    char		cycbuffname[9];
+    CYCBUFF_OFF_T	offset;
+    U_INT32_T		cycnum;
+    CYCBUFF		*cycbuff;
+
+    if (token.type != TOKEN_CNFS) {
+	SMseterror(SMERR_INTERNAL, NULL);
+	return NULL;
+    }
+    if (! CNFSBreakToken(token, cycbuffname, &offset, &cycnum)) {
+	SMseterror(SMERR_INTERNAL, NULL);
+	/* SMseterror() should have already been called */
+	return FALSE;
+    }
+    if ((cycbuff = CNFSgetcycbuffbyname(cycbuffname)) == NULL) {
+	SMseterror(SMERR_INTERNAL, "bogus cycbuff name");
+	return FALSE;
+    }
+    if (! (cycnum == cycbuff->cyclenum ||
+	(cycbuff->cyclenum == 2 && cycnum + 3 == cycbuff->cyclenum) ||
+	(cycnum == cycbuff->cyclenum - 1 && offset > cycbuff->free) ||
+	(cycnum + 1 == 0 && cycbuff->cyclenum == 2 && offset > cycbuff->free))) {
+	SMseterror(SMERR_NOENT, NULL);
+	return FALSE;
+    }
+    if (CNFSUsedBlock(cycbuff, offset, FALSE, FALSE) == 0) {
+	SMseterror(SMERR_NOENT, NULL);
+	return FALSE;
+    }
+    CNFSUsedBlock(cycbuff, offset, TRUE, FALSE);
     return TRUE;
 }
 

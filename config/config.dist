@@ -825,18 +825,6 @@ _PATH_PERL_FILTER_NNRPD		/usr/news/bin/control/filter_nnrpd.pl
 ##  Location of the cnfs partition configuration file
 #### =()<_PATH_CYCBUFFCONFIG	@<_PATH_CYCBUFFCONFIG>@>()=
 _PATH_CYCBUFFCONFIG	/var/news/etc/cycbuff.conf
-##  Maximum number of cycbuffs
-#### =()<MAX_CYCBUFFS	@<MAX_CYCBUFFS>@>()=
-MAX_CYCBUFFS		16
-##  Maximum number of metacycbuffs
-#### =()<MAX_METACYCBUFFS	@<MAX_METACYCBUFFS>@>()=
-MAX_METACYCBUFFS		8
-##  Maximum number of cycbuffs which any one metacycbuff can contain
-#### =()<MAX_META_MEMBERS	@<MAX_META_MEMBERS>@>()=
-MAX_META_MEMBERS		16
-##  Maximum number of cycbuff expire rules
-#### =()<MAX_METACYCBUFF_RULES	@<MAX_METACYCBUFF_RULES>@>()=
-MAX_METACYCBUFF_RULES		24
 ##  C type to use for offsets (should be a big integer like "off_t" 
 ##  (or "offset_t" (64 bits) for Solaris 2.5).
 ##  WARNING: we use "atol" to convert these values ... look in the code
@@ -848,57 +836,7 @@ CYCBUFF_OFF_T		off_t
 ##  use a different system call, namedly llseek().
 #### =()<CNFSseekcall	@<CNFSseekcall>@>()=
 CNFSseekcall			lseek
-##  C type to use for cycle numbers.  Should be big, like a 32 bit unsigned
-##  integer.
-#### =()<CYCLENUM_T	@<CYCLENUM_T>@>()=
-CYCLENUM_T		unsigned long
 ##  Number of articles to be written to a cycbuff before that cycbuff's
 ##  status header is updated.
 #### =()<METACYCBUFF_UPDATE	@<METACYCBUFF_UPDATE>@>()=
 METACYCBUFF_UPDATE		25
-##  Directory where CNFS-specific utilities should go
-#### =()<_PATH_CNFSBIN	@<_PATH_CNFSBIN>@>()=
-_PATH_CNFSBIN		/var/news/bin.cnfs
-##  Utilize CNFS.  Select DO or DONT.  The effects of selecting DONT
-##  in this particular code base are unclear....
-USE_CNFS		DO
-##  Misc MRNet hacks.  I don't even recall what they do anymore, but I
-##  always compile with them.  Select DO or DONT.  I recommend DO.
-##  -Scott <fritchie@mr.net>
-MRNET_HACK		DO
-##  Store articles in "wire" format, namely with CR-LF terminating
-##  each line.  Select DO or DONT.  Recommend DO.
-WIRE_FORMAT		DO
-##  USE mmap() to send articles (e.g. with "innxmit").  THIS CODE IS
-##  EXTREMELY OLD, ANTIQUATED, OUT-OF-DATE, AND UNMAINTAINED.  I have
-##  absolutely no idea why I haven't ripped it out yet.
-COMMIT_MMAP_SUICIDE	DONT
-##  Use mmap() when dealiing with the article number => article
-##  storage location map files.  This option only matters if you're
-##  going to be needing NNRP support.  Use either DO or DONT.
-##  Recommend DO.
-MMAP_MAP_FILES		DO
-##  History mechanism choice.  Your options are: TRADITIONAL, ONEILL
-##  TRADITIONAL is the DBZ mechanism bundled along with INN.
-##  ONEILL is an MD5-based partial-from-scratch DBZ rewrite by Clayton O'Neill
-DBZ_TYPE		TRADITIONAL
-##  History accelerator.  Allocate a large chunk of RAM for an completely
-##  in-core history mechanism.  Classic RAM vs. speed tradeoff.  Use
-##  either DO or DONT to suck up an additional 32MB RAM.
-HISTORY_ACCEL		DONT
-##  Performance timer option, by Joe Greco.  Syslogs messages every 5
-##  minutes with stats on time taken to perform many operations.  Use
-##  either DO or DONT.
-GRECO_TIMER		DO
-##  CIDR slash notation support for NNRPD.  Use either DO or DONT
-CIDR_SLASH_NOTATION	DO
-##  Use mmap() to read .overview files.  Includes handy feature of
-##  performing binary searches on .overview files instead of reading
-##  them sequentially.  Do not use if your system's mmap()
-##  implementation is rock-solid.  See the unoff-patches directory for
-##  "mmaptest.shar" to test your system's mmap() implementation.
-##  Use either DO or DONT.
-OVERSCREAM		DO
-##  Your platform's 64 bit unsigned integer.  For Solaris 2.5.1, 
-##  it's u_longlong_t.  For FreeBSD, u_quad_t.  YMMV.
-U_64			u_longlong_t

@@ -33,58 +33,23 @@
   ||##
   ||##
   ||##  1.  MAKE CONFIG PARAMETERS
-[IN1.7=@1][WDF=obsolete][WOR=no]
- #||##  Where the DBZ sources are, from C News.  INN has a (maybe old) copy.
- #||#### =()<DBZDIR			@<DBZDIR>@>()=
- #||DBZDIR			../dbz
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  If you have a parallel make, set this to "&"
   ||#### =()<P			@<P>@>()=
   ||P			
 [IN1.7=@1][WDF=autoconf][WOR=no]
-#  ||##  C pre-processor flags
-#  ||##[autoconf]
-#  ||#### =()<DEFS			@<DEFS>@>()=
-#  ||DEFS			-I../include @CPPFLAGS@
-[IN1.7=@1][WDF=autoconf][WOR=no]
-#  ||##  C compiler
-#  ||##[autoconf]
-#  ||#### =()<CC			@<CC>@>()=
-#  ||CC			@CC@
-[IN1.7=@1][WDF=autoconf][WOR=no]
   ||##  Does your compiler properly do "char const *"? Pick DO DONT or DUNNO
   ||##[autoconf]
   ||#### =()<USE_CHAR_CONST		@<USE_CHAR_CONST>@>()=
   ||USE_CHAR_CONST		@ac_cv_subst_use_char_const@
-[IN1.7=@1][WDF=autoconf][WOR=no]
-#  ||##  C compiler flags
-#  ||##[autoconf]
-#  ||#### =()<CFLAGS			@<CFLAGS>@>()=
-#  ||CFLAGS			$(DEFS) @CFLAGS@
-[IN1.7=@1][WDF=obsolete][WOR=no]
- #||##  C compiler flags to use when compiling dbz
- #||#### =()<DBZCFLAGS			@<DBZCFLAGS>@>()=
- #||DBZCFLAGS			$(CFLAGS)
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  What flags to use if profiling; -p or -pg, e.g.
   ||#### =()<PROF			@<PROF>@>()=
   ||PROF			-pg
-[IN1.7=@1][WDF=autoconf][WOR=no]
-#  ||##  Flags for the "cc -o" line; e.g., -Bstatic on SunOS4.x while debugging.
-#  ||##[autoconf]
-#  ||#### =()<LDFLAGS			@<LDFLAGS>@>()=
-#  ||LDFLAGS			@LDFLAGS@
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  If you use the standard NNTP way of connecting, where is the library?
   ||#### =()<NNTPLIB		@<NNTPLIB>@>()=
   ||NNTPLIB		
-[IN1.7=@1][WDF=autoconf][WOR=no]
-#  ||##  If you need to link in other libraries, add them here.
-#  ||##[autoconf]
-#  ||##  On NetBSD and FreeBSD, you must add the -lcrypt directive here
-#  ||##  -lutil on BSD/OS gives you setproctitle() see HAVE_SETPROCTITLE.
-#  ||#### =()<LIBS			@<LIBS>@>()=
-#  ||LIBS			@LIBS@
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  How to make a lint library; pick BSD, SYSV, or NONE.
   ||#### =()<LINTLIBSTYLE		@<LINTLIBSTYLE>@>()=
@@ -119,21 +84,6 @@
   ||MAN5			@ac_cv_subst_manpath@/man5
   ||#### =()<MAN8			@<MAN8>@>()=[autoconf]
   ||MAN8			@ac_cv_subst_manpath@/man8
-[IN1.7=@1][WDF=autoconf][WOR=no]
-# ||##  Ranlib command.  Use echo if you don't need ranlib.
-# ||##[autoconf]
-# ||#### =()<RANLIB			@<RANLIB>@>()=
-# ||RANLIB			@ac_cv_subst_ranlib@
-[IN1.7=NO][WDF=autoconf][WOR=no]
-  ||##  LEX should probably be lex or flex
-  ||##[autoconf]
-  ||#### =()<LEX			@<LEX>@>()=
-  ||LEX			@LEX@
-[IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  YACC (yet another config control?)
-  ||##[autoconf]
-  ||#### =()<YACC			@<YACC>@>()=
-  ||YACC			@YACC@
 [IN1.7=@1][WDF=autoconf][WOR=no]
   ||##  Ctags command.  Use echo if you don't have ctags.
   ||##[autoconf]
@@ -224,12 +174,6 @@
   ||##
   ||##  4.  C LIBRARY DIFFERENCES
 [IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Use stdargs, varargs, or neither?  Pick VARARGS STDARGS or NONE.
- #||##  You need vfprintf and vfsprintf if not NONE.
- #||##[autoconf]
- #||#### =()<VAR_STYLE		@<VAR_STYLE>@>()=
- #||VAR_STYLE		@ac_cv_subst_varstyle@
-[IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  If you don't have <string.h>, set this to "mystring.h"
   ||##[autoconf]
   ||#### =()<STR_HEADER		@<STR_HEADER>@>()=
@@ -308,37 +252,6 @@
   ||#### =()<LOCK_STYLE		@<LOCK_STYLE>@>()=
   ||LOCK_STYLE		@ac_lock_style@
 [IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Do you have <unistd.h>?  Pick DO or DONT
- #||##[autoconf]
- #||#### =()<HAVE_UNISTD		@<HAVE_UNISTD>@>()=
- #||HAVE_UNISTD			@ac_cv_subst_have_unistd@
-[IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Do you have setbuffer?  Pick DO or DONT.
- #||##[autoconf]
- #||#### =()<HAVE_SETBUFFER		@<HAVE_SETBUFFER>@>()=
- #||HAVE_SETBUFFER		@ac_cv_subst_have_setbuffer@
-[IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Do you have gettimeofday?  Pick DO or DONT.
- #||##[autoconf]
- #||#### =()<HAVE_GETTIMEOFDAY	@<HAVE_GETTIMEOFDAY>@>()=
- #||HAVE_GETTIMEOFDAY	@ac_cv_subst_have_gettimeofday@
-[IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Do you have setproctitle()?  Pick DO or DONT.
- #||##[autoconf]
- #||##  You may need to adjust LIBS for this.
- #||#### =()<HAVE_SETPROCTITLE	@<HAVE_SETPROCTITLE>@>()=
- #||HAVE_SETPROCTITLE		@ac_cv_subst_have_setproctitle@
-[IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Do you have fchmod?  Pick DO or DONT.
- #||##[autoconf]
- #||#### =()<HAVE_FCHMOD		@<HAVE_FCHMOD>@>()=
- #||HAVE_FCHMOD		@ac_cv_subst_have_fchmod@
-[IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Do you have setsid()?  Pick DO or DONT.
- #||##[autoconf]
- #||#### =()<HAVE_SETSID		@<HAVE_SETSID>@>()=
- #||HAVE_SETSID		@ac_cv_subst_have_setsid@
-[IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Does your (struct tm) have a tm_gmtoff field?  Pick DO or DONT.
   ||##[autoconf]
   ||#### =()<HAVE_TM_GMTOFF		@<HAVE_TM_GMTOFF>@>()=
@@ -348,11 +261,6 @@
   ||##[autoconf]
   ||#### =()<HAVE_ST_BLKSIZE		@<HAVE_ST_BLKSIZE>@>()=
   ||HAVE_ST_BLKSIZE		@ac_cv_subst_have_st_blksize@
-[IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Use waitpid instead of wait3?  Pick DO or DONT.
- #||##[autoconf]
- #||#### =()<HAVE_WAITPID		@<HAVE_WAITPID>@>()=
- #||HAVE_WAITPID		@ac_cv_subst_have_waitpid@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Use "union wait" instead of int?  Pick DO or DONT.
   ||##[autoconf]
@@ -368,11 +276,6 @@
   ||##[autoconf]
   ||#### =()<HAVE_VFORK		@<HAVE_VFORK>@>()=
   ||HAVE_VFORK		@ac_cv_subst_have_vfork@
-[IN1.7=@4][WDF=autoconf][WOR=no]
- #||##  Do you have symbolic links?  Pick DO or DONT.
- #||##[autoconf]
- #||#### =()<HAVE_SYMLINK		@<HAVE_SYMLINK>@>()=
- #||HAVE_SYMLINK		@ac_cv_subst_have_symlink@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Do you have Unix-domain sockets?  Pick DO or DONT.
   ||##[autoconf]
@@ -546,11 +449,6 @@
   ||##  Environment variable that has remote hostname for rnews.
   ||#### =()<_ENV_UUCPHOST		@<_ENV_UUCPHOST>@>()=
   ||_ENV_UUCPHOST		UU_MACHINE
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Require posts to have under 50% inclusion (">") lines?  Pick DO or DONT.
-#|   ||##  (This is only for inews and nnrpd.)
-#|   ||#### =()<CHECK_INCLUDED_TEXT	@<CHECK_INCLUDED_TEXT>@>()=
-#|   ||CHECK_INCLUDED_TEXT	DONT
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Put hosts in the inews Path header?  Pick DO or DONT.
   ||#### =()<INEWS_PATH		@<INEWS_PATH>@>()=
@@ -559,26 +457,10 @@
   ||##  Munge the gecos field of password entry?  Pick DO or DONT.
   ||#### =()<MUNGE_GECOS		@<MUNGE_GECOS>@>()=
   ||MUNGE_GECOS		DO
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  How many times to try to fork before giving up
-#|   ||#### =()<MAX_FORKS		@<MAX_FORKS>@>()=
-#|   ||MAX_FORKS		10
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Largest acceptable article size; 0 allows any size
-#|   ||#### =()<MAX_ART_SIZE		@<MAX_ART_SIZE>@>()=
-#|   ||MAX_ART_SIZE		1000000L
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Value of dbzincore(FLAG) call in innd.  Pick 1 or 0.
   ||#### =()<INND_DBZINCORE		@<INND_DBZINCORE>@>()=
   ||INND_DBZINCORE		1
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Should sub-processes get a nice(2) value?  Pick DO or DONT.
-#|   ||#### =()<INND_NICE_KIDS		@<INND_NICE_KIDS>@>()=
-#|   ||INND_NICE_KIDS		DO
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Value for nice(2) call in innd.
-#|   ||#### =()<INND_NICE_VALUE		@<INND_NICE_VALUE>@>()=
-#|   ||INND_NICE_VALUE		4
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Null-terminated list of unknown commands to not log to syslog.
   ||##	INND_QUIET_BADLIST	"xstream", "xfoo", NULL
@@ -588,37 +470,10 @@
   ||##  Null-terminated set of illegal distribution patterns for local postings.
   ||#### =()<BAD_DISTRIBS		@<BAD_DISTRIBS>@>()=
   ||BAD_DISTRIBS		"*.*",NULL
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Verify that the poster is the person doing the cancel?  Pick DO or DONT.
-#|   ||##  (Can't do this if cancel arrives before the article does, by the way,
-#|   ||##  in which case the early cancel will be ignored.)
-#|   ||#### =()<VERIFY_CANCELS		@<VERIFY_CANCELS>@>()=
-#|   ||VERIFY_CANCELS		DONT
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Log "ctlinnd cancel" commands to syslog?  Pick DO or DONT.
-#|   ||#### =()<LOG_CANCEL_COMMANDS	@<LOG_CANCEL_COMMANDS>@>()=
-#|   ||LOG_CANCEL_COMMANDS	DONT
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  File unknown "to.*" groups into the "to" newsgroup?  Pick DO or DONT.
   ||#### =()<MERGE_TO_GROUPS		@<MERGE_TO_GROUPS>@>()=
   ||MERGE_TO_GROUPS		DONT
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  File articles in unknown newsgroups into junk?  Pick DO or DONT.
-#|   ||#### =()<WANT_TRASH		@<WANT_TRASH>@>()=
-#|   ||WANT_TRASH		DONT
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Record rejected articles in history?  Pick DO or DONT.
-#|   ||#### =()<REMEMBER_TRASH		@<REMEMBER_TRASH>@>()=
-#| ||REMEMBER_TRASH		DO
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Check the linecount against the Lines header?  Pick DO or DONT.
-#|   ||#### =()<CHECK_LINECOUNT		@<CHECK_LINECOUNT>@>()=
-#|   ||CHECK_LINECOUNT		DONT
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  If checking, the error must be within LINECOUNT_FUZZ lines.
-#|   ||##  Five is number of .signature lines + 1.
-#|   ||#### =()<LINECOUNT_FUZZ		@<LINECOUNT_FUZZ>@>()=
-#|   ||LINECOUNT_FUZZ		5
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Have innd throttle itself after this many I/O errors.
   ||#### =()<IO_ERROR_COUNT		@<IO_ERROR_COUNT>@>()=
@@ -631,22 +486,6 @@
   ||##  Flush logs if we go this long with no I/O.
   ||#### =()<DEFAULT_TIMEOUT		@<DEFAULT_TIMEOUT>@>()=
   ||DEFAULT_TIMEOUT		300
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  INND closes channel if inactive this long (seconds).
-#|   ||#### =()<PEER_TIMEOUT		@<PEER_TIMEOUT>@>()=
-#|   ||PEER_TIMEOUT		(1 * 60 * 60)
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  NNRP exits if first command doesn't arrive within this time (seconds).
-#|   ||#### =()<INIT_CLIENT_TIMEOUT	@<INIT_CLIENT_TIMEOUT>@>()=
-#|   ||INIT_CLIENT_TIMEOUT	30
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  NNRP exits if inactive for this long (seconds).
-#|   ||#### =()<CLIENT_TIMEOUT		@<CLIENT_TIMEOUT>@>()=
-#|   ||CLIENT_TIMEOUT		(10 * 60)
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Allow nnrpd readers when paused or throttled?  Pick DO or DONT.
-#|   ||#### =()<ALLOW_READERS		@<ALLOW_READERS>@>()=
-#|   ||ALLOW_READERS		DO
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Refuse newsreader connections if load is higher then this; -1 disables.
   ||#### =()<NNRP_LOADLIMIT		@<NNRP_LOADLIMIT>@>()=
@@ -660,79 +499,14 @@
   ||##  (If DONT, then use only IP addresses in hosts.nnrp)
   ||#### =()<NNRP_GETHOSTBYADDR	@<NNRP_GETHOSTBYADDR>@>()=
   ||NNRP_GETHOSTBYADDR	DO
-[IN1.7=@6][WDF=obsolete][WOR=no]
- #||##  How many Message-ID retrievals until nnrpd does a dbzincore?  Set
- #||##  to -1 to never do incore.
- #||#### =()<NNRP_DBZINCORE_DELAY		@<NNRP_DBZINCORE_DELAY>@>()=
- #||NNRP_DBZINCORE_DELAY	40
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Strip Sender from posts that didn't authenticate?  Pick DO or DONT.
   ||#### =()<NNRP_AUTH_SENDER	@<NNRP_AUTH_SENDER>@>()=
   ||NNRP_AUTH_SENDER	DO
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Do you want to make life easy for peers to pull feeds from you (it's
-#|   ||##  harder on your machine). Pick DO or DONT. With DONT, you get a small
-#|   ||##  sleep inserted before each ARTICLE command is processed. (With
-#|   ||##  apologies to the Australians in the audience).
-#|   ||#### =()<LIKE_PULLERS		@<LIKE_PULLERS>@>()=
-#|   ||LIKE_PULLERS		DO
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Allow the NEWNEWS NNTP command?   Pick DO or DONT.
-#|   ||##  (RFC 977 says you should; your server performance may not agree...)
-#|   ||#### =()<ALLOW_NEWNEWS		@<ALLOW_NEWNEWS>@>()=
-#|   ||ALLOW_NEWNEWS		DONT
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  How many read/write failures until channel is put to sleep or closed?
-#|   ||#### =()<BAD_IO_COUNT		@<BAD_IO_COUNT>@>()=
-#|   ||BAD_IO_COUNT		5
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Multiplier for sleep in EWOULDBLOCK writes (seconds).
-#|   ||#### =()<BLOCK_BACKOFF		@<BLOCK_BACKOFF>@>()=
-#|   ||BLOCK_BACKOFF		(2 * 60)
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  How many article-writes between active and history updates?
-#|   ||#### =()<ICD_SYNC_COUNT		@<ICD_SYNC_COUNT>@>()=
-#|   ||ICD_SYNC_COUNT		10
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Tell resolver _res.options to be fast?  Pick DO or DONT.
   ||#### =()<FAST_RESOLV		@<FAST_RESOLV>@>()=
   ||FAST_RESOLV		DONT
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Drop articles that were posted this many days ago.
-#|   ||#### =()<DEFAULT_CUTOFF		@<DEFAULT_CUTOFF>@>()=
-#| ||DEFAULT_CUTOFF		14
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Maximum number of incoming NNTP connections.
-#|   ||#### =()<DEFAULT_CONNECTIONS	@<DEFAULT_CONNECTIONS>@>()=
-#|   ||DEFAULT_CONNECTIONS	50
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Wait this many seconds before channel restarts.
-#|   ||#### =()<CHANNEL_RETRY_TIME	@<CHANNEL_RETRY_TIME>@>()=
-#|   ||CHANNEL_RETRY_TIME	(5 * 60)
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Wait this many seconds before seeing if pause is ended.
-#|   ||#### =()<PAUSE_RETRY_TIME	@<PAUSE_RETRY_TIME>@>()=
-#|   ||PAUSE_RETRY_TIME	(5 * 60)
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Wait this many seconds between noticing inactive channels.
-#|   ||#### =()<CHANNEL_INACTIVE_TIME	@<CHANNEL_INACTIVE_TIME>@>()=
-#|   ||CHANNEL_INACTIVE_TIME	(10 * 60)
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Put nntplink info (filename) into the log?
-#|   ||#### =()<NNTPLINK_LOG		@<NNTPLINK_LOG>@>()=
-#|   ||NNTPLINK_LOG		DONT
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Put article size into the log?
-#|   ||#### =()<LOG_SIZE		@<LOG_SIZE>@>()=
-#|   ||LOG_SIZE		DO
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Log by host IP address, rather than from Path line?
-#|   ||#### =()<IPADDR_LOG		@<IPADDR_LOG>@>()=
-#|   ||IPADDR_LOG		DO
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Log NNTP activity after this many articles.
-#|   ||#### =()<NNTP_ACTIVITY_SYNC	@<NNTP_ACTIVITY_SYNC>@>()=
-#|   ||NNTP_ACTIVITY_SYNC	200
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Free buffers bigger than this when we're done with them.
   ||#### =()<BIG_BUFFER		@<BIG_BUFFER>@>()=
@@ -753,10 +527,6 @@
   ||##  Maximum size of a single header.
   ||#### =()<MAXHEADERSIZE		@<MAXHEADERSIZE>@>()=
   ||MAXHEADERSIZE		1024
-#| [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
-#|   ||##  Byte limit on locally-posted articles; 0 to disable the check.
-#|   ||#### =()<LOCAL_MAX_ARTSIZE	@<LOCAL_MAX_ARTSIZE>@>()=
-#|   ||LOCAL_MAX_ARTSIZE	1000000L
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Default number of bytes to hold in memory when buffered.
   ||#### =()<SITE_BUFFER_SIZE	@<SITE_BUFFER_SIZE>@>()=
@@ -786,21 +556,6 @@
   ||
   ||##
   ||##  7.  PATHS TO COMMON PROGRAMS
-[IN1.7=@7][WDF=confparam][WOR=yes]
-#  ||##  Where the raison d'etre for this distribution lives.
-#  ||##[autoconf]
-#  ||#### =()<_PATH_INND		@<_PATH_INND>@>()=
-#  ||_PATH_INND		@ac_cv_subst_binpath@/innd
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where the optional front-end that exec's innd lives.
-  ||##[autoconf]
-  ||#### =()<_PATH_INNDSTART		@<_PATH_INNDSTART>@>()=
-  ||_PATH_INNDSTART		@ac_cv_subst_binpath@/inndstart
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where news boot-up script should be installed.
-  ||##[autoconf]
-  ||#### =()<_PATH_NEWSBOOT		@<_PATH_NEWSBOOT>@>()=
-  ||_PATH_NEWSBOOT		@ac_cv_subst_binpath@/rc.news
 [IN1.7=@7][WDF=autoconf][WOR=yes]
   ||##  Where sendmail, or a look-alike, lives.
   ||##[autoconf]
@@ -821,68 +576,6 @@
   ||##  What extension your compress appends
   ||#### =()<_PATH_COMPRESSEXT	@<_PATH_COMPRESSEXT>@>()=
   ||_PATH_COMPRESSEXT	.Z
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where egrep lives (you might need the FSF one; see scanlogs)
-  ||##[autoconf]
-  ||#### =()<_PATH_EGREP		@<_PATH_EGREP>@>()=
-  ||_PATH_EGREP		@ac_cv_subst_path_egrep@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where perl lives
-  ||##[autoconf]
-  ||#### =()<_PATH_PERL		@<_PATH_PERL>@>()=
-  ||_PATH_PERL		@ac_cv_subst_path_perl@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where awk lives
-  ||##[autoconf]
-  ||#### =()<_PATH_AWK		@<_PATH_AWK>@>()=
-  ||_PATH_AWK		@ac_cv_subst_path_awk@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where sed lives (you might need the FSF one)
-  ||##[autoconf]
-  ||#### =()<_PATH_SED		@<_PATH_SED>@>()=
-  ||_PATH_SED		@ac_cv_subst_path_sed@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where sort lives (you may want the FSF one).
-  ||##[autoconf]
-  ||#### =()<_PATH_SORT		@<_PATH_SORT>@>()=
-  ||_PATH_SORT		@ac_cv_subst_path_sort@
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where inews lives.
-  ||##[autoconf]
-  ||#### =()<_PATH_INEWS		@<_PATH_INEWS>@>()=
-  ||_PATH_INEWS		@ac_cv_subst_binpath@/inews
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where rnews lives.
-  ||##[autoconf]
-  ||#### =()<_PATH_RNEWS		@<_PATH_RNEWS>@>()=
-  ||_PATH_RNEWS		@ac_cv_subst_binpath@/rnews
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where generic authentication programs live.
-  ||##[autoconf]
-  ||#### =()<_PATH_AUTHDIR		@<_PATH_AUTHDIR>@>()=
-  ||_PATH_AUTHDIR		@ac_cv_subst_binpath@/auth
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where the NNRP server lives.
-  ||##[autoconf]
-  ||#### =()<_PATH_NNRPD		@<_PATH_NNRPD>@>()=
-  ||_PATH_NNRPD		@ac_cv_subst_binpath@/nnrpd
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  The path of the process run when an unknown host connects to innd.
-  ||##  Usually the same as _PATH_NNRPD, but may be, e.g., the path to
-  ||##  nntpd from the reference implementation.
-  ||##[autoconf]
-  ||#### =()<_PATH_NNTPD		@<_PATH_NNTPD>@>()=
-  ||_PATH_NNTPD		@ac_cv_subst_binpath@/nnrpd
-[IN1.7=@7][WDF=obsolete][WOR=no]
- #||##  Where the NNQR server lives.  Make same as _PATH_NNRPD for now
- #||#### =()<_PATH_NNQRD		@<_PATH_NNRPD>@>()=
- #||_PATH_NNQRD		/usr/news/bin/nnrpd
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where most other programs live.
-  ||##  See also _PATH_RNEWSPROGS and _PATH_CONTROLPROGS, below.
-  ||##[autoconf]
-  ||#### =()<_PATH_NEWSBIN		@<_PATH_NEWSBIN>@>()=
-  ||_PATH_NEWSBIN		@ac_cv_subst_binpath@
 [IN1.7=@7][WDF=confparam][WOR=yes]
   ||##  Where temporary files live on the server
   ||##[autoconf]
@@ -893,10 +586,6 @@
   ||##[autoconf]
   ||#### =()<_PATH_MAILCMD		@<_PATH_MAILCMD>@>()=
   ||_PATH_MAILCMD		@ac_cv_subst_binpath@/innmail
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where scripts should have shlock create locks.
-  ||#### =()<_PATH_LOCKS		@<_PATH_LOCKS>@>()=
-  ||_PATH_LOCKS		@LOCKPATH@
 [IN1.7=@7][WDF=autoconf][WOR=yes]
   ||##  Where your GNU gzip binary is (for rnews to run on gzipped batches).
   ||##[autoconf]
@@ -906,44 +595,19 @@
   ||
   ||##
   ||##  8.  PATHS RELATED TO THE SPOOL DIRECTORY
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Spool directory, where articles live.
-  ||##[autoconf]
-  ||#### =()<_PATH_SPOOL		@<_PATH_SPOOL>@>()=
-  ||_PATH_SPOOL		@SPOOLDIR@/articles
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Spool directory where overview data lives.
-  ||##[autoconf]
-  ||#### =()<_PATH_OVERVIEWDIR	@<_PATH_OVERVIEWDIR>@>()=
-  ||_PATH_OVERVIEWDIR	@SPOOLDIR@/over.view
 [IN1.7=@8][WDF=fixed][WOR=yes]
   ||##  Name of overview file within its spool directory.
   ||#### =()<_PATH_OVERVIEW		@<_PATH_OVERVIEW>@>()=
   ||_PATH_OVERVIEW		.overview
 [IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Where rnews spools its input.
-  ||##[autoconf]
-  ||#### =()<_PATH_SPOOLNEWS		@<_PATH_SPOOLNEWS>@>()=
-  ||_PATH_SPOOLNEWS		@SPOOLDIR@/in.coming
-[IN1.7=@8][WDF=confparam][WOR=yes]
   ||##  Where rnews creates temporary files until finished
   ||##[autoconf]
   ||#### =()<_PATH_SPOOLTEMP		@<_PATH_SPOOLTEMP>@>()=
   ||_PATH_SPOOLTEMP		@TMPPATH@
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Where rnews puts bad input.
-  ||##[autoconf]
-  ||#### =()<_PATH_BADNEWS		@<_PATH_BADNEWS>@>()=
-  ||_PATH_BADNEWS		@SPOOLDIR@/in.coming/bad
 [IN1.7=@8][WDF=fixed][WOR=yes][P=low]
   ||##  Where rnews puts bad input, relative to _PATH_SPOOLNEWS.
   ||#### =()<_PATH_RELBAD		@<_PATH_RELBAD>@>()=
   ||_PATH_RELBAD		bad
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||## Where the XBATCH command should put the batches. Normally same as
-  ||## _PATH_SPOOLNEWS so that 'rnews -U' can find it.
-  ||#### =()<_PATH_XBATCHES		@<_PATH_XBATCHES>@>()=
-  ||_PATH_XBATCHES		@SPOOLDIR@/in.coming
 [IN1.7=@9][comments]
   ||
   ||
@@ -953,43 +617,10 @@
   ||##  Pathname where dups are logged if RNEWS_LOG_DUPS is FILE.
   ||#### =()<_PATH_RNEWS_DUP_LOG	@<_PATH_RNEWS_DUP_LOG>@>()=
   ||_PATH_RNEWS_DUP_LOG	/dev/null
-[IN1.7=@9][WDF=confparam][WOR=yes]
-  ||##  Rnews may execute any program in this directory; see RNEWSPROGS.
-  ||##[autoconf]
-  ||#### =()<_PATH_RNEWSPROGS	@<_PATH_RNEWSPROGS>@>()=
-  ||_PATH_RNEWSPROGS	@ac_cv_subst_binpath@/rnews.libexec
-[IN1.7=@9][WDF=confparam][WOR=yes]
-  ||##  Path to control messages scripts.
-  ||##[autoconf]
-  ||#### =()<_PATH_CONTROLPROGS	@<_PATH_CONTROLPROGS>@>()=
-  ||_PATH_CONTROLPROGS	@ac_cv_subst_binpath@/control
 [IN1.7=@9][WDF=fixed][WOR=yes][P=low]
   ||##  Default "unknown/illegal" control script, within _PATH_CONTROLPROGS.
   ||#### =()<_PATH_BADCONTROLPROG	@<_PATH_BADCONTROLPROG>@>()=
   ||_PATH_BADCONTROLPROG	default
-[IN1.7=@10][comments]
-  ||
-  ||
-  ||##
-  ||##  10.  SOCKETS CREATED BY INND OR CLIENTS
-[IN1.7=@10][WDF=confparam][WOR=yes]
-  ||#### =()<_PATH_INNDDIR		@<_PATH_INNDDIR>@>()=[autoconf]
-  ||_PATH_INNDDIR		@RUNPATH@
-[IN1.7=@10][WDF=confparam][WOR=yes]
-  ||##  Unix-domain stream socket that rnews connects to.
-  ||##[autoconf]
-  ||#### =()<_PATH_NNTPCONNECT	@<_PATH_NNTPCONNECT>@>()=
-  ||_PATH_NNTPCONNECT	@RUNPATH@/nntpin
-[IN1.7=@10][WDF=confparam][WOR=yes]
-  ||##  Unix-domain datagram socket that ctlinnd to.
-  ||##[autoconf]
-  ||#### =()<_PATH_NEWSCONTROL	@<_PATH_NEWSCONTROL>@>()=
-  ||_PATH_NEWSCONTROL	@RUNPATH@/control
-[IN1.7=@10][WDF=confparam][WOR=yes]
-  ||##  Temporary socket created by ctlinnd; run through mktemp
-  ||##[autoconf]
-  ||#### =()<_PATH_TEMPSOCK		@<_PATH_TEMPSOCK>@>()=
-  ||_PATH_TEMPSOCK		@RUNPATH@/ctlinndXXXXXX
 [IN1.7=@11][comments]
   ||
   ||
@@ -1015,192 +646,24 @@
   ||##[autoconf]
   ||#### =()<_PATH_CSH_SHELLVARS	@<_PATH_CSH_SHELLVARS>@>()=
   ||_PATH_CSH_SHELLVARS	@CONFPATH@/innshellvars.csh
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where most config and data files are usually stored; not required
-  ||##  to the home directory of NEWSUSER.
-  ||##[autoconf]
-  ||#### =()<_PATH_NEWSLIB		@<_PATH_NEWSLIB>@>()=
-  ||_PATH_NEWSLIB		@CONFPATH@
 [IN1.7=@11][WDF=confparam][WOR=yes][P=low]
   ||## The group owner of the rnews program. Usually uucp.
   ||#### =()<RNEWS_GROUP		@<RNEWS_GROUP>@>()=
   ||RNEWS_GROUP		uucp
 [IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The server's log file.
-  ||##[autoconf]
-  ||#### =()<_PATH_LOGFILE		@<_PATH_LOGFILE>@>()=
-  ||_PATH_LOGFILE		@LOGDIR@/news
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The server's error log file.
-  ||##[autoconf]
-  ||#### =()<_PATH_ERRLOG		@<_PATH_ERRLOG>@>()=
-  ||_PATH_ERRLOG		@LOGDIR@/errlog
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where most sylog log files go; see also scanlogs, innstat, etc.
-  ||##[autoconf]
-  ||#### =()<_PATH_MOST_LOGS		@<_PATH_MOST_LOGS>@>()=
-  ||_PATH_MOST_LOGS		@LOGDIR@
-[IN1.7=@11][WDF=confparam][WOR=yes]
   ||##  How many generates of log files to keep.
   ||#### =()<LOG_CYCLES		@<LOG_CYCLES>@>()=
   ||LOG_CYCLES		3
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Text value of the server's pid.
-  ||##[autoconf]
-  ||#### =()<_PATH_SERVERPID		@<_PATH_SERVERPID>@>()=
-  ||_PATH_SERVERPID		@RUNPATH@/innd.pid
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The newsfeeds file, on the server host.
-  ||##[autoconf]
-  ||#### =()<_PATH_NEWSFEEDS		@<_PATH_NEWSFEEDS>@>()=
-  ||_PATH_NEWSFEEDS		@CONFPATH@/newsfeeds
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The article history database, on the server host.
-  ||##[autoconf]
-  ||#### =()<_PATH_HISTORY		@<_PATH_HISTORY>@>()=
-  ||_PATH_HISTORY		@VARPATH@/history
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  File listing the sites that feed us news.
-  ||##[autoconf]
-  ||#### =()<_PATH_INNDHOSTS		@<_PATH_INNDHOSTS>@>()=
-  ||_PATH_INNDHOSTS		@CONFPATH@/incoming.conf
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The active file, on the server host.
-  ||##[autoconf]
-  ||#### =()<_PATH_ACTIVE		@<_PATH_ACTIVE>@>()=
-  ||_PATH_ACTIVE		@VARPATH@/active
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  A temporary active file, for writing on the server host.
-  ||##[autoconf]
-  ||#### =()<_PATH_NEWACTIVE		@<_PATH_NEWACTIVE>@>()=
-  ||_PATH_NEWACTIVE		@VARPATH@/active.tmp
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  An old active file on the server host.
-  ||##[autoconf]
-  ||#### =()<_PATH_OLDACTIVE		@<_PATH_OLDACTIVE>@>()=
-  ||_PATH_OLDACTIVE		@VARPATH@/active.old
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The log of when groups are created.
-  ||##[autoconf]
-  ||#### =()<_PATH_ACTIVETIMES	@<_PATH_ACTIVETIMES>@>()=
-  ||_PATH_ACTIVETIMES	@VARPATH@/active.times
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where batch files are located.
-  ||##[autoconf]
-  ||#### =()<_PATH_BATCHDIR		@<_PATH_BATCHDIR>@>()=
-  ||_PATH_BATCHDIR		@SPOOLDIR@/out.going
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where archives are kept.
-  ||##[autoconf]
-  ||#### =()<_PATH_ARCHIVEDIR	@<_PATH_ARCHIVEDIR>@>()=
-  ||_PATH_ARCHIVEDIR	@SPOOLDIR@/archive
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where NNRP distributions file is
-  ||##[autoconf]
-  ||#### =()<_PATH_NNRPDIST		@<_PATH_NNRPDIST>@>()=
-  ||_PATH_NNRPDIST		@CONFPATH@/distributions
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where the NNRP automatic subscriptions file is
-  ||##[autoconf]
-  ||#### =()<_PATH_NNRPSUBS		@<_PATH_NNRPSUBS>@>()=
-  ||_PATH_NNRPSUBS		@CONFPATH@/subscriptions
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where the default Distribution assignments file is
-  ||##[autoconf]
-  ||#### =()<_PATH_DISTPATS		@<_PATH_DISTPATS>@>()=[autoconf]
-  ||_PATH_DISTPATS		@CONFPATH@/distrib.pats
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||#### =()<_PATH_NEWSGROUPS	@<_PATH_NEWSGROUPS>@>()=[autoconf]
-  ||_PATH_NEWSGROUPS	@CONFPATH@/newsgroups
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  File where client configuration parameters can be read.
-  ||##[autoconf]
-  ||#### =()<_PATH_CONFIG		@<_PATH_CONFIG>@>()=
-  ||_PATH_CONFIG		@CONFPATH@/inn.conf
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The possible active file, on clients (NFS-mounted, e.g.).
-  ||##[autoconf]
-  ||#### =()<_PATH_CLIENTACTIVE	@<_PATH_CLIENTACTIVE>@>()=
-  ||_PATH_CLIENTACTIVE	@VARPATH@/active
 [IN1.7=@11][WDF=confparam][WOR=yes]
   ||##  A temporary file, for client inews to use.
   ||##[autoconf]
   ||#### =()<_PATH_TEMPACTIVE	@<_PATH_TEMPACTIVE>@>()=
   ||_PATH_TEMPACTIVE	@TMPPATH@/activeXXXXXX
 [IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where to mail to the moderators.
-  ||##[autoconf]
-  ||#### =()<_PATH_MODERATORS	@<_PATH_MODERATORS>@>()=
-  ||_PATH_MODERATORS	@CONFPATH@/moderators
-[IN1.7=@11][WDF=confparam][WOR=yes]
   ||##  A temporary file, for client inews to use.
   ||##[autoconf]
   ||#### =()<_PATH_TEMPMODERATORS	@<_PATH_TEMPMODERATORS>@>()=
   ||_PATH_TEMPMODERATORS	@TMPPATH@/moderatorsXXXXXX
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where NNTP puts the name of the server.
-  ||##[autoconf]
-  ||#### =()<_PATH_SERVER		@<_PATH_SERVER>@>()=
-  ||_PATH_SERVER		@CONFPATH@/server
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  File with name/password for all remote connections.
-  ||##[autoconf]
-  ||#### =()<_PATH_NNTPPASS		@<_PATH_NNTPPASS>@>()=
-  ||_PATH_NNTPPASS		@CONFPATH@/passwd.nntp
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  NNRP access file.
-  ||##[autoconf]
-  ||#### =()<_PATH_NNRPACCESS	@<_PATH_NNRPACCESS>@>()=
-  ||_PATH_NNRPACCESS	@CONFPATH@/nnrp.access
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Default expire control file.
-  ||##[autoconf]
-  ||#### =()<_PATH_EXPIRECTL		@<_PATH_EXPIRECTL>@>()=
-  ||_PATH_EXPIRECTL		@CONFPATH@/expire.ctl
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Prolog to parse control scripts
-  ||##[autoconf]
-  ||#### =()<_PATH_PARSECTL		@<_PATH_PARSECTL>@>()=
-  ||_PATH_PARSECTL		@ac_cv_subst_binpath@/parsecontrol
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Access control file for control scripts.
-  ||##[autoconf]
-  ||#### =()<_PATH_CONTROLCTL	@<_PATH_CONTROLCTL>@>()=
-  ||_PATH_CONTROLCTL	@CONFPATH@/control.ctl
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Innwatch control file.
-  ||##[autoconf]
-  ||#### =()<_PATH_CTLWATCH		@<_PATH_CTLWATCH>@>()=
-  ||_PATH_CTLWATCH		@CONFPATH@/innwatch.ctl
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where innwatch writes its own pid.
-  ||##[autoconf]
-  ||#### =()<_PATH_WATCHPID		@<_PATH_WATCHPID>@>()=
-  ||_PATH_WATCHPID		@RUNPATH@/innwatch.pid
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where innwatch writes status when it gets an interrupt
-  ||##[autoconf]
-  ||#### =()<_PATH_INNWSTATUS	@<_PATH_INNWSTATUS>@>()=
-  ||_PATH_INNWSTATUS	@RUNPATH@/innwatch.status
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Format of news overview database
-  ||##[autoconf]
-  ||#### =()<_PATH_SCHEMA		@<_PATH_SCHEMA>@>()=
-  ||_PATH_SCHEMA		@CONFPATH@/overview.fmt
-[IN1.7=@NO][WDF=confparam][WOR=yes]
-  ||## Location of the MOTD file.
-  ||##[autoconf]
-  ||#### =()<_PATH_MOTD		@<_PATH_MOTD>@>()=
-  ||_PATH_MOTD		@CONFPATH@/motd.news
-  ||## Location of the storage control file.
-  ||##[autoconf]
-  ||#### =()<_PATH_STORAGECTL		@<_PATH_STORAGECTL>@>()=
-  ||_PATH_STORAGECTL		@CONFPATH@/storage.ctl
-  ||## Location of the unified overview file.
-  ||##[autoconf]
-  ||#### =()<_PATH_OVERVIEWCTL		@<_PATH_OVERVIEWCTL>@>()=
-  ||_PATH_OVERVIEWCTL		@CONFPATH@/overview.ctl
-
 [IN1.7=@12][comments]
   ||
   ||
@@ -1277,18 +740,6 @@
   ||#### =()<TCL_LIB		@<TCL_LIB>@>()=
   ||TCL_LIB			@TCL_LIB@
   ||# TCL_LIB		-ltcl -lm
-[IN1.7=@13][WDF=confparam][WOR=yes]
-  ||##  TCL Startup File. Should probably be prefixed with the same value as
-  ||##  _PATH_CONTROLPROGS.
-  ||##[autoconf]
-  ||#### =()<_PATH_TCL_STARTUP	@<_PATH_TCL_STARTUP>@>()=
-  ||_PATH_TCL_STARTUP	@ac_cv_subst_binpath@/control/startup.tcl
-[IN1.7=@13][WDF=confparam][WOR=yes]
-  ||##  TCL Filter File. Should probably be prefixed with the same value as
-  ||##  _PATH_CONTROLPROGS.
-  ||##[autoconf]
-  ||#### =()<_PATH_TCL_FILTER	@<_PATH_TCL_FILTER>@>()=
-  ||_PATH_TCL_FILTER	@ac_cv_subst_binpath@/control/filter.tcl
 [IN1.7=@14][comments]
   ||
   ||
@@ -1303,21 +754,12 @@
   ||##[autoconf]
   ||#### =()<WANT_PGPVERIFY		@<WANT_PGPVERIFY>@>()=
   ||WANT_PGPVERIFY		@DO_PGP@
-[IN1.7=@14][WDF=autoconf][WOR=yes]
-  ||##  PGP binary.
-  ||##[autoconf]
-  ||#### =()<_PATH_PGP		@<_PATH_PGP>@>()=
-  ||_PATH_PGP		@ac_cv_subst_path_pgp@
 [IN1.7=@15][comments]
   ||
   ||##
   ||##  15. Local Configuration
   ||##
   ||
-[IN1.7=@15][WDF=confparam][WOR=yes]
-  ||##  Home of the NEWSUSER
-  ||#### =()<_PATH_NEWSHOME		@<_PATH_NEWSHOME>@>()=
-  ||_PATH_NEWSHOME		@prefix@
 [IN1.7=@16][comments]
   ||
   ||
@@ -1333,16 +775,6 @@
   ||##  Flags actsyncd is to pass to actsync.
   ||#### =()<ACTSYNC_FLAGS		@<ACTSYNC_FLAGS>@>()=
   ||ACTSYNC_FLAGS		-v 2 -q 2 -b 0 -d 0 -g 7 -s 79 -t 2
-[IN1.7=@16][WDF=confparam][WOR=yes]
-  ||## Actsyncd config file.
-  ||##[autoconf]
-  ||#### =()<_PATH_ACTSYNC_CFG	@<_PATH_ACTSYNC_CFG>@>()=
-  ||_PATH_ACTSYNC_CFG	@CONFPATH@/actsync.cfg
-[IN1.7=@16][WDF=confparam][WOR=yes]
-  ||## Actsyncd ignore file.
-  ||##[autoconf]
-  ||#### =()<_PATH_ACTSYNC_IGN	@<_PATH_ACTSYNC_IGN>@>()=
-  ||_PATH_ACTSYNC_IGN	@CONFPATH@/actsync.ign
 [IN1.7=@17][comments]
   ||
   ||
@@ -1365,15 +797,106 @@
   ||#### =()<PERL_INC	@<PERL_INC>@>()=
   ||PERL_INC		@PERL_INC@
   ||#PERL_INC		-I/usr/local/gnu/lib/perl5/i386-bsdos/5.003/CORE
-[IN1.7=@17][WDF=autoconf][WOR=yes]
-  ||##  Perl Filter Files. Should probably be prefixed with the same value as
-  ||##  _PATH_CONTROLPROGS.
-  ||##[autoconf]
-  ||#### =()<_PATH_PERL_STARTUP_INND		@<_PATH_PERL_STARTUP_INND>@>()=
-  ||_PATH_PERL_STARTUP_INND		@ac_cv_subst_binpath@/control/startup_innd.pl
-[IN1.7=@17][WDF=confparam][WOR=yes]
-  ||#### =()<_PATH_PERL_FILTER_INND		@<_PATH_PERL_FILTER_INND>@>()=[autoconf]
-  ||_PATH_PERL_FILTER_INND		@ac_cv_subst_binpath@/control/filter_innd.pl
-[IN1.7=@17][WDF=confparam][WOR=yes]
-  ||#### =()<_PATH_PERL_FILTER_NNRPD		@<_PATH_PERL_FILTER_NNRPD>@>()=[autoconf]
-  ||_PATH_PERL_FILTER_NNRPD		@ac_cv_subst_binpath@/control/filter_nnrpd.pl
+[IN1.7=@NO][comments]
+  ||
+  ||
+  ||##  18. CNFS partition hackery
+  ||##
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Location of the cnfs partition configuration file
+  ||#### =()<_PATH_CYCBUFFCONFIG	@<_PATH_CYCBUFFCONFIG>@>()=
+  ||_PATH_CYCBUFFCONFIG		/var/news/etc/cycbuff.conf
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Maximum number of cycbuffs
+  ||#### =()<MAX_CYCBUFFS		@<MAX_CYCBUFFS>@>()=
+  ||MAX_CYCBUFFS		16
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Maximum number of metacycbuffs
+  ||#### =()<MAX_METACYCBUFFS	@<MAX_METACYCBUFFS>@>()=
+  ||MAX_METACYCBUFFS		8
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Maximum number of cycbuffs which any one metacycbuff can contain
+  ||#### =()<MAX_META_MEMBERS		@<MAX_META_MEMBERS>@>()=
+  ||MAX_META_MEMBERS		16
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Maximum number of cycbuff expire rules
+  ||#### =()<MAX_METACYCBUFF_RULES		@<MAX_METACYCBUFF_RULES>@>()=
+  ||MAX_METACYCBUFF_RULES		24
+[IN1.7=@NO][WDF=autoconf][WOR=no]
+  ||##  C type to use for offsets (should be a big integer like "off_t" 
+  ||##  (or "offset_t" (64 bits) for Solaris 2.5).
+  ||##  WARNING: we use "atol" to convert these values ... look in the code
+  ||##           for "Danger, Will Robinson!"
+  ||#### =()<CYCBUFF_OFF_T		@<CYCBUFF_OFF_T>@>()=
+  ||CYCBUFF_OFF_T		off_t
+[IN1.7=@NO][WDF=autoconf][WOR=no]
+  ||##  Which seek system call to use?  If CYCBUFF_OFF_T is "off_t", then lseek().
+  ||##  If, like Solaris, CYCBUFF_OFF_T is bigger than "off_t", then we must
+  ||##  use a different system call, namedly llseek().
+  ||#### =()<CNFSseekcall		@<CNFSseekcall>@>()=
+  ||CNFSseekcall		lseek
+[IN1.7=@NO][WDF=autoconf][WOR=no]
+  ||##  C type to use for cycle numbers.  Should be big, like a 32 bit unsigned
+  ||##  integer.
+  ||#### =()<CYCLENUM_T		@<CYCLENUM_T>@>()=
+  ||CYCLENUM_T		unsigned long
+[IN1.7=@NO][WDF=autoconf][WOR=no]
+  ||##  Number of articles to be written to a cycbuff before that cycbuff's
+  ||##  status header is updated.
+  ||#### =()<METACYCBUFF_UPDATE		@<METACYCBUFF_UPDATE>@>()=
+  ||METACYCBUFF_UPDATE		25
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Directory where CNFS-specific utilities should go
+  ||#### =()<_PATH_CNFSBIN		@<_PATH_CNFSBIN>@>()=
+  ||_PATH_CNFSBIN		/var/news/bin.cnfs
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Utilize CNFS.  Select DO or DONT.  The effects of selecting DONT
+  ||##  in this particular code base are unclear....
+  ||USE_CNFS		DO
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Misc MRNet hacks.  I don't even recall what they do anymore, but I
+  ||##  always compile with them.  Select DO or DONT.  I recommend DO.
+  ||##  -Scott <fritchie@mr.net>
+  ||MRNET_HACK		DO
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Store articles in "wire" format, namely with CR-LF terminating
+  ||##  each line.  Select DO or DONT.  Recommend DO.
+  ||WIRE_FORMAT		DO
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  USE mmap() to send articles (e.g. with "innxmit").  THIS CODE IS
+  ||##  EXTREMELY OLD, ANTIQUATED, OUT-OF-DATE, AND UNMAINTAINED.  I have
+  ||##  absolutely no idea why I haven't ripped it out yet.
+  ||COMMIT_MMAP_SUICIDE		DONT
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Use mmap() when dealiing with the article number => article
+  ||##  storage location map files.  This option only matters if you're
+  ||##  going to be needing NNRP support.  Use either DO or DONT.
+  ||##  Recommend DO.
+  ||MMAP_MAP_FILES		DO
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  History mechanism choice.  Your options are: TRADITIONAL, ONEILL
+  ||##  TRADITIONAL is the DBZ mechanism bundled along with INN.
+  ||##  ONEILL is an MD5-based partial-from-scratch DBZ rewrite by Clayton O'Neill
+  ||DBZ_TYPE		TRADITIONAL
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  History accelerator.  Allocate a large chunk of RAM for an completely
+  ||##  in-core history mechanism.  Classic RAM vs. speed tradeoff.  Use
+  ||##  either DO or DONT to suck up an additional 32MB RAM.
+  ||HISTORY_ACCEL		DONT
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Performance timer option, by Joe Greco.  Syslogs messages every 5
+  ||##  minutes with stats on time taken to perform many operations.  Use
+  ||##  either DO or DONT.
+  ||GRECO_TIMER		DO
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  CIDR slash notation support for NNRPD.  Use either DO or DONT
+  ||CIDR_SLASH_NOTATION		DO
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||##  Use mmap() to read .overview files.  Includes handy feature of
+  ||##  performing binary searches on .overview files instead of reading
+  ||##  them sequentially.  Do not use if your system's mmap()
+  ||##  implementation is rock-solid.  See the unoff-patches directory for
+  ||##  "mmaptest.shar" to test your system's mmap() implementation.
+  ||##  Use either DO or DONT.
+  ||OVERSCREAM		DO
+
