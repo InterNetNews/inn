@@ -24,7 +24,7 @@ void
 daemonize(const char *path)
 {
     int status;
-    int fd UNUSED;
+    int fd;
 
     /* Fork and exit in the parent to disassociate from the current process
        group and become the leader of a new process group. */
@@ -49,4 +49,13 @@ daemonize(const char *path)
 
     if (chdir(path) < 0)
         syswarn("cant chdir to %s", path);
+
+    fd = open("/dev/null", O_RDWR, 0);
+    if (fd != -1) {
+	dup2(fd, STDIN_FILENO);
+	dup2(fd, STDOUT_FILENO);
+	dup2(fd, STDERR_FILENO);
+	if (fd > 2)
+	    close(fd);
+    }
 }
