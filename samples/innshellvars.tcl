@@ -162,6 +162,9 @@ set inn_watchpid "/var/news/run/innwatch.pid"
 ##  =()<set inn_z "@<_PATH_COMPRESSEXT>@">()=
 set inn_z ".Z"
 
+##  =()<set inn_path_motd "@<_PATH_MOTD>@">()=
+set inn_path_motd "/var/news/etc/motd.news"
+
 ##  =()<set inn_perl_support [ expr { "@<PERL_SUPPORT>@" == "DO" ? 1 : 0 } ]>()=
 set inn_perl_support [ expr { "DONT" == "DO" ? 1 : 0 } ]
 

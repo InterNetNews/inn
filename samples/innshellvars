@@ -108,6 +108,8 @@ WANT_PGPVERIFY=DO
 WATCHPID=/var/news/run/innwatch.pid
 ##  =()<Z=@<_PATH_COMPRESSEXT>@>()=
 Z=.Z
+##  =()<PATH_MOTD=@<_PATH_MOTD>@>()=
+PATH_MOTD=/var/news/etc/motd.news
 
 ##  =()<PERL_SUPPORT=@<PERL_SUPPORT>@>()=
 PERL_SUPPORT=DONT

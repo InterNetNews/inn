@@ -164,6 +164,9 @@ $watchpid = "/var/news/run/innwatch.pid" ;
 ##  =()<$z = "@<_PATH_COMPRESSEXT>@" ;>()=
 $z = ".Z" ;
 
+##  =()<$path_motd = "@<_PATH_MOTD>@" ;>()=
+$path_motd = "/var/news/etc/motd.news" ;
+
 ##  =()<$perl_support = ("@<PERL_SUPPORT>@" eq "DO" ? 1 : 0) ;>()=
 $perl_support = ("DONT" eq "DO" ? 1 : 0) ;
 
