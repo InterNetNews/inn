@@ -1504,14 +1504,9 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
   caddr_t		addr;
   GIBLIST		*giblist;
 
-  Gibcount = 0;
   if (high - low < 0)
     return TRUE;
-  i = 0;
-  if (high - low + 1 < ge->count)
-    Gibcount = high - low + 1;
-  else
-    Gibcount = ge->count;
+  Gibcount = ge->count;
   if (Gibcount == 0)
     return TRUE;
   Gib = NEW(OVINDEX, Gibcount);
@@ -1533,24 +1528,17 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
       return FALSE;
     }
     ovblock = (OVBLOCK *)(addr + pagefudge);
-    if (low > ovblock->ovindexhead.high) {
-      ov = ovblock->ovindexhead.next;
-      munmap(addr, len);
-      continue;
-    }
     if (ov.index == ge->curindex.index && ov.blocknum == ge->curindex.blocknum) {
       limit = ge->curindexoffset;
     } else {
       limit = OVINDEXMAX;
     }
     for (i = 0 ; i < limit ; i++) {
-      if (ovblock->ovindex[i].artnum >= low) {
-	if (Gibcount == count) {
-	  Gibcount += OV_FUDGE;
-	  RENEW(Gib, OVINDEX, Gibcount);
-	}
-	Gib[count++] = ovblock->ovindex[i];
+      if (Gibcount == count) {
+	Gibcount += OV_FUDGE;
+	RENEW(Gib, OVINDEX, Gibcount);
       }
+      Gib[count++] = ovblock->ovindex[i];
     }
     giblist = NEW(GIBLIST, 1);
     giblist->ov = ov;
@@ -1572,7 +1560,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
     return TRUE;
   count = 0;
   for (i = 0 ; i < Gibcount ; i++) {
-    if (Gib[i].artnum == 0)
+    if (Gib[i].artnum == 0 || Gib[i].artnum < low || Gib[i].artnum > high)
       continue;
     ov.index = Gib[i].index;
     ov.blocknum = Gib[i].blocknum;
@@ -1682,7 +1670,7 @@ bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
   if (search->cur == Gibcount) {
     return FALSE;
   }
-  while (Gib[search->cur].artnum == 0) {
+  while (Gib[search->cur].artnum == 0 || Gib[search->cur].artnum < search->lo) {
     search->cur++;
     if (search->cur == Gibcount)
       return FALSE;
@@ -2025,10 +2013,11 @@ bool buffindexed_expiregroup(char *group, int *lo) {
 }
 
 bool buffindexed_ctl(OVCTLTYPE type, void *val) {
-  int		total, used, *i, j;
-  OVBUFF	*ovbuff = ovbufftab;
-  OVSORTTYPE	*sorttype;
-  bool		*boolval;
+  int			total, used, *i, j;
+  OVBUFF		*ovbuff = ovbufftab;
+  OVSORTTYPE		*sorttype;
+  bool			*boolval;
+  GROUPDATABLOCK	*gdb;
 
   switch (type) {
   case OVSPACE:
@@ -2053,9 +2042,11 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
     i = (int *)val;
     *i = TRUE;
     for (j = 0 ; j < GROUPDATAHASHSIZE ; j++) {
-      if  (groupdatablock[j] != NULL) {
-	*i = FALSE;
-	return TRUE;
+      for (gdb = groupdatablock[j] ; gdb != NULL ; gdb = gdb->next) {
+        if  (gdb->mmapped) {
+	  *i = FALSE;
+	  return TRUE;
+        }
       }
     }
     return TRUE;
