@@ -1084,6 +1084,9 @@ ARTpost(char *article,
 	return MailArticle(modgroup, article);
     }
 
+    if (idbuff)
+	strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
+
     if (PERMaccessconf->spoolfirst)
 	return Spoolit(article, Error);
 
@@ -1209,8 +1212,6 @@ ARTpost(char *article,
 
     /* Send a quit and close down */
     SendQuit(FromServer, ToServer);
-    if (idbuff)
-	strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
 
     /* Tracking */
     if (PERMaccessconf->readertrack) {
