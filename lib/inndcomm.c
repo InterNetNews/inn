@@ -91,7 +91,7 @@ ICCopen(void)
     }
     memset(&ICCclient, 0, sizeof ICCclient);
     ICCclient.sun_family = AF_UNIX;
-    strcpy(ICCclient.sun_path, ICCsockname);
+    strlcpy(ICCclient.sun_path, ICCsockname, sizeof(ICCclient.sun_path));
     mask = umask(0);
     if (bind(ICCfd, (struct sockaddr *) &ICCclient,
              SUN_LEN(&ICCclient)) < 0) {
@@ -106,9 +106,9 @@ ICCopen(void)
     /* Name the server's socket. */
     memset(&ICCserv, 0, sizeof ICCserv);
     ICCserv.sun_family = AF_UNIX;
-    strcpy(ICCserv.sun_path, innconf->pathrun);
-    strcat(ICCserv.sun_path, "/");
-    strcat(ICCserv.sun_path, _PATH_NEWSCONTROL);
+    strlcpy(ICCserv.sun_path, innconf->pathrun, sizeof(ICCserv.sun_path));
+    strlcat(ICCserv.sun_path, "/", sizeof(ICCserv.sun_path));
+    strlcat(ICCserv.sun_path, _PATH_NEWSCONTROL, sizeof(ICCserv.sun_path));
 #else
     /* Make a named pipe and open it. */
     mask = umask(0);
@@ -234,11 +234,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     bufsiz += HEADER_SIZE ;
     if (bufsiz < MIN_BUFFER_SIZE)
 	bufsiz = MIN_BUFFER_SIZE;
-    buff = malloc((unsigned int)bufsiz);
-    if (buff == NULL) {
-	ICCfailure = "malloc";
-	return -1;
-    }
+    buff = xmalloc(bufsiz);
     if (replyp)
 	*replyp = NULL;
 
@@ -246,10 +242,11 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
                                    protocol version info. */
 
     /* Format the message. */
-    sprintf(buff, "%s%c%c", ICCsockname, SC_SEP, cmd);
+    snprintf(buff, bufsiz, "%s%c%c", ICCsockname, SC_SEP, cmd);
     for (p = buff + strlen(buff), i = 0; (q = argv[i]) != NULL; i++) {
 	*p++ = SC_SEP;
-	p += strlen(strcpy(p, q));
+        *p = '\0';
+        strlcat(buff, q, bufsiz);
     }
 
     /* Send message. */
