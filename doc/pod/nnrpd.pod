@@ -11,21 +11,28 @@ B<nnrpd> [B<-DfnoRSt>] [B<-6> I<address>] [B<-b> I<address>]
 
 =head1 DESCRIPTION
 
-B<nnrpd> is an NNTP server for newsreaders. It accepts commands on its
-standard input and responds on its standard output. It is normally
+B<nnrpd> is an NNTP server for newsreaders.  It accepts commands on its
+standard input and responds on its standard output.  It is normally
 invoked by innd(8) with those descriptors attached to a remote client
-connection. B<nnrpd> also supports running as a standalone daemon.
+connection.  B<nnrpd> also supports running as a standalone daemon.
 
 Unlike innd(8) B<nnrpd> supports all NNTP commands for user-oriented
-reading and posting.
-
-B<nnrpd> uses the F<readers.conf> file to control who is authorized to
-access the Usenet database. When I<nnrpdloadlimit> in F<inn.conf> is
-not 0, it will also reject connections if the load average is greater
-than that value (typically 16).
+reading and posting.  B<nnrpd> uses the F<readers.conf> file to control
+who is authorized to access the Usenet database.
 
 On exit, B<nnrpd> will report usage statistics through syslog(3).
 
+B<nnrpd> only reads config files (both F<readers.conf> and F<inn.conf>)
+when it is spawned.  You can therefore never change the behavior of a
+client that's already connected.  If B<nnrpd> is run from B<innd> (the
+default) or from inetd(8), xinetd(8), or some equivalent, a new B<nnrpd>
+process is spawned for every connection and therefore any changes to
+configuration files will be immediately effective for all new
+connections.  If you are instead running B<nnrpd> with the B<-D> option,
+any configuration changes won't take effect until B<nnrpd> is restarted.
+
+When I<nnrpdloadlimit> in F<inn.conf> is not 0, it will also reject
+connections if the load average is greater than that value (typically 16).
 B<nnrpd> can also prevent high-volume posters from abusing your
 resources. See the discussion of exponential backoff in inn.conf(5).
 
@@ -164,26 +171,25 @@ is toggled upon receipt of a C<SIGHUP>; see signal(2).
 
 =head1 PROTOCOL DIFFERENCES
 
-B<nnrpd> implements the NNTP commands defined in RFC 977, with the following
-differences:
+B<nnrpd> implements the NNTP commands defined in RFC 977, with the
+following differences:
 
 =over 4
 
 =item 1.
 
-The C<slave> command is not implemented. This command has never been
+The C<slave> command is not implemented.  This command has never been
 fully defined.
 
 =item 2.
 
-The C<list> command may be followed by the optional word
-C<active.times>, C<distributions>, C<distrib.pats>, C<moderators>,
-C<newsgroups>, C<subscriptions>, or C<Ioverview.fmt> to get a list of
-when newsgroups where created, a list of valid distributions, a file
-specifying default distribution patterns, moderators list, a
-one-per-line description of the current set of newsgroups, a list of
-the automatic group subscriptions, or a listing of the
-F<overview.fmt> file.
+The C<list> command may be followed by the optional word C<active.times>,
+C<distributions>, C<distrib.pats>, C<moderators>, C<newsgroups>,
+C<subscriptions>, or C<Ioverview.fmt> to get a list of when newsgroups
+where created, a list of valid distributions, a file specifying default
+distribution patterns, moderators list, a one-per-line description of the
+current set of newsgroups, a list of the automatic group subscriptions, or
+a listing of the F<overview.fmt> file.
 
 The command C<list active> is equivalent to the C<list> command. This
 is a common extension.
@@ -191,41 +197,40 @@ is a common extension.
 =item 3.
 
 The C<xhdr>, C<authinfo user> and C<authinfo pass> commands are
-implemented.  These are based on the reference Unix
-implementation. See
-ftp://ftp.ietf.org/internet-drafts/draft-ietf-nntpext-imp-04.txt
+implemented.  These are based on the reference Unix implementation.  See
+RFC 2980.
 
 =item 4.
 
 A new command, C<xpat header range|MessageID pat [morepat...]>, is
-provided.  The first argument is the case-insensitive name of the
-header to be searched.  The second argument is either an article range
-or a single Message-ID, as specified in RFC 977.  The third argument
-is a C<uwildmat>(3)-style pattern; if there are additional arguments
-they are joined together separated by a single space to form the
-complete pattern.  This command is similar to the C<xhdr> command.  It
-returns a C<221> response code, followed by the text response of all
-article numbers that match the pattern.
+provided.  The first argument is the case-insensitive name of the header
+to be searched.  The second argument is either an article range or a
+single Message-ID, as specified in RFC 977.  The third argument is a
+C<uwildmat>(3)-style pattern; if there are additional arguments they are
+joined together separated by a single space to form the complete pattern.
+This command is similar to the C<xhdr> command.  It returns a C<221>
+response code, followed by the text response of all article numbers that
+match the pattern.
 
 =item 5.
 
-The C<listgroup group> command is provided.  This is a comment
-extension.  It is equivalent to the C<group> command, except that the
-reply is a multi-line response containing the list of all article
-numbers in the group.
+The C<listgroup group> command is provided.  This is a comment extension.
+It is equivalent to the C<group> command, except that the reply is a
+multi-line response containing the list of all article numbers in the
+group.
 
 =item 6.
 
 The C<xgtitle [group]> command is provided. This extension is used by
 ANU-News.  It returns a C<282> reply code, followed by a one-line
-description of all newsgroups thatmatch the pattern. The default is
-the current group.
+description of all newsgroups thatmatch the pattern.  The default is the
+current group.
 
 =item 7.
 
-The C<xover [range]> command is provided. It returns a C<224> reply
-code, followed by the overview data for the specified range; the
-default is to return the data for the current article.
+The C<xover [range]> command is provided. It returns a C<224> reply code,
+followed by the overview data for the specified range; the default is to
+return the data for the current article.
 
 =item 8.
 
@@ -233,17 +238,17 @@ The C<xpath MessageID> command is provided; see innd(8).
 
 =item 9.
 
-The C<date> command is provided; this is based on the draft NNTP
-protocol revision (draft-ietf-nntpext-imp-04.txt).  It returns a
-one-line response code of C<111>  followed by the GMT date and time on
-the server in the form C<YYYYMMDDhhmmss>.
+The C<date> command is provided; this is based on the draft NNTP protocol
+revision (draft-ietf-nntpext-imp-04.txt).  It returns a one-line response
+code of C<111> followed by the GMT date and time on the server in the form
+C<YYYYMMDDhhmmss>.
 
 =head1 HISTORY
 
-Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
-Overview support added by Rob Robertston <rob@violet.berkeley.edu> and
-Rich in January, 1993. Exponential backoff (for posting) added by
-Dave Hayes in Febuary 1998.
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Overview
+support added by Rob Robertston <rob@violet.berkeley.edu> and Rich in
+January, 1993.  Exponential backoff (for posting) added by Dave Hayes in
+Febuary 1998.
 
 $Id$
 
