@@ -15,7 +15,7 @@
 #include <syslog.h>  
 
 void Usage(void) {
-    fprintf(stderr, "Usage sm [-q] [-r] [-d] [-o] [-R] token [token] [token] ...\n");
+    fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] token [token] [token] ...\n");
     exit(1);
 }
 
@@ -23,14 +23,12 @@ int main(int argc, char **argv) {
     int                 c;
     BOOL                Quiet = FALSE;
     BOOL                Delete = FALSE;
-    BOOL                Overview = FALSE;
     BOOL                Rawformat = FALSE;
     BOOL		val;
     int                 i;
     char                *p;
     QIOSTATE            *qp;
     TOKEN		token;
-    int			linelen;
     ARTHANDLE		*art;
     
     /* First thing, set up logging and our identity. */
@@ -47,9 +45,6 @@ int main(int argc, char **argv) {
 	case 'd':
 	    Delete = TRUE;
 	    break;
-	case 'o':
-	    Overview = TRUE;
-	    break;
 	case 'R':
 	    Rawformat = TRUE;
 	    break;
@@ -57,33 +52,7 @@ int main(int argc, char **argv) {
 	    Usage();
 	}
     }
-    if (Delete && Overview) {
-	if (!Quiet)
-	    fprintf(stderr, "-o cannot be used with -r or -d\n");
-	exit(1);
-    }
 
-    if (Overview) {
-	if (innconf->overviewmmap)
-	    val = TRUE;
-	else
-	    val = FALSE;
-	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
-	    if (!Quiet)
-		fprintf(stderr, "Can't setup unified overview mmap\n");
-	    exit(1);
-	}
-	if (!OVERsetup(OVER_MODE, "r")) {
-	    if (!Quiet)
-		fprintf(stderr, "Can't setup unified overview mode\n");
-	    exit(1);
-	}
-	if (!OVERinit()) {
-	    if (!Quiet)
-		fprintf(stderr, "Can't initialize unified overview mode\n");
-	    exit(1);
-	}
-    } else {
 	if (Delete) {
 	    val = TRUE;
 	    if (!SMsetup(SM_RDWR, (void *)&val)) {
@@ -96,7 +65,6 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
 	    exit(1);
 	}
-    }
     
     for (i = optind; i < argc; i++) {
 	if (Delete) {
@@ -109,26 +77,7 @@ int main(int argc, char **argv) {
 		if (!Quiet)
 		    fprintf(stderr, "Could not remove %s: %s\n", argv[i], SMerrorstr);
 	    }
-	} else if (Overview) {
-	    if (!IsToken(argv[i])) {
-		if (!Quiet)
-		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
-		continue;
-	    }
-	    token = TextToToken(argv[i]);
-	    if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL) {
-		if (!Quiet)
-		    fprintf(stderr, "Could not retrieve %s\n", argv[i]);
-		continue;
-	    }
-	    if (fwrite(p, linelen, 1, stdout) != 1) {
-		if (!Quiet)
-		    fprintf(stderr, "Output failed\n");
-		exit(1);
-	    }
-	    printf("\n");
-	} else {
-	    if (Rawformat) {
+	} else  if (Rawformat) {
 		if (!IsToken(argv[i])) {
 		    if (!Quiet)
 			fprintf(stderr, "%s is not a storage token\n", argv[i]);
@@ -166,7 +115,6 @@ int main(int argc, char **argv) {
 	    }
 	}
 	  
-    }
     SMshutdown();
     return 0;
 }

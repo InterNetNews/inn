@@ -17,11 +17,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <syslog.h>
+#include <dirent.h>
 #include "nntp.h"
 #include "paths.h"
-#include <syslog.h> 
 #include "libinn.h"
-#include "mydir.h"
 #include "macros.h"
 
 
@@ -34,7 +34,7 @@ typedef struct _HEADER {
 STATIC BOOL	Verbose;
 STATIC char	*InputFile = "stdin";
 STATIC char	*UUCPHost;
-STATIC char	*PATHBADNEWS = NULL;
+STATIC char	*PathBadNews = NULL;
 STATIC char	*remoteServer;
 STATIC FILE	*FromServer;
 STATIC FILE	*ToServer;
@@ -86,7 +86,6 @@ StartChild(fd, path, argv)
     int		pan[2];
     int		i;
     PID_T	pid;
-    char	*p;
 
     /* Create a pipe. */
     if (pipe(pan) < 0) {
@@ -197,7 +196,7 @@ STATIC void Reject(const char *article, const char *reason, const char *arg)
     }
 
 #if	defined(DO_RNEWS_SAVE_BAD)
-    TempName(PATHBADNEWS, buff);
+    TempName(PathBadNews, buff);
     if ((F = fopen(buff, "w")) == NULL) {
 	syslog(L_ERROR, "cant fopen %s %m", buff);
 	return;
@@ -608,7 +607,7 @@ STATIC void
 Unspool()
 {
     register DIR	*dp;
-    register DIRENTRY	*ep;
+    struct dirent       *ep;
     register BOOL	ok;
     struct stat		Sb;
     char		buff[SMBUF];
@@ -663,7 +662,7 @@ Unspool()
 	WaitForChildren(i);
 
 	if (!ok) {
-	    TempName(PATHBADNEWS, buff);
+	    TempName(PathBadNews, buff);
 	    (void)fprintf(stderr, "Unspooling failed saving to %s\n", buff);
 	    syslog(L_ERROR, "cant unspool saving to %s", buff);
 	    if (rename(InputFile, buff) < 0) {
@@ -824,7 +823,7 @@ int main(int ac, char *av[])
 #endif
      if (ReadInnConf() < 0) exit(1);
      UUCPHost = getenv(_ENV_UUCPHOST);
-     PATHBADNEWS = COPY(cpcatpath(innconf->pathincoming, _PATH_BADNEWS));
+     PathBadNews = COPY(cpcatpath(innconf->pathincoming, _PATH_BADNEWS));
      port = innconf->nnrpdpostport;
 
     (void)umask(NEWSUMASK);

@@ -76,9 +76,7 @@ void
 wholeconfig()
 {
     FILE	        *F;
-    int	                i;
     char	        *p;
-    char	        c;
 
     /* Read the config file. */
     if ((F = fopen(innconffile, "r")) != NULL) {
