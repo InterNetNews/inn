@@ -184,6 +184,7 @@ typedef int		BOOL;
 #define COMMENT_CHAR		'#'
 #define ART_ACCEPT		'+'
 #define ART_CANC		'c'
+#define ART_STRSTR		'?'
 #define ART_JUNK		'j'
 #define ART_REJECT		'-'
 #define EXP_CONTROL		'!'
