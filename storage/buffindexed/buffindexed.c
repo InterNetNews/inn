@@ -719,9 +719,8 @@ static bool ovbuffinit_disks(void) {
       ovbuff->freeblk = 0;
       ovbuff->updated = 0;
       ovbuff->dirty   = OVBUFF_SYNC_COUNT + 1;
-      syslog(L_NOTICE,
-	"%s: No magic cookie found for buffindexed %d, initializing",
-	LocalLogName, ovbuff->index);
+      notice("buffindexed: no magic cookie found for ovbuff %d, initializing",
+             ovbuff->index);
       ovflushhead(ovbuff);
     }
 #ifdef OV_DEBUG
