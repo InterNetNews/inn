@@ -35,16 +35,16 @@ install: all
 	done
 	@ME=`$(WHOAMI)` ; \
 	if [ x"$$ME" = xroot ] ; then \
-	    echo $(LI_SPRI) innbind $(D)$(PATHBIN)/innbind ; \
-	    $(LI_SPRI) innbind $(D)$(PATHBIN)/innbind ; \
+	    echo $(LI_SPRI) innbind $D$(PATHBIN)/innbind ; \
+	    $(LI_SPRI) innbind $D$(PATHBIN)/innbind ; \
 	else \
-	    echo $(LI_XPRI) innbind $(D)$(PATHBIN)/innbind ; \
-	    $(LI_XPRI) innbind $(D)$(PATHBIN)/innbind ; \
+	    echo $(LI_XPRI) innbind $D$(PATHBIN)/innbind ; \
+	    $(LI_XPRI) innbind $D$(PATHBIN)/innbind ; \
 	    echo '' ; \
 	    echo '========================' ; \
 	    echo 'NOTE NOTE NOTE NOTE NOTE' ; \
-	    ls -l $@ ; \
-	    echo '$@ needs to be installed setuid root' ; \
+	    ls -l $D$(PATHBIN)/innbind ; \
+	    echo '$D$(PATHBIN)/innbind needs to be installed setuid root' ; \
 	    echo '' ; echo ; \
 	fi
 
