@@ -113,9 +113,8 @@ struct group_index {
 /* Internal prototypes. */
 static int index_entry_count(size_t size);
 static size_t index_file_size(int count);
-static long index_offset_to_loc(ptrdiff_t offset);
 static bool index_lock(int fd, enum inn_locktype type);
-static bool index_lock_group(int fd, long loc, enum inn_locktype type);
+static bool index_lock_entry(int fd, ptrdiff_t offset, enum inn_locktype);
 static bool index_map(struct group_index *);
 static bool index_maybe_remap(struct group_index *, long loc);
 static void index_unmap(struct group_index *);
@@ -146,38 +145,42 @@ index_file_size(int count)
 
 
 /*
-**  Given an offset from the beginning of the entry table in the group.index
-**  file, convert that to a group number.
-*/
-static long
-index_offset_to_loc(ptrdiff_t offset)
-{
-    return offset / sizeof(struct group_entry);
-}
-
-
-/*
 **  Lock the hash table for the group index, used to acquire global locks on
 **  the group index when updating it.
 */
 static bool
 index_lock(int fd, enum inn_locktype type)
 {
-    return inn_lock_range(fd, type, true, 0, sizeof(struct group_header));
+    bool status;
+
+    status = inn_lock_range(fd, type, true, 0, sizeof(struct group_header));
+    if (!status)
+        syswarn("tradindexed: cannot %s index hash table",
+                (type == INN_LOCK_UNLOCK) ? "unlock" : "lock");
+    return status;
 }
 
 
 /*
-**  Lock the group entry for a particular group.  Used when updating and
-**  coordinating opening a group when it was just updated.
+**  Lock the group entry for a particular group.  Takes the offset of that
+**  group entry from the start of the group entries (not the start of the
+**  file; we have to add the size of the group header).  Used for coordinating
+**  updates of the data for a group.
 */
 static bool
-index_lock_group(int fd, long group, enum inn_locktype type)
+index_lock_group(int fd, ptrdiff_t offset, enum inn_locktype type)
 {
-    off_t offset = sizeof(struct group_header);
+    bool status;
+    size_t size;
 
-    offset += group * sizeof(struct group_entry);
-    return inn_lock_range(fd, type, true, offset, sizeof(struct group_entry));
+    size = sizeof(struct group_entry);
+    offset += sizeof(struct group_header);
+    status = inn_lock_range(fd, type, true, offset, size);
+    if (!status)
+        syswarn("tradindexed: cannot %s group entry at %lu",
+                (type == INN_LOCK_UNLOCK) ? "unlock" : "lock",
+                (unsigned long) offset);
+    return status;
 }
 
 
@@ -611,17 +614,16 @@ struct group_data *
 tdx_data_open(struct group_index *index, const char *group,
               struct group_entry *entry)
 {
-    long loc;
     struct group_data *data;
     ARTNUM high, base;
+    ptrdiff_t offset;
 
     if (entry == NULL) {
         entry = tdx_index_entry(index, group);
         if (entry == NULL)
             return NULL;
     }
-    loc = index_offset_to_loc(entry - index->entries);
-
+    offset = entry - index->entries;
     data = tdx_data_new(group, index->writable);
 
     /* Check to see if the inode of the index file matches.  If it doesn't,
@@ -637,16 +639,16 @@ tdx_data_open(struct group_index *index, const char *group,
     high = entry->high;
     base = entry->base;
     if (entry->indexinode != data->indexinode) {
-        if (!index_lock_group(index->fd, loc, INN_LOCK_READ))
-            syswarn("tradindexed: cannot lock group entry for %s", group);
-        if (!tdx_data_open_files(data))
+        index_lock_group(index->fd, offset, INN_LOCK_READ);
+        if (!tdx_data_open_files(data)) {
+            index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
             goto fail;
+        }
         if (entry->indexinode != data->indexinode)
             warn("tradindexed: index inode mismatch for %s", group);
         high = entry->high;
         base = entry->base;
-        if (!index_lock_group(index->fd, loc, INN_LOCK_UNLOCK))
-            syswarn("tradindexed: cannot unlock group entry for %s", group);
+        index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     }
     data->high = high;
     data->base = base;
@@ -669,15 +671,22 @@ bool
 tdx_data_add(struct group_index *index, struct group_entry *entry,
              struct group_data *data, const struct article *article)
 {
-    long loc;
     ARTNUM old_base;
     ino_t old_inode;
+    ptrdiff_t offset = entry - index->entries;
 
     if (!index->writable)
         return false;
+    index_lock_group(index->fd, offset, INN_LOCK_WRITE);
 
-    loc = index_offset_to_loc(entry - index->entries);
-    index_lock_group(index->fd, loc, INN_LOCK_WRITE);
+    /* Make sure we have the most current data files. */
+    if (entry->indexinode != data->indexinode) {
+        if (!tdx_data_open_files(data))
+            goto fail;
+        if (entry->indexinode != data->indexinode)
+            warn("tradindexed: index inode mismatch for %s",
+                 HashToText(entry->hash));
+    }
 
     /* If the article number is too low to store in the group index, repack
        the group with a lower base index. */
@@ -708,11 +717,11 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
         entry->high = article->number;
     entry->count++;
     msync(entry, sizeof(*entry), MS_ASYNC);
-    index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+    index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     return true;
 
  fail:
-    index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+    index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     return false;
 }
 
@@ -730,7 +739,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     struct group_entry *entry;
     struct group_entry new_entry;
     struct group_data *data = NULL;
-    long loc;
+    ptrdiff_t offset;
     ARTNUM old_base;
     ino_t old_inode;
 
@@ -742,8 +751,8 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
         tdx_index_close(index);
         return false;
     }
-    loc = index_offset_to_loc(entry - index->entries);
-    index_lock_group(index->fd, loc, INN_LOCK_WRITE);
+    offset = entry - index->entries;
+    index_lock_group(index->fd, offset, INN_LOCK_WRITE);
 
     /* tdx_data_expire_start builds the new IDX and DAT files and fills in the
        struct group_entry that was passed to it.  tdx_data_expire_finish does
@@ -774,7 +783,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
         new_entry.low = new_entry.high;
     *entry = new_entry;
     msync(entry, sizeof(*entry), MS_ASYNC);
-    index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+    index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
 
     /* Return the lowmark to our caller.  If there are no articles in the
        group, this should be one more than the high water mark. */
@@ -788,7 +797,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     return true;
 
  fail:
-    index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
+    index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     if (data != NULL)
         tdx_data_close(data);
     tdx_index_close(index);
