@@ -46,6 +46,7 @@
 #define yyparse		date_parse
 #define yylex		date_lex
 #define yyerror		date_error
+#define yymaxdepth	date_yymaxdepth
 
 
 static int date_lex(void);
