@@ -105,8 +105,8 @@ sub do_nocem {
     my $start = time;
     my $diff = (time - $start) || 0.01;
     my $nr = scalar @$nocems;
-    logmsg(sprintf("processed notice $nid by $issuer"
-        . " ($nr ids, %.5f s, %.1f/s)", $diff, $nr / $diff));
+    logmsg(sprintf("processed notice %s by %s ($nr ids, %.5f s, %.1f/s)",
+        $nid, $issuer, $diff, $nr / $diff));
 }
 
 # - Check if it is a PGP signed NoCeM notice
