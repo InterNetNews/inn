@@ -111,35 +111,36 @@ makedepend: makedepend.sh
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 article.o: article.c innfeed.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/storage.h \
- article.h misc.h buffer.h endpoint.h msgs.h
-buffer.o: buffer.c innfeed.h buffer.h misc.h ../include/config.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/storage.h article.h misc.h buffer.h endpoint.h msgs.h
+buffer.o: buffer.c innfeed.h buffer.h misc.h ../include/config.h \
+ ../include/inn/defines.h
 config_l.o: config_l.c innfeed.h configfile.h config_y.h
 config_y.o: config_y.c innfeed.h ../include/config.h \
- ../include/clibrary.h configfile.h msgs.h misc.h
-connection.o: connection.c innfeed.h ../include/config.h \
- ../include/clibrary.h article.h misc.h buffer.h configfile.h \
- connection.h endpoint.h host.h msgs.h
+ ../include/inn/defines.h ../include/clibrary.h configfile.h msgs.h \
+ misc.h
 endpoint.o: endpoint.c innfeed.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h buffer.h misc.h \
- configfile.h endpoint.h host.h msgs.h
-host.o: host.c innfeed.h ../include/config.h ../include/clibrary.h \
- ../include/libinn.h article.h misc.h buffer.h configfile.h \
- connection.h endpoint.h host.h innlistener.h msgs.h tape.h
-imapconnection.o: article.h buffer.h config.h configfile.h imapconnection.c \
- connection.h endpoint.h host.h misc.h msgs.h sysconfig.h
-innlistener.o: innlistener.c innfeed.h ../include/config.h \
- ../include/clibrary.h article.h misc.h buffer.h configfile.h \
- endpoint.h host.h innlistener.h msgs.h tape.h
-main.o: main.c innfeed.h ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/storage.h article.h misc.h buffer.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ buffer.h misc.h configfile.h endpoint.h host.h msgs.h
+host.o: host.c innfeed.h ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h article.h misc.h buffer.h \
  configfile.h connection.h endpoint.h host.h innlistener.h msgs.h \
  tape.h
-misc.o: misc.c innfeed.h ../include/config.h ../include/clibrary.h \
- ../include/libinn.h endpoint.h misc.h msgs.h tape.h
-startinnfeed.o: startinnfeed.c ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h
-tape.o: tape.c innfeed.h ../include/config.h ../include/clibrary.h \
- ../include/libinn.h article.h misc.h configfile.h endpoint.h msgs.h \
+innlistener.o: innlistener.c innfeed.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h article.h misc.h \
+ buffer.h configfile.h endpoint.h host.h innlistener.h msgs.h \
+ ../include/nntp.h tape.h
+main.o: main.c innfeed.h ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/storage.h \
+ article.h misc.h buffer.h configfile.h connection.h endpoint.h host.h \
+ innlistener.h msgs.h tape.h
+misc.o: misc.c innfeed.h ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h endpoint.h misc.h msgs.h \
  tape.h
+startinnfeed.o: startinnfeed.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/macros.h
+tape.o: tape.c innfeed.h ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h article.h misc.h \
+ configfile.h endpoint.h msgs.h tape.h
 version.o: version.c
