@@ -9,7 +9,7 @@ include ../../Makefile.global
 
 TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README
 
-MAN1	= ../man/convdate.1
+MAN1	= ../man/ckpasswd.1 ../man/convdate.1
 
 MAN3	= ../man/qio.3 ../man/wildmat.3
 
@@ -26,6 +26,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../../NEWS:		news.pod		; $(POD2TEXT) $? > $@
 ../../README:		readme.pod		; $(POD2TEXT) $? > $@
 
+../man/ckpasswd.1:	ckpasswd.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
 
 ../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
