@@ -1,3 +1,4 @@
 .libs
+.pure
 tdx-util
 *.lo
