@@ -1504,8 +1504,10 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
   caddr_t		addr;
   GIBLIST		*giblist;
 
-  if (high - low < 0)
+  if (high - low < 0) {
+    Gibcount = 0;
     return TRUE;
+  }
   Gibcount = ge->count;
   if (Gibcount == 0)
     return TRUE;
