@@ -44,6 +44,6 @@ main(int argc, char *argv[])
     if (argv[1][0] != '.')
         p--;
     *p = '\0';
-    printf("User:%s", host);
+    printf("User:%s\n", host);
     return 0;
 }
