@@ -59,7 +59,7 @@ Here's the relevant portion of my innwatch.ctl:
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef linux
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
 #ifdef NeXT
