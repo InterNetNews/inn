@@ -1,0 +1,83 @@
+=head1 NAME
+
+sm - Command-line interface to the INN storage manager
+
+=head1 SYNOPSIS
+
+B<sm> [B<-dHiqRrS>] [I<token> ...]
+
+=head1 DESCRIPTION
+
+The INN storage manager is the subsystesm that stores and keeps track of
+all of the articles and what storage backend they're in.  All stored
+articles are assigned a storage API token.  B<sm> is a command-line
+interface to that storage manager, primarily used to retrieve articles by
+those tokens but also to perform other operations on the storage
+subsystem.
+
+I<token> is the token of an article (the same thing that's returned by
+B<grephistory> or stored in the history file).  It looks something like:
+
+    @0502000005A4000000010000000000000000@
+
+Any number of tokens can be given on the command line.  If none are, B<sm>
+reads tokens from standard input, one per line.  The default operation is
+to retrieve and write to standard output the corresponding article for
+each token given.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-d>, B<-r>
+
+Rather than retrieving the specified article, remove the article.  This
+will delete the article out of the news spool and it will not subsequently
+be retrievable by any part of INN.  It's equivalent to C<ctlinnd cancel>
+except it takes a storage API token instead of a message ID.
+
+=item B<-H>
+
+Retrieve only the header of the article rather than the entire article.
+This option cannot be used with B<-d>, B<-r>, B<-i>, or B<-S>.
+
+=item B<-i>
+
+Show the newsgroup name and article number associated with the token
+rather than the article itself.  Note that for crossposted articles, only
+the first newsgroup and article number to which the article is associated
+will be returned.
+
+=item B<-q>
+
+Suppress all error messages except usage errors.
+
+=item B<-R>
+
+Display the raw article.  This means that line endings won't be converted
+to native line endings and will be left as CRLF sequences, leading periods
+will still be escaped for sending over NNTP, and the article will end in
+a CRLF.CRLF sequence.
+
+=item B<-S>
+
+Write the article to standard output in the format used by rnews spool
+files.  Multiple articles can be written in this format, and the resulting
+output can be fed to rnews (on another system, for example) to inject
+those articles into INN.  This option cannot be used with B<-d>, B<-r>,
+B<-H>, B<-i>, or B<-R>.
+
+=back
+
+=head1 HISTORY
+
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+Rewritten in POD by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+ctlinnd(8), grephistory(1), history(5), rnews(1), storage.conf(5).
+
+=cut

@@ -232,7 +232,7 @@ doc/man/sendinpaths.8                 Manpage for sendinpaths
 doc/man/shlock.1                      Manpage for shlock backend utility
 doc/man/shrinkfile.1                  Manpage for shrinkfile utility
 doc/man/simpleftp.1                   Manpage for simpleftp utility
-doc/man/sm.8                          Manpage for sm
+doc/man/sm.1                          Manpage for sm
 doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
 doc/man/subscriptions.5               Manpage for subscriptions list
@@ -279,6 +279,7 @@ doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
 doc/pod/sendinpaths.pod               Master file for sendinpaths.8
+doc/pod/sm.pod                        Master file for sm.1
 doc/pod/subscriptions.pod             Master file for subscriptions.5
 doc/pod/tdx-util.pod                  Master file for tdx-util.8
 doc/pod/uwildmat.pod                  Master file for uwildmat.3
