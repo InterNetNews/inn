@@ -116,9 +116,7 @@ static char **GetGroups(char *p) {
   for (Xref++; *Xref == ' '; Xref++);
   if (!Xrefbuf)
     Xrefbuf = NEW(char, BIG_BUFFER);
-  len = strlen(p);
-  memcpy(Xrefbuf, Xref, len - (p - Xref));
-  Xrefbuf[len - (p - Xref)] = '\0';
+  strcpy(Xrefbuf, Xref);
   if ((q = strchr(Xrefbuf, '\t')) != NULL)
     *q = '\0';
   p = Xrefbuf;
