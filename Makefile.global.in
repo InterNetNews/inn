@@ -7,15 +7,15 @@
 ##  For installation paths, see the bottom of this file.
 
 ##  This version information is used to generate lib/version.c and is used
-##  by INN for banner and local version identification.  The version
+##  by INN for banner and local version identification.	 The version
 ##  identification string will be "$VERSION ($VERSION_EXTRA)", with the
 ##  parentheses omitted if $VERSION_EXTRA is empty (as it is for major
-##  releases).  If you make extensive local modifications to INN, you can
-##  put your own version information in $VERSION_EXTRA.  If it's set to
+##  releases).	If you make extensive local modifications to INN, you can
+##  put your own version information in $VERSION_EXTRA.	 If it's set to
 ##  "CVS prerelease", the build time will be automatically included.
 
-VERSION         = 2.5.0
-VERSION_EXTRA   = CVS prerelease
+VERSION		= 2.5.0
+VERSION_EXTRA	= CVS prerelease
 
 ##  If you want to install INN relative to a root directory other than /,
 ##  set DESTDIR to the path to the root directory of the file system.  This
@@ -26,8 +26,8 @@ VERSION_EXTRA   = CVS prerelease
 ##  slash is not added automatically (in case someone wants to add a prefix
 ##  that isn't just a parent directory).
 
-DESTDIR         =
-D               = $(DESTDIR)
+DESTDIR		=
+D		= $(DESTDIR)
 
 ##  The absolute path to the top of the build directory, used to find the
 ##  libraries built as part of INN.  Using relative paths confuses libtool
@@ -40,21 +40,21 @@ abs_builddir	= @abs_builddir@
 ##  -Wall).  LFS_* is for large file support.  All of INN is built with the
 ##  large file support flags if provided.
 
-CC              = @CC@
-COPT            = @CFLAGS@
-GCFLAGS         = $(COPT) -I$(top)/include @CPPFLAGS@
+CC		= @CC@
+COPT		= @CFLAGS@
+GCFLAGS		= $(COPT) -I$(top)/include @CPPFLAGS@
 
-LDFLAGS         = @LDFLAGS@
-LIBS            = @LIBS@
+LDFLAGS		= @LDFLAGS@
+LIBS		= @LIBS@
 
-PROF            = -pg
-PROFSUFFIX      = _p
-MAKEPROFILING   = $(MAKE) COPT="$(COPT) $(PROF)" \
-                          LDFLAGS="$(LDFLAGS) $(PROF)" \
+PROF		= -pg
+PROFSUFFIX	= _p
+MAKEPROFILING	= $(MAKE) COPT="$(COPT) $(PROF)" \
+			  LDFLAGS="$(LDFLAGS) $(PROF)" \
 			  LIBSUFFIX=$(PROFSUFFIX)
 
-##  Used to support non-recursive make.  This variable is set to the necessary
-##  options to the compiler to create an object file in a subdirectory.  It
+##  Used to support non-recursive make.	 This variable is set to the necessary
+##  options to the compiler to create an object file in a subdirectory.	 It
 ##  should be used instead of -c -o $@ $< and may be replaced with code that
 ##  calls mv, if the compiler doesn't support -c with -o.
 
@@ -64,12 +64,12 @@ CCOUTPUT	= @CCOUTPUT@
 ##  useful warnings unless there's something that makes them unsuitable.  In
 ##  particular, the following warnings are *not* included:
 ##
-##    -ansi             Requires messing with feature test macros.
-##    -pedantic         Too much noise from embedded Perl.
-##    -Wtraditional     We assume ANSI C, so these aren't interesting.
+##    -ansi		Requires messing with feature test macros.
+##    -pedantic		Too much noise from embedded Perl.
+##    -Wtraditional	We assume ANSI C, so these aren't interesting.
 ##    -Wshadow		Names like log or index are too convenient.
-##    -Wcast-qual       Used for a while, but some casts are unavoidable.
-##    -Wconversion      Too much unsigned to signed noise.
+##    -Wcast-qual	Used for a while, but some casts are unavoidable.
+##    -Wconversion	Too much unsigned to signed noise.
 ##    -Wredundant-decls Too much noise from system headers.
 ##
 ##  Some may be worth looking at again once a released version of gcc doesn't
@@ -81,22 +81,23 @@ CCOUTPUT	= @CCOUTPUT@
 ##  without optimization turned on.  Add -DDEBUG=1 so that we'll also
 ##  compile all debugging code and check it as well.
 
-WARNINGS        = -g -O -DDEBUG=1 -Wall -W -Wendif-labels -Wpointer-arith \
+WARNINGS	= -g -O -DDEBUG=1 -Wall -W -Wendif-labels -Wpointer-arith \
 		  -Wbad-function-cast -Wcast-align -Wwrite-strings \
-		  -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs
+		  -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs \
+		  -Werror
 
 ##  libtool support.  Note that INN does not use Automake (and that
 ##  retrofitting Automake is likely more work than it's worth), so
 ##  libtool-aware rules have to be written by hand.
 
-LIBTOOL         = @LIBTOOL@
-LIBTOOLCC       = @LIBTOOLCC@
-LIBTOOLLD       = @LIBTOOLLD@
-EXTOBJ          = @EXTOBJ@
-EXTLIB          = @EXTLIB@
+LIBTOOL		= @LIBTOOL@
+LIBTOOLCC	= @LIBTOOLCC@
+LIBTOOLLD	= @LIBTOOLLD@
+EXTOBJ		= @EXTOBJ@
+EXTLIB		= @EXTLIB@
 
-LIBCC           = $(LIBTOOLCC) $(CC)
-LIBLD           = $(LIBTOOLLD) $(CC)
+LIBCC		= $(LIBTOOLCC) $(CC)
+LIBLD		= $(LIBTOOLLD) $(CC)
 
 ##  Berkeley DB support.  If this support is configured, anything linking
 ##  against libstorage also needs to link against DB_LDFLAGS and DB_LIBS.
@@ -107,29 +108,29 @@ DB_LIBS		= @DB_LIBS@
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is
-##  linked against libstorage.  EXTSTORAGELIBS is for external libraries
+##  linked against libstorage.	EXTSTORAGELIBS is for external libraries
 ##  needed by libstorage.
 
-LIBINN          = $(abs_builddir)/lib/libinn$(LIBSUFFIX).$(EXTLIB)
-LIBHIST         = $(abs_builddir)/history/libinnhist$(LIBSUFFIX).$(EXTLIB)
-LIBSTORAGE      = $(abs_builddir)/storage/libstorage$(LIBSUFFIX).$(EXTLIB)
+LIBINN		= $(abs_builddir)/lib/libinn$(LIBSUFFIX).$(EXTLIB)
+LIBHIST		= $(abs_builddir)/history/libinnhist$(LIBSUFFIX).$(EXTLIB)
+LIBSTORAGE	= $(abs_builddir)/storage/libstorage$(LIBSUFFIX).$(EXTLIB)
 STORAGE_LIBS	= @DB_LDFLAGS@ @DB_LIBS@
 
-CRYPT_LIBS      = @CRYPT_LIBS@
-DBM_LIBS        = @DBM_LIBS@
-PAM_LIBS        = @PAM_LIBS@
-REGEX_LIBS      = @REGEX_LIBS@
-SHADOW_LIBS     = @SHADOW_LIBS@
+CRYPT_LIBS	= @CRYPT_LIBS@
+DBM_LIBS	= @DBM_LIBS@
+PAM_LIBS	= @PAM_LIBS@
+REGEX_LIBS	= @REGEX_LIBS@
+SHADOW_LIBS	= @SHADOW_LIBS@
 
-##  Embedding support.  Additional flags and libraries used when compiling
+##  Embedding support.	Additional flags and libraries used when compiling
 ##  or linking portions of INN that support embedded interpretors, set by
 ##  configure based on what interpretor embeddings are selected.
 
-PERL_CPPFLAGS   = @PERL_CPPFLAGS@
-PERL_LIBS       = $(abs_builddir)/lib/perl$(LIBSUFFIX).o @PERL_LIBS@
+PERL_CPPFLAGS	= @PERL_CPPFLAGS@
+PERL_LIBS	= $(abs_builddir)/lib/perl$(LIBSUFFIX).o @PERL_LIBS@
 
 PYTHON_CPPFLAGS = @PYTHON_CPPFLAGS@
-PYTHON_LIBS     = @PYTHON_LIBS@
+PYTHON_LIBS	= @PYTHON_LIBS@
 
 ##  OpenSSL support.  Additional flags and libraries used when compiling or
 ##  linking code that contains OpenSSL support, and the path to the OpenSSL
@@ -156,106 +157,106 @@ KRB5_CPPFLAGS	= @KRB5_CPPFLAGS@
 KRB5_LDFLAGS	= @KRB5_LDFLAGS@
 KRB5_LIBS	= @KRB5_LIBS@
 
-##  Missing functions.  If non-empty, configure detected that your system
+##  Missing functions.	If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own
 ##  replacements from the lib directory.
 
-LIBOBJS         = @LIBOBJS@
+LIBOBJS		= @LIBOBJS@
 
 ##  Paths to various standard programs used during the build process.
 ##  Changes to this file will *not* be reflected in the paths compiled into
 ##  programs; these paths are only used during the build process and for
-##  some autogenerated scripts.  To change the compiled paths, see
+##  some autogenerated scripts.	 To change the compiled paths, see
 ##  include/paths.h.  You may also need to modify scripts/innshellvars*.
 
-AWK             = @AWK@
-COMPRESS        = @COMPRESS@
-CTAGS           = ctags -t -w
-GZIP            = @GZIP@
-LEX             = @LEX@
-PERL            = @PERL@
-RANLIB          = @RANLIB@
-YACC            = @YACC@
-UNCOMPRESS      = @UNCOMPRESS@
+AWK		= @AWK@
+COMPRESS	= @COMPRESS@
+CTAGS		= ctags -t -w
+GZIP		= @GZIP@
+LEX		= @LEX@
+PERL		= @PERL@
+RANLIB		= @RANLIB@
+YACC		= @YACC@
+UNCOMPRESS	= @UNCOMPRESS@
 
 FIXCONFIG	= $(top)/support/fixconfig
-FIXSCRIPT       = $(top)/support/fixscript
+FIXSCRIPT	= $(top)/support/fixscript
 
-PERLWHOAMI      = $(PERL) -e 'print scalar getpwuid($$>), "\n"'
-WHOAMI          = (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
+PERLWHOAMI	= $(PERL) -e 'print scalar getpwuid($$>), "\n"'
+WHOAMI		= (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
 
 ##  Paths and command lines for programs used only by the maintainers to
 ##  regenerate dependencies, documentation, and the like.
 
-MAKEDEPEND      = $(top)/support/makedepend
+MAKEDEPEND	= $(top)/support/makedepend
 
-POD2MAN         = pod2man -c 'InterNetNews Documentation' -r 'INN $(VERSION)'
-POD2TEXT        = pod2text -s -l
+POD2MAN		= pod2man -c 'InterNetNews Documentation' -r 'INN $(VERSION)'
+POD2TEXT	= pod2text -s -l
 
 ##  Installation directories.  If any of the below are incorrect, don't just
 ##  edit this file; these directories are substituted in all over the source
-##  tree by configure.  Instead, re-run configure with the correct
-##  command-line flags to set the directories.  Run configure --help for a
+##  tree by configure.	Instead, re-run configure with the correct
+##  command-line flags to set the directories.	Run configure --help for a
 ##  list of supported flags.
 
-prefix          = @prefix@
-exec_prefix     = @exec_prefix@
-bindir          = @bindir@
-docdir          = @docdir@
-includedir      = @includedir@
-libdir          = @libdir@
-mandir          = @mandir@
-sysconfdir      = @sysconfdir@
-tmpdir          = @tmpdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+bindir		= @bindir@
+docdir		= @docdir@
+includedir	= @includedir@
+libdir		= @libdir@
+mandir		= @mandir@
+sysconfdir	= @sysconfdir@
+tmpdir		= @tmpdir@
 
-PATHNEWS        = $(prefix)
-PATHBIN         = $(bindir)
-PATHDOC         = $(docdir)
-PATHETC         = $(sysconfdir)
-PATHMAN         = $(mandir)
-PATHINCLUDE     = $(includedir)
-PATHLIB         = $(libdir)
-PATHCONTROL     = @CONTROLDIR@
-PATHFILTER      = @FILTERDIR@
-PATHRUN         = @RUNDIR@
-PATHLOG         = @LOGDIR@
-PATHLOGOLD      = $(PATHLOG)/OLD
-PATHDB          = @DBDIR@
-PATHSPOOL       = @SPOOLDIR@
-PATHTMP         = $(tmpdir)
-PATHAUTH        = $(PATHBIN)/auth
-PATHAUTHRESOLV  = $(PATHAUTH)/resolv
-PATHAUTHPASSWD  = $(PATHAUTH)/passwd
-PATHRNEWS       = $(PATHBIN)/rnews.libexec
-PATHARCHIVE     = $(PATHSPOOL)/archive
-PATHARTICLES    = $(PATHSPOOL)/articles
-PATHINCOMING    = $(PATHSPOOL)/incoming
-PATHTAPE        = $(PATHSPOOL)/innfeed
-PATHINBAD       = $(PATHINCOMING)/bad
-PATHOVERVIEW    = $(PATHSPOOL)/overview
-PATHOUTGOING    = $(PATHSPOOL)/outgoing
+PATHNEWS	= $(prefix)
+PATHBIN		= $(bindir)
+PATHDOC		= $(docdir)
+PATHETC		= $(sysconfdir)
+PATHMAN		= $(mandir)
+PATHINCLUDE	= $(includedir)
+PATHLIB		= $(libdir)
+PATHCONTROL	= @CONTROLDIR@
+PATHFILTER	= @FILTERDIR@
+PATHRUN		= @RUNDIR@
+PATHLOG		= @LOGDIR@
+PATHLOGOLD	= $(PATHLOG)/OLD
+PATHDB		= @DBDIR@
+PATHSPOOL	= @SPOOLDIR@
+PATHTMP		= $(tmpdir)
+PATHAUTH	= $(PATHBIN)/auth
+PATHAUTHRESOLV	= $(PATHAUTH)/resolv
+PATHAUTHPASSWD	= $(PATHAUTH)/passwd
+PATHRNEWS	= $(PATHBIN)/rnews.libexec
+PATHARCHIVE	= $(PATHSPOOL)/archive
+PATHARTICLES	= $(PATHSPOOL)/articles
+PATHINCOMING	= $(PATHSPOOL)/incoming
+PATHTAPE	= $(PATHSPOOL)/innfeed
+PATHINBAD	= $(PATHINCOMING)/bad
+PATHOVERVIEW	= $(PATHSPOOL)/overview
+PATHOUTGOING	= $(PATHSPOOL)/outgoing
 
-MAN1            = $(mandir)/man1
-MAN3            = $(mandir)/man3
-MAN5            = $(mandir)/man5
-MAN8            = $(mandir)/man8
+MAN1		= $(mandir)/man1
+MAN3		= $(mandir)/man3
+MAN5		= $(mandir)/man5
+MAN8		= $(mandir)/man8
 
 ##  Installation settings.  The file installation modes are determined by
 ##  configure; inews and rnews are special and have configure flags to
 ##  control how they're installed.  See INSTALL for more information.
 
-NEWSUSER        = @NEWSUSER@
-NEWSGROUP       = @NEWSGRP@
+NEWSUSER	= @NEWSUSER@
+NEWSGROUP	= @NEWSGRP@
 RNEWSGROUP	= @RNEWSGRP@
 
-INEWSMODE       = @INEWSMODE@
-RNEWSMODE       = @RNEWSMODE@
-FILEMODE        = @FILEMODE@
+INEWSMODE	= @INEWSMODE@
+RNEWSMODE	= @RNEWSMODE@
+FILEMODE	= @FILEMODE@
 
-OWNER           = -o $(NEWSUSER) -g $(NEWSGROUP)
-ROWNER          = -o $(NEWSUSER) -g $(RNEWSGROUP)
+OWNER		= -o $(NEWSUSER) -g $(NEWSGROUP)
+ROWNER		= -o $(NEWSUSER) -g $(RNEWSGROUP)
 
-INSTALL         = $(top)/support/install-sh -c
+INSTALL		= $(top)/support/install-sh -c
 
 ##  Installation commands.  These commands are used by the installation rules
 ##  of each separate subdirectory.  The naming scheme is as follows: the first
@@ -270,29 +271,33 @@ INSTALL         = $(top)/support/install-sh -c
 ##  files like active and newsgroups that should have the same permissions as
 ##  article files.
 
-LI_SPRI         = $(LIBTOOL) $(INSTALL) -o root -g $(NEWSGROUP) -m 4550 -B .OLD
-LI_XPRI         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0550 -B .OLD
-LI_XPUB         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0555 -B .OLD
+LI_SPRI		= $(LIBTOOL) $(INSTALL) -o root -g $(NEWSGROUP) -m 4550 -B .OLD
+LI_XPRI		= $(LIBTOOL) $(INSTALL) $(OWNER) -m 0550 -B .OLD
+LI_XPUB		= $(LIBTOOL) $(INSTALL) $(OWNER) -m 0555 -B .OLD
 
-LI_INEWS        = $(LIBTOOL) $(INSTALL) $(OWNER) -m $(INEWSMODE) -B .OLD
-LI_RNEWS        = $(LIBTOOL) $(INSTALL) $(ROWNER) -m $(RNEWSMODE) -B .OLD
+LI_INEWS	= $(LIBTOOL) $(INSTALL) $(OWNER) -m $(INEWSMODE) -B .OLD
+LI_RNEWS	= $(LIBTOOL) $(INSTALL) $(ROWNER) -m $(RNEWSMODE) -B .OLD
 
-CP_RPRI         = $(INSTALL) $(OWNER) -m 0640 -B .OLD
-CP_RPUB         = $(INSTALL) $(OWNER) -m 0644 -B .OLD
-CP_XPRI         = $(INSTALL) $(OWNER) -m 0550 -B .OLD
-CP_XPUB         = $(INSTALL) $(OWNER) -m 0555 -B .OLD
+CP_RPRI		= $(INSTALL) $(OWNER) -m 0640 -B .OLD
+CP_RPUB		= $(INSTALL) $(OWNER) -m 0644 -B .OLD
+CP_XPRI		= $(INSTALL) $(OWNER) -m 0550 -B .OLD
+CP_XPUB		= $(INSTALL) $(OWNER) -m 0555 -B .OLD
 
-CP_DATA         = $(INSTALL) $(OWNER) -m $(FILEMODE) -B .OLD
+CP_DATA		= $(INSTALL) $(OWNER) -m $(FILEMODE) -B .OLD
 
 ##  How to install man pages.  Pick one of SOURCE, BSD4.4, NROFF-PACK, or
 ##  NROFF-PACK-SCO.  Used by doc/man/putman.sh; read that script for more
 ##  information on what it does.
 
-MANPAGESTYLE    = SOURCE
+MANPAGESTYLE	= SOURCE
 
 ##  Some additional definitions needed by some versions of make, to ensure a
 ##  consistant set of variables are available.
 
-SHELL           = /bin/sh
+SHELL		= /bin/sh
 
 @SET_MAKE@
+
+##  Local variables:
+##  mode: makefile
+##  End:
