@@ -8,6 +8,9 @@ rnews \- receive news from a UUCP connection
 .BI \-h " host"
 ]
 [
+.BI \-r " remote"
+]
+[
 .B \-v
 ]
 [
@@ -22,7 +25,12 @@ rnews \- receive news from a UUCP connection
 .SH DESCRIPTION
 .I Rnews
 reads messages typically queued by a UUCP newsfeed and
-sends them to the local InterNetNews server.
+sends them to the local InterNetNews server (either ``localhost'', or the
+value defined by the variable 
+.I nnrpdposthost
+in the file
+.IR inn.conf ).
+.PP
 The message is read from the specified input file, or standard input
 if no input is named.
 .PP
@@ -89,6 +97,10 @@ Normally, if unpacking the input fails it is re-spooled to
 for another attempt later.  If the ``\fB\-N\fP'' flag is used then no such
 re-spooling is done and rnews exits with status value ``9'' to indicate
 this.
+.TP
+.B \-r
+If the ``\fB\-r\fP'' flag is used, then the articles will be sent to the
+named remote host instead of the default host.
 .TP
 .B \-v
 If the ``\fB\-v\fP'' flag is used, it will print a notice of all errors on the
