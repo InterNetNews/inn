@@ -36,7 +36,7 @@ typedef enum _MIMEXFERTYPE {
     MTbase64
 } MIMEXFERTYPE;
 
-#if defined (HAVE_LONG_LONG)
+#if defined (HAVE_LONG_LONG_FORMAT_LLU) || defined (HAVE_LONG_LONG_FORMAT_QU)
 typedef unsigned long long arts_size ;
 #else
 typedef double arts_size ;
@@ -91,10 +91,14 @@ static int logRejects = TRUE ;  /* syslog the 437 responses. */
 ** Syslog formats - collected together so they remain consistent
 */
 STATIC char	STAT1[] =
-#if defined (HAVE_LONG_LONG)
-	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %qu rejsize %qu";
+#if defined (HAVE_LONG_LONG_FORMAT_LLU)
+	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %llu rejsize %llu";
 #else
+# if defined (HAVE_LONG_LONG_FORMAT_QU)
+	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %qu rejsize %qu";
+# else
 	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %.0f rejsize %.0f";
+# endif
 #endif
 STATIC char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
 STATIC char	GOT_RESENDIT[] = "%s requeued %s %s";
