@@ -6,11 +6,6 @@
 */
 #include "config.h"
 #include "clibrary.h"
-#ifdef HAVE_WAIT_H
-# include <wait.h>
-#else
-# include <sys/wait.h>
-#endif
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include "libinn.h"
