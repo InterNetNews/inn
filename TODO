@@ -324,6 +324,11 @@ Needed Bug Fixes
   innfeed generates.  It should ideally generate some summary, or at least
   note that some error has occurred and the logs should be examined.
 
+* nnrpd doesn't check the message ID of a posted article for syntactic
+  validity before remailing it to the moderator, since normally it relies
+  on innd to check the message ID.  The message ID checking code from
+  innd/art.c should be moved into lib so that nnrpd can use it as well.
+
 * Someone should go through the BUGS sections of all of the manpages and
   fix those for which the current behavior is unacceptable.
 
