@@ -410,16 +410,22 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->strippath = FALSE;
     curaccess->nnrpdperlfilter = TRUE;
     curaccess->nnrpdpythonfilter = TRUE;
+    curaccess->fromhost = NULL;
     if (innconf->fromhost)
 	curaccess->fromhost = COPY(innconf->fromhost);
+    curaccess->pathhost = NULL;
     if (innconf->pathhost)
 	curaccess->pathhost = COPY(innconf->pathhost);
+    curaccess->organization = NULL;
     if (innconf->organization)
 	curaccess->organization = COPY(innconf->organization);
+    curaccess->moderatormailer = NULL;
     if (innconf->moderatormailer)
 	curaccess->moderatormailer = COPY(innconf->moderatormailer);
+    curaccess->domain = NULL;
     if (innconf->domain)
 	curaccess->domain = COPY(innconf->domain);
+    curaccess->complaints = NULL;
     if (innconf->complaints)
 	curaccess->complaints = COPY(innconf->complaints);
     curaccess->spoolfirst = innconf->spoolfirst;
@@ -434,6 +440,7 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->nnrpdpostport = innconf->nnrpdpostport;
     curaccess->nnrpdoverstats = innconf->nnrpdoverstats;
     curaccess->backoff_auth = innconf->backoff_auth;
+    curaccess->backoff_db = NULL;
     if (innconf->backoff_db)
 	curaccess->backoff_db = COPY(innconf->backoff_db);
     curaccess->backoff_k = innconf->backoff_k;
