@@ -1,0 +1,72 @@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
+#
+# dbprocs
+#   start or stop processes that support the BerkeleyDB ovdb environment
+#
+
+if [ -z "$DB_HOME" ]; then
+   exit
+fi
+
+cd $PATHTMP
+
+case "$1" in
+
+stop)
+
+  if [ -f $PATHRUN/db_checkpoint.pid ]; then
+    kill $(cat $PATHRUN/db_checkpoint.pid)
+  fi
+  if [ -f $PATHRUN/db_deadlock.pid ]; then
+    kill $(cat $PATHRUN/db_deadlock.pid)
+  fi
+  if [ -f $PATHRUN/logremover.pid ]; then
+    kill -HUP $(cat $PATHRUN/logremover.pid)
+  fi
+  sleep 5
+  # run one more checkpoint just to make sure
+  db_checkpoint -1
+  ;;
+
+start)
+
+  # Run checkpointer and deadlock detector
+  (
+    db_checkpoint -p 1 -k 1000 &
+    echo $! > $PATHRUN/db_checkpoint.pid
+    wait
+    rm -f $PATHRUN/db_checkpoint.pid
+  ) &
+
+  (
+    db_deadlock -t 30 &
+    echo $! > $PATHRUN/db_deadlock.pid
+    wait
+    rm -f $PATHRUN/db_deadlock.pid
+  ) &
+
+  # Remove logs that are no longer needed
+  (
+    trap "rm -f $PATHTMP/dba.$$ $PATHRUN/logremover.pid ; exit" 1 2 3 15
+
+    while [ 1 ];
+    do
+      sleep 600
+      db_archive -a >$PATHTMP/dba.$$
+      if [ -s $PATHTMP/dba.$$ ]; then
+	xargs rm <$PATHTMP/dba.$$
+      fi
+    done
+  ) & 
+  echo $! > $PATHRUN/logremover.pid
+
+  ;;
+
+*)
+  echo "Usage: $0 <start|stop>"
+  ;;
+
+esac
+

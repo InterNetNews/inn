@@ -5,6 +5,38 @@
 ##  News boot script.  Runs as "news" user.  Requires inndstart be
 ##  setuid root.  Run from rc.whatever as:
 ##     su news -c /path/to/rc.news >/dev/console
+##
+##  Or to stop INN:
+##     su news -c '/path/to/rc.news stop'
+
+case X"$1" in
+Xstop)
+    ${PATHBIN}/ctlinnd shutdown 'rc.news stop'
+
+    # Stop cnfsstat (if running)
+    if [ -f ${PATHRUN}/cnfsstat.pid ]; then
+	kill `cat ${PATHRUN}/cnfsstat.pid`
+	rm -f ${PATHRUN}/cnfsstat.pid
+    fi
+
+    # Stop innwatch (if running)
+    if [ -f $WATCHPID ]; then
+	kill `cat $WATCHPID`
+	rm -f $WATCHPID
+    fi
+
+    # give innd some time to exit
+    sleep 10
+
+    # Turn off ovdb support procs, and close the DB environment
+    if [ "$OVMETHOD" = "ovdb" -a -n "$DB_HOME" ]; then
+	${PATHBIN}/dbprocs stop
+    fi
+
+    exit 0
+;;
+esac
+
 
 AZ=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 az=abcdefghijklmnopqrstuvwxyz
@@ -93,6 +125,15 @@ fi
 ( cd ${TEMPSOCKDIR} && rm -f ${TEMPSOCK} )
 rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID}
 
+## In case the ovdb database was not properly shutdown, this will
+## fix it.  Must be done before starting innd.
+if [ "$OVMETHOD" = "ovdb" -a -n "$DB_HOME" ]; then
+    ovdb_recover || {
+	echo "Can't recover ov database (check news.err for OVDB messages)"
+	exit 1
+    }
+fi
+
 ##  Start the show.
 echo 'Starting innd.'
 eval ${WHAT} ${RFLAG} ${INNFLAGS}
@@ -105,8 +146,15 @@ ${DOINNWATCH} && {
 
 ${DOCNFSSTAT} && {
     echo "Scheduled start of cnfsstat."
-    ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l ) &
+    ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l -P ) &
 }
+
+## Stuff to support ovdb.  Must be started after innd has initialized
+## overview.
+if [ "$OVMETHOD" = "ovdb" -a -s "$DB_HOME" ]; then
+    echo "Scheduled start of dbprocs."
+    ( sleep 60 ; ${PATHBIN}/dbprocs start ) &
+fi
 
 RMFILE=${MOST_LOGS}/expire.rm
 for F in ${RMFILE} ${RMFILE}.*; do
@@ -120,3 +168,4 @@ for F in ${RMFILE} ${RMFILE}.*; do
 	${PATHBIN}/expirerm ${F}
     fi
 done &
+

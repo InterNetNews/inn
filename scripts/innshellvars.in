@@ -80,6 +80,16 @@ COMPRESS=@COMPRESS@
 LOG_COMPRESS=@LOG_COMPRESS@
 Z=@LOG_COMPRESSEXT@
 
+BERKELEY_DB_BINDIR=@BERKELEY_DB_BINDIR@
+
+if [ -n "$BERKELEY_DB_BINDIR" ]; then
+    if [ "$OVMETHOD" = "ovdb" ]; then
+      PATH="${BERKELEY_DB_BINDIR}:${PATH}"
+      DB_HOME="${PATHOVERVIEW}"
+      export DB_HOME
+    fi
+fi
+
 TEMPSOCK=`basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
 TEMPSOCKDIR=`echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
 
