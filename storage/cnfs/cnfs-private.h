@@ -44,7 +44,7 @@ typedef struct _CYCBUFF {
 				   freely available byte */
   time_t	updated;	/* Time of last update to header */
   int		fd;		/* file descriptor for this cycbuff */
-  U_INT32_T	cyclenum;	/* Number of current cycle, 0 = invalid */
+  uint32_t	cyclenum;	/* Number of current cycle, 0 = invalid */
   int		magicver;	/* Magic version number */
   caddr_t	bitfield;	/* Bitfield for article in use */
   CYCBUFF_OFF_T	minartoffset;	/* The minimum offset allowed for article
