@@ -1,7 +1,8 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 ##  $Revision$
 ##  Newgroup control-message handler
-. @LIBDIR@/innshellvars
 
 PROG=newgroup
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
