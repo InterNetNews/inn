@@ -20,7 +20,7 @@ LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC) $(TCLINC)>()=
-LINTFLAGS	= -b -h -z $(DEFS) $(PERLINC) $(TCLINC)
+LINTFLAGS	= -b -h -z -I../include $(DEFS) $(PERLINC) $(TCLINC)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
 LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<CTAGS		= @<CTAGS>@>()=

@@ -25,7 +25,7 @@ PROF	= -pg
 RANLIB	= ranlib
 
 CC      = @CC@
-CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC)
+CFLAGS  = -I. -I../include @CPPFLAGS@ $(PERLINC)
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 

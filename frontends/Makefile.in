@@ -12,7 +12,7 @@ LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
-LINTFLAGS	= -b -h -z $(DEFS)
+LINTFLAGS	= -b -h -z -I../include $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
 LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<CTAGS		= @<CTAGS>@>()=
