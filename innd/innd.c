@@ -206,7 +206,7 @@ JustCleanup(void)
     NCclose();
     RCclose();
     ICDclose();
-    HISclose();
+    InndHisClose();
     ARTclose();
     if (innconf->enableoverview) 
         OVclose();
@@ -560,7 +560,7 @@ main(int ac, char *av[])
        it's a slave, so call RCsetup before NCsetup. */
     CHANsetup(i);
     PROCsetup(10);
-    HISsetup();
+    InndHisOpen();
     CCsetup();
     LCsetup();
     RCsetup(fd);
