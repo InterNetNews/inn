@@ -231,7 +231,8 @@ Joshua M. Thompson
         Wrote the original INSTALL documentation.
 
 The following people helped above and beyond the call of duty with testing
-(provided patches, bug reports, suggestions and lobbying):
+(provided patches, bug reports, suggestions, documentation improvements,
+and lobbying):
 
 Paul Vixie, Robert Elz, Evan Champion, Robert Keller, Barry Bouwsma,
 markd@mira.net.au, Ollivier Robert, Kevin Jameson, Heiko W. Rupp,
@@ -252,4 +253,4 @@ Edward S. Marshall, Michael Schroeder, George Lindholm, Don Lewis,
 Christopher Masto, Hiroaki Sengoku, Yury July, Yar Tikhiy, Kees Bakker,
 Peter da Silva, Matt McLeod, Ed Korthof, Jan Rychter, Winfried Magerl,
 Andreas Lamrecht, Duane Currie, Ian Dickinson, Bettina Fink,
-Jochen Erwied
+Jochen Erwied, Rebecca Ore
