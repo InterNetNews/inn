@@ -43,35 +43,55 @@
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED  __attribute__((__unused__))
 
-/* Make available the bool type.  The following macros were taken from the
-   Perl source, with some modifications. */
-#undef TRUE
-#undef FALSE
-#define TRUE    (1)
-#define FALSE   (0)
+/* Make available the bool type.  C99 requires that the bool type be made
+   available by including stdbool.h, as well as the true and false values,
+   so if we're in a C99 compilation environment, just include that header.
+   It would be nice to use an autoconf test, but as this is an installed
+   header, that would mean unnecessary additional complexity.  INN
+   internally uses TRUE and FALSE instead in a lot of places, so make them
+   available as well. */
+#if __STDC_VERSION__ >= 199901L
+# include <stdbool.h>
+# undef TRUE
+# undef FALSE
+# define TRUE   true
+# define FALSE  false
+
+#else
+
+/* We don't have stdbool.h, or can't rely on it, and therefore need to hack
+   something up ourselves.  These methods are taken from Perl with some
+   modifications. */
+
+# undef TRUE
+# undef FALSE
+# define TRUE   (1)
+# define FALSE  (0)
 
 /* C++ has a native bool type, and our TRUE and FALSE will work with it. */
-#ifdef __cplusplus
-# if !HAS_BOOL
-#  define HAS_BOOL 1
+# ifdef __cplusplus
+#  if !HAS_BOOL
+#   define HAS_BOOL 1
+#  endif
 # endif
-#endif
 
 /* The NeXT dynamic loader headers will not build with the bool macro, so
    use an enum instead (which appears to work). */
-#if !defined(HAS_BOOL) && (defined(NeXT) || defined(__NeXT__))
-# undef FALSE
-# undef TRUE
+# if !defined(HAS_BOOL) && (defined(NeXT) || defined(__NeXT__))
+#  undef FALSE
+#  undef TRUE
 typedef enum bool { FALSE = 0, TRUE = 1 } bool;
-# define ENUM_BOOL 1
+#  define ENUM_BOOL 1
+#  if !HAS_BOOL
+#   define HAS_BOOL 1
+#  endif
+# endif /* NeXT || __NeXT__ */
+
 # if !HAS_BOOL
+#  define bool int
 #  define HAS_BOOL 1
 # endif
-#endif /* NeXT || __NeXT__ */
 
-#if !HAS_BOOL
-# define bool int
-# define HAS_BOOL 1
-#endif
+#endif /* __STDC_VERSION__ < 199901L */
 
 #endif /* !INN_DEFINES_H */
