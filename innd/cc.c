@@ -2059,7 +2059,7 @@ STATIC STRING CClowmark(char *av[])
 	    break;
 	}
 	*cp++ = '\0';
-	if ((lo = atol(cp)) == 0) {
+	if ((lo = atol(cp)) == 0 && cp[0] != '0') {
 	    ret = "1 Malformed input line (missing low mark)";
 	    break;
 	}
