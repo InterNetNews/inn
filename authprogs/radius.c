@@ -12,29 +12,20 @@
 #include <netdb.h>
 #include <signal.h>
 #include <sys/socket.h>
-
-#ifdef HAVE_SYS_TIME_H
+#if HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif
 
-#ifdef HAVE_NDBM_H
-# include <ndbm.h>
-#else
-# ifdef HAVE_DB1_NDBM_H
-#  include <db1/ndbm.h>
-# endif
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#if HAVE_SYS_SELECT_H
+# include <sys/select.h>
 #endif
 
 #include "inn/md5.h"
-#include "macros.h"
 #include "libinn.h"
+#include "macros.h"
 #include "nntp.h"
 #include "paths.h"
-
-/* Needed on AIX 4.1 to get fd_set and friends. */
-#ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
-#endif
 
 #define RADIUS_LOCAL_PORT       NNTP_PORT
 
@@ -500,7 +491,7 @@ int main(int argc, char *argv[])
     if (argc != optind)
 	exit(2);
     if (!havefile) {
-	radius_config = (char *)cpcatpath(innconf->pathetc, _PATH_RADIUS_CONFIG);
+	radius_config = concatpath(innconf->pathetc, _PATH_RADIUS_CONFIG);
 	if (!(f = fopen(radius_config, "r"))) {
 	    fprintf(stderr, "couldn't open config file %s: %s\n", radius_config,
                     strerror(errno));
@@ -508,6 +499,7 @@ int main(int argc, char *argv[])
             read_config(f, &radconfig);
             fclose(f);
         }
+        free(radius_config);
     }
     if (!radconfig.radhost) {
 	fprintf(stderr, "No radius host to authenticate against.\n");
