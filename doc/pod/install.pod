@@ -151,7 +151,7 @@ as root, and make sure you fix the ownership of any created files if you
 have to.  INN doesn't like files in the news spool owned by a user other
 than the news user.
 
-INN 2.3 uses GNU autoconf and a generated configure script to make
+INN uses GNU autoconf and a generated configure script to make
 configuration rather painless.  Unless you have a rather abnormal setup,
 configure should be able to completely configure INN for your system.  If
 you want to change the defaults, you can invoke the configure script with
@@ -169,7 +169,10 @@ options are:
 Sets the installation prefix for INN.  The default is F</usr/local/news>.
 All of INN's programs and support files will be installed under this
 directory.  This should match the home directory of your news user (it
-will make installation and maintenance easier).
+will make installation and maintenance easier).  It is not recommended to
+set this to F</usr>; if you decide to do that anyway, make sure to point
+INN's temporary directory at a directory that isn't world-writeable (see
+B<--with-tmp-dir> below).
 
 =item B<--with-db-dir>=PATH
 
@@ -187,6 +190,15 @@ Sets the prefix for the news spool (when using any storage method other
 than CNFS) and the overview spool.  The default is F<PREFIX/spool>.  This
 is another common portion of INN to move to a different file system (often
 F</news>).
+
+=item B<--with-tmp-dir>=PATH
+
+Sets the directory in which INN will create temporary files.  This should
+under no circumstances be the same as the system temporary directory or
+otherwise be set to a world-writeable directory, since INN doesn't take
+care to avoid symlink attacks and other security problems possible with a
+world-writeable directory.  This directory should be reserved for the
+exclusive use of INN and only writeable by the news user.
 
 It's also possible to set the paths for most other sections of the INN
 installation independently; see C<./configure --help> and look for the
@@ -209,7 +221,7 @@ following formula:
 If you don't have at least that much RAM, try rebuilding INN with tagged
 hash enabled.
 
-NOTE: B<--with-largefiles> can not be used with B<--enable-tagged-hash>.
+NOTE: B<--enable-largefiles> cannot be used with B<--enable-tagged-hash>.
 
 =item B<--with-perl>
 
