@@ -543,7 +543,7 @@ static int display_txn(void)
 static int display_ver(void)
 {
     if(html) puts("<p>");
-    printf("ovdb data version: %d\n", DATA_VERSION);
+    printf("ovdb data version: %d\n", ovdb_data_ver);
     if(html) puts("<br>");
     printf("BerkeleyDB version: %s\n", db_version(NULL,NULL,NULL));
     if(html) puts("<p>");

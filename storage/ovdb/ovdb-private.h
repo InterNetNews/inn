@@ -32,6 +32,13 @@
  *
  * The overview records consist of a 'struct ovdata' followed by the actual
  * overview data.  The struct ovdata contains the token and arrival time.
+ * If compression is enabled, overview records larger than COMPRESS_MIN
+ * get compressed using zlib.  A compressed record has the same 'struct
+ * ovdata', but is followed by a uint32_t in network byteorder (which is
+ * the length of the uncompressed data), and then followed by the compressed
+ * data.  Since overview data never starts with a null byte, a compressed
+ * record is identified by the presense of a null byte immediately after
+ * the struct ovdata (which is part of the uint32_t).
  */ 
 
 struct ovdb_conf {
@@ -48,6 +55,7 @@ struct ovdb_conf {
     int maxrsconn;
     int useshm;
     int shmkey;
+    int compress;
 };
 
 typedef u_int32_t group_id_t;
@@ -83,8 +91,10 @@ struct ovdata {
 
 
 #define DATA_VERSION 2
+#define DATA_VERSION_COMPRESS 3
 
 extern struct ovdb_conf ovdb_conf;
+extern int ovdb_data_ver;
 extern DB_ENV *OVDBenv;
 
 void read_ovdb_conf(void);

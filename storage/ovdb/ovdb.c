@@ -84,6 +84,11 @@
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+#ifdef HAVE_ZLIB
+# include <zlib.h>
+# define MAX_UNZIP_SZ 100000
+# define COMPRESS_MIN 600
+#endif
 
 #include "conffile.h"
 #include "inn/innconf.h"
@@ -150,6 +155,7 @@ void ovdb_close(void) { }
 #define EXPIREGROUP_TXN_SIZE 100
 #define DELETE_TXN_SIZE 500
 
+int ovdb_data_ver = 0;
 struct ovdb_conf ovdb_conf;
 DB_ENV *OVDBenv = NULL;
 
@@ -176,6 +182,7 @@ static DB *groupaliases = NULL;
 #define OVDBmaxrsconn	10
 #define OVDBuseshm	11
 #define OVDBshmkey	12
+#define OVDBcompress	13
 
 static CONFTOKEN toks[] = {
     { OVDBtxn_nosync,   (char *) "txn_nosync"   },
@@ -190,6 +197,7 @@ static CONFTOKEN toks[] = {
     { OVDBmaxrsconn,    (char *) "maxrsconn"    },
     { OVDBuseshm,       (char *) "useshm"       },
     { OVDBshmkey,       (char *) "shmkey"       },
+    { OVDBcompress,     (char *) "compress"     },
     { 0,                NULL                    }
 };
 
@@ -410,6 +418,7 @@ void read_ovdb_conf(void)
     ovdb_conf.maxrsconn = 0;
     ovdb_conf.useshm = 0;
     ovdb_conf.shmkey = 6400;
+    ovdb_conf.compress = 0;
 
     path = concatpath(innconf->pathetc, _PATH_OVDBCONF);
     f = CONFfopen(path);
@@ -538,6 +547,18 @@ void read_ovdb_conf(void)
 		    ovdb_conf.shmkey = l;
 		}
 		break;
+	    case OVDBcompress:
+#ifdef HAVE_ZLIB
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_bool_val(tok->name, &b)) {
+		    ovdb_conf.compress = b;
+		}
+#endif
+		break;
 	    }
 	}
 	CONFfclose(f);
@@ -545,7 +566,11 @@ void read_ovdb_conf(void)
 
     /* If user did not specify minkey, choose one based on pagesize */
     if(ovdb_conf.minkey == 0) {
-	ovdb_conf.minkey = ovdb_conf.pagesize / 2048 - 1;
+	if(ovdb_conf.compress) {
+	    ovdb_conf.minkey = ovdb_conf.pagesize / 1500;
+	} else {
+	    ovdb_conf.minkey = ovdb_conf.pagesize / 2600;
+	}
 	if(ovdb_conf.minkey < 2)
 	    ovdb_conf.minkey = 2;
     }
@@ -801,7 +826,7 @@ static int delete_all_records(int whichdb, group_id_t gno)
     DBT key, val;
     struct datakey dk;
     int count;
-    int ret = 0;
+    int ret;
     DB_TXN *tid;
 
     memset(&key, 0, sizeof key);
@@ -936,7 +961,7 @@ rm_temp_groupinfo(group_id_t gno)
     char keystr[1 + sizeof gno];
     DB_TXN *tid;
     DBT key;
-    int ret = 0;
+    int ret;
 
     memset(&key, 0, sizeof key);
 
@@ -1149,7 +1174,7 @@ static bool delete_old_stuff(int forgotton)
 	    }
 	}
     }
-
+out:
     for(i = 0; i < listcount; i++)
 	free(dellist[i]);
     free(dellist);
@@ -1391,7 +1416,7 @@ static int check_version(void)
 	}
     }
     if(ret == DB_NOTFOUND || val.size != sizeof dv) {
-	dv = DATA_VERSION;
+	dv = ovdb_conf.compress ? DATA_VERSION_COMPRESS : DATA_VERSION;
 	if(!(OVDBmode & OV_WRITE)) {
 	    vdb->close(vdb, 0);
 	    return EACCES;
@@ -1407,7 +1432,7 @@ static int check_version(void)
     } else
 	memcpy(&dv, val.data, sizeof dv);
 
-    if(dv > DATA_VERSION) {
+    if(dv > DATA_VERSION_COMPRESS) {
         warn("OVDB: can't open database: unknown version %d", dv);
 	vdb->close(vdb, 0);
 	return EINVAL;
@@ -1417,6 +1442,28 @@ static int check_version(void)
 	vdb->close(vdb, 0);
 	return EINVAL;
     }
+#ifndef HAVE_ZLIB
+    if(dv == DATA_VERSION_COMPRESS) {
+	warn("OVDB: database is compressed but INN was not built with zlib");
+	vdb->close(vdb, 0);
+	return EINVAL;
+    }
+#endif
+    if(ovdb_conf.compress && dv == DATA_VERSION && (OVDBmode & OV_WRITE)) {
+	/* "Upgrade" the database to indicate there may be compressed
+	   records */
+	dv = DATA_VERSION_COMPRESS;
+	val.data = &dv;
+	val.size = sizeof dv;
+
+        ret = vdb->put(vdb, NULL, &key, &val, 0);
+	if (ret != 0) {
+	    warn("OVDB: open: can't store version: %s", db_strerror(ret));
+	    vdb->close(vdb, 0);
+	    return ret;
+	}
+    }
+    ovdb_data_ver = dv;
 
     /* The version db also stores some config values, which will override the
        corresponding ovdb.conf setting. */
@@ -1952,6 +1999,12 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 {
     static size_t databuflen = 0;
     static char *databuf;
+#ifdef HAVE_ZLIB
+    uLong	c_sz = 0;
+    static FILE *fp = NULL;
+#else
+    #define	c_sz 0
+#endif
     DB		*db;
     DBT		key, val;
     DB_TXN	*tid;
@@ -1965,8 +2018,15 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 	databuflen = BIG_BUFFER;
 	databuf = xmalloc(databuflen);
     }
-    if(databuflen < len + sizeof(struct ovdata)) {
-	databuflen = len + sizeof(struct ovdata);
+#ifdef HAVE_ZLIB
+    if(ovdb_conf.compress) {
+	/* Allow for worst-case compression */
+	c_sz = len + (len / 1000) + 20;
+    }
+#endif
+    
+    if(databuflen < len + sizeof(struct ovdata) + c_sz) {
+	databuflen = len + sizeof(struct ovdata) + c_sz;
         databuf = xrealloc(databuf, databuflen);
     }
 
@@ -1976,8 +2036,35 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     ((struct ovdata *)databuf)->token = token;
     ((struct ovdata *)databuf)->arrived = arrived;
     ((struct ovdata *)databuf)->expires = expires;
-    memcpy(databuf + sizeof(struct ovdata), data, len);
-    len += sizeof(struct ovdata);
+
+#ifdef HAVE_ZLIB
+    if(ovdb_conf.compress && len > COMPRESS_MIN) {
+	uint32_t sz;
+	c_sz -= sizeof(uint32_t);
+	ret = compress(
+		(Bytef *)(databuf + sizeof(struct ovdata) + sizeof(uint32_t)),
+		&c_sz, (Bytef *)data, (uLong)len);
+	if(ret != Z_OK) {
+	    memcpy(databuf + sizeof(struct ovdata), data, len);
+	    len += sizeof(struct ovdata);
+	} else {
+	    sz = htonl((uint32_t)len);
+	    memcpy(databuf + sizeof(struct ovdata), &sz, sizeof(uint32_t));
+
+	    /* The following line is mostly paranoia. Just want to make sure
+	       that the first byte is 0 (it should be 0 anyway), so ovdb_search
+	       recognizes this as compressed data.  */
+	    *(databuf + sizeof(struct ovdata)) = 0;
+
+	    len = c_sz + sizeof(struct ovdata) + sizeof(uint32_t);
+	}
+    } else {
+#endif
+      memcpy(databuf + sizeof(struct ovdata), data, len);
+      len += sizeof(struct ovdata);
+#ifdef HAVE_ZLIB
+    }
+#endif
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
@@ -2097,6 +2184,41 @@ bool ovdb_cancel(TOKEN token UNUSED)
     return true;
 }
 
+#ifdef HAVE_ZLIB
+static char *
+myuncompress(char *buf, size_t buflen, size_t *newlen)
+{
+    static char *dbuf = NULL;
+    static uLongf dbuflen = 0, ulen;
+    uint32_t sz;
+    int ret;
+
+    memcpy(&sz, buf, sizeof(sz));
+    sz = ntohl(sz);
+
+    if(sz >= dbuflen) {
+	if(dbuflen == 0) {
+	    dbuflen = sz + 512;
+	    dbuf = xmalloc(dbuflen);
+	} else {
+	    dbuflen = sz + 512;
+	    dbuf = xrealloc(dbuf, dbuflen);
+	}
+    }
+    ulen = dbuflen - 1;
+
+    ret = uncompress((Bytef *)dbuf, &ulen, (Bytef *)(buf + sizeof(uint32_t)), buflen - sizeof(uint32_t));
+    if(ret != Z_OK) {
+	warn("OVDB: uncompress failed");
+	return NULL;
+    }
+    dbuf[ulen] = 0;	/* paranoia */
+    if(newlen)
+	*newlen = ulen;
+    return dbuf;
+}
+#endif
+
 struct ovdbsearch {
     DBC *cursor;
     group_id_t gid;
@@ -2195,8 +2317,10 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len,
     DBT key, val;
     u_int32_t flags;
     struct ovdata ovd;
+    uint32_t sz = 0;
     struct datakey dk;
     int ret;
+    char *dp;
 
     if (clientmode) {
 	struct rs_cmd rs;
@@ -2326,10 +2450,41 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len,
     if(arrived)
 	*arrived = ovd.arrived;
 
-    if(len)
-	*len = val.size - sizeof(struct ovdata);
-    if(data)
-	*data = (char *)val.data + sizeof(struct ovdata);
+    dp = (char *)val.data + sizeof(struct ovdata);
+#ifdef HAVE_ZLIB
+    if(val.size >= (sizeof(struct ovdata) + sizeof(uint32_t)) && *dp == 0) {
+	/* data is compressed */
+	memcpy(&sz, dp, sizeof(uint32_t));
+	sz = ntohl(sz);
+	if(sz > MAX_UNZIP_SZ) {  /* sanity check */
+	    warn("OVDB: search: bogus sz: %d", sz);
+	    sz = 0;
+	}
+    }
+#endif
+
+    if(len) {
+	if(sz) {
+	    *len = sz;
+	} else {
+	    *len = val.size - sizeof(struct ovdata);
+	}
+    }
+
+    if(data) {
+#ifdef HAVE_ZLIB
+	if(sz && val.size > sizeof(struct ovdata) + sizeof(uint32_t)) {
+	    *data = myuncompress(dp, val.size - sizeof(struct ovdata), NULL);
+	    if(*data == NULL) {
+		s->state = 3;
+		s->cursor->c_close(s->cursor);
+		s->cursor = NULL;
+		return false;
+	    }
+	} else
+#endif
+	  *data = dp;
+    }
 
     return true;
 }
@@ -2725,6 +2880,16 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	    if(val.size < sizeof ovd) {
 		delete = 1;	/* must be corrupt, just delete it */
 	    } else {
+		char *p = (char *)val.data + sizeof(ovd);
+		size_t sz = val.size - sizeof(ovd);
+#ifdef HAVE_ZLIB
+		if(*p == 0)
+		    p = myuncompress(p, sz, &sz);
+		if(p == NULL) {
+		    p = "";
+		    delete = 1;
+		}
+#endif
 		memcpy(&ovd, val.data, sizeof ovd);
 
 		ah = NULL;
@@ -2734,15 +2899,13 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 		    } else
 			SMfreearticle(ah);
 		} else {
-		    if (!OVhisthasmsgid(h, (char *)val.data + sizeof(ovd))) {
+		    if (!delete && !OVhisthasmsgid(h, p)) {
 			delete = 1;
 		    }
 		}
-		if (!delete && innconf->groupbaseexpiry &&
-			    OVgroupbasedexpire(ovd.token, group,
-				    (char *)val.data + sizeof(ovd),
-				    val.size - sizeof(ovd),
-				    ovd.arrived, ovd.expires)) {
+		if (!delete && innconf->groupbaseexpiry
+			    && OVgroupbasedexpire(ovd.token, group,
+				    p, sz, ovd.arrived, ovd.expires)) {
 		    delete = 1;
 		}
 	    }

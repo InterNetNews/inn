@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "OVDB 5"
-.TH OVDB 5 "2004-06-08" "INN 2.5.0" "InterNetNews Documentation"
+.TH OVDB 5 "2004-06-12" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 ovdb \- Overview storage method for INN
 .SH "DESCRIPTION"
@@ -161,11 +161,13 @@ You can override this pathname by adding a path to the option, e.g.,
 have subdirectories \fIinclude\fR and \fIlib\fR, containing \fIdb.h\fR, and the
 library itself, respectively.
 .PP
-The ovdb database will take up more disk space for a given spool than the
+The ovdb database may take up more disk space for a given spool than the
 other overview methods.  Plan on needing at least 1.1 \s-1KB\s0 for every article
 in your spool (not counting crossposts).  So, if you have 5 million
-articles, you'll need at least 5.5 \s-1GB\s0 of disk space for ovdb.  With
-BerkeleyDB 2.x, the db files are 'grow only'; the library will not shrink
+articles, you'll need at least 5.5 \s-1GB\s0 of disk space for ovdb. With compression
+enabled, this estimate changes to 0.7 \s-1KB\s0 per article.  See the \s-1COMPRESSION\s0
+section below.
+With BerkeleyDB 2.x, the db files are 'grow only'; the library will not shrink
 them, even if data is removed.  So, reserving extra space above the
 estimate is a good idea.  Plus, you'll need additional space for
 transaction logs: at least 100 \s-1MB\s0.  By default the transaction logs go in
@@ -192,6 +194,11 @@ cache hit percentages.  To make a change of this parameter take effect,
 shut down and restart \s-1INN\s0 (be sure to kill all of the nnrpds when shutting
 down).  Default is 8000, which is adequate for small to medium sized
 servers.  Large servers will probably need at least 20000.
+.IP "compress" 4
+.IX Item "compress"
+If \s-1INN\s0 was compiled with zlib, and this compress parameter is true, \s-1OVDB\s0
+will compress overview records that are longer than 600 bytes. See
+the \s-1COMPRESSION\s0 section below.
 .IP "numdbfiles" 4
 .IX Item "numdbfiles"
 Overview data is split between this many files.  Currently, \fBinnd\fR will
@@ -228,10 +235,12 @@ parameter has no effect on an already-established database.
 .IP "minkey" 4
 .IX Item "minkey"
 Sets the minimum number of keys per page.  See the BerkeleyDB
-documentation for more info.  Default is based on page size:
+documentation for more info.  Default is based on page size
+and whether compression is enabled:
 .Sp
-.Vb 1
-\&   default_minkey = MAX(2, pagesize / 2048 - 1)
+.Vb 2
+\&   default_minkey = MAX(2, pagesize / 2600) if compress is false
+\&   default_minkey = MAX(2, pagesize / 1500) if compress is true
 .Ve
 .Sp
 The lowest allowed minkey is 2.  Setting minkey higher than the default is
@@ -284,8 +293,38 @@ times.  Default is 5.
 This parameter is only used when \fIreadserver\fR is true.  It sets a maximum
 number of readers that a given ovdb_server process will serve at one time.
 This means the maximum number of readers for all of the ovdb_server
-processes is (numrsprocs * maxrsconn).  Default is 0, which means an
+processes is (numrsprocs * maxrsconn). This does \fBnot\fR limit the actual
+number of readers, since nnrpd will fall back to opening the database
+directly if it can't connect to a readserver. Default is 0, which means an
 umlimited number of connections is allowed.
+.SH "COMPRESSION"
+.IX Header "COMPRESSION"
+New in this version of \s-1OVDB\s0 is the ability to compress overview data
+before it is stored into the database. In addition to consuming less disk
+space, compression keeps the average size of the database keys smaller.
+This in turn increases the average number of keys per page, which can
+significantly improve performance and also helps keep the database more
+compact. This feature requires that \s-1INN\s0 be built with zlib. Only records
+larger than 600 bytes get compressed, because that is the point at which
+compression starts to become significant.
+.PP
+If compression is not enabled (either from the \f(CW\*(C`compress\*(C'\fR option in 
+\&\fIovdb.conf\fR or \s-1INN\s0 was not built from zlib), the database will be backward
+compatible with older versions of \s-1OVDB\s0.  However, if compression is enabled,
+the database is marked with a newer version that will prevent older versions
+of \s-1OVDB\s0 from opening the database.
+.PP
+You can upgrade an existing database to use compression simply by setting
+\&\f(CW\*(C`compress\*(C'\fR to \f(CW\*(C`true\*(C'\fR if \fIovdb.conf\fR.  Note that existing records in the
+database will remain uncompressed; only new records added after enabling
+compression will be compressed.
+.PP
+If you disable compression on a database that previously had it enabled,
+new records will be stored uncompressed, but the database will still be
+incompatible with older versions of \s-1OVDB\s0 (and will also be incompatible
+with this version of \s-1OVDB\s0 if it was not built with zlib).  So to downgrade
+to a completely uncompressed database you will have to rebuild the database
+using makehistory.
 .SH "DB_CONFIG"
 .IX Header "DB_CONFIG"
 A file called \fI\s-1DB_CONFIG\s0\fR may be placed in the database directory to

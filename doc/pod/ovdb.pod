@@ -33,16 +33,18 @@ C<--with-berkeleydb=/usr/BerkeleyDB.3.1>.  This directory is expected to
 have subdirectories F<include> and F<lib>, containing F<db.h>, and the
 library itself, respectively.
 
-The ovdb database will take up more disk space for a given spool than the
+The ovdb database may take up more disk space for a given spool than the
 other overview methods.  Plan on needing at least 1.1 KB for every article
 in your spool (not counting crossposts).  So, if you have 5 million
-articles, you'll need at least 5.5 GB of disk space for ovdb.  With
-BerkeleyDB 2.x, the db files are 'grow only'; the library will not shrink
+articles, you'll need at least 5.5 GB of disk space for ovdb. With compression
+enabled, this estimate changes to 0.7 KB per article.  See the L<COMPRESSION>
+section below.
+With BerkeleyDB 2.x, the db files are 'grow only'; the library will not shrink
 them, even if data is removed.  So, reserving extra space above the
 estimate is a good idea.  Plus, you'll need additional space for
 transaction logs: at least 100 MB.  By default the transaction logs go in
 the same directory as the database.  To improve performance, they can be
-placed on a different disk -- see the DB_CONFIG section.
+placed on a different disk -- see the L<DB_CONFIG> section.
 
 =head1 CONFIGURATION
 
@@ -68,6 +70,12 @@ cache hit percentages.  To make a change of this parameter take effect,
 shut down and restart INN (be sure to kill all of the nnrpds when shutting
 down).  Default is 8000, which is adequate for small to medium sized
 servers.  Large servers will probably need at least 20000.
+
+=item compress
+
+If INN was compiled with zlib, and this compress parameter is true, OVDB
+will compress overview records that are longer than 600 bytes. See
+the L<COMPRESSION> section below.
 
 =item numdbfiles
 
@@ -110,9 +118,11 @@ parameter has no effect on an already-established database.
 =item minkey
 
 Sets the minimum number of keys per page.  See the BerkeleyDB
-documentation for more info.  Default is based on page size:
+documentation for more info.  Default is based on page size
+and whether compression is enabled:
 
-   default_minkey = MAX(2, pagesize / 2048 - 1)
+   default_minkey = MAX(2, pagesize / 2600) if compress is false
+   default_minkey = MAX(2, pagesize / 1500) if compress is true
 
 The lowest allowed minkey is 2.  Setting minkey higher than the default is
 not recommended, as it will cause the databases to have a lot of overflow
@@ -169,10 +179,41 @@ times.  Default is 5.
 This parameter is only used when I<readserver> is true.  It sets a maximum
 number of readers that a given ovdb_server process will serve at one time.
 This means the maximum number of readers for all of the ovdb_server
-processes is (numrsprocs * maxrsconn).  Default is 0, which means an
+processes is (numrsprocs * maxrsconn). This does B<not> limit the actual
+number of readers, since nnrpd will fall back to opening the database
+directly if it can't connect to a readserver. Default is 0, which means an
 umlimited number of connections is allowed.
 
 =back
+
+=head1 COMPRESSION
+
+New in this version of OVDB is the ability to compress overview data
+before it is stored into the database. In addition to consuming less disk
+space, compression keeps the average size of the database keys smaller.
+This in turn increases the average number of keys per page, which can
+significantly improve performance and also helps keep the database more
+compact. This feature requires that INN be built with zlib. Only records
+larger than 600 bytes get compressed, because that is the point at which
+compression starts to become significant.
+
+If compression is not enabled (either from the C<compress> option in 
+F<ovdb.conf> or INN was not built from zlib), the database will be backward
+compatible with older versions of OVDB.  However, if compression is enabled,
+the database is marked with a newer version that will prevent older versions
+of OVDB from opening the database.
+
+You can upgrade an existing database to use compression simply by setting
+C<compress> to C<true> if F<ovdb.conf>.  Note that existing records in the
+database will remain uncompressed; only new records added after enabling
+compression will be compressed.
+
+If you disable compression on a database that previously had it enabled,
+new records will be stored uncompressed, but the database will still be
+incompatible with older versions of OVDB (and will also be incompatible
+with this version of OVDB if it was not built with zlib).  So to downgrade
+to a completely uncompressed database you will have to rebuild the database
+using makehistory.
 
 =head1 DB_CONFIG
 
