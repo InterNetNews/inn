@@ -582,4 +582,6 @@ AC_SUBST(MISSING_OBJ)
 
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 AC_CONFIG_HEADER(include/config.h)
-AC_OUTPUT(config/config.data Makefile.global include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/subst.pl makedirs.sh)
+AC_OUTPUT(config/config.data Makefile.global include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/subst.pl storage/buildconfig makedirs.sh)
+
+chmod +x site/subst.pl storage/buildconfig
