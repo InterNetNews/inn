@@ -207,6 +207,14 @@ fi
 fi
 AC_SUBST(pgpverify)
 
+AC_PATH_PROG(GETCONF, getconf)
+LFS_CFLAGS=`$GETCONF LFS_CFLAGS`
+LFS_LDFLAGS=`$GETCONF LFS_LDFLAGS`
+LFS_LIBS=`$GETCONF LFS_LIBS`
+AC_SUBST(LFS_CFLAGS)
+AC_SUBST(LFS_LDFLAGS)
+AC_SUBST(LFS_LFS_LIBS)
+
 AC_PATH_PROG(COMPRESS,compress,no-compress-found-during-configure)
 AC_PATH_PROGS(GZIP,gzip,no-gzip-found-during-configure)
 dnl
@@ -1018,6 +1026,7 @@ AC_OUTPUT(
 	samples/newgroup
 	samples/newgroup.pl
 	samples/newsfeeds
+	samples/nnrpd_auth.pl
 	samples/nntpsend
 	samples/parsecontrol
 	samples/pgpverify
