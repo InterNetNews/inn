@@ -11,7 +11,7 @@
 
 
 
-int create_udp_socket(int port)
+int create_udp_socket(int port, int portexclude)
 {
 	int s;
 	struct sockaddr_in sin;
@@ -29,6 +29,10 @@ int create_udp_socket(int port)
 	}
 	if (bind(s, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		/* perror("create_udp_socket: bind"); */
+		return(-1);
+	}
+	if (sin.sin_port == htons(portexclude)) {
+		close(s);
 		return(-1);
 	}
 	return(s);
