@@ -1944,6 +1944,7 @@ STRING ARTpost(CHANNEL *cp)
 #if defined(DO_PERL) || defined(DO_PYTHON)
     char		*filterrc;
 #endif /* defined(DO_PERL) || defined(DO_PYTHON) */
+    BOOL		NoHistoryUpdate;
 
     /* Preliminary clean-ups. */
     article = &cp->In;
@@ -2229,7 +2230,7 @@ STRING ARTpost(CHANNEL *cp)
      * of code, j will have the needed length, the appropriate site
      * entries will have their Sendit and ng fields set, and GroupPointers
      * will have pointers to the relevant newsgroups. */
-    ToGroup = FALSE;
+    ToGroup = NoHistoryUpdate = FALSE;
     p = HDR(_approved);
     Approved = *p != '\0';
     ngptr = GroupPointers;
@@ -2296,8 +2297,12 @@ STRING ARTpost(CHANNEL *cp)
 	   poisoning.  This means that articles that we accept from them will
 	   be handled correctly if they're crossposted. */
 	canpost = RCcanpost(cp, p);
-	if (!canpost)
+	if (!canpost) {  /* At least one group cannot be fed by this peer.
+	 		    If we later reject the post as unwanted group,
+			    don't remember it.  If we accept, do remember */
+	    NoHistoryUpdate = TRUE;
 	    continue;
+	}
 	else if (canpost < 0) {
 	    (void)sprintf(buff, "%d Won't accept posts in \"%s\"",
 		NNTP_REJECTIT_VAL, p);
@@ -2361,13 +2366,19 @@ STRING ARTpost(CHANNEL *cp)
      * under junk so that downstream feeds can get it. */
     if (!Accepted || ngptr == GroupPointers) {
 	if (!Accepted) {
+	    if (NoHistoryUpdate) {
+		(void)sprintf(buff, "%d Can't post to \"%s\"",
+		    NNTP_REJECTIT_VAL,
+		    MaxLength(HDR(_newsgroups), HDR(_newsgroups)));
+	    } else {
 	    (void)sprintf(buff, "%d Unwanted newsgroup \"%s\"",
 		NNTP_REJECTIT_VAL,
 		MaxLength(HDR(_newsgroups), HDR(_newsgroups)));
+	    }
 	    ARTlog(&Data, ART_REJECT, buff);
 	    if (!innconf->wanttrash) {
 		if (innconf->remembertrash && (Mode == OMrunning) &&
-			!HISremember(hash))
+			!NoHistoryUpdate && !HISremember(hash))
 		    syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
 		if (distributions)
