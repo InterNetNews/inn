@@ -446,10 +446,10 @@ static void initTape (Tape nt)
         syslog (LOG_ERR,NODEFN,"backlog-limit") ;
     }
   
-  dprintf (1, "%s spooling: %s\n", nt->peerName, 
+  d_printf (1, "%s spooling: %s\n", nt->peerName, 
   	   nt->noBacklog ? "disabled" : "enabled");
 
-  dprintf (1,"%s tape backlog limit: [%ld %ld]\n",nt->peerName,
+  d_printf (1,"%s tape backlog limit: [%ld %ld]\n",nt->peerName,
            nt->outputLowLimit,
            nt->outputHighLimit) ;
   
@@ -607,7 +607,7 @@ void delTape (Tape tape)
 
   if (stat(tape->outputFilename, &st) == 0 && st.st_size == 0)
     {
-      dprintf (1,"removing empty output tape: %s\n",tape->outputFilename) ;
+      d_printf (1,"removing empty output tape: %s\n",tape->outputFilename) ;
       (void) unlink (tape->outputFilename) ;
     }
   
@@ -734,7 +734,7 @@ Article getArticle (Tape tape)
           if (fclose (tape->inFp) != 0)
             syslog (LOG_ERR,FCLOSE_FAILED, tape->inputFilename);
 
-          dprintf (1,"No more articles on tape %s\n",tape->inputFilename) ;
+          d_printf (1,"No more articles on tape %s\n",tape->inputFilename) ;
 
           tape->inFp = NULL ;
           tape->scribbled = false ;
@@ -813,9 +813,9 @@ Article getArticle (Tape tape)
 #endif
   
   if (art == NULL)
-    dprintf (2,"%s All out of articles in the backlog\n", tape->peerName) ;
+    d_printf (2,"%s All out of articles in the backlog\n", tape->peerName) ;
   else
-    dprintf (2,"%s Peeled article %s from backlog\n",tape->peerName,
+    d_printf (2,"%s Peeled article %s from backlog\n",tape->peerName,
              artMsgId (art)) ;
       
   return art ;
@@ -963,7 +963,7 @@ static void checkpointTape (Tape tape)
 
   if (!tape->changed)   /* haven't read since last checkpoint */
     {
-      dprintf (1,"Not checkpointing unchanged tape: %s\n", tape->peerName) ;
+      d_printf (1,"Not checkpointing unchanged tape: %s\n", tape->peerName) ;
       return ;
     }
   
@@ -1122,7 +1122,7 @@ static void prepareFiles (Tape tape)
             {
               if (feof (tape->inFp))
                 {
-                  dprintf (1,"Empty input file: %s",tape->inputFilename) ;
+                  d_printf (1,"Empty input file: %s",tape->inputFilename) ;
                   unlink (tape->inputFilename) ;
                 }
               else
@@ -1226,7 +1226,7 @@ static void tapeCheckpointCallback (TimeoutId id, void *d)
   ASSERT (id == checkPtId) ;
   ASSERT (tapeCkPtPeriod > 0) ;
   
-  dprintf (1,"Checkpointing tapes\n") ;
+  d_printf (1,"Checkpointing tapes\n") ;
   
   checkPointTapes () ;
 

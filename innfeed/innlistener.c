@@ -216,7 +216,7 @@ void shutDown (InnListener l)
   u_int i ;
   u_int count ;
 
-  dprintf (1,"Shutting down the listener\n") ;
+  d_printf (1,"Shutting down the listener\n") ;
 
   closeDroppedArticleFile () ;
   unlink (pidFile) ;
@@ -259,7 +259,7 @@ bool listenerAddPeer (InnListener listener, Host hostObj)
 {
   u_int i ;
 
-  dprintf (1,"Adding peer: %s\n", hostPeerName (hostObj)) ;
+  d_printf (1,"Adding peer: %s\n", hostPeerName (hostObj)) ;
   
   for (i = 0 ; i < listener->hostLen ; i++)
     {
@@ -287,7 +287,7 @@ u_int listenerHostGone (InnListener listener, Host host)
   u_int i ;
   u_int someThere = 0 ;
 
-  dprintf (1,"Host is gone: %s\n", hostPeerName (host)) ;
+  d_printf (1,"Host is gone: %s\n", hostPeerName (host)) ;
   
   for (i = 0 ; i < listener->hostLen ; i++)
     if (listener->myHosts [i] == host)
@@ -305,7 +305,7 @@ void listenerHostIsIdle (InnListener listener, Host host)
   ASSERT (listener != NULL) ;
   ASSERT (host != NULL) ;
 
-  dprintf (1,"Host is idle: %s\n", hostPeerName (host)) ;
+  d_printf (1,"Host is idle: %s\n", hostPeerName (host)) ;
   
   if (!listener->dummyListener)
     return ;
@@ -412,7 +412,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
 	}
       else 
         {
-          dprintf (1,"Got EOF on listener\n") ;
+          d_printf (1,"Got EOF on listener\n") ;
           syslog (LOG_NOTICE,INN_GONE) ;
 	  shutDown (lis) ;
         }
@@ -421,7 +421,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
     {
       errno = endPointErrno (ep) ;
       syslog (LOG_ERR,INN_IO_ERROR) ;
-      dprintf (1,"Got IO Error on listener\n") ;
+      d_printf (1,"Got IO Error on listener\n") ;
       shutDown (lis) ;
     }
   else if (strchr (bbase, '\n') == NULL) /* partial read */
@@ -448,7 +448,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
 
           *endc = '\0' ;
           
-          dprintf (2,"INN Command: %s\n", cmd) ;
+          d_printf (2,"INN Command: %s\n", cmd) ;
 
           /* pick out the leading string (the filename) */
           if ((fileName = findNonBlankString (cmd,&fileNameEnd)) == NULL)
@@ -590,20 +590,20 @@ static void giveArticleToPeer (InnListener lis,
     if (lis->myHosts[i] != NULL)
       if (strcmp (peerName,hostPeerName (lis->myHosts [i])) == 0)
         {
-          dprintf (1,"Giving article to peer: %s\n", peerName) ;
+          d_printf (1,"Giving article to peer: %s\n", peerName) ;
           hostSendArticle (lis->myHosts [i],artTakeRef (article)) ;
           break ;
         }
 
   if (i == lis->hostLen)
     {
-      dprintf (1,"Failed to give article to peer: -%s-\n", peerName) ;
+      d_printf (1,"Failed to give article to peer: -%s-\n", peerName) ;
       
       if (lis->dynamicPeers)
 	{
 	  Host newHostObj;
 
-          dprintf (1, "Adding peer dynamically\n") ;
+          d_printf (1, "Adding peer dynamically\n") ;
           
           newHostObj = newDefaultHost (lis, peerName);
 

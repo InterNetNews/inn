@@ -253,7 +253,7 @@ Article newArticle (const char *filename, const char *msgid)
       newArt->inWireFormat = false ;
       newArt->arthandle = NULL;
       
-      dprintf (3,"Adding a new article(%p): %s\n", newArt, msgid) ;
+      d_printf (3,"Adding a new article(%p): %s\n", newArt, msgid) ;
       
       articlesInUse++ ;
       articleTotal++ ;
@@ -266,7 +266,7 @@ Article newArticle (const char *filename, const char *msgid)
         syslog (LOG_ERR, DOUBLE_NAME, filename, newArt->fname) ;
       
       newArt->refCount++ ;
-      dprintf (2,"Reusing existing article for %s\nx",msgid) ;
+      d_printf (2,"Reusing existing article for %s\nx",msgid) ;
     }
   
   return newArt ;
@@ -288,7 +288,7 @@ void delArticle (Article article)
 
       ASSERT (removed == true) ;
 
-      dprintf (2,"Cleaning up article (%p): %s\n",article, article->msgid) ;
+      d_printf (2,"Cleaning up article (%p): %s\n",article, article->msgid) ;
 
       if (article->contents != NULL)
         {
@@ -706,7 +706,7 @@ static bool fillContents (Article article)
 			(bufferDataSize (article->contents) - articlesize) ;
 		    
 		    if (((u_int) UINT_MAX) - diff <= preparedBytes) {
-			dprintf (2,"Newline ratio so far: %02.2f\n",
+			d_printf (2,"Newline ratio so far: %02.2f\n",
 				 ((double) preparedBytes / preparedNewlines)) ;
 			syslog (LOG_NOTICE,PREPARED_NEWLINES,
 				((double) preparedBytes)/preparedNewlines,

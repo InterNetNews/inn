@@ -110,7 +110,7 @@ Buffer newBuffer (size_t size)
   gBufferList = nb ;
   
 #if 0
-  dprintf (1,"Creating a DELETABLE buffer %p\n",nb) ;
+  d_printf (1,"Creating a DELETABLE buffer %p\n",nb) ;
 #endif
 
   return nb ;
@@ -142,7 +142,7 @@ Buffer newBufferByCharP (const char *ptr, size_t size, size_t dataSize)
 
   bufferCount++ ;
 #if 0
-  dprintf (1,"Creating a NON-DELETABLE buffer %p\n",nb) ;
+  d_printf (1,"Creating a NON-DELETABLE buffer %p\n",nb) ;
 #endif
   
   return nb ;
@@ -154,7 +154,7 @@ void delBuffer (Buffer buff)
   if (buff != NULL && --(buff->refCount) == 0)
     {
 #if 0
-      dprintf (1,"Freeing a %s buffer (%p)\n",
+      d_printf (1,"Freeing a %s buffer (%p)\n",
                (buff->deletable ? "DELETABLE" : "NON-DELETABLE"), buff) ;
 #endif
 
@@ -439,7 +439,7 @@ bool concatBuffer (Buffer dest, Buffer src)
   /* realloc the buffer's memory to increase the size by AMT */
 bool expandBuffer (Buffer buff, size_t amt)
 {
-  dprintf (2,"Expanding buffer....\n") ;
+  d_printf (2,"Expanding buffer....\n") ;
   
   if (!buff->deletable)
     return false ;
@@ -499,12 +499,12 @@ bool nntpPrepareBuffer (Buffer buffer)
   
   if (msize - dsize < extra)
     {
-      dprintf (2,"Expanding buffer in nntpPrepareBuffer (from %d to %d)\n",
+      d_printf (2,"Expanding buffer in nntpPrepareBuffer (from %d to %d)\n",
                msize, msize + (extra - (msize - dsize))) ;
 
       if ( !expandBuffer (buffer, extra - (msize - dsize)) )
         {
-          dprintf (1,"Expand failed...\n") ;
+          d_printf (1,"Expand failed...\n") ;
           return false ;
         }
       

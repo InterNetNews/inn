@@ -354,7 +354,7 @@ int hostConfigLoadCbk (void *data)
   char *p ;
 
 
-  dprintf(1,"hostConfigLoadCbk\n");
+  d_printf(1,"hostConfigLoadCbk\n");
 
   if (defaultParams)
     {
@@ -880,7 +880,7 @@ static void tryBlockedHosts(TimeoutId tid /*unused*/ , void *data /*unused*/ )
 		}
 	      else 
 		{
-		  dprintf(1,"Unblocked host %s\n",params->peerName);
+		  d_printf(1,"Unblocked host %s\n",params->peerName);
 
 		  if (params->initialConnections == 0 &&
 		      listenerIsDummy(mainListener) /*talk to self*/)
@@ -1407,7 +1407,7 @@ void hostClose (Host host)
   u_int i ;
   u_int cxnCount ;
 
-  dprintf (1,"Closing host %s\n",host->params->peerName) ;
+  d_printf (1,"Closing host %s\n",host->params->peerName) ;
   
   queuesToTape (host) ;
   delTape (host->myTape) ;
@@ -1481,7 +1481,7 @@ void hostChkCxns(TimeoutId tid /*unused*/, void *data) {
   backlogRatio = (host->backlog * 1.0 / hostHighwater);
   backlogMult = 1.0/(1.0-host->params->dynBacklogFilter);
 
-  dprintf(1,"%s hostChkCxns - entry filter=%3.3f blmult=%3.3f blratio=%3.3f",host->params->peerName,host->backlogFilter, backlogMult, backlogRatio);
+  d_printf(1,"%s hostChkCxns - entry filter=%3.3f blmult=%3.3f blratio=%3.3f",host->params->peerName,host->backlogFilter, backlogMult, backlogRatio);
 
   ratio = 0.0; /* ignore APS by default */
 
@@ -1518,7 +1518,7 @@ void hostChkCxns(TimeoutId tid /*unused*/, void *data) {
 	else if ((currAPS - lastAPS) < -.2)
 	  host->backlogFilter -= ratio;
 	
-	dprintf(1,"%s hostChkCxns - entry hwm=%3.3f lwm=%3.3f new=%3.3f [%3.3f,%3.3f]",
+	d_printf(1,"%s hostChkCxns - entry hwm=%3.3f lwm=%3.3f new=%3.3f [%3.3f,%3.3f]",
 	       host->params->peerName,host->params->dynBacklogHighWaterMark,
 	       host->params->dynBacklogLowWaterMark,host->backlogFilter, 
 	       (host->params->dynBacklogLowWaterMark * backlogMult / 100.0),
@@ -1543,7 +1543,7 @@ void hostChkCxns(TimeoutId tid /*unused*/, void *data) {
 	break;
     }
 
-  dprintf(1, "hostChkCxns: Chngs %f\n", currAPS - lastAPS);
+  d_printf(1, "hostChkCxns: Chngs %f\n", currAPS - lastAPS);
 
   if (newMaxCxns < 1) newMaxCxns=1;
   if (newMaxCxns > MAXCONLIMIT(host->params->absMaxConnections))
@@ -1569,7 +1569,7 @@ void hostChkCxns(TimeoutId tid /*unused*/, void *data) {
 
   if(host->nextCxnTimeChk <= 240) host->nextCxnTimeChk *= 2;
   else host->nextCxnTimeChk = 300;
-  dprintf(1, "prepareSleep hostChkCxns, %d\n", host->nextCxnTimeChk);
+  d_printf(1, "prepareSleep hostChkCxns, %d\n", host->nextCxnTimeChk);
   host->ChkCxnsId = prepareSleep(hostChkCxns, host->nextCxnTimeChk, host);
 }
 
@@ -1622,13 +1622,13 @@ void hostSendArticle (Host host, Article article)
             if (cxnTakeArticle (cxn, extraRef))
               return ;
             else
-              dprintf (1,"%s Inactive connection %d refused an article\n",
+              d_printf (1,"%s Inactive connection %d refused an article\n",
                        host->params->peerName,idx) ;
           }
 
       /* this'll happen if all connections are feeding and all
          their queues are full, or if those not feeding are asleep. */
-      dprintf (1, "Couldn't give the article to a connection\n") ;
+      d_printf (1, "Couldn't give the article to a connection\n") ;
       
       delArticle (extraRef) ;
           
@@ -1972,7 +1972,7 @@ void hostArticleAccepted (Host host, Connection cxn, Article article)
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
 
-  dprintf (5,"Article %s (%s) was transferred\n", msgid, filename) ;
+  d_printf (5,"Article %s (%s) was transferred\n", msgid, filename) ;
   
   host->artsAccepted++ ;
   host->gArtsAccepted++ ;
@@ -2001,7 +2001,7 @@ void hostArticleNotWanted (Host host, Connection cxn, Article article)
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
 
-  dprintf (5,"Article %s (%s) was not wanted\n", msgid, filename) ;
+  d_printf (5,"Article %s (%s) was not wanted\n", msgid, filename) ;
   
   host->artsNotWanted++ ;
   host->gArtsNotWanted++ ;
@@ -2031,7 +2031,7 @@ void hostArticleRejected (Host host, Connection cxn, Article article)
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
 
-  dprintf (5,"Article %s (%s) was rejected\n", msgid, filename) ;
+  d_printf (5,"Article %s (%s) was rejected\n", msgid, filename) ;
   
   host->artsRejected++ ;
   host->gArtsRejected++ ;
@@ -2120,7 +2120,7 @@ void hostArticleIsMissing (Host host, Connection cxn, Article article)
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
 
-  dprintf (5, "%s article is missing %s %s\n", host->params->peerName, msgid, filename) ;
+  d_printf (5, "%s article is missing %s %s\n", host->params->peerName, msgid, filename) ;
     
   host->artsMissing++ ;
   host->gArtsMissing++ ;
@@ -2153,13 +2153,13 @@ bool hostGimmeArticle (Host host, Connection cxn)
 
   if (amClosing (host))
     {
-      dprintf (5,"%s no article to give due to closing\n",host->params->peerName) ;
+      d_printf (5,"%s no article to give due to closing\n",host->params->peerName) ;
 
       return false ;
     }
 
   if (amtToGive == 0)
-    dprintf (5,"%s Queue space is zero....\n",host->params->peerName) ;
+    d_printf (5,"%s Queue space is zero....\n",host->params->peerName) ;
   
   while (amtToGive > 0)
     {

@@ -1770,7 +1770,7 @@ int readConfig (const char *file, FILE *errorDest, int justCheck, int dump)
   if (file == NULL || strlen (file) == 0 || !fileExistsP (file))
     {
       logOrPrint (LOG_ERR,errorDest,NOSUCH_CONFIG, file ? file : "(null)") ;
-      dprintf (1,"No such config file: %s\n", file ? file : "(null)") ;
+      d_printf (1,"No such config file: %s\n", file ? file : "(null)") ;
       exit (1) ;
     }
 

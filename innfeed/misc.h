@@ -74,7 +74,7 @@ typedef unsigned short u_short ;
 
 /* debugging information */
 extern char *program ;
-extern u_int loggingLevel ;     /* if 0 then dprintf is a no-op */
+extern u_int loggingLevel ;     /* if 0 then d_printf is a no-op */
 
 /* the current count of file desccriptors */
 extern u_int openfds ;
@@ -83,7 +83,7 @@ extern u_int openfds ;
 int maxFds (void) ;
 
 /* if level <= loggingLevel then print */
-void dprintf (u_int level, const char *fmt, ...) __attribute__ ((__format__ (printf, 2, 3)));
+void d_printf (u_int level, const char *fmt, ...) __attribute__ ((__format__ (printf, 2, 3)));
 
 /* for the gethostbyname() error code */
 const char *host_err_str (void) ;

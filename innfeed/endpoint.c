@@ -251,13 +251,13 @@ EndPoint newEndPoint (int fd)
       int newfd = fcntl(fd, F_DUPFD, stdioFdMax + 1);
       if (newfd >= 0)
         {
-          dprintf (1,"Dupped fd %d to %d\n",fd,newfd) ;
+          d_printf (1,"Dupped fd %d to %d\n",fd,newfd) ;
           if (close (fd) != 0)
             syslog (LOG_ERR,CLOSE_FAILED,fd) ;
         }
       else
         {
-          dprintf (1,"Couldn't dup fd %d to above %d\n",fd,stdioFdMax) ;
+          d_printf (1,"Couldn't dup fd %d to above %d\n",fd,stdioFdMax) ;
           newfd = fd ;
         }
 
@@ -568,7 +568,7 @@ TimeoutId prepareWake (EndpTCB func, time_t timeToWake, void *clientData)
   id = timerElemAdd (timeToWake,func,clientData) ;
 
 #if 0
-  dprintf (1,"Preparing wake %d at date %ld for %d seconds\n",
+  d_printf (1,"Preparing wake %d at date %ld for %d seconds\n",
            (int) id, (long) now, timeToWake - now) ;
 #endif
 
@@ -585,7 +585,7 @@ TimeoutId prepareSleep (EndpTCB func, int timeToSleep, void *clientData)
   id = timerElemAdd (now + timeToSleep,func,clientData) ;
 
 #if 0
-  dprintf (1,"Preparing sleep %d at date %ld for %d seconds\n",
+  d_printf (1,"Preparing sleep %d at date %ld for %d seconds\n",
            (int) id, (long) now, timeToSleep) ;
 #endif
 
@@ -1144,9 +1144,9 @@ static IoStatus doWrite (EndPoint endp)
       if (debugWrites) 
         {
           /* nasty mixing, but stderr is unbuffered usually. It's debugging only */
-          dprintf (5,"About to write this:================================\n") ;
+          d_printf (5,"About to write this:================================\n") ;
           writev (2,vp,bCount) ;
-          dprintf (5,"end=================================================\n") ;
+          d_printf (5,"end=================================================\n") ;
         }
       
 #endif
@@ -1199,7 +1199,7 @@ static IoStatus doWrite (EndPoint endp)
           rval = IoFailed ;
         }
       else
-        dprintf (1,"Wrote 0 bytes in doWrite()?\n") ;
+        d_printf (1,"Wrote 0 bytes in doWrite()?\n") ;
 
       FREE (vp) ;
     }
@@ -1454,7 +1454,7 @@ static void doTimeout (void)
 void timerCallback (void *cd) ;
 void timerCallback (void *cd)
 {
-  dprintf (1,"Callback \n") ;
+  d_printf (1,"Callback \n") ;
 }
 
   
@@ -1464,7 +1464,7 @@ void lineIsWritten (EndPoint ep, IoStatus status, Buffer *buffer, void *data)
   int i ;
   
   if (status == IoDone)
-    dprintf (1,"LINE was written\n") ;
+    d_printf (1,"LINE was written\n") ;
   else
     {
       int oldErrno = errno ;
@@ -1499,7 +1499,7 @@ void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffer, void *d)
     }
   else if (status == IoEOF)
     {
-      dprintf (1,"EOF on endpoint.\n") ;
+      d_printf (1,"EOF on endpoint.\n") ;
       delEndPoint (myEp) ;
 
       return ;
@@ -1516,7 +1516,7 @@ void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffer, void *d)
 
   data [len] = '\0' ;
   
-  dprintf (1,"Got a line: %s\n", data) ;
+  d_printf (1,"Got a line: %s\n", data) ;
 
   newBuff1 = newBuffer (len + 50) ;
   newBuff2 = newBuffer (len + 50) ;
@@ -1549,7 +1549,7 @@ static void printDate (TimeoutId tid, void *data)
 
   t = theTime() ;
   
-  dprintf (1,"Timeout (%d) time now is %ld %s",
+  d_printf (1,"Timeout (%d) time now is %ld %s",
            (int) tid,(long) t,ctime(&t)) ;
 
   if (timeoutQueue == NULL) 
@@ -1576,11 +1576,11 @@ static void Timeout (TimeoutId tid, void *data)
       seeded = 1 ;
     }
 
-  dprintf (1,"Timeout (%d) time now is %ld %s",
+  d_printf (1,"Timeout (%d) time now is %ld %s",
            (int) tid, (long) t,ctime(&t)) ;
   
   if (timeoutQueue != NULL && timeoutQueue->next != NULL)
-    dprintf (1,"%s timeout id %d\n",
+    d_printf (1,"%s timeout id %d\n",
              (removeTimeout (rm) ? "REMOVED" : "FAILED TO REMOVE"), rm) ;
   rm = 0 ;
   
@@ -1628,7 +1628,7 @@ void newConn (EndPoint ep, IoStatus status, Buffer *buffer, void *d)
 
   prepareRead (newEp, readBuffers, lineIsRead, NULL, 1) ;
 
-  dprintf (1,"Set up a new connection\n");
+  d_printf (1,"Set up a new connection\n");
 }
 
 
@@ -1672,7 +1672,7 @@ int main (int argc, char **argv)
   prepareSleep (Timeout,5,(void *) 0x10) ;
 
   t = theTime() ;
-  dprintf (1,"Time now is %s",ctime(&t)) ;
+  d_printf (1,"Time now is %s",ctime(&t)) ;
   
   prepareWake (printDate,t + 16,NULL) ;
 

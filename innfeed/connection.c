@@ -422,13 +422,13 @@ Connection newConnection (Host host,
 
   if (ipname == NULL)
     {
-      dprintf (1,"NULL ipname in newConnection\n") ;
+      d_printf (1,"NULL ipname in newConnection\n") ;
       croak = true ;
     }
 
   if (ipname && strlen (ipname) == 0)
     {
-      dprintf (1,"Empty ipname in newConnection\n") ;
+      d_printf (1,"Empty ipname in newConnection\n") ;
       croak = true ;
     }
 
@@ -551,7 +551,7 @@ bool cxnConnect (Connection cxn)
   if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0)
     {
       syslog (LOG_ERR, SOCKET_CREATE_ERROR, peerName, cxn->ident) ;
-      dprintf (1,"Can't get a socket: %m\n") ;
+      d_printf (1,"Can't get a socket: %m\n") ;
 
       cxnSleepOrDie (cxn) ;
 
@@ -702,7 +702,7 @@ void cxnFlush (Connection cxn)
         if (!cxn->immedRecon)
           {
             cxn->immedRecon = (cxn->articleQTotal > 0 ? true : false) ;
-            dprintf (1,"%s:%d immediate reconnect for a cxnFlush()\n",
+            d_printf (1,"%s:%d immediate reconnect for a cxnFlush()\n",
                      hostPeerName (cxn->myHost), cxn->ident) ;
           }
         
@@ -736,7 +736,7 @@ void cxnTerminate (Connection cxn)
   switch (cxn->state)
     {
       case cxnFeedingS:
-        dprintf (1,"%s:%d Issuing terminate\n",
+        d_printf (1,"%s:%d Issuing terminate\n",
                  hostPeerName (cxn->myHost), cxn->ident) ;
 
         clearTimer (cxn->flushTimerId) ;
@@ -759,7 +759,7 @@ void cxnTerminate (Connection cxn)
         break ;
 
       case cxnFlushingS: /* we are in the middle of a periodic close. */
-        dprintf (1,"%s:%d Connection already being flushed\n",
+        d_printf (1,"%s:%d Connection already being flushed\n",
                  hostPeerName (cxn->myHost),cxn->ident);
         cxn->state = cxnClosingS ;
         if (cxn->articleQTotal == 0)
@@ -767,7 +767,7 @@ void cxnTerminate (Connection cxn)
         break ;
 
       case cxnClosingS:
-        dprintf (1,"%s:%d Connection already closing\n",
+        d_printf (1,"%s:%d Connection already closing\n",
                  hostPeerName (cxn->myHost),cxn->ident) ;
         break ;
 
@@ -785,7 +785,7 @@ void cxnTerminate (Connection cxn)
 
   if (cxn->state == cxnDeadS)
     {
-      dprintf (1,"%s:%d Deleting connection\n",hostPeerName (cxn->myHost),
+      d_printf (1,"%s:%d Deleting connection\n",hostPeerName (cxn->myHost),
                cxn->ident) ;
 
       delConnection (cxn) ;
@@ -812,7 +812,7 @@ void cxnClose (Connection cxn)
   switch (cxn->state)
     {
       case cxnFeedingS:
-        dprintf (1,"%s:%d Issuing disconnect\n",
+        d_printf (1,"%s:%d Issuing disconnect\n",
                  hostPeerName (cxn->myHost), cxn->ident) ;
 
         clearTimer (cxn->flushTimerId) ;
@@ -834,7 +834,7 @@ void cxnClose (Connection cxn)
         break ;
 
       case cxnFlushingS: /* we are in the middle of a periodic close. */
-        dprintf (1,"%s:%d Connection already being flushed\n",
+        d_printf (1,"%s:%d Connection already being flushed\n",
                  hostPeerName (cxn->myHost),cxn->ident);
         cxn->state = cxnClosingS ;
         if (cxn->articleQTotal == 0)
@@ -842,7 +842,7 @@ void cxnClose (Connection cxn)
         break ;
 
       case cxnClosingS:
-        dprintf (1,"%s:%d Connection already closing\n",
+        d_printf (1,"%s:%d Connection already closing\n",
                  hostPeerName (cxn->myHost),cxn->ident) ;
         break ;
 
@@ -860,7 +860,7 @@ void cxnClose (Connection cxn)
 
   if (cxn->state == cxnDeadS)
     {
-      dprintf (1,"%s:%d Deleting connection\n",hostPeerName (cxn->myHost),
+      d_printf (1,"%s:%d Deleting connection\n",hostPeerName (cxn->myHost),
                cxn->ident) ;
 
       delConnection (cxn) ;
@@ -942,17 +942,17 @@ bool cxnQueueArticle (Connection cxn, Article art)
   switch (cxn->state)
     {
       case cxnClosingS:
-        dprintf (5,"%s:%d Refusing article due to closing\n",
+        d_printf (5,"%s:%d Refusing article due to closing\n",
                  hostPeerName (cxn->myHost),cxn->ident) ;
         break ;
 
       case cxnFlushingS:
-        dprintf (5,"%s:%d Refusing article due to flushing\n",
+        d_printf (5,"%s:%d Refusing article due to flushing\n",
                  hostPeerName (cxn->myHost),cxn->ident) ;
         break ;
 
       case cxnSleepingS:
-        dprintf (5,"%s:%d Refusing article due to sleeping\n",
+        d_printf (5,"%s:%d Refusing article due to sleeping\n",
                  hostPeerName (cxn->myHost),cxn->ident) ;
         break ;
 
@@ -973,7 +973,7 @@ bool cxnQueueArticle (Connection cxn, Article art)
       case cxnIdleS:
       case cxnFeedingS:
         if (cxn->articleQTotal >= cxn->maxCheck)
-          dprintf (5, "%s:%d Refusing article due to articleQTotal >= maxCheck (%d > %d)\n",
+          d_printf (5, "%s:%d Refusing article due to articleQTotal >= maxCheck (%d > %d)\n",
                    hostPeerName (cxn->myHost), cxn->ident,
                    cxn->articleQTotal, cxn->maxCheck) ;
         else
@@ -998,7 +998,7 @@ bool cxnQueueArticle (Connection cxn, Article art)
 
   if (rval)
     {
-      dprintf (5,"%s:%d accepting article %s\n",hostPeerName (cxn->myHost),
+      d_printf (5,"%s:%d accepting article %s\n",hostPeerName (cxn->myHost),
                cxn->ident,artMsgId (art)) ;
 
       cxn->artsTaken++ ;
@@ -1386,7 +1386,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
 
           default:
             syslog (LOG_NOTICE,UNKNOWN_BANNER, peerName, cxn->ident, code, p) ;
-            dprintf (1,"%s:%d Unknown response code: %d: %s\n",
+            d_printf (1,"%s:%d Unknown response code: %d: %s\n",
                      hostPeerName (cxn->myHost),cxn->ident, code, p) ;
             cxnSleepOrDie (cxn) ;
             hostCxnBlocked (cxn->myHost, cxn, rest) ;
@@ -1403,7 +1403,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
           p = bufferBase (modeBuffer) ;
 
           /* now issue the MODE STREAM command */
-          dprintf (1,"%s:%d Issuing the streaming command: %s",
+          d_printf (1,"%s:%d Issuing the streaming command: %s",
                    hostPeerName (cxn->myHost),cxn->ident,MODE_CMD) ;
 
           strcpy (p, MODE_CMD) ;
@@ -1463,7 +1463,7 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   bufferAddNullByte (b[0]) ;
 
-  dprintf (1,"%s:%d Processing mode response: %s", /* no NL */
+  d_printf (1,"%s:%d Processing mode response: %s", /* no NL */
            hostPeerName (cxn->myHost), cxn->ident, p) ;
 
   if (i == IoDone && writeIsPending (cxn->myEp))
@@ -1684,7 +1684,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
           return ;
         }
       
-      dprintf (5,"%s:%d Response %d: %s\n", peerName, cxn->ident, code, response) ;
+      d_printf (5,"%s:%d Response %d: %s\n", peerName, cxn->ident, code, response) ;
 
       /* now handle the response code. I'm not using symbolic names on
          purpose--the numbers are all you see in the RFC's. */
@@ -1777,7 +1777,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
       response = next ;
     }
 
-  dprintf (5,"%s:%d done with responses\n",hostPeerName (cxn->myHost),
+  d_printf (5,"%s:%d done with responses\n",hostPeerName (cxn->myHost),
            cxn->ident) ;
 
   switch (cxn->state)
@@ -1810,7 +1810,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
           {                       /* partial response */
             u_int leftAmt = respSize - (response - bufBase) ;
 
-            dprintf (2,"%s:%d handling a partial response\n",
+            d_printf (2,"%s:%d handling a partial response\n",
                      hostPeerName (cxn->myHost),cxn->ident) ;
 
             /* first we shift what's left in the buffer down to the
@@ -1844,7 +1844,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
                set already above (that would be unlikely I think). */
             VALIDATE_CONNECTION (cxn) ;
 
-            dprintf (5,"%s:%d about to do some writes\n",
+            d_printf (5,"%s:%d about to do some writes\n",
                      hostPeerName (cxn->myHost),cxn->ident) ;
 
             doSomeWrites (cxn) ;
@@ -2036,7 +2036,7 @@ static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
 
   if (i != IoDone)
     {
-      dprintf (1,"%s:%d MODE STREAM command failed to write\n",
+      d_printf (1,"%s:%d MODE STREAM command failed to write\n",
                hostPeerName (cxn->myHost), cxn->ident) ;
 
       syslog (LOG_ERR,MODE_STREAM_FAILED,hostPeerName (cxn->myHost),
@@ -2098,7 +2098,7 @@ static void responseTimeoutCbk (TimeoutId id, void *data)
   peerName = hostPeerName (cxn->myHost) ;
 
   syslog (LOG_WARNING, RESPONSE_TIMEOUT, peerName, cxn->ident) ;
-  dprintf (1,"%s:%d shutting down non-repsonsive connection\n",
+  d_printf (1,"%s:%d shutting down non-repsonsive connection\n",
            hostPeerName (cxn->myHost), cxn->ident) ;
 
   cxnLogStats (cxn,true) ;
@@ -2138,7 +2138,7 @@ static void writeTimeoutCbk (TimeoutId id, void *data)
   peerName = hostPeerName (cxn->myHost) ;
 
   syslog (LOG_WARNING, WRITE_TIMEOUT, peerName, cxn->ident) ;
-  dprintf (1,"%s:%d shutting down non-responsive connection\n",
+  d_printf (1,"%s:%d shutting down non-responsive connection\n",
            hostPeerName (cxn->myHost), cxn->ident) ;
 
   cxnLogStats (cxn,true) ;
@@ -2202,7 +2202,7 @@ static void flushCxnCbk (TimeoutId id, void *data)
     }
   else
     {
-      dprintf (1,"%s:%d Handling periodic connection close.\n",
+      d_printf (1,"%s:%d Handling periodic connection close.\n",
                hostPeerName (cxn->myHost), cxn->ident) ;
 
       syslog (LOG_NOTICE, CXN_PERIODIC_CLOSE,
@@ -2275,7 +2275,7 @@ static void cxnWorkProc (EndPoint ep, void *data)
 
   (void) ep ;                   /* keep lint happy */
 
-  dprintf (2,"%s:%d calling work proc\n",
+  d_printf (2,"%s:%d calling work proc\n",
            hostPeerName (cxn->myHost),cxn->ident) ;
 
   if (writesNeeded (cxn))
@@ -2286,7 +2286,7 @@ static void cxnWorkProc (EndPoint ep, void *data)
         issueQUIT (cxn) ;
     }
   else
-    dprintf (2,"%s:%d no writes were needed....\n",
+    d_printf (2,"%s:%d no writes were needed....\n",
              hostPeerName (cxn->myHost), cxn->ident) ;
 }
 
@@ -2917,7 +2917,7 @@ static void processResponse435 (Connection cxn, char *response)
   delArtHolder (artHolder) ;
 
 #if 0
-  dprintf (1,"%s:%d On exiting 435 article queue total is %d (%d %d %d %d)\n",
+  d_printf (1,"%s:%d On exiting 435 article queue total is %d (%d %d %d %d)\n",
            hostPeerName (cxn->myHost), cxn->ident,
            cxn->articleQTotal,
            (int) (cxn->checkHead != NULL),
@@ -3241,7 +3241,7 @@ static void prepareReopenCbk (Connection cxn)
       return ;
     }
 
-  dprintf (1,"%s:%d Setting up a reopen callback\n",
+  d_printf (1,"%s:%d Setting up a reopen callback\n",
            hostPeerName (cxn->myHost), cxn->ident) ;
 
   cxn->sleepTimerId = prepareSleep (reopenTimeoutCbk, cxn->sleepTimeout, cxn) ;
@@ -3456,7 +3456,7 @@ static bool issueIHAVE (Connection cxn)
       sprintf (p, "IHAVE %s\r\n", msgid) ;
       bufferSetDataSize (ihaveBuff, strlen (p)) ;
 
-      dprintf (5,"%s:%d Command IHAVE %s\n",
+      d_printf (5,"%s:%d Command IHAVE %s\n",
                hostPeerName (cxn->myHost),cxn->ident,msgid) ;
 
       writeArr = makeBufferArray (ihaveBuff, NULL) ;
@@ -3534,7 +3534,7 @@ static void issueIHAVEBody (Connection cxn)
     }
   else
     {
-      dprintf (5,"%s:%d prepared write for IHAVE body.\n",
+      d_printf (5,"%s:%d prepared write for IHAVE body.\n",
                hostPeerName (cxn->myHost),cxn->ident) ;
     }
   
@@ -3675,7 +3675,7 @@ static Buffer buildCheckBuffer (Connection cxn)
           const char *msgid = artMsgId (p->article) ;
 
           sprintf (t,"CHECK %s\r\n", msgid) ;
-          dprintf (5,"%s:%d Command %s", peerName, cxn->ident, t) ;
+          d_printf (5,"%s:%d Command %s", peerName, cxn->ident, t) ;
 
           tlen += strlen (t) ;
 
@@ -3777,7 +3777,7 @@ static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer)
               sprintf (t, "TAKETHIS %s\r\n", msgid) ;
               bufferSetDataSize (takeBuffer, strlen (t)) ;
 
-              dprintf (5,"%s:%d Command %s", peerName, cxn->ident, t) ;
+              d_printf (5,"%s:%d Command %s", peerName, cxn->ident, t) ;
 
               ASSERT (writeIdx <= lenArray) ;
               rval [writeIdx++] = takeBuffer ;
@@ -3860,7 +3860,7 @@ static void issueQUIT (Connection cxn)
 
       writeArray = makeBufferArray (quitBuffer, NULL) ;
 
-      dprintf (1,"%s:%d Sending a quit command\n",
+      d_printf (1,"%s:%d Sending a quit command\n",
                hostPeerName (cxn->myHost),cxn->ident) ;
 
       cxn->quitWasIssued = true ; /* not exactly true, but good enough */
@@ -3937,7 +3937,7 @@ static void delConnection (Connection cxn)
   if (cxn == NULL)
     return ;
 
-  dprintf (1,"Deleting connection: %s:%d\n",
+  d_printf (1,"Deleting connection: %s:%d\n",
            hostPeerName (cxn->myHost),cxn->ident) ;
 
   for (c = gCxnList, q = NULL ; c != NULL ; q = c, c = c->next)
@@ -4057,22 +4057,22 @@ static void validateConnection (Connection cxn)
   /* count up the articles the Connection has and make sure that matches. */
   for (p = cxn->takeHead ; p != NULL ; p = p->next)
     i++ ;
-  dprintf (4,"TAKE queue: %d\n",i) ;
+  d_printf (4,"TAKE queue: %d\n",i) ;
   old = i ;
 
   for (p = cxn->takeRespHead ; p != NULL ; p = p->next)
     i++ ;
-  dprintf (4,"TAKE response queue: %d\n",i - old) ;
+  d_printf (4,"TAKE response queue: %d\n",i - old) ;
   old = i ;
 
   for (p = cxn->checkHead ; p != NULL ; p = p->next)
     i++ ;
-  dprintf (4,"CHECK queue: %d\n",i - old) ;
+  d_printf (4,"CHECK queue: %d\n",i - old) ;
   old = i ;
 
   for (p = cxn->checkRespHead ; p != NULL ; p = p->next)
     i++ ;
-  dprintf (4,"CHECK response queue: %d\n",i - old) ;
+  d_printf (4,"CHECK response queue: %d\n",i - old) ;
 
   ASSERT (i == cxn->articleQTotal) ;
 

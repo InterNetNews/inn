@@ -145,7 +145,7 @@ int maxFds (void)
 }
 
 
-void dprintf (u_int level, const char *fmt, ...) 
+void d_printf (u_int level, const char *fmt, ...) 
 {
   static pid_t myPid ;
   char timeString [30] ;
@@ -861,7 +861,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
     {
       FREE(tmpname) ;
       
-      dprintf (1,"No need to shrink file (%s %ld vs %ld\n",
+      d_printf (1,"No need to shrink file (%s %ld vs %ld\n",
                name,size,currlen) ;
       return true ;
     }

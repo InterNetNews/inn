@@ -317,7 +317,7 @@ int main (int argc, char **argv)
     }
 
   if (!SMinit()) {
-      dprintf(0, "Storage manager initialization failed\n");
+      d_printf(0, "Storage manager initialization failed\n");
       syslog(LOG_ERR, "Storage manager initialization failed\n");
       exit(1);
   }
@@ -364,7 +364,7 @@ int main (int argc, char **argv)
 
   if (subProgram != NULL && (talkToSelf == true || InputFile))
     {
-      dprintf (0,"Cannot specify '-s' with '-x' or an input file\n") ;
+      d_printf (0,"Cannot specify '-s' with '-x' or an input file\n") ;
       syslog (LOG_ERR,"Incorrect arguments: '-s' with '-x' or an input file\n");
       usage (1) ;
     }
