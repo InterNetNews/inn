@@ -15,9 +15,9 @@ all:			autoconfig
 include Make.methods
 include Make.ovmethods
 
-SOURCES = interface.c methods.c ovmethods.c qio.c ov.c
-OBJECTS = interface.o methods.o ovmethods.o qio.o ov.o
-LOBJECTS = interface.lo methods.lo ovmethods.lo qio.lo ov.lo
+SOURCES = interface.c methods.c ovmethods.c ov.c
+OBJECTS = interface.o methods.o ovmethods.o ov.o
+LOBJECTS = interface.lo methods.lo ovmethods.lo ov.lo
 
 methods: 
 	@[ -d objs ] || mkdir objs
@@ -30,7 +30,7 @@ install:		all $(D)$(PATHLIB)/libstorage.$(EXTLIB)
 clobber clean:
 	rm -f *.o *.lo libstorage.la libstorage.a
 	rm -rf objs .libs
-	rm -f methods.c methods.h qiotest
+	rm -f methods.c methods.h
 	rm -f ovmethods.c ovmethods.h
 	rm -f profiled libstorage_p.a
 	rm -f all install 
@@ -49,8 +49,6 @@ libstorage.a:         $(P) $(OBJECTS)
 	ar r $@ $(OBJECTS) objs/*
 	$(RANLIB) libstorage.a
 
-qiotest: qio.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
-	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 ovtest: ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ovtest ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) -L/shared/lib -ldb -lnsl -lsocket
 
