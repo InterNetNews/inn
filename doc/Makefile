@@ -27,9 +27,6 @@ MISSING_MAN =
 #OWNER	= -o root -g bin
 MANFLAGS = $(OWNER) -m 0444
 
-##  =()<DBZDIR	= @<DBZDIR>@>()=
-DBZDIR	= ../dbz
-
 SEC1	= convdate.1 getlist.1 grephistory.1 inews.1 innconfval.1 installit.1 \
 	nntpget.1 rnews.1 shlock.1 shrinkfile.1 subst.1
 SEC3	= $(MISSING_MAN) \
@@ -103,7 +100,6 @@ install-man5:	$(INSTALLED_SEC5)
 install-man8:	$(INSTALLED_SEC8)
 
 clobber clean:
-	rm -f dbz.3
 	rm -f all install lint profiled
 
 tags ctags:
@@ -119,10 +115,6 @@ lint:		$(P) $(ALL)
 
 profiled:
 	cp /dev/null profiled
-
-dbz.3:		$(DBZDIR)/dbz.3z
-	@rm -f dbz.3
-	cat $(DBZDIR)/dbz.3z >dbz.3
 
 .PRECIOUS:	$(ALL)
 

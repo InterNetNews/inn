@@ -12,9 +12,6 @@
 
 ##
 ##  1.  MAKE CONFIG PARAMETERS
-##  Where the DBZ sources are, from C News.  INN has a (maybe old) copy.
-#### =()<DBZDIR			@<DBZDIR>@>()=
-DBZDIR			../dbz
 ##  If you have a parallel make, set this to "&"
 #### =()<P			@<P>@>()=
 P			
