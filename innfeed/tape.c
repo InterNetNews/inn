@@ -652,7 +652,10 @@ void tapeTakeArticle (Tape tape, Article article)
 
   /* return immediately if spooling disabled - jgarzik */
   if (tape->noBacklog)
-    return;
+    {
+      delArticle (article) ;
+      return;
+    }
 
   fname = artFileName (article) ;
   msgid = artMsgId (article) ;
