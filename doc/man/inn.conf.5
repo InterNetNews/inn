@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2004-05-16" "INN 2.5.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2004-05-21" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -309,7 +309,9 @@ check the Lines: header of incoming articles.
 .IX Item "maxartsize"
 The maximum size of article (headers and body) that will be accepted by
 the server, in bytes.  A value of \f(CW0\fR allows any size of article.  The
-default value is \f(CW1000000\fR (approximately 1 \s-1MB\s0).  See also
+default value is \f(CW1000000\fR (approximately 1 \s-1MB\s0).  This is checked against
+the article in wire format (\s-1CRLF\s0 at the end of each line, leading periods
+protected, and with the trailing \*(L"\er\en.\er\en\*(R" at the end).  See also
 \&\fIlocalmaxartsize\fR.
 .IP "\fImaxconnections\fR" 4
 .IX Item "maxconnections"
