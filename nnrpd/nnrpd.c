@@ -219,7 +219,7 @@ STATIC void
 TITLEset(what)
     char		*what;
 {
-#if	defined(DO_HAVE_SETPROCTITLE)
+#if defined(HAVE_SETPROCTITLE)
     setproctitle("%s %s", ClientHost, what);
 #else
 #if	!defined(HPUX)
@@ -247,7 +247,7 @@ TITLEset(what)
     (void)sprintf(buff, "(nnrpd) %s %s", ClientHost, what);
     (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
 #endif	/* defined(HPUX) */
-#endif	/* defined(DO_HAVE_SETPROCTITLE) */
+#endif	/* defined(HAVE_SETPROCTITLE) */
 }
 
 

@@ -313,26 +313,26 @@
  #||#### =()<HAVE_UNISTD		@<HAVE_UNISTD>@>()=
  #||HAVE_UNISTD			@ac_cv_subst_have_unistd@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Do you have setbuffer?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_SETBUFFER		@<HAVE_SETBUFFER>@>()=
-  ||HAVE_SETBUFFER		@ac_cv_subst_have_setbuffer@
+ #||##  Do you have setbuffer?  Pick DO or DONT.
+ #||##[autoconf]
+ #||#### =()<HAVE_SETBUFFER		@<HAVE_SETBUFFER>@>()=
+ #||HAVE_SETBUFFER		@ac_cv_subst_have_setbuffer@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Do you have gettimeofday?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_GETTIMEOFDAY	@<HAVE_GETTIMEOFDAY>@>()=
-  ||HAVE_GETTIMEOFDAY	@ac_cv_subst_have_gettimeofday@
+ #||##  Do you have gettimeofday?  Pick DO or DONT.
+ #||##[autoconf]
+ #||#### =()<HAVE_GETTIMEOFDAY	@<HAVE_GETTIMEOFDAY>@>()=
+ #||HAVE_GETTIMEOFDAY	@ac_cv_subst_have_gettimeofday@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Do you have setproctitle()?  Pick DO or DONT.
-  ||##[autoconf]
-  ||##  You may need to adjust LIBS for this.
-  ||#### =()<HAVE_SETPROCTITLE	@<HAVE_SETPROCTITLE>@>()=
-  ||HAVE_SETPROCTITLE		@ac_cv_subst_have_setproctitle@
+ #||##  Do you have setproctitle()?  Pick DO or DONT.
+ #||##[autoconf]
+ #||##  You may need to adjust LIBS for this.
+ #||#### =()<HAVE_SETPROCTITLE	@<HAVE_SETPROCTITLE>@>()=
+ #||HAVE_SETPROCTITLE		@ac_cv_subst_have_setproctitle@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Do you have fchmod?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_FCHMOD		@<HAVE_FCHMOD>@>()=
-  ||HAVE_FCHMOD		@ac_cv_subst_have_fchmod@
+ #||##  Do you have fchmod?  Pick DO or DONT.
+ #||##[autoconf]
+ #||#### =()<HAVE_FCHMOD		@<HAVE_FCHMOD>@>()=
+ #||HAVE_FCHMOD		@ac_cv_subst_have_fchmod@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Do you have setsid()?  Pick DO or DONT.
   ||##[autoconf]

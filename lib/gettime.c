@@ -18,16 +18,16 @@ int GetTimeInfo(TIMEINFO *Now)
     static long		LastTzone;
     struct tm		*tm;
     int			secondsUntilNextHour;
-#if	defined(DO_HAVE_GETTIMEOFDAY)
+#if	defined(HAVE_GETTIMEOFDAY)
     struct timeval	tv;
-#endif	/* defined(DO_HAVE_GETTIMEOFDAY) */
+#endif	/* defined(HAVE_GETTIMEOFDAY) */
 #if	defined(DONT_HAVE_TM_GMTOFF)
     struct tm		local;
     struct tm		gmt;
 #endif	/* !defined(DONT_HAVE_TM_GMTOFF) */
 
     /* Get the basic time. */
-#if	defined(DO_HAVE_GETTIMEOFDAY)
+#if	defined(HAVE_GETTIMEOFDAY)
     if (gettimeofday(&tv, (struct timezone *)NULL) == -1)
 	return -1;
     Now->time = tv.tv_sec;
@@ -36,7 +36,7 @@ int GetTimeInfo(TIMEINFO *Now)
     /* Can't check for -1 since that might be a time, I guess. */
     (void)time(&Now->time);
     Now->usec = 0;
-#endif	/* defined(DO_HAVE_GETTIMEOFDAY) */
+#endif	/* defined(HAVE_GETTIMEOFDAY) */
 
     /* Now get the timezone if the last time < HH:00:00 <= now for some HH.  */
     if (NextHour <= Now->time) {

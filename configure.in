@@ -254,8 +254,11 @@ AC_SUBST(ac_cv_type_signal)
 AC_FUNC_VFORK
 AC_FUNC_VPRINTF
 dnl Actually INN doesn't care about the rusage argument AC_FUNC_WAIT3
-AC_CHECK_FUNCS(fchmod getdtab gethostname getrlimit getrusage gettimeofday memchr memcmp memcpy memmove memset mkdir mkfifo mktemp select setbuffer setproctitle setsid socket)
-AC_CHECK_FUNCS(strcasecmp strchr strcspn strerror strrchr strspn strstr symlink sysconf syslog ulimit)
+AC_CHECK_FUNCS(fchmod getdtab gethostname getrlimit getrusage)
+AC_CHECK_FUNCS(gettimeofday memchr memcmp memcpy memmove memset)
+AC_CHECK_FUNCS(mkdir mkfifo mktemp select setbuffer setproctitle)
+AC_CHECK_FUNCS(setsid socket strcasecmp strchr strcspn strerror)
+AC_CHECK_FUNCS(strrchr strspn strstr symlink sysconf syslog ulimit)
 AC_CHECK_FUNCS(waitpid)
 dnl
 AC_CACHE_CHECK(for return type of abort, ac_cv_type_abort, AC_TRY_COMPILE([#ifdef HAVE_STDLIB_H

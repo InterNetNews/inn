@@ -22,6 +22,19 @@
 /* Define if you have <vfork.h> */
 #undef HAVE_VFORK_H
 
+/* Define if you have setbuffer() */
+#undef HAVE_SETBUFFER
+
+/* Define if you have gettimeofday() */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define if you have fchmod() */
+#undef HAVE_FCHMOD
+
+/* Define if you have setproctitle() */
+#undef HAVE_SETPROCTITLE
+
+
 
 #if defined(STDC_HEADERS) 
 # if defined(HAVE_STDARG_H)

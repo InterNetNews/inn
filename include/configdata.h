@@ -81,18 +81,6 @@ typedef char		*CSTRING;
     /* Use flock, lockf, or nothing to lock files? */
     /* =()<#define LOCK_@<LOCK_STYLE>@>()= */
 #define LOCK_FLOCK
-    /* Do you have setbuffer? */
-    /* =()<#define @<HAVE_SETBUFFER>@_HAVE_SETBUFFER>()= */
-#define DO_HAVE_SETBUFFER
-    /* Do you have gettimeofday? */
-    /* =()<#define @<HAVE_GETTIMEOFDAY>@_HAVE_GETTIMEOFDAY>()= */
-#define DO_HAVE_GETTIMEOFDAY
-    /* Do you have fchmod? */
-    /* =()<#define @<HAVE_FCHMOD>@_HAVE_FCHMOD>()= */
-#define DO_HAVE_FCHMOD
-    /* Do you have setproctitle()? */
-    /* =()<#define @<HAVE_SETPROCTITLE>@_HAVE_SETPROCTITLE>()= */
-#define DONT_HAVE_SETPROCTITLE
     /* Do you have setsid()? */
     /* =()<#define @<HAVE_SETSID>@_HAVE_SETSID>()= */
 #define DO_HAVE_SETSID

@@ -686,7 +686,7 @@ static void openLogFile (void)
         logAndExit (1,"freopen (%s, \"a\", stderr): %s",
                     logFile, strerror (errno)) ;
       
-#if defined (DO_HAVE_SETBUFFER)
+#if defined (HAVE_SETBUFFER)
       setbuffer (stdout, NULL, 0) ;
       setbuffer (stderr, NULL, 0) ;
 #else
@@ -738,7 +738,7 @@ static void gprintinfo (void)
       return ;
     }
 
-#if defined (DO_HAVE_SETBUFFER)
+#if defined (HAVE_SETBUFFER)
   setbuffer (fp, NULL, 0) ;
 #else
   setbuf (fp, NULL) ;

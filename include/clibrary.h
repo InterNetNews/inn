@@ -148,9 +148,9 @@ extern unsigned int	sleep();
 /* =()<extern @<_EXITVAL>@	_exit();>()= */
 extern void	_exit();
 
-#if defined(DO_HAVE_SETPROCTITLE)
+#if defined(HAVE_SETPROCTITLE)
 extern void	setproctitle();
-#endif	/* defined(DO_HAVE_SETPROCTITLE) */
+#endif	/* defined(HAVE_SETPROCTITLE) */
 
 #ifdef __FreeBSD__
 #include <osreldate.h>
