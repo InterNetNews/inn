@@ -1,0 +1,22 @@
+#! /usr/bin/sh
+
+##  $Id$
+##
+##  Generate dependencies for INN makefiles
+##
+##  This shell script automates the process of updating the dependencies in
+##  INN's Makefiles.  It uses gcc -MM to do this, since only the maintainers
+##  should normally have to do this and using a compiler to parse include
+##  directives is more reliable than more ad hoc methods.  It takes compiler
+##  flags and a list of all source files to process on the command line.
+##
+##  The Makefile is updated in place, and everything after "DO NOT DELETE
+##  THIS LINE" is removed and replaced by the dependencies.
+
+sed '1,/DO NOT DELETE THIS LINE/!d' < Makefile > .makefile.tmp
+gcc -MM "$@" >> .makefile.tmp
+if [ $? = 0 ] ; then
+    mv -f .makefile.tmp Makefile
+else
+    rm .makefile.tmp
+fi
