@@ -1343,6 +1343,10 @@ void PERMgetpermissions()
     if (!success_auth) {
 	/* if we haven't successfully authenticated, we can't do anything. */
 	syslog(L_TRACE, "%s no_success_auth", ClientHost);
+	if (!noaccessconf)
+	    noaccessconf = NEW(ACCESSGROUP, 1);
+	PERMaccessconf = noaccessconf;
+	SetDefaultAccess(PERMaccessconf);
 	return;
     }
     for (i = 0; access_realms[i]; i++)
