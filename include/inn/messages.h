@@ -19,18 +19,9 @@
 
 BEGIN_DECLS
 
-/* These are the currently-supported types of traces. */
-enum message_trace {
-    TRACE_NETWORK,              /* Network traffic. */
-    TRACE_PROGRAM,              /* Stages of program execution. */
-    TRACE_ALL                   /* All traces; this must be last. */
-};
-
 /* The reporting functions.  The ones prefaced by "sys" add a colon, a space,
    and the results of strerror(errno) to the output and are intended for
    reporting failures of system calls. */
-extern void trace(enum message_trace, const char *, ...)
-    __attribute__((__format__(printf, 2, 3)));
 extern void notice(const char *, ...)
     __attribute__((__format__(printf, 1, 2)));
 extern void sysnotice(const char *, ...)
@@ -64,13 +55,9 @@ extern void debug(const char *, ...)
    of those handlers.  These functions are not thread-safe; they set global
    variables. */
 extern void message_handlers_debug(int count, ...);
-extern void message_handlers_trace(int count, ...);
 extern void message_handlers_notice(int count, ...);
 extern void message_handlers_warn(int count, ...);
 extern void message_handlers_die(int count, ...);
-
-/* Enable or disable tracing for particular classes of messages. */
-extern void message_trace_enable(enum message_trace, bool);
 
 /* Some useful handlers, intended to be passed to message_handlers_*.  All
    handlers take the length of the formatted message, the format, a variadic

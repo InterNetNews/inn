@@ -17,16 +17,13 @@
 **      sysdie("open of %s failed", filename);
 **
 **      debug("Some debugging message about %s", string);
-**      trace(TRACE_PROGRAM, "Program trace output");
 **      notice("Informational notices");
 **
 **      message_handlers_warn(1, log);
 **      warn("This now goes through our log function");
 **
 **  These functions implement message reporting through user-configurable
-**  handler functions.  debug() only does something if DEBUG is defined,
-**  trace() supports sending trace messages in one of a number of configurable
-**  classes of traces so that they can be turned on or off independently, and
+**  handler functions.  debug() only does something if DEBUG is defined, and
 **  notice() and warn() just output messages as configured.  die() similarly
 **  outputs a message but then exits, normally with a status of 1.
 **
@@ -73,7 +70,6 @@ static message_handler_func stderr_handlers[2] = {
 
 /* The list of logging functions currently in effect. */
 static message_handler_func *debug_handlers  = NULL;
-static message_handler_func *trace_handlers  = NULL;
 static message_handler_func *notice_handlers = stdout_handlers;
 static message_handler_func *warn_handlers   = stderr_handlers;
 static message_handler_func *die_handlers    = stderr_handlers;
@@ -83,9 +79,6 @@ int (*message_fatal_cleanup)(void) = NULL;
 
 /* If non-NULL, prepended (followed by ": ") to messages. */
 const char *message_program_name = NULL;
-
-/* Whether or not we're currently outputting a particular type of trace. */
-static bool tracing[TRACE_ALL] = { false /* false, ... */ };
 
 
 /*
@@ -122,7 +115,6 @@ message_handlers(message_handler_func **list, int count, va_list args)
         va_end(args);                                           \
     }
 HANDLER_FUNCTION(debug)
-HANDLER_FUNCTION(trace)
 HANDLER_FUNCTION(notice)
 HANDLER_FUNCTION(warn)
 HANDLER_FUNCTION(die)
@@ -205,25 +197,6 @@ SYSLOG_FUNCTION(crit,    CRIT)
 
 
 /*
-**  Enable or disable tracing for particular classes of messages.
-*/
-void
-message_trace_enable(enum message_trace type, bool enable)
-{
-    if (type > TRACE_ALL)
-        return;
-    if (type == TRACE_ALL) {
-        int i;
-
-        for (i = 0; i < TRACE_ALL; i++)
-            tracing[i] = enable;
-    } else {
-        tracing[type] = enable;
-    }
-}
-
-
-/*
 **  All of the message handlers.  There's a lot of code duplication here too,
 **  but each one is still *slightly* different and va_start has to be called
 **  multiple times, so it's hard to get rid of the duplication.
@@ -253,27 +226,6 @@ debug(const char *format, ...)
 #elif !INN_HAVE_C99_VAMACROS && !INN_HAVE_GNU_VAMACROS
 void debug(const char *format UNUSED, ...) { }
 #endif
-
-void
-trace(enum message_trace type, const char *format, ...)
-{
-    va_list args;
-    message_handler_func *log;
-    int length;
-
-    if (trace_handlers == NULL || !tracing[type])
-        return;
-    va_start(args, format);
-    length = vsnprintf(NULL, 0, format, args);
-    va_end(args);
-    if (length < 0)
-        return;
-    for (log = trace_handlers; *log != NULL; log++) {
-        va_start(args, format);
-        (**log)(length, format, args, 0);
-        va_end(args);
-    }
-}
 
 void
 notice(const char *format, ...)

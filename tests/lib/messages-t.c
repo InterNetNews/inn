@@ -144,32 +144,25 @@ static void test18(void) {
     message_program_name = "test18";
     notice("notice");
 }
-static void test19(void) { trace(TRACE_PROGRAM, "tracing"); }
-static void test20(void) { debug("debug"); }
-static void test21(void) {
+static void test19(void) { debug("debug"); }
+static void test20(void) {
     message_handlers_notice(1, log);
     notice("foo");
 }
-static void test22(void) {
-    message_handlers_trace(1, log);
-    message_trace_enable(TRACE_PROGRAM, true);
-    trace(TRACE_PROGRAM, "foo");
-    trace(TRACE_NETWORK, "bar");
-}
-static void test23(void) {
+static void test21(void) {
     message_handlers_debug(1, message_log_stdout);
     message_program_name = "test23";
     debug("baz");
 }
-static void test24(void) {
+static void test22(void) {
     message_handlers_die(0);
     die("hi mom!");
 }
-static void test25(void) {
+static void test23(void) {
     message_handlers_warn(0);
     warn("this is a test");
 }
-static void test26(void) {
+static void test24(void) {
     notice("first");
     message_handlers_notice(0);
     notice("second");
@@ -219,7 +212,7 @@ main(void)
 {
     char buff[32];
 
-    puts("26");
+    puts("24");
 
     test_error(1, 0, "warning\n", test1);
     test_error(2, 1, "fatal\n", test2);
@@ -251,15 +244,13 @@ main(void)
     test_error(17, 0, "notice\n", test17);
     test_error(18, 0, "test18: notice\n", test18);
     test_error(19, 0, "", test19);
-    test_error(20, 0, "", test20);
-    test_error(21, 0, "3 0 foo\n", test21);
-    test_error(22, 0, "3 0 foo\n", test22);
-    test_error(23, 0, "test23: baz\n", test23);
+    test_error(20, 0, "3 0 foo\n", test20);
+    test_error(21, 0, "test23: baz\n", test21);
 
     /* Make sure that it's possible to turn off a message type entirely. */ 
-    test_error(24, 1, "", test24);
-    test_error(25, 0, "", test25);
-    test_error(26, 0, "first\nthird\n", test26);
+    test_error(22, 1, "", test22);
+    test_error(23, 0, "", test23);
+    test_error(24, 0, "first\nthird\n", test24);
 
     return 0;
 }
