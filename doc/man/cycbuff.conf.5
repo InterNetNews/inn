@@ -7,7 +7,7 @@ The file
 .I <pathetc in inn.conf>/cycbuff.conf
 is required if CNFS (Cyclic News File System) method is used.
 CNFS is one of storage method which can be defined at
-.IR storage.ctl (5).
+.IR storage.conf (5).
 .PP
 The file consists of a series of lines;
 blank lines and lines beginning with a number sign (``#'') are ignored.
@@ -55,14 +55,14 @@ metacycbuff:meta_cyclic_buffer_name:buffer_names
 .PP
 \&``Meta_cyclic_buffer_name'' is the symbolic name of meta-cyclic buffer.
 This name is referred at ``options'' field at ``cnfs'' lines in
-.IR storage.ctl (5).
+.IR storage.conf (5).
 \&``Buffer_names'' is comma separated list of buffer names of ``cycbuff.''
 These buffer names should be defined at ``metacycbuff'' lines.
 If ``buffer_names'' has more than one buffer names, CNFS method
 stores articles into each ``cycbuff'' in order cyclically.
 .PP
 Also it is necessary to set up ``options'' field at ``cnfs'' lines in
-.IR storage.ctl (5)
+.IR storage.conf (5)
 to use CNFS method.
 That field should be one of ``meta_cyclic_buffer_name'' defined at
 \&``metacycbuff'' lines.

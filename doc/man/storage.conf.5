@@ -1,0 +1,114 @@
+.\" $Revision$
+.TH STORAGE.CONF 5
+.SH NAME
+storage.conf \- configuration file for storage manager
+.SH DESCRIPTION
+The file
+.I <pathetc in inn.conf>/storage.conf
+is required if storage API is used.
+Storage API is turned on if ``storageapi: true'' in
+.IR inn.conf (5).
+.PP
+The file consists of a series of storage method entries;
+blank lines and lines beginning with a number sign (``#'') are ignored.
+If spaces or tabs are included in the value, that value must be quoted
+with ``"''.
+The order of entries in this file is important.
+.PP
+Each entry is formatted as:
+.PP
+.RS
+.nf
+method <methodname> {
+	newsgroups: <wildmat>
+	class: <storage_class>
+	size: <minsize>[,<maxsize>]
+	expires: <mintime>[,<maxtime>]
+	options: <options>
+}
+.fi
+.RE
+.PP
+The ``methodname'' is the name of storage method.
+Currently, ``timehash'', ``cnfs'' and ``trash'' are available for its name.
+See STORAGE METHODS section for thier method.
+\&``Wildmat'' refers to a newsgroup pattern that will be parsed with
+.IR wildmat (3).
+Matching newsgroup is against newsgroup name in ``Xref'' header, if
+\&``storeonxref'' in inn.conf is ``true.''
+Otherwise, it is against newsgroup name in ``Newsgroups'' header.
+\&``!'' and ``@'' are allowed at the start of the wildmat and
+refer to pattern exclusions. See
+.IR newsfeeds (5)
+for a description of their use.  The ``wildmat'' is matched in order.
+There is no default ``wildmat'' pattern, so specified ``wildmat''
+is only used for matching.
+\&``Storage_class'' is an identifier among all entries.
+\&``Storage_class'' is also referred at
+.IR expire.ctl (5).
+\&``Minsize'' and ``maxsize'' is the range in which article is stored.
+If ``maxsize'' is ``0'', article upper size is unlimited.
+\&``options'' is method specific option which is needed only for some
+method. See STORAGE METHODS sectoin for a description of its use.
+\&``Mintime'' and ``maxtime'' are the times into the future the `Expires:'
+header for the article indicates that it should be expired, and are
+formatted 0d0h0m0s, for days, hours, minutes and seconds into the future.
+If ``mintime'' is non-zero, the storage method will not match an article
+without an 'Expires:' header.  If ``maxtime'' is ``0s'', there is no upper
+bound on the expire time for the article to fall in this entry.
+Note that ``expires'' parameter never controls expire time.  This is
+used just for determining storage class based on ``Expires:'' header.
+.PP
+If a newsgroup matches wildmat pattern and the range, the article is stored
+in that ``storage_class.''
+Note that the file is interpreted in order and first match line
+is used to store an article.
+.PP
+If a newsgroup does not match any wildmat pattern nor the range in all entries, 
+the article is not stored and
+.IR innd (8)
+rejects it.
+.SH STORAGE METHODS
+.TP
+.B cnfs
+\&``Cnfs'' method stores articles in preconfigured files cyclically.
+So, if storing position reaches at the end of the file,
+the position is moved to the beginning of the file and
+old articles are overwritten to write new articles.
+This method is assumed to have self expire functionality.
+There is a configuration file,
+.IR cycbuff.conf ,
+for this method and ``options'' field is needed.
+See
+.IR cycbuff.conf (5)
+for description of thier use.
+.TP
+.B timehash
+\&``Timehash'' method stores each article into each file whose path name
+is based on article's arrival time.  The path name is created as
+.IR <patharticles\ in\ inn.conf>/time-xx/bb/cc/yyyy-aadd .
+Where ``xx'' is hexa decimal value of ``storage_class.''
+Where ``yyyy'' is hexa decimal value of sequence number.
+Where ``bb'', ``cc'' and ``aadd'' are hexa decimal value of splitted
+arrival time and 0xaabbccdd is the actual time.
+There is no configuration file for this method.
+.TP
+.B trash
+\&``Trash'' method stores no article and this can be used simply to
+trash the article but the article is accepted without any problem.
+For this reason, any article stored through this method never can be
+retrieved and this method is assumed to have self expire functionality.
+There is no configuration file for this method.
+.SH HISTORY
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+cycbuff.conf(5),
+expire.ctl(5),
+inn.conf(5),
+innd(8),
+newsfeeds(5),
+wildmat(3).
