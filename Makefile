@@ -74,8 +74,8 @@ install: directories
 	@echo 'Do not forget to update your cron entries, and also run'
 	@echo 'makedbz if you need to.  If this is a first-time installation'
 	@echo 'a minimal active file has been installed.  You will need to'
-	@echo 'run "makedbz -i" to initialize the history database.  See'
-	@echo 'INSTALL for more information.'
+	@echo 'touch history and run "makedbz -i" to initialize the history'
+	@echo 'database.  See INSTALL for more information.'
 	@echo ''
 
 directories:
