@@ -177,6 +177,19 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     struct stat         sb;
     ARTHANDLE           *art;
 
+    if (amount == RETR_STAT) {
+        if (access(path, R_OK) < 0) {
+            SMseterror(SMERR_UNDEFINED, NULL);
+            return NULL;
+        }
+        art = NEW(ARTHANDLE, 1);
+        art->type = TOKEN_TIMEHASH;
+	art->data = NULL;
+	art->len = 0;
+	art->private = NULL;
+	return art;
+    }
+
     if ((fd = open(path, O_RDONLY)) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	return NULL;
@@ -184,14 +197,6 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 
     art = NEW(ARTHANDLE, 1);
     art->type = TOKEN_TIMEHASH;
-
-    if (amount == RETR_STAT) {
-	art->data = NULL;
-	art->len = 0;
-	art->private = NULL;
-	close(fd);
-	return art;
-    }
 
     if (fstat(fd, &sb) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
