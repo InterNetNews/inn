@@ -47,7 +47,7 @@ PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	rmgroup sendme sendsys senduuname version parsecontrol writelog \
-	docheckgroups news.daily scanlogs expirerm \
+	docheckgroups news.daily scanlogs controlchan expirerm \
 	tally.control nntpsend send-ihave send-nntp send-uucp \
 	sendbatch inncheck innstat pgpverify innwatch innreport \
 	innshellvars \
@@ -62,13 +62,16 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/rmgroup $D$(CTLBIN)/sendme $D$(CTLBIN)/sendsys \
 	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL) \
 	$D$(PATHBIN)/writelog $D$(PATHLIB)/docheckgroups \
-	$D$(PATHBIN)/news.daily $D$(PATHBIN)/scanlogs \
+	$D$(PATHBIN)/news.daily $D$(PATHBIN)/scanlogs $D$(PATHBIN)/controlchan \
 	$D$(PATHBIN)/expirerm $D$(PATHBIN)/tally.control $D$(PATHBIN)/innmail \
 	$D$(PATHBIN)/nntpsend $D$(PATHBIN)/send-ihave $D$(PATHBIN)/send-nntp \
 	$D$(PATHBIN)/send-uucp $D$(PATHBIN)/sendbatch $D$(PATHBIN)/inncheck \
 	$D$(PATHBIN)/innstat $D$(PATHBIN)/pgpverify $D$(PATHBIN)/innwatch \
-	$D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) $D$(PATH_PERL_SHELLVARS) \
-	$D$(PATH_TCL_SHELLVARS) $D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool \
+	$D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
+	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
+	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
+	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
+	$D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool \
 	$D$(PATH_MOTD) $D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
 	$D$(CTLBIN)/newgroup.pl $D$(CTLBIN)/rmgroup.pl $D$(CTLBIN)/sendme.pl \
 	$D$(CTLBIN)/sendsys.pl $D$(CTLBIN)/senduuname.pl $D$(CTLBIN)/version.pl
@@ -241,6 +244,7 @@ actsync.ign:	../samples/actsync.ign		; $(COPY) $? $@
 checkgroups:	../samples/checkgroups		; $(COPY) $? $@
 checkgroups.pl:	../samples/checkgroups.pl		; $(COPY) $? $@
 control.ctl:	../samples/control.ctl		; $(COPY) $? $@
+controlchan:	../samples/controlchan		; $(COPY) $? $@
 default:	../samples/default		; $(COPY) $? $@
 docheckgroups:	../samples/docheckgroups	; $(COPY) $? $@
 expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
