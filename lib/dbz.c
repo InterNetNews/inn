@@ -1057,13 +1057,14 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
     }
 
     /* write in data */
-    if (write(tab->fd, (POINTER)value, tab->reclen) != tab->reclen) {
+    while (write(tab->fd, (POINTER)value, tab->reclen) != tab->reclen) {
 	if (errno == EINTR) {
 	    if (lseek(tab->fd, (off_t)(sp->place * tab->reclen), SEEK_SET) == -1) {
 		DEBUG(("set: seek failed\n"));
 		sp->aborted = 1;
 		return FALSE;
 	    }
+	    continue;
 	}
 	if (errno == EAGAIN) {
 	    fd_set writeset;
@@ -1080,6 +1081,7 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
 		sp->aborted = 1;
 		return FALSE;
 	    }
+	    continue;
 	}
 	DEBUG(("set: write failed\n"));
 	sp->aborted = 1;
@@ -1247,7 +1249,8 @@ int main(int argc, char **argv) {
 
     gettimeofday(&start, NULL);
     for (*i = 0; *i < 750000; (*i)++) {
-	dbzexists(key);
+	if (dbzexists(key))
+	    printf("Error, %d was found\n", *i);
     }
     gettimeofday(&end, NULL);
     printf("dbzexists() from memory: %0.5f ms\n",
@@ -1263,6 +1266,15 @@ int main(int argc, char **argv) {
     printf("Time to fill database 2/3's full: %0.5f ms\n",
 	   timediffms(start, end)/(float) ((numiter * FULLRATIO) / 100));
    
+    gettimeofday(&start, NULL);
+    for (*i = 0; *i < 100000; (*i)++) {
+	if (!dbzexists(key))
+	    printf("Could not find %d\n", *i);
+    }
+    gettimeofday(&end, NULL);
+    printf("dbzexists() from memory w/data: %0.5f ms\n",
+	   timediffms(start, end)/(float)100000);
+
     gettimeofday(&start, NULL);
     for (*i = 0; *i < 100000; (*i)++) {
 	dbzfetch(key);
