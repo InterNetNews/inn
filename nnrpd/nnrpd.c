@@ -507,8 +507,8 @@ ToggleTrace(s)
     int		s;
 {
     ChangeTrace = TRUE;
-#ifndef USE_SIGACTION
-    (void)xsignal(s, ToggleTrace);
+#ifndef HAVE_SIGACTION
+    xsignal(s, ToggleTrace);
 #endif
 }
 
@@ -537,8 +537,8 @@ WaitChild(s)
        if (pid <= 0)
        	    break;
     }
-#ifndef USE_SIGACTION
-    (void)xsignal(s, WaitChild);
+#ifndef HAVE_SIGACTION
+    xsignal(s, WaitChild);
 #endif
 }
 

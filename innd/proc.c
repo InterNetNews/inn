@@ -55,8 +55,8 @@ PROCcatchsignal(s)
     int			s;
 {
     PROCreap();
-#ifndef USE_SIGACTION
-    (void)xsignal(s, PROCcatchsignal);
+#ifndef HAVE_SIGACTION
+    xsignal(s, PROCcatchsignal);
 #endif
 }
 

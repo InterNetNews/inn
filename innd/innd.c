@@ -514,8 +514,8 @@ CatchTerminate(s)
 {
     GotTerminate = TRUE;
     KillerSignal = s;
-#ifndef USE_SIGACTION
-    (void)xsignal(s, CatchTerminate);
+#ifndef HAVE_SIGACTION
+    xsignal(s, CatchTerminate);
 #endif
 }
 

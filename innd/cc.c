@@ -2041,8 +2041,8 @@ STATIC SIGHANDLER
 CCresetup(s)
     int         s;
 {
-#ifndef USE_SIGACTION
-    (void)xsignal(s, CCresetup);
+#ifndef HAVE_SIGACTION
+    xsignal(s, CCresetup);
 #endif
     CCclose();
     CCsetup();
