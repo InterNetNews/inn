@@ -160,6 +160,12 @@
 #define MAX_MAXART_TOUT 86400   /* one day max between articles from inn */
 #define MAX_RESP_TOUT 3600      /* one hour max to wait for response */
 
+/* the check / no-check filter value, i.e. roughly how many past
+   articles we take into account whilst doing the average for
+   check / no-check mode.
+   Ensure it's a float. */
+#define FILTERVALUE 50.0
+
 /* the maximum number of peers we'll handle (not connections) */
 #define MAX_HOSTS 100
 

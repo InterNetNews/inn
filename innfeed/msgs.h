@@ -90,8 +90,8 @@
 #define NO_STATUS		"ME oserr status file open: %s : %m"
 
 #define CONNECTION_DISAPPEARING	"%s:%d connection vanishing"
-#define STREAMING_MODE_SWITCH   "%s mode no-CHECK entered"
-#define STREAMING_MODE_UNDO     "%s mode no-CHECK exited"
+#define STREAMING_MODE_SWITCH   "%s mode no-CHECK entered [%.2f,%.2f,%.2f]"
+#define STREAMING_MODE_UNDO     "%s mode no-CHECK exited [%.2f,%.2f,%.2f]"
 
 #define REALLY_FINAL_STATS	"%s global seconds %ld offered %d accepted %d refused %d rejected %d missing %d"
 #define PROCESS_FINAL_STATS	"ME global seconds %ld offered %ld accepted %ld refused %ld rejected %ld missing %ld"

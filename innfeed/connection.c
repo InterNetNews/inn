@@ -409,8 +409,8 @@ Connection newConnection (Host host,
                           u_int portNum,
                           u_int respTimeout,
                           u_int flushTimeout,
-                          double lowPassHigh,
-                          double lowPassLow)
+                          double lowPassLow,
+                          double lowPassHigh)
 {
   Connection cxn ;
   bool croak = false ;
@@ -1668,7 +1668,8 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
 
             /* These three are from the CHECK command */
           case 238:             /* no such article found */
-            incrFilter (cxn) ;
+	    /* Do not incrFilter (cxn) now, wait till after
+	       subsequent TAKETHIS */
             processResponse238 (cxn, response) ;
             break ;
 
@@ -1759,10 +1760,16 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
         if (cxn->state == cxnFeedingS && cxn->doesStreaming)
           {
             if ((cxn->filterValue > cxn->onThreshold) && cxn->needsChecks)
-              hostLogNoCheckMode (cxn->myHost, cxn->needsChecks = false) ; /* on and log */
+              hostLogNoCheckMode (cxn->myHost, !(cxn->needsChecks = false),
+				  cxn->offThreshold/FILTERVALUE,
+				  cxn->filterValue/FILTERVALUE,
+				  cxn->onThreshold/FILTERVALUE) ; /* on and log */
             else if ((cxn->filterValue < cxn->offThreshold) &&
                      !cxn->needsChecks)
-              hostLogNoCheckMode (cxn->myHost, cxn->needsChecks = true) ; /* off and log */
+              hostLogNoCheckMode (cxn->myHost, !(cxn->needsChecks = true),
+				  cxn->offThreshold/FILTERVALUE,
+				  cxn->filterValue/FILTERVALUE,
+				  cxn->onThreshold/FILTERVALUE) ; /* off and log */
           }
 
         /* Now handle possible remaining partial reponse and set up for
@@ -3962,7 +3969,7 @@ static void delConnection (Connection cxn)
  */
 static void incrFilter (Connection cxn)
 {
-  cxn->filterValue *= 0.9 ;
+  cxn->filterValue *= (1.0 - (1.0 / FILTERVALUE)) ;
   cxn->filterValue += 1.0 ;
 }
 
@@ -3975,7 +3982,7 @@ static void incrFilter (Connection cxn)
  */
 static void decrFilter (Connection cxn)
 {
-  cxn->filterValue *= 0.9 ;
+  cxn->filterValue *= (1.0 - (1.0 / FILTERVALUE)) ;
 }
 
 

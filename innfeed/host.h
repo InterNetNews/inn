@@ -195,7 +195,7 @@ u_int hostMaxChecks (Host host) ;
 
 /* Called by the Host's connections when they go into (true) or out of
    (false) no-CHECK mode. */
-void hostLogNoCheckMode (Host host, bool on) ;
+void hostLogNoCheckMode (Host host, bool on, double low, double cur, double high) ;
 
 /* calculate host backlog statistics */
 void gCalcHostBlStat (void) ;

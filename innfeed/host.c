@@ -501,13 +501,13 @@ int hostConfigLoadCbk (void *data)
   ERROR_CHECK ;
   l = 0.0 ;
   (void) getReal (topScope,"no-check-high",&l,NO_INHERIT) ;
-  defaultHighFilter = l / 10.0 ;
+  defaultHighFilter = l * (FILTERVALUE/100.0) ;
 
   vival = validateReal (fp,"no-check-low",0.0,100.0,REQ,NOCHECKLOW) ;
   ERROR_CHECK ;
   l = 0.0 ;
   (void) getReal (topScope,"no-check-low",&l,NO_INHERIT) ;
-  defaultLowFilter = l / 10.0  ;
+  defaultLowFilter = l * (FILTERVALUE/100.0)  ;
 
   vival = validateInteger (fp,"port-number",0,LONG_MAX,REQ,PORTNUM) ;
   ERROR_CHECK ;
@@ -2057,16 +2057,16 @@ bool hostLogConnectionStatsP (void)
  * Called by one of the Host's Connection's when it (the Connection)
  * switches into or out of no-CHECK mode.
  */
-void hostLogNoCheckMode (Host host, bool on)
+void hostLogNoCheckMode (Host host, bool on, double low, double cur, double high)
 {
   if (on && host->loggedModeOn == false)
     {
-      syslog (LOG_NOTICE, STREAMING_MODE_SWITCH, host->peerName) ;
+      syslog (LOG_NOTICE, STREAMING_MODE_SWITCH, host->peerName, low, cur, high) ;
       host->loggedModeOn = true ;
     }
   else if (!on && host->loggedModeOff == false) 
     {
-      syslog (LOG_NOTICE, STREAMING_MODE_UNDO, host->peerName) ;
+      syslog (LOG_NOTICE, STREAMING_MODE_UNDO, host->peerName, low, cur, high) ;
       host->loggedModeOff = true ;
     }
 }
@@ -2240,7 +2240,7 @@ static void hostDetails (scope *s,
               NO_CHECK_LOW,rv,name) ;
       rv = NOCHECKLOW ;
     }
-  *lowFilter = rv / 10.0 ;
+  *lowFilter = rv * (FILTERVALUE/100.0) ;
       
 
   if (!getReal (s,NO_CHECK_HIGH,&rv,INHERIT))
@@ -2255,7 +2255,7 @@ static void hostDetails (scope *s,
               NO_CHECK_HIGH,rv,name) ;
       rv = NOCHECKHIGH ;
     }
-  else if (rv < *lowFilter)
+  else if ((rv * (FILTERVALUE/100.0)) < *lowFilter)
     {
       syslog (LOG_ERR,
               "ME %s's value (%.2f) in peer %s cannot be smaller than %s's value (%.2f)",
