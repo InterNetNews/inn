@@ -1,9 +1,5 @@
 =head1 Welcome to INN 2.4!
 
-This is the current development version of INN 2.4.  This code is under
-active development and may or may not be stable at any given time.
-Contributions and bug reports are welcome and encouraged.
-
 This work is sponsored by the Internet Software Consortium.
 
 Please see F<INSTALL> for installation instructions, F<NEWS> for what's
