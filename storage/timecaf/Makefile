@@ -4,7 +4,7 @@ include ../../Makefile.global
 CC	= $(UPLIBCC)
 CP	= $(UPLIBTOOL) cp
 
-CFLAGS  = $(GCFLAGS)	-I../../include -I.. -Wunused
+CFLAGS  = $(GCFLAGS)	-I../../include -I..
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
