@@ -111,7 +111,7 @@ ME:!*/!local,!collabra-internal::
 # then individual feeds for every separate address that news is being
 # gated to.  This sends all posts to rec.pets.redants.* to the address
 # news-software@example.com.
-#news2mail!:!*,Tc,Ac,Wn*:@prefix@/bin/news2mail
+#news2mail!:!*:Tc,Ac,Wn*:@prefix@/bin/news2mail
 #news-software@example.com:rec.pets.redants.*:Tm:news2mail!
 
 # Capture all local postings (with a distribution of "foo" and no more
