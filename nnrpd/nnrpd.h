@@ -211,7 +211,7 @@ extern void             Reply();
 #endif
 
 #ifdef HAVE_SSL
-extern void             Printf();
+extern void             Printf(const char *fmt, ...);
 #else
 #define Printf printf
 #endif

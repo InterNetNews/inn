@@ -30,7 +30,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <syslog.h>
-#include <com_err.h>
 
 #include "paths.h"
 #include "sasl_config.h"
