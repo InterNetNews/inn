@@ -200,9 +200,9 @@ main(int argc, char *argv[])
 
     /* Now, permanently drop privileges. */
     if (setgid(news_gid) < 0 || getgid() != news_gid)
-        sysdie("can't setgid to %d: %s", news_gid);
+        sysdie("can't setgid to %d", news_gid);
     if (setuid(news_uid) < 0 || getuid() != news_uid)
-        sysdie("can't setuid to %d: %s", news_uid);
+        sysdie("can't setuid to %d", news_uid);
 
     /* Build the argument vector for innd.  Pass -p<port> to innd to tell it
        what port we just created and bound to for it. */
