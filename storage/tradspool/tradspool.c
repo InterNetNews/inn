@@ -920,7 +920,9 @@ tradspool_freearticle(ARTHANDLE *article) {
 	    closedir(private->curdir);
 	}
 	DISPOSE(private->curdirname);
+        DISPOSE(private);
     }
+    DISPOSE(article);
 }
 
 BOOL 
