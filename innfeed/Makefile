@@ -12,7 +12,6 @@ CFLAGS	= $(GCFLAGS)
 
 CPP.c		= $(CC) $(CFLAGS) -E -I.
 COMPILE.c	= $(CC) $(CFLAGS) -c -I.
-LINK.o		= $(LIBTOOL) $(CC) $(LDFLAGS) ($LIBS)
 LINK.c		= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS)
 OUTPUT_OPTION	= -o $@
 
@@ -40,13 +39,6 @@ INCS		= article.h \
 		  msgs.h \
 		  tape.h
 
-MANSRC		= innfeed.1 innfeed.conf.5
-
-EXTRAS		= testListener.pl inet_addr.c uio_maxiov.c configfile.y \
-		  configfile.l config_l.c config_y.c config_y.h \
-		  procbatch.in innfeed-convcfg.in malloc.c ChangeLog \
-		  startinnfeed.c
-
 OBJS		= $(SRC:.c=.o) \
 		  config_l.o config_y.o
 
@@ -57,8 +49,6 @@ STARTINNFEED	= $D$(PATHBIN)/startinnfeed
 
 ALL_INSTALLED	= $D$(PATHBIN)/innfeed $D$(PATHBIN)/startinnfeed \
 		  $D$(PATHBIN)/procbatch $D$(PATHBIN)/innfeed-convcfg
-
-MAN_INSTALLED   = $D$(MANDIR)/man1/innfeed.1 $D$(MANDIR)/man5/innfeed.conf.5
 
 ALL_GCC_WARNINGS = -pedantic -W -Waggregate-return -Wcast-align \
 		   -Wcast-qual -Wcomment -Wformat \
@@ -74,16 +64,7 @@ ALL_GCC_WARNINGS = -pedantic -W -Waggregate-return -Wcast-align \
 MORE_WARN	= -Wconversion 
 
 VERSION		= 1.0
-COMPRESS	= gzip
-COMPRESS_EXT	= gz
-TARSRC		= $(SRC) $(INCS) Makefile README INSTALL innfeed.conf \
-		  $(EXTRAS) $(MANSRC) makedepend.sh
-TARDIR		= innfeed-$(VERSION)
-TARBALL		= $(TARDIR).tar.$(COMPRESS_EXT)
 
-
-TAR		= tar
-MKDIR		= mkdir
 CP		= cp -p
 RM		= rm -f
 MV		= mv
@@ -155,12 +136,11 @@ clean::
 	$(RM) -rf .libs
 
 realclean:: clean 
-	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h $(TARBALL)
-	$(RM) -rf $(TARDIR)
+	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h
 
 clobber distclean:: realclean
 
-.PHONY:	tar listing
+.PHONY:	listing
 
 listing::
 	@$(RM) foo.ps ; \
@@ -175,28 +155,12 @@ startinnfeed.o: startinnfeed.c
 startinnfeed: startinnfeed.o $(LIBINN)
 	$(LINK.c) -o $@ startinnfeed.o $(LIBINN) $(LIBS)
 
-uio_maxiov: uio_maxiov.o
-	$(LINK.c) -o $@ uio_maxiov.o $(LIBS)
-
-check-maxiov: uio_maxiov
-	@./uio_maxiov
-
 makedepend: makedepend.sh
 
 version.c: $(OBJS)
 	echo 'const char *versionInfo = "innfeed v. $(VERSION) ('\
 		`date` ')" ;' |\
 		sed -e 's/( /(/' -e 's/ )/)/' > version.c
-
-tar: $(TARBALL)
-
-tardir: $(TARSRC)
-	$(RM) -r $(TARDIR)
-	$(MKDIR) $(TARDIR)
-	$(CP) $(TARSRC) $(TARDIR)
-
-$(TARBALL): tardir
-	$(TAR) cvf - $(TARDIR) | $(COMPRESS) > $(TARBALL)
 
 depend: makedepend $(SRC) $(INCS)
 	$(MAKEDEPEND) $(DEPENDFLAGS) $(CPPFLAGS) $(SRC)
