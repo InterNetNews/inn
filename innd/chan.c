@@ -59,7 +59,7 @@ void BUFFset(BUFFER *bp, const char *p, const int length)
     if ((bp->Left = length) != 0) {
 	/* Need more space? */
 	if (bp->Size < length) {
-	    bp->Size = GROW_AMOUNT(length);
+	    bp->Size = length;
 	    RENEW(bp->Data, char, bp->Size);
 	}
 	
