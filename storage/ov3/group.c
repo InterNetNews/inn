@@ -272,7 +272,6 @@ group_index_dump(struct group_index *index)
             printf("%s %lu %lu %lu %lu %c %lu %lu\n", HashToText(entry->hash),
                    entry->high, entry->low, entry->base,
                    (unsigned long) entry->count, entry->flag, entry->deleted);
-            free(hash);
             current = entry->next;
         }
     }
