@@ -899,22 +899,25 @@ tradspool_retrieve(const TOKEN token, const RETRTYPE amount) {
 }
 
 void
-tradspool_freearticle(ARTHANDLE *article) {
+tradspool_freearticle(ARTHANDLE *article)
+{
     PRIV_TRADSPOOL *private;
 
-    if (!article) return;
+    if (article == NULL)
+        return;
 
     if (article->private) {
 	private = (PRIV_TRADSPOOL *) article->private;
 	if (private->mmapped)
 	    munmap(private->artbase, private->artlen);
 	else
-	    DISPOSE(private->artbase);
-	if (private->curdir) {
+	    free(private->artbase);
+	if (private->curdir)
 	    closedir(private->curdir);
-	}
-	DISPOSE(private->curdirname);
+	free(private->curdirname);
+        free(private);
     }
+    free(article);
 }
 
 bool 
