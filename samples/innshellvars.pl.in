@@ -83,29 +83,11 @@ $z = "@LOG_COMPRESSEXT@" ;
 ($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
 ($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
 
-##  =()<$cycles = @<LOG_CYCLES>@ ;>()=
-$cycles = 3 ;
-
 ##  =()<$have_uustat = ("@<HAVE_UUSTAT>@" eq "DO" ? 1 : 0) ;>()=
 $have_uustat = ("DO" eq "DO" ? 1 : 0) ;
 
-##  =()<$mail_badcontrols = ("@<MAIL_BADCONTROLS>@" eq "DO" ? 1 : 0) ;>()=
-$mail_badcontrols = ("DONT" eq "DO" ? 1 : 0) ;
-
 $newsmaster = '@NEWSMASTER@' ;
 $newsuser = "@NEWSUSER@" ;
-
-##  =()<$sleeptime = @<INNWATCH_SLEEPTIME>@ ;>()=
-$sleeptime = 600 ;
-
-##  =()<$want_pgpverify = ("@<WANT_PGPVERIFY>@" eq "DO" ? 1 : 0) ;>()=
-$want_pgpverify = ("DO" eq "DO" ? 1 : 0) ;
-
-##  =()<$perl_support = ("@<PERL_SUPPORT>@" eq "DO" ? 1 : 0) ;>()=
-$perl_support = ("DONT" eq "DO" ? 1 : 0) ;
-
-##  =()<$tcl_support = ("@<TCL_SUPPORT>@" eq "DO" ? 1 : 0) ;>()=
-$tcl_support = ("DONT" eq "DO" ? 1 : 0) ;
 
 $ENV{'TMPDIR'} = $pathtmp;
 $tmpdir = $pathtmp;

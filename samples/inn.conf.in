@@ -107,6 +107,10 @@ keymaxwords:		250
 # Other options
 innflags:		
 doinnwatch:		true
+innwatchsleeptime:	600
+pgpverify:		false
+controlfailnotice:	false
+logcycles:		3
 #
 # ---------------------------------
 # Paths to various aspects of the news system

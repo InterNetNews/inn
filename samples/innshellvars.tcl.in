@@ -82,29 +82,11 @@ set inn_z "@LOG_COMPRESSEXT@"
 set inn_tempsock [ eval exec basename ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s/XXXXXX$/*/} ]
 set inn_tempsockdir [ exec echo ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s@/[^/]*$@@} ]
 
-##  =()<scan "@<LOG_CYCLES>@" "%d" inn_cycles>()=
-scan "3" "%d" inn_cycles
-
 ##  =()<set inn_have_uustat [ expr { "@<HAVE_UUSTAT>@" == "DO" ? 1 : 0 } ]>()=
 set inn_have_uustat [ expr { "DO" == "DO" ? 1 : 0 } ]
 
-##  =()<set inn_mail_badcontrols [ expr { "@<MAIL_BADCONTROLS>@" == "DO" ? 1 : 0 } ]>()=
-set inn_mail_badcontrols [ expr { "DONT" == "DO" ? 1 : 0 } ]
-
 set inn_newsmaster "@NEWSMASTER@"
 set inn_newsuser "@NEWSUSER@"
-
-##  =()<scan "@<INNWATCH_SLEEPTIME>@" "%d" inn_sleeptime>()=
-scan "600" "%d" inn_sleeptime
-
-##  =()<set inn_want_pgpverify [ expr { "@<WANT_PGPVERIFY>@" == "DO" ? 1 : 0 } ]>()=
-set inn_want_pgpverify [ expr { "DO" == "DO" ? 1 : 0 } ]
-
-##  =()<set inn_perl_support [ expr { "@<PERL_SUPPORT>@" == "DO" ? 1 : 0 } ]>()=
-set inn_perl_support [ expr { "DONT" == "DO" ? 1 : 0 } ]
-
-##  =()<set inn_tcl_support [ expr { "@<TCL_SUPPORT>@" == "DO" ? 1 : 0 } ]>()=
-set inn_tcl_support [ expr { "DONT" == "DO" ? 1 : 0 } ]
 
 set env(TMPDIR) "$inn_pathtmp"
 set inn_tmpdir "$inn_pathtmp"

@@ -23,6 +23,10 @@ TIMESTAMP=${LOCKS}/${PROGNAME}.time
 ##  Logfile to watch. Comment out if no logwatch.
 LOGFILE=${MOST_LOGS}/news.crit
 
+if [ X${INNWATCHSLEEPTIME} = X ] ; then
+    INNWATCHSLEEPTIME=600
+fi
+
 ##  Parse JCL.
 while [ $# -gt 0 ] ; do
     case X"$1" in
@@ -41,11 +45,11 @@ while [ $# -gt 0 ] ; do
 	LOGFILE=`expr "$1" : '-s\(.*\)'`
 	;;
     X-t)
-	SLEEPTIME=$2
+	INNWATCHSLEEPTIME=$2
 	shift
 	;;
     X-t*)
-	SLEEPTIME=`expr "$1" : '-t\(.*\)'`
+	INNWATCHSLEEPTIME=`expr "$1" : '-t\(.*\)'`
 	;;
     X--)
 	shift
@@ -92,14 +96,14 @@ trap '(
 ##  We need to remember the process ID of innd, in case one exits
 ##  But we need to wait for innd to start before we can do that
 while PID=`cat ${SERVERPID} 2>/dev/null`; test -z "${PID}"; do
-    sleep ${SLEEPTIME}
+    sleep ${INNWATCHSLEEPTIME}
 done
 
 trap '(
 	if [ -z "${STATE}" ]; then
-	    echo "${PROGNAME} state RUN interval ${SLEEPTIME} pid $$"
+	    echo "${PROGNAME} state RUN interval ${INNWATCHSLEEPTIME} pid $$"
 	else
-	    echo "${PROGNAME} state ${STATE} interval ${SLEEPTIME} pid $$"
+	    echo "${PROGNAME} state ${STATE} interval ${INNWATCHSLEEPTIME} pid $$"
 	fi
 	if [ -z "${INND}" ]; then
 	    X=GO
@@ -117,7 +121,7 @@ NEXTSLEEP=1
 HASEXITED=false
 
 while { sleep ${NEXTSLEEP} & wait; } ; : ; do
-    NEXTSLEEP=${SLEEPTIME}
+    NEXTSLEEP=${INNWATCHSLEEPTIME}
 
     ##  If news.daily is running, idle:  we don't want to change the
     ##  status of anything while news.daily may be depending on what we

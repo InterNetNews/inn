@@ -307,15 +307,19 @@ sub ctlperm {
     }
 
     if ($action =~ /^verify-(.+)/) {
-        #print "PGP\n";
-	$keyowner = $1;
-	$keyowner =~ s/=.+//;
-	open(PGPCHECK, "$SM $token|$inn::newsbin/pgpverify|");
-	$pgpresult = <PGPCHECK>;
-	close PGPCHECK;
-	chomp $pgpresult;
-        if ($keyowner eq $pgpresult) { $action =~ s/^[^=]+/doit/ }
-        else { $action =~ s/^[^=]+/_pgpfail/ }
+        if (not $inn::pgpverify or $inn::pgpverify ne "false") {
+            $action = "mail";
+        } else {
+            #print "PGP\n";
+	    $keyowner = $1;
+	    $keyowner =~ s/=.+//;
+	    open(PGPCHECK, "$SM $token|$inn::newsbin/pgpverify|");
+	    $pgpresult = <PGPCHECK>;
+	    close PGPCHECK;
+	    chomp $pgpresult;
+            if ($keyowner eq $pgpresult) { $action =~ s/^[^=]+/doit/ }
+            else { $action =~ s/^[^=]+/_pgpfail/ }
+        }
     }
     return($action);
 }

@@ -6,19 +6,23 @@
 
 WRITELOG=${PATHBIN}/writelog
 SM="${PATHBIN}/sm -q"
-
-PGPVERIFY=false
-if [ "X$WANT_PGPVERIFY" = XDO ]; then
-	PGPVERIFY=true 
-fi
-
-MAILFAILURES=false
-if [ "X$MAIL_BADCONTROLS" = XDO ]; then
-	MAILFAILURES=true
-fi
-
 AZ=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 az=abcdefghijklmnopqrstuvwxyz
+
+PGPVERIFY=`echo ${PGPVERIFY} | tr ${AZ} ${az}`
+if [ X${PGPVERIFY} = Xtrue -o X${PGPVERIFY} = Xyes -o X${PGPVERIFY} = Xon ]; then
+	PGPVERIFY=true 
+else
+	PGPVERIFY=false
+fi
+
+MAILFAILURES=`echo ${CONTROLFAILNOTICE} | tr ${AZ} ${az}`
+if [ X${MAILFAILURES} = Xtrue -o X${MAILFAILURES} = Xyes -o X${MAILFAILURES} = Xon ]; then
+	MAILFAILURES=true
+else
+	MAILFAILURES=false
+fi
+
 ZN=0123456789
 # Attempt to sanitize the address
 FROM="`echo \"$1\" | tr ${AZ} ${az} | tr -dc \\\055${az}${ZN}+_.@%`"

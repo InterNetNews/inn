@@ -32,8 +32,7 @@
 ## to fix some sections here. Search for *PGP*. At each "*PGP*" found
 ## you'll need to comment out the block of lines right after it (that have
 ## 'verify-' in their 4th field). Then uncomment the block of lines that
-## comes right after that. You'll also need to change WANT_PGPVERIFY in
-## config.data.
+## comes right after that. You'll also need to change pgpverify in inn.conf.
 ##
 ## For more information on using PGP to varify control messages, upgrade
 ## to INN-1.5 (or later) or see: ftp://ftp.isc.org/pub/pgpcontrol/
@@ -504,7 +503,7 @@ newgroup:news@noc.eu.net:eunet.*:doit=newgroup
 rmgroup:news@noc.eu.net:eunet.*:doit=rmgroup
 
 ## EXAMPLE ( Bogus hierarchy reserved for standards documents )
-checkgroups:*@*:example.*:drop
+# checkgroups:*@*:example.*:drop
 newgroup:*@*:example.*:drop
 rmgroup:*@*:example.*:doit=rmgroup
 

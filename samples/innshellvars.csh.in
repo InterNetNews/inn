@@ -84,32 +84,13 @@ set inn_z = @LOG_COMPRESSEXT@
 set inn_tempsock = `basename ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's/XXXXXX$/*/'`
 set inn_tempsockdir = `echo ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's@/[^/]*$@@'`
 
-##  =()<set inn_cycles = @<LOG_CYCLES>@>()=
-set inn_cycles = 3
-
 ##  =()<set inn_have_uustat = @<HAVE_UUSTAT>@>()=
 set inn_have_uustat = DO
-
-##  =()<set inn_mail_badcontrols = @<MAIL_BADCONTROLS>@>()=
-set inn_mail_badcontrols = DONT
 
 set inn_newsmaster = @NEWSMASTER@
 set inn_newsuser = @NEWSUSER@
 
-##  =()<set inn_sleeptime = @<INNWATCH_SLEEPTIME>@>()=
-set inn_sleeptime = 600
-
-##  =()<set inn_want_pgpverify = @<WANT_PGPVERIFY>@>()=
-set inn_want_pgpverify = DO
-
-##  =()<set inn_perl_support = @<PERL_SUPPORT>@>()=
-set inn_perl_support = DONT
-
-##  =()<set inn_tcl_support = @<TCL_SUPPORT>@>()=
-set inn_tcl_support = DONT
-
 setenv TMPDIR ${inn_pathtmp}
-
 
 set inn_spooltemp = ${inn_pathtmp}
 

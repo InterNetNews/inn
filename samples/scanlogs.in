@@ -244,6 +244,9 @@ rm -f ${OLD_LOG} ${OLD_SYSLOG}
 ##  Compress and rotate the logs.
 if ${ROTATE} ; then
     cd ${OLD}
+    if [ X${LOGCYCLES} = X ]; then       
+        LOGCYCLES=3
+    fi
     for F in ${LOGS} ; do
 	##  Skip if file doesn't exist.
 	BASE=`basename ${F}`
@@ -254,8 +257,8 @@ if ${ROTATE} ; then
 	chmod 0440 ${BASE}.0${Z}
 
 	##  Do rotation.
-	EXT=${CYCLES}
-	rm -f ${BASE}.${CYCLES}${Z}
+	EXT=${LOGCYCLES}
+	rm -f ${BASE}.${LOGCYCLES}${Z}
 	while [ ${EXT} -gt 0 ] ; do
 	    NEXT=${EXT}
 	    EXT=`expr ${EXT} - 1`
