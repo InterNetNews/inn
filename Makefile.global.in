@@ -133,8 +133,14 @@ FIXSCRIPT       = ../support/fixscript
 PERLWHOAMI      = $(PERL) -e 'print scalar getpwuid($$>), "\n"'
 WHOAMI          = (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
 
+##  Paths and command lines for programs used only by the maintainers to
+##  regenerate dependencies, documentation, and the like.
+
 MAKEDEPEND      = ../support/makedepend
 UPMAKEDEPEND    = ../../support/makedepend
+
+POD2MAN         = pod2man -c 'InterNetNews Documentation' -r 'INN $(VERSION)'
+POD2TEXT        = pod2text -s -l
 
 ##  Installation directories.  If any of the below are incorrect, don't just
 ##  edit this file; these directories are substituted in all over the source
