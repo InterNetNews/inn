@@ -1267,7 +1267,7 @@ void hostClose (Host host)
  */
 void hostChkCxns(TimeoutId tid, void *data) {
   Host host = (Host) data;
-  u_int absMaxCxns ;
+  u_int absMaxCxns, currArticles ;
   float lastAPS, currAPS ;
 
   if(!host->maxCxnChk)
@@ -1275,17 +1275,16 @@ void hostChkCxns(TimeoutId tid, void *data) {
 
   if(host->secsInLastPeriod > 0) 
     lastAPS = host->artsProcLastPeriod / (host->secsInLastPeriod * 1.0);
+  if(lastAPS < 0.0) lastAPS = 0.0;
 
-  host->artsProcLastPeriod = (host->gArtsAccepted + 
-                              host->gArtsRejected +  
-                              (host->gArtsNotWanted / 4)) -
-                              host->lastCheckPoint ;
+  currArticles = (host->gArtsAccepted + host->gArtsRejected +
+                 (host->gArtsNotWanted / 4)) - host->lastCheckPoint ;
+
+  currAPS = currArticles / (host->nextCxnTimeChk * 1.0) ;
+
   host->lastCheckPoint = host->gArtsAccepted +
                          host->gArtsRejected +
                         (host->gArtsNotWanted / 4) ;
-  host->secsInLastPeriod = host->nextCxnTimeChk ;
-
-  currAPS = host->artsProcLastPeriod / (host->secsInLastPeriod * 1.0) ;
 
   if(!host->absMaxConnections) absMaxCxns = host->maxConnections + 1 ;
   else absMaxCxns = host->absMaxConnections ;
@@ -1335,6 +1334,8 @@ void hostChkCxns(TimeoutId tid, void *data) {
       host->cxnSleeping [ii] = false ;
       cxnConnect (host->connections [ii]) ;
       ii++;
+      host->artsProcLastPeriod = currArticles;
+      host->secsInLastPeriod = host->nextCxnTimeChk ;
     }
   } else {
     if ((currAPS - lastAPS) < -.2) {
@@ -1356,6 +1357,8 @@ void hostChkCxns(TimeoutId tid, void *data) {
         host->cxnSleeping = REALLOC (host->cxnSleeping, bool, ii) ;
         ASSERT (host->cxnSleeping != NULL) ;
       } 
+      host->artsProcLastPeriod = currArticles ;
+      host->secsInLastPeriod = host->nextCxnTimeChk ;
     } else 
       dprintf(1, "hostChkCxns doing nothing, Chngs %f\n", currAPS - lastAPS);
   }

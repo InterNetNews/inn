@@ -34,7 +34,7 @@ OSFLAGS		=
 # Add -DUSE_INN_INCLUDES to get INN headers files used (see INCDIRS below)
 # Add -DNO_SBRK if compilation of malloc.c complains about sbrk() prototype.
 # Add -DDYNAMIC_CONNECTIONS to include dynamic max-connections patch
-DEFINES		=  
+DEFINES		=   
 
 # Any system specific libraries. If you get undefines at link time for names
 # matching yy*, then you may need ``-ly -ll''.
