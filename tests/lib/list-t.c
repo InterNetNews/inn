@@ -1,4 +1,4 @@
-/* $Id$
+/* $Id$ */
 /* Test suite for list routines. */
 
 #include "config.h"
