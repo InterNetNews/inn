@@ -26,7 +26,7 @@
 #include "clibrary.h"
 #include "libinn.h"
 
-void
+int
 main(int ac, char **av, char **ep)
 {
   struct passwd *pwd;
