@@ -34,6 +34,7 @@ main(void)
     ok(3, innconf_compare(standard, innconf));
     innconf_free(standard);
     innconf_free(innconf);
+    innconf = NULL;
     ok(4, true);
 
     /* Checking inn.conf. */
@@ -43,6 +44,7 @@ main(void)
     ok(5, innconf_check("config/tmp"));
     ok(6, errors == NULL);
     innconf_free(innconf);
+    innconf = NULL;
     config = fopen("config/tmp", "a");
     if (config == NULL)
         sysdie("Unable to open stripped configuration file for append");
@@ -55,6 +57,7 @@ main(void)
     free(errors);
     errors = NULL;
     innconf_free(innconf);
+    innconf = NULL;
     ok(9, true);
 
     return 0;
