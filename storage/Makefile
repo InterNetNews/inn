@@ -28,8 +28,8 @@ methods:
 install:		all $(D)$(PATHLIB)/libstorage.$(EXTLIB) 
 
 clobber clean:
-	rm -f *.o *.lo libstorage.la libstorage.a objs/*
-	rm -rf .libs
+	rm -f *.o *.lo libstorage.la libstorage.a
+	rm -rf objs .libs
 	rm -f methods.c methods.h qiotest
 	rm -f profiled libstorage_p.a
 	rm -f all install 
