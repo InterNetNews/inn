@@ -1,5 +1,4 @@
 Upgrading from 2.2 to 2.3
-
     Simply doing a make update is not sufficient to upgrade; the history and
     overview information will also have to be regenerated, since the formats
     of both files have changed between 2.2 and 2.3.  Regardless of whether
@@ -21,9 +20,14 @@ Upgrading from 2.2 to 2.3
     (Change the /usr/local/news/tmp path to some directory that has plenty
     of temporary space, and leave off -O if you're running a transit-only
     server and don't intend to expire based on group name, and therefore
-    don't need overview.)  This will generate a new history file as
-    history.n and rebuild overview at the same time.  If you want to preseve
-    a record of expired message IDs in the history file, run:
+    don't need overview.)  Or use:
+
+        makehistory -b -f history.n -O -F
+
+    (This is suitable for ``buffindexed'' ovmethod.)  Both will generate a
+    new history file as history.n and rebuild overview at the same time.  If
+    you want to preseve a record of expired message IDs in the history file,
+    run:
 
         awk 'NF==2 { print; }' < history >> history.n
 
@@ -80,7 +84,6 @@ Upgrading from 2.2 to 2.3
     files and then feed that list to innxmit.
 
 Changes from 2.2 to 2.3
-
     * New readers.conf file (replaces nnrp.access) which allows more
       flexible specification of access restrictions.  Included in the sample
       implementations is a RADIUS-based authenticator.
@@ -140,7 +143,6 @@ Changes from 2.2 to 2.3
       included in INN 2.3.
 
 Changes from 2.1 to 2.2
-
     * New storage.conf file (replaces storage.ctl).
 
     * New (optional) way of handling non-cancel control messages
