@@ -199,3 +199,7 @@ extern void	setproctitle();
 #endif
 
 #endif
+
+#if ! defined(INADDR_NONE)
+#define		INADDR_NONE 	0
+#endif

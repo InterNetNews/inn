@@ -27,10 +27,6 @@
 
 /* #define DEBUGGER "/usr/ucb/dbx" */
 
-#ifndef		INADDR_NONE
-#define		INADDR_NONE	0
-#endif
-
 #if	NOFILE_LIMIT > 0
 /*
 **  Set the limit on the number of open files we can have.  I don't

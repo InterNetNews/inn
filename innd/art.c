@@ -2568,7 +2568,7 @@ STRING ARTpost(CHANNEL *cp)
 		    continue;
 #else
 		    /* Try to make a symbolic link to the full pathname. */
-		    FileGlue(buff, SPOOL, '/', Data.Name);
+		    FileGlue(buff, innconf->patharticles, '/', Data.Name);
 		    if (symlink(buff, linkname) < 0
 			&& (!MakeDirectory(ngp->Dir, TRUE)
 			    || symlink(buff, linkname) < 0)) {

@@ -301,7 +301,7 @@ STATIC BOOL ARTopen(char *name)
 	}
     }
     /* Open it, make sure it's a regular file. */
-    if (ARTmmap) {
+    if (innconf->articlemmap) {
 	if ((fd = open(name, O_RDONLY)) < 0)
 	    return FALSE;
 	if ((fstat(fd, &Sb) < 0) || !S_ISREG(Sb.st_mode)) {
@@ -357,7 +357,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 	ARTlen = ARThandle->len;
 	*ap = 0;
     } else {
-	if (ARTmmap) {
+	if (innconf->articlemmap) {
 	    if ((fd = open(p, O_RDONLY)) < 0)
 		return FALSE;
 	    if ((fstat(fd, &Sb) < 0) || !S_ISREG(Sb.st_mode)) {
@@ -379,7 +379,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 	    }
 	    CloseOnExec(QIOfileno(ARTqp), TRUE);
 	}
-	p += strlen(SPOOL) + 1;
+	p += SPOOLlen + 1;
 	if ((q = strrchr(p, '/')) != NULL)
 	    *q++ = '\0';
 	if (GRPlast[0] && EQ(p, GRPlast))
@@ -902,7 +902,7 @@ STATIC BOOL OVERopen(void)
     if ((OVERmem != NULL) || (OVERfp != NULL))
 	return TRUE;
 
-    if (StorageAPI) {
+    if (innconf->storageapi) {
 	if (!OVERinit()) {
 	    syslog(L_ERROR, "%s cant initialize unified overview %m", ClientHost);
 	    return FALSE;
@@ -913,8 +913,9 @@ STATIC BOOL OVERopen(void)
 	    return FALSE;
 
 	OVERarticle = 0;
-	(void)sprintf(name, "%s/%s/%s", OVERVIEWDIR, GRPlast, innconf->overviewname);
-	if (OVERmmap) {
+	(void)sprintf(name, "%s/%s/%s", innconf->pathoverview, GRPlast,
+						innconf->overviewname);
+	if (innconf->overviewmmap) {
 	    if ((fd = open(name, O_RDONLY)) < 0)
 		return FALSE;
 	    if (fstat(fd, &sb) != 0) {
@@ -947,7 +948,7 @@ STATIC BOOL OVERopen(void)
 void OVERclose(void)
 {
     int	i;
-    if (StorageAPI) {
+    if (innconf->storageapi) {
 	(void)OVERshutdown();
     } else {
 	if (OVERmem != NULL) {
@@ -979,7 +980,7 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
     char		*tokentext, *nextline;
     TOKEN		token;
 
-    if (StorageAPI) {
+    if (innconf->storageapi) {
 	if (((last + 1) < ARTsize) && (ARTnumbers[last + 1].ArtNum == artnum))
 	    i = last + 1;
 	else 
@@ -1339,15 +1340,15 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	if (Opened && (p = OVERfind(i, &linelen)) != NULL) {
 	    OVERhit++;
 	    OVERsize+=linelen;
-	    if ((StorageAPI && OVERmmap) || OVERmem) {
-		if (StorageAPI && OVERmmap) {
+	    if ((innconf->storageapi && innconf->overviewmmap) || OVERmem) {
+		if (innconf->storageapi && innconf->overviewmmap) {
 		    (void)sprintf(buff, "%ld\t", i);
 		    SendIOb(buff, strlen(buff));
 		}
 		SendIOb(p, linelen);
 		SendIOb("\r\n", 2);
 	    } else {
-	        if (StorageAPI) {
+	        if (innconf->storageapi) {
 		    Printf("%ld\t%s\r\n", i, p);
 		} else {
 		    Printf("%s\r\n", p);
@@ -1355,7 +1356,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    }
 	    continue;
 	}
-	if (StorageAPI)
+	if (innconf->storageapi)
 	    continue;
 
 	/* This happens with traditional spool */
@@ -1367,7 +1368,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    Printf("%s\r\n", p);
 	}
     }
-    if ((StorageAPI && OVERmmap) || OVERmem) {
+    if ((innconf->storageapi && innconf->overviewmmap) || OVERmem) {
 	SendIOb(".\r\n", 3);
 	PushIOb(); 
     } else {

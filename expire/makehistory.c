@@ -49,7 +49,6 @@ typedef enum {NO_TRANS, FROM_HIST, FROM_SPOOL} TRANS;
 #define MAXOVERLINE	4096
 
 STATIC char		*ACTIVE = NULL;
-STATIC char		*SPOOL= NULL;
 STATIC char		*HISTORYDIR;
 STATIC char		*HISTORY = NULL;
 STATIC char		MESSAGEID[] = "Message-ID:";
@@ -1148,7 +1147,7 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate
     if (Translate == FROM_SPOOL)
 	xchdir(Tradspooldir);
     else
-	xchdir(SPOOL);
+	xchdir(innconf->patharticles);
     if (chdir(group) < 0)
 	return;
 
@@ -1363,7 +1362,6 @@ main(int ac, char *av[])
     HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
     ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     SCHEMA = COPY(cpcatpath(innconf->pathdb, _PATH_SCHEMA));
-    SPOOL = innconf->patharticles;
     TextFile = HISTORY;
     DoRebuild = TRUE;
     JustRebuild = FALSE;
@@ -1378,7 +1376,7 @@ main(int ac, char *av[])
     RemoveOld = FALSE;
     UnlinkCrosspost = FALSE;
     Translate = NO_TRANS;
-    Tradspooldir = SPOOL;
+    Tradspooldir = innconf->patharticles;
     OldHistory = HISTORY;
     Tflag = "";
     mode = "w";

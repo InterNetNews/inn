@@ -32,20 +32,17 @@ Splice(name, Line)
     register char	*name;
     BUFFER		*Line;
 {
-    static char		*SPOOL = NULL;
     register char	*last;
     register char	*p;
     register char	*end;
     register int	i;
     register int	j;
 
-    if (SPOOL == NULL)
-	SPOOL = innconf->patharticles;
     /* Make sure it's a relative pathname. */
     if (name[0] == '/'
-     && name[STRLEN(SPOOL)] == '/'
-     && EQn(name, SPOOL, STRLEN(SPOOL)))
-	name += STRLEN(SPOOL);
+     && name[strlen(innconf->patharticles)] == '/'
+     && EQn(name, innconf->patharticles, strlen(innconf->patharticles)))
+	name += strlen(innconf->patharticles);
 
     /* Turn foo/bar/baz into foo.bar/baz and get the length. */
     for (last = NULL, p = name; *p; p++)

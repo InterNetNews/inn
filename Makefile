@@ -42,6 +42,8 @@ install:	directories
 	$(MAKE) $(FLAGS) WHAT_TO_MAKE=install DESTDIR=$(DESTDIR) common
 	@echo "" ; echo Do not forget to update your cron entries.
 	@echo Also run makehistory if you have to.
+	@echo Create/obtain an active file and run 'makehistory -o' if
+	@echo this is a first time install
 
 ##  Directories where files get put.
 directories:

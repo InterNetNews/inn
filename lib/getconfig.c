@@ -248,6 +248,11 @@ if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
 */
 int CheckInnConf()
 {
+    if (innconf->pathhost == NULL) {
+	syslog(L_FATAL, "Must set 'pathhost' in inn.conf");
+	(void)fprintf(stderr, "Must set 'pathhost' in inn.conf");
+	return(-1);
+    }
     if (innconf->mta == NULL) {
 	syslog(L_FATAL, "Must set 'mta' in inn.conf");
 	(void)fprintf(stderr, "Must set 'mta' in inn.conf");

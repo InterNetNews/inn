@@ -99,7 +99,7 @@ GetName(F, buff)
     if (SPOOL == NULL)
 	SPOOL = innconf->patharticles;
     (void)strcpy(buff, SPOOL);
-    p = &buff[STRLEN(SPOOL)];
+    p = &buff[strlen(SPOOL)];
     *p++ = '/';
     *p++ = (char)c;
     while ((c = getc(F)) != EOF && c != ' ' && c != '\n')

@@ -34,7 +34,6 @@ main(ac, av)
     int			ac;
     char		*av[];
 {
-    static char		*SPOOL = NULL;
     static char		HDR[] = "Message-ID:";
     int			i;
     register QIOSTATE	*qp;
@@ -47,7 +46,6 @@ main(ac, av)
     struct stat		Sb;
 
     if (ReadInnConf() < 0) exit(-1);
-    SPOOL = innconf->patharticles;
     /* Parse JCL. */
     format = "nm";
     while ((i = getopt(ac, av, "w:")) != EOF)
@@ -72,9 +70,9 @@ main(ac, av)
     if (ac)
 	Usage();
 
-    if (chdir(SPOOL) < 0) {
+    if (chdir(innconf->patharticles) < 0) {
 	(void)fprintf(stderr, "batchconvert cant chdir %s, %s\n",
-		SPOOL, strerror(errno));
+		innconf->patharticles, strerror(errno));
 	exit(1);
     }
 
@@ -82,9 +80,9 @@ main(ac, av)
     qp = QIOfdopen((int)fileno(stdin));
     while ((line = QIOread(qp)) != NULL) {
 	if (line[0] == '/'
-	 && line[strlen(SPOOL)] == '/'
-	 && EQn(line, SPOOL, strlen(SPOOL)))
-	    line += strlen(SPOOL) + 1;
+	 && line[strlen(innconf->patharticles)] == '/'
+	 && EQn(line, innconf->patharticles, strlen(innconf->patharticles)))
+	    line += strlen(innconf->patharticles) + 1;
 
 	for (p = line; *p; p++)
 	    if (ISWHITE(*p)) {
@@ -135,7 +133,7 @@ main(ac, av)
 	    case FEED_FULLNAME:
 		if (Dirty)
 		    (void)putchar(' ');
-		(void)printf("%s/%s", SPOOL, line);
+		(void)printf("%s/%s", innconf->patharticles, line);
 		break;
 	    case FEED_MESSAGEID:
 		if (Dirty)

@@ -24,7 +24,6 @@
 */
 STATIC BOOL GetName(FILE *F, char *buff, BOOL *Againp)
 {
-    static char		*SPOOL = NULL;
     int	                c;
     char	        *p;
 
@@ -34,17 +33,15 @@ STATIC BOOL GetName(FILE *F, char *buff, BOOL *Againp)
     if (c == EOF || c == '\n')
 	return FALSE;
 
-    if (SPOOL == NULL)
-	SPOOL = innconf->patharticles;
-    (void)strcpy(buff, SPOOL);
-    p = &buff[STRLEN(SPOOL)];
+    (void)strcpy(buff, innconf->patharticles);
+    p = &buff[strlen(innconf->patharticles)];
     *p++ = '/';
     *p++ = (char)c;
     while ((c = getc(F)) != EOF && c != ' ' && c != '\n')
 	*p++ = (char)(c == '.' ? '/' : c);
     *p = '\0';
     *Againp = c != EOF && c != '\n';
-    p = &buff[STRLEN(SPOOL) + 1];
+    p = &buff[strlen(innconf->patharticles) + 1];
     if (IsToken(p))
 	memmove(buff, p, strlen(p) + 1);
     return TRUE;

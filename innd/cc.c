@@ -712,7 +712,7 @@ CCgo(av)
     ModeReason = NULL;
     Mode = OMrunning;
 
-    if (NNRPReason && NNRPFollows) {
+    if (NNRPReason && innconf->allowreaders) {
 	av[0] = YES;
 	av[1] = p;
 	(void)CCreaders(av);
@@ -862,7 +862,7 @@ CCmode(av)
     /* Newsreaders. */
     *p++ = '\n';
     p += strlen(strcpy(p, "Readers "));
-    if (NNRPFollows)
+    if (innconf->allowreaders)
 	p += strlen(strcpy(p, "follow "));
     else
 	p += strlen(strcpy(p, "separate "));
@@ -1098,7 +1098,7 @@ CCparam(av)
 	syslog(L_NOTICE, "%s changed -l %ld", LogName, innconf->maxartsize);
 	break;
     case 'n':
-	if (!CCparsebool('n', &NNRPFollows, *p))
+	if (!CCparsebool('n', &innconf->allowreaders, *p))
 	    return BADVAL;
 	break;
     case 'o':
@@ -1171,7 +1171,7 @@ CCblock(NewMode, reason)
     if (ModeReason)
 	DISPOSE(ModeReason);
     ModeReason = COPY(reason);
-    if (NNRPReason == NULL && NNRPFollows) {
+    if (NNRPReason == NULL && innconf->allowreaders) {
 	av[0] = NO;
 	av[1] = ModeReason;
 	(void)CCreaders(av);
@@ -1366,6 +1366,8 @@ CCreload(av)
     }
     else if (EQ(p, "inn.conf")) {
 	ReadInnConf();
+	Pathalias.Data = innconf->pathalias;
+	Pathalias.Used = strlen(innconf->pathalias) + 1;
     }
 #if defined(DO_TCL)
     else if (EQ(p, "filter.tcl")) {

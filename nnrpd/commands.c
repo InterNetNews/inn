@@ -72,7 +72,7 @@ PERMgeneric(av, accesslist)
     char	*accesslist;
 {
     char path[BIG_BUFFER], *fields[6], *p;
-    int i, pan[2], status, max_forks;
+    int i, pan[2], status;
     PID_T pid;
     struct stat stb;
 
@@ -121,9 +121,8 @@ PERMgeneric(av, accesslist)
 	return -1;
     }
 
-    max_forks = innconf->maxforks;
     for (i = 0; (pid = FORK()) < 0; i++) {
-	if (i == max_forks) {
+	if (i == innconf->maxforks) {
 	    Reply("%d Can't fork %s\r\n", NNTP_TEMPERR_VAL,
 		strerror(errno));
 	    syslog(L_FATAL, "cant fork %s %m", av[0]);
@@ -459,7 +458,7 @@ CMDmode(ac, av)
     if (caseEQ(av[1], "reader"))
 	Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	       PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-	       MyHostName, INNVersion(),
+	       innconf->pathhost, INNVersion(),
 	       PERMcanpost ? "posting ok" : "no posting");
     else
 	Reply("%d What?\r\n", NNTP_BAD_COMMAND_VAL);

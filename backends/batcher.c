@@ -215,7 +215,6 @@ main(ac, av)
     char	*av[];
 {
     static char	SKIPPING[] = "batcher %s skipping \"%.40s...\" %s\n";
-    static char *SPOOL = NULL;
     BOOL	Redirect;
     FILE	*F;
     STRING	AltSpool;
@@ -239,7 +238,6 @@ main(ac, av)
     AltSpool = NULL;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);
-    SPOOL = innconf->patharticles;
     ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
 
     /* Parse JCL. */
@@ -310,9 +308,9 @@ main(ac, av)
 	(void)freopen(ERRLOG, "a", stderr);
 
     /* Go to where the articles are. */
-    if (chdir(SPOOL) < 0) {
+    if (chdir(innconf->patharticles) < 0) {
 	(void)fprintf(stderr, "batcher %s cant cd %s %s\n",
-		Host, SPOOL, strerror(errno));
+		Host, innconf->patharticles, strerror(errno));
 	exit(1);
     }
 
@@ -354,9 +352,9 @@ main(ac, av)
 
 	/* Strip of leading spool pathname. */
 	if (line[0] == '/'
-	 && line[strlen(SPOOL)] == '/'
-	 && EQn(line, SPOOL, strlen(SPOOL)))
-	    p = line + strlen(SPOOL) + 1;
+	 && line[strlen(innconf->patharticles)] == '/'
+	 && EQn(line, innconf->patharticles, strlen(innconf->patharticles)))
+	    p = line + strlen(innconf->patharticles) + 1;
 	else
 	    p = line;
 

@@ -26,10 +26,6 @@ extern unsigned long	htonl(); /* nobody should really need this anymore */
 #define COPYADDR(dest, src) \
 	    (void)memcpy((POINTER)dest, (POINTER)src, (SIZE_T)sizeof (INADDR))
 
-#ifndef		INADDR_NONE
-#define		INADDR_NONE     0
-#endif
-
 /*
 **  A remote host has an address and a password.
 */

@@ -266,10 +266,10 @@ BOOL OVERinit(void) {
 	OVERctl = COPY(cpcatpath(innconf->pathetc, _PATH_OVERVIEWCTL));
     }
     if (OVERdir == (char *)NULL) {
-	OVERdir = innconf->pathoverview;
+	OVERdir = COPY(innconf->pathoverview);
     }
     if (OVERnewdir == (char *)NULL) {
-	OVERnewdir = innconf->pathoverview;
+	OVERnewdir = COPY(innconf->pathoverview);
     }
     if (OVERmode == (char *)NULL) {
 	OVERmode = COPY(DEFAULTMODE);

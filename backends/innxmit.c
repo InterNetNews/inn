@@ -1131,7 +1131,6 @@ Usage()
 
 int main(int ac, char *av[])
 {
-    static char		*SPOOL = NULL;
     static char		SKIPPING[] = "Skipping \"%s\" --%s?\n";
     int	                i;
     char	        *p;
@@ -1155,7 +1154,6 @@ int main(int ac, char *av[])
     ConnectTimeout = 0;
     TotalTimeout = 0;
     AltSpool = NULL;
-    SPOOL = innconf->patharticles;
     
     (void)umask(NEWSUMASK);
 
@@ -1216,9 +1214,9 @@ int main(int ac, char *av[])
     REMhost = av[0];
     BATCHname = av[1];
 
-    if (chdir(SPOOL) < 0) {
+    if (chdir(innconf->patharticles) < 0) {
 	(void)fprintf(stderr, "Can't cd to \"%s\", %s\n",
-		SPOOL, strerror(errno));
+		innconf->patharticles, strerror(errno));
 	exit(1);
     }
 
@@ -1413,9 +1411,9 @@ int main(int ac, char *av[])
 
 	/* Split the line into possibly two fields. */
 	if (Article[0] == '/'
-	 && Article[strlen(SPOOL)] == '/'
-	 && EQn(Article, SPOOL, strlen(SPOOL)))
-	    Article += strlen(SPOOL) + 1;
+	 && Article[strlen(innconf->patharticles)] == '/'
+	 && EQn(Article, innconf->patharticles, strlen(innconf->patharticles)))
+	    Article += strlen(innconf->patharticles) + 1;
 	if ((MessageID = strchr(Article, ' ')) != NULL) {
 	    *MessageID++ = '\0';
 	    if (*MessageID != '<'

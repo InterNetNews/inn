@@ -16,8 +16,6 @@
 #include "paths.h"
 #include "qio.h"
 
-BOOL	StorageAPI;
-
 /*
 **  Try to make one directory.  Return FALSE on error.
 */
@@ -211,7 +209,7 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 
 	/* Check if we're handling a token and if so split it out from
 	 * the rest of the data */
-	if (StorageAPI) {
+	if (innconf->storageapi) {
 	    if (Data[0] == '[') {
 		p = strchr(Data, ' ');
 		*p = '\0';
@@ -268,7 +266,7 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 	    *Art++ = '\0';
 
 	    /* Write data. */
-	    if (StorageAPI) {
+	    if (innconf->storageapi) {
 		if (!WriteUnifiedData(&Hash, Dir, Art) &&
 		    (!MakeOverDir(Dir) || !WriteUnifiedData(&Hash, Dir, Art)))
 		    (void)fprintf(stderr, "overchan cant update %s %s\n",
@@ -325,7 +323,6 @@ int main(int ac, char *av[])
 		Dir, strerror(errno));
 	exit(1);
     }
-    StorageAPI = innconf->storageapi;
 
     if (ac == 0)
 	ProcessIncoming(QIOfdopen(STDIN));

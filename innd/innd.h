@@ -394,7 +394,6 @@ EXTERN BOOL		ICDneedsetup;
 EXTERN BOOL		NeedHeaders;
 EXTERN BOOL		NeedOverview;
 EXTERN BOOL		NeedPath;
-EXTERN BOOL		NNRPFollows;
 extern BOOL		NNRPTracing;
 extern BOOL		StreamingOff;
 extern BOOL		Tracing;
@@ -407,7 +406,6 @@ EXTERN char		*ModeReason;	/* NNTP reject message		*/
 EXTERN char		*NNRPReason;	/* NNRP reject message		*/
 EXTERN char		*Reservation;	/* Reserved lock message	*/
 EXTERN char		*RejectReason;	/* NNTP reject message		*/
-extern char		*SPOOL;
 EXTERN char		*Version;
 EXTERN FILE		*Errlog;
 EXTERN FILE		*Log;

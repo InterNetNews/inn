@@ -107,7 +107,6 @@ EXTERN BOOL	PERMlocpost;
 EXTERN BOOL	Tracing;
 EXTERN BOOL 	Offlinepost;
 EXTERN char	**PERMlist;
-EXTERN STRING	MyHostName;
 EXTERN char	ClientHost[SMBUF];
 EXTERN char	Username[SMBUF];
 EXTERN char     ClientIp[20];
@@ -117,9 +116,8 @@ extern char	*HISTORY;
 extern char	*ACTIVE;
 extern char	*NEWSGROUPS;
 extern char	*NNRPACCESS;
-extern char	*SPOOL;
-extern char	*OVERVIEWDIR;
 extern char	NOACCESS[];
+EXTERN int	SPOOLlen;
 EXTERN char	PERMpass[20];
 EXTERN char	PERMuser[20];
 EXTERN char	*RemoteMaster;
@@ -133,9 +131,6 @@ EXTERN long	ARTcount;
 EXTERN long	ARTget;
 EXTERN long	ARTgettime;
 EXTERN long	ARTgetsize;
-EXTERN BOOL     OVERmmap;       /* Whether or not to mmap() overviews */
-EXTERN BOOL     ARTmmap;        /* Whether or not to mmap() articles */
-EXTERN BOOL     StorageAPI;     /* Whether or not to use storage api */
 EXTERN long	OVERcount;	/* number of XOVER commands			*/
 EXTERN long	OVERhit;	/* number of XOVER records found in .overview	*/
 EXTERN long	OVERmiss;	/* number of XOVER records found in articles	*/

@@ -36,7 +36,6 @@ BOOL		Tracing = FALSE;
 BOOL		DoLinks = TRUE;
 BOOL		DoCancels = TRUE;
 char		LogName[] = "SERVER";
-char		*SPOOL = NULL;
 int		ErrorCount = IO_ERROR_COUNT;
 int		SPOOLlen;
 OPERATINGMODE	Mode = OMrunning;
@@ -582,9 +581,6 @@ int main(int ac, char *av[])
     LOG = COPY(cpcatpath(innconf->pathlog, _PATH_LOGFILE));
     ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
 
-    if (innconf->allowreaders)
-	NNRPFollows = TRUE;
-
     /* Parse JCL. */
     CCcopyargv(av);
     while ((i = getopt(ac, av, "ac:Cdfi:l:Lm:o:n:p:P:rsS:t:uH:T:X:")) != EOF)
@@ -642,8 +638,8 @@ int main(int ac, char *av[])
 	    default:
 		Usage();
 		/* NOTREACHED */
-	    case 'n':	NNRPFollows = TRUE;	break;
-	    case 'y':	NNRPFollows = FALSE;	break;
+	    case 'n':	innconf->allowreaders = TRUE;	break;
+	    case 'y':	innconf->allowreaders = FALSE;	break;
 	    }
 	    break;
 	case 'o':
@@ -696,7 +692,7 @@ int main(int ac, char *av[])
     ac -= optind;
     if (ac != 0)
 	Usage();
-    if (ModeReason && NNRPFollows)
+    if (ModeReason && innconf->allowreaders)
 	NNRPReason = COPY(ModeReason);
 
     openlog(path, logflags, LOG_INN_SERVER);
@@ -708,11 +704,10 @@ int main(int ac, char *av[])
 	exit(1);
     }
 
-    SPOOL = innconf->patharticles;
-    SPOOLlen = strlen(SPOOL);
+    SPOOLlen = strlen(innconf->patharticles);
     /* Go to where the data is. */
-    if (chdir(SPOOL) < 0) {
-	syslog(L_FATAL, "%s cant chdir %s %m", LogName, SPOOL);
+    if (chdir(innconf->patharticles) < 0) {
+	syslog(L_FATAL, "%s cant chdir %s %m", LogName, innconf->patharticles);
 	exit(1);
     }
 
@@ -740,8 +735,7 @@ int main(int ac, char *av[])
 	Pathalias.Data = NULL;
     } else {
 	Pathalias.Used = strlen(innconf->pathalias) + 1;
-	Pathalias.Data = NEW(char, Pathalias.Used + 1);
-	(void)sprintf(Pathalias.Data, "%s!", innconf->pathalias);
+	Pathalias.Data = innconf->pathalias;
     }
 
 #if	!defined(__CENTERLINE__)

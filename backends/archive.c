@@ -20,7 +20,6 @@
 
 
 STATIC char	*Archive = NULL;
-STATIC char	*SPOOL = NULL;
 STATIC char	*ERRLOG = NULL;
 
 /*
@@ -268,7 +267,6 @@ main(ac, av)
     Move = FALSE;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);
-    SPOOL = innconf->patharticles;
     ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
     Archive = innconf->patharchive;
 
@@ -320,9 +318,9 @@ main(ac, av)
     }
 
     /* Go to where the action is. */
-    if (chdir(SPOOL) < 0) {
+    if (chdir(innconf->patharticles) < 0) {
 	(void)fprintf(stderr, "archive:  Can't cd to \"%s\", %s\n",
-		SPOOL, strerror(errno));
+		innconf->patharticles, strerror(errno));
 	exit(1);
     }
 

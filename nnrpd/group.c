@@ -347,8 +347,10 @@ STATIC void GRPscandir(char *dir)
     ARTsize = 0;
     GRPcount++;
 
-    path = NEW(char, strlen(OVERVIEWDIR) + strlen(dir) + strlen(innconf->overviewname) + 32);
-    sprintf(path, "%s/%s/%s.index", OVERVIEWDIR, dir, innconf->overviewname);
+    path = NEW(char, strlen(innconf->pathoverview) + strlen(dir) +
+				strlen(innconf->overviewname) + 32);
+    sprintf(path, "%s/%s/%s.index", innconf->pathoverview, dir,
+					innconf->overviewname);
     if ((fd = open(path, O_RDONLY)) >= 0) {
 	DISPOSE(path);
 	if (fstat(fd, &sb) < 0) {
@@ -357,7 +359,7 @@ STATIC void GRPscandir(char *dir)
 	    return;
 	}
 	icount = sb.st_size / OVERINDEXPACKSIZE;
-	if (OVERmmap) {
+	if (innconf->overviewmmap) {
 	    if (icount > 0) {
 		if ((tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
 			    PROT_READ, MAP__ARG, fd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
@@ -377,7 +379,7 @@ STATIC void GRPscandir(char *dir)
 	} 
 	close(fd);
 	if (OVERindex) {
-	    if (OVERmmap) {
+	    if (innconf->overviewmmap) {
 		if ((munmap((MMAP_PTR)OVERindex, OVERicount * OVERINDEXPACKSIZE)) < 0)
 		    syslog(L_ERROR, "%s cant munmap index %m", ClientHost, dir);
 	    } else {
@@ -404,8 +406,9 @@ STATIC void GRPscandir(char *dir)
     } else {
 	DISPOSE(path);
 	/* Go to the directory. */
-	if (chdir(SPOOL) < 0) {
-	    syslog(L_FATAL, "%s cant cd %s %m", ClientHost, SPOOL);
+	if (chdir(innconf->patharticles) < 0) {
+	    syslog(L_FATAL, "%s cant cd %s %m", ClientHost,
+					innconf->patharticles);
 	    ExitWithStats(1);
 	}
 

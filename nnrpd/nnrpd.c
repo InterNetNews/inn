@@ -49,8 +49,6 @@ char	*ACTIVETIMES = NULL;
 char	*HISTORY = NULL;
 char	*NEWSGROUPS = NULL;
 char	*NNRPACCESS = NULL;
-char	*SPOOL = NULL;
-char	*OVERVIEWDIR = NULL;
     /* Default permission -- change with adb. */
 BOOL	PERMdefault = FALSE;
 BOOL	ForceReadOnly = FALSE;
@@ -676,7 +674,7 @@ main(argc, argv, env)
     register int	i;
     char		*Reject;
     char		accesslist[BIG_BUFFER];
-    int			ClientTimeout, timeout;
+    int			timeout;
     BOOL		val;
     char		*p;
     int			vid=0; 
@@ -755,8 +753,7 @@ main(argc, argv, env)
     ACTIVETIMES = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES));
     NEWSGROUPS = COPY(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS));
     NNRPACCESS = COPY(cpcatpath(innconf->pathetc, _PATH_NNRPACCESS));
-    SPOOL = innconf->patharticles;
-    OVERVIEWDIR = innconf->pathoverview;
+    SPOOLlen = strlen(innconf->patharticles);
 
     if (DaemonMode) {
 	if ((lfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -826,19 +823,9 @@ listen_loop:
     }
     STATstart = TIMEINFOasDOUBLE(Now);
 
-    MyHostName = innconf->pathhost;
-    if (MyHostName == NULL) {
-	syslog(L_FATAL, "cant getconfigvalue %m");
-	ExitWithStats(1);
-    }
-
-    ClientTimeout = innconf->clienttimeout;
     PERMnewnews = innconf->allownewnews;
-    ARTmmap = innconf->articlemmap;
-    OVERmmap = innconf->overviewmmap;
-    StorageAPI = innconf->storageapi;
 
-    if (OVERmmap)
+    if (innconf->overviewmmap)
 	val = TRUE;
     else
 	val = FALSE;
@@ -915,7 +902,7 @@ listen_loop:
 	ExitWithStats(1);
     }
 
-    if (StorageAPI && !SMinit()) {
+    if (innconf->storageapi && !SMinit()) {
 	syslog(L_NOTICE, "%s cant initialize storage method", ClientHost);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1);
@@ -929,14 +916,15 @@ listen_loop:
 
     Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-	   MyHostName, INNVersion(),
+	   innconf->pathhost, INNVersion(),
 	   PERMcanpost ? "posting ok" : "no posting");
 
     /* Exponential posting backoff */
     (void)InitBackoffConstants();
 
     /* Main dispatch loop. */
-    for (timeout = INITIAL_TIMEOUT, av = NULL; ; timeout = ClientTimeout) {
+    for (timeout = INITIAL_TIMEOUT, av = NULL; ;
+			timeout = innconf->clienttimeout) {
 	(void)fflush(stdout);
 	if (ChangeTrace) {
 	    Tracing = Tracing ? FALSE : TRUE;
@@ -956,7 +944,7 @@ listen_loop:
 		syslog(L_ERROR, "%s internal %d in main", ClientHost, r);
 		/* FALLTHROUGH */
 	    case RTtimeout:
-		if (timeout < ClientTimeout)
+		if (timeout < innconf->clienttimeout)
 		    syslog(L_NOTICE, "%s timeout short", ClientHost);
 		else
 		    syslog(L_NOTICE, "%s timeout", ClientHost);
