@@ -13,7 +13,6 @@
 #include "innd.h"
 #include <syslog.h> 
 
-#define MAX_PEER     100
 #define MIN_REFRESH   60  /* 1 min */
 #define HTML_STATUS
 #if defined(HTML_STATUS)
@@ -53,6 +52,7 @@ typedef struct _STATUS {
     unsigned long  Ihave_Deferred;
     unsigned long  Ihave_SendIt;
     unsigned long  Ihave_Cybercan;
+    struct _STATUS *next;
 } STATUS;
 
 static unsigned STATUSlast_time;
@@ -111,7 +111,7 @@ static void STATUSsummary(void)
   float             DuplicateSize = 0;
   int               peers = 0;
   char              TempString [SMBUF];
-  STATUS            status[MAX_PEER];
+  STATUS            *head, *status, *tmp;
   char              str[9];
   time_t            now;
 #if defined(DO_PERL)
@@ -138,76 +138,80 @@ static void STATUSsummary(void)
   fprintf (F, "%s\n", Version);
   fprintf (F, "pid %d started %s\n", (int) getpid(), start_time);
 
+  head = NULL;
   for (i = 0; (cp = CHANiter(&i, CTnntp)) != NULL; ) {
     j = 0;
     strcpy(TempString, cp->Address.s_addr == 0 ? "localhost" : RChostname(cp));
-    while ((j < peers) && (strcmp (TempString, status[j].name)))
-      j++;
-    if (j >= MAX_PEER) {
-      syslog(L_NOTICE, "%s: too many peers for STATUSsummary()", TempString);
-      fprintf (F, "%s: too many peers for STATUSsummary()\n", TempString);
-      continue;
+    for (status = head ; status != NULL ; status = status->next) {
+	if (strcmp(TempString, status->name) == 0)
+	    break;
     }
-    if (j == peers) {
+    if (status == NULL) {
+      status = NEW(STATUS, 1);
       peers++;                                              /* a new peer */
-      strcpy (status[j].name, TempString);                         /* name */
-      strcpy (status[j].ip_addr, inet_ntoa(cp->Address));    /* ip address */
-      status[j].can_stream = cp->Streaming;
-      status[j].seconds = status[j].Size = status[j].DuplicateSize = 0;
-      status[j].Ihave = status[j].Ihave_Duplicate =
-	status[j].Ihave_Deferred = status[j].Ihave_SendIt =
-	status[j].Ihave_Cybercan = 0;
-      status[j].Check = status[j].Check_send = 
-	status[j].Check_deferred = status[j].Check_got =
-	status[j].Check_cybercan = 0;
-      status[j].Takethis = status[j].Takethis_Ok = status[j].Takethis_Err = 0;
-      status[j].activeCxn = status[j].sleepingCxns = 0;
-      status[j].accepted = 0;
-      status[j].refused = status[j].rejected = 0;
-      status[j].Duplicate = status[j].Unwanted_u = 0;
-      status[j].Unwanted_d = status[j].Unwanted_g = 0;
-      status[j].Unwanted_s = status[j].Unwanted_f = 0;
+      strcpy (status->name, TempString);                         /* name */
+      strcpy (status->ip_addr, inet_ntoa(cp->Address));    /* ip address */
+      status->can_stream = cp->Streaming;
+      status->seconds = status->Size = status->DuplicateSize = 0;
+      status->Ihave = status->Ihave_Duplicate =
+	status->Ihave_Deferred = status->Ihave_SendIt =
+	status->Ihave_Cybercan = 0;
+      status->Check = status->Check_send = 
+	status->Check_deferred = status->Check_got =
+	status->Check_cybercan = 0;
+      status->Takethis = status->Takethis_Ok = status->Takethis_Err = 0;
+      status->activeCxn = status->sleepingCxns = 0;
+      status->accepted = 0;
+      status->refused = status->rejected = 0;
+      status->Duplicate = status->Unwanted_u = 0;
+      status->Unwanted_d = status->Unwanted_g = 0;
+      status->Unwanted_s = status->Unwanted_f = 0;
+      status->next = NULL;
+      if (head == NULL)
+	head = status;
+      else
+	head->next = status;
     }
-    if (Now.time - cp->Started > status[j].seconds)
-      status[j].seconds = Now.time - cp->Started;
+    if (Now.time - cp->Started > status->seconds)
+      status->seconds = Now.time - cp->Started;
     if (Now.time - cp->Started > seconds)
       seconds = Now.time - cp->Started;
-    status[j].accepted += cp->Received;
+    status->accepted += cp->Received;
     accepted += cp->Received;
-    status[j].refused += cp->Refused;
+    status->refused += cp->Refused;
     refused += cp->Refused;
-    status[j].rejected += cp->Rejected;
+    status->rejected += cp->Rejected;
     rejected += cp->Rejected;
-    status[j].Duplicate += cp->Duplicate;
+    status->Duplicate += cp->Duplicate;
     duplicate += cp->Duplicate;
-    status[j].Unwanted_u += cp->Unwanted_u;
-    status[j].Unwanted_d += cp->Unwanted_d;
-    status[j].Unwanted_g += cp->Unwanted_g;
-    status[j].Unwanted_s += cp->Unwanted_s;
-    status[j].Unwanted_f += cp->Unwanted_f;
-    status[j].Ihave += cp->Ihave;
-    status[j].Ihave_Duplicate += cp->Ihave_Duplicate;
-    status[j].Ihave_Deferred += cp->Ihave_Deferred;
-    status[j].Ihave_SendIt += cp->Ihave_SendIt;
-    status[j].Ihave_Cybercan += cp->Ihave_Cybercan;
-    status[j].Check += cp->Check;
-    status[j].Check_send += cp->Check_send;
-    status[j].Check_deferred += cp->Check_deferred;
-    status[j].Check_got += cp->Check_got;
-    status[j].Check_cybercan += cp->Check_cybercan;
-    status[j].Takethis += cp->Takethis;
-    status[j].Takethis_Ok += cp->Takethis_Ok;
-    status[j].Takethis_Err += cp->Takethis_Err;
-    status[j].Size += cp->Size;
-    status[j].DuplicateSize += cp->DuplicateSize;
+    status->Unwanted_u += cp->Unwanted_u;
+    status->Unwanted_d += cp->Unwanted_d;
+    status->Unwanted_g += cp->Unwanted_g;
+    status->Unwanted_s += cp->Unwanted_s;
+    status->Unwanted_f += cp->Unwanted_f;
+    status->Ihave += cp->Ihave;
+    status->Ihave_Duplicate += cp->Ihave_Duplicate;
+    status->Ihave_Deferred += cp->Ihave_Deferred;
+    status->Ihave_SendIt += cp->Ihave_SendIt;
+    status->Ihave_Cybercan += cp->Ihave_Cybercan;
+    status->Check += cp->Check;
+    status->Check_send += cp->Check_send;
+    status->Check_deferred += cp->Check_deferred;
+    status->Check_got += cp->Check_got;
+    status->Check_cybercan += cp->Check_cybercan;
+    status->Takethis += cp->Takethis;
+    status->Takethis_Ok += cp->Takethis_Ok;
+    status->Takethis_Err += cp->Takethis_Err;
+    status->Size += cp->Size;
+    status->DuplicateSize += cp->DuplicateSize;
     size += cp->Size;
     DuplicateSize += cp->DuplicateSize;
     if (CHANsleeping(cp)) {
       sleepingCxns++;
-      status[j].sleepingCxns++;
+      status->sleepingCxns++;
     } else {
       activeCxn++;
-      status[j].activeCxn++;
+      status->activeCxn++;
     }
   }
 
@@ -278,47 +282,50 @@ static void STATUSsummary(void)
   fputc ('\n', F) ;
   
   /* Incoming Feeds */
-  for (j = 0; j < peers; j++) {
-    fprintf (F, "%s\n",                      status[j].name);
-    fprintf (F, "    seconds: %-7ld  ",      status[j].seconds);
-    fprintf (F, "      duplicates: %-7ld ",  status[j].Duplicate);
-    fprintf (F, "    ip address: %s\n",      status[j].ip_addr);
+  for (status = head ; status != NULL ;) {
+    fprintf (F, "%s\n",                      status->name);
+    fprintf (F, "    seconds: %-7ld  ",      status->seconds);
+    fprintf (F, "      duplicates: %-7ld ",  status->Duplicate);
+    fprintf (F, "    ip address: %s\n",      status->ip_addr);
     fprintf (F, "    offered: %-7ld  ",
-	     status[j].accepted + status[j].refused + status[j].rejected);
-    fprintf (F, "   uw newsgroups: %-7ld ",  status[j].Unwanted_g);
-    fprintf (F, "   active cxns: %d\n",      status[j].activeCxn);
-    fprintf (F, "   accepted: %-7ld  ",      status[j].accepted);
-    fprintf (F, "uw distributions: %-7ld ",  status[j].Unwanted_d);
-    fprintf (F, " sleeping cxns: %d\n",      status[j].sleepingCxns);
-    fprintf (F, "    refused: %-7ld  ",      status[j].refused);
-    fprintf (F, "      unapproved: %-7ld ",  status[j].Unwanted_u);
+	     status->accepted + status->refused + status->rejected);
+    fprintf (F, "   uw newsgroups: %-7ld ",  status->Unwanted_g);
+    fprintf (F, "   active cxns: %d\n",      status->activeCxn);
+    fprintf (F, "   accepted: %-7ld  ",      status->accepted);
+    fprintf (F, "uw distributions: %-7ld ",  status->Unwanted_d);
+    fprintf (F, " sleeping cxns: %d\n",      status->sleepingCxns);
+    fprintf (F, "    refused: %-7ld  ",      status->refused);
+    fprintf (F, "      unapproved: %-7ld ",  status->Unwanted_u);
     fprintf (F, "want streaming: %s\n",
-	     status[j].can_stream ? "Yes" : "No");
-    fprintf (F, "   rejected: %-7ld  ",      status[j].rejected);
-    fprintf (F, "        filtered: %-7ld ",  status[j].Unwanted_f);
+	     status->can_stream ? "Yes" : "No");
+    fprintf (F, "   rejected: %-7ld  ",      status->rejected);
+    fprintf (F, "        filtered: %-7ld ",  status->Unwanted_f);
     fprintf (F, "  is streaming: %s\n",
-	     (status[j].Check || status[j].Takethis) ? "Yes" : "No");
-    fprintf (F, "       size: %-8s ",        PrettySize(status[j].Size, str));
-    fprintf (F, "       bad sites: %-7ld ", status[j].Unwanted_s);
-    fprintf (F, "duplicate size: %s\n", PrettySize(status[j].DuplicateSize, str));
+	     (status->Check || status->Takethis) ? "Yes" : "No");
+    fprintf (F, "       size: %-8s ",        PrettySize(status->Size, str));
+    fprintf (F, "       bad sites: %-7ld ", status->Unwanted_s);
+    fprintf (F, "duplicate size: %s\n", PrettySize(status->DuplicateSize, str));
     fprintf (F, "  Protocol:\n");
     fprintf (F, "      Ihave: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
-	     status[j].Ihave, NNTP_SENDIT_VAL, status[j].Ihave_SendIt,
-	     NNTP_HAVEIT_VAL, status[j].Ihave_Duplicate, NNTP_RESENDIT_VAL,
-	     status[j].Ihave_Deferred);
+	     status->Ihave, NNTP_SENDIT_VAL, status->Ihave_SendIt,
+	     NNTP_HAVEIT_VAL, status->Ihave_Duplicate, NNTP_RESENDIT_VAL,
+	     status->Ihave_Deferred);
     fprintf (F, "      Check: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
-	     status[j].Check, NNTP_OK_SENDID_VAL, status[j].Check_send,
-	     NNTP_ERR_GOTID_VAL, status[j].Check_got, NNTP_RESENDID_VAL,
-	     status[j].Check_deferred);
+	     status->Check, NNTP_OK_SENDID_VAL, status->Check_send,
+	     NNTP_ERR_GOTID_VAL, status->Check_got, NNTP_RESENDID_VAL,
+	     status->Check_deferred);
     fprintf (F, "   Takethis: %-6ld     Ok[%d]: %-6ld  Error[%d]: %-6ld\n",
-	     status[j].Takethis, NNTP_OK_RECID_VAL, status[j].Takethis_Ok,
-	     NNTP_ERR_FAILID_VAL, status[j].Takethis_Err);
+	     status->Takethis, NNTP_OK_RECID_VAL, status->Takethis_Ok,
+	     NNTP_ERR_FAILID_VAL, status->Takethis_Err);
     if (innconf->refusecybercancels) {
         fprintf (F, "   Cancelrejects:    Ihave[%d]: %-6ld  Check[%d]: %-6ld\n",
-	     NNTP_HAVEIT_VAL, status[j].Ihave_Cybercan,
-	     NNTP_ERR_GOTID_VAL, status[j].Check_cybercan);
+	     NNTP_HAVEIT_VAL, status->Ihave_Cybercan,
+	     NNTP_ERR_GOTID_VAL, status->Check_cybercan);
     }
     fputc ('\n', F) ;
+    tmp = status->next;
+    DISPOSE(status);
+    status = tmp;
   }
 
 #if defined(HTML_STATUS)
