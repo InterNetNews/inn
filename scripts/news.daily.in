@@ -67,7 +67,6 @@ if [ -z "${HISTDIR}" -o X"." = X"${HISTDIR}" -o ! -d "${HISTDIR}" ]; then
 fi
 if [ "${ENABLEOVERVIEW}" = "true" ]; then
     DOEXPIREOVER=true
-    RMFILE=${MOST_LOGS}/expire.rm
 fi
 
 EXPIREOVERFLAGS=
@@ -77,13 +76,8 @@ REASON=
 SCANARG=
 DOGROUPBASEEXPIRY=false
 
-if [ "${GROUPBASEEXPIRY}" = "true" ]; then
-    if [ "${ENABLEOVERVIEW}" = "true" ]; then
-	DOGROUPBASEEXPIRY=true
-    else
-	DOEXPIREOVER=false
-	RMFILE=
-    fi
+if [ "${GROUPBASEEXPIRY}" = "true" ] && [ "${ENABLEOVERVIEW}" = "true" ]; then
+    DOGROUPBASEEXPIRY=true
 fi
 
 ##  Parse JCL.
@@ -111,7 +105,6 @@ do
 	;;
     Xexpireover)
 	DOEXPIREOVER=true
-	RMFILE=${MOST_LOGS}/expire.rm
 	;;
     Xexpireoverflags=*)
 	EXPIREOVERFLAGS=`expr "${I}" : 'expireoverflags=\(.*\)'`
