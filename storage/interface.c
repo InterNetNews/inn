@@ -26,12 +26,14 @@ typedef struct {
 
 METHOD_DATA method_data[NUM_STORAGE_METHODS];
 
-static STORAGE_SUB      *subscriptions = NULL;
-static unsigned int     typetoindex[256];
+STATIC STORAGE_SUB      *subscriptions = NULL;
+STATIC unsigned int     typetoindex[256];
 int                     SMerrno;
 char                    *SMerrorstr = NULL;
-static BOOL             ErrorAlloc = FALSE;
-static BOOL             Initialized = FALSE;
+STATIC BOOL             ErrorAlloc = FALSE;
+STATIC BOOL             Initialized = FALSE;
+BOOL			SMopenmode = FALSE;
+BOOL			SMpreopen = FALSE;
 
 /*
 ** Checks to see if the token is valid
@@ -276,6 +278,25 @@ static BOOL SMreadconfig(void) {
 }
 
 /*
+** setup storage api environment (open mode etc.)
+*/
+BOOL SMsetup(SMSETUP type, void *value) {
+    if (Initialized)    
+	return FALSE;
+    switch (type) {
+    case SM_RDWR:
+	SMopenmode = *(BOOL *)value;
+	break;
+    case SM_PREOPEN:
+	SMpreopen = *(BOOL *)value;
+	break;
+    default:
+	return FALSE;
+    }
+    return TRUE;
+}
+
+/*
 ** Calls the setup function for all of the configured methods and returns
 ** TRUE if they all initialize ok, FALSE if they don't
 */
@@ -342,12 +363,12 @@ static BOOL InitMethod(STORAGETYPE method) {
     if (method_data[method].initialized == INIT_FAIL)
 	return FALSE;
 
-    if (!method_data[typetoindex[method]].configured) {
+    if (!method_data[method].configured) {
 	method_data[method].initialized = INIT_FAIL;
 	SMseterror(SMERR_UNDEFINED, "storage method is not configured.");
 	return FALSE;
     }
-    if (!storage_methods[typetoindex[method]].init(&selfexpire)) {
+    if (!storage_methods[method].init(&selfexpire)) {
 	method_data[method].initialized = INIT_FAIL;
 	method_data[method].selfexpire = FALSE;
 	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
@@ -399,6 +420,11 @@ TOKEN SMstore(const ARTHANDLE article) {
     TOKEN               result;
     char                *groups;
 
+    if (!SMopenmode) {
+	result.type = TOKEN_EMPTY;
+	SMseterror(SMERR_INTERNAL, "read only storage api");
+	return result;
+    }
     result.type = TOKEN_EMPTY;
     if (!article.data || !article.len) {
 	SMseterror(SMERR_BADHANDLE, NULL);
@@ -485,6 +511,10 @@ void SMfreearticle(ARTHANDLE *article) {
 }
 
 BOOL SMcancel(TOKEN token) {
+    if (!SMopenmode) {
+	SMseterror(SMERR_INTERNAL, "read only storage api");
+	return FALSE;
+    }
     if (method_data[typetoindex[token.type]].initialized == INIT_FAIL) {
 	SMseterror(SMERR_UNINIT, NULL);
 	return FALSE;

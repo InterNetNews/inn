@@ -35,6 +35,8 @@ typedef struct __S_SUB__ {
     struct __S_SUB__   *next;
 } STORAGE_SUB;
 
+extern BOOL SMopenmode;
+extern BOOL SMpreopen;
 char *SMFindBody(char *article, int len);
 STORAGE_SUB *SMGetConfig(STORAGETYPE type, STORAGE_SUB *sub);
 void SMseterror(int errorno, char *error);
