@@ -68,7 +68,7 @@ struct history {
 
 enum HISRESULT {HIScachehit, HIScachemiss, HIScachedne};
 
-static const struct histstats nullhist = {0};
+static const struct histstats nullhist = { 0, 0, 0, 0 };
 
 /*
 ** Put an entry into the history cache 
@@ -434,7 +434,7 @@ void HISlogto(const char *s) {
 }
 
 void
-his_logger(char *s, int code)
+his_logger(const char *s, int code)
 {
     struct timeval tv;
     struct tm *tm;

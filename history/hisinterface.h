@@ -43,5 +43,5 @@ enum { S_HIScacheadd, S_HIScachelookup, S_HISsetup, S_HISsync,
        S_HISwrite, S_HISremember, S_HIS_MAX };
 
 /* fine grained history logging */
-void his_logger(char *s, int code);
+void his_logger(const char *s, int code);
 #endif
