@@ -596,8 +596,8 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	    vec[2].iov_base = (char *) art->data + len;
 	    vec[2].iov_len = art->len - len;
 	} else {
-	    vec[2].iov_base = (char *) ".\r\n";
-	    vec[2].iov_len = 3;
+	    vec[2].iov_base = (char *) "\r\n.\r\n";
+	    vec[2].iov_len = 5;
 	}
 	if (xwritev(ToServer, vec, 3) < 0)
 	    return false;
