@@ -409,13 +409,13 @@ InitNGTable(void) {
 #define RELOAD_TIME_CHECK 600
 
 void
-CheckNeedReloadDB(void) {
+CheckNeedReloadDB(bool force) {
     static TIMEINFO lastcheck, oldlastcheck, now;
     struct stat sb;
     char *fname;
 
     if (GetTimeInfo(&now) < 0) return; /* anyone ever seen gettimeofday fail? :-) */
-    if (lastcheck.time + RELOAD_TIME_CHECK > now.time) return;
+    if (!force && lastcheck.time + RELOAD_TIME_CHECK > now.time) return;
 
     oldlastcheck = lastcheck;
     lastcheck = now;
@@ -491,7 +491,7 @@ TokenToPath(TOKEN token) {
     unsigned long artnum;
     char *ng, *path;
 
-    CheckNeedReloadDB(); 
+    CheckNeedReloadDB(FALSE);
 
     memcpy(&ngnum, &token.token[0], sizeof(ngnum));
     memcpy(&artnum, &token.token[sizeof(ngnum)], sizeof(artnum));
@@ -499,7 +499,12 @@ TokenToPath(TOKEN token) {
     ngnum = ntohl(ngnum);
 
     ng = FindNGByNum(ngnum);
-    if (ng == NULL) return NULL;
+    if (ng == NULL) {
+	CheckNeedReloadDB(TRUE);
+	ng = FindNGByNum(ngnum);
+	if (ng == NULL)
+	    return NULL;
+    }
 
     path = NEW(char, strlen(ng)+20+strlen(innconf->patharticles));
     sprintf(path, "%s/%s/%lu", innconf->patharticles, ng, artnum);
@@ -1232,13 +1237,18 @@ bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     case SMARTNGNUM:
 	if ((ann = (struct artngnum *)value) == NULL)
 	    return FALSE;
-	CheckNeedReloadDB();
+	CheckNeedReloadDB(FALSE);
 	memcpy(&ngnum, &token->token[0], sizeof(ngnum));
 	memcpy(&artnum, &token->token[sizeof(ngnum)], sizeof(artnum));
 	artnum = ntohl(artnum);
 	ngnum = ntohl(ngnum);
 	ng = FindNGByNum(ngnum);
-	if (ng == NULL) return FALSE;
+	if (ng == NULL) {
+	    CheckNeedReloadDB(TRUE);
+	    ng = FindNGByNum(ngnum);
+	    if (ng == NULL)
+		return FALSE;
+	}
 	ann->groupname = COPY(ng);
 	ann->artnum = (ARTNUM)artnum;
 	return TRUE;
