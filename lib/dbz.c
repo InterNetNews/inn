@@ -297,7 +297,6 @@ static erec empty_rec;          /* empty rec to compare against
 				   initalized in dbzinit */
 
 /* misc. forwards */
-static char *enstring(const char *s1, const char *s2);
 static bool getcore(hash_table *tab);
 static bool putcore(hash_table *tab);
 static bool getconf(FILE *df, dbzconfig *cp);
@@ -386,8 +385,7 @@ create_truncate(const char *name, const char *pag1)
     char *fn;
     FILE *f;
 
-    if ((fn = enstring(name, pag1)) == NULL)
-	return false;
+    fn = concat(name, pag1, (char *) 0);
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
@@ -453,8 +451,7 @@ dbzfresh(const char *name, off_t size)
 #endif
 
     /* write it out */
-    if ((fn = enstring(name, dir)) == NULL)
-	return false;
+    fn = concat(name, dir, (char *) 0);
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
@@ -580,8 +577,7 @@ dbzagain(const char *name, const char *oldname)
     }
 
     /* pick up the old configuration */
-    if ((fn = enstring(oldname, dir))== NULL)
-	return false;
+    fn = concat(oldname, dir, (char *) 0);
     f = Fopen(fn, "r", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
@@ -639,9 +635,7 @@ dbzagain(const char *name, const char *oldname)
 	c.tsize = newsize;
 
     /* write it out */
-    fn = enstring(name, dir);
-    if (fn == NULL)
-	return false;
+    fn = concat(name, dir, (char *) 0);
     f = Fopen(fn, "w", TEMPORARYOPEN);
     free(fn);
     if (f == NULL) {
@@ -676,9 +670,7 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
 {
     char *name;
 
-    if ((name = enstring(base, ext)) == NULL)
-	return false;
-
+    name = concat(base, ext, (char *) 0);
     if ((tab->fd = open(name, readonly ? O_RDONLY : O_RDWR)) < 0) {
 	DEBUG(("openhashtable: could not open raw\n"));
 	free(name);
@@ -733,11 +725,7 @@ openbasefile(const char *name)
     basef = Fopen(name, "r", DBZ_BASE);
     if (basef == NULL) {
 	DEBUG(("dbzinit: basefile open failed\n"));
-	basefname = enstring(name, "");
-	if (basefname == NULL) {
-	     Fclose(dirf);
-	    return false;
-	}
+        basefname = xstrdup(name);
     } else
 	basefname = NULL;
     if (basef != NULL)
@@ -767,8 +755,7 @@ dbzinit(const char *name)
     }
 
     /* open the .dir file */
-    if ((fname = enstring(name, dir)) == NULL)
-	return false;
+    fname = concat(name, dir, (char *) 0);
     if ((dirf = Fopen(fname, "r+", DBZ_DIR)) == NULL) {
 	dirf = Fopen(fname, "r", DBZ_DIR);
 	readonly = true;
@@ -823,20 +810,6 @@ dbzinit(const char *name)
     memset(&empty_rec, '\0', sizeof(empty_rec));
     DEBUG(("dbzinit: succeeded\n"));
     return true;
-}
-
-/* enstring - concatenate two strings into newly allocated memory
- * Returns NULL on failure
- */
-static char *
-enstring(const char *s1, const char *s2)
-{
-    char *p;
-
-    p = xmalloc(strlen(s1) + strlen(s2) + 1);
-    strcpy(p, s1);
-    strcat(p, s2);
-    return p;
 }
 
 /* dbzclose - close a database
