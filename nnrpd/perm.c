@@ -1846,6 +1846,18 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
     EXECSTUFF *ret;
     int rdfd[2], errfd[2], wrfd[2];
     pid_t pid;
+    struct stat stb;
+
+#if !defined(S_IXUSR) && defined(_S_IXUSR)
+#define S_IXUSR _S_IXUSR
+#endif /* !defined(S_IXUSR) && defined(_S_IXUSR) */
+
+#if !defined(S_IXUSR) && defined(S_IEXEC)
+#define S_IXUSR S_IEXEC
+#endif  /* !defined(S_IXUSR) && defined(S_IEXEC) */
+
+    if (stat(arg0, &stb) || !(stb.st_mode&S_IXUSR))
+	return(0);
 
     pipe(rdfd);
     pipe(errfd);
