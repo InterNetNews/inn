@@ -2,8 +2,6 @@
 
 include ../../Makefile.global
 
-CP	= $(UPLIBTOOL) cp
-
 CFLAGS	= $(GCFLAGS) -I../../include -I.. $(BERKELEY_DB_CFLAGS)
 
 SOURCES = ovdb.c
@@ -11,19 +9,16 @@ OBJECTS = ovdb.o
 LOBJECTS = ovdb.lo
 ROBJECTS = ovdb.$(EXTOBJ)
 
-all:			$(OBJECTS) moveobjs
+all:			$(OBJECTS)
 
 .c.o:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 ovdb:	ovdb.c
-	rm -f ovdb.o ../objs/*.o
+	rm -f ovdb.o
 	$(CC) $(CFLAGS) -DTEST_BDB -c ovdb.c
 	$(CC) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../ov.o ../methods.o ../ovmethods.o ../../lib/libinn.$(EXTLIB) $(EXTSTORAGELIBS) $(LIBS)
 	rm -f ovdb.o
-
-moveobjs: $(OBJECTS)
-	$(CP) -p $(ROBJECTS) ../objs
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o *~
