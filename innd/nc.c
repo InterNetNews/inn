@@ -1137,12 +1137,13 @@ NCreader(CHANNEL *cp)
     /* Read any data that's there; ignore errors (retry next time it's our
      * turn) and if we got nothing, then it's EOF so mark it closed. */
     if ((i = CHANreadtext(cp)) <= 0) {
-#ifdef POLL_BUG
-        /* return of -2 indicates EAGAIN, for SUNOS5.4 poll() bug workaround */
+        /* Return of -2 indicates we got EAGAIN even though the descriptor
+           selected true for reading, probably due to the Solaris select
+           bug.  Drop back out to the main loop as if the descriptor never
+           selected true. */
         if (i == -2) {
             return;
         }
-#endif
 	if (i == 0 || cp->BadReads++ >= innconf->badiocount) {
 	    if (NCcount > 0)
 		NCcount--;

@@ -635,12 +635,16 @@ int CHANreadtext(CHANNEL *cp)
     maxbyte = (cp->State != CSgetcmd || bp->Left < BUFSIZ) ? bp->Left : BUFSIZ;
     i = read(cp->fd, &bp->Data[bp->Used], maxbyte-1);
     if (i < 0) {
-#ifdef POLL_BUG
-    /* return of -2 indicates EAGAIN, for SUNOS5.4 poll() bug workaround */
+        /* Solaris (at least 2.4 through 2.6) will occasionally return
+           EAGAIN in response to a read even if the file descriptor already
+           selected true for reading, apparently due to some internal
+           resource exhaustion.  In that case, return -2, which will drop
+           back out to the main loop and go on to the next file descriptor,
+           as if the descriptor never selected true.  This check will
+           probably never trigger on platforms other than Solaris. */
         if (errno == EAGAIN) {
             return -2;
         }
-#endif
 	oerrno = errno;
 	p = CHANname(cp);
 	errno = oerrno;
@@ -1021,7 +1025,9 @@ void CHANreadloop(void)
 				SITEchanclose(cp);
 				CHANclose(cp, p);
 			    }
-			    else if (i < 0 && oerrno == EWOULDBLOCK) {
+			    else if (i < 0 &&
+                                     (oerrno == EWOULDBLOCK
+                                      || oerrno == EAGAIN)) {
 				WCHANremove(cp);
 				CHANwritesleep(cp, p);
 			    }
