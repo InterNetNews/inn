@@ -21,6 +21,13 @@ B<startinnfeed>.  B<innupgrade> will attempt to take care of this
 modification during make update.  When starting B<innd> by hand, B<innd>
 can just be run directly rather than using B<inndstart>.
 
+=item *
+
+INN now uses Autoconf 2.57 or later for configuration.  As a result, some
+configure options have changed slightly and more of the standard --*dir
+options should be supported in lieu of the old INN-specific options.  See
+C<configure --help> for the available options.
+
 =back
 
 =head1 Upgrading from 2.3 to 2.4

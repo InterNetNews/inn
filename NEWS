@@ -18,6 +18,11 @@ Changes from 2.4 to 2.5
       modification during make update.  When starting innd by hand, innd can
       just be run directly rather than using inndstart.
 
+    * INN now uses Autoconf 2.57 or later for configuration.  As a result,
+      some configure options have changed slightly and more of the standard
+      --*dir options should be supported in lieu of the old INN-specific
+      options.  See "configure --help" for the available options.
+
 Upgrading from 2.3 to 2.4
 
     The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
