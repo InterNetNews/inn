@@ -178,9 +178,9 @@ int
 tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
            void **exist_ptr)
 {
-    struct node *current_node;
+    struct node *current_node = NULL;
+    struct node **root_node = NULL;
     int key_index;
-    bool perform_loop = true;
 
     if (data == NULL)
         return TST_NULL_DATA;
@@ -188,19 +188,13 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
     if (key == NULL || *key == '\0')
         return TST_NULL_KEY;
 
-    if (tst->head[*key] == NULL) {
-        tst->head[*key] = tst_get_free_node(tst, key[1]);
-        current_node = tst->head[*key];
-        if (key[1] == '\0') {
-            current_node->middle = data;
-            return TST_OK;
-        }
-        perform_loop = false;
-    }
-
-    current_node = tst->head[*key];
     key_index = 1;
-    while (perform_loop) {
+    if (tst->head[*key] == NULL)
+        root_node = &tst->head[*key];
+    else
+        current_node = tst->head[*key];
+
+    while (root_node == NULL) {
         if (key[key_index] == current_node->value) {
             if (key[key_index] == '\0') {
                 if (exist_ptr != NULL)
@@ -211,48 +205,34 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
                 } else
                     return TST_DUPLICATE_KEY;
             }
-
-            if (current_node->middle == NULL) {
-                current_node->middle = tst_get_free_node(tst, key[key_index]);
-                current_node = current_node->middle;
-                break;
-            } else {
+            if (current_node->middle == NULL)
+                root_node = &current_node->middle;
+            else {
                 current_node = current_node->middle;
                 key_index++;
-                continue;
             }
+        } else if (LEFTP(current_node, key[key_index])) {
+            if (current_node->left == NULL)
+                root_node = &current_node->left;
+            else
+                current_node = current_node->left;
+        } else {
+            if (current_node->right == NULL)
+                root_node = &current_node->right;
+            else
+                current_node = current_node->right;
         }
 
-        if (LEFTP(current_node, key[key_index])) {
-            if (current_node->left == NULL)  {
-                current_node->left = tst_get_free_node(tst, key[key_index]);
-                current_node = current_node->left;
-                if (key[key_index] == '\0') {
-                    current_node->middle = data;
-                    return TST_OK;
-                }
-                break;
-            } else {
-                current_node = current_node->left;
-                continue;
-            }
-        } else {
-            if (current_node->right == NULL) {
-                current_node->right = tst_get_free_node(tst, key[key_index]);
-                current_node = current_node->right;
-                break;
-            } else {
-                current_node = current_node->right;
-                continue;
-            }
-        }
     }
 
-    do {
+    *root_node = tst_get_free_node(tst, key[key_index]);
+    current_node = *root_node;
+
+    while (key[key_index] != '\0') {
         key_index++;
         current_node->middle = tst_get_free_node(tst, key[key_index]);
         current_node = current_node->middle;
-    } while (key[key_index] != '\0');
+    }
 
     current_node->middle = data;
     return TST_OK;
