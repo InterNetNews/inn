@@ -255,6 +255,14 @@ static BOOL SMreadconfig(void) {
 		return FALSE;
 	    }
 	    inbrace = 1;
+	    /* initialize various params to defaults. */
+	    minsize = 0;
+	    maxsize = 0; /* zero means no limit */
+	    class = 0;
+	    options = (char *)NULL;
+	    minexpire = 0;
+	    maxexpire = 0;
+
 	} else {
 	    type = tok->type;
 	    if (type == SMrbrace)
@@ -328,13 +336,7 @@ static BOOL SMreadconfig(void) {
 	    sub->options = options;
 	    sub->minexpire = minexpire;
 	    sub->maxexpire = maxexpire;
-	    options = 0;
 
-	    minsize = 0;
-	    maxsize = 0;
-	    minexpire = 0;
-	    maxexpire = 0;
-	    class = 0;
 	    DISPOSE(method);
 	    method = 0;
 	    
