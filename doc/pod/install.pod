@@ -838,9 +838,10 @@ using CNFS, skip this section.
 CNFS stores articles in logical objects called metacycbuffs.  Each of the
 metacycbuffs is in turn composed of one or more physical buffers called
 cycbuffs.  As articles are written to the metacycbuff each article is
-written to the next cycbuff in the list in a round-robin fashion.  This is
-so that you can distribute the individual cycbuffs across multiple
-physical disks and balance the load between them.
+written to the next cycbuff in the list in a round-robin fashion (unless
+sequential mode is specified, in which case each cycbuff is filled before
+moving on to the next).  This is so that you can distribute the individual
+cycbuffs across multiple physical disks and balance the load between them.
 
 There are two ways to create your cycbuffs:
 
@@ -850,10 +851,10 @@ There are two ways to create your cycbuffs:
 
 Use a raw disk partition (best).  This will give you the most speed, but
 it requires your OS support mmap() on a block device.  Solaris supports
-this, FreeBSD and Linux do not.  Also on many PC-based Unixes it is
-difficult to create more than eight partitions, which may limit your
-options.  See L<Creating the Article Spool> for more discussion of how to
-set this up.
+this, FreeBSD and Linux (without patches) do not.  Also on many PC-based
+Unixes it is difficult to create more than eight partitions, which may
+limit your options.  See L<Creating the Article Spool> for more discussion
+of how to set this up.
 
 =item 2.
 
@@ -910,6 +911,13 @@ choice.  The last part of the entry is a comma-separated list of all of
 the cycbuffs that should be used to build this metacycbuff.  Each cycbuff
 should only appear in one metacycbuff line, and all metacycbuff lines must
 occur after all cycbuff lines in the file.
+
+If you want INN to fill each cycbuff before moving on to the next one
+rather than writing to them round-robin, add C<:SEQUENTIAL> to the end of
+the metacycbuff line.  This may give noticeably better performance when
+using multiple cycbuffs on the same spindle (such as partitions or slices
+of a larger disk), but will probably give worse performance if your
+cycbuffs are spread out across a lot of spindles.
 
 =head2 storage.conf
 
