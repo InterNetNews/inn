@@ -58,6 +58,7 @@ STATIC STRING	CCsend();
 STATIC STRING	CCshutdown();
 STATIC STRING	CCsignal();
 STATIC STRING	CCthrottle();
+STATIC STRING   CCtimer();
 STATIC STRING	CCtrace();
 STATIC STRING	CCxabort();
 STATIC STRING	CCxexec();
@@ -116,6 +117,7 @@ STATIC CCDISPATCH	CCcommands[] = {
     {	SC_SHUTDOWN,	1, CCshutdown	},
     {	SC_SIGNAL,	2, CCsignal	},
     {	SC_THROTTLE,	1, CCthrottle	},
+    {   SC_TIMER,       1, CCtimer      },
     {	SC_TRACE,	2, CCtrace	},
     {	SC_XABORT,	1, CCxabort	},
     {	SC_XEXEC,	1, CCxexec	}
@@ -1498,6 +1500,26 @@ CCthrottle(av)
 	return "1 Already throttled";
     }
     return "1 unknown mode";
+}
+
+/*
+**  Turn on or off performance monitoring
+*/
+STATIC STRING CCtimer(char *av[]) {
+    int                 value;
+    char                *p;
+    
+    if (EQ(av[0], "off"))
+	value = 0;
+    else {
+	for (p = av[0]; *p; p++) {
+	    if (!isdigit(*p))
+		return "1 parameter should be a number or 'off'";
+	}
+	value = atoi(av[0]);
+    }
+    TimerInterval = value;
+    return NULL;
 }
 
 

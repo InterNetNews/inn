@@ -130,6 +130,11 @@ If this is true innd will write all the crossposts of an article to
 the history file, else it will write just the first.  This can be
 useful on servers without readers that don't run crosspost and don't
 link crossposts.
+.TP
+.I timer
+If this is '0' or 'off', then performance monitoring will be disabled by
+default.  Otherwise, it would be how often to report performance
+statistics, in seconds.  If turned on statistics will be logged to syslog.
 .PP
 The following parameters are used only by 
 .I nnrpd.

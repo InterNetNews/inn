@@ -572,10 +572,7 @@ Usage()
 }
 
 
-int
-main(ac, av)
-    int			ac;
-    char		*av[];
+int main(int ac, char *av[])
 {
     static char		WHEN[] = "PID file";
     int			i;
@@ -752,6 +749,15 @@ main(ac, av)
 	syslog(L_FATAL, "%s cant chdir %s %m", LogName, SPOOL);
 	exit(1);
     }
+
+    if (GetBooleanConfigValue(_CONF_TIMER, TRUE) == TRUE) {
+	if ((p = GetConfigValue(_CONF_TIMER)) == NULL) {
+	    TimerInterval = 0;
+	} else {
+	    TimerInterval = atoi(p);
+	}
+    } else
+	TimerInterval = 0;
     
     /* Get the setting for Wireformat */
     WireFormat = GetBooleanConfigValue(_CONF_WIREFORMAT, FALSE);

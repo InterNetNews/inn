@@ -2145,6 +2145,7 @@ STRING ARTpost(CHANNEL *cp)
 	ngp->PostCount = 0;
 
 	if (Data.Name[0] == '\0') {
+	    TMRstart(TMR_ARTWRITE);
 	    /* Write the article the first time. */
 	    if (TimeSpool) {
 	    	i--;
@@ -2172,12 +2173,14 @@ STRING ARTpost(CHANNEL *cp)
 		if (distributions)
 		    DISPOSE(distributions);
 		ARTreject(buff, article);
+		TMRstop(TMR_ARTWRITE);
 		return buff;
 	    }
+	    TMRstop(TMR_ARTWRITE);
 	    p += strlen(strcpy(p, Data.Name));
 	    Data.NameLength = strlen(Data.Name);
-	}
-	else {
+	} else {
+	    TMRstart(TMR_ARTLINK);
 	    /* Link to the main article. */
 	    (void)sprintf(linkname, "%s/%lu", ngp->Dir, ngp->Filenum);
 	    if (DoLinks && link(Data.Name, linkname) < 0
@@ -2203,6 +2206,7 @@ STRING ARTpost(CHANNEL *cp)
 		}
 #endif	/* defined(DONT_HAVE_SYMLINK) */
 	    }
+	    TMRstop(TMR_ARTLINK);
 	    if (WriteLinks) {
 		*p++ = ' ';
 		p += strlen(strcpy(p, linkname));
@@ -2261,11 +2265,17 @@ STRING ARTpost(CHANNEL *cp)
      * has been processed.  We could pause ourselves here, but it doesn't
      * seem to be worth it. */
     if (Accepted) {
-	if (ControlHeader >= 0)
+	if (ControlHeader >= 0) {
+	    TMRstart(TMR_ARTCTRL);
 	    ARTcontrol(&Data, hash, HDR(ControlHeader));
+	    TMRstop(TMR_ARTCTRL);
+	}
 	p = HDR(_supersedes);
-	if (*p && ARTidok(p))
+	if (*p && ARTidok(p)) {
+	    TMRstart(TMR_ARTCNCL);
 	    ARTcancel(&Data, p, hash, FALSE);
+	    TMRstop(TMR_ARTCNCL);
+	}
     }
 
     /* If we need the overview data, write it. */
@@ -2274,8 +2284,11 @@ STRING ARTpost(CHANNEL *cp)
 
     /* And finally, send to everyone who should get it */
     for (sp = Sites, i = nSites; --i >= 0; sp++)
-	if (sp->Sendit)
+	if (sp->Sendit) {
+    	    TMRstart(TMR_SITESEND);
 	    SITEsend(sp, &Data);
+    	    TMRstop(TMR_SITESEND);
+	}
 
     return NNTP_TOOKIT;
 }

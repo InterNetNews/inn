@@ -69,7 +69,6 @@ void BUFFset(BUFFER *bp, const char *p, const int length)
     bp->Used = 0;
 }
 
-
 /*
 **  Swap the contents of two buffers.
 */
@@ -741,6 +740,8 @@ void CHANreadloop(void)
     long		silence;
     char		*p;
     time_t		LastUpdate;
+
+    TMRinit();
     
     LastUpdate = GetTimeInfo(&Now) < 0 ? 0 : Now.time;
     for ( ; ; ) {
@@ -751,9 +752,12 @@ void CHANreadloop(void)
 	MyRead = RCHANmask;
 	MyWrite = WCHANmask;
 	MyTime = TimeOut;
+	TMRstart(TMR_IDLE);
 	count = select(CHANlastfd + 1, &MyRead, &MyWrite, (FDSET *)NULL,
 		&MyTime);
-	
+	TMRstop(TMR_IDLE);
+
+	TMRmainloophook();
 	if (GotTerminate) {
 	    (void)write(2, EXITING, STRLEN(EXITING));
 	    CleanupAndExit(0, (char *)NULL);

@@ -322,6 +322,10 @@ typedef struct _WIP {
     struct _WIP *Next;           /* Next item in this bucket */
 } WIP;
 
+typedef enum {TMR_IDLE, TMR_ARTWRITE, TMR_ARTLINK, TMR_HISWRITE,
+	      TMR_HISSYNC, TMR_SITESEND, TMR_ARTCTRL, TMR_ARTCNCL,
+	      TMR_HISHAVE, TMR_HISGREP, TMR_MAX} TMRTYPE;
+
 
 
 /*
@@ -369,6 +373,7 @@ EXTERN BOOL		WireFormat;
 EXTERN BOOL		TimeSpool;
 EXTERN BOOL             WriteLinks;
 EXTERN int		SeqNum;
+EXTERN int              TimerInterval;
 EXTERN STRING		path;
 EXTERN BUFFER		Path;
 EXTERN char		*ModeReason;	/* NNTP reject message		*/
@@ -547,6 +552,11 @@ extern void		SITEparsefile();
 extern void		SITEprocdied();
 extern void		SITEsend();
 extern void		SITEwrite();
+
+extern void             TMRinit(void);
+extern void             TMRmainloophook(void);
+extern void             TMRstart(TMRTYPE t);
+extern void             TMRstop(TMRTYPE t);
 
 extern void             WIPsetup(void);
 extern WIP              *WIPnew(const char *messageid, CHANNEL *cp);

@@ -189,6 +189,9 @@
 #define _CONF_NNRP_SPOOLFIRST   "spoolfirst"
    /* if false then don't write crossposts to the history file */
 #define _CONF_WRITELINKS        "writelinks"
+   /* if 0 or false then don't monitor performance,
+      otherwise, the reporting interval */
+#define _CONF_TIMER             "timer"
      
 /*
 **  13.  TCL Support

@@ -51,6 +51,7 @@ typedef char ICC_PROTOCOLTYPE ;
 #define SC_SHUTDOWN	'q'
 #define SC_SIGNAL	'B'
 #define SC_THROTTLE	'r'
+#define SC_TIMER        'Z'
 #define SC_TRACE	'w'
 #define SC_XABORT	'x'
 #define SC_XEXEC	'y'

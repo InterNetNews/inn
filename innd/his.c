@@ -126,6 +126,7 @@ void HISsetup(void)
 */
 void HISsync(void)
 {
+    TMRstart(TMR_HISSYNC);
     if (HISdirty) {
 	if (!dbzsync()) {
 	    syslog(L_FATAL, "%s cant dbzsync %m", LogName);
@@ -133,8 +134,8 @@ void HISsync(void)
 	}
 	HISdirty = 0;
     }
+    TMRstop(TMR_HISSYNC);
 }
-
 
 /*
 **  Close the history files.
@@ -157,6 +158,7 @@ void HISclose(void)
 	HIScache = NULL;
 	HIScachesize = 0;
     }
+    TMRstop(TMR_HISSYNC);
 }
 
 
@@ -171,9 +173,13 @@ char *HISfilesfor(const HASH MessageID)
     char	        *p;
     int	                i;
 
+    TMRstart(TMR_HISGREP);
     /* Get the seek value into the history file. */
-    if ((offset = dbzfetch(MessageID)) < 0)
+    if ((offset = dbzfetch(MessageID)) < 0) {
 	return NULL;
+	TMRstop(TMR_HISGREP);
+    }
+    TMRstop(TMR_HISGREP);
 
     /* Get space. */
     if (Files.Data == NULL) {
@@ -239,11 +245,14 @@ BOOL HIShavearticle(const HASH MessageID)
 	lastlog = Now.time;
     }
 
+    TMRstart(TMR_HISHAVE);
     switch (HIScachelookup(MessageID)) {
     case HIScachehit:
-    	    return TRUE;
+	TMRstop(TMR_HISHAVE);
+	return TRUE;
     case HIScachemiss:
-    	    return FALSE;
+	TMRstop(TMR_HISHAVE);
+	return FALSE;
     case HIScachedne:
 	val = dbzexists(MessageID);
 	HIScacheadd(MessageID, val);
@@ -251,8 +260,10 @@ BOOL HIShavearticle(const HASH MessageID)
 	    HISmisses++;
 	else
 	    HISdne++;
+	TMRstop(TMR_HISHAVE);
 	return val;
     }
+    TMRstop(TMR_HISHAVE);
     return FALSE;
 }
 
@@ -287,6 +298,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
     long		offset;
     int			i;
 
+    TMRstart(TMR_HISWRITE);
     if (paths != NULL && paths[0] != '\0')
 	HISslashify(paths);
     else
@@ -310,6 +322,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 	i = errno;
 	syslog(L_ERROR, "%s cant write history %m", LogName);
 	IOError("history", i);
+	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
 
@@ -318,9 +331,11 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
 	IOError("history database", i);
+	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
     HIScacheadd(hash, TRUE);
+    TMRstop(TMR_HISWRITE);
     
     if (++HISdirty >= ICD_SYNC_COUNT)
 	HISsync();
@@ -335,6 +350,7 @@ BOOL HISremember(const HASH hash)
     long		offset;
     int			i;
 
+    TMRstart(TMR_HISWRITE);
     offset = ftell(HISwritefp);
     /* Convert the hash to hex */
     i = fprintf(HISwritefp, "[%s]%c%lu%c%s%c%lu\n",
@@ -346,17 +362,20 @@ BOOL HISremember(const HASH hash)
 	i = errno;
 	syslog(L_ERROR, "%s cant write history %m", LogName);
 	IOError("history", i);
+	TMRstop(TMR_HISWRITE);
 	return FALSE;
-    }
+    } 
 
     /* Set up the database values and write them. */
     if (!dbzstore(hash, offset)) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
 	IOError("history database", i);
+	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
     HIScacheadd(hash, TRUE);
+    TMRstop(TMR_HISWRITE);
     
     if (++HISdirty >= ICD_SYNC_COUNT)
 	HISsync();

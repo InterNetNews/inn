@@ -94,6 +94,8 @@ STATIC COMMAND	Commands[] = {
 	2,	SC_SIGNAL,	FALSE	},
     {	"throttle",	"reason...\t\tStop accepting articles",
 	1,	SC_THROTTLE,	TRUE	},
+    {   "timer",        "interval|off\t\tTurn performance monitoring on or off",
+	1,      SC_TIMER,      FALSE    },
     {	"trace",	"innd|#|nnrpd flag\tTurn tracing on or off",
 	2,	SC_TRACE,	FALSE	},
     {	"xabort",	"text...\t\tAbort the server",

@@ -452,6 +452,14 @@ does a ``readers'' command with ``no'' as the flag and
 .I reason
 as the text.
 .TP
+.BI timer " off|interval"
+Performance monitoring is turned off if 'off' or '0' is specified,
+otherwise, statistics will be reported every
+.I interval
+seconds to syslog.  See 
+.IR inn.conf (5)
+for information on how to set the startup default.
+.TP
 .BI trace " item flag"
 Tracing is turned on or off for the specified
 .IR item .
