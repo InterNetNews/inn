@@ -2462,7 +2462,7 @@ STRING ARTpost(CHANNEL *cp)
     if (innconf->enableoverview && !innconf->useoverchan) {
 	TMRstart(TMR_OVERV);
 	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left)) {
-	    syslog(L_ERROR, "%s cant store ov2 for %s", LogName, TokenToText(token));
+	    syslog(L_ERROR, "%s cant store overview for %s", LogName, TokenToText(token));
 	    OverviewCreated = FALSE;
 	} else {
 	    OverviewCreated = TRUE;
