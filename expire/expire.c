@@ -1760,6 +1760,11 @@ int main(int ac, char *av[])
 	}
     }
 
+    val = TRUE;
+    if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
+	fprintf(stderr, "Can't setup storage manager\n");
+	exit(1);
+    }
     if (!SMinit()) {
 	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
 	exit(1);

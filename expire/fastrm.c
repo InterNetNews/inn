@@ -608,7 +608,7 @@ int main(int ac, char *av[])
     char	        *p;
     int			count;
     int                 deleted;
-    BOOL		empty_error;
+    BOOL		empty_error, val;
 
     MyName = av[0];
     if ((p = strrchr(MyName, '/')) != NULL)
@@ -681,6 +681,11 @@ int main(int ac, char *av[])
 	exit(1);
     }
 
+    val = TRUE;
+    if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
+	fprintf(stderr, "Can't setup storage manager\n");
+	exit(1);
+    }
     SMinit();
 
     while ((list = build_dir(&count, &deleted)) != NULL) {

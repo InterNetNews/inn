@@ -374,6 +374,10 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 	    break;
 	case '<':
 	    key = HashMessageID(p);
+#ifndef	DO_TAGGED_HASH
+	    ionevalue.offset = where;
+	    ivalue = (void *)&ionevalue;
+#endif
 	    break;
 	default:
 	    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
@@ -1611,6 +1615,11 @@ main(int ac, char *av[])
 		strerror(errno));
 	    exit(1);
 	}
+    }
+    val = TRUE;
+    if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
+	fprintf(stderr, "Can't setup storage manager\n");
+	exit(1);
     }
     if (!SMinit()) {
 	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
