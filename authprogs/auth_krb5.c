@@ -51,9 +51,6 @@ krb5_check_password (char *principal_name, char *password)
    long              lifetime = KRB5_DEFAULT_LIFE;
    int               options = 0;
 
-   /* TGT service name for convenience */
-   krb5_data         tgtname = { 0, KRB5_TGS_NAME_SIZE, KRB5_TGS_NAME };
-
    krb5_preauthtype  *preauth = NULL;
 
    krb5_error_code   code;
@@ -111,8 +108,8 @@ krb5_check_password (char *principal_name, char *password)
                &service_principal,
                user_realm->length,
                user_realm->data,
-               tgtname.length,
-               tgtname.data,
+               KRB5_TGS_NAME_SIZE,
+               KRB5_TGS_NAME,
                user_realm->length,
                user_realm->data,
                0 /* terminator */);
