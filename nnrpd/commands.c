@@ -555,7 +555,7 @@ CMDmode(ac, av)
     if (caseEQ(av[1], "reader"))
 	Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	       PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-	       PERMaccessconf->pathhost, INNVersion(),
+               PERMaccessconf->pathhost, inn_version_string,
 	       PERMcanpost ? "posting ok" : "no posting");
     else
 	Reply("%d What?\r\n", NNTP_BAD_COMMAND_VAL);

@@ -994,13 +994,13 @@ main(int argc, char *argv[])
     if (PERMaccessconf) {
         Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-	   PERMaccessconf->pathhost, INNVersion(),
+           PERMaccessconf->pathhost, inn_version_string,
 	   PERMcanpost ? "posting ok" : "no posting");
 	clienttimeout = PERMaccessconf->clienttimeout;
     } else {
         Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-	   innconf->pathhost, INNVersion(),
+           innconf->pathhost, inn_version_string,
 	   PERMcanpost ? "posting ok" : "no posting");
 	clienttimeout = innconf->clienttimeout;
     }
