@@ -490,6 +490,9 @@ See the description of ``enableoverview'' in
 .IR inn.conf (5)
 for overview creation.
 .TP
+.BI renumberlow " file"
+This command does same as ``lowmark'' command.
+.TP
 .BI reserve " reason"
 The next ``pause'' or ``throttle'' command must use
 .I reason
@@ -538,6 +541,15 @@ is ``off''.  Otherwise
 is treated as a filename to be written.  The file can be parsed by
 I contrib/stathist.pl .
 .TP
+.BI status " off|interval"
+.I innd
+status reporting is turned off if ``off'' or ``0'' is specified,
+otherwise, status will be reported every
+.I interval
+seconds to syslog.  See ``status'' in
+.IR inn.conf (5)
+for information on how to set the startup default.
+.TP
 .BI tcl " flag"
 Enable or disable Tcl news filtering, if
 .IR <\-\-with\-tcl\ is\ specified\ at\ configure> .
@@ -563,7 +575,7 @@ as the text.
 Performance monitoring is turned off if ``off'' or ``0'' is specified,
 otherwise, statistics will be reported every
 .I interval
-seconds to syslog.  See 
+seconds to syslog.  See ``timer'' in
 .IR inn.conf (5)
 for information on how to set the startup default.
 .TP
