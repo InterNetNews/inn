@@ -1,5 +1,5 @@
 /* include/config.h.in.  Generated automatically from configure.in by autoheader.  */
-/*  $Revision$
+/*  $Id$
 **
 **  Here be configuration data used by various InterNetNews programs.  This
 **  file is used as source for the autoheader script, which from it and
@@ -553,8 +553,6 @@ typedef unsigned long           ARTNUM;
    ANSI/ISO/standard C definitions given in these typedefs and #defines. */
 #define STATIC          static
 #define FUNCTYPE        void
-
-typedef FUNCTYPE        (*FUNCPTR)();
 
 typedef char const *    STRING;
 typedef char * const    CSTRING;

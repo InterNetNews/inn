@@ -277,8 +277,6 @@ typedef unsigned long           ARTNUM;
 #define STATIC          static
 #define FUNCTYPE        void
 
-typedef FUNCTYPE        (*FUNCPTR)();
-
 typedef char const *    STRING;
 typedef char * const    CSTRING;
 
