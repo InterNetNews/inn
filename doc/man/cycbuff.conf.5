@@ -46,7 +46,7 @@ This line can be omitted and the default value is ``30.''
 .PP
 .RS
 .nf
-cycbuff:buffer_name:file_name:buffer_size[:mode]
+cycbuff:buffer_name:file_name:buffer_size
 .fi
 .RE
 .PP
@@ -58,17 +58,12 @@ The length of this path should be within 63 letters.
 \&``Buffer_size'' is the length of buffer file in kilobytes
 in decimal (1KB = 1024 bytes).  If the ``file_name'' is not a special
 device, the file should be buffer_size * 1024 bytes.
-\&``Mode'' is the mode of storing article.  Currently there are two mode;
-\&``INTERLEAVE'' and ``SEQUENTIAL''.  Mode ``INTERLEAVE'' is to store
-articles into each cycbuff in round robin way.  Mode ``SEQUENTIAL'' is to store
-articles sequentially into one cycbuff until it is filled up.  ``Mode'' is
-optional and the default value without this option is ``INTERLEAVE''.
 .PP
 \&``Metacycbuff'' line is formatted as:
 .PP
 .RS
 .nf
-metacycbuff:meta_cyclic_buffer_name:buffer_names
+metacycbuff:meta_cyclic_buffer_name:buffer_names[:mode]
 .fi
 .RE
 .PP
@@ -79,6 +74,11 @@ This name is referred at ``options'' field at ``cnfs'' lines in
 These buffer names should be defined at ``metacycbuff'' lines.
 If ``buffer_names'' has more than one buffer names, CNFS method
 stores articles into each ``cycbuff'' in order cyclically.
+\&``Mode'' is the mode of storing article.  Currently there are two mode;
+\&``INTERLEAVE'' and ``SEQUENTIAL''.  Mode ``INTERLEAVE'' is to store
+articles into each cycbuff in round robin way.  Mode ``SEQUENTIAL'' is to store
+articles sequentially into one cycbuff until it is filled up.  ``Mode'' is
+optional and the default value without this option is ``INTERLEAVE''.
 .PP
 Also it is necessary to set up ``options'' field at ``cnfs'' lines in
 .IR storage.conf (5)
