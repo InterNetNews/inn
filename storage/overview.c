@@ -27,7 +27,7 @@ static char		*OVERnewdir = (char *)NULL;
 static char		*OVERmode = (char *)NULL;
 static char		*OVERnewmode = (char *)NULL;
 static BOOL		OVERmmap = TRUE;
-#define DEFAULTMODE	"a+"
+#define DEFAULTMODE	"a"
 #define MAXOVERLINE	4096
 
 /*
