@@ -457,7 +457,6 @@ lib/strcasecmp.c                      Case-insenstive string comparison (BSD)
 lib/strerror.c                        String representation of errno
 lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
-lib/tempname.c                        Temporary filename generator
 lib/timer.c                           Generic profile timer
 lib/vector.c                          Manipulate vectors of strings
 lib/version.c                         INN version constants

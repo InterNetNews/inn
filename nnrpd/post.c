@@ -799,63 +799,83 @@ OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
 static const char *
 SpoolitTo(char *article, char *err, char *SpoolDir)
 {
-    static char		CANTSPOOL[NNTP_STRLEN+2];
-    register HEADER	*hp;
-    register FILE	*F = NULL;
-    register int	i;
-    char		temp[BUFSIZ];
-    char		path[BUFSIZ];
+    static char	CANTSPOOL[NNTP_STRLEN+2];
+    HEADER *hp;
+    FILE *F = NULL;
+    int	i, fd;
+    char *tmpspool = NULL;
+    char *spoolfile = NULL;
 
     /* Initialize the returned error message */
     sprintf(CANTSPOOL, "%s and can't write text to local spool file", err);
 
     /* Try to write it to the spool dir. */
-    TempName(SpoolDir, temp);
-    /* rnews -U ignores files starting with . */
-    strrchr(temp, '/')[1] = '.';
-    if ((F = fopen(temp, "w")) == NULL) {
-        syslog(L_FATAL, "cant open %s %m", temp);
-        return CANTSPOOL;
+    tmpspool = concatpath(SpoolDir, ".XXXXXX");
+    fd = mkstemp(tmpspool);
+    if (fd < 0) {
+        syslog(L_FATAL, "cant create temporary spool file %s %m", tmpspool);
+        goto fail;
+    }
+    F = fdopen(fd, "w");
+    if (F == NULL) {
+        syslog(L_FATAL, "cant open %s %m", tmpspool);
+        goto fail;
     }
     fchmod(fileno(F), BATCHFILE_MODE);
 
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Value) {
-	    (void)fprintf(F, "%s: %s\n", hp->Name, hp->Value);
+	    fprintf(F, "%s: %s\n", hp->Name, hp->Value);
 	    if (FLUSH_ERROR(F)) {
-		(void)fclose(F);
-		return CANTSPOOL;
+		fclose(F);
+                goto fail;
 	    }
 	}
     for (i = 0; i < OtherCount; i++) {
-	(void)fprintf(F, "%s\n", OtherHeaders[i]);
+	fprintf(F, "%s\n", OtherHeaders[i]);
 	if (FLUSH_ERROR(F)) {
-	    (void)fclose(F);
-	    return CANTSPOOL;
+	    fclose(F);
+	    goto fail;
 	}
     }
-    (void)fprintf(F, "\n");
+    fprintf(F, "\n");
 
     /* Write the article body */
     i = strlen(article);
     if (fwrite(article, 1, i, F) != (size_t)i) {
         fclose(F);
-        return CANTSPOOL;
+        goto fail;
     }
 
     /* Flush and catch any errors */
     if (fclose(F))
-	return CANTSPOOL;
+        goto fail;
 
-    TempName(SpoolDir, path);
-    if (rename(temp, path) < 0) {
-        syslog(L_FATAL, "cant rename %s %s %m", temp, path);
-	return CANTSPOOL;
+    /* Rename the spool file to something rnews will pick up. */
+    spoolfile = concatpath(SpoolDir, "XXXXXX");
+    fd = mkstemp(spoolfile);
+    if (fd < 0) {
+        syslog(L_FATAL, "cant create spool file %s %m", spoolfile);
+        goto fail;
+    }
+    close(fd);
+    if (rename(tmpspool, spoolfile) < 0) {
+        syslog(L_FATAL, "cant rename %s %s %m", tmpspool, spoolfile);
+	goto fail;
     }
 
     /* Article has been spooled */
+    free(tmpspool);
+    free(spoolfile);
     return NULL;
+
+ fail:
+    if (tmpspool != NULL)
+        free(tmpspool);
+    if (spoolfile != NULL)
+        free(spoolfile);
+    return CANTSPOOL;
 }
 
 /*

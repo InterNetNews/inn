@@ -611,10 +611,10 @@ Unspool(void)
     struct dirent       *ep;
     register bool	ok;
     struct stat		Sb;
-    char		buff[SMBUF];
     char		hostname[10];
     int			fd;
     size_t		i;
+    char                *badname;
 
     /* Go to the spool directory, get ready to scan it. */
     if (chdir(innconf->pathincoming) < 0) {
@@ -663,12 +663,19 @@ Unspool(void)
 	WaitForChildren(i);
 
 	if (!ok) {
-	    TempName(PathBadNews, buff);
-	    (void)fprintf(stderr, "Unspooling failed saving to %s\n", buff);
-	    syslog(L_ERROR, "cant unspool saving to %s", buff);
-	    if (rename(InputFile, buff) < 0) {
-		xperror(buff);
-		syslog(L_FATAL, "cant rename %s to %s %m", InputFile, buff);
+            badname = concat(PathBadNews, "/XXXXXX", (char *) 0);
+            fd = mkstemp(badname);
+            if (fd < 0) {
+                xperror("Can't create temporary file");
+                syslog(L_FATAL, "cant create temporary file %m");
+                exit(1);
+            }
+            close(fd);
+	    fprintf(stderr, "Unspooling failed saving to %s\n", badname);
+	    syslog(L_ERROR, "cant unspool saving to %s", badname);
+	    if (rename(InputFile, badname) < 0) {
+		xperror(badname);
+		syslog(L_FATAL, "cant rename %s to %s %m", InputFile, badname);
 		exit(1);
 	    }
 	    continue;
@@ -688,31 +695,27 @@ Unspool(void)
 **  an alternate filesystem?
 */
 static void
-Spool(register int fd, int mode)
+Spool(int fd, int mode)
 {
-    register int	spfd;
-    register int	i;
-    register int	j;
-    register char	*p;
-    char		temp[BUFSIZ];
-    char		buff[BUFSIZ];
-    int			count;
-    int			status;
+    int spfd;
+    int i;
+    int j;
+    char *tmpspool, *spoolfile, *p;
+    char buff[BUFSIZ];
+    int count;
+    int status;
 
-    if(mode == 'N')
+    if (mode == 'N')
 	exit(9);
-    TempName(innconf->pathincoming, buff);
-    p = strrchr(buff, '/');
-    if (p == NULL)
-	exit(10);
-    *p = '\0';
-    strcpy(temp, buff);
-    strcat(temp, "/.");
-    strcat(temp, ++p);
-    (void)umask(0);
-    if ((spfd = open(temp, O_WRONLY | O_CREAT, BATCHFILE_MODE)) < 0) {
-	syslog(L_FATAL, "cant open %s %m", temp);
-	exit(1);
+    tmpspool = concatpath(innconf->pathincoming, ".XXXXXX");
+    spfd = mkstemp(tmpspool);
+    if (spfd < 0) {
+        syslog(L_FATAL, "cant create temporary batch file %m");
+        exit(1);
+    }
+    if (fchmod(fd, BATCHFILE_MODE) < 0) {
+        syslog(L_FATAL, "cant chmod temporary batch file %s %m", tmpspool);
+        exit(1);
     }
 
     /* Read until we there is nothing left. */
@@ -734,16 +737,25 @@ Spool(register int fd, int mode)
 
     /* Close the file. */
     if (close(spfd) < 0) {
-	syslog(L_FATAL, "cant close spooled rnews %m");
+	syslog(L_FATAL, "cant close spooled article %s %m", tmpspool);
 	status++;
     }
 
     /* Move temp file into the spool area, and exit appropriately. */
-    TempName(innconf->pathincoming, buff);
-    if (rename(temp, buff) < 0) {
-	syslog(L_FATAL, "cant rename %s to %s %m", temp, buff);
-	status++;
+    spoolfile = concatpath(innconf->pathincoming, "XXXXXX");
+    spfd = mkstemp(spoolfile);
+    if (spfd < 0) {
+        syslog(L_FATAL, "cant create spool file %m");
+        status++;
+    } else {
+        close(spfd);
+        if (rename(tmpspool, spoolfile) < 0) {
+            syslog(L_FATAL, "cant rename %s to %s %m", tmpspool, spoolfile);
+            status++;
+        }
     }
+    free(tmpspool);
+    free(spoolfile);
     exit(status);
     /* NOTREACHED */
 }

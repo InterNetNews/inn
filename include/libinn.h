@@ -375,7 +375,6 @@ extern int      GetResourceUsage(double *usertime, double *systime);
 extern void     Radix32(unsigned long, char *buff);
 extern char *   ReadInDescriptor(int fd, struct stat *Sbp);
 extern char *   ReadInFile(const char *name, struct stat *Sbp);
-extern void     TempName(char *dir, char *buff);
 extern FILE *   xfopena(const char *p);
 extern bool     fdreserve(int fdnum);
 extern FILE *   Fopen(const char *p, const char *type, int fd);
