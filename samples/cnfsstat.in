@@ -442,7 +442,7 @@ sub get_cycbuff_info {
     }
     
     my($len) = bhex($lena);
-    my($free) = hex($freea);
+    my($free) = bhex($freea);
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
     
