@@ -19,6 +19,9 @@
 /* Per the autoconf documentation, just always check to see if the various
    macros are defined and define them ourselves if they aren't.  These
    definitions are based on the approach taken by BSDI. */
+#ifndef WCOREDUMP
+# define WCOREDUMP(status)      ((unsigned)(status) & 0x80)
+#endif
 #ifndef WEXITSTATUS
 # define WEXITSTATUS(status)    (((unsigned)(status) >> 8) & 0xff)
 #endif
