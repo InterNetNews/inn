@@ -30,8 +30,9 @@ method <methodname> {
 .RE
 .PP
 The ``methodname'' is the name of storage method.
-Currently, ``timehash'', ``cnfs'' and ``trash'' are available for its name.
-See STORAGE METHODS section for thier method.
+Currently, ``timecaf'', ``timehash'', ``cnfs'', ``tradspool'' and ``trash''
+are available for its name.
+See STORAGE METHODS section for those method.
 \&``Wildmat'' refers to a newsgroup pattern that will be parsed with
 .IR wildmat (3).
 Matching newsgroup is against newsgroup name in ``Xref'' header, if
@@ -83,6 +84,15 @@ See
 .IR cycbuff.conf (5)
 for description of thier use.
 .TP
+.B timecaf
+\&``Timecaf'' method stores multiple articles in one file whose path name
+is based on article's arrival time.  The path name is created as
+.IR <patharticles\ in\ inn.conf>/timecaf-xx/yy/zzzz.CF .
+Where ``xx'' is hexa decimal value of ``storage_class.''
+Where ``yy'' and ``zzzz'' are hexa decimal value of splitted
+arrival time and between 0xyyzzzz00 and 0xyyzzzzFF is the actual time.
+There is no configuration file for this method.
+.TP
 .B timehash
 \&``Timehash'' method stores each article into each file whose path name
 is based on article's arrival time.  The path name is created as
@@ -91,6 +101,16 @@ Where ``xx'' is hexa decimal value of ``storage_class.''
 Where ``yyyy'' is hexa decimal value of sequence number.
 Where ``bb'', ``cc'' and ``aadd'' are hexa decimal value of splitted
 arrival time and 0xaabbccdd is the actual time.
+There is no configuration file for this method.
+.TP
+.B tradspool
+\&``Tradspool'' method stores each article in a way that traditional
+former INN (before 2.0) stores. The path name is created like
+.IR <patharticles\ in\ inn.conf>/news/group/name/nnnnn .
+Where ``news/group/name'' is the `news.group.name'' to which article is posted.
+Where nnnnn is the article numbers that article has in that newsgroup.
+And if the article is crossposted, that file is symbolic linked and the
+name convention is like above.
 There is no configuration file for this method.
 .TP
 .B trash

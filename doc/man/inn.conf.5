@@ -327,6 +327,13 @@ hosts not mentioned in incoming.conf. You probably want to set this to ``true''
 if you run a transit only server, or serve nnrpd from inetd or daemon mode.
 This is a boolean value and the default is ``false''.
 .TP
+.I cnfscheckfudgesize
+If this is set to a non-zero number then the value plus maxartsize is
+used to check article size in cyclic buffer which is used for cnfs method,
+when retrieving article.  This is useful to verify article, after system
+crash which may cause cyclic buffer corruption.
+The default value is ``0''.
+.TP
 .I pathnews
 The news user home directory and sometimes the root of the news
 hierarchy.
