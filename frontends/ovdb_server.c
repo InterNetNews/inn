@@ -127,7 +127,7 @@ static int putpid(const char *path)
 {
     char buf[30];
     int fd = open(path, O_WRONLY|O_TRUNC|O_CREAT, 0664);
-    if(!fd) {
+    if(fd == -1) {
         syswarn("cannot open %s", path);
         return -1;
     }
@@ -657,7 +657,7 @@ main(int argc, char *argv[])
         sysdie("cannot listen on socket");
 
     pidfile = concatpath(innconf->pathrun, OVDB_SERVER_PIDFILE);
-    if(putpid(path))
+    if(putpid(pidfile))
         exit(1);
 
     xsignal_norestart(SIGINT, sigfunc);
