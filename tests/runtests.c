@@ -460,8 +460,12 @@ test_summarize(const struct testset *ts, int status)
             test_print_range(first, last, failed - 1, 0);
         if (!missing && !failed) {
             fputs(!status ? "ok" : "dubious", stdout);
-            if (ts->skipped > 0)
-                printf(" (skipped %d tests)", ts->skipped);
+            if (ts->skipped > 0) {
+                if (ts->skipped == 1)
+                    printf(" (skipped %d test)", ts->skipped);
+                else
+                    printf(" (skipped %d tests)", ts->skipped);
+            }
         }
     }
     if (status > 0)
@@ -716,22 +720,31 @@ test_batch(const char *testlist)
     /* Print out our final results. */
     if (failhead) test_fail_summary(failhead);
     putchar('\n');
-    if (aborted)
-        printf("Aborted %d test sets, passed %d/%d tests.\n", aborted,
-               passed, total);
-    else if (failed == 0) {
+    if (aborted != 0) {
+        if (aborted == 1)
+            printf("Aborted %d test set", aborted);
+        else
+            printf("Aborted %d test sets", aborted);
+        printf(", passed %d/%d tests", passed, total);
+    }
+    else if (failed == 0)
         fputs("All tests successful", stdout);
-        if (skipped) printf(", %d tests skipped", skipped);
-        puts(".");
-    } else
-        printf("Failed %d/%d tests, %.2f%% okay.\n", failed, total,
+    else
+        printf("Failed %d/%d tests, %.2f%% okay", failed, total,
                (total - failed) * 100.0 / total);
+    if (skipped != 0) {
+        if (skipped == 1)
+            printf(", %d test skipped", skipped);
+        else
+            printf(", %d tests skipped", skipped);
+    }
+    puts(".");
     printf("Files=%d,  Tests=%d", line, total);
     printf(",  %.2f seconds", tv_diff(&end, &start));
     printf(" (%.2f usr + %.2f sys = %.2f CPU)\n",
            tv_seconds(&stats.ru_utime), tv_seconds(&stats.ru_stime),
            tv_sum(&stats.ru_utime, &stats.ru_stime));
-    return !(failed || aborted);
+    return (failed == 0 && aborted == 0);
 }
 
 
