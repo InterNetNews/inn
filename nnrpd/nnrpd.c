@@ -205,7 +205,7 @@ ExitWithStats(int x, BOOL readconf)
     if (ARTget)
         syslog(L_NOTICE, "%s artstats get %d time %d size %d", ClientHost,
             ARTget, ARTgettime, ARTgetsize);
-    if (!readconf && PERMaccessconf->nnrpdoverstats && OVERcount)
+    if (!readconf && PERMaccessconf && PERMaccessconf->nnrpdoverstats && OVERcount)
         syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d dbz %d seek %d get %d artcheck %d", ClientHost,
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
