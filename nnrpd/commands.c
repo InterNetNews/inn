@@ -11,11 +11,11 @@
 #include "ov.h"
 
 typedef struct _LISTINFO {
-    STRING	Path;
-    STRING	File;
-    BOOL	Required;
-    STRING	Items;
-    STRING	Format;
+    const char * Path;
+    const char * File;
+    bool         Required;
+    const char * Items;
+    const char * Format;
 } LISTINFO;
 
 typedef struct {
@@ -29,43 +29,43 @@ typedef struct {
 extern int LLOGenable;
 
 
-STATIC LISTINFO		INFOactive = {
+static LISTINFO		INFOactive = {
     NULL, _PATH_ACTIVE, TRUE, "active newsgroups",
     "Newsgroups in form \"group high low flags\""
 };
-STATIC LISTINFO		INFOactivetimes = {
+static LISTINFO		INFOactivetimes = {
     NULL, _PATH_ACTIVETIMES, FALSE, "creation times",
     "Group creations in form \"name time who\""
 };
-STATIC LISTINFO		INFOdistribs = {
+static LISTINFO		INFOdistribs = {
     NULL, _PATH_NNRPDIST, FALSE, "newsgroup distributions",
     "Distributions in form \"area description\""
 };
-STATIC LISTINFO               INFOsubs = {
+static LISTINFO               INFOsubs = {
     NULL, _PATH_NNRPSUBS, FALSE, "automatic group subscriptions",
     "Subscriptions in form \"group\""
 };
-STATIC LISTINFO		INFOdistribpats = {
+static LISTINFO		INFOdistribpats = {
     NULL, _PATH_DISTPATS, FALSE, "distribution patterns",
     "Default distributions in form \"weight:pattern:value\""
 };
-STATIC LISTINFO		INFOextensions = {
+static LISTINFO		INFOextensions = {
     NULL, NULL, FALSE, "supported extensions",
     "Supported NNTP extensions"
 };
-STATIC LISTINFO		INFOgroups = {
+static LISTINFO		INFOgroups = {
     NULL, _PATH_NEWSGROUPS, FALSE, "newsgroup descriptions",
     "Descriptions in form \"group description\""
 };
-STATIC LISTINFO		INFOmoderators = {
+static LISTINFO		INFOmoderators = {
     NULL, _PATH_MODERATORS, FALSE, "moderator patterns",
     "Newsgroup moderators in form \"group-pattern:mail-address-pattern\""
 };
-STATIC LISTINFO		INFOschema = {
+static LISTINFO		INFOschema = {
     NULL, _PATH_SCHEMA, TRUE, "overview format",
     "Order of fields in overview database"
 };
-STATIC LISTINFO		INFOmotd = {
+static LISTINFO		INFOmotd = {
     NULL, _PATH_MOTD, FALSE, "motd",
     "Message of the day text."
 };
@@ -87,7 +87,7 @@ PERMgeneric(av, accesslist)
 {
     char path[BIG_BUFFER], *fields[6], *p;
     int i, pan[2], status;
-    PID_T pid;
+    pid_t pid;
     struct stat stb;
 
     av += 2;
@@ -151,22 +151,22 @@ PERMgeneric(av, accesslist)
 
     /* Run the child, with redirection. */
     if (pid == 0) {
-	(void)close(STDERR);		/* close existing stderr */
-	(void)close(pan[PIPE_READ]);
+	close(STDERR_FILENO);	/* Close existing stderr */
+	close(pan[PIPE_READ]);
 
 	/* stderr goes down the pipe. */
-	if (pan[PIPE_WRITE] != STDERR) {
-	    if ((i = dup2(pan[PIPE_WRITE], STDERR)) != STDERR) {
+	if (pan[PIPE_WRITE] != STDERR_FILENO) {
+	    if ((i = dup2(pan[PIPE_WRITE], STDERR_FILENO)) != STDERR_FILENO) {
 		syslog(L_FATAL, "cant dup2 %d to %d got %d %m",
-		    pan[PIPE_WRITE], STDERR, i);
+		    pan[PIPE_WRITE], STDERR_FILENO, i);
 		_exit(1);
 	    }
 	    (void)close(pan[PIPE_WRITE]);
 	}
 
-	CloseOnExec(STDIN, FALSE);
-	CloseOnExec(STDOUT, FALSE);
-	CloseOnExec(STDERR, FALSE);
+	close_on_exec(STDIN_FILENO, false);
+	close_on_exec(STDOUT_FILENO, false);
+	close_on_exec(STDERR_FILENO, false);
 
 	(void)execv(path, av);
 	Reply("%s\r\n", NNTP_BAD_COMMAND);
@@ -215,7 +215,7 @@ PERMgeneric(av, accesslist)
 }
 
 /* ARGSUSED */
-FUNCTYPE
+void
 CMDauthinfo(ac, av)
     int		ac;
     char	*av[];
@@ -383,7 +383,7 @@ CMDauthinfo(ac, av)
 **  The "DATE" command.  Part of NNTPv2.
 */
 /* ARGSUSED0 */
-FUNCTYPE
+void
 CMDdate(ac, av)
     int		ac;
     char	*av[];
@@ -406,7 +406,7 @@ CMDdate(ac, av)
 **  List active newsgroups, newsgroup descriptions, and distributions.
 */
 /* ARGSUSED0 */
-FUNCTYPE
+void
 CMDlist(int ac, char *av[])
 {
     QIOSTATE	*qp;
@@ -565,7 +565,7 @@ CMDlist(int ac, char *av[])
 **  Handle the "mode" command.
 */
 /* ARGSUSED */
-FUNCTYPE
+void
 CMDmode(ac, av)
     int		ac;
     char	*av[];
@@ -579,7 +579,7 @@ CMDmode(ac, av)
 	Reply("%d What?\r\n", NNTP_BAD_COMMAND_VAL);
 }
 
-STATIC int GroupCompare(const void *a1, const void* b1) {
+static int GroupCompare(const void *a1, const void* b1) {
     const GROUPDATA     *a = a1;
     const GROUPDATA     *b = b1;
 
@@ -590,7 +590,7 @@ STATIC int GroupCompare(const void *a1, const void* b1) {
 **  Display new newsgroups since a given date and time for specified
 **  <distributions>.
 */
-FUNCTYPE CMDnewgroups(int ac, char *av[])
+void CMDnewgroups(int ac, char *av[])
 {
     static char		USAGE[] =
 	"NEWGROUPS [yy]yymmdd hhmmss [\"GMT\"|\"UTC\"] [<distributions>]";
@@ -599,7 +599,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
     char	        *q;
     char	        **dp;
     QIOSTATE	        *qp;
-    BOOL		All;
+    bool		All;
     time_t		date;
     char		*grplist[2];
     int                 hi, lo, count, flag;
@@ -725,7 +725,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 **  Post an article.
 */
 /* ARGSUSED */
-FUNCTYPE
+void
 CMDpost(int ac, char *av[])
 {
     static char	*article;
@@ -738,7 +738,7 @@ CMDpost(int ac, char *av[])
     long	l;
     long	sleeptime;
     char	*path;
-    STRING	response;
+    const char *response;
     char	idbuff[SMBUF];
     static int	backoff_inited = FALSE;
 
@@ -899,7 +899,7 @@ CMDpost(int ac, char *av[])
 **  The "xpath" command.  An uncommon extension.
 */
 /* ARGSUSED */
-FUNCTYPE
+void
 CMDxpath(ac, av)
     int		ac;
     char	*av[];
