@@ -2,6 +2,7 @@
 **
 **  Routines to read and write the active file.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -14,13 +15,10 @@
 # include <sys/mman.h>
 #endif
 
-typedef struct iovec	IOVEC;
-
-
-STATIC char		*ICDactpath = NULL;
-STATIC char		*ICDactpointer;
-STATIC int		ICDactfd;
-STATIC int		ICDactsize;
+static char		*ICDactpath = NULL;
+static char		*ICDactpointer;
+static int		ICDactfd;
+static int		ICDactsize;
 
 
 /*
@@ -28,11 +26,12 @@ STATIC int		ICDactsize;
 **  avoid problems with mmap.
 */
 #ifdef HAVE_MMAP
-void ICDiovset(IOVEC *iovp, char *base, int len) {
-    (iovp)->iov_len = len; 
-    (iovp)->iov_base = NEW(char, (iovp)->iov_len); 
-    (void)memcpy((POINTER)(iovp)->iov_base, (POINTER)base, 
-	    (SIZE_T)(iovp)->iov_len);
+void
+ICDiovset(struct iovec *iovp, char *base, int len)
+{
+    iovp->iov_len = len; 
+    iovp->iov_base = NEW(char, iovp->iov_len); 
+    memcpy(iovp->iov_base, base, iovp->iov_len);
 }
 #define ICDiovrelease(iovp)		DISPOSE((iovp)->iov_base)
 
@@ -48,7 +47,7 @@ void ICDiovset(IOVEC *iovp, char *base, int len) {
 /*
 **  Close the active file, releasing its resources.
 */
-STATIC void
+static void
 ICDcloseactive()
 {
     if (ICDactpointer) {
@@ -72,7 +71,7 @@ ICDcloseactive()
 */
 void
 ICDsetup(StartSites)
-    BOOL	StartSites;
+    bool	StartSites;
 {
     if (ICDneedsetup == TRUE) {
 	ICDneedsetup = FALSE;
@@ -133,7 +132,7 @@ ICDclose()
 /*
 **  Scan the active file, and renumber the min/max counts.
 */
-BOOL
+bool
 ICDrenumberactive()
 {
     register int	i;
@@ -151,7 +150,8 @@ ICDrenumberactive()
 /*
 **  Use writev() to replace the active file.
 */
-STATIC BOOL ICDwritevactive(IOVEC *vp, int vpcount)
+static bool
+ICDwritevactive(struct iovec *vp, int vpcount)
 {
     static char		*BACKUP = NULL;
     static char         *NEWACT = NULL;
@@ -236,12 +236,12 @@ STATIC BOOL ICDwritevactive(IOVEC *vp, int vpcount)
 /*
 **  Change the flag on a newsgroup.  Fairly easy.
 */
-BOOL ICDchangegroup(NEWSGROUP *ngp, char *Rest)
+bool ICDchangegroup(NEWSGROUP *ngp, char *Rest)
 {
     static char		NEWLINE[] = "\n";
-    register int	i;
-    IOVEC		iov[3];
-    BOOL		ret;
+    int                 i;
+    struct iovec	iov[3];
+    bool		ret;
     char		*Name;
     long		Last;
 
@@ -278,14 +278,15 @@ BOOL ICDchangegroup(NEWSGROUP *ngp, char *Rest)
 /*
 **  Add a newsgroup.  Append a line to the end of the active file and reload.
 */
-BOOL ICDnewgroup(char *Name, char *Rest)
+bool
+ICDnewgroup(char *Name, char *Rest)
 {
     char		buff[SMBUF];
-    IOVEC		iov[2];
-    BOOL		ret;
+    struct iovec	iov[2];
+    bool		ret;
 
     /* Set up the scatter/gather vectors. */
-    if (strlen(Name) + strlen(Rest) > (SIZE_T)(SMBUF - 24)) {
+    if (strlen(Name) + strlen(Rest) > SMBUF - 24) {
 	syslog(L_ERROR, "%s too_long %s", LogName, MaxLength(Name, Name));
 	return FALSE;
     }
@@ -307,12 +308,13 @@ BOOL ICDnewgroup(char *Name, char *Rest)
 /*
 **  Remove a newsgroup.  Splice the line out of the active file and reload.
 */
-BOOL ICDrmgroup(NEWSGROUP *ngp)
+bool
+ICDrmgroup(NEWSGROUP *ngp)
 {
-    IOVEC	iov[2];
-    int		i;
-    BOOL	ret;
-    char	*Name;
+    struct iovec iov[2];
+    int i;
+    bool ret;
+    char *Name;
 
     /* Don't let anyone remove newsgroups that INN requires exist. */
     if (EQ(ngp->Name, "junk") || EQ(ngp->Name, "control"))
@@ -391,7 +393,7 @@ ICDreadactive(endp)
 	syslog(L_FATAL, "%s cant open %s %m", LogName, ICDactpath);
 	exit(1);
     }
-    CloseOnExec(ICDactfd, TRUE);
+    close_on_exec(ICDactfd, true);
 
 #ifdef HAVE_MMAP
 
@@ -402,7 +404,7 @@ ICDreadactive(endp)
     }
     ICDactsize = Sb.st_size;
     ICDactpointer = mmap((caddr_t)0, ICDactsize, PROT_READ|PROT_WRITE,
-			MAP__ARG, ICDactfd, (OFFSET_T)0);
+			MAP__ARG, ICDactfd, 0);
     if (ICDactpointer == (char *)-1) {
 	syslog(L_FATAL, "%s cant mmap %d %s %m",
 	    LogName, ICDactfd, ICDactpath);
@@ -447,7 +449,7 @@ ICDwriteactive()
 
 #else /* !HAVE_MMAP */
 
-    if (lseek(ICDactfd, (OFFSET_T)0, SEEK_SET) == -1) {
+    if (lseek(ICDactfd, 0, SEEK_SET) == -1) {
 	syslog(L_FATAL, "%s cant rewind %s %m", LogName, ICDactpath);
 	exit(1);
     }
