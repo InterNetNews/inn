@@ -94,7 +94,8 @@ if ($ovmethod && $ovmethod eq "ovdb") {
 $have_uustat = ("@HAVE_UUSTAT@" eq "DO" ? 1 : 0) ;
 
 $newsmaster = '@NEWSMASTER@' ;
-$newsuser = "@NEWSUSER@" ;
+$newsuser = '@NEWSUSER@' ;
+$newsgroup = '@NEWSGRP@' ;
 
 $ENV{'TMPDIR'} = $pathtmp;
 $tmpdir = $pathtmp;

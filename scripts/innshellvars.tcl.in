@@ -90,6 +90,7 @@ set inn_have_uustat [ expr { "@HAVE_UUSTAT@" == "DO" ? 1 : 0 } ]
 
 set inn_newsmaster "@NEWSMASTER@"
 set inn_newsuser "@NEWSUSER@"
+set inn_newsgroup "@NEWSGRP@"
 
 set env(TMPDIR) "$inn_pathtmp"
 set inn_tmpdir "$inn_pathtmp"
