@@ -381,14 +381,16 @@ AC_CHECK_TYPES([long long])
 AC_CHECK_TYPE([ssize_t], ,
     [AC_DEFINE([ssize_t], [int],
         [Define to int if <sys/types.h> does not define.])])
-AC_CHECK_TYPE([sig_atomic_t], [int],
+AC_CHECK_TYPE([sig_atomic_t], ,
     [AC_DEFINE([sig_atomic_t], [int],
-        [Define to int if <signal.h> does not define.])], ,
-    [#include <signal.h>])
-AC_CHECK_TYPE([socklen_t], [int],
+        [Define to int if <signal.h> does not define.])],
+[#include <sys/types.h>
+#include <signal.h>])
+AC_CHECK_TYPE([socklen_t], ,
     [AC_DEFINE([socklen_t], [int],
-        [Define to int if <sys/socket.h> does not define.])], ,
-    [#include <sys/socket.h>])
+        [Define to int if <sys/socket.h> does not define.])],
+[#include <sys/types.h>
+#include <sys/socket.h>])
 
 dnl See if struct sockaddr_storage is available, and if so, how its members
 dnl are named.
