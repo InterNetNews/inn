@@ -483,7 +483,7 @@ dnl Check for whether the user wants to compile with SASL, and if so what
 dnl the path to the various components of it is.
 AC_DEFUN([INN_LIB_SASL],
 [AC_ARG_WITH(sasl,
-    [  --with-sasl=PATH        Enable SASL (for imapfeed & NNTP AUTH support)],
+    [  --with-sasl=PATH        Enable SASL (for imapfeed authentication)],
     SASL_DIR=$with_sasl,
     SASL_DIR=no)
 AC_MSG_CHECKING(if SASL is desired)
@@ -495,8 +495,7 @@ else
     AC_MSG_RESULT(yes)
     AC_MSG_CHECKING(for SASL location)
     if test x"$SASL_DIR" = xyes ; then
-        for dir in $prefix /usr/local/sasl /usr/lib/sasl /usr/sasl /usr/pkg \
-                   /usr/local /usr ; do
+        for dir in $prefix /usr/local/sasl /usr/sasl /usr/pkg /usr/local ; do
             if test -f "$dir/include/sasl/sasl.h" ; then
                 SASL_DIR=$dir
                 break
@@ -504,7 +503,18 @@ else
         done
     fi
     if test x"$SASL_DIR" = xyes ; then
-        AC_MSG_ERROR(Can not find SASL)
+        if test -f "/usr/include/sasl/sasl.h" ; then
+            SASL_INC=-I/usr/include/sasl
+            SASL_DIR=/usr
+            AC_MSG_RESULT($SASL_DIR)
+            inn_save_LIBS=$LIBS
+            AC_CHECK_LIB(sasl2, sasl_getprop,
+                 [SASL_LIB=-lsasl2], [AC_MSG_ERROR(Can not find SASL)])
+            LIBS=$inn_save_LIBS
+            AC_DEFINE(HAVE_SASL, 1, [Define if SASL is available.])
+        else
+            AC_MSG_ERROR(Can not find SASL)
+        fi
     else
         AC_MSG_RESULT($SASL_DIR)
 	SASL_INC="-I${SASL_DIR}/include"
@@ -1200,16 +1210,13 @@ dnl appear to also offer it via sysconf(3), but it should be a constant for a
 dnl given implementation.  Set IOV_MAX if it's not defined in <sys/uio.h> or
 dnl <limits.h>.
 AC_DEFUN([INN_MACRO_IOV_MAX],
-[AC_MSG_CHECKING(value of IOV_MAX)
-AC_CACHE_VAL(inn_cv_macro_iov_max,
+[AC_CACHE_CHECK([value of IOV_MAX], [inn_cv_macro_iov_max],
 [AC_TRY_RUN(_INN_MACRO_IOV_MAX_SOURCE(),
             inn_cv_macro_iov_max=`cat conftestval`,
-            inn_cv_macro_iov_max=error, 16)]
-[if test x"$inn_cv_macro_iov_max" = xerror ; then
+            inn_cv_macro_iov_max=error, 16)
+if test x"$inn_cv_macro_iov_max" = xerror ; then
     AC_MSG_WARN([probe failure, assuming 16])
     inn_cv_macro_iov_max=16
-else
-    AC_MSG_RESULT($inn_cv_macro_iov_max)
 fi])
 if test x"$inn_cv_macro_iov_max" != x"set in limits.h" ; then
     AC_DEFINE_UNQUOTED(IOV_MAX, $inn_cv_macro_iov_max,
