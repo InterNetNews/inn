@@ -3,9 +3,12 @@
 ##  Format:
 ##	/remember/:<keep>
 ##	<class>:<keep>:<default>:<purge>
-##  First line gives history retention; other lines specify expiration
-##  for classes.
+##	<wildmat>:<flag>:<keep>:<default>:<purge>
+##  First line gives history retention; second line specifies expiration
+##  for classes; third line specifies expiration for group if groupbaseexpiry
+##  is true
 ##	<class>		class specified in storage.conf
+##	<wildmat>	wildmat-style patterns for the newsgroups
 ##	<keep>		Mininum number of days to keep article
 ##	<default>	Default number of days to keep the article
 ##	<purge>		Flush article after this many days
@@ -19,5 +22,7 @@
 ##  make this 28, 30, etc.
 /remember/:14
 
-##  Keep for 1-10 days, allow Expires headers to work.
+##  Keep for 1-10 days, allow Expires headers to work(groupbaseexpiry is false).
 0:1:10:never
+##  Keep for 1-10 days, allow Expires headers to work(groupbaseexpiry is true).
+#*:A:1:10:never
