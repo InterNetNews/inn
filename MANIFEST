@@ -38,6 +38,7 @@ backends/controlbatch.in              Batch program for controlchan
 backends/controlchan.in               Channel program for control messages
 backends/cvtbatch.c                   Add fields to simple batchfile
 backends/filechan.c                   Split a funnel into separate files
+backends/gpgverify.in                 Verify control messages with GnuPG
 backends/inndf.c                      df used for innwatch
 backends/innxbatch.c                  Send batches using XBATCH to remote
 backends/innxmit.c                    Send articles to remote site
