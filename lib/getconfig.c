@@ -269,6 +269,7 @@ void SetDefaults()
     innconf->usecontrolchan = FALSE;
     innconf->mergetogroups = FALSE;
     innconf->noreader = FALSE;
+    innconf->nnrpdauthsender = FALSE;
 }
 
 void ClearInnConf()
@@ -973,6 +974,11 @@ int ReadInnConf()
 		    innconf->sourceaddress = COPY(p);
 		}
 		SET_CONFIG(CONF_VAR_SOURCEADDRESS);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_NNRPDAUTHSENDER)) {
+		TEST_CONFIG(CONF_VAR_NNRPDAUTHSENDER, bit);
+		if (!bit && boolval != -1) innconf->nnrpdauthsender = boolval;
+		SET_CONFIG(CONF_VAR_NNRPDAUTHSENDER);
 	    }
 	}
 	(void)Fclose(F);
