@@ -159,6 +159,7 @@ extern void     daemonize(const char *path);
 extern int      getfdlimit(void);
 extern int      nonblocking(int fd, bool flag);
 extern int      setfdlimit(unsigned int limit);
+extern ssize_t  xpwrite(int fd, const void *buffer, size_t size, off_t offset);
 extern void     (*xsignal(int signum, void (*sigfunc)(int)))(int);
 extern ssize_t  xwrite(int fd, const void *buffer, size_t size);
 extern ssize_t  xwritev(int fd, const struct iovec *iov, int iovcnt);
