@@ -47,6 +47,9 @@ typedef struct _CYCBUFF {
   BOOL		needflush;	/* true if CYCBUFFEXTERN is needed to be
 				   flushed */
   struct _CYCBUFF	*next;
+  BOOL		currentbuff;	/* true if this cycbuff is currently used */
+  char		metaname[CNFSNASIZ];/* Symbolic name of meta */
+  int		order;		/* Order in meta, start from 1 not 0 */
 } CYCBUFF;
 
 /*
@@ -61,10 +64,15 @@ typedef struct {
     char	freea[CNFSLASIZ];	/* ASCII version of free */
     char	updateda[CNFSLASIZ];	/* ASCII version of updated */
     char	cyclenuma[CNFSLASIZ];	/* ASCII version of cyclenum */
+    char	metaname[CNFSNASIZ];
+    char	orderinmeta[CNFSLASIZ];
+    char	currentbuff[CNFSMASIZ];
 } CYCBUFFEXTERN;
 
 #define METACYCBUFF_UPDATE	25
 #define REFRESH_INTERVAL	30
+
+typedef enum {INTERLEAVE, SEQUENTIAL} METAMODE;
 
 typedef struct metacycbuff {
   char		*name;		/* Symbolic name of the pool */
@@ -73,6 +81,7 @@ typedef struct metacycbuff {
   int		memb_next;	/* Index to next member to write onto */
   unsigned long	write_count;	/* Number of writes since last header flush */
   struct metacycbuff	*next;
+  METAMODE	metamode;
 } METACYCBUFF;
 
 typedef struct _CNFSEXPIRERULES {

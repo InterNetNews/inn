@@ -248,6 +248,13 @@ STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
     strncpy(rpx.freea, CNFSofft2hex(cycbuff->free, TRUE), CNFSLASIZ);
     strncpy(rpx.cyclenuma, CNFSofft2hex(cycbuff->cyclenum, TRUE), CNFSLASIZ);
     strncpy(rpx.updateda, CNFSofft2hex(cycbuff->updated, TRUE), CNFSLASIZ);
+    strncpy(rpx.metaname, cycbuff->metaname, CNFSNASIZ);
+    strncpy(rpx.orderinmeta, CNFSofft2hex(cycbuff->order, TRUE), CNFSLASIZ);
+    if (cycbuff->currentbuff) {
+	strncpy(rpx.currentbuff, "TRUE", CNFSMASIZ);
+    } else {
+	strncpy(rpx.currentbuff, "FALSE", CNFSMASIZ);
+    }
     if ((b = write(cycbuff->fd, &rpx, sizeof(CYCBUFFEXTERN))) != sizeof(CYCBUFFEXTERN)) {
       syslog(L_ERROR, "%s: CNFSflushhead: write failed (%d bytes): %m", LocalLogName, b);
       return FALSE;
@@ -374,7 +381,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
 }
 
 STATIC BOOL CNFSparse_metapart_line(char *l) {
-  char		*p, *cycbuff;
+  char		*p, *cycbuff, *q = l;
   CYCBUFF	*rp;
   METACYCBUFF	*metacycbuff, *tmp;
 
@@ -389,8 +396,24 @@ STATIC BOOL CNFSparse_metapart_line(char *l) {
   metacycbuff->count = 0;
   metacycbuff->name = COPY(l);
   metacycbuff->next = (METACYCBUFF *)NULL;
+  metacycbuff->metamode = INTERLEAVE;
   l = ++p;
 
+  if ((p = strchr(l, ':')) != NULL) {
+      if (p - l <= 0) {
+	syslog(L_ERROR, "%s: bad mode in line '%s'", LocalLogName, q);
+	return FALSE;
+      }
+      if (strcmp(++p, "INTERLEAVE") == 0)
+	metacycbuff->metamode = INTERLEAVE;
+      else if (strcmp(p, "SEQUENTIAL") == 0)
+	metacycbuff->metamode = SEQUENTIAL;
+      else {
+	syslog(L_ERROR, "%s: unknown mode in line '%s'", LocalLogName, q);
+	return FALSE;
+      }
+      *--p = '\0';
+  }
   /* Cycbuff list */
   while ((p = strchr(l, ',')) != NULL && p - l > 0) {
     *p = '\0';
@@ -452,13 +475,13 @@ STATIC BOOL CNFSparse_groups_line() {
   sub = SMGetConfig(TOKEN_CNFS, sub);
   for (;sub != (STORAGE_SUB *)NULL; sub = SMGetConfig(TOKEN_CNFS, sub)) {
     if (sub->options == (char *)NULL) {
-      syslog(L_ERROR, "%s: storage.ctl additional field is missing",
+      syslog(L_ERROR, "%s: storage.conf options field is missing",
 	   LocalLogName);
       CNFScleanexpirerule();
       return FALSE;
     }
     if ((mrp = CNFSgetmetacycbuffbyname(sub->options)) == NULL) {
-      syslog(L_ERROR, "%s: storage.ctl additional field '%s' undefined",
+      syslog(L_ERROR, "%s: storage.conf options field '%s' undefined",
 	   LocalLogName, sub->options);
       CNFScleanexpirerule();
       return FALSE;
@@ -570,6 +593,13 @@ STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
 	buf[CNFSLASIZ] = '\0';
 	strncpy(buf, rpx.cyclenuma, CNFSLASIZ);
 	cycbuff->cyclenum = CNFShex2offt(buf);
+	strncpy(cycbuff->metaname, rpx.metaname, CNFSLASIZ);
+	strncpy(buf, rpx.orderinmeta, CNFSLASIZ);
+	cycbuff->order = CNFShex2offt(buf);
+	if (strncmp(rpx.currentbuff, "TRUE", CNFSMASIZ) == 0) {
+	    cycbuff->currentbuff = TRUE;
+	} else
+	    cycbuff->currentbuff = FALSE;
     } else {
 	syslog(L_NOTICE,
 		"%s: No magic cookie found for cycbuff %s, initializing",
@@ -578,6 +608,8 @@ STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
 	cycbuff->free = cycbuff->minartoffset;
 	cycbuff->updated = 0;
 	cycbuff->cyclenum = 1;
+	cycbuff->currentbuff = TRUE;
+	cycbuff->order = 0;	/* to indicate this is newly added cycbuff */
 	cycbuff->needflush = TRUE;
 	if (!CNFSflushhead(cycbuff))
 	    return FALSE;
@@ -595,6 +627,52 @@ STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
     if (oneshot)
       break;
   }
+  return TRUE;
+}
+
+STATIC BOOL CNFS_setcurrent(METACYCBUFF *metacycbuff) {
+  CYCBUFF	*cycbuff;
+  int		i, currentcycbuff, order = -1;
+  BOOL		foundcurrent = FALSE;
+  for (i = 0 ; i < metacycbuff->count ; i++) {
+    cycbuff = metacycbuff->members[i];
+    if (strncmp(cycbuff->metaname, metacycbuff->name, CNFSNASIZ) != 0) {
+      /* this cycbuff is moved from other metacycbuff */
+      cycbuff->order = i + 1;
+      cycbuff->currentbuff = FALSE;
+      strncpy(cycbuff->metaname, metacycbuff->name, CNFSLASIZ);
+      cycbuff->needflush = TRUE;
+      continue;
+    }
+    if (foundcurrent == FALSE && cycbuff->currentbuff == TRUE) {
+      currentcycbuff = i;
+      foundcurrent = TRUE;
+    }
+    if (foundcurrent == FALSE || order == -1 || order > cycbuff->order) {
+      /* this cycbuff is a candidate for current cycbuff */
+      currentcycbuff = i;
+      order = cycbuff->order;
+    }
+    if (cycbuff->order != i + 1) {
+      /* cycbuff order seems to be changed */
+      cycbuff->order = i + 1;
+      cycbuff->needflush = TRUE;
+    }
+  }
+  for (i = 0 ; i < metacycbuff->count ; i++) {
+    cycbuff = metacycbuff->members[i];
+    if (currentcycbuff == i && cycbuff->currentbuff == FALSE) {
+      cycbuff->currentbuff = TRUE;
+      cycbuff->needflush = TRUE;
+    }
+    if (currentcycbuff != i && cycbuff->currentbuff == TRUE) {
+      cycbuff->currentbuff = FALSE;
+      cycbuff->needflush = TRUE;
+    }
+    if (cycbuff->needflush == TRUE && !CNFSflushhead(cycbuff))
+	return FALSE;
+  }
+  metacycbuff->memb_next = currentcycbuff;
   return TRUE;
 }
 
@@ -877,6 +955,7 @@ STATIC void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
 BOOL cnfs_init(BOOL *selfexpire) {
     int			ret;
     METACYCBUFF	*metacycbuff;
+    CYCBUFF	*cycbuff;
 
     *selfexpire = FALSE;
     if (innconf == NULL) {
@@ -917,7 +996,7 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return FALSE;
     }
-    if (SMpreopen && !CNFSinit_disks(NULL)) {
+    if (!CNFSinit_disks(NULL)) {
 	CNFScleancycbuff();
 	CNFScleanmetacycbuff();
 	CNFScleanexpirerule();
@@ -927,6 +1006,20 @@ BOOL cnfs_init(BOOL *selfexpire) {
     for (metacycbuff = metacycbufftab; metacycbuff != (METACYCBUFF *)NULL; metacycbuff = metacycbuff->next) {
       metacycbuff->memb_next = 0;
       metacycbuff->write_count = 0;		/* Let's not forget this */
+      if (metacycbuff->metamode == SEQUENTIAL)
+	/* mark current cycbuff */
+	if (CNFS_setcurrent(metacycbuff) == FALSE) {
+	  CNFScleancycbuff();
+	  CNFScleanmetacycbuff();
+	  CNFScleanexpirerule();
+	  SMseterror(SMERR_INTERNAL, NULL);
+	  return FALSE;
+	}
+    }
+    if (!SMpreopen) {
+      for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL;) {
+	CNFSshutdowncycbuff(cycbuff);
+      }
     }
 
     *selfexpire = TRUE;
@@ -981,11 +1074,31 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	cycbuff->free = cycbuff->minartoffset;
 	cycbuff->cyclenum++;
 	if (cycbuff->cyclenum == 0)
-	    cycbuff->cyclenum += 2;		/* cnfs_next() needs this */
+	  cycbuff->cyclenum += 2;		/* cnfs_next() needs this */
 	cycbuff->needflush = TRUE;
-	(void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
-	syslog(L_NOTICE, "%s: cycbuff %s rollover to cycle 0x%x... remain calm",
+	if (metacycbuff->metamode == INTERLEAVE) {
+	  (void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
+	  syslog(L_NOTICE, "%s: cycbuff %s rollover to cycle 0x%x... remain calm",
 	       LocalLogName, cycbuff->name, cycbuff->cyclenum);
+	} else {
+	  /* SEQUENTIAL */
+	  cycbuff->currentbuff = FALSE;
+	  (void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
+	  if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+	  syslog(L_NOTICE, "%s: metacycbuff %s cycbuff is moved to %s remain calm",
+	       LocalLogName, metacycbuff->name, cycbuff->name);
+	  metacycbuff->memb_next = (metacycbuff->memb_next + 1) % metacycbuff->count;
+	  cycbuff = metacycbuff->members[metacycbuff->memb_next];  
+	  if (!SMpreopen && !CNFSinit_disks(cycbuff)) {
+	      SMseterror(SMERR_INTERNAL, "cycbuff initialization fail");
+	      syslog(L_ERROR, "%s: cycbuff '%s' initialization fail", LocalLogName, cycbuff->name);
+	      token.type = TOKEN_EMPTY;
+	      return token;
+	  }
+	  cycbuff->currentbuff = TRUE;
+	  cycbuff->needflush = TRUE;
+	  (void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
+	}
     }
     /* Ah, at least we know all three important data */
     artcycbuffname = cycbuff->name;
@@ -1031,7 +1144,8 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     ** If cycbuff->free > cycbuff->len, don't worry.  The next cnfs_store()
     ** will detect the situation & wrap around correctly.
     */
-    metacycbuff->memb_next = (metacycbuff->memb_next + 1) % metacycbuff->count;
+    if (metacycbuff->metamode == INTERLEAVE)
+      metacycbuff->memb_next = (metacycbuff->memb_next + 1) % metacycbuff->count;
     if (++metacycbuff->write_count % metabuff_update == 0) {
 	for (i = 0; i < metacycbuff->count; i++) {
 	    (void)CNFSflushhead(metacycbuff->members[i]);
