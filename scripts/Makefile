@@ -10,8 +10,8 @@ include ../Makefile.global
 
 top	      = ..
 
-ALL           = innmail innreport innstat innwatch rc.news scanlogs \
-		simpleftp tally.control writelog
+ALL           = innmail innreport innstat innupgrade innwatch rc.news \
+		scanlogs simpleftp tally.control writelog
 
 EXTRA         = inncheck innshellvars innshellvars.pl innshellvars.tcl \
 		news.daily
@@ -20,6 +20,7 @@ INSTALLED     = $(D)$(PATHBIN)/inncheck		\
 		$(D)$(PATHBIN)/innmail		\
 		$(D)$(PATHBIN)/innreport	\
 		$(D)$(PATHBIN)/innstat		\
+		$(D)$(PATHBIN)/innupgrade	\
 		$(D)$(PATHBIN)/innwatch		\
 		$(D)$(PATHBIN)/news.daily	\
 		$(D)$(PATHBIN)/rc.news		\
