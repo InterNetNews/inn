@@ -30,7 +30,12 @@ MAN8	= ../man/auth_krb5.8 ../man/auth_smb.8 ../man/ckpasswd.8 \
 	../man/ovdb_stat.8 ../man/radius.8 ../man/rc.news.8 \
 	../man/sendinpaths.8 ../man/tdx-util.8
 
-all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
+ALL	= $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
+
+all: $(ALL)
+
+clean:
+	rm -f $(ALL)
 
 ../../HACKING:		hacking.pod		; $(POD2TEXT) $? > $@
 ../../INSTALL:		install.pod		; $(POD2TEXT) $? > $@
