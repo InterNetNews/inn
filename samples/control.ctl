@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2004-10-12
+##  Last modified: 2004-11-15
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -664,6 +664,7 @@ newgroup:*:de.alt.*:doit
 rmgroup:moderator@dana.de:de.alt.*:verify-de.admin.news.announce
 
 ## DFW (Dallas/Fort Worth, Texas, USA)
+# URL: http://www.cirr.com/dfw/
 checkgroups:eric@*cirr.com:dfw.*:doit
 newgroup:eric@*cirr.com:dfw.*:doit
 rmgroup:eric@*cirr.com:dfw.*:doit
