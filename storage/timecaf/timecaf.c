@@ -429,7 +429,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
     }
 
 /* XXX need to figure some way to cache open fds or something? */
-    if ((fd = CAFOpenArtRead((char *)path, artnum, &len)) < 0) {
+    if ((fd = CAFOpenArtRead(path, artnum, &len)) < 0) {
         if (caf_error == CAF_ERR_ARTNOTHERE) {
 	    SMseterror(SMERR_NOENT, NULL);
 	} else {

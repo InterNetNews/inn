@@ -1353,7 +1353,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     FILE *infile, *outfile;
     off_t startoffset, newstartoffset;
     char  buf[BUFSIZ];
-    int   nbytes, ncur;
+    int   nbytes;
+    size_t ncur;
     int   n;
     unsigned int blocksize;
     char *zerobuff;
@@ -1365,7 +1366,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 
 #ifdef STATFUNCT
     struct STATSTRUC fsinfo;
-    long num_diskblocks_needed;
+    unsigned long num_diskblocks_needed;
 #endif
 
     /* allocate buffer for newpath */
@@ -1589,7 +1590,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	    + RoundIt(datasize - head.Free) + RoundIt(head.BlockSize);
 	if (num_diskblocks_needed > fsinfo.STATAVAIL) {
 	    if (verbose) {
-		printf("CANNOT clean %s: needs %ld blocks, only %ld avail.\n",
+		printf("CANNOT clean %s: needs %lu blocks, only %lu avail.\n",
 		       path, num_diskblocks_needed,
                        (unsigned long) fsinfo.f_bavail);
 	    }
