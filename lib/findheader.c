@@ -27,7 +27,7 @@ const char *HeaderFindMem(const char *Article, const int ArtLen, const char *Hea
 	 && ISWHITE(p[HeaderLen + 1])
 	 && caseEQn(p, Header, (SIZE_T)HeaderLen)) {
 	    for (p += HeaderLen; HeaderLen+1<Article+ArtLen-p
-		&& *p != '\r' && *p != '\n' && ISWHITE(*p); p++)
+                && *++p != '\r' && *p != '\n' && ISWHITE(*p);)
 		continue;
 	    return p;
 	}
