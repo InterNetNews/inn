@@ -1070,7 +1070,7 @@ ARTreject(buff, article)
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
-STATIC char *ARTcancelverify(ARTDATA *Data, HASH MessageID)
+STATIC char *ARTcancelverify(ARTDATA *Data, HASH hash)
 {
     register char	*files;
     register char	*p;
@@ -1078,15 +1078,15 @@ STATIC char *ARTcancelverify(ARTDATA *Data, HASH MessageID)
     char		*head;
     char		buff[SMBUF];
 
-    files = HISfilesfor(MessageID);
+    files = HISfilesfor(hash);
     if ((head = ARTreadheader(files)) == NULL)
 	return NULL;
 
     /* Get the author header. */
     if ((local = HeaderFind(head, "Sender", 6)) == NULL
      && (local = HeaderFind(head, "From", 4)) == NULL) {
-	syslog(L_ERROR, "%s bad_article %s checking cancel",
-	    LogName, MessageID);
+	syslog(L_ERROR, "%s bad_article [%s] checking cancel",
+	    LogName, HashToText(hash));
 	return NULL;
     }
     HeaderCleanFrom(local);
@@ -1096,8 +1096,8 @@ STATIC char *ARTcancelverify(ARTDATA *Data, HASH MessageID)
     HeaderCleanFrom(p);
     if (!EQ(local, p)) {
 	files = NULL;
-	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
-		p, MaxLength(MessageID, MessageID), local);
+	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by [%s]",
+		p, HashToText(hash), local);
 	ARTlog(Data, ART_REJECT, buff);
     }
     DISPOSE(p);
