@@ -954,8 +954,8 @@ ARTpost(article, idbuff)
          return Spoolit(article,Error);
 
     /* Open a local connection to the server. */
-    if (innconf->xrefslave != NULL)
-	i = NNTPconnect(innconf->xrefslave, NNTP_PORT, &FromServer, &ToServer, buff);
+    if (innconf->nnrpdposthost != NULL)
+	i = NNTPconnect(innconf->nnrpdposthost, NNTP_PORT, &FromServer, &ToServer, buff);
     else {
 #if	defined(DO_HAVE_UNIX_DOMAIN)
 	i = NNTPlocalopen(&FromServer, &ToServer, buff);
@@ -975,7 +975,7 @@ ARTpost(article, idbuff)
     }
     if (Tracing)
 	syslog(L_TRACE, "%s post_connect %s",
-	    ClientHost, innconf->xrefslave ? innconf->xrefslave : "localhost");
+	    ClientHost, innconf->nnrpdposthost ? innconf->nnrpdposthost : "localhost");
 
     /* The code below has too many (void) casts for my tastes.  At least
      * they are all inside cases that are most likely never going to
@@ -985,9 +985,9 @@ ARTpost(article, idbuff)
     i = OfferArticle(buff, sizeof buff, FromServer, ToServer);
     if (i == NNTP_AUTH_NEEDED_VAL) {
         /* Send authorization. */
-        if (NNTPsendpassword(innconf->xrefslave, FromServer, ToServer) < 0) {
+        if (NNTPsendpassword(innconf->nnrpdposthost, FromServer, ToServer) < 0) {
             (void)sprintf(Error, "Can't authorize with %s",
-                          innconf->xrefslave ? innconf->xrefslave : "innd");
+                          innconf->nnrpdposthost ? innconf->nnrpdposthost : "innd");
             return Spoolit(article,Error);
         }
         i = OfferArticle(buff, sizeof buff, FromServer, ToServer);

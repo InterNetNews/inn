@@ -221,6 +221,8 @@
 #define _CONF_OVERVIEWNAME	"overviewname"
    /* Whether or not to log site names */
 #define _CONF_LOGSITENAME	"logsitename"
+    /* Which server will nnrpd post */
+#define _CONF_NNRPDPOSTHOST     "nnrpdposthost"
 
    /* Enable keyword overview data to be generated (if compiled in) */
 #define _CONF_KEYWORDS		"keywords"

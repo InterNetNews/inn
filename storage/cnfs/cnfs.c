@@ -339,12 +339,16 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   l = ++p;
 
   /* Length/size of symbolic partition */
-  len = atoi(l) * 1024;		/* This value in KB in decimal */
-  if (sb.st_rdev == 0 && len != sb.st_size) {
-    syslog(L_ERROR, "%s: bad length '%ld' for '%s' cycbuff(%ld bytes)",
-	   /* Danger... */ LocalLogName, len, cycbuff->name, sb.st_size);
-    DISPOSE(cycbuff);
-    return FALSE;
+  len = strtoul(l, NULL, 10) * 1024;	/* This value in KB in decimal */
+  if (S_ISREG(sb.st_mode) && len != sb.st_size) {
+    if (sizeof(CYCBUFFEXTERN) > sb.st_size) {
+      syslog(L_NOTICE, "%s: length must be at least '%ld' for '%s' cycbuff(%ld bytes)",
+	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, sb.st_size);
+      DISPOSE(cycbuff);
+      return FALSE;
+    }
+    syslog(L_NOTICE, "%s: length not matched '%ld' for '%s' cycbuff(%ld bytes)",
+      LocalLogName, len, cycbuff->name, sb.st_size);
   }
   cycbuff->len = len;
   cycbuff->fdrd = -1;
@@ -875,12 +879,14 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	CNFScleancycbuff();
 	CNFScleanmetacycbuff();
 	CNFScleanexpirerule();
+	SMseterror(SMERR_INTERNAL, NULL);
 	return FALSE;
     }
     if (!CNFSinit_disks()) {
 	CNFScleancycbuff();
 	CNFScleanmetacycbuff();
 	CNFScleanexpirerule();
+	SMseterror(SMERR_INTERNAL, NULL);
 	return FALSE;
     }
 
@@ -1007,6 +1013,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     long		pagefudge;
     CYCBUFF_OFF_T	mmapoffset;
     static TOKEN	ret_token;
+    static BOOL		nomessage = FALSE;
 
     if (token.type != TOKEN_CNFS) {
 	SMseterror(SMERR_INTERNAL, NULL);
@@ -1017,9 +1024,12 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
 	return NULL;
     }
     if ((cycbuff = CNFSgetcycbuffbyname(cycbuffname)) == NULL) {
-	SMseterror(SMERR_INTERNAL, "bogus cycbuff name");
-	syslog(L_ERROR, "%s: cnfs_retrieve: token %s: bogus cycbuff name: %s:0x%s:%ld",
+	SMseterror(SMERR_NOENT, NULL);
+	if (!nomessage) {
+	    syslog(L_ERROR, "%s: cnfs_retrieve: token %s: bogus cycbuff name: %s:0x%s:%ld",
 	       LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
+	    nomessage = TRUE;
+	}
 	return NULL;
     }
     if (! CNFSArtMayBeHere(cycbuff, offset, cycnum)) {

@@ -905,7 +905,7 @@ listen_loop:
     }
 
     if (innconf->storageapi && !SMinit()) {
-	syslog(L_NOTICE, "%s cant initialize storage method", ClientHost);
+	syslog(L_NOTICE, "%s cant initialize storage method, %s", ClientHost, SMerrorstr);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1);
     }

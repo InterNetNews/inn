@@ -95,7 +95,7 @@ struct conf_vars {
 #define	CONF_VAR_WIREFORMAT 11
 	int wireformat;		/* Toggle for wireformat articles */
 #define	CONF_VAR_XREFSLAVE 12
-	char *xrefslave;	/* master server for slaving */
+	int xrefslave;		/* master server for slaving */
 #define	CONF_VAR_COMPLAINTS 13
 	char *complaints;	/* Addr for X-Complaints-To: header */
 #define	CONF_VAR_SPOOLFIRST 14
@@ -220,7 +220,9 @@ struct conf_vars {
 	int logsitename;	/* log site names? */
 #define	CONF_VAR_PATHHTTP 73
 	char *pathhttp;
-#define	MAX_CONF_VAR 74
+#define	CONF_VAR_NNRPDPOSTHOST 74
+	char *nnrpdposthost;
+#define	MAX_CONF_VAR 75
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

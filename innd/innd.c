@@ -863,7 +863,7 @@ int main(int ac, char *av[])
     if (innconf->storageapi) {
 	innconf->wireformat = TRUE;
 	if (!SMinit()) {
-	    syslog(L_FATAL, "%s cant initialize the storage subsystem %m", LogName);
+	    syslog(L_FATAL, "%s cant initialize the storage subsystem %s", LogName, SMerrorstr);
 	    exit(1);
 	}
     }

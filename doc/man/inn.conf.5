@@ -343,11 +343,21 @@ kilobytes.  It is generally useful to have memory allocated to history
 cache if dbz mmaping is turned on.
 .TP
 .I xrefslave
-If this is specified, innd will use the information in the Xref:
-header for replication.  
-The specified name is used by
-.IR nnrpd (8)
-to determine master server for posting articles.
+If this is true, innd will use the information in the Xref:
+header for replication.  And if this is true,
+.I nnrpdposthost
+should be set to hand articles to the master server.
+The default is ``no''.
+.TP
+.I nnrpdposthost
+If this is specified,
+.I nnrpd
+and
+.I rnews
+pass articles to the specified host.
+This should be set, if
+.I xrefslave
+is ``true''.
 .TP
 .I wireformat
 If this is true then innd will write articles in wire format.  Wire format

@@ -873,8 +873,8 @@ int main(int ac, char *av[])
     }
 
     /* Open the link to the server. */
-    if (innconf->xrefslave != NULL) {
-	if (!OpenRemote(innconf->xrefslave, port, buff))
+    if (innconf->nnrpdposthost != NULL) {
+	if (!OpenRemote(innconf->nnrpdposthost, port, buff))
 	    CantConnect(buff, mode, fd);
     }
     else {

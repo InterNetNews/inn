@@ -162,7 +162,7 @@ void SetDefaults()
     innconf->mimeencoding = NULL;
     innconf->hiscachesize = 0;
     innconf->wireformat = FALSE;
-    innconf->xrefslave = NULL;
+    innconf->xrefslave = FALSE;
     innconf->complaints = NULL;
     innconf->spoolfirst = FALSE;
     innconf->writelinks = TRUE;
@@ -208,6 +208,7 @@ void SetDefaults()
     innconf->keylimit = 512 ;		
     innconf->keyartlimit = 100000;
     innconf->keymaxwords = 250;
+    innconf->nnrpdposthost = NULL;
 
     innconf->pathnews = NULL;
     innconf->pathbin = NULL;
@@ -245,7 +246,7 @@ void ClearInnConf()
     if (innconf->mailcmd != NULL) DISPOSE(innconf->mailcmd);
     if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
     if (innconf->overviewname != NULL) DISPOSE(innconf->bindaddress);
-    if (innconf->xrefslave != NULL) DISPOSE(innconf->xrefslave);
+    if (innconf->nnrpdposthost != NULL) DISPOSE(innconf->nnrpdposthost);
 
     if (innconf->pathnews != NULL) DISPOSE(innconf->pathnews);
     if (innconf->pathbin != NULL) DISPOSE(innconf->pathbin);
@@ -450,7 +451,7 @@ int ReadInnConf()
 	    } else
 	    if (EQ (ConfigBuff,_CONF_XREFSLAVE)) {
 		TEST_CONFIG(CONF_VAR_XREFSLAVE, bit);
-		if (!bit) innconf->xrefslave = COPY(p);
+		if (!bit && boolval != -1) innconf->xrefslave = boolval;
 		SET_CONFIG(CONF_VAR_XREFSLAVE);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_COMPLAINTS)) {
@@ -765,6 +766,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_LOGSITENAME, bit);
 		if (!bit && boolval != -1) innconf->logsitename = boolval;
 		SET_CONFIG(CONF_VAR_LOGSITENAME);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_NNRPDPOSTHOST)) {
+		TEST_CONFIG(CONF_VAR_NNRPDPOSTHOST, bit);
+		if (!bit) innconf->nnrpdposthost = COPY(p);
+		SET_CONFIG(CONF_VAR_NNRPDPOSTHOST);
 	    }
 	}
 	(void)fclose(F);
