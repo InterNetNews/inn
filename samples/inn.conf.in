@@ -69,6 +69,7 @@ backoffpostslow:	1L
 backofftrigger:		10000L
 refusecybercancels:	false
 nnrpperlauth:		false
+nnrppythonauth:		false
 nnrpdauthsender:	false
 addnntppostinghost:	false
 addnntppostingdate:	false

@@ -13,7 +13,8 @@ ALL           = default docheckgroups ihave newgroup parsecontrol rmgroup \
 		sendme sendsys senduuname version
 
 EXTRA         = actsync.cfg checkgroups inn.conf innreport.conf \
-		innwatch.ctl newsfeeds nnrpd_auth.pl startup.tcl
+		innwatch.ctl newsfeeds nnrpd_auth.pl startup.tcl \
+		nnrpd_auth.py
 
 all: $(ALL)
 
