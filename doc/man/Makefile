@@ -18,8 +18,8 @@ SEC5	= active.5 buffindexed.conf.5 control.ctl.5 cycbuff.conf.5 \
 	passwd.nntp.5 readers.conf.5 sasl.conf.5 storage.conf.5
 
 SEC8	= actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 \
-	cnfsheadconf.8 cnfsstat.8 controlchan.8 crosspost.8 ctlinnd.8 \
-	cvtbatch.8 dbprocs.8 expire.8 expireindex.8 expireover.8 \
+	cnfsheadconf.8 cnfsstat.8 controlchan.8 ctlinnd.8 \
+	cvtbatch.8 dbprocs.8 expire.8 expireover.8 \
 	expirerm.8 fastrm.8 filechan.8 inncheck.8 innd.8 inndf.8 \
 	inndstart.8 innreport.8 innstat.8 innwatch.8 innxbatch.8 innxmit.8 \
 	mailpost.8 makeactive.8 makedbz.8 makehistory.8 mod-active.8 \
