@@ -132,6 +132,9 @@ EXTERN char	Username[SMBUF];
 EXTERN char     ClientIp[20];
 EXTERN char     ServerIp[20];
 EXTERN char	LogName[256] ;
+#ifdef HAVE_SSL
+EXTERN BOOL	ClientSSL;
+#endif
 extern char	*ACTIVETIMES;
 extern char	*HISTORY;
 extern char	*ACTIVE;

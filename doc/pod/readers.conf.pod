@@ -75,6 +75,9 @@ wildmat expressions, you may also use CIDR notation to match any IP
 address in a netblock; for example, "10.10.10.0/24" will match any IP
 address between 10.10.10.0 and 10.10.10.255 inclusive.
 
+If compiled against the SSL libraries, an auth group with the ssl_required:
+parameter set to true only applies if the incoming connection is using SSL.
+
 For any connection from a host that matches that wildmat expression or
 netblock, <res-program> (the program given with the res: parameter, if
 present) is run to determine the identity of the user just from the
@@ -231,6 +234,12 @@ no need to use this parameter.)
 If this parameter is present, any connection matching this auth group will
 have its privileges determined only by access groups containing a matching
 key parameter.
+
+=item B<require_ssl:>
+
+If set to true, an incoming connection only matches this auth group if
+it is encrypted using SSL.  This parameter is only valid given at configure
+time with B<--with-openssl>.
 
 =back
 

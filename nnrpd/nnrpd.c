@@ -1021,6 +1021,7 @@ main(int argc, char *argv[])
     STATstart = TIMEINFOasDOUBLE(Now);
 
 #ifdef HAVE_SSL
+    ClientSSL = FALSE;
     if (initialSSL) {
       sasl_config_read();
       ssl_result=tls_init_serverengine(5,        /* depth to verify */
@@ -1050,6 +1051,7 @@ main(int argc, char *argv[])
       }
 
       nnrpd_starttls_done=1;
+      ClientSSL = TRUE;
     }
 #endif /* HAVE_SSL */
 

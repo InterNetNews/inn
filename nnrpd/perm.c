@@ -37,6 +37,9 @@ typedef struct _METHOD {
 typedef struct _AUTHGROUP {
     char *name;
     char *key;
+#ifdef HAVE_SSL
+    int require_ssl;
+#endif
     char *hosts;
     METHOD **res_methods;
     METHOD **auth_methods;
@@ -138,7 +141,12 @@ static int	ConfigBitsize;
 #define PERMvirtualhost		51
 #define PERMnewsmaster		52
 #define PERMlocaladdress	53
+#ifdef HAVE_SSL
+#define PERMrequire_ssl		54
+#define PERMMAX			55
+#else
 #define PERMMAX			54
+#endif
 
 #define TEST_CONFIG(a, b) \
     { \
@@ -216,6 +224,9 @@ static CONFTOKEN PERMtoks[] = {
   { PERMvirtualhost, "virtualhost:" },
   { PERMnewsmaster, "newsmaster:" },
   { PERMlocaladdress, "localaddress:" },
+#ifdef HAVE_SSL
+  { PERMrequire_ssl, "require_ssl:" },
+#endif
   { 0, 0 }
 };
 
@@ -315,6 +326,10 @@ static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
     else
 	ret->hosts = 0;
 
+#ifdef HAVE_SSL
+    ret->require_ssl = orig->require_ssl;
+#endif
+
     ret->res_methods = 0;
     if (orig->res_methods) {
 	for (i = 0; orig->res_methods[i]; i++)
@@ -387,6 +402,13 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
     if (orig->newsmaster)
 	ret->newsmaster = COPY(orig->newsmaster);
     return(ret);
+}
+
+void SetDefaultAuth(AUTHGROUP *curauth)
+{
+#ifdef HAVE_SSL
+        curauth->require_ssl = FALSE;
+#endif
 }
 
 void SetDefaultAccess(ACCESSGROUP *curaccess)
@@ -544,7 +566,7 @@ static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 
 static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 {
-    int oldtype;
+    int oldtype,boolval;
     METHOD *m;
     bool bit;
     char buff[SMBUF], *oldname, *p;
@@ -563,11 +585,24 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	ReportError(f, buff);
     }
 
+    if (caseEQ(tok->name, "on") || caseEQ(tok->name, "true") || caseEQ(tok->name, "yes"))
+	boolval = TRUE;
+    else if (caseEQ(tok->name, "off") || caseEQ(tok->name, "false") || caseEQ(tok->name, "no"))
+	boolval = FALSE;
+    else
+	boolval = -1;
+
     switch (oldtype) {
       case PERMkey:
 	curauth->key = COPY(tok->name);
 	SET_CONFIG(PERMkey);
 	break;
+#ifdef HAVE_SSL
+      case PERMrequire_ssl:
+        if (boolval != -1) curauth->require_ssl = boolval;
+        SET_CONFIG(PERMrequire_ssl);
+        break;
+#endif
       case PERMhost:
 	curauth->hosts = COPY(tok->name);
 	CompressList(curauth->hosts);
@@ -1013,6 +1048,7 @@ static void PERMreadfile(char *filename)
 			curauth = NEW(AUTHGROUP, 1);
 			memset(curauth, 0, sizeof(AUTHGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
+                        SetDefaultAuth(curauth);
 		    }
 
 		    curauth->name = str;
@@ -1054,6 +1090,9 @@ static void PERMreadfile(char *filename)
 
 		/* stuff that belongs in an authgroup */
 	      case PERMhost:
+#ifdef HAVE_SSL
+              case PERMrequire_ssl:
+#endif
 	      case PERMauthprog:
 	      case PERMresprog:
 	      case PERMdefuser:
@@ -1062,6 +1101,7 @@ static void PERMreadfile(char *filename)
 		    curgroup = NEW(GROUP, 1);
 		    memset(curgroup, 0, sizeof(GROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
+                    SetDefaultAuth(curgroup->auth);
 		}
 		if (curgroup->auth == NULL) {
 		    curgroup->auth = NEW(AUTHGROUP, 1);
@@ -1461,6 +1501,12 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
     int	    iter;
     char    *pat, 
 	    *p;
+
+#ifdef HAVE_SSL
+    if ((group->require_ssl == TRUE) && (ClientSSL == FALSE)) {
+        return(0);
+    }
+#endif
 
     /*	If no hostlist are specified, by default they match.   */
 
