@@ -384,7 +384,7 @@ Perl Authentication Support for nnrpd
     exit.
 
     If authenticate() dies (either due to a Perl error or due to calling
-    die), or if it returns anything other than the four-element array
+    die), or if it returns anything other than the five-element array
     described above, an internal error will be reported to the client, the
     exact error will be logged to syslog, and nnrpd will drop the connection
     and exit.
