@@ -13,6 +13,11 @@
 /* If you needed to customize this file for your project, please mention
    your changes. */
 
+/*
+   Modified for Perl 5.6.0 by Russ Allbery (use PERL_VERSION instead of
+   PERL_PATCHLEVEL).
+*/
+
 
 /*
    In order for a Perl extension module to be as portable as possible
@@ -139,21 +144,25 @@ __DATA__
 */
 
 
-#ifndef PERL_PATCHLEVEL
+#if !defined(PERL_VERSION) && !defined(PERL_PATCHLEVEL)
 #	ifndef __PATCHLEVEL_H_INCLUDED__
 #		include <patchlevel.h>
 #	endif
 #endif
-#ifndef PERL_PATCHLEVEL
-#	define PERL_PATCHLEVEL PATCHLEVEL
-#	define PERL_SUBVERSION SUBVERSION
+#ifndef PERL_VERSION
+#       ifdef PERL_PATCHLEVEL
+#               define PERL_VERSION    PERL_PATCHLEVEL
+#       else
+#               define PERL_VERSION    PATCHLEVEL
+#               define PERL_SUBVERSION SUBVERSION
+#       endif
 #endif
 
 #ifndef ERRSV
 #	define ERRSV perl_get_sv("@",FALSE)
 #endif
 
-#if (PERL_PATCHLEVEL < 4) || ((PERL_PATCHLEVEL == 4) && (PERL_SUBVERSION <= 4))
+#if (PERL_VERSION < 4) || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4))
 #	define PL_sv_undef	sv_undef
 #	define PL_sv_yes	sv_yes
 #	define PL_sv_no		sv_no
@@ -165,7 +174,7 @@ __DATA__
 #	define PL_copline	copline
 #endif
 
-#if (PERL_PATCHLEVEL < 5)
+#if (PERL_VERSION < 5)
 #  ifdef WIN32
 #	define dTHR extern int Perl___notused
 #  else
@@ -176,61 +185,5 @@ __DATA__
 #ifndef boolSV
 #	define boolSV(b) ((b) ? &PL_sv_yes : &PL_sv_no)
 #endif
-
-
-
-/* Provide: newCONSTSUB */
-
-/* newCONSTSUB from IO.xs is in the core starting with 5.004_63 */
-#if (PATCHLEVEL < 4) || ((PATCHLEVEL == 4) && (SUBVERSION < 63))
-
-/* Prototype */
-#if !defined(NEED_newCONSTSUB_GLOBAL)
-static
-#endif
-void newCONSTSUB _((HV * stash, char * name, SV *sv));
-
-/* Warning */
-#if !defined(NEED_newCONSTSUB) && !defined(NEED_newCONSTSUB_GLOBAL)
-#define newCONSTSUB Please_define_NEED_newCONSTSUB
-#endif
-
-/* Definition */
-#if defined(NEED_newCONSTSUB)
-static
-#endif
-#if defined(NEED_newCONSTSUB) || defined(NEED_newCONSTSUB_GLOBAL)
-void
-newCONSTSUB(stash,name,sv)
-HV *stash;
-char *name;
-SV *sv;
-{
-	U32 oldhints = PL_hints;
-	HV *old_cop_stash = PL_curcop->cop_stash;
-	HV *old_curstash = PL_curstash;
-	line_t oldline = PL_curcop->cop_line;
-	PL_curcop->cop_line = PL_copline;
-
-	PL_hints &= ~HINT_BLOCK_SCOPE;
-	if (stash)
-		PL_curstash = PL_curcop->cop_stash = stash;
-
-	newSUB(
-		start_subparse(FALSE, 0),
-		newSVOP(OP_CONST, 0, newSVpv(name,0)),
-		newSVOP(OP_CONST, 0, &PL_sv_no),   /* SvPV(&PL_sv_no) == "" -- GMB */
-		newSTATEOP(0, Nullch, newSVOP(OP_CONST, 0, sv))
-	);
-
-	PL_hints = oldhints;
-	PL_curcop->cop_stash = old_cop_stash;
-	PL_curstash = old_curstash;
-	PL_curcop->cop_line = oldline;
-}
-#endif
-
-#endif /* newCONSTSUB */
-
 
 #endif /* _P_P_PORTABILITY_H_ */
