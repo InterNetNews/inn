@@ -63,12 +63,18 @@
    something up ourselves.  These methods are taken from Perl with some
    modifications. */
 
+# undef true
+# undef false
+# define true   (1)
+# define false  (0)
+
+/* Lots of INN still uses TRUE and FALSE. */
 # undef TRUE
 # undef FALSE
-# define TRUE   (1)
-# define FALSE  (0)
+# define TRUE   true
+# define FALSE  false
 
-/* C++ has a native bool type, and our TRUE and FALSE will work with it. */
+/* C++ has a native bool type, and our true and false will work with it. */
 # ifdef __cplusplus
 #  if !HAS_BOOL
 #   define HAS_BOOL 1
