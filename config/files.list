@@ -94,7 +94,7 @@
 ../samples/news.daily
 ../samples/nntpsend
 ../samples/parsecontrol
-../samples/pgpverify
+;subst clean ../samples/pgpverify
 ../samples/rc.news
 ../samples/rmgroup
 ../samples/scanlogs
