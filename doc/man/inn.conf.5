@@ -562,6 +562,12 @@ is ``true'',
 is discarded.
 This is boolean value and the default is ``true''.
 .TP
+.I status
+If this is '0' or 'false', then status monitoring will be disabled by
+default.  Otherwise, it would be how often to report status
+statistics, in seconds.  If turned on statistics will be logged to syslog.
+The default value is ``0''.
+.TP
 .I timer
 If this is '0' or 'false', then performance monitoring will be disabled by
 default.  Otherwise, it would be how often to report performance
@@ -737,10 +743,10 @@ This is boolean value and the default is ``false''.
 .TP
 .I controlfailnotice
 If set to ``true'' and
-.I controlchan
+.I usecontrolchan
 is set to ``false'', then if there is a problem processing control message,
 it is reported to the administrator through mail.  If set to ``false'' or
-.I controlchan
+.I usecontrolchan
 is set to ``true'', nothing is reported.
 This is boolean value and the default is ``false''.
 .TP
