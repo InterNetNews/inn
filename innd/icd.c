@@ -151,14 +151,12 @@ ICDrenumberactive()
 /*
 **  Use writev() to replace the active file.
 */
-STATIC BOOL
-ICDwritevactive(vp, vpcount)
-    IOVEC		*vp;
-    int			vpcount;
+STATIC BOOL ICDwritevactive(IOVEC *vp, int vpcount)
 {
     static char		BACKUP[] = _PATH_OLDACTIVE;
+    static char         NEWACT[] = _PATH_NEWACTIVE;
     static char		WHEN[] = "backup active";
-    register int	fd;
+    int	                fd;
     int			oerrno;
 
     /* Write the current file to a backup. */
@@ -185,10 +183,10 @@ ICDwritevactive(vp, vpcount)
     }
 
     /* Open the active file. */
-    fd = open(ICDactpath, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
+    fd = open(NEWACT, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
     if (fd < 0) {
 	oerrno = errno;
-	syslog(L_ERROR, "%s cant open %s %m", LogName, ICDactpath);
+	syslog(L_ERROR, "%s cant open %s %m", LogName, NEWACT);
 	IOError(WHEN, oerrno);
 	return FALSE;
     }
@@ -196,7 +194,7 @@ ICDwritevactive(vp, vpcount)
     /* Write it. */
     if (xwritev(fd, vp, vpcount) < 0) {
 	oerrno = errno;
-	syslog(L_ERROR, "%s cant write %s %m", LogName, ICDactpath);
+	syslog(L_ERROR, "%s cant write %s %m", LogName, NEWACT);
 	IOError(WHEN, oerrno);
 	(void)close(fd);
 	return FALSE;
@@ -205,7 +203,16 @@ ICDwritevactive(vp, vpcount)
     /* Close it. */
     (void)close(fd);
     if (AmRoot)
-	xchown(ICDactpath);
+	xchown(NEWACT);
+
+    /* Rename it to be the canonical active file */
+    if (rename(NEWACT, ICDactpath) < 0) {
+	oerrno = errno;
+	syslog(L_ERROR, "%s cant rename %s to %s %m",
+	       LogName, NEWACT, ICDactpath);
+	IOError(WHEN, oerrno);
+	return FALSE;
+    }
 
     /* Invalidate in-core pointers. */
     ICDcloseactive();
