@@ -355,6 +355,7 @@ lib/parsedate.y             1 Date parsing
 lib/perl.c                  1 Perl hook routines for nnrpd and innd.
 lib/pread.c                 1 Pread() routine
 lib/pwrite.c                1 Pwrite() routine
+lib/qio.c                   1 Quick I/O package
 lib/radix32.c               1 Encode a number as a radix-32 string
 lib/readin.c                1 Read file into memory
 lib/remopen.c               1 Open a remote NNTP connection
@@ -515,7 +516,6 @@ storage/ov3/ovmethod.config 1 Definition file used by ovbuildconfig
 storage/ov3/tradindexed.h   1 Header file for tradindexed
 storage/ovbuildconfig.in    1 Template of ovbuildconfig file
 storage/ovinterface.h       1 OV header
-storage/qio.c               1 Quick I/O package
 storage/timecaf             1 Timecaf method (Directory)
 storage/timecaf/Makefile    1 Makefile for timecaf method
 storage/timecaf/README.CAF  1 README for timecaf method
