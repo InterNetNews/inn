@@ -229,6 +229,13 @@ void SetDefaults()
     innconf->logsitename = TRUE;
     innconf->extendeddbz = FALSE;
     innconf->nnrpdoverstats = FALSE;
+    innconf->decnetdomain = NULL;
+    innconf->backoff_auth = FALSE;
+    innconf->backoff_db = NULL;
+    innconf->backoff_k = 1L;
+    innconf->backoff_postfast = 0L;
+    innconf->backoff_postslow = 1L;
+    innconf->backoff_trigger = 10000L;
 }
 
 void ClearInnConf()
@@ -265,6 +272,8 @@ void ClearInnConf()
     if (innconf->pathoutgoing != NULL) DISPOSE(innconf->pathoutgoing);
     if (innconf->pathincoming != NULL) DISPOSE(innconf->pathincoming);
     if (innconf->patharchive != NULL) DISPOSE(innconf->patharchive);
+    if (innconf->decnetdomain != NULL) DISPOSE(innconf->decnetdomain);
+    if (innconf->backoff_db != NULL) DISPOSE(innconf->backoff_db);
     memset(ConfigBit, '\0', ConfigBitsize);
 }
 
@@ -296,6 +305,9 @@ int CheckInnConf()
 	innconf->mailcmd = innconf->mta;
     if (innconf->overviewname == NULL) 
 	innconf->overviewname = COPY(".overview");
+
+    if (innconf->storageapi != TRUE)
+	innconf->extendeddbz = FALSE;
 
     if (innconf->pathnews == NULL) {
 	syslog(L_FATAL, "Must set 'pathnews' in inn.conf");
@@ -787,9 +799,43 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPDOVERSTATS, bit);
 		if (!bit && boolval != -1) innconf->nnrpdoverstats = boolval;
 		SET_CONFIG(CONF_VAR_NNRPDOVERSTATS);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_DECNETDOMAIN)) {
+		TEST_CONFIG(CONF_VAR_DECNETDOMAIN, bit);
+		if (!bit) innconf->decnetdomain = COPY(p);
+		SET_CONFIG(CONF_VAR_DECNETDOMAIN);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_BACKOFFAUTH)) {
+		TEST_CONFIG(CONF_VAR_BACKOFFAUTH, bit);
+		if (!bit && boolval != -1) innconf->backoff_auth = boolval;
+		SET_CONFIG(CONF_VAR_BACKOFFAUTH);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_BACKOFFDB)) {
+		TEST_CONFIG(CONF_VAR_BACKOFFDB, bit);
+		if (!bit) innconf->backoff_db = COPY(p);
+		SET_CONFIG(CONF_VAR_BACKOFFDB);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_BACKOFFK)) {
+		TEST_CONFIG(CONF_VAR_BACKOFFK, bit);
+		if (!bit) innconf->backoff_k = atol(p);
+		SET_CONFIG(CONF_VAR_BACKOFFK);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_BACKOFFPOSTFAST)) {
+		TEST_CONFIG(CONF_VAR_BACKOFFPOSTFAST, bit);
+		if (!bit) innconf->backoff_postfast = atol(p);
+		SET_CONFIG(CONF_VAR_BACKOFFPOSTFAST);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_BACKOFFPOSTSLOW)) {
+		TEST_CONFIG(CONF_VAR_BACKOFFPOSTSLOW, bit);
+		if (!bit) innconf->backoff_postslow = atol(p);
+		SET_CONFIG(CONF_VAR_BACKOFFPOSTSLOW);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_BACKOFFTRIGGER)) {
+		TEST_CONFIG(CONF_VAR_BACKOFFTRIGGER, bit);
+		if (!bit) innconf->backoff_trigger = atol(p);
+		SET_CONFIG(CONF_VAR_BACKOFFTRIGGER);
 	    }
 	}
-	if (innconf->storageapi != TRUE) innconf->extendeddbz = FALSE;
 	(void)Fclose(F);
     } else {
 	syslog(L_FATAL, "Cannot open %s", _PATH_CONFIG);

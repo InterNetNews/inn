@@ -44,6 +44,8 @@ main(ac, av)
     int		port;
     int		i;
 
+    if (ReadInnConf() < 0) exit(1);
+
     /* Set defaults. */
     host = NULL;
     pattern = NULL;
@@ -96,7 +98,7 @@ main(ac, av)
 
     /* Open a connection to the server. */
     if (host == NULL
-     && (host = GetConfigValue(_CONF_SERVER)) == NULL) {
+     && (host = innconf->server) == NULL) {
 	(void)fprintf(stderr, "Can't get server name, %s\n", strerror(errno));
 	exit(1);
     }

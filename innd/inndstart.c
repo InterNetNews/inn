@@ -99,10 +99,7 @@ int main(int ac, char *av[])
 	syslog(L_ERROR, "inndstart cant setsockopt %m");
 #endif	/* defined(SO_REUSEADDR) */
     (void)memset((POINTER)&server, 0, sizeof server);
-    server.sin_port = htons(NNTP_PORT);
-    p = GetConfigValue(_CONF_INNPORT);
-    if (p != NULL) 
-	server.sin_port = htons(atoi(p));
+    server.sin_port = htons(innconf->port);
     for (j = 1; av[j]; j++) {
 	if (!strncmp("-P", av[j], 2)) {
 	    server.sin_port = htons(atoi(&av[j][2]));

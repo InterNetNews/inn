@@ -502,15 +502,14 @@ StartConnection(accesslist)
     }
 #if defined(AF_DECnet)
     else if (sin.sin_family == AF_DECnet) {
-	char *p, *MyDECnetDomain;
+	char *p;
 	(void) strcpy(ClientHost, getenv("REMNODE"));
 	for (p = ClientHost; *p; p++)
 	    if (CTYPE(isupper, *p))
 		*p = tolower(*p);
-#define _CONF_DECNETDOMAIN "decnetdomain"
-	if ((MyDECnetDomain = GetConfigValue(_CONF_DECNETDOMAIN)) != NULL) {
+	if (innconf->decnetdomain != NULL) {
 	    (void)strcat(ClientHost, ".");
-	    (void)strcat(ClientHost, MyDECnetDomain);
+	    (void)strcat(ClientHost, innconf->decnetdomain);
 	}
     }
 #endif

@@ -477,19 +477,19 @@ If set to ``yes'' then local postings must have under  50% inclusion
 .I localmaxartsize
 The maximum article size (in bytes) for locally posted articles.
 .TP
-.I mime-version
+.I mimeversion
 If this parameter is present, then
 .I nnrpd
 will add the necessary MIME (Multipurpose Internet Mail Extensions)
 headers to all any articles that do not have a Mime-Version header.
 This parameter specifies the MIME version, and should normally be ``1.0''.
 .TP
-.I mime-contenttype
+.I mimecontenttype
 If MIME headers are being added, this parameter specifies the value
 of the Content-Type header.
 The default value is ``text/plain; charset=US-ASCII.''
 .TP
-.I mime-encoding
+.I mimeencoding
 If MIME headers are being added, this parameter specifies the value of
 the Content-Transfer-Encoding header.
 The default value is ``7bit.''
@@ -518,6 +518,12 @@ problems with mmap().
 How long (in seconds) an nnrpd can be inactive before it exits.
 .PP
 The following flags are only used by the startup script ``rc.news''.
+.TP
+.I decnetdomain
+.PP
+Use this value as the domain to be used for clients connecting via DECNET.
+Support for this is only compiled into INN if ``AF_DECnet'' is defined
+and compile time.
 .TP
 .I innflags
 The flags to pass to INN on startup. See the

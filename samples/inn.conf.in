@@ -51,6 +51,11 @@ timer:			0
 allowreaders:		yes
 #extendeddbz:		yes
 #nnrpdoverstats:	yes
+backoff_auth:		no
+backoff_db:		@DBDIR@/backoff
+backoff_postfast:	0L
+backoff_postslow:	1L
+backoff_trigger:	10000L
 #
 # The following options can be changed live, but are rather obscure and
 # unlikely to need changing in most situations

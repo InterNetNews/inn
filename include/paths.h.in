@@ -227,6 +227,14 @@
 #define _CONF_KEYARTLIMIT	"keyartlimit" /* 100000 */
 /* Max count of interesting workd */
 #define _CONF_KEY_MAXWORDS	"keymaxwords"
+#define _CONF_DECNETDOMAIN	"decnetdomain"
+/* Variables for bbrpd backoff code */
+#define _CONF_BACKOFFAUTH	"backoffauth"
+#define _CONF_BACKOFFDB		"backoffdb"
+#define _CONF_BACKOFFK		"backoffk"
+#define _CONF_BACKOFFPOSTFAST	"backoffpostfast"
+#define _CONF_BACKOFFPOSTSLOW	"backoffpostslow"
+#define _CONF_BACKOFFTRIGGER	"backofftrigger"
 
    /* All the inn.conf path variables */
 #define _CONF_PATHNEWS		"pathnews"

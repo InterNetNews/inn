@@ -70,13 +70,8 @@ libinn \- InterNetNews library routines
 .B "    int	fd;"
 .B "    int	flag;"
 
-.B "char *"
-.B "GetConfigValue(value)"
-.B "    char	*value;"
-
-.B "char *"
-.B "GetFileConfigValue(value)"
-.B "    char	*value;"
+.B "int"
+.B "ReadInnConf()"
 
 .B "char *"
 .B "GetFQDN()"
@@ -308,19 +303,11 @@ is non-zero it will block until the lock can be made, otherwise
 it will return \-1 if the file cannot be locked.
 It returns \-1 on failure or zero on success.
 .PP
-.I GetConfigValue
-returns the value of the specified configuration parameter.
-See
+.I ReadInnConf
+Reads the values of the
 .IR inn.conf (5)
-for details on the parameters and their interpretation.
-The returned value points to static space that is reused on subsequent calls.
-.PP
-.I GetFileConfigValue
-returns the specified configuration parameter from the
-.I inn.conf
-file without checking for any defaults.
-The returned value points to static space that is reused on subsequent calls,
-or NULL if the value is not present.
+parameters into the innconf stucture for use as innconf->varname.
+The return value is less than zero if an error was encountered.
 .PP
 .I GetFQDN
 returns the fully-qualified domain name of the local host.
@@ -415,8 +402,8 @@ stream sockets.
 It always returns \-1.
 .PP
 .I NNTPremoteopen
-does the same except that it calls
-.I GetConfigValue
+does the same except that it uses
+.I innconf->server
 to find the name of the local server, and opens a connection to the
 standard NNTP port.
 Any client program can use this routine.
@@ -455,7 +442,7 @@ entry in the
 file.
 .I Server
 contains the name of the host;
-.I GetConfigValue
+.I innconf->server
 will be used if
 .I server
 is NULL.

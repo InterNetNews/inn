@@ -620,12 +620,7 @@ READline(start, size, timeout)
  *
  * Now these are runtime constants. <grin>
  */
-static long backoff_k = 1L;       /* Constant for backoff */
-static long post_fast = 0L;       /* Interval which posting triggers backoff */
-static long post_slow = 1L;       /* Interval which undoes backoff */
-static long backoff_num = 10000L; /* Number of posts before backoff is invoked */
 static char postrec_dir[SMBUF];   /* Where is the post record directory? */
-static BOOL backoff_auth = FALSE;
 
 void
 InitBackoffConstants()
@@ -640,15 +635,10 @@ InitBackoffConstants()
   BACKOFFenabled = FALSE;
   
   /* Read the runtime config file to get parameters */
-  if ((s = GetFileConfigValue("backoff_db")) != NULL)
-    (void)strncpy(postrec_dir,s,SMBUF);
+
+  if (innconf->backoff_db == NULL) return;
   else
-    return;
-  backoff_k = atol(GetFileConfigValue("backoff_k"));
-  post_fast = atol(GetFileConfigValue("backoff_postfast"));
-  post_slow = atol(GetFileConfigValue("backoff_postslow"));
-  backoff_num = atol(GetFileConfigValue("backoff_trigger"));
-  backoff_auth = GetBooleanConfigValue("backoff_auth", FALSE);
+    (void)strncpy(postrec_dir,innconf->backoff_db,SMBUF);
 
   /* Need this database for backing off */
   if (stat(postrec_dir, &st) < 0) {
@@ -657,7 +647,7 @@ InitBackoffConstants()
   }
 
   /* Only enable if the constants make sense */
-  if (backoff_k > 1L && post_fast > 0L && post_slow > 1L) {
+  if (innconf->backoff_k > 1L && innconf->backoff_postfast > 0L && innconf->backoff_postslow > 1L) {
     BACKOFFenabled = TRUE;
   }
 
@@ -680,7 +670,7 @@ char
      unsigned char addr[4];
      unsigned int i;
 
-     if (backoff_auth) {
+     if (innconf->backoff_auth) {
        sprintf(buff,"%s/%s",postrec_dir,user);
        return(buff);
      }
@@ -731,11 +721,11 @@ LockPostRec(path)
       continue;
     }
 
-    /* If lockfile is older than the value of post_slow, remove it
+    /* If lockfile is older than the value of innconf->backoff_postslow, remove it
      */
     statfailed = 0;
     time(&now);
-    if (now < st.st_ctime + post_slow) continue;
+    if (now < st.st_ctime + innconf->backoff_postslow) continue;
     syslog(L_ERROR, "%s removing stale lock file %s", ClientHost, lockname);
     unlink(lockname);
   }
@@ -854,7 +844,7 @@ RateLimit(sleeptime,path)
       */
      if (prevn < 0L) prevn = 0L;
      if (prevsleep < 0L)  prevsleep = 0L;
-     if (prevsleep > post_fast)  prevsleep = post_fast;
+     if (prevsleep > innconf->backoff_postfast)  prevsleep = innconf->backoff_postfast;
      
       /*
        * Compute the new sleep time
@@ -870,12 +860,12 @@ RateLimit(sleeptime,path)
                 ClientHost,n);
          n = 0L;
        }
-       if (n < post_fast) {
-         if (prevn >= backoff_num) {
-           *sleeptime = 1 + (prevsleep * backoff_k);
+       if (n < innconf->backoff_postfast) {
+         if (prevn >= innconf->backoff_trigger) {
+           *sleeptime = 1 + (prevsleep * innconf->backoff_k);
          } 
-       } else if (n < post_slow) {
-         if (prevn >= backoff_num) {
+       } else if (n < innconf->backoff_postslow) {
+         if (prevn >= innconf->backoff_trigger) {
            *sleeptime = prevsleep;
          }
        } else {
@@ -884,7 +874,7 @@ RateLimit(sleeptime,path)
        prevn++;
      }
 
-     *sleeptime = ((*sleeptime) > post_fast) ? post_fast : (*sleeptime);
+     *sleeptime = ((*sleeptime) > innconf->backoff_postfast) ? innconf->backoff_postfast : (*sleeptime);
      /* This ought to trap this bogon */
      if ((*sleeptime) < 0L) {
 	syslog(L_ERROR,"%s Negative sleeptime detected: %ld, prevsleep: %ld, N: %ld",ClientHost,*sleeptime,prevsleep,n);
