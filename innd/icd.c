@@ -2,15 +2,17 @@
 **
 **  Routines to read and write the active file.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <sys/mman.h>
-#include <sys/uio.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+#include <sys/uio.h>
+
 #include "innd.h"
 #include "ov.h"
+
+#ifdef HAVE_MMAP
+# include <sys/mman.h>
+#endif
 
 typedef struct iovec	IOVEC;
 
@@ -25,7 +27,7 @@ STATIC int		ICDactsize;
 **  Set and unset (or copy) IOVEC elements.  We make copies to
 **  avoid problems with mmap.
 */
-#if	defined(ACT_MMAP)
+#ifdef HAVE_MMAP
 void ICDiovset(IOVEC *iovp, char *base, int len) {
     (iovp)->iov_len = len; 
     (iovp)->iov_base = NEW(char, (iovp)->iov_len); 
@@ -34,12 +36,13 @@ void ICDiovset(IOVEC *iovp, char *base, int len) {
 }
 #define ICDiovrelease(iovp)		DISPOSE((iovp)->iov_base)
 
-#else
+#else /* !HAVE_MMAP */
 
 #define ICDiovset(iovp, base, len)	\
 	(iovp)->iov_base = base, (iovp)->iov_len = len
 #define ICDiovrelease(iovp)		/* NULL */
-#endif	/* defined(ACT_MMAP) */
+
+#endif /* HAVE_MMAP */
 
 
 /*
@@ -49,12 +52,12 @@ STATIC void
 ICDcloseactive()
 {
     if (ICDactpointer) {
-#if	defined(ACT_MMAP)
+#ifdef HAVE_MMAP
 	if (munmap(ICDactpointer, ICDactsize) < 0)
 	    syslog(L_ERROR, "%s cant munmap %s %m", LogName, ICDactpath);
 #else
 	DISPOSE(ICDactpointer);
-#endif	/* defined(ACT_MMAP) */
+#endif
 	ICDactpointer = NULL;
 	if (close(ICDactfd) < 0) {
 	    syslog(L_FATAL, "%s cant close %s %m", LogName, ICDactpath);
@@ -382,7 +385,8 @@ ICDreadactive(endp)
     }
     CloseOnExec(ICDactfd, TRUE);
 
-#if	defined(ACT_MMAP)
+#ifdef HAVE_MMAP
+
     if (fstat(ICDactfd, &Sb) < 0) {
 	syslog(L_FATAL, "%s cant fstat %d %s %m",
 	    LogName, ICDactfd, ICDactpath);
@@ -397,14 +401,15 @@ ICDreadactive(endp)
 	exit(1);
     }
 
-#else
+#else /* !HAVE_MMAP */
 
     if ((ICDactpointer = ReadInDescriptor(ICDactfd, &Sb)) == NULL) {
 	syslog(L_FATAL, "%s cant read %s %m", LogName, ICDactpath);
 	exit(1);
     }
     ICDactsize = Sb.st_size;
-#endif	/* defined(ACT_MMAP) */
+
+#endif /* HAVE_MMAP */
 
     *endp = ICDactpointer + ICDactsize;
     return ICDactpointer;
@@ -417,21 +422,22 @@ ICDreadactive(endp)
 void
 ICDwriteactive()
 {
-#if	defined(ACT_MMAP)
-#if defined (DO_MMAP_SYNC)
-#if defined (HAVE_MSYNC_3_ARG)
+#ifdef HAVE_MMAP
+# ifdef MMAP_NEEDS_MSYNC
+#  ifdef HAVE_MSYNC_3_ARG
     if (msync(ICDactpointer, ICDactsize, MS_ASYNC) < 0) {
         syslog(L_FATAL, "%s msync failed %s %m", LogName, ICDactpath);
         exit(1);
     }
-#else
+#  else /* !HAVE_MSYNC_3_ARG */
     if (msync(ICDactpointer, ICDactsize) < 0) {
         syslog(L_FATAL, "%s msync failed %s %m", LogName, ICDactpath);
         exit(1);
     }
-#endif
-#endif
-#else
+#  endif /* HAVE_MSYNC_3_ARG */
+# endif /* MMAP_NEEDS_MSYNC */
+
+#else /* !HAVE_MMAP */
 
     if (lseek(ICDactfd, 0L, SEEK_SET) == -1) {
 	syslog(L_FATAL, "%s cant rewind %s %m", LogName, ICDactpath);
@@ -441,5 +447,5 @@ ICDwriteactive()
 	syslog(L_FATAL, "%s cant write %s %m", LogName, ICDactpath);
 	exit(1);
     }
-#endif	/* defined(ACT_MMAP) */
+#endif /* HAVE_MMAP */
 }
