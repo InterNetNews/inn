@@ -77,6 +77,8 @@ A B<:> separated list of additional headers which should be treated as known
 headers; these headers will be passed through to inews(1) without being
 ``X-'' prefixed.
 
+=back
+
 =head1 HISTORY
 
 Written by Paul Vixie long ago and then hacked up by James Brister for INN 
