@@ -76,7 +76,7 @@ install:	all
 
 ##  Clean up, remove non-essentials.
 clobber clean:
-	rm -f inews core tags lint a.out *.o
+	rm -f inews core tags a.out *.o
 	rm -f parsedate.c
 
 inews:		inews.o $(OBJECTS)

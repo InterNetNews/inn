@@ -51,7 +51,7 @@ directories:
 	DESTDIR=$(DESTDIR) ./makedirs.sh;
 
 ##  Other generic targets.
-lint depend tags ctags profiled:
+depend tags ctags profiled:
 	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
 
 etags:
@@ -115,13 +115,10 @@ syslogfix:
 	-cd syslog; $(CC) -I../include -o syslogd syslogd.c ; cd ..
 	@echo "Install syslogd and syslog.conf as appropriate"
 
-##  Configure, compile, and lint.
+##  Configure and compile
 world:		Install.ms
 	cd config ; $(MAKE) $(FLAGS) subst quiet ; cd ..
-	cd lib ; $(MAKE) $(FLAGS) lint ; cd ..
-	cat lib/lint
 	cd lib ; $(MAKE) $(FLAGS) install ; cd ..
-	$(MAKE) $(FLAGS) lint
 
 ##  Make a distribution.
 #shar:

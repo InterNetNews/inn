@@ -69,7 +69,7 @@ install:	all
 
 ##  Clean up, remove non-essentials.
 clobber clean:
-	rm -f rnews core tags lint a.out *.o
+	rm -f rnews core tags a.out *.o
 
 rnews:		$(OBJECTS)
 	rm -f rnews

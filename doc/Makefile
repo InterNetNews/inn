@@ -94,7 +94,7 @@ install-man5:	$(INSTALLED_SEC5)
 install-man8:	$(INSTALLED_SEC8)
 
 clobber clean:
-	rm -f all install lint profiled
+	rm -f all install profiled
 
 tags ctags:
 	cp /dev/null tags

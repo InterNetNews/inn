@@ -55,7 +55,7 @@ install:		libinn.a
 	-date >$@
 
 clobber clean:
-	rm -f foo core tags lint a.out *.o
+	rm -f foo core tags a.out *.o
 	rm -f libinn.a
 	rm -f all install
 

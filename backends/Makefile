@@ -21,7 +21,7 @@ install:
 
 clobber clean:
 	rm -f *.o $(ALL)
-	rm -f all install lint profiled
+	rm -f all install profiled
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h

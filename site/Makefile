@@ -126,13 +126,13 @@ update:		$(MOST_INSTALLED)
 
 ##  Remove files that are unchanged from the release version.
 clean:
-	rm -f all install lint
+	rm -f all install 
 	@-for I in $(ALL) ; do \
 	    cmp -s $$I ../samples/$$I && echo rm -f $$I && rm -f $$I ; \
 	done
 
 clobber:	clean
-	rm -f $(ALL) tags lint profiled
+	rm -f $(ALL) tags profiled
 
 tags ctags:
 	cp /dev/null tags

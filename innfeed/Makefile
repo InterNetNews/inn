@@ -144,7 +144,7 @@ tags: $(SRC) $(INCS)
 clean::
 	$(RM) version.c *.E *.o *.a *.core makedepend tags TAGS core \#* *~ 
 	$(RM) Makefile.BAK procbatch convertconfig
-	$(RM) innfeed startinnfeed uio_maxiov listing.ps logfile lint.log
+	$(RM) innfeed startinnfeed uio_maxiov listing.ps logfile 
 
 realclean:: clean 
 	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h config_l.c

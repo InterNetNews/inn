@@ -19,7 +19,7 @@ install:	$D$(PATHBIN)/convdate $D$(PATHBIN)/expire \
 clobber clean:
 	rm -f *.o $(ALL)
 	rm -f expirep expireoverp profiled
-	rm -f all install lint
+	rm -f all install 
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h

@@ -24,7 +24,7 @@ install:
 
 clobber clean:
 	rm -f subst.tmp config.new subst substitutions
-	rm -f all install lint profiled
+	rm -f all install profiled
 
 quiet:
 	@$(MAKE) 'FILE=$(FILE)' substitutions | grep -v unchanged
@@ -32,7 +32,7 @@ quiet:
 tags ctags:
 	cp /dev/null tags
 
-lint profiled:
+profiled:
 	cp /dev/null $@
 
 substitutions:		$(CHECKOUT) subst files.list $(CONF)

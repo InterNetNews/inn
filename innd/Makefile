@@ -43,7 +43,7 @@ ${PATHBIN}/inndstart: inndstart
 clobber clean:
 	rm -f *.o $(ALL)
 	rm -f inndp profiled
-	rm -f all install lint
+	rm -f all install 
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c innd.h ../include/*.h
