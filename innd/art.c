@@ -1535,13 +1535,12 @@ ARTxrefslave()
     strncpy(p, Path.Data, Path.Used - 1);
     p += Path.Used - 1;
     
-    name++;
     for (i = 0; *name; name = next) {
 	/* Mark end of this entry and where next one starts. */
 	if ((next = strchr(name, ' ')) != NULL) {
 	    len = strlen(name);
 	    for (next++; name + len > next && *next == ' '; next++)
-		next = '\0';
+		*next = '\0';
 	    if (name + len == next)
 		next = "";
 	} else
