@@ -1,7 +1,7 @@
-##  rone's unified control.ctl
-##  $Id$
-##
 ##  control.ctl - Access control for control messages.
+##  Last modified: 2004-05-15
+##
+##  Based on rone's unified control.ctl file.
 ##
 ##  Please copy usenet-config@isc.org on any updates to this file so that
 ##  it can be updated in the INN CVS repository and on ftp.isc.org.  For
@@ -128,6 +128,19 @@ rmgroup:*:*:mail
 # This hierarchy is defunct.  Please remove it.
 newgroup:*:a.bsu.*:mail
 rmgroup:*:a.bsu.*:doit
+
+## ABG (Augsburg, Germany)
+# Contact: abgadmin@abg.news-kiste.de
+# URL: http://abg.news-kiste.de/
+# Admin group: abg.admin
+# Key URL: http://abg.news-kiste.de/abgadmin.asc
+# Key fingerprint = 7D 18 DB E7 5B EB 0D 34  C1 89 5D 45 84 86 D3 A8
+# *PGP*   See comment at top of file.
+newgroup:*:abg.*:drop
+rmgroup:*:abg.*:drop
+checkgroups:abgadmin@abg.news-kiste.de:abg.*:verify-abgadmin@abg.news-kiste.de
+newgroup:abgadmin@abg.news-kiste.de:abg.*:verify-abgadmin@abg.news-kiste.de
+rmgroup:abgadmin@abg.news-kiste.de:abg.*:verify-abgadmin@abg.news-kiste.de
 
 ## ACS & OSU (*LOCAL* -- Ohio State University, USA)
 # Contact: Albert J. School <school.1@osu.edu>
@@ -724,15 +737,15 @@ newgroup:admin@england.news-admin.org:england.*:verify-england-usenet
 rmgroup:admin@england.news-admin.org:england.*:verify-england-usenet
 
 ## ES (Spain)
-# Contact: david.martinez@rediris.es
-# URL: http://www.rediris.es/netnews/infonews/config.es.html
-# Admin group: es.news
+# Contact: moderador@corus-es.org
+# URL: http://www.corus-es.org/docs/es_newsadmins_faq.txt
+# Admin group: es.news.anuncios
 # *PGP*   See comment at top of file.
 newgroup:*:es.*:drop
 rmgroup:*:es.*:drop
-checkgroups:moderador@news.rediris.es:es.*:verify-es.news
-newgroup:moderador@news.rediris.es:es.*:verify-es.news
-rmgroup:moderador@news.rediris.es:es.*:verify-es.news
+checkgroups:moderador@corus-es.org:es.*:verify-es.news
+newgroup:moderador@corus-es.org:es.*:verify-es.news
+rmgroup:moderador@corus-es.org:es.*:verify-es.news
 
 ## ESP (Spanish-language newsgroups)
 # Contact: <mod-ena@ennui.org>
