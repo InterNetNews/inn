@@ -826,7 +826,7 @@ static int delete_all_records(int whichdb, group_id_t gno)
     DBT key, val;
     struct datakey dk;
     int count;
-    int ret;
+    int ret = 0;
     DB_TXN *tid;
 
     memset(&key, 0, sizeof key);
@@ -961,7 +961,7 @@ rm_temp_groupinfo(group_id_t gno)
     char keystr[1 + sizeof gno];
     DB_TXN *tid;
     DBT key;
-    int ret;
+    int ret = 0;
 
     memset(&key, 0, sizeof key);
 
@@ -1174,7 +1174,7 @@ static bool delete_old_stuff(int forgotton)
 	    }
 	}
     }
-out:
+
     for(i = 0; i < listcount; i++)
 	free(dellist[i]);
     free(dellist);
@@ -2001,7 +2001,6 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     static char *databuf;
 #ifdef HAVE_ZLIB
     uLong	c_sz = 0;
-    static FILE *fp = NULL;
 #else
     #define	c_sz 0
 #endif
@@ -2886,7 +2885,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 		if(*p == 0)
 		    p = myuncompress(p, sz, &sz);
 		if(p == NULL) {
-		    p = "";
+		    p = (char *) "";
 		    delete = 1;
 		}
 #endif
