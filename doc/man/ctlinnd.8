@@ -348,6 +348,14 @@ If
 .I flag
 starts with the letter ``y'' then filtering is enabled.  If it starts with
 ``n'', then filtering is disabled.
+.TP
+.BI python " flag"
+Enable or disable Python news filtering, if
+.IR <\-\-with\-python\ is\ specified\ at\ configure> .
+If
+.I flag
+starts with the letter ``y'' then filtering is enabled.  If it starts with
+``n'', then filtering is disabled.
 
 .TP
 .BI readers " flag text"
@@ -398,6 +406,7 @@ files are reloaded; if it is the word ``overview.fmt'' then the
 file is reloaded; if it is the word ``overview.ctl'' then the
 .IR overview.ctl (5)
 file is reloaded.
+
 If
 .I <\-\-with\-perl is specified at configure>
 and it is the word ``filter.perl'' then the
@@ -410,10 +419,25 @@ after
 .IR filter_innd.pl .
 has been reloaded.  Reloading the Perl filter does not enable filtering if
 it is disabled; use
-.IR perl y
+.IR perl\ y
 to do this. The
 .IR startup_innd.pl
 file cannot be reloaded.
+
+If
+.I <\-\-with\-python is specified at configure>
+and it is the word ``filter.python'' then the
+.IR filter_innd.py
+file is reloaded.  If a Python method named ``filter_before_reload'' exists,
+it will be called prior to rereading
+.IR filter_innd.py .
+If a Python method named ``filter_after_reload'' exists, it will be called
+after
+.IR filter_innd.py .
+has been reloaded.  Reloading the Python filter does not enable filtering if
+it is disabled; use
+.IR python\ y
+to do this.
 
 If
 .I <\-\-with\-tcl is specified at configure>
