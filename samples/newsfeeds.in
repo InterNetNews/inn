@@ -59,7 +59,7 @@ ME\
 	::
 
 ## Create the links for cross posted articles
-## If you use this you MUST add -L option to FLAGS in rc.news.
+## If you use this you MUST add -L option to innflags in inn.conf.
 ## see innd(8)
 #crosspost:*:Tc,Ap,WR:@prefix@/bin/crosspost
 
