@@ -561,9 +561,11 @@ int CHANreadtext(CHANNEL *cp)
     BUFFER	        *bp;
     char		*p;
     int			oerrno;
+    int			maxbyte;
 
     /* Grow buffer if we're getting close to current limit. */
     bp = &cp->In;
+    bp->Left = bp->Size - bp->Used;
     if (bp->Left <= LOW_WATER) {
 	i = GROW_AMOUNT(bp->Size);
 	bp->Size += i;
@@ -587,9 +589,11 @@ int CHANreadtext(CHANNEL *cp)
      * data, or less.  BUFSIZ is often about 1 kilobyte, and is
      * attractive for other reasons, so let's use that as our size limit.
      */
-    bp->Left = bp->Size - bp->Used;
-    i = read(cp->fd, &bp->Data[bp->Used],
-	      (bp->Left - 1 > BUFSIZ ? BUFSIZ : bp->Left - 1));
+    /*
+     * Reduce the read size only if we are reading commands.
+     */
+    maxbyte = (cp->State != CSgetcmd || bp->Left < BUFSIZ) ? bp->Left : BUFSIZ;
+    i = read(cp->fd, &bp->Data[bp->Used], maxbyte-1);
     if (i < 0) {
 #ifdef POLL_BUG
     /* return of -2 indicates EAGAIN, for SUNOS5.4 poll() bug workaround */
