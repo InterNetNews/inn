@@ -625,7 +625,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 	    grouplist = NEW(GROUPDATA, 1000);
 	    listsize = 1000;
 	}
-	if (listsize >= (numgroups - 1)) {
+	if (listsize < numgroups) {
 	    listsize += 1000;
 	    grouplist = RENEW(grouplist, GROUPDATA, listsize);
 	}
