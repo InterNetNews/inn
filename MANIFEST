@@ -456,7 +456,6 @@ site/getsafe.sh             1 Safely get config file from samples directory
 storage                     1 Storage api library routines (Directory)
 storage/Make.methods        1 Include file for Makefile
 storage/Makefile            1 Makefile for Storage api
-storage/buildconfig         1 Script to create methods.[ch]
 storage/buildconfig.in      1 Template of buildconfig file
 storage/cnfs                1 Cnfs method (Directory)
 storage/cnfs/Makefile       1 Makefile for cnfs method
