@@ -529,33 +529,13 @@ CMDstarttls(ac, av)
 {
   int result;
 
-  sasl_config_read();
-
-  if (nnrpd_starttls_done == 1)
-    {
-      Reply("%d Already successfully executed STARTTLS\r\n", NNTP_STARTTLS_DONE_VAL);
+  tls_init();
+  if (nnrpd_starttls_done == 1) {
+      Reply("%d Already successfully executed STARTTLS\r\n",
+            NNTP_STARTTLS_DONE_VAL);
       return;
-    }
-
-  result=tls_init_serverengine(5,        /* depth to verify */
-			       1,        /* can client auth? */
-			       0,        /* required client to auth? */
-			       (char *)sasl_config_getstring("tls_ca_file", ""),
-			       (char *)sasl_config_getstring("tls_ca_path", ""),
-			       (char *)sasl_config_getstring("tls_cert_file", ""),
-			       (char *)sasl_config_getstring("tls_key_file", ""));
-
-  if (result == -1) {
-    Reply("%d Error initializing TLS\r\n", NNTP_STARTTLS_BAD_VAL);
-    
-    syslog(L_ERROR, "error initializing TLS: "
-	   "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
-	   (char *) sasl_config_getstring("tls_ca_file", ""),
-	   (char *) sasl_config_getstring("tls_ca_path", ""),
-	   (char *) sasl_config_getstring("tls_cert_file", ""),
-	   (char *) sasl_config_getstring("tls_key_file", ""));
-    return;
   }
+
   Reply("%d Begin TLS negotiation now\r\n", NNTP_STARTTLS_NEXT_VAL);
   (void)fflush(stdout);
 

@@ -875,9 +875,6 @@ main(int argc, char *argv[])
     gid_t		shadowgid;
 #endif /* HAVE_GETSPNAM */
 
-#ifdef HAVE_SSL
-    int ssl_result;
-#endif /* HAVE_SSL */
     int respawn = 0;
 
     setproctitle_init(argc, argv);
@@ -997,6 +994,10 @@ main(int argc, char *argv[])
     SPOOLlen = strlen(innconf->patharticles);
 
     if (DaemonMode) {
+
+#ifdef HAVE_SSL
+        tls_init();
+#endif
 
 #ifdef HAVE_INET6
 	memset(&ssa, '\0', sizeof(struct sockaddr_in6));
@@ -1208,35 +1209,13 @@ main(int argc, char *argv[])
 #ifdef HAVE_SSL
     ClientSSL = FALSE;
     if (initialSSL) {
-      sasl_config_read();
-      ssl_result=tls_init_serverengine(5,        /* depth to verify */
-				       0,        /* can client auth? */
-				       0,        /* required client to auth? */
-				       (char *)sasl_config_getstring("tls_ca_file", ""),
-				       (char *)sasl_config_getstring("tls_ca_path", ""),
-				       (char *)sasl_config_getstring("tls_cert_file", ""),
-				       (char *)sasl_config_getstring("tls_key_file", ""));
-      if (ssl_result == -1) {
-	Reply("%d Error initializing TLS\r\n", NNTP_STARTTLS_BAD_VAL);
-	
-	syslog(L_ERROR, "error initializing TLS: "
-	       "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
-	       sasl_config_getstring("tls_ca_file", ""),
-	       sasl_config_getstring("tls_ca_path", ""),
-	       sasl_config_getstring("tls_cert_file", ""),
-	       sasl_config_getstring("tls_key_file", ""));
-	ExitWithStats(1, FALSE);
-      }
-
-      ssl_result=tls_start_servertls(0, /* read */
-				     1); /* write */
-      if (ssl_result==-1) {
-	Reply("%d SSL connection failed\r\n", NNTP_STARTTLS_BAD_VAL);
-	ExitWithStats(1, FALSE);
-      }
-
-      nnrpd_starttls_done=1;
-      ClientSSL = TRUE;
+        tls_init();
+        if (tls_start_servertls(0, 1) == -1) {
+            Reply("%d SSL connection failed\r\n", NNTP_STARTTLS_BAD_VAL);
+            ExitWithStats(1, FALSE);
+        }
+        nnrpd_starttls_done = 1;
+        ClientSSL = TRUE;
     }
 #endif /* HAVE_SSL */
 

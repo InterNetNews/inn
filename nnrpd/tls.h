@@ -29,7 +29,7 @@
 #include <openssl/x509.h>
 #include <openssl/ssl.h>
 
-/* init tls */
+/* init tls engine */
 int tls_init_serverengine(int verifydepth, /* depth to verify */
 			  int askcert,     /* 1 = verify client */
 			  int requirecert, /* 1 = another client verify? */
@@ -37,6 +37,9 @@ int tls_init_serverengine(int verifydepth, /* depth to verify */
 			  char *tls_CApath,
 			  char *tls_cert_file,
 			  char *tls_key_file);
+
+/* init tls */
+void tls_init(void);
 
 /* start tls negotiation */
 int tls_start_servertls(int readfd, int writefd);

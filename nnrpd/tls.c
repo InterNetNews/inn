@@ -73,6 +73,8 @@
 /* We must keep some of the info available */
 static const char hexcodes[] = "0123456789ABCDEF";
 
+static bool tls_initialized = false;
+
 static int verify_depth;
 static int verify_error = X509_V_OK;
 static int do_dump = 0;
@@ -536,6 +538,40 @@ int tls_init_serverengine(int verifydepth,
 
     tls_serverengine = 1;
     return (0);
+}
+
+
+/*
+**  The function called by nnrpd to initialize the TLS support.  Calls
+**  tls_init_server_engine and checks the result.  On any sort of failure,
+**  nnrpd will exit.
+*/
+void
+tls_init(void)
+{
+    int ssl_result;
+
+    if (tls_initialized)
+        return;
+    sasl_config_read();
+    ssl_result = tls_init_serverengine(5,        /* depth to verify */
+				       0,        /* can client auth? */
+				       0,        /* required client to auth? */
+				       (char *)sasl_config_getstring("tls_ca_file", ""),
+				       (char *)sasl_config_getstring("tls_ca_path", ""),
+				       (char *)sasl_config_getstring("tls_cert_file", ""),
+				       (char *)sasl_config_getstring("tls_key_file", ""));
+    if (ssl_result == -1) {
+        Reply("%d Error initializing TLS\r\n", NNTP_STARTTLS_BAD_VAL);
+        syslog(L_ERROR, "error initializing TLS: "
+               "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
+               sasl_config_getstring("tls_ca_file", ""),
+               sasl_config_getstring("tls_ca_path", ""),
+               sasl_config_getstring("tls_cert_file", ""),
+               sasl_config_getstring("tls_key_file", ""));
+        ExitWithStats(1, FALSE);
+    }
+    tls_initialized = true;
 }
 
 
