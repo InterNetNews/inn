@@ -995,6 +995,7 @@ ValidNewsgroups(hdr, F, article)
 				"%s is moderated -- article would be mailed\n",
 				  group);
 		else {
+		    CAclose();
 		    mailed = MailArticle(group, article);
                     tmpPtr = DDend(h) ;
 		    DISPOSE(tmpPtr);
