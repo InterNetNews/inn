@@ -27,19 +27,19 @@ extern void PERLsetup (char *startupfile, char *filterfile, char *function);
 
 #if defined(HAVE_SETBUFFER)
 # define SETBUFFER(F, buff, size)	setbuffer((F), (buff), (size))
-STATIC int	LogBufferSize = 4096;
+static int	LogBufferSize = 4096;
 #else
 # define SETBUFFER(F, buff, size)	setbuf((F), (buff))
-STATIC int	LogBufferSize = BUFSIZ;
+static int	LogBufferSize = BUFSIZ;
 #endif	/* defined(HAVE_SETBUFFER) */
 
 
-BOOL		AmRoot = TRUE;
-BOOL		BufferedLogs = TRUE;
-BOOL		NNRPTracing = FALSE;
-BOOL		StreamingOff = FALSE ; /* default is we can stream */
-BOOL		Tracing = FALSE;
-BOOL		DoCancels = TRUE;
+bool		AmRoot = TRUE;
+bool		BufferedLogs = TRUE;
+bool		NNRPTracing = FALSE;
+bool		StreamingOff = FALSE ; /* default is we can stream */
+bool		Tracing = FALSE;
+bool		DoCancels = TRUE;
 char		LogName[] = "SERVER";
 int		ErrorCount = IO_ERROR_COUNT;
 int		SPOOLlen;
@@ -47,12 +47,12 @@ OPERATINGMODE	Mode = OMrunning;
 int		RemoteLimit = REMOTELIMIT;
 time_t		RemoteTimer = REMOTETIMER;
 int		RemoteTotal = REMOTETOTAL;
-BOOL		ThrottledbyIOError = FALSE;
+bool		ThrottledbyIOError = FALSE;
 
 #if	defined(__CENTERLINE__)
-BOOL		Debug = TRUE;
+bool		Debug = TRUE;
 #else
-BOOL		Debug = FALSE;
+bool		Debug = FALSE;
 #endif	/* defined(__CENTERLINE__) */
 
 #if	defined(lint) || defined(__CENTERLINE__)
@@ -60,13 +60,13 @@ int		KeepLintQuiet = 0;
 #endif	/* defined(lint) || defined(__CENTERLINE__) */
 
 
-STATIC char	*ErrlogBuffer;
-STATIC char	*LogBuffer;
-STATIC char	*ERRLOG = NULL;
-STATIC char	*LOG = NULL;
-STATIC char	*PID = NULL;
-STATIC UID_T	NewsUID;
-STATIC GID_T	NewsGID;
+static char	*ErrlogBuffer;
+static char	*LogBuffer;
+static char	*ERRLOG = NULL;
+static char	*LOG = NULL;
+static char	*PID = NULL;
+static uid_t	NewsUID;
+static gid_t	NewsGID;
 
 
 
@@ -108,7 +108,7 @@ FileGlue(p, n1, c, n2)
 **  Turn any \r or \n in text into spaces.  Used to splice back multi-line
 **  headers into a single line.
 */
-STATIC char *
+static char *
 Join(text)
     register char	*text;
 {
@@ -197,7 +197,7 @@ CommaSplit(text)
 **  the individual words of the command and the command is modified to
 **  have NUL's inserted.
 */
-BOOL
+bool
 NeedShell(p, av, end)
     register char	*p;
     register char	**av;
@@ -242,7 +242,7 @@ NeedShell(p, av, end)
 **  Spawn a process, with I/O redirected as needed.  Return the PID or -1
 **  (and a syslog'd message) on error.
 */
-PID_T
+pid_t
 Spawn(niceval, fd0, fd1, fd2, av)
     int		niceval;
     int		fd0;
@@ -252,7 +252,7 @@ Spawn(niceval, fd0, fd1, fd2, av)
 {
     static char	NOCLOSE[] = "%s cant close %d in %s %m";
     static char	NODUP2[] = "%s cant dup2 %d to %d in %s %m";
-    PID_T	i;
+    pid_t	i;
 
     /* Fork; on error, give up.  If not using the patched dbz, make
      * this call fork! */
@@ -291,9 +291,9 @@ Spawn(niceval, fd0, fd1, fd2, av)
 	if (close(fd2) < 0)
 	    syslog(L_ERROR, NOCLOSE, LogName, fd2, av[0]);
     }
-    CloseOnExec(0, FALSE);
-    CloseOnExec(1, FALSE);
-    CloseOnExec(2, FALSE);
+    close_on_exec(0, false);
+    close_on_exec(1, false);
+    close_on_exec(2, false);
 
     /* Try to set our permissions. */
     if (niceval != 0)
@@ -315,7 +315,7 @@ Spawn(niceval, fd0, fd1, fd2, av)
 /*
 **  Stat our control directory and see who should own things.
 */
-STATIC BOOL
+static bool
 GetNewsOwnerships()
 {
     struct stat	Sb;
@@ -400,9 +400,9 @@ AllocationFailure(const char *what, size_t size, const char *file, int line)
 void
 ThrottleIOError(char *when)
 {
-    char	buff[SMBUF];
-    STRING	p;
-    int		oerrno;
+    char	 buff[SMBUF];
+    const char * p;
+    int		 oerrno;
 
     if (Mode == OMrunning) {
 	oerrno = errno;
@@ -426,8 +426,8 @@ ThrottleIOError(char *when)
 void
 ThrottleNoMatchError(void)
 {
-    char	buff[SMBUF];
-    STRING	p;
+    char buff[SMBUF];
+    const char *p;
 
     if (Mode == OMrunning) {
 	if (Reservation) {
@@ -488,7 +488,7 @@ JustCleanup()
 /*
 **  The name is self-explanatory.
 */
-NORETURN
+void
 CleanupAndExit(x, why)
     int		x;
     char	*why;
@@ -520,10 +520,10 @@ CatchTerminate(int s)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage()
+static void
+Usage(void)
 {
-    (void)fprintf(stderr, "Usage error.\n");
+    fprintf(stderr, "Usage error.\n");
     exit(1);
 }
 
@@ -537,12 +537,12 @@ int main(int ac, char *av[])
     char		buff[SMBUF];
     char		*p;
     FILE		*F;
-    BOOL		ShouldFork;
-    BOOL		ShouldRenumber;
-    BOOL		ShouldSyntaxCheck;
-    BOOL		val;
-    BOOL		filter = TRUE;
-    PID_T		pid;
+    bool		ShouldFork;
+    bool		ShouldRenumber;
+    bool		ShouldSyntaxCheck;
+    bool		val;
+    bool		filter = TRUE;
+    pid_t		pid;
 #if	defined(_DEBUG_MALLOC_INC)
     union malloptarg	m;
 #endif	/* defined(_DEBUG_MALLOC_INC) */
@@ -838,7 +838,7 @@ int main(int ac, char *av[])
 	PID = COPY(cpcatpath(innconf->pathrun, _PATH_SERVERPID));
     if ((F = fopen(PID, "r")) != NULL) {
 	if (fgets(buff, sizeof buff, F) != NULL
-	 && ((pid = (PID_T) atol(buff)) > 0)
+	 && ((pid = (pid_t) atol(buff)) > 0)
 	 && (kill(pid, 0) > 0 || errno != ESRCH)) {
 	    (void)syslog(L_FATAL, "%s already_running pid %ld", LogName,
 	    (long) pid);
@@ -924,14 +924,14 @@ int main(int ac, char *av[])
 				"filter_art");
     PLxsinit();
     if (filter)
-	PerlFilter (TRUE) ;
+	PerlFilter(TRUE);
     DISPOSE(p);
 #endif /* defined(DO_PERL) */
 
 #if defined(DO_PYTHON)
     PYsetup();
     if (!filter)
-	PYfilter(FALSE)
+	PYfilter(FALSE);
 #endif /* (DO_PYTHON) */
  
     /* And away we go... */
