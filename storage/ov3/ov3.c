@@ -793,10 +793,15 @@ void *tradindexed_opensearch(char *group, int low, int high) {
 	base = ge->base;
     } while (ge->indexinode != oldinode);
 
-    if (high < base || low < base) { /* return NULL if searching range is out */
-      OV3closegroup(gh, FALSE);
-      return NULL;
+    /* Adjust the searching range if low < base since the active file can
+       be out of sync with the overview database and this is where the
+       initial lowmark comes from. */
+    if (high < base) {
+        OV3closegroup(gh, FALSE);
+        return NULL;
     }
+    if (low < base)
+       low = base;
 
     if (!OV3mmapgroup(gh)) {
 	OV3closegroup(gh, FALSE);
