@@ -16,6 +16,9 @@
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
+/*
+**  Dump the main index file.
+*/
 static void
 dump_index(void)
 {
@@ -28,6 +31,10 @@ dump_index(void)
     tdx_group_index_close(index);
 }
 
+
+/*
+**  Dump the main index data for a particular group.
+*/
 static void
 dump_group(const char *group)
 {
@@ -38,12 +45,18 @@ dump_group(const char *group)
     if (index == NULL)
         return;
     entry = tdx_group_index_entry(index, group);
-    if (entry == NULL)
+    if (entry == NULL) {
+        warn("cannot find group %s", group);
         return;
+    }
     tdx_group_index_print(group, entry);
     tdx_group_index_close(index);
 }
 
+
+/*
+**  Dump the data index file for a particular group.
+*/
 static void
 dump_group_index(const char *group)
 {
@@ -54,15 +67,24 @@ dump_group_index(const char *group)
     if (index == NULL)
         return;
     data = tdx_data_open(index, group);
-    if (data == NULL)
+    if (data == NULL) {
+        warn("cannot open group %s", group);
         return;
+    }
     tdx_data_index_dump(data);
     tdx_data_close(data);
     tdx_group_index_close(index);
 }
 
+
+/*
+**  Dump the overview data for a particular group.  If number is 0, dump the
+**  overview data for all current articles; otherwise, only dump the data for
+**  that particular article.  Include the article number, token, arrived time,
+**  and expires time (if any) in the overview data as additional fields.
+*/
 static void
-dump_overview(const char *group)
+dump_overview(const char *group, ARTNUM number)
 {
     struct group_index *index;
     struct group_data *data;
@@ -75,15 +97,28 @@ dump_overview(const char *group)
     if (index == NULL)
         return;
     data = tdx_data_open(index, group);
-    if (data == NULL)
+    if (data == NULL) {
+        warn("cannot open group %s", group);
         return;
+    }
 
     entry = tdx_group_index_entry(index, group);
-    if (entry == NULL)
+    if (entry == NULL) {
+        warn("cannot find group %s", group);
         return;
-    search = tdx_search_open(data, entry->low, entry->high);
-    if (search == NULL)
+    }
+    if (number != 0)
+        search = tdx_search_open(data, number, number);
+    else
+        search = tdx_search_open(data, entry->low, entry->high);
+    if (search == NULL) {
+        if (number != 0)
+            puts("Article not found");
+        else
+            warn("cannot open search in %s: %lu - %lu", group, entry->low,
+                 entry->high);
         return;
+    }
     while (tdx_search(search, &article)) {
         fwrite(article.overview, article.overlen - 2, 1, stdout);
         printf("\tArticle: %lu\tToken: %s", article.number,
@@ -101,12 +136,18 @@ dump_overview(const char *group)
     tdx_group_index_close(index);
 }
 
+
+/*
+**  Main routine.  Load inn.conf, parse the arguments, and dispatch to the
+**  appropriate function.
+*/
 int
 main(int argc, char *argv[])
 {
     int option;
     char mode = '\0';
     const char *newsgroup = NULL;
+    ARTNUM article = 0;
 
     error_program_name = "tdx-util";
 
@@ -115,7 +156,7 @@ main(int argc, char *argv[])
 
     /* Parse options. */
     opterr = 0;
-    while ((option = getopt(argc, argv, "dg:i:o:")) != EOF) {
+    while ((option = getopt(argc, argv, "dg:i:n:o:p:")) != EOF) {
         switch (option) {
         case 'd':
             if (mode != '\0')
@@ -133,6 +174,11 @@ main(int argc, char *argv[])
                 die("only one mode option allowed");
             mode = 'i';
             newsgroup = optarg;
+            break;
+        case 'n':
+            article = strtoul(optarg, NULL, 10);
+            if (article == 0)
+                die("invalid article number %s", optarg);
             break;
         case 'o':
             if (mode != '\0')
@@ -161,7 +207,7 @@ main(int argc, char *argv[])
         dump_group(newsgroup);
         break;
     case 'o':
-        dump_overview(newsgroup);
+        dump_overview(newsgroup, article);
         break;
     default:
         die("a mode option must be specified");
