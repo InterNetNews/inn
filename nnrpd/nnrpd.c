@@ -283,6 +283,7 @@ TITLEset(what)
     union pstun un;
     
     (void)sprintf(buff, "(nnrpd) %s %s", ClientHost, what);
+    un.pst_command = buff;
     (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
 #endif	/* defined(HPUX) */
 #endif	/* defined(HAVE_SETPROCTITLE) */
