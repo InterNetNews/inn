@@ -14,6 +14,9 @@
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
 
+STATIC BOOL		setup = FALSE;
+STATIC FILE		*hfp = NULL;
+STATIC ino_t		ino = 0;
 
 #define ASCtoNUM(c)		((c) - '0')
 #define CHARStoINT(c1, c2)	(ASCtoNUM((c1)) * 10 + ASCtoNUM((c2)))
@@ -228,6 +231,21 @@ LOCALtoGMT(t)
     return t;
 }
 
+void HIScheck(void)
+{
+    struct stat		Sb;
+
+    if (!setup)
+	/* not opened yet */
+	return;
+    if ((stat(HISTORY, &Sb) < 0) || (Sb.st_ino != ino)) {
+	dbmclose();
+	fclose(hfp);
+	ino = 0;
+	setup = FALSE;
+	hfp = NULL;
+    }
+}
 
 /*
 **  Return the path name of an article if it is in the history file.
@@ -235,8 +253,6 @@ LOCALtoGMT(t)
 */
 char *HISgetent(HASH *key, BOOL fulldata)
 {
-    static BOOL		setup = FALSE;
-    static FILE		*hfp;
     static char		path[BIG_BUFFER];
     char	        *p;
     char	        *q;
@@ -263,7 +279,12 @@ char *HISgetent(HASH *key, BOOL fulldata)
 	    syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, HISTORY);
 	    return NULL;
 	}
+	if (fstat((int)fileno(hfp), &Sb) < 0) {
+	    syslog(L_ERROR, "%s cant stat %s %m", ClientHost, HISTORY);
+	    return NULL;
+	}
 	CloseOnExec((int)fileno(hfp), TRUE);
+	ino = Sb.st_ino;
     }
 
     /* Seek and read. */

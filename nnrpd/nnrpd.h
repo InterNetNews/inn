@@ -162,6 +162,7 @@ extern BOOL		GetGroupList();
 extern char		*GetHeader();
 extern void		GRPreport();
 extern GROUPENTRY	*GRPfind();
+extern void		HIScheck();
 extern char		*HISgetent();
 extern long		LOCALtoGMT();
 extern BOOL		NGgetlist();

@@ -732,7 +732,7 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
     } else {
 	art->token->index = OVER_NONE;
     }
-    if (index != (FILE *)NULL && Xrefp->HasHeader) {
+    if (index != (FILE *)NULL && Xrefp->HasHeader && (!Overview || (Overview && (art->token->index < OVER_NONE)))) {
 	BUFFset(&Buff, Xrefp->Header, Xrefp->HeaderLength);
 	BUFFappend(&Buff, NUL, STRLEN(NUL));
 	for (i = 0, p = Buff.Data; i < Buff.Left; p++, i++)

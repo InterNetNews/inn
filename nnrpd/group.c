@@ -493,6 +493,7 @@ FUNCTYPE CMDgroup(int ac, char *av[])
     ARTclose();
     ARTindex = 0;
     GRPreport();
+    HIScheck();
 
     /* Make the group name a directory name. */
     if (buff != group)
