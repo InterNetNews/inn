@@ -213,6 +213,14 @@ Related Packages
         Note that it requires that INN be built with Perl support (the
         --with-perl option to configure).
 
+    GUP (Group Update Program)
+        URL: <ftp://ftp.debian.org/debian/dists/unstable/main/source/news/>
+
+        GUP provides a way for your peers to update their newsfeeds entries
+        as they want without having to ask you to edit the configuration
+        file all the time.  It's useful when feeding peers who take limited
+        and very specific feeds that change periodically.
+
     PersonalINN
         URL: <http://www.ritual.org/summer/pinn/>
 
