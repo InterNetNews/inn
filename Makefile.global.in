@@ -239,21 +239,25 @@ NEWSGROUP       = @NEWSGRP@
 
 INEWSMODE       = @INEWSMODE@
 RNEWSMODE       = @RNEWSMODE@
+FILEMODE        = @FILEMODE@
 
 OWNER           = -o $(NEWSUSER) -g $(NEWSGROUP)
 ROWNER          = -o $(NEWSUSER) -g @RNEWSGRP@
 
 INSTALL         = $(top)/support/install-sh -c
 
-##  Installation commands.  These commands are used by the installation
-##  rules of each separate subdirectory.  The naming scheme is as follows:
-##  the first two characters are CP (indicating a plain copy) or LI
-##  (indicating an installation that goes through libtool).  After an
-##  underscore is a one-character indicator of the file type (R for a
-##  regular file, X for an executable, S for a setuid root executable) and
-##  then PUB for a world-readable/world-executable file or PRI for a
-##  group-readable/group-executable file (only the news group).  inews and
-##  rnews have their own special installation rules.
+##  Installation commands.  These commands are used by the installation rules
+##  of each separate subdirectory.  The naming scheme is as follows: the first
+##  two characters are CP (indicating a plain copy) or LI (indicating an
+##  installation that goes through libtool).  After an underscore is a
+##  one-character indicator of the file type (R for a regular file, X for an
+##  executable, S for a setuid root executable) and then PUB for a
+##  world-readable/world-executable file or PRI for a group-readable/
+##  group-executable file (only the news group).
+##
+##  inews and rnews have their own special installation rules, as do database
+##  files like active and newsgroups that should have the same permissions as
+##  article files.
 
 LI_SPRI         = $(LIBTOOL) $(INSTALL) -o root -g $(NEWSGROUP) -m 4550 -B .OLD
 LI_XPRI         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0550 -B .OLD
@@ -266,6 +270,8 @@ CP_RPRI         = $(INSTALL) $(OWNER) -m 0640 -B .OLD
 CP_RPUB         = $(INSTALL) $(OWNER) -m 0644 -B .OLD
 CP_XPRI         = $(INSTALL) $(OWNER) -m 0550 -B .OLD
 CP_XPUB         = $(INSTALL) $(OWNER) -m 0555 -B .OLD
+
+CP_DATA         = $(INSTALL) $(OWNER) -m $(FILEMODE) -B .OLD
 
 ##  How to install man pages.  Pick one of SOURCE, BSD4.4, NROFF-PACK, or
 ##  NROFF-PACK-SCO.  Used by doc/man/putman.sh; read that script for more

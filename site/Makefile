@@ -125,13 +125,13 @@ update:		all $(MOST_INSTALLED)
 ##  Special rules for files that sould never be overwritten if they are
 ##  already installed.  These are used only for the initial install of a
 ##  brand new server.
-$D$(PATH_ACTIVE): 	; $(CP_RPUB) active.minimal $@
-$D$(PATH_NEWSGROUPS):	; $(CP_RPUB) newsgroups.minimal $@
+$D$(PATH_ACTIVE): 	; $(CP_DATA) active.minimal $@
+$D$(PATH_NEWSGROUPS):	; $(CP_DATA) newsgroups.minimal $@
 $D$(PATH_ACTIVE_TIMES):
 	touch $@
 	chown $(NEWSUSER) $@
 	chgrp $(NEWSGROUP) $@
-	chmod 644 $@
+	chmod $(FILEMODE) $@
 
 ##  Remove files that are unchanged from the release version.
 clean:
