@@ -266,9 +266,6 @@
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef ssize_t
 
-/* sort program for makehistory.  */
-#undef SORT_PGM
-
 /* Define to a suitable 32-bit type if standard headers don't define.  */
 #undef uint32_t
 

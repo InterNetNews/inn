@@ -266,9 +266,6 @@ INN_ENSURE_PATH_PROG(_PATH_SH,sh)
 INN_ENSURE_PATH_PROG(_PATH_SED,sed)
 INN_ENSURE_PATH_PROG(_PATH_SORT,sort)
 
-dnl makehistory needs to know what the sort program is.
-AC_DEFINE_UNQUOTED(SORT_PGM, "$_PATH_SORT")
-
 dnl Check for a required version of Perl.  We have to use English to get
 dnl around the fact Perl's version variable is $], a variable that m4 simply
 dnl cannot cope with (even with changequote).
