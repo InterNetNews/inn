@@ -61,8 +61,7 @@ files.  Specifically (but possibly not comprehensively):
    copyright holder.
 
    tests/runtests.c is covered under a license very similar to the MIT/X
-   Consortium license (less restrictive than INN's licese).  See the
-   beginning of the file for details.
+   Consortium license.  See the beginning of the file for details.
 
 Note that all portions of INN that link with core INN code have to be
 convered by licenses compatible with the license at the top of this file,
