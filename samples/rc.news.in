@@ -23,8 +23,12 @@ MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
 ##  RFLAG is set below; set INNFLAGS in inn.conf(5)
 RFLAG=""
 
-##  Clean shutdown?
+##  Clean shutdown or already running?
 if [ -f ${SERVERPID} ] ; then
+    if kill -0 `cat ${SERVERPID}` 2>/dev/null; then
+	echo 'INND is running'
+	exit 0
+    fi
     echo 'INND:  PID file exists -- unclean shutdown!'
     RFLAG="-r"
 fi
