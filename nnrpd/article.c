@@ -848,7 +848,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
     }
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-    while (OVsearch(handle, &artnum, &data, &len, &token)) {
+    while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	if (len == 0 || !ARTinstorebytoken(token))
 	    continue;
 	p = OVERGetHeader(data, Overview);
@@ -912,7 +912,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
     Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
     if (innconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
-    while (OVsearch(handle, &artnum, &data, &len, &token)) {
+    while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	if (innconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
 	    OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
@@ -1029,7 +1029,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 	
     Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
     pattern = Glom(&av[3]);
-    while (OVsearch(handle, &artnum, &data, &len, &token)) {
+    while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	if (len == 0 || !ARTinstorebytoken(token))
 	    continue;
 	if ((p = OVERGetHeader(data, Overview)) != NULL) {

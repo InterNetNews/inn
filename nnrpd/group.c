@@ -81,7 +81,7 @@ FUNCTYPE CMDgroup(int ac, char *av[])
 	/* Must be doing a "listgroup" command. */
 	if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
 	Reply("%d Article list follows\r\n", NNTP_GROUPOK_VAL);
-	    while (OVsearch(handle, &i, NULL, NULL, &token)) {
+	    while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
 		if (!ARTinstorebytoken(token))
 		    continue;
 		Printf("%ld\r\n", i);

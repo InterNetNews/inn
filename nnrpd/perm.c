@@ -1060,8 +1060,7 @@ static void GetConnInfo(METHOD *method, char *buf)
 {
     struct sockaddr_in cli, loc;
     int gotsin;
-    int i;
-    unsigned long j;
+    int i, j;
 
     j = sizeof(cli);
     gotsin = (getpeername(0, (struct sockaddr*)&cli, &j) == 0);
