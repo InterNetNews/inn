@@ -32,7 +32,7 @@ SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 crosspost.8 ctlinnd.8 \
 	newslog.8 newsrequeue.8 nnrpd.8 nntpsend.8 overchan.8 \
 	pgpverify.8 prunehistory.8 scanlogs.8 actived.8 send-uucp.8 \
 	tally.control.8 tally.unwanted.8 writelog.8 expireindex.8 sm.8 inndf.8 \
-	cnfsstat.8 controlchan.8
+	cnfsstat.8 controlchan.8 news2mail.8 pullnews.8 mailpost.8
 
 INSTALLED_SEC1 =	$D$(MAN1)/convdate.1 $D$(MAN1)/getlist.1 \
 			$D$(MAN1)/grephistory.1 $D$(MAN1)/inews.1 \
@@ -81,7 +81,8 @@ INSTALLED_SEC8 =	$D$(MAN8)/actsync.8 $D$(MAN8)/archive.8 \
 			$D$(MAN8)/expireindex.8 $D$(MAN8)/sm.8 \
 			$D$(MAN8)/actived.8 $D$(MAN8)/send-uucp.8 \
 			$D$(MAN8)/inndf.8 $D$(MAN8)/cnfsstat.8 \
-			$D$(MAN8)/controlchan.8
+			$D$(MAN8)/controlchan.8 $D$(MAN8)/news2mail.8 \
+			$D$(MAN8)/pullnews.8 $D$(MAN8)/mailpost.8
 
 ALL	= $(SEC1) $(SEC3) $(SEC5) $(SEC8)
 
@@ -197,6 +198,9 @@ $D$(MAN8)/send-uucp.8:		send-uucp.8        ; $(COPY) $? $@
 $D$(MAN8)/inndf.8:		inndf.8            ; $(COPY) $? $@
 $D$(MAN8)/cnfsstat.8:		cnfsstat.8         ; $(COPY) $? $@
 $D$(MAN8)/controlchan.8:	controlchan.8      ; $(COPY) $? $@
+$D$(MAN8)/news2mail.8:		news2mail.8	   ; $(COPY) $? $@
+$D$(MAN8)/pullnews.8:		pullnews.8	   ; $(COPY) $? $@
+$D$(MAN8)/mailpost.8:		mailpost.8	   ; $(COPY) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
