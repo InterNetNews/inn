@@ -1,6 +1,13 @@
+/* $Revision$
+**
+** Timer functions, to gather profiling data
+**
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 #include "clibrary.h"
 #include "configdata.h"
