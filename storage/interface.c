@@ -34,6 +34,7 @@ static unsigned int     typetoindex[256];
 int                     SMerrno;
 char                    *SMerrorstr = NULL;
 static BOOL             ErrorAlloc = FALSE;
+static BOOL             Initialized = FALSE;
 
 /*
 ** Checks to see if the token is valid
@@ -235,10 +236,16 @@ static BOOL SMreadconfig(void) {
 */
 BOOL SMinit(void) {
     int                 i;
-    int                 j;
 
-    if (!SMreadconfig())
+    if (Initialized)
+	return TRUE;
+    
+    Initialized = TRUE;
+    
+    if (!SMreadconfig()) {
+	Initialized = FALSE;
 	return FALSE;
+    }
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 	method_data[i].initialized = storage_methods[i].init();
@@ -246,13 +253,35 @@ BOOL SMinit(void) {
 	if (!method_data[i].initialized)
 	    break;
     }
-    if (method_data[i - 1].initialized)
-	return TRUE;
-    for (j = 0; j < i; j++) {
-	storage_methods[i].shutdown();
+    if (!method_data[i - 1].initialized) {
+	SMshutdown();
+	Initialized = FALSE;
+	SMseterror(SMERR_UNDEFINED, "One or more storage methods failed initialization");
+	return FALSE;
     }
-    SMseterror(SMERR_UNDEFINED, "One or more storage methods failed initialization");
-    return FALSE;
+    if (atexit(SMshutdown) < 0) {
+	SMshutdown();
+	Initialized = FALSE;
+	SMseterror(SMERR_UNDEFINED, NULL);
+	return FALSE;
+    }
+    return TRUE;
+}
+
+static BOOL InitMethod(STORAGETYPE method) {
+    if (!Initialized)
+	if (!SMreadconfig()) {
+	    Initialized = FALSE;
+	    return FALSE;
+	}
+    if (method_data[method].initialized)
+	return TRUE;
+
+    if (!storage_methods[typetoindex[method]].init()) {
+	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
+	return FALSE;
+    }
+    return TRUE;
 }
 
 static BOOL MatchGroups(const char *g, int num, char **patterns) {
@@ -311,7 +340,8 @@ TOKEN SMstore(const ARTHANDLE article) {
 	if ((article.len >= sub->minsize) &&
 	    (!sub->maxsize || (article.len <= sub->maxsize)) &&
 	    MatchGroups(groups, sub->numpatterns, sub->patterns)) {
-	    return storage_methods[typetoindex[sub->type]].store(article, sub->class);
+	    if (InitMethod(typetoindex[sub->type]))
+		return storage_methods[typetoindex[sub->type]].store(article, sub->class);
 	}
     }
 
@@ -321,16 +351,16 @@ TOKEN SMstore(const ARTHANDLE article) {
 ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
     ARTHANDLE           *art;
 
-    if (method_data[typetoindex[token.type]].initialized) {
-	art = storage_methods[typetoindex[token.type]].retrieve(token, amount);
-	if (art)
-	    art->nextmethod = 0;
-	return art;
+    if (!method_data[typetoindex[token.type]].initialized && !InitMethod(typetoindex[token.type])) {
+	syslog(L_ERROR, "SM could not find token type or method was not initialized");
+	SMseterror(SMERR_BADTOKEN, NULL);
+	return NULL;
     }
-    
-    syslog(L_ERROR, "SM could not find token type or method was not initialized");
-    SMseterror(SMERR_BADTOKEN, NULL);
-    return NULL;
+    art = storage_methods[typetoindex[token.type]].retrieve(token, amount);
+    if (art)
+	art->nextmethod = 0;
+    return art;
+
 }
 
 ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
@@ -343,7 +373,7 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
     else
 	start= article->nextmethod;
 
-    if (!method_data[start].initialized) {
+    if (!method_data[start].initialized && !InitMethod(start)) {
 	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
@@ -356,7 +386,7 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
 }
 
 void SMfreearticle(ARTHANDLE *article) {
-    if (!method_data[typetoindex[article->type]].initialized) {
+    if (!method_data[typetoindex[article->type]].initialized && !InitMethod(typetoindex[article->type])) {
 	syslog(L_ERROR, "SM can't free article with uninitialized method");
 	return;
     }
@@ -364,7 +394,7 @@ void SMfreearticle(ARTHANDLE *article) {
 }
 
 BOOL SMcancel(TOKEN token) {
-    if (!method_data[typetoindex[token.type]].initialized) {
+    if (!method_data[typetoindex[token.type]].initialized && !InitMethod(typetoindex[token.type])) {
 	SMseterror(SMERR_UNINIT, NULL);
 	syslog(L_ERROR, "SM can't free article with uninitialized method");
 	return FALSE;
@@ -374,9 +404,21 @@ BOOL SMcancel(TOKEN token) {
 
 void SMshutdown(void) {
     int                 i;
+    STORAGE_SUB         *old;
+
+    if (!Initialized)
+	return;
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++)
-	storage_methods[i].shutdown();
+	if (method_data[i].initialized)
+	    storage_methods[i].shutdown();
+    while (subscriptions) {
+	old = subscriptions;
+	subscriptions = subscriptions->next;
+	DISPOSE(old->patterns);
+	DISPOSE(old);
+    }
+    Initialized = FALSE;
 }
 
 void SMseterror(int errornum, char *error) {
