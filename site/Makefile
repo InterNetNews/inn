@@ -54,7 +54,7 @@ MOST	= rc.news checkgroups default ihave newgroup \
 	innshellvars innshellvars.pl innshellvars.csh innshellvars.tcl \
 	scanspool innmail checkgroups.pl ihave.pl newgroup.pl rmgroup.pl \
 	sendme.pl sendsys.pl senduuname.pl version.pl cnfsstat \
-	doactsync mod-active simpleftp
+	mod-active simpleftp
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -81,8 +81,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHBIN)/controlbatch $D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_TCL_SHELLVARS) \
 	$D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool $D$(PATHBIN)/cnfsstat \
-	$D$(PATHBIN)/doactsync $D$(PATHBIN)/mod-active \
-	$D$(PATHBIN)/simpleftp \
+	$D$(PATHBIN)/mod-active $D$(PATHBIN)/simpleftp \
 	$D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
 	$D$(CTLBIN)/newgroup.pl $D$(CTLBIN)/rmgroup.pl $D$(CTLBIN)/sendme.pl \
 	$D$(CTLBIN)/sendsys.pl $D$(CTLBIN)/senduuname.pl $D$(CTLBIN)/version.pl
@@ -212,7 +211,6 @@ $D$(PATHBIN)/innstat:	innstat		; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/pgpverify:	pgpverify	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/cnfsstat:	cnfsstat	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innwatch:	innwatch	; $(COPY_XPRI) $? $@
-$D$(PATHBIN)/doactsync:	doactsync	; $(COPY_XPUB) $? $@
 $D$(PATHBIN)/mod-active: mod-active	; $(COPY_XPUB) $? $@
 $D$(PATHBIN)/simpleftp:	simpleftp	; $(COPY_XPUB) $? $@
 $D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPRI) $? $@
@@ -258,7 +256,6 @@ control.ctl:	../samples/control.ctl		; $(COPY) $? $@
 controlbatch:	../samples/controlbatch		; $(COPY) $? $@
 controlchan:	../samples/controlchan		; $(COPY) $? $@
 default:	../samples/default		; $(COPY) $? $@
-doactsync:	../samples/doactsync		; $(COPY) $? $@
 docheckgroups:	../samples/docheckgroups	; $(COPY) $? $@
 expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
 filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
