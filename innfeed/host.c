@@ -103,6 +103,7 @@ struct host_s
     u_int sleepingCxns ;        /* number of connections currently sleeping */
     u_int initialCxns ;         /* number of connections to create at start */
     Connection blockedCxn ;     /* the first connection to get the 400 banner*/
+    Connection notThisCxn ;	/* don't offer articles to this connection */
     double lowPassLow ;		/* value of low-pass filter off threshold */
     double lowPassHigh ;	/* value of low-pass filter on threshold */
 
@@ -126,7 +127,6 @@ struct host_s
     
     bool backedUp ;             /* set to true when all cxns are full */
     u_int backlog ;             /* number of arts in `queued' queue */
-    u_int backlogSpooled ;      /* count of arts given to tape */
 
     bool loggedModeOn ;         /* true if we logged going into no-CHECK mode */
     bool loggedModeOff ;        /* true if we logged going out of no-CHECK mode */
@@ -142,6 +142,11 @@ struct host_s
     u_int artsRejected ;        /* # of articles remote rejected */
     u_int artsDeferred ;        /* # of articles remote asked us to retry */
     u_int artsMissing ;         /* # of articles whose file was missing. */
+    u_int artsToTape ;          /* # of articles given to tape */
+    u_int artsQueueOverflow ;   /* # of articles that overflowed `queued' */
+    u_int artsCxnDrop ;         /* # of articles caught in dead cxn */
+    u_int artsHostSleep ;       /* # of articles spooled by sleeping host */
+    u_int artsHostClose ;       /* # of articles caught by closing host */
     u_int artsFromTape ;        /* # of articles we pulled off tape */
 
     /* These numbers are as above, but for the life of the process. */
@@ -151,6 +156,11 @@ struct host_s
     u_int gArtsRejected ;
     u_int gArtsDeferred ;
     u_int gArtsMissing ;
+    u_int gArtsToTape ;
+    u_int gArtsQueueOverflow ;
+    u_int gArtsCxnDrop ;
+    u_int gArtsHostSleep ;
+    u_int gArtsHostClose ;
     u_int gArtsFromTape ;
 
     time_t firstConnectTime ;   /* time of first connect. */
@@ -166,6 +176,12 @@ struct host_s
     char *blockedReason ;       /* what the 400 from the remote says. */
     
     Host next ;                 /* for global list of hosts. */
+
+    u_int blNone ;              /* number of times the backlog was 0 */
+    u_int blFull ;              /* number of times the backlog was full */
+    u_int blQuartile[4] ;       /* number of times in each quartile */
+    u_long blAccum ;            /* cumulative backlog for computing mean */
+    u_int blCount ;             /* the sample count */
 };
 
 /* A holder for the info we got out of the config file, but couldn't create
@@ -769,6 +785,7 @@ Host newHost (InnListener listener,
   nh->lowPassHigh = lowPassHigh ;
 
   nh->blockedCxn = NULL ;
+  nh->notThisCxn = NULL ;
   nh->maxChecks = maxCheck ;
   nh->articleTimeout = artTimeout ;
   nh->responseTimeout = respTimeout ;
@@ -798,7 +815,6 @@ Host newHost (InnListener listener,
 
   nh->backedUp = false ;
   nh->backlog = 0 ;
-  nh->backlogSpooled = 0 ;
 
   nh->loggedBacklog = false ;
   nh->loggedModeOn = false ;
@@ -812,6 +828,12 @@ Host newHost (InnListener listener,
   nh->artsRejected = 0 ;
   nh->artsDeferred = 0 ;
   nh->artsMissing = 0 ;
+  nh->artsToTape = 0 ;
+  nh->artsQueueOverflow = 0 ;
+  nh->artsCxnDrop = 0 ;
+  nh->artsHostSleep = 0 ;
+  nh->artsHostClose = 0 ;
+  nh->artsFromTape = 0 ;
 
   nh->gArtsOffered = 0 ;
   nh->gArtsAccepted = 0 ;
@@ -819,11 +841,24 @@ Host newHost (InnListener listener,
   nh->gArtsRejected = 0 ;
   nh->gArtsDeferred = 0 ;
   nh->gArtsMissing = 0 ;
+  nh->gArtsToTape = 0 ;
+  nh->gArtsQueueOverflow = 0 ;
+  nh->gArtsCxnDrop = 0 ;
+  nh->gArtsHostSleep = 0 ;
+  nh->gArtsHostClose = 0 ;
+  nh->gArtsFromTape = 0 ;
   
   nh->firstConnectTime = 0 ;
   nh->connectTime = 0 ;
   
   nh->spoolTime = 0 ;
+
+  nh->blNone = 0 ;
+  nh->blFull = 0 ;
+  nh->blQuartile[0] = nh->blQuartile[1] = nh->blQuartile[2] =
+		      nh->blQuartile[3] = 0 ;
+  nh->blAccum = 0;
+  nh->blCount = 0;
 
   /* Create all the connections, but only the initial ones connect
      immediately */
@@ -971,6 +1006,7 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
   u_int i ;
   Connection *cxn ;
   ProcQElem qe ;
+  double cnt = (host->blCount) ? (host->blCount) : 1.0;
   
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -998,7 +1034,6 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
   fprintf (fp,"%s    statistics-id : %d\n",indent,host->statsId) ;
   fprintf (fp,"%s    backed-up : %s\n",indent,boolToString (host->backedUp));
   fprintf (fp,"%s    backlog : %d\n",indent,host->backlog) ;
-  fprintf (fp,"%s    backlogSpooled : %d\n",indent,host->backlogSpooled) ;
   fprintf (fp,"%s    loggedModeOn : %s\n",indent,
            boolToString (host->loggedModeOn)) ;
   fprintf (fp,"%s    loggedModeOff : %s\n",indent,
@@ -1014,6 +1049,16 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
   fprintf (fp,"%s    articles rejected : %d\n",indent,host->artsRejected);
   fprintf (fp,"%s    articles deferred : %d\n",indent,host->artsDeferred) ;
   fprintf (fp,"%s    articles missing : %d\n",indent,host->artsMissing) ;
+  fprintf (fp,"%s    articles spooled : %d\n",indent,host->artsToTape) ;
+  fprintf (fp,"%s      because of queue overflow : %d\n",indent,
+           host->artsQueueOverflow) ;
+  fprintf (fp,"%s      when the we closed the host : %d\n",indent,
+           host->artsHostClose) ;
+  fprintf (fp,"%s      because the host was asleep : %d\n",indent,
+           host->artsHostSleep) ;
+  fprintf (fp,"%s    articles unspooled : %d\n",indent,host->artsFromTape) ;
+  fprintf (fp,"%s    articles requeued from dropped connections : %d\n",indent,
+           host->artsCxnDrop) ;
 
   fprintf (fp,"%s    process articles offered : %d\n",indent,
            host->gArtsOffered) ;
@@ -1027,6 +1072,34 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
            host->gArtsDeferred) ;
   fprintf (fp,"%s    process articles missing : %d\n",indent,
            host->gArtsMissing) ;
+  fprintf (fp,"%s    process articles spooled : %d\n",indent,
+           host->gArtsToTape) ;
+  fprintf (fp,"%s      because of queue overflow : %d\n",indent,
+           host->gArtsQueueOverflow) ;
+  fprintf (fp,"%s      when the we closed the host : %d\n",indent,
+           host->gArtsHostClose) ;
+  fprintf (fp,"%s      because the host was asleep : %d\n",indent,
+           host->gArtsHostSleep) ;
+  fprintf (fp,"%s    process articles unspooled : %d\n",indent,
+           host->gArtsFromTape) ;
+  fprintf (fp,"%s    process articles requeued from dropped connections : %d\n",
+           indent, host->gArtsCxnDrop) ;
+
+  fprintf (fp,"%s    average (mean) queue length : %.1f\n", indent,
+           (double) host->blAccum / cnt) ;
+  fprintf (fp,"%s      percentage of the time empty : %.1f\n", indent,
+           100.0 * host->blNone / cnt) ;
+  fprintf (fp,"%s      percentage of the time >0%%-25%% : %.1f\n", indent,
+           100.0 * host->blQuartile[0] / cnt) ;
+  fprintf (fp,"%s      percentage of the time 25%%-50%% : %.1f\n", indent,
+           100.0 * host->blQuartile[1] / cnt) ;
+  fprintf (fp,"%s      percentage of the time 50%%-75%% : %.1f\n", indent,
+           100.0 * host->blQuartile[2] / cnt) ;
+  fprintf (fp,"%s      percentage of the time 75%%-<100%% : %.1f\n", indent,
+           100.0 * host->blQuartile[3] / cnt) ;
+  fprintf (fp,"%s      percentage of the time full : %.1f\n", indent,
+           100.0 * host->blFull / cnt) ;
+  fprintf (fp,"%s      number of samples : %.1f\n", indent, host->blCount) ;
 
   fprintf (fp,"%s    firstConnectTime : %s",indent,
            ctime (&host->firstConnectTime));
@@ -1151,7 +1224,10 @@ void hostSendArticle (Host host, Article article)
 {
   if (host->spoolTime > 0)
     {                           /* all connections are asleep */
-      host->backlogSpooled++ ;
+      host->artsHostSleep++ ;
+      host->gArtsHostSleep++ ;
+      host->artsToTape++ ;
+      host->gArtsToTape++ ;
       tapeTakeArticle (host->myTape, article) ;
     }
   else                 /* at least one connection is feeding or waiting */
@@ -1171,7 +1247,8 @@ void hostSendArticle (Host host, Article article)
          idleness. */
       for (idx = 0 ; !taken && idx < host->maxConnections ; idx++)
         {
-          if (host->cxnActive [idx])
+          if (host->cxnActive [idx] &&
+              host->connections[idx] != host->notThisCxn)
             taken = cxnTakeArticle (host->connections [idx],extraRef) ;
         }
 
@@ -1180,7 +1257,8 @@ void hostSendArticle (Host host, Article article)
           /* Wasn't taken so try to give it to one of the waiting
              connections. */
           for (idx = 0 ; idx < host->maxConnections ; idx++)
-            if (!host->cxnActive [idx] && !host->cxnSleeping [idx])
+            if (!host->cxnActive [idx] && !host->cxnSleeping [idx] &&
+                host->connections[idx] != host->notThisCxn)
               {
                 if (cxnTakeArticle (host->connections [idx], extraRef))
                   break ;
@@ -1201,8 +1279,7 @@ void hostSendArticle (Host host, Article article)
               queueArticle (article,&host->queued,&host->queuedTail) ;
               
               host->backlog++ ;
-              if (host->backlog > hostHighwater)
-                backlogToTape (host) ;
+              backlogToTape (host) ;
             }
         }
     }
@@ -1599,12 +1676,15 @@ void hostArticleDeferred (Host host, Connection cxn, Article article)
   host->gArtsDeferred++ ;
   procArtsDeferred++ ;
 
-  host->backlogSpooled++ ;
 
   if (!amClosing (host))
     {
-      tapeTakeArticle (host->myTape,article) ;
+      Article extraRef ;
+
+      extraRef = artTakeRef (article) ; /* hold a reference until requeued */
       articleGone (host,cxn,article) ; /* drop from the queue */
+      hostSendArticle (host, article) ; /* requeue it */
+      delArticle (extraRef) ;
     }
   else
     delArticle(article); /*drop parameter reference if not sent to tape*/
@@ -1626,8 +1706,16 @@ void hostTakeBackArticle (Host host, Connection cxn, Article article)
   
   if (!amClosing (host)) 
     {
-      tapeTakeArticle (host->myTape,article) ;
+      Article extraRef ;
+
+      host->artsCxnDrop++ ;
+      host->gArtsCxnDrop++ ;
+      extraRef = artTakeRef (article) ; /* hold a reference until requeued */
       articleGone (host,NULL,article) ; /* drop from the queue */
+      host->notThisCxn = cxn;
+      hostSendArticle (host, article) ; /* requeue it */
+      host->notThisCxn = NULL;
+      delArticle (extraRef) ;
     }
   else
     delArticle(article); /*drop parameter reference if not sent to tape*/
@@ -2231,6 +2319,7 @@ static void hostLogStats (Host host, bool final)
 {
   time_t now = theTime() ;
   time_t *startPeriod ;
+  double cnt = (host->blCount) ? (host->blCount) : 1.0;
 
   if (host->spoolTime == 0 && host->connectTime == 0)
     return ;        /* host has never connected and never started spooling*/
@@ -2243,14 +2332,21 @@ static void hostLogStats (Host host, bool final)
   if (host->spoolTime != 0)
     syslog (LOG_NOTICE, HOST_SPOOL_STATS, host->peerName,
             (final ? "final" : "checkpoint"),
-            (long) (now - host->spoolTime), host->backlogSpooled) ;
+            (long) (now - host->spoolTime), host->artsToTape) ;
   else
     syslog (LOG_NOTICE, HOST_STATS_MSG, host->peerName, 
             (final ? "final" : "checkpoint"),
             (long) (now - host->connectTime),
             host->artsOffered, host->artsAccepted,
             host->artsNotWanted, host->artsRejected,
-            host->artsMissing,host->backlogSpooled) ;
+            host->artsMissing, host->artsToTape,
+            host->artsHostClose, host->artsFromTape,
+            host->artsDeferred, host->artsCxnDrop,
+            (double)host->blAccum/cnt,
+            (100.0*host->blNone)/cnt,
+            (100.0*host->blQuartile[0])/cnt, (100.0*host->blQuartile[1])/cnt,
+            (100.0*host->blQuartile[2])/cnt, (100.0*host->blQuartile[3])/cnt,
+            (100.0*host->blFull)/cnt) ;
 
   if (logConnectionStats) 
     {
@@ -2273,11 +2369,23 @@ static void hostLogStats (Host host, bool final)
       host->artsRejected = 0 ;
       host->artsDeferred = 0 ;
       host->artsMissing = 0 ;
+      host->artsToTape = 0 ;
+      host->artsQueueOverflow = 0 ;
+      host->artsCxnDrop = 0 ;
+      host->artsHostSleep = 0 ;
+      host->artsHostClose = 0 ;
       host->artsFromTape = 0 ;
-      host->backlogSpooled = 0 ;
       
       *startPeriod = theTime () ; /* in of case STATS_RESET_PERIOD */
     }
+
+    /* reset these each log period */
+    host->blNone = 0 ;
+    host->blFull = 0 ;
+    host->blQuartile[0] = host->blQuartile[1] = host->blQuartile[2] =
+                          host->blQuartile[3] = 0;
+    host->blAccum = 0;
+    host->blCount = 0;
 
 #if 0
   /* XXX turn this section on to get a snapshot at each log period. */
@@ -2408,6 +2516,13 @@ static void hostLogStatus (void)
  *  rejected: 31          max checks: 25      initial cxns: 5
  *   missing: 0         on threshold: 95.0%      idle cxns: 4
  *  deferred: 0        off threshold: 95.0%       max cxns: 10
+ *  requeued: 0                               queue length: 0
+ *   spooled: 0                                      empty: 100.0%
+ *[overflow]: 0                                    >0%-25%: 0.0%
+ *[on_close]: 0                                    25%-50%: 0.0%
+ *[sleeping]: 0                                    50%-75%: 0.0%
+ * unspooled: 0                                  75%-<100%: 0.0%
+ *                                                    full: 0.0%
  *                 backlog low limit: 1000000
  *                backlog high limit: 2000000     (factor 2.0)
  *                 backlog shrinkage: 0 bytes (from current file)
@@ -2416,6 +2531,7 @@ static void hostLogStatus (void)
 static void hostPrintStatus (Host host, FILE *fp)
 {
   time_t now = theTime() ;
+  double cnt = (host->blCount) ? (host->blCount) : 1.0;
 
   ASSERT (host != NULL) ;
   ASSERT (fp != NULL) ;
@@ -2456,6 +2572,27 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   (long) host->gArtsDeferred, (host->lowPassLow * 10),
 	   host->maxConnections) ;
 
+  fprintf (fp, "  requeued: %-7ld                         queue length: %-3.1f\n",
+	   (long) host->gArtsCxnDrop, (double)host->blAccum / cnt) ;
+
+  fprintf (fp, "   spooled: %-7ld                                empty: %-3.1f%%\n",
+	   (long) host->gArtsToTape, 100.0 * host->blNone / cnt) ;
+
+  fprintf (fp, "[overflow]: %-7ld                              >0%%-25%%: %-3.1f%%\n",
+	   (long) host->gArtsQueueOverflow, 100.0 * host->blQuartile[0] / cnt) ;
+
+  fprintf (fp, "[on_close]: %-7ld                              25%%-50%%: %-3.1f%%\n",
+	   (long) host->gArtsHostClose, 100.0 * host->blQuartile[1] / cnt) ;
+
+  fprintf (fp, "[sleeping]: %-7ld                              50%%-75%%: %-3.1f%%\n",
+	   (long) host->gArtsHostSleep, 100.0 * host->blQuartile[2] / cnt) ;
+
+  fprintf (fp, " unspooled: %-7ld                            75%%-<100%%: %-3.1f%%\n",
+	   (long) host->gArtsFromTape, 100.0 * host->blQuartile[3] / cnt) ;
+
+  fprintf (fp, "                                                    full: %-3.1f%%\n",
+	   100.0 * host->blFull / cnt) ;
+
   tapeLogStatus (host->myTape,fp) ;
   
   fprintf (fp, "\n\n");
@@ -2490,26 +2627,32 @@ static void hostStatsTimeoutCbk (TimeoutId tid, void *data)
 }
 
 
-/* the host has too many unprocessed articles so we send them to the tape. */
+/* if the host has too many unprocessed articles so we send some to the tape. */
 static void backlogToTape (Host host)
 {
   Article article ;
 
-  if (!host->loggedBacklog)
+  while (host->backlog > hostHighwater)
     {
+      if (!host->loggedBacklog)
+	{
 #if 0               /* this message is pretty useless and confuses people */
-      syslog (LOG_NOTICE,BACKLOG_TO_TAPE,host->peerName /* ,host->backlog */) ;
+	  syslog (LOG_NOTICE,BACKLOG_TO_TAPE,host->peerName /* ,host->backlog */) ;
 #endif
-      host->loggedBacklog = true ;
-    }
+	  host->loggedBacklog = true ;
+	}
   
-  while ((article = remHead (&host->queued,&host->queuedTail)) != NULL)
-    {
-      host->backlogSpooled++ ;
+      article = remHead (&host->queued,&host->queuedTail) ;
+
+      ASSERT(article != NULL);
+
+      host->artsQueueOverflow++ ;
+      host->gArtsQueueOverflow++ ;
+      host->artsToTape++ ;
+      host->gArtsToTape++ ;
+      host->backlog--;
       tapeTakeArticle (host->myTape,article) ;
     }
-
-  host->backlog = 0 ;
 }
 
 
@@ -2541,14 +2684,20 @@ static void queuesToTape (Host host)
   
   while ((art = remHead (&host->processed,&host->processedTail)) != NULL)
     {
-      host->backlogSpooled++ ;
+      host->artsHostClose++ ;
+      host->gArtsHostClose++ ;
+      host->artsToTape++ ;
+      host->gArtsToTape++ ;
       tapeTakeArticle (host->myTape,art) ;
     }
   
   while ((art = remHead (&host->queued,&host->queuedTail)) != NULL)
     {
       host->backlog-- ;
-      host->backlogSpooled++ ;
+      host->artsHostClose++ ;
+      host->gArtsHostClose++ ;
+      host->artsToTape++ ;
+      host->gArtsToTape++ ;
       tapeTakeArticle (host->myTape,art) ;
     }
 }
@@ -2776,6 +2925,24 @@ static int validateBool (FILE *fp, const char *name, int required, bool setval)
 }
 
 
+void gCalcHostBlStat (void)
+{
+  Host h ;
+  char indent [INDENT_BUFFER_SIZE] ;
+  u_int i ;
+  
+  for (h = gHostList ; h != NULL ; h = h->next)
+    {
+      h->blAccum += h->backlog ;
+      if (h->backlog == 0)
+	   h->blNone++ ;
+      else if (h->backlog >= hostHighwater)
+	   h->blFull++ ;
+      else
+	   h->blQuartile[(4*h->backlog) / hostHighwater]++ ;
+      h->blCount++ ;
+    }
+}
 static void hostCleanup (void)
 {
   if (statusFile != NULL)

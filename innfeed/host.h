@@ -197,6 +197,9 @@ u_int hostMaxChecks (Host host) ;
    (false) no-CHECK mode. */
 void hostLogNoCheckMode (Host host, bool on) ;
 
+/* calculate host backlog statistics */
+void gCalcHostBlStat (void) ;
+
 /* set the pathname of the file to use instead of innfeed.status */
 void hostSetStatusFile (const char *filename) ;
 

@@ -672,6 +672,9 @@ void Run (void)
               }
         }
 
+      /* calculate host backlog statistics */
+      gCalcHostBlStat ();
+
       sval = select (highestFd + 1, &rSet, &wSet, &eSet, twait) ;
 
       timePasses () ;

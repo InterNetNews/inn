@@ -229,14 +229,85 @@ The Host statistics are generated for a given peer at regular intervals
 after the first connection is made (or, if the remote is unreachable, after
 spooling starts). The Host statistics give totals over all Connections that
 have been active during the given time frame. For example (broken here to
-fit the page, with ``vixie'' being the peer).
+fit the page, with ``vixie'' being the peer):
 .PP
 .nf
   May 23 12:49:08 data innfeed[16015]: vixie checkpoint
 		seconds 1381 offered 2744 accepted 1286 
 		refused 1021 rejected 437 missing 0 spooled 990
+		on_close 0 unspooled 240 deferred 10 requeued 25
+		queue 42.1/14/35/13/4/24/10
 .fi
 .PP
+These meanings of these fields are:
+.nr XX \w'unspooled '
+.TP \n(XXu
+seconds
+The time since innfeed connected to the host or since the statistics
+were reset by a ``final'' log entry.
+.TP
+offered
+The number of IHAVE commands sent to the host if it is not in streaming mode.
+The sum of the number of TAKETHIS commands sent when no-CHECK mode
+is in effect plus the number CHECK commands sent in streaming mode (when
+no-CHECK mode is not in effect).
+.TP
+accepted
+The number of articles which were sent to the remote host and accepted
+by it.
+.TP
+refused
+The number of articles offered to the host that it it indicated it
+didn't want because it had already seen the Message-ID.  The remote
+host indicates this by sending a 435 response to an IHAVE command or
+a 438 response to a CHECK command.
+.TP
+rejected
+The number of articles transferred to the host that it did not accept
+because it determined either that it already had the article or it did
+not want it because of the article's Newsgroups: or Distribution: headers,
+etc.  The remote host indicates that it is rejecting the article by
+sending a 437 or 439 response after innfeed sent the entire article.
+.TP
+missing
+The number of articles which innfeed was told to offer to the host but
+which were not present in the article spool.  These articles were probably
+cancelled or expired before innfeed was able to offer them to the host.
+.TP
+spooled
+The number of article entries that were written to the .output backlog file
+because the articles could not either be sent to the host or be refused
+by it.  Articles are generally spooled either because new articles are
+arriving more quickly than they can be offered to the host, or because
+innfeed closed all the connections to the host and pushed all the
+articles currently in progress to the .output backlog file.
+.TP
+on_close
+The number of articles that were spooled when innfeed closed all the
+connections to the host.
+.TP
+unspooled
+The number of article entries that were read from the .input backlog
+file.
+.TP
+deferred
+The number of articles that the host told innfeed to retry later by
+sending a 431 or 436 response.  Innfeed immediately puts these articles
+back on the tail of the queue.
+.TP
+requeued
+The number of articles that were in progress on connections when innfeed
+dropped those connections and put the articles back on the queue.  These
+connections may have been broken by a network problem or became unresponsive
+causing innfeed to time them out.
+.TP
+queue
+The first number is the average (mean) queue size during the previous logging
+interval.  The second number is the percentage of the time that the queue
+was empty.  The third through sixth numbers are the percentages of the
+time that the queue was >0% to 25% full, 25% to 50% full, 50% to 75%
+full, and 75% to <100% full.  The last number is the percentage of the
+time that the queue was totally full.
 .PP
 If the ``\fI\-z\fP'' option is used (see below), then when the peer stats are
 generated, each Connection will log its stats too. For example, for

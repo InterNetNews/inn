@@ -95,7 +95,7 @@
 #define REALLY_FINAL_STATS	"%s global seconds %ld offered %d accepted %d refused %d rejected %d missing %d"
 #define PROCESS_FINAL_STATS	"ME global seconds %ld offered %ld accepted %ld refused %ld rejected %ld missing %ld"
 		/* key word in next two is "checkpoint" or "final" */
-#define HOST_STATS_MSG          "%s %s seconds %ld offered %d accepted %d refused %d rejected %d missing %d spooled %d"
+#define HOST_STATS_MSG          "%s %s seconds %ld offered %d accepted %d refused %d rejected %d missing %d spooled %d on_close %d unspooled %d deferred %d requeued %d queue %.1f/%.0f/%.0f/%.0f/%.0f/%.0f/%.0f"
 #define HOST_SPOOL_STATS        "%s %s seconds %ld spooled %d"
 
 #define REMOTE_BLOCKED          "%s remote cannot accept articles initial : %s"
