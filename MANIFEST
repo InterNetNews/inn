@@ -658,6 +658,7 @@ tests/lib/hashtab-t.c                 Tests for lib/hashtab.c
 tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
+tests/lib/innconf-t.c                 Tests for lib/innconf.c
 tests/lib/md5-t.c                     Tests for lib/md5.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
 tests/lib/messages-t.c                Tests for lib/messages.c
@@ -685,3 +686,5 @@ tests/overview/data/reversed          Same as basic, but in reverse order
 tests/overview/munge-data             Support script to generate test data
 tests/overview/tradindexed-t.c        Tests for storage/ov3/*
 tests/runtests.c                      The test suite driver program
+tests/util                            Test suite for utilities (Directory)
+tests/util/convdate.t                 Tests for expire/convdate

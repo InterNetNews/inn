@@ -27,3 +27,4 @@ lib/wire
 lib/xmalloc
 lib/xwrite
 overview/tradindexed
+util/convdate
