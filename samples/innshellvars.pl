@@ -23,6 +23,9 @@ $awk = "/usr/bin/awk" ;
 ##  =()<$batch = "@<_PATH_BATCHDIR>@" ;>()=
 $batch = "/var/news/spool/out.going" ;
 
+##  =()<$sendmail = "@<_PATH_SENDMAIL>@" ;>()=
+$sendmail = "/usr/lib/sendmail -t" ;
+
 ##  =()<$compress = "@<_PATH_COMPRESS>@" ;>()=
 $compress = "/usr/bin/compress" ;
 

@@ -24,6 +24,9 @@ set inn_awk = /usr/bin/awk
 ##  =()<set inn_batch = @<_PATH_BATCHDIR>@>()=
 set inn_batch = /var/news/spool/out.going
 
+##  =()<set inn_sendmail = "@<_PATH_SENDMAIL>@">()=
+set inn_sendmail = "/usr/lib/sendmail -t"
+
 ##  =()<set inn_compress = @<_PATH_COMPRESS>@>()=
 set inn_compress = /usr/bin/compress
 

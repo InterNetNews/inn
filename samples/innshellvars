@@ -14,6 +14,8 @@ ACTIVETIMES=/var/news/etc/active.times
 AWK=/usr/bin/awk
 ##  =()<BATCH=@<_PATH_BATCHDIR>@>()=
 BATCH=/var/news/spool/out.going
+##  =()<SENDMAIL="@<_PATH_SENDMAIL>@">()=
+SENDMAIL="/usr/lib/sendmail -t"
 ##  =()<COMPRESS=@<_PATH_COMPRESS>@>()=
 COMPRESS=/usr/bin/compress
 ##  =()<CONTROLPROGS=@<_PATH_CONTROLPROGS>@>()=

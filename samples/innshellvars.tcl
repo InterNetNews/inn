@@ -24,6 +24,9 @@ set inn_batch "/var/news/spool/out.going"
 ##  =()<set inn_compress "@<_PATH_COMPRESS>@">()=
 set inn_compress "/usr/bin/compress"
 
+##  =()<set inn_compress "@<_PATH_SENDMAIL>@">()=
+set inn_sendmail "/usr/lib/sendmail -t"
+
 ##  =()<set inn_controlprogs "@<_PATH_CONTROLPROGS>@">()=
 set inn_controlprogs "/usr/news/bin/control"
 
