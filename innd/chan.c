@@ -85,6 +85,24 @@ void BUFFswap(BUFFER *b1, BUFFER *b2)
     *b2 = b;
 }
 
+/*
+**  Trim '\r' from buffer.
+*/
+void BUFFtrimcr(BUFFER *bp)
+{
+    char *p, *q;
+    int trimmed = 0;
+
+    for (p = q = bp->Data ; p < bp->Data + bp->Left ; p++) {
+	if (*p == '\r' && p+1 < bp->Data + bp->Left && p[1] == '\n') {
+	    trimmed++;
+	    continue;
+	}
+	*q++ = *p;
+    }
+    bp->Left -= trimmed;
+}
+
 
 /*
 **  Initialize all the I/O channels.

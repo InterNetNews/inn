@@ -485,6 +485,7 @@ extern void		ARTsetup(void);
 extern void		BUFFset(BUFFER *bp, const char *p, const int length);
 extern void		BUFFswap(BUFFER *b1, BUFFER *b2);
 extern void             BUFFappend(BUFFER *bp, const char *p, const int len);
+extern void		BUFFtrimcr(BUFFER *bp);
 
 extern BOOL		CHANsleeping(CHANNEL *cp);
 extern CHANNEL		*CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE STate, FUNCPTR Reader, FUNCPTR WriteDone);

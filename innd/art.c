@@ -488,6 +488,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     p += 6;
     memcpy(p, HDR(_xref), ARTheaders[_xref].Length);
     end = p += ARTheaders[_xref].Length;
+    end += 2; /* include trailing "\r\n" for Headers generation */
     memcpy(p, "\r\n\r\n", 4);
     p += 4;
     ARTheaders[_xref].Found = 1;
@@ -538,6 +539,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     /* Add the data. */
     BUFFset(&Headers, bytesbuff, strlen(bytesbuff));
     BUFFappend(&Headers, artbuff, end - artbuff);
+    BUFFtrimcr(&Headers);
     Data->Headers = &Headers;
 
     DISPOSE(artbuff);
@@ -730,6 +732,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     BUFFset(&Headers, bytesbuff, strlen(bytesbuff));
     for (vp = iov; vp < end; vp++)
 	BUFFappend(&Headers, vp->iov_base, vp->iov_len);
+    BUFFtrimcr(&Headers);
     Data->Headers = &Headers;
 
     return 0;
