@@ -553,7 +553,7 @@ extern void		PROCsetup();
 extern int		RClimit();
 extern BOOL		RCnolimit();
 extern BOOL		RCauthorized();
-extern BOOL		RCcanpost();
+extern int		RCcanpost();
 extern char		*RChostname();
 extern void		RCclose();
 extern void		RChandoff();

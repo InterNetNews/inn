@@ -2084,6 +2084,7 @@ STRING ARTpost(CHANNEL *cp)
     int			ControlHeader;
     int			oerrno;
     TOKEN               token;
+    int			canpost;
 #if defined(DO_PERL)
     char		*perlrc;
 #endif /* DO_PERL */
@@ -2362,8 +2363,18 @@ STRING ARTpost(CHANNEL *cp)
 	/* Check if we accept articles in this group from this peer, after
 	   poisoning.  This means that articles that we accept from them will
 	   be handled correctly if they're crossposted. */
-	if (!RCcanpost(cp, p))
+	canpost = RCcanpost(cp, p);
+	if (!canpost)
 	    continue;
+	else if (canpost < 0) {
+	    (void)sprintf(buff, "%d Won't accept posts in \"%s\"",
+		NNTP_REJECTIT_VAL, p);
+	    ARTlog(&Data, ART_REJECT, buff);
+	    if (distributions)
+		DISPOSE(distributions);
+	    ARTreject(REJECT_GROUP, cp, buff, article);
+	    return buff;
+	}
 
 	/* Valid group, feed it to that group's sites. */
 	Accepted = TRUE;

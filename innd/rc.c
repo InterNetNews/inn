@@ -1286,11 +1286,11 @@ RChostname(cp)
 /*
 **  Is the remote site allowed to post to this group?
 */
-BOOL RCcanpost(CHANNEL *cp, char *group)
+int RCcanpost(CHANNEL *cp, char *group)
 {
     REMOTEHOST	        *rp;
-    BOOL	        match;
-    BOOL	        subvalue;
+    char	        match;
+    char	        subvalue;
     char	        **argv;
     char	        *pat;
     int	                i;
@@ -1300,16 +1300,20 @@ BOOL RCcanpost(CHANNEL *cp, char *group)
 	    continue;
 	if (rp->Patterns == NULL)
 	    break;
-	for (match = TRUE, argv = rp->Patterns; (pat = *argv++) != NULL; ) {
-	    subvalue = *pat != SUB_NEGATE;
-	    if (!subvalue)
+	for (match = 0, argv = rp->Patterns; (pat = *argv++) != NULL; ) {
+	    subvalue = (*pat != SUB_NEGATE) && (*pat != SUB_POISON) ?
+	      0 : *pat;
+	    if (subvalue)
 		pat++;
-	    if ((match != subvalue) && wildmat(group, pat))
+	    if ((match != subvalue) && wildmat(group, pat)) {
+		if (subvalue == SUB_POISON)
+		    return -1;
 		match = subvalue;
+	    }
 	}
-	return match;
+	return !match;
     }
-    return TRUE;
+    return 1;
 }
 
 
