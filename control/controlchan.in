@@ -1,0 +1,443 @@
+#!/usr/bin/perl -w
+require "/usr/local/news/lib/innshellvars.pl";
+
+###########################################################################
+# $Id$
+# Copyright 2001 by Marco d'Itri <md@linux.it>
+###########################################################################
+# controlchan - read a feed, sniff out control messages, and send them
+# to the appropriate script.
+#
+# Give this program its own newsfeed.  Make sure that you've created
+# the newsgroup control.cancel so that you don't have to scan through
+# cancels, which this program won't process anyway.
+#
+# Make a newsfeeds entry like this:
+#
+# controlchan!\
+#    :!*,control,control.*,!control.cancel\
+#    :Tc,Wnsm\
+#    :@prefix@/bin/controlchan
+#
+###########################################################################
+
+require 5.004_03;
+use strict;
+
+delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
+
+# globals
+my ($cachedctl, $curmsgid);
+my $lastctl = 0;
+my $use_syslog = 0;
+my $debug = 0;
+
+# setup logging ###########################################################
+# do not log to syslog if stderr is connected to a console
+if (not -t 2) {
+    eval { require INN::Syslog; import INN::Syslog; $use_syslog = 1; };
+    eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; }
+        unless $use_syslog;
+}
+
+if ($use_syslog) {
+    eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
+    openlog('controlchan', 'pid', $inn::syslog_facility);
+}
+logmsg('starting');
+
+# load modules from the control directory #################################
+opendir(CTL, $inn::controlprogs)
+    or logdie("Cannot open $inn::controlprogs", 'crit');
+foreach (readdir CTL) {
+    next if not /^([a-z\.]+\.pl)$/ and not -f "$inn::controlprogs/$_";
+    eval { require "$inn::controlprogs/$1" };
+    if ($@) {
+        $@ =~ s/\n/  /g;
+        logdie($@, 'crit');
+    }
+    logmsg("loaded $inn::controlprogs/$1", 'debug');
+}
+closedir CTL;
+
+# main loop ###############################################################
+while (<STDIN>) {
+    chop;
+    my ($token, $sitepath, $msgid) = split(/\s+/, $_);
+    next if not defined $token;
+    $sitepath ||= '';
+    $curmsgid = $msgid || '';
+
+    my $artfh = open_article($token);
+    next if not defined $artfh;
+
+    # suck in headers and body, normalize the strange ones
+    my (@headers, @body, %hdr);
+    if (not parse_article($artfh, \@headers, \@body, \%hdr)) {
+        close $artfh;
+        next;
+    }
+    close $artfh or logdie('sm died with status ' . ($? >> 8));
+
+    next if not exists $hdr{control};
+
+    $curmsgid = $hdr{'message-id'};
+    my $sender = cleanaddr($hdr{sender} || $hdr{from});
+    my $replyto = cleanaddr($hdr{'reply-to'} || $hdr{from});
+
+    my (@progparams, $progname);
+    if ($hdr{control} =~ /\s/) {
+        $hdr{control} =~ /^(\S+)\s+(.+)?/;
+        $progname = lc $1;
+        @progparams = split(/\s+/, lc $2) if $2;
+    } else {
+        $progname = lc $hdr{control};
+    }
+
+    next if $progname eq 'cancel';
+
+    if ($progname !~ /^([a-z]+)$/) {
+        logmsg("Naughty control in article $curmsgid ($progname)");
+        next;
+    }
+    $progname = $1;
+
+    # Do we want to process the message?  Let's check the permissions.
+    my ($action, $logname, $newsgrouppats) =
+        ctlperm($progname, $sender, $progparams[0],
+                $token, \@headers, \@body);
+
+    next if $action eq 'drop';
+
+    if ($action eq '_pgpfail') {
+        my $type = '';
+        if ($progparams[0] and $progparams[0] eq 'newgroup') {
+            if ($progparams[1] and $progparams[1] eq 'moderated') {
+                $type = 'm ';
+            } else {
+                $type = 'y ';
+            }
+        }
+        logmsg("skipping $progname $type$sender"
+            . "(pgpverify failed) in $curmsgid");
+        next;
+    }
+
+    # used by checkgroups. Convert from perl regexp to grep regexp.
+    if (local $_ = $newsgrouppats) {
+        s/\$\|/|/g;
+        s/[^\\]\.[^*]/?/g;
+        s/\$//;
+        s/\.\*/*/g;
+        s/\\([\$\+\.])/$1/g;
+        $progparams[0] = $_;
+    }
+
+    # find the appropriate module and call it
+    my $subname = "control_$progname";
+    my $subfind = \&$subname;
+    if (not defined &$subfind) {
+        if ($logname) {
+            logger($logname, "Unknown control message by $sender",
+                \@headers, \@body);
+        } else {
+            logmsg("Unknown \"$progname\" control by $sender");
+        }
+        next;
+    }
+
+    my $approved = $hdr{approved} ? 1 : 0;
+    logmsg("$subname, " . join(' ', @progparams)
+        . " $sender $replyto $token, $sitepath, $action"
+        . ($logname ? "=$logname" : '') .", $approved");
+
+    &$subfind(\@progparams, $sender, $replyto, $sitepath,
+        $action, $logname, $approved, \@headers, \@body);
+}
+
+closelog() if $use_syslog;
+exit 0;
+
+print $inn::most_logs.$inn::syslog_facility.$inn::mta.
+    $inn::newsmaster.$inn::locks; # lint food
+
+# misc functions ##########################################################
+sub parse_article {
+    my ($artfh, $headers, $body, $hdr) = @_;
+    my $h;
+    my %uniquehdr = map { $_ => 1 }    qw(date followup-to from message-id
+        newsgroups path reply-to subject sender);
+
+    while (<$artfh>) {
+        chop;
+        last if /^$/;
+        push @$headers, $_;
+        if (/^(\S+):\s+(.+)/) {
+            $h = lc $1;
+            if (exists $hdr->{$h}) {
+                if (exists $uniquehdr{$h}) {
+                    logmsg("Multiple $1 headers in article $curmsgid");
+                    return 0;
+                }
+                $hdr->{$h} .= ' ' . $2;
+            } else {
+                $hdr->{$h} = $2;
+            }
+            next;
+        } elsif (/^\s+(.+)/) {
+            if (defined $h) {
+                $hdr->{$h} .= ' ' . $1;
+                next;
+            }
+        }
+        logmsg("Broken headers in article $curmsgid");
+        return 0;
+    }
+
+    # article is empty or does not exist
+    return 0 if not @$headers;
+
+    chop (@$body = <$artfh>);
+    return 1;
+}
+
+# Strip a mail address, innd-style.
+sub cleanaddr {
+    local $_ = shift;
+    s/(\s+)?\(.*\)(\s+)?//g;
+    s/.*<(.*)>.*/$1/;
+    s/[^-a-zA-Z0-9+_.@%]/_/g;    # protect MTA
+    s/^-/_/;                    # protect MTA
+    return $_;
+}
+
+# Read and cache control.ctl.
+sub readctlfile {
+    my $mtime = (stat($inn::ctlfile))[9];
+    return $cachedctl if $lastctl == $mtime;    # mtime has not changed.
+    $lastctl = $mtime;
+
+    my @ctllist;
+    open(CTLFILE, $inn::ctlfile)
+        or logdie("Cannot open $inn::ctlfile", 'crit');
+    while (<CTLFILE>) {
+        chop;
+        # Not a comment or blank? Convert wildmat to regex
+        next if not /^(\s+)?[^\#]/ or /^$/;
+        if (not /:(?:doit|doifarg|drop|log|mail|verify-.*)(?:=.*)?$/) {
+            s/.*://;
+            logmsg("$_ is not a valid action for control.ctl", 'err');
+            next;
+        }
+        # Convert to a : separated list of regexps
+        s/^all:/*:/i;
+        s/([\$\+\.])/\\$1/g;
+        s/\*/.*/g;
+        s/\?/./g;
+        s/(.*)/^$1\$/;
+        s/:/\$:^/g;
+        s/\|/\$|^/g;
+        push @ctllist, $_;
+    }
+    close CTLFILE;
+
+    logmsg('warning: control.ctl is empty!', 'err') if not @ctllist;
+    return $cachedctl = [ reverse @ctllist ];
+}
+
+# Parse a control message's permissions.
+sub ctlperm {
+    my ($type, $sender, $newsgroup, $token, $headers, $body) = @_;
+
+    my $action = 'drop';    # default
+    my ($logname, $hier);
+
+    my $ctllist = readctlfile();
+    foreach (@$ctllist) {
+        my @ctlline = split /:/;
+        # 0: type  1: from@addr  2: group.*  3: action
+        if ($type =~ /$ctlline[0]/ and $sender =~ /$ctlline[1]/i and
+            ($type !~ /(?:new|rm)group/ or $newsgroup =~ /$ctlline[2]/)) {
+            $action = $ctlline[3];
+            $action =~ s/\^(.+)\$/$1/;
+            $action =~ s/\\//g;
+            $hier = $ctlline[2] if $type eq 'checkgroups';
+            last;
+        }
+    }
+
+    ($action, $logname) = split(/=/, $action);
+
+    if ($action =~ /^verify-(.+)/) {
+        my $keyowner = $1;
+        if ($inn::pgpverify and $inn::pgpverify =~ /^(?:true|on|yes)$/i) {
+            my $pgpresult = defined &local_pgpverify ?
+                local_pgpverify($token, $headers, $body) : pgpverify($token);
+            if ($keyowner eq $pgpresult) {
+                $action = 'doit';
+            } else {
+                $action = '_pgpfail';
+            }
+        } else {
+            $action = 'mail';
+        }
+    }
+
+    return ($action, $logname, $hier);
+}
+
+# Write stuff to a log or send mail to the news admin.
+sub logger {
+    my ($logfile, $message, $headers, $body) = @_;
+
+    if ($logfile eq 'mail') {
+        my $mail = sendmail($message);
+        print $mail map { s/^~/~~/; "$_\n" } @$headers;
+        print $mail "$_\n" . map { s/^~/~~/; "$_\n" } @$body if $body;
+        close $mail or logdie("Cannot send mail: $!");
+        return;
+    }
+
+    if ($logfile =~ /^([^.\/].*)/) {
+        $logfile = $1;
+    } else {
+        logmsg("Invalid log file: $logfile", 'err');
+        $logfile = 'control';
+    }
+
+    $logfile = "$inn::most_logs/$logfile.log" unless $logfile =~ /^\//;
+    my $lockfile = $logfile;
+    $lockfile =~ s#.*/##;
+    $lockfile = "$inn::locks/LOCK.$lockfile";
+    shlock($lockfile);
+
+    open(LOGFILE, ">>$logfile") or logdie("Cannot open $logfile: $!");
+    print LOGFILE "$message\n";
+    print LOGFILE "    $_\n" foreach (@$headers, '', @$body, '');
+    close LOGFILE;
+    unlink $lockfile;
+}
+
+# write to syslog or errlog
+sub logmsg {
+    my ($msg, $lvl) = @_;
+
+    return if $lvl and $lvl eq 'debug' and not $debug;
+    if ($use_syslog) {
+        syslog($lvl || 'notice', '%s', $msg);
+    } else {
+        print STDERR (scalar localtime) . ": $msg\n";
+    }
+}
+
+# log a message and then die
+sub logdie {
+    my ($msg, $lvl) = @_;
+
+    $msg .= " ($curmsgid)" if $curmsgid;
+    logmsg($msg, $lvl || 'err');
+    exit 1;
+}
+
+# wrappers executing external programs ####################################
+
+# Open an article appropriately to our storage method (or lack thereof).
+sub open_article {
+    my $token = shift;
+
+    if ($token =~ /^\@.+\@$/) {
+        my $pid = open(ART, '-|');
+        logdie('Cannot fork: ' . $!) if $pid < 0;
+        if ($pid == 0) {
+            exec("$inn::newsbin/sm", '-q', $token) or
+                logdie("Cannot exec sm: $!");
+        }
+        return *ART;
+    } else {
+        return *ART if open(ART, $token);
+        logmsg("Cannot open article $token: $!");
+    }
+    return undef;
+}
+
+sub pgpverify {
+    my $token = shift;
+
+    if ($token =~ /^\@.+\@$/) {
+        open(PGPCHECK, "$inn::newsbin/sm -q $token "
+            . "| $inn::newsbin/pgpverify |") or goto ERROR;
+    } else {
+        open(PGPCHECK, "$inn::newsbin/pgpverify < $token |") or goto ERROR;
+    }
+    my $pgpresult = <PGPCHECK>;
+    close PGPCHECK or goto ERROR;
+    $pgpresult ||= '';
+    chop $pgpresult;
+    return $pgpresult;
+ERROR:
+    logmsg("pgpverify failed: $!", 'debug');
+    return '';
+}
+
+sub ctlinnd {
+    my ($cmd, @args) = @_;
+
+    my $st = system("$inn::newsbin/ctlinnd", '-s', $cmd, @args);
+    logdie('Cannot run ctlinnd: ' . $!) if $st == -1;
+    logdie('ctlinnd returned status ' . ($st & 255)) if $st > 0;
+}
+
+sub shlock {
+    my $lockfile = shift;
+
+    my $locktry = 0;
+    while ($locktry < 60) {
+        if (system("$inn::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
+            return 1;
+        }
+        $locktry++;
+        sleep 2;
+    }
+
+    open(LOCKFILE, $lockfile);
+    my $lockpid = <LOCKFILE> || "($!)";
+    close LOCKFILE;
+    logdie("Cannot get lock $lockfile, held by $lockpid");
+    return undef;
+}
+
+# If $body is not defined, returns a file handle which must be closed.
+# Don't forget checking the return value of close().
+# $addresses may be a scalar or a reference to a list of addresses.
+# If not defined, $inn::newsmaster is the default.
+# parts of this code stolen from innmail.pl
+sub sendmail {
+    my ($subject, $addresses, $body) = @_;
+    $addresses = [ $addresses || $inn::newsmaster ] if not ref $addresses;
+    $subject ||= '(no subject)';
+
+    # fix up all addresses
+    my @addrs = map { s#[^-a-zA-Z0-9+_.@%]##g; $_ } @$addresses;
+
+    my $sm = $inn::mta;
+    if ($sm =~ /%s/) {
+        $sm = sprintf($sm, join(' ', @addrs));
+    } else {
+        $sm .= ' ' . join(' ', @addrs);
+    }
+
+    # fork and spawn the MTA whitout using the shell
+    my $pid = open(MTA, '|-');
+    logdie('Cannot fork: ' . $!) if $pid < 0;
+    if ($pid == 0) {
+        exec(split(/\s+/, $sm)) or logdie("Cannot exec $sm: $!");
+    }
+
+    print MTA 'To: ' . join(",\n\t", @addrs) . "\nSubject: $subject\n\n";
+    return *MTA if not defined $body;
+    $body = join("\n", @$body) if ref $body eq 'ARRAY';
+    print MTA $body . "\n";
+    close MTA or logdie("Execution of $sm failed: $!");
+    return 1;
+}
