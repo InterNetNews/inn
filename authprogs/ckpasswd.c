@@ -66,7 +66,9 @@
 **  This function allocates an array of struct pam_response to return to the
 **  PAM libraries that's never freed.  For this program, this isn't much of an
 **  issue, since it will likely only be called once and then the program will
-**  exit.
+**  exit.  This function uses malloc and strdup instead of xmalloc and xstrdup
+**  intentionally so that the PAM conversation will be closed cleanly if we
+**  run out of memory rather than simply terminated.
 **
 **  appdata_ptr contains the password we were given.
 */
