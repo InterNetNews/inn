@@ -220,6 +220,10 @@ static const char * const pvt_h_errlist[] = {
 
 static int pvt_h_nerr = (sizeof pvt_h_errlist / sizeof pvt_h_errlist[0]);
 
+#if defined(hpux) || defined(__hpux)
+extern int h_errno;
+#endif
+
 /* return a friendly string for the current value of h_errno. Pinched from
    Stevens */
 const char *host_err_str (void)
