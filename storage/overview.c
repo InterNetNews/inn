@@ -86,7 +86,7 @@ STATIC BOOL OVERdommap(UNIOVER *config, OFFSET_T offset)
 */
 STATIC BOOL OVERcheckmmap(UNIOVER *config, OFFSET_T offset, unsigned short len)
 {
-    int i, j, refcount = 0;
+    int i, j = 0, refcount = 0;
     OFFSET_T pagefudge;
 
     if ((config == (UNIOVER *)NULL) || (config->size == 0))
