@@ -84,36 +84,6 @@ static void TITLEset(const char *what)
 #endif  /* defined(HAVE_SETPROCTITLE) */
 }
 
-typedef void (*SIG_HANDLER_T)(int);
-
-#ifdef HAVE_SIGACTION
-
-/* like xsignal, but does not set SA_RESTART */
-
-static SIG_HANDLER_T
-xrsignal(int signum, SIG_HANDLER_T sigfunc)
-{
-    struct sigaction act, oact;
-
-    act.sa_handler = sigfunc;
-    sigemptyset(&act.sa_mask);
-#ifdef SA_INTERRUPT
-    act.sa_flags = SA_INTERRUPT;
-#else
-    act.sa_flags = 0;
-#endif
-
-    if (sigaction(signum, &act, &oact) < 0)
-        return SIG_ERR;
-    return oact.sa_handler;
-}
-
-#else /* HAVE_SIGACTION */
-
-#define xrsignal xsignal
-
-#endif /* HAVE_SIGACTION */
-
 #define SELECT_TIMEOUT 15
 
 
@@ -502,10 +472,10 @@ serverproc(int me)
 	syslog(L_FATAL, "ovdb_server: cant open overview");
 	exit(1);
     }
-    xrsignal(SIGINT, sigfunc);
-    xrsignal(SIGTERM, sigfunc);
-    xrsignal(SIGHUP, sigfunc);
-    xrsignal(SIGUSR1, childsig);
+    xsignal_norestart(SIGINT, sigfunc);
+    xsignal_norestart(SIGTERM, sigfunc);
+    xsignal_norestart(SIGHUP, sigfunc);
+    xsignal_norestart(SIGUSR1, childsig);
 
     numreaders = lastnumreaders = 0;
     if(ovdb_conf.maxrsconn) {
@@ -747,12 +717,12 @@ main(int argc, char *argv[])
     if(putpid(path))
         exit(1);
 
-    xrsignal(SIGINT, sigfunc);
-    xrsignal(SIGTERM, sigfunc);
-    xrsignal(SIGHUP, sigfunc);
+    xsignal_norestart(SIGINT, sigfunc);
+    xsignal_norestart(SIGTERM, sigfunc);
+    xsignal_norestart(SIGHUP, sigfunc);
 
-    xrsignal(SIGUSR1, parentsig);
-    xrsignal(SIGCHLD, childsig);
+    xsignal_norestart(SIGUSR1, parentsig);
+    xsignal_norestart(SIGCHLD, childsig);
     parent = getpid();
 
     children = sharemem(sizeof(struct child) * (ovdb_conf.numrsprocs+1));
