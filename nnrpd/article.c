@@ -63,9 +63,9 @@ static bool PushIOvHelper(struct iovec* vec, int* countp) {
 #ifdef HAVE_SSL
     result = tls_conn
 	     ? SSL_writev(tls_conn, vec, *countp)
-	     : writev(STDOUT_FILENO, vec, *countp);
+	     : xwritev(STDOUT_FILENO, vec, *countp);
 #else
-    result = writev(STDOUT_FILENO, vec, *countp);
+    result = xwritev(STDOUT_FILENO, vec, *countp);
 #endif
     *countp = 0;
     return (result <= 0 ? FALSE : TRUE);
