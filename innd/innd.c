@@ -386,7 +386,7 @@ static int
 AllocationFailure(const char *what, size_t size, const char *file, int line)
 {
     syslog(L_FATAL, "%s cant %s %lu bytes at line %d of %s: %m", LogName,
-           what, size, file, line);
+           what, size, line, file);
     exit(1);
 }
 
