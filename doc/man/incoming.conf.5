@@ -146,6 +146,12 @@ This key requires a string value. Reserved for future use. (default=empty)
 .BI skip:
 This key requires a boolean value. Setting this entry causes this peer
 to be skipped. Reserved for future use. (default=false)
+.TP
+.BI noresendid:
+This key requires a boolean value. It defines whether innd should send
+``431 RESENDID'' responses if a message is offered that is already received
+from another peer. This can be useful for peers that resend messages
+right away, as innfeed does. (default=false)
 .SH HISTORY
 Written by Fabien Tassin <fta@oleane.net> for InterNetNews.
 .de R$
