@@ -84,7 +84,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
-#include <stdio.h>              /* for NULL */
+
+#ifndef NULL
+# define NULL 0
+#endif
 
 /* varargs declarations: */
 
