@@ -1317,7 +1317,7 @@ static BOOL getcore(hash_table *tab) {
 	    DEBUG(("getcore: mmap failed\n"));
 	    return FALSE;
 	}
-#if defined (MADV_RANDOM) && !defined(_nec_ews)
+#if defined (MADV_RANDOM) && defined(HAVE_MADVISE)
 	/* not present in all versions of mmap() */
 	madvise(it, (size_t)conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
 #endif

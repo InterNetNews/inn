@@ -81,6 +81,6 @@ int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     }
     return 0;
 #else
-    return NNTPconnect(LOOPBACK_HOST, FromServerp, ToServerp, errbuff);
+    return NNTPconnect(LOOPBACK_HOST, innconf->port, FromServerp, ToServerp, errbuff);
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }

@@ -267,7 +267,7 @@ ICCcommand(cmd, argv, replyp)
 	return -1;
     }
 #else
-    if ((fd = open(cpcatpath(inconf->pathrun, _PATH_NEWSCONTROL), O_WRONLY)) < 0) {
+    if ((fd = open(cpcatpath(innconf->pathrun, _PATH_NEWSCONTROL), O_WRONLY)) < 0) {
 	DISPOSE(buff);
 	ICCfailure = "open";
 	return -1;
