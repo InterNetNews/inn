@@ -1,12 +1,24 @@
 Upgrading from 2.3 to 2.4
 
-    Currently, there are no incompatible differences between INN 2.3 and
-    2.4, unless you use nnrpd's Perl authentication hooks.  A simple "make
-    update" should be sufficient (you probably need to add
+    The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
+    change, options in inn.conf that contain whitespace or a few other
+    special characters must be quoted with double quotes, and empty
+    parameters (parameters with no value) are not allowed.  INN 2.4 comes
+    with a script, innupgrade, that is run automatically on "make update"
+    that will attempt to fix any problems that it finds with your inn.conf
+    file, saving the original as inn.conf.OLD.
+
+    This change is the beginning of standardizing the parsing and syntax
+    across all of INN's configuration files.
+
+    The history subsystem now has a standard API that allows other backends
+    to be used.  Because of this, you now need to specify the history method
+    in inn.conf.  Adding:
 
         hismethod: hisv6
 
-    to inn.conf).
+    will tell INN to use the same history backend as was used in previous
+    versions.
 
     If you use Perl authentication for nnrpd (if nnrpdperlauth in inn.conf
     is true), however, there have been major changes.  See "Changes to Perl
@@ -28,6 +40,14 @@ Changes from 2.3 to 2.4
       affecting the rest of INN, and will significantly improve the
       encapsulation of the history subsystem.  See the libinnhist(3) man
       page for the details of the interface.
+
+    * INN now uses a new parser for the inn.conf file.  This means that
+      parameters containing whitespace or other special characters must now
+      be quoted; see inn.conf(5).  It fixes the long-standing bug that
+      certain values must be included in inn.conf even if using the defaults
+      for the use of shell or Perl scripts, and it will serve as the basis
+      for standardizing and cleaning up the configuration file parsing in
+      other parts of INN.
 
     * Variables can now be used in the newsfeeds file to make it easier to
       specify a lot of similar feeds or feed patterns.  See the newsfeeds(5)
@@ -56,8 +76,9 @@ Changes from 2.3 to 2.4
       authenticators.
 
     * INN now checks to ensure that the configured temporary directory is
-      not world-writeable since INN doesn't currently create all temporary
-      files in a manner that's safe against symlink attacks.
+      not world-writeable.  Additionally, most (if not all) of the temporary
+      file creation in INN now uses functions that create temporary files
+      properly and safely.
 
     * Two configure options have changed names:  --with-tmp-path is now
       --with-tmp-dir and --with-largefiles is now --enable-largefiles to
