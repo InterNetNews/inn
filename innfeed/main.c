@@ -333,7 +333,7 @@ int main (int argc, char **argv)
     }
 
   val = TRUE;
-  if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
+  if (!SMsetup(SM_PREOPEN, (void *)&val)) {
       syslog(LOG_ERR, "cant setup the storage subsystem\n");
       exit(1);
   }

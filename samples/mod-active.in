@@ -13,6 +13,7 @@ $oldact = $inn::active;         # active file location (same; shut up, perl -w)
 $newact = "$oldact.new$$";      # temporary name for new active file
 $actime = "$oldact.times";      # active.times file
 $pausemsg = 'batch active update, ok'; # message to be used for pausing?
+$diff_flags = '';		# Flags for diff(1); default chosen if null.
 
 $0 =~ s#^.*/##;
 
@@ -22,6 +23,20 @@ die "$0: must run as $inn::newsuser user"
 $debug = -t STDOUT ? 1 : 0;
 
 $| = 1;                # show output as it happens (for an rsh/ssh pipe)
+
+# Guess at best flags for a condensed diff listing.  The
+# checks for alternative operating systems is incomplete.
+unless ($diff_flags) {
+  if (`diff -v 2>&1` =~ /GNU/) {
+    $diff_flags = '-u0';
+  } elsif ($^O =~ /^(dec_osf|solaris)$/) {
+    $diff_flags = '-C0';
+  } elsif ($^O eq 'nextstep') {
+    $diff_flags = '-c0';
+  } else {
+    $diff_flags = '-c';
+  }
+}
 
 print "reading list of groups to update\n" if $debug;
 
@@ -72,7 +87,7 @@ if (!rename("$newact", "$oldact")) {
 }
 
 &ctlinnd("reload active 'updated from checkgroups'");
-system("diff -c0 $oldact.old $oldact");
+system("diff $diff_flags $oldact.old $oldact");
 &ctlinnd("go $pausemsg");
 
 print "updating $actime\n" if $debug;
@@ -95,7 +110,7 @@ ctlinnd
   local($command) = @_;
 
   print "ctlinnd $command\n" if $debug;
-  if (system("/usr/news/bin/ctlinnd -s $command")) {
+  if (system("$inn::newsbin/ctlinnd -s $command")) {
     die "$0: \"$command\" failed, aborting\n";
   }
 }

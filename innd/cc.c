@@ -243,24 +243,19 @@ CCaddhist(av)
     HASH                hash;
     int			i;
     TOKEN		token;
-    OFFSET_T		offset;
-    unsigned char	index;
-    unsigned short	len;
 
     /* Check to see if we were passed a hash first. */
     i = strlen(av[0]);
     if (av[0][0]=='[' && av[0][i-1] == ']') {
 	if (i != ((sizeof(HASH) * 2) + 2))
 	    return "1 Bad Hash";
-	index = OVER_NONE;
-	offset = 0;
-	len = 0;
-	OVERsetoffset(&token, &offset, &index, &len);
 	if (av[4] != NULL && *av[4] != '\0') {
 	    if (!IsToken(av[4]))
 		return "1 Bad Token";
 	    else
 		token = TextToToken(av[4]);
+	} else {
+	    OVERmaketoken(&token, (OFFSET_T)0, OVER_NONE, 0);
 	}
         hash = TextToHash(&av[0][1]);
 	/* Put something bogus in here.  This should never be referred
@@ -638,6 +633,12 @@ typedef enum { false = 0, true = 1 } bool;
 #include <perl.h>
 #include <XSUB.h>
 
+/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
+#ifndef ERRSV
+# define ERRSV GvSV(errgv)
+# define PL_na na
+#endif
+
 extern CV *perl_filter_cv ;
 
 STATIC STRING
@@ -749,7 +750,7 @@ CCgo(av)
     Mode = OMrunning;
     ThrottledbyIOError = FALSE;
 
-    if (NNRPReason && innconf->readerswhenstopped) {
+    if (NNRPReason && !innconf->readerswhenstopped) {
 	av[0] = YES;
 	av[1] = p;
 	(void)CCreaders(av);
@@ -760,11 +761,11 @@ CCgo(av)
     if (innconf->storageapi) {
 	int fdcountold = Overfdcount;
 	if (!OVERinit()) {
-	    syslog(L_FATAL, "%s cant initialize the unified overview");
+	    syslog(L_FATAL, "%s cant initialize the unified overview", LogName);
 	    exit(1);
 	}
 	if ((Overfdcount = OVERgetnum()) < 0) {
-            syslog(L_FATAL, "%s cant get config for the unified overview");
+            syslog(L_FATAL, "%s cant get config for the unified overview", LogName);
             exit(1);
 	}
 	if (fdcountold != Overfdcount) {
@@ -1211,7 +1212,7 @@ CCblock(NewMode, reason)
     if (ModeReason)
 	DISPOSE(ModeReason);
     ModeReason = COPY(reason);
-    if (NNRPReason == NULL && innconf->readerswhenstopped) {
+    if (NNRPReason == NULL && !innconf->readerswhenstopped) {
 	av[0] = NO;
 	av[1] = ModeReason;
 	(void)CCreaders(av);
@@ -1353,11 +1354,11 @@ CCreload(av)
 	if (innconf->storageapi) {  
 	    int fdcountold = Overfdcount;
 	    if (!OVERinit()) {
-		syslog(L_FATAL, "%s cant initialize the unified overview");
+		syslog(L_FATAL, "%s cant initialize the unified overview", LogName);
 		exit(1);
 	    } 
 	    if ((Overfdcount = OVERgetnum()) < 0) {
-		syslog(L_FATAL, "%s cant get config for the unified overview");
+		syslog(L_FATAL, "%s cant get config for the unified overview", LogName);
 		exit(1);
 	    }
 	    if (fdcountold != Overfdcount) {
@@ -1397,11 +1398,11 @@ CCreload(av)
 	    int fdcountold = Overfdcount;
 	    OVERshutdown();
 	    if (!OVERinit()) {
-		syslog(L_FATAL, "%s cant initialize the unified overview");
+		syslog(L_FATAL, "%s cant initialize the unified overview", LogName);
 		exit(1);
 	    } 
 	    if ((Overfdcount = OVERgetnum()) < 0) {
-		syslog(L_FATAL, "%s cant get config for the unified overview");
+		syslog(L_FATAL, "%s cant get config for the unified overview", LogName);
 		exit(1);
 	    }
 	    if (fdcountold != Overfdcount) {
@@ -2152,6 +2153,9 @@ XS(XS_INN_newsgroup)
     dXSARGS;
     char*	newsgroup;
     NEWSGROUP*  ngp;
+    char*	end;
+    char*	rest;
+    int		size;
 
     if (items != 1)
         croak("Usage: INN::newsgroup(msgid)");
@@ -2159,8 +2163,28 @@ XS(XS_INN_newsgroup)
 
     if ((ngp = NGfind(newsgroup)) == NULL)
 	XSRETURN_UNDEF;
-    else
-	XSRETURN_PV(ngp->Rest);
+    else {
+	/* ngp->Rest is newline-terminated; find the end. */
+	end = strchr(ngp->Rest, '\n');
+	if (end == NULL) {
+	    size = strlen(ngp->Rest);
+	} else {
+	    size = end - ngp->Rest;
+	}
+
+	if (CCperlbuff.Data == NULL) {
+	    CCperlbuff.Size = SITE_BUFFER_SIZE;
+	    CCperlbuff.Data = NEW(char, CCperlbuff.Size);
+	}
+
+	/* SITE_BUFFER_SIZE should be *huge* for this, but be paranoid. */
+	if (size > SITE_BUFFER_SIZE + 1)
+	    size = SITE_BUFFER_SIZE;
+
+	strncpy(CCperlbuff.Data, ngp->Rest, size);
+	CCperlbuff.Data[size] = '\0';
+	XSRETURN_PV(CCperlbuff.Data);
+    }
 }
 
 XS(XS_INN_filesfor)
@@ -2194,7 +2218,7 @@ XS(XS_INN_head)
     if (items != 1)
         croak("Usage: INN::head(msgid)");
 
-    msgid = (char *)SvPV(ST(0),na);
+    msgid = (char *)SvPV(ST(0),PL_na);
 
     /* Get the article filenames; open the first file */
     if ((q = HISfilesfor(HashMessageID(msgid))) == NULL) {
@@ -2238,7 +2262,7 @@ XS(XS_INN_article)
     if (items != 1)
 	croak("Usage: INN::article(msgid)");
 
-    msgid = (char *)SvPV(ST(0),na);
+    msgid = (char *)SvPV(ST(0),PL_na);
 
     /* Get the article filenames; open the first file */
     if ((q = HISfilesfor(HashMessageID(msgid))) == NULL) {
@@ -2280,8 +2304,8 @@ XS(XS_INN_syslog)
     if (items != 2)
         croak("Usage: INN::syslog(level, message)");
 
-    loglevel = (char *)SvPV(ST(0),na);
-    logmsg = (char *)SvPV(ST(1),na);
+    loglevel = (char *)SvPV(ST(0),PL_na);
+    logmsg = (char *)SvPV(ST(1),PL_na);
 
     switch (*loglevel) {
 	default:		priority = LOG_NOTICE ;

@@ -22,6 +22,7 @@ Supported Systems
   Solaris 2.6.x
   SunOS 4.1.4
   UX/4800 R11 and up
+  AIX 4.2
 
 Before You Begin  <A note here about required packages>
 
@@ -69,12 +70,12 @@ Choosing an Article Storage Format
   INN supports three methods of storing articles on your system. Each method
   has specific advantages and disadvantages. These storage methods are:
 
-  traditional - This is the storage method used by all previous versions of INN.
-                Articles are stored as individual text files whose names are the
-                same as the article number. The articles are divided up into
-                directories based on the news group name. For example, article
-                12345 in news.software.nntp would be stored in the article spool
-                under the path "news/software/nntp/12345".
+  traditional - This is the storage method used by all previous versions of
+                INN.  Articles are stored as individual text files whose names
+                are the same as the article number. The articles are divided up
+                into directories based on the news group name. For example,
+                article 12345 in news.software.nntp would be stored in the
+                article spool under the path "news/software/nntp/12345".
 
                    Advantages: solid time-tested code, compatible with all of
                                the third-party INN add-ons available, gives you
@@ -242,9 +243,9 @@ Configuring INN
   in this case), and all other comp groups will match the first and second
   patterns and will be excluded by the second pattern.
 
-  In most INN configuration files, lines beginning with a pound sign are
-  considered comments and are ignored. Any deviations from this practice
-  will be noted in the description for that particular file.
+  In most INN configuration files, lines beginning with a "#" symbol
+  are considered comments and are ignored. Any deviations from this
+  practice will be noted in the description for that particular file.
   
   1. inn.conf (REQUIRED)
 
@@ -271,7 +272,7 @@ Configuring INN
                        If no pathhost is specified then the FQDN of the
                        machine will be used instead.
 
-  domainname           Sets the domain name for your server. Normally this
+  domain               Sets the domain name for your server. Normally this
                        is determined automatically by INN, but in some cases
                        it is necessary to set it manually. For example, if you
                        are running NIS on a SunOS system -and- your hostnames
@@ -346,6 +347,10 @@ Configuring INN
                           # h2ph *
                           # cd /usr/include/sys
                           # h2ph *
+
+  logipaddr            Set false, if controlchan is used and ihave/sendme setup
+                       is required.  Or ihave and sendme cannot get correct
+	               name, then the messages are incorrect.
 
   2. newsfeeds (REQUIRED)
 
@@ -428,6 +433,12 @@ Configuring INN
         innfeed!:\
                 !*\
                 :Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed -y
+
+  If the server will not be supporting readers (a transit news server only),
+  it's not necessary to run overchan.  If you do that, however, and you're
+  using CNFS or timehash, be sure to leave overview.ctl empty so that INN
+  doesn't generate overview information either.  See the information about
+  overview.ctl below.
 
   Finally, you need to add entries for any actual sites to which you will
   be feeding articles. They will all have the same general format:
@@ -591,19 +602,64 @@ Configuring INN
   of which newsgroups are to be stored in that file. As with storage.conf, the
   first matching line is used.
 
-  The exact way in which you distribute articles across multiple overview
-  storage areas is not an exact science. As a start we suggest creating 27
-  storage areas; the first 26 will be for newsgroups "a*" through "z*", and the
-  27th will be for "*" (thus catching any groups that start with a non-letter,
-  of which there are several). You can change the layout in the future by
-  modifying this file and then waiting for the daily news expiration to run,
-  at which time the overview data will be re-arranged for you during the
-  expiration process.
+  If your server will not be supporting any readers (if it's for news transit
+  only), you can leave this file empty and not run an overchan process (see
+  above under newsfeeds).  As a result, no overview information will be
+  generated and reading from the server will be impossible, but the server may
+  run faster.  If you choose to do this, you won't be able to set expire times
+  on a newsgroup by newsgroup basis, and if you're using timehash you'll have
+  to use a different syntax in expire.ctl.  See the expire.ctl man page for
+  details.
+
+  The way in which you distribute articles across multiple overview storage
+  areas is not an exact science; the goal is to spread access out across a
+  number of smaller files rather than one large file. As a start we suggest
+  creating 27 storage areas; the first 26 will be for newsgroups "a*" through
+  "z*", and the 27th will be for "*" (thus catching any groups that start with
+  a non-letter, of which there are several). You can change the layout in the
+  future by modifying this file and then waiting for the daily news expiration
+  to run, at which time the overview data will be re-arranged for you during
+  the expiration process.
 
   7. expire.ctl (REQUIRED)
 
   The expire.ctl file is the configuration for the expiration policy. See
   the expire.ctl man page for more details.
+
+  8. nnrp.access (REQUIRED)
+
+  The nnrp.access file is the configuration for access to readers.
+
+  Each line should have this format:
+
+    host:access:user:password:groups
+
+  The `host' field can take one of four forms:
+
+    * an IP address, e.g. 192.168.0.1
+
+    * an address range, e.g. 192.168.0.0/24
+
+    * a hostname, e.g. userbox.example.com
+
+    * a wildmat pattern that the hostname must match, e.g. *.example.com
+
+  When checking the access rights for a particular host the last match
+  is used.
+
+  The `access' field shuold contain an "R" to allow read access and/or
+  a "P" to allow posting access.  You can expand these to "Read" and
+  "Post" as in the example that comes with INN.  See the man page for
+  other things that can go here.
+
+  See the man page for details of how to user the `user' and
+  `password' fields.  Leave them blank to use solely host-based
+  authentication.
+
+  The `groups' field defines the newsgroups that a matching host may
+  read as a comma-separated list of wildmat patterns.
+
+  See the nnrp.access man page for more information.
 
 Creating the article spool (CNFS only)
 

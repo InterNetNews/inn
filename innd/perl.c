@@ -33,14 +33,21 @@ typedef enum { false = 0, true = 1 } bool;
 #include <EXTERN.h>
 #include <perl.h>
 
+/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
+#ifndef ERRSV
+# define ERRSV GvSV(errgv)
+# define PL_na na
+#endif
+
 extern BOOL		PerlFilterActive;
 extern ARTHEADER	ARTheaders[], *ARTheadersENDOF;
 extern CV		*perl_filter_cv ;
 extern char		*pathForPerl ;
 
 char *
-HandleArticle(artBody)
-char *artBody;
+HandleArticle(artBody, lines)
+char*	artBody;
+int	lines;
 {
    dSP;
    ARTHEADER	*hp;
@@ -64,6 +71,9 @@ char *artBody;
    if (artBody != NULL)
      hv_store(hdr, (char *) "__BODY__", 8, newSVpv(artBody, 0), 0) ;
 
+   /* store article line count */
+   hv_store(hdr, (char *) "__LINES__", 9, newSViv(lines), 0);
+
    if (pathForPerl != NULL)
      {
        char *p = strchr (pathForPerl,'\n') ;
@@ -84,10 +94,10 @@ char *artBody;
 
    buf [0] = '\0' ;
    
-   if (SvTRUE(GvSV(errgv)))     /* check $@ */
+   if (SvTRUE(ERRSV))     /* check $@ */
      {
        syslog (L_ERROR,"Perl function filter_art died: %s",
-               SvPV(GvSV(errgv), na)) ;
+               SvPV(ERRSV, PL_na)) ;
        POPs ;
        PerlFilter (FALSE) ;
      }
@@ -137,9 +147,9 @@ char *messageID;
 
 	buf [0] = '\0' ;
    
-	if (SvTRUE(GvSV(errgv))) {  /* check $@ */
+	if (SvTRUE(ERRSV)) {  /* check $@ */
 	    syslog (L_ERROR,"Perl function filter_messageid died: %s",
-		SvPV(GvSV(errgv), na)) ;
+		SvPV(ERRSV, PL_na)) ;
 	    POPs ;
 	    PerlFilter (FALSE) ;
 	}
@@ -191,9 +201,9 @@ char		*reason;
 
     if (perl_get_cv("filter_mode", FALSE) != NULL) {
         perl_call_argv("filter_mode", G_EVAL|G_DISCARD|G_NOARGS, NULL);
-        if (SvTRUE(GvSV(errgv))) { /* check $@ */
+        if (SvTRUE(ERRSV)) { /* check $@ */
             syslog (L_ERROR,"Perl function filter_mode died: %s",
-                    SvPV(GvSV(errgv), na)) ;
+                    SvPV(ERRSV, PL_na)) ;
             POPs ;
             PerlFilter (FALSE) ;
         }

@@ -1,184 +1,447 @@
-This is $Revision$ dated $Date$.
+INN Perl Filtering and Authentication Support
 
-innd and nnrpd now support some amount of Perl filtering of articles
-received from another peer or from a newsreader and some authentication.
-This code is based very heavily on work Christophe Wolfhugel <wolf@pasteur.fr>
-did. He in turn was inspired by the existing TCL support. Send me
-(<inn@isc.org>) and not Christophe any bug reports, as I fiddled with the
-code, and am probably the cause of any problems.
+  This is $Revision$ dated $Date$.
 
-What you get with the Perl support is described in more detail below, but
-basically you can supply a perl subroutine that will be invoked on every
-article received by innd from a peer, or by nnrpd from a reader. The
-subroutine causes nnrpd or innd to accept or reject the article. This will
-be most useful for spam killing.
+  This file documents INN's built-in support for Perl filtering and reader
+  authentication.  The code is based very heavily on work by Christophe
+  Wolfhugel <wolf@pasteur.fr>, and his work was in turn inspired by the
+  existing TCL support.  Please send any bug reports to inn-bugs@isc.org,
+  not to Christophe, as the code has been modified heavily since he
+  originally wrote it.
 
-To include Perl support, you need to have perl 5.004. Other Version before
-5.004, you will get link error at compilation time. Go to
-http://www.perl.com/CPAN for the latest Perl goodies.
+  The Perl filtering support is described in more detail below.  Basically,
+  it allows you to supply a Perl function that is invoked on every article
+  received by innd from a peer (the innd filter) or by nnrpd from a reader
+  (the nnrpd filter).  This function can decide whether to accept or reject
+  the article, and can optionally do other, more complicated processing
+  (such as add history entries, cancel articles, spool local posts into a
+  holding area, or even modify the headers of locally submitted posts).
 
-To enable Perl support, you need to specify '--with-perl' with configure.
+  For Perl filtering support, you need to have Perl version 5.004 or newer.
+  Earlier versions of Perl will fail with a link error at compilation time.
+  <URL:http://language.perl.com/info/software.html> should have the latest
+  Perl version.
 
---------------------------------------------------
+  To enable Perl support, you have to specify --with-perl when you run
+  configure.  See INSTALL for more information.
 
-Innd:
-	When innd starts it loads the file _PATH_PERL_STARTUP_INND, next it
-loads _PATH_PERL_FILTER_INND. Everytime, before _PATH_PERL_FILTER_INND is
-loaded, including the first time, if the perl subroutine
-``filter_before_reload'' is defined, then it will be called with no
-arguments, and it is not expected to return any values. After the
-_PATH_PERL_FILTER_INND is loaded the routine ``filter_after_reload'' is
-executed in the same way. These two functions are normally defined in
-_PATH_PERL_STARTUP_INND. They could be used for doing things like flushing
-cached data to disk, or loading up a cache etc.
+The innd Perl Filter
 
-	Whenever ctlinnd is run with the command ``reload'' and the
-first argument ``filter.perl'' or ``all'', the filter file
-_PATH_PERL_FILTER_INND is reloaded with the before and after functions
-being run as just described. If the subroutine ``filter_art'' is defined
-after the file has been reloaded, then filtering is turned on. If is not
-defined, then filtering is turned of.
-	
-	Whenever ctlinnd is run with the command ``throttle'', or ``pause''
-or ``go'', then the perl function ``filter_mode'' is called. It recives no
-arguments and returns no value. It has access to a global associative array
-called ``%mode'', which has three keyed values:
+  When innd starts, it first loads the file _PATH_PERL_STARTUP_INND (defined
+  in include/paths.h, by default startup_innd.pl) and then loads the file
+  _PATH_PERL_FILTER_INND (also defined in include/paths.h, by default
+  filter_innd.pl).  Both of these files must be located in the directory
+  specified by <pathfilter in inn.conf> (/usr/local/news/bin/filter by
+  default).  The default directory for filter code can be specified at
+  configure time by giving the flag --with-filter-dir=PATH to configure.
 
-	'Mode' ==> the current mode (``throttled'', ``paused'', or ``running'')
-	'NewMode' ==> the new mode.
-	'reason' ==> the reason given for the mode change.
+  INN doesn't care what Perl functions you define in what files.  The only
+  thing that's different about the two files is when they're loaded.
+  startup_innd.pl is loaded only once, when innd first starts, and is never
+  reloaded as long as innd is running.  Any modifications to that file won't
+  be noticed by innd; only stopping and restarting innd can cause it to be
+  reloaded.
 
-	Whenever a message-id is received from a peer via the CHECK command,
-and filtering is turned on, the perl subroutine ``filter_messageid'' is
-called. It receives a single argument, the message-id, and returns a single
-scalar value. If the value is not the null string, the article is refused.
+  filter_innd.pl, on the other hand, can be reloaded on command (with
+  ctlinnd reload filter.perl).  Whenever filter_innd.pl is loaded, including
+  the first time at innd startup, the Perl function filter_before_reload()
+  is called before it's reloaded and the function filter_after_reload() is
+  called after it's reloaded (if the functions exist).  Additionally, any
+  code in either startup_innd.pl or filter_innd.pl at the top level (in
+  other words, not inside a sub { }) is automatically executed by Perl when
+  the files are loaded.
 
-	Whenever an article is received from a peer via IHAVE or TAKETHIS,
-and filtering is turned on, the perl subroutine ``filter_art'' is
-called. It receives no arguments and returns a single scalar value or the
-undefined value. It has access to a global associative array called
-``%hdr'', which contains values for all standard headers with a non-null
-value of the article. The standard headers are:
+  This allows one to do things like write out filter statistics whenever the
+  filter is reloaded, load a cache into memory, flush cached data to disk,
+  or other similar operations that should only happen at particular times or
+  with manual intervention.  Remember, any code not inside functions in
+  startup_innd.pl is executed when that file is loaded, and it's loaded only
+  once when innd first starts.  That makes it the ideal place to put
+  initialization code that should only run once, or code to load data that
+  was preserved on disk across a stop and restart of innd (perhaps using
+  filter_mode() -- see below).
 
-	Approved, Control, Date, Distribution, Expires, From, Lines,
-	Message-ID, Newsgroups, Path, Reply-To, Sender, Subject, Supersedes,
-	Bytes, Also-Control, References, __BODY__
+  As mentioned above, ctlinnd reload filter.perl (or ctlinnd reload all)
+  will cause filter_innd.pl to be reloaded.  If the function filter_art() is
+  defined after the file has been reloaded, filtering is turned on.
+  Otherwise, filtering is turned off.
 
-	The special header value of "__BODY__" contains the body of the
-article, for special content-based filters.
+  The Perl function filter_art() is the heart of a Perl filter.  Whenever an
+  article is received from a peer, via either IHAVE or TAKETHIS,
+  filter_art() is called if Perl filtering is turned on.  It receives no
+  arguments, and should return a single scalar value.  That value should be
+  the empty string to indicate that INN should accept the article, or some
+  rejection message to indicate that the article should be rejected.
 
-For example:
+  filter_art() has access to a global hash named %hdr, which contains all of
+  the standard headers present in the article and their values.  The
+  standard headers are:
 
-   %hdr = ('Subject', 'MAKE MONEY FAST!!', 
-	   'From', 'Joe Spamer <him@aol.com>',
-	   'Date', '10 Sep 1996 15:32:28 UTC',
-	   'Newsgroups', 'alt.test',
-	   'Path', 'data.ramona.vix.com!gw.home.vix.com!not-for-mail',
-	   'Organization', 'Spammers Anonymous',
-	   'Lines' '5',
-	   'Distribution', 'world'
-	   'Message-ID', '<6.20232.842369548@home.octet.com.au>',
-	   '__BODY__', 'Send five dollars to the ISC, c/o ...'
-	   )
+        Approved, Control, Date, Distribution, Expires, From, Lines,
+        Message-ID, Newsgroups, Path, Reply-To, Sender, Subject, Supersedes,
+        Bytes, Also-Control, References, Keywords, X-Trace,
+        NNTP-Posting-Host, Followup-To, Organization, Content-Type,
+        Content-Base, Content-Disposition, X-Newsreader, X-Mailer,
+        X-Cancelled-By, X-Canceled-By, Cancel-Key
 
-If ``filter_art'' returns a null string (not a zero), then the article is
-accepted. If it returns a non-zero value, then it is rejected, and the
-value returned (typically a string) is used to log the reason why it was
-rejected.
+  (so, for example, the Newsgroups header of the article is accessible
+  inside the Perl filter as $hdr{Newsgroups}).  In addition, $hdr{__BODY__}
+  will contain the full body of the article and $hdr{__LINES__} will contain
+  the number of lines in the body of the article.
 
-	There are four perl subs available from the perl subroutines called
-from within INN:
+  The contents of the %hdr hash for a typical article may therefore look
+  something like this:
 
-INN::havehist(messageid)  # returns true if messageid is in the history db
+        %hdr = (Subject      => 'MAKE MONEY FAST!!', 
+                From         => 'Joe Spamer <him@example.com>',
+                Date         => '10 Sep 1996 15:32:28 UTC',
+                Newsgroups   => 'alt.test',
+                Path         => 'news.example.com!not-for-mail',
+                Organization => 'Spammers Anonymous',
+                Lines        => '5',
+                Distribution => 'usa',
+                'Message-ID' => '<6.20232.842369548@example.com>',
+                __BODY__     => 'Send five dollars to the ISC, c/o ...',
+                __LINES__    => 5
+        );
 
-INN::newsgroup(newsgroup) # returns the status of the news group (the last
-			  # field of the active file, or false if the
-			  # isn't in your active file
+  Note that the value of $hdr{Lines} is the contents of the Lines header of
+  the article and may bear no resemblence to the actual length of the
+  article.  $hdr{__LINES__} is the line count calculated by INN, and is
+  guaranteed to be accurate.
 
-INN::cancel(messageid)    # cancels messageid on your server
- 
-INN::addhist(messageid, arrivaltime,articletime,expiretime,paths)
-			  # adds messageid to the history database
-			  # all the other fields are optional.
-			  # the time fields default to the current
-			  # time, and the paths field defaults to
-			  # the empty string.
+  The %hdr hash should not be modified inside filter_art().  Instead, if any
+  of the contents need to be modified temporarily during filtering (smashing
+  case, for example), copy them into a seperate variable first and perform
+  the modifications on the copy.  Currently, any modifications are just
+  discarded by INN, but it's possible that in the future %hdr will contain
+  live data that INN will expect not to be modified (this would be a speed
+  optimization to avoid having to make another memory copy of the entire
+  article).  If that optimization is ever made, modifying the %hdr hash
+  could result in dropped articles, fatal errors, or even core dumps in
+  innd.  So don't do that.
 
---------------------------------------------------
+  As mentioned above, if filter_art() returns the empty string (''), the
+  article is accepted.  Note that this must be the empty string, not 0 or
+  undef.  Otherwise, the article is rejected, and whatever scalar
+  filter_art() returns (typically a string) will be taken as the reason why
+  the article was rejected.  This reason will be returned to the remote peer
+  as well as logged to the news logs.  (innreport, in its nightly report,
+  will summarize the number of articles rejected by the Perl filter and
+  include a count of how many articles were rejected with each reason
+  string.)
 
-nnrpd:
+  One other type of filtering is also supported.  If Perl filtering is
+  turned on and the Perl function filter_messageid() is defined, that
+  function will be called for each message ID received from a peer (via
+  either CHECK or IHAVE).  The function receives a single argument, the
+  message ID, and like filter_art() should return an empty string to accept
+  the article or an error string to refuse the article.  This function is
+  called before any history lookups and for every article offered to innd
+  with CHECK or IHAVE (before the actual article is sent).  Accordingly, the
+  message ID is the only information it has about the article (the %hdr hash
+  will be empty).  This code would sit in a performance-critical hot path in
+  a typical server, and therefore should be as fast as possible, but it can
+  do things like refuse articles from certain hosts or cancels for already
+  rejected articles (if they follow the $alz convention) without having to
+  take the network bandwidth hit of accepting the entire article first.
 
-	When nnrpd starts it load the file _PATH_PERL_FILTER_NNRPD. If the
-function ``filter_post'' is defined, then filtering is turned on. If it
-isn't, then filtering is turned off. When filtering is on, every article
-received via the POST command is given to the ``filter_post'' subroutine in
-exactly the same manner as for filter_art in innd. The return value must be
-a null string to accept the article, anything else will cause the article
-to be rejected and the reason sent back to the client will be the returned
-value of the ``filter_post'' function.  If $modify_headers is set to a
-non-zero value, then all headers in the associative array ``%hdr'' are written
-back to the posted message.  Here are other items for filtering articles for
-nnrpd.
+  Note that you cannot rely on filter_messageid() being called for every
+  incoming article; articles sent via TAKETHIS without an earlier CHECK will
+  never pass through filter_messageid() and will only go through
+  filter_art().
 
-  - can access to message bodies, in the $body variable.
-  - can access to the poster's authinfo username, in the $user variable.
-    Obviously this has no effect unless you use authinfo.
-  - check a returncode 'DROP' to the Perl interface.  If the string returned
-    by the Perl subroutine begins with 'DROP', the post will be discarded
-    and success returned to the client.
-  - check a returncode 'SPOOL' to the Perl interface.  If the string
-    returned by the Perl subroutine begins with 'SPOOL', success will be
-    returned to the client and the post will be saved to in.coming/spam
-    for manual inspection.
+  Finally, whenever ctlinnd throttle, ctlinnd pause, or ctlinnd go is run,
+  the Perl function filter_mode() is called if it exists.  It receives no
+  arguments and returns no value, but it has access to a global hash %mode
+  that contains three values:
 
-	If ``nnrpperlauth'' in inn.conf is set to ``true'', nnrpd authenticates
-reader with perl instead of normal authentication  with  nnrp.access.  For
-perl authentication, nnrpd_auth.pl is used.  This file is loaded when nnrpd
-starts up. If it defines a sub named `authenticate', then that function will
-be called during processing of a connect, auth request or disconnect.
-Attributes about the connection are passed to the program in the %attributes
-global variable.  It should return an array with 4 elements:
+        Mode       The current server mode (throttled, paused, or running)
+        NewMode    The new mode the server is going to
+        reason     The reason that was given to ctlinnd
 
-1) NNTP response code.  Should be one of the codes from %connectcodes or %auth
-   codes
-2) Reading Allowed. Should be a boolean value.
-3) Posting Allowed. Should be a boolean value.
-4) Wildmat expression that says what groups to provide access to.
+  One possible use for this function is to save filter state across a
+  restart of innd.  There isn't any Perl function which is called when INN
+  shuts down, but using filter_mode() the Perl filter can dump it's state to
+  disk whenever INN is throttled.  Then, if the news administrator follows
+  the strongly recommended shutdown procedure of throttling the server
+  before shutting it down, the filter state will be safely saved to disk and
+  can be reloaded when innd restarts (possibly by startup_innd.pl).
 
-All four of these are required.  If there is a problem with them then nnrpd
-will die and syslog the exact reason.  See samples/nnrpd_auth.pl.in for sample
-authentication.
---------------------------------------------------
+  The state of the Perl interpretor in which all of these Perl functions run
+  is preserved over the lifetime of innd.  In other words, it's allowed for
+  the Perl code to create its own global Perl variables, data structures,
+  saved state, and the like, and all of that will be available to
+  filter_art() and filter_messageid() each time they're called.  The only
+  variable INN fiddles with (or pays any attention to at all) is %hdr, which
+  is cleared after each call to filter_art().
 
-Some notes:
+  Perl filtering can be turned off with ctlinnd perl n and back on again
+  with ctlinnd perl y.  Perl filtering is turned off automatically if
+  loading of the filter fails or if the filter code returns any sort of a
+  fatal error (either due to Perl itself or due to a die in the Perl code).
 
-In the samples directory there are filter_inn.pl, filter_nnrpd.pl and
-startup_innd.pl, with some simplistic examples on how to use them. Note
-that all perl evaluation is done inside an implicit ``eval'', so calling
-die() will not kill the innd or nnrpd process, nor any other sort of syntax
-or functional error.
+Supported innd Callbacks
 
-You should always do 'perl -c -w file' before starting or reloading. If you
-change the file after innd is running, and then reload it, filtering wil be
-disabled if there was an error in the file. At which point you'll have to
-fix the file and reload it.
+  innd makes eight functions available to any of its embedded Perl code.
+  Those are:
 
---------------------------------------------------
+  INN::addhist(messageid, arrivaltime, articletime, expiretime, paths)
 
-Available packages using filter_innd.pl and filter_nnrpd.pl:
+        Adds messageid to the history database.  All of the arguments except
+        the first one are optional; the times default to the current time
+        and the paths field defaults to the empty string.  (For those
+        unfamiliar with the fields of a history database entry, the
+        arrivaltime is normally the time at which the server accepts the
+        article, the articletime is from the Date header of the article, the
+        expiretime is from the Expires header of the article, and the paths
+        field is either the storage API token or the list of traditional
+        spool filenames associated with the article.)  Returns true on
+        success, false otherwise.
 
-This is an unofficial list of known filtering packages at the time of
-publication. This is not an endorsement of these filters by the ISC or the
-INN developers, but is included as assistance in locating packages which
-make use of this filter mechanism.
+  INN::article(messageid)
 
-CleanFeed		Jeremy Nixon <jeremy@exit109.com>
-http://www.exit109.com/~jeremy/news/antispam.html
-	A spam filter catching excessive multi-posting and a host of other
-	filtering tools. Uses filter_innd.pl exclusively, requires MD5
-	perl module.
+        Returns the full article (as a simple string) identified by the
+        given messageid, or undef if it isn't found.  Each line will end
+        with a simple \n, but leading periods may still be doubled if the
+        article is stored in wire format.
 
-Usenet II Filter	Edward S. Marshall <emarshal@xnet.com>
-http://www.xnet.com/~emarshal/inn/filter_nnrpd.pl
-	Checks for "soundness" according to Usenet II guidelines in the
-	net.* hierarchy. Designed to use filter_nnrpd.pl.
+  INN::cancel(messageid)
+
+        Cancels the given messageid.  (This is equivalent to ctlinnd cancel;
+        it cancels the message on the local server, but doesn't post a
+        cancel message or do anything else that affects anything other than
+        the local server.)  Returns true on success, false otherwise.
+
+  INN::filesfor(messageid)
+
+        Returns the paths field of the history entry for the given
+        messageid.  With traditional spool, this will be a space-separated
+        list of path names relative to the news article spool.  If you're
+        using the storage API, this will return a storage API token.  If the
+        given messageid isn't found in the history database, returns undef.
+
+  INN::havehist(messageid)
+
+        Looks up messageid in the history database and returns true if it's
+        found, false otherwise.
+
+  INN::head(messageid)
+
+        Returns the header (as a simple string) of the article identified by
+        messageid, or undef if it isn't found.  Each line will end with a
+        simple \n (in other words, regardless of the format of article
+        storage, the returned string won't be in wire format).
+
+  INN::newsgroup(newsgroup)
+
+        Returns the status of the newsgroup (the last field of the active
+        file entry for that newsgroup).  See active(5) for a description of
+        the possible values and their meanings (the most common are "y" for
+        an unmoderated group and "m" for a moderated group).  If the
+        newsgroup isn't in the active file, returns undef.
+
+  INN::syslog(level, message)
+
+        Logs a message via syslog(2).  This is quite a bit more reliable and
+        portable than trying to use Sys::Syslog from inside the Perl filter.
+        Only the first character of the level argument matters; the valid
+        letters are the first letters of ALERT, CRIT, ERR, WARNING, NOTICE,
+        INFO, and DEBUG (case-insensitive) and specify the priority at which
+        the message is logged.  If a level that doesn't match any of those
+        levels is given, the default priority level is LOG_NOTICE.  The
+        second argument is the message to log; it will be prefixed by
+        "filter: " and logged to syslog with facility LOG_NEWS.
+
+  These functions can only be used from inside the innd Perl filter; they're
+  not available in the nnrpd filter.
+
+The nnrpd Posting Filter
+
+  When nnrpd starts, it first loads the file _PATH_PERL_FILTER_NNRPD
+  (defined in include/paths.h, by default filter_nnrpd.pl).  This file must
+  be located in the directory specified by <pathfilter in inn.conf>
+  (/usr/local/news/bin/filter by default).  The default directory for filter
+  code can be specified at configure time by giving the flag
+  --with-filter-dir=PATH to configure.
+
+  If filter_nnrpd.pl loads successfully and defines the Perl function
+  filter_post(), Perl filtering is turned on.  Otherwise, it's turned off.
+  If filter_post() ever returns a fatal error (either from Perl or from a
+  die in the Perl code), Perl filtering is turned off for the life of that
+  nnrpd process and any further posts made during that session won't go
+  through the filter.
+
+  While Perl filtering is on, every article received by nnrpd via the POST
+  command is passed to the filter_post() Perl function before it is passed
+  to INN (or mailed to the moderator of a moderated newsgroup).  If
+  filter_post() returns an empty string (''), the article is accepted and
+  normal processing of it continues.  Otherwise, the article is rejected and
+  the string returned by filter_post() is returned to the client as the
+  error message (with some exceptions; see below).
+
+  filter_post() has access to a global hash %hdr, which contains all of the
+  headers of the article.  (Unlike the innd Perl filter, %hdr for the nnrpd
+  Perl filter contains *all* of the headers, not just the standard ones.  If
+  any of the headers are duplicated, though, %hdr will contain only the
+  value of the second occurance of the header.  nnrpd will reject the
+  article before the filter runs if any of the standard headers are
+  duplicated.)  It also has access to the full body of the article in the
+  variable $body, and if the poster authenticated via AUTHINFO, it has
+  access to the authenticated username of the poster in the variable $user.
+
+  Unlike the innd Perl filter, the nnrpd Perl filter can modify the %hdr
+  hash.  In fact, if the Perl variable $modify_headers is set to true after
+  filter_post() returns, the contents of the %hdr hash will be written back
+  to the article replacing the original headers.  filter_post() can
+  therefore make any modifications it wishes to the headers and those
+  modifications will be reflected in the article as it's finally posted.
+  The article body cannot be modified in this way; any changes to $body will
+  just be ignored.
+
+  Be careful when using the ability to modify headers.  filter_post() runs
+  after all the normal consistency checks on the headers and after server
+  supplied headers (like Message-ID and Date) are filled in.  Deleting
+  required headers or modifying headers that need to follow a strict format
+  can result in nnrpd trying to post nonsense articles (which will probably
+  then be rejected by innd).  If $modify_headers is set, *everything* in the
+  %hdr hash is taken to be article headers and added to the article.
+
+  If filter_post() returns something other than the empty string, this
+  message is normally returned to the client as an error.  There are two
+  exceptions:  If the string returned begins with "DROP", the post will be
+  silently discarded and success returned to the client.  If the string
+  begins with "SPOOL", success is returned to the client, but the post is
+  saved in a directory named "spam" under <pathincoming in inn.conf> (in a
+  directory named "spam/mod" if the post is to a moderated group).  This is
+  intended to allow manual inspection of the suspect messages; if they
+  should be posted, they can be manually moved out of the subdirectory into
+  <pathincoming in inn.conf>, where they can be posted by running rnews -U.
+  If you use this functionality, make sure those directories exist.
+
+Perl Authentication Support for nnrpd
+
+  If nnrpperlauth in inn.conf is set to true, nnrpd will authenticate
+  readers by calling a Perl function rather than reading readers.conf and
+  using the normal authentication mechanism.  If it is set, nnrpd loads
+  _PATH_PERL_AUTH (defined in include/paths.h, by default nnrpd_auth.pl).
+  This file must be located in the directory specified by <pathfilter in
+  inn.conf> (/usr/local/news/bin/filter by default).  The default directory
+  for filter code can be specified at configure time by giving the flag
+  --with-filter-dir=PATH to configure.
+
+  If a Perl function auth_init() is defined by that file, it is called
+  immediately after the file is loaded.  It takes no arguments and returns
+  nothing.
+
+  Provided nnrpperlauth is true, the file loads without errors, auth_init()
+  (if present) runs without fatal errors, and a Perl function authenticate()
+  is defined, authenticate() will be called during the processing of a
+  connection, authentication request, or a disconnect.  authenticate() takes
+  no arguments, but it has access to a global hash %attributes which
+  contains information about the connection as follows: $attributes{type}
+  will contain either "connect", indicating a new connection is in progress,
+  or "authenticate", indicating that a client has sent an AUTHINFO command.
+  $attributes{hostname} will contain the hostname (or the IP address if it
+  doesn't resolve) of the client machine and $attributes{ipaddress} will
+  contain its IP address (as a string).  If type was "authenticate",
+  $attributes{username} will contain the provided username and
+  $attributes{password} the password.
+
+  authenticate() should return a four-element array.  The first element is
+  the NNTP response code to return to the client, the second element is a
+  boolean value indicating whether the client is allowed to read, the third
+  element is a boolean value indicating whether the client is allowed to
+  post, and the fourth element is a wildmat(3) expression that says what
+  groups the client is allowed to read.
+
+  If type is connect, the NNTP response code should probably be chosen from
+  one of the following values:  200 (reading and posting allowd), 201 (no
+  posting allowed), 480 (authentication required), or 502 (permission
+  denied).  If the code returned is 502, nnrpd will print a permission
+  refused message, drop the connection, and exit.
+
+  If the type is authentication, the NNTP response code should probably be
+  either 281 (authentication successful) or 502 (authentication
+  unsuccessful).  If the code returned is anything other than 281, nnrpd
+  will print an authentication error message and drop the connection and
+  exit.
+
+  If authenticate() dies (either due to a Perl error or due to calling die),
+  or if it returns anything other than the four-element array described
+  above, an internal error will be reported to the client, the exact error
+  will be logged to syslog, and nnrpd will drop the connection and exit.
+
+Notes on Writing Embedded Perl
+
+  All Perl evaluation is done inside an implicit eval block, so calling die
+  in Perl code will not kill the innd or nnrpd process.  Neither will Perl
+  errors (such as syntax errors).  However, such errors will have negative
+  effects (fatal errors in the innd or nnrpd filter will cause filtering to
+  be disabled, and fatal errors in the nnrpd authentication code will cause
+  the client connection to be terminated).
+
+  Calling exit directly, however, *will* kill the innd or nnrpd process, so
+  don't do that.  Similarly, you probably don't want to call fork (or any
+  other function that results in a fork such as system, IPC::Open3::open3,
+  or any use of backticks) since there are possibly unflushed buffers that
+  could get flushed twice, lots of open state that may not get closed
+  properly, and innumerable other potential problems.  In general, be aware
+  that all Perl code is running inside a large and fairly complicated C
+  program, and Perl code that impacts the process as a whole is best
+  avoided.
+
+  You can use print and warn inside Perl code to send output to STDOUT or
+  STDERR, but you probably shouldn't.  Instead, open a log file and print to
+  it instead (or, in the innd filter, use INN::syslog() to write messages
+  via syslog like the rest of INN).  It's not entirely clear where STDOUT or
+  STDERR will end up if you write to them; the nnrpd filter takes some steps
+  to try to keep output from going across the network connection to the
+  client (which would probably result in a very confused client), but best
+  not to take the chance.
+
+  For similar reasons, try to make your Perl code -w clean, since Perl
+  warnings are written to STDERR.  (INN won't run your code under -w, but
+  better safe than sorry.)
+
+  You *can* use modules in your Perl code, just like you would in an
+  ordinary Perl script.  You can even use modules that dynamically load C
+  code.  Just make sure that none of the modules you use go off behind your
+  back to do any of the things above that are best avoided.
+
+  Whenever you make any modifications to the Perl code, and particularly
+  before starting INN or reloading filter.perl with new code, you should run
+  perl -wc on the file.  This will at least make sure you don't have any
+  glaring syntax errors.  Remember, if there are errors in your code,
+  filtering will be disabled, which could mean that posts you really wanted
+  to reject will leak through and authentication of readers may be totally
+  broken.
+
+  The samples directory has example startup_innd.pl, filter_innd.pl,
+  filter_nnrpd.pl, and nnrpd_auth.pl files that contain some simplistic
+  examples.  Look them over as a starting point when writing your own.
+
+Available Packages
+
+  This is an unofficial list of known filtering packages at the time of
+  publication.  This is not an endorsement of these filters by the ISC or
+  the INN developers, but is included as assistance in locating packages
+  which make use of this filter mechanism.
+
+  CleanFeed               Jeremy Nixon <jeremy@exit109.com>
+  <URL:http://www.exit109.com/~jeremy/news/cleanfeed.html>
+        A spam filter catching excessive multi-posting and a host of other
+        things.  Uses filter_innd.pl exclusively, requires the MD5 Perl
+        module.  Probably the most popular and widely-used Perl filter
+        around.
+
+  Usenet II Filter        Edward S. Marshall <emarshal@xnet.com>
+  <URL:http://www.xnet.com/~emarshal/inn/filter_nnrpd.pl>
+        Checks for "soundness" according to Usenet II guidelines in the
+        net.* hierarchy.  Designed to use filter_nnrpd.pl.
+
+  News Gizmo              Aidan Cully <aidan@panix.com>
+  <URL:http://www.panix.com/gizmo/>
+        A posting filter for helping a site enforce Usenet-II soundness,
+        and for quotaing the number of messages any user can post to
+        Usenet daily.

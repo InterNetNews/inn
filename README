@@ -1,21 +1,130 @@
-Welcome to INN 2.2!
+Welcome to INN 2.2.1!
 
-  This is the public release of version 2.2 of InterNet News (INN). This work
-  is sponsored by the Internet Software Consortium.
+  This work is sponsored by the Internet Software Consortium.
 
-  This release is a bug-fix to the previous version.  Please see
-  the INSTALL document for installation instructions.
-
+  Please see the INSTALL document for installation instructions.
   See the NEWS file for what's changed from the previous release.
+
+What is INN?
+
+  INN (InterNetNews), originally written by Rich Salz, is an extremely
+  flexible and configurable Usenet / netnews news server.  For a
+  complete description of the protocols behind Usenet and netnews, see
+  RFC 1036 and RFC 977 (or their replacements).  In brief, netnews is a
+  set of protocols for exchanging messages between a decentralized
+  network of news servers.  News articles are organized into newsgroups,
+  which are themselves organized into hierarchies.  Each individual news
+  server stores locally all articles it has received for a given
+  newsgroup, making access to stored articles extremely fast.  Netnews
+  does not require any central server; instead, each news server passes
+  along articles it receives to all of the news servers it peers with,
+  those servers pass the articles along to their peers, and so on,
+  resulting in "flood fill" propagation of news articles.
+
+  A news server performs three basic functions:  It accepts articles
+  from other servers and stores them on disk, sends articles it has
+  received out to other servers, and offers stored news articles to
+  readers on demand.  It additionally has to perform some periodic
+  maintenance tasks, such as deleting older articles to make room for
+  new ones.
+
+  Originally, a news server would just store all of the news articles it
+  had received in a file system.  Users could then read news by reading
+  the article files on disk (or more commonly using news reading
+  software that did this efficiently).  These days, news servers are
+  almost always stand-alone systems and news reading is supported via
+  network connections.  A user who wants to read a newsgroup opens that
+  newsgroup in their newsreader software, which opens a network
+  connection to the news server and sends requests for articles and
+  related information.  The protocol that a newsreader uses to talk to a
+  news server and that a news server uses to talk to another news server
+  over TCP/IP is called NNTP (Network News Transport Protocol).
+
+  INN supports accepting articles via either NNTP connections or via
+  UUCP.  innd, the heard of INN, handles NNTP feeding connections
+  directly; UUCP newsfeeds use rnews (included in INN) to hand articles
+  off to innd.  Other parts of INN handle feeding articles out to other
+  news servers, most commonly innfeed (for real-time outgoing feeds) or
+  nntpsend and innxmit (used to send batches of news created by innd to
+  a remote site via TCP/IP).  INN can also handle outgoing UUCP feeds.
+
+  The part of INN that handles connections from newsreaders is nnrpd.
+
+  Also included in INN are a wide variety of supporting programs to
+  handle periodic maintenance and recovery from crashes, process special
+  control messages, maintain the list of active newsgroups, and generate
+  and record a staggering variety of statistics and summary information
+  on the usage and performance of the server.
+
+  INN also supports an extremely powerful filtering system that allows
+  the server administrator to reject unwanted articles (such as spam and
+  other abuses of Usenet).
+
+  INN is free software, supported by the Internet Software Consortium
+  and volunteers around the world.  See the section on Supporting the
+  INN Effort below.
+
+Prerequisites
+
+  Compiling INN requires an ANSI C compiler (gcc is recommended).  INN
+  was originally written in K&R C, but supporting pre-ANSI compilers has
+  become enough of a headache that a lot of the newer parts of INN will
+  no longer compile with a non-ANSI compiler.  gcc itself will compile
+  with most vendor non-ANSI compilers, however, so if you're stuck with
+  one, installing gcc is highly recommended.  Not only will it let you
+  build INN, it will make installing lots of other software much easier.
+  You may also need GNU make (particularly if your system make is
+  BSD-derived), although most SysV make programs should work fine.
+
+  INN uses GNU autoconf to probe the capabilities of your system, and
+  therefore should compile on nearly any Unix system.  See INSTALL for a
+  list of systems it is known to work on.  If you encounter problems
+  compiling or running INN, or if you successfully run INN on a platform
+  that isn't listed in INSTALL, please let us know (see Reporting Bugs
+  below).
+
+  Perl, at least Perl 4, is required to build INN.  Perl 5.004 is
+  required if you want the embedded Perl filter support (which is highly
+  recommended; some excellent spam filters have been written for INN).
+  Since all versions of Perl previous to 5.004 are buggy (including
+  security problems) and have fewer features, installing Perl 5.004 or
+  later is recommended.
+
+  If you want to enable PGP verification of control messages (highly
+  recommended), you will need to have PGP installed.  See INSTALL for
+  more details.
+
+Getting Started
+
+  A news server can be a fairly complicated piece of software to set up
+  just because of the wide variety of pieces that have to be configured
+  (who is authorized to read from the server, what newsgroups it
+  carries, and how the articles are stored on disk at a bare minimum,
+  and if the server isn't completely stand-alone -- and very few servers
+  are -- both incoming and outgoing feeds have to be set up and tested).
+  Be prepared to take some time to understand what's going on and how
+  all the pieces fit together.  If you have any specific suggestions for
+  documentation, or comments about things that are unclear, please send
+  them to the INN maintainers (see Reporting Bugs below).
+
+  See the INSTALL file for step-by-step instructions for setting up and
+  configuring a news server.
+
+  INN also comes with a very complete set of man pages; there is a man
+  page for every configuration file and program that comes with INN.
+  (If you find one that doesn't have a man page, that's a bug.  Please
+  do report it.)  When trying to figure out some specific problem,
+  reading the man pages for all of the configuration files involved is a
+  very good start.
 
 Reporting Bugs
 
   We're interested in all bug reports. Not just on the programs, but on
-  the documentation too. Please send *all* such reports to:
+  the documentation too.  Please send *all* such reports to:
 
         inn-bugs@isc.org
 
-  even if you post to usenet, please CC the above address. All other
+  even if you post to usenet, please CC the above address.  All other
   INN mail should go to:
 
         inn@isc.org
@@ -24,21 +133,58 @@ Reporting Bugs
 
   For general "how do I do this" questions you should post to
   news.software.nntp as there are a lot of experienced INN users there,
-  and there isn't the time necessary to answer general questions
+  and there isn't the time necessary to answer general questions.
+
+Mailing Lists
+
+  There are various mailing lists you can join or send messages to if you
+  like. Some of them you must be a member of before you can send mail to
+  them (thank the Spam gods for that policy), and one of them is
+  read-only (no postings allowed).
+
+	inn-workers@isc.org	discussion of INN development (postings by
+				members only)
+
+	inn-patches@isc.org	where to send patches for consideration for
+				inclusion into the pool. (open)
+
+	inn-committers@isc.org	CVS commit messages get sent to this list
+				(postings not allowed)
+
+	inn-bugs@isc.org	Where to send bugs reports (open). If 
+				you're an INN expert we encourage you 
+				to join this to answer questions.
+
+	inn-announce@isc.org	Where announcements for INN get sent
+				(postings not allowed).
+
+  To join these lists, send a subscription request to the '-request'
+  address. I.e.:
+
+	inn-workers-request@isc.org
+	inn-patches-request@isc.org
+	inn-committers-request@isc.org
+	inn-bugs-request@isc.org
+	inn-announce-request@isc.org
+	
+Contributing Code
+
+  If you have a patch that you'd like to be considered for inclusion into
+  the pool, then please mail it to inn-patches@isc.org
 
   Have fun!
 
 Who's Responsible / Who to Thank
 
-  See the CONTRIBUTORS file for a long list of past constributors as
+  See the CONTRIBUTORS file for a long list of past contributors as
   well as people from the inn-workers mailing list who have dedicated
-  a lot of time and effort to getting this new version together. They
-  deserve a big round of applause. They've certainly got our thanks.
+  a lot of time and effort to getting this new version together.  They
+  deserve a big round of applause.  They've certainly got our thanks.
 
   Last, but certainly not least, Rich Salz, the original author of INN
   deserves a lion's share of the credit for writing INN in the first 
   place and making it the most popular news server software on the 
-  planet (no NNTP yet to the moon, but we plan to be there first)..
+  planet (no NNTP yet to the moon, but we plan to be there first).
 
 Supporting the INN Effort
 
@@ -56,5 +202,4 @@ Supporting the INN Effort
   <URL:http://www.isc.org/isc/>.
 
 James Brister
-inn@isc.org		(INN related mail)
-brister@vix.com		(non-INN mail)
+inn@isc.org

@@ -35,6 +35,12 @@ typedef enum { false = 0, true = 1 } bool;
 #include <perl.h>
 #include <XSUB.h>
 
+/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
+#ifndef ERRSV
+# define ERRSV GvSV(errgv)
+# define PL_na na
+#endif
+
 extern void xs_init    _((void));
 extern void boot_DynaLoader _((CV* cv));
 
@@ -66,9 +72,9 @@ PerlFilter(value)
     if (PerlFilterActive && !value) {
         if (perl_get_cv("filter_end", FALSE) != NULL) {
             perl_call_argv("filter_end", G_EVAL|G_DISCARD|G_NOARGS, NULL);
-            if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+            if (SvTRUE(ERRSV))     /* check $@ */ {
                 syslog (L_ERROR,"%s perl function filter_end died: %s",
-                        LogName, SvPV(GvSV(errgv), na)) ;
+                        LogName, SvPV(ERRSV, PL_na)) ;
                 (void)POPs ;
             }
         } else {
@@ -137,9 +143,9 @@ void PERLsetup (startupfile, filterfile, function)
         
         SPAGAIN ;
         
-        if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+        if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog (L_ERROR,"%s perl loading %s failed: %s",
-                    LogName, startupfile, SvPV(GvSV(errgv), na)) ;
+                    LogName, startupfile, SvPV(ERRSV, PL_na)) ;
             PerlFilter (FALSE) ;
     
         } else {
@@ -174,9 +180,9 @@ PERLreadfilter(filterfile, function)
     
     if (perl_get_cv("filter_before_reload", FALSE) != NULL)    {
         perl_call_argv("filter_before_reload",G_EVAL|G_DISCARD|G_NOARGS,NULL);
-        if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+        if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog (L_ERROR,"%s perl function filter_before_reload died: %s",
-                    LogName, SvPV(GvSV(errgv), na)) ;
+                    LogName, SvPV(ERRSV, PL_na)) ;
             (void)POPs ;
             PerlFilter (FALSE) ;
         }
@@ -186,9 +192,9 @@ PERLreadfilter(filterfile, function)
     perl_call_argv ("_load_", 0, argv) ;
     PerlUnSilence();
 
-    if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+    if (SvTRUE(ERRSV))     /* check $@ */ {
         syslog (L_ERROR,"%s perl loading %s failed: %s",
-                LogName, filterfile, SvPV(GvSV(errgv), na)) ;
+                LogName, filterfile, SvPV(ERRSV, PL_na)) ;
         PerlFilter (FALSE) ;
         
         /* If the reload failed we don't want the old definition hanging
@@ -197,9 +203,9 @@ PERLreadfilter(filterfile, function)
         sprintf (argv[0],"undef &%s",function) ;
         perl_call_argv ("_eval_",0,argv) ;
 
-        if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+        if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog (L_ERROR,"%s perl undef &%s failed: %s",
-                    LogName, function, SvPV(GvSV(errgv), na)) ;
+                    LogName, function, SvPV(ERRSV, PL_na)) ;
         }
         DISPOSE (argv[0]) ;
     } else if ((perl_filter_cv = perl_get_cv(function, FALSE)) == NULL) {
@@ -208,9 +214,9 @@ PERLreadfilter(filterfile, function)
     
     if (perl_get_cv("filter_after_reload", FALSE) != NULL) {
         perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, NULL);
-        if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
+        if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog (L_ERROR,"%s perl function filter_after_reload died: %s",
-                    LogName, SvPV(GvSV(errgv), na)) ;
+                    LogName, SvPV(ERRSV, PL_na)) ;
             (void)POPs ;
             PerlFilter (FALSE) ;
         }

@@ -464,9 +464,20 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
 
           return ;
         }
-      expandBuffer (buffs [0], BUFFER_EXPAND_AMOUNT) ;
+      if (blen == bufferSize(buffs [0])) {
+        if (!expandBuffer (buffs [0], BUFFER_EXPAND_AMOUNT)) {
+          syslog (LOG_CRIT,L_BUFFER_EXPAND_ERROR);
+          shutDown (lis) ;
+          return ;
+        }
+      }
       readArray = makeBufferArray (bufferTakeRef (buffs [0]),NULL) ;
-      prepareRead (ep, readArray, newArticleCommand, data, 1) ;
+      if (!prepareRead (ep, readArray, newArticleCommand, data, 1)) {
+        syslog (LOG_CRIT,L_PREPARE_READ_FAILED) ;
+        freeBufferArray (readArray) ;
+        shutDown (lis) ;
+        return ;
+      }
     }
   else
     {
@@ -578,20 +589,10 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
           Buffer *bArr ;
           u_int leftAmt = blen - (cmd - bbase) ;
 
+          ASSERT (cmd != bbase) ;
           /* first we shift whats left in the buffer down to the bottom */
-          if (cmd != bbase)
-            {
-              memmove (bbase,cmd,leftAmt) ;
-              bufferSetDataSize (buffs [0],leftAmt) ;
-            }
-          else if ( !expandBuffer (buffs[0],BUFFER_EXPAND_AMOUNT) )
-            {
-              syslog (LOG_CRIT,L_BUFFER_EXPAND_ERROR);
-
-              shutDown (lis) ;
-
-              return ;
-            }
+          memmove (bbase,cmd,leftAmt) ;
+          bufferSetDataSize (buffs [0],leftAmt) ;
       
           bArr = makeBufferArray (bufferTakeRef (buffs [0]),NULL) ;
       

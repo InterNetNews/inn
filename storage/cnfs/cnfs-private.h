@@ -64,6 +64,7 @@ typedef struct {
 } CYCBUFFEXTERN;
 
 #define METACYCBUFF_UPDATE	25
+#define REFRESH_INTERVAL	30
 
 typedef struct metacycbuff {
   char		*name;		/* Symbolic name of the pool */
@@ -86,6 +87,8 @@ typedef struct {
   STORAGECLASS	class;		/* storage class */
 } CNFSARTHEADER;
 
+/* uncomment below for old cnfs spool */
+/* #ifdef OLD_CNFS */
 typedef struct {
   long      zottf;      /* This should always be 0x01234*/
   long      size;       /* Size of the article */

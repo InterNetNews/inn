@@ -49,7 +49,11 @@ if ($try_syslog) {
 }
 if ($use_syslog) {
   if (defined &Sys::Syslog::setlogsock && $] >= 5.00403) {
-    Sys::Syslog::setlogsock('unix') if $^O =~ /linux/;
+    # we really need a common module to work all this junk out
+    if ($^O eq "dec_osf") {
+      sub Sys::Syslog::_PATH_LOG { "/dev/log" }
+    }
+    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
   }
   openlog ('controlchan', 'pid', 'news');
 }
@@ -224,9 +228,6 @@ while (<STDIN>) {
 	    $hdrval{'Reply-To'}, $token, $sitepath, $act_log,
 	    $hdrcount{approved});
     
-    if ($progname eq "checkgroups" and $act_log =~ /^doit/) {
-      $act_log = "doit=mail" if $act_log !~ /^doit=.+/;  
-    }
     &$subfind (join(" ", @progparams), $hdrval{Sender},
 	       $hdrval{'Reply-To'}, $token, $sitepath,
 	       $act_log, $hdrcount{approved}, $newsgrouppats);

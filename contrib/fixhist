@@ -47,7 +47,8 @@ while (<>) {
 	}
 	if ($msgid !~ /^<[^<> ]*>$/) {
 		if ($msgid =~ /^\[[0-9A-F]{32}\]$/) {
-			if ($arts ne "" && $arts !~ /^\@[0-9A-F]{56}\@$/) {
+			if ($arts ne "" && ($arts !~ /^\@[0-9A-F]{56}\@$/) &&
+					   ($arts !~ /[^\/]*\/[0-9]*/)) {
 				&tossit();		# malformed msg-ids
 				next;
 			}
@@ -56,7 +57,7 @@ while (<>) {
 			next;
 		}
 	} else {
-		if ($arts ne "" && ($arts !~ /[^\/]*\/.*/)) {
+		if ($arts ne "" && ($arts !~ /[^\/]*\/[0-9]*/)) {
 			&tossit();		# malformed articles list
 			next;
 		}
@@ -73,6 +74,7 @@ while (<>) {
 	}
 	print "$_\n";
 	$count++;
+	$0 = "history line $./$count" if $. % 50000 == 0;
 }
 print STDERR "Done.  Now run:\nmakehistory -r -s $count -f history.n\n";
 

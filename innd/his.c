@@ -28,6 +28,7 @@ STATIC int              HIShitpos; /* The entry existed in the cache and in hist
 STATIC int              HIShitneg; /* The entry existed in the cache but not in history */
 STATIC int              HISmisses; /* The entry was not in the cache, but was in the history file */
 STATIC int              HISdne;    /* The entry was not in cache or history */
+STATIC time_t		HISlastlog;   /* Last time that we logged stats */   
 
 /*
 ** Put an entry into the history cache 
@@ -79,6 +80,14 @@ void HISsetup(void)
 	/* Open the history file for appending formatted I/O. */
 	if ((HISwritefp = Fopen(HIShistpath, "a", INND_HISTORY)) == NULL) {
 	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, HIShistpath);
+	    exit(1);
+	}
+	/* fseek to the end of file because the result of ftell() is undefined
+	   for files freopen()-ed in append mode according to POSIX 1003.1.
+	   ftell() is used later on to determine a new article's offset
+	   in the history file. Fopen() uses freopen() internally. */
+	if (fseek(HISwritefp, 0L, SEEK_END) == -1) {
+	    syslog(L_FATAL, "cant fseek to end of %s %m", HIShistpath);
 	    exit(1);
 	}
 	CloseOnExec((int)fileno(HISwritefp), TRUE);
@@ -136,6 +145,14 @@ void HISsync(void)
     TMRstop(TMR_HISSYNC);
 }
 
+
+STATIC void HISlogstats() {
+    syslog(L_NOTICE, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
+	   HIShitpos, HIShitneg, HISmisses, HISdne);
+    HIShitpos = HIShitneg = HISmisses = HISdne = 0;
+}
+
+
 /*
 **  Close the history files.
 */
@@ -153,6 +170,8 @@ void HISclose(void)
 	HISreadfd = -1;
     }
     if (HIScache) {
+	HISlogstats();			/* print final HISstats */
+	HISlastlog = Now.time;
 	DISPOSE(HIScache);
 	HIScache = NULL;
 	HIScachesize = 0;
@@ -247,13 +266,6 @@ char *HISfilesfor(const HASH MessageID)
     return dest;
 }
 
-STATIC void HISlogstats() {
-    syslog(L_NOTICE, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
-	   HIShitpos, HIShitneg, HISmisses, HISdne);
-    HIShitpos = HIShitneg = HISmisses = HISdne = 0;
-}
-
-
 
 /*
 **  Have we already seen an article?
@@ -261,11 +273,10 @@ STATIC void HISlogstats() {
 BOOL HIShavearticle(const HASH MessageID)
 {
     BOOL	   val;
-    STATIC time_t  lastlog;       /* Last time that we logged stats */   
     
-    if ((Now.time - lastlog) > 3600) {
+    if ((Now.time - HISlastlog) > 3600) {
 	HISlogstats();
-	lastlog = Now.time;
+	HISlastlog = Now.time;
     }
 
     TMRstart(TMR_HISHAVE);
@@ -332,9 +343,9 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
         return FALSE;
 
     TMRstart(TMR_HISWRITE);
-    if (paths != NULL && paths[0] != '\0')
-	HISslashify(paths);
-    else
+    if (paths != NULL && paths[0] != '\0') {
+	if (!innconf->storageapi) HISslashify(paths);
+    } else
 	paths = NOPATHS;
 
     offset = ftell(HISwritefp);

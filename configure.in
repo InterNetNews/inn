@@ -116,10 +116,8 @@ else
 fi
 ])
 
-AC_CACHE_CHECK(for MANDIR,MANDIR, MANDIR=`eval echo $mandir`)
-ac_cv_subst_manpath="$MANDIR"
+MANDIR=`eval echo $mandir`
 AC_SUBST(MANDIR)
-AC_SUBST(ac_cv_subst_manpath)
 
 HOSTNAME=`uname -n`
 AC_SUBST(HOSTNAME)
@@ -216,7 +214,7 @@ AC_SUBST(pgpverify)
 dnl Look for a program that takes an ftp URL as a command line argument
 dnl and retrieves the file to the current directory.
 dnl Shame we can't also use lynx -source; it only writes to stdout
-AC_PATH_PROGS(GETFTP,ncftp wget,\$NEWSBIN/simpleftp)
+AC_PATH_PROGS(GETFTP,ncftp wget,$prefix/bin/simpleftp)
 
 if test "x$DO_LFS" = "xDO"
 then
@@ -298,7 +296,7 @@ dnl parse arguments
 
 dnl Checks for libraries.
 EXTRA_SRC=""
-dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
+AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
 AC_CHECK_LIB(bind,  __inet_addr)
@@ -366,7 +364,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h memory.h sgtty.h stdarg.h)
 AC_CHECK_HEADERS(stdlib.h string.h sys/file.h sys/filio.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h sys/signal.h sys/time.h syslog.h unistd.h)
-AC_CHECK_HEADERS(varargs.h dirent.h wait.h getopt.h)
+AC_CHECK_HEADERS(varargs.h dirent.h wait.h getopt.h sys/sysinfo.h)
 
 # Digital Unix malloc.h looks pretty broken (no function declarations).
 if test X${DECUNIX} = Xyes
@@ -1030,7 +1028,6 @@ AC_OUTPUT(
 	samples/innreport
 	samples/innreport.conf 
 	samples/innshellvars 
-	samples/innshellvars.csh 
 	samples/innshellvars.pl 
 	samples/innshellvars.tcl 
 	samples/innstat
@@ -1072,7 +1069,8 @@ AC_OUTPUT(
 	samples/writelog
 	storage/buildconfig 
 	syslog/syslog.conf
+	,
+	chmod +x storage/buildconfig
 )
 
-chmod +x storage/buildconfig
 cat .now_do

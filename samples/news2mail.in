@@ -8,8 +8,8 @@
 # localhost to get the actual article and stuff
 # it down sendmail's throat.
 # 
-# this program expect to find a file that maps listname to listaddrs,
-#	/var/news/etc/news2mail.cf
+# This program expect to find a file that maps listname to listaddrs,
+#	@prefix@/etc/news2mail.cf
 # which must contain address mapping pairs such as
 #
 #	big-red-ants@ucsd.edu	big-red-ants-digest@ucsd.edu		
@@ -21,7 +21,7 @@
 # the article to.
 #
 # In the INN newsfeeds file, you need to have a channel feed:
-#	n2m!:!*:Tc,Ac,Wn*:/var/news/local/news2mail
+#	n2m!:!*:Tc,Ac,Wn*:@prefix@/bin/news2mail
 # and a site for each of the various mailing lists you're feeding,
 # such as
 #	big-red-ants@ucsd.edu:rec.pets.redants.*:Tm:n2m!
@@ -106,8 +106,8 @@ sub mailto {
 
 	$sendmail = "|" . $inn::mta ;
 	$sendmail =~ s!%s!! ;
-	$sendmail .= " -ee '-f<nobody>' -odq " . $a;
-#	$sendmail = "|/usr/local/bin/debug -oi -ee '-f<nobody>' -odq " . $a;
+	$sendmail .= " -ee '-f<news>' -odq " . $a;
+#	$sendmail = "|/usr/local/bin/debug -oi -ee '-f<news>' -odq " . $a;
 
 	syslog('info', $sendmail);
 
@@ -132,31 +132,37 @@ sub mailto {
 		
 	}
 
+	# header
 	$ih = 1;
-	while ( $line = <SMGR> ) {
+	while ( $ih == 1 && defined($line = <SMGR>) ) {
 		chop $line;
 
 		# empty line signals end of header
-		if ($ih && $line eq "") {
-			print SM "To: $l\n";
+		if ($line eq "") {
+			print SM "To: $l\n\n";
 			$ih = 0;
+			next;	
 			}
 
-		# body
-		if ( $ih == 0) {
-			print SM "$line\n";
-			next;
-			}
-		
 		#
-		# only these header lines get through to mail
+		# skip unnecessary headers
 		#
-		print SM "$line\n" if ($line =~ /^From: /i);
-		print SM "$line\n" if ($line =~ /^Subject: /i);
-		print SM "$line\n" if ($line =~ /^Date: /i);
-		print SM "$line\n" if ($line =~ /^Organization: /i);
-		print SM "$line\n" if ($line =~ /^Message-ID: /i);
+		next if ($line =~ /^NNTP-Posting-Date:/i);
+		next if ($line =~ /^NNTP-Posting-Host:/i);
+		next if ($line =~ /^Xref:/i);
+		next if ($line =~ /^Path:/i);
+
+		#
+		# convert Newsgroups header into X-Newsgroups
+		#
+		$line =~ s/^Newsgroups:/X-Newsgroups:/i;
+		print SM "$line\n";
 		}
+
+	# body
+	while ( $line = <SMGR> ) {
+		print SM $line;
+	}
 
 out:
 	close(SMGR);

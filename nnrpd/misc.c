@@ -20,7 +20,7 @@ STATIC ino_t		ino = 0;
 
 #define ASCtoNUM(c)		((c) - '0')
 #define CHARStoINT(c1, c2)	(ASCtoNUM((c1)) * 10 + ASCtoNUM((c2)))
-#define DaysInYear(y)		((y % 4 ? 365 : 366))
+#define DaysInYear(y) ((y) % 4 ? 365 : (y) % 100 ? 366 : (y) % 400 ? 365 : 366)
 
 
 /*
@@ -160,29 +160,96 @@ NNTPtoGMT(av1, av2)
 	0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30
     };
     register char	*p;
+    int			century;
     int			year;
     int			month;
     int			day;
     int			hour;
     int			mins;
     int			secs;
+    int			datelen;
     register int	i;
     long		seconds;
-    char		buff[6 + 6 + 1];
+    char		buff[8 + 6 + 1];
+    TIMEINFO		t;
+    struct tm		*current;
 
-    if (strlen(av1) != 6 || strlen(av2) != 6)
+    /*
+     * Y2K: accept YYMMDD, YYYMMDD or YYYYMMDD.
+     *    First is strict RFC 977 NNTP spec.
+     *    Second is broken clients that do "printf %02d tm_year".
+     *    Third is people trying to do the right date thing
+     *      despite the old NNTP spec --- or in anticipation of the
+     *	    not yet ratified new NNTP spec.
+     */
+    datelen = strlen(av1);
+    if ((datelen < 6 || datelen > 8) || strlen(av2) != 6)
 	return -1;
     (void)sprintf(buff, "%s%s", av1, av2);
     for (p = buff; *p; p++)
 	if (!CTYPE(isdigit, (int)*p))
 	    return -1;
 
-    year  = CHARStoINT(buff[ 0], buff[ 1]);
-    month = CHARStoINT(buff[ 2], buff[ 3]);
-    day   = CHARStoINT(buff[ 4], buff[ 5]);
-    hour  = CHARStoINT(buff[ 6], buff[ 7]);
-    mins  = CHARStoINT(buff[ 8], buff[ 9]);
-    secs  = CHARStoINT(buff[10], buff[11]);
+    p = buff + datelen - 6;
+
+    year  = CHARStoINT(p[ 0], p[ 1]);
+    month = CHARStoINT(p[ 2], p[ 3]);
+    day   = CHARStoINT(p[ 4], p[ 5]);
+    hour  = CHARStoINT(p[ 6], p[ 7]);
+    mins  = CHARStoINT(p[ 8], p[ 9]);
+    secs  = CHARStoINT(p[10], p[11]);
+
+    if (datelen == 6) {		/* YYMMDD */
+	/*
+	 * RFC 977 says this:
+	 *     "The closest century is assumed as part of the year
+	 *      (i.e., 86 specifies 1986, 30 specifies 2030,
+	 *	    99 is 1999, 00 is 2000)."
+	 *   I interpret this to mean that if the difference between
+	 *   the current year and the given year is:
+	 *	* negative and < 50, the year is in this century's future.
+	 *	* positive and < 50, the year is in this century's past.
+	 *	* negative and > 50, the year is in the last century.
+	 *	* positive and > 50, the year is in the next century.
+	 *	(with the less and greater comparisons being of the
+	 *	absolute value, of course.)
+	 *   If it is either positive or negative 50, presumably the
+	 *   rest of the date and time strings have to be parsed for
+	 *   the "right" answer.  How gory.
+	 *
+	 * draft-ietf-nntpext-base-08.txt simplifies things:
+	 * 	"If the first two digits of the year are not specified,
+	 *	 the year is to be taken from the current century if YY
+	 *	 is smaller than or equal to the current year, otherwise
+	 *	 the year is from the previous century."
+	 *   For one thing, this just makes a whole lot more sense.
+	 *   why would NEWGROUPS or NEWNEWS care about dates in the
+	 *   future?  On the other hand, it does mean that now this
+	 *   routine has to know what year it is.
+	 */
+
+	if (GetTimeInfo(&t) < 0 || (current = gmtime(&t.time)) == NULL)
+		return -1;
+
+	/* Century is the number of centuries since 1900. */
+	century = current->tm_year / 100;
+
+	/* Convert current year to two digits if necessary. */
+	if (current->tm_year > 100)
+		current->tm_year -= century * 100;
+
+	if (year <= current->tm_year)
+		year += (century + 19) * 100;
+	else
+		year += (century + 18) * 100;
+
+    } else {
+        year += ASCtoNUM(*--p) * 100;
+	if (datelen == 7)	/* YYYMMDD */
+	    year += 1900;
+	else
+	    year += ASCtoNUM(*--p) * 1000; /* YYYYMMDD */
+    }
 
     if (month < 1 || month > 12
      || day < 1 || day > 31
@@ -196,10 +263,7 @@ NNTPtoGMT(av1, av2)
     else if (hour < 0 || hour > 23)
 	return -1;
 
-    if (year < 50)
-      year += 100 ;
-    
-    for (seconds = 0, year += 1900, i = 1970; i < year; i++)
+    for (seconds = 0, i = 1970; i < year; i++)
 	seconds += DaysInYear(i);
     if (DaysInYear(year) == 366 && month > 2)
 	seconds++;
@@ -310,14 +374,18 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 #endif
 
     if (entrysize == 0) {
-	HASH hash;
-	time_t dummy = ~(time_t)0;
-	TOKEN token;
-	sprintf(buff, "[%s]%c%lu%c%lu%c%lu%c%s\n", HashToText(hash),
-	    HIS_FIELDSEP, dummy, HIS_SUBFIELDSEP,
-	    dummy, HIS_SUBFIELDSEP,
-	    dummy, HIS_FIELDSEP, TokenToText(token));
-	entrysize = strlen(buff);
+	if (innconf->storageapi) {
+	    HASH hash;
+	    time_t dummy = ~(time_t)0;
+	    TOKEN token;
+	    sprintf(buff, "[%s]%c%lu%c%lu%c%lu%c%s\n", HashToText(hash),
+		HIS_FIELDSEP, dummy, HIS_SUBFIELDSEP,
+		dummy, HIS_SUBFIELDSEP,
+		dummy, HIS_FIELDSEP, TokenToText(token));
+	    entrysize = strlen(buff);
+	} else {
+	    entrysize = sizeof(buff) - 1;
+	}
     }
     if (!setup) {
 	if (!dbzinit(HISTORY)) {
@@ -407,7 +475,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
 	return NULL;
     }
-    buff[entrysize+1] = '\0';
+    buff[entrysize] = '\0';
     if (strchr(buff, '\n') == NULL) {
 	syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
 	return NULL;
@@ -430,24 +498,23 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	return NULL;
     save = p + 1;
 
-    if (IsToken(save)) {
+    if (IsToken(save) && ((useoffset != TRUE) || (off != NULL))) {
 	strcpy(path, save);
 	return path;
     }
 
     /* Want the full data? */
-/*    if (flag) {
+    if ((useoffset == TRUE) && (off == NULL)) {
+	/* this is the case for called by CMDxpath() */
+	if (innconf->storageapi)
+	    return NULL;
 	(void)strcpy(path, save);
 	for (p = path; *p; p++) {
 	    if (*p == '.')
 		*p = '/';
-	    if (*p == ' ') {
-		*p = '\0';
-		break;
-	    }
 	}
 	return path;
-	} */
+    }
 
     /* Want something we can open; loop over all entries. */
     for ( ; ; save = q + 1) {

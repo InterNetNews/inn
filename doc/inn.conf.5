@@ -64,17 +64,20 @@ This specifies how to name the local site when building the Path header line.
 The default is the fully-qualified domain name of the local host.
 .TP
 .I server
-This specifies the name of the NNTP server, and if the server does not use UNIX
-domain socket, articles passed by
-.IR nnrpd (8)
-are get through INET domain socket to this server.
+This specifies the name of the default NNTP server. 
+If
+.IR nnrpdposthost 
+is not specified and UNIX domain sockets are not supported, 
+.IR nnrpd(8) 
+tries to hand off locally-posted articles through an INET domain socket to 
+this server.
 .IR actsync (8),
 .IR nntpget (8)
 and
 .IR getlist (8)
-also use the server to get where to connect.
-The value of the NNTPSERVER environment variable, if it exists, overrides this.
-The default value is unset.
+also use this value as the default server to connect to.
+In the latter cases, the value of the NNTPSERVER environment variable, if it 
+exists, overrides this. The default value is unset.
 .TP
 .I domain
 This should be the domain name of the local host.
@@ -118,8 +121,7 @@ If you run innd as a feeder only, you do not need overview.ctl.
 How many times to attempt a
 .IR fork (2)
 before giving up.
-The default value is
-.IR <MAX_FORKS\ in\ config.data> .
+The default value is 10.
 .TP
 .I maxartsize
 The maximum size article (in bytes) that will be accepted by the
@@ -177,7 +179,7 @@ This is boolean value and the default is ``false''.
 Set this to ``false'' if you don't want to record rejected articles in
 history. This might cause duplicate articles to be offered to you,
 so be careful with it.
-This is boolean value and the default is ``false''.
+This is boolean value and the default is ``true''.
 .TP
 .I linecountfuzz
 If this number is set to any number other than ``0'', the article
@@ -527,11 +529,14 @@ If this is not specified, nothing is prepended before pathhost.
 The default value is unset.
 .TP
 .I hiscachesize
-If this is set to a non-zero number then history file lookups are cached.
-This number is the amount of memory to dedicate to the lookup cache in 
+If this is set to a non-zero number then a hash of recently received
+Message-ID's is kept in this memory to save on history lookups.
+The cache is only used for incoming newsfeeds, so a high value isn't
+necessarily useful unless you have incoming feeds that are badly delayed.
+The value is the amount of memory to dedicate to the lookup cache in 
 kilobytes.  It is generally useful to have memory allocated to history
-cache if dbz mmaping is turned on.
-The default value is ``0''.
+cache if dbz mmaping is turned on. A useful value is around '256', assuming
+you have more than one incoming newsfeed. The default value is ``0''.
 .TP
 .I xrefslave
 If this is true, innd will use the information in the Xref:
@@ -551,6 +556,11 @@ This should be set, if
 is ``true''.
 The default value is unset.
 .TP
+.I nnrpdpostport
+The port to connect to when
+.I nnrpdposthost
+is used.  The default value is ``119''.
+.TP
 .I wireformat
 If this is true then innd will write articles in wire format.  Wire format
 articles are stored with a \\r\\n at the end of each line and with periods
@@ -568,6 +578,9 @@ If this is true innd will write all the crossposts of an article to
 the history file, else it will write just the first.  This can be
 useful on servers without readers that don't run crosspost and don't
 link crossposts.
+If the server does link crossposts, via either innd itself or a crosspost
+feed, this should be set to ``true'' or articles will not be expired
+properly.
 If 
 .I storageapi
 is ``true'', 
@@ -582,7 +595,7 @@ statistics, in seconds.  If turned on statistics will be logged to syslog.
 The default value is ``0''.
 .TP
 .I timer
-If this is '0' or 'false', then performance monitoring will be disabled by
+If this is ``0'' or ``false'', then performance monitoring will be disabled by
 default.  Otherwise, it would be how often to report performance
 statistics, in seconds.  If turned on statistics will be logged to syslog.
 The default value is ``0''.
@@ -593,7 +606,9 @@ innd closes the channel.
 The default value is ``3600''.
 .TP
 .I readerswhenstopped
-Allow readers to connect even when the server is paused or throttled.
+If this is ``false'',
+readers are still allowed to connect even when the server is paused or
+throttled.
 This is boolean value and the default is ``false''.
 .TP
 .I allownewnews
@@ -700,13 +715,14 @@ the Content-Transfer-Encoding header.
 The default value is ``7bit.''
 .TP
 .I spoolfirst
-If this is true then nnrpd will spool new articles with out attempting
+If this is true then nnrpd will spool new articles without attempting
 to send them to innd first.  If this is false then nnrpd will spool
 new articles only after receiving an error trying to send them to
 innd.  Setting this to true can be useful if you want nnrpd to
 respond to the client as fast as possible, however, nnrpd will not
 report articles that are not accepted by innd to the client if they
-are spool.
+are spool.  And the posted article is never handed to innd by nnrpd, if this
+is true.  ``rnews -U'' should be used to pass that article to innd.
 This is boolean value and the default is ``false''.
 .TP
 .I complaints
@@ -867,4 +883,4 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 history(5), libinn(3), moderators(5), makehistory(8), news.daily(8),
-newsrequeue(8), nnrpd(8), scanlogs(8).
+newsrequeue(8), nnrpd(8), rnews(8), scanlogs(8).

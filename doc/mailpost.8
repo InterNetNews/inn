@@ -41,7 +41,8 @@ Normally mailpost is run by sendmail via an alias entry:
 .PP
 .RS
 .nf
-local-mail-wreck-bikes: "|/usr/news/bin/mailpost
+.ds R$ <PREFIX specified with --prefix at configure>/bin
+local-mail-wreck-bikes: "|\*(R$/mailpost
          -d local local.mail.rec.bicycles.racing"
 .fi
 .RE
@@ -78,8 +79,9 @@ integration.
 .de R$
 This is revision \\$3, dated \\$4.
 ..
+.R$ $Id$
 .SH FILES
-/usr/news/db/mailpost-msgid.db
+<pathdb in inn.conf>/mailpost-msgid.db	database file
 .SH BUGS
 Is lacking in configurability.
 .SH "SEE ALSO"

@@ -234,7 +234,7 @@ sub collect
     # running
     return 1 if $left =~ /\S+ running$/o;
     # sleeping
-    if ($left =~ /(\S+):\d+:\proc:\d+ sleeping$/o)
+    if ($left =~ /(\S+):\d+:proc:\d+ sleeping$/o)
     {
       my $server = $1;
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
@@ -242,7 +242,7 @@ sub collect
       return 1;
     }
     # blocked sleeping
-    if ($left =~ /(\S+):\d+:\proc:\d+ blocked sleeping/o)
+    if ($left =~ /(\S+):\d+:proc:\d+ blocked sleeping/o)
     {
       my $server = $1;
       $server =~ tr/A-Z/a-z/ unless ($CASE_SENSITIVE);
@@ -349,7 +349,7 @@ sub collect
                    artlink\ (\d+)\((\d+)\)\s+      # artlink
                    hiswrite\ (\d+)\((\d+)\)\s+     # hiswrite
                    hissync\ (\d+)\((\d+)\)\s+      # hissync
-                   sitesend\ (\d+)\((\d+)\)\s+  # sitesend
+                   sitesend\ (\d+)\((\d+)\)\s+     # sitesend
                    artctrl\ (\d+)\((\d+)\)\s+      # artctrl
                    artcncl\ (\d+)\((\d+)\)\s+      # artcncl
                    hishave\ (\d+)\((\d+)\)\s+      # hishave
@@ -615,6 +615,8 @@ sub collect
     }
     # bad_newsfeeds no feeding sites
     return 1 if $left =~ /\S+ bad_newsfeeds no feeding sites/o;
+    # CNFS-sm: cycbuff rollover - possibly interesting
+    return 1 if $left =~ /CNFS-sm: cycbuff \S+ rollover to cycle/o;
   }
   ########
   ## innfeed
@@ -1579,6 +1581,8 @@ sub collect
   return 1 if ($prog eq "newsx");
   return 1 if ($prog eq "demmf");
   return 1 if ($prog eq "nnnn");
+  return 1 if ($prog eq "controlchan");
+  return 1 if ($prog eq "cnfsstat");
   return 0;
 }
 
@@ -1767,14 +1771,15 @@ sub adjust
       $hash_time{$date} = $delay;
     }
     my ($h, $t) = $last_date =~ m/ (\d+):(\d\d:\d\d)$/o;
+    my ($h2) = $date =~ m/ (\d+):\d\d:\d\d /o;
     my $date2 = $date;
-    $date2 =~ s/:59:59$/:$t/;
+    $date2 =~ s/$h2:59:59$/$h:$t/;
     $hash{$date2} = $hash{$date};
     undef $hash{"$date"};
     $hash_size{$date2} = $hash_size{$date};
     undef $hash_size{"$date"};
     $t =~ m/(\d\d):(\d\d)/o;
-    $hash_time{$date2} = $hash_time{$date} - 3600 + $1 * 60 + $2;
+    $hash_time{$date2} = $hash_time{$date} - ($h2 == $h) * 3600 + $1 * 60 + $2;
     undef $hash_time{"$date"};
     $inn_flow_labels{$date2} = $h;
     %inn_flow = %hash;

@@ -27,6 +27,7 @@ DATE=`date`
 AZ=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 az=abcdefghijklmnopqrstuvwxyz
 TAGGEDHASH=@DO_DBZ_TAGGED_HASH@
+SORT=sort
 
 ##  If your expire does not pause or throttle innd, enable this next line:
 #MESSAGE="Expiration script $$"
@@ -401,10 +402,10 @@ if ${DOEXPIRE} ; then
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
 	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
 
-	test -n "${TMPDIR}" && T="-T ${TMPDIR}"
-	sort -u -o ${RMFILE} ${RMFILE}
+	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"	
+	${SORT} -u -o ${RMFILE} ${RMFILE}
 	if [ X${SAPI} = X"true" ]; then
-	    sort -u -o ${INDEXFILE} ${INDEXFILE}
+	    ${SORT} -u -o ${INDEXFILE} ${INDEXFILE}
 	fi
 	${DOEXPIREOVER} && {
 	    if ${DOEXPLOG}; then
@@ -432,7 +433,7 @@ if ${DOEXPIRE} ; then
     # expire overview lines for files we just removed
     if ${DOEXPIREOVER}; then
 	if [ X${SAPI} = X"true" ]; then
-	    sort -u -o ${INDEXFILE} ${INDEXFILE}
+	    ${SORT} -u -o ${INDEXFILE} ${INDEXFILE}
 	fi
 	if ${DOEXPLOG}; then
 	    echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
@@ -485,7 +486,7 @@ if ${DOMAIL} ; then
     # Stop using the temp file, and mail captured output.
     exec 1>&3 2>&1 3>&-
     MAIL="${MAILCMD} -s \"${MAILSUBJ}\" ${NEWSMASTER}"
-    test -s ${TEMP} && cat ${TEMP} | sed -e 's/^~/~~/' | eval ${MAIL}
+    test -s ${TEMP} && cat ${TEMP} | ${SED} -e 's/^~/~~/' | eval ${MAIL}
     rm -f ${TEMP}
 fi
 

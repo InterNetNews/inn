@@ -94,7 +94,6 @@ extern FUNCTYPE	CMDxpat();
 extern FUNCTYPE	CMDxpath();
 extern FUNCTYPE	CMD_unimp();
 
-extern int RARTenable;
 extern int LLOGenable;
 extern int TrackClient();
 
@@ -181,7 +180,7 @@ ExitWithStats(x)
 	ClientHost, usertime, systime, STATfinish - STATstart);
     /* Tracking code - Make entries in the logfile(s) to show that we have
 	finished with this session */
-    if (RARTenable) {
+    if (innconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Disabled (%s)", ClientHost, Username);
 	if (LLOGenable) {
 		fprintf(locallog, "%s Tracking Disabled (%s)\n", ClientHost, Username);
@@ -663,7 +662,7 @@ Reply(char *fmt, ...)
 	p = buff + strlen(buff) - 1;
 	while (p >= buff && (*p == '\n' || *p == '\r'))
 	    *p-- = '\0';
-	syslog(LOG_DEBUG, "%s > %s", ClientHost, buff);
+	syslog(L_TRACE, "%s > %s", ClientHost, buff);
 
 	va_end(vp);
 	errno = oerrno;
@@ -781,6 +780,7 @@ main(argc, argv, env)
     UID_T               NewsUID;
     int                 one = 1;
     FILE                *pidfile;
+    struct passwd	*pwd;
 #if HAVE_GETSPNAM
     struct group	*grp;
     GID_T		shadowgid;
@@ -795,14 +795,13 @@ main(argc, argv, env)
     /* Parse arguments.   Must COPY() optarg if used because the
      * TITLEset() routine would clobber it! */
     Reject = NULL;
-    RARTenable=FALSE;
     LLOGenable=FALSE;
 
     openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
     if (ReadInnConf() < 0) exit(1);
 
-    while ((i = getopt(argc, argv, "b:Di:g:lop:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:t")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -823,9 +822,6 @@ main(argc, argv, env)
 #endif /* HAVE_GETSPNAM */
 	case 'i':			/* Initial command */
 	    PushedBack = COPY(optarg);
-	    break;
-	case 'l':			/* Tracking */
-	    RARTenable=TRUE;
 	    break;
 	case 'o':
 	    Offlinepost = TRUE;		/* Offline posting only */
@@ -867,6 +863,7 @@ main(argc, argv, env)
 	    exit(1);
 	}
 
+	memset(&ssa, '\0', sizeof(ssa));
 	ssa.sin_family = AF_INET;
 	ssa.sin_addr.s_addr = ListenAddr;
 	ssa.sin_port = htons(ListenPort);
@@ -881,6 +878,21 @@ main(argc, argv, env)
 	if (getuid() == 0) {
 	    if (stat(innconf->pathrun, &Sb) < 0 || !S_ISDIR(Sb.st_mode)) {
 		syslog(L_FATAL, "nnrpd cant stat %s %m", innconf->pathrun);
+		exit(1);
+	    }
+	    if (Sb.st_uid == 0) {
+		syslog(L_FATAL, "nnrpd %s must not be owned by root", innconf->pathrun);
+		exit(1);
+	    }
+	    pwd = getpwnam(NEWSUSER);
+	    if (pwd == (struct passwd *)NULL) {
+		syslog(L_FATAL, "nnrpd getpwnam(%s): %s", NEWSUSER, strerror(errno));
+		exit(1);
+	    } else if (pwd->pw_gid != Sb.st_gid) {
+		syslog(L_FATAL, "nnrpd %s must have group %s", innconf->pathrun, NEWSGRP);
+		exit(1);
+	    } else if (pwd->pw_uid != Sb.st_uid) {
+		syslog(L_FATAL, "nnrpd % must be owned by %s", innconf->pathrun, NEWSUSER);
 		exit(1);
 	    }
 
@@ -920,7 +932,7 @@ main(argc, argv, env)
 	}
 
 	/* Detach */
-	if ((pid = FORK()) < 0) {
+	if ((pid = fork()) < 0) {
 	    fprintf(stderr, "%s: can't fork (%s)\n", argv[0], strerror(errno));
 	    syslog(L_FATAL, "can't fork (%m)");
 	    exit(1);
@@ -951,7 +963,7 @@ listen_loop:
 	if (fd < 0)
 		goto listen_loop;
     
-	for (i = 0; (pid = FORK()) < 0; i++) {
+	for (i = 0; (pid = fork()) < 0; i++) {
 	    if (i == MAX_FORKS) {
 		syslog(L_FATAL, "cant fork %m -- giving up");
 		exit(1);
@@ -972,6 +984,12 @@ listen_loop:
 	close(fd);
 	dup2(0, 1);
 	dup2(0, 2);
+
+	/* if we are a daemon innd didn't make us nice, so be nice kids */
+	if (innconf->nicekids) {
+	    if (nice(innconf->nicekids) < 0)
+		syslog(L_ERROR, "Could not nice child to %d: %m", innconf->nicekids);
+	}
 
 	/* Only automatically reap children in the listening process */
 	(void)signal(SIGCHLD, SIG_DFL);
@@ -1037,10 +1055,10 @@ listen_loop:
 	ExitWithStats(0);
     }
 
-    if (RARTenable)
-	RARTenable=TrackClient(ClientHost,Username);
+    if (innconf->readertrack)
+	innconf->readertrack=TrackClient(ClientHost,Username);
 
-    if (RARTenable) {
+    if (innconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Enabled (%s)", ClientHost, Username);
 	pid=getpid();
 	gettimeofday(&tv,NULL);

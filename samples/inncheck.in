@@ -116,8 +116,8 @@ active
     local ($group, $hi, $lo, $f, $alias, %groups, %aliases);
 
     input: while ( <IN> ) {
-	next input if &spacious($file, ++$line);
-	unless ( ($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)$/ ) {
+	$line++;
+	unless ( ($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/ ) {
 	    print "$file:$line: malformed line.\n";
 	    next input;
 	}
@@ -344,6 +344,7 @@ incoming_conf
     'logsitename',		0,
     'pathhttp',			0,
     'nnrpdposthost',		0,
+    'nnrpdpostport',		0,
     'extendeddbz',		0,
     'nnrpdoverstats',		0,
     'decnetdomain',		0,
@@ -376,7 +377,9 @@ incoming_conf
     'innwatchspoolspace',	0,
     'innwatchbatchspace',	0,
     'innwatchlibspace',		0,
-    'innwatchspoolnodes',	0
+    'innwatchspoolnodes',	0,
+    'nnrpperlauth',		0,
+    'docnfsstat',		0
 );
 %inn_conf'optionals = (
     'innflags',			0,
@@ -498,7 +501,7 @@ moderators
     'H',	'^\d+$',
     'I',	'^\d+$',
     'N',	'^[mu]$',
-    'O',	'^\s+$',
+    'O',	'^\S+$',
     'P',	'^\d+$',
     'S',	'^\d+$',
     'T',	'^[cflmpx]$',
@@ -895,7 +898,7 @@ intersect
 ## The modes for the various programs.
 %prog_modes = (
     'inews',		02555,
-    'innd',		 0555,
+    'innd',		 0550,
     'newsboot',		 0550,
     'nnrpd',		 0555,
     'parsectl',		 0550,
@@ -918,7 +921,7 @@ check_all_perms
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
-    &checkperm($paths{'inndstart'}, 0555, 'root', 'bin');
+    &checkperm($paths{'inndstart'}, 04550);
     foreach ( keys %paths ) {
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};

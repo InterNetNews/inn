@@ -31,15 +31,12 @@ STATIC int		ConfigBitsize;
     }
 /*
   To add a new config value, add it to the following:
-	Use the comment embedded method in include/libinn.h, then
-	run developconfig.sh, which splits items out to the other
-	locations.
-  OR:
-	include/paths.h		:	Add #define _CONF_VARNAME "varname"
+
 	include/innconf.h	:	Add to conf_defaults
 	include/libinn.h	:	Add varname to conf_vars struct
 	lib/getconfig.c		:	SetDefaults() & ReadInnConf(), ClearInnConf()
 	samples/inn.conf	:	Set the default value
+	samples/inncheck.in	:	So we can check it
 	doc/inn.conf.5		:	Document it!
 	wherever you need it	:	Use as innconf->varname
 */
@@ -230,6 +227,7 @@ void SetDefaults()
     innconf->keyartlimit = 100000;
     innconf->keymaxwords = 250;
     innconf->nnrpdposthost = NULL;
+    innconf->nnrpdpostport = NNTP_PORT;
     innconf->nnrpperlauth = FALSE;
 
     innconf->pathnews = NULL;
@@ -321,11 +319,12 @@ void ClearInnConf()
 */
 int CheckInnConf()
 {
-    char *tmpdir;
+    static char *tmpdir = NULL;
+    static int dirlen = 0;
 
     if (GetFQDN() == NULL) {
-	syslog(L_FATAL, "Must set 'domain' in inn.conf");
-	(void)fprintf(stderr, "Must set 'domain' in inn.conf");
+	syslog(L_FATAL, "Hostname does not resolve or 'domain' in inn.conf is missing");
+	(void)fprintf(stderr, "Hostname does not resolve or 'domain' in inn.conf is missing");
 	return(-1);
     }
     if (innconf->fromhost == NULL) {
@@ -403,10 +402,15 @@ int CheckInnConf()
 	innconf->pathuniover = COPY(cpcatpath(innconf->pathspool, "uniover"));
     }
     /* Set the TMPDIR variable unconditionally and globally */
-    tmpdir = NEW(char, 8 + strlen(innconf->pathtmp));
+    if (8 + strlen(innconf->pathtmp) > dirlen)
+	dirlen = 8 + strlen(innconf->pathtmp);
+    if (tmpdir == NULL)
+	tmpdir = NEW(char, dirlen);
+    else
+	RENEW(tmpdir, char, dirlen);
     sprintf(tmpdir, "TMPDIR=%s", innconf->pathtmp);
     putenv(tmpdir);
-    DISPOSE(tmpdir);
+    /* tmpdir should not be freed for some OS */
 
     return(0);
 }
@@ -633,12 +637,7 @@ int ReadInnConf()
 	    } else
 	    if (EQ(ConfigBuff,_CONF_READERSWHENSTOPPED)) {
 		TEST_CONFIG(CONF_VAR_READERSWHENSTOPPED, bit);
-		if (!bit && boolval != -1) {
-		    if (boolval == TRUE)
-			innconf->readerswhenstopped = FALSE;
-		    else
-			innconf->readerswhenstopped = TRUE;
-		}
+		if (!bit && boolval != -1) innconf->readerswhenstopped = boolval;
 		SET_CONFIG(CONF_VAR_READERSWHENSTOPPED);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ALLOWNEWNEWS)) {
@@ -860,6 +859,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPDPOSTHOST, bit);
 		if (!bit) innconf->nnrpdposthost = COPY(p);
 		SET_CONFIG(CONF_VAR_NNRPDPOSTHOST);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_NNRPDPOSTPORT)) {
+		TEST_CONFIG(CONF_VAR_NNRPDPOSTPORT, bit);
+		if (!bit) innconf->nnrpdpostport = atol(p);
+		SET_CONFIG(CONF_VAR_NNRPDPOSTPORT);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_EXTENDEDDBZ)) {
 		TEST_CONFIG(CONF_VAR_EXTENDEDDBZ, bit);

@@ -15,7 +15,7 @@
 ##  there is no way for client to enter one.
 ##
 ## Default is no access, no way to authentication, and no groups.
-*:: -no- : -no- :!*
+*::::!*
 ##  Foo, Incorporated, hosts have no password, can read anything.
 #*.foo.com:Read Post:::*
 ## Bar, Incorporated have a separate access file that they maintain

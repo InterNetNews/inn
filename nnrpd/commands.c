@@ -20,6 +20,9 @@ typedef struct _LISTINFO {
 } LISTINFO;
 
 
+extern int LLOGenable;
+
+
 STATIC LISTINFO		INFOactive = {
     NULL, _PATH_ACTIVE, TRUE, "active newsgroups",
     "Newsgroups in form \"group high low flags\""
@@ -262,6 +265,11 @@ CMDauthinfo(ac, av)
 		PERMspecified = NGgetlist(&PERMlist, accesslist);
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+
+		/* save these values in case you need them later */
+		strcpy(PERMuser, User);
+		strcpy(PERMpass, Password);
+
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
 		return;
@@ -274,6 +282,14 @@ CMDauthinfo(ac, av)
 #endif /* DO_PERL */
 	    if (EQ(User, PERMuser) && EQ(Password, PERMpass)) {
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		if (LLOGenable) {
+			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			fflush(locallog);
+		}
+		if (LLOGenable) {
+			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			fflush(locallog);
+		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
@@ -283,6 +299,10 @@ CMDauthinfo(ac, av)
 			   accesslist, NNRPACCESS)) {
 		PERMspecified = NGgetlist(&PERMlist, accesslist);
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
+		if (LLOGenable) {
+			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, User);
+			fflush(locallog);
+		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
@@ -434,6 +454,10 @@ CMDlist(ac, av)
     while ((p = QIOread(qp)) != NULL) {
 	if (lp == &INFOmotd) {
 	    Printf("%s\r\n", p);
+	    continue;
+	}
+	if (p[0] == '.' && p[1] == '\0') {
+	    syslog(L_ERROR, "%s single dot in %s", ClientHost, lp->File);
 	    continue;
 	}
 	/* matching patterns against patterns is not that
@@ -778,8 +802,11 @@ CMDxpath(ac, av)
     char	*p;
     HASH	hash = HashMessageID(av[1]);
 
-    if ((p = HISgetent(&hash, TRUE, NULL)) == NULL)
+    if (innconf->storageapi) {
+	Reply("%d Syntax error or bad command\r\n", NNTP_BAD_COMMAND_VAL);
+    } else if ((p = HISgetent(&hash, TRUE, NULL)) == NULL) {
 	Reply("%d Don't have it\r\n", NNTP_DONTHAVEIT_VAL);
-    else
+    } else {
 	Reply("%d %s\r\n", NNTP_NOTHING_FOLLOWS_VAL, p);
+    }
 }

@@ -21,14 +21,14 @@ PATS=`${SED} <${T}/$$msg \
     | (tr '\012' '|' ; echo '' )\
     | ${SED} -e 's/|$//'`
 
-${EGREP} "${PATS}" ${ACTIVE} | ${EGREP} "${1}" | ${SED} 's/ .*//' | sort >${T}/$$active
-${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1}" | ${SED} 's/[ 	].*//' | sort >${T}/$$newsgrps
+${EGREP} "${PATS}" ${ACTIVE} | ${EGREP} "${1:-.}" | ${SED} 's/ .*//' | sort >${T}/$$active
+${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" | ${SED} 's/[ 	].*//' | sort >${T}/$$newsgrps
 
 comm -13 ${T}/$$active ${T}/$$newsgrps >${T}/$$missing
 comm -23 ${T}/$$active ${T}/$$newsgrps >${T}/$$remove
 
-${EGREP} "${PATS}" ${ACTIVE} | ${EGREP} "${1}" | ${SED} -n '/ m$/s/ .*//p' | sort >${T}/$$amod.all
-${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1}" |
+${EGREP} "${PATS}" ${ACTIVE} | ${EGREP} "${1:-.}" | ${SED} -n '/ m$/s/ .*//p' | sort >${T}/$$amod.all
+${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" |
 ${SED} -n '/(Moderated)$/s/[ 	].*//p' | sort >${T}/$$ng.mod
 
 comm -12 ${T}/$$missing ${T}/$$ng.mod >${T}/$$add.mod

@@ -43,7 +43,6 @@ STATIC int		NRequestID;
 
 unsigned int	RARTtable[ART_MAX];
 int		RARTcount=0;
-int		RARTenable=FALSE;
 int 		LLOGenable=FALSE;
 
 void
@@ -356,6 +355,7 @@ GPALIAS(GROUPENTRY *gp)
     if (p) {
         if ((p = strchr(p + 1, ' ')) != NULL) {
             if ((p = strchr(p + 1, ' ')) != NULL) {
+		p++;
                 if (p[0] == NF_FLAG_ALIAS &&
                     p[1] != '\n' &&
                     strlen(p + 1) < sizeof(GPBuf) - 1
@@ -467,7 +467,10 @@ GetActivedGroupList()
     struct timeval timeout;
 
     if (GRPactived < 0) {
-	if ((s = create_udp_socket(0)) < 0) {
+	/* On Linux, the obtained socket can have the same ID (IP+port)	*/
+	/* than the actived server. In that case, any future nnrpd will	*/
+	/* be unable to connect to actived.				*/
+	if ((s = create_udp_socket(0, innconf->activedport)) < 0) {
 	    syslog(L_ERROR, "%s actived socket couldnt be created %m",
 				ClientHost);
 	    return(FALSE);
@@ -802,7 +805,7 @@ GRPreport()
 	syslog(L_NOTICE, "%s group %s %ld", ClientHost, buff, GRParticles);
 	GRParticles = 0;
 	repbuff[0]='\0';
-	if (RARTenable && (RARTcount > 0)) {
+	if (innconf->readertrack && (RARTcount > 0)) {
 		for (pp=0;pp<RARTcount; pp++) {
 			sprintf(tmpbuff, "%ld", RARTtable[pp]);
 			strcat(repbuff, tmpbuff);

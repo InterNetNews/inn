@@ -42,7 +42,7 @@ DistMatches(ARTHANDLE *art, char **distribs, char **files)
 	if (p >= art->data + art->len)
 	    return FALSE;
 	for (dp = distribs; *dp; dp++)
-	    if (caseEQn(p, *dp, p2 - q))
+	    if (caseEQn(q, *dp, p2 - q))
 		return TRUE;
 	return FALSE;
     } else {
@@ -351,7 +351,7 @@ CMDnewnews(int ac, char *av[])
 		    continue;
 	    } else
 		    art = NULL;
-	    if (!AllGroups && !PERMmatch(FALSE, groups, files))
+	    if (!AllGroups && !PERMmatch(groups, files))
 		continue;
 	    if (!AllDists && !DistMatches(art, distribs, files))
 		continue;
@@ -376,7 +376,7 @@ CMDnewnews(int ac, char *av[])
 		msgid[p2-q] = '\0';
 		Printf("%s\r\n", msgid);
 	    } else {
-		*p = '\0';
+		*(--p) = '\0';
 		Printf("%s\r\n", line);
 	    }
 	} while (fgets(line, sizeof line, F) != NULL);

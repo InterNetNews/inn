@@ -9,7 +9,12 @@
 #include "nnrpd.h"
 #if	NNRP_LOADLIMIT > 0
 #ifdef linux
+#ifdef HAVE_SYS_SYSINFO_H
 #include <sys/sysinfo.h>
+#else
+/* not all linuces have sys/sysinfo.h -- egil@kvaleberg.no */
+#include <linux/kernel.h>
+#endif
 
 /*
 **  Get the current load average as an integer.

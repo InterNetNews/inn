@@ -473,6 +473,8 @@ NCihave(CHANNEL *cp)
 	}
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, perlrc);
 	NCwritereply(cp, cp->Sendid.Data);
+	DISPOSE(cp->Sendid.Data);
+	cp->Sendid.Size = 0;
 	return;
     }
 #endif
@@ -484,7 +486,12 @@ NCihave(CHANNEL *cp)
     }
     else if (WIPinprogress(p, cp, FALSE)) {
 	cp->Ihave_Deferred++;
-	NCwritereply(cp, NNTP_RESENDIT_LATER);
+	if (cp->NoResendId) {
+	    cp->Refused++;
+	    NCwritereply(cp, NNTP_HAVEIT);
+	} else {
+	    NCwritereply(cp, NNTP_RESENDIT_LATER);
+	}
     }
     else {
 	cp->Ihave_SendIt++;
@@ -560,11 +567,19 @@ NClist(CHANNEL *cp)
     if (caseEQ(p, "newsgroups")) {
 	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_NEWSGROUPS),
 			(struct stat *)NULL);
+	if (p == NULL) {
+	    NCwritereply(cp, NCdot);
+	    return;
+	}
 	end = p + strlen(p);
     }
     else if (caseEQ(p, "active.times")) {
 	trash = p = ReadInFile(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES),
 			(struct stat *)NULL);
+	if (p == NULL) {
+	    NCwritereply(cp, NCdot);
+	    return;
+	}
 	end = p + strlen(p);
     }
     else if (*p == '\0' || (caseEQ(p, "active"))) {
@@ -602,7 +617,7 @@ NCmode(CHANNEL *cp)
     for (p = cp->In.Data + STRLEN("mode"); ISWHITE(*p); p++)
 	continue;
 
-    if (caseEQ(p, "reader"))
+    if (caseEQ(p, "reader") && !innconf->noreader)
 	h = HOnnrpd;
     else if (caseEQ(p, "stream") &&
              (!StreamingOff && cp->Streaming)) {
@@ -643,6 +658,11 @@ NCxpath(CHANNEL *cp)
     char		*p;
     int			i;
 
+    if (innconf->storageapi) {
+	/* not available for storageapi */
+	NCwritereply(cp, NNTP_BAD_COMMAND);
+	return;
+    }
     /* Nip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("xpath"); ISWHITE(*p); p++)
 	continue;

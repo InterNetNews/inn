@@ -81,6 +81,7 @@ Here's the relevant portion of my innwatch.ctl:
 #define STATSTRUC	statvfs		/* structure name */
 #define STATAVAIL	f_bavail	/* blocks available */
 #define STATMULTI	f_frsize	/* fragment size/block size */
+#define CAREFULL_STATMULTI f_bsize /* in case f_frsize is 0 */
 #define STATINODE	f_favail	/* inodes available */
 #define STATTYPES	u_long		/* type of f_bavail etc */
 #define STATFORMT	"%lu"		/* format string to match */
@@ -122,8 +123,12 @@ Printspace(char *path, BOOL inode, BOOL needpadding)
 			/* this is often the same as just buf.f_bavail */
 			/* but we want to cope with different underlying */
 			/* block/fragment sizes, and avoid overflow */
+			STATTYPES x=buf.STATMULTI;
+#ifdef CAREFULL_STATMULTI
+			if (x==0) x=buf.CAREFULL_STATMULTI;
+#endif
 			value = (STATTYPES)
-				(((double) buf.STATAVAIL * buf.STATMULTI) /
+				(((double) buf.STATAVAIL * x) /
 				(STATTYPES) KILOBYTES);
 		} else {
 			value = buf.STATINODE;	  /* simple! */

@@ -1,17 +1,15 @@
-#include	<stdio.h>
-#include	<errno.h>
-#include	<sys/types.h>
-#include	<sys/socket.h>
-#include	<netinet/in.h>
-#include	<arpa/inet.h>
-#include	<netdb.h>
-#include	<string.h>
+#include <stdio.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <string.h>
+#include <syslog.h>
+#include "config.h"
 
-
-
-
-
-int create_udp_socket(int port)
+int create_udp_socket(int port, int portexclude)
 {
 	int s;
 	struct sockaddr_in sin;
@@ -24,18 +22,19 @@ int create_udp_socket(int port)
 	sin.sin_family = AF_INET;
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("create_udp_socket: socket");
+		syslog(L_ERROR, "create_udp_socket: socket %m");
 		return(-1);
 	}
 	if (bind(s, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-		/* perror("create_udp_socket: bind"); */
+		syslog(L_ERROR, "create_udp_socket: bind %m");
+		return(-1);
+	}
+	if (sin.sin_port == htons(portexclude)) {
+		close(s);
 		return(-1);
 	}
 	return(s);
 }
-
-
-
 
 
 int make_udp_sockaddr(struct sockaddr_in *addr, char *ascii)
@@ -49,7 +48,7 @@ int make_udp_sockaddr(struct sockaddr_in *addr, char *ascii)
         char *ptr;
 
         if (! str) {
-                perror("make_udp_sockaddr: malloc");
+                syslog(L_ERROR, "make_udp_sockaddr: malloc");
 		return(-1);
         }
 
@@ -84,7 +83,7 @@ int make_udp_sockaddr(struct sockaddr_in *addr, char *ascii)
         /* Or a name */
         if (! (host = gethostbyname(str))) {
                 free(str);
-                perror("make_udp_sockaddr: gethostbyname");
+                syslog(L_ERROR, "make_udp_sockaddr: gethostbyname %s", str);
 		return(-1);
         }
         mybcopy(host->h_addr_list[0], (char *)&addr->sin_addr.s_addr, sizeof(addr->sin_addr.s_addr));
@@ -109,29 +108,22 @@ int connect_udp_socket(int s, char *address, int port)
 		return(-1);
 	}
 	if (connect(s, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-		perror("connect_udp_socket: connect");
+		syslog(L_ERROR, "connect_udp_socket: connect %m");
 		return(-1);
 	}
 	return(0);
 }
-
-
-
-
 
 int write_udp(int s, char *buf, int len)
 {
 	int rval;
 
 	if ((rval = send(s, buf, len, 0x0)) < 0) {
-		perror("write_udp: send");
+		syslog(L_ERROR, "write_udp: send %m");
 		return(-1);
 	}
 	return(rval);
 }
-
-
-
 
 
 int read_udp(int s, char *buf, int len)
@@ -139,7 +131,7 @@ int read_udp(int s, char *buf, int len)
 	int rval;
 
 	if ((rval = recv(s, buf, len, 0x0)) < 0) {
-		/* perror("read_udp: recv"); */
+		syslog(L_ERROR, "read_udp: recv %m");
 		return(-1);
 	}
 	return(rval);

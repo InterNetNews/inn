@@ -87,9 +87,9 @@ group fast-sites {
      max-connections: 15
 
      # Another peer. The ``max-connections'' value from the
-     # ``fast-sites'' group scope is used.
+     # ``fast-sites'' group scope is used. The ``hostname'' value
+     # defaults to the peer's name.
      peer data.ramona.vix.com {
-         hostname: data.ramona.vix.com
      }
 
      peer bb.home.vix.com {
@@ -115,9 +115,10 @@ following values for the ``max-connections'' key.
 Height keys are allowed:
 .TP
 .BI hostname:
-This key is mandatory in a peer block. The value is a string representing
-a list of hostnames separated by a comma. A hostname is the host's FQDN,
-or the dotted quad ip-address of the peer.
+This key requires a string value. It is a list of hostnames separated by a
+comma. A hostname is the host's FQDN, or the dotted quad ip-address of the
+peer. If this key is not present in a peer block, the hostname defaults to
+the label of the peer.
 .TP
 .BI streaming:
 This key requires a boolean value. It defines whether streaming commands

@@ -18,7 +18,6 @@
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))
 #define HEADER_DELTA		20
 
-extern int RARTenable;
 extern int LLOGenable;
 
 STATIC char     *tmpPtr ;
@@ -363,7 +362,7 @@ ProcessHeaders(linecount)
      * unauthenticated data. */
     if (PERMauthorized && HDR(_sender) == NULL) {
 	(void)sprintf(sendbuff, "%s@%s",
-	    PERMuser ? PERMuser : "UNKNOWN", ClientHost);
+	    PERMuser[0] ? PERMuser : "UNKNOWN", ClientHost);
 	HDR(_sender) = sendbuff;
     }
     else if (!PERMauthorized)
@@ -523,12 +522,12 @@ ProcessHeaders(linecount)
     if ((p = innconf->complaints) != NULL)
       sprintf (complaintsbuff, "%s",p) ;
     else {
-      if ((p = innconf->fromhost) != NULL) 
-	sprintf (complaintsbuff, "%s@%s",
-                NEWSMASTER, p);
+      if ((p = innconf->fromhost) != NULL && strchr(NEWSMASTER, '@') == NULL)
+	sprintf (complaintsbuff, "%s@%s", NEWSMASTER, p);
+      else
+	sprintf (complaintsbuff, "%s", NEWSMASTER);
     }
-    if (p != NULL)  /* Only show it if we can create it */
-	HDR(_xcomplaintsto) = complaintsbuff ;
+    HDR(_xcomplaintsto) = complaintsbuff ;
 
     /* Clear out some headers that should not be here */
     if (innconf->strippostcc) {
@@ -578,7 +577,7 @@ CheckIncludedText(p, lines)
 	if ((p = strchr(p, '\n')) == NULL)
 	    break;
     }
-    if ((i * 2 > lines) && (lines > 40))
+    if (i * 2 > lines)
 	return "Article not posted -- more included text than new text";
     return NULL;
 }
@@ -692,6 +691,13 @@ ValidNewsgroups(hdr, modgroup)
     do {
 	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
 	    p = "to";
+        if (PERMspecified) {
+	    grplist[0] = p;
+	    grplist[1] = NULL;
+	    if (!PERMmatch(PERMlist, grplist)) {
+		sprintf(Error, "You are not allowed to post to %s\r\n", p);
+	    }
+        }
 	if ((gp = GRPfind(p)) == NULL)
 	    continue;
 	FoundOne = TRUE;
@@ -719,13 +725,6 @@ ValidNewsgroups(hdr, modgroup)
 		    p, GPALIAS(gp));
 	    break;
 	}
-        if (PERMspecified) {
-	    grplist[0] = p;
-	    grplist[1] = NULL;
-	    if (!PERMmatch(PERMlist, grplist)) {
-		sprintf(Error,"%s: %s\r\n", NNTP_NOSUCHGROUP,p);
-	    }
-        }
     } while ((p = strtok((char *)NULL, NGSEPS)) != NULL);
     DISPOSE(groups);
 
@@ -953,7 +952,7 @@ ARTpost(article, idbuff)
 		(strlen(article) > innconf->localmaxartsize)) {
 	    (void)sprintf(Error,
 		"Article is bigger then local limit of %ld bytes\n",
-		atoi(p));
+		innconf->localmaxartsize);
 	    if (modgroup)
 		DISPOSE(modgroup);
 	    return Error;
@@ -1012,12 +1011,14 @@ ARTpost(article, idbuff)
 
     /* Open a local connection to the server. */
     if (innconf->nnrpdposthost != NULL)
-	i = NNTPconnect(innconf->nnrpdposthost, NNTP_PORT, &FromServer, &ToServer, buff);
+	i = NNTPconnect(innconf->nnrpdposthost, innconf->nnrpdpostport,
+					&FromServer, &ToServer, buff);
     else {
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 	i = NNTPlocalopen(&FromServer, &ToServer, buff);
 #else
-	i = NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff);
+	i = NNTPremoteopen(innconf->port, &FromServer,
+					&ToServer, buff);
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     }
 
@@ -1095,7 +1096,7 @@ ARTpost(article, idbuff)
     }
 
     /* Tracking */
-    if (RARTenable) {
+    if (innconf->readertrack) {
 	strcat(TrackID,HDR(_messageid));
 	if ((ftd=fopen(TrackID,"w")) != NULL) {
 		for (hp = Table; hp < ENDOF(Table); hp++)

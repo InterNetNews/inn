@@ -73,7 +73,6 @@ STATIC SENDDATA		SENDhead = {
 
 extern unsigned int RARTtable[];
 extern int RARTcount;
-extern int RARTenable;
 
 /*
 **  Overview state information.
@@ -253,6 +252,9 @@ STATIC BOOL ARTinstore(int i)
 	    || token.cancelled )
 	 return FALSE;
     }
+    if (!innconf->nnrpdcheckart) {
+	return TRUE;
+    }
     if (innconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     art = SMretrieve(token, RETR_STAT);
@@ -293,21 +295,27 @@ STATIC int ARTfind(ARTNUM i, BOOL needcheck)
             else
                 return ARTcache - ARTnumbers;
         }
-        else if ((++ARTcache <= top) && (ARTcache->ArtNum <= i)) {
-            /* Next article. */
-            if (ARTcache->ArtNum == i) {
-                if (needcheck) {
-                    return ARTinstore(ARTcache - ARTnumbers)
-                        ? (ARTcache - ARTnumbers) : -1;
+        else if (++ARTcache <= top) {
+            if (ARTcache->ArtNum <= i) {
+                /* Next article. */
+                if (ARTcache->ArtNum == i) {
+                    if (needcheck) {
+                        return ARTinstore(ARTcache - ARTnumbers)
+                            ? (ARTcache - ARTnumbers) : -1;
+                    }
+                    else
+                      return ARTcache - ARTnumbers;
                 }
-                else
-                  return ARTcache - ARTnumbers;
+                bottom = ARTcache;
             }
-            bottom = ARTcache;
-        }
-        else if ( (ARTcache->ArtNum > i) && ((--ARTcache)->ArtNum < i) ) {
-            /* Missing article. */
-            return -1;
+            else if ((--ARTcache)->ArtNum < i ) {
+                /* Missing article. */
+                return -1;
+            }
+            else {
+                ARTcache=NULL;
+                bottom = ARTnumbers;
+            }
         }
         else {
             ARTcache=NULL;
@@ -465,11 +473,9 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
     int			fd;
     HASH		hash = HashMessageID(msg_id);
     TOKEN		token;
-    int			pathlen;
-    char		*path;
 
     *ap = 0;
-    if ((p = HISgetent(&hash, innconf->storageapi ? FALSE : TRUE, NULL)) == NULL)
+    if ((p = HISgetent(&hash, FALSE, NULL)) == NULL)
 	return FALSE;
 
     if (IsToken(p)) {
@@ -483,34 +489,26 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 	ARTlen = ARThandle->len;
 	*ap = 0;
     } else {
-	pathlen = SPOOLlen + 1 + strlen(p) + 1;
-	path = NEW(char, pathlen);
-	(void)sprintf(path, "%s/%s", innconf->patharticles, p);
 	if (innconf->articlemmap) {
-	    if ((fd = open(path, O_RDONLY)) < 0) {
-		DISPOSE(path);
+	    if ((fd = open(p, O_RDONLY)) < 0) {
 		return FALSE;
 	    }
 	    if ((fstat(fd, &Sb) < 0) || !S_ISREG(Sb.st_mode)) {
 		close(fd);
-		DISPOSE(path);
 		return FALSE;
 	    }
 	    ARTlen = Sb.st_size;
 	    if ((ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == (MMAP_PTR)-1) {
 		close(fd);
-		DISPOSE(path);
 		return FALSE;
 	    }
 	    close(fd);
 	} else {
-	    if ((ARTqp = QIOopen(path)) == NULL) {
-		DISPOSE(path);
+	    if ((ARTqp = QIOopen(p)) == NULL) {
 		return FALSE;
 	    }
 	    if (fstat(QIOfileno(ARTqp), &Sb) < 0 || !S_ISREG(Sb.st_mode)) {
 		ARTclose();
-		DISPOSE(path);
 		return FALSE;
 	    }
 	    CloseOnExec(QIOfileno(ARTqp), TRUE);
@@ -519,7 +517,6 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 	    *q++ = '\0';
 	if (GRPlast[0] && EQ(p, GRPlast))
 	    *ap = atol(q);
-	DISPOSE(path);
     }
     return TRUE;
 }
@@ -877,7 +874,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 		ARTsendmmap(what->Type);
 	    else
 		ARTsendqio(what->Type);
-    	    if (tart != 0 && RARTenable && RARTcount < ART_MAX)
+    	    if (tart != 0 && innconf->readertrack && RARTcount < ART_MAX)
 	        RARTtable[RARTcount++]=tart;
 	}
 	ARTclose();
@@ -927,7 +924,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    ARTsendmmap(what->Type);
 	else
 	    ARTsendqio(what->Type);
-    	    if (tart != 0 && RARTenable && RARTcount < ART_MAX)
+    	    if (tart != 0 && innconf->readertrack && RARTcount < ART_MAX)
 	        RARTtable[RARTcount++]=tart;
     }
     if (ac > 1)
@@ -1524,13 +1521,14 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 FUNCTYPE CMDxover(int ac, char *av[])
 {
     char	        *p;
-    ARTNUM	        i;
+    int	                i, j;
     BOOL	        Opened;
     BOOL	        DidReply;
     ARTRANGE		range;
     char		buff[SPOOLNAMEBUFF];
     struct timeval	stv, etv;
     int			linelen;
+    BOOL                checkart;
 
     if (!PERMcanread) {
 	Printf("%s\r\n", NOACCESS);
@@ -1555,11 +1553,17 @@ FUNCTYPE CMDxover(int ac, char *av[])
 
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
-    i = ARTfind(range.Low, innconf->storageapi && innconf->nnrpdcheckart);
-    for (Opened = OVERopen(); (i < ARTsize) && (ARTnumbers[i].ArtNum <= range.High) && (range.High > 0); i++) {
-	if (!ARTinstore(i)) {
-	    if (innconf->storageapi)
-		OVERmiss++;
+    /* Find the first article in the group that actually exists */
+    checkart = (innconf->storageapi && innconf->nnrpdcheckart);
+    for (; ((i = ARTfind(range.Low, checkart)) < 0) && (range.Low <= range.High);
+	range.Low++);
+
+    for (Opened = OVERopen();
+	 (i >= 0) && (i < ARTsize) && (ARTnumbers[i].ArtNum <= range.High) && (range.High > 0);
+	 i++) {
+	if (innconf->storageapi && !ARTinstore(i)) {
+	    OVERmiss++;
+	    continue;
 	}
 
 	if (Opened && (p = OVERfind(ARTnumbers[i].ArtNum, &linelen)) != NULL) {

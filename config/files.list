@@ -13,7 +13,6 @@
 ../samples/innreport.conf
 ../samples/innwatch.ctl
 ../samples/innshellvars
-../samples/innshellvars.csh
 ../samples/innshellvars.pl
 ../samples/innshellvars.tcl
 ../syslog/syslog.conf

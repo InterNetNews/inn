@@ -45,6 +45,23 @@
  **                      INNFEED PRIVATE SECTION                          **
  ***************************************************************************/
 
+#if defined(sinix)
+/* to avoid duplicate definition when using system derived yacc */
+/* this may be ugly, but do you have another suggestion ? */
+#define yy_yyv _yy_yyv
+#define yyval _yyval
+#define yylval _yylval
+#define yys _yys
+#define yyv _yyv
+#define yyexca _yyexca
+#define yyact _yyact
+#define yypact _yypact
+#define yypgo _yypgo
+#define yyr1 _yyr1
+#define yyr2 _yyr2
+#define yychk _yychk
+#define yydef _yydef
+#endif
 /*
 ** BSD/OS
 */
@@ -129,6 +146,22 @@ extern int h_errno ;
 #define DO_NEED_STREAM 1
 #define MAX_STDIO_FD 256
 
+/* to avoid duplicate definition when using system derived yacc */
+/* this may be ugly, but do you have another suggestion ? */
+#define yy_yyv _yy_yyv
+#define yyval _yyval
+#define yylval _yylval
+#define yys _yys
+#define yyv _yyv
+#define yyexca _yyexca
+#define yyact _yyact
+#define yypact _yypact
+#define yypgo _yypgo
+#define yyr1 _yyr1
+#define yyr2 _yyr2
+#define yychk _yychk
+#define yydef _yydef
+
  /* this may be needed for solaris version < 2.6 */
 /* #define wait3(a,b,c) waitpid(-1,a,b) */
 
@@ -144,6 +177,23 @@ extern int h_errno ;
 #define DO_NEED_STRERROR 1
 #define MAX_STDIO_FD 128
 #define atexit(arg) on_exit (arg,0)
+
+/* to avoid duplicate definition when using system derived yacc */
+/* this may be ugly, but do you have another suggestion ? */
+#define yy_yyv _yy_yyv
+#define yyval _yyval
+#define yylval _yylval
+#define yys _yys
+#define yyv _yyv
+#define yyexca _yyexca
+#define yyact _yyact
+#define yypact _yypact
+#define yypgo _yypgo
+#define yyr1 _yyr1
+#define yyr2 _yyr2
+#define yychk _yychk
+#define yydef _yydef
+
 #endif
 
 

@@ -134,6 +134,8 @@ SITEsetlist(patlist, subbed, poison, poisonEntry)
 	    pat++;
 	if (!*pat)
 	    continue;
+	if (!*poisonEntry && poisonvalue)
+	    *poisonEntry = TRUE;
 
 	/* See if pattern is a simple newsgroup name.  If so, set the
 	 * right subbed element for that one group (if found); if not,
@@ -320,7 +322,9 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		}
 	    break;
 	case 'O':
-	    sp->Originator = COPY(++p);
+	    if (*++p == '\0')
+		return "missing originator name for O param in field 3";
+	    sp->Originator = COPY(p);
 	    break;
         case 'P':
             if (*++p && CTYPE(isdigit, *p))
@@ -559,6 +563,7 @@ SITEparsefile(StartSite)
     char		*poison;
     STRING		error;
     int			errors;
+    int			setuperrors;
 
     /* Free old sites info. */
     if (Sites) {
@@ -581,7 +586,7 @@ SITEparsefile(StartSite)
     poison = NEW(char, nGroups);
 
     ME.Prev = 0; /* Used as a flag to ensure exactly one ME entry */
-    for (sp = Sites, errors = 0, i = 0; i < nSites; i++) {
+    for (sp = Sites, errors = 0, setuperrors = 0, i = 0; i < nSites; i++) {
 	p = strings[i];
 	if (p[0] == 'M' && p[1] == 'E' &&
             ((p[2] == NF_FIELD_SEP) || (p[2] == NF_SUBFIELD_SEP))) {
@@ -602,7 +607,7 @@ SITEparsefile(StartSite)
 	}
 	if (StartSite && !SITEsetup(sp)) {
 	    syslog(L_FATAL, "%s cant setup %m", sp->Name);
-	    errors++;
+	    setuperrors++;
 	    continue;
 	}
 	sp->Working = TRUE;
@@ -613,8 +618,11 @@ SITEparsefile(StartSite)
 	errors++;
     }
 
-    if (errors) {
-	syslog(L_FATAL, "%s syntax_error %s", LogName, SITEfeedspath);
+    if (errors || setuperrors) {
+	if (errors)
+	    syslog(L_FATAL, "%s syntax_error %s", LogName, SITEfeedspath);
+	if (setuperrors)
+	    syslog(L_FATAL, "%s setup_error %s", LogName, SITEfeedspath);
 	JustCleanup();
 	exit(1);
     }

@@ -483,19 +483,19 @@ if ($HTML) {
     my $file = &GetValue ($output{'default'}{'html_header_file'});
     $file = $HTML_dir . "/" . $file;
     open (F, $file) && do {
-      $/ = "";
+      local $/ = undef;
       $HTML_header = <F>;
-      close (F);
+      close F;
     };
   }
   if (defined $output{'default'}{'html_footer_file'}) {
     my $file = &GetValue ($output{'default'}{'html_footer_file'});
     $file = $HTML_dir . "/" . $file;
     open (F, $file) && do {
-      $/ = "";
+      local $/ = undef;
       $HTML_footer = <F>;
-      close (F);
-    }
+      close F;
+    };
   }
 }
 
@@ -848,20 +848,22 @@ EOF
   $result .= "</TR>\n<TR>$temp</TR>\n";
 
   foreach (sort {$b cmp $a} (keys %data)) {
-    my @list = split /\|/, $data{$_};
-    my $str = "<TR><TD ALIGN=LEFT>";
-    $str .= "<A HREF=\"$_\">" if -e "$rep/$_";
-    $str .= shift @list;
-    $str .= "</A>" if -e "$rep/$_";;
-    $str .= "</TD>";
-    while (@list) {
-      $str .= "<TD ALIGN=RIGHT>";
-      my $t = shift @list;
-      $t =~ s/^\0+//o; # remove garbage, if any.
-      $str .= "$t</TD>";
+    if (($CYCLE == 0) || ($i < $CYCLE)) {
+      my @list = split /\|/, $data{$_};
+      my $str = "<TR><TD ALIGN=LEFT>";
+      $str .= "<A HREF=\"$_\">" if -e "$rep/$_";
+      $str .= shift @list;
+      $str .= "</A>" if -e "$rep/$_";;
+      $str .= "</TD>";
+      while (@list) {
+        $str .= "<TD ALIGN=RIGHT>";
+        my $t = shift @list;
+        $t =~ s/^\0+//o; # remove garbage, if any.
+        $str .= "$t</TD>";
+      }
+      $str .= "</TR>\n";
+      $result .= "$str";
     }
-    $str .= "</TR>\n";
-    $result .= "$str";
   }
   $result .= "</TABLE>\n</CENTER>\n<P><HR>";
   $result .= "<A HREF=\"ftp://ftp.eerie.fr/pub/usenet/innreport/\">innreport";

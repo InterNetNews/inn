@@ -64,8 +64,8 @@ sub control_ihave {
     if (-s "$tempfile") {
       $kid = open2(\*R, \*INEWS, $inn::inews, "-h");
       print INEWS ("Newsgroups: to.$site\n",
-		   "Subject: cmsg sendme $pathhost\n",
-		   "Control: sendme $pathhost\n\n");
+		   "Subject: cmsg sendme $inn::pathhost\n",
+		   "Control: sendme $inn::pathhost\n\n");
       open TEMPFILE, "<$tempfile";
       print INEWS $_ while <TEMPFILE>;  
       close R;

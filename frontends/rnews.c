@@ -824,8 +824,9 @@ int main(int ac, char *av[])
 #endif
      if (ReadInnConf() < 0) exit(1);
      UUCPHost = getenv(_ENV_UUCPHOST);
-     PATHBADNEWS = cpcatpath(innconf->pathincoming, _PATH_BADNEWS);
-     
+     PATHBADNEWS = COPY(cpcatpath(innconf->pathincoming, _PATH_BADNEWS));
+     port = innconf->nnrpdpostport;
+
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
@@ -880,8 +881,9 @@ int main(int ac, char *av[])
 	if (!OpenRemote(remoteServer,port,buff))
 		CantConnect(buff,mode,fd);
     } else if (innconf->nnrpdposthost != NULL) {
-	if (!OpenRemote(innconf->nnrpdposthost, port, buff))
-	    CantConnect(buff, mode, fd);
+	if (!OpenRemote(innconf->nnrpdposthost,
+	    (port != NNTP_PORT) ? port : innconf->nnrpdpostport, buff))
+		CantConnect(buff, mode, fd);
     }
     else {
 #if	defined(DO_RNEWSLOCALCONNECT)
@@ -889,12 +891,14 @@ int main(int ac, char *av[])
 	    /* If server rejected us, no point in continuing. */
 	    if (buff[0])
 		CantConnect(buff, mode, fd);
-	    if (!OpenRemote((char *)NULL, port, buff))
-		CantConnect(buff, mode, fd);
+	    if (!OpenRemote((char *)NULL,
+	    	(port != NNTP_PORT) ? port : innconf->port, buff))
+			CantConnect(buff, mode, fd);
 	}
 #else
-	if (!OpenRemote((char *)NULL, port, buff))
-	    CantConnect(buff, mode, fd);
+	if (!OpenRemote((char *)NULL, 
+	    (port != NNTP_PORT) ? port : innconf->port, buff))
+		CantConnect(buff, mode, fd);
 #endif	/* defined(DO_RNEWSLOCALCONNECT) */
     }
     CloseOnExec((int)fileno(FromServer), TRUE);

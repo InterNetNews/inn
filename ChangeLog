@@ -1,0 +1,2029 @@
+Wed Aug 25 12:58:47 1999  <kondou>
+
+  * nnrpd/newnews.c (1.9.2.3):
+    nnrpd/newnews.c:
+	    - comparing dist was incorrect
+
+Wed Aug 25 08:57:02 1999 James Brister <brister>
+
+  * ChangeLog (1.1.2.4):
+    Removed all entries prior to 1999. File was way too big
+
+Wed Aug 25 07:50:40 1999 Russ Allbery <rra>
+
+  * samples/cnfsstat.in (1.3.2.7):
+    Protect the shell against special characters in the message ID when
+    running
+    grephistory.  Reported by Mike Bird <mgb@yosemite.net>.
+
+Wed Aug 25 04:14:33 1999  <kondou>
+
+  * samples/cnfsstat.in (1.3.2.6):
+    samples/cnfsstat.in:
+	    - From: Mike Bird <mgb@yosemite.net>
+	    - In INN 2.2, the last loop in the cnfsstat file, which scans
+    for
+	      oldest article, revises $update if a more recent time is
+    found.
+	      However, this has no effect as $nupdate_str and $nago_str
+    have
+	      already been created from $update.  The line which does this
+    should
+	      be moved after the loop, e.g.  just before the close(BUFF).
+	    - If two articles with identical timestamps are found the same
+    loop
+	      incorrectly treats the latter as the oldest timestamp ... a
+    "<"
+	      should be changed to a "<=".  NOTE: This necessarily slows
+    cnfsstat
+	      considerably for cycbuffs containing very large articles.
+	    - do not claim if the same class is multiply defined
+
+Tue Aug 24 21:49:51 1999 James Brister <brister>
+
+  * ChangeLog (1.1.2.3):
+    Completely regenerated the contents to try and remove non-STABLE
+    log messages.
+
+Tue Aug 24 00:23:48 1999 David C Lawrence <tale>
+
+  * nnrpd/misc.c (1.28.2.5):
+    Made 2 digit years in NEWGROUPS/NEWNEWS compatible with the draft NNTP
+    standard.
+
+Mon Aug 23 23:13:19 1999 David C Lawrence <tale>
+
+  * samples/mod-active.in (1.1.2.2):
+    made the flag for a short diff listing more portable
+
+Sun Aug 22 06:25:10 1999 Russ Allbery <rra>
+
+  * frontends/inews.c (1.15.2.5):
+    Fixes for several potential buffer overflows, some more likely than
+    others.
+    Various sanity checks added to ensure strings aren't longer than
+    working
+    buffers.  I *think* all strcpy() and sprintf() calls are now okay, but
+    the
+    code should really be rewritten to make better use of dynamic buffers.
+
+Sat Aug 21 04:35:18 1999 Russ Allbery <rra>
+
+  * frontends/inews.c (1.15.2.4):
+    Jeff King <peff@dbd.com>:
+    There is no bounds-checking on "from" headers given on the command
+    line;
+    when copied into SMBUF-sized buffers, an overflow can occur and
+    arbitrary
+    code can be executed.
+
+Wed Aug 11 12:06:09 1999  <kondou>
+
+  * nnrpd/newnews.c (1.9.2.2):
+    nnrpd/newnews.c:
+	    - reported by Markus Stumpf <maex@Space.Net>
+	    - the result of newnews includes trailing '\t' for traditional
+
+Sun Aug 08 21:56:53 1999  <kondou>
+
+  * innd/art.c (1.90.2.9):
+    innd/art.c:
+	    - reported by news@hammer.msfc.nasa.gov
+	    - 'AC' for junk didn't work
+
+Wed Aug 04 03:22:12 1999  <kondou>
+
+  * samples/parsecontrol.in (1.18.2.2):
+    samples/parsecontrol.in:
+	    - checkgroups failed for non-controlchan
+
+Wed Jul 14 13:27:07 1999  <kondou>
+
+  * nnrpd/post.c (1.28.2.8):
+    nnrpd/post.c
+	    - don't append fromhost for X-Complaints-To, if NEWSMASTER
+    includes '@'
+
+Tue Jul 13 01:42:59 1999  <kondou>
+
+  * samples/control.ctl (1.10.2.3):
+    samples/control.ctl:
+	    - reported by Alexander Koch <efraim@argh.org>
+	    - fixed typo
+
+Thu Jul 08 21:18:34 1999  <kondou>
+
+  * innd/cc.c (1.47.2.6):
+  * innd/innd.c (1.40.2.3):
+    innd/cc.c:
+    innd/innd.c:
+	    - invalid string was showed at syslog()
+
+Wed Jul 07 21:37:47 1999  <kondou>
+
+  * samples/newsfeeds.in (1.3.2.3):
+    samples/newsfeeds.in:
+	    - From: Robert Kiessling <robert@easynet.de>
+	    - Update the flag description in file newsfeeds
+
+Wed Jul 07 18:50:38 1999 David C Lawrence <tale>
+
+  * lib/makedir.c (1.3.2.1):
+    MakeDir() should have its errno determined by mkdir().  Cases where
+    mkdir() failed resulted in errno having the value of a subsequent
+    stat().  This fix was made earlier to the CURRENT branch by someone
+    else (I did not check who) and I am just applying it in 2.2's STABLE
+    as a bug fix.
+
+Tue Jul 06 13:38:41 1999  <kondou>
+
+  * backends/inndf.c (1.4.2.1):
+    backends/inndf.c:
+	    - written by Uwe Ohse <uwe-nsn19990706@ohse.de>
+	    - patch for glibc 2.1
+
+Wed Jun 30 03:53:36 1999  <kondou>
+
+  * samples/control.ctl (1.10.2.2):
+    samples/control.ctl:
+	    - replaced with ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl
+
+Wed Jun 30 02:01:43 1999  <kondou>
+
+  * samples/innreport_inn.pm (1.5.2.5):
+    samples/innreport_inn.pm:
+	    - From: Fabien Tassin <fta@oleane.net>
+	    - innreport failed to run for Perl 5.005_57
+
+Mon Jun 28 09:32:31 1999  <kondou>
+
+  * samples/nntpsend.in (1.11.2.1):
+    samples/nntpsend.in:
+	    - From: Russell Vincent <russellv@uk.uu.net>
+	    - don't sort the batch file if using the storageapi. It doesn't
+	      necessarily help and causes out-of-order articles when using
+	      master-slave mode. The sorting is legacy from trad spool.
+
+Sat Jun 26 00:35:07 1999  <kondou>
+
+  * storage/interface.c (1.35.2.3):
+    storage/interface.c:
+	    - From: George Lindholm <lindholm@ucs.ubc.ca>
+	    - trailing ',' in storage.conf would cause SIGSEGV
+
+Sat Jun 26 00:33:19 1999  <kondou>
+
+  * doc/cycbuff.conf.5 (1.1.2.2):
+    doc/cycbuff.conf.5
+	    - From: George Lindholm <lindholm@ucs.ubc.ca>
+	    - some grammer were wrong
+
+Sat Jun 26 00:31:25 1999  <kondou>
+
+  * README.perl_hook (1.9.2.3):
+    README.perl_hook:
+	    - From: George Lindholm <lindholm@ucs.ubc.ca>
+	    - typo fixed
+
+Fri Jun 25 07:57:16 1999  <kondou>
+
+  * samples/parsecontrol.in (1.18.2.1):
+    samples/parsecontrol.in:
+	    - From: Benedict Lofstedt <benedict@daimi.au.dk>
+	    - there is no input, so the grep will always fail
+
+Fri Jun 25 05:52:45 1999  <kondou>
+
+  * innd/perl.c (1.7.2.2):
+    innd/perl.c:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - Let 2.2 STABLE compile against the current development Perl
+    and the
+	      forthcoming Perl 5.006.
+
+Fri Jun 25 03:16:09 1999  <kondou>
+
+  * nnrpd/perl.c (1.8.2.1):
+    nnrpd/perl.c:
+	    - From: "Edward S. Marshall" <emarshal@xnet.com>
+	    - Here's a patch that fixes up innd and nnrpd as well. This
+    gives a
+	      working INN installation for me, using Perl 5.005_57, the
+    latest CVS
+	      version of INN, Solaris 7, egcs 1.1.2, largefile support in
+    both INN
+	      and Perl.
+
+Fri Jun 25 03:16:00 1999  <kondou>
+
+  * lib/perl.c (1.7.2.1):
+    lib/perl.c:
+	    - From: "Edward S. Marshall" <emarshal@xnet.com>
+	    - Here's a patch that fixes up innd and nnrpd as well. This
+    gives a
+	      working INN installation for me, using Perl 5.005_57, the
+    latest CVS
+	      version of INN, Solaris 7, egcs 1.1.2, largefile support in
+    both INN
+	      and Perl.
+
+Fri Jun 25 03:15:51 1999  <kondou>
+
+  * innd/cc.c (1.47.2.5):
+    innd/cc.c:
+	    - From: "Edward S. Marshall" <emarshal@xnet.com>
+	    - Here's a patch that fixes up innd and nnrpd as well. This
+    gives a
+	      working INN installation for me, using Perl 5.005_57, the
+    latest CVS
+	      version of INN, Solaris 7, egcs 1.1.2, largefile support in
+    both INN
+	      and Perl.
+
+Thu Jun 24 22:06:41 1999  <kondou>
+
+  * nnrpd/nnrpd.c (1.49.2.8):
+    nnrpd/nnrpd.c:
+	    - From: Robert Kiessling <robert@easynet.de>
+	    - On some combinations of IRIX and gcc, inet_ntoa does not work
+	      properly. Squid therefore integrated a test for a working
+    inet_ntoa,
+	      which would be a good idea to also include in INN.
+
+Tue Jun 22 19:59:14 1999 James Brister <brister>
+
+  * ChangeLog (1.1.2.2):
+    Updates for post Oct 21 1998
+
+Tue Jun 22 01:01:49 1999  <kondou>
+
+  * nnrpd/group.c (1.32.2.3):
+    nnrpd/group.c:
+	    - reported by Kjetil Torgrim Homme <kjetilho@ifi.uio.no>
+	    - aliased group name was not showed correctly
+
+Mon Jun 21 22:02:35 1999  <kondou>
+
+  * ltconfig (1.2.2.2):
+    ltconfig:
+	    - reported by Matus fantomas Uhlar <uhlar@fantomas.sk>
+	    - fix for FreeBSD4
+
+Mon Jun 21 00:58:42 1999 David C Lawrence <tale>
+
+  * samples/innmail.in (1.9.2.1):
+    trimming trailing newlines off of the subject; the controlchan
+    handler scripts variously send the subject with or without a
+    newline, so this clears it all up in one place.
+
+Sun Jun 20 21:56:36 1999  <kondou>
+
+  * innd/status.c (1.12.2.1):
+    innd/status.c:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - typo fixed
+
+Tue Jun 15 21:54:23 1999  <kondou>
+
+  * samples/cnfsstat.in (1.3.2.5):
+    samples/cnfsstat.in:
+	    - From: Marg Suarez <marg@columbia.edu>
+	    - fixed the bug in cnfsstat where it printed the wrong date in
+    the case
+	      when a msgid was missing from the history file.
+
+  * doc/wildmat.3 (1.1.2.1):
+  * doc/writelog.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/wildmat.3 (1.1):
+    file wildmat.3 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:23:10 1999  <kondou>
+
+  * doc/writelog.8 (1.1):
+    file writelog.8 was initially added on branch STABLE-2_2.
+
+  * doc/tally.control.8 (1.1.2.1):
+  * doc/tally.unwanted.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:23:09 1999  <kondou>
+
+  * doc/tally.unwanted.8 (1.1):
+    file tally.unwanted.8 was initially added on branch STABLE-2_2.
+
+  * doc/strcasecmp.3 (1.1.2.1):
+  * doc/subst.1 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/subst.1 (1.1):
+    file subst.1 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:23:08 1999  <kondou>
+
+  * doc/tally.control.8 (1.1):
+    file tally.control.8 was initially added on branch STABLE-2_2.
+
+  * doc/storage.ctl.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/storage.ctl.5 (1.1):
+    file storage.ctl.5 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:23:07 1999  <kondou>
+
+  * doc/strcasecmp.3 (1.1):
+    file strcasecmp.3 was initially added on branch STABLE-2_2.
+
+  * doc/startinnfeed.1 (1.1.2.1):
+  * doc/storage.conf.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/startinnfeed.1 (1.1):
+    file startinnfeed.1 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:23:06 1999  <kondou>
+
+  * doc/storage.conf.5 (1.1):
+    file storage.conf.5 was initially added on branch STABLE-2_2.
+
+  * doc/simpleftp.1 (1.1.2.1):
+  * doc/sm.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:23:05 1999  <kondou>
+
+  * doc/sm.8 (1.1):
+    file sm.8 was initially added on branch STABLE-2_2.
+
+  * doc/shlock.1 (1.1.2.1):
+  * doc/shrinkfile.1 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/shrinkfile.1 (1.1):
+    file shrinkfile.1 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:23:04 1999  <kondou>
+
+  * doc/simpleftp.1 (1.1):
+    file simpleftp.1 was initially added on branch STABLE-2_2.
+
+  * doc/send-uucp.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/send-uucp.8 (1.1):
+    file send-uucp.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:23:03 1999  <kondou>
+
+  * doc/shlock.1 (1.1):
+    file shlock.1 was initially added on branch STABLE-2_2.
+
+  * doc/rnews.1 (1.1.2.1):
+  * doc/scanlogs.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:23:02 1999  <kondou>
+
+  * doc/scanlogs.8 (1.1):
+    file scanlogs.8 was initially added on branch STABLE-2_2.
+
+  * doc/pullnews.8 (1.1.2.1):
+  * doc/qio.3 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/qio.3 (1.1):
+    file qio.3 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:23:01 1999  <kondou>
+
+  * doc/rnews.1 (1.1):
+    file rnews.1 was initially added on branch STABLE-2_2.
+
+  * doc/prunehistory.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/prunehistory.8 (1.1):
+    file prunehistory.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:23:00 1999  <kondou>
+
+  * doc/pullnews.8 (1.1):
+    file pullnews.8 was initially added on branch STABLE-2_2.
+
+  * doc/passwd.nntp.5 (1.1.2.1):
+  * doc/pgpverify.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/passwd.nntp.5 (1.1):
+    file passwd.nntp.5 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:59 1999  <kondou>
+
+  * doc/pgpverify.8 (1.1):
+    file pgpverify.8 was initially added on branch STABLE-2_2.
+
+  * doc/overview.fmt.5 (1.1.2.1):
+  * doc/parsedate.3 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:58 1999  <kondou>
+
+  * doc/parsedate.3 (1.1):
+    file parsedate.3 was initially added on branch STABLE-2_2.
+
+  * doc/overchan.8 (1.1.2.1):
+  * doc/overview.ctl.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/overview.ctl.5 (1.1):
+    file overview.ctl.5 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:57 1999  <kondou>
+
+  * doc/overview.fmt.5 (1.1):
+    file overview.fmt.5 was initially added on branch STABLE-2_2.
+
+  * doc/nntpsend.ctl.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:56 1999  <kondou>
+
+  * doc/overchan.8 (1.1):
+    file overchan.8 was initially added on branch STABLE-2_2.
+
+  * doc/nntpsend.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/nntpsend.8 (1.1):
+    file nntpsend.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:55 1999  <kondou>
+
+  * doc/nntpsend.ctl.5 (1.1):
+    file nntpsend.ctl.5 was initially added on branch STABLE-2_2.
+
+  * doc/nnrpd.track.5 (1.1.2.1):
+  * doc/nntpget.1 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/nnrpd.track.5 (1.1):
+    file nnrpd.track.5 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:54 1999  <kondou>
+
+  * doc/nntpget.1 (1.1):
+    file nntpget.1 was initially added on branch STABLE-2_2.
+
+  * doc/nnrp.access.5 (1.1.2.1):
+  * doc/nnrpd.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:53 1999  <kondou>
+
+  * doc/nnrpd.8 (1.1):
+    file nnrpd.8 was initially added on branch STABLE-2_2.
+
+  * doc/newsrequeue.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/newsrequeue.8 (1.1):
+    file newsrequeue.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:52 1999  <kondou>
+
+  * doc/nnrp.access.5 (1.1):
+    file nnrp.access.5 was initially added on branch STABLE-2_2.
+
+  * doc/newslog.5 (1.1.2.1):
+  * doc/newslog.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/newslog.5 (1.1):
+    file newslog.5 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:51 1999  <kondou>
+
+  * doc/newslog.8 (1.1):
+    file newslog.8 was initially added on branch STABLE-2_2.
+
+  * doc/news2mail.8 (1.1.2.1):
+  * doc/newsfeeds.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:50 1999  <kondou>
+
+  * doc/newsfeeds.5 (1.1):
+    file newsfeeds.5 was initially added on branch STABLE-2_2.
+
+  * doc/news.daily.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/news.daily.8 (1.1):
+    file news.daily.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:49 1999  <kondou>
+
+  * doc/news2mail.8 (1.1):
+    file news2mail.8 was initially added on branch STABLE-2_2.
+
+  * doc/motd.news.5 (1.1.2.1):
+  * doc/news-recovery.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/motd.news.5 (1.1):
+    file motd.news.5 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:48 1999  <kondou>
+
+  * doc/news-recovery.8 (1.1):
+    file news-recovery.8 was initially added on branch STABLE-2_2.
+
+  * doc/mod-active.8 (1.1.2.1):
+  * doc/moderators.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:47 1999  <kondou>
+
+  * doc/moderators.5 (1.1):
+    file moderators.5 was initially added on branch STABLE-2_2.
+
+  * doc/makehistory.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/makehistory.8 (1.1):
+    file makehistory.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:46 1999  <kondou>
+
+  * doc/mod-active.8 (1.1):
+    file mod-active.8 was initially added on branch STABLE-2_2.
+
+  * doc/mailpost.8 (1.1.2.1):
+  * doc/makeactive.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/mailpost.8 (1.1):
+    file mailpost.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:45 1999  <kondou>
+
+  * doc/makeactive.8 (1.1):
+    file makeactive.8 was initially added on branch STABLE-2_2.
+
+  * doc/libinn.3 (1.1.2.1):
+  * doc/libstorage.3 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:44 1999  <kondou>
+
+  * doc/libstorage.3 (1.1):
+    file libstorage.3 was initially added on branch STABLE-2_2.
+
+  * doc/installit.1 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/installit.1 (1.1):
+    file installit.1 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:43 1999  <kondou>
+
+  * doc/libinn.3 (1.1):
+    file libinn.3 was initially added on branch STABLE-2_2.
+
+  * doc/innxbatch.8 (1.1.2.1):
+  * doc/innxmit.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/innxbatch.8 (1.1):
+    file innxbatch.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:42 1999  <kondou>
+
+  * doc/innxmit.8 (1.1):
+    file innxmit.8 was initially added on branch STABLE-2_2.
+
+  * doc/innwatch.8 (1.1.2.1):
+  * doc/innwatch.ctl.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:41 1999  <kondou>
+
+  * doc/innwatch.ctl.5 (1.1):
+    file innwatch.ctl.5 was initially added on branch STABLE-2_2.
+
+  * doc/innstat.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/innstat.8 (1.1):
+    file innstat.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:40 1999  <kondou>
+
+  * doc/innwatch.8 (1.1):
+    file innwatch.8 was initially added on branch STABLE-2_2.
+
+  * doc/innlog.pl.8 (1.1.2.1):
+  * doc/innreport.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/innlog.pl.8 (1.1):
+    file innlog.pl.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:39 1999  <kondou>
+
+  * doc/innreport.8 (1.1):
+    file innreport.8 was initially added on branch STABLE-2_2.
+
+  * doc/innfeed.conf.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:38 1999  <kondou>
+
+  * doc/innfeed.conf.5 (1.1):
+    file innfeed.conf.5 was initially added on branch STABLE-2_2.
+
+  * doc/inndf.8 (1.1.2.1):
+  * doc/innfeed.1 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/inndf.8 (1.1):
+    file inndf.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:37 1999  <kondou>
+
+  * doc/innfeed.1 (1.1):
+    file innfeed.1 was initially added on branch STABLE-2_2.
+
+  * doc/innd.8 (1.1.2.1):
+  * doc/inndcomm.3 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:36 1999  <kondou>
+
+  * doc/inndcomm.3 (1.1):
+    file inndcomm.3 was initially added on branch STABLE-2_2.
+
+  * doc/innconfval.1 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/innconfval.1 (1.1):
+    file innconfval.1 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:35 1999  <kondou>
+
+  * doc/innd.8 (1.1):
+    file innd.8 was initially added on branch STABLE-2_2.
+
+  * doc/inn.conf.5 (1.1.2.1):
+  * doc/inncheck.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:34 1999  <kondou>
+
+  * doc/inncheck.8 (1.1):
+    file inncheck.8 was initially added on branch STABLE-2_2.
+
+  * doc/inews.1 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/inews.1 (1.1):
+    file inews.1 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:33 1999  <kondou>
+
+  * doc/inn.conf.5 (1.1):
+    file inn.conf.5 was initially added on branch STABLE-2_2.
+
+  * doc/history.5 (1.1.2.1):
+  * doc/incoming.conf.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/history.5 (1.1):
+    file history.5 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:32 1999  <kondou>
+
+  * doc/incoming.conf.5 (1.1):
+    file incoming.conf.5 was initially added on branch STABLE-2_2.
+
+  * doc/getlist.1 (1.1.2.1):
+  * doc/grephistory.1 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:31 1999  <kondou>
+
+  * doc/grephistory.1 (1.1):
+    file grephistory.1 was initially added on branch STABLE-2_2.
+
+  * doc/filechan.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/filechan.8 (1.1):
+    file filechan.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:30 1999  <kondou>
+
+  * doc/getlist.1 (1.1):
+    file getlist.1 was initially added on branch STABLE-2_2.
+
+  * doc/expirerm.8 (1.1.2.1):
+  * doc/fastrm.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/expirerm.8 (1.1):
+    file expirerm.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:29 1999  <kondou>
+
+  * doc/fastrm.8 (1.1):
+    file fastrm.8 was initially added on branch STABLE-2_2.
+
+  * doc/expireindex.8 (1.1.2.1):
+  * doc/expireover.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:28 1999  <kondou>
+
+  * doc/expireover.8 (1.1):
+    file expireover.8 was initially added on branch STABLE-2_2.
+
+  * doc/expire.ctl.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/expire.ctl.5 (1.1):
+    file expire.ctl.5 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:27 1999  <kondou>
+
+  * doc/expireindex.8 (1.1):
+    file expireindex.8 was initially added on branch STABLE-2_2.
+
+  * doc/distrib.pats.5 (1.1.2.1):
+  * doc/expire.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:26 1999  <kondou>
+
+  * doc/expire.8 (1.1):
+    file expire.8 was initially added on branch STABLE-2_2.
+
+  * doc/dbz.3 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/dbz.3 (1.1):
+    file dbz.3 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:25 1999  <kondou>
+
+  * doc/distrib.pats.5 (1.1):
+    file distrib.pats.5 was initially added on branch STABLE-2_2.
+
+  * doc/cycbuff.conf.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:24 1999  <kondou>
+
+  * doc/cycbuff.conf.5 (1.1):
+    file cycbuff.conf.5 was initially added on branch STABLE-2_2.
+
+  * doc/ctlinnd.8 (1.1.2.1):
+  * doc/cvtbatch.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:23 1999  <kondou>
+
+  * doc/cvtbatch.8 (1.1):
+    file cvtbatch.8 was initially added on branch STABLE-2_2.
+
+  * doc/convdate.1 (1.1.2.1):
+  * doc/crosspost.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/crosspost.8 (1.1):
+    file crosspost.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:22 1999  <kondou>
+
+  * doc/ctlinnd.8 (1.1):
+    file ctlinnd.8 was initially added on branch STABLE-2_2.
+
+  * doc/controlchan.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/controlchan.8 (1.1):
+    file controlchan.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:21 1999  <kondou>
+
+  * doc/convdate.1 (1.1):
+    file convdate.1 was initially added on branch STABLE-2_2.
+
+  * doc/cnfsstat.8 (1.1.2.1):
+  * doc/control.ctl.5 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:20 1999  <kondou>
+
+  * doc/control.ctl.5 (1.1):
+    file control.ctl.5 was initially added on branch STABLE-2_2.
+
+  * doc/clientlib.3 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/clientlib.3 (1.1):
+    file clientlib.3 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:19 1999  <kondou>
+
+  * doc/cnfsstat.8 (1.1):
+    file cnfsstat.8 was initially added on branch STABLE-2_2.
+
+  * doc/batcher.8 (1.1.2.1):
+  * doc/buffchan.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/batcher.8 (1.1):
+    file batcher.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:18 1999  <kondou>
+
+  * doc/buffchan.8 (1.1):
+    file buffchan.8 was initially added on branch STABLE-2_2.
+
+  * doc/actsyncd.8 (1.1.2.1):
+  * doc/archive.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:17 1999  <kondou>
+
+  * doc/archive.8 (1.1):
+    file archive.8 was initially added on branch STABLE-2_2.
+
+  * doc/actsync.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+  * doc/actsync.8 (1.1):
+    file actsync.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:16 1999  <kondou>
+
+  * doc/actsyncd.8 (1.1):
+    file actsyncd.8 was initially added on branch STABLE-2_2.
+
+  * doc/active.5 (1.1.2.1):
+  * doc/actived.8 (1.1.2.1):
+    doc/*:
+	    - all man pages are backed to original directory
+
+Sat Jun 12 08:22:15 1999  <kondou>
+
+  * doc/actived.8 (1.1):
+    file actived.8 was initially added on branch STABLE-2_2.
+
+Sat Jun 12 08:22:14 1999  <kondou>
+
+  * doc/active.5 (1.1):
+    file active.5 was initially added on branch STABLE-2_2.
+
+Fri Jun 11 03:19:34 1999  <kondou>
+
+  * innd/nc.c (1.37.2.5):
+    innd/nc.c:
+	    - innd responds an illegal NNTP code for non streaming even if
+    the
+	      article is accepted, after messageid filter rejects a messge
+
+Wed Jun 02 02:48:49 1999  <kondou>
+
+  * samples/inncheck.in (1.22.2.6):
+    samples/inncheck.in:
+	    - checking inndstart mode was wrong
+
+Mon May 31 03:30:56 1999  <kondou>
+
+  * nnrpd/nnrpd.c (1.49.2.7):
+    nnrpd/nnrpd.c:
+	    - NEWSGRP should be used for news group
+
+Mon May 31 03:30:41 1999  <kondou>
+
+  * innd/inndstart.c (1.16.2.2):
+    innd/inndstart.c:
+	    - NEWSGRP should be used for news group
+
+Thu May 20 14:59:02 1999 David C Lawrence <tale>
+
+  * samples/pgpverify.in (1.19.2.3):
+    upgraded to pgpverify 1.12.  support for gnu pgp, more diddling with
+    syslogging
+
+Tue May 18 21:45:30 1999  <kondou>
+
+  * storage/overview.c (1.32.4.1):
+    storage/overview.c:
+	    - reported by root@news.netmar.com
+	    - If someone enters an empty word in the overview.ctl file,
+	      (e.g. "1:alt*,biz*," or "1:,alt*" etc), you segfault.
+
+Tue May 18 09:35:51 1999  <kondou>
+
+  * samples/news2mail.in (1.1.2.2):
+    samples/news2mail.in:
+	    - From: SAKAI Kiyotaka <ksakai@kso.netwk.ntt-at.co.jp>
+	    - News2mail only preserve 'From', 'Subject', 'Date',
+    'Organization',
+	      'Message-ID' headers, but when multipart/mixed article are
+    sent by
+	      news2mail, 'MIME-Version', 'Content-Type' are disappeared and
+    the mail
+	      received looks broken.
+
+Thu May 13 22:05:50 1999  <kondou>
+
+  * nnrpd/nnrpd.c (1.49.2.6):
+    nnrpd/nnrpd.c:
+	    - pathrun must not be owned by root
+	    - ensure pathrun owner is NEWSUSER
+
+Thu May 13 22:05:38 1999  <kondou>
+
+  * innd/inndstart.c (1.16.2.1):
+    innd/inndstart.c:
+	    - pathrun must not be owned by root
+	    - ensure pathrun owner is NEWSUSER
+
+Wed May 12 21:22:44 1999  <kondou>
+
+  * innd/cc.c (1.47.2.4):
+    innd/cc.c:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - cleanup code
+
+Wed May 12 00:56:34 1999  <kondou>
+
+  * innd/cc.c (1.47.2.3):
+    innd/cc.c:
+	    - From: Michael Schroeder
+    <Michael.Schroeder@informatik.uni-erlangen.de>
+	    - CCaddhist() uses OVERsetoffset() instead of OVERmaketoken()
+
+Wed May 12 00:51:15 1999  <kondou>
+
+  * INSTALL (1.19.2.6):
+    INSTALL:
+	    - From: Michael Schroeder
+    <Michael.Schroeder@informatik.uni-erlangen.de>
+	    - INSTALL talks about a 'domainname' inn.conf parameter. It
+    should be
+	      'domain'.
+
+Wed May 12 00:49:18 1999  <kondou>
+
+  * README (1.5.2.4):
+    README:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - INN's README has always struck me as extremely sparse.  One
+    of the
+	      major things it feels like it lacks is some general overview
+    for
+	      someone who may not be entirely sure what a news server is or
+    what
+	      INN consists of.
+
+Tue May 11 21:53:00 1999  <kondou>
+
+  * samples/mailpost.in (1.1.2.3):
+    samples/mailpost.in:
+	    - From: Vladimir Litovka <doka@triton.kiev.sovam.com>
+	    - inews always rejects messages if there are duplicate headers
+    in
+	      message and it's right. But this is often error due to errors
+    in
+	      sender's setup or errors in mailing software. For avoiding
+    this
+	      problem I've patched mailpost to remove duplicate headers
+    from
+	      message before passing it to inews.
+
+Tue May 11 03:15:57 1999  <kondou>
+
+  * lib/getconfig.c (1.48.2.6):
+    lib/getconfig.c:
+	    - argument of RENEW() which calls realloc() should not be null
+    for
+	      SunOS4.1.4
+
+Mon May 10 22:36:19 1999  <kondou>
+
+  * nnrpd/commands.c (1.20.2.5):
+    nnrpd/commands.c:
+	    - From: Sven Paulus <sven@karlsruhe.org>
+	    - If there is a single dot on a line in the newsgroups file
+    etc., at
+	      the moment INN's nnrpd happily sends it to the client. The
+    client on
+	      the other hand gets confused because there is additional data
+    after
+	      the single dot, violating the NNTP protocol.
+
+Mon May 10 22:33:22 1999  <kondou>
+
+  * lib/getconfig.c (1.48.2.5):
+    lib/getconfig.c:
+	    - From: Sven Paulus <sven@karlsruhe.org>
+	    - INN says "Must set 'domain' in inn.conf" even if the domain
+    is set,
+	      but the FQDN of the machine does not resolve to a valid IP
+    address
+	      (e.g. if you call your machine "foo" in domain "bar.com" and
+    fail to
+	      add "foo" to your DNS zone or /etc/hosts file, there is no
+    use
+	      setting "domain: bar.com" in inn.conf, the error message
+    given by INN
+	      will stay the same). This is very confusing
+
+Sun May 09 00:36:53 1999  <kondou>
+
+  * samples/innreport.in (1.16.2.3):
+    samples/innreport.in:
+	    - From: Fabien Tassin <fta@oleane.net>
+	    - I prefer to 'localize' $/ instead.  I've also changed '' to
+    undef.
+
+Sat May 08 05:16:53 1999  <kondou>
+
+  * README.perl_hook (1.9.2.2):
+    README.perl_hook:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - a complete replacement for the current README.perl_hook. 
+    It's
+	      expanded, clarified, and updated from the existing one and I
+    believe
+	      it comes close to fully documenting the current interface. 
+    While I
+	      was at it, I reformatted the text into roughly the same style
+    used in
+	      README and INSTALL.
+
+Sat May 08 05:03:35 1999  <kondou>
+
+  * samples/innreport.in (1.16.2.2):
+    samples/innreport.in:
+	    - From: Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+	    - When the 'html_header' or 'html_footer' options are turned on
+    in
+	      innreport.conf, innreport fails to update innreport.db and
+    the
+	      index.html files correctly.  The problem is that the code to
+    read in
+	      the html headers/footers sets $/ to '' to read in the
+    headers/footers
+	      all at once, and fails to set $/ back to newline afterwards.
+
+Fri May 07 23:47:27 1999  <kondou>
+
+  * Makefile (1.18.2.4):
+    Makefile:
+	    - The patchlevel of the stable code was set to 0.
+
+Fri May 07 23:32:44 1999  <kondou>
+
+  * CONTRIBUTORS (1.13.2.2):
+    CONTRIBUTORS:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - Clean up some typos, grammar problems, and wrapping
+    inconsistencies
+	      in CONTRIBUTORS.
+
+Fri May 07 23:29:40 1999  <kondou>
+
+  * samples/checkgroups.pl.in (1.8.2.1):
+  * samples/controlchan.in (1.21.2.2):
+    samples/checkgroups.pl.in:
+    samples/controlchan.in:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - A doit (or a successful verify-*) action on a checkgroups
+    message is
+	      fairly pointless unless the output goes somewhere.  The
+    logical place
+	      to send the output if no log file or anything is specified is
+    a mail
+	      message to the news administartor.  This patch implements
+    that for
+	      the controlchan checkgroups.pl.
+
+Tue May 04 00:02:09 1999  <kondou>
+
+  * storage/interface.c (1.35.2.2):
+    storage/interface.c:
+	    - break line was dropped for case '@' in MatchGroups()
+
+Mon May 03 23:58:11 1999  <kondou>
+
+  * innd/art.c (1.90.2.8):
+    innd/art.c:
+	    - drop article with null character in it (to avoid EOF before
+    end of
+	      post)
+
+Wed Apr 28 01:12:55 1999  <kondou>
+
+  * configure (1.104.2.6):
+  * configure.in (1.106.2.6):
+    configure.in:
+    configure:
+	    - MANDIR should be set to same as mandir
+
+Wed Apr 28 01:11:05 1999  <kondou>
+
+  * innd/innd.c (1.40.2.2):
+    innd/innd.c:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - Active has
+	      misc.jobs 00'+,'/0)* 0000000001 y
+	      after ``ctlinnd renumber'' if .overview.index is bad.
+	      I know that misc.jobs is wrong newsgroup
+
+Mon Apr 26 08:40:47 1999  <kondou>
+
+  * frontends/inews.c (1.15.2.3):
+    frontends/inews.c
+	    - previous patch includes unwanted line which led to
+    compilation error
+
+Mon Apr 26 07:08:34 1999  <kondou>
+
+  * frontends/inews.c (1.15.2.2):
+    frontends/inews.c:
+	    - From: Christian Kurz <shorty@jupiter.rhein-neckar.de>
+	    - It seems, as inews doesn't accept lines longer than 512
+    characters,
+	      if I'm not missing something. I have here an article, with a
+    Reference
+	      line of 660 chars and the standard inews from 1.7.2 gives the
+	      following error:
+    
+	      shorty@jupiter% inews -h < /home/shorty/dead.letter
+	      "References" header is too long.
+	      (Article not posted.)
+    
+	      After I changed the inews source, the article will be
+    acceppted by
+	      inews and posted.
+
+Mon Apr 19 07:05:23 1999  <kondou>
+
+  * ltconfig (1.2.2.1):
+    ltconfig:
+	    - From: "Boyd Lynn Gerber (801) 250-O795 Work"
+    <gerberb@zenez.com>
+	    - Here is a patch for your libtool when you use SCO OpenServer
+    5.0.X.  I
+	      have tested this on inn-2.1 and 2.2.  I do not get any errors
+    once
+	      this has been applied on both version of inn.
+
+Mon Apr 19 06:56:47 1999  <kondou>
+
+  * nnrpd/article.c (1.57.2.7):
+    nnrpd/article.c:
+	    - article check was always done regardless of nnrpdcheckart
+
+Mon Apr 19 06:54:46 1999  <kondou>
+
+  * innd/site.c (1.22.2.1):
+    innd/site.c:
+	    - drop 'DEBUG' message
+
+Thu Apr 15 07:01:40 1999  <kondou>
+
+  * innd/cc.c (1.47.2.2):
+    innd/cc.c:
+	    - From: Russell Vincent <russellv@uk.uu.net>
+	    - This fixes a logic bug when possibly setting/unsetting a
+    reason
+	      for preventing readers. When we set/unset NNRPReason, we want
+    to
+	      check that readerswhenstopped in _not_ set. NNRPReason being
+	      set prevents readers connecting when innd is paused.
+
+Thu Apr 15 07:00:40 1999  <kondou>
+
+  * samples/mailpost.in (1.1.2.2):
+    samples/mailpost.in:
+	    - From: Geoff Gibbs <ggibbs@hgmp.mrc.ac.uk>
+	    - There is a bug in mailpost, which produces the error message
+    
+	      "First line with leading whitespace!"
+    
+	      when it is fed an e-mail, where the body of the message
+    starts with
+	      a space. (i.e. headers,blank line,space ...)
+    
+	      The bug is in the code for handling header continuation
+    lines. I
+	      believe that the following patch fixes the problem, although
+    you may
+	      well be able to improve the Perl ;-)
+
+Mon Apr 12 16:14:24 1999  <kondou>
+
+  * samples/inncheck.in (1.22.2.5):
+    samples/inncheck.in:
+	    - checking inndstart mode was incorrect
+
+Mon Apr 12 16:12:23 1999  <kondou>
+
+  * innd/art.c (1.90.2.7):
+    innd/art.c:
+	    - show meaningful message, if article is not stored because it
+    does not
+	      match any entry in storage.conf
+
+Wed Apr 07 08:05:00 1999  <kondou>
+
+  * backends/actsyncd.sh.in (1.3.2.2):
+    backends/actsyncd.sh.in:
+	    - tried to remove directory where actsyncd sits
+
+Fri Mar 26 00:40:56 1999  <kondou>
+
+  * lib/getconfig.c (1.48.2.4):
+    lib/getconfig.c:
+	    - reported by "Matthew Emmerton" <mattemme@enoreo.on.ca>
+	    - tmpdir should not be DISPOSED(), since handed area is used by
+	      putenv() for some OSes
+
+Thu Mar 18 04:17:23 1999  <kondou>
+
+  * backends/actsync.c (1.18.2.1):
+    backends/actsync.c:
+	    - From: Thomas Mike Michlmayr <mike@cosy.sbg.ac.at>
+	    - fixes a problem when syncing to a collabra-server, who
+    returns
+	      "yg" as flag for a newsgroup (at least secnews.netscape.com).
+
+Tue Mar 16 02:30:25 1999  <kondou>
+
+  * samples/moderators (1.2.4.1):
+    samples/moderators:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - moderators.isc.org don't have all fido7.* aliases (at least).
+	      I (as fido7.* supporter) have many question about it.
+
+Mon Mar 15 05:29:02 1999  <kondou>
+
+  * nnrpd/post.c (1.28.2.7):
+    nnrpd/post.c:
+	    - reported by Pavel Gulchouck <gul@lucky.net>
+	    - inews and nnrpd dumps core if size of posting article more
+    then
+	      local size limit. It happans because in inews.c line 1316 and
+	      in nnrpd/post.c line 955 pointer p is out of core. I think
+	      atoi(p) should be changed to innconf->localmaxartsize in
+	      these lines.
+
+Mon Mar 15 05:28:40 1999  <kondou>
+
+  * frontends/inews.c (1.15.2.1):
+    frontends/inews.c:
+	    - reported by Pavel Gulchouck <gul@lucky.net>
+	    - inews and nnrpd dumps core if size of posting article more
+    then
+	      local size limit. It happans because in inews.c line 1316 and
+	      in nnrpd/post.c line 955 pointer p is out of core. I think
+	      atoi(p) should be changed to innconf->localmaxartsize in
+	      these lines.
+
+Sun Mar 07 14:59:12 1999  <kondou>
+
+  * nnrpd/article.c (1.57.2.6):
+    nnrpd/article.c:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - fixed core dump
+
+Sun Mar 07 14:56:57 1999  <kondou>
+
+  * innfeed/innlistener.c (1.11.2.1):
+    innfeed/innlistener.c:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - innfeed -- memory leak. On heavy loaded server (FreeBSD-3.1)
+	      I got many ``partial read'' from innd (and each time
+	      innlistener expanded empty buffer):
+
+Wed Mar 03 03:04:50 1999  <kondou>
+
+  * innd/art.c (1.90.2.6):
+  * innd/perl.c (1.7.2.1):
+    innd/art.c:
+    innd/perl.c:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - This patch adds a special __LINES__ key to the %hdr hash
+    available to
+	      the Perl filter, containing an accurate line count of the
+    article.
+
+Wed Mar 03 03:04:33 1999  <kondou>
+
+  * README.perl_hook (1.9.2.1):
+    README.perl_hook:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - This patch adds a special __LINES__ key to the %hdr hash
+    available to
+	      the Perl filter, containing an accurate line count of the
+    article.
+
+Tue Mar 02 03:10:47 1999  <kondou>
+
+  * innd/innd.h (1.44.2.1):
+  * innd/cc.c (1.47.2.1):
+    innd/cc.c:
+    innd/innd.h:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - The INN::newsgroup() XS Perl function is supposed to return
+    the flags		for a given newsgroup (ngp->Rest).  Unfortunately,
+    whoever wrote it
+	      originally was unaware that the Rest pointer in a NEWSGROUP
+    is just a
+	      pointer into the in-memory copy of the active file, and
+    therefore
+	      this field is *not* null-terminated.  As a result, whenever a
+    Perl
+	      filter called INN::newsgroup, it would get not only the flags
+    for
+	      that newsgroup but a complete copy of the active file from
+    that point
+	      forward.
+
+Tue Feb 23 18:43:26 1999 David C Lawrence <tale>
+
+  * samples/sendsys.pl.in (1.7.2.1):
+  * samples/senduuname.pl.in (1.7.2.1):
+  * samples/version.pl.in (1.8.2.1):
+    fixed instances of @inn::mailcmd to $inn::mailcmd that prevented these
+    scripts from being properly loaded
+
+Tue Feb 23 18:18:29 1999 David C Lawrence <tale>
+
+  * samples/controlchan.in (1.21.2.1):
+    syslog to /dev/log on dec_osf
+
+Wed Feb 17 05:02:37 1999 David C Lawrence <tale>
+
+  * samples/rmgroup.in (1.11.2.1):
+    FIxed check for existing group to not use regular expression for
+    matching
+    (would bogey *.lang.c++).
+    
+    moved approval check earlier, before mailing news admin.
+
+Mon Feb 15 21:09:46 1999 David C Lawrence <tale>
+
+  * backends/actsyncd.sh.in (1.3.2.1):
+    the output file was not being created in the work directory, but in
+    whatever directory the program started from
+    
+    made syncing directly from a local file work again
+
+Sun Feb 14 07:48:44 1999  <kondou>
+
+  * INSTALL (1.19.2.5):
+    INSTALL:
+	    - From: Richard Kettlewell <rjk@greenend.org.uk>
+	    - Firstly the reference to a "pound sign" as the comment
+    character is
+	      misleading to speakers of British English, where that phrase
+    does not
+	      refer to the "#" sign at all.
+    
+	      Secondly there is a complete absence of any reference to
+    nnrp.access
+	      in the section on setting up config files.
+
+Sat Feb 13 10:56:47 1999  <kondou>
+
+  * samples/news.daily.in (1.28.2.2):
+    samples/news.daily.in:
+	    - use ${SED} instead of sed
+
+Fri Feb 12 00:48:42 1999  <kondou>
+
+  * lib/getconfig.c (1.48.2.3):
+    lib/getconfig.c:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - correct mistake in rev. 1.48.2.2
+
+Mon Feb 08 07:56:59 1999  <kondou>
+
+  * nnrpd/nnrpd.c (1.49.2.5):
+    nnrpd/nnrpd.c:
+	    - From: Andrew Gierth <andrew@erlenstar.demon.co.uk>
+	    - The original code was correct in this respect. This is why
+    accept()
+	      et. al. have an additional size parameter for the address.
+    The cast
+	      is something of a historical crock, but is nevertheless
+    correct.
+
+Sat Feb 06 03:14:45 1999  <kondou>
+
+  * samples/cnfsstat.in (1.3.2.4):
+    samples/cnfsstat.in:
+	    - From: davidsen@tmr.com (bill davidsen)
+	    - I don't see in the man pages that you can use continuation
+    lines in
+	      the cycbufs.conf file, but there's code to handle it, and it
+    makes
+	      the file a lot easier to read.
+    
+	      The cnfsstat script doesn't know about this, here's how to
+    make it
+	      work.  This is just the bugfix, I am not quite ready to
+    release my
+	      enhancements yet, due to unexplained failure with raw
+    partitions
+
+Sat Feb 06 03:13:28 1999  <kondou>
+
+  * nnrpd/nnrpd.c (1.49.2.4):
+    nnrpd/nnrpd:
+	    - From: davidsen@tmr.com (bill davidsen)
+	    - This patch addresses one bug (wrong data type) and one
+    missing
+	      feature (nicekids). The type was a struct defined as
+    sockaddr_in and
+	      used with a case where sockaddr was required. Because I'm not
+    sure
+	      all systems will have the same size for both, and my compiler
+    whines
+	      about the original, I defined the value correctly and dropped
+    the
+	      cast.
+    
+	      When running from innd, a nice() value is gotten from the
+    nicekids
+	      value in inn.conf. In daemon mode that wasn't being done, so
+    I added
+	      the code here. Note: you do *not* want to just start the
+    daemon
+	      niced, as it will then open sockets more slowly (I measured
+    with
+	      NSLG). Nicekids is the way to go here.
+
+Tue Feb 02 03:26:12 1999  <kondou>
+
+  * samples/inncheck.in (1.22.2.4):
+    samples/inncheck.in:
+	    - From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+	    - warn if null line is included in active
+	    - warn if eol is not ended with '\n' in active
+
+Mon Feb 01 07:20:58 1999  <kondou>
+
+  * samples/innreport.in (1.16.2.1):
+    samples/innreport.in:
+	    - showed non-existent tag for html output
+
+Mon Feb 01 07:20:01 1999  <kondou>
+
+  * innd/newsfeeds.c (1.18.4.4):
+  * innd/art.c (1.90.2.5):
+    innd/art.c:
+	    - couting Lines was incorrect for storageapi
+	    - '@' was meaningless for groups with 'x' in active
+    innd/newsfeeds.c:
+	    - '@' was meaningless for non existent groups
+
+Sun Jan 31 03:56:13 1999  <kondou>
+
+  * samples/inn.conf.in (1.24.2.2):
+    samples/inn.conf.in:
+	    - reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+	    - default for readerswhenstopped is false
+
+Sun Jan 31 03:56:00 1999  <kondou>
+
+  * lib/getconfig.c (1.48.2.2):
+    lib/getconfig.c:
+	    - reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+	    - default for readerswhenstopped is false
+
+Sun Jan 31 03:55:45 1999  <kondou>
+
+  * innd/innd.c (1.40.2.1):
+    innd/innd.c:
+	    - reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+	    - default for readerswhenstopped is false
+
+Fri Jan 29 11:54:37 1999  <kondou>
+
+  * storage/cnfs/cnfs.c (1.51.2.8):
+    storage/cnfs/cnfs.c:
+	    - From: Thomas Mechtersheimer <thomasm@nrw.net>
+	    - it should be removed like the htonl() on cah.class at a
+    different
+	      source location
+
+Wed Jan 27 21:48:12 1999  <kondou>
+
+  * innd/newsfeeds.c (1.18.4.3):
+    innd/newsfeeds.c:
+	    - From: smurf@noris.de (Matthias Urlichs)
+	    - mischecking errors
+
+Wed Jan 27 21:44:02 1999  <kondou>
+
+  * storage/cnfs/cnfs.c (1.51.2.7):
+    storage/cnfs/cnfs.c:
+	    - From: thomasm@csl33.csl-gmbh.net
+	    - for articles with offset values beyond the cycbuff->free
+    pointer,
+	      this should be cyclenum-1
+	    - From: smurf@noris.de (Matthias Urlichs)
+	    - CNFS next-article code is broken because it fails to clear
+    the offset
+	      when it switches to the next buffer
+	    - From the "while I'm at it" department: the following patch,
+    to the
+	      same file, fixes reading of old-style CNFS buffers --
+    assuming there
+	      is anybody out there who still has a 1.x CNFS-INN server...
+
+Wed Jan 27 21:05:06 1999  <kondou>
+
+  * samples/docheckgroups.in (1.10.2.1):
+    samples/docheckgroups.in:
+	    - From: Philippe Michel <Philippe.Michel@syseca.fr>
+	    - maybe it would be better to use ${1:-.}, for backwards
+    compatibility
+	      at least.
+
+Wed Jan 27 15:28:16 1999  <kondou>
+
+  * nnrpd/post.c (1.28.2.6):
+    nnrpd/post.c:
+	    - From: John Schmidt <js@saltmine.radix.net>
+	    - It seemed more logical to skip the check entirely if the
+    total number
+	      of lines is less than 40.
+
+Wed Jan 27 15:27:29 1999  <kondou>
+
+  * innd/rc.c (1.31.2.3):
+    innd/rc.c:
+	    - From: smurf@noris.de (Matthias Urlichs)
+	    - Some Perl installations have -Dbool=char, which clashes with
+	      innd/rc.c.
+
+Mon Jan 25 10:09:58 1999  <kondou>
+
+  * nnrpd/udp.c (1.3.2.3):
+    nnrpd/udp.c:
+	    - From: SUNAGAWA Keiki <Keiki_SUNAGAWA@yokogawa.co.jp>
+	    - include syslog.h instead of sys/syslog.h
+
+Mon Jan 25 10:01:56 1999  <kondou>
+
+  * nnrpd/commands.c (1.20.2.4):
+    nnrpd/commands.c:
+	    - From: Paul Tomblin <ptomblin@xcski.com>
+	    - here's the patch again
+
+Fri Jan 22 15:29:15 1999  <kondou>
+
+  * samples/cnfsstat.in (1.3.2.3):
+    samples/cnfsstat.in:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - write pointer was not printed correctly
+
+Thu Jan 21 15:21:04 1999  <kondou>
+
+  * site/do-subst.sh (1.1.1.1.4.1):
+    site/do-subst.sh:
+	    - if there is a MAKE configure variable, use it
+
+Thu Jan 21 11:04:33 1999 James Brister <brister>
+
+  * README (1.5.2.3):
+  * CONTRIBUTORS (1.13.2.1):
+    2.2 update
+
+Thu Jan 21 10:30:00 1999 James Brister <brister>
+
+  * innfeed/Makefile (1.28.2.1):
+  * include/patchlevel.h (1.6.2.3):
+  * Makefile (1.18.2.3):
+    Update for 2.2 release.
+
+Tue Jan 19 03:14:56 1999  <kondou>
+
+  * innd/rc.c (1.31.2.2):
+    innd/rc.c:
+	    - From: Sven Paulus <sven@karlsruhe.org>
+	    - In innd/rc.c(RCwritelist()): I think The DISPOSE(r) is wrong
+    - via
+	      cpcatpath() p points to a static buffer and r is assigned to
+    p.
+
+Tue Jan 19 03:14:10 1999  <kondou>
+
+  * frontends/rnews.c (1.16.2.3):
+    frontends/rnews.c:
+	    - From: Sven Paulus <sven@karlsruhe.org>
+	    - The value of PATHBADNEWS is combined using cpcatpath(), which
+    only
+	      returns a pointer to a fixed buffer (pathbuff in
+    lib/getconfig.c).
+	      Later - if you use a password protected NNTP connection -
+    rnews calls
+	      NNTPsendpassword() (lib/sendpass.c) which also uses
+    cpcatpath() to
+	      construct a path name -> pathbuff gets overwritten and the
+    value of
+	      PATHBADNEWS is now pure nonsense.
+
+Sun Jan 17 23:18:16 1999  <kondou>
+
+  * samples/incoming.conf (1.3.4.2):
+  * samples/news.daily.in (1.28.2.1):
+    samples/incoming.conf:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - Add ``noresendid'' for non-stream mode.
+    samples/news.daily.in:
+	    - From: davidsen@tmr.com (bill davidsen)
+	    - The news.daily script doesn't properly use the user defined
+    temp
+	      space for sorts. There's some logic to look and see if TMPDIR
+    is
+	      defined, build the -T option for sort to use, and then ignore
+    the
+	      whole issue.
+
+Sun Jan 17 23:16:25 1999  <kondou>
+
+  * nnrpd/udp.c (1.3.2.2):
+    nnrpd/udp.c:
+	    - From: Sven Paulus <sven@karlsruhe.org>
+	    - This eliminates the calls to perror() and replaces them by
+    syslog()s.
+	      The perror()s make it impossible to use nnrpd from inetd,
+    since the
+	      output goes to the NNTP channel, thus violating the NNTP
+    specs.
+
+Sun Jan 17 23:15:13 1999  <kondou>
+
+  * innd/nc.c (1.37.2.4):
+    innd/nc.c:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - Add ``noresendid'' for non-stream mode.
+
+Sun Jan 17 23:14:27 1999  <kondou>
+
+  * Makefile (1.18.2.2):
+    Makefile:
+	    - From: Aidan Cully <aidan@panix.com>
+	    - This patch should fix it..  I don't really know where the
+    FLAGS
+	      variable comes from, since both GNU and BSD-make use
+    MAKEFLAGS, but
+	      I'm more interested in making this work correctly than
+    cleaning
+	      things up right now, so I just pass DESTDIR directly, like
+    the
+	      install: target does to common.
+
+Wed Jan 13 07:03:21 1999  <kondou>
+
+  * innfeed/sysconfig.h (1.15.2.3):
+    innfeed/sysconfig.h:
+	    - From: "Mark Wedel" <mark@icp.siemens.com>
+	    - avoid symbol duplication for sinix
+
+Tue Jan 12 13:33:38 1999  <kondou>
+
+  * nnrpd/post.c (1.28.2.5):
+    nnrpd/post.c:
+	    - From: Paul Tomblin <ptomblin@xcski.com>
+	    - The test to see if PERMuser is set is wrong, because PERMuser
+    is a
+	      char array, not a char pointer.
+
+Mon Jan 11 02:00:28 1999  <kondou>
+
+  * nnrpd/commands.c (1.20.2.3):
+    nnrpd/commands.c:
+	    - From: Paul Tomblin <ptomblin@xcski.com>
+	    - This patch sets PERMuser and PERMpass after perl
+    authentication so
+	      that they reflect the user and password that successfully
+	      authenticated, just as when you're using regular
+    authentication those
+	      variables are set to the required values from the nnrp.access
+    file.
+	      This is useful especially if you've configured
+    DO_NNRP_AUTH_SENDER
+
+Mon Jan 11 01:38:47 1999  <kondou>
+
+  * innd/art.c (1.90.2.4):
+    innd/art.c:
+	    - From: "Igor Timkin" <ivt@gamma.ru>
+	    - Add logging ``Too old'', ``No colon-space in header''
+
+Sat Jan 09 17:38:43 1999  <kondou>
+
+  * storage/cnfs/cnfs.c (1.51.2.6):
+    storage/cnfs/cnfs.c:
+	    - correct syslog messages (storage.ctl was gone already)
+
+Sat Jan 09 15:40:37 1999  <kondou>
+
+  * nnrpd/post.c (1.28.2.4):
+    nnrpd/post.c:
+	    - originally From: Russ Allbery <rra@stanford.edu>
+	    - All this patch does is move the check against the posting
+    permissions
+	      pattern above this check, and I believe implements precisely
+    the
+	      following change: if a post goes to a group that would be
+    disallowed
+	      by the posting permissions pattern, it will be refused
+    regardless of
+	      whether we actually carry the group in question.
+
+Fri Jan 08 22:03:32 1999 David C Lawrence <tale>
+
+  * backends/nntpget.c (1.11.4.1):
+    y2k fix: pass only two digit date (RFC 977 rules) for newnews command
+
+Fri Jan 08 22:02:04 1999 David C Lawrence <tale>
+
+  * nnrpd/misc.c (1.28.2.4):
+    y2k fix: accept three digit and four digit years for dates in  NNTP
+    commands
+
+Fri Jan 08 08:12:37 1999  <kondou>
+
+  * INSTALL (1.19.2.4):
+    INSTALL:
+	    - describe logipaddr should be false if controlchan is used and
+    ihave/
+	      sendme is required
+
+Fri Jan 08 01:32:08 1999  <kondou>
+
+  * INSTALL (1.19.2.3):
+    INSTALL:
+	    - Add AIX 4.2 which works INN2.x
+
+Thu Jan 07 10:19:53 1999  <kondou>
+
+  * innd/newsfeeds.c (1.18.4.2):
+    innd/newsfeeds.c:
+	    - claim 'setup_error' if SITEsetup() fails
+	      without this patch, innd exits with 'syntax_error' if
+    SITEsetup()
+	      fails.  This is confusing for admins, even if there is no
+    syntax
+	      error.
+
+Wed Jan 06 10:29:52 1999  <kondou>
+
+  * innd/art.c (1.90.2.3):
+    innd/art.c
+	    - do not (sym)link if writelinks is false
+
+Wed Jan 06 10:05:49 1999  <kondou>
+
+  * INSTALL (1.19.2.2):
+    INSTALL:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - Patch to INSTALL attached to add more details on why you
+    might need
+	      overview data and more detail of what the point of the
+    different
+	      BUCKETS in overview.ctl is.  I also corrected one place where
+    the
+	      file had an 80 column line, since it made it somewhat
+    annoying to
+	      deal with in emacs.  (There's still another 80 column line,
+    but
+	      that's a literal cron entry example that can't be easily
+    shortened
+	      and is offset from regular text.)
+
+Wed Jan 06 04:53:17 1999  <kondou>
+
+  * samples/innreport_inn.pm (1.5.2.4):
+    samples/innreport_inn.pm:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - this will suppress the cycbuff rollover messages, which
+    otherwise
+	      show up as unknown log entries.  At some point, someone might
+    want to
+	      do something more interesting with these, but for right now
+    ignoring
+	      them seems the best.
+    
+	      There's also a minor formatting fix with a comment in here.
+
+Tue Jan 05 22:29:59 1999  <kondou>
+
+  * samples/nnrpd_auth.pl.in (1.1.2.1):
+    samples/nnrpd_auth.pl.in:
+	    - From: Paul Tomblin <ptomblin@xcski.com>
+	    - The nnrpd_auth.pl supplied with 2.2-STABLE assumes that the
+    hostname
+	      patterns in nnrp.access are regular expressions, but they're
+    not,
+	      they're glob-like.
+
+Tue Jan 05 15:33:20 1999  <kondou>
+
+  * backends/archive.c (1.10.4.3):
+    backends/archive.c:
+	    - just create one archive even if the article is crossposted
+
+Tue Jan 05 07:17:50 1999  <kondou>
+
+  * samples/innreport_inn.pm (1.5.2.3):
+    samples/innreport_inn.pm:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - With this plus my previous patch that was already applied, I
+    think
+	      innreport is at least quiet about all of the log messages
+    generated
+	      routinely by the standard programs in INN 2.2.
+
+Mon Jan 04 21:26:54 1999  <kondou>
+
+  * samples/innreport_inn.pm (1.5.2.2):
+    samples/innreport_inn.pm:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - Better yet, fix innreport so that it ignores controlchan's
+    output.
+	      There may be some statistical summary that I can think of
+    that might
+	      be useful eventually, and that way you still have the logs
+    there in
+	      case you ever want them.	Here's a patch:
+
+Mon Jan 04 07:44:19 1999  <kondou>
+
+  * storage/Makefile (1.33.2.1):
+    storage/Makefile:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - storage/Makefile creates a storage/objs directory on first
+    build, but
+	      the clean target, while deleting everything in the directory,
+    doesn't
+	      delete the directory itself.  That seems wrong to me, and
+    makes CVS
+	      whine on an update after a build.  Patch following.
+
+Mon Jan 04 07:42:50 1999  <kondou>
+
+  * innd/rc.c (1.31.2.1):
+    innd/rc.c:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - I always liked the way innfeed.conf would let you leave off
+    the
+	      ip-addr key if it was the same as the key of the entry, so I
+    fixed
+	      incoming.conf so that it would do the same.  Patch attached.
+
+Mon Jan 04 07:35:43 1999  <kondou>
+
+  * Makefile (1.18.2.1):
+  * INSTALL (1.19.2.1):
+    INSTALL:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - explain transit only server needs overview
+    Makefile:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - I'm not sure the intended semantics of realclean here, but
+    I'm pretty
+	      sure it's intended to be the same as distclean.  If so, it's
+    missing
+	      a goodly bit of stuff according to CVS, plus it's convenient
+    to have
+	      distclean available as an alias for it as well.  Patch
+    attached.
+    
+	      This also removes the following over what was deleted before:
+    
+	      ? config.status
+	      ? frontends/c7unbatch.sh
+	      ? frontends/gunbatch.sh
+	      ? include/autoconfig.h
+	      ? innfeed/innfeed-convcfg
+	      ? innfeed/procbatch
+	      ? samples/checkgroups.pl
+	      ? samples/cnfsstat
+	      ? samples/controlbatch
+	      ? samples/controlchan
+	      ? samples/ihave.pl
+	      ? samples/mailpost
+	      ? samples/mod-active
+	      ? samples/news2mail
+	      ? samples/newgroup.pl
+	      ? samples/nnrpd_auth.pl
+	      ? samples/pullnews
+	      ? samples/rmgroup.pl
+	      ? samples/sendme.pl
+	      ? samples/sendsys.pl
+	      ? samples/senduuname.pl
+	      ? samples/simpleftp
+	      ? samples/version.pl
+	      ? site/config
+
+Mon Jan 04 02:14:22 1999  <kondou>
+
+  * configure.in (1.106.2.5):
+  * configure (1.104.2.5):
+    configure:
+    configure.in:
+	    - From: Russ Allbery <rra@stanford.edu>
+	    - Additional commands that should run after autoconf generates
+    its
+	      output files should be put into the second argument of
+    AC_OUTPUT
+	      rather than just raw into configure.in.  Raw commands will
+    correctly
+	      get put into the generated configure script, but they *won't*
+    be put
+	      into config.status.  config.status is very convenient when
+    doing a
+	      first build and having to patch various things; if you run
+	      config.status, it will just redo the variable substitution
+    without
+	      rerunning configure.  But when I was doing that, the build
+    then
+	      failed because storage/buildconfig wasn't executable.
+    
+	      configure just runs config.status to do the substitutions;
+    with this
+	      patch, the chmod gets put in config.status rather than in
+    configure
+	      and therefore works correctly both after running configure
+    and after
+	      running config.status.

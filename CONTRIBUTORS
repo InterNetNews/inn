@@ -1,6 +1,7 @@
 The following is a list of the people (in roughly chronological order)
-who've helped out If anyone's name has been left out (probably), or if
-something has been incorrectory to you (ditto), please let us know. 
+who've helped out.  If anyone's name has been left out (probably), or if
+something has been incorrectly attributed to you (ditto), please let us
+know.
 
 Rich Salz:
 	Designed and wrote most of it.
@@ -26,7 +27,7 @@ John Stapleton:
 	Wrote the too-many-connects support ('-X -H -T' flags to innd).
 	
 Landon Curt Noll:
-	Wrote or cwo-wrote actsync, nntpsend, shrinkfile, innstat,
+	Wrote or co-wrote actsync, nntpsend, shrinkfile, innstat,
 	news.daily, tally.control and misc man pages. He also was the
 	person originally behind the site directory 
 	configuration/installation process.
@@ -46,7 +47,7 @@ Russel Street:
 
 Alan Barrett:
 	Did the work-limiter in the select loop to stop streaming from
-	   killing performance.
+	killing performance.
 
 Greg Patten:
 	Wrote the perl innlog
@@ -74,7 +75,8 @@ Fabien Tassin:
 
 Dave Hayes:
 	Along with some bugfixes, Dave wrote the posting-backoff code for 
-	nnrpd and the patches to the perl hooks to make the headers modifiable.
+	nnrpd and the patches to the perl hooks to make the headers
+	modifiable.
 
 Joe Greco:
 	Wrote the code for measuring the timing of various parts of innd
@@ -85,10 +87,11 @@ Sang-yong Suh:
 
 Katsuhiro Kondou:
 	Provided unified overview, trash method, spool translation method,
-	traditional expire policy for articles stored through storage api
-	and expireindex as well has hundreds of fixes to clean up defects
+	traditional expire policy for articles stored through storage API
+	and expireindex, as well has hundreds of fixes to clean up defects
 	as changes were made.  Did a large amount of man page documentation
-	and clean up.
+	and clean up. Has also been a major force in the CVS pool
+	maintenance.
 
 Russell Vincent
 	Expanded inn.conf to make many of the old compile time options
@@ -108,6 +111,11 @@ Adian Cully
 	on Expires header. Also added the '@' article exclusion code to
 	incoming.conf.
 
+Russ Allbery:
+	Has done large amounts of clean-up on various pieces of the system
+	(especially the documentation), and has helped with the CVS pool
+	maintenance.
+
 Also:
 
 Dave Barr:
@@ -124,7 +132,7 @@ Joshua M. Thompson
 	Wrote the INSTALL documentation.
 
 The following people helped above and beyond the call of duty with testing
-(provided patches, bug reports, suggestions and lobbying)
+(provided patches, bug reports, suggestions and lobbying):
 
 Paul Vixie, Robert Elz, Evan Champion, Robert Keller, Barry Bouwsma,
 markd@mira.net.au, Ollivier Robert, Kevin Jameson, Heiko W. Rupp, Fletcher

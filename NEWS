@@ -1,12 +1,24 @@
 
 Here are the changes for the latest version of INN.
 
-Version 2.1:
+Version 2.2.1
+        - Various bug fixes. Most importantly, bug fixes to potential 
+          security holes (buffer overflow type).
+
+Version 2.2:
 
 	- New storage.conf file (replaces storage.ctl).
 	- New (optional) way of handling non-cancel control 
 	  messages (controlchan) that serializes them and 
 	  prevents server overload from control message storms
+        - Support for actsyncd to fetch active file with ftp;
+          configured by default to get the one at
+          <URL:ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z>
+          if you run actsyncd.  Be sure to read the manual
+          page for actsync to configure an actsync.ign file
+          for your site, and test simpleftp if you do not configure
+          with wget or ncftp.  Also see
+          <URL:ftp://ftp.isc.org/pub/usenet/CONFIG/README>.
 	- Some options to configure are now moved to inn.conf
 	  (merge-to-groups and pgp-verify).
 	- inndf, a portable version of df(1) is supplied.
@@ -15,3 +27,5 @@ Version 2.1:
 	- mailpost program for gateway'ing email to news is provided.
 	- pullnews program for doing a sucking feed is provided (not meant 
 	  for large feeds)
+	- The innshellvars.csh.in script is obsolete (and lives in the
+	  obsolete directory, for now).

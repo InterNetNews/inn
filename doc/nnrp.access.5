@@ -4,7 +4,7 @@
 nnrp.access \- access file for NNTP news readers.
 .SH DESCRIPTION
 The file
-.I <pathetc in config.data>/nnrp.access
+.I <pathetc in inn.conf>/nnrp.access
 specifies the access control for those NNTP sites that are not
 handled by the main InterNetNews daemon
 .IR innd (8).
@@ -62,8 +62,10 @@ and
 .I password
 that the client must use to authenticate themselves before the server
 will accept any articles.
-Note that no authentication (other then a matching entry in this file)
-is required for newsreading.
+Note that authentication
+is required for newsreading, unless both are empty.
+In this case, the connection is never closed until it is timed out or the
+client explicitly issues ``QUIT''.
 If they are empty, then no password is required.
 Whitespace in these fields will result in the client being unable
 to properly authenticate themselves and may be used to disable access.

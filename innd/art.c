@@ -977,13 +977,13 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     in++;
 
     /* Try to set this now, so we can report it in errors. */
+    Data->MessageID = NULL;
     p = HDR(_message_id);
-    if (*p) {
+    if (*p && ARTidok(p))
 	Data->MessageID = p;
-	Data->MessageIDLength = strlen(p);
-	if (error == NULL && !ARTidok(p))
-		error = "Bad \"Message-ID\" header";
-    }
+    Data->MessageIDLength = Data->MessageID ? strlen(Data->MessageID) : 0;
+    if (error == NULL && Data->MessageID == NULL)
+	error = "Bad \"Message-ID\" header";
 
     if (error)
 	return error;
@@ -1008,8 +1008,16 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 	*out++ = *in++;
     }
     *out = '\0';
+    if (Article->Data + Article->Used != in + 1) {
+	i++;
+	(void)sprintf(buff, "Line %d includes null character", i);
+	return buff;
+    }
     Article->Used = out - Article->Data;
-    Data->LinesValue = i;
+    if (innconf->storageapi)
+	Data->LinesValue = (i - 1 < 0) ? 0 : (i - 1);
+    else
+	Data->LinesValue = i;
 
     if (innconf->linecountfuzz) {
 	p = HDR(_lines);
@@ -2118,7 +2126,6 @@ STRING ARTpost(CHANNEL *cp)
     int			hopcount;
     char		**distributions;
     STRING		error;
-    int			error_code = 0;
     char		ControlWord[SMBUF];
     int			ControlHeader;
     int			oerrno;
@@ -2130,11 +2137,7 @@ STRING ARTpost(CHANNEL *cp)
 
     /* Preliminary clean-ups. */
     article = &cp->In;
-    if ((error = ARTclean(article, &Data)) != NULL) {
-	sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
-	return buff;
-    }
-    Data.MessageID = HDR(_message_id);
+    error = ARTclean(article, &Data);
     
     /* Fill in other Data fields. */
     Data.Poster = HDR(_sender);
@@ -2144,6 +2147,11 @@ STRING ARTpost(CHANNEL *cp)
     if (*Data.Replyto == '\0')
 	Data.Replyto = HDR(_from);
     hops = ARTparsepath(HDR(_path), &hopcount);
+    if (error != NULL &&
+	(Data.MessageID == NULL || hops == 0 || hops[0]=='\0')) {
+	sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
+	return buff;
+    }
     AddAlias = FALSE;
     if (Pathalias.Data != NULL && !ListHas(hops, innconf->pathalias))
 	AddAlias = TRUE;
@@ -2167,39 +2175,42 @@ STRING ARTpost(CHANNEL *cp)
 	return buff;
     }
 
-    /* And now check the path for unwanted sites -- Andy */
-    for( j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++ ) {
-        if( ListHas(hops, ME.Exclusions[j]) ) {
-            sprintf(ControlWord, "Unwanted site %s in path", ME.Exclusions[j]);
-            error = ControlWord;
-	    error_code = REJECT_SITE;
-            break;
-        }
-    }
-    
-    /* Now see if we got an error in the article. */
     if (error != NULL) {
-	(void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
+	sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
 	ARTlog(&Data, ART_REJECT, buff);
-	if (innconf->remembertrash && Data.MessageID &&
-			(Mode == OMrunning) && !HISremember(hash))
+	if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
 	    syslog(L_ERROR, "%s cant write history %s %m",
 		       LogName, Data.MessageID);
-	ARTreject(error_code, cp, buff, article);
+	ARTreject(REJECT_OTHER, cp, buff, article);
 	return buff;
     }
 
+    /* And now check the path for unwanted sites -- Andy */
+    for( j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++ ) {
+        if( ListHas(hops, ME.Exclusions[j]) ) {
+	    (void)sprintf(buff, "%d Unwanted site %s in path",
+			NNTP_REJECTIT_VAL, ME.Exclusions[j]);
+	    ARTlog(&Data, ART_REJECT, buff);
+	    if (innconf->remembertrash && (Mode == OMrunning) &&
+			!HISremember(hash))
+		syslog(L_ERROR, "%s cant write history %s %m",
+		       LogName, Data.MessageID);
+	    ARTreject(REJECT_SITE, cp, buff, article);
+	    return buff;
+        }
+    }
+    
 #if defined(DO_PERL)
     pathForPerl = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
     TMRstart(TMR_PERL);
-    perlrc = (char *)HandleArticle(Data.Body);
+    perlrc = (char *)HandleArticle(Data.Body, Data.LinesValue);
     TMRstop(TMR_PERL);
     if (perlrc != NULL) {
         (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, perlrc);
-        syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(_message_id), buff);
+        syslog(L_NOTICE, "rejecting[perl] %s %s", Data.MessageID, buff);
         ARTlog(&Data, ART_REJECT, buff);
-        if (innconf->remembertrash && Data.MessageID &&
-			(Mode == OMrunning) && !HISremember(hash))
+        if (innconf->remembertrash && (Mode == OMrunning) &&
+			!HISremember(hash))
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
         ARTreject(REJECT_FILTER, cp, buff, article);
@@ -2238,11 +2249,10 @@ STRING ARTpost(CHANNEL *cp)
 	    if (strcmp(TCLInterpreter->result, "accept") != 0) {
 	        (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, 
 			      TCLInterpreter->result);
-		syslog(L_NOTICE, "rejecting[tcl] %s %s", HDR(_message_id),
-                       buff);
+		syslog(L_NOTICE, "rejecting[tcl] %s %s", Data.MessageID, buff);
 		ARTlog(&Data, ART_REJECT, buff);
-                if (innconf->remembertrash && Data.MessageID &&
-				(Mode == OMrunning) && !HISremember(hash))
+                if (innconf->remembertrash && (Mode == OMrunning) &&
+				!HISremember(hash))
                     syslog(L_ERROR, "%s cant write history %s %m",
                            LogName, Data.MessageID);
 		ARTreject(REJECT_FILTER, cp, buff, article);
@@ -2283,8 +2293,8 @@ STRING ARTpost(CHANNEL *cp)
 		    NNTP_REJECTIT_VAL,
 		    MaxLength(distributions[0], distributions[0]));
 	    ARTlog(&Data, ART_REJECT, buff);
-            if (innconf->remembertrash && Data.MessageID &&
-				(Mode == OMrunning) && !HISremember(hash))
+            if (innconf->remembertrash && (Mode == OMrunning) &&
+				!HISremember(hash))
                 syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
 	    DISPOSE(distributions);
@@ -2379,16 +2389,21 @@ STRING ARTpost(CHANNEL *cp)
 	
 	ngp->PostCount = 0;
 	/* Ignore this group? */
-	if (ngp->Rest[0] == NF_FLAG_IGNORE)
+	if (ngp->Rest[0] == NF_FLAG_IGNORE) {
+	    /* See if any of this group's sites considers this group poison. */
+	    for (isp = ngp->Poison, i = ngp->nPoison; --i >= 0; isp++)
+		if (*isp >= 0)
+		    Sites[*isp].Poison = TRUE;
 	    continue;
+	}
 
 	/* Basic validity check. */
 	if (ngp->Rest[0] == NF_FLAG_MODERATED && !Approved) {
 	    (void)sprintf(buff, "%d Unapproved for \"%s\"",
 		    NNTP_REJECTIT_VAL, ngp->Name);
 	    ARTlog(&Data, ART_REJECT, buff);
-            if (innconf->remembertrash && Data.MessageID &&
-				(Mode == OMrunning) && !HISremember(hash))
+            if (innconf->remembertrash && (Mode == OMrunning) &&
+				!HISremember(hash))
                 syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
 	    if (distributions)
@@ -2474,8 +2489,8 @@ STRING ARTpost(CHANNEL *cp)
 		MaxLength(HDR(_newsgroups), HDR(_newsgroups)));
 	    ARTlog(&Data, ART_REJECT, buff);
 	    if (!innconf->wanttrash) {
-		if (innconf->remembertrash && Data.MessageID &&
-			(Mode == OMrunning) && !HISremember(hash))
+		if (innconf->remembertrash && (Mode == OMrunning) &&
+			!HISremember(hash))
 		    syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
 		if (distributions)
@@ -2489,8 +2504,8 @@ STRING ARTpost(CHANNEL *cp)
 	     * DO_WANT_TRASH, then you want all trash except that which
 	     * you explicitly excluded in your active file. */
 		if (!GroupMissing) {
-                    if (innconf->remembertrash && Data.MessageID &&
-				(Mode == OMrunning) && !HISremember(hash))
+                    if (innconf->remembertrash && (Mode == OMrunning) &&
+				!HISremember(hash))
 			syslog(L_ERROR, "%s cant write history %s %m",
 					LogName, Data.MessageID);
 		    if (distributions)
@@ -2509,7 +2524,7 @@ STRING ARTpost(CHANNEL *cp)
 	for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++)
 	    if (*isp >= 0) {
 		sp = &Sites[*isp];
-		if (!sp->Poison)
+		if (!sp->Poison && !(sp->ControlOnly && (ControlHeader < 0)))
 		    SITEmark(sp, ngp);
 	    }
     }
@@ -2562,10 +2577,13 @@ STRING ARTpost(CHANNEL *cp)
 
 	token = ARTstore(article, &Data);
 	if (token.type == TOKEN_EMPTY) {
-	    syslog(L_ERROR, "%s cant store article", LogName);
+	    if (SMerrno != SMERR_NOERROR)
+		syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
+	    else
+		syslog(L_ERROR, "%s cant store article: no matching entry in storage.conf", LogName);
 	    sprintf(buff, "%d cant store article", NNTP_RESENDIT_VAL);
 	    ARTlog(&Data, ART_REJECT, buff);
-	    if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
+	    if ((Mode == OMrunning) && !HISremember(hash))
 		syslog(L_ERROR, "%s cant write history %s %m",
 		       LogName, Data.MessageID);
 	    if (distributions)
@@ -2606,8 +2624,8 @@ STRING ARTpost(CHANNEL *cp)
 		    (void)sprintf(buff, "%d cant write article %s, %s",
 				  NNTP_RESENDIT_VAL, Data.Name, strerror(i));
 		    ARTlog(&Data, ART_REJECT, buff);
-		    if (innconf->remembertrash && Data.MessageID &&
-				(Mode == OMrunning) && !HISremember(hash))
+		    if (innconf->remembertrash && (Mode == OMrunning) &&
+				!HISremember(hash))
 			syslog(L_ERROR, "%s cant write history %s %m",
 			       LogName, Data.MessageID);
 		    if (distributions)
@@ -2619,6 +2637,9 @@ STRING ARTpost(CHANNEL *cp)
 		TMRstop(TMR_ARTWRITE);
 		p += strlen(strcpy(p, Data.Name));
 		Data.NameLength = strlen(Data.Name);
+		if (!innconf->writelinks)
+		    /* need just one file for feeder */
+		    break;
 	    } else {
 		TMRstart(TMR_ARTLINK);
 		/* Link to the main article. */
@@ -2667,9 +2688,6 @@ STRING ARTpost(CHANNEL *cp)
 	ARTreject(REJECT_OTHER, cp, buff, article);
 	return buff;
     }
-    /* If we just flushed the active (above), now flush history. */
-    if (ICDactivedirty == 0)
-	HISsync();
 
     /* We wrote the history, so modify it and save it for output. */
     if (innconf->storageapi) {

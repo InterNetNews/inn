@@ -129,20 +129,22 @@ shlock -p $$ -f "${LOCK}" || {
 
 # setup
 #
+origdir=`pwd`
 workdir="${TMPDIR}/actsyncd"
 ctlinndcmds="cc_commands"
 out="sync.msg"
-cleanup="$SED -e 's/^/    /' < $out; rm -rf '$workdir' '$LOCK'"
+cleanup="$SED -e 's/^/    /' < $out; cd ${origdir}; rm -rf '$workdir' '$LOCK'"
 trap "eval $cleanup; exit 123" 1 2 3 15
-rm -f "$out"
-touch "$out"
-chmod 0644 "$out"
 
 set -e
 rm -rf "$workdir"
 mkdir "$workdir"
 cd "$workdir"
 set +e
+
+rm -f "$out"
+touch "$out"
+chmod 0644 "$out"
 
 # try to sync 
 # 
@@ -153,32 +155,38 @@ echo "=-= `date` for $host" >>$out 2>&1
 for loop in 1 2 3 4 5 6 7 8 9 10; do
 
     # get the active file to compare against
-    if [ -z "$ftp" ]; then
-       echo "getlist -h $host" >>$out
-       if getlist -h $host > active 2>>$out; then
-         :
-       else
-         status=$NOSYNC
-       fi
-    else
-       echo "$GETFTP ftp://$host/$ftp" >>$out
-       $GETFTP ftp://$host/$ftp >>$out 2>&1
-       status=$?
-       if [ "$status" -ne 0 ]; then
-         status=$NOSYNC
-       else
-         case "$ftp" in
-         # This isn't bulletproof.  $COMPRESS might be compress, which 
-         # does not understand gzip.
-         *.gz|*.Z) echo "$COMPRESS -d active" >>$out
-               if $COMPRESS -d active  >>$out 2>&1; then
-                 :
-               else
-                 status=1
-               fi ;;
-         esac
-       fi
-    fi
+    case $host in
+    /*) cp $host          active ;;
+    .*) cp $origdir/$host active ;;
+     *)
+        if [ -z "$ftp" ]; then
+           echo "getlist -h $host" >>$out
+           if getlist -h $host > active 2>>$out; then
+             :
+           else
+             status=$NOSYNC
+           fi
+        else
+           echo "$GETFTP ftp://$host/$ftp" >>$out
+           $GETFTP ftp://$host/$ftp >>$out 2>&1
+           status=$?
+           if [ "$status" -ne 0 ]; then
+             status=$NOSYNC
+           else
+             case "$ftp" in
+             # This isn't bulletproof.  $COMPRESS might be compress, which 
+             # does not understand gzip.
+             *.gz|*.Z) echo "$COMPRESS -d active" >>$out
+                   if $COMPRESS -d active  >>$out 2>&1; then
+                     :
+                   else
+                     status=1
+                   fi ;;
+             esac
+           fi
+        fi
+        ;;
+    esac
 
     if [ "$status" -ne "$NOSYNC" ]; then
 

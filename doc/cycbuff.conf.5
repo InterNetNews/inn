@@ -11,8 +11,8 @@ CNFS is one of storage method which can be defined at
 .PP
 The file consists of a series of lines;
 blank lines and lines beginning with a number sign (``#'') are ignored.
-There are three kinds of configuration line; ``cycbuffupdate'', ``cycbuff''
-and ``metacycbuff.''
+There are four kinds of configuration lines: ``cycbuffupdate'',
+``refreshinterval'', ``cycbuff'' and ``metacycbuff.''
 The order of lines in this file is not important among the same kind of
 configuration line.  But all ``cycbuff'' lines should be presented before
 any ``metacycbuff'' lines.
@@ -27,6 +27,20 @@ cycbuffupdate:update
 .PP
 \&``Update'' is how many article-stores between cycbuff header updates.
 This line can be omitted and the default value is ``25.''
+.PP
+\&``Refreshinterval'' line is formatted as:
+.PP
+.RS
+.nf
+refreshinterval:interval
+.fi
+.RE
+.PP
+\&``Inerval'' is what interval (seconds) between rereading cycbuff header if
+cycbuff is preopend. (This is in the case
+.IR nnrpd (8)
+runs as a daemon.)
+This line can be omitted and the default value is ``30.''
 .PP
 \&``Cycbuff'' line is formatted as:
 .PP
@@ -73,7 +87,7 @@ the cyclic buffer files.
 .BR 1. " Create a big file on top of a standard filesystem."
 The use "dd" to create the ``cycbuff''
 files, such as "dd if=/dev/zero of=/path/to/cycbuff bs=32k count=N"
-where N is the final size of the RAWPART divided by 32768.
+where N is the buffer_size divided by 32.
 .TP
 .BR 2. " Use block disk devices directly."
 If your operating system will allow you to

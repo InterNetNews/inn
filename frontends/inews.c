@@ -29,7 +29,7 @@
 #define HEADER_DELTA		20
 #define GECOSTERM(c)		\
 	    ((c) == ',' || (c) == ';' || (c) == ':' || (c) == LPAREN)
-
+#define HEADER_STRLEN		998
 
 typedef enum _HEADERTYPE {
     HTobs,
@@ -44,7 +44,6 @@ typedef struct _HEADER {
     int		Size;
     char	*Value;
 } HEADER;
-
 
 STATIC char     *tmpPtr ;
 STATIC BOOL	Dump;
@@ -121,7 +120,7 @@ STATIC NORETURN
 QuitServer(x)
     int		x;
 {
-    char	buff[NNTP_STRLEN + 2];
+    char	buff[HEADER_STRLEN];
     char	*p;
 
     if (Spooling)
@@ -343,10 +342,14 @@ CheckCancel(msgid, JustReturn)
 	    *p = '\0';
 	if (buff[0] == '.' && buff[1] == '\0')
 	    break;
-	if (EQn(buff, "Sender:", 7))
-	    (void)strcpy(remotefrom, TrimSpaces(&buff[7]));
-	else if (remotefrom[0] == '\0' && EQn(buff, "From:", 5))
-	    (void)strcpy(remotefrom, TrimSpaces(&buff[5]));
+        if (EQn(buff, "Sender:", 7)) {
+            strncpy(remotefrom, TrimSpaces(&buff[7]), SMBUF);
+            remotefrom[SMBUF - 1] = '\0';
+        }
+        else if (remotefrom[0] == '\0' && EQn(buff, "From:", 5)) {
+            strncpy(remotefrom, TrimSpaces(&buff[5]), SMBUF);
+            remotefrom[SMBUF - 1] = '\0';
+        }
     }
     if (remotefrom[0] == '\0') {
 	if (JustReturn)
@@ -357,7 +360,8 @@ CheckCancel(msgid, JustReturn)
     HeaderCleanFrom(remotefrom);
 
     /* Get the local user. */
-    (void)strcpy(localfrom, HDR(_sender) ? HDR(_sender) : HDR(_from));
+    (void)strncpy(localfrom, HDR(_sender) ? HDR(_sender) : HDR(_from), SMBUF);
+    localfrom[SMBUF - 1] = '\0';
     HeaderCleanFrom(localfrom);
 
     /* Is the right person cancelling? */
@@ -449,7 +453,8 @@ CheckControl(ctrl, pwp)
 	  || EQ(ctrl, "sendsys")
 	  || EQ(ctrl, "senduuname")
 	  || EQ(ctrl, "version")) {
-	(void)strcpy(name, pwp->pw_name);
+	strncpy(name, pwp->pw_name, SMBUF);
+        name[SMBUF - 1] = '\0';
 	if (!AnAdministrator(name, (int)pwp->pw_gid)) {
 	    (void)fprintf(stderr,
 		    "Ask your news administrator to do the \"%s\" for you.\n",
@@ -481,10 +486,11 @@ FormatUserName(pwp, node)
     struct passwd	*pwp;
     char		*node;
 {
-    char	buff[BUFSIZ];
     char	outbuff[SMBUF];
+    char        *buff;
     char	*out;
     char	*p;
+    int         left;
 
 #if	!defined(DONT_MUNGE_GETENV)
     (void)memset(outbuff, 0, SMBUF);
@@ -497,26 +503,37 @@ FormatUserName(pwp, node)
 
 
 #if	defined(DONT_MUNGE_GECOS)
-    (void)strcpy(outbuff, pwp->pw_gecos);
+    strncpy(outbuff, pwp->pw_gecos, SMBUF);
+    outbuff[SMBUF - 1] = '\0';
 #else
+    /* Be very careful here.  If we're not, we can potentially overflow our
+     * buffer.  Remember that on some Unix systems, the content of the GECOS
+     * field is under (untrusted) user control and we could be setgid. */
     p = pwp->pw_gecos;
+    left = SMBUF - 1;
     if (*p == '*')
 	p++;
-    for (out = outbuff; *p && !GECOSTERM(*p); p++) {
+    for (out = outbuff; *p && !GECOSTERM(*p) && left; p++) {
 	if (*p == '&') {
-	    (void)strcpy(out, pwp->pw_name);
+	    strncpy(out, pwp->pw_name, left);
 	    if (CTYPE(islower, *out)
 	     && (out == outbuff || !isalpha(out[-1])))
 		*out = toupper(*out);
-	    while (*out)
+	    while (*out) {
 		out++;
+                left--;
+            }
 	}
 	else if (*p == '-'
 	      && p > pwp->pw_gecos
-	      && (isdigit(p[-1]) || isspace(p[-1]) || p[-1] == ']'))
+              && (isdigit(p[-1]) || isspace(p[-1]) || p[-1] == ']')) {
 	    out = outbuff;
-	else
+            left = SMBUF - 1;
+        }
+	else {
 	    *out++ = *p;
+            left--;
+        }
     }
     *out = '\0';
 #endif	/* defined(DONT_MUNGE_GECOS) */
@@ -526,11 +543,16 @@ FormatUserName(pwp, node)
 #endif	/* !defined(DONT_MUNGE_GETENV) */
 
     out = TrimSpaces(outbuff);
-    if (out[0])
-	(void)sprintf(buff, "%s@%s (%s)", pwp->pw_name, node, out);
-    else
-	(void)sprintf(buff, "%s@%s", pwp->pw_name, node);
-    return COPY(buff);
+    if (out[0]) {
+        buff = NEW(char, (strlen(pwp->pw_name) + 1 + strlen(node) + 2
+                          + strlen(out) + 2));
+	sprintf(buff, "%s@%s (%s)", pwp->pw_name, node, out);
+    }
+    else {
+        buff = NEW(char, strlen(pwp->pw_name) + 1 + strlen(node) + 1);
+	sprintf(buff, "%s@%s", pwp->pw_name, node);
+    }
+    return buff;
 }
 
 
@@ -597,8 +619,13 @@ ProcessHeaders(AddOrg, linecount, pwp)
     if (HDR(_from) == NULL)
 	HDR(_from) = FormatUserName(pwp, p);
     else {
+      if (strlen(pwp->pw_name) + strlen(p) + 2 > sizeof(buff)) {
+          fprintf(stderr, "Username and host too long\n");
+          QuitServer(1);
+      }
       (void)sprintf(buff, "%s@%s", pwp->pw_name, p);
-      (void)strcpy(from, HDR(_from));
+      (void)strncpy(from, HDR(_from), SMBUF);
+      from[SMBUF - 1] = '\0';
       HeaderCleanFrom(from);
       if (!EQ(from, buff))
         HDR(_sender) = COPY(buff);
@@ -614,7 +641,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
      * printf's treat it %02 (two digits wide) .2 (zero-fill to at least
      * two digits), while old versions treat it as %02 (zero-fill two
      * digits wide) .2 (noise).  You might want to check this on your
-     * system. */
+     * system.  This shouldn't be able to overflow SMBUF... */
     if (Now.tzone < 0) {
 	p = &SIGNS[0];
 	zone = -Now.tzone;
@@ -772,6 +799,10 @@ AppendSignature(UseMalloc, article, homedir, linesp)
 
     /* Open the file. */
     *linesp = 0;
+    if (strlen(homedir) > sizeof(buff) - 14) {
+        fprintf(stderr, "Home directory path too long\n");
+        QuitServer(1);
+    }
     (void)sprintf(buff, "%s/.signature", homedir);
     if ((F = fopen(buff, "r")) == NULL) {
 	if (errno == ENOENT)
@@ -898,6 +929,10 @@ MailArticle(group, article)
      * in case %s isn't in innconf->mta) and send the headers. */
     if (innconf->mta == NULL)
 	PerrorExit(TRUE, "Can't start mailer - not set");
+    if (strlen(innconf->mta) > sizeof(buff)) {
+        fprintf(stderr, "Mailer command is too long\n");
+        QuitServer(1);
+    }
     (void)sprintf(buff, innconf->mta, address);
     if ((F = popen(buff, "w")) == NULL)
 	PerrorExit(TRUE, "Can't start mailer");
@@ -1085,7 +1120,7 @@ OfferArticle(buff, Authorized)
 {
     (void)fprintf(ToServer, "post\r\n");
     SafeFlush(ToServer);
-    if (fgets(buff, NNTP_STRLEN, FromServer) == NULL)
+    if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
 	PerrorExit(TRUE,
 	    Authorized ? "Can't offer article to server (authorized)"
 		       : "Can't offer article to server");
@@ -1174,8 +1209,8 @@ main(ac, av)
     struct passwd	*pwp;
     char		*article;
     char		*deadfile;
-    char		buff[NNTP_STRLEN + 2];
-    char		SpoolMessage[NNTP_STRLEN + 2];
+    char		buff[HEADER_STRLEN];
+    char		SpoolMessage[HEADER_STRLEN];
     BOOL		DoSignature;
     BOOL		AddOrg;
     SIZE_T		Length;
@@ -1271,6 +1306,10 @@ main(ac, av)
 	if ((p = strchr(buff, '\r')) != NULL)
 	    *p = '\0';
 	(void)strcpy(SpoolMessage, buff[0] ? buff : NOCONNECT);
+        if (strlen(pwp->pw_dir) > sizeof(buff) - 14) {
+            fprintf(stderr, "Home directory path too long\n");
+            exit(1);
+        }
 	(void)sprintf(buff, "%s/dead.article", pwp->pw_dir);
 	deadfile = COPY(buff);
     }
@@ -1283,7 +1322,7 @@ main(ac, av)
 	setbuf(ToServer, NEW(char, BUFSIZ));
 	(void)fprintf(ToServer, "mode reader\r\n");
 	SafeFlush(ToServer);
-	if (fgets(buff, NNTP_STRLEN, FromServer) == NULL)
+	if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
 	    PerrorExit(TRUE, "Can't tell server we're reading");
 	if ((j = atoi(buff)) != NNTP_BAD_COMMAND_VAL)
 	    i = j;
@@ -1313,7 +1352,7 @@ main(ac, av)
     if ((innconf->localmaxartsize > 0) && (Length > innconf->localmaxartsize)) {
 	(void)fprintf(stderr,
 		"Article is bigger then local limit of %ld bytes\n",
-		atoi(p));
+		innconf->localmaxartsize);
 	QuitServer(1);
     }
 
@@ -1323,15 +1362,15 @@ main(ac, av)
 	QuitServer(1);
     }
     for (hp = Table; hp < ENDOF(Table); hp++)
-	if (hp->Value && (int)strlen(hp->Value) + hp->Size > NNTP_STRLEN) {
+	if (hp->Value && (int)strlen(hp->Value) + hp->Size > HEADER_STRLEN) {
 	    (void)fprintf(stderr, "\"%s\" header is too long.\n", hp->Name);
 	    QuitServer(1);
 	}
     for (i = 0; i < OtherCount; i++)
-	if ((int)strlen(OtherHeaders[i]) > NNTP_STRLEN) {
+	if ((int)strlen(OtherHeaders[i]) > HEADER_STRLEN) {
 	    (void)fprintf(stderr,
 		    "Header too long (%d characters max):\n\t%40.40s...\n",
-		    NNTP_STRLEN, OtherHeaders[i]);
+		    HEADER_STRLEN, OtherHeaders[i]);
 	    QuitServer(1);
 	}
 
