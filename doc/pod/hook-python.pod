@@ -310,7 +310,7 @@ dynamic generation of an access group of an incoming connection using
 a Python script. If a connection matches an auth group which has a
 python_access parameter, all access groups in readers.conf are
 ignored; instead the procedure described below is used to generate an
-access group. This concept is due to Jeffery M. Vinocur.
+access group. This concept is due to Jeffrey M. Vinocur.
 
 In the old implementation, the authorization method allowed for access
 control on a per-group basis. That functionality is preserved in the

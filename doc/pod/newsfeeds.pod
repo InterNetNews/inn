@@ -89,7 +89,7 @@ will be matched against every newsgroup carried by the server and all
 newsgroups that match will be added to the subscription list for the site.
 
 Normally, a given article (or information about it) is sent to a site if
-any of the articles to which the article was posted are in that site's
+any of the newsgroups to which the article was posted are in that site's
 subscription list.  If a newsgroup matches a C<@> pattern in I<pattern>,
 then not only is it not added to the subscription list, but any articles
 crossposted to that newsgroup also will not be sent to that site even if
