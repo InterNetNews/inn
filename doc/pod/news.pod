@@ -1,19 +1,48 @@
 =head1 Upgrading from 2.2 to 2.3
 
-This section is still a work in progress and is not complete.  There may
-be additional things to watch out for not listed here; if you run across
-any, please let inn-bugs@isc.org know about them.
+This section is still a work in progress.  There may be additional things
+to watch out for not listed here; if you run across any, please let
+inn-bugs@isc.org know about them.
 
-Simply doing a make update is not sufficient to upgrade.  For one, several
-of the scripts that live in the F<samples> directory have been updated,
-and some of those updates are required to work with INN 2.3.  (It's
-possible that this will be fixed before the final 2.3 release.)
+Simply doing a make update is not sufficient to upgrade; the history and
+overview information will also have to be regenerated, since the formats
+of both files have changed between 2.2 and 2.3.  Regardless of whether you
+were using the storage API or traditional spool under 2.2, you'll need to
+rebuild your overview and history files.
 
-The history file format changed between 2.2 and 2.3, as did the overview
-format.  Regardless of whether you were using the storage API or
-traditional spool under 2.2, you'll need to rebuild your overview and
-history files.  The program to use to rebuild the history file is makedbz,
-not makehistory.  makehistory is used to rebuild the overview database.
+If you want to allow readers, or if you want to expire based on newsgroup
+name, you need to tell INN to generate overview data and pick an overview
+method by setting ovmethod in inn.conf.  See INSTALL and inn.conf(5) for
+more details.
+
+The code that generates the dbz index files has been split into a seperate
+program, makedbz.  makehistory still generates the base history file and
+the overview information, but some of its options have been changed.  To
+rebuild the history and overview files, use:
+
+    makehistory -b -f history.n -O -T/usr/local/news/tmp -l 600000
+
+(Change the /usr/local/news/tmp path to some directory that has plenty of
+temporary space, and leave off -O if you're running a transit-only server
+and don't intend to expire based on group name, and therefore don't need
+overview.)  This will generate a new history file as history.n and rebuild
+overview at the same time.  If you want to preseve a record of expired
+message IDs in the history file, run:
+
+    awk 'NF==2 { print; }' < history >> history.n
+
+to append them to the newly created history file.  Look over the new
+history file and make sure it looks right, then generate the new index
+files and move them into place:
+
+    makedbz -s `wc -l <history.n` -f history.n
+    mv history.n history
+    mv history.n.dir history.dir
+    mv history.n.hash history.hash
+    mv history.n.index history.index
+
+(Rather than .hash and .index files, you may have a .pag file if you're
+using tagged hash.)
 
 For a reader machine, F<nnrp.access> has been replaced by F<readers.conf>.
 There currently isn't a program to convert between the old format and the
@@ -30,6 +59,10 @@ default, so in a normal upgrade from 2.2 to 2.3 you'll want to comment out
 or remove your overchan entry in F<newsfeeds> and set useoverchan to false
 in F<inn.conf>.
 
+crosspost is no longer installed, and no longer works (even with
+traditional spool).  If you have an entry for crosspost in F<newsfeeds>,
+remove it.
+
 =head1 Changes from 2.2 to 2.3
 
 =over 2
@@ -37,7 +70,8 @@ in F<inn.conf>.
 =item *
 
 New F<readers.conf> file (replaces F<nnrp.access>) which allows more
-flexible specification of access restrictions.
+flexible specification of access restrictions.  Included in the sample
+implementations is a RADIUS-based authenticator.
 
 =item *
 
@@ -70,6 +104,15 @@ The INN build system no longer uses subst.  This should be mostly
 transparent to users, apart from the old annoyance of modifications to
 include files being overridden again by subst when building INN being a
 thing of the past.
+
+=item *
+
+The build and installation system has been substantially overhauled.  make
+update now updates scripts as well as binaries and documentation, there is
+better support for parallel builds (with make -j), there is less needless
+make recursion, and far more of the system-dependent configuration is
+handled directly by autoconf.  libtool build support (including shared
+library support) should be better than previous releases.
 
 =back
 
