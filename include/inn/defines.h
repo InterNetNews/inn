@@ -66,6 +66,8 @@
 #define FALSE  false
 
 /* Tell Perl that we have a bool type. */
-#define HAS_BOOL 1
+#ifndef HAS_BOOL
+# define HAS_BOOL 1
+#endif /* HAS_BOOL */
 
 #endif /* !INN_DEFINES_H */
