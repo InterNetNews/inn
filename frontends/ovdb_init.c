@@ -396,6 +396,7 @@ int main(int argc, char **argv)
 	    fprintf(stderr, "can't fork: %s\n", strerror(errno));
 	    exit(1);
 	case 0:
+	    setsid();
 	    execl(cpcatpath(innconf->pathbin, "ovdb_monitor"),
 		"ovdb_monitor", SPACES, NULL);
 	    fprintf(stderr, "Can't exec ovdb_monitor: %s\n", strerror(errno));
@@ -413,6 +414,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "can't fork: %s\n", strerror(errno));
 		exit(1);
 	    case 0:
+		setsid();
 		execl(cpcatpath(innconf->pathbin, "ovdb_server"),
 		    "ovdb_server", SPACES, NULL);
 		fprintf(stderr, "Can't exec ovdb_server: %s\n", strerror(errno));
