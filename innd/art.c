@@ -1355,6 +1355,7 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 	}
     }
 
+#ifndef USE_CONTROLCHAN
     /* Build the command vector and execute it. */
     av[0] = buff;
     av[1] = COPY(Data->Poster);
@@ -1376,6 +1377,7 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 	    LogName, MaxLength(av[0], strrchr(av[0], '/')), Data->Name);
     DISPOSE(av[1]);
     DISPOSE(av[2]);
+#endif
 }
 
 
