@@ -437,7 +437,7 @@ AC_SUBST(ac_cv_type_signal)
 AC_FUNC_VFORK
 AC_FUNC_VPRINTF
 dnl Actually INN doesn't care about the rusage argument AC_FUNC_WAIT3
-AC_CHECK_FUNCS(fchmod getdtab gethostname getrlimit getrusage)
+AC_CHECK_FUNCS(fchmod getdtab gethostname getrlimit setrlimit getrusage)
 AC_CHECK_FUNCS(gettimeofday memchr memcmp memcpy memmove memset)
 AC_CHECK_FUNCS(mkdir mkfifo mktemp select setbuffer setproctitle)
 AC_CHECK_FUNCS(setsid socket strcasecmp strchr strcspn strerror)
@@ -445,6 +445,11 @@ AC_CHECK_FUNCS(strrchr strspn strstr symlink sysconf syslog ulimit)
 AC_CHECK_FUNCS(waitpid socketpair getpagesize getspnam)
 AC_CHECK_FUNCS(statvfs, [AC_DEFINE(HAVE_STATVFS)], [AC_CHECK_FUNCS(statfs) AC_CHECK_HEADERS(sys/vfs.h, AC_DEFINE(HAVE_SYS_VFS_H)) AC_CHECK_HEADERS(sys/param.h, AC_DEFINE(HAVE_SYS_PARAM_H)) AC_CHECK_HEADERS(sys/mount.h, AC_DEFINE(HAVE_SYS_MOUNT_H))])
 
+if test $ac_cv_func_getrlimit = yes; then
+  if test $ac_cv_func_setrlimit = yes; then
+    AC_DEFINE(HAVE_RLIMIT)
+  fi
+fi
 
 dnl This portion is similar to what AC_FUNC_MMAP does, only
 dnl it tests shared, non-fixed mmaps.

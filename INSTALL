@@ -351,7 +351,11 @@ Configuring INN
 
   logipaddr            Set false, if controlchan is used and ihave/sendme setup
                        is required.  Or ihave and sendme cannot get correct
-	               name, then the messages are incorrect.
+                       name, then the messages are incorrect.
+
+  rlimitnofile         This should be extended, if the server has many incoming
+                       and outgoing feed.  Note some Unix boxed need to be
+                       reconfigured before extending this value.
 
   2. newsfeeds (REQUIRED)
 
