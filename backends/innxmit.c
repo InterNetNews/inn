@@ -1281,7 +1281,7 @@ int main(int ac, char *av[]) {
             continue;
 	token = TextToToken(Article);
 	/* Open the article. */
-	if ((art = SMretrieve(token, RETR_HEAD)) == NULL) {
+	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
 	    if ((SMerrno == SMERR_NOENT) || (SMerrno == SMERR_UNINIT)) {
 		++STATmissing;
 		continue;
