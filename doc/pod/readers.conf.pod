@@ -298,7 +298,9 @@ The client may post to newsgroups that are set to disallow local posting
 Note that if this parameter is given and C<R> isn't present in the access
 string, the client cannot read regardless of newsgroups: or read:
 parameters.  Similarly, if this parameter is given and C<P> isn't present,
-the client cannot post.  This use of access: is deprecated and confusing;
+the client cannot post.  And if this parameter is given, I<allownewnews> in
+inn.conf(5) is never used to determine permission of NEWNEWS command usage.
+This use of access: is deprecated and confusing;
 it's strongly recommended that if the access: parameter is used, C<R> and
 C<P> always be included in the access string and newsgroups:, read:, and
 post: be used to control access.  (To grant read access but no posting
