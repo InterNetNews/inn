@@ -6,7 +6,7 @@
 #ifndef __CNFS_H__
 #define __CNFS_H__
 
-BOOL cnfs_init(BOOL *selfexpire);
+BOOL cnfs_init(SMATTRIBUTE *attr);
 TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount);

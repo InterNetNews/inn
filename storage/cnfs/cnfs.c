@@ -982,12 +982,18 @@ STATIC void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
     cycbuff->fd = -1;
 }
 
-BOOL cnfs_init(BOOL *selfexpire) {
+BOOL cnfs_init(SMATTRIBUTE *attr) {
     int			ret;
     METACYCBUFF	*metacycbuff;
     CYCBUFF	*cycbuff;
 
-    *selfexpire = FALSE;
+    if (attr == NULL) {
+	syslog(L_ERROR, "%s: attr is NULL", LocalLogName);
+	SMseterror(SMERR_INTERNAL, "attr is NULL");
+	return FALSE;
+    }
+    attr->selfexpire = TRUE;
+    attr->expensivestat = FALSE;
     if (innconf == NULL) {
 	if ((ret = ReadInnConf()) < 0) {
 	    syslog(L_ERROR, "%s: ReadInnConf failed, returned %d", LocalLogName, ret);
@@ -1051,8 +1057,6 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	CNFSshutdowncycbuff(cycbuff);
       }
     }
-
-    *selfexpire = TRUE;
     return TRUE;
 }
 
