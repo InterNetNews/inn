@@ -46,7 +46,7 @@ test_s(int n, const char *text, const char *pattern, bool matches)
 int
 main(void)
 {
-    puts("166");
+    puts("174");
 
     /* Basic wildmat features. */
     test_r(  1, "foo",            "foo",               true);
@@ -174,7 +174,7 @@ main(void)
     test_r(107, "\303\303",       "??",                true);
     test_r(108, "\200",           "[\177-\201]",       true);
     test_r(109, "abc\206d",       "*\206d",            true);
-    test_r(110, "\303\206",       "*\206",             true);
+    test_r(110, "\303\206",       "*\206",             false);
     test_r(111, "\40",            "\240",              false);
     test_r(112, "\323",           "[a-\377]",          true);
     test_r(113, "\376\277\277\277\277\277", "?",       false);
@@ -235,6 +235,18 @@ main(void)
     test_s(164, "!aaabbb",        "!a*b*",             true);
     test_s(165, "ccc",            "*,!a*",             false);
     test_s(166, "foo",            "*",                 true);
+
+    /* Combinations of * and (possibly invalid) UTF-8 characters. */
+    test_r(167, "\303\206",       "*[^\303\206]",      false);
+    test_r(168, "\303\206",       "\303*",             true);
+    test_r(169, "\303\206",       "*\206",             false);
+    test_r(170, "\357\277\277",   "*\277",             false);
+    test_r(171, "\357\277\277",   "\357*",             true);
+    test_r(172, "\303\206",       "*[\206]",           false);
+    test_r(173, "\303\206\303\206",
+                                  "*[^\303\206]",      false);
+    test_r(174, "\303\206\357\277\277",
+                                  "*[^\303\206]",      true);
 
     return 0;
 }
