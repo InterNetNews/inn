@@ -320,7 +320,8 @@ Path: header.  The default value is unset.
 .Ip "\fIpgpverify\fR" 4
 .IX Item "pgpverify"
 Whether to enable \s-1PGP\s0 verification of control messages other than cancel.
-This is a boolean value and the default is false.
+This is a boolean value and the default is based on whether configure found
+pgp or pgpv.
 .Ip "\fIport\fR" 4
 .IX Item "port"
 What \s-1TCP\s0 port \fIinnd\fR\|(8) should listen on.  The default value is \f(CW\*(C`119\*(C'\fR, the
