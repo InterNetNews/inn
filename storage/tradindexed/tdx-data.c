@@ -561,7 +561,7 @@ tdx_search_close(struct search *search)
 **  constantly repack if the article numbers are clustered around a particular
 **  value but don't come in order.
 */
-ARTNUM
+static ARTNUM
 index_base(ARTNUM artnum)
 {
     return (artnum > 128) ? (artnum - 128) : 1;
