@@ -9,14 +9,13 @@ Welcome to INN 2.0!
 
 Reporting Bugs
 
-  I'm gathering information on who uses INN. If you haven't do so for
-  a previous version of INN, then please do the following:
+  We're gathering information on who uses INN. Please do the following
 
         uname -a | Mail -s "2.0 usage survey" inn-survey@isc.org
 
-  I will appreciate it. You won't get a reply.
+  We appreciate it. You won't get a reply.
 
-  I'm interested in all bug reports. Not just on the programs, but on
+  We're interested in all bug reports. Not just on the programs, but on
   the documentation too. Please send *all* such reports to:
 
         inn-bugs@isc.org
@@ -26,17 +25,20 @@ Reporting Bugs
 
         inn@isc.org
   
+  (please do *not* send bug reports to this address)
+
   For general "how do I do this" questions you should post to
-  news.software.nntp as there a lot of experienced INN users there, and I
-  don't have the time necessary to help except when something is obviously
-  broken.
+  news.software.nntp as there are a lot of experienced INN users there, and 
+  there isn't the time necessary to answer general questions
 
   Have fun!
 
 Who's Responsible / Who to Thank
 
-  See the CONTRIBUTORS file for a list of people responsible for this whole
-  mess. :-)
+  See the CONTRIBUTORS file for a long list of past constributors as well 
+  as people from the inn-workers mailing list who have dedicated a
+  lot of time and effort to getting this new version together. They deserve
+  a big round of applause. They've certainly got my thanks.
 
 Supporting the INN Effort
 
