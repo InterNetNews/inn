@@ -15,6 +15,7 @@
 #include "inn/confparse.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/vector.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -323,12 +324,55 @@ innconf_set_defaults(void)
 
 
 /*
+**  Given a config_group struct representing the inn.conf file, parse that
+**  into an innconf struct and return the newly allocated struct.  This
+**  routine should be pulled out into a library for smashing configuration
+**  file parse results into structs.
+*/
+static struct innconf *
+innconf_parse(struct config_group *group)
+{
+    unsigned int i;
+    bool *bool_ptr;
+    long *long_ptr;
+    const char *char_ptr;
+    char **string;
+    struct innconf *config;
+
+    config = xmalloc(sizeof(struct innconf));
+    for (i = 0; i < SIZEOF(config_table); i++)
+        switch (config_table[i].type) {
+        case TYPE_BOOLEAN:
+            bool_ptr = CONF_BOOL(config, config_table[i].location);
+            if (!config_param_boolean(group, config_table[i].name, bool_ptr))
+                *bool_ptr = config_table[i].defaults.boolean;
+            break;
+        case TYPE_NUMBER:
+            long_ptr = CONF_LONG(config, config_table[i].location);
+            if (!config_param_integer(group, config_table[i].name, long_ptr))
+                *long_ptr = config_table[i].defaults.integer;
+            break;
+        case TYPE_STRING:
+            if (!config_param_string(group, config_table[i].name, &char_ptr))
+                char_ptr = config_table[i].defaults.string;
+            string = CONF_STRING(config, config_table[i].location);
+            *string = (char_ptr == NULL) ? NULL : xstrdup(char_ptr);
+            break;
+        default:
+            die("internal error: invalid type in row %d of config table", i);
+            break;
+        }
+    return config;
+}
+
+
+/*
 **  Check the configuration file for consistency and ensure that mandatory
 **  settings are present.  Returns true if the file is okay and false
 **  otherwise.
 */
 static bool
-innconf_validate(void)
+innconf_validate(struct config_group *group)
 {
     bool okay = true;
     long threshold;
@@ -351,7 +395,8 @@ innconf_validate(void)
     }
     threshold = innconf->datamovethreshold;
     if (threshold <= 0 || threshold > 1024 * 1024) {
-        warn("maximum value for datamovethreshold in inn.conf is 1MB");
+        config_error_param(group, "datamovethreshold",
+                           "maximum value for datamovethreshold is 1MB");
         innconf->datamovethreshold = 1024 * 1024;
     }
     return okay;
@@ -363,56 +408,25 @@ innconf_validate(void)
 **  the default configuration file or a path to an alternate configuration
 **  file to read.  Returns true if the file was read successfully and false
 **  otherwise.
-**
-**  The core of this routine should be pulled out into a library for smashing
-**  configuration file parse results into structs.
 */
 bool
 innconf_read(const char *path)
 {
     struct config_group *group;
-    unsigned int i;
-    bool *bool_ptr;
-    long *long_ptr;
-    const char *char_ptr;
-    char **string;
     char *tmpdir;
 
     if (innconf != NULL)
         innconf_free(innconf);
-    innconf = xmalloc(sizeof(struct innconf));
     if (path == NULL)
         path = getenv("INNCONF");
     group = config_parse_file(path == NULL ? _PATH_CONFIG : path);
     if (group == NULL)
         return false;
 
-    for (i = 0; i < SIZEOF(config_table); i++)
-        switch (config_table[i].type) {
-        case TYPE_BOOLEAN:
-            bool_ptr = CONF_BOOL(innconf, config_table[i].location);
-            if (!config_param_boolean(group, config_table[i].name, bool_ptr))
-                *bool_ptr = config_table[i].defaults.boolean;
-            break;
-        case TYPE_NUMBER:
-            long_ptr = CONF_LONG(innconf, config_table[i].location);
-            if (!config_param_integer(group, config_table[i].name, long_ptr))
-                *long_ptr = config_table[i].defaults.integer;
-            break;
-        case TYPE_STRING:
-            if (!config_param_string(group, config_table[i].name, &char_ptr))
-                char_ptr = config_table[i].defaults.string;
-            string = CONF_STRING(innconf, config_table[i].location);
-            *string = (char_ptr == NULL) ? NULL : xstrdup(char_ptr);
-            break;
-        default:
-            die("internal error: invalid type in row %d of config table", i);
-            break;
-        }
-
-    config_free(group);
-    if (!innconf_validate())
+    innconf = innconf_parse(group);
+    if (!innconf_validate(group))
         return false;
+    config_free(group);
     innconf_set_defaults();
 
     /* It's not clear that this belongs here, but it was done by the old
@@ -425,7 +439,56 @@ innconf_read(const char *path)
         }
 
     return true;
-} 
+}
+
+
+/*
+**  Check an inn.conf file.  This involves reading it in and then additionally
+**  making sure that there are no keys defined in the inn.conf file that
+**  aren't recognized.  This doesn't have to be very fast (and isn't).
+**  Returns true if everything checks out successfully, and false otherwise.
+**
+**  A lot of code is duplicated with innconf_read here and should be
+**  refactored.
+*/
+bool
+innconf_check(const char *path)
+{
+    struct config_group *group;
+    struct vector *params;
+    size_t set, known;
+    bool found;
+    bool okay = true;
+
+    if (innconf != NULL)
+        innconf_free(innconf);
+    if (path == NULL)
+        path = getenv("INNCONF");
+    group = config_parse_file(path == NULL ? _PATH_CONFIG : path);
+    if (group == NULL)
+        return false;
+
+    innconf = innconf_parse(group);
+    if (!innconf_validate(group))
+        return false;
+
+    /* Now, do the work that innconf_read doesn't do.  Get a list of
+       parameters defined in innconf and then walk our list of valid
+       parameters and see if there are any set that we don't recognize. */
+    params = config_params(group);
+    for (set = 0; set < params->count; set++) {
+        found = false;
+        for (known = 0; known < SIZEOF(config_table); known++)
+            if (strcmp(params->strings[set], config_table[known].name) == 0)
+                found = true;
+        if (!found) {
+            config_error_param(group, params->strings[set],
+                               "unknown parameter %s", params->strings[set]);
+            okay = false;
+        }
+    }
+    return okay;
+}
 
 
 /*

@@ -199,6 +199,10 @@ void innconf_dump(FILE *, enum innconf_quoting);
 /* Compare two instances of an innconf struct, for testing. */
 bool innconf_compare(struct innconf *, struct innconf *);
 
+/* Check the validity of an inn.conf file.  Does innconf_read plus checking
+   for any unknown parameters that are set. */
+bool innconf_check(const char *path);
+
 END_DECLS
 
 #endif /* INN_INNCONF_H */

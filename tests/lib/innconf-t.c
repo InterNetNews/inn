@@ -16,12 +16,13 @@ int
 main(void)
 {
     struct innconf *standard;
+    FILE *config;
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
             chdir("lib");
 
-    puts("4");
+    puts("9");
 
     ok(1, innconf_read("../../samples/inn.conf"));
     standard = innconf;
@@ -34,6 +35,27 @@ main(void)
     innconf_free(standard);
     innconf_free(innconf);
     ok(4, true);
+
+    /* Checking inn.conf. */
+    errors_capture();
+    if (system(grep) != 0)
+        die("Unable to create stripped configuration file");
+    ok(5, innconf_check("config/tmp"));
+    ok(6, errors == NULL);
+    innconf_free(innconf);
+    config = fopen("config/tmp", "a");
+    if (config == NULL)
+        sysdie("Unable to open stripped configuration file for append");
+    fputs("foo: bar\n", config);
+    fclose(config);
+    ok(7, !innconf_check("config/tmp"));
+    unlink("config/tmp");
+    ok_string(8, "config/tmp:25: unknown parameter foo\n", errors);
+    errors_uncapture;
+    free(errors);
+    errors = NULL;
+    innconf_free(innconf);
+    ok(9, true);
 
     return 0;
 }
