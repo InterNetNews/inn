@@ -17,13 +17,13 @@ typedef enum _ARTHEADERTYPE {
 **  Entry in the header table.
 */
 typedef struct _ARTHEADER {
-    STRING              Name;
+    const char *        Name;
     ARTHEADERTYPE       Type;
-    int                 Size;                   /* Length of Name       */
-    char                *Value;
-    int                 Length;                 /* Length of Value      */
+    int                 Size;                   /* Length of Name. */
+    char *              Value;
+    int                 Length;                 /* Length of Value. */
     int                 Found;
-    BOOL                Allocated;
+    bool                Allocated;
 } ARTHEADER;
 
 /*

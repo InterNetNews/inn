@@ -11,17 +11,17 @@
 #include "innd.h"
 
 
-STATIC int	SITEcount;
-STATIC int	SITEhead = NOSITE;
-STATIC int	SITEtail = NOSITE;
-STATIC char	SITEshell[] = _PATH_SH;
+static int	SITEcount;
+static int	SITEhead = NOSITE;
+static int	SITEtail = NOSITE;
+static char	SITEshell[] = _PATH_SH;
 
 
 /*
 **  Called when input is ready to read.  Shouldn't happen.
 */
 /* ARGSUSED0 */
-STATIC FUNCTYPE SITEreader(CHANNEL *cp)
+static void SITEreader(CHANNEL *cp)
 {
     syslog(L_ERROR, "%s internal SITEreader", LogName);
 }
@@ -31,7 +31,7 @@ STATIC FUNCTYPE SITEreader(CHANNEL *cp)
 **  Called when write is done.  No-op.
 */
 /* ARGSUSED0 */
-STATIC FUNCTYPE SITEwritedone(CHANNEL *cp)
+static void SITEwritedone(CHANNEL *cp)
 {
 }
 
@@ -39,7 +39,7 @@ STATIC FUNCTYPE SITEwritedone(CHANNEL *cp)
 /*
 **  Make a site start spooling.
 */
-BOOL SITEspool(SITE *sp, CHANNEL *cp)
+bool SITEspool(SITE *sp, CHANNEL *cp)
 {
     int			i;
     char		buff[SPOOLNAMEBUFF];
@@ -111,7 +111,7 @@ static void SITEunlink(SITE *sp)
 /*
 **  Find the oldest "file feed" site and buffer it.
 */
-STATIC void SITEbufferoldest(void)
+static void SITEbufferoldest(void)
 {
     SITE	        *sp;
     BUFFER	        *bp;
@@ -171,7 +171,7 @@ STATIC void SITEbufferoldest(void)
 /*
  * *  Bilge Site's Channel out buffer.
  */
-STATIC BOOL SITECHANbilge(SITE *sp)
+static bool SITECHANbilge(SITE *sp)
 {
     int             fd;
     int             i;
@@ -193,8 +193,8 @@ STATIC BOOL SITECHANbilge(SITE *sp)
         return FALSE;
     }
     while(sp->Channel->Out.Left > 0) {
-        i = write(fd, (POINTER) &sp->Channel->Out.Data[sp->Channel->Out.Used],
-            (SIZE_T) sp->Channel->Out.Left);
+        i = write(fd, &sp->Channel->Out.Data[sp->Channel->Out.Used],
+                  sp->Channel->Out.Left);
         if(i <= 0) {
             syslog(L_ERROR,"%s cant spool count %d",CHANname(sp->Channel),
                 sp->Channel->Out.Left);
@@ -217,7 +217,7 @@ STATIC BOOL SITECHANbilge(SITE *sp)
 **  Check if we need to write out the site's buffer.  If we're buffered
 **  or the feed is backed up, this gets a bit complicated.
 */
-STATIC void SITEflushcheck(SITE *sp, BUFFER *bp)
+static void SITEflushcheck(SITE *sp, BUFFER *bp)
 {
     int	                i;
     CHANNEL	        *cp;
@@ -252,7 +252,7 @@ STATIC void SITEflushcheck(SITE *sp, BUFFER *bp)
 	    int j;
 	    if (bp->Left == 0)
 		return;
-	    j = write(cp->fd, (POINTER)&bp->Data[bp->Used], (SIZE_T)bp->Left);
+	    j = write(cp->fd, &bp->Data[bp->Used], bp->Left);
 	    if (j > 0) {
 		bp->Left -= j;
 		bp->Used += j;
@@ -291,7 +291,7 @@ STATIC void SITEflushcheck(SITE *sp, BUFFER *bp)
 /*
 **  Send a control line to an exploder.
 */
-void SITEwrite(SITE *sp, STRING text)
+void SITEwrite(SITE *sp, const char *text)
 {
     static char		PREFIX[] = { EXP_CONTROL, '\0' };
     BUFFER	        *bp;
@@ -315,13 +315,13 @@ void SITEwrite(SITE *sp, STRING text)
 /*
 **  Send the desired data about an article down a channel.
 */
-STATIC void SITEwritefromflags(SITE *sp, ARTDATA *Data)
+static void SITEwritefromflags(SITE *sp, ARTDATA *Data)
 {
     static char		ITEMSEP[] = " ";
     static char		NL[] = "\n";
     char		pbuff[12];
     char	        *p;
-    BOOL	        Dirty;
+    bool	        Dirty;
     BUFFER	        *bp;
     SITE	        *spx;
     int	                i;
@@ -474,7 +474,7 @@ void SITEsend(SITE *sp, ARTDATA *Data)
     char	        *p;
     char		*temp;
     char		buff[BUFSIZ];
-    STRING		argv[MAX_BUILTIN_ARGV];
+    const char *	argv[MAX_BUILTIN_ARGV];
     int			fd;
 
     switch (sp->Type) {
@@ -547,7 +547,7 @@ void SITEsend(SITE *sp, ARTDATA *Data)
 **  The channel was sleeping because we had to spool our output to
 **  a file.  Flush and restart.
 */
-STATIC FUNCTYPE SITEspoolwake(CHANNEL *cp)
+static void SITEspoolwake(CHANNEL *cp)
 {
     SITE	*sp;
     int		*ip;
@@ -570,10 +570,11 @@ STATIC FUNCTYPE SITEspoolwake(CHANNEL *cp)
 **  Start up a process for a channel, or a spool to a file if we can't.
 **  Create a channel for the site to talk to.
 */
-STATIC BOOL SITEstartprocess(SITE *sp)
+static bool
+SITEstartprocess(SITE *sp)
 {
-    PID_T	        i;
-    STRING		argv[MAX_BUILTIN_ARGV];
+    pid_t	        i;
+    const char		*argv[MAX_BUILTIN_ARGV];
     char		*process;
     int			*ip;
     int			pan[2];
@@ -591,7 +592,7 @@ STATIC BOOL SITEstartprocess(SITE *sp)
 	return FALSE;
     }
 #endif
-    CloseOnExec(pan[PIPE_WRITE], TRUE);
+    close_on_exec(pan[PIPE_WRITE], true);
 
     /* Set up the argument vector. */
     process = COPY(sp->Param);
@@ -628,8 +629,8 @@ STATIC BOOL SITEstartprocess(SITE *sp)
     syslog(L_ERROR, "%s cant spawn spooling %m", sp->Name);
     ip = NEW(int, 1);
     *ip = sp - Sites;
-    SCHANadd(sp->Channel, (time_t)(Now.time + innconf->chanretrytime),
-	(POINTER)NULL, SITEspoolwake, (POINTER)ip);
+    SCHANadd(sp->Channel, Now.time + innconf->chanretrytime, NULL,
+             SITEspoolwake, ip);
     return TRUE;
 }
 
@@ -637,7 +638,7 @@ STATIC BOOL SITEstartprocess(SITE *sp)
 /*
 **  Set up a site for internal buffering.
 */
-STATIC void SITEbuffer(SITE *sp)
+static void SITEbuffer(SITE *sp)
 {
     BUFFER	        *bp;
 
@@ -682,7 +683,7 @@ static void SITEmovetohead(SITE *sp)
 /*
 **  Set up a site's feed.  This means opening a file or channel if needed.
 */
-BOOL SITEsetup(SITE *sp)
+bool SITEsetup(SITE *sp)
 {
     int			fd;
     int			oerrno;
@@ -780,8 +781,8 @@ void SITEchanclose(CHANNEL *cp)
 	    WCHANadd(sp->Channel);
 	    ip = NEW(int, 1);
 	    *ip = sp - Sites;
-	    SCHANadd(sp->Channel, (time_t)(Now.time + innconf->chanretrytime),
-		(POINTER)NULL, SITEspoolwake, (POINTER)ip);
+	    SCHANadd(sp->Channel, Now.time + innconf->chanretrytime, NULL,
+                     SITEspoolwake, ip);
 	    break;
 	}
 }
@@ -790,7 +791,7 @@ void SITEchanclose(CHANNEL *cp)
 /*
 **  Flush any pending data waiting to be sent.
 */
-void SITEflush(SITE *sp, BOOL Restart)
+void SITEflush(SITE *sp, bool Restart)
 {
     CHANNEL	        *cp;
     BUFFER	        *out;
@@ -886,7 +887,7 @@ void SITEflush(SITE *sp, BOOL Restart)
 /*
 **  Flush all sites.
 */
-void SITEflushall(BOOL Restart)
+void SITEflushall(bool Restart)
 {
     int	                i;
     SITE	        *sp;
@@ -901,10 +902,10 @@ void SITEflushall(BOOL Restart)
 **  Run down the site's pattern list and see if it wants the specified
 **  newsgroup.
 */
-BOOL SITEwantsgroup(SITE *sp, char *name)
+bool SITEwantsgroup(SITE *sp, char *name)
 {
-    BOOL	        match;
-    BOOL	        subvalue;
+    bool	        match;
+    bool	        subvalue;
     char	        *pat;
     char	        **argv;
 
@@ -933,10 +934,10 @@ BOOL SITEwantsgroup(SITE *sp, char *name)
 **  Run down the site's pattern list and see if specified newsgroup is
 **  considered poison.
 */
-BOOL SITEpoisongroup(SITE *sp, char *name)
+bool SITEpoisongroup(SITE *sp, char *name)
 {
-    BOOL	        match;
-    BOOL	        poisonvalue;
+    bool	        match;
+    bool	        poisonvalue;
     char	        *pat;
     char	        **argv;
 
@@ -1109,7 +1110,7 @@ void SITEdrop(SITE *sp)
 /*
 **  Append info about the current state of the site to the buffer
 */
-void SITEinfo(BUFFER *bp, SITE *sp, BOOL Verbose)
+void SITEinfo(BUFFER *bp, SITE *sp, bool Verbose)
 {
     static char		FREESITE[] = "<<No name>>\n\n";
     char	        *p;

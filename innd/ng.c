@@ -40,11 +40,11 @@ typedef struct _NGHASH {
 } NGHASH;
 
 
-STATIC BUFFER	NGdirs;
-STATIC BUFFER	NGnames;
-STATIC NGHASH	NGHtable[NGH_SIZE];
-STATIC int	NGHbuckets;
-STATIC int	NGHcount;
+static BUFFER	NGdirs;
+static BUFFER	NGnames;
+static NGHASH	NGHtable[NGH_SIZE];
+static int	NGHbuckets;
+static int	NGHcount;
 
 
 
@@ -53,13 +53,11 @@ STATIC int	NGHcount;
 **  rough order of their activity.  Will be better if we write a "counts"
 **  file sometime.
 */
-STATIC int
-NGcompare(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+static int
+NGcompare(const void *p1, const void *p2)
 {
-    NEWSGROUP	**ng1;
-    NEWSGROUP	**ng2;
+    NEWSGROUP **ng1;
+    NEWSGROUP **ng2;
 
     ng1 = (NEWSGROUP **) p1;
     ng2 = (NEWSGROUP **) p2;
@@ -70,7 +68,7 @@ NGcompare(p1, p2)
 /*
 **  Convert a newsgroup name into a directory name.
 */
-STATIC void
+static void
 NGdirname(p)
     register char	*p;
 {
@@ -85,7 +83,7 @@ NGdirname(p)
 **  not to write NUL's into the in-core copy, since we're either mmap(2)'d,
 **  or we want to just blat it out to disk later.
 */
-STATIC BOOL NGparseentry(NEWSGROUP *ngp, char *p, char *end)
+static bool NGparseentry(NEWSGROUP *ngp, char *p, char *end)
 {
     register char		*q;
     register unsigned int	j;
@@ -100,12 +98,12 @@ STATIC BOOL NGparseentry(NEWSGROUP *ngp, char *p, char *end)
 
     ngp->NameLength = i;
     ngp->Name = &NGnames.Data[NGnames.Used];
-    (void)strncpy(ngp->Name, p, (SIZE_T)i);
+    strncpy(ngp->Name, p, i);
     ngp->Name[i] = '\0';
     NGnames.Used += i + 1;
 
     ngp->Dir = &NGdirs.Data[NGdirs.Used];
-    (void)strncpy(ngp->Dir, p, (SIZE_T)i);
+    strncpy(ngp->Dir, p, i);
     ngp->Dir[i] = '\0';
     NGdirs.Used += i + 1;
     NGdirname(ngp->Dir);
@@ -159,7 +157,7 @@ NGparsefile()
     register char	*p;
     register char	*q;
     register int	i;
-    register BOOL	SawMe;
+    register bool	SawMe;
     register NEWSGROUP	*ngp;
     register NGHASH	*htp;
     char		**strings;
@@ -230,8 +228,7 @@ NGparsefile()
     /* Sort each bucket. */
     for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++)
 	if (htp->Used > 1)
-	    qsort((POINTER)htp->Groups, (SIZE_T)htp->Used,
-		sizeof htp->Groups[0], NGcompare);
+	    qsort(htp->Groups, htp->Used, sizeof htp->Groups[0], NGcompare);
 
     /* Chase down any alias flags. */
     for (ngp = Groups, i = nGroups; --i >= 0; ngp++)
@@ -353,7 +350,7 @@ NGsplit(p)
 static char		NORENUMBER[] = "%s cant renumber %s %s too wide";
 static char		RENUMBER[] = "%s renumber %s %s from %ld to %ld";
 
-BOOL NGrenumber(NEWSGROUP *ngp)
+bool NGrenumber(NEWSGROUP *ngp)
 {
     int			low, high, count,flag;
     char	        *f2;
@@ -420,7 +417,7 @@ BOOL NGrenumber(NEWSGROUP *ngp)
  * Like NGrenumber(), but we don't scan the spool,
  * and the himark is ignored.
  */
-BOOL NGlowmark(NEWSGROUP *ngp, long lomark)
+bool NGlowmark(NEWSGROUP *ngp, long lomark)
 {
     long l;
     char *f2, *f3, *f4;

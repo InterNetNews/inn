@@ -11,21 +11,21 @@
 #include "innd.h"
 
 
-STATIC PROCESS	*PROCtable;
-STATIC int	PROCtablesize;
-STATIC PROCESS	PROCnull = { PSfree };
+static PROCESS	*PROCtable;
+static int	PROCtablesize;
+static PROCESS	PROCnull = { PSfree };
 
 
 /*
 **  Collect dead processes.
 */
-STATIC void
+static void
 PROCreap()
 {
-    int			status;
-    register PROCESS	*pp;
-    register int	i;
-    register PID_T	pid;
+    int		status;
+    PROCESS	*pp;
+    int         i;
+    pid_t	pid;
 
     for ( ; ; ) {
 	pid = waitpid(-1, &status, WNOHANG);
@@ -51,11 +51,11 @@ PROCreap()
 /*
 **  Signal handler that collects the processes, then resets the signal.
 */
-STATIC SIGHANDLER
-PROCcatchsignal(s)
-    int			s;
+static RETSIGTYPE
+PROCcatchsignal(int s)
 {
     PROCreap();
+
 #ifndef HAVE_SIGACTION
     xsignal(s, PROCcatchsignal);
 #endif
@@ -87,7 +87,7 @@ PROCscan()
 */
 void
 PROCclose(Quickly)
-    BOOL		Quickly;
+    bool		Quickly;
 {
     register int	sig;
     register PROCESS	*pp;
@@ -133,12 +133,10 @@ PROCunwatch(process)
 **  Add a pid to the list of processes we watch.
 */
 int
-PROCwatch(pid, site)
-    PID_T		pid;
-    int			site;
+PROCwatch(pid_t pid, int site)
 {
-    register PROCESS	*pp;
-    register int	i;
+    PROCESS     *pp;
+    int         i;
 
     /* Find a free slot for this process. */
     for (pp = PROCtable, i = PROCtablesize; --i >= 0; pp++)

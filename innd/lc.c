@@ -16,14 +16,14 @@
 #if HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>
 
-STATIC char	*LCpath = NULL;
-STATIC CHANNEL	*LCchan;
+static char	*LCpath = NULL;
+static CHANNEL	*LCchan;
 
 
 /*
 **  Read function.  Accept the connection and create an NNTP channel.
 */
-STATIC FUNCTYPE
+static void
 LCreader(cp)
     CHANNEL	*cp;
 {
@@ -36,7 +36,7 @@ LCreader(cp)
 	return;
     }
 
-    if ((fd = accept(cp->fd, (struct sockaddr *)NULL, (ARGTYPE *)NULL)) < 0) {
+    if ((fd = accept(cp->fd, NULL, NULL)) < 0) {
 	syslog(L_ERROR, "%s cant accept CCreader %m", LogName);
 	return;
     }
@@ -51,7 +51,7 @@ LCreader(cp)
 /*
 **  Write-done function.  Shouldn't happen.
 */
-STATIC FUNCTYPE
+static void
 LCwritedone()
 {
     syslog(L_ERROR, "%s internal LCwritedone", LogName);
@@ -83,7 +83,7 @@ LCsetup()
 	syslog(L_FATAL, "%s cant socket %s %m", LogName, LCpath);
 	exit(1);
     }
-    (void)memset((POINTER)&server, 0, sizeof server);
+    memset(&server, 0, sizeof server);
     server.sun_family = AF_UNIX;
     (void)strcpy(server.sun_path, LCpath);
     if (bind(i, (struct sockaddr *) &server, SUN_LEN(&server)) < 0) {

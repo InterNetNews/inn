@@ -16,8 +16,8 @@
 
 typedef struct iovec	IOVEC;
 
-extern BOOL DoLinks;
-extern BOOL DoCancels;
+extern bool DoLinks;
+extern bool DoCancels;
 
 #if	defined(S_IXUSR)
 #define EXECUTE_BITS	(S_IXUSR | S_IXGRP | S_IXOTH)
@@ -32,13 +32,13 @@ extern BOOL DoCancels;
 **  doing an extra indirection.
 */
 typedef struct _TREE {
-    STRING		Name;
-    ARTHEADER		*Header;
-    struct _TREE	*Before;
-    struct _TREE	*After;
+    const char *        Name;
+    ARTHEADER *         Header;
+    struct _TREE *      Before;
+    struct _TREE *      After;
 } TREE;
 
-STATIC TREE		*ARTheadertree;
+static TREE		*ARTheadertree;
 
 /*
 **  For doing the overview database, we keep a list of the headers and
@@ -46,18 +46,18 @@ STATIC TREE		*ARTheadertree;
 */
 typedef struct _ARTOVERFIELD {
     ARTHEADER		*Header;
-    BOOL		NeedHeader;
+    bool		NeedHeader;
 } ARTOVERFIELD;
 
-STATIC ARTOVERFIELD		*ARTfields;
+static ARTOVERFIELD		*ARTfields;
 
 
 /*
 **  General newsgroup we care about, and what we put in the Path line.
 */
-STATIC char		ARTctl[] = "control";
-STATIC char		ARTjnk[] = "junk";
-STATIC char		*ARTpathme;
+static char		ARTctl[] = "control";
+static char		ARTjnk[] = "junk";
+static char		*ARTpathme;
 
 /*
 **  Different types of rejected articles.
@@ -68,7 +68,7 @@ typedef enum {REJECT_DUPLICATE, REJECT_SITE, REJECT_FILTER, REJECT_DISTRIB,
 /*
 **  Flag array, indexed by character.  Character classes for Message-ID's.
 */
-STATIC char		ARTcclass[256];
+static char		ARTcclass[256];
 #define CC_MSGID_ATOM	01
 #define CC_MSGID_NORM	02
 #define CC_HOSTNAME	04
@@ -76,8 +76,8 @@ STATIC char		ARTcclass[256];
 #define ARTatomchar(c)	((ARTcclass[(unsigned char)(c)] & CC_MSGID_ATOM) != 0)
 #define ARThostchar(c)	((ARTcclass[(unsigned char)(c)] & CC_HOSTNAME) != 0)
 
-STATIC int	CRwithoutLF;
-STATIC int	LFwithoutCR;
+static int	CRwithoutLF;
+static int	LFwithoutCR;
 
 /*
 **  The header table.  Not necessarily sorted, but the first character
@@ -171,7 +171,7 @@ void SITEmark(SITE *sp, NEWSGROUP *ngp) {
 /*
 **
 */
-BOOL ARTreadschema(void)
+bool ARTreadschema(void)
 {
     static char			*SCHEMA = NULL;
     FILE		        *F;
@@ -179,10 +179,10 @@ BOOL ARTreadschema(void)
     char	 	        *p;
     ARTOVERFIELD	        *fp;
     ARTHEADER		        *hp;
-    BOOL			ok;
+    bool			ok;
     char			buff[SMBUF];
-    BOOL			foundxref = FALSE;
-    BOOL			foundxreffull = FALSE;
+    bool			foundxref = FALSE;
+    bool			foundxreffull = FALSE;
 
     if (ARTfields != NULL) {
 	DISPOSE(ARTfields);
@@ -275,13 +275,11 @@ ARTbuildtree(Table, lo, hi)
 /*
 **  Sorting predicate for qsort call in ARTsetup.
 */
-STATIC int
-ARTcompare(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+static int
+ARTcompare(const void *p1, const void *p2)
 {
-    ARTHEADER	**h1;
-    ARTHEADER	**h2;
+    ARTHEADER **h1;
+    ARTHEADER **h2;
 
     h1 = (ARTHEADER **) p1;
     h2 = (ARTHEADER **) p2;
@@ -294,14 +292,14 @@ ARTcompare(p1, p2)
 */
 void ARTsetup(void)
 {
-    STRING	        p;
-    ARTHEADER	        *hp;
-    ARTHEADER		**table;
+    const char *        p;
+    ARTHEADER *         hp;
+    ARTHEADER **        table;
     int	                i;
 
     /* Set up the character class tables.  These are written a
      * little strangely to work around a GCC2.0 bug. */
-    (void)memset((POINTER)ARTcclass, 0, sizeof ARTcclass);
+    memset(ARTcclass, 0, sizeof ARTcclass);
     p = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     while ((i = *p++) != 0) {
         ARTcclass[i] = CC_HOSTNAME | CC_MSGID_ATOM | CC_MSGID_NORM;
@@ -334,7 +332,7 @@ void ARTsetup(void)
     table = NEW(ARTHEADER*, SIZEOF(ARTheaders));
     for (i = 0; i < SIZEOF(ARTheaders); i++)
 	table[i] = &ARTheaders[i];
-    qsort((POINTER)table, SIZEOF(ARTheaders), sizeof *table, ARTcompare);
+    qsort(table, SIZEOF(ARTheaders), sizeof *table, ARTcompare);
     ARTheadertree = ARTbuildtree(table, 0, SIZEOF(ARTheaders));
     DISPOSE(table);
 
@@ -347,7 +345,7 @@ void ARTsetup(void)
 }
 
 
-STATIC void
+static void
 ARTfreetree(tp)
     TREE	*tp;
 {
@@ -382,11 +380,11 @@ void ARTclose(void)
 **  Parse a Path line, splitting it up into NULL-terminated array of strings.
 **  The argument is modified!
 */
-STATIC char **ARTparsepath(char *p, int *countp)
+static char **ARTparsepath(char *p, int *countp)
 {
-    STATIC char		*NULLPATH[1] = { NULL };
-    STATIC int		oldlength;
-    STATIC char		**hosts;
+    static char		*NULLPATH[1] = { NULL };
+    static int		oldlength;
+    static char		**hosts;
     int	                i;
     char	        **hp;
 
@@ -428,7 +426,7 @@ STATIC char **ARTparsepath(char *p, int *countp)
 
 /* Write an article using the storage api.  Put it together in memory and
    call out to the api. */
-STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
+static TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     char                *path;
     char                *p;
     char                *end;
@@ -569,7 +567,8 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 **  get added to the output pointer.  (This nicely lets us clobber obsolete
 **  headers by setting it to zero.)
 */
-STATIC char *ARTparseheader(char *in, char *out, int *deltap, STRING *errorp)
+static char *
+ARTparseheader(char *in, char *out, int *deltap, const char **errorp)
 {
     static char		buff[SMBUF];
     static char		COLONSPACE[] = "No colon-space in \"%s\" header";
@@ -675,7 +674,7 @@ STATIC char *ARTparseheader(char *in, char *out, int *deltap, STRING *errorp)
 	return NULL;
     }
     hp->Length = i;
-    (void)memcpy((POINTER)hp->Value, (POINTER)p, (SIZE_T)i);
+    memcpy(hp->Value, p, i);
     hp->Value[i] = '\0';
 
     return in;
@@ -689,7 +688,7 @@ STATIC char *ARTparseheader(char *in, char *out, int *deltap, STRING *errorp)
 **  in <#*tyo2'~n@twinsun.com>, with additional email discussion.
 **  Thanks, Paul.
 */
-BOOL ARTidok(const char *MessageID)
+bool ARTidok(const char *MessageID)
 {
     int	                c;
     const char	        *p;
@@ -768,7 +767,8 @@ BOOL ARTidok(const char *MessageID)
 **  headers.  Also fill in the article data block with what we can find.
 **  Return NULL if the article is okay, or a string describing the error.
 */
-STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
+static const char *
+ARTclean(BUFFER *Article, ARTDATA *Data)
 {
     static char		buff[SMBUF];
     ARTHEADER		*hp;
@@ -776,7 +776,7 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     char	        *out;
     int	                i;
     char	        *p;
-    STRING		error;
+    const char          *error;
     int			delta;
 
     TMRstart(TMR_ARTCLEAN);
@@ -943,14 +943,14 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 /*
 **  Start a log message about an article.
 */
-STATIC void
+static void
 ARTlog(Data, code, text)
     ARTDATA		*Data;
     char		code;
     char		*text;
 {
     int			i;
-    BOOL		Done;
+    bool		Done;
 
     /* We could be a bit faster by not dividing Now.usec by 1000,
      * but who really wants to log at the Microsec level? */
@@ -980,7 +980,7 @@ ARTlog(Data, code, text)
 **  We are going to reject an article, record the reason and
 **  and the article.
 */
-STATIC void
+static void
 ARTreject(code, cp, buff, article)
     Reject_type code;
     CHANNEL     *cp;
@@ -1026,7 +1026,7 @@ ARTreject(code, cp, buff, article)
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
-STATIC TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const HASH hash)
+static TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const HASH hash)
 {
     char	        *p, *q;
     char	        *local;
@@ -1075,7 +1075,7 @@ STATIC TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const 
 /*
 **  Process a cancel message.
 */
-void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
+void ARTcancel(const ARTDATA *Data, const char *MessageID, const bool Trusted)
 {
     char		buff[SMBUF+16];
     HASH                hash;
@@ -1137,7 +1137,7 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 **  are passed out to an external program in a specific directory that
 **  has the same name as the first word of the control message.
 */
-STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
+static void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 {
     char	        *p;
     char		buff[SMBUF];
@@ -1217,8 +1217,8 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 	av[5] = NULL;
 	HeaderCleanFrom(av[1]);
 	HeaderCleanFrom(av[2]);
-	if (Spawn(innconf->nicekids, STDIN, (int)fileno(Errlog),
-					(int)fileno(Errlog), av) < 0)
+	if (Spawn(innconf->nicekids, STDIN_FILENO, fileno(Errlog),
+                  fileno(Errlog), av) < 0)
 	    /* We know the strrchr below can't fail. */
 	    syslog(L_ERROR, "%s cant spawn %s for %s %m",
 		LogName, MaxLength(av[0], strrchr(av[0], '/')), Data->Name);
@@ -1232,7 +1232,7 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 **  Split a Distribution header, making a copy and skipping leading and
 **  trailing whitespace (which the RFC allows).
 */
-STATIC void DISTparse(char **list, ARTDATA *Data)
+static void DISTparse(char **list, ARTDATA *Data)
 {
     static BUFFER	Dist;
     char	        *p;
@@ -1276,11 +1276,11 @@ STATIC void DISTparse(char **list, ARTDATA *Data)
 **  A somewhat similar routine, except that this handles negated entries
 **  in the list and is used to check the distribution sub-field.
 */
-STATIC BOOL DISTwanted(char **list, char *p)
+static bool DISTwanted(char **list, char *p)
 {
     char	        *q;
     char	        c;
-    BOOL	        sawbang;
+    bool	        sawbang;
 
     for (sawbang = FALSE, c = *p; (q = *list) != NULL; list++)
 	if (*q == '!') {
@@ -1300,7 +1300,7 @@ STATIC BOOL DISTwanted(char **list, char *p)
 /*
 **  See if any of the distributions in the article are wanted by the site.
 */
-STATIC BOOL DISTwantany(char **site, char **article)
+static bool DISTwantany(char **site, char **article)
 {
     for ( ; *article; article++)
 	if (DISTwanted(site, *article))
@@ -1313,7 +1313,7 @@ STATIC BOOL DISTwantany(char **site, char **article)
 **  Send the current article to all sites that would get it if the
 **  group were created.
 */
-STATIC void ARTsendthegroup(char *name)
+static void ARTsendthegroup(char *name)
 {
     SITE	        *sp;
     int	                i;
@@ -1330,7 +1330,7 @@ STATIC void ARTsendthegroup(char *name)
 **  Check if site doesn't want this group even if it's crossposted
 **  to a wanted group.
 */
-STATIC void ARTpoisongroup(char *name)
+static void ARTpoisongroup(char *name)
 {
     SITE	        *sp;
     int	                i;
@@ -1347,7 +1347,7 @@ STATIC void ARTpoisongroup(char *name)
 ** If we end up not being able to write the article, we'll get "holes"
 ** in the directory and active file.
 */
-STATIC void ARTassignnumbers(void)
+static void ARTassignnumbers(void)
 {
     char	        *p;
     int	                i;
@@ -1381,7 +1381,7 @@ STATIC void ARTassignnumbers(void)
 **  Parse the data from the xref header and assign the numbers.
 **  This involves replacing the GroupPointers entries.
 */
-STATIC BOOL
+static bool
 ARTxrefslave()
 {
     char	*p;
@@ -1391,7 +1391,7 @@ ARTxrefslave()
     NEWSGROUP	*ngp;
     int	        i, len;
     char        xrefbuf[MAXHEADERSIZE*2];
-    BOOL	nogroup = TRUE;
+    bool	nogroup = TRUE;
 
     if (!ARTheaders[_xref].Found)
     	return FALSE;
@@ -1460,7 +1460,7 @@ ARTxrefslave()
 **  Return TRUE if a list of strings has a specific one.  This is a
 **  generic routine, but is used for seeing if a host is in the Path line.
 */
-STATIC BOOL ListHas(char **list, char *p)
+static bool ListHas(char **list, char *p)
 {
     char	        *q;
     char	        c;
@@ -1475,7 +1475,7 @@ STATIC BOOL ListHas(char **list, char *p)
 /*
 **  Propagate an article to the sites have "expressed an interest."
 */
-STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, BOOL ControlStore, BOOL OverviewCreated)
+static void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, bool ControlStore, bool OverviewCreated)
 {
     SITE	        *sp;
     int	                i;
@@ -1486,7 +1486,7 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
     char	        *p, *q;
     SITE	        *funnel;
     BUFFER	        *bp;
-    BOOL		sendit;
+    bool		sendit;
 
     /* Work out which sites should really get it. */
     Groupcount = Data->Groupcount;
@@ -1643,9 +1643,7 @@ struct word_entry {
 */
 
 int
-wvec_freq_cmp(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+wvec_freq_cmp(const void *p1, const void *p2)
 {
     struct word_entry *w1, *w2;
 
@@ -1659,9 +1657,7 @@ wvec_freq_cmp(p1, p2)
 */
 
 int
-wvec_length_cmp(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+wvec_length_cmp(const void *p1, const void *p2)
 {
     struct word_entry *w1, *w2;
 
@@ -1675,9 +1671,7 @@ wvec_length_cmp(p1, p2)
 */
 
 int
-ptr_strcmp(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+ptr_strcmp(const void *p1, const void *p2)
 {
     int cdiff;
     char **s1, **s2;
@@ -1694,7 +1688,7 @@ ptr_strcmp(p1, p2)
 **  Build new Keywords.
 */
 
-STATIC void
+static void
 ARTmakekeys(hp, body, v, l)
     register ARTHEADER	*hp;		/* header data */
     register char	*body, *v;	/* article body, old kw value */
@@ -1885,7 +1879,7 @@ out:
 /*
 **  Build up the overview data.
 */
-STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
+static void ARTmakeoverview(ARTDATA *Data, bool Filename)
 {
     static char			SEP[] = "\t";
     static char			COLONSPACE[] = ": ";
@@ -1983,23 +1977,23 @@ ARTpost(CHANNEL *cp)
     int	                *isp;
     SITE	        *sp;
     ARTDATA		Data;
-    BOOL		Approved;
-    BOOL		Accepted;
-    BOOL		LikeNewgroup;
-    BOOL		ToGroup;
-    BOOL		GroupMissing;
-    BOOL		MadeOverview = FALSE;
-    BOOL		ControlStore = FALSE;
-    BOOL		NonExist = FALSE;
-    BOOL		OverviewCreated = FALSE;
-    BOOL                IsControl = FALSE;
+    bool		Approved;
+    bool		Accepted;
+    bool		LikeNewgroup;
+    bool		ToGroup;
+    bool		GroupMissing;
+    bool		MadeOverview = FALSE;
+    bool		ControlStore = FALSE;
+    bool		NonExist = FALSE;
+    bool		OverviewCreated = FALSE;
+    bool                IsControl = FALSE;
     BUFFER		*article;
     HASH                hash;
     char		**groups;
     char		**hops;
     int			hopcount;
     char		**distributions;
-    STRING		error;
+    const char		*error;
     char		ControlWord[SMBUF];
     int			oerrno;
     TOKEN               token;
@@ -2008,8 +2002,8 @@ ARTpost(CHANNEL *cp)
 #if defined(DO_PERL) || defined(DO_PYTHON)
     char		*filterrc;
 #endif /* defined(DO_PERL) || defined(DO_PYTHON) */
-    BOOL		NoHistoryUpdate;
-    BOOL		Filtered = FALSE;
+    bool		NoHistoryUpdate;
+    bool		Filtered = FALSE;
 
     /* Preliminary clean-ups. */
     article = &cp->In;

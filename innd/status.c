@@ -17,7 +17,7 @@
 typedef struct _STATUS {
     char           name[SMBUF];
     char           ip_addr[15];
-    BOOL           can_stream;
+    bool           can_stream;
     unsigned short activeCxn;
     unsigned short sleepingCxns;
     unsigned long  seconds;

@@ -16,7 +16,7 @@
 #define WIPTABLESIZE        1024
 #define WIP_ARTMAX          300		/* innfeed default max send time */
 
-STATIC WIP     *WIPtable[WIPTABLESIZE];      /* Top level of the WIP hash table */
+static WIP     *WIPtable[WIPTABLESIZE];      /* Top level of the WIP hash table */
 
 void WIPsetup(void) {
     memset(WIPtable, '\0', sizeof(WIPtable));
@@ -95,7 +95,7 @@ void WIPfree(WIP *wp) {
 
 /* Check if the given messageid is being transfered on another channel.  If
    Add is true then add the given message-id to the current channel */
-BOOL WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Precommit) {
+bool WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit) {
     WIP *wp;
     int i;
     

@@ -28,25 +28,25 @@ typedef struct _NCDISPATCH {
     int                 Size;
 } NCDISPATCH;
 
-static FUNCTYPE	NCauthinfo();
-static FUNCTYPE	NChead();
-static FUNCTYPE	NChelp();
-static FUNCTYPE	NCihave();
-static FUNCTYPE	NClist();
-static FUNCTYPE	NCmode();
-static FUNCTYPE	NCquit();
-static FUNCTYPE	NCstat();
-static FUNCTYPE	NCxpath();
-static FUNCTYPE	NC_unimp();
+static void NCauthinfo();
+static void NChead();
+static void NChelp();
+static void NCihave();
+static void NClist();
+static void NCmode();
+static void NCquit();
+static void NCstat();
+static void NCxpath();
+static void NC_unimp();
 /* new modules for streaming */
-static FUNCTYPE	NCxbatch();
-static FUNCTYPE	NCcheck();
-static FUNCTYPE	NCtakethis();
-static FUNCTYPE NCwritedone();
-static FUNCTYPE NCcancel();
+static void NCxbatch();
+static void NCcheck();
+static void NCtakethis();
+static void NCwritedone();
+static void NCcancel();
 
-STATIC int		NCcount;	/* Number of open connections	*/
-STATIC NCDISPATCH	NCcommands[] = {
+static int		NCcount;	/* Number of open connections	*/
+static NCDISPATCH	NCcommands[] = {
 #if	0
     {	"article",	NCarticle },
 #else
@@ -74,12 +74,12 @@ STATIC NCDISPATCH	NCcommands[] = {
     {	"xhdr",		NC_unimp },
     {	"xpath",	NCxpath	},
 };
-STATIC char		*NCquietlist[] = {
+static char		*NCquietlist[] = {
     INND_QUIET_BADLIST
 };
-STATIC char		NCterm[] = "\r\n";
-STATIC char 		NCdot[] = "." ;
-STATIC char		NCbadcommand[] = NNTP_BAD_COMMAND;
+static char		NCterm[] = "\r\n";
+static char 		NCdot[] = "." ;
+static char		NCbadcommand[] = NNTP_BAD_COMMAND;
 
 /*
 ** Clear the WIP entry for the given channel
@@ -163,7 +163,7 @@ NCwriteshutdown(CHANNEL *cp, char *text)
 /*
 **  If a Message-ID is bad, write a reject message and return TRUE.
 */
-STATIC BOOL
+static bool
 NCbadid(CHANNEL *cp, char *p)
 {
     if (ARTidok(p))
@@ -179,11 +179,11 @@ NCbadid(CHANNEL *cp, char *p)
 **  We have an entire article collected; try to post it.  If we're
 **  not running, drop the article or just pause and reschedule.
 */
-STATIC void
+static void
 NCpostit(CHANNEL *cp)
 {
-    STRING	response;
-    char	buff[SMBUF];
+    const char *response;
+    char buff[SMBUF];
 
     /* Note that some use break, some use return here. */
     switch (Mode) {
@@ -191,8 +191,8 @@ NCpostit(CHANNEL *cp)
 	syslog(L_ERROR, "%s internal NCpostit mode %d", CHANname(cp), Mode);
 	return;
     case OMpaused:
-	SCHANadd(cp, (time_t)(Now.time + innconf->pauseretrytime),
-			(POINTER)&Mode, NCpostit, (POINTER)NULL);
+	SCHANadd(cp, Now.time + innconf->pauseretrytime, &Mode, NCpostit,
+                 NULL);
 	return;
     case OMrunning:
 	response = ARTpost(cp);
@@ -244,7 +244,7 @@ NCpostit(CHANNEL *cp)
 **  Write-done function.  Close down or set state for what we expect to
 **  read next.
 */
-STATIC FUNCTYPE
+static void
 NCwritedone(CHANNEL *cp)
 {
     switch (cp->State) {
@@ -274,7 +274,7 @@ NCwritedone(CHANNEL *cp)
 /*
 **  The "head" command.
 */
-STATIC FUNCTYPE NChead(CHANNEL *cp)
+static void NChead(CHANNEL *cp)
 {
     char	        *p;
     TOKEN		*token;
@@ -310,7 +310,7 @@ STATIC FUNCTYPE NChead(CHANNEL *cp)
 /*
 **  The "stat" command.
 */
-STATIC FUNCTYPE NCstat(CHANNEL *cp)
+static void NCstat(CHANNEL *cp)
 {
     char	        *p;
     TOKEN		*token;
@@ -348,7 +348,7 @@ STATIC FUNCTYPE NCstat(CHANNEL *cp)
 **  The "authinfo" command.  Actually, we come in here whenever the
 **  channel is in CSgetauth state and we just got a command.
 */
-STATIC FUNCTYPE
+static void
 NCauthinfo(CHANNEL *cp)
 {
     static char		AUTHINFO[] = "authinfo ";
@@ -401,7 +401,7 @@ NCauthinfo(CHANNEL *cp)
 /*
 **  The "help" command.
 */
-STATIC FUNCTYPE
+static void
 NChelp(CHANNEL *cp)
 {
     static char		LINE1[] = "For more information, contact \"";
@@ -430,7 +430,7 @@ NChelp(CHANNEL *cp)
 **  The "ihave" command.  Check the Message-ID, and see if we want the
 **  article or not.  Set the state appropriately.
 */
-STATIC FUNCTYPE
+static void
 NCihave(CHANNEL *cp)
 {
     char	*p;
@@ -527,7 +527,7 @@ NCihave(CHANNEL *cp)
 ** The "xbatch" command. Set the state appropriately.
 */
 
-STATIC FUNCTYPE
+static void
 NCxbatch(CHANNEL *cp)
 {
     char	*p;
@@ -577,7 +577,7 @@ NCxbatch(CHANNEL *cp)
 /*
 **  The "list" command.  Send the active file.
 */
-STATIC FUNCTYPE
+static void
 NClist(CHANNEL *cp)
 {
     char		*p;
@@ -630,7 +630,7 @@ NClist(CHANNEL *cp)
 /*
 **  The "mode" command.  Hand off the channel.
 */
-STATIC FUNCTYPE
+static void
 NCmode(CHANNEL *cp)
 {
     char		*p;
@@ -672,7 +672,7 @@ NCmode(CHANNEL *cp)
 /*
 **  The "quit" command.  Acknowledge, and set the state to closing down.
 */
-STATIC FUNCTYPE NCquit(CHANNEL *cp)
+static void NCquit(CHANNEL *cp)
 {
     cp->State = CSwritegoodbye;
     NCwritereply(cp, NNTP_GOODBYE_ACK);
@@ -682,7 +682,7 @@ STATIC FUNCTYPE NCquit(CHANNEL *cp)
 /*
 **  The "xpath" command.  Return the paths for an article is.
 */
-STATIC FUNCTYPE
+static void
 NCxpath(CHANNEL *cp)
 {
     /* not available for storageapi */
@@ -693,7 +693,7 @@ NCxpath(CHANNEL *cp)
 /*
 **  The catch-all for inimplemented commands.
 */
-STATIC FUNCTYPE
+static void
 NC_unimp(CHANNEL *cp)
 {
     char		*p;
@@ -714,7 +714,7 @@ NC_unimp(CHANNEL *cp)
 **  Check whatever data is available on the channel.  If we got the
 **  full amount (i.e., the command or the whole article) process it.
 */
-STATIC FUNCTYPE NCproc(CHANNEL *cp)
+static void NCproc(CHANNEL *cp)
 {
     char	        *p;
     NCDISPATCH   	*dp;
@@ -908,8 +908,8 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		cp->Rest = 0;
 		bp->Used = cp->SaveUsed;
 		RCHANremove(cp); /* don't bother trying to read more for now */
-		SCHANadd(cp, (time_t)(Now.time + innconf->pauseretrytime),
-		    (POINTER)&Mode, NCproc, (POINTER)NULL);
+		SCHANadd(cp, Now.time + innconf->pauseretrytime, &Mode,
+                         NCproc, NULL);
 		return;
 	    }
 
@@ -1162,7 +1162,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		** would require changes to the bp structure and
 		** the way it is used.
 		*/
-		(void)memmove((POINTER)bp->Data, (POINTER)&bp->Data[cp->Rest], (SIZE_T)bp->Used);
+		memmove(bp->Data, &bp->Data[cp->Rest], bp->Used);
 		cp->Rest = cp->Lastch = 0;
 	    } else {
 		bp->Used = cp->Lastch = 0;
@@ -1177,7 +1177,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 **  Read whatever data is available on the channel.  If we got the
 **  full amount (i.e., the command or the whole article) process it.
 */
-STATIC FUNCTYPE
+static void
 NCreader(CHANNEL *cp)
 {
     int			i;
@@ -1256,7 +1256,7 @@ NCclose(void)
 **  Create an NNTP channel and print the greeting message.
 */
 CHANNEL *
-NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal)
+NCcreate(int fd, bool MustAuthorize, bool IsLocal)
 {
     CHANNEL		*cp;
     int			i;
@@ -1323,7 +1323,7 @@ NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal)
 **  The "check" command.  Check the Message-ID, and see if we want the
 **  article or not.  Stay in command state.
 */
-STATIC FUNCTYPE
+static void
 NCcheck(CHANNEL *cp)
 {
     char		*p;
@@ -1409,7 +1409,7 @@ NCcheck(CHANNEL *cp)
 **  The "takethis" command.  Article follows.
 **  Remember <id> for later ack.
 */
-STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
+static void NCtakethis(CHANNEL *cp)
 {
     char	        *p;
     int			msglen;
@@ -1446,10 +1446,11 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
 /*
 **  Process a cancel ID from a "mode cancel" channel.
 */
-STATIC FUNCTYPE NCcancel(CHANNEL *cp)
+static void
+NCcancel(CHANNEL *cp)
 {
-    char                *av[2] = {NULL, NULL};
-    STRING              res;
+    char *av[2] = { NULL, NULL };
+    const char *res;
 
     ++cp->Received;
     av[0] = cp->In.Data;

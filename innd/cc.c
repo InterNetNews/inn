@@ -135,7 +135,7 @@ static CCDISPATCH	CCcommands[] = {
     {	SC_XEXEC,	1, CCxexec	}
 };
 
-static SIGHANDLER	CCresetup();
+static RETSIGTYPE CCresetup();
 
 
 void
@@ -245,7 +245,7 @@ CCaddhist(av)
     static char		DIGITS[] = "0123456789";
     ARTDATA		Data;
     const char *		p;
-    BOOL		ok;
+    bool		ok;
     HASH                hash;
     int			i;
     TOKEN		token;
@@ -770,7 +770,7 @@ CCgo(av)
     syslog(L_NOTICE, "%s running", LogName);
     if (ICDneedsetup)
 	ICDsetup(TRUE);
-    SCHANwakeup((POINTER)&Mode);
+    SCHANwakeup(&Mode);
     return NULL;
 }
 
@@ -1060,7 +1060,7 @@ CCnewgroup(av)
 	if (CTYPE(isupper, Rest[0]))
 	    Rest[0] = tolower(Rest[0]);
     }
-    if (strlen(Name) + strlen(Rest) > (SIZE_T)(SMBUF - 24))
+    if (strlen(Name) + strlen(Rest) > SMBUF - 24)
 	return "1 Name too long";
 
     if ((ngp = NGfind(Name)) != NULL)
@@ -1114,10 +1114,10 @@ CCnewgroup(av)
 /*
 **  Parse and set a boolean flag.
 */
-static BOOL
+static bool
 CCparsebool(name, bp, value)
     char	name;
-    BOOL	*bp;
+    bool	*bp;
     char	value;
 {
     switch (value) {
@@ -1695,7 +1695,7 @@ CCtrace(av)
     char	*av[];
 {
     char	*p;
-    BOOL	Flag;
+    bool	Flag;
     const char *	word;
     CHANNEL	*cp;
 
@@ -1760,7 +1760,7 @@ CCargsplit(p, end, argv, size)
 /*
 **  Read function.  Read and process the message.
 */
-static FUNCTYPE
+static void
 CCreader(cp)
     CHANNEL		*cp;
 {
@@ -1944,7 +1944,7 @@ CCreader(cp)
 /*
 **  Called when a write-in-progress is done on the channel.  Shouldn't happen.
 */
-static FUNCTYPE
+static void
 CCwritedone()
 {
     syslog(L_ERROR, "%s internal CCwritedone", LogName);
@@ -2044,9 +2044,8 @@ CCclose()
 /*
 **  Restablish the control channel.
 */
-static SIGHANDLER
-CCresetup(s)
-    int         s;
+static RETSIGTYPE
+CCresetup(int s)
 {
 #ifndef HAVE_SIGACTION
     xsignal(s, CCresetup);

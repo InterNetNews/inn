@@ -10,14 +10,14 @@
 #include "innd.h"
 
 
-STATIC SITE	SITEnull;
-STATIC char	*SITEfeedspath = NULL;
+static SITE	SITEnull;
+static char	*SITEfeedspath = NULL;
 
 
 /*
 **  Return a copy of an array of strings.
 */
-STATIC char **
+static char **
 SITEcopystrings(av)
     char	**av;
 {
@@ -39,12 +39,12 @@ SITEcopystrings(av)
 */
 char **
 SITEreadfile(ReadOnly)
-    BOOL		ReadOnly;
+    bool		ReadOnly;
 {
     static char		**old_strings;
     static time_t	old_mtime;
     static ino_t	old_ino;
-    static OFFSET_T	old_size;
+    static off_t	old_size;
     register char	*p;
     register char	*to;
     register char	*site;
@@ -112,12 +112,12 @@ SITEreadfile(ReadOnly)
 /*
 **  Modify "subbed" according to the patterns in "patlist."
 */
-STATIC void
+static void
 SITEsetlist(patlist, subbed, poison, poisonEntry)
     char		**patlist;
     char		*subbed;
     char		*poison;
-    BOOL		*poisonEntry;
+    bool		*poisonEntry;
 {
     register char	*pat;
     register char	*p;
@@ -211,8 +211,8 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     char		*f4;
     char		**save;
     char		**argv;
-    BOOL		JustModerated;
-    BOOL		JustUnmoderated;
+    bool		JustModerated;
+    bool		JustUnmoderated;
     int			isp;
     SITE		*nsp;
     BUFFER		b;
@@ -264,8 +264,8 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 
     if (subbed) {
 	/* Read the subscription patterns and set the bits. */
-	(void)memset((POINTER)subbed, SUB_DEFAULT, (SIZE_T)nGroups);
-	(void)memset((POINTER)poison, SUB_DEFAULT, (SIZE_T)nGroups);
+	memset(subbed, SUB_DEFAULT, nGroups);
+	memset(poison, SUB_DEFAULT, nGroups);
 	if (ME.Patterns)
 	    SITEsetlist(ME.Patterns, subbed, poison, &ME.PoisonEntry);
 	SITEsetlist(sp->Patterns, subbed, poison, &sp->PoisonEntry);
@@ -544,14 +544,14 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 /*
 **  Patch up the funnel references.
 */
-BOOL
+bool
 SITEfunnelpatch()
 {
     register int	i;
     register int	length;
     register SITE	*sp;
     SITE		*funnel;
-    BOOL		result;
+    bool		result;
 
     /* Get worst-case length of all sitenames. */
     for (length = 0, i = nSites, sp = Sites; --i >= 0; sp++)
@@ -602,15 +602,15 @@ SITEfunnelpatch()
 */
 void
 SITEparsefile(StartSite)
-    BOOL		StartSite;
+    bool		StartSite;
 {
-    register int	i;
-    register char	*p;
-    char		**strings;
-    SITE		*sp;
-    char		*subbed;
-    char		*poison;
-    STRING		error;
+    int                 i;
+    char *              p;
+    char **             strings;
+    SITE *              sp;
+    char *              subbed;
+    char *              poison;
+    const char *	error;
     int			errors;
     int			setuperrors;
 
@@ -628,7 +628,7 @@ SITEparsefile(StartSite)
     for (strings = SITEreadfile(FALSE), nSites = 0; strings[nSites]; nSites++)
 	continue;
     Sites = NEW(SITE, nSites);
-    (void)memset((POINTER)Sites, '\0', (SIZE_T)(nSites * sizeof(SITE)));
+    memset(Sites, '\0', nSites * sizeof(SITE));
 
     /* Set up scratch subscription list. */
     subbed = NEW(char, nGroups);

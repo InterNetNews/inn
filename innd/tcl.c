@@ -14,17 +14,17 @@
 #if     defined(DO_TCL)
 
 Tcl_Interp       *TCLInterpreter;
-BOOL             TCLFilterActive;
+bool             TCLFilterActive;
 BUFFER           *TCLCurrArticle;
 ARTDATA          *TCLCurrData;
 
-STATIC char      *TCLSTARTUP = NULL;
-STATIC char      *TCLFILTER = NULL;
+static char      *TCLSTARTUP = NULL;
+static char      *TCLFILTER = NULL;
 
 
 void
 TCLfilter(value)
-    BOOL value;
+    bool value;
 {
     TCLFilterActive=value;
 

@@ -179,8 +179,8 @@ typedef struct _CHANNEL {
     time_t              Waketime;
     time_t              Started;
     innd_callback_t     Waker;
-    POINTER             Argument;
-    POINTER             Event;
+    void *              Argument;
+    void *              Event;
     BUFFER              In;
     BUFFER              Out;
     bool                Tracing;
@@ -550,10 +550,10 @@ extern void             RCHANadd(CHANNEL *cp);
 extern void             RCHANremove(CHANNEL *cp);
 
 extern void             SCHANadd(CHANNEL *cp, time_t Waketime,
-                                 POINTER Event, innd_callback_t Waker,
-                                 POINTER Argument);
+                                 void *Event, innd_callback_t Waker,
+                                 void *Argument);
 extern void             SCHANremove(CHANNEL *cp);
-extern void             SCHANwakeup(POINTER *Event);
+extern void             SCHANwakeup(void *Event);
 
 extern bool             WCHANflush(CHANNEL *cp);
 extern void             WCHANadd(CHANNEL *cp);
@@ -689,7 +689,7 @@ extern void             TCLclose();
 #if DO_PYTHON
 extern bool             PythonFilterActive;
 
-extern char *           PYcontrol(char **av);
+extern const char *     PYcontrol(char **av);
 extern int              PYreadfilter(void);
 extern char *           PYartfilter(char *artBody, long artLen, int lines);
 extern char *           PYmidfilter(char *messageID, int msglen);
