@@ -119,6 +119,7 @@ struct conf_vars {
 	int icdsynccount;	/* How many article-writes between active and history updates */
 	char *bindaddress;	/* Which interface IP to bind to */
 	int port;		/* Which port INND should listen on */
+	int readertrack;	/* Enable/Disable the reader tracking system */
 };
 extern struct	conf_vars *innconf;
 extern char	*GetFQDN(void);

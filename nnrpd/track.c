@@ -11,7 +11,7 @@
 #include <sys/time.h>
 #include <string.h>
 
-#define MAX_LEN 80
+#define MAX_LEN 180
 
 /* TrackClient determines whether or not
    we are interested in tracking the activities
@@ -28,25 +28,27 @@
 int TrackClient(char *client, char *user)
 {
 	int RARTon;
-	char dbfile[180];
+	char dbfile[MAX_LEN];
 	FILE *fd;
 	char line[MAX_LEN],*p,*pp,*lp;
+	flock_t hostlock;
 
 	strcpy(dbfile, _PATH_NEWSLIB);
-	strcat(dbfile, "/hosts.track");
+	strcat(dbfile, "/nnrpd.track");
 
 	RARTon=FALSE;
 	strcpy(user,"");
 
 	if ((fd=fopen(dbfile,"r"))!=NULL) {
 		while((fgets(line,(MAX_LEN - 1),fd))!=NULL) {
+			if (line[0] == '#' || line[0] == '\n') continue;
 			if ((p=strchr(line,' ')) != NULL) *p='\0';
 			if ((p=strchr(line,'\n')) != NULL) *p='\0';
-			if ((p=strchr(line,':')) != NULL) 
+			if ((p=strchr(line,':')) != NULL) {
 				*p++='\0';
-			else 
+			} else {
 				p=NULL;
-			
+			}
 			pp=line;
 			if ((lp=strchr(pp,'*')) != NULL) {
 				pp=++lp;
@@ -61,11 +63,8 @@ int TrackClient(char *client, char *user)
 		fclose(fd);
 	} else {
 		RARTon=FALSE;
-		syslog(L_NOTICE, "No logging for %s - can't read %s", ClientHost, dbfile);
+		syslog(L_NOTICE, "%s No logging - can't read %s", ClientHost, dbfile);
 	}
 
 	return RARTon;
 }
-
-
-

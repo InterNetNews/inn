@@ -217,3 +217,5 @@
 #define _CONF_INNBINDADDR	"bindaddress"
    /* The port for innd to listen on */
 #define _CONF_INNPORT		"port"
+   /* Enable/Disable the reader tracking system */
+#define _CONF_READERTRACK	"readertrack"

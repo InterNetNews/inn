@@ -164,6 +164,7 @@ if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
     innconf->icdsynccount = 10;
     innconf->bindaddress = NULL;
     innconf->port = NNTP_PORT;
+    innconf->readertrack = FALSE;
 }
 
 void ClearInnConf()
@@ -362,15 +363,18 @@ if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ICD_SYNC_COUNT)) {
 		innconf->icdsynccount = atoi(p);
-	    }
+	    } else
 	    if (EQ(ConfigBuff,_CONF_INNBINDADDR)) {
 		if (EQ(p,"all") || EQ(p,"any"))
 		    innconf->bindaddress =  NULL;
 		else
 		    innconf->bindaddress =  COPY(p);
-	    }
+	    } else
 	    if (EQ(ConfigBuff,_CONF_INNPORT)) {
 		innconf->port = atoi(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_READERTRACK)) {
+		if (boolval != -1) innconf->readertrack = boolval;
 	    }
 	}
 	(void)fclose(F);
