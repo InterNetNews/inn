@@ -286,7 +286,7 @@ STATIC BOOL ARTopen(char *name)
     if ((i = ARTfind(artnum)) < 0)
 	return FALSE;
 
-    if (ARTnumbers[i].ArtNum == artnum) {
+    if ((ARTnumbers[i].ArtNum == artnum) && innconf->storageapi) {
 	if (ARTnumbers[i].Token.cancelled)
 	    return FALSE;
 	if (ARTnumbers[i].Tokenretrieved)
