@@ -1296,7 +1296,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
             warn("CNFS: could not match article size token %s %s:0x%s:%d: %ld",
                  TokenToText(token), cycbuffname, CNFSofft2hex(offset, false),
-                 cycnum, ntohl(cah.size));
+                 cycnum, (long) ntohl(cah.size));
 	    free(art);
 	    CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
@@ -1306,7 +1306,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
             warn("CNFS: could not match article size token %s %s:0x%s:%d: %ld",
                  TokenToText(token), cycbuffname, CNFSofft2hex(offset, false),
-                 cycnum, ntohl(cah.size));
+                 cycnum, (long) ntohl(cah.size));
 	    free(art);
 	    return NULL;
 	}
@@ -1319,7 +1319,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	strlcpy(buf1, CNFSofft2hex(cycbuff->free, false), sizeof(buf1));
 	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");
         warn("CNFS: fudge size overflows bitmaps %s %s:0x%s: %ld",
-             TokenToText(token), cycbuffname, buf1, ntohl(cah.size));
+             TokenToText(token), cycbuffname, buf1, (long) ntohl(cah.size));
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	free(art);
 	return NULL;
