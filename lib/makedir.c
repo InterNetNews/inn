@@ -17,7 +17,11 @@ STATIC BOOL MakeDir(char *Name)
     }
 
     /* See if it failed because it already exists. */
-    return stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode);
+    if (stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode)) {
+	errno = 0;
+	return TRUE;
+    }
+    return FALSE;
 }
 
 
