@@ -31,50 +31,50 @@
 typedef struct _CCDISPATCH {
     char Name;
     int	argc;
-    const char * (*Function)();
+    const char * (*Function)(char *av[]);
 } CCDISPATCH;
 
 
-static const char *	CCallow();
-static const char *	CCbegin();
-static const char *	CCchgroup();
-static const char *	CCdrop();
-static const char *	CCfeedinfo();
-static const char *	CCflush();
-static const char *	CCflushlogs();
-static const char *	CCgo();
-static const char *	CChangup();
-static const char *	CCreserve();
-static const char *	CClogmode();
-static const char *	CCmode();
-static const char *	CCname();
-static const char *	CCnewgroup();
-static const char *	CCparam();
-static const char *	CCpause();
-static const char *	CCreaders();
-static const char *	CCreject();
-static const char *	CCreload();
-static const char *	CCrenumber();
-static const char *	CCrmgroup();
-static const char *	CCsend();
-static const char *	CCshutdown();
-static const char *	CCsignal();
-static const char *	CCstatus();
-static const char *	CCthrottle();
-static const char *	CCtimer();
-static const char *	CCtrace();
-static const char *	CCxabort();
-static const char *	CCxexec();
+static const char *	CCallow(char *av[]);
+static const char *	CCbegin(char *av[]);
+static const char *	CCchgroup(char *av[]);
+static const char *	CCdrop(char *av[]);
+static const char *	CCfeedinfo(char *av[]);
+static const char *	CCflush(char *av[]);
+static const char *	CCflushlogs(char *unused[]);
+static const char *	CCgo(char *av[]);
+static const char *	CChangup(char *av[]);
+static const char *	CCreserve(char *av[]);
+static const char *	CClogmode(char *unused[]);
+static const char *	CCmode(char *unused[]);
+static const char *	CCname(char *av[]);
+static const char *	CCnewgroup(char *av[]);
+static const char *	CCparam(char *av[]);
+static const char *	CCpause(char *av[]);
+static const char *	CCreaders(char *av[]);
+static const char *	CCreject(char *av[]);
+static const char *	CCreload(char *av[]);
+static const char *	CCrenumber(char *av[]);
+static const char *	CCrmgroup(char *av[]);
+static const char *	CCsend(char *av[]);
+static const char *	CCshutdown(char *av[]);
+static const char *	CCsignal(char *av[]);
+static const char *	CCstatus(char *av[]);
+static const char *	CCthrottle(char *av[]);
+static const char *	CCtimer(char *av[]);
+static const char *	CCtrace(char *av[]);
+static const char *	CCxabort(char *av[]);
+static const char *	CCxexec(char *av[]);
 #if defined(DO_TCL)
-static const char *	CCfilter();
+static const char *	CCfilter(char *av[]);
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
-static const char *	CCperl();
+static const char *	CCperl(char *av[]);
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
-static const char *	CCpython();
+static const char *	CCpython(char *av[]);
 #endif /* defined(DO_PYTHON) */
-static const char *	CClowmark();
+static const char *	CClowmark(char *av[]);
 
 
 static char		*CCpath = NULL;
@@ -135,12 +135,11 @@ static CCDISPATCH	CCcommands[] = {
     {	SC_XEXEC,	1, CCxexec	}
 };
 
-static RETSIGTYPE CCresetup();
+static RETSIGTYPE CCresetup(int unused);
 
 
 void
-CCcopyargv(av)
-    char		*av[];
+CCcopyargv(char *av[])
 {
     register char	**v;
     register int	i;
@@ -164,7 +163,7 @@ CCcopyargv(av)
 **  Return a string representing our operating mode.
 */
 static const char *
-CCcurrmode()
+CCcurrmode(void)
 {
     static char		buff[32];
 
@@ -187,9 +186,7 @@ CCcurrmode()
 **  Add <> around Message-ID if needed.
 */
 static const char *
-CCgetid(p, store)
-    char		*p;
-    char		**store;
+CCgetid(char *p, const char **store)
 {
     static char		NULLMESGID[] = "1 Empty Message-ID";
     static BUFFER	Save;
@@ -215,7 +212,7 @@ CCgetid(p, store)
 	RENEW(Save.Data, char, Save.Size);
     }
     *store = Save.Data;
-    (void)sprintf(*store, "<%s>", p);
+    (void)sprintf((char *)*store, "<%s>", p);
     return NULL;
 }
 
@@ -224,8 +221,7 @@ CCgetid(p, store)
 **  Abort and dump core.
 */
 static const char *
-CCxabort(av)
-    char		*av[];
+CCxabort(char *av[])
 {
     syslog(L_FATAL, "%s abort %s", LogName, av[0]);
     abort();
@@ -239,16 +235,14 @@ CCxabort(av)
 **  Do the work needed to add a history entry.
 */
 const char *
-CCaddhist(av)
-    char		*av[];
+CCaddhist(char *av[])
 {
     static char		DIGITS[] = "0123456789";
     ARTDATA		Data;
-    const char *		p;
+    const char *	p;
     bool		ok;
     HASH                hash;
     int			i;
-    TOKEN		token;
 
     /* Check to see if we were passed a hash first. */
     i = strlen(av[0]);
@@ -258,8 +252,6 @@ CCaddhist(av)
 	if (av[4] != NULL && *av[4] != '\0') {
 	    if (!IsToken(av[4]))
 		return "1 Bad Token";
-	    else
-		token = TextToToken(av[4]);
 	} 
 
         hash = TextToHash(&av[0][1]);
@@ -303,11 +295,11 @@ CCaddhist(av)
     Data.Posted = atol(av[3]);
 
     if (Mode == OMrunning)
-	ok = HISwrite(&Data, hash, av[4], &token);
+	ok = HISwrite(&Data, hash, av[4]);
     else {
 	/* Possible race condition, but documented in ctlinnd manpage. */
 	HISsetup();
-	ok = HISwrite(&Data, hash, av[4], &token);
+	ok = HISwrite(&Data, hash, av[4]);
 	HISclose();
     }
     return ok ? NULL : "1 Write failed";
@@ -318,8 +310,7 @@ CCaddhist(av)
 **  Do the work to allow foreign connectiosn.
 */
 static const char *
-CCallow(av)
-    char	*av[];
+CCallow(char *av[])
 {
     char	*p;
 
@@ -343,16 +334,17 @@ CCbegin(char *av[])
     SITE	*sp;
     int		i;
     int		length;
-    const char *	p;
+    char	*p;
+    const char	*p1;
     char	**strings;
     NEWSGROUP	*ngp;
-    const char *	error;
+    const char	*error;
     char	*subbed;
     char	*poison;
 
     /* If site already exists, drop it. */
-    if (SITEfind(av[0]) != NULL && (p = CCdrop(av)) != NULL)
-	return p;
+    if (SITEfind(av[0]) != NULL && (p1 = CCdrop(av)) != NULL)
+	return p1;
 
     /* Find the named site. */
     length = strlen(av[0]);
@@ -408,9 +400,7 @@ CCbegin(char *av[])
 **  Common code to change a group's flags.
 */
 static const char *
-CCdochange(ngp, Rest)
-    register NEWSGROUP	*ngp;
-    char		*Rest;
+CCdochange(register NEWSGROUP *ngp, char *Rest)
 {
     int			length;
     char		*p;
@@ -439,8 +429,7 @@ CCdochange(ngp, Rest)
 **  Change the mode of a newsgroup.
 */
 static const char *
-CCchgroup(av)
-    char	*av[];
+CCchgroup(char *av[])
 {
     NEWSGROUP	*ngp;
     char	*Rest;
@@ -461,8 +450,7 @@ CCchgroup(av)
 **  Cancel a message.
 */
 const char *
-CCcancel(av)
-    char	*av[];
+CCcancel(char *av[])
 {
     ARTDATA	Data;
     const char *	p;
@@ -496,10 +484,8 @@ CCcancel(av)
 /*
 **  Syntax-check the newsfeeds file.
 */
-/* ARGSUSED */
 const char *
-CCcheckfile(av)
-    char		*av[];
+CCcheckfile(char *unused[])
 {
     register char	**strings;
     register char	*p;
@@ -508,6 +494,7 @@ CCcheckfile(av)
     const char *		error;
     SITE		fake;
 
+    unused = unused;		/* ARGSUSED */
     /* Parse all site entries. */
     strings = SITEreadfile(FALSE);
     fake.Buffer.Size = 0;
@@ -542,8 +529,7 @@ CCcheckfile(av)
 **  Drop a site.
 */
 static const char *
-CCdrop(av)
-    char		*av[];
+CCdrop(char *av[])
 {
     SITE		*sp;
     register NEWSGROUP	*ngp;
@@ -574,8 +560,7 @@ CCdrop(av)
 **  Return info on the feeds for one, or all, sites
 */
 static const char *
-CCfeedinfo(av)
-    char		*av[];
+CCfeedinfo(char *av[])
 {
     register SITE	*sp;
     register char	*p;
@@ -603,8 +588,7 @@ CCfeedinfo(av)
 
 #if defined(DO_TCL)
 static const char *
-CCfilter(av)
-    char	*av[];
+CCfilter(char *av[])
 {
     char	*p;
 
@@ -639,8 +623,7 @@ extern void PerlFilter(bool value);
 extern int  PERLreadfilter(char *filterfile, char *function);
 
 static const char *
-CCperl(av)
-    char	*av[];
+CCperl(char *av[])
 {
     extern int	PerlFilterActive;
 
@@ -667,8 +650,7 @@ CCperl(av)
 
 #if defined(DO_PYTHON)
 static const char *
-CCpython(av)
-    char	*av[];
+CCpython(char *av[])
 {
     return PYcontrol(av);
 }
@@ -679,8 +661,7 @@ CCpython(av)
 **  Flush all sites or one site.
 */
 static const char *
-CCflush(av)
-    char		*av[];
+CCflush(char *av[])
 {
     register SITE	*sp;
     register int	i;
@@ -706,11 +687,11 @@ CCflush(av)
 /*
 **  Flush the log files.
 */
-/* ARGSUSED0 */
 static const char *
-CCflushlogs(av)
-    char	*av[];
+CCflushlogs(char *unused[])
 {
+    unused = unused;		/* ARGSUSED */
+
     if (Debug)
 	return "1 In debug mode";
 
@@ -726,8 +707,7 @@ CCflushlogs(av)
 **  Leave paused or throttled mode.
 */
 static const char *
-CCgo(av)
-    char	*av[];
+CCgo(char *av[])
 {
     static char	YES[] = "y";
     char	*p;
@@ -779,8 +759,7 @@ CCgo(av)
 **  Hangup a channel.
 */
 static const char *
-CChangup(av)
-    char		*av[];
+CChangup(char *av[])
 {
     register CHANNEL	*cp;
     register int	fd;
@@ -819,10 +798,8 @@ CChangup(av)
 /*
 **  Return our operating mode.
 */
-/* ARGSUSED */
 static const char *
-CCmode(av)
-    char		*av[];
+CCmode(char *unused[])
 {
     register char	*p;
     register int	i;
@@ -831,6 +808,8 @@ CCmode(av)
 #if defined(DO_PERL)
     extern int		PerlFilterActive;
 #endif /* defined(DO_PERL) */
+
+    unused = unused;		/* ARGSUSED */
 
     /* nb: We assume here that BUFSIZ is >= 512, and that none of
      * ModeReason RejectReason Reservation or NNRPReason is longer than
@@ -943,11 +922,10 @@ CCmode(av)
 /*
 **  Log our operating mode (via syslog).
 */
-/* ARGSUSED */
 static const char *
-CClogmode(av)
-    char		*av[];
+CClogmode(char *unused[])
 {
+    unused = unused;		/* ARGSUSED */
     syslog(L_NOTICE, "%s servermode %s", LogName, CCcurrmode());
     return NULL;
 }
@@ -1026,8 +1004,7 @@ CCname(char *av[])
 **  Create a newsgroup.
 */
 static const char *
-CCnewgroup(av)
-    char		*av[];
+CCnewgroup(char *av[])
 {
     static char		*TIMES = NULL;
     static char		WHEN[] = "updating active.times";
@@ -1115,10 +1092,7 @@ CCnewgroup(av)
 **  Parse and set a boolean flag.
 */
 static bool
-CCparsebool(name, bp, value)
-    char	name;
-    bool	*bp;
-    char	value;
+CCparsebool(char name, bool *bp, char value)
 {
     switch (value) {
     default:
@@ -1139,8 +1113,7 @@ CCparsebool(name, bp, value)
 **  Change a running parameter.
 */
 static const char *
-CCparam(av)
-    char	*av[];
+CCparam(char *av[])
 {
     static char	BADVAL[] = "1 Bad value";
     char	*p;
@@ -1206,12 +1179,10 @@ CCparam(av)
 **  Common code to implement a pause or throttle.
 */
 const char *
-CCblock(NewMode, reason)
-    OPERATINGMODE	NewMode;
-    char		*reason;
+CCblock(OPERATINGMODE NewMode, char *reason)
 {
     static char		NO[] = "n";
-    const char *		av[2];
+    char *		av[2];
 
     if (*reason == '\0')
 	return CCnoreason;
@@ -1256,8 +1227,7 @@ CCblock(NewMode, reason)
 **  Enter paused mode.
 */
 static const char *
-CCpause(av)
-    char	*av[];
+CCpause(char *av[])
 {
     switch (Mode) {
     case OMrunning:
@@ -1275,10 +1245,9 @@ CCpause(av)
 **  Allow or disallow newsreaders.
 */
 static const char *
-CCreaders(av)
-    char	*av[];
+CCreaders(char *av[])
 {
-    char	*p;
+    const char	*p;
 
     switch (av[0][0]) {
     default:
@@ -1311,8 +1280,7 @@ CCreaders(av)
 **  Re-exec ourselves.
 */
 static const char *
-CCxexec(av)
-    char	*av[];
+CCxexec(char *av[])
 {
     char	*inndstart;
     char	*p;
@@ -1347,8 +1315,7 @@ CCxexec(av)
 **  Reject remote readers.
 */
 static const char *
-CCreject(av)
-    char	*av[];
+CCreject(char *av[])
 {
     if (RejectReason)
 	return "1 Already rejecting";
@@ -1363,8 +1330,7 @@ CCreject(av)
 **  Re-read all in-core data.
 */
 static const char *
-CCreload(av)
-    char	*av[];
+CCreload(char *av[])
 {
     static char	BADSCHEMA[] = "1 Can't read schema";
 #if defined(DO_PERL)
@@ -1466,8 +1432,7 @@ CCreload(av)
 **  Renumber the active file.
 */
 static const char *
-CCrenumber(av)
-    char	*av[];
+CCrenumber(char *av[])
 {
     static char	CANTRENUMBER[] = "1 Failed (see syslog)";
     char	*p;
@@ -1494,8 +1459,7 @@ CCrenumber(av)
 **  Reserve a lock.
 */
 static const char *
-CCreserve(av)
-    char	*av[];
+CCreserve(char *av[])
 {
     char	*p;
 
@@ -1525,8 +1489,7 @@ CCreserve(av)
 **  Remove a newsgroup.
 */
 static const char *
-CCrmgroup(av)
-    char	*av[];
+CCrmgroup(char *av[])
 {
     NEWSGROUP	*ngp;
 
@@ -1548,8 +1511,7 @@ CCrmgroup(av)
 **  Send a command line to an exploder.
 */
 static const char *
-CCsend(av)
-    char		*av[];
+CCsend(char *av[])
 {
     SITE		*sp;
 
@@ -1566,8 +1528,7 @@ CCsend(av)
 **  Shut down the system.
 */
 static const char *
-CCshutdown(av)
-    char	*av[];
+CCshutdown(char *av[])
 {
     syslog(L_NOTICE, "%s shutdown %s", LogName, av[0]);
     CleanupAndExit(0, av[0]);
@@ -1580,8 +1541,7 @@ CCshutdown(av)
 **  Send a signal to a site's feed.
 */
 static const char *
-CCsignal(av)
-    char	*av[];
+CCsignal(char *av[])
 {
     register SITE	*sp;
     register char	*p;
@@ -1628,8 +1588,7 @@ CCsignal(av)
 **  Enter throttled mode.
 */
 static const char *
-CCthrottle(av)
-    char	*av[];
+CCthrottle(char *av[])
 {
     char	*p;
 
@@ -1650,7 +1609,9 @@ CCthrottle(av)
 /*
 **  Turn on or off performance monitoring
 */
-static const char * CCtimer(char *av[]) {
+static const char *
+CCtimer(char *av[])
+{
     int                 value;
     char                *p;
     
@@ -1670,7 +1631,9 @@ static const char * CCtimer(char *av[]) {
 /*
 **  Turn innd status creation on or off
 */
-static const char * CCstatus(char *av[]) {
+static const char *
+CCstatus(char *av[])
+{
     int                 value;
     char                *p;
     
@@ -1691,8 +1654,7 @@ static const char * CCstatus(char *av[]) {
 **  Add or remove tracing.
 */
 static const char *
-CCtrace(av)
-    char	*av[];
+CCtrace(char *av[])
 {
     char	*p;
     bool	Flag;
@@ -1737,11 +1699,8 @@ CCtrace(av)
 **  number of elements or -1 on error.
 */
 static int
-CCargsplit(p, end, argv, size)
-    register char	*p;
-    register char	*end;
-    register char	**argv;
-    register int	size;
+CCargsplit(register char *p, register char *end, register char **argv,
+	   register int size)
 {
     char		**save;
 
@@ -1761,8 +1720,7 @@ CCargsplit(p, end, argv, size)
 **  Read function.  Read and process the message.
 */
 static void
-CCreader(cp)
-    CHANNEL		*cp;
+CCreader(CHANNEL *cp)
 {
     static char		TOOLONG[] = "0 Reply too long for server to send";
     register CCDISPATCH	*dp;
@@ -1784,7 +1742,7 @@ CCreader(cp)
     char		*tbuff ;
 
     if (cp != CCchan) {
-	syslog(L_ERROR, "%s internal CCreader wrong channel 0x%x not 0x%x",
+	syslog(L_ERROR, "%s internal CCreader wrong channel 0x%p not 0x%p",
 	    LogName, cp, CCchan);
 	return;
     }
@@ -1798,7 +1756,7 @@ CCreader(cp)
     } else if (i == 0) {
 	syslog(L_ERROR, "%s cant recv CCreader empty", LogName);
 	return;
-    } else if (i < HEADER_SIZE) {
+    } else if (i < (int)HEADER_SIZE) {
 	syslog(L_ERROR, "%s cant recv CCreader header-length %m", LogName);
 	return;
     }
@@ -1945,8 +1903,9 @@ CCreader(cp)
 **  Called when a write-in-progress is done on the channel.  Shouldn't happen.
 */
 static void
-CCwritedone()
+CCwritedone(CHANNEL *unused)
 {
+    unused = unused;		/* ARGSUSED */
     syslog(L_ERROR, "%s internal CCwritedone", LogName);
 }
 
@@ -1955,7 +1914,7 @@ CCwritedone()
 **  Create the channel.
 */
 void
-CCsetup()
+CCsetup(void)
 {
     int			i;
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
@@ -2024,7 +1983,7 @@ CCsetup()
 **  Cleanly shut down the channel.
 */
 void
-CCclose()
+CCclose(void)
 {
     CHANclose(CCchan, CHANname(CCchan));
     CCchan = NULL;
@@ -2045,10 +2004,12 @@ CCclose()
 **  Restablish the control channel.
 */
 static RETSIGTYPE
-CCresetup(int s)
+CCresetup(int unused)
 {
 #ifndef HAVE_SIGACTION
     xsignal(s, CCresetup);
+#else
+    unused = unused;		/* ARGSUSED */
 #endif
     CCclose();
     CCsetup();
@@ -2059,10 +2020,12 @@ CCresetup(int s)
  * Read a file containing lines of the form "newsgroup lowmark",
  * and reset the low article number for the specified groups.
  */
-static const char * CClowmark(char *av[])
+static const char *
+CClowmark(char *av[])
 {
     long lo;
-    char *line, *cp, *ret = NULL;
+    char *line, *cp;
+    const char  *ret = NULL;
     QIOSTATE *qp;
     NEWSGROUP *ngp;
 

@@ -3,25 +3,25 @@
 **  Many of the data types used here have abbreviations, such as CT
 **  for CHANNELTYPE.  Here are a list of the conventions and meanings:
 **
-**      ART     A news article
-**      CHAN    An I/O channel
-**      CS      Channel state
-**      CT      Channel type
-**      FNL     Funnel, into which other feeds pour
-**      FT      Feed type -- how a site gets told about new articles
-**      ICD     In-core data (primarily the active and sys files)
-**      LC      Local NNTP connection-receiving channel
-**      CC      Control channel (used by ctlinnd)
-**      NC      NNTP client channel
-**      NG      Newsgroup
-**      NGH     Newgroup hashtable
-**      PROC    A process (used to feed a site)
-**      PS      Process state
-**      RC      Remote NNTP connection-receiving channel
-**      RCHAN   A channel in "read" state
-**      SITE    Something that gets told when we get an article
-**      WCHAN   A channel in "write" state
-**      WIP     Work-In-Progress, keeps track of articles before committed.
+**	ART	A news article
+**	CHAN	An I/O channel
+**	CS	Channel state
+**	CT	Channel type
+**	FNL	Funnel, into which other feeds pour
+**	FT	Feed type -- how a site gets told about new articles
+**	ICD	In-core data (primarily the active and sys files)
+**	LC	Local NNTP connection-receiving channel
+**	CC	Control channel (used by ctlinnd)
+**	NC	NNTP client channel
+**	NG	Newsgroup
+**	NGH	Newgroup hashtable
+**	PROC	A process (used to feed a site)
+**	PS	Process state
+**	RC	Remote NNTP connection-receiving channel
+**	RCHAN	A channel in "read" state
+**	SITE	Something that gets told when we get an article
+**	WCHAN	A channel in "write" state
+**	WIP	Work-In-Progress, keeps track of articles before committed.
 */
 
 #ifndef INND_H
@@ -53,7 +53,7 @@
 
 BEGIN_DECLS
 
-typedef short  SITEIDX;
+typedef short	SITEIDX;
 #define NOSITE ((SITEIDX) -1)
 
 /*
@@ -71,10 +71,10 @@ typedef enum _OPERATINGMODE {
 **  much space is left if reading or how much still needs to be written.
 */
 typedef struct _BUFFER {
-    long        Size;
-    long        Used;
-    long        Left;
-    char *      Data;
+    int		Size;
+    int		Used;
+    int		Left;
+    char *	Data;
 } BUFFER;
 
 
@@ -134,72 +134,72 @@ struct _CHANNEL;
 typedef void (*innd_callback_t)(struct _CHANNEL *);
 
 typedef struct _CHANNEL {
-    CHANNELTYPE         Type;
-    CHANNELSTATE        State;
-    int                 fd;
-    bool                Skip;
-    bool                Streaming;
-    bool                NoResendId;
-    bool                privileged;
-    unsigned long       Duplicate;
-    unsigned long       Unwanted_s;
-    unsigned long       Unwanted_f;
-    unsigned long       Unwanted_d;
-    unsigned long       Unwanted_g;
-    unsigned long       Unwanted_u;
-    unsigned long       Unwanted_o;
-    float               Size;
-    float               DuplicateSize;
-    unsigned long       Check;
-    unsigned long       Check_send;
-    unsigned long       Check_deferred;
-    unsigned long       Check_got;
-    unsigned long       Check_cybercan;
-    unsigned long       Takethis;
-    unsigned long       Takethis_Ok;
-    unsigned long       Takethis_Err;
-    unsigned long       Ihave;
-    unsigned long       Ihave_Duplicate;
-    unsigned long       Ihave_Deferred;
-    unsigned long       Ihave_SendIt;
-    unsigned long       Ihave_Cybercan;
-    int                 Reported;
-    long                Received;
-    long                Refused;
-    long                Rejected;
-    int                 BadWrites;
-    int                 BadReads;
-    int                 BlockedWrites;
-    int                 BadCommands;
-    time_t              LastActive;
-    time_t              NextLog;
-    struct in_addr      Address;
-    innd_callback_t     Reader;
-    innd_callback_t     WriteDone;
-    time_t              Waketime;
-    time_t              Started;
-    innd_callback_t     Waker;
-    void *              Argument;
-    void *              Event;
-    BUFFER              In;
-    BUFFER              Out;
-    bool                Tracing;
-    BUFFER              Sendid;
-    HASH                CurrentMessageIDHash;
+    CHANNELTYPE			Type;
+    CHANNELSTATE	State;
+    int			fd;
+    bool		Skip;
+    bool		Streaming;
+    bool		NoResendId;
+    bool		privileged;
+    unsigned long	Duplicate;
+    unsigned long	Unwanted_s;
+    unsigned long	Unwanted_f;
+    unsigned long	Unwanted_d;
+    unsigned long	Unwanted_g;
+    unsigned long	Unwanted_u;
+    unsigned long	Unwanted_o;
+    float		Size;
+    float		DuplicateSize;
+    unsigned long	Check;
+    unsigned long	Check_send;
+    unsigned long	Check_deferred;
+    unsigned long	Check_got;
+    unsigned long	Check_cybercan;
+    unsigned long	Takethis;
+    unsigned long	Takethis_Ok;
+    unsigned long	Takethis_Err;
+    unsigned long	Ihave;
+    unsigned long	Ihave_Duplicate;
+    unsigned long	Ihave_Deferred;
+    unsigned long	Ihave_SendIt;
+    unsigned long	Ihave_Cybercan;
+    int			Reported;
+    long		Received;
+    long		Refused;
+    long		Rejected;
+    int			BadWrites;
+    int			BadReads;
+    int			BlockedWrites;
+    int			BadCommands;
+    time_t		LastActive;
+    time_t		NextLog;
+    struct in_addr	Address;
+    innd_callback_t	Reader;
+    innd_callback_t	WriteDone;
+    time_t		Waketime;
+    time_t		Started;
+    innd_callback_t	Waker;
+    void *		Argument;
+    void *		Event;
+    BUFFER		In;
+    BUFFER		Out;
+    bool		Tracing;
+    BUFFER		Sendid;
+    HASH		CurrentMessageIDHash;
 #define PRECOMMITCACHESIZE 128
-    struct _WIP *       PrecommitWIP[PRECOMMITCACHESIZE];
-    int                 PrecommitiCachenext;
-    int                 XBatchSize;
-    int                 LargeArtSize;
-    int                 LargeCmdSize;
-    int                 Lastch;
-    int                 Rest;
-    int                 SaveUsed;
-    int                 ActiveCnx;
-    int                 MaxCnx;
-    int                 HoldTime;
-    time_t              ArtBeg;
-    int                 ArtMax;
+    struct _WIP *	PrecommitWIP[PRECOMMITCACHESIZE];
+    int			PrecommitiCachenext;
+    int			XBatchSize;
+    int			LargeArtSize;
+    int			LargeCmdSize;
+    int			Lastch;
+    int			Rest;
+    int			SaveUsed;
+    int			ActiveCnx;
+    int			MaxCnx;
+    int			HoldTime;
+    time_t		ArtBeg;
+    int			ArtMax;
 } CHANNEL;
 
 
@@ -209,20 +209,20 @@ typedef struct _CHANNEL {
 **  get this group.
 */
 typedef struct _NEWSGROUP {
-    long                Start;          /* Offset into the active file  */
-    char *              Name;
-    char *              Dir;            /* The name, as a directory     */
-    int                 NameLength;
-    ARTNUM              Last;
-    ARTNUM              Filenum;        /* File name to use             */
-    int                 Lastwidth;
-    int                 PostCount;      /* Have we already put it here? */
-    char *              LastString;
-    char *              Rest;           /* Flags, NOT NULL TERMINATED */
-    SITEIDX             nSites;
-    int *               Sites;
-    SITEIDX             nPoison;
-    int *               Poison;
+    long		Start;		/* Offset into the active file  */
+    char *		Name;
+    char *		Dir;		/* The name, as a directory     */
+    int			NameLength;
+    ARTNUM		Last;
+    ARTNUM		Filenum;	/* File name to use             */
+    int			Lastwidth;
+    int			PostCount;	/* Have we already put it here? */
+    char *		LastString;
+    char *		Rest;		/* Flags, NOT NULL TERMINATED   */
+    SITEIDX		nSites;
+    int *		Sites;
+    SITEIDX		nPoison;
+    int *		Poison;
     struct _NEWSGROUP * Alias;
 } NEWSGROUP;
 
@@ -246,55 +246,55 @@ typedef enum _FEEDTYPE {
 **  too many hops, or a bad distribution.
 */
 typedef struct _SITE {
-    char *              Name;
-    char *              Entry;
-    int                 NameLength;
-    char **             Exclusions;
-    char **             Distributions;
-    char **             Patterns;
-    bool                Poison;
-    bool                PoisonEntry;
-    bool                Sendit;
-    bool                Seenit;
-    bool                IgnoreControl;
-    bool                DistRequired;
-    bool                IgnorePath;
-    bool                ControlOnly;
-    bool                DontWantNonExist;
-    bool                NeedOverviewCreation;
-    bool                FeedwithoutOriginator;
-    bool                DropFiltered;
-    int                 Hops;
-    int                 Groupcount;
-    int                 Followcount;
-    int                 Crosscount;
-    FEEDTYPE            Type;
-    NEWSGROUP *         ng;
-    bool                Spooling;
-    char *              SpoolName;
-    bool                Working;
-    long                StartWriting;
-    long                StopWriting;
-    long                StartSpooling;
-    char *              Param;
-    char                FileFlags[FEED_MAXFLAGS + 1];
-    long                MaxSize;
-    long                MinSize;
-    int                 Nice;
-    CHANNEL *           Channel;
-    bool                IsMaster;
-    int                 Master;
-    int                 Funnel;
-    bool                FNLwantsnames;
-    BUFFER              FNLnames;
-    int                 Process;
-    pid_t               pid;
-    long                Flushpoint;
-    BUFFER              Buffer;
-    bool                Buffered;
-    char **             Originator;
-    int                 Next;
-    int                 Prev;
+    const char *	Name;
+    char *		Entry;
+    int			NameLength;
+    char **		Exclusions;
+    char **		Distributions;
+    char **		Patterns;
+    bool		Poison;
+    bool		PoisonEntry;
+    bool		Sendit;
+    bool		Seenit;
+    bool		IgnoreControl;
+    bool		DistRequired;
+    bool		IgnorePath;
+    bool		ControlOnly;
+    bool		DontWantNonExist;
+    bool		NeedOverviewCreation;
+    bool		FeedwithoutOriginator;
+    bool		DropFiltered;
+    int			Hops;
+    int			Groupcount;
+    int			Followcount;
+    int			Crosscount;
+    FEEDTYPE		Type;
+    NEWSGROUP *		ng;
+    bool		Spooling;
+    char *		SpoolName;
+    bool		Working;
+    long		StartWriting;
+    long		StopWriting;
+    long		StartSpooling;
+    char *		Param;
+    char		FileFlags[FEED_MAXFLAGS + 1];
+    long		MaxSize;
+    long		MinSize;
+    int			Nice;
+    CHANNEL *		Channel;
+    bool		IsMaster;
+    int			Master;
+    int			Funnel;
+    bool		FNLwantsnames;
+    BUFFER		FNLnames;
+    int			Process;
+    pid_t		pid;
+    long		Flushpoint;
+    BUFFER		Buffer;
+    bool		Buffered;
+    char **		Originator;
+    int			Next;
+    int			Prev;
 } SITE;
 
 
@@ -343,15 +343,15 @@ typedef struct _ARTDATA {
     int         NameLength;
     char        TimeReceived[33];
     int         TimeReceivedLength;
-    char *      MessageID;
-    int         MessageIDLength;
+    const char *MessageID;
+    int		MessageIDLength;
     char *      Newsgroups;
     int         NewsgroupsLength;
-    char *      Distribution;
+    const char *Distribution;
     int         DistributionLength;
-    char *      Feedsite;
+    const char *Feedsite;
     int         FeedsiteLength;
-    char *      Path;
+    const char *Path;
     int         PathLength;
     char *      Replic;
     int         ReplicLength;
@@ -393,12 +393,8 @@ enum timer {
     TMR_ARTCNCL,                /* Processing a cancel message. */
     TMR_SITESEND,               /* Sending an article to feeds. */
     TMR_OVERV,                  /* Generating overview information. */
-#if defined(DO_PERL)
     TMR_PERL,                   /* Perl filter. */
-#endif
-#if defined(DO_PYTHON)
     TMR_PYTHON,                 /* Python filter. */
-#endif
     TMR_MAX
 };
 
@@ -431,275 +427,274 @@ enum timer {
 ** with "EXTERN" are not explicitly initialized in innd.c.
 */
 #if defined(DEFINE_DATA)
-# define EXTERN         /* NULL */
+# define EXTERN		/* NULL */
 #else
-# define EXTERN         extern
+# define EXTERN		extern
 #endif
-extern bool             AmRoot;
-extern bool             BufferedLogs;
-EXTERN bool             AnyIncoming;
-extern bool             Debug;
-EXTERN bool             ICDneedsetup;
-EXTERN bool             NeedHeaders;
-EXTERN bool             NeedOverview;
-EXTERN bool             NeedPath;
-extern bool             NNRPTracing;
-extern bool             StreamingOff;
-extern bool             Tracing;
-EXTERN int              Overfdcount;
-EXTERN int              SeqNum;
-EXTERN char *           path;
-EXTERN BUFFER           Path;
-EXTERN BUFFER           Pathalias;
-EXTERN char *           ModeReason;     /* NNTP reject message          */
-EXTERN char *           NNRPReason;     /* NNRP reject message          */
-EXTERN char *           Reservation;    /* Reserved lock message        */
-EXTERN char *           RejectReason;   /* NNTP reject message          */
-EXTERN FILE *           Errlog;
-EXTERN FILE *           Log;
-extern char             LogName[];
-EXTERN struct in_addr   MyAddress;
-extern int              ErrorCount;
-EXTERN int              ICDactivedirty;
-EXTERN int              KillerSignal;
-EXTERN int              MaxOutgoing;
-EXTERN int              nGroups;
-EXTERN SITEIDX          nSites;
-EXTERN int              PROCneedscan;
-extern int              SPOOLlen;
-EXTERN int              Xrefbase;
-extern long             LargestArticle;
-EXTERN NEWSGROUP **     GroupPointers;
-EXTERN NEWSGROUP *      Groups;
-extern OPERATINGMODE    Mode;
-EXTERN sig_atomic_t     GotTerminate;
-EXTERN SITE *           Sites;
-EXTERN SITE             ME;
-EXTERN struct timeval   TimeOut;
-EXTERN TIMEINFO         Now;            /* Reasonably accurate time     */
-EXTERN bool             ThrottledbyIOError;
-EXTERN bool             AddAlias;
-EXTERN bool             Hassamepath;
-EXTERN char *           NCgreeting;
+extern bool		AmRoot;
+extern bool		BufferedLogs;
+EXTERN bool		AnyIncoming;
+extern bool		Debug;
+EXTERN bool		ICDneedsetup;
+EXTERN bool		NeedHeaders;
+EXTERN bool		NeedOverview;
+EXTERN bool		NeedPath;
+extern bool		NNRPTracing;
+extern bool		StreamingOff;
+extern bool		Tracing;
+EXTERN int		Overfdcount;
+EXTERN int		SeqNum;
+EXTERN const char *	path;
+EXTERN BUFFER		Path;
+EXTERN BUFFER		Pathalias;
+EXTERN char *		ModeReason;	/* NNTP reject message   */
+EXTERN char *		NNRPReason;	/* NNRP reject message   */
+EXTERN char *		Reservation;	/* Reserved lock message */
+EXTERN char *		RejectReason;	/* NNTP reject message   */
+EXTERN FILE *		Errlog;
+EXTERN FILE *		Log;
+extern char		LogName[];
+EXTERN struct in_addr	MyAddress;
+extern int		ErrorCount;
+EXTERN int		ICDactivedirty;
+EXTERN int		KillerSignal;
+EXTERN int		MaxOutgoing;
+EXTERN int		nGroups;
+EXTERN SITEIDX		nSites;
+EXTERN int		PROCneedscan;
+extern int		SPOOLlen;
+EXTERN int		Xrefbase;
+extern long		LargestArticle;
+EXTERN NEWSGROUP **	GroupPointers;
+EXTERN NEWSGROUP *	Groups;
+extern OPERATINGMODE	Mode;
+EXTERN sig_atomic_t	GotTerminate;
+EXTERN SITE *		Sites;
+EXTERN SITE		ME;
+EXTERN struct timeval	TimeOut;
+EXTERN TIMEINFO		Now;		/* Reasonably accurate time     */
+EXTERN bool		ThrottledbyIOError;
+EXTERN bool		AddAlias;
+EXTERN bool		Hassamepath;
+EXTERN char *		NCgreeting;
 
 /*
 ** Table size for limiting incoming connects.  Do not change the table
 ** size unless you look at the code manipulating it in rc.c.
 */
-#define REMOTETABLESIZE 128
+#define REMOTETABLESIZE	128
 
 /*
 ** Setup the default values.  The REMOTETIMER being zero turns off the
 ** code to limit incoming connects.
 */
-#define REMOTELIMIT     2
-#define REMOTETIMER     0
-#define REMOTETOTAL     60
-#define REJECT_TIMEOUT  10
-extern int              RemoteLimit; /* Per host limit. */
-extern time_t           RemoteTimer; /* How long to remember connects. */
-extern int              RemoteTotal; /* Total limit. */
+#define REMOTELIMIT	2
+#define REMOTETIMER	0
+#define REMOTETOTAL	60
+#define REJECT_TIMEOUT	10
+extern int		RemoteLimit;	/* Per host limit. */
+extern time_t		RemoteTimer;	/* How long to remember connects. */
+extern int		RemoteTotal;	/* Total limit. */
 
 
 /*
 **  Function declarations.
 */
-extern bool             FormatLong();
-extern bool             MakeSpoolDirectory();
-extern bool             NeedShell();
-extern char **          CommaSplit();
-extern char *           MaxLength();
-extern pid_t            Spawn();
-extern void             CleanupAndExit();
-extern void             FileGlue();
-extern void             JustCleanup();
-extern void             ThrottleIOError();
-extern void             ThrottleNoMatchError();
-extern void             ReopenLog();
-extern void             xchown();
+extern bool		FormatLong(char *p, unsigned long value, int width);
+extern bool		NeedShell(char *p, const char **av, const char **end);
+extern char **		CommaSplit(char *text);
+extern char *		MaxLength(const char *p, const char *q);
+extern pid_t		Spawn(int niceval, int fd0, int fd1, int fd2,
+			      char * const av[]);
+extern void		CleanupAndExit(int x, const char *why);
+extern void		FileGlue(char *p, const char *n1, char c, const char *n2);
+extern void		JustCleanup(void);
+extern void		ThrottleIOError(const char *when);
+extern void		ThrottleNoMatchError(void);
+extern void		ReopenLog(FILE *F);
+extern void		xchown(char *p);
 
-extern bool             ARTidok(const char *MessageID);
-extern bool             ARTreadschema(void);
-extern const char *     ARTreadarticle(char *files);
-extern char *           ARTreadheader(char *files);
-extern const char *     ARTpost(CHANNEL *cp);
-extern void             ARTcancel(const ARTDATA *Data,
-                                  const char *MessageID, bool Trusted);
-extern void             ARTclose(void);
-extern void             ARTsetup(void);
+extern bool		ARTidok(const char *MessageID);
+extern bool		ARTreadschema(void);
+extern const char *	ARTreadarticle(char *files);
+extern char *		ARTreadheader(char *files);
+extern const char *	ARTpost(CHANNEL *cp);
+extern void		ARTcancel(const ARTDATA *Data,
+				  const char *MessageID, bool Trusted);
+extern void		ARTclose(void);
+extern void		ARTsetup(void);
 
-extern void             BUFFset(BUFFER *bp, const char *p, const int length);
-extern void             BUFFswap(BUFFER *b1, BUFFER *b2);
-extern void             BUFFappend(BUFFER *bp, const char *p, const int len);
-extern void             BUFFtrimcr(BUFFER *bp);
+extern void		BUFFset(BUFFER *bp, const char *p, const int length);
+extern void		BUFFswap(BUFFER *b1, BUFFER *b2);
+extern void		BUFFappend(BUFFER *bp, const char *p, const int len);
+extern void		BUFFtrimcr(BUFFER *bp);
 
-extern bool             CHANsleeping(CHANNEL *cp);
-extern CHANNEL *        CHANcreate(int fd, CHANNELTYPE Type,
-                                   CHANNELSTATE State,
-                                   innd_callback_t Reader,
-                                   innd_callback_t WriteDone);
-extern CHANNEL *        CHANiter(int *cp, CHANNELTYPE Type);
-extern CHANNEL *        CHANfromdescriptor(int fd);
-extern char *           CHANname(const CHANNEL *cp);
-extern int              CHANreadtext(CHANNEL *cp);
-extern void             CHANclose(CHANNEL *cp, char *name);
-extern void             CHANreadloop(void);
-extern void             CHANsetup(int i);
-extern void             CHANshutdown();
-extern void             CHANtracing(CHANNEL *cp, bool Flag);
-extern void             CHANsetActiveCnx(CHANNEL *cp);
+extern bool		CHANsleeping(CHANNEL *cp);
+extern CHANNEL *	CHANcreate(int fd, CHANNELTYPE Type,
+				   CHANNELSTATE State,
+				   innd_callback_t Reader,
+				   innd_callback_t WriteDone);
+extern CHANNEL *	CHANiter(int *cp, CHANNELTYPE Type);
+extern CHANNEL *	CHANfromdescriptor(int fd);
+extern char *		CHANname(const CHANNEL *cp);
+extern int		CHANreadtext(CHANNEL *cp);
+extern void		CHANclose(CHANNEL *cp, const char *name);
+extern void		CHANreadloop(void);
+extern void		CHANsetup(int i);
+extern void		CHANshutdown(void);
+extern void		CHANtracing(CHANNEL *cp, bool Flag);
+extern void		CHANsetActiveCnx(CHANNEL *cp);
 
-extern void             RCHANadd(CHANNEL *cp);
-extern void             RCHANremove(CHANNEL *cp);
+extern void		RCHANadd(CHANNEL *cp);
+extern void		RCHANremove(CHANNEL *cp);
 
-extern void             SCHANadd(CHANNEL *cp, time_t Waketime,
-                                 void *Event, innd_callback_t Waker,
-                                 void *Argument);
-extern void             SCHANremove(CHANNEL *cp);
-extern void             SCHANwakeup(void *Event);
+extern void		SCHANadd(CHANNEL *cp, time_t Waketime, void *Event,
+				 innd_callback_t Waker, void *Argument);
+extern void		SCHANremove(CHANNEL *cp);
+extern void		SCHANwakeup(void *Event);
 
-extern bool             WCHANflush(CHANNEL *cp);
-extern void             WCHANadd(CHANNEL *cp);
-extern void             WCHANremove(CHANNEL *cp);
-extern void             WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp);
+extern bool		WCHANflush(CHANNEL *cp);
+extern void		WCHANadd(CHANNEL *cp);
+extern void		WCHANremove(CHANNEL *cp);
+extern void		WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp);
 
-extern void             CCcopyargv();
-extern const char *     CCaddhist(char *av[]);
-extern const char *     CCblock();
-extern const char *     CCcancel();
-extern const char *     CCcheckfile();
+extern void		CCcopyargv(char *av[]);
+extern const char *	CCaddhist(char *av[]);
+extern const char *	CCblock(OPERATINGMODE NewMode, char *reason);
+extern const char *	CCcancel(char *av[]);
+extern const char *	CCcheckfile(char *av[]);
 
-extern bool             HIShavearticle(const HASH MessageID);
-extern bool             HISwrite(const ARTDATA *Data, const HASH hash,
-                                 char *paths, TOKEN *token);
-extern bool             HISremember(const HASH MessageID);
-extern TOKEN *          HISfilesfor(const HASH MessageID);
-extern void             HISclose(void);
-extern void             HISsetup(void);
-extern void             HISsync(void);
+extern bool		HIShavearticle(const HASH MessageID);
+extern bool		HISwrite(const ARTDATA *Data, const HASH hash,
+				 char *paths);
+extern bool		HISremember(const HASH MessageID);
+extern TOKEN *		HISfilesfor(const HASH MessageID);
+extern void		HISclose(void);
+extern void		HISsetup(void);
+extern void		HISsync(void);
 
-extern bool             ICDnewgroup();
-extern char *           ICDreadactive();
-extern bool             ICDchangegroup();
-extern void             ICDclose();
-extern bool             ICDrenumberactive();
-extern bool             ICDrmgroup();
-extern void             ICDsetup();
-extern void             ICDwrite();
-extern void             ICDwriteactive();
+extern bool		ICDnewgroup(char *Name, char *Rest);
+extern char *		ICDreadactive(char **endp);
+extern bool		ICDchangegroup(NEWSGROUP *ngp, char *Rest);
+extern void		ICDclose(void);
+extern bool		ICDrenumberactive(void);
+extern bool		ICDrmgroup(NEWSGROUP *ngp);
+extern void		ICDsetup(bool StartSites);
+extern void		ICDwrite(void);
+extern void		ICDwriteactive(void);
 
-extern void             CCclose();
-extern void             CCsetup();
+extern void		CCclose(void);
+extern void		CCsetup(void);
 
-extern void             LCclose();
-extern void             LCsetup();
+extern void		LCclose(void);
+extern void		LCsetup(void);
 
-extern char **          NGsplit();
-extern NEWSGROUP *      NGfind();
-extern void             NGclose();
-extern CHANNEL *        NCcreate(int fd, bool MustAuthorize, bool IsLocal);
-extern void             NGparsefile();
-extern bool             NGrenumber();
-extern bool             NGlowmark(NEWSGROUP *ngp, long lomark);
+extern char **		NGsplit(char *p);
+extern NEWSGROUP *	NGfind(const char *Name);
+extern void		NGclose(void);
+extern CHANNEL *	NCcreate(int fd, bool MustAuthorize, bool IsLocal);
+extern void		NGparsefile(void);
+extern bool		NGrenumber(NEWSGROUP *ngp);
+extern bool		NGlowmark(NEWSGROUP *ngp, long lomark);
 
-extern void             NCclearwip(CHANNEL *cp);
-extern void             NCclose();
-extern void             NCsetup();
-extern void             NCwritereply(CHANNEL *cp, char *text);
-extern void             NCwriteshutdown(CHANNEL *cp, char *text);
+extern void		NCclearwip(CHANNEL *cp);
+extern void		NCclose(void);
+extern void		NCsetup(void);
+extern void		NCwritereply(CHANNEL *cp, const char *text);
+extern void		NCwriteshutdown(CHANNEL *cp, const char *text);
 
 /* perl.c */
-extern char *           PLartfilter(char *artBody, int lines);
-extern char *           PLmidfilter(char *messageID);
-extern void             PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode,
-                               char *reason);
-extern void             PLxsinit();
+extern char *		PLartfilter(char *artBody, int lines);
+extern char *		PLmidfilter(char *messageID);
+extern void		PLmode(OPERATINGMODE mode, OPERATINGMODE NewMode,
+			       char *reason);
+extern void		PLxsinit(void);
 
-extern int              PROCwatch();
-extern void             PROCunwatch();
-/* extern void          PROCclose(); */
-extern void             PROCscan();
-extern void             PROCsetup();
+extern int		PROCwatch(pid_t pid, int site);
+extern void		PROCunwatch(int process);
+/* extern void		PROCclose(bool Quickly); */
+extern void		PROCscan(void);
+extern void		PROCsetup(int i);
 
-extern int              RClimit();
-extern bool             RCnolimit();
-extern bool             RCauthorized();
-extern int              RCcanpost();
-extern char *           RChostname();
-extern char *           RClabelname(CHANNEL *cp);
-extern void             RCclose();
-extern void             RChandoff();
-extern void             RCreadlist();
-extern void             RCsetup();
+extern int		RClimit(CHANNEL *cp);
+extern bool		RCnolimit(CHANNEL *cp);
+extern bool		RCauthorized(CHANNEL *cp, char *pass);
+extern int		RCcanpost(CHANNEL *cp, char *group);
+extern char *		RChostname(const CHANNEL *cp);
+extern char *		RClabelname(CHANNEL *cp);
+extern void		RCclose(void);
+extern void		RChandoff(int fd, HANDOFF h);
+extern void		RCreadlist(void);
+extern void		RCsetup(int i);
 
-extern bool             SITEfunnelpatch();
-extern bool             SITEsetup();
-extern bool             SITEwantsgroup();
-extern bool             SITEpoisongroup();
-extern char **          SITEreadfile();
-extern SITE *           SITEfind();
-extern SITE *           SITEfindnext();
-extern const char *     SITEparseone();
-extern void             SITEchanclose();
-extern void             SITEdrop();
-extern void             SITEflush();
-extern void             SITEflushall();
-extern void             SITEforward();
-extern void             SITEfree();
-extern void             SITEinfo();
-extern void             SITElinkall();
-extern void             SITEparsefile();
-extern void             SITEprocdied();
-extern void             SITEsend();
-extern void             SITEwrite();
+extern bool		SITEfunnelpatch(void);
+extern bool		SITEsetup(SITE *sp);
+extern bool		SITEwantsgroup(SITE *sp, char *name);
+extern bool		SITEpoisongroup(SITE *sp, char *name);
+extern char **		SITEreadfile(const bool ReadOnly);
+extern SITE *		SITEfind(const char *p);
+extern SITE *		SITEfindnext(const char *p, SITE *sp);
+extern const char *	SITEparseone(char *Entry, SITE *sp,
+				     char *subbed, char *poison);
+extern void		SITEchanclose(CHANNEL *cp);
+extern void		SITEdrop(SITE *sp);
+extern void		SITEflush(SITE *sp, const bool Restart);
+extern void		SITEflushall(const bool Restart);
+extern void		SITEforward(SITE *sp, const char *text);
+extern void		SITEfree(SITE *sp);
+extern void		SITEinfo(BUFFER *bp, SITE *sp, const bool Verbose);
+extern void		SITEparsefile(bool StartSite);
+extern void		SITEprocdied(SITE *sp, int process, PROCESS *pp);
+extern void		SITEsend(SITE *sp, ARTDATA *Data);
+extern void		SITEwrite(SITE *sp, const char *text);
 
-extern void             STATUSinit(void);
-extern void             STATUSmainloophook(void);
+extern void		STATUSinit(void);
+extern void		STATUSmainloophook(void);
 
 /* timer.c */
-extern void             TMRinit(void);
-extern int              TMRmainloophook(void);
-extern void             TMRstart(enum timer timer);
-extern void             TMRstop(enum timer timer);
+extern void		TMRinit(void);
+extern int		TMRmainloophook(void);
+extern void		TMRstart(enum timer timer);
+extern void		TMRstop(enum timer timer);
 
-extern void             WIPsetup(void);
-extern WIP *            WIPnew(const char *messageid, CHANNEL *cp);
-extern void             WIPprecomfree(CHANNEL *cp);
-extern void             WIPfree(WIP *wp);
-extern bool             WIPinprogress(const char *msgid, CHANNEL *cp,
-                                      bool Add);
-extern WIP *            WIPbyid(const char *mesageid);
-extern WIP *            WIPbyhash(const HASH hash);
+extern void		WIPsetup(void);
+extern WIP *		WIPnew(const char *messageid, CHANNEL *cp);
+extern void		WIPprecomfree(CHANNEL *cp);
+extern void		WIPfree(WIP *wp);
+extern bool		WIPinprogress(const char *msgid, CHANNEL *cp,
+				      bool Add);
+extern WIP *		WIPbyid(const char *mesageid);
+extern WIP *		WIPbyhash(const HASH hash);
 
 /*
 **  TCL globals and functions
 */
 #if DO_TCL
-extern Tcl_Interp *     TCLInterpreter;
-extern bool             TCLFilterActive;
-extern BUFFER *         TCLCurrArticle;
-extern ARTDATA *        TCLCurrData;
+extern Tcl_Interp *	TCLInterpreter;
+extern bool		TCLFilterActive;
+extern BUFFER *		TCLCurrArticle;
+extern ARTDATA *	TCLCurrData;
 
-extern void             TCLfilter();
-extern void             TCLreadfilter();
-extern void             TCLsetup();
-extern void             TCLclose();
+extern void		TCLfilter(bool value);
+extern void		TCLreadfilter(void);
+extern void		TCLsetup(void);
+extern void		TCLclose(void);
 #endif /* DO_TCL */
 
 /*
 **  Python globals and functions
 */
 #if DO_PYTHON
-extern bool             PythonFilterActive;
+extern bool		PythonFilterActive;
 
-extern const char *     PYcontrol(char **av);
-extern int              PYreadfilter(void);
-extern char *           PYartfilter(char *artBody, long artLen, int lines);
-extern char *           PYmidfilter(char *messageID, int msglen);
-extern void             PYmode(OPERATINGMODE Mode, OPERATINGMODE newmode,
-                               char *reason);
-extern void             PYsetup(void);
-extern void             PYclose(void);
+extern const char *	PYcontrol(char **av);
+extern int		PYreadfilter(void);
+extern char *		PYartfilter(char *artBody, long artLen, int lines);
+extern char *		PYmidfilter(char *messageID, int msglen);
+extern void		PYmode(OPERATINGMODE Mode, OPERATINGMODE newmode,
+			       char *reason);
+extern void		PYsetup(void);
+extern void		PYclose(void);
 #endif /* DO_PYTHON */
 
 END_DECLS

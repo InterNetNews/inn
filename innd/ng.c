@@ -56,12 +56,8 @@ static int	NGHcount;
 static int
 NGcompare(const void *p1, const void *p2)
 {
-    NEWSGROUP **ng1;
-    NEWSGROUP **ng2;
-
-    ng1 = (NEWSGROUP **) p1;
-    ng2 = (NEWSGROUP **) p2;
-    return ng1[0]->Last - ng2[0]->Last;
+    return ((const NEWSGROUP **)p1)[0]->Last -	
+	   ((const NEWSGROUP **)p2)[0]->Last;
 }
 
 
@@ -69,8 +65,7 @@ NGcompare(const void *p1, const void *p2)
 **  Convert a newsgroup name into a directory name.
 */
 static void
-NGdirname(p)
-    register char	*p;
+NGdirname(register char *p)
 {
     for ( ; *p; p++)
 	if (*p == '.')
@@ -83,7 +78,8 @@ NGdirname(p)
 **  not to write NUL's into the in-core copy, since we're either mmap(2)'d,
 **  or we want to just blat it out to disk later.
 */
-static bool NGparseentry(NEWSGROUP *ngp, char *p, char *end)
+static bool
+NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
 {
     register char		*q;
     register unsigned int	j;
@@ -152,7 +148,7 @@ static bool NGparseentry(NEWSGROUP *ngp, char *p, char *end)
 **  Parse the active file, building the initial Groups global.
 */
 void
-NGparsefile()
+NGparsefile(void)
 {
     register char	*p;
     register char	*q;
@@ -249,7 +245,7 @@ NGparsefile()
 ** Free allocated memory
 */
 void
-NGclose()
+NGclose(void)
 {
     register int	i;
     register NEWSGROUP	*ngp;
@@ -281,10 +277,9 @@ NGclose()
 **  Hash a newsgroup and see if we get it.
 */
 NEWSGROUP *
-NGfind(Name)
-    char			*Name;
+NGfind(const char *Name)
 {
-    register char		*p;
+    register const char		*p;
     register int		i;
     register unsigned int	j;
     register NEWSGROUP		**ngp;
@@ -350,7 +345,8 @@ NGsplit(p)
 static char		NORENUMBER[] = "%s cant renumber %s %s too wide";
 static char		RENUMBER[] = "%s renumber %s %s from %ld to %ld";
 
-bool NGrenumber(NEWSGROUP *ngp)
+bool
+NGrenumber(NEWSGROUP *ngp)
 {
     int			low, high, count,flag;
     char	        *f2;
@@ -417,7 +413,8 @@ bool NGrenumber(NEWSGROUP *ngp)
  * Like NGrenumber(), but we don't scan the spool,
  * and the himark is ignored.
  */
-bool NGlowmark(NEWSGROUP *ngp, long lomark)
+bool
+NGlowmark(NEWSGROUP *ngp, long lomark)
 {
     long l;
     char *f2, *f3, *f4;

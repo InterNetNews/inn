@@ -21,7 +21,6 @@ static char		*HIShistpath = NULL;
 static FILE		*HISwritefp;
 static int		HISreadfd;
 static int		HISdirty;
-static int		HISincore = INND_DBZINCORE;
 static _HIScache	*HIScache;
 static int              HIScachesize;   /* Number of entries in HIScache */
 static int              HIShitpos;      /* In cache, in history */
@@ -33,7 +32,8 @@ static time_t		HISlastlog;     /* Last time that we logged stats */
 /*
 ** Put an entry into the history cache 
 */
-void HIScacheadd(HASH MessageID, bool Found) {
+void
+HIScacheadd(HASH MessageID, bool Found) {
     unsigned int  i, loc;
 
     if (HIScache == NULL)
@@ -47,7 +47,8 @@ void HIScacheadd(HASH MessageID, bool Found) {
 /*
 ** Lookup an entry in the history cache
 */
-HISresult HIScachelookup(HASH MessageID) {
+HISresult
+HIScachelookup(HASH MessageID) {
     unsigned int i, loc;
 
     if (HIScache == NULL)
@@ -70,7 +71,8 @@ HISresult HIScachelookup(HASH MessageID) {
 /*
 **  Set up the history files.
 */
-void HISsetup(void)
+void
+HISsetup(void)
 {
     dbzoptions opt;
     
@@ -107,7 +109,7 @@ void HISsetup(void)
 	opt.pag_incore = INCORE_MMAP;
 #else
 	opt.pag_incore = INCORE_NO;
-	opt.exists_incore = HISincore ? INCORE_MMAP : INCORE_NO;
+	opt.exists_incore = INND_DBZINCORE ? INCORE_MMAP : INCORE_NO;
 #endif
 	dbzsetoptions(opt);
 	if (!dbzinit(HIShistpath)) {
@@ -133,7 +135,8 @@ void HISsetup(void)
 /*
 **  Synchronize the in-core history file (flush it).
 */
-void HISsync(void)
+void
+HISsync(void)
 {
     TMRstart(TMR_HISSYNC);
     if (HISdirty) {
@@ -147,7 +150,8 @@ void HISsync(void)
 }
 
 
-static void HISlogstats() {
+static void
+HISlogstats(void) {
     syslog(L_NOTICE, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
 	   HIShitpos, HIShitneg, HISmisses, HISdne);
     HIShitpos = HIShitneg = HISmisses = HISdne = 0;
@@ -157,7 +161,8 @@ static void HISlogstats() {
 /*
 **  Close the history files.
 */
-void HISclose(void)
+void
+HISclose(void)
 {
     if (HISwritefp != NULL) {
 	HISsync();
@@ -184,7 +189,8 @@ void HISclose(void)
 /*
 **  Get the list of files under which a Message-ID is stored.
 */
-TOKEN *HISfilesfor(const HASH MessageID)
+TOKEN *
+HISfilesfor(const HASH MessageID)
 {
     static BUFFER	Files;
     off_t		offset;
@@ -250,7 +256,8 @@ TOKEN *HISfilesfor(const HASH MessageID)
 /*
 **  Have we already seen an article?
 */
-bool HIShavearticle(const HASH MessageID)
+bool
+HIShavearticle(const HASH MessageID)
 {
     bool	   val;
     
@@ -287,7 +294,8 @@ bool HIShavearticle(const HASH MessageID)
 /*
 **  Write a history entry.
 */
-bool HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
+bool
+HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 {
     static char		NOPATHS[] = "";
     off_t		offset;
@@ -328,8 +336,8 @@ bool HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
     /* Set up the database values and write them. */
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
-	syslog(L_ERROR, "%s cant dbzstore [%s]@%lu: %m", LogName,
-	       HashToText(hash), offset);
+	syslog(L_ERROR, "%s cant dbzstore [%s]@%.0f: %m", LogName,
+	       HashToText(hash), (double)offset);
 	IOError("history database", i);
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
@@ -375,8 +383,8 @@ HISremember(const HASH hash)
     /* Set up the database values and write them. */
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
-	syslog(L_ERROR, "%s cant dbzstore [%s]@%lu: %m", LogName,
-	       HashToText(hash), offset);
+	syslog(L_ERROR, "%s cant dbzstore [%s]@%.0f: %m", LogName,
+	       HashToText(hash), (double)offset);
 	IOError("history database", i);
 	TMRstop(TMR_HISWRITE);
 	return FALSE;

@@ -43,13 +43,7 @@
 static const char * const timer_name[TMR_MAX] = {
     "idle", "hishave", "hisgrep", "hiswrite", "hissync",
     "artclean", "artwrite", "artctrl", "artcncl",
-    "sitesend", "overv"
-#if defined(DO_PERL)
-    , "perl"
-#endif
-#if defined(DO_PYTHON)
-    , "python"
-#endif
+    "sitesend", "overv", "perl", "python"
 };
 
 /* Timer values.  start stores the time (relative to the last summary) at
@@ -159,7 +153,7 @@ TMRmainloophook(void)
 	return 0;
     now = get_time(false);
 
-    if (now >= innconf->timer * 1000) {
+    if (now >= (unsigned int)innconf->timer * 1000) {
         summarize();
         return innconf->timer;
     } else {

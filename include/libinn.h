@@ -324,7 +324,7 @@ extern char *    GetModeratorAddress(FILE *FromServer, FILE *ToServer,
                                      char *group, char *moderatormailer); 
 extern void  ClearInnConf(void);
 extern int ReadInnConf(void);
-extern char *cpcatpath(char *p, char *f);
+extern char *cpcatpath(const char *p, const char *f);
 
 #define TEMPORARYOPEN   0
 #define INND_HISTORY    1
@@ -355,7 +355,7 @@ extern char *   ReadInFile(const char *name, struct stat *Sbp);
 extern void     TempName(char *dir, char *buff);
 extern FILE *   xfopena(const char *p);
 extern bool     fdreserve(int fdnum);
-extern FILE *   Fopen(const char *p, char *type, int fd);
+extern FILE *   Fopen(const char *p, const char *type, int fd);
 extern int      Fclose(FILE *fp);
 
 extern int      argify(char *line, char ***argvp);

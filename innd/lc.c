@@ -24,14 +24,13 @@ static CHANNEL	*LCchan;
 **  Read function.  Accept the connection and create an NNTP channel.
 */
 static void
-LCreader(cp)
-    CHANNEL	*cp;
+LCreader(CHANNEL *cp)
 {
     int		fd;
     CHANNEL	*new;
 
     if (cp != LCchan) {
-	syslog(L_ERROR, "%s internal LCreader wrong channel 0x%x not 0x%x",
+	syslog(L_ERROR, "%s internal LCreader wrong channel 0x%p not 0x%p",
 	    LogName, cp, LCchan);
 	return;
     }
@@ -52,8 +51,9 @@ LCreader(cp)
 **  Write-done function.  Shouldn't happen.
 */
 static void
-LCwritedone()
+LCwritedone(CHANNEL *unused)
 {
+    unused = unused;		/* ARGSUSED */
     syslog(L_ERROR, "%s internal LCwritedone", LogName);
 }
 
@@ -64,7 +64,7 @@ LCwritedone()
 **  Create the channel.
 */
 void
-LCsetup()
+LCsetup(void)
 {
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     int			i;
@@ -107,7 +107,7 @@ LCsetup()
 **  Cleanly shut down the channel.
 */
 void
-LCclose()
+LCclose(void)
 {
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     CHANclose(LCchan, CHANname(LCchan));

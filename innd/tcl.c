@@ -34,7 +34,7 @@ TCLfilter(value)
 
 
 void
-TCLreadfilter()
+TCLreadfilter(void)
 {
     int code;
     
@@ -82,9 +82,7 @@ TCLreadfilter()
  */
 
 static uint32_t
-makechecksum(sumbuf, buflen)
-     u_char *sumbuf;
-     int buflen;
+makechecksum(u_char *sumbuf, int buflen)
 {
     register u_char *buf = (u_char *)sumbuf;
     register int32_t len = buflen;
@@ -154,11 +152,7 @@ makechecksum(sumbuf, buflen)
 
 
 int
-TCLCksumArt(clientData, interp, argc, argv)
-     ClientData clientData;
-     Tcl_Interp *interp;
-     int argc;
-     char *argv[];
+TCLCksumArt(ClientData clientData, Tcl_Interp *interp, int argc, char *argv[])
 {
     char buf[100];
 
@@ -172,7 +166,7 @@ TCLCksumArt(clientData, interp, argc, argv)
 
 
 void
-TCLsetup()
+TCLsetup(void)
 {
     int code;
     
@@ -195,7 +189,7 @@ TCLsetup()
 
 
 void
-TCLclose()
+TCLclose(void)
 {
 }
 

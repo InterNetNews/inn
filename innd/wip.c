@@ -18,13 +18,17 @@
 
 static WIP     *WIPtable[WIPTABLESIZE];      /* Top level of the WIP hash table */
 
-void WIPsetup(void) {
+void
+WIPsetup(void)
+{
     memset(WIPtable, '\0', sizeof(WIPtable));
 }
 
 /* Add a new entry into the table.  It is the appilications responsiblity to
    to call WIPinprogress or WIPbyid first. */
-WIP *WIPnew(const char *messageid, CHANNEL *cp) {
+WIP *
+WIPnew(const char *messageid, CHANNEL *cp)
+{
     HASH hash;
     unsigned long bucket;
     WIP *new;
@@ -44,7 +48,9 @@ WIP *WIPnew(const char *messageid, CHANNEL *cp) {
     return new; 
 }
 
-void WIPprecomfree(CHANNEL *cp) {
+void
+WIPprecomfree(CHANNEL *cp)
+{
     WIP *cur;
     int i;
     if (cp == NULL)
@@ -58,7 +64,9 @@ void WIPprecomfree(CHANNEL *cp) {
     }
 }
 
-void WIPfree(WIP *wp) {
+void
+WIPfree(WIP *wp)
+{
     unsigned long bucket;
     WIP *cur;
     WIP *prev = NULL;
@@ -95,7 +103,9 @@ void WIPfree(WIP *wp) {
 
 /* Check if the given messageid is being transfered on another channel.  If
    Add is true then add the given message-id to the current channel */
-bool WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit) {
+bool
+WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
+{
     WIP *wp;
     int i;
     
@@ -139,7 +149,9 @@ bool WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit) {
     return FALSE;
 }
 
-WIP *WIPbyid(const char *messageid) {
+WIP *
+WIPbyid(const char *messageid)
+{
     HASH hash;
     unsigned long bucket;
     WIP *wp;
@@ -157,7 +169,9 @@ WIP *WIPbyid(const char *messageid) {
     return NULL;
 }
 
-WIP *WIPbyhash(const HASH hash) {
+WIP *
+WIPbyhash(const HASH hash)
+{
     unsigned long bucket;
     WIP *wp;
 
@@ -172,4 +186,3 @@ WIP *WIPbyhash(const HASH hash) {
 
     return NULL;
 }
-

@@ -187,7 +187,8 @@ GoodIdent(int fd, char *identd)
  * and removed here)
  */
 
-char **RCCommaSplit(char *text)
+char **
+RCCommaSplit(char *text)
 {
     register int        i;
     register char       *p;
@@ -398,7 +399,7 @@ RChandoff(int fd, HANDOFF h)
 
     /* Call NNRP; don't send back a QUIT message if Spawn fails since  
      * that's a major error we want to find out about quickly. */
-    (void)Spawn(innconf->nicekids, fd, fd, fd, argv);
+    (void)Spawn(innconf->nicekids, fd, fd, fd, (char * const *)argv);
 }
 
 
@@ -417,7 +418,7 @@ RCreader(CHANNEL *cp)
     CHANNEL		*new;
     char		*name;
     long		reject_val = 0;
-    char		*reject_message;
+    const char		*reject_message;
     int			count;
     int			found;
     time_t		now;
@@ -425,7 +426,7 @@ RCreader(CHANNEL *cp)
     char		buff[SMBUF];
 
     if (cp != RCchan) {
-	syslog(L_ERROR, "%s internal RCreader wrong channel 0x%x not 0x%x",
+	syslog(L_ERROR, "%s internal RCreader wrong channel 0x%p not 0x%p",
 	    LogName, cp, RCchan);
 	return;
     }
@@ -615,8 +616,9 @@ RCreader(CHANNEL *cp)
 **  Write-done function.  Shouldn't happen.
 */
 static void
-RCwritedone()
+RCwritedone(CHANNEL *unused)
 {
+    unused = unused;		/* ARGSUSED */
     syslog(L_ERROR, "%s internal RCwritedone", LogName);
 }
 
@@ -632,7 +634,8 @@ RCwritedone()
 /*
  * Read something (a word or a double quoted string) from a file.
  */
-char *RCreaddata (int *num, FILE *F, bool *toolong)
+char *
+RCreaddata(int *num, FILE *F, bool *toolong)
 {
   register char *p;
   register char *s;
@@ -712,7 +715,8 @@ char *RCreaddata (int *num, FILE *F, bool *toolong)
 /*
  *  Add all data into RCpeerlistfile.
  */
-void RCadddata(REMOTEHOST_DATA **d, int *count, int Key, int Type, char* Value)
+void
+RCadddata(REMOTEHOST_DATA **d, int *count, int Key, int Type, char* Value)
 {
   (*d)[*count].key = Key;
   (*d)[*count].type = Type;
@@ -815,6 +819,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     linecount = 0;
     infocount = 0;
     groupcount = 0; /* no group defined yet */
+    groups = 0;
     peer_params.Label = NULL;
     default_params.Streaming = TRUE;
     default_params.Skip = FALSE;
@@ -999,11 +1004,11 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      continue;
 	    }
 	    if (i == 1) {
-	      char **r;
+	      char **rr;
 	      int    t = 0;
 	      /* Strange DNS ? try this.. */
-	      for (r = hp->h_aliases; *r != 0; r++) {
-                if (!inet_aton(*r, &addr))
+	      for (rr = hp->h_aliases; *rr != 0; rr++) {
+                if (!inet_aton(*rr, &addr))
 		  continue;
 		(*count)++;
 		/* Grow the array */
@@ -1592,7 +1597,7 @@ RCwritelist(char *filename)
 }
 
 void
-RCreadlist()
+RCreadlist(void)
 {
     static char	*INNDHOSTS = NULL;
 
@@ -1607,8 +1612,7 @@ RCreadlist()
 **  Find the name of a remote host we've connected to.
 */
 char *
-RChostname(cp)
-    register CHANNEL	*cp;
+RChostname(register const CHANNEL *cp)
 {
     static char		buff[SMBUF];
     register REMOTEHOST	*rp;
@@ -1639,7 +1643,8 @@ RClabelname(CHANNEL *cp) {
 /*
 **  Is the remote site allowed to post to this group?
 */
-int RCcanpost(CHANNEL *cp, char *group)
+int
+RCcanpost(CHANNEL *cp, char *group)
 {
     REMOTEHOST	        *rp;
     char	        match;
@@ -1674,8 +1679,7 @@ int RCcanpost(CHANNEL *cp, char *group)
 **  Create the channel.
 */
 void
-RCsetup(i)
-    register int	i;
+RCsetup(register int i)
 {
     struct sockaddr_in	server;
 #if	defined(SO_REUSEADDR)
@@ -1730,7 +1734,7 @@ RCsetup(i)
 **  Cleanly shut down the channel.
 */
 void
-RCclose()
+RCclose(void)
 {
     register REMOTEHOST	*rp;
     register int	i;

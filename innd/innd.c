@@ -92,11 +92,8 @@ FormatLong(char *p, unsigned long value, int width)
 **  filenames.
 */
 void
-FileGlue(p, n1, c, n2)
-    register char	*p;
-    register char	*n1;
-    char		c;
-    register char	*n2;
+FileGlue(register char *p, register const char *n1, char c,
+	 register const char *n2)
 {
     p += strlen(strcpy(p, n1));
     *p++ = c;
@@ -109,8 +106,7 @@ FileGlue(p, n1, c, n2)
 **  headers into a single line.
 */
 static char *
-Join(text)
-    register char	*text;
+Join(register char *text)
 {
     register char	*p;
 
@@ -126,20 +122,20 @@ Join(text)
 **  q should either be p, or point into p where the "interesting" part is.
 */
 char *
-MaxLength(p, q)
-    char		*p;
-    char		*q;
+MaxLength(const char *p, const char *q)
 {
-    static char		buff[80];
-    register int	i;
+    static char			buff[80];
+    register unsigned int	i;
 
     /* Already short enough? */
     i = strlen(p);
-    if (i < sizeof buff - 1)
-	return Join(p);
+    if (i < sizeof buff - 1) {
+	(void)strcpy(buff, p);
+	return Join(buff);
+    }
 
     /* Simple case of just want the begining? */
-    if (q - p < sizeof buff - 4) {
+    if ((unsigned)(q - p) < sizeof buff - 4) {
 	(void)strncpy(buff, p, sizeof buff - 4);
 	(void)strcpy(&buff[sizeof buff - 4], "...");
     }
@@ -167,8 +163,7 @@ MaxLength(p, q)
 **  the text is expected to be either relatively short or "comma-dense."
 */
 char **
-CommaSplit(text)
-    char		*text;
+CommaSplit(char *text)
 {
     register int	i;
     register char	*p;
@@ -198,10 +193,7 @@ CommaSplit(text)
 **  have NUL's inserted.
 */
 bool
-NeedShell(p, av, end)
-    register char	*p;
-    register char	**av;
-    register char	**end;
+NeedShell(register char *p, register const char **av, register const char **end)
 {
     static char		Metachars[] = ";<>|*?[]{}()#$&=`'\"\\~\n";
     register char	*q;
@@ -243,12 +235,7 @@ NeedShell(p, av, end)
 **  (and a syslog'd message) on error.
 */
 pid_t
-Spawn(niceval, fd0, fd1, fd2, av)
-    int		niceval;
-    int		fd0;
-    int		fd1;
-    int		fd2;
-    char	*av[];
+Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
 {
     static char	NOCLOSE[] = "%s cant close %d in %s %m";
     static char	NODUP2[] = "%s cant dup2 %d to %d in %s %m";
@@ -316,7 +303,7 @@ Spawn(niceval, fd0, fd1, fd2, av)
 **  Stat our control directory and see who should own things.
 */
 static bool
-GetNewsOwnerships()
+GetNewsOwnerships(void)
 {
     struct stat	Sb;
 
@@ -335,8 +322,7 @@ GetNewsOwnerships()
 **  Change the onwership of a file.
 */
 void
-xchown(p)
-    char	*p;
+xchown(char *p)
 {
     if (chown(p, NewsUID, NewsGID) < 0)
 	syslog(L_ERROR, "%s cant chown %s %m", LogName, p);
@@ -347,8 +333,7 @@ xchown(p)
 **  Flush one log file, with pessimistic size of working filename buffer.
 */
 void
-ReopenLog(F)
-    FILE	*F;
+ReopenLog(FILE *F)
 {
     char	buff[SMBUF];
     char	*Name;
@@ -389,7 +374,7 @@ static void
 AllocationFailure(const char *what, size_t size, const char *file, int line)
 {
     syslog(L_FATAL, "%s cant %s %lu bytes at line %d of %s: %m", LogName,
-           what, size, line, file);
+           what, (unsigned long)size, line, file);
     abort();
 }
 
@@ -398,7 +383,7 @@ AllocationFailure(const char *what, size_t size, const char *file, int line)
 **  We ran out of space or other I/O error, throttle ourselves.
 */
 void
-ThrottleIOError(char *when)
+ThrottleIOError(const char *when)
 {
     char	 buff[SMBUF];
     const char * p;
@@ -448,7 +433,7 @@ ThrottleNoMatchError(void)
 **  Close down all parts of the system (e.g., before calling exit or exec).
 */
 void
-JustCleanup()
+JustCleanup(void)
 {
     SITEflushall(FALSE);
     /* PROCclose(FALSE); */
@@ -489,9 +474,7 @@ JustCleanup()
 **  The name is self-explanatory.
 */
 void
-CleanupAndExit(x, why)
-    int		x;
-    char	*why;
+CleanupAndExit(int x, const char *why)
 {
     JustCleanup();
     if (why)
@@ -528,14 +511,15 @@ Usage(void)
 }
 
 
-int main(int ac, char *av[])
+int
+main(int ac, char *av[])
 {
     static char		WHEN[] = "PID file";
     int			i;
     int			fd;
     int			logflags;
     char		buff[SMBUF];
-    char		*p;
+    const char		*p;
     FILE		*F;
     bool		ShouldFork;
     bool		ShouldRenumber;
@@ -698,7 +682,7 @@ int main(int ac, char *av[])
 	NNRPReason = COPY(ModeReason);
 
     if (ShouldSyntaxCheck) {
-	if ((p = (char *) CCcheckfile((char **)NULL)) == NULL)
+	if ((p = CCcheckfile((char **)NULL)) == NULL)
 	    exit(0);
 	(void)fprintf(stderr, "%s\n", p + 2);
 	exit(1);
@@ -865,7 +849,7 @@ int main(int ac, char *av[])
     LCsetup();
     RCsetup(fd);
     WIPsetup();
-    NCsetup(i);
+    NCsetup();
     ARTsetup();
     ICDsetup(TRUE);
     

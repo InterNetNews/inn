@@ -15,43 +15,44 @@
 #endif
 
 typedef struct _STATUS {
-    char           name[SMBUF];
-    char           ip_addr[15];
-    bool           can_stream;
-    unsigned short activeCxn;
-    unsigned short sleepingCxns;
-    unsigned long  seconds;
-    unsigned long  accepted;
-    unsigned long  refused;
-    unsigned long  rejected;
-    unsigned long  Duplicate;
-    unsigned long  Unwanted_u;
-    unsigned long  Unwanted_d;
-    unsigned long  Unwanted_g;
-    unsigned long  Unwanted_s;
-    unsigned long  Unwanted_f;
-    float          Size;
-    float          DuplicateSize;
-    unsigned long  Check;
-    unsigned long  Check_send;
-    unsigned long  Check_deferred;
-    unsigned long  Check_got;
-    unsigned long  Check_cybercan;
-    unsigned long  Takethis;
-    unsigned long  Takethis_Ok;
-    unsigned long  Takethis_Err;
-    unsigned long  Ihave;
-    unsigned long  Ihave_Duplicate;
-    unsigned long  Ihave_Deferred;
-    unsigned long  Ihave_SendIt;
-    unsigned long  Ihave_Cybercan;
+    char		name[SMBUF];
+    char		ip_addr[15];
+    bool		can_stream;
+    unsigned short	activeCxn;
+    unsigned short	sleepingCxns;
+    time_t		seconds;
+    unsigned long	accepted;
+    unsigned long	refused;
+    unsigned long	rejected;
+    unsigned long	Duplicate;
+    unsigned long	Unwanted_u;
+    unsigned long	Unwanted_d;
+    unsigned long	Unwanted_g;
+    unsigned long	Unwanted_s;
+    unsigned long	Unwanted_f;
+    float		Size;
+    float		DuplicateSize;
+    unsigned long	Check;
+    unsigned long	Check_send;
+    unsigned long	Check_deferred;
+    unsigned long	Check_got;
+    unsigned long	Check_cybercan;
+    unsigned long	Takethis;
+    unsigned long	Takethis_Ok;
+    unsigned long	Takethis_Err;
+    unsigned long	Ihave;
+    unsigned long	Ihave_Duplicate;
+    unsigned long	Ihave_Deferred;
+    unsigned long	Ihave_SendIt;
+    unsigned long	Ihave_Cybercan;
     struct _STATUS *next;
 } STATUS;
 
 static unsigned STATUSlast_time;
 char            start_time[50];
 
-static unsigned STATUSgettime(void)
+static unsigned
+STATUSgettime(void)
 {
   static int	    	init = 0;
   static struct timeval	start_tv;
@@ -66,7 +67,8 @@ static unsigned STATUSgettime(void)
 	 (tv.tv_usec - start_tv.tv_usec) / 1000);
 }
 
-void STATUSinit(void)
+void
+STATUSinit(void)
 {
   time_t now;
   
@@ -75,7 +77,8 @@ void STATUSinit(void)
   strcpy (start_time, ctime (&now)) ;
 }
 
-char *PrettySize (float size, char *str)
+char *
+PrettySize(float size, char *str)
 {
   if (size > 1073741824) /* 1024*1024*1024 */
     sprintf (str, "%.1fGb", size / 1073741824.);
@@ -87,28 +90,29 @@ char *PrettySize (float size, char *str)
   return (str);
 }
 
-static void STATUSsummary(void)
+static void
+STATUSsummary(void)
 {
-  FILE             *F;
-  int               i, j;
-  register CHANNEL *cp;
-  int               activeCxn = 0;
-  int               sleepingCxns = 0;
-  unsigned long     seconds = 0;
-  unsigned long     duplicate = 0;
-  unsigned long     offered;
-  unsigned long     accepted = 0;
-  unsigned long     refused = 0;
-  unsigned long     rejected = 0;
-  float             size = 0;
-  float             DuplicateSize = 0;
-  int               peers = 0;
-  char              TempString [SMBUF];
-  STATUS            *head, *status, *tmp;
-  char              str[9];
-  time_t            now;
+  FILE			*F;
+  int			i, j;
+  register CHANNEL	*cp;
+  int			activeCxn = 0;
+  int			sleepingCxns = 0;
+  time_t		seconds = 0;
+  unsigned long		duplicate = 0;
+  unsigned long		offered;
+  unsigned long		accepted = 0;
+  unsigned long		refused = 0;
+  unsigned long		rejected = 0;
+  float			size = 0;
+  float			DuplicateSize = 0;
+  int			peers = 0;
+  char			TempString [SMBUF];
+  STATUS		*head, *status, *tmp;
+  char			str[9];
+  time_t		now;
 #if defined(DO_PERL)
-  extern int        PerlFilterActive;
+  extern int		PerlFilterActive;
 #endif /* defined(DO_PERL) */
  
 #if defined(HTML_STATUS)
@@ -331,7 +335,8 @@ static void STATUSsummary(void)
   (void)Fclose(F);
 }
 
-void STATUSmainloophook(void)
+void
+STATUSmainloophook(void)
 {
   unsigned now;
     
@@ -339,9 +344,8 @@ void STATUSmainloophook(void)
     return;
   now = STATUSgettime();
   
-  if (now - STATUSlast_time > (innconf->status * 1000)) {
+  if (now - STATUSlast_time > (unsigned)(innconf->status * 1000)) {
     STATUSsummary();
     STATUSlast_time = now;
   }
 }
-

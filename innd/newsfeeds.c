@@ -18,8 +18,7 @@ static char	*SITEfeedspath = NULL;
 **  Return a copy of an array of strings.
 */
 static char **
-SITEcopystrings(av)
-    char	**av;
+SITEcopystrings(char **av)
 {
     register char	**new;
     register char	**pp;
@@ -38,8 +37,7 @@ SITEcopystrings(av)
 **  Read the newsfeeds file, return a string array of entries.
 */
 char **
-SITEreadfile(ReadOnly)
-    bool		ReadOnly;
+SITEreadfile(const bool ReadOnly)
 {
     static char		**old_strings;
     static time_t	old_mtime;
@@ -113,11 +111,7 @@ SITEreadfile(ReadOnly)
 **  Modify "subbed" according to the patterns in "patlist."
 */
 static void
-SITEsetlist(patlist, subbed, poison, poisonEntry)
-    char		**patlist;
-    char		*subbed;
-    char		*poison;
-    bool		*poisonEntry;
+SITEsetlist(char **patlist, char *subbed, char *poison, bool *poisonEntry)
 {
     register char	*pat;
     register char	*p;
@@ -167,8 +161,7 @@ SITEsetlist(patlist, subbed, poison, poisonEntry)
 **  the text is expected to be either relatively short or "slash-dense."
 */
 char **
-SlashSplit(text)
-    char		*text;
+SlashSplit(char *text)
 {
     register int	i;
     register char	*p;
@@ -545,7 +538,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 **  Patch up the funnel references.
 */
 bool
-SITEfunnelpatch()
+SITEfunnelpatch(void)
 {
     register int	i;
     register int	length;
@@ -601,8 +594,7 @@ SITEfunnelpatch()
 **  Read the entries in the newsfeeds file, and parse them one at a time.
 */
 void
-SITEparsefile(StartSite)
-    bool		StartSite;
+SITEparsefile(bool StartSite)
 {
     int                 i;
     char *              p;

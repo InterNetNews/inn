@@ -13,7 +13,9 @@
 static FILE **Reserved_fd = NULL;
 static int Maxfd = -1;
 
-bool fdreserve(int fdnum) {
+bool
+fdreserve(int fdnum)
+{
     static int allocated = 0;
     int i, start = allocated;
 
@@ -57,7 +59,9 @@ bool fdreserve(int fdnum) {
     return TRUE;
 }
 
-FILE *Fopen(const char *p, char *type, int index) {
+FILE *
+Fopen(const char *p, const char *type, int index)
+{
     FILE *nfp;
     if (p == NULL || *p == '\0')
 	return NULL;
@@ -70,7 +74,9 @@ FILE *Fopen(const char *p, char *type, int index) {
     return (Reserved_fd[index] = nfp);
 }
 
-int Fclose(FILE *fp) {
+int
+Fclose(FILE *fp)
+{
     int	i;
 
     if (fp == NULL)

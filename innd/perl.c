@@ -472,7 +472,7 @@ XS(XS_INN_newsgroup)
 **  Initialize the XS callbacks defined in this file.
 */
 void
-PLxsinit()
+PLxsinit(void)
 {
     newXS("INN::addhist", XS_INN_addhist, "perl.c");
     newXS("INN::article", XS_INN_article, "perl.c");

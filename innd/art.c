@@ -83,66 +83,70 @@ static int	LFwithoutCR;
 **  The header table.  Not necessarily sorted, but the first character
 **  must be uppercase.
 */
+#define ARTHEADERINIT(name, type) \
+	{name, type, sizeof(name) - 1, (char *)0, 0, 0, FALSE}
+
 ARTHEADER	ARTheaders[] = {
-    /*	Name			Type	... */
-    {	"Approved",		HTstd },
+    /*		   Name			Type */
+    ARTHEADERINIT("Approved",		HTstd),
 #define _approved		 0
-    {	"Control",		HTstd },
+    ARTHEADERINIT("Control",		HTstd),
 #define _control		 1
-    {	"Date",			HTreq },
+    ARTHEADERINIT("Date",		HTreq),
 #define _date			 2
-    {	"Distribution",		HTstd },
+    ARTHEADERINIT("Distribution",	HTstd),
 #define _distribution		 3
-    {	"Expires",		HTstd },
+    ARTHEADERINIT("Expires",		HTstd),
 #define _expires		 4
-    {	"From",			HTreq },
+    ARTHEADERINIT("From",		HTreq),
 #define _from			 5
-    {	"Lines",		HTstd },
+    ARTHEADERINIT("Lines",		HTstd),
 #define _lines			 6
-    {	"Message-ID",		HTreq },
+    ARTHEADERINIT("Message-ID",		HTreq),
 #define _message_id		 7
-    {	"Newsgroups",		HTreq },
+    ARTHEADERINIT("Newsgroups",		HTreq),
 #define _newsgroups		 8
-    {	"Path",			HTreq },
+    ARTHEADERINIT("Path",		HTreq),
 #define _path			 9
-    {	"Reply-To",		HTstd },
+    ARTHEADERINIT("Reply-To",		HTstd),
 #define _reply_to		10
-    {	"Sender",		HTstd },
+    ARTHEADERINIT("Sender",		HTstd),
 #define _sender			11
-    {	"Subject",		HTreq },
+    ARTHEADERINIT("Subject",		HTreq),
 #define _subject		12
-    {	"Supersedes",		HTstd },
+    ARTHEADERINIT("Supersedes",		HTstd),
 #define _supersedes		13
-    {	"Bytes",		HTstd },
+    ARTHEADERINIT("Bytes",		HTstd),
 #define _bytes			14
-    {	"Also-Control",		HTstd },
-    {	"References",		HTstd },
+    ARTHEADERINIT("Also-Control",	HTstd),
+    ARTHEADERINIT("References",		HTstd),
 #define _references		16
-    {	"Xref",			HTsav },
+    ARTHEADERINIT("Xref",		HTsav),
 #define _xref			17
-    {	"Keywords",		HTstd },
+    ARTHEADERINIT("Keywords",		HTstd),
 #define _keywords		18
-    {   "X-Trace",		HTstd },
+    ARTHEADERINIT("X-Trace",		HTstd),
 #define _xtrace			19
-    {	"Date-Received",	HTobs },
-    {	"Posted",		HTobs },
-    {	"Posting-Version",	HTobs },
-    {	"Received",		HTobs },
-    {	"Relay-Version",	HTobs },
-    {	"NNTP-Posting-Host",	HTstd },
-    {	"Followup-To",		HTstd },
+    ARTHEADERINIT("Date-Received",	HTobs),
+    ARTHEADERINIT("Posted",		HTobs),
+    ARTHEADERINIT("Posting-Version",	HTobs),
+    ARTHEADERINIT("Received",		HTobs),
+    ARTHEADERINIT("Relay-Version",	HTobs),
+    ARTHEADERINIT("NNTP-Posting-Host",	HTstd),
+    ARTHEADERINIT("Followup-To",	HTstd),
 #define _followup_to		26
-    {	"Organization",		HTstd },
-    {	"Content-Type",		HTstd },
-    {	"Content-Base",		HTstd },
-    {	"Content-Disposition",	HTstd },
-    {	"X-Newsreader",		HTstd },
-    {	"X-Mailer",		HTstd },
-    {	"X-Newsposter",		HTstd },
-    {	"X-Cancelled-By",	HTstd },
-    {	"X-Canceled-By",	HTstd },
-    {	"Cancel-Key",		HTstd },
+    ARTHEADERINIT("Organization",	HTstd),
+    ARTHEADERINIT("Content-Type",	HTstd),
+    ARTHEADERINIT("Content-Base",	HTstd),
+    ARTHEADERINIT("Content-Disposition", HTstd),
+    ARTHEADERINIT("X-Newsreader",	HTstd),
+    ARTHEADERINIT("X-Mailer",		HTstd),
+    ARTHEADERINIT("X-Newsposter",	HTstd),
+    ARTHEADERINIT("X-Cancelled-By",	HTstd),
+    ARTHEADERINIT("X-Canceled-By",	HTstd),
+    ARTHEADERINIT("Cancel-Key",		HTstd)
 };
+#undef ARTHEADERINIT
 
 ARTHEADER	*ARTheadersENDOF = ENDOF(ARTheaders);
 
@@ -155,7 +159,8 @@ const char	*filterPath;
 /*
 **  Mark that the site gets this article.
 */
-void SITEmark(SITE *sp, NEWSGROUP *ngp) {
+void
+SITEmark(SITE *sp, NEWSGROUP *ngp) {
     SITE	*funnel; 
 
     sp->Sendit = TRUE; 
@@ -171,7 +176,8 @@ void SITEmark(SITE *sp, NEWSGROUP *ngp) {
 /*
 **
 */
-bool ARTreadschema(void)
+bool
+ARTreadschema(void)
 {
     static char			*SCHEMA = NULL;
     FILE		        *F;
@@ -248,10 +254,7 @@ bool ARTreadschema(void)
 **  so we don't bother to unroll the recursion.
 */
 static TREE *
-ARTbuildtree(Table, lo, hi)
-    ARTHEADER	**Table;
-    int		lo;
-    int		hi;
+ARTbuildtree(ARTHEADER **Table, int lo, int hi)
 {
     int		mid;
     TREE	*tp;
@@ -278,24 +281,21 @@ ARTbuildtree(Table, lo, hi)
 static int
 ARTcompare(const void *p1, const void *p2)
 {
-    ARTHEADER **h1;
-    ARTHEADER **h2;
-
-    h1 = (ARTHEADER **) p1;
-    h2 = (ARTHEADER **) p2;
-    return strcasecmp(h1[0]->Name, h2[0]->Name);
+    return strcasecmp(((const ARTHEADER **)p1)[0]->Name,
+		      ((const ARTHEADER **)p2)[0]->Name);
 }
 
 
 /*
 **  Setup the article processing.
 */
-void ARTsetup(void)
+void
+ARTsetup(void)
 {
-    const char *        p;
-    ARTHEADER *         hp;
-    ARTHEADER **        table;
-    int	                i;
+    const char *	p;
+    ARTHEADER *		hp;
+    ARTHEADER **	table;
+    unsigned int	i;
 
     /* Set up the character class tables.  These are written a
      * little strangely to work around a GCC2.0 bug. */
@@ -321,7 +321,6 @@ void ARTsetup(void)
 
     /* Allocate space in the header table. */
     for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++) {
-	hp->Size = strlen(hp->Name);
 	hp->Allocated = hp->Value == NULL && hp->Type != HTobs
 			&& hp != &ARTheaders[_bytes];
 	if (hp->Allocated)
@@ -346,8 +345,7 @@ void ARTsetup(void)
 
 
 static void
-ARTfreetree(tp)
-    TREE	*tp;
+ARTfreetree(TREE *tp)
 {
     TREE	*next;
 
@@ -360,7 +358,8 @@ ARTfreetree(tp)
 }
 
 
-void ARTclose(void)
+void
+ARTclose(void)
 {
     ARTHEADER	*hp;
 
@@ -380,9 +379,10 @@ void ARTclose(void)
 **  Parse a Path line, splitting it up into NULL-terminated array of strings.
 **  The argument is modified!
 */
-static char **ARTparsepath(char *p, int *countp)
+static const char **
+ARTparsepath(char *p, int *countp)
 {
-    static char		*NULLPATH[1] = { NULL };
+    static const char	*NULLPATH[1] = { NULL };
     static int		oldlength;
     static char		**hosts;
     int	                i;
@@ -421,13 +421,14 @@ static char **ARTparsepath(char *p, int *countp)
     }
     *hp = NULL;
     *countp = hp - hosts;
-    return hosts;
+    return (const char **)hosts;
 }
 
 /* Write an article using the storage api.  Put it together in memory and
    call out to the api. */
-static TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
-    char                *path;
+static TOKEN
+ARTstore(BUFFER *Article, ARTDATA *Data) {
+    const char		*ppath;
     char                *p;
     char                *end;
     unsigned long       size;
@@ -440,8 +441,8 @@ static TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 
     result.type = TOKEN_EMPTY;
 
-    if (((path = (char *)HeaderFindMem(Article->Data, Article->Used, "Path", 4)) == NULL)
-	|| (path == Article->Data)) {
+    if (((ppath = HeaderFindMem(Article->Data, Article->Used, "Path", 4)) == NULL)
+	|| (ppath == Article->Data)) {
 	/* This should not happen */
 	syslog(L_ERROR, "%s internal %s no Path header",
 	       Data->MessageID, LogName);
@@ -450,29 +451,29 @@ static TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 
     size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + Pathalias.Used + 64 + 1;
     p = artbuff = NEW(char, size);
-    if ((Path.Used >= Article->Used - (int)(path - Article->Data)) || strncmp(Path.Data, path, Path.Used) != 0) {
+    if ((Path.Used >= Article->Used - (int)(ppath - Article->Data)) || strncmp(Path.Data, ppath, Path.Used) != 0) {
 	Hassamepath = FALSE;
-	memcpy(p, Article->Data, path - Article->Data);
-	p += path - Article->Data;
+	memcpy(p, Article->Data, ppath - Article->Data);
+	p += ppath - Article->Data;
 	memcpy(p, Path.Data, Path.Used);
 	p += Path.Used;
 	if (AddAlias) {
 	    memcpy(p, Pathalias.Data, Pathalias.Used);
 	    p += Pathalias.Used;
 	}
-	memcpy(p, path, Data->Body - path - 1);
-	p += Data->Body - path - 1;
+	memcpy(p, ppath, Data->Body - ppath - 1);
+	p += Data->Body - ppath - 1;
     } else {
 	Hassamepath = TRUE;
 	if (AddAlias) {
-	    memcpy(p, Article->Data, path - Article->Data);
-	    p += path - Article->Data;
+	    memcpy(p, Article->Data, ppath - Article->Data);
+	    p += ppath - Article->Data;
 	    memcpy(p, Path.Data, Path.Used);
 	    p += Path.Used;
 	    memcpy(p, Pathalias.Data, Pathalias.Used);
 	    p += Pathalias.Used;
-	    memcpy(p, path + Path.Used, Data->Body - path - Path.Used - 1);
-	    p += Data->Body - path - Path.Used - 1;
+	    memcpy(p, ppath + Path.Used, Data->Body - ppath - Path.Used - 1);
+	    p += Data->Body - ppath - Path.Used - 1;
 	} else {
 	    memcpy(p, Article->Data, Data->Body - Article->Data - 1);
 	    p += Data->Body - Article->Data - 1;
@@ -480,11 +481,11 @@ static TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     }
 
     if (NeedPath) {
-	Data->Path = path;
-	for (i = Data->Body - path; --i >= 0; path++)
-	    if (*path == '\r' || *path == '\n')
+	Data->Path = ppath;
+	for (i = Data->Body - ppath; --i >= 0; ppath++)
+	    if (*ppath == '\r' || *ppath == '\n')
 		break;
-	Data->PathLength = path - Data->Path;
+	Data->PathLength = ppath - Data->Path;
     }
 
     if (ARTheaders[_lines].Found == 0) {
@@ -688,7 +689,8 @@ ARTparseheader(char *in, char *out, int *deltap, const char **errorp)
 **  in <#*tyo2'~n@twinsun.com>, with additional email discussion.
 **  Thanks, Paul.
 */
-bool ARTidok(const char *MessageID)
+bool
+ARTidok(const char *MessageID)
 {
     int	                c;
     const char	        *p;
@@ -944,10 +946,7 @@ ARTclean(BUFFER *Article, ARTDATA *Data)
 **  Start a log message about an article.
 */
 static void
-ARTlog(Data, code, text)
-    ARTDATA		*Data;
-    char		code;
-    char		*text;
+ARTlog(const ARTDATA *Data, char code, const char *text)
 {
     int			i;
     bool		Done;
@@ -981,10 +980,7 @@ ARTlog(Data, code, text)
 **  and the article.
 */
 static void
-ARTreject(code, cp, buff, article)
-    Reject_type code;
-    CHANNEL     *cp;
-    BUFFER	*article;
+ARTreject(Reject_type code, CHANNEL *cp, BUFFER *article)
 {
   /* Remember why the article was rejected (for the status file) */
 
@@ -1026,10 +1022,12 @@ ARTreject(code, cp, buff, article)
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
-static TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const HASH hash)
+static TOKEN *
+ARTcancelverify(const ARTDATA *Data, const char *MessageID, const HASH hash)
 {
-    char	        *p, *q;
-    char	        *local;
+    const char	        *p;
+    char	        *q, *q1;
+    const char	        *local;
     char		buff[SMBUF];
     ARTHANDLE		*art;
     TOKEN		*token;
@@ -1038,8 +1036,8 @@ static TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const 
 	return NULL;
     if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
 	return NULL;
-    if ((local = (char *)HeaderFindMem(art->data, art->len, "Sender", 6)) == NULL
-     && (local = (char *)HeaderFindMem(art->data, art->len, "From", 4)) == NULL) {
+    if ((local = HeaderFindMem(art->data, art->len, "Sender", 6)) == NULL
+     && (local = HeaderFindMem(art->data, art->len, "From", 4)) == NULL) {
 	SMfreearticle(art);
 	return NULL;
     }
@@ -1058,15 +1056,15 @@ static TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const 
     HeaderCleanFrom(q);
 
     /* Compare canonical forms. */
-    p = COPY(Data->Poster);
-    HeaderCleanFrom(p);
-    if (!EQ(q, p)) {
+    q1 = COPY(Data->Poster);
+    HeaderCleanFrom(q1);
+    if (!EQ(q, q1)) {
 	token = NULL;
 	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
-		      p, MaxLength(MessageID, MessageID), q);
+		      q1, MaxLength(MessageID, MessageID), q);
 	ARTlog(Data, ART_REJECT, buff);
     }
-    DISPOSE(p);
+    DISPOSE(q1);
     DISPOSE(q);
     return token;
 }
@@ -1075,7 +1073,8 @@ static TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const 
 /*
 **  Process a cancel message.
 */
-void ARTcancel(const ARTDATA *Data, const char *MessageID, const bool Trusted)
+void
+ARTcancel(const ARTDATA *Data, const char *MessageID, const bool Trusted)
 {
     char		buff[SMBUF+16];
     HASH                hash;
@@ -1137,14 +1136,15 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const bool Trusted)
 **  are passed out to an external program in a specific directory that
 **  has the same name as the first word of the control message.
 */
-static void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
+static void
+ARTcontrol(ARTDATA *Data, char *Control, CHANNEL *cp)
 {
     char	        *p;
     char		buff[SMBUF];
     char		*av[6];
     struct stat		Sb;
     char	        c;
-    char		**hops;
+    const char		**hops;
     int			hopcount;
 
     /* See if it's a cancel message. */
@@ -1210,15 +1210,15 @@ static void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 	av[3] = Data->Name;
 	if (innconf->logipaddr) {
 	    hops = ARTparsepath(HDR(_path), &hopcount);
-	    av[4] = hops && hops[0] ? hops[0] : CHANname(cp);
+	    (const char *)av[4] = hops && hops[0] ? hops[0] : CHANname(cp);
 	} else {
-	    av[4] = (char *)Data->Feedsite;
+	    (const char *)av[4] = Data->Feedsite;
 	}
 	av[5] = NULL;
 	HeaderCleanFrom(av[1]);
 	HeaderCleanFrom(av[2]);
 	if (Spawn(innconf->nicekids, STDIN_FILENO, fileno(Errlog),
-                  fileno(Errlog), av) < 0)
+                  fileno(Errlog), (char * const *)av) < 0)
 	    /* We know the strrchr below can't fail. */
 	    syslog(L_ERROR, "%s cant spawn %s for %s %m",
 		LogName, MaxLength(av[0], strrchr(av[0], '/')), Data->Name);
@@ -1232,7 +1232,8 @@ static void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 **  Split a Distribution header, making a copy and skipping leading and
 **  trailing whitespace (which the RFC allows).
 */
-static void DISTparse(char **list, ARTDATA *Data)
+static void
+DISTparse(char **list, ARTDATA *Data)
 {
     static BUFFER	Dist;
     char	        *p;
@@ -1276,7 +1277,8 @@ static void DISTparse(char **list, ARTDATA *Data)
 **  A somewhat similar routine, except that this handles negated entries
 **  in the list and is used to check the distribution sub-field.
 */
-static bool DISTwanted(char **list, char *p)
+static bool
+DISTwanted(char **list, char *p)
 {
     char	        *q;
     char	        c;
@@ -1300,7 +1302,8 @@ static bool DISTwanted(char **list, char *p)
 /*
 **  See if any of the distributions in the article are wanted by the site.
 */
-static bool DISTwantany(char **site, char **article)
+static bool
+DISTwantany(char **site, char **article)
 {
     for ( ; *article; article++)
 	if (DISTwanted(site, *article))
@@ -1313,7 +1316,8 @@ static bool DISTwantany(char **site, char **article)
 **  Send the current article to all sites that would get it if the
 **  group were created.
 */
-static void ARTsendthegroup(char *name)
+static void
+ARTsendthegroup(char *name)
 {
     SITE	        *sp;
     int	                i;
@@ -1330,7 +1334,8 @@ static void ARTsendthegroup(char *name)
 **  Check if site doesn't want this group even if it's crossposted
 **  to a wanted group.
 */
-static void ARTpoisongroup(char *name)
+static void
+ARTpoisongroup(char *name)
 {
     SITE	        *sp;
     int	                i;
@@ -1347,7 +1352,8 @@ static void ARTpoisongroup(char *name)
 ** If we end up not being able to write the article, we'll get "holes"
 ** in the directory and active file.
 */
-static void ARTassignnumbers(void)
+static void
+ARTassignnumbers(void)
 {
     char	        *p;
     int	                i;
@@ -1382,7 +1388,7 @@ static void ARTassignnumbers(void)
 **  This involves replacing the GroupPointers entries.
 */
 static bool
-ARTxrefslave()
+ARTxrefslave(void)
 {
     char	*p;
     char	*q;
@@ -1460,9 +1466,10 @@ ARTxrefslave()
 **  Return TRUE if a list of strings has a specific one.  This is a
 **  generic routine, but is used for seeing if a host is in the Path line.
 */
-static bool ListHas(char **list, char *p)
+static bool
+ListHas(const char **list, const char *p)
 {
-    char	        *q;
+    const char	        *q;
     char	        c;
 
     for (c = *p; (q = *list) != NULL; list++)
@@ -1475,7 +1482,9 @@ static bool ListHas(char **list, char *p)
 /*
 **  Propagate an article to the sites have "expressed an interest."
 */
-static void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, bool ControlStore, bool OverviewCreated)
+static void
+ARTpropagate(ARTDATA *Data, const char **hops, int hopcount, char **list,
+	     bool ControlStore, bool OverviewCreated)
 {
     SITE	        *sp;
     int	                i;
@@ -1645,11 +1654,8 @@ struct word_entry {
 int
 wvec_freq_cmp(const void *p1, const void *p2)
 {
-    struct word_entry *w1, *w2;
-
-    w1 = (struct word_entry *) p1;
-    w2 = (struct word_entry *) p2;
-    return w2->count - w1->count;	/* decreasing sort */
+    return ((const struct word_entry *)p2)->count -	/* decreasing sort */
+           ((const struct word_entry *)p1)->count;
 }
 
 /*
@@ -1659,11 +1665,8 @@ wvec_freq_cmp(const void *p1, const void *p2)
 int
 wvec_length_cmp(const void *p1, const void *p2)
 {
-    struct word_entry *w1, *w2;
-
-    w1 = (struct word_entry *) p1;
-    w2 = (struct word_entry *) p2;
-    return w2->length - w1->length;	/* decreasing sort */
+    return ((const struct word_entry *)p2)->length -	/* decreasing sort */
+           ((const struct word_entry *)p1)->length;
 }
 
 /*
@@ -1674,14 +1677,11 @@ int
 ptr_strcmp(const void *p1, const void *p2)
 {
     int cdiff;
-    char **s1, **s2;
 
-    s1 = (char **) p1;
-    s2 = (char **) p2;
-    cdiff = (**s1) - (**s2);
+    cdiff = (**(const char **)p1) - (**(const char **)p2);
     if (cdiff)
 	return cdiff;
-    return strcmp((*s1)+1, (*s2)+1);
+    return strcmp((*(const char **)p1)+1, (*(const char **)p2)+1);
 }
 
 /*
@@ -1689,24 +1689,25 @@ ptr_strcmp(const void *p1, const void *p2)
 */
 
 static void
-ARTmakekeys(hp, body, v, l)
-    register ARTHEADER	*hp;		/* header data */
-    register char	*body, *v;	/* article body, old kw value */
-    register int	l;		/* old kw length */
+ARTmakekeys(
+    register ARTHEADER	*hp,	/* header data */
+    register char	*body,	/* article body */
+    register char	*v;	/* old kw value */
+    register int	l)	/* old kw length */
 {
 
     int		word_count, word_length, bodylen, word_index, distinct_words;
     int		last;
     char	*text, *orig_text, *text_end, *this_word, *chase, *punc;
     static struct word_entry	*word_vec;
-    static char	**word;
-    static char	*whitespace  = " \t\r\n";
+    static char		**word;
+    static const char	*whitespace  = " \t\r\n";
 
     /* ---------------------------------------------------------------- */
     /* Prototype setup: Regex match preparation. */
     static	int	regex_lib_init = 0;
     static	regex_t	preg;
-    static	char	*elim_regexp = "^\\([-+/0-9][-+/0-9]*\\|.*1st\\|.*2nd\\|.*3rd\\|.*[04-9]th\\|about\\|after\\|ago\\|all\\|already\\|also\\|among\\|and\\|any\\|anybody\\|anyhow\\|anyone\\|anywhere\\|are\\|bad\\|because\\|been\\|before\\|being\\|between\\|but\\|can\\|could\\|did\\|does\\|doing\\|done\\|dont\\|during\\|eight\\|eighth\\|eleven\\|else\\|elsewhere\\|every\\|everywhere\\|few\\|five\\|fifth\\|first\\|for\\|four\\|fourth\\|from\\|get\\|going\\|gone\\|good\\|got\\|had\\|has\\|have\\|having\\|he\\|her\\|here\\|hers\\|herself\\|him\\|himself\\|his\\|how\\|ill\\|into\\|its\\|ive\\|just\\|kn[eo]w\\|least\\|less\\|let\\|like\\|look\\|many\\|may\\|more\\|m[ou]st\\|myself\\|next\\|nine\\|ninth\\|not\\|now\\|off\\|one\\|only\\|onto\\|our\\|out\\|over\\|really\\|said\\|saw\\|says\\|second\\|see\\|set\\|seven\\|seventh\\|several\\|shall\\|she\\|should\\|since\\|six\\|sixth\\|some\\|somehow\\|someone\\|something\\|somewhere\\|such\\|take\\|ten\\|tenth\\|than\\|that\\|the\\|their\\!|them\\|then\\|there\\|therell\\|theres\\|these\\|they\\|thing\\|things\\|third\\|this\\|those\\|three\\|thus\\|together\\|told\\|too\\|twelve\\|two\\|under\\|upon\\|very\\|via\\|want\\|wants\\|was\\|wasnt\\|way\\|were\\|weve\\|what\\|whatever\\|when\\|where\\|wherell\\|wheres\\|whether\\|which\\|while\\|who\\|why\\|will\\|will\\|with\\|would\\|write\\|writes\\|wrote\\|yes\\|yet\\|you\\|your\\|youre\\|yourself\\)$";
+    static const char	*elim_regexp = "^\\([-+/0-9][-+/0-9]*\\|.*1st\\|.*2nd\\|.*3rd\\|.*[04-9]th\\|about\\|after\\|ago\\|all\\|already\\|also\\|among\\|and\\|any\\|anybody\\|anyhow\\|anyone\\|anywhere\\|are\\|bad\\|because\\|been\\|before\\|being\\|between\\|but\\|can\\|could\\|did\\|does\\|doing\\|done\\|dont\\|during\\|eight\\|eighth\\|eleven\\|else\\|elsewhere\\|every\\|everywhere\\|few\\|five\\|fifth\\|first\\|for\\|four\\|fourth\\|from\\|get\\|going\\|gone\\|good\\|got\\|had\\|has\\|have\\|having\\|he\\|her\\|here\\|hers\\|herself\\|him\\|himself\\|his\\|how\\|ill\\|into\\|its\\|ive\\|just\\|kn[eo]w\\|least\\|less\\|let\\|like\\|look\\|many\\|may\\|more\\|m[ou]st\\|myself\\|next\\|nine\\|ninth\\|not\\|now\\|off\\|one\\|only\\|onto\\|our\\|out\\|over\\|really\\|said\\|saw\\|says\\|second\\|see\\|set\\|seven\\|seventh\\|several\\|shall\\|she\\|should\\|since\\|six\\|sixth\\|some\\|somehow\\|someone\\|something\\|somewhere\\|such\\|take\\|ten\\|tenth\\|than\\|that\\|the\\|their\\!|them\\|then\\|there\\|therell\\|theres\\|these\\|they\\|thing\\|things\\|third\\|this\\|those\\|three\\|thus\\|together\\|told\\|too\\|twelve\\|two\\|under\\|upon\\|very\\|via\\|want\\|wants\\|was\\|wasnt\\|way\\|were\\|weve\\|what\\|whatever\\|when\\|where\\|wherell\\|wheres\\|whether\\|which\\|while\\|who\\|why\\|will\\|will\\|with\\|would\\|write\\|writes\\|wrote\\|yes\\|yet\\|you\\|your\\|youre\\|yourself\\)$";
 
     if (word_vec == 0) {
 	word_vec = NEW(struct word_entry, innconf->keymaxwords);
@@ -1879,7 +1880,8 @@ out:
 /*
 **  Build up the overview data.
 */
-static void ARTmakeoverview(ARTDATA *Data, bool Filename)
+static void
+ARTmakeoverview(ARTDATA *Data)
 {
     static char			SEP[] = "\t";
     static char			COLONSPACE[] = ": ";
@@ -1990,7 +1992,7 @@ ARTpost(CHANNEL *cp)
     BUFFER		*article;
     HASH                hash;
     char		**groups;
-    char		**hops;
+    const char		**hops;
     int			hopcount;
     char		**distributions;
     const char		*error;
@@ -2043,7 +2045,7 @@ ARTpost(CHANNEL *cp)
     if (HIShavearticle(hash)) {
 	sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
 	ARTlog(&Data, ART_REJECT, buff);
-	ARTreject(REJECT_DUPLICATE, cp, buff, article);
+	ARTreject(REJECT_DUPLICATE, cp, article);
 	return buff;
     }
 
@@ -2053,7 +2055,7 @@ ARTpost(CHANNEL *cp)
 	if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
 	    syslog(L_ERROR, "%s cant write history %s %m",
 		       LogName, Data.MessageID);
-	ARTreject(REJECT_OTHER, cp, buff, article);
+	ARTreject(REJECT_OTHER, cp, article);
 	return buff;
     }
 
@@ -2067,7 +2069,7 @@ ARTpost(CHANNEL *cp)
 			!HISremember(hash))
 		syslog(L_ERROR, "%s cant write history %s %m",
 		       LogName, Data.MessageID);
-	    ARTreject(REJECT_SITE, cp, buff, article);
+	    ARTreject(REJECT_SITE, cp, article);
 	    return buff;
         }
     }
@@ -2093,7 +2095,7 @@ ARTpost(CHANNEL *cp)
 			!HISremember(hash))
                 syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
-            ARTreject(REJECT_FILTER, cp, buff, article);
+            ARTreject(REJECT_FILTER, cp, article);
             return buff;
         }
     }
@@ -2116,7 +2118,7 @@ ARTpost(CHANNEL *cp)
 			!HISremember(hash))
                 syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
-            ARTreject(REJECT_FILTER, cp, buff, article);
+            ARTreject(REJECT_FILTER, cp, article);
             return buff;
         }
     }
@@ -2162,7 +2164,7 @@ ARTpost(CHANNEL *cp)
 				!HISremember(hash))
                         syslog(L_ERROR, "%s cant write history %s %m",
                            LogName, Data.MessageID);
-		    ARTreject(REJECT_FILTER, cp, buff, article);
+		    ARTreject(REJECT_FILTER, cp, article);
 		    return buff;
 		}
 	    }
@@ -2203,7 +2205,7 @@ ARTpost(CHANNEL *cp)
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
 	DISPOSE(distributions);
-	ARTreject(REJECT_DISTRIB, cp, buff, article);
+	ARTreject(REJECT_DISTRIB, cp, article);
 	return buff;
       } else {
 	DISTparse(distributions, &Data);
@@ -2218,7 +2220,7 @@ ARTpost(CHANNEL *cp)
                 syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
 	    DISPOSE(distributions);
-	    ARTreject(REJECT_DISTRIB, cp, buff, article);
+	    ARTreject(REJECT_DISTRIB, cp, article);
 	    return buff;
 	}
       }
@@ -2353,7 +2355,7 @@ ARTpost(CHANNEL *cp)
                        LogName, Data.MessageID);
 	    if (distributions)
 		DISPOSE(distributions);
-	    ARTreject(REJECT_UNAPP, cp, buff, article);
+	    ARTreject(REJECT_UNAPP, cp, article);
 	    return buff;
 	}
 
@@ -2378,7 +2380,7 @@ ARTpost(CHANNEL *cp)
 	    ARTlog(&Data, ART_REJECT, buff);
 	    if (distributions)
 		DISPOSE(distributions);
-	    ARTreject(REJECT_GROUP, cp, buff, article);
+	    ARTreject(REJECT_GROUP, cp, article);
 	    return buff;
 	}
 
@@ -2452,7 +2454,7 @@ ARTpost(CHANNEL *cp)
                        LogName, Data.MessageID);
 		if (distributions)
 		    DISPOSE(distributions);
-		ARTreject(REJECT_GROUP, cp, buff, article);
+		ARTreject(REJECT_GROUP, cp, article);
 		return buff;
 	    } else {
 	    /* if !GroupMissing, then all the groups the article was posted
@@ -2467,7 +2469,7 @@ ARTpost(CHANNEL *cp)
 					LogName, Data.MessageID);
 		    if (distributions)
 				DISPOSE(distributions);
-		    ARTreject(REJECT_GROUP, cp, buff, article);
+		    ARTreject(REJECT_GROUP, cp, article);
 		    return buff;
 		}
 	    }
@@ -2514,7 +2516,7 @@ ARTpost(CHANNEL *cp)
             ARTlog(&Data, ART_REJECT, buff);
 	    if (distributions)
 	        DISPOSE(distributions);
-	    ARTreject(REJECT_OTHER, cp, buff, article);
+	    ARTreject(REJECT_OTHER, cp, article);
 	    return buff;
     	}
     } else {
@@ -2540,12 +2542,12 @@ ARTpost(CHANNEL *cp)
 		   LogName, Data.MessageID);
 	if (distributions)
 	    DISPOSE(distributions);
-	ARTreject(REJECT_OTHER, cp, buff, article);
+	ARTreject(REJECT_OTHER, cp, article);
 	TMRstop(TMR_ARTWRITE);
 	return buff;
     }
     TMRstop(TMR_ARTWRITE);
-    ARTmakeoverview(&Data, FALSE);
+    ARTmakeoverview(&Data);
     MadeOverview = TRUE;
     if (innconf->enableoverview && !innconf->useoverchan) {
 	TMRstart(TMR_OVERV);
@@ -2566,7 +2568,7 @@ ARTpost(CHANNEL *cp)
     Data.NameLength = strlen(Data.Name);
 
     /* Update history if we didn't get too many I/O errors above. */
-    if ((Mode != OMrunning) || !HISwrite(&Data, hash, Files.Data, &token)) {
+    if ((Mode != OMrunning) || !HISwrite(&Data, hash, Files.Data)) {
 	i = errno;
 	syslog(L_ERROR, "%s cant write history %s %m", LogName, Data.MessageID);
 	(void)sprintf(buff, "%d cant write history, %s",
@@ -2574,7 +2576,7 @@ ARTpost(CHANNEL *cp)
 	ARTlog(&Data, ART_REJECT, buff);
 	if (distributions)
 	    DISPOSE(distributions);
-	ARTreject(REJECT_OTHER, cp, buff, article);
+	ARTreject(REJECT_OTHER, cp, article);
 	return buff;
     }
 
@@ -2643,7 +2645,7 @@ ARTpost(CHANNEL *cp)
     if (Accepted) {
 	if (IsControl) {
 	    TMRstart(TMR_ARTCTRL);
-	    ARTcontrol(&Data, hash, HDR(_control), cp);
+	    ARTcontrol(&Data, HDR(_control), cp);
 	    TMRstop(TMR_ARTCTRL);
 	}
 	p = HDR(_supersedes);
@@ -2654,7 +2656,7 @@ ARTpost(CHANNEL *cp)
 
     /* If we need the overview data, write it. */
     if (NeedOverview && !MadeOverview)
-	ARTmakeoverview(&Data, TRUE);
+	ARTmakeoverview(&Data);
 
     /* And finally, send to everyone who should get it */
     for (sp = Sites, i = nSites; --i >= 0; sp++)

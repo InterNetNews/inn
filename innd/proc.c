@@ -13,14 +13,14 @@
 
 static PROCESS	*PROCtable;
 static int	PROCtablesize;
-static PROCESS	PROCnull = { PSfree };
+static PROCESS	PROCnull = { PSfree, 0, 0, 0, 0, 0 };
 
 
 /*
 **  Collect dead processes.
 */
 static void
-PROCreap()
+PROCreap(void)
 {
     int		status;
     PROCESS	*pp;
@@ -58,6 +58,8 @@ PROCcatchsignal(int s)
 
 #ifndef HAVE_SIGACTION
     xsignal(s, PROCcatchsignal);
+#else
+    s = s;			/* ARGSUSED */
 #endif
 }
 
@@ -66,7 +68,7 @@ PROCcatchsignal(int s)
 **  Synchronous version that notifies a site when its process went away.
 */
 void
-PROCscan()
+PROCscan(void)
 {
     register PROCESS	*pp;
     register int	i;
@@ -163,8 +165,7 @@ PROCwatch(pid_t pid, int site)
 **  Setup.
 */
 void
-PROCsetup(i)
-    register int	i;
+PROCsetup(register int i)
 {
     register PROCESS	*pp;
 

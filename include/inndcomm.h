@@ -68,14 +68,14 @@ typedef char ICC_PROTOCOLTYPE ;
 #define MAX_REASON_LEN 80
 
 
-extern void	ICCsettimeout();
-extern int	ICCopen();
-extern int	ICCclose();
-extern int	ICCcommand();
-extern int	ICCcancel();
-extern int	ICCgo();
-extern int	ICCpause();
-extern int	ICCreserve();
+extern void	ICCsettimeout(int i);
+extern int	ICCopen(void);
+extern int	ICCclose(void);
+extern int	ICCcommand(char cmd, char *argv[], char **replyp);
+extern int	ICCcancel(char *msgid);
+extern int	ICCgo(char *why);
+extern int	ICCpause(char *why);
+extern int	ICCreserve(char *why);
 
 extern char	*ICCfailure;
 

@@ -44,9 +44,8 @@ struct conf_vars	*innconf = NULL;
 char			*innconffile = _PATH_CONFIG;
 char			pathbuff[SMBUF];
 
-char *cpcatpath(p, f)
-    char *p;
-    char *f;
+char *
+cpcatpath(const char *p, const char *f)
 {
     if (strchr(f, '/') != NULL) {
 	return(f);

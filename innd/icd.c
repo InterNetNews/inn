@@ -48,7 +48,7 @@ ICDiovset(struct iovec *iovp, char *base, int len)
 **  Close the active file, releasing its resources.
 */
 static void
-ICDcloseactive()
+ICDcloseactive(void)
 {
     if (ICDactpointer) {
 #ifdef HAVE_MMAP
@@ -100,7 +100,7 @@ ICDsetup(StartSites)
 **  Write out all in-core data.
 */
 void
-ICDwrite()
+ICDwrite(void)
 {
     HISsync();
     SMflushcacheddata(SM_ALL);
@@ -122,7 +122,7 @@ ICDwrite()
 **  Close things down.
 */
 void
-ICDclose()
+ICDclose(void)
 {
     ICDwrite();
     ICDcloseactive();
@@ -133,7 +133,7 @@ ICDclose()
 **  Scan the active file, and renumber the min/max counts.
 */
 bool
-ICDrenumberactive()
+ICDrenumberactive(void)
 {
     register int	i;
     register NEWSGROUP	*ngp;
@@ -236,7 +236,8 @@ ICDwritevactive(struct iovec *vp, int vpcount)
 /*
 **  Change the flag on a newsgroup.  Fairly easy.
 */
-bool ICDchangegroup(NEWSGROUP *ngp, char *Rest)
+bool
+ICDchangegroup(NEWSGROUP *ngp, char *Rest)
 {
     static char		NEWLINE[] = "\n";
     int                 i;
@@ -430,7 +431,7 @@ ICDreadactive(endp)
 **  Write the active file out.
 */
 void
-ICDwriteactive()
+ICDwriteactive(void)
 {
 #ifdef HAVE_MMAP
 # ifdef MMAP_NEEDS_MSYNC

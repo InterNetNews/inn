@@ -28,52 +28,55 @@ typedef struct _NCDISPATCH {
     int                 Size;
 } NCDISPATCH;
 
-static void NCauthinfo();
-static void NChead();
-static void NChelp();
-static void NCihave();
-static void NClist();
-static void NCmode();
-static void NCquit();
-static void NCstat();
-static void NCxpath();
-static void NC_unimp();
+static void NCauthinfo(CHANNEL *cp);
+static void NChead(CHANNEL *cp);
+static void NChelp(CHANNEL *cp);
+static void NCihave(CHANNEL *cp);
+static void NClist(CHANNEL *cp);
+static void NCmode(CHANNEL *cp);
+static void NCquit(CHANNEL *cp);
+static void NCstat(CHANNEL *cp);
+static void NCxpath(CHANNEL *cp);
+static void NC_unimp(CHANNEL *cp);
 /* new modules for streaming */
-static void NCxbatch();
-static void NCcheck();
-static void NCtakethis();
-static void NCwritedone();
-static void NCcancel();
+static void NCxbatch(CHANNEL *cp);
+static void NCcheck(CHANNEL *cp);
+static void NCtakethis(CHANNEL *cp);
+static void NCwritedone(CHANNEL *cp);
+static void NCcancel(CHANNEL *cp);
 
 static int		NCcount;	/* Number of open connections	*/
+#define NCDISPATCHINIT(name, func) \
+	{name, func, sizeof(name) - 1}
 static NCDISPATCH	NCcommands[] = {
 #if	0
-    {	"article",	NCarticle },
+    NCDISPATCHINIT("article",	NCarticle),
 #else
-    {	"article",	NC_unimp },
+    NCDISPATCHINIT("article",	NC_unimp),
 #endif	/* 0 */
-    {	"authinfo",	NCauthinfo },
-    {	"help",		NChelp	},
-    {	"ihave",	NCihave	},
-    {	"check",	NCcheck	},
-    {	"takethis",	NCtakethis },
-    {	"list",		NClist	},
-    {	"mode",		NCmode	},
-    {	"quit",		NCquit	},
-    {	"head",		NChead	},
-    {	"stat",		NCstat	},
-    {	"body",		NC_unimp },
-    {	"group",	NC_unimp },
-    {	"last",		NC_unimp },
-    {	"newgroups",	NC_unimp },
-    {	"newnews",	NC_unimp },
-    {	"next",		NC_unimp },
-    {	"post",		NC_unimp },
-    {	"slave",	NC_unimp },
-    {	"xbatch",	NCxbatch },
-    {	"xhdr",		NC_unimp },
-    {	"xpath",	NCxpath	},
+    NCDISPATCHINIT("authinfo",	NCauthinfo),
+    NCDISPATCHINIT("help",	NChelp),
+    NCDISPATCHINIT("ihave",	NCihave),
+    NCDISPATCHINIT("check",	NCcheck),
+    NCDISPATCHINIT("takethis",	NCtakethis),
+    NCDISPATCHINIT("list",	NClist),
+    NCDISPATCHINIT("mode",	NCmode),
+    NCDISPATCHINIT("quit",	NCquit),
+    NCDISPATCHINIT("head",	NChead),
+    NCDISPATCHINIT("stat",	NCstat),
+    NCDISPATCHINIT("body",	NC_unimp),
+    NCDISPATCHINIT("group",	NC_unimp),
+    NCDISPATCHINIT("last",	NC_unimp),
+    NCDISPATCHINIT("newgroups",	NC_unimp),
+    NCDISPATCHINIT("newnews",	NC_unimp),
+    NCDISPATCHINIT("next",	NC_unimp),
+    NCDISPATCHINIT("post",	NC_unimp),
+    NCDISPATCHINIT("slave",	NC_unimp),
+    NCDISPATCHINIT("xbatch",	NCxbatch),
+    NCDISPATCHINIT("xhdr",	NC_unimp),
+    NCDISPATCHINIT("xpath",	NCxpath)
 };
+#undef NCDISPATCHINIT
 static char		*NCquietlist[] = {
     INND_QUIET_BADLIST
 };
@@ -84,7 +87,9 @@ static char		NCbadcommand[] = NNTP_BAD_COMMAND;
 /*
 ** Clear the WIP entry for the given channel
 */
-void NCclearwip(CHANNEL *cp) {
+void
+NCclearwip(CHANNEL *cp)
+{
     WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
     HashClear(&cp->CurrentMessageIDHash);
     cp->ArtBeg = 0;
@@ -104,7 +109,7 @@ void NCclearwip(CHANNEL *cp) {
 **  *before* NCwritereply is called.
 */
 void
-NCwritereply(CHANNEL *cp, char *text)
+NCwritereply(CHANNEL *cp, const char *text)
 {
     BUFFER	*bp;
     int		i;
@@ -142,7 +147,7 @@ NCwritereply(CHANNEL *cp, char *text)
 **  Tell the NNTP channel to go away.
 */
 void
-NCwriteshutdown(CHANNEL *cp, char *text)
+NCwriteshutdown(CHANNEL *cp, const char *text)
 {
     cp->State = CSwritegoodbye;
     RCHANremove(cp); /* we're not going to read anything more */
@@ -199,7 +204,6 @@ NCpostit(CHANNEL *cp)
 	if (atoi(response) == NNTP_TOOKIT_VAL) {
 	    cp->Received++;
 	    if (cp->Sendid.Size > 3) { /* We be streaming */
-		char buff[4];
 		cp->Takethis_Ok++;
 		(void)sprintf(buff, "%d", NNTP_OK_RECID_VAL);
 		cp->Sendid.Data[0] = buff[0];
@@ -226,7 +230,7 @@ NCpostit(CHANNEL *cp)
 	    break;
 	}
 	cp->State = CSgetcmd;
-	NCwritereply(cp, (char *)response);
+	NCwritereply(cp, response);
 	break;
 
     case OMthrottled:
@@ -274,7 +278,8 @@ NCwritedone(CHANNEL *cp)
 /*
 **  The "head" command.
 */
-static void NChead(CHANNEL *cp)
+static void
+NChead(CHANNEL *cp)
 {
     char	        *p;
     TOKEN		*token;
@@ -310,7 +315,8 @@ static void NChead(CHANNEL *cp)
 /*
 **  The "stat" command.
 */
-static void NCstat(CHANNEL *cp)
+static void
+NCstat(CHANNEL *cp)
 {
     char	        *p;
     TOKEN		*token;
@@ -537,17 +543,17 @@ NCxbatch(CHANNEL *cp)
 	continue;
 
     if (cp->XBatchSize) {
-        syslog(L_FATAL, "NCxbatch(): oops, cp->XBatchSize already set to %ld",
+        syslog(L_FATAL, "NCxbatch(): oops, cp->XBatchSize already set to %d",
 	       cp->XBatchSize);
     }
 
     cp->XBatchSize = atoi(p);
     if (Tracing || cp->Tracing)
-        syslog(L_TRACE, "%s will read batch of size %ld",
+        syslog(L_TRACE, "%s will read batch of size %d",
 	       CHANname(cp), cp->XBatchSize);
 
     if (cp->XBatchSize <= 0 || ((innconf->maxartsize != 0) && (innconf->maxartsize < cp->XBatchSize))) {
-        syslog(L_NOTICE, "%s got bad xbatch size %ld",
+        syslog(L_NOTICE, "%s got bad xbatch size %d",
 	       CHANname(cp), cp->XBatchSize);
 	NCwritereply(cp, NNTP_XBATCH_BADSIZE);
 	return;
@@ -672,7 +678,8 @@ NCmode(CHANNEL *cp)
 /*
 **  The "quit" command.  Acknowledge, and set the state to closing down.
 */
-static void NCquit(CHANNEL *cp)
+static void
+NCquit(CHANNEL *cp)
 {
     cp->State = CSwritegoodbye;
     NCwritereply(cp, NNTP_GOODBYE_ACK);
@@ -714,7 +721,8 @@ NC_unimp(CHANNEL *cp)
 **  Check whatever data is available on the channel.  If we got the
 **  full amount (i.e., the command or the whole article) process it.
 */
-static void NCproc(CHANNEL *cp)
+static void
+NCproc(CHANNEL *cp)
 {
     char	        *p;
     NCDISPATCH   	*dp;
@@ -861,7 +869,6 @@ static void NCproc(CHANNEL *cp)
 		cp->Rejected++;
 		cp->State = CSgetcmd;
 		if (cp->Sendid.Size > 3) { /* We be streaming */
-		    char buff[4];
 		    cp->Takethis_Err++;
 		    (void)sprintf(buff, "%d", NNTP_ERR_FAILID_VAL);
 		    cp->Sendid.Data[0] = buff[0];
@@ -951,16 +958,17 @@ static void NCproc(CHANNEL *cp)
 		    cp->Argument = NULL;
 		}
 		i = cp->LargeArtSize + bp->Used;
-		syslog(L_NOTICE, "%s internal rejecting huge article (%d > %d)",
+		syslog(L_NOTICE, "%s internal rejecting huge article (%d > %ld)",
 		    CHANname(cp), i, innconf->maxartsize);
 		cp->LargeArtSize = 0;
-		(void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
-			NNTP_REJECTIT_VAL, innconf->maxartsize);
 		cp->State = CSgetcmd;
 		if (cp->Sendid.Size)
 		    NCwritereply(cp, cp->Sendid.Data);
-		else
+		else {
+		    (void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
+				NNTP_REJECTIT_VAL, innconf->maxartsize);
 		    NCwritereply(cp, buff);
+                }
 		cp->Rejected++;
 
 		/* Write a local cancel entry so nobody else gives it to us. */
@@ -1059,7 +1067,7 @@ static void NCproc(CHANNEL *cp)
 	    * directory with an unique timestamp, and start rnews on it.
 	    */
 	    if (Tracing || cp->Tracing)
-		syslog(L_TRACE, "%s CSgetxbatch: now %ld of %ld bytes",
+		syslog(L_TRACE, "%s CSgetxbatch: now %d of %d bytes",
 			CHANname(cp), bp->Used, cp->XBatchSize);
 
 	    if (bp->Used < cp->XBatchSize) {
@@ -1070,7 +1078,7 @@ static void NCproc(CHANNEL *cp)
 
 	    /* now do something with the batch */
 	    {
-		char buff[SMBUF], buff2[SMBUF];
+		char buff2[SMBUF];
 		int fd, oerrno, failed;
 		long now;
 
@@ -1126,7 +1134,7 @@ static void NCproc(CHANNEL *cp)
 		} else
 		    cp->Rejected++;
 	    }
-	    syslog(L_NOTICE, "%s accepted batch size %ld",
+	    syslog(L_NOTICE, "%s accepted batch size %d",
 		   CHANname(cp), cp->XBatchSize);
 	    cp->State = CSgetcmd;
 	    
@@ -1213,9 +1221,8 @@ NCreader(CHANNEL *cp)
 **  Set up the NNTP channel state.
 */
 void
-NCsetup(int i)
+NCsetup(void)
 {
-    NCDISPATCH		*dp;
     char		*p;
     char		buff[SMBUF];
 
@@ -1227,10 +1234,6 @@ NCsetup(int i)
     (void)sprintf(buff, "%d %s InterNetNews server %s ready",
 	    NNTP_POSTOK_VAL, p, inn_version_string);
     NCgreeting = COPY(buff);
-
-    /* Get the length of every command. */
-    for (dp = NCcommands; dp < ENDOF(NCcommands); dp++)
-	dp->Size = strlen(dp->Name);
 }
 
 
@@ -1409,7 +1412,8 @@ NCcheck(CHANNEL *cp)
 **  The "takethis" command.  Article follows.
 **  Remember <id> for later ack.
 */
-static void NCtakethis(CHANNEL *cp)
+static void
+NCtakethis(CHANNEL *cp)
 {
     char	        *p;
     int			msglen;

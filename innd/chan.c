@@ -55,7 +55,8 @@ static CHANNEL	*CHANrc;
 /*
 **  Append data to a buffer.
 */
-void BUFFappend(BUFFER *bp, const char *p, const int len) {
+void
+BUFFappend(BUFFER *bp, const char *p, const int len) {
     int i;
     
     if (len == 0)
@@ -75,7 +76,8 @@ void BUFFappend(BUFFER *bp, const char *p, const int len) {
 **  Set a buffer's contents, ignoring anything that might have
 **  been there.
 */
-void BUFFset(BUFFER *bp, const char *p, const int length)
+void
+BUFFset(BUFFER *bp, const char *p, const int length)
 {
     if ((bp->Left = length) != 0) {
 	/* Need more space? */
@@ -93,7 +95,8 @@ void BUFFset(BUFFER *bp, const char *p, const int length)
 /*
 **  Swap the contents of two buffers.
 */
-void BUFFswap(BUFFER *b1, BUFFER *b2)
+void
+BUFFswap(BUFFER *b1, BUFFER *b2)
 {
     BUFFER		b;
 
@@ -105,7 +108,8 @@ void BUFFswap(BUFFER *b1, BUFFER *b2)
 /*
 **  Trim '\r' from buffer.
 */
-void BUFFtrimcr(BUFFER *bp)
+void
+BUFFtrimcr(BUFFER *bp)
 {
     char *p, *q;
     int trimmed = 0;
@@ -124,7 +128,7 @@ void BUFFtrimcr(BUFFER *bp)
 ** Tear down our world
 */
 void
-CHANshutdown()
+CHANshutdown(void)
 {
   CHANNEL	        *cp;
   int			i;
@@ -146,7 +150,8 @@ CHANshutdown()
 /*
 **  Initialize all the I/O channels.
 */
-void CHANsetup(int i)
+void
+CHANsetup(int i)
 {
     CHANNEL	        *cp;
 
@@ -256,7 +261,8 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
 /*
 **  Start tracing a channel.
 */
-void CHANtracing(CHANNEL *cp, bool Flag)
+void
+CHANtracing(CHANNEL *cp, bool Flag)
 {
     char		*p;
 
@@ -269,7 +275,7 @@ void CHANtracing(CHANNEL *cp, bool Flag)
 	syslog(L_NOTICE, "%s trace address %s lastactive %ld nextlog %ld",
 	    p, inet_ntoa(cp->Address), cp->LastActive, cp->NextLog);
 	if (FD_ISSET(cp->fd, &SCHANmask))
-	    syslog(L_NOTICE, "%s trace sleeping %ld 0x%x",
+	    syslog(L_NOTICE, "%s trace sleeping %ld 0x%p",
 		p, (long)cp->Waketime, cp->Waker);
 	if (FD_ISSET(cp->fd, &RCHANmask))
 	    syslog(L_NOTICE, "%s trace reading %d %s",
@@ -284,7 +290,8 @@ void CHANtracing(CHANNEL *cp, bool Flag)
 /*
 **  Close a channel.
 */
-void CHANclose(CHANNEL *cp, char *name)
+void
+CHANclose(CHANNEL *cp, const char *name)
 {
     char	*label, *tmplabel, buff[SMBUF];
 
@@ -371,7 +378,8 @@ void CHANclose(CHANNEL *cp, char *name)
 /*
 **  Return a printable name for the channel.
 */
-char *CHANname(const CHANNEL *cp)
+char *
+CHANname(const CHANNEL *cp)
 {
     static char		buff[SMBUF];
     int	                i;
@@ -434,7 +442,8 @@ char *CHANname(const CHANNEL *cp)
 /*
 **  Return the channel for a specified descriptor.
 */
-CHANNEL *CHANfromdescriptor(int fd)
+CHANNEL *
+CHANfromdescriptor(int fd)
 {
     if (fd <0 || fd > CHANtablesize)
 	return NULL;
@@ -445,7 +454,8 @@ CHANNEL *CHANfromdescriptor(int fd)
 /*
 **  Iterate over all channels of a specified type.
 */
-CHANNEL *CHANiter(int *ip, CHANNELTYPE Type)
+CHANNEL *
+CHANiter(int *ip, CHANNELTYPE Type)
 {
     CHANNEL	        *cp;
     int	                i;
@@ -468,7 +478,8 @@ CHANNEL *CHANiter(int *ip, CHANNELTYPE Type)
 /*
 **  Mark a channel as an active reader.
 */
-void RCHANadd(CHANNEL *cp)
+void
+RCHANadd(CHANNEL *cp)
 {
     FD_SET(cp->fd, &RCHANmask);
     if (cp->fd > CHANlastfd)
@@ -482,7 +493,8 @@ void RCHANadd(CHANNEL *cp)
 /*
 **  Remove a channel from the set of readers.
 */
-void RCHANremove(CHANNEL *cp)
+void
+RCHANremove(CHANNEL *cp)
 {
     if (FD_ISSET(cp->fd, &RCHANmask)) {
 	FD_CLR(cp->fd, &RCHANmask);
@@ -524,7 +536,8 @@ SCHANadd(CHANNEL *cp, time_t Waketime, void *Event, innd_callback_t Waker,
 /*
 **  Take a channel off the sleep list.
 */
-void SCHANremove(CHANNEL *cp)
+void
+SCHANremove(CHANNEL *cp)
 {
     if (FD_ISSET(cp->fd, &SCHANmask)) {
 	FD_CLR(cp->fd, &SCHANmask);
@@ -543,7 +556,8 @@ void SCHANremove(CHANNEL *cp)
 /*
 **  Is a channel on the sleep list?
 */
-bool CHANsleeping(CHANNEL *cp)
+bool
+CHANsleeping(CHANNEL *cp)
 {
     return FD_ISSET(cp->fd, &SCHANmask);
 }
@@ -568,7 +582,8 @@ SCHANwakeup(void *Event)
 **  Mark a channel as an active writer.  Don't reset the Out->Left field
 **  since we could have buffered I/O already in there.
 */
-void WCHANadd(CHANNEL *cp)
+void
+WCHANadd(CHANNEL *cp)
 {
     if (cp->Out.Left > 0) {
 	FD_SET(cp->fd, &WCHANmask);
@@ -581,7 +596,8 @@ void WCHANadd(CHANNEL *cp)
 /*
 **  Remove a channel from the set of writers.
 */
-void WCHANremove(CHANNEL *cp)
+void
+WCHANremove(CHANNEL *cp)
 {
     if (FD_ISSET(cp->fd, &WCHANmask)) {
 	FD_CLR(cp->fd, &WCHANmask);
@@ -604,7 +620,8 @@ void WCHANremove(CHANNEL *cp)
 /*
 **  Set a channel to start off with the contents of an existing channel.
 */
-void WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp)
+void
+WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp)
 {
     WCHANset(cp, &bp->Data[bp->Used], bp->Left);
 }
@@ -614,7 +631,8 @@ void WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp)
 /*
 **  Read in text data, return the amount we read.
 */
-int CHANreadtext(CHANNEL *cp)
+int
+CHANreadtext(CHANNEL *cp)
 {
     int	                i;
     BUFFER	        *bp;
@@ -715,7 +733,8 @@ CHANwrite(int fd, char *p, long length)
 /*
 **  Try to flush out the buffer.  Use this only on file channels!
 */
-bool WCHANflush(CHANNEL *cp)
+bool
+WCHANflush(CHANNEL *cp)
 {
     BUFFER	        *bp;
     int	                i;
@@ -823,7 +842,8 @@ CHANdiagnose(void)
 }
 #endif	/* defined(INND_FIND_BAD_FDS) */
 
-void CHANsetActiveCnx(CHANNEL *cp) {
+void
+CHANsetActiveCnx(CHANNEL *cp) {
     int		found;  
     CHANNEL	*tempchan;
     char	*label, *tmplabel;
@@ -855,7 +875,8 @@ void CHANsetActiveCnx(CHANNEL *cp) {
 **
 **  Yes, the main code has really wandered over to the side a lot.
 */
-void CHANreadloop(void)
+void
+CHANreadloop(void)
 {
     static char		EXITING[] = "INND exiting because of signal\n";
     static int		fd;
