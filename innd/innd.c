@@ -639,8 +639,8 @@ int main(int ac, char *av[])
 	    default:
 		Usage();
 		/* NOTREACHED */
-	    case 'n':	innconf->readerswhenstopped = TRUE;	break;
-	    case 'y':	innconf->readerswhenstopped = FALSE;	break;
+	    case 'n':	innconf->readerswhenstopped = FALSE;	break;
+	    case 'y':	innconf->readerswhenstopped = TRUE;	break;
 	    }
 	    break;
 	case 'o':
