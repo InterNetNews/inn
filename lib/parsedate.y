@@ -1,5 +1,5 @@
 %{
-/* $Revision$
+/*  $Id$
 **
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
 **  at the University of North Carolina at Chapel Hill.  Later tweaked by
@@ -17,21 +17,22 @@
 /* SUPPRESS 593 on yyerrlab *//* Label was not used */
 /* SUPPRESS 593 on yynewstate *//* Label was not used */
 /* SUPPRESS 595 on yypvt *//* Automatic variable may be used before set */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
 #include <ctype.h>
-#include "libinn.h"
-#include "macros.h"
 
 #if defined(_HPUX_SOURCE)
-#include <alloca.h>
+# include <alloca.h>
 #endif
+
+#ifdef TM_IN_SYS_TIME
+# include <sys/time.h>
+#else
+# include <time.h>
+#endif
+
+#include "libinn.h"
+#include "macros.h"
 
 
 #define yylhs		date_yylhs
