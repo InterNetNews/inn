@@ -154,9 +154,10 @@ then
 AC_PATH_PROG(_PATH_PGP,pgp,no-pgp-found-during-configure)
 fi
 
-AC_PATH_PROGS(_PATH_COMPRESS,gzip compress,no-compress-found-during-configure)
+AC_PATH_PROG(COMPRESS,compress,no-compress-found-during-configure)
+AC_PATH_PROGS(LOG_COMPRESS,gzip compress,no-compress-found-during-configure)
 dnl
-case "`basename $_PATH_COMPRESS`" in
+case "`basename $LOG_COMPRESS`" in
 gzip)
 	LOG_COMPRESSEXT=".gz" ;;
 compress)
