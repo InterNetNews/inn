@@ -168,7 +168,7 @@ static OFFSET_T tagboth;		/* tagbits|taghere */
 #define PACKED __attribute__ ((packed))
 #endif
 
-#if defined(__SUNPRO_C) || defined(_nec_ews) || defined (sgi)
+#if defined(__SUNPRO_C) || defined(_nec_ews) || defined(sgi) || defined(sun)
 #if !defined(lint) && defined(__SUNPRO_C)
 #pragma pack(1)
 #endif /* nor lint, nor sgi, nor _nec_ews */

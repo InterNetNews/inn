@@ -1567,7 +1567,8 @@ ARTxrefslave()
 	GroupPointers[i++] = ngp;
 
 	/* Turn news.group/# into news.group:#, append to Xref. */
-	len = sprintf(p, " %s:%ld", name, ngp->Filenum);
+	sprintf(p, " %s:%ld", name, ngp->Filenum);
+	len = strlen(p);
 	p += len;
 	
     }
