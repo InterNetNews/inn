@@ -1049,11 +1049,29 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 	    break;
 	}
 
-    if (Overview < 0) {
-	Reply("%d Header not in index\r\n", NNTP_SYNTAX_VAL);
+    /* Not in overview, we have to fish headers out from the articles */
+    if (Overview < 0 ) {
+        Reply("%d %s matches follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
+	pattern = Glom(&av[3]);
+        for (i = range.Low; i <= range.High && range.High > 0; i++) {
+            if (!ARTopen(i))
+                continue;
+            p = GetHeader(header, FALSE);
+	    if (p && wildmat(p, pattern)) {
+		sprintf(buff, "%lu ", i);
+		SendIOb(buff, strlen(buff));
+		SendIOb(p, strlen(p));
+		SendIOb("\r\n", 2);
+		ARTclose();
+	    }
+        }
+        SendIOb(".\r\n", 3);
+        PushIOb();
+        DISPOSE(pattern);
 	return;
     }
 
+    /* Okay then, we can grab values from overview. */
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
 	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
 	return;
@@ -1070,7 +1088,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 		SendIOb(buff, strlen(buff));
 		SendIOb(p, strlen(p));
 		SendIOb("\r\n", 2);
-    }
+            }
 	}
     }
     SendIOb(".\r\n", 3);
