@@ -89,6 +89,9 @@
 /* Define if you have symlink() */
 #undef HAVE_SYMLINK
 
+/* Define if you have socketpair() */
+#undef HAVE_SOCKETPAIR
+
 /* if I understand how configure does this, if 'const' isn't valid, 
  * it will remove the 'const' declarations from the typedef's below 
  * <scrappy@hub.org 
