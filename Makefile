@@ -97,7 +97,8 @@ cert:
 	$(SSLBIN)/openssl req -new -x509 -nodes \
 	    -out $(PATHLIB)/cert.pem -days 366 \
 	    -keyout $(PATHLIB)/cert.pem
-	chown news:news $(PATHLIB)/cert.pem
+	chown news $(PATHLIB)/cert.pem
+	chgrp news $(PATHLIB)/cert.pem
 	chmod 640 $(PATHLIB)/cert.pem
 
 
@@ -110,7 +111,6 @@ clean:
 	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
 	done
 	@echo ''
-	rm -f config.log FILELIST
 
 clobber realclean distclean:
 	@for D in $(ALLDIRS) ; do \
@@ -119,8 +119,8 @@ clobber realclean distclean:
 	done
 	@echo ''
 	rm -rf inews.* rnews.* $(TARDIR)
-	rm -f inn*.tar.gz CHANGES MANIFEST.BAK tags core
-	rm -f config.cache config.log config.status libtool makedirs.sh
+	rm -f inn*.tar.gz TAGS tags
+	rm -f config.cache config.log config.status libtool
 	rm -f include/autoconfig.h include/config.h include/paths.h
 	rm -f support/fixscript Makefile.global
 
@@ -139,7 +139,8 @@ TAGS etags:
 ##  Make a release.  We create a release by recreating the directory
 ##  structure and then copying over all files listed in the MANIFEST.  If it
 ##  isn't in the MANIFEST, it doesn't go into the release.  We also update
-##  all timestamps to the date the release is made.
+##  the version information in Makefile.global.in to remove the prerelease
+##  designation and update all timestamps to the date the release is made.
 release: MANIFEST
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
@@ -148,6 +149,8 @@ release: MANIFEST
 	for f in `sed $(DISTFILES) < MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
+	sed 's/= CVS prerelease/=/' < Makefile.global.in \
+	    > $(TARDIR)/Makefile.global.in
 	find $(TARDIR) -type -f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(GZIP) -9 $(TARFILE)
