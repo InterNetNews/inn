@@ -862,14 +862,14 @@ Configuring INN
     For each metacycbuff, you now need to determine how many cycbuffs will
     make up the metacycbuff, the size of those cycbuffs and where they will
     be stored.  Some OSes do not support files larger than 2GB which will
-    force all of your cycbuffs to be < 2GB.  Linux is known to have this
-    limitation, FreeBSD does not.  Some OSes that support large files don't
-    support block access to large raw partitions (Solaris is in this
-    category); on those OSes, if you want cycbuffs over 2GB, you'll have to
-    use regular files.  If in doubt, keep your cycbuffs smaller than 2GB. 
-    Also when laying out your cycbuffs, you will want to try to arrange them
-    across as many physical disks as possible (or use a striped disk array
-    and put them all on that).
+    force all of your cycbuffs to be < 2GB.  Some versions of Linux are
+    known to have this limitation, FreeBSD does not.  Some OSes that support
+    large files don't support block access to large raw partitions (Solaris
+    is in this category); on those OSes, if you want cycbuffs over 2GB,
+    you'll have to use regular files.  If in doubt, keep your cycbuffs
+    smaller than 2GB.  Also when laying out your cycbuffs, you will want to
+    try to arrange them across as many physical disks as possible (or use a
+    striped disk array and put them all on that).
 
     For each cycbuff you will be creating, add a line to cycbuff.conf like
     the following:
@@ -1250,14 +1250,17 @@ File Descriptor Limits
     rlimitnofile in inn.conf to a higher value.  This will cause
     startinnfeed and inndstart, the setuid root wrapper scripts that start
     innfeed and innd respectively, to increase the file descriptor limits
-    before they run the regular INN programs.  Note, however, that you won't
+    before they run the regular INN programs.  Note, however, that INN won't
     be able to increase the limits above the hard limits set by your
     operating system; on some systems, that hard limit is 256 file
     descriptors (Linux, for example).  On others, like Solaris, it's 1024. 
     Increasing the limit beyond that value may require serious system
-    configuration work (on Linux, patching and recompiling the kernel; on
-    Solaris 2.6 or earlier, the limit cannot be increased beyond 1024
-    without breaking select() and thereby breaking all of INN).
+    configuration work.  (On some operating systems, it requires patching
+    and recompiling the kernel.  On Solaris it can be changed in
+    /etc/system, but for 2.6 or earlier the limit cannot be increased beyond
+    1024 without breaking select() and thereby breaking all of INN.  For
+    current versions of Linux, you may be able to change the maximum by
+    writing to /proc/sys/fs/file-max.)
 
     256 file descriptors will probably be enough for all but the largest
     site.  There is no harm in setting the limits higher than you actually
