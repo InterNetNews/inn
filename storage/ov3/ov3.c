@@ -20,8 +20,8 @@
 #include <time.h>
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
-#endif	/* defined(HAVE_RLIMIT) */
 #include <sys/resource.h>
+#endif	/* defined(HAVE_RLIMIT) */
 #include "macros.h"
 #include "clibrary.h"
 #include "libinn.h"
@@ -163,13 +163,16 @@ BOOL tradindexed_open(int mode) {
     char                *groupfn;
     struct stat         sb;
     int                 flag = 0;
+#ifdef HAVE_RLIMIT
     struct rlimit	rl;
+#endif
 
     OV3mode = mode;
     if (OV3mode & OV_READ)
 	CACHEmaxentries = 1;
     else
 	CACHEmaxentries = innconf->overcachesize;
+#if defined(HAVE_RLIMIT) && defined(RLIMIT_NOFILE)
     if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
         syslog(L_FATAL, "tradindexed: cant getrlimit(NOFILE) %m");
         return FALSE;
@@ -178,6 +181,7 @@ BOOL tradindexed_open(int mode) {
         syslog(L_FATAL, "tradindexed: overcachesize is too large or maximum fd number is too small");
         return FALSE;
     }
+#endif /* HAVE_RLIMIT && RLIMIT_NOFILE */
     memset(&CACHEdata, '\0', sizeof(CACHEdata));
     
     strcpy(dirname, innconf->pathoverview);
