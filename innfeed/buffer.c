@@ -3,9 +3,6 @@
 **  The Buffer class for innfeed.
 **
 **  Written by James Brister <brister@vix.com>
-**  Copyright 1996 by the Internet Software Consortium
-**
-**  For license terms, see the end of this file.
 **
 **  The implementation of the Buffer class.  Buffers are reference counted
 **  objects that abstract memory regions in a way similar to struct iovec.
@@ -530,20 +527,3 @@ bool nntpPrepareBuffer (Buffer buffer)
   
   return true ;
 }
-
-/*
-**  Copyright 1996 by the Internet Software Consortium
-**
-**  Permission to use, copy, modify, and distribute this software for any
-**  purpose with or without fee is hereby granted, provided that the above
-**  copyright notice and this permission notice appear in all copies.
-**
-**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
-**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
-**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
-**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
-**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
-**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-**  PERFORMANCE OF THIS SOFTWARE.
-*/
