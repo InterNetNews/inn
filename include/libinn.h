@@ -264,12 +264,12 @@ struct conf_vars {
     int strippostcc;            /* Strip To:, Cc: and Bcc: from posts */
 
     /* Posting -- Exponential Backoff */
-    int backoff_auth;           /* Backoff by user, not IP address */
-    char *backoff_db;           /* Directory for backoff databases */
-    long backoff_k;             /* Multiple for the sleep time */
-    long backoff_postfast;      /* Upper time limit for fast posting */
-    long backoff_postslow;      /* Lower time limit for slow posting */
-    long backoff_trigger;       /* Number of postings before triggered */
+    int backoffauth;            /* Backoff by user, not IP address */
+    char *backoffdb;            /* Directory for backoff databases */
+    long backoffk;              /* Multiple for the sleep time */
+    long backoffpostfast;       /* Upper time limit for fast posting */
+    long backoffpostslow;       /* Lower time limit for slow posting */
+    long backofftrigger;        /* Number of postings before triggered */
 
     /* Logging */
     int logartsize;             /* Log article sizes? */

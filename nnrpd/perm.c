@@ -472,14 +472,14 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->nnrpdposthost = innconf->nnrpdposthost;
     curaccess->nnrpdpostport = innconf->nnrpdpostport;
     curaccess->nnrpdoverstats = innconf->nnrpdoverstats;
-    curaccess->backoff_auth = innconf->backoff_auth;
+    curaccess->backoff_auth = innconf->backoffauth;
     curaccess->backoff_db = NULL;
-    if (innconf->backoff_db)
-	curaccess->backoff_db = COPY(innconf->backoff_db);
-    curaccess->backoff_k = innconf->backoff_k;
-    curaccess->backoff_postfast = innconf->backoff_postfast;
-    curaccess->backoff_postslow = innconf->backoff_postslow;
-    curaccess->backoff_trigger = innconf->backoff_trigger;
+    if (innconf->backoffdb)
+	curaccess->backoff_db = COPY(innconf->backoffdb);
+    curaccess->backoff_k = innconf->backoffk;
+    curaccess->backoff_postfast = innconf->backoffpostfast;
+    curaccess->backoff_postslow = innconf->backoffpostslow;
+    curaccess->backoff_trigger = innconf->backofftrigger;
     curaccess->nnrpdcheckart = innconf->nnrpdcheckart;
     curaccess->nnrpdauthsender = innconf->nnrpdauthsender;
     curaccess->virtualhost = FALSE;

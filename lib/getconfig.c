@@ -237,12 +237,12 @@ SetDefaults(void)
     innconf->logsitename = TRUE;
     innconf->nnrpdoverstats = FALSE;
     innconf->storeonxref = TRUE;
-    innconf->backoff_auth = FALSE;
-    innconf->backoff_db = NULL;
-    innconf->backoff_k = 1L;
-    innconf->backoff_postfast = 0L;
-    innconf->backoff_postslow = 1L;
-    innconf->backoff_trigger = 10000L;
+    innconf->backoffauth = FALSE;
+    innconf->backoffdb = NULL;
+    innconf->backoffk = 1L;
+    innconf->backoffpostfast = 0L;
+    innconf->backoffpostslow = 1L;
+    innconf->backofftrigger = 10000L;
     innconf->refusecybercancels = FALSE;
     innconf->nnrpdcheckart = TRUE;
     innconf->nicenewnews = 0;
@@ -304,7 +304,7 @@ ClearInnConf(void)
     if (innconf->pathincoming != NULL) DISPOSE(innconf->pathincoming);
     if (innconf->patharchive != NULL) DISPOSE(innconf->patharchive);
     if (innconf->pathtmp != NULL) DISPOSE(innconf->pathtmp);
-    if (innconf->backoff_db != NULL) DISPOSE(innconf->backoff_db);
+    if (innconf->backoffdb != NULL) DISPOSE(innconf->backoffdb);
     if (innconf->ovmethod != NULL) DISPOSE(innconf->ovmethod);
     if (innconf->ovgrouppat != NULL) DISPOSE(innconf->ovgrouppat);
     if (innconf->stathist != NULL) DISPOSE(innconf->stathist);
@@ -863,32 +863,32 @@ ReadInnConf(void)
 	    } else
 	    if (EQ(ConfigBuff,_CONF_BACKOFFAUTH)) {
 		TEST_CONFIG(CONF_VAR_BACKOFFAUTH, bit);
-		if (!bit && boolval != -1) innconf->backoff_auth = boolval;
+		if (!bit && boolval != -1) innconf->backoffauth = boolval;
 		SET_CONFIG(CONF_VAR_BACKOFFAUTH);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_BACKOFFDB)) {
 		TEST_CONFIG(CONF_VAR_BACKOFFDB, bit);
-		if (!bit) innconf->backoff_db = COPY(p);
+		if (!bit) innconf->backoffdb = COPY(p);
 		SET_CONFIG(CONF_VAR_BACKOFFDB);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_BACKOFFK)) {
 		TEST_CONFIG(CONF_VAR_BACKOFFK, bit);
-		if (!bit) innconf->backoff_k = atol(p);
+		if (!bit) innconf->backoffk = atol(p);
 		SET_CONFIG(CONF_VAR_BACKOFFK);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_BACKOFFPOSTFAST)) {
 		TEST_CONFIG(CONF_VAR_BACKOFFPOSTFAST, bit);
-		if (!bit) innconf->backoff_postfast = atol(p);
+		if (!bit) innconf->backoffpostfast = atol(p);
 		SET_CONFIG(CONF_VAR_BACKOFFPOSTFAST);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_BACKOFFPOSTSLOW)) {
 		TEST_CONFIG(CONF_VAR_BACKOFFPOSTSLOW, bit);
-		if (!bit) innconf->backoff_postslow = atol(p);
+		if (!bit) innconf->backoffpostslow = atol(p);
 		SET_CONFIG(CONF_VAR_BACKOFFPOSTSLOW);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_BACKOFFTRIGGER)) {
 		TEST_CONFIG(CONF_VAR_BACKOFFTRIGGER, bit);
-		if (!bit) innconf->backoff_trigger = atol(p);
+		if (!bit) innconf->backofftrigger = atol(p);
 		SET_CONFIG(CONF_VAR_BACKOFFTRIGGER);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_REFUSECYBERCANCELS)) {
