@@ -101,6 +101,33 @@ static void test11(void) {
     sysdie("fatal");
 }
 
+static void log(int len, const char *format, va_list args, int error) {
+    fprintf(stderr, "%d %d ", len, error);
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+}
+
+static void test12(void) {
+    error_log_function = log;
+    warn("warning");
+}
+static void test13(void) {
+    error_log_function = log;
+    die("fatal");
+}
+static void test14(void) {
+    error_log_function = log;
+    error_program_name = "test14";
+    errno = EPERM;
+    syswarn("warning");
+}
+static void test15(void) {
+    error_log_function = log;
+    error_fatal_cleanup = return10;
+    errno = EPERM;
+    sysdie("fatal");
+}
+
 /* Given the test number, intended exit status and message, and the actual
    exit status and message, print ok or not ok. */
 static void
@@ -127,7 +154,10 @@ ok(int n, int status, const char *output, test_function_t function)
 int
 main(void)
 {
-    puts("11");
+    char buff[32];
+
+    puts("15");
+
     ok(1, 0, "warning\n", test1);
     ok(2, 1, "fatal\n", test2);
     ok(3, 0, concat("permissions: ", strerror(EPERM), "\n", END), test3);
@@ -140,5 +170,18 @@ main(void)
     ok(10, 10, concat("fatal perm: ", strerror(EPERM), "\n", END), test10);
     ok(11, 10, concat("1st test11: fatal: ", strerror(EPERM), "\n", END),
        test11);
+    ok(12, 0, "warning\n7 0 warning\n", test12);
+    ok(13, 1, "fatal\n5 0 fatal\n", test13);
+
+    sprintf(buff, "%d", EPERM);
+
+    ok(14, 0,
+       concat("test14: warning: ", strerror(EPERM), "\n7 ", buff,
+              " warning\n", END),
+       test14);
+    ok(15, 10,
+       concat("fatal: ", strerror(EPERM), "\n5 ", buff, " fatal\n", END),
+       test15);
+
     return 0;
 }
