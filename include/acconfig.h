@@ -238,10 +238,6 @@ typedef unsigned long           ARTNUM;
 #define NG_SEPARATOR            ","
 #define NG_ISSEP(c)             ((c) == ',')
 
-/* Only used by inews.  Should be moved there. */
-#define SIG_MAXLINES		4
-#define SIG_SEPARATOR		"-- \n"
-
 /* There's no reason to make all of these #defines except possibly for
    L_CC_CMD and even that's a stretch.  Since we're logging to our own
    distinguished log facility, provided that we spread things out between a
