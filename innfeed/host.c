@@ -105,6 +105,7 @@ typedef struct proc_q_elem
     Article article ;
     struct proc_q_elem *next ;
     struct proc_q_elem *prev ;
+    time_t whenToRequeue ;
 } *ProcQElem ;
 
 typedef struct host_param_s
@@ -155,14 +156,19 @@ struct host_s
 
     ProcQElem processed ;       /* articles given to a Connection */
     ProcQElem processedTail ;
+
+    ProcQElem deferred ;	/* articles which have been deferred by */
+    ProcQElem deferredTail ;	/* a connection */
     
     TimeoutId statsId ;         /* timeout id for stats logging. */
-    TimeoutId ChkCxnsId ;     /* timeout id for dynamic connections */
+    TimeoutId ChkCxnsId ;	/* timeout id for dynamic connections */
+    TimeoutId deferredId ;	/* timeout id for deferred articles */
 
     Tape myTape ;
     
     bool backedUp ;             /* set to true when all cxns are full */
     u_int backlog ;             /* number of arts in `queued' queue */
+    u_int deferLen ;		/* number of arts in `deferred' queue */
 
     bool loggedModeOn ;         /* true if we logged going into no-CHECK mode */
     bool loggedModeOff ;        /* true if we logged going out of no-CHECK mode */
@@ -229,6 +235,7 @@ struct host_s
     
     Host next ;                 /* for global list of hosts. */
 
+    u_long dlAccum ;		/* cumulative deferLen */
     u_int blNone ;              /* number of times the backlog was 0 */
     u_int blFull ;              /* number of times the backlog was full */
     u_int blQuartile[4] ;       /* number of times in each quartile */
@@ -269,6 +276,7 @@ static void hostStopSpooling (Host host) ;
 static void hostStartSpooling (Host host) ;
 static void hostLogStats (Host host, bool final) ;
 static void hostStatsTimeoutCbk (TimeoutId tid, void *data) ;
+static void hostDeferredArtCbk (TimeoutId tid, void *data) ;
 static void backlogToTape (Host host) ;
 static void queuesToTape (Host host) ;
 static bool amClosing (Host host) ;
@@ -306,7 +314,8 @@ static void hostAlterMaxConnections(Host host,
 
 /* article queue management functions */
 static Article remHead (ProcQElem *head, ProcQElem *tail) ;
-static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail) ;
+static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail,
+			  time_t when) ;
 static bool remArticle (Article article, ProcQElem *head, ProcQElem *tail) ;
 
 
@@ -986,9 +995,13 @@ Host newHost (InnListener listener, HostParams p)
 
   nh->processed = NULL ;
   nh->processedTail = NULL ;
+
+  nh->deferred = NULL ;
+  nh->deferredTail = NULL ;
   
   nh->statsId = 0 ;
   nh->ChkCxnsId = 0 ;
+  nh->deferredId = 0;
 
   nh->myTape = newTape (nh->params->peerName,
 			listenerIsDummy (nh->listener)) ;
@@ -1004,6 +1017,7 @@ Host newHost (InnListener listener, HostParams p)
 
   nh->backedUp = false ;
   nh->backlog = 0 ;
+  nh->deferLen = 0 ;
 
   nh->loggedBacklog = false ;
   nh->loggedModeOn = false ;
@@ -1060,6 +1074,7 @@ Host newHost (InnListener listener, HostParams p)
   nh->blFull = 0 ;
   nh->blQuartile[0] = nh->blQuartile[1] = nh->blQuartile[2] =
 		      nh->blQuartile[3] = 0 ;
+  nh->dlAccum = 0;
   nh->blAccum = 0;
   nh->blCount = 0;
 
@@ -1256,8 +1271,10 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
 
   fprintf (fp,"%s    statistics-id : %d\n",indent,host->statsId) ;
   fprintf (fp,"%s    ChkCxns-id : %d\n",indent,host->ChkCxnsId) ;
+  fprintf (fp,"%s    deferred-id : %d\n",indent,host->deferredId) ;
   fprintf (fp,"%s    backed-up : %s\n",indent,boolToString (host->backedUp));
   fprintf (fp,"%s    backlog : %d\n",indent,host->backlog) ;
+  fprintf (fp,"%s    deferLen : %d\n",indent,host->deferLen) ;
   fprintf (fp,"%s    loggedModeOn : %s\n",indent,
            boolToString (host->loggedModeOn)) ;
   fprintf (fp,"%s    loggedModeOff : %s\n",indent,
@@ -1309,6 +1326,8 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
   fprintf (fp,"%s    process articles requeued from dropped connections : %d\n",
            indent, host->gArtsCxnDrop) ;
 
+  fprintf (fp,"%s    average (mean) defer length : %.1f\n", indent,
+	   (double) host->dlAccum / cnt) ;
   fprintf (fp,"%s    average (mean) queue length : %.1f\n", indent,
            (double) host->blAccum / cnt) ;
   fprintf (fp,"%s      percentage of the time empty : %.1f\n", indent,
@@ -1362,6 +1381,17 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
 #endif
     }
   
+  fprintf (fp,"%s    }\n",indent) ;
+  fprintf (fp,"%s    DEFERRED articles {\n",indent) ;
+  for (qe = host->deferred ; qe != NULL ; qe = qe->next)
+    {
+#if 0
+	printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
+#else
+	fprintf (fp,"%s    %p\n",indent,qe->article) ;
+#endif
+    }
+
   fprintf (fp,"%s    }\n",indent) ;
 
   
@@ -1420,6 +1450,7 @@ void hostClose (Host host)
 
   clearTimer (host->statsId) ;
   clearTimer (host->ChkCxnsId) ;
+  clearTimer (host->deferredId) ;
   
   host->connectTime = 0 ;
 
@@ -1603,7 +1634,7 @@ void hostSendArticle (Host host, Article article)
       extraRef = artTakeRef (article) ; /* the referrence we give away */
       
       /* stick on the queue of articles we've handed off--we're hopeful. */
-      queueArticle (article,&host->processed,&host->processedTail) ;
+      queueArticle (article,&host->processed,&host->processedTail, 0) ;
 
       /* first we try to give it to one of our active connections. We
          simply start at the bottom and work our way up. This way
@@ -1647,7 +1678,7 @@ void hostSendArticle (Host host, Article article)
 
   /* either all the per connection queues were full or we already had
      a backlog, so there was no sense in checking. */
-  queueArticle (article,&host->queued,&host->queuedTail) ;
+  queueArticle (article,&host->queued,&host->queuedTail, 0) ;
     
   host->backlog++ ;
   backlogToTape (host) ;
@@ -2067,10 +2098,24 @@ void hostArticleDeferred (Host host, Connection cxn, Article article)
   if (!amClosing (host))
     {
       Article extraRef ;
+      int deferTimeout = 5 ; /* XXX - should be tunable */
+      time_t now = theTime() ;
 
       extraRef = artTakeRef (article) ; /* hold a reference until requeued */
       articleGone (host,cxn,article) ; /* drop from the queue */
-      hostSendArticle (host, article) ; /* requeue it */
+
+      if (host->deferred == NULL)
+       {
+           if (host->deferredId != 0)
+             clearTimer (host->deferredId) ;
+           host->deferredId = prepareSleep (hostDeferredArtCbk, deferTimeout,
+                                            host) ;
+        }
+
+      queueArticle (article,&host->deferred,&host->deferredTail,
+                   now + deferTimeout) ;
+      host->deferLen++ ;
+      backlogToTape (host) ;
       delArticle (extraRef) ;
     }
   else
@@ -2175,7 +2220,7 @@ bool hostGimmeArticle (Host host, Connection cxn)
 
           ASSERT (tookIt == true) ;
 
-          queueArticle (article,&host->processed,&host->processedTail) ;
+          queueArticle (article,&host->processed,&host->processedTail, 0) ;
           amtToGive-- ;
 
           gaveSomething = true ;
@@ -2188,7 +2233,7 @@ bool hostGimmeArticle (Host host, Connection cxn)
 
           host->artsFromTape++ ;
           host->gArtsFromTape++ ;
-          queueArticle (article,&host->processed,&host->processedTail) ;
+          queueArticle (article,&host->processed,&host->processedTail, 0) ;
           amtToGive-- ;
 
           gaveSomething = true ;
@@ -2649,7 +2694,8 @@ static void hostLogStats (Host host, bool final)
             host->artsNotWanted, host->artsRejected,
             host->artsMissing, host->artsToTape,
             host->artsHostClose, host->artsFromTape,
-            host->artsDeferred, host->artsCxnDrop,
+            host->artsDeferred, (double)host->dlAccum/cnt,
+            host->artsCxnDrop,
             (double)host->blAccum/cnt, hostHighwater,
             (100.0*host->blNone)/cnt,
             (100.0*host->blQuartile[0])/cnt, (100.0*host->blQuartile[1])/cnt,
@@ -2692,6 +2738,7 @@ static void hostLogStats (Host host, bool final)
     host->blFull = 0 ;
     host->blQuartile[0] = host->blQuartile[1] = host->blQuartile[2] =
                           host->blQuartile[3] = 0;
+    host->dlAccum = 0;
     host->blAccum = 0;
     host->blCount = 0;
 
@@ -2861,6 +2908,7 @@ Default peer configuration parameters:
  *[sleeping]: 0       dyn b'log stat: 37%          50%-75%: 0.0%
  * unspooled: 0       dyn b'log fltr: 0.7        75%-<100%: 0.0%
  *                                                    full: 0.0%
+ *                                            defer length: 0
  *                 backlog low limit: 1000000
  *                backlog high limit: 2000000     (factor 2.0)
  *                 backlog shrinkage: 0 bytes (from current file)
@@ -2942,6 +2990,8 @@ static void hostPrintStatus (Host host, FILE *fp)
 
   fprintf (fp, "                                                    full: %-3.1f%%\n",
 	   100.0 * host->blFull / cnt) ;
+  fprintf (fp, "                                            defer length: %-3.1f\n",
+           (double)host->dlAccum / cnt) ;
 
   tapeLogStatus (host->myTape,fp) ;
 #ifdef        XXX_STATSHACK
@@ -2994,12 +3044,41 @@ static void hostStatsTimeoutCbk (TimeoutId tid, void *data)
 }
 
 
+/*
+ * The callback function for the deferred article timer to call.
+ */
+static void hostDeferredArtCbk (TimeoutId tid, void *data)
+{
+  Host host = (Host) data ;
+  time_t now = theTime () ;
+  Article article ;
+
+  (void) tid ;                  /* keep lint happy */
+
+  ASSERT (tid == host->deferredId) ;
+
+  while (host->deferred && host->deferred->whenToRequeue <= now)
+    {
+      article = remHead (&host->deferred,&host->deferredTail) ;
+      host->deferLen-- ;
+      hostSendArticle (host, article) ; /* requeue it */
+    }
+
+  if (host->deferred)
+    host->deferredId = prepareSleep (hostDeferredArtCbk,
+                                    host->deferred->whenToRequeue - now,
+                                    host) ;
+  else
+    host->deferredId = 0;
+}
+
+
 /* if the host has too many unprocessed articles so we send some to the tape. */
 static void backlogToTape (Host host)
 {
   Article article ;
 
-  while (host->backlog > hostHighwater)
+  while ((host->backlog + host->deferLen) > hostHighwater)
     {
       if (!host->loggedBacklog)
 	{
@@ -3009,7 +3088,16 @@ static void backlogToTape (Host host)
 	  host->loggedBacklog = true ;
 	}
   
-      article = remHead (&host->queued,&host->queuedTail) ;
+      if (host->deferred != NULL)
+       {
+         article = remHead (&host->deferred,&host->deferredTail) ;
+          host->deferLen--;
+       }
+      else
+       {
+         article = remHead (&host->queued,&host->queuedTail) ;
+          host->backlog--;
+       }
 
       ASSERT(article != NULL);
 
@@ -3017,7 +3105,6 @@ static void backlogToTape (Host host)
       host->gArtsQueueOverflow++ ;
       host->artsToTape++ ;
       host->gArtsToTape++ ;
-      host->backlog--;
       tapeTakeArticle (host->myTape,article) ;
     }
 }
@@ -3067,6 +3154,16 @@ static void queuesToTape (Host host)
       host->gArtsToTape++ ;
       tapeTakeArticle (host->myTape,art) ;
     }
+
+  while ((art = remHead (&host->deferred,&host->deferredTail)) != NULL)
+    {
+      host->deferLen-- ;
+      host->artsHostClose++ ;
+      host->gArtsHostClose++ ;
+      host->artsToTape++ ;
+      host->gArtsToTape++ ;
+      tapeTakeArticle (host->myTape,art) ;
+    }
 }
 
 
@@ -3082,7 +3179,8 @@ static ProcQElem queueElemPool ;
 /*
  * Add an article to the given queue.
  */
-static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail)
+static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail,
+                         time_t when)
 {
   ProcQElem elem ;
 
@@ -3105,6 +3203,7 @@ static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail)
   elem->article = article ;
   elem->next = NULL ;
   elem->prev = *tail ;
+  elem->whenToRequeue = when ;
   if (*tail != NULL)
     (*tail)->next = elem ;
   else
@@ -3320,13 +3419,14 @@ void gCalcHostBlStat (void)
   
   for (h = gHostList ; h != NULL ; h = h->next)
     {
+      h->dlAccum += h->deferLen ;
       h->blAccum += h->backlog ;
       if (h->backlog == 0)
 	   h->blNone++ ;
-      else if (h->backlog >= hostHighwater)
+      else if (h->backlog >= (hostHighwater - h->deferLen))
 	   h->blFull++ ;
       else
-	   h->blQuartile[(4*h->backlog) / hostHighwater]++ ;
+	   h->blQuartile[(4*h->backlog) / (hostHighwater - h->deferLen)]++ ;
       h->blCount++ ;
     }
 }
