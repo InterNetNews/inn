@@ -1460,6 +1460,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	private->offset += CNFS_BLOCKSIZE;
 	art->data = NULL;
 	art->len = 0;
+	art->token = NULL;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
@@ -1477,6 +1478,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    private->offset = middle;
 	    art->data = NULL;
 	    art->len = 0;
+	    art->token = NULL;
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
@@ -1491,6 +1493,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    private->offset = middle;
 	    art->data = NULL;
 	    art->len = 0;
+	    art->token = NULL;
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
@@ -1511,6 +1514,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    MAP__ARG, cycbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
 	    art->data = NULL;
 	    art->len = 0;
+	    art->token = NULL;
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
@@ -1523,6 +1527,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	if (read(cycbuff->fd, private->base, ntohl(cah.size)) < 0) {
 	    art->data = NULL;
 	    art->len = 0;
+	    art->token = NULL;
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    DISPOSE(private->base);
 	    private->base = 0;
@@ -1538,6 +1543,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     if ((p = SMFindBody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
 	art->data = NULL;
 	art->len = 0;
+	art->token = NULL;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
@@ -1563,6 +1569,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     }
     art->data = NULL;
     art->len = 0;
+    art->token = NULL;
     if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
     return art;
 }
