@@ -52,7 +52,7 @@
 #endif
 
 /* The default error handler. */
-static void
+void
 xmalloc_fail(const char *function, size_t size, const char *file, int line)
 {
     sysdie("failed to %s %lu bytes at %s line %d", function,
