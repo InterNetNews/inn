@@ -32,8 +32,12 @@ ALL	= innd inndstart
 
 all:		$(ALL)
 
-install:
+install: ${PATHBIN}/innd ${PATHBIN}/inndstart
+
+${PATHBIN}/innd: innd
 	$(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD innd ${PATHBIN}/innd
+
+${PATHBIN}/inndstart: inndstart
 	-$(SHELL) ../installit.sh -O root -G $(NEWSGROUP) -m 4550 -b .OLD inndstart ${PATHBIN}/inndstart
 	@ME=`(whoami || /usr/ucb/whoami) 2> /dev/null` ;\
 	if [ "X$$ME" = Xroot ]; then \
