@@ -1,41 +1,42 @@
-/*  $Revision$
+/*  $Id$
 **
+**  Portable non-blocking wait for a child process to exit.
+**
+**  Prefer waitpid, fall back on wait3.  Per autoconf advice, define our own
+**  versions of the wait macros used if they aren't defined, even if
+**  HAVE_SYS_WAIT_H isn't defined.  Never use the union wait code.
 */
-#include <stdio.h>
+#include "config.h"
 #include <sys/types.h>
-#include "configdata.h"
-#include "clibrary.h"
-#ifdef HAVE_WAIT_H
-# include <wait.h>
-#else
+
+#ifdef HAVE_SYS_WAIT_H
 # include <sys/wait.h>
 #endif
 
+#ifndef HAVE_WAITPID
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# endif
+# include <sys/resource.h>
+#endif
 
-#if	defined(HAVE_UNION_WAIT)
-typedef union wait	WAITER;
-#if	defined(WEXITSTATUS)
-#define WAITVAL(x)	(WEXITSTATUS(x))
-#else
-#define WAITVAL(x)	((x).w_retcode)
-#endif	/* defined(WEXITSTATUS) */
-#else
-typedef int		WAITER;
-#define WAITVAL(x)	(((x) >> 8) & 0xFF)
-#endif	/* defined(HAVE_UNION_WAIT) */
+#ifndef WEXITSTATUS
+# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
+#endif
 
-PID_T waitnb(int *statusp)
+pid_t
+waitnb(int *statusp)
 {
-    WAITER	w;
-    PID_T	pid;
+    int         status;
+    pid_t       pid;
 
-#if defined(HAVE_WAITPID)
-    pid = waitpid(-1, &w, WNOHANG);
+#ifdef HAVE_WAITPID
+    pid = waitpid(-1, &status, WNOHANG);
 #else
-    pid = wait3(&w, WNOHANG, (struct rusage *)NULL);
-#endif	
+    pid = wait3(&status, WNOHANG, (struct rusage *) 0);
+#endif
 
-    if (pid > 0)
-	*statusp = WAITVAL(w);
+    if (statusp && pid > 0)
+        *statusp = WEXITSTATUS(status);
     return pid;
 }
