@@ -329,7 +329,10 @@ struct conf_rec conf_defaults[] = {
     { _CONF_ENABLEOVERVIEW,			"",	2, 1 },
 #define _CONF_WIREFORMAT			"wireformat"
 #define CONF_VAR_WIREFORMAT			102
-    { _CONF_WIREFORMAT,				"",	2, 1 }
+    { _CONF_WIREFORMAT,				"",	2, 1 },
+#define _CONF_OVMETHOD				"ovmethod"
+#define CONF_VAR_OVMETHOD			103
+    { _CONF_OVMETHOD,				"",	1, 1 }
 };
-#define MAX_CONF_VAR 103
+#define MAX_CONF_VAR 104
 

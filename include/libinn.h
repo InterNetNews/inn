@@ -180,6 +180,7 @@ struct conf_vars {
 	int overcachesize;
 	int enableoverview;
 	int wireformat; /* enable/disable wire format for tradspool */
+	char *ovmethod;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
