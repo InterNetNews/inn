@@ -30,10 +30,10 @@ PATH_NEWSFEEDS		= ${PATHETC}/newsfeeds
 PATH_NNRPACCESS		= ${PATHETC}/nnrp.access
 PATH_NNRPDTRACK		= ${PATHETC}/nnrpd.track
 PATH_SCHEMA		= ${PATHETC}/overview.fmt
-PATH_PERL_SHELLVARS	= ${PATHETC}/innshellvars.pl
-PATH_TCL_SHELLVARS	= ${PATHETC}/innshellvars.tcl
-PATH_CSH_SHELLVARS	= ${PATHETC}/innshellvars.csh
-PATH_SHELLVARS		= ${PATHETC}/innshellvars
+PATH_PERL_SHELLVARS	= ${PATHLIB}/innshellvars.pl
+PATH_TCL_SHELLVARS	= ${PATHLIB}/innshellvars.tcl
+PATH_CSH_SHELLVARS	= ${PATHLIB}/innshellvars.csh
+PATH_SHELLVARS		= ${PATHLIB}/innshellvars
 PATH_NNTPPASS		= ${PATHETC}/passwd.nntp
 PATH_CTLWATCH		= ${PATHETC}/innwatch.ctl
 PATH_ACTSYNC_IGN	= ${PATHETC}/actsync.ign
@@ -59,7 +59,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
 	$D$(CTLBIN)/rmgroup $D$(CTLBIN)/sendme $D$(CTLBIN)/sendsys \
 	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL) \
-	$D$(PATHBIN)/writelog $D$(PATHETC)/docheckgroups \
+	$D$(PATHBIN)/writelog $D$(PATHLIB)/docheckgroups \
 	$D$(PATHBIN)/news.daily $D$(PATHBIN)/scanlogs \
 	$D$(PATHBIN)/expirerm $D$(PATHBIN)/tally.control $D$(PATHBIN)/innmail \
 	$D$(PATHBIN)/nntpsend $D$(PATHBIN)/send-ihave $D$(PATHBIN)/send-nntp \
@@ -87,7 +87,7 @@ REST_INSTALLED	= \
 	$D$(PATH_NNRPACCESS) $D$(PATH_NNTPPASS) \
 	$D$(PATH_CONFIG) $D$(PATH_MODERATORS) \
 	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(PATHETC)/nntpsend.ctl \
-	$D$(PATHETC)/innreport.conf $D$(PATHETC)/innreport_inn.pm \
+	$D$(PATHETC)/innreport.conf $D$(PATHLIB)/innreport_inn.pm \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_SCHEMA) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(PATH_MOTD) $D$(PATH_STORAGECTL) \
@@ -169,7 +169,7 @@ $D$(PATH_CONTROLCTL):	control.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_CTLWATCH):	innwatch.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_PARSECTL):	parsecontrol	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/writelog:	writelog	; $(COPY_XPRI) $? $@
-$D$(PATHETC)/docheckgroups: docheckgroups ; $(COPY_XPRI) $? $@
+$D$(PATHLIB)/docheckgroups: docheckgroups ; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/news.daily: news.daily	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/scanlogs:	scanlogs	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/expirerm:	expirerm	; $(COPY_XPRI) $? $@
@@ -195,7 +195,7 @@ $D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPRI) $? $@
 $D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
 $D$(PATHBIN)/innreport: innreport	; $(COPY_XPRI) $? $@
-$D$(PATHETC)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
+$D$(PATHLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_STORAGECTL): storage.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_OVERVIEWCTL): overview.ctl	; $(COPY_RPRI) $? $@
