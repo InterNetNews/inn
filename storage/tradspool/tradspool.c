@@ -883,7 +883,10 @@ tradspool_retrieve(const TOKEN token, const RETRTYPE amount) {
 	return NULL;
     }
 
-    if ((path = TokenToPath(token)) == NULL) return NULL;
+    if ((path = TokenToPath(token)) == NULL) {
+	SMseterror(SMERR_NOENT, NULL);
+	return NULL;
+    }
     if ((art = OpenArticle(path, amount)) != (ARTHANDLE *)NULL) {
         ret_token = token;
         art->token = &ret_token;
