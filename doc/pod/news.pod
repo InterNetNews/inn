@@ -38,11 +38,11 @@ from 2.2 to 2.3">.
 
 =item *
 
-Preliminary IPv6 support has been added, it is off by default.  Build with
---enable-ipv6 to try it.  Hopefully, nobody will notice any problems with
-the default configuration, although some changes have been made to data
-structures even when IPv6 is disabled.  Further information is available
-in F<doc/IPv6-info>.
+IPv6 support has been added, disabled by default.  If you have IPv6
+connectivity, build with --enable-ipv6 to try it.  There are no known
+bugs, but please report any problems you find (or even successes, if you
+use an unusual platform).  There are a few changes of interest; further
+information is available in F<doc/IPv6-info>.
 
 =item *
 
@@ -54,12 +54,14 @@ from a tradspool news spool.
 
 =item *
 
-nnrpd now optionally supports article injection via IHAVE.  Any articles
-injected this way must have Date, From, Message-ID, Newsgroups, Path, and
-Subject headers.  X-Trace and X-Complaints-To headers will be added if the
-appropriate options are set in F<readers.conf>, but other headers will not
-be modified/inserted (e.g. NNTP-Posting-Host, NNTP-Posting-Date,
-Organization, Lines, Cc, Bcc and To headers).
+nnrpd now optionally supports article injection via IHAVE, see
+readers.conf(5).  Any articles injected this way must have Date, From,
+Message-ID, Newsgroups, Path, and Subject headers.  X-Trace and
+X-Complaints-To headers will be added if the appropriate options are set
+in F<readers.conf>, but other headers will not be modified/inserted (e.g.
+NNTP-Posting-Host, NNTP-Posting-Date, Organization, Lines, Cc, Bcc, and To
+headers).
+
 
 =item *
 
@@ -86,12 +88,12 @@ starts to rely on it.
 
 =item *
 
-innfeed supports a new peer parameter, backlog-feed-first, that if set to
-true feeds any backlog to a peer before new articles.  When used in
-combination with setting max-connections to 1, this can be used to enforce
-in-order delivery of messages to a peer that is doing Xref slaving,
-avoiding cases where a higher-numbered message is received before a
-lower-numbered message in the same group.
+innfeed supports a new peer parameter, I<backlog-feed-first>, that if set
+to true feeds any backlog to a peer before new articles, see
+innfeed.conf(5).  When used in combination with I<max-connections: 1>,
+this can be used to enforce in-order delivery of messages to a peer that
+is doing Xref slaving, avoiding cases where a higher-numbered message is
+received before a lower-numbered message in the same group.
 
 =item *
 
@@ -126,20 +128,21 @@ parts of INN.
 =item *
 
 Two configure options have changed names:  --with-tmp-path is now
---with-tmp-dir, and --with-largefiles is now --enable-largefiles to
+--with-tmp-dir, and --with-largefiles is now --enable-largefiles, to
 improve consistency and better match the autoconf option guidelines.
 
 =item *
 
 Variables can now be used in the F<newsfeeds> file to make it easier to
 specify many similar feeds or feed patterns.  See the newsfeeds(5) man
-page for more details.
+page for details.
 
 =item *
 
 Local connections to INN support a new special mode, MODE CANCEL, that
 allows efficient batch cancellation of messages.  This is intended to be
 the preferred interface for external spam and abuse filters like NoCeM.
+See L<CANCEL FEEDS> in innd(8) for details.
 
 =item *
 
@@ -167,8 +170,8 @@ information.
 
 =item *
 
-An authenticator that checks a username and password against a remote
-Samba server is now included.
+An authenticator, B<auth_smb>, that checks a username and password against
+a remote Samba server is now included.  See auth_smb(8) for details.
 
 =item *
 
@@ -180,9 +183,11 @@ Unicode).  See uwildmat(3) for the details.
 
 =item *
 
-The interface between external authenticators and nnrpd is now wrapped in
-a library, which should make it easier to write additional authenticators.
-For example, see F<authprogs/domain.c>.
+The interface between external authenticators and nnrpd is now properly
+documented, in F<doc/external-auth>.  A library implementing this
+interface in C is provided, which should make it easier to write
+additional authenticators resolvers.  See libauth(3) for details, and any
+of the existing programs in F<authprogs/> for examples.
 
 =item *
 
