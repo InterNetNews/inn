@@ -193,6 +193,8 @@ $HTML = 1 if $output{'default'}{'html'} eq 'true';
 $HTML = 0 if defined ($ref{'html'});
 $HTML = 1 if ($ref{'html'});
 
+$GRAPH = 0 if defined ($output{'default'}{'graph'});
+$GRAPH = 1 if ($HTML && ($output{'default'}{'graph'} eq 'true'));
 $GRAPH = 0 if (defined ($ref{'g'}) || defined ($ref{'graph'}));
 $GRAPH = 1 if ($HTML && ($ref{'g'} || $ref{'graph'}));
 
