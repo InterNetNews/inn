@@ -690,7 +690,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
 			      fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 			      tokentext);
 		Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-		        + strlen(tokentest) + 1;
+		        + strlen(tokentext) + 1;
 		if (EXPverbose > 3)
 		  (void)printf("keeping article: %s%c%s%c%s\n",
 			       fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
