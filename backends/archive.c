@@ -640,7 +640,7 @@ main(ac, av)
 		/* Check for group limits... -p flag */
 		if ((p=strchr(xrefs[i], ':')) == NULL) {
 		    fprintf(stderr, "archive: bogus xref '%s'\n", xrefs[i]);
-		    continue;
+		    continue;	/* Skip to next xref */
 		}
 		if (numgroups > 0) {
 		    *p = '\0';
@@ -649,6 +649,9 @@ main(ac, av)
 		    for (j=0; j<numgroups && !doit; j++) {
 			if (wildmat(ng, groups[j]) != 0) doit=TRUE;
 		    }
+		}
+		else {
+		    doit = TRUE;
 		}
 		*p = '/';
 		if (doit) {
@@ -694,6 +697,12 @@ main(ac, av)
 
 	    /* Free up the article storage space */
 	    SMfreearticle(art);
+	    art = NULL;
+	    /* Free up the xrefs storage space */
+	    for ( i=0; i<numxrefs; i++) DISPOSE(xrefs[i]);
+	    DISPOSE(xrefs);
+	    numxrefs = 0;
+	    xrefs = NULL;
 	}
 	else {
 	    /* Make sure we're only copying files. */
