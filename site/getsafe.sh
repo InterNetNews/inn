@@ -36,6 +36,6 @@ if [ -f ${DEST} ] ; then
 fi
 
 echo Using sample version of ${DEST}
-cat ${SRC} | ./subst.pl > ${DEST}
+cp ${SRC} ${DEST}
 
 exit 0
