@@ -52,6 +52,7 @@ EXPIRECTL=
 EXPDIR=
 EXPIREFLAGS="-v1"
 EXPIREOVER=expireover
+LOWMARKFILE=
 
 HISTDIR="`dirname ${HISTORY}`"
 TOUT=600   # timeout value for ctlinnd commands
@@ -171,8 +172,6 @@ MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/' | \
 ${DOEXPIRE} || {
     EXPDIR=
     RMFILE=
-    INDEXFILE=
-    LOWMARKFILE=
 }
 
 test -n "${EXPDIR}" && {
@@ -406,6 +405,24 @@ if ${DOEXPIRE} ; then
 	    mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
 	}
     fi
+fi
+# in case noexpire expireover
+if ${DOEXPIREOVER}; then
+    if ${DOEXPLOG}; then
+	echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
+    fi
+    eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 | \
+	grep -v 'No such file or directory'
+    if ${DOEXPLOG}; then
+	echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
+    fi
+    test -n "${LOWMARKFILE}" && {
+	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
+	ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
+	echo "lowmarkrenumber end `date`"                           >>${EXPLOG}
+	rm -f ${MOST_LOGS}/expire.lastlowmark
+	mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
+    }
 fi
 
 ##  Renumber the active file.
