@@ -614,9 +614,6 @@ CCfilter(char *av[])
 
 
 #if defined(DO_PERL)
-
-extern CV *perl_filter_cv;
-
 static const char *
 CCperl(char *av[])
 {
@@ -626,14 +623,13 @@ CCperl(char *av[])
     case 'y':
 	if (PerlFilterActive)
 	    return "1 Perl filter already enabled";
-        else if (perl_filter_cv == NULL)
-            return "1 Perl filter not defined" ;
-	PerlFilter(TRUE);
+        else if (!PerlFilter(TRUE))
+            return "1 Perl filter not defined";
 	break;
     case 'n':
 	if (!PerlFilterActive)
 	    return "1 Perl filter already disabled";
-	PerlFilter(FALSE);
+        PerlFilter(FALSE);
 	break;
     }
     return NULL;
@@ -799,17 +795,17 @@ CCmode(char *unused[])
     int		h;
     char	buff[BUFSIZ];
 #if defined(DO_PERL)
-    dSP;
+    char        *stats;
 #endif /* defined(DO_PERL) */
 
     unused = unused;		/* ARGSUSED */
 
-    /* nb: We assume here that BUFSIZ is >= 512, and that none of
-     * ModeReason RejectReason Reservation or NNRPReason is longer than
-     * MAX_REASON_LEN bytes (or actually, the average of their lengths is
-     * <= MAX_REASON_LEN).  If this is not true, the sprintf's/strcpy's
-     * below are likely to overflow buff with somewhat nasty
-     * consequences...
+    /* FIXME: We assume here that BUFSIZ is >= 512, and that none of
+     * ModeReason, RejectReason, Reservation, NNRPReason, or the Perl filter
+     * statistics are longer than MAX_REASON_LEN bytes (or actually, the
+     * average of their lengths is <= MAX_REASON_LEN).  If this is not true,
+     * the sprintf's/strcpy's below are likely to overflow buff with somewhat
+     * nasty consequences...
      */
 
     p = buff;
@@ -885,6 +881,7 @@ CCmode(char *unused[])
     else
 	p += strlen(strcpy(p, "disabled"));
 #endif /* defined(DO_TCL) */
+
 #if defined(DO_PERL)
     *p++ = '\n';
     p += strlen(strcpy(p, "Perl filtering "));
@@ -893,27 +890,15 @@ CCmode(char *unused[])
     else
         p += strlen(strcpy(p, "disabled"));
 
-    /* perl filter status */
-
-    if (perl_get_cv("filter_stats", FALSE) != NULL) {
-        *p++ = '\n';
+    /* Perl filter status. */
+    stats = PLstats();
+    if (stats != NULL) {
         p += strlen(strcpy(p, "Perl filter stats: "));
- 
-	ENTER ;
-	SAVETMPS;
-    
-	perl_call_argv("filter_stats", G_EVAL|G_NOARGS, NULL);
-
-	SPAGAIN;
-
-	p += strlen(strcpy(p, POPp)); 
-   
-	PUTBACK;
-	FREETMPS;
-	LEAVE; 
+        p += strlen(strcpy(p, stats));
+        free(stats);
     }    
-
 #endif /* defined(DO_PERL) */
+
 #if defined(DO_PYTHON)
     *p++ = '\n';
     p += strlen(strcpy(p, "Python filtering "));
@@ -923,7 +908,7 @@ CCmode(char *unused[])
         p += strlen(strcpy(p, "disabled"));
 #endif /* defined(DO_PYTHON) */
 
-     i = strlen(buff);
+    i = strlen(buff);
     if (CCreply.Size <= i) {
 	CCreply.Size = i;
 	RENEW(CCreply.Data, char, CCreply.Size + 1);
