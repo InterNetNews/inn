@@ -2132,8 +2132,6 @@ STRING ARTpost(CHANNEL *cp)
     }
     *ngptr = NULL;
     j++;
-    if (cp->Replic.Used && AmSlave && !XrefSlave)
-	j = cp->Replic.Used + 1;
 
     /* Add enough extra room for time pathname */
     if (TimeSpool)
@@ -2170,10 +2168,7 @@ STRING ARTpost(CHANNEL *cp)
 	    return buff;
     	}
     } else {
-        if (!AmSlave)
-            ARTassignnumbers();
-        else
-            ARTreplic(&cp->Replic);
+	ARTassignnumbers();
     }
 
     /* Now we can file it. */
@@ -2298,12 +2293,6 @@ STRING ARTpost(CHANNEL *cp)
     /* If we just flushed the active (above), now flush history. */
     if (ICDactivedirty == 0)
 	HISsync();
-
-    /* We wrote the history, so modify it and save it for output. */
-    for (Data.Replic = Files.Data, p = (char *)Data.Replic; *p; p++)
-	if (*p == ' ')
-	    *p = ',';
-    Data.ReplicLength = p - Data.Replic;
 
     /* Start logging, then propagate the article. */
     ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);

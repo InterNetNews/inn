@@ -146,7 +146,6 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->Out = out;
     cp->Tracing = Tracing;
     cp->Sendid.Size = 0;
-    cp->Replic.Size = 0;
     cp->Rest=0;
     cp->SaveUsed=0;
     cp->Lastch=0;
@@ -255,10 +254,6 @@ void CHANclose(CHANNEL *cp, char *name)
     if (cp->Sendid.Size) {
 	cp->Sendid.Size = 0;
 	DISPOSE(cp->Sendid.Data);
-    }
-    if (cp->Replic.Size) {
-	cp->Replic.Size = 0;
-	DISPOSE(cp->Replic.Data);
     }
 }
 

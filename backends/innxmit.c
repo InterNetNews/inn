@@ -104,7 +104,6 @@ STATIC BOOL		AlwaysRewrite;
 STATIC BOOL		Debug;
 STATIC BOOL		DoRequeue = TRUE;
 STATIC BOOL		Purging;
-STATIC BOOL		Slavish;
 STATIC BOOL		STATprint;
 STATIC BOOL		Mime;
 STATIC MIMEXFERTYPE	MimeArticle = MTnotmime;
@@ -1193,10 +1192,6 @@ main(ac, av)
 	case 's':
 	    TryStream = FALSE;
 	    break;
-	case 'S':
-	    Slavish = TRUE;
-	    TryStream = FALSE; /* streaming does not support xreplic */
-	    break;
 	case 't':
 	    ConnectTimeout = atoi(optarg);
 	    break;
@@ -1405,14 +1400,12 @@ main(ac, av)
 	    Article += STRLEN(SPOOL) + 1;
 	if ((MessageID = strchr(Article, ' ')) != NULL) {
 	    *MessageID++ = '\0';
-	    if (!Slavish) {
-		if (*MessageID != '<'
-		 || (p = strrchr(MessageID, '>')) == NULL
-		 || *++p != '\0') {
-		    (void)fprintf(stderr, "Ignoring line \"%s %s...\"\n",
-			Article, MessageID);
-		    continue;
-		}
+	    if (*MessageID != '<'
+		|| (p = strrchr(MessageID, '>')) == NULL
+		|| *++p != '\0') {
+		(void)fprintf(stderr, "Ignoring line \"%s %s...\"\n",
+			      Article, MessageID);
+		continue;
 	    }
 	}
 
@@ -1432,15 +1425,11 @@ main(ac, av)
 	}
 
         /*
-         * If the command ("IHAVE" or "XREPLIC") plus the "message-id",
-         * separating space and trailing CR-NL will exceed the maximum command
-         * length permitted by the RFC (i.e. NNTP_STRLEN), then reject the
-         * article and continue to avoid overrunning buffers and throwing the
-         * server on the recieving end a blow from behind.  This really comes
-         * into play with XREPLIC feeds to slaved servers where cross-posting
-         * really causes the "message-ID" to get too long really quickly.  Note
-         * that the value of 12 is the length of "XREPLIC " plus 2 for the
-         * CR-NL, plus 2 for a safety buffer.
+         * If the IHAVE plus the "message-id", separating space and trailing
+	 * CR-NL will exceed the maximum command length permitted by the RFC
+	 * (i.e. NNTP_STRLEN), then reject the article and continue to avoid
+	 * overrunning buffers and throwing the server on the recieving end a
+	 * blow from behind.  
          */
         if (MessageID != NULL && (strlen(MessageID) > NNTP_STRLEN - 12)) {
             (void)fprintf(stderr, "Dropping article in \"%s\" - long message id \"%s\"\n",
@@ -1581,7 +1570,7 @@ main(ac, av)
 	    }
 	    continue; /* next article */
 	}
-	(void)sprintf(buff, "%s %s", Slavish ? "xreplic" : "ihave", MessageID);
+	(void)sprintf(buff, "ihave %s", MessageID);
 	if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
 	    (void)fprintf(stderr, "Can't offer article, %s\n",
 		    strerror(errno));

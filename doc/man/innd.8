@@ -229,12 +229,6 @@ allow newsreading even when the server is not running.
 If the ``\-S'' flag is used, then
 .I innd
 will run in ``slave'' mode.
-When running as a slave, the server will only accept articles from the
-specified
-.IR host ,
-which must use the
-.I "``xreplic''"
-protocol extension described below.
 Note that the host must either appear in the
 .I hosts.nntp
 file, or the server must be started with the ``\fB\-a\fP'' flag.
@@ -394,18 +388,6 @@ This command will cause the server to pass the connection on to
 The command
 .I "``mode query''"
 is intended for future use, and is currently treated the same way.
-.IP 4.
-A new command,
-.IR "``xreplic news.group/art[,news.group/art]''" ,
-is provided.
-This is similar to the
-.I "``ihave''"
-command (the same reply codes are used) except for the data that follows
-the command word.
-The data consists of entries separated by a single comma.
-Each entry consists of a newsgroup name, a slash, and an article number.
-Once processed, the article will be filed in the newsgroup and article
-numbers specified in the command.
 .IP 5.
 A new command,
 .IR "``xpath messageid''" ,

@@ -394,11 +394,6 @@ SITEwritefromflags(sp, Data)
 	    BUFFappend(bp, Path.Data, Path.Used);
 	    BUFFappend(bp, Data->Path, Data->PathLength);
 	    break;
-	case FEED_REPLIC:
-	    if (Dirty)
-		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Replic, Data->ReplicLength);
-	    break;
 	case FEED_TIMERECEIVED:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
@@ -1068,19 +1063,6 @@ SITEfree(sp)
 	sp->FNLnames.Size = 0;
     }
 
-    /* If this site was a master, find a new one. */
-    if (sp->IsMaster) {
-	for (new = NOSITE, s = Sites, i = nSites; --i >= 0; s++)
-	    if (&Sites[s->Master] == sp)
-		if (new == NOSITE) {
-		    s->Master = NOSITE;
-		    s->IsMaster = TRUE;
-		    new = s - Sites;
-		}
-		else
-		    s->Master = new;
-	sp->IsMaster = FALSE;
-    }
 }
 
 

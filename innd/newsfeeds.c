@@ -352,7 +352,6 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		case FEED_MESSAGEID:		/* Message-ID		*/
 		case FEED_NAME:			/* Filename		*/
 		case FEED_NEWSGROUP:		/* Newsgroup		*/
-		case FEED_REPLIC:		/* Replication data	*/
 		case FEED_SITE:			/* Site that gave it	*/
 		case FEED_TIMERECEIVED:		/* When received	*/
 		case FEED_TIMEPOSTED:		/* When posted		*/

@@ -37,7 +37,6 @@ static FUNCTYPE	NCmode();
 static FUNCTYPE	NCquit();
 static FUNCTYPE	NCstat();
 static FUNCTYPE	NCxpath();
-static FUNCTYPE	NCxreplic();
 static FUNCTYPE	NC_unimp();
 /* new modules for streaming */
 static FUNCTYPE	NCxbatch();
@@ -73,7 +72,6 @@ STATIC NCDISPATCH	NCcommands[] = {
     {	"xbatch",	NCxbatch },
     {	"xhdr",		NC_unimp },
     {	"xpath",	NCxpath	},
-    {	"xreplic",	NCxreplic }
 };
 STATIC char		*NCquietlist[] = {
     INND_QUIET_BADLIST
@@ -653,41 +651,6 @@ NCxpath(cp)
     (void)sprintf(Reply.Data, "%d %s", NNTP_NOTHING_FOLLOWS_VAL, p);
     NCwritereply(cp, Reply.Data);
 }
-
-
-/*
-**  The "xreplic" command.  Take an article and the places to file it.
-*/
-STATIC FUNCTYPE
-NCxreplic(cp)
-    CHANNEL		*cp;
-{
-    register char	*p;
-    register BUFFER	*bp;
-    register int	i;
-
-    if (!RCismaster(cp->Address)) {
-	NCwritereply(cp, NCbadcommand);
-	return;
-    }
-
-    /* Stash the filename arguments. */
-    for (p = cp->In.Data + STRLEN("xreplic"); ISWHITE(*p); p++)
-	continue;
-    i = cp->In.Used - (p - cp->In.Data) + 1;
-    bp = &cp->Replic;
-    if (bp->Data == NULL) {
-	bp->Size = i;
-	bp->Data = NEW(char, i);
-    }
-    BUFFset(bp, p, i);
-    bp->Used = bp->Left;
-
-    /* Tell master to send it to us. */
-    cp->State = CSgetrep;
-    NCwritereply(cp, NNTP_SENDIT);
-}
-
 
 /*
 **  The catch-all for inimplemented commands.

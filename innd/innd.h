@@ -157,7 +157,6 @@ typedef struct _CHANNEL {
     BUFFER		Out;
     BOOL		Tracing;
     BUFFER		Sendid;
-    BUFFER              Replic;
     HASH                CurrentMessageIDHash;
     int                 XBatchSize;
     int                 LargeArtSize;
@@ -308,8 +307,6 @@ typedef struct _ARTDATA {
     int		FeedsiteLength;
     STRING      Path;
     int		PathLength;
-    STRING	Replic;
-    int		ReplicLength;
     BUFFER	*Headers;
     BUFFER	*Overview;
 } ARTDATA;

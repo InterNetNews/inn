@@ -9,7 +9,6 @@
 ##	-p		Run innxmit with -p to prune batch files
 ##	-r		innxmit, don't requeue on unexpected error code
 ##	-s size		limit the =n file to size bytes
-##	-S		send via xreplic protocol (send to a slave site)
 ##	-c		disable message-ID checking in streaming mode
 ##	-t timeout	innxmit timeout to make connection (def: 180)
 ##	-T limit	innxmit connection transmit time limit (def: forever)

@@ -149,23 +149,6 @@ If the ``\fB\-p\fP'' flag is given, then no connection is made and the batchfile
 is purged of entries that refer to files that no longer exist.
 This implies the ``\fB\-a\fP'' flag.
 .TP
-.B \-S
-If the ``\fB\-S\fP'' flag is given, then
-.I innxmit
-will offer articles to the specified host using the
-.I "``xreplic''"
-protocol extension described in
-.IR innd (8).
-The ``\-S'' flag implies ``-s'', since streaming is not supported
-in the xreplic protocol.
-To use this flag, the input file must contain the history data (commas
-are transliterated to spaces by the server).
-In order for this flag to be used, the input must contain the necessary
-history entries.
-This is usually done by setting up a ``WnR'' entry in the
-.I newsfeeds
-file.
-.TP
 .B \-d
 Use the ``\fB\-d\fP'' flag to print debugging information on standard error.
 This will show the protocol transactions between
