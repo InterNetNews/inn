@@ -83,7 +83,17 @@ sub upgrade_file {
     my @output;
     &$function (\@input, \@output, $file);
     if (join ('', @input) ne join ('', @output)) {
-        if (-e "$file.OLD") { die "$file: backup $file.OLD already exists\n" }
+        if (-e "$file.OLD") {
+            if (-t STDIN) {
+                print "$file.OLD already exists, overwrite (y/N)? ";
+                my $answer = <STDIN>;
+                if ($answer !~ /y/i) {
+                    die "$file: backup $file.OLD already exists, aborting\n";
+                }
+            } else {
+                die "$file: backup $file.OLD already exists\n";
+            }
+        }
         print "Updating $file, old verion saved as $file.OLD\n";
         my ($user, $group) = (stat $file)[4,5];
         open (OUTPUT, "> .$file.new.$$")
