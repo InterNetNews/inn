@@ -2737,9 +2737,22 @@ static void processResponse439 (Connection cxn, char *response)
 
   if (cxn->takeRespHead == NULL) /* peer is confused */
     {
-      syslog (LOG_NOTICE,BAD_RESPONSE,
-              hostPeerName (cxn->myHost),cxn->ident,439) ;
-      cxnSleepOrDie (cxn) ;
+      /* NNTPRelay return 439 for check <messid> if messid is bad */
+      if (cxn->checkRespHead == NULL) /* peer is confused */
+        {
+          syslog (LOG_NOTICE,BAD_RESPONSE,
+                  hostPeerName (cxn->myHost),cxn->ident,439) ;
+          cxnSleepOrDie (cxn) ;
+        }
+      else
+        {
+          cxn->checksRefused++ ;
+          remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
+          if (cxn->articleQTotal == 0)
+            cxnIdle (cxn) ;
+          hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
+          delArtHolder (artHolder) ;
+        }
     }
   else if (msgid == NULL || strlen (msgid) == 0 ||
            (artHolder = artHolderByMsgId (msgid, cxn->takeRespHead)) == NULL)
