@@ -36,12 +36,20 @@ if (!$inn::pathhost) {
 }
 
 my $use_syslog = 0;
-## Comment out this eval line if you don't want to try to syslog
-eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
 
+## Comment out this line if you don't want to try to syslog
+my $try_syslog = 1;
+
+
+if ($try_syslog) {
+  eval { require INN::Syslog; import INN::Syslog; $use_syslog = 1 };
+  if (!$use_syslog) {
+    eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
+  }
+}
 if ($use_syslog) {
-  if ($] >= 5.00403) {
-    Sys::Syslog::setlogsock('inet') if not Sys::Syslog::setlogsock('unix');
+  if (defined &Sys::Syslog::setlogsock && $] >= 5.00403) {
+    Sys::Syslog::setlogsock('unix') if $^O =~ /linux/;
   }
   openlog ('controlchan', 'pid', 'news');
 }
