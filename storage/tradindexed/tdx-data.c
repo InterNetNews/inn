@@ -51,8 +51,8 @@ static void *map_file(int fd, size_t length, const char *base,
                       const char *suffix);
 static bool map_index(struct group_data *data);
 static bool map_data(struct group_data *data);
-static void unmap_file(void *data, off_t length, const char *base,
-                       const char *suffix);
+static void unmap_index(struct group_data *data);
+static void unmap_data(struct group_data *data);
 static ARTNUM index_base(ARTNUM artnum);
 
 
@@ -208,8 +208,8 @@ tdx_data_new(const char *group, bool writable)
 bool
 tdx_data_open_files(struct group_data *data)
 {
-    unmap_file(data->index, data->indexlen, data->path, "IDX");
-    unmap_file(data->data, data->datalen, data->path, "DAT");
+    unmap_index(data);
+    unmap_data(data);
     data->index = NULL;
     data->data = NULL;
     if (!file_open_index(data, NULL))
@@ -268,11 +268,18 @@ static bool
 map_index(struct group_data *data)
 {
     struct stat st;
+    int r;
 
-    if (fstat(data->indexfd, &st) < 0) {
-        syswarn("tradindexed: cannot stat %s.IDX", data->path);
-        return false;
+    r = fstat(data->indexfd, &st);
+    if (r == -1) {
+	if (errno == ESTALE) {
+	    r = file_open_index(data, NULL);
+	} else {
+	    syswarn("tradindexed: cannot stat %s.IDX", data->path);
+	}
     }
+    if (r == -1)
+	return false;
     data->indexlen = st.st_size;
     data->index = map_file(data->indexfd, data->indexlen, data->path, "IDX");
     return (data->index == NULL && data->indexlen > 0) ? false : true;
@@ -286,11 +293,18 @@ static bool
 map_data(struct group_data *data)
 {
     struct stat st;
+    int r;
 
-    if (fstat(data->datafd, &st) < 0) {
-        syswarn("tradindexed: cannot stat %s.DAT", data->path);
-        return false;
+    r = fstat(data->datafd, &st);
+    if (r == -1) {
+	if (errno == ESTALE) {
+	    r = file_open_data(data, NULL);
+	} else {
+	    syswarn("tradindexed: cannot stat %s.DAT", data->path);
+	}
     }
+    if (r == -1)
+	return false;
     data->datalen = st.st_size;
     data->data = map_file(data->datafd, data->datalen, data->path, "DAT");
     return (data->data == NULL && data->indexlen > 0) ? false : true;
@@ -316,6 +330,54 @@ unmap_file(void *data, off_t length, const char *base, const char *suffix)
     return;
 }
 
+/*
+**  Unmap the index file.
+*/
+static void
+unmap_index(struct group_data *data)
+{
+    unmap_file(data->index, data->indexlen, data->path, "IDX");
+    data->index = NULL;
+}
+
+
+/*
+**  Unmap the data file.
+*/
+static void
+unmap_data(struct group_data *data)
+{
+    unmap_file(data->data, data->datalen, data->path, "DAT");
+    data->data = NULL;
+}
+
+/*
+**  Determine if the file handle associated with the index table is stale
+*/
+static bool
+stale_index(struct group_data *data)
+{
+    struct stat st;
+    int r;
+
+    r = fstat(data->indexfd, &st);
+    return r == -1 && errno == ESTALE;
+}
+
+
+/*
+**  Determine if the file handle associated with the data table is stale
+*/
+static bool
+stale_data(struct group_data *data)
+{
+    struct stat st;
+    int r;
+
+    r = fstat(data->datafd, &st);
+    return r == -1 && errno == ESTALE;
+}
+
 
 /*
 **  Retrieves the article metainformation stored in the index table (all the
@@ -331,10 +393,11 @@ tdx_article_entry(struct group_data *data, ARTNUM article, ARTNUM high)
     ARTNUM offset;
 
     if (article > data->high && high > data->high) {
-        unmap_file(data->index, data->indexlen, data->path, "IDX");
+        unmap_index(data);
         map_index(data);
         data->high = high;
-    }
+    } else if (innconf->nfsreader && stale_index(data))
+        unmap_index(data);
     if (data->index == NULL)
         if (!map_index(data))
             return NULL;
@@ -368,16 +431,20 @@ tdx_search_open(struct group_data *data, ARTNUM start, ARTNUM end, ARTNUM high)
         return NULL;
 
     if (end > data->high && high > data->high) {
-        unmap_file(data->index, data->indexlen, data->path, "IDX");
+        unmap_index(data);
         map_index(data);
         data->high = high;
     }
     if (start > data->high)
         return NULL;
 
+    if (innconf->nfsreader && stale_index(data))
+	unmap_index(data);
     if (data->index == NULL)
         if (!map_index(data))
             return NULL;
+    if (innconf->nfsreader && stale_data(data))
+	unmap_data(data);
     if (data->data == NULL)
         if (!map_data(data))
             return NULL;
@@ -422,8 +489,7 @@ tdx_search(struct search *search, struct article *artdata)
        currently mapped.  Otherwise, warn about possible corruption and return
        a miss. */
     if (entry->offset + entry->length > search->data->datalen) {
-        unmap_file(search->data->data, search->data->datalen,
-                   search->data->path, ".IDX");
+        unmap_data(search->data);
         if (!map_data(search->data))
             return false;
     }
@@ -564,7 +630,7 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
     }
 
     /* For convenience, memory map the old index file. */
-    unmap_file(data->index, data->indexlen, data->path, "IDX");
+    unmap_index(data);
     if (!map_index(data))
         goto fail;
 
@@ -783,8 +849,8 @@ tdx_data_expire_start(const char *group, struct group_data *data,
 void
 tdx_data_close(struct group_data *data)
 {
-    unmap_file(data->index, data->indexlen, data->path, "IDX");
-    unmap_file(data->data, data->datalen, data->path, "DAT");
+    unmap_index(data);
+    unmap_data(data);
     if (data->indexfd >= 0)
         close(data->indexfd);
     if (data->datafd >= 0)
@@ -946,7 +1012,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
         warn("tradindexed: %lu bytes of trailing trash in %s.IDX",
              (unsigned long)(data->indexlen - expected), data->path);
         if (fix) {
-            unmap_file(data->index, data->indexlen, data->path, "IDX");
+            unmap_index(data);
             if (ftruncate(data->indexfd, expected) < 0)
                 syswarn("tradindexed: cannot truncate %s.IDX", data->path);
             if (!map_index(data))
