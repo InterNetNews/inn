@@ -26,7 +26,7 @@
 **     to run innd as the news user with bogus configuration information,
 **     thereby possibly compromising the news account.
 **
-**   - The only ports < 1024 that we'll bind to are 119 and 443, or a port
+**   - The only ports < 1024 that we'll bind to are 119 and 433, or a port
 **     given at configure time with --with-innd-port.  This is to prevent
 **     the news user from taking over a service such as telnet or POP and
 **     potentially gaining access to user passwords.
