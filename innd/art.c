@@ -1735,7 +1735,7 @@ ARTmakekeys(hp, body, v, l)
     if ((bodylen < 100) || (bodylen > innconf->keyartlimit)) /* too small/big to bother */
 	return;
     
-    orig_text = text = strdup(body);	/* orig_text is for free() later on */
+    orig_text = text = xstrdup(body);	/* orig_text is for free() later on */
     if (text == (char *) NULL)  /* malloc failure? */
 	return;
 
