@@ -92,6 +92,7 @@ STATIC BOOL NGparseentry(NEWSGROUP *ngp, char *p, char *end)
     register NGHASH		*htp;
     register NEWSGROUP		**ngpp;
     register int		i;
+    ARTNUM			lo;
 
     if ((q = strchr(p, ' ')) == NULL)
 	return FALSE;
@@ -115,6 +116,7 @@ STATIC BOOL NGparseentry(NEWSGROUP *ngp, char *p, char *end)
     ngp->Lastwidth = q - ngp->LastString;
     if ((q = strchr(q, ' ')) == NULL || q > end)
 	return FALSE;
+    lo = (ARTNUM)atol(q + 1);
     if ((q = strchr(q + 1, ' ')) == NULL || q > end)
 	return FALSE;
     ngp->Rest = ++q;
@@ -141,7 +143,7 @@ STATIC BOOL NGparseentry(NEWSGROUP *ngp, char *p, char *end)
     }
     htp->Groups[htp->Used++] = ngp;
 
-    if (innconf->enableoverview && !OVgroupadd(ngp->Name, ngp->Rest))
+    if (innconf->enableoverview && !OVgroupadd(ngp->Name, lo, ngp->Rest))
 	return FALSE;
 
     return TRUE;

@@ -259,7 +259,7 @@ BOOL ICDchangegroup(NEWSGROUP *ngp, char *Rest)
     ICDiovrelease(&iov[2]);
 
     if (ret) {
-	if (innconf->enableoverview && !OVgroupadd(Name, Rest)) {
+	if (innconf->enableoverview && !OVgroupadd(Name, 0, Rest)) {
 	    DISPOSE(Name);
 	    return FALSE;
 	}
@@ -291,7 +291,7 @@ BOOL ICDnewgroup(char *Name, char *Rest)
     ICDiovrelease(&iov[0]);
     ICDiovrelease(&iov[1]);
     if (ret) {
-	if (innconf->enableoverview && !OVgroupadd(Name, Rest))
+	if (innconf->enableoverview && !OVgroupadd(Name, 1, Rest))
 	    return FALSE;
     }
     return ret;
