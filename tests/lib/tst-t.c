@@ -88,10 +88,14 @@ main(void)
     else {
         while (fgets((char *) buffer, sizeof(buffer), words)) {
             buffer[ustrlen(buffer) - 1] = '\0';
+            if (buffer[0] == '\0')
+                continue;
             word = (unsigned char *) xstrdup((char *) buffer);
             if (tst_insert(tst, buffer, word, 0, NULL) != TST_OK) {
-                if (!reported)
+                if (!reported) {
+                    printf("# Failed insert of word %s\n", word);
                     printf("not ");
+                }
                 reported = true;
             }
         }
@@ -106,16 +110,22 @@ main(void)
     else {
         while (fgets((char *) buffer, sizeof(buffer), words)) {
             buffer[ustrlen(buffer) - 1] = '\0';
+            if (buffer[0] == '\0')
+                continue;
             word = tst_search(tst, buffer);
             if (word == NULL || strcmp((char *) word, buffer) != 0) {
-                if (!reported)
+                if (!reported) {
+                    printf("# Failed search of word %s\n", word);
                     printf("not ");
+                }
                 reported = true;
             }
             word = tst_delete(tst, buffer);
             if (word == NULL || strcmp((char *) word, buffer) != 0) {
-                if (!reported)
+                if (!reported) {
+                    printf("# Failed delete of word %s\n", word);
                     printf("not ");
+                }
                 reported = true;
             }
             free(word);
