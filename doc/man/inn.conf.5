@@ -633,6 +633,14 @@ The value of the INND_BIND_ADDRESS environment variable, if it exists,
 overrides this.
 The default value is unset.
 .TP
+.I sourceaddress
+Which local IP address to bind for outgoing NNTP sockets (used by
+.I innxmit
+among possibly others). Must be in dotted-quad format (nnn.nnn.nnn.nnn)
+If set to ``all'' or not set at all, the operating system which choose
+the source IP address for outgoing NNTP connections.
+The default value is unset.
+.TP
 .I port
 Which TCP port
 .I innd
