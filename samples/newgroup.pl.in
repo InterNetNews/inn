@@ -215,7 +215,6 @@ sub control_newgroup {
       if ($logging) {
 	$errmsg = "newgroup $groupname ";
 	($modflag eq "moderated" ? $errmsg .= "m " :  $errmsg .= "y ");
-	}
 	$errmsg .=  $status . " " . $sender;
 	logger($token, $logging, $errmsg);
       }
