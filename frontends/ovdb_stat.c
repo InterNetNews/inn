@@ -70,105 +70,105 @@ static void display_heading(const char *str)
 }
 
 
-static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
+static void
+print_value(int i, void *p, struct datatab *tab, const char *sep)
 {
     int mode = 0;
     u_int32_t a = 0, b = 0, c = 0, bytes = 0, mbytes = 0, gbytes = 0;
+    double percent;
     char *cp = p;
     char *tmp = NULL;
     time_t tm = 0;
     size_t sz = 0;
     DB_LSN *dl = NULL;
-
-    val[0] = 0;
-    sufx[0] = 0;
+    char buf[SMBUF];
 
     switch(tab[i].type) {
     case INT32:	/* 'a' points to u_int32_t */
         memcpy(&a, cp + tab[i].a, sizeof(a));
-	sprintf(val, "%u", a);
+        printf("%16u%s", a, sep);
 	break;
     case HEX32:	/* 'a' printed in hex */
         memcpy(&a, cp + tab[i].a, sizeof(a));
-	sprintf(val, "%x", a);
+        printf("%16x%s", a, sep);
 	break;
     case DIFF32:	/* 'a' - 'b' - 'c' */
         memcpy(&a, cp + tab[i].a, sizeof(a));
         memcpy(&b, cp + tab[i].b, sizeof(b));
-	if(tab[i].c != -1) {
+	if (tab[i].c != -1) {
             memcpy(&c, cp + tab[i].c, sizeof(c));
-	    sprintf(val, "%d", a - b - c);
+            printf("%16d%s", a - b - c, sep);
 	} else {
-	    sprintf(val, "%d", a - b);
+            printf("%16d%s", a - b, sep);
 	}
 	break;
     case PCT32:	/* 100 * 'a' / ('a' + 'b') */
         memcpy(&a, cp + tab[i].a, sizeof(a));
         memcpy(&b, cp + tab[i].b, sizeof(b));
-	sprintf(val, "%.0f", (double) a / (a + b) * 100.0);
-	strcpy(sufx, "%");
+        printf("%16.0f%s%% ", (double) a / (a + b) * 100.0, sep);
 	break;
     case FF:	/* 'a' = freebytes, 'b' = npages, 'c' = pagesize */
         memcpy(&a, cp + tab[i].a, sizeof(a));
         memcpy(&b, cp + tab[i].b, sizeof(b));
         memcpy(&c, cp + tab[i].c, sizeof(c));
-	if(b == 0) {
-	    sprintf(val, "%.0f", 0.0);
+	if (b == 0) {
+            printf("%16.0f%s%% ", 0.0, sep);
 	} else {
-	    sprintf(val, "%.0f", (double)((b * c) - a) / (b * c) * 100);
+            percent = (double) ((b * c) - a) / (b * c) * 100;
+            printf("%16.0f%s%% ", percent, sep);
 	}
-	strcpy(sufx, "%");
 	break;
     case BYTES:	/* 'a' = bytes, 'b' = mbytes, 'c' = gbytes */
-	if(tab[i].a != -1)
+	if (tab[i].a != -1)
             memcpy(&bytes, cp + tab[i].a, sizeof(bytes));
 	else
 	    bytes = 0;
-	if(tab[i].b != -1)
+	if (tab[i].b != -1)
             memcpy(&mbytes, cp + tab[i].b, sizeof(mbytes));
 	else
 	    mbytes = 0;
-	if(tab[i].c != -1)
+	if (tab[i].c != -1)
             memcpy(&gbytes, cp + tab[i].c, sizeof(gbytes));
 	else
 	    gbytes = 0;
-	if(gbytes > 0 || mbytes > 0) {
+	if (gbytes > 0 || mbytes > 0) {
 	    mbytes += gbytes * 1024;
-	    if(bytes > (1024*1024))
+	    if (bytes > (1024*1024))
 		mbytes += bytes / (1024*1024);
-	    sprintf(val, "%u", mbytes);
-	    strcpy(sufx, "MB");
+            printf("%16u%sMB", mbytes, sep);
 	} else {
-	    sprintf(val, "%u", bytes);
+            printf("%16u%s", bytes, sep);
 	}
 	break;
     case MODE:	/* 'a' points to int, printed as octal mode */
         memcpy(&mode, cp + tab[i].a, sizeof(mode));
-	sprintf(val, "%04o", mode);
+        printf("        %04o%s", mode, sep);
 	break;	
     case TIME:	/* 'a' points to time_t, printed as date/time */
         memcpy(&tm, cp + tab[i].a, sizeof(tm));
-	if(tm == 0) {
-	    strcpy(val, "none");
+	if (tm == 0) {
+            printf("%16s%s", "none", sep);
 	} else {
-	    strftime(val, SMBUF, "%Y-%m-%d %T %Z", localtime(&tm));
+	    strftime(buf, SMBUF, "%Y-%m-%d %T %Z", localtime(&tm));
+            printf("%16s%s", buf, sep);
 	}
 	break;
     case LSN:	/* 'a' points to DB_LSN */
 	dl = (DB_LSN *)(cp + tab[i].a);
-	if(dl->file == 0) {
-	    strcpy(val, "none");
+	if (dl->file == 0) {
+            printf("%16s%s", "none", sep);
 	} else {
-	    sprintf(val, "%u/%u", dl->file, dl->offset);
+            snprintf(buf, sizeof(buf), "%u/%u", dl->file, dl->offset);
+            printf("%16s%s", buf, sep);
 	}
 	break;
     case STR:	/* 'a' points to char* */
         memcpy(&tmp, cp + tab[i].a, sizeof(tmp));
-	strcpy(val, tmp);
+        printf("%16s%s", tmp, sep);
 	break;
     case SIZE:	/* 'a' points to size_t */
         memcpy(&sz, cp + tab[i].a, sizeof(sz));
-	sprintf(val, "%lu", (unsigned long) sz);
+        printf("%16lu%s", (unsigned long) sz, sep);
 	break;
     case END:
         break;
@@ -185,17 +185,20 @@ static char *myctime(time_t *tm)
 static void display_data(void *p, struct datatab *tab)
 {
     int i;
-    char val[SMBUF], sufx[SMBUF];
-    if(html)
+
+    if (html)
 	puts("<table border=0 cellpadding=1>");
-    for(i = 0; tab[i].type != END; i++) {
-	getval(i, p, tab, val, sufx);
-	if(html)
-	    printf("<tr><td align=right>%s<td>%s<td>%s\n", val, sufx, tab[i].desc);
-	else
-	    printf("%16s%-2s %s\n", val, sufx, tab[i].desc);
+    for (i = 0; tab[i].type != END; i++) {
+        if (html) {
+            printf("<tr><td align=right>");
+            print_value(i, p, tab, "<td>");
+            printf("<td>%s\n", tab[i].desc);
+        } else {
+            print_value(i, p, tab, "");
+            printf(" %s\n", tab[i].desc);
+        }
     }
-    if(html)
+    if (html)
 	puts("</table><p>");
 }
 
@@ -213,12 +216,13 @@ static void start_table(const char *label, struct datatab *tab)
 static void display_row(void *p, struct datatab *tab)
 {
     int i;
-    char val[SMBUF], sufx[SMBUF];
-    if(html) {
+
+    if (html) {
 	puts("<tr>");
-	for(i = 0; tab[i].type != END; i++) {
-	    getval(i, p, tab, val, sufx);
-	    printf("<td align=right>%s<td>%s\n", val, sufx);
+	for (i = 0; tab[i].type != END; i++) {
+            printf("<td align=right>");
+            print_value(i, p, tab, "<td>");
+            printf("\n");
 	}
     } else {
 	puts("---------------------------------------------");
