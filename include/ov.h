@@ -1,6 +1,8 @@
 #ifndef _OV_H_
 #define _OV_H_
 
+#include "storage.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
