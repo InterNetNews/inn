@@ -122,39 +122,12 @@ extern size_t strspn();
 # define fseek fseeko
 #endif
 
-/* readv(), writev(), and friends want to know how many elements can be in a
-   struct iovec.  This should be IOV_MAX but some systems may lack that
-   #define, so if it isn't defined figure it out from the system type. */
-#ifndef IOV_MAX
-# ifdef UIO_MAXIOV
-#  define IOV_MAX UIO_MAXIOV
-# else
-   /* FreeBSD 3.0 or above. */
-#  ifdef __FreeBSD__
-#   include <osreldate.h>
-#   if (__FreeBSD_version >= 222000)
-#    define IOV_MAX 1024
-#   endif
-#  endif
-   /* BSDI. */
-#  ifdef __bsdi__
-#   define IOV_MAX 1024
-#  endif
-# endif /* !UIO_MAXIOV */
-#endif /* !IOV_MAX */
-
-/* HP-UX, Solaris, NEC, and IRIX all limit to 16, which is the smallest
-   known limit, so if still not set fall back on that. */
-#ifndef IOV_MAX
-# define IOV_MAX 16
-#endif
-
 /* mmap() flags.  This really doesn't belong in this header file; it should
    be moved to a header file specifically for mmap-related things. */
 #ifdef MAP_FILE
-#define MAP__ARG (MAP_FILE | MAP_SHARED)
+# define MAP__ARG (MAP_FILE | MAP_SHARED)
 #else
-#define MAP__ARG (MAP_SHARED)
+# define MAP__ARG (MAP_SHARED)
 #endif
 
 /* This almost certainly isn't necessary, but it's not hurting anything. */
