@@ -739,6 +739,9 @@ AC_CHECK_FUNCS(atexit fchmod gethostname getpagesize getrusage getspnam \
                setsid socketpair strcspn strncasecmp strstr strtoul \
                symlink waitpid)
 
+dnl We only care if we have setreuid() if we don't have seteuid().
+AC_CHECK_FUNCS(seteuid setreuid, break)
+
 dnl We need both *rlimit functions.
 AC_CHECK_FUNC(getrlimit, AC_CHECK_FUNC(setrlimit, AC_DEFINE(HAVE_RLIMIT)))
 

@@ -354,8 +354,14 @@
 /* Define if you have the setbuffer function.  */
 #undef HAVE_SETBUFFER
 
+/* Define if you have the seteuid function.  */
+#undef HAVE_SETEUID
+
 /* Define if you have the setproctitle function.  */
 #undef HAVE_SETPROCTITLE
+
+/* Define if you have the setreuid function.  */
+#undef HAVE_SETREUID
 
 /* Define if you have the setsid function.  */
 #undef HAVE_SETSID
