@@ -16,12 +16,12 @@
 **  Read a big amount, looping until it is all done.  Return TRUE if
 **  successful.
 */
-int xread(int fd, char *p, OFFSET_T i)
+int xread(int fd, char *p, off_t i)
 {
     int	                count;
 
     for ( ; i; p += count, i -= count)
-	if ((count = read(fd, p, (SIZE_T)i)) <= 0)
+	if ((count = read(fd, p, i)) <= 0)
 	    return -1;
     return 0;
 }
@@ -49,7 +49,7 @@ char *ReadInDescriptor(int fd, struct stat *Sbp)
     p = NEW(char, Sbp->st_size + 1);
 
     /* Slurp, slurp. */
-    if (xread(fd, p, (OFFSET_T)(Sbp->st_size)) < 0) {
+    if (xread(fd, p, Sbp->st_size) < 0) {
 	oerrno = errno;
 	DISPOSE(p);
 	(void)close(fd);
