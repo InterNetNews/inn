@@ -211,6 +211,13 @@ sub write_makefile {
 }
 
 my ($dir, %storage, %overview);
+if (!-d 'cnfs') {
+    if (-d 'storage/cnfs') {
+        chdir 'storage' or die "Can't chdir to storage: $!\n";
+    } else {
+        die "Can't find storage directory (looking for storage/cnfs)\n";
+    }
+}
 opendir (D, ".") or die "Can't open current directory: $!\n";
 my @dirs = sort readdir D;
 for $dir (@dirs) {
