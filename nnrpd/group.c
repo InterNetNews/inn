@@ -489,7 +489,7 @@ FUNCTYPE CMDgroup(int ac, char *av[])
     else
 	group = av[1];
     if (GRPfind(group) == NULL) {
-	Reply("%s %s\r\n", NOSUCHGROUP,group);
+	Reply("%s %s\r\n", NOSUCHGROUP, group);
 	return;
     }
 
@@ -498,12 +498,12 @@ FUNCTYPE CMDgroup(int ac, char *av[])
 	grplist[0] = group;
 	grplist[1] = NULL;
 	if (!PERMmatch(PERMdefault, PERMlist, grplist)) {
-	    Reply("%s\r\n", NOSUCHGROUP);
+	    Reply("%s %s\r\n", NOSUCHGROUP, group);
 	    return;
 	}
     }
     else if (!PERMdefault) {
-	Reply("%s\r\n", NOSUCHGROUP);
+	Reply("%s %s\r\n", NOSUCHGROUP, group);
 	return;
     }
 
@@ -600,6 +600,7 @@ CMDxgtitle(ac, av)
     register char	*line;
     register char	*p;
     register char	*q;
+    char		*grplist[2];
     char		save;
 
     /* Parse the arguments. */
@@ -612,6 +613,12 @@ CMDxgtitle(ac, av)
     }
     else
 	p = av[1];
+
+    if (!PERMdefault) {
+	Printf("%d list follows\r\n", NNTP_XGTITLE_OK);
+	Printf(".\r\n");
+	return;
+    }
 
     /* Open the file, get ready to scan. */
     if ((qp = QIOopen(NEWSGROUPS)) == NULL) {
@@ -628,6 +635,12 @@ CMDxgtitle(ac, av)
 	save = *q;
 	*q = '\0';
 	if (wildmat(line, p)) {
+	    if (PERMspecified) {
+		grplist[0] = line;
+		grplist[1] = NULL;
+		if (!PERMmatch(PERMdefault, PERMlist, grplist))
+		    continue;
+	    }
 	    *q = save;
 	    Printf("%s\r\n", line);
 	}

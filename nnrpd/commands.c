@@ -315,6 +315,7 @@ CMDlist(ac, av)
     register QIOSTATE	*qp;
     register char	*p;
     register char	*save;
+    char		*q;
     char		*grplist[2];
     LISTINFO		*lp;
     char		*wildarg = NULL;
@@ -410,14 +411,33 @@ CMDlist(ac, av)
 
     /* Read lines, ignore long ones. */
     while ((p = QIOread(qp)) != NULL) {
-	if (lp == &INFOdistribs || lp == &INFOdistribpats ||
-            lp == &INFOsubs || lp == &INFOmoderators ||
-	    lp == &INFOmotd) {
+	if (lp == &INFOmotd) {
 	    Printf("%s\r\n", p);
 	    continue;
 	}
-	if (lp == &INFOschema) {
-	    if (*p != '\0' && *p != '#')
+	/* matching patterns against patterns is not that
+	   good but it's better than nothing ... */
+	if (lp == &INFOdistribpats) {
+	    if (*p == '\0' || *p == '#' || *p == ';' || *p == ' ')
+		continue;
+	    if (PERMspecified) {
+		if ((q = strchr(p, ':')) == NULL)
+	    	    continue;
+		q++;
+		if ((save = strchr(q, ':')) == NULL)
+		    continue;
+		*save = '\0';
+		grplist[0] = q;
+		if (!PERMmatch(PERMdefault, PERMlist, grplist))
+		    continue;
+		*save = ':';
+	    }
+	    Printf("%s\r\n", p);
+	    continue;
+	}
+	if (lp == &INFOdistribs || lp == &INFOmoderators ||
+	    lp == &INFOschema) {
+	    if (*p != '\0' && *p != '#' && *p != ';' && *p != ' ')
 		Printf("%s\r\n", p);
 	    continue;
 	}
