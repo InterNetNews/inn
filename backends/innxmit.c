@@ -920,6 +920,7 @@ int main(int ac, char *av[]) {
     BOOL		val;
     TOKEN		token;
 
+    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
 
@@ -984,9 +985,6 @@ int main(int ac, char *av[]) {
 	exit(1);
     }
 
-    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-
-    
     val = TRUE;
     if (!SMsetup(SM_PREOPEN,(void *)&val)) {
 	fprintf(stderr, "Can't setup the storage manager\n");
