@@ -133,7 +133,7 @@ STATIC dnode *build_node(dnode *prev, char *dir, char *name)
 **  names a file not in the same directory as the previous lot remember
 **  the file names in the directory we're examining, and count them
 */
-STATIC dnode *build_dir(int *ip)
+STATIC dnode *build_dir(int *queued, int *deleted)
 {
     static char	line[MAX_LINE_SIZE];
     dnode	*start;
@@ -142,7 +142,22 @@ STATIC dnode *build_dir(int *ip)
     char 	*p;
     char        *dir;
 
-    *ip = 0;
+    *queued = *deleted = 0;
+    while (!line[0] || (line[0] && IsToken(line))) {
+	if (!line[0])
+	    if (!get_line(line, (int)sizeof(line)))
+		return NULL;
+	
+	if (IsToken(line)) {
+	    if (!SMcancel(TextToToken(line)) && (SMerrno != SMERR_NOENT)) {
+		fprintf(stderr, "%s: can't cancel %s\n", MyName, line);
+		fatals++;
+	    }
+	    (*deleted)++;
+	    if (!get_line(line, (int)sizeof(line)))
+		return NULL;
+	}
+    }
     if (line[0] == '\0' && !get_line(line, (int)sizeof line))
 	return NULL;
 
@@ -159,9 +174,16 @@ STATIC dnode *build_dir(int *ip)
 	p = line;
     }
     n = start = build_node((dnode *)NULL, dir, p);
-    *ip = 1;
+    *queued = 1;
 
     while (get_line(line, (int)sizeof line)) {
+	if (IsToken(line)) {
+	    if (!SMcancel(TextToToken(p)) && (SMerrno != SMERR_NOENT)) {
+		fprintf(stderr, "%s: can't cancel %s\n", MyName, p);
+		fatals++;
+	    }
+	    continue;
+	}
 	if ((dlen < 0 && strchr(line, '/'))
 	 || (dlen >= 0 && (line[dlen] != '/'
 			      || strchr(line + dlen + 1, '/') != NULL
@@ -169,7 +191,7 @@ STATIC dnode *build_dir(int *ip)
 	    return start;
 
 	n = build_node(n, dir, line + dlen + 1);
-	(*ip)++;
+	(*queued)++;
     }
     line[0] = '\0';
     return start;
@@ -240,14 +262,6 @@ STATIC void unlink_node(dnode *n)
     if (prefix_len != 0) {
 	(void)strcpy(prefix_dir + prefix_len, p);
 	p = prefix_dir;
-    }
-
-    if (IsToken(p)) {
-	if (!SMcancel(TextToToken(p)) && (SMerrno != SMERR_NOENT)) {
-	    fprintf(stderr, "%s: can't cancel %s\n", MyName, p);
-	    fatals++;
-	}
-	return;
     }
 
     if (AmRoot) {
@@ -593,6 +607,7 @@ int main(int ac, char *av[])
     dnode	        *list;
     char	        *p;
     int			count;
+    int                 deleted;
     BOOL		empty_error;
 
     MyName = av[0];
@@ -666,10 +681,12 @@ int main(int ac, char *av[])
 
     SMinit();
 
-    while ((list = build_dir(&count)) != NULL) {
+    while ((list = build_dir(&count, &deleted)) != NULL) {
 	empty_error = FALSE;
 	unlink_dir(list, count);
     }
+    if (deleted)
+	empty_error = FALSE;
 
     SMshutdown();
     
