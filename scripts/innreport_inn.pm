@@ -62,6 +62,10 @@ my %innfeed_timer_names = (
 		   'cb'      => 'callbacks',
 );
 
+my %nnrpd_timer_names = (
+                   'idle'    => 'idle',
+);
+
 # init innd timer
 foreach (values %timer_names) {
   $innd_time_min{$_} = $MIN;
@@ -79,6 +83,15 @@ foreach (values %innfeed_timer_names) {
   $innfeed_time_num{$_} = 0;    # ...
 }
 $innfeed_time_times = 0;        # ...
+
+# init nnrpd timer
+foreach (values %nnrpd_timer_names) {
+  $nnrpd_time_min{$_} = $MIN;
+  $nnrpd_time_max{$_} = $MAX;
+  $nnrpd_time_time{$_} = 0;   # to avoid a warning... Perl < 5.004
+  $nnrpd_time_num{$_} = 0;    # ...
+}
+$nnrpd_time_times = 0;        # ...
 
 # collect: Used to collect the data.
 sub collect {
@@ -1369,6 +1382,29 @@ sub collect {
       $nnrpd_gethostbyaddr{"? (can't getpeername)"}++;
       return 1;
     }
+    # profile timer
+    # ME time X nnnn X(X) [...]
+    # The exact timers change from various versions of INN, so try to deal
+    # with this in a general fashion.
+    if ($left =~ m/^\S+\s+                         # ME
+	           time\ (\d+)\s+                  # time
+                   ((?:\S+\ \d+\(\d+\)\s*)+)       # timer values
+                   $/ox) {
+      $nnrpd_time_times += $1;
+      my $timers = $2;
+
+      while ($timers =~ /(\S+) (\d+)\((\d+)\)\s*/g) {
+        my $name = $nnrpd_timer_names{$1} || $1;
+        my $average = $2 / ($3 || 1);
+        $nnrpd_time_time{$name} += $2;
+        $nnrpd_time_num{$name} += $3;
+        $nnrpd_time_min{$name} = $average
+          if ($3 && $nnrpd_time_min{$name} > $average);
+        $nnrpd_time_max{$name} = $average
+          if ($3 && $nnrpd_time_max{$name} < $average);
+      }
+      return 1;
+    }
     # ME dropping articles into ...
     return 1 if $left = ~/ME dropping articles into /o;
     # newnews (interesting but ignored till now)
@@ -1758,6 +1794,12 @@ sub adjust {
         $innfeed_time_max{$key} = 0 if ($innfeed_time_max{$key} == $MAX);
       }
     }
+    if (%nnrpd_time_min) {
+      foreach $key (keys (%nnrpd_time_min)) {
+        $nnrpd_time_min{$key} = 0 if ($nnrpd_time_min{$key} == $MIN);
+        $nnrpd_time_max{$key} = 0 if ($nnrpd_time_max{$key} == $MAX);
+      }
+    }
     # remove the innd timer stats if not used.
     unless ($innd_time_times) {
       undef %innd_time_min;
@@ -1771,6 +1813,13 @@ sub adjust {
       undef %innfeed_time_max;
       undef %innfeed_time_num;
       undef %innfeed_time_time;
+    }
+    # same thing for nnrpd timer
+    unless ($nnrpd_time_times) {
+      undef %nnrpd_time_min;
+      undef %nnrpd_time_max;
+      undef %nnrpd_time_num;
+      undef %nnrpd_time_time;
     }
 
     # adjust the crosspost stats.

@@ -333,6 +333,64 @@ section innfeed_timer {
         };
 };
 
+section nnrpd_timer {
+        title   "nnrpd timer:";
+	data    "%nnrpd_time_time";
+        column {
+                name          "Code region";
+                format        "%-15.15s";
+		value         "$key";
+		format_total  "TOTAL: %-8.8s";
+		total         "time_ms($nnrpd_time_times)";
+        };
+        column {
+                name          "Time";
+                format        "%13s";
+		value         "time_ms($nnrpd_time_time{$key})";
+		total         "time_ms(total(%nnrpd_time_time))";
+        };
+        column {
+                name          "Pct";
+                format_name   "%6s";
+                format        "%5.1f%%";
+		value         "100 * $nnrpd_time_time{$key} / $nnrpd_time_times";
+		total         "100 * total(%nnrpd_time_time) /
+	                       $nnrpd_time_times";
+        };
+        column {
+                name          "Invoked";
+                format        "%10s";
+		value         "$nnrpd_time_num{$key}";
+                format_total  "%9s-";
+		total         "";
+        };
+        column {
+                name          "Min(ms)";
+                format_name   "%9s";
+                format        "%9.3f";
+		value         "$nnrpd_time_min{$key}";
+                format_total  "%8s-";
+		total         "";
+        };
+        column {
+                name          "Avg(ms)";
+                format_name   "%10s";
+                format        "%10.3f";
+		value         "$nnrpd_time_time{$key} /
+		            ($nnrpd_time_num{$key} ? $nnrpd_time_num{$key} : 1)";
+                format_total  "%9s-";
+		total         "";
+        };
+        column {
+                name          "Max(ms)";
+                format_name   "%10s";
+                format        "%10.3f";
+		value         "$nnrpd_time_max{$key}";
+                format_total  "%9s-";
+		total         "";
+        };
+};
+
 section innd_control {
         title   "Control commands to INND:";
 	data    "%innd_control";
