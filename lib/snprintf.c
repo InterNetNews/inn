@@ -716,16 +716,13 @@ static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c)
   return 1;
 }
 
-#ifndef HAVE_VSNPRINTF
 int vsnprintf (char *str, size_t count, const char *fmt, va_list args)
 {
   if (str != NULL)
     str[0] = 0;
   return dopr(str, count, fmt, args);
 }
-#endif /* !HAVE_VSNPRINTF */
 
-#ifndef HAVE_SNPRINTF
 /* VARARGS3 */
 #ifdef HAVE_STDARGS
 int snprintf (char *str,size_t count,const char *fmt,...)
@@ -749,7 +746,6 @@ int snprintf (va_alist) va_dcl
   VA_END;
   return total;
 }
-#endif /* !HAVE_SNPRINTF */
 
 #ifdef TEST_SNPRINTF
 #ifndef LONG_STRING
