@@ -42,6 +42,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <math.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -49,10 +50,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <syslog.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
@@ -159,14 +156,15 @@ int main (int argc, char **argv)
   strcpy (dateString,ctime(&now)) ;
   dateString [24] = '\0' ;
 
-  if ((program = strrchr (argv [0],'/')) == NULL)
-    program = argv [0] ;
+  error_program_name = strrchr (argv [0],'/');
+  if (error_program_name == NULL)
+    error_program_name = argv [0] ;
   else
-    program++ ;
+    error_program_name++;
 
   gPrintInfo = gprintinfo ;
 
-  openlog (program,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
+  openlog (error_program_name,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
   if (ReadInnConf() < 0) {
       syslog(LOG_ERR, "cant read inn.conf\n");
       exit(1);
@@ -178,8 +176,8 @@ int main (int argc, char **argv)
   useMMap = false ;
 #endif
 
-  die_set_handlers (2, log_stderr, syslog_err) ;
-  warn_set_handlers (2, log_stderr, syslog_warn) ;
+  die_set_handlers (2, error_log_stderr_date, error_log_syslog_err) ;
+  warn_set_handlers (2, error_log_stderr_date, error_log_syslog_warning) ;
 
 #define OPT_STRING "a:b:c:Cd:e:hl:mMo:p:S:s:vxyz"
 
@@ -284,7 +282,7 @@ int main (int argc, char **argv)
 
   if (seenV)
     {
-      warn ("%s version: %s\n",program, versionInfo) ;
+      warn ("%s version: %s\n",error_program_name, versionInfo) ;
       exit (0) ;
     }
 
@@ -520,7 +518,7 @@ int main (int argc, char **argv)
 static void usage (int val)
 {
   fprintf (stderr,"usage: %s [ options ] [ file ]\n\n",
-           program) ;
+           error_program_name) ;
   fprintf (stderr,"Version: %s\n\n",versionInfo) ;
   fprintf (stderr,"Config file: %s\n",CONFIG_FILE) ;
   fprintf (stderr,"Backlog directory: %s/%s\n", innconf->pathspool, TAPE_DIRECTORY) ;
