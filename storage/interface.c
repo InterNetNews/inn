@@ -1,3 +1,8 @@
+/*  $Id$
+**
+**  Storage Manager interface
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -248,9 +253,8 @@ static BOOL SMreadconfig(void) {
 	if (!prev)
 	    subscriptions = sub;
 
-	/* Store the patterns in reverse order since we need to match
-	   them like that. */
-	for (i--, p = strtok(patterns, ","); p != NULL; i--, p = strtok(NULL, ","))
+	/* Store the patterns. */
+	for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ","))
 	    sub->patterns[i] = COPY(p);
 
 	if (prev)

@@ -21,7 +21,9 @@ CTAGS		= /usr/bin/ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
-all:			autoconfig methods libstorage.a
+all:			autoconfig
+	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods
+	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libstorage.a
 
 include Make.methods
 

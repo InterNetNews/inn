@@ -53,7 +53,9 @@ not ``Newsgroups'' header.
 \&``!'' and ``@'' are allowed at the start of the wildmat and
 refer to pattern exclusions. See
 .IR newsfeeds (5)
-for a description of their use.
+for a description of their use.  The ``wildmat'' is matched in order.
+There is no default ``wildmat'' pattern, so specified ``wildmat''
+is only used for matching.
 .PP
 If a newsgroup matches wildmat pattern, overview data is stored
 in

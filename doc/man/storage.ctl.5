@@ -32,7 +32,9 @@ Matching newsgroup is against newsgroup name in ``Newsgroups'' header.
 \&``!'' and ``@'' are allowed at the start of the wildmat and
 refer to pattern exclusions. See
 .IR newsfeeds (5)
-for a description of their use.
+for a description of their use.  The ``wildmat'' is matched in order.
+There is no default ``wildmat'' pattern, so specified ``wildmat''
+is only used for matching.
 \&``Storage_class'' is an identifier among all entries.
 \&``Storage_class'' is also referred at
 .IR expire.ctl (5).
@@ -41,7 +43,7 @@ for a description of their use.
 method. See method specific man page for a description of its use.
 .PP
 If a newsgroup matches wildmat pattern and the range, the article is stored
-in that ``storage_class''.
+in that ``storage_class.''
 Note that the file is interpreted in order and first match line
 is used to store an article.
 .PP

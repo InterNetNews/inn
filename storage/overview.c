@@ -176,8 +176,8 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	    newconfig->addr = addr;
 	    newconfig->size = sb.st_size;
 	    newconfig->offset = -1;
-	    /* Store the patterns in reverse order like storage.ctl */
-	    for (i--, p = strtok(patterns, ","); p != NULL; i--, p = strtok(NULL, ","))
+	    /* Store the patterns */
+	    for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ","))
 	        newconfig->patterns[i] = COPY(p);
 	    if (prev)
 		prev->next = newconfig;
