@@ -14,7 +14,7 @@
 ##  put your own version information in $VERSION_EXTRA.  If it's set to
 ##  "CVS prerelease", the build time will be automatically included.
 
-VERSION         = 2.4.0
+VERSION         = 2.4.1
 VERSION_EXTRA   = CVS prerelease
 
 ##  If you want to install INN relative to a root directory other than /,
