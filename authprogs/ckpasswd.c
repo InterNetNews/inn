@@ -25,7 +25,8 @@
 #endif
 
 #if HAVE_GETSPNAM
-char *GetShadowPass(char *user)
+char *
+GetShadowPass(char *user)
 {
     static struct spwd *spwd;
 
@@ -35,7 +36,8 @@ char *GetShadowPass(char *user)
 }
 #endif
 
-char *GetPass(char *user)
+char *
+GetPass(char *user)
 {
     static struct passwd *pwd;
 
@@ -44,7 +46,8 @@ char *GetPass(char *user)
     return(0);
 }
 
-char *GetFilePass(char *name, char *file)
+char *
+GetFilePass(char *name, char *file)
 {
     FILE *pwfile;
     char buf[SMBUF];
@@ -57,14 +60,16 @@ char *GetFilePass(char *name, char *file)
 	return(0);
     found = 0;
     while ((!found) && fgets(buf, sizeof(buf), pwfile)) {
-	buf[strlen(buf)-1] = 0; /* clean off the \n */
-	if (!(colon = strchr(buf, ':'))) {
-	    fclose(pwfile);
-	    return(0);
+	if (*buf != '#') {			/* ignore comment lines */
+	    buf[strlen(buf)-1] = 0;		/* clean off the \n */
+	    if (!(colon = strchr(buf, ':'))) {
+		fclose(pwfile);
+		return(0);
+	    }
+	    *colon = 0;
+	    if (!strcmp(buf, name))
+    		found = 1;
 	}
-	*colon = 0;
-	if (!strcmp(buf, name))
-         found = 1;
     }
     fclose(pwfile);
     if (!found)
@@ -77,7 +82,8 @@ char *GetFilePass(char *name, char *file)
 }
 
 #if defined(HAVE_NDBM_H) || defined(HAVE_DB1_NDBM_H)
-char *GetDBPass(char *name, char *file)
+char *
+GetDBPass(char *name, char *file)
 {
     datum key;
     datum val;
@@ -101,7 +107,8 @@ char *GetDBPass(char *name, char *file)
 }
 #endif
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     extern int optind;
     extern char *optarg;
