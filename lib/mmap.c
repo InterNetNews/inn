@@ -26,8 +26,8 @@ msync_page(void *p, size_t length, int flags)
         syswarn("getpagesize failed");
     else {
         const size_t mask = ~(size_t)(pagesize - 1);
-        const char *start = (char *) ((size_t) p & mask);
-        const char *end = (char *) (((size_t) p + length + pagesize) & mask);
+        char *start = (char *) ((size_t) p & mask);
+        char *end = (char *) (((size_t) p + length + pagesize) & mask);
 
         msync(start, end - start, flags);
     }
