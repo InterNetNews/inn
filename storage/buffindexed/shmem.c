@@ -4,17 +4,17 @@
 
 /* shared memory control utility */
 
-#include <stdlib.h>
-#include <sys/types.h>
+#include "config.h"
+#include "clibrary.h"
+#include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <assert.h>
-#include <signal.h>
 #include <syslog.h>
-#include <errno.h>
 
 #include "shmem.h"
   
@@ -254,8 +254,8 @@ smcd_t* smcCreateShmemBuffer(const char *name, int size)
     this->shmid = shmid;
     this->semap = semap;
 
-    syslog( L_NOTICE, "created shmid %d semap %d addr %8.8x size %lu",
-        shmid, semap, addr, size );
+    syslog( L_NOTICE, "created shmid %d semap %d addr %8.8lx size %d",
+        shmid, semap, (unsigned long) addr, size );
 
     return this;
 }
@@ -274,7 +274,7 @@ void smcClose( smcd_t *this )
 
     /* delete shm if no one has attached it */
     if ( shmctl(this->shmid, IPC_STAT, &buf) < 0) {
-        syslog( L_ERROR, "cant stat shmid %s", this->shmid );
+        syslog( L_ERROR, "cant stat shmid %d", this->shmid );
     } else if ( buf.shm_nattch == 0 ) {
         if (shmctl(this->shmid, IPC_RMID, 0) < 0) {
             syslog( L_ERROR, "cant delete shmid %d", this->shmid );

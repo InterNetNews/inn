@@ -641,8 +641,8 @@ static bool ovbuffinit_disks(void) {
       /* No shared memory exists, create one. */
       smc = smcCreateShmemBuffer(ovbuff->path, ovbuff->base);
       if (!smc) {
-	syslog(L_ERROR, "%s: ovinitdisks: cant create shmem for %s len %d: %m",
-	  LocalLogName, ovbuff->path, ovbuff->base);
+	syslog(L_ERROR, "%s: ovinitdisks: cant create shmem for %s len %lu: %m",
+	  LocalLogName, ovbuff->path, (unsigned long) ovbuff->base);
 	return false;
       }
     }
@@ -2056,7 +2056,7 @@ bool buffindexed_expiregroup(char *group, int *lo, struct history *h) {
   GROUPENTRY	newge, *ge;
   GROUPLOC	gloc, next;
   char		*data;
-  int		i, j, len;
+  int		i, len;
   TOKEN		token;
   ARTNUM	artnum, low, high;
   ARTHANDLE	*ah;
@@ -2082,7 +2082,7 @@ bool buffindexed_expiregroup(char *group, int *lo, struct history *h) {
       search.hi = ge->high;
       search.lo = ge->low;
       search.cur = 0;
-      search.needov = TRUE;
+      search.needov = true;
       while (ovsearch((void *)&search, NULL, &data, &len, &token, &arrived, &expires)) {
 	if (innconf->groupbaseexpiry)
 	  /* assuming "." is not real newsgroup */
@@ -2342,13 +2342,11 @@ static int countgdb(void) {
   return count;
 }
 
+int 
 main(int argc, char **argv) {
   char			*group, flag[2], buff[OV_BLOCKSIZE];
   int			lo, hi, count, flags, i;
   OVSEARCH		*search;
-  OVBLOCK		*ovblock;
-  OVINDEX		*ovindex;
-  OVBUFF		*ovbuff;
   GROUPENTRY		*ge;
   GROUPLOC		gloc;
   GIBLIST		*giblist;
@@ -2373,7 +2371,7 @@ main(int argc, char **argv) {
   if (isdigit(*group)) {
     gloc.recno = atoi(group);
     ge = &GROUPentries[gloc.recno];
-    fprintf(stdout, "left articles are %d for %d, last expiry is %d\n", ge->count, gloc.recno, ge->expired);
+    fprintf(stdout, "left articles are %d for %d, last expiry is %ld\n", ge->count, gloc.recno, (long) ge->expired);
     if (ge->count == 0) {
       GROUPlock(gloc, INN_LOCK_UNLOCK);
       exit(0);
@@ -2392,9 +2390,9 @@ main(int argc, char **argv) {
       if (Gib[i].artnum == 0)
 	continue;
       if (Gib[i].index == NULLINDEX)
-	fprintf(stdout, "    %d empty\n");
+	fprintf(stdout, "    %lu empty\n", (unsigned long) Gib[i].offset);
       else {
-	fprintf(stdout, "    %d %d\n", Gib[i].offset, Gib[i].len);
+	fprintf(stdout, "    %lu %d\n", (unsigned long) Gib[i].offset, Gib[i].len);
       }
     }
     ovgroupunmap();
@@ -2430,9 +2428,9 @@ main(int argc, char **argv) {
     if (Gib[i].artnum == 0)
       continue;
     if (Gib[i].index == NULLINDEX)
-      fprintf(stdout, "    %d empty\n");
+      fprintf(stdout, "    %lu empty\n", (unsigned long) Gib[i].offset);
     else {
-      fprintf(stdout, "    %d %d\n", Gib[i].offset, Gib[i].len);
+      fprintf(stdout, "    %lu %d\n", (unsigned long) Gib[i].offset, Gib[i].len);
     }
   }
   {
@@ -2442,13 +2440,14 @@ main(int argc, char **argv) {
     TOKEN token;
     while (buffindexed_search((void *)search, &artnum, &data, &len, &token, NULL)) {
       if (len == 0)
-	fprintf(stdout, "%d: len is 0\n", artnum);
+	fprintf(stdout, "%lu: len is 0\n", artnum);
       else {
 	memcpy(buff, data, len);
 	buff[len] = '\0';
-	fprintf(stdout, "%d: %s\n", artnum, buff);
+	fprintf(stdout, "%lu: %s\n", artnum, buff);
       }
     }
   }
+  return 0;
 }
 #endif /* DEBUG */
