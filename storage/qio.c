@@ -22,18 +22,18 @@
 QIOSTATE *QIOfdopen(const int fd)
 {
     QIOSTATE	*qp;
-#if	defined(DO_HAVE_ST_BLKSIZE)
+#if	defined(HAVE_ST_BLKSIZE)
     struct stat	Sb;
-#endif	/* defined(DO_HAVE_ST_BLKSIZE) */
+#endif	/* defined(HAVE_ST_BLKSIZE) */
 
     qp = NEW(QIOSTATE, 1);
     qp->flag = QIO_ok;
     qp->fd = fd;
-#if	defined(DO_HAVE_ST_BLKSIZE)
+#if	defined(HAVE_ST_BLKSIZE)
     qp->Size = fstat(fd, &Sb) >= 0 ? (int)Sb.st_blksize : QIO_BUFFER;
 #else
     qp->Size = QIO_BUFFER;
-#endif	/* defined(DO_HAVE_ST_BLKSIZE) */
+#endif	/* defined(HAVE_ST_BLKSIZE) */
     qp->Buffer = NEW(char, qp->Size);
     qp->Count = 0;
     qp->Start = qp->Buffer;

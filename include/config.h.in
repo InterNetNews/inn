@@ -7,48 +7,25 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__ 
 
+/* Change to fork() if your vfork() is broken */
+#define FORK() vfork()
+
 /* Define if you have ANSI C headers */
 #undef STDC_HEADERS
 
 /* Define if you have <dirent.h> */
 #undef HAVE_DIRENT_H 
-#ifdef HAVE_DIRENT_H
-# define DIR_DIRENT
-#else
-# define DIR_DIRECT
-#endif
 
 /* Define if your 'struct stat' has a 'st_blksize' member */
 #undef HAVE_ST_BLKSIZE
-#ifdef HAVE_ST_BLKSIZE
-# define DO_HAVE_ST_BLKSIZE
-#endif
 
 /* Define if your 'struct tm' has a 'tm_gmtoff' member */
 #undef HAVE_TM_GMTOFF
-#ifdef HAVE_TM_GMTOFF
-# define DO_HAVE_TM_GMTOFF
-#else
-# define DONT_HAVE_TM_GMTOFF
-#endif
 
 /* Define one of the following locking methods */
 #undef HAVE_FLOCK
 #undef HAVE_LOCKF
 #undef HAVE_FCNTL
-#ifdef HAVE_FLOCK
-# define LOCK_FLOCK
-#else
-# ifdef HAVE_LOCKF
-#  define LOCK_LOCKF
-# else
-#  ifdef HAVE_FCNTL
-#   define LOCK_FCNTL
-#  else
-#   define LOCK_NONE
-#  endif
-# endif
-#endif
 
 /* Define one of the following for 'close on exec' */
 #undef CLX_FCNTL
@@ -60,9 +37,6 @@
 
 /* Define if you have msync() with 3 args */
 #undef HAVE_MSYNC_3_ARG
-#ifdef HAVE_MSYNC_3_ARG 
-# define DO_MSYNC_3_ARG
-#endif
 
 /* Define if you have 'union wait' */
 #undef HAVE_UNION_WAIT

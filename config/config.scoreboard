@@ -114,25 +114,6 @@
   ||#### =()<OFFSET_T		@<OFFSET_T>@>()=
   ||OFFSET_T	long
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  What is the type of an object size? Usually size_t or unsigned int.
-  ||##[autoconf]
-  ||#### =()<SIZE_T			@<SIZE_T>@>()=
-  ||SIZE_T			@ac_cv_subst_size_t@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  What is the type of a passwd uid and gid, for use in chown(2)?
-  ||##[autoconf]
-  ||#### =()<UID_T			@<UID_T>@>()=
-  ||UID_T			@ac_cv_subst_uid_t@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##[autoconf]
-  ||#### =()<GID_T			@<GID_T>@>()=
-  ||GID_T			@ac_cv_subst_gid_t@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Type of a pid, for use in kill(2).
-  ||##[autoconf]
-  ||#### =()<PID_T			@<PID_T>@>()=
-  ||PID_T			@ac_cv_subst_pid_t@
-[IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Generic pointer, used by memcpy, malloc, etc.  Usually char or void.
   ||##[autoconf]
   ||#### =()<POINTER			@<POINTER>@>()=
@@ -171,11 +152,6 @@
   ||##[autoconf]
   ||#### =()<FORK			@<FORK>@>()=
   ||FORK			@ac_cv_subst_fork@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Do you have <vfork.h>?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_VFORK		@<HAVE_VFORK>@>()=
-  ||HAVE_VFORK		@ac_cv_subst_have_vfork@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Do you have Unix-domain sockets?  Pick DO or DONT.
   ||##[autoconf]
@@ -436,40 +412,10 @@
   ||##  Do you have shadow file?  Pick DO or DONT
   ||#### =()<HAVE_SHADOW		@<HAVE_SHADOW>@>()=
   ||HAVE_SHADOW		DO
-[IN1.7=@7][comments]
-  ||
-  ||
-  ||##
-  ||##  7.  PATHS TO COMMON PROGRAMS
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where the shell is.
-  ||##[autoconf]
-  ||#### =()<_PATH_SH		@<_PATH_SH>@>()=
-  ||_PATH_SH		@_PATH_SH@
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where the compress program lives.
-  ||##[autoconf]
-  ||#### =()<_PATH_COMPRESS		@<_PATH_COMPRESS>@>()=
-  ||_PATH_COMPRESS		@COMPRESS@
-[IN1.7=@7][WDF=confparam][WOR=yes]
-  ||##  Where temporary files live on the server
-  ||##[autoconf]
-  ||#### =()<_PATH_TMP		@<_PATH_TMP>@>()=
-  ||_PATH_TMP		@TMPPATH@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where your GNU gzip binary is (for rnews to run on gzipped batches).
-  ||##[autoconf]
-  ||#### =()<_PATH_GZIP		@<_PATH_GZIP>@>()=
-  ||_PATH_GZIP		@GZIP@
 [IN1.7=@8][comments]
   ||
   ||##
   ||##  8.  PATHS RELATED TO THE SPOOL DIRECTORY
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Where rnews creates temporary files until finished
-  ||##[autoconf]
-  ||#### =()<_PATH_SPOOLTEMP		@<_PATH_SPOOLTEMP>@>()=
-  ||_PATH_SPOOLTEMP		@TMPPATH@
 [IN1.7=@8][WDF=fixed][WOR=yes][P=low]
   ||##  Where rnews puts bad input, relative to _PATH_SPOOLNEWS.
   ||#### =()<_PATH_RELBAD		@<_PATH_RELBAD>@>()=
@@ -492,26 +438,6 @@
   ||
   ||##
   ||##  11.  LOG AND CONFIG FILES
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Shell script that sets most of these as shell vars
-  ||##[autoconf]
-  ||#### =()<_PATH_SHELLVARS		@<_PATH_SHELLVARS>@>()=
-  ||_PATH_SHELLVARS		@CONFPATH@/innshellvars
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Perl script that sets most of these as perl variables
-  ||##[autoconf]
-  ||#### =()<_PATH_PERL_SHELLVARS	@<_PATH_PERL_SHELLVARS>@>()=
-  ||_PATH_PERL_SHELLVARS	@CONFPATH@/innshellvars.pl
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  TCL script that sets most of these as tcl variables
-  ||##[autoconf]
-  ||#### =()<_PATH_TCL_SHELLVARS	@<_PATH_TCL_SHELLVARS>@>()=
-  ||_PATH_TCL_SHELLVARS	@CONFPATH@/innshellvars.tcl
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  csh script that sets most of these as csh variables
-  ||##[autoconf]
-  ||#### =()<_PATH_CSH_SHELLVARS	@<_PATH_CSH_SHELLVARS>@>()=
-  ||_PATH_CSH_SHELLVARS	@CONFPATH@/innshellvars.csh
 [IN1.7=@11][WDF=confparam][WOR=yes][P=low]
   ||## The group owner of the rnews program. Usually uucp.
   ||#### =()<RNEWS_GROUP		@<RNEWS_GROUP>@>()=
@@ -520,16 +446,6 @@
   ||##  How many generates of log files to keep.
   ||#### =()<LOG_CYCLES		@<LOG_CYCLES>@>()=
   ||LOG_CYCLES		3
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  A temporary file, for client inews to use.
-  ||##[autoconf]
-  ||#### =()<_PATH_TEMPACTIVE	@<_PATH_TEMPACTIVE>@>()=
-  ||_PATH_TEMPACTIVE	@TMPPATH@/activeXXXXXX
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  A temporary file, for client inews to use.
-  ||##[autoconf]
-  ||#### =()<_PATH_TEMPMODERATORS	@<_PATH_TEMPMODERATORS>@>()=
-  ||_PATH_TEMPMODERATORS	@TMPPATH@/moderatorsXXXXXX
 [IN1.7=@12][comments]
   ||
   ||
@@ -620,12 +536,6 @@
   ||##[autoconf]
   ||#### =()<WANT_PGPVERIFY		@<WANT_PGPVERIFY>@>()=
   ||WANT_PGPVERIFY		@DO_PGP@
-[IN1.7=@15][comments]
-  ||
-  ||##
-  ||##  15. Local Configuration
-  ||##
-  ||
 [IN1.7=@16][comments]
   ||
   ||

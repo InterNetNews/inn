@@ -5046,46 +5046,6 @@ else
 fi
 
 
-if test "x${ac_cv_subst_fork}" = "x"
-then
-if test x${ac_cv_func_vfork_works} = "xno"
-then
-    echo setting ac_cv_subst_fork...fork 
-	ac_cv_subst_fork=fork
-else
-    if test x${ac_cv_func_vfork_works} = "xyes"
-    then
-	    echo setting ac_cv_subst_fork...vfork
-	    ac_cv_subst_fork=vfork
-	else
-	    { echo "configure: error: ac_cv_func_vfork_works = ${ac_cv_func_vfork_works}. Must be yes or no" 1>&2; exit 1; }
-	fi
-fi
-else
-    echo "setting ac_cv_subst_fork... (cached) ${ac_cv_subst_fork}" 
-fi
-
-
-if test "x${ac_cv_subst_have_vfork}" = "x"
-then
-if test x${ac_cv_header_vfork_h} = "xno"
-then
-    echo setting ac_cv_subst_have_vfork...DONT 
-	ac_cv_subst_have_vfork=DONT
-else
-    if test x${ac_cv_header_vfork_h} = "xyes"
-    then
-	    echo setting ac_cv_subst_have_vfork...DO
-	    ac_cv_subst_have_vfork=DO
-	else
-	    { echo "configure: error: ac_cv_header_vfork_h = ${ac_cv_header_vfork_h}. Must be yes or no" 1>&2; exit 1; }
-	fi
-fi
-else
-    echo "setting ac_cv_subst_have_vfork... (cached) ${ac_cv_subst_have_vfork}" 
-fi
-
-
 if test "x${ac_cv_subst_res_style}" = "x"
 then
 if test x${ac_cv_func_getrusage} = "xno"
@@ -5458,8 +5418,6 @@ s%@ac_cv_subst_use_char_const@%$ac_cv_subst_use_char_const%g
 s%@ac_cv_subst_size_t@%$ac_cv_subst_size_t%g
 s%@ac_cv_subst_pid_t@%$ac_cv_subst_pid_t%g
 s%@ac_cv_subst_lseekval@%$ac_cv_subst_lseekval%g
-s%@ac_cv_subst_fork@%$ac_cv_subst_fork%g
-s%@ac_cv_subst_have_vfork@%$ac_cv_subst_have_vfork%g
 s%@ac_cv_subst_res_style@%$ac_cv_subst_res_style%g
 s%@ac_cv_subst_need_time@%$ac_cv_subst_need_time%g
 s%@ac_cv_subst_act_style@%$ac_cv_subst_act_style%g

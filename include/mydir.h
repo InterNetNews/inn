@@ -3,12 +3,10 @@
 **  Encapsulate dirent/direct differences.
 */
 
-#if	defined(DIR_DIRENT)
+#if defined(HAVE_DIRENT_H)
 #include <dirent.h>
 typedef struct dirent	DIRENTRY;
-#endif	/* defined(DIR_DIRENT) */
-
-#if	defined(DIR_DIRECT)
+#else 
 #include <sys/dir.h>
 typedef struct direct	DIRENTRY;
-#endif	/* defined(DIR_DIRECT) */
+#endif

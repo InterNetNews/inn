@@ -62,12 +62,10 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <syslog.h>
 #include <errno.h>
 
-#if defined (DIR_DIRENT)
+#if defined (HAVE_DIRENT_H)
 #include <dirent.h>
 typedef struct dirent DIRENTRY ;
-#endif
-
-#if defined (DIR_DIRECT)
+#else
 #include <sys/dir.h>
 typedef struct direct DIRENTRY ;
 #endif

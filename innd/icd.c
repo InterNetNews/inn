@@ -388,7 +388,7 @@ ICDwriteactive()
 {
 #if	defined(ACT_MMAP)
 #if defined (DO_MMAP_SYNC)
-#if defined (DO_MSYNC_3_ARG)
+#if defined (HAVE_MSYNC_3_ARG)
     if (msync(ICDactpointer, ICDactsize, MS_ASYNC) < 0) {
         syslog(L_FATAL, "%s msync failed %s %m", LogName, ICDactpath);
         exit(1);
