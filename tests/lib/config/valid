@@ -1,0 +1,29 @@
+# This is a leading comment.
+param1: on
+
+	param2:  true
+
+
+param3: yes
+# this is a comment \
+param4: off
+  # this is another
+# comment
+	  # on several lines
+  param5: false ; param6: no
+
+int1: 0		; 	int2: -3
+  # int3: 5000
+  int4: 5000
+int5: 2147483647
+int6: -2147483648
+
+string1: foo; string2: bar
+string3: "this is a test"
+string4: "this is \
+a test"
+string5: "this is \a\b\f\n\r\t\v a test \' of \" escapes \?\\"
+string6: "\
+# this is not a comment\
+"; string7: "lost \
+\nyet?"
