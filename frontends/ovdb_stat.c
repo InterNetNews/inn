@@ -488,6 +488,8 @@ static int display_ver()
 static struct datatab BTREE_tab[] = {
  { HEX32, F(bt_magic), -1, -1, "Btree magic number" },
  { INT32, F(bt_version), -1, -1, "Btree version number" },
+ { INT32, F(bt_minkey), -1, -1, "Minimum keys per page (minkey)" },
+ { INT32, F(bt_pagesize), -1, -1, "Database page size" },
  { INT32, F(bt_levels), -1, -1, "Levels in the tree" },
 #if DB_VERSION_MAJOR == 2 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0)
  { INT32, F(bt_nrecs), -1, -1, "Keys in the tree" },
@@ -540,7 +542,7 @@ static int display_btree(DB *db)
 static struct datatab HASH_tab[] = {
  { HEX32, F(hash_magic), -1, -1, "Hash magic number" },
  { INT32, F(hash_version), -1, -1, "Hash version number" },
- { INT32, F(hash_pagesize), -1, -1, "Underlying database page size" },
+ { INT32, F(hash_pagesize), -1, -1, "Database page size" },
 #if DB_VERSION_MINOR == 0
  { INT32, F(hash_nrecs), -1, -1, "Keys in the database" },
 #else
@@ -675,9 +677,19 @@ int main(int argc, char *argv[])
 
     if(ReadInnConf() < 0)
 	exit(1);
-    ovdb_getlock(OVDB_LOCK_ADMIN);
-    if(!ovdb_open(OV_READ))
+
+    if(!ovdb_check_user()) {
+	fprintf(stderr, "Error: Only run this command as user " NEWSUSER "\n");
 	exit(1);
+    }
+    if(!ovdb_getlock(OVDB_LOCK_ADMIN)) {
+	fprintf(stderr, "Can't lock database: %s\n", strerror(errno));
+	exit(1);
+    }
+    if(!ovdb_open(OV_READ)) {
+	fprintf(stderr, "Can't open overview; check syslog for OVDB messages\n");
+	exit(1);
+    }
 
     xsignal(SIGINT, sigfunc);
     xsignal(SIGTERM, sigfunc);

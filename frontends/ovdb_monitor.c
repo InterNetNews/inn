@@ -311,6 +311,10 @@ int main(int argc, char **argv)
 	syslog(L_FATAL, "ovmethod not set to ovdb");
         exit(1);
     }
+    if(!ovdb_check_user()) {
+	syslog(L_FATAL, "Error: Only run this command as user " NEWSUSER "\n");
+	exit(1);
+    }
     if(!ovdb_getlock(OVDB_LOCK_ADMIN)) {
 	syslog(L_FATAL, "can't lock database");
 	exit(1);

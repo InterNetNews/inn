@@ -313,6 +313,12 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Error: ovmethod not set to ovdb\n");
 	exit(1);
     }
+
+    if(!ovdb_check_user()) {
+	fprintf(stderr, "Error: Only run this command as user " NEWSUSER "\n");
+	exit(1);
+    }
+
     ovdb_errmode = OVDB_ERR_STDERR;
 
     while((c = getopt(argc, argv, "ru")) != -1) {
