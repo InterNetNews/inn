@@ -124,6 +124,16 @@
 #define NNTP_AUTH_REJECT_VAL		482
 
 /*
+**  Starttls commands (not official).
+*/
+#define NNTP_STARTTLS_NEXT		"382"
+#define NNTP_STARTTLS_NEXT_VAL	382
+#define NNTP_STARTTLS_DONE		"483"
+#define NNTP_STARTTLS_DONE_VAL	483
+#define NNTP_STARTTLS_BAD		"580"
+#define NNTP_STARTTLS_BAD_VAL	580
+
+/*
 **  XGTITLE, from ANU news.
 */
 #define NNTP_XGTITLE_BAD		481	/* Yes, 481. */

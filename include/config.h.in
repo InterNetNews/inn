@@ -210,6 +210,9 @@
 /* Define to compile in TCL filter support. */
 #undef DO_TCL
 
+/* Define if nnrpd uses STARTTLS. */
+#undef HAVE_SSL
+
 /* Mode that directories are created with.  */
 #undef GROUPDIR_MODE
 
