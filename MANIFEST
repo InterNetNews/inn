@@ -66,10 +66,13 @@ contrib/README.contrib      1 README file for the contrib contents.
 contrib/cleanoi             1 Script to clean overview index files
 contrib/count_overview.pl   1 Count overview entries
 contrib/expirectl           1 Generate expire.ctl from template
-contrib/findmissing.pl      1 locate articles not in history.
+contrib/findmissing.pl      1 Locate articles not in history.
+contrib/findreadgroups.pl   1 Keep track of which groups are currently being read
 contrib/fixhist             1 Script to clean history
 contrib/format_overview.pl  1 Format output of count_overview.pl
 contrib/listoi.c            1 Display an overview.index file
+contrib/makeexpctl.pl       1 Create expire.ctl script based on recently read articles
+contrib/makestorconf.pl     1 Create storage.conf script based on recently read articles
 contrib/newsbot             1 Grep articles and trigger actions
 contrib/reset-cnfs.c        1 Reset the state parts of a CNFS buffer
 doc                         1 Manpages (Directory)
