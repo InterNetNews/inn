@@ -64,6 +64,17 @@ High Priority Projects:
   configuration syntaxes, or merged into other existing more general
   configuration files.)
 
+* The recovery tools currently need serious work in the area of recovering
+  overview for a single newsgroup using tradspool, analyzing a broken
+  overview file (rather than just deleting it and regenerating it) and
+  doing things like regenerating a .IDX from a .DAT for tradindexed, and
+  renumbering the active file if it gets out of sync with the article
+  numbers on disk.
+
+* ctlinnd renumber for tradspool no longer works, in the sense that it
+  doesn't detect and fix differences between the files present on disk and
+  the low and high water marks in the active file or in the overview.
+
 
 Future Projects:
 
@@ -156,7 +167,26 @@ Future Projects:
   the active file as valid groups.
 
 * Lots of people encrypt X-Trace in various ways.  Should that be offered
-  as a standard option?
+  as a standard option?  The first data element should probably remain
+  unencrypted so that the O flag in newsfeeds doesn't break.  Olaf Titz
+  suggests:
+
+      This can be done by formatting the (rest of) the header in a way
+      that fields are always a multiple of 8 bytes and applying a 64 bit
+      block cipher in ECB mode on it.  But then we would be better off
+      using binary fields, as the timestamp is 9 bytes and an IP address
+      10-12 bytes.
+
+      Combining the timestamp and PID into one block, adding an
+      authenticated user field and omitting the redundant formatted time
+      would give the following format:
+
+      X-Trace: g212.hadiko.de [395109AA000016FF] [AC14302A00000000] [...]
+                               time    |    pid   ip      |reserved  user
+
+  Should there also be an option not to generate X-Trace?  And this whole
+  area may change if USEFOR ever standardizes poster trace information;
+  it's been proposed to put it in the path tail instead.
 
 * Validity checks on the poster's address.  (Although this could also be
   handled by the nnrpd posting filter.)
@@ -271,6 +301,12 @@ Future Projects:
   to the amount of data that's generated from it and stashed in various
   places).
 
+* Editing the active file by hand can currently munge it fairly badly even
+  if the server is throttled unless you reload active before restarting
+  the server.  This could be avoidable for at least that particular case
+  by checking the mtime of active before and after the server was
+  throttled.
+
 
 Long-Term Projects:
 
@@ -286,8 +322,11 @@ Long-Term Projects:
   and there should be standard API calls for filtering message IDs, remote
   posts, and local posts.  As part of this revision, all of the Perl
   callbacks should be defined before any of the user code is loaded, and
-  the Perl loading code needs considerable cleanup.  [Russ is planning on
-  working on this at some point.]
+  the Perl loading code needs considerable cleanup.  At the same time as
+  this is done, the implementation should really be documented; we do some
+  interesting things with embedded filters and it would be nice to have a
+  general document describing how we do it.  [Russ is planning on working
+  on this at some point.]
 
 * The innd filter should be able to specify additional or replacement
   groups into which an article should be filed, or even spool the article
@@ -387,3 +426,13 @@ Long-Term Projects:
   has offered to us (even if we didn't accept them from that peer).  This
   is really hard to do right, but even a small cache might increase feed
   performance.
+
+* There is a fundamental problem with the current design of the
+  control.ctl file.  It combines two things:  A database of hierarchies,
+  their maintainers, and related information, and a list of which
+  hierarchies the local server should honor.  These should be separated
+  out into the database (which could mostly be updated from a remote
+  source like ftp.isc.org and then combined with local additions) and a
+  configured list of hierarchies (or sub-hierarchies within hierarchies)
+  that control messages should be honored for.  This should be reasonably
+  simple although correct handling of checkgroups could get a mite tricky.
