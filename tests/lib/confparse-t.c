@@ -3,7 +3,6 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <unistd.h>
 
 #include "inn/confparse.h"
 #include "inn/messages.h"
@@ -103,6 +102,8 @@ test_errors(int n)
     char *expected;
     struct config_group *group;
 
+    if (symlink(".", "config/link") < 0)
+        sysdie("Cannot create config/link symlink");
     errfile = fopen("config/errors", "r");
     if (errfile == NULL)
         sysdie("Cannot open config/errors");
@@ -115,10 +116,11 @@ test_errors(int n)
         free(expected);
     }
     fclose(errfile);
+    unlink("config/link");
     return n;
 }
 
-/* Test the warning test cases in config/warningss, ensuring that they all
+/* Test the warning test cases in config/warnings, ensuring that they all
    parse successfully and match the expected error messages.  Takes the
    current test count and returns the new test count. */
 static int
@@ -138,6 +140,7 @@ test_warnings(int n)
         ok(n++, group != NULL);
         ok_string(n++, expected, errors);
         free(expected);
+        config_free(group);
     }
     fclose(warnfile);
     return n;
@@ -168,6 +171,7 @@ test_warnings_bool(int n)
         ok_string(n++, expected, errors);
         errors_uncapture();
         free(expected);
+        config_free(group);
     }
     fclose(warnfile);
     return n;
@@ -198,6 +202,69 @@ test_warnings_int(int n)
         ok_string(n++, expected, errors);
         errors_uncapture();
         free(expected);
+        config_free(group);
+    }
+    fclose(warnfile);
+    return n;
+}
+
+/* Test the warning test cases in config/warn-real, ensuring that they all
+   parse successfully and produce the expected error messages when retrieved
+   as bools.  Takes the current test count and returns the new test count. */
+static int
+test_warnings_real(int n)
+{
+    FILE *warnfile;
+    char *expected;
+    struct config_group *group;
+    double d_value;
+
+    warnfile = fopen("config/warn-real", "r");
+    if (warnfile == NULL)
+        sysdie("Cannot open config/warn-real");
+    while (parse_test_config(warnfile, &group)) {
+        expected = read_section(warnfile);
+        if (expected == NULL)
+            die("Unexpected end of file while reading error tests");
+        ok(n++, group != NULL);
+        ok(n++, errors == NULL);
+        errors_capture();
+        ok(n++, !config_param_real(group, "parameter", &d_value));
+        ok_string(n++, expected, errors);
+        errors_uncapture();
+        free(expected);
+        config_free(group);
+    }
+    fclose(warnfile);
+    return n;
+}
+
+/* Test the warning test cases in config/warn-string, ensuring that they all
+   parse successfully and produce the expected error messages when retrieved
+   as bools.  Takes the current test count and returns the new test count. */
+static int
+test_warnings_string(int n)
+{
+    FILE *warnfile;
+    char *expected;
+    struct config_group *group;
+    const char *s_value = NULL;
+
+    warnfile = fopen("config/warn-string", "r");
+    if (warnfile == NULL)
+        sysdie("Cannot open config/warn-string");
+    while (parse_test_config(warnfile, &group)) {
+        expected = read_section(warnfile);
+        if (expected == NULL)
+            die("Unexpected end of file while reading error tests");
+        ok(n++, group != NULL);
+        ok(n++, errors == NULL);
+        errors_capture();
+        ok(n++, !config_param_string(group, "parameter", &s_value));
+        ok_string(n++, expected, errors);
+        errors_uncapture();
+        free(expected);
+        config_free(group);
     }
     fclose(warnfile);
     return n;
@@ -206,17 +273,19 @@ test_warnings_int(int n)
 int
 main(void)
 {
-    struct config_group *group;
+    struct config_group *group, *subgroup;
     bool b_value = false;
     long l_value = 1;
+    double d_value = 1;
     const char *s_value;
-    struct vector *v_value;
+    const struct vector *v_value;
+    struct vector *vector;
     char *long_param, *long_value;
     size_t length;
     int n;
     FILE *tmpconfig;
 
-    test_init(125);
+    test_init(345);
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
@@ -318,10 +387,10 @@ main(void)
     free(long_param);
     free(long_value);
 
-    /* Parsing problems exactly on the boundary of a buffer.  This test
-       catches a bug in the parser that caused it to miss the colon at the end
-       of a parameter because the colon was the first character read in a new
-       read of the file buffer. */
+    /* Parsing problems exactly on the boundary of a buffer.  This test caught
+       a bug in the parser that caused it to miss the colon at the end of a
+       parameter because the colon was the first character read in a new read
+       of the file buffer. */
     tmpconfig = fopen("config/tmp", "w");
     if (tmpconfig == NULL)
         sysdie("cannot create config/tmp");
@@ -373,27 +442,185 @@ main(void)
     ok(66, group != NULL);
     if (group == NULL)
         exit(1);
-    v_value = config_params(group);
-    ok_int(67, 2, v_value->count);
-    ok_int(68, 2, v_value->allocated);
-    if (strcmp(v_value->strings[0], "foo") == 0)
-        ok_string(69, "bar", v_value->strings[1]);
-    else if (strcmp(v_value->strings[0], "bar") == 0)
-        ok_string(69, "foo", v_value->strings[1]);
+    vector = config_params(group);
+    ok_int(67, 2, vector->count);
+    ok_int(68, 2, vector->allocated);
+    if (strcmp(vector->strings[0], "foo") == 0)
+        ok_string(69, "bar", vector->strings[1]);
+    else if (strcmp(vector->strings[0], "bar") == 0)
+        ok_string(69, "foo", vector->strings[1]);
     else
         ok(69, false);
-    vector_free(v_value);
+    vector_free(vector);
+    config_free(group);
+
+    /* Lists. */
+    group = config_parse_file("config/lists");
+    ok(70, group != NULL);
+    if (group == NULL)
+        exit(1);
+    ok(71, config_param_list(group, "vector1", &v_value));
+    ok_int(72, 1, v_value->count);
+    ok_string(73, "simple", v_value->strings[0]);
+    ok(74, config_param_list(group, "vector2", &v_value));
+    ok_int(75, 3, v_value->count);
+    ok_string(76, "foo\tbar", v_value->strings[0]);
+    ok_string(77, "baz", v_value->strings[1]);
+    ok_string(78, "# this is not a comment", v_value->strings[2]);
+    ok(79, config_param_list(group, "vector3", &v_value));
+    ok_int(80, 0, v_value->count);
+    ok(81, config_param_list(group, "vector4", &v_value));
+    ok_int(82, 0, v_value->count);
+    ok(83, config_param_list(group, "vector5", &v_value));
+    ok_int(84, 1, v_value->count);
+    ok_string(85, "baz", v_value->strings[0]);
+    ok(86, config_param_list(group, "vector6", &v_value));
+    ok_int(87, 1, v_value->count);
+    ok_string(88, "bar baz", v_value->strings[0]);
+    config_free(group);
+
+    /* Groups. */
+    group = config_parse_file("config/groups");
+    ok(89, group != NULL);
+    if (group == NULL)
+        exit(1);
+    subgroup = config_find_group(group, "test");
+    ok(90, subgroup != NULL);
+    ok_string(91, "test", config_group_type(subgroup));
+    ok(92, config_param_boolean(subgroup, "value", &b_value));
+    ok(93, b_value);
+    subgroup = config_next_group(subgroup);
+    ok(94, subgroup != NULL);
+    ok_string(95, "test", config_group_type(subgroup));
+    ok(96, config_group_tag(subgroup) == NULL);
+    ok(97, config_param_boolean(subgroup, "value", &b_value));
+    subgroup = config_next_group(subgroup);
+    ok(98, subgroup != NULL);
+    ok(99, config_param_integer(subgroup, "value", &l_value));
+    ok_int(100, 2, l_value);
+    subgroup = config_next_group(subgroup);
+    ok(101, subgroup != NULL);
+    ok(102, config_param_integer(subgroup, "value", &l_value));
+    ok_int(103, 3, l_value);
+    subgroup = config_find_group(subgroup, "test");
+    ok(104, subgroup != NULL);
+    ok(105, config_param_integer(subgroup, "value", &l_value));
+    ok_int(106, 2, l_value);
+    subgroup = config_next_group(subgroup);
+    ok(107, subgroup != NULL);
+    ok_string(108, "test", config_group_type(subgroup));
+    ok_string(109, "final", config_group_tag(subgroup));
+    ok(110, config_param_integer(subgroup, "value", &l_value));
+    ok_int(111, 4, l_value);
+    subgroup = config_next_group(subgroup);
+    ok(112, subgroup == NULL);
+    subgroup = config_find_group(group, "nest");
+    ok(113, subgroup != NULL);
+    ok_string(114, "nest", config_group_type(subgroup));
+    ok_string(115, "1", config_group_tag(subgroup));
+    ok(116, config_param_integer(subgroup, "param", &l_value));
+    ok_int(117, 10, l_value);
+    subgroup = config_next_group(subgroup);
+    ok(118, subgroup != NULL);
+    ok_string(119, "2", config_group_tag(subgroup));
+    ok(120, config_param_integer(subgroup, "param", &l_value));
+    ok_int(121, 10, l_value);
+    subgroup = config_next_group(subgroup);
+    ok(122, subgroup != NULL);
+    ok_string(123, "3", config_group_tag(subgroup));
+    ok(124, config_param_integer(subgroup, "param", &l_value));
+    ok_int(125, 10, l_value);
+    subgroup = config_next_group(subgroup);
+    ok(126, subgroup != NULL);
+    ok_string(127, "4", config_group_tag(subgroup));
+    ok(128, config_param_integer(subgroup, "param", &l_value));
+    ok_int(129, 10, l_value);
+    subgroup = config_next_group(subgroup);
+    ok(130, subgroup == NULL);
+    subgroup = config_find_group(group, "nonexistent");
+    ok(131, subgroup == NULL);
+    subgroup = config_find_group(group, "nest");
+    ok(132, subgroup != NULL);
+    subgroup = config_find_group(subgroup, "params");
+    ok(133, subgroup != NULL);
+    ok_string(134, "params", config_group_type(subgroup));
+    ok_string(135, "first", config_group_tag(subgroup));
+    ok(136, config_param_integer(subgroup, "first", &l_value));
+    ok_int(137, 1, l_value);
+    ok(138, !config_param_integer(subgroup, "second", &l_value));
+    subgroup = config_next_group(subgroup);
+    ok(139, subgroup != NULL);
+    ok_string(140, "second", config_group_tag(subgroup));
+    ok(141, config_param_integer(subgroup, "first", &l_value));
+    ok_int(142, 1, l_value);
+    ok(143, config_param_integer(subgroup, "second", &l_value));
+    ok_int(144, 2, l_value);
+    subgroup = config_next_group(subgroup);
+    ok(145, subgroup != NULL);
+    ok_string(146, "third", config_group_tag(subgroup));
+    ok(147, config_param_integer(subgroup, "first", &l_value));
+    ok_int(148, 1, l_value);
+    ok(149, config_param_integer(subgroup, "second", &l_value));
+    ok_int(150, 2, l_value);
+    ok(151, config_param_integer(subgroup, "third", &l_value));
+    ok_int(152, 3, l_value);
+    vector = config_params(subgroup);
+    ok(153, vector != NULL);
+    ok_int(154, 3, vector->count);
+    ok_int(155, 3, vector->allocated);
+    ok_string(156, "third", vector->strings[0]);
+    ok_string(157, "second", vector->strings[1]);
+    ok_string(158, "first", vector->strings[2]);
+    vector_free(vector);
+    config_free(group);
+
+    /* Includes. */
+    group = config_parse_file("config/include");
+    ok(159, group != NULL);
+    if (group == NULL)
+        exit(1);
+    subgroup = config_find_group(group, "group");
+    ok(160, subgroup != NULL);
+    ok(161, config_param_string(subgroup, "foo", &s_value));
+    ok_string(162, "baz", s_value);
+    ok(163, config_param_string(subgroup, "bar", &s_value));
+    ok_string(164, "baz", s_value);
+    ok(165, !config_param_integer(subgroup, "value", &l_value));
+    subgroup = config_next_group(subgroup);
+    ok(166, subgroup != NULL);
+    subgroup = config_next_group(subgroup);
+    ok(167, subgroup != NULL);
+    ok_string(168, "test", config_group_tag(subgroup));
+    ok(169, config_param_string(subgroup, "foo", &s_value));
+    ok_string(170, "baz", s_value);
+    ok(171, config_param_integer(subgroup, "value", &l_value));
+    ok_int(172, 10, l_value);
+    config_free(group);
+
+    /* Real numbers. */
+    group = config_parse_file("config/reals");
+    ok(173, group != NULL);
+    ok(174, config_param_real(group, "real1", &d_value));
+    ok_double(175, 0.1, d_value);
+    ok(176, config_param_real(group, "real2", &d_value));
+    ok_double(177, -123.45e10, d_value);
+    ok(178, config_param_real(group, "real3", &d_value));
+    ok_double(179, 4.0e-3, d_value);
+    ok(180, config_param_real(group, "real4", &d_value));
+    ok_double(181, 1, d_value);
     config_free(group);
 
     /* Errors. */
     group = parse_error_config("config/null");
-    ok(70, group == NULL);
-    ok_string(71, "config/null: invalid NUL character found in file\n",
+    ok(182, group == NULL);
+    ok_string(183, "config/null: invalid NUL character found in file\n",
               errors);
-    n = test_errors(72);
+    n = test_errors(184);
     n = test_warnings(n);
     n = test_warnings_bool(n);
     n = test_warnings_int(n);
+    n = test_warnings_real(n);
+    n = test_warnings_string(n);
 
     return 0;
 }

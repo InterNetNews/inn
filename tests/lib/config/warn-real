@@ -1,0 +1,36 @@
+parameter: [ value ]
+===
+config/tmp:1: parameter is not a real number
+===
+parameter: .1
+===
+config/tmp:1: parameter is not a real number
+===
+parameter: 1E4
+===
+config/tmp:1: parameter is not a real number
+===
+parameter: foo
+===
+config/tmp:1: parameter is not a real number
+===
+parameter: 1.e4
+===
+config/tmp:1: parameter is not a real number
+===
+parameter: 1.
+===
+config/tmp:1: parameter is not a real number
+===
+parameter: 1.0e
+===
+config/tmp:1: parameter is not a real number
+===
+parameter: 23.4e999999999999999999999999999999999999
+===
+config/tmp:1: parameter doesn't convert to a real number
+===
+parameter: +1.3
+===
+config/tmp:1: parameter is not a real number
+===

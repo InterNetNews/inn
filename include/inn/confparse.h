@@ -53,7 +53,8 @@ bool config_param_boolean(struct config_group *, const char *, bool *);
 bool config_param_integer(struct config_group *, const char *, long *);
 bool config_param_real(struct config_group *, const char *, double *);
 bool config_param_string(struct config_group *, const char *, const char **);
-bool config_param_list(struct config_group *, const char *, struct vector *);
+bool config_param_list(struct config_group *, const char *,
+                       const struct vector **);
 
 /* Used for checking a configuration file, returns a vector of all parameters
    set for the given config_group, including inherited ones. */

@@ -115,7 +115,7 @@ enum value_type {
     VALUE_UNKNOWN,
     VALUE_BOOL,
     VALUE_INTEGER,
-    VALUE_NUMBER,
+    VALUE_REAL,
     VALUE_STRING,
     VALUE_LIST,
     VALUE_INVALID
@@ -135,7 +135,7 @@ struct config_parameter {
     union {
         bool boolean;
         long integer;
-        double number;
+        double real;
         char *string;
         struct vector *list;
     } value;
@@ -173,7 +173,7 @@ static void parameter_collect(void *, void *);
 
 /* Group handling. */
 static struct config_group *group_new(const char *file, unsigned int line,
-                                      const char *type, const char *tag);
+                                      char *type, char *tag);
 static void group_free(struct config_group *);
 static bool group_parameter_get(struct config_group *group, const char *key,
                                 void *result, convert_func convert);
@@ -182,7 +182,9 @@ static bool group_parameter_get(struct config_group *group, const char *key,
    a pointer to where the result can be placed. */
 static bool convert_boolean(struct config_parameter *, const char *, void *);
 static bool convert_integer(struct config_parameter *, const char *, void *);
+static bool convert_real(struct config_parameter *, const char *, void *);
 static bool convert_string(struct config_parameter *, const char *, void *);
+static bool convert_list(struct config_parameter *, const char *, void *);
 
 /* File I/O.  Many other functions also manipulate config_file structs; see
    the struct definition for notes on who's responsible for what. */
@@ -208,10 +210,18 @@ static bool token_skip_whitespace(struct config_file *);
 /* Handles comments for the rest of the lexer. */
 static bool token_skip_comment(struct config_file *);
 
+/* Convert a quoted string to the string value it represents. */
+static char *token_unquote_string(const char *, const char *file,
+                                  unsigned int line);
+
 /* Parser functions to parse the named syntactic element. */
-static bool parse_group_contents(struct config_group *, struct config_file *);
+static enum token_type parse_list(struct config_group *,
+                                  struct config_file *, char *key);
 static enum token_type parse_parameter(struct config_group *,
                                        struct config_file *, char *key);
+static bool parse_group_contents(struct config_group *, struct config_file *);
+static bool parse_include(struct config_group *, struct config_file *);
+static bool parse_group(struct config_file *, struct config_group *parent);
 
 /* Error reporting functions. */
 static void error_bad_unquoted_char(struct config_file *, char bad);
@@ -254,12 +264,12 @@ parameter_free(void *p)
     struct config_parameter *param = p;
 
     free(param->key);
-    free(param->raw_value);
-    if (param->type == VALUE_STRING) {
+    if (param->raw_value != NULL)
+        free(param->raw_value);
+    if (param->type == VALUE_STRING)
         free(param->value.string);
-    } else if (param->type == VALUE_LIST) {
+    else if (param->type == VALUE_LIST)
         vector_free(param->value.list);
-    }
     free(param);
 }
 
@@ -400,11 +410,12 @@ token_string(struct config_file *file)
     i = 0;
     while (!done) {
         switch (file->current[i]) {
-        case '\t':  case '\r':  case '\n':  case ' ':   case ';':
+        case '\t':  case '\r':  case '\n':  case ' ':
+        case ';':   case '>':   case '}':
             done = true;
             break;
-        case '"':   case '<':   case '>':   case '[':
-        case '\\':  case ']':   case '{':   case '}':
+        case '"':   case '<':   case '[':   case '\\':
+        case ']':   case '{':
             error_bad_unquoted_char(file, file->current[i]);
             return;
         case ':':
@@ -512,6 +523,79 @@ token_quoted_string(struct config_file *file)
     file->token.type = TOKEN_QSTRING;
     file->token.string = xstrndup(file->current, i);
     file->current += i;
+}
+
+
+/*
+**  Convert a quoted string to a string and returns the newly allocated string
+**  or NULL on failure.  Takes the quoted string and the file and line number
+**  for error reporting.
+*/
+static char *
+token_unquote_string(const char *raw, const char *file, unsigned int line)
+{
+    size_t length;
+    char *string, *dest;
+    const char *src;
+
+    length = strlen(raw) - 2;
+    string = xmalloc(length + 1);
+    src = raw + 1;
+    dest = string;
+    for (; *src != '"' && *src != '\0'; src++) {
+        if (*src != '\\') {
+            *dest++ = *src;
+        } else {
+            src++;
+
+            /* This should implement precisely the semantics of backslash
+               escapes in quoted strings in C. */
+            switch (*src) {
+            case 'a':   *dest++ = '\a'; break;
+            case 'b':   *dest++ = '\b'; break;
+            case 'f':   *dest++ = '\f'; break;
+            case 'n':   *dest++ = '\n'; break;
+            case 'r':   *dest++ = '\r'; break;
+            case 't':   *dest++ = '\t'; break;
+            case 'v':   *dest++ = '\v'; break;
+
+            case '\n':  break;  /* Escaped newlines disappear. */
+
+            case '\\':
+            case '\'':
+            case '"':
+            case '?':
+                *dest++ = *src;
+                break;
+
+            case '\0':
+                /* Should never happen; the tokenizer should catch this. */
+                warn("%s:%u: unterminated string", file, line);
+                goto fail;
+
+            default:
+                /* FIXME: \<octal>, \x, \u, and \U not yet implemented; the
+                   last three could use the same basic code.  Think about
+                   whether the escape should generate a single 8-bit character
+                   or a UTF-8 encoded character; maybe the first two generate
+                   the former and \u and \U generate the latter? */
+                warn("%s:%u: unrecognized escape '\\%c'", file, line, *src);
+                goto fail;
+            }
+        }
+    }
+    *dest = '\0';
+
+    /* Should never happen; the tokenizer should catch this. */
+    if (*src != '"') {
+        warn("%s:%u: unterminated string (no closing quote)", file, line);
+        goto fail;
+    }
+    return string;
+
+ fail:
+    free(string);
+    return NULL;
 }
 
 
@@ -645,12 +729,15 @@ static struct config_file *
 file_open(const char *filename)
 {
     struct config_file *file;
+    int oerrno;
 
     file = xmalloc(sizeof(*file));
     file->filename = filename;
     file->fd = open(filename, O_RDONLY);
     if (file->fd < 0) {
+        oerrno = errno;
         free(file);
+        errno = oerrno;
         return NULL;
     }
     file->buffer = xmalloc(BUFSIZ);
@@ -753,36 +840,66 @@ file_close(struct config_file *file)
 
 
 /*
-**  Given a config_group with the type and tag already filled in and a
-**  config_file with the buffer positioned after the opening brace of the
-**  group, read and add parameters to the group until encountering a close
-**  brace.  Returns true on a successful parse, false on an error that
-**  indicates the group should be discarded.
+**  Parse a vector.  Takes the group that we're currently inside, the
+**  config_file parse state, and the key of the parameter.  Returns the next
+**  token after the vector.
 */
-static bool
-parse_group_contents(struct config_group *group, struct config_file *file)
+static enum token_type
+parse_list(struct config_group *group, struct config_file *file, char *key)
 {
     enum token_type token;
+    struct vector *vector;
+    struct config_parameter *param;
+    char *string;
 
+    vector = vector_new();
     token = token_next(file);
-    while (!file->error) {
-        switch (token) {
-        case TOKEN_PARAM:
-            token = parse_parameter(group, file, file->token.string);
-            while (token == TOKEN_CRLF || token == TOKEN_SEMICOLON)
-                token = token_next(file);
-            break;
-        case TOKEN_CRLF:
+    while (token != TOKEN_RBRACKET) {
+        if (token == TOKEN_CRLF) {
             token = token_next(file);
-            break;
-        case TOKEN_EOF:
-            return true;
-        default:
-            error_unexpected_token(file, "parameter");
-            break;
+            continue;
         }
+        if (token != TOKEN_STRING && token != TOKEN_QSTRING)
+            break;
+        vector_resize(vector, vector->allocated + 1);
+        if (token == TOKEN_QSTRING) {
+            string = token_unquote_string(file->token.string, file->filename,
+                                          file->line);
+            free(file->token.string);
+            if (string == NULL) {
+                vector_free(vector);
+                free(key);
+                return TOKEN_ERROR;
+            }
+            vector->strings[vector->count] = string;
+        } else {
+            vector->strings[vector->count] = file->token.string;
+        }
+        vector->count++;
+        token = token_next(file);
     }
-    return false;
+    if (token == TOKEN_RBRACKET) {
+        param = xmalloc(sizeof(*param));
+        param->key = key;
+        param->raw_value = NULL;
+        param->type = VALUE_LIST;
+        param->value.list = vector;
+        param->line = file->line;
+        if (!hash_insert(group->params, key, param)) {
+            warn("%s:%u: duplicate parameter %s", file->filename, file->line,
+                 key);
+            vector_free(vector);
+            free(param->key);
+            free(param);
+        }
+        token = token_next(file);
+        return token;
+    } else {
+        error_unexpected_token(file, "string or ']'");
+        vector_free(vector);
+        free(key);
+        return TOKEN_ERROR;
+    }
 }
 
 
@@ -799,7 +916,9 @@ parse_parameter(struct config_group *group, struct config_file *file,
     enum token_type token;
 
     token = token_next(file);
-    if (token == TOKEN_STRING || token == TOKEN_QSTRING) {
+    if (token == TOKEN_LBRACKET) {
+        return parse_list(group, file, key);
+    } else if (token == TOKEN_STRING || token == TOKEN_QSTRING) {
         struct config_parameter *param;
         unsigned int line;
         char *value;
@@ -819,6 +938,7 @@ parse_parameter(struct config_group *group, struct config_file *file,
         case TOKEN_CRLF:
         case TOKEN_SEMICOLON:
         case TOKEN_EOF:
+        case TOKEN_RBRACE:
             param = xmalloc(sizeof(*param));
             param->key = key;
             param->raw_value = value;
@@ -845,18 +965,205 @@ parse_parameter(struct config_group *group, struct config_file *file,
 
 
 /*
+**  Given a config_group with the type and tag already filled in and a
+**  config_file with the buffer positioned after the opening brace of the
+**  group, read and add parameters to the group until encountering a close
+**  brace.  Returns true on a successful parse, false on an error that
+**  indicates the group should be discarded.
+*/
+static bool
+parse_group_contents(struct config_group *group, struct config_file *file)
+{
+    enum token_type token;
+    bool semicolon = false;
+
+    token = token_next(file);
+    while (!file->error) {
+        switch (token) {
+        case TOKEN_PARAM:
+            if (group->child != NULL) {
+                warn("%s:%u: parameter specified after nested group",
+                     file->filename, file->line);
+                free(file->token.string);
+                return false;
+            }
+            token = parse_parameter(group, file, file->token.string);
+            while (token == TOKEN_CRLF || token == TOKEN_SEMICOLON) {
+                semicolon = (token == TOKEN_SEMICOLON);
+                token = token_next(file);
+            }
+            break;
+        case TOKEN_CRLF:
+            token = token_next(file);
+            break;
+        case TOKEN_STRING:
+            if (semicolon) {
+                error_unexpected_token(file, "parameter");
+                break;
+            }
+            if (!parse_group(file, group))
+                return false;
+            token = token_next(file);
+            break;
+        case TOKEN_RBRACE:
+        case TOKEN_EOF:
+            return true;
+        case TOKEN_ERROR:
+            return false;
+        default:
+            error_unexpected_token(file, "parameter");
+            break;
+        }
+    }
+    return false;
+}
+
+
+/*
+**  Given a newly allocated group and with config_file positioned on the left
+**  angle bracket, parse an included group.  Return true on a successful
+**  parse, false on an error that indicates the group should be discarded.
+*/
+static bool
+parse_include(struct config_group *group, struct config_file *file)
+{
+    char *filename, *path, *slash;
+    enum token_type token;
+    bool status;
+    struct config_group *parent;
+    int levels;
+    struct config_file *included;
+
+    /* Make sure that the syntax is fine. */
+    token = token_next(file);
+    if (token != TOKEN_STRING) {
+        error_unexpected_token(file, "file name");
+        return false;
+    }
+    filename = file->token.string;
+    token = token_next(file);
+    if (token != TOKEN_RANGLE) {
+        error_unexpected_token(file, "'>'");
+        return false;
+    }
+
+    /* Build the file name that we want to include.  If the file name is
+       relative, it's relative to the file of its enclosing group line. */
+    if (*filename == '/')
+        path = filename;
+    else {
+        slash = strrchr(group->file, '/');
+        if (slash == NULL)
+            path = filename;
+        else {
+            *slash = '\0';
+            path = concat(group->file, "/", filename, (char *) 0);
+            *slash = '/';
+            free(filename);
+        }
+    }
+
+    /* Make sure we're not including ourselves recursively and put an
+       arbitrary limit of 20 levels in case of something like a recursive
+       symlink. */
+    levels = 1;
+    for (parent = group; parent != NULL; parent = parent->parent) {
+        if (strcmp(path, parent->file) == 0) {
+            warn("%s:%u: file %s recursively included", group->file,
+                 group->line, path);
+            goto fail;
+        }
+        if (levels > 20) {
+            warn("%s:%u: file inclusions limited to 20 deep", group->file,
+                 group->line);
+            goto fail;
+        }
+        levels++;
+    }
+
+    /* Now, attempt to include the file. */
+    included = file_open(path);
+    if (included == NULL) {
+        syswarn("%s:%u: open of %s failed", group->file, group->line, path);
+        goto fail;
+    }
+    group->included = path;
+    status = parse_group_contents(group, included);
+    file_close(included);
+    return status;
+
+fail:
+    free(path);
+    return false;
+}
+
+
+/*
+**  With config_file positioned at the beginning of the group declaration,
+**  Parse a group declaration and its nested contents.  Return true on a
+**  successful parse, false on an error that indicates the group should be
+**  discarded.
+*/
+static bool
+parse_group(struct config_file *file, struct config_group *parent)
+{
+    char *type, *tag;
+    const char *expected;
+    struct config_group *group, *last;
+    enum token_type token;
+    bool status;
+
+    tag = NULL;
+    type = file->token.string;
+    token = token_next(file);
+    if (token == TOKEN_STRING) {
+        tag = file->token.string;
+        token = token_next(file);
+    }
+    if (token != TOKEN_LBRACE && token != TOKEN_LANGLE) {
+        free(type);
+        if (tag != NULL)
+            free(tag);
+        expected = tag != NULL ? "'{' or '<'" : "group tag, '{', or '<'";
+        error_unexpected_token(file, expected);
+        return false;
+    }
+    group = group_new(file->filename, file->line, type, tag);
+    group->parent = parent;
+    if (parent->child == NULL)
+        parent->child = group;
+    else {
+        for (last = parent->child; last->next != NULL; last = last->next)
+            ;
+        last->next = group;
+    }
+    if (token == TOKEN_LANGLE)
+        status = parse_include(group, file);
+    else
+        status = parse_group_contents(group, file);
+    if (!status)
+        return false;
+    if (token != TOKEN_LANGLE && file->token.type != TOKEN_RBRACE) {
+        error_unexpected_token(file, "'}'");
+        return false;
+    }
+    return true;
+}
+
+
+/*
 **  Allocate a new config_group and set the initial values of all of the
-**  struct members.
+**  struct members.  The group type and tag should be allocated memory that
+**  can later be freed, although the tag may be NULL.
 */
 static struct config_group *
-group_new(const char *file, unsigned int line, const char *type,
-          const char *tag)
+group_new(const char *file, unsigned int line, char *type, char *tag)
 {
     struct config_group *group;
 
     group = xmalloc(sizeof(*group));
-    group->type = xstrdup(type);
-    group->tag = (tag == NULL) ? NULL : xstrdup(tag);
+    group->type = type;
+    group->tag = tag;
     group->file = xstrdup(file);
     group->included = NULL;
     group->line = line;
@@ -923,10 +1230,15 @@ config_parse_file(const char *filename, ...)
         syswarn("open of %s failed", filename);
         return NULL;
     }
-    group = group_new(filename, 1, "GLOBAL", NULL);
+    group = group_new(filename, 1, xstrdup("GLOBAL"), NULL);
     success = parse_group_contents(group, file);
     file_close(file);
-    return success ? group : NULL;
+    if (success)
+        return group;
+    else {
+        config_free(group);
+        return NULL;
+    }
 }
 
 
@@ -937,6 +1249,14 @@ config_parse_file(const char *filename, ...)
 void
 config_free(struct config_group *group)
 {
+    struct config_group *child, *last;
+
+    child = group->child;
+    while (child != NULL) {
+        last = child;
+        child = child->next;
+        config_free(last);
+    }
     group_free(group);
 }
 
@@ -1027,81 +1347,66 @@ convert_integer(struct config_parameter *param, const char *file,
 
 
 /*
-**  Convert a parameter value to a string, interpreting it as a quoted string,
-**  and returning true if successful and false otherwise.  Does none of the
-**  initial type checking, since convert_string should have already done that.
+**  Convert a given parameter value to a real number, returning true if
+**  successful and false otherwise.
 */
 static bool
-convert_string_quoted(struct config_parameter *param, const char *file,
-                      void *result)
+convert_real(struct config_parameter *param, const char *file, void *result)
 {
-    const char **value = result;
-    size_t length;
-    char *src, *dest;
+    double *value = result;
+    char *p;
 
-    length = strlen(param->raw_value) - 2;
-    param->value.string = xmalloc(length + 1);
-    src = param->raw_value + 1;
-    dest = param->value.string;
-    for (; *src != '"' && *src != '\0'; src++) {
-        if (*src != '\\') {
-            *dest++ = *src;
-        } else {
-            src++;
-
-            /* This should implement precisely the semantics of backslash
-               escapes in quoted strings in C. */
-            switch (*src) {
-            case 'a':   *dest++ = '\a'; break;
-            case 'b':   *dest++ = '\b'; break;
-            case 'f':   *dest++ = '\f'; break;
-            case 'n':   *dest++ = '\n'; break;
-            case 'r':   *dest++ = '\r'; break;
-            case 't':   *dest++ = '\t'; break;
-            case 'v':   *dest++ = '\v'; break;
-
-            case '\n':  break;  /* Escaped newlines disappear. */
-
-            case '\\':
-            case '\'':
-            case '"':
-            case '?':
-                *dest++ = *src;
-                break;
-
-            case '\0':
-                /* Should never happen; the tokenizer should catch this. */
-                warn("%s:%u: unterminated string", file, param->line);
-                goto fail;
-
-            default:
-                /* FIXME: \<octal>, \x, \u, and \U not yet implemented; the
-                   last three could use the same basic code.  Think about
-                   whether the escape should generate a single 8-bit character
-                   or a UTF-8 encoded character; maybe the first two generate
-                   the former and \u and \U generate the latter? */
-                warn("%s:%u: unrecognized escape '\\%c'", file, param->line,
-                     *src);
-                goto fail;
-            }
-        }
+    if (param->type == VALUE_REAL) {
+        *value = param->value.real;
+        return true;
+    } else if (param->type != VALUE_UNKNOWN) {
+        warn("%s:%u: %s is not a real number", file, param->line, param->key);
+        return false;
     }
-    *dest = '\0';
 
-    /* The tokenizer already checked this for most cases but could miss the
-       case where the final quote mark is escaped with a backslash. */
-    if (*src != '"') {
-        warn("%s:%u: unterminated string (no closing quote)", file,
-             param->line);
+    /* Do a syntax check even though strtod would do some of this for us,
+       since otherwise some syntax errors may go silently undetected.  We have
+       a somewhat stricter syntax. */
+    p = param->raw_value;
+    if (*p == '-')
+        p++;
+    if (*p < '0' || *p > '9')
         goto fail;
+    while (*p != '\0' && *p >= '0' && *p <= '9')
+        p++;
+    if (*p == '.') {
+        p++;
+        if (*p < '0' || *p > '9')
+            goto fail;
+        while (*p != '\0' && *p >= '0' && *p <= '9')
+            p++;
     }
+    if (*p == 'e') {
+        p++;
+        if (*p == '-')
+            p++;
+        if (*p < '0' || *p > '9')
+            goto fail;
+        while (*p != '\0' && *p >= '0' && *p <= '9')
+            p++;
+    }
+    if (*p != '\0')
+        goto fail;
 
-    param->type = VALUE_STRING;
-    *value = param->value.string;
+    /* Do the actual conversion with strtod. */
+    errno = 0;
+    param->value.real = strtod(param->raw_value, NULL);
+    if (errno != 0) {
+        warn("%s:%u: %s doesn't convert to a real number", file, param->line,
+             param->key);
+        return false;
+    }
+    *value = param->value.real;
+    param->type = VALUE_REAL;
     return true;
 
- fail:
-    free(param->value.string);
+fail:
+    warn("%s:%u: %s is not a real number", file, param->line, param->key);
     return false;
 }
 
@@ -1114,23 +1419,67 @@ static bool
 convert_string(struct config_parameter *param, const char *file, void *result)
 {
     const char **value = result;
+    char *string;
 
     if (param->type == VALUE_STRING) {
         *value = param->value.string;
         return true;
     } else if (param->type != VALUE_UNKNOWN) {
-        warn("%s:%u: %s is not an string", file, param->line, param->key);
+        warn("%s:%u: %s is not a string", file, param->line, param->key);
         return false;
     }
 
-    if (*param->raw_value == '"') {
-        return convert_string_quoted(param, file, result);
-    } else {
-        param->value.string = xstrdup(param->raw_value);
-        param->type = VALUE_STRING;
-        *value = param->value.string;
+    if (*param->raw_value == '"')
+        string = token_unquote_string(param->raw_value, file, param->line);
+    else
+        string = xstrdup(param->raw_value);
+    if (string == NULL)
+        return false;
+    param->value.string = string;
+    param->type = VALUE_STRING;
+    *value = param->value.string;
+    return true;
+}
+
+
+/*
+**  Convert a given parameter value to a list, returning true if succcessful
+**  and false otherwise.
+*/
+static bool
+convert_list(struct config_parameter *param, const char *file, void *result)
+{
+    const struct vector **value = result;
+    struct vector *vector;
+    char *string;
+
+    if (param->type == VALUE_LIST) {
+        *value = param->value.list;
         return true;
+    } else if (param->type != VALUE_UNKNOWN) {
+        warn("%s:%u: %s is not an list", file, param->line, param->key);
+        return false;
     }
+
+    /* If the value type is unknown, the value was actually a string.  We
+       support returning string values as lists with one element, since that
+       way config_param_list can be used to read any value. */
+    if (*param->raw_value == '"') {
+        string = token_unquote_string(param->raw_value, file, param->line);
+        if (string == NULL)
+            return false;
+        vector = vector_new();
+        vector_resize(vector, 1);
+        vector->strings[0] = string;
+        vector->count++;
+    } else {
+        vector = vector_new();
+        vector_add(vector, param->raw_value);
+    }
+    param->type = VALUE_LIST;
+    param->value.list = vector;
+    *value = vector;
+    return true;
 }
 
 
@@ -1152,14 +1501,14 @@ group_parameter_get(struct config_group *group, const char *key, void *result,
     while (current != NULL) {
         struct config_parameter *param;
 
-        param = hash_lookup(group->params, key);
+        param = hash_lookup(current->params, key);
         if (param != NULL) {
             if (param->type == VALUE_INVALID)
                 return false;
             else
-                return (*convert)(param, group->file, result);
+                return (*convert)(param, current->file, result);
         }
-        current = group->parent;
+        current = current->parent;
     }
     return false;
 }
@@ -1188,23 +1537,42 @@ config_param_integer(struct config_group *group, const char *key,
 }
 
 bool
+config_param_real(struct config_group *group, const char *key, double *result)
+{
+    return group_parameter_get(group, key, result, convert_real);
+}
+
+bool
 config_param_string(struct config_group *group, const char *key,
                     const char **result)
 {
     return group_parameter_get(group, key, result, convert_string);
 }
 
+bool
+config_param_list(struct config_group *group, const char *key,
+                  const struct vector **result)
+{
+    return group_parameter_get(group, key, result, convert_list);
+}
+
 
 /*
 **  A hash traversal function to add all parameter keys to the vector provided
-**  as the second argument.
+**  as the second argument.  Currently this does a simple linear search to see
+**  if this parameter was already set, which makes the config_params function
+**  overall O(n^2).  So far, this isn't a problem.
 */
 static void
 parameter_collect(void *element, void *cookie)
 {
     struct config_parameter *param = element;
     struct vector *params = cookie;
+    size_t i;
 
+    for (i = 0; i < params->count; i++)
+        if (strcmp(params->strings[i], param->key) == 0)
+            return;
     vector_add(params, param->key);
 }
 
@@ -1219,14 +1587,55 @@ config_params(struct config_group *group)
     struct vector *params;
     size_t size;
 
-    /* Size the vector, which we can do accurately for now. */
     params = vector_new();
-    size = hash_count(group->params);
-    vector_resize(params, size);
-
-    /* Now, walk the hash to build the vector of params. */
-    hash_traverse(group->params, parameter_collect, params);
+    for (; group != NULL; group = group->parent) {
+        size = hash_count(group->params);
+        vector_resize(params, params->allocated + size);
+        hash_traverse(group->params, parameter_collect, params);
+    }
     return params;
+}
+
+
+/*
+**  Given a config_group and a group type, find the next group in a
+**  depth-first traversal of the configuration tree of the given type and
+**  return it.  Returns NULL if no further groups of that type are found.
+*/
+struct config_group *
+config_find_group(struct config_group *group, const char *type)
+{
+    struct config_group *sib;
+
+    if (group->child != NULL) {
+        if (strcmp(group->child->type, type) == 0)
+            return group->child;
+        else
+            return config_find_group(group->child, type);
+    }
+    for (; group != NULL; group = group->parent)
+        for (sib = group->next; sib != NULL; sib = sib->next) {
+            if (strcmp(sib->type, type) == 0)
+                return sib;
+            if (sib->child != NULL) {
+                if (strcmp(sib->child->type, type) == 0)
+                    return sib->child;
+                else
+                    return config_find_group(sib->child, type);
+            }
+        }
+    return NULL;
+}
+
+
+/*
+**  Find the next group with the same type as the current group.  This is just
+**  a simple wrapper around config_find_group for convenience.
+*/
+struct config_group *
+config_next_group(struct config_group *group)
+{
+    return config_find_group(group, group->type);
 }
 
 
@@ -1266,36 +1675,26 @@ config_error_param(struct config_group *group, const char *key,
 
 
 /*
-**  Stubs for functions not yet implemented.
+**  Report an error in a given group.  Used so that the file and line number
+**  can be included in the error message.  Largely duplicates
+**  config_error_param (which we could fix if we were sure we had va_copy).
 */
-struct config_group *
-config_find_group(struct config_group *group UNUSED, const char *type UNUSED)
-{
-    return NULL;
-}
-
-struct config_group *
-config_next_group(struct config_group *group UNUSED)
-{
-    return NULL;
-}
-
-bool
-config_param_real(struct config_group *group UNUSED, const char *key UNUSED,
-                  double *result UNUSED)
-{
-    return false;
-}
-
-bool
-config_param_list(struct config_group *group UNUSED, const char *key UNUSED,
-                  struct vector *result UNUSED)
-{
-    return false;
-}
-
 void
-config_error_group(struct config_group *group UNUSED, const char *fmt UNUSED,
-                   ...)
+config_error_group(struct config_group *group, const char *fmt, ...)
 {
+    va_list args;
+    ssize_t length;
+    char *message;
+
+    va_start(args, fmt);
+    length = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+    if (length < 0)
+        return;
+    message = xmalloc(length + 1);
+    va_start(args, fmt);
+    vsnprintf(message, length + 1, fmt, args);
+    va_end(args);
+    warn("%s:%u: %s", group->file, group->line, message);
+    free(message);
 }

@@ -1,0 +1,31 @@
+test {
+  value: true
+}test { value: false }
+group {
+  value: 2
+
+  test {
+
+}
+
+# comment
+  test { value: 3 }
+  test { test final { value: 4} }
+}
+
+group { param: 10
+  nest 1 { nest 2 { nest 3 { nest 4 { } }}} }
+
+params first {
+  #comment
+  first: 1
+#comment
+
+  params second {
+    second: 2
+
+    params third {
+      third: 3
+    }
+  }
+}

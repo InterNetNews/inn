@@ -1,0 +1,12 @@
+vector1: [ simple ]; vector2: [ "foo\tbar"
+# this is a comment
+baz
+"\
+# this is not a comment\
+"]; vector3: []
+vector4: [
+# nothing but a comment
+
+]
+vector5: baz
+vector6: "bar baz"

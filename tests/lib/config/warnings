@@ -16,3 +16,9 @@ parameter: value
 ===
 config/tmp:3: duplicate parameter parameter
 ===
+# Duplicate parameter checking with vectors.
+parameter: value
+parameter: [ value ]
+===
+config/tmp:3: duplicate parameter parameter
+===

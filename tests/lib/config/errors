@@ -1,6 +1,6 @@
 foo bar
 ===
-config/tmp:1: parse error: saw string, expecting parameter
+config/tmp:2: parse error: saw end of file, expecting '{' or '<'
 ===
 parameter: value with spaces
 ===
@@ -49,4 +49,104 @@ parameter: "value
 value"
 ===
 config/tmp:1: no close quote seen for quoted string
+===
+parameter: [ foo: ]
+===
+config/tmp:1: parse error: saw parameter, expecting string or ']'
+===
+parameter: [
+foo::
+]
+===
+config/tmp:2: invalid character ':' in unquoted string
+===
+parameter: [
+===
+config/tmp:2: parse error: saw end of file, expecting string or ']'
+===
+parameter: [ ; ]
+===
+config/tmp:1: parse error: saw ';', expecting string or ']'
+===
+parameter: [ "foo\cbar" ]
+===
+config/tmp:1: unrecognized escape '\c'
+===
+parameter: [ "foo\" ]
+===
+config/tmp:1: no close quote seen for quoted string
+===
+group tag another
+===
+config/tmp:1: parse error: saw string, expecting '{' or '<'
+===
+group
+tag
+===
+config/tmp:2: parse error: saw end of line, expecting group tag, '{', or '<'
+===
+group {
+  param: foo
+===
+config/tmp:3: parse error: saw end of file, expecting '}'
+===
+group "tag" { }
+===
+config/tmp:1: parse error: saw quoted string, expecting group tag, '{', or '<'
+===
+group {
+  group foo { param: true }
+  value: 5
+}
+===
+config/tmp:3: parameter specified after nested group
+===
+group
+===
+config/tmp:2: parse error: saw end of file, expecting group tag, '{', or '<'
+===
+group {
+  group
+===
+config/tmp:3: parse error: saw end of file, expecting group tag, '{', or '<'
+===
+param: foo; group { param: bar }
+===
+config/tmp:1: parse error: saw string, expecting parameter
+===
+group <
+===
+config/tmp:2: parse error: saw end of file, expecting file name
+===
+group <file
+===
+config/tmp:2: parse error: saw end of file, expecting '>'
+===
+group <file}
+===
+config/tmp:1: parse error: saw '}', expecting '>'
+===
+group <recurse>
+===
+config/recurse:1: file config/recurse recursively included
+===
+group <null>
+===
+config/null: invalid NUL character found in file
+===
+group <link/symlink>
+===
+config/link/link/link/link/link/link/link/link/link/link/link/link/link/link/link/link/link/link/link/symlink:1: file inclusions limited to 20 deep
+===
+parameter: value>
+===
+config/tmp:1: parse error: saw '>', expecting semicolon or newline
+===
+group<file>
+===
+config/tmp:1: invalid character '<' in unquoted string
+===
+group <nonexistent>
+===
+config/tmp:1: open of config/nonexistent failed
 ===
