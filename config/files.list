@@ -36,17 +36,17 @@
 ;subst clean ../doc/innxbatch.8
 ;subst clean ../doc/innxmit.8
 ;subst clean ../doc/libinn.3
-../doc/makeactive.8
-../doc/makehistory.8
-../doc/moderators.5
+;subst clean ../doc/makeactive.8
+;subst clean ../doc/makehistory.8
+;subst clean ../doc/moderators.5
 ../doc/motd.news.5
-../doc/news.daily.8
-../doc/newsfeeds.5
-../doc/newslog.5
-../doc/nnrp.access.5
-../doc/nnrpd.8
-../doc/nntpsend.8
-../doc/nntpsend.ctl.5
+;subst clean ../doc/news.daily.8
+;subst clean ../doc/newsfeeds.5
+;subst clean ../doc/newslog.5
+;subst clean ../doc/nnrp.access.5
+;subst clean ../doc/nnrpd.8
+;subst clean ../doc/nntpsend.8
+;subst clean ../doc/nntpsend.ctl.5
 ../doc/overchan.8
 ../doc/overview.ctl.5
 ../doc/overview.fmt.5
