@@ -1852,10 +1852,10 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-#if test x$ac_need_libresolv=x1
-#then
-#LIBS="$LIBS -lresolv"
-#fi
+if test x$ac_need_libresolv = x1
+then
+LIBS="$LIBS -lresolv"
+fi
 echo $ac_n "checking for inet_aton in -lbind""... $ac_c" 1>&6
 echo "configure:1861: checking for inet_aton in -lbind" >&5
 ac_lib_var=`echo bind'_'inet_aton | sed 'y%./+-%__p_%'`
