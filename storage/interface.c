@@ -19,26 +19,26 @@
 typedef enum {INIT_NO, INIT_DONE, INIT_FAIL} INITTYPE;
 typedef struct {
     INITTYPE		initialized;
-    BOOL		configured;
-    BOOL		selfexpire;
-    BOOL		expensivestat;
+    bool		configured;
+    bool		selfexpire;
+    bool		expensivestat;
 } METHOD_DATA;
 
 METHOD_DATA method_data[NUM_STORAGE_METHODS];
 
-STATIC STORAGE_SUB      *subscriptions = NULL;
-STATIC unsigned int     typetoindex[256];
+static STORAGE_SUB      *subscriptions = NULL;
+static unsigned int     typetoindex[256];
 int                     SMerrno;
 char                    *SMerrorstr = NULL;
-STATIC BOOL             ErrorAlloc = FALSE;
-STATIC BOOL             Initialized = FALSE;
-BOOL			SMopenmode = FALSE;
-BOOL			SMpreopen = FALSE;
+static bool             ErrorAlloc = FALSE;
+static bool             Initialized = FALSE;
+bool			SMopenmode = FALSE;
+bool			SMpreopen = FALSE;
 
 /*
 ** Checks to see if the token is valid
 */
-BOOL IsToken(const char *text) {
+bool IsToken(const char *text) {
     const char          *p;
     
     if (!text)
@@ -86,7 +86,7 @@ char *TokenToText(const TOKEN token) {
 /*
 ** Converts a hex digit and converts it to a int
 */
-STATIC int hextodec(const int c) {
+static int hextodec(const int c) {
     return isdigit(c) ? (c - '0') : ((c - 'A') + 10);
 }
 
@@ -122,7 +122,7 @@ char *ToWireFmt(const char *article, int len, int *newlen) {
     char *newart;
     const char *p;
     char  *dest;
-    BOOL atstartofline=TRUE;
+    bool atstartofline=TRUE;
 
     /* First go thru article and count number of bytes we need. */
     for (bytes = 0, p=article ; p < &article[len] ; ++p) {
@@ -164,7 +164,7 @@ char *FromWireFmt(const char *article, int len, int *newlen) {
     char *newart;
     const char *p;
     char *dest;
-    BOOL atstartofline = TRUE;
+    bool atstartofline = TRUE;
 
     /* First go thru article and count number of bytes we need */
     for (bytes = 0, p=article ; p < &article[len] ; ) {
@@ -212,11 +212,11 @@ char *FromWireFmt(const char *article, int len, int *newlen) {
 /*
 **  get Xref header without pathhost
 */
-STATIC char *GetXref(ARTHANDLE *art) {
+static char *GetXref(ARTHANDLE *art) {
   char	*p, *p1;
   char	*q;
   char	*buff;
-  BOOL	Nocr;
+  bool	Nocr;
 
   if ((p = q = (char *)HeaderFindMem(art->data, art->len, "xref", sizeof("xref")-1)) == NULL)
     return NULL;
@@ -250,7 +250,7 @@ STATIC char *GetXref(ARTHANDLE *art) {
 **  Split newsgroup and returns artnum
 **  or 0 if there are no newsgroup.
 */
-STATIC ARTNUM GetGroups(char *Xref) {
+static ARTNUM GetGroups(char *Xref) {
   char	*p;
 
   if ((p = strchr(Xref, ':')) == NULL)
@@ -346,7 +346,7 @@ static CONFTOKEN smtoks[] = {
 };
 
 /* Open the config file and parse it, generating the policy data */
-static BOOL SMreadconfig(void) {
+static bool SMreadconfig(void) {
     CONFFILE            *f;
     CONFTOKEN           *tok;
     int			type;
@@ -535,15 +535,15 @@ static BOOL SMreadconfig(void) {
 /*
 ** setup storage api environment (open mode etc.)
 */
-BOOL SMsetup(SMSETUP type, void *value) {
+bool SMsetup(SMSETUP type, void *value) {
     if (Initialized)    
 	return FALSE;
     switch (type) {
     case SM_RDWR:
-	SMopenmode = *(BOOL *)value;
+	SMopenmode = *(bool *)value;
 	break;
     case SM_PREOPEN:
-	SMpreopen = *(BOOL *)value;
+	SMpreopen = *(bool *)value;
 	break;
     default:
 	return FALSE;
@@ -555,10 +555,10 @@ BOOL SMsetup(SMSETUP type, void *value) {
 ** Calls the setup function for all of the configured methods and returns
 ** TRUE if they all initialize ok, FALSE if they don't
 */
-BOOL SMinit(void) {
+bool SMinit(void) {
     int                 i;
-    BOOL		allok = TRUE;
-    static		BOOL once = FALSE;
+    bool		allok = TRUE;
+    static		bool once = FALSE;
     SMATTRIBUTE		smattr;
 
     if (Initialized)
@@ -605,7 +605,7 @@ BOOL SMinit(void) {
     return TRUE;
 }
 
-static BOOL InitMethod(STORAGETYPE method) {
+static bool InitMethod(STORAGETYPE method) {
     SMATTRIBUTE		smattr;
 
     if (!Initialized)
@@ -639,13 +639,13 @@ static BOOL InitMethod(STORAGETYPE method) {
     return TRUE;
 }
 
-static BOOL MatchGroups(const char *g, int num, char **patterns) {
+static bool MatchGroups(const char *g, int num, char **patterns) {
     char                *group;
     char                *groups;
     char		*groupsep, *q;
     const char          *p;
     int                 i;
-    BOOL                wanted = FALSE;
+    bool                wanted = FALSE;
 
     /* Find the end of the line */
     for (p = g+1; (*p != '\n') && (*(p - 1) != '\r'); p++);
@@ -826,7 +826,7 @@ void SMfreearticle(ARTHANDLE *article) {
     storage_methods[typetoindex[article->type]].freearticle(article);
 }
 
-BOOL SMcancel(TOKEN token) {
+bool SMcancel(TOKEN token) {
     if (!SMopenmode) {
 	SMseterror(SMERR_INTERNAL, "read only storage api");
 	return FALSE;
@@ -843,7 +843,7 @@ BOOL SMcancel(TOKEN token) {
     return storage_methods[typetoindex[token.type]].cancel(token);
 }
 
-BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value) {
+bool SMprobe(PROBETYPE type, TOKEN *token, void *value) {
     struct artngnum	*ann;
     ARTHANDLE		*art;
 
@@ -899,7 +899,7 @@ BOOL SMprobe(PROBETYPE type, TOKEN *token, void *value) {
     }
 }
 
-BOOL SMflushcacheddata(FLUSHTYPE type) {
+bool SMflushcacheddata(FLUSHTYPE type) {
     int		i;
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
