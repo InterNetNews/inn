@@ -64,10 +64,14 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
             buff[length - 2] = '\0';
 
         /* Parse */
-        if (auth != NULL && strncmp(buff, NAMESTR, strlen(NAMESTR)) == 0)
+        if (strncmp(buff, ".", 2) == 0)
+            break;
+        else if (auth != NULL && strncmp(buff, NAMESTR, strlen(NAMESTR)) == 0)
             auth->username = xstrdup(buff + strlen(NAMESTR));
         else if (auth != NULL && strncmp(buff, PASSSTR, strlen(PASSSTR)) == 0)
             auth->password = xstrdup(buff + strlen(PASSSTR));
+        else if (res != NULL && strncmp(buff, CLIHOST, strlen(CLIHOST)) == 0)
+            res->clienthostname = xstrdup(buff + strlen(CLIHOST));
         else if (res != NULL && strncmp(buff, CLIIP, strlen(CLIIP)) == 0)
             cip = xstrdup(buff + strlen(CLIIP));
         else if (res != NULL && strncmp(buff, CLIPORT, strlen(CLIPORT)) == 0)
@@ -76,28 +80,29 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
             sip = xstrdup(buff + strlen(LOCIP));
         else if (res != NULL && strncmp(buff, LOCPORT, strlen(LOCPORT)) == 0)
             sport = xstrdup(buff + strlen(LOCPORT));
-        else if (res != NULL && strncmp(buff, CLIHOST, strlen(CLIHOST)) == 0)
-            res->clienthostname = xstrdup(buff + strlen(CLIHOST));
-        else if (strncmp(buff, ".", 2) == 0)
-            break;      /* This isn't in the spec, but nnrpd sends it... */
         else {
-            warn("libauth: unexpected data from nnrpd: \"%s\"", buff);
-            goto error;
+            /**** We just ignore excess fields for now ****/
+
+            /* warn("libauth: unexpected data from nnrpd: \"%s\"", buff); */
+            /* goto error; */
         }
     }
 
     /* If some field is missing, free the rest and error out. */
-    if ((auth != NULL && (auth->username == NULL || auth ->password == NULL))
-            || (res != NULL && (res->clienthostname == NULL || cip == NULL ||
-                    cport == NULL || sip == NULL || sport == NULL))) {
-        warn("libauth: requested data not sent by nnrpd");
+    if (auth != NULL && (auth->username == NULL || auth->password == NULL)) {
+        warn("libauth: requested authenticator data not sent by nnrpd");
+        goto error;
+    }
+    if (res != NULL && (res->clienthostname == NULL || cip == NULL ||
+                cport == NULL || sip == NULL || sport == NULL)) {
+        warn("libauth: requested resolver data not sent by nnrpd");
         goto error;
     }
 
     /* Generate sockaddrs from IP and port strings */
     if (res != NULL) {
-        res->client = xmalloc(sizeof(struct sockaddr));
-        res->local = xmalloc(sizeof(struct sockaddr));
+        res->client = xcalloc(1, sizeof(struct sockaddr));
+        res->local = xcalloc(1, sizeof(struct sockaddr));
 
 #ifdef HAVE_INET6
         memset( &hints, 0, sizeof( hints ) );
@@ -107,13 +112,13 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
         hints.ai_family = strchr( cip, ':' ) != NULL ? PF_INET6 : PF_INET;
         if( getaddrinfo( cip, cport, &hints, &r ) != 0)
             goto error;
-        memcpy( res->client, r->ai_addr, SA_LEN( r->ai_addr ) );
+        memcpy( res->client, r->ai_addr, r->ai_addrlen );
         freeaddrinfo( r );
 
         hints.ai_family = strchr( sip, ':' ) != NULL ? PF_INET6 : PF_INET;
         if( getaddrinfo( sip, sport, &hints, &r ) != 0)
             goto error;
-        memcpy( res->local, r->ai_addr, SA_LEN( r->ai_addr ) );
+        memcpy( res->local, r->ai_addr, r->ai_addrlen );
         freeaddrinfo( r );
 #else
         cli_sin = (struct sockaddr_in *)(res->client);
@@ -140,13 +145,13 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
 error:
     if (auth != NULL && auth->username != NULL)     free(auth->username);
     if (auth != NULL && auth->password != NULL)     free(auth->password);
+    if (res != NULL && res->clienthostname != NULL) free(res->clienthostname);
+    if (res != NULL && res->client != NULL)         free(res->client);
+    if (res != NULL && res->local != NULL)          free(res->local);
     if (sip != NULL)                                free(sip);
     if (sport != NULL)                              free(sport);
     if (cip != NULL)                                free(cip);
     if (cport != NULL)                              free(cport);
-    if (res != NULL && res->clienthostname != NULL) free(res->clienthostname);
-    if (res != NULL && res->client != NULL)         free(res->client);
-    if (res != NULL && res->local != NULL)          free(res->local);
     return false;
 }
 
