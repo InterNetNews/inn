@@ -31,7 +31,6 @@ typedef struct _LINE {
     int		Offset;
 } LINE;
 
-
 /*
 **  A list of articles; re-uses space.
 */
@@ -56,12 +55,12 @@ typedef struct _BUFFER {
 **  Information about the schema of the news overview files.
 */
 typedef struct _ARTOVERFIELD {
-    char	*Header;
-    int		Length;
-    BOOL	HasHeader;
+    char       *Header;
+    int                Length;
+    BOOL       HasHeader;
 } ARTOVERFIELD;
 
-
+    
 /*
 **  Append an article to an LIST.
 */
@@ -91,10 +90,7 @@ STATIC int		ARTfieldsize;
 /*
 **  Sorting predicate for qsort to put articles in numeric order.
 */
-STATIC int
-LISTcompare(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+STATIC int LISTcompare(CPOINTER p1, CPOINTER p2)
 {
     ARTNUM	*ip1;
     ARTNUM	*ip2;
@@ -108,12 +104,10 @@ LISTcompare(p1, p2)
 /*
 **  If list is big enough, and out of order, sort it.
 */
-STATIC void
-LISTsort(lp)
-    LIST	*lp;
+STATIC void LISTsort(LIST *lp)
 {
-    register int	i;
-    register ARTNUM	*ap;
+    int	                i;
+    ARTNUM	        *ap;
 
     for (ap = lp->Articles, i = lp->Used - 1; --i >= 0; ap++)
 	if (ap[0] >= ap[1]) {
@@ -123,14 +117,54 @@ LISTsort(lp)
 	}
 }
 
+/*
+**  Read the overview schema.
+*/
+static void ARTreadschema(void)
+{
+    FILE		        *F;
+    char		        *p;
+    ARTOVERFIELD	        *fp;
+    int		                i;
+    char			buff[SMBUF];
+
+    /* Open file, count lines. */
+    if ((F = fopen(SCHEMA, "r")) == NULL) {
+	(void)fprintf(stderr, "Can't open %s, %s\n", SCHEMA, strerror(errno));
+	exit(1);
+    }
+    for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
+	continue;
+    (void)fseek(F, (OFFSET_T)0, SEEK_SET);
+    ARTfields = NEW(ARTOVERFIELD, i + 1);
+
+    /* Parse each field. */
+    for (fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
+	/* Ignore blank and comment lines. */
+	if ((p = strchr(buff, '\n')) != NULL)
+	    *p = '\0';
+	if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
+	    *p = '\0';
+	if (buff[0] == '\0')
+	    continue;
+	if ((p = strchr(buff, ':')) != NULL) {
+	    *p++ = '\0';
+	    fp->HasHeader = EQ(p, "full");
+	}
+	else
+	    fp->HasHeader = FALSE;
+	fp->Header = COPY(buff);
+	fp->Length = strlen(buff);
+	fp++;
+    }
+    ARTfieldsize = fp - ARTfields;
+    (void)fclose(F);
+}
 
 /*
 **  Unlock the group.
 */
-STATIC void
-UnlockGroup(lfd, lockfile)
-    int		lfd;
-    char	*lockfile;
+STATIC void UnlockGroup(int lfd, char *lockfile)
 {
     if (lfd > 0) {
 	if (unlink(lockfile) < 0 && errno != ENOENT)
@@ -147,10 +181,7 @@ UnlockGroup(lfd, lockfile)
 /*
 **  Sorting predicate to put lines in numeric order.
 */
-STATIC int
-LINEcompare(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+STATIC int LINEcompare(CPOINTER p1, CPOINTER p2)
 {
     LINE	*lp1;
     LINE	*lp2;
@@ -160,11 +191,7 @@ LINEcompare(p1, p2)
     return lp1->Article - lp2->Article;
 }
 
-STATIC void
-WriteIndex(fd, offset, line)
-    int                                fd;
-    unsigned long              offset;
-    char                       *line;
+STATIC void WriteIndex(int fd, unsigned long offset, char *line)
 {
     STATIC OVERINDEX           buf[1024];
     STATIC int                 i = 0;
@@ -189,21 +216,18 @@ WriteIndex(fd, offset, line)
 **  Take in a sorted list of count article numbers in group, and delete
 **  them from the overview file.
 */
-STATIC void
-RemoveLines(group, Deletes)
-    char			*group;
-    LIST			*Deletes;
+STATIC void RemoveLines(char *group, LIST *Deletes)
 {
     static BUFFER		B;
     static LINE			*Lines;
     static int			LineSize;
-    register struct iovec	*vp;
-    register LINE		*lp;
-    register LINE		*end;
-    register char		*p;
-    register char		*next;
-    register ARTNUM		*ap;
-    register int		i;
+    struct iovec	        *vp;
+    LINE		        *lp;
+    LINE		        *end;
+    char		        *p;
+    char		        *next;
+    ARTNUM		        *ap;
+    int		                i;
     struct stat			Sb;
     struct iovec		iov[8];
     char			file[SPOOLNAMEBUFF];
@@ -412,50 +436,6 @@ RemoveLines(group, Deletes)
 }
 
 
-/*
-**  Read the overview schema.
-*/
-static void
-ARTreadschema()
-{
-    register FILE		*F;
-    register char		*p;
-    register ARTOVERFIELD	*fp;
-    register int		i;
-    char			buff[SMBUF];
-
-    /* Open file, count lines. */
-    if ((F = fopen(SCHEMA, "r")) == NULL) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", SCHEMA, strerror(errno));
-	exit(1);
-    }
-    for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
-	continue;
-    (void)fseek(F, (OFFSET_T)0, SEEK_SET);
-    ARTfields = NEW(ARTOVERFIELD, i + 1);
-
-    /* Parse each field. */
-    for (fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
-	/* Ignore blank and comment lines. */
-	if ((p = strchr(buff, '\n')) != NULL)
-	    *p = '\0';
-	if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
-	    *p = '\0';
-	if (buff[0] == '\0')
-	    continue;
-	if ((p = strchr(buff, ':')) != NULL) {
-	    *p++ = '\0';
-	    fp->HasHeader = EQ(p, "full");
-	}
-	else
-	    fp->HasHeader = FALSE;
-	fp->Header = COPY(buff);
-	fp->Length = strlen(buff);
-	fp++;
-    }
-    ARTfieldsize = fp - ARTfields;
-    (void)fclose(F);
-}
 
 /*
 **  Read an article and create an overview line without the trailing
@@ -638,20 +618,17 @@ STATIC char *OVERgen(char *name)
 **  Take in a sorted list of count article numbers in group, and add
 **  them them to the overview file.
 */
-STATIC void
-AddLines(group, Adds)
-    char			*group;
-    LIST			*Adds;
+STATIC void AddLines(char *group, LIST *Adds)
 {
     static BUFFER		New;
     static BUFFER		B;
     static LINE			*Lines;
     static int			LineSize;
-    register LINE		*lp;
-    register char		*next;
-    register int		i;
-    register struct iovec	*vp;
-    register ARTNUM		*ap;
+    LINE		        *lp;
+    char		        *next;
+    int		                i;
+    struct iovec	        *vp;
+    ARTNUM		        *ap;
     LINE			*end;
     struct iovec		iov[8];
     struct stat			Sb;
@@ -879,9 +856,7 @@ AddLines(group, Adds)
 /*
 ** Read through the overview files once and rewrite the index from it 
 */
-STATIC void
-RebuildIndex(group)
-    char			*group;
+STATIC void RebuildIndex(char *group)
 {
     static BUFFER		B;
     char			ifile[SPOOLNAMEBUFF];
@@ -889,7 +864,6 @@ RebuildIndex(group)
     char			ilockfile[SPOOLNAMEBUFF];
     char			lockfile[SPOOLNAMEBUFF];
     char			*p;
-    int				offset;
     int				fd;
     int				lfd, ilfd;
     struct stat			Sb;
@@ -980,14 +954,11 @@ RebuildIndex(group)
 /*
 **  Expire by batch, or line at a time.
 */
-STATIC void
-Expire(SortedInput, qp)
-    BOOL		SortedInput;
-    register QIOSTATE	*qp;
+STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
 {
     static LIST		List;
-    register char	*line;
-    register char	*p;
+    char	        *line;
+    char	        *p;
     char		group[SPOOLNAMEBUFF];
 
     if (List.Articles == NULL) {
@@ -1057,13 +1028,9 @@ Expire(SortedInput, qp)
 /*
 ** Read the overview index file, return sorted list of all articles in it.
 */
-STATIC LIST *
-GetOverviewIndex(group, numentries)
-    char		*group;
-    int			*numentries;
+STATIC LIST *GetOverviewIndex(char *group, int *numentries)
 {
     char		file[SPOOLNAMEBUFF];
-    struct stat		st;
     static LIST		List;
     int			fd;
     int			i;
