@@ -205,9 +205,7 @@ ICDwritevactive(struct iovec *vp, int vpcount)
     }
 
     /* Close it. */
-    (void)close(fd);
-    if (AmRoot)
-	xchown(NEWACT);
+    close(fd);
 
     /* Rename it to be the canonical active file */
     if (rename(NEWACT, ICDactpath) < 0) {

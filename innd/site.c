@@ -62,8 +62,6 @@ SITEspool(SITE *sp, CHANNEL *cp)
 	sp->Channel = NULL;
 	return FALSE;
     }
-    if (AmRoot)
-	xchown(name);
     if (cp) {
       if (cp->fd >= 0)
         /* syslog(L_ERROR, "DEBUG ERROR SITEspool trashed:%d %s:%d", cp->fd, sp->Name, i);
@@ -731,8 +729,6 @@ SITEsetup(SITE *sp)
 		return FALSE;
 	    }
 	    SITEmovetohead(sp);
-	    if (AmRoot)
-		xchown(sp->Param);
 	    sp->Channel = CHANcreate(fd, CTfile, CSwriting,
 			    SITEreader, SITEwritedone);
 	    syslog(L_NOTICE, "%s opened %s", sp->Name, CHANname(sp->Channel));

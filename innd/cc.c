@@ -1075,8 +1075,6 @@ CCnewgroup(char *av[])
 	    syslog(L_ERROR, "%s cant close %s %m", LogName, TIMES);
 	    IOError(WHEN, oerrno);
 	}
-	if (AmRoot)
-	    xchown(TIMES);
     }
 
     /* Update the in-core data. */
