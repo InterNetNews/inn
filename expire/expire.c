@@ -36,7 +36,7 @@ static bool		EXPusepost;
 static bool		Ignoreselfexpire = FALSE;
 static FILE		*EXPunlinkfile;
 static EXPIRECLASS      EXPclasses[NUM_STORAGE_CLASSES+1];
-static const char	*EXPreason;
+static char		*EXPreason;
 static time_t		EXPremember;
 static time_t		Now;
 static time_t		RealNow;
