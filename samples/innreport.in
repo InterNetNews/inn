@@ -850,6 +850,7 @@ EOF
   }
   $result .= "</TR>\n<TR>$temp</TR>\n";
 
+  $i = 0;
   foreach (sort {$b cmp $a} (keys %data)) {
     if ($CYCLE == 0 || $i < $CYCLE) {
       my @list = split /\|/, $data{$_};
@@ -867,6 +868,7 @@ EOF
       $str .= "</TR>\n";
       $result .= "$str";
     }
+    $i++;
   }
   $result .= "</TABLE>\n</CENTER>\n<P><HR>";
   $result .= "<A HREF=\"ftp://ftp.oleane.net/pub/packages/usenet/innreport/\">innreport";
