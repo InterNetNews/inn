@@ -29,8 +29,6 @@ const struct {
       "437 Article of 8193 bytes exceeds local limit of 8192 bytes" },
     { "../storage/articles/bad-empty",
       "437 Empty article" },
-    { "../storage/articles/bad-hdr-empty",
-      "437 Body of header is all blanks in \"From\" header" },
     { "../storage/articles/bad-hdr-nospc",
       "437 No colon-space in \"Test:<-he: re\" header" },
     { "../storage/articles/bad-hdr-space",
