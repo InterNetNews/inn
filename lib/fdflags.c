@@ -78,7 +78,8 @@ nonblocking(int fd, bool flag)
     int mode;
 
     mode = fcntl(fd, F_GETFL, 0);
-    if (mode < 0) return -1;
+    if (mode < 0)
+        return -1;
     mode = (flag ? (mode | O_NONBLOCK) : (mode & ~O_NONBLOCK));
     return fcntl(fd, F_SETFL, mode);
 }
