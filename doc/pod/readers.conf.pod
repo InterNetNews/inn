@@ -329,6 +329,20 @@ If set to false, posts made by these users do not pass through the Python
 filter even if it is otherwise enabled.  This is a boolean value and the
 default is true.
 
+=item B<virtualhost:>
+
+If set to true, nnrpd(8) behaves as a different news server, and also domain
+cannot be unset.  If pathhost is same as in inn.conf, domain is used as
+pathhost.  And if pathhost is same as in inn.conf in this case, nnrpd(8) fails
+to start.  If virtualhost is enabled, some of headers(Path, Message-ID and
+X-Trace) of posted articles will be changed for the virtual host.  And also
+some of headers(Path and Xref) of retrieved artilces will be changed for it.
+
+=item B<newsmaster:>
+
+This is used for contact address listed in help message when virtualhost
+is enabled.
+
 =back
 
 In addition, all of the following parameters are valid in access groups
