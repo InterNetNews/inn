@@ -1070,7 +1070,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	return token;
     }
     /* Article too big? */
-    if (cycbuff->len - cycbuff->free < CNFS_BLOCKSIZE - 1)
+    if (cycbuff->len - cycbuff->free < CNFS_BLOCKSIZE + 1)
         left = 0;
     else
         left = cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1;
