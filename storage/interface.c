@@ -419,7 +419,8 @@ static bool SMreadconfig(void) {
 	    minsize = 0;
 	    maxsize = 0; /* zero means no limit */
 	    class = 0;
-	    options = (char *)NULL;
+            pattern = NULL;
+	    options = NULL;
 	    minexpire = 0;
 	    maxexpire = 0;
 	    exactmatch = FALSE;
