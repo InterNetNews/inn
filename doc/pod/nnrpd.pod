@@ -1,6 +1,6 @@
 =head1 NAME
 
-nnrpd - NNTP server for on-campus hosts
+nnrpd - NNTP server for reader clients
 
 =head1 SYNOPSIS
 
