@@ -385,7 +385,7 @@ CMDlist(ac, av)
 		lp->Path = innconf->pathdb;
     if (strchr(lp->File, '/') != NULL)
 	lp->Path = "";
-    if ((qp = QIOopen(cpcatpath(lp->Path, (char *)lp->File))) == NULL) {
+    if ((qp = QIOopen(cpcatpath((char *)lp->Path, (char *)lp->File))) == NULL) {
 	if (!lp->Required && errno == ENOENT) {
 	    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
 	    Printf(".\r\n");
