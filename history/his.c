@@ -364,7 +364,7 @@ HISctl(struct history *h, int selector, void *val)
     bool r;
 
     if (h == NULL)
-	return NULL;
+	return false;
     r = (*h->methods->ctl)(h->sub, selector, val);
     return r;
 }
