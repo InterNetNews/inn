@@ -159,9 +159,9 @@ do
     ##  Check the host's queue size?
     QUEUE=0
     if [ -n "${BYTESQUEUED}" ] ; then
-	if [ -d /usr/spool/uucp/${SITE} ] ; then
+	if [ -d ${UUSPOOL}/${SITE} ] ; then
 	    # Get queue size from directory size
-	    QUEUE=`du -s "/usr/spool/uucp/${SITE}" \
+	    QUEUE=`du -s "${UUSPOOL}/${SITE}" \
 		    | ${AWK} '{ printf("%s000\n", $1); }'`
 
 	else
