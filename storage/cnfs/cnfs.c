@@ -1349,6 +1349,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
 	}
+#ifdef MMAP_MISSES_WRITES
+	msync(private->base, private->len, MS_INVALIDATE);
+#endif
 #if defined(MADV_SEQUENTIAL) && defined(HAVE_MADVISE)
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
 #endif
@@ -1669,6 +1672,9 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
+#ifdef MMAP_MISSES_WRITES
+	msync(private->base, private->len, MS_INVALIDATE);
+#endif
 #if defined(MADV_SEQUENTIAL) && defined(HAVE_MADVISE)
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
 #endif
