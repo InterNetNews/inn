@@ -990,7 +990,7 @@ STATIC OVfindheaderindex() {
     int		i;
 
     if (ReadOverviewfmt)
-    return;
+	return;
     ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
 	(void)fprintf(stderr, "Can't read %s, %s\n",
@@ -1010,13 +1010,10 @@ STATIC OVfindheaderindex() {
 	for (Dateindex = OVFMT_NODATE, i = 0; i < ARTfieldsize; i++) {
 	    if (caseEQ(ARTfields[i].Header, "Date")) {
 		Dateindex = i;
-		break;
 	    } else if (caseEQ(ARTfields[i].Header, "Xref")) {
 		Xrefindex = i;
-		break;
 	    } else if (caseEQ(ARTfields[i].Header, "Message-ID")) {
 		Messageidindex = i;
-		break;
 	    }
 	}
     }
