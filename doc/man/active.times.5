@@ -1,0 +1,42 @@
+.\" $Revision$
+.TH ACTIVE.TIMES 5
+.SH NAME
+active.times \- list of local creation times of Usenet newsgroups
+.SH DESCRIPTION
+The file
+.I <pathdb in inn.conf>/active.times
+provides a chronological record of when newsgroups were created on the
+local server.
+This file is normally updated by
+.IR innd (8)
+whenever a newgroup control message is processed or a
+.I ctlinnd
+\&``newgroup'' command is done.
+Each line consist of three fields:
+.PP
+.RS
+.nf
+name time creator
+.fi
+.RE
+.PP
+The first field is the name of the newsgroup.
+The second field is the time it was created, expressed as the number of
+seconds since the epoch \(em
+.IR i.e. ,
+a
+.IR time_t ;
+see
+.IR gettimeofday (2).
+The third field is the electronic mail address of the person who
+created the group, as specified in the control message or on the 
+.I ctlinnd
+command line.
+.SH HISTORY
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+active(5), ctlinnd(8), inn.conf(5), innd(8).

@@ -1,7 +1,7 @@
 .\" $Revision$
 .TH ACTIVE 5
 .SH NAME
-active, active.times \- list of active Usenet newsgroups
+active \- list of active Usenet newsgroups
 .SH DESCRIPTION
 The file
 .I <pathdb in inn.conf>/active
@@ -14,10 +14,10 @@ monotonically increasing numbers.
 If an article is posted to newsgroups not mentioned in this file, those
 newsgroups are ignored.
 If no valid newsgroups are specified, the article is either
-filed into the newsgroup ``junk'' and only propagated to sites that receive
-the ``junk'' newsgroup if ``wanttrash'' option in
-.IR inn.conf (5)
-is true.  Or it is ignored completely.
+filed into the newsgroup ``junk'' (and only propagated to sites that receive
+the ``junk'' newsgroup) if ``wanttrash'' option in
+.I inn.conf
+is true; otherwise it is ignored completely.
 .PP
 Each line consists of four fields specified by a space:
 .PP
@@ -79,33 +79,6 @@ Note that the Newsgroup header is not modified
 created with
 .IR ctlinnd (8)).
 An alias newsgroup should not point to another alias.
-.PP
-The file
-.I <pathdb in inn.conf>/active.times
-provides a chronological record of when newsgroups are created.
-This file is normally updated by
-.IR innd (8)
-whenever a
-.I ctlinnd
-\&``newgroup'' command is done.
-Each line consist of three fields:
-.PP
-.RS
-.nf
-name time creator
-.fi
-.RE
-.PP
-The first field is the name of the newsgroup.
-The second field is the time it was created, expressed as the number of
-seconds since the epoch \(em
-.IR i.e. ,
-a
-.IR time_t ;
-see
-.IR gettimeofday (2).
-The third field is the electronic mail address of the person who
-created the group.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$
@@ -113,4 +86,4 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-ctlinnd(8), inn.conf(5), innd(8).
+active.times(5), ctlinnd(8), inn.conf(5), innd(8).
