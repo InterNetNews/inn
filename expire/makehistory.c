@@ -709,6 +709,26 @@ OverAddAllNewsgroups(void)
     QIOclose(qp);
 }
 
+
+/*
+**  Change to the news user if possible, and if not, die.  Used for operations
+**  that may create new database files, so as not to mess up the ownership.
+*/
+static void
+setuid_news(void)
+{
+    struct passwd *pwd;
+
+    pwd = getpwnam(NEWSUSER);
+    if (pwd == NULL)
+        die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
+    if (getuid() == 0)
+        setuid(pwd->pw_uid);
+    if (getuid() != pwd->pw_uid)
+        die("must be run as %s", NEWSUSER);
+}
+
+
 int
 main(int argc, char **argv)
 {
@@ -801,6 +821,9 @@ main(int argc, char **argv)
 
     if (chdir(HistoryDir) < 0)
         sysdie("cannot chdir to %s", HistoryDir);
+
+    /* Change users if necessary. */
+    setuid_news();
 
     /* Read in the overview schema */
     ARTreadschema(DoOverview);

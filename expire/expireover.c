@@ -45,6 +45,25 @@ fatal_signal(int sig)
 }
 
 
+/*
+**  Change to the news user if possible, and if not, die.  Used for operations
+**  that may create new database files so as not to mess up the ownership.
+*/
+static void
+setuid_news(void)
+{
+    struct passwd *pwd;
+
+    pwd = getpwnam(NEWSUSER);
+    if (pwd == NULL)
+        die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
+    if (getuid() == 0)
+        setuid(pwd->pw_uid);
+    if (getuid() != pwd->pw_uid)
+        die("must be run as %s", NEWSUSER);
+}
+
+
 int
 main(int argc, char *argv[])
 {
@@ -121,6 +140,9 @@ main(int argc, char *argv[])
     /* Initialize innconf. */
     if (!innconf_read(NULL))
         exit(1);
+
+    /* Change to the news user if necessary. */
+    setuid_news();
 
     /* Initialize the lowmark file, if one was requested. */
     if (lowmark_path != NULL) {

@@ -488,7 +488,27 @@ Usage(void)
 }
 
 
-int main(int ac, char *av[])
+/*
+**  Change to the news user if possible, and if not, die.  Used for operations
+**  that may create new database files so as not to mess up the ownership.
+*/
+static void
+setuid_news(void)
+{
+    struct passwd *pwd;
+
+    pwd = getpwnam(NEWSUSER);
+    if (pwd == NULL)
+        die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
+    if (getuid() == 0)
+        setuid(pwd->pw_uid);
+    if (getuid() != pwd->pw_uid)
+        die("must be run as %s", NEWSUSER);
+}
+
+
+int
+main(int ac, char *av[])
 {
     int                 i;
     char 	        *p;
@@ -606,6 +626,9 @@ int main(int ac, char *av[])
     (void)time(&Now);
     RealNow = Now;
     Now += TimeWarp;
+
+    /* Change users if necessary. */
+    setuid_news();
 
     /* Parse the control file. */
     if (av[0])
