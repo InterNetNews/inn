@@ -426,8 +426,11 @@ else
     INN_PERL_VERSION(5.003)
 fi
 
-dnl Look for PGP 5.0's pgpv, or pgp/pgpgpg if pgpv is not found.
+dnl Look for PGP 5.0's pgpv, then pgp, then pgpgpg (not sure why anyone would
+dnl have pgpgpg and not gpgv, but it doesn't hurt).  Separately look for
+dnl GnuPG (which we prefer).
 pgpverify=true
+AC_PATH_PROGS(PATH_GPGV, gpgv)
 AC_PATH_PROGS(_PATH_PGP, pgpv pgp pgpgpg)
 if test -z "$_PATH_PGP" ; then
     pgpverify=false
