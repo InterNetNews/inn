@@ -67,6 +67,27 @@ sub bhex {
     return $integerValue;
     }
 
+sub bint2hex {
+    my $d = shift; 
+    my $o = 0;
+
+    while ($d > 0) {
+        my $h = bmod("$d",'16');
+        $d = bdiv("$d",'16');
+        $h =~ s/^\+//;
+        $h='a' if $h eq '10';
+        $h='b' if $h eq '11';
+        $h='c' if $h eq '12';
+        $h='d' if $h eq '13';
+        $h='e' if $h eq '14';
+        $h='f' if $h eq '15';
+        $h =~ s/^\+//;
+        $o="$h$o";  
+    }
+
+    return "$o";
+}
+
 sub usage {
     print <<_end_;
 Summary tool for cycbuff header manupilation
@@ -247,7 +268,7 @@ sub print_cycbuff_head {
     }
 
     my($len) = bhex($lena);
-    my($free) = hex($freea);
+    my($free) = bhex($freea);
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
 
@@ -278,10 +299,18 @@ sub print_cycbuff_head {
 	if ($in ne "") {
 	    $path = sprintf("%0.65s\0", $in);
 	}
-	print "Free [$freea (len = $lena) ] => ";
+        print "Length [$len ($lena)] => ";
+        $in = <>;
+        chop $in;
+        if ($in ne "") {
+            $in = bint2hex($in);
+            $lena = sprintf("%0.17s\0", $in);
+        }
+	print "Free [$free ($freea)] => ";
 	$in = <>;
 	chop $in;
 	if ($in ne "") {
+            $in = bint2hex($in);
 	    $freea = sprintf("%0.17s\0", $in);
 	}
 	print "Meta [$metaname] => ";
