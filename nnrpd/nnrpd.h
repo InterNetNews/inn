@@ -131,8 +131,8 @@ EXTERN char	ClientHost[SMBUF];
 EXTERN char     ServerHost[SMBUF];
 EXTERN char	Username[SMBUF];
 #ifdef HAVE_INET6
-EXTERN char     ClientIpString[40];
-EXTERN char     ServerIpString[40];
+EXTERN char     ClientIpString[INET6_ADDRSTRLEN];
+EXTERN char     ServerIpString[INET6_ADDRSTRLEN];
 #else
 EXTERN char     ClientIpString[20];
 EXTERN char     ServerIpString[20];
