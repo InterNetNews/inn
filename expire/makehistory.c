@@ -188,6 +188,8 @@ FlushOverTmpFile(void)
     char *line, *p, *q;
     time_t arrived;
 
+    if (OverTmpFile == NULL)
+	return;
     if (fflush(OverTmpFile) == EOF || ferror(OverTmpFile) || fclose(OverTmpFile) == EOF) {
 	(void)fprintf(stderr, "Can't close OverTmp file, %s\n",	strerror(errno));
 	exit(1);
