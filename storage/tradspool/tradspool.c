@@ -280,6 +280,8 @@ DumpDB(void) {
 
     if ((out = fopen(fnamenew, "w")) == NULL) {
 	syslog(L_ERROR, "tradspool: DumpDB: can't write %s: %m", fnamenew);
+	DISPOSE(fname);
+	DISPOSE(fnamenew);
 	return;
     }
     for (i = 0 ; i < NGT_SIZE ; ++i) {
@@ -290,10 +292,14 @@ DumpDB(void) {
     }
     if (fclose(out) < 0) {
 	syslog(L_ERROR, "tradspool: DumpDB: can't close %s: %m", fnamenew);
+	DISPOSE(fname);
+	DISPOSE(fnamenew);
 	return;
     }
     if (rename(fnamenew, fname) < 0) {
 	syslog(L_ERROR, "tradspool: can't rename %s\n", fnamenew);
+	DISPOSE(fname);
+	DISPOSE(fnamenew);
 	return;
     }
     DISPOSE(fname);
@@ -325,6 +331,8 @@ ReadDBFile(void) {
 	    p = strchr(line, ' ');
 	    if (p == NULL) {
 		syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
+		QIOclose(qp);
+		DISPOSE(fname);
 		return FALSE;
 	    }
 	    *p++ = 0;
@@ -348,6 +356,7 @@ ReadActiveFile(void) {
     fname = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     if ((qp = QIOopen(fname)) == NULL) {
 	syslog(L_FATAL, "tradspool: can't open %s", fname);
+	DISPOSE(fname);
 	return FALSE;
     }
 
@@ -355,6 +364,8 @@ ReadActiveFile(void) {
 	p = strchr(line, ' ');
 	if (p == NULL) {
 	    syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
+	    QIOclose(qp);
+	    DISPOSE(fname);
 	    return FALSE;
 	}
 	*p = 0;
@@ -550,12 +561,16 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
 	token.type = TOKEN_EMPTY;
 	SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
+	if (xrefs != NULL)
+	    DISPOSE(xrefs);
 	return token;
     }
 
     if ((p = strchr(xrefs[0], ':')) == NULL) {
 	token.type = TOKEN_EMPTY;
 	SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
+	for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+	DISPOSE(xrefs);
 	return token;
     }
     *p++ = '\0';
@@ -577,6 +592,8 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    token.type = TOKEN_EMPTY;
 	    DISPOSE(path);
 	    SMseterror(SMERR_UNDEFINED, NULL);
+	    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+	    DISPOSE(xrefs);
 	    return token;
 	} else {
 	    *p = '/';
@@ -585,6 +602,8 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		syslog(L_ERROR, "tradspool: could not open %s %m", path);
 		token.type = TOKEN_EMPTY;
 		DISPOSE(path);
+		for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+		DISPOSE(xrefs);
 		return token;
 	    }
 	}
@@ -596,6 +615,8 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	token.type = TOKEN_EMPTY;
 	unlink(path);
 	DISPOSE(path);
+	for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+	DISPOSE(xrefs);
 	return token;
     }
     close(fd);
@@ -624,6 +645,8 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    DISPOSE(linkpath);
 		    DISPOSE(path);
 		    SMseterror(SMERR_UNDEFINED, NULL);
+		    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+		    DISPOSE(xrefs);
 		    return token;
 		} else {
 		    *p = '/';
@@ -631,7 +654,10 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 			SMseterror(SMERR_UNDEFINED, NULL);
 			syslog(L_ERROR, "tradspool: could not open %s %m", path);
 			token.type = TOKEN_EMPTY;
+			DISPOSE(linkpath);
 			DISPOSE(path);
+			for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+			DISPOSE(xrefs);
 			return token;
 		    }
 		}
@@ -800,6 +826,7 @@ tradspool_cancel(TOKEN token) {
 
     if ((path = TokenToPath(token)) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
+	DISPOSE(path);
 	return FALSE;
     }
     /*
