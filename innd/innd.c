@@ -735,13 +735,6 @@ int main(int ac, char *av[])
 
     val = TRUE;
 
-    if (innconf->enableoverview) {
-	if (!OVopen(OV_WRITE)) {
-	    syslog(L_FATAL, "%s cant open overview method", LogName);
-	    exit(1);
-	}
-    }
-
     /* Get the Path entry. */
     if (innconf->pathhost == NULL) {
 	syslog(L_FATAL, "%s No pathhost set", LogName);
@@ -836,6 +829,13 @@ int main(int ac, char *av[])
 	    xchown(ERRLOG);
 	if (BufferedLogs && (ErrlogBuffer = NEW(char, LogBufferSize)) != NULL)
 	    SETBUFFER(Errlog, ErrlogBuffer, LogBufferSize);
+    }
+
+    if (innconf->enableoverview) {
+	if (!OVopen(OV_WRITE)) {
+	    syslog(L_FATAL, "%s cant open overview method", LogName);
+	    exit(1);
+	}
     }
 
     /* Set number of open channels. */
