@@ -1103,7 +1103,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
         left = 0;
     else
         left = cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1;
-    if (article.len > left) {
+    if (article.len > (size_t) left) {
 	for (middle = cycbuff->free ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
 	    middle += CNFS_BLOCKSIZE) {
 	    CNFSUsedBlock(cycbuff, middle, true, false);
@@ -1222,7 +1222,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     PRIV_CNFS		*private;
     char		*p;
     long		pagefudge;
-    off_t               mmapoffset;
+    off_t               cycsize, mmapoffset;
     static TOKEN	ret_token;
     static bool		nomessage = false;
     int			plusoffset = 0;
@@ -1320,8 +1320,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	}
     }
     /* checking the bitmap to ensure cah.size is not broken was dropped */
+    cycsize = ntohl(cah.size);
     if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
-	(ntohl(cah.size) > (size_t) innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+	(cycsize > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	char buf1[24];
 	strlcpy(buf1, CNFSofft2hex(cycbuff->free, false), sizeof(buf1));
 	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");

@@ -893,7 +893,7 @@ bool buffindexed_open(int mode) {
     close(GROUPfd);
     return false;
   }
-  if (sb.st_size > sizeof(GROUPHEADER)) {
+  if (sb.st_size > (off_t) sizeof(GROUPHEADER)) {
     if (mode & OV_READ)
       flag |= PROT_READ;
     if (mode & OV_WRITE) {
@@ -904,8 +904,9 @@ bool buffindexed_open(int mode) {
       flag |= PROT_WRITE|PROT_READ;
     }
     GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
-    if ((GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount), flag,
-	MAP_SHARED, GROUPfd, 0)) == (GROUPHEADER *) -1) {
+    GROUPheader = mmap(0, GROUPfilesize(GROUPcount), flag, MAP_SHARED,
+                       GROUPfd, 0);
+    if (GROUPheader == MAP_FAILED) {
       syslog(L_FATAL, "%s: Could not mmap %s in buffindexed_open: %m", LocalLogName, groupfn);
       free(groupfn);
       close(GROUPfd);
@@ -1053,9 +1054,9 @@ static bool GROUPremapifneeded(GROUPLOC loc) {
   }
 
   GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
-  GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
-				     PROT_READ | PROT_WRITE, MAP_SHARED, GROUPfd, 0);
-  if (GROUPheader == (GROUPHEADER *) -1) {
+  GROUPheader = mmap(0, GROUPfilesize(GROUPcount), PROT_READ | PROT_WRITE,
+                     MAP_SHARED, GROUPfd, 0);
+  if (GROUPheader == MAP_FAILED) {
     syslog(L_FATAL, "%s: Could not mmap group.index in GROUPremapifneeded: %m", LocalLogName);
     return false;
   }
@@ -1088,9 +1089,9 @@ static bool GROUPexpand(int mode) {
      */
     flag |= PROT_WRITE|PROT_READ;
   }
-  GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
-				     flag, MAP_SHARED, GROUPfd, 0);
-  if (GROUPheader == (GROUPHEADER *) -1) {
+  GROUPheader = mmap(0, GROUPfilesize(GROUPcount), flag, MAP_SHARED,
+                     GROUPfd, 0);
+  if (GROUPheader == MAP_FAILED) {
     syslog(L_FATAL, "%s: Could not mmap group.index in GROUPexpand: %m", LocalLogName);
     return false;
   }

@@ -653,7 +653,8 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
     char nulls[1];
 
     strlcpy(finalpath, cfpath, sizeof(finalpath));
-    snprintf(path, sizeof(path), "%s.%d", cfpath, getpid());/* create path with PID attached */
+    /* create path with PID attached */
+    snprintf(path, sizeof(path), "%s.%lu", cfpath, (unsigned long) getpid());
     /* 
     ** Shouldn't be anyone else with our pid trying to write to the temp.
     ** file, but there might be an old one lying around.  Nuke it.
