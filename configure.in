@@ -66,19 +66,28 @@ if test x"$inn_use_libtool" = xyes ; then
     EXTLIB='la'
     EXTOBJ='lo'
     LIBTOOL='../libtool'
-    UPLIBTOOL='../../libtool'
+    LIBTOOLCC='../libtool --mode=compile'
+    UPLIBTOOLCC='../../libtool --mode=compile'
+    LIBTOOLLD='../libtool --mode=link'
+    UPLIBTOOLLD='../../libtool --mode=link'
 else
     AC_CANONICAL_HOST
     AC_PROG_CC
     EXTLIB='a'
     EXTOBJ='o'
     LIBTOOL=''
-    UPLIBTOOL=''
+    LIBTOOLCC=''
+    UPLIBTOOLCC=''
+    LIBTOOLLD=''
+    UPLIBTOOLLD=''
     AC_SUBST(LIBTOOL)
 fi
 AC_SUBST(EXTLIB)
 AC_SUBST(EXTOBJ)
-AC_SUBST(UPLIBTOOL)
+AC_SUBST(LIBTOOLCC)
+AC_SUBST(UPLIBTOOLCC)
+AC_SUBST(LIBTOOLLD)
+AC_SUBST(UPLIBTOOLLD)
 
 dnl INN has quite a few more configurable paths than autoconf supports by
 dnl default.  For right now, those additional paths are configured with

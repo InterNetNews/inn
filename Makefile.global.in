@@ -65,14 +65,17 @@ PROF            = -pg
 ##  directories two levels deep.
 
 LIBTOOL         = @LIBTOOL@
-UPLIBTOOL       = @UPLIBTOOL@
+LIBTOOLCC       = @LIBTOOLCC@
+UPLIBTOOLCC     = @UPLIBTOOLCC@
+LIBTOOLLD       = @LIBTOOLLD@
+UPLIBTOOLLD     = @UPLIBTOOLLD@
 EXTOBJ          = @EXTOBJ@
 EXTLIB          = @EXTLIB@
 
-LIBCC           = $(LIBTOOL) --mode=compile $(CC)
-LIBLD           = $(LIBTOOL) --mode=link $(CC)
-UPLIBCC         = $(UPLIBTOOL) --mode=compile $(CC)
-UPLIBLD         = $(UPLIBTOOL) --mode=link $(CC)
+LIBCC           = $(LIBTOOLCC) $(CC)
+LIBLD           = $(LIBTOOLLD) $(CC)
+UPLIBCC         = $(UPLIBTOOLCC) $(CC)
+UPLIBLD         = $(UPLIBTOOLLD) $(CC)
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is
