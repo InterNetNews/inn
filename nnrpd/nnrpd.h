@@ -21,6 +21,11 @@
 #include "inn/vector.h"
 #include "inn/timer.h"
 
+#ifdef HAVE_SASL
+#include <sasl/sasl.h>
+#include <sasl/saslutil.h>
+#endif
+
 /*
 **  Maximum input line length, sigh.
 */
@@ -260,7 +265,7 @@ extern void		CMD_unimp    (int ac, char** av);
 extern void		CMDstarttls  (int ac, char** av);
 #endif
 
-
+void write_buffer(const char *buff, ssize_t len);
 
 extern char *HandleHeaders(char *article);
 extern bool ARTinstorebytoken(TOKEN token);
@@ -287,3 +292,13 @@ void PY_dynamic_init (char* file);
 void line_free(struct line *);
 void line_init(struct line *);
 READTYPE line_read(struct line *, int, const char **, size_t *);
+
+#ifdef HAVE_SASL
+#include <sasl/sasl.h>
+
+extern sasl_conn_t *sasl_conn;
+extern int sasl_ssf, sasl_maxout;
+extern sasl_callback_t sasl_callbacks[];
+
+void SASLauth(int ac, char *av[]);
+#endif /* HAVE_SASL */

@@ -24,6 +24,7 @@
 #include <sys/uio.h>
 
 #include "nnrpd.h"
+#include "inn/innconf.h"
 
 #ifdef HAVE_SSL
 
@@ -62,7 +63,6 @@
 
 /* outside the ifdef so `make depend` works even ifndef HAVE_SSL */
 #include "tls.h"
-#include "sasl_config.h"
 
 #ifdef HAVE_SSL
 
@@ -86,7 +86,7 @@ char   *tls_peer_issuer = NULL;
 char   *tls_peer_fingerprint = NULL;
 
 int     tls_clientactive = 0;	/* available or not */
-char   *tls_peer_CN = NULL;
+char   *tls_peer_CN= NULL;
 char   *tls_issuer_CN = NULL;
 
 const char   *tls_protocol = NULL;
@@ -551,22 +551,20 @@ tls_init(void)
 
     if (tls_initialized)
         return;
-    sasl_config_read();
+
     ssl_result = tls_init_serverengine(5,        /* depth to verify */
 				       0,        /* can client auth? */
 				       0,        /* required client to auth? */
-				       (char *)sasl_config_getstring("tls_ca_file", ""),
-				       (char *)sasl_config_getstring("tls_ca_path", ""),
-				       (char *)sasl_config_getstring("tls_cert_file", ""),
-				       (char *)sasl_config_getstring("tls_key_file", ""));
+				       innconf->tlscafile,
+				       innconf->tlscapath,
+				       innconf->tlscertfile,
+				       innconf->tlskeyfile);
     if (ssl_result == -1) {
         Reply("%d Error initializing TLS\r\n", NNTP_STARTTLS_BAD_VAL);
         syslog(L_ERROR, "error initializing TLS: "
                "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
-               sasl_config_getstring("tls_ca_file", ""),
-               sasl_config_getstring("tls_ca_path", ""),
-               sasl_config_getstring("tls_cert_file", ""),
-               sasl_config_getstring("tls_key_file", ""));
+               innconf->tlscafile, innconf->tlscapath,
+               innconf->tlscertfile, innconf->tlskeyfile);
         ExitWithStats(1, false);
     }
     tls_initialized = true;

@@ -61,34 +61,49 @@ static struct iovec	iov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
 static int		queued_iov = 0;
 
 static void PushIOvHelper(struct iovec* vec, int* countp) {
-    int result;
-    TMRstart(TMR_NNTPWRITE);
-#ifdef HAVE_SSL
-    if (tls_conn) {
-Again:
-        result = SSL_writev(tls_conn, vec, *countp);
-        switch (SSL_get_error(tls_conn, result)) {
-        case SSL_ERROR_NONE:
-        case SSL_ERROR_SYSCALL:
-            break;
-        case SSL_ERROR_WANT_WRITE:
-            goto Again;
-            break;
-        case SSL_ERROR_SSL:
-            SSL_shutdown(tls_conn);
-            tls_conn = NULL;
-            errno = ECONNRESET;
-            break;
-        case SSL_ERROR_ZERO_RETURN:
-            break;
-        }
+    int result = 0;
+
+#ifdef HAVE_SASL
+    if (sasl_conn && sasl_ssf) {
+	int i;
+
+	for (i = 0; i < *countp; i++) {
+	    write_buffer(vec[i].iov_base, vec[i].iov_len);
+	}
     } else {
-        result = xwritev(STDOUT_FILENO, vec, *countp);
+#endif /* HAVE_SASL */
+
+        TMRstart(TMR_NNTPWRITE);
+
+#ifdef HAVE_SSL
+	if (tls_conn) {
+Again:
+	    result = SSL_writev(tls_conn, vec, *countp);
+	    switch (SSL_get_error(tls_conn, result)) {
+	    case SSL_ERROR_NONE:
+	    case SSL_ERROR_SYSCALL:
+		break;
+	    case SSL_ERROR_WANT_WRITE:
+		goto Again;
+		break;
+	    case SSL_ERROR_SSL:
+		SSL_shutdown(tls_conn);
+		tls_conn = NULL;
+		errno = ECONNRESET;
+		break;
+	    case SSL_ERROR_ZERO_RETURN:
+		break;
+	    }
+	} else
+#endif /* HAVE_SSL */
+	    result = xwritev(STDOUT_FILENO, vec, *countp);
+
+        TMRstop(TMR_NNTPWRITE);
+
+#ifdef HAVE_SASL
     }
-#else
-    result = xwritev(STDOUT_FILENO, vec, *countp);
 #endif
-    TMRstop(TMR_NNTPWRITE);
+
     if (result == -1) {
 	/* we can't recover, since we can't resynchronise with our
 	 * peer */
@@ -178,48 +193,7 @@ static int		highwater = 0;
 
 static void
 PushIOb(void) {
-    TMRstart(TMR_NNTPWRITE);
-    fflush(stdout);
-#ifdef HAVE_SSL
-    if (tls_conn) {
-        int r;
-Again:
-        r = SSL_write(tls_conn, _IO_buffer_, highwater);
-        switch (SSL_get_error(tls_conn, r)) {
-        case SSL_ERROR_NONE:
-        case SSL_ERROR_SYSCALL:
-            break;
-        case SSL_ERROR_WANT_WRITE:
-            goto Again;
-            break;
-        case SSL_ERROR_SSL:
-            SSL_shutdown(tls_conn);
-            tls_conn = NULL;
-            errno = ECONNRESET;
-            break;
-        case SSL_ERROR_ZERO_RETURN:
-            break;
-        }
-        if (r != highwater) {
-            TMRstop(TMR_NNTPWRITE);
-            highwater = 0;
-            return;
-        }
-    } else {
-      if (xwrite(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
-	TMRstop(TMR_NNTPWRITE);
-	highwater = 0;
-	return;
-      }
-    }
-#else
-    if (xwrite(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
-	TMRstop(TMR_NNTPWRITE);
-        highwater = 0;
-        return;
-    }
-#endif
-    TMRstop(TMR_NNTPWRITE);
+    write_buffer(_IO_buffer_, highwater);
     highwater = 0;
 }
 

@@ -13,7 +13,7 @@ top	      = ..
 
 ALL           = inn.conf innreport.conf newsfeeds nnrpd_auth.pl \
 		nnrpd_access.pl nnrpd_auth_wrapper.pl \
-		nnrpd_access_wrapper.pl sasl.conf
+		nnrpd_access_wrapper.pl
 
 all: $(ALL)
 
@@ -44,4 +44,3 @@ nnrpd_auth.pl:           nnrpd_auth.pl.in           $(FIXS) ; $(FIXS) $@.in
 nnrpd_access.pl:         nnrpd_access.pl.in         $(FIXS) ; $(FIXS) $@.in
 nnrpd_auth_wrapper.pl:   nnrpd_auth_wrapper.pl.in   $(FIXS) ; $(FIXS) $@.in
 nnrpd_access_wrapper.pl: nnrpd_access_wrapper.pl.in $(FIXS) ; $(FIXS) $@.in
-sasl.conf:               sasl.conf.in               $(FIXC) ; $(FIXC) $@.in

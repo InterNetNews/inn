@@ -20,8 +20,7 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/distrib.pats.5 \
 	../man/expire.ctl.5 ../man/inn.conf.5 ../man/motd.news.5 \
 	../man/newsfeeds.5 ../man/ovdb.5 ../man/passwd.nntp.5 \
-	../man/radius.conf.5 ../man/readers.conf.5 ../man/sasl.conf.5 \
-	../man/subscriptions.5
+	../man/radius.conf.5 ../man/readers.conf.5 ../man/subscriptions.5
 
 MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/auth_smb.8 ../man/batcher.8 ../man/buffchan.8 \
@@ -77,7 +76,6 @@ clean:
 ../man/passwd.nntp.5:	passwd.nntp.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/radius.conf.5:	radius.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/readers.conf.5:	readers.conf.pod	; $(POD2MAN) -s 5 $? > $@
-../man/sasl.conf.5:	sasl.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/subscriptions.5:	subscriptions.pod	; $(POD2MAN) -s 5 $? > $@
 
 ../man/actsync.8:	actsync.pod		; $(POD2MAN) -s 8 $? > $@

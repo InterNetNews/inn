@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2004-05-21" "INN 2.5.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2004-06-09" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -671,6 +671,36 @@ the default is false.
 If set to a value other than \f(CW0\fR, connections to nnrpd will be refused
 if the system load average is higher than this value.  The default value
 is \f(CW16\fR.
+.IP "\fItlscafile\fR" 4
+.IX Item "tlscafile"
+The path to a file containing certificate authority root certificates,
+used to present a trust chain to an \s-1SSL\s0 or \s-1TLS\s0 client.  This parameter is
+only used if nnrpd is built with \s-1TLS\s0 support.  There is no default value.
+.IP "\fItlscapath\fR" 4
+.IX Item "tlscapath"
+The path to a directory containing certificate authority root
+certificates.  Each file in the directory should contain one \s-1CA\s0
+certificate, and the name of the file should be the \s-1CA\s0 subject name hash
+value.  See the OpenSSL documentation for more information.  This
+parameter is only used if nnrpd is built with \s-1TLS\s0 support.  There is no
+default value.
+.IP "\fItlscertfile\fR" 4
+.IX Item "tlscertfile"
+The path to a file containing the server certificate to present to \s-1SSL\s0 or
+\&\s-1TLS\s0 clients.  This parameter is only used if nnrpd is built with \s-1TLS\s0
+support.  The default value is \fIpathnews\fR/lib/cert.pem.
+.IP "\fItlskeyfile\fR" 4
+.IX Item "tlskeyfile"
+The path to a file containing the encryption key for the server
+certificate named in \fItlscertfile\fR.  This may be the same as
+\&\fItlscertfile\fR if, when you created the certificate, you put the key in
+the same file (if, for example, you gave the same file name to both the
+\&\fB\-out\fR and \fB\-keyout\fR options to \f(CW\*(C`openssl req\*(C'\fR).  This parameter is only
+used if nnrpd is built with \s-1TLS\s0 support.  The default value is
+\&\fIpathnews\fR/lib/cert.pem.
+.Sp
+This file must only be readable by the news user or nnrpd will refuse to
+use it.
 .PP
 \&\s-1INN\s0 has optional support for generating keyword information automatically
 from article body text and putting that information in overview for the

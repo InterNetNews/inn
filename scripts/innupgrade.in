@@ -16,6 +16,7 @@
 ##
 ##   * Clean up inn.conf for the new parser in INN 2.4.
 ##   * Add the hismethod parameter to inn.conf if not found.
+##   * Move parameters from sasl.conf to inn.conf if needed.
 ##   * Change startinnfeed to innfeed or imapfeed in newsfeeds.
 
 require 5.003;
@@ -40,7 +41,7 @@ use Getopt::Long qw(GetOptions);
 sub fix_inn_conf {
     my ($input, $output, $file) = @_;
     my $line = 0;
-    my ($raw, $hismethod);
+    my ($raw, $hismethod, $tls);
     local $_;
     for $raw (@$input) {
         $_ = $raw;
@@ -61,6 +62,7 @@ sub fix_inn_conf {
             next;
         }
         $hismethod = 1 if $key eq 'hismethod';
+        $tls = 1 if $key =~ /^tls(capath|cafile|certfile|keyfile)$/;
         $value =~ s/\s+$//;
         if ($value =~ /[\s;\"<>\[\]\\{}]/ && $value !~ /^\".*\"\s*$/) {
             $value =~ s/([\"\\])/\\$1/g;
@@ -72,6 +74,25 @@ sub fix_inn_conf {
     # Add a setting of hismethod if one wasn't present in the original file.
     unless ($hismethod) {
         push (@$output, "\n# Added by innupgrade\nhismethod: hisv6\n");
+    }
+
+    # Import the settings from sasl.conf if present and not found in inn.conf.
+    if (!$tls && -f 'sasl.conf') {
+        open (SASL, 'sasl.conf') or die "Can't open sasl.conf: $!\n";
+        my (@sasl, $found);
+        while (<SASL>) {
+            $found = 1 if (/\S/ && !/^\s*\#/);
+            s/^(\s*)tls_ca_file:/tlscafile:/;
+            s/^(\s*)tls_ca_path:/tlscapath:/;
+            s/^(\s*)tls_cert_file:/tlscertfile:/;
+            s/^(\s*)tls_key_file:/tlskeyfile:/;
+            push (@sasl, $_);
+        }
+        close SASL;
+        if ($found) {
+            push (@$output, "\n# Moved from sasl.conf by innupgrade\n");
+            push (@$output, @sasl);
+        }
     }
 }
 
@@ -165,11 +186,14 @@ Getopt::Long::config ('bundling');
 GetOptions ('file|f=s' => \$file,
             'type|t=s' => \$type) or exit 1;
 if ($file) {
+    my $dirname = $file;
+    $dirname =~ s%/[^/]+$%%;
+    chdir $dirname or die "Can't chdir to $dirname: $!\n";
     my $basename = $file;
     $basename =~ s%.*/%%;
     $type ||= $basename;
     if (!$FIXES{$type}) { die "No upgrade rules defined for $basename\n" }
-    upgrade_file ($file, $FIXES{$type});
+    upgrade_file ($basename, $FIXES{$type});
 } else {
     if (@ARGV != 1) { die "Usage: innupgrade <directory>\n" }
     my $directory = shift;

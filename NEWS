@@ -1,5 +1,8 @@
 Changes from 2.4 to 2.5
 
+    * Ken Murchison has contributed SASL authentication support for nnrpd,
+      implementing the current Internet Draft specification.
+
     * inndstart and startinnfeed are no longer part of INN and are no longer
       used.  Instead, a separate setuid root helper program is used to bind
       to the news ports (and does only that), and is run by innd and nnrpd

@@ -11,6 +11,10 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 
+#ifdef HAVE_SSL
+extern int nnrpd_starttls_done;
+#endif /* HAVE_SSL */
+
 typedef struct _LISTINFO {
     const char *method;
     const char * File;
@@ -105,7 +109,28 @@ cmd_list_schema(LISTINFO *lp)
 static void
 cmd_list_extensions(LISTINFO *lp)
 {
+    const char *mechlist;
+    int mechcount = 0;
+
     Reply("%d %s.\r\n", NNTP_SLAVEOK_VAL, lp->Format);
+
+#ifdef HAVE_SSL
+    if (!nnrpd_starttls_done && PERMauthorized != true)
+	Printf("STARTTLS\r\n");
+#endif /* HAVE_SSL */
+
+#ifdef HAVE_SASL
+    /* check for SASL mechs */
+    sasl_listmech(sasl_conn, NULL, " SASL:", ",", "",
+		  &mechlist, NULL, &mechcount);
+#endif /* HAVE_SASL */
+
+    if (PERMauthorized != true || mechcount != 0) {
+	Printf("AUTHINFO%s%s\r\n",
+	       PERMauthorized != true ? " USER" : "",
+	       mechcount != 0 ? mechlist : "");
+    }
+
     Printf("LISTGROUP\r\n");
     Printf(".\r\n");
 }

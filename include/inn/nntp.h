@@ -91,7 +91,9 @@ enum nntp_code {
 
     /* Authentication extension. */
     NNTP_OK_AUTHINFO            = 281,
+    NNTP_OK_SASL                = 283,
     NNTP_CONT_AUTHINFO          = 381,
+    NNTP_CONT_SASL              = 383,
     NNTP_FAIL_AUTH_NEEDED       = 480,
     NNTP_FAIL_AUTHINFO_BAD      = 481,
     NNTP_FAIL_AUTHINFO_REJECT   = 482,

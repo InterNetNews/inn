@@ -3,15 +3,15 @@
 include ../Makefile.global
 
 top		= ..
-CFLAGS		= $(GCFLAGS) $(SSLINC)
+CFLAGS		= $(GCFLAGS) $(SSL_INC) $(SASL_INC)
 
 ALL		= nnrpd
 
 SOURCES		= article.c cache.c group.c commands.c line.c list.c misc.c \
 		  newnews.c nnrpd.c perl.c perm.c post.c python.c \
-		  sasl_config.c tls.c track.c
+		  sasl.c tls.c track.c
 
-INCLUDES	= cache.h nnrpd.h post.h sasl_config.h tls.h
+INCLUDES	= cache.h nnrpd.h post.h tls.h
 
 OBJECTS		= $(SOURCES:.c=.o)
 
@@ -38,10 +38,10 @@ tags ctags: $(SOURCES) $(INCLUDES)
 
 NNRPDLIBS	= $(LIBHIST) $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) \
 		  $(PYTHON_LIBS) $(SSL_LDFLAGS) $(SSL_LIBS) $(LIBS) \
-		  $(PERL_LIBS)
+		  $(PERL_LIBS) $(SASL_LDFLAGS) $(SASL_LIBS)
 
 .c.o:
-	$(CC) $(CFLAGS) $(SSL_CPPFLAGS) -c $<
+	$(CC) $(CFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) -c $<
 
 perl.o:		perl.c   ; $(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
 python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
@@ -116,7 +116,7 @@ misc.o: misc.c ../include/config.h ../include/inn/defines.h \
  ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h ../include/inn/vector.h \
- ../include/inn/timer.h tls.h sasl_config.h
+ ../include/inn/timer.h tls.h
 newnews.o: newnews.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/innconf.h \
  ../include/inn/messages.h ../include/inn/wire.h nnrpd.h \
@@ -132,7 +132,7 @@ nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
  ../include/storage.h ../include/inn/history.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/nntp.h ../include/paths.h \
- ../include/inn/vector.h ../include/inn/timer.h tls.h sasl_config.h
+ ../include/inn/vector.h ../include/inn/timer.h tls.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/innconf.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
@@ -160,12 +160,11 @@ python.o: python.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/qio.h ../include/libinn.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h ../include/inn/vector.h \
  ../include/inn/timer.h ../include/inn/hashtab.h
-sasl_config.o: sasl_config.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/innconf.h nnrpd.h ../include/portable/socket.h \
+sasl.o: sasl.c ../include/config.h ../include/inn/defines.h nnrpd.h \
+ ../include/portable/socket.h ../include/portable/getaddrinfo.h \
  ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
- ../include/inn/vector.h ../include/inn/timer.h sasl_config.h
+ ../include/inn/vector.h ../include/inn/timer.h
 tls.o: tls.c ../include/config.h ../include/inn/defines.h nnrpd.h \
  ../include/portable/socket.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/nntp.h \

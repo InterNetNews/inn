@@ -4,6 +4,11 @@
 
 =item *
 
+Ken Murchison has contributed SASL authentication support for B<nnrpd>,
+implementing the current Internet Draft specification.
+
+=item *
+
 B<inndstart> and B<startinnfeed> are no longer part of INN and are no
 longer used.  Instead, a separate setuid root helper program is used to
 bind to the news ports (and does only that), and is run by B<innd> and

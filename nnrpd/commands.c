@@ -10,6 +10,7 @@
 #include "ov.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "tls.h"
 
 typedef struct {
     char                *name;
@@ -199,6 +200,11 @@ CMDauthinfo(ac, av)
 		/* lower level has issued Reply */
 		return;
 	}
+
+#ifdef HAVE_SASL
+    } else if (strcasecmp(av[1], "sasl") == 0) {
+	SASLauth(ac, av);
+#endif /* HAVE_SASL */
 
     } else {
 

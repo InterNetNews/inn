@@ -47,6 +47,6 @@ int tls_start_servertls(int readfd, int writefd);
 
 ssize_t SSL_writev (SSL *ssl, const struct iovec *vector, int count);
 
-#endif /* CYRUSTLS_H */
+#endif /* TLS_H */
 
 #endif /* HAVE_SSL */

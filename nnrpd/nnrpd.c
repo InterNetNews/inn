@@ -28,7 +28,6 @@
 #include "nnrpd.h"
 
 #include "tls.h"
-#include "sasl_config.h"
 
 #ifdef HAVE_SSL
 extern SSL *tls_conn;
@@ -110,7 +109,11 @@ static char	CMDfetchhelp[] = "[MessageID|Number]";
 
 static CMDENT	CMDtable[] = {
     {	"authinfo",	CMDauthinfo,	false,	3,	CMDany,
-	"user Name|pass Password|generic <prog> <args>" },
+	"user Name|pass Password"
+#ifdef HAVE_SASL
+	"|sasl <mech> [<init-resp>]"
+#endif
+	"|generic <prog> <args>" },
 #ifdef HAVE_SSL
     {	"starttls",	CMDstarttls,	false,	1,	1,
 	NULL },
@@ -223,6 +226,15 @@ ExitWithStats(int x, bool readconf)
         tls_conn = NULL;
      } 
 #endif
+
+#ifdef HAVE_SASL
+    if (sasl_conn) {
+	sasl_dispose(&sasl_conn);
+	sasl_conn = NULL;
+	sasl_ssf = 0;
+	sasl_maxout = NNTP_STRLEN;
+    }
+#endif /* HAVE_SASL */
 
      if (DaemonMode) {
      	shutdown(STDIN_FILENO, 2);
@@ -582,66 +594,90 @@ static void StartConnection(void)
     PERMgetpermissions();
 }
 
-
 /*
-**  Send a reply, possibly with debugging output.
+** Write a buffer, via SASL security layer and/or TLS if necessary.
 */
 void
-Reply(const char *fmt, ...)
+write_buffer(const char *buff, ssize_t len)
 {
-    va_list     args;
-    int         oerrno;
-    char *      p;
-    char        buff[2048];
+    const char *p;
+    ssize_t n;
+
+    TMRstart(TMR_NNTPWRITE);
+
+    p = buff;
+    while (len > 0) {
+	const char *out;
+	unsigned outlen;
+	int r;
+
+#ifdef HAVE_SASL
+	if (sasl_conn && sasl_ssf) {
+	    /* can only encode as much as the client can handle at one time */
+	    n = (len > sasl_maxout) ? sasl_maxout : len;
+	    if ((r = sasl_encode(sasl_conn, p, n, &out, &outlen)) != SASL_OK) {
+		sysnotice("sasl_encode() failed: %s",
+			  sasl_errstring(r, NULL, NULL));
+		return;
+	    }
+	} else
+#endif /* HAVE_SASL */
+	{
+	    /* output the entire unencoded string */
+	    n = len;
+	    out = buff;
+	    outlen = len;
+	}
+
+	len -= n;
+	p += n;
 
 #ifdef HAVE_SSL
-    if (tls_conn) {
-      int r;
-
-      va_start(args, fmt);
-      vsnprintf(buff, sizeof(buff), fmt, args);
-      va_end(args);
-      TMRstart(TMR_NNTPWRITE);
+	if (tls_conn) {
 Again:
-      r = SSL_write(tls_conn, buff, strlen(buff));
-      switch (SSL_get_error(tls_conn, r)) {
-      case SSL_ERROR_NONE:
-      case SSL_ERROR_SYSCALL:
-        break;
-      case SSL_ERROR_WANT_WRITE:
-        goto Again;
-        break;
-      case SSL_ERROR_SSL:
-        SSL_shutdown(tls_conn);
-        tls_conn = NULL;
-        errno = ECONNRESET;
-        break;
-      case SSL_ERROR_ZERO_RETURN:
-        break;
-      }
-      TMRstop(TMR_NNTPWRITE);
-    } else {
-      va_start(args, fmt);
-      TMRstart(TMR_NNTPWRITE);
-      vprintf(fmt, args);
-      TMRstop(TMR_NNTPWRITE);
-      va_end(args);
+	    r = SSL_write(tls_conn, out, outlen);
+	    switch (SSL_get_error(tls_conn, r)) {
+	    case SSL_ERROR_NONE:
+	    case SSL_ERROR_SYSCALL:
+		break;
+	    case SSL_ERROR_WANT_WRITE:
+		goto Again;
+		break;
+	    case SSL_ERROR_SSL:
+		SSL_shutdown(tls_conn);
+		tls_conn = NULL;
+		errno = ECONNRESET;
+		break;
+	    case SSL_ERROR_ZERO_RETURN:
+		break;
+	    }
+	} else
+#endif /* HAVE_SSL */
+	    do {
+		n = write(STDIN_FILENO, out, outlen);
+	    } while (n == -1 && errno == EINTR);
     }
-#else
-      va_start(args, fmt);
-      TMRstart(TMR_NNTPWRITE);
-      vprintf(fmt, args);
-      TMRstop(TMR_NNTPWRITE);
-      va_end(args);
-#endif
-    if (Tracing) {
-        oerrno = errno;
-        va_start(args, fmt);
+
+    TMRstop(TMR_NNTPWRITE);
+}
+
+/*
+** Send formatted output, possibly with debugging output.
+*/
+static void
+VPrintf(const char *fmt, va_list args, int dotrace)
+{
+    char buff[2048], *p;
+    ssize_t len;
+
+    len = vsnprintf(buff, sizeof(buff), fmt, args);
+    write_buffer(buff, len);
+
+    if (dotrace && Tracing) {
+	int oerrno = errno;
 
         /* Copy output, but strip trailing CR-LF.  Note we're assuming here
            that no output line can ever be longer than 2045 characters. */
-        vsnprintf(buff, sizeof(buff), fmt, args);
-        va_end(args);
         p = buff + strlen(buff) - 1;
         while (p >= buff && (*p == '\n' || *p == '\r'))
             *p-- = '\0';
@@ -651,48 +687,27 @@ Again:
     }
 }
 
+/*
+**  Send a reply, possibly with debugging output.
+*/
+void
+Reply(const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    VPrintf(fmt, args, 1);
+    va_end(args);
+}
+
 void
 Printf(const char *fmt, ...)
 {
-    va_list     args;
+    va_list args;
 
-#ifdef HAVE_SSL
-    if (tls_conn) {
-      int r;
-      char buff[2048];
-
-      va_start(args, fmt);
-      vsnprintf(buff, sizeof(buff), fmt, args);
-      va_end(args);
-      TMRstart(TMR_NNTPWRITE);
-Again:
-      r = SSL_write(tls_conn, buff, strlen(buff));
-      switch (SSL_get_error(tls_conn, r)) {
-      case SSL_ERROR_NONE:
-      case SSL_ERROR_SYSCALL:
-        break;
-      case SSL_ERROR_WANT_WRITE:
-        goto Again;
-        break;
-      case SSL_ERROR_SSL:
-        SSL_shutdown(tls_conn);
-        tls_conn = NULL;
-        errno = ECONNRESET;
-        break;
-      case SSL_ERROR_ZERO_RETURN:
-        break;
-      }
-      TMRstop(TMR_NNTPWRITE);
-    } else {
-#endif /* HAVE_SSL */
-      va_start(args, fmt);
-      TMRstart(TMR_NNTPWRITE);
-      vprintf(fmt, args);
-      TMRstop(TMR_NNTPWRITE);
-      va_end(args);
-#ifdef HAVE_SSL
-    }
-#endif /* HAVE_SSL */
+    va_start(args, fmt);
+    VPrintf(fmt, args, 0);
+    va_end(args);
 }
 
 
@@ -853,6 +868,13 @@ main(int argc, char *argv[])
 
     if (!innconf_read(NULL))
         exit(1);
+
+#ifdef HAVE_SASL
+    if (sasl_server_init(sasl_callbacks, "INN") != SASL_OK) {
+	syslog(L_FATAL, "sasl_server_init() failed");
+	exit(1);
+    }
+#endif /* HAVE_SASL */
 
 #ifdef HAVE_SSL
     while ((i = getopt(argc, argv, "6:c:b:Dfi:I:g:nop:P:Rr:s:tS")) != EOF)
@@ -1206,6 +1228,23 @@ main(int argc, char *argv[])
 	    LLOGenable = true;
 	}
     }
+
+#ifdef HAVE_SASL
+    if (sasl_server_new("nntp", NULL, NULL, NULL, NULL,
+			NULL, SASL_SUCCESS_DATA, &sasl_conn) != SASL_OK) {
+	syslog(L_FATAL, "sasl_server_new() failed");
+	exit(1);
+    } else {
+	/* XXX fill in sec props and ip ports */
+	sasl_security_properties_t secprops;
+
+	memset(&secprops, 0, sizeof(secprops));
+	secprops.security_flags = SASL_SEC_NOPLAINTEXT;
+	secprops.max_ssf = 256;
+	secprops.maxbufsize = NNTP_STRLEN;
+	sasl_setprop(sasl_conn, SASL_SEC_PROPS, &secprops);
+    }
+#endif /* HAVE_SASL */
 
     if (PERMaccessconf) {
         Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",

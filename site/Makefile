@@ -42,7 +42,6 @@ PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 PATH_BUFFINDEXED	= ${PATHETC}/buffindexed.conf
 PATH_RADIUS_CONF	= ${PATHETC}/radius.conf
 PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
-PATH_SASL_CONF		= ${PATHETC}/sasl.conf
 PATH_SUBSCRIPTIONS	= ${PATHETC}/subscriptions
 
 PATH_ACTIVE		= ${PATHDB}/active
@@ -61,7 +60,7 @@ REST		= \
 	filter_innd.py INN.py \
 	nnrpd_auth.pl nnrpd_access.pl \
         news2mail.cf readers.conf \
-	radius.conf nnrpd_auth.py ovdb.conf sasl.conf active.minimal \
+	radius.conf nnrpd_auth.py ovdb.conf active.minimal \
 	newsgroups.minimal subscriptions
 
 ALL		= $(MOST) $(REST)
@@ -82,7 +81,7 @@ REST_INSTALLED	= \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF) \
-	$D$(PATH_SASL_CONF) $D$(PATH_SUBSCRIPTIONS)
+	$D$(PATH_SUBSCRIPTIONS)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -192,7 +191,6 @@ $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPUB) $? $@
 $D$(PATH_MOTD): motd.news		; $(COPY_RPUB) $? $@
 $D$(PATH_INNFEEDCTL): innfeed.conf	; $(COPY_RPRI) $? $@
-$D$(PATH_SASL_CONF):	sasl.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_SUBSCRIPTIONS): subscriptions	; $(COPY_RPUB) $? $@
 
 REASON	= 'Installing site config files from site/Makefile'
@@ -242,6 +240,5 @@ readers.conf:	../samples/readers.conf		; $(COPY) $? $@
 radius.conf:	../samples/radius.conf		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 subscriptions:	../samples/subscriptions	; $(COPY) $? $@
-sasl.conf:	../samples/sasl.conf		; $(COPY) $? $@
 active.minimal:	../samples/active.minimal	; $(COPY) $? $@
 newsgroups.minimal: ../samples/newsgroups.minimal ; $(COPY) $? $@

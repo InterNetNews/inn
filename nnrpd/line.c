@@ -20,9 +20,9 @@
 
 #include "inn/messages.h"
 #include "nnrpd.h"
+#include "tls.h"
 
 #ifdef HAVE_SSL
-#include <openssl/ssl.h>
 extern SSL *tls_conn;
 #endif
 
@@ -57,31 +57,52 @@ line_doread(void *p, size_t len)
 {
     ssize_t n;
 
+    do {
 #ifdef HAVE_SSL
-    if (tls_conn) {
-	int err;
-	do {
-	    n = SSL_read(tls_conn, p, len);
-	    err = SSL_get_error(tls_conn, n);
-	    switch (err) {
-	    case SSL_ERROR_SYSCALL:
-		break;
+	if (tls_conn) {
+	    int err;
+	    do {
+		n = SSL_read(tls_conn, p, len);
+		err = SSL_get_error(tls_conn, n);
+		switch (err) {
+		case SSL_ERROR_SYSCALL:
+		    break;
+		    
+		case SSL_ERROR_SSL:
+		    SSL_shutdown(tls_conn);
+		    tls_conn = NULL;
+		    errno = ECONNRESET;
+		    break;
+		}
+	    } while (err == SSL_ERROR_WANT_READ);
+	} else
+#endif /* HAVE_SSL */
+	    do {
+		n = read(STDIN_FILENO, p, len);
+	    } while (n == -1 && errno == EINTR);
 
-	    case SSL_ERROR_SSL:
-		SSL_shutdown(tls_conn);
-		tls_conn = NULL;
-		errno = ECONNRESET;
-		break;
+	if (n <= 0) break; /* EOF or error */
+
+#ifdef HAVE_SASL
+	if (sasl_conn && sasl_ssf) {
+	    /* security layer in place, decode the data */
+	    const char *out;
+	    unsigned outlen;
+	    int r;
+
+	    if ((r = sasl_decode(sasl_conn, p, n, &out, &outlen)) == SASL_OK) {
+		if (outlen) memcpy(p, out, outlen);
+		n = outlen;
+	    } else {
+		sysnotice("sasl_decode() failed: %s; %s",
+			  sasl_errstring(r, NULL, NULL),
+			  sasl_errdetail(sasl_conn));
+		n = -1;
 	    }
-	} while (err == SSL_ERROR_WANT_READ);
-    } else {
-#endif
-	do {
-	    n = read(STDIN_FILENO, p, len);
-	} while (n == -1 && errno == EINTR);
-#ifdef HAVE_SSL
-    }
-#endif
+	}
+#endif /* HAVE_SASL */
+    } while (n == 0); /* split SASL blob, need to read more data */
+
     return n;
 }
 

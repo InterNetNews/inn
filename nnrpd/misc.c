@@ -14,10 +14,11 @@
 #include "inn/innconf.h"
 #include "nnrpd.h"
 #include "tls.h"
-#include "sasl_config.h"
 
 #ifdef HAVE_SSL
 extern SSL *tls_conn;
+extern int tls_cipher_usebits;
+extern char *tls_peer_CN;
 extern int nnrpd_starttls_done;
 #endif 
 
@@ -547,6 +548,21 @@ CMDstarttls(ac, av)
     Reply("%d Starttls failed\r\n", NNTP_STARTTLS_BAD_VAL);
     return;
   }
+
+#ifdef HAVE_SASL
+  /* tell SASL about the negotiated layer */
+  result = sasl_setprop(sasl_conn, SASL_SSF_EXTERNAL,
+			(sasl_ssf_t *) &tls_cipher_usebits);
+  if (result != SASL_OK) {
+    syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
+  }
+
+  result = sasl_setprop(sasl_conn, SASL_AUTH_EXTERNAL, tls_peer_CN);
+  if (result != SASL_OK) {
+    syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
+  }
+#endif /* HAVE_SASL */
+
   nnrpd_starttls_done = 1;
 }
 #endif /* HAVE_SSL */

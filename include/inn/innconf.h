@@ -102,6 +102,12 @@ struct innconf {
     char *organization;         /* Data for the Organization: header */
     bool spoolfirst;            /* Spool all posted articles? */
     bool strippostcc;           /* Strip To:, Cc: and Bcc: from posts */
+#ifdef HAVE_SSL
+    char *tlscafile;            /* Path to a certificate authority file */
+    char *tlscapath;            /* Path to a directory of CA certificates */
+    char *tlscertfile;          /* Path to the SSL certificate to use */
+    char *tlskeyfile;           /* Path to the key for the certificate */
+#endif /* HAVE_SSL */
 
     /* Posting -- Exponential Backoff */
     bool backoffauth;           /* Backoff by user, not IP address */
