@@ -907,7 +907,6 @@ CMDstarttls(ac, av)
   SSL_CTX *ctx;
   int result;
 
-  openlog("starttls", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
   sasl_config_read();
 
   if (nnrpd_starttls_done == 1)
