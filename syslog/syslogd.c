@@ -25,14 +25,11 @@
     /* if you need various BSD functions, set  this. */
 #define NEED_BZERO_ETC
 
-    /* Use "union wait" instead of int? */
-    /* =()<#define @<USE_UNION_WAIT>@_USE_UNION_WAIT>()= */
-#define DONT_USE_UNION_WAIT
-#if	defined(DO_USE_UNION_WAIT)
+#if	defined(HAVE_UNION_WAIT)
 #define WAITVALUE	union wait
 #else
 #define WAITVALUE	int
-#endif	/* defined(DO_USE_UNION_WAIT) */
+#endif	/* defined(HAVE_UNION_WAIT) */
 
 /*
  * Copyright (c) 1983, 1988 Regents of the University of California.
@@ -95,7 +92,11 @@ static char sccsid[] = "@(#)syslogd.c	5.42 (Berkeley) 6/29/90";
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
+#ifdef HAVE_WAIT_H
+# include <wait.h>
+#else
+# include <sys/wait.h>
+#endif
 #include <sys/socket.h>
 #include <sys/file.h>
 #include <sys/uio.h>

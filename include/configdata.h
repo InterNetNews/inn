@@ -71,9 +71,6 @@ typedef char		*CSTRING;
 /*
 **  4.  C LIBRARY DIFFERENCES
 */
-    /* Use "union wait" instead of int? */
-    /* =()<#define @<USE_UNION_WAIT>@_USE_UNION_WAIT>()= */
-#define DONT_USE_UNION_WAIT
     /* How to fork? */
     /* =()<#define FORK()	@<FORK>@()>()= */
 #define FORK()	vfork()

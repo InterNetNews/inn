@@ -167,7 +167,7 @@
 
 #if defined (_AIX32)
 #define DO_NEED_STREAM 1
-#define DONT_USE_UNION_WAIT 1
+#undef HAVE_UNION_WAIT 
 #define FDCOUNT_GETDTAB 1
 #define MAX_WRITEV_VEC 16
 #define UIO_MAXIOV 16

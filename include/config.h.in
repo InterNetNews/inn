@@ -60,6 +60,12 @@
 # define DO_MSYNC_3_ARG
 #endif
 
+/* Define if you have 'union wait' */
+#undef HAVE_UNION_WAIT
+
+/* Define if you have <wait.h> */
+#undef HAVE_WAIT_H
+
 /* Define if you have <string.h> */
 #undef HAVE_STRING_H 
 

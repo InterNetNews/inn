@@ -50,10 +50,14 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <math.h>
 
 #if defined (HAVE_UNISTD_H)
-#include <unistd.h>
+# include <unistd.h>
 #endif
 
-#include <sys/wait.h>
+#ifdef HAVE_WAIT_H
+# include <wait.h>
+#else
+# include <sys/wait.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include <ctype.h>

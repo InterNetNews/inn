@@ -275,7 +275,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h malloc.h memory.h sgtty.h stdarg.h)
 AC_CHECK_HEADERS(stdlib.h string.h sys/file.h sys/filio.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h sys/signal.h sys/time.h syslog.h unistd.h)
-AC_CHECK_HEADERS(varargs.h dirent.h)
+AC_CHECK_HEADERS(varargs.h dirent.h wait.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -298,7 +298,16 @@ AC_TRY_LINK([#include <time.h>],
 	[AC_DEFINE(HAVE_TM_GMTOFF) AC_MSG_RESULT(yes)],
 	AC_MSG_RESULT(no))
 
-AC_CACHE_CHECK(for union wait, ac_cv_union_wait, AC_TRY_COMPILE([#include <wait.h>],[union wait w],ac_cv_union_wait=yes,ac_cv_union_wait=no))
+AC_MSG_CHECKING(for union wait)
+AC_TRY_LINK([#ifdef HAVE_WAIT_H
+# include <wait.h>
+#else
+# include <sys/wait.h>
+#endif],
+	[union wait w],
+	[AC_DEFINE(HAVE_UNION_WAIT) AC_MSG_RESULT(yes)],
+	AC_MSG_RESULT(no))
+
 # Size of integers
 AC_CHECK_SIZEOF(int)
 if test $ac_cv_sizeof_int = 4; then
@@ -384,9 +393,6 @@ AC_CACHE_CHECK(for return type of _exit, ac_cv_type__exit, AC_TRY_COMPILE([#ifde
 #include <unistd.h>
 #endif],[int a;a=_exit(0)],ac_cv_type__exit=int,ac_cv_type__exit=void))
 AC_SUBST(ac_cv_type__exit)
-
-AC_CACHE_CHECK(for union wait, ac_cv_union_wait, AC_TRY_COMPILE([#include <wait.h>],[union wait w],ac_cv_union_wait=yes,ac_cv_union_wait=no))
-# Size of integers
 
 dnl Locking style
 AC_CHECK_FUNCS(flock lockf fcntl)

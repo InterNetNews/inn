@@ -64,7 +64,11 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
+#ifdef HAVE_WAIT_H
+# include <wait.h>
+#else
+# include <sys/wait.h>
+#endif
 #include <ctype.h>
 #include <math.h>
 #include <signal.h>
@@ -397,13 +401,13 @@ struct eqgrp {
 #define NEWGRP_NOCHG 1		/* new group dir found but no hi/low change */
 #define NEWGRP_CHG 2		/* new group dir found but no hi/low change */
 
-#if !defined(DONT_USE_UNION_WAIT)
-#if !defined(WEXITSTATUS)
-#define WEXITSTATUS(status) ((status).w_retcode)
-#endif
-#if !defined(WTERMSIG)
-#define WTERMSIG(status) ((status).w_termsig)
-#endif
+#if defined(HAVE_UNION_WAIT)
+# if !defined(WEXITSTATUS)
+#  define WEXITSTATUS(status) ((status).w_retcode)
+# endif
+# if !defined(WTERMSIG)
+#  define WTERMSIG(status) ((status).w_termsig)
+# endif
 #endif
 
 /* -b macros */
@@ -3122,7 +3126,7 @@ exec_cmd(mode, cmd, grp, type, who)
     char buf[BUFSIZ+1];		/* interactive buffer */
     int pid;			/* pid of child process */
     int io[2];			/* pair of pipe descriptors */
-#if defined(DONT_USE_UNION_WAIT)
+#if !defined(HAVE_UNION_WAIT)
     int status;			/* wait status */
 #else
     union wait status;		/* wait status */

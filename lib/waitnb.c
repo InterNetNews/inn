@@ -5,10 +5,14 @@
 #include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
-#include <sys/wait.h>
+#ifdef HAVE_WAIT_H
+# include <wait.h>
+#else
+# include <sys/wait.h>
+#endif
 
 
-#if	defined(USE_UNION_WAIT)
+#if	defined(HAVE_UNION_WAIT)
 typedef union wait	WAITER;
 #if	defined(WEXITSTATUS)
 #define WAITVAL(x)	(WEXITSTATUS(x))
@@ -18,7 +22,7 @@ typedef union wait	WAITER;
 #else
 typedef int		WAITER;
 #define WAITVAL(x)	(((x) >> 8) & 0xFF)
-#endif	/* defined(USE_UNION_WAIT) */
+#endif	/* defined(HAVE_UNION_WAIT) */
 
 PID_T waitnb(int *statusp)
 {

@@ -136,8 +136,6 @@ typHAVE_TM_GMTOFF 		DO
 typHAVE_ST_BLKSIZE 		DO
 =()<typHAVE_WAITPID 			@<HAVE_WAITPID>@>()=
 typHAVE_WAITPID 		DO
-=()<typUSE_UNION_WAIT 			@<USE_UNION_WAIT>@>()=
-typUSE_UNION_WAIT 		DONT
 =()<typFORK 			@<FORK>@>()=
 typFORK 		vfork
 =()<typHAVE_VFORK 			@<HAVE_VFORK>@>()=

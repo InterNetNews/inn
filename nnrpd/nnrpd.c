@@ -6,7 +6,11 @@
 */
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#ifdef HAVE_WAIT_H
+# include <wait.h>
+#else
+# include <sys/wait.h>
+#endif
 #include <netinet/in.h>
 #include "configdata.h"
 #include "clibrary.h"

@@ -221,9 +221,6 @@ HAVE_ST_BLKSIZE		DO
 ##  Use waitpid instead of wait3?  Pick DO or DONT.
 #### =()<HAVE_WAITPID		@<HAVE_WAITPID>@>()=
 HAVE_WAITPID		DO
-##  Use "union wait" instead of int?  Pick DO or DONT.
-#### =()<USE_UNION_WAIT		@<USE_UNION_WAIT>@>()=
-USE_UNION_WAIT		DONT
 ##  How to fork?  Pick fork or vfork.
 #### =()<FORK			@<FORK>@>()=
 FORK			vfork
