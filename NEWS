@@ -1,6 +1,10 @@
 
 Here are the changes for the latest version of INN.
 
+Version 2.2.1
+        - Various bug fixes. Most importantly, bug fixes to potential 
+          security holes (buffer overflow type).
+
 Version 2.2:
 
 	- New storage.conf file (replaces storage.ctl).
