@@ -280,6 +280,16 @@ sub collect {
       $innd_refused{$server} += $refused;
       $innd_rejected{$server} += $rejected;
       return 1;
+    } elsif ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/o) {
+      # closed (with times)
+      my ($server, $seconds, $accepted, $refused, $rejected) =
+	($1, $2, $3, $4, $5);
+      $server = lc $server unless $CASE_SENSITIVE;
+      $innd_seconds{$server} += $seconds;
+      $innd_accepted{$server} += $accepted;
+      $innd_refused{$server} += $refused;
+      $innd_rejected{$server} += $rejected;
+      return 1;
     }
     # closed (without times (?))
     return 1 if $left =~ m/\S+ closed$/o;
@@ -709,9 +719,9 @@ sub collect {
       return 1;
     }
     # global (real) (new format)
-    if ($left =~ /(\S+) global seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+)/o) {
+    if ($left =~ /(\S+) global seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+) spooled (\d+)/o) {
       my ($server, $seconds, $offered, $accepted, $refused, $rejected,
-	  $missing, $accepted_size, $rejected_size) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+	  $missing, $accepted_size, $rejected_size, $spooled) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       if ($server eq "ME") {
         return 1;
       }
@@ -722,7 +732,7 @@ sub collect {
       $innfeed_refused{$server} += $refused;
       $innfeed_rejected{$server} += $rejected;
       $innfeed_missing{$server} += $missing;
-      $innfeed_spooled{$server} += $spooled + $t_innfeed_spooled{$server};
+      $innfeed_spooled{$server} += $spooled;
       $innfeed_accepted_size{$server} += $accepted_size;
       $innfeed_rejected_size{$server} += $rejected_size;
       $t_innfeed_seconds{$server} = 0;
