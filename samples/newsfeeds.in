@@ -12,25 +12,28 @@
 
 ##  The ME feed entry is special magic.
 ##
-##  "/exclude" entries will cause INN to reject all articles that have
-##  passed through those listed sites (by matching Path: entries).  There
-##  are some "pseudo-sites" in general use that can be listed as exclusions
-##  to reject specific types of 3rd-party cancel messages (see the "Cancel
-##  FAQ" in news.admin.net-abuse.usenet):
+##  "/exclude" entries for this feed entry will cause INN to reject all
+##  articles that have passed through those listed sites (by matching
+##  Path: entries).  There are some "pseudo-sites" in general use that can
+##  be listed as exclusions to reject specific types of 3rd-party cancel
+##  messages (see the "Cancel FAQ" in news.admin.net-abuse.usenet):
+##
 ##	cyberspam	Cancels for spam, munged articles, binaries
 ##	spewcancel	Cancels for munged articles and runaway gateways
 ##	bincancel	Cancels for binary postings to non-binary groups
+##      udpcancel       Cancels to force sites to enforce antispam policies
 ##
-##  The "pattern" field gives the initial subscription list for all other
-##  feeds specified in this file.  These patterns are *prepended* to all
-##  other feed patterns.  Using this feature is confusing and mildly
-##  discouraged; make sure you understand the man page.
+##  The "pattern" field for this feed entry gives the initial subscription
+##  list for all other feeds specified in this file.  These patterns are
+##  *prepended* to all other feed patterns.  Using this feature is
+##  confusing and mildly discouraged; make sure you understand the man
+##  page before using it.
 ##
-##  "/distrib" specifies what distributions the server will accept.  If any
-##  distributions are listed there, the server will accept only articles
-##  with those distributions.  If all the distributions listed are negated
-##  (starting with !), then the server will only accept articles without
-##  those distributions.
+##  "/distrib" for this feed entry specifies what distributions the server
+##  will accept.  If any distributions are listed there, the server will
+##  accept only articles with those distributions.  If all the
+##  distributions listed are negated (starting with !), then the server
+##  will only accept articles without those distributions.
 ##
 ##  Patterns affect *outgoing* feeds.  Distributions affect *incoming*
 ##  feeds.
