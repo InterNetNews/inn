@@ -132,12 +132,12 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
         cli_sin = (struct sockaddr_in *)(res->client);
         loc_sin = (struct sockaddr_in *)(res->local);
         cli_sin->sin_family = AF_INET;
-        if( ( cli_sin->sin_addr.s_addr = inet_addr( cip ) ) == INADDR_NONE )
+        if (!inet_aton(cip, &cli_sin->sin_addr))
             goto error;
         cli_sin->sin_port = htons( atoi(cport) );
 
         loc_sin->sin_family = AF_INET;
-        if( ( loc_sin->sin_addr.s_addr = inet_addr( sip ) ) == INADDR_NONE )
+        if (!inet_aton(sip, &loc_sin->sin_addr))
             goto error;
         loc_sin->sin_port = htons( atoi(sport) );
 #endif
