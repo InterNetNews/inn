@@ -1,7 +1,14 @@
 
 Here are the changes for the latest version of INN.
 
+Version 2.2.2
+
+	- Various minor bug fixes and a y2k bug fix. The y2k bug is in version 
+	  version 2.2.1 only and will show up after Jan 1st when a news reader
+	  issues a NEWNEWS command for a date prior to the year 2000. 
+
 Version 2.2.1
+
         - Various bug fixes. Most importantly, bug fixes to potential 
           security holes (buffer overflow type).
 
