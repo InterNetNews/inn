@@ -268,7 +268,10 @@ STATIC BOOL EXPreadfile(FILE *F)
     /* Scan all lines. */
     EXPremember = -1;
     SawDefault = FALSE;
+#if 0
+    /* XXX disabled until we find a way to re-enable ng-based expire. */
     patterns = NEW(char*, nGroups);
+#endif
     for (i = 0; i < NUM_STORAGE_CLASSES; i++)
 	EXPclasses[i].ReportedMissing = EXPclasses[i].Missing = TRUE;
     
@@ -341,9 +344,12 @@ STATIC BOOL EXPreadfile(FILE *F)
 	}
 
 	/* Regular expiration line -- right number of fields? */
+#if 0
 	if (j != 5) {
+#endif
 	    (void)fprintf(stderr, "Line %d bad format\n", i);
 	    return FALSE;
+#if 0
 	}
 
 	/* Parse the fields. */
@@ -395,8 +401,11 @@ STATIC BOOL EXPreadfile(FILE *F)
 	}
 	for (k = 0; k < j; k++)
 	    EXPmatch(patterns[k], &v, mod);
+#endif
     }
+#if 0
     DISPOSE(patterns);
+#endif
 
     return TRUE;
 }
