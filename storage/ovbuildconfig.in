@@ -64,7 +64,7 @@ foreach $method (keys %methods) {
     print DEF $method, "_open, ", $method, "_groupstats, \n\t  ", $method, "_groupadd, ";
     print DEF $method, "_groupdel, \n\t  ", $method, "_add, ", $method, "_cancel, \n\t  ";
     print DEF $method, "_opensearch, ", $method, "_search, ", $method, "_closesearch, \n\t  ";
-    print DEF $method, "_getartinfo, ", $method, "_expiregroup, ", $method, "_probe, ", $method, "_close";
+    print DEF $method, "_getartinfo, ", $method, "_expiregroup, ", $method, "_ctl, ", $method, "_close";
     $first++;
 }
 

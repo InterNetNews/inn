@@ -16,14 +16,14 @@ typedef struct {
     BOOL	(*groupstats)(char *group, int *lo, int *hi, int *count, int *flag);
     BOOL	(*groupadd)(char *group, ARTNUM lo, ARTNUM hi, char *flag);
     BOOL	(*groupdel)(char *group);
-    BOOL	(*add)(TOKEN token, char *data, int len);
+    BOOL	(*add)(TOKEN token, char *data, int len, time_t arrived);
     BOOL	(*cancel)(TOKEN token);
     void	*(*opensearch)(char *group, int low, int high);
-    BOOL	(*search)(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token);
+    BOOL	(*search)(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
     void	(*closesearch)(void *handle);
     BOOL	(*getartinfo)(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
     BOOL	(*expiregroup)(char *group, int *lo);
-    BOOL	(*probe)(OVPROBETYPE type, void *result);
+    BOOL	(*ctl)(OVCTLTYPE type, void *val);
     void	(*close)(void);
 } OV_METHOD;
 

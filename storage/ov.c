@@ -85,14 +85,14 @@ BOOL OVgroupdel(char *group) {
     return ((*ov.groupdel)(group));
 }
 
-BOOL OVadd(TOKEN token, char *data, int len) {
+BOOL OVadd(TOKEN token, char *data, int len, time_t arrived) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    return ((*ov.add)(token, data, len));
+    return ((*ov.add)(token, data, len, arrived));
 }
 
 BOOL OVcancel(TOKEN token) {
@@ -115,14 +115,14 @@ void *OVopensearch(char *group, int low, int high) {
     return ((*ov.opensearch)(group, low, high));
 }
 
-BOOL OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token) {
+BOOL OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    return ((*ov.search)(handle, artnum, data, len, token));
+    return ((*ov.search)(handle, artnum, data, len, token, arrived));
 }
 
 void OVclosesearch(void *handle) {
@@ -156,19 +156,14 @@ BOOL OVexpiregroup(char *group, int *lo) {
     return ((*ov.expiregroup)(group, lo));
 }
 
-BOOL OVprobe(OVPROBETYPE type, void *result) {
+BOOL OVctl(OVCTLTYPE type, void *val) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    switch (type) {
-    case OVSPACE:
-        return ((*ov.probe)(type, result));
-    default:
-        return FALSE;
-    }
+    return ((*ov.ctl)(type, val));
 }
 
 void OVclose(void) {
