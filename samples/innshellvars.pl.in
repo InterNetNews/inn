@@ -76,6 +76,7 @@ $egrep = "@_PATH_EGREP@" ;
 $perl = "@_PATH_PERL@" ;
 $pgp = "@_PATH_PGP@" ;
 $sort = "@_PATH_SORT@" ;
+$getftp = "@GETFTP@" ;
 $compress = "@COMPRESS@" ;
 $log_compress = "@LOG_COMPRESS@" ;
 $z = "@LOG_COMPRESSEXT@" ;

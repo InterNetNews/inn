@@ -53,7 +53,8 @@ MOST	= rc.news checkgroups default ihave newgroup \
 	sendbatch inncheck innstat pgpverify innwatch innreport \
 	innshellvars innshellvars.pl innshellvars.csh innshellvars.tcl \
 	scanspool innmail checkgroups.pl ihave.pl newgroup.pl rmgroup.pl \
-	sendme.pl sendsys.pl senduuname.pl version.pl
+	sendme.pl sendsys.pl senduuname.pl version.pl cnfsstat \
+	doactsync mod-active simpleftp
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
@@ -80,6 +81,8 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHBIN)/controlbatch $D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_TCL_SHELLVARS) \
 	$D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool $D$(PATHBIN)/cnfsstat \
+	$D$(PATHBIN)/doactsync $D$(PATHBIN)/mod-active \
+	$D$(PATHBIN)/simpleftp \
 	$D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
 	$D$(CTLBIN)/newgroup.pl $D$(CTLBIN)/rmgroup.pl $D$(CTLBIN)/sendme.pl \
 	$D$(CTLBIN)/sendsys.pl $D$(CTLBIN)/senduuname.pl $D$(CTLBIN)/version.pl
@@ -209,6 +212,9 @@ $D$(PATHBIN)/innstat:	innstat		; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/pgpverify:	pgpverify	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/cnfsstat:	cnfsstat	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innwatch:	innwatch	; $(COPY_XPRI) $? $@
+$D${PATHBIN)/doactsync:	doactsync	; $(COPY_XPUB) $? $@
+$D${PATHBIN)/mod-active: mod-active	; $(COPY_XPUB) $? $@
+$D${PATHBIN)/simpleftp:	simpleftp	; $(COPY_XPUB) $? $@
 $D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPRI) $? $@
@@ -247,11 +253,12 @@ COPY	= $(SHELL) ./getsafe.sh
 actsync.cfg:	../samples/actsync.cfg		; $(COPY) $? $@
 actsync.ign:	../samples/actsync.ign		; $(COPY) $? $@
 checkgroups:	../samples/checkgroups		; $(COPY) $? $@
-checkgroups.pl:	../samples/checkgroups.pl		; $(COPY) $? $@
+checkgroups.pl:	../samples/checkgroups.pl	; $(COPY) $? $@
 control.ctl:	../samples/control.ctl		; $(COPY) $? $@
 controlbatch:	../samples/controlbatch		; $(COPY) $? $@
 controlchan:	../samples/controlchan		; $(COPY) $? $@
 default:	../samples/default		; $(COPY) $? $@
+doactsync:	../samples/doactsync		; $(COPY) $? $@
 docheckgroups:	../samples/docheckgroups	; $(COPY) $? $@
 expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
 filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
@@ -260,9 +267,9 @@ filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@
 expirerm:	../samples/expirerm		; $(COPY) $? $@
 innmail:	../samples/innmail		; $(COPY) $? $@
-incoming.conf:	../samples/incoming.conf		; $(COPY) $? $@
+incoming.conf:	../samples/incoming.conf	; $(COPY) $? $@
 ihave:		../samples/ihave		; $(COPY) $? $@
-ihave.pl:		../samples/ihave.pl		; $(COPY) $? $@
+ihave.pl:	../samples/ihave.pl		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 inncheck:	../samples/inncheck		; $(COPY) $? $@
 innreport:	../samples/innreport		; $(COPY) $? $@
@@ -279,6 +286,7 @@ innshellvars:	../samples/innshellvars		; $(COPY) $? $@
 innshellvars.pl: ../samples/innshellvars.pl	; $(COPY) $? $@
 innshellvars.tcl: ../samples/innshellvars.tcl	; $(COPY) $? $@
 innshellvars.csh: ../samples/innshellvars.csh	; $(COPY) $? $@
+mod-active:	../samples/mod-active		; $(COPY) $? $@
 moderators:	../samples/moderators		; $(COPY) $? $@
 distrib.pats:	../samples/distrib.pats		; $(COPY) $? $@
 motd.news:	../samples/motd.news		; $(COPY) $? $@
@@ -305,11 +313,12 @@ send-nntp:	../samples/send-nntp		; $(COPY) $? $@
 send-uucp:	../samples/send-uucp		; $(COPY) $? $@
 sendbatch:	../samples/sendbatch		; $(COPY) $? $@
 sendme:		../samples/sendme		; $(COPY) $? $@
-sendme.pl:		../samples/sendme.pl		; $(COPY) $? $@
+sendme.pl:	../samples/sendme.pl		; $(COPY) $? $@
 sendsys:	../samples/sendsys		; $(COPY) $? $@
 sendsys.pl:	../samples/sendsys.pl		; $(COPY) $? $@
 senduuname:	../samples/senduuname		; $(COPY) $? $@
-senduuname.pl:	../samples/senduuname.pl		; $(COPY) $? $@
+senduuname.pl:	../samples/senduuname.pl	; $(COPY) $? $@
+simpleftp:	../samples/simpleftp		; $(COPY) $? $@
 startup.tcl:	../samples/startup.tcl		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 tally.control:	../samples/tally.control	; $(COPY) $? $@

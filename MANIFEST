@@ -397,6 +397,7 @@ samples/innshellvars.tcl.in 1 TCL Script to set config parameters
 samples/innstat.in          1 Display INN status snapshot
 samples/innwatch.ctl.in     1 Sample innwatch.ctl(5) file
 samples/innwatch.in         1 Throttle innd based on load and disk space
+samples/mod-active.in       1 Batch do ctlinnd newgroup/rmgroup/changegroup
 samples/moderators          1 Sample moderators(5) file
 samples/motd.news           1 Sample motd.news(5) file
 samples/newgroup.in         1 Newgroup control message handler
@@ -429,6 +430,7 @@ samples/sendsys.pl.in       1 Sendsys control message handler for controlchan
 samples/senduuname.in       1 Senduuname control message handler
 samples/senduuname.pl.in    1 Senduuname control message handler for controlchan
 samples/signcontrol.in      1 pgp control message signing program.
+samples/simpleftp.in        1 Rudimentary perl ftp client
 samples/startup.tcl.in      1 tcl startup code.
 samples/startup_innd.pl     1 perl startup code for innd
 samples/storage.conf        1 Sample storage.conf(5) file
