@@ -5,19 +5,19 @@ include ../Makefile.global
 top	= ..
 CFLAGS  = $(GCFLAGS)
 
-SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c concat.c \
-	conffile.c confparse.c daemonize.c date.c dbz.c defdist.c fdflags.c \
-	fdlimit.c findheader.c fseeko.c ftello.c genid.c getconfig.c \
-	getfqdn.c getmodaddr.c gettime.c hash.c hashtab.c hstrerror.c \
-	inet_aton.c inet_ntoa.c inndcomm.c localopen.c lockfile.c makedir.c \
-	md5.c memcmp.c messages.c mkstemp.c parsedate.c perl.c pread.c \
-	pwrite.c qio.c radix32.c readin.c remopen.c reservedfd.c resource.c \
-	sendarticle.c sendpass.c sequence.c setenv.c sockaddr.c strcasecmp.c \
-	strerror.c strspn.c strtok.c timer.c wildmat.c vector.c version.c \
-	xfopena.c xmalloc.c xsignal.c xwrite.c
+SOURCES = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
+	concat.c conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
+	fdflags.c fdlimit.c findheader.c fseeko.c ftello.c genid.c \
+	getconfig.c getfqdn.c getmodaddr.c gettime.c hash.c hashtab.c \
+	hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
+	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c parsedate.c \
+	perl.c pread.c pwrite.c qio.c radix32.c readin.c remopen.c \
+	reservedfd.c resource.c sendarticle.c sendpass.c sequence.c setenv.c \
+	sockaddr.c strcasecmp.c strerror.c strspn.c strtok.c timer.c \
+	wildmat.c vector.c version.c xfopena.c xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
-	argparse.o cleanfrom.o clientactive.o clientlib.o concat.o \
+	argparse.o buffer.o cleanfrom.o clientactive.o clientlib.o concat.o \
 	conffile.o confparse.o daemonize.o date.o dbz.o defdist.o fdflags.o \
 	fdlimit.o findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o \
 	gettime.o hash.o hashtab.o inndcomm.o localopen.o lockfile.o \
@@ -93,6 +93,8 @@ depend: Makefile $(SOURCES) ../include/inn/version.h
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 argparse.o: argparse.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
+buffer.o: buffer.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/buffer.h ../include/libinn.h
 cleanfrom.o: cleanfrom.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 clientactive.o: clientactive.c ../include/config.h \

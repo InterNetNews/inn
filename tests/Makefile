@@ -10,7 +10,7 @@ CFLAGS	= $(GCFLAGS) -I.
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= lib/concat.t lib/confparse.t lib/date.t lib/hashtab.t \
+TESTS	= lib/buffer.t lib/concat.t lib/confparse.t lib/date.t lib/hashtab.t \
 	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/md5.t \
 	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/pread.t lib/pwrite.t \
 	lib/qio.t lib/snprintf.t lib/strerror.t lib/vector.t lib/wildmat.t \
@@ -23,8 +23,10 @@ EXTRA	= runtests lib/setenv.tr lib/xmalloc
 all check test: $(TESTS) $(EXTRA)
 	./runtests TESTS
 
+build: $(TESTS) $(EXTRA)
+
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT='$(WARNINGS)' build
 
 clean clobber distclean:
 	rm -f *.o *.lo */*.o */*.lo .pure */.pure $(TESTS) $(EXTRA)
@@ -39,6 +41,9 @@ STORAGELIBS	= $(STORAGEDEPS) $(EXTSTORAGELIBS)
 
 runtests: runtests.o
 	$(LINK) runtests.o
+
+lib/buffer.t: lib/buffer-t.o libtest.o $(LIBINN)
+	$(LINK) lib/buffer-t.o libtest.o $(LIBINN)
 
 lib/concat.t: lib/concat-t.o libtest.o $(LIBINN)
 	$(LINK) lib/concat-t.o libtest.o $(LIBINN)
