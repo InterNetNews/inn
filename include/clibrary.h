@@ -87,9 +87,6 @@ extern int              fseeko(FILE *, off_t, int);
 #if !HAVE_FTELLO
 extern off_t            ftello(FILE *);
 #endif
-#if !HAVE_HSTRERROR
-extern const char *     hstrerror(int);
-#endif
 #if !HAVE_MKSTEMP
 extern int              mkstemp(char *);
 #endif

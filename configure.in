@@ -1580,9 +1580,9 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(fseeko ftello getpagesize hstrerror inet_aton mkstemp \
-                 pread pwrite seteuid strcasecmp strerror strlcat strlcpy \
-                 strspn setenv)
+AC_REPLACE_FUNCS(fseeko ftello getaddrinfo getpagesize hstrerror inet_aton \
+                 mkstemp pread pwrite seteuid strcasecmp strerror strlcat \
+                 strlcpy strspn setenv)
 
 dnl Source used by INN_TYPE_FPOS_T_LARGE.
 define([_INN_TYPE_FPOS_T_LARGE_SOURCE],

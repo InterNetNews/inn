@@ -381,6 +381,7 @@ include/nntp.h                        NNTP command and reply codes
 include/ov.h                          Header file for overview
 include/paths.h.in                    Paths to common programs and files
 include/portable                      Portability wrappers (Directory)
+include/portable/getaddrinfo.h        getaddrinfo replacement header
 include/portable/mmap.h               Wrapper for <sys/mman.h>
 include/portable/setproctitle.h       Portable setup for setproctitle
 include/portable/socket.h             Wrapper for <sys/socket.h> and friends
@@ -457,6 +458,7 @@ lib/fdlimit.c                         File descriptor limits
 lib/fseeko.c                          fseeko replacement
 lib/ftello.c                          ftello replacement
 lib/genid.c                           Generate a message ID
+lib/getaddrinfo.c                     getaddrinfo replacement
 lib/getfqdn.c                         Get FQDN of local host
 lib/getmodaddr.c                      Get a moderator's address
 lib/getpagesize.c                     getpagesize replacement
@@ -698,6 +700,7 @@ tests/lib/config/warnings             Various config files with warnings
 tests/lib/confparse-t.c               Tests for lib/confparse.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
+tests/lib/getaddrinfo-t.c             Tests for lib/getaddrinfo.c
 tests/lib/hash-t.c                    Tests for lib/hash.c
 tests/lib/hashtab-t.c                 Tests for lib/hashtab.c
 tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c

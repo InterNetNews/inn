@@ -17,10 +17,10 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
-EXTRA_SOURCES = fseeko.c ftello.c getpagesize.c hstrerror.c inet_aton.c \
-		inet_ntoa.c memcmp.c mkstemp.c pread.c pwrite.c setenv.c \
-		setproctitle.c strcasecmp.c strerror.c strlcat.c strlcpy.c \
-		strspn.c strtok.c
+EXTRA_SOURCES = fseeko.c ftello.c getaddrinfo.c getpagesize.c hstrerror.c \
+		inet_aton.c inet_ntoa.c memcmp.c mkstemp.c pread.c pwrite.c \
+		setenv.c setproctitle.c strcasecmp.c strerror.c strlcat.c \
+		strlcpy.c strspn.c strtok.c
 
 OBJECTS       = $(LIBOBJS) $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
@@ -155,8 +155,8 @@ innconf.o: innconf.c ../include/config.h ../include/inn/defines.h \
 inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h \
   ../include/portable/time.h ../include/portable/socket.h \
-  ../include/inn/innconf.h ../include/inndcomm.h ../include/libinn.h \
-  ../include/paths.h
+  ../include/portable/getaddrinfo.h ../include/inn/innconf.h \
+  ../include/inndcomm.h ../include/libinn.h ../include/paths.h
 list.o: list.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/inn/list.h
 localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
@@ -177,9 +177,9 @@ mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/mmap.h
 network.o: network.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h \
-  ../include/portable/socket.h ../include/portable/wait.h \
-  ../include/inn/innconf.h ../include/inn/messages.h \
-  ../include/inn/network.h ../include/libinn.h
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/wait.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/inn/network.h ../include/libinn.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/libinn.h
 qio.o: qio.c ../include/config.h ../include/inn/defines.h \
@@ -191,8 +191,9 @@ readin.o: readin.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/libinn.h
 remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h \
-  ../include/portable/socket.h ../include/inn/innconf.h \
-  ../include/libinn.h ../include/nntp.h ../include/paths.h
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/inn/innconf.h ../include/libinn.h ../include/nntp.h \
+  ../include/paths.h
 reservedfd.o: reservedfd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/libinn.h
 resource.o: resource.c ../include/config.h ../include/inn/defines.h \
@@ -207,7 +208,8 @@ sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/inn/sequence.h
 sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h \
-  ../include/portable/socket.h ../include/libinn.h
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/libinn.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h \
   ../include/portable/time.h ../include/inn/messages.h \
@@ -238,6 +240,9 @@ fseeko.o: fseeko.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h
 ftello.o: ftello.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h
+getaddrinfo.o: getaddrinfo.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h
 getpagesize.o: getpagesize.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h
 hstrerror.o: hstrerror.c ../include/config.h ../include/inn/defines.h \

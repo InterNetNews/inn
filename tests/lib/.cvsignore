@@ -4,6 +4,7 @@ buffer.t
 concat.t
 confparse.t
 date.t
+getaddrinfo.t
 hash.t
 hashtab.t
 hstrerror.t
