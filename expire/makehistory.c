@@ -446,13 +446,15 @@ DoArt(ARTHANDLE *art)
     static char			SEP[] = "\t";
     static char			NUL[] = "\0";
     static char			COLONSPACE[] = ": ";
-    int				i, j;
+    int				i, j, len;
     char			*MessageID;
     time_t			Arrived;
     time_t			Expires;
     time_t			Posted;
     char			*hash;
     HASH			key;
+    char			overdata[BIG_BUFFER];
+    struct artngnum		ann;
 
     /* Set up place to store headers. */
     for (fp = ARTfields, i = ARTfieldsize; --i >= 0; fp++) {
@@ -507,6 +509,21 @@ DoArt(ARTHANDLE *art)
 		}
 		fp->HeaderLength = p2 - fp->Header;
 	    }
+	}
+    }
+    if (Xrefp->HeaderLength == 0) {
+	if (!SMprobe(SMARTNGNUM, art->token, (void *)&ann)) {
+	    Xrefp->Header = NULL;
+	    Xrefp->HeaderLength = 0;
+	}
+	len = strlen(XREF) + 1 + strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1 + 16 + 1;
+	if (len > BIG_BUFFER) {
+	    Xrefp->Header = NULL;
+	    Xrefp->HeaderLength = 0;
+	} else {
+	    sprintf(overdata, "%s %s %s:%d", XREF, innconf->pathhost, ann.groupname, ann.artnum);
+	    Xrefp->Header = overdata;
+	    Xrefp->HeaderLength = strlen(overdata);
 	}
     }
 
@@ -569,7 +586,7 @@ DoArt(ARTHANDLE *art)
 	Expires = GetaDate(Buff.Data);
     }
 
-    if (DoOverview) {
+    if (DoOverview && Xrefp->HeaderLength > 0) {
 	for (j = ARTfieldsize, fp = ARTfields; --j >= 0;fp++) {
 	    if (fp == ARTfields)
 		BUFFset(&Buff, "", 0);

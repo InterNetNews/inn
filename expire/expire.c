@@ -612,7 +612,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length)
 	    return TRUE;
 	}
 	token = TextToToken(fields[2]);
-	if (SMprobe(SELFEXPIRE, &token)) {
+	if (SMprobe(SELFEXPIRE, &token, NULL)) {
 	    if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL) {
 		HasSelfexpire = TRUE;
 		Selfexpired = TRUE;
