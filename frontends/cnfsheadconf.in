@@ -93,7 +93,7 @@ sub usage {
 Summary tool for cycbuff header manipulation
 
 Usage:
-	$0 [-c] CYCBUFF
+	$0 [-c CYCBUFF] [-h] [-w]
 
 	If called without args, does a one-time status of all CNFS buffers
 	-c <cycbuff>:  prints out status of cycbuff
