@@ -41,8 +41,6 @@ STATIC char		*TextFile;
 STATIC char		Reason[] = "makehistory is running";
 STATIC TIMEINFO		Now;
 
-extern long		dbztagmask();
-
 /*
 **  Change to a directory or exit out.
 */
