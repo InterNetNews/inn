@@ -51,6 +51,11 @@
 
 
 #define MD5_IO
+#include <stdio.h>
+#include <sys/types.h>
+#include <ctype.h>
+#include "configdata.h"
+#include "clibrary.h"
 #include "md5.h"
 #include "autoconfig.h"
 
@@ -91,7 +96,7 @@ static BYTE PADDING[MD5_CHUNKSIZE] = {
 #define S13 17
 #define S14 22
 #define FF(a, b, c, d, x, s, ac) \
-    {(a) += F((b), (c), (d)) + (x) + (ULONG)(ac); \
+    {(a) += F((b), (c), (d)) + (x) + (U_INT32_T)(ac); \
      (a) = ROT((a), (s)); \
      (a) += (b); \
     }
@@ -100,7 +105,7 @@ static BYTE PADDING[MD5_CHUNKSIZE] = {
 #define S23 14
 #define S24 20
 #define GG(a, b, c, d, x, s, ac) \
-    {(a) += G((b), (c), (d)) + (x) + (ULONG)(ac); \
+    {(a) += G((b), (c), (d)) + (x) + (U_INT32_T)(ac); \
      (a) = ROT((a), (s)); \
      (a) += (b); \
     }
@@ -109,7 +114,7 @@ static BYTE PADDING[MD5_CHUNKSIZE] = {
 #define S33 16
 #define S34 23
 #define HH(a, b, c, d, x, s, ac) \
-    {(a) += H((b), (c), (d)) + (x) + (ULONG)(ac); \
+    {(a) += H((b), (c), (d)) + (x) + (U_INT32_T)(ac); \
      (a) = ROT((a), (s)); \
      (a) += (b); \
     }
@@ -118,15 +123,15 @@ static BYTE PADDING[MD5_CHUNKSIZE] = {
 #define S43 15
 #define S44 21
 #define II(a, b, c, d, x, s, ac) \
-    {(a) += I((b), (c), (d)) + (x) + (ULONG)(ac); \
+    {(a) += I((b), (c), (d)) + (x) + (U_INT32_T)(ac); \
      (a) = ROT((a), (s)); \
      (a) += (b); \
     }
 
 /* forward declaration */
-static void MD5Transform P((ULONG*, ULONG*));
+static void MD5Transform P((U_INT32_T*, U_INT32_T*));
 #if INN_BYTE_ORDER == INN_BIG_ENDIAN
-static ULONG in[MD5_CHUNKWORDS];
+static U_INT32_T in[MD5_CHUNKWORDS];
 #endif
 
 
@@ -141,10 +146,10 @@ MD5Init(md5Ctx)
     MD5_CTX *md5Ctx;
 {
     /* load magic initialization constants */
-    md5Ctx->buf[0] = (ULONG)0x67452301;
-    md5Ctx->buf[1] = (ULONG)0xefcdab89;
-    md5Ctx->buf[2] = (ULONG)0x98badcfe;
-    md5Ctx->buf[3] = (ULONG)0x10325476;
+    md5Ctx->buf[0] = (U_INT32_T)0x67452301;
+    md5Ctx->buf[1] = (U_INT32_T)0xefcdab89;
+    md5Ctx->buf[2] = (U_INT32_T)0x98badcfe;
+    md5Ctx->buf[3] = (U_INT32_T)0x10325476;
 
     /* Initialise bit count */
     md5Ctx->countLo = 0L;
@@ -166,9 +171,9 @@ MD5Update(md5Ctx, inBuf, count)
     BYTE *inBuf;
     UINT count;
 {
-    ULONG datalen = md5Ctx->datalen;
+    U_INT32_T datalen = md5Ctx->datalen;
 #if INN_BYTE_ORDER == INN_BIG_ENDIAN
-    ULONG tmp;
+    U_INT32_T tmp;
     int cnt;
 #endif
 
@@ -178,7 +183,7 @@ MD5Update(md5Ctx, inBuf, count)
     if (datalen > 0) {
 
 	/* determine the size we need to copy */
-	ULONG cpylen = MD5_CHUNKSIZE - datalen;
+	U_INT32_T cpylen = MD5_CHUNKSIZE - datalen;
 
 	/* case: new data will not fill the inBuf */
 	if (cpylen > count) {
@@ -244,7 +249,7 @@ MD5fullUpdate(md5Ctx, inBuf, count)
     UINT count;
 {
 #if INN_BYTE_ORDER == INN_BIG_ENDIAN
-    ULONG tmp;
+    U_INT32_T tmp;
     int cnt;
 #endif
 
@@ -264,11 +269,11 @@ MD5fullUpdate(md5Ctx, inBuf, count)
 	MD5Transform(md5Ctx->buf, in);
 #else
 #if INN_BYTE_ORDER == INN_LITTLE_ENDIAN
-	MD5Transform(md5Ctx->buf, (ULONG *)inBuf);
+	MD5Transform(md5Ctx->buf, (U_INT32_T *)inBuf);
 #else
 	/* byte swap data into little endian order */
 	for (cnt=0; cnt < MD5_CHUNKWORDS; ++cnt) {
-	    tmp = (((ULONG *)inBuf)[cnt] << 16) | (((ULONG *)inBuf)[cnt] >> 16);
+	    tmp = (((U_INT32_T *)inBuf)[cnt] << 16) | (((U_INT32_T *)inBuf)[cnt] >> 16);
 	    in[cnt] = ((tmp & 0xFF00FF00L) >> 8) | ((tmp & 0x00FF00FFL) << 8);
 	}
 	MD5Transform(md5Ctx->buf, in);
@@ -292,10 +297,10 @@ MD5Final(md5Ctx)
 {
     UINT padLen;
     int count = md5Ctx->datalen;
-    ULONG lowBitcount = md5Ctx->countLo;
-    ULONG highBitcount = md5Ctx->countHi;
+    U_INT32_T lowBitcount = md5Ctx->countLo;
+    U_INT32_T highBitcount = md5Ctx->countHi;
 #if INN_BYTE_ORDER == INN_BIG_ENDIAN
-    ULONG tmp;
+    U_INT32_T tmp;
     UINT i, ii;
 #endif
 
@@ -334,10 +339,10 @@ MD5Final(md5Ctx)
  */
 static void
 MD5Transform(buf, in)
-    ULONG *buf;
-    ULONG *in;
+    U_INT32_T *buf;
+    U_INT32_T *in;
 {
-    ULONG a = buf[0], b = buf[1], c = buf[2], d = buf[3];
+    U_INT32_T a = buf[0], b = buf[1], c = buf[2], d = buf[3];
 
     /* Round 1 */
     FF( a, b, c, d, in[ 0], S11, 3614090360UL); /* 1 */

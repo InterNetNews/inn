@@ -61,18 +61,17 @@
  * Useful defines/typedefs
  */
 typedef unsigned char BYTE;
-typedef unsigned long ULONG;
 typedef unsigned int UINT;
 
 #endif /* HASH_MACROS */
 
 /* MD5_CHUNKSIZE must be a power of 2 - fixed value defined by the algorithm */
 #define MD5_CHUNKSIZE	(1<<6)
-#define MD5_CHUNKWORDS (MD5_CHUNKSIZE/sizeof(ULONG))
+#define MD5_CHUNKWORDS (MD5_CHUNKSIZE/sizeof(U_INT32_T))
 
 /* MD5_DIGESTSIZE is a the length of the digest as defined by the algorithm */
 #define MD5_DIGESTSIZE	(16)
-#define MD5_DIGESTWORDS (MD5_DIGESTSIZE/sizeof(ULONG))
+#define MD5_DIGESTWORDS (MD5_DIGESTSIZE/sizeof(U_INT32_T))
 
 /* MD5_LOW - where low 32 bits of 64 bit count is stored during final */
 #define MD5_LOW 14
@@ -89,19 +88,19 @@ typedef unsigned int UINT;
 
 /* MD5_READSIZE must be a multiple of MD5_CHUNKSIZE >= MD5_MAXBLOCK */
 #define MD5_READSIZE (MD5_CHUNKSIZE<<9)
-#define MD5_READWORDS (MD5_READSIZE/sizeof(ULONG))
+#define MD5_READWORDS (MD5_READSIZE/sizeof(U_INT32_T))
 
 /* maximum size of pre_file that is used <= MD5_MAXBLOCK */
 #define MD5_MAX_PRE_FILE MD5_MAXBLOCK
 
 /*
- * MD5COUNT(MD5_CTX*, ULONG) - update the 64 bit count in an MD5_CTX
+ * MD5COUNT(MD5_CTX*, U_INT32_T) - update the 64 bit count in an MD5_CTX
  *
  * We will count bytes and convert to bit count during the final
  * transform.
  */
 #define MD5COUNT(md5info, count) {				\
-    long tmp_countLo;						\
+    U_INT32_T tmp_countLo;					\
     tmp_countLo = (md5info)->countLo;				\
     if (((md5info)->countLo += (count)) < tmp_countLo) {	\
 	(md5info)->countHi++;					\
@@ -118,15 +117,15 @@ typedef unsigned int UINT;
  */
 typedef struct {
     BYTE digest[MD5_DIGESTSIZE];	/* actual digest after MD5Final call */
-    ULONG countLo;		/* 64 bit count: bits 3-34 */
-    ULONG countHi;		/* 64 bit count: bits 35-63 (64-66 ignored) */
-    ULONG datalen;		/* length of data in inp.inp_BYTE */
-    ULONG sub_block;		/* length of current partial block or 0 */
+    U_INT32_T countLo;		/* 64 bit count: bits 3-34 */
+    U_INT32_T countHi;		/* 64 bit count: bits 35-63 (64-66 ignored) */
+    U_INT32_T datalen;		/* length of data in inp.inp_BYTE */
+    U_INT32_T sub_block;		/* length of current partial block or 0 */
     union {
 	BYTE inp_BYTE[MD5_CHUNKSIZE];		       /* BYTE chunk buffer */
-	ULONG inp_ULONG[MD5_CHUNKWORDS];  /* ULONG chunk buffer */
+	U_INT32_T inp_ULONG[MD5_CHUNKWORDS];  /* U_INT32_T chunk buffer */
     } inp;
-    ULONG buf[MD5_DIGESTWORDS];	       /* scratch buffer */
+    U_INT32_T buf[MD5_DIGESTWORDS];	       /* scratch buffer */
 } MD5_CTX;
 #define in_byte inp.inp_BYTE
 #define in_ulong inp.inp_ULONG
@@ -172,7 +171,7 @@ extern char *MD5_what;
 /* md5io.c */
 void MD5Stream P((BYTE*, UINT, FILE*, MD5_CTX*));
 void MD5File P((BYTE*, UINT, char*, int, MD5_CTX*));
-extern ULONG md5_zero[];
+extern U_INT32_T md5_zero[];
 
 /*
  * Some external programs use the functions found in md5.c and md5io.c.
