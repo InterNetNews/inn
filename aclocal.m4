@@ -30,24 +30,6 @@ AC_REQUIRE([AM_PROG_LD])
 AC_REQUIRE([AM_PROG_NM])
 AC_REQUIRE([AC_PROG_LN_S])
 
-dnl Allow the --disable-libtool flag to stop using libtool
-LIBTOOL=''
-UPLIBTOOL=''
-EXTOBJ='o'
-EXTLIB='a'
-AC_ARG_ENABLE(libtool,
-[  --enable-libtool        use libtool for lib generation [default=no]],
-[if test "$enableval" = yes; then
-  LIBTOOL='$(SHELL) ../libtool'
-  UPLIBTOOL='$(SHELL) ../../libtool'
-  EXTOBJ='lo'
-  EXTLIB='la'
-fi])
-AC_SUBST(LIBTOOL)
-AC_SUBST(UPLIBTOOL)
-AC_SUBST(EXTOBJ)
-AC_SUBST(EXTLIB)
-
 dnl Allow the --disable-shared flag to stop us from building shared libs.
 AC_ARG_ENABLE(shared,
 [  --enable-shared         build shared libraries [default=yes]],

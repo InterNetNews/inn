@@ -10,7 +10,7 @@ P	= # &
 PROF	= #-pg
 
 ##  Ctags command.  Use echo if you don't have ctags.
-CTAGS		= /usr/bin/ctags -t -w
+CTAGS		= @PATH_CTAGS@ -t -w
 
 ##  If you use the standard NNTP way of connecting, where is the library?
 NNTPLIB 	=
