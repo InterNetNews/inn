@@ -642,8 +642,10 @@ process_args(argc, argv, host1, host2)
 		break;
 	    case 1:
 		ign_host1_flag = 1;
+		ign_host2_flag = 0;
 		break;
 	    case 2:
+		ign_host1_flag = 0;
 		ign_host2_flag = 1;
 		break;
 	    case 12:
@@ -1963,7 +1965,7 @@ ignore(grp, grplen, igcl, iglen)
 		}
 		break;
 	    case HOSTID2:
-		if (ign_host1_flag) {
+		if (ign_host2_flag) {
 		    gp->ignore |= CHECK_IGNORE;
 		    ++icnt;
 		}
