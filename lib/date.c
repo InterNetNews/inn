@@ -47,7 +47,7 @@ static const int MONTHDAYS[] = {
 **  correct.  (We can't for arbitrary times in the past.)
 */
 static long
-local_tz_offset(time_t time, bool current)
+local_tz_offset(time_t date, bool current UNUSED)
 {
     struct tm *tm;
 #if !HAVE_TM_GMTOFF
@@ -55,7 +55,7 @@ local_tz_offset(time_t time, bool current)
     long offset;
 #endif
 
-    tm = localtime(&time);
+    tm = localtime(&date);
 
 #if !HAVE_TM_GMTOFF && HAVE_VAR_TIMEZONE
     if (current)
@@ -69,7 +69,7 @@ local_tz_offset(time_t time, bool current)
        and gmtime and calculate the difference.  Assume that local time is
        never more than 24 hours away from UTC and ignore seconds. */
     local = *tm;
-    tm = gmtime(&time);
+    tm = gmtime(&date);
     gmt = *tm;
     offset = local.tm_yday - gmt.tm_yday;
     if (offset < -1) {
@@ -98,9 +98,9 @@ local_tz_offset(time_t time, bool current)
 **  wrong output.  If the time is -1, obtain and use the current time.
 */
 bool
-makedate(time_t clock, bool local, char *buff, size_t buflen)
+makedate(time_t date, bool local, char *buff, size_t buflen)
 {
-    time_t realclock;
+    time_t realdate;
     struct tm *tmp_tm;
     struct tm tm;
     long tz_offset;
@@ -109,25 +109,26 @@ makedate(time_t clock, bool local, char *buff, size_t buflen)
     const char *tz_name;
 
     /* Make sure the buffer is large enough. */
-    if (buflen < DATE_LENGTH + 1) return false;
+    if (buflen < DATE_LENGTH + 1)
+        return false;
 
     /* Get the current time if the provided time is -1. */
-    realclock = (clock == (time_t) -1) ? time(NULL) : clock;
+    realdate = (date == (time_t) -1) ? time(NULL) : date;
 
     /* RFC 822 says the timezone offset is given as [+-]HHMM, so we have to
        separate the offset into a sign, hours, and minutes.  Dividing the
        offset by 36 looks like it works, but will fail for any offset that
        isn't an even number of hours, and there are half-hour timezones. */
     if (local) {
-        tmp_tm = localtime(&realclock);
+        tmp_tm = localtime(&realdate);
         tm = *tmp_tm;
-        tz_offset = local_tz_offset(realclock, clock == (time_t) -1);
+        tz_offset = local_tz_offset(realdate, date == (time_t) -1);
         tz_sign = (tz_offset < 0) ? -1 : 1;
         tz_offset *= tz_sign;
         tz_hour_offset = tz_offset / 3600;
         tz_min_offset = (tz_offset % 3600) / 60;
     } else {
-        tmp_tm = gmtime(&realclock);
+        tmp_tm = gmtime(&realdate);
         tm = *tmp_tm;
         tz_sign = 1;
         tz_hour_offset = 0;
@@ -137,7 +138,8 @@ makedate(time_t clock, bool local, char *buff, size_t buflen)
     /* tz_min_offset cannot be larger than 60 (by basic mathematics).  If
        through some insane circumtances, tz_hour_offset would be larger,
        reject the time as invalid rather than generate an invalid date. */
-    if (tz_hour_offset > 24) return false;
+    if (tz_hour_offset > 24)
+        return false;
 
     /* Generate the actual date string, sans the trailing time zone comment
        but with the day of the week and the seconds (both of which are
@@ -182,7 +184,7 @@ mktime_utc(const struct tm *tm)
     int i;
 
     /* We do allow some ill-formed dates, but we don't do anything special
-       with them and our callers really should pass them to us.  Do
+       with them and our callers really shouldn't pass them to us.  Do
        explicitly disallow the ones that would cause invalid array accesses
        or other algorithm problems. */
     if (tm->tm_mon < 0 || tm->tm_mon > 11 || tm->tm_year < 70)
