@@ -109,7 +109,7 @@ convdate(const char *date, char mode)
 
     /* Output the resulting date. */
     if (mode == 'n') {
-        printf("%ld\n", seconds);
+        printf("%ld\n", (long) seconds);
         return true;
     } else {
         return print_date(seconds);

@@ -438,7 +438,7 @@ StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
        return 0;
      }
 
-     fprintf(fp,"%ld,%ld,%ld\n",lastpost,lastsleep,lastn);
+     fprintf(fp,"%ld,%ld,%ld\n",(long) lastpost,lastsleep,lastn);
      fclose(fp);
      return 1;
 }

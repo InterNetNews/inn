@@ -2076,7 +2076,7 @@ static void GetProgInput(EXECSTUFF *prog)
     fd_set rfds, tfds;
     int maxfd;
     int got;
-    struct timeval tmout, stv, etv;
+    struct timeval tmout;
     pid_t tmp;
     int status;
     char rdbuf[BIG_BUFFER], errbuf[BIG_BUFFER];

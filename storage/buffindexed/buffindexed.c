@@ -235,7 +235,6 @@ static bool		Cache;
 static OVSEARCH		*Cachesearch;
 
 static int ovbuffmode;
-static int ovpadamount = 128;
 
 static GROUPLOC GROUPnewnode(void);
 static bool GROUPremapifneeded(GROUPLOC loc);
@@ -325,11 +324,13 @@ static bool ovparse_part_line(char *l) {
   ovbuff->base = base + tonextblock;
   if (S_ISREG(sb.st_mode) && (len != sb.st_size || ovbuff->base > sb.st_size)) {
     if (len != sb.st_size)
-      syslog(L_NOTICE, "%s: length mismatch '%ld' for index '%d' (%ld bytes)",
-        LocalLogName, len, ovbuff->index, sb.st_size);
+      syslog(L_NOTICE, "%s: length mismatch '%lu' for index '%d' (%lu bytes)",
+        LocalLogName, (unsigned long) len, ovbuff->index,
+        (unsigned long) sb.st_size);
     if (ovbuff->base > sb.st_size)
-      syslog(L_NOTICE, "%s: length must be at least '%ld' for index '%d' (%ld bytes)",
-        LocalLogName, ovbuff->base, ovbuff->index, sb.st_size);
+      syslog(L_NOTICE, "%s: length must be at least '%lu' for index '%d' (%lu bytes)",
+        LocalLogName, (unsigned long) ovbuff->base, ovbuff->index,
+        (unsigned long) sb.st_size);
     free(ovbuff);
     return false;
   }
@@ -546,7 +547,7 @@ static bool ovbuffinit_disks(void) {
 	      MAP_SHARED, ovbuff->fd, (off_t) 0)) == MAP_FAILED) {
       syslog(L_ERROR,
 	       "%s: ovinitdisks: mmap for %s offset %d len %lu failed: %m",
-	       LocalLogName, ovbuff->path, 0, ovbuff->base);
+	       LocalLogName, ovbuff->path, 0, (unsigned long) ovbuff->base);
       return false;
     }
     rpx = (OVBUFFHEAD *)ovbuff->bitfield;
@@ -591,7 +592,7 @@ static bool ovbuffinit_disks(void) {
 	ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
 	if (ovbuff->totalblk < 1) {
 	  syslog(L_ERROR, "%s: too small length '%lu' for buffindexed %s",
-	    LocalLogName, ovbuff->len, ovbuff->path);
+	    LocalLogName, (unsigned long) ovbuff->len, ovbuff->path);
 	  ovlock(ovbuff, INN_LOCK_UNLOCK);
 	  return false;
 	}
