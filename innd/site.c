@@ -42,32 +42,36 @@ SITEwritedone(CHANNEL *cp UNUSED)
 static bool
 SITEspool(SITE *sp, CHANNEL *cp)
 {
-    int			i;
-    char		buff[SPOOLNAMEBUFF];
-    char		*name;
+    int i;
+    char *name;
+    char *togo = NULL;
 
     name = sp->SpoolName;
     i = open(name, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
     if (i < 0 && errno == EISDIR) {
-	FileGlue(buff, sp->SpoolName, '/', "togo");
-	name = buff;
-	i = open(buff, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
+        togo = concatpath(sp->SpoolName, "togo");
+        name = togo;
+	i = open(name, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
     }
     if (i < 0) {
 	i = errno;
 	syslog(L_ERROR, "%s cant open %s %m", sp->Name, name);
 	IOError("site batch file", i);
 	sp->Channel = NULL;
+        if (togo != NULL)
+            free(togo);
 	return false;
     }
-    if (cp) {
-      if (cp->fd >= 0)
-        /* syslog(L_ERROR, "DEBUG ERROR SITEspool trashed:%d %s:%d", cp->fd, sp->Name, i);
-	   CPU-eating bug, killed by kre. */
-	WCHANremove(cp);
-	RCHANremove(cp);
-	SCHANremove(cp);
-	close(cp->fd);
+    if (togo != NULL)
+        free(togo);
+    if (cp != NULL) {
+        /* Don't log a message here; it spewed into syslog. */
+        if (cp->fd >= 0) {
+            WCHANremove(cp);
+            RCHANremove(cp);
+            SCHANremove(cp);
+            close(cp->fd);
+        }
 	cp->fd = i;
 	return true;
     }
@@ -175,25 +179,29 @@ SITEbufferoldest(void)
 static bool
 SITECHANbilge(SITE *sp)
 {
-    int             fd;
-    int             i;
-    char            buff[SPOOLNAMEBUFF];
-    char           *name;
+    int fd;
+    int i;
+    char *name;
+    char *togo = NULL;
 
     name = sp->SpoolName;
     fd = open(name, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
     if (fd < 0 && errno == EISDIR) {
-        FileGlue(buff, sp->SpoolName, '/', "togo");
-        name = buff;
-        fd = open(buff, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
+        togo = concatpath(sp->SpoolName, "togo");
+        name = togo;
+        fd = open(togo, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
     }
     if (fd < 0) {
 	int oerrno = errno ;
         syslog(L_ERROR, "%s cant open %s %m", sp->Name, name);
         IOError("site batch file",oerrno);
         sp->Channel = NULL;
+        if (togo != NULL)
+            free(togo);
         return false;
     }
+    if (togo != NULL)
+        free(togo);
     while (sp->Channel->Out.left > 0) {
         i = write(fd, &sp->Channel->Out.data[sp->Channel->Out.used],
                   sp->Channel->Out.left);

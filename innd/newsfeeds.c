@@ -561,13 +561,8 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	case 'F':
 	    if (*++p == '\0')
 		return "missing file name for F param in field 3";
-	    else if (*p == '/')
-		sp->SpoolName = xstrdup(p);
-	    else {
-		sp->SpoolName = xmalloc(strlen(innconf->pathoutgoing) + 1 +
-						strlen(p) + 1);
-		FileGlue(sp->SpoolName, innconf->pathoutgoing, '/', p);
-	    }
+	    else
+                sp->SpoolName = concatpath(innconf->pathoutgoing, p);
 	    break;
 	case 'G':
 	    if (*++p && CTYPE(isdigit, *p))
@@ -691,23 +686,15 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     if (*f4 == '\0' && sp != &ME) {
 	if (sp->Type != FTfile && sp->Type != FTlogonly)
 	    return "empty field 4";
-	sp->Param = xmalloc(strlen(innconf->pathoutgoing) + 1 +
-						sp->NameLength + 1);
-	FileGlue(sp->Param, innconf->pathoutgoing, '/', sp->Name);
+        sp->Param = concatpath(innconf->pathoutgoing, sp->Name);
     }
-    else if (sp->Type == FTfile && *f4 != '/') {
-	sp->Param = xmalloc(strlen(innconf->pathoutgoing) + 1 +
-						strlen(f4) + 1);
-	FileGlue(sp->Param, innconf->pathoutgoing, '/', f4);
-    }
+    else if (sp->Type == FTfile && *f4 != '/')
+        sp->Param = concatpath(innconf->pathoutgoing, f4);
     else
 	sp->Param = xstrdup(f4);
 
-    if (sp->SpoolName == NULL) {
-	sp->SpoolName = xmalloc(strlen(innconf->pathoutgoing) + 1 +
-						strlen(sp->Name) + 1);
-	FileGlue(sp->SpoolName, innconf->pathoutgoing, '/', sp->Name);
-    }
+    if (sp->SpoolName == NULL)
+        sp->SpoolName = concatpath(innconf->pathoutgoing, sp->Name);
 
     /* Make sure there is only one %s, and only one *. */
     if (sp->Type == FTprogram) {

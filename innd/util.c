@@ -29,20 +29,6 @@ FormatLong(char *p, unsigned long value, int width)
 
 
 /*
-**  Glue a string, a char, and a string together.  Useful for making
-**  filenames.
-*/
-void
-FileGlue(char *p, const char *n1, char c,
-         const char *n2)
-{
-    p += strlen(strcpy(p, n1));
-    *p++ = c;
-    strcpy(p, n2);
-}
-
-
-/*
 **  Turn any \r or \n in text into spaces.  Used to splice back multi-line
 **  headers into a single line.
 */

@@ -630,7 +630,6 @@ extern char         *	MaxLength(const char *p, const char *q);
 extern pid_t		Spawn(int niceval, int fd0, int fd1, int fd2,
 			      char * const av[]);
 extern void		CleanupAndExit(int x, const char *why);
-extern void		FileGlue(char *p, const char *n1, char c, const char *n2);
 extern void		JustCleanup(void);
 extern void		ThrottleIOError(const char *when);
 extern void		ThrottleNoMatchError(void);
