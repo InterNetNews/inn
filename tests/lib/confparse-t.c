@@ -251,10 +251,11 @@ main(void)
     long l_value = 1;
     const char *s_value;
     char *long_param, *long_value;
+    size_t length;
     int n;
     FILE *tmpconfig;
 
-    puts("95");
+    puts("100");
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
@@ -356,12 +357,41 @@ main(void)
     free(long_param);
     free(long_value);
 
+    /* Parsing problems exactly on the boundary of a buffer.  This test
+       catches a bug in the parser that caused it to miss the colon at the end
+       of a parameter because the colon was the first character read in a new
+       read of the file buffer. */
+    tmpconfig = fopen("config/tmp", "w");
+    if (tmpconfig == NULL)
+        sysdie("cannot create config/tmp");
+    length = 16 * 1024 - strlen(": baz\nfoo:");
+    long_param = xcalloc(length + 1, 1);
+    memset(long_param, 'c', length);
+    fprintf(tmpconfig, "%s: baz\nfoo: bar\n", long_param);
+    fclose(tmpconfig);
+    group = config_parse_file("config/tmp");
+    ok(48, group != NULL);
+    if (group == NULL) {
+        ok(49, false);
+        ok(50, false);
+        ok(51, false);
+        ok(52, false);
+    } else {
+        ok(49, config_param_string(group, long_param, &s_value));
+        ok_string(50, "baz", s_value);
+        ok(51, config_param_string(group, "foo", &s_value));
+        ok_string(52, "bar", s_value);
+        config_free(group);
+    }
+    unlink("config/tmp");
+    free(long_param);
+
     /* Errors. */
     group = parse_error_config("config/null");
-    ok(48, group == NULL);
-    ok_string(49, "config/null: invalid NUL character found in file\n",
+    ok(53, group == NULL);
+    ok_string(54, "config/null: invalid NUL character found in file\n",
               errors);
-    n = test_errors(50);
+    n = test_errors(55);
     n = test_warnings(n);
     n = test_warnings_bool(n);
     n = test_warnings_int(n);

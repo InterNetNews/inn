@@ -377,7 +377,8 @@ token_string(struct config_file *file)
     /* Use an offset from file->current rather than a pointer that moves
        through the buffer, since the base of file->current can change during a
        file_read_more() call and we don't want to have to readjust a
-       pointer. */
+       pointer.  If we have to read more, adjust our counter back one
+       character, since the nul was replaced by a new, valid character. */
     i = 0;
     while (!done) {
         switch (file->current[i]) {
@@ -398,7 +399,9 @@ token_string(struct config_file *file)
         case '\0':
             offset = file->current - file->buffer;
             status = file_read_more(file, offset);
-            if (!status)
+            if (status)
+                i--;
+            else
                 done = true;
             break;
         default:
@@ -433,8 +436,9 @@ token_quoted_string(struct config_file *file)
 
     /* Use an offset from file->current rather than a pointer that moves
        through the buffer, since the base of file->current can change during a
-       file_read_more() call and we don't want to have to readjust a
-       pointer. */
+       file_read_more() call and we don't want to have to readjust a pointer.
+       If we have to read more, adjust our counter back one character, since
+       the nul was replaced by a new, valid character. */
     for (i = 1; !done; i++) {
         switch (file->current[i]) {
         case '"':
@@ -454,7 +458,9 @@ token_quoted_string(struct config_file *file)
         case '\0':
             offset = file->current - file->buffer;
             status = file_read_more(file, offset);
-            if (!status) {
+            if (status)
+                i--;
+            else {
                 warn("%s:%u: end of file encountered while parsing quoted"
                      " string", file->filename, file->line);
                 file->token.type = TOKEN_ERROR;
