@@ -15,6 +15,12 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+/* Linux defines some of these.  Later versions of INN will use different
+   symbols, but this is the simple fix. */
+#undef LOCK_READ
+#undef LOCK_WRITE
+#undef LOCK_UNLOCK
+
 /* Tell C++ not to mangle prototypes. */
 #ifdef __cplusplus
 extern "C" {
