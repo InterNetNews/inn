@@ -28,6 +28,7 @@ void            TMRstart(unsigned int);
 void            TMRstop(unsigned int);
 void            TMRsummary(const char *const *labels);
 unsigned long   TMRnow(void);
+void            TMRfree(void);
 
 END_DECLS
 
