@@ -19,6 +19,7 @@
 #include <netinet/in.h>
     
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/wire.h"
 #include "libinn.h"
@@ -188,8 +189,10 @@ AddNG(char *ng, unsigned long number) {
 		    } else if (curnode->ngnumber > number) {
 			nextnode = &curnode->left;
 		    } else {
-			/* Error, same number is already in NGtree (shouldn't happen!) */
-			syslog(L_ERROR, "tradspool: AddNG: duplicate newsgroup number in NGtree: %ld(%s)", number, p);
+			/* Error, same number is already in NGtree (shouldn't
+                           happen!) */
+                        warn("tradspool: AddNG: duplicate newsgroup number in"
+                             " NGtree: %ld (%s)", number, p);
 			return;
 		    }
 		}
@@ -203,7 +206,7 @@ AddNG(char *ng, unsigned long number) {
 #if 0 /* XXX */
 	} else if (CompareHash(&ngtp->hash, &hash) == 0) {
 	    /* eep! we hit a hash collision. */
-	    syslog(L_ERROR, "tradspool: AddNG: Hash collison %s/%s", ngtp->ngname, p);
+            warn("tradspool: AddNG: hash collision %s/%s", ngtp->ngname, p);
 	    free(p);
 	    return;
 #endif 
@@ -288,7 +291,7 @@ DumpDB(void)
     fnamenew = concatpath(innconf->pathspool, _PATH_NEWTSNGDB);
 
     if ((out = fopen(fnamenew, "w")) == NULL) {
-	syslog(L_ERROR, "tradspool: DumpDB: can't write %s: %m", fnamenew);
+        syswarn("tradspool: DumpDB: can't write %s", fnamenew);
 	free(fname);
 	free(fnamenew);
 	return;
@@ -300,13 +303,13 @@ DumpDB(void)
 	}
     }
     if (fclose(out) < 0) {
-	syslog(L_ERROR, "tradspool: DumpDB: can't close %s: %m", fnamenew);
+        syswarn("tradspool: DumpDB: can't close %s", fnamenew);
 	free(fname);
 	free(fnamenew);
 	return;
     }
     if (rename(fnamenew, fname) < 0) {
-	syslog(L_ERROR, "tradspool: can't rename %s", fnamenew);
+        syswarn("tradspool: DumpDB: can't rename %s", fnamenew);
 	free(fname);
 	free(fnamenew);
 	return;
@@ -335,12 +338,12 @@ ReadDBFile(void)
     fname = concatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB);
     if ((qp = QIOopen(fname)) == NULL) {
 	/* only warn if db not found. */
-	syslog(L_NOTICE, "tradspool: %s not found", fname);
+        notice("tradspool: mapping file %s not found", fname);
     } else {
 	while ((line = QIOread(qp)) != NULL) {
 	    p = strchr(line, ' ');
 	    if (p == NULL) {
-		syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
+                warn("tradspool: corrupt line in active: %s", line);
 		QIOclose(qp);
 		free(fname);
 		return false;
@@ -366,7 +369,7 @@ ReadActiveFile(void)
 
     fname = concatpath(innconf->pathdb, _PATH_ACTIVE);
     if ((qp = QIOopen(fname)) == NULL) {
-	syslog(L_FATAL, "tradspool: can't open %s", fname);
+        syswarn("tradspool: can't open %s", fname);
 	free(fname);
 	return false;
     }
@@ -374,7 +377,7 @@ ReadActiveFile(void)
     while ((line = QIOread(qp)) != NULL) {
 	p = strchr(line, ' ');
 	if (p == NULL) {
-	    syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
+            syswarn("tradspool: corrupt line in active: %s", line);
 	    QIOclose(qp);
 	    free(fname);
 	    return false;
@@ -444,12 +447,12 @@ CheckNeedReloadDB(bool force)
 bool
 tradspool_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
-	syslog(L_ERROR, "tradspool: attr is NULL");
+        warn("tradspool: attr is NULL");
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
 	return false;
     }
     if (!innconf->storeonxref) {
-	syslog(L_ERROR, "tradspool: storeonxref needs to be true");
+        warn("tradspool: storeonxref needs to be true");
 	SMseterror(SMERR_INTERNAL, "storeonxref needs to be true");
 	return false;
     }
@@ -609,7 +612,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	p = strrchr(path, '/');
 	*p = '\0';
 	if (!MakeDirectory(path, true)) {
-	    syslog(L_ERROR, "tradspool: could not make directory %s %m", path);
+            syswarn("tradspool: could not create directory %s", path);
 	    token.type = TOKEN_EMPTY;
 	    free(path);
 	    SMseterror(SMERR_UNDEFINED, NULL);
@@ -620,7 +623,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    *p = '/';
 	    if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
 		SMseterror(SMERR_UNDEFINED, NULL);
-		syslog(L_ERROR, "tradspool: could not open %s %m", path);
+                syswarn("tradspool: could not open %s", path);
 		token.type = TOKEN_EMPTY;
 		free(path);
 		for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
@@ -632,7 +635,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     if (innconf->wireformat) {
 	if (xwritev(fd, article.iov, article.iovcnt) != (ssize_t) article.len) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "tradspool error writing %s %m", path);
+            syswarn("tradspool: error writing to %s", path);
 	    close(fd);
 	    token.type = TOKEN_EMPTY;
 	    unlink(path);
@@ -652,7 +655,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	if (write(fd, nonwfarticle, nonwflen) != (ssize_t) nonwflen) {
 	    free(nonwfarticle);
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "tradspool error writing %s %m", path);
+            syswarn("tradspool: error writing to %s", path);
 	    close(fd);
 	    token.type = TOKEN_EMPTY;
 	    unlink(path);
@@ -690,7 +693,8 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		if (!MakeDirectory(dirname, true) || link(path, linkpath) < 0) {
 		    if (symlink(path, linkpath) < 0) {
 			SMseterror(SMERR_UNDEFINED, NULL);
-			syslog(L_ERROR, "tradspool: could not symlink %s to %s %m", path, linkpath);
+                        syswarn("tradspool: could not symlink %s to %s",
+                                path, linkpath);
 			token.type = TOKEN_EMPTY;
 			free(dirname);
 			free(linkpath);
@@ -744,7 +748,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 
     if (fstat(fd, &sb) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "tradspool: could not fstat article: %m");
+        syswarn("tradspool: could not fstat article %s", path);
 	free(art);
 	close(fd);
 	return NULL;
@@ -758,7 +762,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
     if (innconf->articlemmap) {
 	if ((private->artbase = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
+            syswarn("tradspool: could not mmap article %s", path);
 	    free(art->private);
 	    free(art);
 	    close(fd);
@@ -768,7 +772,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	p = memchr(private->artbase, '\n', private->artlen);
 	if (p == NULL || p == private->artbase) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
+            syswarn("tradspool: apparently corrupt article %s", path);
 	    munmap(private->artbase, private->artlen);
 	    free(art->private);
 	    free(art);
@@ -789,7 +793,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	private->artbase = xmalloc(private->artlen);
 	if (read(fd, private->artbase, private->artlen) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "tradspool: could not read article: %m");
+            syswarn("tradspool: could not read article %s", path);
 	    free(private->artbase);
 	    free(art->private);
 	    free(art);
@@ -799,7 +803,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	p = memchr(private->artbase, '\n', private->artlen);
 	if (p == NULL || p == private->artbase) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
+            syswarn("tradspool: apparently corrupt article %s", path);
 	    free(art->private);
 	    free(art);
 	    close(fd);
@@ -1204,8 +1208,8 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
            all the ones skipped via the hard-link skipping algorithm
            commented above. */
         if (art->len > 0)
-            syslog(L_ERROR, "tradspool: can't determine class: %s: %s",
-                   TokenToText(token), SMerrorstr);
+            warn("tradspool: can't determine class of %s: %s",
+                 TokenToText(token), SMerrorstr);
     } else {
 	token = MakeToken(priv.ngtp->ngname, artnum, sub->class);
     }
