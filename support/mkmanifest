@@ -21,8 +21,7 @@ use File::Find qw(find);
 # or files that are present in the tree and in CVS but which are not included
 # in releases.
 @IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr/\.[ao]\Z/, qr%(\A|/)CVS(/|\Z)%,
-           qr%(\A|/)\.?\#%, qr/\.(old|bak|orig|rej)$/, qr%(\A|/)core\Z%,
-           qr%(\A|/)\.libs(/|\Z)%);
+           qr%(\A|/)\.?\#%, qr/\.(old|bak|orig|rej)$/, qr%(\A|/)core\Z%);
 
 # Build a list of all the files ignored by rules in .cvsignore files.  Meant
 # to be run as the wanted sub of a call to File::Find.  Stuff in .cvsignore
@@ -59,7 +58,10 @@ sub find_files {
     return if $_ eq '.';
     my $name = $File::Find::name;
     $name =~ s%^./%%;
-    return if $CVSIGNORE{$name};
+    if ($CVSIGNORE{$name}) {
+        $File::Find::prune = 1;
+        return;
+    }
     for my $pattern (@IGNORE) {
         return if $name =~ /$pattern/;
     }
