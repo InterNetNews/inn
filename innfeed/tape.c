@@ -525,6 +525,8 @@ void tapeLogStatus (Tape tape, FILE *fp)
     fprintf (fp,"(no tape)\n") ;
   else if (tape->noBacklog)
       fprintf (fp,"                 spooling: DISABLED\n");
+  else if (tape->outputLowLimit == 0)
+      fprintf (fp,"                 spooling: UNLIMITED\n");
   else 
     {
       fprintf (fp,"                 backlog low limit: %ld\n",

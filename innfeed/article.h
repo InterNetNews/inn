@@ -76,6 +76,9 @@ Buffer *artGetNntpBuffers (Article article) ;
   /* return the message id stoed in the article object */
 const char *artMsgId (Article article) ;
 
+  /* return size of the article */
+int artSize (Article article) ;
+
   /* return the number of buffers that artGetNntpBuffers() would return. */
 u_int artNntpBufferCount (Article article) ;
 

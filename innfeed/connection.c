@@ -243,6 +243,9 @@ struct connection_s
     u_int takesRejected ;       /* the number of response 437/439 recevied */
     u_int takesOkayed ;         /* the number of response 235/239 received */
 
+    long long takesSizeRejected ;
+    long long takesSizeOkayed ;
+
     double onThreshold ;        /* for no-CHECK mode */
     double offThreshold ;       /* for no-CHECK mode */
     double filterValue ;        /* current value of IIR filter */
@@ -1071,7 +1074,7 @@ void cxnLogStats (Connection cxn, bool final)
   syslog (LOG_NOTICE,STATS_MSG, peerName, cxn->ident,
           (final ? "final" : "checkpoint"), (long) (now - cxn->timeCon),
           cxn->checksIssued, cxn->takesOkayed, cxn->checksRefused,
-          cxn->takesRejected) ;
+          cxn->takesRejected, cxn->takesSizeOkayed, cxn->takesSizeRejected) ;
 
   if (final)
     {
@@ -1080,6 +1083,8 @@ void cxnLogStats (Connection cxn, bool final)
       cxn->checksRefused = 0 ;
       cxn->takesRejected = 0 ;
       cxn->takesOkayed = 0 ;
+      cxn->takesSizeRejected = 0 ;
+      cxn->takesSizeOkayed = 0 ;
 
       if (cxn->timeCon > 0)
         cxn->timeCon = theTime() ;
@@ -2648,6 +2653,7 @@ static void processResponse239 (Connection cxn, char *response)
   else
     {
       cxn->takesOkayed++ ;
+      cxn->takesSizeOkayed += (long long) artSize(artHolder->article);
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
       if (cxn->articleQTotal == 0)
@@ -2737,6 +2743,7 @@ static void processResponse439 (Connection cxn, char *response)
   else
     {
       cxn->takesRejected++ ;
+      cxn->takesSizeRejected += (long long) artSize(artHolder->article);
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
       /* Some(?) hosts return the 439 response even before we're done
@@ -2802,6 +2809,7 @@ static void processResponse235 (Connection cxn, char *response)
       cxn->takeRespHead = NULL ;
       cxn->articleQTotal = 0 ;
       cxn->takesOkayed++ ;
+      cxn->takesSizeOkayed += (long long) artSize(artHolder->article);
       
       if (cxn->articleQTotal == 0)
         cxnIdle (cxn) ;
@@ -3066,6 +3074,7 @@ static void processResponse437 (Connection cxn, char *response)
 
   artHolder = cxn->takeRespHead ;
   cxn->takeRespHead = NULL ;
+  cxn->takesSizeRejected += (long long) artSize(artHolder->article);
 
   if (cxn->articleQTotal == 0)
     cxnIdle (cxn) ;
@@ -3321,6 +3330,8 @@ static void resetConnection (Connection cxn)
   cxn->checksRefused = 0 ;
   cxn->takesRejected = 0 ;
   cxn->takesOkayed = 0 ;
+  cxn->takesSizeRejected = 0 ;
+  cxn->takesSizeOkayed = 0 ;
 
   cxn->filterValue = 0.0 ;
 }

@@ -440,6 +440,14 @@ const char *artMsgId (Article article)
   return article->msgid ;
 }
 
+  /* return size of the article */
+int artSize (Article article)
+{
+  if (article == NULL || article->arthandle == NULL)
+    return (int)0 ;
+  return article->arthandle->len ;
+}
+
 
   /* return how many NNTP-ready buffers the article contains */
 u_int artNntpBufferCount (Article article)

@@ -122,6 +122,7 @@ typedef struct host_param_s
   u_int dynamicMethod;
   bool wantStreaming;
   bool dropDeferred;
+  bool minQueueCxn;
   double lowPassLow; /* as percentages */
   double lowPassHigh;
   double lowPassFilter;
@@ -194,6 +195,8 @@ struct host_s
     u_int artsHostSleep ;       /* # of articles spooled by sleeping host */
     u_int artsHostClose ;       /* # of articles caught by closing host */
     u_int artsFromTape ;        /* # of articles we pulled off tape */
+    long long artsSizeAccepted ;/* size of articles succesfully transferred */
+    long long artsSizeRejected ;/* size of articles remote rejected */
 
     /* Dynamic Peerage - MGF */
     u_int artsProcLastPeriod ;  /* # of articles processed in last period */
@@ -221,6 +224,10 @@ struct host_s
     u_int gArtsHostSleep ;
     u_int gArtsHostClose ;
     u_int gArtsFromTape ;
+    long long gArtsSizeAccepted ;
+    long long gArtsSizeRejected ;
+    u_int gCxnQueue ;
+    u_int gNoQueue ;
 
     time_t firstConnectTime ;   /* time of first connect. */
     time_t connectTime ;        /* the time the first connection was fully
@@ -262,6 +269,8 @@ long procArtsNotWanted ;
 long procArtsRejected ;
 long procArtsDeferred ;
 long procArtsMissing ;
+long long procArtsSizeAccepted ;
+long long procArtsSizeRejected ;
 
 static HostParams defaultParams=NULL;
 
@@ -511,6 +520,7 @@ HostParams newHostParams(HostParams p)
       params->dynamicMethod=METHOD_STATIC;
       params->wantStreaming=STREAM;
       params->dropDeferred=FALSE;
+      params->minQueueCxn=FALSE;
       params->lowPassLow=NOCHECKLOW;
       params->lowPassHigh=NOCHECKHIGH;
       params->lowPassFilter=FILTERVALUE;
@@ -1040,6 +1050,8 @@ Host newHost (InnListener listener, HostParams p)
   nh->artsHostSleep = 0 ;
   nh->artsHostClose = 0 ;
   nh->artsFromTape = 0 ;
+  nh->artsSizeAccepted = 0 ;
+  nh->artsSizeRejected = 0 ;
 
   nh->artsProcLastPeriod = 0;
   nh->secsInLastPeriod = 0;
@@ -1066,6 +1078,10 @@ Host newHost (InnListener listener, HostParams p)
   nh->gArtsHostSleep = 0 ;
   nh->gArtsHostClose = 0 ;
   nh->gArtsFromTape = 0 ;
+  nh->gArtsSizeAccepted = 0 ;
+  nh->gArtsSizeRejected = 0 ;
+  nh->gCxnQueue = 0 ;
+  nh->gNoQueue = 0 ;
   
   nh->firstConnectTime = 0 ;
   nh->connectTime = 0 ;
@@ -1239,6 +1255,8 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
            boolToString (host->params->wantStreaming)) ;
   fprintf (fp,"%s    drop-deferred : %s\n",indent,
            boolToString (host->params->dropDeferred)) ;
+  fprintf (fp,"%s    min-queue-connection : %s\n",indent,
+           boolToString (host->params->minQueueCxn)) ;
   fprintf (fp,"%s    remote-streams : %s\n",indent,
            boolToString (host->remoteStreams)) ;
   fprintf (fp,"%s    max-checks : %d\n",indent,host->params->maxChecks) ;
@@ -1640,29 +1658,68 @@ void hostSendArticle (Host host, Article article)
       /* stick on the queue of articles we've handed off--we're hopeful. */
       queueArticle (article,&host->processed,&host->processedTail, 0) ;
 
-      /* first we try to give it to one of our active connections. We
-         simply start at the bottom and work our way up. This way
-         connections near the end of the list will get closed sooner from
-         idleness. */
-      for (idx = 0 ; idx < host->maxConnections ; idx++)
-        {
-          if (host->cxnActive [idx] &&
-              (cxn = host->connections[idx]) != host->notThisCxn &&
-              cxnTakeArticle (cxn, extraRef))
-	    return ;
+      if (host->params->minQueueCxn) {
+        Connection x_cxn = NULL ;
+        u_int x_queue = host->params->maxChecks + 1 ;
+
+        for (idx = 0 ; x_queue > 0 && idx < host->maxConnections ; idx++)
+          if ((cxn = host->connections[idx]) != host->notThisCxn)
+            if (!host->cxnActive [idx]) {
+              if (!host->cxnSleeping [idx]) {
+                if (cxnTakeArticle (cxn, extraRef)) {
+                  host->gNoQueue++ ;
+                  return ;
+                } else
+                  d_printf (1,"%s Inactive connection %d refused an article\n",
+                           host->params->peerName,idx) ;
+              }
+            } else {
+              u_int queue = host->params->maxChecks - cxnQueueSpace (cxn) ;
+              if (queue < x_queue) {
+                x_queue = queue ;
+                x_cxn = cxn ;
+              }
+            }
+
+        if (x_cxn != NULL && cxnTakeArticle (x_cxn, extraRef)) {
+          if (x_queue == 0) host->gNoQueue++ ;
+          else              host->gCxnQueue += x_queue ;
+          return ;
         }
 
-      /* Wasn't taken so try to give it to one of the waiting connections. */
-      for (idx = 0 ; idx < host->maxConnections ; idx++)
-        if (!host->cxnActive [idx] && !host->cxnSleeping [idx] &&
-            (cxn = host->connections[idx]) != host->notThisCxn)
+      } else {
+
+        /* first we try to give it to one of our active connections. We
+           simply start at the bottom and work our way up. This way
+           connections near the end of the list will get closed sooner from
+           idleness. */
+        for (idx = 0 ; idx < host->maxConnections ; idx++)
           {
-            if (cxnTakeArticle (cxn, extraRef))
-              return ;
-            else
-              d_printf (1,"%s Inactive connection %d refused an article\n",
-                       host->params->peerName,idx) ;
+            if (host->cxnActive [idx] &&
+                (cxn = host->connections[idx]) != host->notThisCxn &&
+                cxnTakeArticle (cxn, extraRef)) {
+              u_int queue = host->params->maxChecks - cxnQueueSpace (cxn) - 1;
+              if (queue == 0) host->gNoQueue++ ;
+              else            host->gCxnQueue += queue ;
+	      return ;
+            }
           }
+
+        /* Wasn't taken so try to give it to one of the waiting connections. */
+        for (idx = 0 ; idx < host->maxConnections ; idx++)
+          if (!host->cxnActive [idx] && !host->cxnSleeping [idx] &&
+              (cxn = host->connections[idx]) != host->notThisCxn)
+            {
+              if (cxnTakeArticle (cxn, extraRef)) {
+                u_int queue = host->params->maxChecks - cxnQueueSpace (cxn) - 1;
+                if (queue == 0) host->gNoQueue++ ;
+                else            host->gCxnQueue += queue ;
+                return ;
+              } else
+                d_printf (1,"%s Inactive connection %d refused an article\n",
+                         host->params->peerName,idx) ;
+            }
+      }
 
       /* this'll happen if all connections are feeding and all
          their queues are full, or if those not feeding are asleep. */
@@ -1958,7 +2015,8 @@ bool hostCxnGone (Host host, Connection cxn)
                 (long) (now - host->firstConnectTime),
                 host->gArtsOffered, host->gArtsAccepted,
                 host->gArtsNotWanted, host->gArtsRejected,
-                host->gArtsMissing) ;
+                host->gArtsMissing, host->gArtsSizeAccepted,
+                host->gArtsSizeRejected) ;
 
       hostsLeft = listenerHostGone (host->listener, host) ;
       delHost (host) ;
@@ -1968,7 +2026,8 @@ bool hostCxnGone (Host host, Connection cxn)
                 (long) (now - start),
                 procArtsOffered, procArtsAccepted,
                 procArtsNotWanted,procArtsRejected,
-                procArtsMissing) ;
+                procArtsMissing, procArtsSizeAccepted,
+                procArtsSizeRejected) ;
       
       /* return true if that was the last host */
       return (hostsLeft == 0 ? true : false) ;
@@ -2009,12 +2068,16 @@ void hostArticleAccepted (Host host, Connection cxn, Article article)
 {
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
+  long long len = (long long) artSize (article);
 
   d_printf (5,"Article %s (%s) was transferred\n", msgid, filename) ;
   
   host->artsAccepted++ ;
   host->gArtsAccepted++ ;
   procArtsAccepted++ ;
+  host->artsSizeAccepted += len ;
+  host->gArtsSizeAccepted += len ;
+  procArtsSizeAccepted += len ;
 
   /* host has two references to the article here... the parameter `article'
      and the queue */
@@ -2068,12 +2131,16 @@ void hostArticleRejected (Host host, Connection cxn, Article article)
 {
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
+  long long len = (long long) artSize (article);
 
   d_printf (5,"Article %s (%s) was rejected\n", msgid, filename) ;
   
   host->artsRejected++ ;
   host->gArtsRejected++ ;
   procArtsRejected++ ;
+  host->artsSizeRejected += len ;
+  host->gArtsSizeRejected += len ;
+  procArtsSizeRejected += len ;
 
   /* host has two references to the article here... `article' and the queue */
 
@@ -2216,6 +2283,7 @@ bool hostGimmeArticle (Host host, Connection cxn)
   while (amtToGive > 0)
     {
       bool tookIt ;
+      u_int queue = host->params->maxChecks - amtToGive ;
       
       if ((article = remHead (&host->queued,&host->queuedTail)) != NULL)
         {
@@ -2223,6 +2291,9 @@ bool hostGimmeArticle (Host host, Connection cxn)
           tookIt = cxnQueueArticle (cxn,artTakeRef (article)) ;
 
           ASSERT (tookIt == true) ;
+
+          if (queue == 0) host->gNoQueue++ ;
+          else            host->gCxnQueue += queue ;
 
           queueArticle (article,&host->processed,&host->processedTail, 0) ;
           amtToGive-- ;
@@ -2234,6 +2305,9 @@ bool hostGimmeArticle (Host host, Connection cxn)
           tookIt = cxnQueueArticle (cxn,artTakeRef (article)) ;
 
           ASSERT (tookIt == true) ;
+
+          if (queue == 0) host->gNoQueue++ ;
+          else            host->gCxnQueue += queue ;
 
           host->artsFromTape++ ;
           host->gArtsFromTape++ ;
@@ -2470,6 +2544,7 @@ static HostParams hostDetails (scope *s,
   GETINT(s,fp,"max-queue-size",1,LONG_MAX,REQ,p->maxChecks, inherit);
   GETBOOL(s,fp,"streaming",REQ,p->wantStreaming, inherit);
   GETBOOL(s,fp,"drop-deferred",REQ,p->dropDeferred, inherit);
+  GETBOOL(s,fp,"min-queue-connection",REQ,p->minQueueCxn, inherit);
   GETREAL(s,fp,"no-check-high",0.0,100.0,REQ,p->lowPassHigh, inherit);
   GETREAL(s,fp,"no-check-low",0.0,100.0,REQ,p->lowPassLow, inherit);
   GETREAL(s,fp,"no-check-filter",0.1,DBL_MAX,REQ,p->lowPassFilter, inherit);
@@ -2702,7 +2777,8 @@ static void hostLogStats (Host host, bool final)
             (long) (now - host->connectTime),
             host->artsOffered, host->artsAccepted,
             host->artsNotWanted, host->artsRejected,
-            host->artsMissing, host->artsToTape,
+            host->artsMissing, host->artsSizeAccepted,
+            host->artsSizeRejected, host->artsToTape,
             host->artsHostClose, host->artsFromTape,
             host->artsDeferred, (double)host->dlAccum/cnt,
             host->artsCxnDrop,
@@ -2739,6 +2815,8 @@ static void hostLogStats (Host host, bool final)
       host->artsHostSleep = 0 ;
       host->artsHostClose = 0 ;
       host->artsFromTape = 0 ;
+      host->artsSizeAccepted = 0 ;
+      host->artsSizeRejected = 0 ;
       
       *startPeriod = theTime () ; /* in of case STATS_RESET_PERIOD */
     }
@@ -2765,6 +2843,32 @@ static void hostLogStats (Host host, bool final)
 
 
 
+
+static double convsize(long long size, char **tsize)
+{
+    double dsize;
+    static char tGB[]="GB";
+    static char tMB[]="MB";
+    static char tKB[]="KB";
+    static char tB []="B";
+
+    if (size/(1024*1024*1000)>0) {
+	dsize=(double)size/(1024*1024*1024);
+	*tsize=tGB;
+    } else if (size/(1024*1000)>0) {
+	dsize=(double)size/(1024*1024);
+	*tsize=tMB;
+    } else if (size/1000>0) {
+	dsize=(double)size/1024;
+	*tsize=tKB;
+    } else {
+	dsize=(double)size;
+	*tsize=tB;
+    }
+    return dsize;
+}
+
+
 /*
  * Log the status of the Hosts.
  */
@@ -2813,10 +2917,15 @@ static void hostLogStatus (void)
     {
       char timeString [30] ;
       time_t now ;
+      long sec ;
+      long offered ;        
+      double size, totalsize;
+      char *tsize;
 
       flogged = false ;
       
       now = time (NULL) ;
+      sec = (long) (now - start) ;
       strcpy (timeString,ctime (&now)) ;
 
       if (genHtml)
@@ -2868,10 +2977,12 @@ Default peer configuration parameters:
       fprintf(fp,"    no-check filter: %-2.1f   dynamic backlog filter: %-2.1f\n",
 	    defaultParams->lowPassFilter,
 	    defaultParams->dynBacklogFilter) ;
-      fprintf(fp,"  backlog limit low: %-5d\n",
-	    defaultParams->backlogLimit);
-      fprintf(fp," backlog limit high: %-5d\n",
-	    defaultParams->backlogLimitHigh);
+      fprintf(fp,"  backlog limit low: %-7d         drop-deferred: %s\n",
+	    defaultParams->backlogLimit,
+	    defaultParams->dropDeferred ? "true " : "false");
+      fprintf(fp," backlog limit high: %-7d         min-queue-cxn: %s\n",
+	    defaultParams->backlogLimitHigh,
+	    defaultParams->minQueueCxn ? "true " : "false");
       fprintf(fp,"     backlog factor: %1.1f\n\n",
 	    defaultParams->backlogFactor);
 
@@ -2880,13 +2991,50 @@ Default peer configuration parameters:
       fprintf (fp,"\n") ;
       fprintf (fp,"global (process)\n") ;
       
-      fprintf (fp, "   seconds: %-7ld\n", (long) (now - start)) ;
-      fprintf (fp, "   offered: %-7ld\n", procArtsOffered) ;
-      fprintf (fp, "  accepted: %-7ld\n", procArtsAccepted) ;
-      fprintf (fp, "   refused: %-7ld\n", procArtsNotWanted) ;
-      fprintf (fp, "  rejected: %-7ld\n", procArtsRejected) ;
-      fprintf (fp, "   missing: %-7ld\n", procArtsMissing) ;
-      fprintf (fp, "  deferred: %-7ld\n", procArtsDeferred) ;
+      fprintf (fp, "   seconds: %ld\n", sec) ;
+      if (sec == 0) sec = 1 ;
+      offered = procArtsOffered ? procArtsOffered : 1 ;
+      totalsize = procArtsSizeAccepted+procArtsSizeRejected ;
+      if (totalsize == 0) totalsize = 1. ;
+
+      fprintf (fp, "   offered: %-5ld\t%6.2f ars/s\n",
+		procArtsOffered,
+		(double)procArtsOffered/sec) ;
+      fprintf (fp, "  accepted: %-5ld\t%6.2f art/s\t%5.1f%%\n",
+		procArtsAccepted,
+		(double)procArtsAccepted/sec,
+		(double)procArtsAccepted*100./offered) ;
+      fprintf (fp, "   refused: %-5ld\t%6.2f art/s\t%5.1f%%\n",
+		procArtsNotWanted,
+		(double)procArtsNotWanted/sec,
+		(double)procArtsNotWanted*100./offered) ;
+      fprintf (fp, "  rejected: %-5ld\t%6.2f art/s\t%5.1f%%\n",
+		procArtsRejected,
+		(double)procArtsRejected/sec,
+		(double)procArtsRejected*100./offered) ;
+      fprintf (fp, "   missing: %-5ld\t%6.2f art/s\t%5.1f%%\n",
+		procArtsMissing,
+		(double)procArtsMissing/sec,
+		(double)procArtsMissing*100./offered) ;
+      fprintf (fp, "  deferred: %-5ld\t%6.2f art/s\t%5.1f%%\n",
+		procArtsDeferred,
+		(double)procArtsDeferred/sec,
+		(double)procArtsDeferred*100./offered) ;
+
+      size=convsize(procArtsSizeAccepted, &tsize);
+      fprintf (fp, "accpt size: %.3g %s", size, tsize) ;
+      size=convsize(procArtsSizeAccepted/sec, &tsize);
+      fprintf (fp, " \t%6.3g %s/s\t%5.1f%%\n",
+		size, tsize,
+		procArtsSizeAccepted*100./totalsize) ;
+
+      size=convsize(procArtsSizeRejected, &tsize);
+      fprintf (fp, "rejct size: %.3g %s", size, tsize) ;
+      size=convsize(procArtsSizeRejected/sec, &tsize);
+      fprintf (fp, " \t%6.3g %s/s\t%5.1f%%\n",
+		size, tsize,
+		procArtsSizeRejected*100./totalsize) ;
+
       fprintf (fp, "\n");
       
       for (h = gHostList ; h != NULL ; h = h->next)
@@ -2911,23 +3059,30 @@ Default peer configuration parameters:
  *  rejected: 31          max checks: 25      initial cxns: 5
  *   missing: 0          no-check on: 95.0%      idle cxns: 4
  *  deferred: 0         no-check off: 95.0%       max cxns: 8/10
- *  requeued: 0        no-check fltr: 50.0    queue length: 0
- *   spooled: 0                                      empty: 100.0%
+ *  requeued: 0        no-check fltr: 50.0    queue length: 0.0/200
+ *   spooled: 0       dynamic method: 0              empty: 100.0%
  *[overflow]: 0        dyn b'log low: 25%          >0%-25%: 0.0%
  *[on_close]: 0       dyn b'log high: 50%          25%-50%: 0.0%
  *[sleeping]: 0       dyn b'log stat: 37%          50%-75%: 0.0%
  * unspooled: 0       dyn b'log fltr: 0.7        75%-<100%: 0.0%
- *                                                    full: 0.0%
- *                                            defer length: 0
+ *  no queue: 1234    avr.cnxs queue: 0.0             full: 0.0%
+ *accpt size: 121.1 MB drop-deferred: false   defer length: 0
+ *rejct size: 27.1 MB  min-queue-cnx: false
  *                 backlog low limit: 1000000
  *                backlog high limit: 2000000     (factor 2.0)
  *                 backlog shrinkage: 0 bytes (from current file)
+ *   offered:  1.13 art/s   accepted:  0.69 art/s (101.71 KB/s)
+ *   refused:  0.01 art/s   rejected:  0.42 art/s (145.11 KB/s)
+ *   missing 0 spooled 0
  *
  */
 static void hostPrintStatus (Host host, FILE *fp)
 {
   time_t now = theTime() ;
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
+  double size;
+  char *tsize;
+  char buf[]="1234.1 MB";
 
   ASSERT (host != NULL) ;
   ASSERT (fp != NULL) ;
@@ -2969,9 +3124,9 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   (long) host->gArtsDeferred, host->params->lowPassLow,
 	   host->maxConnections, host->params->absMaxConnections) ;
 
-  fprintf (fp, "  requeued: %-7ld  no-check fltr: %-3.1f    queue length: %-3.1f\n",
+  fprintf (fp, "  requeued: %-7ld  no-check fltr: %-3.1f    queue length: %-3.1f/%d\n",
 	   (long) host->gArtsCxnDrop, host->params->lowPassFilter,
-	   (double)host->blAccum / cnt) ;
+	   (double)host->blAccum / cnt, hostHighwater) ;
 
   fprintf (fp, "   spooled: %-7ld dynamic method: %-5d          empty: %-3.1f%%\n",
 	   (long) host->gArtsToTape,
@@ -2998,12 +3153,43 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   host->params->dynBacklogLowWaterMark,
 	   100.0 * host->blQuartile[3] / cnt) ;
 
-  fprintf (fp, "                                                    full: %-3.1f%%\n",
+  fprintf (fp, "  no queue: %-7ld avr.cnxs queue: %-3.1f             full: %-3.1f%%\n",
+	   (long) host->gNoQueue,
+	   (double) host->gCxnQueue / (host->gArtsOffered ? host->gArtsOffered :1) ,
 	   100.0 * host->blFull / cnt) ;
-  fprintf (fp, "                                            defer length: %-3.1f\n",
+  size=convsize(host->gArtsSizeAccepted, &tsize);
+  sprintf(buf,"%.3g %s", size, tsize);
+  fprintf (fp, "accpt size: %-8s drop-deferred: %-5s   defer length: %-3.1f\n",
+	   buf, host->params->dropDeferred ? "true " : "false",
            (double)host->dlAccum / cnt) ;
+  size=convsize(host->gArtsSizeRejected, &tsize);
+  sprintf(buf,"%.3g %s", size, tsize);
+  fprintf (fp, "rejct size: %-8s min-queue-cxn: %s\n",
+	   buf, host->params->minQueueCxn ? "true " : "false");
 
   tapeLogStatus (host->myTape,fp) ;
+
+  {
+  time_t      sec = (time_t) (now - host->connectTime);
+  double      or, ar, rr, jr;
+  double      ars, jrs;
+  char       *tars, *tjrs;
+  if (sec != 0) {
+      or = (double) host->artsOffered / (double) sec;
+      ar = (double) host->artsAccepted / (double) sec;
+      rr = (double) host->artsNotWanted / (double) sec;
+      jr = (double) host->artsRejected / (double) sec;
+      ars = convsize (host->artsSizeAccepted/sec, &tars);
+      jrs = convsize (host->artsSizeRejected/sec, &tjrs);
+      fprintf(fp, "   offered: %5.2f art/s   accepted: %5.2f art/s, %.3g %s/s\n",
+	      or, ar, ars, tars);
+      fprintf(fp, "   refused: %5.2f art/s   rejected: %5.2f art/s, %.3g %s/s\n",
+	      rr, jr, jrs, tjrs);
+  }
+  fprintf(fp, "   missing %d spooled %d\n",
+	  host->artsMissing, host->artsToTape);
+  }
+
 #ifdef        XXX_STATSHACK
   {
   time_t      now = time(NULL), sec = (long) (now - host->connectTime);
