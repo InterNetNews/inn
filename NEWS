@@ -70,12 +70,14 @@ Changes from 2.2 to 2.3
       implementations is a RADIUS-based authenticator.
 
     * Unified overview has been replaced with an overview API, and there are
-      now two separate overview implementations to choose from.  One
+      now three separate overview implementations to choose from.  One
       (tradindexed) is very like traditional overview but uses an additional
-      index file for faster responses to readers.  The other (buffindexed)
+      index file for faster responses to readers.  The second (buffindexed)
       uses circular buffers and can handle a higher incoming article rate
-      while still being fast for readers.  The ovmethod key in inn.conf
-      chooses the overview method to use.
+      while still being fast for readers.  The third (ovdb) uses Berkeley DB
+      to store overview information (so you need to have Berkeley DB
+      installed to use it).  The ovmethod key in inn.conf chooses the
+      overview method to use.
 
     * All article storage and retrieval is now done via the storage API. 
       Traditional spool is now available as a storage type under the storage
@@ -87,6 +89,8 @@ Changes from 2.2 to 2.3
 
     * INN now supports embedded Python filters as well as Perl and TCL
       filters.
+
+    * There is preliminary support for news reading over SSL, using OpenSSL.
 
     * The INN build system no longer uses subst.  This should be mostly
       transparent to users, apart from the old annoyance of modifications to
