@@ -55,7 +55,7 @@ file, for example:
 .sp
 .RS
 .\" =()<crosspost:*:Tc,Ap,WR:@<_PATH_NEWSBIN>@/crosspost>()=
-crosspost:*:Tc,Ap,WR:/news/bin/crosspost
+crosspost:*:Tc,Ap,WR:/usr/news/bin/crosspost
 .RE
 .sp
 .PP
@@ -71,7 +71,7 @@ awk <history -F'	' '(NF > 2){print $3}' | crosspost
 The ``\-D'' flag can be used to specify where the article spool is stored.
 The default directory is
 .\" =()<.IR @<_PATH_SPOOL>@ .>()=
-.IR /news/spool/articles .
+.IR /var/news/spool/articles .
 .PP
 By default
 .I crosspost

@@ -3,7 +3,7 @@
 ##  Remove all files specified in the input file.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
 MAIL="${MAILCMD} -s 'Problem removing expired files' ${NEWSMASTER}"
 

@@ -71,6 +71,7 @@ static char *MakePath(int time, int seqnum, const STORAGECLASS class) {
 BOOL timehash_init(void) {
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timehash: token length is less than 6 bytes");
+	SMseterror(SMERR_TOKENSHORT, NULL);
 	return FALSE;
     }
     return TRUE;
@@ -98,10 +99,12 @@ TOKEN timehash_store(const ARTHANDLE article, STORAGECLASS class) {
 	    syslog(L_ERROR, "timehash: could not make directory %s %m", path);
 	    token.type = TOKEN_EMPTY;
 	    DISPOSE(path);
+	    SMseterror(SMERR_UNDEFINED, NULL);
 	    return token;
 	} else {
 	    *p = '/';
 	    if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
+		SMseterror(SMERR_UNDEFINED, NULL);
 		syslog(L_ERROR, "timehash: could not open %s %m", path);
 		token.type = TOKEN_EMPTY;
 		DISPOSE(path);
@@ -111,6 +114,7 @@ TOKEN timehash_store(const ARTHANDLE article, STORAGECLASS class) {
     }
 
     if ((result = write(fd, article.data, article.len)) != article.len) {
+	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timehash error writing %s %m", path);
 	close(fd);
 	token.type = TOKEN_EMPTY;
@@ -131,6 +135,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     ARTHANDLE           *art;
 
     if ((fd = open(path, O_RDONLY)) < 0) {
+	SMseterror(SMERR_UNDEFINED, NULL);
 	return NULL;
     }
 
@@ -145,6 +150,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     }
 
     if (fstat(fd, &sb) < 0) {
+	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timehash: could not fstat article: %m");
 	DISPOSE(art);
 	return NULL;
@@ -153,6 +159,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     art->private = (void *)private = NEW(PRIV_TIMEHASH, 1);
     private->len = sb.st_size;
     if ((private->base = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
+	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timehash: could not mmap article: %m");
 	DISPOSE(art->private);
 	DISPOSE(art);
@@ -173,6 +180,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     }
     
     if ((p = SMFindBody(private->base, private->len)) == NULL)
+	SMseterror(SMERR_NOBODY, NULL);
 	return NULL;
 
     if (amount == RETR_HEAD) {
@@ -185,6 +193,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	art->data = p + 4;
 	art->len = art->len - (private->base - p - 4);
     }
+    SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
     return NULL;
 }
 
@@ -195,6 +204,7 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
     ARTHANDLE           *art;
     
     if (token.type != TOKEN_TIMEHASH)
+	SMseterror(SMERR_INTERNAL, NULL);
 	return NULL;
 
     BreakToken(token, &time, &seqnum);
@@ -234,10 +244,11 @@ BOOL timehash_cancel(TOKEN token) {
     path = MakePath(time, seqnum, token.class);
     result = unlink(path);
     DISPOSE(path);
-    if (result < 0)
+    if (result < 0) {
+	SMseterror(SMERR_UNDEFINED, NULL);
 	return FALSE;
-    else
-	return TRUE;
+    }
+    return TRUE;
 }
 
 static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
@@ -289,10 +300,12 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 	    if (priv.top && ((priv.topde = FindDir(priv.top, FIND_DIR)) != NULL)) {
 		sprintf(path, "%s/time", _PATH_SPOOL);
 		if ((priv.top = opendir(path)) == NULL) {
+		    SMseterror(SMERR_UNDEFINED, NULL);
 		    DISPOSE(path);
 		    return NULL;
 		}
 		if ((priv.topde = FindDir(priv.top, FIND_DIR)) == NULL) {
+		    SMseterror(SMERR_UNDEFINED, NULL);
 		    closedir(priv.top);
 		    DISPOSE(path);
 		    return NULL;

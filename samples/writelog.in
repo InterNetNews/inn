@@ -7,7 +7,7 @@
 ##	name	is 'mail' to mail it, or filename to append to.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
 MAXTRY=60
 

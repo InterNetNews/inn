@@ -1,3 +1,4 @@
+
 /*
  * delete a list of filenames from stdin
  *
@@ -22,24 +23,21 @@
 #define SHORT_NAME	16
 #define MAX_DIR_LEN	2048
 
-/* typedef unsigned char chr; */
-typedef char	chr;
-
 typedef struct _dnode {
     struct _dnode	*next;
     int			count;
-    chr			*dir;
-    chr			*longname;
-    chr			shortname[SHORT_NAME];
+    char			*dir;
+    char			*longname;
+    char			shortname[SHORT_NAME];
 } dnode;
 
 #define	NODENAME(d)	((d)->longname ? (d)->longname : (d)->shortname)
 
 
 STATIC char	DotDot[] = "../../../../";
-STATIC chr	base_dir[MAX_DIR_LEN];
-STATIC chr	cur_dir[MAX_DIR_LEN];
-STATIC chr	prefix_dir[MAX_DIR_LEN];
+STATIC char	base_dir[MAX_DIR_LEN];
+STATIC char	cur_dir[MAX_DIR_LEN];
+STATIC char	prefix_dir[MAX_DIR_LEN];
 STATIC int	prefix_len;
 STATIC char	*MyName;
 STATIC int	fatals;				/* error counter */
@@ -50,33 +48,29 @@ STATIC int	sortdirs;
 STATIC int	cdval = 3;
 
 
-STATIC void
-err_exit(s)
-    char	*s;
+STATIC void err_exit(char *s)
 {
     (void)fprintf(stderr, "%s: %s\n", MyName, s);
+    SMshutdown();
     exit(1);
 }
 
 
-STATIC int
-myexit()
+STATIC int myexit(void)
 {
     err_exit("Could not allocate memory");
     /* NOTREACHED */
+    return 1;
 }
 
 
 /*
 **  Get the next line from stdin into 'l' which has 'len' bytes available.
 */
-STATIC BOOL
-get_line(l, len)
-    register chr	*l;
-    register int	len;
+STATIC BOOL get_line(char *l, int len)
 {
     static int		count;
-    register chr	*p;
+    char                *p;
 
     for ( ; ; ) {
 	/* Get the line. */
@@ -85,7 +79,7 @@ get_line(l, len)
 	count++;
 
 	/* See if we got the \n terminator. */
-	p = (chr *)strchr(l, '\n');
+	p = (char *)strchr(l, '\n');
 	if (p != NULL) {
 	    /* Yes, ok, that's a good line, trash the \n & return. */
 	    *p = '\0';
@@ -110,14 +104,10 @@ get_line(l, len)
 **  Remember a file name; this is pretty trivial (only fancy bit is not
 **  malloc'ing mem for short names).
 */
-STATIC dnode *
-build_node(prev, dir, name)
-    dnode		*prev;
-    chr			*dir;
-    chr			*name;
+STATIC dnode *build_node(dnode *prev, char *dir, char *name)
 {
-    register dnode	*n;
-    register int	i;
+    dnode	        *n;
+    int	                i;
 
     n = NEW(dnode, 1);
     if (prev)
@@ -143,23 +133,21 @@ build_node(prev, dir, name)
 **  names a file not in the same directory as the previous lot remember
 **  the file names in the directory we're examining, and count them
 */
-STATIC dnode *
-build_dir(ip)
-    int		*ip;
+STATIC dnode *build_dir(int *ip)
 {
-    static chr	line[MAX_LINE_SIZE];
-    register dnode	*start;
-    register dnode	*n;
-    register int	dlen;
-    register chr	*p;
-    register chr	*dir;
+    static char	line[MAX_LINE_SIZE];
+    dnode	*start;
+    dnode	*n;
+    int	        dlen;
+    char 	*p;
+    char        *dir;
 
     *ip = 0;
     if (line[0] == '\0' && !get_line(line, (int)sizeof line))
 	return NULL;
 
     /* Build node. */
-    p = (chr *)strrchr(line, '/');
+    p = (char *)strrchr(line, '/');
     if (p != NULL) {
 	*p++ = '\0';
 	dlen = strlen(line);
@@ -191,12 +179,9 @@ build_dir(ip)
 /*
 **  Sorting predicate for qsort to put nodes in alphabetical order.
 */
-STATIC int
-comp(a, b)
-	CPOINTER a;
-	CPOINTER b;
+STATIC int comp(CPOINTER a, CPOINTER b)
 {
-	dnode *l1, *l2;
+	dnode           *l1, *l2;
 
 	l1 = *CAST(dnode**, a);
 	l2 = *CAST(dnode**, b);
@@ -207,15 +192,11 @@ comp(a, b)
 /*
 **  Find a node in the list.
 */
-STATIC dnode *
-inlist(list, num, name)
-    register dnode	**list;
-    int			num;
-    char		*name;
+STATIC dnode *inlist(dnode **list, int num, char *name)
 {
-    register dnode	**top;
-    register dnode	**cur;
-    register int	i;
+    dnode	        **top;
+    dnode	        **cur;
+    int	                i;
 
     for (top = list + num - 1; top >= list; ) {
 	cur = list + (top - list) / 2;
@@ -236,11 +217,9 @@ inlist(list, num, name)
 /*
 **  Free a list of nodes.
 */
-STATIC void
-freelist(list)
-    register dnode *list;
+STATIC void freelist(dnode *list)
 {
-    register dnode *l;
+    dnode               *l;
 
     while ((l = list) != NULL) {
 	list = l->next;
@@ -251,11 +230,9 @@ freelist(list)
 }
 
 
-STATIC void
-unlink_node(n)
-    dnode		*n;
+STATIC void unlink_node(dnode *n)
 {
-    register chr	*p;
+    char	        *p;
     struct stat		sb;
     int			oerrno;
 
@@ -295,6 +272,14 @@ unlink_node(n)
 	return;
     }
 
+    if (IsToken(p)) {
+	if (!SMcancel(TextToToken(p)) && (SMerrno != SMERR_NOENT)) {
+	    fprintf(stderr, "%s: can't cancel %s\n", MyName, p);
+	    fatals++;
+	}
+	return;
+    }
+
     if (unlink(p) < 0) {
 	if (errno != ENOENT) {
 	    oerrno = errno;
@@ -308,13 +293,9 @@ unlink_node(n)
 }
 
 
-STATIC void
-copynsegs(from, to, n)
-    register chr	*from;
-    register chr	*to;
-    register int	n;
+STATIC void copynsegs(char *from, char *to, int n)
 {
-    register chr	c;
+    char	        c;
 
     while ((*to++ = c = *from++) != '\0')
 	if (c == '/' && --n <= 0)
@@ -325,11 +306,9 @@ copynsegs(from, to, n)
 }
 
 
-STATIC int
-slashcount(p)
-    register chr	*p;
+STATIC int slashcount(char *p)
 {
-    register int	i;
+    int	                i;
 
     for (i = 0; *p; )
 	if (*p++ == '/')
@@ -345,17 +324,14 @@ slashcount(p)
 **  depending on the amount of work to do in 'd' - that's given by 'num'.
 **  Return FALSE if the directory can be determined not to exist.
 */
-STATIC BOOL
-setup_dir(d, num)
-    register chr	*d;
-    int			num;
+STATIC BOOL setup_dir(char *d, int num)
 {
-    register chr	*p;
-    register chr	*q;
-    register chr	*abs;
-    register int	bsegs;
-    register int	oerrno;
-    chr			string[MAX_DIR_LEN];
+    char                *p;
+    char                *q;
+    char                *abs;
+    int	                bsegs;
+    int	                oerrno;
+    char		string[MAX_DIR_LEN];
 
     bsegs = slashcount(base_dir);
     if (d == NULL)
@@ -363,7 +339,7 @@ setup_dir(d, num)
     else if (*d == '/')
 	abs = d;
     else if (*d == '\0')
-	abs = (chr *)"/";
+	abs = (char *)"/";
     else {
 	while (d[0] == '.' && d[1] == '/')
 	    for (d += 2; *d == '/'; )
@@ -499,18 +475,15 @@ setup_dir(d, num)
 }
 
 
-STATIC void
-unlink_dir(list, num)
-    register dnode	*list;
-    register int	num;
+STATIC void unlink_dir(dnode *list, int num)
 {
     static dnode	**dptrs;
     static int		ndp;
-    register dnode	*l;
-    register dnode	**pl;
-    register DIR	*dfd;
-    register DIRENTRY	*d;
-    register BOOL	sorted;
+    dnode	        *l;
+    dnode	        **pl;
+    DIR	                *dfd;
+    DIRENTRY	        *d;
+    BOOL	        sorted;
     struct stat		sb;
 
     if (!setup_dir(list->dir, num)) {
@@ -599,9 +572,7 @@ unlink_dir(list, num)
 }
 
 
-STATIC BOOL
-bad_path(p)
-    register char	*p;
+STATIC BOOL bad_path(char *p)
 {
     while (*p) {
 	if (p[0] == '.' && ((p[1] == '/' || p[1] == '.') && p[2] == '/'))
@@ -617,13 +588,10 @@ bad_path(p)
 }
 
 
-int
-main(ac, av)
-    int		ac;
-    char	*av[];
+int main(int ac, char *av[])
 {
-    register dnode	*list;
-    register char	*p;
+    dnode	        *list;
+    char	        *p;
     int			count;
     BOOL		empty_error;
 
@@ -642,7 +610,6 @@ main(ac, av)
 	    switch (*p) {
 	    default:
 		err_exit("Usage error, unknown flag");
-		exit(1);
 	    case 'd':
 		Debugging = TRUE;
 		continue;
@@ -679,10 +646,8 @@ main(ac, av)
 	av++;
     }
 
-    if (ac != 2) {
+    if (ac != 2)
 	err_exit("Usage error, wrong number of arguments");
-	exit(1);
-    }
 
     p = av[1];
     if (*p != '/' || bad_path(p) || strlen(p) >= (SIZE_T)MAX_DIR_LEN) {
@@ -699,10 +664,15 @@ main(ac, av)
 	exit(1);
     }
 
+    SMinit();
+
     while ((list = build_dir(&count)) != NULL) {
 	empty_error = FALSE;
 	unlink_dir(list, count);
     }
+
+    SMshutdown();
+    
     if (empty_error)
 	err_exit("No files to remove");
     if (fatals)

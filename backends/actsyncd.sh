@@ -23,7 +23,7 @@
 # preset vars
 #
 # =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 # Our lock file
 LOCK=${LOCKS}/LOCK.actsyncd
 # where actsync is located

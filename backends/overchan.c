@@ -145,7 +145,7 @@ STATIC BOOL WriteData(TOKEN Token, char *Dir, char *Art, char *Rest, BOOL Compla
     index.token = Token;
     index.cancelled = FALSE;
     PackOverIndex(&index, packed);
-    if (xwrite(ifd, &packed, OVERINDEXPACKSIZE) < 0) {
+    if (xwrite(ifd, packed, OVERINDEXPACKSIZE) < 0) {
 	(void)fprintf(stderr, "overchan cant write %s %s\n",
 		ifile, strerror(errno));
 	close(fd);

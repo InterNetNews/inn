@@ -26,7 +26,7 @@ When the condition restores, it unblocks the server.
 In addition, on each pass through the loop it will check the
 logfile
 .\" =()<.I @<_PATH_MOST_LOGS>@/news.crit>()=
-.I /news/log/news.crit
+.I /var/log/news/news.crit
 to see if it has been modified, and send mail to the news administrator
 if so.
 .PP
@@ -34,7 +34,7 @@ Upon receipt of an interrupt signal (SIGINT),
 .IR innwatch
 will report its status in the file
 .\" =()<.IR @<_PATH_INNWSTATUS>@ .>()=
-.IR /news/run/innwatch.status .
+.IR /var/news/run/innwatch.status .
 .SH OPTIONS
 .TP
 .B \-l 

@@ -19,61 +19,61 @@ if [ ${CHOWN} = chown ] ; then
 fi
 
 ##  =()<MAN1=@<MAN1>@>()=
-MAN1=/news/man/man1
+MAN1=/usr/news/man/man1
 ##  =()<MAN3=@<MAN3>@>()=
-MAN3=/news/man/man3
+MAN3=/usr/news/man/man3
 ##  =()<MAN5=@<MAN5>@>()=
-MAN5=/news/man/man5
+MAN5=/usr/news/man/man5
 ##  =()<MAN8=@<MAN8>@>()=
-MAN8=/news/man/man8
+MAN8=/usr/news/man/man8
 MAN=`echo $MAN8 | sed -e 's@\(.*\)/[^/]*@\1@'`
 
 ##  =()<SPOOL=@<_PATH_SPOOL>@>()=
-SPOOL=/news/spool/articles
+SPOOL=/var/news/spool/articles
 ## =()<OVERVIEWDIR=@<_PATH_OVERVIEWDIR>@>()=
-OVERVIEWDIR=/news/spool/over.view
+OVERVIEWDIR=/var/news/spool/over.view
 ##  =()<ARCHIVEDIR=@<_PATH_ARCHIVEDIR>@>()=
-ARCHIVEDIR=/news/spool/archive
+ARCHIVEDIR=/var/news/spool/archive
 ##  =()<BATCHDIR=@<_PATH_BATCHDIR>@>()=
-BATCHDIR=/news/spool/out.going
+BATCHDIR=/var/news/spool/out.going
 ##  =()<MOST_LOGS=@<_PATH_MOST_LOGS>@>()=
-MOST_LOGS=/news/log
+MOST_LOGS=/var/log/news
 ## =()<PATH_AUTHDIR=@<_PATH_AUTHDIR>@>()=
-PATH_AUTHDIR=/news/bin/auth
+PATH_AUTHDIR=/usr/news/bin/auth
 ##  =()<SPOOLNEWS=@<_PATH_SPOOLNEWS>@>()=
-SPOOLNEWS=/news/spool/in.coming
+SPOOLNEWS=/var/news/spool/in.coming
 ##  =()<BADNEWS=@<_PATH_BADNEWS>@>()=
-BADNEWS=/news/spool/in.coming/bad
+BADNEWS=/var/news/spool/in.coming/bad
 ##  =()<SPOOLTEMP=@<_PATH_SPOOLTEMP>@>()=
 SPOOLTEMP=/var/tmp
 
 ##  =()<NEWSLIB=@<_PATH_NEWSLIB>@>()=
-NEWSLIB=/news/etc
+NEWSLIB=/var/news/etc
 ##  =()<NEWSBIN=@<_PATH_NEWSBIN>@>()=
-NEWSBIN=/news/bin
+NEWSBIN=/usr/news/bin
 ##  =()<CONTROLPROGS=@<_PATH_CONTROLPROGS>@>()=
-CONTROLPROGS=/news/bin/control
+CONTROLPROGS=/usr/news/bin/control
 ##  =()<RNEWSPROGS=@<_PATH_RNEWSPROGS>@>()=
-RNEWSPROGS=/news/bin/rnews.libexec
+RNEWSPROGS=/usr/news/bin/rnews.libexec
 ##  =()<INNDDIR=@<_PATH_INNDDIR>@>()=
-INNDDIR=/news/run
+INNDDIR=/var/news/run
 ##  =()<LOCKSDIR=@<_PATH_LOCKS>@>()=
-LOCKSDIR=/news/locks
+LOCKSDIR=/var/news/locks
 ## =()<MOST_LOGS=@<_PATH_MOST_LOGS>@>()=
-MOST_LOGS=/news/log
+MOST_LOGS=/var/log/news
 ## =()<LOCKS=@<_PATH_LOCKS>@>()=
-LOCKS=/news/locks
+LOCKS=/var/news/locks
 
 ##  =()<NEWSETC=@<_PATH_NEWSBOOT>@>()=
-NEWSETC=/news/bin/rc.news
+NEWSETC=/usr/news/bin/rc.news
 NEWSETC="`dirname ${NEWSETC}`"
 ##  =()<NEWSHIST=@<_PATH_HISTORY>@>()=
-NEWSHIST=/news/etc/history
+NEWSHIST=/var/news/etc/history
 NEWSHIST="`dirname ${NEWSHIST}`"
 ##  =()<NEWSTMP=@<_PATH_TMP>@>()=
 NEWSTMP=/var/tmp
 ##  =()<NEWSHOME=@<_PATH_NEWSHOME>@>()=
-NEWSHOME=/news
+NEWSHOME=/usr/news
 NEWSLBIN=${NEWSHOME}/local
 
 ##  =()<NEWSUSER=@<NEWSUSER>@>()=

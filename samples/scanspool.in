@@ -107,11 +107,11 @@ $|=1;
 #
 $prog = $0;			 	# our name
 # =()<$spool = "@<_PATH_SPOOL>@";>()=   # top of where articles are filed
-$spool = "/news/spool/articles";
+$spool = "/var/news/spool/articles";
 # =()<$active = "@<_PATH_ACTIVE>@";>()=	# inn active file, list of groups
-$active = "/news/etc/active";
+$active = "/var/news/etc/active";
 # =()<$ctlinnd = "@<_PATH_NEWSBIN>@/ctlinnd";>()=
-$ctlinnd = "/news/bin/ctlinnd";
+$ctlinnd = "/usr/news/bin/ctlinnd";
 $reason = "running scanspool";		# throttle reason
 
 # parse args

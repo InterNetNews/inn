@@ -4,7 +4,7 @@
 ##  Written by Landon Curt Noll <chongo@toad.com>.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
 SYSLOG_CRIT=news.crit
 SYSLOG_ERR=news.err

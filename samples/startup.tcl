@@ -6,7 +6,7 @@
 # must exist in the location defined in the config.data
 
 ## =()<set o [open "@<_PATH_MOST_LOGS>@/tcl.log" "a+"]>()=
-set o [open "/news/log/tcl.log" "a+"]
+set o [open "/var/log/news/tcl.log" "a+"]
 
 proc filter_before_reload {} {
     global o

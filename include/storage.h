@@ -9,6 +9,7 @@
 
 typedef enum {RETR_ALL, RETR_HEAD, RETR_BODY, RETR_STAT} RETRTYPE;
 
+#define NUM_STORAGE_CLASSES 256
 typedef unsigned char STORAGECLASS;
 typedef unsigned char STORAGETYPE;
 
@@ -28,6 +29,20 @@ typedef struct {
     void                *private;   /* This is a pointer to method specific data */
 } ARTHANDLE;
 
+#define SMERR_NOERROR          0
+#define SMERR_INTERNAL         1
+#define SMERR_UNDEFINED        2
+#define SMERR_NOENT            3
+#define SMERR_TOKENSHORT       4
+#define SMERR_NOBODY           5
+#define SMERR_UNINIT           6
+#define SMERR_CONFIG           7
+#define SMERR_BADHANDLE        8
+#define SMERR_BADTOKEN         9
+
+extern int              SMerrno;
+extern char             *SMerrorstr;
+
 char *TokenToText(const TOKEN token);
 TOKEN TextToToken(const char *text);
 BOOL IsToken(const char *text);
@@ -39,5 +54,4 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount);
 void      SMfreearticle(ARTHANDLE *article);
 BOOL      SMcancel(TOKEN token);
 void      SMshutdown(void);
-
 #endif

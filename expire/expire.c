@@ -49,7 +49,6 @@ typedef struct _NEWSGROUP {
 } NEWSGROUP;
 
 typedef struct _EXPIRECLASS {
-    STORAGECLASS        Class;
     time_t              Keep;
     time_t              Default;
     time_t              Purge;
@@ -88,6 +87,7 @@ STATIC FILE		*EXPunlinkfile;
 STATIC long		EXPsaved;
 STATIC NEWSGROUP	*Groups;
 STATIC NEWSGROUP	EXPdefault;
+STATIC EXPIRECLASS      EXPclasses[NUM_STORAGE_CLASSES];
 STATIC NGHASH		NGHtable[NGH_SIZE];
 STATIC STRING		EXPreason;
 STATIC time_t		EXPremember;
@@ -367,7 +367,7 @@ STATIC BOOL EXPreadfile(FILE *F)
     NEWSGROUP		v;
     BOOL		SawDefault;
     char		buff[BUFSIZ];
-    char		*fields[6];
+    char		*fields[7];
     char		**patterns;
 
     /* Scan all lines. */
@@ -410,6 +410,34 @@ STATIC BOOL EXPreadfile(FILE *F)
 	    }
 	    if (!EXPgetnum(i, fields[1], &EXPremember, "remember"))
 		return FALSE;
+	    continue;
+	}
+
+	/* Storage class line? */
+	if (j == 4) {
+	    j = atoi(fields[0]);
+	    if ((j < 0) || (j > NUM_STORAGE_CLASSES)) {
+		fprintf(stderr, "Line %d bad storage class %d\n", i, j);
+	    }
+	
+	    if (!EXPgetnum(i, fields[1], &EXPclasses[j].Keep,    "keep")
+		|| !EXPgetnum(i, fields[2], &EXPclasses[j].Default, "default")
+		|| !EXPgetnum(i, fields[3], &EXPclasses[j].Purge,   "purge"))
+		return FALSE;
+	    /* These were turned into offsets, so the test is the opposite
+	     * of what you think it should be.  If Purge isn't forever,
+	     * make sure it's greater then the other two fields. */
+	    if (EXPclasses[j].Purge) {
+		/* Some value not forever; make sure other values are in range. */
+		if (EXPclasses[j].Keep && EXPclasses[j].Keep < EXPclasses[j].Purge) {
+		    (void)fprintf(stderr, "Line %d keep>purge\n", i);
+		    return FALSE;
+		}
+		if (EXPclasses[j].Default && EXPclasses[j].Default < EXPclasses[j].Purge) {
+		    (void)fprintf(stderr, "Line %d default>purge\n", i);
+		    return FALSE;
+		}
+	    }
 	    continue;
 	}
 
@@ -532,6 +560,46 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
 {
     char	        *p;
     NEWSGROUP	        *ngp;
+    EXPIRECLASS         class;
+    TOKEN               token;
+
+    if (IsToken(Entry)) {
+	token = TextToToken(Entry);
+	class = EXPclasses[token.class];
+	/* Bad posting date? */
+	if (when > (RealNow + 86400)) {
+	    /* Yes -- force the article to go to right now */
+	    when = Expires ? class.Purge : class.Default;
+	}
+	if (EXPverbose > 2) {
+	    if (EXPverbose > 3)
+		printf("%s age = %0.2f\n", Entry, (Now - when) / 86400.);
+	    if (Expires == 0) {
+		if (when <= class.Default)
+		    (void)printf("%s too old (no exp)\n", Entry);
+	    } else {
+		if (when <= class.Purge)
+		    (void)printf("%s later than purge\n", Entry);
+		if (when >= class.Keep)
+		    (void)printf("%s earlier than min\n", Entry);
+		if (Now >= Expires)
+		    (void)printf("%s later than header\n", Entry);
+	    }
+	}
+	
+	/* If no expiration, make sure it wasn't posted before the default. */
+	if (Expires == 0) {
+	    if (when >= class.Default)
+		return Keep;
+	    
+	    /* Make sure it's not posted before the purge cut-off and
+	     * that it's not due to expire. */
+	} else {
+	    if (when >= class.Purge && (Expires >= Now || when >= class.Keep))
+		return Keep;
+	}
+	return Remove;
+    }
 
     if ((p = strchr(Entry, '/')) == NULL) {
 	(void)fflush(stdout);
@@ -551,8 +619,7 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
 
     if (EXPverbose > 2) {
 	if (EXPverbose > 3)
-	    (void)printf("%s age = %0.2f\n",
-		    Entry, (Now - when) / 86400.);
+	    (void)printf("%s age = %0.2f\n", Entry, (Now - when) / 86400.);
 	if (Expires == 0) {
 	    if (when <= ngp->Default)
 		(void)printf("%s too old (no exp)\n", Entry);
@@ -593,12 +660,13 @@ STATIC void EXPremove(char *p, long *size)
     struct stat		Sb;
 
     /* Turn into a filename and get the size if we need it. */
-    for (q = p; *q; q++)
-	if (*q == '.')
-	    *q = '/';
-    if (EXPsizing && *size < 0 && stat(p, &Sb) >= 0)
-	*size = (int)(((long)Sb.st_size >> 10) + (((long)Sb.st_size >> 9) & 1));
-
+    if (!IsToken(p)) {
+	for (q = p; *q; q++)
+	    if (*q == '.')
+		*q = '/';
+	if (EXPsizing && *size < 0 && stat(p, &Sb) >= 0)
+	    *size = (int)(((long)Sb.st_size >> 10) + (((long)Sb.st_size >> 9) & 1));
+    }
     if (EXPverbose > 1)
 	(void)printf("\tunlink %s\n", p);
     EXPunlinked++;
@@ -617,8 +685,13 @@ STATIC void EXPremove(char *p, long *size)
 	(void)fclose(EXPunlinkfile);
 	EXPunlinkfile = NULL;
     }
-    if (unlink(p) < 0 && errno != ENOENT)
-	(void)fprintf(stderr, "Can't unlink %s, %s\n", p, strerror(errno));
+    if (IsToken(p)) {
+	if (!SMcancel(TextToToken(p)))
+	    fprintf(stderr, "Can't unlink %s\n", p);
+    } else {
+	if (unlink(p) < 0 && errno != ENOENT)
+	    (void)fprintf(stderr, "Can't unlink %s, %s\n", p, strerror(errno));
+    }
 }
 
 
@@ -630,10 +703,10 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
     static long		Offset;
     static BUFFER	New;
-    register char	*p;
-    register char	*q;
-    register char	*first;
-    register int	i;
+    char	        *p;
+    char	        *q;
+    char	        *first;
+    int	                i;
     int			count;
     char		*fields[4];
     time_t		Arrived;
@@ -956,7 +1029,7 @@ int main(int ac, char *av[])
     char		*NHistoryhash;
     char		*EXPhistdir;
     char		buff[SMBUF];
-    register FILE	*out;
+    FILE	        *out;
     BOOL		Server;
     BOOL		Paused;
     BOOL		Bad;

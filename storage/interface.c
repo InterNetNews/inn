@@ -28,8 +28,11 @@ typedef struct __S_SUB__ {
     struct __S_SUB__   *next;
 } STORAGE_SUB;
 
-static STORAGE_SUB *subscriptions = NULL;
-static unsigned int typetoindex[256];
+static STORAGE_SUB      *subscriptions = NULL;
+static unsigned int     typetoindex[256];
+int                     SMerrno;
+char                    *SMerrorstr = NULL;
+static BOOL             ErrorAlloc = FALSE;
 
 /*
 ** Checks to see if the token is valid
@@ -141,6 +144,7 @@ static BOOL SMreadconfig(void) {
 
     sprintf(path, "%s/storage.ctl", _PATH_NEWSLIB);
     if ((f = fopen(path, "r")) == NULL) {
+	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "SM Could not open %s: %m", path);
 	return FALSE;
     }
@@ -161,6 +165,7 @@ static BOOL SMreadconfig(void) {
 	    continue;
 	
 	if ((p = strchr(line, ':')) == NULL) {
+	    SMseterror(SMERR_CONFIG, "Could not find end of the first field");
 	    syslog(L_ERROR, "SM could not find end of first field, line %d", linenum);
 	    return FALSE;
 	}
@@ -190,6 +195,7 @@ static BOOL SMreadconfig(void) {
 	    }
 	}
 	if (sub->type == TOKEN_EMPTY) {
+	    SMseterror(SMERR_CONFIG, "Invalid storage method name");
 	    syslog(L_ERROR, "no configured storage methods are named '%s'", method);
 	    DISPOSE(sub);
 	    return FALSE;
@@ -244,6 +250,7 @@ BOOL SMinit(void) {
     for (j = 0; j < i; j++) {
 	storage_methods[i].shutdown();
     }
+    SMseterror(SMERR_UNDEFINED, "One or more storage methods failed initialization");
     return FALSE;
 }
 
@@ -289,11 +296,15 @@ TOKEN SMstore(const ARTHANDLE article) {
     char                *groups;
 
     result.type = TOKEN_EMPTY;
-    if (!article.data || !article.len)
+    if (!article.data || !article.len) {
+	SMseterror(SMERR_BADHANDLE, NULL);
 	return result;
+    }
 
-    if ((groups = (char *)HeaderFindMem(article.data, article.len, "Newsgroups", 10)) == NULL)
+    if ((groups = (char *)HeaderFindMem(article.data, article.len, "Newsgroups", 10)) == NULL) {
+	SMseterror(SMERR_UNDEFINED, "Could not find Newsgroups header");
 	return result;
+    }
 
     for (sub = subscriptions; sub != NULL; sub = sub->next) {
 	if ((article.len >= sub->minsize) &&
@@ -317,6 +328,7 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
     }
     
     syslog(L_ERROR, "SM could not find token type or method was not initialized");
+    SMseterror(SMERR_BADTOKEN, NULL);
     return NULL;
 }
 
@@ -330,8 +342,10 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
     else
 	start= article->nextmethod;
 
-    if (!method_data[start].initialized)
+    if (!method_data[start].initialized) {
+	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
+    }
 
     for (i = start, newart = NULL; newart && (i < NUM_STORAGE_METHODS); i++) {
 	newart = storage_methods[start].next(article, amount);
@@ -350,6 +364,7 @@ void SMfreearticle(ARTHANDLE *article) {
 
 BOOL SMcancel(TOKEN token) {
     if (!method_data[typetoindex[token.type]].initialized) {
+	SMseterror(SMERR_UNINIT, NULL);
 	syslog(L_ERROR, "SM can't free article with uninitialized method");
 	return FALSE;
     }
@@ -362,3 +377,54 @@ void SMshutdown(void) {
     for (i = 0; i < NUM_STORAGE_METHODS; i++)
 	storage_methods[i].shutdown();
 }
+
+void SMseterror(int errornum, char *error) {
+    if (ErrorAlloc)
+	DISPOSE(SMerrorstr);
+
+    ErrorAlloc = FALSE;
+    
+    if ((errornum == SMERR_UNDEFINED) && (errno == ENOENT))
+	errornum = SMERR_NOENT;
+	    
+    SMerrno = errornum;
+
+    if (error == NULL) {
+	switch (SMerrno) {
+	case SMERR_UNDEFINED:
+	    SMerrorstr = COPY(strerror(errno));
+	    ErrorAlloc = TRUE;
+	    break;
+	case SMERR_INTERNAL:
+	    SMerrorstr = "Internal error";
+	    break;
+	case SMERR_NOENT:
+	    SMerrorstr = "Token not found";
+	    break;
+	case SMERR_TOKENSHORT:
+	    SMerrorstr = "Configured token size too small";
+	    break;
+	case SMERR_NOBODY:
+	    SMerrorstr = "No article body found";
+	    break;
+	case SMERR_UNINIT:
+	    SMerrorstr = "Storage manager is not initialized";
+	    break;
+	case SMERR_CONFIG:
+	    SMerrorstr = "Error reading config file";
+	    break;
+	case SMERR_BADHANDLE:
+	    SMerrorstr = "Bad article handle";
+	    break;
+	case SMERR_BADTOKEN:
+	    SMerrorstr = "Bad token";
+	    break;
+	default:
+	    SMerrorstr = "Undefined error";
+	}
+    } else {
+	SMerrorstr = COPY(error);
+	ErrorAlloc = TRUE;
+    }
+}
+

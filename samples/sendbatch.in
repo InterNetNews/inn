@@ -4,7 +4,7 @@
 ##  Based on B News sendbatch 1.22 10/29/89.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
 ##  Place to run a df, and amount of space needed.
 UUSPOOL=/usr/spool/uucp

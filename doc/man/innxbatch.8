@@ -74,12 +74,12 @@ entry to produce appropriate xbatch files (thanks to Karsten Leipold
     :*\e
     :Tc,Wnb\e
 .\" =()<.ds R$ @<_PATH_NEWSBIN>@>()=
-.ds R$ /news/bin
+.ds R$ /usr/news/bin
     :\*(R$/batcher \e
 .\" =()<.ds R$ @<_PATH_COMPRESS>@>()=
 .ds R$ /usr/bin/compress
 .\" =()<.ds P$ @<_PATH_BATCHDIR>@>()=
-.ds P$ /news/spool/out.going
+.ds P$ /var/news/spool/out.going
        -p "(\*(R$ > \*(P$/nase.\e$\e$)" \e
        nase.do.main
 .fi
@@ -101,7 +101,7 @@ is:
   fi
 
   ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
   site="$1"; host="$2"; shift; shift
 

@@ -8,7 +8,7 @@
 ##  control.ctl specifies logging.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
 CONTROL=${MOST_LOGS}/control.log
 CONTROL_NEW=${CONTROL}.new

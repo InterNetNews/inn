@@ -11,7 +11,7 @@ CC	= gcc
 ##  =()<DEFS	= @<DEFS>@>()=
 DEFS	= -I../include
 ##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g -Wall
+CFLAGS	= $(DEFS) -g
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
@@ -24,7 +24,7 @@ CTAGS		= ctags -t -w
 PROF	= -pg
 
 ##  =()<NEWSBIN	= @<_PATH_NEWSBIN>@>()=
-NEWSBIN	= /news/bin
+NEWSBIN	= /usr/news/bin
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 
@@ -64,7 +64,7 @@ expireover:	$(P) expireover.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ expireover.o $(LIBNEWS) $(LIBS)
 
 fastrm:	$(P) fastrm.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ fastrm.o $(LIBNEWS) $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ fastrm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
 
 grephistory:	$(P) grephistory.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ grephistory.o $(LIBNEWS) $(LIBS)

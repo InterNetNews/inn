@@ -11,7 +11,7 @@ CC	= gcc
 ##  =()<DEFS	= -I.. -I../../include @<DEFS>@>()=
 DEFS	= -I.. -I../../include -I../include
 ##  =()<CFLAGS	= -I. @<CFLAGS>@ $(PERLINC)>()=
-CFLAGS	= -I. $(DEFS) -g -Wall $(PERLINC)
+CFLAGS	= -I. $(DEFS) -g $(PERLINC)
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<CTAGS		= @<CTAGS>@>()=

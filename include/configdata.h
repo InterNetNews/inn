@@ -212,7 +212,7 @@ typedef char		*CSTRING;
 #define BAD_DISTRIBS	"*.*",NULL
     /* Check that poster is the person doing the cancel? */
     /* =()<#define @<VERIFY_CANCELS>@_VERIFY_CANCELS>()= */
-#define DO_VERIFY_CANCELS
+#define DONT_VERIFY_CANCELS
     /* Log "ctlinnd cancel" commands to syslog? */
     /* =()<#define @<LOG_CANCEL_COMMANDS>@_LOG_CANCEL_COMMANDS>()= */
 #define DONT_LOG_CANCEL_COMMANDS

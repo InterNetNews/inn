@@ -11,7 +11,7 @@ CC	= gcc
 ##  =()<DEFS	= @<DEFS>@>()=
 DEFS	= -I../include
 ##  =()<CFLAGS	= @<CFLAGS>@>()=
-CFLAGS	= $(DEFS) -g -Wall
+CFLAGS	= $(DEFS) -g
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
@@ -22,13 +22,13 @@ LINTFILTER	= | sed -n -f ../sedf.sun
 CTAGS		= ctags -t -w
 
 ##  =()<NEWSBIN	=@<_PATH_NEWSBIN>@>()=
-NEWSBIN	=/news/bin
+NEWSBIN	=/usr/news/bin
 ##  =()<INEWS	= @<_PATH_INEWS>@>()=
-INEWS	= /news/bin/inews
+INEWS	= /usr/news/bin/inews
 ##  =()<RNEWS	= @<_PATH_RNEWS>@>()=
-RNEWS	= /news/bin/rnews
+RNEWS	= /usr/news/bin/rnews
 ##  =()<RNEWSPROGS	= @<_PATH_RNEWSPROGS>@>()=
-RNEWSPROGS	= /news/bin/rnews.libexec
+RNEWSPROGS	= /usr/news/bin/rnews.libexec
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 ## =()<ROWNER	= -O @<NEWSUSER>@ -G @<RNEWS_GROUP>@>()=

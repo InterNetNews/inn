@@ -5,7 +5,7 @@ newsfeeds \- determine where Usenet articles get sent
 .SH DESCRIPTION
 The file
 .\" =()<.I @<_PATH_NEWSFEEDS>@>()=
-.I /news/etc/newsfeeds
+.I /var/news/etc/newsfeeds
 specifies how incoming articles should be distributed to other sites.
 It is parsed by the InterNetNews server
 .IR innd (8)
@@ -202,7 +202,7 @@ If
 .I name
 is not an absolute pathname, it is taken to be relative to
 .\" =()<.IR @<_PATH_BATCHDIR>@ .>()=
-.IR /news/spool/out.going .
+.IR /var/news/spool/out.going .
 Then, if the destination is a directory, the file
 .I togo
 in that directory will be used as filename.
@@ -265,7 +265,7 @@ If the amount of data queued for the site gets to be larger than
 bytes, then the server will switch to spooling, appending to a file
 specified by the ``F'' flag, or
 .\" =()<.I @<_PATH_BATCHDIR>@/ sitename>()=
-.I /news/spool/out.going/ sitename
+.I /var/news/spool/out.going/ sitename
 if the ``F'' flag is not specified.
 Spooling usually happens only for channel or exploder feeds.
 .TP
@@ -410,10 +410,10 @@ If
 is not an absolute pathname, it is taken to be
 relative to
 .\" =()<.IR @<_PATH_BATCHDIR>@ .>()=
-.IR /news/spool/out.going .
+.IR /var/news/spool/out.going .
 If empty, the filename defaults to
 .\" =()<.IR @<_PATH_BATCHDIR>@/ sitename.>()=
-.IR /news/spool/out.going/ sitename.
+.IR /var/news/spool/out.going/ sitename.
 This name should be unique.
 .PP
 When a site fed by a file is flushed (see
@@ -447,7 +447,7 @@ Standard output and error
 will be set to the error log.
 The process will run with the user and group ID of the
 .\" =()<.I @<_PATH_INNDDIR>@>()=
-.I /news/run
+.I /var/news/run
 directory.
 .I Innd
 will try to avoid spawning a shell if the command has no shell
@@ -478,7 +478,7 @@ If the process exits, it will be restarted.
 If the process cannot be started, the server will spool input to a
 file named
 .\" =()<.IR @<_PATH_BATCHDIR>@/ sitename.>()=
-.IR /news/spool/out.going/ sitename.
+.IR /var/news/spool/out.going/ sitename.
 It will then try to start the process some time later.
 .PP
 When a site fed by a channel or exploder is flushed, the server closes down its
@@ -526,7 +526,7 @@ ME:*,!junk,!foo.*/world,usa,na,ne,foo,ddn,gnu,inet\e
 	::
 ##  Feed all moderated source postings to an archiver
 .\" =()<.ds R$ @<_PATH_NEWSBIN>@>()=
-.ds R$ /news/bin
+.ds R$ /usr/news/bin
 source-archive!:!*,*sources*,!*wanted*,!*.d\e
 	:Tc,Wn:\*(R$/archive \-f \-i \e
 	    /usr/spool/news.archive/INDEX
@@ -550,7 +550,7 @@ feed1::Tf,Wnm:feed1.domain.name
 peer.foo.com:foo.*:Tf,Wnm:peer.foo.com
 ##  Real-time transmission.
 .\" =()<.ds R$ @<_PATH_NEWSBIN>@>()=
-.ds R$ /news/bin
+.ds R$ /usr/news/bin
 mit.edu:/world,usa,na,ne,ddn,gnu,inet\e
 	:Tc,Wnm:\*(R$/nntplink -i stdin mit.edu
 ##  Two sites feeding into a hypothetical NNTP fan-out program:

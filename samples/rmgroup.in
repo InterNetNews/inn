@@ -5,7 +5,7 @@
 PROG=rmgroup
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
 ##  =()<. @<_PATH_PARSECTL>@ "$@">()=
-. /news/etc/parsecontrol "$@"
+. /var/news/etc/parsecontrol "$@"
 
 # Fix up the group name so grep matches exactly.
 GROUPNAME=`echo $1 | sed 's/\./\\./g'`

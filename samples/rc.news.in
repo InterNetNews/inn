@@ -6,7 +6,7 @@
 
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INNDSTART}

@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <string.h>
+#include <sys/mman.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "nnrpd.h"
@@ -519,7 +520,8 @@ char *GetHeader(char *header, BOOL IsLines)
     static char		buff[40];
     char		*p;
     char		*q;
-    char		lastchar;
+    /* Bogus value here to make sure that it isn't initialized to \n */
+    char		lastchar = ' ';
     char		*limit;
     static char		*retval = NULL;
     static int		retlen = 0;

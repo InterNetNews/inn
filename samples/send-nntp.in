@@ -3,7 +3,7 @@
 ##  SH script to send NNTP news out.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
 PROGNAME=`basename $0`
 LOG=${MOST_LOGS}/${PROGNAME}.log

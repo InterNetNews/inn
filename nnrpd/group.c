@@ -355,7 +355,7 @@ STATIC void GRPscandir(char *dir)
 	}
 	icount = sb.st_size / OVERINDEXPACKSIZE;
 	if (OVERmmap) {
-	    if ((tmp = mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
+	    if ((tmp = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, icount * OVERINDEXPACKSIZE,
 			    PROT_READ, MAP__ARG, fd, 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
 		syslog(L_ERROR, "%s cant mmap index %s %m", ClientHost, dir);
 		close(fd);

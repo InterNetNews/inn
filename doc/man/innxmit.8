@@ -63,7 +63,7 @@ If the
 .I file
 is not an absolute pathname, it is taken relative to the
 .\" =()<.I @<_PATH_BATCHDIR>@>()=
-.I /news/spool/out.going
+.I /var/news/spool/out.going
 directory.
 It is normally written by specifying the ``Wnm'' flags in the
 .IR newsfeeds (5)
@@ -83,7 +83,7 @@ field names the article to be sent.
 If it is not an absolute pathname it is taken relative to the news
 spool directory,
 .\" =()<.IR @<_PATH_SPOOL>@ .>()=
-.IR /news/spool/articles .
+.IR /var/news/spool/articles .
 If the
 .I Message-ID
 field is not specified, it will be obtained by scanning the article.

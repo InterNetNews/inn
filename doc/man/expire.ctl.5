@@ -5,7 +5,7 @@ expire.ctl \- control file for Usenet article expiration
 .SH DESCRIPTION
 The file
 .\" =()<.I @<_PATH_EXPIRECTL>@>()=
-.I /news/etc/expire.ctl
+.I /var/news/etc/expire.ctl
 is the default control file for the
 .IR expire (8)
 program, which reads it at start-up.
@@ -106,6 +106,19 @@ days.
 If
 .I purge
 is the word ``never'' then the article will never be deleted.
+.PP
+If you have turned on the storage manager with the 'storageapi' inn.conf option, 
+then you will need to use a slightly different format for specifying expiration
+times for storage classes:
+.RS
+.nf
+classnum:keep:default:purge
+.fi
+.RE
+Where
+.I classnum 
+is the number that you specified in storage.ctl.  The 
+rest of the fields are identical to the 5 field format.
 .PP
 It is often useful to honor the expiration headers in articles, especially
 those in moderated groups.

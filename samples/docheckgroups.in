@@ -3,7 +3,7 @@
 ##  Script to execute checkgroups text; results to stdout.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 T=${TMPDIR}
 
 cat /dev/null >${T}/$$out

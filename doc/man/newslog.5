@@ -4,7 +4,7 @@ newslog \- description of Usenet log files
 .SH DESCRIPTION
 Most log files created by Usenet programs reside in the
 .\" =()<.I @<_PATH_MOST_LOGS>@>()=
-.I /news/log
+.I /var/log/news
 directory and have a ``.log'' extension.
 Several versions are usually kept with an additional extension such as ``.1'',
 ``.2'', etc. \(em the higher the number, the older the log.
@@ -82,7 +82,7 @@ spawned by
 .IR innd (8).
 The most common programs are the control-message handlers found in
 .\" =()<.IR @<_PATH_CONTROLPROGS>@ .>()=
-.IR /news/bin/control .
+.IR /usr/news/bin/control .
 This file should be empty.
 .I Scanlogs
 will print the entire contents of this log file if it is non-empty.
@@ -132,7 +132,7 @@ file:
 .RS
 .RS
 .\" =()<news.crit  @<_PATH_MOST_LOGS>@/news.crit>()=
-news.crit  /news/log/news.crit
+news.crit  /var/log/news/news.crit
 .RE
 .RE
 .TP
@@ -150,7 +150,7 @@ file:
 .RS
 .RS
 .\" =()<news.err  @<_PATH_MOST_LOGS>@/news.err>()=
-news.err  /news/log/news.err
+news.err  /var/log/news/news.err
 .RE
 .RE
 .TP
@@ -169,7 +169,7 @@ You should have the following line in your syslog.conf file:
 .RS
 .RS
 .\" =()<news.notice  @<_PATH_MOST_LOGS>@/news.notice>()=
-news.notice  /news/log/news.notice
+news.notice  /var/log/news/news.notice
 .RE
 .RE
 .TP

@@ -240,7 +240,7 @@ main(ac, av)
 	where = QIOtell(h);
     }
     if (QIOtoolong(h)) {
-	fprintf(stderr, "Line too line at %ld\n", QIOtell(h));
+	fprintf(stderr, "Line too long at %ld\n", QIOtell(h));
 	exit(1);
     }
     if (QIOerror(h)) {

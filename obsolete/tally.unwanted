@@ -6,7 +6,7 @@
 ##  to have the new count of unwanted groups, and how often they were used.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 
 PROGNAME=unwanted
 LOCK=${LOCKS}/LOCK.${PROGNAME}

@@ -61,7 +61,7 @@ is used as a filter for other programs such as
 .B \-f
 The default name of the history file is
 .\" =()<.IR @<_PATH_HISTORY>@ ;>()=
-.IR /news/etc/history ;
+.IR /var/news/etc/history ;
 to specify a different name, use the ``\-f'' flag.
 .SH EXAMPLES
 .PP
@@ -73,7 +73,7 @@ database every so often by using a script like the following:
 .nf
 ctlinnd throttle "Rebuilding history database"
 .\" =()<cd @<_PATH_NEWSLIB>@>()=
-cd /news/etc
+cd /var/news/etc
 awk 'NF > 2 {
 	printf "%s\et%s\et%s", $1, $2, $3;
 	for (i = 4; i <= NF; i++)
