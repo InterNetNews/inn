@@ -243,4 +243,7 @@ typedef char * const    CSTRING;
 /* sort program for makehistory */
 #define SORT_PGM	"@_PATH_SORT@"
 
+/* Additional valid low-numbered port for inndstart. */
+#undef INND_PORT
+
 #endif /* __CONFIG_H__ */

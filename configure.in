@@ -146,6 +146,11 @@ AC_SUBST(FILEMODE)
 AC_SUBST(DIRMODE)
 AC_SUBST(RUNDIRMODE)
 
+AC_ARG_WITH(innd-port,
+    [  --with-innd-port=PORT   Additional low-numbered port for inndstart],
+    INND_PORT=$with_innd_port)
+AC_DEFINE_UNQUOTED(INND_PORT, $INND_PORT)
+
 AC_ARG_ENABLE(tagged-hash,
     [  --enable-tagged-hash    Use tagged hash table for history],
     DO_DBZ_TAGGED_HASH=DO,
