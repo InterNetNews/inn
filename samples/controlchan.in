@@ -235,9 +235,6 @@ while (<STDIN>) {
 	    $hdrval{'Reply-To'}, $token, $sitepath, $act_log,
 	    $hdrcount{approved});
     
-    if ($progname eq "checkgroups" and $act_log =~ /^doit/) {
-      $act_log = "doit=mail" if $act_log !~ /^doit=.+/;  
-    }
     &$subfind (join(" ", @progparams), $hdrval{Sender},
 	       $hdrval{'Reply-To'}, $token, $sitepath,
 	       $act_log, $hdrcount{approved}, $newsgrouppats);
