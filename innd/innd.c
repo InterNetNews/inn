@@ -907,7 +907,7 @@ main(ac, av)
     (void)signal(SIGDANGER, CatchTerminate);
 #endif	/* defined(SIGDANGER) */
     CHANsetup(i);
-    PROCsetup(i * 2);
+    PROCsetup(10);
     HISsetup();
     CCsetup();
     LCsetup();
