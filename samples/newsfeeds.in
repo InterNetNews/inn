@@ -7,24 +7,33 @@
 ##		:param
 ##  Summary of flags:
 ##	<size		Article must be less then size bytes.
+##	>size		Article must be more then size bytes.
 ##	Aitems		Article checks -- d (must have Distribution header)
-##			p (don't check for site in Path header).
+##			p (don't check for site in Path header)
+##			c (no control messages) C (only control messages)
+##			e (all groups must exist).
 ##	Bhigh/low	Internal buffer size before writing to output.
+##	Fname		Name of the spool file.
+##	Gcount		Crossposts limited to count groups.
 ##	H[count]	Article must have less then count hops; default is 1.
 ##	Isize		Internal buffer size (if a file feed)
 ##	Nm		Only moderated groups that match the patterns.
 ##	Nu		Only unmoderated groups that match the patterns.
+##	Ppriority	Nice priority of channel or program feed.
+##	Ooriginator	First field of X-Trace must match originator (wildmat).
 ##	Ssize		Start spooling if more than size bytes get queued.
 ##	Ttype		Feed types -- f (file) m (funnel; param names the
 ##			real entry) p (pipe to program) c (send to stdin
-##			channel of param's sub-process); x (like c, but
-##			handles commands on stdin).
+##			channel of param's sub-process) x (like c, but
+##			handles commands on stdin) x (log entry only).
 ##	Witems		What to write -- b (article bytesize) f (full path)
-##			g (first newsgroup) m (Message-ID) n (relative
-##			path) s (site that fed article) t (time received)
+##			g (first newsgroup) h (Message-ID hash) 
+##			m (Message-ID) n (relative path) p (posted time)
+##			s (site that fed article) t (time received)
 ##			* (names of funnel feed-in's or all sites that get
 ##			the article) N (Newsgroups header) D (Distribution
 ##			header) H (all headers) O (overview data)
+##			P (path header) R (replication information)
 ##  Param field depends on T flag.  For Tf, relative paths are from the
 ##  out.going directory.  For Tp and Tc, it is a shell command to execute.
 ##  If a Tm refers to this entry (which will have its own T param) then "*"
