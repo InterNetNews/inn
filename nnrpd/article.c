@@ -464,6 +464,8 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
     int			fd;
     HASH		hash = HashMessageID(msg_id);
     TOKEN		token;
+    int			pathlen;
+    char		*path;
 
     *ap = 0;
     if ((p = HISgetent(&hash, innconf->storageapi ? FALSE : TRUE, NULL)) == NULL)
@@ -480,33 +482,43 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 	ARTlen = ARThandle->len;
 	*ap = 0;
     } else {
+	pathlen = SPOOLlen + 1 + strlen(p) + 1;
+	path = NEW(char, pathlen);
+	(void)sprintf(path, "%s/%s", innconf->patharticles, p);
 	if (innconf->articlemmap) {
-	    if ((fd = open(p, O_RDONLY)) < 0)
+	    if ((fd = open(path, O_RDONLY)) < 0) {
+		DISPOSE(path);
 		return FALSE;
+	    }
 	    if ((fstat(fd, &Sb) < 0) || !S_ISREG(Sb.st_mode)) {
 		close(fd);
+		DISPOSE(path);
 		return FALSE;
 	    }
 	    ARTlen = Sb.st_size;
 	    if ((ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == (MMAP_PTR)-1) {
 		close(fd);
+		DISPOSE(path);
 		return FALSE;
 	    }
 	    close(fd);
 	} else {
-	    if ((ARTqp = QIOopen(p)) == NULL)
+	    if ((ARTqp = QIOopen(path)) == NULL) {
+		DISPOSE(path);
 		return FALSE;
+	    }
 	    if (fstat(QIOfileno(ARTqp), &Sb) < 0 || !S_ISREG(Sb.st_mode)) {
 		ARTclose();
+		DISPOSE(path);
 		return FALSE;
 	    }
 	    CloseOnExec(QIOfileno(ARTqp), TRUE);
 	}
-	p += SPOOLlen + 1;
 	if ((q = strrchr(p, '/')) != NULL)
 	    *q++ = '\0';
 	if (GRPlast[0] && EQ(p, GRPlast))
 	    *ap = atol(q);
+	DISPOSE(path);
     }
     return TRUE;
 }
