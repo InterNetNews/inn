@@ -44,6 +44,8 @@ int	PerlFilterActive = FALSE;
 static PerlInterpreter	*PerlCode;
 CV *perl_filter_cv ;                 /* filter_art or filter_post holder */
 
+int PERLreadfilter(char *filterfile, char *function);
+
 void PerlSilence();
 void PerlUnSilence();
 

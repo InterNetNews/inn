@@ -53,9 +53,9 @@ const char *HeaderFindMem(const char *Article, const int ArtLen, const char *Hea
 		}
 	    }
 	}
-	if ((p = memchr(p, '\n', ArtLen - (p - Article))) == NULL ||
-	    ++p >= Article + ArtLen || *p == '\n' || (*p == '\r' &&
-	    ++p >= Article + ArtLen || *p == '\n'))
+	if ((p = memchr(p, '\n', ArtLen - (p - Article))) == NULL
+	    || ++p >= Article + ArtLen || *p == '\n'
+	    || (*p == '\r' && (++p >= Article + ArtLen || *p == '\n')))
 	    return NULL;
     }
 }

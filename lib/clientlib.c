@@ -15,6 +15,7 @@ FILE	*ser_rd_fp = NULL;
 FILE	*ser_wr_fp = NULL;
 char	ser_line[NNTP_STRLEN + 2];
 void put_server(char *buff);
+int get_server(char *buff, int buffsize);
 
 
 /*

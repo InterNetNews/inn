@@ -48,6 +48,9 @@
 #define yyerror		date_error
 
 
+static int date_lex(void);
+
+
     /* See the LeapYears table in Convert. */
 #define EPOCH		1970
 #define END_OF_TIME	2038
