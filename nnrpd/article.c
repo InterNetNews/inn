@@ -205,7 +205,7 @@ void ARTclose(void)
 	if (ARThandle) {
 	    SMfreearticle(ARThandle);
 	} else {
-#if defined(MC_ADVISE) && defined(MADV_DONTNEED) && !defined(_nec_ews)
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(ARTmem, ARTlen, MADV_DONTNEED);
 #endif
 	    munmap(ARTmem, ARTlen);
