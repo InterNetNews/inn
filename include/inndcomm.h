@@ -80,6 +80,13 @@ extern int		ICCreserve(const char *why);
 
 extern const char	*ICCfailure;
 
+/* Use a read or recv call to read a descriptor. */
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+# define RECVorREAD(fd, p, s)   recv((fd), (p), (s), 0)
+#else
+# define RECVorREAD(fd, p, s)   read((fd), (p), (s))
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
