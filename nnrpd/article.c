@@ -520,7 +520,7 @@ STATIC void ARTsendmmap(SENDTYPE what)
 char *GetHeader(char *header, BOOL IsLines)
 {
     static char		buff[40];
-    char		*p, *q, *r, *s, *virtualpath;
+    char		*p, *q, *r, *s, *t, *virtualpath;
     /* Bogus value here to make sure that it isn't initialized to \n */
     char		lastchar = ' ';
     char		*limit;
@@ -543,8 +543,25 @@ char *GetHeader(char *header, BOOL IsLines)
 		for (; (p < limit) && !isspace((int)*p) ; p++);
 		for (; (p < limit) && isspace((int)*p) ; p++);
 		for (q = p; q < limit; q++) 
-		    if ((*q == '\r') || (*q == '\n'))
-			break;
+		    if ((*q == '\r') || (*q == '\n')) {
+			/* Check for continuation header lines */
+			t = q + 1;
+			if (t < limit) {
+			    if ((*q == '\r' && *t == '\n')) {
+				t++;
+				if (t == limit)
+				    break;
+			    }
+			    if ((*t == '\t' || *t == ' ')) {
+				for (; (t < limit) && isspace((int)*t) ; t++);
+				q = t;
+			    } else {
+				break;
+			    }
+			} else {
+			    break;
+			}
+		    }
 		if (q == limit)
 		    return NULL;
 		if (caseEQn("Path", header, headerlen))
@@ -589,6 +606,9 @@ char *GetHeader(char *header, BOOL IsLines)
 		    memcpy(retval, p, q - p);
 		    *(retval + (int)(q - p)) = '\0';
 		}
+		for (p = retval; *p; p++)
+		    if (*p == '\n' || *p == '\r')
+			*p = ' ';
 		return retval;
 	    }
 	}
