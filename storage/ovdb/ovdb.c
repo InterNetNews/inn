@@ -801,7 +801,7 @@ static int delete_all_records(int whichdb, group_id_t gno)
     DBT key, val;
     struct datakey dk;
     int count;
-    int ret;
+    int ret = 0;
     DB_TXN *tid;
 
     memset(&key, 0, sizeof key);
@@ -936,7 +936,7 @@ rm_temp_groupinfo(group_id_t gno)
     char keystr[1 + sizeof gno];
     DB_TXN *tid;
     DBT key;
-    int ret;
+    int ret = 0;
 
     memset(&key, 0, sizeof key);
 
@@ -1149,7 +1149,7 @@ static bool delete_old_stuff(int forgotton)
 	    }
 	}
     }
-out:
+
     for(i = 0; i < listcount; i++)
 	free(dellist[i]);
     free(dellist);
