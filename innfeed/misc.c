@@ -80,7 +80,7 @@ char *program ;                 /* this should be set to argv[0] */
 int debuggingOutput ;
 u_int loggingLevel ;
 char **PointersFreedOnExit ;
-static void log (int level, const char *fmt, va_list args) ;
+static void dolog (int level, const char *fmt, va_list args) ;
 
 
 
@@ -122,7 +122,7 @@ bool debuggingDump = true ;
 extern void (*gPrintInfo) (void) ;
 void (*gCleanUp) (void) = 0 ;
 
-static void log (int level, const char *fmt, va_list args)
+static void dolog (int level, const char *fmt, va_list args)
 {
   time_t now = time (NULL) ;
   char timeString [30] ;
@@ -167,7 +167,7 @@ void die (const char *fmt, ...)
   va_list ap ;
 
   va_start (ap, fmt) ;
-  log (LOG_ERR,fmt,ap) ;
+  dolog (LOG_ERR,fmt,ap) ;
   va_end (ap) ;
 
 #if SNAPSHOT_ON_DIE
@@ -192,7 +192,7 @@ void warn (const char *fmt, ...)
   va_list ap ;
 
   va_start (ap, fmt) ;
-  log (LOG_WARNING,fmt,ap) ;
+  dolog (LOG_WARNING,fmt,ap) ;
   va_end (ap) ;
 }
 
@@ -202,7 +202,7 @@ void logAndExit (int exitVal, const char *fmt, ...)
   va_list ap ;
 
   va_start (ap,fmt) ;
-  log (LOG_CRIT,fmt,ap) ;
+  dolog (LOG_CRIT,fmt,ap) ;
   va_end (ap) ;
 
   exit (exitVal) ;
