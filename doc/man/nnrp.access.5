@@ -67,12 +67,18 @@ is required for newsreading.
 If they are empty, then no password is required.
 Whitespace in these fields will result in the client being unable
 to properly authenticate themselves and may be used to disable access.
-If <HAVE_SHADOW in config.data> is ``DO'' and
-the third field is ``+'', then
+If the third field is ``+'', then
 .IR nnrpd (8)
 uses
 .IR crypt (3)
-to authenticate passed username and password.
+to authenticate passed username and password. This might not work on
+systems that use a shadow password file, since nnrpd normally doesn't
+have the permissions to read that file. If nnrpd is started in standalone
+mode, it tries to adjust its permissions so that it can read the shadow
+file. See also the
+.I \-g
+option in the manual page for
+.IR nnrpd (8).
 .PP
 The fifth field is a set of patterns identifying the newsgroups that
 the client is allowed to access.

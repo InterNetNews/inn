@@ -11,6 +11,9 @@ nnrpd \- NNTP server for on-campus hosts
 .BI \-D
 ]
 [
+.BI \-g " shadowgroup"
+]
+[
 .BI \-l
 ]
 [
@@ -151,6 +154,16 @@ to listen on
 .IR port 
 when started as a standalone daemon using the ``\-D'' flag.
 .TP
+.B \-g
+The ``\-g'' parameter instructs
+.I nnrpd
+to try to add the named group as a supplementary group on shadow systems.
+This only works when
+.I nnrpd
+is running in standalone mode since this call only works when
+.I nnrpd
+is started as root.
+.TP
 .B \-b
 The ``\-b'' parameter instructs
 .I nnrpd
@@ -268,6 +281,13 @@ It returns a one-line response code of
 .I 111
 followed by the GMT date
 and time on the server in the form YYYYMMDDhhmmss.
+.SH SHADOW PASSWORD SYSTEMS
+On systems that have a shadow password file,
+.I nnrpd
+tries to add the group ``shadow'' as a supplementary group if it is
+running in standalone mode. On many systems, members of that group have
+read permission for the shadow password file. The ``-g'' option can
+be used to change the group that nnrpd tries to become a member of.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 Overview support added by Rob Robertston <rob@violet.berkeley.edu> and
