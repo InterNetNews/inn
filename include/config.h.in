@@ -294,6 +294,9 @@
 /* Define if you have the ulimit function.  */
 #undef HAVE_ULIMIT
 
+/* Define if you have the krb5_init_ets function.  */
+#undef HAVE_KRB5_INIT_ETS
+
 /* Define if you have the <crypt.h> header file.  */
 #undef HAVE_CRYPT_H
 
