@@ -17,12 +17,12 @@
 **  Copyright abandoned 1999 by author.  This work is in the public domain.
 */
 
-/* This mess is needed because INN's header files are currently a maze. */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
-#include "clibrary.h"
+#include "config.h"
 #include "libinn.h"
+
+#ifdef STDC_HEADERS
+# include <string.h>
+#endif
 
 /* If we're testing, use our own xmalloc. */
 #ifdef TEST
@@ -30,23 +30,19 @@
 # define xmalloc myxmalloc
 #endif
 
-#ifdef VAR_STDARGS
-# include <stdarg.h>
-#else
-# ifdef VAR_VARARGS
-#  include <varargs.h>
-# else
-#  error "No variadic argument mechanism available."
-# endif
-#endif
-
 /* varargs implementation based on Solaris 2.6 man page. */
-#ifdef VAR_STDARGS
+#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
+# include <stdarg.h>
 # define VA_PARAM(type, param)  (type param, ...)
 # define VA_START(param)        (va_start(args, param))
 #else
-# define VA_PARAM(type, param)  (param, va_alist) type param; va_dcl
-# define VA_START(param)        (va_start(args))
+# ifdef HAVE_VARARGS_H
+#  include <varargs.h>
+#  define VA_PARAM(type, param) (param, va_alist) type param; va_dcl
+#  define VA_START(param)       (va_start(args))
+# else
+#  error "No variadic argument mechanism available."
+# endif
 #endif
 
 /* These are the same between stdargs and varargs. */
@@ -89,6 +85,8 @@ concat VA_PARAM(const char *, first)
 
 /* Some simple testing code to create memory leaks. */
 #ifdef TEST
+
+#include <stdio.h>
 
 int
 main ()
