@@ -11,7 +11,7 @@ SPOOLFREE=20000
 ##  Program names and flags.  Most can be set on the command-line.
 C7=
 COMP=
-COMPFLAGS=
+COMPFLAGS=-f
 # Use the COMPRESS variable as it is in innshellvars
 # COMPRESS=/usr/ucb/compress
 ECHO=
