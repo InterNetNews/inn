@@ -1132,50 +1132,84 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
     art->arrived = ntohl(cah.arrived);
-    offset += sizeof(cah);
-    pagefudge = offset % pagesize;
-    mmapoffset = offset - pagefudge;
-    private->len = pagefudge + ntohl(cah.size);
-    if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ, MAP__ARG,
-			      cycbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
-        SMseterror(SMERR_UNDEFINED, "mmap failed");
-        syslog(L_ERROR, "%s: could not mmap token %s %s:0x%s:%ld: %m",
-	        LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
-        DISPOSE(art->private);
-        DISPOSE(art);
-	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-        return NULL;
+    if (innconf->articlemmap) {
+	offset += sizeof(cah);
+	pagefudge = offset % pagesize;
+	mmapoffset = offset - pagefudge;
+	private->len = pagefudge + ntohl(cah.size);
+	if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ,
+		MAP__ARG, cycbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+	    SMseterror(SMERR_UNDEFINED, "mmap failed");
+	    syslog(L_ERROR, "%s: could not mmap token %s %s:0x%s:%ld: %m",
+		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
+	    DISPOSE(art->private);
+	    DISPOSE(art);
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+	    return NULL;
+	}
+    } else {
+	private->base = NEW(char, ntohl(cah.size));
+	if (read(cycbuff->fd, private->base, ntohl(cah.size)) < 0) {
+	    SMseterror(SMERR_UNDEFINED, "read failed");
+	    syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%ld: %m",
+		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
+	    DISPOSE(private->base);
+	    DISPOSE(art->private);
+	    DISPOSE(art);
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+	    return NULL;
+	}
     }
     ret_token = token;    
     art->token = &ret_token;
     art->len = ntohl(cah.size);
     if (amount == RETR_ALL) {
-	art->data = private->base + pagefudge;
+	art->data = innconf->articlemmap ? private->base + pagefudge : private->base;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
-    if ((p = SMFindBody(private->base + pagefudge, art->len)) == NULL) {
+    if ((p = SMFindBody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
         SMseterror(SMERR_NOBODY, NULL);
-	munmap(private->base, private->len);
+	if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+	    madvise(priv.base, priv.len, MADV_DONTNEED);
+#endif
+	    munmap(private->base, private->len);
+	} else
+	    DISPOSE(private->base);
         DISPOSE(art->private);
         DISPOSE(art);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return NULL;
     }
     if (amount == RETR_HEAD) {
-	art->data = private->base + pagefudge;
-        art->len = p - private->base - pagefudge;
+	if (innconf->articlemmap) {
+	    art->data = private->base + pagefudge;
+            art->len = p - private->base - pagefudge;
+	} else {
+	    art->data = private->base;
+            art->len = p - private->base;
+	}
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return art;
     }
     if (amount == RETR_BODY) {
         art->data = p;
-	art->len = art->len - (p - private->base - pagefudge);
+	if (innconf->articlemmap)
+	    art->len = art->len - (p - private->base - pagefudge);
+	else
+	    art->len = art->len - (p - private->base);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
-    munmap(private->base, private->len);
+    if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && !defined(_nec_ews)
+	madvise(priv.base, priv.len, MADV_DONTNEED);
+#endif
+	munmap(private->base, private->len);
+    } else
+	DISPOSE(private->base);
     DISPOSE(art->private);
     DISPOSE(art);
     if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
@@ -1190,10 +1224,13 @@ void cnfs_freearticle(ARTHANDLE *article) {
     
     if (article->private) {
 	private = (PRIV_CNFS *)article->private;
+	if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && !defined(_nec_ews)
-	madvise(private->base, private->len, MADV_DONTNEED);
+	    madvise(private->base, private->len, MADV_DONTNEED);
 #endif	/* MADV_DONTNEED */
-	munmap(private->base, private->len);
+	    munmap(private->base, private->len);
+	} else
+	    DISPOSE(private->base);
 	DISPOSE(private);
     }
     DISPOSE(article);
@@ -1263,10 +1300,13 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
 	priv = *(PRIV_CNFS *)article->private;
 	DISPOSE(article->private);
 	DISPOSE(article);
+	if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && !defined(_nec_ews)
-	madvise(priv.base, priv.len, MADV_DONTNEED);  
+	    madvise(priv.base, priv.len, MADV_DONTNEED);  
 #endif
-	munmap(priv.base, priv.len);
+	    munmap(priv.base, priv.len);
+	} else
+	    DISPOSE(priv.base);
 	cycbuff = priv.cycbuff;
     }
 
@@ -1356,38 +1396,57 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     art->arrived = ntohl(cah.arrived);
     token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, ntohl(cah.class), (TOKEN *)NULL);
     art->token = &token;
-    offset += sizeof(cah);
-    pagefudge = offset % pagesize;
-    mmapoffset = offset - pagefudge;
-    private->len = pagefudge + ntohl(cah.size);
-    if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ, MAP__ARG,
-	cycbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
-	art->data = NULL;
-	art->len = 0;
-	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	return art;
+    if (innconf->articlemmap) {
+	offset += sizeof(cah);
+	pagefudge = offset % pagesize;
+	mmapoffset = offset - pagefudge;
+	private->len = pagefudge + ntohl(cah.size);
+	if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ,
+	    MAP__ARG, cycbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+	    art->data = NULL;
+	    art->len = 0;
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+	    return art;
+	}
+    } else {
+	private->base = NEW(char, ntohl(cah.size));
+	if (read(cycbuff->fd, private->base, ntohl(cah.size)) < 0) {
+	    art->data = NULL;
+	    art->len = 0;
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+	    return art;
+	    DISPOSE(private->base);
+	}
     }
     art->len = ntohl(cah.size);
     if (amount == RETR_ALL) {
-	art->data = private->base + pagefudge;
+	art->data = innconf->articlemmap ? private->base + pagefudge : private->base;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
-    if ((p = SMFindBody(private->base + pagefudge, art->len)) == NULL) {
+    if ((p = SMFindBody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
 	art->data = NULL;
 	art->len = 0;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
     if (amount == RETR_HEAD) {
-	art->data = private->base + pagefudge;
-	art->len = p - private->base - pagefudge;
+	if (innconf->articlemmap) {
+	    art->data = private->base + pagefudge;
+	    art->len = p - private->base - pagefudge;
+	} else {
+	    art->data = private->base;
+	    art->len = p - private->base;
+	}
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
     if (amount == RETR_BODY) {
 	art->data = p;
-	art->len = art->len - (p - private->base - pagefudge);
+	if (innconf->articlemmap)
+	    art->len = art->len - (p - private->base - pagefudge);
+	else
+	    art->len = art->len - (p - private->base);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
