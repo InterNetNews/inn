@@ -164,6 +164,10 @@ sub collect {
       $inn_badart{$server}++;
       return 1;
     }
+    # Cancelling <...>
+    if ($left =~ /(\S+) <[^>]+> Cancelling/o) {
+      return 1;
+    }
     # all others are just counted as "Other"
     if ($left =~ /(\S+) /o) {
       my $server = $1;
