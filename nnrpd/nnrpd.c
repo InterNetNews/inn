@@ -951,7 +951,6 @@ main(argc, argv, env)
 
 	/* Set signal handle to care for dead children */
 	(void)signal(SIGCHLD, WaitChild);
-	SetupDaemon();
  
 	TITLEset("nnrpd: accepting connections");
  	
@@ -984,6 +983,7 @@ listen_loop:
 	close(fd);
 	dup2(0, 1);
 	dup2(0, 2);
+	SetupDaemon();
 
 	/* if we are a daemon innd didn't make us nice, so be nice kids */
 	if (innconf->nicekids) {
