@@ -40,9 +40,12 @@
 #include <sys/un.h>
 #include <sys/uio.h>
 
-#include "configdata.h"
-#include "clibrary.h"
-#include "nnrpd.h"
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#include <syslog.h>
+
+#include "config.h"
 
 #define STATEDIR	"/var"
 
@@ -107,3 +110,98 @@ const char *pass;
     response[start] = '\0';
     return 1;
 }
+
+
+/* retry.c -- keep trying write system calls
+ *
+ * Keep calling the write() system call with 'fd', 'buf', and 'nbyte'
+ * until all the data is written out or an error occurs.
+ */
+int 
+retry_write(fd, buf, nbyte)
+int fd;
+const char *buf;
+unsigned nbyte;
+{
+    int n;
+    int written = 0;
+
+    if (nbyte == 0) return 0;
+
+    for (;;) {
+	n = write(fd, buf, nbyte);
+	if (n == -1) {
+	    if (errno == EINTR) continue;
+	    return -1;
+	}
+
+	written += n;
+
+	if (n >= nbyte) return written;
+
+	buf += n;
+	nbyte -= n;
+    }
+}
+
+	
+/*
+ * Keep calling the writev() system call with 'fd', 'iov', and 'iovcnt'
+ * until all the data is written out or an error occurs.
+ */
+int
+retry_writev(fd, iov, iovcnt)
+int fd;
+struct iovec *iov;
+int iovcnt;
+{
+    int n;
+    int i;
+    int written = 0;
+    static int iov_max =
+#ifdef MAXIOV
+	MAXIOV
+#else
+#ifdef IOV_MAX
+	IOV_MAX
+#else
+	8192
+#endif
+#endif
+	;
+    
+    for (;;) {
+	while (iovcnt && iov[0].iov_len == 0) {
+	    iov++;
+	    iovcnt--;
+	}
+
+	if (!iovcnt) return written;
+
+	n = writev(fd, iov, iovcnt > iov_max ? iov_max : iovcnt);
+	if (n == -1) {
+	    if (errno == EINVAL && iov_max > 10) {
+		iov_max /= 2;
+		continue;
+	    }
+	    if (errno == EINTR) continue;
+	    return -1;
+	}
+
+	written += n;
+
+	for (i = 0; i < iovcnt; i++) {
+	    if (iov[i].iov_len > n) {
+		iov[i].iov_base = (char *)iov[i].iov_base + n;
+		iov[i].iov_len -= n;
+		break;
+	    }
+	    n -= iov[i].iov_len;
+	    iov[i].iov_len = 0;
+	}
+
+	if (i == iovcnt) return written;
+    }
+}
+
+	
