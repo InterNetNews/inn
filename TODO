@@ -51,11 +51,11 @@ Scheduled for INN 2.4:
 * Integrate IPv6 support.  [Marco d'Itri has a patch which needs some
   work.]
 
-* Replace the current innshellvars mechanism with a real INN Perl module
-  for Perl programs, and include the necessary glue so that other Perl
-  modules can be added to INN's build tree and installed with INN,
-  allowing their capabilities to be available to the portions of INN
-  written in Perl.  [Russ will be working on this.]
+* Replace the current innshellvars.pl file with a real INN Perl module for
+  Perl programs, and include the necessary glue so that other Perl modules
+  can be added to INN's build tree and installed with INN, allowing their
+  capabilities to be available to the portions of INN written in Perl.
+  [Russ will be working on this.]
 
 * A complete audit of INN against the latest NNTP protocol draft, with at
   least a report on the differences and preferrably all issues fixed.
@@ -503,6 +503,8 @@ Future Projects:
   and the space penalty isn't too bad.  For more information, see
   <http://www.ddj.com/articles/1998/9804/9804a/9804a.htm>.  A generic
   implementation in libinn may be usable in many places.
+
+* Provide an innshellvars equivalent for Python.
 
 
 Long-Term Projects:
