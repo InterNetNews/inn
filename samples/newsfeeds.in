@@ -69,7 +69,7 @@ ME:!*/!local,!collabra-internal::
 ##  operations out of innd's main loop.
 
 # News overview.
-#overchan!:*:Tc,WntO:@prefix@/bin/overchan
+#overview!:*:Tc,WnteO:@prefix@/bin/overchan
 
 
 ##  OUTGOING NORMAL FEED EXAMPLES

@@ -43,11 +43,14 @@ maxconnections:		50
 artcutoff:		14
 icdsynccount:		10
 hiscachesize:		0
+wipcheck:		5
+wipexpire:		10
 overcachesize:		15
 enableoverview:		true
 useoverchan:		false
 ovmethod:		tradindexed
-ovmmapthreshold:	10000
+ovgrouppat:
+groupbaseexpiry:	false
 readertrack:		false
 strippostcc:		false
 status:			0
