@@ -36,9 +36,7 @@ typedef struct _CYCBUFF {
   CYCBUFF_OFF_T free;		/* Offset (relative to byte 0 of file) to first
 				   freely available byte */
   time_t	updated;	/* Time of last update to header */
-  int		fdrd;		/* O_RDONLY file descriptor for this cycbuff */
-  int		fdrdwr;		/* O_RDWR file descriptor for this cycbuff,
-				   for use by "innd" only! */
+  int		fd;		/* file descriptor for this cycbuff */
   U_INT32_T	cyclenum;	/* Number of current cycle, 0 = invalid */
   int		magicver;	/* Magic version number */
   caddr_t	bitfield;	/* Bitfield for article in use */
