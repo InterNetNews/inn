@@ -192,7 +192,8 @@ typedef unsigned long           ARTNUM;
    header file; used by innd/site.c and backends/buffchan.c. */
 #define EXP_CONTROL             '!'
 
-/* Only used internal to innd, should be moved to innd/innd.h. */
+/* Only used by innd and cvtbatch, should be moved to a more specific header
+   file. */
 #define FEED_BYTESIZE           'b'
 #define FEED_FULLNAME           'f'
 #define FEED_HASH               'h'
@@ -228,11 +229,6 @@ typedef unsigned long           ARTNUM;
    will attempt to construct. */
 #define MAX_BUILTIN_ARGV        20
 
-/* Special characters for newsfeeds entries.  Should be moved to a more
-   specific header file. */
-#define NF_FIELD_SEP            ':'
-#define NF_SUBFIELD_SEP         '/'
-
 /* active file flags.  Should be moved to a more specific header file. */
 #define NF_FLAG_ALIAS		'='
 #define NF_FLAG_EXCLUDED	'j'
@@ -254,12 +250,6 @@ typedef unsigned long           ARTNUM;
 /* Only used by inews.  Should be moved there. */
 #define SIG_MAXLINES		4
 #define SIG_SEPARATOR		"-- \n"
-
-/* Used internally by innd for storing group subscriptions for feeds.
-   Should be moved into innd-specific headers. */
-#define SUB_DEFAULT		FALSE
-#define SUB_NEGATE		'!'
-#define SUB_POISON		'@'
 
 /* There's no reason to make all of these #defines except possibly for
    L_CC_CMD and even that's a stretch.  Since we're logging to our own

@@ -58,6 +58,20 @@ typedef short	SITEIDX;
 #define NOSITE ((SITEIDX) -1)
 
 /*
+**  Various constants.
+*/
+
+/* Used for storing group subscriptions for feeds. */
+#define SUB_DEFAULT		FALSE
+#define SUB_NEGATE		'!'
+#define SUB_POISON		'@'
+
+/* Special characters for newsfeeds entries. */
+#define NF_FIELD_SEP            ':'
+#define NF_SUBFIELD_SEP         '/'
+
+
+/*
 **  Server's operating mode.
 */
 typedef enum _OPERATINGMODE {
