@@ -1940,60 +1940,6 @@ ARTpost(CHANNEL *cp)
   }
 #endif /* DO_PERL */
 
-  /* I suppose some masochist will run with both TCL and Perl in together */
-
-#if defined(DO_TCL)
-  if (TCLFilterActive) {
-    int code;
-    const ARTHEADER *hp;
-
-    /* make info available to Tcl */
-
-    TCLCurrArticle = article;
-    TCLCurrData = data;
-    Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
-    Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
-    for (i = 0 ; i < MAX_ARTHEADER ; i++, hc++) {
-      if (HDR_FOUND(i)) {
-	hp = &ARTheaders[i];
-	Tcl_SetVar2(TCLInterpreter, "Headers", (char *) hp->Name, HDR(i),
-	  TCL_GLOBAL_ONLY);
-      }
-    }
-    Tcl_SetVar(TCLInterpreter, "Body", article->data + data->Body,
-      TCL_GLOBAL_ONLY);
-    /* call filter */
-
-    code = Tcl_Eval(TCLInterpreter, "filter_news");
-    Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
-    Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
-    if (code == TCL_OK) {
-      if (strcmp(TCLInterpreter->result, "accept") != 0) {
-        if (innconf->dontrejectfiltered) {
-	  Filtered = true;
-        } else {
-	  snprintf(cp->Error, sizeof(cp->Error), "%d %.200s",
-                   NNTP_REJECTIT_VAL, TCLInterpreter->result);
-	  syslog(L_NOTICE, "rejecting[tcl] %s %s", HDR(HDR__MESSAGE_ID),
-                 cp->Error);
-	  ARTlog(data, ART_REJECT, cp->Error);
-	  if (innconf->remembertrash && (Mode == OMrunning) &&
-	      !InndHisRemember(HDR(HDR__MESSAGE_ID)))
-	    syslog(L_ERROR, "%s cant write history %s %m",
-	      LogName, HDR(HDR__MESSAGE_ID));
-	  ARTreject(REJECT_FILTER, cp, article);
-	  return false;
-	}
-      }
-    } else {
-      /* the filter failed: complain and then turn off filtering */
-      syslog(L_ERROR, "TCL proc filter_news failed: %s",
-	TCLInterpreter->result);
-      TCLfilter(false);
-    }
-  }
-#endif /* defined(DO_TCL) */
-
   /* If we limit what distributions we get, see if we want this one. */
   if (HDR_FOUND(HDR__DISTRIBUTION)) {
     if (HDR(HDR__DISTRIBUTION)[0] == ',') {

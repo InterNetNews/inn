@@ -463,23 +463,6 @@ has been reloaded.  Reloading the Python filter does not enable filtering if
 it is disabled; use
 .I python y
 to do this.
-If
-.I <\-\-with\-tcl is specified at configure>
-and it is the word ``filter.tcl'' then the
-.I filter.tcl
-file is reloaded.  If a TCL procedure named ``filter_before_reload'' exists,
-it will be called prior to rereading
-.IR filter.tcl.
-If a TCL procedure named ``filter_after_reload'' exists, it will be called
-after
-.I filter.tcl
-has been reloaded.  Reloading the Tcl filter does not enable filtering if
-it is disabled; use
-.IR filter
-to do this.
-The
-.I startup.tcl
-file cannot be reloaded.
 .TP
 .BI renumber " group"
 Scan overview database for the specified newsgroup and update the
@@ -535,7 +518,7 @@ and sent to all open connections.
 .sp 1
 It is a good idea to send a ``throttle'' command first.
 .sp 1
-If Perl, Python, or TCL filtering is compiled in and enabled, certain
+If Perl or Python filtering is compiled in and enabled, certain
 functions are called at ``throttle'' or ``shutdown'' (for example, to
 save filter state to disk), consult the embedded filter documentation
 for details.
@@ -553,14 +536,6 @@ reports status informatoin to syslog.  Status reporting is turned off if
 ``off'' or ``0'' is specified.  See ``status'' in
 .IR inn.conf (5)
 for information on how to set the startup default.
-.TP
-.BI tcl " flag"
-Enable or disable Tcl news filtering, if
-.IR <\-\-with\-tcl\ is\ specified\ at\ configure> .
-If
-.I flag
-starts with the letter ``y'' then filtering is enabled.  If it starts with
-``n'', then filtering is disabled.
 .TP
 .BI throttle " reason"
 Input is throttled so that all existing connections are closed and new

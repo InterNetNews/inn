@@ -27,8 +27,6 @@
 #define _PATH_RNEWSPROGS	"rnews.libexec"
 
 /* Default prefix path is pathfilter. */
-#define _PATH_TCL_STARTUP	"startup.tcl"
-#define _PATH_TCL_FILTER	"filter.tcl"
 #define _PATH_PERL_STARTUP_INND	"startup_innd.pl"
 #define _PATH_PERL_FILTER_INND	"filter_innd.pl"
 #define _PATH_PERL_FILTER_NNRPD	"filter_nnrpd.pl"

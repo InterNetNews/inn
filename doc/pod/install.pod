@@ -134,9 +134,9 @@ non-profit organization, this shouldn't be a problem.
 
 =back
 
-Also, if you want to use either the Tcl or Python embedded hooks, you'll
-need to have suitable versions of Tcl and/or Python installed.  See
-F<doc/hook-tcl> and F<doc/hook-python> for more information.
+Also, if you want to use either the Python embedded hooks, you'll need to
+have a suitable versions of Python installed.  See F<doc/hook-python> for
+more information.
 
 =head1 Unpacking the Distribution
 
@@ -304,14 +304,6 @@ later installed on your system to enable this option.  See
 F<doc/hook-python> for all the details.  Note that there is an
 incompatibility between INN and Python 2.0 when Python is compiled with
 cycle garbage collection; this problem was reported fixed in Python 2.1a1.
-
-=item B<--with-tcl>
-
-Enables support for Tcl, allowing you to install filter scripts written in
-Tcl.  Most available filterse seem to be written in Perl these days, so
-you can safely leave out Tcl support.  If you choose to enable this, you
-will need to have a suitable Tcl distribution installed.  See
-F<doc/hook-tcl> for all the details.
 
 =item B<--with-innd-port>=PORT
 

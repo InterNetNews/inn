@@ -32,7 +32,6 @@ typedef char ICC_PROTOCOLTYPE ;
 #define SC_CHECKFILE	'd'
 #define SC_DROP		'e'
 #define SC_FEEDINFO	'F'
-#define SC_FILTER	'T'
 #define SC_FLUSH	'f'
 #define SC_FLUSHLOGS	'g'
 #define SC_GO		'h'

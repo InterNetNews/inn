@@ -5,7 +5,7 @@ INN Perl Filtering and Authentication Support
     This file documents INN's built-in support for Perl filtering and reader
     authentication.  The code is based very heavily on work by Christophe
     Wolfhugel <wolf@pasteur.fr>, and his work was in turn inspired by the
-    existing TCL support.  Please send any bug reports to inn-bugs@isc.org,
+    previous Tcl support.  Please send any bug reports to inn-bugs@isc.org,
     not to Christophe, as the code has been modified heavily since he
     originally wrote it.
 

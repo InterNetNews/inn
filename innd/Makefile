@@ -9,7 +9,7 @@ ALL		= innd
 
 SOURCES		= art.c cc.c chan.c icd.c innd.c keywords.c lc.c nc.c \
 		  newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
-		  status.c tcl.c util.c wip.c
+		  status.c util.c wip.c
 
 OBJECTS		= $(SOURCES:.c=.o)
 
@@ -175,12 +175,6 @@ status.o: status.c ../include/clibrary.h ../include/config.h \
  ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
  ../include/innperl.h
-tcl.o: tcl.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h innd.h \
- ../include/portable/time.h ../include/portable/socket.h \
- ../include/inn/buffer.h ../include/inn/history.h \
- ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
- ../include/nntp.h ../include/paths.h ../include/storage.h
 util.o: util.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h \
  innd.h ../include/portable/time.h ../include/portable/socket.h \

@@ -260,14 +260,10 @@ STATUSsummary(void)
   } else {
 	fprintf (F, "               Remember Trash: No\n");
   }
-#if defined(DO_TCL)
-  fprintf (F, "                Tcl filtering: %s\n", 
-	   TCLFilterActive ? "enabled" : "disabled");
-#endif /* defined(DO_TCL) */
-#if defined(DO_PERL)
+#ifdef DO_PERL
   fprintf (F, "               Perl filtering: %s\n", 
 	   PerlFilterActive ? "enabled" : "disabled");
-#endif /* defined(DO_PERL) */
+#endif
 
   fputc ('\n', F) ;
 

@@ -212,10 +212,6 @@ JustCleanup(void)
     NGclose();
     SMshutdown();
 
-#if DO_TCL
-    TCLclose();
-#endif
-
 #if DO_PERL
     PerlFilter(false);
     PerlClose();
@@ -637,12 +633,6 @@ main(int ac, char *av[])
 	    IOError(WHEN, i);
 	}
     }
-
-#if DO_TCL
-    TCLsetup();
-    if (!filter)
-	TCLfilter(false);
-#endif /* DO_TCL */
 
 #if DO_PERL
     /* Load the Perl code */

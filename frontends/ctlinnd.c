@@ -45,10 +45,6 @@ static COMMAND	Commands[] = {
 	1,	SC_DROP,	false		},
     {	"feedinfo",		"site\t\t\tPrint state of feed to site*",
 	1,	SC_FEEDINFO,	false		},
-#if defined(DO_TCL)
-    {	"tcl",			"flag\t\t\tEnable or disable Tcl filtering",
-	1,	SC_FILTER,	false		},
-#endif /* defined(DO_TCL) */
     {	"flush",	"site\t\t\tFlush feed for site*",
 	1,	SC_FLUSH,	false	},
     {	"flushlogs",	"\t\t\tFlush log files",
@@ -69,14 +65,14 @@ static COMMAND	Commands[] = {
 	2,	SC_PARAM,	false	},
     {	"pause",	"reason...\t\tShort-term pause in accepting articles",
 	1,	SC_PAUSE,	true	},
-#if defined(DO_PERL)
+#ifdef DO_PERL
     {	"perl",			"flag\t\t\tEnable or disable Perl filtering",
 	1,	SC_PERL,	false	},
-#endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
+#endif
+#ifdef DO_PYTHON
     {	"python",		"flag\t\t\tEnable or disable Python filtering",
 	1,	SC_PYTHON,	false	},
-#endif /* (DO_PYTHON) */
+#endif
     {	"readers",	"flag text...\t\tEnable or disable newsreading",
 	2,	SC_READERS,	true	},
     {	"reject",	"reason...\t\t\tReject remote connections",

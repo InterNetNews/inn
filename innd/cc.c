@@ -67,7 +67,6 @@ static const char *	CCtimer(char *av[]);
 static const char *	CCtrace(char *av[]);
 static const char *	CCxabort(char *av[]);
 static const char *	CCxexec(char *av[]);
-static const char *	CCfilter(char *av[]);
 static const char *	CCperl(char *av[]);
 static const char *	CCpython(char *av[]);
 static const char *	CClowmark(char *av[]);
@@ -94,7 +93,6 @@ static CCDISPATCH	CCcommands[] = {
     {	SC_CHECKFILE,	0, CCcheckfile	},
     {	SC_DROP,	1, CCdrop	},
     {	SC_FEEDINFO,	1, CCfeedinfo	},
-    {	SC_FILTER,	1, CCfilter     },
     {	SC_PERL,	1, CCperl       },
     {	SC_PYTHON,	1, CCpython     },
     {	SC_FLUSH,	1, CCflush	},
@@ -562,33 +560,6 @@ CCfeedinfo(char *av[])
 
 
 static const char *
-CCfilter(char *av[] UNUSED)
-{
-#ifdef DO_TCL
-    char	*p;
-
-    switch (av[0][0]) {
-    default:
-	return "1 Bad flag";
-    case 'y':
-	if (TCLFilterActive)
-	    return "1 tcl filter already enabled";
-	TCLfilter(true);
-	break;
-    case 'n':
-	if (!TCLFilterActive)
-	    return "1 tcl filter already disabled";
-	TCLfilter(false);
-	break;
-    }
-    return NULL;
-#else
-    return "1 TCL filtering support not compiled in";
-#endif
-}
-
-
-static const char *
 CCperl(char *av[] UNUSED)
 {
 #ifdef DO_PERL
@@ -890,14 +861,6 @@ CCmode(char *unused[] UNUSED)
         buffer_sprintf(&CCreply, true, "enabled");
     else
         buffer_sprintf(&CCreply, true, "disabled %s", NNRPReason);
-
-#ifdef DO_TCL
-    buffer_sprintf(&CCreply, true, "\nTcl filtering ");
-    if (TCLFilterActive)
-        buffer_sprintf(&CCreply, true, "enabled");
-    else
-        buffer_sprintf(&CCreply, true, "disabled");
-#endif
 
 #ifdef DO_PERL
     buffer_sprintf(&CCreply, true, "\nPerl filtering ");
@@ -1354,9 +1317,6 @@ CCreload(char *av[])
 	ICDsetup(true);
 	if (!ARTreadschema())
 	    return BADSCHEMA;
-#ifdef DO_TCL
-	TCLreadfilter();
-#endif
 #ifdef DO_PERL
         path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
         PERLreadfilter(path, "filter_art") ;
@@ -1417,11 +1377,6 @@ CCreload(char *av[])
 	    Pathalias.Data = xmalloc(Pathalias.Used + 1);
 	    sprintf(Pathalias.Data, "%s!", innconf->pathalias);
 	}
-    }
-#endif
-#ifdef DO_TCL
-    else if (strcmp(p, "filter.tcl") == 0) {
-	TCLreadfilter();
     }
 #endif
 #ifdef DO_PERL

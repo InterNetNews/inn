@@ -46,12 +46,6 @@
 #include "paths.h"
 #include "storage.h"
 
-/* TCL defines EXTERN, so undef it after inclusion since we use it. */
-#if DO_TCL
-# include <tcl.h>
-# undef EXTERN
-#endif
-
 BEGIN_DECLS
 
 typedef short	SITEIDX;
@@ -773,21 +767,6 @@ extern bool		WIPinprogress(const char *msgid, CHANNEL *cp,
 				      bool Add);
 extern WIP	    *	WIPbyid(const char *mesageid);
 extern WIP	    *	WIPbyhash(const HASH hash);
-
-/*
-**  TCL globals and functions
-*/
-#if DO_TCL
-extern Tcl_Interp   *	TCLInterpreter;
-extern bool		TCLFilterActive;
-extern struct buffer *	TCLCurrArticle;
-extern ARTDATA	    *	TCLCurrData;
-
-extern void		TCLfilter(bool value);
-extern void		TCLreadfilter(void);
-extern void		TCLsetup(void);
-extern void		TCLclose(void);
-#endif /* DO_TCL */
 
 /*
 **  Python globals and functions

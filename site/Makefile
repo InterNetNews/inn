@@ -16,8 +16,6 @@ FILTBIN			= ${PATHFILTER}
 PATH_PERL_STARTUP_INND	= ${PATHFILTER}/startup_innd.pl
 PATH_PERL_FILTER_INND	= ${PATHFILTER}/filter_innd.pl
 PATH_PERL_FILTER_NNRPD	= ${PATHFILTER}/filter_nnrpd.pl
-PATH_TCL_STARTUP	= ${PATHFILTER}/startup.tcl
-PATH_TCL_FILTER		= ${PATHFILTER}/filter.tcl
 PATH_PYTHON_FILTER_INND = ${PATHFILTER}/filter_innd.py
 PATH_PYTHON_INN_MODULE  = ${PATHFILTER}/INN.py
 PATH_NNRPAUTH           = ${PATHFILTER}/nnrpd_auth.pl
@@ -60,7 +58,7 @@ REST		= \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
-	startup.tcl filter.tcl nnrpd_auth.pl nnrpd_access.pl \
+	nnrpd_auth.pl nnrpd_access.pl \
         news2mail.cf readers.conf \
 	radius.conf nnrpd_auth.py ovdb.conf sasl.conf active.minimal \
 	newsgroups.minimal subscriptions
@@ -182,8 +180,6 @@ $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPUB) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPUB) $? $@
 $D$(PATH_PYTHON_FILTER_INND): filter_innd.py ; $(COPY_RPUB) $? $@
 $D$(PATH_PYTHON_INN_MODULE): INN.py ;	$(COPY_RPUB) $? $@
-$D$(PATH_TCL_STARTUP): startup.tcl	; $(COPY_RPUB) $? $@
-$D$(PATH_TCL_FILTER): filter.tcl	; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPAUTH): nnrpd_auth.pl       ; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPACCESS): nnrpd_access.pl     ; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPYAUTH): nnrpd_auth.py      ; $(COPY_RPUB) $? $@
@@ -211,7 +207,6 @@ actsync.cfg:	../samples/actsync.cfg		; $(COPY) $? $@
 actsync.ign:	../samples/actsync.ign		; $(COPY) $? $@
 control.ctl:	../samples/control.ctl		; $(COPY) $? $@
 expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
-filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
 nnrpd_auth.pl:  ../samples/nnrpd_auth.pl	; $(COPY) $? $@
 nnrpd_access.pl:  ../samples/nnrpd_access.pl	; $(COPY) $? $@
 nnrpd_auth.py:  ../samples/nnrpd_auth.py	; $(COPY) $? $@
@@ -240,7 +235,6 @@ parsecontrol:	../samples/parsecontrol		; $(COPY) $? $@
 passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 readers.conf:	../samples/readers.conf		; $(COPY) $? $@
 radius.conf:	../samples/radius.conf		; $(COPY) $? $@
-startup.tcl:	../samples/startup.tcl		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 subscriptions:	../samples/subscriptions	; $(COPY) $? $@
 sasl.conf:	../samples/sasl.conf		; $(COPY) $? $@

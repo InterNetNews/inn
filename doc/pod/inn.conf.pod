@@ -306,10 +306,10 @@ is C<10> and probably doesn't need to be changed.
 =item I<dontrejectfiltered>
 
 Normally innd(8) rejects incoming articles when directed to do so by any
-enabled article filters (Perl, Python, and TCL).  However, this parameter
-causes such articles I<not> to be rejected; instead filtering can be
-applied on outbound articles.  If this parameter is set, all articles will
-be accepted on the local machine, but articles rejected by the filter will
+enabled article filters (Perl or Python).  However, this parameter causes
+such articles I<not> to be rejected; instead filtering can be applied on
+outbound articles.  If this parameter is set, all articles will be
+accepted on the local machine, but articles rejected by the filter will
 I<not> be fed to any peers specified in F<newsfeeds> with the C<Af> flag.
 
 =back
@@ -1160,7 +1160,7 @@ I<pathnews>/etc.
 
 =item I<pathfilter>
 
-The path to the Perl, Tcl, and Python filters.  The default value is
+The path to the Perl and Python filters.  The default value is
 I<pathbin>/filter.
 
 =item I<pathhttp>

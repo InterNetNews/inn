@@ -583,11 +583,6 @@ General Projects
   Other parts of INN, notably makehistory, may benefit from doing the same
   thing if they can without root privileges.
 
-* The Tcl filtering support code has undergone serious bitrot and needs
-  some work to fix it and make it work with modern versions of Tcl and the
-  current version of INN.  It also lacks a lot of the functionality of the
-  Perl and Python filters, if anyone cares.
-
 * Revisit support for aliased groups and what nnrpd does with them.
   Should posts to the alias automatically be redirected to the real group?
   Regardless, the error return should provide useful information about

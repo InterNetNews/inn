@@ -135,7 +135,6 @@ doc/external-auth                     readers.conf external interface notes
 doc/history                           Messages of historical significance
 doc/hook-perl                         Christophe Wolfhugel's Perl hook notes
 doc/hook-python                       Python hook notes
-doc/hook-tcl                          Bob Halley's TCL hook notes
 doc/man                               nroff documentation (Directory)
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
@@ -413,7 +412,6 @@ innd/python.c                         Python routines for innd
 innd/rc.c                             Remote channel accepting routines
 innd/site.c                           Site feeding routines
 innd/status.c                         Status routines for innd
-innd/tcl.c                            Bob Halley's Tcl hook
 innd/util.c                           Utility functions for innd
 innd/wip.c                            Work-in-progress routines for innd
 innfeed                               innfeed (Directory)
@@ -581,7 +579,6 @@ samples/control.ctl                   Access control for control messages
 samples/cycbuff.conf                  Sample cycbuff.conf file
 samples/distrib.pats                  Default values for Distribution header
 samples/expire.ctl                    Expiration config file
-samples/filter.tcl                    Sample Tcl filter for innd
 samples/filter_innd.pl                Sample Perl filter for innd
 samples/filter_innd.py                Sample Python filter for innd
 samples/filter_nnrpd.pl               Sample Perl filter for nnrpd
@@ -612,7 +609,6 @@ samples/passwd.nntp                   Passwords for remote connections
 samples/radius.conf                   Sample config for RADIUS authentication
 samples/readers.conf                  Reader connection configuration
 samples/sasl.conf.in                  SASL configuration
-samples/startup.tcl                   Tcl startup code for innd
 samples/startup_innd.pl               Perl startup code for innd
 samples/storage.conf                  Sample storage configuration
 samples/subscriptions                 Sample default subscriptions list

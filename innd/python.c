@@ -1,14 +1,13 @@
 /*  $Id$
 **
-**  python.c: Embed Python in the style of innd's TCL and Perl stuff.
+**  Embed Python in the style of innd's Tcl and Perl stuff.
 ** 
-**  Written by G.J. Andruk <meowing@banet.net> patterned after
-**  TCL/Perl work by Bob Heiney and Christophe Wolfhugel and a whole
-**  bunch of other people mentioned in the docs and sources for the
-**  other filters.
+**  Written by G.J. Andruk <meowing@banet.net> patterned after Tcl/Perl work
+**  by Bob Heiney and Christophe Wolfhugel and a whole bunch of other people
+**  mentioned in the docs and sources for the other filters.
 **
-**  The astute reader may notice the commission of blatant atrocities
-**  against Python's OO model here.  Don't tell Guido.
+**  The astute reader may notice the commission of blatant atrocities against
+**  Python's OO model here.  Don't tell Guido.
 */
 
 #include "config.h"
