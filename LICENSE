@@ -29,11 +29,11 @@ files.  Specifically (but possibly not comprehensively):
    are under the GNU General Public License.  See doc/GPL for a copy of
    this license.
 
-   backends/shrinkfile.c, frontends/scanspool.in, lib/concat.c,
-   lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c, lib/memcmp.c,
-   lib/parsedate.y, lib/pread.c, lib/pwrite.c, lib/setenv.c, lib/seteuid.c,
-   lib/strlcat.c, lib/strlcpy.c, and lib/strerror.c are in the public
-   domain.
+   backends/shrinkfile.c, frontends/scanspool.in, lib/alloca.c,
+   lib/concat.c, lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c,
+   lib/memcmp.c, lib/parsedate.y, lib/pread.c, lib/pwrite.c, lib/setenv.c,
+   lib/seteuid.c, lib/strlcat.c, lib/strlcpy.c, and lib/strerror.c are in
+   the public domain.
 
    control/gpgverify.in, control/pgpverify.in and control/signcontrol.in
    are under a BSD-style license (with the advertising clause) with UUNET
