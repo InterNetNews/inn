@@ -65,14 +65,15 @@ set_user (uid_t euid, uid_t ruid)
 
 
 int
-main(void)
+main(int argc, char *argv[])
 {
     struct passwd *     pwd;
     struct group *      grp;
     uid_t               news_uid;
     gid_t               news_gid;
     struct rlimit       rl;
-    char *              innfeed_argv[2];
+    char **             innfeed_argv;
+    int                 i;
 
     openlog("innfeed", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
@@ -138,8 +139,11 @@ main(void)
     }
 
     /* Build the argument vector for innfeed. */
+    innfeed_argv = NEW(char *, argc + 1);
     innfeed_argv[0] = concat(innconf->pathbin, "/innfeed", (char *) 0);
-    innfeed_argv[1] = NULL;
+    for (i = 1; i <= argc; i++)
+        innfeed_argv[i] = argv[i];
+    innfeed_argv[argc] = NULL;
 
     /* Set debugging malloc options. */
 #ifdef USE_DMALLOC
