@@ -63,4 +63,4 @@ install-man8:
 	done
 	if [ x"$(KRB5_AUTH)" != x ] ; then \
 	    $(COPY) auth_krb5.8 $D$(MAN8)/auth_krb5.8 ; \
-	done
+	fi
