@@ -590,6 +590,43 @@ if test x"$DO_LFS" = xDO ; then
     AC_CHECK_FUNCS(ftello fseeko)
 fi
 
+dnl
+dnl Test for OpenSSL
+dnl
+AC_ARG_WITH(openssl,
+	[  --with-openssl=PATH      use OpenSSL from PATH],
+        OPENSSL_DIR=$with_openssl)
+case "$OPENSSL_DIR" in
+        no) OPENSSL_DIR="no";;
+        ""|yes)
+	for dir in ${prefix} /usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr; do
+		if test -f "$dir/include/openssl/ssl.h"; then
+			OPENSSL_DIR="$dir"
+			break
+		fi
+		if test -f "$dir/include/ssl.h"; then
+			OPENSSL_DIR="$dir"
+			break
+		fi
+		done
+	;;
+esac
+AC_MSG_CHECKING(for openssl)
+AC_MSG_RESULT($OPENSSL_DIR)
+if test "$OPENSSL_DIR" != "no"; then
+	SSL_INC="-I${OPENSSL_DIR}/include"
+	SSL_LIB="-L${OPENSSL_DIR}/lib -lssl -lcrypto"
+	SSL_BIN="${OPENSSL_DIR}/bin"
+	AC_DEFINE(HAVE_SSL)
+else
+	SSL_LIB=""
+	SSL_INC=""
+	SSL_BIN=""
+fi
+AC_SUBST(SSL_LIB)
+AC_SUBST(SSL_INC)
+AC_SUBST(SSL_BIN)
+
 dnl Special checks for header files.
 
 dnl Start by checking for standard C headers.  AC_HEADER_STDC will set
@@ -1229,6 +1266,7 @@ AC_OUTPUT(
         samples/nnrpd_auth.pl
         samples/nnrpd_auth.py
         samples/startup.tcl
+        samples/sasl.conf
         scripts/inncheck
         scripts/innreport
         scripts/innshellvars

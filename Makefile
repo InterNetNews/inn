@@ -84,6 +84,13 @@ update:
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
 
+## for starttls
+cert:
+	$(SSLBIN)/openssl req -new -x509 -nodes \
+	-out $(PATHLIB)/cert.pem -days 366 \
+	-keyout $(PATHLIB)/cert.pem
+	chown news:news $(PATHLIB)/cert.pem
+	chmod 640 $(PATHLIB)/cert.pem
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the
 ##  configure results.  distclean or clobber removes everything not part of

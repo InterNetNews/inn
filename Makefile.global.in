@@ -84,6 +84,10 @@ TCLINC          = @TCL_INC@
 PYTHONLIB       = @PYTHON_LIB@
 PYTHONINC       = @PYTHON_INC@
 
+SSLLIB			= @SSL_LIB@
+SSLINC			= @SSL_INC@
+SSLBIN			= @SSL_BIN@
+
 ##  Missing functions.  If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own
 ##  replacements using the source and object files listed below.  In some
