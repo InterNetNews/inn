@@ -283,7 +283,7 @@ STATIC BOOL ARTinstorebyartnum(int artnum)
     
     if (innconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
-    if (!OV3getartinfo(GRPcur, NULL, NULL, NULL, &token))
+    if (!OV3getartinfo(GRPcur, 0, NULL, NULL, &token))
 	return FALSE;
   
     art = SMretrieve(token, RETR_STAT);
