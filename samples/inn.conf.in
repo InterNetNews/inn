@@ -74,6 +74,7 @@ nfswriter:              false
 allownewnews:           true
 articlemmap:            false
 clienttimeout:          600
+initialtimeout:         10
 nnrpdcheckart:          true
 nnrppythonauth:         false
 noreader:               false
