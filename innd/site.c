@@ -514,7 +514,10 @@ void SITEsend(SITE *sp, ARTDATA *Data)
 	}
 
 	/* Feed the article on standard input. */
-	fd = open(Data->Name, O_RDONLY);
+	if (IsToken(Data->Name))
+	    fd = 0;
+	else
+	    fd = open(Data->Name, O_RDONLY);
 	if (fd < 0) {
 	    /* Unlikely, but we could check if the article is cross-posted
 	     * and try it under other names... */
