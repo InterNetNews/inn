@@ -148,6 +148,7 @@ void ovdb_close(void) { }
 #else /* USE_BERKELEY_DB */
 
 #define EXPIREGROUP_TXN_SIZE 100
+#define DELETE_TXN_SIZE 500
 
 struct ovdb_conf ovdb_conf;
 DB_ENV *OVDBenv = NULL;
@@ -403,7 +404,7 @@ void read_ovdb_conf(void)
     ovdb_conf.cachesize = 8000 * 1024;
     ovdb_conf.minkey = 0;
     ovdb_conf.maxlocks = 4000;
-    ovdb_conf.nocompact = 1000;
+    ovdb_conf.nocompact = 1;
     ovdb_conf.readserver = 0;
     ovdb_conf.numrsprocs = 5;
     ovdb_conf.maxrsconn = 0;
@@ -791,86 +792,189 @@ static int groupid_free(group_id_t gno, DB_TXN *tid)
     return ret;
 }
 
-
-static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
+/* Must be called outside of a transaction because it makes its own
+   transactions */
+static int delete_all_records(int whichdb, group_id_t gno)
 {
     DB *db;
     DBC *dbcursor;
     DBT key, val;
     struct datakey dk;
+    int count;
     int ret;
+    DB_TXN *tid;
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
     memset(&dk, 0, sizeof dk);
-    dk.groupnum = gno;
-    dk.artnum = 0;
 
     db = get_db_bynum(whichdb);
     if(db == NULL)
-	return DB_NOTFOUND;
+        return DB_NOTFOUND;
 
-    /* get a cursor to traverse the ov records and delete them */
-    ret = db->cursor(db, tid, &dbcursor, 0);
-    if (ret != 0) {
-	if(ret != TRYAGAIN)
-            warn("OVDB: delete_all_records: db->cursor: %s",
-                 db_strerror(ret));
-	return ret;
-    }
+    dk.groupnum = gno;
+    dk.artnum = 0;
 
-    key.data = &dk;
-    key.size = sizeof dk;
-    val.flags = DB_DBT_PARTIAL;
+    while(1) {
+        TXN_START(t_del, tid);
 
-    ret = dbcursor->c_get(dbcursor, &key, &val, DB_SET_RANGE);
-    switch (ret)
-    {
-    case 0:
-	break;
-    case DB_NOTFOUND:
-        return dbcursor->c_close(dbcursor);
-    default:
-        warn("OVDB: delete_all_records: DBcursor->c_get(1): %s",
-             db_strerror(ret));
-    case TRYAGAIN:
-        dbcursor->c_close(dbcursor);
-	return ret;
-    }
-
-    while(key.size == sizeof dk
-	&& !memcmp(key.data, &(dk.groupnum), sizeof(dk.groupnum))) {
-
-        ret = dbcursor->c_del(dbcursor, 0);
-	switch (ret) {
-	case 0:
-        case DB_KEYEMPTY:
-	    break;
-	default:
-            warn("OVDB: delete_all_records: DBcursor->c_del: %s",
-                 db_strerror(ret));
-	case TRYAGAIN:
-            dbcursor->c_close(dbcursor);
-	    return ret;
-	}
-	ret = dbcursor->c_get(dbcursor, &key, &val, DB_NEXT);
-	switch (ret) {
-	case 0:
+        /* get a cursor to traverse the ov records and delete them */
+        ret = db->cursor(db, tid, &dbcursor, 0);
+        switch(ret)
+        {
+        case 0:
             break;
-	case DB_NOTFOUND:
-            goto done;
-	default:
-            warn("OVDB: delete_all_records: DBcursor->c_get(2): %s",
-                 db_strerror(ret));
-	case TRYAGAIN:
-            dbcursor->c_close(dbcursor);
-	    return ret;
-	}
+        case TRYAGAIN:
+            TXN_RETRY(t_del, tid);
+        default:
+            TXN_ABORT(t_del, tid);
+            warn("OVDB: delete_all_records: db->cursor: %s", db_strerror(ret));
+            return ret;
+        }
+
+        key.data = &dk;
+        key.size = sizeof dk;
+        val.flags = DB_DBT_PARTIAL;
+
+        for(count = 0; count < DELETE_TXN_SIZE; count++) {
+            ret = dbcursor->c_get(dbcursor, &key, &val,
+                            count ? DB_NEXT : DB_SET_RANGE);
+            switch (ret)
+            {
+            case 0:
+                break;
+            case DB_NOTFOUND:
+                dbcursor->c_close(dbcursor);
+                TXN_COMMIT(t_del, tid);
+                return 0;
+            case TRYAGAIN:
+                dbcursor->c_close(dbcursor);
+                TXN_RETRY(t_del, tid);
+            default:
+                warn("OVDB: delete_all_records: DBcursor->c_get: %s",
+                     db_strerror(ret));
+                dbcursor->c_close(dbcursor);
+                TXN_ABORT(t_del, tid);
+                return ret;
+            }
+
+            if(key.size == sizeof dk
+                    && memcmp(key.data, &gno, sizeof gno)) {
+                break;
+            }
+
+            ret = dbcursor->c_del(dbcursor, 0);
+            switch (ret) {
+            case 0:
+            case DB_KEYEMPTY:
+                break;
+            case TRYAGAIN:
+                dbcursor->c_close(dbcursor);
+                TXN_RETRY(t_del, tid);
+            default:
+                warn("OVDB: delete_all_records: DBcursor->c_del: %s",
+                     db_strerror(ret));
+                dbcursor->c_close(dbcursor);
+                TXN_ABORT(t_del, tid);
+                return ret;
+            }
+        }
+        dbcursor->c_close(dbcursor);
+        TXN_COMMIT(t_del, tid);
+        if(count < DELETE_TXN_SIZE) {
+            break;
+        }
     }
-  done:
-    return dbcursor->c_close(dbcursor);
+    return 0;
 }
 
+/* Make a temporary groupinfo key using the given db number and group ID.
+   Must be called in a transaction */
+static int
+mk_temp_groupinfo(int whichdb, group_id_t gno, DB_TXN *tid)
+{
+    char keystr[1 + sizeof gno];
+    DBT key, val;
+    struct groupinfo gi;
+    int ret;
+
+    memset(&key, 0, sizeof key);
+    memset(&val, 0, sizeof val);
+    memset(&gi, 0, sizeof gi);
+
+    keystr[0] = 0;
+    memcpy(keystr + 1, &gno, sizeof gno);
+
+    gi.current_db = whichdb;
+    gi.current_gid = gno;
+    gi.status = GROUPINFO_DELETED;
+
+    key.data = keystr;
+    key.size = sizeof keystr;
+    val.data = &gi;
+    val.size = sizeof gi;
+
+    ret = groupinfo->put(groupinfo, tid, &key, &val, 0);
+    switch (ret) {
+    case 0:
+        break;
+    default:
+        warn("OVDB: mk_temp_groupinfo: groupinfo->put: %s", db_strerror(ret));
+    case TRYAGAIN:
+        return ret;
+    }
+
+    return 0;
+}
+
+/* Delete a temporary groupinfo key created by mk_temp_groupid, then
+   frees the group id.
+   Must NOT be called within a transaction. */
+static int
+rm_temp_groupinfo(group_id_t gno)
+{
+    char keystr[1 + sizeof gno];
+    DB_TXN *tid;
+    DBT key;
+    int ret;
+
+    memset(&key, 0, sizeof key);
+
+    keystr[0] = 0;
+    memcpy(keystr + 1, &gno, sizeof gno);
+
+    key.data = keystr;
+    key.size = sizeof keystr;
+
+    TXN_START(t_tmp, tid);
+
+    ret = groupinfo->del(groupinfo, tid, &key, 0);
+    switch(ret) {
+    case 0:
+    case DB_NOTFOUND:
+        break;
+    case TRYAGAIN:
+        TXN_RETRY(t_tmp, tid);
+    default:
+        TXN_ABORT(t_tmp, tid);
+        warn("OVDB: rm_temp_groupinfo: groupinfo->del: %s", db_strerror(ret));
+        return ret;
+    }
+
+    switch(groupid_free(gno, tid)) {
+    case 0:
+        break;
+    case TRYAGAIN:
+        TXN_RETRY(t_tmp, tid);
+    default:
+        TXN_ABORT(t_tmp, tid);
+        warn("OVDB: rm_temp_groupinfo: groupid_free: %s", db_strerror(ret));
+        return ret;
+    }
+
+    TXN_COMMIT(t_tmp, tid);
+    return 0;
+}
 
 /* This function deletes overview records for deleted or forgotton groups */
 /* argument: 0 = process deleted groups   1 = process forgotton groups */
@@ -957,9 +1061,6 @@ static bool delete_old_stuff(int forgotton)
     for(i = 0; i < listcount; i++) {
 	TXN_START(t_dos, tid);
 
-	if(tid==NULL)
-	    goto out;
-
 	/* Can't use ovdb_getgroupinfo here */
 	key.data = dellist[i];
 	key.size = dellistsz[i];
@@ -967,7 +1068,7 @@ static bool delete_old_stuff(int forgotton)
 	val.ulen = sizeof(struct groupinfo);
 	val.flags = DB_DBT_USERMEM;
 
-	ret = groupinfo->get(groupinfo, tid, &key, &val, DB_RMW);
+	ret = groupinfo->get(groupinfo, tid, &key, &val, 0);
 
 	switch (ret)
         {
@@ -989,28 +1090,10 @@ static bool delete_old_stuff(int forgotton)
 	    continue;
 	}
 
-	switch(delete_all_records(gi.current_db, gi.current_gid, tid)) {
-	case 0:
-	    break;
-	case TRYAGAIN:
-	    TXN_RETRY(t_dos, tid);
-	default:
-	    TXN_ABORT(t_dos, tid);
-	    continue;
-	}
+	/* This if() is true if this ISN'T a key created by mk_temp_groupinfo */
+	if(*((char *)key.data) != 0 || key.size != 1 + sizeof(group_id_t)) {
 
-	switch(groupid_free(gi.current_gid, tid)) {
-	case 0:
-	    break;
-	case TRYAGAIN:
-	    TXN_RETRY(t_dos, tid);
-	default:
-	    TXN_ABORT(t_dos, tid);
-	    continue;
-	}
-
-	if(gi.status & GROUPINFO_MOVING) {
-	    switch(delete_all_records(gi.new_db, gi.new_gid, tid)) {
+	    switch(mk_temp_groupinfo(gi.current_db, gi.current_gid, tid)) {
 	    case 0:
 		break;
 	    case TRYAGAIN:
@@ -1019,8 +1102,22 @@ static bool delete_old_stuff(int forgotton)
 		TXN_ABORT(t_dos, tid);
 		continue;
 	    }
-	    switch(groupid_free(gi.new_gid, tid)) {
+	    if(gi.status & GROUPINFO_MOVING) {
+		switch(mk_temp_groupinfo(gi.new_db, gi.new_gid, tid)) {
+		case 0:
+		    break;
+		case TRYAGAIN:
+		    TXN_RETRY(t_dos, tid);
+		default:
+		    TXN_ABORT(t_dos, tid);
+		    continue;
+		}
+	    }
+
+	    /* delete the corresponding groupaliases record (if exists) */
+	    switch(groupaliases->del(groupaliases, tid, &key, 0)) {
 	    case 0:
+	    case DB_NOTFOUND:
 		break;
 	    case TRYAGAIN:
 		TXN_RETRY(t_dos, tid);
@@ -1028,32 +1125,29 @@ static bool delete_old_stuff(int forgotton)
 		TXN_ABORT(t_dos, tid);
 		continue;
 	    }
-	}
 
-	/* delete the corresponding groupaliases record (if exists) */
-	switch(groupaliases->del(groupaliases, tid, &key, 0)) {
-	case 0:
-	case DB_NOTFOUND:
-	    break;
-	case TRYAGAIN:
-	    TXN_RETRY(t_dos, tid);
-	default:
-	    TXN_ABORT(t_dos, tid);
-	    continue;
-	}
-
-	switch(groupinfo->del(groupinfo, tid, &key, 0)) {
-	case 0:
-	case DB_NOTFOUND:
-	    break;
-	case TRYAGAIN:
-	    TXN_RETRY(t_dos, tid);
-	default:
-	    TXN_ABORT(t_dos, tid);
-	    continue;
+	    switch(groupinfo->del(groupinfo, tid, &key, 0)) {
+	    case 0:
+	    case DB_NOTFOUND:
+		break;
+	    case TRYAGAIN:
+		TXN_RETRY(t_dos, tid);
+	    default:
+		TXN_ABORT(t_dos, tid);
+		continue;
+	    }
 	}
 
 	TXN_COMMIT(t_dos, tid);
+
+	if(delete_all_records(gi.current_db, gi.current_gid) == 0) {
+	    rm_temp_groupinfo(gi.current_gid);
+	}
+	if(gi.status & GROUPINFO_MOVING) {
+	    if(delete_all_records(gi.new_db, gi.new_gid) == 0) {
+		rm_temp_groupinfo(gi.new_gid);
+	    }
+	}
     }
 out:
     for(i = 0; i < listcount; i++)
@@ -2390,7 +2484,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
     DBT key, val, nkey, gkey, gval;
     DB_TXN *tid;
     DBC *cursor = NULL;
-    int ret = 0, delete, old_db = 0;
+    int ret = 0, delete, old_db = 0, cleanup;
     struct groupinfo gi;
     struct ovdata ovd;
     struct datakey dk, ndk;
@@ -2427,6 +2521,8 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
     if(tid==NULL)
 	return false;
 
+    cleanup = 0;
+
     ret = ovdb_getgroupinfo(group, &gi, true, tid, DB_RMW);
     switch (ret)
     {
@@ -2456,17 +2552,19 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	/* a previous expireover run must've died.  We'll clean
 	   up after it */
 	if(gi.status & GROUPINFO_MOVING) {
-	    switch(delete_all_records(gi.new_db, gi.new_gid, tid)) {
+	    cleanup = 1;
+	    old_db = gi.new_db;
+	    old_gid = gi.new_gid;
+
+	    ret = mk_temp_groupinfo(old_db, old_gid, tid);
+	    switch(ret) {
 	    case 0:
-		break;
+	    	break;
 	    case TRYAGAIN:
-		TXN_RETRY(t_expgroup_1, tid);
+	    	TXN_RETRY(t_expgroup_1, tid);
 	    default:
-		TXN_ABORT(t_expgroup_1, tid);
+	    	TXN_ABORT(t_expgroup_1, tid);
 		return false;
-	    }
-	    if(groupid_free(gi.new_gid, tid) == TRYAGAIN) {
-		TXN_RETRY(t_expgroup_1, tid);
 	    }
 	    gi.status &= ~GROUPINFO_MOVING;
 	}
@@ -2524,6 +2622,12 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	return false;
     }
     TXN_COMMIT(t_expgroup_1, tid);
+
+    if(cleanup) {
+	if(delete_all_records(old_db, old_gid) == 0) {
+	    rm_temp_groupinfo(old_gid);
+	}
+    }
 
     /*
      * The following loop iterates over the OV records for the group in
@@ -2706,6 +2810,17 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 		old_gid = gi.current_gid;
 		gi.current_gid = gi.new_gid;
 		gi.status &= ~GROUPINFO_MOVING;
+
+		ret = mk_temp_groupinfo(old_db, old_gid, tid);
+		switch(ret) {
+		case 0:
+		    break;
+		case TRYAGAIN:
+		    TXN_RETRY(t_expgroup_loop, tid);
+		default:
+		    TXN_ABORT(t_expgroup_loop, tid);
+		    return false;
+		}
 	    }
 
 	    gi.status &= ~GROUPINFO_EXPIRING;
@@ -2739,38 +2854,9 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
     }
 
     if(compact) {
-	TXN_START(t_expgroup_cleanup, tid);
-	if(tid == NULL)
-	    return false;
-
-        ret = delete_all_records(old_db, old_gid, tid);
-	switch (ret)
-        {
-	case 0:
-	    break;
-	case TRYAGAIN:
-	    TXN_RETRY(t_expgroup_cleanup, tid);
-	default:
-	    TXN_ABORT(t_expgroup_cleanup, tid);
-            warn("OVDB: expiregroup: delete_all_records: %s",
-                 db_strerror(ret));
-	    return false;
+	if(delete_all_records(old_db, old_gid) == 0) {
+	    rm_temp_groupinfo(old_gid);
 	}
-
-        ret = groupid_free(old_gid, tid);
-	switch (ret)
-        {
-	case 0:
-	    break;
-	case TRYAGAIN:
-	    TXN_RETRY(t_expgroup_cleanup, tid);
-	default:
-	    TXN_ABORT(t_expgroup_cleanup, tid);
-            warn("OVDB: expiregroup: groupid_free: %s", db_strerror(ret));
-	    return false;
-	}
-
-	TXN_COMMIT(t_expgroup_cleanup, tid);
     }
 
     if(currentcount != gi.count) {
