@@ -1,43 +1,59 @@
+/*  $Id$
+**
+**  Domain authenticator.
+**
+**  Compares the domain of the client connection to the first argument given
+**  on the command line, and returns the host portion of the connecting host
+**  as the user if it matches.
+*/
+
 #include "config.h"
 #include "clibrary.h"
-#include <errno.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
-#include "macros.h"
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     char buf[2048];
-    char *domain;
+    char *host, *p;
+    size_t length;
 
-    if (argc != 2) {
-	fprintf(stderr, "Usage:\n\t%s <domain>\n", argv[0]);
-	exit(1);
-    }
-    /* read the connection info from stdin */
-    domain = 0;
-#define CLIENTHOST "ClientHost: "
-    while(fgets(buf, sizeof(buf), stdin) != (char*) 0) {
-	/* strip '\n' */
-	buf[strlen(buf)-1] = '\0';
-	if (buf[strlen(buf)-1] == '\r')
-	    buf[strlen(buf)-1] = '\0';
+    if (argc != 2)
+        die("Usage: domain <domain>");
+    message_program_name = "domain";
 
-	if (!strncmp(buf, CLIENTHOST, strlen(CLIENTHOST)))
-	    domain = COPY(buf+strlen(CLIENTHOST));
-    }
+    /* Read the connection information from stdin. */
+    host = NULL;
+    while (fgets(buf, sizeof(buf), stdin) != NULL) {
+        length = strlen(buf);
+        if (buf[length - 1] != '\n')
+            die("input line too long");
+        buf[length - 1] = '\0';
+        if (buf[length - 2] == '\r')
+            buf[length - 2] = '\0';
 
-    if (!domain) {
-	fprintf(stderr, "domain: didn't get clienthost.\n");
-	exit(1);
+        if (strncmp(buf, "ClientHost: ", strlen("ClientHost: ")) == 0)
+            host = xstrdup(buf + strlen("ClientHost: "));
     }
-    if (strlen(domain) < strlen(argv[1]) ||
-      (strcmp(domain+strlen(domain)-strlen(argv[1]), argv[1]))) {
-	fprintf(stderr, "domain: domain %s didn't match %s\n", domain, argv[1]);
-	exit(1);
-    }
-    *(domain+strlen(domain)-strlen(argv[1])) = '\0';
-    printf("User:%s\n", domain);
+    if (host == NULL)
+        die("did not get ClientHost data from nnrpd");
 
-    return(0);
+    /* Check the host against the provided domain.  Allow the domain to be
+       specified both with and without a leading period; if without, make sure
+       that there is a period right before where it matches in the host. */
+    p = strstr(host, argv[1]);
+    if (p == host)
+        die("host %s matches the domain exactly", host);
+    if (p == NULL || (argv[1][0] != '.' && p != host && *(p - 1) != '.'))
+        die("host %s didn't match domain %s", host, argv[1]);
+
+    /* Peel off the portion of the host before where the provided domain
+       matches and return it as the user. */
+    if (argv[1][0] != '.')
+        p--;
+    *p = '\0';
+    printf("User:%s", host);
+    return 0;
 }
