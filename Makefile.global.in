@@ -55,7 +55,9 @@ LFS_LIBS        = @LFS_LIBS@
 
 PROF            = -pg
 PROFSUFFIX      = _p
-MAKEPROFILING   = $(MAKE) COPT="$(COPT) $(PROF)" LIBSUFFIX=$(PROFSUFFIX)
+MAKEPROFILING   = $(MAKE) COPT="$(COPT) $(PROF)" \
+                          LDFLAGS="$(LDFLAGS) $(PROF)" \
+			  LIBSUFFIX=$(PROFSUFFIX)
 
 ##  Warnings to use with gcc.  Default to including all of the generally
 ##  useful warnings unless there's something that makes them unsuitable.  In
