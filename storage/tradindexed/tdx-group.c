@@ -53,6 +53,7 @@ static bool group_index_maybe_remap(struct group_index *, GROUPLOC loc);
 static bool group_index_expand(struct group_index *);
 static GROUPLOC group_index_find(struct group_index *, const char *group);
 
+
 /*
 **  Given a file size, return the number of group entries that it contains.
 */
@@ -62,6 +63,7 @@ group_index_entry_count(size_t size)
     return (size - sizeof(struct group_header)) / sizeof(struct group_entry);
 }
 
+
 /*
 **  Given a number of group entries, return the required file size.
 */
@@ -70,6 +72,7 @@ group_index_file_size(int count)
 {
     return sizeof(struct group_header) + count * sizeof(struct group_entry);
 }
+
 
 /*
 **  Memory map (or read into memory) the key portions of the group.index
@@ -127,6 +130,7 @@ group_index_map(struct group_index *index)
     }
 }
 
+
 /*
 **  Given a group location, remap the index file if our existing mapping isn't
 **  large enough to include that group.  (This can be the case when another
@@ -138,6 +142,7 @@ group_index_maybe_remap(struct group_index *index UNUSED, GROUPLOC loc UNUSED)
     return true;
 }
 
+
 /*
 **  Expand the group.index file to hold more entries; also used to build the
 **  initial file.  Not yet implemented.
@@ -147,6 +152,7 @@ group_index_expand(struct group_index *index UNUSED)
 {
     return false;
 }
+
 
 /*
 **  Open the group.index file and allocate a new struct for it, returning a
@@ -198,6 +204,7 @@ tdx_group_index_open(int mode)
     return NULL;
 }
 
+
 /*
 **  Find a group in the index file, returning the GROUPLOC for that group.
 */
@@ -226,6 +233,7 @@ group_index_find(struct group_index *index, const char *group)
     return empty_loc;
 }
 
+
 /*
 **  Return the information stored about a given group in the group index.
 */
@@ -250,6 +258,7 @@ tdx_group_index_info(struct group_index *index, const char *group,
         *flag = index->entries[loc.recno].flag;
     return true;
 }
+
 
 /*
 **  Close an open handle to the group index file, freeing the group_index
@@ -277,6 +286,7 @@ tdx_group_index_close(struct group_index *index)
     free(index);
 }
 
+
 /*
 **  RECOVERY AND AUDITING
 **
@@ -292,6 +302,7 @@ struct hashmap {
     char *name;
 };
 
+
 /*
 **  Hash table functions for the mapping from group hashes to names.
 */
@@ -305,11 +316,13 @@ hashmap_hash(const void *entry)
     return hash;
 }
 
+
 static const void *
 hashmap_key(const void *entry)
 {
     return &((const struct hashmap *) entry)->hash;
 }
+
 
 static bool
 hashmap_equal(const void *key, const void *entry)
@@ -321,6 +334,7 @@ hashmap_equal(const void *key, const void *entry)
     return memcmp(first, second, sizeof(HASH)) == 0;
 }
 
+
 static void
 hashmap_delete(void *entry)
 {
@@ -329,6 +343,7 @@ hashmap_delete(void *entry)
     free(group->name);
     free(group);
 }
+
 
 /*
 **  Construct a hash table of group hashes to group names by scanning the
@@ -372,6 +387,7 @@ hashmap_load(void)
     QIOclose(active);
     return hash;
 }
+
 
 /*
 **  Dump the complete contents of the group.index file in human-readable form

@@ -6,8 +6,8 @@ top	= ../..
 CFLAGS	= $(GCFLAGS) -I..
 
 ALL	= tdx-util
-SOURCES = group.c tdx-util.c
-OBJECTS = group.o
+SOURCES = tdx-group.c tdx-util.c
+OBJECTS = tdx-group.o
 
 .SUFFIXES: .lo
 
@@ -35,12 +35,12 @@ depend:	Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-group.o: group.c ../../include/config.h ../../include/inn/defines.h \
- ../../include/clibrary.h ../../include/portable/mmap.h \
- ../../include/inn/hashtab.h ../../include/inn/qio.h \
- ../../include/libinn.h ../../include/ov.h ../../include/storage.h \
- ../../include/inn/history.h ../../include/paths.h tdx-private.h \
- tdx-structure.h
+tdx-group.o: tdx-group.c ../../include/config.h \
+ ../../include/inn/defines.h ../../include/clibrary.h \
+ ../../include/portable/mmap.h ../../include/inn/hashtab.h \
+ ../../include/inn/qio.h ../../include/libinn.h ../../include/ov.h \
+ ../../include/storage.h ../../include/inn/history.h \
+ ../../include/paths.h tdx-private.h tdx-structure.h
 tdx-util.o: tdx-util.c ../../include/config.h \
  ../../include/inn/defines.h ../../include/clibrary.h \
  ../../include/libinn.h ../../include/ov.h ../../include/storage.h \
