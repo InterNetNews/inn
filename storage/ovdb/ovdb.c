@@ -3,6 +3,8 @@
  * ovdb 2.00 beta1
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-09-29 : ovdb_expiregroup can now fix incorrect counts; use new
+ *              inn/version.h so can have same ovdb.c for 2.3.0, 2.3.1, and 2.4
  * 2000-09-28 : low mark in ovdb_expiregroup still wasn't right
  * 2000-09-27 : Further improvements to ovdb_expiregroup: restructured the
  *              loop; now updates groupinfo as it goes along rather than
@@ -75,6 +77,14 @@
 #include "ovinterface.h"
 #include "ovdb.h"
 
+#ifdef HAVE_INN_VERSION_H
+#include "inn/version.h"
+#else
+/* 2.3.0 doesn't have version.h */
+#define INN_VERSION_MAJOR 2
+#define INN_VERSION_MINOR 3
+#define INN_VERSION_PATCH 0
+#endif
 
 #ifndef USE_BERKELEY_DB
 
@@ -731,7 +741,6 @@ out:
     return TRUE;
 }
 
-#if 0
 static int count_records(struct groupinfo *gi)
 {
     int ret;
@@ -788,7 +797,7 @@ static int count_records(struct groupinfo *gi)
 	return 0;
     return ret;
 }
-#endif
+
 
 /*
  * Locking:  OVopen() calls ovdb_getlock(OVDB_LOCK_NORMAL).  This
@@ -1794,8 +1803,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     struct datakey dk, ndk;
     group_id_t old_gid;
     ARTHANDLE *ah;
-    ARTNUM artnum, currentart, low, high;
-    int i, lowest, compact, done;
+    ARTNUM artnum, currentart, lowest;
+    int i, compact, done, currentcount, newcount;
 
     if(eo_start == 0) {
 	eo_start = time(NULL);
@@ -1920,7 +1929,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
      * }
      */
     currentart = 0;
-    lowest = 0;
+    lowest = currentcount = 0;
 
     memset(&gkey, 0, sizeof gkey);
     memset(&gval, 0, sizeof gval);
@@ -1934,6 +1943,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	if(tid==NULL)
 	    return FALSE;
         done = 0;
+	newcount = 0;
 
 	switch(ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW)) {
 	case 0:
@@ -1997,8 +2007,22 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 		memcpy(&ovd, val.data, sizeof ovd);
 
 		ah = NULL;
-		if (!SMprobe(EXPENSIVESTAT, &ovd.token, NULL) || OVstatall) {
+#if INN_VERSION_MAJOR == 2 && INN_VERSION_MINOR == 3 && INN_VERSION_PATCH == 0
+		if (SMprobe(SELFEXPIRE, &ovd.token, NULL)) {
 		    if((ah = SMretrieve(ovd.token, RETR_STAT)) == NULL) { 
+			delete = 1;
+		    }
+		} else {
+		    if (!innconf->groupbaseexpiry
+			    && !OVhisthasmsgid((char *)val.data + sizeof(ovd))) {
+			delete = 1;
+		    }
+		}
+		if(ah)
+		    SMfreearticle(ah);
+#else
+		if (!SMprobe(EXPENSIVESTAT, &ovd.token, NULL) || OVstatall) {
+		    if((ah = SMretrieve(ovd.token, RETR_STAT)) == NULL) {
 			delete = 1;
 		    } else
 			SMfreearticle(ah);
@@ -2007,6 +2031,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 			delete = 1;
 		    }
 		}
+#endif
 		if (!delete && innconf->groupbaseexpiry &&
 			    OVgroupbasedexpire(ovd.token, group,
 				    (char *)val.data + sizeof(ovd),
@@ -2055,7 +2080,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 			return FALSE;
 		    }
 		}
-		if(lowest == 0 || artnum < lowest)
+		newcount++;
+		if(lowest != -1 && (lowest == 0 || artnum < lowest))
 		    lowest = artnum;
 	    }
 	}
@@ -2065,10 +2091,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	    TXN_RETRY(t_expgroup_loop, tid);
 	}
 
-	if(lowest != 0)
+	if(lowest != 0 && lowest != -1)
 	    gi.low = lowest;
-	else if(gi.count == 0)
-	    gi.low = gi.high+1;
 
 	if(done) {
 	    if(compact) {
@@ -2081,6 +2105,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 
 	    gi.status &= ~GROUPINFO_EXPIRING;
 	    gi.expired = time(NULL);
+	    if(gi.count == 0 && lowest == 0)
+		gi.low = gi.high+1;
 	}
 
 	switch(ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0)) {
@@ -2094,6 +2120,10 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	    return FALSE;
 	}
         TXN_COMMIT(t_expgroup_loop, tid);
+
+	currentcount += newcount;
+	if(lowest != 0)
+	    lowest = -1;
 
 	if(done)
 	    break;
@@ -2123,6 +2153,42 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	}
 
 	TXN_COMMIT(t_expgroup_cleanup, tid);
+    }
+
+    if(currentcount != gi.count) {
+	syslog(L_NOTICE, "OVDB: expiregroup: recounting %s", group);
+
+	TXN_START(t_expgroup_recount, tid);
+	if(tid == NULL)
+	    return FALSE;
+
+	switch(ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW)) {
+	case 0:
+	    break;
+	case TRYAGAIN:
+	    TXN_RETRY(t_expgroup_recount, tid);
+	default:
+	    TXN_ABORT(t_expgroup_recount, tid);
+	    syslog(L_ERROR, "OVDB: expiregroup: ovdb_getgroupinfo: %s", db_strerror(ret));
+	    return FALSE;
+	}
+
+	if(count_records(&gi) != 0) {
+	    TXN_ABORT(t_expgroup_recount, tid);
+	    return FALSE;
+	}
+
+	switch(ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0)) {
+	case 0:
+	    break;
+	case TRYAGAIN:
+	    TXN_RETRY(t_expgroup_recount, tid);
+	default:
+	    TXN_ABORT(t_expgroup_recount, tid);
+	    syslog(L_ERROR, "OVDB: expiregroup: groupinfo->put: %s", db_strerror(ret));
+	    return FALSE;
+	}
+        TXN_COMMIT(t_expgroup_recount, tid);
     }
 
     if(lo)
