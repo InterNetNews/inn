@@ -268,6 +268,7 @@ doc/pod/expire.ctl.pod                Master file for expire.ctl.5
 doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/external-auth.pod             Master file for doc/external-auth
 doc/pod/fastrm.pod                    Master file for fastrm.1
+doc/pod/getlist.pod                   Master file for getlist.1
 doc/pod/grephistory.pod               Master file for grephistory.1
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for doc/hook-perl

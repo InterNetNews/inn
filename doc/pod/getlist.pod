@@ -1,0 +1,84 @@
+=head1 NAME
+
+getlist - Get a list from an NNTP server
+
+=head1 SYNOPSIS
+
+B<getlist> [B<-A>] [B<-h> I<host>] [I<list> [I<pattern> [I<types>]]]
+
+=head1 DESCRIPTION
+
+B<getlist> obtains a list from an NNTP server and sends it to standard
+output.  I<list> may be one of C<active>, C<active.times>,
+C<distributions>, or C<newsgroups>.  C<active> contains a list of all
+newsgroups carried by the server with the high and low article numbers in
+the group and the group status flag.  C<active.times> is a list of
+newsgroups, their creation times (in seconds since epoch), and the creator
+of the group.  C<distributions> is a list of relevant distributions and
+their descriptions.  C<newsgroups> is a list of newsgroups and their short
+descriptions.
+
+For more information on the formats of these files, see active(5) and
+active.times(5).
+
+The I<pattern> parameter may be used with a I<list> value of C<active> or
+C<newsgroups> to limit the output.  If given, only entries corresponding
+to newsgroups that match the uwildmat(3) pattern I<pattern> will be
+printed.
+
+If the I<list> parameter is C<active>, a third parameter, I<types>, may
+also be used to restrict the list.  If given, only entries corresponding
+to newsgroups with a newsgroup mode found in I<types> will be printed.
+For example, a I<types> value of C<y> would only show unmoderated groups,
+and a I<types> value of C<ym> would show all unmoderated and moderated
+groups but not aliased groups or groups that disallow postings.
+
+The listing files other than the active file are common extensions to the
+NNTP protocol and may not be available on all servers.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-A>
+
+Try to authenticate using the username and password information in
+passwd.nntp(5) before issuing the LIST command.
+
+=item B<-h> I<host>
+
+Connect to the server I<host> rather than to the value of I<server> in
+F<inn.conf> or the value of the NNTPSERVER environment variable.
+
+=back
+
+=head1 EXAMPLES
+
+The following command will obtain the one-line descriptions of all
+newsgroups found on UUNET:
+
+    getlist -h news.uu.net newsgroups
+
+The following command will show the active file entries for all moderated
+comp.* groups on the default server:
+
+    getlist active 'comp.*' m
+
+The following command lists all groups where local postings are permitted,
+are moderated or aliased:
+
+    getlist active '*' ym=
+
+Note that the wildcard character C<*> has to be quoted to protect it from
+the shell.
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Rewritten
+in POD by Russ Allbery <rra@stanford.edu>.
+
+=head1 SEE ALSO
+
+active(5), active.times(5), inn.conf(5), nnrpd(8), uwildmat(3)
+
+=cut
