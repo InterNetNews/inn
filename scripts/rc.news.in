@@ -25,8 +25,17 @@ Xstop)
 	rm -f $WATCHPID
     fi
 
-    # give innd some time to exit
-    sleep 10
+    # wait for innd to exit (up to 60 sec)
+    i=12
+    while [ $i -gt 0 ];
+    do
+	if [ -f ${SERVERPID} ]; then
+	    sleep 5
+	    let i=i-1
+	else
+	    i=0
+	fi
+    done
 
     # Turn off ovdb support procs, and close the DB environment
     if [ "$OVMETHOD" = "ovdb" -a -n "$DB_HOME" ]; then
@@ -69,6 +78,7 @@ MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
 
 ##  RFLAG is set below; set INNFLAGS in inn.conf(5)
 RFLAG=""
+OVDBFLAG=""
 
 ##  Clean shutdown or already running?
 if [ -f ${SERVERPID} ] ; then
@@ -78,6 +88,7 @@ if [ -f ${SERVERPID} ] ; then
     fi
     echo 'INND:  PID file exists -- unclean shutdown!'
     RFLAG="-r"
+    OVDBFLAG="-f"
 fi
 
 if [ ! -f ${PATHDB}/.news.daily ] ; then
@@ -128,7 +139,7 @@ rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID}
 ## In case the ovdb database was not properly shutdown, this will
 ## fix it.  Must be done before starting innd.
 if [ "$OVMETHOD" = "ovdb" -a -n "$DB_HOME" ]; then
-    ovdb_recover || {
+    ovdb_recover ${OVDBFLAG} || {
 	echo "Can't recover ov database (check news.err for OVDB messages)"
 	exit 1
     }
