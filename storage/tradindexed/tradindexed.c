@@ -114,7 +114,7 @@ tradindexed_open(int mode)
 **  and the structure API used internally.
 */
 bool
-tradindexed_groupstats(char *group, int *low, int *high, int *count,
+tradindexed_groupstats(const char *group, int *low, int *high, int *count,
                        int *flag)
 {
     const struct group_entry *entry;
@@ -142,7 +142,7 @@ tradindexed_groupstats(char *group, int *low, int *high, int *count,
 **  Add a new newsgroup to the index.
 */
 bool
-tradindexed_groupadd(char *group, ARTNUM low, ARTNUM high, char *flag)
+tradindexed_groupadd(const char *group, ARTNUM low, ARTNUM high, char *flag)
 {
     if (tradindexed == NULL || tradindexed->index == NULL) {
         warn("tradindexed: overview method not initialized");
@@ -156,7 +156,7 @@ tradindexed_groupadd(char *group, ARTNUM low, ARTNUM high, char *flag)
 **  Delete a newsgroup from the index.
 */
 bool
-tradindexed_groupdel(char *group)
+tradindexed_groupdel(const char *group)
 {
     if (tradindexed == NULL || tradindexed->index == NULL) {
         warn("tradindexed: overview method not initialized");
@@ -172,7 +172,7 @@ tradindexed_groupdel(char *group)
 **  cutoff if that was requested.
 */
 bool
-tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data,
+tradindexed_add(const char *group, ARTNUM artnum, TOKEN token, char *data,
                 int length, time_t arrived, time_t expires)
 {
     struct article article;
@@ -226,7 +226,7 @@ tradindexed_cancel(TOKEN token UNUSED)
 **  search in it.
 */
 void *
-tradindexed_opensearch(char *group, int low, int high)
+tradindexed_opensearch(const char *group, int low, int high)
 {
     struct group_entry *entry;
     struct group_data *data;
@@ -296,7 +296,7 @@ tradindexed_closesearch(void *handle)
 **  convert from the pointer API to the struct API used internally.
 */
 bool
-tradindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
+tradindexed_getartinfo(const char *group, ARTNUM artnum, TOKEN *token)
 {
     struct group_entry *entry;
     struct group_data *data;
@@ -331,7 +331,7 @@ tradindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 **  Expire a single newsgroup.
 */
 bool
-tradindexed_expiregroup(char *group, int *low, struct history *history)
+tradindexed_expiregroup(const char *group, int *low, struct history *history)
 {
     ARTNUM new_low;
     bool status;

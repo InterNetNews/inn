@@ -19,19 +19,20 @@
 BEGIN_DECLS
 
 bool tradindexed_open(int mode);
-bool tradindexed_groupstats(char *group, int *low, int *high, int *count,
-                            int *flag);
-bool tradindexed_groupadd(char *group, ARTNUM low, ARTNUM high, char *flag);
-bool tradindexed_groupdel(char *group);
-bool tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data,
-                     int length, time_t arrived, time_t expires);
+bool tradindexed_groupstats(const char *group, int *low, int *high,
+                            int *count, int *flag);
+bool tradindexed_groupadd(const char *group, ARTNUM low, ARTNUM high,
+                          char *flag);
+bool tradindexed_groupdel(const char *group);
+bool tradindexed_add(const char *group, ARTNUM artnum, TOKEN token,
+                     char *data, int length, time_t arrived, time_t expires);
 bool tradindexed_cancel(TOKEN token);
-void *tradindexed_opensearch(char *group, int low, int high);
+void *tradindexed_opensearch(const char *group, int low, int high);
 bool tradindexed_search(void *handle, ARTNUM *artnum, char **data,
                         int *length, TOKEN *token, time_t *arrived);
 void tradindexed_closesearch(void *handle);
-bool tradindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token);
-bool tradindexed_expiregroup(char *group, int *low, struct history *);
+bool tradindexed_getartinfo(const char *group, ARTNUM artnum, TOKEN *token);
+bool tradindexed_expiregroup(const char *group, int *low, struct history *);
 bool tradindexed_ctl(OVCTLTYPE type, void *val);
 void tradindexed_close(void);
 

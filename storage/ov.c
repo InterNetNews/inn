@@ -23,10 +23,11 @@
 #include "ovinterface.h"
 #include "ovmethods.h"
 
-/* FIXME: The following variables are shared between this file and expire.c.
-   This should be cleaned up with a better internal interface. */
-static bool	OVdelayrm;
+static bool             OVdelayrm;
 static OV_METHOD	ov;
+
+time_t	OVrealnow;
+bool    OVstatall;
 
 bool
 OVopen(int mode)

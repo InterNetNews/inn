@@ -212,7 +212,7 @@ static int clientfd = -1;
 /* read client send and recieve functions. */
 
 static int
-csend(void *data, int n)
+csend(const void *data, int n)
 {
     ssize_t status;
 
@@ -664,7 +664,7 @@ static void close_db_file(int which)
     dbs[which] = NULL;
 }
 
-static int which_db(char *group)
+static int which_db(const char *group)
 {
     HASH grouphash;
     unsigned int i;
@@ -693,7 +693,9 @@ static DB *get_db_bynum(int which)
 }
 
 
-int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_TXN *tid, int getflags)
+int
+ovdb_getgroupinfo(const char *group, struct groupinfo *gi, int ignoredeleted,
+                  DB_TXN *tid, int getflags)
 {
     int ret;
     DBT key, val;
@@ -704,7 +706,7 @@ int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_T
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
 
-    key.data = group;
+    key.data = (char *) group;
     key.size = strlen(group);
     val.data = gi;
     val.ulen = sizeof(struct groupinfo);
@@ -1733,7 +1735,7 @@ bool ovdb_open(int mode)
 
 
 bool
-ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
+ovdb_groupstats(const char *group, int *lo, int *hi, int *count, int *flag)
 {
     int ret;
     struct groupinfo gi;
@@ -1796,7 +1798,8 @@ ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
     return true;
 }
 
-bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
+bool
+ovdb_groupadd(const char *group, ARTNUM lo, ARTNUM hi, char *flag)
 {
     DBT key, val;
     struct groupinfo gi;
@@ -1860,7 +1863,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
             warn("OVDB: groupinfo->put: %s", db_strerror(ret));
 	    return false;
 	}
-	key.data = group;
+	key.data = (char *) group;
 	key.size = strlen(group);
         ret = groupinfo->del(groupinfo, tid, &key, 0);
 	switch (ret)
@@ -1903,7 +1906,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	gi.flag = *flag;
     }
 
-    key.data = group;
+    key.data = (char *) group;
     key.size = strlen(group);
     val.data = &gi;
     val.size = sizeof gi;
@@ -1921,7 +1924,7 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     }
 
     if(*flag == '=') {
-	key.data = group;
+	key.data = (char *) group;
 	key.size = strlen(group);
 	val.data = flag + 1;
 	val.size = strcspn(flag, "\n") - 1;
@@ -1942,7 +1945,8 @@ bool ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     return true;
 }
 
-bool ovdb_groupdel(char *group)
+bool
+ovdb_groupdel(const char *group)
 {
     DBT key, val;
     struct groupinfo gi;
@@ -1980,7 +1984,7 @@ bool ovdb_groupdel(char *group)
 
     gi.status |= GROUPINFO_DELETED;
 
-    key.data = group;
+    key.data = (char *) group;
     key.size = strlen(group);
     val.data = &gi;
     val.size = sizeof gi;
@@ -2012,7 +2016,9 @@ bool ovdb_groupdel(char *group)
     return true;
 }
 
-bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires)
+bool
+ovdb_add(const char *group, ARTNUM artnum, TOKEN token, char *data, int len,
+         time_t arrived, time_t expires)
 {
     static size_t databuflen = 0;
     static char *databuf;
@@ -2120,7 +2126,7 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     gi.count++;
 
     /* store groupinfo */
-    key.data = group;
+    key.data = (char *) group;
     key.size = strlen(group);
     val.data = &gi;
     val.size = sizeof gi;
@@ -2251,7 +2257,7 @@ static int nsearches = 0;
 static int maxsearches = 0;
 
 void *
-ovdb_opensearch(char *group, int low, int high)
+ovdb_opensearch(const char *group, int low, int high)
 {
     DB *db;
     struct ovdbsearch *s;
@@ -2535,7 +2541,8 @@ void ovdb_closesearch(void *handle)
     }
 }
 
-bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
+bool
+ovdb_getartinfo(const char *group, ARTNUM artnum, TOKEN *token)
 {
     int ret, cdb = 0;
     group_id_t cgid = 0;
@@ -2649,7 +2656,8 @@ bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
     return true;
 }
 
-bool ovdb_expiregroup(char *group, int *lo, struct history *h)
+bool
+ovdb_expiregroup(const char *group, int *lo, struct history *h)
 {
     DB *db, *ndb = NULL;
     DBT key, val, nkey, gkey, gval;
@@ -2775,7 +2783,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	}
     }
 
-    key.data = group;
+    key.data = (char *) group;
     key.size = strlen(group);
     val.data = &gi;
     val.size = sizeof gi;
@@ -2817,7 +2825,7 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 
     memset(&gkey, 0, sizeof gkey);
     memset(&gval, 0, sizeof gval);
-    gkey.data = group;
+    gkey.data = (char *) group;
     gkey.size = strlen(group);
     gval.data = &gi;
     gval.size = sizeof gi;
@@ -3166,6 +3174,4 @@ void ovdb_close(void)
     ovdb_releaselock();
 }
 
-
 #endif /* USE_BERKELEY_DB */
-

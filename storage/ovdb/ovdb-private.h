@@ -101,7 +101,8 @@ extern DB_ENV *OVDBenv;
 void read_ovdb_conf(void);
 int ovdb_open_berkeleydb(int mode, int flags);
 void ovdb_close_berkeleydb(void);
-int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_TXN *tid, int getflags);
+int ovdb_getgroupinfo(const char *group, struct groupinfo *gi,
+                      int ignoredeleted, DB_TXN *tid, int getflags);
 
 #define OVDB_RECOVER    1
 #define OVDB_UPGRADE    2

@@ -278,7 +278,8 @@ static bool GROUPlockhash(enum inn_locktype type);
 static bool GROUPlock(GROUPLOC gloc, enum inn_locktype type);
 static off_t GROUPfilesize(int count);
 static bool GROUPexpand(int mode);
-static void *ovopensearch(char *group, ARTNUM low, ARTNUM high, bool needov);
+static void *ovopensearch(const char *group, ARTNUM low, ARTNUM high,
+                          bool needov);
 static void ovclosesearch(void *handle, bool freeblock);
 static OVINDEX	*Gib;
 static GIBLIST	*Giblist;
@@ -1072,7 +1073,9 @@ bool buffindexed_open(int mode) {
   return true;
 }
 
-static GROUPLOC GROUPfind(char *group, bool Ignoredeleted) {
+static GROUPLOC
+GROUPfind(const char *group, bool Ignoredeleted)
+{
   HASH		grouphash;
   unsigned int	i;
   GROUPLOC	loc;
@@ -1094,7 +1097,10 @@ static GROUPLOC GROUPfind(char *group, bool Ignoredeleted) {
   return GROUPemptyloc;
 }
 
-bool buffindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag) {
+bool
+buffindexed_groupstats(const char *group, int *lo, int *hi, int *count,
+                       int *flag)
+{
   GROUPLOC	gloc;
 
   gloc = GROUPfind(group, false);
@@ -1126,7 +1132,9 @@ static void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC ne
   ge->next = next;
 }
 
-bool buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
+bool
+buffindexed_groupadd(const char *group, ARTNUM lo, ARTNUM hi, char *flag)
+{
   unsigned int	i;
   HASH		grouphash;
   GROUPLOC	gloc;
@@ -1268,7 +1276,9 @@ static GROUPLOC GROUPnewnode(void) {
   return loc;
 }
 
-bool buffindexed_groupdel(char *group) {
+bool
+buffindexed_groupdel(const char *group)
+{
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
 
@@ -1502,7 +1512,10 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   return true;
 }
 
-bool buffindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+bool
+buffindexed_add(const char *group, ARTNUM artnum, TOKEN token, char *data,
+                int len, time_t arrived, time_t expires)
+{
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
 
@@ -1736,7 +1749,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
 }
 
 static void *
-ovopensearch(char *group, ARTNUM low, ARTNUM high, bool needov)
+ovopensearch(const char *group, ARTNUM low, ARTNUM high, bool needov)
 {
   GROUPLOC		gloc;
   GROUPENTRY		*ge;
@@ -1768,7 +1781,9 @@ ovopensearch(char *group, ARTNUM low, ARTNUM high, bool needov)
   return (void *)search;
 }
 
-void *buffindexed_opensearch(char *group, int low, int high) {
+void *
+buffindexed_opensearch(const char *group, int low, int high)
+{
   GROUPLOC		gloc;
   void			*handle;
 
@@ -1976,7 +1991,9 @@ static bool gettoken(ARTNUM artnum, TOKEN *token) {
   return true;
 }
 
-bool buffindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token) {
+bool
+buffindexed_getartinfo(const char *group, ARTNUM artnum, TOKEN *token)
+{
   GROUPLOC	gloc;
   void		*handle;
   bool		retval, grouplocked = false;
@@ -2032,7 +2049,9 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token) {
   return retval;
 }
 
-bool buffindexed_expiregroup(char *group, int *lo, struct history *h) {
+bool
+buffindexed_expiregroup(const char *group, int *lo, struct history *h)
+{
   void		*handle;
   GROUPENTRY	newge, *ge;
   GROUPLOC	gloc, next;

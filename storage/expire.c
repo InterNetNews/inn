@@ -23,9 +23,9 @@
 enum KRP {Keep, Remove, Poison};
 
 /* Statistics */
-static long             EXPprocessed;
-static long             EXPunlinked;
-static long             EXPoverindexdrop;
+long             EXPprocessed;
+long             EXPunlinked;
+long             EXPoverindexdrop;
 
 #define NGH_HASH(Name, p, j)    \
         for (p = Name, j = 0; *p; ) j = (j << 5) + j + *p++
@@ -92,16 +92,16 @@ static bool             ReadOverviewfmt = false;
 
 /* FIXME: The following variables are shared between this file and ov.c.
    This should be cleaned up with a better internal interface. */
-extern time_t   OVnow;
-extern char *   ACTIVE;
-extern FILE *   EXPunlinkfile;
-extern bool     OVignoreselfexpire;
-extern bool     OVusepost;
-extern bool     OVkeep;
-extern bool     OVearliest;
-extern bool     OVquiet;
-extern int      OVnumpatterns;
-extern char **  OVpatterns;
+time_t   OVnow;
+char *   ACTIVE;
+FILE *   EXPunlinkfile;
+bool     OVignoreselfexpire;
+bool     OVusepost;
+bool     OVkeep;
+bool     OVearliest;
+bool     OVquiet;
+int      OVnumpatterns;
+char **  OVpatterns;
 
 
 /*
