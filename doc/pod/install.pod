@@ -395,12 +395,14 @@ hierarchies and hierarchies that should never expire in tradspool.
 
 If your news server will be supporting readers, you'll also need to choose
 an overview storage mechanism (by setting ovmethod in F<inn.conf>).  There
-are two overview mechanisms to choose from, tradindexed and buffindexed.
-tradindexed very fast for readers, but it has to update two files for
-every incoming article and can be quite slow to write.  buffindexed can
-keep up with a large feed more easily, since it uses large buffers to
+are three overview mechanisms to choose from, tradindexed, buffindexed,
+and ovdb.  tradindexed is very fast for readers, but it has to update two
+files for every incoming article and can be quite slow to write.  buffindexed
+can keep up with a large feed more easily, since it uses large buffers to
 store all overview information in, but it's somewhat slower for readers
-(although not as slow as the unified overview in INN 2.2).
+(although not as slow as the unified overview in INN 2.2).  ovdb stores
+overview data into a BerkeleyDB database.  It is fast and very robust, but
+requires more disk space.  See the ovdb(5) man page for more information.
 
 If buffindexed is chosen, you will need to create the buffers for it to
 use (very similar to creating CNFS buffers) and list the available buffers
@@ -1243,7 +1245,7 @@ in F</etc/system> and rebooting.  You can increase it all the way to 1024
 cause RPC and some stdio applications to break.  It therefore probably
 isn't a good idea on a machine that isn't dedicated to INN.
 
-=head1 Starting the System
+=head1 Starting and Stopping the System
 
 INN is started via the shell script rc.news.  This must be run as the news
 user and not as root.  To start INN on system boot, you therefore want to
@@ -1254,5 +1256,10 @@ put something like:
 in the system boot scripts.  If innd is stopped or killed, you can restart
 it by running rc.news by hand as the news user.
 
-FIXME: We really should provide a sample init script for people using
-System V-style init.d directories.
+The rc.news script may also be used to shut down INN, with the C<stop>
+option:
+
+    su news -c '/usr/local/news/bin/rc.news stop'
+
+In the F<contrib> directory of this source tree is a sample init script
+for people using System V-style init.d directories.

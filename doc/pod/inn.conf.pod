@@ -354,22 +354,26 @@ This is a boolean value and the default is false.
 =item I<ovmethod>
 
 What overview storage method to use.  Currently supported values
-are C<tradindexed> and C<buffindexed>.
+are C<tradindexed>, C<buffindexed>, and C<ovdb>.
 There is no default value; this parameter must be set if
 I<enableoverview> is true (the default).
 
 =over 4
 
-=item C<   > C<tradindexed>
+=item C<tradindexed>
 
 stores two files per newsgroup, one containing the overview data and one
 containing the index.
 
-=item C<   > C<buffindexed>
+=item C<buffindexed>
 
 stores data and its index into buffers which are preconfigured files
 defined in F<buffinedexed.conf>.  C<buffindexed> never consumes disk
 space other than those files for overview data and index.
+
+=item C<ovdb>
+
+stores data into a BerkeleyDB database.  See the ovdb(5) man page.
 
 =back
 

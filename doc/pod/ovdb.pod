@@ -1,0 +1,188 @@
+=head1 NAME
+
+ovdb - Overview storage method for INN
+
+=head1 DESCRIPTION
+
+Ovdb is a storage method that uses the BerkeleyDB library to store overview
+data.  It requires version 2.6.x or later of the BerkeleyDB library; it has been
+tested with versions 2.7.7 and 3.0.55.  Ovdb makes use of the full
+transaction/logging/locking functionality of the BerkeleyDB environment.
+BerkeleyDB may be downloaded from http://www.sleepycat.com .
+
+The BerkeleyDB distribution is (by default) installed into
+F</usr/local/BerkeleyDB>, with subdirectories F<lib/>, F<include/>, and
+F<bin/> for the library, headers, and support tools, respectively.
+Version 3.x uses F</usr/local/BerkeleyDB.3.0> instead.
+Ovdb uses some of the support tools in the F<bin/> subdirectory; namely
+F<db_archive>, F<db_checkpoint>, and F<db_deadlock>.
+
+=head1 INSTALLATION
+
+To build ovdb support into INN, specify the option C<--with-berkeleydb>
+when running the configure script.  By default, configure will use
+F</usr/local/BerkeleyDB>.
+If you installed it in a different location, you'll need to specify
+that location like this (for example): C<--with-berkeleydb=/opt/BerkeleyDB>.
+
+The ovdb database will take up more disk space for a given spool than
+the other overview methods.  Plan on needing at least 1.1 KB for every
+article in your spool (not counting crossposts).  So, if you have 5
+million articles, you'll need at least 5.5 GB of disk space for ovdb.
+Plus, you'll need additional space for transaction logs: at least 40 MB,
+preferably 100 MB or more.  (The logs may be on a different filesystem
+-- see the DB_CONFIG section.)  If space is running tight, you can shrink
+the ovXXXX database files by dumping and reloading them (to remove unused
+space within the database file).
+
+=head1 CONFIGURATION
+
+To enable ovdb, set the I<ovmethod> parameter in F<inn.conf> to C<ovdb>.
+The ovdb database is stored in the directory specified by the I<pathoverview>
+paramter in F<inn.conf>.  This is the "DB_HOME" directory.  To start out,
+this directory should be empty (other than an optional F<DB_CONFIG> file,
+see the DB_CONFIG section for details) and innd (or makehistory) will
+create the files as necessary in that directory.
+
+Other parameters for configuring ovdb are in the optional F<ovdb.conf>
+configuration file.  See also the sample F<ovdb.conf>.
+
+=over 4
+
+=item numdbfiles
+
+Overview data is split between this many files.  Currently,
+innd will keep all of the files open, so don't set this too high
+or innd may run out of file descriptors.  The nnrpds only open one
+at a time, regardless.  May be set to one, or just a few, but only
+do that if your OS supports large (>2G) files.
+Warning: do NOT change this on an already established database.
+Default is 32.
+
+=item txn_nosync
+
+If txn_nosync is set to false, BerkeleyDB flushes the log after every
+transaction.  This minimizes the number of transactions that may be lost
+in the event of a crash, but results in significantly degraded
+performance.  Default is true.
+
+=item cachesize
+
+Size of the memory pool cache, in Kilobytes.  The cache will have a
+backing store file in the DB directory which will be at least as big.
+In general, the bigger the cache, the better.  Use C<db_stat -m> to see
+cache hit percentages.  If they're less than 80%, try increasing the
+cache size.  To make a change of this parameter take effect with an
+existing database, remove the F<__db*> files while there are no
+database processes running.  Default is 4096 K, which may be
+adequate for small to medium-sized servers.  Full-feed servers will
+probably need at least 10000.
+
+=item pagesize
+
+Sets the page size for the DB files (in bytes).  Must be a power of 2.
+Best range will probably be between 2048 and 16384.  The default is
+whatever BerkeleyDB selects as its default (based on the I/O block
+size of the underlying filesystem).
+
+=item minkey
+
+Sets the minimum number of keys per page.  See the BerkeleyDB
+documentation for more info.  Default is 2; a setting of 3 may work
+better with larger page sizes.
+
+=back
+
+=head2 DB_CONFIG
+
+A file called F<DB_CONFIG> may be placed in the database directory to
+customize where the various database files and transaction logs are
+written.  By default, all of the files are written in the "DB_HOME"
+directory.  One way to improve performance is to put the transaction
+logs on a different disk.  To do this, put:
+
+DB_LOG_DIR /path/to/logs
+
+in the F<DB_CONFIG> file.  If the pathname you give starts with a /,
+it is treated as an absolute path; otherwise, it is relative to the
+"DB_HOME" directory.  Make sure that any directories you specify 
+exist and have proper ownership/mode before starting INN, because 
+they won't be created automatically.  Also, don't change the DB_CONFIG
+file while anything that uses ovdb is running.
+
+The DB_CONFIG functionality is part of BerkeleyDB itself.
+
+=head1 RUNNING
+
+You don't need to do anything special when starting or stopping INN
+when using ovdb, as long as you use F<rc.news>.  When starting,
+F<rc.news>:
+
+=over 4
+
+=item *
+
+Runs C<ovdb_recover>.  This will perform any needed recovery on the
+database; e.g., if there was a crash that may have left the database
+in an inconsistent state.  This is done before innd is started.
+
+=item *
+
+Runs C<dbprocs start>.  This starts the DB housekeeping processes.
+
+=back
+
+And when stopping INN, F<rc.news> calls C<dbprocs stop> after the
+other INN processes have been shut down.
+
+=head1 DIAGNOSTICS
+
+Problems relating to ovdb are logged to news.err with "OVDB" in the
+error message.
+
+=head1 FILES
+
+=over 4
+
+=item inn.conf
+
+The I<ovmethod> and I<pathoverview> parameters are relevant to ovdb.
+
+=item ovdb.conf
+
+Optional configuration file for tuning.  See CONFIGURATION section above.
+
+=item I<pathoverview>
+
+Directory where the database goes.  BerkeleyDB calls it the 'DB_HOME'
+directory.
+
+=item I<pathoverview>/DB_CONFIG
+
+Optional file to configure the layout of the database files.
+
+=back
+
+=head1 TO DO
+
+I've modified innshellvars and innshellvars.pl to add the BerkeleyDB
+bin dir to PATH and set DB_HOME to innconf->pathoverview.  Since I
+don't know TCL, someone needs to modify innshellvars.tcl in the same
+way.
+
+Implement a way to limit how many databases can be open at once (to
+reduce file descriptor usage); maybe using something similar to the
+cache code in ov3.c
+
+=head1 HISTORY
+
+Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews
+
+=head1 SEE ALSO
+
+rc.news(8), inn.conf(5), dbprocs(8), ovdb_recover(8), ovdb_upgrade(8)
+
+BerkeleyDB documentation, in the F<docs> directory of the BerkeleyDB
+source distribution, or on the Sleepycat web page: http://www.sleepycat.com/
+
+=cut

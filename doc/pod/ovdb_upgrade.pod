@@ -1,0 +1,61 @@
+=head1 NAME
+
+ovdb_upgrade - Perform any needed upgrades on the ovdb database
+
+=head1 SYNOPSYS
+
+ovdb_upgrade
+
+=head1 DESCRIPTION
+
+The B<ovdb_upgrade> command is be used to upgrade the ovdb database when
+migrating to a newer version of the BerkeleyDB library (e.g., 2.x to 3.x).
+The upgrade is done in-place, and is not reversable.
+
+Here is an example procedure to upgrade a database created with BerkeleyDB
+2.x to use BerkeleyDB 3.x:
+
+=over 4
+
+=item 1
+
+Install BerkeleyDB 3.x
+
+=item 2
+
+Do a C<make clean> in the INN source tree
+
+=item 3
+
+If BerkeleyDB 3.x is installed into a different path than the 2.x version,
+run configure again, specifying the new path.  For example:
+C<./configure --with-berkeleydb=/usr/local/BerkeleyDB.3.0  [... other options]>
+
+=item 4
+
+Shut down INN (e.g., with C<rc.news stop>)
+
+=item 5
+
+Do a C<make update> to build INN with the new BerkeleyDB version and install
+the new binaries.
+
+=item 6
+
+Run C<ovdb_upgrade> as the news user.
+
+=item 7
+
+Start INN with C<rc.news>
+
+=back
+
+=head1 HISTORY
+
+Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+
+=head1 SEE ALSO
+
+ovdb(5)
+
+=cut
