@@ -173,18 +173,6 @@ verify-*)
     ;;
 esac
 
-case "${LOGFILE}" in
-"")
-    LOGFILE=/dev/null
-    ;;
-mail|/*)
-    ;;
-*)
-    LOGFILE=${MOST_LOGS}/${LOGFILE}.log
-    ;;
-esac
-export LOGFILE
-
 if $PGPVERIFY; then
     PGPSENDER=`${SM} ${ARTICLE} | pgpverify`;
     PGP_STATUS=$?
@@ -207,13 +195,24 @@ if $PGPVERIFY; then
     # code 255 is failure to run pgp.
     verify:255)
 	ACTION=logit
-	LOGFILE=failedpgp.log
+	LOGFILE=failedpgp
 	;;
     # pgp ran, but failed to verify message.
     verify:*)
        ACTION=logit
-       LOGFILE=badpgp.log
+       LOGFILE=badpgp
        ;;
     esac
 fi
 
+case "${LOGFILE}" in
+"")
+    LOGFILE=/dev/null
+    ;;
+mail|/*)
+    ;;
+*)
+    LOGFILE=${MOST_LOGS}/${LOGFILE}.log
+    ;;
+esac
+export LOGFILE
