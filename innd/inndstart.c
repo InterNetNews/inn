@@ -117,8 +117,8 @@ main(int argc, char *argv[])
     /* Exit if run by any other user or group. */
     real_uid = getuid();
     if (real_uid != news_uid)
-        die("must be run by user %s (%lu), not %lu", NEWSUSER, news_uid,
-            real_uid);
+        die("must be run by user %s (%lu), not %lu", NEWSUSER,
+                (unsigned long)news_uid, (unsigned long)real_uid);
 
     /* Drop all supplemental groups and drop privileges to read inn.conf.
        setgroups() can only be invoked by root, so if inndstart isn't setuid
@@ -126,7 +126,7 @@ main(int argc, char *argv[])
     if (setgroups(1, &news_gid) < 0)
         syswarn("can't setgroups (is inndstart setuid root?)");
     if (seteuid(news_uid) < 0)
-        sysdie("can't seteuid to %lu", news_uid);
+        sysdie("can't seteuid to %lu", (unsigned long)news_uid);
     if (!innconf_read(NULL))
         exit(1);
 
@@ -308,9 +308,9 @@ main(int argc, char *argv[])
 
     /* Now, permanently drop privileges. */
     if (setgid(news_gid) < 0 || getgid() != news_gid)
-        sysdie("can't setgid to %lu", news_gid);
+        sysdie("can't setgid to %lu", (unsigned long)news_gid);
     if (setuid(news_uid) < 0 || getuid() != news_uid)
-        sysdie("can't setuid to %lu", news_uid);
+        sysdie("can't setuid to %lu", (unsigned long)news_uid);
 
     /* Build the argument vector for innd.  Pass -p<port> to innd to tell it
        what port we just created and bound to for it. */

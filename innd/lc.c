@@ -31,7 +31,7 @@ LCreader(CHANNEL *cp)
 
     if (cp != LCchan) {
 	syslog(L_ERROR, "%s internal LCreader wrong channel 0x%p not 0x%p",
-	    LogName, cp, LCchan);
+	    LogName, (void *)cp, (void *)LCchan);
 	return;
     }
 

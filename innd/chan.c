@@ -312,7 +312,7 @@ CHANtracing(CHANNEL *cp, bool Flag)
 	    cp->LastActive, cp->NextLog);
 	if (FD_ISSET(cp->fd, &SCHANmask))
 	    syslog(L_NOTICE, "%s trace sleeping %ld 0x%p",
-		p, (long)cp->Waketime, cp->Waker);
+		p, (long)cp->Waketime, (void *)cp->Waker);
 	if (FD_ISSET(cp->fd, &RCHANmask))
 	    syslog(L_NOTICE, "%s trace reading %d %s",
 		p, cp->In.Used, MaxLength(cp->In.Data, cp->In.Data));
@@ -1009,7 +1009,7 @@ CHANreadloop(void)
 	if (innconf->timer) {
 	    unsigned long now = TMRnow();
 
-	    if (now >= innconf->timer * 1000) {
+	    if (now >= 1000 * (unsigned long)(innconf->timer)) {
 		TMRsummary("ME", timer_name);
 		InndHisLogStats();
 		MyTime.tv_sec = innconf->timer;
