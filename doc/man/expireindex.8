@@ -25,13 +25,21 @@ expireindex \- Expire entries from the news overview index
 .SH DESCRIPTION
 .I Expireindex
 expires entries from the news overview database index.
-It reads a list of pathnames (relative to the spool directory,
-.\" =()<.IR @<_PATH_SPOOL>@ ),>()=
-.IR /var/news/spool/articles ),
-from the specified
+It reads a list of newsgroup and article number, from the specified
 .I files
 or standard input if none are specified.
 (A file name of ``\-'' may be used to specify the standard input.)
+Each line should consist of 2 fields specified by a colon:
+.PP
+.RS
+.nf
+        newsgroupname:aritclenumber
+.fi
+.RE
+.PP
+The first field is the name of the newsgroup.  A period ``.'' in the
+newsgroup name should be a slash ``/''.
+The second field is an article number to be expired.
 It then removes any mention of those articles from the appropriate overview
 database index.
 .PP

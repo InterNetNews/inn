@@ -92,7 +92,9 @@ will ignore it.)
 The program reads each file found and writes a history line for it.
 .PP
 .I Makehistory
-also translates articles stored by traditional method.
+also restores articles stored by traditional method through storage api.
+If this is done, unified overview database and its index can be created
+together.
 .PP
 After the text file is written,
 .I makehistory
@@ -280,7 +282,7 @@ s       same as S
 .in -0.5i
 .sp 1
 Retrieving from history translates articles stored by both traditional method
-and storage api.  Retrieving from will only translates articles stored by
+and storage api.  Retrieving from spool will only translates articles stored by
 traditional method.
 .TP
 .B \-U

@@ -19,6 +19,7 @@
 ../doc/distrib.pats.5
 ../doc/expire.8
 ../doc/expire.ctl.5
+../doc/expireindex.8
 ../doc/expireover.8
 ../doc/expirerm.8
 ../doc/filechan.8
@@ -36,6 +37,7 @@
 ../doc/makeactive.8
 ../doc/makehistory.8
 ../doc/moderators.5
+../doc/motd.5
 ../doc/news.daily.8
 ../doc/newsfeeds.5
 ../doc/newslog.5
@@ -44,6 +46,7 @@
 ../doc/nntpsend.8
 ../doc/nntpsend.ctl.5
 ../doc/overchan.8
+../doc/overview.ctl.5
 ../doc/overview.fmt.5
 ../doc/passwd.nntp.5
 ../doc/prunehistory.8
@@ -51,6 +54,8 @@
 ../doc/rnews.1
 ../doc/shlock.1
 ../doc/shrinkfile.1
+../doc/sm.8
+../doc/storage.ctl.5
 ../doc/writelog.8
 ../expire/Makefile
 ../frontends/Makefile

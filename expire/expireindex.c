@@ -182,7 +182,7 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
     char			ilockfile[SPOOLNAMEBUFF];
     int				count, icount;
     int				ifd, ilfd;
-    int				ARTarraysize;
+    static int			ARTarraysize = 0;
     OVERINDEX			index;
     char			(*tmp)[][OVERINDEXPACKSIZE];
     
@@ -267,13 +267,13 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
     if (ARTarraysize == 0) {
 	ARTnumbers = NEW(ARTLIST, OVERicount);
 	OVERindexnew = (char (*)[][OVERINDEXPACKSIZE])NEW(char, OVERicount * OVERINDEXPACKSIZE);
-    } else {
+    } else if (ARTarraysize < OVERicount) {
 	ARTnumbers = RENEW(ARTnumbers, ARTLIST, OVERicount);
 	p = (char *)OVERindexnew;
 	p = RENEW(p, char, OVERicount * OVERINDEXPACKSIZE);
 	OVERindexnew = (char (*)[][OVERINDEXPACKSIZE])p;
+	ARTarraysize = OVERicount;
     }
-    ARTarraysize = OVERicount;
     for (i = 0; i < OVERicount; i++) {
 	UnpackOverIndex((*OVERindex)[i], &index);
 	ARTnumbers[ARTsize].ArtNum = index.artnum;

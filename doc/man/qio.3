@@ -61,7 +61,12 @@ The letters ``QIO'' stand for
 .I QIOopen
 opens the file
 .I name
-for reading.
+for reading.  If 
+.I name
+is the token of an article,
+.I QIOopen
+calls
+.IR SMretrieve .
 It uses a buffer of
 .I size
 bytes, which must also be larger then the longest expected line.
