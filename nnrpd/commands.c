@@ -389,7 +389,6 @@ CMDlist(int ac, char *av[])
 	if (ac == 3) {
 	    wildarg = av[2];
 	    if (OVgroupstats(wildarg, &lo, &hi, NULL, &flag)) {
-		syslog(L_NOTICE, "%s shortcut list active %s", ClientHost, wildarg);
 		Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
 		printf("%s %010d %010d %c\r\n.\r\n", wildarg, hi, lo, flag);
 		return;
