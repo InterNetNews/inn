@@ -5,8 +5,9 @@ include ../../Makefile.global
 ##  Edit these if you need to.
 MANFLAGS = -c $(OWNER) -m 0444 -B .OLD
 
-SEC1	= convdate.1 getlist.1 grephistory.1 inews.1 innconfval.1 innfeed.1 \
-	nntpget.1 rnews.1 shlock.1 shrinkfile.1 startinnfeed.1 simpleftp.1
+SEC1	= ckpasswd.1 convdate.1 getlist.1 grephistory.1 inews.1 \
+	innconfval.1 innfeed.1 nntpget.1 rnews.1 shlock.1 shrinkfile.1 \
+	startinnfeed.1 simpleftp.1
 
 ##  MISSING_MAN installs man pages for standard library functions the system
 ##  didn't have (and which were therefore added to libinn), as detected by
@@ -30,12 +31,13 @@ SEC8	= actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 cnfsheadconf.8 \
 	overchan.8 pgpverify.8 prunehistory.8 pullnews.8 scanlogs.8 \
 	send-uucp.8 sm.8 tally.control.8 writelog.8 dbprocs.8
 
-INSTALLED_SEC1 =	$D$(MAN1)/convdate.1 $D$(MAN1)/getlist.1 \
-			$D$(MAN1)/grephistory.1 $D$(MAN1)/inews.1 \
-			$D$(MAN1)/innconfval.1 $D$(MAN1)/innfeed.1 \
-			$D$(MAN1)/nntpget.1 $D$(MAN1)/rnews.1 \
-			$D$(MAN1)/shlock.1 $D$(MAN1)/shrinkfile.1 \
-			$D$(MAN1)/startinnfeed.1 $D$(MAN1)/simpleftp.1
+INSTALLED_SEC1 =	$D$(MAN1)/ckpasswd.1 $D$(MAN1)/convdate.1 \
+			$D$(MAN1)/getlist.1 $D$(MAN1)/grephistory.1 \
+			$D$(MAN1)/inews.1 $D$(MAN1)/innconfval.1 \
+			$D$(MAN1)/innfeed.1 $D$(MAN1)/nntpget.1 \
+			$D$(MAN1)/rnews.1 $D$(MAN1)/shlock.1 \
+			$D$(MAN1)/shrinkfile.1 $D$(MAN1)/startinnfeed.1 \
+			$D$(MAN1)/simpleftp.1
 
 INSTALLED_SEC3 =	$D$(MAN3)/clientlib.3 $D$(MAN3)/dbz.3 \
 			$D$(MAN3)/inndcomm.3 $D$(MAN3)/libinn.3 \
@@ -109,6 +111,7 @@ profiled:
 ##  Low-level install actions.
 COPY	= $(SHELL) ./putman.sh $(MANPAGESTYLE) "$(MANFLAGS)"
 
+$D$(MAN1)/ckpasswd.1:		ckpasswd.1	   ; $(COPY) $? $@
 $D$(MAN1)/convdate.1:		convdate.1	   ; $(COPY) $? $@
 $D$(MAN1)/getlist.1:		getlist.1	   ; $(COPY) $? $@
 $D$(MAN1)/grephistory.1:	grephistory.1	   ; $(COPY) $? $@
