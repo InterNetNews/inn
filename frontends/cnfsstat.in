@@ -279,7 +279,7 @@ sub print_cycbuff_head {
     if ($use_syslog) {
 	($name) = split(/\s/, $name);
 	$name =~ s/\0//g;
-	syslog ('notice', '%s Buffer %s, len: %d  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
+	syslog ('notice', '%s Buffer %s, len: %.2f  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
 		$logline, $name, $len / (1024 * 1024),
 		Math::BigFloat->new ($free) / (1024 * 1024),
 		100 * Math::BigFloat->new ($free) / $len, $cyclenum);
