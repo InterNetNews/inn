@@ -152,7 +152,7 @@ ARTreadschema(void)
   bool		foundxreffull = FALSE;
 
   if (ARTfields != NULL) {
-    DISPOSE(ARTfields);
+    free(ARTfields);
     ARTfields = NULL;
   }
 
@@ -164,7 +164,7 @@ ARTreadschema(void)
   for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
     continue;
   fseeko(F, 0, SEEK_SET);
-  ARTfields = NEW(ARTOVERFIELD, i + 1);
+  ARTfields = xmalloc((i + 1) * sizeof(ARTOVERFIELD));
 
   /* Parse each field. */
   for (ok = TRUE, fp = ARTfields ; fgets(buff, sizeof buff, F) != NULL ;) {
@@ -221,7 +221,7 @@ ARTbuildtree(ARTHEADER **Table, int lo, int hi)
   TREE	*tp;
 
   mid = lo + (hi - lo) / 2;
-  tp = NEW(TREE, 1);
+  tp = xmalloc(sizeof(TREE));
   tp->Header = Table[mid];
   tp->Name = tp->Header->Name;
   if (mid == lo)
@@ -280,15 +280,15 @@ ARTsetup(void)
   ARTcclass['_'] |= CC_HOSTNAME;
 
   /* Build the header tree. */
-  table = NEW(ARTHEADER*, SIZEOF(ARTheaders));
+  table = xmalloc(SIZEOF(ARTheaders) * sizeof(ARTHEADER *));
   for (i = 0; i < SIZEOF(ARTheaders); i++)
     table[i] = &ARTheaders[i];
   qsort(table, SIZEOF(ARTheaders), sizeof *table, ARTcompare);
   ARTheadertree = ARTbuildtree(table, 0, SIZEOF(ARTheaders));
-  DISPOSE(table);
+  free(table);
 
   /* Get our Path name, kill trailing !. */
-  ARTpathme = COPY(Path.data);
+  ARTpathme = xstrdup(Path.data);
   ARTpathme[Path.used - 1] = '\0';
 
   /* Set up database; ignore errors. */
@@ -305,7 +305,7 @@ ARTfreetree(TREE *tp)
     if (tp->Before)
       ARTfreetree(tp->Before);
     next = tp->After;
-    DISPOSE(tp);
+    free(tp);
   }
 }
 
@@ -314,7 +314,7 @@ void
 ARTclose(void)
 {
   if (ARTfields != NULL) {
-    DISPOSE(ARTfields);
+    free(ARTfields);
     ARTfields = NULL;
   }
   ARTfreetree(ARTheadertree);
@@ -375,7 +375,7 @@ ARTparsepath(const char *p, int size, LISTBUFFER *list)
 
     if (list->ListLength <= i) {
       list->ListLength += DEFAULTNGBOXSIZE;
-      RENEW(list->List, char*, list->ListLength);
+      list->List = xrealloc(list->List, list->ListLength * sizeof(char *));
       hp = &list->List[i];
     }
     /* mark the start of the host, move to the end of it while copying */  
@@ -387,7 +387,7 @@ ARTparsepath(const char *p, int size, LISTBUFFER *list)
   *q = '\0';
   if (i == list->ListLength) {
     list->ListLength += DEFAULTNGBOXSIZE;
-    RENEW(list->List, char *, list->ListLength);
+    list->List = xrealloc(list->List, list->ListLength * sizeof(char *));
     hp = &list->List[i];
   }
   *hp = NULL;
@@ -1169,14 +1169,14 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
     SMfreearticle(art);
     return false;
   }
-  q = NEW(char, p - local + 1);
+  q = xmalloc(p - local + 1);
   memcpy(q, local, p - local);
   SMfreearticle(art);
   q[p - local] = '\0';
   HeaderCleanFrom(q);
 
   /* Compare canonical forms. */
-  q1 = COPY(data->Poster);
+  q1 = xstrdup(data->Poster);
   HeaderCleanFrom(q1);
   if (!EQ(q, q1)) {
     r = false;
@@ -1187,8 +1187,8 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
   else {
     r = true;
   }
-  DISPOSE(q1);
-  DISPOSE(q);
+  free(q1);
+  free(q);
   return r;
 }
 
@@ -1294,7 +1294,7 @@ ARTparsedist(const char *p, int size, LISTBUFFER *list)
 
     if (list->ListLength <= i) {
       list->ListLength += DEFAULTNGBOXSIZE;
-      RENEW(list->List, char*, list->ListLength);
+      list->List = xrealloc(list->List, list->ListLength * sizeof(char *));
       dp = &list->List[i];
     }
     /* mark the start of the host, move to the end of it while copying */  
@@ -1306,7 +1306,7 @@ ARTparsedist(const char *p, int size, LISTBUFFER *list)
   *q = '\0';
   if (i == list->ListLength) {
     list->ListLength += DEFAULTNGBOXSIZE;
-    RENEW(list->List, char *, list->ListLength);
+    list->List = xrealloc(list->List, list->ListLength * sizeof(char *));
     dp = &list->List[i];
   }
   *dp = NULL;
@@ -1399,7 +1399,7 @@ ARTassignnumbers(ARTDATA *data)
 
   if (data->XrefBufLength == 0) {
     data->XrefBufLength = MAXHEADERSIZE * 2 + 1;
-    data->Xref = NEW(char, data->XrefBufLength);
+    data->Xref = xmalloc(data->XrefBufLength);
     strncpy(data->Xref, Path.data, Path.used - 1);
   }
   len = Path.used - 1;
@@ -1421,7 +1421,7 @@ ARTassignnumbers(ARTDATA *data)
     /*  len  ' ' "news_groupname"  ':' "#" "\r\n" */
     if (len + 1 + ngp->NameLength + 1 + 10 + 2 > data->XrefBufLength) {
       data->XrefBufLength += MAXHEADERSIZE;
-      RENEW(data->Xref, char, data->XrefBufLength);
+      data->Xref = xrealloc(data->Xref, data->XrefBufLength);
       p = data->Xref + len;
     }
     if (linelen + 1 + ngp->NameLength + 1 + 10 > MAXHEADERSIZE) {

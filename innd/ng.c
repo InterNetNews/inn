@@ -97,9 +97,9 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
     /* We count on atoi() to stop at the space after the digits! */
     ngp->Last = atol(ngp->LastString);
     ngp->nSites = 0;
-    ngp->Sites = NEW(int, NGHcount);
+    ngp->Sites = xmalloc(NGHcount * sizeof(int));
     ngp->nPoison = 0;
-    ngp->Poison = NEW(int, NGHcount);
+    ngp->Poison = xmalloc(NGHcount * sizeof(int));
     ngp->Alias = NULL;
 
     /* Find the right bucket for the group, make sure there is room. */
@@ -113,7 +113,7 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
 	}
     if (htp->Used >= htp->Size) {
 	htp->Size += NGHbuckets;
-	RENEW(htp->Groups, NEWSGROUP*, htp->Size);
+        htp->Groups = xrealloc(htp->Groups, htp->Size * sizeof(NEWSGROUP *));
     }
     htp->Groups[htp->Used++] = ngp;
 
@@ -151,15 +151,15 @@ NGparsefile(void)
 	syslog(L_FATAL, "%s empty active file", LogName);
 	exit(1);
     }
-    Groups = NEW(NEWSGROUP, nGroups);
-    GroupPointers = NEW(NEWSGROUP*, nGroups);
+    Groups = xmalloc(nGroups * sizeof(NEWSGROUP));
+    GroupPointers = xmalloc(nGroups * sizeof(NEWSGROUP *));
 
     /* Get space to hold copies of the names.  This might take more space
      * than individually allocating each element, but it is definitely easier
      * on the system. */
     i = end - active;
     NGnames.size = i;
-    NGnames.data = NEW(char, NGnames.size + 1);
+    NGnames.data = xmalloc(NGnames.size + 1);
     NGnames.used = 0;
 
     /* Set up the default hash buckets. */
@@ -172,7 +172,7 @@ NGparsefile(void)
     else
 	for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
 	    htp->Size = NGHbuckets;
-	    htp->Groups = NEW(NEWSGROUP*, htp->Size);
+	    htp->Groups = xmalloc(htp->Size * sizeof(NEWSGROUP *));
 	    htp->Used = 0;
 	}
 
@@ -230,19 +230,19 @@ NGclose(void)
 
     if (Groups) {
 	for (i = nGroups, ngp = Groups; --i >= 0; ngp++) {
-	    DISPOSE(ngp->Sites);
-	    DISPOSE(ngp->Poison);
+	    free(ngp->Sites);
+	    free(ngp->Poison);
 	}
-	DISPOSE(Groups);
+	free(Groups);
 	Groups = NULL;
-	DISPOSE(GroupPointers);
-	DISPOSE(NGnames.data);
+	free(GroupPointers);
+	free(NGnames.data);
     }
 
     for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
       htp->Size = NGHbuckets;
       if (htp->Groups) {
-	DISPOSE(htp->Groups);
+	free(htp->Groups);
 	htp->Used = 0;
 	htp->Groups = NULL;
       }
@@ -295,7 +295,7 @@ NGsplit(char *p, int size, LISTBUFFER *list)
 
     if (i == list->ListLength) {
       list->ListLength += DEFAULTNGBOXSIZE;
-      RENEW(list->List, char *, list->ListLength); 
+      list->List = xrealloc(list->List, list->ListLength * sizeof(char *));
       gp = &list->List[i];
     }
     /* mark the start of the newsgroup, move to the end of it while copying */
@@ -312,7 +312,7 @@ NGsplit(char *p, int size, LISTBUFFER *list)
   *q = '\0';
   if (i == list->ListLength) {
     list->ListLength += DEFAULTNGBOXSIZE;
-    RENEW(list->List, char *, list->ListLength); 
+    list->List = xrealloc(list->List, list->ListLength * sizeof(char *));
     gp = &list->List[i];
   }
   *gp = NULL;

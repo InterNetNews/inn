@@ -200,7 +200,7 @@ BuildGroups(char *active)
     for (p = active, i = 0; (p = strchr(p, '\n')) != NULL; p++, i++)
         continue;
     nGroups = i;
-    Groups = NEW(NEWSGROUP, i);
+    Groups = xmalloc(sizeof(NEWSGROUP));
 
     /* Set up the default hash buckets. */
     NGHbuckets = i / NGH_SIZE;
@@ -208,7 +208,7 @@ BuildGroups(char *active)
         NGHbuckets = 1;
     for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
         htp->Size = NGHbuckets;
-        htp->Groups = NEW(NEWSGROUP*, htp->Size);
+        htp->Groups = xmalloc(htp->Size * sizeof(NEWSGROUP *));
         htp->Used = 0;
     }
 
@@ -237,7 +237,7 @@ BuildGroups(char *active)
         htp = NGH_BUCKET(j);
         if (htp->Used >= htp->Size) {
             htp->Size += NGHbuckets;
-            RENEW(htp->Groups, NEWSGROUP*, htp->Size);
+            htp->Groups = xrealloc(htp->Groups, htp->Size * sizeof(NEWSGROUP *));
         }
         htp->Groups[htp->Used++] = ngp;
     }
@@ -347,12 +347,12 @@ EXPreadfile(FILE *F)
 
     /* Scan all lines. */
     SawDefault = FALSE;
-    patterns = NEW(char*, nGroups);
+    patterns = xmalloc(nGroups * sizeof(char *));
     
     for (i = 1; fgets(buff, sizeof buff, F) != NULL; i++) {
         if ((p = strchr(buff, '\n')) == NULL) {
             fprintf(stderr, "Line %d too long\n", i);
-            DISPOSE(patterns);
+            free(patterns);
             return FALSE;
         }
         *p = '\0';
@@ -371,7 +371,7 @@ EXPreadfile(FILE *F)
             continue;
         if ((j = EXPsplit(buff, ':', fields, SIZEOF(fields))) == -1) {
             fprintf(stderr, "Line %d too many fields\n", i);
-            DISPOSE(patterns);
+            free(patterns);
             return FALSE;
         }
 
@@ -383,7 +383,7 @@ EXPreadfile(FILE *F)
         /* Regular expiration line -- right number of fields? */
         if (j != 5) {
             fprintf(stderr, "Line %d bad format\n", i);
-            DISPOSE(patterns);
+            free(patterns);
             return FALSE;
         }
 
@@ -396,14 +396,14 @@ EXPreadfile(FILE *F)
             mod = 'a';
         else {
             fprintf(stderr, "Line %d bad modflag\n", i);
-            DISPOSE(patterns);
+            free(patterns);
             return FALSE;
         }
         v.Poison = (strchr(fields[1], 'X') != NULL);
         if (!EXPgetnum(i, fields[2], &v.Keep,    "keep")
          || !EXPgetnum(i, fields[3], &v.Default, "default")
          || !EXPgetnum(i, fields[4], &v.Purge,   "purge")) {
-            DISPOSE(patterns);
+            free(patterns);
             return FALSE;
         }
         /* These were turned into offsets, so the test is the opposite
@@ -413,12 +413,12 @@ EXPreadfile(FILE *F)
             /* Some value not forever; make sure other values are in range. */
             if (v.Keep && v.Keep < v.Purge) {
                 fprintf(stderr, "Line %d keep>purge\n", i);
-                DISPOSE(patterns);
+                free(patterns);
                 return FALSE;
             }
             if (v.Default && v.Default < v.Purge) {
                 fprintf(stderr, "Line %d default>purge\n", i);
-                DISPOSE(patterns);
+                free(patterns);
                 return FALSE;
             }
         }
@@ -427,7 +427,7 @@ EXPreadfile(FILE *F)
         if (fields[0][0] == '*' && fields[0][1] == '\0' && mod == 'a') {
             if (SawDefault) {
                 fprintf(stderr, "Line %d duplicate default\n", i);
-                DISPOSE(patterns);
+                free(patterns);
                 return FALSE;
             }
             EXPdefault.Keep    = v.Keep;
@@ -440,13 +440,13 @@ EXPreadfile(FILE *F)
         /* Assign to all groups that match the pattern and flags. */
         if ((j = EXPsplit(fields[0], ',', patterns, nGroups)) == -1) {
             fprintf(stderr, "Line %d too many patterns\n", i);
-            DISPOSE(patterns);
+            free(patterns);
             return FALSE;
         }
         for (k = 0; k < j; k++)
             EXPmatch(patterns[k], &v, mod);
     }
-    DISPOSE(patterns);
+    free(patterns);
 
     return TRUE;
 }
@@ -465,8 +465,8 @@ EXPnotfound(char *Entry)
         if (EQ(Entry, bg->Name))
             break;
     if (bg == NULL) {
-        bg = NEW(BADGROUP, 1);
-        bg->Name = COPY(Entry);
+        bg = xmalloc(sizeof(BADGROUP));
+        bg->Name = xstrdup(Entry);
         bg->Next = EXPbadgroups;
         EXPbadgroups = bg;
     }
@@ -564,7 +564,7 @@ ARTreadschema(void)
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
         continue;
     fseeko(F, 0, SEEK_SET);
-    ARTfields = NEW(ARTOVERFIELD, i + 1);
+    ARTfields = xmalloc((i + 1) * sizeof(ARTOVERFIELD));
 
     /* Parse each field. */
     for (fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
@@ -582,7 +582,7 @@ ARTreadschema(void)
         else
             fp->NeedsHeader = FALSE;
         fp->HasHeader = FALSE;
-        fp->Header = COPY(buff);
+        fp->Header = xstrdup(buff);
         fp->Length = strlen(buff);
         if (caseEQ(buff, "Xref")) {
             foundxref = TRUE;
@@ -641,11 +641,11 @@ OVERGetHeader(const char *p, int field)
     }
     if (buffsize == 0) {
         buffsize = i;
-        buff = NEW(char, buffsize + 1);
+        buff = xmalloc(buffsize + 1);
     }
     else if (buffsize < i) {
         buffsize = i;
-        RENEW(buff, char, buffsize + 1);
+        buff = xrealloc(buff, buffsize + 1);
     }
 
     strncpy(buff, p, i);
@@ -674,8 +674,8 @@ OVfindheaderindex(void)
             exit(1);
         }
         BuildGroups(active);
-        arts = NEW(char *, nGroups);
-        krps = NEW(enum KRP, nGroups);
+        arts = xmalloc(nGroups * sizeof(char *));
+        krps = xmalloc(nGroups * sizeof(enum KRP));
         path = concatpath(innconf->pathetc, _PATH_EXPIRECTL);
         F = fopen(path, "r");
         free(path);
@@ -744,9 +744,9 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
     }
     if ((Xref = OVERGetHeader(data, Xrefindex)) == NULL) {
         if (Group != NULL) {
-            DISPOSE(Group);
+            free(Group);
         }
-        Group = NEW(char, strlen(group) + 2);
+        Group = xmalloc(strlen(group) + 2);
         strcpy(Group, group);
         strcat(Group, ":");
         Xref = Group;
@@ -881,29 +881,29 @@ OVEXPcleanup(void)
     }
     if (innconf->ovgrouppat != NULL) {
         for (i = 0 ; i < OVnumpatterns ; i++)
-            DISPOSE(OVpatterns[i]);
-        DISPOSE(OVpatterns);
+            free(OVpatterns[i]);
+        free(OVpatterns);
     }
     for (bg = EXPbadgroups; bg; bg = bgnext) {
         bgnext = bg->Next;
-        DISPOSE(bg->Name);
-        DISPOSE(bg);
+        free(bg->Name);
+        free(bg);
     }
     for (fp = ARTfields, i = 0; i < ARTfieldsize ; i++, fp++) {
-        DISPOSE(fp->Header);
+        free(fp->Header);
     }
-    DISPOSE(ARTfields);
+    free(ARTfields);
     if (ACTIVE != NULL) {
-        DISPOSE(ACTIVE);
+        free(ACTIVE);
         ACTIVE = NULL;
     }
     if (Groups != NULL) {
-        DISPOSE(Groups);
+        free(Groups);
         Groups = NULL;
     }
     for (i = 0, htp = NGHtable ; i < NGH_SIZE ; i++, htp++) {
         if (htp->Groups != NULL) {
-            DISPOSE(htp->Groups);
+            free(htp->Groups);
             htp->Groups = NULL;
         }
     }

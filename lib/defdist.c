@@ -65,7 +65,7 @@ DDstart(FILE *FromServer, FILE *ToServer)
 	continue;
 
     /* Allocate space for the handle. */
-    if ((h = NEW(DDHANDLE, 1)) == NULL) {
+    if ((h = xmalloc(sizeof(DDHANDLE))) == NULL) {
 	i = errno;
 	fclose(F);
 	if (name != NULL)
@@ -77,9 +77,9 @@ DDstart(FILE *FromServer, FILE *ToServer)
     h->Current = NULL;
     if (i == 0) {
         return NULL ;
-    } else if ((h->Entries = NEW(DDENTRY, i)) == NULL) {
+    } else if ((h->Entries = xmalloc(sizeof(DDENTRY) * i)) == NULL) {
 	i = errno;
-	DISPOSE(h);
+	free(h);
 	fclose(F);
 	if (name != NULL)
 	    unlink(name);
@@ -98,7 +98,7 @@ DDstart(FILE *FromServer, FILE *ToServer)
 	    continue;
 	*p++ = '\0';
 	ep->Weight = atoi(buff);
-	ep->Pattern = COPY(p);
+	ep->Pattern = xstrdup(p);
 	q = strchr(ep->Pattern, ':');
 	*q++ = '\0';
 	ep->Value = q;
@@ -142,19 +142,19 @@ DDend(DDHANDLE *h)
 
     if (h == NULL) {
 	p = NIL;
-	return COPY(p);
+	return xstrdup(p);
     }
 
     if (h->Current == NULL)
 	p = NIL;
     else
 	p = h->Current->Value;
-    p = COPY(p);
+    p = xstrdup(p);
 
     for (ep = h->Entries, i = h->Count; --i >= 0; ep++)
-	DISPOSE(ep->Pattern);
-    DISPOSE(h->Entries);
-    DISPOSE(h);
+	free(ep->Pattern);
+    free(h->Entries);
+    free(h);
     return p;
 }
 

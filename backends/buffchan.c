@@ -78,7 +78,7 @@ SITEsetup(void)
 
     for (shp = SITEtable; shp < ENDOF(SITEtable); shp++) {
 	shp->Size = 3;
-	shp->Sites = NEW(SITE, shp->Size);
+	shp->Sites = xmalloc(shp->Size * sizeof(SITE));
 	shp->Used = 0;
     }
 }
@@ -174,18 +174,18 @@ SITEfind(char *Name, bool CanCreate)
     /* Adding a new site -- grow hash bucket if we need to. */
     if (shp->Used == shp->Size - 1) {
 	shp->Size *= 2;
-	RENEW(shp->Sites, SITE, shp->Size);
+        shp->Sites = xrealloc(shp->Sites, shp->Size * sizeof(SITE));
     }
     sp = &shp->Sites[shp->Used++];
 
     /* Fill in the structure for the new site. */
-    sp->Name = COPY(Name);
+    sp->Name = xstrdup(Name);
     snprintf(buff, sizeof(buff), Format, Map ? MAPname(Name) : sp->Name);
-    sp->Filename = COPY(buff);
+    sp->Filename = xstrdup(buff);
     if (BufferMode == 'u')
 	sp->Buffer = NULL;
     else if (BufferMode == 'b')
-	sp->Buffer = NEW(char, BUFSIZ);
+	sp->Buffer = xmalloc(BUFSIZ);
     SITEopen(sp);
 
     return sp;
@@ -380,7 +380,7 @@ main(int ac, char *av[])
 	case 'd':
 	    Directory = optarg;
 	    if (Format == NULL)
-		Format =COPY("%s");
+		Format =xstrdup("%s");
 	    break;
 	case 'f':
 	    Fields = atoi(optarg);

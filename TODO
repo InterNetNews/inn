@@ -271,9 +271,6 @@ Code Cleanup Projects
 
 * Rename TRUE and FALSE to true and false everywhere.
 
-* Eliminate use of NEW, DISPOSE, RENEW, and COPY everywhere in favor of
-  xmalloc, free, xrealloc, and xstrdup.
-
 * Eliminate use of EQ, EQn, caseEQ, and caseEQn everywhere in favor of
   calling strcmp, strncmp, strcasecmp, and strncasecmp and comparing the
   result to 0.

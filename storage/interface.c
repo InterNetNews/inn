@@ -143,7 +143,7 @@ ToWireFmt(const char *article, size_t len, size_t *newlen)
 	}
     }
     bytes += 3; /* for .\r\n */
-    newart = NEW(char, bytes + 1);
+    newart = xmalloc(bytes + 1);
     *newlen = bytes;
 
     /* now copy the article, making changes */
@@ -195,7 +195,7 @@ FromWireFmt(const char *article, size_t len, size_t *newlen)
 	    atstartofline = FALSE;
 	}
     }
-    newart = NEW(char, bytes + 1);
+    newart = xmalloc(bytes + 1);
     *newlen = bytes;
     for (p = article, dest = newart ; p < &article[len]; ) {
 	/* check for terminating .\r\n and if so break */
@@ -257,7 +257,7 @@ GetXref(ARTHANDLE *art)
   for (q++; (*q == ' ') && (q < p); q++);
   if (q == p)
     return NULL;
-  buff = NEW(char, p - q + 1);
+  buff = xmalloc(p - q + 1);
   memcpy(buff, q, p - q);
   buff[p - q] = '\0';
   return buff;
@@ -408,7 +408,7 @@ SMreadconfig(void)
 		syslog(L_ERROR, "SM expected method name, line %d", f->lineno);
 		return FALSE;
 	    }
-	    method = COPY(tok->name);
+	    method = xstrdup(tok->name);
 	    if ((tok = CONFgettoken(smtoks, f)) == NULL || tok->type != SMlbrace) {
 		SMseterror(SMERR_CONFIG, "Expected '{'");
 		syslog(L_ERROR, "SM Expected '{', line %d", f->lineno);
@@ -439,8 +439,8 @@ SMreadconfig(void)
 		switch(type) {
 		  case SMgroups:
 		    if (pattern)
-			DISPOSE(pattern);
-		    pattern = COPY(tok->name);
+			free(pattern);
+		    pattern = xstrdup(tok->name);
 		    break;
 		  case SMsize:
 		    minsize = strtoul(p, NULL, 10);
@@ -462,8 +462,8 @@ SMreadconfig(void)
 		    break;
 		  case SMoptions:
 		    if (options)
-			DISPOSE(options);
-		    options = COPY(p);
+			free(options);
+		    options = xstrdup(p);
 		    break;
 		  case SMexactmatch:
 		    if (caseEQ(p, "true") || caseEQ(p, "yes") || caseEQ(p, "on"))
@@ -472,7 +472,7 @@ SMreadconfig(void)
 		  default:
 		    SMseterror(SMERR_CONFIG, "Unknown keyword in method declaration");
 		    syslog(L_ERROR, "SM Unknown keyword in method declaration, line %d: %s", f->lineno, tok->name);
-		    DISPOSE(method);
+		    free(method);
 		    return FALSE;
 		    break;
 		}
@@ -480,7 +480,7 @@ SMreadconfig(void)
 	}
 	if (!inbrace) {
 	    /* just finished a declaration */
-	    sub = NEW(STORAGE_SUB, 1);
+	    sub = xmalloc(sizeof(STORAGE_SUB));
 	    sub->type = TOKEN_EMPTY;
 	    for (i = 0; i < NUM_STORAGE_METHODS; i++) {
 		if (!strcasecmp(method, storage_methods[i].name)) {
@@ -492,15 +492,15 @@ SMreadconfig(void)
 	    if (sub->type == TOKEN_EMPTY) {
 		SMseterror(SMERR_CONFIG, "Invalid storage method name");
 		syslog(L_ERROR, "SM no configured storage methods are named '%s'", method);
-		DISPOSE(options);
-		DISPOSE(sub);
+		free(options);
+		free(sub);
 		return FALSE;
 	    }
 	    if (!pattern) {
 		SMseterror(SMERR_CONFIG, "pattern not defined");
 		syslog(L_ERROR, "SM no pattern defined");
-		DISPOSE(options);
-		DISPOSE(sub);
+		free(options);
+		free(sub);
 		return FALSE;
 	    }
             sub->pattern = pattern;
@@ -512,7 +512,7 @@ SMreadconfig(void)
 	    sub->maxexpire = maxexpire;
 	    sub->exactmatch = exactmatch;
 
-	    DISPOSE(method);
+	    free(method);
 	    method = 0;
 
 	    if (!prev)
@@ -650,7 +650,7 @@ MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
     else
 	groupsep = ",";
 
-    q = groups = NEW(char, len + 1);
+    q = groups = xmalloc(len + 1);
     for (lastwhite = -1,  i = 0 ; i < len ; i++) {
 	/* trim white chars */
 	if (g[i] == '\r' || g[i] == '\n' || g[i] == ' ' || g[i] == '\t') {
@@ -673,7 +673,7 @@ MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
         }
         matched = uwildmat_poison(group, pattern);
         if (matched == UWILDMAT_POISON || (exactmatch && !matched)) {
-	    DISPOSE(groups);
+	    free(groups);
 	    return false;
 	}
         if (matched == UWILDMAT_MATCH)
@@ -681,7 +681,7 @@ MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
         group = strtok(NULL, groupsep);
     }
 
-    DISPOSE(groups);
+    free(groups);
     return wanted;
 }
 
@@ -836,20 +836,20 @@ bool SMprobe(PROBETYPE type, TOKEN *token, void *value) {
 		art = storage_methods[typetoindex[token->type]].retrieve(*token, RETR_HEAD);
 		if (art == NULL) {
 		    if (ann->groupname != NULL)
-			DISPOSE(ann->groupname);
+			free(ann->groupname);
 		    storage_methods[typetoindex[token->type]].freearticle(art);
 		    return FALSE;
 		}
 		if ((ann->groupname = GetXref(art)) == NULL) {
 		    if (ann->groupname != NULL)
-			DISPOSE(ann->groupname);
+			free(ann->groupname);
 		    storage_methods[typetoindex[token->type]].freearticle(art);
 		    return FALSE;
 		}
 		storage_methods[typetoindex[token->type]].freearticle(art);
 		if ((ann->artnum = GetGroups(ann->groupname)) == 0) {
 		    if (ann->groupname != NULL)
-			DISPOSE(ann->groupname);
+			free(ann->groupname);
 		    return FALSE;
 		}
 		return TRUE;
@@ -903,16 +903,16 @@ void SMshutdown(void) {
     while (subscriptions) {
 	old = subscriptions;
 	subscriptions = subscriptions->next;
-	DISPOSE(old->pattern);
-	DISPOSE(old->options);
-	DISPOSE(old);
+	free(old->pattern);
+	free(old->options);
+	free(old);
     }
     Initialized = FALSE;
 }
 
 void SMseterror(int errornum, char *error) {
     if (ErrorAlloc)
-	DISPOSE(SMerrorstr);
+	free(SMerrorstr);
 
     ErrorAlloc = FALSE;
     
@@ -924,7 +924,7 @@ void SMseterror(int errornum, char *error) {
     if (error == NULL) {
 	switch (SMerrno) {
 	case SMERR_UNDEFINED:
-	    SMerrorstr = COPY(strerror(errno));
+	    SMerrorstr = xstrdup(strerror(errno));
 	    ErrorAlloc = TRUE;
 	    break;
 	case SMERR_INTERNAL:
@@ -958,7 +958,7 @@ void SMseterror(int errornum, char *error) {
 	    SMerrorstr = "Undefined error";
 	}
     } else {
-	SMerrorstr = COPY(error);
+	SMerrorstr = xstrdup(error);
 	ErrorAlloc = TRUE;
     }
 }

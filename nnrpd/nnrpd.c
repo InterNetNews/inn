@@ -248,7 +248,7 @@ ExitWithStats(int x, bool readconf)
     TMRfree();
 
     if (LocalLogFileName != NULL)
-	DISPOSE(LocalLogFileName);
+	free(LocalLogFileName);
     closelog();
     exit(x);
 }
@@ -286,12 +286,12 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 		Printf("Report problems to <%s@%s>\r\n",
 		    newsmaster, PERMaccessconf->domain);
 	    else {
-		q = NEW(char, p - newsmaster + 1);
+		q = xmalloc(p - newsmaster + 1);
 		strncpy(q, newsmaster, p - newsmaster);
 		q[p - newsmaster] = '\0';
 		Printf("Report problems to <%s@%s>\r\n",
 		    q, PERMaccessconf->domain);
-		DISPOSE(q);
+		free(q);
 	    }
 	}
     } else {
@@ -605,7 +605,7 @@ static void StartConnection(void)
 	    PERMpostlist = PERMreadlist;
 	}
 	if (!authconf)
-	    authconf = NEW(ACCESSGROUP, 1);
+	    authconf = xmalloc(sizeof(ACCESSGROUP));
 	PERMaccessconf = authconf;
 	SetDefaultAccess(PERMaccessconf);
     } else {
@@ -879,7 +879,7 @@ main(int argc, char *argv[])
 
     setproctitle_init(argc, argv);
 
-    /* Parse arguments.   Must COPY() optarg if used because setproctitle may
+    /* Parse arguments.   Must xstrdup() optarg if used because setproctitle may
        clobber it! */
     Reject = NULL;
     LLOGenable = FALSE;
@@ -899,7 +899,7 @@ main(int argc, char *argv[])
 	if (p != NULL)
 	    name = p + 1;
     }
-    message_program_name = COPY(name);
+    message_program_name = xstrdup(name);
     openlog(message_program_name, L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_handlers_die(1, message_log_syslog_crit);
     message_handlers_warn(1, message_log_syslog_warning);
@@ -939,10 +939,10 @@ main(int argc, char *argv[])
 	    break;
 #endif /* HAVE_GETSPNAM */
 	case 'i':			/* Initial command */
-	    PushedBack = COPY(optarg);
+	    PushedBack = xstrdup(optarg);
 	    break;
 	case 'I':			/* Instance */
-	    NNRPinstance = COPY(optarg);
+	    NNRPinstance = xstrdup(optarg);
 	    break;
 	case 'n':			/* No DNS lookups */
 	    GetHostByAddr = FALSE;
@@ -957,7 +957,7 @@ main(int argc, char *argv[])
 	    ForceReadOnly = TRUE;
 	    break;
 	case 'r':			/* Reject connection message */
-	    Reject = COPY(optarg);
+	    Reject = xstrdup(optarg);
 	    break;
 	case 's':			/* Unused title string */
 	    break;
@@ -1276,12 +1276,12 @@ main(int argc, char *argv[])
 	count += pid;
 	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
 	len = strlen("innconf->pathlog") + strlen("/tracklogs/log-") + BUFSIZ;
-	LocalLogFileName = NEW(char, len);
+	LocalLogFileName = xmalloc(len);
 	sprintf(LocalLogFileName, "%s/tracklogs/log-%d", innconf->pathlog, vid);
 	if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
             LocalLogDirName = concatpath(innconf->pathlog, "tracklogs");
 	    MakeDirectory(LocalLogDirName, FALSE);
-	    DISPOSE(LocalLogDirName);
+	    free(LocalLogDirName);
 	}
 	if (locallog == NULL && (locallog = fopen(LocalLogFileName, "w")) == NULL) {
 	    syslog(L_ERROR, "%s Local Logging failed (%s) %s: %m", ClientHost, Username, LocalLogFileName);

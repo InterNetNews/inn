@@ -116,7 +116,7 @@ CommaSplit(char *text)
         if (*p == ',')
             i++;
 
-    for (av = save = NEW(char*, i), *av++ = p = text; *p; )
+    for (av = save = xmalloc(i * sizeof(char *)), *av++ = p = text; *p; )
         if (*p == ',') {
             *p++ = '\0';
             *av++ = p;
@@ -139,15 +139,15 @@ SetupListBuffer(int size, LISTBUFFER *list)
   /* get space for data to be splitted */
   if (list->Data == NULL) {
     list->DataLength = size;
-    list->Data = NEW(char, list->DataLength + 1);
+    list->Data = xmalloc(list->DataLength + 1);
   } else if (list->DataLength < size) {
     list->DataLength = size;
-    RENEW(list->Data, char, list->DataLength + 1);
+    list->Data = xrealloc(list->Data, list->DataLength + 1);
   }
   /* get an array of character pointers. */
   if (list->List == NULL) {
     list->ListLength = DEFAULTNGBOXSIZE;
-    list->List = NEW(char*, list->ListLength);
+    list->List = xmalloc(list->ListLength * sizeof(char *));
   }
 }
 
@@ -273,7 +273,7 @@ ThrottleIOError(const char *when)
     if (Mode == OMrunning) {
         oerrno = errno;
         if (Reservation) {
-            DISPOSE(Reservation);
+            free(Reservation);
             Reservation = NULL;
         }
         snprintf(buff, sizeof(buff), "%s writing %s file -- throttling",
@@ -297,7 +297,7 @@ ThrottleNoMatchError(void)
 
     if (Mode == OMrunning) {
         if (Reservation) {
-            DISPOSE(Reservation);
+            free(Reservation);
             Reservation = NULL;
         }
         snprintf(buff, sizeof(buff), "%s storing article -- throttling",

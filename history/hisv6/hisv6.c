@@ -447,7 +447,7 @@ hisv6_new(const char *path, int flags, struct history *history)
     struct hisv6 *h;
 
     h = xmalloc(sizeof *h);
-    h->histpath = path ? COPY(path) : NULL;
+    h->histpath = path ? xstrdup(path) : NULL;
     h->flags = flags;
     h->writefp = NULL;
     h->history = history;
@@ -1363,7 +1363,7 @@ hisv6_ctl(void *history, int selector, void *val)
 	    hisv6_seterror(h, concat("path already set in handle", NULL));
 	    r = false;
 	} else {
-	    h->histpath = COPY((char *)val);
+	    h->histpath = xstrdup((char *)val);
 	    if (!hisv6_reopen(h)) {
 		free(h->histpath);
 		h->histpath = NULL;

@@ -71,7 +71,7 @@ static char **GetGroups(char *p) {
 
   if (size == 0) {
     size = GROUP_LIST_DELTA;
-    list = NEW(char*, size + 1);
+    list = xmalloc((size + 1) * sizeof(char *));
   }
   Xref = p;
   for (Xref++; *Xref == ' '; Xref++);
@@ -79,7 +79,7 @@ static char **GetGroups(char *p) {
     return NULL;
   for (Xref++; *Xref == ' '; Xref++);
   if (!Xrefbuf)
-    Xrefbuf = NEW(char, BIG_BUFFER);
+    Xrefbuf = xmalloc(BIG_BUFFER);
   strcpy(Xrefbuf, Xref);
   if ((q = strchr(Xrefbuf, '\t')) != NULL)
     *q = '\0';
@@ -93,7 +93,7 @@ static char **GetGroups(char *p) {
 
     if (i >= size - 1) {
       size += GROUP_LIST_DELTA;
-      RENEW(list, char *, size + 1);
+      list = xrealloc(list, (size + 1) * sizeof(char *));
     }
     for (list[i] = p; *p && *p != '\n' && !ISWHITE(*p); p++) {
       if (*p == ':')

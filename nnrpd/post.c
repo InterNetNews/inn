@@ -201,7 +201,7 @@ StripOffHeaders(char *article)
 	if (hp == ENDOF(Table)) {
 	    if (OtherCount >= OtherSize - 1) {
 		OtherSize += HEADER_DELTA;
-		RENEW(OtherHeaders, char*, OtherSize);
+                OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
 	    }
 	    OtherHeaders[OtherCount++] = p;
 	}
@@ -435,7 +435,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     }
     if (addvirtual) {
 	if (newpath != NULL)
-	    DISPOSE(newpath);
+	    free(newpath);
         newpath = concat(VirtualPath, HDR(HDR__PATH), (char *) 0);
 	HDR_SET(HDR__PATH, newpath);
     }
@@ -453,9 +453,9 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 
     /* Distribution. */
     if ((p = HDR(HDR__DISTRIBUTION)) != NULL) {
-	p = COPY(p);
+	p = xstrdup(p);
 	error = CheckDistribution(p);
-	DISPOSE(p);
+	free(p);
 	if (error != NULL)
 	    return error;
     }
@@ -604,10 +604,10 @@ MailArticle(char *group, char *article)
     if ((address = GetModeratorAddress(NULL, NULL, group, PERMaccessconf->moderatormailer)) == NULL) {
 	snprintf(Error, sizeof(Error), "No mailing address for \"%s\" -- %s",
                  group, "ask your news administrator to fix this");
-	DISPOSE(group);  
+	free(group);  
 	return Error;
     }
-    DISPOSE(group);
+    free(group);
 
     /* Now build up the command (ignore format/argument mismatch errors,
      * in case %s isn't in inconf->mta) and send the headers. */
@@ -676,7 +676,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 
     p = HDR(HDR__CONTROL);
     IsNewgroup = p && EQn(p, "newgroup", 8);
-    groups = COPY(hdr);
+    groups = xstrdup(hdr);
     if ((p = strtok(groups, NGSEPS)) == NULL)
 	return "Can't parse newsgroups line";
 
@@ -725,7 +725,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 		snprintf(Error, sizeof(Error),
                          "You are not allowed to approve postings");
 	    } else if (!approved && !*modgroup) {
-		*modgroup = COPY(p);
+		*modgroup = xstrdup(p);
 	    }
 	    break;
 	case NF_FLAG_IGNORE:
@@ -743,14 +743,14 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	    break;
 	}
     } while ((p = strtok((char *)NULL, NGSEPS)) != NULL);
-    DISPOSE(groups);
+    free(groups);
 
     if (!FoundOne && !IsNewgroup)
 	snprintf(Error, sizeof(Error), "No valid newsgroups in \"%s\"",
                  MaxLength(hdr,hdr));
     if (Error[0]) {
         tmpPtr = DDend(h);
-	DISPOSE(tmpPtr) ;
+	free(tmpPtr) ;
 	return Error;
     }
 
@@ -759,7 +759,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	strcpy(distbuff, p);
 	HDR_SET(HDR__DISTRIBUTION, distbuff);
     }
-    DISPOSE(p);
+    free(p);
     return NULL;
 }
 
@@ -833,7 +833,7 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Value) {
-	    q = NEW(char, hp->Body - hp->Value + hp->Len + 1);
+	    q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
             strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
 	    *(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
 	    if (*hp->Value == ' ' || *hp->Value == '\t')
@@ -842,10 +842,10 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
 		fprintf(F, "%s: %s\n", hp->Name, q);
 	    if (FLUSH_ERROR(F)) {
 		fclose(F);
-		DISPOSE(q);
+		free(q);
                 goto fail;
 	    }
-	    DISPOSE(q);
+	    free(q);
 	}
     for (i = 0; i < OtherCount; i++) {
 	fprintf(F, "%s\n", OtherHeaders[i]);
@@ -906,11 +906,11 @@ static char *Towire(char *p) {
     char	*q, *r, *s;
     int		curlen, len = BIG_BUFFER;
 
-    for (r = p, q = s = NEW(char, len); *r != '\0' ;) {
+    for (r = p, q = s = xmalloc(len); *r != '\0' ;) {
 	curlen = q - s;
 	if (curlen + 3 > len) {
 	    len += BIG_BUFFER;
-	    RENEW(s, char, len);
+            s = xrealloc(s, len);
 	    q = s + curlen;
 	}
 	if (*r == '\n') {
@@ -919,7 +919,7 @@ static char *Towire(char *p) {
 		    *q++ = '\r';
 	    } else {
 		/* this should not happen */
-		DISPOSE(s);
+		free(s);
 		return NULL;
 	    }
 	}
@@ -928,7 +928,7 @@ static char *Towire(char *p) {
     curlen = q - s;
     if (curlen + 1 > len) {
 	len++;
-	RENEW(s, char, len);
+        s = xrealloc(s, len);
 	q = s + curlen;
     }
     *q = '\0';
@@ -962,7 +962,7 @@ ARTpost(char *article,
     /* Set up the other headers list. */
     if (OtherHeaders == NULL) {
 	OtherSize = HEADER_DELTA;
-	OtherHeaders = NEW(char*, OtherSize);
+	OtherHeaders = xmalloc(OtherSize * sizeof(char *));
     }
 
     /* Basic processing. */
@@ -1003,20 +1003,20 @@ ARTpost(char *article,
 	p = strrchr(frombuf, '.');
 	if (!p) {
 	    if (modgroup)
-		DISPOSE(modgroup);
+		free(modgroup);
 	    return "From: address not in Internet syntax";
 	}
     }
     else {
 	if (modgroup)
-	    DISPOSE(modgroup);
+	    free(modgroup);
 	return "From: address not in Internet syntax";
     }
     if ((p = HDR(HDR__FOLLOWUPTO)) != NULL
      && !EQ(p, "poster")
      && (error = ValidNewsgroups(p, (char **)NULL)) != NULL) {
 	if (modgroup)
-	    DISPOSE(modgroup);
+	    free(modgroup);
 	return error;
     }
     if ((PERMaccessconf->localmaxartsize > 0) &&
@@ -1025,7 +1025,7 @@ ARTpost(char *article,
                  "Article is bigger then local limit of %ld bytes\n",
                  PERMaccessconf->localmaxartsize);
         if (modgroup)
-            DISPOSE(modgroup);
+            free(modgroup);
         return Error;
     }
 
@@ -1044,7 +1044,7 @@ ARTpost(char *article,
 	if (strncmp(p, "DROP", 4) == 0) {
 	    syslog(L_NOTICE, "%s post %s", ClientHost, p);
 	    if (modgroup)
-		DISPOSE(modgroup);
+		free(modgroup);
 	    return NULL;
 	}
 	else if (strncmp(p, "SPOOL", 5) == 0) {
@@ -1052,7 +1052,7 @@ ARTpost(char *article,
 	    strcpy(SDir, innconf->pathincoming);
 	    if (modgroup)
 	    {
-		DISPOSE(modgroup);
+		free(modgroup);
 		return SpoolitTo(article, p, strcat(SDir,"/spam/mod"));
 	    }
 	    else
@@ -1061,7 +1061,7 @@ ARTpost(char *article,
 	else
 	{
 	    if (modgroup)
-		DISPOSE(modgroup);
+		free(modgroup);
 	    return p;
 	}
     }
@@ -1143,7 +1143,7 @@ ARTpost(char *article,
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Value) {
-	    q = NEW(char, hp->Body - hp->Value + hp->Len + 1);
+	    q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
             strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
 	    *(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
 	    if (strchr(q, '\n') != NULL) {
@@ -1153,7 +1153,7 @@ ARTpost(char *article,
 			fprintf(ToServer, "%s:%s\r\n", hp->Name, p);
 		    else
 			fprintf(ToServer, "%s: %s\r\n", hp->Name, p);
-		    DISPOSE(p);
+		    free(p);
 		}
 	    } else {
 		/* there is no white space, if hp->Value and hp->Body is the same */
@@ -1162,13 +1162,13 @@ ARTpost(char *article,
 		else
 		    fprintf(ToServer, "%s: %s\r\n", hp->Name, q);
 	    }
-	    DISPOSE(q);
+	    free(q);
 	}
     for (i = 0; i < OtherCount; i++) {
 	if (strchr(OtherHeaders[i], '\n') != NULL) {
 	    if ((p = Towire(OtherHeaders[i])) != NULL) {
 		fprintf(ToServer, "%s\r\n", p);
-		DISPOSE(p);
+		free(p);
 	    }
 	} else {
 	    fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
@@ -1218,17 +1218,17 @@ ARTpost(char *article,
 	if ((ftd = fopen(TrackID,"w")) == NULL) {
 	    DirTrackID = concatpath(innconf->pathlog, "trackposts");
 	    MakeDirectory(DirTrackID, FALSE);
-	    DISPOSE(DirTrackID);
+	    free(DirTrackID);
 	}
 	if (ftd == NULL && (ftd = fopen(TrackID,"w")) == NULL) {
 	    syslog(L_ERROR, "%s (%s) open %s: %m",
 		ClientHost, Username, TrackID);
-	    DISPOSE(TrackID);
+	    free(TrackID);
 	    return NULL;
 	}
 	for (hp = Table; hp < ENDOF(Table); hp++)
 	    if (hp->Value) {
-		q = NEW(char, hp->Body - hp->Value + hp->Len + 1);
+		q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
                 strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
 		*(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
 		if (strchr(q, '\n') != NULL) {
@@ -1238,7 +1238,7 @@ ARTpost(char *article,
 			    fprintf(ftd, "%s:%s\r\n", hp->Name, p);
 			else
 			    fprintf(ftd, "%s: %s\r\n", hp->Name, p);
-			DISPOSE(p);
+			free(p);
 		    }
 		} else {
 		    /* there is no white space, if hp->Value and hp->Body is the same */
@@ -1247,13 +1247,13 @@ ARTpost(char *article,
 		    else
 			fprintf(ftd, "%s: %s\r\n", hp->Name, q);
 		}
-		DISPOSE(q);
+		free(q);
 	    }
 	for (i = 0 ; i < OtherCount ; i++) {
 	    if (strchr(OtherHeaders[i], '\n') != NULL) {
 	        if ((p = Towire(OtherHeaders[i])) != NULL) {
 		    fprintf(ftd, "%s\r\n", p);
-		    DISPOSE(p);
+		    free(p);
 	        }
 	    } else {
 	        fprintf(ftd, "%s\r\n", OtherHeaders[i]);
@@ -1271,7 +1271,7 @@ ARTpost(char *article,
 	    syslog(L_ERROR, "%s (%s) posttrack error 2 %s",
 		ClientHost, Username, TrackID);
 	}
-	DISPOSE(TrackID);
+	free(TrackID);
     }
 
     return NULL;

@@ -769,10 +769,10 @@ get_active(host, hostid, len, grp, errs)
 	if ((p = strchr(host, ':')) != NULL) {
 		rport = atoi(p + 1);
 		*p = '\0';
-		rhost = COPY(host);
+		rhost = xstrdup(host);
 		*p = ':';
 	} else {
-		rhost = COPY(host);
+		rhost = xstrdup(host);
 		rport = NNTP_PORT;
 	}
 
@@ -785,7 +785,7 @@ get_active(host, hostid, len, grp, errs)
         if (A_flag && NNTPsendpassword(rhost, FromServer, ToServer) < 0)
             die("cannot authenticate to server");
 
-	DISPOSE(rhost);
+	free(rhost);
 
 	/* get the active data from the server */
 	active = CAlistopen(FromServer, ToServer, NULL);

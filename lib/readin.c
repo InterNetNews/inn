@@ -46,12 +46,12 @@ char *ReadInDescriptor(int fd, struct stat *Sbp)
 	errno = oerrno;
 	return NULL;
     }
-    p = NEW(char, Sbp->st_size + 1);
+    p = xmalloc(Sbp->st_size + 1);
 
     /* Slurp, slurp. */
     if (xread(fd, p, Sbp->st_size) < 0) {
 	oerrno = errno;
-	DISPOSE(p);
+	free(p);
 	close(fd);
 	errno = oerrno;
 	return NULL;

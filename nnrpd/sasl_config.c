@@ -129,11 +129,11 @@ sasl_config_read()
 
 	if (nconfiglist == alloced) {
 	    alloced += CONFIGLISTGROWSIZE;
-	    RENEW(configlist, struct configlist, alloced);
+            configlist = xrealloc(configlist, alloced * sizeof(struct configlist));
 	}
 
-	configlist[nconfiglist].key = COPY(key);
-	configlist[nconfiglist].value = COPY(p);
+	configlist[nconfiglist].key = xstrdup(key);
+	configlist[nconfiglist].value = xstrdup(p);
 	nconfiglist++;
     }
     fclose(infile);

@@ -197,7 +197,7 @@ int PERLreadfilter(char *filterfile, const char *function)
         
         /* If the reload failed we don't want the old definition hanging
            around. */
-        argv[0] = NEW (char,strlen (function) + strlen ("undef &%s")) ;
+        argv[0] = xmalloc (strlen (function) + strlen ("undef &%s")) ;
         sprintf (argv[0],"undef &%s",function) ;
         perl_call_argv ("_eval_",0,argv) ;
 
@@ -205,7 +205,7 @@ int PERLreadfilter(char *filterfile, const char *function)
             syslog (L_ERROR,"SERVER perl undef &%s failed: %s",
                     function, SvPV(ERRSV, PL_na)) ;
         }
-        DISPOSE (argv[0]) ;
+        free (argv[0]) ;
     } else if ((perl_filter_cv = perl_get_cv(function, FALSE)) == NULL) {
         PerlFilter (FALSE) ;
     }

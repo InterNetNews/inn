@@ -32,10 +32,10 @@ MAPfree(void)
     PAIR	*mp;
 
     for (mp = MAPdata; mp < MAPend; mp++) {
-	DISPOSE(mp->Key);
-	DISPOSE(mp->Value);
+	free(mp->Key);
+	free(mp->Value);
     }
-    DISPOSE(MAPdata);
+    free(MAPdata);
     MAPdata = NULL;
 }
 
@@ -62,7 +62,7 @@ MAPread(const char *name)
     }
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
 	continue;
-    mp = MAPdata = NEW(PAIR, i + 1);
+    mp = MAPdata = xmalloc((i + 1) * sizeof(PAIR));
 
     /* Read each line; ignore blank and comment lines. */
     fseeko(F, 0, SEEK_SET);
@@ -75,8 +75,8 @@ MAPread(const char *name)
 	    continue;
 	*p++ = '\0';
 	mp->First = buff[0];
-	mp->Key = COPY(buff);
-	mp->Value = COPY(p);
+	mp->Key = xstrdup(buff);
+	mp->Value = xstrdup(p);
 	mp++;
     }
     fclose(F);

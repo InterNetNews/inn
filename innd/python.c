@@ -375,7 +375,7 @@ PY_head(self, args)
     p = FromWireFmt(art->data, art->len, &headerlen);
     SMfreearticle(art);
     header = PyString_FromStringAndSize(p, headerlen);
-    DISPOSE(p);
+    free(p);
 
     return header;
 }
@@ -407,7 +407,7 @@ PY_article(self, args)
     p = FromWireFmt(arth->data, arth->len, &artlen);
     SMfreearticle(arth);
     art = PyString_FromStringAndSize(p, artlen);
-    DISPOSE(p);
+    free(p);
 
     return art;
 }
@@ -499,7 +499,7 @@ PY_hashstring(self, args)
 	/* Compress out multiple whitespace in the trimmed string.  We
 	 * do a copy because this is probably an original art
 	 * buffer. */
-	workstring =  memcpy(NEW(char, worksize), wpos, worksize);
+	workstring =  memcpy(xmalloc(worksize), wpos, worksize);
 	newsize = wasspace = 0;
 	p = wpos;
 	q = workstring;
@@ -517,7 +517,7 @@ PY_hashstring(self, args)
 	}
 	worksize = q - workstring;
 	myhash = Hash(workstring, worksize);
-	DISPOSE(workstring);
+	free(workstring);
     }
     else
 	myhash = Hash(instring, insize);
@@ -678,8 +678,8 @@ PYsetup(void)
 
     /* Grab space for these so we aren't forever recreating them. */
     PYheaders = PyDict_New();
-    PYheaditem = NEW(PyObject *, ENDOF(ARTheaders) - ARTheaders);
-    PYheadkey = NEW(PyObject *, ENDOF(ARTheaders) - ARTheaders);
+    PYheaditem = xmalloc((ENDOF(ARTheaders) - ARTheaders) * sizeof(PyObject *));
+    PYheadkey = xmalloc((ENDOF(ARTheaders) - ARTheaders) * sizeof(PyObject *));
 
     /* Preallocate keys for the article dictionary */
     for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)

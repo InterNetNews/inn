@@ -487,8 +487,8 @@ main(int ac, char *av[])
       continue;
     } else if (XBATCHsize > XBATCHbuffersize) {
       XBATCHbuffersize = XBATCHsize;
-      if (XBATCHbuffer) DISPOSE(XBATCHbuffer);
-      XBATCHbuffer = NEW(char, XBATCHsize);
+      if (XBATCHbuffer) free(XBATCHbuffer);
+      XBATCHbuffer = xmalloc(XBATCHsize);
     }
 
     err = 0; /* stupid compiler */

@@ -339,7 +339,7 @@ NCstat(CHANNEL *cp)
     buff = xmalloc(length);
     snprintf(buff, length, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p);
     NCwritereply(cp, buff);
-    DISPOSE(buff);
+    free(buff);
 }
 
 
@@ -461,17 +461,17 @@ NCihave(CHANNEL *cp)
         cp->Refused++;
         msglen = strlen(p) + 5; /* 3 digits + space + id + null */
         if (cp->Sendid.size < msglen) {
-            if (cp->Sendid.size > 0) DISPOSE(cp->Sendid.data);
+            if (cp->Sendid.size > 0) free(cp->Sendid.data);
             if (msglen > MAXHEADERSIZE)
                 cp->Sendid.size = msglen;
             else
                 cp->Sendid.size = MAXHEADERSIZE;
-            cp->Sendid.data = NEW(char, cp->Sendid.size);
+            cp->Sendid.data = xmalloc(cp->Sendid.size);
         }
         snprintf(cp->Sendid.data, cp->Sendid.size, "%d %.200s",
                  NNTP_HAVEIT_VAL, filterrc);
         NCwritereply(cp, cp->Sendid.data);
-        DISPOSE(cp->Sendid.data);
+        free(cp->Sendid.data);
         cp->Sendid.size = 0;
         return;
     }
@@ -488,17 +488,17 @@ NCihave(CHANNEL *cp)
 	msglen += 5; /* 3 digits + space + id + null */
 	if (cp->Sendid.size < msglen) {
 	    if (cp->Sendid.size > 0)
-		DISPOSE(cp->Sendid.data);
+		free(cp->Sendid.data);
 	    if (msglen > MAXHEADERSIZE)
 		cp->Sendid.size = msglen;
 	    else
 		cp->Sendid.size = MAXHEADERSIZE;
-	    cp->Sendid.data = NEW(char, cp->Sendid.size);
+	    cp->Sendid.data = xmalloc(cp->Sendid.size);
 	}
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %.200s",
                  NNTP_HAVEIT_VAL, filterrc);
 	NCwritereply(cp, cp->Sendid.data);
-	DISPOSE(cp->Sendid.data);
+	free(cp->Sendid.data);
 	cp->Sendid.size = 0;
 	return;
     }
@@ -520,7 +520,7 @@ NCihave(CHANNEL *cp)
     }
     else {
 	if (cp->Sendid.size > 0) {
-            DISPOSE(cp->Sendid.data);
+            free(cp->Sendid.data);
 	    cp->Sendid.size = 0;
 	}
 	cp->Ihave_SendIt++;
@@ -622,7 +622,7 @@ NClist(CHANNEL *cp)
     }
     NCwritereply(cp, NCdot);
     if (trash)
-	DISPOSE(trash);
+	free(trash);
 }
 
 
@@ -799,13 +799,13 @@ NCproc(CHANNEL *cp)
       if (p[-2] != '\r') { /* probably in an article */
 	char *tmpstr;
 
-	tmpstr = NEW(char, i - cp->Start + 1);
+	tmpstr = xmalloc(i - cp->Start + 1);
 	memcpy(tmpstr, bp->data + cp->Start, i - cp->Start);
 	tmpstr[i - cp->Start] = '\0';
 	
 	syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
 	  MaxLength(tmpstr, tmpstr));
-	DISPOSE(tmpstr);
+	free(tmpstr);
 
 	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
 	  cp->State = CSwritegoodbye;
@@ -831,7 +831,7 @@ NCproc(CHANNEL *cp)
       /* We got something -- stop sleeping (in case we were). */
       SCHANremove(cp);
       if (cp->Argument != NULL) {
-	DISPOSE(cp->Argument);
+	free(cp->Argument);
 	cp->Argument = NULL;
       }
 
@@ -979,7 +979,7 @@ NCproc(CHANNEL *cp)
 
       SCHANremove(cp);
       if (cp->Argument != NULL) {
-	DISPOSE(cp->Argument);
+	free(cp->Argument);
 	cp->Argument = NULL;
       }
       NCpostit(cp);
@@ -1005,7 +1005,7 @@ NCproc(CHANNEL *cp)
 	/* Reached the end of the command line. */
 	SCHANremove(cp);
 	if (cp->Argument != NULL) {
-	  DISPOSE(cp->Argument);
+	  free(cp->Argument);
 	  cp->Argument = NULL;
 	}
 	i += cp->LargeCmdSize;
@@ -1206,7 +1206,7 @@ NCsetup(void)
 	p = Path.data;
     snprintf(buff, sizeof(buff), "%d %s InterNetNews server %s ready",
 	    NNTP_POSTOK_VAL, p, inn_version_string);
-    NCgreeting = COPY(buff);
+    NCgreeting = xstrdup(buff);
 }
 
 
@@ -1318,10 +1318,10 @@ NCcheck(CHANNEL *cp)
     idlen = strlen(p);
     msglen = idlen + 5; /* 3 digits + space + id + null */
     if (cp->Sendid.size < msglen) {
-	if (cp->Sendid.size > 0) DISPOSE(cp->Sendid.data);
+	if (cp->Sendid.size > 0) free(cp->Sendid.data);
 	if (msglen > MAXHEADERSIZE) cp->Sendid.size = msglen;
 	else cp->Sendid.size = MAXHEADERSIZE;
-	cp->Sendid.data = NEW(char, cp->Sendid.size);
+	cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
     if (!ARTidok(p)) {
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
@@ -1413,10 +1413,10 @@ NCtakethis(CHANNEL *cp)
     }
     msglen = strlen(p) + 5; /* 3 digits + space + id + null */
     if (cp->Sendid.size < msglen) {
-	if (cp->Sendid.size > 0) DISPOSE(cp->Sendid.data);
+	if (cp->Sendid.size > 0) free(cp->Sendid.data);
 	if (msglen > MAXHEADERSIZE) cp->Sendid.size = msglen;
 	else cp->Sendid.size = MAXHEADERSIZE;
-	cp->Sendid.data = NEW(char, cp->Sendid.size);
+	cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
     /* save ID for later NACK or ACK */
     snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s", NNTP_ERR_FAILID_VAL,

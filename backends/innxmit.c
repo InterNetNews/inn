@@ -222,8 +222,8 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
     ** If filename ever is longer than SPOOLNAMEBUFF then code will abort.
     ** If ID is ever longer than NNTP_STRLEN then other code would break.
     */
-    if (!stbuf[i].st_fname) stbuf[i].st_fname = NEW(char, SPOOLNAMEBUFF);
-    if (!stbuf[i].st_id) stbuf[i].st_id = NEW(char, NNTP_STRLEN);
+    if (!stbuf[i].st_fname) stbuf[i].st_fname = xmalloc(SPOOLNAMEBUFF);
+    if (!stbuf[i].st_id) stbuf[i].st_id = xmalloc(NNTP_STRLEN);
     strcpy(stbuf[i].st_fname, Article);
     strcpy(stbuf[i].st_id, MessageID);
     stbuf[i].art = art;
@@ -260,7 +260,7 @@ REMwrite(char *p, int i, bool escdot) {
 	if (REMbuffend - REMbuffer < i + 3) {
 	    /* Line too long -- grow buffer. */
 	    size = i * 2;
-	    RENEW(REMbuffer, char, size);
+            REMbuffer = xrealloc(REMbuffer, size);
 	    REMbuffend = &REMbuffer[size];
 	}
     }
@@ -680,9 +680,9 @@ GetMessageID(ARTHANDLE *art) {
 	return NULL;
     if (buffsize < q - p) {
 	if (buffsize == 0)
-	    buff = NEW(char, q - p + 1);
+	    buff = xmalloc(q - p + 1);
 	else
-	    RENEW(buff, char, q - p + 1);
+            buff = xrealloc(buff, q - p + 1);
 	buffsize = q - p;
     }
     memcpy(buff, p, q - p);
@@ -927,10 +927,10 @@ article_open(const char *path, const char *id)
             Requeue(path, id);
             return NULL;
         }
-        article = NEW(ARTHANDLE, 1);
+        article = xmalloc(sizeof(ARTHANDLE));
         article->type = TOKEN_EMPTY;
         article->len = st.st_size;
-        data = NEW(char, article->len);
+        data = xmalloc(article->len);
         if (xread(fd, data, article->len) < 0) {
             syswarn("requeue %s", path);
             free(data);
@@ -1012,7 +1012,7 @@ int main(int ac, char *av[]) {
 	    Usage();
 	    /* NOTREACHED */
 	case 'P':
-	    port = atoi(COPY(optarg));
+	    port = atoi(optarg);
 	    break;
 	case 'a':
 	    AlwaysRewrite = TRUE;
@@ -1095,7 +1095,7 @@ int main(int ac, char *av[]) {
     *p = '/';
 
     /* Set up buffer used by REMwrite. */
-    REMbuffer = NEW(char, OUTPUT_BUFFER_SIZE);
+    REMbuffer = xmalloc(OUTPUT_BUFFER_SIZE);
     REMbuffend = &REMbuffer[OUTPUT_BUFFER_SIZE];
     REMbuffptr = REMbuffer;
 

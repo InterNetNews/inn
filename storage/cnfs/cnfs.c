@@ -227,7 +227,7 @@ static void CNFScleancycbuff(void) {
     for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL;) {
       CNFSshutdowncycbuff(cycbuff);
       nextcycbuff = cycbuff->next;
-      DISPOSE(cycbuff);
+      free(cycbuff);
       cycbuff = nextcycbuff;
     }
     cycbufftab = (CYCBUFF *)NULL;
@@ -238,9 +238,9 @@ static void CNFScleanmetacycbuff(void) {
 
     for (metacycbuff = metacycbufftab; metacycbuff != (METACYCBUFF *)NULL;) {
       nextmetacycbuff = metacycbuff->next;
-      DISPOSE(metacycbuff->members);
-      DISPOSE(metacycbuff->name);
-      DISPOSE(metacycbuff);
+      free(metacycbuff->members);
+      free(metacycbuff->name);
+      free(metacycbuff);
       metacycbuff = nextmetacycbuff;
     }
     metacycbufftab = (METACYCBUFF *)NULL;
@@ -251,7 +251,7 @@ static void CNFScleanexpirerule(void) {
 
     for (metaexprule = metaexprulestab; metaexprule != (CNFSEXPIRERULES *)NULL;) {
       nextmetaexprule = metaexprule->next;
-      DISPOSE(metaexprule);
+      free(metaexprule);
       metaexprule = nextmetaexprule;
     }
     metaexprulestab = (CNFSEXPIRERULES *)NULL;
@@ -330,7 +330,7 @@ static bool CNFSparse_part_line(char *l) {
     syslog(L_ERROR, "%s: duplicate cycbuff name in line '%s'", LocalLogName, l);
     return FALSE;
   }
-  cycbuff = NEW(CYCBUFF, 1);
+  cycbuff = xmalloc(sizeof(CYCBUFF));
   memset(cycbuff->name, '\0', CNFSNASIZ);
   strncpy(cycbuff->name, l, CNFSNASIZ - 1);
   cycbuff->name[CNFSNASIZ - 1] = '\0';
@@ -339,7 +339,7 @@ static bool CNFSparse_part_line(char *l) {
   /* Path to cnfs partition */
   if ((p = strchr(l, ':')) == NULL || p - l <= 0 || p - l > CNFSPASIZ - 1) {
     syslog(L_ERROR, "%s: bad pathname in line '%s'", LocalLogName, l);
-    DISPOSE(cycbuff);
+    free(cycbuff);
     return FALSE;
   }
   *p = '\0';
@@ -349,7 +349,7 @@ static bool CNFSparse_part_line(char *l) {
   if (stat(cycbuff->path, &sb) < 0) {
     syslog(L_ERROR, "%s: file '%s' : %m, ignoring '%s' cycbuff",
 	   LocalLogName, cycbuff->path, cycbuff->name);
-    DISPOSE(cycbuff);
+    free(cycbuff);
     return FALSE;
   }
   l = ++p;
@@ -360,7 +360,7 @@ static bool CNFSparse_part_line(char *l) {
     if (sizeof(CYCBUFFEXTERN) > sb.st_size) {
       syslog(L_NOTICE, "%s: length must be at least '%u' for '%s' cycbuff(%ld bytes)",
 	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, sb.st_size);
-      DISPOSE(cycbuff);
+      free(cycbuff);
       return FALSE;
     }
   }
@@ -405,10 +405,10 @@ static bool CNFSparse_metapart_line(char *l) {
     syslog(L_ERROR, "%s: duplicate metabuff name in line '%s'", LocalLogName, l);
     return FALSE;
   }
-  metacycbuff = NEW(METACYCBUFF, 1);
+  metacycbuff = xmalloc(sizeof(METACYCBUFF));
   metacycbuff->members = (CYCBUFF **)NULL;
   metacycbuff->count = 0;
-  metacycbuff->name = COPY(l);
+  metacycbuff->name = xstrdup(l);
   metacycbuff->next = (METACYCBUFF *)NULL;
   metacycbuff->metamode = INTERLEAVE;
   l = ++p;
@@ -436,15 +436,15 @@ static bool CNFSparse_metapart_line(char *l) {
     if ((rp = CNFSgetcycbuffbyname(cycbuff)) == NULL) {
       syslog(L_ERROR, "%s: bogus cycbuff '%s' (metacycbuff '%s')",
 	     LocalLogName, cycbuff, metacycbuff->name);
-      DISPOSE(metacycbuff->members);
-      DISPOSE(metacycbuff->name);
-      DISPOSE(metacycbuff);
+      free(metacycbuff->members);
+      free(metacycbuff->name);
+      free(metacycbuff);
       return FALSE;
     }
     if (metacycbuff->count == 0)
-      metacycbuff->members = NEW(CYCBUFF *, 1);
-    else 
-      RENEW(metacycbuff->members, CYCBUFF *, metacycbuff->count + 1);
+      metacycbuff->members = xmalloc(sizeof(CYCBUFF *));
+    else
+      metacycbuff->members = xrealloc(metacycbuff->members, (metacycbuff->count + 1) * sizeof(CYCBUFF *));
     metacycbuff->members[metacycbuff->count++] = rp;
   }
   /* Gotta deal with the last cycbuff on the list */
@@ -452,23 +452,23 @@ static bool CNFSparse_metapart_line(char *l) {
   if ((rp = CNFSgetcycbuffbyname(cycbuff)) == NULL) {
     syslog(L_ERROR, "%s: bogus cycbuff '%s' (metacycbuff '%s')",
 	   LocalLogName, cycbuff, metacycbuff->name);
-    DISPOSE(metacycbuff->members);
-    DISPOSE(metacycbuff->name);
-    DISPOSE(metacycbuff);
+    free(metacycbuff->members);
+    free(metacycbuff->name);
+    free(metacycbuff);
     return FALSE;
   } else {
     if (metacycbuff->count == 0)
-      metacycbuff->members = NEW(CYCBUFF *, 1);
-    else 
-      RENEW(metacycbuff->members, CYCBUFF *, metacycbuff->count + 1);
+      metacycbuff->members = xmalloc(sizeof(CYCBUFF *));
+    else
+      metacycbuff->members = xrealloc(metacycbuff->members, (metacycbuff->count + 1) * sizeof(CYCBUFF *));
     metacycbuff->members[metacycbuff->count++] = rp;
   }
   
   if (metacycbuff->count == 0) {
     syslog(L_ERROR, "%s: no cycbuffs assigned to cycbuff '%s'",
 	   LocalLogName, metacycbuff->name);
-    DISPOSE(metacycbuff->name);
-    DISPOSE(metacycbuff);
+    free(metacycbuff->name);
+    free(metacycbuff);
     return FALSE;
   }
   if (metacycbufftab == (METACYCBUFF *)NULL)
@@ -500,7 +500,7 @@ static bool CNFSparse_groups_line(void) {
       CNFScleanexpirerule();
       return FALSE;
     }
-    metaexprule = NEW(CNFSEXPIRERULES, 1);
+    metaexprule = xmalloc(sizeof(CNFSEXPIRERULES));
     metaexprule->class = sub->class;
     metaexprule->dest = mrp;
     metaexprule->next = (CNFSEXPIRERULES *)NULL;
@@ -703,7 +703,7 @@ static bool CNFSread_config(void) {
     config = ReadInFile(path, NULL);
     if (config == NULL) {
 	syslog(L_ERROR, "%s: cannot read %s", LocalLogName, path);
-	DISPOSE(config);
+	free(config);
         free(path);
 	return FALSE;
     }
@@ -720,9 +720,9 @@ static bool CNFSread_config(void) {
 	    continue;				/* Back to top of loop */
 	}
 	if (ctab_free == 0)
-	  ctab = NEW(char *, 1);
+          ctab = xmalloc(sizeof(char *));
 	else
-	  RENEW(ctab, char *, ctab_free+1);
+          ctab = xrealloc(ctab, (ctab_free + 1) * sizeof(char *));
 	/* If we're here, we've got the beginning of a real entry */
 	ctab[ctab_free++] = to = from;
 	while (1) {
@@ -748,35 +748,35 @@ static bool CNFSread_config(void) {
 	if (strncmp(ctab[ctab_i], "cycbuff:", 8) == 0) {
 	    if (metacycbufffound) {
 		syslog(L_ERROR, "%s: all cycbuff entries shoud be before metacycbuff entries", LocalLogName);
-		DISPOSE(config);
-		DISPOSE(ctab);
+		free(config);
+		free(ctab);
 		return FALSE;
 	    }
 	    if (!CNFSparse_part_line(ctab[ctab_i] + 8)) {
-		DISPOSE(config);
-		DISPOSE(ctab);
+		free(config);
+		free(ctab);
 		return FALSE;
 	    }
 	} else if (strncmp(ctab[ctab_i], "metacycbuff:", 12) == 0) {
 	    metacycbufffound = TRUE;
 	    if (!CNFSparse_metapart_line(ctab[ctab_i] + 12)) {
-		DISPOSE(config);
-		DISPOSE(ctab);
+		free(config);
+		free(ctab);
 		return FALSE;
 	    }
 	} else if (strncmp(ctab[ctab_i], "cycbuffupdate:", 14) == 0) {
 	    if (cycbuffupdatefound) {
 		syslog(L_ERROR, "%s: duplicate cycbuffupdate entries", LocalLogName);
-		DISPOSE(config);
-		DISPOSE(ctab);
+		free(config);
+		free(ctab);
 		return FALSE;
 	    }
 	    cycbuffupdatefound = TRUE;
 	    update = atoi(ctab[ctab_i] + 14);
 	    if (update < 0) {
 		syslog(L_ERROR, "%s: invalid cycbuffupdate", LocalLogName);
-		DISPOSE(config);
-		DISPOSE(ctab);
+		free(config);
+		free(ctab);
 		return FALSE;
 	    }
 	    if (update == 0)
@@ -786,16 +786,16 @@ static bool CNFSread_config(void) {
 	} else if (strncmp(ctab[ctab_i], "refreshinterval:", 16) == 0) {
 	    if (refreshintervalfound) {
 		syslog(L_ERROR, "%s: duplicate refreshinterval entries", LocalLogName);
-		DISPOSE(config);
-		DISPOSE(ctab);
+		free(config);
+		free(ctab);
 		return FALSE;
 	    }
 	    refreshintervalfound = TRUE;
 	    refresh = atoi(ctab[ctab_i] + 16);
 	    if (refresh < 0) {
 		syslog(L_ERROR, "%s: invalid refreshinterval", LocalLogName);
-		DISPOSE(config);
-		DISPOSE(ctab);
+		free(config);
+		free(ctab);
 		return FALSE;
 	    }
 	    if (refresh == 0)
@@ -807,8 +807,8 @@ static bool CNFSread_config(void) {
 		   LocalLogName, ctab[ctab_i]);
 	}
     }
-    DISPOSE(config);
-    DISPOSE(ctab);
+    free(config);
+    free(ctab);
     if (!CNFSparse_groups_line()) {
 	return FALSE;
     }
@@ -1137,10 +1137,10 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	return token;
     }
     if (iovcnt == 0) {
-	iov = NEW(struct iovec, article.iovcnt + 1);
+	iov = xmalloc((article.iovcnt + 1) * sizeof(struct iovec));
 	iovcnt = article.iovcnt + 1;
     } else if (iovcnt < article.iovcnt + 1) {
-	RENEW(iov, struct iovec, article.iovcnt + 1);
+        iov = xrealloc(iov, (article.iovcnt + 1) * sizeof(struct iovec));
 	iovcnt = article.iovcnt + 1;
     }
     iov[0].iov_base = (char *) &cah;
@@ -1230,7 +1230,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	return NULL;
     }
 
-    art = NEW(ARTHANDLE, 1);
+    art = xmalloc(sizeof(ARTHANDLE));
     art->type = TOKEN_CNFS;
     if (amount == RETR_STAT) {
 	art->data = NULL;
@@ -1253,7 +1253,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
         SMseterror(SMERR_UNDEFINED, "read failed");
         syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%d: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
-        DISPOSE(art);
+        free(art);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return NULL;
     }
@@ -1266,7 +1266,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
             syslog(L_ERROR, "%s: could not read2 token %s %s:0x%s:%ld: %m",
                     LocalLogName, TokenToText(token), cycbuffname,
                     CNFSofft2hex(offset, FALSE), cycnum);
-            DISPOSE(art);
+            free(art);
             if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
             return NULL;
 	}
@@ -1281,7 +1281,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
 	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%d: %d",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum, ntohl(cah.size));
-	    DISPOSE(art);
+	    free(art);
 	    CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
 	}
@@ -1290,7 +1290,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
 	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%d: %d",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum, ntohl(cah.size));
-	    DISPOSE(art);
+	    free(art);
 	    return NULL;
 	}
     }
@@ -1303,10 +1303,10 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s: %u",
 	LocalLogName, TokenToText(token), cycbuffname, buf1, ntohl(cah.size));
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	DISPOSE(art);
+	free(art);
 	return NULL;
     }
-    private = NEW(PRIV_CNFS, 1);
+    private = xmalloc(sizeof(PRIV_CNFS));
     art->private = (void *)private;
     art->arrived = ntohl(cah.arrived);
     offset += sizeof(cah) + plusoffset;
@@ -1319,23 +1319,23 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    SMseterror(SMERR_UNDEFINED, "mmap failed");
 	    syslog(L_ERROR, "%s: could not mmap token %s %s:0x%s:%d: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
-	    DISPOSE(art->private);
-	    DISPOSE(art);
+	    free(art->private);
+	    free(art);
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
 	}
 	mmap_invalidate(private->base, private->len);
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
     } else {
-	private->base = NEW(char, ntohl(cah.size));
+	private->base = xmalloc(ntohl(cah.size));
 	pagefudge = 0;
 	if (pread(cycbuff->fd, private->base, ntohl(cah.size), offset) < 0) {
 	    SMseterror(SMERR_UNDEFINED, "read failed");
 	    syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%d: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
-	    DISPOSE(private->base);
-	    DISPOSE(art->private);
-	    DISPOSE(art);
+	    free(private->base);
+	    free(art->private);
+	    free(art);
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
 	}
@@ -1353,9 +1353,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
 	else
-	    DISPOSE(private->base);
-        DISPOSE(art->private);
-        DISPOSE(art);
+	    free(private->base);
+        free(art->private);
+        free(art);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return NULL;
     }
@@ -1383,9 +1383,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     if (innconf->articlemmap)
 	munmap(private->base, private->len);
     else
-	DISPOSE(private->base);
-    DISPOSE(art->private);
-    DISPOSE(art);
+	free(private->base);
+    free(art->private);
+    free(art);
     if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
     return NULL;
 }
@@ -1401,10 +1401,10 @@ void cnfs_freearticle(ARTHANDLE *article) {
 	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
 	else
-	    DISPOSE(private->base);
-	DISPOSE(private);
+	    free(private->base);
+	free(private);
     }
-    DISPOSE(article);
+    free(article);
 }
 
 bool cnfs_cancel(TOKEN token) {
@@ -1472,8 +1472,8 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	priv.rollover = FALSE;
     } else {        
 	priv = *(PRIV_CNFS *)article->private;
-	DISPOSE(article->private);
-	DISPOSE((void *)article);
+	free(article->private);
+	free((void *)article);
 	if (innconf->articlemmap)
 	    munmap(priv.base, priv.len);
 	else {
@@ -1482,7 +1482,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
                -mibsoft@mibsoftware.com
 	     */
 	    if (priv.base) {
-	        DISPOSE(priv.base);
+	        free(priv.base);
 		priv.base = 0;
 	    }
 	}
@@ -1558,8 +1558,8 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	plusoffset = sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
 #endif /* OLD_CNFS */
-    art = NEW(ARTHANDLE, 1);
-    private = NEW(PRIV_CNFS, 1);
+    art = xmalloc(sizeof(ARTHANDLE));
+    private = xmalloc(sizeof(PRIV_CNFS));
     art->private = (void *)private;
     art->type = TOKEN_CNFS;
     *private = priv;
@@ -1639,14 +1639,14 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	mmap_invalidate(private->base, private->len);
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
     } else {
-	private->base = NEW(char, ntohl(cah.size));
+	private->base = xmalloc(ntohl(cah.size));
 	pagefudge = 0;
 	if (pread(cycbuff->fd, private->base, ntohl(cah.size), offset) < 0) {
 	    art->data = NULL;
 	    art->len = 0;
 	    art->token = NULL;
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	    DISPOSE(private->base);
+	    free(private->base);
 	    private->base = 0;
 	    return art;
 	}

@@ -470,8 +470,8 @@ PY_setup(void)
     ** recreating them.
     */
     PYauthinfo = PyDict_New();
-    PYauthitem = NEW(PyObject *, _PY_MAX_AUTH_ITEM);
-    PYauthkey = NEW(PyObject *, _PY_MAX_AUTH_ITEM);
+    PYauthitem = xmalloc(_PY_MAX_AUTH_ITEM * sizeof(PyObject *));
+    PYauthkey = xmalloc(_PY_MAX_AUTH_ITEM * sizeof(PyObject *));
 
     /* Preallocate keys for the authinfo dictionary (up to PY_MAX_AUTH_ITEM) */
     authnum = 0;

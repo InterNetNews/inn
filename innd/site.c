@@ -150,11 +150,11 @@ SITEbufferoldest(void)
     bp->left = 0;
     if (bp->size == 0) {
 	bp->size = sp->Flushpoint;
-	bp->data = NEW(char, bp->size);
+	bp->data = xmalloc(bp->size);
     }
     else {
 	bp->size = sp->Flushpoint;
-	RENEW(bp->data, char, bp->size);
+        bp->data = xrealloc(bp->data, bp->size);
     }
 
     /* If there's any unwritten data, copy it. */
@@ -207,8 +207,8 @@ SITECHANbilge(SITE *sp)
         sp->Channel->Out.used += i;
     }
     close(fd);
-    DISPOSE(sp->Channel->Out.data);
-    sp->Channel->Out.data = NEW(char, SMBUF);
+    free(sp->Channel->Out.data);
+    sp->Channel->Out.data = xmalloc(SMBUF);
     sp->Channel->Out.size = SMBUF;
     sp->Channel->Out.left = 0;
     sp->Channel->Out.used = 0;
@@ -506,7 +506,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
 		    sp->Name, i + (sizeof(TOKEN) * 2) + 3, sp->Name);
 		break;
 	    }
-	    temp = NEW(char, i + 1);
+	    temp = xmalloc(i + 1);
 	    p = strchr(sp->Param, '*');
 	    *p = '\0';
 	    strcpy(temp, sp->Param);
@@ -514,7 +514,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	    strcat(temp, &p[1]);
 	    *p = '*';
 	    sprintf(buff, temp, Data->TokenText);
-	    DISPOSE(temp);
+	    free(temp);
 	}
 	else
 	    sprintf(buff, sp->Param, Data->TokenText);
@@ -547,7 +547,7 @@ SITEspoolwake(CHANNEL *cp)
 
     ip = (int *) cp->Argument;
     sp = &Sites[*ip];
-    DISPOSE(cp->Argument);
+    free(cp->Argument);
     cp->Argument = NULL;
     if (sp->Channel != cp) {
 	syslog(L_ERROR, "%s internal SITEspoolwake %s got %d, not %d",
@@ -588,7 +588,7 @@ SITEstartprocess(SITE *sp)
     close_on_exec(pan[PIPE_WRITE], true);
 
     /* Set up the argument vector. */
-    process = COPY(sp->Param);
+    process = xstrdup(sp->Param);
     if (NeedShell(process, (const char **)argv, (const char **)ENDOF(argv))) {
 	argv[0] = SITEshell;
 	argv[1] = (char *) "-c";
@@ -607,7 +607,7 @@ SITEstartprocess(SITE *sp)
 	sp->Channel = CHANcreate(pan[PIPE_WRITE],
 			sp->Type == FTchannel ? CTprocess : CTexploder,
 			CSwriting, SITEreader, SITEwritedone);
-	DISPOSE(process);
+	free(process);
 	return TRUE;
     }
 
@@ -615,13 +615,13 @@ SITEstartprocess(SITE *sp)
     syslog(L_ERROR, "%s cant spawn spooling %m", sp->Name);
     close(pan[PIPE_WRITE]);
     close(pan[PIPE_READ]);
-    DISPOSE(process);
+    free(process);
     if (!SITEspool(sp, (CHANNEL *)NULL))
 	return FALSE;
 
     /* We'll try to restart the channel later. */
     syslog(L_ERROR, "%s cant spawn spooling %m", sp->Name);
-    ip = NEW(int, 1);
+    ip = xmalloc(sizeof(int));
     *ip = sp - Sites;
     SCHANadd(sp->Channel, Now.time + innconf->chanretrytime, NULL,
              SITEspoolwake, ip);
@@ -768,7 +768,7 @@ SITEchanclose(CHANNEL *cp)
 	    }
 	    WCHANsetfrombuffer(sp->Channel, &cp->Out);
 	    WCHANadd(sp->Channel);
-	    ip = NEW(int, 1);
+	    ip = xmalloc(sizeof(int));
 	    *ip = sp - Sites;
 	    SCHANadd(sp->Channel, Now.time + innconf->chanretrytime, NULL,
                      SITEspoolwake, ip);
@@ -1010,40 +1010,40 @@ SITEfree(SITE *sp)
 	sp->Process = -1;
     }
     if (sp->Entry) {
-	DISPOSE(sp->Entry);
+	free(sp->Entry);
 	sp->Entry = NULL;
     }
     if (sp->Originator) {
-    	DISPOSE(sp->Originator);
+    	free(sp->Originator);
     	sp->Originator = NULL;
     }
     if (sp->Param) {
-	DISPOSE(sp->Param);
+	free(sp->Param);
 	sp->Param = NULL;
     }
     if (sp->SpoolName) {
-	DISPOSE(sp->SpoolName);
+	free(sp->SpoolName);
 	sp->SpoolName = NULL;
     }
     if (sp->Patterns) {
-	DISPOSE(sp->Patterns);
+	free(sp->Patterns);
 	sp->Patterns = NULL;
     }
     if (sp->Exclusions) {
-	DISPOSE(sp->Exclusions);
+	free(sp->Exclusions);
 	sp->Exclusions = NULL;
     }
     if (sp->Distributions) {
-	DISPOSE(sp->Distributions);
+	free(sp->Distributions);
 	sp->Distributions = NULL;
     }
     if (sp->Buffer.data) {
-	DISPOSE(sp->Buffer.data);
+	free(sp->Buffer.data);
 	sp->Buffer.data = NULL;
 	sp->Buffer.size = 0;
     }
     if (sp->FNLnames.data) {
-	DISPOSE(sp->FNLnames.data);
+	free(sp->FNLnames.data);
 	sp->FNLnames.data = NULL;
 	sp->FNLnames.size = 0;
     }

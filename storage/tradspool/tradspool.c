@@ -106,10 +106,10 @@ HashNGName(char *ng) {
     HASHEDNG return_hash;
     char *p;
 
-    p = COPY(ng);
+    p = xstrdup(ng);
     DeDotify(p);
     hash = Hash(p, strlen(p));
-    DISPOSE(p);
+    free(p);
 
     memcpy(return_hash.hash, hash.hash, HASHEDNGLEN);
 
@@ -139,7 +139,7 @@ AddNG(char *ng, unsigned long number) {
     NGTENT *ngtp, **ngtpp;
     NGTREENODE *newnode, *curnode, **nextnode;
 
-    p = COPY(ng);
+    p = xstrdup(ng);
     DeDotify(p); /* canonicalize p to standard (/) form. */
     hash = HashNGName(p);
 
@@ -155,7 +155,7 @@ AddNG(char *ng, unsigned long number) {
 	    /* ng wasn't in table, add new entry. */
 	    NGTableUpdated = TRUE;
 
-	    ngtp = NEW(NGTENT, 1);
+	    ngtp = xmalloc(sizeof(NGTENT));
 	    ngtp->ngname = p; /* note: we store canonicalized name */
 	    /* ngtp->hash = hash XXX */
 	    ngtp->next = NULL;
@@ -170,7 +170,7 @@ AddNG(char *ng, unsigned long number) {
 	    *ngtpp = ngtp;
 
 	    /* Now insert an appropriate record into the binary tree */
-	    newnode = NEW(NGTREENODE, 1);
+	    newnode = xmalloc(sizeof(NGTREENODE));
 	    newnode->left = newnode->right = (NGTREENODE *) NULL;
 	    newnode->ngnumber = number;
 	    newnode->ngtp = ngtp;
@@ -199,13 +199,13 @@ AddNG(char *ng, unsigned long number) {
 	    }
 	} else if (strcmp(ngtp->ngname, p) == 0) {
 	    /* entry in table already, so return */
-	    DISPOSE(p);
+	    free(p);
 	    return;
 #if 0 /* XXX */
 	} else if (CompareHash(&ngtp->hash, &hash) == 0) {
 	    /* eep! we hit a hash collision. */
 	    syslog(L_ERROR, "tradspool: AddNG: Hash collison %s/%s", ngtp->ngname, p);
-	    DISPOSE(p);
+	    free(p);
 	    return;
 #endif 
 	} else {
@@ -224,7 +224,7 @@ FindNGByName(char *ngname) {
     HASHEDNG hash;
     char *p;
 
-    p = COPY(ngname);
+    p = xstrdup(ngname);
     DeDotify(p); /* canonicalize p to standard (/) form. */
     hash = HashNGName(p);
 
@@ -237,12 +237,12 @@ FindNGByName(char *ngname) {
 
     while (ngtp) {
 	if (strcmp(p, ngtp->ngname) == 0) {
-	    DISPOSE(p);
+	    free(p);
 	    return ngtp;
 	}
 	ngtp = ngtp->next;
     }
-    DISPOSE(p);
+    free(p);
     return NULL; 
 }
 
@@ -290,8 +290,8 @@ DumpDB(void)
 
     if ((out = fopen(fnamenew, "w")) == NULL) {
 	syslog(L_ERROR, "tradspool: DumpDB: can't write %s: %m", fnamenew);
-	DISPOSE(fname);
-	DISPOSE(fnamenew);
+	free(fname);
+	free(fnamenew);
 	return;
     }
     for (i = 0 ; i < NGT_SIZE ; ++i) {
@@ -302,18 +302,18 @@ DumpDB(void)
     }
     if (fclose(out) < 0) {
 	syslog(L_ERROR, "tradspool: DumpDB: can't close %s: %m", fnamenew);
-	DISPOSE(fname);
-	DISPOSE(fnamenew);
+	free(fname);
+	free(fnamenew);
 	return;
     }
     if (rename(fnamenew, fname) < 0) {
 	syslog(L_ERROR, "tradspool: can't rename %s", fnamenew);
-	DISPOSE(fname);
-	DISPOSE(fnamenew);
+	free(fname);
+	free(fnamenew);
 	return;
     }
-    DISPOSE(fname);
-    DISPOSE(fnamenew);
+    free(fname);
+    free(fnamenew);
     NGTableUpdated = FALSE; /* reset modification flag. */
     return;
 }
@@ -343,7 +343,7 @@ ReadDBFile(void)
 	    if (p == NULL) {
 		syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
 		QIOclose(qp);
-		DISPOSE(fname);
+		free(fname);
 		return FALSE;
 	    }
 	    *p++ = 0;
@@ -353,7 +353,7 @@ ReadDBFile(void)
 	}
 	QIOclose(qp);
     }
-    DISPOSE(fname);
+    free(fname);
     return TRUE;
 }
 
@@ -368,7 +368,7 @@ ReadActiveFile(void)
     fname = concatpath(innconf->pathdb, _PATH_ACTIVE);
     if ((qp = QIOopen(fname)) == NULL) {
 	syslog(L_FATAL, "tradspool: can't open %s", fname);
-	DISPOSE(fname);
+	free(fname);
 	return FALSE;
     }
 
@@ -377,14 +377,14 @@ ReadActiveFile(void)
 	if (p == NULL) {
 	    syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
 	    QIOclose(qp);
-	    DISPOSE(fname);
+	    free(fname);
 	    return FALSE;
 	}
 	*p = 0;
 	AddNG(line, 0);
     }
     QIOclose(qp);
-    DISPOSE(fname);
+    free(fname);
     /* dump any newly added changes to database */
     DumpDB();
     return TRUE;
@@ -430,10 +430,10 @@ CheckNeedReloadDB(bool force)
 
     fname = concatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB);
     if (stat(fname, &sb) < 0) {
-	DISPOSE(fname);
+	free(fname);
 	return;
     }
-    DISPOSE(fname);
+    free(fname);
     if (sb.st_mtime > oldlastcheck.time) {
 	/* add any newly added ngs to our in-memory copy of the db. */
 	ReadDBFile();
@@ -516,7 +516,7 @@ TokenToPath(TOKEN token) {
     }
 
     length = strlen(ng) + 20 + strlen(innconf->patharticles);
-    path = NEW(char, length);
+    path = xmalloc(length);
     snprintf(path, length, "%s/%s/%lu", innconf->patharticles, ng, artnum);
     return path;
 }
@@ -535,7 +535,7 @@ CrackXref(char *xref, unsigned int *lenp) {
 
     len = 0;
     xrefsize = 5;
-    xrefs = NEW(char *, xrefsize);
+    xrefs = xmalloc(xrefsize * sizeof(char *));
 
     /* no path element should exist, nor heading white spaces exist */
     p = xref;
@@ -551,14 +551,14 @@ CrackXref(char *xref, unsigned int *lenp) {
 	for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
 
 	slen = q-p;
-	xrefs[len] = NEW(char, slen+1);
+	xrefs[len] = xmalloc(slen + 1);
 	strncpy(xrefs[len], p, slen);
 	xrefs[len][slen] = '\0';
 
 	if (++len == xrefsize) {
 	    /* grow xrefs if needed. */
 	    xrefsize *= 2;
-	    RENEW(xrefs, char *, xrefsize);
+            xrefs = xrealloc(xrefs, xrefsize * sizeof(char *));
 	}
 
  	p = q;
@@ -587,15 +587,15 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	token.type = TOKEN_EMPTY;
 	SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
 	if (xrefs != NULL)
-	    DISPOSE(xrefs);
+	    free(xrefs);
 	return token;
     }
 
     if ((p = strchr(xrefs[0], ':')) == NULL) {
 	token.type = TOKEN_EMPTY;
 	SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
-	for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-	DISPOSE(xrefs);
+	for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
+	free(xrefs);
 	return token;
     }
     *p++ = '\0';
@@ -606,7 +606,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     token = MakeToken(ng, artnum, class);
 
     length = strlen(innconf->patharticles) + strlen(ng) + 32;
-    path = NEW(char, length);
+    path = xmalloc(length);
     snprintf(path, length, "%s/%s/%lu", innconf->patharticles, ng, artnum);
 
     /* following chunk of code boldly stolen from timehash.c  :-) */
@@ -616,10 +616,10 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	if (!MakeDirectory(path, TRUE)) {
 	    syslog(L_ERROR, "tradspool: could not make directory %s %m", path);
 	    token.type = TOKEN_EMPTY;
-	    DISPOSE(path);
+	    free(path);
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-	    DISPOSE(xrefs);
+	    for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
+	    free(xrefs);
 	    return token;
 	} else {
 	    *p = '/';
@@ -627,9 +627,9 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		SMseterror(SMERR_UNDEFINED, NULL);
 		syslog(L_ERROR, "tradspool: could not open %s %m", path);
 		token.type = TOKEN_EMPTY;
-		DISPOSE(path);
-		for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-		DISPOSE(xrefs);
+		free(path);
+		for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
+		free(xrefs);
 		return token;
 	    }
 	}
@@ -641,9 +641,9 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    close(fd);
 	    token.type = TOKEN_EMPTY;
 	    unlink(path);
-	    DISPOSE(path);
-	    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-	    DISPOSE(xrefs);
+	    free(path);
+	    for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
+	    free(xrefs);
 	    return token;
 	}
     } else {
@@ -655,18 +655,18 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	nonwfarticle = FromWireFmt(onebuffer, used, &nonwflen);
 	free(onebuffer);
 	if (write(fd, nonwfarticle, nonwflen) != (ssize_t) nonwflen) {
-	    DISPOSE(nonwfarticle);
+	    free(nonwfarticle);
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool error writing %s %m", path);
 	    close(fd);
 	    token.type = TOKEN_EMPTY;
 	    unlink(path);
-	    DISPOSE(path);
-	    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-	    DISPOSE(xrefs);
+	    free(path);
+	    for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
+	    free(xrefs);
 	    return token;
 	}
-	DISPOSE(nonwfarticle);
+	free(nonwfarticle);
     }
     close(fd);
 
@@ -684,47 +684,47 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    artnum = atol(p);
 
             length = strlen(innconf->patharticles) + strlen(ng) + 32;
-	    linkpath = NEW(char, length);
+	    linkpath = xmalloc(length);
 	    snprintf(linkpath, length, "%s/%s/%lu", innconf->patharticles,
                      ng, artnum);
 	    if (link(path, linkpath) < 0) {
 		p = strrchr(linkpath, '/');
 		*p = '\0';
-		dirname = COPY(linkpath);
+		dirname = xstrdup(linkpath);
 		*p = '/';
 		if (!MakeDirectory(dirname, TRUE) || link(path, linkpath) < 0) {
 #if !defined(HAVE_SYMLINK)
 		    SMseterror(SMERR_UNDEFINED, NULL);
 		    syslog(L_ERROR, "tradspool: could not link %s to %s %m", path, linkpath);
 		    token.type = TOKEN_EMPTY;
-		    DISPOSE(dirname);
-		    DISPOSE(linkpath);
-		    DISPOSE(path);
-		    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-		    DISPOSE(xrefs);
+		    free(dirname);
+		    free(linkpath);
+		    free(path);
+		    for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
+		    free(xrefs);
 		    return token;
 #else
 		    if (symlink(path, linkpath) < 0) {
 			SMseterror(SMERR_UNDEFINED, NULL);
 			syslog(L_ERROR, "tradspool: could not symlink %s to %s %m", path, linkpath);
 			token.type = TOKEN_EMPTY;
-			DISPOSE(dirname);
-			DISPOSE(linkpath);
-			DISPOSE(path);
-			for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-			DISPOSE(xrefs);
+			free(dirname);
+			free(linkpath);
+			free(path);
+			for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
+			free(xrefs);
 			return token;
 		    }
 #endif  /* !defined(HAVE_SYMLINK) */
 		}
-		DISPOSE(dirname);
+		free(dirname);
 	    }
-	    DISPOSE(linkpath);
+	    free(linkpath);
 	}
     }
-    DISPOSE(path);
-    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-    DISPOSE(xrefs);
+    free(path);
+    for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
+    free(xrefs);
     return token;
 }
 
@@ -743,7 +743,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    return NULL;
 	}
-	art = NEW(ARTHANDLE, 1);
+	art = xmalloc(sizeof(ARTHANDLE));
 	art->type = TOKEN_TRADSPOOL;
 	art->data = NULL;
 	art->len = 0;
@@ -756,28 +756,28 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	return NULL;
     }
 
-    art = NEW(ARTHANDLE, 1);
+    art = xmalloc(sizeof(ARTHANDLE));
     art->type = TOKEN_TRADSPOOL;
 
     if (fstat(fd, &sb) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "tradspool: could not fstat article: %m");
-	DISPOSE(art);
+	free(art);
 	close(fd);
 	return NULL;
     }
 
     art->arrived = sb.st_mtime;
 
-    private = NEW(PRIV_TRADSPOOL, 1);
+    private = xmalloc(sizeof(PRIV_TRADSPOOL));
     art->private = (void *)private;
     private->artlen = sb.st_size;
     if (innconf->articlemmap) {
 	if ((private->artbase = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
-	    DISPOSE(art->private);
-	    DISPOSE(art);
+	    free(art->private);
+	    free(art);
 	    close(fd);
 	    return NULL;
 	}
@@ -787,8 +787,8 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
 	    munmap(private->artbase, private->artlen);
-	    DISPOSE(art->private);
-	    DISPOSE(art);
+	    free(art->private);
+	    free(art);
 	    close(fd);
 	    return NULL;
 	}
@@ -803,13 +803,13 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	}
     } else {
 	private->mmapped = FALSE;
-	private->artbase = NEW(char, private->artlen);
+	private->artbase = xmalloc(private->artlen);
 	if (read(fd, private->artbase, private->artlen) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool: could not read article: %m");
-	    DISPOSE(private->artbase);
-	    DISPOSE(art->private);
-	    DISPOSE(art);
+	    free(private->artbase);
+	    free(art->private);
+	    free(art);
 	    close(fd);
 	    return NULL;
 	}
@@ -817,15 +817,15 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	if (p == NULL || p == private->artbase) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
-	    DISPOSE(art->private);
-	    DISPOSE(art);
+	    free(art->private);
+	    free(art);
 	    close(fd);
 	    return NULL;
 	}
 	if (p[-1] != '\r') {
 	    /* need to make a wireformat copy of the article */
 	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
-	    DISPOSE(private->artbase);
+	    free(private->artbase);
 	    private->artbase = wfarticle;
 	    private->artlen = wflen;
 	}
@@ -847,10 +847,10 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	if (private->mmapped)
 	    munmap(private->artbase, private->artlen);
 	else
-	    DISPOSE(private->artbase);
+	    free(private->artbase);
 	SMseterror(SMERR_NOBODY, NULL);
-	DISPOSE(art->private);
-	DISPOSE(art);
+	free(art->private);
+	free(art);
 	return NULL;
     }
 
@@ -869,9 +869,9 @@ OpenArticle(const char *path, RETRTYPE amount) {
     if (private->mmapped)
 	munmap(private->artbase, private->artlen);
     else
-	DISPOSE(private->artbase);
-    DISPOSE(art->private);
-    DISPOSE(art);
+	free(private->artbase);
+    free(art->private);
+    free(art);
     return NULL;
 }
 
@@ -895,7 +895,7 @@ tradspool_retrieve(const TOKEN token, const RETRTYPE amount) {
         ret_token = token;
         art->token = &ret_token;
     }
-    DISPOSE(path);
+    free(path);
     return art;
 }
 
@@ -936,7 +936,7 @@ tradspool_cancel(TOKEN token) {
 
     if ((path = TokenToPath(token)) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	DISPOSE(path);
+	free(path);
 	return FALSE;
     }
     /*
@@ -946,7 +946,7 @@ tradspool_cancel(TOKEN token) {
     ** good things for performance of fastrm...  -- rmtodd
     */
     if ((article = OpenArticle(path, RETR_HEAD)) == NULL) {
-	DISPOSE(path);
+	free(path);
 	SMseterror(SMERR_UNDEFINED, NULL);
         return FALSE;
     }
@@ -956,13 +956,13 @@ tradspool_cancel(TOKEN token) {
 	/* for backwards compatibility; there is no Xref unless crossposted
 	   for 1.4 and 1.5 */
 	if (unlink(path) < 0) result = FALSE;
-	DISPOSE(path);
+	free(path);
 	tradspool_freearticle(article);
         return result;
     }
 
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
-	DISPOSE(path);
+	free(path);
 	tradspool_freearticle(article);
         SMseterror(SMERR_UNDEFINED, NULL);
         return FALSE;
@@ -977,7 +977,7 @@ tradspool_cancel(TOKEN token) {
 	artnum = atol(p);
 
         length = strlen(innconf->patharticles) + strlen(ng) + 32;
-	linkpath = NEW(char, length);
+	linkpath = xmalloc(length);
 	snprintf(linkpath, length, "%s/%s/%lu", innconf->patharticles, ng,
                  artnum);
 	/* repeated unlinkings of a crossposted article may fail on account
@@ -985,14 +985,14 @@ tradspool_cancel(TOKEN token) {
 	if (unlink(linkpath) < 0)
 	    if (errno != ENOENT || i == 1)
 		result = FALSE;
-	DISPOSE(linkpath);
+	free(linkpath);
     }
     if (unlink(path) < 0)
     	if (errno != ENOENT || numxrefs == 1)
 	    result = FALSE;
-    DISPOSE(path);
-    for (i = 0 ; i < numxrefs ; ++i) DISPOSE(xrefs[i]);
-    DISPOSE(xrefs);
+    free(path);
+    for (i = 0 ; i < numxrefs ; ++i) free(xrefs[i]);
+    free(xrefs);
     return result;
 }
 
@@ -1022,17 +1022,17 @@ FindDir(DIR *dir, char *dirname) {
 	}
 	if (!flag) continue; /* if not all digits, skip this entry. */
 
-	path = NEW(char, strlen(dirname)+namelen+2);
+	path = xmalloc(strlen(dirname) + namelen + 2);
 	strcpy(path, dirname);
 	strcat(path, "/");
 	strncpy(&path[strlen(dirname)+1], de->d_name, namelen);
 	path[strlen(dirname)+namelen+1] = '\0';
 
 	if (lstat(path, &sb) < 0) {
-	    DISPOSE(path);
+	    free(path);
 	    continue;
 	}
-	DISPOSE(path);
+	free(path);
 	if (!S_ISREG(sb.st_mode)) continue;
 	return de;
     }
@@ -1061,13 +1061,13 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	priv.nextindex = -1;
     } else {
 	priv = *(PRIV_TRADSPOOL *) article->private;
-	DISPOSE(article->private);
-	DISPOSE((void*)article);
+	free(article->private);
+	free((void*)article);
 	if (priv.artbase != NULL) {
 	    if (priv.mmapped)
 		munmap(priv.artbase, priv.artlen);
 	    else
-		DISPOSE(priv.artbase);
+		free(priv.artbase);
 	}
     }
 
@@ -1075,7 +1075,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	if (priv.curdir) {
 	    closedir(priv.curdir);
 	    priv.curdir = NULL;
-	    DISPOSE(priv.curdirname);
+	    free(priv.curdirname);
 	    priv.curdirname = NULL;
 	}
 
@@ -1109,11 +1109,11 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 
     art = OpenArticle(path, amount);
     if (art == (ARTHANDLE *)NULL) {
-	art = NEW(ARTHANDLE, 1);
+	art = xmalloc(sizeof(ARTHANDLE));
 	art->type = TOKEN_TRADSPOOL;
 	art->data = NULL;
 	art->len = 0;
-	art->private = (void *)NEW(PRIV_TRADSPOOL, 1);
+	art->private = xmalloc(sizeof(PRIV_TRADSPOOL));
 	art->expires = 0;
 	art->groups = NULL;
 	art->groupslen = 0;
@@ -1154,11 +1154,11 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 			/* this is linked article, skip it */
 			art->len = 0;
 		    }
-		    DISPOSE(linkpath);
+		    free(linkpath);
 		}
 	    }
-	    for (i = 0 ; i < numxrefs ; ++i) DISPOSE(xrefs[i]);
-	    DISPOSE(xrefs);
+	    for (i = 0 ; i < numxrefs ; ++i) free(xrefs[i]);
+	    free(xrefs);
 	    if (innconf->storeonxref) {
 		/* skip path element */
 		if ((xrefhdr = strchr(xrefhdr, ' ')) == NULL) {
@@ -1192,7 +1192,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	} else {
             /* optionally parse expire header */
             for (p = expires + 1; (*p != '\n') && (*(p - 1) != '\r'); p++);
-            x = NEW(char, p - expires);
+            x = xmalloc(p - expires);
             memcpy(x, expires, p - expires - 1);
             x[p - expires - 1] = '\0';
 
@@ -1201,7 +1201,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
                 art->expires = 0;
             else
                 art->expires -= time(0);
-            DISPOSE(x);
+            free(x);
         }
 	/* for backwards compatibility; assumes no Xref unless crossposted
 	   for 1.4 and 1.5: just fall through */
@@ -1226,7 +1226,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	token = MakeToken(priv.ngtp->ngname, artnum, sub->class);
     }
     art->token = &token;
-    DISPOSE(path);
+    free(path);
     return art;
 }
 
@@ -1240,9 +1240,9 @@ FreeNGTree(void)
         ngtp = NGTable[i];
         for ( ; ngtp != NULL ; ngtp = nextngtp) {
 	    nextngtp = ngtp->next;
-	    DISPOSE(ngtp->ngname);
-	    DISPOSE(ngtp->node);
-	    DISPOSE(ngtp);
+	    free(ngtp->ngname);
+	    free(ngtp->node);
+	    free(ngtp);
 	}
 	NGTable[i] = NULL;
     }
@@ -1272,7 +1272,7 @@ bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
 	    if (ng == NULL)
 		return FALSE;
 	}
-	ann->groupname = COPY(ng);
+	ann->groupname = xstrdup(ng);
 	ann->artnum = (ARTNUM)artnum;
 	return TRUE;
     default:

@@ -24,8 +24,7 @@ extern int nnrpd_starttls_done;
 
 /*
 **  Parse a string into a NULL-terminated array of words; return number
-**  of words.  If argvp isn't NULL, it and what it points to will be
-**  DISPOSE'd.
+**  of words.  If argvp isn't NULL, it and what it points to will be freed.
 */
 int
 Argify(line, argvp)
@@ -37,19 +36,19 @@ Argify(line, argvp)
     int	i;
 
     if (*argvp != NULL) {
-	DISPOSE(*argvp[0]);
-	DISPOSE(*argvp);
+	free(*argvp[0]);
+	free(*argvp);
     }
 
     /*  Copy the line, which we will split up. */
     while (ISWHITE(*line))
 	line++;
     i = strlen(line);
-    p = NEW(char, i + 1);
+    p = xmalloc(i + 1);
     strcpy(p, line);
 
     /* Allocate worst-case amount of space. */
-    for (*argvp = argv = NEW(char*, i + 2); *p; ) {
+    for (*argvp = argv = xmalloc((i + 2) * sizeof(char *)); *p; ) {
 	/* Mark start of this word, find its end. */
 	for (*argv++ = p; *p && !ISWHITE(*p); )
 	    p++;
@@ -82,7 +81,7 @@ Glom(av)
     for (i = 0, v = av; *v; v++)
 	i += strlen(*v) + 1;
 
-    for (save = p = NEW(char, i + 1), v = av; *v; v++) {
+    for (save = p = xmalloc(i + 1), v = av; *v; v++) {
 	if (p > save)
 	    *p++ = ' ';
 	p += strlen(strcpy(p, *v));

@@ -273,7 +273,7 @@ int main(int ac, char *av[])
 	/* Glue any extra words together. */
 	for (length = 0, i = cp->argc - 1; (p = av[i++]) != NULL; )
 	    length += strlen(p) + 1;
-	for (new = p = NEW(char, length), i = cp->argc - 1; av[i]; i++) {
+	for (new = p = xmalloc(length), i = cp->argc - 1; av[i]; i++) {
 	    if (i >= cp->argc)
 		*p++ = ' ';
 	    p += strlen(strcpy(p, av[i]));

@@ -250,12 +250,12 @@ static void GrowArray(void ***array, void *el)
     int i;
 
     if (!*array) {
-	*array = NEW(void*, 2);
+	*array = xmalloc(2 * sizeof(void *));
 	i = 0;
     } else {
 	for (i = 0; (*array)[i]; i++)
 	    ;
-	*array = RENEW(*array, void*, i+2);
+	*array = xrealloc(*array, (i + 2) * sizeof(void *));
     }
     (*array)[i++] = el;
     (*array)[i] = 0;
@@ -266,13 +266,13 @@ static METHOD *copy_method(METHOD *orig)
     METHOD *ret;
     int i;
 
-    ret = NEW(METHOD, 1);
+    ret = xmalloc(sizeof(METHOD));
     memset(ConfigBit, '\0', ConfigBitsize);
 
-    ret->name = COPY(orig->name);
-    ret->program = COPY(orig->program);
+    ret->name = xstrdup(orig->name);
+    ret->program = xstrdup(orig->program);
     if (orig->users)
-	ret->users = COPY(orig->users);
+	ret->users = xstrdup(orig->users);
     else
 	ret->users = 0;
 
@@ -280,14 +280,14 @@ static METHOD *copy_method(METHOD *orig)
     if (orig->extra_headers) {
 	for (i = 0; orig->extra_headers[i]; i++)
 	    GrowArray((void***) &ret->extra_headers,
-	      (void*) COPY(orig->extra_headers[i]));
+	      (void*) xstrdup(orig->extra_headers[i]));
     }
 
     ret->extra_logs = 0;
     if (orig->extra_logs) {
 	for (i = 0; orig->extra_logs[i]; i++)
 	    GrowArray((void***) &ret->extra_logs,
-	      (void*) COPY(orig->extra_logs[i]));
+	      (void*) xstrdup(orig->extra_logs[i]));
     }
 
     ret->type = orig->type;
@@ -301,20 +301,20 @@ static void free_method(METHOD *del)
 
     if (del->extra_headers) {
 	for (j = 0; del->extra_headers[j]; j++)
-	    DISPOSE(del->extra_headers[j]);
-	DISPOSE(del->extra_headers);
+	    free(del->extra_headers[j]);
+	free(del->extra_headers);
     }
     if (del->extra_logs) {
 	for (j = 0; del->extra_logs[j]; j++)
-	    DISPOSE(del->extra_logs[j]);
-	DISPOSE(del->extra_logs);
+	    free(del->extra_logs[j]);
+	free(del->extra_logs);
     }
     if (del->program)
-	DISPOSE(del->program);
+	free(del->program);
     if (del->users)
-	DISPOSE(del->users);
-    DISPOSE(del->name);
-    DISPOSE(del);
+	free(del->users);
+    free(del->name);
+    free(del);
 }
 
 static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
@@ -324,21 +324,21 @@ static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
 
     if (!orig)
 	return(0);
-    ret = NEW(AUTHGROUP, 1);
+    ret = xmalloc(sizeof(AUTHGROUP));
     memset(ConfigBit, '\0', ConfigBitsize);
 
     if (orig->name)
-	ret->name = COPY(orig->name);
+	ret->name = xstrdup(orig->name);
     else
 	ret->name = 0;
 
     if (orig->key)
-	ret->key = COPY(orig->key);
+	ret->key = xstrdup(orig->key);
     else
 	ret->key = 0;
 
     if (orig->hosts)
-	ret->hosts = COPY(orig->hosts);
+	ret->hosts = xstrdup(orig->hosts);
     else
 	ret->hosts = 0;
 
@@ -361,22 +361,22 @@ static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
     }
 
     if (orig->default_user)
-	ret->default_user = COPY(orig->default_user);
+	ret->default_user = xstrdup(orig->default_user);
     else
 	ret->default_user = 0;
 
     if (orig->default_domain)
-	ret->default_domain = COPY(orig->default_domain);
+	ret->default_domain = xstrdup(orig->default_domain);
     else
 	ret->default_domain = 0;
 
     if (orig->localaddress)
-	ret->localaddress = COPY(orig->localaddress);
+	ret->localaddress = xstrdup(orig->localaddress);
     else
 	ret->localaddress = 0;
 
     if (orig->perl_access)
-        ret->perl_access = COPY(orig->perl_access);
+        ret->perl_access = xstrdup(orig->perl_access);
     else
         ret->perl_access = 0;
 
@@ -389,41 +389,41 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
 
     if (!orig)
 	return(0);
-    ret = NEW(ACCESSGROUP, 1);
+    ret = xmalloc(sizeof(ACCESSGROUP));
     memset(ConfigBit, '\0', ConfigBitsize);
     /* copy all anyway, and update for local strings */
     *ret = *orig;
 
     if (orig->name)
-	ret->name = COPY(orig->name);
+	ret->name = xstrdup(orig->name);
     if (orig->key)
-	ret->key = COPY(orig->key);
+	ret->key = xstrdup(orig->key);
     if (orig->read)
-	ret->read = COPY(orig->read);
+	ret->read = xstrdup(orig->read);
     if (orig->post)
-	ret->post = COPY(orig->post);
+	ret->post = xstrdup(orig->post);
     if (orig->users)
-	ret->users = COPY(orig->users);
+	ret->users = xstrdup(orig->users);
     if (orig->rejectwith)
-	ret->rejectwith = COPY(orig->rejectwith);
+	ret->rejectwith = xstrdup(orig->rejectwith);
     if (orig->fromhost)
-	ret->fromhost = COPY(orig->fromhost);
+	ret->fromhost = xstrdup(orig->fromhost);
     if (orig->pathhost)
-	ret->pathhost = COPY(orig->pathhost);
+	ret->pathhost = xstrdup(orig->pathhost);
     if (orig->organization)
-	ret->organization = COPY(orig->organization);
+	ret->organization = xstrdup(orig->organization);
     if (orig->moderatormailer)
-	ret->moderatormailer = COPY(orig->moderatormailer);
+	ret->moderatormailer = xstrdup(orig->moderatormailer);
     if (orig->domain)
-	ret->domain = COPY(orig->domain);
+	ret->domain = xstrdup(orig->domain);
     if (orig->complaints)
-	ret->complaints = COPY(orig->complaints);
+	ret->complaints = xstrdup(orig->complaints);
     if (orig->nnrpdposthost)
-	ret->nnrpdposthost = COPY(orig->nnrpdposthost);
+	ret->nnrpdposthost = xstrdup(orig->nnrpdposthost);
     if (orig->backoff_db)
-	ret->backoff_db = COPY(orig->backoff_db);
+	ret->backoff_db = xstrdup(orig->backoff_db);
     if (orig->newsmaster)
-	ret->newsmaster = COPY(orig->newsmaster);
+	ret->newsmaster = xstrdup(orig->newsmaster);
     return(ret);
 }
 
@@ -446,22 +446,22 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->nnrpdpythonfilter = TRUE;
     curaccess->fromhost = NULL;
     if (innconf->fromhost)
-	curaccess->fromhost = COPY(innconf->fromhost);
+	curaccess->fromhost = xstrdup(innconf->fromhost);
     curaccess->pathhost = NULL;
     if (innconf->pathhost)
-	curaccess->pathhost = COPY(innconf->pathhost);
+	curaccess->pathhost = xstrdup(innconf->pathhost);
     curaccess->organization = NULL;
     if (innconf->organization)
-	curaccess->organization = COPY(innconf->organization);
+	curaccess->organization = xstrdup(innconf->organization);
     curaccess->moderatormailer = NULL;
     if (innconf->moderatormailer)
-	curaccess->moderatormailer = COPY(innconf->moderatormailer);
+	curaccess->moderatormailer = xstrdup(innconf->moderatormailer);
     curaccess->domain = NULL;
     if (innconf->domain)
-	curaccess->domain = COPY(innconf->domain);
+	curaccess->domain = xstrdup(innconf->domain);
     curaccess->complaints = NULL;
     if (innconf->complaints)
-	curaccess->complaints = COPY(innconf->complaints);
+	curaccess->complaints = xstrdup(innconf->complaints);
     curaccess->spoolfirst = innconf->spoolfirst;
     curaccess->checkincludedtext = innconf->checkincludedtext;
     curaccess->clienttimeout = innconf->clienttimeout;
@@ -476,7 +476,7 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->backoff_auth = innconf->backoffauth;
     curaccess->backoff_db = NULL;
     if (innconf->backoffdb && *innconf->backoffdb != '\0')
-	curaccess->backoff_db = COPY(innconf->backoffdb);
+	curaccess->backoff_db = xstrdup(innconf->backoffdb);
     curaccess->backoff_k = innconf->backoffk;
     curaccess->backoff_postfast = innconf->backoffpostfast;
     curaccess->backoff_postslow = innconf->backoffpostslow;
@@ -493,65 +493,65 @@ static void free_authgroup(AUTHGROUP *del)
     int i;
 
     if (del->name)
-	DISPOSE(del->name);
+	free(del->name);
     if (del->key)
-	DISPOSE(del->key);
+	free(del->key);
     if (del->hosts)
-	DISPOSE(del->hosts);
+	free(del->hosts);
     if (del->res_methods) {
 	for (i = 0; del->res_methods[i]; i++)
 	    free_method(del->res_methods[i]);
-	DISPOSE(del->res_methods);
+	free(del->res_methods);
     }
     if (del->auth_methods) {
 	for (i = 0; del->auth_methods[i]; i++)
 	    free_method(del->auth_methods[i]);
-	DISPOSE(del->auth_methods);
+	free(del->auth_methods);
     }
     if (del->default_user)
-	DISPOSE(del->default_user);
+	free(del->default_user);
     if (del->default_domain)
-	DISPOSE(del->default_domain);
+	free(del->default_domain);
     if (del->localaddress)
-	DISPOSE(del->localaddress);
+	free(del->localaddress);
     if (del->perl_access)
-        DISPOSE(del->perl_access);
-    DISPOSE(del);
+        free(del->perl_access);
+    free(del);
 }
 
 static void free_accessgroup(ACCESSGROUP *del)
 {
     if (del->name)
-	DISPOSE(del->name);
+	free(del->name);
     if (del->key)
-	DISPOSE(del->key);
+	free(del->key);
     if (del->read)
-	DISPOSE(del->read);
+	free(del->read);
     if (del->post)
-	DISPOSE(del->post);
+	free(del->post);
     if (del->users)
-	DISPOSE(del->users);
+	free(del->users);
     if (del->rejectwith)
-	DISPOSE(del->rejectwith);
+	free(del->rejectwith);
     if (del->fromhost)
-	DISPOSE(del->fromhost);
+	free(del->fromhost);
     if (del->pathhost)
-	DISPOSE(del->pathhost);
+	free(del->pathhost);
     if (del->organization)
-	DISPOSE(del->organization);
+	free(del->organization);
     if (del->moderatormailer)
-	DISPOSE(del->moderatormailer);
+	free(del->moderatormailer);
     if (del->domain)
-	DISPOSE(del->domain);
+	free(del->domain);
     if (del->complaints)
-	DISPOSE(del->complaints);
+	free(del->complaints);
     if (del->nnrpdposthost)
-	DISPOSE(del->nnrpdposthost);
+	free(del->nnrpdposthost);
     if (del->backoff_db)
-	DISPOSE(del->backoff_db);
+	free(del->backoff_db);
     if (del->newsmaster)
-	DISPOSE(del->newsmaster);
-    DISPOSE(del);
+	free(del->newsmaster);
+    free(del);
 }
 
 static void ReportError(CONFFILE *f, const char *err)
@@ -575,10 +575,10 @@ static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 
     switch (oldtype) {
       case PERMheader:
-	GrowArray((void***) &method->extra_headers, (void*) COPY(tok->name));
+	GrowArray((void***) &method->extra_headers, (void*) xstrdup(tok->name));
 	break;
       case PERMalsolog:
-	GrowArray((void***) &method->extra_logs, (void*) COPY(tok->name));
+	GrowArray((void***) &method->extra_logs, (void*) xstrdup(tok->name));
 	break;
       case PERMusers:
 
@@ -588,14 +588,14 @@ static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 	    ReportError(f, "Multiple users: directive in file.");
 	}
 
-	method->users = COPY(tok->name);
+	method->users = xstrdup(tok->name);
 	break;
       case PERMprogram:
 	if (method->program) {
 	    ReportError(f, "Multiple program: directives in auth/res decl."); 
 	}
 
-	method->program = COPY(tok->name);
+	method->program = xstrdup(tok->name);
 	break;
     }
 }
@@ -631,7 +631,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 
     switch (oldtype) {
       case PERMkey:
-	curauth->key = COPY(tok->name);
+	curauth->key = xstrdup(tok->name);
 	SET_CONFIG(PERMkey);
 	break;
 #ifdef HAVE_SSL
@@ -641,7 +641,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
         break;
 #endif
       case PERMhost:
-	curauth->hosts = COPY(tok->name);
+	curauth->hosts = xstrdup(tok->name);
 	CompressList(curauth->hosts);
 	SET_CONFIG(PERMhost);
 
@@ -654,24 +654,24 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 
 	break;
       case PERMdefdomain:
-	curauth->default_domain = COPY(tok->name);
+	curauth->default_domain = xstrdup(tok->name);
 	SET_CONFIG(PERMdefdomain);
 	break;
       case PERMdefuser:
-	curauth->default_user = COPY(tok->name);
+	curauth->default_user = xstrdup(tok->name);
 	SET_CONFIG(PERMdefuser);
 	break;
       case PERMresolv:
       case PERMresprog:
-	m = NEW(METHOD, 1);
+        m = xmalloc(sizeof(METHOD));
 	memset(m, 0, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
 	GrowArray((void***) &curauth->res_methods, (void*) m);
 
 	if (oldtype == PERMresprog)
-	    m->program = COPY(tok->name);
+	    m->program = xstrdup(tok->name);
 	else {
-	    m->name = COPY(tok->name);
+	    m->name = xstrdup(tok->name);
 	    tok = CONFgettoken(PERMtoks, f);
 	    if (tok == NULL || tok->type != PERMlbrace) {
 		ReportError(f, "Expected '{' after 'res'");
@@ -692,22 +692,22 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
       case PERMauth:
       case PERMperl_auth:
       case PERMauthprog:
-	m = NEW(METHOD, 1);
+        m = xmalloc(sizeof(METHOD));
 	memset(m, 0, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
 	GrowArray((void***) &curauth->auth_methods, (void*) m);
 	if (oldtype == PERMauthprog) {
             m->type = PERMauthprog;
-	    m->program = COPY(tok->name);
+	    m->program = xstrdup(tok->name);
 	} else if (oldtype == PERMperl_auth) {
 #ifdef DO_PERL
             m->type = PERMperl_auth;
-	    m->program = COPY(tok->name);
+	    m->program = xstrdup(tok->name);
 #else
             ReportError(f, "perl_auth can not be used in readers.conf: inn not compiled with perl support enabled.");
 #endif
         } else {
-	    m->name = COPY(tok->name);
+	    m->name = xstrdup(tok->name);
 	    tok = CONFgettoken(PERMtoks, f);
 
 	    if (tok == NULL || tok->type != PERMlbrace) {
@@ -728,13 +728,13 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	break;
       case PERMperl_access:
 #ifdef DO_PERL
-        curauth->perl_access = COPY(tok->name);
+        curauth->perl_access = xstrdup(tok->name);
 #else
         ReportError(f, "perl_access can not be used in readers.conf: inn not compiled with perl support enabled.");
 #endif
         break;
       case PERMlocaladdress:
-	curauth->localaddress = COPY(tok->name);
+	curauth->localaddress = xstrdup(tok->name);
 	CompressList(curauth->localaddress);
 	SET_CONFIG(PERMlocaladdress);
 	break;
@@ -774,16 +774,16 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 
     switch (oldtype) {
       case PERMkey:
-	curaccess->key = COPY(tok->name);
+	curaccess->key = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMusers:
-	curaccess->users = COPY(tok->name);
+	curaccess->users = xstrdup(tok->name);
 	CompressList(curaccess->users);
 	SET_CONFIG(oldtype);
 	break;
       case PERMrejectwith:
-	curaccess->rejectwith = COPY(tok->name);
+	curaccess->rejectwith = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMnewsgroups:
@@ -800,34 +800,34 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	    ReportError(f, "post: newsgroups already set.");
 	}
 
-	curaccess->read = COPY(tok->name);
+	curaccess->read = xstrdup(tok->name);
 	CompressList(curaccess->read);
-	curaccess->post = COPY(tok->name);
+	curaccess->post = xstrdup(tok->name);
 	CompressList(curaccess->post);
 	SET_CONFIG(oldtype);
 	SET_CONFIG(PERMread);
 	SET_CONFIG(PERMpost);
 	break;
       case PERMread:
-	curaccess->read = COPY(tok->name);
+	curaccess->read = xstrdup(tok->name);
 	CompressList(curaccess->read);
 	SET_CONFIG(oldtype);
 	break;
       case PERMpost:
-	curaccess->post = COPY(tok->name);
+	curaccess->post = xstrdup(tok->name);
 	CompressList(curaccess->post);
 	SET_CONFIG(oldtype);
 	break;
       case PERMaccessrp:
 	TEST_CONFIG(PERMread, bit);
 	if (bit && strchr(tok->name, 'R') == NULL) {
-	    DISPOSE(curaccess->read);
+	    free(curaccess->read);
 	    curaccess->read = 0;
 	    CLEAR_CONFIG(PERMread);
 	}
 	TEST_CONFIG(PERMpost, bit);
 	if (bit && strchr(tok->name, 'P') == NULL) {
-	    DISPOSE(curaccess->post);
+	    free(curaccess->post);
 	    curaccess->post = 0;
 	    CLEAR_CONFIG(PERMpost);
 	}
@@ -855,38 +855,38 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	break;
       case PERMfromhost:
 	if (curaccess->fromhost)
-	    DISPOSE(curaccess->fromhost);
-	curaccess->fromhost = COPY(tok->name);
+	    free(curaccess->fromhost);
+	curaccess->fromhost = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMpathhost:
 	if (curaccess->pathhost)
-	    DISPOSE(curaccess->pathhost);
-	curaccess->pathhost = COPY(tok->name);
+	    free(curaccess->pathhost);
+	curaccess->pathhost = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMorganization:
 	if (curaccess->organization)
-	    DISPOSE(curaccess->organization);
-	curaccess->organization = COPY(tok->name);
+	    free(curaccess->organization);
+	curaccess->organization = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMmoderatormailer:
 	if (curaccess->moderatormailer)
-	    DISPOSE(curaccess->moderatormailer);
-	curaccess->moderatormailer = COPY(tok->name);
+	    free(curaccess->moderatormailer);
+	curaccess->moderatormailer = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMdomain:
 	if (curaccess->domain)
-	    DISPOSE(curaccess->domain);
-	curaccess->domain = COPY(tok->name);
+	    free(curaccess->domain);
+	curaccess->domain = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMcomplaints:
 	if (curaccess->complaints)
-	    DISPOSE(curaccess->complaints);
-	curaccess->complaints = COPY(tok->name);
+	    free(curaccess->complaints);
+	curaccess->complaints = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMspoolfirst:
@@ -923,8 +923,8 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	break;
       case PERMnnrpdposthost:
 	if (curaccess->nnrpdposthost)
-	    DISPOSE(curaccess->nnrpdposthost);
-	curaccess->nnrpdposthost = COPY(tok->name);
+	    free(curaccess->nnrpdposthost);
+	curaccess->nnrpdposthost = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMnnrpdpostport:
@@ -941,8 +941,8 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	break;
       case PERMbackoff_db:
 	if (curaccess->backoff_db)
-	    DISPOSE(curaccess->backoff_db);
-	curaccess->backoff_db = COPY(tok->name);
+	    free(curaccess->backoff_db);
+	curaccess->backoff_db = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMbackoff_k:
@@ -975,8 +975,8 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	break;
       case PERMnewsmaster:
 	if (curaccess->newsmaster)
-	    DISPOSE(curaccess->newsmaster);
-	curaccess->newsmaster = COPY(tok->name);
+	    free(curaccess->newsmaster);
+	curaccess->newsmaster = xstrdup(tok->name);
 	SET_CONFIG(oldtype);
 	break;
       case PERMmaxbytespersecond:
@@ -996,7 +996,7 @@ static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector
     char        *str;
     unsigned int i;
 
-    file	= NEW(CONFFILE, 1);
+    file	= xmalloc(sizeof(CONFFILE));
     memset(file, 0, sizeof(CONFFILE));
     file->array = access_vec->strings;
     file->array_len = access_vec->count;
@@ -1004,7 +1004,7 @@ static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector
     memset(ConfigBit, '\0', ConfigBitsize);
 
     SetDefaultAccess(acc);
-    str = COPY(name);
+    str = xstrdup(name);
     acc->name = str;
 
     for (i = 0; i <= access_vec->count; i++) {
@@ -1014,7 +1014,7 @@ static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector
         accessdecl_parse(acc, file, tok);
       }
     }
-    DISPOSE(file);
+    free(file);
     return;       
 }
 
@@ -1038,7 +1038,7 @@ static void PERMreadfile(char *filename)
 	       filename == NULL ? "(NULL)" : filename);
     }
 
-    cf		= NEW(CONFCHAIN, 1);
+    cf		= xmalloc(sizeof(CONFCHAIN));
     if ((cf->f = CONFfopen(filename)) == NULL) {
 	syslog(L_ERROR, "%s cannot open %s: %m", ClientHost, filename);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
@@ -1067,7 +1067,7 @@ static void PERMreadfile(char *filename)
 		    ReportError(cf->f, "Expected filename after 'include'.");
 		}
 
-		hold		= NEW(CONFCHAIN, 1);
+		hold		= xmalloc(sizeof(CONFCHAIN));
 		hold->parent	= cf;
 
 		/* unless the filename's path is fully qualified, open it
@@ -1093,9 +1093,9 @@ static void PERMreadfile(char *filename)
 		    ReportError(cf->f, "Unexpected EOF at group name");
 		}
 
-		newgroup	= NEW(GROUP, 1);
+		newgroup	= xmalloc(sizeof(GROUP));
 		newgroup->above = curgroup;
-		newgroup->name	= COPY(tok->name);
+		newgroup->name	= xstrdup(tok->name);
 		memset(ConfigBit, '\0', ConfigBitsize);
 
 		tok = CONFgettoken(PERMtoks, cf->f);
@@ -1125,7 +1125,7 @@ static void PERMreadfile(char *filename)
 		    ReportError(cf->f, "Expected identifier.");
 		}
 
-		str = COPY(tok->name);
+		str = xstrdup(tok->name);
 
 		tok = CONFgettoken(PERMtoks, cf->f);
 
@@ -1138,7 +1138,7 @@ static void PERMreadfile(char *filename)
 		    if (curgroup && curgroup->auth)
 			curauth = copy_authgroup(curgroup->auth);
 		    else {
-			curauth = NEW(AUTHGROUP, 1);
+			curauth = xmalloc(sizeof(AUTHGROUP));
 			memset(curauth, 0, sizeof(AUTHGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
                         SetDefaultAuth(curauth);
@@ -1152,7 +1152,7 @@ static void PERMreadfile(char *filename)
 		    if (curgroup && curgroup->access)
 			curaccess = copy_accessgroup(curgroup->access);
 		    else {
-			curaccess = NEW(ACCESSGROUP, 1);
+			curaccess = xmalloc(sizeof(ACCESSGROUP));
 			memset(curaccess, 0, sizeof(ACCESSGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
 			SetDefaultAccess(curaccess);
@@ -1177,8 +1177,8 @@ static void PERMreadfile(char *filename)
 		    free_authgroup(newgroup->auth);
 		if (newgroup->access)
 		    free_accessgroup(newgroup->access);
-		DISPOSE(newgroup->name);
-		DISPOSE(newgroup);
+		free(newgroup->name);
+		free(newgroup);
 		break;
 
 		/* stuff that belongs in an authgroup */
@@ -1191,12 +1191,12 @@ static void PERMreadfile(char *filename)
 	      case PERMdefuser:
 	      case PERMdefdomain:
 		if (curgroup == NULL) {
-		    curgroup = NEW(GROUP, 1);
+		    curgroup = xmalloc(sizeof(GROUP));
 		    memset(curgroup, 0, sizeof(GROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		}
 		if (curgroup->auth == NULL) {
-		    curgroup->auth = NEW(AUTHGROUP, 1);
+		    curgroup->auth = xmalloc(sizeof(AUTHGROUP));
 		    memset(curgroup->auth, 0, sizeof(AUTHGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
                     SetDefaultAuth(curgroup->auth);
@@ -1244,12 +1244,12 @@ static void PERMreadfile(char *filename)
 	      case PERMvirtualhost:
 	      case PERMnewsmaster:
 		if (!curgroup) {
-		    curgroup = NEW(GROUP, 1);
+		    curgroup = xmalloc(sizeof(GROUP));
 		    memset(curgroup, 0, sizeof(GROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		}
 		if (!curgroup->access) {
-		    curgroup->access = NEW(ACCESSGROUP, 1);
+		    curgroup->access = xmalloc(sizeof(ACCESSGROUP));
 		    memset(curgroup->access, 0, sizeof(ACCESSGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		    SetDefaultAccess(curgroup->access);
@@ -1313,7 +1313,7 @@ again:
 	    hold = cf;
 	    cf = hold->parent;
 	    CONFfclose(hold->f);
-	    DISPOSE(hold);
+	    free(hold);
 	    if (cf) {
 		tok = CONFgettoken(PERMtoks, cf->f);
 	    }
@@ -1342,7 +1342,7 @@ void PERMgetaccess(char *nnrpaccess)
 	    ConfigBitsize = PERMMAX/8;
 	else
 	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = NEW(char, ConfigBitsize);
+	ConfigBit = xmalloc(ConfigBitsize);
 	memset(ConfigBit, '\0', ConfigBitsize);
     }
     PERMreadfile(nnrpaccess);
@@ -1415,7 +1415,7 @@ void PERMlogin(char *uname, char *pass, char *errorstr)
 	    ConfigBitsize = PERMMAX/8;
 	else
 	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = NEW(char, ConfigBitsize);
+	ConfigBit = xmalloc(ConfigBitsize);
 	memset(ConfigBit, '\0', ConfigBitsize);
     }
     /* The check in CMDauthinfo uses the value of PERMneedauth to know if
@@ -1458,15 +1458,15 @@ static int MatchUser(char *pat, char *user)
 	return(1);
     if (!user || !*user)
 	return(0);
-    cp = COPY(pat);
+    cp = xstrdup(pat);
     list = 0;
     NGgetlist(&list, cp);
     userlist[0] = user;
     userlist[1] = 0;
     ret = PERMmatch(list, userlist);
-    DISPOSE(cp);
-    DISPOSE(list[0]);
-    DISPOSE(list);
+    free(cp);
+    free(list[0]);
+    free(list);
     return(ret);
 }
 
@@ -1486,21 +1486,21 @@ void PERMgetpermissions()
 	    ConfigBitsize = PERMMAX/8;
 	else
 	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = NEW(char, ConfigBitsize);
+	ConfigBit = xmalloc(ConfigBitsize);
 	memset(ConfigBit, '\0', ConfigBitsize);
     }
     if (!success_auth) {
 	/* if we haven't successfully authenticated, we can't do anything. */
 	syslog(L_TRACE, "%s no_success_auth", ClientHost);
 	if (!noaccessconf)
-	    noaccessconf = NEW(ACCESSGROUP, 1);
+	    noaccessconf = xmalloc(sizeof(ACCESSGROUP));
 	PERMaccessconf = noaccessconf;
 	SetDefaultAccess(PERMaccessconf);
 	return;
 #ifdef DO_PERL
     } else if (success_auth->perl_access != NULL) {
       i = 0;
-      cpp = COPY(success_auth->perl_access);
+      cpp = xstrdup(success_auth->perl_access);
       args = 0;
       Argify(cpp, &args);
       perl_path = concat(args[0], (char *) 0);
@@ -1511,14 +1511,14 @@ void PERMgetpermissions()
         PERLsetup(NULL, perl_path, "access");
         free(perl_path);
 
-        uname = COPY(PERMuser);
+        uname = xstrdup(PERMuser);
         
         access_vec = vector_new();
 
         perlAccess(ClientHost, ClientIpString, ServerHost, uname, access_vec);
-        DISPOSE(uname);
+        free(uname);
 
-        access_realms[0] = NEW(ACCESSGROUP, 1);
+        access_realms[0] = xmalloc(sizeof(ACCESSGROUP));
         memset(access_realms[0], 0, sizeof(ACCESSGROUP));
 
         PERMvectortoaccess(access_realms[0], "perl-dyanmic", access_vec);
@@ -1529,8 +1529,8 @@ void PERMgetpermissions()
         Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
         ExitWithStats(1, TRUE);
       }
-      DISPOSE(cpp);
-      DISPOSE(args);
+      free(cpp);
+      free(args);
 #endif /* DO_PERL */
     } else {
       for (i = 0; access_realms[i]; i++)
@@ -1545,22 +1545,22 @@ void PERMgetpermissions()
             break;
           else if (!*PERMuser)
             continue;
-          cp = COPY(access_realms[i]->users);
+          cp = xstrdup(access_realms[i]->users);
           list = 0;
           NGgetlist(&list, cp);
           if (PERMmatch(list, user)) {
             syslog(L_TRACE, "%s match_user %s %s", ClientHost,
                    PERMuser, access_realms[i]->users);
-            DISPOSE(cp);
-            DISPOSE(list[0]);
-            DISPOSE(list);
+            free(cp);
+            free(list[0]);
+            free(list);
             break;
           } else
             syslog(L_TRACE, "%s no_match_user %s %s", ClientHost,
                    PERMuser, access_realms[i]->users);
-          DISPOSE(cp);
-	  DISPOSE(list[0]);
-          DISPOSE(list);
+          free(cp);
+	  free(list[0]);
+          free(list);
 	}
       }
     }
@@ -1574,18 +1574,18 @@ void PERMgetpermissions()
 	    ExitWithStats(1, TRUE);
 	}
 	if (access_realms[i]->read) {
-	    cp = COPY(access_realms[i]->read);
+	    cp = xstrdup(access_realms[i]->read);
 	    PERMspecified = NGgetlist(&PERMreadlist, cp);
-	    DISPOSE(cp);
+	    free(cp);
 	    PERMcanread = TRUE;
 	} else {
 	    syslog(L_TRACE, "%s no_read %s", ClientHost, access_realms[i]->name);
 	    PERMcanread = FALSE;
 	}
 	if (access_realms[i]->post) {
-	    cp = COPY(access_realms[i]->post);
+	    cp = xstrdup(access_realms[i]->post);
 	    NGgetlist(&PERMpostlist, cp);
-	    DISPOSE(cp);
+	    free(cp);
 	    PERMcanpost = TRUE;
 	} else {
 	    syslog(L_TRACE, "%s no_post %s", ClientHost, access_realms[i]->name);
@@ -1601,7 +1601,7 @@ void PERMgetpermissions()
 		ExitWithStats(1, TRUE);
 	    }
 	    if (VirtualPath)
-		DISPOSE(VirtualPath);
+		free(VirtualPath);
 	    if (EQ(innconf->pathhost, PERMaccessconf->pathhost)) {
 		/* use domain, if pathhost in access relm matches one in
 		   inn.conf to differentiate virtual host */
@@ -1621,7 +1621,7 @@ void PERMgetpermissions()
 	    VirtualPathlen = 0;
     } else {
 	if (!noaccessconf)
-	    noaccessconf = NEW(ACCESSGROUP, 1);
+	    noaccessconf = xmalloc(sizeof(ACCESSGROUP));
 	PERMaccessconf = noaccessconf;
 	SetDefaultAccess(PERMaccessconf);
 	syslog(L_TRACE, "%s no_access_realm", ClientHost);
@@ -1665,7 +1665,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
     }
 
     list    = 0;
-    cp	    = COPY(hostlist);
+    cp	    = xstrdup(hostlist);
 
     NGgetlist(&list, cp);
 
@@ -1739,9 +1739,9 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
     }
     if (ret && list[iter][0] == '!')
 	ret = FALSE;
-    DISPOSE(list[0]);
-    DISPOSE(list);
-    DISPOSE(cp);
+    free(list[0]);
+    free(list);
+    free(cp);
     return(ret);
 }
 
@@ -1751,11 +1751,11 @@ static void add_authgroup(AUTHGROUP *group)
 
     if (auth_realms == NULL) {
 	i = 0;
-	auth_realms = NEW(AUTHGROUP*, 2);
+	auth_realms = xmalloc(2 * sizeof(AUTHGROUP *));
     } else {
 	for (i = 0; auth_realms[i]; i++)
 	    ;
-	RENEW(auth_realms, AUTHGROUP*, i+2);
+        auth_realms = xrealloc(auth_realms, (i + 2) * sizeof(AUTHGROUP *));
     }
     auth_realms[i] = group;
     auth_realms[i+1] = 0;
@@ -1767,11 +1767,11 @@ static void add_accessgroup(ACCESSGROUP *group)
 
     if (access_realms == NULL) {
 	i = 0;
-	access_realms = NEW(ACCESSGROUP*, 2);
+	access_realms = xmalloc(2 * sizeof(ACCESSGROUP *));
     } else {
 	for (i = 0; access_realms[i]; i++)
 	    ;
-	RENEW(access_realms, ACCESSGROUP*, i+2);
+        access_realms = xrealloc(access_realms, (i + 2) * sizeof(ACCESSGROUP *));
     }
     access_realms[i] = group;
     access_realms[i+1] = 0;
@@ -1898,7 +1898,7 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
     close(rdfd[1]);
     close(errfd[1]);
     close(wrfd[0]);
-    ret = NEW(EXECSTUFF, 1);
+    ret = xmalloc(sizeof(EXECSTUFF));
     ret->pid = pid;
     ret->rdfd = rdfd[0];
     ret->errfd = errfd[0];
@@ -2098,7 +2098,7 @@ static char *ResolveUser(AUTHGROUP *auth)
 		syslog(L_NOTICE, "%s res also-log: %s", ClientHost,
 		  auth->res_methods[i]->extra_logs[j]);
 	}
-	cp = COPY(auth->res_methods[i]->program);
+	cp = xstrdup(auth->res_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
 	arg0 = args[0];
@@ -2118,20 +2118,20 @@ static char *ResolveUser(AUTHGROUP *auth)
 		syslog(L_TRACE, "%s res resolver successful, user %s", ClientHost, ubuf);
 	    else
 		syslog(L_TRACE, "%s res resolver failed", ClientHost);
-	    DISPOSE(foo);
+	    free(foo);
 	} else
 	    syslog(L_ERROR, "%s res couldnt start resolver: %m", ClientHost);
 	/* clean up */
 	if (args[0][0] != '/') {
-	    DISPOSE(arg0);
+	    free(arg0);
 	}
-	DISPOSE(args);
-	DISPOSE(cp);
+	free(args);
+	free(cp);
 	if (done)
 	    /* this resolver succeeded */
 	    break;
     }
-    DISPOSE(resdir);
+    free(resdir);
     if (ubuf[0])
 	return(ubuf);
     return(0);
@@ -2165,7 +2165,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
     for (i = 0; auth->auth_methods[i]; i++) {
 #ifdef DO_PERL
       if (auth->auth_methods[i]->type == PERMperl_auth) {
-            cp = COPY(auth->auth_methods[i]->program);
+            cp = xstrdup(auth->auth_methods[i]->program);
             args = 0;
             Argify(cp, &args);
             perl_path = concat(args[0], (char *) 0);
@@ -2211,7 +2211,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
 		syslog(L_NOTICE, "%s auth also-log: %s", ClientHost,
 		  auth->auth_methods[i]->extra_logs[j]);
 	}
-	cp = COPY(auth->auth_methods[i]->program);
+	cp = xstrdup(auth->auth_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
 	arg0 = args[0];
@@ -2235,15 +2235,15 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
 		syslog(L_TRACE, "%s auth authenticator successful, user %s", ClientHost, ubuf);
 	    else
 		syslog(L_TRACE, "%s auth authenticator failed", ClientHost);
-	    DISPOSE(foo);
+	    free(foo);
 	} else
 	    syslog(L_ERROR, "%s auth couldnt start authenticator: %m", ClientHost);
 	/* clean up */
 	if (args[0][0] != '/') {
-	    DISPOSE(arg0);
+	    free(arg0);
 	}
-	DISPOSE(args);
-	DISPOSE(cp);
+	free(args);
+	free(cp);
 	if (done)
 	    /* this authenticator succeeded */
 	    break;
@@ -2251,7 +2251,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
       }
 #endif /* DO_PERL */
     }
-    DISPOSE(resdir);
+    free(resdir);
     if (ubuf[0])
 	return(ubuf);
     return(0);

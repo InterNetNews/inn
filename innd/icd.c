@@ -33,10 +33,10 @@ static void
 ICDiovset(struct iovec *iovp, char *base, int len)
 {
     iovp->iov_len = len; 
-    iovp->iov_base = NEW(char, iovp->iov_len); 
+    iovp->iov_base = xmalloc(iovp->iov_len); 
     memcpy(iovp->iov_base, base, iovp->iov_len);
 }
-#define ICDiovrelease(iovp)		DISPOSE((iovp)->iov_base)
+#define ICDiovrelease(iovp)		free((iovp)->iov_base)
 
 #else /* !HAVE_MMAP */
 
@@ -58,7 +58,7 @@ ICDcloseactive(void)
 	if (munmap(ICDactpointer, ICDactsize) < 0)
 	    syslog(L_ERROR, "%s cant munmap %s %m", LogName, ICDactpath);
 #else
-	DISPOSE(ICDactpointer);
+	free(ICDactpointer);
 #endif
 	ICDactpointer = NULL;
 	if (close(ICDactfd) < 0) {
@@ -203,10 +203,10 @@ ICDwritevactive(struct iovec *vp, int vpcount)
 	 newactsize += vp[i].iov_len;
     if (newactsize < ICDactsize) {
 	 padactsize = ICDactsize - newactsize;
-	 newvp = NEW(struct iovec, vpcount + 1);
+	 newvp = xmalloc((vpcount + 1) * sizeof(struct iovec));
 	 for (i = 0; i < vpcount; i++)
 	      newvp[i] = vp[i];
-	 filler = NEW(char, padactsize);
+	 filler = xmalloc(padactsize);
 	 memset(filler, '\0', padactsize);
 	 *filler = '.';
 	 filler[padactsize - 1] = '\n';
@@ -238,8 +238,8 @@ ICDwritevactive(struct iovec *vp, int vpcount)
 
 bailout:
     if (padactsize != 0) {
-	 DISPOSE(filler);
-	 DISPOSE(newvp);
+	 free(filler);
+	 free(newvp);
     }
     if (oerrno != 0)
 	 return FALSE;
@@ -309,7 +309,7 @@ ICDchangegroup(NEWSGROUP *ngp, char *Rest)
     /* Set up the scatter/gather vectors. */
     ICDiovset(&iov[0], ICDactpointer, ngp->Rest - ICDactpointer);
     ICDiovset(&iov[1], Rest, strlen(Rest));
-    Name = COPY(ngp->Name);
+    Name = xstrdup(ngp->Name);
     Last = ngp->Last;
     if (++ngp < &Groups[nGroups]) {
 	/* Not the last group, keep the \n from the next line. */
@@ -327,11 +327,11 @@ ICDchangegroup(NEWSGROUP *ngp, char *Rest)
 
     if (ret) {
 	if (innconf->enableoverview && !OVgroupadd(Name, 0, Last, Rest)) {
-	    DISPOSE(Name);
+	    free(Name);
 	    return FALSE;
 	}
     }
-    DISPOSE(Name);
+    free(Name);
     return ret;
 }
 
@@ -383,7 +383,7 @@ ICDrmgroup(NEWSGROUP *ngp)
     if (innconf->mergetogroups && EQ(ngp->Name, "to"))
         return FALSE;
 
-    Name = COPY(ngp->Name);
+    Name = xstrdup(ngp->Name);
     /* If this is the first group in the file, write everything after. */
     if (ngp == &Groups[0]) {
 	i = ngp[1].Start;
@@ -392,11 +392,11 @@ ICDrmgroup(NEWSGROUP *ngp)
 	ICDiovrelease(&iov[0]);
 	if (ret) {
 	    if (innconf->enableoverview && !OVgroupdel(Name)) {
-		DISPOSE(Name);
+		free(Name);
 		return FALSE;
 	    }
 	}
-	DISPOSE(Name);
+	free(Name);
 	return ret;
     }
 
@@ -409,11 +409,11 @@ ICDrmgroup(NEWSGROUP *ngp)
 	ICDiovrelease(&iov[0]);
 	if (ret) {
 	    if (innconf->enableoverview && !OVgroupdel(Name)) {
-		DISPOSE(Name);
+		free(Name);
 		return FALSE;
 	    }
 	}
-	DISPOSE(Name);
+	free(Name);
 	return ret;
     }
 
@@ -425,11 +425,11 @@ ICDrmgroup(NEWSGROUP *ngp)
     ICDiovrelease(&iov[1]);
     if (ret) {
 	if (innconf->enableoverview && !OVgroupdel(Name)) {
-	    DISPOSE(Name);
+	    free(Name);
 	    return FALSE;
 	}
     }
-    DISPOSE(Name);
+    free(Name);
     return ret;
 }
 

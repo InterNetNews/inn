@@ -171,7 +171,7 @@ FlushOverTmpFile(void)
 	if(pid > 0) {
 	    /* parent */
 	    first = 0;
-	    DISPOSE(OverTmpPath);
+	    free(OverTmpPath);
 	    OverTmpPath = NULL;
 	    return;
 	}
@@ -219,7 +219,7 @@ FlushOverTmpFile(void)
 
     /* don't need old path anymore. */
     unlink(OverTmpPath);
-    DISPOSE(OverTmpPath);
+    free(OverTmpPath);
     OverTmpPath = NULL;
 
     /* read sorted lines. */
@@ -287,7 +287,7 @@ FlushOverTmpFile(void)
     QIOclose(qp);
     /* unlink sorted tmp file */
     unlink(SortedTmpPath);
-    DISPOSE(SortedTmpPath);
+    free(SortedTmpPath);
     if(Fork) {
 	OVclose();
 	_exit(0);
@@ -400,7 +400,7 @@ ARTreadschema(bool Overview)
 	for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
 	    continue;
 	fseeko(F, 0, SEEK_SET);
-	ARTfields = NEW(ARTOVERFIELD, i + 1);
+	ARTfields = xmalloc((i + 1) * sizeof(ARTOVERFIELD));
 
 	/* Parse each field. */
 	for (fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
@@ -417,7 +417,7 @@ ARTreadschema(bool Overview)
 	    }
 	    else
 		fp->NeedHeadername = FALSE;
-	    fp->Headername = COPY(buff);
+	    fp->Headername = xstrdup(buff);
 	    fp->HeadernameLength = strlen(buff);
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = FALSE;
@@ -446,11 +446,11 @@ ARTreadschema(bool Overview)
     if (Overview && (Xrefp == (ARTOVERFIELD *)NULL || !foundxreffull))
         die("Xref:full must be included in %s", SchemaPath);
     if (Missfieldsize > 0) {
-	Missfields = NEW(ARTOVERFIELD, Missfieldsize);
+	Missfields = xmalloc(Missfieldsize * sizeof(ARTOVERFIELD));
         fp = Missfields;
 	if (Msgidp == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = FALSE;
-	    fp->Headername = COPY(MESSAGEID);
+	    fp->Headername = xstrdup(MESSAGEID);
 	    fp->HeadernameLength = strlen(MESSAGEID)-1;
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = FALSE;
@@ -459,7 +459,7 @@ ARTreadschema(bool Overview)
 	}
 	if (Datep == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = FALSE;
-	    fp->Headername = COPY(DATE);
+	    fp->Headername = xstrdup(DATE);
 	    fp->HeadernameLength = strlen(DATE)-1;
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = FALSE;
@@ -468,7 +468,7 @@ ARTreadschema(bool Overview)
 	}
 	if (Expp == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = FALSE;
-	    fp->Headername = COPY(EXPIRES);
+	    fp->Headername = xstrdup(EXPIRES);
 	    fp->HeadernameLength = strlen(EXPIRES)-1;
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = FALSE;
@@ -477,7 +477,7 @@ ARTreadschema(bool Overview)
 	}
         if (Overview && Xrefp == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = FALSE;
-	    fp->Headername = COPY(XREF);
+	    fp->Headername = xstrdup(XREF);
 	    fp->HeadernameLength = strlen(XREF)-1;
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = FALSE;
@@ -810,7 +810,7 @@ main(int argc, char **argv)
 	HistoryDir = innconf->pathdb;
     } else {
 	*p = '\0';
-	HistoryDir = COPY(HistoryPath);
+	HistoryDir = xstrdup(HistoryPath);
 	*p = '/';
     }
 
@@ -839,7 +839,7 @@ main(int argc, char **argv)
 		buff = concat(innconf->pathbin, "/", "overchan", NULL);
 		if ((Overchan = popen(buff, "w")) == NULL)
                     sysdie("cannot fork overchan process");
-		DISPOSE(buff);
+		free(buff);
 	    }
 	    OVclose();
 	}

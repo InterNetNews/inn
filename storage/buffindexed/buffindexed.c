@@ -286,12 +286,12 @@ static bool ovparse_part_line(char *l) {
     return FALSE;
   }
   *p = '\0';
-  ovbuff = NEW(OVBUFF, 1);
+  ovbuff = xmalloc(sizeof(OVBUFF));
   ovbuff->index = strtoul(l, NULL, 10);
   for (; tmp != (OVBUFF *)NULL; tmp = tmp->next) {
     if (tmp->index == ovbuff->index) {
       syslog(L_ERROR, "%s: dupulicate index in line '%s'", LocalLogName, l);
-      DISPOSE(ovbuff);
+      free(ovbuff);
       return FALSE;
     }
   }
@@ -300,7 +300,7 @@ static bool ovparse_part_line(char *l) {
   /* Path to ovbuff partition */
   if ((p = strchr(l, ':')) == NULL || p - l <= 0 || p - l > OVBUFFPASIZ - 1) {
     syslog(L_ERROR, "%s: bad pathname in line '%s'", LocalLogName, l);
-    DISPOSE(ovbuff);
+    free(ovbuff);
     return FALSE;
   }
   *p = '\0';
@@ -310,7 +310,7 @@ static bool ovparse_part_line(char *l) {
   if (stat(ovbuff->path, &sb) < 0) {
     syslog(L_ERROR, "%s: file '%s' does not exist, ignoring '%d'",
            LocalLogName, ovbuff->path, ovbuff->index);
-    DISPOSE(ovbuff);
+    free(ovbuff);
     return FALSE;
   }
   l = ++p;
@@ -332,7 +332,7 @@ static bool ovparse_part_line(char *l) {
     if (ovbuff->base > sb.st_size)
       syslog(L_NOTICE, "%s: length must be at least '%ld' for index '%d' (%ld bytes)",
         LocalLogName, ovbuff->base, ovbuff->index, sb.st_size);
-    DISPOSE(ovbuff);
+    free(ovbuff);
     return FALSE;
   }
   ovbuff->len = len;
@@ -364,7 +364,7 @@ static bool ovbuffread_config(void) {
   config = ReadInFile(path, NULL);
   if (config == NULL) {
     syslog(L_ERROR, "%s: cannot read %s", LocalLogName, path);
-    DISPOSE(config);
+    free(config);
     free(path);
     return FALSE;
   }
@@ -381,9 +381,9 @@ static bool ovbuffread_config(void) {
       continue;		/* Back to top of loop */
     }
     if (ctab_free == 0)
-      ctab = NEW(char *, 1);
+      ctab = xmalloc(sizeof(char *));
     else
-      RENEW(ctab, char *, ctab_free+1);
+      ctab = xrealloc(ctab, (ctab_free + 1) * sizeof(char *));
     /* If we're here, we've got the beginning of a real entry */
     ctab[ctab_free++] = to = from;
     while (1) {
@@ -406,13 +406,13 @@ static bool ovbuffread_config(void) {
   }
   for (ctab_i = 0; ctab_i < ctab_free; ctab_i++) {
     if (!ovparse_part_line(ctab[ctab_i])) {
-      DISPOSE(config);
-      DISPOSE(ctab);
+      free(config);
+      free(ctab);
       return FALSE;
     }
   }
-  DISPOSE(config);
-  DISPOSE(ctab);
+  free(config);
+  free(ctab);
   if (ovbufftab == (OVBUFF *)NULL) {
     syslog(L_ERROR, "%s: no buffindexed defined", LocalLogName);
     return FALSE;
@@ -608,7 +608,7 @@ static bool ovbuffinit_disks(void) {
 	ovflushhead(ovbuff);
     }
 #ifdef OV_DEBUG
-    ovbuff->trace = NEW(struct ov_trace_array, ovbuff->totalblk);
+    ovbuff->trace = xmalloc(ovbuff->totalblk * sizeof(ov_trace_array));
     memset(ovbuff->trace, '\0', sizeof(struct ov_trace_array) * ovbuff->totalblk);
 #endif /* OV_DEBUG */
     ovlock(ovbuff, INN_LOCK_UNLOCK);
@@ -757,12 +757,12 @@ static OV ovblocknew(void) {
   }
   trace = &ovbuff->trace[ovbuff->freeblk];
   if (trace->ov_trace == NULL) {
-    trace->ov_trace = NEW(struct ov_trace, OV_TRACENUM);
+    trace->ov_trace = xmalloc(OV_TRACENUM * sizeof(struct ov_trace));
     trace->max = OV_TRACENUM;
     memset(trace->ov_trace, '\0', sizeof(struct ov_trace) * OV_TRACENUM);
   } else if (trace->cur + 1 == trace->max) {
     trace->max += OV_TRACENUM;
-    RENEW(trace->ov_trace, struct ov_trace, trace->max);
+    trace->ov_trace = xrealloc(trace->ov_trace, trace->max * sizeof(struct ov_trace));
     memset(&trace->ov_trace[trace->cur], '\0', sizeof(struct ov_trace) * (trace->max - trace->cur));
   }
   if (trace->ov_trace[trace->cur].occupied != 0) {
@@ -810,12 +810,12 @@ static void ovblockfree(OV ov) {
   }
   trace = &ovbuff->trace[ov.blocknum];
   if (trace->ov_trace == NULL) {
-    trace->ov_trace = NEW(struct ov_trace, OV_TRACENUM);
+    trace->ov_trace = xmalloc(OV_TRACENUM * sizeof(struct ov_trace));
     trace->max = OV_TRACENUM;
     memset(trace->ov_trace, '\0', sizeof(struct ov_trace) * OV_TRACENUM);
   } else if (trace->cur + 1 == trace->max) {
     trace->max += OV_TRACENUM;
-    RENEW(trace->ov_trace, struct ov_trace, trace->max);
+    trace->ov_trace = xrealloc(trace->ov_trace, trace->max * sizeof(struct ov_trace));
     memset(&trace->ov_trace[trace->cur], '\0', sizeof(struct ov_trace) * (trace->max - trace->cur));
   }
   if (trace->ov_trace[trace->cur].freed != 0) {
@@ -885,13 +885,13 @@ bool buffindexed_open(int mode) {
   GROUPfd = open(groupfn, ovbuffmode & OV_WRITE ? O_RDWR | O_CREAT : O_RDONLY, 0660);
   if (GROUPfd < 0) {
     syslog(L_FATAL, "%s: Could not create %s: %m", LocalLogName, groupfn);
-    DISPOSE(groupfn);
+    free(groupfn);
     return FALSE;
   }
 
   if (fstat(GROUPfd, &sb) < 0) {
     syslog(L_FATAL, "%s: Could not fstat %s: %m", LocalLogName, groupfn);
-    DISPOSE(groupfn);
+    free(groupfn);
     close(GROUPfd);
     return FALSE;
   }
@@ -909,7 +909,7 @@ bool buffindexed_open(int mode) {
     if ((GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount), flag,
 	MAP_SHARED, GROUPfd, 0)) == (GROUPHEADER *) -1) {
       syslog(L_FATAL, "%s: Could not mmap %s in buffindexed_open: %m", LocalLogName, groupfn);
-      DISPOSE(groupfn);
+      free(groupfn);
       close(GROUPfd);
       return FALSE;
     }
@@ -917,14 +917,14 @@ bool buffindexed_open(int mode) {
   } else {
     GROUPcount = 0;
     if (!GROUPexpand(mode)) {
-      DISPOSE(groupfn);
+      free(groupfn);
       close(GROUPfd);
       return FALSE;
     }
   }
   close_on_exec(GROUPfd, true);
 
-  DISPOSE(groupfn);
+  free(groupfn);
   Cutofflow = FALSE;
 
   return TRUE;
@@ -1013,9 +1013,9 @@ bool buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   setinitialge(ge, grouphash, flag, GROUPheader->hash[i], lo, hi);
   GROUPheader->hash[i] = gloc;
 #ifdef OV_DEBUG
-  ntp = NEW(struct ov_name_table, 1);
+  ntp = xmalloc(sizeof(struct ov_name_table));
   memset(ntp, '\0', sizeof(struct ov_name_table));
-  ntp->name = COPY(group);
+  ntp->name = xstrdup(group);
   ntp->recno = gloc.recno;
   if (name_table == NULL)
     name_table = ntp;
@@ -1441,21 +1441,21 @@ static void ovgroupunmap(void) {
   for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
     for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdbnext) {
       gdbnext = gdb->next;
-      DISPOSE(gdb);
+      free(gdb);
     }
     groupdatablock[i] = NULL;
   }
   for (giblist = Giblist ; giblist != NULL ; giblist = giblistnext) {
     giblistnext = giblist->next;
-    DISPOSE(giblist);
+    free(giblist);
   }
   Giblist = NULL;
   if (!Cache && (Gib != NULL)) {
-    DISPOSE(Gib);
+    free(Gib);
     Gib = NULL;
     if (Cachesearch != NULL) {
-      DISPOSE(Cachesearch->group);
-      DISPOSE(Cachesearch);
+      free(Cachesearch->group);
+      free(Cachesearch);
       Cachesearch = NULL;
     }
   }
@@ -1504,7 +1504,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
   Gibcount = ge->count;
   if (Gibcount == 0)
     return TRUE;
-  Gib = NEW(OVINDEX, Gibcount);
+  Gib = xmalloc(Gibcount * sizeof(OVINDEX));
   count = 0;
   while (ov.index != NULLINDEX) {
     ovbuff = getovbuff(ov);
@@ -1531,11 +1531,11 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
     for (i = 0 ; i < limit ; i++) {
       if (Gibcount == count) {
 	Gibcount += OV_FUDGE;
-	RENEW(Gib, OVINDEX, Gibcount);
+        Gib = xrealloc(Gib, Gibcount * sizeof(OVINDEX));
       }
       Gib[count++] = ovblock->ovindex[i];
     }
-    giblist = NEW(GIBLIST, 1);
+    giblist = xmalloc(sizeof(GIBLIST));
     giblist->ov = ov;
     giblist->next = Giblist;
     Giblist = giblist;
@@ -1565,7 +1565,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
     ovbuff = getovbuff(ov);
     if (ovbuff == NULL)
       continue;
-    gdb = NEW(GROUPDATABLOCK, 1);
+    gdb = xmalloc(sizeof(GROUPDATABLOCK));
     gdb->datablk = ov;
     gdb->next = NULL;
     gdb->mmapped = FALSE;
@@ -1587,7 +1587,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
       gdb->len = pagefudge + OV_BLOCKSIZE;
       if ((gdb->addr = mmap(NULL, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
         syslog(L_ERROR, "%s: ovgroupmmap could not mmap data block: %m", LocalLogName);
-        DISPOSE(gdb);
+        free(gdb);
         ovgroupunmap();
         return FALSE;
       }
@@ -1617,11 +1617,11 @@ static void *ovopensearch(char *group, int low, int high, bool needov) {
     return NULL;
   }
 
-  search = NEW(OVSEARCH, 1);
+  search = xmalloc(sizeof(OVSEARCH));
   search->hi = high;
   search->lo = low;
   search->cur = 0;
-  search->group = COPY(group);
+  search->group = xstrdup(group);
   search->needov = needov;
   search->gloc = gloc;
   search->count = ge->count;
@@ -1634,11 +1634,11 @@ void *buffindexed_opensearch(char *group, int low, int high) {
   void			*handle;
 
   if (Gib != NULL) {
-    DISPOSE(Gib);
+    free(Gib);
     Gib = NULL;
     if (Cachesearch != NULL) {
-      DISPOSE(Cachesearch->group);
-      DISPOSE(Cachesearch);
+      free(Cachesearch->group);
+      free(Cachesearch);
       Cachesearch = NULL;
     }
   }
@@ -1776,8 +1776,8 @@ static void ovclosesearch(void *handle, bool freeblock) {
   if (Cache) {
     Cachesearch = search;
   } else {
-    DISPOSE(search->group);
-    DISPOSE(search);
+    free(search->group);
+    free(search);
   }
   return;
 }
@@ -1844,10 +1844,10 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token) {
 
   if (Gib != NULL) {
     if (Cachesearch != NULL && !EQ(Cachesearch->group, group)) {
-      DISPOSE(Gib);
+      free(Gib);
       Gib = NULL;
-      DISPOSE(Cachesearch->group);
-      DISPOSE(Cachesearch);
+      free(Cachesearch->group);
+      free(Cachesearch);
       Cachesearch = NULL;
     } else {
       if (gettoken(artnum, token))
@@ -1865,11 +1865,11 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token) {
 	  return FALSE;
 	} else {
 	  grouplocked = TRUE;
-	  DISPOSE(Gib);
+	  free(Gib);
 	  Gib = NULL;
 	  if (Cachesearch != NULL) {
-	    DISPOSE(Cachesearch->group);
-	    DISPOSE(Cachesearch);
+	    free(Cachesearch->group);
+	    free(Cachesearch);
 	    Cachesearch = NULL;
 	  }
 	}
@@ -2053,11 +2053,11 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
     boolval = (bool *)val;
     *boolval = TRUE;
     if (Gib != NULL) {
-      DISPOSE(Gib);
+      free(Gib);
       Gib = NULL;
       if (Cachesearch != NULL) {
-	DISPOSE(Cachesearch->group);
-	DISPOSE(Cachesearch);
+	free(Cachesearch->group);
+	free(Cachesearch);
 	Cachesearch = NULL;
       }
     }
@@ -2091,7 +2091,7 @@ void buffindexed_close(void) {
 	  trace->ov_trace[j].freed != 0) {
 	  if (F == NULL) {
             length = strlen(innconf->pathtmp) + 11;
-	    path = NEW(char, length);
+	    path = xmalloc(length);
 	    pid = getpid();
 	    snprintf(path, length, "%s/%d", innconf->pathtmp, pid);
 	    if ((F = fopen(path, "w")) == NULL) {
@@ -2110,7 +2110,7 @@ void buffindexed_close(void) {
   if ((ntp = name_table) != NULL) {
     if (F == NULL) {
       length = strlen(innconf->pathtmp) + 11;
-      path = NEW(char, length);
+      path = xmalloc(length);
       pid = getpid();
       sprintf(path, length, "%s/%d", innconf->pathtmp, pid);
       if ((F = fopen(path, "w")) == NULL) {
@@ -2127,14 +2127,14 @@ void buffindexed_close(void) {
   if (F != NULL)
     fclose(F);
   if (path != NULL)
-    DISPOSE(path);
+    free(path);
 #endif /* OV_DEBUG */
   if (Gib != NULL) {
-    DISPOSE(Gib);
+    free(Gib);
     Gib = NULL;
     if (Cachesearch != NULL) {
-      DISPOSE(Cachesearch->group);
-      DISPOSE(Cachesearch);
+      free(Cachesearch->group);
+      free(Cachesearch);
       Cachesearch = NULL;
     }
   }
@@ -2150,7 +2150,7 @@ void buffindexed_close(void) {
   }
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuffnext) {
     ovbuffnext = ovbuff->next;
-    DISPOSE(ovbuff);
+    free(ovbuff);
   }
   ovbufftab = NULL;
 }

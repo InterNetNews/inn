@@ -144,7 +144,7 @@ PROCwatch(pid_t pid, int site)
 	    break;
     if (i < 0) {
 	/* Ran out of room -- grow the table. */
-	RENEW(PROCtable, PROCESS, PROCtablesize + 20);
+        PROCtable = xrealloc(PROCtable, (PROCtablesize + 20) * sizeof(PROCESS));
         for (pp = &PROCtable[PROCtablesize], i=20; --i >= 0; pp++)
           *pp = PROCnull;
 	pp = &PROCtable[PROCtablesize];
@@ -168,9 +168,9 @@ PROCsetup(int i)
     PROCESS	*pp;
 
     if (PROCtable)
-	DISPOSE(PROCtable);
+	free(PROCtable);
     PROCtablesize = i;
-    PROCtable = NEW(PROCESS, PROCtablesize);
+    PROCtable = xmalloc(PROCtablesize * sizeof(PROCESS));
     for (pp = PROCtable, i = PROCtablesize; --i >= 0; pp++)
 	*pp = PROCnull;
 

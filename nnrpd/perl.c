@@ -140,14 +140,14 @@ char *HandleHeaders(char *article)
        /* See if it's a table header */
        for (hp = Table; hp < EndOfTable; hp++) {
          if (caseEQn(p, hp->Name, hp->Size)) {
-           char *copy = COPY(s);
+           char *copy = xstrdup(s);
            HDR_SET(hp - Table, copy);
            hp->Len = TrimSpaces(hp->Value);
            for (q = hp->Value ; ISWHITE(*q) || *q == '\n' ; q++)
              continue;
            hp->Body = q;
            if (hp->Len == 0) {
-             DISPOSE(hp->Value);
+             free(hp->Value);
              hp->Value = hp->Body = NULL;
            }
            break;
@@ -157,8 +157,8 @@ char *HandleHeaders(char *article)
        
        /* Add to other headers */
        if (i >= OtherSize - 1) {
-         OtherSize += 20; 
-         RENEW(OtherHeaders, char*, OtherSize);
+         OtherSize += 20;
+         OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
        }
        t = concat(p, ": ", s, (char *) 0);
        OtherHeaders[i++] = t;
@@ -251,7 +251,7 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
 
   vector_resize(access_vec, (rc / 2));
 
-  buffer = NEW(char, BIG_BUFFER);
+  buffer = xmalloc(BIG_BUFFER);
 
   for (i = (rc / 2); i >= 1; i--) {
     sv = POPs;
@@ -264,7 +264,7 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
     strlcat(buffer, val, BIG_BUFFER);
     strlcat(buffer, "\"\n", BIG_BUFFER);
  
-    vector_add(access_vec, COPY(buffer));
+    vector_add(access_vec, xstrdup(buffer));
   }
 
   free(buffer);

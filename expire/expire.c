@@ -547,7 +547,7 @@ main(int ac, char *av[])
     umask(NEWSUMASK);
 
     /* find the default history file directory */
-    EXPhistdir = COPY(HistoryText);
+    EXPhistdir = xstrdup(HistoryText);
     p = strrchr(EXPhistdir, '/');
     if (p != NULL) {
 	*p = '\0';
@@ -584,7 +584,7 @@ main(int ac, char *av[])
 	    EXPusepost = TRUE;
 	    break;
 	case 'r':
-	    EXPreason = COPY(optarg);
+	    EXPreason = xstrdup(optarg);
 	    break;
 	case 's':
 	    Size = atoi(optarg);
@@ -652,7 +652,7 @@ main(int ac, char *av[])
 	if (EXPreason == NULL) {
 	    snprintf(buff, sizeof(buff), "Expiring process %ld",
                      (long) getpid());
-	    EXPreason = COPY(buff);
+	    EXPreason = xstrdup(buff);
 	}
     }
     else {

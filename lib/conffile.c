@@ -49,7 +49,7 @@ static char *CONFgetword(CONFFILE *F)
     if (cfeof (F)) return (NULL);
     if (!F->buf) {
       F->sbuf = BIG_BUFFER;
-      F->buf = NEW(char, F->sbuf);
+      F->buf = xmalloc(F->sbuf);
     }
     if (getconfline(F, F->buf, F->sbuf) != 0)
       return (NULL); /* Line too long */
@@ -96,7 +96,7 @@ static char *CONFgetword(CONFFILE *F)
       *t++ = '\0';
   }
   if (*p == '\0' && cfeof(F)) return (NULL);
-  word = COPY (p);
+  word = xstrdup (p);
   for (p = F->buf; *t != '\0'; t++)
     *p++ = *t;
   *p = '\0';
@@ -112,12 +112,12 @@ CONFFILE *CONFfopen(char *filename)
   f = fopen(filename, "r");
   if (!f)
     return(0);
-  ret = NEW(CONFFILE, 1);
+  ret = xmalloc(sizeof(CONFFILE));
   if (!ret) {
     fclose(f);
     return(0);
   }
-  ret->filename = COPY(filename);
+  ret->filename = xstrdup(filename);
   ret->buf = 0;
   ret->sbuf = 0;
   ret->lineno = 0;
@@ -131,10 +131,10 @@ void CONFfclose(CONFFILE *f)
   if (!f) return;		/* No conf file */
   fclose(f->f);
   if (f->buf)
-    DISPOSE(f->buf);
+    free(f->buf);
   if (f->filename)
-    DISPOSE(f->filename);
-  DISPOSE(f);
+    free(f->filename);
+  free(f);
 }
 
 CONFTOKEN *CONFgettoken(CONFTOKEN *toklist, CONFFILE *file)
@@ -144,7 +144,7 @@ CONFTOKEN *CONFgettoken(CONFTOKEN *toklist, CONFFILE *file)
   int i;
 
   if (ret.name) {
-    DISPOSE(ret.name);
+    free(ret.name);
     ret.name = 0;
   }
   word = CONFgetword(file);
@@ -153,7 +153,7 @@ CONFTOKEN *CONFgettoken(CONFTOKEN *toklist, CONFFILE *file)
   if (toklist) {
     for (i = 0; toklist[i].type; i++) {
        if (EQ(word, toklist[i].name)) {
-         DISPOSE(word);
+         free(word);
          return(&toklist[i]);
        }
     }

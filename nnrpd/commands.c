@@ -185,9 +185,9 @@ PERMgeneric(char *av[], char *accesslist)
 	*p = '\0';
 
     if (PERMauthstring)
-	DISPOSE(PERMauthstring);
+	free(PERMauthstring);
 
-    PERMauthstring = COPY(path);
+    PERMauthstring = xstrdup(path);
 
     /*syslog(L_NOTICE, "%s (%ld) returned: %d %s %d\n", av[0], (long) pid, i, path, status);*/
     /* Split "host:permissions:user:pass:groups" into fields. */
@@ -244,13 +244,13 @@ CMDauthinfo(ac, av)
 		Reply("%d Authentication succeeded\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
-		DISPOSE(logrec);
+		free(logrec);
 		return;
 	    case 0:
 		syslog(L_NOTICE, "%s bad_auth %s (%s)", ClientHost, PERMuser,
 			logrec);
 		Reply("%d Authentication failed\r\n", NNTP_ACCESS_VAL);
-		DISPOSE(logrec);
+		free(logrec);
 		ExitWithStats(1, FALSE);
 	    default:
 		/* lower level has issued Reply */
@@ -654,18 +654,18 @@ void CMDnewgroups(int ac, char *av[])
 	    continue;
 
 	if (grouplist == NULL) {
-	    grouplist = NEW(GROUPDATA, 1000);
+	    grouplist = xmalloc(1000 * sizeof(GROUPDATA));
 	    listsize = 1000;
 	}
 	if (listsize <= numgroups) {
 	    listsize += 1000;
-	    RENEW(grouplist, GROUPDATA, listsize);
+            grouplist = xrealloc(grouplist, listsize * sizeof(GROUPDATA));
 	}
 
 	grouplist[numgroups].high = hi;
 	grouplist[numgroups].low = lo;
 	grouplist[numgroups].count = count;
-	grouplist[numgroups].name = COPY(p);
+	grouplist[numgroups].name = xstrdup(p);
 	numgroups++;
     }
     QIOclose(qp);
@@ -694,9 +694,9 @@ void CMDnewgroups(int ac, char *av[])
 	numfound--;
     }
     for (i = 0; i < numgroups; i++) {
-	DISPOSE(grouplist[i].name);
+	free(grouplist[i].name);
     }
-    DISPOSE(grouplist);
+    free(grouplist);
     QIOclose(qp);
     Printf(".\r\n");
 }
@@ -783,7 +783,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     /* Start at beginning of buffer. */
     if (article == NULL) {
 	size = 4096;
-	article = NEW(char, size);
+	article = xmalloc(size);
     }
     idbuff[0] = 0;
     if (ihave) {
@@ -852,7 +852,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	if ((len + 2) > (size_t)(end - p)) {
 	    i = p - article;
 	    size += len + ART_LINE_MALLOC;
-	    RENEW(article, char, size);
+            article = xrealloc(article, size);
 	    end = &article[size];
 	    p = i + article;
 	}

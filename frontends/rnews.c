@@ -354,7 +354,7 @@ ReadRemainder(int fd, char first, char second)
 
     /* Get an initial allocation, leaving space for the \0. */
     size = BUFSIZ + 1;
-    article = NEW(char, size + 2);
+    article = xmalloc(size + 2);
     article[0] = first;
     article[1] = second;
     used = second ? 2 : 1;
@@ -374,7 +374,7 @@ ReadRemainder(int fd, char first, char second)
         if (left < SMBUF) {
             size += BUFSIZ;
             left += BUFSIZ;
-            RENEW(article, char, size);
+            article = xrealloc(article, size);
         }
         p = fgets(article + used, left, F);
     }
@@ -387,7 +387,7 @@ ReadRemainder(int fd, char first, char second)
     fclose(F);
 
     ok = Process(article);
-    DISPOSE(article);
+    free(article);
     return ok;
 }
 
@@ -408,11 +408,11 @@ ReadBytecount(int fd, int artsize)
      * then get some. */
     if (article == NULL) {
 	oldsize = artsize;
-	article = NEW(char, oldsize + 1 + 1);
+	article = xmalloc(oldsize + 1 + 1);
     }
     else if (artsize > oldsize) {
 	oldsize = artsize;
-	RENEW(article, char, oldsize + 1 + 1);
+        article = xrealloc(article, oldsize + 1 + 1);
     }
 
     /* Read in the article. */

@@ -209,13 +209,13 @@ CAFDisposeBitmap(CAFBITMAP *bm)
     for (i = 0 ; i < bm->NumBMB ; ++i) {
 	if (bm->Blocks[i]) {
 	    bmb = bm->Blocks[i];
-	    if (bmb->BMBBits) DISPOSE(bmb->BMBBits);
-	    DISPOSE(bmb);
+	    if (bmb->BMBBits) free(bmb->BMBBits);
+	    free(bmb);
 	}
     }
-    DISPOSE(bm->Blocks);
-    DISPOSE(bm->Bits);
-    DISPOSE(bm);
+    free(bm->Blocks);
+    free(bm->Bits);
+    free(bm);
 }
 
 /*
@@ -236,7 +236,7 @@ CAFReadFreeBM(int fd, CAFHEADER *h)
 	CAFError(CAF_ERR_IO);
 	return NULL;
     }
-    bm = NEW(CAFBITMAP, 1);
+    bm = xmalloc(sizeof(CAFBITMAP));
 
     bm->FreeZoneTabSize = h->FreeZoneTabSize;
     bm->FreeZoneIndexSize = h->FreeZoneIndexSize;
@@ -244,8 +244,8 @@ CAFReadFreeBM(int fd, CAFHEADER *h)
     bm->BytesPerBMB = (h->BlockSize) * (h->BlockSize * BYTEWIDTH);
     bm->BlockSize = h->BlockSize;
     
-    bm->Blocks = NEW(CAFBMB *, bm->NumBMB);
-    bm->Bits = NEW(char, bm->FreeZoneIndexSize);
+    bm->Blocks = xmalloc(bm->NumBMB * sizeof(CAFBMB *));
+    bm->Bits = xmalloc(bm->FreeZoneIndexSize);
     for (i = 0 ; i < bm->NumBMB ; ++i) {
 	bm->Blocks[i] = NULL;
     }
@@ -282,7 +282,7 @@ CAFFetchBMB(unsigned int blkno, int fd, CAFBITMAP *bm)
     /* if already in memory, don't need to do anything. */
     if (bm->Blocks[blkno]) return bm->Blocks[blkno];
 
-    newbmb = NEW(CAFBMB, 1);
+    newbmb = xmalloc(sizeof(CAFBMB));
 
     newbmb->Dirty = 0;
     newbmb->StartDataBlock = bm->StartDataBlock + blkno*(bm->BytesPerBMB);
@@ -293,18 +293,18 @@ CAFFetchBMB(unsigned int blkno, int fd, CAFBITMAP *bm)
 	newbmb->MaxDataBlock = bm->MaxDataBlock;
     }
 
-    newbmb->BMBBits = NEW(char, bm->BlockSize);
+    newbmb->BMBBits = xmalloc(bm->BlockSize);
 
     if (lseek(fd, (blkno + 1) * bm->BlockSize, SEEK_SET) < 0) {
-	DISPOSE(newbmb->BMBBits);
-	DISPOSE(newbmb);
+	free(newbmb->BMBBits);
+	free(newbmb);
 	CAFError(CAF_ERR_IO);
 	return NULL;
     }
 
     if (OurRead(fd, newbmb->BMBBits, bm->BlockSize) < 0) {
-	DISPOSE(newbmb->BMBBits);
-        DISPOSE(newbmb);
+	free(newbmb->BMBBits);
+        free(newbmb);
 	return NULL;
     }
 
@@ -685,7 +685,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
     head.spare[0] = head.spare[1] = head.spare[2] = 0;
     
     if (OurWrite(fd, &head, sizeof(head)) < 0) {
-	(void)close(fd);
+	close(fd);
 	return -1;
     }
 
@@ -1112,7 +1112,7 @@ CAFOpenReadTOC(char *path, CAFHEADER *ch, CAFTOCENT **tocpp)
     }
 
     /* Allocate memory for TOC. */
-    tocp = NEW(CAFTOCENT, (ch->High - ch->Low + 1));
+    tocp = xmalloc((ch->High - ch->Low + 1) * sizeof(CAFTOCENT));
     nb = (sizeof(CAFTOCENT))*(ch->High - ch->Low + 1); /* # bytes to read for toc. */
 
     /* seek to beginning of TOC */
@@ -1370,7 +1370,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 #endif
 
     /* allocate buffer for newpath */
-    newpath = NEW(char, strlen(path)+10);
+    newpath = xmalloc(strlen(path) + 10);
     while (TRUE) {
 	/* try to open the file and lock it. */
 	if ((fdin = open(path, O_RDWR)) < 0) {
@@ -1427,7 +1427,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     ** we can decide if a clean or a compaction is needed.
     */
 
-    (void)lseek(fdin, 0L, SEEK_SET);
+    lseek(fdin, 0L, SEEK_SET);
 	
     /* make input file stdio-buffered. */
     if ((infile = fdopen(fdin, "r+")) == NULL) {
@@ -1437,7 +1437,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     }
 
     /* Allocate memory for TOC. */
-    tocarray = NEW(CAFTOCENT, (head.High - head.Low + 1));
+    tocarray = xmalloc((head.High - head.Low + 1) * sizeof(CAFTOCENT));
 
     fseeko(infile, (off_t) (sizeof(CAFHEADER) + head.FreeZoneTabSize),
            SEEK_SET);
@@ -1445,17 +1445,17 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     n = fread(tocarray, sizeof(CAFTOCENT), (head.High - head.Low + 1), infile);
     if (n < 0) {
 	CAFError(CAF_ERR_IO);
-	(void)fclose(infile);
-	DISPOSE(tocarray);
-	DISPOSE(newpath);
+	fclose(infile);
+	free(tocarray);
+	free(newpath);
 	return -1;
     }
 
     if ((unsigned long) n < (head.High - head.Low +1)) {
 	CAFError(CAF_ERR_BADFILE);
-	(void)fclose(infile);
-	DISPOSE(tocarray);
-	DISPOSE(newpath);
+	fclose(infile);
+	free(tocarray);
+	free(newpath);
 	return -1;
     }
     
@@ -1476,8 +1476,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     if (newlow == head.High + 1) {
         unlink(path);
 	fclose(infile);
-	DISPOSE(tocarray);
-	DISPOSE(newpath);
+	free(tocarray);
+	free(newpath);
 	return 0;
     }
 
@@ -1529,8 +1529,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	    fseeko(infile, 0, SEEK_SET);
 	    if (fwrite(&head, sizeof(CAFHEADER), 1, infile) < 1) {
 		CAFError(CAF_ERR_IO);
-		DISPOSE(tocarray);
-		DISPOSE(newpath);
+		free(tocarray);
+		free(newpath);
 		fclose(infile);
 		return -1;
 	    }
@@ -1541,8 +1541,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	    if (fseeko(infile, sizeof(CAFHEADER) + head.FreeZoneTabSize,
 		       SEEK_SET) < 0) {
 		perror(path);
-		DISPOSE(tocarray);
-		DISPOSE(newpath);
+		free(tocarray);
+		free(newpath);
 		fclose(infile);
 		unlink(newpath);
 		return -1;
@@ -1550,15 +1550,15 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	    if (fwrite(tocarray, sizeof(CAFTOCENT), head.High - newlow + 1, infile) < head.High - newlow + 1
 		|| fflush(infile) < 0) {
 		CAFError(CAF_ERR_IO);
-		DISPOSE(tocarray);
-		DISPOSE(newpath);
+		free(tocarray);
+		free(newpath);
 		fclose(infile);
 		return -1;
 	    }
 	    /* all done, return. */
 	    fclose(infile);
-	    DISPOSE(tocarray);
-	    DISPOSE(newpath);
+	    free(tocarray);
+	    free(newpath);
 	    return 0;
 	} else {
 	    /* need neither full cleaning nor compaction, so return. */
@@ -1566,8 +1566,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 		printf("Not cleaning %s: Free=%d (%f%%)\n", path, head.Free, percentfree);
 	    }
 	    fclose(infile);
-	    DISPOSE(tocarray);
-	    DISPOSE(newpath);
+	    free(tocarray);
+	    free(newpath);
 	    return 0;
 	}
     }
@@ -1595,8 +1595,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
                        (unsigned long) fsinfo.f_bavail);
 	    }
 	    fclose(infile);
-	    DISPOSE(tocarray);
-	    DISPOSE(newpath);
+	    free(tocarray);
+	    free(newpath);
 	    return 0;
 	}
     }
@@ -1617,44 +1617,44 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     /* note: new CAF file is created in flocked state. */
     if ((fdout = CAFCreateCAFFile(path, newlow, newtocsize,
                                   statbuf.st_size, 1, newpath)) < 0) {
-	(void)fclose(infile);
-	DISPOSE(tocarray);
-	DISPOSE(newpath);
+	fclose(infile);
+	free(tocarray);
+	free(newpath);
 	return -1;
     }
 
     if ((outfile = fdopen(fdout, "w+")) == NULL) {
 	CAFError(CAF_ERR_IO);
 	fclose(infile);
-	DISPOSE(tocarray);
+	free(tocarray);
 	unlink(newpath);
-	DISPOSE(newpath);
+	free(newpath);
 	return -1;
     }
 
-    newtocarray = NEW(CAFTOCENT, head.High - newlow + 1);
+    newtocarray = xmalloc((head.High - newlow + 1) * sizeof(CAFTOCENT));
     memset(newtocarray, 0, sizeof(CAFTOCENT)*(head.High - newlow+1));
 
     if (fseeko(outfile, 0, SEEK_SET) < 0) {
 	perror(newpath);
-	DISPOSE(tocarray);
-	DISPOSE(newtocarray);
+	free(tocarray);
+	free(newtocarray);
 	fclose(infile);
 	fclose(outfile);
 	unlink(newpath);
-	DISPOSE(newpath);
+	free(newpath);
 	return -1;
     }
 
     /* read in the CAFheader from the new file. */
     if (fread(&newhead, sizeof(CAFHEADER), 1, outfile) < 1) {
 	perror(newpath);
-	DISPOSE(tocarray);
-	DISPOSE(newtocarray);
+	free(tocarray);
+	free(newtocarray);
 	fclose(infile);
 	fclose(outfile);
 	unlink(newpath);
-	DISPOSE(newpath);
+	free(newpath);
 	return -1;
     }
 
@@ -1662,7 +1662,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     blocksize = newhead.BlockSize;
     if (blocksize == 0) blocksize=CAF_DEFAULT_BLOCKSIZE;
 
-    zerobuff = NEW(char, blocksize);
+    zerobuff = xmalloc(blocksize);
     memset(zerobuff, 0, blocksize);
 
     /* seek to end of output file/place to start writing new articles */
@@ -1705,11 +1705,11 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 		    errorexit:
 		    fclose(infile);
 		    fclose(outfile);
-		    DISPOSE(tocarray);
-		    DISPOSE(newtocarray);
-		    DISPOSE(zerobuff);
+		    free(tocarray);
+		    free(newtocarray);
+		    free(zerobuff);
 		    unlink(newpath);
-		    DISPOSE(newpath);
+		    free(newpath);
 		    return -1;
 		}
 		nbytes -= ncur;
@@ -1733,8 +1733,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	}
     }
 
-    DISPOSE(tocarray); /* don't need this guy anymore. */
-    DISPOSE(zerobuff);
+    free(tocarray); /* don't need this guy anymore. */
+    free(zerobuff);
 
     /* 
     ** set up new file header, TOC.
@@ -1743,11 +1743,11 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     */
     if (fseeko(outfile, 0, SEEK_SET) < 0) {
 	perror(newpath);
-	DISPOSE(newtocarray);
+	free(newtocarray);
 	fclose(infile);
 	fclose(outfile);
 	unlink(newpath);
-	DISPOSE(newpath);
+	free(newpath);
 	return -1;
     }
 
@@ -1760,11 +1760,11 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 
     if (fwrite(&newhead, sizeof(CAFHEADER), 1, outfile) < 1) {
 	CAFError(CAF_ERR_IO);
-	DISPOSE(newtocarray);
+	free(newtocarray);
 	fclose(infile);
 	fclose(outfile);
 	unlink(newpath);
-	DISPOSE(newpath);
+	free(newpath);
 	return -1;
     }
 
@@ -1775,38 +1775,38 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     if (fseeko(outfile, sizeof(CAFHEADER) + newhead.FreeZoneTabSize,
 	       SEEK_SET) < 0) {
 	perror(newpath);
-	DISPOSE(newtocarray);
+	free(newtocarray);
 	fclose(infile);
 	fclose(outfile);
 	unlink(newpath);
-	DISPOSE(newpath);
+	free(newpath);
 	return -1;
     }
 
     if (fwrite(newtocarray, sizeof(CAFTOCENT), head.High - newlow + 1, outfile) < head.High - newlow + 1
 	|| fflush(outfile) < 0) {
 	CAFError(CAF_ERR_IO);
-	DISPOSE(newtocarray);
+	free(newtocarray);
 	fclose(infile);
 	fclose(outfile);
 	unlink(newpath);
-	DISPOSE(newpath);
+	free(newpath);
 	return -1;
     }
     
     if (rename(newpath, path) < 0) {
 	CAFError(CAF_ERR_IO);
-	DISPOSE(newtocarray);
-	DISPOSE(newpath);
+	free(newtocarray);
+	free(newpath);
 	fclose(infile);
 	fclose(outfile);
 	/* if can't rename, probably no point in trying to unlink newpath, is there? */
 	return -1;
     }
-    /* written and flushed newtocarray, can safely (void)fclose and get out of
+    /* written and flushed newtocarray, can safely fclose and get out of
        here! */
-    DISPOSE(newtocarray);
-    DISPOSE(newpath);
+    free(newtocarray);
+    free(newpath);
     fclose(outfile);
     fclose(infile);
     return 0;

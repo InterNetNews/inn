@@ -348,7 +348,7 @@ XS(XS_INN_article)
     /* Push a copy of the article onto the Perl stack, free our temporary
        memory allocation, and return the article to Perl. */
     ST(0) = sv_2mortal(newSVpv(p, len));
-    DISPOSE(p);
+    free(p);
     XSRETURN(1);
 }
 
@@ -450,7 +450,7 @@ XS(XS_INN_head)
     /* Push a copy of the article header onto the Perl stack, free our
        temporary memory allocation, and return the header to Perl. */
     ST(0) = sv_2mortal(newSVpv(p, len));
-    DISPOSE(p);
+    free(p);
     XSRETURN(1);
 }
 

@@ -36,7 +36,7 @@ main(int ac, char *av[]) {
         exit(1);
 
     /* Parse JCL. */
-    format = COPY("nm");
+    format = xstrdup("nm");
     while ((i = getopt(ac, av, "w:")) != EOF)
 	switch (i) {
 	default:
@@ -90,7 +90,7 @@ main(int ac, char *av[]) {
 	    SMfreearticle(art);
 	    continue;
 	}
-	q = NEW(char, r - text + 1);
+	q = xmalloc(r - text + 1);
 	memcpy(q, text, r - text);
 	SMfreearticle(art);
 	q[r - text] = '\0';
@@ -119,7 +119,7 @@ main(int ac, char *av[]) {
 	    }
 	    Dirty = TRUE;
 	}
-	DISPOSE(q);
+	free(q);
 	if (Dirty)
 	    putchar('\n');
     }

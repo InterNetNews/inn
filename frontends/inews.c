@@ -218,7 +218,7 @@ StripOffHeaders(char *article)
 
     /* Set up the other headers list. */
     OtherSize = HEADER_DELTA;
-    OtherHeaders = NEW(char*, OtherSize);
+    OtherHeaders = xmalloc(OtherSize * sizeof(char *));
     OtherCount = 0;
 
     /* Scan through buffer, a header at a time. */
@@ -264,7 +264,7 @@ StripOffHeaders(char *article)
 	if (hp == ENDOF(Table)) {
 	    if (OtherCount >= OtherSize - 1) {
 		OtherSize += HEADER_DELTA;
-		RENEW(OtherHeaders, char*, OtherSize);
+                OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
 	    }
 	    OtherHeaders[OtherCount++] = p;
 	}
@@ -556,14 +556,14 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
       from[SMBUF - 1] = '\0';
       HeaderCleanFrom(from);
       if (!EQ(from, buff))
-        HDR(_sender) = COPY(buff);
+        HDR(_sender) = xstrdup(buff);
     }
 
     if (HDR(_date) == NULL) {
 	/* Set Date. */
 	if (!makedate(-1, false, buff, sizeof(buff)))
 	    die("cannot generate Date header");
-	HDR(_date) = COPY(buff);
+	HDR(_date) = xstrdup(buff);
     }
 
     /* Newsgroups are checked later. */
@@ -588,7 +588,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     if (HDR(_messageid) == NULL) {
 	if ((p = GenerateMessageID(innconf->domain)) == NULL)
             die("cannot generate Message-ID header");
-	HDR(_messageid) = COPY(p);
+	HDR(_messageid) = xstrdup(p);
     }
     else if ((p = strchr(HDR(_messageid), '@')) == NULL
              || strchr(++p, '@') != NULL) {
@@ -632,16 +632,16 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 
     /* Distribution. */
     if ((p = HDR(_distribution)) != NULL) {
-	p = COPY(p);
+	p = xstrdup(p);
 	CheckDistribution(p);
-	DISPOSE(p);
+	free(p);
     }
 
     /* Set Organization. */
     if (AddOrg
      && HDR(_organization) == NULL
      && (p = innconf->organization) != NULL) {
-	HDR(_organization) = COPY(p);
+	HDR(_organization) = xstrdup(p);
     }
 
     /* Keywords; left alone. */
@@ -650,7 +650,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 
     /* Set Lines */
     sprintf(buff, "%d", linecount);
-    HDR(_lines) = COPY(buff);
+    HDR(_lines) = xstrdup(buff);
 
     /* Check Supersedes. */
     if (HDR(_supersedes))
@@ -715,12 +715,12 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     /* Grow the article to have the signature. */
     i = strlen(article);
     if (UseMalloc) {
-	p = NEW(char, i + (sizeof SIGSEP - 1) + length + 1);
+	p = xmalloc(i + (sizeof SIGSEP - 1) + length + 1);
 	strcpy(p, article);
 	article = p;
     }
     else
-	RENEW(article, char, i + (sizeof SIGSEP - 1) + length + 1);
+        article = xrealloc(article, i + (sizeof SIGSEP - 1) + length + 1);
     strcpy(&article[i], SIGSEP);
     strcpy(&article[i + sizeof SIGSEP - 1], buff);
     return article;
@@ -776,11 +776,11 @@ ReadStdin(void)
     int	i;
 
     size = BUFSIZ;
-    article = NEW(char, size);
+    article = xmalloc(size);
     end = &article[size - 3];
     for (p = article; (i = getchar()) != EOF; *p++ = (char)i)
 	if (p == end) {
-	    RENEW(article, char, size + BUFSIZ);
+            article = xrealloc(article, size + BUFSIZ);
 	    p = &article[size - 3];
 	    size += BUFSIZ;
 	    end = &article[size - 3];
@@ -988,8 +988,8 @@ main(int ac, char *av[])
 	i = atoi(buff);
 
 	/* Tell the server we're posting. */
-	setbuf(FromServer, NEW(char, BUFSIZ));
-	setbuf(ToServer, NEW(char, BUFSIZ));
+	setbuf(FromServer, xmalloc(BUFSIZ));
+	setbuf(ToServer, xmalloc(BUFSIZ));
 	fprintf(ToServer, "mode reader\r\n");
 	SafeFlush(ToServer);
 	if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)

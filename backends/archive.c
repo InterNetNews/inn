@@ -196,7 +196,7 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
     }
 
     /* Copy the data. */
-    article = NEW(char, art->len);
+    article = xmalloc(art->len);
     for (i=0, q=article, p=art->data; p<art->data+art->len;) {
 	if (&p[1] < art->data + art->len && p[0] == '\r' && p[1] == '\n') {
 	    p += 2;
@@ -226,10 +226,10 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
         syswarn("cannot write to %s", dest);
 	fclose(out);
 	if (!Concat) unlink(dest);
-	DISPOSE(article);
+	free(article);
 	return FALSE;
     }
-    DISPOSE(article);
+    free(article);
 
     /* Flush and close the output. */
     if (ferror(out) || fflush(out) == EOF) {
@@ -300,7 +300,7 @@ CrackXref(const char *xref, unsigned int *lenp) {
 
     len = 0;
     xrefsize = 5;
-    xrefs = NEW(char *, xrefsize);
+    xrefs = xmalloc(xrefsize * sizeof(char *));
 
     /* skip pathhost */
     if ((p = strchr(xref, ' ')) == NULL) {
@@ -321,14 +321,14 @@ CrackXref(const char *xref, unsigned int *lenp) {
 	for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
 
 	slen = q-p;
-	xrefs[len] = NEW(char, slen+1);
+	xrefs[len] = xmalloc(slen + 1);
 	strncpy(xrefs[len], p, slen);
 	xrefs[len][slen] = '\0';
 
 	if (++len == xrefsize) {
 	    /* grow xrefs if needed. */
 	    xrefsize *= 2;
-	    RENEW(xrefs, char *, xrefsize);
+            xrefs = xrealloc(xrefs, xrefsize * sizeof(char *));
 	}
 
  	p = q;
@@ -352,7 +352,7 @@ CrackGroups(char *group, unsigned int *lenp) {
 
     len = 0;
     grpsize = 5;
-    groups = NEW(char *, grpsize);
+    groups = xmalloc(grpsize * sizeof(char *));
 
     /* skip leading spaces */
     for (p=group; *p == ' ' ; p++) ;
@@ -368,14 +368,14 @@ CrackGroups(char *group, unsigned int *lenp) {
 	for (q=p; *q && *q != ',' && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
 
 	slen = q-p;
-	groups[len] = NEW(char, slen+1);
+	groups[len] = xmalloc(slen + 1);
 	strncpy(groups[len], p, slen);
 	groups[len][slen] = '\0';
 
 	if (++len == grpsize) {
 	    /* grow groups if needed. */
 	    grpsize *= 2;
-	    RENEW(groups, char *, grpsize);
+            groups = xrealloc(groups, grpsize * sizeof(char *));
 	}
 
  	p = q;
@@ -513,7 +513,7 @@ main(int ac, char *av[])
 
 	    /* Process each newsgroup... */
 	    if (base) {
-		DISPOSE(base);
+		free(base);
 		base = NULL;
 	    }
 	    for (i=0; (unsigned)i<numxrefs; i++) {
@@ -586,7 +586,7 @@ main(int ac, char *av[])
 		    } else {
 			if (!CopyArt(art, dest, Concat))
                             syswarn("copying %s to %s failed", buff, dest);
-			base = COPY(dest);
+			base = xstrdup(dest);
 		    }
 
 	            /* Write index. */
@@ -602,8 +602,8 @@ main(int ac, char *av[])
 	    SMfreearticle(art);
 	    art = NULL;
 	    /* Free up the xrefs storage space */
-	    for ( i=0; (unsigned)i<numxrefs; i++) DISPOSE(xrefs[i]);
-	    DISPOSE(xrefs);
+	    for ( i=0; (unsigned)i<numxrefs; i++) free(xrefs[i]);
+	    free(xrefs);
 	    numxrefs = 0;
 	    xrefs = NULL;
 	} else {

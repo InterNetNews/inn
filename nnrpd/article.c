@@ -245,7 +245,7 @@ SendIOb(const char *p, int len) {
     int tocopy;
     
     if (_IO_buffer_ == NULL)
-        _IO_buffer_ = NEW(char, BIG_BUFFER);
+        _IO_buffer_ = xmalloc(BIG_BUFFER);
 
     while (len > 0) {
         tocopy = (len > (BIG_BUFFER - highwater)) ? (BIG_BUFFER - highwater) : len;
@@ -552,11 +552,11 @@ char *GetHeader(const char *header)
 		    xrefheader = TRUE;
 		if (retval == NULL) {
 		    retlen = q - p + VirtualPathlen + 1;
-		    retval = NEW(char, retlen);
+		    retval = xmalloc(retlen);
 		} else {
 		    if ((q - p + VirtualPathlen + 1) > retlen) {
 			retlen = q - p + VirtualPathlen + 1;
-			RENEW(retval, char, retlen);
+                        retval = xrealloc(retval, retlen);
 		    }
 		}
 		if (pathheader && (VirtualPathlen > 0)) {
@@ -978,15 +978,15 @@ build_groups(char *buff)
 {
     char *next, *p, *q, *newsgroupbuff;
 
-    newsgroupbuff = p = COPY(buff);
+    newsgroupbuff = p = xstrdup(buff);
     if ((p = strchr(p, ' ')) == NULL) {
-	DISPOSE(newsgroupbuff);
+	free(newsgroupbuff);
 	return false;
     }
 
     for (buff[0] = '\0', q = buff, p++; *p != '\0'; ) {
 	if ((next = strchr(p, ':')) == NULL) {
-	    DISPOSE(newsgroupbuff);
+	    free(newsgroupbuff);
 	    return false;
 	}
 	*next++ = '\0';
@@ -996,7 +996,7 @@ build_groups(char *buff)
 	    break;
 	*p = ',';
     }
-    DISPOSE(newsgroupbuff);
+    free(newsgroupbuff);
     return true;
 }
 
@@ -1147,5 +1147,5 @@ void CMDpat(int ac, char *av[])
 	cvector_free(vector);
 
     if (pattern)
-	DISPOSE(pattern);
+	free(pattern);
 }

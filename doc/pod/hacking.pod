@@ -363,12 +363,12 @@ portability traps or that need some fixing up on some platforms.  Look in
 include/portable and familiarize yourself with them and use them where
 appropriate.
 
-Another frequently included header file is F<macros.h>, which defines the
-NEW(), COPY(), and DISPOSE() macros that are used throughout INN for
-memory management rather than directly calling malloc(), strdup(), and
-free().  (They actually use xmalloc() instead so you don't have to check
-the return value.)  Alternately, xmalloc(), xstrdup(), and free() can be
-called directly; the first two are provided by libinn.
+Another frequently included header file is F<libinn.h>, which among other
+things defines xmalloc(), xrealloc(), xstrdup(), and xcalloc(), which are
+checked versions of the standard memory allocation routines that terminate
+the program if the memory allocation fails.  These should generally always
+be used instead of the regular C versions.  F<libinn.h> also provides
+various other utility functions that are frequently used.
 
 F<paths.h> includes a wide variety of paths determined at configure time,
 both default paths to various parts of INN and paths to programs.  Don't
@@ -376,9 +376,9 @@ just use the default paths, though, if they're also configurable in
 F<inn.conf>; instead, call ReadInnConf() and use the global innconf
 structure.
 
-Other files in include, most notably F<libinn.h>, are interfaces to
-particular bits of INN library functionality or are used for other
-purposes; see the comments in each file.
+Other files in include are interfaces to particular bits of INN library
+functionality or are used for other purposes; see the comments in each
+file.
 
 Eventually, the header files will be separated into installed header files
 and uninstalled header files; the latter are those headers that are used

@@ -146,7 +146,7 @@ STATUSsummary(void)
 	    break;
     }
     if (status == NULL) {
-      status = NEW(STATUS, 1);
+      status = xmalloc(sizeof(STATUS));
       peers++;                                              /* a new peer */
       strcpy (status->name, TempString);                         /* name */
       strcpy (status->ip_addr,
@@ -326,7 +326,7 @@ STATUSsummary(void)
     }
     fputc ('\n', F) ;
     tmp = status->next;
-    DISPOSE(status);
+    free(status);
     status = tmp;
   }
 

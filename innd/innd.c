@@ -369,15 +369,15 @@ main(int ac, char *av[])
 	    innconf->maxconnections = atoi(optarg);
 	    break;
 	case 'I':
-	    if (innconf->bindaddress) DISPOSE(innconf->bindaddress);
-	    innconf->bindaddress = COPY(optarg);
+	    if (innconf->bindaddress) free(innconf->bindaddress);
+	    innconf->bindaddress = xstrdup(optarg);
 	    break;
 	case 'l':
 	    innconf->maxartsize = atol(optarg);
 	    break;
 	case 'm':
 	    if (ModeReason)
-		DISPOSE(ModeReason);
+		free(ModeReason);
 	    switch (*optarg) {
 	    default:
 		Usage();
@@ -410,7 +410,7 @@ main(int ac, char *av[])
 	       called inndstart. */
 	    if (fd[0] != -1)
 		break;
-	    t = COPY(optarg);
+	    t = xstrdup(optarg);
 	    p = strtok(t, ",");
 	    j = 0;
 	    do {
@@ -419,7 +419,7 @@ main(int ac, char *av[])
 		    break;
 	    } while ((p = strtok(NULL, ",")) != NULL);
 	    fd[j] = -1;
-	    DISPOSE(t);
+	    free(t);
 	    break;
 	case 'P':
 	    innconf->port = atoi(optarg);
@@ -450,7 +450,7 @@ main(int ac, char *av[])
     if (ac != 0)
 	Usage();
     if (ModeReason && innconf->readerswhenstopped)
-	NNRPReason = COPY(ModeReason);
+	NNRPReason = xstrdup(ModeReason);
 
     if (ShouldSyntaxCheck) {
 	if ((p = CCcheckfile((char **)NULL)) == NULL)
@@ -466,7 +466,7 @@ main(int ac, char *av[])
     }
     Path.used = strlen(innconf->pathhost) + 1;
     Path.size = Path.used + 1;
-    Path.data = NEW(char, Path.size);
+    Path.data = xmalloc(Path.size);
     snprintf(Path.data, Path.size, "%s!", innconf->pathhost);
     if (innconf->pathalias == NULL) {
 	Pathalias.used = 0;
@@ -474,7 +474,7 @@ main(int ac, char *av[])
     } else {
 	Pathalias.used = strlen(innconf->pathalias) + 1;
 	Pathalias.size = Pathalias.used + 1;
-	Pathalias.data = NEW(char, Pathalias.size);
+	Pathalias.data = xmalloc(Pathalias.size);
 	snprintf(Pathalias.data, Pathalias.size, "%s!", innconf->pathalias);
     }
     /* Trace history ? */

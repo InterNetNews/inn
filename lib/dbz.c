@@ -390,7 +390,7 @@ create_truncate(const char *name, const char *pag1)
     if ((fn = enstring(name, pag1)) == NULL)
 	return FALSE;
     f = Fopen(fn, "w", TEMPORARYOPEN);
-    DISPOSE(fn);
+    free(fn);
     if (f == NULL) {
 	DEBUG(("dbz.c create_truncate: unable to create/truncate %s\n", pag1));
 	return FALSE;
@@ -457,7 +457,7 @@ dbzfresh(const char *name, off_t size)
     if ((fn = enstring(name, dir)) == NULL)
 	return FALSE;
     f = Fopen(fn, "w", TEMPORARYOPEN);
-    DISPOSE(fn);
+    free(fn);
     if (f == NULL) {
 	DEBUG(("dbzfresh: unable to write config\n"));
 	return FALSE;
@@ -584,7 +584,7 @@ dbzagain(const char *name, const char *oldname)
     if ((fn = enstring(oldname, dir))== NULL)
 	return FALSE;
     f = Fopen(fn, "r", TEMPORARYOPEN);
-    DISPOSE(fn);
+    free(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: cannot open old .dir file\n"));
 	return FALSE;
@@ -644,7 +644,7 @@ dbzagain(const char *name, const char *oldname)
     if (fn == NULL)
 	return FALSE;
     f = Fopen(fn, "w", TEMPORARYOPEN);
-    DISPOSE(fn);
+    free(fn);
     if (f == NULL) {
 	DEBUG(("dbzagain: unable to write new .dir\n"));
 	return FALSE;
@@ -682,11 +682,11 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
 
     if ((tab->fd = open(name, readonly ? O_RDONLY : O_RDWR)) < 0) {
 	DEBUG(("openhashtable: could not open raw\n"));
-	DISPOSE(name);
+	free(name);
 	errno = EDOM;
 	return FALSE;
     }
-    DISPOSE(name);
+    free(name);
 
     tab->reclen = reclen;
     close_on_exec(tab->fd, true);
@@ -715,7 +715,7 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
 static void closehashtable(hash_table *tab) {
     close(tab->fd);
     if (tab->incore == INCORE_MEM)
-	DISPOSE(tab->core);
+	free(tab->core);
     if (tab->incore == INCORE_MMAP) {
 #if defined(HAVE_MMAP)
 	if (munmap(tab->core, (int)conf.tsize * tab->reclen) == -1) {
@@ -775,7 +775,7 @@ dbzinit(const char *name)
 	readonly = TRUE;
     } else
 	readonly = FALSE;
-    DISPOSE(fname);
+    free(fname);
     if (dirf == NULL) {
 	DEBUG(("dbzinit: can't open .dir file\n"));
 	return FALSE;
@@ -834,7 +834,7 @@ enstring(const char *s1, const char *s2)
 {
     char *p;
 
-    p = NEW(char, strlen(s1) + strlen(s2) + 1);
+    p = xmalloc(strlen(s1) + strlen(s2) + 1);
     strcpy(p, s1);
     strcat(p, s2);
     return p;
@@ -862,7 +862,7 @@ dbzclose(void)
 	ret = FALSE;
     }
     if (basefname != NULL)
-	DISPOSE(basefname);
+	free(basefname);
     basef = NULL;
 #else
     closehashtable(&idxtab);
@@ -1317,12 +1317,12 @@ getcore(hash_table *tab)
 	return FALSE;
 #endif
     } else {
-	it = NEW(char, conf.tsize * tab->reclen);
+	it = xmalloc(conf.tsize * tab->reclen);
 	
 	nread = read(tab->fd, it, tab->reclen * conf.tsize);
 	if (nread < 0) {
 	    DEBUG(("getcore: read failed\n"));
-	    DISPOSE(it);
+	    free(it);
 	    return FALSE;
 	}
 	

@@ -36,15 +36,15 @@ void CMDgroup(int ac, char *av[])
 	    Printf("%d No group specified\r\n", NNTP_XGTITLE_BAD);
 	    return;
 	} else {
-	    group = COPY(GRPcur);
+	    group = xstrdup(GRPcur);
 	}
     } else {
-	group = COPY(av[1]);
+	group = xstrdup(av[1]);
     }
     
     if (!OVgroupstats(group, &ARTlow, &ARThigh, &count, NULL)) {
 	Reply("%s %s\r\n", NOSUCHGROUP, group);
-	DISPOSE(group);
+	free(group);
 	return;
     }
 
@@ -59,7 +59,7 @@ void CMDgroup(int ac, char *av[])
 	    if (reply != NULL) {
 	        syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, group, reply);
 		Reply("%d %s\r\n", NNTP_ACCESS_VAL, reply);
-		DISPOSE(group);
+		free(group);
 		return;
 	    }
 	}
@@ -72,12 +72,12 @@ void CMDgroup(int ac, char *av[])
 	grplist[1] = NULL;
 	if (!PERMmatch(PERMreadlist, grplist)) {
 	    Reply("%s %s\r\n", NOSUCHGROUP, group);
-	    DISPOSE(group);
+	    free(group);
 	    return;
 	}
     } else {
 	Reply("%s %s\r\n", NOSUCHGROUP, group);
-	DISPOSE(group);
+	free(group);
 	return;
     }
 
@@ -107,7 +107,7 @@ void CMDgroup(int ac, char *av[])
 		handle = OVopensearch(group, low, ARThigh);
 		if (!handle) {
 		    Reply("%d group disappeared\r\n", NNTP_TEMPERR_VAL);
-		    DISPOSE(group);
+		    free(group);
 		    return;
 		}
 		prev = low;
@@ -129,11 +129,11 @@ void CMDgroup(int ac, char *av[])
 	if (GRPcur) {
 	    if (!EQ(GRPcur, group)) {
 		OVctl(OVCACHEFREE, &boolval);
-		DISPOSE(GRPcur);
-		GRPcur = COPY(group);
+		free(GRPcur);
+		GRPcur = xstrdup(group);
 	    }
 	} else
-	    GRPcur = COPY(group);
+	    GRPcur = xstrdup(group);
     } else {
 	/* Must be doing a "listgroup" command.  We used to just return
            something bland here ("Article list follows"), but reference NNTP
@@ -157,16 +157,16 @@ void CMDgroup(int ac, char *av[])
 	    if (GRPcur) {
 		if (!EQ(GRPcur, group)) {
 		    OVctl(OVCACHEFREE, &boolval);
-		    DISPOSE(GRPcur);
-		    GRPcur = COPY(group);
+		    free(GRPcur);
+		    GRPcur = xstrdup(group);
 		}
 	    } else
-		GRPcur = COPY(group);
+		GRPcur = xstrdup(group);
 	} else {
 	    Reply("%s %s\r\n", NOSUCHGROUP, group);
 	}
     }
-    DISPOSE(group);
+    free(group);
 }
 
 

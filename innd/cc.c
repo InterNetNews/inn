@@ -140,11 +140,11 @@ CCcopyargv(char *av[])
 	continue;
 
     /* Get the vector, copy each element. */
-    for (v = CCargv = NEW(char*, i + 1); *av; av++) {
+    for (v = CCargv = xmalloc((i + 1) * sizeof(char *)); *av; av++) {
 	/* not to renumber */
 	if (strncmp(*av, "-r", 2) == 0)
 	    continue;
-	*v++ = COPY(*av);
+	*v++ = xstrdup(*av);
     }
     *v = NULL;
 }
@@ -287,7 +287,7 @@ CCallow(char *av[])
     p = av[0];
     if (*p && !EQ(p, RejectReason))
 	return "1 Wrong reason";
-    DISPOSE(RejectReason);
+    free(RejectReason);
     RejectReason = NULL;
     return NULL;
 }
@@ -319,7 +319,7 @@ CCbegin(char *av[])
     for (strings = SITEreadfile(TRUE), i = 0; (p = strings[i]) != NULL; i++)
 	if ((p[length] == NF_FIELD_SEP || p[length] == NF_SUBFIELD_SEP)
 	 && caseEQn(p, av[0], length)) {
-	    p = COPY(p);
+	    p = xstrdup(p);
 	    break;
 	}
     if (p == NULL)
@@ -335,24 +335,24 @@ CCbegin(char *av[])
 		break;
 	if (i < 0) {
 	    nSites++;
-	    RENEW(Sites, SITE, nSites);
+            Sites = xrealloc(Sites, nSites * sizeof(SITE));
 	    sp = &Sites[nSites - 1];
 	    sp->Next = sp->Prev = NOSITE;
 	    for (i = nGroups, ngp = Groups; --i >= 0; ngp++) {
-		RENEW(ngp->Sites, int, nSites);
-		RENEW(ngp->Poison, int, nSites);
+                ngp->Sites = xrealloc(ngp->Sites, nSites * sizeof(int));
+                ngp->Poison = xrealloc(ngp->Poison, nSites * sizeof(int));
 	    }
 	}
     }
 
     /* Parse. */
-    subbed = NEW(char, nGroups);
-    poison = NEW(char, nGroups);
+    subbed = xmalloc(nGroups);
+    poison = xmalloc(nGroups);
     error = SITEparseone(p, sp, subbed, poison);
-    DISPOSE(subbed);
-    DISPOSE(poison);
+    free(subbed);
+    free(poison);
     if (error != NULL) {
-	DISPOSE((void *)p);
+	free((void *)p);
 	syslog(L_ERROR, "%s bad_newsfeeds %s", av[0], error);
 	return "1 Parse error";
     }
@@ -381,14 +381,14 @@ CCdochange(NEWSGROUP *ngp, char *Rest)
     if (Mode != OMrunning)
 	return CCnotrunning;
 
-    p = COPY(ngp->Name);
+    p = xstrdup(ngp->Name);
     if (!ICDchangegroup(ngp, Rest)) {
 	syslog(L_NOTICE, "%s cant change_group %s to %s", LogName, p, Rest);
-	DISPOSE(p);
+	free(p);
 	return "1 Change failed (probably can't write active?)";
     }
     syslog(L_NOTICE, "%s change_group %s to %s", LogName, p, Rest);
-    DISPOSE(p);
+    free(p);
     return NULL;
 }
 
@@ -484,7 +484,7 @@ CCcheckfile(char *unused[])
     }
     SITEfree(&fake);
   }
-  DISPOSE(strings);
+  free(strings);
   /* restore global variables not to be changed */
   NeedHeaders = needheaders;
   NeedOverview = needoverview;
@@ -684,11 +684,11 @@ CCgo(char *av[])
 
     p = av[0];
     if (Reservation && EQ(p, Reservation)) {
-	DISPOSE(Reservation);
+	free(Reservation);
 	Reservation = NULL;
     }
     if (RejectReason && EQ(p, RejectReason)) {
-	DISPOSE(RejectReason);
+	free(RejectReason);
 	RejectReason = NULL;
     }
 
@@ -704,7 +704,7 @@ CCgo(char *av[])
     PYmode(Mode, OMrunning, p);
 #endif /* defined(DO_PYTHON) */
     
-    DISPOSE(ModeReason);
+    free(ModeReason);
     ModeReason = NULL;
     Mode = OMrunning;
     ThrottledbyIOError = FALSE;
@@ -921,7 +921,7 @@ CCname(char *av[])
     p = av[0];
     if (*p != '\0') {
 	if ((cp = CHANfromdescriptor(atoi(p))) == NULL)
-	    return COPY(CCnochannel);
+	    return xstrdup(CCnochannel);
 	snprintf(CCreply.data, CCreply.size, "0 %s", CHANname(cp));
 	return CCreply.data;
     }
@@ -1041,7 +1041,7 @@ CCnewgroup(char *av[])
 	    IOError(WHEN, oerrno);
 	}
 
-	DISPOSE(buff);
+	free(buff);
 	
 	if (close(fd) < 0) {
 	    oerrno = errno;
@@ -1167,7 +1167,7 @@ CCblock(OPERATINGMODE NewMode, char *reason)
                      Reservation);
 	    return CCreply.data;
 	}
-	DISPOSE(Reservation);
+	free(Reservation);
 	Reservation = NULL;
     }
 
@@ -1182,8 +1182,8 @@ CCblock(OPERATINGMODE NewMode, char *reason)
     InndHisClose();
     Mode = NewMode;
     if (ModeReason)
-	DISPOSE(ModeReason);
-    ModeReason = COPY(reason);
+	free(ModeReason);
+    ModeReason = xstrdup(reason);
     if (NNRPReason == NULL && !innconf->readerswhenstopped) {
 	av[0] = NO;
 	av[1] = ModeReason;
@@ -1230,7 +1230,7 @@ CCreaders(char *av[])
 	p = av[1];
 	if (*p && !EQ(p, NNRPReason))
 	    return "1 Wrong reason";
-	DISPOSE(NNRPReason);
+	free(NNRPReason);
 	NNRPReason = NULL;
 	break;
     case 'n':
@@ -1241,7 +1241,7 @@ CCreaders(char *av[])
 	    return CCnoreason;
 	if (strlen(p) > MAX_REASON_LEN) /* MAX_REASON_LEN is as big as is safe */
 	    return CCbigreason;
-	NNRPReason = COPY(p);
+	NNRPReason = xstrdup(p);
 	break;
     }
     return NULL;
@@ -1293,7 +1293,7 @@ CCreject(char *av[])
 	return "1 Already rejecting";
     if (strlen(av[0]) > MAX_REASON_LEN)	/* MAX_REASON_LEN is as big as is safe */
 	return CCbigreason;
-    RejectReason = COPY(av[0]);
+    RejectReason = xstrdup(av[0]);
     return NULL;
 }
 
@@ -1371,18 +1371,18 @@ CCreload(char *av[])
 	    syslog(L_FATAL, "%s No pathhost set", LogName);
 	    exit(1);
 	}   
-	DISPOSE(Path.Data);
+	free(Path.Data);
 	Path.Used = strlen(innconf->pathhost) + 1;
-	Path.Data = NEW(char, Path.Used + 1);
+	Path.Data = xmalloc(Path.Used + 1);
 	sprintf(Path.Data, "%s!", innconf->pathhost);
 	if (Pathalias.Used > 0)
-	    DISPOSE(Pathalias.Data);
+	    free(Pathalias.Data);
 	if (innconf->pathalias == NULL) {
 	    Pathalias.Used = 0;
 	    Pathalias.Data = NULL;
 	} else {
 	    Pathalias.Used = strlen(innconf->pathalias) + 1;
-	    Pathalias.Data = NEW(char, Pathalias.Used + 1);
+	    Pathalias.Data = xmalloc(Pathalias.Used + 1);
 	    sprintf(Pathalias.Data, "%s!", innconf->pathalias);
 	}
     }
@@ -1457,13 +1457,13 @@ CCreserve(char *av[])
 	    return "1 Already reserved";
 	if (strlen(p) > MAX_REASON_LEN) /* MAX_REASON_LEN is as big as is safe */
 	    return CCbigreason;
-	Reservation = COPY(p);
+	Reservation = xstrdup(p);
     }
     else {
 	/* Trying to remove a reservation. */
 	if (Reservation == NULL)
 	    return "1 Not reserved";
-	DISPOSE(Reservation);
+	free(Reservation);
 	Reservation = NULL;
     }
     return NULL;
@@ -1857,7 +1857,7 @@ CCreader(CHANNEL *cp)
 
     /* Build the reply address and send the reply. */
     len = strlen(p) + HEADER_SIZE ;
-    tbuff = NEW(char,len + 1);
+    tbuff = xmalloc(len + 1);
     
     protocol = ICC_PROTOCOL_1 ;
     memcpy (tbuff,&protocol,sizeof (protocol)) ;
@@ -1896,7 +1896,7 @@ CCreader(CHANNEL *cp)
 	    syslog(L_ERROR, "%s cant close %s %m", LogName, argv[0]);
     }
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
-    DISPOSE (tbuff) ;
+    free (tbuff) ;
 }
 
 
@@ -1987,9 +1987,9 @@ CCclose(void)
     CCchan = NULL;
     if (unlink(CCpath) < 0)
 	syslog(L_ERROR, "%s cant unlink %s %m", LogName, CCpath);
-    DISPOSE(CCpath);
+    free(CCpath);
     CCpath = NULL;
-    DISPOSE(CCreply.data);
+    free(CCreply.data);
     CCreply.data = NULL;
     CCreply.size = 0;
     CCreply.used = 0;

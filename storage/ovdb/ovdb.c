@@ -713,7 +713,7 @@ static int groupid_new(group_id_t *gno, DB_TXN *tid)
     }
 
     n = val.size / sizeof(group_id_t);
-    freelist = NEW(group_id_t, n);
+    freelist = xmalloc(n * sizeof(group_id_t));
     memcpy(freelist, val.data, val.size);
     if(n <= GROUPID_MIN_FREELIST ) {
 	newgno = freelist[n-1];
@@ -727,11 +727,11 @@ static int groupid_new(group_id_t *gno, DB_TXN *tid)
 
     ret = groupinfo->put(groupinfo, tid, &key, &val, 0);
     if (ret != 0) {
-	DISPOSE(freelist);
+	free(freelist);
 	return ret;
     }
 
-    DISPOSE(freelist);
+    free(freelist);
     *gno = newgno;
     return 0;
 }
@@ -764,16 +764,16 @@ static int groupid_free(group_id_t gno, DB_TXN *tid)
     n = val.size / sizeof(group_id_t);
     if(n > GROUPID_MAX_FREELIST)
 	return 0;
-    freelist = NEW(group_id_t, n+1);
+    freelist = xmalloc((n + 1) * sizeof(group_id_t));
     memcpy(freelist, val.data, val.size);
 
     if(gno >= freelist[n-1]) {	/* shouldn't happen */
-	DISPOSE(freelist);
+	free(freelist);
 	return 0;
     }
     for(i = 0; i < n-1; i++) {
 	if(gno == freelist[i]) {	/* already on freelist */
-	    DISPOSE(freelist);
+	    free(freelist);
 	    return 0;
 	}
     }
@@ -785,7 +785,7 @@ static int groupid_free(group_id_t gno, DB_TXN *tid)
 
     ret = groupinfo->put(groupinfo, tid, &key, &val, 0);
 
-    DISPOSE(freelist);
+    free(freelist);
     return ret;
 }
 
@@ -859,7 +859,7 @@ static bool delete_old_stuff(int forgotton)
     int listlen = 20, listcount = 0;
     int i, ret;
 
-    dellist = NEW(char *, listlen);
+    dellist = xmalloc(listlen * sizeof(char *));
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
@@ -872,7 +872,7 @@ static bool delete_old_stuff(int forgotton)
     ret = groupinfo->cursor(groupinfo, NULL, &cursor, 0);
     if (ret != 0) {
 	syslog(L_ERROR, "OVDB: delete_old_stuff: groupinfo->cursor: %s", db_strerror(ret));
-	DISPOSE(dellist);
+	free(dellist);
 	return FALSE;
     }
 
@@ -886,13 +886,13 @@ static bool delete_old_stuff(int forgotton)
 	}
 	if((!forgotton && (gi.status & GROUPINFO_DELETED))
 		|| (forgotton && (gi.expired < eo_start))) {
-	    dellist[listcount] = NEW(char, key.size + 1);
+	    dellist[listcount] = xmalloc(key.size + 1);
 	    memcpy(dellist[listcount], key.data, key.size);
 	    dellist[listcount][key.size] = 0;
 	    listcount++;
 	    if(listcount >= listlen) {
 		listlen += 20;
-		RENEW(dellist, char *, listlen);
+                dellist = xrealloc(dellist, listlen * sizeof(char *));
 	    }
 	}
     }
@@ -982,8 +982,8 @@ static bool delete_old_stuff(int forgotton)
     }
 out:
     for(i = 0; i < listcount; i++)
-	DISPOSE(dellist[i]);
-    DISPOSE(dellist);
+	free(dellist[i]);
+    free(dellist);
     return TRUE;
 }
 
@@ -1078,13 +1078,13 @@ bool ovdb_getlock(int mode)
 	lockfd = open(lockfn,
 		mode == OVDB_LOCK_NORMAL ? O_RDWR : O_CREAT|O_RDWR, 0660);
 	if(lockfd == -1) {
-	    DISPOSE(lockfn);
+	    free(lockfn);
 	    if(errno == ENOENT)
 		syslog(L_FATAL, "OVDB: can not open database unless ovdb_monitor is running.");
 	    return FALSE;
 	}
 	close_on_exec(lockfd, TRUE);
-	DISPOSE(lockfn);
+	free(lockfn);
     } else
 	return TRUE;
 
@@ -1132,18 +1132,18 @@ bool ovdb_check_pidfile(char *file)
     if(f == -1) {
 	if(errno != ENOENT)
 	    syslog(L_FATAL, "OVDB: can't open %s: %m", pidfn);
-	DISPOSE(pidfn);
+	free(pidfn);
 	return FALSE;
     }
     memset(buf, 0, SMBUF);
     if(read(f, buf, SMBUF-1) < 0) {
 	syslog(L_FATAL, "OVDB: can't read from %s: %m", pidfn);
-	DISPOSE(pidfn);
+	free(pidfn);
 	close(f);
 	return FALSE;
     }
     close(f);
-    DISPOSE(pidfn);
+    free(pidfn);
     pid = atoi(buf);
     if(pid <= 1) {
 	return FALSE;
@@ -1304,7 +1304,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
 
 #if DB_VERSION_MAJOR == 2
 
-    OVDBenv = NEW(DB_ENV,1);
+    OVDBenv = xmalloc(sizeof(DB_ENV));
     memset(OVDBenv, 0, sizeof(DB_ENV));
 
     OVDBenv->db_errcall = OVDBerror;
@@ -1314,7 +1314,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
     /* initialize environment */
     ret = db_appinit(ovdb_conf.home, NULL, OVDBenv, ai_flags);
     if (ret != 0) {
-	DISPOSE(OVDBenv);
+	free(OVDBenv);
 	OVDBenv = NULL;
 	syslog(L_FATAL, "OVDB: db_appinit failed: %s", db_strerror(ret));
 	return ret;
@@ -1409,7 +1409,7 @@ bool ovdb_open(int mode)
     _dbinfo.bt_minkey = ovdb_conf.minkey;
 #endif
 
-    dbs = NEW(DB *, ovdb_conf.numdbfiles);
+    dbs = xmalloc(ovdb_conf.numdbfiles * sizeof(DB *));
     memset(dbs, 0, sizeof(DB *) * ovdb_conf.numdbfiles);
     
     if(!oneatatime) {
@@ -1492,9 +1492,9 @@ bool ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 	/* we don't use the alias yet, but the OV API will be extended
 	   at some point so that the alias is returned also */
 	if(repl.aliaslen != 0) {
-	    char *buf = NEW(char, repl.aliaslen);
+	    char *buf = xmalloc(repl.aliaslen);
 	    crecv(buf, repl.aliaslen);
-	    DISPOSE(buf);
+	    free(buf);
 	}
 
 	if(lo)
@@ -1763,11 +1763,11 @@ bool ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 
     if(databuflen == 0) {
 	databuflen = BIG_BUFFER;
-	databuf = NEW(char, databuflen);
+	databuf = xmalloc(databuflen);
     }
     if(databuflen < len + sizeof(struct ovdata)) {
 	databuflen = len + sizeof(struct ovdata);
-	RENEW(databuf, char, databuflen);
+        databuf = xrealloc(databuf, databuflen);
     }
 
     /* hmm... BerkeleyDB needs something like a 'struct iovec' so that we don't
@@ -1943,17 +1943,17 @@ void *ovdb_opensearch(char *group, int low, int high)
 	return NULL;
     }
 
-    s = NEW(struct ovdbsearch, 1);
+    s = xmalloc(sizeof(struct ovdbsearch));
     db = get_db_bynum(gi.current_db);
     if(db == NULL) {
-	DISPOSE(s);
+	free(s);
 	return NULL;
     }
 
     ret = db->cursor(db, NULL, &(s->cursor), 0);
     if (ret != 0) {
 	syslog(L_ERROR, "OVDB: opensearch: s->db->cursor: %s", db_strerror(ret));
-	DISPOSE(s);
+	free(s);
 	return NULL;
     }
 
@@ -1991,10 +1991,10 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	if(repl.len > buflen) {
 	    if(buflen == 0) {
 		buflen = repl.len + 512;
-		databuf = NEW(char, buflen);
+		databuf = xmalloc(buflen);
 	    } else {
 		buflen = repl.len + 512;
-		RENEW(databuf, char, buflen);
+                databuf = xrealloc(databuf, buflen);
 	    }
 	}
 	crecv(databuf, repl.len);
@@ -2123,7 +2123,7 @@ void ovdb_closesearch(void *handle)
 	if(s->cursor)
 	    s->cursor->c_close(s->cursor);
 
-	DISPOSE(handle);
+	free(handle);
     }
 }
 
@@ -2691,7 +2691,7 @@ void ovdb_close_berkeleydb(void)
 	/* close db environment */
 #if DB_VERSION_MAJOR == 2
 	db_appexit(OVDBenv);
-	DISPOSE(OVDBenv);
+	free(OVDBenv);
 #else
 	OVDBenv->close(OVDBenv, 0);
 #endif
@@ -2713,7 +2713,7 @@ void ovdb_close(void)
 	for(i = 0; i < ovdb_conf.numdbfiles; i++)
 	    close_db_file(i);
 
-	DISPOSE(dbs);
+	free(dbs);
 	dbs = NULL;
     }
     if(groupinfo) {

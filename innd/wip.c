@@ -37,7 +37,7 @@ WIPnew(const char *messageid, CHANNEL *cp)
 	   sizeof(bucket) < sizeof(hash) ? sizeof(bucket) : sizeof(hash));
     bucket = bucket % WIPTABLESIZE;
     
-    new = NEW(WIP, sizeof(WIP));
+    new = xmalloc(sizeof(WIP));
     new->MessageID = hash;
     new->Timestamp = Now.time;
     new->Chan = cp;
@@ -97,7 +97,7 @@ WIPfree(WIP *wp)
 	prev->Next = cur->Next;
 
     /* unlink the entry and free the memory */
-    DISPOSE(wp);
+    free(wp);
 }
 
 /* Check if the given messageid is being transfered on another channel.  If

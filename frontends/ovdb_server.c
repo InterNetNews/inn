@@ -147,7 +147,7 @@ do_groupstats(struct reader *r)
 {
     struct rs_groupstats *reply;
     char *group = (char *)(r->buf) + sizeof(struct rs_cmd);
-    reply = NEW(struct rs_groupstats, 1);
+    reply = xmalloc(sizeof(struct rs_groupstats));
 
     /*syslog(LOG_DEBUG, "OVDB: rs: do_groupstats '%s'", group);*/
     if(ovdb_groupstats(group, &reply->lo, &reply->hi, &reply->count, &reply->flag)) {
@@ -156,7 +156,7 @@ do_groupstats(struct reader *r)
     } else {
 	reply->status = CMD_GROUPSTATS | RPLY_ERROR;
     }
-    DISPOSE(r->buf);
+    free(r->buf);
     r->buf = reply;
     r->buflen = sizeof(struct rs_groupstats);
     r->bufpos = 0;
@@ -169,7 +169,7 @@ do_opensrch(struct reader *r)
     struct rs_cmd *cmd = r->buf;
     struct rs_opensrch *reply;
     char *group = (char *)(r->buf) + sizeof(struct rs_cmd);
-    reply = NEW(struct rs_opensrch, 1);
+    reply = xmalloc(sizeof(struct rs_opensrch));
 
     /*syslog(LOG_DEBUG, "OVDB: rs: do_opensrch '%s' %d %d", group, cmd->artlo, cmd->arthi);*/
 
@@ -179,7 +179,7 @@ do_opensrch(struct reader *r)
     } else {
     	reply->status = CMD_OPENSRCH;
     }
-    DISPOSE(r->buf);
+    free(r->buf);
     r->buf = reply;
     r->buflen = sizeof(struct rs_opensrch);
     r->bufpos = 0;
@@ -198,7 +198,7 @@ do_srch(struct reader *r)
     char *data;
 
     if(ovdb_search(cmd->handle, &artnum, &data, &len, &token, &arrived)) {
-    	reply = NEW(char, (sizeof(struct rs_srch) + len));
+    	reply = xmalloc(sizeof(struct rs_srch) + len);
 	reply->status = CMD_SRCH;
 	reply->artnum = artnum;
 	reply->token = token;
@@ -207,11 +207,11 @@ do_srch(struct reader *r)
 	memcpy((char *)reply + sizeof(struct rs_srch), data, len);
 	r->buflen = sizeof(struct rs_srch) + len;
     } else {
-    	reply = NEW(struct rs_srch, 1);
+    	reply = xmalloc(sizeof(struct rs_srch));
 	reply->status = CMD_SRCH | RPLY_ERROR;
 	r->buflen = sizeof(struct rs_srch);
     }
-    DISPOSE(r->buf);
+    free(r->buf);
     r->buf = reply;
     r->bufpos = 0;
     r->mode = MODE_WRITE;
@@ -223,7 +223,7 @@ do_closesrch(struct reader *r)
     struct rs_cmd *cmd = r->buf;
 
     ovdb_closesearch(cmd->handle);
-    DISPOSE(r->buf);
+    free(r->buf);
     r->buf = NULL;
     r->bufpos = r->buflen = 0;
     r->mode = MODE_READ;
@@ -239,16 +239,16 @@ do_artinfo(struct reader *r)
 
     /*syslog(LOG_DEBUG, "OVDB: rs: do_artinfo: '%s' %d", group, cmd->artlo);*/
     if(ovdb_getartinfo(group, cmd->artlo, &token)) {
-    	reply = NEW(char, (sizeof(struct rs_artinfo)));
+    	reply = xmalloc(sizeof(struct rs_artinfo));
 	reply->status = CMD_ARTINFO;
 	reply->token = token;
 	r->buflen = sizeof(struct rs_artinfo);
     } else {
-    	reply = NEW(struct rs_artinfo, 1);
+    	reply = xmalloc(sizeof(struct rs_artinfo));
 	reply->status = CMD_ARTINFO | RPLY_ERROR;
 	r->buflen = sizeof(struct rs_artinfo);
     }
-    DISPOSE(r->buf);
+    free(r->buf);
     r->buf = reply;
     r->bufpos = 0;
     r->mode = MODE_WRITE;
@@ -270,12 +270,12 @@ process_cmd(struct reader *r)
 		/* shoudn't happen... */
 		r->mode = MODE_CLOSED;
 		close(r->fd);
-		DISPOSE(r->buf);
+		free(r->buf);
 		r->buf = NULL;
 		return 0;
 	    }
 	    r->buflen += cmd->grouplen;
-	    RENEW(r->buf, char, r->buflen);
+            r->buf = xrealloc(r->buf, r->buflen);
 	    return 1;
 	}
     }
@@ -302,7 +302,7 @@ process_cmd(struct reader *r)
     default:
 	r->mode = MODE_CLOSED;
 	close(r->fd);
-	DISPOSE(r->buf);
+	free(r->buf);
 	r->buf = NULL;
 	break;
     }
@@ -318,7 +318,7 @@ handle_read(struct reader *r)
 
     if(r->buf == NULL) {
     	r->state = STATE_READCMD;
-    	r->buf = NEW(struct rs_cmd, 1);
+    	r->buf = xmalloc(sizeof(struct rs_cmd));
 	r->buflen = sizeof(struct rs_cmd);
 	r->bufpos = 0;
     }
@@ -329,7 +329,7 @@ again:
 	    return;
     	r->mode = MODE_CLOSED;
 	close(r->fd);
-	DISPOSE(r->buf);
+	free(r->buf);
 	r->buf = NULL;
     }
     r->bufpos += n;
@@ -354,13 +354,13 @@ handle_write(struct reader *r)
 	    return;
     	r->mode = MODE_CLOSED;
 	close(r->fd);
-	DISPOSE(r->buf);
+	free(r->buf);
 	r->buf = NULL;
     }
     r->bufpos += n;
 
     if(r->bufpos >= r->buflen) {
-	DISPOSE(r->buf);
+	free(r->buf);
     	r->buf = NULL;
 	r->bufpos = r->buflen = 0;
 	r->mode = MODE_READ;
@@ -376,7 +376,7 @@ newclient(int fd)
 
     if(numreaders >= readertablen) {
     	readertablen += 50;
-	RENEW(readertab, struct reader, readertablen);
+        readertab = xrealloc(readertab, readertablen * sizeof(struct reader));
     }
 
     r = &(readertab[numreaders]);
@@ -386,7 +386,7 @@ newclient(int fd)
     r->mode = MODE_WRITE;
     r->buflen = sizeof(OVDB_SERVER_BANNER);
     r->bufpos = 0;
-    r->buf = COPY(OVDB_SERVER_BANNER);
+    r->buf = xstrdup(OVDB_SERVER_BANNER);
     r->lastactive = now;
 
     handle_write(r);
@@ -402,7 +402,7 @@ delclient(int which)
     	close(r->fd);
 
     if(r->buf != NULL) {
-    	DISPOSE(r->buf);
+    	free(r->buf);
     }
 
     /* numreaders will get decremented by the calling function */
@@ -440,7 +440,7 @@ serverproc(int me)
     } else {
     	readertablen = 50;
     }
-    readertab = NEW(struct reader, readertablen);    
+    readertab = xmalloc(readertablen * sizeof(struct reader));
     for(i = 0; i < readertablen; i++) {
 	readertab[i].mode = MODE_CLOSED;
 	readertab[i].buf = NULL;

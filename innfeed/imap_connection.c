@@ -3998,7 +3998,7 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
     cxn->current_rcpts_okayed = 0;
     
     if(mailfrom_name == NULL)
-	mailfrom_name = COPY("");
+	mailfrom_name = xstrdup("");
     p = concat("RSET\r\n"
                "MAIL FROM:<", mailfrom_name, ">\r\n",
                rcpt_list,

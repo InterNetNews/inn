@@ -72,9 +72,9 @@ OVopen(int mode)
     if (innconf->ovgrouppat != NULL) {
 	for (i = 1, p = innconf->ovgrouppat; *p && (p = strchr(p+1, ',')); i++);
 	OVnumpatterns = i;
-	OVpatterns = NEW(char *, OVnumpatterns);
+	OVpatterns = xmalloc(OVnumpatterns * sizeof(char *));
 	for (i = 0, p = strtok(innconf->ovgrouppat, ","); p != NULL && i <= OVnumpatterns ; i++, p = strtok(NULL, ","))
-	    OVpatterns[i] = COPY(p);
+	    OVpatterns[i] = xstrdup(p);
 	if (i != OVnumpatterns) {
 	    syslog(L_FATAL, "extra ',' in pattern");
 	    fprintf(stderr, "extra ',' in pattern");
@@ -177,23 +177,23 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
 
     if (xrefdatalen == 0) {
         xrefdatalen = BIG_BUFFER;
-        xrefdata = NEW(char, xrefdatalen);
+        xrefdata = xmalloc(xrefdatalen);
         if (innconf->ovgrouppat != NULL)
-            patcheck = NEW(char, xrefdatalen);
+            patcheck = xmalloc(xrefdatalen);
     }
     if (xreflen > xrefdatalen) {
         xrefdatalen = xreflen;
-        RENEW(xrefdata, char, xrefdatalen + 1);
+        xrefdata = xrealloc(xrefdata, xrefdatalen + 1);
         if (innconf->ovgrouppat != NULL)
-            RENEW(patcheck, char, xrefdatalen + 1);
+            patcheck = xrealloc(patcheck, xrefdatalen + 1);
     }
     if (overdatalen == 0) {
 	overdatalen = BIG_BUFFER;
-	overdata = NEW(char, overdatalen);
+	overdata = xmalloc(overdatalen);
     }
     if (len + 16 > overdatalen) {
 	overdatalen = len + 16;
-	RENEW(overdata, char, overdatalen);
+        overdata = xrealloc(overdata, overdatalen);
     }
 
     if (innconf->ovgrouppat != NULL) {

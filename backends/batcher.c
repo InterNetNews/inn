@@ -282,7 +282,7 @@ main(int ac, char *av[])
 
     /* Set initial counters, etc. */
     datasize = 8 * 1024;
-    data = NEW(char, datasize);
+    data = xmalloc(datasize);
     BytesInCB = 0;
     ArtsInCB = 0;
     Cookie = -1;

@@ -119,7 +119,7 @@ static int read_config(char *authfile, rad_config_t *radconf)
           die("expected server keyword on line %d", file->lineno);
 	if ((token = CONFgettoken(0, file)) == NULL)
           die("expected server name on line %d", file->lineno);
-	server = COPY(token->name);
+	server = xstrdup(token->name);
 	if ((token = CONFgettoken(radtoks, file)) == NULL 
 	    || token->type != RADlbrace)
           die("expected { on line %d", file->lineno);
@@ -145,11 +145,11 @@ static int read_config(char *authfile, rad_config_t *radconf)
 	  switch(type) {
 	  case RADsecret:
 	    if (radconfig->secret) continue;
-	    radconfig->secret = COPY(iter);
+	    radconfig->secret = xstrdup(iter);
 	    break;
 	  case RADhost:
 	    if (radconfig->radhost) continue;
-	    radconfig->radhost = COPY(iter);
+	    radconfig->radhost = xstrdup(iter);
 	    break;
 	  case RADport:
 	    if (radconfig->radport) continue;
@@ -157,7 +157,7 @@ static int read_config(char *authfile, rad_config_t *radconf)
 	    break;
 	  case RADlochost:
 	    if (radconfig->lochost) continue;
-	    radconfig->lochost = COPY(iter);
+	    radconfig->lochost = xstrdup(iter);
 	    break;
 	  case RADlocport:
 	    if (radconfig->locport) continue;
@@ -165,11 +165,11 @@ static int read_config(char *authfile, rad_config_t *radconf)
 	    break;
 	  case RADprefix:
 	    if (radconfig->prefix) continue;
-	    radconfig->prefix = COPY(iter);
+	    radconfig->prefix = xstrdup(iter);
 	    break;
 	  case RADsuffix:
 	    if (radconfig->suffix) continue;
-	    radconfig->suffix = COPY(iter);
+	    radconfig->suffix = xstrdup(iter);
 	    break;
 	  case RADsource:
 	    if (!strcasecmp(iter, "true"))
@@ -280,7 +280,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
           syswarn("cannot get local hostname");
           return(-2);
         }
-	config->lochost = COPY(hostname);
+	config->lochost = xstrdup(hostname);
       }
       if (config->lochost) {
 	if (inet_aton(config->lochost, &sinl.sin_addr) != 1) {

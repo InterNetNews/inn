@@ -8,12 +8,6 @@
 
 #include "config.h"
 
-/* Memory allocation macros. */
-#define NEW(T, c)               xmalloc(sizeof(T) * (c))
-#define COPY(p)                 xstrdup(p)
-#define DISPOSE(p)              free(p)
-#define RENEW(p, T, c)          (p = xrealloc((p), sizeof(T) * (c)))
-
 /* Wrappers around str[n]cmp.  Don't add the ((a) == (b)) test here; it's
    already been done in places where it's time-critical. */
 #define EQ(a, b)		(strcmp((a), (b)) == 0)

@@ -273,7 +273,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     if (sendto(ICCfd, buff, len, 0,
 	    (struct sockaddr *)&ICCserv, SUN_LEN(&ICCserv)) < 0) {
-	DISPOSE(buff);
+	free(buff);
 	ICCfailure = "sendto";
 	return -1;
     }
@@ -282,13 +282,13 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     fd = open(path, O_WRONLY);
     free(path);
     if (fd < 0) {
-	DISPOSE(buff);
+	free(buff);
 	ICCfailure = "open";
 	return -1;
     }
     if (write(fd, buff, len) != len) {
 	i = errno;
-	DISPOSE(buff);
+	free(buff);
 	close(fd);
 	errno = i;
 	ICCfailure = "write";
@@ -306,7 +306,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     case SC_SHUTDOWN:
     case SC_XABORT:
     case SC_XEXEC:
-	DISPOSE(buff);
+	free(buff);
 	return 0;
     }
 
@@ -318,7 +318,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 	T.tv_usec = 0;
 	i = select(ICCfd + 1, &Rmask, NULL, NULL, &T);
 	if (i < 0) {
-	    DISPOSE(buff);
+	    free(buff);
 	    ICCfailure = "select";
 	    return -1;
 	}
@@ -328,14 +328,14 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 
 	/* No data -- if we timed out, return. */
 	if (ICCtimeout) {
-	    DISPOSE(buff);
+	    free(buff);
 	    errno = ETIMEDOUT;
 	    ICCfailure = "timeout";
 	    return -1;
 	}
 
 	if (!ICCserveralive(pid)) {
-	    DISPOSE(buff);
+	    free(buff);
 	    ICCfailure = "dead server";
 	    return -1;
 	}
@@ -347,7 +347,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     /* Read the reply. */
     i = RECVorREAD(ICCfd, buff, bufsiz) ;
     if ((unsigned int)i < HEADER_SIZE) {
-        DISPOSE(buff) ;
+        free(buff) ;
         ICCfailure = "read" ;
         return -1 ;
     }
@@ -356,13 +356,13 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     rlen = ntohs (rlen) ;
 
     if (i != rlen) {
-        DISPOSE(buff) ;
+        free(buff) ;
         ICCfailure = "short read" ;
         return -1 ;
     }
 
     if (protocol != ICC_PROTOCOL_1) {
-        DISPOSE(buff) ;
+        free(buff) ;
         ICCfailure = "protocol mismatch" ;
         return -1 ;
     }
@@ -412,7 +412,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     if (replyp) {
 	*replyp = buff ;
     } else {
-	DISPOSE(buff);
+	free(buff);
     }
     
     return i;

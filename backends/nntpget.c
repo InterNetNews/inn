@@ -144,7 +144,7 @@ SITEconnect(char *host)
         sysdie("cannot authenticate to %s", host);
 
     /* Build the structure. */
-    sp = NEW(SITE, 1);
+    sp = xmalloc(sizeof(SITE));
     sp->Name = host;
     sp->Rfd = fileno(From);
     sp->Wfd = fileno(To);

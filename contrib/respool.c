@@ -45,7 +45,7 @@ ProcessLine(char *line)
 
     len = art->len;
     arrived = art->arrived;
-    arttmp = NEW(char, len);
+    arttmp = xmalloc(len);
     memcpy(arttmp, art->data, len);
     SMfreearticle(art);
     if (!SMcancel(token)) {
@@ -63,7 +63,7 @@ ProcessLine(char *line)
 	fprintf(stderr, "%s: cant store article:%s\n", ME, SMerrorstr);
 	return;
     }
-    DISPOSE(arttmp);
+    free(arttmp);
     printf("refiled %s ",TokenToText(token));
     printf("to %s\n", TokenToText(newtoken));
     return;

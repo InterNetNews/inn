@@ -75,7 +75,7 @@ static char *MakePath(int now, int seqnum, const STORAGECLASS class) {
     
     /* innconf->patharticles + '/time-zz/xx/xx/yyyy-xxxx' */
     length = strlen(innconf->patharticles) + 32;
-    path = NEW(char, length);
+    path = xmalloc(length);
     snprintf(path, length, "%s/time-%02x/%02x/%02x/%04x-%04x",
              innconf->patharticles, class,
              (now >> 16) & 0xff, (now >> 8) & 0xff, seqnum,
@@ -141,7 +141,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    if (!MakeDirectory(path, TRUE)) {
 	        syslog(L_ERROR, "timehash: could not make directory %s %m", path);
 	        token.type = TOKEN_EMPTY;
-	        DISPOSE(path);
+	        free(path);
 	        SMseterror(SMERR_UNDEFINED, NULL);
 	        return token;
 	    } else {
@@ -150,7 +150,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    SMseterror(SMERR_UNDEFINED, NULL);
 		    syslog(L_ERROR, "timehash: could not open %s %m", path);
 		    token.type = TOKEN_EMPTY;
-		    DISPOSE(path);
+		    free(path);
 		    return token;
 	        }
 	    }
@@ -161,7 +161,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timehash: all sequence numbers for the time and class are reserved %lu %d", now, class);
 	token.type = TOKEN_EMPTY;
-	DISPOSE(path);
+	free(path);
 	return token;
     }
 
@@ -172,11 +172,11 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
 	close(fd);
 	token.type = TOKEN_EMPTY;
 	unlink(path);
-	DISPOSE(path);
+	free(path);
 	return token;
     }
     close(fd);
-    DISPOSE(path);
+    free(path);
     return MakeToken(now, seq, class, article.token);
 }
 
@@ -192,7 +192,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
             SMseterror(SMERR_UNDEFINED, NULL);
             return NULL;
         }
-        art = NEW(ARTHANDLE, 1);
+        art = xmalloc(sizeof(ARTHANDLE));
         art->type = TOKEN_TIMEHASH;
 	art->data = NULL;
 	art->len = 0;
@@ -205,35 +205,35 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	return NULL;
     }
 
-    art = NEW(ARTHANDLE, 1);
+    art = xmalloc(sizeof(ARTHANDLE));
     art->type = TOKEN_TIMEHASH;
 
     if (fstat(fd, &sb) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "timehash: could not fstat article: %m");
-	DISPOSE(art);
+	free(art);
 	return NULL;
     }
     
-    private = NEW(PRIV_TIMEHASH, 1);
+    private = xmalloc(sizeof(PRIV_TIMEHASH));
     art->private = (void *)private;
     private->len = sb.st_size;
     if (innconf->articlemmap) {
 	if ((private->base = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "timehash: could not mmap article: %m");
-	    DISPOSE(art->private);
-	    DISPOSE(art);
+	    free(art->private);
+	    free(art);
 	    return NULL;
 	}
     } else {
-	private->base = NEW(char, private->len);
+	private->base = xmalloc(private->len);
 	if (read(fd, private->base, private->len) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "timehash: could not read article: %m");
-	    DISPOSE(private->base);
-	    DISPOSE(art->private);
-	    DISPOSE(art);
+	    free(private->base);
+	    free(art->private);
+	    free(art);
 	    return NULL;
 	}
     }
@@ -258,9 +258,9 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
 	else
-	    DISPOSE(private->base);
-	DISPOSE(art->private);
-	DISPOSE(art);
+	    free(private->base);
+	free(art->private);
+	free(art);
 	return NULL;
     }
 
@@ -279,9 +279,9 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     if (innconf->articlemmap)
 	munmap(private->base, private->len);
     else
-	DISPOSE(private->base);
-    DISPOSE(art->private);
-    DISPOSE(art);
+	free(private->base);
+    free(art->private);
+    free(art);
     return NULL;
 }
 
@@ -304,7 +304,7 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount) {
 	ret_token = token;
 	art->token = &ret_token;
     }
-    DISPOSE(path);
+    free(path);
     return art;
 }
 
@@ -319,7 +319,7 @@ void timehash_freearticle(ARTHANDLE *article) {
 	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
 	else
-	    DISPOSE(private->base);
+	    free(private->base);
 	if (private->top)
 	    closedir(private->top);
 	if (private->sec)
@@ -328,9 +328,9 @@ void timehash_freearticle(ARTHANDLE *article) {
 	    closedir(private->ter);
 	if (private->artdir)
 	    closedir(private->artdir);
-	DISPOSE(private);
+	free(private);
     }
-    DISPOSE(article);
+    free(article);
 }
 
 bool timehash_cancel(TOKEN token) {
@@ -342,7 +342,7 @@ bool timehash_cancel(TOKEN token) {
     BreakToken(token, &now, &seqnum);
     path = MakePath(now, seqnum, token.class);
     result = unlink(path);
-    DISPOSE(path);
+    free(path);
     if (result < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	return FALSE;
@@ -392,7 +392,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     size_t              length;
 
     length = strlen(innconf->patharticles) + 32;
-    path = NEW(char, length);
+    path = xmalloc(length);
     if (article == NULL) {
 	priv.top = NULL;
 	priv.sec = NULL;
@@ -403,13 +403,13 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	priv.terde = NULL;
     } else {
 	priv = *(PRIV_TIMEHASH *)article->private;
-	DISPOSE(article->private);
-	DISPOSE((void *)article);
+	free(article->private);
+	free((void *)article);
 	if (priv.base != NULL) {
 	    if (innconf->articlemmap)
 		munmap(priv.base, priv.len);
 	    else
-		DISPOSE(priv.base);
+		free(priv.base);
 	}
     }
 
@@ -433,19 +433,19 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
 			/* end of search */
 			closedir(priv.top);
 			priv.top = NULL;
-			DISPOSE(path);
+			free(path);
 			return NULL;
 		    }
 		    snprintf(path, length, "%s", innconf->patharticles);
 		    if ((priv.top = opendir(path)) == NULL) {
 			SMseterror(SMERR_UNDEFINED, NULL);
-			DISPOSE(path);
+			free(path);
 			return NULL;
 		    }
 		    if ((priv.topde = FindDir(priv.top, FIND_TOPDIR)) == NULL) {
 			SMseterror(SMERR_UNDEFINED, NULL);
 			closedir(priv.top);
-			DISPOSE(path);
+			free(path);
 			return NULL;
 		    }
 		}
@@ -467,11 +467,11 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
 
     art = OpenArticle(path, amount);
     if (art == (ARTHANDLE *)NULL) {
-	art = NEW(ARTHANDLE, 1);
+	art = xmalloc(sizeof(ARTHANDLE));
 	art->type = TOKEN_TIMEHASH;
 	art->data = NULL;
 	art->len = 0;
-	art->private = (void *)NEW(PRIV_TIMEHASH, 1);
+	art->private = xmalloc(sizeof(PRIV_TIMEHASH));
 	newpriv = (PRIV_TIMEHASH *)art->private;
 	newpriv->base = NULL;
     }
@@ -486,7 +486,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     snprintf(path, length, "%s/%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
     art->token = PathToToken(path);
     BreakToken(*art->token, (int *)&(art->arrived), &seqnum);
-    DISPOSE(path);
+    free(path);
     return art;
 }
 

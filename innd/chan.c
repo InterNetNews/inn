@@ -69,13 +69,13 @@ CHANshutdown(void)
   if (CHANtable) {
     for (i = CHANtablesize, cp = &CHANtable[0]; --i >= 0; cp++) {
       if (cp->In.data) {
-	DISPOSE(cp->In.data);
+	free(cp->In.data);
       }
       if (cp->Out.data) {
-	DISPOSE(cp->Out.data);
+	free(cp->Out.data);
       }
     }
-    DISPOSE(CHANtable);
+    free(CHANtable);
     CHANtable = NULL;
   }
 }
@@ -93,7 +93,7 @@ CHANsetup(int i)
     FD_ZERO(&WCHANmask);
     CHANshutdown();
     CHANtablesize = i;
-    CHANtable = NEW(CHANNEL, CHANtablesize);
+    CHANtable = xmalloc(CHANtablesize * sizeof(CHANNEL));
     memset(CHANtable, 0, CHANtablesize * sizeof *CHANtable);
     CHANnull.NextLog = innconf->chaninacttime;
     memset( &CHANnull.Address, 0, sizeof( CHANnull.Address ) );
@@ -188,8 +188,8 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
 	} else if (chanlimit == 0) {
 	    /* assuming two file descriptors(AF_INET and AF_INET6) */
 	    chanlimit = 2;
-	    CHANrc = NEW(CHANNEL **, chanlimit);
-	    CHANrcfd = NEW(int *, chanlimit);
+	    CHANrc = xmalloc(chanlimit * sizeof(CHANNEL **));
+	    CHANrcfd = xmalloc(chanlimit * sizeof(int *));
 	    for (j = 0 ; j < chanlimit ; j++ ) {
 		CHANrc[j] = NULL;
 		CHANrcfd[j] = -1;
@@ -198,8 +198,8 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
 	    CHANrcfd[0] = fd;
 	} else {
 	    /* extend to double size */
-	    RENEW(CHANrc, CHANNEL **, chanlimit * 2);
-	    RENEW(CHANrcfd, int *, chanlimit * 2);
+            CHANrc = xrealloc(CHANrc, chanlimit * 2 * sizeof(CHANNEL **));
+            CHANrcfd = xrealloc(CHANrcfd, chanlimit * 2 * sizeof(int *));
 	    for (j = chanlimit ; j < chanlimit * 2 ; j++ ) {
 		CHANrc[j] = NULL;
 		CHANrcfd[j] = -1;
@@ -274,38 +274,38 @@ CHANclose(CHANNEL *cp, const char *name)
 		cp->Duplicate, buff);
 	    }
 	    if (cp->Data.Newsgroups.Data != NULL) {
-		DISPOSE(cp->Data.Newsgroups.Data);
+		free(cp->Data.Newsgroups.Data);
 		cp->Data.Newsgroups.Data = NULL;
 	    }
 	    if (cp->Data.Newsgroups.List != NULL) {
-		DISPOSE(cp->Data.Newsgroups.List);
+		free(cp->Data.Newsgroups.List);
 		cp->Data.Newsgroups.List = NULL;
 	    }
 	    if (cp->Data.Distribution.Data != NULL) {
-		DISPOSE(cp->Data.Distribution.Data);
+		free(cp->Data.Distribution.Data);
 		cp->Data.Distribution.Data = NULL;
 	    }
 	    if (cp->Data.Distribution.List != NULL) {
-		DISPOSE(cp->Data.Distribution.List);
+		free(cp->Data.Distribution.List);
 		cp->Data.Distribution.List = NULL;
 	    }
 	    if (cp->Data.Path.Data != NULL) {
-		DISPOSE(cp->Data.Path.Data);
+		free(cp->Data.Path.Data);
 		cp->Data.Path.Data = NULL;
 	    }
 	    if (cp->Data.Path.List != NULL) {
-		DISPOSE(cp->Data.Path.List);
+		free(cp->Data.Path.List);
 		cp->Data.Path.List = NULL;
 	    }
 	    if (cp->Data.Overview.size != 0) {
-		DISPOSE(cp->Data.Overview.data);
+		free(cp->Data.Overview.data);
 		cp->Data.Overview.data = NULL;
 		cp->Data.Overview.size = 0;
                 cp->Data.Overview.left = 0;
                 cp->Data.Overview.used = 0;
 	    }
 	    if (cp->Data.XrefBufLength != 0) {
-		DISPOSE(cp->Data.Xref);
+		free(cp->Data.Xref);
 		cp->Data.Xref = NULL;
 		cp->Data.XrefBufLength = 0;
 	    }
@@ -320,7 +320,7 @@ CHANclose(CHANNEL *cp, const char *name)
 	SCHANremove(cp);
 	if (cp->Argument != NULL)
 	    /* Set to NULL below. */
-	    DISPOSE(cp->Argument);
+	    free(cp->Argument);
 	if (cp->fd >= 0 && close(cp->fd) < 0)
 	    syslog(L_ERROR, "%s cant close %s %m", LogName, name);
  
@@ -357,21 +357,21 @@ CHANclose(CHANNEL *cp, const char *name)
 	cp->In.size = 0;
         cp->In.used = 0;
         cp->In.left = 0;
-	DISPOSE(cp->In.data);
+	free(cp->In.data);
 	cp->In.data = NULL;
     }
     if (cp->Out.size > BIG_BUFFER) {
 	cp->Out.size = 0;
         cp->Out.used = 0;
         cp->Out.left = 0;
-	DISPOSE(cp->Out.data);
+	free(cp->Out.data);
 	cp->Out.data = NULL;
     }
     if (cp->Sendid.size > 0) {
 	cp->Sendid.size = 0;
 	cp->Sendid.used = 0;
 	cp->Sendid.left = 0;
-	DISPOSE(cp->Sendid.data);
+	free(cp->Sendid.data);
         cp->Sendid.data = NULL;
     }
 }
@@ -530,7 +530,7 @@ SCHANadd(CHANNEL *cp, time_t Waketime, void *Event, innd_callback_t Waker,
     cp->Waketime = Waketime;
     cp->Waker = Waker;
     if (cp->Argument != Argument) {
-	DISPOSE(cp->Argument);
+	free(cp->Argument);
 	cp->Argument = Argument;
     }
     cp->Event = Event;
@@ -655,7 +655,7 @@ CHANreadtext(CHANNEL *cp)
 	bp->left += i;
 	p = bp->data;
 	TMRstart(TMR_DATAMOVE);
-	RENEW(bp->data, char, bp->size);
+        bp->data = xrealloc(bp->data, bp->size);
 
 	/* Adjust offets of realloc moved the location of the memory region.
            FIXME: This is invalid C, although it will work on most (all?)
@@ -1072,9 +1072,9 @@ CHANreadloop(void)
 			cp->In.size = (cp->In.used * 2) > START_BUFF_SIZE ? (cp->In.used * 2) : START_BUFF_SIZE;
 			p = cp->In.data;
 			TMRstart(TMR_DATAMOVE);
-			RENEW(cp->In.data, char, cp->In.size);
+                        cp->In.data = xrealloc(cp->In.data, cp->In.size);
 			cp->In.left = cp->In.size - cp->In.used;
-			/* do not move data, since RENEW did it already */
+			/* do not move data, since xrealloc did it already */
 			if ((i = p - cp->In.data) != 0) {
 			    if (cp->State == CSgetheader ||
 				cp->State == CSgetbody ||
@@ -1095,7 +1095,7 @@ CHANreadloop(void)
 		} else {
 		    p = cp->In.data;
 		    TMRstart(TMR_DATAMOVE);
-		    RENEW(cp->In.data, char, START_BUFF_SIZE);
+                    cp->In.data = xrealloc(cp->In.data, START_BUFF_SIZE);
 		    cp->In.size = cp->In.left = START_BUFF_SIZE;
 		    if ((i = p - cp->In.data) != 0) {
 			if (cp->State == CSgetheader ||

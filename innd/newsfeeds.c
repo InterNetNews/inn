@@ -39,8 +39,8 @@ SITEcopystrings(char **av)
 
     for (pp = av; *pp; pp++)
 	continue;
-    for (new = save = NEW(char*, pp - av + 1), pp = av; *pp; pp++)
-	*new++ = COPY(*pp);
+    for (new = save = xmalloc((pp - av + 1) * sizeof(char *)), pp = av; *pp; pp++)
+	*new++ = xstrdup(*pp);
     *new = NULL;
     return save;
 }
@@ -85,20 +85,20 @@ SITEaddvariable(char *line)
     	v = v->Next;
     }
     if (v)
-    	DISPOSE(v->Value);
+    	free(v->Value);
     else {
-    	v = NEW(SITEVARIABLES, 1);
+    	v = xmalloc(sizeof(SITEVARIABLES));
     	if (!SITEvariables)
     	    SITEvariables = v;
     	if (w)
             w->Next = v;
-    	v->Name = COPY(line + 1);
+    	v->Name = xstrdup(line + 1);
     	v->Next = NULL;
     }
 
     /* Add variable's contents. */
     v->Elements = 1;
-    for (q = v->Value = NEW(char, (strlen(p) + 1)); *p != '\0'; p++) {
+    for (q = v->Value = xmalloc(strlen(p) + 1); *p != '\0'; p++) {
         if (*p != ' ' && *p != '\t')
             *q++ = *p;
         if (*p == ',')
@@ -115,11 +115,11 @@ SITEclearvariables(void)
     
     v = SITEvariables;
     while (v) {
-    	DISPOSE(v->Name);
-    	DISPOSE(v->Value);
+    	free(v->Name);
+    	free(v->Value);
     	w = v;
     	v = v->Next;
-    	DISPOSE(w);
+    	free(w);
     }
     SITEvariables = NULL;
 }
@@ -206,7 +206,7 @@ SITEexpandvariables(char *site)
     }
 
     /* Copy contents. */
-    s = r = NEW(char, c + 1);
+    s = r = xmalloc(c + 1);
     *varname = '\0';
     modifier = '\0';
     for (p = site; p <= site + strlen(site); p++) {
@@ -295,8 +295,8 @@ SITEreadfile(const bool ReadOnly)
 
 	/* Data's bad, toss it. */
 	for (i = 0; old_strings[i] != NULL; i++)
-	    DISPOSE(old_strings[i]);
-	DISPOSE(old_strings);
+	    free(old_strings[i]);
+	free(old_strings);
     }
 
     /* Read in the file, note its statistics. */
@@ -313,7 +313,7 @@ SITEreadfile(const bool ReadOnly)
 	continue;
 
     /* Scan the file, parse all multi-line entries. */
-    for (old_strings = NEW(char*, i + 1), i = 0, to = p = data; *p; ) {
+    for (old_strings = xmalloc((i + 1) * sizeof(char *)), i = 0, to = p = data; *p; ) {
 	for (site = to; *p; ) {
 	    if (*p == '\n') {
 		p++;
@@ -336,12 +336,12 @@ SITEreadfile(const bool ReadOnly)
 	if (SITEvariables)
 	    old_strings[i++] = SITEexpandvariables(site);
 	else
-	    old_strings[i++] = COPY(site);
+	    old_strings[i++] = xstrdup(site);
     }
     old_strings[i] = NULL;
     
     SITEclearvariables();
-    DISPOSE(data);
+    free(data);
     return ReadOnly ? old_strings : SITEcopystrings(old_strings);
 }
 
@@ -412,7 +412,7 @@ SlashSplit(char *text)
 	if (*p == '/')
 	    i++;
 
-    for (av = save = NEW(char*, i), *av++ = p = text; *p; )
+    for (av = save = xmalloc(i * sizeof(char *)), *av++ = p = text; *p; )
 	if (*p == '/') {
 	    *p++ = '\0';
 	    *av++ = p;
@@ -562,9 +562,9 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    if (*++p == '\0')
 		return "missing file name for F param in field 3";
 	    else if (*p == '/')
-		sp->SpoolName = COPY(p);
+		sp->SpoolName = xstrdup(p);
 	    else {
-		sp->SpoolName = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+		sp->SpoolName = xmalloc(strlen(innconf->pathoutgoing) + 1 +
 						strlen(p) + 1);
 		FileGlue(sp->SpoolName, innconf->pathoutgoing, '/', p);
 	    }
@@ -669,7 +669,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    sp->FileFlags[i] = '\0';
 	    break;
 	}
-    DISPOSE(save);
+    free(save);
     if (sp->Flushpoint && sp->Type != FTfile)
 	return "I param with non-file feed";
     if (sp->Flushpoint == 0 && sp->Type == FTfile)
@@ -691,20 +691,20 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     if (*f4 == '\0' && sp != &ME) {
 	if (sp->Type != FTfile && sp->Type != FTlogonly)
 	    return "empty field 4";
-	sp->Param = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+	sp->Param = xmalloc(strlen(innconf->pathoutgoing) + 1 +
 						sp->NameLength + 1);
 	FileGlue(sp->Param, innconf->pathoutgoing, '/', sp->Name);
     }
     else if (sp->Type == FTfile && *f4 != '/') {
-	sp->Param = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+	sp->Param = xmalloc(strlen(innconf->pathoutgoing) + 1 +
 						strlen(f4) + 1);
 	FileGlue(sp->Param, innconf->pathoutgoing, '/', f4);
     }
     else
-	sp->Param = COPY(f4);
+	sp->Param = xstrdup(f4);
 
     if (sp->SpoolName == NULL) {
-	sp->SpoolName = NEW(char, strlen(innconf->pathoutgoing) + 1 +
+	sp->SpoolName = xmalloc(strlen(innconf->pathoutgoing) + 1 +
 						strlen(sp->Name) + 1);
 	FileGlue(sp->SpoolName, innconf->pathoutgoing, '/', sp->Name);
     }
@@ -820,11 +820,11 @@ SITEfunnelpatch(void)
 	}
 	if (funnel->FNLnames.data == NULL) {
 	    funnel->FNLnames.size = length;
-	    funnel->FNLnames.data = NEW(char, length);
+	    funnel->FNLnames.data = xmalloc(length);
 	}
 	else if (funnel->FNLnames.size != length) {
 	    funnel->FNLnames.size = length;
-	    RENEW(funnel->FNLnames.data, char, length);
+            funnel->FNLnames.data = xrealloc(funnel->FNLnames.data, length);
 	}
 	sp->Funnel = funnel - Sites;
     }
@@ -855,19 +855,19 @@ SITEparsefile(bool StartSite)
       SITEflush(sp, FALSE);
       SITEfree(sp);
     }
-    DISPOSE(Sites);
+    free(Sites);
     SITEfree(&ME);
   }
 
   /* Count the number of sites. */
   for (strings = SITEreadfile(FALSE), nSites = 0; strings[nSites]; nSites++)
     continue;
-  Sites = NEW(SITE, nSites);
+  Sites = xmalloc(nSites * sizeof(SITE));
   memset(Sites, '\0', nSites * sizeof(SITE));
 
   /* Set up scratch subscription list. */
-  subbed = NEW(char, nGroups);
-  poison = NEW(char, nGroups);
+  subbed = xmalloc(nGroups);
+  poison = xmalloc(nGroups);
   /* reset global variables */
   NeedHeaders = NeedOverview = NeedPath = NeedStoredGroup = NeedReplicdata
     = FALSE;
@@ -915,9 +915,9 @@ SITEparsefile(bool StartSite)
 
   /* Free our scratch array, set up the funnel links. */
   nSites = sp - Sites;
-  DISPOSE(subbed);
-  DISPOSE(poison);
-  DISPOSE(strings);
+  free(subbed);
+  free(poison);
+  free(strings);
   if (!SITEfunnelpatch()) {
     JustCleanup();
     exit(1);

@@ -302,7 +302,7 @@ main(int argc, char **argv)
 	HistoryDir = innconf->pathdb;
     } else {
 	*p = '\0';
-	HistoryDir = COPY(TextFile);
+	HistoryDir = xstrdup(TextFile);
 	*p = '/';
     }
 

@@ -41,14 +41,14 @@ ReadActive(act)
     }
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
 	continue;
-    Groups = NEW(char*, i + 2);
+    Groups = xmalloc((i + 2) * sizeof(char *));
 
     /* Fill in each word. */
     rewind(F);
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++) {
 	if ((p = strchr(buff, ' ')) != NULL)
 	    *p = '\0';
-	Groups[i] = COPY(buff);
+	Groups[i] = xstrdup(buff);
     }
     Groups[i] = NULL;
     fclose(F);
@@ -79,7 +79,7 @@ ReadSys(sys)
 	continue;
 
     /* Scan the file, glue all multi-line entries. */
-    for (strings = NEW(char*, i + 1), i = 0, to = p = data; *p; ) {
+    for (strings = xmalloc((i + 1) * sizeof(char *)), i = 0, to = p = data; *p; ) {
 	for (site = to; *p; ) {
 	    if (*p == '\n') {
 		p++;
@@ -95,10 +95,10 @@ ReadSys(sys)
 	*to++ = '\0';
 	if (*site == '\0')
 	    continue;
-	strings[i++] = COPY(site);
+	strings[i++] = xstrdup(site);
     }
     strings[i] = NULL;
-    DISPOSE(data);
+    free(data);
     return strings;
 }
 
@@ -279,7 +279,7 @@ main(ac, av)
 	    fclose(F);
 	    break;
 	}
-	site = COPY(p);
+	site = xstrdup(p);
 	if ((f2 = strchr(site, ':')) == NULL)
 	    f2 = "HELP";
 	else
@@ -306,7 +306,7 @@ main(ac, av)
 	if (ferror(F) || fclose(F) == EOF)
 	    perror(TEMPFILE), exit(1);
 
-	DISPOSE(site);
+	free(site);
 
 	/* Find the sitename. */
 	for (q = p; *q && *q != '/' && *q != ':'; q++)

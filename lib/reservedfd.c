@@ -24,7 +24,7 @@ fdreserve(int fdnum)
 	    for (i = 0 ; i < Maxfd ; i++) {
 		fclose(Reserved_fd[i]);
 	    }
-	    DISPOSE(Reserved_fd);
+	    free(Reserved_fd);
 	    Reserved_fd = NULL;
 	}
 	Maxfd = -1;
@@ -32,11 +32,11 @@ fdreserve(int fdnum)
 	return TRUE;
     }
     if (Reserved_fd == NULL) {
-	Reserved_fd = NEW(FILE *, fdnum);
+	Reserved_fd = xmalloc(fdnum * sizeof(FILE *));
 	allocated = fdnum;
     } else {
 	if (allocated < fdnum) {
-	    RENEW(Reserved_fd, FILE *, fdnum);
+            Reserved_fd = xrealloc(Reserved_fd, fdnum * sizeof(FILE *));
 	    allocated = fdnum;
 	} else if (Maxfd > fdnum) {
 	    for (i = fdnum ; i < Maxfd ; i++) {
@@ -48,7 +48,7 @@ fdreserve(int fdnum)
 	if (((Reserved_fd[i] = fopen("/dev/null", "r")) == NULL)){
 	    for (--i ; i >= 0 ; i--)
 		fclose(Reserved_fd[i]);
-	    DISPOSE(Reserved_fd);
+	    free(Reserved_fd);
 	    Reserved_fd = NULL;
 	    allocated = 0;
 	    Maxfd = -1;
