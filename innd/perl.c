@@ -37,15 +37,14 @@
 **     active.
 */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
-#include "clibrary.h"
-#include "innd.h"
-#include "art.h"
+#include "config.h"
 
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #if defined(DO_PERL)
+
+#include "clibrary.h"
+#include "innd.h"
+#include "art.h"
 
 /* Linux doesn't have bool, yet sets _G_HAVE_BOOL to true.  Hello? */
 #ifdef DO_NEED_BOOL
@@ -60,7 +59,7 @@ typedef int bool;
 /* From lib/perl.c. */
 extern BOOL		PerlFilterActive;
 
-/* From art.c. */
+/* From art.c.  Ew.  Need header parsing that doesn't use globals. */
 extern ARTHEADER	ARTheaders[], *ARTheadersENDOF;
 extern char		*filterPath;
 
@@ -72,12 +71,13 @@ char *
 PLartfilter(char *artBody, int lines)
 {
     dSP;
-    ARTHEADER   *hp;
-    HV          *hdr;
-    CV          *filter;
+    ARTHEADER * hp;
+    HV *        hdr;
+    CV *        filter;
     int         rc;
-    char        *p, save;
-    static SV   *body = NULL;
+    char *      p;
+    char        save = '\0';
+    static SV * body = NULL;
     static char buf[256];
 
     if (!PerlFilterActive) return NULL;
@@ -252,7 +252,7 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
 /*
 **  The remainder of this file are XS callbacks visible to embedded Perl
 **  code to perform various innd functions.  They were originally written by
-**  Ed Mooring (mooring@acm.org) on May 14, 1998, but have since been split
+**  Ed Mooring (mooring@acm.org) on May 14, 1998, and have since been split
 **  between this file and lib/perl.c (which has the ones that can also be
 **  used in nnrpd).  The function that registers them at startup is at the
 **  end.
@@ -299,6 +299,43 @@ XS(XS_INN_addhist)
 
 
 /*
+**  Takes the message ID of an article and returns the full article as a
+**  string or undef if the article wasn't found.  It will be converted from
+**  wire format to native format.  Note that this call isn't particularly
+**  optimized or cheap.
+*/
+XS(XS_INN_article)
+{
+    dXSARGS;
+    char *      msgid;
+    TOKEN *     token;
+    ARTHANDLE * art;
+    char *      p;
+    int         len;
+
+    if (items != 1)
+	croak("Usage: INN::article(msgid)");
+
+    /* Get the article token from the message ID and the history file. */
+    msgid = (char *) SvPV(ST(0), PL_na);
+    token = HISfilesfor(HashMessageID(msgid));
+    if (token == NULL) XSRETURN_UNDEF;
+
+    /* Retrieve the article and convert it from wire format. */
+    art = SMretrieve(*token, RETR_ALL);
+    if (art == NULL) XSRETURN_UNDEF;
+    p = FromWireFmt(art->data, art->len, &len);
+    SMfreearticle(art);
+
+    /* Push a copy of the article onto the Perl stack, free our temporary
+       memory allocation, and return the article to Perl. */
+    ST(0) = sv_2mortal(newSVpv(p, len));
+    DISPOSE(p);
+    XSRETURN(1);
+}
+
+
+/*
 **  Cancel a message by message ID; returns boolean success.  Equivalent to
 **  ctlinnd cancel <message>.
 */
@@ -325,8 +362,8 @@ XS(XS_INN_cancel)
 
 /*
 **  Return the files for a given message ID, taken from the history file.
-**  This function is now obsolete; HISfilesfor() needs to be rethought for
-**  the storage API world and this will probably become token().
+**  This function should really be named INN::token() and probably will be
+**  some day.
 */
 XS(XS_INN_filesfor)
 {
@@ -367,15 +404,51 @@ XS(XS_INN_havehist)
 
 
 /*
+**  Takes the message ID of an article and returns the article headers as
+**  a string or undef if the article wasn't found.  Each line of the header
+**  will end with \n.
+*/
+XS(XS_INN_head)
+{
+    dXSARGS;
+    char *      msgid;
+    TOKEN *     token;
+    ARTHANDLE * art;
+    char *      p;
+    int         len;
+
+    if (items != 1)
+        croak("Usage: INN::head(msgid)");
+
+    /* Get the article token from the message ID and the history file. */
+    msgid = (char *) SvPV(ST(0), PL_na);
+    token = HISfilesfor(HashMessageID(msgid));
+    if (token == NULL) XSRETURN_UNDEF;
+
+    /* Retrieve the article header and convert it from wire format. */
+    art = SMretrieve(*token, RETR_HEAD);
+    if (art == NULL) XSRETURN_UNDEF;
+    p = FromWireFmt(art->data, art->len, &len);
+    SMfreearticle(art);
+
+    /* Push a copy of the article header onto the Perl stack, free our
+       temporary memory allocation, and return the header to Perl. */
+    ST(0) = sv_2mortal(newSVpv(p, len));
+    DISPOSE(p);
+    XSRETURN(1);
+}
+
+
+/*
 **  Returns the active file flag for a newsgroup or undef if it isn't in the
 **  active file.
 */
 XS(XS_INN_newsgroup)
 {
     dXSARGS;
-    char        *newsgroup;
-    NEWSGROUP   *ngp;
-    char        *end;
+    char *      newsgroup;
+    NEWSGROUP * ngp;
+    char *      end;
     int         size;
 
     if (items != 1)
@@ -405,9 +478,11 @@ XS(XS_INN_newsgroup)
 void
 PLxsinit()
 {
-    newXS("INN::havehist", XS_INN_havehist, "perl.c");
-    newXS("INN::cancel", XS_INN_cancel, "perl.c");
     newXS("INN::addhist", XS_INN_addhist, "perl.c");
+    newXS("INN::article", XS_INN_article, "perl.c");
+    newXS("INN::cancel", XS_INN_cancel, "perl.c");
+    newXS("INN::havehist", XS_INN_havehist, "perl.c");
+    newXS("INN::head", XS_INN_head, "perl.c");
     newXS("INN::newsgroup", XS_INN_newsgroup, "perl.c");
     newXS("INN::filesfor", XS_INN_filesfor, "perl.c");
 }
