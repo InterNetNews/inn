@@ -98,11 +98,13 @@ if ${ROTATE} ; then
     ctlinnd -s logmode
     PAUSED=false
     ctlinnd -s pause "Flushing log and syslog files" 2>&1 && PAUSED=true
-    ctlinnd -s flushlogs 2>&1 || {
+    OUTPUT=`ctlinnd -s flushlogs 2>&1`
+    if [ ! "$OUTPUT" = "Ok" -a ! "$OUTPUT" = "In debug mode" ]; then
+	echo "$OUTPUT"
 	echo 'Cannot flush logs.'
 	rm -f ${LOCK}
 	exit 1
-    }
+    fi
 
     ##  Make sure these .old files exist, in case innd is down.
     for F in ${LOG} ${ERRLOG} ${EXPLOG} ; do
