@@ -455,12 +455,12 @@
   ||##  Where the shell is.
   ||##[autoconf]
   ||#### =()<_PATH_SH		@<_PATH_SH>@>()=
-  ||_PATH_SH		@ac_cv_subst_path_sh@
+  ||_PATH_SH		@_PATH_SH@
 [IN1.7=@7][WDF=confparam][WOR=yes]
   ||##  Where the compress program lives.
   ||##[autoconf]
   ||#### =()<_PATH_COMPRESS		@<_PATH_COMPRESS>@>()=
-  ||_PATH_COMPRESS		@ac_cv_subst_path_compress@
+  ||_PATH_COMPRESS		@COMPRESS@
 [IN1.7=@7][WDF=confparam][WOR=yes]
   ||##  Where temporary files live on the server
   ||##[autoconf]
@@ -470,7 +470,7 @@
   ||##  Where your GNU gzip binary is (for rnews to run on gzipped batches).
   ||##[autoconf]
   ||#### =()<_PATH_GZIP		@<_PATH_GZIP>@>()=
-  ||_PATH_GZIP		@ac_cv_subst_path_gzip@
+  ||_PATH_GZIP		@GZIP@
 [IN1.7=@8][comments]
   ||
   ||##
