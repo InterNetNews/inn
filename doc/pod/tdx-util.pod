@@ -4,7 +4,7 @@ tdx-util - Tradindexed overview manipulation utility
 
 =head1 SYNOPSIS
 
-B<tdx-util> [B<-Agio>] [B<-a> I<article>] [B<-n> I<newsgroup>]
+B<tdx-util> [B<-AFgio>] [B<-a> I<article>] [B<-n> I<newsgroup>]
 [B<-p> I<path>] [B<-R> I<path>]
 
 =head1 DESCRIPTION
@@ -64,6 +64,20 @@ error.
 
 The article number to act on.  Only useful in combination with the B<-o>
 option to dump overview information.
+
+=item B<-F>
+
+Audit the entire overview database for problems, fixing them as they're
+detected where possible. This runs the internal consistency checks built
+into the tradindexed overview implementation, checking such things as the
+validity and reachability of all group index entries, the format of the
+individual overview entries, the correspondance of index entries to
+overview data, and similar such things.  The strategy used when fixing
+problems is to throw away data that's unrecoverable, so be warned that
+using this option may result in inaccessible articles if their overview
+data has been corrupted.
+
+To see what would be changed by B<-F>, run B<tdx-util> with B<-A> first.
 
 =item B<-g>
 

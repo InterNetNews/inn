@@ -363,7 +363,7 @@ main(int argc, char *argv[])
 
     /* Parse options. */
     opterr = 0;
-    while ((option = getopt(argc, argv, "a:n:p:AR:gio")) != EOF) {
+    while ((option = getopt(argc, argv, "a:n:p:AFR:gio")) != EOF) {
         switch (option) {
         case 'a':
             article = strtoul(optarg, NULL, 10);
@@ -380,6 +380,11 @@ main(int argc, char *argv[])
             if (mode != '\0')
                 die("only one mode option allowed");
             mode = 'A';
+            break;
+        case 'F':
+            if (mode != '\0')
+                die("only one mode option allowed");
+            mode = 'F';
             break;
         case 'R':
             if (mode != '\0')
@@ -416,6 +421,9 @@ main(int argc, char *argv[])
     switch (mode) {
     case 'A':
         tdx_index_audit(false);
+        break;
+    case 'F':
+        tdx_index_audit(true);
         break;
     case 'R':
         group_rebuild(newsgroup, path);

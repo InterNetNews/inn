@@ -129,12 +129,12 @@
 .\" ========================================================================
 .\"
 .IX Title "TDX-UTIL 8"
-.TH TDX-UTIL 8 "2002-08-26" "INN 2.4.0" "InterNetNews Documentation"
+.TH TDX-UTIL 8 "2002-08-30" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 tdx\-util \- Tradindexed overview manipulation utility
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBtdx-util\fR [\fB\-Agio\fR] [\fB\-a\fR \fIarticle\fR] [\fB\-n\fR \fInewsgroup\fR]
+\&\fBtdx-util\fR [\fB\-AFgio\fR] [\fB\-a\fR \fIarticle\fR] [\fB\-n\fR \fInewsgroup\fR]
 [\fB\-p\fR \fIpath\fR] [\fB\-R\fR \fIpath\fR]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
@@ -189,6 +189,19 @@ error.
 .IX Item "-a article"
 The article number to act on.  Only useful in combination with the \fB\-o\fR
 option to dump overview information.
+.IP "\fB\-F\fR" 4
+.IX Item "-F"
+Audit the entire overview database for problems, fixing them as they're
+detected where possible. This runs the internal consistency checks built
+into the tradindexed overview implementation, checking such things as the
+validity and reachability of all group index entries, the format of the
+individual overview entries, the correspondance of index entries to
+overview data, and similar such things.  The strategy used when fixing
+problems is to throw away data that's unrecoverable, so be warned that
+using this option may result in inaccessible articles if their overview
+data has been corrupted.
+.Sp
+To see what would be changed by \fB\-F\fR, run \fBtdx-util\fR with \fB\-A\fR first.
 .IP "\fB\-g\fR" 4
 .IX Item "-g"
 Dump the master index of the overview database.  This contains similar
