@@ -19,6 +19,8 @@
 #ifndef INN_DEFINES_H
 #define INN_DEFINES_H 1
 
+#include <inn/system.h>
+
 /* BEGIN_DECLS is used at the beginning of declarations so that C++
    compilers don't mangle their names.  END_DECLS is used at the end. */
 #undef BEGIN_DECLS
@@ -43,14 +45,9 @@
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED  __attribute__((__unused__))
 
-/* Make available the bool type.  C99 requires that the bool type be made
-   available by including stdbool.h, as well as the true and false values,
-   so if we're in a C99 compilation environment, just include that header.
-   It would be nice to use an autoconf test, but as this is an installed
-   header, that would mean unnecessary additional complexity.  INN
-   internally uses TRUE and FALSE instead in a lot of places, so make them
-   available as well. */
-#if __STDC_VERSION__ >= 199901L
+/* Make available the bool type.  INN internally uses TRUE and FALSE instead
+   in a lot of places, so make them available as well. */
+#if INN_HAVE_STDBOOL_H
 # include <stdbool.h>
 # undef TRUE
 # undef FALSE
@@ -59,9 +56,8 @@
 
 #else
 
-/* We don't have stdbool.h, or can't rely on it, and therefore need to hack
-   something up ourselves.  These methods are taken from Perl with some
-   modifications. */
+/* We don't have stdbool.h and therefore need to hack something up
+   ourselves.  These methods are taken from Perl with some modifications. */
 
 # undef true
 # undef false
