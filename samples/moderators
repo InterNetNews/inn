@@ -22,6 +22,7 @@
 
 ## Public hierarchies with exceptions.
 fido7.*:%s@fido7.ru
+ffm.*:%s@moderators.arcornews.de
 medlux.*:%s@news.medlux.ru
 nl.*:%s@nl.net
 relcom.*:%s@moderators.relcom.ru
