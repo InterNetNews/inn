@@ -31,8 +31,6 @@
 **  be a sub-timer of more than one timer or a timer without a parent, and
 **  each of those counts will be reported separately.
 **
-**  innreport can't currently handle nested timers.
-**
 **  Note that this code is not thread-safe and in fact would need to be
 **  completely overhauled for a threaded server (since the idea of global
 **  timing statistics doesn't make as much sense when different tasks are
@@ -85,6 +83,21 @@ unsigned int timer_count = 0;
 static const char *const timer_name[TMR_APPLICATION] = {
     "hishave", "hisgrep", "hiswrite", "hissync",
 };
+
+
+/*
+**  Returns the current time as a double.  This is not used by any of the
+**  other timer code, but is used by various programs right now to keep track
+**  of elapsed time.
+*/
+double
+TMRnow_double(void)
+{
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+    return (tv.tv_sec + tv.tv_usec * 1.0e-6);
+}
 
 
 /*

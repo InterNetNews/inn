@@ -30,6 +30,9 @@ void            TMRsummary(const char *prefix, const char *const *labels);
 unsigned long   TMRnow(void);
 void            TMRfree(void);
 
+/* Return the current time as a double of seconds and fractional sections. */
+double TMRnow_double(void);
+
 END_DECLS
 
 #endif /* INN_TIMER_H */
