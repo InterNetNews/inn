@@ -14,9 +14,11 @@
 /*
 **  Find a header in an article.
 */
-const char *HeaderFindMem(const char *Article, const int ArtLen, const char *Header, const int HeaderLen)
+const char *
+HeaderFindMem(const char *Article, int ArtLen, const char *Header,
+              int HeaderLen)
 {
-    const char	        *p;
+    const char *p;
 
     for (p = Article; ; ) {
 	/* Match first character, then colon, then whitespace (don't
@@ -25,7 +27,7 @@ const char *HeaderFindMem(const char *Article, const int ArtLen, const char *Hea
 	if (HeaderLen+1<Article+ArtLen-p
 	 && p[HeaderLen] == ':'
 	 && ISWHITE(p[HeaderLen + 1])
-	 && caseEQn(p, Header, (SIZE_T)HeaderLen)) {
+	 && caseEQn(p, Header, HeaderLen)) {
 	    p += HeaderLen + 2;
 	    while (1) {
 		for (; p < Article + ArtLen && ISWHITE(*p); p++)
