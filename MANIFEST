@@ -179,7 +179,6 @@ doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
 doc/man/storage.ctl.5                 Manpage for storage.ctl config file
 doc/man/strcasecmp.3                  Manpage for strcasecmp (from BSD)
-doc/man/subst.1                       Manpage for subst
 doc/man/tally.control.8               Manpage for tally.control
 doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
