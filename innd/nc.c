@@ -484,7 +484,12 @@ NCihave(CHANNEL *cp)
     }
     else if (WIPinprogress(p, cp, FALSE)) {
 	cp->Ihave_Deferred++;
-	NCwritereply(cp, NNTP_RESENDIT_LATER);
+	if (cp->NoResendId) {
+	    cp->Refused++;
+	    NCwritereply(cp, NNTP_HAVEIT);
+	} else {
+	    NCwritereply(cp, NNTP_RESENDIT_LATER);
+	}
     }
     else {
 	cp->Ihave_SendIt++;
