@@ -439,7 +439,7 @@ ICDwriteactive()
 
 #else /* !HAVE_MMAP */
 
-    if (lseek(ICDactfd, 0L, SEEK_SET) == -1) {
+    if (lseek(ICDactfd, (OFFSET_T)0, SEEK_SET) == -1) {
 	syslog(L_FATAL, "%s cant rewind %s %m", LogName, ICDactpath);
 	exit(1);
     }

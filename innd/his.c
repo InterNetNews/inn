@@ -85,7 +85,7 @@ void HISsetup(void)
 	   for files freopen()-ed in append mode according to POSIX 1003.1.
 	   ftell() is used later on to determine a new article's offset
 	   in the history file. Fopen() uses freopen() internally. */
-	if (fseek(HISwritefp, 0L, SEEK_END) == -1) {
+	if (fseek(HISwritefp, (OFFSET_T)0, SEEK_END) == -1) {
 	    syslog(L_FATAL, "cant fseek to end of %s %m", HIShistpath);
 	    exit(1);
 	}
