@@ -12,39 +12,55 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "inn/messages.h"
+
 #include "libauth.h"
 #include "smbval/valid.h"
 
 int
 main(int argc, char *argv[])
 {
-   char uname[SMBUF], pass[SMBUF];
-   int result;
+    struct authinfo *authinfo;
+    int result;
+    char *server, *backup, *domain;
 
-   if ( (argc > 4) || (argc < 3) ){
-       fprintf(stderr,"auth_smb: wrong number of arguments (auth_smb <server> [<backupserver>] <domain>)\n");
-       exit(1);
-   }
-   result = get_auth(uname, pass);
-   if (result != 0)
-       exit(result);
+    message_program_name = "auth_smb";
 
-   /* got username and password, check if they're valid */
-   if (argc > 3)
-       result = Valid_User(uname, pass , argv[1], argv[2], argv[3]);
-   else
-       result = Valid_User(uname, pass , argv[1], argv[1], argv[2]);
-   switch (result) {
-    case 0: printf("User:%s\n",uname);
-	    exit(0);
-    case 1: fprintf(stderr, "auth_smb: server error\n");
-	    exit(1);
-    case 2: fprintf(stderr, "auth_smb: protocol error\n");
-            exit(1);
-    case 3: fprintf(stderr, "auth_smb: logon error\n");
-	    exit(1);
-   }
-   fprintf(stderr, "auth_smb: unknown error\n");
-   exit(1);   
+    if ((argc > 4) || (argc < 3))
+        die("wrong number of arguments"
+            " (auth_smb <server> [<backup-server>] <domain>");
+
+    authinfo = get_auth();
+    if (authinfo == NULL)
+        die("no user information provided by nnrpd");
+
+    /* Got a username and password.  Now check to see if they're valid. */
+    server = argv[1];
+    backup = (argc > 3) ? argv[2] : argv[1];
+    domain = (argc > 3) ? argv[3] : argv[2];
+    result = Valid_User(authinfo->username, authinfo->password, argv[1],
+                        backup, domain);
+
+    /* Analyze the result. */
+    switch (result) {
+    case NTV_NO_ERROR:
+        printf("User:%s\n", authinfo->username);
+        exit(0);
+        break;
+    case NTV_SERVER_ERROR:
+        die("server error");
+        break;
+    case NTV_PROTOCOL_ERROR:
+        die("protocol error");
+        break;
+    case NTV_LOGON_ERROR:
+        die("logon error");
+        break;
+    default:
+        die("unknown error");
+        break;
+    }
+
+    /* Never reached. */
+    return 1;
 }
-
