@@ -1,9 +1,73 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 # showtoken - decode SM tokens
-# Olaf Titz, 1999. Public domain.
+# Olaf Titz, 1999. Marco d'Itri, 2000. Public domain.
 # Takes tokens on stdin and write them along with a decoded form on stdout.
-# XX: tradspool is untested.
-#
+
+use strict;
+
+my ($pathspool, %NG);
+
+my @types = ('trash', '', 'timehash', 'cnfs', 'timecaf', 'tradspool');
+
+if ($ARGV[0]) {
+	$pathspool = $ARGV[0];
+	if (open(MAP, "$pathspool/tradspool.map")) {
+		while (<MAP>) {
+			my ($ng, $gnum) = split;
+			$NG{$gnum} = $ng;
+		}
+		close MAP;
+	}
+}
+
+$| = 1;
+while (<STDIN>) {
+	chomp;
+	next if not /^@.+@/;
+	print "$_ ";
+	splittoken($_);
+}
+
+sub splittoken {
+	my $t = shift;
+
+	$t =~ tr/@//d;
+	$t = pack('H*', $t);
+	my ($type, $class, $token, $index, $offset, $overlen, $cancelled) =
+		unpack('C C a16 CLnc', $t);
+
+	if (not $types[$type]) {
+		print "type=$type unknown!\n";
+		next;
+	}
+	print "type=$types[$type] class=$class ";
+
+	if ($type == 0) {		# trash
+	} elsif ($type == 2) {	# timehash
+		my ($time, $seq) = unpack('Nn', $token);
+		my ($a, $b, $c, $d) = unpack('CCCC', $token);
+		printf 'time=%08lX seq=%04X file=time-%02x/%02x/%02x/%04x-%02x%02x',
+			$time, $seq, $class, $b, $c, $seq, $a, $d;
+	} elsif ($type == 3) {	# cnfs
+		my ($buffn, $offset, $cnum) = unpack('A8NN', $token);
+		printf 'buffer=%s offset=%x cycnum=%x', $buffn, $offset * 512, $cnum;
+	} elsif ($type == 4) {	# timecaf
+		my ($time, $seq) = unpack('Nn', $token);
+		my (undef, $b, $c, $d) = unpack('CCCC', $token);
+		printf 'time=%06lX seq=%04X caf=timecaf-%02x/%02x/%02x%02x.CF',
+			$time, $seq, $class, $c, $b, $d;
+	} elsif ($type == 5) {	# tradspool
+		my ($gnum, $art) = unpack('NN', $token);
+		printf 'ng=%08X art=%d', $gnum, $art;
+		print "file=articles/$NG{$gnum}/$art" if $NG{$gnum};
+	} else {
+		die "invalid type $type";
+	}
+	print " over=$index offset=$offset overlen=$overlen cancelled=$cancelled"
+		if length $t > 36;
+	print "\n";
+}
+__END__
 # Format of a token:
 #  1   type
 #  1   class
@@ -29,65 +93,3 @@
 # for type=5 (tradspool)
 #  4   ngnum
 #  4   artnum
-
-@types=("trash", "", "timehash", "cnfs", "timecaf", "tradspool");
-
-sub splittoken
-{
-    local($t)=@_;
-    $t=~tr/@//d;
-    $_=pack("H*", $t);
-    local($type, $class, $toke, $index, $offset, $overlen, $cancelled) =
-      unpack("CCa16CLnc", $_);
-    printf "type=%s class=%d ", $types[$type], $class;
-    if (length>36) {
-	printf "over=%d offset=%x overlen=%x cancelled=%d ",
-	       $index, $offset, $overlen, $cancelled;
-    }
-    if ($type==2) {
-	($time, $seq)=unpack("Nn", $toke);
-	printf "time=%08lX seq=%04X ", $time, $seq;
-	($aa,$bb,$cc,$dd)=unpack("a2a2a2a2", sprintf("%08lx", $time));
-	printf "file=time-%02x/%s/%s/%04x-%s%s\n",
-	       $class, $bb, $cc, $seq, $aa, $dd;
-    }
-    elsif ($type==3) {
-	($buffn, $offset, $cnum)=unpack("A8NN", $toke);
-	printf "buffer=%s offset=%x cycnum=%x\n", $buffn, $offset*512, $cnum;
-    }
-    elsif ($type==4) {
-	($time, $seq)=unpack("Nn", $toke);
-	printf "time=%06lX seq=%04X ", $time, $seq;
-	($aa,$bb,$cc)=unpack("a2a2a2a2", sprintf("%06lx", $time));
-	printf "caf=timecaf-%02x/%s/%s%s.CF\n",
-	       $class, $bb, $aa, $cc;
-    }
-    elsif ($type==5) {
-	($ngn, $art)=unpack("NN", $toke);
-	printf "ng=%08X art=%d", $time, $seq;
-	if ($tradspool && $NG{$ngn}) {
-	    printf "file=%s/%s/%d", $pathspool, $NG{$ngn}, $art;
-	}
-	print "\n";
-    }
-}
-
-$tradspool=0;
-if ($ARGV[0]) {
-    $pathspool=$ARGV[0];
-    if (open(M, "$pathspool/tradspool.map")) {
-	$tradspool=1;
-	while (<M>) {
-	    ($ng, $ngn)=split;
-	    $NG{$ngn}=$ng;
-	}
-	close M;
-    }
-}
-$|=1;
-while(<>) {
-    chomp;
-    /^@/ || next;
-    print "$_ ";
-    splittoken($_);
-}
