@@ -1250,7 +1250,7 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
 
   Nospace = FALSE;
   if (OV_BLOCKSIZE < len) {
-    syslog(L_ERROR, "%s: overview data must be under %d", LocalLogName, OV_BLOCKSIZE);
+    syslog(L_ERROR, "%s: overview data must be under %d (%d)", LocalLogName, OV_BLOCKSIZE, len);
     return FALSE;
   }
   if (ge->curdata.index == NULLINDEX) {
@@ -1905,7 +1905,7 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
   return retval;
 }
 
-bool buffindexed_expiregroup(char *group, int *lo) {
+bool buffindexed_expiregroup(char *group, int *lo, struct history *h) {
   void		*handle;
   GROUPENTRY	newge, *ge;
   GROUPLOC	gloc, next;
@@ -1982,7 +1982,7 @@ bool buffindexed_expiregroup(char *group, int *lo) {
         continue; 
       SMfreearticle(ah);
     } else {
-      if (!OVhisthasmsgid(data))
+      if (!OVhisthasmsgid(h, data))
 	continue; 
     }
     if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))

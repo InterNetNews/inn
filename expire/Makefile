@@ -36,7 +36,7 @@ tags ctags: $(SOURCES)
 
 ##  Compilation rules.
 
-BOTH		= $(LIBSTORAGE) $(LIBINN)
+BOTH		= $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 
 LINK            = $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
@@ -52,7 +52,7 @@ grephistory:	grephistory.o  $(BOTH)   ; $(LINK) grephistory.o  $(STORELIBS)
 makedbz:	makedbz.o      $(LIBINN) ; $(LINK) makedbz.o      $(INNLIBS)
 makehistory:	makehistory.o  $(BOTH)   ; $(LINK) makehistory.o  $(STORELIBS)
 newsrequeue:	newsrequeue.o  $(LIBINN) ; $(LINK) newsrequeue.o  $(INNLIBS)
-prunehistory:	prunehistory.o $(LIBINN) ; $(LINK) prunehistory.o $(INNLIBS)
+prunehistory:	prunehistory.o $(BOTH)   ; $(LINK) prunehistory.o $(STORELIBS)
 
 expirerm:	expirerm.in    $(FIX)    ; $(FIX) expirerm.in
 

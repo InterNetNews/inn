@@ -160,7 +160,7 @@ void ovdb_closesearch(void *handle) { }
 BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token)
 { return FALSE; }
 
-BOOL ovdb_expiregroup(char *group, int *lo)
+BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 { return FALSE; }
 
 BOOL ovdb_ctl(OVCTLTYPE type, void *val)
@@ -2234,7 +2234,7 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
     return TRUE;
 }
 
-BOOL ovdb_expiregroup(char *group, int *lo)
+BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 {
     DB *db, *ndb;
     DBT key, val, nkey, gkey, gval;
@@ -2459,7 +2459,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 		    }
 		} else {
 		    if (!innconf->groupbaseexpiry
-			    && !OVhisthasmsgid((char *)val.data + sizeof(ovd))) {
+			    && !OVhisthasmsgid(h, (char *)val.data + sizeof(ovd))) {
 			delete = 1;
 		    }
 		}
@@ -2472,7 +2472,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 		    } else
 			SMfreearticle(ah);
 		} else {
-		    if (!OVhisthasmsgid((char *)val.data + sizeof(ovd))) {
+		    if (!OVhisthasmsgid(h, (char *)val.data + sizeof(ovd))) {
 			delete = 1;
 		    }
 		}

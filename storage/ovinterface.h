@@ -9,6 +9,7 @@
 #include "config.h"
 #include "ov.h"
 #include "storage.h"
+#include "inn/history.h"
 
 typedef struct {
     char	*name;
@@ -22,7 +23,7 @@ typedef struct {
     bool	(*search)(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
     void	(*closesearch)(void *handle);
     bool	(*getartinfo)(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
-    bool	(*expiregroup)(char *group, int *lo);
+    bool	(*expiregroup)(char *group, int *lo, struct history *h);
     bool	(*ctl)(OVCTLTYPE type, void *val);
     void	(*close)(void);
 } OV_METHOD;
@@ -30,7 +31,7 @@ typedef struct {
 extern time_t	OVrealnow;
 bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t arrived, time_t expires);
 bool OVgroupmatch(char *group);
-bool OVhisthasmsgid(char *data);
+bool OVhisthasmsgid(struct history *, char *data);
 void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
 
 #define DEFAULT_MAX_XREF_LEN 8192

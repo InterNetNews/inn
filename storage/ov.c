@@ -17,7 +17,6 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
-#include "dbz.h"
 #include "macros.h"
 #include "libinn.h"
 #include "ov.h"
@@ -371,14 +370,14 @@ bool OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *toke
     return ((*ov.getartinfo)(group, artnum, data, len, token));
 }
 
-bool OVexpiregroup(char *group, int *lo) {
+bool OVexpiregroup(char *group, int *lo, struct history *h) {
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    return ((*ov.expiregroup)(group, lo));
+    return ((*ov.expiregroup)(group, lo, h));
 }
 
 bool OVctl(OVCTLTYPE type, void *val) {
@@ -1016,7 +1015,8 @@ static char *OVERGetHeader(char *p, int field)
 /*
 **  Read overview.fmt and find index for headers
 */
-static OVfindheaderindex() {
+static void
+OVfindheaderindex() {
     FILE	*F;
     char	*active;
     char        *path;
@@ -1182,51 +1182,19 @@ bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
     return FALSE;
 }
 
-bool OVhisthasmsgid(char *data) {
+bool OVhisthasmsgid(struct history *h, char *data) {
     char		*p;
-    static const char   *History;
     HASH		key;
     off_t		offset;
-    static FILE		*F;
     int			i, c;
-    char		buff[(sizeof(TOKEN) * 2) + 3];
 
     if (!ReadOverviewfmt) {
 	OVfindheaderindex();
     }
-    if (History == NULL) {
-	History = concatpath(innconf->pathdb, _PATH_HISTORY);
-	if (!dbzinit(History)) {
-	    syslog(L_ERROR, "OVhisthasmsgid: dbzinit failed '%s'", History);
-	    return FALSE;
-	}
-	if ((F = fopen(History, "r")) == NULL) {
-	    syslog(L_ERROR, "OVhisthasmsgid: fopen failed '%s', %m", History);
-	    return FALSE;
-	}
-    }
     if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
 	return FALSE;
-    key = HashMessageID(p);
-    if (!dbzfetch(key, &offset))
+    if (!HISlookup(h, p, NULL, NULL, NULL, NULL))
 	return FALSE;
-    if (fseek(F, offset, SEEK_SET) == -1) {
-	syslog(L_ERROR, "OVhisthasmsgid: fseek failed to %ld '%s', %m", offset, History);
-	return FALSE;
-    }
-    for (i = 2; (c = getc(F)) != EOF && c != '\n'; )
-	if (c == HIS_FIELDSEP && --i == 0)
-	    break;
-    if (c != HIS_FIELDSEP)
-	return FALSE;
-    i = 0;
-    while ((c = getc(F)) != EOF && c != ' ' && c != '\n' && i < (sizeof(TOKEN) * 2) + 2) {
-	buff[i++] = (char)c;
-    }
-    buff[i] = '\0';
-    if (IsToken(buff))
-	return TRUE;
-    return FALSE;
 }
 
 bool OVgroupmatch(char *group) {

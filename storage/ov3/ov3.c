@@ -1144,7 +1144,7 @@ static bool OV3packgroup(char *group, int delta) {
     return TRUE;
 }
 
-bool tradindexed_expiregroup(char *group, int *lo) {
+bool tradindexed_expiregroup(char *group, int *lo, struct history *h) {
     char                newgroup[BIG_BUFFER];
     char                bakgroup[BIG_BUFFER];
     void                *handle;
@@ -1207,7 +1207,7 @@ bool tradindexed_expiregroup(char *group, int *lo) {
 		continue;
 	    SMfreearticle(ah);
 	} else {
-	    if (!OVhisthasmsgid(data))
+	    if (!OVhisthasmsgid(h, data))
 		continue; 
 	}
 	if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))

@@ -2,6 +2,7 @@
 #define _OV_H_
 
 #include "storage.h"
+#include "inn/history.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,7 +44,7 @@ void *OVopensearch(char *group, int low, int high);
 bool OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
 void OVclosesearch(void *handle);
 bool OVgetartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
-bool OVexpiregroup(char *group, int *lo);
+bool OVexpiregroup(char *group, int *lo, struct history *h);
 bool OVctl(OVCTLTYPE type, void *val);
 void OVclose(void);
 

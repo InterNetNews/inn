@@ -53,9 +53,11 @@ main(int argc, char *argv[])
     OVGE ovge;
     char *active_path = NULL;
     char *lowmark_path = NULL;
+    char *path;
     FILE *lowmark = NULL;
     bool purge_deleted = false;
     bool always_stat = false;
+    struct history *history;
 
     /* First thing, set up logging and our identity. */
     openlog("expireover", LOG_PID, LOG_INN_PROG);
@@ -142,7 +144,13 @@ main(int argc, char *argv[])
         if (qp == NULL)
             sysdie("can't open active file (%s)", active_path);
     }
-        
+    free(active_path);
+
+    /* open up the history manager */
+    path = concatpath(innconf->pathdb, _PATH_HISTORY);
+    history = HISopen(path, innconf->hismethod, HIS_RDONLY, NULL);
+    free(path);
+
     /* Initialize the storage manager.  We only need to initialize it in
        read/write mode if we're not going to be writing a separate file for
        the use of fastrm. */
@@ -184,7 +192,7 @@ main(int argc, char *argv[])
         p = strchr(line, '\t');
         if (p != NULL)
             *p = '\0';
-        if (!OVexpiregroup(line, &low))
+        if (!OVexpiregroup(line, &low, history))
             warn("can't expire %s", line);
         else if (lowmark != NULL && low != 0)
             fprintf(lowmark, "%s %u\n", line, low);
@@ -195,13 +203,14 @@ main(int argc, char *argv[])
 
     /* If desired, purge all deleted newsgroups. */
     if (!signalled && purge_deleted)
-        if (!OVexpiregroup(NULL, NULL))
+        if (!OVexpiregroup(NULL, NULL, history))
             warn("can't expire deleted newsgroups");
 
     /* Close everything down in an orderly fashion. */
     QIOclose(qp);
     OVclose();
     SMshutdown();
+    HISclose(history);
     if (lowmark != NULL)
         if (fclose(lowmark) == EOF)
             syswarn("can't close %s", lowmark_path);
