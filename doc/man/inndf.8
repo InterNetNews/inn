@@ -138,13 +138,15 @@
 .\" ======================================================================
 .\"
 .IX Title "inndf 8"
-.TH inndf 8 "INN 2.4.0" "2001-01-16" "InterNetNews Documentation"
+.TH inndf 8 "INN 2.4.0" "2001-01-23" "InterNetNews Documentation"
 .UC
 .SH "NAME"
 inndf \- Report free disk, inodes, and overview information
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
 \&\fBinndf\fR [\fB\-hi\fR] \fIdirectory\fR [\fIdirectory\fR ...]
+.PP
+\&\fBinndf\fR [\fB\-i\fR] [\fB\-f\fR \fIfilename\fR] [\fB\-F\fR] \fIdirectory\fR [\fIdirectory\fR ...]
 .PP
 \&\fBinndf\fR \fB\-n\fR
 .PP
@@ -170,6 +172,14 @@ With \fB\-o\fR, it reports the percentage of space used in the overview
 database (for those overview methods where this is a meaningful question).
 .SH "OPTIONS"
 .IX Header "OPTIONS"
+.Ip "\fB\-f\fR \fIfilename\fR" 4
+.IX Item "-f filename"
+\&\fIfilename\fR should contain a list of directories to use in addition to those
+given by the arguments. Syntax of this file is that blank lines are ignored
+and everything after a '#' is ignored.
+.Ip "\fB\-F\fR" 4
+.IX Item "-F"
+\&\fB\-F\fR is like \fB\-f\fR execpt that the filename is \fIpathetc\fR/inndf.conf.
 .Ip "\fB\-h\fR" 4
 .IX Item "-h"
 Print a usage message and exit.

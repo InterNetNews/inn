@@ -6,6 +6,8 @@ inndf - Report free disk, inodes, and overview information
 
 B<inndf> [B<-hi>] I<directory> [I<directory> ...]
 
+B<inndf> [B<-i>] [B<-f> I<filename>] [B<-F>] I<directory> [I<directory> ...]
+
 B<inndf> B<-n>
 
 B<inndf> B<-o>
@@ -33,6 +35,16 @@ database (for those overview methods where this is a meaningful question).
 =head1 OPTIONS
 
 =over 4
+
+=item B<-f> I<filename>
+
+I<filename> should contain a list of directories to use in addition to those
+given by the arguments. Syntax of this file is that blank lines are ignored
+and everything after a '#' is ignored.
+
+=item B<-F>
+
+B<-F> is like B<-f> execpt that the filename is I<pathetc>/inndf.conf.
 
 =item B<-h>
 
