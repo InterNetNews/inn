@@ -59,6 +59,7 @@ static void use_rcsid (const char *rId) {   /* Never called */
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #if defined (DO_NEED_SYS_SELECT) 
 #include <sys/select.h>
@@ -193,8 +194,8 @@ static void handleSignals (void) ;
 
 #if 0
 static int ff_set (fd_set *set, u_int start) ;
-#endif
 static int ff_free (fd_set *set, u_int start) ;
+#endif
 static void endpointCleanup (void) ;
 
 
@@ -212,7 +213,6 @@ static u_int priorityCount = 0 ;
 static fd_set rdSet ;
 static fd_set wrSet ;
 static fd_set exSet ;
-static fd_set usedFds ;
 
 static int keepSelecting ;
 
@@ -247,21 +247,16 @@ EndPoint newEndPoint (int fd)
      broken stdio implementations. */
   if (stdioFdMax > 0 && ((u_int) fd) <= stdioFdMax)
     {
-      int newfd = ff_free (&usedFds,stdioFdMax + 1) ;
+      int newfd = fcntl(fd, F_DUPFD, stdioFdMax + 1);
       if (newfd >= 0)
         {
-          dprintf (1,"Dupping fd %d to %d\n",fd,newfd) ;
-          if (dup2 (fd,newfd) == -1)
-            {
-              syslog (LOG_ERR,DUP2_FAILED,fd,newfd) ;
-              newfd = fd ;
-            }
-          else if (close (fd) != 0)
+          dprintf (1,"Dupped fd %d to %d\n",fd,newfd) ;
+          if (close (fd) != 0)
             syslog (LOG_ERR,CLOSE_FAILED,fd) ;
         }
       else
         {
-          syslog (LOG_ERR,NO_FD_FREE,fd,stdioFdMax) ;
+          dprintf (1,"Couldn't dup fd %d to above %d\n",fd,stdioFdMax) ;
           newfd = fd ;
         }
 
@@ -314,8 +309,6 @@ EndPoint newEndPoint (int fd)
       absHighestFd = fd ;
     }
       
-  FD_SET (fd,&usedFds) ;
-  
   ep = CALLOC (struct endpoint_s, 1) ;
   ASSERT (ep != NULL) ;
 
@@ -378,8 +371,6 @@ void delEndPoint (EndPoint ep)
 
   close (ep->myFd) ;
 
-  FD_CLR (ep->myFd,&usedFds) ;
-  
   /* remove from selectable bits */
   FD_CLR (ep->myFd,&rdSet) ;
   FD_CLR (ep->myFd,&wrSet) ;
@@ -1855,20 +1846,20 @@ static int ff_set (fd_set *set,u_int start)
 
   return -1 ;
 }
-#endif
 
 
 static int ff_free (fd_set *set, u_int start)
 {
   u_int i ;
 
-  for (i = start ; i <= FD_SETSIZE ; i++)
+  for (i = start ; i < FD_SETSIZE ; i++)
     if (!FD_ISSET (i,set))
       return i ;
 
 
   return -1 ;
 }
+#endif
 
 
 static void endpointCleanup (void)
