@@ -101,14 +101,16 @@ libinn \- InterNetNews library routines
 .B "    char	*errbuff;"
 
 .B "int"
-.B "NNTPremoteopen(FromServerp, ToServerp, errbuff)"
+.B "NNTPremoteopen(port, FromServerp, ToServerp, errbuff)"
+.B "    int	port;"
 .B "    FILE	**FromServerp;"
 .B "    FILE	**ToServerp;"
 .B "    char	*errbuff;"
 
 .B "int"
-.B "NNTPconnect(host, FromServerp, ToServerp, errbuff)"
+.B "NNTPconnect(host, port, FromServerp, ToServerp, errbuff)"
 .B "    char	*host;"
+.B "    int	port;"
 .B "    FILE	**FromServerp;"
 .B "    FILE	**ToServerp;"
 .B "    char	*errbuff;"
@@ -413,7 +415,7 @@ It always returns \-1.
 does the same except that it uses
 .I innconf->server
 to find the name of the local server, and opens a connection to the
-standard NNTP port.
+.IR port .
 Any client program can use this routine.
 It returns \-1 on failure, or zero on success.
 .PP
@@ -503,10 +505,11 @@ printing in logon banners.
 .nf
 char	*p;
 char	*Article;
-char	buff[256];
+char	buff[256], errbuff[256];
 FILE	*F;
 FILE	*ToServer;
 FILE	*FromServer;
+int	port = 119;
 
 if ((p = HeaderFind(Article, "From", 4)) == NULL)
     Fatal("Can't find From line");
@@ -525,7 +528,7 @@ p = ReadInDescriptor(fileno(F), (struct stat *)NULL);
 /* Close the file. */
 CAclose();
 
-if (NNTPremoteopen(&FromServer, &ToServer) < 0)
+if (NNTPremoteopen(port, &FromServer, &ToServer, errbuff) < 0)
     Fatal("Can't connect to server");
 
 if ((p = GetModeratorAddress("comp.sources.unix")) == NULL)
