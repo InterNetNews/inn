@@ -132,7 +132,8 @@ The Path will always end
 If an unapproved posting is made to a moderated newsgroup,
 .I inews
 will try to mail the article to the moderator for posting.
-It uses the
+It will query the remote news server for a moderators listing. If
+that doesn't succeed, it will fallback to using the local
 .IR moderators (5)
 file to determine the mailing address.
 If no address is found, it will use the
