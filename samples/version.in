@@ -7,7 +7,7 @@ PROG=version
 ##  Some shells don't pass in $* unless we explicitly pass it in here.
 . ${PATHBIN}/parsecontrol "$@"
 
-VERSION="INN 2.0"
+VERSION="INN 2.1"
 
 WHERE=`innconfval pathhost`
 
