@@ -7,6 +7,14 @@ Version 2.2:
 	- New (optional) way of handling non-cancel control 
 	  messages (controlchan) that serializes them and 
 	  prevents server overload from control message storms
+        - Support for actsyncd to fetch active file with ftp;
+          configured by default to get the one at
+          <URL:ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z>
+          if you run actsyncd.  Be sure to read the manual
+          page for actsyncd to configure an actsync.ign file
+          for your site, and test simpleftp if you do not configure
+          with wget or ncftp.  Also see
+          <URL:ftp://ftp.isc.org/pub/usenet/CONFIG/README>.
 	- Some options to configure are now moved to inn.conf
 	  (merge-to-groups and pgp-verify).
 	- inndf, a portable version of df(1) is supplied.
