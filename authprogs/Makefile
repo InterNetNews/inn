@@ -44,7 +44,7 @@ SMB_LIBS	= $(LIBSMB) $(AUTHLIBS)
 
 auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(SMB_LIBS)
 ckpasswd:	ckpasswd.o  $(LIBAUTH)	; $(LINK) ckpasswd.o $(CK_LIBS)
-domain:		domain.o    $(LIBINN)	; $(LINK) domain.o   $(NEWSLIBS)
+domain:		domain.o    $(LIBAUTH)	; $(LINK) domain.o   $(AUTHLIBS)
 ident:		ident.o     $(LIBAUTH)	; $(LINK) ident.o    $(AUTHLIBS)
 radius:		radius.o    $(AUTH_INN)	; $(LINK) radius.o   $(AUTHLIBS)
 
@@ -72,22 +72,25 @@ depend: Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 auth_smb.o: auth_smb.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h libauth.h \
- ../include/portable/socket.h smbval/valid.h
+  ../include/inn/system.h ../include/clibrary.h ../include/inn/messages.h \
+  libauth.h ../include/portable/socket.h smbval/valid.h
 ckpasswd.o: ckpasswd.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/inn/qio.h \
- ../include/inn/vector.h ../include/libinn.h libauth.h \
- ../include/portable/socket.h
+  ../include/inn/system.h ../include/clibrary.h ../include/inn/messages.h \
+  ../include/inn/qio.h ../include/inn/vector.h ../include/libinn.h \
+  libauth.h ../include/portable/socket.h
 domain.o: domain.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/inn/messages.h \
+  ../include/libinn.h libauth.h ../include/portable/socket.h
 ident.o: ident.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
- ../include/macros.h libauth.h ../include/portable/socket.h
+  ../include/inn/system.h ../include/clibrary.h ../include/inn/messages.h \
+  ../include/libinn.h ../include/macros.h libauth.h \
+  ../include/portable/socket.h
 libauth.o: libauth.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h libauth.h \
- ../include/portable/socket.h
+  ../include/inn/system.h ../include/clibrary.h ../include/libinn.h \
+  libauth.h ../include/portable/socket.h ../include/inn/messages.h
 radius.o: radius.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h ../include/inn/md5.h \
- ../include/inn/messages.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/conffile.h libauth.h \
- ../include/portable/socket.h
+  ../include/inn/system.h ../include/clibrary.h \
+  ../include/portable/time.h ../include/inn/innconf.h \
+  ../include/inn/md5.h ../include/inn/messages.h ../include/libinn.h \
+  ../include/macros.h ../include/nntp.h ../include/paths.h \
+  ../include/conffile.h libauth.h ../include/portable/socket.h

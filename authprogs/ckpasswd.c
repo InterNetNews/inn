@@ -306,7 +306,7 @@ main(int argc, char *argv[])
     enum authtype type = AUTH_NONE;
     bool wantgroup = false;
     const char *filename = NULL;
-    struct authinfo *authinfo = NULL;
+    struct auth_info *authinfo = NULL;
     char *password = NULL;
 
     message_program_name = "ckpasswd";
@@ -341,14 +341,14 @@ main(int argc, char *argv[])
             break;
         case 'u':
             if (authinfo == NULL) {
-                authinfo = xmalloc(sizeof(struct authinfo));
+                authinfo = xmalloc(sizeof(struct auth_info));
                 authinfo->password = NULL;
             }
             authinfo->username = optarg;
             break;
         case 'p':
             if (authinfo == NULL) {
-                authinfo = xmalloc(sizeof(struct authinfo));
+                authinfo = xmalloc(sizeof(struct auth_info));
                 authinfo->username = NULL;
             }
             authinfo->password = optarg;
@@ -367,7 +367,7 @@ main(int argc, char *argv[])
     /* Unless a username or password was given on the command line, assume
        we're being run by nnrpd. */
     if (authinfo == NULL)
-        authinfo = get_auth();
+        authinfo = get_auth_info(stdin);
     if (authinfo == NULL)
         die("no authentication information from nnrpd");
     if (authinfo->username[0] == '\0')

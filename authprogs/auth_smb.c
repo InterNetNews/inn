@@ -20,7 +20,7 @@
 int
 main(int argc, char *argv[])
 {
-    struct authinfo *authinfo;
+    struct auth_info *authinfo;
     int result;
     char *server, *backup, *domain;
 
@@ -30,7 +30,7 @@ main(int argc, char *argv[])
         die("wrong number of arguments"
             " (auth_smb <server> [<backup-server>] <domain>");
 
-    authinfo = get_auth();
+    authinfo = get_auth_info(stdin);
     if (authinfo == NULL)
         die("no user information provided by nnrpd");
 

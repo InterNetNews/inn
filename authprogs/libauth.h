@@ -7,43 +7,33 @@
 #include "config.h"
 #include "portable/socket.h"
 
-
-/*********************** Authenticators ************************/
+/* Holds the resolver information from nnrpd. */
+struct res_info {
+    struct sockaddr *client;
+    struct sockaddr *local;
+    char *clienthostname;
+};
 
 /* Holds the authentication information from nnrpd. */
-struct authinfo {
+struct auth_info {
     char *username;
     char *password;
 };
 
-/* Reads authentication information from nnrpd and returns a new authinfo
-   struct, or returns NULL on failure.  Note that both the username and the
-   password may be empty.  The client is responsible for freeing the authinfo
-   struct. */
-extern struct authinfo *get_auth(void);
-
-
-
-/*********************** Resolvers ************************/
-
-#define IPNAME "ClientIP: "
-#define PORTNAME "ClientPort: "
-#define LOCIP "LocalIP: "
-#define LOCPORT "LocalPort: "
-
-#define GOTCLIADDR 0x1
-#define GOTCLIPORT 0x2
-#define GOTLOCADDR 0x4
-#define GOTLOCPORT 0x8
-#define GOT_ALL (GOTCLIADDR | GOTCLIPORT | GOTLOCADDR | GOTLOCPORT)
-
-
 /*
- * Parses the client and local IP and ports from stdin and stores them
- * into the argument structs.  Returns the OR of the GOT... constants
- * defined above for those fields which were found.  Returns GOT_ALL
- * if all fields wre found.
+ * Reads connection information from a file descriptor (normally stdin, when
+ * talking to nnrpd) and returns a new res_info or auth_info struct, or
+ * returns NULL on failure.  Note that the fields will never be NULL; if the
+ * corresponding information is missing, it is an error (which will be
+ * logged and NULL will be returned).  The client is responsible for freeing
+ * the struct and its fields; this can be done by calling the appropriate
+ * destruction function below.
  */
-extern char
-get_res(struct sockaddr* loc,
-	struct sockaddr* cli);
+
+extern struct auth_info *get_auth_info(FILE *);
+extern struct res_info  *get_res_info (FILE *);
+
+extern void free_auth_info(struct auth_info*);
+extern void free_res_info (struct res_info*);
+
+

@@ -12,33 +12,23 @@
 
 #include "inn/messages.h"
 #include "libinn.h"
+#include "libauth.h"
 
 int
 main(int argc, char *argv[])
 {
-    char buf[2048];
-    char *host, *p;
-    size_t length;
+    char *p, *host;
+    struct res_info *res;
 
     if (argc != 2)
         die("Usage: domain <domain>");
     message_program_name = "domain";
 
     /* Read the connection information from stdin. */
-    host = NULL;
-    while (fgets(buf, sizeof(buf), stdin) != NULL) {
-        length = strlen(buf);
-        if (buf[length - 1] != '\n')
-            die("input line too long");
-        buf[length - 1] = '\0';
-        if (buf[length - 2] == '\r')
-            buf[length - 2] = '\0';
-
-        if (strncmp(buf, "ClientHost: ", strlen("ClientHost: ")) == 0)
-            host = xstrdup(buf + strlen("ClientHost: "));
-    }
-    if (host == NULL)
+    res = get_res_info(stdin);
+    if (res == NULL)
         die("did not get ClientHost data from nnrpd");
+    host = res->clienthostname;
 
     /* Check the host against the provided domain.  Allow the domain to be
        specified both with and without a leading period; if without, make sure

@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
 {
     int opt;
     int havefile, haveother;
-    struct authinfo *authinfo;
+    struct auth_info *authinfo;
     rad_config_t radconfig;
     int retval;
     char *radius_config;
@@ -540,7 +540,9 @@ int main(int argc, char *argv[])
       free(radius_config);
     }
 
-    authinfo = get_auth();
+    authinfo = get_auth_info(stdin);
+    if (authinfo == NULL)
+        die("failed getting auth info");
     if (authinfo->username[0] == '\0')
         die("empty username");
 
