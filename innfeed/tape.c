@@ -1141,7 +1141,7 @@ static void prepareFiles (Tape tape)
             {
               if (feof (tape->inFp))
                 {
-                  d_printf (1,"Empty input file: %s",tape->inputFilename) ;
+                  d_printf (1,"Empty input file: %s\n",tape->inputFilename) ;
                   unlink (tape->inputFilename) ;
                 }
               else

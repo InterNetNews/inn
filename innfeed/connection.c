@@ -1446,7 +1446,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
           p = bufferBase (modeBuffer) ;
 
           /* now issue the MODE STREAM command */
-          d_printf (1,"%s:%d Issuing the streaming command: %s",
+          d_printf (1,"%s:%d Issuing the streaming command: %s\n",
                    hostPeerName (cxn->myHost),cxn->ident,MODE_CMD) ;
 
           strcpy (p, MODE_CMD) ;
@@ -3757,7 +3757,7 @@ static Buffer buildCheckBuffer (Connection cxn)
           const char *msgid = artMsgId (p->article) ;
 
           sprintf (t,"CHECK %s\r\n", msgid) ;
-          d_printf (5,"%s:%d Command %s", peerName, cxn->ident, t) ;
+          d_printf (5,"%s:%d Command %s\n", peerName, cxn->ident, t) ;
 
           tlen += strlen (t) ;
 
@@ -3859,7 +3859,7 @@ static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer)
               sprintf (t, "TAKETHIS %s\r\n", msgid) ;
               bufferSetDataSize (takeBuffer, strlen (t)) ;
 
-              d_printf (5,"%s:%d Command %s", peerName, cxn->ident, t) ;
+              d_printf (5,"%s:%d Command %s\n", peerName, cxn->ident, t) ;
 
               ASSERT (writeIdx <= lenArray) ;
               rval [writeIdx++] = takeBuffer ;

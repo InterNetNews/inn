@@ -1555,7 +1555,7 @@ void hostChkCxns(TimeoutId tid /*unused*/, void *data) {
   backlogRatio = (host->backlog * 1.0 / hostHighwater);
   backlogMult = 1.0/(1.0-host->params->dynBacklogFilter);
 
-  d_printf(1,"%s hostChkCxns - entry filter=%3.3f blmult=%3.3f blratio=%3.3f",host->params->peerName,host->backlogFilter, backlogMult, backlogRatio);
+  d_printf(1,"%s hostChkCxns - entry filter=%3.3f blmult=%3.3f blratio=%3.3f\n",host->params->peerName,host->backlogFilter, backlogMult, backlogRatio);
 
   ratio = 0.0; /* ignore APS by default */
 
@@ -1592,7 +1592,7 @@ void hostChkCxns(TimeoutId tid /*unused*/, void *data) {
 	else if ((currAPS - lastAPS) < -.2)
 	  host->backlogFilter -= ratio;
 	
-	d_printf(1,"%s hostChkCxns - entry hwm=%3.3f lwm=%3.3f new=%3.3f [%3.3f,%3.3f]",
+	d_printf(1,"%s hostChkCxns - entry hwm=%3.3f lwm=%3.3f new=%3.3f [%3.3f,%3.3f]\n",
 	       host->params->peerName,host->params->dynBacklogHighWaterMark,
 	       host->params->dynBacklogLowWaterMark,host->backlogFilter, 
 	       (host->params->dynBacklogLowWaterMark * backlogMult / 100.0),
