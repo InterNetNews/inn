@@ -1,0 +1,104 @@
+=head1 NAME
+
+rc.news - Start or stop INN daemons
+
+=head1 SYNOPSIS
+
+B<rc.news> [start | stop]
+
+=head1 DESCRIPTION
+
+B<rc.news> can be used to start or stop B<innd> and supporting programs.
+It checks to make sure INN is not already running, handles cases of
+unclean shutdown, finishes up tasks which might have been interrupted by
+the preceeding shutdown, emails certain boot-time warnings to
+I<newsmaster> (as set in F<inn.conf>), and is generally safer and easier
+than starting and stopping everything directly.  It needs to be run as the
+news user so that files in I<pathrun> are created with the right ownership
+(though this is less important for C<rc.news stop>), and therefore
+requires that F<inndstart> be setuid root, see inndstart(8) for
+discussion.
+
+Programs run and stopped by this script include:
+
+=over 4
+
+=item *
+
+Always:  B<inndstart> is run, and B<innd> is stopped.
+
+=item *
+
+If I<doinnwatch> is true in F<inn.conf>:  B<innwatch> is started and
+stopped.
+
+=item *
+
+If I<docnfsstat> is true in F<inn.conf>:  B<ovdb_init> is run;
+B<ovdb_server> and B<ovdb_monitor> are stopped.
+
+=item *
+
+If F<rc.news.local> exists in I<pathbin>:  B<rc.news.local> is run with
+argument C<start> or C<stop> (to perform site-specific startup or shutdown
+tasks).
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item C<start>
+
+If the first argument is C<start>, or no first argument is given,
+B<rc.news> initiates INN startup.
+
+=item C<stop>
+
+If the first argument is C<stop>, B<rc.news> initiates INN shutdown.  It
+is recommended to throttle the server first as described in ctlinnd(8).
+
+=back
+
+=head1 EXAMPLES
+
+To start INN and leave certain error messages going to the terminal:
+
+       su - news -c ~news/bin/rc.news
+
+To run INN at startup time from appropriate system boot scripts:
+
+       su - news -c ~news/bin/rc.news >/dev/console
+  
+To stop INN (throttling first):
+
+       ~news/bin/ctlinnd throttle reason
+       su - news -c '~news/bin/rc.news stop'
+
+=head1 BUGS
+
+Running C<rc.news start> as root is never the right thing to do, so we
+should at minimum check for this and error, or perhaps change effective
+user ID.
+
+=head1 HISTORY
+
+// FIXME:  any attribution for rc.news itself?
+
+This manual page written by Jeffrey M. Vinocur <jeff@litech.org> for
+InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+ctlinnd(8),
+cnfsstat(8),
+inn.conf(5),
+inndstart(8),
+innwatch(8),
+ovdb(5).
+
+=cut
+
