@@ -319,11 +319,13 @@ include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
 include/dbz.h                         Header file for DBZ
 include/inn                           Installed header files (Directory)
+include/inn/buffer.h                  Header file for reusable counted buffers
 include/inn/confparse.h               Header file for configuration parser
 include/inn/defines.h                 Portable defs for installed headers
 include/inn/hashtab.h                 Header file for generic hash table
 include/inn/history.h                 Header file for the history API
 include/inn/md5.h                     Header file for MD5 digests
+include/inn/messages.h                Header file for message functions
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/timer.h                   Header file for generic timers
@@ -388,7 +390,6 @@ innfeed/innfeed.h                     Application configuration values
 innfeed/innlistener.c                 Implementation of the InnListener class
 innfeed/innlistener.h                 Public interface of InnListener class
 innfeed/main.c                        Main routines for the innfeed program
-innfeed/makedepend.sh                 A replacement for 'gcc -MM'
 innfeed/misc.c                        Miscelloneous routines for innfeed
 innfeed/misc.h                        Header file for misc.c
 innfeed/msgs.h                        Log message definition
@@ -400,6 +401,7 @@ innfeed/testListener.pl               Script to hand articles to innfeed
 lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
 lib/argparse.c                        Parsing used for OV3
+lib/buffer.c                          Reusable counted buffer
 lib/cleanfrom.c                       Clean out a From line
 lib/clientactive.c                    Client access to the active file
 lib/clientlib.c                       Replacement for C News library routine
@@ -509,11 +511,11 @@ samples/newsfeeds.in                  innd feed configuration
 samples/newsgroups.minimal            Minimal starting newsgroups file
 samples/nnrpd.py                      Python hooks for nnrpd
 samples/nnrpd.track                   Reader tracking configuration
-samples/nnrpd_access_wrapper.pl.in    Wrapper around old Perl access hooks
 samples/nnrpd_access.pl.in            Sample nnrpd Perl access hooks
-samples/nnrpd_auth_wrapper.pl.in      Wrapper around old Perl auth hooks
+samples/nnrpd_access_wrapper.pl.in    Wrapper around old Perl access hooks
 samples/nnrpd_auth.pl.in              Sample nnrpd Perl authorization hooks
 samples/nnrpd_auth.py                 Sample nnrpd Python authorization hooks
+samples/nnrpd_auth_wrapper.pl.in      Wrapper around old Perl auth hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
 samples/ovdb.conf                     Berkeley DB overview configuration
 samples/overview.fmt                  Format of news overview database
@@ -591,11 +593,14 @@ storage/timehash/timehash.c           timehash storage routines
 storage/timehash/timehash.h           Header for timehash
 storage/tradindexed                   tradindexed overview method (Directory)
 storage/tradindexed/Makefile          Makefile for tradindexed overview method
+storage/tradindexed/tdx-cache.c       Data file cache handling for tradindexed
 storage/tradindexed/tdx-data.c        Data file handling for tradindexed
 storage/tradindexed/tdx-group.c       Group index handling for tradindexed
 storage/tradindexed/tdx-private.h     Private header file for tradindexed
 storage/tradindexed/tdx-structure.h   On disk layout of tradindexed files
 storage/tradindexed/tdx-util.c        Utility program for tradindexed
+storage/tradindexed/tradindexed.c     Interface code for the overview API
+storage/tradindexed/tradindexed.h     Interface for tradindexed
 storage/tradspool                     tradspool storage method (Directory)
 storage/tradspool/Makefile            Makefile for tradspool storage method
 storage/tradspool/README.tradspool    Docs for tradspool storage method
@@ -624,6 +629,7 @@ tests                                 Test suite for INN (Directory)
 tests/Makefile                        Makefile for test suite
 tests/TESTS                           List of tests to run
 tests/lib                             Test suite for libinn (Directory)
+tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/config                      Testing config files (Directory)
 tests/lib/config/errors               Various config files with errors
