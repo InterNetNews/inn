@@ -1009,7 +1009,7 @@ static bool OV3packgroup(char *group, int delta) {
     syslog(L_NOTICE, "tradindexed: repacking group %s, offset %d", group, delta);
     GROUPlock(gloc, INN_LOCK_WRITE);
 
-    if (delta > ge->base) delta = ge->base;
+    if (delta >= ge->base) delta = ge->base - 1;
 
     strcpy(bakgroup, group);
     strcat(bakgroup, "-BAK");
@@ -1062,7 +1062,7 @@ static bool OV3packgroup(char *group, int delta) {
     }
 
     if (pwrite(fd, &gh->indexmem[ge->low - ge->base] , nbytes,
-	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta - 1)) != nbytes) {
+	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta)) != nbytes) {
 	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
 	close(fd);
 	OV3closegroup(gh, FALSE);
