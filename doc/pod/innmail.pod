@@ -1,0 +1,68 @@
+=head1 NAME
+
+innmail - Simple mail-sending program
+
+=head1 SYNOPSIS
+
+B<innmail> [B<-h>] [B<-s> I<subject>] I<address> [I<address> ...]
+
+=head1 DESCRIPTION
+
+B<innmail> is a Perl script intended to provide the non-interactive
+mail-sending functionality of mail(1) while avoiding nasty security
+problems.  It takes the body of a mail message on standard input and sends
+it to the specified addresses by invoking the value of I<mta> in
+F<inn.conf>.
+
+At least one address (formatted for the MTA specified in F<inn.conf> if it
+matters) is required.  B<innmail> will sanitize the addresses so that they
+contain only alphanumerics and the symbols C<@>, C<.>, C<->, C<+>, C<_>,
+and C<%>.
+
+B<innmail> was written to be suitable for the I<mailcmd> setting in
+F<inn.conf>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h>
+
+Gives usage information.
+
+=item B<-s> I<subject>
+
+Sets the Subject: header of the message.  A warning is issued if this
+option is omitted.
+
+=back
+
+=head1 EXAMPLES
+
+This sends a one-line message to the local user C<joe>:
+
+    echo "A one-line message." | innmail -s "Simple message" joe
+
+B<innmail> by default is used by INN for sending nightly reports and
+control message reports.
+
+=head1 BUGS
+
+B<innmail> fails on addresses that begin with C<->, although one might
+hope that the news server will not need to contact any such addresses.
+
+There are many "correct" addresses that will be silently modified by the
+sanitization process.  A news administrator should be careful to use
+particularly sane addresses if they may be passed to B<innmail>.
+
+=head1 HISTORY
+
+B<innmail> was written by James Brister <brister@vix.com> for
+InterNetNews.  This manual page was originally written by Jeffrey
+M. Vinocur.
+
+=head1 SEE ALSO
+
+inn.conf(5), mail(1).
+
+=cut
