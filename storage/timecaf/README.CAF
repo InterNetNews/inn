@@ -8,10 +8,10 @@ do one big file per newsgroup, but it turns out that a time-based file layout
 rather than newsgroup-name-based is a. more efficient and b. much easier to
 fit into the current storage manager interface paradigm.  Anyway, the 
 pathnames for the files are of the form
-	<patharticles>/timecaf-nn/zz/yyyy.CF
+	<patharticles>/timecaf-nn/bb/aacc.CF
 where 'nn' is the numeric storage class (same as in 'timehash') and the
 file contains all articles written during the interval from 
-(time_t) 0xzzyyyy00 to 0xzzyyyyFF.  
+(time_t) 0xaabbcc00 to 0xaabbccFF.  
 
   The way expiration works on the 'timecaf' storage manager is a bit
 complicated.  When articles are expired or cancelled (via SMcancel())
