@@ -17,7 +17,7 @@ archive () {
     rm -rf archive
     mkdir -p archive
     "$archive" -r "$@" < spool/tokens
-    if [ $? == 0 ] ; then
+    if [ $? = 0 ] ; then
         printcount "ok"
     else
         printcount "not ok"

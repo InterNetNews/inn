@@ -14,7 +14,7 @@ printcount () {
 # Store an article and make sure that sm succeeds.
 store () {
     token=`$sm -s < $1`
-    if [ $? == 0 ] ; then
+    if [ $? = 0 ] ; then
         printcount "ok"
     else
         printcount "not ok"
@@ -34,7 +34,7 @@ exists () {
 # the article spool.  Takes the token and the path to the actual article.
 retrieve () {
     "$sm" "$1" > spool/test
-    if [ $? == 0 ] && diff "$2" spool/test ; then
+    if [ $? = 0 ] && diff "$2" spool/test ; then
         printcount "ok"
     else
         printcount "not ok"
@@ -47,7 +47,7 @@ info () {
     real=`grep ^Xref $2 | sed -e 's/.*\.example\.com //' -e 's/ .*//'`
     real=`echo "$real" | sed -e 's%\.%/%g' -e 's/:/: /'`
     info=`$sm -i $1`
-    if [ $? == 0 ] && [ "$info" == "$real" ] ; then
+    if [ $? = 0 ] && [ "$info" = "$real" ] ; then
         printcount "ok"
     else
         echo "Want: $real"
@@ -59,7 +59,7 @@ info () {
 # Given a token and a path in the spool, make sure that article removal works.
 remove () {
     "$sm" -r "$1"
-    if [ $? == 0 ] && [ ! -r "$2" ] ; then
+    if [ $? = 0 ] && [ ! -r "$2" ] ; then
         printcount "ok"
     else
         printcount "not ok"
@@ -69,7 +69,7 @@ remove () {
 # Check retrieval of a raw article, given a token and a path in the spool.
 raw () {
     "$sm" -R "$1" > spool/test
-    if [ $? == 0 ] && diff "$2" spool/test ; then
+    if [ $? = 0 ] && diff "$2" spool/test ; then
         printcount "ok"
     else
         printcount "not ok"
@@ -81,7 +81,7 @@ raw () {
 headers () {
     sed '/^$/q' "$2" > spool/real
     "$sm" -H "$1" > spool/test
-    if [ $? == 0 ] && diff spool/real spool/test ; then
+    if [ $? = 0 ] && diff spool/real spool/test ; then
         printcount "ok"
     else
         printcount "not ok"
@@ -95,7 +95,7 @@ rnews () {
     size=`perl -e "print -s \"$2\""`
     ( echo "#! rnews $size" ; cat "$2" ) > spool/real
     "$sm" -S "$1" > spool/test
-    if [ $? == 0 ] && diff spool/real spool/test ; then
+    if [ $? = 0 ] && diff spool/real spool/test ; then
         printcount "ok"
     else
         printcount "not ok"
@@ -108,13 +108,13 @@ rnews () {
 multiple () {
     cat "$3" "$4" > spool/real
     "$sm" "$1" "$2" > spool/test
-    if [ $? == 0 ] && diff spool/real spool/test ; then
+    if [ $? = 0 ] && diff spool/real spool/test ; then
         printcount "ok"
     else
         printcount "not ok"
     fi
     ( echo "$1" ; echo "$2" ) | "$sm" > spool/test
-    if [ $? == 0 ] && diff spool/real spool/test ; then
+    if [ $? = 0 ] && diff spool/real spool/test ; then
         printcount "ok"
     else
         printcount "not ok"
@@ -124,7 +124,7 @@ multiple () {
 # Check the quieting of error messages.
 quiet () {
     output=`$sm -q @BADTOKEN@ 2>&1`
-    if [ $? == 1 ] && [ -z "$output" ] ; then
+    if [ $? = 1 ] && [ -z "$output" ] ; then
         printcount "ok"
     else
         printcount "not ok"
