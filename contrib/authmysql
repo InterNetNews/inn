@@ -1,0 +1,110 @@
+#!/usr/bin/perl -w
+#
+# Authenticate users for INN against a MySQL database.
+# Written by Daniel Marsh
+# Covered under the same license as INN in general.
+
+# You really shouldn't need to edit this file.
+# To test via tcsh:
+#     ( echo 'ClientAuthname: test' ; echo 'ClientPassword: monkey' ) | ./authmysql.pl
+
+use DBI;
+use strict;
+
+# get STDIN and retun it as a HASH
+my %stdin = get_stdin();
+
+# edit this path to wherever you want your config to reside.
+my %conf = readconf('/usr/local/news/etc/authmysql.config'); # read our config
+
+# create our dbi string for the connection
+$conf{'database'} =
+  "dbi:mysql:database=$conf{'DB'};host=$conf{'HOST'};";
+
+# open the database connection
+my $dbh = db_open(%conf);
+
+# create the query we're going to pass through
+my $query = "SELECT $conf{'passcol'} FROM $conf{'TABLE'} WHERE $conf{'usercol'}=\'$stdin{'ClientAuthname'}\'";
+
+# get our statement handler... not really a result.
+my $result = $dbh->prepare($query);
+$result->execute;
+my $cryptedpw = $result->fetchrow_array(); # the database needs to store this encrypted
+
+$stdin{'ClientPassword'} = crypt($stdin{'ClientPassword'}, $cryptedpw); # encrypt the client password we were given.
+
+# this query is to return a count of 1. there should either be one
+# match of the encrypted password/username or none.
+$query = "SELECT COUNT(*) FROM $conf{'TABLE'} WHERE"
+  ."$conf{'usercol'}=\'$stdin{'ClientAuthname'}\' and"
+  ."$conf{'passcol'}=\'$stdin{'ClientPassword'}\'";
+
+$result = $dbh->prepare($query);
+$result->execute;
+my $query_result = $result->fetchrow_array(); # this should be 1 or 0, 1 on success
+
+$result->finish;
+
+# need to get the return shit working now so it will reply proper
+# information to news clients
+
+if( $query_result ) { # the user authenticated fine.
+  print "user:$stdin{'ClientAuthname'}\n"; # return based on nnrpd
+                                           # auth specs.
+  exit(0); # exit with no error
+} else {
+  exit(502); # exit with error. username/password incorrect
+}
+
+# subs below
+sub readconf {
+  my ($file) = @_;
+
+  my %conf;
+
+  open(CONF, "$file");
+  while (<CONF>) {
+    chomp;
+    next if $_ =~ /^#.*$/;
+    next if $_ =~ /\s+/;
+    $_ =~ s/#.*$//g;
+
+    if ( $_ ne "" ) {
+      my ($key, $value) = split(':', $_, 2);
+      $conf{$key} = $_;
+    }
+  }
+  close(CONF);
+
+  return(%conf);
+}
+
+sub db_open {
+  my (%conf) = @_;
+  my ($err, $dbh);
+
+  if( $dbh = DBI->connect($conf{'database'}, $conf{'User'}, $conf{'Pass'}) ) {
+    return($dbh);
+  } else { $err = "Failure opening database ".$DBI::errstr; }
+
+  return(undef, $err);
+}
+
+sub get_stdin {
+  my %stdin;
+  while (<STDIN>) {
+    chomp;
+    next if $_ =~ /^#.*$/;
+    next if $_ =~ /\s+/;
+    $_ =~ s/#.*$//g;
+    $_ =~ s/\s+//g;
+
+    if ( $_ ne "" ) {
+      my $key = $_;
+      my ($key, $value) = split(':', $_, 2);
+      $stdin{$key} = $value;
+    }
+  }
+  return(%stdin);
+}
