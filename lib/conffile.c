@@ -111,7 +111,7 @@ static char *CONFgetword(CONFFILE *F)
   return (word);
 }
 
-CONFFILE *CONFfopen(char *filename)
+CONFFILE *CONFfopen(const char *filename)
 {
   FILE *f;
   CONFFILE *ret;

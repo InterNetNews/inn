@@ -25,10 +25,10 @@ typedef struct {
 
 extern char CONFerror[];
 
-extern CONFFILE *CONFfopen(char*);
-extern void CONFfclose(CONFFILE*);
+extern CONFFILE *CONFfopen(const char *);
+extern void CONFfclose(CONFFILE *);
 
-extern CONFTOKEN *CONFgettoken(CONFTOKEN*, CONFFILE*);
+extern CONFTOKEN *CONFgettoken(CONFTOKEN *, CONFFILE *);
 
 #ifdef __cplusplus
 }
