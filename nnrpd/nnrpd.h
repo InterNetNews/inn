@@ -268,8 +268,8 @@ extern int TrackClient(char *client, char* user);
 
 #ifdef  DO_PERL
 extern void loadPerl(void);
-extern void perlAccess(char *clientHost, char *clientIpString, char *serverHost, char *user, struct vector *access_vec);
-extern int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *errorstring, char*newUser);
+extern void perlAccess(char *user, struct vector *access_vec);
+extern int perlAuthenticate(char *user, char *passwd, char *errorstring, char*newUser);
 extern void perlAuthInit(void);
 #endif /* DO_PERL */
 

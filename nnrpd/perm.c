@@ -1562,7 +1562,7 @@ void PERMgetpermissions()
         
         access_vec = vector_new();
 
-        perlAccess(ClientHost, ClientIpString, ServerHost, uname, access_vec);
+        perlAccess(uname, access_vec);
         free(uname);
 
         access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
@@ -2248,7 +2248,7 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
                 free(script_path);
                 perlAuthInit();
           
-                code = perlAuthenticate(ClientHost, ClientIpString, ServerHost, username, password, errorstr, newUser);
+                code = perlAuthenticate(username, password, errorstr, newUser);
                 if (code == NNTP_AUTH_OK_VAL) {
                     /* Set the value of ubuf to the right username */
                     if (newUser[0] != '\0') {

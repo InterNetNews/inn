@@ -202,7 +202,7 @@ void loadPerl(void) {
     PerlLoaded = true;
 }
 
-void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, struct vector *access_vec) {
+void perlAccess(char *user, struct vector *access_vec) {
   dSP;
   HV              *attribs;
   SV              *sv;
@@ -216,9 +216,12 @@ void perlAccess(char *clientHost, char *clientIP, char *serverHost, char *user, 
   SAVETMPS;
 
   attribs = perl_get_hv("attributes", true);
-  hv_store(attribs, "hostname", 8, newSVpv(clientHost, 0), 0);
-  hv_store(attribs, "ipaddress", 9, newSVpv(clientIP, 0), 0);
-  hv_store(attribs, "interface", 9, newSVpv(serverHost, 0), 0);
+  hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
+  hv_store(attribs, "ipaddress", 9, newSVpv(ClientIpString, 0), 0);
+  hv_store(attribs, "port", 4, newSViv(ClientPort), 0);
+  hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
+  hv_store(attribs, "intipaddr", 9, newSVpv(ServerIpString, 0), 0);
+  hv_store(attribs, "intport", 7, newSViv(ServerPort), 0);
   hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
 
   PUSHMARK(SP);
@@ -311,7 +314,7 @@ void perlAuthInit(void) {
     
 }
 
-int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, char *user, char *passwd, char *errorstring, char *newUser) {
+int perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser) {
     dSP;
     HV              *attribs;
     int             rc;
@@ -330,9 +333,12 @@ int perlAuthenticate(char *clientHost, char *clientIpString, char *serverHost, c
     ENTER;
     SAVETMPS;
     attribs = perl_get_hv("attributes", true);
-    hv_store(attribs, "hostname", 8, newSVpv(clientHost, 0), 0);
-    hv_store(attribs, "ipaddress", 9, newSVpv(clientIpString, 0), 0);
-    hv_store(attribs, "interface", 9, newSVpv(serverHost, 0), 0);
+    hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
+    hv_store(attribs, "ipaddress", 9, newSVpv(ClientIpString, 0), 0);
+    hv_store(attribs, "port", 4, newSViv(ClientPort), 0);
+    hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
+    hv_store(attribs, "intipaddr", 9, newSVpv(ServerIpString, 0), 0);
+    hv_store(attribs, "intport", 7, newSViv(ServerPort), 0);
     hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
     hv_store(attribs, "password", 8, newSVpv(passwd, 0), 0);
     
