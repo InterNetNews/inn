@@ -822,7 +822,6 @@ ARTparse(CHANNEL *cp)
 		cp->Next = ++i;
 		goto sizecheck;
 	      }
-	      data->HeaderLines++;
 	      if (data->LastCRLF + MAXHEADERSIZE < i)
 		sprintf(cp->Error, "%d Too long line in header %d bytes",
 		  NNTP_REJECTIT_VAL, i - data->LastCRLF);
@@ -841,6 +840,7 @@ ARTparse(CHANNEL *cp)
 		cp->State = CSgetbody;
 		goto bodyprocessing;
 	      }
+	      data->HeaderLines++;
 	      data->LastCRLF = i++;
 	      goto endofheaderline;
 	    } else {
