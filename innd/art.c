@@ -452,16 +452,13 @@ char *ARTreadheader(char *files)
 **  Parse a Path line, splitting it up into NULL-terminated array of strings.
 **  The argument is modified!
 */
-STATIC char **
-ARTparsepath(p, countp)
-    register char	*p;
-    int			*countp;
+STATIC char **ARTparsepath(char *p, int *countp)
 {
-    static char		*NULLPATH[1] = { NULL };
-    static int		oldlength;
-    static char		**hosts;
-    register int	i;
-    register char	**hp;
+    STATIC char		*NULLPATH[1] = { NULL };
+    STATIC int		oldlength;
+    STATIC char		**hosts;
+    int	                i;
+    char	        **hp;
 
     /* We can be called with a non-existant or empty path. */
     if (p == NULL || *p == '\0') {
@@ -513,18 +510,14 @@ ARTparsepath(p, countp)
 **	Article body.
 **  Also, the Data->Size field is filled in.
 */
-STATIC int
-ARTwrite(name, Article, Data)
-    char		*name;
-    BUFFER		*Article;
-    ARTDATA		*Data;
+STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
 {
     static char		WHEN[] = "article";
     static BUFFER	Headers;
-    register int	fd;
-    register IOVEC	*vp;
-    register long	size;
-    register char	*p;
+    int                 fd;
+    IOVEC	        *vp;
+    long	        size;
+    char	        *p;
     IOVEC		iov[8];
     IOVEC		*end;
     char		bytesbuff[SMBUF];
@@ -670,22 +663,17 @@ ARTwrite(name, Article, Data)
 **  get added to the output pointer.  (This nicely lets us clobber obsolete
 **  headers by setting it to zero.)
 */
-STATIC char *
-ARTparseheader(in, out, deltap, errorp)
-    register char	*in;
-    register char	*out;
-    int			*deltap;
-    STRING		*errorp;
+STATIC char *ARTparseheader(char *in, char *out, int *deltap, STRING *errorp)
 {
     static char		buff[SMBUF];
     static char		COLONSPACE[] = "No colon-space in \"%s\" header";
-    register char	*start;
-    register TREE	*tp;
-    register ARTHEADER	*hp;
-    register char	c;
-    register char	*p;
-    register int	i;
-    register char	*colon;
+    char	        *start;
+    TREE	        *tp;
+    ARTHEADER	        *hp;
+    char	        c;
+    char	        *p;
+    int	                i;
+    char	        *colon;
 
     /* Find a non-continuation line. */
     for (colon = NULL, start = out; ; ) {
@@ -791,10 +779,10 @@ ARTparseheader(in, out, deltap, errorp)
 **  in <#*tyo2'~n@twinsun.com>, with additional email discussion.
 **  Thanks, Paul.
 */
-BOOL ARTidok(char *MessageID)
+BOOL ARTidok(const char *MessageID)
 {
     int	                c;
-    char	        *p;
+    const char	        *p;
 
     /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
     p = MessageID;
@@ -866,17 +854,14 @@ BOOL ARTidok(char *MessageID)
 **  headers.  Also fill in the article data block with what we can find.
 **  Return NULL if the article is okay, or a string describing the error.
 */
-STATIC STRING
-ARTclean(Article, Data)
-    BUFFER		*Article;
-    ARTDATA		*Data;
+STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 {
     static char		buff[SMBUF];
     ARTHEADER		*hp;
-    register char	*in;
-    register char	*out;
-    register int	i;
-    register char	*p;
+    char	        *in;
+    char	        *out;
+    int	                i;
+    char	        *p;
     STRING		error;
     int			delta;
 
@@ -1061,11 +1046,11 @@ ARTreject(buff, article)
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
-STATIC char *ARTcancelverify(ARTDATA *Data, char *MessageID, HASH hash)
+STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const HASH hash)
 {
-    register char	*files;
-    register char	*p;
-    register char	*local;
+    char	        *files;
+    char	        *p;
+    char	        *local;
     char		*head;
     char		buff[SMBUF];
 
@@ -1100,78 +1085,45 @@ STATIC char *ARTcancelverify(ARTDATA *Data, char *MessageID, HASH hash)
 /*
 **  Process a cancel message.
 */
-void ARTcancel(ARTDATA *Data, char *MessageID, const BOOL Trusted)
+void ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, const BOOL Trusted)
 {
     char	        *files;
     char	        *p;
-    char	        *msgid;
-    char	        *next;
     BOOL	        more;
-    STRING		save;
     char		buff[SMBUF+16];
-    char		c;
-    HASH                hash;
 
     if (!DoCancels && !Trusted) {
 	return;
     }
 
-    for (msgid = MessageID; msgid && *msgid; msgid = next) {
-	for (next = msgid; *next && !ISWHITE(*next); next++)
-	    continue;
-
-	if ((c = *next) != '\0')
-	    *next++ = '\0';
-	if (c && msgid == MessageID)
-	    syslog(L_NOTICE, "%s multiple cancel %s", Data->Feedsite,
-		MaxLength(Data->MessageID, Data->MessageID));
-	if (*msgid == '\0') {
-	    if (c)
-		next[-1] = c;
-	    continue;
-	}
-	if (!ARTidok(msgid)) {
-	    syslog(L_NOTICE, "%s bad cancel Message-ID %s", Data->Feedsite,
-		MaxLength(msgid, msgid));
-	    continue;
-	}
-
-	hash = HashMessageID(msgid);
-	if (!HIShavearticle(hash)) {
+    if (!ARTidok(MessageID)) {
+	syslog(L_NOTICE, "%s bad cancel Message-ID %s", Data->Feedsite,
+	       MaxLength(MessageID, MessageID));
+        return;
+    }
+    
+    if (!HIShavearticle(hash)) {
 	/* Article hasn't arrived here, so write a fake entry using
 	 * most of the information from the cancel message. */
 #if	defined(DO_VERIFY_CANCELS)
-	    if (!Trusted) {
-		if (c)
-		    next[-1] = c;
-		continue;
-	    }
-#endif	/* defined(DO_VERIFY_CANCELS) */
-	save = Data->MessageID;
-	    Data->MessageID = msgid;
-	HISremember(hash);
-	    if (save != MessageID)
-	Data->MessageID = save;
-	    (void)sprintf(buff, "Cancelling %s", MaxLength(msgid, msgid));
-	ARTlog(Data, ART_CANC, buff);
-	    Data->MessageID = save;
-	    if (c)
-		next[-1] = c;
-	    continue;
-    }
-
-#if	defined(DO_VERIFY_CANCELS)
-	files = Trusted ? HISfilesfor(hash)
-			: ARTcancelverify(Data, MessageID, hash);
-#else
-	files = HISfilesfor(hash);
-#endif	/* !defined(DO_VERIFY_CANCELS) */
-	if (files == NULL) {
-	    if (c)
-		next[-1] = c;
-	    continue;
+	if (!Trusted) {
+	    return;
 	}
-
+#endif	/* defined(DO_VERIFY_CANCELS) */
+	HISremember(hash);
+	(void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
+	ARTlog(Data, ART_CANC, buff);
+	return;
+    }
+#if	defined(DO_VERIFY_CANCELS)
+    files = Trusted ? HISfilesfor(hash)
+	: ARTcancelverify(Data, MessageID, hash);
+#else
+    files = HISfilesfor(hash);
+#endif	/* !defined(DO_VERIFY_CANCELS) */
+    if (files == NULL)
+	return;
+    
     /* Get the files where the message is stored and and zap them. */
     for ( ; *files; files = p + 1) {
 	/* Snip off next name, turn dots to slashes. */
@@ -1183,17 +1135,15 @@ void ARTcancel(ARTDATA *Data, char *MessageID, const BOOL Trusted)
 	more = *p == ' ';
 	if (more)
 	    *p = '\0';
-
+	
 	/* Remove this file, go back for the next one if there's more. */
 	if (unlink(files) < 0 && errno != ENOENT)
 	    syslog(L_ERROR, "%s cant unlink %s %m", LogName, files);
 	if (!more)
 	    break;
     }
-	if (c)
-	    next[-1] = c;
-    }
 }
+
 
 
 /*
@@ -1201,17 +1151,14 @@ void ARTcancel(ARTDATA *Data, char *MessageID, const BOOL Trusted)
 **  are passed out to an external program in a specific directory that
 **  has the same name as the first word of the control message.
 */
-STATIC void
-ARTcontrol(Data, Control)
-    ARTDATA		*Data;
-    char		*Control;
+STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
 {
     static char		CTLBIN[] = _PATH_CONTROLPROGS;
-    register char	*p;
+    char	        *p;
     char		buff[SMBUF];
     char		*av[6];
     struct stat		Sb;
-    register char	c;
+    char	        c;
 
     /* See if it's a cancel message. */
     c = *Control;
@@ -1219,7 +1166,7 @@ ARTcontrol(Data, Control)
 	for (p = &Control[6]; ISWHITE(*p); p++)
 	    continue;
 	if (*p && ARTidok(p))
-	    ARTcancel(Data, p, FALSE);
+	    ARTcancel(Data, p, hash, FALSE);
 	return;
     }
 
@@ -1290,16 +1237,13 @@ ARTcontrol(Data, Control)
 **  Split a Distribution header, making a copy and skipping leading and
 **  trailing whitespace (which the RFC allows).
 */
-STATIC void
-DISTparse(list, Data)
-    register char	**list;
-    ARTDATA		*Data;
+STATIC void DISTparse(char **list, ARTDATA *Data)
 {
     static BUFFER	Dist;
-    register char	*p;
-    register char	*q;
-    register int	i;
-    register int	j;
+    char	        *p;
+    char	        *q;
+    int	                i;
+    int	                j;
 
     /* Get space to store the copy. */
     for (i = 0, j = 0; (p = list[i]) != NULL; i++)
@@ -1337,14 +1281,11 @@ DISTparse(list, Data)
 **  A somewhat similar routine, except that this handles negated entries
 **  in the list and is used to check the distribution sub-field.
 */
-STATIC BOOL
-DISTwanted(list, p)
-    register char	**list;
-    register char	*p;
+STATIC BOOL DISTwanted(char **list, char *p)
 {
-    register char	*q;
-    register char	c;
-    register BOOL	sawbang;
+    char	        *q;
+    char	        c;
+    BOOL	        sawbang;
 
     for (sawbang = FALSE, c = *p; (q = *list) != NULL; list++)
 	if (*q == '!') {
@@ -1364,10 +1305,7 @@ DISTwanted(list, p)
 /*
 **  See if any of the distributions in the article are wanted by the site.
 */
-STATIC BOOL
-DISTwantany(site, article)
-    char		**site;
-    register char	**article;
+STATIC BOOL DISTwantany(char **site, char **article)
 {
     for ( ; *article; article++)
 	if (DISTwanted(site, *article))
@@ -1377,39 +1315,13 @@ DISTwantany(site, article)
 
 
 /*
-**  Sort an array of newsgroups for optimal disk access.  This may be
-**  of marginal benefit.
-*/
-STATIC void
-ARTsortfordisk()
-{
-    static NEWSGROUP	*save;
-    register NEWSGROUP	**ngptr;
-
-    if (save && GroupPointers[1] != NULL) {
-	/* If one of the groups we want to access is the group we last
-	 * wrote to, move it to the front of the list. */
-	for (ngptr = GroupPointers; *++ngptr; )
-	    if (*ngptr == save) {
-		*ngptr = GroupPointers[0];
-		GroupPointers[0] = save;
-		return;
-	    }
-    }
-    save = GroupPointers[0];
-}
-
-
-/*
 **  Send the current article to all sites that would get it if the
 **  group were created.
 */
-STATIC void
-ARTsendthegroup(name)
-    register char	*name;
+STATIC void ARTsendthegroup(char *name)
 {
-    register SITE	*sp;
-    register int	i;
+    SITE	        *sp;
+    int	                i;
     NEWSGROUP		*ngp;
 
     for (ngp = NGfind(ARTctl), sp = Sites, i = nSites; --i >= 0; sp++)
@@ -1423,12 +1335,10 @@ ARTsendthegroup(name)
 **  Check if site doesn't want this group even if it's crossposted
 **  to a wanted group.
 */
-STATIC void
-ARTpoisongroup(name)
-    register char	*name;
+STATIC void ARTpoisongroup(char *name)
 {
-    register SITE	*sp;
-    register int	i;
+    SITE	        *sp;
+    int	                i;
 
     for (sp = Sites, i = nSites; --i >= 0; sp++)
 	if (sp->Name != NULL && (sp->PoisonEntry || ME.PoisonEntry) &&
@@ -1442,12 +1352,11 @@ ARTpoisongroup(name)
 ** If we end up not being able to write the article, we'll get "holes"
 ** in the directory and active file.
 */
-STATIC void
-ARTassignnumbers()
+STATIC void ARTassignnumbers(void)
 {
-    register char	*p;
-    register int	i;
-    register NEWSGROUP	*ngp;
+    char	        *p;
+    int	                i;
+    NEWSGROUP	        *ngp;
 
     p = HDR(_xref);
     strcpy(p,path);
@@ -1547,16 +1456,14 @@ ARTxrefslave()
 **  Parse the data from the xreplic command and assign the numbers.
 **  This involves replacing the GroupPointers entries.
 */
-STATIC void
-ARTreplic(Replic)
-    BUFFER		*Replic;
+STATIC void ARTreplic(BUFFER *Replic)
 {
-    register char	*p;
-    register char	*q;
-    register char	*name;
-    register char	*next;
-    register NEWSGROUP	*ngp;
-    register int	i;
+    char	        *p;
+    char	        *q;
+    char	        *name;
+    char	        *next;
+    NEWSGROUP	        *ngp;
+    int	                i;
 
     p = HDR(_xref);
     strcpy(p,path);
@@ -1611,13 +1518,10 @@ ARTreplic(Replic)
 **  Return TRUE if a list of strings has a specific one.  This is a
 **  generic routine, but is used for seeing if a host is in the Path line.
 */
-STATIC BOOL
-ListHas(list, p)
-    register char	**list;
-    register char	*p;
+STATIC BOOL ListHas(char **list, char *p)
 {
-    register char	*q;
-    register char	c;
+    char	        *q;
+    char	        c;
 
     for (c = *p; (q = *list) != NULL; list++)
 	if (c == *q && caseEQ(p, q))
@@ -1629,20 +1533,15 @@ ListHas(list, p)
 /*
 **  Propagate an article to the sites have "expressed an interest."
 */
-STATIC void
-ARTpropagate(Data, hops, hopcount, list)
-    ARTDATA		*Data;
-    char		**hops;
-    int			hopcount;
-    char		**list;
+STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list)
 {
-    register SITE	*sp;
-    register int	i;
-    register int	j;
-    register int	Groupcount;
-    register char	*p;
-    register SITE	*funnel;
-    register BUFFER	*bp;
+    SITE	        *sp;
+    int	                i;
+    int	                j;
+    int 	        Groupcount;
+    char	        *p;
+    SITE	        *funnel;
+    BUFFER	        *bp;
 
     /* Work out which sites should really get it. */
     Groupcount = Data->Groupcount;
@@ -1728,17 +1627,15 @@ ARTpropagate(Data, hops, hopcount, list)
 /*
 **  Build up the overview data.
 */
-STATIC void
-ARTmakeoverview(Data)
-    ARTDATA			*Data;
+STATIC void ARTmakeoverview(ARTDATA *Data)
 {
     static char			SEP[] = "\t";
     static char			COLONSPACE[] = ": ";
     static BUFFER		Overview;
-    register ARTOVERFIELD	*fp;
-    register ARTHEADER		*hp;
-    register char		*p;
-    register int		i;
+    ARTOVERFIELD	        *fp;
+    ARTHEADER		        *hp;
+    char		        *p;
+    int		                i;
 
     /* Setup. */
     if (Overview.Data == NULL)
@@ -2224,10 +2121,8 @@ STRING ARTpost(CHANNEL *cp)
         if (!AmSlave)
             ARTassignnumbers();
         else
-            ARTreplic(cp->Replic);
+            ARTreplic(&cp->Replic);
     }
-    /* Optimize how we place the article on the disk. */
-    ARTsortfordisk();
 
     /* Now we can file it. */
     if (++ICDactivedirty >= ICD_SYNC_COUNT) {
@@ -2360,10 +2255,10 @@ STRING ARTpost(CHANNEL *cp)
      * seem to be worth it. */
     if (Accepted) {
 	if (ControlHeader >= 0)
-	    ARTcontrol(&Data, HDR(ControlHeader));
+	    ARTcontrol(&Data, hash, HDR(ControlHeader));
 	p = HDR(_supersedes);
 	if (*p && ARTidok(p))
-	    ARTcancel(&Data, p, FALSE);
+	    ARTcancel(&Data, p, hash, FALSE);
     }
 
     /* If we need the overview data, write it. */

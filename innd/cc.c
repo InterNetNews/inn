@@ -411,18 +411,20 @@ CCcancel(av)
 {
     ARTDATA	Data;
     STRING	p;
+    HASH        hash;
 
     Data.Posted = Data.Arrived = Now.time;
     Data.Expires = 0;
     Data.Feedsite = "?";
+    hash = HashMessageID(Data.MessageID);
     if ((p = CCgetid(av[0], &Data.MessageID)) != NULL)
 	return p;
     if (Mode == OMrunning)
-	ARTcancel(&Data, Data.MessageID, TRUE);
+	ARTcancel(&Data, Data.MessageID, hash, TRUE);
     else {
 	/* Possible race condition, but documented in ctlinnd manpage. */
 	HISsetup();
-	ARTcancel(&Data, Data.MessageID, TRUE);
+	ARTcancel(&Data, Data.MessageID, hash, TRUE);
 	HISclose();
     }
 #if	defined(DO_LOG_CANCEL_COMMANDS)
