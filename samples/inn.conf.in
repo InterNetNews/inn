@@ -29,7 +29,7 @@ verifycancels:		false
 logcancelcomm:		false
 wanttrash:		false
 remembertrash:		true
-linecountfuzz:		true
+linecountfuzz:		0
 peertimeout:		3600
 clienttimeout:		600
 allownewnews:		true
@@ -38,7 +38,7 @@ logartsize:		true
 logipaddr:		true
 logsitename:		true
 maxconnections:		50
-artcutoff:		14
+artcutoff:		1209600
 icdsynccount:		10
 hiscachesize:		0
 readertrack:		false
