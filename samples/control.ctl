@@ -205,6 +205,7 @@ rmgroup:newsbastard@arkane.demon.co.uk:arkane.*:doit
 
 ## AT (Austria)
 # URL: http://www.usenet.at/
+# Admin group: at.usenet.gruppen
 checkgroups:control@usenet.backbone.at:at.*:doit
 newgroup:control@usenet.backbone.at:at.*:doit
 rmgroup:control@usenet.backbone.at:at.*:doit
@@ -439,10 +440,12 @@ rmgroup:lisbon@*chi.il.us:chi.*:doit
 rmgroup:lisbon@*interaccess.com:chi.*:doit
 
 ## CHILE (Chile and Chilean affairs)
-# Contact: mod-cga@webhost.cl
-checkgroups:mod-cga@*webhost.cl:chile.*:doit
-newgroup:mod-cga@*webhost.cl:chile.*:doit
-rmgroup:mod-cga@*webhost.cl:chile.*:doit
+# Contact: mod-cga@usenet.cl
+# URL: http://www.usenet.cl/
+# Admin group: chile.grupos.anuncios
+checkgroups:mod-cga@*lj.cl:chile.*:doit
+newgroup:mod-cga@*lj.cl:chile.*:doit
+rmgroup:mod-cga@*lj.cl:chile.*:doit
 
 ## CHINESE (China and Chinese language groups)
 checkgroups:pinghua@stat.berkeley.edu:chinese.*:doit
