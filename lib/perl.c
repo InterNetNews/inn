@@ -17,9 +17,7 @@
 #if DO_PERL
 
 #include "clibrary.h"
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <fcntl.h>
 #include <syslog.h>
 
 #include "libinn.h"
@@ -54,7 +52,7 @@ void LogPerl()
    syslog(L_NOTICE, "SERVER perl filtering %s", PerlFilterActive ? "enabled" : "disabled");
 }
 
-void PerlFilter(BOOL value)
+void PerlFilter(bool value)
 {
     dSP;
 
