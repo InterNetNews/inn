@@ -61,7 +61,10 @@ where N is the buffer_size.
 If your operating system will allow you to
 .I mmap()
 block disk devices (Solaris does, FreeBSD does not), this is the
-recommended method.  Partition the disks to make each partition
+recommended method.  But note that Solaris(at least 2.6) seems to
+have a problem in regional locking of block disk devices, and should
+not be used.  Or overview data will be corrupted.
+Partition the disks to make each partition
 slightly larger (a few MB larger) than the intended size of each overview buffer.
 It is not recommend to use the block device files already located in ``/dev.''
 Instead, use "mknod" to create a new set of block device files.
