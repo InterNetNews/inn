@@ -41,29 +41,32 @@ clean:
 clobber: clean
 	rm -f tags
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES)
 
 
 ##  Compilation rules.
 
+BOTH		= $(LIBSTORAGE) $(LIBINN)
+
 LINK 		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
-LIB_S_I		= $(LIBSTORAGE) $(LIBINN)
-ES		= $(EXTSTORAGELIBS)
+INNLIBS		= $(LIBINN) $(LIBS)
+STORELIBS	= $(BOTH) $(EXTSTORAGELIBS) $(LIBS)
+
 FIX		= $(FIXSCRIPT)
+
+ctlinnd:	ctlinnd.o      $(LIBINN) ; $(LINK) ctlinnd.o      $(INNLIBS)
+decode:		decode.o                 ; $(LINK) decode.o
+encode:		encode.o                 ; $(LINK) encode.o
+getlist:	getlist.o      $(LIBINN) ; $(LINK) getlist.o      $(INNLIBS)
+inews:		inews.o        $(LIBINN) ; $(LINK) inews.o        $(INNLIBS)
+innconfval:	innconfval.o   $(LIBINN) ; $(LINK) innconfval.o   $(INNLIBS)
+ovdb_recover:	ovdb_recover.o $(BOTH)   ; $(LINK) ovdb_recover.o $(STORELIBS)
+rnews:		rnews.o        $(LIBINN) ; $(LINK) rnews.o        $(INNLIBS)
+sm:		sm.o           $(BOTH)   ; $(LINK) sm.o           $(STORELIBS)
 
 ovdb_recover.o: ovdb_recover.c
 	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
-
-ctlinnd:	ctlinnd.o    $(LIBINN)	; $(LINK) ctlinnd.o    $(LIBINN) $(LIBS)
-decode:		decode.o		; $(LINK) decode.o
-encode:		encode.o		; $(LINK) encode.o
-getlist:	getlist.o    $(LIBINN)	; $(LINK) getlist.o    $(LIBINN) $(LIBS)
-inews:		inews.o      $(LIBINN)	; $(LINK) inews.o      $(LIBINN) $(LIBS)
-innconfval:	innconfval.o $(LIBINN)	; $(LINK) innconfval.o $(LIBINN) $(LIBS)
-ovdb_recover: ovdb_recover.o $(LIB_S_I) ; $(LINK) ovdb_recover.o $(LIB_S_I) $(ES) $(LIBS)
-rnews:		rnews.o      $(LIBINN)	; $(LINK) rnews.o      $(LIBINN) $(LIBS)
-sm:		sm.o         $(LIB_S_I)	; $(LINK) sm.o         $(LIB_S_I) $(ES) $(LIBS)
 
 cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
 cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in
@@ -72,22 +75,18 @@ pullnews:	pullnews.in      $(FIX)	; $(FIX) -i pullnews.in
 scanspool:	scanspool.in     $(FIX)	; $(FIX) scanspool.in
 signcontrol:	signcontrol.in   $(FIX)	; $(FIX) -i signcontrol.in
 
-c7unbatch:	../Makefile.global
-	echo '#! $(SHELL)' > c7unbatch
-	echo 'decode | $(COMPRESS) -d' >> c7unbatch
+c7unbatch: Makefile ../Makefile.global
+	( echo '#! $(SHELL)' ; echo 'decode | $(COMPRESS) -d' ) > $@
 
-gunbatch:	../Makefile.global
-	echo '#! $(SHELL)' > gunbatch
-	echo 'exec $(GZIP) -d -c' >> gunbatch
+gunbatch: Makefile ../Makefile.global
+	( echo '#! $(SHELL)' ; echo 'exec $(GZIP) -d -c' ) > $@
 
 ##  Not normally built.
-feedone:	feedone.o    $(LIBINN)	; $(LINK) feedone.o    $(LIBINN) $(LIBS)
-sys2nf:		sys2nf.o     $(LIBINN)	; $(LINK) sys2nf.o     $(LIBINN) $(LIBS)
+feedone:	feedone.o     $(LIBINN)	; $(LINK) feedone.o $(INNLIBS)
+sys2nf:		sys2nf.o      $(LIBINN)	; $(LINK) sys2nf.o  $(INNLIBS)
 
-$(LIBINN):
-	(cd ../lib ; $(MAKE))
-$(LIBSTORAGE):
-	(cd ../storage ; $(MAKE))
+$(LIBINN):	; (cd ../lib ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.
@@ -113,48 +112,38 @@ $(D)$(PATHRNEWS)/decode:            decode              ; $(LI_XPUB) $? $@
 $(D)$(PATHRNEWS)/encode:            encode              ; $(LI_XPUB) $? $@
 $(D)$(PATHRNEWS)/gunbatch:          gunbatch            ; $(CP_XPUB) $? $@
 
-$(D)$(PATHBIN)/ovdb_upgrade:	../Makefile.global
+$(D)$(PATHBIN)/ovdb_upgrade: Makefile
 	rm -f $@
 	ln -s ovdb_recover $@
 
+
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+
+depend:	Makefile $(SOURCES)
+	$(MAKEDEPEND) -DUSE_BERKELEY_DB $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-ctlinnd.o:	../include/clibrary.h
-ctlinnd.o:	../include/configdata.h
-ctlinnd.o:	../include/inndcomm.h
-ctlinnd.o:	../include/libinn.h
-ctlinnd.o:	../include/macros.h
-ctlinnd.o:	../include/paths.h
-sm.o:		../include/configdata.h
-sm.o:		../include/clibrary.h
-sm.o:		../include/libinn.h
-sm.o:		../include/macros.h
-decode.o:	../include/clibrary.h
-decode.o:	../include/configdata.h
-encode.o:	../include/clibrary.h
-encode.o:	../include/configdata.h
-getlist:	../include/clibrary.h
-getlist:	../include/configdata.h
-getlist:	../include/libinn.h
-getlist:	../include/macros.h
-getlist:	../include/paths.h
-getlist:	../include/qio.h
-inews.o:	../include/clibrary.h
-inews.o:	../include/configdata.h
-inews.o:	../include/libinn.h
-inews.o:	../include/macros.h
-inews.o:	../include/nntp.h
-inews.o:	../include/paths.h
-innconfval.o:	../include/clibrary.h
-innconfval.o:	../include/configdata.h
-innconfval.o:	../include/libinn.h
-innconfval.o:	../include/macros.h
-rnews.o:	../include/clibrary.h
-rnews.o:	../include/configdata.h
-rnews.o:	../include/libinn.h
-rnews.o:	../include/macros.h
-rnews.o:	../include/nntp.h
-rnews.o:	../include/paths.h
+ctlinnd.o: ctlinnd.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h ../include/libinn.h ../include/inndcomm.h \
+ ../include/paths.h ../include/macros.h
+decode.o: decode.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h
+encode.o: encode.c ../include/configdata.h ../include/config.h \
+ ../include/clibrary.h
+getlist.o: getlist.c ../include/config.h ../include/clibrary.h \
+ ../include/macros.h ../include/libinn.h ../include/qio.h \
+ ../include/paths.h
+inews.o: inews.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h
+innconfval.o: innconfval.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h
+ovdb_recover.o: ovdb_recover.c ../include/config.h \
+ ../include/clibrary.h ../include/libinn.h ../include/ov.h \
+ ../include/storage.h ../storage/ovdb/ovdb.h
+rnews.o: rnews.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h \
+ ../include/paths.h
+sm.o: sm.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h \
+ ../include/qio.h
