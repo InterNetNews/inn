@@ -318,6 +318,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	return(-1);
     }
 
+    done = 0;
     while (!done && authtries--) {
 	/* send out the packet and wait for reply. */
 	if (sendto(sock, (char *)&req, reqlen, 0, (struct sockaddr*) &sinr,
