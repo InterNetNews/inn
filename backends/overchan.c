@@ -192,6 +192,7 @@ STATIC BOOL WriteUnifiedData(HASH *Hash, char *Dir, char *Art)
 STATIC void ProcessIncoming(QIOSTATE *qp)
 {
     char	        *Xref = NULL;
+    char		*OrigXref;
     char                *Data;
     char                *Dir;
     char	        *Art;
@@ -243,6 +244,8 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 	    for (Xref++; *Xref == ' '; Xref++);
 	}
 	Xref = COPY(Xref);
+	OrigXref = Xref; /* save pointer so we can do free() later */
+
 	for (p = Xref; *p; p++)
 	    if (*p == '.')
 		*p = '/';
@@ -277,8 +280,8 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 			Dir, strerror(errno));
 	    }
 	}
+	DISPOSE(OrigXref);
     }
-    DISPOSE(Xref);
 
     if (QIOerror(qp))
 	(void)fprintf(stderr, "overchan cant read %s\n", strerror(errno));
