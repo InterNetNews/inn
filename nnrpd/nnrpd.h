@@ -65,6 +65,16 @@ typedef enum _READTYPE {
     RTtimeout
 } READTYPE;
 
+/*
+**  Information about the schema of the news overview files.
+*/
+typedef struct _ARTOVERFIELD {
+    char	*Header;
+    int		Length;
+    BOOL	HasHeader;
+    BOOL	NeedsHeader;
+} ARTOVERFIELD;
+
 #if	defined(MAINLINE)
 #define EXTERN	/* NULL */
 #else
@@ -93,6 +103,8 @@ extern char	*ACTIVE;
 extern char	*NEWSGROUPS;
 extern char	*NNRPACCESS;
 extern char	NOACCESS[];
+EXTERN ARTOVERFIELD	*ARTfields;
+EXTERN int	ARTfieldsize;
 EXTERN int	SPOOLlen;
 EXTERN char	PERMpass[SMBUF];
 EXTERN char	PERMuser[SMBUF];
@@ -145,6 +157,7 @@ extern BOOL		PERMartok();
 extern BOOL		PERMmatch();
 extern BOOL		ParseDistlist();
 extern READTYPE		READline();
+extern char		*OVERGetHeader(char *p, int field);
 #if	defined(VAR_STDARGS)
 extern void		Reply(char *, ...);
 #endif	/* defined(VAR_STDARGS) */

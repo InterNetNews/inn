@@ -37,23 +37,10 @@ typedef struct _SENDDATA {
     STRING	Item;
 } SENDDATA;
 
-/*
-**  Information about the schema of the news overview files.
-*/
-typedef struct _ARTOVERFIELD {
-    char	*Header;
-    int		Length;
-    BOOL	HasHeader;
-    BOOL	NeedsHeader;
-} ARTOVERFIELD;
-
-
 STATIC char		ARTnotingroup[] = NNTP_NOTINGROUP;
 STATIC char		ARTnoartingroup[] = NNTP_NOARTINGRP;
 STATIC char		ARTnocurrart[] = NNTP_NOCURRART;
 STATIC ARTHANDLE        *ARThandle = NULL;
-STATIC ARTOVERFIELD	*ARTfields;
-STATIC int		ARTfieldsize;
 STATIC int		ARTfirstfullfield = 0;
 STATIC int              ARTxreffield = 0;
 STATIC SENDDATA		SENDbody = {
@@ -684,7 +671,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 **  Return a field from the overview line or NULL on error.  Return a copy
 **  since we might be re-using the line later.
 */
-STATIC char *OVERGetHeader(char *p, int field)
+char *OVERGetHeader(char *p, int field)
 {
     static char		*buff;
     static int		buffsize;
@@ -724,7 +711,7 @@ STATIC char *OVERGetHeader(char *p, int field)
     }
 
     /* Figure out length; get space. */
-    if ((next = strpbrk(p, "\n\t")) != NULL) {
+    if ((next = strpbrk(p, "\n\r\t")) != NULL) {
 	i = next - p;
     } else {
 	i = strlen(p);
