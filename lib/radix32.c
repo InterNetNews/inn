@@ -8,6 +8,8 @@
 #include "clibrary.h"
 #include <time.h>
 
+#include "libinn.h"
+
 
 static char	ALPHABET[] =
     "0123456789abcdefghijklmnopqrstuv";
