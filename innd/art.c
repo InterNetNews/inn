@@ -766,7 +766,7 @@ ARTparse(CHANNEL *cp)
 {
   struct buffer	*bp = &cp->In;
   ARTDATA	*data = &cp->Data;
-  size_t        i, limit, fudge, size;
+  long          i, limit, fudge, size;
   int		hopcount;
   char		**hops;
   HDRCONTENT	*hc = data->HdrContent;
