@@ -1476,7 +1476,7 @@ fi
 
 dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(fseeko ftello hstrerror inet_aton mkstemp pread pwrite \
-                 seteuid strcasecmp strerror strlcpy strspn setenv)
+                 seteuid strcasecmp strerror strlcat strlcpy strspn setenv)
 
 dnl Source used by INN_TYPE_FPOS_T_LARGE.
 define([_INN_TYPE_FPOS_T_LARGE_SOURCE],

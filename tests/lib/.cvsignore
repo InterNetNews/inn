@@ -18,6 +18,7 @@ qio.t
 setenv.tr
 snprintf.t
 strerror.t
+strlcat.t
 strlcpy.t
 uwildmat.t
 vector.t

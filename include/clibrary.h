@@ -112,6 +112,9 @@ extern int              snprintf(char *, size_t, const char *, ...)
 #if !HAVE_STRERROR
 extern const char *     strerror(int);
 #endif
+#if !HAVE_STRLCAT
+extern size_t           strlcat(char *, const char *, size_t);
+#endif
 #if !HAVE_STRLCPY
 extern size_t           strlcpy(char *, const char *, size_t);
 #endif

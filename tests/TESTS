@@ -16,6 +16,7 @@ lib/qio
 lib/setenv
 lib/snprintf
 lib/strerror
+lib/strlcat
 lib/strlcpy
 lib/uwildmat
 lib/vector

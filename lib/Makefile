@@ -13,9 +13,9 @@ SOURCES = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c mmap.c \
 	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
 	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
-	sequence.c setenv.c sockaddr.c strcasecmp.c strerror.c strlcpy.c \
-	strspn.c strtok.c timer.c uwildmat.c vector.c version.c xfopena.c \
-	xmalloc.c xsignal.c xwrite.c
+	sequence.c setenv.c sockaddr.c strcasecmp.c strerror.c strlcat.c \
+	strlcpy.c strspn.c strtok.c timer.c uwildmat.c vector.c version.c \
+	xfopena.c xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	buffer.o cleanfrom.o clientactive.o clientlib.o concat.o conffile.o \
@@ -216,6 +216,7 @@ sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
 strcasecmp.o: strcasecmp.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
 strerror.o: strerror.c ../include/config.h ../include/inn/defines.h
+strlcat.o: strlcat.c ../include/config.h ../include/inn/defines.h
 strlcpy.o: strlcpy.c ../include/config.h ../include/inn/defines.h
 strspn.o: strspn.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h

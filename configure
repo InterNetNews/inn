@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.222 
+# From configure.in Revision: 1.223 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -10434,7 +10434,7 @@ done
 fi
 
 for ac_func in fseeko ftello hstrerror inet_aton mkstemp pread pwrite \
-                 seteuid strcasecmp strerror strlcpy strspn setenv
+                 seteuid strcasecmp strerror strlcat strlcpy strspn setenv
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:10441: checking for $ac_func" >&5
