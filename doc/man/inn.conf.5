@@ -130,6 +130,17 @@ this
 value.
 The default value is ``4''.
 .TP
+.I nicenewnews
+If set to anything greater than ``0'', all
+.IR nnrpd (8)
+processes that use
+the ``NEWNEWS'' command will
+.IR nice (1)
+themselves to this value. This gives other nnrpd processes a higher
+priority. The default value is ``0'', which means
+that no change is made from the ``nicekids'' value. Note that this
+value will be ignored if it is set to a value lower than ``nicekids''.
+.TP
 .I mta
 This specifies the message transfer agent (mta) to be used when mailing
 moderated postings and for use for innmail. The article, with headers and
@@ -281,7 +292,7 @@ This is boolean value and the default is ``false''.
 .TP
 .I activedenable
 If set to ``true'' then
-.I nnrpd
+.IR nnrpd (8)
 processes access the active file through a separate process, using
 UDP requests. The actived process will be started automatically on
 innd startup. This saves a significant amount of memory and processing
@@ -375,10 +386,10 @@ A path to unified overview files.
 The default value is ``<pathspool>/uniover''.
 .PP
 The following parameters are used only by 
-.I nnrpd
+.IR nnrpd (8)
 to control high-volume posters via an exponential backoff algorithm.
 These parameters are read at 
-.I nnrpd
+.IR nnrpd (8)
 run time.
 .PP
 Exponential posting backoff works as follows. News clients are 
@@ -387,7 +398,7 @@ indexed by IP number (or username, see
 below). Each time that a specific IP number posts a message, the time of
 posting is stored (along with the previous sleep time, see below). 
 After a configurable number of posts in a configurable period of time,
-.I nnrpd 
+.IR nnrpd (8)
 will activate posting backoff, and begin to sleep for increasing
 periods of time before actually posting anything. Posts will still get
 through, but at an increasingly reduced rate.
@@ -453,7 +464,7 @@ The default value is unset.
 This is a boolean value. If on, posting backoffs are indexed on a per
 user basis instead of a per IP basis. You must be using authentication
 in 
-.I nnrpd
+.IR nnrpd (8)
 for the on value of this constant to have any meaning.
 This is boolean value and the default is ``false''.
 .TP
@@ -498,7 +509,7 @@ This is boolean value and the default is ``false''.
 .TP
 .I nnrpdposthost
 If this is specified,
-.I nnrpd
+.IR nnrpd (8)
 and
 .I rnews
 pass articles to the specified host.
@@ -609,7 +620,7 @@ should listen on.
 The default value is ``119'' - the standard nntp port.
 .PP
 The following parameters are used only by
-.I nnrpd
+.IR nnrpd (8)
 ( or perhaps
 .I inews )
 when accepting postings from clients:
@@ -625,7 +636,7 @@ The default value is ``1000000''.
 .TP
 .I mimeversion
 If this parameter is present, then
-.I nnrpd
+.IR nnrpd (8)
 will add the necessary MIME (Multipurpose Internet Mail Extensions)
 headers to all any articles that do not have a Mime-Version header.
 This parameter specifies the MIME version, and should normally be ``1.0''.
