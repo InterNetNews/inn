@@ -28,6 +28,7 @@ warnings:
 
 clean:
 	rm -f *.o $(ALL)
+	rm -f profiled expirep
 	rm -rf .libs
 
 clobber distclean: clean
@@ -69,11 +70,9 @@ $(LIBHIST):	; (cd ../history ; $(MAKE))
 profiled:	expirep 
 	date >$@
 
-NEWFLAGS	= CFLAGS="$(CFLAGS) $(PROF)" LDFLAGS="$(LDFLAGS) $(PROF)"
-
 expirep:	expire.c
 	rm -f expire.o
-	$(MAKE) expire $(NEWFLAGS) LIBINN=../libinn_p.a
+	$(MAKEPROFILING) expire
 	mv expire expirep
 	rm -f expire.o
 

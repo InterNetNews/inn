@@ -20,7 +20,9 @@ clean:
 clobber distclean: clean
 	rm -f $(EXTRA)
 
-depend tags ctags profiled:
+depend tags ctags:
+
+profiled: all
 
 
 ##  Build rules.

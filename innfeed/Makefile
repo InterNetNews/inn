@@ -31,6 +31,7 @@ warnings:
 
 clean:
 	rm -f *.o $(ALL) version.c innfeed-convcfg
+	rm -f profiled innfeedp
 	rm -rf .libs
 
 clobber distclean: clean 
@@ -101,6 +102,19 @@ $(D)$(PATHBIN)/startinnfeed: startinnfeed
 	    echo '$@ needs to be installed setuid root' ; \
 	    echo '' ; echo ; \
 	fi
+
+
+##  Profiling.  These rules have not been checked for a while and may need
+##  some work.
+
+profiled:	innfeedp
+	date >$@
+
+innfeedp:	$(SOURCES)
+	rm -f $(OBJECTS)
+	$(MAKEPROFILING) innfeed
+	mv innfeed innfeedp
+	rm -f $(OBJECTS)
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

@@ -32,6 +32,9 @@ clobber clean distclean:
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
 
+profiled:
+	$(MAKEPROFILING) all
+
 
 ##  Compilation rules.
 

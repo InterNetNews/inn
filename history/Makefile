@@ -28,7 +28,7 @@ programs:
 clobber clean distclean:
 	rm -f *.o *.lo libinnhist.la libinnhist.a libinnhist_pure_*.a .pure
 	rm -f buildconfig hismethods.c hismethods.h
-	rm -f profiled libinnhist_p.a
+	rm -f profiled libinnhist$(PROFSUFFIX).a
 	rm -rf .libs
 	@for D in $(SUBDIRS); do \
 	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
@@ -68,14 +68,14 @@ $(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
 
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
-profiled: ../libinnhist_p.a
+profiled: libinnhist$(PROFSUFFIX).a
 	date >$@
 
-../libinnhist_p.a: $(SOURCES)
+libinnhist$(PROFSUFFIX).a: $(SOURCES)
 	rm -f $(OBJECTS)
-	$(MAKE) libinnhist.a CFLAGS="$(CFLAGS) $(PROF)"
-	mv libinnhist.a ../libinnhist_p.a
-	$(RANLIB) ../libinnhist_p.a
+	$(MAKEPROFILING) libinnhist.a
+	mv libinnhist.a libinnhist$(PROFSUFFIX).a
+	$(RANLIB) libinnhist$(PROFSUFFIX).a
 	rm -f $(OBJECTS)
 
 

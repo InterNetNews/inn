@@ -30,7 +30,7 @@ programs: library
 clobber clean distclean:
 	rm -f *.o *.lo libstorage.la libstorage.a libstorage_pure_*.a .pure
 	rm -f buildconfig methods.c methods.h ovmethods.c ovmethods.h
-	rm -f profiled libstorage_p.a
+	rm -f profiled libstorage$(PROFSUFFIX).a
 	rm -rf .libs
 	@for D in $(SUBDIRS) ; do \
 	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
@@ -71,14 +71,14 @@ $(LIBINN):      ; (cd ../lib ; $(MAKE))
 
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
-profiled: ../libstorage_p.a
+profiled: libstorage$(PROFSUFFIX).a
 	date >$@
 
-../libstorage_p.a: $(SOURCES)
+libstorage$(PROFSUFFIX).a: $(SOURCES)
 	rm -f $(OBJECTS)
-	$(MAKE) libstorage.a CFLAGS="$(CFLAGS) $(PROF)"
-	mv libstorage.a ../libstorage_p.a
-	$(RANLIB) ../libstorage_p.a
+	$(MAKEPROFILING) libstorage.a
+	mv libstorage.a libstorage$(PROFSUFFIX).a
+	$(RANLIB) libstorage$(PROFSUFFIX).a
 	rm -f $(OBJECTS)
 
 

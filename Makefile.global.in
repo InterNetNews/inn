@@ -54,6 +54,8 @@ LFS_LDFLAGS     = @LFS_LDFLAGS@
 LFS_LIBS        = @LFS_LIBS@
 
 PROF            = -pg
+PROFSUFFIX      = _p
+MAKEPROFILING   = $(MAKE) COPT="$(COPT) $(PROF)" LIBSUFFIX=$(PROFSUFFIX)
 
 ##  Warnings to use with gcc.  Default to including all of the generally
 ##  useful warnings unless there's something that makes them unsuitable.  In
@@ -98,9 +100,9 @@ LIBLD           = $(LIBTOOLLD) $(CC)
 ##  linked against libstorage.  EXTSTORAGELIBS is for external libraries
 ##  needed by libstorage.
 
-LIBINN          = $(builddir)/lib/libinn.$(EXTLIB)
-LIBHIST         = $(builddir)/history/libinnhist.$(EXTLIB)
-LIBSTORAGE      = $(builddir)/storage/libstorage.$(EXTLIB)
+LIBINN          = $(builddir)/lib/libinn$(LIBSUFFIX).$(EXTLIB)
+LIBHIST         = $(builddir)/history/libinnhist$(LIBSUFFIX).$(EXTLIB)
+LIBSTORAGE      = $(builddir)/storage/libstorage$(LIBSUFFIX).$(EXTLIB)
 EXTSTORAGELIBS  = @BERKELEY_DB_LIB@
 
 CRYPTLIB        = @CRYPT_LIB@
@@ -113,7 +115,7 @@ SHADOWLIB       = @SHADOW_LIB@
 ##  or linking portions of INN that support embedded interpretors, set by
 ##  configure based on what interpretor embeddings are selected.
 
-PERLLIB         = ../lib/perl.o @PERL_LIB@
+PERLLIB         = $(builddir)/lib/perl$(LIBSUFFIX).o @PERL_LIB@
 PERLINC         = @PERL_INC@
 
 TCLLIB          = @TCL_LIB@

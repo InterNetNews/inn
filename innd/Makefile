@@ -87,7 +87,7 @@ profiled:	inndp
 
 inndp:		$(SOURCES)
 	rm -f $(OBJECTS)
-	$(MAKE) innd CFLAGS="$(CFLAGS) $(PROF)" LIBINN=../libinn_p.a
+	$(MAKEPROFILING) innd
 	mv innd inndp
 	rm -f $(OBJECTS)
 

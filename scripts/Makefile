@@ -43,6 +43,8 @@ clobber distclean: clean
 
 depend:
 
+profiled: all
+
 
 ##  Build rules.
 

@@ -64,7 +64,7 @@ profiled:	nnrpdp
 
 nnrpdp:		$(SOURCES)
 	rm -f $(OBJECTS)
-	$(MAKE) nnrpd CFLAGS="$(CFLAGS) $(PROF)" LIBINN="../libinn_p.a"
+	$(MAKEPROFILING) nnrpd
 	mv nnrpd nnrpdp
 	rm -f $(OBJECTS)
 

@@ -27,6 +27,8 @@ clobber distclean: clean
 install:
 depend:
 
+profiled: all
+
 
 ##  Build rules.
 

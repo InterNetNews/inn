@@ -51,6 +51,9 @@ clobber distclean: clean
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES)
 
+profiled:
+	$(MAKEPROFILING) all
+
 
 ##  Compilation rules.
 
