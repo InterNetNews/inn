@@ -948,9 +948,12 @@ main(int argc, char *argv[])
 
 	setsid();
 
-	if ((pidfile = fopen(cpcatpath(innconf->pathrun, "nnrpd.pid"),
-                                                "w")) == NULL) {
-	    syslog(L_ERROR, "cannot write nnrpd.pid %m");
+	if (ListenPort == NNTP_PORT)
+	    strcpy(buff, "nnrpd.pid");
+	else
+	    sprintf(buff, "nnrpd-%d.pid", ListenPort);
+	if ((pidfile = fopen(cpcatpath(innconf->pathrun, buff), "w")) == NULL) {
+	    syslog(L_ERROR, "cannot write %s %m", buff);
             exit(1);
 	}
 	fprintf(pidfile,"%d\n", getpid());
