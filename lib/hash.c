@@ -92,7 +92,7 @@ void HashClear(HASH *hash) {
 **  messages and logs.
 */
 char *HashToText(const HASH hash) {
-    STATIC char         hex[] = "0123456789ABCEDF";
+    STATIC char         hex[] = "0123456789ABCDEF";
     char                *p;
     STATIC char         hashstr[(sizeof(HASH) * 2) + 1];
     int                 i;
@@ -124,4 +124,16 @@ HASH TextToHash(const char *text) {
 	q[i] = (hextodec(text[i * 2]) << 4) + hextodec(text[(i * 2) + 1]);
     }
     return hash;
+}
+
+/* This is rather gross, we compare like the last 4 bytes of the
+   hash are at the beginning because dbz considers them to be the
+   most significant bytes */
+int HashCompare(const HASH *h1, const HASH *h2) {
+    int i;
+    int tocomp = sizeof(HASH) - sizeof(unsigned long);
+    
+    if ((i = memcmp(&h1->hash[tocomp], &h1->hash[tocomp], sizeof(unsigned long))))
+	return i;
+    return memcmp(h1, h2, sizeof(HASH));
 }
