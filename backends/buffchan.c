@@ -161,7 +161,6 @@ SITEfind(char *Name, bool CanCreate)
     char		buff[BUFSIZ];
 
     /* Look for site in the hash table. */
-    /* SUPPRESS 6 *//* Over/underflow from plus expression */
     SITE_HASH(Name, p, j);
     shp = SITE_BUCKET(j);
     for (c = *Name, sp = shp->Sites, i = shp->Used; --i >= 0; sp++)

@@ -13,10 +13,7 @@
 **
 **  This code is in the public domain and has no copyright.
 */
-/* SUPPRESS 530 *//* Empty body for statement */
-/* SUPPRESS 593 on yyerrlab *//* Label was not used */
-/* SUPPRESS 593 on yynewstate *//* Label was not used */
-/* SUPPRESS 595 on yypvt *//* Automatic variable may be used before set */
+
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>

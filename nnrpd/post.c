@@ -256,7 +256,6 @@ CheckControl(char *ctrl)
           || strcmp(ctrl, "sendme")      == 0
 	  || strcmp(ctrl, "newgroup")    == 0
           || strcmp(ctrl, "rmgroup")     == 0)
-	/* SUPPRESS 530 *//* Empty body for statement */
 	;
     else {
 	snprintf(Error, sizeof(Error),

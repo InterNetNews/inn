@@ -117,7 +117,6 @@ NGfind(char *Name)
     char                c;
     NGHASH              *htp;
 
-    /* SUPPRESS 6 *//* Over/underflow from plus expression */
     NGH_HASH(Name, p, j);
     htp = NGH_BUCKET(j);
     for (c = *Name, ngp = htp->Groups, i = htp->Used; --i >= 0; ngp++)
@@ -231,7 +230,6 @@ BuildGroups(char *active)
         ngp->Rest = fields[3];
 
         /* Find the right bucket for the group, make sure there is room. */
-        /* SUPPRESS 6 *//* Over/underflow from plus expression */
         NGH_HASH(ngp->Name, p, j);
         htp = NGH_BUCKET(j);
         if (htp->Used >= htp->Size) {
