@@ -286,44 +286,6 @@
   ||## The group owner of the rnews program. Usually uucp.
   ||#### =()<RNEWS_GROUP		@<RNEWS_GROUP>@>()=
   ||RNEWS_GROUP		uucp
-[IN1.7=@12][WDF=confparam][WOR=yes][P=low]
-  ||##  Load average (* 100) at which innd should be paused.
-  ||#### =()<INNWATCH_PAUSELOAD	@<INNWATCH_PAUSELOAD>@>()=
-  ||INNWATCH_PAUSELOAD	1500
-[IN1.7=@12][WDF=confparam][WOR=yes][P=low]
-  ||##  Load average (* 100) at which innd should be throttled.
-  ||#### =()<INNWATCH_HILOAD		@<INNWATCH_HILOAD>@>()=
-  ||INNWATCH_HILOAD		2000
-[IN1.7=@12][WDF=confparam][WOR=yes][P=low]
-  ||##  Load average (* 100) at which to restart innd (pause/throttle undone).
-  ||#### =()<INNWATCH_LOLOAD		@<INNWATCH_LOLOAD>@>()=
-  ||INNWATCH_LOLOAD		1000
-[IN1.7=@12][WDF=confparam][WOR=yes][P=low]
-  ||##  Space, in df output units, at which to throttle innd on _PATH_SPOOL
-  ||##  or _PATH_OVERVIEWDIR.
-  ||#### =()<INNWATCH_SPOOLSPACE	@<INNWATCH_SPOOLSPACE>@>()=
-  ||INNWATCH_SPOOLSPACE	8000
-[IN1.7=@12][WDF=confparam][WOR=yes][P=low]
-  ||##  Space, in df output units, at which to throttle innd on _PATH_BATCHDIR.
-  ||#### =()<INNWATCH_BATCHSPACE	@<INNWATCH_BATCHSPACE>@>()=
-  ||INNWATCH_BATCHSPACE	800
-[IN1.7=@12][WDF=confparam][WOR=yes][P=low]
-  ||##  Space, in df output units, at which to throttle innd on _PATH_NEWSLIB.
-  ||#### =()<INNWATCH_LIBSPACE	@<INNWATCH_LIBSPACE>@>()=
-  ||INNWATCH_LIBSPACE	25000
-[IN1.7=@12][WDF=confparam][WOR=yes][P=low]
-  ||##  Number of inodes at which to throttle innd on _PATH_SPOOL.
-  ||#### =()<INNWATCH_SPOOLNODES	@<INNWATCH_SPOOLNODES>@>()=
-  ||INNWATCH_SPOOLNODES	200
-[IN1.7=@12][WDF=autoconf][WOR=yes][P=moderate]
-  ||##  Field number of INNWATCH_DF (with -i) output that gives free
-  ||##  inodes (starting at 1).
-  ||#### =()<INNWATCH_INODES		@<INNWATCH_INODES>@>()=
-  ||INNWATCH_INODES		7
-[IN1.7=@12][WDF=autoconf][WOR=yes][P=moderate]
-  ||##  Field number of INNWATCH_DF output that gives the free block count.
-  ||##### =()<INNWATCH_BLOCKS		@<INNWATCH_BLOCKS>@>()=
-  ||INNWATCH_BLOCKS		4
 [IN1.7=@13][WDF=confparam][WOR=yes]
   ||##  Do you want TCL support?  Pick DO or DONT
   ||##[autoconf]
