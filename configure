@@ -1078,7 +1078,7 @@ case "$BERKELEY_DB_DIR" in
   yes)
     echo $ac_n "checking for BerkeleyDB location""... $ac_c" 1>&6
 echo "configure:1081: checking for BerkeleyDB location" >&5
-    for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1
+    for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2
     do
       for d in /opt /usr /usr/local
       do

@@ -256,7 +256,7 @@ case "$BERKELEY_DB_DIR" in
 
   yes)
     AC_MSG_CHECKING(for BerkeleyDB location)
-    for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1
+    for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2
     do
       for d in /opt /usr /usr/local
       do
