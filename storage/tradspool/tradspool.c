@@ -55,6 +55,7 @@ typedef struct _ngtent {
 /*    HASHEDNG hash; XXX */
     unsigned long ngnumber;
     struct _ngtent *next;
+    struct _ngtreenode *node;
 } NGTENT;
 
 typedef struct _ngtreenode {
@@ -166,6 +167,7 @@ AddNG(char *ng, unsigned long number) {
 	    newnode->left = newnode->right = (NGTREENODE *) NULL;
 	    newnode->ngnumber = number;
 	    newnode->ngtp = ngtp;
+	    ngtp->node = newnode;
 
 	    if (NGTree == NULL) {
 		/* tree was empty, so put our one element in and return */
@@ -636,7 +638,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 
 	    linkpath = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
 	    sprintf(linkpath, "%s/%s/%lu", innconf->patharticles, ng, artnum);
-	    if (symlink(path, linkpath) < 0) {
+	    if (link(path, linkpath) < 0) {
 		p = strrchr(linkpath, '/');
 		*p = '\0';
 		if (!MakeDirectory(linkpath, TRUE)) {
@@ -650,15 +652,27 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    return token;
 		} else {
 		    *p = '/';
-		    if (symlink(path, linkpath) < 0) {
+		    if (link(path, linkpath) < 0) {
+#if !defined(HAVE_SYMLINK)
 			SMseterror(SMERR_UNDEFINED, NULL);
-			syslog(L_ERROR, "tradspool: could not open %s %m", path);
+			syslog(L_ERROR, "tradspool: could not link %s to %s %m", path, linkpath);
 			token.type = TOKEN_EMPTY;
 			DISPOSE(linkpath);
 			DISPOSE(path);
 			for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
 			DISPOSE(xrefs);
 			return token;
+#else
+		    } else if (symlink(path, linkpath) < 0) {
+			SMseterror(SMERR_UNDEFINED, NULL);
+			syslog(L_ERROR, "tradspool: could not symlink %s to %s %m", path, linkpath);
+			token.type = TOKEN_EMPTY;
+			DISPOSE(linkpath);
+			DISPOSE(path);
+			for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+			DISPOSE(xrefs);
+			return token;
+#endif  /* !defined(HAVE_SYMLINK) */
 		    }
 		}
 	    }
@@ -1050,6 +1064,25 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 }
 
 void
+FreeNGTree(void) {
+    unsigned int i;
+    NGTENT *ngtp, *nextngtp;
+
+    for (i = 0 ; i < NGT_SIZE ; i++) {
+        ngtp = NGTable[i];
+        for ( ; ngtp != NULL ; ngtp = nextngtp) {
+	    nextngtp = ngtp->next;
+	    DISPOSE(ngtp->ngname);
+	    DISPOSE(ngtp->node);
+	}
+	NGTable[i] = NULL;
+    }
+    MaxNgNumber = 0;
+    NGTree = NULL;
+}
+
+void
 tradspool_shutdown(void) {
     DumpDB();
+    FreeNGTree();
 }
