@@ -18,14 +18,14 @@
 ;subst clean ../doc/crosspost.8
 ;subst clean ../doc/ctlinnd.8
 ;subst clean ../doc/cvtbatch.8
-../doc/distrib.pats.5
-../doc/expire.8
-../doc/expire.ctl.5
+;subst clean ../doc/distrib.pats.5
+;subst clean ../doc/expire.8
+;subst clean ../doc/expire.ctl.5
 ../doc/expireindex.8
-../doc/expireover.8
-../doc/expirerm.8
-../doc/filechan.8
-../doc/getlist.1
+;subst clean ../doc/expireover.8
+;subst clean ../doc/expirerm.8
+;subst clean ../doc/filechan.8
+;subst clean ../doc/getlist.1
 ../doc/history.5
 ../doc/inews.1
 ../doc/inn.conf.5
