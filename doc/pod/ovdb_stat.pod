@@ -20,7 +20,7 @@ outputs in HTML format.
 
 =item B<-g>
 
-Newsgroup himark, lowmark, article count, and flag for the given newsgroup(s)
+Newsgroup himark, lowmark, article count, and flag for the given newsgroups
 (as stored in the ovdb "groupinfo" database) are displayed.
 
 =item B<-c>
@@ -31,7 +31,7 @@ This can be a lengthy operation on groups with lots of articles.
 
 =item B<-i>
 
-Internal data regarding the given newsgroup(s) are displayed.
+Internal data regarding the given newsgroups are displayed.
 
 =item B<-r> I<artnumrange>
 
@@ -80,8 +80,6 @@ on busy systems (several minutes or more).
 =back
 
 =head1 WARNINGS
-
-Only run this command as the news user, and never as root.
 
 ovdb_stat may be safely killed with the INT, TERM, or HUP signals.
 It catches those signals and exits cleanly.

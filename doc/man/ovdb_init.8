@@ -2,9 +2,8 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
-''' Revision 1.1  2000/08/29 22:03:57  kondou
-''' - From: Heath Kehoe <heath.kehoe@intermec.com>
-''' - new ovdb version (forgot to commit last time)
+''' Revision 1.2  2000/09/28 20:30:34  hkehoe
+''' more doc updates
 '''
 '''
 .de Sh
@@ -97,7 +96,7 @@
 .nr % 0
 .rr F
 .\}
-.TH ovdb_init 8 "INN 2.3" "26/Aug/2000" "InterNetNews Documentation"
+.TH ovdb_init 8 "INN 2.3" "28/Sep/2000" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -244,9 +243,9 @@ The upgrade may take several minutes to complete.
 If an upgrade does get interrupted, try running the upgrade again.
 .PP
 Here's an example procedure to upgrade a database created with BerkeleyDB
-2.x to use BerkeleyDB 3.x:
+2.7.7 to use BerkeleyDB 3.1.17:
 .Ip "1" 4
-Build and install the BerkeleyDB 3.x
+Build and install the BerkeleyDB 3.1.17
 .Ip "2" 4
 Run configure in the \s-1INN\s0 source tree and make sure it picks up the
 right BerkeleyDB directory (e.g., /usr/local/BerkeleyDB.3.1)
@@ -263,8 +262,6 @@ Run \f(CWovdb_init -u\fR as the news user.
 Start \s-1INN\s0 with \f(CWrc.news\fR
 .PP
 It is \s-1OK\s0 to specify \f(CW-u\fR even if no upgrades are needed.
-.SH "WARNINGS"
-Always run this command as the news user, and never as root.
 .SH "HISTORY"
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 .SH "SEE ALSO"
@@ -313,8 +310,6 @@ Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 .IX Item "6"
 
 .IX Item "7"
-
-.IX Header "WARNINGS"
 
 .IX Header "HISTORY"
 

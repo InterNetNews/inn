@@ -87,13 +87,13 @@ The upgrade may take several minutes to complete.
 If an upgrade does get interrupted, try running the upgrade again.
 
 Here's an example procedure to upgrade a database created with BerkeleyDB
-2.x to use BerkeleyDB 3.x:
+2.7.7 to use BerkeleyDB 3.1.17:
 
 =over 4
 
 =item 1
 
-Build and install the BerkeleyDB 3.x
+Build and install the BerkeleyDB 3.1.17
 
 =item 2
 
@@ -124,10 +124,6 @@ Start INN with C<rc.news>
 =back
 
 It is OK to specify C<-u> even if no upgrades are needed.
-
-=head1 WARNINGS
-
-Always run this command as the news user, and never as root.
 
 =head1 HISTORY
 

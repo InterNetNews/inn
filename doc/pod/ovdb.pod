@@ -6,9 +6,8 @@ ovdb - Overview storage method for INN
 
 Ovdb is a storage method that uses the BerkeleyDB library to store overview
 data.  It requires version 2.6.x or later of the BerkeleyDB library; it is
-known to work well with version 2.7.7.  The latest released version, 3.1.17,
-appears to work, but hasn't been tested as much.  Check the
-web page http://www.avalon.net/~hakehoe/inn/ for the latest on BerkeleyDB
+known to work well with version 2.7.7, and latest released version, 3.1.17.
+Check the web page http://www.avalon.net/~hakehoe/inn/ for the latest on BerkeleyDB
 compatibility.
 
 Ovdb makes use of the full transaction/logging/locking functionality of the
@@ -19,6 +18,13 @@ The BerkeleyDB distribution is (by default) installed into
 F</usr/local/BerkeleyDB>, with subdirectories F<lib/>, F<include/>, and
 F<bin/> for the library, headers, and support tools, respectively.
 Version 3.x uses F</usr/local/BerkeleyDB.3.x> instead.
+
+=head1 UPGRADING
+
+This is version 2 of ovdb.  If you have a database created with a previous
+version of ovdb (such as the one shipped with INN 2.3.0) your database
+will need to be upgraded using ovdb_init(8).  See the man page ovdb_init(8)
+for upgrade instructions.
 
 =head1 INSTALLATION
 
@@ -61,6 +67,17 @@ configuration file.  See also the sample F<ovdb.conf>.
 
 =over 4
 
+=item cachesize
+
+Size of the memory pool cache, in Kilobytes.  The cache will have a
+backing store file in the DB directory which will be at least as big.
+In general, the bigger the cache, the better.  Use C<ovdb_stat -m> to see
+cache hit percentages.  If they're less than 80%, try increasing the
+cache size.  To make a change of this parameter take effect, shut down
+and restart INN (be sure to kill all of the nnrpds when shutting down).
+Default is 8000, which is adequate for small to medium sized servers.
+Large servers will probably need at least 14000.
+
 =item numdbfiles
 
 Overview data is split between this many files.  Currently,
@@ -77,17 +94,6 @@ If txn_nosync is set to false, BerkeleyDB flushes the log after every
 transaction.  This minimizes the number of transactions that may be lost
 in the event of a crash, but results in significantly degraded
 performance.  Default is true.
-
-=item cachesize
-
-Size of the memory pool cache, in Kilobytes.  The cache will have a
-backing store file in the DB directory which will be at least as big.
-In general, the bigger the cache, the better.  Use C<ovdb_stat -m> to see
-cache hit percentages.  If they're less than 80%, try increasing the
-cache size.  To make a change of this parameter take effect, shut down
-and restart INN (be sure to kill all of the nnrpds when shutting down).
-Default is 8000, which is adequate for small to medium sized servers.
-Large servers will probably need at least 14000.
 
 =item pagesize
 
@@ -165,7 +171,7 @@ Creates the database environment, if necessary
 
 If the database is idle, it performs a normal recovery.  The
 recovery will remove stale locks, recreate the memory pool cache,
-and repair the damage that may result from a system crash or
+and repair any damage caused by a system crash or
 improper shutdown.
 
 =item *
@@ -186,6 +192,9 @@ error message.
 INN programs that use overview will fail to start up if the
 ovdb_monitor processes aren't running.  Be sure to run C<ovdb_init>
 before running anything that accesses overview.
+
+Also, INN programs that use overview will fail to start up if the
+user running them is not the "news" user.
 
 If a program accessing the database crashes, or otherwise exits
 uncleanly, it might leave a stale lock in the database.  This lock

@@ -2,8 +2,8 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
-''' Revision 1.2  2000/09/28 07:17:04  hkehoe
-''' docs update
+''' Revision 1.3  2000/09/28 20:30:35  hkehoe
+''' more doc updates
 '''
 '''
 .de Sh
@@ -202,14 +202,14 @@ statistics, newsgroup data, and overview records; and optionally
 outputs in HTML format.
 .SH "OPTIONS"
 .Ip "\fB\-g\fR" 4
-Newsgroup himark, lowmark, article count, and flag for the given \fInewsgroup\fR\|(s)
+Newsgroup himark, lowmark, article count, and flag for the given newsgroups
 (as stored in the ovdb \*(L"groupinfo\*(R" database) are displayed.
 .Ip "\fB\-c\fR" 4
 Similar to \fB\-g\fR, except the himark, lowmark, and count are calculated
 by actually scanning the overview records and counting them.
 This can be a lengthy operation on groups with lots of articles.
 .Ip "\fB\-i\fR" 4
-Internal data regarding the given \fInewsgroup\fR\|(s) are displayed.
+Internal data regarding the given newsgroups are displayed.
 .Ip "\fB\-r\fR \fIartnumrange\fR" 4
 Overview records are retrieved.  The \fIartnumrange\fR parameter may be
 a single article number, or a range of articles in the format \f(CWlow-hi\fR.
@@ -237,8 +237,6 @@ Displays information about the given database, as returned by the
 BerkeleyDB db->\fIstat()\fR call.  This operation may take a long time
 on busy systems (several minutes or more).
 .SH "WARNINGS"
-Only run this command as the news user, and never as root.
-.PP
 ovdb_stat may be safely killed with the INT, TERM, or HUP signals.
 It catches those signals and exits cleanly.
 Do not kill ovdb_stat with other signals, unless absolutely necessary,

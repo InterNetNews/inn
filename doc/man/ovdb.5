@@ -2,9 +2,8 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
-''' Revision 1.6  2000/08/29 22:03:57  kondou
-''' - From: Heath Kehoe <heath.kehoe@intermec.com>
-''' - new ovdb version (forgot to commit last time)
+''' Revision 1.7  2000/09/28 20:30:33  hkehoe
+''' more doc updates
 '''
 '''
 .de Sh
@@ -97,7 +96,7 @@
 .nr % 0
 .rr F
 .\}
-.TH ovdb 5 "INN 2.3" "25/Aug/2000" "InterNetNews Documentation"
+.TH ovdb 5 "INN 2.3" "28/Sep/2000" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -196,9 +195,8 @@ ovdb \- Overview storage method for INN
 .SH "DESCRIPTION"
 Ovdb is a storage method that uses the BerkeleyDB library to store overview
 data.  It requires version 2.6.x or later of the BerkeleyDB library; it is
-known to work well with version 2.7.7.  The latest released version, 3.1.17,
-appears to work, but hasn't been tested as much.  Check the
-web page http://www.avalon.net/~hakehoe/inn/ for the latest on BerkeleyDB
+known to work well with version 2.7.7, and latest released version, 3.1.17.
+Check the web page http://www.avalon.net/~hakehoe/inn/ for the latest on BerkeleyDB
 compatibility.
 .PP
 Ovdb makes use of the full transaction/logging/locking functionality of the
@@ -209,6 +207,11 @@ The BerkeleyDB distribution is (by default) installed into
 \fI/usr/local/BerkeleyDB\fR, with subdirectories \fIlib/\fR, \fIinclude/\fR, and
 \fIbin/\fR for the library, headers, and support tools, respectively.
 Version 3.x uses \fI/usr/local/BerkeleyDB.3.x\fR instead.
+.SH "UPGRADING"
+This is version 2 of ovdb.  If you have a database created with a previous
+version of ovdb (such as the one shipped with INN 2.3.0) your database
+will need to be upgraded using \fIovdb_init\fR\|(8).  See the man page \fIovdb_init\fR\|(8)
+for upgrade instructions.
 .SH "INSTALLATION"
 To build ovdb support into INN, specify the option \f(CW--with-berkeleydb\fR
 when running the configure script.  By default, configure will search
@@ -244,6 +247,15 @@ is owned by the news user.
 .PP
 Other parameters for configuring ovdb are in the optional \fIovdb.conf\fR
 configuration file.  See also the sample \fIovdb.conf\fR.
+.Ip "cachesize" 4
+Size of the memory pool cache, in Kilobytes.  The cache will have a
+backing store file in the \s-1DB\s0 directory which will be at least as big.
+In general, the bigger the cache, the better.  Use \f(CWovdb_stat -m\fR to see
+cache hit percentages.  If they're less than 80%, try increasing the
+cache size.  To make a change of this parameter take effect, shut down
+and restart \s-1INN\s0 (be sure to kill all of the nnrpds when shutting down).
+Default is 8000, which is adequate for small to medium sized servers.
+Large servers will probably need at least 14000.
 .Ip "numdbfiles" 4
 Overview data is split between this many files.  Currently,
 innd will keep all of the files open, so don't set this too high
@@ -257,15 +269,6 @@ If txn_nosync is set to false, BerkeleyDB flushes the log after every
 transaction.  This minimizes the number of transactions that may be lost
 in the event of a crash, but results in significantly degraded
 performance.  Default is true.
-.Ip "cachesize" 4
-Size of the memory pool cache, in Kilobytes.  The cache will have a
-backing store file in the \s-1DB\s0 directory which will be at least as big.
-In general, the bigger the cache, the better.  Use \f(CWovdb_stat -m\fR to see
-cache hit percentages.  If they're less than 80%, try increasing the
-cache size.  To make a change of this parameter take effect, shut down
-and restart \s-1INN\s0 (be sure to kill all of the nnrpds when shutting down).
-Default is 8000, which is adequate for small to medium sized servers.
-Large servers will probably need at least 14000.
 .Ip "pagesize" 4
 Sets the page size for the \s-1DB\s0 files (in bytes).  Must be a power of 2.
 Best choices are 4096 or 8192.  The default is 8192.
@@ -324,7 +327,7 @@ Creates the database environment, if necessary
 .Ip "\(bu" 4
 If the database is idle, it performs a normal recovery.  The
 recovery will remove stale locks, recreate the memory pool cache,
-and repair the damage that may result from a system crash or
+and repair any damage caused by a system crash or
 improper shutdown.
 .Ip "\(bu" 4
 Starts the \s-1DB\s0 housekeeping processes (ovdb_monitor) if they're not
@@ -339,6 +342,9 @@ error message.
 INN programs that use overview will fail to start up if the
 ovdb_monitor processes aren't running.  Be sure to run \f(CWovdb_init\fR
 before running anything that accesses overview.
+.PP
+Also, INN programs that use overview will fail to start up if the
+user running them is not the \*(L"news\*(R" user.
 .PP
 If a program accessing the database crashes, or otherwise exits
 uncleanly, it might leave a stale lock in the database.  This lock
@@ -370,7 +376,7 @@ cache code in ov3.c
 .SH "HISTORY"
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews
 .SH "SEE ALSO"
-rc.\fInews\fR\|(8), inn.\fIconf\fR\|(5), \fIovdb_init\fR\|(8), \fIovdb_monitor\fR\|(8), \fIovdb_stat\fR\|(8)
+inn.\fIconf\fR\|(5), \fIovdb_init\fR\|(8), \fIovdb_monitor\fR\|(8), \fIovdb_stat\fR\|(8)
 .PP
 BerkeleyDB documentation: in the \fIdocs\fR directory of the BerkeleyDB
 source distribution, or on the Sleepycat web page: http://www.sleepycat.com/
@@ -383,15 +389,17 @@ source distribution, or on the Sleepycat web page: http://www.sleepycat.com/
 
 .IX Header "DESCRIPTION"
 
+.IX Header "UPGRADING"
+
 .IX Header "INSTALLATION"
 
 .IX Header "CONFIGURATION"
 
+.IX Item "cachesize"
+
 .IX Item "numdbfiles"
 
 .IX Item "txn_nosync"
-
-.IX Item "cachesize"
 
 .IX Item "pagesize"
 
