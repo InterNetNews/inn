@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 #include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
@@ -14,13 +15,8 @@
 #endif
 #include <netinet/in.h>
 #include <syslog.h> 
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
-
-#ifndef MAP_FAILED
-# define MAP_FAILED     (caddr_t) -1
-#endif
 
 #include "interface.h"
 #include "libinn.h"
@@ -196,13 +192,7 @@ static bool CNFSflushhead(CYCBUFF *cycbuff) {
 	strncpy(rpx.currentbuff, "FALSE", CNFSMASIZ);
     }
     memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
-#ifdef MMAP_NEEDS_MSYNC
-# ifdef HAVE_MSYNC_3_ARG
-    msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
-# else
-    msync(cycbuff->bitfield, cycbuff->minartoffset);
-# endif
-#endif
+    mmap_flush(cycbuff->bitfield, cycbuff->minartoffset);
     cycbuff->needflush = FALSE;
   } else {
     syslog(L_ERROR, "%s: CNFSflushhead: bogus magicver for %s: %d",
@@ -686,7 +676,7 @@ static bool CNFS_setcurrent(METACYCBUFF *metacycbuff) {
 */
 
 static bool CNFSread_config(void) {
-    char	*config, *from, *to, **ctab = (char **)NULL;
+    char	*path, *config, *from, *to, **ctab = (char **)NULL;
     int		ctab_free = 0;	/* Index to next free slot in ctab */
     int		ctab_i;
     bool	metacycbufffound = FALSE;
@@ -694,13 +684,15 @@ static bool CNFSread_config(void) {
     bool	refreshintervalfound = FALSE;
     int		update, refresh;
 
-    if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG),
-				(struct stat *)NULL)) == NULL) {
-	syslog(L_ERROR, "%s: cannot read %s", LocalLogName,
-		cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG), NULL);
+    path = concatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG);
+    config = ReadInFile(path, NULL);
+    if (config == NULL) {
+	syslog(L_ERROR, "%s: cannot read %s", LocalLogName, path);
 	DISPOSE(config);
+        free(path);
 	return FALSE;
     }
+    free(path);
     for (from = to = config; *from; ) {
 	if (*from == '#') {	/* Comment line? */
 	    while (*from && *from != '\n')
@@ -1283,16 +1275,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return NULL;
 	}
-#ifdef MMAP_MISSES_WRITES
-# ifdef HAVE_MSYNC_3_ARG
-	msync(private->base, private->len, MS_INVALIDATE);
-# else
-        msync(private->base, private->len);
-# endif
-#endif
-#if defined(MADV_SEQUENTIAL) && defined(HAVE_MADVISE)
+	mmap_invalidate(private->base, private->len);
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
-#endif
     } else {
 	private->base = NEW(char, ntohl(cah.size));
 	pagefudge = 0;
@@ -1317,12 +1301,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     }
     if ((p = SMFindBody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
         SMseterror(SMERR_NOBODY, NULL);
-	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->base, private->len, MADV_DONTNEED);
-#endif
+	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
-	} else
+	else
 	    DISPOSE(private->base);
         DISPOSE(art->private);
         DISPOSE(art);
@@ -1350,12 +1331,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
         return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
-    if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	madvise(private->base, private->len, MADV_DONTNEED);
-#endif
+    if (innconf->articlemmap)
 	munmap(private->base, private->len);
-    } else
+    else
 	DISPOSE(private->base);
     DISPOSE(art->private);
     DISPOSE(art);
@@ -1371,12 +1349,9 @@ void cnfs_freearticle(ARTHANDLE *article) {
     
     if (article->private) {
 	private = (PRIV_CNFS *)article->private;
-	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(private->base, private->len, MADV_DONTNEED);
-#endif	/* MADV_DONTNEED */
+	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
-	} else
+	else
 	    DISPOSE(private->base);
 	DISPOSE(private);
     }
@@ -1447,12 +1422,9 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	priv = *(PRIV_CNFS *)article->private;
 	DISPOSE(article->private);
 	DISPOSE((void *)article);
-	if (innconf->articlemmap) {
-#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
-	    madvise(priv.base, priv.len, MADV_DONTNEED);  
-#endif
+	if (innconf->articlemmap)
 	    munmap(priv.base, priv.len);
-	} else {
+	else {
 	    /* In the case we return art->data = NULL, we
              * must not free an already stale pointer.
                -mibsoft@mibsoftware.com
@@ -1612,16 +1584,8 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
-#ifdef MMAP_MISSES_WRITES
-# ifdef HAVE_MSYNC_3_ARG
-	msync(private->base, private->len, MS_INVALIDATE);
-# else
-        msync(private->base, private->len);
-# endif
-#endif
-#if defined(MADV_SEQUENTIAL) && defined(HAVE_MADVISE)
+	mmap_invalidate(private->base, private->len);
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
-#endif
     } else {
 	private->base = NEW(char, ntohl(cah.size));
 	pagefudge = 0;
