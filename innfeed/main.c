@@ -174,7 +174,7 @@ int main (int argc, char **argv)
   gPrintInfo = gprintinfo ;
 
   if (ReadInnConf() < 0) {
-      openlog (program,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_NEWS) ;
+      openlog (program,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
       syslog(LOG_ERR, "cant read inn.conf\n");
       exit(1);
   }
@@ -328,7 +328,7 @@ int main (int argc, char **argv)
 
   if ( !checkConfig ) 
     {
-      openlog (program,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_NEWS) ;
+      openlog (program,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
       syslog (LOG_NOTICE,STARTING_PROGRAM,versionInfo,dateString) ;
     }
 

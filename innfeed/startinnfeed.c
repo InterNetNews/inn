@@ -43,7 +43,7 @@ main(int ac, char **av, char **ep)
   else
 	progname = av[0];
 
-  openlog (progname,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_NEWS) ;
+  openlog (progname,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
 
   if (ReadInnConf() < 0) {
       syslog(LOG_ERR, "cant read inn.conf");

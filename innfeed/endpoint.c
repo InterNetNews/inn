@@ -708,7 +708,7 @@ void Run (void)
         {
           IoStatus rval ;
           int readyCount = sval ;
-          int endpointsServiced = 0 ;
+          int endpointsServiced = 1 ;
           
           handleSignals() ;
           
@@ -726,7 +726,7 @@ void Run (void)
                      loop we check to see if the mainEndPoint fd is ready to
                      read or write. If so we process it and do the current
                      endpoint next time around. */
-                  if (((endpointsServiced % SELECT_RATIO) == 0) &&
+                  if (((endpointsServiced % (SELECT_RATIO + 1)) == 0) &&
                       ep != mainEndPoint && mainEndPoint != NULL &&
                       !mainEpIsReg)
                     {
@@ -734,6 +734,8 @@ void Run (void)
                       struct timeval tw ;
                       int checkRead = FD_ISSET (mainEndPoint->myFd,&rdSet) ;
                       int checkWrite = FD_ISSET (mainEndPoint->myFd,&wrSet) ;
+
+                      endpointsServiced++;
 
                       if (checkRead || checkWrite) 
                         {
