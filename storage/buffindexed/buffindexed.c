@@ -1509,6 +1509,8 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, int low, int high, BOOL needov) {
     Gibcount = high - low + 1;
   else
     Gibcount = ge->count;
+  if (Gibcount == 0)
+    return TRUE;
   Gib = NEW(OVINDEX, Gibcount);
   count = 0;
   while (ov.index != NULLINDEX) {
