@@ -790,9 +790,9 @@ NCproc(CHANNEL *cp)
       if (p[-2] != '\r') { /* probably in an article */
 	char *tmpstr;
 
-	tmpstr = NEW(char, i + 1);
-	memcpy(tmpstr, bp->Data + cp->Start, i);
-	tmpstr[i] = '\0';
+	tmpstr = NEW(char, i - cp->Start + 1);
+	memcpy(tmpstr, bp->Data + cp->Start, i - cp->Start);
+	tmpstr[i - cp->Start] = '\0';
 	
 	syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
 	  MaxLength(tmpstr, tmpstr));

@@ -1608,6 +1608,7 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
 	if (!sp->FeedwithoutOriginator)
 	  continue;
       } else {
+	HDR_PARSE_START(HDR__XTRACE);
 	if ((p = strchr(HDR(HDR__XTRACE), ' ')) != NULL) {
 	  *p = '\0';
 	  for (j = 0, sendit = FALSE; (q = sp->Originator[j]) != NULL; j++) {
