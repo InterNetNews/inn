@@ -101,10 +101,11 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
 
     /* Generate sockaddrs from IP and port strings */
     if (res != NULL) {
-        res->client = xcalloc(1, sizeof(struct sockaddr));
-        res->local = xcalloc(1, sizeof(struct sockaddr));
-
 #ifdef HAVE_INET6
+        /* sockaddr_in6 may be overkill for PF_INET case, but oh well */
+        res->client = xcalloc(1, sizeof(struct sockaddr_in6));
+        res->local = xcalloc(1, sizeof(struct sockaddr_in6));
+
         memset( &hints, 0, sizeof( hints ) );
         hints.ai_flags = AI_NUMERICHOST;
         hints.ai_socktype = SOCK_STREAM;
@@ -112,15 +113,22 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
         hints.ai_family = strchr( cip, ':' ) != NULL ? PF_INET6 : PF_INET;
         if( getaddrinfo( cip, cport, &hints, &r ) != 0)
             goto error;
+        if( r->ai_addrlen > sizeof(struct sockaddr_in6) )
+            goto error;
         memcpy( res->client, r->ai_addr, r->ai_addrlen );
         freeaddrinfo( r );
 
         hints.ai_family = strchr( sip, ':' ) != NULL ? PF_INET6 : PF_INET;
         if( getaddrinfo( sip, sport, &hints, &r ) != 0)
             goto error;
+        if( r->ai_addrlen > sizeof(struct sockaddr_in6) )
+            goto error;
         memcpy( res->local, r->ai_addr, r->ai_addrlen );
         freeaddrinfo( r );
 #else
+        res->client = xcalloc(1, sizeof(struct sockaddr_in));
+        res->local = xcalloc(1, sizeof(struct sockaddr_in));
+
         cli_sin = (struct sockaddr_in *)(res->client);
         loc_sin = (struct sockaddr_in *)(res->local);
         cli_sin->sin_family = AF_INET;
