@@ -471,7 +471,7 @@ and aren't prepared to handle a 423 return from this command.
 
 ------------------------------
 
-  Summary: nnrpd fails on articles without Message-ID headers
+  Summary: Articles without Message-ID headers can't be retrieved
  Standard: draft-ietf-nntpext-base-13.txt, section 9.2.1.1
   Version: 1.0 to CURRENT 2001-07-04
 Reference: nnrpd/article.c CMDfetch()
