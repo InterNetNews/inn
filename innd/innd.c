@@ -73,7 +73,7 @@ STATIC GID_T	NewsGID;
 BOOL
 FormatLong(p, value, width)
     register char	*p;
-    register long	value;
+    register u_long	value;
     register int	width;
 {
     for (p += width - 1; width-- > 0; ) {
