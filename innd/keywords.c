@@ -134,7 +134,7 @@ KEYgenerate(
     /* first re-init kw from original value. */
     if (l > innconf->keylimit - (MAX_WORD_LENGTH+5))	/* mostly arbitrary cutoff: */
         l = innconf->keylimit - (MAX_WORD_LENGTH+5);	/* room for minimal word vec */
-    hc->Value = malloc(innconf->keylimit+1);
+    hc->Value = xmalloc(innconf->keylimit+1);
     if ((v != NULL) && (*v != '\0'))
         strlcpy(hc->Value, v, l + 1);
     else
@@ -150,8 +150,6 @@ KEYgenerate(
 	return;
 
     orig_text = text = xstrdup(body);	/* orig_text is for free() later on */
-    if (text == (char *) NULL)  /* malloc failure? */
-	return;
 
     text_end = text + bodylen;
 
