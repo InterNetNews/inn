@@ -353,7 +353,7 @@ sub gpg_check {
   }
 
   open(PGP, "$gpgv $opts $file 2> /dev/null |") ||
-    &fail("$0: failed to execute $pgp: $!\n");
+    &fail("$0: failed to execute $gpgv: $!\n");
 
   undef $/;
   $_ = <PGP>;
