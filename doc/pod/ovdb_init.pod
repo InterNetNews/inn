@@ -34,6 +34,12 @@ to the database.  See the UPGRADING section below.
 Starts the DB housekeeping processes (ovdb_monitor) if they're not
 already running. (Unless the C<-r> option is specified).
 
+=item 5
+
+Starts the ovdb readserver (ovdb_server) processes if C<readserver>
+in F<ovdb.conf> is C<true>, and if they're not
+already running. (Unless the C<-r> option is specified).
+
 =back
 
 Returns exit status of 0 if all steps were completed successfully.

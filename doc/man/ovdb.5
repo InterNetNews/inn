@@ -2,8 +2,8 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
-''' Revision 1.7  2000/09/28 20:30:33  hkehoe
-''' more doc updates
+''' Revision 1.8  2000/11/14 03:00:11  hkehoe
+''' ovdb doc updates
 '''
 '''
 .de Sh
@@ -96,7 +96,7 @@
 .nr % 0
 .rr F
 .\}
-.TH ovdb 5 "INN 2.3" "28/Sep/2000" "InterNetNews Documentation"
+.TH ovdb 5 "INN 2.4" "13/Nov/2000" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -245,22 +245,21 @@ see the DB_CONFIG section for details) and innd (or makehistory) will
 create the files as necessary in that directory.  Make sure the directory
 is owned by the news user.
 .PP
-Other parameters for configuring ovdb are in the optional \fIovdb.conf\fR
+Other parameters for configuring ovdb are in the \fIovdb.conf\fR
 configuration file.  See also the sample \fIovdb.conf\fR.
 .Ip "cachesize" 4
 Size of the memory pool cache, in Kilobytes.  The cache will have a
 backing store file in the \s-1DB\s0 directory which will be at least as big.
 In general, the bigger the cache, the better.  Use \f(CWovdb_stat -m\fR to see
-cache hit percentages.  If they're less than 80%, try increasing the
-cache size.  To make a change of this parameter take effect, shut down
+cache hit percentages. To make a change of this parameter take effect, shut down
 and restart \s-1INN\s0 (be sure to kill all of the nnrpds when shutting down).
 Default is 8000, which is adequate for small to medium sized servers.
-Large servers will probably need at least 14000.
+Large servers will probably need at least 20000.
 .Ip "numdbfiles" 4
 Overview data is split between this many files.  Currently,
 innd will keep all of the files open, so don't set this too high
 or innd may run out of file descriptors.  The nnrpds only open one
-at a time, regardless.  May be set to one, or just a few, but only
+at a time, regardless. May be set to one, or just a few, but only
 do that if your \s-1OS\s0 supports large (>2G) files.  Changing this
 parameter has no effect on an already-established database.
 Default is 32.
@@ -301,6 +300,26 @@ If this parameter is set to 0, expireover will compact all newsgroups;
 if set to 1, expireover will not compact any newsgroups; and if set to
 a value greater than one, expireover will only compact groups that
 have less than that number of articles.  Default is 10000.
+.Ip "readserver" 4
+Normally, each nnrpd process directly accesses the BerkeleyDB environment.
+The process of attaching to the database (and detaching when finished) is
+fairly expensive, and can result in high loads in situations when there are
+lots of reader connections of relatively short duration.
+.Sp
+When the readserver parameter is \*(L"true\*(R", the nnrpds will access overview
+via a helper server (ovdb_server -- which is started by ovdb_init).
+Default is false.
+.Ip "numrsprocs" 4
+This parameter is only used when \*(L'readserver\*(R' is true.  It sets the number
+of ovdb_server processes.  As each ovdb_server can process only one
+transaction at a time, running more servers can improve reader response
+times.  Default is 5.
+.Ip "maxrsconn" 4
+This parameter is only used when \*(L'readserver\*(R' is true.  It sets a maximum
+number of readers that a given ovdb_server process will serve at one time.
+This means the maximum number of readers for all of the ovdb_server
+processes is (numrsprocs * maxrsconn).  Default is 0, which means an
+umlimited number of connections is allowed.
 .Sh "\s-1DB_CONFIG\s0"
 A file called \fI\s-1DB_CONFIG\s0\fR may be placed in the database directory to
 customize where the various database files and transaction logs are
@@ -408,6 +427,12 @@ source distribution, or on the Sleepycat web page: http://www.sleepycat.com/
 .IX Item "maxlocks"
 
 .IX Item "nocompact"
+
+.IX Item "readserver"
+
+.IX Item "numrsprocs"
+
+.IX Item "maxrsconn"
 
 .IX Subsection "\s-1DB_CONFIG\s0"
 

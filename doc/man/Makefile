@@ -24,7 +24,7 @@ SEC8	= actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 \
 	inncheck.8 innd.8 inndf.8 inndstart.8 innreport.8 innstat.8 \
 	innwatch.8 innxbatch.8 innxmit.8 mailpost.8 makedbz.8 makehistory.8 \
 	mod-active.8 news.daily.8 news2mail.8 newsrequeue.8 nnrpd.8 \
-	nntpsend.8 ovdb_init.8 ovdb_monitor.8 ovdb_stat.8 overchan.8 \
+	nntpsend.8 ovdb_init.8 ovdb_monitor.8 ovdb_server.8 ovdb_stat.8 overchan.8 \
 	pgpverify.8 prunehistory.8 pullnews.8 scanlogs.8 send-uucp.8 sm.8 \
 	tally.control.8 writelog.8
 

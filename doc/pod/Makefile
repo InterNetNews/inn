@@ -18,7 +18,8 @@ MAN5	= ../man/inn.conf.5 ../man/ovdb.5 ../man/readers.conf.5 \
 	../man/sasl.conf.5
 
 MAN8	= ../man/dbprocs.8 ../man/inndstart.8 ../man/makehistory.8 \
-	../man/ovdb_recover.8 ../man/ovdb_upgrade.8
+	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
+	../man/ovdb_stat.8
 
 all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
@@ -43,5 +44,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/dbprocs.8:	dbprocs.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inndstart.8:	inndstart.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/makehistory.8:	makehistory.pod		; $(POD2MAN) -s 8 $? > $@
-../man/ovdb_recover.8:	ovdb_recover.pod	; $(POD2MAN) -s 8 $? > $@
-../man/ovdb_upgrade.8:	ovdb_upgrade.pod	; $(POD2MAN) -s 8 $? > $@
+../man/ovdb_init.8:	ovdb_init.pod		; $(POD2MAN) -s 8 $? > $@
+../man/ovdb_monitor.8:	ovdb_monitor.pod	; $(POD2MAN) -s 8 $? > $@
+../man/ovdb_server.8:	ovdb_server.pod		; $(POD2MAN) -s 8 $? > $@
+../man/ovdb_stat.8:	ovdb_stat.pod		; $(POD2MAN) -s 8 $? > $@

@@ -2,8 +2,8 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
-''' Revision 1.2  2000/09/28 20:30:34  hkehoe
-''' more doc updates
+''' Revision 1.3  2000/11/14 03:00:11  hkehoe
+''' ovdb doc updates
 '''
 '''
 .de Sh
@@ -96,7 +96,7 @@
 .nr % 0
 .rr F
 .\}
-.TH ovdb_init 8 "INN 2.3" "28/Sep/2000" "InterNetNews Documentation"
+.TH ovdb_init 8 "INN 2.4" "13/Nov/2000" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -210,6 +210,10 @@ to the database.  See the \s-1UPGRADING\s0 section below.
 .Ip "4" 4
 Starts the \s-1DB\s0 housekeeping processes (ovdb_monitor) if they're not
 already running. (Unless the \f(CW-r\fR option is specified).
+.Ip "5" 4
+Starts the ovdb readserver (ovdb_server) processes if \f(CWreadserver\fR
+in \fIovdb.conf\fR is \f(CWtrue\fR, and if they're not
+already running. (Unless the \f(CW-r\fR option is specified).
 .PP
 Returns exit status of 0 if all steps were completed successfully.
 In the event of an error, messages are written to syslog and/or stderr.
@@ -284,6 +288,8 @@ Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 .IX Item "3"
 
 .IX Item "4"
+
+.IX Item "5"
 
 .IX Header "OPTIONS"
 
