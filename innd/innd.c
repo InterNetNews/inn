@@ -848,6 +848,19 @@ int main(int ac, char *av[])
 	syslog(L_FATAL, "%s cant getfdcount %m", LogName);
 	exit(1);
     }
+
+    /* There is no file descriptor limit on some hosts; for those, cap at
+       MaxOutgoing plus maxconnections plus 20, or 5000, whichever is larger. 
+       Otherwise, we use insane amounts of memory for the channel table.
+       FIXME: Get rid of this hard-coded constant. */
+    if (i > 5000) {
+        int max;
+
+        max = innconf->maxconnections + MaxOutgoing + 20;
+        if (max < 5000)
+            max = 5000;
+        i = max;
+    }
     syslog(L_NOTICE, "%s descriptors %d", LogName, i);
     if (MaxOutgoing == 0) {
 	/* getfdcount() - (stdio + dbz + cc + lc + rc + art + Overfdcount + fudge) */
