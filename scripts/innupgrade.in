@@ -82,6 +82,16 @@ sub upgrade_file {
             rename ($file, "$file.OLD")
                 or die "$file: cannot rename to $file.OLD: $!\n";
         }
+        if ($> == 0) {
+            my $user = getpwnam $inn::newsuser;
+            my $group = getgrnam $inn::newsgroup;
+            if (defined ($user) && defined ($group)) {
+                chown ($user, $group, ".$file.new.$$")
+                    or warn "$file: cannot chown .$file.new.$$: $!\n";
+            } else {
+                warn "$file: cannot find UID and GID of $inn::newsuser\n";
+            }
+        }
         rename (".$file.new.$$", $file)
             or die "$file: cannot replace with .$file.new.$$: $!\n";
     }
