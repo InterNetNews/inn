@@ -1774,7 +1774,10 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
             break ;
 
           case 436:             /* transfer failed try again later */
-            processResponse436 (cxn, response) ;
+            if (cxn->takeRespHead == NULL && hostDropDeferred (cxn->myHost))
+                processResponse435 (cxn, response) ;
+            else
+                processResponse436 (cxn, response) ;
             break ;
 
           case 437:             /* article rejected */
