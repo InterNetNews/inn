@@ -256,6 +256,10 @@ STATIC void SITEflushcheck(SITE *sp, BUFFER *bp)
 		bp->Left -= j;
 		bp->Used += j;
 		i = cp->Out.Left;
+		/* Since we just had a successful write, we need to clear the 
+		 * channel's error counts. - dave@jetcafe.org */
+		cp->BadWrites = 0;
+		cp->BlockedWrites = 0;
 	    }
 	    if (bp->Left <= 0) {
                 /* reset Used, Left on bp, keep channel buffer size from
