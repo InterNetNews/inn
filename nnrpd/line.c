@@ -81,7 +81,9 @@ line_doread(void *p, size_t len)
 	do {
 	    n = read(STDIN_FILENO, p, len);
 	} while (n == -1 && errno == EINTR);
+#ifdef HAVE_SSL
     }
+#endif
     return n;
 }
 
