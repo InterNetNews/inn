@@ -2335,7 +2335,8 @@ static void hostLogStats (Host host, bool final)
   if (host->spoolTime != 0)
     syslog (LOG_NOTICE, HOST_SPOOL_STATS, host->peerName,
             (final ? "final" : "checkpoint"),
-            (long) (now - host->spoolTime), host->artsToTape) ;
+            (long) (now - host->spoolTime), host->artsToTape,
+            host->artsHostClose, host->artsHostSleep) ;
   else
     syslog (LOG_NOTICE, HOST_STATS_MSG, host->peerName, 
             (final ? "final" : "checkpoint"),
@@ -2345,7 +2346,7 @@ static void hostLogStats (Host host, bool final)
             host->artsMissing, host->artsToTape,
             host->artsHostClose, host->artsFromTape,
             host->artsDeferred, host->artsCxnDrop,
-            (double)host->blAccum/cnt,
+            (double)host->blAccum/cnt, hostHighwater,
             (100.0*host->blNone)/cnt,
             (100.0*host->blQuartile[0])/cnt, (100.0*host->blQuartile[1])/cnt,
             (100.0*host->blQuartile[2])/cnt, (100.0*host->blQuartile[3])/cnt,

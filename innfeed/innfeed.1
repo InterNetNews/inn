@@ -236,7 +236,7 @@ fit the page, with ``vixie'' being the peer):
 		seconds 1381 offered 2744 accepted 1286 
 		refused 1021 rejected 437 missing 0 spooled 990
 		on_close 0 unspooled 240 deferred 10 requeued 25
-		queue 42.1/14/35/13/4/24/10
+		queue 42.1/100:14,35,13,4,24,10
 .fi
 .PP
 These meanings of these fields are:
@@ -303,8 +303,9 @@ causing innfeed to time them out.
 .TP
 queue
 The first number is the average (mean) queue size during the previous logging
-interval.  The second number is the percentage of the time that the queue
-was empty.  The third through sixth numbers are the percentages of the
+interval.  The second number is the maximum allowable queue size.
+The third number is the percentage of the time that the queue
+was empty.  The fourth through seventh numbers are the percentages of the
 time that the queue was >0% to 25% full, 25% to 50% full, 50% to 75%
 full, and 75% to <100% full.  The last number is the percentage of the
 time that the queue was totally full.
