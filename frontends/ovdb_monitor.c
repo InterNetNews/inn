@@ -33,7 +33,7 @@
 
 #ifndef USE_BERKELEY_DB
 
-int main(int argc, char **argv)
+int main(int argc UNUSED, char **argv UNUSED)
 {
     exit(0);
 }

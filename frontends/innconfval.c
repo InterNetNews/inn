@@ -17,7 +17,7 @@ static char	ConfigBuff[SMBUF] = "";
 int		format = 0;
 static bool	version = FALSE;
 
-int isnum(const char *v)
+static int isnum(const char *v)
 {
     if (!*v) return(0);
     for (; *v; v++)
@@ -25,21 +25,19 @@ int isnum(const char *v)
     return(1);
 }
 
-char *upit(char *v)
+static void upit(char *v)
 {
-    register int i;
-
-    for (i=0; i<strlen(v); i++) v[i] = toupper(v[i]);
-    return(v);
+    for ( ; *v; v++)
+        *v = toupper(*v);
 }
 
-void
+static void
 printit(char *v, const char *val)
 {
     switch (format) {
 	case 0: printf("%s\n", val); break;
 	case 1:   /* sh */
-	    v = upit(v);
+	    upit(v);
 	    if ((strchr(val, ' ') == NULL) && *val)
 	    	printf("%s=%s; export %s;\n", v, val, v);
 	    else
@@ -82,8 +80,8 @@ printit(char *v, const char *val)
     }
 }
 
-void
-wholeconfig()
+static void
+wholeconfig(void)
 {
     FILE	        *F;
     char	        *p;

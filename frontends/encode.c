@@ -34,9 +34,7 @@ static int	Count;
 
 
 static void
-dumpcode(p, n)
-    register char	*p;
-    register int	n;
+dumpcode(register char *p, register int n)
 {
     register int	last;
     register int	c;
@@ -63,7 +61,7 @@ dumpcode(p, n)
 }
 
 static void
-flushout()
+flushout(void)
 {
     (void)putchar(ENDMARK1);
     (void)putchar(ENDMARK2);
@@ -73,9 +71,7 @@ flushout()
 
 
 static void
-encode(dest, n)
-    register char	*dest;
-    int			n;
+encode(register char *dest, int n)
 {
     register char	*p;
     register int	i;

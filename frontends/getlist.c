@@ -35,7 +35,7 @@ main(int ac, char *av[])
     char	*types;
     char	*host;
     char	*line;
-    char	*list;
+    const char	*list;
     char	*p;
     char	*pattern;
     char	buff[512 + 1];

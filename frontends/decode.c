@@ -31,9 +31,7 @@ static int	count;
 
 
 static void
-pack6(n, last)
-    register int	n;
-    int			last;
+pack6(register int n, int last)
 {
     register char	*q;
     register int	i;
@@ -55,10 +53,7 @@ pack6(n, last)
 
 
 static void
-pack12(p, n, last)
-    register char	*p;
-    register int	n;
-    int			last;
+pack12(register char *p, register int n, int last)
 {
     register char	*q;
     register int	c13;

@@ -18,12 +18,12 @@ bool	Delete = FALSE;
 bool	Rawformat = FALSE;
 bool	Artinfo = FALSE;
 
-void Usage(void) {
+static void Usage(void) {
     fprintf(stderr, "Usage sm [-q] [-r] [-d] [-R] [-i] [token] [token] ...\n");
     exit(1);
 }
 
-void getinfo(const char *p) {
+static void getinfo(const char *p) {
     TOKEN		token;
     struct artngnum	ann;
     ARTHANDLE		*art;

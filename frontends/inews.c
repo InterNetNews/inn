@@ -151,7 +151,7 @@ QuitServer(int x)
 **  Print and error message (with errno) and exit with an error code.
 */
 static void
-PerrorExit(bool ShouldQuit, char *s)
+PerrorExit(bool ShouldQuit, const char *s)
 {
     fprintf(stderr, "%s, %s.\n", s, strerror(errno));
     if (ShouldQuit)
@@ -165,8 +165,7 @@ PerrorExit(bool ShouldQuit, char *s)
 **  Flush a stdio FILE; exit if there are any errors.
 */
 static void
-SafeFlush(F)
-    FILE	*F;
+SafeFlush(FILE *F)
 {
     if (FLUSH_ERROR(F))
 	PerrorExit(TRUE, "Can't send text to server");
@@ -177,8 +176,7 @@ SafeFlush(F)
 **  Trim trailing spaces, return pointer to first non-space char.
 */
 static char *
-TrimSpaces(p)
-    register char	*p;
+TrimSpaces(register char *p)
 {
     register char	*start;
 
@@ -195,8 +193,7 @@ TrimSpaces(p)
 **  to the start of the next one.  Handles continuations.
 */
 static char *
-NextHeader(p)
-    register char	*p;
+NextHeader(register char *p)
 {
     for ( ; ; p++) {
 	if ((p = strchr(p, '\n')) == NULL) {
@@ -215,8 +212,7 @@ NextHeader(p)
 **  Strip any headers off the article and dump them into the table.
 */
 static char *
-StripOffHeaders(article)
-    char		*article;
+StripOffHeaders(char *article)
 {
     register char	*p;
     register char	*q;
@@ -305,9 +301,7 @@ StripOffHeaders(article)
 **  that the Sender or From line has already been filled in.
 */
 static void
-CheckCancel(msgid, JustReturn)
-    char		*msgid;
-    bool		JustReturn;
+CheckCancel(char *msgid, bool JustReturn)
 {
     char		localfrom[SMBUF];
     register char	*p;
@@ -370,9 +364,7 @@ CheckCancel(msgid, JustReturn)
 **  See if the user is the news administrator.
 */
 static bool
-AnAdministrator(name, group)
-    char		*name;
-    gid_t		group;
+AnAdministrator(char *name, gid_t group)
 {
     struct passwd	*pwp;
     struct group	*grp;
@@ -406,9 +398,7 @@ AnAdministrator(name, group)
 **  Check the control message, and see if it's legit.
 */
 static void
-CheckControl(ctrl, pwp)
-    char		*ctrl;
-    struct passwd	*pwp;
+CheckControl(char *ctrl, struct passwd *pwp)
 {
     register char	*p;
     register char	*q;
@@ -474,9 +464,7 @@ CheckControl(ctrl, pwp)
 **  to hate that, but everyone also supports it.)
 */
 static char *
-FormatUserName(pwp, node)
-    struct passwd	*pwp;
-    char		*node;
+FormatUserName(struct passwd *pwp, char *node)
 {
     char	outbuff[SMBUF];
     char        *buff;
@@ -574,10 +562,7 @@ static void CheckDistribution(char *p)
 **  Process all the headers.  FYI, they're done in RFC-order.
 */
 static void
-ProcessHeaders(AddOrg, linecount, pwp)
-    bool		AddOrg;
-    int			linecount;
-    struct passwd	*pwp;
+ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 {
     static char		PATHFLUFF[] = PATHMASTER;
     HEADER              *hp;
@@ -756,11 +741,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
 **  -- here's the article again."
 */
 static char *
-AppendSignature(UseMalloc, article, homedir, linesp)
-    bool	UseMalloc;
-    char	*article;
-    char	*homedir;
-    int		*linesp;
+AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
 {
     static char	NOSIG[] = "Can't add your .signature (%s), article not posted";
     int		i;
@@ -835,9 +816,7 @@ AppendSignature(UseMalloc, article, homedir, linesp)
 **  so that we don't reject diff(1) output.
 */
 static void
-CheckIncludedText(p, lines)
-    register char	*p;
-    register int	lines;
+CheckIncludedText(register char *p, register int lines)
 {
     register int	i;
 
@@ -873,7 +852,7 @@ CheckIncludedText(p, lines)
 **  since that will fail if stdin is a tty.
 */
 static char *
-ReadStdin()
+ReadStdin(void)
 {
     register int	size;
     register char	*p;
@@ -905,9 +884,7 @@ ReadStdin()
 **  Offer the article to the server, return its reply.
 */
 static int
-OfferArticle(buff, Authorized)
-    char		*buff;
-    bool		Authorized;
+OfferArticle(char *buff, bool Authorized)
 {
     (void)fprintf(ToServer, "post\r\n");
     SafeFlush(ToServer);
@@ -969,9 +946,7 @@ Usage(void)
 
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char *av[])
 {
     static char		NOCONNECT[] = "Can't connect to server";
     int                 i;
@@ -996,7 +971,7 @@ main(ac, av)
 
     /* Find out who we are. */
     uid = geteuid();
-    if (uid == (pid_t) -1)
+    if (uid == (uid_t) -1)
 	PerrorExit(TRUE, "Can't get your user ID");
     if ((pwp = getpwuid(uid)) == NULL)
 	PerrorExit(TRUE, "Can't get your password entry");
@@ -1115,6 +1090,7 @@ main(ac, av)
 	    QuitServer(1);
 	    exit(1);
 	}
+	deadfile = NULL;
     }
 
     /* Basic processing. */
@@ -1132,7 +1108,8 @@ main(ac, av)
 	SigLines = 0;
     ProcessHeaders(AddOrg, i + SigLines, pwp);
     Length = strlen(article);
-    if ((innconf->localmaxartsize > 0) && (Length > innconf->localmaxartsize)) {
+    if ((innconf->localmaxartsize > 0)
+	    && (Length > (size_t)innconf->localmaxartsize)) {
 	(void)fprintf(stderr,
 		"Article is bigger then local limit of %ld bytes\n",
 		innconf->localmaxartsize);

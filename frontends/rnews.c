@@ -30,7 +30,7 @@ typedef struct _HEADER {
 
 
 static bool	Verbose;
-static char	*InputFile = "stdin";
+static const char	*InputFile = "stdin";
 static char	*UUCPHost;
 static char	*PathBadNews = NULL;
 static char	*remoteServer;
@@ -60,8 +60,7 @@ static HEADER	RequiredHeaders[] = {
 **  Do perror, making sure errno is preserved.
 */
 static void
-xperror(p)
-    char	*p;
+xperror(const char *p)
 {
     int		oerrno;
 
@@ -76,10 +75,7 @@ xperror(p)
 **  descriptor tied to its stdout or -1 on error.
 */
 static int
-StartChild(fd, path, argv)
-    int		fd;
-    char	*path;
-    char	*argv[];
+StartChild(int fd, const char *path, const char *argv[])
 {
     int		pan[2];
     int		i;
@@ -330,10 +326,7 @@ static bool Process(char *article)
 **  this case and let it do the buffering.
 */
 static bool
-ReadRemainder(fd, first, second)
-    register int	fd;
-    char		first;
-    char		second;
+ReadRemainder(register int fd, char first, char second)
 {
     register FILE	*F;
     register char	*article;
@@ -396,9 +389,7 @@ ReadRemainder(fd, first, second)
 **  Read an article from the input stream that is artsize bytes long.
 */
 static bool
-ReadBytecount(fd, artsize)
-    register int	fd;
-    int			artsize;
+ReadBytecount(register int fd, int artsize)
 {
     static char		*article;
     static int		oldsize;
@@ -445,10 +436,7 @@ ReadBytecount(fd, artsize)
 **  Read a single text line; not unlike fgets().  Just more inefficient.
 */
 static bool
-ReadLine(p, size, fd)
-    char	*p;
-    int		size;
-    int		fd;
+ReadLine(char *p, int size, int fd)
 {
     char	*save;
 
@@ -474,9 +462,7 @@ ReadLine(p, size, fd)
 **  Unpack a single batch.
 */
 static bool
-UnpackOne(fdp, countp)
-    int		*fdp;
-    int		*countp;
+UnpackOne(int *fdp, size_t *countp)
 {
 #if	defined(DO_RNEWSPROGS)
     char	path[(SMBUF * 2) + 1];
@@ -611,7 +597,7 @@ UnpackOne(fdp, countp)
 **  interactively.
 */
 static void
-Unspool()
+Unspool(void)
 {
     register DIR	*dp;
     struct dirent       *ep;
@@ -620,7 +606,7 @@ Unspool()
     char		buff[SMBUF];
     char		hostname[10];
     int			fd;
-    int			i;
+    size_t		i;
 
     /* Go to the spool directory, get ready to scan it. */
     if (chdir(innconf->pathincoming) < 0) {
@@ -694,9 +680,7 @@ Unspool()
 **  an alternate filesystem?
 */
 static void
-Spool(fd, mode)
-    register int	fd;
-    int			mode;
+Spool(register int fd, int mode)
 {
     register int	spfd;
     register int	i;
@@ -789,10 +773,7 @@ static bool OpenRemote(char *server, int port, char *buff)
 **  Can't connect to server; print message and spool if necessary.
 */
 static void
-CantConnect(buff, mode, fd)
-    char	*buff;
-    int		mode;
-    int		fd;
+CantConnect(char *buff, int mode, int fd)
 {
     if (buff[0])
 	syslog(L_NOTICE, "rejected connection %s", REMclean(buff));
@@ -819,6 +800,7 @@ int main(int ac, char *av[])
 {
     int		fd;
     int		i;
+    size_t	count;
     int		mode;
     char	buff[SMBUF];
     int         port = NNTP_PORT;
@@ -922,9 +904,9 @@ int main(int ac, char *av[])
     if (mode == 'U')
 	Unspool();
     else {
-	if (!UnpackOne(&fd, &i))
+	if (!UnpackOne(&fd, &count))
 	    Spool(fd, mode);
-	WaitForChildren(i);
+	WaitForChildren(count);
     }
 
     /* Tell the server we're quitting, get his okay message. */

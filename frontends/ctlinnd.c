@@ -160,7 +160,7 @@ WrongArgs(COMMAND *cp)
 **  Print an error message and exit.
 */
 static void
-Failed(char *p)
+Failed(const char *p)
 {
     if (ICCfailure)
 	(void)fprintf(stderr, "Can't %s (%s failure) %s.\n",
@@ -176,7 +176,7 @@ Failed(char *p)
 **  Print an error reporting incorrect usage.
 */
 static void
-Usage(char *what)
+Usage(const char *what)
 {
     fprintf(stderr, "Usage error (%s) -- try -h for help.\n", what);
     exit(1);

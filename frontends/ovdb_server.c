@@ -74,7 +74,7 @@
 #ifndef USE_BERKELEY_DB
 
 int
-main(int argc, char **argv)
+main(int argc UNUSED, char **argv UNUSED)
 {
     fprintf(stderr, "Error: BerkeleyDB not compiled in.\n");
     exit(1);
