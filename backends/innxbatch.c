@@ -331,15 +331,16 @@ main(int ac, char *av[])
   FILE			*From;
   FILE			*To;
   char			buff[NNTP_STRLEN];
-  RETSIGTYPE		(*old)(int) = NULL;
-  unsigned int		ConnectTimeout;
-  unsigned int		TotalTimeout;
+  RETSIGTYPE		(*volatile old)(int) = NULL;
   struct stat		statbuf;
   int			fd;
   int			err;
-  char			*XBATCHbuffer = NULL;
-  int			XBATCHbuffersize = 0;
-  int			XBATCHsize;
+  char *volatile        XBATCHbuffer = NULL;
+  char **volatile       argv;
+  volatile int		XBATCHbuffersize = 0;
+  volatile int		XBATCHsize, argc;
+  volatile unsigned int	ConnectTimeout;
+  volatile unsigned int	TotalTimeout;
 
   openlog("innxbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
   message_program_name = "innxbatch";
@@ -385,6 +386,8 @@ main(int ac, char *av[])
   REMhost = av[0];
   ac--;
   av++;
+  argc = ac;
+  argv = av;
 
   /* Open a connection to the remote server. */
   if (ConnectTimeout) {
@@ -452,7 +455,7 @@ main(int ac, char *av[])
   STATbegin = TMRnow_double();
 
   /* main loop over all specified files */
-  for (XBATCHname = *av; ac && (XBATCHname = *av); av++, ac--) {
+  for (XBATCHname = *argv; argc && (XBATCHname = *argv); argv++, argc--) {
 
     if (Debug) fprintf(stderr, "will work on %s\n", XBATCHname);
 

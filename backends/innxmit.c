@@ -984,12 +984,12 @@ int main(int ac, char *av[]) {
     char		buff[8192+128];
     char		*Article;
     char		*MessageID;
-    RETSIGTYPE		(*old)(int) = NULL;
-    unsigned int	ConnectTimeout;
-    unsigned int	TotalTimeout;
-    int                 port = NNTP_PORT;
+    RETSIGTYPE		(*volatile old)(int) = NULL;
+    volatile int        port = NNTP_PORT;
     bool		val;
     char                *path;
+    volatile unsigned int	ConnectTimeout;
+    volatile unsigned int	TotalTimeout;
 
     openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "innxmit";
