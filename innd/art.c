@@ -328,7 +328,7 @@ ARTlog(const ARTDATA *data, char code, const char *text)
 /*
 **  Parse a Path line, splitting it up into NULL-terminated array of strings.
 */
-int
+static int
 ARTparsepath(const char *p, int size, LISTBUFFER *list)
 {
   int	i;
