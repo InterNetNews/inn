@@ -1,0 +1,59 @@
+.\" $Revision$
+.TH STORAGE.CTL 5
+.SH NAME
+storage.ctl \- configuration file for storage manager
+.SH DESCRIPTION
+The file
+.\" =()<.I @<_PATH_STORAGECTL>@>()=
+.I /var/news/etc/storage.ctl
+is required if storage API is used.
+Storage API is turned on if ``storageapi: true'' in
+.IR inn.conf (5).
+.PP
+The file consists of a series of lines;
+blank lines and lines beginning with a number sign (``#'') are ignored.
+The order of lines in this file is important.
+.PP
+Each line is formatted as:
+.PP
+.RS
+.nf
+methodname:storage_class:wildmat:minsize:maxsize
+.fi
+.RE
+.PP
+The ``methodname'' is the name of storage method.
+Currently, only ``timehash'' is available for its name.
+\&``Storage_class'' is an identifier among all entries.
+\&``Storage_class'' is also referred at
+.IR expire.ctl (5).
+\&``Wildmat'' refers to a newsgroup pattern that will be parsed with
+.IR wildmat (3).
+Matching newsgroup is against newsgroup name in ``Newsgroups'' header.
+\&``!'' and ``@'' are allowed at the start of the wildmat and
+refer to pattern exclusions. See
+.IR newsfeeds (5)
+for a description of their use.
+\&``Minsize'' and ``maxsize'' is the range in which article is stored.
+.PP
+If a newsgroup matches wildmat pattern and the range, the article is stored
+in that ``storage_class''.
+Note that the file is interpreted in order and first match line
+is used to store an article.
+.PP
+If a newsgroup does not match any wildmat pattern nor the range in all entries, 
+the article is not stored and
+.IR innd (8)
+rejects it.
+.SH HISTORY
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+.de R$
+This is revision \\$3, dated \\$4.
+..
+.R$ $Id$
+.SH "SEE ALSO"
+expire.ctl(5),
+inn.conf(5),
+innd(8),
+newsfeeds(5),
+wildmat(3).
