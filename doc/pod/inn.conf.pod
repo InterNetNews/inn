@@ -343,6 +343,15 @@ space other than those files for overview data and index.
 
 =back
 
+=item I<ovmmapthreshold>
+
+Threshold not to use mmap when retrieving overview data for C<buffindexed>.
+If the number of retrieving overview data is beyond this value,
+C<buffindexed> does not hold mmapped area and allocates memory for it.
+If set to a negative value or if the number of retrieving overview data is
+under this value, C<buffindexed> holds mmapped area.  The default value is
+C<10000>.
+
 =item I<storeonxref>
 
 If set to true, articles will be stored based on the newsgroup names in
