@@ -271,11 +271,6 @@ Code Cleanup Projects
 
 * Rename TRUE and FALSE to true and false everywhere.
 
-* Remove all the register qualifiers for variables everywhere.
-
-* Eliminate all of the needless casts to void that are scattered around to
-  silent lint.
-
 * Eliminate use of NEW, DISPOSE, RENEW, and COPY everywhere in favor of
   xmalloc, free, xrealloc, and xstrdup.
 
@@ -284,7 +279,7 @@ Code Cleanup Projects
   result to 0.
 
 * Change SIZEOF and ENDOF to ARRAY_SIZE and ARRAY_END so that it's clearer
-  what they're for and move them from macros.h to inn/defines.h.
+  what they're for and move them from macros.h to another header.
 
 * Eliminate use of the STRLEN macro; it's too confusingly named.  In
   general, this macro should not be needed.  Most compilers will optimize
