@@ -11,9 +11,6 @@
 #include "innd.h"
 
 #define BAD_COMMAND_COUNT	10
-#define ART_EOF(c, s)		\
-    ((c) >= 5 && (s)[-5] == '\r' && (s)[-4] == '\n' && (s)[-3] == '.' \
-     && (s)[-2] == '\r' && (s)[-1] == '\n')
 
 
 /*
@@ -26,7 +23,10 @@ typedef struct _NCDISPATCH {
     int                 Size;
 } NCDISPATCH;
 
+/* The functions that implement the various commands. */
 static void NCauthinfo(CHANNEL *cp);
+static void NCcancel(CHANNEL *cp);
+static void NCcheck(CHANNEL *cp);
 static void NChead(CHANNEL *cp);
 static void NChelp(CHANNEL *cp);
 static void NCihave(CHANNEL *cp);
@@ -34,50 +34,54 @@ static void NClist(CHANNEL *cp);
 static void NCmode(CHANNEL *cp);
 static void NCquit(CHANNEL *cp);
 static void NCstat(CHANNEL *cp);
-static void NCxpath(CHANNEL *cp);
-static void NC_unimp(CHANNEL *cp);
-/* new modules for streaming */
-static void NCxbatch(CHANNEL *cp);
-static void NCcheck(CHANNEL *cp);
 static void NCtakethis(CHANNEL *cp);
-static void NCwritedone(CHANNEL *cp);
-static void NCcancel(CHANNEL *cp);
+static void NCxbatch(CHANNEL *cp);
 
-static int		NCcount;	/* Number of open connections	*/
-#define NCDISPATCHINIT(name, func) \
-	{name, func, sizeof(name) - 1}
-static NCDISPATCH	NCcommands[] = {
-#if	0
-    NCDISPATCHINIT("article",	NCarticle),
-#else
-    NCDISPATCHINIT("article",	NC_unimp),
-#endif	/* 0 */
-    NCDISPATCHINIT("authinfo",	NCauthinfo),
-    NCDISPATCHINIT("help",	NChelp),
-    NCDISPATCHINIT("ihave",	NCihave),
-    NCDISPATCHINIT("check",	NCcheck),
-    NCDISPATCHINIT("takethis",	NCtakethis),
-    NCDISPATCHINIT("list",	NClist),
-    NCDISPATCHINIT("mode",	NCmode),
-    NCDISPATCHINIT("quit",	NCquit),
-    NCDISPATCHINIT("head",	NChead),
-    NCDISPATCHINIT("stat",	NCstat),
-    NCDISPATCHINIT("body",	NC_unimp),
-    NCDISPATCHINIT("group",	NC_unimp),
-    NCDISPATCHINIT("last",	NC_unimp),
-    NCDISPATCHINIT("newgroups",	NC_unimp),
-    NCDISPATCHINIT("newnews",	NC_unimp),
-    NCDISPATCHINIT("next",	NC_unimp),
-    NCDISPATCHINIT("post",	NC_unimp),
-    NCDISPATCHINIT("slave",	NC_unimp),
-    NCDISPATCHINIT("xbatch",	NCxbatch),
-    NCDISPATCHINIT("xhdr",	NC_unimp),
-    NCDISPATCHINIT("xpath",	NCxpath)
+/* Handlers for unimplemented commands.  We need two handlers so that we can
+   return the right status code; reader commands that are required by the
+   standard must return a 502 error rather than a 500 error. */
+static void NC_reader(CHANNEL *cp);
+static void NC_unimp(CHANNEL *cp);
+
+/* Supporting functions. */
+static void NCwritedone(CHANNEL *cp);
+
+/* Set up the dispatch table for all of the commands. */
+#define COMMAND(name, func) { name, func, sizeof(name) - 1 }
+static NCDISPATCH NCcommands[] = {
+    COMMAND("authinfo",  NCauthinfo),
+    COMMAND("check",     NCcheck),
+    COMMAND("head",      NChead),
+    COMMAND("help",      NChelp),
+    COMMAND("ihave",     NCihave),
+    COMMAND("list",      NClist),
+    COMMAND("mode",      NCmode),
+    COMMAND("quit",      NCquit),
+    COMMAND("stat",      NCstat),
+    COMMAND("takethis",  NCtakethis),
+    COMMAND("xbatch",    NCxbatch),
+
+    /* Unimplemented reader commands which may become available after a MODE
+       READER command. */
+    COMMAND("article",   NC_reader),
+    COMMAND("body",      NC_reader),
+    COMMAND("group",     NC_reader),
+    COMMAND("last",      NC_reader),
+    COMMAND("newgroups", NC_reader),
+    COMMAND("newnews",   NC_reader),
+    COMMAND("next",      NC_reader),
+    COMMAND("post",      NC_reader),
+
+    /* Other unimplemented standard commands. */
+    COMMAND("date",      NC_unimp),
+    COMMAND("slave",     NC_unimp)
 };
-#undef NCDISPATCHINIT
-static char		*NCquietlist[] = {
-    INND_QUIET_BADLIST
-};
+#undef COMMAND
+
+/* Number of open connections. */
+static int NCcount;
+
+static char		*NCquietlist[] = { INND_QUIET_BADLIST };
 static const char	NCterm[] = "\r\n";
 static const char 	NCdot[] = "." ;
 static const char	NCbadcommand[] = NNTP_BAD_COMMAND;
@@ -150,13 +154,7 @@ NCwriteshutdown(CHANNEL *cp, const char *text)
 {
     cp->State = CSwritegoodbye;
     RCHANremove(cp); /* we're not going to read anything more */
-#if 0
-    /* XXX why would we want to zap whatever was already
-     * in the output buffer? */
-    WCHANset(cp, NNTP_GOODBYE, STRLEN(NNTP_GOODBYE));
-#else
     WCHANappend(cp, NNTP_GOODBYE, STRLEN(NNTP_GOODBYE));
-#endif
     WCHANappend(cp, " ", 1);
     WCHANappend(cp, text, (int)strlen(text));
     WCHANappend(cp, NCterm, STRLEN(NCterm));
@@ -677,16 +675,17 @@ NCquit(CHANNEL *cp)
 
 
 /*
-**  The "xpath" command.  Return the paths for an article is.
+**  The catch-all for reader commands, which should return a different status
+**  than just "unrecognized command" since a change of state may make them
+**  available.
 */
 static void
-NCxpath(CHANNEL *cp)
+NC_reader(CHANNEL *cp)
 {
-    /* not available for storageapi */
-    cp->Start = cp->Next ;
-    NCwritereply(cp, NNTP_BAD_COMMAND);
-    return;
+    cp->Start = cp->Next;
+    NCwritereply(cp, NNTP_ACCESS);
 }
+
 
 /*
 **  The catch-all for inimplemented commands.
