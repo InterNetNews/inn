@@ -157,19 +157,18 @@ get_authinfo(const char *server, char **username, char **password)
         return false;
     }
     free(path);
-    line = QIOread(passwords);
-    while (line != NULL) {
+    while ((line = QIOread(passwords) != NULL) {
         if (line[0] == '\0' || line[0] == '#')
             continue;
         info = cvector_split(line, ':', info);
-        if (info->count != 4)
+        if (info->count > 4 || info->count < 3)
             continue;
-        if (strcmp(info->strings[2], "authinfo") != 0)
+        if (info->count == 4 && strcmp(info->strings[3], "authinfo") != 0)
             continue;
-        if (strcasecmp(info->strings[3], server) != 0)
+        if (strcasecmp(info->strings[0], server) != 0)
             continue;
-        *username = xstrdup(info->strings[0]);
-        *password = xstrdup(info->strings[1]);
+        *username = xstrdup(info->strings[1]);
+        *password = xstrdup(info->strings[2]);
         return true;
     }
     return false;
