@@ -61,6 +61,7 @@ fake_innconf(void)
     innconf->pathoverview = xstrdup("tdx-tmp");
     innconf->overcachesize = 20;
     innconf->groupbaseexpiry = true;
+    innconf->tradindexedmmap = true;
 }
 
 /* Initialize the overview database. */
