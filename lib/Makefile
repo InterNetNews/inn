@@ -1,6 +1,8 @@
 ##  $Revision$
 include ../Makefile.global
 
+CC	= $(LIBCC)
+
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 CFLAGS = $(GCFLAGS) $(PERLINC)
@@ -27,17 +29,19 @@ OBJECTS = $(MISSING_OBJ) \
 	checkart.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
 	dbz.o defdist.o findheader.o genid.o getconfig.o getdtab.o \
 	getfqdn.o getmodaddr.o gettime.o hash.o inndcomm.o innvers.o localopen.o \
-	lockfile.o makedir.o md5.o over.o nonblocking.o parsedate.o perl.o radix32.o\
+	lockfile.o makedir.o md5.o over.o nonblocking.o parsedate.o radix32.o\
 	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o tempname.o \
 	waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o xrealloc.o xwrite.o \
 	xwritev.o
+LOBJECTS	= $(OBJECTS:.o=.lo)
 
-all:			libinn.a
+all:			libinn.la perl.o ../include/autoconfig.h
 
-install:		../libinn.a ../include/autoconfig.h
+install:		$(D)$(PATHLIB)/libinn.la
 
 clobber clean:
-	rm -f *.o libinn.a 
+	rm -f *.o *.lo libinn.la
+	rm -rf .libs
 	rm -f parsedate parsedate.c
 	rm -f profiled libinn_p.a endian
 	rm -f all install 
@@ -45,9 +49,9 @@ clobber clean:
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
-libinn.a:		$(P) $(OBJECTS)
-	ar r $@ $(OBJECTS)
-	$(RANLIB) libinn.a
+libinn.la:		$(P) $(OBJECTS) $(LOBJECTS)
+	$(CC) $(LDFLAGS) -o $@ $(LOBJECTS) \
+		-rpath /usr/lib -version-info 2:0:0
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:		../libinn_p.a
@@ -90,10 +94,9 @@ ccenter:	$(SOURCES)
 	#load $(CFLAGS) $(SOURCES)
 
 ##  Low-level install actions.
-../libinn.a:		libinn.a
+$(D)$(PATHLIB)/libinn.la:		libinn.la
 	@rm -f $@
-	cp libinn.a $@
-	$(RANLIB) $@
+	$(LIBTOOL) cp libinn.la $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES) ../include/dbz.h
