@@ -1194,6 +1194,27 @@ void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt)
 
 
 
+/*
+ * return the number of articles the connection will accept.
+ */
+bool cxnCheckstate (Connection cxn)
+{
+  bool rval = false ;
+
+  ASSERT (cxn != NULL) ;
+
+  if (cxn->state == cxnFeedingS ||
+      cxn->state == cxnIdleS ||
+      cxn->state == cxnConnectingS)
+    rval = true ;
+
+  return rval ;
+}
+
+
+
+
+
 /**********************************************************************/
 /**                       STATIC PRIVATE FUNCTIONS                   **/
 /**********************************************************************/

@@ -1595,6 +1595,7 @@ void hostSendArticle (Host host, Article article)
     {
       u_int idx ;
       Article extraRef ;
+      Connection cxn ;
       
       extraRef = artTakeRef (article) ; /* the referrence we give away */
       
@@ -1608,17 +1609,17 @@ void hostSendArticle (Host host, Article article)
       for (idx = 0 ; idx < host->maxConnections ; idx++)
         {
           if (host->cxnActive [idx] &&
-              host->connections[idx] != host->notThisCxn &&
-              cxnTakeArticle (host->connections [idx],extraRef))
+              (cxn = host->connections[idx]) != host->notThisCxn &&
+              cxnTakeArticle (cxn, extraRef))
 	    return ;
         }
 
       /* Wasn't taken so try to give it to one of the waiting connections. */
       for (idx = 0 ; idx < host->maxConnections ; idx++)
         if (!host->cxnActive [idx] && !host->cxnSleeping [idx] &&
-            host->connections[idx] != host->notThisCxn)
+            (cxn = host->connections[idx]) != host->notThisCxn)
           {
-            if (cxnTakeArticle (host->connections [idx], extraRef))
+            if (cxnTakeArticle (cxn, extraRef))
               return ;
             else
               dprintf (1,"%s Inactive connection %d refused an article\n",
@@ -1632,6 +1633,13 @@ void hostSendArticle (Host host, Article article)
       delArticle (extraRef) ;
           
       remArticle (article,&host->processed,&host->processedTail) ;
+      if (!cxnCheckstate (cxn))
+        {
+          host->artsToTape++ ;
+          host->gArtsToTape++ ;
+          tapeTakeArticle (host->myTape,article) ;
+          return ;
+        }
     }
 
   /* either all the per connection queues were full or we already had

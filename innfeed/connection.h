@@ -137,6 +137,9 @@ void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt) ;
 /* config file load callback */
 int cxnConfigLoadCbk (void *data) ;
 
+/* check connection state is in cxnWaitingS, cxnConnectingS or cxnIdleS */
+bool cxnCheckstate (Connection cxn) ;
+
 #endif /* connection_h__ */
 
 
