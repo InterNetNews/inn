@@ -491,6 +491,9 @@ Requested New Features:
   failed, or even better a list of them.  This would make pruning old
   stuff out of incoming.conf much easier.
 
+* nnrpd could use sendfile(2), if available, to send articles directly
+  to the socket.
+
 
 General Projects:
 
