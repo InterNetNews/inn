@@ -118,6 +118,7 @@ innwatchspoolspace:	8000
 innwatchbatchspace:	800
 innwatchlibspace:	25000
 innwatchspoolnodes:	200
+docnfsstat:		false
 #
 # ---------------------------------
 # Paths to various aspects of the news system

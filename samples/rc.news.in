@@ -6,9 +6,13 @@
 
 . @LIBDIR@/innshellvars
 
+AZ=ABCDEFGHIJKLMNOPQRSTUVWXYZ
+az=abcdefghijklmnopqrstuvwxyz
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INNDSTART}
 ##  Set to true or false
+: ${DOINNWATCH:=true}
+DOINNWATCH=`echo ${DOINNWATCH} | tr ${AZ} ${az}`
 if [ -z "${DOINNWATCH}" \
      -o "${DOINNWATCH}" = "on" \
      -o "${DOINNWATCH}" = "true" \
@@ -16,6 +20,17 @@ if [ -z "${DOINNWATCH}" \
     DOINNWATCH=true
 else
     DOINNWATCH=false
+fi
+
+: ${DOCNFSSTAT:=false}
+DOCNFSSTAT=`echo ${DOCNFSSTAT} | tr ${AZ} ${az}`
+if [ -z "${DOCNFSSTAT}" \
+     -o "${DOCNFSSTAT}" = "on" \
+     -o "${DOCNFSSTAT}" = "true" \
+     -o "${DOCNFSSTAT}" = "yes" ]; then
+    DOCNFSSTAT=true
+else
+    DOCNFSSTAT=false
 fi
 
 MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
@@ -86,6 +101,11 @@ eval ${WHAT} ${RFLAG} ${INNFLAGS}
 ${DOINNWATCH} && {
     echo "Scheduled start of ${INNWATCH}."
     ( sleep 60 ; ${INNWATCH} ) &
+}
+
+${DOCNFSSTAT} && {
+    echo "Scheduled start of cnfsstat."
+    ${PATHBIN}/cnfsstat -a -s -l &
 }
 
 RMFILE=${MOST_LOGS}/expire.rm
