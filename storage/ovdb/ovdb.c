@@ -868,8 +868,9 @@ static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
 	ret = dbcursor->c_get(dbcursor, &key, &val, DB_NEXT);
 	switch (ret) {
 	case 0:
+            break;
 	case DB_NOTFOUND:
-	    break;
+            goto done;
 	default:
             warn("OVDB: delete_all_records: DBcursor->c_get(2): %s",
                  db_strerror(ret));
@@ -878,6 +879,7 @@ static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
 	    return ret;
 	}
     }
+  done:
     return dbcursor->c_close(dbcursor);
 }
 
