@@ -220,7 +220,6 @@ struct conf_vars {
     int refusecybercancels;     /* Reject message IDs with "<cancel."? */
     int remembertrash;          /* Put unwanted article IDs into history */
     char *sourceaddress;        /* Source IP for outgoing NNTP connections */
-    int usecontrolchan;         /* Use a channel feed for control messages? */
     int verifycancels;          /* Verify cancels against article author */
     int wanttrash;              /* Put unwanted articles in junk */
     int wipcheck;               /* How long to defer other copies of article */
@@ -313,7 +312,6 @@ struct conf_vars {
     char *patharchive;          /* Archived news. */
     char *patharticles;         /* Articles. */
     char *pathbin;              /* News binaries. */
-    char *pathcontrol;          /* Control message processing routines */
     char *pathdb;               /* News database files */
     char *pathetc;              /* News configuration files */
     char *pathfilter;           /* Filtering code */

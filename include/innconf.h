@@ -204,9 +204,6 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_PATHFILTER			"pathfilter"
 #define CONF_VAR_PATHFILTER			60
     { _CONF_PATHFILTER,				"",	1, 1 },
-#define _CONF_PATHCONTROL			"pathcontrol"
-#define CONF_VAR_PATHCONTROL			61
-    { _CONF_PATHCONTROL,			"",	1, 1 },
 #define _CONF_PATHDB				"pathdb"
 #define CONF_VAR_PATHDB				62
     { _CONF_PATHDB,				"",	1, 1 },
@@ -303,9 +300,6 @@ struct conf_rec conf_defaults[] = {
 #define _CONF_NICENEWNEWS			"nicenewnews"
 #define CONF_VAR_NICENEWNEWS			93
     { _CONF_NICENEWNEWS,			"",	2, 1 },
-#define _CONF_USECONTROLCHAN			"usecontrolchan"
-#define CONF_VAR_USECONTROLCHAN			94
-    { _CONF_USECONTROLCHAN,			"",	2, 1 },
 #define _CONF_MERGETOGROUPS			"mergetogroups"
 #define CONF_VAR_MERGETOGROUPS			95
     { _CONF_MERGETOGROUPS,			"",	2, 1 },
