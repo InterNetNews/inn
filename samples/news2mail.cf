@@ -1,0 +1,20 @@
+# Sample config file for news2mail. Format is:
+#
+#	mailing-list-name	address
+#
+#
+# In newsfeeds put an entry like:
+#
+#	n2m!:!*:Tc,Ac,Wn*:/usr/news/bin/news2mail
+# 
+# and for each mailing list have an entry list:
+#
+#	news-software@localhost.our.domain.com:rec.pets.redants.*:Tm:n2m!
+#
+# The site name used in the newfeeds entry for a mailing list (above 
+# ``news-software@localhost.our.domain.com'') must be the same as the first
+# field in an entry in this file. It is what is put into the ``To'' header of 
+# mailed messages.
+#
+#
+news-software@localhost.our.domain.com	news-software@real-host.somewhere.com
