@@ -140,11 +140,6 @@ cnfs/cnfs.o: cnfs/cnfs.c ../include/config.h ../include/inn/defines.h \
  ../include/storage.h ../include/libinn.h ../include/macros.h \
  methods.h ../include/paths.h ../include/inn/wire.h \
  ../include/inn/mmap.h cnfs/cnfs.h cnfs/cnfs-private.h
-ov3/ov3.o: ov3/ov3.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/mmap.h \
- ../include/inn/innconf.h ../include/libinn.h ../include/macros.h \
- ../include/ov.h ../include/storage.h ../include/inn/history.h \
- ../include/paths.h ovinterface.h ov3/tradindexed.h ov3/structure.h
 ovdb/ovdb.o: ovdb/ovdb.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
  ../include/portable/time.h ../include/conffile.h \

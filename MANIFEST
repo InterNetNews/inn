@@ -560,7 +560,7 @@ storage/buffindexed                   buffindexed overview method (Directory)
 storage/buffindexed/Makefile          Makefile for buffindexed overview
 storage/buffindexed/buffindexed.c     buffindexed overview routines
 storage/buffindexed/buffindexed.h     Header file for buffindexed overview
-storage/buffindexed/ovmethod.config   ovbuildconfig definition
+storage/buffindexed/ovmethod.config   buildconfig definition
 storage/buildconfig.in                Construct method interface
 storage/cnfs                          CNFS storage method (Directory)
 storage/cnfs/Makefile                 Makefile for CNFS storage method
@@ -572,18 +572,12 @@ storage/expire.c                      Overview-drive expire implementation
 storage/interface.c                   Storage API glue implementation
 storage/interface.h                   Storage API interface
 storage/ov.c                          Overview API glue implementation
-storage/ov3                           tradindexed overview method (Directory)
-storage/ov3/Makefile                  Makefile for tradindexed overview
-storage/ov3/ov3.c                     tradindexed overview routines
-storage/ov3/ovmethod.config           ovbuildconfig definition
-storage/ov3/structure.h               On-disk data structures for tradindexed
-storage/ov3/tradindexed.h             Header file for tradindexed overview
 storage/ovdb                          ovdb overview method (Directory)
 storage/ovdb/Makefile                 Makefile for ovdb overview method
 storage/ovdb/ovdb-private.h           Private header file for ovdb
 storage/ovdb/ovdb.c                   ovdb (Berkeley DB) overview method
 storage/ovdb/ovdb.h                   Header for ovdb (Berkeley DB) overview
-storage/ovdb/ovmethod.config          ovbuildconfig definition
+storage/ovdb/ovmethod.config          buildconfig definition
 storage/overdata.c                    Overview data manipulation
 storage/ovinterface.h                 Overview API interface
 storage/timecaf                       timecaf storage method (Directory)
@@ -601,6 +595,7 @@ storage/timehash/timehash.c           timehash storage routines
 storage/timehash/timehash.h           Header for timehash
 storage/tradindexed                   tradindexed overview method (Directory)
 storage/tradindexed/Makefile          Makefile for tradindexed overview method
+storage/tradindexed/ovmethod.config   buildconfig definition
 storage/tradindexed/tdx-cache.c       Data file cache handling for tradindexed
 storage/tradindexed/tdx-data.c        Data file handling for tradindexed
 storage/tradindexed/tdx-group.c       Group index handling for tradindexed
