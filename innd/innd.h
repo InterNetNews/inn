@@ -38,8 +38,8 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
-#include "dbz.h"
 #include "inn/timer.h"
+#include "inn/history.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -593,6 +593,7 @@ EXTERN bool		ThrottledbyIOError;
 EXTERN bool		AddAlias;
 EXTERN bool		Hassamepath;
 EXTERN char	    *   NCgreeting;
+EXTERN struct history   *History;
 
 /*
 ** Table size for limiting incoming connects.  Do not change the table
@@ -616,6 +617,13 @@ extern int		RemoteTotal;	/* Total limit. */
 /*
 **  Function declarations.
 */
+extern void	        InndHisOpen(void);
+extern void             InndHisClose(void);
+extern bool             InndHisWrite(const char *key, time_t arrived,
+				     time_t posted, time_t expires,
+				     TOKEN *token);
+extern bool             InndHisRemember(const char *key);
+extern void             InndHisLogStats(void);
 extern bool		FormatLong(char *p, unsigned long value, int width);
 extern bool		NeedShell(char *p, const char **av, const char **end);
 extern char	    **	CommaSplit(char *text);
@@ -681,15 +689,6 @@ extern const char   *	CCaddhist(char *av[]);
 extern const char   *	CCblock(OPERATINGMODE NewMode, char *reason);
 extern const char   *	CCcancel(char *av[]);
 extern const char   *	CCcheckfile(char *av[]);
-
-extern bool		HIShavearticle(const HASH MessageID);
-extern bool		HISwrite(const ARTDATA *Data, const HASH hash,
-				 char *paths);
-extern bool		HISremember(const HASH MessageID);
-extern TOKEN	    *   HISfilesfor(const HASH MessageID);
-extern void		HISclose(void);
-extern void		HISsetup(void);
-extern void		HISsync(void);
 
 extern bool		ICDnewgroup(char *Name, char *Rest);
 extern char	    *   ICDreadactive(char **endp);
