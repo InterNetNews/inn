@@ -213,6 +213,7 @@ ExitWithStats(int x, bool readconf)
      }
     
     OVclose();
+    SMshutdown();
 
 #ifdef DO_PYTHON
     if (innconf->nnrppythonauth) {
