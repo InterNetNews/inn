@@ -24,14 +24,12 @@ is configured in
 .IR newsfeeds (5)
 and invoked from
 .IR innd (8).
-And you need to set
-.I <usecontrolchan in inn.conf>
-to ``true''.
 .I Controlchan
 reports all log message through
 .IR syslog (3),
 if possible.  To enable
-.IR syslog (3)'ging,
+.IR syslog (3)'ing
+for versions of Perl prior to 5.6.0,
 you will need to have run ``h2ph'' on your
 system include files at some point (this is required to
 make ``Sys::Syslog'' work).  If you have not done so, do this:
