@@ -7,22 +7,25 @@ top	      = ..
 CFLAGS	      = $(GCFLAGS) -I.
 
 SOURCES	      = expire.c interface.c methods.c ov.c overdata.c ovmethods.c
-OBJECTS	      = $(SOURCES:.c=.o) $(METHOD_OBJECTS)
+TOP_OBJECTS   = $(SOURCES:.c=.o)
+OBJECTS	      = $(TOP_OBJECTS) $(METHOD_OBJECTS)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
 
-all: objects programs
+all: objects library programs
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-objects: methods.c buildconfig
+objects: methods.c buildconfig $(TOP_OBJECTS)
 	@for D in $(SUBDIRS) ; do \
 	    cd $$D && $(MAKE) objects || exit 1 ; cd .. ; \
 	done
 
-programs: objects libstorage.$(EXTLIB)
+library: libstorage.$(EXTLIB)
+
+programs: library
 	@progdirs='$(PROGDIRS)' ; for D in $$progdirs ; do \
 	    cd $$D && $(MAKE) programs || exit 1 ; cd .. ; \
 	done
@@ -39,12 +42,12 @@ clobber clean distclean:
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h ../include/inn/*.h
 
-libstorage.la: $(OBJECTS) $(LOBJECTS)
+libstorage.la: objects
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
-libstorage.a: $(OBJECTS)
+libstorage.a: objects
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libstorage.a
 
