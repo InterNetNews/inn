@@ -98,9 +98,8 @@ sub mailto {
 	my($t, $l, @a) = @_ ;
 
 	my $sendmail = $inn::mta ;
-	$sendmail =~ s!%s!! ;
-	$sendmail =~ s/\s//g;
-	my @command = ($sendmail, '-ee', '-f<news>', -odq, @a);
+	$sendmail =~ s!\s*%s!! ;
+	my @command = (split (' ', $sendmail), '-ee', '-f<news>', '-odq', @a);
 #	@command[0] = '/usr/local/bin/debug';
 
 	syslog('info', join(' ', @command));
