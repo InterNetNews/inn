@@ -168,7 +168,7 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	break;
     case SIZE:	/* 'a' points to size_t */
         memcpy(&sz, cp + tab[i].a, sizeof(sz));
-	sprintf(val, "%d", sz);
+	sprintf(val, "%lu", (unsigned long) sz);
 	break;
     case END:
         break;
