@@ -45,6 +45,7 @@
 # include <sys/select.h>
 #endif
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -99,8 +100,7 @@ REMwrite(register int fd, register char *p)
   for (dest = buff, i+=2; i; dest += err, i -= err) {
     err = write(fd, dest, i);
     if (err < 0) {
-      (void)fprintf(stderr, "cant write %s to %s: %s\n",
-		    REMhost, dest, strerror(errno));
+      syswarn("cannot write %s to %s", dest, REMhost);
       return FALSE;
     }
   }
@@ -217,7 +217,7 @@ REMread(char *start, int size)
 static void
 Interrupted(void)
 {
-  (void)fprintf(stderr, "Interrupted\n");
+  warn("interrupted");
   ExitWithStats(1);
 }
 
@@ -236,8 +236,7 @@ REMsendxbatch(int fd, char *buf, int size)
   for (i = size, p = buf; i; p += err, i -= err) {
     err = write(fd, p, i);
     if (err < 0) {
-      (void)fprintf(stderr, "cant write xbatch to %s: %s\n",
-		    REMhost, strerror(errno));
+      syswarn("cannot write xbatch to %s", REMhost);
       return FALSE;
     }
   }
@@ -247,8 +246,7 @@ REMsendxbatch(int fd, char *buf, int size)
 
   /* What did the remote site say? */
   if (!REMread(buf, size)) {
-    (void)fprintf(stderr, "No reply after sending xbatch, %s\n",
-		  strerror(errno));
+    syswarn("no reply after sending xbatch");
     return FALSE;
   }
   if (GotInterrupt) Interrupted();
@@ -256,7 +254,7 @@ REMsendxbatch(int fd, char *buf, int size)
   /* Parse the reply. */
   switch (atoi(buf)) {
   default:
-    (void)fprintf(stderr, "Unknown reply after sending batch -- %s", buf);
+    warn("unknown reply after sending batch -- %s", buf);
     syslog(L_ERROR, UNKNOWN_REPLY, buf);
     return FALSE;
     /* NOTREACHED */
@@ -275,8 +273,7 @@ REMsendxbatch(int fd, char *buf, int size)
       /* probably another incarantion was faster, so avoid further duplicate
        * work
        */
-      (void)fprintf(stderr, "cannot unlink %s: %s\n",
-		    XBATCHname, strerror(errno));
+      syswarn("cannot unlink %s", XBATCHname);
       syslog(L_NOTICE, CANNOT_UNLINK, XBATCHname);
       return FALSE;
     }
@@ -319,11 +316,9 @@ CATCHalarm(int s UNUSED)
 static void
 Usage(void)
 {
-    (void)fprintf(stderr,
-	"Usage: innxbatch [-D] [-v] [-t#] [-T#] host file ...\n");
+    warn("Usage: innxbatch [-Dv] [-t#] [-T#] host file ...");
 #ifdef FROMSTDIN
-    (void)fprintf(stderr,
-        "       innxbatch [-D] [-v] [-t#] [-T#] -i host\n");
+    warn("       innxbatch [-Dv] [-t#] [-T#] -i host");
 #endif
     exit(1);
 }
@@ -349,6 +344,8 @@ main(int ac, char *av[])
   int			XBATCHsize;
 
   (void)openlog("innxbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+  message_program_name = "innxbatch";
+
   /* Set defaults. */
   if (ReadInnConf() < 0) exit(1);
   ConnectTimeout = 0;
@@ -395,17 +392,14 @@ main(int ac, char *av[])
     GotAlarm = FALSE;
     old = xsignal(SIGALRM, CATCHalarm);
     JMPyes = TRUE;
-    if (setjmp(JMPwhere)) {
-      (void)fprintf(stderr, "Can't connect to %s, timed out\n",
-		    REMhost);
-      exit(1);
-    }
+    if (setjmp(JMPwhere))
+      die("cannot connect to %s: timed out", REMhost);
     (void)alarm(ConnectTimeout);
   }
   if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff) < 0 || GotAlarm) {
     i = errno;
-    (void)fprintf(stderr, "Can't connect to %s, %s\n",
-		  REMhost, buff[0] ? REMclean(buff) : strerror(errno));
+    warn("cannot connect to %s: %s", REMhost,
+         buff[0] ? REMclean(buff): strerror(errno));
     if (GotAlarm)
       syslog(L_NOTICE, CANT_CONNECT, REMhost, "timeout");
     else
@@ -418,8 +412,7 @@ main(int ac, char *av[])
     (void)fprintf(stderr, "< %s\n", REMclean(buff));
   if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
     i = errno;
-    (void)fprintf(stderr, "Can't authenticate with %s, %s\n",
-		  REMhost, strerror(errno));
+    syswarn("cannot authenticate with %s", REMhost);
     syslog(L_ERROR, CANT_AUTHENTICATE,
 	   REMhost, GotAlarm ? "timeout" : strerror(i));
     /* Don't send quit; we want the remote to print a message. */
@@ -457,10 +450,8 @@ main(int ac, char *av[])
   }
 
   /* Start timing. */
-  if (GetTimeInfo(&Now) < 0) {
-    (void)fprintf(stderr, "Can't get time, %s\n", strerror(errno));
-    exit(1);
-  }
+  if (GetTimeInfo(&Now) < 0)
+    sysdie("cannot get time");
   STATbegin = TIMEINFOasDOUBLE(Now);
 
 
@@ -470,28 +461,25 @@ main(int ac, char *av[])
     if (Debug) (void)fprintf(stderr, "will work on %s\n", XBATCHname);
 
     if (GotAlarm) {
-      (void)fprintf(stderr, "Timed out\n");
+      warn("timed out");
       ExitWithStats(1);
     }
     if (GotInterrupt) Interrupted();
 
     if ((fd = open(XBATCHname, O_RDONLY, 0)) < 0) {
-      (void)fprintf(stderr, "Can't open \"%s\", %s - skipping it\n",
-		    XBATCHname, strerror(errno));
+      syswarn("cannot open %s, skipping", XBATCHname);
       continue;
     }
 
     if (fstat(fd, &statbuf)) {
-      (void)fprintf(stderr, "Can't stat \"%s\", %s - skipping it\n",
-		    XBATCHname, strerror(errno));
+      syswarn("cannot stat %s, skipping", XBATCHname);
       (void)close(i);
       continue;
     }
 
     XBATCHsize = statbuf.st_size;
     if (XBATCHsize == 0) {
-      (void)fprintf(stderr, "Batch file \"%s\" is zero length, - skipping it\n",
-		    XBATCHname);
+      warn("batch file %s is zero length, skipping", XBATCHname);
       (void)close(i);
       (void)unlink(XBATCHname);
       continue;
@@ -505,12 +493,10 @@ main(int ac, char *av[])
     for (i = XBATCHsize, p = XBATCHbuffer; i; i -= err, p+= err) {
       err = read(fd, p, i);
       if (err < 0) {
-	(void)fprintf(stderr, "error reading %s: %s - skipping it\n",
-		      XBATCHname, strerror(errno));
+        syswarn("error reading %s, skipping", XBATCHname);
 	break;
       } else if (0 == err) {
-	(void)fprintf(stderr, "unexpected EOF reading %s: %s - truncated\n",
-		      XBATCHname, strerror(errno));
+        syswarn("unexpected EOF reading %s, truncated", XBATCHname);
 	XBATCHsize = p - XBATCHbuffer;
 	break;
       }
@@ -524,8 +510,7 @@ main(int ac, char *av[])
     /* Offer the xbatch. */
     snprintf(buff, sizeof(buff), "xbatch %d", XBATCHsize);
     if (!REMwrite(ToServer, buff)) {
-      (void)fprintf(stderr, "Can't offer xbatch to %s, %s\n",
-		    REMhost, strerror(errno));
+      syswarn("cannot offer xbatch to %s", REMhost);
       ExitWithStats(1);
     }
     STAToffered++;
@@ -533,8 +518,7 @@ main(int ac, char *av[])
 
     /* Does he want it? */
     if (!REMread(buff, (int)sizeof buff)) {
-      (void)fprintf(stderr, "No reply to XBATCH %d from %s, %s\n",
-		    XBATCHsize, REMhost, strerror(errno));
+      syswarn("no reply to XBATCH %d from %s", XBATCHsize, REMhost);
       ExitWithStats(1);
     }
     if (GotInterrupt) Interrupted();
@@ -542,7 +526,7 @@ main(int ac, char *av[])
     /* Parse the reply. */
     switch (atoi(buff)) {
     default:
-      (void)fprintf(stderr, "Unknown reply to \"%s\" -- %s", XBATCHname, buff);
+      warn("unknown reply to %s -- %s", XBATCHname, buff);
       ExitWithStats(1);
       /* NOTREACHED */
       break;
@@ -559,8 +543,7 @@ main(int ac, char *av[])
       break;
     case NNTP_SYNTAX_VAL:
     case NNTP_BAD_COMMAND_VAL:
-      (void)fprintf(stderr, "Server %s seems not understand XBATCH: %s\n",
-		    REMhost, buff);
+      warn("server %s seems not to understand XBATCH: %s", REMhost, buff);
       syslog(L_FATAL, XBATCH_FAIL, REMhost, buff);
       break;
     }
