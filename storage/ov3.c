@@ -969,7 +969,7 @@ OV3packgroup(char *group, int delta) {
     return TRUE;
 }
 
-BOOL OV3expiregroup(char *group) {
+BOOL OV3expiregroup(char *group, int *lo) {
     char                newgroup[BIG_BUFFER];
     char                bakgroup[BIG_BUFFER];
     void                *handle;
@@ -990,8 +990,11 @@ BOOL OV3expiregroup(char *group) {
     if (GROUPLOCempty(gloc))
 	return FALSE;
     ge = &GROUPentries[gloc.recno];
-    if (ge->count == 0)
+    if (ge->count == 0) {
+	if (lo)
+	    *lo = ge->low;
 	return TRUE;
+    }
     
     strcpy(bakgroup, group);
     strcat(bakgroup, "-BAK");
@@ -1018,7 +1021,7 @@ BOOL OV3expiregroup(char *group) {
 	return FALSE;
     }
     newge = *ge;
-    newge.base = newge.low = newge.high = newge.count = 0;
+    newge.base = newge.low = newge.count = 0;
     while (OV3search(handle, &artnum, &data, &len, &token)) {
 	if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
 	    continue;
@@ -1097,6 +1100,8 @@ BOOL OV3expiregroup(char *group) {
     GROUPlock(gloc, LOCK_UNLOCK);
     OV3closesearch(handle);
     OV3closegroupfiles(newgh);
+    if (lo)
+	*lo = ge->low;
     return TRUE;
 }
 
