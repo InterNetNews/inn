@@ -11,25 +11,34 @@ innd, inndstart \- InterNetNews daemon
 .BI \-c " days"
 ]
 [
+.B \-C
+]
+[
 .B \-d
 ]
 [
 .B \-f
 ]
 [
+.BI \-H " count"
+]
+[
 .BI \-i " count"
 ]
 [
-.BI \-o " count"
+.BI \-l " size"
 ]
 [
-.BI \-l " size"
+.B \-L
 ]
 [
 .BI \-m " mode"
 ]
 [
 .BI \-n " flag"
+]
+[
+.BI \-o " count"
 ]
 [
 .BI \-p " port"
@@ -47,25 +56,16 @@ innd, inndstart \- InterNetNews daemon
 .BI \-t " timeout"
 ]
 [
-.B \-u
-]
-[
-.B \-x
-]
-[
-.B \-L
-]
-[
-.B \-N
-]
-[
-.BI \-H " count"
-]
-[
 .BI \-T " count"
 ]
 [
+.B \-u
+]
+[
 .BI \-X " seconds"
+]
+[
+.B \-Z
 ]
 
 .B inndstart
@@ -128,40 +128,13 @@ value of 4.\}
 \}
 .SH OPTIONS
 .TP
-.B \-p
-If the ``\fB\-p\fP'' flag is used, then the NNTP port is assumed to be
-open on the specified descriptor.
-(If this flag is used, then
-.I innd
-assumes it is running with the proper permissions and it will not call
-.IR chown (2)
-on any files or directories it creates.)
-.TP
-.B \-t
-Change the timeout period before flushing to 
-.IR timeout seconds.
-.TP
-.B \-i
-To limit the number of incoming NNTP connections, use the ``\fB\-i\fP'' flag.
-A value of zero will suppress this check.
-.\" =()<.ie !@<DEFAULT_CONNECTIONS>@ The default is to not limit connections.>()=
-.ie !50 The default is to not limit connections.
-.\" =()<.el The default is @<DEFAULT_CONNECTIONS>@.>()=
-.el The default is 50.
-.TP
-.B \-o
-To limit the number of files that will be kept open for outgoing file
-feeds, use the ``\fB\-o\fP'' flag.
-The default is the number of available descriptors minus some reserved
-for internal use.
-.TP
-.B \-l
-To limit the size of an article, use the ``\fB\-l\fP'' flag.
-If this flag is used, then any article bigger than
-.I size
-bytes will be rejected.
-The default is no checking, which can also be obtained by using a value
-of zero.
+.B \-a
+By default, if a host if not mentioned in the
+.I hosts.nntp
+file, then the connection is handed off to
+.IR nnrpd .
+If the ``\fB\-a\fP'' flag is used, then any host can connect and transfer
+articles.
 .TP
 .B \-c
 .I Innd
@@ -177,80 +150,6 @@ A value of zero will suppress this check.
 .\" =()<.el The default is @<DEFAULT_CUTOFF>@ days.>()=
 .el The default is 14 days.
 .TP
-.B "\-d \-f"
-.I Innd
-normally puts itself into the background, sets its standard output and
-error to log files, and disassociates itself from the terminal.
-Using the ``\fB\-d\fP'' flag instructs the server to not do this, while using
-the ``\fB\-f\fP'' flag just leaves the server running the foreground.
-.TP
-.B \-u
-The logs are normally buffered; use the ``\fB\-u\fP'' flag to have them
-unbuffered.
-.TP
-.B \-m
-To start the server in a paused or throttled state (see
-.IR ctlinnd (8))
-use the ``\fB\-m\fP'' flag to set the initial running mode.
-The argument should start with a single letter
-.IR g ,
-.IR p ,
-or
-.IR t ,
-to emulate the ``go,'' ``pause,'' or ``throttle'' commands, respectively.
-.TP
-.B \-r
-If the ``\fB\-r\fP'' flag is used, the server will renumber the
-.I active
-file
-as if a ``renumber'' command were sent.
-.TP
-.B \-s
-If the ``\fB\-s\fP'' flag is used, then
-.I innd
-will not do any work but will instead just check the syntax of the
-.I newsfeeds
-file.
-It will exit with an error status if there are any errors; the actual
-errors will be reported in
-.IR syslog (3).
-.TP
-.B \-n
-The ``\-n'' flag specifies whether or not pausing or throttling the server
-should also disable future newsreading processes.
-A value of ``\fBy\fP'' will make newreaders act as the server, a value 
-of ``\fBn\fP'' will
-allow newsreading even when the server is not running.
-.\" =()<.ie '@<ALLOW_READERS>@'DONT' The default is to not allow reading.>()=
-.ie 'DO'DONT' The default is to not allow reading.
-.el The default is to allow reading.
-.TP
-.B \-S
-If the ``\-S'' flag is used, then
-.I innd
-will run in ``slave'' mode.
-Note that the host must either appear in the
-.I hosts.nntp
-file, or the server must be started with the ``\fB\-a\fP'' flag.
-.TP
-.B \-a
-By default, if a host if not mentioned in the
-.I hosts.nntp
-file, then the connection is handed off to
-.IR nnrpd .
-If the ``\fB\-a\fP'' flag is used, then any host can connect and transfer
-articles.
-.TP
-.B \-L
-If the ``\fB\-L\fP'' flag is used, then
-.I innd
-will not create the links for cross posted articles.
-A feed only type of site could use this option to improve performance.
-Or it can be combined with a channel feed to the
-.I crosspost(8)
-program to move the delay associated with creating the links out of
-the innd processing loop.
-.TP
 .B \-C
 If the ``\fB\-C\fP'' flag is used, then
 .I innd
@@ -258,6 +157,13 @@ will accept and propagate but not actually process cancel or
 supercedes messages.  This is intended for sites concerned about abuse
 of cancels and wish to use another cancel mechanism with greater
 authentication.
+.TP
+.B "\-d \-f"
+.I Innd
+normally puts itself into the background, sets its standard output and
+error to log files, and disassociates itself from the terminal.
+Using the ``\fB\-d\fP'' flag instructs the server to not do this, while using
+the ``\fB\-f\fP'' flag just leaves the server running the foreground.
 .TP
 .B "\-H \-T \-X"
 The ``\fB\-H\fP'', ``\fB\-T\fP'', and ``\fB\-X\fP'' flags control
@@ -279,6 +185,105 @@ per ``\fB\-X\fP'' seconds.  The maximum value is 128.  The default is 60.
 The ``\fB\-X\fP'' sets the number of seconds used by the ``\fB\-H\fP''
 and ``\fB\-T\fP''
 flags.  A value of zero turns off checking.  The default is 0.
+.TP
+.B \-i
+To limit the number of incoming NNTP connections, use the ``\fB\-i\fP'' flag.
+A value of zero will suppress this check.
+.\" =()<.ie !@<DEFAULT_CONNECTIONS>@ The default is to not limit connections.>()=
+.ie !50 The default is to not limit connections.
+.\" =()<.el The default is @<DEFAULT_CONNECTIONS>@.>()=
+.el The default is 50.
+.TP
+.B \-l
+To limit the size of an article, use the ``\fB\-l\fP'' flag.
+If this flag is used, then any article bigger than
+.I size
+bytes will be rejected.
+The default is no checking, which can also be obtained by using a value
+of zero.
+.TP
+.B \-L
+If the ``\fB\-L\fP'' flag is used, then
+.I innd
+will not create the links for cross posted articles.
+A feed only type of site could use this option to improve performance.
+Or it can be combined with a channel feed to the
+.I crosspost(8)
+program to move the delay associated with creating the links out of
+the innd processing loop.
+.TP
+.B \-m
+To start the server in a paused or throttled state (see
+.IR ctlinnd (8))
+use the ``\fB\-m\fP'' flag to set the initial running mode.
+The argument should start with a single letter
+.IR g ,
+.IR p ,
+or
+.IR t ,
+to emulate the ``go,'' ``pause,'' or ``throttle'' commands, respectively.
+.TP
+.B \-n
+The ``\-n'' flag specifies whether or not pausing or throttling the server
+should also disable future newsreading processes.
+A value of ``\fBy\fP'' will make newreaders act as the server, a value 
+of ``\fBn\fP'' will
+allow newsreading even when the server is not running.
+.\" =()<.ie '@<ALLOW_READERS>@'DONT' The default is to not allow reading.>()=
+.ie 'DO'DONT' The default is to not allow reading.
+.el The default is to allow reading.
+.TP
+.B \-o
+To limit the number of files that will be kept open for outgoing file
+feeds, use the ``\fB\-o\fP'' flag.
+The default is the number of available descriptors minus some reserved
+for internal use.
+.TP
+.B \-p
+If the ``\fB\-p\fP'' flag is used, then the NNTP port is assumed to be
+open on the specified descriptor.
+(If this flag is used, then
+.I innd
+assumes it is running with the proper permissions and it will not call
+.IR chown (2)
+on any files or directories it creates.)
+.TP
+.B \-r
+If the ``\fB\-r\fP'' flag is used, the server will renumber the
+.I active
+file
+as if a ``renumber'' command were sent.
+.TP
+.B \-s
+If the ``\fB\-s\fP'' flag is used, then
+.I innd
+will not do any work but will instead just check the syntax of the
+.I newsfeeds
+file.
+It will exit with an error status if there are any errors; the actual
+errors will be reported in
+.IR syslog (3).
+.TP
+.B \-S
+If the ``\-S'' flag is used, then
+.I innd
+will run in ``slave'' mode.
+Note that the host must either appear in the
+.I hosts.nntp
+file, or the server must be started with the ``\fB\-a\fP'' flag.
+.TP
+.B \-t
+Change the timeout period before flushing to 
+.IR timeout seconds.
+.TP
+.B \-u
+The logs are normally buffered; use the ``\fB\-u\fP'' flag to have them
+unbuffered.
+.TP
+.B "\-Z"
+The ``\fB\-Z\fP'' flag turns off streaming, so that
+.I innd
+will not accept the `mode stream' or other streaming commands.
 .PP
 .I Inndstart
 is a small front-end program that opens the NNTP port, sets its
