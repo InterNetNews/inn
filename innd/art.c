@@ -1753,6 +1753,7 @@ ARTmakeoverview(CHANNEL *cp)
     for (i = 0, q = overview->data + overview->left; i < len; p++, i++) {
         if (*p == '\r' && i < len - 1 && p[1] == '\n') {
             p++;
+            i++;
             continue;
         }
         if (*p == '\0' || *p == '\t' || *p == '\n' || *p == '\r')
