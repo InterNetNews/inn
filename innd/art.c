@@ -825,7 +825,7 @@ ARTparse(CHANNEL *cp)
 	    data->NullHeader = true;
 	    break;
 	  case '\r':
-	    if (data->LastCR >= cp->Start)
+            if (data->LastCR >= cp->Start && data->LastCR != (size_t) -1)
 	      data->CRwithoutLF++;
 	    data->LastCR = i;
 	    break;
@@ -907,7 +907,7 @@ bodyprocessing:
 	/* rest of the line */
 	switch (bp->data[i]) {
 	  case '\r':
-	    if (data->LastCR >= cp->Start)
+            if (data->LastCR >= cp->Start && data->LastCR != (size_t) -1)
 	      data->CRwithoutLF++;
 	    data->LastCR = i;
 	    break;
