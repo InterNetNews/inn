@@ -15,7 +15,7 @@ all:		methods libstorage.$(EXTLIB)
 
 install:	all $(D)$(PATHLIB)/libstorage.$(EXTLIB) 
 
-methods:
+methods: methods.c buildconfig
 	@for D in $(SUBDIRS) ; do \
 	    cd $$D && $(MAKE) all || exit 1 ; cd .. ; \
 	done
