@@ -220,8 +220,7 @@ HISfilesfor(MessageID)
     }
 
     /* Copy the value to an aligned spot. */
-    for (p = val.dptr, dest = (char *)&offset, i = sizeof offset; --i >= 0; )
-	*dest++ = *p++;
+    memmove(&offset, val.dptr, sizeof(offset));
     if (lseek(HISreadfd, offset, SEEK_SET) == -1)
 	return NULL;
 
