@@ -306,13 +306,22 @@ BOOL ICDrmgroup(NEWSGROUP *ngp)
     IOVEC	iov[2];
     int		i;
     BOOL	ret;
+    char	*Name;
 
+    Name = COPY(ngp->Name);
     /* If this is the first group in the file, write everything after. */
     if (ngp == &Groups[0]) {
 	i = ngp[1].Start;
 	ICDiovset(&iov[0], &ICDactpointer[i], ICDactsize - i);
 	ret = ICDwritevactive(iov, 1);
 	ICDiovrelease(&iov[0]);
+	if (ret) {
+	    if (innconf->enableoverview && !OVgroupdel(Name)) {
+		DISPOSE(Name);
+		return FALSE;
+	    }
+	}
+	DISPOSE(Name);
 	return ret;
     }
 
@@ -323,6 +332,13 @@ BOOL ICDrmgroup(NEWSGROUP *ngp)
     if (ngp == &Groups[nGroups - 1]) {
 	ret = ICDwritevactive(iov, 1);
 	ICDiovrelease(&iov[0]);
+	if (ret) {
+	    if (innconf->enableoverview && !OVgroupdel(Name)) {
+		DISPOSE(Name);
+		return FALSE;
+	    }
+	}
+	DISPOSE(Name);
 	return ret;
     }
 
@@ -333,9 +349,12 @@ BOOL ICDrmgroup(NEWSGROUP *ngp)
     ICDiovrelease(&iov[0]);
     ICDiovrelease(&iov[1]);
     if (ret) {
-	if (innconf->enableoverview && !OVgroupdel(ngp->Name))
+	if (innconf->enableoverview && !OVgroupdel(Name)) {
+	    DISPOSE(Name);
 	    return FALSE;
+	}
     }
+    DISPOSE(Name);
     return ret;
 }
 
