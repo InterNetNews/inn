@@ -413,7 +413,7 @@ ARTreadschema(bool Overview)
 		continue;
 	    if ((p = strchr(buff, ':')) != NULL) {
 		*p++ = '\0';
-		fp->NeedHeadername = EQ(p, "full");
+		fp->NeedHeadername = (strcmp(p, "full") == 0);
 	    }
 	    else
 		fp->NeedHeadername = false;
@@ -422,13 +422,13 @@ ARTreadschema(bool Overview)
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
-	    if (caseEQn(buff, DATE, STRLEN(DATE)-1))
+	    if (strncasecmp(buff, DATE, STRLEN(DATE)-1) == 0)
 		Datep = fp;
-	    if (caseEQn(buff, MESSAGEID, STRLEN(MESSAGEID)-1))
+	    if (strncasecmp(buff, MESSAGEID, STRLEN(MESSAGEID)-1) == 0)
 		Msgidp = fp;
-	    if (caseEQn(buff, EXPIRES, STRLEN(EXPIRES)-1))
+	    if (strncasecmp(buff, EXPIRES, STRLEN(EXPIRES)-1) == 0)
 		Expp = fp;
-	    if (caseEQn(buff, XREF, STRLEN(XREF)-1)) {
+	    if (strncasecmp(buff, XREF, STRLEN(XREF)-1) == 0) {
 		Xrefp = fp;
 		foundxreffull = fp->NeedHeadername;
             }

@@ -315,7 +315,7 @@ CMD_unimp(ac, av)
     int		ac UNUSED;
     char	*av[];
 {
-    if (caseEQ(av[0], "slave"))
+    if (strcasecmp(av[0], "slave") == 0)
 	/* Somebody sends us this?  I don't believe it! */
 	Reply("%d Unsupported\r\n", NNTP_SLAVEOK_VAL);
     else
@@ -355,7 +355,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
 
     /* Make sure one of those addresses is the address we got. */
     for (pp = hp->h_addr_list; *pp; pp++)
-	if (EQn((const char *)&ap->s_addr, *pp, hp->h_length))
+	if (strncmp((const char *)&ap->s_addr, *pp, hp->h_length) == 0)
 	    break;
     if (*pp == NULL)
     {
@@ -1368,12 +1368,12 @@ main(int argc, char *argv[])
 	/* Client gone? */
 	if (r == RTeof)
 	    break;
-	if (ac == 0 || caseEQ(av[0], "quit"))
+	if (ac == 0 || strcasecmp(av[0], "quit") == 0)
 	    break;
 
 	/* Find command. */
 	for (cp = CMDtable; cp->Name; cp++)
-	    if (caseEQ(cp->Name, av[0]))
+	    if (strcasecmp(cp->Name, av[0]) == 0)
 		break;
 	if (cp->Name == NULL) {
 	    if ((int)strlen(buff) > 40)

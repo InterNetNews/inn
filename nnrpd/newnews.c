@@ -237,7 +237,7 @@ void CMDnewnews(int ac, char *av[]) {
 
   TMRstart(TMR_NEWNEWS);
   /* Optimization in case client asks for !* (no groups) */
-  if (EQ(av[1], "!*")) {
+  if (strcmp(av[1], "!*") == 0) {
       Reply("%s\r\n", NNTP_NEWNEWSOK);
       Printf(".\r\n");
       TMRstop(TMR_NEWNEWS);
@@ -245,7 +245,7 @@ void CMDnewnews(int ac, char *av[]) {
   }
 
   /* Parse the newsgroups. */
-  AllGroups = EQ(av[1], "*");
+  AllGroups = (strcmp(av[1], "*") == 0);
   if (!AllGroups && !NGgetlist(&groups, av[1])) {
       Reply("%d Bad newsgroup specifier %s\r\n", NNTP_SYNTAX_VAL, av[1]);
       TMRstop(TMR_NEWNEWS);
@@ -253,7 +253,7 @@ void CMDnewnews(int ac, char *av[]) {
   }
 
   /* Parse the date. */
-  local = !(ac > 4 && caseEQ(av[4], "GMT"));
+  local = !(ac > 4 && strcasecmp(av[4], "GMT") == 0);
   date = parsedate_nntp(av[2], av[3], local);
   if (date == (time_t) -1) {
       Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);

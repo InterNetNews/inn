@@ -176,7 +176,7 @@ StripOffHeaders(char *article)
 	for (hp = Table; hp < ENDOF(Table); hp++) {
 	    if (c == hp->Name[0]
 	     && p[hp->Size] == ':'
-	     && caseEQn(p, hp->Name, hp->Size)) {
+	     && strncasecmp(p, hp->Name, hp->Size) == 0) {
 		if (hp->Type == HTobs) {
 		    snprintf(Error, sizeof(Error), "Obsolete \"%s\" header",
                              hp->Name);
@@ -241,16 +241,20 @@ CheckControl(char *ctrl)
     save = *p;
     *p = '\0';
 
-    if (EQ(ctrl, "cancel")) {
+    if (strcmp(ctrl, "cancel") == 0) {
 	for (q = p + 1; ISWHITE(*q); q++)
 	    continue;
 	if (*q == '\0')
 	    return "Message-ID missing in cancel";
     }
-    else if (EQ(ctrl, "sendsys") || EQ(ctrl, "senduuname")
-	  || EQ(ctrl, "version") || EQ(ctrl, "checkgroups")
-	  || EQ(ctrl, "ihave") || EQ(ctrl, "sendme")
-	  || EQ(ctrl, "newgroup") || EQ(ctrl, "rmgroup"))
+    else if (strcmp(ctrl, "sendsys")     == 0
+          || strcmp(ctrl, "senduuname")  == 0
+	  || strcmp(ctrl, "version")     == 0
+          || strcmp(ctrl, "checkgroups") == 0
+	  || strcmp(ctrl, "ihave")       == 0
+          || strcmp(ctrl, "sendme")      == 0
+	  || strcmp(ctrl, "newgroup")    == 0
+          || strcmp(ctrl, "rmgroup")     == 0)
 	/* SUPPRESS 530 *//* Empty body for statement */
 	;
     else {
@@ -385,7 +389,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	p = HDR(HDR__SUBJECT);
 	if (p == NULL)
 	    return "Required \"Subject\" header is missing";
-        if (EQn(p, "cmsg ", 5)) {
+        if (strncmp(p, "cmsg ", 5) == 0) {
             HDR_SET(HDR__CONTROL, p + 5);
             if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
                 return error;
@@ -418,7 +422,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	    } else {
 		HDR_SET(HDR__PATH, p);
 		if ((VirtualPathlen > 0) &&
-		    !EQ(p, PERMaccessconf->pathhost))
+		    strcmp(p, PERMaccessconf->pathhost) != 0)
 		    addvirtual = true;
 	    }
 	} else if (VirtualPathlen > 0)
@@ -427,7 +431,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	if ((VirtualPathlen > 0) &&
 	    (p = strchr(HDR(HDR__PATH), '!')) != NULL) {
 	    *p = '\0';
-	    if (!EQ(HDR(HDR__PATH), PERMaccessconf->pathhost))
+	    if (strcmp(HDR(HDR__PATH), PERMaccessconf->pathhost) != 0)
 		addvirtual = true;
 	    *p = '!';
 	} else if (VirtualPathlen > 0)
@@ -675,7 +679,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     int                 flag;
 
     p = HDR(HDR__CONTROL);
-    IsNewgroup = p && EQn(p, "newgroup", 8);
+    IsNewgroup = (p && strncmp(p, "newgroup", 8) == 0);
     groups = xstrdup(hdr);
     if ((p = strtok(groups, NGSEPS)) == NULL)
 	return "Can't parse newsgroups line";
@@ -1013,7 +1017,7 @@ ARTpost(char *article,
 	return "From: address not in Internet syntax";
     }
     if ((p = HDR(HDR__FOLLOWUPTO)) != NULL
-     && !EQ(p, "poster")
+     && strcmp(p, "poster") != 0
      && (error = ValidNewsgroups(p, (char **)NULL)) != NULL) {
 	if (modgroup)
 	    free(modgroup);

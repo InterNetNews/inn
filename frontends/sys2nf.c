@@ -118,7 +118,7 @@ Toplevel(p)
     if (strchr(p, '.') != NULL)
 	return false;
     for (i = strlen(p) - 1, gp = Groups; (g = *gp++) != NULL; )
-	if (EQn(p, g, i) && g[i + 1] == '.')
+	if (strncmp(p, g, i) == 0 && g[i + 1] == '.')
 	    return true;
     return false;
 }
@@ -140,7 +140,7 @@ GroupPrefix(p)
     if (strchr(p, '.') == NULL)
 	return false;
     for (i = strlen(p), count = 0, gp = Groups; (g = *gp++) != NULL; )
-	if (EQ(p, g) || (EQn(p, g, i) && g[i] == '.'))
+	if (strcmp(p, g) == 0 || (strncmp(p, g, i) == 0 && g[i] == '.'))
 	    count++;
     return count > 1;
 }
@@ -156,9 +156,26 @@ DoSub(F, p)
     char		*p;
 {
     char	*s;
-    int	len;
+    int	len, i;
+    bool matched;
     bool	SawBang;
     bool	SawAll;
+
+    /* Distributions, not newsgroups. */
+    static const char * const distributions[] = {
+        "world", "na", "usa", "inet", "mod", "net", "local"
+    };
+
+    /* Newsgroup hierarchies. */
+    static const char * const hierarchies[] = {
+        "comp", "misc", "news", "rec", "sci", "soc", "talk", "alt", "bionet",
+        "bit", "biz", "clari", "ddn", "gnu", "ieee", "k12", "pubnet", "trial",
+        "u3b", "vmsnet",
+
+        "ba", "ca", "dc", "ne", "ny", "tx",
+
+        "info", "mail", "opinions", "uunet"
+    }
 
     if ((s = strtok(p, ",")) == NULL)
 	return;
@@ -166,15 +183,16 @@ DoSub(F, p)
     fprintf(F, "!*");
     len = 8 + 1 + 2;
     do {
-	/* These are distributions, not newsgroups. */
-	if (EQ(s, "world") || EQ(s, "na") || EQ(s, "usa") || EQ(s, "inet")
-	 || EQ(s, "mod") || EQ(s, "net")
-	 || EQ(s, "local")
-	)
-	    continue;
+        for (matched = false, i = 0; i < SIZEOF(distributions); i++)
+            if (strcmp(s, distributions[i]) == 0) {
+                matched = true;
+                break;
+            }
+        if (matched)
+            continue;
 
 	if (innconf->mergetogroups)
-	    if (EQ(s, "!to") || EQn(s, "to.", 3))
+	    if (strcmp(s, "!to") == 0 || strncmp(s, "to.", 3) == 0)
 		continue;
 
 	putc(',', F);
@@ -192,7 +210,7 @@ DoSub(F, p)
 	    s++;
 	}
 
-	SawAll = EQ(s, "all");
+	SawAll = (strcmp(s, "all") == 0);
 	if (SawAll)
 	    s = SawBang ? "*" : "*,!control";
 	len += strlen(s);
@@ -200,29 +218,21 @@ DoSub(F, p)
 
 	if (SawAll)
 	    ;
-	else if (
-	    EQ(s, "comp") || EQ(s, "misc") || EQ(s, "news") || EQ(s, "rec")
-	 || EQ(s, "sci") || EQ(s, "soc") || EQ(s, "talk")
+	else {
+            for (matched = false, i = 0; i < SIZEOF(distributions); i++)
+                if (strcmp(s, hierarchies[i]) == 0) {
+                    matched = true;
+                    break;
+                }
 
-	 || EQ(s, "alt") || EQ(s, "bionet") || EQ(s, "bit") || EQ(s, "biz")
-	 || EQ(s, "clari") || EQ(s, "ddn") || EQ(s, "gnu") || EQ(s, "ieee")
-	 || EQ(s, "k12") || EQ(s, "pubnet") || EQ(s, "trial") || EQ(s, "u3b")
-	 || EQ(s, "vmsnet")
-
-	 || EQ(s, "ba") || EQ(s, "ca") || EQ(s, "dc") || EQ(s, "ne")
-	 || EQ(s, "ny") || EQ(s, "tx")
-
-	 || EQ(s, "info") || EQ(s, "mail") || EQ(s, "opinions")
-	 || EQ(s, "uunet")
-
-	 || Toplevel(s)) {
-	    fprintf(F, ".*");
-	    len += 2;
-	}
-	else if (GroupPrefix(s)) {
-	    putc('*', F);
-	    len++;
-	}
+            if (matched) {
+                fprintf(F, ".*");
+                len += 2;
+            } else if (GroupPrefix(s)) {
+                putc('*', F);
+                len++;
+            }
+        }
     } while ((s = strtok((char *)NULL, ",")) != NULL);
 }
 
@@ -298,7 +308,7 @@ main(ac, av)
 	fprintf(F, "\t:");
 	DoSub(F, f2);
 	fprintf(F, "\\\n");
-	if (EQ(f3, "n"))
+	if (strcmp(f3, "n") == 0)
 	    fprintf(F, "\t:Tf,Wnm\\\n", f3);
 	else
 	    fprintf(F, "\t:HELP%s\\\n", f3);

@@ -359,13 +359,13 @@ NCauthinfo(CHANNEL *cp)
     cp->Start = cp->Next;
 
     /* Allow the poor sucker to quit. */
-    if (caseEQ(p, "quit")) {
+    if (strcasecmp(p, "quit") == 0) {
 	NCquit(cp);
 	return;
     }
 
     /* Otherwise, make sure we're only getting "authinfo" commands. */
-    if (!caseEQn(p, AUTHINFO, STRLEN(AUTHINFO))) {
+    if (strncasecmp(p, AUTHINFO, STRLEN(AUTHINFO)) != 0) {
 	NCwritereply(cp, NNTP_AUTH_NEEDED);
 	return;
     }
@@ -374,13 +374,13 @@ NCauthinfo(CHANNEL *cp)
 
     /* Ignore "authinfo user" commands, since we only care about the
      * password. */
-    if (caseEQn(p, USER, STRLEN(USER))) {
+    if (strncasecmp(p, USER, STRLEN(USER)) == 0) {
 	NCwritereply(cp, NNTP_AUTH_NEXT);
 	return;
     }
 
     /* Now make sure we're getting only "authinfo pass" commands. */
-    if (!caseEQn(p, PASS, STRLEN(PASS))) {
+    if (strncasecmp(p, PASS, STRLEN(PASS)) != 0) {
 	NCwritereply(cp, NNTP_AUTH_NEEDED);
 	return;
     }
@@ -584,7 +584,7 @@ NClist(CHANNEL *cp)
 	NCwritereply(cp, NCbadcommand);
 	return;
     }
-    if (caseEQ(p, "newsgroups")) {
+    if (strcasecmp(p, "newsgroups") == 0) {
         path = concatpath(innconf->pathdb, _PATH_NEWSGROUPS);
 	trash = p = ReadInFile(path, NULL);
         free(path);
@@ -594,7 +594,7 @@ NClist(CHANNEL *cp)
 	}
 	end = p + strlen(p);
     }
-    else if (caseEQ(p, "active.times")) {
+    else if (strcasecmp(p, "active.times") == 0) {
         path = concatpath(innconf->pathdb, _PATH_ACTIVETIMES);
 	trash = p = ReadInFile(path, NULL);
         free(path);
@@ -604,7 +604,7 @@ NClist(CHANNEL *cp)
 	}
 	end = p + strlen(p);
     }
-    else if (*p == '\0' || (caseEQ(p, "active"))) {
+    else if (*p == '\0' || (strcasecmp(p, "active") == 0)) {
 	p = ICDreadactive(&end);
 	trash = NULL;
     }
@@ -640,9 +640,9 @@ NCmode(CHANNEL *cp)
 	continue;
     cp->Start = cp->Next;
 
-    if (caseEQ(p, "reader") && !innconf->noreader)
+    if (strcasecmp(p, "reader") == 0 && !innconf->noreader)
 	h = HOnnrpd;
-    else if (caseEQ(p, "stream") &&
+    else if (strcasecmp(p, "stream") == 0 &&
              (!StreamingOff && cp->Streaming)) {
 	char buff[16];
 
@@ -651,7 +651,7 @@ NCmode(CHANNEL *cp)
 	syslog(L_NOTICE, "%s NCmode \"mode stream\" received",
 		CHANname(cp));
 	return;
-    } else if (caseEQ(p, "cancel") && cp->privileged) {
+    } else if (strcasecmp(p, "cancel") == 0 && cp->privileged) {
        char buff[16];
 
        cp->State = CScancel;
@@ -836,7 +836,7 @@ NCproc(CHANNEL *cp)
       }
 
       if (cp->State == CSgetauth) {
-	if (caseEQn(q, "mode", 4))
+	if (strncasecmp(q, "mode", 4) == 0)
 	  NCmode(cp);
 	else
 	  NCauthinfo(cp);
@@ -848,7 +848,7 @@ NCproc(CHANNEL *cp)
 
       /* Loop through the command table. */
       for (p = q, dp = NCcommands; dp < ENDOF(NCcommands); dp++) {
-	if (caseEQn(p, dp->Name, dp->Size)) {
+	if (strncasecmp(p, dp->Name, dp->Size) == 0) {
 	  /* ignore the streaming commands if necessary. */
 	  if (!StreamingOff || cp->Streaming ||
 	    (dp->Function != NCcheck && dp->Function != NCtakethis)) {
@@ -869,7 +869,7 @@ NCproc(CHANNEL *cp)
 	if (cp->Type == CTfree)
 	  return;
 	for (i = 0; (p = NCquietlist[i]) != NULL; i++)
-	  if (caseEQ(p, q))
+	  if (strcasecmp(p, q) == 0)
 	    break;
 	if (p == NULL)
 	  syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),

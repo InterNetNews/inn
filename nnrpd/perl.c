@@ -139,7 +139,7 @@ char *HandleHeaders(char *article)
 
        /* See if it's a table header */
        for (hp = Table; hp < EndOfTable; hp++) {
-         if (caseEQn(p, hp->Name, hp->Size)) {
+         if (strncasecmp(p, hp->Name, hp->Size) == 0) {
            char *copy = xstrdup(s);
            HDR_SET(hp - Table, copy);
            hp->Len = TrimSpaces(hp->Value);

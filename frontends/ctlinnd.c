@@ -135,7 +135,7 @@ Help(char *p)
 	exit(0);
     }
     for (cp = Commands; cp < ENDOF(Commands); cp++)
-	if (EQ(p, cp->Command)) {
+	if (strcmp(p, cp->Command) == 0) {
 	    printf("Command usage:\n");
 	    printf("  %s %s\n", cp->Command, cp->Text);
 	    exit(0);
@@ -233,10 +233,10 @@ int main(int ac, char *av[])
 	Usage("missing command");
 
     /* Look up the command word and move to the arguments. */
-    if (EQ(av[0], "help"))
+    if (strcmp(av[0], "help") == 0)
 	Help(av[1]);
     for (cp = Commands; cp < ENDOF(Commands); cp++)
-	if (EQ(av[0], cp->Command))
+	if (strcmp(av[0], cp->Command) == 0)
 	    break;
     if (cp == ENDOF(Commands))
 	Usage("unknown command");

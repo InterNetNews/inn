@@ -440,7 +440,7 @@ setup_dir(char *dir, int filecount)
         /* Handle any leading "../", but only up to the number of segments
            in base_dir. */
         base_depth = slashcount(base_dir);
-        while (base_depth > 0 && EQn(dir, "../", 3))
+        while (base_depth > 0 && strncmp(dir, "../", 3) == 0)
             for (base_depth--, dir += 3; *dir == '/'; dir++)
                 ;
         if (base_depth <= 0)

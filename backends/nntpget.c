@@ -322,7 +322,7 @@ main(int ac, char *av[])
 		SITEquit(Remote);
 		exit(1);
 	    }
-	    if (EQ(buff, "."))
+	    if (strcmp(buff, ".") == 0)
 		break;
 	    if (Offer && HIShaveit(buff))
 		continue;
@@ -408,7 +408,7 @@ main(int ac, char *av[])
 	    }
 	    else
 		printf("%s\n", buff);
-	    if (EQ(buff, "."))
+	    if (strcmp(buff, ".") == 0)
 		break;
 	}
 	if (Error) {

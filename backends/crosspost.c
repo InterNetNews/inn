@@ -324,7 +324,7 @@ main(ac, av)
 	ProcessIncoming(QIOfdopen(STDIN_FILENO));
     else {
 	for ( ; *av; av++)
-	    if (EQ(*av, "-"))
+	    if (strcmp(*av, "-") == 0)
 		ProcessIncoming(QIOfdopen(STDIN_FILENO));
 	    else if ((qp = QIOopen(*av)) == NULL)
 		fprintf(stderr, "crosspost cant open %s %s\n",

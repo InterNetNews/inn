@@ -321,7 +321,7 @@ main(int ac, char *av[])
 	/* Strip of leading spool pathname. */
 	if (line[0] == '/'
 	 && line[strlen(innconf->patharticles)] == '/'
-	 && EQn(line, innconf->patharticles, strlen(innconf->patharticles)))
+	 && strncmp(line, innconf->patharticles, strlen(innconf->patharticles)) == 0)
 	    p = line + strlen(innconf->patharticles) + 1;
 	else
 	    p = line;

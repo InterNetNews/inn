@@ -66,7 +66,7 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
 
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
-     || !EQn(buff, NNTP_LIST_FOLLOWS, STRLEN(NNTP_LIST_FOLLOWS))) {
+     || strncmp(buff, NNTP_LIST_FOLLOWS, STRLEN(NNTP_LIST_FOLLOWS)) != 0) {
 	oerrno = errno;
 	/* Only call CAclose() if opened through CAopen() */
 	if (strcmp(CApathname, pathname) == 0)

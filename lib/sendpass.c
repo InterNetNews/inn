@@ -57,13 +57,13 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 	*pass++ = '\0';
 	if ((style = strchr(pass, ':')) != NULL) {
 	    *style++ = '\0';
-	    if (!EQ(style, "authinfo")) {
+	    if (strcmp(style, "authinfo") != 0) {
 		errno = EDOM;
 		break;
 	    }
 	}
 
-	if (!caseEQ(server, buff))
+	if (strcasecmp(server, buff) != 0)
 	    continue;
 
 	if (*user) {

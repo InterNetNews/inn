@@ -622,9 +622,13 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	ReportError(f, buff);
     }
 
-    if (caseEQ(tok->name, "on") || caseEQ(tok->name, "true") || caseEQ(tok->name, "yes"))
+    if (strcasecmp(tok->name, "on") == 0
+        || strcasecmp(tok->name, "true") == 0
+        || strcasecmp(tok->name, "yes") == 0)
 	boolval = true;
-    else if (caseEQ(tok->name, "off") || caseEQ(tok->name, "false") || caseEQ(tok->name, "no"))
+    else if (strcasecmp(tok->name, "off") == 0
+             || strcasecmp(tok->name, "false") == 0
+             || strcasecmp(tok->name, "no") == 0)
 	boolval = false;
     else
 	boolval = -1;
@@ -765,9 +769,13 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
                  oldname);
 	ReportError(f, buff);
     }
-    if (caseEQ(tok->name, "on") || caseEQ(tok->name, "true") || caseEQ(tok->name, "yes"))
+    if (strcasecmp(tok->name, "on") == 0
+        || strcasecmp(tok->name, "true") == 0
+        || strcasecmp(tok->name, "yes") == 0)
 	boolval = true;
-    else if (caseEQ(tok->name, "off") || caseEQ(tok->name, "false") || caseEQ(tok->name, "no"))
+    else if (strcasecmp(tok->name, "off") == 0
+             || strcasecmp(tok->name, "false") == 0
+             || strcasecmp(tok->name, "no") == 0)
 	boolval = false;
     else
 	boolval = -1;
@@ -1602,10 +1610,10 @@ void PERMgetpermissions()
 	    }
 	    if (VirtualPath)
 		free(VirtualPath);
-	    if (EQ(innconf->pathhost, PERMaccessconf->pathhost)) {
+	    if (strcmp(innconf->pathhost, PERMaccessconf->pathhost) == 0) {
 		/* use domain, if pathhost in access relm matches one in
 		   inn.conf to differentiate virtual host */
-		if (innconf->domain != NULL && EQ(innconf->domain, PERMaccessconf->domain)) {
+		if (innconf->domain != NULL && strcmp(innconf->domain, PERMaccessconf->domain) == 0) {
 		    syslog(L_ERROR, "%s domain parameter(%s) in readers.conf must be different from the one in inn.conf",
 			ClientHost, PERMaccessconf->name);
 		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
@@ -1936,7 +1944,7 @@ typedef void (*LineFunc)(char*);
 /* messages from a program's stdout */
 static void HandleProgLine(char *ln)
 {
-    if (caseEQn(ln, "User:", strlen("User:"))) {
+    if (strncasecmp(ln, "User:", strlen("User:")) == 0) {
 	strncpy(ubuf, ln+strlen("User:"), sizeof(ubuf) - 1);
         ubuf[sizeof(ubuf) - 1] = '\0';
     }

@@ -357,11 +357,15 @@ char *db_strerror(int err)
 
 static bool conf_bool_val(char *str, bool *value)
 {
-    if(caseEQ(str, "on") || caseEQ(str, "true") || caseEQ(str, "yes")) {
+    if(strcasecmp(str, "on") == 0
+       || strcasecmp(str, "true") == 0
+       || strcasecmp(str, "yes") == 0) {
 	*value = true;
 	return true;
     }
-    if(caseEQ(str, "off") || caseEQ(str, "false") || caseEQ(str, "no")) {
+    if(strcasecmp(str, "off") == 0
+       || strcasecmp(str, "false") == 0
+       || strcasecmp(str, "no") == 0) {
 	*value = false;
 	return true;
     }

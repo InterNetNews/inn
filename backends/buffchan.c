@@ -166,7 +166,7 @@ SITEfind(char *Name, bool CanCreate)
     SITE_HASH(Name, p, j);
     shp = SITE_BUCKET(j);
     for (c = *Name, sp = shp->Sites, i = shp->Used; --i >= 0; sp++)
-	if (c == sp->Name[0] && caseEQ(Name, sp->Name))
+	if (c == sp->Name[0] && strcasecmp(Name, sp->Name) == 0)
 	    return sp;
     if (!CanCreate)
 	return NULL;
@@ -275,11 +275,11 @@ Process(char *p)
 {
     SITE	*sp;
 
-    if (*p == 'b' && EQn(p, "begin", 5))
+    if (*p == 'b' && strncmp(p, "begin", 5) == 0)
 	/* No-op. */
 	return;
 
-    if (*p == 'f' && EQn(p, "flush", 5)) {
+    if (*p == 'f' && strncmp(p, "flush", 5) == 0) {
 	for (p += 5; ISWHITE(*p); p++)
 	    continue;
 	if (*p == '\0')
@@ -291,7 +291,7 @@ Process(char *p)
 	return;
     }
 
-    if (*p == 'd' && EQn(p, "drop", 4)) {
+    if (*p == 'd' && strncmp(p, "drop", 4) == 0) {
 	for (p += 4; ISWHITE(*p); p++)
 	    continue;
 	if (*p == '\0')
@@ -305,7 +305,7 @@ Process(char *p)
 	return;
     }
 
-    if (*p == 'r' && EQn(p, "readmap", 7)) {
+    if (*p == 'r' && strncmp(p, "readmap", 7) == 0) {
 	MAPread(Map);
 	return;
     }

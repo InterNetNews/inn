@@ -211,7 +211,7 @@ GoodIdent(int fd, char *identd)
     }
     close(ident_fd);
 
-    return EQ(identd, IDENTuser);
+    return strcmp(identd, IDENTuser) == 0;
 }
 
 /*
@@ -367,7 +367,7 @@ RCauthorized(CHANNEL *cp, char *pass)
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address)) {
-	    if (rp->Password[0] == '\0' || EQ(pass, rp->Password))
+	    if (rp->Password[0] == '\0' || strcmp(pass, rp->Password) == 0)
 		return true;
 	    syslog(L_ERROR, "%s (%s) bad_auth", rp->Label,
 		   sprint_sockaddr((struct sockaddr *)&cp->Address));

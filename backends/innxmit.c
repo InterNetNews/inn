@@ -563,7 +563,7 @@ HeadersLen(ARTHANDLE *art, int *iscmsg) {
 		    p--;
 		break;
 	    }
-	    if (*(p + 1) == 'C' && caseEQn(p + 1, "Control: ", 9))
+	    if (*(p + 1) == 'C' && strncasecmp(p + 1, "Control: ", 9) == 0)
 		*iscmsg = 1;
 	}
 	lastchar = *p;
@@ -1264,7 +1264,7 @@ int main(int ac, char *av[]) {
 	/* Split the line into possibly two fields. */
 	if (Article[0] == '/'
 	 && Article[strlen(innconf->patharticles)] == '/'
-	 && EQn(Article, innconf->patharticles, strlen(innconf->patharticles)))
+	 && strncmp(Article, innconf->patharticles, strlen(innconf->patharticles)) == 0)
 	    Article += strlen(innconf->patharticles) + 1;
 	if ((MessageID = strchr(Article, ' ')) != NULL) {
 	    *MessageID++ = '\0';

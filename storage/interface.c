@@ -466,7 +466,9 @@ SMreadconfig(void)
 		    options = xstrdup(p);
 		    break;
 		  case SMexactmatch:
-		    if (caseEQ(p, "true") || caseEQ(p, "yes") || caseEQ(p, "on"))
+		    if (strcasecmp(p, "true") == 0
+                        || strcasecmp(p, "yes") == 0
+                        || strcasecmp(p, "on") == 0)
 			exactmatch = true;
 		    break;
 		  default:

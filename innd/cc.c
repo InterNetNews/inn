@@ -285,7 +285,7 @@ CCallow(char *av[])
     if (RejectReason == NULL)
 	return "1 Already allowed";
     p = av[0];
-    if (*p && !EQ(p, RejectReason))
+    if (*p && strcmp(p, RejectReason) != 0)
 	return "1 Wrong reason";
     free(RejectReason);
     RejectReason = NULL;
@@ -318,7 +318,7 @@ CCbegin(char *av[])
     length = strlen(av[0]);
     for (strings = SITEreadfile(true), i = 0; (p = strings[i]) != NULL; i++)
 	if ((p[length] == NF_FIELD_SEP || p[length] == NF_SUBFIELD_SEP)
-	 && caseEQn(p, av[0], length)) {
+	 && strncasecmp(p, av[0], length) == 0) {
 	    p = xstrdup(p);
 	    break;
 	}
@@ -375,7 +375,7 @@ CCdochange(NEWSGROUP *ngp, char *Rest)
 
     if (ngp->Rest[0] == Rest[0]) {
 	length = strlen(Rest);
-	if (ngp->Rest[length] == '\n' && EQn(ngp->Rest, Rest, length))
+	if (ngp->Rest[length] == '\n' && strncmp(ngp->Rest, Rest, length) == 0)
 	    return "0 Group status unchanged";
     }
     if (Mode != OMrunning)
@@ -683,18 +683,18 @@ CCgo(char *av[])
     char	*p;
 
     p = av[0];
-    if (Reservation && EQ(p, Reservation)) {
+    if (Reservation && strcmp(p, Reservation) == 0) {
 	free(Reservation);
 	Reservation = NULL;
     }
-    if (RejectReason && EQ(p, RejectReason)) {
+    if (RejectReason && strcmp(p, RejectReason) == 0) {
 	free(RejectReason);
 	RejectReason = NULL;
     }
 
     if (Mode == OMrunning)
 	return "1 Already running";
-    if (*p && !EQ(p, ModeReason))
+    if (*p && strcmp(p, ModeReason) != 0)
 	return "1 Wrong reason";
 
 #if defined(DO_PERL)
@@ -1162,7 +1162,7 @@ CCblock(OPERATINGMODE NewMode, char *reason)
 	return CCbigreason;
 
     if (Reservation) {
-	if (!EQ(reason, Reservation)) {
+	if (strcmp(reason, Reservation) != 0) {
 	    snprintf(CCreply.data, CCreply.size, "1 Reserved \"%s\"",
                      Reservation);
 	    return CCreply.data;
@@ -1228,7 +1228,7 @@ CCreaders(char *av[])
 	if (NNRPReason == NULL)
 	    return "1 Already allowing readers";
 	p = av[1];
-	if (*p && !EQ(p, NNRPReason))
+	if (*p && strcmp(p, NNRPReason) != 0)
 	    return "1 Wrong reason";
 	free(NNRPReason);
 	NNRPReason = NULL;
@@ -1264,7 +1264,7 @@ CCxexec(char *av[])
     inndstart = concatpath(innconf->pathbin, "inndstart");
     /* Get the pathname. */
     p = av[0];
-    if (*p == '\0' || EQ(p, "innd") || EQ(p, "inndstart"))
+    if (*p == '\0' || strcmp(p, "innd") == 0 || strcmp(p, "inndstart") == 0)
 	CCargv[0] = inndstart;
     else
 	return "1 Bad value";
@@ -1315,7 +1315,7 @@ CCreload(char *av[])
     char *path;
 
     p = av[0];
-    if (*p == '\0' || EQ(p, "all")) {
+    if (*p == '\0' || strcmp(p, "all") == 0) {
 	SITEflushall(false);
 	InndHisClose();
 	RCreadlist();
@@ -1339,24 +1339,24 @@ CCreload(char *av[])
 #endif /* DO_PYTHON */
 	p = "all";
     }
-    else if (EQ(p, "active") || EQ(p, "newsfeeds")) {
+    else if (strcmp(p, "active") == 0 || strcmp(p, "newsfeeds") == 0) {
 	SITEflushall(false);
 	ICDwrite();
 	ICDsetup(true);
     }
-    else if (EQ(p, "history")) {
+    else if (strcmp(p, "history") == 0) {
 	InndHisClose();
 	InndHisOpen();
     }
-    else if (EQ(p, "incoming.conf"))
+    else if (strcmp(p, "incoming.conf") == 0)
 	RCreadlist();
-    else if (EQ(p, "overview.fmt")) {
+    else if (strcmp(p, "overview.fmt") == 0) {
 	if (!ARTreadschema())
 	    return BADSCHEMA;
     }
 #if 0 /* we should check almost all innconf parameter, but the code
          is still incomplete for innd, so just commented out */
-    else if (EQ(p, "inn.conf")) {
+    else if (strcmp(p, "inn.conf") == 0) {
         struct innconf *saved;
 
         saved = innconf;
@@ -1388,19 +1388,19 @@ CCreload(char *av[])
     }
 #endif
 #if defined(DO_TCL)
-    else if (EQ(p, "filter.tcl")) {
+    else if (strcmp(p, "filter.tcl") == 0) {
 	TCLreadfilter();
     }
 #endif /* defined(DO_TCL) */
 #if defined(DO_PERL)
-    else if (EQ(p, "filter.perl")) {
+    else if (strcmp(p, "filter.perl") == 0) {
         path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
         if (!PERLreadfilter(path, "filter_art"))
             return BADPERLRELOAD;
     }
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
-    else if (EQ(p, "filter.python")) {
+    else if (strcmp(p, "filter.python") == 0) {
 	if (!PYreadfilter())
 	    return BADPYRELOAD;
     }
@@ -1537,11 +1537,11 @@ CCsignal(char *av[])
     p = av[0];
     if (*p == '-')
 	p++;
-    if (caseEQ(p, "HUP"))
+    if (strcasecmp(p, "HUP") == 0)
 	s = SIGHUP;
-    else if (caseEQ(p, "INT"))
+    else if (strcasecmp(p, "INT") == 0)
 	s = SIGINT;
-    else if (caseEQ(p, "TERM"))
+    else if (strcasecmp(p, "TERM") == 0)
 	s = SIGTERM;
     else if ((s = atoi(p)) <= 0)
 	return "1 Invalid signal";
@@ -1580,7 +1580,7 @@ CCthrottle(char *av[])
     p = av[0];
     switch (Mode) {
     case OMpaused:
-	if (*p && !EQ(p, ModeReason))
+	if (*p && strcmp(p, ModeReason) != 0)
 	    return "1 Already paused";
 	/* FALLTHROUGH */
     case OMrunning:
@@ -1600,7 +1600,7 @@ CCtimer(char *av[])
     int                 value;
     char                *p;
     
-    if (EQ(av[0], "off"))
+    if (strcmp(av[0], "off") == 0)
 	value = 0;
     else {
 	for (p = av[0]; *p; p++) {
@@ -1623,7 +1623,7 @@ CCtimer(char *av[])
 static const char *
 CCstathist(char *av[])
 {
-    if (EQ(av[0], "off"))
+    if (strcmp(av[0], "off") == 0)
         HISlogclose();
     else
         HISlogto(av[0]);
@@ -1639,7 +1639,7 @@ CCstatus(char *av[])
     int                 value;
     char                *p;
     
-    if (EQ(av[0], "off"))
+    if (strcmp(av[0], "off") == 0)
 	value = 0;
     else {
 	for (p = av[0]; *p; p++) {

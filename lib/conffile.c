@@ -152,7 +152,7 @@ CONFTOKEN *CONFgettoken(CONFTOKEN *toklist, CONFFILE *file)
     return(0);
   if (toklist) {
     for (i = 0; toklist[i].type; i++) {
-       if (EQ(word, toklist[i].name)) {
+       if (strcmp(word, toklist[i].name) == 0) {
          free(word);
          return(&toklist[i]);
        }

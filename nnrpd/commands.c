@@ -105,7 +105,7 @@ PERMgeneric(char *av[], char *accesslist)
        be any other references for it, and I don't want to break
        portability */
     for (p = av[0]; *p; p++)
-	if (EQn(p, "../", 3)) {
+	if (strncmp(p, "../", 3) == 0) {
 	    Reply("%d ../ in authenticator %s\r\n", NNTP_SYNTAX_VAL, av[0]);
 	    return(-1);
 	}
@@ -229,7 +229,7 @@ CMDauthinfo(ac, av)
     int         code;
 #endif
 
-    if (caseEQ(av[1], "generic")) {
+    if (strcasecmp(av[1], "generic") == 0) {
 	char *logrec = Glom(av);
 
 	strncpy(PERMuser, "<none>", sizeof(PERMuser) - 1);
@@ -259,7 +259,7 @@ CMDauthinfo(ac, av)
 
     } else {
 
-	if (caseEQ(av[1], "simple")) {
+	if (strcasecmp(av[1], "simple") == 0) {
 	    if (ac != 4) {
 		Reply("%d AUTHINFO SIMPLE <USER> <PASS>\r\n", NNTP_BAD_COMMAND_VAL);
 		return;
@@ -270,14 +270,14 @@ CMDauthinfo(ac, av)
 	    strncpy(Password, av[3], sizeof Password - 1);
 	    Password[sizeof Password - 1] = 0;
 	} else {
-	    if (caseEQ(av[1], "user")) {
+	    if (strcasecmp(av[1], "user") == 0) {
 		strncpy(User, av[2], sizeof User - 1);
 		User[sizeof User - 1] = 0;
 		Reply("%d PASS required\r\n", NNTP_AUTH_NEXT_VAL);
 		return;
 	    }
 
-	    if (!caseEQ(av[1], "pass")) {
+	    if (strcasecmp(av[1], "pass") != 0) {
 		Reply("%d bad authinfo param\r\n", NNTP_BAD_COMMAND_VAL);
 		return;
 	    }
@@ -321,7 +321,7 @@ CMDauthinfo(ac, av)
 	    } else {
 #endif /* DO_PYTHON */
 
-	    if (EQ(User, PERMuser) && EQ(Password, PERMpass)) {
+	    if (strcmp(User, PERMuser) == 0 && strcmp(Password, PERMpass) == 0) {
 		syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
 		if (LLOGenable) {
 			fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
@@ -432,7 +432,7 @@ CMDlist(int ac, char *av[])
     char		savec;
 
     p = av[1];
-    if (p == NULL || caseEQ(p, "active")) {
+    if (p == NULL || strcasecmp(p, "active") == 0) {
 	time_t		now;
 	time(&now);
 	lp = &INFOactive;
@@ -441,30 +441,30 @@ CMDlist(int ac, char *av[])
             if (CMD_list_single(wildarg))
 		return;
 	}
-    } else if (caseEQ(p, "active.times"))
+    } else if (strcasecmp(p, "active.times") == 0)
 	lp = &INFOactivetimes;
-    else if (caseEQ(p, "distributions"))
+    else if (strcasecmp(p, "distributions") == 0)
 	lp = &INFOdistribs;
-    else if (caseEQ(p, "subscriptions"))
+    else if (strcasecmp(p, "subscriptions") == 0)
 	lp = &INFOsubs;
-    else if (caseEQ(p, "distrib.pats"))
+    else if (strcasecmp(p, "distrib.pats") == 0)
 	lp = &INFOdistribpats;
-    else if (caseEQ(p, "extensions")) {
+    else if (strcasecmp(p, "extensions") == 0) {
 	lp = &INFOextensions;
         Reply("%d %s.\r\n", NNTP_SLAVEOK_VAL, lp->Format);
         Printf("LISTGROUP\r\n.\r\n");
         return;
     }
-    else if (caseEQ(p, "moderators"))
+    else if (strcasecmp(p, "moderators") == 0)
 	lp = &INFOmoderators;
-    else if (caseEQ(p,"motd"))
+    else if (strcasecmp(p,"motd") == 0)
 	lp = &INFOmotd;
-    else if (caseEQ(p, "newsgroups")) {
+    else if (strcasecmp(p, "newsgroups") == 0) {
 	if (ac == 3)
 	    wildarg = av[2];
   	lp = &INFOgroups;
     }
-    else if (caseEQ(p, "overview.fmt"))
+    else if (strcasecmp(p, "overview.fmt") == 0)
 	lp = &INFOschema;
     else {
 	Reply("%s\r\n", NNTP_SYNTAX_USE);
@@ -577,7 +577,7 @@ CMDmode(ac, av)
     int		ac UNUSED;
     char	*av[];
 {
-    if (caseEQ(av[1], "reader"))
+    if (strcasecmp(av[1], "reader") == 0)
 	Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	       PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
                PERMaccessconf->pathhost, inn_version_string,
@@ -615,7 +615,7 @@ void CMDnewgroups(int ac, char *av[])
     bool                local;
 
     /* Parse the date. */
-    local = !(ac > 3 && caseEQ(av[3], "GMT"));
+    local = !(ac > 3 && strcasecmp(av[3], "GMT") == 0);
     date = parsedate_nntp(av[1], av[2], local);
     if (date == (time_t) -1) {
         Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
@@ -724,7 +724,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     static int	backoff_inited = false;
     bool	ihave, permanent;
 
-    ihave = caseEQ(av[0], "ihave");
+    ihave = (strcasecmp(av[0], "ihave") == 0);
     if (ihave && (!PERMaccessconf->allowihave || !PERMcanpost)) {
 	syslog(L_NOTICE, "%s noperm ihave without permission", ClientHost);
 	Reply("%s\r\n", NNTP_ACCESS);

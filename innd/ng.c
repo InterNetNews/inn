@@ -107,7 +107,7 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
     NGH_HASH(ngp->Name, p, j);
     htp = NGH_BUCKET(j);
     for (p = ngp->Name, ngpp = htp->Groups, i = htp->Used; --i >= 0; ngpp++)
-	if (*p == ngpp[0]->Name[0] && EQ(p, ngpp[0]->Name)) {
+	if (*p == ngpp[0]->Name[0] && strcmp(p, ngpp[0]->Name) == 0) {
 	    syslog(L_ERROR, "%s duplicate_group %s", LogName, p);
 	    return false;
 	}
@@ -266,7 +266,7 @@ NGfind(const char *Name)
     NGH_HASH(Name, p, j);
     htp = NGH_BUCKET(j);
     for (c = *Name, ngp = htp->Groups, i = htp->Used; --i >= 0; ngp++)
-	if (c == ngp[0]->Name[0] && EQ(Name, ngp[0]->Name))
+	if (c == ngp[0]->Name[0] && strcmp(Name, ngp[0]->Name) == 0)
 	    return ngp[0];
     return NULL;
 }

@@ -139,7 +139,7 @@ static bool EXPgetnum(int line, char *word, time_t *v, const char *name)
     bool	        SawDot;
     double		d;
 
-    if (caseEQ(word, "never")) {
+    if (strcasecmp(word, "never") == 0) {
 	*v = (time_t)0;
 	return true;
     }
@@ -216,7 +216,7 @@ static bool EXPreadfile(FILE *F)
 	}
 
 	/* Expired-article remember line? */
-	if (EQ(fields[0], "/remember/")) {
+	if (strcmp(fields[0], "/remember/") == 0) {
 	    if (j != 2) {
                 warn("invalid format on line %d", i);
 		return false;
@@ -632,9 +632,12 @@ main(int ac, char *av[])
     setuid_news();
 
     /* Parse the control file. */
-    if (av[0])
-	F = EQ(av[0], "-") ? stdin : EXPfopen(false, av[0], "r", false, false, false);
-    else {
+    if (av[0]) {
+        if (strcmp(av[0], "-") == 0)
+            F = stdin;
+        else
+            F = EXPfopen(false, av[0], "r", false, false, false);
+    } else {
         char *path;
 
         path = concatpath(innconf->pathetc, _PATH_EXPIRECTL);

@@ -58,7 +58,7 @@ GMA_listopen(int fd, FILE *FromServer, FILE *ToServer, const char *request)
 
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
-     || !EQn(buff, NNTP_LIST_FOLLOWS, STRLEN(NNTP_LIST_FOLLOWS))) {
+     || strncmp(buff, NNTP_LIST_FOLLOWS, STRLEN(NNTP_LIST_FOLLOWS)) != 0) {
 	oerrno = errno;
         fclose(F);
 	GMAclose();

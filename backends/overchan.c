@@ -128,7 +128,7 @@ int main(int ac, char *av[])
 	ProcessIncoming(QIOfdopen(STDIN_FILENO));
     else {
 	for ( ; *av; av++)
-	    if (EQ(*av, "-"))
+	    if (strcmp(*av, "-") == 0)
 		ProcessIncoming(QIOfdopen(STDIN_FILENO));
 	    else if ((qp = QIOopen(*av)) == NULL)
                 syswarn("cannot open %s", *av);

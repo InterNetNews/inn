@@ -8,13 +8,6 @@
 
 #include "config.h"
 
-/* Wrappers around str[n]cmp.  Don't add the ((a) == (b)) test here; it's
-   already been done in places where it's time-critical. */
-#define EQ(a, b)		(strcmp((a), (b)) == 0)
-#define EQn(a, b, n)		(strncmp((a), (b), (n)) == 0)
-#define caseEQ(a, b)		(strcasecmp((a), (b)) == 0)
-#define caseEQn(a, b, n)	(strncasecmp((a), (b), (n)) == 0)
-
 /* <ctype.h> usually includes \n, which is not what we want. */
 #define ISWHITE(c)              ((c) == ' ' || (c) == '\t')
 

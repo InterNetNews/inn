@@ -134,14 +134,14 @@ main(int argc, char *argv[])
        cause inndstart to bind to INADDR_ANY. */
     address.s_addr = htonl(INADDR_ANY);
     p = innconf->bindaddress;
-    if (p && !EQ(p, "all") && !EQ(p, "any")) {
+    if (p && strcmp(p, "all") != 0 && strcmp(p, "any") != 0) {
         if (!inet_aton(p, &address))
             die("invalid bindaddress in inn.conf (%s)", p);
     }
 #ifdef HAVE_INET6
     address6 = in6addr_any;
     p = innconf->bindaddress6;
-    if (p && !EQ(p, "all") && !EQ(p, "any")) {
+    if (p && strcmp(p, "all") != 0 && strcmp(p, "any") != 0) {
 	if (inet_pton(AF_INET6, p, &address6) < 1)
 	    die("invalid bindaddress6 in inn.conf (%s)", p);
     }
@@ -154,7 +154,7 @@ main(int argc, char *argv[])
        innd. */
     port = innconf->port;
     for (i = 1; i < argc; i++) {
-        if (EQn("-P", argv[i], 2)) {
+        if (strncmp("-P", argv[i], 2) == 0) {
             if (strlen(argv[i]) > 2) {
                 port = atoi(&argv[i][2]);
             } else {
@@ -166,7 +166,7 @@ main(int argc, char *argv[])
             if (port == 0)
                 die("invalid port %s (must be a number)", argv[i]);
 #ifdef HAVE_INET6
-        } else if (EQn("-6", argv[i], 2)) {
+        } else if (strncmp("-6", argv[i], 2) == 0) {
             if (strlen(argv[i]) > 2) {
                 p = &argv[i][2];
             } else {
@@ -179,7 +179,7 @@ main(int argc, char *argv[])
                 die("invalid address %s", p);
 	    addr6_specified = true;
 #endif
-        } else if (EQn("-I", argv[i], 2)) {
+        } else if (strncmp("-I", argv[i], 2) == 0) {
             if (strlen(argv[i]) > 2) {
                 p = &argv[i][2];
             } else {

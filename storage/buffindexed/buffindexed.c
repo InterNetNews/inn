@@ -1843,7 +1843,7 @@ bool buffindexed_getartinfo(char *group, ARTNUM artnum, TOKEN *token) {
   bool		retval, grouplocked = false;
 
   if (Gib != NULL) {
-    if (Cachesearch != NULL && !EQ(Cachesearch->group, group)) {
+    if (Cachesearch != NULL && strcmp(Cachesearch->group, group) != 0) {
       free(Gib);
       Gib = NULL;
       free(Cachesearch->group);

@@ -442,7 +442,7 @@ static void ARTsendmmap(SENDTYPE what)
 	    s + VirtualPathlen + 1 < endofpath;
 	    lastchar = *s++) {
 	    if ((lastchar != '\0' && lastchar != '!') || *s != *VirtualPath ||
-		!EQn(s, VirtualPath, VirtualPathlen - 1))
+		strncmp(s, VirtualPath, VirtualPathlen - 1) != 0)
 		continue;
 	    if (*(s + VirtualPathlen - 1) != '\0' &&
 		*(s + VirtualPathlen - 1) != '!')
@@ -521,7 +521,7 @@ char *GetHeader(const char *header)
 	}
 	if ((lastchar == '\n') || (p == ARThandle->data)) {
 	    headerlen = strlen(header);
-	    if (caseEQn(p, header, headerlen) && p[headerlen] == ':') {
+	    if (strncasecmp(p, header, headerlen) == 0 && p[headerlen] == ':') {
 		for (; (p < limit) && !isspace((int)*p) ; p++);
 		for (; (p < limit) && isspace((int)*p) ; p++);
 		for (q = p; q < limit; q++) 
@@ -546,9 +546,9 @@ char *GetHeader(const char *header)
 		    }
 		if (q == limit)
 		    return NULL;
-		if (caseEQn("Path", header, headerlen))
+		if (strncasecmp("Path", header, headerlen) == 0)
 		    pathheader = true;
-		else if (caseEQn("Xref", header, headerlen))
+		else if (strncasecmp("Xref", header, headerlen) == 0)
 		    xrefheader = true;
 		if (retval == NULL) {
 		    retlen = q - p + VirtualPathlen + 1;
@@ -572,7 +572,7 @@ char *GetHeader(const char *header)
 			prevchar = *s++) {
 			if ((prevchar != '\0' && prevchar != '!') ||
 			    *s != *VirtualPath ||
-			    !EQn(s, VirtualPath, VirtualPathlen - 1))
+			    strncmp(s, VirtualPath, VirtualPathlen - 1) != 0)
 			    continue;
 			if (*(s + VirtualPathlen - 1) != '\0' &&
 			    *(s + VirtualPathlen - 1) != '!')
@@ -1032,7 +1032,7 @@ void CMDpat(int ac, char *av[])
     }
 
     header = av[1];
-    IsLines = caseEQ(header, "lines");
+    IsLines = (strcasecmp(header, "lines") == 0);
 
     if (ac > 3) /* XPAT */
 	pattern = Glom(&av[3]);
@@ -1074,7 +1074,7 @@ void CMDpat(int ac, char *av[])
 	}
 
 	/* In overview? */
-	if (caseEQ(header, "Newsgroups")) {
+	if (strcasecmp(header, "Newsgroups") == 0) {
 	    BuildingNewsgroups = true;
 	    Overview = overview_index("Xref", OVextra);
 	} else

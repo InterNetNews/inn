@@ -378,9 +378,9 @@ ICDrmgroup(NEWSGROUP *ngp)
     char *Name;
 
     /* Don't let anyone remove newsgroups that INN requires exist. */
-    if (EQ(ngp->Name, "junk") || EQ(ngp->Name, "control"))
+    if (strcmp(ngp->Name, "junk") == 0 || strcmp(ngp->Name, "control") == 0)
         return false;
-    if (innconf->mergetogroups && EQ(ngp->Name, "to"))
+    if (innconf->mergetogroups && strcmp(ngp->Name, "to") == 0)
         return false;
 
     Name = xstrdup(ngp->Name);

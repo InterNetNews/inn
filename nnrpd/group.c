@@ -86,7 +86,7 @@ void CMDgroup(int ac, char *av[])
     GRPreport();
 
     /* Doing a "group" command? */
-    if (caseEQ(av[0], "group")) {
+    if (strcasecmp(av[0], "group") == 0) {
 	if (count == 0)
 	    Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
 	else {
@@ -127,7 +127,7 @@ void CMDgroup(int ac, char *av[])
 	GRPcount++;
 	ARTnumber = ARTlow;
 	if (GRPcur) {
-	    if (!EQ(GRPcur, group)) {
+	    if (strcmp(GRPcur, group) != 0) {
 		OVctl(OVCACHEFREE, &boolval);
 		free(GRPcur);
 		GRPcur = xstrdup(group);
@@ -155,7 +155,7 @@ void CMDgroup(int ac, char *av[])
 	    GRPcount++;
 	    ARTnumber = ARTlow;
 	    if (GRPcur) {
-		if (!EQ(GRPcur, group)) {
+		if (strcmp(GRPcur, group) != 0) {
 		    OVctl(OVCACHEFREE, &boolval);
 		    free(GRPcur);
 		    GRPcur = xstrdup(group);

@@ -99,9 +99,9 @@ main(int ac, char *av[])
 	list = "active";
     else {
 	list = av[0];
-        if (!EQ(list, "active") && types != NULL)
+        if (strcmp(list, "active") != 0 && types != NULL)
             Usage();
-	if (!EQ(list, "active") && !EQ(list, "newsgroups")
+	if (strcmp(list, "active") != 0 && strcmp(list, "newsgroups") != 0
          && pattern != NULL)
 	    Usage();
     }
@@ -116,7 +116,8 @@ main(int ac, char *av[])
         die("cannot authenticate to server");
 
     /* Get the data from the server. */
-    active = CAlistopen(FromServer, ToServer, EQ(list, "active") ? NULL : list);
+    active = CAlistopen(FromServer, ToServer,
+                        (strcmp(list, "active") == 0) ? NULL : list);
     if (active == NULL)
         sysdie("cannot retrieve data");
 

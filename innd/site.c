@@ -965,7 +965,7 @@ SITEfind(const char *p)
     SITE	        *sp;
 
     for (i = nSites, sp = Sites; --i >= 0; sp++)
-	if (sp->Name && caseEQ(p, sp->Name))
+	if (sp->Name && strcasecmp(p, sp->Name) == 0)
 	    return sp;
     return NULL;
 }
@@ -980,7 +980,7 @@ SITEfindnext(const char *p, SITE *sp)
     SITE	        *end;
 
     for (sp++, end = &Sites[nSites]; sp < end; sp++)
-	if (sp->Name && caseEQ(p, sp->Name))
+	if (sp->Name && strcasecmp(p, sp->Name) == 0)
 	    return sp;
     return NULL;
 }

@@ -32,7 +32,8 @@ GenerateMessageID(char *domain)
     Radix32(Now.time - OFFSET, sec32);
     Radix32(getpid(), pid32);
     if ((domain != NULL && innconf->domain == NULL) ||
-	(domain != NULL && innconf->domain != NULL && !EQ(domain, innconf->domain))) {
+	(domain != NULL && innconf->domain != NULL
+         && strcmp(domain, innconf->domain) != 0)) {
 	p = domain;
     } else {
 	if ((p = GetFQDN(domain)) == NULL)

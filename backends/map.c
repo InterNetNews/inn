@@ -94,7 +94,7 @@ MAPname(char *p)
     char	c;
 
     for (c = *p, mp = MAPdata; mp < MAPend; mp++)
-	if (c == mp->First && EQ(p, mp->Key))
+	if (c == mp->First && strcmp(p, mp->Key) == 0)
 	    return mp->Value;
     return p;
 }

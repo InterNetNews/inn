@@ -245,7 +245,7 @@ StripOffHeaders(char *article)
 	    if (c == hp->Name[0]
 	     && p[hp->Size] == ':'
 	     && ISWHITE(p[hp->Size + 1])
-	     && caseEQn(p, hp->Name, hp->Size)) {
+	     && strncasecmp(p, hp->Name, hp->Size) == 0) {
 		if (hp->Type == HTobs)
                     die("obsolete header: %s", hp->Name);
 		if (hp->Value)
@@ -311,11 +311,11 @@ CheckCancel(char *msgid, bool JustReturn)
 	    *p = '\0';
 	if (buff[0] == '.' && buff[1] == '\0')
 	    break;
-        if (EQn(buff, "Sender:", 7)) {
+        if (strncmp(buff, "Sender:", 7) == 0) {
             strncpy(remotefrom, TrimSpaces(&buff[7]), SMBUF);
             remotefrom[SMBUF - 1] = '\0';
         }
-        else if (remotefrom[0] == '\0' && EQn(buff, "From:", 5)) {
+        else if (remotefrom[0] == '\0' && strncmp(buff, "From:", 5) == 0) {
             strncpy(remotefrom, TrimSpaces(&buff[5]), SMBUF);
             remotefrom[SMBUF - 1] = '\0';
         }
@@ -333,7 +333,7 @@ CheckCancel(char *msgid, bool JustReturn)
     HeaderCleanFrom(localfrom);
 
     /* Is the right person cancelling? */
-    if (!caseEQ(localfrom, remotefrom))
+    if (strcasecmp(localfrom, remotefrom) != 0)
         die("article was posted by \"%s\" and you are \"%s\"", remotefrom,
             localfrom);
 }
@@ -367,7 +367,7 @@ AnAdministrator(char *name, gid_t group)
     if (group == grp->gr_gid)
 	return true;
     while ((p = *mem++) != NULL)
-	if (EQ(name, p))
+	if (strcmp(name, p) == 0)
 	    return true;
     return false;
 }
@@ -394,7 +394,7 @@ CheckControl(char *ctrl, struct passwd *pwp)
     save = *p;
     *p = '\0';
 
-    if (EQ(ctrl, "cancel")) {
+    if (strcmp(ctrl, "cancel") == 0) {
 	for (q = p + 1; ISWHITE(*q); q++)
 	    continue;
 	if (*q == '\0')
@@ -402,14 +402,14 @@ CheckControl(char *ctrl, struct passwd *pwp)
 	if (!Spooling)
 	    CheckCancel(q, false);
     }
-    else if (EQ(ctrl, "checkgroups")
-	  || EQ(ctrl, "ihave")
-	  || EQ(ctrl, "sendme")
-	  || EQ(ctrl, "newgroup")
-	  || EQ(ctrl, "rmgroup")
-	  || EQ(ctrl, "sendsys")
-	  || EQ(ctrl, "senduuname")
-	  || EQ(ctrl, "version")) {
+    else if (strcmp(ctrl, "checkgroups") == 0
+	  || strcmp(ctrl, "ihave")       == 0
+	  || strcmp(ctrl, "sendme")      == 0
+	  || strcmp(ctrl, "newgroup")    == 0
+	  || strcmp(ctrl, "rmgroup")     == 0
+	  || strcmp(ctrl, "sendsys")     == 0
+	  || strcmp(ctrl, "senduuname")  == 0
+	  || strcmp(ctrl, "version")     == 0) {
 	strncpy(name, pwp->pw_name, SMBUF);
         name[SMBUF - 1] = '\0';
 	if (!AnAdministrator(name, pwp->pw_gid))
@@ -555,7 +555,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
       strncpy(from, HDR(_from), SMBUF);
       from[SMBUF - 1] = '\0';
       HeaderCleanFrom(from);
-      if (!EQ(from, buff))
+      if (strcmp(from, buff) != 0)
         HDR(_sender) = xstrdup(buff);
     }
 
@@ -579,7 +579,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 	else if (HDR(_alsocontrol))
 	    CheckControl(HDR(_alsocontrol), pwp);
 #if	0
-	if (EQn(p, "Re: ", 4) && HDR(_references) == NULL)
+	if (strncmp(p, "Re: ", 4) == 0 && HDR(_references) == NULL)
             die("article subject begins with \"Re: \" but has no references");
 #endif	/* 0 */
     }

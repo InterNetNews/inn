@@ -118,7 +118,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
         sysdie("cannot open %s", TextFile);
 
     /* If using the standard history file, force DBZ to use history.n. */
-    if (EQ(TextFile, HISTORY) && !Overwrite) {
+    if (strcmp(TextFile, HISTORY) == 0 && !Overwrite) {
 	snprintf(temp, sizeof(temp), "%s.n", HISTORY);
 	if (link(HISTORY, temp) < 0)
             sysdie("cannot create temporary link to %s", temp);
@@ -131,7 +131,8 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	** only do removedbz files if a. we're using something besides 
 	** $pathdb/history, or b. we're ignoring the old db.
 	*/
-	if (!EQ(TextFile, HISTORY) || IgnoreOld) RemoveDBZFiles(TextFile);
+	if (strcmp(TextFile, HISTORY) != 0 || IgnoreOld)
+            RemoveDBZFiles(TextFile);
 	p = TextFile;
     }
 

@@ -177,15 +177,15 @@ ARTreadschema(void)
       continue;
     if ((p = strchr(buff, ':')) != NULL) {
       *p++ = '\0';
-      fp->NeedHeader = EQ(p, "full");
+      fp->NeedHeader = (strcmp(p, "full") == 0);
     } else
       fp->NeedHeader = false;
-    if (caseEQ(buff, "Xref")) {
+    if (strcasecmp(buff, "Xref") == 0) {
       foundxref = true;
       foundxreffull = fp->NeedHeader;
     }
     for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++) {
-      if (caseEQ(buff, hp->Name)) {
+      if (strcasecmp(buff, hp->Name) == 0) {
 	fp->Header = hp;
 	break;
       }
@@ -1178,7 +1178,7 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
   /* Compare canonical forms. */
   q1 = xstrdup(data->Poster);
   HeaderCleanFrom(q1);
-  if (!EQ(q, q1)) {
+  if (strcmp(q, q1) != 0) {
     r = false;
     sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
       q1, MaxLength(MessageID, MessageID), q);
@@ -1262,7 +1262,7 @@ ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp UNUSED)
 
   /* See if it's a cancel message. */
   c = *Control;
-  if (c == 'c' && EQn(Control, "cancel", 6)) {
+  if (c == 'c' && strncmp(Control, "cancel", 6) == 0) {
     for (p = &Control[6]; ISWHITE(*p); p++)
       continue;
     if (*p && ARTidok(p))
@@ -1327,9 +1327,9 @@ DISTwanted(char **list, char *p)
   for (sawbang = false, c = *p; (q = *list) != NULL; list++) {
     if (*q == '!') {
       sawbang = true;
-      if (c == *++q && EQ(p, q))
+      if (c == *++q && strcmp(p, q) == 0)
 	return false;
-    } else if (c == *q && EQ(p, q))
+    } else if (c == *q && strcmp(p, q) == 0)
       return true;
   }
 
@@ -1532,7 +1532,7 @@ ListHas(const char **list, const char *p)
   char		c;
 
   for (c = *p; (q = *list) != NULL; list++)
-    if (caseEQ(p, q))
+    if (strcasecmp(p, q) == 0)
       return true;
   return false;
 }
@@ -2033,7 +2033,8 @@ ARTpost(CHANNEL *cp)
       if (CTYPE(isupper, *p))
 	*p = tolower(*p);
     *p = '\0';
-    LikeNewgroup = EQ(ControlWord, "newgroup") || EQ(ControlWord, "rmgroup");
+    LikeNewgroup = (strcmp(ControlWord, "newgroup") == 0
+                    || strcmp(ControlWord, "rmgroup") == 0);
 
     if (innconf->ignorenewsgroups && LikeNewgroup) {
       for (p++; *p && ISWHITE(*p); p++);

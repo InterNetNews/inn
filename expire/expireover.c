@@ -160,7 +160,7 @@ main(int argc, char *argv[])
         active_path = concatpath(innconf->pathdb, _PATH_ACTIVE);
         purge_deleted = true;
     }
-    if (EQ(active_path, "-")) {
+    if (strcmp(active_path, "-") == 0) {
         qp = QIOfdopen(fileno(stdin));
         if (qp == NULL)
             sysdie("can't reopen stdin");

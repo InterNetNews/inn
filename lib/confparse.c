@@ -242,7 +242,7 @@ parameter_equal(const void *k, const void *p)
     const char *key = k;
     const struct config_parameter *param = p;
 
-    return EQ(key, param->key);
+    return strcmp(key, param->key) == 0;
 }
 
 
@@ -964,13 +964,13 @@ convert_boolean(struct config_parameter *param, const char *file,
     }
     param->type = VALUE_BOOL;
     for (i = 0; truevals[i] != NULL; i++)
-        if (EQ(param->raw_value, truevals[i])) {
+        if (strcmp(param->raw_value, truevals[i]) == 0) {
             param->value.boolean = true;
             *value = true;
             return true;
         }
     for (i = 0; falsevals[i] != NULL; i++)
-        if (EQ(param->raw_value, falsevals[i])) {
+        if (strcmp(param->raw_value, falsevals[i]) == 0) {
             param->value.boolean = false;
             *value = false;
             return true;

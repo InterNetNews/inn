@@ -122,7 +122,7 @@ NGfind(char *Name)
     NGH_HASH(Name, p, j);
     htp = NGH_BUCKET(j);
     for (c = *Name, ngp = htp->Groups, i = htp->Used; --i >= 0; ngp++)
-        if (c == ngp[0]->Name[0] && EQ(Name, ngp[0]->Name))
+        if (c == ngp[0]->Name[0] && strcmp(Name, ngp[0]->Name) == 0)
             return ngp[0];
     return NULL;
 }
@@ -272,7 +272,7 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
     bool                SawDot;
     double              d;
 
-    if (caseEQ(word, "never")) {
+    if (strcasecmp(word, "never") == 0) {
         *v = (time_t)0;
         return true;
     }
@@ -376,7 +376,7 @@ EXPreadfile(FILE *F)
         }
 
         /* Expired-article remember line? */
-        if (EQ(fields[0], "/remember/")) {
+        if (strcmp(fields[0], "/remember/") == 0) {
             continue;
         }
 
@@ -462,7 +462,7 @@ EXPnotfound(char *Entry)
 
     /* See if we already know about this group. */
     for (bg = EXPbadgroups; bg; bg = bg->Next)
-        if (EQ(Entry, bg->Name))
+        if (strcmp(Entry, bg->Name) == 0)
             break;
     if (bg == NULL) {
         bg = xmalloc(sizeof(BADGROUP));
@@ -577,14 +577,14 @@ ARTreadschema(void)
             continue;
         if ((p = strchr(buff, ':')) != NULL) {
             *p++ = '\0';
-            fp->NeedsHeader = EQ(p, "full");
+            fp->NeedsHeader = (strcmp(p, "full") == 0);
         }
         else
             fp->NeedsHeader = false;
         fp->HasHeader = false;
         fp->Header = xstrdup(buff);
         fp->Length = strlen(buff);
-        if (caseEQ(buff, "Xref")) {
+        if (strcasecmp(buff, "Xref") == 0) {
             foundxref = true;
             foundxreffull = fp->NeedsHeader;
         }
@@ -689,11 +689,11 @@ OVfindheaderindex(void)
     ARTreadschema();
     if (Dateindex == OVFMT_UNINIT) {
         for (Dateindex = OVFMT_NODATE, i = 0; i < ARTfieldsize; i++) {
-            if (caseEQ(ARTfields[i].Header, "Date")) {
+            if (strcasecmp(ARTfields[i].Header, "Date") == 0) {
                 Dateindex = i;
-            } else if (caseEQ(ARTfields[i].Header, "Xref")) {
+            } else if (strcasecmp(ARTfields[i].Header, "Xref") == 0) {
                 Xrefindex = i;
-            } else if (caseEQ(ARTfields[i].Header, "Message-ID")) {
+            } else if (strcasecmp(ARTfields[i].Header, "Message-ID") == 0) {
                 Messageidindex = i;
             }
         }
@@ -788,7 +788,7 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
             poisoned = true;
         if (OVkeep && (krps[i] == Keep))
             keeper = true;
-        if ((krps[i] == Remove) && EQ(group, arts[i]))
+        if ((krps[i] == Remove) && strcmp(group, arts[i]) == 0)
             delete = true;
         if ((krps[i] == Keep))
             purge = false;
@@ -798,7 +798,7 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
     if (OVearliest) {
         if (delete || poisoned || token.type == TOKEN_EMPTY) {
             /* delete article if this is first entry */
-            if (EQ(group, arts[0])) {
+            if (strcmp(group, arts[0]) == 0) {
                 for (i = 0; i < count; i++)
                     arts[i][strlen(arts[i])] = ':';
                 OVEXPremove(token, false, arts, count);
