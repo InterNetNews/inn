@@ -95,7 +95,7 @@
 # perl requirements
 #
 require "getopts.pl";
-require "@prefix@/etc/innshellvars.pl" ;
+require "@ETCDIR@/innshellvars.pl" ;
 
 # setup non-buffered stdout and stderr
 #

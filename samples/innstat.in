@@ -3,7 +3,7 @@
 ##  Display status of INN.
 ##  Written by Landon Curt Noll <chongo@toad.com>.
 
-. @prefix@/etc/innshellvars
+. @ETCDIR@/innshellvars
 
 SYSLOG_CRIT=news.crit
 SYSLOG_ERR=news.err

@@ -1,7 +1,7 @@
 #!@_PATH_SH@
 ##  $Revision$
 ##  SH script to send UUCP batches out.
-. @prefix@/etc/innshellvars
+. @ETCDIR@/innshellvars
 
 PROGNAME=`basename $0`
 LOCK=${LOCKS}/LOCK.${PROGNAME}

@@ -3,7 +3,7 @@
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
-require "@prefix@/etc/innshellvars.pl" ;
+require "@ETCDIR@/innshellvars.pl" ;
 
 $ST_MODE = 2;
 $ST_UID  = 4;

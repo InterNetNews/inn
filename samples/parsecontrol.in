@@ -2,7 +2,7 @@
 ##  $Revision$
 ##  Initial parsing of control messages.
 
-. @prefix@/etc/innshellvars
+. @ETCDIR@/innshellvars
 
 WRITELOG=${PATHBIN}/writelog
 SM="${PATHBIN}/sm -q"

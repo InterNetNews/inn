@@ -89,7 +89,7 @@
 
 # use strict;
 
-require "@prefix@/etc/innshellvars.pl" ;
+require "@ETCDIR@/innshellvars.pl" ;
 
 ## Do you want to create a Web page. Pick DO or DONT.
 my $HTML = "DO";

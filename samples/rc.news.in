@@ -4,7 +4,7 @@
 ##  setuid root.  Run from rc.whatever as:
 ##     su news -c /path/to/rc.news >/dev/console
 
-. @prefix@/etc/innshellvars
+. @ETCDIR@/innshellvars
 
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INNDSTART}

@@ -1,7 +1,7 @@
 #!@_PATH_SH@
 ##  $Revision$
 ##  Newgroup control-message handler
-. @prefix@/etc/innshellvars
+. @ETCDIR@/innshellvars
 
 PROG=newgroup
 ##  Some shells don't pass in $* unless we explicitly pass it in here.

@@ -75,8 +75,8 @@ $egrep = "@_PATH_EGREP@" ;
 $perl = "@_PATH_PERL@" ;
 $pgp = "@_PATH_PGP@" ;
 $sort = "@_PATH_SORT@" ;
-$compress = "@ac_cv_subst_path_compress@" ;
-$log_compress = "@LOG_COMPRESS@" ;
+$compress = "@_PATH_COMPRESS@" ;
+$log_compress = "@_PATH_COMPRESS@" ;
 $z = "@LOG_COMPRESSEXT@" ;
 
 ($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;

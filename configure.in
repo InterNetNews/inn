@@ -133,10 +133,7 @@ ac_cv_subst_innwatch_df=$ac_cv_path__PATH_DF
 
 AC_ENSURE_PATH_PROG(_PATH_EGREP,egrep)
 AC_ENSURE_PATH_PROG(_PATH_SORT,sort)
-
 AC_ENSURE_PATH_PROG(_PATH_SH,sh)
-ac_cv_subst_path_sh=$ac_cv_path__PATH_SH
-AC_SUBST(ac_cv_subst_path_sh)
 
 AC_MSG_CHECKING(for Perl version)
 $_PATH_PERL -e 'require 5.004' > /dev/null 2>&1
@@ -154,22 +151,16 @@ then
 AC_PATH_PROG(_PATH_PGP,pgp,no-pgp-found-during-configure)
 fi
 
-AC_PATH_PROG(ac_cv_subst_path_compress,compress,no-compress-found-during-configure)
-AC_PATH_PROG(ac_cv_subst_path_gzip,gzip,no-gzip-found-during-configure)
+AC_PATH_PROGS(_PATH_COMPRESS,gzip compress,no-compress-found-during-configure)
 dnl
-AC_ARG_WITH(log-compress,[  --with-log-compress=METHOD   Log compression method (default gzip)], LOG_COMPRESS=$with_log_compress, LOG_COMPRESS=gzip)
-case "$LOG_COMPRESS" in
+case "`basename $_PATH_COMPRESS`" in
 gzip)
-	LOG_COMPRESS=$ac_cv_subst_path_gzip
 	LOG_COMPRESSEXT=".gz" ;;
 compress)
-	LOG_COMPRESS=$ac_cv_subst_path_compress
 	LOG_COMPRESSEXT=".Z" ;;
 *)
-	LOG_COMPRESS=$LOG_COMPRESS
 	LOG_COMPRESSEXT=".unknown" ;;
 esac
-AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
 dnl
 AC_ARG_ENABLE(tagged-hash,[  --enable-tagged-hash    use tagged hash table for history], DO_DBZ_TAGGED_HASH=DO, DO_DBZ_TAGGED_HASH=DONT)

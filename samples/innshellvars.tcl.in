@@ -74,8 +74,8 @@ set inn_pgp "@_PATH_PGP@"
 set inn_inndf "@_PATH_DF@"
 set inn_egrep "@_PATH_EGREP@"
 set inn_sort "@_PATH_SORT@"
-set inn_compress "@ac_cv_subst_path_compress@"
-set inn_log_compress "@LOG_COMPRESS@"
+set inn_compress "@_PATH_COMPRESS@"
+set inn_log_compress "@_PATH_COMPRESS@"
 set inn_z "@LOG_COMPRESSEXT@"
 
 set inn_tempsock [ eval exec basename ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s/XXXXXX$/*/} ]

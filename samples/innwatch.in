@@ -12,7 +12,7 @@
 ##  Steve's extensions merged in innwatch by
 ##	<Christophe.Wolfhugel@grasp.insa-lyon.fr>
 
-. @prefix@/etc/innshellvars
+. @ETCDIR@/innshellvars
 
 PROGNAME=innwatch
 LOCK=${LOCKS}/LOCK.${PROGNAME}

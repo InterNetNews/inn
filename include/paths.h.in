@@ -44,7 +44,7 @@
 #define _PATH_DISTPATS		"distrib.pats"
 #define _PATH_NNRPDIST		"distributions"
 #define _PATH_NNRPSUBS		"subscriptions"
-#define _PATH_CONFIG		"@prefix@/etc/inn.conf"
+#define _PATH_CONFIG		"@ETCDIR@/inn.conf"
 #define _PATH_CLIENTACTIVE	"active"
 #define _PATH_MODERATORS	"moderators"
 #define _PATH_SERVER		"server"
@@ -63,17 +63,13 @@
 /* Default prefix path is pathlog */
 #define _PATH_LOGFILE		"news"
 #define _PATH_ERRLOG		"errlog"
+#define _PATH_SH		"@_PATH_SH@"
+#define _PATH_COMPRESS	"@_PATH_COMPRESS"
 
-    /* =()<#define _PATH_SH		"@<_PATH_SH>@">()= */
-#define _PATH_SH		"/bin/sh"
-    /* =()<#define _PATH_COMPRESS	"@<_PATH_COMPRESS>@">()= */
-#define _PATH_COMPRESS	"/usr/bin/compress"
+#define _PATH_GZIP	_PATH_COMPRESS
 #define _PATH_TMP	"@TMPPATH@"
-    /* =()<#define _PATH_GZIP	"@<_PATH_GZIP>@">()= */
-#define _PATH_GZIP	"/usr/bin/gzip"
-
 #define _PATH_SPOOLTEMP	"@TMPPATH@"
-    /* =()<#define _PATH_RELBAD		"@<_PATH_RELBAD>@">()= */
+
 #define _PATH_RELBAD		"bad"
 
 /*

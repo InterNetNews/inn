@@ -3,7 +3,7 @@
 ##  Summarize INN log files.
 ##  Optional arguments:
 ##	norotate	Do not rotate logfiles
-. @prefix@/etc/innshellvars
+. @ETCDIR@/innshellvars
 
 ##  If you get an error from this line:
 ##	sh -c 'egrep "`ls /etc`" /dev/null'

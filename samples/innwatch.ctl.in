@@ -15,7 +15,7 @@
 ##	<reason>	Used in ctlinnd command (if needed).
 
 ##  First, just exit innwatch if innd has gone away.
-!!! test -f @prefix@/run/innd.pid && echo 0 || echo 1 ! eq ! 1 ! exit ! innd dead
+!!! test -f @RUNDIR@/innd.pid && echo 0 || echo 1 ! eq ! 1 ! exit ! innd dead
 
 ##  Next test the load average.  Above first threshold pause, above higher
 ##  threshold throttle, below restart limit undo whatever was done.
@@ -31,8 +31,8 @@
 !!! @_PATH_DF@ . | awk 'NR == 2 { print $4 }' ! lt ! 8000 ! throttle ! No space (spool)
 ##  =()<!!! @<INNWATCH_DF>@ @SPOOLDIR@/out.going | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_BATCHSPACE>@ ! throttle ! No space (newsq)>()=
 !!! @_PATH_DF@ @SPOOLDIR@/out.going | awk 'NR == 2 { print $4 }' ! lt ! 800 ! throttle ! No space (newsq)
-##  =()<!!! @<INNWATCH_DF>@ @prefix@/etc | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_LIBSPACE>@ ! throttle ! No space (newslib)>()=
-!!! @_PATH_DF@ @prefix@/etc | awk 'NR == 2 { print $4 }' ! lt ! 25000 ! throttle ! No space (newslib)
+##  =()<!!! @<INNWATCH_DF>@ @ETCDIR@ | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_LIBSPACE>@ ! throttle ! No space (newslib)>()=
+!!! @_PATH_DF@ @ETCDIR@ | awk 'NR == 2 { print $4 }' ! lt ! 25000 ! throttle ! No space (newslib)
 ##  =()<!!! @<INNWATCH_DF>@ -i . | awk 'NR == 2 { print $@<INNWATCH_INODES>@ }' ! lt ! @<INNWATCH_SPOOLNODES>@ ! throttle ! No space (spool inodes)>()=
 !!! @_PATH_DF@ -i . | awk 'NR == 2 { print $7 }' ! lt ! 200 ! throttle ! No space (spool inodes)
 ##  =()<!!! @<INNWATCH_DF>@ @SPOOLDIR@/over.view | awk 'NR == 2 { print $@<INNWATCH_BLOCKS>@ }' ! lt ! @<INNWATCH_SPOOLSPACE>@ ! throttle ! No space (overview)>()=

@@ -4,4 +4,4 @@ host=news.foo.bar.com
 
 flags=-v 2 -q 2 -b 0 -d 0 -g 7 -s 79 -t 2
 
-ignore_file=@prefix@/etc/actsync.ign
+ignore_file=@ETCDIR@/actsync.ign
