@@ -67,7 +67,7 @@ STATIC SITEHASH	SITEtable[SITE_SIZE];
 STATIC TIMEINFO	Now;
 
 
-#if !defined(HAVE_FCHMOD)
+#if !defined(DO_HAVE_FCHMOD)
 /*
 **  A dummy fchmod.
 */
@@ -77,7 +77,7 @@ fchmod(i)
     int		i;
 {
 }
-#endif	/* !defined(HAVE_FCHMOD) */
+#endif	/* !defined(DO_HAVE_FCHMOD) */
 
 
 /*
