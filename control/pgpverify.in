@@ -1,14 +1,21 @@
 #! /usr/bin/perl -ws
 do '@LIBDIR@/innshellvars.pl';
+# Remove the above line if not running as part of INN.
 #
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.14, 6 May 2001
+# Currently maintained by Russ Allbery <rra@stanford.edu>
+# Version 1.15, 25 Nov 2002
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN
 # is the same as the version that I make available to the rest of the
 # world (including non-INN sites), so please make all changes through me.
 #
 # This program is intended to be compatible with Perl 4 and Perl 5.
+#
+# Changes from 1.14 -> 1.15
+# -- Added POD documentation.
+# -- Fixed the -test switch so that it works again.
+# -- Dropped Perl 4 compatibility and reformatted.  Now passes use strict.
 #
 # Changes from 1.13.1 -> 1.14
 # -- Native support for GnuPG without the pgpgpg wrapper, using GnuPG's
@@ -131,13 +138,13 @@ $lockdir = $tmpdir;
 # $syslog_method = '';        # Don't ever try to do syslogging.
 $syslog_method = 'logger';    # search for the logger program
 
-# The next two variables are the values to be used for syslog's facility and
-# level to use, as would be found in syslog.conf.  For various reasons, it is
-# impossible to economically have the script figure out how to do syslogging
-# correctly on the machine.  If you have INN and the script is able to
-# successfully include you innshellvars.pl file, then the value of
-# $inn::syslog_facility will override this value of $syslog_facility;
-# $syslog_level is unaffected.
+# The next two variables are the values to be used for syslog's facility
+# and level to use, as would be found in syslog.conf.  For various
+# reasons, it is impossible to economically have the script figure out how
+# to do syslogging correctly on the machine.  If you have INN and the
+# script is able to successfully include you innshellvars.pl file, then
+# the value of $inn::syslog_facility will override this value of
+# $syslog_facility; $syslog_level is unaffected.
 $syslog_facility = 'news';
 $syslog_level = 'err';
 
@@ -148,28 +155,40 @@ $syslog_level = 'err';
 # $log_date = 1;  # non-zero means do it.
 $log_date = -t STDOUT; # do it if STDOUT is to a terminal
 
-### Exit value:
-### 0  good signature
-### 1  no signature
-### 2  unknown signature
-### 3  bad signature
-### 255 problem not directly related to pgp analysis of signature
+# End of configuration section.
 
-# not syslogged, such an error is almost certainly from someone running
+
+require 5;
+
+use strict;
+use vars qw($gpgv $pgp $keyring $tmp $tmpdir $lockdir $syslog_method
+            $syslog_facility $syslog_level $log_date $test $messageid);
+
+# Turn on test mode if the first argument is '-test'.
+if ($1 && $1 eq '-test') {
+  shift @ARGV;
+  $test = 1;
+}
+
+# Not syslogged, such an error is almost certainly from someone running
 # the script manually.
 die "Usage: $0 < message\n" if @ARGV != 0;
 
-$0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
-
-$pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
-$gpgv = $inn'gpgv if $inn'gpgv;
-$tmp = ($inn'pathtmp ? $inn'pathtmp : $tmpdir) . "/pgp$$";
-$lockdir = $inn'locks if $inn'locks;
-$syslog_facility = $inn'syslog_facility if $inn'syslog_facility;
-if (! $keyring && $inn'newsetc) {
-  $keyring = $inn'newsetc . '/pgp' if -d $inn'newsetc . '/pgp';
+# Grab various defaults from innshellvars.pl if running inside INN.
+$pgp = $inn::pgp
+    if $inn::pgp && $inn::pgp ne "no-pgp-found-during-configure";
+$gpgv = $inn::gpgv if $inn::gpgv;
+$tmp = ($inn::pathtmp ? $inn::pathtmp : $tmpdir) . "/pgp$$";
+$lockdir = $inn::locks if $inn::locks;
+$syslog_facility = $inn::syslog_facility if $inn::syslog_facility;
+if (! $keyring && $inn::newsetc) {
+  $keyring = $inn::newsetc . '/pgp' if -d $inn::newsetc . '/pgp';
 }
 
+# Trim /path/to/prog to prog for error messages.
+$0 =~ s%^.*/%%;
+
+# Make sure that the signature verification program can be executed.
 if ($gpgv) {
   if (! -x $gpgv) {
     &fail("$0: $gpgv: " . (-e _ ? "cannot execute" : "no such file") . "\n");
@@ -178,111 +197,142 @@ if ($gpgv) {
   &fail("$0: $pgp: " . (-e _ ? "cannot execute" : "no such file") . "\n");
 }
 
-# this is, by design, case-sensitive with regards to the headers it checks.
-# it's also insistent about the colon-space rule.
-while (<>) {
-  # if a header line ends with \r\n, this article is in the encoding
-  # it would be in during an NNTP session.  some article storage
-  # managers keep them this way for efficiency.
-  $nntp_format = /\r\n$/ if $. == 1;
-  s/\r?\n$//;
+# Parse the article headers and generate the PGP message.
+my ($nntp_format, $header, $dup) = &parse_header();
+exit 1 unless $$header{'X-PGP-Sig'};
+my $message = &generate_message($nntp_format, $header, $dup);
+&write_message($message);
 
-  last if /^$/;
-  if (/^(\S+):[ \t](.+)/) {
-    ($label, $value) = ($1, $2);
-    $dup{$label} = 1 if $header{$label};
-    $header{$label} = $value;
-  } elsif (/^\s/) {
-    &fail("$0: non-header at line $.: $_\n") unless $label;
-    $header{$label} .= "\n$_";
-  } else {
-    &fail("$0: non-header at line $.: $_\n");
-  }
-}
-
-$pgpheader = "X-PGP-Sig";
-exit 1 unless $_ = $header{$pgpheader}; # no signature
-
-# the regexp below might be too strict about the structure of pgp sig lines
-
-# the $sep value means the separator between the radix64 signature lines
-# can have any amount of spaces or tabs, but must have at least one space
-# or tab, if there is a newline then the space or tab has to follow the
-# newline.  any number of newlines can appear as long as each is followed
-# by at least one space or tab.   *phew*
-$sep = "[ \t]*(\n?[ \t]+)+";
-
-# match all of the characters in a radix64 string
-$r64 = '[a-zA-Z0-9+/]';
-
-&fail("$0: $pgpheader not in expected format\n")
-  unless /^(\S+)$sep(\S+)(($sep$r64{64})+$sep$r64+=?=?$sep=$r64{4})$/;
-
-($version, $signed_headers, $signature) = ($1, $3, $4);
-$signature =~ s/$sep/\n/g;
-
-$message  = "-----BEGIN PGP SIGNED MESSAGE-----\n\n";
-$message .= "X-Signed-Headers: $signed_headers\n";
-foreach $label (split(",", $signed_headers)) {
-  &fail("$0: duplicate signed $label header, can't verify\n")
-    if $dup{$label};
-  $message .= "$label: ";
-  $message .= "$header{$label}" if $header{$label};
-  $message .= "\n";
-}
-$message .= "\n";               # end of headers
-
-while (<>) {                    # read body lines
-  if ($nntp_format) {
-    # check for end of article; some news servers (eg, Highwind's "Breeze")
-    # include the dot-CRLF of the NNTP protocol in the article data passed
-    # to this script
-    last if $_ eq ".\r\n";
-
-    # remove NNTP encoding
-    s/^\.\./\./;
-    s/\r\n$/\n/;
-  }
-
-  s/^-/- -/;                    # pgp quote ("ASCII armor") dashes
-  $message .= $_;               # append to output string
-}
-
-$message .= "\n-----BEGIN PGP SIGNATURE-----\n";
-$message .= "Version: $version\n";
-$message .= $signature;
-$message .= "\n-----END PGP SIGNATURE-----\n";
-
-open(TMP,">> $tmp") || &fail("$0: open > $tmp: $!\n");
-
--f TMP ||
-  &fail("$0: $tmp not a plain file, possible security violation attempt\n");
-(stat(_))[3] == 1 ||
-  &fail("$0: $tmp has hard links, possible security violation attempt\n");
-
-seek(TMP, 0, 0);                # make sure pointer is at beginning of file
-truncate(TMP, 0);               # make sure file is zero length
-
-print TMP $message;
-close(TMP) || &errmsg("$0: close > $tmp: $!\n");
-&fail("$0: write error for message to check\n")
-  if -s $tmp != length($message);
-
-print $message if $test;
-
+# Verify the message.
+my ($ok, $signer);
 if ($gpgv) {
   ($ok, $signer) = &gpg_check($tmp, $keyring);
 } else {
   ($ok, $signer) = &pgp_check($tmp, $keyring);
 }
-
 print "$signer\n" if $signer;
 exit $ok;
+
+
+# Parse the article headers and return a flag saying whether the message
+# is in NNTP format and then two references to hashes.  The first hash
+# contains all the header/value pairs, and the second contains entries for
+# every header that's duplicated.  This is, by design, case-sensitive with
+# regards to the headers it checks.  It's also insistent about the
+# colon-space rule.
+sub parse_header {
+  my (%header, %dup, $label, $value);
+  while (<>) {
+    # If the first header line ends with \r\n, this article is in the
+    # encoding it would be in during an NNTP session.  Some article
+    # storage managers keep them this way for efficiency.
+    my $nntp_format = /\r\n$/ if $. == 1;
+    s/\r?\n$//;
+
+    last if /^$/;
+    if (/^(\S+):[ \t](.+)/) {
+      ($label, $value) = ($1, $2);
+      $dup{$label} = 1 if $header{$label};
+      $header{$label} = $value;
+    } elsif (/^\s/) {
+      &fail("$0: non-header at line $.: $_\n") unless $label;
+      $header{$label} .= "\n$_";
+    } else {
+      &fail("$0: non-header at line $.: $_\n");
+    }
+  }
+  $messageid = $header{'Message-ID'};
+  return ($nntp_format, \%header, \%dup);
+}
+
+# Generate the PGP message to verify, undoing the same transformation as
+# is applied by signcontrol (along with other changes required to deal
+# with NNTP wire format and to quote the message properly for PGP).  Takes
+# the hash of headers and header duplicates returned by parse_header.
+sub generate_message {
+  my ($nntp_format, $header, $dup) = @_;
+
+  # The regexp below might be too strict about the structure of pgp sig
+  # lines.
+
+  # The $sep value means the separator between the radix64 signature lines
+  # can have any amount of spaces or tabs, but must have at least one
+  # space or tab, if there is a newline then the space or tab has to
+  # follow the newline.  Any number of newlines can appear as long as each
+  # is followed by at least one space or tab.  *phew*
+  my $sep = "[ \t]*(\n?[ \t]+)+";
+
+  # Match all of the characters in a radix64 string
+  my $r64 = '[a-zA-Z0-9+/]';
+
+  local $_ = $$header{'X-PGP-Sig'};
+  &fail("$0: X-PGP-Sig not in expected format\n")
+    unless /^(\S+)$sep(\S+)(($sep$r64{64})+$sep$r64+=?=?$sep=$r64{4})$/;
+
+  my ($version, $signed_headers, $signature) = ($1, $3, $4);
+  $signature =~ s/$sep/\n/g;
+
+  my $message  = "-----BEGIN PGP SIGNED MESSAGE-----\n\n";
+  $message .= "X-Signed-Headers: $signed_headers\n";
+  my $label;
+  foreach $label (split(",", $signed_headers)) {
+    &fail("$0: duplicate signed $label header, can't verify\n")
+      if $$dup{$label};
+    $message .= "$label: ";
+    $message .= "$$header{$label}" if $$header{$label};
+    $message .= "\n";
+  }
+  $message .= "\n";             # end of headers
+
+  while (<>) {                  # read body lines
+    if ($nntp_format) {
+      # Check for end of article; some news servers (eg, Highwind's
+      # "Breeze") include the dot-CRLF of the NNTP protocol in the article
+      # data passed to this script
+      last if $_ eq ".\r\n";
+
+      # Remove NNTP encoding
+      s/^\.\./\./;
+      s/\r\n$/\n/;
+    }
+
+    s/^-/- -/;                  # pgp quote ("ASCII armor") dashes
+    $message .= $_;             # append to output string
+  }
+
+  $message .= "\n-----BEGIN PGP SIGNATURE-----\n";
+  $message .= "Version: $version\n";
+  $message .= $signature;
+  $message .= "\n-----END PGP SIGNATURE-----\n";
+  return $message;
+}
+
+# Write a PGP message to a file.  Attempt to do so safely.
+sub write_message {
+  my ($message) = @_;
+
+  open(TMP,">> $tmp") || &fail("$0: open > $tmp: $!\n");
+
+  -f TMP ||
+    &fail("$0: $tmp not a plain file, possible security violation attempt\n");
+  (stat(_))[3] == 1 ||
+    &fail("$0: $tmp has hard links, possible security violation attempt\n");
+
+  seek(TMP, 0, 0);              # make sure pointer is at beginning of file
+  truncate(TMP, 0);             # make sure file is zero length
+
+  print TMP $message;
+  close(TMP) || &errmsg("$0: close > $tmp: $!\n");
+  &fail("$0: write error for message to check\n")
+    if -s $tmp != length($message);
+
+  print $message if $test;
+}
 
 # Check the signature using PGP (including 2.6.2, 5.0, and the pgpgpg
 # wrapper for GnuPG).
 sub pgp_check {
-  ($file, $ring) = @_;
+  my ($file, $ring) = @_;
 
   $ENV{'PGPPATH'} = $ring if $ring;
 
@@ -290,7 +340,7 @@ sub pgp_check {
   # write a file named randseed.bin but doesn't do its own locking as it
   # should, and the consequences of a multiprocess conflict is failure to
   # verify.
-  $lock = "$lockdir/LOCK.$0";
+  my $lock = "$lockdir/LOCK.$0";
 
   until (&shlock($lock) > 0) {
     sleep(2);
@@ -326,7 +376,8 @@ sub pgp_check {
   #     1024 bits, Key ID B88DA9C1, Created 1996-04-10
   #      "news.announce.newgroups"
 
-  $ok = 2;                        # unknown signature result is default
+  my $ok = 2;                   # unknown signature result is default
+  my $signer;
   if (/B[Aa][Dd] signature /) {
     $ok = 3;
   } elsif (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
@@ -343,13 +394,13 @@ sub pgp_check {
 
 # Check the signature using GnuPG.
 sub gpg_check {
-  ($file, $ring) = @_;
+  my ($file, $ring) = @_;
 
-  $opts = '--quiet --status-fd=1 --logger-fd=1';
+  my $opts = '--quiet --status-fd=1 --logger-fd=1';
   if ($ring) {
     $opts .= " --keyring=$ring/pubring.gpg";
   } else {
-    $opts .= " --keyring=pubring.gpg";
+    $opts .= ' --keyring=pubring.gpg';
   }
 
   open(PGP, "$gpgv $opts $file 2> /dev/null |") ||
@@ -368,7 +419,10 @@ sub gpg_check {
     }
   }
 
-  $ok = 255;        # default exit status
+  print if $test;
+
+  my $ok = 255;                 # default exit status
+  my $signer;
   if (/\[GNUPG:\]\s+GOODSIG\s+\S+\s+(\S+)/) {
     $ok = 0;
     $signer = $1;
@@ -386,13 +440,12 @@ sub gpg_check {
 # Log an error message, attempting syslog first based on $syslog_method
 # and falling back on stderr.
 sub errmsg {
-  $_[0] =~ s/\n$//;
+  my ($message) = @_;
+  $message =~ s/\n$//;
 
-  $date = '';
+  my $date = '';
   if ($log_date) {
-    eval "require 'ctime.pl'";
-    ($date = &ctime(time)) =~ s/\d{4}\n//
-      unless $@;
+    ($date = localtime) =~ s/\d{4}\n//;
   }
 
   if ($syslog_method && $] >= 5.006) {
@@ -401,7 +454,9 @@ sub errmsg {
   }
 
   if ($syslog_method eq "logger") {
-    @loggers = ('/usr/ucb/logger', '/usr/bin/logger', '/usr/local/bin/logger');
+    my @loggers = ('/usr/ucb/logger', '/usr/bin/logger',
+                   '/usr/local/bin/logger');
+    my $try;
     foreach $try (@loggers) {
       if (-x $try) {
         $syslog_method = $try;
@@ -412,39 +467,35 @@ sub errmsg {
   }
 
   if ($syslog_method ne '' && $syslog_method !~ m%/logger$%) {
-    if ($] >= 5) {
-      eval "use Sys::Syslog";
-    } else {
-      eval "require 'syslog.pl'";
-    }
+    eval "use Sys::Syslog";
   }
 
   if ($@ || $syslog_method eq '') {
     warn $date, "$0: trying to use perl's syslog: $@\n" if $@;
-    warn $date, $_[0], "\n";
-    warn $date, "... while processing $header{'Message-ID'}\n"
-      if $header{'Message-ID'};
+    warn $date, $message, "\n";
+    warn $date, "... while processing $messageid\n"
+      if $messageid;
 
   } else {
-    $_[0] .= " processing $header{'Message-ID'}"
-      if $header{'Message-ID'};
+    $message .= " processing $messageid"
+      if $messageid;
 
     if ($syslog_method =~ m%/logger$%) {
       unless (system($syslog_method, "-i", "-p",
-                     "$syslog_facility.$syslog_level", $_[0]) == 0) {
+                     "$syslog_facility.$syslog_level", $message) == 0) {
         if ($? >> 8) {
           warn $date, "$0: $syslog_method exited status ",  $? >>  8, "\n";
         } else {
           warn $date, "$0: $syslog_method died on signal ", $? & 255, "\n";
         }
         $syslog_method = '';
-        &errmsg($_[0]);
+        &errmsg($message);
       }
 
     } else {
-      # setlogsock arrived in perl 5.004_03 to enable Sys::Syslog
-      # to use a Unix domain socket to talk to syslogd, which is
-      # the only way to do it when syslog runs with the -l switch.
+      # setlogsock arrived in perl 5.004_03 to enable Sys::Syslog to use a
+      # Unix domain socket to talk to syslogd, which is the only way to do
+      # it when syslog runs with the -l switch.
       if ($syslog_method eq "unix") {
         if ($^O eq "dec_osf" && $] >= 5) {
           eval 'sub Sys::Syslog::_PATH_LOG { "/dev/log" }';
@@ -452,14 +503,14 @@ sub errmsg {
         if ($] <= 5.00403 || ! eval "setlogsock('unix')") {
           warn $date, "$0: cannot use syslog_method 'unix' on this system\n";
           $syslog_method = '';
-          &errmsg($_[0]);
+          &errmsg($message);
           return;
         }
       }
 
-      # unfortunately, there is no way to definitively know in this program if
-      # the message was logged.  I wish there were a way to send a message
-      # to stderr if and only if the syslog attempt failed.
+      # Unfortunately, there is no way to definitively know in this
+      # program if the message was logged.  I wish there were a way to
+      # send a message to stderr if and only if the syslog attempt failed.
       &openlog($0, 'pid', $syslog_facility);
       &syslog($syslog_level, $_[0]);
       &closelog();
@@ -473,12 +524,12 @@ sub fail {
   exit 255;
 }
 
-# get a lock in essentially the same fashion as INN's shlock.
-# return 1 on success, 0 for normal failure, -1 for abnormal failure.
-# "normal failure" is that a lock is apparently in use by someone else.
+# Get a lock in essentially the same fashion as INN's shlock.  return 1 on
+# success, 0 for normal failure, -1 for abnormal failure.  "normal
+# failure" is that a lock is apparently in use by someone else.
 sub shlock {
-  local($file) = @_;
-  local($ltmp, $pid);
+  my ($file) = @_;
+  my ($ltmp, $pid);
 
   unless (defined(&ENOENT)) {
     eval "require POSIX qw(:errno_h)";
@@ -490,7 +541,7 @@ sub shlock {
     }
   }
 
-  $ltmp = ($file =~ m#(.*/)#)[0] . "shlock$$";
+  $ltmp = ($file =~ m%(.*/)%)[0] . "shlock$$";
 
   # this should really attempt to use another temp name
   -e $ltmp && (unlink($ltmp) || return -1);
@@ -540,38 +591,186 @@ sub shlock {
   return 1;
 }
 
-# Our lawyer told me to include the following.  The upshot of it is
-# that you can use the software for free as much as you like.
+=head1 NAME
 
-# Copyright (c) 1996 UUNET Technologies, Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#      This product includes software developed by UUNET Technologies, Inc.
-# 4. The name of UUNET Technologies ("UUNET") may not be used to endorse or
-#    promote products derived from this software without specific prior
-#    written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY UUNET ``AS IS'' AND ANY EXPRESS OR
-# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL UUNET BE LIABLE FOR ANY DIRECT,
-# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-# OF THE POSSIBILITY OF SUCH DAMAGE.
+pgpverify - Cryptographically verify Usenet control messages
+
+=head1 SYNOPSIS
+
+B<pgpverify> [B<-test>] < I<message>
+
+=head1 DESCRIPTION
+
+The B<pgpverify> program reads (on standard input) a Usenet control
+message that has been cryptographically signed using the B<signcontrol>
+program (or some other program that produces a compatible format).
+B<pgpverify> then uses a PGP implementation to determine who signed the
+control message.  If the control message has a valid signature,
+B<pgpverify> prints (to stdout) the user ID of the key that signed the
+message.  Otherwise, it exits with a non-zero exit status.
+
+If B<pgpverify> is installed as part of INN, it uses INN's configuration
+to determine what signature verification program to use, how to log
+errors, what temporary directory to use, and what keyring to use.
+Otherwise, all of those parameters can be set by editing the beginning of
+this script.
+
+By default, when running as part of INN, B<pgpverify> expects the PGP key
+ring to be found in I<pathetc>/pgp (as either F<pubring.pgp> or
+F<pubring.gpg> depending on whether PGP or GnuPG is used to verify
+signatures).  If that directory doesn't exist, it will fall back on using
+the default key ring, which is in a F<.pgp> or F<.gnupg> subdirectory of
+the running user's home directory.
+
+=head1 OPTIONS
+
+The B<-test> flag causes B<pgpverify> to print out the input that it is
+passing to PGP (which is a reconstructed version of the input that
+supposedly created the control message) as well as the output from PGP's
+analysis of the message.
+
+=head1 EXIT STATUS
+
+B<pgpverify> may exit with the following statuses:
+
+=over 5
+
+=item 0Z<>
+
+The control message had a good PGP signature.
+
+=item 1
+
+The control message had no PGP signature.
+
+=item 2
+
+The control message had an unknown PGP signature.
+
+=item 3
+
+The control message had a bad PGP signature.
+
+=item 255
+
+A problem occurred not directly related to PGP analysis of signature.
+
+=back
+
+=head1 ENVIRONMENT
+
+B<pgpverify> does not modify or otherwise alter the environment before
+invoking the B<pgp> or B<gpgv> program.  It is the responsibility of the
+person who installs B<pgpverify> to ensure that when B<pgp> or B<gpgv>
+runs, it has the ability to locate and read a PGP key file that contains
+the PGP public keys for the appropriate Usenet hierarchy administrators.
+
+=head1 NOTES
+
+Historically, Usenet news server administrators have configured their news
+servers to automatically honor Usenet control messages based on the
+originator of the control messages and the hierarchies for which the
+control messages applied.  For example, in the past, David Lawrence always
+issued control messages for the "Big 8" hierarchies (comp, humanities,
+misc, news, rec, sci, soc, talk).  Usenet news administrators would
+configure their news server software to automatically honor newgroup and
+rmgroup control messages that originated from David Lawrence and applied
+to any of the Big 8 hierarchies.
+
+Unfortunately, Usenet news articles (including control messages) are
+notoriously easy to forge.  Soon, malicious users realized they could
+create or remove (at least temporarily) any Big 8 newsgroup they wanted by
+simply forging an appropriate control message in David Lawrence's name.
+As Usenet became more widely used, forgeries became more common.
+
+The B<pgpverify> program was designed to allow Usenet news administrators
+to configure their servers to cryptographically verify control messages
+before automatically acting on them.  Under the pgpverify system, a Usenet
+hierarchy maintainer creates a PGP public/private key pair and
+disseminates the public key.  Whenever the hierarchy maintainer issues a
+control message, he uses the B<signcontrol> program to sign the control
+message with the PGP private key.  Usenet news administrators configure
+their news servers to run the B<pgpverify> program on the appropriate
+control messages, and take action based on the PGP key User ID that signed
+the control message, not the name and address that appear in the control
+message's From or Sender headers.
+
+Thus, using the B<signcontrol> and B<pgpverify> programs appropriately
+essentially eliminates the possibility of malicious users forging Usenet
+control messages that sites will act upon, as such users would have to
+obtain the PGP private key in order to forge a control message that would
+pass the cryptographic verification step.  If the hierarchy administrators
+properly protect their PGP private keys, the only way a malicious user
+could forge a validly-signed control message would be by breaking the
+public key encryption algorithm, which (at least at this time) is believed
+to be prohibitively difficult for PGP keys of a sufficient bit length.
+
+=head1 SEE ALSO
+
+gpgv(1), pgp(1)
+
+L<ftp://ftp.isc.org/pub/pgpcontrol/> is where the most recent versions of
+B<signcontrol> and B<pgpverify> live, along with PGP public keys used for
+hierarchy administration.
+
+=head1 HISTORY
+
+B<pgpverify> was written by David C Lawrence <tale@isc.org>.  Manual page
+provided by James Ralston.
+
+=head1 COPYRIGHT AND LICENSE
+
+David Lawrence wrote:  "Our lawyer told me to include the following.  The
+upshot of it is that you can use the software for free as much as you
+like."
+
+Copyright (c) 1996 UUNET Technologies, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+=over 3
+
+=item 1.
+
+Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+=item 2.
+
+Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+=item 3.
+
+All advertising materials mentioning features or use of this software must
+display the following acknowledgement:
+
+  This product includes software developed by UUNET Technologies, Inc.
+
+=item 4.
+
+The name of UUNET Technologies ("UUNET") may not be used to endorse or
+promote products derived from this software without specific prior written
+permission.
+
+=back
+
+THIS SOFTWARE IS PROVIDED BY UUNET "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+NO EVENT SHALL UUNET BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+=cut
 
 # Local variables:
 # cperl-indent-level: 2

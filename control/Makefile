@@ -7,7 +7,7 @@ top	      = ..
 ALL	      = controlbatch controlchan docheckgroups gpgverify perl-nocem \
 		pgpverify signcontrol
 
-MAN	      = ../doc/man/perl-nocem.8
+MAN	      = ../doc/man/perl-nocem.8 ../doc/man/pgpverify.1
 
 INSTALLED     = $(D)$(PATHBIN)/controlbatch	\
 		$(D)$(PATHBIN)/controlchan	\
@@ -41,6 +41,9 @@ signcontrol:	signcontrol.in   $(FIX) ; $(FIX) -i signcontrol.in
 
 ../doc/man/perl-nocem.8: perl-nocem
 	$(POD2MAN) -s 8 $? > $@
+
+../doc/man/pgpverify.1: pgpverify
+	$(POD2MAN) -s 1 $? > $@
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.
