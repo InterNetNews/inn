@@ -42,10 +42,9 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
     char *p, *q;
     char *overindex;
     char *patterns;
-    UNIOVER *config, *newconfig = (UNIOVER *)NULL, *prev = (UNIOVER *)NULL;
+    UNIOVER *config, *newconfig, *prev = (UNIOVER *)NULL;
     unsigned char index;
     FILE *fp;
-    BOOL nextline;
     char *dirpath;
     char *newdirpath;
     char *path;
@@ -99,7 +98,7 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	    return OVER_ERROR;
 	}
 
-	nextline = FALSE;
+	newconfig = (UNIOVER *)NULL;
 	for(config=OVERconfig;config!=(UNIOVER *)NULL;config=config->next) {
 	    if (config->index == index) {
 		if (New) {
@@ -180,19 +179,18 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	    /* Store the patterns in reverse order like storage.ctl */
 	    for (i--, p = strtok(patterns, ","); p != NULL; i--, p = strtok(NULL, ","))
 	        newconfig->patterns[i] = COPY(p);
+	    if (prev)
+		prev->next = newconfig;
+	    else
+		OVERconfig = newconfig;
+	    prev = newconfig;
+	    newconfig->next = (UNIOVER *)NULL;
 	} else {
 	    if (New)
 		newconfig->newfp = fp;
 	    else
 		newconfig->fp = fp;
 	}
-
-	if (prev)
-	    prev->next = newconfig;
-	else
-	    OVERconfig = newconfig;
-	prev = newconfig;
-	newconfig->next = (UNIOVER *)NULL;
     }
     (void)fclose(f);
     DISPOSE(dirpath);
@@ -270,10 +268,7 @@ BOOL OVERinit(void) {
 
     Initialized = TRUE;
     status = OVERreadconfig(FALSE);
-    if (status == OVER_ERROR) {
-	Initialized = FALSE;
-	return FALSE;
-    } else if (status == OVER_DONE && atexit(OVERshutdown) < 0) {
+    if (status == OVER_ERROR || (status == OVER_DONE && atexit(OVERshutdown) < 0)) {
 	OVERshutdown();
 	Initialized = FALSE;
 	return FALSE;
@@ -409,6 +404,7 @@ static BOOL MatchGroups(const char *g, int num, char **patterns) {
     char                *group;
     char                *groups;
     const char          *p;
+    char		*q;
     int                 i;
     BOOL                wanted = FALSE;
 
@@ -420,8 +416,8 @@ static BOOL MatchGroups(const char *g, int num, char **patterns) {
     groups[p - g] = '\0';
 
     for (group = strtok(groups, " "); group != NULL; group = strtok(NULL, " ")) {
-	if ((p = strchr(group, ':')) != (char *)NULL)
-	    p = '\0';
+	if ((q = strchr(group, ':')) != (char *)NULL)
+	    *q = '\0';
 	for (i = 0; i < num; i++) {
 	    switch (patterns[i][0]) {
 	    case '!':
