@@ -309,7 +309,7 @@ int main(int ac, char *av[])
     /* Do the real work. */
     if (ICCopen() < 0)
 	Failed("setup communication");
-    i = ICCcommand(cp->Letter, av, &reply);
+    i = ICCcommand(cp->Letter, (const char **) av, &reply);
     if (i < 0) {
 	i = errno;
 	p = concatpath(innconf->pathrun, _PATH_SERVERPID);
