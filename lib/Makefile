@@ -4,10 +4,6 @@ include ../Makefile.global
 
 CFLAGS  = $(GCFLAGS)
 
-##  For OSx systems, get these from the ATT Universe libc.
-##  See the rule for version.o, below.
-OSXATTOBJ= version.o memchr.o memcmp.o memcpy.o memset.o strchr.o strrchr.o
-
 ##  MISSING_SRC and MISSING_OBJ fill in standard library functions the
 ##  system doesn't have, as detected by configure and recorded in
 ##  Makefile.global.
@@ -16,21 +12,21 @@ SOURCES = $(MISSING_SRC) \
 	argparse.c checkart.c cleanfrom.c clientactive.c clientlib.c \
 	closeonexec.c concat.c conffile.c dbz.c defdist.c findheader.c \
 	genid.c getconfig.c getdtab.c getfqdn.c getmodaddr.c gettime.c \
-	grpalias.c hash.c inndcomm.c innvers.c localopen.c lockfile.c \
-	makedir.c md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c \
-	readin.c remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
-	sendpass.c tempname.c waitnb.c wildmat.c xfopena.c xmalloc.c \
-	xsignal.c xwrite.c xwritev.c
+	grpalias.c hash.c inndcomm.c localopen.c lockfile.c makedir.c \
+	md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c readin.c \
+	remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
+	sendpass.c tempname.c waitnb.c wildmat.c version.c xfopena.c \
+	xmalloc.c xsignal.c xwrite.c xwritev.c
 
 OBJECTS = $(MISSING_OBJ) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
 	closeonexec.o concat.o conffile.o dbz.o defdist.o findheader.o \
 	genid.o getconfig.o getdtab.o getfqdn.o getmodaddr.o gettime.o \
-	grpalias.o hash.o inndcomm.o innvers.o localopen.o lockfile.o \
-	makedir.o md5.o nonblocking.o parsedate.o qio.o radix32.o readin.o \
+	grpalias.o hash.o inndcomm.o localopen.o lockfile.o makedir.o \
+	md5.o nonblocking.o parsedate.o qio.o radix32.o readin.o \
 	remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
-	sendpass.o tempname.o waitnb.o wildmat.o xfopena.o xmalloc.o \
-	xsignal.o xwrite.o xwritev.o
+	sendpass.o tempname.o waitnb.o wildmat.o version.o xfopena.o \
+	xmalloc.o xsignal.o xwrite.o xwritev.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -40,7 +36,7 @@ install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:
 	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate qiotest
-	rm -f profiled libinn_p.a endian
+	rm -f profiled libinn_p.a endian version.c
 	rm -rf .libs
 
 tags ctags:	$(SOURCES)
@@ -66,6 +62,9 @@ perl.o: perl.c
 ../include/autoconfig.h: endian
 	./endian >../include/autoconfig.h
 
+version.c:	mkversion ../Makefile.global
+	./mkversion '$(VERSION)' '$(VERSION_EXTRA)'
+
 parsedate.c:	parsedate.y
 	@echo Expect 6 shift/reduce conflicts
 	$(YACC) parsedate.y
@@ -73,11 +72,6 @@ parsedate.c:	parsedate.y
 
 parsedate:	parsedate.c gettime.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -DTEST -DYYDEBUG parsedate.c gettime.o
-
-##  This rule will only be triggered if $(OSXATTOBJ) is in MISSING_OBJ.
-version.o:
-	@rm -f $(OSXATTOBJ)
-	/.attbin/ar vx /usr/.attlib/libc.a $(OSXATTOBJ)
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:	../libinn_p.a
