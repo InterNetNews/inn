@@ -823,6 +823,10 @@ STATIC char *ARTparseheader(char *in, char *out, int *deltap, STRING *errorp)
 	return in;
     }
 
+    /* Skip the Bytes header */
+    if (hp == &ARTheaders[_bytes])
+	return in;
+
     if (hp->Type == HTsav) {
 	*deltap = 0;
     }
