@@ -1080,12 +1080,6 @@ ARTclean(ARTDATA *data, char *buff)
     return false;
   }
 
-  /* Fill in other Data fields. */
-  if (HDR_FOUND(HDR__SENDER))
-    data->Poster = HDR(HDR__SENDER);
-  else
-    data->Poster = HDR(HDR__FROM);
-
   TMRstop(TMR_ARTCLEAN);
   return true;
 }
@@ -1145,9 +1139,10 @@ ARTreject(Reject_type code, CHANNEL *cp, struct buffer *article UNUSED)
 static bool
 ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
 {
+  const HDRCONTENT *hc = data->HdrContent;
   const char	*p;
   char		*q, *q1;
-  const char	*local;
+  const char	*local, *poster;
   char		buff[SMBUF];
   ARTHANDLE	*art;
   bool		r;
@@ -1179,7 +1174,11 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
   HeaderCleanFrom(q);
 
   /* Compare canonical forms. */
-  q1 = xstrdup(data->Poster);
+  if (HDR_FOUND(HDR__SENDER))
+    poster = HDR(HDR__SENDER);
+  else
+    poster = HDR(HDR__FROM);
+  q1 = xstrdup(poster);
   HeaderCleanFrom(q1);
   if (strcmp(q, q1) != 0) {
     r = false;
