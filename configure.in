@@ -13,9 +13,7 @@ dnl really should be done.
 dnl A file that should always be in the root directory of the source tree,
 dnl to make sure our source file was set correctly.
 AC_INIT(Makefile.global.in)
-
-dnl Just to be sure.
-chmod +x config.sub config.guess
+AC_CONFIG_AUX_DIR(support)
 
 dnl Fix the paths.
 AC_PREFIX_DEFAULT(/usr/local/news)
@@ -25,24 +23,12 @@ test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
 dnl Parse the arguments.  libtool, then specifying alternate paths, then
 dnl various other compile options.
 
-LIBTOOL=''
-UPLIBTOOL=''
-EXTOBJ='o'
-EXTLIB='a'
+inn_use_libtool=no
 AC_ARG_ENABLE(libtool,
     [  --enable-libtool        Use libtool for lib generation [default=no]],
-    [
-        if test "$enableval" = yes ; then
-            LIBTOOL='$(SHELL) ../libtool'
-            UPLIBTOOL='$(SHELL) ../../libtool'
-            EXTOBJ='lo'
-            EXTLIB='la'
-        fi
-    ])
-AC_SUBST(LIBTOOL)
-AC_SUBST(UPLIBTOOL)
-AC_SUBST(EXTOBJ)
-AC_SUBST(EXTLIB)
+    if test "$enableval" = yes ; then
+        inn_use_libtool=yes
+    fi)
 
 AC_ARG_WITH(control-dir,
     [  --with-control-dir=PATH Control programs [PREFIX/bin/control]],
@@ -224,15 +210,29 @@ AC_SUBST(LOG_COMPRESSEXT)
 dnl FIXME: hostname is more reliable on most systems; uname may truncate.
 HOSTNAME=`uname -n`
 AC_SUBST(HOSTNAME)
-AC_CANONICAL_HOST
 
-dnl If libtool was requested, configure it now.
-if test x"$EXTOBJ" = xlo ; then
-    AM_PROG_LIBTOOL
+dnl Use libtool if it was requested.  Otherwise, hunt up that information
+dnl ourselves.  Manually set a few things for makefiles.
+if test x"$inn_use_libtool" = xyes ; then
+    AC_PROG_LIBTOOL
+    EXTLIB='la'
+    EXTOBJ='lo'
+    LIBTOOL='../libtool'
+    UPLIBTOOL='../../libtool'
+else
+    AC_CANONICAL_HOST
+    AC_PROG_CC
+    EXTLIB='a'
+    EXTOBJ='o'
+    LIBTOOL=''
+    UPLIBTOOL=''
+    AC_SUBST(LIBTOOL)
 fi
+AC_SUBST(EXTLIB)
+AC_SUBST(EXTOBJ)
+AC_SUBST(UPLIBTOOL)
 
 dnl Checks for programs.
-AC_PROG_CC
 AC_PROG_GCC_TRADITIONAL
 AC_PROG_LEX
 AC_PROG_MAKE_SET
