@@ -24,21 +24,6 @@
 #include "msgs.h"
 #include "misc.h"
 
-/* Avoid conflicts with parsedate.y's generated yacc code. */
-#define yy_yyv	innfeed_yy_yyv
-#define yyact	innfeed_yyact
-#define yychk	innfeed_yychk
-#define yydef	innfeed_yydef
-#define yyexca	innfeed_yyexca
-#define yylval	innfeed_yylval
-#define yypact	innfeed_yypact
-#define yypgo	innfeed_yypgo
-#define yyr1	innfeed_yyr1
-#define yyr2	innfeed_yyr2
-#define yys	innfeed_yys
-#define yyv	innfeed_yyv
-#define yyval	innfeed_yyval
-
 #define UNKNOWN_SCOPE_TYPE "line %d: unknown scope type: %s"
 #define SYNTAX_ERROR "line %d: syntax error"
 
