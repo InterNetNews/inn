@@ -2,37 +2,33 @@
 include ../Makefile.global
 
 CC	= $(LIBCC)
-
 IFTRUE	= @$(SHELL) ../iftrue.sh
-
-CFLAGS = $(GCFLAGS) $(PERLINC)
-
+CFLAGS	= $(GCFLAGS) $(PERLINC)
 
 ##  For OSx systems, get these from the ATT Universe libc.
 ##  See the rule for version.o, below.
 OSXATTOBJ= version.o memchr.o memcmp.o memcpy.o memset.o strchr.o strrchr.o
 
-##  =()<MISSING_SRC = @<MISSING_SRC>@>()=
-MISSING_SRC = 
-##  =()<MISSING_OBJ = @<MISSING_OBJ>@>()=
-MISSING_OBJ = 
-
+##  MISSING_SRC and MISSING_OBJ fill in standard library functions the system
+##  doesn't have, as detected by configure and recorded in Makefile.global.
 SOURCES = $(MISSING_SRC) \
-	checkart.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
-	conffile.c dbz.c defdist.c findheader.c genid.c getconfig.c getdtab.c \
-	getfqdn.c getmodaddr.c gettime.c hash.c inndcomm.c innvers.c localopen.c \
-	lockfile.c makedir.c md5.c nonblocking.c parsedate.c perl.c radix32.c\
-	readin.c remopen.c reservedfd.c resource.c sendarticle.c sendpass.c tempname.c \
-	waitnb.c wildmat.c xfopena.c xmalloc.c xmemerr.c xrealloc.c xwrite.c \
-	xwritev.c grpalias.c rwlock.c argparse.c
+	argparse.c checkart.c cleanfrom.c clientactive.c clientlib.c \
+	closeonexec.c conffile.c dbz.c defdist.c findheader.c genid.c \
+	getconfig.c getdtab.c getfqdn.c getmodaddr.c gettime.c grpalias.c \
+	hash.c inndcomm.c innvers.c localopen.c lockfile.c makedir.c md5.c \
+	nonblocking.c parsedate.c perl.c pread.c pwrite.c radix32.c readin.c \
+	remopen.c reservedfd.c resource.c rwlock.c sendarticle.c sendpass.c \
+	tempname.c waitnb.c wildmat.c xfopena.c xmalloc.c xmemerr.c \
+	xrealloc.c xwrite.c xwritev.c
 OBJECTS = $(MISSING_OBJ) \
-	checkart.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
-	conffile.o dbz.o defdist.o findheader.o genid.o getconfig.o getdtab.o \
-	getfqdn.o getmodaddr.o gettime.o hash.o inndcomm.o innvers.o localopen.o \
-	lockfile.o makedir.o md5.o nonblocking.o parsedate.o radix32.o\
-	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o tempname.o \
-	waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o xrealloc.o xwrite.o \
-	xwritev.o pread.o pwrite.o grpalias.o rwlock.o argparse.o
+	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
+	closeonexec.o conffile.o dbz.o defdist.o findheader.o genid.o \
+	getconfig.o getdtab.o getfqdn.o getmodaddr.o gettime.o grpalias.o \
+	hash.o inndcomm.o innvers.o localopen.o lockfile.o makedir.o md5.o \
+	nonblocking.o parsedate.o pread.o pwrite.o radix32.o readin.o \
+	remopen.o reservedfd.o resource.o rwlock.o sendarticle.o sendpass.o \
+	tempname.o waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o \
+	xrealloc.o xwrite.o xwritev.o
 LOBJECTS	= $(OBJECTS:.o=.lo)
 
 all:			libinn.$(EXTLIB) perl.o ../include/autoconfig.h
@@ -97,7 +93,7 @@ syslog.o:		syslog.c
 syslog.c:		../syslog/syslog.c
 	(cd .. ; $(MAKE) syslogfix )
 
-## This rule will only be triggered if $(OSXATTOBJ) is in MISSING_OBJ.
+##  This rule will only be triggered if $(OSXATTOBJ) is in MISSING_OBJ.
 version.o:
 	@rm -f $(OSXATTOBJ)
 	/.attbin/ar vx /usr/.attlib/libc.a $(OSXATTOBJ)
