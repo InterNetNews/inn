@@ -11,6 +11,7 @@
 # include "config.h"
 #endif
 
+#include <stdio.h>
 #include <sys/types.h>
 
 #define STORAGE_TOKEN_LENGTH 16
@@ -70,22 +71,23 @@ struct artngnum {
 extern "C" {
 #endif
 
-char *          TokenToText(const TOKEN token);
-TOKEN           TextToToken(const char *text);
-bool            IsToken(const char *text);
-char *          ToWireFmt(const char *article, int len, int *newlen);
-char *          FromWireFmt(const char *article, int len, int *newlen);
-
-bool            SMsetup(SMSETUP type, void *value);
-bool            SMinit(void);
-TOKEN           SMstore(const ARTHANDLE article);
-ARTHANDLE *     SMretrieve(const TOKEN token, const RETRTYPE amount);
-ARTHANDLE *     SMnext(const ARTHANDLE *article, const RETRTYPE amount);
-void            SMfreearticle(ARTHANDLE *article);
-bool            SMcancel(TOKEN token);
-bool            SMprobe(PROBETYPE type, TOKEN *token, void *value);
-bool            SMflushcacheddata(FLUSHTYPE type);
-void            SMshutdown(void);
+char *      TokenToText(const TOKEN token);
+TOKEN       TextToToken(const char *text);
+bool        IsToken(const char *text);
+char *      ToWireFmt(const char *article, int len, int *newlen);
+char *      FromWireFmt(const char *article, int len, int *newlen);
+            
+bool        SMsetup(SMSETUP type, void *value);
+bool        SMinit(void);
+TOKEN       SMstore(const ARTHANDLE article);
+ARTHANDLE * SMretrieve(const TOKEN token, const RETRTYPE amount);
+ARTHANDLE * SMnext(const ARTHANDLE *article, const RETRTYPE amount);
+void        SMfreearticle(ARTHANDLE *article);
+bool        SMcancel(TOKEN token);
+bool        SMprobe(PROBETYPE type, TOKEN *token, void *value);
+bool        SMflushcacheddata(FLUSHTYPE type);
+void        SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups);
+void        SMshutdown(void);
 
 #ifdef __cplusplus
 }
