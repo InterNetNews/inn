@@ -6,15 +6,15 @@ CFLAGS  = $(GCFLAGS)
 
 SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
 	concat.c conffile.c date.c dbz.c defdist.c endian.c error.c \
-	findheader.c genid.c getconfig.c getdtab.c getfqdn.c getmodaddr.c \
-	getopt.c gettime.c grpalias.c hash.c hstrerror.c inet_aton.c \
-	inet_ntoa.c inndcomm.c localopen.c lockfile.c makedir.c md5.c \
-	memchr.c memcmp.c memmove.c memset.c mkfifo.c nonblocking.c \
-	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
-	remopen.c reservedfd.c resource.c rwlock.c sendarticle.c sendpass.c \
-	setenv.c strcasecmp.c strdup.c strerror.c strspn.c strtok.c \
-	tempname.c waitnb.c wildmat.c version.c xfopena.c xmalloc.c \
-	xsignal.c xwrite.c
+	findheader.c fseeko.c ftello.c genid.c getconfig.c getdtab.c \
+	getfqdn.c getmodaddr.c getopt.c gettime.c grpalias.c hash.c \
+	hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
+	lockfile.c makedir.c md5.c memchr.c memcmp.c memmove.c memset.c \
+	mkfifo.c nonblocking.c parsedate.c perl.c pread.c pwrite.c qio.c \
+	radix32.c readin.c remopen.c reservedfd.c resource.c rwlock.c \
+	sendarticle.c sendpass.c setenv.c strcasecmp.c strerror.c strspn.c \
+	strtok.c tempname.c waitnb.c wildmat.c version.c xfopena.c \
+	xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	argparse.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
@@ -124,6 +124,10 @@ error.o: error.c ../include/config.h ../include/inn/defines.h \
 findheader.o: findheader.c ../include/configdata.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h ../include/inn/qio.h
+fseeko.o: fseeko.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+ftello.o: ftello.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
 genid.o: genid.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
 getconfig.o: getconfig.c ../include/config.h ../include/inn/defines.h \
@@ -148,8 +152,10 @@ hash.o: hash.c ../include/configdata.h ../include/config.h \
  ../include/macros.h ../include/md5.h
 hstrerror.o: hstrerror.c ../include/configdata.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
-inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h
-inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h
+inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
 inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inndcomm.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h
@@ -179,8 +185,10 @@ parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/ppport.h
-pread.o: pread.c ../include/config.h ../include/inn/defines.h
-pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h
+pread.o: pread.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
 qio.o: qio.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h
@@ -204,10 +212,10 @@ sendarticle.o: sendarticle.c ../include/configdata.h \
 sendpass.o: sendpass.c ../include/configdata.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/nntp.h \
  ../include/paths.h ../include/libinn.h ../include/macros.h
-setenv.o: setenv.c ../include/config.h ../include/inn/defines.h
+setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
 strcasecmp.o: strcasecmp.c ../include/configdata.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
-strdup.o: strdup.c ../include/config.h ../include/inn/defines.h
 strerror.o: strerror.c ../include/config.h ../include/inn/defines.h
 strspn.o: strspn.c ../include/configdata.h ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
