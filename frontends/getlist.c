@@ -19,7 +19,7 @@
 STATIC NORETURN
 Usage()
 {
-    (void)fprintf(stderr, "Usage: getlist [-h host] [type [pat [groups]]\n");
+    (void)fprintf(stderr, "Usage: getlist [-p port] [-h host] [type [pat [groups]]\n");
     exit(1);
 }
 
@@ -41,21 +41,30 @@ main(ac, av)
     char	*p;
     char	*pattern;
     char	buff[512 + 1];
+    int		port;
     int		i;
 
     /* Set defaults. */
     host = NULL;
     pattern = NULL;
     types = NULL;
+    port = NNTP_PORT;
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "h:")) != EOF)
+    while ((i = getopt(ac, av, "h:p:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
 	case 'h':
 	    host = optarg;
+	    break;
+	case 'p':
+	    port = atoi(optarg);
+	    if (port <= 0) {
+	       (void)fprintf(stderr, "Illegal value for -p option\n");
+	       	exit(1);
+	    }
 	    break;
 	}
     ac -= optind;
@@ -92,7 +101,7 @@ main(ac, av)
 	exit(1);
     }
     buff[0] = '\0';
-    if (NNTPconnect(host, NNTP_PORT, &FromServer, &ToServer, buff) < 0) {
+    if (NNTPconnect(host, port, &FromServer, &ToServer, buff) < 0) {
 	(void)fprintf(stderr, "Can't connect to server, %s\n",
 		buff[0] ? buff : strerror(errno));
 	exit(1);
