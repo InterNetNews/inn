@@ -1031,9 +1031,28 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
 	return FALSE;
     }
 
+    /* stat old index file so we know its actual size. */
+    if (fstat(fd, &sb) < 0) {
+	syslog(L_ERROR, "tradindexed: could not stat %s: %m", newidx);
+	close(fd);
+	OV3closegroup(gh, FALSE);
+	GROUPlock(gloc, LOCK_UNLOCK);
+	return FALSE;
+    }
+	
+
     /* write old index records to new file */
     numentries = ge->high - ge->low + 1;
     nbytes = numentries * sizeof(INDEXENTRY);
+
+    /*
+    ** check to see if the actual file length is less than nbytes (since the 
+    ** article numbers may be sparse) and if so, only read/write that amount. 
+    */
+    if (nbytes > sb.st_size) {
+	nbytes = sb.st_size;
+    }
+
     if (pwrite(fd, &gh->indexmem[ge->low - ge->base] , nbytes,
 	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta)) != nbytes) {
 	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
