@@ -694,6 +694,15 @@ EXPdoline(out, line, length, arts, krps)
       return TRUE;
     }
 
+    /* Check to see if this messageid has already been written to the
+       text file.  Unfortunately, this is the only clean way to do this */
+    key.dptr = fields[0];
+    key.dsize = strlen(key.dptr) + 1;
+    if (dbzexists(key)) {
+	fprintf(stderr, "Duplicate message-id \"%s\" in history\n", fields[0]);
+	return TRUE;
+    }
+    
     /* Split up the time field, robustly. */
     if ((p = strchr(fields[1], HIS_SUBFIELDSEP)) == NULL) {
 	/* One sub-field:  when the article arrived. */
@@ -879,19 +888,13 @@ EXPdoline(out, line, length, arts, krps)
 
     /* Set up the DBZ data.  We don't have to sanitize the Message-ID
      * since it had to have been clean to get in there. */
-    key.dptr = fields[0];
-    key.dsize = strlen(key.dptr) + 1;
     value.dptr = (char *)&where;
     value.dsize = sizeof where;
     if (EXPverbose > 4)
 	(void)printf("\tdbz %s@%ld\n", key.dptr, where);
     if (!dbzstore(key, value)) {
-        if (dbzexists(key)) {
-            fprintf(stderr, "Duplicate message-id \"%s\" in history\n", fields[0]);
-        } else {
-	    fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
-	    return FALSE;
-	}
+	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
+	return FALSE;
     }
     return TRUE;
 }
