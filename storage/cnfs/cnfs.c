@@ -1179,6 +1179,19 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	SMseterror(SMERR_UNDEFINED, "size overflows bitmaps");
 	syslog(L_ERROR, "%s: size overflows bitmaps %s %s:0x%s:0x%s:0x%s: %ld",
 	LocalLogName, TokenToText(token), cycbuffname, buf1, buf2, buf3, ntohl(cah.size));
+	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+	DISPOSE(art);
+	return NULL;
+    }
+    if ((innconf->cnfscheckfudgesize != 0) && (ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+	char buf1[24], buf2[24], buf3[24];
+	strcpy(buf1, CNFSofft2hex(cycbuff->free, FALSE));
+	strcpy(buf2, CNFSofft2hex(middle, FALSE));
+	strcpy(buf3, CNFSofft2hex(limit, FALSE));
+	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");
+	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s:0x%s:0x%s: %ld",
+	LocalLogName, TokenToText(token), cycbuffname, buf1, buf2, buf3, ntohl(cah.size));
+	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	DISPOSE(art);
 	return NULL;
     }
@@ -1454,6 +1467,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	private->offset += CNFS_BLOCKSIZE;
 	art->data = NULL;
 	art->len = 0;
+	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
     /* check the bitmap to ensure cah.size is not broken */
@@ -1470,6 +1484,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    private->offset = middle;
 	    art->data = NULL;
 	    art->len = 0;
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
     } else {
@@ -1483,8 +1498,16 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    private->offset = middle;
 	    art->data = NULL;
 	    art->len = 0;
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
+    }
+    if ((innconf->cnfscheckfudgesize != 0) && (ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+	art->data = NULL;
+	art->len = 0;
+	private->base = 0;
+	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+	return art;
     }
 
     private->offset += (CYCBUFF_OFF_T) ntohl(cah.size) + sizeof(cah);
