@@ -271,6 +271,8 @@ long procArtsDeferred ;
 long procArtsMissing ;
 double procArtsSizeAccepted ;
 double procArtsSizeRejected ;
+long procArtsToTape ;
+long procArtsFromTape ;
 
 static HostParams defaultParams=NULL;
 
@@ -1654,6 +1656,7 @@ void hostSendArticle (Host host, Article article)
       host->gArtsHostSleep++ ;
       host->artsToTape++ ;
       host->gArtsToTape++ ;
+      procArtsToTape++ ;
       tapeTakeArticle (host->myTape, article) ;
       return ;
     }
@@ -1744,6 +1747,7 @@ void hostSendArticle (Host host, Article article)
         {
           host->artsToTape++ ;
           host->gArtsToTape++ ;
+          procArtsToTape++ ;
           tapeTakeArticle (host->myTape,article) ;
           return ;
         }
@@ -2030,7 +2034,8 @@ bool hostCxnGone (Host host, Connection cxn)
                 host->gArtsOffered, host->gArtsAccepted,
                 host->gArtsNotWanted, host->gArtsRejected,
                 host->gArtsMissing, host->gArtsSizeAccepted,
-                host->gArtsSizeRejected) ;
+                host->gArtsSizeRejected, host->gArtsToTape,
+		host->gArtsFromTape) ;
 
       hostsLeft = listenerHostGone (host->listener, host) ;
       delHost (host) ;
@@ -2041,7 +2046,8 @@ bool hostCxnGone (Host host, Connection cxn)
                 procArtsOffered, procArtsAccepted,
                 procArtsNotWanted,procArtsRejected,
                 procArtsMissing, procArtsSizeAccepted,
-                procArtsSizeRejected) ;
+                procArtsSizeRejected, procArtsToTape,
+		procArtsFromTape) ;
       
       /* return true if that was the last host */
       return (hostsLeft == 0 ? true : false) ;
@@ -2325,6 +2331,7 @@ bool hostGimmeArticle (Host host, Connection cxn)
 
           host->artsFromTape++ ;
           host->gArtsFromTape++ ;
+          procArtsFromTape++ ;
           queueArticle (article,&host->processed,&host->processedTail, 0) ;
           amtToGive-- ;
 
@@ -3329,6 +3336,7 @@ static void backlogToTape (Host host)
       host->gArtsQueueOverflow++ ;
       host->artsToTape++ ;
       host->gArtsToTape++ ;
+      procArtsToTape++ ;
       tapeTakeArticle (host->myTape,article) ;
     }
 }
@@ -3366,6 +3374,7 @@ static void queuesToTape (Host host)
       host->gArtsHostClose++ ;
       host->artsToTape++ ;
       host->gArtsToTape++ ;
+      procArtsToTape++ ;
       tapeTakeArticle (host->myTape,art) ;
     }
   
@@ -3376,6 +3385,7 @@ static void queuesToTape (Host host)
       host->gArtsHostClose++ ;
       host->artsToTape++ ;
       host->gArtsToTape++ ;
+      procArtsToTape++ ;
       tapeTakeArticle (host->myTape,art) ;
     }
 
@@ -3386,6 +3396,7 @@ static void queuesToTape (Host host)
       host->gArtsHostClose++ ;
       host->artsToTape++ ;
       host->gArtsToTape++ ;
+      procArtsToTape++ ;
       tapeTakeArticle (host->myTape,art) ;
     }
 
@@ -3396,6 +3407,7 @@ static void queuesToTape (Host host)
       host->gArtsHostClose++ ;
       host->artsToTape++ ;
       host->gArtsToTape++ ;
+      procArtsToTape++ ;
       tapeTakeArticle (host->myTape,art) ;
     }
 }
