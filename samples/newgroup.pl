@@ -171,7 +171,7 @@ sub control_newgroup {
       }
       ($ngname, $ngdesc) = split(/\s+/, $ngline, 2);
       if ($ngdesc) {
-	$ngdesc =~ s/\s+(moderated)$//i;
+	$ngdesc =~ s/\s+\(moderated\)\s*$//i;
 	$ngdesc .= " (Moderated)" if $modflag eq "moderated";  
       }
       if (($ngdesc) && ($ngname eq $groupname)) {
