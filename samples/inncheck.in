@@ -318,6 +318,7 @@ incoming_conf
     'blockbackoff',		0,
     'icdsynccount',		0,
     'bindaddress',		0,
+    'sourceaddress',		0,
     'port',			0,
     'readertrack',		0,
     'strippostcc',		0,

@@ -91,6 +91,7 @@ storageapi:		false
 articlemmap:		false
 overviewmmap:		true
 bindaddress:		all
+sourceaddress:		any
 port:			119
 #
 ## Keywords-in-overview options
