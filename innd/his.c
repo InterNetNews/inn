@@ -180,8 +180,8 @@ char *HISfilesfor(const HASH MessageID)
     
     /* Get the seek value into the history file. */
     if ((offset = dbzfetch(MessageID)) < 0) {
-	return NULL;
 	TMRstop(TMR_HISGREP);
+	return NULL;
     }
     TMRstop(TMR_HISGREP);
 
