@@ -204,7 +204,7 @@ tdx_data_new(const char *group, bool writable)
 
 
 /*
-**  Open the index file for a group.
+**  Open the index and data files for a group.
 */
 bool
 tdx_data_open_files(struct group_data *data)
@@ -861,6 +861,9 @@ static void
 entry_audit(struct group_data *data, struct index_entry *entry,
             const char *group, ARTNUM article, bool fix)
 {
+    struct index_entry new_entry;
+    off_t offset;
+
     if (entry->length < 0) {
         warn("tradindexed: negative length %d in %s:%lu", entry->length,
              group, article);
@@ -883,9 +886,12 @@ entry_audit(struct group_data *data, struct index_entry *entry,
     return;
 
  clear:
-    entry->offset = 0;
-    entry->length = 0;
-    mapcntl(entry, sizeof(*entry), MS_ASYNC);
+    new_entry = *entry;
+    new_entry.offset = 0;
+    new_entry.length = 0;
+    offset = (entry - data->index) * sizeof(struct index_entry);
+    if (xpwrite(data->indexfd, &new_entry, sizeof(new_entry), offset) != 0)
+        warn("tradindexed: unable to repair %s:%lu", group, article);
 }
 
 
