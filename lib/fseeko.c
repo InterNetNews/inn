@@ -14,6 +14,9 @@
 #include "clibrary.h"
 #include <errno.h>
 
+/* Make sure we get the system fseek (clibrary.h #defines it to fseeko). */
+#undef fseek
+
 #if HAVE_LARGE_FPOS_T
 
 int

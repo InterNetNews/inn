@@ -13,6 +13,9 @@
 #include "config.h"
 #include "clibrary.h"
 
+/* Make sure we get the system ftell (clibrary.h #defines it to ftello). */
+#undef ftell
+
 #if HAVE_LARGE_FPOS_T
 
 off_t
