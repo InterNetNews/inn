@@ -174,9 +174,6 @@
 /* Define if your `struct tm' has a `tm_gmtoff' member.  */
 #undef HAVE_TM_GMTOFF
 
-/* Define if you have union wait.  */
-#undef HAVE_UNION_WAIT
-
 /* Define if you have unix domain sockets.  */
 #undef HAVE_UNIX_DOMAIN_SOCKETS
 
@@ -211,6 +208,9 @@
 
 /* Define to `int' if <signal.h> doesn't define.  */
 #undef sig_atomic_t
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef ssize_t
 
 /* sort program for makehistory.  */
 #undef SORT_PGM
@@ -282,9 +282,8 @@ typedef FUNCTYPE        (*FUNCPTR)();
 typedef char const *    STRING;
 typedef char * const    CSTRING;
 
-/* Programming convenience.  This has to be here because of all the headers
-   and prototypes that depend on it.  Might be better to just use bool with
-   autoconf magic if it doesn't exist. */
+/* Programming convenience.  Since we need bool anyway for Perl, we should
+   use the lowercase version everywhere. */
 typedef int             BOOL;
 
 /* Currently unconditionally an off_t.  This may not be the right choice on
