@@ -655,7 +655,7 @@ void CMDfetch(int ac, char *av[])
 	    return;
 	}
 	tart=art;
-	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, what->Item, av[1]);
+	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, av[1], what->Item);
 	if (what->Type != STstat) {
 	    ARTsendmmap(what->Type);
 	}
