@@ -66,6 +66,11 @@ Xstop)
         ${PATHBIN}/rc.news.local stop
     fi
 
+    # Delete all of the PID files that we know about to avoid having them
+    # stick around after a fresh start.
+    rm -f ${PATHRUN}/cnfsstat.pid $WATCHPID $SERVERPID
+    rm -f ${PATHRUN}/ovdb_server.pid ${PATHRUN}/ovdb_monitor.pid
+
     exit 0
 ;;
 esac
