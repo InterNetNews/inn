@@ -511,6 +511,7 @@ static BOOL MatchGroups(const char *g, int num, char **patterns) {
 		    DISPOSE(groups);
 		    return FALSE;
 		}
+		break;
 	    default:
 		if (wildmat(group, patterns[i]))
 		    wanted = TRUE;
