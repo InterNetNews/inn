@@ -393,6 +393,11 @@ Needed Bug Fixes
 * Someone should go through the BUGS sections of all of the manpages and
   fix those for which the current behavior is unacceptable.
 
+* The ovdb server utilities don't handle unclean shutdowns very well.
+  They may leave PID files sitting around, fail to start properly, and
+  otherwise not do what's expected.  This area needs some thought and a
+  careful design.
+
 
 Requested New Features
 
