@@ -14,19 +14,25 @@
 #include "config.h"
 
 /* Our declarations of sys_nerr and sys_errlist may conflict with the ones
-   provided by stdio.h from glibc.  Defining __STRICT_ANSI__ ensures that
-   glibc won't attempt to provide any declarations.  (The conflicts are just
+   provided by stdio.h from glibc.  This trick hides the declarations in the
+   system header from the compiler while we test.  (The conflicts are just
    whether or not to const, so there are no negative effects from using our
-   declarations. */
-#ifndef __STRICT_ANSI__
-# define __STRICT_ANSI__ 1
+   declarations.) */
+#if TESTING
+# define sys_nerr       hidden_sys_nerr
+# define sys_errlist    hidden_sys_errlist
+#endif
+
+#include <errno.h>
+#include <stdio.h>
+
+#if TESTING
+# undef sys_nerr
+# undef sys_errlist
 #endif
 
 extern const int sys_nerr;
 extern const char *sys_errlist[];
-
-#include <errno.h>
-#include <stdio.h>
 
 /* If we're running the test suite, rename strerror to avoid conflicts with
    the system version. */
