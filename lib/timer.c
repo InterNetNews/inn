@@ -154,7 +154,7 @@ TMRsummary(const char *const *labels)
 void
 TMRinit(unsigned int timers)
 {
-    int i;
+    unsigned int i;
 
     /* Make sure we're multiple call safe and free any arrays we had. */
     if (start) {
