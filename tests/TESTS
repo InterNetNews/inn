@@ -1,4 +1,5 @@
 lib/concat
+lib/date
 lib/error
 lib/strerror
 lib/xmalloc

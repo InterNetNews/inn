@@ -9,7 +9,7 @@ CFLAGS	= $(GCFLAGS)
 ##  list.  If they need other things compiled, they should be added to
 ##  EXTRA.
 
-TESTS	= lib/concat.t lib/error.t lib/strerror.t lib/xwrite.t
+TESTS	= lib/concat.t lib/date.t lib/error.t lib/strerror.t lib/xwrite.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -40,6 +40,9 @@ lib/strerror.t: lib/strerror.o lib/strerror-t.o
 
 lib/concat.t: lib/concat-t.o $(LIBINN)
 	$(LINK) lib/concat-t.o $(LIBINN)
+
+lib/date.t: lib/date-t.o $(LIBINN)
+	$(LINK) lib/date-t.o $(LIBINN)
 
 lib/error.t: lib/error-t.o $(LIBINN)
 	$(LINK) lib/error-t.o $(LIBINN)
