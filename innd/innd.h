@@ -212,7 +212,7 @@ typedef struct _NEWSGROUP {
     int			Lastwidth;
     int			PostCount;	/* Have we already put it here?	*/
     char		*LastString;
-    char		*Rest;
+    char		*Rest;		/* Flags, NOT NULL TERMINATED */
     SITEIDX		nSites;
     int			*Sites;
     SITEIDX		nPoison;

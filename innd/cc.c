@@ -2152,6 +2152,9 @@ XS(XS_INN_newsgroup)
     dXSARGS;
     char*	newsgroup;
     NEWSGROUP*  ngp;
+    char*	end;
+    char*	rest;
+    int		size;
 
     if (items != 1)
         croak("Usage: INN::newsgroup(msgid)");
@@ -2159,8 +2162,28 @@ XS(XS_INN_newsgroup)
 
     if ((ngp = NGfind(newsgroup)) == NULL)
 	XSRETURN_UNDEF;
-    else
-	XSRETURN_PV(ngp->Rest);
+    else {
+	/* ngp->Rest is newline-terminated; find the end. */
+	end = strchr(ngp->Rest, '\n');
+	if (end == NULL) {
+	    size = strlen(ngp->Rest);
+	} else {
+	    size = end - ngp->Rest;
+	}
+
+	if (CCperlbuff.Data == NULL) {
+	    CCperlbuff.Size = SITE_BUFFER_SIZE;
+	    CCperlbuff.Data = NEW(char, CCperlbuff.Size);
+	}
+
+	/* SITE_BUFFER_SIZE should be *huge* for this, but be paranoid. */
+	if (size > SITE_BUFFER_SIZE + 1)
+	    size = SITE_BUFFER_SIZE;
+
+	strncpy(CCperlbuff.Data, ngp->Rest, size);
+	CCperlbuff.Data[size] = '\0';
+	XSRETURN_PV(CCperlbuff.Data);
+    }
 }
 
 XS(XS_INN_filesfor)
