@@ -1,4 +1,4 @@
-Welcome to INN 2.2.1!
+Welcome to INN 2.2.2!
 
   This work is sponsored by the Internet Software Consortium.
 
@@ -113,9 +113,19 @@ Getting Started
   INN also comes with a very complete set of man pages; there is a man
   page for every configuration file and program that comes with INN.
   (If you find one that doesn't have a man page, that's a bug.  Please
-  do report it.)  When trying to figure out some specific problem,
-  reading the man pages for all of the configuration files involved is a
-  very good start.
+  do report it to inn-bugs@isc.org.)  When trying to figure out some
+  specific problem, reading the man pages for all of the configuration
+  files involved is a very good start.
+
+  Some good resources on the web (as of December 1999) are:
+
+	http://www.isc.org
+	http://web.inter.nl.net/users/Elena.Samsonova/unix/INN/v2.3/
+	http://www.blank.org/innfaq
+	http://www.mibsoftware.com/userkt/userkt.html
+	http://www.cis.ohio-state.edu/~barr/INN.html
+	http://members.home.net/rck/software/inn.html
+	http://www.cybercable.fr/~droyer/inn.html
 
 Reporting Bugs
 
@@ -202,4 +212,5 @@ Supporting the INN Effort
   <URL:http://www.isc.org/isc/>.
 
 James Brister
-inn@isc.org
+inn-bugs@isc.org 	-- bug reports.
+inn@isc.org		-- general INN related mail
