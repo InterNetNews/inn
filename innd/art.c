@@ -937,7 +937,8 @@ bodyprocessing:
 			data->Feedsite = RChostname(cp);
 			if (data->Feedsite == NULL)
 			  data->Feedsite = CHANname(cp);
-			if (strcmp("0.0.0.0", data->Feedsite) == 0)
+			if (strcmp("0.0.0.0", data->Feedsite) == 0 ||
+			  || data->Feedsite[0] == '\0')
 			  data->Feedsite =
 			    hops && hops[0] ? hops[0] : CHANname(cp);
 		      } else {
@@ -1818,7 +1819,7 @@ ARTpost(CHANNEL *cp)
     data->Feedsite = RChostname(cp);
     if (data->Feedsite == NULL)
       data->Feedsite = CHANname(cp);
-    if (strcmp("0.0.0.0", data->Feedsite) == 0)
+    if (strcmp("0.0.0.0", data->Feedsite) == 0 || data->Feedsite[0] == '\0')
       data->Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
   } else {
     data->Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
