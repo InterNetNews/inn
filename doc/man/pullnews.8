@@ -10,10 +10,19 @@ to another.
 .BI \-c " config"
 ]
 [
-.B \-p " port"
+.BI \-g " groups"
+]
+[
+.B \-h
+]
+[
+.BI \-p " port"
 ]
 [
 .B \-q
+]
+[
+.BI \-r " file"
 ]
 [
 .BI \-s " downstream-server"
@@ -53,11 +62,25 @@ Normally the config file is stored in $HOME/.pullnews for the user running the
 .I pullnews
 program. The ``\fB\-c\fP'' flag lets you change that.
 .TP
+.B \-g
+The ``\fB\-g\fP'' flag specifies a collection of groups to get.
+The value must be a single argument with commas between group names.
+Each group must be defined in the config file.
+Only the remote hosts that carry those groups will be contacted.
+.TP
+.B \-h
+The ``\fB\-h\fP'' flag just prints usage.
+.TP
 .B \-p
 The ``\fB\-p\fP'' flag can be used to change connecting port other than 119.
 .TP
 .B \-q
 The ``\fB\-q\fP'' flag can be used to make things run more quietly.
+.TP
+.B \-r 
+The ``\fB\-r\fP'' flag tells
+.I pullnews
+to create an rnews-compatible file, instead of feeding article.
 .TP
 .B \-s 
 Normally 
