@@ -9,17 +9,17 @@
 **
 **  This module completely rips away all pretense of software layering.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+# include <sys/un.h>
+#endif
+
 #include "innd.h"
 #include "inndcomm.h"
 #include "qio.h"
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-#include <sys/un.h>
-#endif	
 
 /* Linux doesn't have bool, yet sets _G_HAVE_BOOL to true.  Hello? */
 #ifdef DO_NEED_BOOL
@@ -1908,17 +1908,17 @@ CCreader(cp)
     tbuff -= HEADER_SIZE ;
 
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-    (void)memset((POINTER)&client, 0, sizeof client);
+    memset(&client, 0, sizeof client);
     client.sun_family = AF_UNIX;
-    (void)strcpy(client.sun_path, argv[0]);
+    strcpy(client.sun_path, argv[0]);
     if (sendto(CCwriter, tbuff, len, 0,
-	    (struct sockaddr *)&client, AF_UNIX_SOCKSIZE(client)) < 0) {
+	    (struct sockaddr *) &client, SUN_LEN(&client)) < 0) {
 	i = errno;
 	syslog(i == ENOENT ? L_NOTICE : L_ERROR,
 	    "%s cant sendto CCreader bytes %d %m", LogName, len);
 	if (i == EMSGSIZE)
-	    (void)sendto(CCwriter, TOOLONG, STRLEN(TOOLONG), 0,
-		(struct sockaddr *)&client, AF_UNIX_SOCKSIZE(client));
+	    sendto(CCwriter, TOOLONG, STRLEN(TOOLONG), 0,
+		(struct sockaddr *) &client, SUN_LEN(&client));
     }
 #else
     if ((i = open(argv[0], O_WRONLY | O_NDELAY)) < 0)
@@ -1972,10 +1972,10 @@ CCsetup()
 	syslog(L_FATAL, "%s cant socket %s %m", LogName, CCpath);
 	exit(1);
     }
-    (void)memset((POINTER)&server, 0, sizeof server);
+    memset(&server, 0, sizeof server);
     server.sun_family = AF_UNIX;
-    (void)strcpy(server.sun_path, CCpath);
-    if (bind(i, (struct sockaddr *)&server, AF_UNIX_SOCKSIZE(server)) < 0) {
+    strcpy(server.sun_path, CCpath);
+    if (bind(i, (struct sockaddr *) &server, SUN_LEN(&server)) < 0) {
 	syslog(L_FATAL, "%s cant bind %s %m", LogName, CCpath);
 	exit(1);
     }
