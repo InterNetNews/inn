@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "NEWSFEEDS 5"
-.TH NEWSFEEDS 5 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
+.TH NEWSFEEDS 5 "2003-07-05" "INN 2.4.1" "InterNetNews Documentation"
 .SH "NAME"
 newsfeeds \- Determine where Usenet articles are sent
 .SH "DESCRIPTION"
@@ -670,7 +670,9 @@ will be set to the error log (\fIpathlog\fR/errlog).  \fBinnd\fR will try to
 avoid spawning a shell if the command has no shell meta\-characters; this
 feature can be defeated if necessary for some reason by appending a
 semi-colon to the end of the command.  The full path name of the program
-to be run must be specified unless the command will be run by the shell.
+to be run must be specified unless the command will be run by the shell
+(and it is strongly recommended that the full path name always be
+specified regardless).
 .PP
 If a program feed is the target of a funnel, and if \fBW*\fR appears in the
 flags of the site, a single asterisk may be present in the \fIparameter\fR
