@@ -503,7 +503,6 @@ enum timer {
     TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
     TMR_ARTCLEAN,               /* Analyzing an incoming article. */
     TMR_ARTWRITE,               /* Writing an article. */
-    TMR_ARTCTRL,                /* Processing a control message. */
     TMR_ARTCNCL,                /* Processing a cancel message. */
     TMR_SITESEND,               /* Sending an article to feeds. */
     TMR_OVERV,                  /* Generating overview information. */

@@ -27,8 +27,8 @@
 #endif
 
 static const char * const timer_name[] = {
-    "idle", "artclean", "artwrite", "artctrl", "artcncl", "sitesend",
-    "overv", "perl", "python", "nntpread", "artparse", "artlog", "datamove"
+    "idle", "artclean", "artwrite", "artcncl", "sitesend", "overv",
+    "perl", "python", "nntpread", "artparse", "artlog", "datamove"
 };
 
 /* Minutes - basically, keep the connection open but idle */
