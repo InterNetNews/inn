@@ -372,7 +372,9 @@ The default value is ``<pathlog>''.
 .TP
 .I pathtmp
 Where the various programs place their tempfiles. For security reasons
-this is not the same as the system temporary files directory.
+this is not the same as the system temporary files directory. It should (or
+perhaps 'must') be on the same partition as the incoming spool directory) (so
+rename(2) can work).
 The default value is
 .IR ``<PATH\ specified\ with\ \-\-with\-tmp\-path\ at\ configure>''.
 .TP
