@@ -482,14 +482,18 @@ STATIC void ARTsendmmap(SENDTYPE what)
         ARTgetsize += 3;
     } else {
        SendIOv(q, p - q);
+       ARTgetsize += p - q;
        if (what == SThead) {
            SendIOv(".\r\n", 3);
            ARTgetsize += 3;
-       }
-       ARTgetsize += p - q;
-       if (memcmp((ARTmem+ARTlen-3), ".\r\n", 3)) {
-           SendIOv("\r\n.\r\n", 5);
-           ARTgetsize += 5;
+       } else if (memcmp((ARTmem+ARTlen-5), "\r\n.\r\n", 5)) {
+           if (memcmp((ARTmem+ARTlen-2), "\r\n", 2)) {
+               SendIOv("\r\n.\r\n", 5);
+               ARTgetsize += 5;
+		   } else {
+               SendIOv(".\r\n", 3);
+               ARTgetsize += 3;
+		   }
        }
        PushIOv();
     }
