@@ -33,7 +33,6 @@ PATH_NNRPDTRACK		= ${PATHETC}/nnrpd.track
 PATH_SCHEMA		= ${PATHETC}/overview.fmt
 PATH_PERL_SHELLVARS	= ${PATHLIB}/innshellvars.pl
 PATH_TCL_SHELLVARS	= ${PATHLIB}/innshellvars.tcl
-PATH_CSH_SHELLVARS	= ${PATHLIB}/innshellvars.csh
 PATH_SHELLVARS		= ${PATHLIB}/innshellvars
 PATH_NNTPPASS		= ${PATHETC}/passwd.nntp
 PATH_CTLWATCH		= ${PATHETC}/innwatch.ctl
@@ -51,7 +50,7 @@ MOST	= rc.news checkgroups default ihave newgroup \
 	docheckgroups news.daily scanlogs controlbatch controlchan expirerm \
 	tally.control nntpsend send-ihave send-nntp send-uucp \
 	sendbatch inncheck innstat pgpverify innwatch innreport \
-	innshellvars innshellvars.pl innshellvars.csh innshellvars.tcl \
+	innshellvars innshellvars.pl innshellvars.tcl \
 	scanspool innmail checkgroups.pl ihave.pl newgroup.pl rmgroup.pl \
 	sendme.pl sendsys.pl senduuname.pl version.pl cnfsstat \
 	mod-active simpleftp mailpost news2mail pullnews
@@ -221,7 +220,6 @@ $D$(PATHETC)/news2mail.cf: news2mail.cf	; $(COPY_RPRI) $? $@
 $D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPUB) $? $@
 $D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPUB) $? $@
 $D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPUB) $? $@
-$D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPUB) $? $@
 $D$(PATHBIN)/innreport: innreport	; $(COPY_XPRI) $? $@
 $D$(PATHLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
@@ -287,7 +285,6 @@ innfeed.conf:	../samples/innfeed.conf		; $(COPY) $? $@
 innshellvars:	../samples/innshellvars		; $(COPY) $? $@
 innshellvars.pl: ../samples/innshellvars.pl	; $(COPY) $? $@
 innshellvars.tcl: ../samples/innshellvars.tcl	; $(COPY) $? $@
-innshellvars.csh: ../samples/innshellvars.csh	; $(COPY) $? $@
 mailpost:	../samples/mailpost		; $(COPY) $? $@
 mod-active:	../samples/mod-active		; $(COPY) $? $@
 moderators:	../samples/moderators		; $(COPY) $? $@
