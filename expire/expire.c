@@ -52,6 +52,8 @@ typedef struct _EXPIRECLASS {
     time_t              Keep;
     time_t              Default;
     time_t              Purge;
+    BOOL                Missing;
+    BOOL                ReportedMissing;
 } EXPIRECLASS;
 
 typedef struct _NGHASH {
@@ -374,6 +376,9 @@ STATIC BOOL EXPreadfile(FILE *F)
     EXPremember = -1;
     SawDefault = FALSE;
     patterns = NEW(char*, nGroups);
+    for (i = 0; i < NUM_STORAGE_CLASSES; i++)
+	EXPclasses[i].ReportedMissing = EXPclasses[i].Missing = TRUE;
+    
     for (i = 1; fgets(buff, sizeof buff, F) != NULL; i++) {
 	if ((p = strchr(buff, '\n')) == NULL) {
 	    (void)fprintf(stderr, "Line %d too long\n", i);
@@ -438,6 +443,7 @@ STATIC BOOL EXPreadfile(FILE *F)
 		    return FALSE;
 		}
 	    }
+	    EXPclasses[j].Missing = FALSE;
 	    continue;
 	}
 
@@ -566,6 +572,15 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
     if (IsToken(Entry)) {
 	token = TextToToken(Entry);
 	class = EXPclasses[token.class];
+	if (class.Missing) {
+	    if (!class.ReportedMissing) {
+		fprintf(stderr, "Class definition %d is missing from control file, assuming zero expiration\n",
+			token.class);
+	    } else {
+		EXPclasses[token.class].ReportedMissing = TRUE;
+	    }
+	    return Remove;
+	}
 	/* Bad posting date? */
 	if (when > (RealNow + 86400)) {
 	    /* Yes -- force the article to go to right now */
