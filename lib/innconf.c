@@ -649,27 +649,27 @@ print_string(FILE *file, const char *key, const char *value,
 **  specifying the attribute to print and the quoting.
 */
 static void
-print_parameter(FILE *file, size_t index, enum innconf_quoting quoting)
+print_parameter(FILE *file, size_t i, enum innconf_quoting quoting)
 {
     bool bool_val;
     long long_val;
     const char *string_val;
 
-    switch (config_table[index].type) {
+    switch (config_table[i].type) {
     case TYPE_BOOLEAN:
-        bool_val = *CONF_BOOL(innconf, config_table[index].location);
-        print_boolean(file, config_table[index].name, bool_val, quoting);
+        bool_val = *CONF_BOOL(innconf, config_table[i].location);
+        print_boolean(file, config_table[i].name, bool_val, quoting);
         break;
     case TYPE_NUMBER:
-        long_val = *CONF_LONG(innconf, config_table[index].location);
-        print_number(file, config_table[index].name, long_val, quoting);
+        long_val = *CONF_LONG(innconf, config_table[i].location);
+        print_number(file, config_table[i].name, long_val, quoting);
         break;
     case TYPE_STRING:
-        string_val = *CONF_STRING(innconf, config_table[index].location);
-        print_string(file, config_table[index].name, string_val, quoting);
+        string_val = *CONF_STRING(innconf, config_table[i].location);
+        print_string(file, config_table[i].name, string_val, quoting);
         break;
     default:
-        die("internal error: invalid type in row %d of config table", index);
+        die("internal error: invalid type in row %d of config table", i);
         break;
     }
 }
