@@ -130,7 +130,7 @@ clean:
 	done
 
 clobber:
-	rm -f $(ALL) tags profiled config
+	rm -f $(ALL) tags profiled config update
 
 tags ctags:
 	cp /dev/null tags
