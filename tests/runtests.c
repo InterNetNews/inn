@@ -547,6 +547,7 @@ test_fail_summary(const struct testlist *fails)
         }
         chars = 0;
         first = 0;
+        last = 0;
         for (i = 0; i < ts->count; i++) {
             if (ts->results[i] == TEST_FAIL) {
                 if (first && i == last) {

@@ -73,7 +73,7 @@ main(void)
     char buff[64] = "";
     bool status;
     time_t now, result;
-    double diff;
+    double diff = 0;
     int n;
     unsigned int i;
 
