@@ -89,6 +89,9 @@ to arbitrary addresses and will result in unexpected behavior.  There is
 no default value for this parameter; it must be set in F<inn.conf> or a
 fatal error message will be logged via syslog.
 
+For most systems, C</usr/lib/sendmail -oi -oem %s> (adjusted for the
+correct path to sendmail) is a good choice.
+
 =item I<pathhost>
 
 What to put into the Path: header to represent the local site.  This is
@@ -145,19 +148,6 @@ are badly delayed.  A good value for a system with more than one incoming
 feed is C<256>; systems with only one incoming feed should probably leave
 this at C<0>.  The default value is C<0>.
 
-=item I<wipcheck>
-
-How long (in seconds) pre-committed message-ids are kept before unused.
-Pre-commit cache is used to respond to peers with ``436'' which means
-innd does not want the article currently and requests to try later.
-The default value is <5>.
-
-=item I<wipexpire>
-
-How long (in seconds) pre-committed message-ids are kept before expired.
-This is used to respond with ``436'' on pending channel before finishing
-transfer.  The default value is <10>.
-
 =item I<ignorenewsgroups>
 
 Whether newsgroup creation control messages (newgroup and rmgroup) should
@@ -173,11 +163,12 @@ default is false.
 
 =item I<immediatecancel>
 
-Set this to true to cancel article immediately.  Canceled artilces, which
-is stored through timecaf method, is not really canceled within it; that
-is they are cached to be canceld.  This parameter is effective only if
-timecaf method is used and within innd.  This is a boolean value, and the
-default is false.
+When using the timecaf storage methoc, article cancels are normally just
+cached to be cancelled, not cancelled immediately.  If this is set to
+true, they will instead by cancelled as soon as the cancel is processed.
+This is a boolean value and the default is false.
+
+This setting is ignored unless the timecaf storage method is used.
 
 =item I<linecountfuzz>
 
@@ -287,6 +278,20 @@ than rejecting them.  This is sometimes useful for a transit news server
 that needs to propagate articles in all newsgroups regardless if they're
 carried locally.  This is a boolean value and the default is false.
 
+=item I<wipcheck>
+
+If INN is offered an article by a peer on one channel, it will return
+deferral responses (code 436) to all other offers of that article for this
+many seconds.  (After this long, if the peer that offered the article
+still hasn't sent it, it will be accepted from other channels.)  The
+default value is C<5> and probably doesn't need to be changed.
+
+=item I<wipexpire>
+
+How long, in seconds, to keep track of message IDs offered on a channel
+before expiring articles that still haven't been sent.  The default value
+is C<10> and probably doesn't need to be changed.
+
 =back
 
 =head2 Article Storage
@@ -306,17 +311,18 @@ have changed I<maxartsize> recently.  The default value is C<0>.
 =item I<enableoverview>
 
 Whether to write out overview data for articles.  If set to false, INN
-will run much faster, but reading news from the system will be slow or
-impossible since there will be no overview files for readers.
-I<ovmethod> needs to be set, if I<enableoverview> is set to true.
-This is a boolean value and the default is true.
+will run much faster, but reading news from the system will be impossible
+(the server will be for news transit only).  If this option is set to
+true, I<ovmethod> must also be set.  This is a boolean value and the
+default is true.
 
 =item I<groupbaseexpiry>
 
-Whether to enable newsgroup base expiry.  If set to false, expiry is
-done based on class of storing method.  If set to true and overview
-data is created, expiry is done based on newsgroup name.
-This is a boolean value and the default is true.
+Whether to enable newsgroup-based expiry.  If set to false, article expiry
+is done based on storage class of storing method.  If set to true (and
+overview information is available), expiry is done by newsgroup name.
+This effects the format of F<expire.ctl>.  This is a boolean value and the
+default is true.
 
 =item I<mergetogroups>
 
@@ -328,52 +334,51 @@ default is false.
 =item I<overcachesize>
 
 How many cache slots to reserve for open overview files.  If INN is
-writing overview files (see I<enableoverview>), C<tradindexed> is
-set for I<ovmethod> and this is set to a value
-other than C<0>, INN will keep around and open that many recently
-written-to overview files in case more articles come in for those
-newsgroups.  Every overview cache slot consumes two file descriptors, so
-be careful not to set this value too high.  You may be able to use the
-C<limit> command to see how many open file descriptors your operating
-system allows.  innd(8) also uses an open file descriptor for each
-incoming feed and outgoing channel or batch file, and if it runs out of
-open file descriptors it may throttle and stop accepting new news.  The
-default value is C<15> (which is probably way too low if you have a large
-number of file descriptors available).
+writing overview files (see I<enableoverview>), I<ovmethod> is set to
+C<tradindexed>, and this is set to a value other than C<0>, INN will keep
+around and open that many recently written-to overview files in case more
+articles come in for those newsgroups.  Every overview cache slot consumes
+two file descriptors, so be careful not to set this value too high.  You
+may be able to use the C<limit> command to see how many open file
+descriptors your operating system allows.  innd(8) also uses an open file
+descriptor for each incoming feed and outgoing channel or batch file, and
+if it runs out of open file descriptors it may throttle and stop accepting
+new news.  The default value is C<15> (which is probably way too low if
+you have a large number of file descriptors available).
+
+This setting is ignored unless I<ovmethod> is set to C<tradindexed>.
 
 =item I<ovgrouppat>
 
-For which newsgroups should overview be stored.  If nothing is specified,
-overview data for all newsgroups will be stored.  If something is specified,
-it is treated as a comma separated list of wildmat and any of matched overview
-data will be stored.  Note that if I<groupbaseexpiry> is true, I<ovgrouppat>
-is specifed and article storage method does not have self expire functionality,
-storing overview data will fail.
-This is a boolean value and the default is false.
+If set, restricts the overview data stored by INN to only the newsgroups
+matching this comma-separated list of wildmat expressions.  Newsgroups not
+matching this setting may not be readable, and if I<groupbaseexpiry> is
+set to true and the storage method for these newsgroups does not have
+self-expire functionality, storing overview data will fail.  This is a
+boolean value and the default is false.
 
 =item I<ovmethod>
 
-What overview storage method to use.  Currently supported values
-are C<tradindexed>, C<buffindexed>, and C<ovdb>.
-There is no default value; this parameter must be set if
-I<enableoverview> is true (the default).
+Which overview storage method to use.  Currently supported values are
+C<tradindexed>, C<buffindexed>, and C<ovdb>.  There is no default value;
+this parameter must be set if I<enableoverview> is true (the default).
 
 =over 4
 
-=item C<tradindexed>
-
-stores two files per newsgroup, one containing the overview data and one
-containing the index.
-
 =item C<buffindexed>
 
-stores data and its index into buffers which are preconfigured files
-defined in F<buffinedexed.conf>.  C<buffindexed> never consumes disk
-space other than those files for overview data and index.
+Stores overview data and index information into buffers, which are
+preconfigured files defined in F<buffinedexed.conf>.  C<buffindexed> never
+consumes additional disk space beyond that allocated to these buffers.
+
+=item C<tradindexed>
+
+Uses two files per newsgroup, one containing the overview data and one
+containing the index.  Fast for readers, but slow to write to.
 
 =item C<ovdb>
 
-stores data into a BerkeleyDB database.  See the ovdb(5) man page.
+Stores data into a Berkeley DB database.  See the ovdb(5) man page.
 
 =back
 
@@ -382,10 +387,10 @@ stores data into a BerkeleyDB database.  See the ovdb(5) man page.
 If set to true, articles will be stored based on the newsgroup names in
 the Xref: header rather than in the Newsgroups: header.  This affects what
 the patterns in F<storage.conf> apply to.  The primary interesting effect
-of setting this to true is to file all control messages according to what
-storage class the control pseudogroups are filed in rather than according
-to the newsgroups the control messages are posted to.  This is a boolean
-value and the default is false.
+of setting this to true is to enable filing of all control messages
+according to what storage class the control pseudogroups are filed in
+rather than according to the newsgroups the control messages are posted
+to.  This is a boolean value and the default is false.
 
 =item I<useoverchan>
 
@@ -435,10 +440,10 @@ out separately after the initial alphabetized list.
 
 =item I<allownewnews>
 
-Whether to allow use of the NEWNEWS command by clients.  Allowing this can
-be a performance problem for the server, since the data structures used by
-INN are ill-suited for this sort of request, but it is recommended by RFC
-977.  This is a boolean value and the default is true.
+Whether to allow use of the NEWNEWS command by clients.  This command used
+to put a heavy load on the server in older versions of INN, but is now
+reasonably efficient, at least if only one newsgroup is specified by the
+client.  This is a boolean value and the default is true.
 
 =item I<articlemmap>
 
@@ -477,10 +482,10 @@ a boolean value and the default is false.
 
 =item I<nnrppythonauth>
 
-Whether to use the Python hook in nnrpd(8) to authenticate readers.  If this
-is enabled, normal readers.conf(5) authentication will not be used, and
-instead the python hook will be called to authenticate connections.  This is
-a boolean value and the default is false.
+Whether to use the Python hook in nnrpd(8) to authenticate readers.  If
+this is enabled, normal readers.conf(5) authentication will not be used,
+and instead the python hook will be called to authenticate connections.
+This is a boolean value and the default is false.
 
 =item I<noreader>
 
@@ -600,28 +605,6 @@ host.
 The maximum article size (in bytes) for locally posted articles.  Articles
 larger than this will be rejected.  Also see I<maxartsize>.  The default
 value is C<1000000> (approximately 1MB).
-
-=item I<mimecontenttype>
-
-If MIME headers are being added (see I<mimeversion>), this parameter
-specifies the value of the Content-Type: header.  The default value is
-C<text/plain; charset=US-ASCII>.
-
-=item I<mimeencoding>
-
-If MIME headers are being added (see I<mimeversion>), this parameter
-specifies the value of the Content-Transfer-Encoding: header.  The default
-value is C<7bit>.
-
-=item I<mimeversion>
-
-If this parameter is set, nnrpd(8) will add the required MIME
-(Multipurpose Internet Mail Extensions) headers to all articles that do
-not have a MIME-Version: header.  This parameter specifies the MIME
-version, and should normally be C<1.0>.  Use of this parameter is not
-recommended under most circumstances, since there is no way to be certain
-that the added MIME headers will be correct for all articles.  The default
-value is unset.
 
 =item I<moderatormailer>
 
@@ -907,9 +890,9 @@ closed.  The default value is C<5>.
 
 =item I<blockbackoff>
 
-Each time an attempted write returns EWOULDBLOCK, innd(8) will wait for an
-increasing number of seconds before trying it again.  This is the
-multiplier for the sleep time.  If you're having trouble with channel
+Each time an attempted write returns EAGAIN or EWOULDBLOCK, innd(8) will
+wait for an increasing number of seconds before trying it again.  This is
+the multiplier for the sleep time.  If you're having trouble with channel
 feeds not keeping up, it may be good to change this value to C<2> or C<3>,
 since then when the channel fills INN will try again in a couple of
 seconds rather than waiting two minutes.  The default value is C<120>.
@@ -983,8 +966,8 @@ this parameter is set to a negative value, the default limit of the
 operating system will be used; this will normally be adequate on systems
 other than Solaris.  Nearly all operating systems have some hard maximum
 limit beyond which this value cannot be raised, usually either 128, 256,
-or 1024.  The default value of this parameter is -1.  Setting it to 1024
-on Solaris systems is highly recommended.
+or 1024.  The default value of this parameter is -1.  Setting it to 256 on
+Solaris systems is highly recommended.
 
 =back
 
