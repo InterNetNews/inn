@@ -1523,7 +1523,7 @@ static void add_authgroup(AUTHGROUP *group)
     } else {
 	for (i = 0; auth_realms[i]; i++)
 	    ;
-	auth_realms = RENEW(auth_realms, AUTHGROUP*, i+2);
+	RENEW(auth_realms, AUTHGROUP*, i+2);
     }
     auth_realms[i] = group;
     auth_realms[i+1] = 0;
@@ -1539,7 +1539,7 @@ static void add_accessgroup(ACCESSGROUP *group)
     } else {
 	for (i = 0; access_realms[i]; i++)
 	    ;
-	access_realms = RENEW(access_realms, ACCESSGROUP*, i+2);
+	RENEW(access_realms, ACCESSGROUP*, i+2);
     }
     access_realms[i] = group;
     access_realms[i+1] = 0;
@@ -1665,7 +1665,8 @@ static void GetConnInfo(METHOD *method, char *buf)
 {
     struct sockaddr_in cli, loc;
     int gotsin;
-    int i, j;
+    int i;
+    ARGTYPE j;
 
     j = sizeof(cli);
     gotsin = (getpeername(0, (struct sockaddr*)&cli, &j) == 0);
