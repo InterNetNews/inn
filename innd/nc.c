@@ -78,9 +78,10 @@ static NCDISPATCH	NCcommands[] = {
 static char		*NCquietlist[] = {
     INND_QUIET_BADLIST
 };
-static char		NCterm[] = "\r\n";
-static char 		NCdot[] = "." ;
-static char		NCbadcommand[] = NNTP_BAD_COMMAND;
+static const char	NCterm[] = "\r\n";
+static const char 	NCdot[] = "." ;
+static const char	NCbadcommand[] = NNTP_BAD_COMMAND;
+static const char       NCbadsubcommand[] = NNTP_BAD_SUBCMD;
 
 /*
 ** Clear the WIP entry for the given channel
@@ -602,7 +603,7 @@ NClist(CHANNEL *cp)
 	trash = NULL;
     }
     else {
-	NCwritereply(cp, NCbadcommand);
+	NCwritereply(cp, NCbadsubcommand);
 	return;
     }
 
@@ -654,7 +655,7 @@ NCmode(CHANNEL *cp)
                CHANname(cp));
        return;
     } else {
-	NCwritereply(cp, NCbadcommand);
+	NCwritereply(cp, NCbadsubcommand);
 	return;
     }
     RChandoff(cp->fd, h);

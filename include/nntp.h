@@ -66,6 +66,7 @@
 #define NNTP_SENDIT_VAL			335
 #define NNTP_SYNTAX_USE			"501 Bad command use"
 #define NNTP_SYNTAX_VAL			501
+#define NNTP_BAD_SUBCMD			"501 Bad subcommand"
 #define NNTP_TOOKIT			"235"
 #define NNTP_TOOKIT_VAL			235
 #define NNTP_NOTINGROUP			"412 Not in a newsgroup"

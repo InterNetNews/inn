@@ -583,7 +583,7 @@ CMDmode(ac, av)
                PERMaccessconf->pathhost, inn_version_string,
 	       PERMcanpost ? "posting ok" : "no posting");
     else
-	Reply("%d What?\r\n", NNTP_BAD_COMMAND_VAL);
+	Reply("%d What?\r\n", NNTP_SYNTAX_VAL);
 }
 
 static int GroupCompare(const void *a1, const void* b1) {
