@@ -1,12 +1,11 @@
 #!/usr/local/bin/perl
+# fixscript will replace this line with require innshellvars.pl
 
 # Create storage.conf script based on recently read articles.
 
-require '/var/netnews/lib/innshellvars.pl';
+$readfile="$inn::pathdb/readgroups";
 
-$readfile="$inn'pathdb/readgroups";
-
-$outfile="$inn'pathdb/storage.conf";
+$outfile="$inn::pathdb/storage.conf";
 outloop: 
 for ($level=9 ; $level >= 2; --$level) {
   # clear groups hash.

@@ -1,9 +1,9 @@
 #!/usr/local/bin/perl
+# fixscript will replace this line with require innshellvars.pl
 
 # Keep track of which groups are currently being read.  Takes logfile input
 # on stdin.
-require '/var/netnews/lib/innshellvars.pl';
-$readfile="$inn'newsetc/readgroups";
+$readfile="$inn::newsetc/readgroups";
 
 $curtime = time;
 $oldtime = $curtime - 30 * 86400; # 30 days in the past
@@ -36,4 +36,3 @@ foreach $i (keys %groups) {
 }
 
 exit(0);
-    

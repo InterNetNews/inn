@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-print "do a fixscript on me to put the appropriate require line in.\n"; exit;
+# fixscript will replace this line with require innshellvars.pl
 
 # This script cleans the newsgroups file:
 #   * Groups no longer in the active file are removed.
