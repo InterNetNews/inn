@@ -467,14 +467,14 @@ index_splice(struct group_index *index, const char *group)
 /*
 **  Return the information stored about a given group in the group index.
 */
-const struct group_entry *
+struct group_entry *
 tdx_index_entry(struct group_index *index, const char *group)
 {
     long loc;
 
     loc = index_find(index, group);
     if (loc == -1)
-        return false;
+        return NULL;
     return index->entries + loc;
 }
 
@@ -616,14 +616,9 @@ tdx_data_open(struct group_index *index, const char *group,
     struct group_data *data;
     ARTNUM high, base;
 
-    if (entry == NULL) {
-        loc = index_find(index, group);
-        if (loc == -1)
-            return NULL;
-        entry = &index->entries[loc];
-    } else {
-        loc = index_offset_to_loc(entry - index->entries);
-    }
+    if (entry == NULL)
+        entry = tdx_index_entry(index, group);
+    loc = index_offset_to_loc(entry - index->entries);
 
     data = tdx_data_new(group, index->writable);
 
@@ -662,31 +657,24 @@ tdx_data_open(struct group_index *index, const char *group,
 
 
 /*
-**  Add an overview record for a particular article.  Takes the group and the
-**  information about the article and returns true on success, false on
-**  failure.  This function calls tdx_data_store to do most of the real work
-**  and then updates the index information.
+**  Add an overview record for a particular article.  Takes the group entry,
+**  the open overview data structure, and the information about the article
+**  and returns true on success, false on failure.  This function calls
+**  tdx_data_store to do most of the real work and then updates the index
+**  information.
 */
 bool
-tdx_data_add(struct group_index *index, const char *group,
-             const struct article *article)
+tdx_data_add(struct group_index *index, struct group_entry *entry,
+             struct group_data *data, const struct article *article)
 {
     long loc;
-    struct group_data *data;
-    struct group_entry *entry;
     ARTNUM old_base;
 
     if (!index->writable)
         return false;
 
-    loc = index_find(index, group);
-    if (loc == -1)
-        return false;
-    entry = &index->entries[loc];
+    loc = index_offset_to_loc(entry - index->entries);
     index_lock_group(index->fd, loc, INN_LOCK_WRITE);
-    data = tdx_data_open(index, group, entry);
-    if (data == NULL)
-        return false;
 
     /* If the article number is too low to store in the group index, repack
        the group with a lower base index. */
@@ -715,12 +703,10 @@ tdx_data_add(struct group_index *index, const char *group,
     entry->count++;
     msync(entry, sizeof(*entry), MS_ASYNC);
     index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
-    tdx_data_close(data);
     return true;
 
  fail:
     index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
-    tdx_data_close(data);
     return false;
 }
 
