@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
     char buf[2048];
     struct sockaddr_storage loc, cli;
     int sock;
+    int opt;
     int truncate_domain = 0;
     char *iter;
     char *p;
@@ -43,8 +44,8 @@ int main(int argc, char *argv[])
     else
 	identport = ntohs(s->s_port);
 
-    while ((optind = getopt(argc, argv, "p:t")) != -1) {
-	switch (optind) {
+    while ((opt = getopt(argc, argv, "p:t")) != -1) {
+	switch (opt) {
 	  case 'p':
 	    for (iter = optarg; *iter; iter++)
 		if (*iter < '0' || *iter > '9')
@@ -109,23 +110,23 @@ int main(int argc, char *argv[])
     sprintf(buf, "%d , %d\r\n", cport, lport);
     got = 0;
     while (got != strlen(buf)) {
-	optind = write(sock, buf+got, strlen(buf)-got);
-	if (optind < 0)
+	opt = write(sock, buf+got, strlen(buf)-got);
+	if (opt < 0)
 	    exit(1);
-	else if (!optind)
+	else if (!opt)
 	    exit(1);
-	got += optind;
+	got += opt;
     }
 
     /* get the answer back */
     got = 0;
     do {
-	optind = read(sock, buf+got, sizeof(buf)-got);
-	if (optind < 0)
+	opt = read(sock, buf+got, sizeof(buf)-got);
+	if (opt < 0)
 	    exit(1);
-	else if (!optind)
+	else if (!opt)
 	    exit(1);
-	while (optind--)
+	while (opt--)
 	    if (buf[got] != '\n')
 		got++;
     } while (buf[got] != '\n');
