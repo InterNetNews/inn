@@ -738,6 +738,10 @@ if test "$OPENSSL_DIR" != "no"; then
 	SSL_INC="-I${OPENSSL_DIR}/include"
 	SSL_BIN="${OPENSSL_DIR}/bin"
 	SSL_LIB="-L${OPENSSL_DIR}/lib"
+        AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
+            [AC_CHECK_LIB(RSAglue, RSAPublicEncrypt,
+                SSL_LIB="-lRSAglue -lrsaref ${SSL_LIB}",,-lrsaref $SSL_LIB)]
+             ,,$SSL_LIB)
 	AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
 		SSL_LIB="${SSL_LIB} -lRSAglue -lrsaref",,$SSL_LIB)
 	AC_CHECK_LIB(crypto,BIO_accept,
