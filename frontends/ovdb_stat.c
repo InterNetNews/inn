@@ -154,7 +154,7 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	}
 	break;
     case LSN:	/* 'a' points to DB_LSN */
-        memcpy(&dl, cp + tab[i].a, sizeof(dl));
+	dl = (DB_LSN *)(cp + tab[i].a);
 	if(dl->file == 0) {
 	    strcpy(val, "none");
 	} else {
@@ -163,7 +163,7 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	break;
     case STR:	/* 'a' points to char* */
         memcpy(&tmp, cp + tab[i].a, sizeof(tmp));
-	strcpy(val, *tmp);
+	strcpy(val, tmp);
 	break;
     case SIZE:	/* 'a' points to size_t */
         memcpy(&sz, cp + tab[i].a, sizeof(sz));
@@ -443,9 +443,11 @@ static int display_mem(int all)
     display_data(gsp, MEM_tab);
 
     if(all) {
+	DB_MPOOL_FSTAT **p = fsp;
+
 	start_table("Per-database Memory Pool Statistics", MEMF_tab);
-	for(; fsp != NULL && *fsp != NULL; ++fsp) {
-	    display_row(*fsp, MEMF_tab);
+	for(; p != NULL && *p != NULL; ++p) {
+	    display_row(*p, MEMF_tab);
 	}
 	end_table();
     }
