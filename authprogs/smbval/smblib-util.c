@@ -29,6 +29,37 @@
 #include "smblib-priv.h"
 #include "rfcnb.h"
 
+/* The following two arrays need to be in step!              */
+/* We must make it possible for callers to specify these ... */
+
+const char *SMB_Prots[] = {"PC NETWORK PROGRAM 1.0", 
+                           "MICROSOFT NETWORKS 1.03",
+                           "MICROSOFT NETWORKS 3.0",
+                           "DOS LANMAN1.0",
+                           "LANMAN1.0",
+                           "DOS LM1.2X002",
+                           "LM1.2X002",
+                           "DOS LANMAN2.1",
+                           "LANMAN2.1",
+                           "Samba",
+                           "NT LM 0.12",
+                           "NT LANMAN 1.0",
+                           NULL};
+
+int SMB_Types[] = {SMB_P_Core,
+                   SMB_P_CorePlus,
+                   SMB_P_DOSLanMan1,
+                   SMB_P_DOSLanMan1,
+                   SMB_P_LanMan1,
+                   SMB_P_DOSLanMan2,
+                   SMB_P_LanMan2,
+                   SMB_P_LanMan2_1,
+                   SMB_P_LanMan2_1,
+                   SMB_P_NT1,
+                   SMB_P_NT1,
+                   SMB_P_NT1,
+                   -1};
+
 /* Figure out what protocol was accepted, given the list of dialect strings */
 /* We offered, and the index back from the server. We allow for a user      */
 /* supplied list, and assume that it is a subset of our list                */
@@ -68,9 +99,7 @@ int SMB_Figure_Protocol(const char *dialects[], int prot_index)
 /* none acceptible, and our return value is 0 if ok, <0 if problems       */
 
 int SMB_Negotiate(SMB_Handle_Type Con_Handle, const char *Prots[])
-
-{ struct SMB_Neg_Prot_Def *prot_pkt;
-  struct SMB_Neg_Prot_Resp_Def *resp_pkt;
+{
   struct RFCNB_Pkt *pkt;
   int prots_len, i, pkt_len, prot, alloc_len;
   char *p;
@@ -115,7 +144,7 @@ int SMB_Negotiate(SMB_Handle_Type Con_Handle, const char *Prots[])
 
   /* Now plug in the bits we need */
 
-  bzero(SMB_Hdr(pkt), SMB_negp_len);
+  memset(SMB_Hdr(pkt), 0, SMB_negp_len);
   SIVAL(SMB_Hdr(pkt), SMB_hdr_idf_offset, SMB_DEF_IDF);  /* Plunk in IDF */
   *(SMB_Hdr(pkt) + SMB_hdr_com_offset) = SMBnegprot;
   SSVAL(SMB_Hdr(pkt), SMB_hdr_pid_offset, Con_Handle -> pid);
@@ -229,7 +258,7 @@ int SMB_Negotiate(SMB_Handle_Type Con_Handle, const char *Prots[])
     Con_Handle -> Encrypt_Key_Len = SVAL(SMB_Hdr(pkt), SMB_negrLM_ekl_offset);
     
     p = (SMB_Hdr(pkt) + SMB_negrLM_buf_offset);
-    fprintf(stderr, "%d", (char *)(SMB_Hdr(pkt) + SMB_negrLM_buf_offset));
+    fprintf(stderr, "%p", (char *)(SMB_Hdr(pkt) + SMB_negrLM_buf_offset));
     memcpy(Con_Handle->Encrypt_Key, p, 8);
 
     p = (SMB_Hdr(pkt) + SMB_negrLM_buf_offset + Con_Handle -> Encrypt_Key_Len);
@@ -283,8 +312,7 @@ int SMB_Negotiate(SMB_Handle_Type Con_Handle, const char *Prots[])
 
 void SMB_Get_My_Name(char *name, int len)
 
-{ int loc;
-
+{
   if (gethostname(name, len) < 0) { /* Error getting name */
 
     strncpy(name, "unknown", len);
