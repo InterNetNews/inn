@@ -1,0 +1,93 @@
+#!/usr/bin/perl
+# showtoken - decode SM tokens
+# Olaf Titz, 1999. Public domain.
+# Takes tokens on stdin and write them along with a decoded form on stdout.
+# XX: tradspool is untested.
+#
+# Format of a token:
+#  1   type
+#  1   class
+# 16   token
+#  1   index
+#  4   offset
+#  2   overlen
+#  2   cancelled
+# The fields "index" and following are not available with OV3 (INN 2.3 up)
+#
+# the "token" field is:
+# for type=0 (trash) ignored
+# for type=2 (timehash)
+#  4   time
+#  2   seqnum
+# for type=3 (cnfs)
+#  8   cycbuffname
+#  4   offset/512
+#  4   cycnum
+# for type=4 (timecaf)
+#  4   time
+#  2   seqnum
+# for type=5 (tradspool)
+#  4   ngnum
+#  4   artnum
+
+@types=("trash", "", "timehash", "cnfs", "timecaf", "tradspool");
+
+sub splittoken
+{
+    local($t)=@_;
+    $t=~tr/@//d;
+    $_=pack("H*", $t);
+    local($type, $class, $toke, $index, $offset, $overlen, $cancelled) =
+      unpack("CCa16CLnc", $_);
+    printf "type=%s class=%d ", $types[$type], $class;
+    if (length>36) {
+	printf "over=%d offset=%x overlen=%x cancelled=%d ",
+	       $index, $offset, $overlen, $cancelled;
+    }
+    if ($type==2) {
+	($time, $seq)=unpack("Nn", $toke);
+	printf "time=%08lX seq=%04X ", $time, $seq;
+	($aa,$bb,$cc,$dd)=unpack("a2a2a2a2", sprintf("%08lx", $time));
+	printf "file=time-%02x/%s/%s/%04x-%s%s\n",
+	       $class, $bb, $cc, $seq, $aa, $dd;
+    }
+    elsif ($type==3) {
+	($buffn, $offset, $cnum)=unpack("A8NN", $toke);
+	printf "buffer=%s offset=%x cycnum=%x\n", $buffn, $offset*512, $cnum;
+    }
+    elsif ($type==4) {
+	($time, $seq)=unpack("Nn", $toke);
+	printf "time=%06lX seq=%04X ", $time, $seq;
+	($aa,$bb,$cc)=unpack("a2a2a2a2", sprintf("%06lx", $time));
+	printf "caf=timecaf-%02x/%s/%s%s.CF\n",
+	       $class, $bb, $aa, $cc;
+    }
+    elsif ($type==5) {
+	($ngn, $art)=unpack("NN", $toke);
+	printf "ng=%08X art=%d", $time, $seq;
+	if ($tradspool && $NG{$ngn}) {
+	    printf "file=%s/%s/%d", $pathspool, $NG{$ngn}, $art;
+	}
+	print "\n";
+    }
+}
+
+$tradspool=0;
+if ($ARGV[0]) {
+    $pathspool=$ARGV[0];
+    if (open(M, "$pathspool/tradspool.map")) {
+	$tradspool=1;
+	while (<M>) {
+	    ($ng, $ngn)=split;
+	    $NG{$ngn}=$ng;
+	}
+	close M;
+    }
+}
+$|=1;
+while(<>) {
+    chomp;
+    /^@/ || next;
+    print "$_ ";
+    splittoken($_);
+}
