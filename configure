@@ -1190,19 +1190,19 @@ echo "$ac_t""$ac_cv_subst_ctags" 1>&6
 set dummy awk; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:1193: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_path__PATH_AWK  '+set}'`\" = set"; then
+if eval "test \"`echo '$''{'ac_cv_path__PATH_AWK'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  case "$_PATH_AWK  " in
+  case "$_PATH_AWK" in
   /*)
-  ac_cv_path__PATH_AWK  ="$_PATH_AWK  " # Let the user override the test with a path.
+  ac_cv_path__PATH_AWK="$_PATH_AWK" # Let the user override the test with a path.
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
   for ac_dir in $PATH; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path__PATH_AWK  ="$ac_dir/$ac_word"
+      ac_cv_path__PATH_AWK="$ac_dir/$ac_word"
       break
     fi
   done
@@ -1210,14 +1210,14 @@ else
   ;;
 esac
 fi
-_PATH_AWK  ="$ac_cv_path__PATH_AWK  "
-if test -n "$_PATH_AWK  "; then
-  echo "$ac_t""$_PATH_AWK  " 1>&6
+_PATH_AWK="$ac_cv_path__PATH_AWK"
+if test -n "$_PATH_AWK"; then
+  echo "$ac_t""$_PATH_AWK" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
 
-if test "x${_PATH_AWK  }" = "x"
+if test "x${_PATH_AWK}" = "x"
 then
 { echo "configure: error: awk is a required program not found in path" 1>&2; exit 1; }
 fi
@@ -1227,19 +1227,19 @@ fi
 set dummy perl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:1230: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_path__PATH_PERL '+set}'`\" = set"; then
+if eval "test \"`echo '$''{'ac_cv_path__PATH_PERL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  case "$_PATH_PERL " in
+  case "$_PATH_PERL" in
   /*)
-  ac_cv_path__PATH_PERL ="$_PATH_PERL " # Let the user override the test with a path.
+  ac_cv_path__PATH_PERL="$_PATH_PERL" # Let the user override the test with a path.
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
   for ac_dir in $PATH; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path__PATH_PERL ="$ac_dir/$ac_word"
+      ac_cv_path__PATH_PERL="$ac_dir/$ac_word"
       break
     fi
   done
@@ -1247,14 +1247,14 @@ else
   ;;
 esac
 fi
-_PATH_PERL ="$ac_cv_path__PATH_PERL "
-if test -n "$_PATH_PERL "; then
-  echo "$ac_t""$_PATH_PERL " 1>&6
+_PATH_PERL="$ac_cv_path__PATH_PERL"
+if test -n "$_PATH_PERL"; then
+  echo "$ac_t""$_PATH_PERL" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
 
-if test "x${_PATH_PERL }" = "x"
+if test "x${_PATH_PERL}" = "x"
 then
 { echo "configure: error: perl is a required program not found in path" 1>&2; exit 1; }
 fi
@@ -1264,19 +1264,19 @@ fi
 set dummy sed; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:1267: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_path__PATH_SED  '+set}'`\" = set"; then
+if eval "test \"`echo '$''{'ac_cv_path__PATH_SED'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  case "$_PATH_SED  " in
+  case "$_PATH_SED" in
   /*)
-  ac_cv_path__PATH_SED  ="$_PATH_SED  " # Let the user override the test with a path.
+  ac_cv_path__PATH_SED="$_PATH_SED" # Let the user override the test with a path.
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
   for ac_dir in $PATH; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path__PATH_SED  ="$ac_dir/$ac_word"
+      ac_cv_path__PATH_SED="$ac_dir/$ac_word"
       break
     fi
   done
@@ -1284,14 +1284,14 @@ else
   ;;
 esac
 fi
-_PATH_SED  ="$ac_cv_path__PATH_SED  "
-if test -n "$_PATH_SED  "; then
-  echo "$ac_t""$_PATH_SED  " 1>&6
+_PATH_SED="$ac_cv_path__PATH_SED"
+if test -n "$_PATH_SED"; then
+  echo "$ac_t""$_PATH_SED" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
 
-if test "x${_PATH_SED  }" = "x"
+if test "x${_PATH_SED}" = "x"
 then
 { echo "configure: error: sed is a required program not found in path" 1>&2; exit 1; }
 fi
@@ -1301,19 +1301,19 @@ fi
 set dummy df; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:1304: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_path__PATH_DF   '+set}'`\" = set"; then
+if eval "test \"`echo '$''{'ac_cv_path__PATH_DF'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  case "$_PATH_DF   " in
+  case "$_PATH_DF" in
   /*)
-  ac_cv_path__PATH_DF   ="$_PATH_DF   " # Let the user override the test with a path.
+  ac_cv_path__PATH_DF="$_PATH_DF" # Let the user override the test with a path.
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
   for ac_dir in $PATH; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path__PATH_DF   ="$ac_dir/$ac_word"
+      ac_cv_path__PATH_DF="$ac_dir/$ac_word"
       break
     fi
   done
@@ -1321,14 +1321,14 @@ else
   ;;
 esac
 fi
-_PATH_DF   ="$ac_cv_path__PATH_DF   "
-if test -n "$_PATH_DF   "; then
-  echo "$ac_t""$_PATH_DF   " 1>&6
+_PATH_DF="$ac_cv_path__PATH_DF"
+if test -n "$_PATH_DF"; then
+  echo "$ac_t""$_PATH_DF" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
 
-if test "x${_PATH_DF   }" = "x"
+if test "x${_PATH_DF}" = "x"
 then
 { echo "configure: error: df is a required program not found in path" 1>&2; exit 1; }
 fi
@@ -1375,19 +1375,19 @@ fi
 set dummy sort; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:1378: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_path__PATH_SORT '+set}'`\" = set"; then
+if eval "test \"`echo '$''{'ac_cv_path__PATH_SORT'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  case "$_PATH_SORT " in
+  case "$_PATH_SORT" in
   /*)
-  ac_cv_path__PATH_SORT ="$_PATH_SORT " # Let the user override the test with a path.
+  ac_cv_path__PATH_SORT="$_PATH_SORT" # Let the user override the test with a path.
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
   for ac_dir in $PATH; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path__PATH_SORT ="$ac_dir/$ac_word"
+      ac_cv_path__PATH_SORT="$ac_dir/$ac_word"
       break
     fi
   done
@@ -1395,14 +1395,14 @@ else
   ;;
 esac
 fi
-_PATH_SORT ="$ac_cv_path__PATH_SORT "
-if test -n "$_PATH_SORT "; then
-  echo "$ac_t""$_PATH_SORT " 1>&6
+_PATH_SORT="$ac_cv_path__PATH_SORT"
+if test -n "$_PATH_SORT"; then
+  echo "$ac_t""$_PATH_SORT" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
 
-if test "x${_PATH_SORT }" = "x"
+if test "x${_PATH_SORT}" = "x"
 then
 { echo "configure: error: sort is a required program not found in path" 1>&2; exit 1; }
 fi
@@ -5283,12 +5283,12 @@ s%@RANLIB@%$RANLIB%g
 s%@CPP@%$CPP%g
 s%@PATH_CTAGS@%$PATH_CTAGS%g
 s%@ac_cv_subst_ctags@%$ac_cv_subst_ctags%g
-s%@_PATH_AWK  @%$_PATH_AWK  %g
-s%@_PATH_PERL @%$_PATH_PERL %g
-s%@_PATH_SED  @%$_PATH_SED  %g
-s%@_PATH_DF   @%$_PATH_DF   %g
+s%@_PATH_AWK@%$_PATH_AWK%g
+s%@_PATH_PERL@%$_PATH_PERL%g
+s%@_PATH_SED@%$_PATH_SED%g
+s%@_PATH_DF@%$_PATH_DF%g
 s%@_PATH_EGREP@%$_PATH_EGREP%g
-s%@_PATH_SORT @%$_PATH_SORT %g
+s%@_PATH_SORT@%$_PATH_SORT%g
 s%@ac_cv_subst_path_compress@%$ac_cv_subst_path_compress%g
 s%@ac_cv_subst_path_gzip@%$ac_cv_subst_path_gzip%g
 s%@ac_cv_subst_path_pgp@%$ac_cv_subst_path_pgp%g
