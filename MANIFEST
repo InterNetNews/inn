@@ -14,6 +14,7 @@ Makefile.global.in          1 Template Makefile included by all Makefile
 NEWS                        1 Info about changes since last version
 README                      1 Assorted notes
 README.perl_hook            1 Notes on Christophe Wolfhugel's Perl hook
+README.python_auth_hook     1 Notes on Python authentication hook
 README.python_hook          1 Notes on Greg Andruk's Python hook
 README.tcl_hook             1 Bob Halley's TCL hook notes
 aclocal.m4                  1 M4 macro for libtool
@@ -397,6 +398,7 @@ nnrpd/perl.c                1 Perl routines for nnrpd.
 nnrpd/perm.c                1 Reading readers.conf
 nnrpd/post.c                1 Article processing and posting
 nnrpd/post.h                1 Article data types
+nnrpd/python.c              1 Python routines for nnrpd
 nnrpd/track.c               1 Track client
 nnrpd/udp.c                 1 Udp handling for actived
 samples                     1 Prototype InterNetNews files (Directory)
@@ -430,8 +432,10 @@ samples/newgroup.in         1 Newgroup control message handler
 samples/newgroup.pl         1 Newgroup control message handler for controlchan
 samples/news2mail.cf        1 news2mail config file
 samples/newsfeeds.in        1 Sample newsfeeds(5) file
+samples/nnrpd.py            1 Sample python filter for nnrpd
 samples/nnrpd.track         1 Sample nnrpd.track(5) file
 samples/nnrpd_auth.pl.in    1 Sample nnrpd authorization script
+samples/nnrpd_auth.py.in    1 Sample nnrpd authorization script for python
 samples/nntpsend.ctl        1 Sample control file for nntpsend
 samples/overview.fmt        1 Format of news overview database
 samples/parsecontrol.in     1 Initial parsing of control messages

@@ -1162,6 +1162,7 @@ AC_OUTPUT(
         samples/innwatch.ctl
         samples/newsfeeds
         samples/nnrpd_auth.pl
+        samples/nnrpd_auth.py
         samples/startup.tcl
         scripts/inncheck
         scripts/innreport
