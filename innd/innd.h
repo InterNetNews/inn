@@ -495,7 +495,7 @@ extern void		CHANtracing(CHANNEL *cp, BOOL Flag);
 extern void		RCHANadd(CHANNEL *cp);
 extern void		RCHANremove(CHANNEL *cp);
 
-extern void		SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event, POINTER Waker, POINTER Argument);
+extern void		SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event, FUNCPTR Waker, POINTER Argument);
 extern void		SCHANremove(CHANNEL *cp);
 extern void		SCHANwakeup(POINTER *Event);
 

@@ -406,7 +406,7 @@ void RCHANremove(CHANNEL *cp)
 **  Put a channel to sleep, call a function when it wakes.
 **  Note that the Argument must be NULL or allocated memory!
 */
-void SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event, POINTER Waker, POINTER Argument)
+void SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event, FUNCPTR Waker, POINTER Argument)
 {
     if (!FD_ISSET(cp->fd, &SCHANmask)) {
 	SCHANcount++;
@@ -582,13 +582,10 @@ int CHANreadtext(CHANNEL *cp)
 **  a good chunk value.
 */
 STATIC int
-CHANwrite(fd, p, length)
-    register int	fd;
-    register char	*p;
-    register int	length;
+CHANwrite(int fd, char *p, long length)
 {
-    register int	i;
-    register char	*save;
+    int	i;
+    char	*save;
 
     do {
 	/* Try the standard case -- write it all. */
@@ -641,8 +638,7 @@ BOOL WCHANflush(CHANNEL *cp)
 **  Wakeup routine called after a write channel was put to sleep.
 */
 STATIC FUNCTYPE
-CHANwakeup(cp)
-    CHANNEL	*cp;
+CHANwakeup(CHANNEL *cp)
 {
     syslog(L_NOTICE, "%s wakeup", CHANname(cp));
     WCHANadd(cp);
@@ -653,9 +649,7 @@ CHANwakeup(cp)
 **  Attempting to write would block; stop output or give up.
 */
 STATIC void
-CHANwritesleep(cp, p)
-    register CHANNEL	*cp;
-    char		*p;
+CHANwritesleep(CHANNEL *cp, char *p)
 {
     int			i;
 
@@ -686,7 +680,7 @@ CHANwritesleep(cp, p)
 **  Not really ready for production use yet, and it's expensive, too.
 */
 STATIC void
-CHANdiagnose()
+CHANdiagnose(void)
 {
     FDSET		Test;
     int			i;
@@ -737,13 +731,13 @@ void CHANreadloop(void)
 {
     static char		EXITING[] = "INND exiting because of signal\n";
     static int		fd;
-    register int	i;
-    register int	startpoint;
-    register int	count;
-    register int	lastfd;
+    int			i;
+    int			startpoint;
+    int			count;
+    int			lastfd;
     int			oerrno;
-    register CHANNEL	*cp;
-    register BUFFER	*bp;
+    CHANNEL		*cp;
+    BUFFER		*bp;
     FDSET		MyRead;
     FDSET		MyWrite;
     struct timeval	MyTime;

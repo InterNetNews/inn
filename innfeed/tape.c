@@ -1070,8 +1070,8 @@ static void prepareFiles (Tape tape)
     }
   else
     {
-      inpExists = (tape->inFp != NULL) ; /* can this ever be true?? */
-      outExists = (tape->outFp != NULL && tape->outputSize > 0) ;
+      inpExists = (tape->inFp != NULL) ? true : false ; /* can this ever be true?? */
+      outExists = (tape->outFp != NULL && tape->outputSize > 0) ? true : false ;
     }
   
 

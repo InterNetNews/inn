@@ -1789,19 +1789,22 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
         /* see if we need to drop in to or out of no-CHECK mode */
         if (cxn->state == cxnFeedingS && cxn->doesStreaming)
           {
-            if ((cxn->filterValue > cxn->onThreshold) && cxn->needsChecks)
-              hostLogNoCheckMode (cxn->myHost, !(cxn->needsChecks = false),
+            if ((cxn->filterValue > cxn->onThreshold) && cxn->needsChecks) {
+	      cxn->needsChecks = false;
+              hostLogNoCheckMode (cxn->myHost, true,
 				  cxn->offThreshold/cxn->lowPassFilter,
 				  cxn->filterValue/cxn->lowPassFilter,
 				  cxn->onThreshold/cxn->lowPassFilter) ;
 	      /* on and log */
-            else if ((cxn->filterValue < cxn->offThreshold) &&
-                     !cxn->needsChecks)
-              hostLogNoCheckMode (cxn->myHost, !(cxn->needsChecks = true),
+            } else if ((cxn->filterValue < cxn->offThreshold) &&
+                     !cxn->needsChecks) {
+	      cxn->needsChecks = true;
+              hostLogNoCheckMode (cxn->myHost, false,
 				  cxn->offThreshold/cxn->lowPassFilter,
 				  cxn->filterValue/cxn->lowPassFilter,
 				  cxn->onThreshold/cxn->lowPassFilter) ;
 	      /* off and log */
+	    }
           }
 
         /* Now handle possible remaining partial reponse and set up for

@@ -552,7 +552,7 @@ static bool fillContents (Article article)
 	avgCharsPerLine = 75 ;      /* roughly number of characters per line */
     
     if (IsToken(article->fname)) {
-	opened = ((article->arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL);
+	opened = ((article->arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL) ? true : false;
 	if (opened)
 	    articlesize = article->arthandle->len;
 	else {
@@ -566,7 +566,7 @@ static bool fillContents (Article article)
     } else {
 	struct stat sb ;
 	
-	opened = ((fd = open (article->fname,O_RDONLY,0)) >= 0);
+	opened = ((fd = open (article->fname,O_RDONLY,0)) >= 0) ? true : false;
 	article->arthandle = NULL;
 	if (opened) {
 	    if (fstat (fd, &sb) < 0) {

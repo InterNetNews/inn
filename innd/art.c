@@ -1526,9 +1526,8 @@ ARTxrefslave()
     	return FALSE;
     if ((name = strchr(HDR(_xref), ' ')) == NULL)
     	return FALSE;
-    len = strlen(name);
-    for (name++; HDR(_xref) + len > name && *name == ' '; name++);
-    if (HDR(_xref) + len == name)
+    while ( *++name == ' ' );
+    if ( *name == '\0' )
     	return FALSE;
 
     p = xrefbuf;

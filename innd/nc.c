@@ -104,12 +104,10 @@ void NCclearwip(CHANNEL *cp) {
 **  *before* NCwritereply is called.
 */
 STATIC void
-NCwritereply(cp, text)
-    CHANNEL	*cp;
-    char	*text;
+NCwritereply(CHANNEL *cp, char *text)
 {
-    register BUFFER	*bp;
-    register int	i;
+    BUFFER	*bp;
+    int		i;
 
     /* XXX could do RCHANremove(cp) here, as the old NCwritetext() used to
      * do, but that would be wrong if the channel is sreaming (because it
@@ -144,9 +142,7 @@ NCwritereply(cp, text)
 **  Tell the NNTP channel to go away.
 */
 STATIC void
-NCwriteshutdown(cp, text)
-    CHANNEL	*cp;
-    char	*text;
+NCwriteshutdown(CHANNEL *cp, char *text)
 {
     cp->State = CSwritegoodbye;
     RCHANremove(cp); /* we're not going to read anything more */
@@ -168,9 +164,7 @@ NCwriteshutdown(cp, text)
 **  If a Message-ID is bad, write a reject message and return TRUE.
 */
 STATIC BOOL
-NCbadid(cp, p)
-    register CHANNEL	*cp;
-    register char	*p;
+NCbadid(CHANNEL *cp, char *p)
 {
     if (ARTidok(p))
 	return FALSE;
@@ -186,8 +180,7 @@ NCbadid(cp, p)
 **  not running, drop the article or just pause and reschedule.
 */
 STATIC void
-NCpostit(cp)
-    register CHANNEL	*cp;
+NCpostit(CHANNEL *cp)
 {
     STRING		response;
 
@@ -230,7 +223,7 @@ NCpostit(cp)
 	    break;
 	}
 	cp->State = CSgetcmd;
-	NCwritereply(cp, response);
+	NCwritereply(cp, (char *)response);
 	break;
 
     case OMthrottled:
@@ -249,8 +242,7 @@ NCpostit(cp)
 **  read next.
 */
 STATIC FUNCTYPE
-NCwritedone(cp)
-    register CHANNEL	*cp;
+NCwritedone(CHANNEL *cp)
 {
     switch (cp->State) {
     default:
@@ -315,7 +307,7 @@ STATIC FUNCTYPE NChead(CHANNEL *cp)
     }
 
     /* Write the terminator. */
-    NCwritereply(cp, NCdot, STRLEN(NCdot));
+    NCwritereply(cp, NCdot);
     QIOclose(qp);
 }
 
@@ -364,13 +356,12 @@ STATIC FUNCTYPE NCstat(CHANNEL *cp)
 **  channel is in CSgetauth state and we just got a command.
 */
 STATIC FUNCTYPE
-NCauthinfo(cp)
-    register CHANNEL	*cp;
+NCauthinfo(CHANNEL *cp)
 {
     static char		AUTHINFO[] = "authinfo ";
     static char		PASS[] = "pass ";
     static char		USER[] = "user ";
-    register char	*p;
+    char		*p;
 
     p = cp->In.Data;
 
@@ -418,12 +409,11 @@ NCauthinfo(cp)
 **  The "help" command.
 */
 STATIC FUNCTYPE
-NChelp(cp)
-    register CHANNEL	*cp;
+NChelp(CHANNEL *cp)
 {
     static char		LINE1[] = "For more information, contact \"";
     static char		LINE2[] = "\" at this machine.";
-    register NCDISPATCH	*dp;
+    NCDISPATCH		*dp;
 
     WCHANappend(cp, NNTP_HELP_FOLLOWS,STRLEN(NNTP_HELP_FOLLOWS));
     WCHANappend(cp, NCterm,STRLEN(NCterm));
@@ -448,10 +438,9 @@ NChelp(cp)
 **  article or not.  Set the state appropriately.
 */
 STATIC FUNCTYPE
-NCihave(cp)
-    CHANNEL		*cp;
+NCihave(CHANNEL *cp)
 {
-    register char	*p;
+    char	*p;
 
     cp->Ihave++;
     /* Snip off the Message-ID. */
@@ -481,10 +470,9 @@ NCihave(cp)
 */
 
 STATIC FUNCTYPE
-NCxbatch(cp)
-    CHANNEL		*cp;
+NCxbatch(CHANNEL *cp)
 {
-    register char	*p;
+    char	*p;
 
     /* Snip off the batch size */
     for (p = cp->In.Data + STRLEN("xbatch"); ISWHITE(*p); p++)
@@ -532,11 +520,10 @@ NCxbatch(cp)
 **  The "list" command.  Send the active file.
 */
 STATIC FUNCTYPE
-NClist(cp)
-    register CHANNEL	*cp;
+NClist(CHANNEL *cp)
 {
-    register char	*p;
-    register char	*q;
+    char		*p;
+    char		*q;
     char		*trash;
     char		*end;
 
@@ -578,10 +565,9 @@ NClist(cp)
 **  The "mode" command.  Hand off the channel.
 */
 STATIC FUNCTYPE
-NCmode(cp)
-    register CHANNEL	*cp;
+NCmode(CHANNEL *cp)
 {
-    register char	*p;
+    char		*p;
     HANDOFF		h;
 
     /* Skip the first word, get the argument. */
@@ -623,12 +609,11 @@ STATIC FUNCTYPE NCquit(CHANNEL *cp)
 **  The "xpath" command.  Return the paths for an article is.
 */
 STATIC FUNCTYPE
-NCxpath(cp)
-    CHANNEL		*cp;
+NCxpath(CHANNEL *cp)
 {
     static BUFFER	Reply;
-    register char	*p;
-    register int	i;
+    char		*p;
+    int			i;
 
     /* Nip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("xpath"); ISWHITE(*p); p++)
@@ -657,10 +642,9 @@ NCxpath(cp)
 **  The catch-all for inimplemented commands.
 */
 STATIC FUNCTYPE
-NC_unimp(cp)
-    CHANNEL		*cp;
+NC_unimp(CHANNEL *cp)
 {
-    register char	*p;
+    char		*p;
     char		buff[SMBUF];
 
     /* Nip off the first word. */
@@ -678,12 +662,11 @@ NC_unimp(cp)
 **  Remove the \r\n and leading dot escape that the NNTP protocol adds.
 */
 STATIC void
-NCclean(bp)
-    register BUFFER	*bp;
+NCclean(BUFFER *bp)
 {
-    register char	*end;
-    register char	*p;
-    register char	*dest;
+    char	*end;
+    char	*p;
+    char	*dest;
 
     for (p = bp->Data, dest = p, end = p + bp->Used; p < end; ) {
 	if (p[0] == '\r' && p[1] == '\n') {
@@ -1104,8 +1087,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 **  full amount (i.e., the command or the whole article) process it.
 */
 STATIC FUNCTYPE
-NCreader(cp)
-    register CHANNEL	*cp;
+NCreader(CHANNEL *cp)
 {
     int			i;
 
@@ -1139,10 +1121,9 @@ NCreader(cp)
 **  Set up the NNTP channel state.
 */
 void
-NCsetup(i)
-    register int	i;
+NCsetup(int i)
 {
-    register NCDISPATCH	*dp;
+    NCDISPATCH		*dp;
     char		*p;
     char		buff[SMBUF];
 
@@ -1165,9 +1146,9 @@ NCsetup(i)
 **  Tear down our state.
 */
 void
-NCclose()
+NCclose(void)
 {
-    register CHANNEL	*cp;
+    CHANNEL		*cp;
     int			j;
 
     /* Close all incoming channels. */
@@ -1183,12 +1164,9 @@ NCclose()
 **  Create an NNTP channel and print the greeting message.
 */
 CHANNEL *
-NCcreate(fd, MustAuthorize, IsLocal)
-    int			fd;
-    BOOL		MustAuthorize;
-    BOOL		IsLocal;
+NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal)
 {
-    register CHANNEL	*cp;
+    CHANNEL		*cp;
     int			i;
 
     /* Create the channel. */
@@ -1239,7 +1217,7 @@ NCcreate(fd, MustAuthorize, IsLocal)
     }
     cp->BadReads = 0;
     cp->BadCommands = 0;
-    NCwritereply(cp, NCgreeting);
+    NCwritereply(cp, (char *)NCgreeting);
     return cp;
 }
 
@@ -1254,10 +1232,9 @@ NCcreate(fd, MustAuthorize, IsLocal)
 **  article or not.  Stay in command state.
 */
 STATIC FUNCTYPE
-NCcheck(cp)
-    CHANNEL		*cp;
+NCcheck(CHANNEL *cp)
 {
-    register char	*p;
+    char		*p;
     int			msglen;
 
     cp->Check++;

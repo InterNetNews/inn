@@ -59,7 +59,7 @@
 #define TAPE_ROTATE_PERIOD 	60 		/* backlog-rotate-period */
 #define TAPE_CHECKPOINT_PERIOD 	30 		/* backlog-ckpt-period */
 #define TAPE_NEWFILE_PERIOD 	600 		/* backlog-newfile-period */
-#define TAPE_DISABLE		0		/* no-backlog */
+#define TAPE_DISABLE		false		/* no-backlog */
 
 /* in main.c */
 #define NEWSSPOOL 		"/var/news/spool/articles" /* news-spool */
@@ -70,7 +70,7 @@
 #define DNS_RETRY_PERIOD 	900 		/* dns-retry */
 #define DNS_EXPIRE_PERIOD 	86400 		/* dns-expire */
 #define CLOSE_PERIOD 		(60 * 60) 	/* close-period */
-#define GEN_HTML		0 		/* gen-html */
+#define GEN_HTML		false 		/* gen-html */
 #define INNFEED_STATUS 		"innfeed.status" /* status-file */
 #define LOG_CONNECTION_STATS 	0 		/* connection-stats */
 #define HOST_HIGHWATER 		10 		/* host-highwater */
@@ -82,7 +82,7 @@
 #define INIT_CXNS		1 		/* initial-connections */
 #define MAX_CXNS		2 		/* max-connections */
 #define MAX_Q_SIZE		5 		/* max-queue-size */
-#define STREAM			1 		/* streaming */
+#define STREAM			true 		/* streaming */
 #define NOCHECKHIGH 		95.0 		/* no-check-high */
 #define NOCHECKLOW 		90.0 		/* no-check-low */
 #define PORTNUM 		119 		/* port-number */
