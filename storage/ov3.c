@@ -1021,7 +1021,7 @@ BOOL OV3expiregroup(char *group, int *lo) {
 	return FALSE;
     }
     newge = *ge;
-    newge.base = newge.count = 0;
+    newge.base = newge.low = newge.count = 0;
     while (OV3search(handle, &artnum, &data, &len, &token)) {
 	if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
 	    continue;
@@ -1095,13 +1095,21 @@ BOOL OV3expiregroup(char *group, int *lo) {
 	unlink(bakidx);
 	unlink(bakdat);
     } while (0);
+    if (newge.low == 0)
+	/* no article for the group */
+	newge.low = newge.high;
     *ge = newge;
     ge->indexinode = sb.st_ino;
+    if (lo) {
+	if (ge->count == 0)
+	    /* lomark should be himark + 1, if no article for the group */
+	    *lo = ge->low + 1;
+	else
+	    *lo = ge->low;
+    }
     GROUPlock(gloc, LOCK_UNLOCK);
     OV3closesearch(handle);
     OV3closegroupfiles(newgh);
-    if (lo)
-	*lo = ge->low;
     return TRUE;
 }
 
