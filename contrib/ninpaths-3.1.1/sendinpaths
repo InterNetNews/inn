@@ -13,10 +13,18 @@ keep=14
 TMP=tmp$$
 defaddr=pathsurvey@top1000.org
 
+# Renice to give other processes priority, since this isn't too important.
+renice 20 -p $$ > /dev/null
+
 trap "rm -f $TMP; trap 0; exit" 0 1 2 15
 # Make report from (up to) $report days of dumps
 find . -name 'inpaths.*' ! -size 0 -mtime -$report -print |\
  sed 's/^/-u /' > $TMP
+
+if [ ! -s "$TMP" ] ; then
+  echo "No data has been collected this month!"
+  exit 1
+fi
 
 if [ "$1" = "-n" ] ; then
   ninpaths `cat $TMP` -r $ME
