@@ -39,7 +39,7 @@ LINK		= $(LIBLD) $(LDFLAGS) -o $@
 NEWSLIBS        = $(LIBINN) $(LIBS)
 AUTHLIBS	= $(LIBAUTH) $(LIBINN) $(LIBS)
 
-CK_LIBS		= $(PAMLIB) $(DBMLIB) $(AUTHLIBS)
+CK_LIBS		= $(CRYPTLIB) $(SHADOWLIB) $(PAMLIB) $(DBMLIB) $(AUTHLIBS)
 SMB_LIBS	= $(LIBSMB) $(AUTHLIBS)
 
 auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(SMB_LIBS)
