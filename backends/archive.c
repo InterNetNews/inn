@@ -308,8 +308,10 @@ CopyArt(ARTHANDLE *art, char *dest, BOOL Concat)
 		dest, strerror(errno));
 	(void)fclose(out);
 	if (!Concat) (void)unlink(dest);
+	DISPOSE(article.data);
 	return FALSE;
     }
+    DISPOSE(article.data);
 
     /* Flush and close the output. */
     if (ferror(out) || fflush(out) == EOF) {
