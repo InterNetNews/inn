@@ -1,0 +1,2211 @@
+#!/usr/local/bin/perl 
+
+##########################################################################
+#
+#   innreport.pl: Perl script to summarize INN (& Diablo) log files
+#                 (with optional HTML output and graphs).
+#
+# version: 2.1.9_6
+#
+# Copyright (c) 1996-1998, Fabien Tassin (tassin@eerie.fr).
+#
+##########################################################################
+#
+# Usage: innreport.pl -f config_file [-[no]options] logfile [logfile2 [...]]
+#   where options are:
+#     -h (or -help)      : this help page
+#     -html              : HTML output
+#     -v                 : display the version number of INNreport
+#     -f config_file     : name of the configuration file
+#     -config            : print INNreport configuration information
+#     -g                 : want graphs [default]
+#     -graph             : an alias for option -g
+#     -d directory       : directory for Web pages
+#     -dir directory     : an alias for option -d
+#     -p directory       : pictures path (file space)
+#     -path directory    : an alias for option -p
+#     -w directory       : pictures path (web space)
+#     -webpath directory : an alias for option -w
+#     -i                 : name of index page
+#     -index             : an alias for option -i
+#     -a                 : want to archive HTML results
+#     -archive           : an alias for option -a
+#     -c number          : how many report files to keep (0 = all)
+#     -cycle number      : an alias for option -c
+#     -s char            : separator for filename
+#     -separator char    : an alias for option -s
+#     -unknown           : Unknown entries from news log file
+#     -maxunrec          : Max number of unrecognized line to display
+#     -casesensitive     : Case sensitive
+#
+# Use no in front of boolean options to unset them.
+# For example, "-html" is set by default. Use "-nohtml" to remove this
+# feature.
+#
+##########################################################################
+#
+# ABSOLUTELY NO WARRANTY WITH THIS PACKAGE. USE IT AT YOUR OWN RISKS.
+#
+# Note: You need the Perl graphic library GD.pm if you want the graphs.
+#       GD is available on all good CPAN ftp sites:
+#           ex: [CPAN_DIR]/authors/id/LDS/GD-1.16.tar.gz (or greater)
+#         or directly to:
+#           <URL:http://www-genome.wi.mit.edu/pub/software/WWW/GD.html>
+#
+# Documentation: for a short explaination of the different options, you
+#        can read the usage (obtained with the -h or -help switch).
+#
+# Install: - check the Perl location (first line). Require Perl 5.002
+#            or greater.
+#          - look at the parameters in the configuration file (section
+#            'default')
+#          - copy the configuration file into ${NEWSLIB}/innreport.conf
+#          - copy the INN module into ${NEWSLIB}/innreport_inn.pm
+#          - copy this script into ${NEWSLIB}/innreport.pl
+#          - be sure that the news user can run it (chmod 755 or 750)
+#          - in "scanlog", comment the line containing innlog and add:
+#            ${NEWSLIB}/innreport.pl -f ${NEWSLIB}/innreport.conf ${OLD_SYSLOG}
+#            or, if you want to change some options:
+#    ${NEWSLIB}/innreport.pl -f ${NEWSLIB}/innreport.conf options ${OLD_SYSLOG}
+#
+# Report: please report bugs (preferably) to the innreport mailing list
+#         (see below) or directly to the author (do not forget to
+#         include the result of the "-config" switch, the parameters
+#         passed on the command line and the INN version).
+#         Please also report unknown entries.
+#         Be sure your are using the latest version of this script before
+#         any report. (check <URL:ftp://ftp.eerie.fr/pub/usenet/innreport/>)
+#
+#         You can subscribe to the innreport mailing list by sending
+#         a message to "listserv@eerie.fr" without subject and with
+#         "sub innreport FirstName LastName (organization)" in the body.
+#         To obtain more information, send "help" to "listserv@eerie.fr".
+#
+##########################################################################
+
+# remember to add '-w' on the first line and to uncomment the 'use strict'
+# below before doing any changes to this file.
+
+# use strict;
+
+## Do you want to create a Web page. Pick DO or DONT.
+my $HTML = "DO";
+
+## Do you want the graphs (need $HTML too). Pick DO or DONT.
+my $GRAPH = "DO";
+
+## Directory for the Web pages (used only if the previous line is active)
+my $HTML_dir = "/var/www/News/stats";
+
+## Directory for the GIF pictures (need HTML support) in the file space
+my $IMG_dir = "$HTML_dir/pics";
+
+## Directory for the GIF pictures (need HTML support) in the Web space
+## (can be relative or global)
+my $IMG_pth = "pics";
+
+## Do you want to archive HTML results (& pics) [ will add a date in each
+## name ]. Pick DO or DONT.
+my $ARCHIVE = "DO";
+
+## index page will be called:
+my $index = "index.html";
+
+## How many report files to keep (0 = all) (need $ARCHIVE).
+my $CYCLE = 0;
+
+## separator between hours-minutes-seconds in filenames
+## (normaly a ":" but some web-browsers (Lynx, MS-IE, Mosaic) can't read it)
+## Warning: never use "/". Use only a _valid_ filename char.
+my $SEPARATOR = ".";
+
+## Do you want the "Unknown entries from news log file" report. Pick DO or DONT.
+my $WANT_UNKNOWN = "DO";
+
+## Max number of unrecognized lines to display (if $WANT_UNKNOWN)
+## (-1 = no limit)
+my $MAX_UNRECOGNIZED = 50;
+
+## Do you want to be case sensitive. Pick DO or DONT.
+my $CASE_SENSITIVE = "DO";
+
+###############################################
+## THERE'S NOTHING TO CHANGE AFTER THIS LINE ##
+###############################################
+
+my $version = "2.1.9_6";
+my %output;  # the content of the configuration file.
+my $DEBUG = 0; # set to 1 to verify the structure/content of the conf file.
+my $start_time = time;
+
+# Require Perl 5.002 or greater.
+require 5.002;
+use Getopt::Long;
+
+my @old_argv = @ARGV;
+
+# Convert DO/DONT into boolean values.
+{
+  my $i;
+  foreach $i (\$HTML, \$GRAPH, \$ARCHIVE, \$WANT_UNKNOWN, \$CASE_SENSITIVE)
+  {
+    $$i = ($$i eq 'DO') ? 1 : 0 ;
+  }
+}
+
+my %ref;
+GetOptions (\%ref,
+	   qw(-h -help
+	      -html!
+	      -config
+	      -f=s
+	      -g! -graph!
+	      -d=s -dir=s
+	      -p=s -path=s
+	      -w=s -webpath=s
+              -i=s -index=s
+	      -a! -archive!
+	      -c=i -cycle=i
+	      -s=s -separator=s
+	      -unknown!
+	      -maxunrec=i
+	      -casesensitive!
+	      -v
+	      ));
+
+&Version if ($ref{'v'});
+
+&Decode_Config_File($ref{'f'}) if defined ($ref{'f'});
+&Usage if ($ref{'h'} || $ref{'help'} || !defined $ref{'f'});
+
+$HTML = 0 if defined ($output{'default'}{'html'});
+$HTML = 1 if $output{'default'}{'html'} eq 'true';
+$HTML = 0 if defined ($ref{'html'});
+$HTML = 1 if ($ref{'html'});
+
+$GRAPH = 0 if (defined ($ref{'g'}) || defined ($ref{'graph'}));
+$GRAPH = 1 if ($HTML && ($ref{'g'} || $ref{'graph'}));
+
+$HTML_dir = &GetValue ($output{'default'}{'html_dir'})
+  if defined ($output{'default'}{'html_dir'});
+$HTML_dir = $ref{'d'} if defined ($ref{'d'});
+$HTML_dir = $ref{'dir'} if defined ($ref{'dir'});
+
+$IMG_pth = &GetValue ($output{'default'}{'img_dir'})
+  if defined ($output{'default'}{'img_dir'});
+$IMG_pth = $ref{'w'} if defined ($ref{'w'});
+$IMG_pth = $ref{'webpath'} if defined ($ref{'webpath'});
+
+$IMG_dir = $HTML_dir . "/" . $IMG_pth
+  if ((defined ($output{'default'}{'html_dir'}) ||
+       defined ($ref{'w'}) || defined ($ref{'webpath'}))
+      &&
+      (defined ($output{'default'}{'html_dir'}) ||
+       defined ($ref{'d'}) || defined ($ref{'dir'})));
+
+$IMG_dir = $ref{'p'} if defined ($ref{'p'});
+$IMG_dir = $ref{'path'} if defined ($ref{'path'});
+
+$index = &GetValue ($output{'default'}{'index'})
+  if defined ($output{'default'}{'index'});
+$index = $ref{'i'} if defined ($ref{'i'});
+$index = $ref{'index'} if defined ($ref{'index'});
+
+$ARCHIVE = &GetValue ($output{'default'}{'archive'})
+  if defined ($output{'default'}{'archive'});
+$ARCHIVE = ($ARCHIVE eq 'true');
+$ARCHIVE = 0 if (defined ($ref{'a'}) || defined ($ref{'archive'}));
+$ARCHIVE = 1 if ((($ref{'a'}) || ($ref{'archive'})) && ($HTML));
+$ARCHIVE = 0 unless ($HTML);
+
+$CYCLE = &GetValue ($output{'default'}{'cycle'})
+  if defined ($output{'default'}{'cycle'});
+$CYCLE = 0 if ($CYCLE eq 'none');
+$CYCLE = $ref{'c'} if defined ($ref{'c'});
+$CYCLE = $ref{'cycle'} if defined ($ref{'cycle'});
+
+$SEPARATOR = &GetValue ($output{'default'}{'separator'})
+  if defined ($output{'default'}{'separator'});
+$SEPARATOR = $ref{'s'} if defined ($ref{'s'});
+$SEPARATOR = $ref{'separator'} if defined ($ref{'separator'});
+
+if (defined ($output{'default'}{'unknown'}))
+{
+  $WANT_UNKNOWN = &GetValue ($output{'default'}{'unknown'});
+  $WANT_UNKNOWN = ($WANT_UNKNOWN eq 'true' ? 1 : 0);
+}
+$WANT_UNKNOWN = 0 if defined ($ref{'unknown'});
+$WANT_UNKNOWN = 1 if ($ref{'unknown'});
+
+$MAX_UNRECOGNIZED = &GetValue ($output{'default'}{'max_unknown'})
+  if defined ($output{'default'}{'max_unknown'});
+$MAX_UNRECOGNIZED = $ref{'maxunrec'} if defined ($ref{'maxunrec'});
+
+$CASE_SENSITIVE = &GetValue ($output{'default'}{'casesensitive'})
+  if defined ($output{'default'}{'casesensitive'});
+$CASE_SENSITIVE = 1 if ($CASE_SENSITIVE eq 'true');
+$CASE_SENSITIVE = 0 if defined ($ref{'casesensitive'});
+$CASE_SENSITIVE = 1 if ($ref{'casesensitive'});
+
+my $CLASS = &GetValue ($output{'default'}{'module'});
+my $LIBPATH = &GetValue ($output{'default'}{'libpath'});
+
+umask (022);
+
+BEGIN
+{
+  eval "use GD;";
+  $::HAVE_GD = ($@ eq "");
+};
+
+undef $GRAPH unless $HTML;
+ 
+if ($GRAPH && !$::HAVE_GD)
+{
+  print "WARNING: can't make graphs as required.\n";
+  print "         Install GD.pm or disable this option.\n\n";
+  undef $GRAPH;
+}
+
+if ($HTML)
+{
+  if ($GRAPH)
+  {
+    $IMG_dir = "." if (defined ($IMG_dir) && ($IMG_dir eq ""));
+    $IMG_pth .= "/" if ($IMG_pth);
+    $IMG_pth =~ s|/+|/|g;
+    $IMG_dir =~ s|/+|/|g;
+    unless (-w $IMG_dir)
+    {
+      print "WARNING: can't write in \"$IMG_dir\" as required by -g switch.\n";
+      print "         Option -g removed. Please see the -p switch.\n\n";
+      undef $GRAPH;
+    }
+  }
+  $HTML_dir = "." if (defined ($HTML_dir) && ($HTML_dir eq ""));
+  unless (-w $HTML_dir)
+  {
+    print "WARNING: can't write in \"$HTML_dir\" as required by -html switch.\n";
+    print "         Option -html and -a removed. Please see the -d switch.\n";
+    print "\n";
+    undef $HTML;
+    $ARCHIVE = 0;
+  }
+}
+
+# Now, we are sure that HTML and graphs can be made if options are active.
+&Summary if defined ($ref{'config'});
+
+my $unrecognize_max = 0;
+my @unrecognize;
+my ($total_line, $total_size) = (0, 0);
+my ($suffix, $HTML_output, %config, $first_date, $last_date,
+    %prog_type, %prog_size);
+
+my $HTML_header = "";
+my $HTML_footer = "";
+
+my $MIN = 1E10;
+my $MAX = -1;
+
+my $xmax = &GetValue ($output{'default'}{'graph_width'})   # Graph size..
+  if defined ($output{'default'}{'graph_width'});
+$xmax = 550 unless $xmax;
+
+my $transparent = &GetValue ($output{'default'}{'transparent'})
+  if defined ($output{'default'}{'transparent'});
+$transparent = (defined $transparent && $transparent eq 'true') ? 1 : 0;
+
+my $repeated = 1;
+
+my $first_date_cvt = $MIN;
+my $last_date_cvt = $MAX;
+
+
+#########################################################################
+my $s = sprintf "use lib qw($LIBPATH); use $CLASS;";
+eval $s;  # initialization
+die "Can't find/load $CLASS.pm : $@\n" if $@;
+
+my $save_line = <>;
+$_ = $save_line;
+LINE: while (!eof ())
+{
+  local $^W = 0 if $] < 5.004; # to avoid a warning for each '+=' first use.
+  $total_line++;
+  my $size = length;
+  $total_size += $size;
+
+  # Syslog optimization
+  if ($repeated)                
+  {
+    $repeated--;
+    $_ = $save_line;
+  }
+  else
+  {
+    $_ = <>;
+    if ($_ =~ /last message repeated (\d+) times$/o)
+    {
+       ($repeated) = $1;
+       $_ = $save_line;
+    }
+    else
+    {
+       $save_line = $_;
+    }
+  }
+
+  # skip empty lines
+  next LINE if ($_ eq "");
+
+  my $res;
+  my ($day, $hour, $prog, $left) =
+    $_ =~ /^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o;
+
+  unless ($day)
+  {
+    ($day, $hour, $res, $left) = $_ =~ /^(\S+\s+\S+) (\S+)\.\d+ (\S+) (.*)$/o;
+    if ($day)
+    {
+      my $cvtdate = &convdate ("$day $hour");
+      if ($cvtdate < $first_date_cvt)
+      {
+	$first_date_cvt = $cvtdate;
+	$first_date = "$day $hour";
+      }
+      elsif ($cvtdate > $last_date_cvt)
+      {
+	$last_date_cvt = $cvtdate;
+	$last_date = "$day $hour";
+      }
+
+      $prog = "inn";
+    }
+    else
+    {
+      next if $_ =~ /^$/;
+      # Unrecognize line... skip
+      $unrecognize[$unrecognize_max] = $_
+	unless (($unrecognize_max > $MAX_UNRECOGNIZED) 
+		&& ($MAX_UNRECOGNIZED > 0));
+      $unrecognize_max++;
+      next LINE;
+    }
+  }
+
+  my $cvtdate = &convdate ("$day $hour");
+  if ($cvtdate < $first_date_cvt)
+  {
+    $first_date_cvt = $cvtdate;
+    $first_date = "$day $hour";
+  }
+  elsif ($cvtdate > $last_date_cvt)
+  {
+    $last_date_cvt = $cvtdate;
+    $last_date = "$day $hour";
+  }
+
+  ########
+  ## Program name (usually innd or nnrpd)
+  # word[7164] -> word
+  $prog =~ s/\[\d+\]$//o;
+  # word: -> word
+  $prog =~ s/:$//o;
+  # wordX -> word   (where X is a digit)
+  $prog =~ s/\d+$//o;
+
+  $prog_type{$prog}++;
+  $prog_size{$prog} = 0 unless defined $prog_size{$prog}; # stupid warning :(
+  $prog_size{$prog} += $size;
+
+  # The "heart" of the tool.
+  {
+    no strict;
+    next LINE if 
+      &{$CLASS."::collect"} ($day, $hour, $prog, $res, $left, $CASE_SENSITIVE);
+  }
+
+  $unrecognize[$unrecognize_max] = $_
+    unless (($unrecognize_max > $MAX_UNRECOGNIZED) 
+	    && ($MAX_UNRECOGNIZED > 0));
+  $unrecognize_max++;
+}
+
+{
+  no strict;
+  &{$CLASS . "::adjust"} ($first_date, $last_date);
+}
+
+$| = 1;
+
+die "no data. Abort.\n" unless $total_line;
+
+my $sec_glob = &convdate ("$last_date") - &convdate ("$first_date");
+unless ($sec_glob)
+{
+  print "WARNING: bad date (\"$last_date\" or \"$first_date\")\n";
+  print "         Please, contact the author of innreport.\n";
+  $sec_glob = 24 * 60 * 60; # one day
+}
+
+$HTML_output = "";
+
+if ($HTML)
+{
+  # Create a new filename (unique and _sortable_)
+  if ($ARCHIVE)
+  {
+    # The filename will contain the first date of the log or the current time.
+    my ($ts, $tm, $th, $dd, $dm, $dy) = localtime;
+    my ($m, $d, $h, $mn, $s) =
+      $first_date =~ /^(\S+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
+    if ($m)
+    {
+      my $ddm = (index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m)) / 3;
+      # Adjust the year because syslog doesn't record it. We assume that
+      # it's the current year unless the last date if in the future.
+      $dy-- if (&convdate ("$last_date") > $ts + 60 * ($tm + 60 * ($th + 24 *
+         ($dd + substr("000031059090120151181212243273304334", $dm * 3, 3)))));
+      ($dm, $dd, $th, $tm, $ts) = ($ddm, $d, $h, $mn, $s);
+    }
+    $dm++; # because January = 0 and we prefer 1
+    $dy += 100 if ($dy < 90); # Try to pacify the year 2000 !
+    $dy += 1900;
+    $suffix = sprintf ".%02d.%02d.%02d-%02d$SEPARATOR%02d$SEPARATOR%02d",
+		       $dy, $dm, $dd, $th, $tm, $ts;
+  }
+  else
+  {
+    $suffix = "";
+  }
+  $HTML_output = "$HTML_dir" . "/news-notice" . "$suffix" . ".html";
+  $HTML_output =~ s|/+|/|g;
+  if (defined $output{'default'}{'html_header_file'})
+  {
+    my $file = &GetValue ($output{'default'}{'html_header_file'});
+    $file = $HTML_dir . "/" . $file;
+    open (F, $file) && do {
+      $/ = "";
+      $HTML_header = <F>;
+      close (F);
+    };
+    print ">>>>> $HTML_header <<<\n";
+  }
+  if (defined $output{'default'}{'html_footer_file'})
+  {
+    my $file = &GetValue ($output{'default'}{'html_footer_file'});
+    $file = $HTML_dir . "/" . $file;
+    open (F, $file) && do {
+      $/ = "";
+      $HTML_footer = <F>;
+      close (F);
+    }
+  }
+  
+}
+
+&Write_all_results ($HTML_output, \%output);
+
+&make_index ($HTML_dir, $index, "news-notice$suffix.html", \%output)
+  if ($HTML && $index);
+
+#====================================================================
+
+if ($ARCHIVE)
+{
+  # rotate html files
+  &rotate ($CYCLE, $HTML_dir, "news-notice", ".html");
+
+  # rotate pictures
+  my $report;
+  foreach $report (@{$output{'_order_'}})
+  {
+    next if $report =~ m/^(default|index)$/;
+    next unless defined $output{$report}{'graph'};
+    
+    my $i = 0;
+    while ($GRAPH && defined ${${$output{$report}{'graph'}}[$i]}{'type'})
+    {
+      my $name = $report . ($i ? $i : "");
+      &rotate ($CYCLE, $IMG_dir, $name, ".gif");
+      $i++;
+    }
+  }
+}
+
+# Code needed by INN only.
+if (defined ($output{'default'}{'unwanted_log'}))
+{
+  my $logfile = &GetValue ($output{'default'}{'unwanted_log'});
+  my $logpath = &GetValue ($output{'default'}{'logpath'});
+  {
+    no strict;
+    &{$CLASS . "::report_unwanted_ng"} ("$logpath/$logfile");
+  }
+}
+
+################
+# End of report.
+###################################################################
+
+######
+# Misc...
+
+# Compare 2 dates (+hour)
+sub DateCompare
+{
+  # ex: "May 12 06"   for May 12, 6:00am
+  local($[) = 0;
+  # The 2 dates are near. The range is less than a few days that's why we
+  # can cheat to determine the order. It is only important if one date
+  # is in January and the other in December.
+
+  my($date1) = substr($a, 4, 2) * 24;
+  my($date2) = substr($b, 4, 2) * 24;
+  $date1 += index("JanFebMarAprMayJunJulAugSepOctNovDec",substr($a,0,3)) * 288;
+  $date2 += index("JanFebMarAprMayJunJulAugSepOctNovDec",substr($b,0,3)) * 288;
+  if ($date1 - $date2 > 300 * 24)
+  {
+    $date2 += 288 * 3 * 12;
+  }
+  elsif ($date2 - $date1 > 300 * 24)
+  {
+    $date1 += 288 * 3 * 12;
+  }
+  $date1 += substr($a, 7, 2);
+  $date2 += substr($b, 7, 2);
+  $date1 - $date2;
+}
+
+
+# Convert: seconds to hh:mm:ss
+sub second2time
+{
+  my ($temp);
+  my ($t) = @_;
+  # Hours
+  $temp = sprintf "%02d", $t / 3600;
+  my $chaine = "$temp:";
+  $t %= 3600;
+  # Min
+  $temp = sprintf "%02d", $t / 60;
+  $chaine .= "$temp:";
+  $t %= 60;
+  # Sec
+  $chaine .= sprintf "%02d", $t;
+  return ($chaine);
+}
+
+# Convert: milliseconds to hh:mm:ss:mm
+sub ms2time
+{
+  my ($temp);
+  my ($t) = @_;
+  # Hours
+  $temp = sprintf "%02d", $t / 3600000;
+  my $chaine = "$temp:";
+  $t %= 3600000;
+  # Min
+  $temp = sprintf "%02d", $t / 60000;
+  $chaine .= "$temp:";
+  $t %= 60000;
+  # Sec
+  $temp = sprintf "%02d", $t / 1000;
+  $chaine .= "$temp.";
+  $t %= 1000;
+  # Millisec
+  $chaine .= sprintf "%03d", $t;
+  return ($chaine);
+}
+
+# Rotate the archive files..
+sub rotate 
+{
+  # Usage: &rotate ($max_files, "$directory", "prefix", "suffix");
+  my ($max, $rep, $prefix, $suffix) = @_;
+  my ($file, $num, %files);
+  local ($a, $b);
+
+  return 1 unless ($max);
+  opendir (DIR, "$rep") || die "Error: Cant open directory \"$rep\"\n";
+  
+  FILE : while (defined ($file = readdir (DIR)))
+  {
+    next FILE 
+      unless ($file =~ /^           # e.g. news-notice.1997.05.14-01:34:29.html
+                        $prefix          # Prefix : news-notice
+                        \.               # dot    : .
+	                (\d\d)?\d\d      # Year   : 1997 (or 97) 
+	                \.               # dot    : .
+	                \d\d             # Month  : 05
+	                \.               # dot    : .
+                        \d\d             # Day    : 14
+                        -                # Separator : -
+                        \d\d             # Hour   : 01
+                        $SEPARATOR       # Separator : ":"
+                        \d\d             # Minute : 34
+                        $SEPARATOR       # Separator : ":"
+                        \d\d             # Second : 29
+                        $suffix          # Suffix : ".html"
+                        $/xo);
+    $files{$file}++;
+  }
+  closedir (DIR);
+  $num = 0;
+  foreach $file (sort {$b cmp $a} (keys (%files)))
+  {
+    unlink ("$rep/$file") if (($num++ >= $max) && (-f "$rep/$file"));
+  }
+  return 1;
+}
+
+# convert a date to a number of seconds
+sub convdate
+{
+  # usage: $num = &convdate ($date);
+  # date format is Aug 22 01:49:40
+  my ($T) = @_;
+  my ($m, $d, $h, $mn, $s) = $T =~ /^(\S+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
+  my $out = $s + 60 * $mn + 3600 * $h + 86400 * $d;
+
+  ## this will works from now to July 97.. then you will have to
+  ## find something better or delete all the previous files.
+  # $out += 86400 * 365
+  #   if (index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m) < 21);
+
+  $m = substr("000031059090120151181212243273304334", 
+	      index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m), 3);
+  $out += $m * 86400;
+  return ($out);
+}
+
+# Compare 2 filenames
+sub filenamecmp
+{
+  local ($[) = 0;
+  my ($la, $lb) = ($a, $b);
+  my ($ya) = $la =~ /news-notice\.(\d+)\./;
+  $ya += 100 if ($ya < 90); # Try to pacify the year 2000 !
+  $ya += 1900 if ($ya < 1900); # xx -> xxxx
+  my ($yb) = $lb =~ /news-notice\.(\d+)\./;
+  $yb += 100 if ($yb < 90); # Try to pacify the year 2000 !
+  $yb += 1900 if ($yb < 1900); # xx -> xxxx
+
+  $la =~ s/news-notice\.(\d+)\./$ya\./;
+  $lb =~ s/news-notice\.(\d+)\./$yb\./;
+  $la =~ s/[\.\-\:html]//g;
+  $lb =~ s/[\.\-\:html]//g;
+
+  $lb <=> $la;
+}
+
+sub ComputeTotal
+{
+  my $h = shift;
+  my $total = 0;
+  my $key;
+  foreach $key (keys (%$h))
+  {
+    $total += $$h{$key};
+  }
+  return $total;
+}
+
+sub ComputeTotalDouble
+{
+  my $h = shift;
+  my $total = 0;
+  my ($key1, $key2);
+  foreach $key1 (keys (%$h))
+  {
+    foreach $key2 (keys (%{$$h{$key1}}))
+    {
+      $total += ${$$h{$key1}}{$key2};
+    }
+  }
+  return $total;
+}
+
+# make an index for archive pages
+sub make_index
+{
+  my ($rep, $index, $filename, $data) = @_;
+  my %output = %$data;
+
+  $index =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+
+  # add requested data at the end of the database.
+  open (DATA, ">> $rep/innreport.db") || die "can't open $rep/innreport.db\n";
+  my $i = 0;
+  my $res = "$filename";
+  while (defined ${${$output{'index'}{'column'}}[$i]}{'value'})
+  {
+    my ($data) = ${${$output{'index'}{'column'}}[$i]}{'value'}
+      =~ m/^\"\s*(.*?)\s*\"$/o;
+    my @list = split /\|/, $data;
+    my $val;
+    foreach $val (@list)
+    {
+      $res .= ($val eq 'date' ? "|$first_date -- $last_date"
+	                      : "|" . &EvalExpr($val));
+    }
+    $i++;
+  }
+  print DATA "$res\n";
+  close (DATA);
+
+  # sort the database (reverse order), remove duplicates.
+  open (DATA, "$rep/innreport.db") || die "can't open $rep/innreport.db\n";
+  my %data;
+  while (<DATA>)
+  {
+    m/^([^\|]+)\|(.*)$/o;
+    $data{$1} = $2;
+  }
+  close (DATA);
+  open (DATA, "> $rep/innreport.db") || die "can't open $rep/innreport.db\n";
+  $i = 0;
+  foreach (sort {$b cmp $a} (keys %data))
+  {
+    print DATA "$_|$data{$_}\n" if (($CYCLE == 0) || ($i < $CYCLE));
+    $i++;
+  }
+  close (DATA);
+
+  my $title = defined $output{'default'}{'title'} ?
+                   $output{'default'}{'title'} : "Daily Usenet report";
+  $title =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+  $title =~ s/\\\"/\"/g;
+  my $Title = $title;
+  $Title =~ s/<.*?>//g;
+  my $body = defined $output{'default'}{'html_body'} ?
+                   $output{'default'}{'html_body'} : "";
+  $body =~ s/^\"\s*(.*?)\s*\"$/ $1/o;
+  $body =~ s/\\\"/\"/go;
+  my $result = sprintf <<EOF;
+<HTML><HEAD>
+<TITLE>$Title: index</TITLE>
+</HEAD><BODY$body>
+$HTML_header
+<HR ALIGN=CENTER SIZE=\"4\" WIDTH=\"100%%\">
+<BR><CENTER><FONT SIZE=\"+2\">
+<B>$title - archives</B>
+</FONT></CENTER>
+<BR CLEAR=ALL>
+<HR ALIGN=CENTER SIZE=4 WIDTH=\"100%%\"><P>
+<CENTER>
+EOF
+
+  $i = 0;
+  $result .= "<TABLE BORDER=\"1\"><TR>";
+  my $temp = "";
+  while (defined ${${$output{'index'}{'column'}}[$i]}{'title'})
+  {
+    my ($title) = ${${$output{'index'}{'column'}}[$i]}{'title'}
+       =~ m/^\"\s*(.*?)\s*\"$/o;
+    my $name = defined ${${$output{'index'}{'column'}}[$i]}{'name'} ?
+       ${${$output{'index'}{'column'}}[$i]}{'name'} : "";
+    $name =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+    my @list = split /\|/, $name;
+    if ($name)
+    {
+      $result .= sprintf "<TH COLSPAN=%d>$title</TH>", $#list + 1;
+    }
+    else
+    {
+      $result .= "<TH ROWSPAN=\"2\">$title</TH>";
+    }
+    foreach (@list)
+    {
+      $temp .= "<TH>$_</TH>";
+    }
+    $i++;
+  }
+  $result .= "</TR>\n<TR>$temp</TR>\n";
+
+  foreach (sort {$b cmp $a} (keys %data))
+  {
+    my @list = split /\|/, $data{$_};
+    my $str = "<TR><TD ALIGN=LEFT><A HREF=\"$_\">" . shift @list;
+    $str .= "</A></TD>";
+    while (@list)
+    {
+      $str .= "<TD ALIGN=RIGHT>";
+      $str .= shift @list;
+      $str .= "</TD>";
+    }
+    $str .= "</TR>\n";
+    $result .= "$str";
+  }
+  $result .= "</TABLE>\n</CENTER>\n<P><HR>";
+  $result .= "<A HREF=\"ftp://ftp.eerie.fr/pub/usenet/innreport/\">innreport";
+  $result .= "</A> $version (c) 1996-1998 ";
+  $result .= "by Fabien Tassin &lt;<A HREF=\"mailto:tassin\@eerie.fr\">";
+  $result .= "tassin\@eerie.fr</A>&gt;.\n";
+  if (defined ($output{'default'}{'footer'}))
+  {
+    my ($t) = $output{'default'}{'footer'} =~ m/^\"\s*(.*?)\s*\"$/o;
+    $t =~ s/\\\"/\"/go;
+    $result .= "<BR>" . $t;
+  }
+  $result .= "$HTML_footer\n</BODY>\n</HTML>\n";
+  my $name = $rep . "/" . $index;
+  while ($name =~ m/\/\.\.\//o)
+  {
+    $name =~ s|^\./||o;                 # ^./xxx        =>      ^xxx
+    $name =~ s|/\./|/|go;               # xxx/./yyy     =>      xxx/yyy
+    $name =~ s|/+|/|go;                 # xxx//yyy      =>      xxx/yyy
+    $name =~ s|^/\.\./|/|o;             # ^/../xxx      =>      ^/xxx
+    $name =~ s|^[^/]+/\.\./||o;         # ^xxx/../      =>      ^nothing
+    $name =~ s|/[^/]+/\.\./|/|go;       # /yyy/../      =>      /
+  }
+ 
+  open (INDEX, "> $name") || die "Error: Unable to create $name\n";
+  print INDEX $result;
+  close (INDEX);
+  return 1;
+}
+
+sub Graph3d
+{
+  my $filename = shift;           # filename (for the GIF file)
+  my $title = shift;              # title
+  my $xmax = shift;               # width
+  my $n = shift;                  # Number of hash code tables
+
+  no strict;
+  my ($i, $k, $t);
+  my @val;
+  for $i (0 .. $n - 1)
+  {
+    push (@val, shift);           # hash code table
+  }
+  my $colors = shift;             # colors table
+  my $labels = shift;             # labels
+
+  my $max = 0;
+  my $max_size = 0;
+  my $size = 0;
+  foreach $k (sort (keys (%{$val[0]})))
+  {
+    $t = 0;
+    $size++;
+    for $i (0 .. $n - 1)
+    {
+      $t += ${$val[$i]}{$k};
+    }
+    $max = $t if ($max < $t);
+    $t = length "$k";
+    $max_size = $t if ($max_size < $t);
+  }
+  $max = 1 unless $max;
+  $max_size *= gdSmallFont->width;
+
+  # relief
+  my ($rx, $ry) = (15, 5);
+
+  # margins
+  my ($mt, $mb) = (40, 40);
+  my $ml = $max_size > 30 ? $max_size + 8 : 30;
+
+  my $mr = 7 + (length "$max") * gdSmallFont->width;
+  $mr = 30 if ($mr < 30);
+
+  # height of each bar
+  my $h = 12;
+
+  # difference between 2 bars
+  my $d = 25;
+
+  my $ymax = $size * $d + $mt + $mb;
+  my $image = new GD::Image ($xmax, $ymax);
+
+  my ($white, $black);
+  if (defined $output{'default'}{'graph_fg'})
+  {
+    my $t = $output{'default'}{'graph_fg'};
+    $t =~ s/^\"\s*\#(.*?)\s*\"$/$1/o;
+    $t =~ m/^[\da-fA-F]{6}$/o ||
+      die "Error in section 'default' section 'graph_fg'. Bad color.\n";
+    my @c = map { hex ($_) } ($t =~ m/^(..)(..)(..)$/);
+    $black = $image->colorAllocate (@c);
+  }
+  else
+  {
+    $black = $image->colorAllocate (  0,   0,   0);
+  } 
+  if (defined $output{'default'}{'graph_bg'})
+  {
+    my $t = $output{'default'}{'graph_bg'};
+    $t =~ s/^\"\s*\#(.*?)\s*\"$/$1/o;
+    $t =~ m/^[\da-fA-F]{6}$/o ||
+      die "Error in section 'default' section 'graph_bg'. Bad color.\n";
+    my @c = map { hex ($_) } ($t =~ m/^(..)(..)(..)$/);
+    $white = $image->colorAllocate (@c);
+  }
+  else
+  {
+    $white = $image->colorAllocate (255, 255, 255);
+  } 
+  $image->filledRectangle (0, 0, $xmax, $ymax, $white);
+  my @col;
+  for $i (0 .. $n - 1)
+  {
+    $col[$i][0] = $image->colorAllocate
+      ($$colors[$i][0], $$colors[$i][1], $$colors[$i][2]);
+    $col[$i][1] = $image->colorAllocate
+      ($$colors[$i][0] * 3 / 4, $$colors[$i][1] * 3 / 4,
+       $$colors[$i][2] * 3 / 4);
+    $col[$i][2] = $image->colorAllocate
+      ($$colors[$i][0] * 2 / 3, $$colors[$i][1] * 2 / 3,
+       $$colors[$i][2] * 2 / 3);
+  }
+
+  $image->transparent ($white) if $transparent;
+
+  $image->rectangle (0, 0, $xmax - 1, $size * $d + $mt + $mb - 1, $black);
+  $image->line (0, $mt - 5, $xmax - 1, $mt - 5, $black);
+  for $i (0 .. $n - 1)
+  {
+    $image->string (gdSmallFont, $i * $xmax / $n + $mt - 10 + $rx,
+		    ($mt - gdSmallFont->height) / 2, "$$labels[$i]", $black);
+    $image->filledRectangle ($i * $xmax / $n + 10, 8 + $ry / 2,
+		       $i * $xmax / $n + $mt - 10, $mt - 12, $col[$i][0]);
+    $image->rectangle ($i * $xmax / $n + 10, 8 + $ry / 2,
+		       $i * $xmax / $n + $mt - 10, $mt - 12, $black);
+    {
+      my $poly = new GD::Polygon;
+      $poly->addPt($i * $xmax / $n + 10, 8 + $ry / 2);
+      $poly->addPt($i * $xmax / $n + 10 + $rx / 2, 8);
+      $poly->addPt($i * $xmax / $n + $mt - 10 + $rx / 2, 8);
+      $poly->addPt($i * $xmax / $n + $mt - 10, 8 + $ry / 2);
+
+      $image->filledPolygon($poly, $col[$i][1]);
+      $image->polygon($poly, $black);
+    }
+    {
+      my $poly = new GD::Polygon;
+      $poly->addPt($i * $xmax / $n + $mt - 10 + $rx / 2, 8);
+      $poly->addPt($i * $xmax / $n + $mt - 10, 8 + $ry / 2);
+      $poly->addPt($i * $xmax / $n + $mt - 10, $mt - 12);
+      $poly->addPt($i * $xmax / $n + $mt - 10 + $rx / 2, $mt - 12 - $ry / 2);
+
+      $image->filledPolygon($poly, $col[$i][2]);
+      $image->polygon($poly, $black);
+    }
+  }
+  # Title
+  $image->string (gdMediumBoldFont, ($xmax - gdMediumBoldFont->width *
+		  (length "$title")) / 2, $ymax - gdMediumBoldFont->height - 7,
+                      "$title", $black);
+
+  my $e = $mt - $h + $d;
+  my $r = ($xmax - $ml - $mr - $rx) / $max;
+
+  # Axe Oz
+  $image->line ($ml + $rx, $mt, $ml + $rx, $size * $d + $mt - $ry, $black);
+  $image->line ($ml + $rx + $max * $r, $mt, $ml + $rx + $max * $r,
+		$size * $d + $mt - $ry, $black);
+  $image->line ($ml, $mt + $ry, $ml, $size * $d + $mt, $black);
+  # Axe Ox
+  $image->line ($ml + $rx, $size * $d + $mt - $ry,
+		$ml + $rx - 2 * $rx, $size * $d + $mt + $ry, $black);
+  # Axe Oy
+  $image->line ($ml + $rx, $size * $d + $mt - $ry,
+		$xmax - $mr / 2, $size * $d + $mt - $ry, $black);
+  $image->line ($ml, $size * $d + $mt,
+		$xmax - $mr - $rx, $size * $d + $mt, $black);
+
+  # Graduations..
+  my $nn = 10;
+  for $k (1 .. ($nn - 1))
+  {
+    $image->dashedLine ($ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
+		  $mt + 10, $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
+		  $size * $d + $mt - $ry, $black);
+    $image->dashedLine ($ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
+			$size * $d + $mt - $ry,
+			$ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
+			$size * $d + $mt, $black);
+    $image->line ($ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
+			$size * $d + $mt,
+			$ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
+			$size * $d + $mt + 5, $black);
+    my $t = sprintf "%d%%", $k * 10;
+    $image->string (gdSmallFont, $ml + $k * ($xmax - $ml - $mr - $rx) / $nn -
+		    (length "$t") * gdSmallFont->width / 2,
+		    $size * $d + $mt + 6, "$t", $black);
+   
+  }
+  {
+    my $t = sprintf "%d%%", 0;
+    $image->line ($ml, $size * $d + $mt, $ml, $size * $d + $mt + 5, $black);
+    $image->string (gdSmallFont, $ml - (length "$t") * gdSmallFont->width / 2,
+		    $size * $d + $mt + 6, "$t", $black);
+    $image->line ($xmax - $mr, $size * $d + $mt - $ry,
+		  $xmax - $mr - $rx, $size * $d + $mt, $black);
+    $image->line ($xmax - $mr - $rx, $size * $d + $mt,
+		  $xmax - $mr - $rx, $size * $d + $mt + 5, $black);
+    $t = sprintf "%d%%", 100;
+    $image->string (gdSmallFont, $xmax - $mr - $rx
+		    - (length "$t") * gdSmallFont->width / 2,
+		    $size * $d + $mt + 6, "$t", $black);
+  }
+  foreach $k (sort {${$val[0]}{$b} <=> ${$val[0]}{$a}}(keys (%{$val[0]})))
+  {
+    $image->string (gdSmallFont, $ml - (length "$k") * gdSmallFont->width - 3,
+                    $e + $h / 2 - gdSmallFont->height / 2, "$k", $black);
+    my $t = 0;
+    $image->line ($ml + ($t + ${$val[0]}{$k}) * $r + $rx - $rx, $e + $h,
+                  $ml + ($t + ${$val[0]}{$k}) * $r + $rx, $e - $ry + $h,
+                  $black);
+    for $i (0 .. $n - 1)
+    {
+      {
+	my $poly = new GD::Polygon;
+	$poly->addPt($ml + $t * $r, $e);
+	$poly->addPt($ml + $t * $r + $rx, $e - $ry);
+	$poly->addPt($ml + ($t + ${$val[$i]}{$k}) * $r + $rx, $e - $ry);
+        $poly->addPt($ml + ($t + ${$val[$i]}{$k}) * $r, $e);
+
+        $image->filledPolygon($poly, $col[$i][1]);
+        $image->polygon($poly, $black);
+      }
+      unless ((${$val[$i + 1]}{$k}) || (${$val[$i]}{$k} == 0))
+      {
+	my $poly = new GD::Polygon;
+	$poly->addPt($ml + ($t + ${$val[$i]}{$k}) * $r + $rx, $e - $ry);
+	$poly->addPt($ml + ($t + ${$val[$i]}{$k}) * $r + $rx - $rx, $e);
+	$poly->addPt($ml + ($t + ${$val[$i]}{$k}) * $r + $rx - $rx, $e + $h);
+	$poly->addPt($ml + ($t + ${$val[$i]}{$k}) * $r + $rx, $e - $ry + $h);
+	
+	$image->filledPolygon($poly, $col[$i][2]);
+	$image->polygon($poly, $black);
+      }
+      $image->filledRectangle ($ml + $t * $r, $e,
+			       $ml + ($t + ${$val[$i]}{$k}) * $r, $e + $h,
+                               $col[$i][0]);
+      $image->rectangle ($ml + $t * $r, $e, $ml + ($t + ${$val[$i]}{$k}) * $r,
+                         $e + $h, $black);
+      $t += ${$val[$i]}{$k};
+    }
+    # total length (offered)
+    $image->filledRectangle ($ml + $t * $r + $rx + 3,
+			     $e - 2 - gdSmallFont->height / 2,
+			     $ml + $t * $r + $rx + 4 +
+			     gdSmallFont->width * length $t,
+			     $e - 6 + gdSmallFont->height / 2, $white);
+    $image->string (gdSmallFont, $ml + $t * $r + $rx + 5,
+		    $e - 3 - gdSmallFont->height / 2, "$t", $black);
+    # first value (accepted)
+    $image->filledRectangle ($ml + $t * $r + $rx + 3,
+			     $e - 4 + gdSmallFont->height / 2,
+			     $ml + $t * $r + $rx + 4 +
+			     gdSmallFont->width * length "${$val[0]}{$k}",
+			     $e - 2 + gdSmallFont->height, $white);
+    $image->string (gdSmallFont, $ml + $t * $r + $rx + 5,
+		    $e - 5 + gdSmallFont->height / 2, ${$val[0]}{$k}, $black);
+    $e += $d;
+  }
+
+
+  open (IMG, "> $filename") || die "Error: Can't open \"$filename\": $!\n";
+  print IMG $image->gif;
+  close (IMG);
+  return $ymax;
+}
+
+sub Histo
+{
+  my ($filename, $title, $xmax, $factor,
+      $labelx, $labely, $val1, $labels1) = @_;
+
+  no strict;
+  my $max = 0;
+  my $ymax = 300;
+  my $nb = 0;
+  # A hugly hack to convert hashes to lists..
+  # and to adjust the first and the last value...
+  # this function should be rewritten..
+  my (@a, @b, $kk);
+  foreach $kk (sort (keys (%$val1)))
+  {
+    if (defined $$val1{$kk})
+    {
+      $nb++;
+      $$val1{$kk} = $$val1{$kk} / $innreport_inn::inn_flow_time{$kk} * 3600
+	if $innreport_inn::inn_flow_time{$kk} != 3600;
+      push @a, $$val1{$kk};
+      $max = $$val1{$kk} if $$val1{$kk} > $max;
+      push @b, $$labels1{$kk};
+    }
+  }
+  return 0 unless $nb; # strange, no data.
+  my $val = \@a;
+  my $labels = \@b;
+  my ($i, $j);
+  my ($marginl, $marginr, $margint, $marginb, $shx, $shy);
+  
+  my $image = new GD::Image($xmax, $ymax);
+  my ($white, $black);
+  if (defined $output{'default'}{'graph_fg'})
+  {
+    my $t = $output{'default'}{'graph_fg'};
+    $t =~ s/^\"\s*\#(.*?)\s*\"$/$1/o;
+    $t =~ m/^[\da-fA-F]{6}$/o ||
+      die "Error in section 'default' section 'graph_fg'. Bad color.\n";
+    my @c = map { hex ($_) } ($t =~ m/^(..)(..)(..)$/);
+    $black = $image->colorAllocate (@c);
+  }
+  else
+  {
+    $black = $image->colorAllocate (  0,   0,   0);
+  } 
+  if (defined $output{'default'}{'graph_bg'})
+  {
+    my $t = $output{'default'}{'graph_bg'};
+    $t =~ s/^\"\s*\#(.*?)\s*\"$/$1/o;
+    $t =~ m/^[\da-fA-F]{6}$/o ||
+      die "Error in section 'default' section 'graph_bg'. Bad color.\n";
+    my @c = map { hex ($_) } ($t =~ m/^(..)(..)(..)$/);
+    $white = $image->colorAllocate (@c);
+  }
+  else
+  {
+    $white = $image->colorAllocate (255, 255, 255);
+  } 
+  $image->filledRectangle (0, 0, $xmax, $ymax, $white);
+  my $gray  = $image->colorAllocate (128, 128, 128);
+  my $red   = $image->colorAllocate (255,   0,   0);
+  my $red2  = $image->colorAllocate (189,   0,   0);
+  my $red3  = $image->colorAllocate (127,   0,   0);
+  my $coltxt = $black;
+  
+  $image->transparent ($white) if $transparent;
+  
+  my $FontWidth = gdSmallFont->width;
+  my $FontHeight = gdSmallFont->height;
+
+  $marginl = 60;
+  $marginr = 30;
+  $margint = 60;
+  $marginb = 30;
+  $shx = 7;
+  $shy = 7;
+  
+  $max = 1 unless $max;
+  my $part = 8;
+  $max /= $factor;
+
+  my $old_max = $max;
+  {
+    my $t = (log ($max) / log (10));
+    $t = sprintf "%.0f", $t - 1;
+    $t = exp ($t * log (10));
+    $max = sprintf ("%.0f", $max / $t * 10 + 0.4);
+    my $t2 = sprintf ("%.0f", $max / $part);
+    unless ($part * $t2 == $max)
+    {
+      while ($part * $t2 != $max)
+      {
+	$max++;
+	$t2 = sprintf ("%d", $max / $part);
+      }
+    }
+    $max = $max * $t / 10;
+  }
+
+  # Title
+  $image->string (gdMediumBoldFont,
+		  ($xmax - length ($title) * gdMediumBoldFont->width) / 2,
+		  ($margint - $shy - gdMediumBoldFont->height) / 2,
+		  $title, $coltxt);
+
+  # Labels
+  $image->string (gdSmallFont, $marginl / 2, $margint / 2, $labely, $coltxt);
+  $image->string (gdSmallFont, $xmax - $marginr / 2 - 
+		  $FontWidth * length ($labelx), $ymax - $marginb / 2,
+		  $labelx, $coltxt);
+  
+  # Max
+  $image->line ($marginl, $ymax - $marginb - $shy -
+		$old_max * ($ymax - $marginb - $margint - $shy) / $max,
+		$xmax - $marginr, $ymax - $marginb - $shy -
+		$old_max * ($ymax - $marginb - $margint - $shy) / $max, $red);
+  $image->line ($marginl, $ymax - $marginb - $shy -
+		$old_max * ($ymax - $marginb - $margint - $shy) / $max,
+		$marginl - $shx, $ymax - $marginb -
+		$old_max * ($ymax - $marginb - $margint - $shy) / $max, $red);
+  
+  # Left
+  $image->line ($marginl - $shx, $margint + $shy,
+		$marginl - $shx, $ymax - $marginb, $coltxt);
+  $image->line ($marginl, $margint,
+		$marginl, $ymax - $marginb - $shy, $coltxt);
+  $image->line ($marginl, $margint,
+		$marginl - $shx, $margint + $shy, $coltxt);
+  $image->line ($marginl - $shx, $ymax - $marginb,
+		$marginl, $ymax - $marginb - $shy, $coltxt);
+  
+  # Right
+  $image->line ($xmax - $marginr, $margint,
+		$xmax - $marginr, $ymax - $marginb - $shy, $coltxt);
+  $image->line ($xmax - $marginr - $shx, $ymax - $marginb,
+		$xmax - $marginr, $ymax - $marginb - $shy, $coltxt);
+  
+  # Bottom
+  $image->line ($marginl - $shx, $ymax - $marginb,
+		$xmax - $marginr - $shx, $ymax - $marginb, $coltxt);
+  $image->line ($marginl, $ymax - $marginb - $shy,
+		$xmax - $marginr, $ymax - $marginb - $shy, $coltxt);
+  $image->fill ($xmax / 2, $ymax - $marginb - $shy / 2, $gray);
+  
+  # Top
+  $image->line ($marginl, $margint,
+		$xmax - $marginr, $margint, $coltxt);
+  $image->setStyle ($coltxt, $coltxt, gdTransparent,
+		    gdTransparent, gdTransparent);
+  # Graduations
+  for ($i = 0; $i <= $part; $i++)
+  {
+    $j = ($max * $i) / $part ;  # Warning to floor
+    # $j = ($max / $part) * ($i / 10000);
+    # $j *= 10000;
+    
+    # Little hack...
+    $j = sprintf "%d", $j if ($j > 100);
+
+    $image->line ($marginl - $shx - 3, $ymax - $marginb -
+		  $i * ($ymax - $marginb - $margint - $shy) / $part,
+		  $marginl - $shx, $ymax - $marginb -
+		  $i * ($ymax - $marginb - $margint - $shy) / $part, $coltxt);
+    $image->line ($marginl - $shx, $ymax - $marginb -
+		  $i * ($ymax - $marginb - $margint - $shy) / $part,
+		  $marginl, $ymax - $marginb - $shy -
+		  $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled);
+    $image->line ($marginl, $ymax - $marginb - $shy -
+		  $i * ($ymax - $marginb - $margint - $shy) / $part,
+		  $xmax - $marginr, $ymax - $marginb - $shy -
+		  $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled);
+    $image->string (gdSmallFont,
+		    $marginl - $shx - $FontWidth * length ("$j") - 7,
+		    $ymax - $marginb - 
+		    ($i) * ($ymax - $marginb - $margint - $shy) / ($part) - 
+		    $FontHeight / 2, "$j", $coltxt);
+  }
+  
+  # Graduation (right bottom corner)
+  $image->line ($xmax - $marginr - $shx, $ymax - $marginb,
+		$xmax - $marginr - $shx, $ymax - $marginb + 3, $coltxt);
+  # Bars
+  $i = 0;
+  my $w = ($xmax - $marginl - $marginr) / $nb;
+  my $k = $w / 5;
+  $$val[$nb - 1] = 0 unless ($$val[$nb - 1]);
+  foreach $j (@$val)
+  {
+    my $MAX = 1;
+    if ($i++ <= $nb)
+    {
+      # Graduation
+      $image->line ($marginl + ($i - 1) * $w - $shx, $ymax - $marginb,
+		    $marginl + ($i - 1) * $w - $shx, $ymax - $marginb + 3,
+		    $coltxt);
+      my $ii = sprintf ("%d", ($i / $MAX));
+      $image->string (gdSmallFont,
+		      $marginl + ($i - 0.5) * $w + 1 -
+		      ($FontWidth * length ($$labels[$i-1])) / 2 - $shx, 
+		      $ymax - $marginb + 3, $$labels[$i-1], $coltxt)
+	unless (($w < $FontWidth * length ($$labels[$i-1]))
+		&& ($i != $MAX * $ii));
+
+      # Right
+      my $poly = new GD::Polygon;
+      $poly->addPt($marginl + ($i) * $w - $k, $ymax - $marginb - $shy -
+		   $j / $factor * ($ymax - $marginb - $margint - $shy) / $max);
+      $poly->addPt($marginl + ($i) * $w - $k, $ymax - $marginb - $shy);
+      $poly->addPt($marginl + ($i) * $w - $k - $shx, $ymax - $marginb);
+      $poly->addPt($marginl + ($i) * $w - $k - $shx, $ymax - $marginb -
+		   $j / $factor * ($ymax - $marginb - $margint - $shy) / $max);
+      
+      $image->filledPolygon($poly, $red3);
+      $image->polygon($poly, $coltxt);
+      
+      # Front
+      $image->filledRectangle ($marginl + ($i - 1) * $w + $k - $shx,
+		   $ymax - $marginb -
+		   $j  / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+		   $marginl + ($i) * $w - $k - $shx, 
+		   $ymax - $marginb, $red);
+      $image->rectangle ($marginl + ($i - 1) * $w + $k - $shx,
+		   $ymax - $marginb -
+		   $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+		   $marginl + ($i) * $w - $k - $shx, 
+		   $ymax - $marginb, $coltxt);
+      # Top
+      my $poly2 = new GD::Polygon;
+      $poly2->addPt($marginl + ($i - 1) * $w + $k, $ymax - $marginb - $shy -
+		   $j / $factor * ($ymax - $marginb - $margint - $shy) / $max);
+      $poly2->addPt($marginl + ($i) * $w - $k, $ymax - $marginb - $shy -
+		   $j / $factor * ($ymax - $marginb - $margint - $shy) / $max);
+      $poly2->addPt($marginl + ($i) * $w - $k - $shx, $ymax - $marginb -
+		   $j / $factor * ($ymax - $marginb - $margint - $shy) / $max);
+      $poly2->addPt($marginl + ($i - 1) * $w + $k - $shx, $ymax - $marginb -
+		   $j / $factor * ($ymax - $marginb - $margint - $shy) / $max);
+      
+      $image->rectangle (0, 0, $xmax - 1, $ymax - 1, $coltxt);
+      $image->filledPolygon($poly2, $red2);
+      $image->polygon($poly2, $coltxt);
+    }
+  }
+  
+  open (IMG, "> $filename") || die "Can't create '$filename'\n";
+  print IMG $image->gif;
+  close (IMG);
+  1;
+}
+
+sub Write_all_results
+{
+  my $HTML_output = shift;
+  my $h = shift;
+  my $k;
+
+  my $title = $$h{'default'}{'title'} ?
+    $$h{'default'}{'title'} : "Daily Usenet report";
+  $title =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+  $title =~ s/\\\"/\"/go;
+  my $Title = $title;
+  $Title =~ s/<.*?>//go;
+  {
+    my $Title = $Title;
+    $Title =~ s/\&amp;/&/go;
+    $Title =~ s/\&lt;/</go;
+    $Title =~ s/\&gt;/>/go;
+    print "$Title from $first_date to $last_date\n\n";
+  }
+
+  if ($HTML)
+  {
+    my $body = defined $output{'default'}{'html_body'} ?
+      $output{'default'}{'html_body'} : "";
+    $body =~ s/^\"\s*(.*?)\s*\"$/ $1/o;
+    $body =~ s/\\\"/\"/go;
+    open (HTML, "> $HTML_output") || die "Error: cant open $HTML_output\n";
+  
+    print HTML "<HTML>\n<HEAD>\n<TITLE>$Title: $first_date</TITLE>\n";
+    print HTML "<!-- innreport $version -->\n";
+    
+    print HTML "</HEAD>\n<BODY$body>\n";
+    print HTML "$HTML_header\n";
+    print HTML "<CENTER><H1>$title</H1>\n";
+    print HTML "<H3>$first_date -- $last_date</H3>\n";
+    print HTML "</CENTER>\n<P><HR><P>\n";
+  
+    # Index
+    print HTML "<UL>\n";
+    foreach $k (@{$$h{'_order_'}})
+    {
+      next if $k =~ m/^(default|index)$/;
+      my ($data) = $$h{$k}{'data'} =~ m/^\"\s*(.*?)\s*\"$/o;
+      $data =~ s/^\%/\%$CLASS\:\:/ unless $data eq '%prog_type';
+      my %data;
+      { local $^W = 0; no strict; %data = eval $data }
+      my ($string) = $$h{$k}{'title'} =~ m/^\"\s*(.*?)\s*\"$/o;
+      $string =~ s/\s*:$//o;
+      my $want = 1;
+
+      ($want) = $$h{$k}{'skip'} =~ m/^\"?\s*(.*?)\s*\"?$/o
+	if defined $$h{$k}{'skip'};
+      $want = ($want eq 'true' ? 0 : 1);
+      print HTML "<LI><A HREF=\"#$k\">$string</A>\n" if (%data && $want);
+    }
+    print HTML "</UL><P><HR><P>\n";
+  }
+  if ((@unrecognize) && ($WANT_UNKNOWN))
+  {
+    my $mm = $#unrecognize;
+    print HTML "<A NAME=\"unrecognize\">" if ($HTML);
+    print "Unknown entries from news log file:\n";
+    print HTML "<STRONG>Unknown entries from news log file:</STRONG></A><P>\n"
+      if ($HTML);
+    $mm = $MAX_UNRECOGNIZED - 1
+      if (($MAX_UNRECOGNIZED > 0) && ($mm > $MAX_UNRECOGNIZED - 1));
+    if (($mm < $unrecognize_max) && ($unrecognize_max > 0))
+    {
+      printf HTML "First %d / $unrecognize_max lines (%3.1f%%)<BR>\n", $mm + 1,
+        ($mm + 1) / $unrecognize_max * 100 if ($HTML);
+      printf "First %d / $unrecognize_max lines (%3.1f%%)\n", $mm + 1,
+        ($mm + 1)/ $unrecognize_max * 100;
+    }
+
+    my $l;
+    for $l (0 .. $mm)
+    {
+      chomp ($unrecognize[$l]);   # sometimes, the last line need a CR
+      print "$unrecognize[$l]\n"; # so, we always add one
+      if ($HTML)
+      {
+	$unrecognize[$l] =~ s/&/\&amp;/g;
+	$unrecognize[$l] =~ s/</\&lt;/g;
+	$unrecognize[$l] =~ s/>/\&gt;/g;
+	print HTML "$unrecognize[$l]<BR>\n";
+      }
+    }
+    print "\n";
+    print HTML "<P><HR><P>\n" if $HTML;
+  }
+
+  close (HTML) if $HTML;
+  foreach $k (@{$$h{'_order_'}})
+  {
+    next if $k =~ m/^(default|index)$/;
+    &Write_Results($HTML_output, $k, $h);
+  }
+  if ($HTML)
+  {
+    open (HTML, ">> $HTML_output") || die "Error: cant open $HTML_output\n";
+    print HTML <<EOT;
+<A HREF="ftp://ftp.eerie.fr/pub/usenet/innreport/">innreport</A> 
+$version (c) 1996-1998 by Fabien Tassin 
+&lt;<A HREF="mailto:tassin\@eerie.fr">tassin\@eerie.fr</A>&gt;.
+EOT
+    if (defined ($$h{'default'}{'footer'}))
+    {
+      my ($t) = $$h{'default'}{'footer'} =~ m/^\"\s*(.*?)\s*\"$/o;
+      $t =~ s/\\\"/\"/go;
+      print HTML "<BR>" . $t;
+    }
+    printf HTML "\n$HTML_footer";
+    printf HTML "\n<!-- Running time: %s -->", second2time(time - $start_time);
+    print HTML "\n</BODY>\n</HTML>\n";
+    close (HTML);
+  }
+}
+
+sub Write_Results
+{
+  my $HTML_output = shift;
+  my $report = shift;
+  my $data = shift;
+  my %output = %$data;
+  return 0 unless defined $output{$report}; # no data to write
+  return 0 if (defined $output{$report}{'skip'} &&
+	       $output{$report}{'skip'} =~ m/^true$/io);
+  my ($TEXT, $HTML, $DOUBLE);
+
+  # Need a text report ?
+  $TEXT = defined $output{$report}{'text'} ? $output{$report}{'text'} :
+    (defined $output{'default'}{'text'} ? $output{'default'}{'text'} : "");
+  die "Error in config file. Field 'text' is mandatory.\n" unless $TEXT;
+  $TEXT = ($TEXT =~ m/^true$/io) ? 1 : 0;
+
+  # Need an html report ?
+  $HTML = defined $output{$report}{'html'} ? $output{$report}{'html'} :
+    (defined $output{'default'}{'html'} ? $output{'default'}{'html'} : "");
+  die "Error in config file. Field 'html' is mandatory.\n" unless $HTML;
+  $HTML = ($HTML =~ m/^true$/io) ? 1 : 0;
+  # Double table ?
+  $DOUBLE = defined $output{$report}{'double'} ?
+    $output{$report}{'double'} : 0;
+  $DOUBLE = ($DOUBLE =~ m/^true$/io) ? 1 : 0;
+
+  # Want to truncate the report ?
+  my $TOP = defined $output{$report}{'top'} ? $output{$report}{'top'} : -1;
+  my $TOP_HTML = defined $output{$report}{'top_html'} ?
+                   $output{$report}{'top_html'} : $TOP;
+  my $TOP_TEXT = defined $output{$report}{'top_text'} ?
+                   $output{$report}{'top_text'} : $TOP;
+
+  my (%h, %d, $h);
+  {
+    my $t = $output{$report}{'data'} ||
+      die "Error in section $report. Need a 'data' field.\n";
+    $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+    $t =~ s/^\%/\%$CLASS\:\:/ unless $t eq '%prog_type';
+    %d = eval $t;
+    return unless %d; # nothing to report. exit.
+    return unless keys (%d); # nothing to report. exit.
+  }
+  {
+    my $t = defined ($output{$report}{'sort'}) ? $output{$report}{'sort'} :
+      "\$a cmp \$b";
+    $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+    $t =~ s/([\$\%\@])/$1${CLASS}\:\:/og;
+    $t =~ s/([\$\%\@])${CLASS}\:\:(prog_(?:size|type)|key|num)/$1$2/og;
+    $t =~ s/\{\$${CLASS}\:\:(a|b)\}/\{\$$1\}/og;
+    $t =~ s/\$${CLASS}\:\:(a|b)/\$$1/og;
+    $h = $t;
+  }
+
+  if ($HTML)
+  {
+    open (HTML, ">> $HTML_output") || die "Error: cant open $HTML_output\n";
+  }
+  print "\n" if $TEXT;
+  my ($key, $key1, $key2);
+  if (defined ($output{$report}{'title'}))
+  {
+    my $t = $output{$report}{'title'};
+    $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+    if ($HTML)
+    {
+      print HTML "<A NAME=\"$report\">";
+      my $html = $t;
+      $html =~ s/(:?)$/ [Top $TOP_HTML]$1/o if $TOP_HTML > 0;
+      $html =~ s|^(.*)$|<STRONG>$1</STRONG>|;
+      print HTML "$html</A>\n<P>\n<CENTER>\n";
+      print HTML "<TABLE BORDER=\"1\">\n";
+    }
+    $t =~ s/(:?)$/ [Top $TOP_TEXT]$1/o if $TOP_TEXT > 0;
+    print "$t\n" if $TEXT;
+  }
+  my $i;
+  my $s = "";
+  my $html = "";
+  my $first = 0;
+  
+  foreach $i (@{$output{$report}{'column'}})
+  {
+    my ($v1, $v2);
+    $v1 = defined ($$i{'format_name'}) ? $$i{'format_name'} :
+      (defined ($$i{'format'}) ? $$i{'format'} : "%s");
+    $v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+    $v2 = $$i{'name'};
+    $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+    $s .= sprintf $v1 . " ", $v2 unless ($DOUBLE && ($first == 1));
+    if ($HTML)
+    {
+      my $v1 = $v1; # local, abomination !!
+      $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?(\w)/\%$1/g;
+      my $temp = $first ? "CENTER" : "LEFT";
+      $html .= sprintf "<TH ALIGN=\"$temp\">$v1</TH>", $v2;
+    }
+    $first++;
+  }
+  $s =~ s/\s*$//;
+  print "$s\n" if $TEXT;
+  $s = "";
+  if ($HTML)
+  {
+    print HTML "<TR>$html</TR>\n";
+    print HTML "<TR></TR>\n";
+    $html = "";
+  }
+  my $num = 0;
+  my $done;
+  if ($DOUBLE)
+  {
+    foreach $key1 (sort (keys (%d)))
+    {
+      $done = 0;
+      foreach $key2 (sort {$d{$key1}{$b} <=> $d{$key1}{$a}}
+		     (keys (%{$d{$key1}})))
+      {
+	my $first = 0;
+	foreach $i (@{$output{$report}{'column'}})
+	{
+	  my ($v1, $v2, $p);
+
+	  # is it the primary key ?
+	  $p = 0;
+	  $p = 1 if defined ($$i{'primary'}) && ($$i{'primary'} =~ m/true/);
+
+	  # format
+	  $v1 = defined ($$i{'format'}) ? $$i{'format'} : "%s";
+	  $v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+
+	  # value
+	  $v2 = $$i{'value'};
+	  $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	  my $r ='';
+	  if ($v2)
+	  {
+	    $r = &EvalExpr ($v2, $key2, $num, $key1);
+	    die "Error in section $report column $$i{'name'}. " .
+	      "Invalid 'value' value.\n" unless defined $r;
+	  }
+	  if ($p)
+	  {
+	    $s .= sprintf $v1. "\n", $r unless $done;
+	    if ($HTML)
+	    {
+	      if ($done)
+	      {
+		$html .= "<TD></TD>";
+	      }
+	      else
+	      {
+		$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
+
+		$html .= sprintf "<TD ALIGN=\"LEFT\">$v1</TD></TR>\n", $r;
+		$html .= "<TR><TD></TD>";
+	      }
+	    }
+	  }
+	  else
+	  {
+	    $s .= "  " if $first == 1;
+	    $s .= sprintf $v1 . " ", $r;
+	    if ($HTML)
+	    {
+	      $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
+	      my $temp = $first > 1 ? "RIGHT" : "LEFT";
+	      $html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	    }
+	  }
+	  $done = 1 if $p;
+	  $first++;
+	}
+	$s =~ s/\s*$//;
+	$s =~ s/\\n/\n/g;
+	print "$s\n" if $TEXT;
+	$s = "";
+	if ($HTML)
+	{
+	  $html =~ s/\\n//g;
+	  print HTML "<TR>$html</TR>\n";
+	  $html = "";
+	}
+      }
+    }
+    print "\n" if $TEXT;
+    print HTML "<TR></TR>\n" if $HTML;
+    $first = 0;
+    foreach $i (@{$output{$report}{'column'}})
+    {
+      my ($v1, $v2);
+      $v1 = defined ($$i{'format_total'}) ? $$i{'format_total'} :
+	(defined ($$i{'format'}) ? $$i{'format'} : "%s");
+      $v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+      $v2 = $$i{'total'} ||
+	die "Error in section $report column $$i{'name'}. " .
+	  "Need a 'total' field.\n";
+      $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+      my $r = '';
+      if ($v2)
+      {
+	$r = &EvalExpr ($v2, $key2, $num, 1);
+	die "Error in section $report column $$i{'name'}. " .
+	  "Invalid 'total' value.\n" unless defined $r;
+      }
+      $s .= sprintf $v1 . " ", $r unless ($first == 1);
+      if ($HTML)
+      {
+	my $temp = $first ? "RIGHT" : "LEFT";
+	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
+	$v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first;
+	$html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+      }
+      $first++;
+    }
+    $s =~ s/\s*$//;
+    $s =~ s/\\n//g;
+    print "$s\n" if $TEXT;
+    if ($HTML)
+    {
+      print HTML "<TR>$html</TR>\n";
+      print HTML "</TABLE>\n</CENTER>\n<P>\n<HR>\n";
+    }
+  }
+  else
+  {
+    # foreach $key (sort { local $^W = 0; no strict; eval $h } (keys (%d)))
+    foreach $key ((eval "sort { local \$^W = 0; no strict; $h } (keys (%d))"))
+    {
+      next unless defined $key;
+      next unless defined $d{$key}; # to avoid problems after some undef()
+      $num++;
+      next unless ($num <= $TOP_HTML || $TOP_HTML == -1 ||
+	           $num <= $TOP_TEXT || $TOP_TEXT == -1);
+      my $first = 0;
+      foreach $i (@{$output{$report}{'column'}})
+      {
+	my ($v1, $v2);
+	$v1 = defined ($$i{'format'}) ? $$i{'format'} : "%s";
+	$v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	$v2 = $$i{'value'};
+	$v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	my $r ='';
+	if ($v2)
+	{
+	  $r = &EvalExpr ($v2, $key, $num);
+	  die "Error in section $report column $$i{'name'}. " .
+	    "Invalid 'value' value.\n" unless defined $r;
+	}
+	$s .= sprintf $v1 . " ", $r
+	  if (($num <= $TOP_TEXT) || ($TOP_TEXT == -1));
+	if ($HTML && (($num <= $TOP_HTML) || ($TOP_HTML == -1)))
+	{
+	  $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
+	  my $temp = $first ? "RIGHT" : "LEFT";
+	  $html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	}
+	$first++;
+      }
+      $s =~ s/\s*$//;
+      print "$s\n" if ($TEXT && ($num <= $TOP_TEXT || $TOP_TEXT == -1));
+      $s = "";
+      if ($HTML && ($num <= $TOP_HTML || $TOP_HTML == -1))
+      {
+	print HTML "<TR>$html</TR>\n";
+	$html = "";
+      }
+    }
+    print "\n" if $TEXT;
+    print HTML "<TR></TR>\n" if $HTML;
+    $first = 0;
+    foreach $i (@{$output{$report}{'column'}})
+    {
+      my ($v1, $v2);
+      $v1 = defined ($$i{'format_total'}) ? $$i{'format_total'} :
+	(defined ($$i{'format'}) ? $$i{'format'} : "%s");
+      $v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+      $v2 = $$i{'total'} ||
+	die "Error in section $report column $$i{'name'}. " .
+	  "Need a 'total' field.\n";
+      $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+      my $r = '';
+      if ($v2)
+      {
+	$r = &EvalExpr ($v2, $key, $num);
+	die "Error in section $report column $$i{'name'}. " .
+	  "Invalid 'total' value.\n" unless defined $r;
+      }
+      $s .= sprintf $v1 . " ", $r;
+      if ($HTML)
+      {
+	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
+	my $temp = $first ? "RIGHT" : "LEFT";
+	$v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first;
+	$html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+      }
+      $first++;
+    }
+    $s =~ s/\s*$//;
+    print "$s\n" if $TEXT;
+    if ($HTML)
+    {
+      print HTML "<TR>$html</TR>\n";
+      print HTML "</TABLE>\n</CENTER><P>\n";
+
+      my $i = 0;
+      while ($GRAPH && defined ${${$output{$report}{'graph'}}[$i]}{'type'})
+      {
+	my $type = ${${$output{$report}{'graph'}}[$i]}{'type'};
+        my ($title) = ${${$output{$report}{'graph'}}[$i]}{'title'} =~
+	               m/^\"\s*(.*?)\s*\"$/o;
+        if ($type eq 'histo3d')
+        {
+	  my (@values, @colors, @labels);
+	  my $num = 0;
+	  my $j;
+	  foreach $j (@{${${$output{$report}{'graph'}}[$i]}{'data'}})
+          {
+	    $num++;
+	    my ($h) = $$j{'value'} =~ m/^\"\s*(.*?)\s*\"$/o;
+	    my %hh;
+	    $h =~ s/^\%/\%$CLASS\:\:/ unless $h eq '%prog_type';
+	    { local $^W = 0; no strict; %hh = eval $h }
+	    push @values, \%hh;
+	    my ($t) = $$j{'name'} =~ m/^\"\s*(.*?)\s*\"$/o;
+	    push @labels, $t;
+	    $t = $$j{'color'} ||
+	      die "Error in section $report section 'graph'. " .
+		"No color specified for 'value' $$j{'value'}.\n";
+	    $t =~ s/^\"\s*\#(.*?)\s*\"$/$1/o;
+	    $t =~ m/^[\da-fA-F]{6}$/o ||
+	      die "Error in section $report section 'graph'. " .
+		"Bad color for 'value' $$j{'value'}.\n";
+	    my @c = map { hex ($_) } ($t =~ m/^(..)(..)(..)$/);
+	    push @colors, \@c;
+	  }
+	  $suffix = "" unless defined $suffix;
+	  my $s = ($i ? $i : "") . $suffix;
+	  print HTML "<CENTER><IMG ALT=\"$title\" ";
+	  close (HTML);
+	  my $y = &Graph3d ("$IMG_dir/$report$s.gif",
+		    $title, $xmax, $num, @values, \@colors, \@labels);
+	  open (HTML, ">> $HTML_output") ||
+	    die "Error: cant open $HTML_output\n";
+	  print HTML "WIDTH=\"$xmax\" HEIGHT=\"$y\" ";
+	  print HTML "SRC=\"$IMG_pth$report$s.gif\"></CENTER>\n";
+	}
+        elsif ($type eq 'histo')
+        {
+	  my (%values, %labels);
+	  my $factor = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'factor'}
+             || die "Error in section $report section 'graph'. " .
+	       "No factor specified for 'value' " .
+	       ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'name'} .
+	       ".\n";
+	  $factor =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	  my $labelx = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[0]}{'name'}
+	     || die "Error in section $report section 'graph'. " .
+	       "No name specified for value.\n";
+	  $labelx =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	  my $labely = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'name'}
+	     || die "Error in section $report section 'graph'. " .
+	       "No name specified for value.\n";
+	  $labely =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	  my $t = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[0]}{'value'}
+	     || die "Error in section $report section 'graph'. " .
+	       "No 'value' specified for " .
+	       ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[0]}{'name'} .
+	       ".\n";
+	  $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	  $t =~ s/^\%/\%$CLASS\:\:/ unless $t eq '%prog_type';
+	  { local $^W = 0; no strict; %labels = eval $t }
+
+	  $t = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'value'} ||
+	     die "Error in section $report section 'graph'. " .
+	       "No 'value' specified for " .
+	       ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'name'} .
+	       ".\n";
+	  $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+	  $t =~ s/^\%/\%$CLASS\:\:/ unless $t eq '%prog_type';
+	  { local $^W = 0; no strict; %values = eval $t }
+	  my $s = ($i ? $i : "") . $suffix;
+	  {
+	    my $r;
+	    close (HTML);
+	    $r = &Histo ("$IMG_dir/$report$s.gif", $title, $xmax,
+			 $factor, $labelx, $labely, \%values, \%labels);
+	    open (HTML, ">> $HTML_output") ||
+	      die "Error: cant open $HTML_output\n";
+	    print HTML "<CENTER><IMG ALT=\"$title\" WIDTH=\"$xmax\" SRC=\"$IMG_pth$report$s.gif\"></CENTER>\n"
+		 if $r;
+	  }
+	}
+        elsif ($type eq 'piechart')
+        {
+	  print "Sorry, graph type 'piechart' not supported yet..\n";
+	}
+        else
+        {
+	  die "Error in section $report section 'graph'. " .
+	    "Invalid 'type' value.\n"
+	}
+	$i++;
+	print HTML "<P>\n";
+      }
+      print HTML "\n<HR>\n";
+    }
+  }
+  close (HTML) if $HTML;
+}
+
+sub EvalExpr
+{
+  my $v = shift;
+  my ($key, $num, $key1) = @_;
+  my $key2;
+
+  if ($key1)
+  {
+    $key2 = $key;
+    $v =~ s/([^a-zA-Z_\-]?)total\s*\(\s*%/$1&ComputeTotalDouble\(\\%/og;
+  }
+  else
+  {
+    $v =~ s/([^a-zA-Z_\-]?)total\s*\(\s*%/$1&ComputeTotal\(\\%/og;
+  }
+  $v =~ s/([^a-zA-Z_\-]?)bytes\s*\(\s*/$1&NiceByte\(/og;
+  $v =~ s/([^a-zA-Z_\-]?)time\s*\(\s*/$1&second2time\(/og;
+  $v =~ s/([^a-zA-Z_\-]?)time_ms\s*\(\s*/$1&ms2time\(/og;
+  $v =~ s/([\$\%\@])/$1${CLASS}\:\:/og;
+  $v =~ s/([\$\%\@])${CLASS}\:\:(prog_(?:size|type)|key|num)/$1$2/og;
+  my $r;
+  eval { local $^W = 0; no strict; ($r) = eval $v; };
+  $r = 0 unless defined $r;
+  return $r;
+}
+
+sub NiceByte
+{
+  my $size = shift;
+  my $t;
+
+  $size = 0 unless defined ($size);
+  $t = $size / 1024 / 1024 / 1024 > 1 ?
+    sprintf "%.1f Gb", $size / 1024 / 1024 / 1024 :
+      ( $size / 1024 / 1024 > 1 ? sprintf "%.1f Mb", $size / 1024 / 1024 :
+	sprintf "%.1f kb", $size / 1024 );
+  return $t;
+}
+
+sub Decode_Config_File
+{
+  my $file = shift;
+  my ($line, $section);
+  my $linenum = 0;
+  my $info;
+  my @list;
+  open (FILE, "$file") || die "Can\'t open config file \"$file\". Abort.\n";
+  while (defined ($line = <FILE>))
+  {
+    $linenum++;
+    last if eof (FILE);
+    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+    die "Error in $file line $linenum: must be 'section' instead of '$info'\n"
+      unless ($info eq 'section');
+    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+    die "Error in $file line $linenum: invalid section name '$info'\n"
+      unless $info =~ /^\w+$/;
+    print "section $info {\n" if $DEBUG;
+    $section = $info;
+    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+    die "Error in $file line $linenum: must be a '{' instead of '$info'\n"
+      unless ($info eq '{');
+    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+    push @list, $section;
+    while ($info ne '}')
+    { # it is a block
+      last if eof (FILE);
+      my $keyword = $info;
+      ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+      my $value = $info;
+      if ($info eq '{')
+      { # it is a sub-block
+	my @a;
+	$output{$section}{$keyword} = \@a unless $output{$section}{$keyword};
+	my %hash;
+	print "\t$keyword {\n" if $DEBUG;
+	($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	my @sublist; # to store the "data" blocks
+
+	while ($info ne '}')
+	{ 
+	  last if eof (FILE);
+	  my $subkeyword = $info;
+	  ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	  my $subvalue = $info;
+	  if ($info eq '{')
+	  {
+	    # it is a sub-sub-block
+	    my %subhash;
+	    print "\t\t$subkeyword {\n" if $DEBUG;
+	    my @b;
+	    $hash{$subkeyword} = \@b unless ${hash}{$subkeyword};
+	    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	    while ($info ne '}')
+	    { 
+	      last if eof (FILE);
+	      my $subsubkeyword = $info;
+	      ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	      my $subsubvalue = $info;
+	      if ($info eq '{')
+	      {
+		die "Error in $file line $linenum: too many blocks.\n";
+	      }
+	      else
+	      {
+		($info, $linenum, $line) =
+		  &read_conf ($linenum, $line, \*FILE);
+		die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
+		  unless ($info eq ';');
+		print "\t\t\t$subsubkeyword\t$subsubvalue;\n" if $DEBUG;
+		
+		$subhash{$subsubkeyword} = $subsubvalue;
+		($info, $linenum, $line) =
+		  &read_conf ($linenum, $line, \*FILE);
+	      }
+	    }
+	    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	    die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
+	      unless ($info eq ';');
+	    push @{$hash{$subkeyword}} , \%subhash;
+            ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	    print "\t\t};\n" if $DEBUG; 
+	  }
+	  else
+	  {
+	    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	    die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
+	      unless ($info eq ';');
+	    print "\t\t$subkeyword\t$subvalue;\n" if $DEBUG;
+	    $hash{$subkeyword} = $subvalue;
+	    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	  }
+	}
+	($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+        die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
+	  unless ($info eq ';');
+	push @{$output{$section}{$keyword}}, \%hash;
+	($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+	print "\t};\n" if $DEBUG; 
+      }
+      else
+      {
+	($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+        die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
+	  unless ($info eq ';');
+	print "\t$keyword\t$value;\n" if $DEBUG;
+	$output{$section}{$keyword} = $value;
+	($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+      }
+    }
+    die "Error in $file line $linenum: must be a '}' instead of '$info'\n"
+      unless $info eq '}';
+    ($info, $linenum, $line) = &read_conf ($linenum, $line, \*FILE);
+    die "Error in $file line $linenum: must be a ';' instead of '$info'\n"
+      unless ($info eq ';');
+    print "};\n\n" if $DEBUG; 
+  }
+  close (FILE);
+  $output{'_order_'} = \@list;
+}
+
+sub read_conf
+{
+  my ($linenum, $line, $file) = @_;
+  *FILE = *$file;
+
+  chomp $line;
+  $line =~ s/^\s+//o;           # remove useless blanks
+  $line =~ s,^(\#|//).*$,,o;    # remove comments (at the beginning)
+  while (($line eq '') && !(eof (FILE)))
+  {
+    $line = <FILE>;             # read one line
+    chomp $line;
+    $linenum++;
+    $line =~ s/^\s*//o;         # remove useless blanks
+    $line =~ s,^(\#|//).*$,,o;  # remove comments (at the beginning)
+  }
+  $line =~ s/^(                 # at the beginning
+	       [{};]            # match '{', '}', or ';'
+	      |                 # OR
+	       \"               # a double quoted string
+                (?:\\.|[^\"\\])*
+               \"
+	      |                 # OR
+               [^{};\"\s]+      # a word
+             )\s*//xo;
+  my $info = $1;
+  warn "Syntax error in conf file line $linenum. No data !?\n"
+    if $info eq '';
+  return ($info, $linenum, $line);
+}
+
+sub GetValue
+{
+  my $v = shift;
+  $v =~ m/^(?:\"\s*)?(.*?)(?:\s*\")?$/o;
+  return $1;
+}
+
+sub Usage
+{
+  my ($base) = $0 =~ /([^\/]+)$/;
+  print "Usage: $base -f innreport.conf [-[no]options]\n";
+  print "  where options are:\n";
+  print "    -h (or -help)       this help page\n";
+  print "    -v                  display the version number of INNreport\n";
+  print "    -config             print INNreport configuration information\n";
+  print "    -html               HTML output";
+  print " [default]" if ($HTML);
+  print "\n";
+  print "    -g                  want graphs";
+  print " [default]" if ($GRAPH);
+  print "\n";
+  print "    -graph              an alias for option -g\n";
+  print "    -d directory        directory for Web pages";
+  print "\n                        [default=$HTML_dir]"
+    if (defined ($HTML_dir));
+  print "\n";
+  print "    -dir directory      an alias for option -d\n";
+  print "    -p directory        pictures path (file space)";
+  print "\n                        [default=$IMG_dir]" 
+    if (defined ($IMG_dir));
+  print "\n";
+  print "    -path directory     an alias for option -p\n";
+  print "    -w directory        pictures path (web space)";
+  print " [default=$IMG_pth]" if (defined ($IMG_pth));
+  print "\n";
+  print "    -webpath directory  an alias for option -w\n";
+  print "\n";
+  print "    -i file             Name of index file";
+  print " [default=$index]" if (defined ($index));
+  print "\n";
+  print "    -index file         an alias for option -i\n"; 
+  print "    -a                  want to archive HTML results";
+  print " [default]" if ($ARCHIVE);
+  print "\n";
+  print "    -archive            an alias for option -a\n";
+  print "    -c number           how many report files to keep (0 = all)\n";
+  print "                        [default=$CYCLE]"
+    if (defined ($CYCLE));
+  print "\n";
+  print "    -cycle number       an alias for option -c\n";
+  print "    -s char             separator for filename";
+  print " [default=\"$SEPARATOR\"]\n";
+  print "    -separator char     an alias for option -s\n";
+  print "    -unknown            \"Unknown entries from news log file\"\n";
+  print "                        report";
+  print " [default]" if ($WANT_UNKNOWN);
+  print "\n";
+  print "    -maxunrec           Max number of unrecognized lines to display\n";
+  print "                        [default=$MAX_UNRECOGNIZED]"
+    if (defined ($MAX_UNRECOGNIZED));
+  print "\n";
+  print "    -casesensitive      Case sensitive";
+  print " [default]" if ($CASE_SENSITIVE);
+  print "\n\n";
+  print "Use no in front of boolean options to unset them.\n";
+  print "For example, \"-html\" is set by default. Use \"-nohtml\" to remove this\n";
+  print "feature.\n";
+  exit (0);
+}
+
+sub Version
+{
+  print "\nThis is INNreport version $version\n\n";
+  print "Copyright 1996-1998, Fabien Tassin <tassin\@eerie.fr>\n";
+  exit (0);
+}
+
+sub Summary
+{
+  use Config;
+  
+  # Convert empty arguments into null string ("")
+  my $i = 0;
+  foreach (@old_argv)
+  {
+    $old_argv[$i] = '""' if ($_ eq '');
+    $i++;
+  }
+
+  # Display the summary
+  print "\nSummary of my INNreport (version $version) configuration:\n";
+  print "  General options:\n";
+  print "    command line='@old_argv' (please, check this value)\n";
+  print "    html=" . ($HTML?"yes":"no") . ", graph=" . 
+                      ($GRAPH?"yes":"no") . ", haveGD=" .
+                      ($::HAVE_GD?"yes":"no") . "\n";
+  print "    archive=" . ($ARCHIVE?"yes":"no") . 
+                      ", cycle=$CYCLE, separator=\"" . $SEPARATOR . "\"\n";
+  print "    case_sensitive=" .
+                      ($CASE_SENSITIVE?"yes":"no") . ", want_unknown=" .
+		      ($WANT_UNKNOWN?"yes":"no") . 
+                      ", max_unrecog=$MAX_UNRECOGNIZED\n";
+  print "  Paths:\n";
+  print "    html_dir=$HTML_dir\n";
+  print "    img_dir=$IMG_dir\n";
+  print "    img_pth=$IMG_pth\n";
+  print "    index=$index\n";
+  print "  Platform:\n";
+  print "    perl version $::Config{baserev} "
+            . "patchlevel $::Config{patchlevel} "
+            . "subversion $::Config{subversion}\n";
+  print "    libperl=$::Config{libperl}, useshrplib=$::Config{useshrplib}, "
+       . "bincompat3=$::Config{bincompat3}\n";
+  print "    osname=$::Config{osname}, osvers=$::Config{osvers}, "
+        . "archname=$::Config{archname}\n";
+  print "    uname=$::Config{myuname}\n\n";
+  
+  exit (0);
+}
+
+######################### End of File ##########################
