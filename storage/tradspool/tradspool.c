@@ -872,13 +872,13 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    private->mmapped = TRUE;
 	} else {
 	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
-	    private->artbase = wfarticle;
-	    private->artlen = wflen;
-	    private->mmapped = FALSE;
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
 #endif
 	    munmap(private->artbase, private->artlen);
+	    private->artbase = wfarticle;
+	    private->artlen = wflen;
+	    private->mmapped = FALSE;
 	}
     } else {
 	private->mmapped = FALSE;
