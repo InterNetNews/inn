@@ -383,7 +383,8 @@ incoming_conf
     'docnfsstat',		0,
     'nnrpdauthsender',		0,
     'cnfscheckfudgesize',	0,
-    'rlimitnofile',		0
+    'rlimitnofile',		0,
+    'ignorenewsgroups',		0
 );
 %inn_conf'optionals = (
     'innflags',			0,
