@@ -243,8 +243,8 @@ struct connection_s
     u_int takesRejected ;       /* the number of response 437/439 recevied */
     u_int takesOkayed ;         /* the number of response 235/239 received */
 
-    arts_size takesSizeRejected ;
-    arts_size takesSizeOkayed ;
+    double takesSizeRejected ;
+    double takesSizeOkayed ;
 
     double onThreshold ;        /* for no-CHECK mode */
     double offThreshold ;       /* for no-CHECK mode */
@@ -2653,7 +2653,7 @@ static void processResponse239 (Connection cxn, char *response)
   else
     {
       cxn->takesOkayed++ ;
-      cxn->takesSizeOkayed += (arts_size) artSize(artHolder->article);
+      cxn->takesSizeOkayed += (double) artSize(artHolder->article);
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
       if (cxn->articleQTotal == 0)
@@ -2743,7 +2743,7 @@ static void processResponse439 (Connection cxn, char *response)
   else
     {
       cxn->takesRejected++ ;
-      cxn->takesSizeRejected += (arts_size) artSize(artHolder->article);
+      cxn->takesSizeRejected += (double) artSize(artHolder->article);
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
       /* Some(?) hosts return the 439 response even before we're done
@@ -2809,7 +2809,7 @@ static void processResponse235 (Connection cxn, char *response)
       cxn->takeRespHead = NULL ;
       cxn->articleQTotal = 0 ;
       cxn->takesOkayed++ ;
-      cxn->takesSizeOkayed += (arts_size) artSize(artHolder->article);
+      cxn->takesSizeOkayed += (double) artSize(artHolder->article);
       
       if (cxn->articleQTotal == 0)
         cxnIdle (cxn) ;
@@ -3074,7 +3074,7 @@ static void processResponse437 (Connection cxn, char *response)
 
   artHolder = cxn->takeRespHead ;
   cxn->takeRespHead = NULL ;
-  cxn->takesSizeRejected += (arts_size) artSize(artHolder->article);
+  cxn->takesSizeRejected += (double) artSize(artHolder->article);
 
   if (cxn->articleQTotal == 0)
     cxnIdle (cxn) ;

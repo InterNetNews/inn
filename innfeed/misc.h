@@ -72,12 +72,6 @@ typedef unsigned int u_int ;
 typedef unsigned short u_short ;
 #endif
 
-#if defined (HAVE_LONG_LONG_FORMAT_LLU) || defined (HAVE_LONG_LONG_FORMAT_QU)
-typedef unsigned long long arts_size ;
-#else
-typedef double arts_size ;
-#endif
-
 /* debugging information */
 extern char *program ;
 extern u_int loggingLevel ;     /* if 0 then d_printf is a no-op */
