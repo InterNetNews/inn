@@ -8,6 +8,7 @@
 
 #include <configdata.h>
 #include <storage.h>
+#include <ov.h>
 
 typedef struct {
     char	*name;
@@ -22,6 +23,7 @@ typedef struct {
     void	(*closesearch)(void *handle);
     BOOL	(*getartinfo)(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
     BOOL	(*expiregroup)(char *group, int *lo);
+    BOOL	(*probe)(OVPROBETYPE type, void *result);
     void	(*close)(void);
 } OV_METHOD;
 

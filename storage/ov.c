@@ -156,6 +156,21 @@ BOOL OVexpiregroup(char *group, int *lo) {
     return ((*ov.expiregroup)(group, lo));
 }
 
+BOOL OVprobe(OVPROBETYPE type, void *result) {
+    if (!ov.open) {
+	/* must be opened */
+	syslog(L_ERROR, "ovopen must be called first");
+	(void)fprintf(stderr, "ovopen must be called first");
+	return FALSE;
+    }
+    switch (type) {
+    case OVSPACE:
+        return ((*ov.probe)(type, result));
+    default:
+        return FALSE;
+    }
+}
+
 void OVclose(void) {
     if (!ov.open)
 	return;
