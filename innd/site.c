@@ -912,7 +912,7 @@ SITEwantsgroup(SITE *sp, char *name)
 	    subvalue = *pat != SUB_NEGATE && *pat != SUB_POISON;
 	    if (!subvalue)
 		pat++;
-	    if ((match != subvalue) && wildmat(name, pat))
+	    if ((match != subvalue) && uwildmat(name, pat))
 		match = subvalue;
 	}
     }
@@ -920,7 +920,7 @@ SITEwantsgroup(SITE *sp, char *name)
 	subvalue = *pat != SUB_NEGATE && *pat != SUB_POISON;
 	if (!subvalue)
 	    pat++;
-	if ((match != subvalue) && wildmat(name, pat))
+	if ((match != subvalue) && uwildmat(name, pat))
 	    match = subvalue;
     }
     return match;
@@ -945,7 +945,7 @@ SITEpoisongroup(SITE *sp, char *name)
 	    poisonvalue = *pat == SUB_POISON;
 	    if (*pat == SUB_NEGATE || *pat == SUB_POISON)
 		pat++;
-	    if (wildmat(name, pat))
+	    if (uwildmat(name, pat))
 		match = poisonvalue;
 	}
     }
@@ -953,7 +953,7 @@ SITEpoisongroup(SITE *sp, char *name)
 	poisonvalue = *pat == SUB_POISON;
 	if (*pat == SUB_NEGATE || *pat == SUB_POISON)
 	    pat++;
-	if (wildmat(name, pat))
+	if (uwildmat(name, pat))
 	    match = poisonvalue;
     }
     return match;

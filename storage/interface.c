@@ -642,7 +642,7 @@ MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
     char *group, *groups, *q;
     const char *groupsep;
     int i, lastwhite;
-    enum wildmat matched;
+    enum uwildmat matched;
     bool wanted = false;
 
     if (innconf->storeonxref)
@@ -671,12 +671,12 @@ MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
             if (q != NULL)
                 *q = '\0';
         }
-        matched = wildmat_poison(group, pattern);
-        if (matched == WILDMAT_POISON || (exactmatch && !matched)) {
+        matched = uwildmat_poison(group, pattern);
+        if (matched == UWILDMAT_POISON || (exactmatch && !matched)) {
 	    DISPOSE(groups);
 	    return false;
 	}
-        if (matched == WILDMAT_MATCH)
+        if (matched == UWILDMAT_MATCH)
             wanted = true;
         group = strtok(NULL, groupsep);
     }

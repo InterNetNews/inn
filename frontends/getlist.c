@@ -156,7 +156,7 @@ main(int ac, char *av[])
 	    continue;
 	}
 	*p = '\0';
-	if (!wildmat(line, pattern))
+	if (!uwildmat(line, pattern))
 	    continue;
 	*p = ' ';
 

@@ -1739,7 +1739,7 @@ ignore(grp, grplen, igcl, iglen)
 		    break;
 		case '=':
 		    if (! pp->eq_type) continue;  /* pattern does not apply */
-		    if (pp->epat != NULL && !wildmat(&gp->type[1], pp->epat)) {
+		    if (pp->epat != NULL && !uwildmat(&gp->type[1], pp->epat)) {
 			/* equiv pattern doesn't match, patt does not apply */
 			continue;
 		    }
@@ -1748,7 +1748,7 @@ ignore(grp, grplen, igcl, iglen)
 	    }
 
 	    /* perform a match on group name */
-	    if (wildmat(gp->name, pp->pat)) {
+	    if (uwildmat(gp->name, pp->pat)) {
 		/* this pattern fully matches, use the ignore value */
 		ign = pp->ignore;
 	    }

@@ -651,6 +651,6 @@ $Id$
 
 =head1 SEE ALSO
 
-inn.conf(5), innd(8), newsfeeds(5), nnrpd(8), wildmat(3).
+inn.conf(5), innd(8), newsfeeds(5), nnrpd(8), uwildmat(3).
 
 =cut

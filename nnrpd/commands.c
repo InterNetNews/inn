@@ -534,7 +534,7 @@ CMDlist(int ac, char *av[])
 	    if (!PERMmatch(PERMreadlist, grplist))
 		continue;
 	}
-	if (wildarg && !wildmat(p, wildarg))
+	if (wildarg && !uwildmat(p, wildarg))
 	    continue;
 	if (savec != '\0')
 	    *save = savec;

@@ -550,7 +550,7 @@ static void CheckDistribution(char *p)
     }
     do {
 	for (dp = BadDistribs; *dp; dp++)
-	    if (wildmat(p, *dp)) {
+	    if (uwildmat(p, *dp)) {
 		(void)fprintf(stderr, "Illegal distribution \"%s\"\n", p);
 		QuitServer(1);
 	    }

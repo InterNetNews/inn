@@ -107,10 +107,10 @@ bool PERMmatch(char **Pats, char **list)
     for ( ; *list; list++) {
 	for (i = 0; (p = Pats[i]) != NULL; i++) {
 	    if (p[0] == '!') {
-		if (wildmat(*list, ++p))
+		if (uwildmat(*list, ++p))
 		    match = FALSE;
 	    }
-	    else if (wildmat(*list, p))
+	    else if (uwildmat(*list, p))
 		match = TRUE;
 	}
 	if (match)

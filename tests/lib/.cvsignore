@@ -18,7 +18,7 @@ qio.t
 setenv.tr
 snprintf.t
 strerror.t
+uwildmat.t
 vector.t
-wildmat.t
 xmalloc
 xwrite.t

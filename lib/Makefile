@@ -10,12 +10,12 @@ SOURCES = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
 	fdflags.c fdlimit.c findheader.c fseeko.c ftello.c genid.c \
 	getconfig.c getfqdn.c getmodaddr.c gettime.c hash.c hashtab.c \
 	hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
-	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c \
-	mmap.c parsedate.c perl.c pread.c pwrite.c qio.c radix32.c \
-	readin.c remopen.c reservedfd.c resource.c sendarticle.c \
-	sendpass.c sequence.c setenv.c sockaddr.c strcasecmp.c \
-	strerror.c strspn.c strtok.c timer.c wildmat.c vector.c \
-	version.c xfopena.c xmalloc.c xsignal.c	xwrite.c
+	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c mmap.c \
+	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
+	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
+	sequence.c setenv.c sockaddr.c strcasecmp.c strerror.c strspn.c \
+	strtok.c timer.c uwildmat.c vector.c version.c xfopena.c \
+	xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	argparse.o buffer.o cleanfrom.o clientactive.o clientlib.o concat.o \
@@ -24,7 +24,7 @@ OBJECTS = $(LIBOBJS) \
 	gettime.o hash.o hashtab.o inndcomm.o localopen.o lockfile.o \
 	makedir.o md5.o messages.o mmap.o parsedate.o qio.o radix32.o \
 	readin.o remopen.o reservedfd.o resource.o sendarticle.o \
-	sendpass.o sequence.o sockaddr.o timer.o wildmat.o \
+	sendpass.o sequence.o sockaddr.o timer.o uwildmat.o \
 	vector.o version.o xfopena.o xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
@@ -222,7 +222,7 @@ strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h \
  ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h
-wildmat.o: wildmat.c ../include/config.h ../include/inn/defines.h \
+uwildmat.o: uwildmat.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 vector.o: vector.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/vector.h ../include/libinn.h

@@ -13,7 +13,7 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 MAN1	= ../man/ckpasswd.1 ../man/convdate.1 ../man/fastrm.1 \
 	../man/innmail.1
 
-MAN3	= ../man/qio.3 ../man/wildmat.3 ../man/libinnhist.3
+MAN3	= ../man/qio.3 ../man/uwildmat.3 ../man/libinnhist.3
 
 MAN5	= ../man/inn.conf.5 ../man/newsfeeds.5 ../man/ovdb.5 \
 	../man/passwd.nntp.5 ../man/readers.conf.5 ../man/sasl.conf.5 \
@@ -39,7 +39,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/innmail.1:	innmail.pod		; $(POD2MAN) -s 1 $? > $@
 
 ../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
-../man/wildmat.3:	wildmat.pod		; $(POD2MAN) -s 3 $? > $@
+../man/uwildmat.3:	uwildmat.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
 
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@

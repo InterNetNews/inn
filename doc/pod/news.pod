@@ -1,23 +1,24 @@
 =head1 Upgrading from 2.3 to 2.4
 
-Currently, there are no incompatible differences between INN 2.3 and
-2.4, unless you use nnrpd's Perl authentication hooks.  A simple C<make
-update> should be sufficient (you probably need to add 
+Currently, there are no incompatible differences between INN 2.3 and 2.4,
+unless you use nnrpd's Perl authentication hooks.  A simple C<make update>
+should be sufficient (you probably need to add
 
-	hismethod:              hisv6
+    hismethod: hisv6
 
-to inn.conf).  If you are upgrading from a version prior to INN 2.3, see
-L<"Upgrading from 2.2 to 2.3">.
-
-=over 2
-
-=item *
+to inn.conf).
 
 If you use Perl authentication for nnrpd (if nnrpdperlauth in inn.conf
 is true), however, there have been major changes.  See L<"Changes to
 Perl Authentication Support for nnrpd"> in F<doc/hook-perl> for details.
 
-=back
+The wildmat API has been renamed (to uwildmat and friends; see uwildmat(3)
+for the interfaces) to distinguish it from Rich $alz's original version,
+since it now supports UTF-8.  This may require changes in other software
+packages that link against INN's libraries.
+
+If you are upgrading from a version prior to INN 2.3, see L<"Upgrading
+from 2.2 to 2.3">.
 
 =head1 Changes from 2.3 to 2.4
 
@@ -54,6 +55,14 @@ information.
 
 An authenticator that checks a username and password against a remote
 Samba server is now included.
+
+=item *
+
+The wildmat functions in INN now support UTF-8, in a way that should allow
+them to still work with most simple 8-bit character sets in widespread
+use.  As part of this change, some additional wildmat interfaces are now
+available and the names have changed (to uwildmat, where u is for
+Unicode).  See uwildmat(3) for the details.
 
 =item *
 

@@ -28,7 +28,7 @@
 **  do the reverse to disable.
 */
 
-/* A null-terminated list of wildmat(5) patterns matching illegal
+/* A null-terminated list of uwildmat(3) patterns matching illegal
    distributions.  inews and nnrpd will reject posts with a distribution
    matching one of these patterns. */
 #define BAD_DISTRIBS            "*.*", NULL

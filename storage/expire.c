@@ -314,7 +314,7 @@ EXPmatch(char *p, NEWSGROUP *v, char mod)
     if (negate)
         p++;
     for (ngp = Groups, i = nGroups; --i >= 0; ngp++)
-        if (negate ? !wildmat(ngp->Name, p) : wildmat(ngp->Name, p))
+        if (negate ? !uwildmat(ngp->Name, p) : uwildmat(ngp->Name, p))
             if (mod == 'a'
              || (mod == 'm' && ngp->Rest[0] == NF_FLAG_MODERATED)
              || (mod == 'u' && ngp->Rest[0] != NF_FLAG_MODERATED)) {
@@ -845,15 +845,15 @@ OVgroupmatch(const char *group)
     for (i = 0; i < OVnumpatterns; i++) {
         switch (OVpatterns[i][0]) {
         case '!':
-            if (!wanted && wildmat(group, &OVpatterns[i][1]))
+            if (!wanted && uwildmat(group, &OVpatterns[i][1]))
                 break;
         case '@':
-            if (wildmat(group, &OVpatterns[i][1])) {
+            if (uwildmat(group, &OVpatterns[i][1])) {
                 return FALSE;
             }
             break;
         default:
-            if (wildmat(group, OVpatterns[i]))
+            if (uwildmat(group, OVpatterns[i]))
                 wanted = TRUE;
         }
     }

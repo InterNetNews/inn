@@ -1676,9 +1676,9 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
 	pat = list[iter];
 	if (*pat == '!')
 	    pat++;
-	ret = wildmat(host, pat);
+	ret = uwildmat(host, pat);
 	if (!ret && *ip) {
-	    ret = wildmat(ip, pat);
+	    ret = uwildmat(ip, pat);
 	    if (!ret && (p = strchr(pat, '/')) != (char *)NULL) {
 		unsigned int bits, c, b;
 		struct in_addr ia, net, tmp;

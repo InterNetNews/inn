@@ -560,7 +560,7 @@ main(int ac, char *av[])
 		    ng = xrefs[i];
 		    doit = FALSE;
 		    for (j=0; (unsigned)j<numgroups && !doit; j++) {
-			if (wildmat(ng, groups[j]) != 0) doit=TRUE;
+			if (uwildmat(ng, groups[j]) != 0) doit=TRUE;
 		    }
 		}
 		else {

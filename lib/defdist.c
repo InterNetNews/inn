@@ -124,7 +124,7 @@ DDcheck(DDHANDLE *h, char *group)
 
     w = h->Current ? h->Current->Weight : -1;
     for (ep = h->Entries, i = h->Count; --i >= 0; ep++)
-	if (ep->Weight > w && wildmat(group, ep->Pattern)) {
+	if (ep->Weight > w && uwildmat(group, ep->Pattern)) {
 	    h->Current = ep;
 	    w = ep->Weight;
 	}

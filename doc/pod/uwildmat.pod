@@ -1,23 +1,23 @@
 =head1 NAME
 
-wildmat, wildmat_simple, wildmat_poison - Perform wildmat matching
+uwildmat, uwildmat_simple, uwildmat_poison - Perform wildmat matching
 
 =head1 SYNOPSIS
 
 B<#include E<lt>libinn.hE<gt>>
 
-B<bool wildmat(const char *>I<text>B<, const char *>I<pattern>B<);>
+B<bool uwildmat(const char *>I<text>B<, const char *>I<pattern>B<);>
 
-B<bool wildmat_simple(const char *>I<text>B<, const char *>I<pattern>B<);>
+B<bool uwildmat_simple(const char *>I<text>B<, const char *>I<pattern>B<);>
 
-B<enum wildmat wildmat_poison(const char *>I<text>B<,
+B<enum uwildmat uwildmat_poison(const char *>I<text>B<,
 const char *>I<pattern>B<);>
 
 =head1 DESCRIPTION
 
-B<wildmat> compares I<text> against the wildmat expression I<pattern>,
+B<uwildmat> compares I<text> against the wildmat expression I<pattern>,
 returning true if and only if the expression matches the text.  C<@> has
-no special meaning in I<pattern> when passed to B<wildmat>.  Both I<text>
+no special meaning in I<pattern> when passed to B<uwildmat>.  Both I<text>
 and I<pattern> are assumed to be in the UTF-8 character encoding, although
 malformed UTF-8 sequences are treated in a way that attempts to be mostly
 compatible with single-octet character sets like ISO 8859-1.  (In other
@@ -25,18 +25,18 @@ words, if you try to match ISO 8859-1 text with these routines everything
 should work as expected unless the ISO 8859-1 text contains valid UTF-8
 sequences, which thankfully is somewhat rare.)
 
-B<wildmat_simple> is identical to B<wildmat> except that neither C<!> nor
-C<,> have any special meanting and I<pattern> is always treated as a
+B<uwildmat_simple> is identical to B<uwildmat> except that neither C<!>
+nor C<,> have any special meaning and I<pattern> is always treated as a
 single pattern.  This function exists solely to support legacy interfaces
 like NNTP's XPAT command, and should be avoided when implementing new
 features.
 
-B<wildmat_poison> works similarly to B<wildmat>, except that C<@> as the
+B<uwildmat_poison> works similarly to B<uwildmat>, except that C<@> as the
 first character of one of the patterns in the expression (see below)
-"poisons" the match if it matches.  B<wildmat_poison> returns
-B<WILDMAT_MATCH> if the expression matches the text, B<WILDMAT_FAIL> if it
-doesn't, and B<WILDMAT_POISON> if the expression doesn't match because a
-poisoned pattern matched the text.  These enumeration constants are
+"poisons" the match if it matches.  B<uwildmat_poison> returns
+B<UWILDMAT_MATCH> if the expression matches the text, B<UWILDMAT_FAIL> if
+it doesn't, and B<UWILDMAT_POISON> if the expression doesn't match because
+a poisoned pattern matched the text.  These enumeration constants are
 defined in the B<libinn.h> header.
 
 =head1 WILDMAT EXPRESSIONS
@@ -123,12 +123,12 @@ C<!> has significance only as the first character of a pattern; anywhere
 else in the pattern, it matches a literal C<!> in the text like any other
 non-metacharacter.
 
-If the B<wildmat_poison> interface is used, then C<@> behaves the same as
+If the B<uwildmat_poison> interface is used, then C<@> behaves the same as
 C<!> except that if an expression fails to match because the rightmost
-matching pattern began with C<@>, B<WILDMAT_POISON> is returned instead of
-B<WILDMAT_FAIL>.
+matching pattern began with C<@>, B<UWILDMAT_POISON> is returned instead of
+B<UWILDMAT_FAIL>.
 
-If the B<wildmat_simple> interface is used, the matching rules are the
+If the B<uwildmat_simple> interface is used, the matching rules are the
 same as above except that none of C<!>, C<@>, or C<,> have any special
 meaning at all and only match those literal characters.
 
@@ -162,6 +162,14 @@ and the C<!> and C<@> metacharacters to the core wildmat routines in July,
 behavior to assume that both the text and the pattern are in UTF-8, and
 largely rewrote this documentation to expand and clarify the description
 of how a wildmat expression matches.
+
+Please note that the interfaces to these functions are named B<uwildmat>
+and the like rather than B<wildmat> to distinguish them from the
+B<wildmat> function provided by Rich $alz's original implementation.
+While this code is heavily based on Rich's original code, it has
+substantial differences, including the extension to support UTF-8
+characters, and has noticable functionality changes.  Any bugs present in
+it aren't Rich's fault.
 
 $Id$
 

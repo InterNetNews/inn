@@ -1530,13 +1530,13 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
 	  *p = '\0';
 	  for (j = 0, sendit = FALSE; (q = sp->Originator[j]) != NULL; j++) {
 	    if (*q == '@') {
-	      if (wildmat(HDR(HDR__XTRACE), &q[1])) {
+	      if (uwildmat(HDR(HDR__XTRACE), &q[1])) {
 		*p = ' ';
 		sendit = FALSE;
 		break;
 	      }
 	    } else {
-	      if (wildmat(HDR(HDR__XTRACE), q))
+	      if (uwildmat(HDR(HDR__XTRACE), q))
 		sendit = TRUE;
 	    }
 	  }

@@ -1110,7 +1110,7 @@ void CMDpat(int ac, char *av[])
 	    Printf("%d %s matches follow (ID)\r\n", NNTP_HEAD_FOLLOWS_VAL,
 		   header);
 	    if ((text = GetHeader(header, FALSE)) != NULL
-		&& (!pattern || wildmat_simple(text, pattern)))
+		&& (!pattern || uwildmat_simple(text, pattern)))
 		Printf("%s %s\r\n", p, text);
 
 	    ARTclose();
@@ -1148,7 +1148,7 @@ void CMDpat(int ac, char *av[])
 		if (!ARTopen(i))
 		    continue;
 		p = GetHeader(header, FALSE);
-		if (p && (!pattern || wildmat_simple(p, pattern))) {
+		if (p && (!pattern || uwildmat_simple(p, pattern))) {
 		    sprintf(buff, "%u ", i);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
@@ -1176,7 +1176,7 @@ void CMDpat(int ac, char *av[])
 		&& !ARTinstorebytoken(token)))
 		continue;
 	    if ((p = OVERGetHeader(data, len, Overview)) != NULL) {
-		if (!pattern || wildmat_simple(p, pattern)) {
+		if (!pattern || uwildmat_simple(p, pattern)) {
 		    sprintf(buff, "%lu ", artnum);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));

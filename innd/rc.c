@@ -1865,7 +1865,7 @@ RCcanpost(CHANNEL *cp, char *group)
 	      0 : *pat;
 	    if (subvalue)
 		pat++;
-	    if ((match != subvalue) && wildmat(group, pat)) {
+	    if ((match != subvalue) && uwildmat(group, pat)) {
 		if (subvalue == SUB_POISON)
 		    return -1;
 		match = subvalue;

@@ -15,8 +15,8 @@ lib/qio
 lib/setenv
 lib/snprintf
 lib/strerror
+lib/uwildmat
 lib/vector
-lib/wildmat
 lib/xmalloc
 lib/xwrite
 overview/tradindexed

@@ -1,13 +1,13 @@
 /*  $Id$
 **
-**  wildmat pattern matching.
+**  wildmat pattern matching with Unicode UTF-8 extensions.
 **
 **  Do shell-style pattern matching for ?, \, [], and * characters.  Might not
 **  be robust in face of malformed patterns; e.g., "foo[a-" could cause a
 **  segmentation violation.  It is 8-bit clean.  (Robustness hopefully fixed
 **  July 2000; all malformed patterns should now just fail to match anything.)
 **
-**  Written by Rich $alz, mirror!rs, Wed Nov 26 19:03:17 EST 1986.
+**  Original by Rich $alz, mirror!rs, Wed Nov 26 19:03:17 EST 1986.
 **  Rich $alz is now <rsalz@osf.org>.
 **
 **  April, 1991:  Replaced mutually-recursive calls with in-line code for the
@@ -287,7 +287,7 @@ match_pattern(const unsigned char *text, const unsigned char *start,
 **  set, allow @ to introduce a poison expression (the same as !, but if it
 **  triggers the failed match the routine returns WILDMAT_POISON instead).
 */
-static enum wildmat
+static enum uwildmat
 match_expression(const unsigned char *text, const unsigned char *start,
                  bool allowpoison)
 {
@@ -301,7 +301,7 @@ match_expression(const unsigned char *text, const unsigned char *start,
     /* Handle the empty expression separately, since otherwise end will be
        set to an invalid pointer. */
     if (!*p)
-        return !*text ? WILDMAT_MATCH : WILDMAT_FAIL;
+        return !*text ? UWILDMAT_MATCH : UWILDMAT_FAIL;
     end = start + strlen((const char *) start) - 1;
 
     /* Main match loop.  Find each comma that separates patterns, and attempt 
@@ -340,8 +340,8 @@ match_expression(const unsigned char *text, const unsigned char *start,
         }
     }
     if (poisoned)
-        return WILDMAT_POISON;
-    return match ? WILDMAT_MATCH : WILDMAT_FAIL;
+        return UWILDMAT_POISON;
+    return match ? UWILDMAT_MATCH : UWILDMAT_FAIL;
 }
 
 
@@ -350,7 +350,7 @@ match_expression(const unsigned char *text, const unsigned char *start,
 **  regular character.
 */
 bool
-wildmat(const char *text, const char *pat)
+uwildmat(const char *text, const char *pat)
 {
     const unsigned char *utext = (const unsigned char *) text;
     const unsigned char *upat = (const unsigned char *) pat;
@@ -358,21 +358,21 @@ wildmat(const char *text, const char *pat)
     if (upat[0] == '*' && upat[1] == '\0')
         return true;
     else
-        return (match_expression(utext, upat, false) == WILDMAT_MATCH);
+        return (match_expression(utext, upat, false) == UWILDMAT_MATCH);
 }
 
 
 /*
 **  User-level routine used for wildmats that support poison matches.
 */
-enum wildmat
-wildmat_poison(const char *text, const char *pat)
+enum uwildmat
+uwildmat_poison(const char *text, const char *pat)
 {
     const unsigned char *utext = (const unsigned char *) text;
     const unsigned char *upat = (const unsigned char *) pat;
 
     if (upat[0] == '*' && upat[1] == '\0')
-        return WILDMAT_MATCH;
+        return UWILDMAT_MATCH;
     else
         return match_expression(utext, upat, true);
 }
@@ -382,7 +382,7 @@ wildmat_poison(const char *text, const char *pat)
 **  User-level routine for simple expressions (neither , nor ! are special).
 */
 bool
-wildmat_simple(const char *text, const char *pat)
+uwildmat_simple(const char *text, const char *pat)
 {
     const unsigned char *utext = (const unsigned char *) text;
     const unsigned char *upat = (const unsigned char *) pat;

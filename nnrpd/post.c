@@ -294,7 +294,7 @@ CheckDistribution(char *p)
 	return "Can't parse Distribution line.";
     do {
 	for (dp = BadDistribs; *dp; dp++)
-	    if (wildmat(p, *dp)) {
+	    if (uwildmat(p, *dp)) {
 		(void)sprintf(Error, "Illegal distribution \"%s\"", MaxLength(p,p));
 		return Error;
 	    }

@@ -232,7 +232,7 @@ doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
 doc/man/subscriptions.5               Manpage for subscriptions list
 doc/man/tally.control.8               Manpage for tally.control
-doc/man/wildmat.3                     Manpage for wildmat library routine
+doc/man/uwildmat.3                    Manpage for uwildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
@@ -265,7 +265,7 @@ doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
 doc/pod/subscriptions.pod             Master file for subscriptions.5
-doc/pod/wildmat.pod                   Master file for wildmat.3
+doc/pod/uwildmat.pod                  Master file for uwildmat.3
 doc/sample-control                    Sample PGP-signed control message
 expire                                Expiration and recovery (Directory)
 expire/Makefile                       Makefile for expiration
@@ -459,7 +459,7 @@ lib/strtok.c                          Split a string into tokens (BSD)
 lib/timer.c                           Generic profile timer
 lib/vector.c                          Manipulate vectors of strings
 lib/version.c                         INN version constants
-lib/wildmat.c                         Pattern match routine
+lib/uwildmat.c                        Pattern match routine
 lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper
 lib/xsignal.c                         signal() wrapper using sigaction
@@ -660,7 +660,7 @@ tests/lib/setenv.t                    Wrapper for setenv tests
 tests/lib/snprintf-t.c                Tests for lib/snprintf.c
 tests/lib/strerror-t.c                Tests for lib/strerror.c
 tests/lib/vector-t.c                  Tests for lib/vector.c
-tests/lib/wildmat-t.c                 Tests for lib/wildmat.c
+tests/lib/uwildmat-t.c                Tests for lib/uwildmat.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
 tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c

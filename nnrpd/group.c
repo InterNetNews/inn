@@ -202,7 +202,7 @@ CMDxgtitle(ac, av)
 	    continue;
 	save = *q;
 	*q = '\0';
-	if (wildmat(line, p)) {
+	if (uwildmat(line, p)) {
 	    if (PERMspecified) {
 		grplist[0] = line;
 		grplist[1] = NULL;

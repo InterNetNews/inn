@@ -61,7 +61,7 @@ for specifying expiration times by storage class.
 .TP
 .B newsgroups
 What newsgroups are stored using this storage method.  <wildmat> is a
-.IR wildmat (3)
+.IR uwildmat (3)
 pattern that is matched against the newsgroups an article is posted to.
 If ``storeonxref'' in inn.conf is ``true'', this pattern will be matched
 against the newsgroup names in the ``Xref'' header; otherwise, it will be
@@ -270,4 +270,4 @@ expire.ctl(5),
 inn.conf(5),
 innd(8),
 newsfeeds(5),
-wildmat(3).
+uwildmat(3).

@@ -14,18 +14,18 @@ test_r(int n, const char *text, const char *pattern, bool matches)
 {
     bool matched;
 
-    matched = wildmat(text, pattern);
+    matched = uwildmat(text, pattern);
     printf("%sok %d\n", matched == matches ? "" : "not ", n);
     if (matched != matches)
         printf("  %s\n  %s\n  expected %d\n", text, pattern, matches);
 }
 
 static void
-test_p(int n, const char *text, const char *pattern, enum wildmat matches)
+test_p(int n, const char *text, const char *pattern, enum uwildmat matches)
 {
-    enum wildmat matched;
+    enum uwildmat matched;
 
-    matched = wildmat_poison(text, pattern);
+    matched = uwildmat_poison(text, pattern);
     printf("%sok %d\n", matched == matches ? "" : "not ", n);
     if (matched != matches)
         printf("  %s\n  %s\n  expected %d got %d\n", text, pattern,
@@ -37,7 +37,7 @@ test_s(int n, const char *text, const char *pattern, bool matches)
 {
     bool matched;
 
-    matched = wildmat_simple(text, pattern);
+    matched = uwildmat_simple(text, pattern);
     printf("%sok %d\n", matched == matches ? "" : "not ", n);
     if (matched != matches)
         printf("  %s\n  %s\n  expected %d\n", text, pattern, matches);
@@ -126,14 +126,14 @@ main(void)
     test_r( 71, "abc",            "\\a\\b\\c",         true);
 
     /* Poison negation. */
-    test_p( 72, "abc",            "*",                 WILDMAT_MATCH);
-    test_p( 73, "abc",            "def",               WILDMAT_FAIL);
-    test_p( 74, "abc",            "*,!abc",            WILDMAT_FAIL);
-    test_p( 75, "a",              "*,@a",              WILDMAT_POISON);
-    test_p( 76, "ab",             "*,@a*,ab",          WILDMAT_MATCH);
-    test_p( 77, "ab",             "*,@a**,!ab",        WILDMAT_FAIL);
-    test_p( 78, "@ab",            "\\@ab",             WILDMAT_MATCH);
-    test_p( 79, "@ab",            "@\\@ab",            WILDMAT_POISON);
+    test_p( 72, "abc",            "*",                 UWILDMAT_MATCH);
+    test_p( 73, "abc",            "def",               UWILDMAT_FAIL);
+    test_p( 74, "abc",            "*,!abc",            UWILDMAT_FAIL);
+    test_p( 75, "a",              "*,@a",              UWILDMAT_POISON);
+    test_p( 76, "ab",             "*,@a*,ab",          UWILDMAT_MATCH);
+    test_p( 77, "ab",             "*,@a**,!ab",        UWILDMAT_FAIL);
+    test_p( 78, "@ab",            "\\@ab",             UWILDMAT_MATCH);
+    test_p( 79, "@ab",            "@\\@ab",            UWILDMAT_POISON);
 
     /* UTF-8 characters. */
     test_r( 80, "S\303\256ne",    "S\303\256ne",       true);

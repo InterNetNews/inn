@@ -83,7 +83,7 @@ significant in site names.
 The comma-separated I<pattern> specifies which groups to send to the site;
 it is interpreted to build a "subscription list" for the site.  The
 default subscription is to get all groups carried by the server.  It is a
-wildmat(3) pattern supporting poison (C<@>) wildcards; see the wildmat(3)
+uwildmat(3) pattern supporting poison (C<@>) wildcards; see the uwildmat(3)
 man page for full details on the pattern matching language.  I<pattern>
 will be matched against every newsgroup carried by the server and all
 newsgroups that match will be added to the subscription list for the site.
@@ -368,7 +368,7 @@ unmoderated groups are sent.
 
 If this flag is specified, an article will only be sent to this site if it
 contains an X-Trace: header and the first field of this header matches
-I<originator>.  I<originator> is a wildmat(3) expression without commas or
+I<originator>.  I<originator> is a uwildmat(3) expression without commas or
 a list of such expressions, separated by C</>.  The article is never sent
 if the first character of the pattern begins with C<@> and the rest of the
 pattern matches.  One use of this flag is to restrict the feed to locally
@@ -750,6 +750,6 @@ $Id$
 =head1 SEE ALSO
 
 active(5), buffchan(8), controlchan(8), ctlinnd(8), inn.conf(5), innd(8),
-innfeed(8), innxmit(8), nntpsend(8), wildmat(3).
+innfeed(8), innxmit(8), nntpsend(8), uwildmat(3).
 
 =cut

@@ -563,7 +563,7 @@ Configuring INN
     article will not match the pattern even if other newsgroups to which it
     was posted match other expressions.
 
-    See wildmat(5) for full details on wildmat patterns.
+    See uwildmat(3) for full details on wildmat patterns.
 
     In all INN configuration files, blank lines and lines beginning with a
     "#" symbol are considered comments and are ignored.
