@@ -58,6 +58,7 @@ FILE *OverTmpFile;
 char *OverTmpPath = NULL;
 BOOL NoHistory;
 OVSORTTYPE sorttype;
+int RetrMode;
 
 TIMEINFO Now;
 
@@ -519,6 +520,7 @@ DoArt(ARTHANDLE *art)
     char			*hash;
     HASH			key;
     char			overdata[BIG_BUFFER];
+    char			bytes[BIG_BUFFER];
     struct artngnum		ann;
 
     /* Set up place to store headers. */
@@ -554,6 +556,12 @@ DoArt(ARTHANDLE *art)
 		continue;
 	    }
             fp->HeaderLength = p2 - fp->Header;
+	} else if (RetrMode == RETR_ALL && strcmp(fp->Headername, "Bytes") == 0)
+	{
+		sprintf(bytes, "%d", art->len);
+		fp->HasHeader = TRUE;
+		fp->Header = bytes;
+		fp->HeaderLength = strlen(bytes);
 	}
     }
     if (Missfieldsize > 0) {
@@ -695,6 +703,7 @@ Usage(void)
 {
     fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-u] [-x] [-T tmpdir]\n");
     fprintf(stderr, "\t-b -- delete bad articles from spool\n");
+    fprintf(stderr, "\t-e -- read entire articles to compute proper Bytes headers\n");
     fprintf(stderr, "\t-f -- write history entries to file (default $pathdb/history)\n");
     fprintf(stderr, "\t-a -- open output history file in append mode\n");
     fprintf(stderr, "\t-O -- create overview entries for articles\n");
@@ -789,8 +798,9 @@ main(int argc, char **argv)
     Fork = FALSE;
     AppendMode = FALSE;
     NoHistory = FALSE;
+    RetrMode = RETR_HEAD;
 
-    while ((i = getopt(argc, argv, "abf:Il:OT:xF")) != EOF) {
+    while ((i = getopt(argc, argv, "aebf:Il:OT:xF")) != EOF) {
 	switch(i) {
 	case 'T':
 	    TmpDir = optarg;
@@ -819,6 +829,10 @@ main(int argc, char **argv)
 	case 'F':
 	    Fork = TRUE;
 	    break;
+	case 'e':
+	    RetrMode = RETR_ALL;
+	    break;
+	    
 	default:
 	    Usage();
 	    break;
@@ -894,7 +908,8 @@ main(int argc, char **argv)
      * Scan the entire spool, nuke any bad arts if needed, and process each
      * article.
      */
-    while ((art = SMnext(art, RETR_HEAD)) != NULL) {
+	
+    while ((art = SMnext(art, RetrMode)) != NULL) {
 	if (art->len == 0) {
 	    if (NukeBadArts && art->data == NULL && art->token != NULL)
 		(void)SMcancel(*art->token);
