@@ -109,8 +109,7 @@ cmd_list_schema(LISTINFO *lp)
 static void
 cmd_list_extensions(LISTINFO *lp)
 {
-    const char *mechlist;
-    int mechcount = 0;
+    const char *mechlist = NULL;
 
     Reply("%d %s.\r\n", NNTP_SLAVEOK_VAL, lp->Format);
 
@@ -121,14 +120,13 @@ cmd_list_extensions(LISTINFO *lp)
 
 #ifdef HAVE_SASL
     /* check for SASL mechs */
-    sasl_listmech(sasl_conn, NULL, " SASL:", ",", "",
-		  &mechlist, NULL, &mechcount);
+    sasl_listmech(sasl_conn, NULL, " SASL:", ",", "", &mechlist, NULL, NULL);
 #endif /* HAVE_SASL */
 
-    if (PERMauthorized != true || mechcount != 0) {
+    if (PERMauthorized != true || mechlist != NULL) {
 	Printf("AUTHINFO%s%s\r\n",
 	       PERMauthorized != true ? " USER" : "",
-	       mechcount != 0 ? mechlist : "");
+	       mechlist != NULL ? mechlist : "");
     }
 
     Printf("LISTGROUP\r\n");
