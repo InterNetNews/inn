@@ -1,18 +1,22 @@
 ##  $Revision$
 include ../Makefile.global
 
+CC	= $(LIBCC)
+CP	= $(LIBTOOL) cp
+
 CFLAGS	= $(GCFLAGS) -I.
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 all:			autoconfig
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods
-	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libstorage.a
+	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libstorage.la
 
 include Make.methods
 
 SOURCES = interface.c methods.c qio.c overview.c
 OBJECTS = interface.o methods.o qio.o overview.o
+LOBJECTS = interface.lo methods.lo qio.lo overview.lo
 
 
 methods: 
@@ -23,10 +27,11 @@ methods:
 	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
 	done
 
-install:		all ../libstorage.a 
+install:		all $(D)$(PATHLIB)/libstorage.la 
 
 clobber clean:
-	rm -f *.o objs/* libstorage.a *~
+	rm -f *.o *.lo libstorage.la objs/*
+	rm -rf .libs
 	rm -f methods.c methods.h qiotest
 	rm -f profiled libstorage_p.a
 	rm -f all install 
@@ -37,12 +42,12 @@ clobber clean:
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
-libstorage.a:		$(P) $(OBJECTS)
-	ar r $@ $(OBJECTS) objs/*
-	$(RANLIB) libstorage.a
+libstorage.la:	$(P) $(OBJECTS) $(LOBJECTS)
+	$(CC) $(LDFLAGS) -o libstorage.la $(LOBJECTS) objs/*.lo \
+		-rpath /usr/lib -version-info 2:0:0
 
-qiotest: qio.c ../libstorage.a ../libinn.a
-	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c ../libstorage.a ../libinn.a
+qiotest: qio.c libstorage.la ../lib/libinn.la
+	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c libstorage.la ../lib/libinn.la
 
 autoconfig:
 	@./buildconfig `find . -name method.config -print`
@@ -59,10 +64,9 @@ profiled:		../libstorage_p.a
 	rm -f $(OBJECTS)
 
 ##  Low-level install actions.
-../libstorage.a:	libstorage.a
+$(D)$(PATHLIB)/libstorage.la:	libstorage.la
 	@rm -f $@
-	cp -p libstorage.a $@
-	$(RANLIB) $@
+	$(LIBTOOL) cp -p libstorage.la $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
