@@ -2007,8 +2007,13 @@ ARTmakekeys(hp, body, v, l)
 	    break;
     }
     /* note #words we didn't get to add. */
+    /* This code can potentially lead to a buffer overflow if the number of
+       ignored words is greater than 100, under some circumstances.  It's
+       temporarily disabled until fixed. */
+#if 0
     if (word_index < distinct_words - 1)
 	sprintf(chase, ",%d", (distinct_words - word_index) - 1);
+#endif
     hp->Length = strlen(hp->Value);
 
 out:
