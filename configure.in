@@ -194,11 +194,17 @@ else
 fi
 
 dnl Look for PGP 5.0's pgpv, or pgp if pgpv is not found
+pgpverify=true
 AC_PATH_PROG(_PATH_PGP,pgpv)
 if test "x$_PATH_PGP" = x
 then
 AC_PATH_PROG(_PATH_PGP,pgp,no-pgp-found-during-configure)
+if test "x$_PATH_PGP" = xno-pgp-found-during-configure
+then
+pgpverify=false
 fi
+fi
+AC_SUBST(pgpverify)
 
 AC_PATH_PROG(COMPRESS,compress,no-compress-found-during-configure)
 AC_PATH_PROGS(GZIP,gzip,no-gzip-found-during-configure)
@@ -415,7 +421,6 @@ AC_CHECK_FUNCS(waitpid socketpair getpagesize)
 dnl This portion is similar to what AC_FUNC_MMAP does, only
 dnl it tests shared, non-fixed mmaps.
 
-AC_CHECK_FUNCS(getpagesize)
 AC_CACHE_CHECK(for working mmap, ac_cv_func_mmap_shared,
 [AC_TRY_RUN([
 /* test shared mmap */

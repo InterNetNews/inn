@@ -31,17 +31,17 @@ AC_REQUIRE([AM_PROG_NM])
 AC_REQUIRE([AC_PROG_LN_S])
 
 dnl Allow the --disable-libtool flag to stop using libtool
-LIBTOOL='$(SHELL) ../libtool'
-UPLIBTOOL='$(SHELL) ../../libtool'
-EXTOBJ='lo'
-EXTLIB='la'
+LIBTOOL=''
+UPLIBTOOL=''
+EXTOBJ='o'
+EXTLIB='a'
 AC_ARG_ENABLE(libtool,
-[  --enable-libtool        use libtool for lib generation [default=yes]],
-[if test "$enableval" = no; then
-  LIBTOOL=''
-  UPLIBTOOL=''
-  EXTOBJ='o'
-  EXTLIB='a'
+[  --enable-libtool        use libtool for lib generation [default=no]],
+[if test "$enableval" = yes; then
+  LIBTOOL='$(SHELL) ../libtool'
+  UPLIBTOOL='$(SHELL) ../../libtool'
+  EXTOBJ='lo'
+  EXTLIB='la'
 fi])
 AC_SUBST(LIBTOOL)
 AC_SUBST(UPLIBTOOL)
