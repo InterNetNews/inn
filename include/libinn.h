@@ -258,6 +258,7 @@ extern FILE	*xfopena(const char *p);
 extern BOOL	fdreserve(int fdnum);
 extern FILE	*Fopen(const char *p, char *type, int index);
 extern int	Fclose(FILE *fp);
+extern void	(*xsignal(int signum, void (*sigfunc)(int )))(int );
 
 const char  *Aliasgetnamebyhash(const HASH hash);
 HASH Aliasgethashbyhash(const HASH hash);

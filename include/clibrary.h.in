@@ -232,6 +232,10 @@ extern void	setproctitle();
 #undef HAVE_UNION_WAIT
 #endif
 
+#if defined(HPUX) && ! defined(USE_SIGACTION)
+#define USE_SIGACTION
+#endif
+
 #if ! defined(INADDR_NONE) && ! defined(_AIX41)
 #define		INADDR_NONE 	(unsigned long)0xffffffff
 #endif

@@ -193,6 +193,12 @@ typedef char * const    CSTRING;
 # define LOG_FACILITY	LOG_LOCAL1
 #endif
 
+/* HP/UX headers define LOG_NEWS, but syslogd doesn't recognize it.  Bleagh!  */
+#ifdef HPUX
+# undef LOG_FACILITY
+# define LOG_FACILITY	LOG_LOCAL1
+#endif
+
 #define LOG_INN_SERVER		LOG_FACILITY
 
 /* Facility all other programs should log under. */
