@@ -1009,6 +1009,11 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 	*out++ = *in++;
     }
     *out = '\0';
+    if (Article->Data + Article->Used != in + 1) {
+	i++;
+	(void)sprintf(buff, "Line %d includes null character", i);
+	return buff;
+    }
     Article->Used = out - Article->Data;
     if (innconf->storageapi)
 	Data->LinesValue = (i - 1 < 0) ? 0 : (i - 1);
