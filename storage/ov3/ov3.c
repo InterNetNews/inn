@@ -725,7 +725,7 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     ie.expires = expires;
     ie.token = token;
     
-    if (pwrite(gh->indexfd, &ie, sizeof(ie), (artnum - base) * sizeof(ie)) != sizeof(ie)) {
+    if (xpwrite(gh->indexfd, &ie, sizeof(ie), (artnum - base) * sizeof(ie)) != sizeof(ie)) {
 	syslog(L_ERROR, "tradindexed: could not write index record for %s:%d", gh->group, artnum);
 	return FALSE;
     }
@@ -1018,7 +1018,7 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
 	nbytes = sb.st_size;
     }
 
-    if (pwrite(fd, &gh->indexmem[ge->low - ge->base] , nbytes,
+    if (xpwrite(fd, &gh->indexmem[ge->low - ge->base] , nbytes,
 	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta)) != nbytes) {
 	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
 	close(fd);
