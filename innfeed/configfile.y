@@ -572,9 +572,17 @@ static char *keyOk (const char *key)
   char *rval ;
 
   if (key == NULL)
-    return strdup ("NULL key") ;
+    {
+      rval = malloc (strlen ("line : NULL key") + 15) ;
+      sprintf (rval,"line %d: NULL key", lineCount) ;
+      return rval ;
+    }
   else if (*key == '\0')
-    return strdup ("EMPTY KEY") ;
+    {
+      rval = malloc (strlen ("line : EMPTY KEY") + 15) ;
+      sprintf (rval,"line %d: EMPTY KEY", lineCount) ;
+      return rval ;
+    }
   
   if (!isalpha(*p))
     {
