@@ -903,6 +903,8 @@ STATIC void ARTreadschema(void)
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
+    BOOL			foundxref = FALSE;
+    BOOL			foundxreffull = FALSE;
 
     /* Open file, count lines. */
     if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_SCHEMA), "r")) == NULL)
@@ -931,9 +933,17 @@ STATIC void ARTreadschema(void)
 	fp->Header = COPY(buff);
 	fp->Length = strlen(buff);
 	fp++;
+	if (caseEQ(buff, "Xref")) {
+	    foundxref = TRUE;
+	    foundxreffull = fp->NeedsHeader;
+	}
     }
     ARTfieldsize = fp - ARTfields;
     (void)fclose(F);
+    if (!foundxref || !foundxreffull) {
+	(void)fprintf(stderr, "'Xref:full' must be included in %s", cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+	exit(1);
+    }
 }
 
 /*
