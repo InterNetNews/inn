@@ -376,8 +376,15 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	    newconfig->numpatterns = i;
 	    newconfig->patterns = NEW(char *, i);
 	    /* Store the patterns */
-	    for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ","))
+	    for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ",")) {
+		if (*p == '\0') {
+		    syslog(L_ERROR, "OVER null pattern, line %d", line);
+		    DISPOSE(newconfig);
+		    (void)Fclose(f);
+		    return OVER_ERROR;
+		}
 	        newconfig->patterns[i] = COPY(p);
+	    }
 	    if (prev)
 		prev->next = newconfig;
 	    else
