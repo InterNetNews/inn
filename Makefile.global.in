@@ -163,12 +163,14 @@ MAN8            = @mandir@/man8
 ##  configure; inews and rnews are special and have configure flags to
 ##  control how they're installed.  See INSTALL for more information.
 
-OWNER           = -o @NEWSUSER@ -g @NEWSGRP@
-ROWNER          = -o @NEWSUSER@ -g @RNEWSGRP@
+NEWSUSER        = @NEWSUSER@
 NEWSGROUP       = @NEWSGRP@
 
 INEWSMODE       = @INEWSMODE@
 RNEWSMODE       = @RNEWSMODE@
+
+OWNER           = -o $(NEWSUSER) -g $(NEWSGROUP)
+ROWNER          = -o $(NEWSUSER) -g @RNEWSGRP@
 
 INSTALL         = ../support/install-sh -c
 
