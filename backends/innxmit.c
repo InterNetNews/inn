@@ -1238,9 +1238,17 @@ int main(int ac, char *av[])
 
     (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
-    if (innconf->storageapi && !SMinit()) {
-	fprintf(stderr, "Can't initialize the storage manager: %s\n", SMerrorstr);
-	exit(1);
+    if (innconf->storageapi) {
+	BOOL val;
+	val = TRUE;
+	if (!SMsetup(SM_PREOPEN,(void *)&val)) {
+	    fprintf(stderr, "Can't setup the storage manager\n");
+	    exit(1);
+	}
+	if (!SMinit()) {
+	    fprintf(stderr, "Can't initialize the storage manager: %s\n", SMerrorstr);
+	    exit(1);
+	}
     }
 
     /* Open the batch file and lock others out. */
