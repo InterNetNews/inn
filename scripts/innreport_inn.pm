@@ -3,7 +3,7 @@
 #
 # Sample file tested with INN 2.3, 2.2, 1.7.2 and 1.5.1
 #
-# (c) 1997-1999 by Fabien Tassin <fta@oleane.net>
+# (c) 1997-1999 by Fabien Tassin <fta@sofaraway.org>
 # version 3.0.2
 ##########################################################
 
