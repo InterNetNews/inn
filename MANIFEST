@@ -20,6 +20,7 @@ aclocal.m4                  1 M4 macro for libtool
 authprogs                   1 The authorization programs (Directory)
 authprogs/Makefile          1 Makefile for authprograms
 authprogs/README.auth_pass  1 The authprogs README
+authprogsREADME.readers.conf  1 Developer docs for readers.conf
 authprogs/auth_pass.c       1 A sample prog for use with authinfo generic.
 authprogs/ckpasswd.c        1 Prog for checking password
 authprogs/ident.c           1 Prog for checking ident

@@ -103,10 +103,10 @@ Steve Carrue:
 	Modified nnrpd to allow detailed client tracking.
 
 Adian Cully
-	Provided the patches to support the new storage.conf format.
-	Added the storage method selection to also be based
-	on Expires header. Also added the '@' article exclusion code to
-	incoming.conf.
+	Provided the patches to support the new readers.conf file, and
+	wrote the initial user authenticators and resolvers for the
+	readers.conf.  Provided the patches to support the new storage.conf
+	format.  Also added the '@' article exclusion code to incoming.conf.
 
 Also:
 
