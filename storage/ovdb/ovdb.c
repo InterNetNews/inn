@@ -802,7 +802,7 @@ static int groupid_free(group_id_t gno, DB_TXN *tid)
 }
 
 
-static int delete_all_records(int whichdb, group_id_t gno)
+static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
 {
     DB *db;
     DBC *dbcursor;
@@ -821,7 +821,7 @@ static int delete_all_records(int whichdb, group_id_t gno)
 	return DB_NOTFOUND;
 
     /* get a cursor to traverse the ov records and delete them */
-    ret = db->cursor(db, NULL, &dbcursor, 0);
+    ret = db->cursor(db, tid, &dbcursor, 0);
     if (ret != 0) {
 	if(ret != TRYAGAIN)
 	    syslog(L_ERROR, "OVDB: delete_all_records: db->cursor: %s", db_strerror(ret));
@@ -839,23 +839,31 @@ static int delete_all_records(int whichdb, group_id_t gno)
     case DB_NOTFOUND:
 	break;
     default:
-	syslog(L_ERROR, "OVDB: delete_all_records: dbcursor->c_get: %s", db_strerror(ret));
+	return ret;
     }
 
-    while(ret == 0
-	&& key.size == sizeof dk
+    while(key.size == sizeof dk
 	&& !memcmp(key.data, &(dk.groupnum), sizeof(dk.groupnum))) {
 
         ret = dbcursor->c_del(dbcursor, 0);
-	if (ret != 0)
+	switch (ret) {
+	case 0:
 	    break;
-
+	case DB_LOCK_DEADLOCK:
+	default:
+	    return ret;
+	}
 	ret = dbcursor->c_get(dbcursor, &key, &val, DB_NEXT);
+	switch (ret) {
+	case 0:
+	case DB_NOTFOUND:
+	    break;
+	case DB_LOCK_DEADLOCK:
+	default:
+	    return ret;
+	}
     }
-    dbcursor->c_close(dbcursor);
-    if(ret == DB_NOTFOUND)
-	return 0;
-    return ret;
+    return dbcursor->c_close(dbcursor);
 }
 
 
@@ -934,7 +942,12 @@ static bool delete_old_stuff(int forgotton)
 	    continue;
 	}
 
-	if(delete_all_records(gi.current_db, gi.current_gid)) {
+	switch(delete_all_records(gi.current_db, gi.current_gid, tid)) {
+	case 0:
+	    break;
+	case TRYAGAIN:
+	    TXN_RETRY(t_dos, tid);
+	default:
 	    TXN_ABORT(t_dos, tid);
 	    continue;
 	}
@@ -950,7 +963,12 @@ static bool delete_old_stuff(int forgotton)
 	}
 
 	if(gi.status & GROUPINFO_MOVING) {
-	    if(delete_all_records(gi.new_db, gi.new_gid)) {
+	    switch(delete_all_records(gi.new_db, gi.new_gid, tid)) {
+	    case 0:
+		break;
+	    case TRYAGAIN:
+		TXN_RETRY(t_dos, tid);
+	    default:
 		TXN_ABORT(t_dos, tid);
 		continue;
 	    }
@@ -1357,16 +1375,18 @@ int ovdb_open_berkeleydb(int mode, int flags)
 	OVDBenv->set_flags(OVDBenv, DB_TXN_NOSYNC, 1);
 #endif
 
+    if(!(flags & OVDB_UPGRADE)) {
 #if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
-    ret = OVDBenv->open(OVDBenv, ovdb_conf.home, NULL, ai_flags, 0666);
+	ret = OVDBenv->open(OVDBenv, ovdb_conf.home, NULL, ai_flags, 0666);
 #else
-    ret = OVDBenv->open(OVDBenv, ovdb_conf.home, ai_flags, 0666);
+	ret = OVDBenv->open(OVDBenv, ovdb_conf.home, ai_flags, 0666);
 #endif
-    if (ret != 0) {
-	OVDBenv->close(OVDBenv, 0);
-	OVDBenv = NULL;
-	syslog(L_FATAL, "OVDB: OVDBenv->open: %s", db_strerror(ret));
-	return ret;
+	if (ret != 0) {
+	    OVDBenv->close(OVDBenv, 0);
+	    OVDBenv = NULL;
+	    syslog(L_FATAL, "OVDB: OVDBenv->open: %s", db_strerror(ret));
+	    return ret;
+	}
     }
 #endif /* DB_VERSION_MAJOR == 2 */
 
@@ -2337,7 +2357,12 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
 	/* a previous expireover run must've died.  We'll clean
 	   up after it */
 	if(gi.status & GROUPINFO_MOVING) {
-	    if(delete_all_records(gi.new_db, gi.new_gid)) {
+	    switch(delete_all_records(gi.new_db, gi.new_gid, tid)) {
+	    case 0:
+		break;
+	    case TRYAGAIN:
+		TXN_RETRY(t_expgroup_1, tid);
+	    default:
 		TXN_ABORT(t_expgroup_1, tid);
 		return false;
 	    }
@@ -2611,15 +2636,22 @@ bool ovdb_expiregroup(char *group, int *lo, struct history *h)
     }
 
     if(compact) {
-        ret = delete_all_records(old_db, old_gid);
-	if (ret) {
-	    syslog(L_ERROR, "OVDB: expiregroup: delete_all_records: %s", db_strerror(ret));
-	    return false;
-	}
-
 	TXN_START(t_expgroup_cleanup, tid);
 	if(tid == NULL)
 	    return false;
+
+        ret = delete_all_records(old_db, old_gid, tid);
+	switch (ret)
+        {
+	case 0:
+	    break;
+	case TRYAGAIN:
+	    TXN_RETRY(t_expgroup_cleanup, tid);
+	default:
+	    TXN_ABORT(t_expgroup_cleanup, tid);
+	    syslog(L_ERROR, "OVDB: expiregroup: groupid_free: %s", db_strerror(ret));
+	    return false;
+	}
 
         ret = groupid_free(old_gid, tid);
 	switch (ret)

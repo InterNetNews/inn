@@ -98,6 +98,7 @@ void ovdb_close_berkeleydb(void);
 int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_TXN *tid, int getflags);
 
 #define OVDB_RECOVER    1
+#define OVDB_UPGRADE    2
 
 #define OVDB_LOCK_NORMAL 0
 #define OVDB_LOCK_ADMIN 1

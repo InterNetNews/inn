@@ -312,6 +312,17 @@ static int check_upgrade(int do_upgrade)
 	    if (ret != 0)
 		return ret;
 	}
+	ovdb_close_berkeleydb();
+	ret = ovdb_open_berkeleydb(OV_WRITE, OVDB_UPGRADE);
+	if (ret != 0)
+	    return ret;
+	ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, 0);
+	if (ret != 0)
+	    return ret;
+	OVDBenv = NULL;
+	ret = ovdb_open_berkeleydb(OV_WRITE, 0);
+	if(ret != 0)
+	    return ret;
     }
 
     if(dv > DATA_VERSION) {
