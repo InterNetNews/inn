@@ -171,6 +171,33 @@ if (1) {
 	}
     }
 
+
+    for ($hdrval{'Reply-To'}, $hdrval{Sender}) {
+	if (EvilMeta ($_)) {
+            if ($use_syslog) {
+		syslog ('notice', 'Bad address in control %s', $msgid);
+	    }
+	    else {
+		print scalar localtime,
+		   ": Bad address in control $msgid\n";
+		next CHANITEM;
+	    }
+	}
+    }
+
+    for (@progparams) {
+	if (EvilMeta ($_)) {
+            if ($use_syslog) {
+		syslog ('notice', 'Bad parameter in control %s', $msgid);
+	    }
+	    else {
+		print scalar localtime,
+		    ": Bad parameter in control $msgid\n";
+		next CHANITEM;
+	    }
+	}
+    }
+
     # Do we want to process the message?  Let's check the permissions.
     ($action, $logname, $newsgrouppats) = split(/=/, ctlperm($progname,
             $hdrval{Sender}, $progparams[0], $token));
@@ -266,6 +293,15 @@ sub CleanAddy {
         s/[^\w\d\-\!\@\.:+%]//g;
         s/^[^A-Za-z0-9]+//g;
         return $_;
+}
+
+
+sub EvilMeta { # Find evil meta characters
+    $_ = shift;
+    if ( /[\[\]\/\$&(){}\`\'\"\;\\|<>\~\^]/ or /^[^A-Za-z0-9]/) {
+	return $_;
+    }
+    return "";
 }
 
 
