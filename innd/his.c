@@ -101,7 +101,7 @@ void HISsetup(void)
 #endif
 	dbzsetoptions(opt);
 	if (!dbzinit(HIShistpath)) {
-	    syslog(L_FATAL, "%s cant dbzinit %s %m", HIShistpath, LogName);
+	    syslog(L_FATAL, "%s cant dbzinit %s %m", LogName, HIShistpath);
 	    exit(1);
 	}
     }
