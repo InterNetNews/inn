@@ -173,8 +173,8 @@ struct grp {
     char *hi;		/* high article string */
     char *low;		/* low article string */
     char *type;		/* newsgroup type string */
-    char *outhi;	/* output high article string */
-    char *outlow;	/* output low article string */
+    const char *outhi;	/* output high article string */
+    const char *outlow;	/* output low article string */
     char *outtype;	/* output newsgroup type string */
 };
 
@@ -306,25 +306,26 @@ int z_flag = 4;			/* sleep z_flag sec per exec if -o x */
 int A_flag = 0;
 
 /* forward declarations */
-static struct grp *get_active();    /* get an active file from a remote host */
-static int bad_grpname();	    /* test if string is a valid group name */
-static struct pat *get_ignore();    /* read in an ignore file */
-static void ignore();		    /* ignore newsgroups given an ignore list */
-static int merge_cmp();		    /* qsort compare for active file merge */
-static void merge_grps();	    /* merge groups from active files */
-static int active_cmp();	    /* qsort compare for active file output */
-static void output_grps();	    /* output the merged groups */
-static void process_args();	    /* process command line arguments */
-static void error_mark();	    /* mark for removal, error grps from host */
-static int eq_merge_cmp();	    /* qsort compare for =type grp processing */
-static int mark_eq_probs();	    /* mark =type problems from a host */
-static int exec_cmd();		    /* exec a ctlinnd command */
-static int new_top_hier();	    /* see if we have a new top level */
+static void process_args(int argc, char *argv[], char **host1, char **host2);
+static struct grp *get_active(char *host, int hostid, int *len, struct grp *,
+                              int *errs);
+static int bad_grpname(char *name, int num_chk);
+static struct pat *get_ignore(char *filename, int *len);
+static void ignore(struct grp *, int grplen, struct pat *, int iglen);
+static int merge_cmp(const void *, const void *);
+static void merge_grps(struct grp *, int grplen, char *host1, char *host2);
+static int active_cmp(const void *, const void *);
+static void output_grps(struct grp *, int grplen);
+static void error_mark(struct grp *, int grplen, int hostid);
+static int eq_merge_cmp(const void *, const void *);
+static int mark_eq_probs(struct grp *, int grplen, int hostid, char *host1,
+                         char *host2);
+static int exec_cmd(int mode, const char *cmd, char *grp, char *type,
+                    const char *who);
+static int new_top_hier(char *name);
 
 int
-main(argc, argv)
-    int	 argc;			/* arg count */
-    char *argv[];		/* the args */
+main(int argc, char *argv[])
 {
     struct grp *grp;		/* struct grp array for host1 & host2 */
     struct pat *ignor;		/* ignore list from ignore file */
@@ -382,11 +383,7 @@ main(argc, argv)
  *	host2	name of second host2 *may be 1st if -R)
  */
 static void
-process_args(argc, argv, host1, host2)
-    int argc;		/* arg count */
-    char *argv[];	/* the arg array */
-    char **host1;	/* where to place name of host1 */
-    char **host2;	/* where to place name of host2 */
+process_args(int argc, char *argv[], char **host1, char **host2)
 {
     char *def_serv = NULL;	/* name of default server */
     int i;
@@ -702,12 +699,7 @@ process_args(argc, argv, host1, host2)
  * In that case, the local file is opened and read.
  */
 static struct grp *
-get_active(host, hostid, len, grp, errs)
-    char *host;			/* the host to contact */
-    int hostid;			/* HOST_ID of host */
-    int *len;			/* length of returned grp array in elements */
-    struct grp* grp;		/* existing group array or NULL */
-    int *errs;			/* line error count */
+get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 {
     FILE *active;		/* stream for fetched active data */
     FILE *FromServer;		/* stream from server */
@@ -1117,9 +1109,7 @@ get_active(host, hostid, len, grp, errs)
  *	1	group is bad
  */
 static int
-bad_grpname(name, num_chk)
-    char *name;			/* newsgroup name to check */
-    int num_chk;		/* true => check for numeric newsgroup */
+bad_grpname(char *name, int num_chk)
 {
     char *p;
     int non_num;	/* true => found a non-numeric, non-. character */
@@ -1245,9 +1235,7 @@ bad_grpname(name, num_chk)
  *       "=" is considered to be equivalent to "=*".
  */
 static struct pat *
-get_ignore(filename, len)
-    char *filename;		/* name of the ignore file to read */
-    int *len;			/* length of return array */
+get_ignore(char *filename, int *len)
 {
     QIOSTATE *qp;		/* QIO ignore file state */
     char *line;			/* the line just read */
@@ -1396,7 +1384,7 @@ get_ignore(filename, len)
 	    }
 
 	    /* object if too many fields */
-	    if (i-3 > TYPECNT)
+	    if (i-3 > (int) TYPECNT)
                 die("too many fields on line %d of %s", linenum, filename);
 	}
 
@@ -1418,11 +1406,7 @@ get_ignore(filename, len)
  *	iglen	length of igcl array in elements
  */
 static void
-ignore(grp, grplen, igcl, iglen)
-    struct grp *grp;		/* array of groups */
-    int grplen;			/* length of grp array in elements */
-    struct pat *igcl;		/* array of ignore patterns */
-    int iglen;			/* length of igcl array in elements */
+ignore(struct grp *grp, int grplen, struct pat *igcl, int iglen)
 {
     struct grp *gp;		/* current group element being examined */
     struct pat *pp;		/* current pattern element being examined */
@@ -1545,9 +1529,7 @@ ignore(grp, grplen, igcl, iglen)
  *	linenum			(active file line number)
  */
 static int
-merge_cmp(arg_a, arg_b)
-    const void *arg_a;		/* first qsort compare arg */
-    const void *arg_b;		/* first qsort compare arg */
+merge_cmp(const void *arg_a, const void *arg_b)
 {
     const struct grp *a = arg_a;	/* group a to compare */
     const struct grp *b = arg_b;	/* group b to compare */
@@ -1600,11 +1582,7 @@ merge_cmp(arg_a, arg_b)
  * This routine will select which groups to output form a merged active file.
  */
 static void
-merge_grps(grp, grplen, host1, host2)
-    struct grp *grp;		/* array of groups */
-    int grplen;			/* length of grp array in elements */
-    char *host1;		/* name of host with HOSTID1 */
-    char *host2;		/* name of host with HOSTID2 */
+merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
 {
     int cur;		/* current group index being examined */
     int nxt;		/* next group index being examined */
@@ -1765,9 +1743,7 @@ merge_grps(grp, grplen, host1, host2)
  *	linenum			(active file line number)
  */
 static int
-active_cmp(arg_a, arg_b)
-    const void *arg_a;		/* first qsort compare arg */
-    const void *arg_b;		/* first qsort compare arg */
+active_cmp(const void *arg_a, const void *arg_b)
 {
     const struct grp *a = arg_a;	/* group a to compare */
     const struct grp *b = arg_b;	/* group b to compare */
@@ -1809,9 +1785,7 @@ active_cmp(arg_a, arg_b)
  *	grplen	length of grp array in elements
  */
 static void
-output_grps(grp, grplen)
-    struct grp *grp;		/* array of groups */
-    int grplen;			/* length of grp array in elements */
+output_grps(struct grp *grp, int grplen)
 {
     int add;		/* number of groups added */
     int change;		/* number of groups changed */
@@ -2187,10 +2161,7 @@ output_grps(grp, grplen)
  *	hostid	host to mark error groups for removal
  */
 static void
-error_mark(grp, grplen, hostid)
-    struct grp *grp;		/* array of groups */
-    int grplen;			/* length of grp array in elements */
-    int hostid;			/* host to mark error groups for removal */
+error_mark(struct grp *grp, int grplen, int hostid)
 {
     int i;
     int errcnt;
@@ -2248,9 +2219,7 @@ error_mark(grp, grplen, hostid)
  *	linenum			(active file line number)
  */
 static int
-eq_merge_cmp(arg_a, arg_b)
-    const void *arg_a;		/* first qsort compare arg */
-    const void *arg_b;		/* first qsort compare arg */
+eq_merge_cmp(const void *arg_a, const void *arg_b)
 {
     const struct eqgrp *a = arg_a;	/* group a to compare */
     const struct eqgrp *b = arg_b;	/* group b to compare */
@@ -2320,12 +2289,8 @@ eq_merge_cmp(arg_a, arg_b)
  * This function assumes that the grp array has been sorted by name.
  */
 static int
-mark_eq_probs(grp, grplen, hostid, host1, host2)
-    struct grp *grp;		/* array of groups */
-    int grplen;			/* length of grp array in elements */
-    int hostid;			/* host to mark error groups for removal */
-    char *host1;		/* name of host with HOSTID1 */
-    char *host2;		/* name of host with HOSTID2 */
+mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
+              char *host2)
 {
     struct eqgrp *eqgrp;	/* =type pointer array */
     int eq_cnt;			/* number of =type groups from host */
@@ -2530,12 +2495,7 @@ mark_eq_probs(grp, grplen, hostid, host1, host2)
  *	0	exec was not performed
  */
 static int
-exec_cmd(mode, cmd, grp, type, who)
-    int mode;		/* OUTPUT_EXEC or OUTPUT_IEXEC (interactive mode) */
-    char *cmd;		/* changegroup, newgroup or rmgroup */
-    char *grp;		/* name of group to change, add, remove */
-    char *type;		/* type of group or NULL */
-    char *who;		/* newgroup creator or NULL */
+exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 {
     FILE *ch_stream = NULL;	/* stream from a child process */
     char buf[BUFSIZ+1];		/* interactive buffer */
@@ -2735,8 +2695,7 @@ exec_cmd(mode, cmd, grp, type, who)
  * NOTE: This function assumes that we are at the top of the news spool.
  */
 static int
-new_top_hier(name)
-    char *name;
+new_top_hier(char *name)
 {
     struct stat	statbuf;	/* stat of the hierarchy */
     int result;			/* return result */
