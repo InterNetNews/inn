@@ -869,11 +869,12 @@ GetMessageID(qp)
 	    if (*p == '\0')
 		/* Header is empty*/
 		break;
-	    if (strlen(p) >= buffsize) {
+	    if (strlen(p) > buffsize) {
 		if (buffsize)
 		    RENEW(buff, char, strlen(p) + 1);
 		else
 		    buff = NEW(char, strlen(p) + 1);
+		buffsize = strlen(p);
 		
 	    }
 	    (void)strcpy(buff, p);
