@@ -431,11 +431,12 @@ CleanupAndExit(bool Server, bool Paused, int x)
 {
     FILE	*F;
 
-    if (Server)
+    if (Server) {
 	(void)ICCreserve("");
-    if (Paused && ICCgo(EXPreason) != 0) {
-        syswarn("cannot unpause server");
-	x = 1;
+	if (Paused && ICCgo(EXPreason) != 0) {
+            syswarn("cannot unpause server");
+	    x = 1;
+	}
     }
     if (Server && ICCclose() < 0) {
         syswarn("cannot close communication link to server");
