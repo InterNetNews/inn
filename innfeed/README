@@ -1,6 +1,7 @@
 This is version 1.0 of the INN feeder program `innfeed.'
-It is written in ANSI C and tries to be POSIX.1 compliant. The features of
-it are:
+It is written in ANSI C and tries to be POSIX.1 compliant. This software
+was originally written and maintained by James Brister <brister@vix.com>
+and is now part of INN. The features of it are:
 
 	1. Handles the STREAM extenstion to NNTP.
 	2. Will open multiple connections to the remote host to parallel
@@ -13,8 +14,6 @@ it are:
 	   the remote responds affermatively to enough CHECKs.
 	7. It will go back to issuing CHECKs if enough TAKETHIS commands fail.
 
-Read the rest of this file and then read and apply the instructions in the
-the INSTALL file.
 
 Changes for 0.10.1
 
@@ -380,8 +379,8 @@ Futures:
 	5. Heaps more stuff requested that's buried in my mail folders.
 
 
-Any praise, complaints, requests, porting issues etc. should go to me:
-brister@vix.com.
+Any compliments, complaints, requests, porting issues etc. should go to
+inn-bugs@isc.org.
 
 Many thanks to the following people for extra help (above and beyond the
 call of duty) with pateches, beta testing and/or suggestions:
