@@ -1670,6 +1670,11 @@ int main(int ac, char *av[])
 	fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
 	exit(1);
     }
+    if (!OVERsetup(OVER_NEWMODE, "w")) {
+       fprintf(stderr, "Can't setup unified overview mode to be created: %s\n", strerror(errno));
+       exit(1);
+    }
+
     if (OverPath)
 	if (!OVERsetup(OVER_NEWDIR, (void *)OverPath)) {
 	    fprintf(stderr, "Can't setup unified overview path: %s\n", strerror(errno));
