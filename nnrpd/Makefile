@@ -39,7 +39,6 @@ NNRPDLIBS	= $(LIBHIST) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) \
 		  $(PERLLIB) $(PYTHONLIB) $(SSLLIB) $(LIBS)
 
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
-perm.o:		perm.c		; $(CC) $(CFLAGS) $(PERLINC) -c perm.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
 
 nnrpd: $(OBJECTS) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
