@@ -146,11 +146,13 @@ STATIC FILE *HistorySeek(char *MessageID)
 	if (!dbminit(History)) {
 	    (void)fprintf(stderr, "Can't set up \"%s\" database, %s\n",
 		    History, strerror(errno));
+	    SMshutdown();
 	    exit(1);
 	}
 	if ((F = fopen(History, "r")) == NULL) {
 	    (void)fprintf(stderr, "Can't open \"%s\" for reading, %s\n",
 		    History, strerror(errno));
+	    SMshutdown();
 	    exit(1);
 	}
     }
@@ -459,6 +461,7 @@ ExitWithStats(x)
 	(void)fprintf(stderr, "Can't remove \"%s\", %s\n",
 		BATCHtemp, strerror(errno));
     (void)sleep(1);
+    SMshutdown();
     exit(x);
     /* NOTREACHED */
 }
@@ -1124,17 +1127,14 @@ Usage()
 }
 
 
-int
-main(ac, av)
-    int			ac;
-    char		*av[];
+int main(int ac, char *av[])
 {
     static char		SPOOL[] = _PATH_SPOOL;
     static char		BATCHDIR[] = _PATH_BATCHDIR;
     static char		SKIPPING[] = "Skipping \"%s\" --%s?\n";
-    register int	i;
-    register char	*p;
-    register QIOSTATE	*qp;
+    int	                i;
+    char	        *p;
+    QIOSTATE	        *qp;
     TIMEINFO		Now;
     FILE		*From;
     FILE		*To;
@@ -1219,24 +1219,32 @@ main(ac, av)
 
     (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
+    if (!SMinit()) {
+	fprintf(stderr, "Can't initialize the storage manager: %s\n", SMerrorstr);
+	exit(1);
+    }
+
     /* Open the batch file and lock others out. */
     if (BATCHname[0] != '/') {
 	BATCHname = NEW(char, STRLEN(BATCHDIR) + 1 + strlen(av[1]) + 1);
 	(void)sprintf(BATCHname, "%s/%s", BATCHDIR, av[1]);
     }
-    if ((i = open(BATCHname, O_RDWR)) < 0
-     || (BATCHqp = QIOfdopen(i)) == NULL) {
+    if (((i = open(BATCHname, O_RDWR)) < 0) || ((BATCHqp = QIOfdopen(i)) == NULL)) {
 	(void)fprintf(stderr, "Can't open \"%s\", %s\n",
 		BATCHname, strerror(errno));
+	SMshutdown();
 	exit(1);
     }
     if (LockFile(QIOfileno(BATCHqp), TRUE) < 0) {
 #if	defined(EWOULDBLOCK)
-	if (errno == EWOULDBLOCK)
+	if (errno == EWOULDBLOCK) {
+	    SMshutdown();
 	    exit(0);
+	}
 #endif	/* defined(EWOULDBLOCK) */
 	(void)fprintf(stderr, "Can't lock \"%s\", %s\n",
 		BATCHname, strerror(errno));
+	SMshutdown();
 	exit(1);
     }
 
@@ -1255,6 +1263,7 @@ main(ac, av)
     /* Start timing. */
     if (GetTimeInfo(&Now) < 0) {
 	(void)fprintf(stderr, "Can't get time, %s\n", strerror(errno));
+	SMshutdown();
 	exit(1);
     }
     STATbegin = TIMEINFOasDOUBLE(Now);
@@ -1269,6 +1278,7 @@ main(ac, av)
 	    if (setjmp(JMPwhere)) {
 		(void)fprintf(stderr, "Can't connect to %s, timed out\n",
 			REMhost);
+		SMshutdown();
 		exit(1);
 	    }
 	}
@@ -1278,9 +1288,10 @@ main(ac, av)
 		    REMhost, buff[0] ? REMclean(buff) : strerror(errno));
 	    if (GotAlarm)
 		syslog(L_NOTICE, CANT_CONNECT, REMhost, "timeout");
-	    else
+	    else 
 		syslog(L_NOTICE, CANT_CONNECT, REMhost,
 		    buff[0] ? REMclean(buff) : strerror(i));
+	    SMshutdown();
 	    exit(1);
 	}
 	if (Debug)
@@ -1292,6 +1303,7 @@ main(ac, av)
 	    syslog(L_ERROR, CANT_AUTHENTICATE,
 		REMhost, GotAlarm ? "timeout" : strerror(i));
 	    /* Don't send quit; we want the remote to print a message. */
+	    SMshutdown();
 	    exit(1);
 	}
 	if (ConnectTimeout) {
