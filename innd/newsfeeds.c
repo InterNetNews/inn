@@ -616,7 +616,7 @@ SITEparsefile(StartSite)
 	errors++;
     }
 
-    if (errors && setuperrors) {
+    if (errors || setuperrors) {
 	if (errors)
 	    syslog(L_FATAL, "%s syntax_error %s", LogName, SITEfeedspath);
 	if (setuperrors)
