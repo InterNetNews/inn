@@ -86,6 +86,22 @@ accepted. If it returns a non-zero value, then it is rejected, and the
 value returned (typically a string) is used to log the reason why it was
 rejected.
 
+	There are four perl subs available from the perl subroutines called
+from within INN:
+
+INN::havehist(messageid)  # returns true if messageid is in the history db
+INN::newsgroup(newsgroup) # returns the status of the news group (the last
+			  # field of the active file, or false if the
+			  # isn't in your active file
+INN::cancel(messageid)    # cancels messageid on your server
+ 
+INN::addhist(messageid, arrivaltime,articletime,expiretime,paths)
+			  # adds messageid to the history database
+			  # all the other fields are optional.
+			  # the time fields default to the current
+			  # time, and the paths field defaults to
+			  # the empty string.
+
 --------------------------------------------------
 
 nnrpd:
