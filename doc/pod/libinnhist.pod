@@ -140,17 +140,19 @@ creating a new, replacement, database in the same location if I<path>
 is B<NULL>, or in I<path> if not B<NULL>; if I<path> is not B<NULL>
 then the replacement of the old history database with the new one is
 assumed to be performed out of band by the caller. The I<writing> flag
-is normall passed as B<true>, if you wish to inhibit writing of the
+is normally passed as B<true>, if you wish to inhibit writing of the
 new database (and so merely see the callbacks), I<writing> may be set
 B<false>.
 
-If the underlying history mechanism needs to reserve or pause the
-server the I<reason> string is used as an an argument to the `ctlinnd
-(reserve|pause|go)' commands; if the caller wishes to inhibit
-reservation or pausing of the server, passing B<NULL> will achieve
-this.
+If the underlying history mechanism needs to pause the server the
+I<reason> string is used as an an argument to the `ctlinnd pause'
+command, as such prior to calling B<HISexpire> the server should be
+reserved by the caller; if the caller wishes to inhibit pausing of the
+server, passing B<NULL> will achieve this. If I<reason> is not
+B<NULL>, then on successful return from B<HISexpire> the server will
+be left paused and the caller should unpause it.
 
-The history database if scanned and entries with an associated storage
+The history database is scanned and entries with an associated storage
 token are passed to the discrimination function I<exists>.
 
 If I<exists>() returns B<false> it indicates that stored entity
@@ -163,10 +165,9 @@ The I<exists> function is passed the arrival, posting and expiry
 times, in addition to the token associated with the entry. Note that
 posting and/or expiry may be zero, but that token will never be
 B<NULL> (such entries are handled solely via the threshold
-mechanism). A non-const pointer to the token is passed so that the
-discrimination function may update the token if required (for example
-as might be needed by a hierachical storage management
-implementation).
+mechanism). The storage token passed to the discrimination function
+may updated if required (for example as might be needed by a
+hierachical storage management implementation).
 
 Entries in the database with an arrival time less than I<threshold>
 with no token associated with them are deleted from the database.
@@ -221,15 +222,15 @@ on retrieval from the underlying history manager was found not to exist.
 
 =back
 
-Note that the history cache is only used by B<HIScheck> and only
-affected by B<HISwrite> and B<HISremember>. Following a call to
-B<HISstats> the history statistics associated with I<history> are
-cleared.
+Note that the history cache is only checked by B<HIScheck> and only
+affected by B<HIScheck>, B<HISwrite>, B<HISremember> and
+B<HISreplace>. Following a call to B<HISstats> the history statistics
+associated with I<history> are cleared.
 
 B<HISerror> returns a string describing the most recent error
 associated with I<history>; the format and content of these strings is
-history manager dependent. Note that most history managers will, on
-setting an error, call libinn's B<warn> function.
+history manager dependent. Note that on setting an error the history
+API will call libinn's B<warn> function.
 
 B<HISctl> provides a control interface to the underlying history
 manager. The I<request> argument determines the type of the request
