@@ -96,6 +96,11 @@ const char *pidFile = NULL ;
 bool useMMap = false ;
 void (*gPrintInfo) (void) ;
 char *dflTapeDir;
+/* these are used by imapfeed */
+char *deliver_username = NULL;
+char *deliver_authname = NULL;
+char *deliver_password = NULL;
+char *deliver_realm    = NULL;
 
 /* imports */
 extern char *versionInfo ;
@@ -155,7 +160,6 @@ int main (int argc, char **argv)
   bool checkConfig = false ;
   struct rlimit rl;
   bool val;
-
 
   strcpy (dateString,ctime(&now)) ;
   dateString [24] = '\0' ;
@@ -840,6 +844,32 @@ static int mainConfigLoadCbk (void *data)
       logFile = buildFilename (innconf->pathlog,p) ;
       FREE (p) ;
     }
+
+   /* For imap/lmtp delivering */
+  if (getString (topScope,"deliver-username",&p, NO_INHERIT))
+    {   
+        deliver_username = p;
+      /* don't need to free */
+    }
+
+  if (getString (topScope,"deliver-authname",&p, NO_INHERIT))
+    {
+      deliver_authname = p;
+      /* don't need to free */
+    }
+
+  if (getString (topScope,"deliver-password",&p, NO_INHERIT))
+    {
+      deliver_password = p;
+      /* don't need to free */
+    }
+
+  if (getString (topScope,"deliver-realm",&p, NO_INHERIT))
+    {
+      deliver_realm = p;
+      /* don't need to free */
+    }
+
   
 
   return 1 ;

@@ -4,9 +4,9 @@ include ../Makefile.global
 
 CFLAGS		= $(GCFLAGS)
 
-ALL		= innfeed procbatch startinnfeed
+ALL		= innfeed procbatch startinnfeed imapfeed
 
-SOURCES		= article.c buffer.c config_l.c config_y.c connection.c \
+SOURCES		= article.c buffer.c config_l.c config_y.c \
 		  endpoint.c host.c innlistener.c main.c misc.c \
 		  startinnfeed.c tape.c version.c
 
@@ -15,13 +15,14 @@ INCLUDES	= article.h buffer.h configfile.h config_y.h connection.h \
 		  tape.h
 
 # The objects linked into innfeed.  All SOURCES except startinnfeed.
-OBJECTS		= article.o buffer.o config_l.o config_y.o connection.o \
+OBJECTS		= article.o buffer.o config_l.o config_y.o \
 		  endpoint.o host.o innlistener.o main.o misc.o tape.o \
 		  version.o
 
 INSTALLED	= $(D)$(PATHBIN)/innfeed \
 		  $(D)$(PATHBIN)/procbatch \
-		  $(D)$(PATHBIN)/startinnfeed
+		  $(D)$(PATHBIN)/startinnfeed \
+		  $(D)$(PATHBIN)/imapfeed
 
 all: $(ALL)
 
@@ -53,8 +54,11 @@ version.c: Makefile ../Makefile.global
 	version=`echo '$(VERSION) ($(VERSION_EXTRA))' | sed 's/ ()//'` ; \
 	echo 'const char *versionInfo = "innfeed' "$$version\" ;" > $@
 
-innfeed: $(OBJECTS) $(MALLOC) $(LIBSTORAGE) $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(INNFEEDLIBS)
+innfeed: $(OBJECTS) connection.o $(MALLOC) $(LIBSTORAGE) $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) connection.o $(INNFEEDLIBS)
+
+imapfeed: $(OBJECTS) imap_connection.o $(MALLOC) $(LIBSTORAGE) $(LIBINN)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) imap_connection.o $(INNFEEDLIBS)
 
 procbatch: procbatch.in $(FIXSCRIPT)
 	$(FIXSCRIPT) procbatch.in
@@ -121,6 +125,8 @@ endpoint.o: endpoint.c innfeed.h ../include/config.h \
 host.o: host.c innfeed.h ../include/config.h ../include/clibrary.h \
  ../include/libinn.h article.h misc.h buffer.h configfile.h \
  connection.h endpoint.h host.h innlistener.h msgs.h tape.h
+imapconnection.o: article.h buffer.h config.h configfile.h imapconnection.c \
+ connection.h endpoint.h host.h misc.h msgs.h sysconfig.h
 innlistener.o: innlistener.c innfeed.h ../include/config.h \
  ../include/clibrary.h article.h misc.h buffer.h configfile.h \
  endpoint.h host.h innlistener.h msgs.h tape.h
