@@ -14,7 +14,7 @@
 #include <dirent.h>
 #include <ctype.h>
 #include <clibrary.h>
-#include <logging.h>
+#include <syslog.h>
 #include <macros.h>
 #include <configdata.h>
 #include <libinn.h>
