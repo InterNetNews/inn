@@ -11,6 +11,7 @@
 
 
 typedef struct _LISTINFO {
+    STRING	Path;
     STRING	File;
     BOOL	Required;
     STRING	Items;
@@ -19,39 +20,39 @@ typedef struct _LISTINFO {
 
 
 STATIC LISTINFO		INFOactive = {
-    _PATH_ACTIVE, TRUE, "active newsgroups",
+    NULL, _PATH_ACTIVE, TRUE, "active newsgroups",
     "Newsgroups in form \"group high low flags\""
 };
 STATIC LISTINFO		INFOactivetimes = {
-    _PATH_ACTIVETIMES, FALSE, "creation times",
+    NULL, _PATH_ACTIVETIMES, FALSE, "creation times",
     "Group creations in form \"name time who\""
 };
 STATIC LISTINFO		INFOdistribs = {
-    _PATH_NNRPDIST, FALSE, "newsgroup distributions",
+    NULL, _PATH_NNRPDIST, FALSE, "newsgroup distributions",
     "Distributions in form \"area description\""
 };
 STATIC LISTINFO               INFOsubs = {
-    _PATH_NNRPSUBS, FALSE, "automatic group subscriptions",
+    NULL, _PATH_NNRPSUBS, FALSE, "automatic group subscriptions",
     "Subscriptions in form \"group\""
 };
 STATIC LISTINFO		INFOdistribpats = {
-    _PATH_DISTPATS, FALSE, "distribution patterns",
+    NULL, _PATH_DISTPATS, FALSE, "distribution patterns",
     "Default distributions in form \"weight:pattern:value\""
 };
 STATIC LISTINFO		INFOgroups = {
-    _PATH_NEWSGROUPS, FALSE, "newsgroup descriptions",
+    NULL, _PATH_NEWSGROUPS, FALSE, "newsgroup descriptions",
     "Descriptions in form \"group description\""
 };
 STATIC LISTINFO		INFOmoderators = {
-    _PATH_MODERATORS, FALSE, "moderator patterns",
+    NULL, _PATH_MODERATORS, FALSE, "moderator patterns",
     "Newsgroup moderators in form \"group-pattern:mail-address-pattern\""
 };
 STATIC LISTINFO		INFOschema = {
-    _PATH_SCHEMA, TRUE, "overview format",
+    NULL, _PATH_SCHEMA, TRUE, "overview format",
     "Order of fields in overview database"
 };
 STATIC LISTINFO		INFOmotd = {
-    _PATH_MOTD, FALSE, "motd",
+    NULL, _PATH_MOTD, FALSE, "motd",
     "Message of the day text."
 };
 
@@ -378,7 +379,13 @@ CMDlist(ac, av)
 	Reply("%s\r\n", NNTP_SYNTAX_USE);
 	return;
     }
-    if ((qp = QIOopen(cpcatpath(innconf->pathetc, (char *)lp->File))) == NULL) {
+    lp->Path = innconf->pathetc;
+    if ((strstr(lp->File, "active") != NULL) ||
+	(strstr(lp->File, "newsgroups") != NULL))
+		lp->Path = innconf->pathdb;
+    if (strchr(lp->File, '/') != NULL)
+	lp->Path = "";
+    if ((qp = QIOopen(cpcatpath(lp->Path, (char *)lp->File))) == NULL) {
 	if (!lp->Required && errno == ENOENT) {
 	    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
 	    Printf(".\r\n");

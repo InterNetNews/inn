@@ -9,7 +9,7 @@
 
 package inn ;
 
-eval { `@prefix@/bin/innconfval -p` };
+eval `@prefix@/bin/innconfval -p`;
 
 $newshome = $pathnews;
 $spooldir = $pathspool;
