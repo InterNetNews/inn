@@ -1540,9 +1540,13 @@ sub collect {
       return 1;
     }
     # control_XXgroup, foo.bar [moderated] who who /x/y/12, peer, action, 1
+    #
+    # Various other random junk can end up in the moderated field, like y,
+    # unmoderated, m, etc. depending on what the control message says.  It
+    # can even have multiple words, which we still don't handle.
     if ($left =~ m/^control_(\S+),    # type of msg
 		  \s(?:\S+)?          # newsgroup name
-		  (\smoderated)?      # optional
+		  (\s\S+)?            # optional
 		  \s(\S+)             # email
                   \s\S+               # email
                   \s\S+,              # filename
@@ -1559,7 +1563,6 @@ sub collect {
       }
       $controlchan_who{$3}++;
       $controlchan_ok{$3} += $5;
-      print "$5 : $left\n" unless $5;
       my $action = $4;
       my $email = $3;
       $action =~ s/=.*//;
