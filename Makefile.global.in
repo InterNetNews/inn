@@ -56,9 +56,6 @@ LFS_CFLAGS      = @LFS_CFLAGS@
 LFS_LDFLAGS     = @LFS_LDFLAGS@
 LFS_LIBS        = @LFS_LIBS@
 
-THREAD_CFLAGS   = @THREADFLAGS@
-THREAD_LIBS     = @THREADLIB@
-
 PROF            = -pg
 
 ##  libtool support.  Note that INN does not use Automake (and that
