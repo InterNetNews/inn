@@ -84,16 +84,6 @@
   ||MAN5			@ac_cv_subst_manpath@/man5
   ||#### =()<MAN8			@<MAN8>@>()=[autoconf]
   ||MAN8			@ac_cv_subst_manpath@/man8
-[IN1.7=NO][WDF=autoconf][WOR=no]
-  ||##  LEX should probably be lex or flex
-  ||##[autoconf]
-  ||#### =()<LEX			@<LEX>@>()=
-  ||LEX			@LEX@
-[IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  YACC (yet another config control?)
-  ||##[autoconf]
-  ||#### =()<YACC			@<YACC>@>()=
-  ||YACC			@YACC@
 [IN1.7=@1][WDF=autoconf][WOR=no]
   ||##  Ctags command.  Use echo if you don't have ctags.
   ||##[autoconf]
