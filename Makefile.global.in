@@ -102,11 +102,15 @@ AWK             = @_PATH_AWK@
 COMPRESS        = @COMPRESS@
 CTAGS           = @CTAGS@
 GZIP            = @GZIP@
-LEX             = @LEX@ 
+LEX             = @LEX@
+PERL            = @_PATH_PERL@
 RANLIB          = @RANLIB@
 YACC            = @YACC@
 
 FIXSCRIPT       = ../support/fixscript
+
+PERLWHOAMI      = $(PERL) -e 'print scalar getpwuid($$>), "\n"'
+WHOAMI          = (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
 
 ##  Installation directories.  If any of the below are incorrect, don't just
 ##  edit this file; these directories are substituted in all over the source
@@ -119,18 +123,27 @@ prefix          = @prefix@
 PATHNEWS        = $(prefix)
 PATHBIN         = $(PATHNEWS)/bin
 PATHETC         = @ETCDIR@
+PATHMAN         = @mandir@
 PATHLIB         = @LIBDIR@
 PATHCONTROL     = @CONTROLDIR@
 PATHFILTER      = @FILTERDIR@
 PATHRUN         = @RUNDIR@
 PATHLOG         = @LOGDIR@
+PATHLOGOLD      = $(PATHLOG)/OLD
 PATHDB          = @DBDIR@
 PATHSPOOL       = @SPOOLDIR@
+PATHTMP         = @TMPPATH@
+PATHAUTH        = $(PATHBIN)/auth
+PATHAUTHRESOLV  = $(PATHAUTH)/resolv
+PATHAUTHPASSWD  = $(PATHAUTH)/passwd
+PATHRNEWS       = $(PATHBIN)/rnews.libexec
+PATHARCHIVE     = $(PATHSPOOL)/archive
 PATHARTICLES    = $(PATHSPOOL)/articles
+PATHINCOMING    = $(PATHSPOOL)/incoming
+PATHTAPE        = $(PATHSPOOL)/innfeed
+PATHINBAD       = $(PATHINCOMING)/bad
 PATHOVERVIEW    = $(PATHSPOOL)/overview
 PATHOUTGOING    = $(PATHSPOOL)/outgoing
-PATHINCOMING    = $(PATHSPOOL)/incoming
-PATHARCHIVE     = $(PATHSPOOL)/archive
 
 MAN1            = @mandir@/man1
 MAN3            = @mandir@/man3
@@ -141,14 +154,14 @@ MAN8            = @mandir@/man8
 ##  configure; inews and rnews are special and have configure flags to
 ##  control how they're installed.  See INSTALL for more information.
 
-OWNER           = -O @NEWSUSER@ -G @NEWSGRP@
-ROWNER          = -O @NEWSUSER@ -G @RNEWSGRP@
+OWNER           = -o @NEWSUSER@ -g @NEWSGRP@
+ROWNER          = -o @NEWSUSER@ -g @RNEWSGRP@
 NEWSGROUP       = @NEWSGRP@
 
 INEWSMODE       = @INEWSMODE@
 RNEWSMODE       = @RNEWSMODE@
 
-INSTALL         = ../installit.sh
+INSTALL         = ../support/install-sh -c
 
 ##  Installation commands.  These commands are used by the installation
 ##  rules of each separate subdirectory.  The naming scheme is as follows:
@@ -160,16 +173,17 @@ INSTALL         = ../installit.sh
 ##  group-readable/group-executable file (only the news group).  inews and
 ##  rnews have their own special installation rules.
 
-LI_XPRI         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0550 -b .OLD
-LI_XPUB         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0555 -b .OLD
+LI_SPRI         = $(LIBTOOL) $(INSTALL) -o root -g $(NEWSGROUP) -m 4550 -B .OLD
+LI_XPRI         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0550 -B .OLD
+LI_XPUB         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0555 -B .OLD
 
-LI_INEWS        = $(LIBTOOL) $(INSTALL) $(OWNER) -m $(INEWSMODE) -b .OLD
-LI_RNEWS        = $(LIBTOOL) $(INSTALL) $(ROWNER) -m $(RNEWSMODE) -b .OLD
+LI_INEWS        = $(LIBTOOL) $(INSTALL) $(OWNER) -m $(INEWSMODE) -B .OLD
+LI_RNEWS        = $(LIBTOOL) $(INSTALL) $(ROWNER) -m $(RNEWSMODE) -B .OLD
 
-CP_RPRI         = $(INSTALL) $(OWNER) -m 0640 -b .OLD
-CP_RPUB         = $(INSTALL) $(OWNER) -m 0644 -b .OLD
-CP_XPRI         = $(INSTALL) $(OWNER) -m 0550 -b .OLD
-CP_XPUB         = $(INSTALL) $(OWNER) -m 0555 -b .OLD
+CP_RPRI         = $(INSTALL) $(OWNER) -m 0640 -B .OLD
+CP_RPUB         = $(INSTALL) $(OWNER) -m 0644 -B .OLD
+CP_XPRI         = $(INSTALL) $(OWNER) -m 0550 -B .OLD
+CP_XPUB         = $(INSTALL) $(OWNER) -m 0555 -B .OLD
 
 ##  Some additional definitions needed by some versions of make, to ensure a
 ##  consistant set of variables are available.
