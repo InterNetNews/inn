@@ -30,6 +30,11 @@ create the links innd spends less time waiting for disk IO.
 In this mode one would start
 .I innd(8)
 using the ``\-L'' flag.
+If
+.I storageapi
+is turned on at inn.conf,
+.I crosspost
+is not needed since it is for traditional spool.
 .PP
 .I Crosspost
 expects input in the form:

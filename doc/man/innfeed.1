@@ -13,7 +13,6 @@
 .de c$
 innfeed.conf
 ..
-.de
 .TH INNFEED 1
 .\"
 .\"
@@ -156,7 +155,7 @@ For each peer (say, ``\fIfoo\fP''), innfeed manages up to 4 files in the
 backlog directory: a ``\fIfoo.lock\fP'' file, which prevents other
 instances of innfeed from interfering with this one; a ``\fIfoo.input\fP''
 file which has old article information innfeed is reading for
-re-processing; a ``\fPfoo.output\fP'' file where innfeed is writing
+re-processing; a ``\fIfoo.output\fP'' file where innfeed is writing
 information on articles that couldn't be processed (normally due to a slow
 or blocked peer); and a ``\fIfoo\fP'' file.
 .PP

@@ -97,19 +97,19 @@ probes the article to see if it still exists.
 If it does not exist,
 .I expire
 purges relevant entries (history and overview).
-To disable this, use the ``\fP\-N\fP'' flag.
+To disable this, use the ``\fI\-N\fP'' flag.
 .SH OPTIONS
 .TP
 .B \-c
 If articles are stored by storage api, articles are normally expired by storage
 class base.
-If the ``\fP\-c\fP'' flag is used, articles are expired by normal way (newsgroup
+If the ``\fI\-c\fP'' flag is used, articles are expired by normal way (newsgroup
 base).
 Note that if overview of an article is not stored, the article is expired
 by storage class base.
 .TP
 .B \-D
-If the ``\fP\-D\fP'' flag is used, then the new overview files are
+If the ``\fI\-D\fP'' flag is used, then the new overview files are
 created in the specified directory,
 .IR dir .
 This is useful when the filesystem does not have sufficient space to
@@ -122,7 +122,7 @@ it has successfully completed the expiration.
 The calling script should install the new overview file and un-pause the server.
 .TP
 .B \-d
-If the ``\fP\-d\fP'' flag is used, then the new history file and database is
+If the ``\fI\-d\fP'' flag is used, then the new history file and database is
 created in the specified directory,
 .IR dir .
 This is useful when the filesystem does not have sufficient space to
@@ -136,7 +136,7 @@ The calling script should install the new history file and un-pause the server.
 The ``\fB\-r\fP'' flag should be used with this flag.
 .TP
 .B \-e
-If the ``\fP\-e\fP'' flag is used, then as soon as the first cross posting 
+If the ``\fI\-e\fP'' flag is used, then as soon as the first cross posting 
 of the article expires, all copies of it are removed.
 .TP
 .B \-f
@@ -146,8 +146,8 @@ be written to this file.
 The default without ``\fB\-f\fP'' flag is ``history.''
 .TP
 .B \-g
-If the ``\fP\-g\fP'' flag is given, then a one-line summary equivalent to the
-output of ``\fP\-v\fP 1'' and preceeded by the current time, will be appended to
+If the ``\fI\-g\fP'' flag is given, then a one-line summary equivalent to the
+output of ``\fI\-v\fP 1'' and preceeded by the current time, will be appended to
 the specified
 .IR file .
 .TP
@@ -211,7 +211,7 @@ file.
 This means articles are often kept a little longer than with other
 expiration programs that base their decisions on the article's posting
 date.
-To use the article's posting date, use the ``\fP\-p\fP'' flag.
+To use the article's posting date, use the ``\fI\-p\fP'' flag.
 .TP
 .B \-q
 .I Expire
@@ -276,7 +276,7 @@ individual file, while level five results in more than one line of output
 for every line processed.
 .TP
 .B \-w
-Use the ``\fP\-w\fP'' flag to ``warp'' time so that
+Use the ``\fI\-w\fP'' flag to ``warp'' time so that
 .I expire
 thinks it is running at some time other then the current time.
 The value should be a signed floating point number of the number of days
