@@ -1314,8 +1314,8 @@ rmgroup:control@usenet.org.uk:uk.*:verify-uk.net.news.announce
 
 
 ## UKR ( Ukraine )
-newgroup:news-server@sita.kiev.ua:ukr.*:doit=newgroup
-rmgroup:news-server@sita.kiev.ua:ukr.*:doit=rmgroup
+newgroup:ay@sita.kiev.ua:ukr.*:doit=newgroup
+rmgroup:ay@sita.kiev.ua:ukr.*:doit=rmgroup
 
 ## UMN (University of Minnesota, USA )
 newgroup:edh@*.tc.umn.edu:umn.*:doit=newgroup
