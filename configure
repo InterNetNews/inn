@@ -1093,7 +1093,7 @@ fi
 ac_cv_subst_ranlib=$ac_cv_prog_RANLIB
 if test x$ac_cv_subst_ranlib = x:
 then
-	ac_cv_subst_ranlib = echo
+	ac_cv_subst_ranlib=echo
 fi
 
 
