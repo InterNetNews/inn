@@ -20,6 +20,13 @@ Changes from 2.3 to 2.4
       as well as other NNTP servers.  See the man page for innfeed for more
       information.
 
+    * An authenticator that checks a username and password against a remote
+      Samba server is now included.
+
+    * The interface between external authenticators and nnrpd is now wrapped
+      in a library, which should make it easier to write additional
+      authenticators.
+
     * INN now checks to ensure that the configured temporary directory is
       not world-writeable since INN doesn't currently create all temporary
       files in a manner that's safe against symlink attacks.
@@ -61,10 +68,10 @@ Upgrading from 2.2 to 2.3
 
         makehistory -b -f history.n -O -F
 
-    (This is suitable for ``buffindexed'' ovmethod.) Both will generate a
-    new history file as history.n and rebuild overview at the same time.  If
-    you want to preseve a record of expired message IDs in the history file,
-    run:
+    (This is suitable for the "buffindexed" overview backend.)  Both will
+    generate a new history file as history.n and rebuild overview at the
+    same time.  If you want to preseve a record of expired message IDs in
+    the history file, run:
 
         awk 'NF==2 { print; }' < history >> history.n
 
