@@ -95,7 +95,7 @@ wholeconfig()
 	}
 	(void)fclose(F);
     }
-    printit(strdup("version"), ver);
+    printit(COPY("version"), ver);
     exit(0);
 }
 
@@ -145,7 +145,7 @@ main(int ac, char **av)
 
     ver = INNVersion();
     if (version) {
-	printit(strdup("version"), ver);
+	printit(COPY("version"), ver);
 	exit(0);
     }
     if (!*av) wholeconfig();   /* Doesn't return */
