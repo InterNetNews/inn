@@ -38,8 +38,8 @@ typedef struct __S_SUB__ {
     time_t		maxexpire;   /* Maximum expire offset to send method */
     int                 numpatterns; /* Number of patterns in patterns */
     int                 class;       /* Number of the storage class for this subscription */
-    char                **patterns;  /* Array of patterns to check against
-					the groups to determine if the article
+    char                *pattern;    /* Wildmat pattern to check against the
+					groups to determine if the article
 					should go to this method */
     char		*options;    /* additional options specific to the
 				        method */

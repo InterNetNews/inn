@@ -361,7 +361,7 @@ static bool SMreadconfig(void) {
     char                *q;
     char                *path;
     char                *method;
-    char                *patterns = NULL;
+    char                *pattern = NULL;
     int                 minsize;
     int                 maxsize;
     time_t		minexpire;
@@ -437,9 +437,9 @@ static bool SMreadconfig(void) {
 		p = tok->name;
 		switch(type) {
 		  case SMgroups:
-		    if (patterns)
-			DISPOSE(patterns);
-		    patterns = COPY(tok->name);
+		    if (pattern)
+			DISPOSE(pattern);
+		    pattern = COPY(tok->name);
 		    break;
 		  case SMsize:
 		    minsize = atoi(p);
@@ -495,13 +495,14 @@ static bool SMreadconfig(void) {
 		DISPOSE(sub);
 		return FALSE;
 	    }
-	    if (!patterns) {
-		SMseterror(SMERR_CONFIG, "patterns not defined");
-		syslog(L_ERROR, "SM no patterns defined");
+	    if (!pattern) {
+		SMseterror(SMERR_CONFIG, "pattern not defined");
+		syslog(L_ERROR, "SM no pattern defined");
 		DISPOSE(options);
 		DISPOSE(sub);
 		return FALSE;
 	    }
+            sub->pattern = pattern;
 	    sub->minsize = minsize;
 	    sub->maxsize = maxsize;
 	    sub->class = class;
@@ -512,31 +513,9 @@ static bool SMreadconfig(void) {
 
 	    DISPOSE(method);
 	    method = 0;
-	    
-	
-	    /* Count the number of patterns and allocate space*/
-	    for (i = 1, p = patterns; *p && (p = strchr(p+1, ',')); i++);
 
-	    sub->numpatterns = i;
-	    sub->patterns = NEW(char *, i);
 	    if (!prev)
 		subscriptions = sub;
-
-	    /* Store the patterns. */
-	    for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ","))
-		sub->patterns[i] = COPY(p);
-	    DISPOSE(patterns);
-	    patterns = NULL;
-
-	    if (i != sub->numpatterns) {
-	      /* Spurious ',' */
-	      SMseterror(SMERR_CONFIG, "extra ',' in pattern");
-	      syslog(L_ERROR, "SM extra ',' in pattern");
-	      DISPOSE(options);
-	      DISPOSE(sub);
-	      return FALSE;
-	    }
-
 	    if (prev)
 		prev->next = sub;
 	    prev = sub;
@@ -544,7 +523,7 @@ static bool SMreadconfig(void) {
 	}
     }
     
-    (void)CONFfclose(f);
+    CONFfclose(f);
 
     return TRUE;
 }
@@ -656,12 +635,14 @@ static bool InitMethod(STORAGETYPE method) {
     return TRUE;
 }
 
-static bool MatchGroups(const char *g, int len, int num, char **patterns, bool exactmatch) {
-    char                *group;
-    char                *groups;
-    char		*groupsep, *q;
-    int                 i, lastwhite;
-    bool                matched, wanted = FALSE;
+static bool
+MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
+{
+    char *group, *groups, *q;
+    const char *groupsep;
+    int i, lastwhite;
+    enum wildmat matched;
+    bool wanted = false;
 
     if (innconf->storeonxref)
 	groupsep = " ";
@@ -682,26 +663,21 @@ static bool MatchGroups(const char *g, int len, int num, char **patterns, bool e
     }
     *q = '\0';
 
-    for (group = strtok(groups, groupsep); group != NULL; group = strtok(NULL, groupsep)) {
-	if (innconf->storeonxref && ((q = strchr(group, ':')) != (char *)NULL))
-	    *q = '\0';
-	for (matched = FALSE, i = 0; i < num; i++) {
-	    switch (patterns[i][0]) {
-	    case '@':
-		if (wildmat(group, &patterns[i][1])) {
-		    DISPOSE(groups);
-		    return FALSE;
-		}
-		break;
-	    default:
-		if (wildmat(group, patterns[i]))
-		    matched = wanted = TRUE;
-	    }
-	}
-	if (exactmatch && (matched == FALSE)) {
+    group = strtok(groups, groupsep);
+    while (group != NULL) {
+	if (innconf->storeonxref) {
+            q = strchr(group, ':');
+            if (q != NULL)
+                *q = '\0';
+        }
+        matched = wildmat_poison(group, pattern);
+        if (matched == WILDMAT_POISON || (exactmatch && !matched)) {
 	    DISPOSE(groups);
-	    return FALSE;
+	    return false;
 	}
+        if (matched == WILDMAT_MATCH)
+            wanted = true;
+        group = strtok(NULL, groupsep);
     }
 
     DISPOSE(groups);
@@ -725,7 +701,8 @@ STORAGE_SUB *SMgetsub(const ARTHANDLE article) {
 	    (!sub->maxsize || (article.len <= sub->maxsize)) &&
 	    (!sub->minexpire || article.expires >= sub->minexpire) &&
 	    (!sub->maxexpire || (article.expires <= sub->maxexpire)) &&
-	    MatchGroups(article.groups, article.groupslen, sub->numpatterns, sub->patterns, sub->exactmatch)) {
+	    MatchGroups(article.groups, article.groupslen, sub->pattern,
+                        sub->exactmatch)) {
 	    if (InitMethod(typetoindex[sub->type]))
 		return sub;
 	}
@@ -925,10 +902,7 @@ void SMshutdown(void) {
     while (subscriptions) {
 	old = subscriptions;
 	subscriptions = subscriptions->next;
-	for (i = 0; i < old->numpatterns; i++) {
-	  DISPOSE(old->patterns[i]);
-	}
-	DISPOSE(old->patterns);
+	DISPOSE(old->pattern);
 	DISPOSE(old->options);
 	DISPOSE(old);
     }
