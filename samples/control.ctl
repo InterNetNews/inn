@@ -312,14 +312,18 @@ newgroup:*@*:best.*:mail
 rmgroup:*@*:best.*:doit
 
 ## BIONET (Biology Network)
-checkgroups:kristoff@*.bio.net:bionet.*:mail
-checkgroups:news@*.bio.net:bionet.*:mail
-newgroup:dmack@*.bio.net:bionet.*:doit
-newgroup:kristoff@*.bio.net:bionet.*:doit
-newgroup:shibumi@*.bio.net:bionet.*:doit
-rmgroup:dmack@*.bio.net:bionet.*:doit
-rmgroup:kristoff@*.bio.net:bionet.*:doit
-rmgroup:shibumi@*.bio.net:bionet.*:doit
+# URL: http://www.bio.net/
+# PGP: http://pgp.ai.mit.edu/~bal/pks-commands.html
+#
+# Biosci-control-key@net.bio.net
+#     PGP  Key fingerprint =  EB C0 F1 BA 26 0B C6 D6  FB 8D ED C4 AE 5D 10 54
+#
+# *PGP*   See comment at top of file.
+newgroup:*:bionet.*:drop
+rmgroup:*:bionet.*:drop
+checkgroups:Biosci-control-key@net.bio.net:bionet.*:verify-Biosci-control-key@net.bio.net
+newgroup:Biosci-control-key@net.bio.net:bionet.*:verify-Biosci-control-key@net.bio.net=newgroup
+rmgroup:Biosci-control-key@net.bio.net:bionet.*:verify-Biosci-control-key@net.bio.net=rmgroup
 
 ## BIRK (University of Oslo, Norway)
 # Contact: birk-admin@ping.uio.no
