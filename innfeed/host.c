@@ -1999,7 +1999,7 @@ bool hostCxnGone (Host host, Connection cxn)
 {
   u_int i;
   bool oneThere = false ;
-  char *msgstr[SMBUF] ;
+  char msgstr[SMBUF] ;
 
   /* forget about the Connection and see if we are still holding any live
      connections still. */
@@ -2472,7 +2472,7 @@ void gHostStats (void)
 {
   Host h ;
   time_t now = theTime() ;
-  char *msgstr[SMBUF] ;
+  char msgstr[SMBUF] ;
 
   for (h = gHostList ; h != NULL ; h = h->next)
       if (h->firstConnectTime > 0) {
@@ -2803,7 +2803,7 @@ static void hostLogStats (Host host, bool final)
   time_t now = theTime() ;
   time_t *startPeriod ;
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
-  char *msgstr[SMBUF] ;
+  char msgstr[SMBUF] ;
 
   if (host->spoolTime == 0 && host->connectTime == 0)
     return ;        /* host has never connected and never started spooling*/
