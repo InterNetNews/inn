@@ -52,17 +52,6 @@
 #include "nntp.h"
 
 /*
-** Syslog formats - collected together so they remain consistent
-*/
-static char	STAT1[] =
-	"%s stats offered %lu accepted %lu refused %lu rejected %lu";
-static char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
-static char	CANT_CONNECT[] = "%s connect failed %s";
-static char	CANT_AUTHENTICATE[] = "%s authenticate failed %s";
-static char	XBATCH_FAIL[] = "%s xbatch failed %s";
-static char	UNKNOWN_REPLY[] = "Unknown reply after sending batch -- %s";
-static char	CANNOT_UNLINK[] = "cannot unlink %s: %m";
-/*
 **  Global variables.
 */
 static bool		Debug = 0;
@@ -130,16 +119,16 @@ ExitWithStats(int x)
   }
 
   if (STATprint) {
-    printf(STAT1,
-	REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
-    printf("\n");
-    printf(STAT2, REMhost, usertime, systime, STATend - STATbegin);
-    printf("\n");
+      printf("%s stats offered %lu accepted %lu refused %lu rejected %lu\n",
+             REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
+      printf("%s times user %.3f system %.3f elapsed %.3f\n", REMhost,
+             usertime, systime, STATend - STATbegin);
   }
 
-  syslog(L_NOTICE, STAT1,
+  notice("%s stats offered %lu accepted %lu refused %lu rejected %lu",
 	 REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
-  syslog(L_NOTICE, STAT2, REMhost, usertime, systime, STATend - STATbegin);
+  notice("%s times user %.3f system %.3f elapsed %.3f", REMhost, usertime,
+         systime, STATend - STATbegin);
 
   exit(x);
   /* NOTREACHED */
@@ -254,13 +243,12 @@ REMsendxbatch(int fd, char *buf, int size)
   switch (atoi(buf)) {
   default:
     warn("unknown reply after sending batch -- %s", buf);
-    syslog(L_ERROR, UNKNOWN_REPLY, buf);
     return false;
     /* NOTREACHED */
     break;
   case NNTP_RESENDIT_VAL:
   case NNTP_GOODBYE_VAL:
-    syslog(L_NOTICE, XBATCH_FAIL, REMhost, buf);
+    notice("%s xbatch failed %s", REMhost, buf);
     STATrejected++;
     return false;
     /* NOTREACHED */
@@ -273,7 +261,6 @@ REMsendxbatch(int fd, char *buf, int size)
        * work
        */
       syswarn("cannot unlink %s", XBATCHname);
-      syslog(L_NOTICE, CANNOT_UNLINK, XBATCHname);
       return false;
     }
     break;
@@ -344,6 +331,9 @@ main(int ac, char *av[])
 
   openlog("innxbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
   message_program_name = "innxbatch";
+  message_handlers_warn(1, message_log_syslog_err, message_log_stderr);
+  message_handlers_die(1, message_log_syslog_err, message_log_stderr);
+  message_handlers_notice(1, message_log_syslog_notice);
 
   /* Set defaults. */
   if (!innconf_read(NULL))
@@ -401,13 +391,11 @@ main(int ac, char *av[])
   if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff, sizeof(buff)) < 0
       || GotAlarm) {
     i = errno;
-    warn("cannot connect to %s: %s", REMhost,
-         buff[0] ? REMclean(buff): strerror(errno));
     if (GotAlarm)
-      syslog(L_NOTICE, CANT_CONNECT, REMhost, "timeout");
+        warn("%s connect failed: timeout", REMhost);
     else
-      syslog(L_NOTICE, CANT_CONNECT, REMhost,
-	     buff[0] ? REMclean(buff) : strerror(i));
+        syswarn("%s connect failed: %s", REMhost,
+                buff[0] ? REMclean(buff) : strerror(i));
     exit(1);
   }
 
@@ -415,9 +403,8 @@ main(int ac, char *av[])
     fprintf(stderr, "< %s\n", REMclean(buff));
   if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
     i = errno;
-    syswarn("cannot authenticate with %s", REMhost);
-    syslog(L_ERROR, CANT_AUTHENTICATE,
-	   REMhost, GotAlarm ? "timeout" : strerror(i));
+    syswarn("%s authentication failed: %s", REMhost,
+            GotAlarm ? "timeout" : strerror(i));
     /* Don't send quit; we want the remote to print a message. */
     exit(1);
   }
@@ -434,9 +421,9 @@ main(int ac, char *av[])
 #if	defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF)
   i = 24 * 1024;
   if (setsockopt(ToServer, SOL_SOCKET, SO_SNDBUF, (char *)&i, sizeof i) < 0)
-    perror("cant setsockopt(SNDBUF)");
+    syswarn("cant setsockopt(SNDBUF)");
   if (setsockopt(FromServer, SOL_SOCKET, SO_RCVBUF, (char *)&i, sizeof i) < 0)
-    perror("cant setsockopt(RCVBUF)");
+    syswarn("cant setsockopt(RCVBUF)");
 #endif	/* defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) */
 
   GotInterrupt = false;
@@ -533,7 +520,7 @@ main(int ac, char *av[])
     case NNTP_RESENDIT_VAL:
     case NNTP_GOODBYE_VAL:
       /* Most likely out of space -- no point in continuing. */
-      syslog(L_NOTICE, XBATCH_FAIL, REMhost, buff);
+      notice("%s xbatch failed %s", REMhost, buff);
       ExitWithStats(1);
       /* NOTREACHED */
     case NNTP_CONT_XBATCH_VAL:
@@ -543,8 +530,7 @@ main(int ac, char *av[])
       break;
     case NNTP_SYNTAX_VAL:
     case NNTP_BAD_COMMAND_VAL:
-      warn("server %s seems not to understand XBATCH: %s", REMhost, buff);
-      syslog(L_FATAL, XBATCH_FAIL, REMhost, buff);
+      warn("%s xbatch failed %s", REMhost, buff);
       break;
     }
   }
