@@ -30,7 +30,7 @@ fail(int n, const char *string)
     struct in_addr in;
     int success;
 
-    in.s_addr = 0x01020304UL;
+    in.s_addr = htonl(0x01020304UL);
     success = test_inet_aton(string, &in);
     success = (success == 0 && in.s_addr == htonl(0x01020304UL));
     printf("%sok %d\n", success ? "" : "not ", n);
