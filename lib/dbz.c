@@ -1446,7 +1446,7 @@ search(searcher *sp)
 	    /* seek, if necessary */
 	    dest = sp->place * SOF;
 	    if (pagtab.pos != dest) {
-		if (fseek(pagtab.f, dest, SEEK_SET) != 0) {
+		if (lseek(fileno(pagtab.f), dest, SEEK_SET) == -1) {
 		    DEBUG(("search: seek failed\n"));
 		    pagtab.pos = -1;
 		    sp->aborted = 1;
@@ -1456,8 +1456,8 @@ search(searcher *sp)
 	    }
 
 	    /* read it */
-	    if (fread((POINTER)&value, sizeof(value), 1, pagtab.f) != 1) {
-		if (ferror(pagtab.f)) {
+	    if (read(fileno(pagtab.f), (POINTER)&value, sizeof(value)) != sizeof(value)) {
+		if (errno != 0) {
 		    DEBUG(("search: read failed\n"));
 		    pagtab.pos = -1;
 		    sp->aborted = 1;
@@ -1525,7 +1525,7 @@ static BOOL search(searcher *sp) {
 	    /* seek, if necessary */
 	    dest = sp->place * sizeof(erec);
 	    if (etab.pos != dest) {
-		if (fseek(etab.f, dest, SEEK_SET) != 0) {
+		if (lseek(fileno(etab.f), dest, SEEK_SET) == -1) {
 		    DEBUG(("search: seek failed\n"));
 		    etab.pos = -1;
 		    sp->aborted = 1;
@@ -1535,8 +1535,8 @@ static BOOL search(searcher *sp) {
 	    }
 
 	    /* read it */
-	    if (fread((POINTER)&value, sizeof(erec), 1, etab.f) != 1) {
-		if (ferror(etab.f)) {
+	    if (read(fileno(etab.f), (POINTER)&value, sizeof(erec)) != sizeof(erec)) {
+		if (errno != 0) {
 		    DEBUG(("search: read failed\n"));
 		    etab.pos = -1;
 		    sp->aborted = 1;

@@ -29,6 +29,10 @@
 #include "libinn.h"
 #include "macros.h"
 
+#if defined(_HPUX_SOURCE)
+#include <alloca.h>
+#endif
+
 
 #define yylhs		date_yylhs
 #define yylen		date_yylen

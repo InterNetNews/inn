@@ -228,6 +228,7 @@ void SetDefaults()
 
     innconf->logsitename = TRUE;
     innconf->extendeddbz = FALSE;
+    innconf->nnrpdoverstats = FALSE;
 }
 
 void ClearInnConf()
@@ -777,6 +778,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_EXTENDEDDBZ, bit);
 		if (!bit && boolval != -1) innconf->extendeddbz = boolval;
 		SET_CONFIG(CONF_VAR_EXTENDEDDBZ);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_NNRPDOVERSTATS)) {
+		TEST_CONFIG(CONF_VAR_NNRPDOVERSTATS, bit);
+		if (!bit && boolval != -1) innconf->nnrpdoverstats = boolval;
+		SET_CONFIG(CONF_VAR_NNRPDOVERSTATS);
 	    }
 	}
 	if (innconf->storageapi != TRUE) innconf->extendeddbz = FALSE;
