@@ -95,9 +95,11 @@ scanspool:	scanspool.in     $(FIX)	; $(FIX) scanspool.in
 
 c7unbatch: Makefile ../Makefile.global
 	( echo '#! $(SHELL)' ; echo 'decode | $(UNCOMPRESS)' ) > $@
+	chmod 755 c7unbatch
 
 gunbatch: Makefile ../Makefile.global
 	( echo '#! $(SHELL)' ; echo 'exec $(GZIP) -d -c' ) > $@
+	chmod 755 gunbatch
 
 ##  Not normally built.
 feedone:	feedone.o     $(LIBINN)	; $(LINK) feedone.o $(INNLIBS)
