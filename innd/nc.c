@@ -1318,5 +1318,6 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
     /* set WIP for benefit of later code in NCreader */
     if ((wp = WIPbyid(p)) == (WIP *)NULL)
 	wp = WIPnew(p, cp);
+    WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
     cp->CurrentMessageIDHash = wp->MessageID;
 }

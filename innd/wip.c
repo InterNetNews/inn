@@ -56,7 +56,6 @@ void WIPprecomfree(CHANNEL *cp) {
 	cur = cp->PrecommitWIP[i];
 	if (cur != (WIP *)NULL) {
 	    WIPfree(cur);
-	    break;
 	}
     }
 }
@@ -127,8 +126,10 @@ BOOL WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Precommit) {
 	if (cp->PrecommitWIP[cp->PrecommitiCachenext])
 	    WIPfree(cp->PrecommitWIP[cp->PrecommitiCachenext]);
 	cp->PrecommitWIP[cp->PrecommitiCachenext++] = wp;
-    } else
+    } else {
+	WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
 	cp->CurrentMessageIDHash = wp->MessageID;
+    }
     return FALSE;
 }
 
