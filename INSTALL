@@ -559,6 +559,8 @@ Configuring INN
         readers.  While this can be an expensive operation, its speed has
         been improved considerably as of INN 2.3 and it's probably safe to
         turn on without risking excessive server load.  The default is true.
+        (Note that the access: setting in readers.conf overrides this value;
+        see readers.conf(5) for more details.)
 
     complaints
         Used to set the value of the X-Complaints-To: header which is added
