@@ -73,7 +73,8 @@ char	*NEWSGROUPS = NULL;
 char	*NNRPACCESS = NULL;
 
 BOOL	ForceReadOnly = FALSE;
-char 	LocalLogFileName[256];
+STATIC	char 	*LocalLogFileName = NULL;
+STATIC	char 	*LocalLogDirName;
 
 STATIC double	STATstart;
 STATIC double	STATfinish;
@@ -112,7 +113,7 @@ extern FUNCTYPE	CMD_unimp();
 extern FUNCTYPE	CMDstarttls();
 #endif
 
-int LLOGenable;
+BOOL LLOGenable;
 extern int TrackClient();
 
 STATIC char	CMDfetchhelp[] = "[MessageID|Number]";
@@ -234,6 +235,9 @@ ExitWithStats(int x, BOOL readconf)
 	}
     }
 #endif	/* DO_PYTHON */
+
+    if (LocalLogFileName != NULL);
+	DISPOSE(LocalLogFileName);
 
     exit(x);
 }
@@ -770,7 +774,7 @@ main(int argc, char *argv[])
     /* Parse arguments.   Must COPY() optarg if used because the
      * TITLEset() routine would clobber it! */
     Reject = NULL;
-    LLOGenable=FALSE;
+    LLOGenable = FALSE;
     GRPcur = NULL;
     MaxBytesPerSecond = 0;
     strcpy(Username, "unknown");
@@ -1084,19 +1088,28 @@ main(int argc, char *argv[])
     }
 
     if (PERMaccessconf && PERMaccessconf->readertrack || !PERMaccessconf && innconf->readertrack) {
+	int len;
 	syslog(L_NOTICE, "%s Tracking Enabled (%s)", ClientHost, Username);
 	pid=getpid();
 	gettimeofday(&tv,NULL);
 	count += pid;
 	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
-	sprintf(LocalLogFileName, "%s/tracklogs/log-%ld", innconf->pathlog,vid);
-	if ((locallog=fopen(LocalLogFileName, "w")) != NULL) {
-		syslog(L_NOTICE, "%s Local Logging begins (%s) %s",ClientHost, Username, LocalLogFileName);
-		fprintf(locallog, "%s Tracking Enabled (%s)\n", ClientHost, Username);
-		fflush(locallog);
-		LLOGenable=TRUE;
+	len = strlen("innconf->pathlog") + strlen("/tracklogs/log-") + BUFSIZ;
+	LocalLogFileName = NEW(char, len);
+	sprintf(LocalLogFileName, "%s/tracklogs/log-%ld", innconf->pathlog, vid);
+	if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
+	    LocalLogDirName = NEW(char, len);
+	    sprintf(LocalLogDirName, "%s/tracklogs", innconf->pathlog);
+	    MakeDirectory(LocalLogDirName, FALSE);
+	    DISPOSE(LocalLogDirName);
+	}
+	if (locallog == NULL && (locallog = fopen(LocalLogFileName, "w")) == NULL) {
+	    syslog(L_ERROR, "%s Local Logging failed (%s) %s: %m", ClientHost, Username, LocalLogFileName);
 	} else {
-		syslog(L_NOTICE, "%s Local Logging failed (%s) %s", ClientHost, Username, LocalLogFileName);
+	    syslog(L_NOTICE, "%s Local Logging begins (%s) %s",ClientHost, Username, LocalLogFileName);
+	    fprintf(locallog, "%s Tracking Enabled (%s)\n", ClientHost, Username);
+	    fflush(locallog);
+	    LLOGenable = TRUE;
 	}
     }
 

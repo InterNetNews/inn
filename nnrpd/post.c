@@ -924,12 +924,11 @@ ARTpost(article, idbuff)
     char		buff[NNTP_STRLEN + 2], frombuf[SMBUF];
     char		*modgroup = NULL;
     STRING		error;
-    char		TrackID[NNTP_STRLEN];
+    char		*TrackID;
+    char		*DirTrackID;
     FILE		*ftd;
-    int			result;
+    int			result, len;
     char		SDir[255];
-
-    sprintf(TrackID,"%s/trackposts/track.", innconf->pathlog);
 
     /* Set up the other headers list. */
     if (OtherHeaders == NULL) {
@@ -1160,32 +1159,48 @@ ARTpost(article, idbuff)
 
     /* Tracking */
     if (PERMaccessconf->readertrack) {
-	strcat(TrackID,HDR(_messageid));
-	if ((ftd=fopen(TrackID,"w")) != NULL) {
-		for (hp = Table; hp < ENDOF(Table); hp++)
-			if (hp->Value) {
-			    if (strchr(hp->Value, '\n') != NULL) {
-				if ((p = Towire(hp->Value)) != NULL) {
-				    (void)fprintf(ftd, "%s: %s\r\n", hp->Name, p);
-				    DISPOSE(p);
-				}
-			    }
-			}
-		for (i=0; i<OtherCount; i++)
-			(void)fprintf(ftd,"%s\r\n",OtherHeaders[i]);
-		(void)fprintf(ftd,"\r\n");
-		result=fputs(article,ftd);
-		fclose(ftd);
-		if (result != EOF) {
-			syslog(L_NOTICE, "%s (%s) posttrack ok %s",
-				ClientHost, Username, TrackID);
-			if (LLOGenable)
-				fprintf(locallog, "%s (%s) posttrack ok %s\n",
-					ClientHost, Username, TrackID);
-		} else 
-			syslog(L_NOTICE, "%s (%s) posttrack error 2 %s",
-				ClientHost, Username, TrackID);
+	len = strlen(innconf->pathlog) + strlen("/trackposts/track.") + strlen(HDR(_messageid)) + 1;
+	TrackID = NEW(char, len);
+	sprintf(TrackID, "%s/trackposts/track.%s", innconf->pathlog, HDR(_messageid));
+	if ((ftd = fopen(TrackID,"w")) == NULL) {
+	    DirTrackID = NEW(char, len);
+	    sprintf(DirTrackID, "%s/trackposts", innconf->pathlog, HDR(_messageid));
+	    MakeDirectory(DirTrackID, FALSE);
+	    DISPOSE(DirTrackID);
 	}
+	if (ftd == NULL && (ftd = fopen(TrackID,"w")) == NULL) {
+	    syslog(L_ERROR, "%s (%s) open %s: %m",
+		ClientHost, Username, TrackID);
+	    DISPOSE(TrackID);
+	    return NULL;
+	}
+	for (hp = Table; hp < ENDOF(Table); hp++)
+	    if (hp->Value) {
+		if (strchr(hp->Value, '\n') != NULL) {
+		    if ((p = Towire(hp->Value)) != NULL) {
+			(void)fprintf(ftd, "%s: %s\r\n", hp->Name, p);
+			DISPOSE(p);
+		    }
+		} else {
+		    (void)fprintf(ftd, "%s: %s\r\n", hp->Name, hp->Value);
+		}
+	    }
+	for (i=0; i<OtherCount; i++)
+	    (void)fprintf(ftd,"%s\r\n",OtherHeaders[i]);
+	(void)fprintf(ftd,"\r\n");
+	(void)NNTPsendarticle(article, ftd, TRUE);
+	fclose(ftd);
+	if (result != EOF) {
+	    syslog(L_NOTICE, "%s (%s) posttrack ok %s",
+		ClientHost, Username, TrackID);
+	    if (LLOGenable)
+		fprintf(locallog, "%s (%s) posttrack ok %s\n",
+		    ClientHost, Username, TrackID);
+	} else {
+	    syslog(L_ERROR, "%s (%s) posttrack error 2 %s",
+		ClientHost, Username, TrackID);
+	}
+	DISPOSE(TrackID);
     }
 
     return NULL;
