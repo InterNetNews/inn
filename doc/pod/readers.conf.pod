@@ -34,7 +34,7 @@ it's not necessary to quote it, although you may wish to anyway for
 clarity.
 
 There is no way to continue a line on the next line, and therefore no way
-to have a single paramenter with a value longer than about 8,180
+to have a single parameter with a value longer than about 8,180
 characters.
 
 Many parameters take a boolean value.  For all such parameters, the value
