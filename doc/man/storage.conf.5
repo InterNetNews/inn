@@ -87,10 +87,10 @@ for description of thier use.
 .B timecaf
 \&``Timecaf'' method stores multiple articles in one file whose path name
 is based on article's arrival time.  The path name is created as
-.IR <patharticles\ in\ inn.conf>/timecaf-xx/yy/zzzz.CF .
-Where ``xx'' is hexa decimal value of ``storage_class.''
-Where ``yy'' and ``zzzz'' are hexa decimal value of splitted
-arrival time and between 0xyyzzzz00 and 0xyyzzzzFF is the actual time.
+.IR <patharticles\ in\ inn.conf>/timecaf-nn/bb/aacc.CF .
+Where ``nn'' is hexa decimal value of ``storage_class.''
+Where ``bb'' and ``aacc'' are hexa decimal value of splitted
+arrival time and between 0xaabbcc00 and 0xaabbccFF is the actual time.
 There is no configuration file for this method.
 .TP
 .B timehash
