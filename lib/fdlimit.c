@@ -26,7 +26,7 @@
 #endif
 
 /* FreeBSD 3.4 RELEASE needs <sys/time.h> before <sys/resource.h>. */
-#if (HAVE_GETRLIMIT || HAVE_SETRLIMIT) && defined(RLIMIT_NOFILE)
+#if HAVE_GETRLIMIT || HAVE_SETRLIMIT
 # if HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # endif
