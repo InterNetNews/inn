@@ -65,6 +65,12 @@ else
 f\&i
 .fi
 .RE
+.SH BUGS
+.I shlock
+does not assumed to be used under a number of lock/unlock environment in a
+short time.  Namely,
+.I shlock
+should be used for an environment like daily or hourly based job.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> after a description of HDB UUCP
 locking given by Peter Honeyman.
