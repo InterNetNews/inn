@@ -130,7 +130,7 @@ static BYTE PADDING[MD5_CHUNKSIZE] = {
 
 /* forward declaration */
 static void MD5Transform P((U_INT32_T*, U_INT32_T*));
-#if INN_BYTE_ORDER == INN_BIG_ENDIAN
+#if INN_BYTE_ORDER == INN_BIG_ENDIAN || defined(INN_MUST_ALIGN)
 static U_INT32_T in[MD5_CHUNKWORDS];
 #endif
 

@@ -226,6 +226,7 @@ void SetDefaults()
     innconf->pathoutgoing = NULL;
     innconf->pathincoming = NULL;
     innconf->patharchive = NULL;
+    innconf->pathtmp = NULL;
 
     innconf->logsitename = TRUE;
     innconf->extendeddbz = FALSE;
@@ -273,6 +274,7 @@ void ClearInnConf()
     if (innconf->pathoutgoing != NULL) DISPOSE(innconf->pathoutgoing);
     if (innconf->pathincoming != NULL) DISPOSE(innconf->pathincoming);
     if (innconf->patharchive != NULL) DISPOSE(innconf->patharchive);
+    if (innconf->pathtmp != NULL) DISPOSE(innconf->pathtmp);
     if (innconf->decnetdomain != NULL) DISPOSE(innconf->decnetdomain);
     if (innconf->backoff_db != NULL) DISPOSE(innconf->backoff_db);
     memset(ConfigBit, '\0', ConfigBitsize);
@@ -284,6 +286,8 @@ void ClearInnConf()
 */
 int CheckInnConf()
 {
+    char *tmpdir;
+
     if (GetFQDN() == NULL) {
 	syslog(L_FATAL, "Must set 'domain' in inn.conf");
 	(void)fprintf(stderr, "Must set 'domain' in inn.conf");
@@ -357,6 +361,15 @@ int CheckInnConf()
     if (innconf->patharchive == NULL) {
 	innconf->patharchive = COPY(cpcatpath(innconf->pathspool, "archive"));
     }
+    if (innconf->pathtmp == NULL) {
+	innconf->pathtmp = COPY(_PATH_TMP);
+    }
+    /* Set the TMPDIR variable unconditionally and globally */
+    tmpdir = NEW(char, 8 + strlen(innconf->pathtmp));
+    sprintf(tmpdir, "TMPDIR=%s", innconf->pathtmp);
+    putenv(tmpdir);
+    DISPOSE(tmpdir);
+
     return(0);
 }
 

@@ -15,29 +15,20 @@
 ** on disk.  Result is architecture independent.
 */
 void PackOverIndex(OVERINDEX *index, char *result) {
-    unsigned long       i;
-    int                 intoverage;
-    
-    intoverage = sizeof(i) - 4;
+    U_INT32_T i;
     
     i = htonl(index->artnum & 0xffffffff);
     memcpy(&result[OFFSET_ARTNUM], &i, sizeof(i));
-    memmove(&result[OFFSET_ARTNUM], &result[intoverage], 4);
-    
     memcpy(&result[OFFSET_HASH], &index->hash, sizeof(HASH));
 }
 
 
 void UnpackOverIndex(char *packedindex, OVERINDEX *index) {
-    unsigned long       i;
+    U_INT32_T		i;
     char                buff[sizeof(i)];
-    int                 intoverage;
-
-    intoverage = sizeof(i) - 4;
 
     memset(buff, '\0', sizeof(buff));
-    memcpy(&buff[intoverage], &packedindex[OFFSET_ARTNUM], 4);
-    memcpy(&i, buff, sizeof(i));
+    memcpy(&i, &packedindex[OFFSET_ARTNUM], sizeof(i));
     index->artnum = ntohl(i);
 
     memcpy(&index->hash, &packedindex[OFFSET_HASH], sizeof(HASH));

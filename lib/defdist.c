@@ -34,7 +34,7 @@ struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer)
     char	*p;
     char	*q;
     int		i;
-    char	name[sizeof _PATH_TEMPACTIVE + 10];
+    char	name[256];
 
     /* Open the file. */
     if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_DISTPATS), "r")) != NULL) {
@@ -45,7 +45,7 @@ struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer)
 	    /* We're probably nnrpd running on the server and the
 	     * file isn't installed.  Oh well. */
 	    return NULL;
-	(void)strcpy(name, _PATH_TEMPACTIVE);
+	(void)sprintf(name, "%.220s/%s", innconf->pathtmp, _PATH_TEMPACTIVE);
 	(void)mktemp(name);
 	if ((F = CA_listopen(name, FromServer, ToServer,
 		    "distrib.pats")) == NULL)

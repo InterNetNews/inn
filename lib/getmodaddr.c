@@ -12,7 +12,7 @@
 #include "nntp.h"
 
 
-STATIC char	GMApathname[sizeof _PATH_TEMPMODERATORS];
+STATIC char	GMApathname[256];
 STATIC FILE	*GMAfp = NULL;
 
 
@@ -107,7 +107,8 @@ char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group)
         /*
          *  Get a local copy of the moderators file from the server.
          */
-        (void)strcpy(GMApathname, _PATH_TEMPMODERATORS);
+	(void)sprintf(GMApathname, "%.220s/%s", innconf->pathtmp,
+		_PATH_TEMPMODERATORS);
         (void)mktemp(GMApathname);
         GMAfp = GMA_listopen(GMApathname, FromServer, ToServer, "moderators");
 	/* Fallback to the local copy if the server doesn't have it */
