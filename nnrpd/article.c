@@ -1045,6 +1045,9 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 	if (rp->Low < ARTnumbers[0].ArtNum)
 	    rp->Low = ARTnumbers[0].ArtNum;
     }
+    else
+	/* No articles; make sure loops don't run. */
+	rp->High = rp->Low ? rp->Low - 1 : 0;
 
     return TRUE;
 }
