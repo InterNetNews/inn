@@ -1305,7 +1305,12 @@ NCcheck(CHANNEL *cp)
 	NCwritereply(cp, cp->Sendid.Data);
     } else if (WIPinprogress(p, cp, TRUE)) {
 	cp->Check_deferred++;
-	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_RESENDID_VAL, p);
+	if (cp->NoResendId) {
+	    cp->Refused++;
+	    (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	} else {
+	    (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_RESENDID_VAL, p);
+	}
 	NCwritereply(cp, cp->Sendid.Data);
     } else {
 	cp->Check_send++;
