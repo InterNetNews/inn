@@ -18,7 +18,7 @@ static int getconfline(CONFFILE *F, char *buffer, int length) {
     strlcpy(buffer, F->array[F->lineno], F->sbuf);
   }
   F->lineno++;
-  if (strlen (F->buf) == F->sbuf) {
+  if (strlen (F->buf) >= F->sbuf - 1) {
     return 1; /* Line too long */
   } else {
     return 0;
@@ -41,7 +41,7 @@ static char *CONFgetword(CONFFILE *F)
   char *s;
   char *t;
   char *word;
-  bool flag;
+  bool flag, comment;
 
   if (!F) return (NULL);	/* No conf file */
   if (!F->buf || !F->buf[0]) {
@@ -57,13 +57,9 @@ static char *CONFgetword(CONFFILE *F)
      /* Ignore blank and comment lines. */
      if ((p = strchr(F->buf, '\n')) != NULL)
        *p = '\0';
-     if ((p = strchr(F->buf, '#')) != NULL) {
-       if (p == F->buf || (p > F->buf && *(p - 1) != '\\'))
-           *p = '\0';
-     }
      for (p = F->buf; *p == ' ' || *p == '\t' ; p++);
      flag = true;
-     if (*p == '\0' && !cfeof(F)) {
+     if ((*p == '\0' || *p == '#') && !cfeof(F)) {
        flag = false;
        if (getconfline(F, F->buf, F->sbuf))
          return (NULL); /* Line too long */
@@ -72,13 +68,17 @@ static char *CONFgetword(CONFFILE *F)
      break;
   } while (!cfeof(F) || !flag);
 
+  comment = false;
   if (*p == '"') { /* double quoted string ? */
     p++;
     do {
       for (t = p; (*t != '"' || (*t == '"' && *(t - 1) == '\\')) &&
              *t != '\0'; t++);
       if (*t == '\0') {
+        if (strlen(F->buf) >= F->sbuf - 2)
+          return (NULL); /* Line too long */
         *t++ = '\n';
+        *t = '\0';
         if (getconfline(F, t, F->sbuf - strlen(F->buf)))
           return (NULL); /* Line too long */
         if ((s = strchr(t, '\n')) != NULL)
@@ -87,17 +87,25 @@ static char *CONFgetword(CONFFILE *F)
       else 
         break;
     } while (!cfeof(F));
+    if (*t != '"')
+      return (NULL);
     *t++ = '\0';
   }
   else {
-    for (t = p; *t != ' ' && *t != '\t' && *t != '\0'; t++);
+    for (t = p; *t != ' ' && *t != '\t' && *t != '\0'; t++)
+      if (*t == '#' && (t == p || *(t - 1) != '\\')) {
+        comment = true;
+        break;
+      }
     if (*t != '\0')
       *t++ = '\0';
   }
   if (*p == '\0' && cfeof(F)) return (NULL);
   word = xstrdup (p);
-  for (p = F->buf; *t != '\0'; t++)
-    *p++ = *t;
+  p = F->buf;
+  if (!comment)
+    for (; *t != '\0'; t++)
+      *p++ = *t;
   *p = '\0';
 
   return (word);
