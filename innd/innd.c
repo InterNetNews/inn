@@ -553,7 +553,6 @@ int main(int ac, char *av[])
     else if ((p = strrchr(path, '/')) != NULL)
 	path = p + 1;
     ONALLOCFAIL(AllocationFailure);
-    Version = INNVersion();
 
     /* Handle malloc debugging. */
 #if	defined(_DEBUG_MALLOC_INC)
