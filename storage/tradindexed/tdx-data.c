@@ -83,7 +83,7 @@ group_path(const char *group)
     }
     *p++ = '/';
     strcpy(p, group);
-    p[length - 1] = '\0';
+    path[length - 1] = '\0';
     return path;
 }
 
@@ -184,6 +184,9 @@ tdx_data_new(const char *group, bool writable)
     data->datafd = -1;
     data->index = NULL;
     data->data = NULL;
+    data->indexlen = 0;
+    data->datalen = 0;
+    data->indexinode = 0;
 
     return data;
 }
@@ -359,10 +362,10 @@ tdx_search(struct search *search, struct article *artdata)
 
     max = (search->data->indexlen / sizeof(struct index_entry)) - 1;
     entry = search->data->index + search->current;
-    while (entry->length == 0) {
-        search->current++;
-        if (search->current > search->limit || search->current > max)
+    while (search->current <= search->limit && search->current <= max) {
+        if (entry->length != 0)
             break;
+        search->current++;
         entry++;
     }
     if (search->current > search->limit || search->current > max)
@@ -522,6 +525,7 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
         syswarn("tradindexed: cannot close %s.IDX-NEW", data->path);
         goto fail;
     }
+    data->base = base;
     return true;
 
  fail:

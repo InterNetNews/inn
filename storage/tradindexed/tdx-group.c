@@ -117,6 +117,7 @@ static const GROUPLOC empty_loc = { -1 };
 /* Internal prototypes. */
 static int index_entry_count(size_t size);
 static size_t index_file_size(int count);
+static GROUPLOC index_offset_to_loc(ptrdiff_t offset);
 static bool index_lock(int fd, enum inn_locktype type);
 static bool index_lock_group(int fd, GROUPLOC loc, enum inn_locktype type);
 static bool index_map(struct group_index *);
@@ -144,6 +145,20 @@ static size_t
 index_file_size(int count)
 {
     return sizeof(struct group_header) + count * sizeof(struct group_entry);
+}
+
+
+/*
+**  Given an offset from the beginning of the entry table in the group.index
+**  file, convert that to a GROUPLOC.
+*/
+static GROUPLOC
+index_offset_to_loc(ptrdiff_t offset)
+{
+    GROUPLOC loc;
+
+    loc.recno = offset / sizeof(struct group_entry);
+    return loc;
 }
 
 
@@ -482,6 +497,7 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
     unsigned int bucket;
     GROUPLOC loc;
     struct group_entry *entry;
+    struct group_data *data;
 
     if (!index->writable)
         return false;
@@ -509,16 +525,24 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
 
     /* Initialize the entry. */
     entry = &index->entries[loc.recno];
+    hash = Hash(group, strlen(group));
     entry->hash = hash;
     entry->low = low;
     entry->high = high;
     entry->deleted = 0;
     entry->base = 0;
     entry->count = 0;
-    hash = Hash(group, strlen(group));
+    entry->flag = *flag;
     bucket = index_bucket(hash);
     entry->next = index->header->hash[bucket];
     index->header->hash[bucket] = loc;
+
+    /* Create the data files and initialize the index inode. */
+    data = tdx_data_new(group, index->writable);
+    if (!tdx_data_open_files(data))
+        warn("tradindexed: unable to create data files for %s", group);
+    entry->indexinode = data->indexinode;
+    tdx_data_close(data);
 
     index_lock(index->fd, INN_LOCK_UNLOCK);
     msync(index->header, sizeof(struct group_header), MS_ASYNC);
@@ -599,6 +623,8 @@ tdx_data_open(struct group_index *index, const char *group,
         if (loc.recno == -1)
             return NULL;
         entry = &index->entries[loc.recno];
+    } else {
+        loc = index_offset_to_loc(entry - index->entries);
     }
 
     data = tdx_data_new(group, index->writable);
@@ -676,6 +702,7 @@ tdx_data_add(struct group_index *index, const char *group,
             entry->base = old_base;
             goto fail;
         }
+        entry->indexinode = data->indexinode;
     }
 
     /* Store the data. */
@@ -688,7 +715,7 @@ tdx_data_add(struct group_index *index, const char *group,
     if (entry->high < article->number)
         entry->high = article->number;
     entry->count++;
-    mmap_flush(entry, sizeof(*entry));
+    msync(entry, sizeof(*entry), MS_ASYNC);
     index_lock_group(index->fd, loc, INN_LOCK_UNLOCK);
     tdx_data_close(data);
     return true;
