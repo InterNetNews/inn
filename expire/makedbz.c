@@ -70,7 +70,6 @@ STATIC void Rebuild(OFFSET_T size, BOOL IgnoreOld, BOOL Overwrite)
 #ifndef	DO_TAGGED_HASH
     TOKEN	token;
     void        *ivalue;
-    idxrec      ionevalue;  
 #endif
 
     if (chdir(HistoryDir) < 0) {
