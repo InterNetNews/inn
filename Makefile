@@ -119,7 +119,7 @@ clobber realclean distclean:
 	done
 	@echo ''
 	rm -rf inews.* rnews.* $(TARDIR)
-	rm -f inn*.tar.gz TAGS tags
+	rm -f inn*.tar.gz TAGS tags LIST.*
 	rm -f config.cache config.log config.status libtool
 	rm -f include/autoconfig.h include/config.h include/paths.h
 	rm -f support/fixscript Makefile.global
@@ -141,12 +141,12 @@ TAGS etags:
 ##  isn't in the MANIFEST, it doesn't go into the release.  We also update
 ##  the version information in Makefile.global.in to remove the prerelease
 ##  designation and update all timestamps to the date the release is made.
-release: MANIFEST
+release:
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
-	for d in `sed $(DISTDIRS) < MANIFEST` ; do mkdir $$i ; done
-	for f in `sed $(DISTFILES) < MANIFEST` ; do \
+	for d in `sed $(DISTDIRS) MANIFEST` ; do mkdir $$i ; done
+	for f in `sed $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
 	sed 's/= CVS prerelease/=/' < Makefile.global.in \
@@ -154,3 +154,11 @@ release: MANIFEST
 	find $(TARDIR) -type -f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(GZIP) -9 $(TARFILE)
+
+
+##  Check the MANIFEST against the files present in the current tree,
+##  building a list with find and running diff between the lists.
+check-manifest:
+	sed -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
+	find . -print | sed -e 's/^\.\///' -e /CVS/d | sort > LIST.real
+	diff -u LIST.manifest LIST.real
