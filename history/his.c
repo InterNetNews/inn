@@ -422,7 +422,7 @@ void HISlogto(const char *s) {
 
    HISlogclose();
    if ((HISfdlog = Fopen(s, "a", INND_HISLOG)) == NULL)
-       syslog(L_FATAL, "cant open %s %m", s);
+       syswarn("cant open %s", s);
    /* initialize our counters */
    for (i = 0; i < S_HIS_MAX; i++) {
        HISstat_start[i].tv_sec = 0;
