@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 #include "inn/history.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "ov.h"
 #include "ovinterface.h"
@@ -796,7 +797,7 @@ tdx_data_delete(const char *group, const char *suffix)
 **  Dump the index file for a given group in human-readable format.
 */
 void
-tdx_data_index_dump(struct group_data *data)
+tdx_data_index_dump(struct group_data *data, FILE *output)
 {
     ARTNUM current;
     struct index_entry *entry, *end;
@@ -808,10 +809,10 @@ tdx_data_index_dump(struct group_data *data)
     current = data->base;
     end = data->index + (data->indexlen / sizeof(struct index_entry));
     for (entry = data->index; entry < end; entry++) {
-        printf("%lu %lu %lu %lu %lu %s\n", current,
-               (unsigned long) entry->offset, (unsigned long) entry->length,
-               (unsigned long) entry->arrived, (unsigned long) entry->expires,
-               TokenToText(entry->token));
+        fprintf(output, "%lu %lu %lu %lu %lu %s\n", current,
+                (unsigned long) entry->offset, (unsigned long) entry->length,
+                (unsigned long) entry->arrived,
+                (unsigned long) entry->expires, TokenToText(entry->token));
         current++;
     }
 }

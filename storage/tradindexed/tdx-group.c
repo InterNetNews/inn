@@ -89,6 +89,7 @@
 #include <time.h>
 
 #include "inn/hashtab.h"
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "paths.h"
@@ -114,7 +115,7 @@ struct group_index {
 static int index_entry_count(size_t size);
 static size_t index_file_size(int count);
 static bool index_lock(int fd, enum inn_locktype type);
-static bool index_lock_entry(int fd, ptrdiff_t offset, enum inn_locktype);
+static bool index_lock_group(int fd, ptrdiff_t offset, enum inn_locktype);
 static bool index_map(struct group_index *);
 static bool index_maybe_remap(struct group_index *, long loc);
 static void index_unmap(struct group_index *);
@@ -916,20 +917,21 @@ hashmap_load(void)
 **  all on one line.  Name is passed into this function.
 */
 void
-tdx_index_print(const char *name, const struct group_entry *entry)
+tdx_index_print(const char *name, const struct group_entry *entry,
+                FILE *output)
 {
-    printf("%s %lu %lu %lu %lu %c %lu %lu\n", name, entry->high,
-           entry->low, entry->base, (unsigned long) entry->count,
-           entry->flag, entry->deleted, (unsigned long) entry->indexinode);
+    fprintf(output, "%s %lu %lu %lu %lu %c %lu %lu\n", name, entry->high,
+            entry->low, entry->base, (unsigned long) entry->count,
+            entry->flag, entry->deleted, (unsigned long) entry->indexinode);
 }
 
 
 /*
 **  Dump the complete contents of the group.index file in human-readable form
-**  to stdout, one line per group.
+**  to the specified file, one line per group.
 */
 void
-tdx_index_dump(struct group_index *index)
+tdx_index_dump(struct group_index *index, FILE *output)
 {
     int bucket;
     long current;
@@ -955,7 +957,7 @@ tdx_index_dump(struct group_index *index)
             }
             if (name == NULL)
                 name = HashToText(entry->hash);
-            tdx_index_print(name, entry);
+            tdx_index_print(name, entry, output);
             current = entry->next.recno;
         }
     }

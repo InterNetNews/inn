@@ -7,6 +7,7 @@
 #define INN_TDX_PRIVATE_H 1
 
 #include "config.h"
+#include <stdio.h>
 #include <sys/types.h>
 
 #include "libinn.h"
@@ -83,7 +84,7 @@ struct group_index *tdx_index_open(bool writable);
 struct group_entry *tdx_index_entry(struct group_index *, const char *group);
 
 /* Print the contents of a single group entry in human-readable form. */
-void tdx_index_print(const char *name, const struct group_entry *);
+void tdx_index_print(const char *name, const struct group_entry *, FILE *);
 
 /* Add a new newsgroup to the index file. */
 bool tdx_index_add(struct group_index *, const char *group, ARTNUM low,
@@ -93,7 +94,7 @@ bool tdx_index_add(struct group_index *, const char *group, ARTNUM low,
 bool tdx_index_delete(struct group_index *, const char *group);
 
 /* Dump the contents of the index file to stdout in human-readable form. */
-void tdx_index_dump(struct group_index *);
+void tdx_index_dump(struct group_index *, FILE *);
 
 /* Close the open index file and dispose of the opaque data structure. */
 void tdx_index_close(struct group_index *);
@@ -108,6 +109,7 @@ bool tdx_data_add(struct group_index *, struct group_entry *,
 
 /* Expire a single group. */
 bool tdx_expire(const char *group, ARTNUM *low, struct history *);
+
 
 /* tdx-data.c */
 
@@ -145,7 +147,7 @@ bool tdx_data_expire_start(const char *group, struct group_data *,
 bool tdx_data_expire_finish(const char *group);
 
 /* Dump the contents of the index file for a group. */
-void tdx_data_index_dump(struct group_data *data);
+void tdx_data_index_dump(struct group_data *, FILE *);
 
 /* Close the open data files for a group and free the structure. */
 void tdx_data_close(struct group_data *);
