@@ -2,22 +2,18 @@
 /* memcmp test suite. */
 
 #include "config.h"
-
 #include <stdio.h>
 #include <sys/types.h>
 
-int test_memcmp(const void *, const void *, size_t);
+#include "libtest.h"
 
-static void
-ok(int n, int success)
-{
-    printf("%sok %d\n", success ? "" : "not ", n);
-}
+int test_memcmp(const void *, const void *, size_t);
 
 int
 main(void)
 {
     puts("15");
+
     ok( 1, test_memcmp("",             "",             0) == 0);
     ok( 2, test_memcmp("",             "",             1) == 0);
     ok( 3, test_memcmp("alpha",        "alpha",        6) == 0);
@@ -33,5 +29,6 @@ main(void)
     ok(13, test_memcmp("\100",         "\201",         1)  < 0);
     ok(14, test_memcmp("\200",         "\201",         1)  < 0);
     ok(15, test_memcmp("a",            "b",            0) == 0);
+
     return 0;
 }

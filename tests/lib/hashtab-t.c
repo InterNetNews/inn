@@ -7,17 +7,12 @@
 
 #include "libinn.h"
 #include "inn/hashtab.h"
+#include "libtest.h"
 
 struct wordref {
     const char *word;
     int count;
 };
-
-static void
-ok(int n, int success)
-{
-    printf("%sok %d\n", success ? "" : "not ", n);
-}
 
 static const void *
 string_key(const void *entry)
