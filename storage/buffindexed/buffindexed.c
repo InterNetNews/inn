@@ -257,6 +257,24 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type);
 STATIC void *ovopensearch(char *group, int low, int high, BOOL needov);
 STATIC void ovclosesearch(void *handle, BOOL freeblock);
 
+STATIC OFFSET_T mmappwrite(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset) {
+  int		pagefudge, len;
+  OFFSET_T	mmapoffset;
+  caddr_t	addr;
+
+  pagefudge = offset % pagesize;
+  mmapoffset = offset - pagefudge;
+  len = pagefudge + nbyte;
+
+  if ((addr = mmap((caddr_t) 0, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, mmapoffset)) == (caddr_t) -1) {
+    return -1;
+  }
+  memcpy(addr+pagefudge, buf, nbyte);
+  munmap(addr, len);
+  return nbyte;
+}
+
+
 STATIC BOOL ovparse_part_line(char *l) {
   char		*p;
   struct stat	sb;
@@ -697,7 +715,10 @@ STATIC OVBUFF *getovbuff(OV ov) {
 /* just search ov, do not set curindex */
 STATIC OV getsrchov(OV ov, ARTNUM artnum, OVINDEXHEAD *ovihp, SRCH type) {
   OVBUFF	*ovbuff;
-  OVINDEXHEAD	ovindexhead;
+  OVINDEXHEAD	*ovindexhead;
+  caddr_t	addr;
+  int		pagefudge, len;
+  OFFSET_T	offset, mmapoffset;
 
   if (type != SRCH_FRWD && type != SRCH_BKWD)
     return ovnull;
@@ -705,19 +726,29 @@ STATIC OV getsrchov(OV ov, ARTNUM artnum, OVINDEXHEAD *ovihp, SRCH type) {
     ovbuff = getovbuff(ov);
     if (ovbuff == NULL)
       return ovnull;
-    if (pread(ovbuff->fd, (POINTER)&ovindexhead, sizeof(ovindexhead), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(ovindexhead)) {
-      syslog(L_ERROR, "%s: could not read index record index '%d', blocknum '%d': %m", LocalLogName, ov.index, ov.blocknum);
-      return ovnull;
+
+    offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
+    pagefudge = offset % pagesize;
+    mmapoffset = offset - pagefudge;
+    len = pagefudge + OV_BLOCKSIZE;
+
+    if ((addr = mmap((caddr_t) 0, len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == (caddr_t) -1) {
+	syslog(L_ERROR, "%s: could not mmap index record index '%d', blocknum '%d': %m", LocalLogName, ov.index, ov.blocknum);
+	return ovnull;
     }
-    if (ovindexhead.base <= artnum && ovindexhead.base + OVINDEXMAX - ovindexhead.baseoffset > artnum) {
+    ovindexhead = (OVINDEXHEAD *)(addr + pagefudge);
+
+    if (ovindexhead->base <= artnum && ovindexhead->base + OVINDEXMAX - ovindexhead->baseoffset > artnum) {
       if (ovihp)
-	*ovihp = ovindexhead;
+	*ovihp = *ovindexhead;
+      munmap(addr, len);
       return ov;
     }
     if (type == SRCH_FRWD)
-      ov = ovindexhead.next;
+      ov = ovindexhead->next;
     else
-      ov = ovindexhead.prev;
+      ov = ovindexhead->prev;
+    munmap(addr, len);
   }
   return ovnull;
 }
@@ -1231,7 +1262,7 @@ STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset) {
     ovblock.ovindexhead.prev = ovnull;
     ovblock.ovindexhead.next = ovnull;
     ovblock.ovindexhead.base = base;
-    if (pwrite(ovbuff->fd, (POINTER)&ovblock, sizeof(ovblock), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(ovblock)) {
+    if (mmappwrite(ovbuff->fd, (POINTER)&ovblock, sizeof(ovblock), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(ovblock)) {
       syslog(L_ERROR, "%s: ovsetcurindexblock could not initialize ovbuff block index '%d', blocknum '%d': %m", LocalLogName, ov.index, ov.blocknum);
       return FALSE;
     }
@@ -1343,7 +1374,7 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     abort();
   }
 #endif /* OV_DEBUG */
-  if (pwrite(ovbuff->fd, data, len, ovbuff->base + ge->curdata.blocknum * OV_BLOCKSIZE + ge->curoffset) != len) {
+  if (mmappwrite(ovbuff->fd, data, len, ovbuff->base + ge->curdata.blocknum * OV_BLOCKSIZE + ge->curoffset) != len) {
     syslog(L_ERROR, "%s: could not append overview record index '%d', blocknum '%d': %m", LocalLogName, ge->curdata.index, ge->curdata.blocknum);
     return FALSE;
   }
@@ -1374,7 +1405,7 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     abort();
   }
 #endif /* OV_DEBUG */
-  if (pwrite(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE + sizeof(OVINDEXHEAD) + sizeof(ie) * (artnum - ge->baseinblock + baseoffset)) != sizeof(ie)) {
+  if (mmappwrite(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE + sizeof(OVINDEXHEAD) + sizeof(ie) * (artnum - ge->baseinblock + baseoffset)) != sizeof(ie)) {
     syslog(L_ERROR, "%s: could not write index record index '%d', blocknum '%d': %m", LocalLogName, ge->curindex.index, ge->curindex.blocknum);
     return TRUE;
   }
