@@ -1363,18 +1363,19 @@ ARTxrefslave()
     NEWSGROUP	*ngp;
     int	        i, len;
     char        xrefbuf[MAXHEADERSIZE*2];
+    BOOL	nogroup = TRUE;
 
     if (!ARTheaders[_xref].Found)
     	return FALSE;
-    if ((name = strchr(HDR(_xref), ' ')) == NULL)
+    if ((q = name = strchr(HDR(_xref), ' ')) == NULL)
     	return FALSE;
     while ( *++name == ' ' );
     if ( *name == '\0' )
     	return FALSE;
 
     p = xrefbuf;
-    strncpy(p, Path.Data, Path.Used - 1);
-    p += Path.Used - 1;
+    strncpy(p, HDR(_xref), q - HDR(_xref));
+    p += q - HDR(_xref);
     
     for (i = 0; *name; name = next) {
 	/* Mark end of this entry and where next one starts. */
@@ -1418,9 +1419,10 @@ ARTxrefslave()
 	sprintf(p, " %s:%ld", name, ngp->Filenum);
 	len = strlen(p);
 	p += len;
-	
+	nogroup = FALSE;
     }
-    
+    if (nogroup)
+	return FALSE;
     ARTheaders[_xref].Length = strlen(xrefbuf);
     strcpy(HDR(_xref), xrefbuf);
     return TRUE;
