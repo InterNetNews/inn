@@ -304,6 +304,7 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
       }
     }
     grplist[0] = group = p;
+    grplist[1] = NULL;
     if (PERMspecified && !PERMmatch(PERMreadlist, grplist))
       continue;
     if (!AllGroups && !PERMmatch(groups, grplist))
