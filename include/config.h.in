@@ -234,9 +234,6 @@
 /* Define if you have unix domain sockets.  */
 #undef HAVE_UNIX_DOMAIN_SOCKETS
 
-/* Define to `(unsigned long) -1' if <netinet/in.h> doesn't define.  */
-#undef INADDR_NONE
-
 /* Additional valid low-numbered port for inndstart.  */
 #undef INND_PORT
 
@@ -310,6 +307,9 @@
 
 /* Define if you have the gettimeofday function.  */
 #undef HAVE_GETTIMEOFDAY
+
+/* Define if you have the inet_aton function.  */
+#undef HAVE_INET_ATON
 
 /* Define if you have the lockf function.  */
 #undef HAVE_LOCKF
@@ -418,9 +418,6 @@
 
 /* Define if you have the <ndir.h> header file.  */
 #undef HAVE_NDIR_H
-
-/* Define if you have the <sgtty.h> header file.  */
-#undef HAVE_SGTTY_H
 
 /* Define if you have the <stdarg.h> header file.  */
 #undef HAVE_STDARG_H

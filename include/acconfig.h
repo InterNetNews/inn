@@ -177,9 +177,6 @@
 /* Define if you have unix domain sockets.  */
 #undef HAVE_UNIX_DOMAIN_SOCKETS
 
-/* Define to `(unsigned long) -1' if <netinet/in.h> doesn't define.  */
-#undef INADDR_NONE
-
 /* Additional valid low-numbered port for inndstart.  */
 #undef INND_PORT
 
