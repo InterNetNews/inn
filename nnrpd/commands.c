@@ -4,6 +4,7 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
 #include <netinet/in.h>
 
 #include "nnrpd.h"
@@ -177,6 +178,10 @@ PERMgeneric(av, accesslist)
     (void)close(pan[PIPE_WRITE]);
     i = read(pan[PIPE_READ], path, sizeof(path));
 
+    waitpid(pid, &status, 0);
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+        return 1;
+
     if ((p = strchr(path, '\n')) != NULL)
 	*p = '\0';
 
@@ -184,8 +189,6 @@ PERMgeneric(av, accesslist)
 	DISPOSE(PERMauthstring);
 
     PERMauthstring = COPY(path);
-
-    while( pid != waitnb(&status) );
 
     /*syslog(L_NOTICE, "%s (%ld) returned: %d %s %d\n", av[0], (long) pid, i, path, status);*/
     /* Split "host:permissions:user:pass:groups" into fields. */
@@ -208,7 +211,7 @@ PERMgeneric(av, accesslist)
     /*for (i = 0; fields[i] && i < 6; i++)
 	printf("fields[%d] = %s\n", i, fields[i]);*/
 
-    return !status;
+    return 0;
 }
 
 /* ARGSUSED */
