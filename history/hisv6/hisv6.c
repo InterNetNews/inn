@@ -390,6 +390,15 @@ hisv6_checkfiles(struct hisv6 *h)
     if (h->statinterval == 0)
 	return true;
 
+    if (h->readfd == -1) {
+	/* this can happen if a previous checkfiles() has failed to
+	 * reopen the handles, but our caller hasn't realised... */
+	hisv6_closefiles(h);
+	if (!hisv6_reopen(h)) {
+	    hisv6_closefiles(h);
+	    return false;
+	}
+    }
     if (seq_lcompare(t, h->nextcheck) == 1) {
 	struct stat st;
 
@@ -553,11 +562,35 @@ hisv6_fetchline(struct hisv6 *h, const HASH *hash, char *buf, off_t *poff)
     }
 
     /* Get the seek value into the history file. */
-    if (dbzfetch(*hash, &offset)) {
+    errno = 0;
+    r = dbzfetch(*hash, &offset);
+#ifdef ESTALE
+    /* If your history is on NFS need to deal with stale NFS
+     * handles */
+    if (!r && errno == ESTALE) {
+	hisv6_closefiles(h);
+	if (!hisv6_reopen(h)) {
+	    hisv6_closefiles(h);
+	    r = false;
+	    goto fail;
+	}
+    }
+#endif
+    if (r) {
 	ssize_t n;
 
 	do {
 	    n = pread(h->readfd, buf, HISV6_MAXLINE, offset);
+#ifdef ESTALE
+	    if (n == -1 && errno == ESTALE) {
+		hisv6_closefiles(h);
+		if (!hisv6_reopen(h)) {
+		    hisv6_closefiles(h);
+		    r = false;
+		    goto fail;
+		}
+	    }
+#endif
 	} while (n == -1 && errno == EINTR);
 	if (n >= HISV6_MINLINE) {
 	    char *p;
