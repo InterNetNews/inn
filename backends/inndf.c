@@ -50,7 +50,6 @@
 #include "libinn.h"
 #include "ov.h"
 #include "paths.h"
-#include "storage.h"
 
 /* The portability mess.  Hide everything in macros so that the actual code
    is relatively clean.  SysV uses statvfs, BSD uses statfs, and ULTRIX is
