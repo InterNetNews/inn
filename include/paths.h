@@ -13,7 +13,7 @@
     /* =()<#define _PATH_INNDSTART	"@<_PATH_INNDSTART>@">()= */
 #define _PATH_INNDSTART	"/usr/news/bin/inndstart"
     /* =()<#define _PATH_SENDMAIL	"@<_PATH_SENDMAIL>@">()= */
-#define _PATH_SENDMAIL	"/usr/sbin/sendmail -t"
+#define _PATH_SENDMAIL	"/usr/sbin/sendmail -oi %s"
     /* =()<#define _PATH_SH		"@<_PATH_SH>@">()= */
 #define _PATH_SH		"/bin/sh"
     /* =()<#define _PATH_NNRPD		"@<_PATH_NNRPD>@">()= */
@@ -138,6 +138,8 @@
 #define _PATH_SCHEMA	"/var/news/etc/overview.fmt"
     /* =()<#define _PATH_XBATCHES	"@<_PATH_XBATCHES>@">()= */
 #define _PATH_XBATCHES	"/var/news/spool/in.coming"
+    /* =()<#define _PATH_MOTD	"@<_PATH_MOTD>@">()= */
+#define _PATH_MOTD	"/var/news/etc/motd.news"
 
 
 
