@@ -352,7 +352,8 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
     if [ -f "${SITE}.work" ] ; then
 	if [ X${STORAGEAPI} = X"true" -o X${STORAGEAPI} = X"yes" -o \
 			X${STORAGEAPI} = X"on" ]; then
-	    mv "${SITE}.work" "${BATCHFILE}"
+	    cat "${SITE}.work" >>"${BATCHFILE}"
+	    rm -f "${SITE}.work"
 	else
 	    sort "${SITE}.work" >>"${BATCHFILE}"
 	    rm -f "${SITE}.work"
@@ -364,7 +365,8 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	if ctlinnd -s -t30 flush ${SITE} ; then
 	    if [ X${STORAGEAPI} = X"true" -o X${STORAGEAPI} = X"yes" -o \
 			X${STORAGEAPI} = X"on" ]; then
-		mv ${SITE}.work "${BATCHFILE}"
+		cat ${SITE}.work >>"${BATCHFILE}"
+		rm -f ${SITE}.work
 	    else
 		sort ${SITE}.work >>"${BATCHFILE}"
 		rm -f ${SITE}.work
