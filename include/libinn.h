@@ -181,6 +181,7 @@ struct conf_vars {
 	char *ovmethod;
         int useoverchan; /* should innd write overview, or should overchan */
         int immediatecancel;
+	int ovmmapthreshold;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

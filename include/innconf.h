@@ -314,7 +314,10 @@ struct conf_rec conf_defaults[] = {
     { _CONF_NOREADER,				"",	2, 1 },
 #define _CONF_SOURCEADDRESS			"sourceaddress"
 #define CONF_VAR_SOURCEADDRESS			97
-    { _CONF_SOURCEADDRESS,			"",	1, 1 }
+    { _CONF_SOURCEADDRESS,			"",	1, 1 },
+#define _CONF_OVMMAPTHRESHOLD			"ovmmapthreshold"
+#define CONF_VAR_OVMMAPTHRESHOLD		98
+    { _CONF_OVMMAPTHRESHOLD,			"",	1, 1 }
 };
-#define MAX_CONF_VAR 98
+#define MAX_CONF_VAR 99
 
