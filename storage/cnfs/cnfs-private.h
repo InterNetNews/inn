@@ -14,6 +14,8 @@
 typedef off_t	CYCBUFF_OFF_T;
 /* =()<#define	CNFSseek		@<CNFSseekcall>@>()= */
 #define	CNFSseek		lseek
+/* =()<#define	CNFS_HDR_PAGESIZE	@<CNFS_HDR_PAGESIZE>@>()= */
+#define	CNFS_HDR_PAGESIZE	16384
 
 #define	CNFS_MAGICV1	"Cycbuff"	/* CNFSMASIZ bytes */
 #define	CNFS_MAGICV2	"CBuf1"		/* CNFSMASIZ bytes */

@@ -358,7 +358,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   */
   minartoffset =
       cycbuff->len / (CNFS_BLOCKSIZE * 8) + CNFS_BEFOREBITF;
-  tonextblock = pagesize - (minartoffset & (pagesize - 1));
+  tonextblock = CNFS_HDR_PAGESIZE - (minartoffset & (CNFS_HDR_PAGESIZE - 1));
   cycbuff->minartoffset = minartoffset + tonextblock;
 
   if (cycbufftab == (CYCBUFF *)NULL)
@@ -867,7 +867,22 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	}
     }
     if (pagesize == 0) {
-	pagesize = 16384;	/* portable solution */
+#if	defined(HAVE_GETPAGESIZE)
+	pagesize = getpagesize();
+#elif	defined(_SC_PAGESIZE)
+	if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
+	    syslog(L_ERROR, "%s: sysconf(_SC_PAGESIZE) failed: %m", LocalLogName);
+	    SMseterror(SMERR_INTERNAL, "sysconf(_SC_PAGESIZE) failed");
+	    return NULL;
+	}
+#else
+	pagesize = 16384;
+#endif
+	if ((pagesize > CNFS_HDR_PAGESIZE) || (CNFS_HDR_PAGESIZE % pagesize)) {
+	    syslog(L_ERROR, "%s: CNFS_HDR_PAGESIZE (%d) is not a multiple of pagesize (%d)", LocalLogName, CNFS_HDR_PAGESIZE, pagesize);
+	    SMseterror(SMERR_INTERNAL, "CNFS_HDR_PAGESIZE not multiple of pagesize");
+	    return NULL;
+	}
     }
     if (STORAGE_TOKEN_LENGTH < 16) {
 	syslog(L_ERROR, "%s: token length is less than 16 bytes", LocalLogName);
