@@ -439,6 +439,27 @@ rather than:
 
 to make it clearer what the code is assuming.
 
+=item *
+
+It's better to always put the body of an if statement on a separate line,
+even if it's only a single line.  In other words, write:
+
+    if (p != NULL)
+        return p;
+
+and not:
+
+    if (p != NULL) return p;
+
+This is in part for a practical reason:  Some code coverage analysis tools
+like purecov will count the second example above as a single line and
+won't notice if the condition always evaluates the same way.
+
+=item *
+
+When noting something that should be improved later, add a comment
+containing "FIXME:" so that one can easily grep for such comments.
+
 =back
 
 The source is currently full of some rather odd casts, including a lot of
