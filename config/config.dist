@@ -46,7 +46,7 @@ NNTPLIB
 ##  On NetBSD and FreeBSD, you must add the -lcrypt directive here
 ##  -lutil on BSD/OS gives you setproctitle() see HAVE_SETPROCTITLE.
 #### =()<LIBS			@<LIBS>@>()=
-LIBS			-lutil
+LIBS			
 ##  How to make a lint library; pick BSD, SYSV, or NONE.
 #### =()<LINTLIBSTYLE		@<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE		NONE
@@ -208,7 +208,7 @@ HAVE_GETTIMEOFDAY	DO
 ##  Do you have setproctitle()?  Pick DO or DONT.
 ##  You may need to adjust LIBS for this.
 #### =()<HAVE_SETPROCTITLE	@<HAVE_SETPROCTITLE>@>()=
-HAVE_SETPROCTITLE	DO
+HAVE_SETPROCTITLE	DONT
 ##  Do you have fchmod?  Pick DO or DONT.
 #### =()<HAVE_FCHMOD		@<HAVE_FCHMOD>@>()=
 HAVE_FCHMOD		DO
@@ -217,7 +217,7 @@ HAVE_FCHMOD		DO
 HAVE_SETSID		DO
 ##  Does your (struct tm) have a tm_gmtoff field?  Pick DO or DONT.
 #### =()<HAVE_TM_GMTOFF		@<HAVE_TM_GMTOFF>@>()=
-HAVE_TM_GMTOFF		DO
+HAVE_TM_GMTOFF		DONT
 ##  Does your (struct stat) have a st_blksize field?  Pick DO or DONT.
 #### =()<HAVE_ST_BLKSIZE		@<HAVE_ST_BLKSIZE>@>()=
 HAVE_ST_BLKSIZE		DO
@@ -244,7 +244,7 @@ HAVE_UNIX_DOMAIN	DO
 BIND_USE_SIZEOF		DO
 ##  How should close-on-exec be done?  Pick IOCTL or FCNTL.
 #### =()<CLX_STYLE		@<CLX_STYLE>@>()=
-CLX_STYLE		IOCTL
+CLX_STYLE		FCNTL
 ##  How should non-blocking I/O be done?  Pick IOCTL or FCNTL.
 #### =()<NBIO_STYLE		@<NBIO_STYLE>@>()=
 NBIO_STYLE		FCNTL
