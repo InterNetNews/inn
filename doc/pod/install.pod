@@ -956,9 +956,9 @@ There are two ways to create your cycbuffs:
 
 Use a raw disk partition (best).  This will give you the most speed, but
 it requires your OS support mmap(2) on a block device.  Solaris supports
-this, FreeBSD and Linux (without patches) do not.  Also on many PC-based
-Unixes it is difficult to create more than eight partitions, which may
-limit your options.
+this, as do late Linux 2.4 kernels.  FreeBSD does not at last report.
+Also on many PC-based Unixes it is difficult to create more than eight
+partitions, which may limit your options.
 
 =item 2.
 
