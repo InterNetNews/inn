@@ -398,7 +398,7 @@ newsfeeds
 	    if /\s+$/;
 
         # Catch a variable setting.
-        if ( /^\$([A-Za-z0-9]+)= ) {
+        if ( /^\$([A-Za-z0-9]+)=/ ) {
             print "$file:$line: variable name too long\n"
                 if length ($1) > 31;
             next input;
