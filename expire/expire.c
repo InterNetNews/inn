@@ -1633,8 +1633,10 @@ int main(int ac, char *av[])
 	}
     ac -= optind;
     av += optind;
-    if (ac != 0 && ac != 1)
+    if ((ac != 0 && ac != 1) || (EXPearliest && EXPkeep))
 	Usage();
+    if (!EXPearliest && !EXPkeep && innconf->storageapi)
+	EXPearliest = TRUE;
 
     /* Get active file, parse it. */
     if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {

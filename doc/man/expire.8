@@ -138,6 +138,12 @@ The ``\fB\-r\fP'' flag should be used with this flag.
 .B \-e
 If the ``\fI\-e\fP'' flag is used, then as soon as the first cross posting 
 of the article expires, all copies of it are removed.
+Note that you cannot use both ``\fI\-e\fP'' and ``\fI\-k\fP'' flag at the
+same time.
+If you turn on 'storageapi' in
+.IR inn.conf (5)
+and don't use both ``\fI\-e\fP'' and ``\fI\-k\fP'' flag,
+``\fI\-e\fP'' flag is set internally.
 .TP
 .B \-f
 To specify an alternate history file, use the ``\fB\-f\fP'' flag.
@@ -167,10 +173,13 @@ To ignore the old database, use the ``\fB\-i\fP'' flag.
 .TP
 .B \-k
 If this flag is used then articles are removed when they have been
-expired from all the groups they appear in.  This is intended for use
-on news spools that are on a single filesystem and/or with the time
-based spool. (See
-.IR inn.conf (5))
+expired from all the groups they appear in.
+Note that you cannot use both ``\fI\-e\fP'' and ``\fI\-k\fP'' flag at the
+same time.
+If you turn on 'storageapi' in
+.IR inn.conf (5)
+and don't use both ``\fI\-e\fP'' and ``\fI\-k\fP'' flag,
+``\fI\-e\fP'' flag is set internally.
 .TP
 .B \-l
 .I Expire
