@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!@_PATH_PERL@
 # 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sun, 19 Jan 1997 21:19:24 +0100
 # Project:      INN (innfeed)
-# File:         convertconfig.pl
+# File:         innfeed-convcfg.in
 # RCSId:        $Id$
 # Description:  Read in a old version of innfeed.conf on the command line 
 #		or on stdin, and write a new version on stdout.
@@ -13,7 +13,6 @@ require 'ctime.pl' ;
 
 
 @keyorder = (
-'news-spool',
 'pid-file',
 'debug-level',
 'use-mmap',
@@ -49,13 +48,12 @@ require 'ctime.pl' ;
 );
 
 %procDefaults = (
-'news-spool', '/var/news/spool/articles',
 'pid-file', 'innfeed.pid',
 'debug-level', '0',
 'use-mmap', 'false',
 'log-file', 'innfeed.log',
 'stdio-fdmax', '0',
-'backlog-directory', '/var/news/spool/innfeed',
+'backlog-directory', 'innfeed',
 'backlog-rotate-period', '60',
 'backlog-ckpt-period', '30',
 'backlog-newfile-period', '600',

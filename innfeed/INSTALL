@@ -51,9 +51,9 @@
 	- the config.h value for CONFIG_FILE.
 
    If you're running innfeed version 0.9.3 or lower, then you can use the
-   supplied perlscript convertconfig.pl to create a new-style config file:
+   supplied perlscript innfeed-convcfg to create a new-style config file:
 
-	convertconfig old-innfeed.conf > new-innfeed.conf
+	innfeed-convcfg old-innfeed.conf > new-innfeed.conf
 
 9. Edit the new innfeed.conf as approriate.
 

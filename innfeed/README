@@ -47,7 +47,7 @@ Changes for 0.10
 	   ``-C'' (for ``check'') that will make innfeed read the config
 	   file and report on any errors and then exit. This will let you
 	   verify things before locking them into a newsfeeds file entry. A
-	   program has been added ``convertconfig.pl'' that will read your
+	   program has been added ``innfeed-convcfg'' that will read your
 	   old config off the command line (or stdin), and will write a new
 	   version to stdout. 
 

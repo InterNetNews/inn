@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!@_PATH_PERL@
 # 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Thu May 16 10:32:02 1996 +0200
@@ -31,37 +31,16 @@
 # improvments. 
 # 
 
-# If you have inn 1.5 or higher, then set $innshellvars to point at the
-# installed innshellvars.pl file. 
-$innshellvars = "/var/news/etc/innshellvars.pl" ;
+require "@ETCDIR@/innshellvars.pl" ;
 
-if ( -f $innshellvars ) {
-    require $innshellvars ;
-
-    $spoolTop = $inn'spool ; #'
-
-    # if $inn'batch is /var/news/spool/out.going then set tapeDir to 
-    # /var/news/spool/innfeed
-    $tapeDir = $inn'batch ; #'
-    $tapeDir =~ s!(.*)/.*!$1! ;
-    $tapeDir .= "/innfeed" ;
-
-    $destDir = $inn'spooltemp ; #'
-} else {
-    # the top of the article spool. In this directory are alt, comp etc. 
-    # Overriden with the ``-s'' option.
-    $spoolTop = "/var/news/spool/articles" ;
-
-    # The directory where innfeed stores its backlog files. 
-    # Overriden with the ``-t'' option.
-    $tapeDir = "/var/news/spool/innfeed" ;
-
-    # Where the files get written to before possibly being moved to the 
-    # tape directory. The ``-d'' option overrides
-    $destDir = "/var/tmp" ;
-}
-
-
+#
+#	Hmm, perhaps we should try to read "backlog-directory"
+#	from innfeed.conf. Oh well.
+#
+$tapeDir = $inn'pathspool . "/innfeed"; #'
+$destDir = $inn'spooltemp ; #'
+$spoolArts = $inn'patharticles ; #'
+$outGoing = $inn'pathoutgoing; #'
 
 ##
 ## Everything below here should probably be left alone.
@@ -75,8 +54,8 @@ $usage = "$0 [ -q ][ -v ][ -u ][ -e host ][ -d dir ][ -c [ -s dir ]][ -m [-t dir
   -e host    to process on entries for only that host
   -d dir     to put the output file(s) in that directory ($destDir)
   -c         to check pathnames of articles before storing them
-  -s dir     to specify the top of the news 
-             spool tree ($spoolTop)
+  -s dir     to specify where the news articles are
+             ($spoolArts)
   -m         to have $0 move the new files to the backlog directory.
   -t dir     to specify the backlog directory ($tapeDir)
   -u         to unlink the input files when finished
@@ -84,7 +63,7 @@ $usage = "$0 [ -q ][ -v ][ -u ][ -e host ][ -d dir ][ -c [ -s dir ]][ -m [-t dir
   -q         quiet mode; only display error messages. Good for cron jobs.
 
 $0 will take an inn funnel file (normally a file in
-/var/spool/news/out.going), or an innfeed ``dropped'' file, 
+$outGoing), or an innfeed ``dropped'' file, 
 which is presumed to be of the format:
 
 	pathname message-id peer1 peer2 peer3 ...
@@ -106,7 +85,7 @@ $opt_u = $opt_h = "";  # shut up, perl -w
 die $usage if ( $opt_h ) ;
 die "Cannot specify both -q and -v\n\n" . $usage if ($opt_q && $opt_v);
 
-$spoolTop = $opt_s if $opt_s ;
+$spoolArts = $opt_s if $opt_s ;
 $destDir = $opt_d if $opt_d ;
 $tapeDir = $opt_t if $opt_t ;
 $inputFile = shift ;
@@ -116,7 +95,7 @@ unless (-f $inputFile) {
        exit if $opt_q;
        die "No such file: $inputFile\n\n" . $usage;
 }
-die "No such directory: $spoolTop\n\n" . $usage if ( ! -d $spoolTop && $opt_c ) ;
+die "No such directory: $spoolArts\n\n" . $usage if ( ! -d $spoolArts && $opt_c ) ;
 die "No such directory: $destDir\n\n" . $usage if ( ! -d $destDir ) ;
 die "No such directory: $tapeDir\n\n" . $usage if ( ! -d $tapeDir && $opt_m ) ;
 
@@ -131,9 +110,9 @@ while (<INPUT>) {
         next unless (m!^\S+/\d+ <.+@.+> \S+!) ;  
 
 	if ( $opt_c ) {
-		if ( ! -f "$spoolTop/$F[0]" )  {
+		if ( ! -f "$spoolArts/$F[0]" )  {
 			$missing++ ;
-			print "Dropping file: $spoolTop/$F[0]\n" if $opt_v ;
+			print "Dropping file: $spoolArts/$F[0]\n" if $opt_v ;
 			next ;
 		}
 	}
@@ -159,7 +138,7 @@ while (<INPUT>) {
 				die "open >>$outputFile: $!\n" ;
 			print {$hosts{$host}} "$F[0] $F[1]\n";
 		}
-	}	
+	}
 }
 close (INPUT) ;
 

@@ -42,7 +42,7 @@ MANSRC		= innfeed.1 innfeed.conf.5
 
 EXTRAS		= testListener.pl inet_addr.c uio_maxiov.c configfile.y \
 		  configfile.l config_l.c config_y.c config_y.h \
-		  procbatch.pl convertconfig.pl malloc.c ChangeLog \
+		  procbatch.in innfeed-convcfg.in malloc.c ChangeLog \
 		  startinnfeed.c
 
 OBJS		= $(SRC:.c=.o) $(EXTRA_SRC:.c=.o) \
@@ -54,7 +54,7 @@ STARTINNFEED	= $D$(PATHBIN)/startinnfeed
 
 
 ALL_INSTALLED	= $D$(PATHBIN)/innfeed $D$(PATHBIN)/startinnfeed \
-		  $D$(PATHBIN)/procbatch $D$(PATHBIN)/convertconfig
+		  $D$(PATHBIN)/procbatch $D$(PATHBIN)/innfeed-convcfg
 
 MAN_INSTALLED   = $D$(MANDIR)/man1/innfeed.1 $D$(MANDIR)/man5/innfeed.conf.5
 
@@ -101,10 +101,7 @@ DEPENDFLAGS	= -s -c '$(CC) -E'
 .sh:
 	$(RM) $@ ; $(CP) $< $@ ; $(CHMOD) a-w,a+x $@
 
-.pl:
-	$(RM) $@ ; $(CP) $< $@ ; $(CHMOD) a-w,a+x $@
-
-all: innfeed startinnfeed procbatch convertconfig
+all: innfeed startinnfeed
 
 install: $(ALL_INSTALLED)
 
@@ -118,7 +115,7 @@ $D$(PATHBIN)/procbatch: procbatch
 	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
 
 
-$D$(PATHBIN)/convertconfig: convertconfig
+$D$(PATHBIN)/innfeed-convcfg: innfeed-convcfg
 	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
 	$(SAVEOLD)
 	$(COPYFILE)
@@ -143,7 +140,7 @@ tags: $(SRC) $(INCS)
 
 clean::
 	$(RM) version.c *.E *.o *.a *.core makedepend tags TAGS core \#* *~ 
-	$(RM) Makefile.BAK procbatch convertconfig
+	$(RM) Makefile.BAK
 	$(RM) innfeed startinnfeed uio_maxiov listing.ps logfile 
 
 realclean:: clean 
