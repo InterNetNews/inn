@@ -977,6 +977,18 @@ limit beyond which this value cannot be raised, usually either 128, 256,
 or 1024.  The default value of this parameter is -1.  Setting it to 256 on
 Solaris systems is highly recommended.
 
+=item I<keepmmappedthreshold>
+
+When overview retrieval which means responding 'XOVER' or running
+expireover, buffindexed mmap's all overview data blocks which include
+requested overview data internally for newsgroup.  But for high volumed
+newsgroups like control.cancel, it will try to do too many mmapping at
+once, and this may lead to system resource problem.  To avoid this,
+buffindexed mmap's just one overview block(8KB), if it will try to mmap
+over "keepmmappedthreshold * 1024"(bytes).  This parameter is specific
+to buffindexed overview storage method.  The default value is C<1024>
+(1MB).
+
 =back
 
 =head2 Paths and File Names

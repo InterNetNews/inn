@@ -272,6 +272,7 @@ SetDefaults(void)
     innconf->wipcheck = 5;
     innconf->wipexpire = 10;
     innconf->dontrejectfiltered = FALSE;
+    innconf->keepmmappedthreshold = 1024;
 }
 
 void
@@ -994,6 +995,11 @@ ReadInnConf(void)
 		TEST_CONFIG(CONF_VAR_DONTREJECTFILTERED, bit);
 		if (!bit && boolval != -1) innconf->dontrejectfiltered = boolval;
 		SET_CONFIG(CONF_VAR_DONTREJECTFILTERED);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_KEEPMMAPPEDTHRESHOLD)) {
+		TEST_CONFIG(CONF_VAR_KEEPMMAPPEDTHRESHOLD, bit);
+		if (!bit) innconf->keepmmappedthreshold = atoi(p);
+		SET_CONFIG(CONF_VAR_KEEPMMAPPEDTHRESHOLD);
 	    }
 	}
 	(void)Fclose(F);

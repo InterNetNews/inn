@@ -295,6 +295,7 @@ struct conf_vars {
     int pauseretrytime;         /* Seconds before seeing if pause is ended */
     int peertimeout;            /* How long peers can be inactive */
     int rlimitnofile;           /* File descriptor limit to set */
+    int keepmmappedthreshold;  /* threshold for keep mmapped for buffindexed */
 
     /* Paths */
     char *patharchive;          /* Archived news. */

@@ -138,7 +138,7 @@
 .\" ======================================================================
 .\"
 .IX Title "inn.conf 5"
-.TH inn.conf 5 "INN 2.4.0" "2000-07-16" "InterNetNews Documentation"
+.TH inn.conf 5 "INN 2.4.0" "2000-11-11" "InterNetNews Documentation"
 .UC
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
@@ -967,6 +967,17 @@ other than Solaris.  Nearly all operating systems have some hard maximum
 limit beyond which this value cannot be raised, usually either 128, 256,
 or 1024.  The default value of this parameter is \-1.  Setting it to 256 on
 Solaris systems is highly recommended.
+.Ip "\fIkeepmmappedthreshold\fR" 4
+.IX Item "keepmmappedthreshold"
+When overview retrieval which means responding '\s-1XOVER\s0' or running
+expireover, buffindexed mmap's all overview data blocks which include
+requested overview data internally for newsgroup.  But for high volumed
+newsgroups like control.cancel, it will try to do too many mmapping at
+once, and this may lead to system resource problem.  To avoid this,
+buffindexed mmap's just one overview block(8KB), if it will try to mmap
+over \*(L"keepmmappedthreshold * 1024\*(R"(bytes).  This parameter is specific
+to buffindexed overview storage method.  The default value is \f(CW\*(C`1024\*(C'\fR
+(1MB).
 .Sh "Paths and File Names"
 .IX Subsection "Paths and File Names"
 .Ip "\fIpatharchive\fR" 4

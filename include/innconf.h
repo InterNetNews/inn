@@ -332,7 +332,9 @@ struct conf_rec conf_defaults[] = {
     { _CONF_NNRPPYTHONAUTH,			"",     2, 1 },
 #define	_CONF_DONTREJECTFILTERED		"dontrejectfiltered"
 #define	CONF_VAR_DONTREJECTFILTERED		104
-    { _CONF_DONTREJECTFILTERED,			"",     2, 1 }
+    { _CONF_DONTREJECTFILTERED,			"",     2, 1 },
+#define	_CONF_KEEPMMAPPEDTHRESHOLD		"keepmmappedthreshold"
+#define	CONF_VAR_KEEPMMAPPEDTHRESHOLD		105
+    { _CONF_KEEPMMAPPEDTHRESHOLD,		"",     2, 1 }
 };
-#define MAX_CONF_VAR 105
-
+#define MAX_CONF_VAR 106

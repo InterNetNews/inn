@@ -196,6 +196,7 @@ typedef struct _GDB {
   caddr_t	addr;
   caddr_t	data;
   int		len;
+  bool		mmapped;
   struct _GDB	*next;
 } GROUPDATABLOCK;
 
@@ -207,6 +208,7 @@ typedef struct {
   bool			needov;
   GROUPLOC		gloc;
   int			count;
+  GROUPDATABLOCK	gdb;	/* used for caching current block */
 } OVSEARCH;
 
 #define GROUPDATAHASHSIZE	25
@@ -253,7 +255,6 @@ static void ovclosesearch(void *handle, bool freeblock);
 static OVINDEX	*Gib;
 static GIBLIST	*Giblist;
 static int	Gibcount;
-static char	*Gdb;
 
 #ifdef MMAP_MISSES_WRITES
 /* With HP/UX, you definitely do not want to mix mmap-accesses of
@@ -1463,10 +1464,6 @@ static void ovgroupunmap(void) {
     DISPOSE(Cachesearch);
     Cachesearch = NULL;
   }
-  if (Gdb != NULL) {
-    DISPOSE(Gdb);
-    Gdb = NULL;
-  }
 }
 
 static void insertgdb(OV *ov, GROUPDATABLOCK *gdb) {
@@ -1586,13 +1583,15 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
     gdb = NEW(GROUPDATABLOCK, 1);
     gdb->datablk = ov;
     gdb->next = NULL;
+    gdb->mmapped = FALSE;
     insertgdb(&ov, gdb);
     count++;
   }
   if (count == 0)
     return TRUE;
-  Gdb = NEW(char, count * OV_BLOCKSIZE);
-  count = 0;
+  if (count * OV_BLOCKSIZE > innconf->keepmmappedthreshold * 1024)
+    /* large retrieval, mmap is done in ovsearch() */
+    return TRUE;
   for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
     for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next) {
       ov = gdb->datablk;
@@ -1608,10 +1607,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
         return FALSE;
       }
       gdb->data = gdb->addr + pagefudge;
-      memcpy(&Gdb[count * OV_BLOCKSIZE], gdb->data, OV_BLOCKSIZE);
-      munmap(gdb->addr, gdb->len);
-      gdb->data = &Gdb[count * OV_BLOCKSIZE];
-      count++;
+      gdb->mmapped = TRUE;
     }
   }
   return TRUE;
@@ -1644,6 +1640,7 @@ static void *ovopensearch(char *group, int low, int high, bool needov) {
   search->needov = needov;
   search->gloc = gloc;
   search->count = ge->count;
+  search->gdb.mmapped = FALSE;
   return (void *)search;
 }
 
@@ -1673,6 +1670,10 @@ bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
   OVBLOCK		*ovblock;
   OV			srchov;
   GROUPDATABLOCK	*gdb;
+  off_t			offset, mmapoffset;
+  OVBUFF		*ovbuff;
+  int			pagefudge;
+  bool			newblock;
 
   if (search->cur == Gibcount) {
     return FALSE;
@@ -1710,6 +1711,34 @@ bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
 	  search->cur++;
 	  return TRUE;
 	}
+	if (!gdb->mmapped) {
+	  /* block needs to be mmapped */
+	  if (search->gdb.mmapped) {
+	    /* check previous mmapped area */
+	    if (search->gdb.datablk.blocknum != srchov.blocknum || search->gdb.datablk.index != srchov.index) {
+	      /* different one, release previous one */
+	      munmap(search->gdb.addr, search->gdb.len);
+	      newblock = TRUE;
+	    } else
+	      newblock = FALSE;
+	  } else
+	    newblock = TRUE;
+	  if (newblock) {
+	    search->gdb.datablk.blocknum = srchov.blocknum;
+	    search->gdb.datablk.index = srchov.index;
+	    ovbuff = getovbuff(srchov);
+	    offset = ovbuff->base + (srchov.blocknum * OV_BLOCKSIZE);
+	    pagefudge = offset % pagesize;
+	    mmapoffset = offset - pagefudge;
+	    search->gdb.len = pagefudge + OV_BLOCKSIZE;
+	    if ((search->gdb.addr = mmap((caddr_t) 0, search->gdb.len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
+	      syslog(L_ERROR, "%s: ovsearch could not mmap data block: %m", LocalLogName);
+	      return FALSE;
+	    }
+	    gdb->data = search->gdb.data = search->gdb.addr + pagefudge;
+	    search->gdb.mmapped = TRUE;
+	  }
+	}
 	*data = gdb->data + Gib[search->cur].offset;
       }
     }
@@ -1730,12 +1759,22 @@ bool buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 }
 
 static void ovclosesearch(void *handle, bool freeblock) {
-  OVSEARCH	*search = (OVSEARCH *)handle;
+  OVSEARCH		*search = (OVSEARCH *)handle;
+  GROUPDATABLOCK	*gdb;
+  int			i;
 #ifdef OV_DEBUG
   GROUPENTRY	*ge;
   GROUPLOC	gloc;
 #endif /* OV_DEBUG */
 
+  for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
+    for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next) {
+      if (gdb->mmapped)
+	munmap(gdb->addr, gdb->len);
+    }
+  }
+  if (search->gdb.mmapped)
+    munmap(search->gdb.addr, search->gdb.len);
   if (freeblock) {
 #ifdef OV_DEBUG
     gloc = GROUPfind(search->group, FALSE);
@@ -1978,7 +2017,7 @@ bool buffindexed_expiregroup(char *group, int *lo) {
 }
 
 bool buffindexed_ctl(OVCTLTYPE type, void *val) {
-  int		total, used, *i;
+  int		total, used, *i, j;
   OVBUFF	*ovbuff = ovbufftab;
   OVSORTTYPE	*sorttype;
   bool		*boolval;
@@ -2004,7 +2043,13 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
     return TRUE;
   case OVSTATICSEARCH:
     i = (int *)val;
-    *i = FALSE;
+    *i = TRUE;
+    for (j = 0 ; j < GROUPDATAHASHSIZE ; j++) {
+      if  (groupdatablock[j] != NULL) {
+	*i = FALSE;
+	return TRUE;
+      }
+    }
     return TRUE;
   case OVCACHEKEEP:
     Cache = *(bool *)val;
