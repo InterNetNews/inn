@@ -392,7 +392,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 #else
     if (innconf->extendeddbz) {
         iextvalue.offset[HISTOFFSET] = offset;
-        OVERsetoffset(token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex);
+        OVERsetoffset(token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex, &iextvalue.overlen);
         ivalue = (void *)&iextvalue;
     } else {
         ionevalue.offset = offset;

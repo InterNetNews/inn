@@ -709,12 +709,17 @@ int main(int ac, char *av[])
 
     val = FALSE;
     if (!OVERsetup(OVER_MMAP, &val)) {
-	syslog(L_FATAL, "%s cant setup for the unified overview %m");
+	syslog(L_FATAL, "%s cant setup for the unified overview no mmap");
+	exit(1);
+    }
+    val = TRUE;
+    if (!OVERsetup(OVER_PREOPEN, &val)) {
+	syslog(L_FATAL, "%s cant setup for the unified overview preopen");
 	exit(1);
     }
 
     if (innconf->storageapi && (Overfdcount = OVERgetnum()) < 0) {
-	syslog(L_FATAL, "%s cant get config for the unified overview %m");
+	syslog(L_FATAL, "%s cant get config for the unified overview");
 	exit(1);
     }
 
@@ -878,7 +883,7 @@ int main(int ac, char *av[])
 	}
     }
     if (innconf->storageapi && !OVERinit()) {
-	syslog(L_FATAL, "%s cant initialize the unified overview %m", LogName);
+	syslog(L_FATAL, "%s cant initialize the unified overview", LogName);
 	exit(1);
     }
 #if	defined(_DEBUG_MALLOC_INC)

@@ -242,6 +242,7 @@ CCaddhist(av)
     TOKEN		token;
     OFFSET_T		offset;
     unsigned char	index;
+    unsigned short	len;
 
     /* Check to see if we were passed a hash first. */
     i = strlen(av[0]);
@@ -250,7 +251,8 @@ CCaddhist(av)
 	    return "1 Bad Hash";
 	index = OVER_NONE;
 	offset = 0;
-	OVERsetoffset(&token, &offset, &index);
+	len = 0;
+	OVERsetoffset(&token, &offset, &index, &len);
 	if (av[4] != NULL && *av[4] != '\0') {
 	    if (!IsToken(av[4]))
 		return "1 Bad Token";
@@ -757,11 +759,11 @@ CCgo(av)
     if (innconf->storageapi) {
 	int fdcountold = Overfdcount;
 	if (!OVERinit()) {
-	    syslog(L_FATAL, "%s cant initialize the unified overview %m");
+	    syslog(L_FATAL, "%s cant initialize the unified overview");
 	    exit(1);
 	}
 	if ((Overfdcount = OVERgetnum()) < 0) {
-            syslog(L_FATAL, "%s cant get config for the unified overview %m");
+            syslog(L_FATAL, "%s cant get config for the unified overview");
             exit(1);
 	}
 	if (fdcountold != Overfdcount) {
@@ -1344,11 +1346,11 @@ CCreload(av)
 	if (innconf->storageapi) {  
 	    int fdcountold = Overfdcount;
 	    if (!OVERinit()) {
-		syslog(L_FATAL, "%s cant initialize the unified overview %m");
+		syslog(L_FATAL, "%s cant initialize the unified overview");
 		exit(1);
 	    } 
 	    if ((Overfdcount = OVERgetnum()) < 0) {
-		syslog(L_FATAL, "%s cant get config for the unified overview %m");
+		syslog(L_FATAL, "%s cant get config for the unified overview");
 		exit(1);
 	    }
 	    if (fdcountold != Overfdcount) {
@@ -1388,11 +1390,11 @@ CCreload(av)
 	    int fdcountold = Overfdcount;
 	    OVERshutdown();
 	    if (!OVERinit()) {
-		syslog(L_FATAL, "%s cant initialize the unified overview %m");
+		syslog(L_FATAL, "%s cant initialize the unified overview");
 		exit(1);
 	    } 
 	    if ((Overfdcount = OVERgetnum()) < 0) {
-		syslog(L_FATAL, "%s cant get config for the unified overview %m");
+		syslog(L_FATAL, "%s cant get config for the unified overview");
 		exit(1);
 	    }
 	    if (fdcountold != Overfdcount) {
