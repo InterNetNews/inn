@@ -70,7 +70,7 @@ profiled:		../libstorage_p.a
 ##  Low-level install actions.
 $(D)$(PATHLIB)/libstorage.$(EXTLIB):	libstorage.$(EXTLIB)
 	@rm -f $@
-	$(LIBTOOL) cp -p libstorage.$(EXTLIB) $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD libstorage.$(EXTLIB) $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
