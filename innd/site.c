@@ -20,10 +20,9 @@ static char	SITEshell[] = _PATH_SH;
 **  Called when input is ready to read.  Shouldn't happen.
 */
 static void
-SITEreader(CHANNEL *unused)
+SITEreader(CHANNEL *cp)
 {
-    unused = unused;		/* ARGSUSED */
-    syslog(L_ERROR, "%s internal SITEreader", LogName);
+    syslog(L_ERROR, "%s internal SITEreader: %s", LogName, CHANname(cp));
 }
 
 
@@ -31,16 +30,15 @@ SITEreader(CHANNEL *unused)
 **  Called when write is done.  No-op.
 */
 static void
-SITEwritedone(CHANNEL *unused)
+SITEwritedone(CHANNEL *cp UNUSED)
 {
-    unused = unused;		/* ARGSUSED */
 }
 
 
 /*
 **  Make a site start spooling.
 */
-bool
+static bool
 SITEspool(SITE *sp, CHANNEL *cp)
 {
     int			i;
