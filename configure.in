@@ -602,7 +602,7 @@ AC_ARG_WITH(openssl,
 	     ;;
     esac],
     DO_SSL=DONT)
-if test "x$DL_SSL" = "xDO"
+if test "x$DO_SSL" = "xDO"
 then
     case "$OPENSSL_DIR" in
         no) OPENSSL_DIR="no";;
