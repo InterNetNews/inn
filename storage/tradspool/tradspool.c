@@ -72,6 +72,21 @@ NGTREENODE *NGTree;
 BOOL NGTableUpdated; /* set to TRUE if we've added any entries since reading 
 			in the database file */
 
+/*
+**  Searches through the given string and find the begining of the
+**  message body and returns that if it finds it.  If not, it returns
+**  NULL.  This is only for traditional.
+*/
+static char *TradFindBody(char *article, int len) {
+    char                *p;
+
+    for (p = article; p < (article + len - 2); p++) {
+        if (!memcmp(p, "\n\n", 2))
+            return p+2;
+    }
+    return NULL;
+}
+
 /* 
 ** Convert all .s to /s in a newsgroup name.  Modifies the passed string 
 ** inplace.
@@ -756,7 +771,16 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     
-    if ((p = SMFindBody(private->artbase, private->artlen)) == NULL) {
+    if (((p = SMFindBody(private->artbase, private->artlen)) == NULL) &&
+        ((p = TradFindBody(private->artbase, private->artlen)) == NULL)) {
+	if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
+#endif
+	    munmap(private->artbase, private->artlen);
+	} else {
+	    DISPOSE(private->artbase);
+	}
 	SMseterror(SMERR_NOBODY, NULL);
 	DISPOSE(art->private);
 	DISPOSE(art);
@@ -773,6 +797,14 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	art->data = p;
 	art->len = private->artlen - (p - private->artbase);
 	return art;
+    }
+    if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	madvise(private->artbase, private->artlen, MADV_DONTNEED);
+#endif
+	munmap(private->artbase, private->artlen);
+    } else {
+	DISPOSE(private->artbase);
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
     DISPOSE(art->private);
