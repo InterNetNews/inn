@@ -80,7 +80,7 @@ lib/inet_ntoa.t: lib/inet_ntoa.o lib/inet_ntoa-t.o libtest.o
 	$(LINK) lib/inet_ntoa.o lib/inet_ntoa-t.o libtest.o
 
 lib/innconf.t: lib/innconf-t.o libtest.o $(LIBINN)
-	$(LINK) lib/innconf-t.o libtest.o $(LIBINN)
+	$(LINK) lib/innconf-t.o libtest.o $(LIBINN) $(LIBS)
 
 lib/md5.t: lib/md5-t.o libtest.o $(LIBINN)
 	$(LINK) lib/md5-t.o libtest.o $(LIBINN)
