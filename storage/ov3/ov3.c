@@ -4,12 +4,12 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include "portable/mmap.h"
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <syslog.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #ifdef SYNCGINDEXMMAP
 #include <limits.h>
@@ -654,7 +654,7 @@ static void OV3closegroupfiles(GROUPHANDLE *gh) {
     DISPOSE(gh);
 #ifdef SYNCGINDEXMMAP
 /* msync async to not hit the feed too badly, may be altogether superfluous */
-    msync((void *)GROUPheader, GROUPfilesize(GROUPcount), MS_ASYNC);
+    mmap_flush(GROUPheader, GROUPfilesize(GROUPcount));
     utime(GROUPfn, NULL);
 #endif
 
