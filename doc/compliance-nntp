@@ -206,30 +206,6 @@ special handling in NCauthinfo.  This should also simplify the code.
 
 ------------------------------
 
-  Summary: innd rejects reader commands with 500, not 502
- Standard: draft-ietf-nntpext-base-13.txt, section 4.1.1
-  Version: 1.0 to CURRENT 2001-07-04
-Reference: innd/nc.c NC_unimp()
- Severity: Violates MUST
-
-The standard says:
-
-    If the client is not authorized to use the specified facility when the
-    server is in its current state, the response code 502 MUST be
-    returned.  A different command MIGHT change the server state and
-    permit the command if it is retried.
-
-innd rejects all reader commands with 500 instead.
-
-Impact:  Likely none, but could potentially confuse a reader client into
-thinking that sending MODE READER won't help.
-
-Suggested fix:  Create a new handler like NC_unimp() that returns 502 to
-all commands instead of 500 and change the dispatch tables to dispatch
-reader commands in innd to that handler.
-
-------------------------------
-
   Summary: innd always sends 200 for an accepted connection
  Standard: draft-ietf-nntpext-base-13.txt, section 7.1
   Version: 1.0 to CURRENT 2001-07-04
