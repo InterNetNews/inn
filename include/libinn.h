@@ -175,6 +175,7 @@ struct conf_vars {
 	int nnrpdauthsender;
 	long cnfscheckfudgesize;
 	int rlimitnofile;
+	int ignorenewsgroups;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

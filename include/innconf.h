@@ -332,7 +332,10 @@ struct conf_rec conf_defaults[] = {
     { _CONF_NICENNRPD,				"",     2, 1 },
 #define _CONF_RLIMITNOFILE			"rlimitnofile"
 #define CONF_VAR_RLIMITNOFILE			103
-    { _CONF_RLIMITNOFILE,			"",     2, 1 }
+    { _CONF_RLIMITNOFILE,			"",     2, 1 },
+#define _CONF_IGNORENEWSGROUPS			"ignorenewsgroups"
+#define CONF_VAR_IGNORENEWSGROUPS		104
+    { _CONF_IGNORENEWSGROUPS,			"",     2, 1 }
 };
-#define MAX_CONF_VAR 104
+#define MAX_CONF_VAR 105
 
