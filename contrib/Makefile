@@ -11,9 +11,12 @@ CFLAGS        = $(GCFLAGS)
 
 ALL	      = archivegz backupfeed cleannewsgroups delayer findreadgroups \
 		makeexpctl makestorconf mlockfile newsresp pathinfo pullart \
-		showtoken stathist thdexpire tunefeed
+		respool showtoken stathist thdexpire tunefeed
 
 all: $(ALL)
+
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
 
 clean clobber distclean:
 	rm -f *.o $(ALL)
@@ -25,10 +28,13 @@ clean clobber distclean:
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 FIX		= $(FIXSCRIPT)
 
+STORELIBS	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+
 expirectl:	expirectl.o	; $(LINK) expirectl.o
 mlockfile:	mlockfile.o	; $(LINK) mlockfile.o
 newsresp:	newsresp.o	; $(LINK) newsresp.o $(LIBS)
 pullart:	pullart.o	; $(LINK) pullart.o
+respool:	respool.o	; $(LINK) respool.o $(STORELIBS)
 
 archivegz:       archivegz.in       $(FIX) ; $(FIX) -i archivegz.in
 backupfeed:      backupfeed.in      $(FIX) ; $(FIX) -i backupfeed.in

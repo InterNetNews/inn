@@ -101,6 +101,7 @@ contrib/ninpaths/sendinpaths.in       Script to submit accumulated data
 contrib/pathinfo.in                   Scan news headers for information
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
+contrib/respool.c                     Respool articles in the storage manager
 contrib/sample.init.script            Example SysV-style init.d script
 contrib/showtoken.in                  Decode storage API tokens
 contrib/stathist.in                   Parse history statistics

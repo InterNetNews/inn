@@ -107,6 +107,14 @@ pullart
     Attempts to pull news articles out of CNFS cycbuffs.  Useful for
     emergency recoveries.
 
+respool
+
+    Takes a list of tokens on stdin and respools them, by retrieving the
+    article, storing it again, and then calling SMcancel on the previous
+    instance of the article.  Note that after running this program, you'd
+    need to rebuild the history and overview, since it doesn't update
+    either.
+
 showtoken
 
     Decodes storage API tokens.
