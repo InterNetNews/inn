@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <pwd.h>
 #include "macros.h"
 #include "conffile.h"
 #include "libinn.h"
@@ -355,6 +356,23 @@ static void OVDBerror(char *db_errpfx, char *buffer)
 #endif
 }
 
+/* make sure the effective uid is that of NEWSUSER */
+BOOL ovdb_check_user(void)
+{           
+    struct passwd *p;
+    static int result = -1;
+	
+    if(result == -1) {
+	p = getpwnam(NEWSUSER);
+	if(!p) {
+	    syslog(L_FATAL, "OVDB: getpwnam(" NEWSUSER ") failed: %m");
+	    return FALSE;
+	}  
+	result = (p->pw_uid == geteuid());
+    }   
+    return result;
+}   
+
 static u_int32_t _db_flags = 0;
 static char   ** _dbnames;
 #if DB_VERSION_MAJOR == 2
@@ -620,6 +638,11 @@ int ovdb_open_berkeleydb(int mode, int flags)
     DB_INFO dbinfo;
 #endif
     DBT key, val;
+
+    if(!ovdb_check_user()) {
+	syslog(L_FATAL, "OVDB: must be running as " NEWSUSER " to access overview.");
+	return -1;
+    }
 
     OVDBmode = mode;
     read_ovdb_conf();
