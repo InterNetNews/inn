@@ -740,6 +740,9 @@ STATIC OV ovblocknew(void) {
   for (ovbuff = ovbuffnext ; ovbuff != (OVBUFF *)NULL ; ovbuff = ovbuff->next) {
     ovlock(ovbuff, LOCK_WRITE);
     ovreadhead(ovbuff);
+    if (ovbuff->totalblk != ovbuff->usedblk && ovbuff->freeblk == ovbuff->totalblk) {
+      ovnextblock(ovbuff);
+    }
     if (ovbuff->totalblk == ovbuff->usedblk || ovbuff->freeblk == ovbuff->totalblk) {
       /* no space left for this ovbuff */
       ovlock(ovbuff, LOCK_UNLOCK);
@@ -903,9 +906,8 @@ BOOL buffindexed_open(int mode) {
   groupfn = NEW(char, strlen(dirname) + strlen("/group.index") + 1);
   strcpy(groupfn, dirname);
   strcat(groupfn, "/group.index");
-  if (Needunlink) {
+  if (Needunlink && unlink(groupfn) == 0)
     syslog(L_NOTICE, "%s: all buffers are brandnew, unlink '%s'", LocalLogName, groupfn);
-    unlink(groupfn);
   }
   GROUPfd = open(groupfn, O_RDWR | O_CREAT, ARTFILE_MODE);
   if (GROUPfd < 0) {
