@@ -3,8 +3,10 @@
 **  How to figure out where a user comes from, and what that user can do once
 **  we know who sie is.
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -12,24 +14,6 @@
 
 #include "conffile.h"
 #include "nnrpd.h"
-
-/* wait portability mess.  Per autoconf, #define macros ourself. */
-#ifdef HAVE_SYS_WAIT_H
-# include <sys/wait.h>
-#endif
-#ifndef WEXITSTATUS
-# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
-#endif
-#ifndef WIFEXITED
-# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
-#endif
-#ifndef WIFSIGNALED
-# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
-                                 && (((unsigned)(status)) & 0xFF00) == 0)
-#endif
-#ifndef WTERMSIG
-# define WTERMSIG(status)       (((unsigned)(status)) & 0x7F)
-#endif
 
 /* Error returns from inet_addr. */
 #ifndef INADDR_NONE
@@ -557,7 +541,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 {
     int oldtype;
     METHOD *m;
-    BOOL bit;
+    bool bit;
     char buff[SMBUF], *oldname, *p;
 
     oldtype = tok->type;
@@ -603,7 +587,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
       case PERMresolv:
       case PERMresprog:
 	m = NEW(METHOD, 1);
-	(void) memset((POINTER) m, 0, sizeof(METHOD));
+	memset(m, 0, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
 	GrowArray((void***) &curauth->res_methods, (void*) m);
 
@@ -631,7 +615,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
       case PERMauth:
       case PERMauthprog:
 	m = NEW(METHOD, 1);
-	(void) memset((POINTER) m, 0, sizeof(METHOD));
+	memset(m, 0, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
 	GrowArray((void***) &curauth->auth_methods, (void*) m);
 	if (oldtype == PERMauthprog)
@@ -666,7 +650,7 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
 {
     int oldtype, boolval;
-    BOOL bit;
+    bool bit;
     char buff[SMBUF], *oldname;
 
     oldtype = tok->type;
@@ -1013,7 +997,7 @@ static void PERMreadfile(char *filename)
 			curauth = copy_authgroup(curgroup->auth);
 		    else {
 			curauth = NEW(AUTHGROUP, 1);
-			memset((POINTER) curauth, 0, sizeof(AUTHGROUP));
+			memset(curauth, 0, sizeof(AUTHGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
 		    }
 
@@ -1026,7 +1010,7 @@ static void PERMreadfile(char *filename)
 			curaccess = copy_accessgroup(curgroup->access);
 		    else {
 			curaccess = NEW(ACCESSGROUP, 1);
-			memset((POINTER) curaccess, 0, sizeof(ACCESSGROUP));
+			memset(curaccess, 0, sizeof(ACCESSGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
 			SetDefaultAccess(curaccess);
 		    }
@@ -1062,12 +1046,12 @@ static void PERMreadfile(char *filename)
 	      case PERMdefdomain:
 		if (curgroup == NULL) {
 		    curgroup = NEW(GROUP, 1);
-		    memset((POINTER) curgroup, 0, sizeof(GROUP));
+		    memset(curgroup, 0, sizeof(GROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		}
 		if (curgroup->auth == NULL) {
 		    curgroup->auth = NEW(AUTHGROUP, 1);
-		    (void)memset((POINTER)curgroup->auth, 0, sizeof(AUTHGROUP));
+		    memset(curgroup->auth, 0, sizeof(AUTHGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		}
 
@@ -1113,13 +1097,12 @@ static void PERMreadfile(char *filename)
 	      case PERMnewsmaster:
 		if (!curgroup) {
 		    curgroup = NEW(GROUP, 1);
-		    memset((POINTER) curgroup, 0, sizeof(GROUP));
+		    memset(curgroup, 0, sizeof(GROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		}
 		if (!curgroup->access) {
 		    curgroup->access = NEW(ACCESSGROUP, 1);
-		    (void)memset((POINTER)curgroup->access, 0,
-		      sizeof(ACCESSGROUP));
+		    memset(curgroup->access, 0, sizeof(ACCESSGROUP));
 		    memset(ConfigBit, '\0', ConfigBitsize);
 		    SetDefaultAccess(curgroup->access);
 		}
@@ -1619,7 +1602,7 @@ static void strip_accessgroups()
 }
 
 typedef struct _EXECSTUFF {
-    PID_T pid;
+    pid_t pid;
     int rdfd, errfd, wrfd;
 } EXECSTUFF;
 
@@ -1627,7 +1610,7 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
 {
     EXECSTUFF *ret;
     int rdfd[2], errfd[2], wrfd[2];
-    PID_T pid;
+    pid_t pid;
 
     pipe(rdfd);
     pipe(errfd);
@@ -1668,7 +1651,7 @@ static void GetConnInfo(METHOD *method, char *buf)
     struct sockaddr_in cli, loc;
     int gotsin;
     int i;
-    ARGTYPE j;
+    socklen_t j;
 
     j = sizeof(cli);
     gotsin = (getpeername(0, (struct sockaddr*)&cli, &j) == 0);
