@@ -5355,12 +5355,17 @@ trap 'rm -fr `echo "Makefile.global
 	include/paths.h 
 	samples/actsync.cfg 
 	samples/inncheck 
+	samples/innmail
+	samples/innreport
 	samples/innshellvars 
 	samples/innshellvars.csh 
 	samples/innshellvars.pl 
 	samples/innshellvars.tcl 
 	samples/innreport.conf 
 	samples/innwatch.ctl 
+	samples/pgpverify
+	samples/scanspool
+	samples/signcontrol
 	samples/startup.tcl 
 	site/subst.pl 
 	storage/buildconfig 
@@ -5516,12 +5521,17 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	include/paths.h 
 	samples/actsync.cfg 
 	samples/inncheck 
+	samples/innmail
+	samples/innreport
 	samples/innshellvars 
 	samples/innshellvars.csh 
 	samples/innshellvars.pl 
 	samples/innshellvars.tcl 
 	samples/innreport.conf 
 	samples/innwatch.ctl 
+	samples/pgpverify
+	samples/scanspool
+	samples/signcontrol
 	samples/startup.tcl 
 	site/subst.pl 
 	storage/buildconfig 

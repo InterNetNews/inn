@@ -1,4 +1,4 @@
-#!_PATH_PERL
+#!@_PATH_PERL@
 # 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Fri, 25 Apr 1997 14:11:23 +0200
@@ -14,7 +14,7 @@ $0 =~ s!.*/!! ;
 require 5.001 ;
 require 'getopts.pl' ;
 
-require "_INNSHELLVARS_.pl" ;
+require "@prefix@/etc/innshellvars.pl" ;
 
 die "$0: No \$inn::mta  variable defined.\n" 
     if ! defined ($inn::mta);

@@ -1,4 +1,4 @@
-#!_PATH_PERL -w
+#!@_PATH_PERL@ -w
 # written April 1996, tale@uunet.uu.net (David C Lawrence)
 # Version 1.1
 
@@ -10,7 +10,7 @@
 # if you don't use pgppassfile, you can only use this script interactively.
 $pgpsigner = 'INSERT_YOUR_PGP_USERID';
 $pgppassfile = '';      # file with pass phrase for $pgpsigner
-$pgp = "/usr/local/bin/pgp";
+$pgp = "@_PATH_PGP@";
 $pgpheader = "X-PGP-Sig";
 
 # this program is strict about always wanting to be consistent about
