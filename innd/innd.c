@@ -2,16 +2,9 @@
 **
 **  Variable definitions, miscellany, and main().
 */
+
 #include "config.h"
 #include "clibrary.h"
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#include <sys/uio.h>
-
-#ifdef DO_FAST_RESOLV
-# include <arpa/nameser.h>
-# include <resolv.h>
-#endif
 
 #define DEFINE_DATA
 #include "innd.h"
@@ -21,411 +14,99 @@
 #if DO_PERL
 extern void PerlFilter(bool value);
 extern void PerlClose(void);
-extern void PERLsetup (char *startupfile, char *filterfile, char *function);
+extern void PERLsetup(char *startupfile, char *filterfile, char *function);
 #endif
 
 
-#if defined(HAVE_SETBUFFER)
-# define SETBUFFER(F, buff, size)	setbuffer((F), (buff), (size))
-static int	LogBufferSize = 4096;
-#else
-# define SETBUFFER(F, buff, size)	setbuf((F), (buff))
-static int	LogBufferSize = BUFSIZ;
-#endif	/* defined(HAVE_SETBUFFER) */
-
-
-bool		AmRoot = TRUE;
-bool		BufferedLogs = TRUE;
+bool		Debug = FALSE;
 bool		NNRPTracing = FALSE;
 bool		StreamingOff = FALSE ; /* default is we can stream */
 bool		Tracing = FALSE;
 bool		DoCancels = TRUE;
 char		LogName[] = "SERVER";
 int		ErrorCount = IO_ERROR_COUNT;
-int		SPOOLlen;
 OPERATINGMODE	Mode = OMrunning;
 int		RemoteLimit = REMOTELIMIT;
 time_t		RemoteTimer = REMOTETIMER;
 int		RemoteTotal = REMOTETOTAL;
 bool		ThrottledbyIOError = FALSE;
 
-#if	defined(__CENTERLINE__)
-bool		Debug = TRUE;
-#else
-bool		Debug = FALSE;
-#endif	/* defined(__CENTERLINE__) */
-
-#if	defined(lint) || defined(__CENTERLINE__)
-int		KeepLintQuiet = 0;
-#endif	/* defined(lint) || defined(__CENTERLINE__) */
-
-
-static char	*ErrlogBuffer;
-static char	*LogBuffer;
-static char	*ERRLOG = NULL;
-static char	*LOG = NULL;
 static char	*PID = NULL;
-static uid_t	NewsUID;
-static gid_t	NewsGID;
+
+/* Signal handling.  If we receive a signal that should kill the server,
+   killer_signal is set to the signal number that we received.  This isn't
+   what indicates that we should terminate; that's the separate global
+   variable GotTerminate, used in CHANreadloop. */
+static volatile sig_atomic_t killer_signal = 0;
+
+/* Whether our self-maintained logs (stdout and stderr) are buffered, used
+   to determine whether fflush is needed.  Should be static. */
+bool BufferedLogs = true;
+
+/* FILEs for logs and error logs.  Everything should just use stdout and
+   stderr. */
+FILE *Log = NULL;
+FILE *Errlog = NULL;
+
+/* Some very old systems have a completely inadequate BUFSIZ buffer size, at
+   least for our logging purposes. */
+#if BUFSIZ < 4096
+# define LOG_BUFSIZ 4096
+#else
+# define LOG_BUFSIZ BUFSIZ
+#endif
+
+/* Internal prototypes. */
+static RETSIGTYPE       catch_terminate(int signal);
+static void             xmalloc_abort(const char *what, size_t size,
+                                      const char *file, int line);
 
 
 
 /*
-**  Sprintf a long into a buffer with enough leading zero's so that it
-**  takes up width characters.  Don't add trailing NUL.  Return TRUE
-**  if it fit.  Used for updating high-water marks in the active file
-**  in-place.
+**  Signal handler to catch SIGTERM and similar signals and queue a clean
+**  shutdown.
 */
-bool
-FormatLong(char *p, unsigned long value, int width)
+static RETSIGTYPE
+catch_terminate(int signal)
 {
-    for (p += width - 1; width-- > 0; ) {
-	*p-- = (int)(value % 10) + '0';
-	value /= 10;
-    }
-    return value == 0;
+    GotTerminate = TRUE;
+    killer_signal = signal;
+
+#ifndef HAVE_SIGACTION
+    xsignal(signal, catch_terminate);
+#endif
 }
 
 
 /*
-**  Glue a string, a char, and a string together.  Useful for making
-**  filenames.
-*/
-void
-FileGlue(register char *p, register const char *n1, char c,
-	 register const char *n2)
-{
-    p += strlen(strcpy(p, n1));
-    *p++ = c;
-    (void)strcpy(p, n2);
-}
-
-
-/*
-**  Turn any \r or \n in text into spaces.  Used to splice back multi-line
-**  headers into a single line.
-*/
-static char *
-Join(register char *text)
-{
-    register char	*p;
-
-    for (p = text; *p; p++)
-	if (*p == '\n' || *p == '\r')
-	    *p = ' ';
-    return text;
-}
-
-
-/*
-**  Return a short name that won't overrun our bufer or syslog's buffer.
-**  q should either be p, or point into p where the "interesting" part is.
-*/
-char *
-MaxLength(const char *p, const char *q)
-{
-    static char			buff[80];
-    register unsigned int	i;
-
-    /* Already short enough? */
-    i = strlen(p);
-    if (i < sizeof buff - 1) {
-	(void)strcpy(buff, p);
-	return Join(buff);
-    }
-
-    /* Simple case of just want the begining? */
-    if ((unsigned)(q - p) < sizeof buff - 4) {
-	(void)strncpy(buff, p, sizeof buff - 4);
-	(void)strcpy(&buff[sizeof buff - 4], "...");
-    }
-    /* Is getting last 10 characters good enough? */
-    else if ((p + i) - q < 10) {
-	(void)strncpy(buff, p, sizeof buff - 14);
-	(void)strcpy(&buff[sizeof buff - 14], "...");
-	(void)strcpy(&buff[sizeof buff - 11], &p[i - 10]);
-    }
-    else {
-	/* Not in last 10 bytes, so use double elipses. */
-	(void)strncpy(buff, p, sizeof buff - 17);
-	(void)strcpy(&buff[sizeof buff - 17], "...");
-	(void)strncpy(&buff[sizeof buff - 14], &q[-5], 10);
-	(void)strcpy(&buff[sizeof buff - 4], "...");
-    }
-    return Join(buff);
-}
-
-
-/*
-**  Split text into comma-separated fields.  Return an allocated
-**  NULL-terminated array of the fields within the modified argument that
-**  the caller is expected to save or free.  We don't use strchr() since
-**  the text is expected to be either relatively short or "comma-dense."
-*/
-char **
-CommaSplit(char *text)
-{
-    register int	i;
-    register char	*p;
-    register char	**av;
-    char		**save;
-
-    /* How much space do we need? */
-    for (i = 2, p = text; *p; p++)
-	if (*p == ',')
-	    i++;
-
-    for (av = save = NEW(char*, i), *av++ = p = text; *p; )
-	if (*p == ',') {
-	    *p++ = '\0';
-	    *av++ = p;
-	}
-	else
-	    p++;
-    *av = NULL;
-    return save;
-}
-
-
-/*
-**  Do we need a shell for the command?  If not, av is filled in with
-**  the individual words of the command and the command is modified to
-**  have NUL's inserted.
-*/
-bool
-NeedShell(register char *p, register const char **av, register const char **end)
-{
-    static char		Metachars[] = ";<>|*?[]{}()#$&=`'\"\\~\n";
-    register char	*q;
-
-    /* We don't use execvp(); works for users, fails out of /etc/rc. */
-    if (*p != '/')
-	return TRUE;
-    for (q = p; *q; q++)
-	if (strchr(Metachars, *q) != NULL)
-	    return TRUE;
-
-    for (end--; av < end; ) {
-	/* Mark this word, check for shell meta-characters. */
-	for (*av++ = p; *p && !ISWHITE(*p); p++)
-	    continue;
-
-	/* If end of list, we're done. */
-	if (*p == '\0') {
-	    *av = NULL;
-	    return FALSE;
-	}
-
-	/* Skip whitespace, find next word. */
-	for (*p++ = '\0'; ISWHITE(*p); p++)
-	    continue;
-	if (*p == '\0') {
-	    *av = NULL;
-	    return FALSE;
-	}
-    }
-
-    /* Didn't fit. */
-    return TRUE;
-}
-
-
-/*
-**  Spawn a process, with I/O redirected as needed.  Return the PID or -1
-**  (and a syslog'd message) on error.
-*/
-pid_t
-Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
-{
-    static char	NOCLOSE[] = "%s cant close %d in %s %m";
-    static char	NODUP2[] = "%s cant dup2 %d to %d in %s %m";
-    pid_t	i;
-
-    /* Fork; on error, give up.  If not using the patched dbz, make
-     * this call fork! */
-    i = FORK();
-    if (i == -1) {
-	syslog(L_ERROR, "%s cant fork %s %m", LogName, av[0]);
-	return -1;
-    }
-
-    /* If parent, do nothing. */
-    if (i > 0)
-	return i;
-
-    /* Child -- do any I/O redirection. */
-    if (fd0 != 0) {
-	if (dup2(fd0, 0) < 0) {
-	    syslog(L_FATAL, NODUP2, LogName, fd0, 0, av[0]);
-	    _exit(1);
-	}
-	if (fd0 != fd1 && fd0 != fd2 && close(fd0) < 0)
-	    syslog(L_ERROR, NOCLOSE, LogName, fd0, av[0]);
-    }
-    if (fd1 != 1) {
-	if (dup2(fd1, 1) < 0) {
-	    syslog(L_FATAL, NODUP2, LogName, fd1, 1, av[0]);
-	    _exit(1);
-	}
-	if (fd1 != fd2 && close(fd1) < 0)
-	    syslog(L_ERROR, NOCLOSE, LogName, fd1, av[0]);
-    }
-    if (fd2 != 2) {
-	if (dup2(fd2, 2) < 0) {
-	    syslog(L_FATAL, NODUP2, LogName, fd2, 2, av[0]);
-	    _exit(1);
-	}
-	if (close(fd2) < 0)
-	    syslog(L_ERROR, NOCLOSE, LogName, fd2, av[0]);
-    }
-    close_on_exec(0, false);
-    close_on_exec(1, false);
-    close_on_exec(2, false);
-
-    /* Try to set our permissions. */
-    if (niceval != 0)
-	if (nice(niceval) == -1) 
-		syslog(L_ERROR, "Could not nice child to %d: %m", niceval);
-    if (setgid(NewsGID) == -1)
-	syslog(L_ERROR, "%s cant setgid in %s %m", LogName, av[0]);
-    if (setuid(NewsUID) == -1)
-	syslog(L_ERROR, "%s cant setuid in %s %m", LogName, av[0]);
-
-    /* Start the desired process (finally!). */
-    (void)execv(av[0], av);
-    syslog(L_FATAL, "%s cant exec in %s %m", LogName, av[0]);
-    _exit(1);
-    /* NOTREACHED */
-}
-
-
-/*
-**  Stat our control directory and see who should own things.
-*/
-static bool
-GetNewsOwnerships(void)
-{
-    struct stat	Sb;
-
-    /* Make sure item exists and is of the right type. */
-    if (stat(innconf->pathrun, &Sb) < 0)
-	return FALSE;
-    if (!S_ISDIR(Sb.st_mode))
-	return FALSE;
-    NewsUID = Sb.st_uid;
-    NewsGID = Sb.st_gid;
-    return TRUE;
-}
-
-
-/*
-**  Change the onwership of a file.
-*/
-void
-xchown(char *p)
-{
-    if (chown(p, NewsUID, NewsGID) < 0)
-	syslog(L_ERROR, "%s cant chown %s %m", LogName, p);
-}
-
-
-/*
-**  Flush one log file, with pessimistic size of working filename buffer.
-*/
-void
-ReopenLog(FILE *F)
-{
-    char	buff[SMBUF];
-    char	*Name;
-    char	*Buffer;
-    int		mask;
-
-    if (Debug)
-	return;
-    if (F == Log) {
-	Name = LOG;
-	Buffer = LogBuffer;
-    }
-    else {
-	Name = ERRLOG;
-	Buffer = ErrlogBuffer;
-    }
-
-    FileGlue(buff, Name, '.', "old");
-    if (rename(Name, buff) < 0)
-	syslog(L_ERROR, "%s cant rename %s to %s %m", LogName, Name, buff);
-    mask = umask(033);
-    if (freopen(Name, "a", F) != F) {
-	syslog(L_FATAL, "%s cant freopen %s %m", LogName, Name);
-	exit(1);
-    }
-    (void)umask(mask);
-    if (AmRoot)
-	xchown(Name);
-    if (BufferedLogs)
-	SETBUFFER(F, Buffer, LogBufferSize);
-}
-
-
-/*
-**  Function called when memory allocation fails.
+**  Memory allocation failure handler.  Instead of the default behavior of
+**  just exiting, call abort to generate a core dump.
 */
 static void
-AllocationFailure(const char *what, size_t size, const char *file, int line)
+xmalloc_abort(const char *what, size_t size, const char *file, int line)
 {
-    syslog(L_FATAL, "%s cant %s %lu bytes at line %d of %s: %m", LogName,
-           what, (unsigned long)size, line, file);
+    fprintf(stderr, "SERVER cant %s %lu bytes at %s line %d: %m", what,
+            (unsigned long) size, line, file);
+    syslog(LOG_CRIT, "SERVER cant %s %lu bytes at %s line %d: %m", what,
+           (unsigned long) size, line, file);
     abort();
 }
 
 
 /*
-**  We ran out of space or other I/O error, throttle ourselves.
+**  The name is self-explanatory.
 */
 void
-ThrottleIOError(const char *when)
+CleanupAndExit(int status, const char *why)
 {
-    char	 buff[SMBUF];
-    const char * p;
-    int		 oerrno;
-
-    if (Mode == OMrunning) {
-	oerrno = errno;
-	if (Reservation) {
-	    DISPOSE(Reservation);
-	    Reservation = NULL;
-	}
-	(void)sprintf(buff, "%s writing %s file -- throttling",
-	    strerror(oerrno), when);
-	if ((p = CCblock(OMthrottled, buff)) != NULL)
-	    syslog(L_ERROR, "%s cant throttle %s", LogName, p);
-	syslog(L_FATAL, "%s throttle %s", LogName, buff);
-	errno = oerrno;
-	ThrottledbyIOError = TRUE;
-    }
-}
-
-/*
-**  No matching storage.conf, throttle ourselves.
-*/
-void
-ThrottleNoMatchError(void)
-{
-    char buff[SMBUF];
-    const char *p;
-
-    if (Mode == OMrunning) {
-	if (Reservation) {
-	    DISPOSE(Reservation);
-	    Reservation = NULL;
-	}
-	(void)sprintf(buff, "%s storing article -- throttling",
-	    SMerrorstr);
-	if ((p = CCblock(OMthrottled, buff)) != NULL)
-	    syslog(L_ERROR, "%s cant throttle %s", LogName, p);
-	syslog(L_FATAL, "%s throttle %s", LogName, buff);
-	ThrottledbyIOError = TRUE;
-    }
+    JustCleanup();
+    if (why)
+        syslog(LOG_WARNING, "SERVER shutdown %s", why);
+    else
+        syslog(LOG_WARNING, "SERVER shutdown received signal %d",
+               killer_signal);
+    exit(status);
 }
 
 
@@ -436,7 +117,6 @@ void
 JustCleanup(void)
 {
     SITEflushall(FALSE);
-    /* PROCclose(FALSE); */
     CCclose();
     LCclose();
     NCclose();
@@ -445,58 +125,59 @@ JustCleanup(void)
     HISclose();
     ARTclose();
     if (innconf->enableoverview) 
-	OVclose();
+        OVclose();
     NGclose();
     SMshutdown();
 
-#if defined(DO_TCL)
+#if DO_TCL
     TCLclose();
-#endif /* defined(DO_TCL) */
-#if defined(DO_PERL)
+#endif
+
+#if DO_PERL
     PerlFilter(FALSE);
     PerlClose();
-#endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
+#endif
+
+#if DO_PYTHON
     PYclose();
-#endif /* defined(DO_PYTHON) */
+#endif
 
     CHANshutdown();
     ClearInnConf();
 
-    (void)sleep(1);
-    /* PROCclose(TRUE); */
+    sleep(1);
+
     if (unlink(PID) < 0 && errno != ENOENT)
-	syslog(L_ERROR, "%s cant unlink %s %m", LogName, PID);
+        syslog(LOG_ERR, "SERVER cant unlink %s: %m", PID);
 }
 
 
 /*
-**  The name is self-explanatory.
+**  Flush one log file, re-establishing buffering if necessary.  stdout is
+**  block-buffered, stderr is line-buffered.
 */
 void
-CleanupAndExit(int x, const char *why)
+ReopenLog(FILE *F)
 {
-    JustCleanup();
-    if (why)
-	syslog(L_FATAL, "%s shutdown %s", LogName, why);
-    else
-	syslog(L_FATAL, "%s shutdown received signal %d",
-	    LogName, KillerSignal);
-    exit(x);
-}
+    char *path, *oldpath;
+    int mask;
 
+    if (Debug)
+	return;
 
-/*
-**  Signal handler to catch SIGTERM and queue a clean shutdown.
-*/
-static RETSIGTYPE
-CatchTerminate(int s)
-{
-    GotTerminate = TRUE;
-    KillerSignal = s;
-#ifndef HAVE_SIGACTION
-    xsignal(s, CatchTerminate);
-#endif
+    path = concatpath(innconf->pathlog,
+                      (F == stdout) ? _PATH_LOGFILE : _PATH_ERRLOG);
+    oldpath = concat(path, ".old", (char *) 0);
+    if (rename(path, oldpath) < 0)
+        syswarn("cant rename %s to %s", path, oldpath);
+    free(oldpath);
+    mask = umask(033);
+    if (freopen(path, "a", F) != F)
+        sysdie("cant freopen %s", path);
+    free(path);
+    umask(mask);
+    if (BufferedLogs)
+        setvbuf(F, NULL, (F == stdout) ? _IOFBF : _IOLBF, LOG_BUFSIZ);
 }
 
 
@@ -514,12 +195,13 @@ Usage(void)
 int
 main(int ac, char *av[])
 {
+    const char *name, *p;
+    char *path;
+    bool flag;
     static char		WHEN[] = "PID file";
     int			i;
     int			fd;
-    int			logflags;
     char		buff[SMBUF], *q;
-    const char		*p;
     FILE		*F;
     bool		ShouldFork;
     bool		ShouldRenumber;
@@ -531,13 +213,25 @@ main(int ac, char *av[])
     union malloptarg	m;
 #endif	/* defined(_DEBUG_MALLOC_INC) */
 
-    /* Set up the pathname, first thing. */
-    path = av[0];
-    if (path == NULL || *path == '\0')
-	path = "innd";
-    else if ((p = strrchr(path, '/')) != NULL)
-	path = p + 1;
-    ONALLOCFAIL(AllocationFailure);
+    /* Set up the pathname, first thing, and teach our error handlers about
+       the name of the program. */
+    name = av[0];
+    if (name == NULL || *name == '\0')
+	name = "innd";
+    else {
+        p = strrchr(name, '/');
+        if (p != NULL)
+            name = p + 1;
+    }
+    error_program_name = name;
+    openlog(name, LOG_CONS | LOG_NDELAY, LOG_INN_SERVER);
+    die_set_handlers(2, error_log_stderr, error_log_syslog_crit);
+    warn_set_handlers(2, error_log_stderr, error_log_syslog_err);
+
+    /* Make sure innd is not running as root.  innd must be either started
+       via inndstart or use a non-privileged port. */
+    if (getuid() == 0 || geteuid() == 0)
+        die("must be run as user news, not root (use inndstart)");
 
     /* Handle malloc debugging. */
 #if	defined(_DEBUG_MALLOC_INC)
@@ -557,20 +251,12 @@ main(int ac, char *av[])
     ShouldFork = TRUE;
     ShouldRenumber = FALSE;
     ShouldSyntaxCheck = FALSE;
-    logflags = L_OPENLOG_FLAGS | LOG_NOWAIT;
     fd = -1;
 
-#if	defined(DO_FAST_RESOLV)
-    /* We only use FQDN's in the hosts.nntp file. */
-    _res.options &= ~(RES_DEFNAMES | RES_DNSRCH);
-#endif	/* defined(DO_FAST_RESOLV) */
-
-    openlog(path, logflags, LOG_INN_SERVER);
-  /* Set some options from inn.conf(5) that can be overridden with
-     command-line options if they exist */
-    if (ReadInnConf() < 0) exit(1);
-    LOG = COPY(cpcatpath(innconf->pathlog, _PATH_LOGFILE));
-    ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
+    /* Set some options from inn.conf that can be overridden with
+       command-line options if they exist, so read inn.conf first. */
+    if (ReadInnConf() < 0)
+        exit(1);
 
     /* Parse JCL. */
     CCcopyargv(av);
@@ -585,11 +271,11 @@ main(int ac, char *av[])
 	case 'c':
 	    innconf->artcutoff = atoi(optarg) * 24 * 60 * 60;
 	    break;
+ 	case 'C':
+ 	    DoCancels = FALSE;
+  	    break;
 	case 'd':
 	    Debug = TRUE;
-#if	defined(LOG_PERROR)
-	    logflags = LOG_PERROR | (logflags & ~LOG_CONS);
-#endif	/* defined(LOG_PERROR) */
 	    break;
 	case 'f':
 	    ShouldFork = FALSE;
@@ -641,11 +327,9 @@ main(int ac, char *av[])
 	    break;
 	case 'p':
 	    /* Silently ignore multiple -p flags, in case ctlinnd xexec
-	     * called inndstart. */
-	    if (fd == -1) {
+	       called inndstart. */
+	    if (fd == -1)
 		fd = atoi(optarg);
-		AmRoot = FALSE;
-	    }
 	    break;
 	case 'P':
 	    innconf->port = atoi(optarg);
@@ -665,9 +349,6 @@ main(int ac, char *av[])
 	case 'u':
 	    BufferedLogs = FALSE;
 	    break;
- 	case 'C':
- 	    DoCancels = FALSE;
-  	    break;
 	case 'X':
 	    RemoteTimer = atoi(optarg);
 	    break;
@@ -684,18 +365,9 @@ main(int ac, char *av[])
     if (ShouldSyntaxCheck) {
 	if ((p = CCcheckfile((char **)NULL)) == NULL)
 	    exit(0);
-	(void)fprintf(stderr, "%s\n", p + 2);
+	fprintf(stderr, "%s\n", p + 2);
 	exit(1);
     }
-
-    SPOOLlen = strlen(innconf->patharticles);
-    /* Go to where the data is. */
-    if (chdir(innconf->patharticles) < 0) {
-	syslog(L_FATAL, "%s cant chdir %s %m", LogName, innconf->patharticles);
-	exit(1);
-    }
-
-    val = TRUE;
 
     /* Get the Path entry. */
     if (innconf->pathhost == NULL) {
@@ -704,26 +376,16 @@ main(int ac, char *av[])
     }
     Path.Used = strlen(innconf->pathhost) + 1;
     Path.Data = NEW(char, Path.Used + 1);
-    (void)sprintf(Path.Data, "%s!", innconf->pathhost);
+    sprintf(Path.Data, "%s!", innconf->pathhost);
     if (innconf->pathalias == NULL) {
 	Pathalias.Used = 0;
 	Pathalias.Data = NULL;
     } else {
 	Pathalias.Used = strlen(innconf->pathalias) + 1;
 	Pathalias.Data = NEW(char, Pathalias.Used + 1);
-	(void)sprintf(Pathalias.Data, "%s!", innconf->pathalias);
+	sprintf(Pathalias.Data, "%s!", innconf->pathalias);
     }
 
-#if	!defined(__CENTERLINE__)
-    /* Set standard input to /dev/null. */
-    if ((i = open("/dev/null", O_RDWR)) < 0) {
-	syslog(L_FATAL, "%s cant open /dev/null %m", LogName);
-	exit(1);
-    }
-    if (dup2(i, 0) != 0)
-	syslog(L_NOTICE, "%s cant dup2 %d to 0 %m", LogName, i);
-    (void)close(i);
-#endif	/* !defined(__CENTERLINE__) */
     i = dbzneedfilecount();
     if (!fdreserve(2 + i)) { /* TEMPORARYOPEN, INND_HISTORY and i */
 	syslog(L_FATAL, "%s cant reserve file descriptors %m", LogName);
@@ -731,77 +393,42 @@ main(int ac, char *av[])
     }
 
     /* Set up our permissions. */
-    (void)umask(NEWSUMASK);
-    if (!GetNewsOwnerships()) {
-	syslog(L_FATAL, "%s internal cant stat control directory %m", LogName);
-	exit(1);
-    }
-    if (fd != -1 && setgid(NewsGID) < 0)
-	syslog(L_ERROR, "%s cant setgid running as %d not %d %m",
-	    LogName, (int)getgid(), (int)NewsGID);
+    umask(NEWSUMASK);
 
+    /* Become a daemon and initialize our log files. */
     if (Debug) {
-	Log = stdout;
-	Errlog = stderr;
-	(void)xsignal(SIGINT, CatchTerminate);
+	xsignal(SIGINT, catch_terminate);
+        if (chdir(innconf->patharticles) < 0)
+            sysdie("cant chdir to %s", innconf->patharticles);
+    } else {
+	if (ShouldFork)
+            daemonize(innconf->patharticles);
+
+	/* Open the logs.  stdout is used to log information about incoming
+           articles and stderr is used to log serious error conditions (as
+           well as to capture stderr from embedded filters).  Both are
+           normally fully buffered. */
+        path = concatpath(innconf->pathlog, _PATH_LOGFILE);
+        if (freopen(path, "a", stdout) == NULL)
+            sysdie("cant freopen stdout to %s", path);
+        setvbuf(stdout, NULL, _IOFBF, LOG_BUFSIZ);
+        free(path);
+        path = concatpath(innconf->pathlog, _PATH_ERRLOG);
+        if (freopen(path, "a", stderr) == NULL)
+            sysdie("cant freopen stderr to %s", path);
+        setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
+        free(path);
     }
-    else {
-	if (ShouldFork) {
-	    /* Become a server. */
-	    i = fork();
-	    if (i < 0) {
-		syslog(L_FATAL, "%s cant fork %m", LogName);
-		exit(1);
-	    }
-	    if (i > 0)
-		_exit(0);
+    Log = stdout;
+    Errlog = stderr;
 
-#if	defined(TIOCNOTTY)
-	    /* Disassociate from terminal. */
-	    if ((i = open("/dev/tty", O_RDWR)) >= 0) {
-		if (ioctl(i, TIOCNOTTY, (char *)NULL) < 0)
-		    syslog(L_ERROR, "%s cant ioctl(TIOCNOTTY) %m", LogName);
-		if (close(i) < 0)
-		    syslog(L_ERROR, "%s cant close /dev/tty %m", LogName);
-	    }
-#endif	/* defined(TIOCNOTTY) */
-#if	defined(HAVE_SETSID)
-	    (void)setsid();
-#endif	/* defined(HAVE_SETSID) */
-	}
+    /* Initialize overview if necessary. */
+    if (innconf->enableoverview && !OVopen(OV_WRITE))
+        die("cant open overview method");
 
-	/* Open the Log. */
-	(void)fclose(stdout);
-	if ((Log = fopen(LOG, "a")) == NULL) {
-	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, LOG);
-	    exit(1);
-	}
-	if (AmRoot)
-	    xchown(LOG);
-	if (BufferedLogs && (LogBuffer = NEW(char, LogBufferSize)) != NULL)
-	    SETBUFFER(Log, LogBuffer, LogBufferSize);
-
-	/* Open the Errlog. */
-	(void)fclose(stderr);
-	if ((Errlog = fopen(ERRLOG, "a")) == NULL) {
-	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, ERRLOG);
-	    exit(1);
-	}
-	if (AmRoot)
-	    xchown(ERRLOG);
-	if (BufferedLogs && (ErrlogBuffer = NEW(char, LogBufferSize)) != NULL)
-	    SETBUFFER(Errlog, ErrlogBuffer, LogBufferSize);
-    }
-
-    if (innconf->enableoverview) {
-	if (!OVopen(OV_WRITE)) {
-	    syslog(L_FATAL, "%s cant open overview method", LogName);
-	    exit(1);
-	}
-    }
-
-    /* Set number of open channels. */
-    if (AmRoot && innconf->rlimitnofile >= 0)
+    /* Always attempt to increase the number of open file descriptors.  If
+       we're not root, this may just fail quietly. */
+    if (innconf->rlimitnofile > 0)
         setfdlimit(innconf->rlimitnofile);
 
     /* Get number of open channels. */
@@ -834,14 +461,14 @@ main(int ac, char *av[])
     if (GetTimeInfo(&Now) < 0)
 	syslog(L_ERROR, "%s cant gettimeinfo %m", LogName);
 
+    /* Set up signal and error handlers. */
+    xmalloc_error_handler = xmalloc_abort;
+    xsignal(SIGHUP, catch_terminate);
+    xsignal(SIGTERM, catch_terminate);
+
     /* Set up the various parts of the system.  Channel feeds start
-     * processes so call PROCsetup before ICDsetup.  NNTP needs to know
-     * if it's a slave, so call RCsetup before NCsetup. */
-    (void)xsignal(SIGHUP, CatchTerminate);
-    (void)xsignal(SIGTERM, CatchTerminate);
-#if	defined(SIGDANGER)
-    (void)xsignal(SIGDANGER, CatchTerminate);
-#endif	/* defined(SIGDANGER) */
+       processes so call PROCsetup before ICDsetup.  NNTP needs to know if
+       it's a slave, so call RCsetup before NCsetup. */
     CHANsetup(i);
     PROCsetup(10);
     HISsetup();
@@ -853,15 +480,12 @@ main(int ac, char *av[])
     ARTsetup();
     ICDsetup(TRUE);
     
-    val = TRUE;
-    if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
-	syslog(L_FATAL, "%s cant setup the storage subsystem", LogName);
-	exit(1);
-    }
-    if (!SMinit()) {
-	syslog(L_FATAL, "%s cant initialize the storage subsystem %s", LogName, SMerrorstr);
-	exit(1);
-    }
+    /* Initialize the storage subsystem. */
+    flag = true;
+    if (!SMsetup(SM_RDWR, &flag) || !SMsetup(SM_PREOPEN, &flag))
+        die("cant set up the storage subsystem");
+    if (!SMinit())
+        die("cant initialize the storage subsystem: %s", SMerrorstr);
 
 #if	defined(_DEBUG_MALLOC_INC)
     m.i = 1;
@@ -894,41 +518,40 @@ main(int ac, char *av[])
 	}
     }
 
-#if defined(DO_TCL)
+#if DO_TCL
     TCLsetup();
     if (!filter)
 	TCLfilter(FALSE);
-#endif /* defined(DO_TCL) */
+#endif /* DO_TCL */
 
-#if defined(DO_PERL)
+#if DO_PERL
     /* Load the Perl code */
     /* Make a temp copy because the path is a static var */
     q = COPY(cpcatpath(innconf->pathfilter, _PATH_PERL_STARTUP_INND));
-    PERLsetup(q, (char *)cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND),
-				"filter_art");
+    PERLsetup(q, (char *)cpcatpath(innconf->pathfilter,
+                                   _PATH_PERL_FILTER_INND), "filter_art");
     PLxsinit();
     if (filter)
 	PerlFilter(TRUE);
     DISPOSE(q);
-#endif /* defined(DO_PERL) */
+#endif /* DO_PERL */
 
-#if defined(DO_PYTHON)
+#if DO_PYTHON
     PYsetup();
     if (!filter)
 	PYfilter(FALSE);
-#endif /* (DO_PYTHON) */
+#endif /* DO_PYTHON */
  
     /* And away we go... */
     if (ShouldRenumber) {
-	syslog(L_NOTICE, "%s renumbering", LogName);
-	if (!ICDrenumberactive()) {
-	    syslog(L_FATAL, "%s cant renumber", LogName);
-	    exit(1);
-	}
+        syslog(LOG_NOTICE, "renumbering");
+        if (!ICDrenumberactive())
+            die("cant renumber");
     }
-    syslog(L_NOTICE, "%s starting", LogName);
+    syslog(LOG_NOTICE, "starting");
     CHANreadloop();
+
+    /* CHANreadloop should never return. */
     CleanupAndExit(1, "CHANreadloop returned");
-    /* NOTREACHED */
     return 1;
 }
