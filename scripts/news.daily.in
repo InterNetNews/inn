@@ -254,7 +254,7 @@ ${DOLOGS} && {
     scanlogs ${SCANARG}
 }
 
-# group based expiry (delete expired overview first)
+# group-based expiry (delete expired overview first)
 if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
     if ${DOEXPLOG}; then
 	echo "${EXPIREOVER} start `date`: (${EXPIREOVERFLAGS})" >>${EXPLOG}
