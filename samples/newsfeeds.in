@@ -1,127 +1,115 @@
-##  $Revision$
+##  $Id$
+##
 ##  newsfeeds - determine where Usenet articles get sent
+##
 ##  Format:
 ##	site[/exclude,exclude...]\
 ##		:pattern,pattern...[/distrib,distrib...]\
 ##		:flag,flag...\
 ##		:param
-##  Summary of flags:
-##	<size		Article must be less then size bytes.
-##	>size		Article must be more then size bytes.
-##	Aitems		Article checks -- d (must have Distribution header)
-##			p (don't check for site in Path header)
-##			c (no control messages) C (only control messages)
-##			e (all groups must exist).
-##	Bhigh/low	Internal buffer size before writing to output.
-##	Fname		Name of the spool file.
-##	Gcount		Crossposts limited to count groups.
-##	H[count]	Article must have less then count hops; default is 1.
-##	Isize		Internal buffer size (if a file feed)
-##	Nm		Only moderated groups that match the patterns.
-##	Nu		Only unmoderated groups that match the patterns.
-##	Ppriority	Nice priority of channel or program feed.
-##	Ooriginator	First field of X-Trace must match originator (wildmat).
-##	Ssize		Start spooling if more than size bytes get queued.
-##	Ttype		Feed types -- f (file) m (funnel; param names the
-##			real entry) p (pipe to program) c (send to stdin
-##			channel of param's sub-process) x (like c, but
-##			handles commands on stdin) x (log entry only).
-##	Witems		What to write -- b (article bytesize) f (full path)
-##			g (first newsgroup) h (Message-ID hash) 
-##			m (Message-ID) n (relative path) p (posted time)
-##			s (site that fed article) t (time received)
-##			* (names of funnel feed-in's or all sites that get
-##			the article) N (Newsgroups header) D (Distribution
-##			header) H (all headers) O (overview data)
-##			P (path header) R (replication information)
-##  Param field depends on T flag.  For Tf, relative paths are from the
-##  out.going directory.  For Tp and Tc, it is a shell command to execute.
-##  If a Tm refers to this entry (which will have its own T param) then "*"
-##  is expanded to all the funnel sites that triggered this one.  Useful
-##  for spawning one mail process, e.g.
 ##
-##  This file is complicated -- see newsfeeds.5!
+##  This file is complicated -- see newsfeeds(5) for full details.
 
-##  This is the local site.
-##  The "pattern" field gives the initial subscription list for
-##  all other sites.  You might want to put "!control,!junk,!<local>.*"
-##  there.  The "distrib" subfield limits incoming articles.
+##  The ME feed entry is special magic.
 ##
-##  You can also have ME/bad.site: to refuse articles from a particular
-##  site (by matching the Path: entry).  Other pseudo-sites may be put
-##  in here, to REFUSE certain types of 3rd-party cancel messages
-##  (See the "Cancel FAQ" news.admin.net-abuse.misc):
-##	cyberspam	Spam cancels, munged articles, binary postings
-##	spewcancel	just munged articles from runaway gateways
-##	bincancel	just binary postings to non-binaries groups
+##  "/exclude" entries will cause INN to reject all articles that have
+##  passed through those listed sites (by matching Path: entries).  There
+##  are some "pseudo-sites" in general use that can be listed as exclusions
+##  to reject specific types of 3rd-party cancel messages (see the "Cancel
+##  FAQ" in news.admin.net-abuse.usenet):
+##	cyberspam	Cancels for spam, munged articles, binaries
+##	spewcancel	Cancels for munged articles and runaway gateways
+##	bincancel	Cancels for binary postings to non-binary groups
 ##
-##  Note that refusing articles means you won't offer them to sites you feed
+##  The "pattern" field gives the initial subscription list for all other
+##  feeds specified in this file.  These patterns are *prepended* to all
+##  other feed patterns.  Using this feature is confusing and mildly
+##  discouraged; make sure you understand the man page.
+##
+##  "/distrib" specifies what distributions the server will accept.  If any
+##  distributions are listed there, the server will accept only articles
+##  with those distributions.  If all the distributions listed are negated
+##  (starting with !), then the server will only accept articles without
+##  those distributions.
+##
+##  Patterns affect *outgoing* feeds.  Distributions affect *incoming*
+##  feeds.
 
-## Default of  everything to everybody except for junk, control, anything
-## with "local" as the newsgroup prefix (i.e. matches "localhost.stuff") or
-## groups under foo. Articles posted to any group under alt.binaries.warez
-## will not get propagated, even if they're cross posted to something that
-## is.
-ME\
-	:*,@alt.binaries.warez.*,!junk,!control*,!local*,!foo.*\
-		/world,usa,na,gnu,bionet,pubnet,u3b,eunet,vmsnet,inet,ddn,k12\
-	::
+# Empty default subscription list, reject all incoming articles with a
+# distribution of "local" or "collabra-internal," accept all others.
+ME:!*/!local,!collabra-internal::
 
-## Create the links for cross posted articles
-## If you use this you MUST add -L option to innflags in inn.conf.
-## see innd(8)
-## XXX - this doesn't work with inn2.3experimental at the moment.
-#crosspost:*:Tc,Ap,WR:@prefix@/bin/crosspost
+##  Uncomment if you're using innfeed.  This feed tells INN how to run
+##  innfeed, and then every site you're feeding with innfeed has a
+##  flag of Tm and an argument of "innfeed!" to funnel into this feed.
+##  The feed pattern for innfeed should *always* be "!*"; don't ever
+##  feed articles directly into innfeed.
+##
+##  Add "-y" as an option to startinnfeed to use the name of each feed as
+##  the name of the host to feed articles to; without "-y" an innfeed.conf
+##  file is needed.
 
-# Feed all moderated source postings to an archiver
-#source-archive!:!*,*sources*,!*wanted*,!*.d\
-#	:Tc,Wn:@prefix@/bin/archive -f -i @prefix@/spool/archive/INDEX
+# innfeed funnel master.
+#innfeed!\
+#	:!*,\
+#	:Tc,Wnm*:@prefix@/bin/startinnfeed
 
-##  News overview       
-## overchan is needed both enableoverview and useoverchan is true
-#overview!:*:Tc,WntO:@prefix@/bin/overchan
+##  Uncomment if usecontrolchan is set to true in inn.conf.  See INSTALL
+##  for more information.
 
-# Feed all local non-internal postings to nearnet; sent off-line via
-# nntpsend or send-nntp.
-#nic.near.net\
-#	:!junk/!foo\
-#	:Tf,Wnm:nic.near.net
-
-# A real-time nntplink feed
-# Warning: nntplink doesn't work with INN 2.3, since it doesn't know
-# about the new storageapi. Someone needs to fix nntplink and release
-# a new version first!
-#uunet\
-#	:/!foo\
-#	:Tc,Wnm:@prefix@/bin/nntplink -i stdin news.uu.net
-
-# Capture all Foo, Incorporated, postings
-#capture\
-#	:*/foo\
-#	:Tp,H2:@prefix@/bin/capture %s
-
-# A UUCP feed, where we try to keep the "batching" between 4 and 1K.
-#ihnp4\
-#	:!junk,!control/!foo\
-#	:Tf,Wnb,B4096/1024:
-
-# Innfeed funnel master; individual peers feed into the funnel.
-# Note that innfeed with "-y" and no peer in innfeed.conf
-# would cause a problem that innfeed drops the first article.
-#innfeed!:\
-#	!*,\
-#	:Tc,Wnm*,S30000:@prefix@/bin/startinnfeed
-
-# A real-time feed through innfeed.
-#news.uu.net/uunet\
-#	:!junk,!control/!foo\
-#	:Tm:innfeed!
-
-# Use an external program to handle control messages, except cancel
+# Send non-cancel control messages through controlchan.
 #controlchan!\
 #	:!*,control,control.*,!control.cancel\
 #	:Tc,Wnsm:@prefix@/bin/controlchan
 
-# news to mail gateway
-#n2m!:!*:Tc,Ac,Wn*:@prefix@/bin/news2mail
-#news-software@localhost.our.domain.com:rec.pets.redants.*:Tm:n2m!
+##  Only uncomment this feed if both enableoverview and useoverchan are
+##  set to true in inn.conf.  By default, innd will write out overview
+##  internally and doesn't need or want this feed, but useoverchan can
+##  optionally be set to true and this feed uncommented to move those
+##  operations out of innd's main loop.
+
+# News overview.
+#overchan!:*:Tc,WntO:@prefix@/bin/overchan
+
+
+##  OUTGOING NORMAL FEED EXAMPLES
+
+# A real-time feed through innfeed.  Don't send articles with a distribution
+# of "foo", since those articles are internal.
+#news.uu.net/uunet\
+#	:!junk,!control*/!foo\
+#	:Tm:innfeed!
+
+# Create a batch file in @SPOOLDIR@/outgoing for all articles
+# that haven't already passed through nic.near.net.  The batch file will
+# be named nic.near.net, the default file name, and either nntpsend or
+# send-nntp can send articles from that spool file.
+#nic.near.net\
+#	:!junk,!control*/!foo\
+#	:Tf,Wnm:
+
+# A UUCP feed, where we try to keep the "batching" between 4K and 1K.
+#ihnp4\
+#	:!junk,!control/!foo\
+#	:Tf,Wnb,B4096/1024:
+
+
+##  OUTGOING SPECIAL FEED EXAMPLES
+
+# Feed all moderated source postings to an archiver.
+#source-archive!:!*,*sources*,!*wanted*,!*.d\
+#	:Tc,Wn:@prefix@/bin/archive -f -i @SPOOLDIR@/archive/INDEX
+
+# News to mail gateway.  Similar to innfeed, this uses a master feed and
+# then individual feeds for every separate address that news is being
+# gated to.  This sends all posts to rec.pets.redants.* to the address
+# news-software@example.com.
+#news2mail!:!*,Tc,Ac,Wn*:@prefix@/bin/news2mail
+#news-software@example.com:rec.pets.redants.*:Tm:news2mail!
+
+# Capture all local postings (with a distribution of "foo" and no more
+# than two sites in the Path) using a local program (that doesn't come with
+# INN).
+#capture\
+#	:*/foo\
+#	:Tp,H2:/usr/local/bin/capture %s
