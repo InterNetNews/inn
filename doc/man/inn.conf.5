@@ -197,6 +197,12 @@ is ``DONT''.
 Should nnrpd overview statistics report be logged to syslog.
 This can be useful to see overview performance.
 .TP
+.I storeonxref
+Should storage api stores articles based on newsgroup name in Xref header.
+If this is ``false'', it stores articles based on newsgroup name in
+Newsgroups header.
+The default value is ``true.''
+.TP
 .I keywords
 Should keywords be generated in the overview databases. Must be a boolean
 value. Default is false. Changing this requires also changing
