@@ -911,9 +911,6 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, off_t offset,
     bitoffset = blocknum % (longsize * 8);
     where = (ULONG *)cycbuff->bitfield + (CNFS_BEFOREBITF / longsize)
 	+ longoffset;
-    if (!set_operation && innconf->nfsreader) {
-	cnfs_mapcntl(where, sizeof *where, MS_INVALIDATE);
-    }
     bitlong = *where;
     if (set_operation) {
 	if (setbitvalue) {
