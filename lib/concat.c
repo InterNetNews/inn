@@ -61,7 +61,7 @@ concat VA_PARAM(const char *, first)
     VA_DECL;
     char *result, *p;
     const char *string;
-    size_t length;
+    size_t length = 0;
 
     /* Find the total memory required. */
     VA_START(first);
