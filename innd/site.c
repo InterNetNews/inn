@@ -509,15 +509,15 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	    temp = xmalloc(i + 1);
 	    p = strchr(sp->Param, '*');
 	    *p = '\0';
-	    strcpy(temp, sp->Param);
-	    strcat(temp, sp->FNLnames.data);
-	    strcat(temp, &p[1]);
+	    strlcpy(temp, sp->Param, i + 1);
+	    strlcat(temp, sp->FNLnames.data, i + 1);
+	    strlcat(temp, &p[1], i + 1);
 	    *p = '*';
-	    sprintf(buff, temp, Data->TokenText);
+	    snprintf(buff, sizeof(buff), temp, Data->TokenText);
 	    free(temp);
 	}
 	else
-	    sprintf(buff, sp->Param, Data->TokenText);
+	    snprintf(buff, sizeof(buff), sp->Param, Data->TokenText);
 
 	if (NeedShell(buff, (const char **)argv, (const char **)ARRAY_END(argv))) {
 	    argv[0] = SITEshell;
@@ -1073,7 +1073,6 @@ void
 SITEforward(SITE *sp, const char *text)
 {
     SITE	        *fsp;
-    char	        *p;
     char		buff[SMBUF];
 
     fsp = sp;
@@ -1082,11 +1081,10 @@ SITEforward(SITE *sp, const char *text)
     if (sp->Name == NULL || fsp->Name == NULL)
 	return;
     if (fsp->Type == FTexploder) {
-	strcpy(buff, text);
+	strlcpy(buff, text, sizeof(buff));
 	if (fsp != sp && fsp->FNLwantsnames) {
-	    p = buff + strlen(buff);
-	    *p++ = ' ';
-	    strcpy(p, sp->Name);
+            strlcat(buff, " ", sizeof(buff));
+            strlcat(buff, sp->Name, sizeof(buff));
 	}
 	SITEwrite(fsp, buff);
     }
