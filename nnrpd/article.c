@@ -90,7 +90,7 @@ BOOL PushIOvRateLimited(void) {
 	    }
 	}
 	gettimeofday(&start, NULL);
-	if (writev(STDOUT_FILENO, newiov, newiov_len) <= 0) {
+	if (xwritev(STDOUT_FILENO, newiov, newiov_len) <= 0) {
 	    queued_iov = 0;
 	    return FALSE;
 	}
@@ -124,7 +124,7 @@ BOOL PushIOv(void) {
 	return FALSE;
       }
     } else {
-      if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
+      if (xwritev(STDOUT_FILENO, iov, queued_iov) <= 0) {
         queued_iov = 0;
 	return FALSE;
       }
@@ -132,7 +132,7 @@ BOOL PushIOv(void) {
 #else
     if (MaxBytesPerSecond != 0)
 	return PushIOvRateLimited();
-    if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
+    if (xwritev(STDOUT_FILENO, iov, queued_iov) <= 0) {
       queued_iov = 0;
       return FALSE;
     }
