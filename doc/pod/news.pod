@@ -38,6 +38,11 @@ Two configure options have changed names:  --with-tmp-path is now
 --with-tmp-dir and --with-largefiles is now --enable-largefiles to improve
 consistency and better match the autoconf option guidelines.
 
+=item *
+
+All of the applicable bug fixes from the INN 2.3 STABLE series are also
+included in INN 2.4.
+
 =back
 
 =head1 Upgrading from 2.2 to 2.3
@@ -186,6 +191,13 @@ and supports Python authentication hooks.
 =item *
 
 There is preliminary support for news reading over SSL, using OpenSSL.
+
+=item *
+
+Users can no longer post articles containing Approved: headers to
+moderated groups by default; they must be specifically given that
+permission with the access: parameter in F<readers.conf>.  See the man
+page for more details.
 
 =item *
 

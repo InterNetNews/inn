@@ -28,6 +28,9 @@ Changes from 2.3 to 2.4
       --with-tmp-dir and --with-largefiles is now --enable-largefiles to
       improve consistency and better match the autoconf option guidelines.
 
+    * All of the applicable bug fixes from the INN 2.3 STABLE series are
+      also included in INN 2.4.
+
 Upgrading from 2.2 to 2.3
 
     There may be additional things to watch out for not listed here; if you
@@ -163,6 +166,11 @@ Changes from 2.2 to 2.3
       filters, and supports Python authentication hooks.
 
     * There is preliminary support for news reading over SSL, using OpenSSL.
+
+    * Users can no longer post articles containing Approved: headers to
+      moderated groups by default; they must be specifically given that
+      permission with the access: parameter in readers.conf.  See the man
+      page for more details.
 
     * To simplify anti-abuse filtering, and to be more compliant with news
       standards and proposed standards, INN now treats as control messages
