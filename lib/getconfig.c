@@ -273,6 +273,7 @@ void SetDefaults()
     innconf->nnrpdauthsender = FALSE;
     innconf->cnfscheckfudgesize = 0L;
     innconf->rlimitnofile = -1;
+    innconf->ignorenewsgroups = FALSE;
 }
 
 void ClearInnConf()
@@ -995,6 +996,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_RLIMITNOFILE, bit);
 		if (!bit) innconf->rlimitnofile = atoi(p);
 		SET_CONFIG(CONF_VAR_RLIMITNOFILE);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_IGNORENEWSGROUPS)) {
+		TEST_CONFIG(CONF_VAR_IGNORENEWSGROUPS, bit);
+		if (!bit && boolval != -1) innconf->ignorenewsgroups = boolval;
+		SET_CONFIG(CONF_VAR_IGNORENEWSGROUPS);
 	    }
 	}
 	(void)Fclose(F);
