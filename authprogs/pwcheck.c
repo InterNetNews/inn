@@ -41,6 +41,10 @@
 #include <sys/uio.h>
 #include <syslog.h>
 
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif

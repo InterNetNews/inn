@@ -8,6 +8,10 @@
 #include <sys/mman.h>
 #include <sys/uio.h>
 
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #include "nnrpd.h"
 #include "ov.h"
 
