@@ -8,13 +8,9 @@
 #include "config.h"
 #include "clibrary.h"
 #include "libinn.h"
-#include <syslog.h>
-#include <string.h>
+#include <fcntl.h>
 #include <signal.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <syslog.h>
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
