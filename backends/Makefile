@@ -16,7 +16,7 @@ all:		$(ALL)
 install:	
 	for i in ${ALL}; \
 		do $(SHELL) ../installit.sh $(OWNER) -m 0555 \
-			-b .OLD $${i} ${PATHBIN}/$${i}; \
+			-b .OLD $${i} $D${PATHBIN}/$${i}; \
 	done
 
 clobber clean:
