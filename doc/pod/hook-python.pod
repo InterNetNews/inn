@@ -475,7 +475,7 @@ method may be omitted.
 
 =item dynamic(self, attributes)
 
-Called when a client requests a newsgroup, an atricle or attempts to
+Called when a client requests a newsgroup, an article or attempts to
 post. Connection attributes are passed in the C<attributes> dictionary.
 Returns C<None> to grant access, or a non-empty string (which will be
 reported back to the client) otherwise.
