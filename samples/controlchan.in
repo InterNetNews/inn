@@ -274,6 +274,7 @@ sub readctlfile {
     chomp;
     # Not a comment or blank? Convert wildmat to regex
     if (/^(\s+)?[^\#]/ && ! (/^$/)) {
+      s/^all:/\*:/i;
       s/([\@\$\+\.])/\\$1/g;
       s/\*/.*/g;
       s/\?/./g;
