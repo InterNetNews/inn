@@ -2139,9 +2139,6 @@ ARTpost(CHANNEL *cp)
   if (HIShavearticle(hash)) {
     sprintf(buff, "%d Duplicate", NNTP_REJECTIT_VAL);
     ARTlog(data, ART_REJECT, buff);
-    if (innconf->remembertrash && (Mode == OMrunning) && !HISremember(hash))
-      syslog(L_ERROR, "%s cant write history %s %m", LogName,
-	HDR(HDR__MESSAGE_ID));
     ARTreject(REJECT_DUPLICATE, cp, article);
     return FALSE;
   }
