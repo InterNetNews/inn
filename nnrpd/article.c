@@ -1482,7 +1482,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
     for (i = range.Low; i <= range.High; i++) {
-	if (ARTfind(i, innconf->nnrpdcheckart) < 0)
+	if (ARTfind(i, innconf->storageapi && innconf->nnrpdcheckart) < 0)
 	    continue;
 
 	/* Get it from the overview? */
@@ -1542,7 +1542,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
     OVERcount++;
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
     for (Opened = OVERopen(), i = range.Low; i <= range.High; i++) {
-	if (ARTfind(i, innconf->nnrpdcheckart) < 0) {
+	if (ARTfind(i, innconf->storageapi && innconf->nnrpdcheckart) < 0) {
 	    if (innconf->storageapi)
 		OVERmiss++;
 	    continue;
@@ -1658,7 +1658,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 
     Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
     for (pattern = Glom(&av[3]), i = range.Low; i <= range.High; i++) {
-	if (ARTfind(i, innconf->nnrpdcheckart) < 0)
+	if (ARTfind(i, innconf->storageapi && innconf->nnrpdcheckart) < 0)
 	    continue;
 
 	/* Get it from the Overview? */
