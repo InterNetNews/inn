@@ -141,7 +141,7 @@ while read MESSAGE FROM_PAT NG_PAT ACT_PAT ; do
 	    ;;
 	*)
 	    ACTION=${ACT_PAT}
-	    NEWSGROUPPATS=`echo X${NG_PAT} | ${SED} -e 's/^X//' -e 's/^/\\\\^/' -e 's/\|/\\\\|\\\\^/g'`
+	    NEWSGROUPPATS=`echo X${NG_PAT} | ${SED} -e 's/^X//' -e 's/^/\\\\^/' -e 's/|/\\\\|\\\\^/g'`
 	    ;;
 	esac
     ;;
