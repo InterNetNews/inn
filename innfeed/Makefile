@@ -103,12 +103,18 @@ DEPENDFLAGS	= -s -c '$(CC) -E'
 .sh:
 	$(RM) $@ ; $(CP) $< $@ ; $(CHMOD) a-w,a+x $@
 
-all: innfeed startinnfeed
+all: innfeed startinnfeed innfeed-convcfg procbatch
 
 install: $(ALL_INSTALLED)
 
 innfeed: $(OBJS) version.o $(MALLOC) $(LIBNEWS)
 	$(LINK.c) -o $@ $(OBJS) version.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
+
+innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
+	$(FIXSCRIPT) -i innfeed-convcfg.in
+
+procbatch: procbatch.in $(FIXSCRIPT)
+	$(FIXSCRIPT) procbatch.in
 
 $D$(PATHBIN)/innfeed: innfeed
 	$(LIBTOOL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@
@@ -143,14 +149,15 @@ tags: $(SRC) $(INCS)
 clean::
 	$(RM) version.c *.E *.o *.a *.core makedepend tags TAGS core \#* *~ 
 	$(RM) Makefile.BAK
-	$(RM) innfeed startinnfeed uio_maxiov listing.ps logfile 
+	$(RM) innfeed startinnfeed uio_maxiov listing.ps logfile
+	$(RM) innfeed-convcfg procbatch
 
 realclean:: clean 
-	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h config_l.c
+	$(RM) y.tab.c y.tab.h lex.yy.c config_y.c config_y.h
 	$(RM) -r $(TARDIR)
 	$(RM) $(TARBALL)
 
-distclean:: realclean rcsclean
+clobber distclean:: realclean
 
 .PHONY:	tar listing
 
