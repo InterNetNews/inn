@@ -55,6 +55,49 @@ static unsigned int NumDeleteArtnums, MaxDeleteArtnums;
 
 typedef enum {FIND_DIR, FIND_CAF, FIND_TOPDIR} FINDTYPE;
 
+/*
+** Structures for the cache for stat information (to make expireover etc. 
+** faster. 
+**
+** The first structure contains the TOC info for a single CAF file.  The 2nd
+** one has pointers to the info for up to 256 CAF files, indexed
+** by the 2nd least significant byte of the arrival time.
+*/
+
+struct caftoccacheent {
+    CAFTOCENT *toc;
+    CAFHEADER header;
+};
+typedef struct caftoccacheent CAFTOCCACHEENT;
+
+struct caftocl1cache {
+    CAFTOCCACHEENT *entries[256];
+};
+typedef struct caftocl1cache CAFTOCL1CACHE;
+
+/*
+** and similar structures indexed by the 3rd and 4th bytes of the arrival time.
+** pointing to the lower level structures.  Note that the top level structure
+** (the one indexed by the MSByte of the timestamp) is likely to have only
+** one active pointer, unless your spool keeps more than 194 days of articles,
+** but it doesn't cost much to keep that one structure around and keep the
+** code general.
+*/
+
+struct caftocl2cache {
+    CAFTOCL1CACHE *l1ptr[256];
+};
+typedef struct caftocl2cache CAFTOCL2CACHE;
+
+struct caftocl3cache {
+    CAFTOCL2CACHE *l2ptr[256];
+};
+typedef struct caftocl3cache CAFTOCL3CACHE;
+
+static CAFTOCL3CACHE *TOCCache[256]; /* indexed by storage class! */
+static int TOCCacheHits, TOCCacheMisses;
+
+    
 static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     unsigned int        i;
@@ -127,6 +170,134 @@ BOOL timecaf_init(BOOL *selfexpire) {
     ReadingFile.path = WritingFile.path = (char *)NULL;
     return TRUE;
 }
+
+/*
+** Routines for managing the 'TOC cache' (cache of TOCs of various CAF files)
+**
+** Attempt to look up a given TOC entry in the cache.  Takes the timestamp
+** as arguments. 
+*/
+
+static CAFTOCCACHEENT *
+CheckTOCCache(int timestamp, int tokenclass)
+{
+    CAFTOCL2CACHE *l2;
+    CAFTOCL1CACHE *l1;
+    CAFTOCCACHEENT *cent;
+    unsigned char tmp;
+
+    if (TOCCache[tokenclass] == NULL) return NULL; /* cache is empty */
+
+    tmp = (timestamp>>16) & 0xff;
+    l2 = TOCCache[tokenclass]->l2ptr[tmp];
+    if (l2 == NULL) return NULL;
+
+    tmp = (timestamp>>8) & 0xff;
+    l1 = l2->l1ptr[tmp];
+    if (l1 == NULL) return NULL;
+
+    tmp = (timestamp) & 0xff;
+    cent = l1->entries[tmp];
+
+    ++TOCCacheHits;
+    return cent;
+}
+
+/*
+** Add given TOC and header to the cache.  Assume entry is not already in
+** cache.
+*/
+static CAFTOCCACHEENT *
+AddTOCCache(int timestamp, CAFTOCENT *toc, CAFHEADER head, int tokenclass)
+{
+    CAFTOCL2CACHE *l2;
+    CAFTOCL1CACHE *l1;
+    CAFTOCCACHEENT *cent;
+    unsigned char tmp;
+    int i;
+
+    if (TOCCache[tokenclass] == NULL) {
+	TOCCache[tokenclass] = NEW(CAFTOCL3CACHE, 1);
+	for (i = 0 ; i < 256 ; ++i) TOCCache[tokenclass]->l2ptr[i] = NULL;
+    }
+
+    tmp = (timestamp>>16) & 0xff;
+    l2 = TOCCache[tokenclass]->l2ptr[tmp];
+    if (l2 == NULL) {
+	TOCCache[tokenclass]->l2ptr[tmp] = l2 = NEW(CAFTOCL2CACHE, 1);
+	for (i = 0 ; i < 256 ; ++i) l2->l1ptr[i] = NULL;
+    }
+
+    tmp = (timestamp>>8) & 0xff;
+    l1 = l2->l1ptr[tmp];
+    if (l1 == NULL) {
+	l2->l1ptr[tmp] = l1 = NEW(CAFTOCL1CACHE, 1);
+	for (i = 0 ; i < 256 ; ++i) l1->entries[i] = NULL;
+    }
+
+    tmp = (timestamp) & 0xff;
+    cent = NEW(CAFTOCCACHEENT, 1);
+    l1->entries[tmp] = cent;
+
+    cent->header = head;
+    cent->toc = toc;
+    ++TOCCacheMisses;
+    return cent;
+}
+
+/*
+** Do stating of an article, going thru the TOC cache if possible. 
+*/
+
+static ARTHANDLE *
+StatArticle(int timestamp, ARTNUM artnum, int tokenclass)
+{
+    CAFTOCCACHEENT *cent;
+    CAFTOCENT *toc;
+    CAFHEADER head;
+    char *path;
+    CAFTOCENT *tocentry;
+    ARTHANDLE *art;
+
+    cent = CheckTOCCache(timestamp,tokenclass);
+    if (cent == NULL) {
+	path = MakePath(timestamp, tokenclass);
+	toc = CAFReadTOC(path, &head);
+	if (toc == NULL) {
+	    if (caf_error == CAF_ERR_ARTNOTHERE) {
+		SMseterror(SMERR_NOENT, NULL);
+	    } else {
+		SMseterror(SMERR_UNDEFINED, NULL);
+	    }
+	    DISPOSE(path);
+	    return NULL;
+	}
+	cent = AddTOCCache(timestamp, toc, head, tokenclass);
+	DISPOSE(path);
+    }
+    
+    /* check current TOC for the given artnum. */
+    if (artnum < cent->header.Low || artnum > cent->header.High) {
+	SMseterror(SMERR_NOENT, NULL);
+	return NULL;
+    }
+    
+    tocentry = &(cent->toc[artnum - cent->header.Low]);
+    if (tocentry->Size == 0) {
+	/* no article with that article number present */
+	SMseterror(SMERR_NOENT, NULL);
+	return NULL;
+    }
+
+    /* stat is a success, so build a null art struct to represent that. */
+    art = NEW(ARTHANDLE, 1);
+    art->type = TOKEN_TIMECAF;
+    art->data = NULL;
+    art->len = 0;
+    art->private = NULL;
+    return art;
+}
+	
 
 static void
 CloseOpenFile(CAFOPENFILE *foo) {
@@ -334,6 +505,7 @@ ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount) {
     char                *path;
     ARTHANDLE           *art;
     static TOKEN	ret_token;
+    time_t		now;
     
     if (token.type != TOKEN_TIMECAF) {
 	SMseterror(SMERR_INTERNAL, NULL);
@@ -341,6 +513,26 @@ ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount) {
     }
 
     BreakToken(token, &timestamp, &artnum);
+
+    /*
+    ** Do a possible shortcut on RETR_STAT requests, going thru the "TOC cache"
+    ** we mentioned above.  We only try to go thru the TOC Cache under these
+    ** conditions:
+    **   1) SMpreopen is TRUE (so we're "preopening" the TOCs.)
+    **   2) the timestamp is older than the timestamp corresponding to current
+    ** time. Any timestamp that matches current time (to within 256 secondsf
+    ** would be in a CAF file that innd is actively 
+    ** writing, in which case we would not want to cache the TOC for that
+    ** CAF file. 
+    */
+
+    if (SMpreopen && amount == RETR_STAT) {
+	now = time(NULL);
+	if (timestamp < ((now >> 8) & 0xffffff)) {
+	    return StatArticle(timestamp, artnum, token.class);
+	}
+    }
+
     path = MakePath(timestamp, token.class);
     if ((art = OpenArticle(path, artnum, amount)) != (ARTHANDLE *)NULL) {
 	art->arrived = timestamp<<8; /* XXX not quite accurate arrival time,
