@@ -65,7 +65,7 @@ MakeArchiveDirectory(Name)
 
     /* Try to make each of comp and comp/foo in turn. */
     for (p = Name; *p; p++)
-	if (*p == '/') {
+	if (*p == '/' && p != Name) {
 	    *p = '\0';
 	    made = MakeDir(Name);
 	    *p = '/';

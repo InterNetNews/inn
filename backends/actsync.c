@@ -403,7 +403,7 @@ struct eqgrp {
 #define NEWGRP_NOCHG 1		/* new group dir found but no hi/low change */
 #define NEWGRP_CHG 2		/* new group dir found but no hi/low change */
 
-#if defined(DO_USE_UNION_WAIT)
+#if !defined(DONT_USE_UNION_WAIT)
 #if !defined(WEXITSTATUS)
 #define WEXITSTATUS(status) ((status).w_retcode)
 #endif
@@ -965,7 +965,7 @@ usage()
     (void) fprintf(stderr,
 	"\txi\t    no output, safely exec commands interactively\n");
     (void) fprintf(stderr,
-	"    -p %\t\tmin % host1 lines unchanged allowed\t     (def: -p 96)\n");
+	"    -p %%\t\tmin %% host1 lines unchanged allowed\t     (def: -p 96)\n");
     (void) fprintf(stderr,
      "    -q hostid\tsilence errors from a host (see -b)\t     (def: -q 0)\n");
     (void) fprintf(stderr,
@@ -3117,11 +3117,11 @@ exec_cmd(mode, cmd, grp, type, who)
     char buf[BUFSIZ+1];		/* interactive buffer */
     int pid;			/* pid of child process */
     int io[2];			/* pair of pipe descriptors */
-#if defined(DO_USE_UNION_WAIT)
-    union wait status;		/* wait status */
-#else
+#if defined(DONT_USE_UNION_WAIT)
     int status;			/* wait status */
-#endif /* defined(DO_USE_UNION_WAIT) */
+#else
+    union wait status;		/* wait status */
+#endif
     int exitval;		/* exit status of the child */
     char *p;
 
@@ -3384,10 +3384,10 @@ scan_spool_dir(grp)
      */
     oldhi = atol(grp->outhi);
     oldlow = atol(grp->outlow);
-    found = HiLowWater(grp->name, &newhi, &newlow, -1, -1);
+    found = HiLowWater(grp->name, &newhi, &newlow, (long)-1, (long)-1);
     if (D_SUMMARY) {
 	fprintf(stderr,
-	    "%s: new: %s, found %d, old hi/low: %d %d, new hi/low: %d %d\n",
+	    "%s: new: %s, found %d, old hi/low: %ld %ld, new hi/low: %ld %ld\n",
 	    program, grp->name, found, oldhi, oldlow, newhi, newlow);
     }
     if (!found) {
@@ -3429,7 +3429,7 @@ scan_spool_dir(grp)
 		program, WATER_LEN+1);
 	    exit(54);
 	}
-	sprintf(hi, "%010.10ld", newhi);
+	sprintf(hi, "%010ld", newhi);
 	if (D_BUG) {
 	    fprintf(stderr,
 	      "%s: new: %s, dir found, oldhi:<%s> != newhi:<%s>\n",
@@ -3445,7 +3445,7 @@ scan_spool_dir(grp)
 		program, WATER_LEN+1);
 	    exit(55);
 	}
-	sprintf(low, "%010.10ld", newlow);
+	sprintf(low, "%010ld", newlow);
 	if (D_BUG) {
 	    fprintf(stderr,
 	      "%s: new: %s, dir found, oldlow:<%s> != newlow:<%s>\n",

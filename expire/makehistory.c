@@ -259,7 +259,7 @@ GetMessageID(p)
 	B.Size = length;
 	RENEW(B.Data, char, B.Size + 1);
     }
-    (void)memcpy((POINTER)B.Data, (POINTER)p, (SIZE_T)B.Size + 1);
+    (void)memcpy((POINTER)B.Data, (POINTER)p, (SIZE_T)length + 1);
 
     for (p = B.Data; *p; p++)
 	if (*p == HIS_FIELDSEP)
@@ -383,17 +383,18 @@ DoArticle(qp, Sbp, name, out, RemoveBad, Update)
     if (Posted == 0)
 	Posted = Arrived;
     if (Expires > 0)
-	i = fprintf(out, "%s%c%ld%c%ld%c%ld%c%s\n",
-		MessageID, HIS_FIELDSEP,
-		(long)Arrived, HIS_SUBFIELDSEP, (long)Expires,
-		    HIS_SUBFIELDSEP, (long)Posted, HIS_FIELDSEP,
-		name);
+	i = fprintf(out, "%s%c%lu%c%lu%c%lu%c%s\n",
+                    MessageID, HIS_FIELDSEP,
+                    (unsigned long)Arrived, HIS_SUBFIELDSEP,
+                    (unsigned long)Expires,
+		    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
+                    name);
     else
-	i = fprintf(out, "%s%c%ld%c%s%c%ld%c%s\n",
-		MessageID, HIS_FIELDSEP,
-		(long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
-		    HIS_SUBFIELDSEP, (long)Posted, HIS_FIELDSEP,
-		name);
+	i = fprintf(out, "%s%c%lu%c%s%c%lu%c%s\n",
+                    MessageID, HIS_FIELDSEP,
+                    (unsigned long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
+		    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
+                    name);
     if (i == EOF || ferror(out)) {
 	(void)fprintf(stderr, "Can't write history line, %s\n",
 		strerror(errno));

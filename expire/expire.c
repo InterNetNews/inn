@@ -39,7 +39,7 @@ typedef struct _BUFFER {
 typedef struct _NEWSGROUP {
     char		*Name;
     char		*Rest;
-    long		Last;
+    unsigned long	Last;
 	/* These fields are new. */
     time_t		Keep;
     time_t		Default;
@@ -857,7 +857,7 @@ EXPdoline(out, line, length, arts, krps)
 		where = Offset;
 		if (Arrived > RealNow)
 		    Arrived = RealNow;
-		(void)sprintf(date, "%ld", (long)Arrived);
+		(void)sprintf(date, "%lu", (unsigned long)Arrived);
 		(void)fprintf(out, "%s%c%s%c%s\n",
 			fields[0], HIS_FIELDSEP,
 			date, HIS_SUBFIELDSEP, HIS_NOEXP);

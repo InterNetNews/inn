@@ -503,7 +503,13 @@ char *av[];
     }
 
     XBATCHsize = statbuf.st_size;
-    if (XBATCHsize > XBATCHbuffersize) {
+    if (XBATCHsize == 0) {
+      (void)fprintf(stderr, "Batch file \"%s\" is zero length, - skipping it\n",
+		    XBATCHname);
+      (void)close(i);
+      (void)unlink(XBATCHname);
+      continue;
+    } else if (XBATCHsize > XBATCHbuffersize) {
       XBATCHbuffersize = XBATCHsize;
       if (XBATCHbuffer) DISPOSE(XBATCHbuffer);
       XBATCHbuffer = NEW(char, XBATCHsize);

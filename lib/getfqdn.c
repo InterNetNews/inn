@@ -46,8 +46,9 @@ GetFQDN()
      * turn it on, but don't complain to me. */
     if (strchr(hp->h_name, '.') == NULL) {
 	/* Try to force DNS lookup if NIS/whatever gets in the way. */
-	(void)strncpy(temp, buff, sizeof buff);
-	(void)strcat(temp, ".");
+	(void)strncpy(temp, buff, sizeof(temp) - 1);
+	temp[sizeof(temp) - 1] = '\0';
+	(void)strncat(temp, ".", sizeof(temp) - strlen(temp) - 1);
 	hp = gethostbyname(temp);
     }
 #endif	/* 0 */

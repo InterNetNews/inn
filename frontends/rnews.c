@@ -296,7 +296,7 @@ Process(article)
 #if	defined(FILE_RNEWS_LOG_DUPS)
 	if ((F = fopen(_PATH_RNEWS_DUP_LOG, "a")) != NULL) {
 	    *p = '\0';
-	    (void)fprintf(F, "duplicate %s %s", id, path);
+	    (void)fprintf(F, "duplicate %s %s\n", id, path);
 	    (void)fclose(F);
 	}
 #endif	/* defined(FILE_RNEWS_LOG_DUPS) */
@@ -817,7 +817,7 @@ main(ac, av)
 
     /* First thing, set up logging and our identity. */
     openlog("rnews", L_OPENLOG_FLAGS, LOG_INN_PROG);
-#if !defined(__FreeBSD__) && !defined(__bsdi__)
+#if !defined(__FreeBSD__) && !defined(__bsdi__) && !defined (__NetBSD__)
     if (setgid(getegid()) < 0) {
 	syslog(L_FATAL, "cant setgid to %d %m", getegid());
 	exit(1);

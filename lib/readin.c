@@ -56,7 +56,7 @@ ReadInDescriptor(fd, Sbp)
     p = NEW(char, Sbp->st_size + 1);
 
     /* Slurp, slurp. */
-    if (xread(fd, p, Sbp->st_size) < 0) {
+    if (xread(fd, p, (OFFSET_T)(Sbp->st_size)) < 0) {
 	oerrno = errno;
 	DISPOSE(p);
 	(void)close(fd);

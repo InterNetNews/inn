@@ -145,7 +145,8 @@ ProcessIncoming(qp)
 		    }
 		    else {
 			/* 2nd try to link */
-			if (link(names[0], names[i]) < 0) {
+			lnval = link(names[0], names[i]) ;
+			if (lnval < 0 && errno == EXDEV) {
 #if	defined(DONT_HAVE_SYMLINK)
 			    (void)fprintf(stderr, "crosspost cant link %s %s",
 				names[0], names[i]);
@@ -167,10 +168,13 @@ ProcessIncoming(qp)
 				perror(" ");
 			    }
 #endif	/* defined(DONT_HAVE_SYMLINK) */
-			}
+			} else if (lnval < 0) {
+			    (void)fprintf(stderr, "crosspost cant link %s %s",
+				names[0], names[i]);
+			    perror(" ");
+                        }
 		    }
-		}
-		else {
+		} else {
 		    (void)fprintf(stderr, "crosspost bad path %s\n",
 			    names[i]);
 		}

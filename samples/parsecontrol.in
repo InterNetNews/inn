@@ -21,7 +21,7 @@ az=abcdefghijklmnopqrstuvwxyz
 ZN=0123456789
 # Attempt to sanitize the address
 FROM="`echo \"$1\" | tr ${AZ} ${az} | tr -dc \\\055${az}${ZN}+_.@%`"
-REPLYTO="$2"
+REPLYTO="`echo \"$2\" | tr ${AZ} ${az} | tr -dc \\\055${az}${ZN}+_.@%`"
 case "$3" in
 "")
     ARTICLE=/dev/null
@@ -34,6 +34,32 @@ case "$3" in
     ;;
 esac
 PATHHOST="$4"
+
+# Catch an address left with a leading '-' just in case...
+test -z "$MAILFAILURES" && MAILFAILURES=false
+case "X$FROM" in
+    X-*) 
+        if $MAILFAILURES; then
+            ${SED} -e 's/^~/~~/' < ${ARTICLE} \
+                | ${MAILCMD} -s "Bad FROM address" ${NEWSMASTER}
+        fi
+        cat ${ARTICLE} | \
+            writelog $MOST_LOGS/badcontrol.log "`date` Bad FROM address"
+        exit
+        ;;
+esac
+
+case "X$REPLYTO" in
+    X-*)
+        if $MAILFAILURES; then
+            ${SED} -e 's/^~/~~/' < ${ARTICLE} \
+                | ${MAILCMD} -s "Bad REPLY-TO address" ${NEWSMASTER}
+        fi
+        cat ${ARTICLE} | \
+            writelog $MOST_LOGS/badcontrol.log "`date` Bad REPLY-TO address"
+        exit
+        ;;
+esac
 
 umask 002
 TEMP=${TMPDIR}/ctl$$

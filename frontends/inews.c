@@ -45,6 +45,7 @@ typedef struct _HEADER {
 } HEADER;
 
 
+STATIC char     *tmpPtr ;
 STATIC BOOL	Dump;
 STATIC BOOL	Revoked;
 STATIC BOOL	Spooling;
@@ -997,7 +998,8 @@ ValidNewsgroups(hdr, F, article)
 				  group);
 		else {
 		    mailed = MailArticle(group, article);
-		    DISPOSE(DDend(h));
+                    tmpPtr = DDend(h) ;
+		    DISPOSE(tmpPtr);
 		    QuitServer(mailed ? 0 : 1);
 		}
 	    break;
@@ -1005,7 +1007,8 @@ ValidNewsgroups(hdr, F, article)
 	case NF_FLAG_NOLOCAL:
 	    (void)fprintf(stderr, "Postings to \"%s\" are not allowed here.\n",
 		    group);
-	    DISPOSE(DDend(h));
+            tmpPtr = DDend(h) ;
+	    DISPOSE(tmpPtr);
 	    return FALSE;
 	case NF_FLAG_EXCLUDED:
 	    (void)fprintf(stderr, "Warning:  \"%s\" is rejected here.\n",
@@ -1018,7 +1021,8 @@ ValidNewsgroups(hdr, F, article)
 	    (void)fprintf(stderr,
 		    "The newsgroup \"%s\" has been renamed to \"%s\".\n",
 		    group, p + 1);
-	    DISPOSE(DDend(h));
+            tmpPtr = DDend(h) ;
+	    DISPOSE(tmpPtr);
 	    return FALSE;
 	}
 
@@ -1026,7 +1030,8 @@ ValidNewsgroups(hdr, F, article)
 
     if (!FoundOne && !IsNewgroup) {
 	(void)fprintf(stderr, "No such newsgroups as \"%s\".\n", hdr);
-	DISPOSE(DDend(h));
+        tmpPtr = DDend(h) ;
+	DISPOSE(tmpPtr);
 	return FALSE;
     }
 

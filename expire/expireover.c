@@ -409,7 +409,7 @@ RemoveLines(group, Deletes)
 /*
 **  Read the overview schema.
 */
-void
+static void
 ARTreadschema()
 {
     register FILE		*F;
@@ -487,6 +487,19 @@ OVERgen(name)
 	Headers = NEW(ARTOVERFIELD, ARTfieldsize);
 	for (hp = Headers, i = ARTfieldsize; --i >= 0; hp++)
 	    hp->Length = 0;
+    } else {
+	/* This disposes from the previous call.  This simplifies
+	   handling later on.  We trade off this readable code
+	   for the problem that nothing DISPOSEs() the last
+	   caller's use.  mibsoft 8/22/97
+	 */
+	for (hp = Headers, i = ARTfieldsize; --i >= 0; hp++) {
+	    if (hp->Header) {
+		DISPOSE(hp->Header);
+		hp->Header = 0;
+	    }
+	    hp->Length = 0;
+	}
     }
     for (hp = Headers, i = ARTfieldsize; --i >= 0; hp++)
 	hp->HasHeader = FALSE;
@@ -507,7 +520,6 @@ OVERgen(name)
 
 	/* See if we want this header. */
 	fp = ARTfields;
-        lasthp = 0 ;
 	for (hp = Headers, i = ARTfieldsize; --i >= 0; hp++, fp++) {
 	    colon = &line[fp->Length];
 	    if (*colon != ':')
@@ -525,31 +537,28 @@ OVERgen(name)
 		for (p = colon; *++p && ISWHITE(*p); )
 		    continue;
 	    size = strlen(p);
-	    if (hp->Length == 0) {
-		hp->Length = size;
-		hp->Header = NEW(char, hp->Length + 1);
-	    }
-	    else if (hp->Length < size) {
-		hp->Length = size;
-		RENEW(hp->Header, char, hp->Length + 1);
-	    }
+            hp->Length = size;
+            hp->Header = NEW(char, hp->Length + 1);
 	    (void)strcpy(hp->Header, p);
 	    for (p = hp->Header; *p; p++)
 		if (*p == '\t' || *p == '\n' || *p == '\r')
 		    *p = ' ';
 	    hp->HasHeader = TRUE;
             lasthp = hp;
+            break ;             /* the first one is used */
 	}
         /* handle multi-line headers -- kondou@uxd.fc.nec.co.jp */
-	if (lasthp && ISWHITE(*line)) {
-	    register int oldsize = lasthp->Length;
-	    size = strlen(line);
-	    lasthp->Length += size + 1;
-	    RENEW(lasthp->Header, char, lasthp->Length + 1);
-	    for (p = line; *p; p++)
-		if (*p == '\t' || *p == '\n' || *p == '\r')
-		    *p = ' ';
-	    strcat(lasthp->Header, line);
+        if (i < 0) {
+            if (lasthp && ISWHITE(*line)) {
+                lasthp->Length += strlen(line);
+                RENEW(lasthp->Header, char, lasthp->Length + 1);
+                for (p = line; *p; p++)
+                    if (*p == '\t' || *p == '\n' || *p == '\r')
+                        *p = ' ';
+                strcat(lasthp->Header, line);
+            } else {
+                lasthp = 0 ;
+            }
         }
     }
 
@@ -1240,7 +1249,7 @@ MakeDir(Name)
 **  Given a directory, comp/foo/bar, create that directory and all
 **  intermediate directories needed.  Return FALSE on error.
 */
-BOOL
+static BOOL
 MakeOverDir(Name)
     register char	*Name;
 {

@@ -8,7 +8,7 @@
 ##  TODO: - we should check the amount of queued batches for the site,
 ##          to prevent disk overflow due to unreachable sites.
 
-if [ $# -le 3 ]
+if [ $# -lt 3 ]
 then
 	echo "usage: $0 <sitename> <hostname> <xbatch file name>"
 	exit 1
