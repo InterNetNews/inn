@@ -79,6 +79,8 @@ HEADER	Table[] = {
 #define _xtrace         21
     {   "X-Complaints-To",	FALSE, HTstd },
 #define _xcomplaintsto	22
+    {   "NNTP-Posting-Date",	FALSE, HTstd },
+#define _nntppostdate	23
     {	"Xref",			FALSE,	HTstd },
     {	"Summary",		TRUE,	HTstd },
     {	"Keywords",		TRUE,	HTstd },
@@ -87,6 +89,12 @@ HEADER	Table[] = {
     {	"Posted",		FALSE,	HTobs },
     {	"Posting-Version",	FALSE,	HTobs },
     {	"Relay-Version",	FALSE,	HTobs },
+    {   "CC",			TRUE, HTstd },
+#define _cc		32
+    {   "BCC",			TRUE, HTstd },
+#define _bcc		33
+    {   "To",			TRUE, HTstd },
+#define _to		34
 };
 
 HEADER *EndOfTable = ENDOF(Table);
@@ -366,14 +374,14 @@ ProcessHeaders(linecount)
 	return Error;
     }
 
-    if (HDR(_date) == NULL) {
-	if ((gmt = gmtime(&Now.time)) == NULL)
+    if ((gmt = gmtime(&Now.time)) == NULL)
 	    return "Can't get the time";
-	(void)sprintf(datebuff, "%d %3.3s %d %02d:%02d:%02d GMT",
+    (void)sprintf(datebuff, "%d %3.3s %d %02d:%02d:%02d GMT",
 	    gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
 	    gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+
+    if (HDR(_date) == NULL)
 	HDR(_date) = datebuff;
-    }
     else {
 	if ((t = parsedate(HDR(_date), &Now)) == -1)
 	    return "Can't parse \"Date\" header";
@@ -493,12 +501,16 @@ ProcessHeaders(linecount)
 
     /* NNTP-Posting host; set. */
     HDR(_nntpposthost) = ClientHost;
+    /* NNTP-Posting-Date - not in RFC (yet) */
+    HDR(_nntppostdate) = datebuff;
 
     /* X-Trace; set */
     t = time((time_t *)NULL) ;
     pid = (long) getpid() ;
     if ((gmt = gmtime(&Now.time)) == NULL)
 	return "Can't get the time";
+    if ((p = GetFQDN()) == NULL)
+	p = "unknown";
     sprintf(tracebuff, "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
              GetFQDN(), (long) t, (long) pid, ClientIp,
 	    gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
@@ -508,11 +520,20 @@ ProcessHeaders(linecount)
     /* X-Complaints-To; set */
     if ((p = GetConfigValue (_CONF_COMPLAINTS)) != NULL)
       sprintf (complaintsbuff, "%s",p) ;
-    else
-      sprintf (complaintsbuff, "%s@%s",
-                NEWSMASTER,GetConfigValue (_CONF_FROMHOST)) ;
-    HDR(_xcomplaintsto) = complaintsbuff ;
+    else {
+      if ((p = GetConfigValue (_CONF_FROMHOST)) != NULL) 
+	sprintf (complaintsbuff, "%s@%s",
+                NEWSMASTER, p);
+    }
+    if (p != NULL)  /* Only show it if we can create it */
+	HDR(_xcomplaintsto) = complaintsbuff ;
 
+    /* Clear out some headers that should not be here */
+    if (GetBooleanConfigValue(_CONF_STRIPPOSTCC, FALSE)) {
+	HDR(_cc) = NULL;
+	HDR(_bcc) = NULL;
+	HDR(_to) = NULL;
+    }
     /* Now make sure everything is there. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Type == HTreq && hp->Value == NULL) {

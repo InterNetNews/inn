@@ -392,6 +392,8 @@ READline(start, size, timeout)
     char		c;
     BOOL		toolong;
 
+    toolong = FALSE;
+
     for (p = start, end = &start[size - 1]; ; ) {
 	if (count == 0) {
 	    /* Fill the buffer. */
@@ -433,7 +435,7 @@ READline(start, size, timeout)
 	if (p < end)
 	    *p++ = c;
 	else
-	    toolong = true;
+	    toolong = TRUE;
     }
 
     *p = '\0';
