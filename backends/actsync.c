@@ -65,6 +65,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <syslog.h>
 #ifdef HAVE_WAIT_H
 # include <wait.h>
 #else
@@ -560,6 +561,9 @@ main(argc, argv)
     int iglen;			/* length of ignore list */
     char *host1;		/* host to change */
     char *host2;		/* comparison host */
+
+    /* First thing, set up logging and our identity. */
+    openlog("actsync", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
     /*read in default info from inn.conf*/
     if(ReadInnConf() < 0) {

@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <syslog.h>
 #include "libinn.h"
 #include "macros.h"
 
@@ -345,6 +346,9 @@ main(ac, av)
     int		i;
     OFFSET_T	size = (OFFSET_T)0;
     OFFSET_T	maxsize = (OFFSET_T)0;
+
+    /* First thing, set up logging and our identity. */
+    openlog("skrinkfile", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
     /* Set defaults. */
     program = av[0];
