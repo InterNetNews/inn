@@ -10,7 +10,7 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 
 all:			autoconfig
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods
-	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libstorage.la
+	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libstorage.$(EXTLIB)
 
 include Make.methods
 
@@ -27,10 +27,10 @@ methods:
 	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
 	done
 
-install:		all $(D)$(PATHLIB)/libstorage.la 
+install:		all $(D)$(PATHLIB)/libstorage.$(EXTLIB) 
 
 clobber clean:
-	rm -f *.o *.lo libstorage.la objs/*
+	rm -f *.o *.lo libstorage.la libstorage.a objs/*
 	rm -rf .libs
 	rm -f methods.c methods.h qiotest
 	rm -f profiled libstorage_p.a
@@ -46,8 +46,12 @@ libstorage.la:	$(P) $(OBJECTS) $(LOBJECTS)
 	$(CC) $(LDFLAGS) -o libstorage.la $(LOBJECTS) objs/*.lo \
 		-rpath $(PATHLIB) -version-info 2:0:0
 
-qiotest: qio.c libstorage.la ../lib/libinn.la
-	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c libstorage.la ../lib/libinn.la
+libstorage.a:         $(P) $(OBJECTS)
+	ar r $@ $(OBJECTS) objs/*
+	$(RANLIB) libstorage.a
+
+qiotest: qio.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
+	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 
 autoconfig:
 	@./buildconfig `find . -name method.config -print`
@@ -64,9 +68,9 @@ profiled:		../libstorage_p.a
 	rm -f $(OBJECTS)
 
 ##  Low-level install actions.
-$(D)$(PATHLIB)/libstorage.la:	libstorage.la
+$(D)$(PATHLIB)/libstorage.$(EXTLIB):	libstorage.$(EXTLIB)
 	@rm -f $@
-	$(LIBTOOL) cp -p libstorage.la $@
+	$(LIBTOOL) cp -p libstorage.$(EXTLIB) $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
