@@ -1,5 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(config/config.data.in)
+AC_INIT(config/config.scoreboard)
+dnl Replace the existing config.data with a message in case we abort.
+echo "# configure did not complete successfully.  Resolve problems and re-run." >config/config.data
+echo "# or obtain a known good config.data for your O/S" >>config/config.data
+
 AC_PREFIX_DEFAULT(/usr/local/news)
 
 dnl Parse the arguments
@@ -70,9 +74,20 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_LEX
+
+dnl config.data wants "echo" not ':' if ranlib not found...
+if test x$ac_cv_subst_ranlib = x
+then
+AC_PROG_RANLIB
+fi
+ac_cv_subst_ranlib=$ac_cv_prog_RANLIB
+if test x$ac_cv_subst_ranlib = x:
+then
+	ac_cv_subst_ranlib = echo
+fi
+AC_SUBST(ac_cv_subst_ranlib)
 
 dnl System specific
 AC_AIX
@@ -110,18 +125,28 @@ else
 fi)
 AC_SUBST(ac_cv_subst_ctags)
 
-AC_PATH_PROG(ac_cv_subst_innwatch_df,df)
-AC_PATH_PROG(ac_cv_subst_path_awk,awk)
-AC_PATH_PROG(ac_cv_subst_path_compress,compress)
-AC_PATH_PROG(ac_cv_subst_path_egrep,egrep)
-AC_PATH_PROG(ac_cv_subst_path_gzip,gzip)
-AC_PATH_PROG(ac_cv_subst_path_mail,Mail)
-AC_PATH_PROG(ac_cv_subst_path_perl,perl)
-AC_PATH_PROG(ac_cv_subst_path_pgp,pgp)
-AC_PATH_PROG(ac_cv_subst_path_sed,sed)
-AC_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
-AC_PATH_PROG(ac_cv_subst_path_sort,sort)
-AC_PATH_PROG(ac_cv_subst_path_sh,sh)
+dnl ***************************************************
+dnl Run AC_PATH_PROG when it is an error to not find something.
+AC_DEFUN(AC_ENSURE_PATH_PROG, [
+AC_PATH_PROG($1,$2)
+if test "x${$1}" = "x"
+then
+AC_MSG_ERROR($2 is a required program not found in path)
+fi
+])
+
+AC_ENSURE_PATH_PROG(ac_cv_subst_innwatch_df,df)
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_awk,awk)
+AC_PATH_PROG(ac_cv_subst_path_compress,compress,no-compress-found-during-configure)
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_egrep,egrep)
+AC_PATH_PROG(ac_cv_subst_path_gzip,gzip,no-gzip-found-during-configure)
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_perl,perl)
+AC_PATH_PROG(ac_cv_subst_path_pgp,pgp,no-pgp-found-during-configure)
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_sed,sed)
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_sort,sort)
+AC_ENSURE_PATH_PROG(ac_cv_subst_path_sh,sh)
 PATH="$ac_save_path"
 dnl If the path mucking above must be done, redo the echo test.
 if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
@@ -143,6 +168,7 @@ dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
 AC_CHECK_LIB(resolv, gethostbyname)
+AC_CHECK_LIB(resolv, inet_aton)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(elf, nlist)
@@ -214,7 +240,7 @@ AC_FUNC_VFORK
 AC_FUNC_VPRINTF
 dnl Actually INN doesn't care about the rusage argument AC_FUNC_WAIT3
 AC_CHECK_FUNCS(fchmod getdtab gethostname getrlimit getrusage gettimeofday memchr memcmp memcpy memmove memset mkdir mkfifo mktemp select setbuffer setproctitle setsid socket)
-AC_CHECK_FUNCS(strcasecmp strchr strcspn strerror strrchr strspn strstr symlink sysconf syslog ulimit inet_aton)
+AC_CHECK_FUNCS(strcasecmp strchr strcspn strerror strrchr strspn strstr symlink sysconf syslog ulimit)
 AC_CHECK_FUNCS(waitpid)
 dnl
 AC_CACHE_CHECK(for return type of abort, ac_cv_type_abort, AC_TRY_COMPILE([#ifdef HAVE_STDLIB_H
@@ -378,8 +404,6 @@ AC_TRY_COMPILE([#ifdef HAVE_MALLOC_H
 ac_cv_type_generic=char));
 AC_SUBST(ac_cv_type_generic)
 
-dnl ***************************************************
-
 
 dnl ***************************************************
 dnl Convert a yes no value to a ac_cv_subst value which
@@ -526,7 +550,6 @@ dnl Missing sources
 MISSING_MAN=""
 MISSING_SRC=""
 MISSING_OBJ=""
-MISSING_INET_ATON=""
 if test ${ac_cv_func_strcasecmp} = "no"
 then
 	MISSING_MAN="strcasecmp.3 "
@@ -591,14 +614,9 @@ then
 	MISSING_SRC="${MISSING_SRC}strrchr.c "
 	MISSING_OBJ="${MISSING_OBJ}strrchr.o "
 fi
-if test ${ac_cv_func_inet_aton} = "no"
-then
-	MISSING_INET_ATON="${MISSING_INET_ATON}inet_addr.c "
-fi
 AC_SUBST(MISSING_MAN)
 AC_SUBST(MISSING_SRC)
 AC_SUBST(MISSING_OBJ)
-AC_SUBST(MISSING_INET_ATON)
 
-
+grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 AC_OUTPUT(config/config.data)

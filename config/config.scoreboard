@@ -123,7 +123,7 @@
   ||##  Ranlib command.  Use echo if you don't need ranlib.
   ||##[autoconf]
   ||#### =()<RANLIB			@<RANLIB>@>()=
-  ||RANLIB			@RANLIB@
+  ||RANLIB			@ac_cv_subst_ranlib@
 [IN1.7=NO][WDF=autoconf][WOR=no]
   ||##  LEX should probably be lex or flex
   ||##[autoconf]
@@ -487,10 +487,6 @@
   ||##[autoconf]
   ||#### =()<MISSING_OBJ		@<MISSING_OBJ>@>()=
   ||MISSING_OBJ		@MISSING_OBJ@
-  ||## Do we need an inet_aton(). Leave blank or add 'inet_addr.c'
-  ||##[autoconf]
-  ||#### =()<MISSING_INET_ATON		@<MISSING_INET_ATON>@>()=
-  ||MISSING_INET_ATON		@MISSING_INET_ATON@
 [IN1.7=@6][comments]
   ||
   ||
