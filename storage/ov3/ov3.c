@@ -134,7 +134,7 @@ static void GROUPLOCclear(GROUPLOC *loc);
 static bool GROUPLOCempty(GROUPLOC loc);
 static bool GROUPlockhash(enum inn_locktype type);
 static bool GROUPlock(GROUPLOC gloc, enum inn_locktype type);
-static bool GROUPfilesize(int count);
+static off_t GROUPfilesize(int count);
 static bool GROUPexpand(int mode);
 static bool OV3packgroup(char *group, int delta);
 static GROUPHANDLE *OV3opengroup(char *group, bool needcache);
@@ -307,8 +307,8 @@ bool tradindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
     return TRUE;
 }
 
-static bool GROUPfilesize(int count) {
-    return (count * sizeof(GROUPENTRY)) + sizeof(GROUPHEADER);
+static off_t GROUPfilesize(int count) {
+    return ((off_t)count * sizeof(GROUPENTRY)) + sizeof(GROUPHEADER);
 }
 
 /* Check if the given GROUPLOC refers to GROUPENTRY that we don't have mmap'ed,

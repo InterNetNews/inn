@@ -243,7 +243,7 @@ static void GROUPLOCclear(GROUPLOC *loc);
 static bool GROUPLOCempty(GROUPLOC loc);
 static bool GROUPlockhash(enum inn_locktype type);
 static bool GROUPlock(GROUPLOC gloc, enum inn_locktype type);
-static bool GROUPfilesize(int count);
+static off_t GROUPfilesize(int count);
 static bool GROUPexpand(int mode);
 static void *ovopensearch(char *group, int low, int high, bool needov);
 static void ovclosesearch(void *handle, bool freeblock);
@@ -1034,8 +1034,8 @@ bool buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   return TRUE;
 }
 
-static bool GROUPfilesize(int count) {
-  return (count * sizeof(GROUPENTRY)) + sizeof(GROUPHEADER);
+static off_t GROUPfilesize(int count) {
+  return ((off_t) count * sizeof(GROUPENTRY)) + sizeof(GROUPHEADER);
 }
 
 /* Check if the given GROUPLOC refers to GROUPENTRY that we don't have mmap'ed,
