@@ -37,7 +37,7 @@ STATIC char	*UUCPHost;
 STATIC char	*PATHBADNEWS = NULL;
 STATIC FILE	*FromServer;
 STATIC FILE	*ToServer;
-STATIC char	UNPACK[] = "compress";
+STATIC char	UNPACK[] = "gzip";
 STATIC HEADER	RequiredHeaders[] = {
     { "Message-ID",	10 },
 #define _messageid	0
@@ -555,7 +555,7 @@ UnpackOne(fdp, countp)
 	    cargv[0] = UNPACK;
 	    cargv[1] = "-d";
 	    cargv[2] = NULL;
-	    *fdp = StartChild(*fdp, _PATH_COMPRESS, cargv);
+	    *fdp = StartChild(*fdp, _PATH_GZIP, cargv);
 	    if (*fdp < 0)
 		return FALSE;
 	    (*countp)++;
