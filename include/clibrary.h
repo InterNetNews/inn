@@ -104,7 +104,7 @@ extern int              seteuid(uid_t);
 #endif
 #if !HAVE_DECL_SNPRINTF
 extern int              snprintf(char *, size_t, const char *, ...)
-    __attribute__((__format__(3, 4)));
+    __attribute__((__format__(printf, 3, 4)));
 #endif
 #if !HAVE_STRERROR
 extern const char *     strerror(int);
