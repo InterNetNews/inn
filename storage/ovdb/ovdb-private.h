@@ -188,8 +188,7 @@ label: { \
 
 #define TRYAGAIN EAGAIN
 
-#elif DB_VERSION_MAJOR < 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR < 1)
-/* version 3 and 4.0 */
+#elif DB_VERSION_MAJOR == 3
 
 #define TXN_START(label, tid) \
 label: { \
@@ -209,8 +208,7 @@ label: { \
 
 #define TRYAGAIN DB_LOCK_DEADLOCK
 
-#else
-/* version 4.1 and later */
+#else /* DB_VERSION_MAJOR == 4 */
 
 #define TXN_START(label, tid) \
 label: { \
