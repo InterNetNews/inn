@@ -48,12 +48,6 @@
    further I/O from the client. */
 #define DEFAULT_TIMEOUT         300
 
-/* Define to try to make name resolution a little bit faster by disabling
-   appending the default domain and searching the domain tree.  Only use
-   this if you're always going to use FQDNs.  The minor speed improvement
-   probably isn't worth the bother. */
-/* #undef DO_FAST_RESOLV */
-
 /* Define if inews should put hostnames into the Path header itself. */
 #define DO_INEWS_PATH
 
