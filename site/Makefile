@@ -56,14 +56,14 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	actsync.cfg actsync.ign scanspool innmail
 
 MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
-	$D$(PATHETC)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
+	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
 	$D$(CTLBIN)/rmgroup $D$(CTLBIN)/sendme $D$(CTLBIN)/sendsys \
 	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL) \
 	$D$(PATHBIN)/writelog $D$(PATHETC)/docheckgroups \
 	$D$(PATHBIN)/news.daily $D$(PATHBIN)/scanlogs \
 	$D$(PATHBIN)/expirerm $D$(PATHBIN)/tally.control $D$(PATHBIN)/innmail \
-	$D$(PATHBIN)/nntpsend $D$(PATHETC)/send-ihave $D$(PATHETC)/send-nntp \
-	$D$(PATHETC)/send-uucp $D$(PATHBIN)/sendbatch $D$(PATHBIN)/inncheck \
+	$D$(PATHBIN)/nntpsend $D$(PATHBIN)/send-ihave $D$(PATHBIN)/send-nntp \
+	$D$(PATHBIN)/send-uucp $D$(PATHBIN)/sendbatch $D$(PATHBIN)/inncheck \
 	$D$(PATHBIN)/innstat $D$(PATHBIN)/pgpverify $D$(PATHBIN)/innwatch \
 	$D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
@@ -157,7 +157,7 @@ $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSBOOT):	rc.news		; $(COPY_XPRI) $? $@
 $D$(PATH_SCHEMA):	overview.fmt	; $(COPY_RPUB) $? $@
 $D$(CTLBIN)/checkgroups: checkgroups	; $(COPY_XPRI) $? $@
-$D$(PATHETC)/default:	default		; $(COPY_XPRI) $? $@
+$D$(CTLBIN)/default:	default		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/ihave:	ihave		; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/newgroup:	newgroup	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/rmgroup:	rmgroup		; $(COPY_XPRI) $? $@
@@ -183,9 +183,9 @@ $D$(PATH_NNTPPASS):	passwd.nntp	; $(COPY_RPRI) $? $@
 $D$(PATHBIN)/nntpsend:	nntpsend	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/sendbatch:	sendbatch	; $(COPY_XPRI) $? $@
 $D$(PATHETC)/nntpsend.ctl: nntpsend.ctl	; $(COPY_RPRI) $? $@
-$D$(PATHETC)/send-ihave: send-ihave	; $(COPY_XPRI) $? $@
-$D$(PATHETC)/send-nntp:	send-nntp	; $(COPY_XPRI) $? $@
-$D$(PATHETC)/send-uucp:	send-uucp	; $(COPY_XPRI) $? $@
+$D$(PATHBIN)/send-ihave: send-ihave	; $(COPY_XPRI) $? $@
+$D$(PATHBIN)/send-nntp:	send-nntp	; $(COPY_XPRI) $? $@
+$D$(PATHBIN)/send-uucp:	send-uucp	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/inncheck:	inncheck	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innstat:	innstat		; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/pgpverify:	pgpverify	; $(COPY_XPRI) $? $@
