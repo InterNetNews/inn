@@ -48,7 +48,7 @@ OpenTemp(void)
     int		i;
 
     /* Get filename. */
-    (void)sprintf(buff, "%s/shrinkXXXXXX", innconf->pathtmp);
+    snprintf(buff, sizeof(buff), "%s/shrinkXXXXXX", innconf->pathtmp);
     (void)mktemp(buff);
 
     /* Open the file. */

@@ -252,7 +252,7 @@ main(int ac, char *av[])
 	    }
 	    gt = gmtime(&Sb.st_mtime);
 	    /* Y2K: NNTP Spec currently allows only two digit years. */
-	    (void)sprintf(tbuff, "%02d%02d%02d %02d%02d%02d GMT",
+	    snprintf(tbuff, sizeof(tbuff), "%02d%02d%02d %02d%02d%02d GMT",
 		    gt->tm_year % 100, gt->tm_mon + 1, gt->tm_mday,
 		    gt->tm_hour, gt->tm_min, gt->tm_sec);
 	    Since = tbuff;
@@ -312,10 +312,10 @@ main(int ac, char *av[])
 	if (Groups == NULL)
 	    Groups = "*";
 	if (distributions)
-	    (void)sprintf(buff, "NEWNEWS %s %s <%s>",
-		    Groups, Since, distributions);
+	    snprintf(buff, sizeof(buff), "NEWNEWS %s %s <%s>",
+                     Groups, Since, distributions);
 	else
-	    (void)sprintf(buff, "NEWNEWS %s %s", Groups, Since);
+	    snprintf(buff, sizeof(buff), "NEWNEWS %s %s", Groups, Since);
 	if (!SITEwrite(Remote, buff, (int)strlen(buff))
 	 || !SITEread(Remote, buff)) {
 	    (void)fprintf(stderr, "Can't start list, %s\n", strerror(errno));
@@ -393,7 +393,7 @@ main(int ac, char *av[])
 	if (Offer) {
 	    /* See if the local server wants it. */
 	    STAToffered++;
-	    (void)sprintf(buff, "ihave %s", mesgid);
+	    snprintf(buff, sizeof(buff), "ihave %s", mesgid);
 	    if (!SITEwrite(Local, buff, (int)strlen(buff))
 	     || !SITEread(Local, buff)) {
 		(void)fprintf(stderr, "Can't offer \"%s\", %s\n.",
@@ -405,7 +405,7 @@ main(int ac, char *av[])
 	}
 
 	/* Try to get the article. */
-	(void)sprintf(buff, "article %s", mesgid);
+	snprintf(buff, sizeof(buff), "article %s", mesgid);
 	if (!SITEwrite(Remote, buff, (int)strlen(buff))
 	 || !SITEread(Remote, buff)) {
 	    (void)fprintf(stderr, "Can't get \"%s\", %s\n",

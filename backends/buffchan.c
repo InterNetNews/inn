@@ -185,7 +185,7 @@ SITEfind(char *Name, bool CanCreate)
 
     /* Fill in the structure for the new site. */
     sp->Name = COPY(Name);
-    sprintf(buff, Format, Map ? MAPname(Name) : sp->Name);
+    snprintf(buff, sizeof(buff), Format, Map ? MAPname(Name) : sp->Name);
     sp->Filename = COPY(buff);
     if (BufferMode == 'u')
 	sp->Buffer = NULL;
@@ -443,8 +443,7 @@ main(int ac, char *av[])
     if (Redirect)
 	(void)freopen(ERRLOG, "a", stderr);
     if (Format == NULL) {
-	Format = NEW(char, strlen(innconf->pathoutgoing) + 1 + 2 + 1);
-	(void)sprintf(Format, "%s/%%s", innconf->pathoutgoing);
+        Format = concatpath(innconf->pathoutgoing, "%s");
     }
     if (Directory && chdir(Directory) < 0) {
 	(void)fprintf(stderr, "buffchan cant chdir %s %s\n",

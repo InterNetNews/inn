@@ -52,7 +52,7 @@ BATCHstart(void)
     char	buff[SMBUF];
 
     if (Processor && *Processor) {
-	(void)sprintf(buff, Processor, Host);
+	snprintf(buff, sizeof(buff), Processor, Host);
 	F = popen(buff, "w");
 	if (F == NULL)
 	    return NULL;
@@ -87,7 +87,7 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
     static char	LINE1[] = "batcher %s times user %.3f system %.3f elapsed %.3f";
     static char	LINE2[] ="batcher %s stats batches %d articles %d bytes %ld";
     static char	NOWRITE[] = "batcher %s cant write spool %s\n";
-    char	temp[BIG_BUFFER];
+    char	*spool;
     char	buff[BIG_BUFFER];
     int		i;
     FILE	*F;
@@ -126,12 +126,12 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 
     /* Make an appropriate spool file. */
     if (Input == NULL)
-	(void)sprintf(temp, "%s/%s", innconf->pathoutgoing, Host);
+        spool = concatpath(innconf->pathoutgoing, Host);
     else
-	(void)sprintf(temp, "%s.bch", Input);
-    if ((F = xfopena(temp)) == NULL) {
+        spool = concat(Input, ".bch", (char *) 0);
+    if ((F = xfopena(spool)) == NULL) {
 	(void)fprintf(stderr, "batcher %s cant open %s %s\n",
-	    Host, temp, strerror(errno));
+	    Host, spool, strerror(errno));
 	exit(1);
     }
 
@@ -164,7 +164,7 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
     }
 
     /* If we had a named input file, try to rename the spool. */
-    if (Input != NULL && rename(temp, Input) < 0) {
+    if (Input != NULL && rename(spool, Input) < 0) {
 	(void)fprintf(stderr, "batcher %s cant rename spool %s\n",
 	    Host, strerror(errno));
 	i = 1;
@@ -288,9 +288,7 @@ main(int ac, char *av[])
     Host = av[0];
     if ((Input = av[1]) != NULL) {
 	if (Input[0] != '/') {
-	    Input = NEW(char, strlen(innconf->pathoutgoing) +  1+
-					strlen(av[1]) + 1);
-	    (void)sprintf(Input, "%s/%s", innconf->pathoutgoing, av[1]);
+            Input = concatpath(innconf->pathoutgoing, av[1]);
 	}
 	if (freopen(Input, "r", stdin) == NULL) {
 	    (void)fprintf(stderr, "batcher %s cant open %s %s\n",
@@ -430,7 +428,7 @@ main(int ac, char *av[])
     SendIt:
 	/* Now we can start to send the article! */
 	if (Separator && *Separator) {
-	    (void)sprintf(buff, Separator, BytesInArt);
+	    snprintf(buff, sizeof(buff), Separator, BytesInArt);
 	    BytesInCB += strlen(buff) + 1;
 	    BytesWritten += strlen(buff) + 1;
 	    if (fprintf(F, "%s\n", buff) == EOF || ferror(F)) {

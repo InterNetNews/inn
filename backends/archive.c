@@ -36,7 +36,7 @@ DateString(void)
 
     time(&now);
     x = localtime(&now);
-    sprintf(ds, "%d%d", x->tm_year + 1900, x->tm_mon + 1);
+    snprintf(ds, sizeof(ds), "%d%d", x->tm_year + 1900, x->tm_mon + 1);
 
     return ds;
 }
@@ -417,7 +417,7 @@ main(int ac, char *av[])
     bool		Concat;
     char		*Index;
     char		buff[BUFSIZ];
-    char		temp[BUFSIZ];
+    char		*spool;
     char		dest[BUFSIZ];
     char		**groups, *q, *ng;
     char		**xrefs;
@@ -663,14 +663,14 @@ main(int ac, char *av[])
     /* Make an appropriate spool file. */
     p = av[0];
     if (p == NULL)
-	(void)sprintf(temp, "%s/%s", innconf->pathoutgoing, "archive");
+        spool = concatpath(innconf->pathoutgoing, "archive");
     else if (*p == '/')
-	(void)sprintf(temp, "%s.bch", p);
+        spool = concat(p, ".bch", (char *) 0);
     else
-	(void)sprintf(temp, "%s/%s.bch", innconf->pathoutgoing, p);
-    if ((F = xfopena(temp)) == NULL) {
+        spool = concat(innconf->pathoutgoing, "/", p, ".bch", (char *) 0);
+    if ((F = xfopena(spool)) == NULL) {
 	(void)fprintf(stderr, "archive: Can't spool to \"%s\", %s\n",
-	    temp, strerror(errno));
+	    spool, strerror(errno));
 	exit(1);
     }
 
@@ -695,7 +695,7 @@ main(int ac, char *av[])
     }
 
     /* If we had a named input file, try to rename the spool. */
-    if (p != NULL && rename(temp, av[0]) < 0) {
+    if (p != NULL && rename(spool, av[0]) < 0) {
 	(void)fprintf(stderr, "archive: Can't rename spool, %s\n",
 	    strerror(errno));
 	i = 1;

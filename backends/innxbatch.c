@@ -522,7 +522,7 @@ main(int ac, char *av[])
     if (GotInterrupt) Interrupted();
 
     /* Offer the xbatch. */
-    (void)sprintf(buff, "xbatch %d", XBATCHsize);
+    snprintf(buff, sizeof(buff), "xbatch %d", XBATCHsize);
     if (!REMwrite(ToServer, buff)) {
       (void)fprintf(stderr, "Can't offer xbatch to %s, %s\n",
 		    REMhost, strerror(errno));

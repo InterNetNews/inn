@@ -135,11 +135,11 @@ main(int ac, char *av[])
     /* Create the temp file in the same directory as the destination. */
     if ((p = strrchr(name, '/')) != NULL) {
 	*p = '\0';
-	(void)sprintf(tmp, "%s/shlock%ld", name, (long)getpid());
+	snprintf(tmp, sizeof(tmp), "%s/shlock%ld", name, (long)getpid());
 	*p = '/';
     }
     else
-	(void)sprintf(tmp, "shlock%ld", (long)getpid());
+	snprintf(tmp, sizeof(tmp), "shlock%ld", (long)getpid());
 
     /* Loop until we can open the file. */
     while ((fd = open(tmp, O_RDWR | O_CREAT | O_EXCL, 0644)) < 0)
@@ -161,7 +161,7 @@ main(int ac, char *av[])
     if (BinaryLock)
 	ok = write(fd, &pid, sizeof pid) == sizeof pid;
     else {
-	(void)sprintf(buff, "%ld\n", (long) pid);
+	snprintf(buff, sizeof(buff), "%ld\n", (long) pid);
 	i = strlen(buff);
 	ok = write(fd, buff, i) == i;
     }

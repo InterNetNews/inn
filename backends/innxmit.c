@@ -596,7 +596,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	vec[0].iov_base = art->data;
 	vec[0].iov_len = len;
 	/* Add 14 bytes, which maybe will be the length of the Bytes header */
-	sprintf(buf, "Bytes: %d\r\n", art->len + 14);
+	snprintf(buf, sizeof(buf), "Bytes: %d\r\n", art->len + 14);
 	vec[1].iov_base = buf;
 	vec[1].iov_len = strlen(buf);
 	if (iscmsg) {
@@ -729,7 +729,7 @@ check(int i) {
     char	buff[NNTP_STRLEN];
 
     /* send "check <ID>" to the other system */
-    (void)sprintf(buff, "check %s", stbuf[i].st_id);
+    snprintf(buff, sizeof(buff), "check %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
 	(void)fprintf(stderr, "Can't check article, %s\n",
 		strerror(errno));
@@ -762,7 +762,7 @@ takethis(int i) {
         return TRUE;
     }
     /* send "takethis <ID>" to the other system */
-    (void)sprintf(buff, "takethis %s", stbuf[i].st_id);
+    snprintf(buff, sizeof(buff), "takethis %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
         (void)fprintf(stderr, "Can't send takethis <id>, %s\n",
                       strerror(errno));
@@ -1082,9 +1082,7 @@ int main(int ac, char *av[]) {
 
     /* Open the batch file and lock others out. */
     if (BATCHname[0] != '/') {
-	BATCHname = NEW(char, strlen(innconf->pathoutgoing) + 1 +
-						strlen(av[1]) + 1);
-	(void)sprintf(BATCHname, "%s/%s", innconf->pathoutgoing, av[1]);
+        BATCHname = concatpath(innconf->pathoutgoing, av[1]);
     }
     if (((i = open(BATCHname, O_RDWR)) < 0) || ((BATCHqp = QIOfdopen(i)) == NULL)) {
 	(void)fprintf(stderr, "Can't open \"%s\", %s\n",
@@ -1107,9 +1105,8 @@ int main(int ac, char *av[]) {
 
     /* Get a temporary name in the same directory as the batch file. */
     p = strrchr(BATCHname, '/');
-    BATCHtemp = NEW(char, strlen(BATCHname) + STRLEN("/bchXXXXXX") + 1);
     *p = '\0';
-    (void)sprintf(BATCHtemp, "%s/bchXXXXXX", BATCHname);
+    BATCHtemp = concatpath(BATCHname, "bchXXXXXX");
     *p = '/';
 
     /* Set up buffer used by REMwrite. */
@@ -1416,7 +1413,7 @@ int main(int ac, char *av[]) {
 	    }
 	    continue; /* next article */
 	}
-	(void)sprintf(buff, "ihave %s", MessageID);
+	snprintf(buff, sizeof(buff), "ihave %s", MessageID);
 	if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
 	    (void)fprintf(stderr, "Can't offer article, %s\n",
 		    strerror(errno));
