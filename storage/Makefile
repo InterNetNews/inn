@@ -50,7 +50,7 @@ libstorage.a:         $(P) $(OBJECTS)
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
 ovtest: ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
-	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ovtest ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) -L/shared/lib -ldb -lnsl -lsocket
+	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ovtest ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) $(EXTSTORAGELIBS) -L/shared/lib -ldb -lnsl -lsocket
 
 methods.h: autoconfig
 

@@ -179,13 +179,113 @@ BOOL OVgroupdel(char *group) {
 }
 
 BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+    char		*next;
+    static char		*xrefdata, *patcheck, *overdata;
+    char		*xrefstart;
+    static int		xrefdatalen = 0, overdatalen = 0;
+    BOOL		found = FALSE;
+    int			xreflen;
+    int			i;
+    char		*group;
+    ARTNUM		artnum;
+
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    return ((*ov.add)(token, data, len, arrived, expires));
+
+    /*
+     * find last Xref: in the overview line.  Note we need to find the *last*
+     * Xref:, since there have been corrupted articles on Usenet with Xref:
+     * fragments stuck in other header lines.  The last Xref: is guaranteed
+     * to be from our server.
+     */
+
+    for (next = data; ((len - (next - data)) > 6 ) && ((next = memchr(next, 'X', len - (next - data))) != NULL); ) {
+        if (memcmp(next, "Xref: ", 6) == 0) {
+            found =  TRUE;
+            xrefstart = next;
+        }
+        next++;
+    }
+
+    if (!found)
+        return FALSE;
+
+    next = xrefstart;
+    for (i = 0; (i < 2) && (next < (data + len)); i++) {
+        if ((next = memchr(next, ' ', len - (next - data))) == NULL)
+            return FALSE;
+        next++;
+    }
+    xreflen = len - (next - data);
+    if (xrefdatalen == 0) {
+        xrefdatalen = BIG_BUFFER;
+        xrefdata = NEW(char, xrefdatalen);
+        if (innconf->ovgrouppat != NULL)
+            patcheck = NEW(char, xrefdatalen);
+    }
+    if (xreflen > xrefdatalen) {
+        xrefdatalen = xreflen;
+        RENEW(xrefdata, char, xrefdatalen + 1);
+        if (innconf->ovgrouppat != NULL)
+            RENEW(patcheck, char, xrefdatalen + 1);
+    }
+    if (overdatalen == 0) {
+	overdatalen = BIG_BUFFER;
+	overdata = NEW(char, overdatalen);
+    }
+    if (len + 16 > overdatalen) {
+	overdatalen = len + 16;
+	RENEW(overdata, char, overdatalen);
+    }
+
+    if (innconf->ovgrouppat != NULL) {
+        memcpy(patcheck, next, xreflen);
+        patcheck[xreflen] = '\0';
+        for (group = patcheck; group && *group; group = memchr(next, ' ', next - patcheck)) {
+            while (isspace((int)*group))
+                group++;
+            if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
+                return FALSE;
+            *next++ = '\0';
+            if (!OVgroupmatch(group)) {
+                if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
+                    /* this article will never be expired, since it does not
+                       have self expiry function in stored method and
+                       groupbaseexpiry is true */
+                    return FALSE;
+                return TRUE;
+            }
+        }
+    }
+    memcpy(xrefdata, next, xreflen);
+    xrefdata[xreflen] = '\0';
+    for (group = xrefdata; group && *group; group = memchr(next, ' ', xreflen - (next - xrefdata))) {
+        /* Parse the xref part into group name and article number */
+        while (isspace((int)*group))
+            group++;
+        if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
+            return FALSE;
+        *next++ = '\0';
+        artnum = atoi(next);
+        if (artnum <= 0)
+            continue;
+
+        sprintf(overdata, "%d\t", artnum);
+        i = strlen(overdata);
+        memcpy(overdata + i, data, len);
+        i += len;
+        memcpy(overdata + i, "\r\n", 2);
+        i += 2;
+
+	if(! (*ov.add)(group, artnum, token, overdata, i, arrived, expires))
+	    return FALSE;
+    }
+
+    return TRUE;
 }
 
 BOOL OVcancel(TOKEN token) {

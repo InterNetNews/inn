@@ -16,7 +16,7 @@ typedef struct {
     BOOL	(*groupstats)(char *group, int *lo, int *hi, int *count, int *flag);
     BOOL	(*groupadd)(char *group, ARTNUM lo, ARTNUM hi, char *flag);
     BOOL	(*groupdel)(char *group);
-    BOOL	(*add)(TOKEN token, char *data, int len, time_t arrived, time_t expires);
+    BOOL	(*add)(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires);
     BOOL	(*cancel)(TOKEN token);
     void	*(*opensearch)(char *group, int low, int high);
     BOOL	(*search)(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
