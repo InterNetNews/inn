@@ -76,9 +76,7 @@
 
 /* C++ has a native bool type, and our true and false will work with it. */
 # ifdef __cplusplus
-#  if !HAS_BOOL
-#   define HAS_BOOL 1
-#  endif
+#  define HAS_BOOL 1
 # endif
 
 /* The NeXT dynamic loader headers will not build with the bool macro, so
@@ -87,10 +85,7 @@
 #  undef FALSE
 #  undef TRUE
 typedef enum bool { FALSE = 0, TRUE = 1 } bool;
-#  define ENUM_BOOL 1
-#  if !HAS_BOOL
-#   define HAS_BOOL 1
-#  endif
+#  define HAS_BOOL 1
 # endif /* NeXT || __NeXT__ */
 
 # if !HAS_BOOL
