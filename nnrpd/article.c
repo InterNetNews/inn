@@ -44,7 +44,6 @@ STATIC char		ARTnotingroup[] = NNTP_NOTINGROUP;
 STATIC char		ARTnoartingroup[] = NNTP_NOARTINGRP;
 STATIC char		ARTnocurrart[] = NNTP_NOCURRART;
 STATIC ARTHANDLE        *ARThandle = NULL;
-STATIC int		ARTfirstfullfield = 0;
 STATIC int              ARTxreffield = 0;
 STATIC SENDDATA		SENDbody = {
     STbody,	NNTP_BODY_FOLLOWS_VAL,		"body"
@@ -243,8 +242,6 @@ BOOL ARTreadschema(void)
 	if ((p = strchr(buff, ':')) != NULL) {
 	    *p++ = '\0';
 	    fp->NeedsHeader = EQ(p, "full");
-	    if (ARTfirstfullfield == 0)
-	      ARTfirstfullfield = fp - ARTfields + 1;
 	}
 	else
 	    fp->NeedsHeader = FALSE;
@@ -843,18 +840,17 @@ char *OVERGetHeader(char *p, int field)
 	fp = &ARTfields[ARTxreffield];
     }
 
-    if (fp->NeedsHeader) 		/* we're going to need an exact match */
-      field = ARTfirstfullfield;
-
     /* Skip leading headers. */
-    for (; field-- >= 0 && *p; p++)
+    for (field; field >= 0 && *p; p++)
 	if ((p = strchr(p, '\t')) == NULL)
 	    return NULL;
+	else
+	    field--;
     if (*p == '\0')
 	return NULL;
 
     if (fp->NeedsHeader) {		/* find an exact match */
-	if (!EQn(fp->Header, p, fp->Length))
+	if (!caseEQn(fp->Header, p, fp->Length))
 	    return NULL;
 	p += fp->Length + 2;
 	/* skip spaces */
