@@ -115,6 +115,9 @@
 /* Define to a suitable 32-bit type if standard headers don't define.  */
 #undef int32_t
 
+/* Define to `long' if <sys/types.h> doesn't define.  */
+#undef ptrdiff_t
+
 /* Define to `int' if <signal.h> doesn't define.  */
 #undef sig_atomic_t
 

@@ -1082,6 +1082,7 @@ AC_TYPE_SIZE_T
 AC_TYPE_UID_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
+AC_CHECK_TYPE(ptrdiff_t, long)
 AC_CHECK_TYPE(ssize_t, int)
 
 dnl Check for ISO C99 variadic macro support in the compiler.
