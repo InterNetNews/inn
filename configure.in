@@ -780,7 +780,7 @@ if test x"$DO_PERL" = xDO ; then
         inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lgdbm / /'`
         ;;
     *-cygwin*)
-        inn_perl_libname=`$_PATH_PERL -MConfig -e 'print $Config{libperl}'
+        inn_perl_libname=`$_PATH_PERL -MConfig -e 'print $Config{libperl}'`
         inn_perl_libname=`echo "$inn_perl_libname" | sed 's/^lib//; s/\.a$//'`
         inn_perl_core_libs="${inn_perl_core_libs}-l$inn_perl_libname"
         ;;
