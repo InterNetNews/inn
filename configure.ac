@@ -310,8 +310,17 @@ INN_SEARCH_AUX_LIBS([crypt], [crypt], [CRYPT_LIBS])
 INN_SEARCH_AUX_LIBS([getspnam], [shadow], [SHADOW_LIBS])
 INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm], [DBM_LIBS],
     [AC_DEFINE([HAVE_DBM], 1, [Define if you have a dbm library.])])
-INN_SEARCH_AUX_LIBS([pam_start], [pam], [PAM_LIBS],
-    [AC_DEFINE([HAVE_PAM], 1, [Define if you have PAM.])])
+
+dnl IRIX has a PAM library with the right symbols but no header files suitable
+dnl for use with it, so we have to check the header files first and then only
+dnl if one is found do we check for the library.
+inn_check_pam=1
+AC_CHECK_HEADERS([pam/pam_appl.h], ,
+    [AC_CHECK_HEADER([security/pam_appl.h], , [inn_check_pam=0])])
+if test x"$inn_check_pam" = x1; then
+    INN_SEARCH_AUX_LIBS([pam_start], [pam], [PAM_LIBS],
+        [AC_DEFINE([HAVE_PAM], 1, [Define if you have PAM.])])
+fi
 
 dnl If keyword generation support was requested, check for the appropriate
 dnl libraries.

@@ -347,6 +347,9 @@
 /* Define if you have unix domain sockets. */
 #undef HAVE_UNIX_DOMAIN_SOCKETS
 
+/* Define if zlib is available. */
+#undef HAVE_ZLIB
+
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
@@ -409,9 +412,6 @@
 
 /* Define if BerkeleyDB is available. */
 #undef USE_BERKELEY_DB
-
-/* Define if zlib is available */
-#undef HAVE_ZLIB
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
