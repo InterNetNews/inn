@@ -947,6 +947,9 @@ main(int argc, char *argv[])
 
 	/* Set signal handle to care for dead children */
 	(void)xsignal(SIGCHLD, WaitChild);
+
+	/* Arrange to toggle tracing. */
+	(void)xsignal(SIGHUP, ToggleTrace);
  
 	TITLEset("nnrpd: accepting connections");
  	
@@ -965,6 +968,11 @@ main(int argc, char *argv[])
 		}
 		syslog(L_NOTICE, "cant fork (waiting): %m");
 		sleep(1);
+	    }
+	    if (ChangeTrace) {
+		Tracing = Tracing ? FALSE : TRUE;
+		syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
+		ChangeTrace = FALSE;
 	    }
 	    if (pid != 0)
 		close(fd);
@@ -990,6 +998,8 @@ main(int argc, char *argv[])
  
     } else {
 	SetupDaemon();
+	/* Arrange to toggle tracing. */
+	(void)xsignal(SIGHUP, ToggleTrace);
     }/* DaemonMode */
 
     /* Setup. */
@@ -1045,9 +1055,6 @@ main(int argc, char *argv[])
 
     /* Catch SIGPIPE so that we can exit out of long write loops */
     (void)xsignal(SIGPIPE, CatchPipe);
-
-    /* Arrange to toggle tracing. */
-    (void)xsignal(SIGHUP, ToggleTrace);
 
     /* Get permissions and see if we can talk to this client */
     StartConnection();
