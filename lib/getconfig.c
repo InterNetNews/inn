@@ -184,7 +184,7 @@ void SetDefaults()
     innconf->linecountfuzz = 0;
     innconf->peertimeout = 1 * 60 * 60;
     innconf->clienttimeout = 10 * 60;
-    innconf->allowreaders = TRUE;
+    innconf->allowreaders = FALSE;
     innconf->allownewnews = TRUE;
     innconf->localmaxartsize = 1000000L;
     innconf->logartsize = TRUE;
@@ -565,7 +565,12 @@ int ReadInnConf()
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ALLOW_READERS)) {
 		TEST_CONFIG(CONF_VAR_ALLOWREADERS, bit);
-		if (!bit && boolval != -1) innconf->allowreaders = boolval;
+		if (!bit && boolval != -1) {
+		    if (boolval == TRUE)
+			innconf->allowreaders = FALSE;
+		    else
+			innconf->allowreaders = TRUE;
+		}
 		SET_CONFIG(CONF_VAR_ALLOWREADERS);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ALLOW_NEWNEWS)) {
