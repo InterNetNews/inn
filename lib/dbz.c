@@ -890,7 +890,7 @@ static BOOL getcore(hash_table *tab) {
 	}
 #if defined (MADV_RANDOM)                           
 	/* not present in all versions of mmap() */
-	madvise(it, (size_t)conf.tsize * sizeof(dbzrec), MADV_RANDOM);
+	madvise(it, (size_t)conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
 #endif
     } else {
 	it = NEW(char, conf.tsize * tab->reclen);
