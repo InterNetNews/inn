@@ -242,14 +242,22 @@ date	: tUNUMBER '/' tUNUMBER {
 	}
 	| tUNUMBER '/' tUNUMBER '/' tUNUMBER {
 	    if ($1 > 100) {
+		/* assume YYYY/MM/DD format, so need not to add 1900 */
 		yyYear = $1;
 		yyMonth = $3;
 		yyDay = $5;
 	    }
 	    else {
+		/* assume MM/DD/YY* format */
 		yyMonth = $1;
 		yyDay = $3;
-		yyYear = $5;
+		if ($5 > 100) {
+		    /* assume year is YYYY format, so need not to add 1900 */
+		    yyYear = $5;
+		} else {
+		    /* assume year is YY format, so need to add 1900 */
+		    yyYear = $5 + 1900;
+		}
 	    }
 	}
 	| tMONTH tUNUMBER {
@@ -259,7 +267,13 @@ date	: tUNUMBER '/' tUNUMBER {
 	| tMONTH tUNUMBER ',' tUNUMBER {
 	    yyMonth = $1;
 	    yyDay = $2;
-	    yyYear = $4;
+	    if ($4 > 100) {
+		/* assume year is YYYY format, so need not to add 1900 */
+		yyYear = $4;
+	    } else {
+		/* assume year is YY format, so need to add 1900 */
+		yyYear = $4 + 1900;
+	    }
 	}
 	| tUNUMBER tMONTH {
 	    yyDay = $1;
@@ -268,12 +282,24 @@ date	: tUNUMBER '/' tUNUMBER {
 	| tUNUMBER tMONTH tUNUMBER {
 	    yyDay = $1;
 	    yyMonth = $2;
-	    yyYear = $3;
+	    if ($3 > 100) {
+		/* assume year is YYYY format, so need not to add 1900 */
+		yyYear = $3;
+	    } else {
+		/* assume year is YY format, so need to add 1900 */
+		yyYear = $3 + 1900;
+	    }
 	}
 	| tDAY ',' tUNUMBER tMONTH tUNUMBER {
 	    yyDay = $3;
 	    yyMonth = $4;
-	    yyYear = $5;
+	    if ($5 > 100) {
+		/* assume year is YYYY format, so need not to add 1900 */
+		yyYear = $5;
+	    } else {
+		/* assume year is YY format, so need to add 1900 */
+		yyYear = $5 + 1900;
+	    }
 	}
 	;
 
@@ -514,6 +540,8 @@ Convert(Month, Day, Year, Hours, Minutes, Seconds, Meridian, dst)
     int	                i;
     time_t		tod;
 
+    /* Year should not be passed as a relative value, but absolute one.
+       so this should not happen, but just ensure it */
     if (Year < 0)
 	Year = -Year;
     if (Year < 100)
@@ -575,6 +603,7 @@ RelativeMonth(Start, RelMonth)
     tm = localtime(&Start);
     Month = 12 * tm->tm_year + tm->tm_mon + RelMonth;
     Year = Month / 12;
+    Year += 1900;
     Month = Month % 12 + 1;
     return DSTcorrect(Start,
 	    Convert(Month, (time_t)tm->tm_mday, Year,
@@ -748,7 +777,7 @@ time_t parsedate(char *p, TIMEINFO *now)
     }
 
     tm = localtime(&now->time);
-    yyYear = tm->tm_year;
+    yyYear = tm->tm_year + 1900;
     yyMonth = tm->tm_mon + 1;
     yyDay = tm->tm_mday;
     yyTimezone = now->tzone;
