@@ -144,11 +144,39 @@ static void deadlock(void)
 static void checkpoint(void)
 {
     int ret, status = 0;
+    DB *db;
+#if DB_VERSION_MAJOR == 2
+    DB_INFO dbinfo;
+#endif
 
     if(ovdb_open_berkeleydb(OV_WRITE, 0))
 	_exit(1);
 
     TITLEset("ovdb_monitor: checkpoint");
+
+    /* Open a database and close it.  This is so a necessary initialization
+       gets performed (by the db->open function).  */
+
+#if DB_VERSION_MAJOR == 2
+    memset(&dbinfo, 0, sizeof dbinfo);
+    if(ret = db_open("version", DB_BTREE, DB_CREATE, 0666, OVDBenv,
+                    &dbinfo, &db)) {
+        syslog(L_ERROR, "OVDB: checkpoint: db_open failed: %s\n", db_strerror(ret));
+        _exit(1);
+    }
+#else
+    if(ret = db_create(&db, OVDBenv, 0)) {
+        syslog(L_ERROR, "OVDB: checkpoint: db_create: %s\n", db_strerror(ret));
+        _exit(1);
+    }
+    if(ret = db->open(db, "version", NULL, DB_BTREE, DB_CREATE, 0666)) {
+        db->close(db, 0);
+        syslog(L_ERROR, "OVDB: checkpoint: version open: %s\n", db_strerror(ret));
+        _exit(1);
+    }
+#endif
+    db->close(db, 0);
+
 
     while(!signalled) {
 #if DB_VERSION_MAJOR == 2
