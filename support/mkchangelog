@@ -4,10 +4,9 @@
 ##
 ##  Generate a ChangeLog from cvs log using cvs2cl and fixlog.
 ##
-##  This script prompts the user for a date from which to pull log entries,
-##  a tag to select what files one wants log information for, and the path
-##  to cvs2cl and generates a ChangeLog file from that information and by
-##  running cvs log.
+##  This script prompts the user for a date from which to pull log entries and
+##  a tag to select what files one wants log information for, and generates a
+##  ChangeLog file from that information and by running cvs log.
 
 $| = 1;
 
@@ -19,15 +18,10 @@ print "Enter date to start log at (YYYY-MM-DD): ";
 my $date = <STDIN>;
 chomp $date;
 
-print "Enter path to cvs2cl: ";
-my $cvs2cl = <STDIN>;
-chomp $cvs2cl;
-unless (-x $cvs2cl) { die "$cvs2cl not found\n" }
-
 print "\nRunning cvs log recursively....\n";
 system ("cvs log '-d>$date' | perl support/fixlog > CHANGES") == 0
     or die "cvs log exited with status " . ($? >> 8) . "\n";
 
 print "\nRunning cvs2cl....\n";
-system ("$cvs2cl --stdin -F $tag --utc < CHANGES") == 0
+system ("cvs2cl --stdin -F $tag --utc < CHANGES") == 0
     or die "cvs2cl exited with status " . ($? >> 8) . "\n";
