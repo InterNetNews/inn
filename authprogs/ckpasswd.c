@@ -2,16 +2,14 @@
 **
 **  The default username/password authenticator.
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include <fcntl.h>
 #include <pwd.h>
 
 #ifdef HAVE_CRYPT_H
 # include <crypt.h>
-#endif
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
 #endif
 
 #ifdef HAVE_NDBM_H
