@@ -411,7 +411,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
 	return NULL;
     }
-    buff[entrysize+1] = '\0';
+    buff[entrysize] = '\0';
     if (strchr(buff, '\n') == NULL) {
 	syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
 	return NULL;
