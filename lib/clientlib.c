@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Routines compatible with the NNTP "clientlib" routines.
 */
@@ -26,7 +26,8 @@ char *getserverbyfile(char *file)
 {
     static char	buff[256];
 
-    (void)strcpy(buff, innconf->server);
+    strncpy(buff, innconf->server, sizeof(buff));
+    buff[255] = '\0';
     return buff;
 }
 
