@@ -245,6 +245,10 @@ FlushOverTmpFile(void)
 	}
 	token = TextToToken(p);
 	if (!OVadd(token, q, strlen(q), arrived)) {
+	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
+		fprintf(stderr, "makehistory: no space left for overview\n");
+		exit(1);
+	    }
 	    fprintf(stderr, "makehistory: Can't write overview data \"%s\"\n", q);
 	}
     }
