@@ -298,7 +298,7 @@ dnl parse arguments
 
 dnl Checks for libraries.
 EXTRA_SRC=""
-dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
+AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
 AC_CHECK_LIB(bind,  __inet_addr)
