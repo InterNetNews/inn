@@ -575,6 +575,9 @@ If this is true innd will write all the crossposts of an article to
 the history file, else it will write just the first.  This can be
 useful on servers without readers that don't run crosspost and don't
 link crossposts.
+If the server does link crossposts, via either innd itself or a crosspost
+feed, this should be set to ``true'' or articles will not be expired
+properly.
 If 
 .I storageapi
 is ``true'', 
