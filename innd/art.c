@@ -12,8 +12,6 @@
 #include "art.h"
 #include <sys/uio.h>
 
-extern BOOL WireFormat;
-
 typedef struct iovec	IOVEC;
 
 extern BOOL DoLinks;
@@ -495,7 +493,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 
         /* Figure out how much space we'll need and get it. */
     (void)sprintf(bytesbuff, "Bytes: %ld%s\n", 
-        size, WireFormat ? "\r" : "");
+        size, innconf->wireformat ? "\r" : "");
 
     if (Headers.Data == NULL) {
 	Headers.Size = end - artbuff;
@@ -571,7 +569,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     }
         
     vp->iov_base = p;
-    vp->iov_len  = Data->Body - p - (WireFormat == 1);
+    vp->iov_len  = Data->Body - p - (innconf->wireformat == 1);
     size += (vp++)->iov_len;
 
     if (NeedPath) {
@@ -583,14 +581,14 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     }
 
     if (ARTheaders[_lines].Found == 0) {
-	(void)sprintf(Data->Lines, "Lines: %d%s\n", Data->LinesValue, WireFormat ? "\r" : "");
+	(void)sprintf(Data->Lines, "Lines: %d%s\n", Data->LinesValue, innconf->wireformat ? "\r" : "");
 	i = strlen(Data->Lines);
 	vp->iov_base = Data->Lines;
 	vp->iov_len = i;
 	size += (vp++)->iov_len;
 	/* Install in header table; STRLEN("Lines: ") == 7. */
 	(void)strcpy(ARTheaders[_lines].Value, Data->Lines + 7);
-	ARTheaders[_lines].Length = i - 7 - (WireFormat ? 2 : 1);
+	ARTheaders[_lines].Length = i - 7 - (innconf->wireformat ? 2 : 1);
 	ARTheaders[_lines].Found = 1;
     }
 
@@ -605,15 +603,15 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
 
 
     end = vp;
-    vp->iov_base = WireFormat ? "\r\n\r\n" : "\n\n";
-    vp->iov_len  = WireFormat ? 4 : 2;
+    vp->iov_base = innconf->wireformat ? "\r\n\r\n" : "\n\n";
+    vp->iov_len  = innconf->wireformat ? 4 : 2;
     size += (vp++)->iov_len;
 
     vp->iov_base = Data->Body;
     vp->iov_len  = &Article->Data[Article->Used] - Data->Body;
     size += (vp++)->iov_len;
     
-    if (WireFormat) {
+    if (innconf->wireformat) {
         vp->iov_base = ".\r\n";
         vp->iov_len = 3;
         size += (vp++)->iov_len;
@@ -661,7 +659,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
 
     /* Figure out how much space we'll need and get it. */
     (void)sprintf(bytesbuff, "Bytes: %ld%s\n", 
-        size, WireFormat ? "\r" : "");
+        size, innconf->wireformat ? "\r" : "");
     for (i = strlen(bytesbuff), vp = iov; vp < end; vp++)
       i += vp->iov_len;
     i+= ARTheaders[_xref].Length;
@@ -786,7 +784,7 @@ STATIC char *ARTparseheader(char *in, char *out, int *deltap, STRING *errorp)
     start[hp->Size] = ':';
 
     /* Copy the header if not too big. */
-    i = (out - 1 - (WireFormat == TRUE)) - p;
+    i = (out - 1 - (innconf->wireformat == TRUE)) - p;
     if (i >= MAXHEADERSIZE) {
 	(void)sprintf(buff, "\"%s\" header too long", hp->Name);
 	*errorp = buff;
@@ -916,7 +914,7 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 	if ((p = ARTparseheader(in, out, &delta, &error)) == NULL)
 	    break;
     }
-    Data->Body = out + (WireFormat == TRUE);
+    Data->Body = out + (innconf->wireformat == TRUE);
     in++;
 
     /* Try to set this now, so we can report it in errors. */
@@ -954,16 +952,17 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
     Article->Used = out - Article->Data;
     Data->LinesValue = i;
 
-#if	defined(DO_CHECK_LINECOUNT)
-    p = HDR(_lines);
-    if (*p && (delta = i - atoi(p)) != 0 && abs(delta) > LINECOUNT_FUZZ) {
-	if ((in = strchr(p, '\n')) != NULL)
-	    *in = '\0';
-	(void)sprintf(buff, "Linecount %s != %d +- %d",
-		MaxLength(p, p), i, LINECOUNT_FUZZ);
-	return buff;
+    if (innconf->linecountfuzz) {
+	p = HDR(_lines);
+	if (*p && (delta = i - atoi(p)) != 0 && abs(delta) >
+						innconf->linecountfuzz) {
+	    if ((in = strchr(p, '\n')) != NULL)
+		*in = '\0';
+	    (void)sprintf(buff, "Linecount %s != %d +- %d",
+		MaxLength(p, p), i, innconf->linecountfuzz);
+	    return buff;
+	}
     }
-#endif	/* defined(DO_CHECK_LINECOUNT) */
 
     /* Is article too old? */
     p = HDR(_date);
@@ -1175,7 +1174,7 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 	/* Article hasn't arrived here, so write a fake entry using
 	 * most of the information from the cancel message. */
 #if	defined(DO_VERIFY_CANCELS)
-	if (!Trusted) {
+	if (innconf->verifycancels && !Trusted) {
 	    TMRstop(TMR_ARTCNCL);
 	    return;
 	}
@@ -1187,8 +1186,12 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 	return;
     }
 #if	defined(DO_VERIFY_CANCELS)
-    files = Trusted ? HISfilesfor(hash)
-	: ARTcancelverify(Data, MessageID, hash);
+    if (innconf->verifycancels) {
+	files = Trusted ? HISfilesfor(hash)
+	    : ARTcancelverify(Data, MessageID, hash);
+    } else {
+	files = HISfilesfor(hash);
+    }
 #else
     files = HISfilesfor(hash);
 #endif	/* !defined(DO_VERIFY_CANCELS) */
@@ -1303,7 +1306,8 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
     av[5] = NULL;
     HeaderCleanFrom(av[1]);
     HeaderCleanFrom(av[2]);
-    if (Spawn(INND_NICE_VALUE, STDIN, (int)fileno(Errlog), (int)fileno(Errlog), av) < 0)
+    if (Spawn(innconf->nicekids, STDIN, (int)fileno(Errlog),
+					(int)fileno(Errlog), av) < 0)
 	/* We know the strrchr below can't fail. */
 	syslog(L_ERROR, "%s cant spawn %s for %s %m",
 	    LogName, MaxLength(av[0], strrchr(av[0], '/')), Data->Name);
@@ -1759,13 +1763,13 @@ STRING ARTpost(CHANNEL *cp)
     if (*Data.Replyto == '\0')
 	Data.Replyto = HDR(_from);
     hops = ARTparsepath(HDR(_path), &hopcount);
-#if	defined(DO_IPADDR_LOG)
-    Data.Feedsite = RChostname(cp);
-    if (Data.Feedsite == NULL)
-	Data.Feedsite = CHANname(cp);
-#else
-    Data.Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
-#endif	/* defined(DO_IPADDRLOG) */
+    if (innconf->logipaddr) {
+	Data.Feedsite = RChostname(cp);
+	if (Data.Feedsite == NULL)
+	    Data.Feedsite = CHANname(cp);
+    } else {
+	Data.Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
+    }
     Data.FeedsiteLength = strlen(Data.Feedsite);
     (void)sprintf(Data.TimeReceived, "%lu", Now.time);
     Data.TimeReceivedLength = strlen(Data.TimeReceived);
@@ -1793,11 +1797,10 @@ STRING ARTpost(CHANNEL *cp)
     if (error != NULL) {
 	(void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
 	ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-	    if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
-		syslog(L_ERROR, "%s cant write history %s %m",
+	if (innconf->remembertrash && Data.MessageID &&
+			(Mode == OMrunning) && !HISremember(hash))
+	    syslog(L_ERROR, "%s cant write history %s %m",
 		       LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
 	ARTreject(error_code, cp, buff, article);
 	return buff;
     }
@@ -1808,11 +1811,10 @@ STRING ARTpost(CHANNEL *cp)
         (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, perlrc);
         syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(_message_id), buff);
         ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-        if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
+        if (innconf->remembertrash && Data.MessageID &&
+			(Mode == OMrunning) && !HISremember(hash))
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
         ARTreject(REJECT_FILTER, cp, buff, article);
         return buff;
     }
@@ -1852,11 +1854,10 @@ STRING ARTpost(CHANNEL *cp)
 		syslog(L_NOTICE, "rejecting[tcl] %s %s", HDR(_message_id),
                        buff);
 		ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-                if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
+                if (innconf->remembertrash && Data.MessageID &&
+				(Mode == OMrunning) && !HISremember(hash))
                     syslog(L_ERROR, "%s cant write history %s %m",
                            LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
 		ARTreject(REJECT_FILTER, cp, buff, article);
 		return buff;
 	    }
@@ -1895,11 +1896,10 @@ STRING ARTpost(CHANNEL *cp)
 		    NNTP_REJECTIT_VAL,
 		    MaxLength(distributions[0], distributions[0]));
 	    ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-            if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
+            if (innconf->remembertrash && Data.MessageID &&
+				(Mode == OMrunning) && !HISremember(hash))
                 syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
 	    DISPOSE(distributions);
 	    ARTreject(REJECT_DISTRIB, cp, buff, article);
 	    return buff;
@@ -2000,11 +2000,10 @@ STRING ARTpost(CHANNEL *cp)
 	    (void)sprintf(buff, "%d Unapproved for \"%s\"",
 		    NNTP_REJECTIT_VAL, ngp->Name);
 	    ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-            if ((Data.MessageID && (Mode == OMrunning) && !HISremember(hash)))
+            if (innconf->remembertrash && Data.MessageID &&
+				(Mode == OMrunning) && !HISremember(hash))
                 syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
 	    if (distributions)
 		DISPOSE(distributions);
 	    ARTreject(REJECT_UNAPP, cp, buff, article);
@@ -2077,34 +2076,32 @@ STRING ARTpost(CHANNEL *cp)
 		NNTP_REJECTIT_VAL,
 		MaxLength(HDR(_newsgroups), HDR(_newsgroups)));
 	    ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DONT_WANT_TRASH)
-#if	defined(DO_REMEMBER_TRASH)
-	    if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
-		syslog(L_ERROR, "%s cant write history %s %m",
+	    if (innconf->wanttrash) {
+		if (innconf->remembertrash && Data.MessageID &&
+			(Mode == OMrunning) && !HISremember(hash))
+		    syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
-	    if (distributions)
-		DISPOSE(distributions);
-	    ARTreject(REJECT_GROUP, cp, buff, article);
-	    return buff;
-#else
+		if (distributions)
+		    DISPOSE(distributions);
+		ARTreject(REJECT_GROUP, cp, buff, article);
+		return buff;
+	    } else {
 	    /* if !GroupMissing, then all the groups the article was posted
 	     * to have a flag of "x" in our active file, and therefore
 	     * we should throw the article away:  if you have define
 	     * DO_WANT_TRASH, then you want all trash except that which
 	     * you explicitly excluded in your active file. */
-	    if (!GroupMissing) {
-#if	defined(DO_REMEMBER_TRASH)
-                if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
-                    syslog(L_ERROR, "%s cant write history %s %m",
-                           LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
-		if (distributions)
-		    DISPOSE(distributions);
-		ARTreject(REJECT_GROUP, cp, buff, article);
-		return buff;
+		if (!GroupMissing) {
+                    if (innconf->remembertrash && Data.MessageID &&
+				(Mode == OMrunning) && !HISremember(hash))
+			syslog(L_ERROR, "%s cant write history %s %m",
+					LogName, Data.MessageID);
+		    if (distributions)
+				DISPOSE(distributions);
+		    ARTreject(REJECT_GROUP, cp, buff, article);
+		    return buff;
+		}
 	    }
-#endif	/* defined(DONT_WANT_TRASH) */
 	}
 	ngp = NGfind(ARTjnk);
 	*ngptr++ = ngp;
@@ -2123,11 +2120,11 @@ STRING ARTpost(CHANNEL *cp)
     j++;
 
     /* Add enough extra room for time pathname */
-    if (TimeSpool)
+    if (innconf->timespool)
         j += 48;
 
     /* Allocate exactly enough space for the textual representation */
-    if (StorageAPI)
+    if (innconf->storageapi)
 	j = (sizeof(TOKEN) * 2) + 3;
 
     /* Make sure the filename buffer has room. */
@@ -2140,7 +2137,7 @@ STRING ARTpost(CHANNEL *cp)
 	RENEW(Files.Data, char, Files.Size + 1);
     }
 
-    if (XrefSlave == TRUE) {
+    if (innconf->xrefslave == TRUE) {
     	if (ARTxrefslave() == FALSE) {
     	    if (HDR(_xref)) {
                 (void)sprintf(buff, "%d Invalid Xref header \"%s\"",
@@ -2161,11 +2158,11 @@ STRING ARTpost(CHANNEL *cp)
     }
 
     /* Now we can file it. */
-    if (++ICDactivedirty >= ICD_SYNC_COUNT) {
+    if (++ICDactivedirty >= innconf->icdsynccount) {
 	ICDwriteactive();
 	ICDactivedirty = 0;
     }
-    if (StorageAPI) {
+    if (innconf->storageapi) {
 	TMRstart(TMR_ARTWRITE);
 	for (i = 0; (ngp = GroupPointers[i]) != NULL; i++)
 	    ngp->PostCount = 0;
@@ -2204,7 +2201,7 @@ STRING ARTpost(CHANNEL *cp)
 	    if (Data.Name[0] == '\0') {
 		TMRstart(TMR_ARTWRITE);
 		/* Write the article the first time. */
-		if (TimeSpool) {
+		if (innconf->timespool) {
 		    i--;
 		    ngp->PostCount = 1;
 		    /* Pull the bottom 14 bits off and split them into two levels of hierarchy */
@@ -2222,11 +2219,10 @@ STRING ARTpost(CHANNEL *cp)
 		    (void)sprintf(buff, "%d cant write article %s, %s",
 				  NNTP_RESENDIT_VAL, Data.Name, strerror(i));
 		    ARTlog(&Data, ART_REJECT, buff);
-#if	defined(DO_REMEMBER_TRASH)
-		    if (Data.MessageID && (Mode == OMrunning) && !HISremember(hash))
+		    if (innconf->remembertrash && Data.MessageID &&
+				(Mode == OMrunning) && !HISremember(hash))
 			syslog(L_ERROR, "%s cant write history %s %m",
 			       LogName, Data.MessageID);
-#endif	/* defined(DO_REMEMBER_TRASH) */
 		    if (distributions)
 			DISPOSE(distributions);
 		    ARTreject(REJECT_OTHER, cp, buff, article);
@@ -2264,7 +2260,7 @@ STRING ARTpost(CHANNEL *cp)
 #endif	/* defined(DONT_HAVE_SYMLINK) */
 		}
 		TMRstop(TMR_ARTLINK);
-		if (WriteLinks) {
+		if (innconf->writelinks) {
 		    *p++ = ' ';
 		    p += strlen(strcpy(p, linkname));
 		}
@@ -2289,7 +2285,7 @@ STRING ARTpost(CHANNEL *cp)
 	HISsync();
 
     /* We wrote the history, so modify it and save it for output. */
-    if (StorageAPI) {
+    if (innconf->storageapi) {
 	Data.Replic = HDR(_xref) + Path.Used;
 	Data.ReplicLength = ARTheaders[_xref].Length - Path.Used;
     } else {
@@ -2301,24 +2297,23 @@ STRING ARTpost(CHANNEL *cp)
 
     /* Start logging, then propagate the article. */
     ARTlog(&Data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
-#if	defined(DO_NNTPLINK_LOG)
-    if (fprintf(Log, " (%s)", Data.Name) == EOF || ferror(Log)) {
+    if ((innconf->logartsize) &&
+    	(fprintf(Log, " (%s)", Data.Name) == EOF || ferror(Log))) {
 	oerrno = errno;
 	syslog(L_ERROR, "%s cant write log_nntplink %m", LogName);
 	IOError("logging nntplink", oerrno);
 	clearerr(Log);
     }
-#endif	/* defined(DO_NNTPLINK_LOG) */
 
-#if defined(DO_LOG_SIZE)
-    cp->Size += Data.SizeValue;
-    if (fprintf(Log, " %ld",Data.SizeValue) == EOF || ferror (Log)) {
-        oerrno = errno;
-	syslog(L_ERROR, "%s cant write log_nntplink %m", LogName);
-	IOError("logging nntplink", oerrno);
-	clearerr(Log);
+    if (innconf->logartsize) {
+	cp->Size += Data.SizeValue;
+	if (fprintf(Log, " %ld",Data.SizeValue) == EOF || ferror (Log)) {
+            oerrno = errno;
+	    syslog(L_ERROR, "%s cant write log_nntplink %m", LogName);
+	    IOError("logging nntplink", oerrno);
+	    clearerr(Log);
+	}
     }
-#endif
     
     ARTpropagate(&Data, hops, hopcount, distributions);
     if (distributions)

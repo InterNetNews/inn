@@ -355,31 +355,15 @@ RNEWSLOCALCONNECT	DO
 ##  Environment variable that has remote hostname for rnews.
 #### =()<_ENV_UUCPHOST		@<_ENV_UUCPHOST>@>()=
 _ENV_UUCPHOST		UU_MACHINE
-##  Require posts to have under 50% inclusion (">") lines?  Pick DO OR DONT.
-##  (This is only for inews and nnrpd.)
-#### =()<CHECK_INCLUDED_TEXT	@<CHECK_INCLUDED_TEXT>@>()=
-CHECK_INCLUDED_TEXT	DO
 ##  Put hosts in the inews Path header?  Pick DO or DONT.
 #### =()<INEWS_PATH		@<INEWS_PATH>@>()=
 INEWS_PATH		DO
 ##  Munge the gecos field of password entry?  Pick DO or DONT.
 #### =()<MUNGE_GECOS		@<MUNGE_GECOS>@>()=
 MUNGE_GECOS		DO
-##  How many times to try to fork before giving up
-#### =()<MAX_FORKS		@<MAX_FORKS>@>()=
-MAX_FORKS		10
-##  Largest acceptable article size; 0 allows any size
-#### =()<MAX_ART_SIZE		@<MAX_ART_SIZE>@>()=
-MAX_ART_SIZE		1000000L
 ##  Value of dbzincore(FLAG) call in innd.  Pick 1 or 0.
 #### =()<INND_DBZINCORE		@<INND_DBZINCORE>@>()=
 INND_DBZINCORE		1
-##  Should sub-processes get a nice(2) value?  Pick DO or DONT.
-#### =()<INND_NICE_KIDS		@<INND_NICE_KIDS>@>()=
-INND_NICE_KIDS		DO
-##  Value for nice(2) call in innd.
-#### =()<INND_NICE_VALUE		@<INND_NICE_VALUE>@>()=
-INND_NICE_VALUE		4
 ##  Null-terminated list of unknown commands to not log to syslog.
 ##	INND_QUIET_BADLIST	"xstream", "xfoo", NULL
 #### =()<INND_QUIET_BADLIST	@<INND_QUIET_BADLIST>@>()=
@@ -387,30 +371,9 @@ INND_QUIET_BADLIST	NULL
 ##  Null-terminated set of illegal distribution patterns for local postings.
 #### =()<BAD_DISTRIBS		@<BAD_DISTRIBS>@>()=
 BAD_DISTRIBS		"*.*",NULL
-##  Verify that the poster is the person doing the cancel?  Pick DO or DONT.
-##  (Can't do this if cancel arrives before the article does, by the way,
-##  in which case the early cancel will be ignored.)
-#### =()<VERIFY_CANCELS		@<VERIFY_CANCELS>@>()=
-VERIFY_CANCELS		DONT
-##  Log "ctlinnd cancel" commands to syslog?  Pick DO or DONT.
-#### =()<LOG_CANCEL_COMMANDS	@<LOG_CANCEL_COMMANDS>@>()=
-LOG_CANCEL_COMMANDS	DONT
 ##  File unknown "to.*" groups into the "to" newsgroup?  Pick DO or DONT.
 #### =()<MERGE_TO_GROUPS		@<MERGE_TO_GROUPS>@>()=
 MERGE_TO_GROUPS		DONT
-##  File articles in unknown newsgroups into junk?  Pick DO or DONT.
-#### =()<WANT_TRASH		@<WANT_TRASH>@>()=
-WANT_TRASH		DONT
-##  Record rejected articles in history?  Pick DO or DONT.
-#### =()<REMEMBER_TRASH		@<REMEMBER_TRASH>@>()=
-REMEMBER_TRASH		DO
-##  Check the linecount against the Lines header?  Pick DO or DONT.
-#### =()<CHECK_LINECOUNT		@<CHECK_LINECOUNT>@>()=
-CHECK_LINECOUNT		DONT
-##  If checking, the error must be within LINECOUNT_FUZZ lines.
-##  Five is number of .signature lines + 1.
-#### =()<LINECOUNT_FUZZ		@<LINECOUNT_FUZZ>@>()=
-LINECOUNT_FUZZ		5
 ##  Have innd throttle itself after this many I/O errors.
 #### =()<IO_ERROR_COUNT		@<IO_ERROR_COUNT>@>()=
 IO_ERROR_COUNT		50
@@ -420,18 +383,6 @@ CTLINND_TIMEOUT		0
 ##  Flush logs if we go this long with no I/O.
 #### =()<DEFAULT_TIMEOUT		@<DEFAULT_TIMEOUT>@>()=
 DEFAULT_TIMEOUT		300
-##  INND closes channel if inactive this long (seconds).
-#### =()<PEER_TIMEOUT		@<PEER_TIMEOUT>@>()=
-PEER_TIMEOUT		(1 * 60 * 60)
-##  NNRP exits if first command doesn't arrive within this time (seconds).
-#### =()<INIT_CLIENT_TIMEOUT	@<INIT_CLIENT_TIMEOUT>@>()=
-INIT_CLIENT_TIMEOUT	30
-##  NNRP exits if inactive for this long (seconds).
-#### =()<CLIENT_TIMEOUT		@<CLIENT_TIMEOUT>@>()=
-CLIENT_TIMEOUT		(10 * 60)
-##  Allow nnrpd readers when paused or throttled?  Pick DO or DONT.
-#### =()<ALLOW_READERS		@<ALLOW_READERS>@>()=
-ALLOW_READERS		DO
 ##  Refuse newsreader connections if load is higher then this; -1 disables.
 #### =()<NNRP_LOADLIMIT		@<NNRP_LOADLIMIT>@>()=
 NNRP_LOADLIMIT		16
@@ -445,55 +396,9 @@ NNRP_GETHOSTBYADDR	DO
 ##  Strip Sender from posts that didn't authenticate?  Pick DO or DONT.
 #### =()<NNRP_AUTH_SENDER	@<NNRP_AUTH_SENDER>@>()=
 NNRP_AUTH_SENDER	DO
-##  Do you want to make life easy for peers to pull feeds from you (it's
-##  harder on your machine). Pick DO or DONT. With DONT, you get a small
-##  sleep inserted before each ARTICLE command is processed. (With
-##  apologies to the Australians in the audience).
-#### =()<LIKE_PULLERS		@<LIKE_PULLERS>@>()=
-LIKE_PULLERS		DONT
-##  Allow the NEWNEWS NNTP command?   Pick DO or DONT.
-##  (RFC 977 says you should; your server performance may not agree...)
-#### =()<ALLOW_NEWNEWS		@<ALLOW_NEWNEWS>@>()=
-ALLOW_NEWNEWS		DONT
-##  How many read/write failures until channel is put to sleep or closed?
-#### =()<BAD_IO_COUNT		@<BAD_IO_COUNT>@>()=
-BAD_IO_COUNT		5
-##  Multiplier for sleep in EWOULDBLOCK writes (seconds).
-#### =()<BLOCK_BACKOFF		@<BLOCK_BACKOFF>@>()=
-BLOCK_BACKOFF		(2 * 60)
-##  How many article-writes between active and history updates?
-#### =()<ICD_SYNC_COUNT		@<ICD_SYNC_COUNT>@>()=
-ICD_SYNC_COUNT		10
 ##  Tell resolver _res.options to be fast?  Pick DO or DONT.
 #### =()<FAST_RESOLV		@<FAST_RESOLV>@>()=
 FAST_RESOLV		DONT
-##  Drop articles that were posted this many days ago.
-#### =()<DEFAULT_CUTOFF		@<DEFAULT_CUTOFF>@>()=
-DEFAULT_CUTOFF		14
-##  Maximum number of incoming NNTP connections.
-#### =()<DEFAULT_CONNECTIONS	@<DEFAULT_CONNECTIONS>@>()=
-DEFAULT_CONNECTIONS	50
-##  Wait this many seconds before channel restarts.
-#### =()<CHANNEL_RETRY_TIME	@<CHANNEL_RETRY_TIME>@>()=
-CHANNEL_RETRY_TIME	(5 * 60)
-##  Wait this many seconds before seeing if pause is ended.
-#### =()<PAUSE_RETRY_TIME	@<PAUSE_RETRY_TIME>@>()=
-PAUSE_RETRY_TIME	(5 * 60)
-##  Wait this many seconds between noticing inactive channels.
-#### =()<CHANNEL_INACTIVE_TIME	@<CHANNEL_INACTIVE_TIME>@>()=
-CHANNEL_INACTIVE_TIME	(10 * 60)
-##  Put nntplink info (filename) into the log?
-#### =()<NNTPLINK_LOG		@<NNTPLINK_LOG>@>()=
-NNTPLINK_LOG		DONT
-##  Put article size into the log?
-#### =()<LOG_SIZE		@<LOG_SIZE>@>()=
-LOG_SIZE		DO
-##  Log by host IP address, rather than from Path line?
-#### =()<IPADDR_LOG		@<IPADDR_LOG>@>()=
-IPADDR_LOG		DO
-##  Log NNTP activity after this many articles.
-#### =()<NNTP_ACTIVITY_SYNC	@<NNTP_ACTIVITY_SYNC>@>()=
-NNTP_ACTIVITY_SYNC	200
 ##  Free buffers bigger than this when we're done with them.
 #### =()<BIG_BUFFER		@<BIG_BUFFER>@>()=
 BIG_BUFFER		(2 * START_BUFF_SIZE)
@@ -509,9 +414,6 @@ SPOOLNAMEBUFF		512
 ##  Maximum size of a single header.
 #### =()<MAXHEADERSIZE		@<MAXHEADERSIZE>@>()=
 MAXHEADERSIZE		1024
-##  Byte limit on locally-posted articles; 0 to disable the check.
-#### =()<LOCAL_MAX_ARTSIZE	@<LOCAL_MAX_ARTSIZE>@>()=
-LOCAL_MAX_ARTSIZE	1000000L
 ##  Default number of bytes to hold in memory when buffered.
 #### =()<SITE_BUFFER_SIZE	@<SITE_BUFFER_SIZE>@>()=
 SITE_BUFFER_SIZE	(16 * 1024)

@@ -179,58 +179,24 @@ typedef char		*CSTRING;
     /* Should rnews try the local host? */
     /* =()<#define @<RNEWSLOCALCONNECT>@_RNEWSLOCALCONNECT>()= */
 #define DO_RNEWSLOCALCONNECT
-    /* Disallow posts with more than 50% inclusion (">") lines? */
-    /* (This is only for inews and nnrpd.) */
-    /* =()<#define @<CHECK_INCLUDED_TEXT>@_CHECK_INCLUDED_TEXT>()= */
-#define DO_CHECK_INCLUDED_TEXT
     /* Put hosts in the inews Path header? */
     /* =()<#define @<INEWS_PATH>@_INEWS_PATH>()= */
 #define DO_INEWS_PATH
     /* Munge the gecos field of password entry? */
     /* =()<#define @<MUNGE_GECOS>@_MUNGE_GECOS>()= */
 #define DO_MUNGE_GECOS
-    /* How many times to try before giving up */
-    /* =()<#define MAX_FORKS	@<MAX_FORKS>@>()= */
-#define MAX_FORKS	10
-    /* Largest acceptable article size; 0 allows any size */
-    /* =()<#define MAX_ART_SIZE	@<MAX_ART_SIZE>@>()= */
-#define MAX_ART_SIZE	1000000L
     /* Value of dbzincore(FLAG) call in innd. */
     /* =()<#define INND_DBZINCORE	@<INND_DBZINCORE>@>()= */
 #define INND_DBZINCORE	1
-    /* Should sub-processes get a nice(2) value? */
-    /* =()<#define @<INND_NICE_KIDS>@_INND_NICE_KIDS>()= */
-#define DO_INND_NICE_KIDS
-    /* Value for nice(2) call in innd. */
-    /* =()<#define INND_NICE_VALUE	@<INND_NICE_VALUE>@>()= */
-#define INND_NICE_VALUE	4
     /* Null-terminated list of unknown commands to not log to syslog. */
     /* =()<#define INND_QUIET_BADLIST	@<INND_QUIET_BADLIST>@>()= */
 #define INND_QUIET_BADLIST	NULL
     /* Null-terminated set of illegal distribution patterns. */
     /* =()<#define BAD_DISTRIBS	@<BAD_DISTRIBS>@>()= */
 #define BAD_DISTRIBS	"*.*",NULL
-    /* Check that poster is the person doing the cancel? */
-    /* =()<#define @<VERIFY_CANCELS>@_VERIFY_CANCELS>()= */
-#define DONT_VERIFY_CANCELS
-    /* Log "ctlinnd cancel" commands to syslog? */
-    /* =()<#define @<LOG_CANCEL_COMMANDS>@_LOG_CANCEL_COMMANDS>()= */
-#define DONT_LOG_CANCEL_COMMANDS
     /* File unknown "to.*" groups into the "to" newsgroup? */
     /* =()<#define @<MERGE_TO_GROUPS>@_MERGE_TO_GROUPS>()= */
 #define DONT_MERGE_TO_GROUPS
-    /* File articles in unknown newsgroups into junk? */
-    /* =()<#define @<WANT_TRASH>@_WANT_TRASH>()= */
-#define DONT_WANT_TRASH
-    /* Record rejected articles in history? */
-    /* =()<#define @<REMEMBER_TRASH>@_REMEMBER_TRASH>()= */
-#define DO_REMEMBER_TRASH
-    /* Check the linecount against the Lines header? */
-    /* =()<#define @<CHECK_LINECOUNT>@_CHECK_LINECOUNT>()= */
-#define DONT_CHECK_LINECOUNT
-    /* If checking, the error must be within LINECOUNT_FUZZ lines. */
-    /* =()<#define LINECOUNT_FUZZ	@<LINECOUNT_FUZZ>@>()= */
-#define LINECOUNT_FUZZ	5
     /* Have innd throttle itself after this many I/O errors. */
     /* =()<#define IO_ERROR_COUNT	@<IO_ERROR_COUNT>@>()= */
 #define IO_ERROR_COUNT	50
@@ -240,18 +206,6 @@ typedef char		*CSTRING;
     /* Flush logs (and NNRP connections) if we go this long with no I/O. */
     /* =()<#define DEFAULT_TIMEOUT	@<DEFAULT_TIMEOUT>@>()= */
 #define DEFAULT_TIMEOUT	300
-    /* INND closes channel if inactive this long (seconds). */
-    /* =()<#define PEER_TIMEOUT	@<PEER_TIMEOUT>@>()= */
-#define PEER_TIMEOUT	(1 * 60 * 60)
-    /* NNRP exits if first command doesn't arrive within this time (seconds).*/
-    /* =()<#define INITIAL_TIMEOUT	@<INIT_CLIENT_TIMEOUT>@>()= */
-#define INITIAL_TIMEOUT	30
-    /* NNRP exits if inactive this long (seconds). */
-    /* =()<#define CLIENT_TIMEOUT	@<CLIENT_TIMEOUT>@>()= */
-#define CLIENT_TIMEOUT	(10 * 60)
-    /* Allow nnrpd readers when paused or throttled? */
-    /* =()<#define @<ALLOW_READERS>@_ALLOW_READERS>()= */
-#define DO_ALLOW_READERS
     /* Refuse NNTP connections if load is higher then this; -1 disables. */
     /* =()<#define NNRP_LOADLIMIT	@<NNRP_LOADLIMIT>@>()= */
 #define NNRP_LOADLIMIT	16
@@ -264,51 +218,9 @@ typedef char		*CSTRING;
     /*  Strip Sender from posts that did authenticate? */
     /* =()<#define @<NNRP_AUTH_SENDER>@_NNRP_AUTH_SENDER>()= */
 #define DO_NNRP_AUTH_SENDER
-    /*  Make life easy for sucking feeds. DO or DONT */
-    /* =()<#define @<LIKE_PULLERS>@_LIKE_PULLERS>()= */
-#define DONT_LIKE_PULLERS
-    /* Allow the NEWNEWS NNTP command? */
-    /* =()<#define @<ALLOW_NEWNEWS>@_ALLOW_NEWNEWS>()= */
-#define DONT_ALLOW_NEWNEWS
-    /* How many read/write failures until channel is put to sleep or closed? */
-    /* =()<#define BAD_IO_COUNT	@<BAD_IO_COUNT>@>()= */
-#define BAD_IO_COUNT	5
-    /* Multiplier for sleep in EWOULDBLOCK writes (seconds). */
-    /* =()<#define BLOCK_BACKOFF	@<BLOCK_BACKOFF>@>()= */
-#define BLOCK_BACKOFF	(2 * 60)
-    /* How many article-writes between active and history updates? */
-    /* =()<#define ICD_SYNC_COUNT	@<ICD_SYNC_COUNT>@>()= */
-#define ICD_SYNC_COUNT	10
     /* Tell resolver _res.options to be fast? */
     /* =()<#define @<FAST_RESOLV>@_FAST_RESOLV>()= */
 #define DONT_FAST_RESOLV
-    /* Drop articles that were posted this many days ago. */
-    /* =()<#define DEFAULT_CUTOFF	@<DEFAULT_CUTOFF>@>()= */
-#define DEFAULT_CUTOFF	14
-    /* Maximum number of incoming NNTP connections. */
-    /* =()<#define DEFAULT_CONNECTIONS	@<DEFAULT_CONNECTIONS>@>()= */
-#define DEFAULT_CONNECTIONS	50
-    /* Wait this many seconds before channel restarts. */
-    /* =()<#define CHANNEL_RETRY_TIME	@<CHANNEL_RETRY_TIME>@>()= */
-#define CHANNEL_RETRY_TIME	(5 * 60)
-    /* Wait this many seconds before seeing if pause is ended. */
-    /* =()<#define PAUSE_RETRY_TIME	@<PAUSE_RETRY_TIME>@>()= */
-#define PAUSE_RETRY_TIME	(5 * 60)
-    /* Wait this many seconds before seeing if pause is ended. */
-    /* =()<#define CHANNEL_INACTIVE_TIME	@<CHANNEL_INACTIVE_TIME>@>()= */
-#define CHANNEL_INACTIVE_TIME	(10 * 60)
-    /* Put nntplink info (filename) into the log? */
-    /* =()<#define @<NNTPLINK_LOG>@_NNTPLINK_LOG>()= */
-#define DONT_NNTPLINK_LOG
-    /* Put article size into the log? */
-    /* =()<#define @<LOG_SIZE>@_LOG_SIZE>()= */
-#define DO_LOG_SIZE
-    /* Log by host IP address, rather than from Path line? */
-    /* =()<#define @<IPADDR_LOG>@_IPADDR_LOG>()= */
-#define DO_IPADDR_LOG
-    /* Log NNTP activity after this many articles. */
-    /* =()<#define NNTP_ACTIVITY_SYNC	@<NNTP_ACTIVITY_SYNC>@>()= */
-#define NNTP_ACTIVITY_SYNC	200
     /* Free buffers bigger than this when we're done with them. */
     /* =()<#define BIG_BUFFER	@<BIG_BUFFER>@>()= */
 #define BIG_BUFFER	(2 * START_BUFF_SIZE)
@@ -324,9 +236,6 @@ typedef char		*CSTRING;
     /* Maximum size of a single header. */
     /* =()<#define MAXHEADERSIZE	@<MAXHEADERSIZE>@>()= */
 #define MAXHEADERSIZE	1024
-    /* Byte limit on locally-posted articles; 0 to disable the check. */
-    /* =()<#define LOCAL_MAX_ARTSIZE	@<LOCAL_MAX_ARTSIZE>@>()= */
-#define LOCAL_MAX_ARTSIZE	1000000L
     /* Default number of bytes to hold in memory when buffered. */
     /* =()<#define SITE_BUFFER_SIZE	@<SITE_BUFFER_SIZE>@>()= */
 #define SITE_BUFFER_SIZE	(16 * 1024)
@@ -347,6 +256,12 @@ typedef char		*CSTRING;
 typedef FUNCTYPE	(*FUNCPTR)();
 
 
+
+/* Some default values that can be overridden by values inn.conf
+      These values used to be in config.data */
+#define	MAX_FORKS		10
+#define DO_VERIFY_CANCELS		/* Incl the code */
+#define DO_LOG_CANCEL_COMMANDS		/* Incl the code */
 
     /* While reading input, if we have less than LOW_WATER bytes free, we
      * use the current buffersize as input to GROW_AMOUNT to determine how

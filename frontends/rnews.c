@@ -86,6 +86,8 @@ StartChild(fd, path, argv)
     int		pan[2];
     int		i;
     PID_T	pid;
+    char	*p;
+    int		max_forks;
 
     /* Create a pipe. */
     if (pipe(pan) < 0) {
@@ -93,9 +95,14 @@ StartChild(fd, path, argv)
 	exit(1);
     }
 
+    if ((p = GetConfigValue(_CONF_MAX_FORKS)) != NULL)
+    {
+	max_forks = atoi(p);
+    }
+    else max_forks = MAX_FORKS;
     /* Get a child. */
     for (i = 0; (pid = FORK()) < 0; i++) {
-	if (i == MAX_FORKS) {
+	if (i == max_forks) {
 	    syslog(L_ERROR, "cant fork %s %m -- spooling", path);
 	    return -1;
 	}

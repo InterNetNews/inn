@@ -304,12 +304,10 @@ should be chosen from the following set:
 	m	Article's Message-ID
 	n	Article's pathname relative to the spool directory
 	p	The time the article was posted as seconds since epoch.
-.\" =()<.ie '@<IPADDR_LOG>@'DONT' \{\>()=
-.ie 'DO'DONT' \{\
-	s	The site that fed the article to the server;
-		from the Path header\}
-.el \{\
-	s	The IP address of the site that sent the article\}
+	s	The site that fed the article to the server; from the
+		Path: header or the IP address of the site that sent
+		the article depending on the ``logipaddr'' field in
+.I			inn.conf (8)
 	t	Time article was received as seconds since epoch
 	*	Names of the appropriate funnel entries;
 		or all sites that get the article

@@ -211,6 +211,58 @@
 #define _CONF_OVERMMAP          "overviewmmap"
    /* Path to MTA */
 #define _CONF_MTA               "mta"
+   /* Check included text on local postings */
+#define _CONF_CHECK_INC_TEXT	"checkincludedtext"
+   /* How many times to try to fork before giving up */
+#define _CONF_MAX_FORKS		"maxforks"
+   /* Largest acceptable article size; 0 allows any size */
+#define _CONF_MAX_ART_SIZE	"maxartsize"
+   /* Value for nice(2) call in innd's child processes */
+#define _CONF_NICE_KIDS		"nicekids"
+   /* Should we verify cancels to the article author */
+#define _CONF_VERIFY_CANCELS	"verifycancels"
+   /* Should we log cancel commands */
+#define _CONF_LOG_CANCEL_COMM	"logcancelcomm"
+   /* Do we want to file unwanted articles in 'junk'? */
+#define _CONF_WANT_TRASH	"wanttrash"
+   /* Should be put unwanted article ID's into history */
+#define _CONF_REMEMBER_TRASH	"remembertrash"
+   /* Check linecont against Lines: header adjust if out by this ammount */
+#define _CONF_LINECOUNT_FUZZ	"linecountfuzz"
+   /* INND closes channel if inactive for this long (seconds) */
+#define _CONF_PEER_TIMEOUT	"peertimeout"
+   /* NNRP exits if inactive for this long (seconds) */
+#define _CONF_CLIENT_TIMEOUT	"clienttimeout"
+   /* Allow readers when server is paused or throttled */
+#define _CONF_ALLOW_READERS	"allowreaders"
+   /* Allow use of the 'NEWNEWS' command by clients */
+#define _CONF_ALLOW_NEWNEWS	"allownewnews"
+   /* Max article size of local postings */
+#define _CONF_LOCAL_MAX_ARTSIZE	"localmaxartsize"
+   /* Log article sizes */
+#define _CONF_LOG_ARTSIZE	"logartsize"
+   /* Log by host IP address, rather than from Path line */
+#define _CONF_LOG_IPADDR	"logipaddr"
+   /* Wait this many seconds between noticing inactive channels */
+#define _CONF_CHAN_INACT_TIME	"chaninacttime"
+   /* Maximum number of incoming NNTP connections */
+#define _CONF_MAX_CONNECTIONS	"maxconnections"
+   /* Wait this many seconds before channel restarts */
+#define _CONF_CHAN_RETRY_TIME	"chanretrytime"
+   /* Drop articles that were posted this many days ago. */
+#define _CONF_ART_CUTOFF	"artcutoff"
+   /* Wait this many seconds before seeing if pause is ended */
+#define _CONF_PAUSE_RETRY_TIME	"pauseretrytime"
+   /* Put nntplink info (filename) into the log */
+#define _CONF_NNTPLINK_LOG	"nntplinklog"
+   /* Log NNTP activity after this many articles. */
+#define _CONF_NNTP_ACT_SYNC	"nntpactsync"
+   /* How many read/write failures until channel is put to sleep or closed? */
+#define _CONF_BAD_IO_COUNT	"badiocount"
+   /* Multiplier for sleep in EWOULDBLOCK writes (seconds) */
+#define _CONF_BLOCK_BACKOFF	"blockbackoff"
+   /* How many article-writes between active and history updates */
+#define _CONF_ICD_SYNC_COUNT	"icdsynccount"
      
 /*
 **  13.  TCL Support

@@ -587,8 +587,9 @@ main(argc, argv, env)
     register int	i;
     char		*Reject;
     char		accesslist[BIG_BUFFER];
-    int			timeout;
+    int			ClientTimeout, timeout;
     BOOL		val;
+    char		*p;
 
 #if	!defined(HPUX)
     /* Save start and extent of argv for TITLEset. */
@@ -636,6 +637,13 @@ main(argc, argv, env)
 	ExitWithStats(1);
     }
     MyHostName = COPY(MyHostName);
+
+
+    if ((p = GetConfigValue(_CONF_CLIENT_TIMEOUT)) != NULL)
+	ClientTimeout = atoi(p);
+    else
+	ClientTimeout = 10*60;
+    PERMnewnews = GetBooleanConfigValue(_CONF_ALLOW_NEWNEWS, TRUE);
 
     ARTmmap = GetBooleanConfigValue(_CONF_ARTMMAP, TRUE);
     OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
@@ -718,7 +726,7 @@ main(argc, argv, env)
     (void)InitBackoffConstants();
 
     /* Main dispatch loop. */
-    for (timeout = INITIAL_TIMEOUT, av = NULL; ; timeout = CLIENT_TIMEOUT) {
+    for (timeout = INITIAL_TIMEOUT, av = NULL; ; timeout = ClientTimeout) {
 	(void)fflush(stdout);
 	if (ChangeTrace) {
 	    Tracing = Tracing ? FALSE : TRUE;
@@ -738,7 +746,7 @@ main(argc, argv, env)
 		syslog(L_ERROR, "%s internal %d in main", ClientHost, r);
 		/* FALLTHROUGH */
 	    case RTtimeout:
-		if (timeout < CLIENT_TIMEOUT)
+		if (timeout < ClientTimeout)
 		    syslog(L_NOTICE, "%s timeout short", ClientHost);
 		else
 		    syslog(L_NOTICE, "%s timeout", ClientHost);

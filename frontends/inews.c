@@ -825,7 +825,6 @@ AppendSignature(UseMalloc, article, homedir, linesp)
 }
 
 
-#if	defined(DO_CHECK_INCLUDED_TEXT)
 /*
 **  See if the user has more included text than new text.  Simple-minded, but
 **  reasonably effective for catching neophyte's mistakes.  A line starting
@@ -863,7 +862,6 @@ CheckIncludedText(p, lines)
 	QuitServer(1);
     }
 }
-#endif	/* defined(DO_CHECK_INCLUDED_TEXT) */
 
 
 
@@ -1304,23 +1302,22 @@ main(ac, av)
 	article = StripOffHeaders(article);
     for (i = 0, p = article; (p = strchr(p, '\n')) != NULL; i++, p++)
 	continue;
-#if	defined(DO_CHECK_INCLUDED_TEXT)
-    CheckIncludedText(article, i);
-#endif	/* defined(DO_CHECK_INCLUDED_TEXT) */
+    if (GetBooleanConfigValue(_CONF_CHECK_INC_TEXT, TRUE) == TRUE) {
+	CheckIncludedText(article, i);
+    }
     if (DoSignature)
 	article = AppendSignature(Mode == 'h', article, pwp->pw_dir, &SigLines);
     else
 	SigLines = 0;
     ProcessHeaders(AddOrg, i + SigLines, pwp);
     Length = strlen(article);
-#if	LOCAL_MAX_ARTSIZE > 0
-    if (Length > LOCAL_MAX_ARTSIZE) {
+    if (((p = GetConfigValue(_CONF_LOCAL_MAX_ARTSIZE)) != NULL) &&
+		(atoi(p) > 0) && (Length > atoi(p))) {
 	(void)fprintf(stderr,
 		"Article is bigger then local limit of %ld bytes\n",
-		LOCAL_MAX_ARTSIZE);
+		atoi(p));
 	QuitServer(1);
     }
-#endif	/* LOCAL_MAX_ARTSIZE > 0 */
 
     /* Do final checks. */
     if (i == 0 && HDR(_control) == NULL) {

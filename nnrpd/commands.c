@@ -71,7 +71,7 @@ PERMgeneric(av, accesslist)
     char	*accesslist;
 {
     char path[BIG_BUFFER], *fields[6], *p;
-    int i, pan[2], status;
+    int i, pan[2], status, max_forks;
     PID_T pid;
     struct stat stb;
 
@@ -113,8 +113,13 @@ PERMgeneric(av, accesslist)
 	return -1;
     }
 
+    if ((p = GetConfigValue(_CONF_MAX_FORKS)) != NULL)   
+    {
+	max_forks = atoi(p);
+    }
+    else max_forks = MAX_FORKS;
     for (i = 0; (pid = FORK()) < 0; i++) {
-	if (i == MAX_FORKS) {
+	if (i == max_forks) {
 	    Reply("%d Can't fork %s\r\n", NNTP_TEMPERR_VAL,
 		strerror(errno));
 	    syslog(L_FATAL, "cant fork %s %m", av[0]);

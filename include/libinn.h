@@ -38,11 +38,64 @@ extern FILE     *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, c
 extern void	CAclose(void);
 
 /* Parameter retrieval. */
+
+struct conf_vars {
+	char *fromhost;		/* Host for the From line */
+	char *server;		/* NNTP server to post to */
+	char *pathhost;		/* Host for the Path line */
+	char *organization;	/* Data for the Organization line */
+	char *moderatormailer;	/* Default host to mail moderated articles */
+	char *domain;		/* Default domain of local host */
+	char *mimeversion;	/* Default mime version */
+	char *mimecontenttype;	/* Default Content-Type */
+	char *mimeencoding;	/* Default encoding */
+	int hiscachesize;	/* Size of the history cache in kB */
+	int wireformat;		/* Toggle for wireformat articles */
+	int xrefslave;		/* Toggle for Xref: slaving */
+	int timespool;		/* Toggle for the time spool format */
+	char *complaints;	/* Addr for X-Complaints-To: header */
+	int spoolfirst;		/* Spool newly posted article or only on error*/
+	int writelinks;		/* Write crossposts to the history */
+	int timer;		/* Performance monitoring interval */
+	int status;		/* Status file update interval */
+	int storageapi;		/* Use the storage api? */
+	int articlemmap;	/* mmap articles? */
+	int overviewmmap;	/* mmap overviews and indices? */
+	char *mta;		/* Which MTA to mail moderated posts */
+	int checkincludedtext;	/* Reject if too much included text */
+	int maxforks;		/* Give up after fork failure */
+	long maxartsize;	/* Reject articles bigger than this */
+	int nicekids;		/* Kids get niced to this */
+	int verifycancels;	/* Verify cancels against article author */
+	int logcancelcomm;	/* Log "ctlinnd cancel" commands to syslog? */
+	int wanttrash;		/* Put unwanted articles in 'junk' */
+	int remembertrash;	/* Put unwanted article ID's into history */
+	int linecountfuzz;	/* Check linecount and adjust of out by more */
+	int peertimeout;	/* How long peers can be inactive */
+	int clienttimeout;	/* How long nnrpd can be inactive */
+	int allowreaders;	/* Allow nnrpd when server is paused */
+	int allownewnews;	/* Allow use of the 'NEWNEWS' command */
+	long localmaxartsize;	/* Max article size of local postings */
+	int logartsize;		/* Log article sizes */
+	int logipaddr;		/* Log by host IP address */
+	int chaninacttime;	/* Wait time between noticing inact chans */
+	int maxconnections;	/* Max number of incoming NNTP connections */
+	int chanretrytime;	/* Wait this many secs before chan restarts */
+	int artcutoff;		/* Max article age */
+	int pauseretrytime;	/* Secs before seeing if pause is ended */
+	int nntplinklog;	/* Put nntplink info (filename) into the log */
+	int nntpactsync;	/* Log NNTP activity after this many articles */
+	int badiocount;		/* Read/write failures until chan is put to sleep or closed? */
+	int blockbackoff;	/* Multiplier for sleep in EWOULDBLOCK writes */
+	int icdsynccount;	/* How many article-writes between active and history updates */
+};
+extern struct	conf_vars *innconf;
 extern char	*GetFQDN(void);
 extern char	*GetConfigValue(char *value);
 extern char	*GetFileConfigValue(char *value);
 extern BOOL      GetBooleanConfigValue(char *value, BOOL DefaultValue);
 extern char	*GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group);
+extern int ReadInnConf(char *configfile);
 
 /* Time functions. */
 typedef struct _TIMEINFO {

@@ -196,8 +196,8 @@ NCpostit(cp)
 	syslog(L_ERROR, "%s internal NCpostit mode %d", CHANname(cp), Mode);
 	return;
     case OMpaused:
-	SCHANadd(cp, (time_t)(Now.time + PAUSE_RETRY_TIME), (POINTER)&Mode,
-	    NCpostit, (POINTER)NULL);
+	SCHANadd(cp, (time_t)(Now.time + innconf->pauseretrytime),
+			(POINTER)&Mode, NCpostit, (POINTER)NULL);
 	return;
     case OMrunning:
 	response = ARTpost(cp);
@@ -217,7 +217,7 @@ NCpostit(cp)
 	    if (cp->Sendid.Size) response = cp->Sendid.Data;
         }
 	cp->Reported++;
-	if (cp->Reported >= NNTP_ACTIVITY_SYNC) {
+	if (cp->Reported >= innconf->nntpactsync) {
 	    syslog(L_NOTICE,
 	    "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld",
 		CHANname(cp), (long)(Now.time - cp->Started),
@@ -449,7 +449,7 @@ NCihave(cp)
     register char	*p;
 
     cp->Ihave++;
-    if (AmSlave && !XrefSlave) {
+    if (AmSlave && !innconf->xrefslave) {
 	NCwritereply(cp, NCbadcommand);
 	return;
     }
@@ -876,7 +876,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    cp->Lastch = i;
 	    if (i > bp->Used) {	/* did not find terminator */
 		/* Check for big articles. */
-		if (LargestArticle > SAVE_AMT && bp->Used > LargestArticle) {
+		if (innconf->maxartsize > SAVE_AMT && bp->Used > innconf->maxartsize) {
 		    /* Make some room, saving only the last few bytes. */
 		    for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
 			p[0] = p[bp->Used - SAVE_AMT];
@@ -890,7 +890,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    if (Mode == OMpaused) { /* defer processing while paused */
 		cp->Rest = 0;
 		bp->Used = cp->SaveUsed;
-		SCHANadd(cp, (time_t)(Now.time + PAUSE_RETRY_TIME),
+		SCHANadd(cp, (time_t)(Now.time + innconf->pauseretrytime),
 		    (POINTER)&Mode, NCproc, (POINTER)NULL);
 		return;
 	    }
@@ -903,7 +903,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		DISPOSE(cp->Argument);
 		cp->Argument = NULL;
 	    }
-	    if (!WireFormat)
+	    if (!innconf->wireformat)
   	        NCclean(bp);
 	    NCpostit(cp);
 	    cp->State = CSgetcmd;
@@ -934,10 +934,10 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		}
 		i = cp->LargeArtSize + bp->Used;
 		syslog(L_ERROR, "%s internal rejecting huge article (%d > %d)",
-		    CHANname(cp), i, LargestArticle);
+		    CHANname(cp), i, innconf->maxartsize);
 		cp->LargeArtSize = 0;
 		(void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
-			NNTP_REJECTIT_VAL, LargestArticle);
+			NNTP_REJECTIT_VAL, innconf->maxartsize);
 		cp->State = CSgetcmd;
 		if (cp->Sendid.Size)
 		    NCwritereply(cp, cp->Sendid.Data);
@@ -1118,7 +1118,7 @@ NCreader(cp)
             return;
         }
 #endif
-	if (i == 0 || cp->BadReads++ >= BAD_IO_COUNT) {
+	if (i == 0 || cp->BadReads++ >= innconf->badiocount) {
 	    if (NCcount > 0)
 		NCcount--;
 	    CHANclose(cp, CHANname(cp));
@@ -1143,7 +1143,8 @@ NCsetup(i)
     char		buff[SMBUF];
 
     /* Set the greeting message. */
-    if ((p = GetConfigValue(_CONF_PATHHOST)) == NULL)
+    p = innconf->pathhost;
+    if (p == NULL)
 	/* Worked in main, now it fails?  Curious. */
 	p = Path.Data;
     (void)sprintf(buff, "%d %s InterNetNews server %s ready",
@@ -1255,7 +1256,7 @@ NCcheck(cp)
     int			msglen;
 
     cp->Check++;
-    if (AmSlave && !XrefSlave) {
+    if (AmSlave && !innconf->xrefslave) {
 	NCwritereply(cp, NCbadcommand);
 	return;
     }

@@ -194,7 +194,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->Originator = NULL;
     sp->FileFlags[0] = FEED_NAME;
     sp->FileFlags[1] = '\0';
-    sp->Nice = INND_NICE_VALUE;
+    sp->Nice = innconf->nicekids;
 
     /* Nip off the first field, the site name. */
     if ((f2 = strchr(Entry, NF_FIELD_SEP)) == NULL)

@@ -121,14 +121,6 @@ file, an article file, or the history database, it will send itself
 a ``throttle'' command.
 This will also happen if it gets too many I/O errors while writing
 to any files.
-.\" =()<.if '@<INND_NICE_KIDS>@'DO' \{\>()=
-.if 'DO'DO' \{\
-.PP
-Any sub-processes spawned by the server will get a
-.IR nice (2)
-.\" =()<value of @<INND_NICE_VALUE>@.\}>()=
-value of 4.\}
-\}
 .SH OPTIONS
 .TP
 .B \-a
@@ -147,11 +139,9 @@ occasionally a site dumps a batch of very old news back onto the network.
 Use the ``\fB\-c\fP'' flag to specify a cutoff.
 For example ``\fB\-c21\fP'' will reject any articles that were posted more than
 21 days ago.
-A value of zero will suppress this check.
-.\" =()<.ie !@<DEFAULT_CUTOFF>@ The default is to not reject old articles.>()=
-.ie !14 The default is to not reject old articles.
-.\" =()<.el The default is @<DEFAULT_CUTOFF>@ days.>()=
-.el The default is 14 days.
+A value of zero will suppress this check. The default is 14 days, but
+can be changed with the ``artcutoff'' option in
+.I inn.conf (5)
 .TP
 .B \-C
 If the ``\fB\-C\fP'' flag is used, then
@@ -192,17 +182,15 @@ flags.  A value of zero turns off checking.  The default is 0.
 .B \-i
 To limit the number of incoming NNTP connections, use the ``\fB\-i\fP'' flag.
 A value of zero will suppress this check.
-.\" =()<.ie !@<DEFAULT_CONNECTIONS>@ The default is to not limit connections.>()=
-.ie !50 The default is to not limit connections.
-.\" =()<.el The default is @<DEFAULT_CONNECTIONS>@.>()=
-.el The default is 50.
+The default is 50, but can also be changed with the ``maxconnections''
+option in
+.I inn.conf (5)
 .TP
 .B \-l
 To limit the size of an article, use the ``\fB\-l\fP'' flag.
 If this flag is used, then any article bigger than
 .I size
 bytes will be rejected.
-.\" =()<The default is @<MAX_ART_SIZE>@ bytes.>()=
 The default is 1000000L bytes.
 Checking can be disabled by using a value
 of zero.
@@ -234,9 +222,9 @@ should also disable future newsreading processes.
 A value of ``\fBy\fP'' will make newreaders act as the server, a value 
 of ``\fBn\fP'' will
 allow newsreading even when the server is not running.
-.\" =()<.ie '@<ALLOW_READERS>@'DONT' The default is to not allow reading.>()=
-.ie 'DO'DONT' The default is to not allow reading.
-.el The default is to allow reading.
+The default is to allow reading, but can also be changed with the
+``allowreaders'' option in
+.I inn.conf (5)
 .TP
 .B \-o
 To limit the number of files that will be kept open for outgoing file
@@ -485,16 +473,17 @@ This is a text file with a variable number of space-separated fields in
 one of the following formats:
 .RS
 .nf
-.\" =()<.ie '@<NNTPLINK_LOG>@'DO' .ds R$ (path)\ >()=
-.ie 'DONT'DO' .ds R$ (path)\ 
-.\" =()<.ie '@<LOG_SIZE>@'DO' .ds Q$ size\ >()=
-.ie 'DO'DO' .ds Q$ size\ 
-mon dd hh:mm:ss.mmm + feed <Message-ID> \*(R$\*(Q$site...
-mon dd hh:mm:ss.mmm j feed <Message-ID> \*(R$\*(Q$site...
-mon dd hh:mm:ss.mmm c feed <Message-ID> \*(R$\*(Q$site...
+mon dd hh:mm:ss.mmm + feed <Message-ID> site...
+mon dd hh:mm:ss.mmm j feed <Message-ID> site...
+mon dd hh:mm:ss.mmm c feed <Message-ID> site...
 mon dd hh:mm:ss.mmm - feed <Message-ID> reason...
 .fi
 .RE
+.PP
+There can also be a hostname and size field after the Message-ID
+depending on the ``nntplinklog'' and ``logsize'' options in
+.I inn.conf (5)
+.PP
 The first three fields are the date and time to millisecond resolution.
 The fifth field is the site that sent the article (based on the Path
 header) and the sixth field is the article's Message-ID; they will be a
@@ -539,11 +528,10 @@ Whitespace in "Newsgroups" header -- "%s"
 .fi
 .RE
 Where ``%s'', above, is replaced by more specific information.
-.\" =()<.if '@<WANT_TRASH>@'DO' \{\>()=
-.if 'DONT'DO' \{\
 .PP
-Note that if an article is accepted and none of the newsgroups are valid,
-it will be logged with two lines, a ``j'' line and a minus sign line.\}
+Note that if an article is accepted, the ``wanttrash'' config value is
+set to ``yes'' and none of the newsgroups are valid, it will be logged
+with two lines, a ``j'' line and a minus sign line.
 .PP
 .I Innd
 also makes extensive reports through

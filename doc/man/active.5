@@ -14,12 +14,11 @@ monotonically increasing numbers.
 .PP
 If an article is posted to newsgroups not mentioned in this file, those
 newsgroups are ignored.
-If no valid newsgroups are specified, the article is
-.\" =()<.ie '@<WANT_TRASH>@'DONT' rejected.>()=
-.ie 'DONT'DONT' rejected.
-.el \{\
+If no valid newsgroups are specified, the article is either
 filed into the newsgroup ``junk'' and only propagated to sites that receive
-the ``junk'' newsgroup.\}
+the ``junk'' newsgroup or it is ignored completely, depending on the
+``wanttrash'' option in
+.I inn.conf (5)
 .PP
 Each line consists of four fields specified by a space:
 .PP

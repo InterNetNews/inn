@@ -38,11 +38,10 @@ BOOL		DoCancels = TRUE;
 char		LogName[] = "SERVER";
 char		SPOOL[] = _PATH_SPOOL;
 int		ErrorCount = IO_ERROR_COUNT;
-int		MaxIncoming = DEFAULT_CONNECTIONS;
+int		MaxIncoming = 50;
 int		SPOOLlen = STRLEN(SPOOL);
-long		LargestArticle = MAX_ART_SIZE;
 OPERATINGMODE	Mode = OMrunning;
-time_t		Cutoff = DEFAULT_CUTOFF * 24 * 60 * 60;
+time_t		Cutoff = 14 * 24 * 60 * 60;
 int		RemoteLimit = REMOTELIMIT;
 time_t		RemoteTimer = REMOTETIMER;
 int		RemoteTotal = REMOTETOTAL;
@@ -298,10 +297,9 @@ Spawn(niceval, fd0, fd1, fd2, av)
     CloseOnExec(2, FALSE);
 
     /* Try to set our permissions. */
-#if	defined(DO_INND_NICE_KIDS)
-    if (nice(niceval) == -1) 
-	syslog(L_ERROR, "Could not nice child to %d: %m", niceval);
-#endif	/* defined(DO_INND_NICE_KIDS) */
+    if (niceval != 0)
+	if (nice(niceval) == -1) 
+		syslog(L_ERROR, "Could not nice child to %d: %m", niceval);
     if (setgid(NewsGID) == -1)
 	syslog(L_ERROR, "%s cant setgid in %s %m", LogName, av[0]);
     if (setuid(NewsUID) == -1)
@@ -442,7 +440,7 @@ JustCleanup()
     ICDclose();
     HISclose();
     ARTclose();
-    if (StorageAPI)
+    if (innconf->storageapi)
 	OVERshutdown();
 #if defined(DO_TCL)
     TCLclose();
@@ -575,14 +573,26 @@ int main(int ac, char *av[])
     port = NNTP_PORT;
     fd = -1;
     master = NULL;
-#if	defined(DONT_ALLOW_READERS)
-    NNRPFollows = TRUE;
-#endif	/* defined(DONT_ALLOW_READERS) */
 
 #if	defined(DO_FAST_RESOLV)
     /* We only use FQDN's in the hosts.nntp file. */
     _res.options &= ~(RES_DEFNAMES | RES_DNSRCH);
 #endif	/* defined(DO_FAST_RESOLV) */
+
+  /* Set some options from inn.conf(5) that can be overridden with
+     command-line options if they exist */
+
+     if ((i = ReadInnConf(_PATH_CONFIG)) < 0) {
+	if (i == -1) (void)fprintf(stderr, "Cannot open %s\n", _PATH_CONFIG);
+	if (i == -2) (void)fprintf(stderr, "Cannot malloc for innconf\n");
+	exit(1);
+     }
+
+    if (innconf->allowreaders)
+	NNRPFollows = TRUE;
+
+    MaxIncoming = innconf->maxconnections;
+    Cutoff = innconf->artcutoff * 24 * 60 * 60;
 
     /* Parse JCL. */
     CCcopyargv(av);
@@ -613,7 +623,7 @@ int main(int ac, char *av[])
 	    MaxIncoming = atoi(optarg);
 	    break;
 	case 'l':
-	    LargestArticle = atol(optarg);
+	    innconf->maxartsize = atol(optarg);
 	    break;
 	case 'm':
 	    if (ModeReason)
@@ -727,38 +737,25 @@ int main(int ac, char *av[])
     } else
 	StatusInterval = 0;
     
-    /* Get the setting for Wireformat */
-    WireFormat = GetBooleanConfigValue(_CONF_WIREFORMAT, FALSE);
-    /* Get the setting for Xref slaving */
-    XrefSlave = GetBooleanConfigValue(_CONF_XREFSLAVE, FALSE);
-    /* Get the setting for time spool */
-    TimeSpool = GetBooleanConfigValue(_CONF_TIMESPOOL, FALSE);
-    /* Get the setting for whether or not to write crossposts to the
-       history file */
-    WriteLinks = GetBooleanConfigValue(_CONF_WRITELINKS, TRUE);
-
-    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
-    OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
     val = FALSE;
     if (!OVERsetup(OVER_MMAP, &val)) {
 	syslog(L_FATAL, "%s cant setup for the unified overview %m");
 	exit(1);
     }
 
-    if (StorageAPI && (Overfdcount = OVERgetnum()) < 0) {
+    if (innconf->storageapi && (Overfdcount = OVERgetnum()) < 0) {
 	syslog(L_FATAL, "%s cant get config for the unified overview %m");
 	exit(1);
     }
 
     /* Get the Path entry. */
-    if ((path = GetConfigValue(_CONF_PATHHOST)) == NULL) {
-	syslog(L_FATAL, "%s cant GetConfigValue %s %m",
-	    LogName, _CONF_PATHHOST);
+    if (innconf->pathhost == NULL) {
+	syslog(L_FATAL, "%s No pathhost set", LogName);
 	exit(1);
     }
-    Path.Used = strlen(path) + 1;
+    Path.Used = strlen(innconf->pathhost) + 1;
     Path.Data = NEW(char, Path.Used + 1);
-    (void)sprintf(Path.Data, "%s!", path);
+    (void)sprintf(Path.Data, "%s!", innconf->pathhost);
 
 #if	!defined(__CENTERLINE__)
     /* Set standard input to /dev/null. */
@@ -883,14 +880,14 @@ int main(int ac, char *av[])
     NCsetup(i);
     ARTsetup();
     ICDsetup(TRUE);
-    if (StorageAPI) {
-	WireFormat = TRUE;
+    if (innconf->storageapi) {
+	innconf->wireformat = TRUE;
 	if (!SMinit()) {
 	    syslog(L_FATAL, "%s cant initialize the storage subsystem %m");
 	    exit(1);
 	}
     }
-    if (StorageAPI && !OVERinit()) {
+    if (innconf->storageapi && !OVERinit()) {
 	syslog(L_FATAL, "%s cant initialize the unified overview %m");
 	exit(1);
     }

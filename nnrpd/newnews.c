@@ -8,19 +8,6 @@
 #include "clibrary.h"
 #include "nnrpd.h"
 
-#if	defined(DONT_ALLOW_NEWNEWS)
-
-FUNCTYPE
-CMDnewnews(ac, av)
-    register int	ac;
-    char		*av[];
-{
-    Reply("%d NEWNEWS command disabled by administrator\r\n",
-	  NNTP_ACCESS_VAL);
-}
-
-#else
-
 #define FILE_LIST_DELTA		10
 #define GET_DATE(p, line)	\
 	((p = strchr(line, HIS_FIELDSEP)) == NULL ? 0 : atol(++p))
@@ -198,6 +185,12 @@ CMDnewnews(ac, av)
     char		line[BIG_BUFFER];
     long		date;
 
+    if (!PERMnewnews) {
+	Reply("%d NEWNEWS command disabled by administrator\r\n",
+          NNTP_ACCESS_VAL);
+	return;
+    }
+
     if (!PERMcanread) {
 	Reply("%s\r\n", NNTP_ACCESS);
 	return;
@@ -283,4 +276,3 @@ CMDnewnews(ac, av)
     Printf(".\r\n");
 }
 
-#endif	/* defined(DONT_ALLOW_NEWNEWS) */

@@ -101,7 +101,7 @@ void CHANsetup(int i)
     CHANtable = NEW(CHANNEL, CHANtablesize);
     (void)memset((POINTER)CHANtable, 0,
 	    (SIZE_T)(CHANtablesize * sizeof *CHANtable));
-    CHANnull.NextLog = CHANNEL_INACTIVE_TIME;
+    CHANnull.NextLog = innconf->chaninacttime;
     CHANnull.Address.s_addr = MyAddress.s_addr;
     for (cp = CHANtable; --i >= 0; cp++)
 	*cp = CHANnull;
@@ -658,7 +658,7 @@ CHANwritesleep(cp, p)
 {
     int			i;
 
-    if ((i = ++(cp->BlockedWrites)) > BAD_IO_COUNT)
+    if ((i = ++(cp->BlockedWrites)) > innconf->badiocount)
 	switch (cp->Type) {
 	default:
 	    break;
@@ -672,7 +672,7 @@ CHANwritesleep(cp, p)
 	    CHANclose(cp, p);
 	    return;
 	}
-    i *= BLOCK_BACKOFF;
+    i *= innconf->blockbackoff;
     syslog(L_ERROR, "%s blocked sleeping %d", p, i);
     SCHANadd(cp, (time_t)(Now.time + i), (POINTER)NULL,
 	CHANwakeup, (POINTER)NULL);
@@ -937,11 +937,11 @@ void CHANreadloop(void)
 				WCHANremove(cp);
 				CHANwritesleep(cp, p);
 			    }
-			    else if (cp->BadWrites >= BAD_IO_COUNT) {
+			    else if (cp->BadWrites >= innconf->badiocount) {
 				syslog(L_ERROR, "%s sleeping", p);
 				WCHANremove(cp);
 				SCHANadd(cp,
-				    (time_t)(Now.time + PAUSE_RETRY_TIME),
+				    (time_t)(Now.time + innconf->pauseretrytime),
 				    (POINTER)NULL, CHANwakeup, (POINTER)NULL);
 			    }
 			}
@@ -993,9 +993,9 @@ void CHANreadloop(void)
 	     && cp->LastActive + cp->NextLog < Now.time) {
 		p = CHANname(cp);
 		silence = Now.time - cp->LastActive;
-		cp->NextLog += CHANNEL_INACTIVE_TIME;
+		cp->NextLog += innconf->chaninacttime;
 		syslog(L_NOTICE, "%s inactive %ld", p, silence / 60L);
-		if (silence > PEER_TIMEOUT) {
+		if (silence > innconf->peertimeout) {
 		    syslog(L_NOTICE, "%s timeout", p);
 		    CHANclose(cp, p);
 		}

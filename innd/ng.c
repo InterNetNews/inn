@@ -367,7 +367,7 @@ BOOL NGrenumber(NEWSGROUP *ngp)
     himark = atol(f2);
     lomark = himark + 1;
 
-    if (StorageAPI) {
+    if (innconf->storageapi) {
 	p = NEW(char, strlen(_PATH_OVERVIEWDIR) + strlen(ngp->Dir) + strlen(_PATH_OVERVIEW) + 32);
 	sprintf(p, "%s/%s/%s.index", _PATH_OVERVIEWDIR, ngp->Dir, _PATH_OVERVIEW);
 	if ((fi = fopen(p, "r")) == NULL) {
@@ -375,7 +375,7 @@ BOOL NGrenumber(NEWSGROUP *ngp)
 	    return TRUE;
 	}
 	DISPOSE(p);
-	if (OVERmmap) {
+	if (innconf->overviewmmap) {
 	    if (fstat(fileno(fi), &sb) < 0) {
 		fclose(fi);
 		return TRUE;

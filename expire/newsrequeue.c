@@ -765,9 +765,7 @@ main(ac, av)
     register QIOSTATE	*qp;
     register char	*p;
     register char	*q;
-#if	defined(DO_NNTPLINK_LOG)
     register char	*r;
-#endif	/* defined(DO_NNTPLINK_LOG) */
     register char	*line;
     register FILE	*art;
     register FILE	*F;
@@ -779,12 +777,14 @@ main(ac, av)
     BOOL		Logfile;
     char		name[SPOOLNAMEBUFF];
     char		save;
+    int			nntplinklog;
 
     /* Set defaults. */
     Active = _PATH_ACTIVE;
     History = _PATH_HISTORY;
     Newsfeeds = _PATH_NEWSFEEDS;
     Logfile = FALSE;
+    nntplinklog = GetBooleanConfigValue(_CONF_NNTPLINK_LOG, FALSE);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "a:d:h:ln:")) != EOF)
@@ -907,18 +907,18 @@ main(ac, av)
 	    continue;
 
 	if (Logfile) {
-#if	defined(DO_NNTPLINK_LOG)
-	    /* Skip the (filename) if it's there. */
-	    if (save != '\0' && (r = strchr(q + 1, ')')) != NULL)
-		(void)printf("%s %s%s\n", name, p, r + 1);
-	    else {
+	    if (nntplinklog) {
+		/* Skip the (filename) if it's there. */
+		if (save != '\0' && (r = strchr(q + 1, ')')) != NULL)
+		    (void)printf("%s %s%s\n", name, p, r + 1);
+		else {
+		    *q = save;
+		    (void)printf("%s %s\n", name, p);
+		}
+	    } else {
 		*q = save;
 		(void)printf("%s %s\n", name, p);
 	    }
-#else
-	    *q = save;
-	    (void)printf("%s %s\n", name, p);
-#endif	/* defined(DO_NNTPLINK_LOG) */
 
 	    if (fflush(stdout) == EOF || ferror(stdout))
 		(void)fprintf(stderr, "Can't write %s, %s\n",

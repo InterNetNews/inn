@@ -109,18 +109,17 @@ void HISsetup(void)
 	    exit(1);
 	}
     }
-    if ((HIScachesizestr = GetConfigValue(_CONF_HISCACHESIZE)) == NULL) {
+    if (innconf->hiscachesize == 0) {
 	HIScache = NULL;
 	HIScachesize = 0;
     } else {
-	if ((HIScachesize = atoi(HIScachesizestr)) != 0) {
-	    HIScachesize *= 1024;
-	    if (HIScache != NULL)
+	HIScachesize = innconf->hiscachesize;
+	HIScachesize *= 1024;
+	if (HIScache != NULL)
 		free(HIScache);
-	    HIScachesize = (HIScachesize / sizeof(_HIScache));
-	    HIScache = NEW(_HIScache, HIScachesize);
-	    memset((void *)HIScache, '\0', HIScachesize * sizeof(_HIScache));
-	}
+	HIScachesize = (HIScachesize / sizeof(_HIScache));
+	HIScache = NEW(_HIScache, HIScachesize);
+	memset((void *)HIScache, '\0', HIScachesize * sizeof(_HIScache));
     }
     HIShitpos = HIShitneg = HISmisses = HISdne = 0;
 }
@@ -318,7 +317,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 	paths = NOPATHS;
 
     offset = ftell(HISwritefp);
-    if (StorageAPI) {
+    if (innconf->storageapi) {
 	if (Data->Expires > 0)
 	    i = fprintf(HISwritefp, "[%s]%c%lu%c%lu%c%lu%c%s\n",
 			HashToText(hash), HIS_FIELDSEP,
@@ -365,7 +364,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
     HIScacheadd(hash, TRUE);
     TMRstop(TMR_HISWRITE);
     
-    if (++HISdirty >= ICD_SYNC_COUNT)
+    if (++HISdirty >= innconf->icdsynccount)
 	HISsync();
     return TRUE;
 }
@@ -410,7 +409,7 @@ BOOL HISremember(const HASH hash)
     HIScacheadd(hash, TRUE);
     TMRstop(TMR_HISWRITE);
     
-    if (++HISdirty >= ICD_SYNC_COUNT)
+    if (++HISdirty >= innconf->icdsynccount)
 	HISsync();
     return TRUE;
 }

@@ -435,7 +435,8 @@ CCcancel(av)
 	HISclose();
     }
 #if	defined(DO_LOG_CANCEL_COMMANDS)
-    syslog(L_NOTICE, "%s cancelled %s", LogName, Data.MessageID);
+    if (innconf->logcancelcomm)
+	syslog(L_NOTICE, "%s cancelled %s", LogName, Data.MessageID);
 #endif	/* defined(DO_LOG_CANCEL_COMMANDS) */
     return NULL;
 }
@@ -699,7 +700,7 @@ CCgo(av)
     if (ErrorCount < 0)
 	ErrorCount = IO_ERROR_COUNT;
     HISsetup();
-    if (StorageAPI) {
+    if (innconf->storageapi) {
 	int fdcountold = Overfdcount;
 	if (!OVERinit()) {
 	    syslog(L_FATAL, "%s cant initialize the unified overview %m");
@@ -823,7 +824,7 @@ CCmode(av)
     (void)sprintf(p, "Parameters c %ld i %d (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
 	    (long)Cutoff / (24L * 60L * 60L),
 	    MaxIncoming, i,
-	    LargestArticle, MaxOutgoing, (long)TimeOut.tv_sec,
+	    innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
 	    RemoteLimit, RemoteTotal, (int) RemoteTimer,
 	    AmSlave ? "slave" : "normal",
 	    AnyIncoming ? "any" : "specified");
@@ -1070,8 +1071,8 @@ CCparam(av)
 	syslog(L_NOTICE, "%s changed -i %d", LogName, MaxIncoming);
 	break;
     case 'l':
-	LargestArticle = atol(p);
-	syslog(L_NOTICE, "%s changed -l %ld", LogName, LargestArticle);
+	innconf->maxartsize = atol(p);
+	syslog(L_NOTICE, "%s changed -l %ld", LogName, innconf->maxartsize);
 	break;
     case 'n':
 	if (!CCparsebool('n', &NNRPFollows, *p))
@@ -1141,7 +1142,7 @@ CCblock(NewMode, reason)
 
     ICDwrite();
     HISclose();
-    if (StorageAPI)
+    if (innconf->storageapi)
 	OVERshutdown();
     Mode = NewMode;
     if (ModeReason)
@@ -1276,11 +1277,11 @@ CCreload(av)
     if (*p == '\0' || EQ(p, "all")) {
 	SITEflushall(FALSE);
 	HISclose();
-	if (StorageAPI)
+	if (innconf->storageapi)
 	    OVERshutdown();
 	RCreadlist();
 	HISsetup();
-	if (StorageAPI) {  
+	if (innconf->storageapi) {  
 	    int fdcountold = Overfdcount;
 	    if (!OVERinit()) {
 		syslog(L_FATAL, "%s cant initialize the unified overview %m");
@@ -1323,7 +1324,7 @@ CCreload(av)
 	    return BADSCHEMA;
     }
     else if (EQ(p, "overview.ctl")) {
-	if (StorageAPI) {
+	if (innconf->storageapi) {
 	    int fdcountold = Overfdcount;
 	    OVERshutdown();
 	    if (!OVERinit()) {
@@ -1339,6 +1340,9 @@ CCreload(av)
 		syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
 	    }   
 	}
+    }
+    else if (EQ(p, "inn.conf")) {
+	ReadInnConf(_PATH_CONFIG);
     }
 #if defined(DO_TCL)
     else if (EQ(p, "filter.tcl")) {

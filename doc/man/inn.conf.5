@@ -93,6 +93,19 @@ To specify which index is used for unified overview, you need to edit
 overview.ctl.
 If you run innd as a feeder only, you do not need overview.ctl.
 .TP
+.I maxforks
+How many times to attempt a fork() before giving up.
+.TP
+.I maxartsize
+The maximum size article (in bytes) that will be accepted by the
+server. ``0'' allows any size.
+.TP
+.I nicekids
+If set to anything other than ``0'', all child processes will have
+this
+.IR nice (1)
+value.
+.TP
 .I mta
 This specifies the message transfer agent (mta) to be used when mailing
 moderated postings. The article, with headers and an added To: line,
@@ -100,27 +113,36 @@ will be piped into this program and an optional ``%s'' parameter will
 be replaced with the moderator email address(es). See
 .IR moderators (5)
 for more info on the moderator email address(es).
-.PP
-Three parameters are used only by
-.I nnrpd
-when accepting postings from clients:
 .TP
-.I mime-version
-If this parameter is present, then
-.I nnrpd
-will add the necessary MIME (Multipurpose Internet Mail Extensions)
-headers to all any articles that do not have a Mime-Version header.
-This parameter specifies the MIME version, and should normally be ``1.0''.
+.I verifycancels
+Set this to ``yes'' to verify that a poster is the person doing the cancel.
+This can't be done if the cancel arrives before the article does.
 .TP
-.I mime-contenttype
-If MIME headers are being added, this parameter specifies the value
-of the Content-Type header.
-The default value is ``text/plain; charset=US-ASCII.''
+.I logcancelcomm
+Set this to ``yes'' to log ``ctlinnd cancel'' commands to syslog.
 .TP
-.I mime-encoding
-If MIME headers are being added, this parameter specifies the value of
-the Content-Transfer-Encoding header.
-The default value is ``7bit.''
+.I wanttrash
+Set this to ``yes'' if you want to file articles in unknown newsgroups
+into the ``junk'' newsgroup.
+.TP
+.I remembertrash
+Set this to ``no'' if you don't want to record rejected articles in
+history. This might cause duplicate articles to be offered to you,
+so be careful with it.
+.TP
+.I linecountfuzz
+If this number is set to any number other than ``0'', the article
+linecounts are checked against the Lines: header and the header is
+adjusted if it is out by more than this amount. A suitable figure
+is ``5'' which is the number of suitable .signature lines + 1.
+.TP
+.I logartsize
+Should the article size be put into the article log file. This is
+useful for statistics.
+.TP
+.I logipaddr
+Should the IP address of a host be logged rather than the entry in
+the Path: line. This is useful for tracking forged postings.
 .PP
 The following parameters are used only by 
 .I nnrpd
@@ -254,9 +276,79 @@ is discarded.
 If this is '0' or 'off', then performance monitoring will be disabled by
 default.  Otherwise, it would be how often to report performance
 statistics, in seconds.  If turned on statistics will be logged to syslog.
+.TP
+.I peertimeout
+How long (in seconds) an innd incoming channel can be inactive before
+innd closes the channel.
+.TP
+.I allowreaders
+Allow readers to connect even when the server is paused or throttled.
+The default is ``no''.
+.TP
+.I allownewnews
+Allow use of the ``NEWNEWS'' command by clients. Allowing this can be
+a perfomance problem on the server, but is recommended by RFC 977.
+The default is ``yes''.
+.TP
+.I chaninacttime
+The time (in seconds) to wait between noticing inactive channels.
+.TP
+.I chanretrytime
+How many seconds to wait before a channel restarts.
+.TP
+.I maxconnections
+The maximum number of incoming NNTP connections.
+.TP
+.I artcutoff
+Articles older than this number of days are dropped.
+.TP
+.I nntplinklog
+Should we put nntplink info (filename) into the log.
+.TP
+.I nntpactsync
+How many articles to process before logging NNTP activity.
+.TP
+.I badiocount
+How many read/write failures until a channel is put to sleep or closed.
+.TP
+.I pauseretrytime
+Wait for this many seconds between noticing inactive channels.
+.TP
+.I blockbackoff
+A multiplier (in seconds) for sleep in ``EWOULDBLOCK'' writes.
+.TP
+.I icdsynccount
+How many article writes between active and history file updates.
 .PP
-The following parameters are used only by 
-.I nnrpd.
+The following parameters are used only by
+.I nnrpd
+( or perhaps
+.I inews )
+when accepting postings from clients:
+.TP
+.I checkincludedtext
+If set to ``yes'' then local postings must have under  50% inclusion
+(">") lines.
+.TP
+.I localmaxartsize
+The maximum article size (in bytes) for locally posted articles.
+.TP
+.I mime-version
+If this parameter is present, then
+.I nnrpd
+will add the necessary MIME (Multipurpose Internet Mail Extensions)
+headers to all any articles that do not have a Mime-Version header.
+This parameter specifies the MIME version, and should normally be ``1.0''.
+.TP
+.I mime-contenttype
+If MIME headers are being added, this parameter specifies the value
+of the Content-Type header.
+The default value is ``text/plain; charset=US-ASCII.''
+.TP
+.I mime-encoding
+If MIME headers are being added, this parameter specifies the value of
+the Content-Transfer-Encoding header.
+The default value is ``7bit.''
 .TP
 .I spoolfirst
 If this is true then nnrpd will spool new articles with out attempting
@@ -277,6 +369,9 @@ If this is false then nnrpd will use regular file access to access
 articles, otherwise it will mmap() the articles.  Setting this to true
 will give better performance on most systems, but some systems do have 
 problems with mmap().
+.TP
+.I clienttimeout
+How long (in seconds) an nnrpd can be inactive before it exits.
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE

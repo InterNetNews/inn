@@ -209,7 +209,7 @@ static void STATUSsummary(void)
   fprintf (F, "\n\nConfiguration file: %s\n\n", _PATH_CONFIG);
 
   fprintf (F, "Global configuration parameters:\n");
-  fprintf (F, "              Largest Article: %ld bytes\n", LargestArticle);
+  fprintf (F, "              Largest Article: %ld bytes\n", innconf->maxartsize);
   fprintf (F, "     Max Incoming connections: ");
   if (MaxIncoming)
     fprintf (F, "%d\n", MaxIncoming);
@@ -223,12 +223,11 @@ static void STATUSsummary(void)
     fprintf (F, "none\n");
   fprintf (F, "               Timeout period: %d seconds\n",
 	   (long)TimeOut.tv_sec);
-  fprintf (F, "               Remember Trash: %s\n",
-#if defined(DO_REMEMBER_TRASH)
-	    "Yes");
-#else
-            "No");
-#endif /* defined(DO_REMEMBER_TRASH) */
+  if (innconf->remembertrash) {
+	fprintf (F, "               Remember Trash: Yes\n");
+  } else {
+	fprintf (F, "               Remember Trash: No\n");
+  }
 #if defined(DO_TCL)
   fprintf (F, "                Tcl filtering: %s\n", 
 	   TCLFilterActive ? "enabled" : "disabled");

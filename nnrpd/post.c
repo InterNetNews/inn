@@ -521,7 +521,6 @@ ProcessHeaders(linecount)
 }
 
 
-#if	defined(DO_CHECK_INCLUDED_TEXT)
 /*
 **  See if the user has more included text than new text.  Simple-minded, but
 **  reasonably effective for catching neophyte's mistakes.  A line starting
@@ -557,7 +556,6 @@ CheckIncludedText(p, lines)
 	return "Article not posted -- more included text than new text";
     return NULL;
 }
-#endif	/* defined(DO_CHECK_INCLUDED_TEXT) */
 
 
 
@@ -868,10 +866,10 @@ ARTpost(article, idbuff)
     for (i = 0, p = article; p; i++, p = next + 1)
 	if ((next = strchr(p, '\n')) == NULL)
 	    break;
-#if	defined(DO_CHECK_INCLUDED_TEXT)
-    if ((error = CheckIncludedText(article, i)) != NULL)
-	return error;
-#endif	/* defined(DO_CHECK_INCLUDED_TEXT) */
+    if (GetBooleanConfigValue(_CONF_CHECK_INC_TEXT, TRUE) == TRUE) {
+	if ((error = CheckIncludedText(article, i)) != NULL)
+		return error;
+    }
     if ((error = ProcessHeaders(i)) != NULL)
 	return error;
     if (i == 0 && HDR(_control) == NULL)
@@ -906,14 +904,13 @@ ARTpost(article, idbuff)
      && !EQ(p, "poster")
      && (error = ValidNewsgroups(p, (char *)NULL)) != NULL)
 	return error;
-#if	LOCAL_MAX_ARTSIZE > 0
-    if (strlen(article) > LOCAL_MAX_ARTSIZE) {
-	(void)sprintf(Error,
+    if (((p = GetConfigValue(_CONF_LOCAL_MAX_ARTSIZE)) != NULL) &&
+			(atoi(p) > 0) && (strlen(article) > atoi(p))) {
+	    (void)sprintf(Error,
 		"Article is bigger then local limit of %ld bytes\n",
-		LOCAL_MAX_ARTSIZE);
-	return Error;
+		atoi(p));
+	    return Error;
     }
-#endif	/* LOCAL_MAX_ARTSIZE > 0 */
 
 #if defined(DO_PERL)
     /* Calls the Perl subroutine for headers management */

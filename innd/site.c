@@ -604,7 +604,7 @@ STATIC BOOL SITEstartprocess(SITE *sp)
     syslog(L_ERROR, "%s cant spawn spooling %m", sp->Name);
     ip = NEW(int, 1);
     *ip = sp - Sites;
-    SCHANadd(sp->Channel, (time_t)(Now.time + CHANNEL_RETRY_TIME),
+    SCHANadd(sp->Channel, (time_t)(Now.time + innconf->chanretrytime),
 	(POINTER)NULL, SITEspoolwake, (POINTER)ip);
     return TRUE;
 }
@@ -756,7 +756,7 @@ void SITEchanclose(CHANNEL *cp)
 	    WCHANadd(sp->Channel);
 	    ip = NEW(int, 1);
 	    *ip = sp - Sites;
-	    SCHANadd(sp->Channel, (time_t)(Now.time + CHANNEL_RETRY_TIME),
+	    SCHANadd(sp->Channel, (time_t)(Now.time + innconf->chanretrytime),
 		(POINTER)NULL, SITEspoolwake, (POINTER)ip);
 	    break;
 	}
