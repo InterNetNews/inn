@@ -398,8 +398,7 @@ AllocationFailure(const char *what, size_t size, const char *file, int line)
 **  We ran out of space or other I/O error, throttle ourselves.
 */
 void
-ThrottleIOError(when)
-    char	*when;
+ThrottleIOError(char *when)
 {
     char	buff[SMBUF];
     STRING	p;
@@ -417,6 +416,30 @@ ThrottleIOError(when)
 	    syslog(L_ERROR, "%s cant throttle %s", LogName, p);
 	syslog(L_FATAL, "%s throttle %s", LogName, buff);
 	errno = oerrno;
+	ThrottledbyIOError = TRUE;
+    }
+}
+
+/*
+**  No matching storage.conf, throttle ourselves.
+*/
+void
+ThrottleNoMatchError(void)
+{
+    char	buff[SMBUF];
+    STRING	p;
+    int		oerrno;
+
+    if (Mode == OMrunning) {
+	if (Reservation) {
+	    DISPOSE(Reservation);
+	    Reservation = NULL;
+	}
+	(void)sprintf(buff, "%s storing article -- throttling",
+	    SMerrorstr);
+	if ((p = CCblock(OMthrottled, buff)) != NULL)
+	    syslog(L_ERROR, "%s cant throttle %s", LogName, p);
+	syslog(L_FATAL, "%s throttle %s", LogName, buff);
 	ThrottledbyIOError = TRUE;
     }
 }

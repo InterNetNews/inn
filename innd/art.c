@@ -527,7 +527,9 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     SMerrno = SMERR_NOERROR;
     result = SMstore(arth);
     if (result.type == TOKEN_EMPTY) {
-	if (SMerrno != SMERR_NOERROR)
+	if (SMerrno == SMERR_NOMATCH)
+	    ThrottleNoMatchError();
+	else if (SMerrno != SMERR_NOERROR)
 	    IOError("SMstore", SMerrno);
 	DISPOSE(artbuff);
 	return result;
