@@ -3,8 +3,7 @@
 **  Date parsing and conversion routines.
 **
 **  Provides various date parsing and conversion routines, including
-**  generating Date headers for posted articles.  Note that the parsedate
-**  parser is separate from this file.
+**  generating Date headers for posted articles.
 */
 
 #include "config.h"
@@ -57,8 +56,9 @@ static const struct {
     { "PDT", -7 * 60 * 60 },    { "PST", -8 * 60 * 60 },
 };
 
-/* Additional non-numeric time zones supported because parsedate supported
-   them.  These aren't legal in RFC 2822, but are supported in lax mode. */
+/* Additional non-numeric time zones supported because the old parsedate
+   parser supported them.  These aren't legal in RFC 2822, but are supported
+   in lax mode. */
 static const struct {
     const char name[5];
     long offset;
@@ -745,10 +745,11 @@ parsedate_rfc2822(const char *date)
 
 
 /*
-**  Parse a date, accepting a lax syntax that tries to allow for any date that
-**  the old parsedate code would accept, allowing for a lot of variation
-**  that's seen in Usenet articles.  Takes a pointer to the date and returns
-**  the translated time in seconds since epoch, or (time_t) -1 on error.
+**  Parse a date, accepting a lax syntax that tries to allow for any vaguely
+**  RFC-2822-like date that the old parsedate code would accept, allowing for
+**  a lot of variation that's seen in Usenet articles.  Takes a pointer to the
+**  date and returns the translated time in seconds since epoch, or (time_t)
+**  -1 on error.
 */
 time_t
 parsedate_rfc2822_lax(const char *date)
