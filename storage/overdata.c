@@ -143,7 +143,7 @@ build_header(const char *article, size_t length, const char *header,
 */
 struct buffer *
 overview_build(ARTNUM number, const char *article, size_t length,
-               struct vector *extra, struct buffer *overview)
+               const struct vector *extra, struct buffer *overview)
 {
     unsigned int field;
     char buffer[32];
@@ -269,4 +269,111 @@ overview_check(const char *data, size_t length, ARTNUM article)
     cvector_free(overview);
     free(copy);
     return false;
+}
+
+
+/*
+**  Given an overview header, return the offset of the field within
+**  the overview data, or -1 if the field is not present in the
+**  overview schema for this installation.
+*/
+int
+overview_index(const char *field, const struct vector *extra)
+{
+    int i;
+
+    for (i = 0; i < (sizeof fields / sizeof fields[0]); ++i) {
+	if (strcasecmp(field, fields[i]) == 0)
+	    return i;
+    }
+    for (i = 0; i < extra->count; i++) {
+	if (strcasecmp(field, extra->strings[i]) == 0)
+	    return i + (sizeof fields / sizeof fields[0]);
+    }
+    return -1;
+}
+
+
+/*
+**  Given an overview header line, split out a vector pointing at each
+**  of the components (within line), returning a pointer to the
+**  vector. If the vector initially passed in is NULL a new vector is
+**  created, else the existing one is filled in.
+**
+**  A member `n' of the vector is of length (vector->strings[n+1] -
+**  vector->strings[n] - 1). Note that the last member of the vector
+**  will always point beyond (line + length).
+*/
+struct cvector *
+overview_split(const char *line, size_t length, ARTNUM *number,
+	       struct cvector *vector)
+{
+    const char *p = NULL;
+
+    if (vector == NULL) {
+	vector = cvector_new();
+    } else {
+	cvector_clear(vector);
+    }
+    while (line != NULL) {
+	/* the first field is the article number */
+	if (p == NULL) {
+	    if (number != NULL) {
+		*number = atoi(line);
+	    }
+	} else {
+	    cvector_add(vector, line);
+	}
+	p = memchr(line, '\t', length);
+	if (p != NULL) {
+	    /* skip over the tab */
+	    ++p;
+	    /* and calculate the remaining length */
+	    length -= (p - line);
+	} else {
+	    /* add in a pointer to beyond the end of the final
+	     * component, so you can always calculate the length.
+	     * overview lines are always terminated with \r\n, so the
+	     * -1 ends up chopping those off */
+	    cvector_add(vector, line + length - 1);
+	}
+	line = p;
+    }
+    return vector;
+}
+
+/*
+**  Given an overview vector (from overview_split), return a copy of
+**  the member which the caller is interested in (and must free).
+*/
+char *
+overview_getheader(struct cvector *vector, int element)
+{
+    char *field = NULL;
+    size_t len;
+    const char *p;
+
+    if (element >= vector->count) {
+	warn("request for invalid overview field %d", element);
+	return NULL;
+    }
+    /* Note... this routine does not synthesise Newsgroups: on behalf
+     * of the caller... */
+    len = vector->strings[element + 1] - vector->strings[element] - 1;
+    if (element > SIZEOF(fields)) {
+	p = memchr(vector->strings[element], ':', len);
+	if (p == NULL) {
+	    warn("malformed overview field: %.*s", len, 
+		 vector->strings[element]);
+	    goto fail;
+	}
+	++p;
+	len -= p - vector->strings[element];
+    } else {
+	p = vector->strings[element];
+    }
+    field = xstrndup(p, len);
+
+ fail:
+    return field;
 }

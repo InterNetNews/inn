@@ -39,13 +39,6 @@ bool OVhisthasmsgid(struct history *, const char *data);
 void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
 void OVEXPcleanup(void);
 
-/* Overview data manipulation functions. */
-struct vector *overview_extra_fields(void);
-struct buffer *overview_build(ARTNUM number, const char *article,
-                              size_t length, struct vector *extra,
-                              struct buffer *);
-bool overview_check(const char *data, size_t length, ARTNUM article);
-
 #define DEFAULT_MAX_XREF_LEN 8192
 
 #endif /* __OVINTERFACE_H__ */

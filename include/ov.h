@@ -48,6 +48,28 @@ bool OVexpiregroup(char *group, int *lo, struct history *h);
 bool OVctl(OVCTLTYPE type, void *val);
 void OVclose(void);
 
+/* Overview data manipulation functions. */
+struct vector *overview_extra_fields(void);
+struct buffer *overview_build(ARTNUM number, const char *article,
+                              size_t length, const struct vector *extra,
+                              struct buffer *);
+bool overview_check(const char *data, size_t length, ARTNUM article);
+int overview_index(const char *field, const struct vector *extra);
+struct cvector *overview_split(const char *line, size_t length,
+			       ARTNUM *number, struct cvector *vector);
+
+/* offsets into vectors for standard overview headers */
+enum {
+    OVERVIEW_SUBJECT,
+    OVERVIEW_FROM,
+    OVERVIEW_DATE,
+    OVERVIEW_MESSAGE_ID,
+    OVERVIEW_REFERENCES,
+    OVERVIEW_BYTES,
+    OVERVIEW_LINES,
+    OVERVIEW_MAX
+};
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
