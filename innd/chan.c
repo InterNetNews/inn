@@ -48,7 +48,13 @@ static int	CHANccfd;
 static int	CHANtablesize;
 static CHANNEL	*CHANtable;
 static CHANNEL	*CHANcc;
-static CHANNEL	CHANnull = { CTfree, CSerror, -1 };
+
+/* We want to initialize the first three elements of CHANnull but let all of
+   the other elements be initialized according to the standard rules for a
+   static initializer.  However, GCC warns about incomplete initializer lists
+   (since it may be a mistake), so we don't initialize anything at all here
+   and instead explicitly set the first three values in CHANsetup. */
+static CHANNEL CHANnull;
 
 #define PRIORITISE_REMCONN
 #ifdef PRIORITISE_REMCONN
@@ -86,7 +92,7 @@ CHANshutdown(void)
 void
 CHANsetup(int i)
 {
-    CHANNEL	        *cp;
+    CHANNEL *cp;
 
     FD_ZERO(&RCHANmask);
     FD_ZERO(&SCHANmask);
@@ -94,8 +100,17 @@ CHANsetup(int i)
     CHANshutdown();
     CHANtablesize = i;
     CHANtable = xcalloc(CHANtablesize, sizeof(CHANNEL));
+
+    /* Finish initializing CHANnull, since we can't do this entirely with a
+       static initializer without having to list every element in the
+       incredibly long channel struct and update it whenever the channel
+       struct changes. */
+    CHANnull.Type = CTfree;
+    CHANnull.State = CSerror;
+    CHANnull.fd = -1;
     CHANnull.NextLog = innconf->chaninacttime;
-    memset(&CHANnull.Address, 0, sizeof(CHANnull.Address));
+
+    /* Now, we can use CHANnull to initialize all of the other channels. */
     for (cp = CHANtable; --i >= 0; cp++)
 	*cp = CHANnull;
 }
@@ -123,37 +138,19 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     buffer_resize(&out, SMBUF);
     buffer_set(&out, "", 0);
 
-    /* Set up the channel's info. */
+    /* Set up the channel's info.  Note that we don't have to initialize
+       anything that's already set properly to zero in CHANnull. */
     *cp = CHANnull;
     cp->fd = fd;
     cp->Type = Type;
     cp->State = State;
-    cp->Streaming = false;
-    cp->Skip = false;
-    cp->NoResendId = false;
-    cp->privileged = false;
-    cp->Ihave = cp->Ihave_Duplicate = cp->Ihave_Deferred = cp->Ihave_SendIt = cp->Ihave_Cybercan = 0;
-    cp->Check = cp->Check_send = cp->Check_deferred = cp->Check_got = cp->Check_cybercan = 0;
-    cp->Takethis = cp->Takethis_Ok = cp->Takethis_Err = 0;
-    cp->Size = cp->Duplicate = 0;
-    cp->Unwanted_s = cp->Unwanted_f = cp->Unwanted_d = 0;
-    cp->Unwanted_g = cp->Unwanted_u = cp->Unwanted_o = 0;
     cp->Reader = Reader;
     cp->WriteDone = WriteDone;
     cp->Started = cp->LastActive = Now.time;
     cp->In = in;
     cp->Out = out;
     cp->Tracing = Tracing;
-    cp->Sendid.size = 0;
-    cp->Next=0;
-    cp->MaxCnx=0;
-    cp->ActiveCnx=0;
-    cp->ArtBeg = 0;
-    cp->ArtMax = 0;
-    cp->Start = 0;
     HashClear(&cp->CurrentMessageIDHash);
-    memset(cp->PrecommitWIP, '\0', sizeof(cp->PrecommitWIP));
-    cp->PrecommitiCachenext=0;
     ARTprepare(cp);
 
     close_on_exec(fd, true);
