@@ -13,6 +13,7 @@
 #include <syslog.h>
 #include <errno.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>

@@ -11,6 +11,7 @@
 #include <syslog.h>
 #include <string.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
