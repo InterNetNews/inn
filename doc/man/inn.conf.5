@@ -318,6 +318,12 @@ copy of the active file.
 .I activedport
 The UDP port on which to send actived requests and responses.
 .TP
+.I noreader
+If set to ``false'' innd will fork a copy of nnrpd for all connections from
+hosts not mentioned in incoming.conf. You probably want to set this to ``true''
+if you run a transit only server, or serve nnrpd from inetd or daemon mode.
+This is a boolean value and the default is ``false''.
+.TP
 .I pathnews
 The news user home directory and sometimes the root of the news
 hierarchy.
@@ -565,7 +571,7 @@ How long (in seconds) an innd incoming channel can be inactive before
 innd closes the channel.
 The default value is ``3600''.
 .TP
-.I allowreaders
+.I readerswhenstopped
 Allow readers to connect even when the server is paused or throttled.
 This is boolean value and the default is ``false''.
 .TP
