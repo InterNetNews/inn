@@ -1,28 +1,28 @@
-##  $Revision$
+##  $Id$
 
 include Makefile.global
-
-CFLAGS = $(GCFLAGS)
 
 RELEASE=2
 PATCHLEVEL=3
 VERSION=$(RELEASE).$(PATCHLEVEL)
 
-#TARDIR=inn
-#TARFILE=inn.tar
+##  All installation directories except for $(PATHRUN), which has a
+##  different mode than the rest.
+INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
+		$(PATHAUTHPASSWD) $(PATHCONTROL) $(PATHFILTER) \
+		$(PATHRNEWS) $(PATHDB) $(PATHETC) $(PATHLIB) $(PATHMAN) \
+		$(MAN1) $(MAN3) $(MAN5) $(MAN8) $(PATHSPOOL) \
+		$(PATHARCHIVE) $(PATHARTICLES) $(PATHINCOMING) \
+		$(PATHINBAD) $(PATHTAPE) $(PATHOVERVIEW) $(PATHOUTGOING)
+
 TARDIR=inn-$(VERSION)
 TARFILE=inn-$(VERSION).tar
 SQUASH=gzip
 
-RCSCOFLAGS	= -u
-
-##  The first two directories must be lib and storage.
-PROGS = lib storage innd nnrpd innfeed expire frontends backends authprogs \
-	scripts doc
-DIRS  = $(PROGS) samples site
-
-##  We invoke an extra process and set this to be what to make.
-WHAT_TO_MAKE	= all
+LIBDIRS    = lib storage
+PROGDIRS   = innd nnrpd innfeed expire frontends backends authprogs scripts
+UPDATEDIRS = $(LIBDIRS) $(PROGDIRS) doc
+ALLDIRS    = $(UPDATEDIRS) samples site
 
 ##  Delete the first two lines and all lines that contain (Directory).
 ##  Print only the first field of all other lines.  This gets us just
@@ -30,69 +30,101 @@ WHAT_TO_MAKE	= all
 SEDCOMMANDS = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 SEDDIRCMDS = -e '1,2d' -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(TARDIR)/;'
 
-##  Major target -- build everything.
-all:
-	$(MAKE) $(FLAGS) WHAT_TO_MAKE=all DESTDIR=$(DESTDIR) common
 
-##  Install everything.
-install:	directories
-	$(MAKE) $(FLAGS) WHAT_TO_MAKE=install DESTDIR=$(DESTDIR) common
-	@echo "" ; echo Do not forget to update your cron entries.
-	@echo Also run makehistory if you have to.
-	@echo Create/obtain an active file and run 'makehistory -o' if
-	@echo this is a first time install
+##  Major target -- build everything.  Rather than just looping through
+##  all the directories, use a set of parallel rules so that make -j can
+##  work on more than one directory at a time.
+all: all-libraries all-programs
+	cd doc     && $(MAKE) all
+	cd samples && $(MAKE) all
+	cd site    && $(MAKE) all
 
-##  Directories where files get put.
+all-libraries:	all-lib all-storage
+all-lib:			; cd lib       && $(MAKE) all
+all-storage:			; cd storage   && $(MAKE) all
+
+all-programs:	all-innd all-nnrpd all-innfeed all-expire all-frontends \
+		all-backends all-authprogs all-scripts
+
+all-authprogs:	all-lib		; cd authprogs && $(MAKE) all
+all-backends:	all-libraries	; cd backends  && $(MAKE) all
+all-expire:	all-libraries	; cd expire    && $(MAKE) all
+all-frontends:	all-libraries	; cd frontends && $(MAKE) all
+all-innd:	all-libraries	; cd innd      && $(MAKE) all
+all-innfeed:	all-libraries	; cd innfeed   && $(MAKE) all
+all-nnrpd:	all-libraries	; cd nnrpd     && $(MAKE) all
+all-scripts:			; cd scripts   && $(MAKE) all
+
+
+##  Installation rules.  make install installs everything; make update only
+##  updates the binaries, scripts, and documentation and leaves
+##  configuration files alone.
+install: directories
+	@for D in $(ALLDIRS) ; do \
+	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
+	done
+	@echo ''
+	@echo Do not forget to update your cron entries, and also run
+	@echo makehistory if you need to.  Create/obtain an active file and
+	@echo run 'makehistory -o' if this is a first-time installation.
+	@echo ''
+
 directories:
-	chmod +x ./makedirs.sh
-	DESTDIR=$(DESTDIR) ./makedirs.sh;
+	@chmod +x support/install-sh
+	for D in $(INSTDIRS) ; do \
+	    support/install-sh $(OWNER) -m 0755 -d $$D ; \
+	done
+	support/install-sh $(OWNER) -m 0750 -d $(PATHRUN)
 
-##  Other generic targets.
-depend tags ctags profiled:
-	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
+update: 
+	@chmod +x support/install-sh
+	@for D in $(UPDATEDIRS) ; do \
+	    echo '' ; \
+	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
+	done
 
-etags:
-	etags */*.c */*.h
 
+##  Cleanup targets.  clean deletes all compilation results but leaves the
+##  configure results.  distclean or clobber removes everything not part of
+##  the distribution tarball.
 clean:
-	@$(MAKE) $(FLAGS) WHAT_TO_MAKE=$@ common
-	rm -f *~ libinn_p.a llib-linn.ln FILELIST config.log
-
-##  Common target.
-common:
-	@for D in $(DIRS) ; do \
-	    echo "" ; \
-	    echo "cd $$D ; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $(WHAT_TO_MAKE) ; cd .." ; \
-	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $(WHAT_TO_MAKE) || exit 1 ; cd .. ; \
+	@for D in $(ALLDIRS) ; do \
+	    echo '' ; \
+	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
 	done
+	@echo ''
+	rm -f config.log FILELIST
 
-##  Software update -- install just the programs and documentation.
-update:
-	@for D in $(PROGS) ; do \
-	    echo "" ; \
-	    echo "cd $$D ; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) install ; cd .." ; \
-	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) install || exit 1 ; cd .. ; \
-	done
-
-##  Additional cleanups.
 clobber realclean distclean:
-	@for D in $(DIRS) ; do \
-	    cd $$D; $(MAKE) $(FLAGS) clobber || exit 1; cd ..; \
+	@for D in $(ALLDIRS) ; do \
+	    echo '' ; \
+	    cd $$D && $(MAKE) $(FLAGS) clobber && cd ..; \
 	done
-	rm -rf inews.* rnews.* nntplib.* $(TARDIR)
-	rm -f inn*.tar.Z inn*.tar.gz Part0? CHANGES MANIFEST.BAK
-	rm -f tags */tags core */core
+	@echo ''
+	rm -rf inews.* rnews.* $(TARDIR)
+	rm -f inn*.tar.gz CHANGES MANIFEST.BAK tags core
 	rm -f config.cache config.log config.status libtool makedirs.sh
 	rm -f include/autoconfig.h include/config.h include/paths.h
 	rm -f support/fixscript Makefile.global
 
-##  Configure and compile
-world:
-	cd lib ; $(MAKE) $(FLAGS) ; cd ..
 
-##  Make a distribution.
-#shar:
-#	makekit -m -k40 -s70k
+##  Other generic targets.
+depend tags ctags profiled:
+	@for D in $(ALLDIRS) ; do \
+	    echo '' ; \
+	    cd $$D && $(MAKE) $@ || exit 1 ; cd .. ; \
+	done
+
+TAGS etags:
+	etags */*.c */*.h */*/*.c */*/*.h
+
+
+##  If someone tries to run make before running configure, tell them to run
+##  configure first.
+Makefile.global:
+	@echo Run ./configure before running make.  See INSTALL for details.
+	@exit 1
+
 
 release: include/innversion.h samples/version tar
 
@@ -132,10 +164,10 @@ samples/version: Makefile
 
 
 tardir: MANIFEST CHANGES
-	rm -f inn*.tar.Z inn*.tar.gz
-	rm -fr $(TARDIR)
+	rm -rf $(TARDIR)
+	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
-	set -x ; for i in `sed $(SEDDIRCMDS) < MANIFEST`; do mkdir $$i;done
+	set -x ; for i in `sed $(SEDDIRCMDS) < MANIFEST` ; do mkdir $$i ; done
 
 tar:	tardir
 	for i in `sed $(SEDCOMMANDS) <MANIFEST`;do \
@@ -157,5 +189,3 @@ CHANGES: FORCE
 list:	FORCE
 	@sed $(SEDCOMMANDS) <MANIFEST >FILELIST
 FORCE:
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
