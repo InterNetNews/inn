@@ -554,6 +554,7 @@ Creating the db files
 
         makehistory -i
 
+  When it finished, you need to move history.n* to history*.
   Finally, set the file permissions on all of the files you just created:
 
         chmod 0664 *
