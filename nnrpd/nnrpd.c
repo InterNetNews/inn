@@ -439,12 +439,16 @@ STATIC void StartConnection()
 	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
 	}
+#ifdef DO_NNRP_GETHOSTBYADDR
 	if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
 	    strcpy(ServerHost, inet_ntoa(sin.sin_addr));
 	    syslog(L_NOTICE,
 		   "? cant gethostbyaddr %s %m -- using IP address for access",
 		   ClientHost);
 	}
+#else
+        strcpy(ServerHost, inet_ntoa(sin.sin_addr));
+#endif /* DO_NNRP_GETHOSTBYADDR */
     }
 
     strncpy (LogName,ClientHost,sizeof(LogName) - 1) ;
