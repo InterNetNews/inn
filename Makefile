@@ -17,7 +17,8 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 ##  test target itself and the clean targets.  Currently, include is built
 ##  before anything else but nothing else runs in it except clean targets.
 LIBDIRS     = lib storage
-PROGDIRS    = innd nnrpd innfeed expire frontends backends authprogs scripts
+PROGDIRS    = innd nnrpd innfeed control expire frontends backends authprogs \
+              scripts
 UPDATEDIRS  = $(LIBDIRS) $(PROGDIRS) doc
 ALLDIRS     = $(UPDATEDIRS) samples site
 CLEANDIRS   = $(ALLDIRS) include tests
