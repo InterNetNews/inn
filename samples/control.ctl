@@ -296,10 +296,11 @@ rmgroup:fj-committee@etl.go.jp:fj.*:doit=rmgroup
 # *PGP*   See comment at top of file.
 newgroup:control@usenet.fr.net:fr.*:verify-fr.announce.newgroups
 rmgroup:control@usenet.fr.net:fr.*:verify-fr.announce.newgroups
+checkgroup:control@usenet.fr.net:fr.*:verify-fr.announce.newgroups
 
 #newgroup:control@usenet.fr.net:fr.*:doit=newgroup
 #rmgroup:control@usenet.fr.net:fr.*:doit=rmgroup
-
+#checkgroup:control@usenet.fr.net:fr.*:doit=checkgroup
 
 ## FREE
 newgroup:*:free.*:doit=mail
