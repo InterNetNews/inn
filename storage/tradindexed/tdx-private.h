@@ -110,6 +110,12 @@ struct group_data *tdx_data_open(struct group_index *, const char *group,
 bool tdx_data_add(struct group_index *, struct group_entry *,
                   struct group_data *, const struct article *);
 
+/* Handle rebuilds of the data for a particular group.  Call _start first and
+   then _finish when done, with the new group_entry information. */
+bool tdx_index_rebuild_start(struct group_index *, struct group_entry *);
+bool tdx_index_rebuild_finish(struct group_index *, struct group_entry *,
+                              struct group_entry *new);
+
 /* Expire a single group. */
 bool tdx_expire(const char *group, ARTNUM *low, struct history *);
 
@@ -141,13 +147,17 @@ bool tdx_data_pack_start(struct group_data *, ARTNUM);
 /* Complete a repack of the files for a newsgroup. */
 bool tdx_data_pack_finish(struct group_data *);
 
+/* Manage a rebuild of the data files for a particular group.  Until
+   tdx_data_rebuild_finish is called, anything stored into the returned struct
+   group_data will have no effect on the data for that group.  Does not handle
+   updating the index entries; that must be done separately. */
+struct group_data *tdx_data_rebuild_start(const char *group);
+bool tdx_data_rebuild_finish(const char *group);
+
 /* Start the expiration of a newsgroup and do most of the work, filling out
-   the provided group_entry struct. */
+   the provided group_entry struct.  Complete with tdx_data_rebuild_finish. */
 bool tdx_data_expire_start(const char *group, struct group_data *,
                            struct group_entry *, struct history *);
-
-/* Complete the expiration of a newsgroup. */
-bool tdx_data_expire_finish(const char *group);
 
 /* Dump the contents of the index file for a group. */
 void tdx_data_index_dump(struct group_data *, FILE *);

@@ -190,6 +190,8 @@ tdx_data_new(const char *group, bool writable)
     data = xmalloc(sizeof(struct group_data));
     data->path = group_path(group);
     data->writable = writable;
+    data->high = 0;
+    data->base = 0;
     data->indexfd = -1;
     data->datafd = -1;
     data->index = NULL;
@@ -629,6 +631,86 @@ tdx_data_pack_finish(struct group_data *data)
 
 
 /*
+**  Open the data files for a group data rebuild, and return a struct
+**  group_data for the new files.  Calling this function doesn't interfere
+**  with the existing data for the group.  Either tdx_data_rebuild_abort or
+**  tdx_data_rebuild_finish should be called on the returned struct group_data
+**  when the caller is done.
+*/
+struct group_data *
+tdx_data_rebuild_start(const char *group)
+{
+    struct group_data *data;
+
+    data = tdx_data_new(group, true);
+    tdx_data_delete(group, "-NEW");
+    if (!file_open_index(data, "IDX-NEW"))
+        goto fail;
+    if (!file_open_data(data, "DAT-NEW"))
+        goto fail;
+    return data;
+
+ fail:
+    tdx_data_delete(group, "-NEW");
+    tdx_data_close(data);
+    return NULL;
+}
+
+
+/*
+**  Finish a rebuild by renaming the new index and data files to their
+**  permanent names.  Takes the group_data struct corresponding to the new
+**  data files.
+*/
+bool
+tdx_data_rebuild_finish(const char *group)
+{
+    char *base, *newidx, *bakidx, *idx, *newdat, *dat;
+    bool saved = false;
+
+    base = group_path(group);
+    idx = concat(base, ".IDX", (char *) 0);
+    newidx = concat(base, ".IDX-NEW", (char *) 0);
+    bakidx = concat(base, ".IDX-BAK", (char *) 0);
+    dat = concat(base, ".DAT", (char *) 0);
+    newdat = concat(base, ".DAT-NEW", (char *) 0);
+    free(base);
+    if (rename(idx, bakidx) < 0) {
+        syswarn("tradindexed: cannot rename %s to %s", idx, bakidx);
+        goto fail;
+    } else {
+        saved = true;
+    }
+    if (rename(newidx, idx) < 0) {
+        syswarn("tradindexed: cannot rename %s to %s", newidx, idx);
+        goto fail;
+    }
+    if (rename(newdat, dat) < 0) {
+        syswarn("tradindexed: cannot rename %s to %s", newdat, dat);
+        goto fail;
+    }
+    if (unlink(bakidx) < 0)
+        syswarn("tradindexed: cannot remove backup %s", bakidx);
+    free(idx);
+    free(newidx);
+    free(bakidx);
+    free(dat);
+    free(newdat);
+    return true;
+
+ fail:
+    if (saved && rename(bakidx, idx) < 0)
+        syswarn("tradindexed: cannot restore old index %s", bakidx);
+    free(idx);
+    free(newidx);
+    free(bakidx);
+    free(dat);
+    free(newdat);
+    return false;
+}
+
+
+/*
 **  Do the main work of expiring a group.  Step through each article in the
 **  group, only writing the unexpired entries out to the new group.  There's
 **  probably some room for optimization here for newsgroups that don't expire
@@ -645,13 +727,7 @@ tdx_data_expire_start(const char *group, struct group_data *data,
     struct article article;
     ARTNUM high;
 
-    new_data = tdx_data_new(group, true);
-    tdx_data_delete(group, "-NEW");
-    if (!file_open_index(data, "IDX-NEW"))
-        goto fail;
-    if (!file_open_data(data, "DAT-NEW"))
-        goto fail;
-    index->indexinode = new_data->indexinode;
+    new_data = tdx_data_rebuild_start(group);
 
     /* Try to make sure that the search range is okay for even an empty group
        so that we can treat all errors on opening a search as errors. */
@@ -659,7 +735,7 @@ tdx_data_expire_start(const char *group, struct group_data *data,
     new_data->high = high;
     search = tdx_search_open(data, data->base, high, high);
     if (search == NULL)
-        return false;
+        goto fail;
 
     /* Loop through all of the articles in the group, adding the ones that are
        still valid to the new index. */
@@ -696,59 +772,8 @@ tdx_data_expire_start(const char *group, struct group_data *data,
     return true;
 
  fail:
-    tdx_data_close(new_data);
     tdx_data_delete(group, "-NEW");
-    return false;
-}
-
-
-/*
-**  Finish expire by renaming the new index and data files to their permanent
-**  names.  Just takes the group that we're finishing expire for.
-*/
-bool
-tdx_data_expire_finish(const char *group)
-{
-    char *base, *newidx, *bakidx, *idx, *newdat, *dat;
-    bool saved = false;
-
-    base = group_path(group);
-    idx = concat(base, ".IDX", (char *) 0);
-    newidx = concat(base, ".IDX-NEW", (char *) 0);
-    bakidx = concat(base, ".IDX-BAK", (char *) 0);
-    dat = concat(base, ".DAT", (char *) 0);
-    newdat = concat(base, ".DAT-NEW", (char *) 0);
-    if (rename(idx, bakidx) < 0) {
-        syswarn("tradindexed: cannot rename %s to %s", idx, bakidx);
-        goto fail;
-    } else {
-        saved = true;
-    }
-    if (rename(newidx, idx) < 0) {
-        syswarn("tradindexed: cannot rename %s to %s", newidx, idx);
-        goto fail;
-    }
-    if (rename(newdat, dat) < 0) {
-        syswarn("tradindexed: cannot rename %s to %s", newdat, dat);
-        goto fail;
-    }
-    if (unlink(bakidx) < 0)
-        syswarn("tradindexed: cannot remove backup %s", bakidx);
-    free(idx);
-    free(newidx);
-    free(bakidx);
-    free(dat);
-    free(newdat);
-    return true;
-
- fail:
-    if (saved && rename(bakidx, idx) < 0)
-        syswarn("tradindexed: cannot restore old index %s", bakidx);
-    free(idx);
-    free(newidx);
-    free(bakidx);
-    free(dat);
-    free(newdat);
+    tdx_data_close(new_data);
     return false;
 }
 

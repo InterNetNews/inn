@@ -786,6 +786,40 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
 
 
 /*
+**  Start a rebuild of the group data for a newsgroup.  Right now, all this
+**  does is lock the group index entry.
+*/
+bool
+tdx_index_rebuild_start(struct group_index *index, struct group_entry *entry)
+{
+    ptrdiff_t offset;
+
+    offset = entry - index->entries;
+    return index_lock_group(index->fd, offset, INN_LOCK_WRITE);
+}
+
+
+/*
+**  Finish a rebuild of the group data for a newsgroup.  Takes the old and new
+**  entry and writes the data from the new entry into the group index, and
+**  then unlocks it.
+*/
+bool
+tdx_index_rebuild_finish(struct group_index *index, struct group_entry *entry,
+                         struct group_entry *new)
+{
+    ptrdiff_t offset;
+
+    entry->indexinode = new->indexinode;
+    *entry = *new;
+    msync(entry, sizeof(*entry), MS_ASYNC);
+    offset = entry - index->entries;
+    index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
+    return true;
+}
+
+
+/*
 **  Expire a single newsgroup.  Most of the work is done by tdx_data_expire*,
 **  but this routine has the responsibility to do locking (the same as would
 **  be done for repacking, since the group base may change) and updating the
@@ -810,8 +844,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
         tdx_index_close(index);
         return false;
     }
-    offset = entry - index->entries;
-    index_lock_group(index->fd, offset, INN_LOCK_WRITE);
+    tdx_index_rebuild_start(index, entry);
 
     /* tdx_data_expire_start builds the new IDX and DAT files and fills in the
        struct group_entry that was passed to it.  tdx_data_expire_finish does
@@ -830,7 +863,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     entry->indexinode = new_entry.indexinode;
     entry->base = new_entry.base;
     msync(entry, sizeof(*entry), MS_ASYNC);
-    if (!tdx_data_expire_finish(group)) {
+    if (!tdx_data_rebuild_finish(group)) {
         entry->base = old_base;
         entry->indexinode = old_inode;
         msync(entry, sizeof(*entry), MS_ASYNC);
@@ -842,9 +875,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
        mark. */
     if (new_entry.low == 0)
         new_entry.low = new_entry.high + 1;
-    *entry = new_entry;
-    msync(entry, sizeof(*entry), MS_ASYNC);
-    index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
+    tdx_index_rebuild_finish(index, entry, &new_entry);
 
     /* Return the lowmark to our caller.  If there are no articles in the
        group, this should be one more than the high water mark. */
@@ -854,6 +885,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     return true;
 
  fail:
+    offset = entry - index->entries;
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     if (data != NULL)
         tdx_data_close(data);
