@@ -37,11 +37,11 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
-#include "config.h"
+#include "innfeed.h"
 
-#include <stdlib.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "buffer.h"

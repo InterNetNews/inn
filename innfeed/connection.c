@@ -84,37 +84,38 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
+#include "innfeed.h"
 #include "config.h"
+#include "clibrary.h"
 
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-
-#if defined (HAVE_UNISTD_H)
-# include <unistd.h>
-#endif
-
-#include <stdio.h>
-#include <errno.h>
-#include <signal.h>
-#include <sys/types.h>
-
-#if defined (DO_NEED_TIME)
-#include <time.h>
-#endif
-#include <sys/time.h>
-
-#include <syslog.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/socket.h>
-#include <string.h>
+#include <assert.h>
+#include <errno.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <signal.h>
 #include <sys/file.h>
-#include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <syslog.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
 
 #if defined (__FreeBSD__)
-#include <sys/ioctl.h>
+# include <sys/ioctl.h>
 #endif
 
 /* Error returns from inet_addr. */
@@ -122,14 +123,13 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # define INADDR_NONE 0xffffffff
 #endif
 
+#include "article.h"
 #include "buffer.h"
+#include "configfile.h"
 #include "connection.h"
 #include "endpoint.h"
 #include "host.h"
-#include "article.h"
 #include "msgs.h"
-#include "configfile.h"
-#include "clibrary.h"
 
 #if defined (NDEBUG)
 #define VALIDATE_CONNECTION(x) ((void) 0)
@@ -1303,7 +1303,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
       cxnSleepOrDie (cxn) ;
     }
   else if (getsockopt (endPointFd (e), SOL_SOCKET, SO_ERROR,
-                       (GETSOCKOPT_ARG) &optval, &size) != 0)
+                       (char *) &optval, &size) != 0)
     {
       /* This is bad. Can't even get the SO_ERROR value out of the socket */
       syslog (LOG_ERR,GETSOCKOPT_FAILED, peerName, cxn->ident) ;

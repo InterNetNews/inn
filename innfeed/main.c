@@ -35,54 +35,52 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
-#include "config.h"             /* system specific configuration */
+#include "innfeed.h"
+#include "config.h"
+#include "clibrary.h"
 
-#include <stdlib.h>
-#include <syslog.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <assert.h>
+#include <ctype.h>
+#include <errno.h>
 #include <math.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <signal.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <syslog.h>
 
-#if defined (HAVE_UNISTD_H)
-# include <unistd.h>
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
 #endif
 
-#include <signal.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <limits.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/resource.h>
+#ifdef HAVE_RLIMIT
+# include <sys/resource.h>
+#endif
 
-
-#include "misc.h"
-#include "tape.h"
-#include "article.h"
-#include "msgs.h"
-#include "buffer.h"
-#include "connection.h"
-#include "configfile.h"
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#else
+# include <time.h>
+#endif
 
 #if defined(HAVE_UNIX_DOMAIN_SOCKETS)
-#include <sys/un.h>
-#endif  /* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+# include <sys/un.h>
+#endif
 
+#include "libinn.h"
+#include "storage.h"
+
+#include "article.h"
+#include "buffer.h"
+#include "configfile.h"
+#include "connection.h"
 #include "endpoint.h"
 #include "host.h"
 #include "innlistener.h"
-
-#include <configdata.h>
-#include <clibrary.h>
-#include <libinn.h>
-#include <storage.h>
+#include "misc.h"
+#include "msgs.h"
+#include "tape.h"
 
 #define INHERIT 1
 #define NO_INHERIT 0
@@ -438,7 +436,7 @@ int main (int argc, char **argv)
           close (0) ;
           dup2 (fds[0],0) ;
           close (fds[1]) ;
-          signal(SIGCHLD,sigchld) ;
+          xsignal(SIGCHLD,sigchld) ;
           openfds++ ;
         }
     }
@@ -672,7 +670,7 @@ static void sigchld (int sig)
   wait (&status) ;              /* we don't care */
 #endif
 
-  signal (sig,sigchld) ;
+  xsignal (sig,sigchld) ;
 }
 
   /* SIGUSR1 increments logging level. SIGUSR2 decrements. */

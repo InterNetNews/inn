@@ -418,15 +418,15 @@ char *yytext;
  *
  */
 
+#include "innfeed.h"
+
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <syslog.h>
-  
+
 #include "configfile.h"
-#include "sysconfig.h"
 #include "config_y.h"
-#include "config.h"
 
 #if ! defined (FLEX_SCANNER)
 #error "You must use FLEX to process the lex input file."
@@ -465,7 +465,7 @@ int include_stack_ptr = 0;
 
 #define incl 1
 
-#line 468 "lex.yy.c"
+#line 469 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -619,10 +619,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 63 "configfile.l"
+#line 64 "configfile.l"
 
 
-#line 625 "lex.yy.c"
+#line 626 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -708,42 +708,42 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 65 "configfile.l"
+#line 66 "configfile.l"
 lineCount++ ;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 67 "configfile.l"
+#line 68 "configfile.l"
 { return (COLON) ; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 69 "configfile.l"
+#line 70 "configfile.l"
 { return (LBRACE) ; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 71 "configfile.l"
+#line 72 "configfile.l"
 { return (RBRACE) ; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 73 "configfile.l"
+#line 74 "configfile.l"
 { return (PEER) ; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 75 "configfile.l"
+#line 76 "configfile.l"
 BEGIN(incl);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 77 "configfile.l"
+#line 78 "configfile.l"
 /* eat the whitespace before include filename */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 79 "configfile.l"
+#line 80 "configfile.l"
 {
   if (include_stack_ptr == MAX_INCLUDE_DEPTH - 1)
     {
@@ -778,7 +778,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(incl):
-#line 113 "configfile.l"
+#line 112 "configfile.l"
 {
   if ( include_stack_ptr <= 0 )
     yyterminate();
@@ -792,22 +792,22 @@ case YY_STATE_EOF(incl):
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 124 "configfile.l"
+#line 123 "configfile.l"
 { return (GROUP) ; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 126 "configfile.l"
+#line 125 "configfile.l"
 { (void) 0 ; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 128 "configfile.l"
+#line 127 "configfile.l"
 { (void) 1 ; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 130 "configfile.l"
+#line 129 "configfile.l"
 {
 	switch (yytext[2]) {
 		case '\\': yylval.chr = '\\' ; break ;
@@ -823,18 +823,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 143 "configfile.l"
+#line 142 "configfile.l"
 { yylval.chr = yytext[1] ; return (CHAR) ; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 145 "configfile.l"
+#line 144 "configfile.l"
 { yylval.chr = (char)strtol(&yytext[2], (char **)NULL, 8);
 			  return (CHAR) ;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 148 "configfile.l"
+#line 147 "configfile.l"
 {{
 	int i ;
 
@@ -922,17 +922,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 233 "configfile.l"
+#line 232 "configfile.l"
 { yylval.integer = atoi (yytext) ; return (IVAL) ; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 235 "configfile.l"
+#line 234 "configfile.l"
 { yylval.real = atof (yytext) ; return (RVAL) ; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 237 "configfile.l"
+#line 236 "configfile.l"
 {
   yylval.name = strdup (yytext) ;
   if (strcasecmp (yylval.name,"false") == 0)
@@ -945,10 +945,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 247 "configfile.l"
+#line 246 "configfile.l"
 ECHO;
 	YY_BREAK
-#line 953 "lex.yy.c"
+#line 952 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1834,7 +1834,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 247 "configfile.l"
+#line 246 "configfile.l"
 
 
 

@@ -35,44 +35,44 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
+#include "innfeed.h"
 #include "config.h"
+#include "clibrary.h"
 
-
-#include <stdlib.h>
-#include <sys/types.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <netdb.h>
-#include <ctype.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <assert.h>
-#include <netinet/in.h>
 #include <arpa/nameser.h>
-#include <resolv.h>
-#include <fcntl.h>
+#include <assert.h>
+#include <ctype.h>
 #include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <resolv.h>
+#include <signal.h>
+#include <stdarg.h>
 #include <syslog.h>
 #include <sys/param.h>
-#include <limits.h>
+#include <sys/stat.h>
+#include <time.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 #if defined (HAVE_UNISTD_H)
-#include <unistd.h>
+# include <unistd.h>
 #endif
 
-#if defined (_AIX41)
-#include <time.h>
+/* FIXME: Default to a max length of 256 characters for path names if the
+   host headers doesn't give better information.  Should be replaced by the
+   code from Stevens. */
+#ifndef PATH_MAX
+# define PATH_MAX 256
 #endif
 
-#include <signal.h>
-
-#include "configdata.h"
-#include "clibrary.h"
 #include "libinn.h"
+
+#include "endpoint.h"
 #include "misc.h"
 #include "msgs.h"
-#include "endpoint.h"
 #include "tape.h"
 
 u_int openfds ;
@@ -220,7 +220,7 @@ static const char * const pvt_h_errlist[] = {
 
 static int pvt_h_nerr = (sizeof pvt_h_errlist / sizeof pvt_h_errlist[0]);
 
-#if defined(hpux) || defined(__hpux)
+#if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
 extern int h_errno;
 #endif
 
@@ -327,27 +327,6 @@ writev(fd, vp, vpcount)
 
 #endif
 
-
-
-#if defined (DO_NEED_STRDUP)
-
-char *strdup (const char *string)
-{
-  char *p = NULL ;
-  
-  if (string != NULL)
-    {
-      p = MALLOC (strlen (string) + 1) ;
-      assert (p != NULL) ;
-
-      strcpy (p,string) ;
-    }
-
-
-  return p ;
-}
-
-#endif
 
 
 /* Pull out a message id from a response on to a streaming command */
@@ -513,7 +492,7 @@ void deadBeef (void *base, size_t byteCount)
 bool lockFile (const char *fileName)
 {
   char buff [20] ;
-  char tmpName [MAXPATHLEN], realName [MAXPATHLEN] ;
+  char tmpName [PATH_MAX], realName [PATH_MAX] ;
   char *p ;
   int fd, i ;
   pid_t pid = getpid () ;

@@ -46,21 +46,16 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
+#include "innfeed.h"
 #include "config.h"
+#include "clibrary.h"
 
-#if defined (HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-
-#include <stdlib.h>
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
-#include <ctype.h>
 #include <syslog.h>
-#include <errno.h>
 
 #if defined (HAVE_DIRENT_H)
 #include <dirent.h>
@@ -70,19 +65,24 @@ typedef struct dirent DIRENTRY ;
 typedef struct direct DIRENTRY ;
 #endif
 
-#if defined (DO_NEED_TIME)
-#include <time.h>
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
 #endif
-#include <sys/time.h>
 
-#include "tape.h"
+#include "libinn.h"
+
 #include "article.h"
+#include "configfile.h"
 #include "endpoint.h"
 #include "msgs.h"
-#include "configfile.h"
-#include "configdata.h"
-#include "clibrary.h"
-#include "libinn.h"
+#include "tape.h"
 
 extern char *dflTapeDir;
 extern bool genHtml ;

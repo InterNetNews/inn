@@ -124,10 +124,6 @@ char *mystrtok (char *string, const char *sep) ;
 /* remove trailing whitespace */
 void trim_ws (char *string) ;
 
-#if defined (DO_NEED_STRDUP)
-char *strdup (const char *s) ;
-#endif
-
 /* locks the peer and returns true or returns false */
 bool lockPeer (const char *peerName) ;
 

@@ -35,34 +35,28 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
+#include "innfeed.h"
 #include "config.h"
+#include "clibrary.h"
 
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <syslog.h>
+#include <time.h>
 
-#if defined (HAVE_UNISTD_H)
-#include <unistd.h>
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
 #endif
 
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-#include <syslog.h>
-#include <errno.h>
-#include <stdio.h>
-#include <time.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-#include "innlistener.h"
+#include "article.h"
+#include "buffer.h"
+#include "configfile.h"
 #include "endpoint.h"
 #include "host.h"
-#include "buffer.h"
-#include "article.h"
+#include "innlistener.h"
 #include "msgs.h"
 #include "tape.h"
-#include "configfile.h"
-#include "configdata.h"
 
 #define LISTENER_INPUT_BUFFER (1024 * 8) /* byte size of the input buffer */
 #define EOF_SLEEP_TIME 1	/* seconds to sleep when EOF on InputFile */

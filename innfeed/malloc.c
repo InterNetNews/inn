@@ -26,9 +26,7 @@ static char sccsid[] = "@(#)malloc.c	4.3 (Berkeley) 9/16/83";
  * but bombs when it runs out. 
  */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <syslog.h> 
 
@@ -84,7 +82,8 @@ union	overhead {
  */
 #define	NBUCKETS 30
 static	union overhead *nextf[NBUCKETS];
-#if ! defined (NO_SBRK)
+
+#ifdef _nec_ews
 extern	char *sbrk();
 #endif
 

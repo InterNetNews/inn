@@ -29,15 +29,14 @@ SRC 		= article.c \
 
 INCS		= article.h \
 		  buffer.h \
-		  config.h \
 		  configfile.h \
 		  connection.h \
 		  endpoint.h \
 		  host.h \
+		  innfeed.h \
 		  innlistener.h \
 		  misc.h \
 		  msgs.h \
-		  sysconfig.h \
 		  tape.h
 
 MANSRC		= innfeed.1 innfeed.conf.5
@@ -231,19 +230,19 @@ tst:	config_y.c config_l.c
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-article.o: article.c article.h buffer.h config.h endpoint.h misc.h \
-   msgs.h sysconfig.h
-buffer.o: buffer.c buffer.h config.h misc.h sysconfig.h
-connection.o: article.h buffer.h config.h configfile.h connection.c \
-   connection.h endpoint.h host.h misc.h msgs.h sysconfig.h
-endpoint.o: buffer.h config.h configfile.h endpoint.c endpoint.h host.h \
-   misc.h msgs.h sysconfig.h
-host.o: article.h buffer.h config.h configfile.h connection.h endpoint.h \
-   host.c host.h innlistener.h misc.h msgs.h sysconfig.h tape.h
-innlistener.o: article.h buffer.h config.h configfile.h endpoint.h host.h \
-   innlistener.c innlistener.h misc.h msgs.h sysconfig.h tape.h
-main.o: article.h buffer.h config.h configfile.h connection.h endpoint.h \
-   host.h innlistener.h main.c misc.h msgs.h sysconfig.h tape.h
-misc.o: config.h endpoint.h misc.c misc.h msgs.h sysconfig.h tape.h
-tape.o: article.h config.h configfile.h endpoint.h misc.h msgs.h \
-   sysconfig.h tape.c tape.h
+article.o: article.c article.h buffer.h innfeed.h endpoint.h misc.h \
+   msgs.h
+buffer.o: buffer.c buffer.h innfeed.h misc.h
+connection.o: article.h buffer.h innfeed.h configfile.h connection.c \
+   connection.h endpoint.h host.h misc.h msgs.h
+endpoint.o: buffer.h innfeed.h configfile.h endpoint.c endpoint.h host.h \
+   misc.h msgs.h
+host.o: article.h buffer.h innfeed.h configfile.h connection.h endpoint.h \
+   host.c host.h innlistener.h misc.h msgs.h tape.h
+innlistener.o: article.h buffer.h innfeed.h configfile.h endpoint.h host.h \
+   innlistener.c innlistener.h misc.h msgs.h tape.h
+main.o: article.h buffer.h innfeed.h configfile.h connection.h endpoint.h \
+   host.h innlistener.h main.c misc.h msgs.h tape.h
+misc.o: innfeed.h endpoint.h misc.c misc.h msgs.h tape.h
+tape.o: article.h innfeed.h configfile.h endpoint.h misc.h msgs.h \
+   tape.c tape.h

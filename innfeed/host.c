@@ -36,38 +36,32 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #endif
 
 
+#include "innfeed.h"
 #include "config.h"
+#include "clibrary.h"
 
+#include <arpa/inet.h>
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <syslog.h>
-#include <sys/param.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <ctype.h>
-#include <limits.h>
 #include <errno.h>
+#include <float.h>
 #include <math.h>
 #include <netdb.h>
 #include <netinet/in.h>
-/*#include <arpa/inet.h>*/
-#include <limits.h> /* LONG_MAX */
-#include <float.h>
+#include <syslog.h>
+#include <sys/param.h>
 
-#include "host.h"
-#include "tape.h"
-#include "connection.h"
+#include "libinn.h"
+
 #include "article.h"
 #include "buffer.h"
+#include "configfile.h"
+#include "connection.h"
 #include "endpoint.h"
+#include "host.h"
 #include "innlistener.h"
 #include "msgs.h"
-#include "configfile.h"
-#include "configdata.h"
-#include "clibrary.h"
-#include "libinn.h"
+#include "tape.h"
 
 #define REQ 1
 #define NOTREQ 0

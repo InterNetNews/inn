@@ -43,27 +43,26 @@ static void use_rcsid (const char *rid) {   /* Never called */
 }
 #endif
 
+#include "innfeed.h"
 #include "config.h"
+#include "clibrary.h"
 
-#if defined (HAVE_UNISTD_H)
-# include <unistd.h>
-#endif
-
-#include <stdlib.h>
 #include <assert.h>
-#include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <syslog.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
 
-#include "configdata.h"
-#include "clibrary.h"
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #include "libinn.h"
 #include "storage.h"
+
 #include "article.h"
 #include "buffer.h"
 #include "endpoint.h"

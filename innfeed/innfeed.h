@@ -3,7 +3,7 @@
  * Author:      James Brister <brister@vix.com> -- berkeley-unix --
  * Start Date:  Wed Dec 27 08:34:23 1995
  * Project:     INN (innfeed)
- * File:        config.h
+ * File:        innfeed.h
  * RCSId:       $Id$
  *
  * Copyright:   Copyright (c) 1996 by Internet Software Consortium
@@ -30,11 +30,8 @@
  * 
  */
 
-#if ! defined ( config_h__ )
-#define config_h__
-
-/* Go edit sysconfig.h for platform differences */
-#include "sysconfig.h"
+#if ! defined ( innfeed_h__ )
+#define innfeed_h__
 
 /**********************************************************************/
 /*                     Application specific defines                   */
@@ -61,7 +58,6 @@
 #define TAPE_DISABLE		false		/* no-backlog */
 
 /* in main.c */
-/*#define NEWSSPOOL 		"/var/news/spool/articles"*/ /* news-spool */
 #define PID_FILE 		"innfeed.pid" 	/* [pathrun]/pid-file */
 #define LOG_FILE 		"innfeed.log"	/* [pathlog]/log-file */
 
@@ -239,4 +235,42 @@ extern void syslog (int, const char *,...) __attribute__ ((__format__ (printf, 2
 #endif
 
 
-#endif /* config_h__ */
+
+/* Additional OS-specific defines.  These should really be moved into
+   configure at some point. */
+
+/* Some broken system (all SunOS versions) have a lower limit for the
+   maximum number of stdio files that can be open, than the limit of open
+   file the OS will let you have. If this value is > 0 (and ``stdio-fdmax''
+   is *not* used in the config file), then all non-stdio file descriptors
+   will be kept above this value (by dup'ing them). */
+#if defined (sun)
+# if defined (__SVR4)
+#  define MAX_STDIO_FD 256
+# else
+#  define MAX_STDIO_FD 128
+# endif
+#else
+# define MAX_STDIO_FD 0
+#endif
+
+/* If you compiler doesn't support `volatile' then add a line like
+              #define VOLATILE
+   above */
+#if ! defined (VOLATILE)
+#define VOLATILE volatile
+#endif
+
+/* define DONT_NEED_U_INT or DO_NEED_U_INT depending on if you
+   have a `u_long', `u_int', `u_short' in your system include path or not */
+#if ! defined (DO_NEED_U_INT) && ! defined (DONT_NEED_U_INT)
+#define DONT_NEED_U_INT 1
+#endif
+
+/* define DONT_NEED_BOOL or DO_NEED_BOOL depending on if you have a `bool'
+   in your include path or not */
+#if ! defined (DO_NEED_BOOL) && ! defined (DONT_NEED_BOOL)
+#define DO_NEED_BOOL 1
+#endif
+
+#endif /* innfeed_h__ */

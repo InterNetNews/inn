@@ -10,15 +10,15 @@
  *
  */
 
+#include "innfeed.h"
+
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <syslog.h>
-  
+
 #include "configfile.h"
-#include "sysconfig.h"
 #include "config_y.h"
-#include "config.h"
 
 #if ! defined (FLEX_SCANNER)
 #error "You must use FLEX to process the lex input file."

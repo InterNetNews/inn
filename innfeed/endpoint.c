@@ -44,47 +44,44 @@ static void use_rcsid (const char *rId) {   /* Never called */
 } 
 #endif
 
+#include "innfeed.h"
 #include "config.h"
+#include "clibrary.h"
 
-
-#if defined (HAVE_UNISTD_H)
-# include <unistd.h>
-#endif /* defined (HAVE_UNISTD_H) */
-
-#include <stdlib.h>
 #include <assert.h>
-#include <string.h>
-#include <stdio.h>
 #include <errno.h>
 #include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#if defined (DO_NEED_SYS_SELECT) 
-#include <sys/select.h>
-#endif
-
-#if defined (DO_NEED_TIME)
-#include <time.h>
-#endif /* defined (DO_NEED_TIME) */
-#include <sys/time.h>
-
-#include <syslog.h>
-#include <sys/uio.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
+#include <syslog.h>
 
-#if defined (DO_NEED_STREAM)
-#include <sys/stream.h>
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
 #endif
 
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
 
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
+#include "libinn.h"
+
+#include "buffer.h"
 #include "configfile.h"
 #include "endpoint.h"
-#include "buffer.h"
-#include "msgs.h"
 #include "host.h"
-#include "clibrary.h"
+#include "msgs.h"
 
 
 #if defined (__bsdi__) && (defined (_ANSI_SOURCE) || defined (_POSIX_SOURCE))
@@ -94,18 +91,6 @@ struct timeval
     long tv_sec;                /* seconds */
     long tv_usec;               /* and microseconds */
 };
-#endif
-
-
-#if ! defined (UIO_MAXIOV) && defined (MAX_WRITEV_VEC)
-#define UIO_MAXIOV MAX_WRITEV_VEC
-#elif ! defined (UIO_MAXIOV) && defined (DEF_MAX_IOV) /* svr4 */
-#define UIO_MAXIOV DEF_MAX_IOV
-#endif
-
-
-#if ! defined (UIO_MAXIOV)
-#error Neither UIO_MAXIOV nor MAX_WRITEV_VEC are defined -- see sysconfig.h
 #endif
 
 
@@ -652,7 +637,7 @@ void Run (void)
   fd_set eSet ;
 
   keepSelecting = 1 ;
-  signal (SIGPIPE, pipeHandler) ;
+  xsignal (SIGPIPE, pipeHandler) ;
 
   while (keepSelecting)
     {
@@ -994,8 +979,7 @@ static IoStatus doRead (EndPoint endp)
   for (i = currIdx ; buffers && buffers [i] != NULL ; i++)
     bCount++ ;
 
-  /* if UIO_MAXIOV is undefined then set MAX_WRITEV_VEC in config.h */
-  bCount = (bCount > UIO_MAXIOV ? UIO_MAXIOV : bCount) ;
+  bCount = (bCount > IOV_MAX ? IOV_MAX : bCount) ;
 
   i = 0 ;
 
@@ -1119,8 +1103,7 @@ static IoStatus doWrite (EndPoint endp)
   for (i = currIdx ; buffers && buffers [i] != NULL ; i++)
     bCount++ ;
 
-  /* if UIO_MAXIOV is undefined then set MAX_WRITEV_VEC in config.h */
-  bCount = (bCount > UIO_MAXIOV ? UIO_MAXIOV : bCount) ;
+  bCount = (bCount > IOV_MAX ? IOV_MAX : bCount) ;
 
   i = 0 ;
   
@@ -1220,7 +1203,7 @@ static IoStatus doExcept (EndPoint endp)
   int fd = endPointFd (endp) ;
 
   if (getsockopt (fd, SOL_SOCKET, SO_ERROR,
-                  (GETSOCKOPT_ARG) &optval, &size) != 0)
+                  (char *) &optval, &size) != 0)
     syslog (LOG_ERR,GETSOCKOPT_FAILURE,fd) ;
   else if (optval != 0)
     {
@@ -1249,15 +1232,15 @@ static void endPointPrint (EndPoint ep, FILE *fp)
 static void signalHandler (int s)
 {
   sigFlags[s] = 1 ;
-#if !defined(USE_SIGACTION) && !defined(USE_SIGVEC) && !defined(USE_SIGSET)
-  signal (s, signalHandler) ;
+#ifndef HAVE_SIGACTION
+  xsignal (s, signalHandler) ;
 #endif
 }
 
 
 static void pipeHandler (int s)
 {
-  signal (s, pipeHandler) ;
+  xsignal (s, pipeHandler) ;
 }
 
 
@@ -1659,7 +1642,11 @@ int main (int argc, char **argv)
   accNet.sin_addr.s_addr = htonl (INADDR_ANY) ;
   accNet.sin_port = htons (port) ;
 
+#ifdef LOG_PERROR
   openlog (program, LOG_PERROR | LOG_PID, LOG_NEWS) ;
+#else
+  openlog (program, LOG_PID, LOG_NEWS) ;
+#endif
   
   if (bind (accFd, (struct sockaddr *) &accNet, sizeof (accNet)) < 0)
     {
@@ -1709,35 +1696,9 @@ void setSigHandler (int signum, void (*ptr)(int))
       return ;
     }
 
-#if defined(USE_SIGACTION)
-  {
-    struct sigaction sa ;
-
-    sa.sa_handler = signalHandler ;
-    sa.sa_flags = 0 ;
-    sigemptyset (&sa.sa_mask) ;
-
-    if (sigaction ( signum, &sa, (struct sigaction *)NULL) != 0)
-      die ("sigaction failed: %s", strerror(errno)) ;
-  }
-#elif defined(USE_SIGVEC)
-  {
-    struct sigvec vec;
-
-    vec.sv_handler = signalHandler ;
-    vec.sv_mask = 0 ;
-    vec.sv_flags = 0 ;
-
-    if (sigvec (signum, &vec, (struct sigvec *)NULL) != 0)
-      die ("sigvec failed: %s", strerror(errno)) ;
-  }
-#elif defined(USE_SIGSET)
-  if (sigset (signum, signalHandler) == SIG_ERR)
-    die ("sigset failed: %s", strerror(errno)) ;
-#else
-  if (signal (signum, signalHandler) == -1)
+  if (xsignal (signum, signalHandler) == -1)
     die ("signal failed: %s", strerror(errno)) ;
-#endif
+
   sigHandlers[signum] = ptr ;
 }
 
