@@ -343,6 +343,16 @@ CHANclose(CHANNEL *cp, const char *name)
 		DISPOSE(cp->Data.Path.List);
 		cp->Data.Path.List = NULL;
 	    }
+	    if (cp->Data.Overview.Size != 0) {
+		DISPOSE(cp->Data.Overview.Data);
+		cp->Data.Overview.Data = NULL;
+		cp->Data.Overview.Size = 0;
+	    }
+	    if (cp->Data.XrefBufLength != 0) {
+		DISPOSE(cp->Data.Xref);
+		cp->Data.Xref = NULL;
+		cp->Data.XrefBufLength = 0;
+	    }
 	} else if (cp->Type == CTreject)
 	    syslog(L_NOTICE, "%s %ld", name, cp->Rejected);
 	else if (cp->Out.Left)
