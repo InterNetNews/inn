@@ -16,6 +16,7 @@ BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 void tradindexed_closesearch(void *handle);
 BOOL tradindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
 BOOL tradindexed_expiregroup(char *group, int *lo);
+BOOL tradindexed_probe(OVPROBETYPE type, void *result);
 void tradindexed_close(void);
 
 #ifdef __cplusplus

@@ -703,17 +703,17 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
 	base = ge->base;
 	if (ge->base > artnum) {
 	    syslog(L_ERROR, "tradindexed: could not add %s:%d, base == %d", gh->group, artnum, ge->base);
-	    return TRUE;
+	    return FALSE;
 	}
     }
     memset(&ie, '\0', sizeof(ie));
     if (write(gh->datafd, data, len) != len) {
 	syslog(L_ERROR, "tradindexed: could not append overview record to %s: %m", gh->group);
-	return TRUE;
+	return FALSE;
     }
     if ((ie.offset = lseek(gh->datafd, 0, SEEK_CUR)) < 0) {
 	syslog(L_ERROR, "tradindexed: could not get offset of overview record in %s: %m", gh->group);
-	return TRUE;
+	return FALSE;
     }
     ie.length = len;
     ie.offset -= ie.length;
@@ -721,7 +721,7 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     
     if (pwrite(gh->indexfd, &ie, sizeof(ie), (artnum - base) * sizeof(ie)) != sizeof(ie)) {
 	syslog(L_ERROR, "tradindexed: could not write index record for %s:%d", gh->group, artnum);
-	return TRUE;
+	return FALSE;
     }
     if ((ge->low <= 0) || (ge->low > artnum))
 	ge->low = artnum;
@@ -1207,6 +1207,18 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     tradindexed_closesearch(handle);
     OV3closegroupfiles(newgh);
     return TRUE;
+}
+
+BOOL tradindexed_probe(OVPROBETYPE type, void *result) {
+    int *i;
+    switch (type) {
+    case OVSPACE:
+	i = (int *)result;
+	*i = -1;
+	return TRUE;
+    default:
+	return FALSE;
+    }
 }
 
 void tradindexed_close(void) {
