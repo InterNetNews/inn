@@ -55,11 +55,59 @@ if test x"$with_largefiles" != x ; then
     AC_MSG_ERROR([Use --enable-largefiles instead of --with-largefiles])
 fi
 
+dnl Used to check whether -o can be provided with -c with the chosen
+dnl compiler.  We need this if we're not using libtool so that object files
+dnl can be built in subdirectories.  This macro is stolen shamelessly from
+dnl the libtool macros; there's a better version in Autoconf that we should
+dnl eventually use that tests twice.
+AC_DEFUN([INN_PROG_CC_C_O],
+[AC_REQUIRE([AC_OBJEXT])
+AC_MSG_CHECKING([if $CC supports -c -o file.$ac_objext])
+AC_CACHE_VAL([inn_cv_compiler_c_o],
+[rm -f -r conftest 2>/dev/null
+mkdir conftest
+cd conftest
+echo "int some_variable = 0;" > conftest.$ac_ext
+mkdir out
+# According to Tom Tromey, Ian Lance Taylor reported there are C compilers
+# that will create temporary files in the current directory regardless of
+# the output directory.  Thus, making CWD read-only will cause this test
+# to fail, enabling locking or at least warning the user not to do parallel
+# builds.
+chmod -w .
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -o out/conftest2.$ac_objext"
+compiler_c_o=no
+if { (eval $ac_compile) 2> out/conftest.err; } \
+    && test -s out/conftest2.$ac_objext; then
+  # The compiler can only warn and ignore the option if not recognized
+  # So say no if there are warnings
+  if test -s out/conftest.err; then
+    inn_cv_compiler_c_o=no
+  else
+    inn_cv_compiler_c_o=yes
+  fi
+else
+  # Append any errors to the config.log.
+  cat out/conftest.err 1>&AC_FD_CC
+  inn_cv_compiler_c_o=no
+fi
+CFLAGS="$save_CFLAGS"
+chmod u+w .
+rm -f conftest* out/*
+rmdir out
+cd ..
+rmdir conftest
+rm -f -r conftest 2>/dev/null])
+compiler_c_o=$inn_cv_compiler_c_o
+AC_MSG_RESULT([$compiler_c_o])])
+
 dnl A few tests need to happen before any of the libtool tests in order to
 dnl avoid error messages.  We therefore lift them up to the top of the file.
 AC_PROG_CC
 AC_AIX
 AC_ISC_POSIX
+INN_PROG_CC_C_O
 
 dnl Check to see if the user wants to use libtool.  We only invoke the libtool
 dnl setup macros if they do.  Keep this call together with the libtool setup
@@ -77,6 +125,7 @@ if test x"$inn_use_libtool" = xyes ; then
     LIBTOOL='$(top)/libtool'
     LIBTOOLCC='$(top)/libtool --mode=compile'
     LIBTOOLLD='$(top)/libtool --mode=link'
+    CCOUTPUT='-c -o $@ $<'
 else
     AC_CANONICAL_HOST
     EXTLIB='a'
@@ -84,12 +133,18 @@ else
     LIBTOOL=''
     LIBTOOLCC=''
     LIBTOOLLD=''
+    if test x"$compiler_c_o" = xyes ; then
+        CCOUTPUT='-c -o $@ $<'
+    else
+        CCOUTPUT='-c $< && if test x"$(@F)" != x"$@" ; then mv $(@F) $@ ; fi'
+    fi
     AC_SUBST(LIBTOOL)
 fi
 AC_SUBST(EXTLIB)
 AC_SUBST(EXTOBJ)
 AC_SUBST(LIBTOOLCC)
 AC_SUBST(LIBTOOLLD)
+AC_SUBST(CCOUTPUT)
 
 dnl INN has quite a few more configurable paths than autoconf supports by
 dnl default.  For right now, those additional paths are configured with
@@ -341,7 +396,8 @@ else
                 fi
             done
             if test x"$BERKELEY_DB_LIB" = x ; then        
-                AC_MSG_ERROR(Cannot find BerkeleyDB)
+                BERKELEY_DB_LIB=-ldb
+                AC_MSG_RESULT(trying -ldb)
             fi
         fi
     else

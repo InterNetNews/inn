@@ -36,9 +36,7 @@ builddir	= @builddir@
 ##  Basic compiler settings.  COPT is the variable to override on the make
 ##  command line to change the optimization or add warning flags (such as
 ##  -Wall).  LFS_* is for large file support.  All of INN is built with the
-##  large file support flags if provided, just to be sure.  While configure
-##  searches out the appropriate flags, no part of INN is currently built
-##  threaded.
+##  large file support flags if provided.
 
 CC              = @CC@
 COPT            = @CFLAGS@
@@ -58,6 +56,13 @@ PROFSUFFIX      = _p
 MAKEPROFILING   = $(MAKE) COPT="$(COPT) $(PROF)" \
                           LDFLAGS="$(LDFLAGS) $(PROF)" \
 			  LIBSUFFIX=$(PROFSUFFIX)
+
+##  Used to support non-recursive make.  This variable is set to the necessary
+##  options to the compiler to create an object file in a subdirectory.  It
+##  should be used instead of -c -o $@ $< and may be replaced with code that
+##  calls mv, if the compiler doesn't support -c with -o.
+
+CCOUTPUT	= @CCOUTPUT@
 
 ##  Warnings to use with gcc.  Default to including all of the generally
 ##  useful warnings unless there's something that makes them unsuitable.  In

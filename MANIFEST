@@ -334,7 +334,6 @@ history/buildconfig.in                Construct history interface
 history/his.c                         History API glue implementation
 history/hisinterface.h                History API interface
 history/hisv6                         History v6 method (Directory)
-history/hisv6/Makefile                Makefile for v6 history
 history/hisv6/hismethod.config        hisbuildconfig definition
 history/hisv6/hisv6-private.h         Private header file for hisv6
 history/hisv6/hisv6.c                 hisv6 history method
@@ -597,13 +596,12 @@ storage                               Storage library (Directory)
 storage/Make.methods                  Makefile for storage methods
 storage/Makefile                      Makefile for storage library
 storage/buffindexed                   buffindexed overview method (Directory)
-storage/buffindexed/Makefile          Makefile for buffindexed overview
 storage/buffindexed/buffindexed.c     buffindexed overview routines
 storage/buffindexed/buffindexed.h     Header file for buffindexed overview
 storage/buffindexed/ovmethod.config   buildconfig definition
+storage/buffindexed/ovmethod.mk       Make rules for buffindexed overview
 storage/buildconfig.in                Construct method interface
 storage/cnfs                          CNFS storage method (Directory)
-storage/cnfs/Makefile                 Makefile for CNFS storage method
 storage/cnfs/cnfs-private.h           Private header file for CNFS
 storage/cnfs/cnfs.c                   CNFS storage routines
 storage/cnfs/cnfs.h                   Header file for CNFS
@@ -613,7 +611,6 @@ storage/interface.c                   Storage API glue implementation
 storage/interface.h                   Storage API interface
 storage/ov.c                          Overview API glue implementation
 storage/ovdb                          ovdb overview method (Directory)
-storage/ovdb/Makefile                 Makefile for ovdb overview method
 storage/ovdb/ovdb-private.h           Private header file for ovdb
 storage/ovdb/ovdb.c                   ovdb (Berkeley DB) overview method
 storage/ovdb/ovdb.h                   Header for ovdb (Berkeley DB) overview
@@ -621,7 +618,6 @@ storage/ovdb/ovmethod.config          buildconfig definition
 storage/overdata.c                    Overview data manipulation
 storage/ovinterface.h                 Overview API interface
 storage/timecaf                       timecaf storage method (Directory)
-storage/timecaf/Makefile              Makefile for timecaf storage method
 storage/timecaf/README.CAF            README the CAF file format
 storage/timecaf/caf.c                 CAF file implementation
 storage/timecaf/caf.h                 Header for CAF files
@@ -629,13 +625,12 @@ storage/timecaf/method.config         buildconfig definition
 storage/timecaf/timecaf.c             timecaf storage routines
 storage/timecaf/timecaf.h             Header file for timecaf
 storage/timehash                      timehash storage method (Directory)
-storage/timehash/Makefile             Makefile for timehash storage method
 storage/timehash/method.config        buildconfig definition
 storage/timehash/timehash.c           timehash storage routines
 storage/timehash/timehash.h           Header for timehash
 storage/tradindexed                   tradindexed overview method (Directory)
-storage/tradindexed/Makefile          Makefile for tradindexed overview method
 storage/tradindexed/ovmethod.config   buildconfig definition
+storage/tradindexed/ovmethod.mk       Make rules for tradindexed overview
 storage/tradindexed/tdx-cache.c       Data file cache handling for tradindexed
 storage/tradindexed/tdx-data.c        Data file handling for tradindexed
 storage/tradindexed/tdx-group.c       Group index handling for tradindexed
@@ -645,13 +640,11 @@ storage/tradindexed/tdx-util.c        Utility program for tradindexed
 storage/tradindexed/tradindexed.c     Interface code for the overview API
 storage/tradindexed/tradindexed.h     Interface for tradindexed
 storage/tradspool                     tradspool storage method (Directory)
-storage/tradspool/Makefile            Makefile for tradspool storage method
 storage/tradspool/README.tradspool    Docs for tradspool storage method
 storage/tradspool/method.config       buildconfig definition
 storage/tradspool/tradspool.c         tradspool storage routines
 storage/tradspool/tradspool.h         Header for tradspool
 storage/trash                         Trash storage method (Directory)
-storage/trash/Makefile                Makefile for trash storage method
 storage/trash/method.config           buildconfig definition
 storage/trash/trash.c                 Trash storage routines
 storage/trash/trash.h                 Header file for trash storage

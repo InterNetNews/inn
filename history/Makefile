@@ -5,9 +5,8 @@ include ../Makefile.global
 top           = ..
 CFLAGS        = $(GCFLAGS) -I.
 
-SOURCES       = his.c hismethods.c
-TOP_OBJECTS   = $(SOURCES:.c=.o)
-OBJECTS	      = $(TOP_OBJECTS) $(METHOD_OBJECTS)
+SOURCES       = his.c hismethods.c $(METHOD_SOURCES)
+OBJECTS       = $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
@@ -23,16 +22,14 @@ warnings:
 
 library: libinnhist.$(EXTLIB)
 
-programs:
+programs: $(PROGRAMS)
 
 clobber clean distclean:
-	rm -f *.o *.lo libinnhist.la libinnhist.a libinnhist_pure_*.a .pure
+	rm -f *.o *.lo */*.o */*.lo libinnhist.la libinnhist.a
+	rm -f libinnhist_pure_*.a .pure $(PROGRAMS)
 	rm -f buildconfig hismethods.c hismethods.h
 	rm -f profiled libinnhist$(PROFSUFFIX).a
-	rm -rf .libs
-	@for D in $(SUBDIRS); do \
-	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
-	done
+	rm -rf .libs */.libs
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
@@ -61,13 +58,14 @@ buildconfig: buildconfig.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i buildconfig.in
 
 .c.o .c.lo:
-	$(LIBCC) $(CFLAGS) -c $*.c -o $@
+	$(LIBCC) $(CFLAGS) $(CCOUTPUT)
 
 $(LIBINN):      ; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
 
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
+
 profiled: libinnhist$(PROFSUFFIX).a
 	date >$@
 
@@ -89,18 +87,15 @@ $(D)$(PATHLIB)/libinnhist.$(EXTLIB): libinnhist.$(EXTLIB)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend:	$(SOURCES)
-	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES) */*.c
-	@for D in $(SUBDIRS) ; do \
-	    cd $$D && $(MAKE) depend || exit 1 ; cd .. ; \
-	done
+depend:	$(SOURCES) $(EXTRA_SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES) $(EXTRA_SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 his.o: his.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h /usr/include/errno.h ../include/portable/time.h \
  ../include/libinn.h ../include/macros.h ../include/inn/history.h \
- ../include/inn/timer.h hisinterface.h hismethods.h \
- ../include/storage.h
+ ../include/inn/messages.h ../include/inn/timer.h hisinterface.h \
+ hismethods.h ../include/storage.h
 hismethods.o: hismethods.c hisinterface.h ../include/config.h \
  ../include/inn/defines.h hismethods.h hisv6/hisv6.h
 hisv6/hisv6.o: hisv6/hisv6.c ../include/config.h ../include/inn/defines.h \

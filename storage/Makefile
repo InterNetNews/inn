@@ -3,10 +3,11 @@
 include ../Makefile.global
 
 top	      = ..
-CFLAGS	      = $(GCFLAGS) -I.
+CFLAGS	      = $(GCFLAGS) -I. $(BERKELEY_DB_CFLAGS)
 
-SOURCES	      = expire.c interface.c methods.c ov.c overdata.c ovmethods.c
-OBJECTS	      = $(SOURCES:.c=.o) $(METHOD_OBJECTS)
+SOURCES	      = expire.c interface.c methods.c ov.c overdata.c ovmethods.c \
+		$(METHOD_SOURCES)
+OBJECTS	      = $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
@@ -22,19 +23,14 @@ warnings:
 
 library: libstorage.$(EXTLIB)
 
-programs: library
-	@progdirs='$(PROGDIRS)' ; for D in $$progdirs ; do \
-	    cd $$D && $(MAKE) programs || exit 1 ; cd .. ; \
-	done
+programs: $(PROGRAMS)
 
 clobber clean distclean:
-	rm -f *.o *.lo libstorage.la libstorage.a libstorage_pure_*.a .pure
+	rm -f *.o *.lo */*.o */*.lo libstorage.la libstorage.a
+	rm -f $(PROGRAMS) libstorage_pure_*.a .pure
 	rm -f buildconfig methods.c methods.h ovmethods.c ovmethods.h
 	rm -f profiled libstorage$(PROFSUFFIX).a
-	rm -rf .libs
-	@for D in $(SUBDIRS) ; do \
-	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
-	done
+	rm -rf .libs */.libs
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h ../include/inn/*.h
@@ -61,16 +57,18 @@ buildconfig: buildconfig.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i buildconfig.in
 
 .c.o .c.lo:
-	$(LIBCC) $(CFLAGS) -c $*.c -o $@
+	$(LIBCC) $(CFLAGS) $(CCOUTPUT)
 
 ovtest:	ov.c libstorage.$(EXTLIB) $(LIBINN)
 	$(CC) $(CFLAGS) -D_TEST_ -o ovtest ov.c \
 	    libstorage.$(EXTLIB) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
 $(LIBINN):      ; (cd ../lib ; $(MAKE))
+$(LIBHIST):	; (cd ../history ; $(MAKE))
 
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
+
 profiled: libstorage$(PROFSUFFIX).a
 	date >$@
 
@@ -84,10 +82,7 @@ libstorage$(PROFSUFFIX).a: $(SOURCES)
 
 ##  Low-level install actions.
 
-install: $(D)$(PATHLIB)/libstorage.$(EXTLIB)
-	@for D in $(SUBDIRS) ; do \
-	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
-	done
+install: $(D)$(PATHLIB)/libstorage.$(EXTLIB) $(INSTALLED)
 
 $(D)$(PATHLIB)/libstorage.$(EXTLIB): libstorage.$(EXTLIB)
 	$(LI_XPUB) libstorage.$(EXTLIB) $@
@@ -95,11 +90,8 @@ $(D)$(PATHLIB)/libstorage.$(EXTLIB): libstorage.$(EXTLIB)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend:	Makefile $(SOURCES) */*.c
-	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES) */*.c
-	@for D in $(SUBDIRS) ; do \
-	    cd $$D && $(MAKE) depend || exit 1 ; cd .. ; \
-	done
+depend:	Makefile $(SOURCES) $(EXTRA_SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES) $(EXTRA_SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 expire.o: expire.c ../include/config.h ../include/inn/defines.h \
@@ -180,13 +172,6 @@ tradindexed/tdx-group.o: tradindexed/tdx-group.c ../include/config.h \
  ../include/inn/mmap.h ../include/inn/qio.h ../include/libinn.h \
  ../include/paths.h tradindexed/tdx-private.h ../include/storage.h \
  tradindexed/tdx-structure.h
-tradindexed/tdx-util.o: tradindexed/tdx-util.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/buffer.h ../include/inn/history.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/vector.h ../include/libinn.h ../include/ov.h \
- ../include/storage.h ovinterface.h ../include/paths.h \
- tradindexed/tdx-private.h tradindexed/tdx-structure.h
 tradindexed/tradindexed.o: tradindexed/tradindexed.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h \
  ../include/inn/innconf.h ../include/inn/messages.h \
@@ -202,3 +187,10 @@ tradspool/tradspool.o: tradspool/tradspool.c ../include/config.h \
 trash/trash.o: trash/trash.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h methods.h interface.h \
  ../include/storage.h trash/trash.h
+tradindexed/tdx-util.o: tradindexed/tdx-util.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/inn/buffer.h ../include/inn/history.h \
+ ../include/inn/innconf.h ../include/inn/messages.h \
+ ../include/inn/vector.h ../include/libinn.h ../include/ov.h \
+ ../include/storage.h ovinterface.h ../include/paths.h \
+ tradindexed/tdx-private.h tradindexed/tdx-structure.h
