@@ -118,12 +118,7 @@ char *argv[];
       host = gethostbyname(*whoP);
       if ( host ) {
 	sock_in.sin_family = host->h_addrtype;
-#if defined(h_addr)         /* In 4.3, this is a #define */
-	memcpy((caddr_t)&sock_in.sin_addr,
-			    host->h_addr_list[0],host->h_length);
-#else
-	memcpy((caddr_t)&sock_in.sin_addr,host->h_addr,host->h_length);
-#endif
+	memcpy(&sock_in.sin_addr,host->h_addr,host->h_length);
       }
       else {
 	fprintf(stderr,"gethostbyname can't find %s\n",*whoP);
