@@ -526,7 +526,7 @@ PY_hashstring(self, args)
 	p = wpos;
 	q = workstring;
 	for (i=0 ; i<worksize ; i++) {
-	    if isspace(*p) {
+	    if (isspace(*p)) {
 		if (!wasspace)
 		    *q++ = ' ';
 		wasspace = 1;
