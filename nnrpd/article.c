@@ -117,8 +117,6 @@ BOOL PushIOvRateLimited(void) {
 
 BOOL PushIOv(void) {
     fflush(stdout);
-    if (MaxBytesPerSecond != 0)
-	return PushIOvRateLimited();
 #ifdef HAVE_SSL
     if (tls_conn) {
       if (SSL_writev(tls_conn, iov, queued_iov) <= 0) {
@@ -132,6 +130,8 @@ BOOL PushIOv(void) {
       }
     }
 #else
+    if (MaxBytesPerSecond != 0)
+	return PushIOvRateLimited();
     if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
       queued_iov = 0;
       return FALSE;
