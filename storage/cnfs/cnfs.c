@@ -1055,10 +1055,11 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     CNFSARTHEADER	cah;
     PRIV_CNFS		*private;
     char		*p;
-    long		pagefudge;
+    long		pagefudge, blockfudge;
     CYCBUFF_OFF_T	mmapoffset;
     static TOKEN	ret_token;
     static BOOL		nomessage = FALSE;
+    CYCBUFF_OFF_T	middle, limit;
 
     if (token.type != TOKEN_CNFS) {
 	SMseterror(SMERR_INTERNAL, NULL);
@@ -1123,6 +1124,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return NULL;
     }
+#ifdef OLD_CNFS
     if(cah.size == htonl(0x1234) && ntohl(cah.arrived) < time(NULL)-10*365*24*3600) {
 	oldCNFSARTHEADER cahh;
 	*(CNFSARTHEADER *)&cahh = cah;
@@ -1140,6 +1142,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	cah.class = 0;
 	offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
+#endif /* OLD_CNFS */
     if (offset > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
         if (!SMpreopen) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
@@ -1157,6 +1160,27 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    DISPOSE(art);
 	    return NULL;
 	}
+    }
+    /* check the bitmap to ensure cah.size is not broken */
+    /* cannot believe cycbuff->free, since it may not be updated by writer */
+    blockfudge = (sizeof(cah) + ntohl(cah.size)) % CNFS_BLOCKSIZE;
+    limit = offset + sizeof(cah) + ntohl(cah.size) - blockfudge + CNFS_BLOCKSIZE;
+    for (middle = offset + CNFS_BLOCKSIZE; middle < limit;
+	middle += CNFS_BLOCKSIZE) {
+	if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) != 0)
+	/* Bitmap set.  This article assumes to be broken */
+	break;
+    }
+    if (middle != limit) {
+	char buf1[24], buf2[24], buf3[24];
+	strcpy(buf1, CNFSofft2hex(cycbuff->free, FALSE));
+	strcpy(buf2, CNFSofft2hex(middle, FALSE));
+	strcpy(buf3, CNFSofft2hex(limit, FALSE));
+	SMseterror(SMERR_UNDEFINED, "size overflows bitmaps");
+	syslog(L_ERROR, "%s: size overflows bitmaps %s %s:0x%s:0x%s:0x%s: %ld",
+	LocalLogName, TokenToText(token), cycbuffname, buf1, buf2, buf3, ntohl(cah.size));
+	DISPOSE(art);
+	return NULL;
     }
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
@@ -1314,10 +1338,10 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     ARTHANDLE           *art;
     CYCBUFF		*cycbuff;
     PRIV_CNFS		priv, *private;
-    CYCBUFF_OFF_T	middle;
+    CYCBUFF_OFF_T	middle, limit;
     CNFSARTHEADER	cah;
     CYCBUFF_OFF_T	offset;
-    long		pagefudge;
+    long		pagefudge, blockfudge;
     static TOKEN	token;
     int			tonextblock;
     CYCBUFF_OFF_T	mmapoffset;
@@ -1404,6 +1428,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return (ARTHANDLE *)NULL;
     }
+#ifdef OLD_CNFS
     if(cah.size == htonl(0x1234) && ntohl(cah.arrived) < time(NULL)-10*365*24*3600) {
 	oldCNFSARTHEADER cahh;
 	*(CNFSARTHEADER *)&cahh = cah;
@@ -1417,6 +1442,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	priv.offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
 	offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
+#endif /* OLD_CNFS */
     art = NEW(ARTHANDLE, 1);
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
@@ -1430,6 +1456,37 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	art->len = 0;
 	return art;
     }
+    /* check the bitmap to ensure cah.size is not broken */
+    blockfudge = (sizeof(cah) + ntohl(cah.size)) % CNFS_BLOCKSIZE;
+    limit = private->offset + sizeof(cah) + ntohl(cah.size) - blockfudge + CNFS_BLOCKSIZE;
+    if (offset < cycbuff->free) {
+	for (middle = offset + CNFS_BLOCKSIZE; (middle < cycbuff->free) && (middle < limit);
+	    middle += CNFS_BLOCKSIZE) {
+	    if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) != 0)
+		/* Bitmap set.  This article assumes to be broken */
+		break;
+	}
+	if ((middle >= cycbuff->free) || (middle != limit)) {
+	    private->offset = middle;
+	    art->data = NULL;
+	    art->len = 0;
+	    return art;
+	}
+    } else {
+	for (middle = offset + CNFS_BLOCKSIZE; (middle < cycbuff->len) && (middle < limit);
+	    middle += CNFS_BLOCKSIZE) {
+	    if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) != 0)
+		/* Bitmap set.  This article assumes to be broken */
+		break;
+	}
+	if ((middle >= cycbuff->len) || (middle != limit)) {
+	    private->offset = middle;
+	    art->data = NULL;
+	    art->len = 0;
+	    return art;
+	}
+    }
+
     private->offset += (CYCBUFF_OFF_T) ntohl(cah.size) + sizeof(cah);
     tonextblock = CNFS_BLOCKSIZE - (private->offset & (CNFS_BLOCKSIZE - 1));
     private->offset += (CYCBUFF_OFF_T) tonextblock;
