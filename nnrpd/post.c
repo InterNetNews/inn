@@ -317,9 +317,7 @@ CheckDistribution(p)
 **  Return NULL if okay, or an error message.
 */
 STATIC STRING
-ProcessHeaders(linecount, idbuff)
-    int			linecount;
-    char                *idbuff;
+ProcessHeaders(int linecount, char *idbuff)
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     static char		WEEKS[] = "SunMonTueWedThuFriSat";
@@ -330,14 +328,15 @@ ProcessHeaders(linecount, idbuff)
     static char		tracebuff[SMBUF];
     static char 	complaintsbuff[SMBUF];
     static char		sendbuff[SMBUF];
-    register HEADER	*hp;
-    register char	*p;
+    static char		*newpath = NULL;
+    HEADER		*hp;
+    char		*p;
     time_t		t;
     struct tm		*gmt, *local;
     TIMEINFO		Now;
     STRING		error;
     pid_t               pid;
-    char		*newpath;
+    BOOL		addvirtual = FALSE;
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ENDOF(Table); hp++) {
@@ -440,16 +439,40 @@ ProcessHeaders(linecount, idbuff)
     if (HDR(_path) == NULL) {
 	/* Note that innd will put host name here for us. */
 	HDR(_path) = PATHMASTER;
+	if (VirtualPathlen > 0)
+	    addvirtual = TRUE;
     } else if (PERMaccessconf->strippath) {
 	/* Here's where to do Path changes for new Posts. */
-	if ((newpath = strrchr(HDR(_path), '!')) != NULL) {
-	    newpath++;
-	    if (*newpath == '\0') {
-		HDR(_path) = NEWSMASTER;
+	if ((p = strrchr(HDR(_path), '!')) != NULL) {
+	    p++;
+	    if (*p == '\0') {
+		HDR(_path) = PATHMASTER;
+		if (VirtualPathlen > 0)
+		    addvirtual = TRUE;
 	    } else {
-		HDR(_path) = newpath;
+		HDR(_path) = p;
+		if ((VirtualPathlen > 0) &&
+		    !EQ(p, PERMaccessconf->pathhost))
+		    addvirtual = TRUE;
 	    }
-	}
+	} else if (VirtualPathlen > 0)
+	    addvirtual = TRUE;
+    } else {
+	if ((VirtualPathlen > 0) &&
+	    (p = strchr(HDR(_path), '!')) != NULL) {
+	    *p = '\0';
+	    if (!EQ(HDR(_path), PERMaccessconf->pathhost))
+		addvirtual = TRUE;
+	    *p = '!';
+	} else if (VirtualPathlen > 0)
+	    addvirtual = TRUE;
+    }
+    if (addvirtual) {
+	if (newpath != NULL)
+	    DISPOSE(newpath);
+	newpath = NEW(char, VirtualPathlen + strlen(HDR(_path)) + 1);
+	sprintf(newpath, "%s%s", VirtualPath, HDR(_path));
+	HDR(_path) = newpath;
     }
     
 
@@ -501,12 +524,15 @@ ProcessHeaders(linecount, idbuff)
     pid = (long) getpid() ;
     if ((gmt = gmtime(&Now.time)) == NULL)
 	return "Can't get the time";
-    if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
-	p = "unknown";
+    if (VirtualPathlen > 0)
+	p = PERMaccessconf->domain;
+    else
+	if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
+	    p = "unknown";
     sprintf(tracebuff, "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
-             GetFQDN(PERMaccessconf->domain), (long) t, (long) pid, ClientIp,
-	    gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
-	    gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+	p, (long) t, (long) pid, ClientIp,
+	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
+	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR (_xtrace) = tracebuff ;
 
     /* X-Complaints-To; set */

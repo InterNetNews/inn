@@ -237,11 +237,10 @@ ExitWithStats(int x, BOOL readconf)
 */
 /* ARGSUSED0 */
 STATIC FUNCTYPE
-CMDhelp(ac, av)
-    int		ac;
-    char	*av[];
+CMDhelp(int ac, char *av[])
 {
     CMDENT	*cp;
+    char	*p, *q;
 
     Reply("%s\r\n", NNTP_HELP_FOLLOWS);
     for (cp = CMDtable; cp->Name; cp++)
@@ -249,12 +248,37 @@ CMDhelp(ac, av)
 	    Printf("  %s\r\n", cp->Name);
 	else
 	    Printf("  %s %s\r\n", cp->Name, cp->Help);
-    if (strchr(NEWSMASTER, '@') == NULL)
-	Printf("Report problems to <%s@%s>\r\n",
-	    NEWSMASTER, innconf->fromhost);
-    else
-	Printf("Report problems to <%s>\r\n",
-	    NEWSMASTER);
+    if (PERMaccessconf && (VirtualPathlen > 0)) {
+	if (PERMaccessconf->newsmaster) {
+	    if (strchr(PERMaccessconf->newsmaster, '@') == NULL) {
+		Printf("Report problems to <%s@%s>\r\n",
+		    PERMaccessconf->newsmaster, PERMaccessconf->domain);
+	    } else {
+		Printf("Report problems to <%s>\r\n",
+		    PERMaccessconf->newsmaster);
+	    }
+	} else {
+	    /* sigh, pickup from NEWSMASTER anyway */
+	    if ((p = strchr(NEWSMASTER, '@')) == NULL)
+		Printf("Report problems to <%s@%s>\r\n",
+		    NEWSMASTER, PERMaccessconf->domain);
+	    else {
+		q = NEW(char, p - NEWSMASTER + 1);
+		strncpy(q, NEWSMASTER, p - NEWSMASTER);
+		q[p - NEWSMASTER] = '\0';
+		Printf("Report problems to <%s@%s>\r\n",
+		    q, PERMaccessconf->domain);
+		DISPOSE(q);
+	    }
+	}
+    } else {
+	if (strchr(NEWSMASTER, '@') == NULL)
+	    Printf("Report problems to <%s@%s>\r\n",
+		NEWSMASTER, innconf->fromhost);
+	else
+	    Printf("Report problems to <%s>\r\n",
+		NEWSMASTER);
+    }
     Reply(".\r\n");
 }
 
@@ -363,7 +387,7 @@ Address2Name(ap, hostname, i)
 #endif
 
     /* Only needed for misconfigured YP/NIS systems. */
-    if (strchr(hostname, '.') == NULL
+    if (ap->s_addr != INADDR_LOOPBACK && strchr(hostname, '.') == NULL
      && (p = innconf->domain) != NULL) {
 	(void)strcat(hostname, ".");
 	(void)strcat(hostname, p);
