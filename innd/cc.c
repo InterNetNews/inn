@@ -761,11 +761,11 @@ CCgo(av)
     if (innconf->storageapi) {
 	int fdcountold = Overfdcount;
 	if (!OVERinit()) {
-	    syslog(L_FATAL, "%s cant initialize the unified overview");
+	    syslog(L_FATAL, "%s cant initialize the unified overview", LogName);
 	    exit(1);
 	}
 	if ((Overfdcount = OVERgetnum()) < 0) {
-            syslog(L_FATAL, "%s cant get config for the unified overview");
+            syslog(L_FATAL, "%s cant get config for the unified overview", LogName);
             exit(1);
 	}
 	if (fdcountold != Overfdcount) {
@@ -1354,11 +1354,11 @@ CCreload(av)
 	if (innconf->storageapi) {  
 	    int fdcountold = Overfdcount;
 	    if (!OVERinit()) {
-		syslog(L_FATAL, "%s cant initialize the unified overview");
+		syslog(L_FATAL, "%s cant initialize the unified overview", LogName);
 		exit(1);
 	    } 
 	    if ((Overfdcount = OVERgetnum()) < 0) {
-		syslog(L_FATAL, "%s cant get config for the unified overview");
+		syslog(L_FATAL, "%s cant get config for the unified overview", LogName);
 		exit(1);
 	    }
 	    if (fdcountold != Overfdcount) {
@@ -1398,11 +1398,11 @@ CCreload(av)
 	    int fdcountold = Overfdcount;
 	    OVERshutdown();
 	    if (!OVERinit()) {
-		syslog(L_FATAL, "%s cant initialize the unified overview");
+		syslog(L_FATAL, "%s cant initialize the unified overview", LogName);
 		exit(1);
 	    } 
 	    if ((Overfdcount = OVERgetnum()) < 0) {
-		syslog(L_FATAL, "%s cant get config for the unified overview");
+		syslog(L_FATAL, "%s cant get config for the unified overview", LogName);
 		exit(1);
 	    }
 	    if (fdcountold != Overfdcount) {
