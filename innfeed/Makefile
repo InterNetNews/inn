@@ -106,8 +106,8 @@ all: innfeed startinnfeed innfeed-convcfg procbatch
 
 install: $(ALL_INSTALLED)
 
-innfeed: $(OBJS) version.o $(MALLOC) $(LIBNEWS)
-	$(LINK.c) -o $@ $(OBJS) version.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
+innfeed: $(OBJS) version.o $(MALLOC) $(LIBSTORAGE) $(LIBINN)
+	$(LINK.c) -o $@ $(OBJS) version.o $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
 innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i innfeed-convcfg.in
@@ -172,8 +172,8 @@ listing::
 startinnfeed.o: startinnfeed.c
 	$(COMPILE.c) $?
 
-startinnfeed: startinnfeed.o
-	$(LINK.c) -o $@ $? $(LIBNEWS) $(LIBS)
+startinnfeed: startinnfeed.o $(LIBINN)
+	$(LINK.c) -o $@ $? $(LIBINN) $(LIBS)
 
 uio_maxiov: uio_maxiov.o
 	$(LINK.c) -o $@ uio_maxiov.o $(LIBS)
