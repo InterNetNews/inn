@@ -302,3 +302,74 @@ ThrottleNoMatchError(void)
         ThrottledbyIOError = TRUE;
     }
 }
+
+void
+InndHisOpen(void)
+{
+    char *histpath;
+    int flags;
+    struct histopts opts = {0};
+
+    histpath = concatpath(innconf->pathdb, _PATH_HISTORY);
+    if (innconf->hismethod == NULL) {
+	sysdie("hismethod is not defined");
+	/*NOTREACHED*/
+    }
+
+    opts.npairs = 0;
+    opts.synccount = innconf->icdsynccount;
+    opts.u.hisv6.statinterval = 0;
+    flags = HIS_RDWR | (INND_DBZINCORE ? HIS_MMAP : HIS_ONDISK);
+    History = HISopen(histpath, innconf->hismethod, flags, &opts);
+    if (!History) {
+	sysdie("SERVER can't open history %s", histpath);
+	/*NOTREACHED*/
+    }
+    free(histpath);
+    HISsetcache(History, 1024 * innconf->hiscachesize);
+}
+
+void
+InndHisClose(void)
+{
+    if (!HISclose(History)) {
+        char *histpath;
+
+	histpath = concatpath(innconf->pathdb, _PATH_HISTORY);
+	sysdie("SERVER can't close history %s", histpath);
+	free(histpath);
+    }	
+    History = NULL;
+}
+
+bool
+InndHisWrite(const char *key, time_t arrived, time_t posted, time_t expires,
+	     TOKEN *token)
+{
+    bool r = HISwrite(History, key, arrived, posted, expires, token);
+
+    if (r != true)
+	IOError("history write", errno);
+    return r;
+}
+
+bool
+InndHisRemember(const char *key)
+{
+    bool r = HISremember(History, key, Now.time);
+
+    if (r != true)
+	IOError("history remember", errno);
+    return r;
+}
+
+void
+InndHisLogStats(void)
+{
+    struct histstats stats = HISstats(History);
+
+    syslog(L_NOTICE, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
+	   stats.hitpos, stats.hitneg, stats.misses, stats.dne);
+}
+
+
