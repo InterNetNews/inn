@@ -12,7 +12,7 @@ ALL           = actmerge actsync actsyncd archive batcher buffchan \
 EXTRA         = controlchan pgpverify
 
 SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
-		filechan.c inndf.c innxbatch.c innxmit.c nntpget.c \
+		filechan.c inndf.c innxbatch.c innxmit.c map.c nntpget.c \
 		overchan.c shlock.c shrinkfile.c
 
 INSTALLED     = $(D)$(PATHBIN)/actmerge		\
@@ -137,28 +137,27 @@ depend:	Makefile $(SOURCES)
 	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-actsync.o: actsync.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
- ../include/inn/qio.h ../include/paths.h ../include/macros.h
+actsync.o: actsync.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h
 archive.o: archive.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h ../include/storage.h
 batcher.o: batcher.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h ../include/storage.h
-buffchan.o: buffchan.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/paths.h \
- ../include/libinn.h ../include/inn/qio.h ../include/macros.h
+buffchan.o: buffchan.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h
 cvtbatch.o: cvtbatch.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h ../include/storage.h
-filechan.o: filechan.c ../include/configdata.h ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/paths.h \
- ../include/libinn.h ../include/macros.h
+filechan.o: filechan.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h
 inndf.o: inndf.c ../include/config.h ../include/inn/defines.h \
- ../include/configdata.h ../include/clibrary.h ../include/libinn.h \
- ../include/storage.h ../include/paths.h ../include/inn/qio.h \
- ../include/ov.h
+ ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/ov.h ../include/storage.h ../include/paths.h
 innxbatch.o: innxbatch.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h
@@ -166,6 +165,9 @@ innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
  ../include/inn/qio.h ../include/macros.h ../include/nntp.h \
  ../include/paths.h ../include/storage.h
+map.o: map.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h
 nntpget.o: nntpget.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h
@@ -175,6 +177,6 @@ overchan.o: overchan.c ../include/config.h ../include/inn/defines.h \
  ../include/paths.h
 shlock.o: shlock.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
-shrinkfile.o: shrinkfile.c ../include/configdata.h ../include/config.h \
+shrinkfile.o: shrinkfile.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h
