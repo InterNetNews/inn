@@ -109,9 +109,13 @@ IhaveSendme(STRING History, char What)
     BOOL		More;
     char		buff[BUFSIZ];
     char		Name[SPOOLNAMEBUFF];
+#ifndef DO_TAGGED_HASH
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+#endif
 
     /* Open history. */
-    if (!dbminit(History)) {
+    if (!dbzinit(History)) {
 	(void)fprintf(stderr, "Can't open history database, %s\n",
 		strerror(errno));
 	exit(1);
@@ -134,7 +138,25 @@ IhaveSendme(STRING History, char What)
 	*++q = '\0';
 
 	key = HashMessageID(p);
+#ifdef	DO_TAGGED_HASH
 	offset = dbzfetch(key);
+#else
+	if (innconf->extendeddbz) {
+	    if (!dbzfetch(key, &iextvalue)) {
+		if (What == 'i')
+		    (void)printf("%s\n", p);
+		continue;
+	    }
+	    offset = iextvalue.offset[HISTOFFSET];
+	} else {
+	    if (!dbzfetch(key, &ionevalue)) {
+		if (What == 'i')
+		    (void)printf("%s\n", p);
+		continue;
+	    }
+	    offset = ionevalue.offset;
+	}
+#endif
 
 	/* Ihave -- say if we want it, and continue. */
 	if (What == 'i') {
@@ -184,6 +206,14 @@ main(int ac, char *av[])
     BOOL		More;
     char		What;
     char		Name[SPOOLNAMEBUFF];
+#ifndef DO_TAGGED_HASH
+    BOOL		val;
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+    TOKEN		token;
+    int			len;
+    char		*p, *q;
+#endif
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -193,7 +223,11 @@ main(int ac, char *av[])
     What = '?';
 
     /* Parse JCL. */
+#ifdef	DO_TAGGED_HASH
     while ((i = getopt(ac, av, "f:eiltnqs")) != EOF)
+#else
+    while ((i = getopt(ac, av, "f:eiloTtnqs")) != EOF)
+#endif
 	switch (i) {
 	default:
 	    Usage();
@@ -208,8 +242,16 @@ main(int ac, char *av[])
 	case 'n':
 	case 'q':
 	case 's':
+#ifndef	DO_TAGGED_HASH
+	case 'o':
+	case 'T':
+#endif
 	    if (What != '?') {
+#ifdef	DO_TAGGED_HASH
 		(void)fprintf(stderr, "Only one [eiltnqs] flag allowed.\n");
+#else
+		(void)fprintf(stderr, "Only one [eiloTtnqs] flag allowed.\n");
+#endif
 		exit(1);
 	    }
 	    What = (char)i;
@@ -235,7 +277,7 @@ main(int ac, char *av[])
 	Usage();
 
     /* Open the history file, do the lookup. */
-    if (!dbminit(History)) {
+    if (!dbzinit(History)) {
 	(void)fprintf(stderr, "Can't open history database, %s\n",
 		strerror(errno));
 	exit(1);
@@ -254,11 +296,29 @@ main(int ac, char *av[])
     }
 
     /* Not found. */
+#ifdef	DO_TAGGED_HASH
     if ((offset = dbzfetch(key)) < 0) {
 	if (What == 'n')
 	    (void)fprintf(stderr, "Not found.\n");
 	exit(1);
     }
+#else
+    if (innconf->extendeddbz) {
+	if (!dbzfetch(key, &iextvalue)) {
+	    if (What == 'n')
+		(void)fprintf(stderr, "Not found.\n");
+	    exit(1);
+	}
+	offset = iextvalue.offset[HISTOFFSET];
+    } else {
+	if (!dbzfetch(key, &ionevalue)) {
+	    if (What == 'n')
+		(void)fprintf(stderr, "Not found.\n");
+	    exit(1);
+	}
+	offset = ionevalue.offset;
+    }
+#endif
 
     /* Simple case? */
     if (What == 'q')
@@ -269,6 +329,50 @@ main(int ac, char *av[])
       (void)printf("%lu\n", offset);
       exit(0);
     }
+
+#ifndef	DO_TAGGED_HASH
+    /* Just give offset into overview */
+    if (What == 'T') {
+      if (innconf->extendeddbz)
+        (void)printf("%lu (%lu)\n", iextvalue.offset[OVEROFFSET], iextvalue.overindex);
+      else
+        (void)printf("Overview offset is not available.\n");
+      exit(0);
+    }
+
+    /* Get overview */
+    if (What == 'o') {
+      if (innconf->extendeddbz) {
+	if (innconf->overviewmmap)
+	  val = TRUE;
+	else
+	  val = FALSE;
+	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
+	  fprintf(stderr, "Can't setup unified overview mmap: %s\n", strerror(errno));
+	  exit(1);    
+	}
+	if (!OVERsetup(OVER_MODE, "r")) {
+	  fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
+	  exit(1);
+	}
+	if (!OVERinit()) {
+	  fprintf(stderr, "Can't initialize unified overview mode: %s\n", strerror(errno));
+	  exit(1);
+	}
+	OVERmaketoken(&token, iextvalue.offset[OVEROFFSET], iextvalue.overindex);
+	if ((p = OVERretrieve(&token, &len)) == NULL) {
+	  fprintf(stderr, "Can't retrieve overview : %s\n", strerror(errno));
+	  exit(1);
+	}
+	q = NEW(char, len + 1);
+	strncpy(q, p, len);
+	(void)printf("%s\n", q);
+      } else {
+	(void)printf("Overview offset is not available.\n");
+      }
+      exit(0);
+    }
+#endif
 
     /* Open the text file, go to the entry. */
     if ((F = fopen(History, "r")) == NULL) {
