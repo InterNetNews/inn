@@ -212,9 +212,9 @@ $D$(PATHBIN)/innstat:	innstat		; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/pgpverify:	pgpverify	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/cnfsstat:	cnfsstat	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innwatch:	innwatch	; $(COPY_XPRI) $? $@
-$D${PATHBIN)/doactsync:	doactsync	; $(COPY_XPUB) $? $@
-$D${PATHBIN)/mod-active: mod-active	; $(COPY_XPUB) $? $@
-$D${PATHBIN)/simpleftp:	simpleftp	; $(COPY_XPUB) $? $@
+$D$(PATHBIN)/doactsync:	doactsync	; $(COPY_XPUB) $? $@
+$D$(PATHBIN)/mod-active: mod-active	; $(COPY_XPUB) $? $@
+$D$(PATHBIN)/simpleftp:	simpleftp	; $(COPY_XPUB) $? $@
 $D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPRI) $? $@
