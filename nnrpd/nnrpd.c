@@ -216,6 +216,13 @@ ExitWithStats(int x, bool readconf)
         syslog(L_NOTICE, "%s overstats count %ld hit %ld miss %ld time %ld size %ld dbz %ld seek %ld get %ld artcheck %ld", ClientHost,
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
+#ifdef HAVE_OPENSSL
+     if (tls_conn) {
+        SSL_shutdown(tls_conn);
+        tls_conn = NULL;
+     } 
+#endif
+
      if (DaemonMode) {
      	shutdown(STDIN_FILENO, 2);
      	shutdown(STDOUT_FILENO, 2);
