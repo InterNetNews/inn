@@ -1206,11 +1206,6 @@ compiler."
 	esac
 	;;
 
-      *.o | *.obj | *.a | *.lib)
-	# A standard object.
-	objs="$objs $arg"
-	;;
-
       *.lo | *.$objext)
 	# A library or standard object.
 	if test "$prev" = dlfiles; then
@@ -2935,12 +2930,6 @@ EOF
 	fi
       fi
       ;;
-
-    *.lo | *.o | *.obj)
-      if test -n "$link_against_libtool_libs"; then
-	$echo "$modename: error: cannot link libtool libraries into objects" 1>&2
-	exit 1
-      fi
 
     obj)
       if test -n "$deplibs"; then
