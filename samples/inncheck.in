@@ -116,8 +116,8 @@ active
     local ($group, $hi, $lo, $f, $alias, %groups, %aliases);
 
     input: while ( <IN> ) {
-	next input if &spacious($file, ++$line);
-	unless ( ($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)$/ ) {
+	$line++;
+	unless ( ($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/ ) {
 	    print "$file:$line: malformed line.\n";
 	    next input;
 	}
