@@ -76,18 +76,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_YACC
 AC_PROG_LEX
-
-dnl config.data wants "echo" not ':' if ranlib not found...
-if test x$ac_cv_subst_ranlib = x
-then
 AC_PROG_RANLIB
-fi
-ac_cv_subst_ranlib=$ac_cv_prog_RANLIB
-if test x$ac_cv_subst_ranlib = x:
-then
-	ac_cv_subst_ranlib=echo
-fi
-AC_SUBST(ac_cv_subst_ranlib)
 
 dnl System specific
 AC_AIX

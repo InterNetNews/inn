@@ -10,14 +10,13 @@ CC      = @CC@
 CFLAGS  = -I../include -I.. -I../../include @CPPFLAGS@ 
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
+RANLIB	= @RANLIB@
 
 ##  =()<CTAGS		= @<CTAGS>@>()=
 CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
-##  =()<RANLIB	= @<RANLIB>@>()=
-RANLIB	= ranlib
 
 SOURCES = timehash.c
 OBJECTS = timehash.o

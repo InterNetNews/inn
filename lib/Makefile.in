@@ -12,6 +12,7 @@ CC      = @CC@
 CFLAGS  = -I../include @CPPFLAGS@ $(PERLINC)
 LDFLAGS = @LDFLAGS@
 LIBS    = @LIBS@
+RANLIB	= @RANLIB@
 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE
@@ -26,8 +27,6 @@ CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
-##  =()<RANLIB	= @<RANLIB>@>()=
-RANLIB	= ranlib
 
 ##  For OSx systems, get these from the ATT Universe libc.
 ##  See the rule for version.o, below.

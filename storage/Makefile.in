@@ -21,9 +21,7 @@ CTAGS		= ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 
-##  =()<RANLIB	= @<RANLIB>@>()=
-RANLIB	= ranlib
-
+RANLIB	= @RANLIB@
 CC      = @CC@
 CFLAGS  = -I. -I../include @CPPFLAGS@ $(PERLINC)
 LDFLAGS = @LDFLAGS@

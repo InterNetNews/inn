@@ -120,10 +120,10 @@
   ||#### =()<MAN8			@<MAN8>@>()=[autoconf]
   ||MAN8			@ac_cv_subst_manpath@/man8
 [IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  Ranlib command.  Use echo if you don't need ranlib.
-  ||##[autoconf]
-  ||#### =()<RANLIB			@<RANLIB>@>()=
-  ||RANLIB			@ac_cv_subst_ranlib@
+# ||##  Ranlib command.  Use echo if you don't need ranlib.
+# ||##[autoconf]
+# ||#### =()<RANLIB			@<RANLIB>@>()=
+# ||RANLIB			@ac_cv_subst_ranlib@
 [IN1.7=NO][WDF=autoconf][WOR=no]
   ||##  LEX should probably be lex or flex
   ||##[autoconf]
