@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "NNRPD 8"
-.TH NNRPD 8 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
+.TH NNRPD 8 "2003-09-07" "INN 2.4.1" "InterNetNews Documentation"
 .SH "NAME"
 nnrpd \- NNTP server for on\-campus hosts
 .SH "SYNOPSIS"
@@ -139,21 +139,28 @@ nnrpd \- NNTP server for on\-campus hosts
 [\fB\-P\fR \fIprefork\fR] [\fB\-r\fR \fIreason\fR] [\fB\-s\fR \fIpadding\fR]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBnnrpd\fR is an \s-1NNTP\s0 server for newsreaders. It accepts commands on its
-standard input and responds on its standard output. It is normally
+\&\fBnnrpd\fR is an \s-1NNTP\s0 server for newsreaders.  It accepts commands on its
+standard input and responds on its standard output.  It is normally
 invoked by \fIinnd\fR\|(8) with those descriptors attached to a remote client
-connection. \fBnnrpd\fR also supports running as a standalone daemon.
+connection.  \fBnnrpd\fR also supports running as a standalone daemon.
 .PP
 Unlike \fIinnd\fR\|(8) \fBnnrpd\fR supports all \s-1NNTP\s0 commands for user-oriented
-reading and posting.
-.PP
-\&\fBnnrpd\fR uses the \fIreaders.conf\fR file to control who is authorized to
-access the Usenet database. When \fInnrpdloadlimit\fR in \fIinn.conf\fR is
-not 0, it will also reject connections if the load average is greater
-than that value (typically 16).
+reading and posting.  \fBnnrpd\fR uses the \fIreaders.conf\fR file to control
+who is authorized to access the Usenet database.
 .PP
 On exit, \fBnnrpd\fR will report usage statistics through \fIsyslog\fR\|(3).
 .PP
+\&\fBnnrpd\fR only reads config files (both \fIreaders.conf\fR and \fIinn.conf\fR)
+when it is spawned.  You can therefore never change the behavior of a
+client that's already connected.  If \fBnnrpd\fR is run from \fBinnd\fR (the
+default) or from \fIinetd\fR\|(8), \fIxinetd\fR\|(8), or some equivalent, a new \fBnnrpd\fR
+process is spawned for every connection and therefore any changes to
+configuration files will be immediately effective for all new
+connections.  If you are instead running \fBnnrpd\fR with the \fB\-D\fR option,
+any configuration changes won't take effect until \fBnnrpd\fR is restarted.
+.PP
+When \fInnrpdloadlimit\fR in \fIinn.conf\fR is not 0, it will also reject
+connections if the load average is greater than that value (typically 16).
 \&\fBnnrpd\fR can also prevent high-volume posters from abusing your
 resources. See the discussion of exponential backoff in \fIinn.conf\fR\|(5).
 .SH "OPTIONS"
@@ -259,66 +266,64 @@ by \fIinnd\fR\|(8) under the control of the \fIctlinnd\fR\|(8) \f(CW\*(C`trace\*
 is toggled upon receipt of a \f(CW\*(C`SIGHUP\*(C'\fR; see \fIsignal\fR\|(2).
 .SH "PROTOCOL DIFFERENCES"
 .IX Header "PROTOCOL DIFFERENCES"
-\&\fBnnrpd\fR implements the \s-1NNTP\s0 commands defined in \s-1RFC\s0 977, with the following
-differences:
+\&\fBnnrpd\fR implements the \s-1NNTP\s0 commands defined in \s-1RFC\s0 977, with the
+following differences:
 .RS 4
 .IP "1." 4
-The \f(CW\*(C`slave\*(C'\fR command is not implemented. This command has never been
+The \f(CW\*(C`slave\*(C'\fR command is not implemented.  This command has never been
 fully defined.
 .IP "2." 4
-The \f(CW\*(C`list\*(C'\fR command may be followed by the optional word
-\&\f(CW\*(C`active.times\*(C'\fR, \f(CW\*(C`distributions\*(C'\fR, \f(CW\*(C`distrib.pats\*(C'\fR, \f(CW\*(C`moderators\*(C'\fR,
-\&\f(CW\*(C`newsgroups\*(C'\fR, \f(CW\*(C`subscriptions\*(C'\fR, or \f(CW\*(C`Ioverview.fmt\*(C'\fR to get a list of
-when newsgroups where created, a list of valid distributions, a file
-specifying default distribution patterns, moderators list, a
-one-per-line description of the current set of newsgroups, a list of
-the automatic group subscriptions, or a listing of the
-\&\fIoverview.fmt\fR file.
+The \f(CW\*(C`list\*(C'\fR command may be followed by the optional word \f(CW\*(C`active.times\*(C'\fR,
+\&\f(CW\*(C`distributions\*(C'\fR, \f(CW\*(C`distrib.pats\*(C'\fR, \f(CW\*(C`moderators\*(C'\fR, \f(CW\*(C`newsgroups\*(C'\fR,
+\&\f(CW\*(C`subscriptions\*(C'\fR, or \f(CW\*(C`Ioverview.fmt\*(C'\fR to get a list of when newsgroups
+where created, a list of valid distributions, a file specifying default
+distribution patterns, moderators list, a one-per-line description of the
+current set of newsgroups, a list of the automatic group subscriptions, or
+a listing of the \fIoverview.fmt\fR file.
 .Sp
 The command \f(CW\*(C`list active\*(C'\fR is equivalent to the \f(CW\*(C`list\*(C'\fR command. This
 is a common extension.
 .IP "3." 4
 The \f(CW\*(C`xhdr\*(C'\fR, \f(CW\*(C`authinfo user\*(C'\fR and \f(CW\*(C`authinfo pass\*(C'\fR commands are
-implemented.  These are based on the reference Unix
-implementation. See
-ftp://ftp.ietf.org/internet\-drafts/draft\-ietf\-nntpext\-imp\-04.txt
+implemented.  These are based on the reference Unix implementation.  See
+\&\s-1RFC\s0 2980.
 .IP "4." 4
 A new command, \f(CW\*(C`xpat header range|MessageID pat [morepat...]\*(C'\fR, is
-provided.  The first argument is the case-insensitive name of the
-header to be searched.  The second argument is either an article range
-or a single Message\-ID, as specified in \s-1RFC\s0 977.  The third argument
-is a \f(CW\*(C`uwildmat\*(C'\fR(3)\-style pattern; if there are additional arguments
-they are joined together separated by a single space to form the
-complete pattern.  This command is similar to the \f(CW\*(C`xhdr\*(C'\fR command.  It
-returns a \f(CW221\fR response code, followed by the text response of all
-article numbers that match the pattern.
+provided.  The first argument is the case-insensitive name of the header
+to be searched.  The second argument is either an article range or a
+single Message\-ID, as specified in \s-1RFC\s0 977.  The third argument is a
+\&\f(CW\*(C`uwildmat\*(C'\fR(3)\-style pattern; if there are additional arguments they are
+joined together separated by a single space to form the complete pattern.
+This command is similar to the \f(CW\*(C`xhdr\*(C'\fR command.  It returns a \f(CW221\fR
+response code, followed by the text response of all article numbers that
+match the pattern.
 .IP "5." 4
-The \f(CW\*(C`listgroup group\*(C'\fR command is provided.  This is a comment
-extension.  It is equivalent to the \f(CW\*(C`group\*(C'\fR command, except that the
-reply is a multi-line response containing the list of all article
-numbers in the group.
+The \f(CW\*(C`listgroup group\*(C'\fR command is provided.  This is a comment extension.
+It is equivalent to the \f(CW\*(C`group\*(C'\fR command, except that the reply is a
+multi-line response containing the list of all article numbers in the
+group.
 .IP "6." 4
 The \f(CW\*(C`xgtitle [group]\*(C'\fR command is provided. This extension is used by
 ANU\-News.  It returns a \f(CW282\fR reply code, followed by a one-line
-description of all newsgroups thatmatch the pattern. The default is
-the current group.
+description of all newsgroups thatmatch the pattern.  The default is the
+current group.
 .IP "7." 4
-The \f(CW\*(C`xover [range]\*(C'\fR command is provided. It returns a \f(CW224\fR reply
-code, followed by the overview data for the specified range; the
-default is to return the data for the current article.
+The \f(CW\*(C`xover [range]\*(C'\fR command is provided. It returns a \f(CW224\fR reply code,
+followed by the overview data for the specified range; the default is to
+return the data for the current article.
 .IP "8." 4
 The \f(CW\*(C`xpath MessageID\*(C'\fR command is provided; see \fIinnd\fR\|(8).
 .IP "9." 4
-The \f(CW\*(C`date\*(C'\fR command is provided; this is based on the draft \s-1NNTP\s0
-protocol revision (draft\-ietf\-nntpext\-imp\-04.txt).  It returns a
-one-line response code of \f(CW111\fR  followed by the \s-1GMT\s0 date and time on
-the server in the form \f(CW\*(C`YYYYMMDDhhmmss\*(C'\fR.
+The \f(CW\*(C`date\*(C'\fR command is provided; this is based on the draft \s-1NNTP\s0 protocol
+revision (draft\-ietf\-nntpext\-imp\-04.txt).  It returns a one-line response
+code of \f(CW111\fR followed by the \s-1GMT\s0 date and time on the server in the form
+\&\f(CW\*(C`YYYYMMDDhhmmss\*(C'\fR.
 .SH "HISTORY"
 .IX Header "HISTORY"
-Written by Rich \f(CW$alz\fR <rsalz@uunet.uu.net> for InterNetNews.
-Overview support added by Rob Robertston <rob@violet.berkeley.edu> and
-Rich in January, 1993. Exponential backoff (for posting) added by
-Dave Hayes in Febuary 1998.
+Written by Rich \f(CW$alz\fR <rsalz@uunet.uu.net> for InterNetNews.  Overview
+support added by Rob Robertston <rob@violet.berkeley.edu> and Rich in
+January, 1993.  Exponential backoff (for posting) added by Dave Hayes in
+Febuary 1998.
 .Sp
 $Id$
 .SH "SEE ALSO"
