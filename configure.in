@@ -309,6 +309,7 @@ then
 		LIBS="$LIBS -lnsl"
 	fi
 fi
+AC_CHECK_LIB(shadow, getspnam)
 AC_CHECK_LIB(elf, nlist)
 dnl AIX needs flock from libbsd
 AC_CHECK_LIB(bsd,flock)
@@ -412,7 +413,7 @@ AC_CHECK_FUNCS(gettimeofday memchr memcmp memcpy memmove memset)
 AC_CHECK_FUNCS(mkdir mkfifo mktemp select setbuffer setproctitle)
 AC_CHECK_FUNCS(setsid socket strcasecmp strchr strcspn strerror)
 AC_CHECK_FUNCS(strrchr strspn strstr symlink sysconf syslog ulimit)
-AC_CHECK_FUNCS(waitpid socketpair getpagesize)
+AC_CHECK_FUNCS(waitpid socketpair getpagesize getspnam)
 AC_CHECK_FUNCS(statvfs, [AC_DEFINE(HAVE_STATVFS)], [AC_CHECK_FUNCS(statfs) AC_CHECK_HEADERS(sys/vfs.h, AC_DEFINE(HAVE_SYS_VFS_H)) AC_CHECK_HEADERS(sys/param.h, AC_DEFINE(HAVE_SYS_PARAM_H)) AC_CHECK_HEADERS(sys/mount.h, AC_DEFINE(HAVE_SYS_MOUNT_H))])
 
 
