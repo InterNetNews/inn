@@ -1126,6 +1126,19 @@ checkgroups:scs@lokkur.dexter.mi.us:mi.*:mail
 newgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 rmgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 
+## MICROSOFT (Microsoft, Inc.)
+#
+# Broken control messages for the Microsoft groups are sent from the
+# address pssolops@microsoft.com, but they aren't signed and don't contain
+# valid newsgroup file entries.  It is therefore recommended to use
+# actsync rather than control message processing to maintain one's local
+# list of microsoft.* groups if you carry this hierarchy.
+#
+# newgroup:pssolops@microsoft.com:microsoft.*:doit
+# rmgroup:pssolops@microsoft.com:microsoft.*:doit
+newgroup:*:microsoft.*:drop
+rmgroup:*:microsoft.*:drop
+
 ## MILW (Milwaukee, Wisconsin, USA)
 # Contact: milw@usenet.mil.wi.us
 # URL: http://usenet.mil.wi.us
