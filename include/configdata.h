@@ -71,18 +71,6 @@ typedef char		*CSTRING;
 /*
 **  4.  C LIBRARY DIFFERENCES
 */
-    /* Use BSD4.2 or Posix directory names? */
-    /* =()<#define DIR_@<DIR_STYLE>@>()= */
-#define DIR_DIRENT
-    /* Use flock, lockf, or nothing to lock files? */
-    /* =()<#define LOCK_@<LOCK_STYLE>@>()= */
-#define LOCK_FLOCK
-    /* Does your (struct tm) have a tm_gmtoff field? */
-    /* =()<#define @<HAVE_TM_GMTOFF>@_HAVE_TM_GMTOFF>()= */
-#define DO_HAVE_TM_GMTOFF
-    /* Does your (struct stat) have a st_blksize field? */
-    /* =()<#define @<HAVE_ST_BLKSIZE>@_HAVE_ST_BLKSIZE>()= */
-#define DO_HAVE_ST_BLKSIZE
     /* Use "union wait" instead of int? */
     /* =()<#define @<USE_UNION_WAIT>@_USE_UNION_WAIT>()= */
 #define DONT_USE_UNION_WAIT

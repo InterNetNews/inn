@@ -167,12 +167,6 @@
   ||#### =()<INT32_T			@<INT32_T>@>()=
   ||INT32_T			@ac_cv_subst_int32_t@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Use flock, lockf, or nothing to lock files?
-  ||##[autoconf]
-  ||##  Pick FLOCK, LOCKF, FCNTL, or NONE
-  ||#### =()<LOCK_STYLE		@<LOCK_STYLE>@>()=
-  ||LOCK_STYLE		@ac_lock_style@
-[IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Use "union wait" instead of int?  Pick DO or DONT.
   ||##[autoconf]
   ||#### =()<USE_UNION_WAIT		@<USE_UNION_WAIT>@>()=

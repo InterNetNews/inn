@@ -4592,7 +4592,7 @@ fi
 echo "$ac_t""$ac_cv_union_wait" 1>&6
 # Size of integers
 
-for ac_func in flock
+for ac_func in flock lockf fcntl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:4599: checking for $ac_func" >&5
@@ -4647,138 +4647,14 @@ else
 fi
 done
 
-if test $ac_cv_func_flock = yes; then
-	ac_lock_style=FLOCK
-else
-	for ac_func in lockf
-do
-echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:4657: checking for $ac_func" >&5
-if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 4662 "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $ac_func(); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-/* We use char because int might match the return type of a gcc2
-    builtin and then its argument prototype would still apply.  */
-char $ac_func();
-
-int main() {
-
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
-choke me
-#else
-$ac_func();
-#endif
-
-; return 0; }
-EOF
-if { (eval echo configure:4685: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
-  rm -rf conftest*
-  eval "ac_cv_func_$ac_func=yes"
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  eval "ac_cv_func_$ac_func=no"
-fi
-rm -f conftest*
-fi
-
-if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-  cat >> confdefs.h <<EOF
-#define $ac_tr_func 1
-EOF
- 
-else
-  echo "$ac_t""no" 1>&6
-fi
-done
-
-	if test $ac_cv_func_lockf = yes; then
-		ac_lock_style=LOCKF
-	else
-		for ac_func in fcntl
-do
-echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:4715: checking for $ac_func" >&5
-if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 4720 "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $ac_func(); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-/* We use char because int might match the return type of a gcc2
-    builtin and then its argument prototype would still apply.  */
-char $ac_func();
-
-int main() {
-
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
-choke me
-#else
-$ac_func();
-#endif
-
-; return 0; }
-EOF
-if { (eval echo configure:4743: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
-  rm -rf conftest*
-  eval "ac_cv_func_$ac_func=yes"
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  eval "ac_cv_func_$ac_func=no"
-fi
-rm -f conftest*
-fi
-
-if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-  cat >> confdefs.h <<EOF
-#define $ac_tr_func 1
-EOF
- 
-else
-  echo "$ac_t""no" 1>&6
-fi
-done
-
-		if test $ac_cv_func_lockf = yes; then
-			ac_lock_style=FCNTL
-		else
-			ac_lock_style=NONE
-		fi
-	fi
-fi
-
 
 echo $ac_n "checking for AF_UNIX""... $ac_c" 1>&6
-echo "configure:4777: checking for AF_UNIX" >&5
+echo "configure:4653: checking for AF_UNIX" >&5
 if eval "test \"`echo '$''{'ac_cv_subst_have_unix_domain'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 4782 "configure"
+#line 4658 "configure"
 #include "confdefs.h"
 #include <sys/socket.h>
 #ifdef AF_UNIX
@@ -4801,13 +4677,13 @@ echo "$ac_t""$ac_cv_subst_have_unix_domain" 1>&6
 
 
 echo $ac_n "checking for close on exec style""... $ac_c" 1>&6
-echo "configure:4805: checking for close on exec style" >&5
+echo "configure:4681: checking for close on exec style" >&5
 if eval "test \"`echo '$''{'ac_cv_subst_clx_style'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   if test $ac_cv_header_fcntl_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4811 "configure"
+#line 4687 "configure"
 #include "confdefs.h"
 #include <fcntl.h>
 #ifdef FD_CLOEXEC
@@ -4836,7 +4712,7 @@ then
 
 if test $ac_cv_header_fcntl_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4840 "configure"
+#line 4716 "configure"
 #include "confdefs.h"
 #include <fcntl.h>
 #ifdef FD_SETFD
@@ -4860,7 +4736,7 @@ if test ${ac_cv_subst_clx_style} = "unknown"
 then
 if test $ac_cv_header_sys_filio_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4864 "configure"
+#line 4740 "configure"
 #include "confdefs.h"
 #include <sys/filio.h>
 #ifdef FIOCLEX
@@ -4889,13 +4765,13 @@ fi
 
 
 echo $ac_n "checking for nbio style""... $ac_c" 1>&6
-echo "configure:4893: checking for nbio style" >&5
+echo "configure:4769: checking for nbio style" >&5
 if eval "test \"`echo '$''{'ac_cv_subst_nbio_style'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   if test $ac_cv_header_fcntl_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4899 "configure"
+#line 4775 "configure"
 #include "confdefs.h"
 #include <fcntl.h>
 #ifdef O_NONBLOCK
@@ -4922,7 +4798,7 @@ echo "$ac_t""$ac_cv_subst_nbio_style" 1>&6
 if test $ac_cv_subst_nbio_style = unknown; then
 if test $ac_cv_header_sys_filio_h = yes; then
 	cat > conftest.$ac_ext <<EOF
-#line 4926 "configure"
+#line 4802 "configure"
 #include "confdefs.h"
 #include <sys/filio.h>
 #ifdef FIONBIO
@@ -4952,12 +4828,12 @@ fi
 
 
 echo $ac_n "checking log level for news""... $ac_c" 1>&6
-echo "configure:4956: checking log level for news" >&5
+echo "configure:4832: checking log level for news" >&5
 if eval "test \"`echo '$''{'ac_cv_log_news'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 4961 "configure"
+#line 4837 "configure"
 #include "confdefs.h"
 #include <syslog.h>
 #ifdef LOG_NEWS
@@ -4981,12 +4857,12 @@ echo "$ac_t""$ac_cv_log_news" 1>&6
 
 
 echo $ac_n "checking generic pointer""... $ac_c" 1>&6
-echo "configure:4985: checking generic pointer" >&5
+echo "configure:4861: checking generic pointer" >&5
 if eval "test \"`echo '$''{'ac_cv_type_generic'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 4990 "configure"
+#line 4866 "configure"
 #include "confdefs.h"
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
@@ -4997,7 +4873,7 @@ int main() {
 void *a; a = malloc(sizeof(a))
 ; return 0; }
 EOF
-if { (eval echo configure:5001: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:4877: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_type_generic=void
 else
@@ -5546,7 +5422,6 @@ s%@ac_cv_type_qsort@%$ac_cv_type_qsort%g
 s%@ac_cv_type_free@%$ac_cv_type_free%g
 s%@ac_cv_type_exit@%$ac_cv_type_exit%g
 s%@ac_cv_type__exit@%$ac_cv_type__exit%g
-s%@ac_lock_style@%$ac_lock_style%g
 s%@ac_cv_subst_have_unix_domain@%$ac_cv_subst_have_unix_domain%g
 s%@ac_cv_subst_clx_style@%$ac_cv_subst_clx_style%g
 s%@ac_cv_subst_nbio_style@%$ac_cv_subst_nbio_style%g

@@ -376,23 +376,7 @@ AC_CACHE_CHECK(for union wait, ac_cv_union_wait, AC_TRY_COMPILE([#include <wait.
 # Size of integers
 
 dnl Locking style
-AC_CHECK_FUNCS(flock)
-if test $ac_cv_func_flock = yes; then
-	ac_lock_style=FLOCK
-else
-	AC_CHECK_FUNCS(lockf)
-	if test $ac_cv_func_lockf = yes; then
-		ac_lock_style=LOCKF
-	else
-		AC_CHECK_FUNCS(fcntl)
-		if test $ac_cv_func_lockf = yes; then
-			ac_lock_style=FCNTL
-		else
-			ac_lock_style=NONE
-		fi
-	fi
-fi
-AC_SUBST(ac_lock_style)
+AC_CHECK_FUNCS(flock lockf fcntl)
 
 dnl Macros check
 AC_CACHE_CHECK(for AF_UNIX, ac_cv_subst_have_unix_domain, AC_EGREP_CPP(yes, [#include <sys/socket.h>
