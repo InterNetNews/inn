@@ -440,6 +440,7 @@ JustCleanup()
     ARTclose();
     if (innconf->enableoverview) 
 	OVclose();
+    NGclose();
     SMshutdown();
 
 #if defined(DO_TCL)
@@ -452,6 +453,9 @@ JustCleanup()
 #if defined(DO_PYTHON)
     PYclose();
 #endif /* defined(DO_TCL) */
+
+    CHANshutdown();
+    ClearInnConf();
 
     (void)sleep(1);
     /* PROCclose(TRUE); */

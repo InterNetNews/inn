@@ -502,6 +502,7 @@ extern int		CHANreadtext(CHANNEL *cp);
 extern void		CHANclose(CHANNEL *cp, char *name);
 extern void		CHANreadloop(void);
 extern void		CHANsetup(int i);
+extern void		CHANshutdown();
 extern void		CHANtracing(CHANNEL *cp, BOOL Flag);
 
 extern void		RCHANadd(CHANNEL *cp);
@@ -548,6 +549,7 @@ extern void		LCsetup();
 
 extern char		**NGsplit();
 extern NEWSGROUP	*NGfind();
+extern void		NGclose();
 extern CHANNEL		*NCcreate();
 extern void		NGparsefile();
 extern BOOL		NGrenumber();

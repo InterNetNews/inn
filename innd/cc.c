@@ -2031,6 +2031,10 @@ CCclose()
     CCchan = NULL;
     if (unlink(CCpath) < 0)
 	syslog(L_ERROR, "%s cant unlink %s %m", LogName, CCpath);
+    DISPOSE(CCpath);
+    CCpath = NULL;
+    DISPOSE(CCreply.Data);
+    CCreply.Data = NULL;
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     if (close(CCwriter) < 0)
 	syslog(L_ERROR, "%s cant close unbound %m", LogName);

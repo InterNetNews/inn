@@ -103,6 +103,28 @@ void BUFFtrimcr(BUFFER *bp)
     bp->Left -= trimmed;
 }
 
+/*
+** Tear down our world
+*/
+void
+CHANshutdown()
+{
+  CHANNEL	        *cp;
+  int			i;
+
+  if (CHANtable) {
+    for (i = CHANtablesize, cp = &CHANtable[0]; --i >= 0; cp++) {
+      if (cp->In.Data) {
+	DISPOSE(cp->In.Data);
+      }
+      if (cp->Out.Data) {
+	DISPOSE(cp->Out.Data);
+      }
+    }
+    DISPOSE(CHANtable);
+    CHANtable = NULL;
+  }
+}
 
 /*
 **  Initialize all the I/O channels.
@@ -114,8 +136,7 @@ void CHANsetup(int i)
     FD_ZERO(&RCHANmask);
     FD_ZERO(&SCHANmask);
     FD_ZERO(&WCHANmask);
-    if (CHANtable)
-	DISPOSE(CHANtable);
+    CHANshutdown();
     CHANtablesize = i;
     CHANtable = NEW(CHANNEL, CHANtablesize);
     (void)memset((POINTER)CHANtable, 0,

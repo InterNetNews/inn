@@ -165,17 +165,7 @@ NGparsefile()
     char		*end;
 
     /* If re-reading, remove anything we might have had. */
-    if (Groups) {
-	for (i = nGroups, ngp = Groups; --i >= 0; ngp++) {
-	    DISPOSE(ngp->Sites);
-	    DISPOSE(ngp->Poison);
-	}
-	DISPOSE(Groups);
-	DISPOSE(GroupPointers);
-	DISPOSE(NGdirs.Data);
-	DISPOSE(NGnames.Data);
-    }
-
+    NGclose();
 
     /* Get active file and space for group entries. */
     active = ICDreadactive(&end);
@@ -256,6 +246,37 @@ NGparsefile()
 	}
 }
 
+/*
+** Free allocated memory
+*/
+void
+NGclose()
+{
+    register int	i;
+    register NEWSGROUP	*ngp;
+    register NGHASH	*htp;
+
+    if (Groups) {
+	for (i = nGroups, ngp = Groups; --i >= 0; ngp++) {
+	    DISPOSE(ngp->Sites);
+	    DISPOSE(ngp->Poison);
+	}
+	DISPOSE(Groups);
+	Groups = NULL;
+	DISPOSE(GroupPointers);
+	DISPOSE(NGdirs.Data);
+	DISPOSE(NGnames.Data);
+    }
+
+    for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
+      htp->Size = NGHbuckets;
+      if (htp->Groups) {
+	DISPOSE(htp->Groups);
+	htp->Used = 0;
+	htp->Groups = NULL;
+      }
+    }
+}
 
 /*
 **  Hash a newsgroup and see if we get it.

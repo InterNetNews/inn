@@ -109,5 +109,6 @@ LCclose()
     LCchan = NULL;
     if (unlink(LCpath) < 0)
 	syslog(L_ERROR, "%s cant unlink %s %m", LogName, LCpath);
+    DISPOSE(LCpath);
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }
