@@ -1799,11 +1799,10 @@ ARTpost(CHANNEL *cp)
   article = &cp->In;
   artclean = ARTclean(data, cp->Error);
 
-  /* assumes Path header is required header */
-  hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
-  if (!artclean && (!HDR_FOUND(HDR__MESSAGE_ID) || hopcount == 0)) {
+  /* If we don't have Path or Message-ID, we can't continue. */
+  if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID)))
     return false;
-  }
+  hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
             NNTP_REJECTIT_VAL);
