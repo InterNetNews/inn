@@ -2,6 +2,8 @@
  * ovdb.c
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-06-10 : Modified groupnum() interface; fix ovdb_add() to return FALSE
+ *              for certain groupnum() errors
  * 2000-06-08 : Added BerkeleyDB 3.1.x compatibility
  * 2000-04-09 : Tweak some default parameters; store aliased group info
  * 2000-03-29 : Add DB_RMW flag to the 'get' of get-modify-put sequences
@@ -406,11 +408,14 @@ static int which_db(char *group)
 
 static DB *get_db_bynum(int which)
 {
+    int ret;
     if(oneatatime) {
 	if(which != current_db && current_db != -1)
 	    close_db_file(current_db);
 
-	open_db_file(which);
+	if(ret = open_db_file(which))
+	    syslog(L_ERROR, "OVDB: open_db_file failed: %s", db_strerror(ret));
+
 	current_db = which;
     }
     return(dbs[which]);
@@ -423,37 +428,36 @@ static DB *get_db(char *group)
     return get_db_bynum(which_db(group));
 }
 
-/* returns group ID for given group */
-static group_id_t groupnum(char *group)
+/* returns group ID for given group in gno */
+static int groupnum(char *group, group_id_t *gno)
 {
     int ret;
     DBT key, val;
-    group_id_t gno;
 
     if(group == NULL)	/* just in case */
-	return 0;
+	return DB_NOTFOUND;
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
 
     key.data = group;
     key.size = strlen(group);
-    val.data = &gno;		/* the get call will write directly into gno */
-    val.ulen = sizeof gno;
+    val.data = gno;
+    val.ulen = sizeof(group_id_t);
     val.flags = DB_DBT_USERMEM;
 
     if(ret = groupsbyname->get(groupsbyname, NULL, &key, &val, 0)) {
 	if(ret != DB_NOTFOUND)
 	    syslog(L_ERROR, "OVDB: groupnum: get: %s", db_strerror(ret));
-	return 0;
+	return ret;
     }
 
-    if(val.size != sizeof gno) {
+    if(val.size != sizeof(group_id_t)) {
 	syslog(L_ERROR, "OVDB: groupnum: wrong size for groupnum val (%d, %s)", val.size, group);
-	return 0;
+	return DB_NOTFOUND;
     }
 
-    return gno;
+    return 0;
 }
 
 static void delete_all_records(group_id_t gno)
@@ -834,11 +838,11 @@ BOOL ovdb_open(int mode)
 BOOL ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 {
     int ret;
-    group_id_t gno = groupnum(group);
+    group_id_t gno;
     DBT key, val;
     struct groupstats gs;
 
-    if(!gno)
+    if(groupnum(group, &gno) != 0)
 	return FALSE;
 
     memset(&key, 0, sizeof key);
@@ -886,10 +890,14 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     int ret, new = 0;
 
 retry:
-    gno = groupnum(group);
-    if(!gno)
+    switch(groupnum(group, &gno)) {
+    case DB_NOTFOUND:
 	new = 1;
-
+    case 0:
+	break;
+    default:
+	return FALSE;
+    }
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
 
@@ -1097,10 +1105,12 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 
     db = get_db(group);
     if(!db)
+	return FALSE;
+    ret = groupnum(group, &gno);
+    if(ret == DB_NOTFOUND)
 	return TRUE;
-    gno = groupnum(group);
-    if(!gno)
-	return TRUE;
+    if(ret != 0)
+	return FALSE;
 
     /* start the transaction */
 retry:
@@ -1203,8 +1213,7 @@ void *ovdb_opensearch(char *group, int low, int high)
 
     s = NEW(struct ovdbsearch, 1);
 
-    gno = groupnum(group);
-    if(!gno) {
+    if(groupnum(group, &gno) != 0) {
 	DISPOSE(s);
 	return NULL;
     }
@@ -1325,12 +1334,14 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
 {
     int ret;
     DB *db = get_db(group);
-    group_id_t gno = groupnum(group);
+    group_id_t gno;
     DBT key, val;
     struct ovdata ovd;
     struct datakey dk;
 
-    if(!db || !gno)
+    if(!db)
+	return FALSE;
+    if(groupnum(group, &gno) != 0)
 	return FALSE;
 
     dk.groupnum = gno;
@@ -1401,12 +1412,9 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	return delete_old_stuff();
 
     db = get_db(group);
-    if(!db) {
-	syslog(L_ERROR, "OVDB: get_db(%s) failed (errno=%m)", group);
+    if(!db)
 	return FALSE;
-    }
-    gno = groupnum(group);
-    if(!gno)
+    if(groupnum(group, &gno) != 0)
 	return FALSE;
 
     memset(&key, 0, sizeof key);
