@@ -11,7 +11,7 @@
 #include <configdata.h>
 #include <interface.h>
 
-BOOL timecaf_init(BOOL *selfexpire);
+BOOL timecaf_init(SMATTRIBUTE *attr);
 TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount);

@@ -160,8 +160,14 @@ static TOKEN *PathNumToToken(char *path, ARTNUM artnum) {
 }
 
 
-BOOL timecaf_init(BOOL *selfexpire) {
-    *selfexpire = FALSE;
+BOOL timecaf_init(SMATTRIBUTE *attr) {
+    if (attr == NULL) {
+	syslog(L_ERROR, "timecaf: attr is NULL");
+	SMseterror(SMERR_INTERNAL, "attr is NULL");
+	return FALSE;
+    }
+    attr->selfexpire = FALSE;
+    attr->expensivestat = FALSE;
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timecaf: token length is less than 6 bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);
