@@ -1,12 +1,17 @@
 .TH SEND-UUCP 8
 .SH NAME
-send-uucp, send-nntp, send-ihave \- send Usenet articles to remote site
+send-nntp, send-ihave \- send Usenet articles to remote site
 .SH SYNOPSIS
-{
 .B send-nntp
-|
+[
+.B \-d
+]
+.B sitename:hostname | sitename
+[
+.B sitename:hostname | sitename ..
+]
+.PP
 .B send-ihave
-}
 [
 .B \-d
 ]
