@@ -796,7 +796,7 @@ static conn_ret FindHeader(Buffer *bufs, const char *header, char **start,
     str_base = bufferBase(b);
     str = str_base;
     
-    while ( (((int)str) - ((int)str_base)) < size - headerlen)
+    while ((str - str_base) < size - headerlen)
     {
 	if (*str == header[0])
 	{

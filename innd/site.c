@@ -206,8 +206,8 @@ SITECHANbilge(SITE *sp)
         i = write(fd, &sp->Channel->Out.data[sp->Channel->Out.used],
                   sp->Channel->Out.left);
         if(i <= 0) {
-            syslog(L_ERROR,"%s cant spool count %d", CHANname(sp->Channel),
-                sp->Channel->Out.left);
+            syslog(L_ERROR,"%s cant spool count %lu", CHANname(sp->Channel),
+                (unsigned long) sp->Channel->Out.left);
             close(fd);
             return false;
         }
@@ -510,8 +510,9 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	if (sp->FNLwantsnames) {
 	    i = strlen(sp->Param) + sp->FNLnames.used;
 	    if (i + (sizeof(TOKEN) * 2) + 3 >= sizeof buff) {
-		syslog(L_ERROR, "%s toolong need %d for %s",
-		    sp->Name, i + (sizeof(TOKEN) * 2) + 3, sp->Name);
+		syslog(L_ERROR, "%s toolong need %lu for %s",
+		    sp->Name, (unsigned long) (i + (sizeof(TOKEN) * 2) + 3),
+		    sp->Name);
 		break;
 	    }
 	    temp = xmalloc(i + 1);
@@ -771,7 +772,8 @@ SITEchanclose(CHANNEL *cp)
 	     * site spooling, copy any data that might be pending,
 	     * and arrange to retry later. */
 	    if (!SITEspool(sp, (CHANNEL *)NULL)) {
-		syslog(L_ERROR, "%s loss %d bytes", sp->Name, cp->Out.left);
+		syslog(L_ERROR, "%s loss %lu bytes", sp->Name,
+                       (unsigned long) cp->Out.left);
 		return;
 	    }
 	    WCHANsetfrombuffer(sp->Channel, &cp->Out);
@@ -860,11 +862,13 @@ SITEflush(SITE *sp, const bool Restart)
     else if (cp != NULL && cp->Out.left) {
 	if (sp->Type == FTfile || sp->Spooling) {
 	    /* Can't flush a file?  Hopeless. */
-	    syslog(L_ERROR, "%s dataloss %d", sp->Name, cp->Out.left);
+	    syslog(L_ERROR, "%s dataloss %lu", sp->Name,
+                   (unsigned long) cp->Out.left);
 	    return;
 	}
 	/* Must be a working channel; spool and retry. */
-	syslog(L_ERROR, "%s spooling %d bytes", sp->Name, cp->Out.left);
+	syslog(L_ERROR, "%s spooling %lu bytes", sp->Name,
+               (unsigned long) cp->Out.left);
 	if (SITEspool(sp, cp))
 	    SITEflush(sp, false);
 	return;
@@ -1148,13 +1152,14 @@ SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
     case FTfile:
 	p += strlen(strcpy(p, "file"));
 	if (sp->Buffered) {
-	    sprintf(p, " buffered(%d)", sp->Buffer.left);
+	    sprintf(p, " buffered(%lu)", (unsigned long) sp->Buffer.left);
 	    p += strlen(p);
 	}
 	else if ((cp = sp->Channel) == NULL)
 	    p += strlen(strcpy(p, " no channel?"));
 	else {
-	    sprintf(p, " open fd=%d, in mem %d", cp->fd, cp->Out.left);
+	    sprintf(p, " open fd=%d, in mem %lu", cp->fd,
+                    (unsigned long) cp->Out.left);
 	    p += strlen(p);
 	}
 	break;
@@ -1173,7 +1178,8 @@ Common:
 	if ((cp = sp->Channel) == NULL)
 	    p += strlen(strcpy(p, " no channel?"));
 	else {
-	    sprintf(p, " fd=%d, in mem %d", cp->fd, cp->Out.left);
+	    sprintf(p, " fd=%d, in mem %lu", cp->fd,
+                    (unsigned long) cp->Out.left);
 	    p += strlen(p);
 	}
 	break;

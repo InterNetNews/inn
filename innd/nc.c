@@ -133,8 +133,9 @@ NCwritereply(CHANNEL *cp, const char *text)
     if (i == 0) {	/* if only data then try to write directly */
 	i = write(cp->fd, &bp->data[bp->used], bp->left);
 	if (Tracing || cp->Tracing)
-	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %d)",
-		CHANname(cp), i, cp->fd, &bp->data[bp->used], bp->left);
+	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %lu)",
+		CHANname(cp), i, cp->fd, &bp->data[bp->used],
+		(unsigned long) bp->left);
 	if (i > 0) bp->used += i;
 	if (bp->used == bp->left) {
 	    /* all the data was written */
@@ -736,7 +737,8 @@ NCproc(CHANNEL *cp)
 
   readmore = movedata = false;
   if (Tracing || cp->Tracing)
-    syslog(L_TRACE, "%s NCproc Used=%d", CHANname(cp), cp->In.used);
+    syslog(L_TRACE, "%s NCproc Used=%lu", CHANname(cp),
+           (unsigned long) cp->In.used);
 
   bp = &cp->In;
   if (bp->used == 0)
@@ -744,8 +746,8 @@ NCproc(CHANNEL *cp)
 
   for ( ; ; ) {
     if (Tracing || cp->Tracing) {
-      syslog(L_TRACE, "%s cp->Start=%d cp->Next=%d bp->Used=%d", CHANname(cp),
-	cp->Start, cp->Next, bp->used);
+      syslog(L_TRACE, "%s cp->Start=%d cp->Next=%d bp->Used=%lu",
+        CHANname(cp), cp->Start, cp->Next, (unsigned long) bp->used);
       if (bp->used > 15)
 	syslog(L_TRACE, "%s NCproc state=%d next \"%.15s\"", CHANname(cp),
 	  cp->State, &bp->data[cp->Next]);
@@ -1017,8 +1019,8 @@ NCproc(CHANNEL *cp)
        * directory with an unique timestamp, and start rnews on it.
        */
       if (Tracing || cp->Tracing)
-	syslog(L_TRACE, "%s CSgetxbatch: now %d of %d bytes", CHANname(cp),
-	  bp->used, cp->XBatchSize);
+	syslog(L_TRACE, "%s CSgetxbatch: now %lu of %d bytes", CHANname(cp),
+	  (unsigned long) bp->used, cp->XBatchSize);
 
       if (cp->Next != 0) {
 	/* data must start from the begining of the buffer */
@@ -1101,8 +1103,9 @@ NCproc(CHANNEL *cp)
     if (cp->State == CSwritegoodbye || cp->Type == CTfree)
       break;
     if (Tracing || cp->Tracing)
-      syslog(L_TRACE, "%s NCproc state=%d Start=%d Next=%d Used=%d",
-	CHANname(cp), cp->State, cp->Start, cp->Next, bp->used);
+      syslog(L_TRACE, "%s NCproc state=%d Start=%d Next=%d Used=%lu",
+	CHANname(cp), cp->State, cp->Start, cp->Next,
+        (unsigned long) bp->used);
 
     if (movedata) { /* move data rather than extend buffer */
       TMRstart(TMR_DATAMOVE);
@@ -1147,8 +1150,8 @@ NCreader(CHANNEL *cp)
     int			i;
 
     if (Tracing || cp->Tracing)
-	syslog(L_TRACE, "%s NCreader Used=%d",
-	    CHANname(cp), cp->In.used);
+	syslog(L_TRACE, "%s NCreader Used=%lu",
+	    CHANname(cp), (unsigned long) cp->In.used);
 
     /* Read any data that's there; ignore errors (retry next time it's our
      * turn) and if we got nothing, then it's EOF so mark it closed. */
