@@ -3,11 +3,22 @@
 startinnfeed \- setuid root program to start innfeed
 .SH SYNOPSIS
 .B startinnfeed
-.RB innfeed-options
+.RB [innfeed-options]
+.sp
+.B startinnfeed
+.RB imapfeed
+.RB [imapfeed-options]
 .SH DESCRIPTION
 .B Startinnfeed
 sets all resources (files opened, memory usage) to unlimited. It then executes
 innfeed(8) with the options specified.
+
+If the first argument to 
+.B startinnfeed
+is ``\fIimapfeed\fP'' then 
+.B imapfeed 
+will be executed (instead of innfeed(8)) with the remaining argument as
+options.
 .SH AUTHOR
 James Brister
 .SH "SEE ALSO"
