@@ -1,10 +1,26 @@
 #! /usr/bin/perl -w
-# written April 1996, tale@uunet.uu.net (David C Lawrence)
-# Version 1.2
+# written April 1996, tale@isc.org (David C Lawrence)
+# Version 1.6
+#
+# Changes from 1.5 -> 1.6
+# -- handle articles encoded in NNTP format ('.' starting line is doubled,
+#    \r\n at line end) by string NNTP encoding.
+# -- exit 255 with pointer to $HOME or $PGPPATH if pgp can't find key ring.
+#    (probably doesn't match the necessary error message with ViaCrypt PGP)
+# -- failures also report message-id so the article can be looked up to retry.
+#
+# Changes from 1.4 -> 1.5
+# -- force English lanugage for 'Good signature from user' by passing
+#    +language=en on pgp command line, rather than setting the
+#    environment variable LANGUAGE to 'en'.
+#
+# Changes from 1.3 -> 1.4
+# -- now handles wrapped headers that have been unfolded.
+#    (though I do believe news software oughtn't be unfolding them.)
+# -- checks to ensure that the temporary file is really a file, and
+#    not a link or some other weirdness
 
-## =()<$pgp = '@<_PATH_PGP>@' ;>()=
-$pgp = '/usr/local/bin/pgp' ;
-
+$pgp = '/usr/local/bin/pgp';
 # if you keep your keyring somewhere that is not the default used by pgp,
 # uncomment the next line and set appropriately.
 # $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
@@ -25,7 +41,12 @@ $0 =~ s(^.*/)();                # trim /path/to/prog to prog
 # this is, by design, case-sensitive with regards to the headers it checks.
 # it's also insistent about the colon-space rule.
 while (<>) {
-  s/[\n\r]$//g;
+  # if a header line ends with \r\n, this article is in the encoding
+  # it would be in during an NNTP session.  some article storage
+  # managers keep them this way for efficiency.
+  $nntp_format = /\r\n$/ if $. == 1;
+  s/\r?\n$//;
+
   last if /^$/;
   if (/^(\S+):[ \t](.+)/) {
     ($label, $value) = ($1, $2);
@@ -42,14 +63,23 @@ while (<>) {
 $pgpheader = "X-PGP-Sig";
 exit 1 unless $_ = $header{$pgpheader}; # no signature
 
-# this regexp might be too strict about the structure of pgp signature lines
-$sep = "\n[ \t]+";
-$r64 = '[a-zA-Z0-9+/]';
-&fail("$0: $pgpheader not in expected format\n")
-  unless /^(\S+) (\S+)(($sep$r64{64})+$sep$r64+=?=$sep=$r64{4})$/;
+# the regexp below might be too strict about the structure of pgp sig lines
 
-($version, $signed_headers, $signature) = ($1, $2, $3);
-$signature =~ s/\n[ \t]+/\n/g;
+# the $sep value means the separator between the radix64 signature lines
+# can have any amount of spaces or tabs, but must have at least one space
+# or tab, if there is a newline then the space or tab has to follow the
+# newline.  any number of newlines can appear as long as each is followed
+# by at least one space or tab.   *phew*
+$sep = "[ \t]*(\n?[ \t]+)+";
+
+# match all of the characters in a radix64 string
+$r64 = '[a-zA-Z0-9+/]';
+
+&fail("$0: $pgpheader not in expected format\n")
+  unless /^(\S+)$sep(\S+)(($sep$r64{64})+$sep$r64+=?=?$sep=$r64{4})$/;
+
+($version, $signed_headers, $signature) = ($1, $3, $4);
+$signature =~ s/$sep/\n/g;
 
 $message  = "-----BEGIN PGP SIGNED MESSAGE-----\n\n";
 $message .= "X-Signed-Headers: $signed_headers\n";
@@ -63,6 +93,12 @@ foreach $label (split(",", $signed_headers)) {
 $message .= "\n";               # end of headers
 
 while (<>) {                    # read body lines
+  if ($nntp_format) {
+    # remove NNTP encoding
+    s/^\.\./\./;
+    s/\r\n$/\n/;
+  }
+
   s/^-/- -/;                    # pgp quote ("ASCII armor") dashes
   $message .= $_;               # append to output string
 }
@@ -73,17 +109,19 @@ $message .= $signature;
 $message .= "\n-----END PGP SIGNATURE-----\n";
 
 open(TMP,"> $tmp") || &fail("$0: open > $tmp: $!\n");
+
+-f TMP ||
+  &fail("$0: $tmp not a plain file, possible security violation attempt\n");
+(stat(_))[3] == 1 ||
+  &fail("$0: $tmp has hard links, possible security violation attempt\n");
+
 print TMP $message;
 close(TMP) || warn "$0: close > $tmp: $!\n";
 &fail("$0: write error for message to check\n")
   if -s $tmp != length($message);
 
-&fail("$0: $pgp does not exist.\n") if ( ! -f $pgp ) ;
-&fail("$0: $pgp is not executable\n") if ( ! -x $pgp ) ;
-
-$ENV{'LANGUAGE'} = 'en';        # force English for pgp messages
 $ok = 2;                        # unknown signature result is default
-open(PGP,"$pgp -f < $tmp 2>&1 >/dev/null |") ||
+open(PGP,"$pgp -f +language=en < $tmp 2>&1 >/dev/null |") ||
   &fail("$0: failed to execute pgp: $!\n");
 
 $/ = "\n";
@@ -97,9 +135,8 @@ while (<PGP>) {
     $signer = $+;
   } elsif (/^Bad signature /) {
     $ok = 3;
-  } elsif (/^.?(Keyring file .*? does not exist)/) {
-    warn "$0: pgp error: $1.\n";
-    $ok = 255;
+  } elsif (/Keyring file '(.*)' does not exist/) {
+    &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
   }
 }
 close(PGP) || warn "$0: closing pgp pipe returned status $?\n";
@@ -114,6 +151,8 @@ fail
 {
   unlink($tmp);
   print STDERR $_[0];
+  print STDERR " ... while processing $header{'Message-ID'}\n"
+    if $header{'Message-ID'};
   exit 255;
 }
 
