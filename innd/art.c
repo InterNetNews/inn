@@ -807,6 +807,7 @@ ARTerror(CHANNEL *cp, const char *format, ...)
     snprintf(cp->Error, sizeof(cp->Error), "%d ", NNTP_REJECTIT_VAL);
     va_start(args, format);
     vsnprintf(cp->Error + 4, sizeof(cp->Error) - 4, format, args);
+    va_end(args);
 }
 
 /*
