@@ -405,6 +405,10 @@ innconf_validate(struct config_group *group)
         warn("must set pathnews in inn.conf");
         okay = false;
     }
+    if (innconf->hismethod == NULL) {
+        warn("must set hismethod in inn.conf");
+        okay = false;
+    }
     if (innconf->enableoverview && innconf->ovmethod == NULL) {
         warn("ovmethod must be set in inn.conf if enableoverview is true");
         okay = false;
