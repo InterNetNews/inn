@@ -30,29 +30,29 @@ authprogs/domain.c                    Get username from remote user's hostname
 authprogs/ident.c                     Get username from ident
 authprogs/pwcheck.c                   Check password through a socket
 authprogs/radius.c                    Get username from RADIUS server
-smbval/Makefile                       Libraries for smb auth
-smbval/byteorder.h                    Libraries for smb auth
-smbval/md4.c                          Libraries for smb auth
-smbval/rfcnb-common.h                 Libraries for smb auth
-smbval/rfcnb-error.h                  Libraries for smb auth
-smbval/rfcnb-io.c                     Libraries for smb auth
-smbval/rfcnb-io.h                     Libraries for smb auth
-smbval/rfcnb-priv.h                   Libraries for smb auth
-smbval/rfcnb-util.c                   Libraries for smb auth
-smbval/rfcnb-util.h                   Libraries for smb auth
-smbval/rfcnb.h                        Libraries for smb auth
-smbval/session.c                      Libraries for smb auth
-smbval/smbdes.c                       Libraries for smb auth
-smbval/smbencrypt.c                   Libraries for smb auth
-smbval/smblib-common.h                Libraries for smb auth
-smbval/smblib-priv.h                  Libraries for smb auth
-smbval/smblib-util.c                  Libraries for smb auth
-smbval/smblib.c                       Libraries for smb auth
-smbval/smblib.h                       Libraries for smb auth
-smbval/std-defines.h                  Libraries for smb auth
-smbval/std-includes.h                 Libraries for smb auth
-smbval/valid.c                        Libraries for smb auth
-smbval/valid.h                        Libraries for smb auth
+authprogs/smbval/Makefile             Libraries for smb auth
+authprogs/smbval/byteorder.h          Libraries for smb auth
+authprogs/smbval/md4.c                Libraries for smb auth
+authprogs/smbval/rfcnb-common.h       Libraries for smb auth
+authprogs/smbval/rfcnb-error.h        Libraries for smb auth
+authprogs/smbval/rfcnb-io.c           Libraries for smb auth
+authprogs/smbval/rfcnb-io.h           Libraries for smb auth
+authprogs/smbval/rfcnb-priv.h         Libraries for smb auth
+authprogs/smbval/rfcnb-util.c         Libraries for smb auth
+authprogs/smbval/rfcnb-util.h         Libraries for smb auth
+authprogs/smbval/rfcnb.h              Libraries for smb auth
+authprogs/smbval/session.c            Libraries for smb auth
+authprogs/smbval/smbdes.c             Libraries for smb auth
+authprogs/smbval/smbencrypt.c         Libraries for smb auth
+authprogs/smbval/smblib-common.h      Libraries for smb auth
+authprogs/smbval/smblib-priv.h        Libraries for smb auth
+authprogs/smbval/smblib-util.c        Libraries for smb auth
+authprogs/smbval/smblib.c             Libraries for smb auth
+authprogs/smbval/smblib.h             Libraries for smb auth
+authprogs/smbval/std-defines.h        Libraries for smb auth
+authprogs/smbval/std-includes.h       Libraries for smb auth
+authprogs/smbval/valid.c              Libraries for smb auth
+authprogs/smbval/valid.h              Libraries for smb auth
 backends                              Outgoing feed programs (Directory)
 backends/Makefile                     Makefile for outgoing feed programs
 backends/actmerge.in                  Merge two active files to stdout
