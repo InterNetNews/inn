@@ -2579,8 +2579,11 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 BOOL ovdb_ctl(OVCTLTYPE type, void *val)
 {
     int *i;
-    bool *boolval;
     OVSORTTYPE *sorttype;
+#if INN_VERSION_MINOR >= 4
+    bool *boolval;
+#endif
+
     switch (type) {
     case OVSPACE:
         i = (int *)val;
@@ -2597,7 +2600,7 @@ BOOL ovdb_ctl(OVCTLTYPE type, void *val)
 	i = (int *)val;
 	*i = TRUE;
 	return TRUE;
-#ifdef OVCACHEKEEP
+#if INN_VERSION_MINOR >= 4
     case OVCACHEKEEP:
     case OVCACHEFREE:
         boolval = (bool *)val;
