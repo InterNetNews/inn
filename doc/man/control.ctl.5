@@ -4,8 +4,10 @@
 control.ctl \- specify handling of Usenet control messages
 .SH DESCRIPTION
 The file
-.\" =()<.I @<_PATH_CONTROLCTL>@>()=
-.I /var/news/etc/control.ctl
+.I <_PATH_CONTROLCTL in config.data>
+(typically
+.\" =()<.I @<typ_PATH_CONTROLCTL>@ )>()=
+.I /var/news/etc/control.ctl )
 is used to determine what action is taken when a control message
 is received.
 It is read by the
@@ -47,8 +49,10 @@ The following actions are understood:
 .B doit
 The action requested by the control message should be performed.
 In most cases the control script will also send mail to
-.\" =()<@<NEWSMASTER>@.>()=
-usenet.
+.I <NEWSMASTER in config.data>
+(typically
+.\" =()<@<typNEWSMASTER>@ .)>()=
+usenet .)
 .TP
 .B doifarg
 If the control message has an argument, this is treated as a ``doit'' action.
@@ -73,8 +77,10 @@ A null string is equivalent to /dev/null.
 A pathname that starts with a slash is taken as the absolute filename to
 use as the log.
 All other pathnames are written to
-.\" =()<.IR @<_PATH_MOST_LOGS>@/ file .log .>()=
-.IR /var/log/news/ file .log .
+.I <_PATH_MOST_LOGS in config.data>/file.log 
+(typically
+.\" =()<.IR @<typ_PATH_MOST_LOGS>@/ file .log .)>()=
+.IR /var/log/news/ file .log .)
 The log is written by
 .I writelog
 (see
@@ -97,8 +103,10 @@ is written to the specified file.
 A one-line log notice is sent to standard error.
 .I Innd
 normally directs this to the file
-.\" =()<.IR @<_PATH_ERRLOG>@ .>()=
-.IR /var/log/news/errlog .
+.I <_PATH_ERRLOG in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_ERRLOG>@ .)>()=
+.IR /var/log/news/errlog .)
 .TP
 .BI log =file
 A log entry is written to the specified log file,

@@ -53,8 +53,11 @@ When waiting for a reply,
 .I ctlinnd
 will try every two minutes to see if the server is still running, so it
 is unlikely that ``\fB\-t0\fP'' will hang.
-.\" =()<The default is ``\-t@<CTLINND_TIMEOUT>@.''>()=
-The default is ``\-t0.''
+The default is set as 
+.I <CTLINND_TIMEOUT in config.data> 
+(typically 
+.\"=()<.IR @<typCTLINND_TIMEOUT>@ .)>()=
+.IR 0 .)
 .TP
 .B \-h
 To see a command summary, use the ``\fB\-h\fP'' flag.
@@ -340,15 +343,16 @@ If the server was not started with the ``\fB\-ny\fP'' flag, then this command al
 does a ``readers'' command with ``no'' as the flag and
 .I reason
 as the text.
-.\" =()<.if '@<PERL_SUPPORT>@'DO' \{\>()=
-.if 'DONT'DO' \{\
 .TP
 .BI perl " flag"
-Enable or disable perl news filtering.
+Enable or disable perl news filtering, when 
+.I <PERL_SUPPORT in config.data>
+== DO.
 If
 .I flag
 starts with the letter ``y'' then filtering is enabled.  If it starts with
-``n'', then filtering is disabled.\}
+``n'', then filtering is disabled.
+
 .TP
 .BI readers " flag text"
 Allow or disallow newsreaders.
@@ -398,9 +402,10 @@ files are reloaded; if it is the word ``overview.fmt'' then the
 file is reloaded; if it is the word ``overview.ctl'' then the
 .IR overview.ctl (5)
 file is reloaded.
-.\" =()<.if '@<PERL_SUPPORT>@'DO' \{\>()=
-.if 'DONT'DO' \{\
-If it is the word ``filter.perl'' then the
+If
+.I <PERL_SUPPORT in config.data>
+== DO
+and it is the word ``filter.perl'' then the
 .IR filter_innd.pl
 file is reloaded.  If a Perl procedure named ``filter_before_reload'' exists,
 it will be called prior to rereading
@@ -411,10 +416,14 @@ after
 has been reloaded.  Reloading the Perl filter does not enable filtering if
 it is disabled; use
 .IR perl y
-to do this.\}
-.\" =()<.if '@<TCL_SUPPORT>@'DO' \{\>()=
-.if 'DONT'DO' \{\
-If it is the word ``filter.tcl'' then the
+to do this. The
+.IR startup_innd.pl
+file cannot be reloaded.
+
+If
+.IR <TCL_SUPPORT in config.data>
+== DO
+and it is the word ``filter.tcl'' then the
 .IR filter.tcl
 file is reloaded.  If a TCL procedure named ``filter_before_reload'' exists,
 it will be called prior to rereading
@@ -425,7 +434,7 @@ after
 has been reloaded.  Reloading the Tcl filter does not enable filtering if
 it is disabled; use
 .IR filter
-to do this.\}
+to do this.
 The
 .I reason
 is reported to
@@ -434,16 +443,9 @@ There is no way to reload the data
 .IR inn.conf (5)
 file; the server currently only uses the ``pathhost'' parameter, so this
 restriction should not be a problem.
-.\" =()<.if '@<PERL_SUPPORT>@'DO' \{\>()=
-.if 'DONT'DO' \{\
-The
-.IR startup_innd.pl
-file cannot be reloaded.\}
-.\" =()<.if '@<TCL_SUPPORT>@'DO' \{\>()=
-.if 'DONT'DO' \{\
 The
 .IR startup.tcl
-file cannot be reloaded.\}
+file cannot be reloaded.
 .TP
 .BI renumber " group"
 Scan the spool directory for the specified newsgroup and update the
@@ -496,15 +498,16 @@ which must be a channel or exploder feed.
 .I Sig
 can be a numeric signal number or the word ``hup,'' ``int,'' or ``term'';
 case is not significant.
-.\" =()<.if '@<TCL_SUPPORT>@'DO' \{\>()=
-.if 'DONT'DO' \{\
 .TP
 .BI tcl " flag"
-Enable or disable Tcl news filtering.
+Enable or disable Tcl news filtering, when
+.I <TCL_SUPPORT in config.data>
+== DO.
 If
 .I flag
 starts with the letter ``y'' then filtering is enabled.  If it starts with
-``n'', then filtering is disabled.\}
+``n'', then filtering is disabled.
+
 .TP
 .BI throttle " reason"
 Input is throttled so that all existing connections are closed and new
@@ -553,12 +556,14 @@ routine.
 .BI xexec " path"
 The server gets ready to shut itself down, but instead of exiting it
 execs
-.\" =()<.I @<_PATH_INNDSTART>@>()=
-.I /usr/news/bin/inndstart
+.I <_PATH_INNDSTART in config.data>
+(typically 
+.\"=()<.I @<typ_PATH_INNDSTART>@ )>()=
+.I /usr/news/bin/inndstart )
 with all of its original arguments except for ``\fB\-r\fP''.
 .I Path
 can be any of ``innd'', ``inndstart'' or an empty string.
-Any other value is an error.
+any other value is an error.
 .PP
 In addition to being acted upon within the server, certain commands can
 be forwarded to the appropriate child process.

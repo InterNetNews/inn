@@ -120,8 +120,12 @@ seconds.
 .TP
 .B \-r
 By default, the program sets its standard error to
-.\" =()<.IR @<_PATH_ERRLOG>@ .>()=
-.IR /var/log/news/errlog .
+.I <_PATH_ERRLOG in config.data> .
+(typically
+.\" =()<.IR @<typ_PATH_ERRLOG>@ .)>()=
+.IR /var/log/news/errlog .)
+
+
 To suppress this redirection, use the ``\fB\-r\fP'' flag.
 .TP
 .B \-s
@@ -134,8 +138,10 @@ This is a
 format string which should have a single ``%s'' parameter which will be given
 the field.
 The default value is
-.\" =()<.IR @<_PATH_BATCHDIR>@/ %s.>()=
-.IR /var/news/spool/out.going/ %s.
+.I <_PATH_BATCHDIR in config.data>/ %s
+(typically
+.\" =()<.IR @<typ_PATH_BATCHDIR>@/ %s .)>()=
+.IR /var/news/spool/out.going/ %s .)
 See the description of this flag in
 .IR filechan (8).
 .TP
@@ -160,14 +166,14 @@ Applications can tell that the ``flush'' has completed by renaming the
 file before issuing the command;
 .I buffchan
 has completed the command when the original filename re-appears.
-.\" =()<.if '@<HAVE_FCHMOD>@'DO' \{\>()=
-.if 'DO'DO' \{\
+.I if <HAVE_FCHMOD in config.data>
+== DO, then 
 .IP 
 .I Buffchan
 also changes the access permissions of the file from read-only for
 everyone to read-write for owner and group as it flushes or closes each
-output file.
-It will change the modes back to read-only if it re-opens the same file.\}
+output file.  It will change the modes back to read-only if it re-opens
+the same file.
 .TP
 .B drop
 The ``drop'' command is similar to the ``flush'' command except that any

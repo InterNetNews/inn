@@ -18,8 +18,10 @@ article.
 Each line is taken as the pathname to a Usenet article.
 If it is not an absolute pathname, it is taken relative to the spool
 directory,
-.\" =()<.IR @<_PATH_SPOOL>@ .>()=
-.IR /var/news/spool/articles .
+.I <_PATH_SPOOL in config.data> .
+(typically
+.\" =()<.IR @<typ_PATH_SPOOL>@ .)>()=
+.IR /var/news/spool/articles .)
 (Only the first word of each line is parsed; anything following
 whitespace is ignored.)
 .SH OPTIONS
