@@ -103,7 +103,7 @@ ccenter:	$(SOURCES)
 ##  Low-level install actions.
 $(D)$(PATHLIB)/libinn.$(EXTLIB):		libinn.$(EXTLIB)
 	@rm -f $@
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD libinn.$(EXTLIB) $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD libinn.$(EXTLIB) $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES) ../include/dbz.h
