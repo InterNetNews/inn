@@ -96,7 +96,7 @@ static pid_t deadlockpid = 0;
 static pid_t checkpointpid = 0;
 static pid_t logremoverpid = 0;
 
-static int putpid(char *path)
+static int putpid(const char *path)
 {
     char buf[30];
     int fd = open(path, O_WRONLY|O_TRUNC|O_CREAT, 0664);
