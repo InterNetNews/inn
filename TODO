@@ -475,6 +475,9 @@ Requested New Features
   just "?".  The host2dom function could be updated to group these as
   something like "Local".
 
+* news.daily could detect if expire segfaults and unpause the server.
+  
+
 
 General Projects
 
