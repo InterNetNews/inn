@@ -5,39 +5,34 @@ include ../Makefile.global
 top	= ..
 CFLAGS  = $(GCFLAGS)
 
-SOURCES = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
-	conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
-	fdflags.c fdlimit.c findheader.c fseeko.c ftello.c genid.c \
-	getfqdn.c getmodaddr.c getpagesize.c gettime.c hash.c hashtab.c \
-	hstrerror.c inet_aton.c inet_ntoa.c innconf.c inndcomm.c localopen.c \
-	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c mmap.c \
-	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
-	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
-	sequence.c setenv.c setproctitle.c sockaddr.c strcasecmp.c \
-	strerror.c strlcat.c strlcpy.c strspn.c strtok.c timer.c tst.c \
-	uwildmat.c vector.c version.c wire.c xfopena.c xmalloc.c xsignal.c \
-	xwrite.c
+# The base library files that are always compiled and included.
+SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
+		conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
+		fdflags.c fdlimit.c findheader.c genid.c getfqdn.c \
+		getmodaddr.c gettime.c hash.c hashtab.c innconf.c inndcomm.c \
+		localopen.c lockfile.c makedir.c md5.c messages.c mmap.c \
+		parsedate.c qio.c radix32.c readin.c remopen.c reservedfd.c \
+		resource.c sendarticle.c sendpass.c sequence.c sockaddr.c \
+		timer.c tst.c uwildmat.c vector.c version.c wire.c xfopena.c \
+		xmalloc.c xsignal.c xwrite.c
 
-OBJECTS = $(LIBOBJS) \
-	buffer.o cleanfrom.o clientactive.o clientlib.o concat.o conffile.o \
-	confparse.o daemonize.o date.o dbz.o defdist.o fdflags.o fdlimit.o \
-	findheader.o genid.o getfqdn.o getmodaddr.o gettime.o hash.o \
-	hashtab.o innconf.o inndcomm.o localopen.o lockfile.o makedir.o \
-	md5.o messages.o mmap.o parsedate.o qio.o radix32.o readin.o \
-	remopen.o reservedfd.o resource.o sendarticle.o sendpass.o \
-	sequence.o sockaddr.o timer.o tst.o uwildmat.o vector.o version.o \
-	wire.o xfopena.o xmalloc.o xsignal.o xwrite.o
+# Sources for additional functions only built to replace missing system ones.
+EXTRA_SOURCES = fseeko.c ftello.c getpagesize.c hstrerror.c inet_aton.c \
+		inet_ntoa.c memcmp.c mkstemp.c pread.c pwrite.c setenv.c \
+		setproctitle.c strcasecmp.c strerror.c strlcat.c strlcpy.c \
+		strspn.c strtok.c
 
-LOBJECTS= $(OBJECTS:.o=.lo)
+OBJECTS       = $(LIBOBJS) $(SOURCES:.c=.o)
+LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
 
-all:		libinn.$(EXTLIB) perl.o
+all: libinn.$(EXTLIB) perl.o
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
+install: all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean distclean:
 	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate
@@ -45,14 +40,14 @@ clobber clean distclean:
 	rm -f libinn_pure_*.a .pure
 	rm -rf .libs
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
-libinn.la:	$(OBJECTS) $(LOBJECTS)
+libinn.la: $(OBJECTS) $(LOBJECTS)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
-libinn.a:       $(OBJECTS)
+libinn.a: $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libinn.a
 
@@ -65,19 +60,19 @@ perl.o: perl.c
 ../include/inn/system.h:
 	(cd ../include && $(MAKE))
 
-parsedate.c:	parsedate.y
+parsedate.c: parsedate.y
 	@echo Expect 6 shift/reduce conflicts
 	$(YACC) parsedate.y
 	@mv y.tab.c parsedate.c
 
-parsedate:	parsedate.c gettime.o
+parsedate: parsedate.c gettime.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -DTEST -DYYDEBUG parsedate.c gettime.o
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
-profiled:	libinn$(PROFSUFFIX).a perl$(PROFSUFFIX).o
+profiled: libinn$(PROFSUFFIX).a perl$(PROFSUFFIX).o
 	date >$@
 
-libinn$(PROFSUFFIX).a perl$(PROFSUFFIX).o:	$(SOURCES)
+libinn$(PROFSUFFIX).a perl$(PROFSUFFIX).o: $(OBJECTS) perl.o
 	rm -f $(OBJECTS)
 	$(MAKEPROFILING) libinn.a
 	$(MAKEPROFILING) perl.o
@@ -92,8 +87,8 @@ $(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend: Makefile $(SOURCES) ../include/inn/version.h
-	$(MAKEDEPEND) '$(CFLAGS) $(PERLINC)' $(SOURCES)
+depend: Makefile $(SOURCES) $(EXTRA_SOURCES) perl.c ../include/inn/system.h
+	$(MAKEDEPEND) '$(CFLAGS) $(PERLINC)' $(SOURCES) $(EXTRA_SOURCES) perl.c
 
 # Special dependency to teach make to build the include directory properly.
 ../include/inn/defines.h: ../include/inn/system.h
@@ -136,10 +131,6 @@ fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
 findheader.o: findheader.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h
-fseeko.o: fseeko.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-ftello.o: ftello.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
 genid.o: genid.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/innconf.h ../include/libinn.h ../include/macros.h \
  /usr/include/string.h
@@ -149,8 +140,6 @@ getmodaddr.o: getmodaddr.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h \
  ../include/inn/innconf.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h
-getpagesize.o: getpagesize.c ../include/config.h \
- ../include/inn/defines.h
 gettime.o: gettime.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
 hash.o: hash.c ../include/config.h ../include/inn/defines.h \
@@ -159,12 +148,6 @@ hash.o: hash.c ../include/config.h ../include/inn/defines.h \
 hashtab.o: hashtab.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/hashtab.h ../include/libinn.h \
  ../include/macros.h
-hstrerror.o: hstrerror.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
 innconf.o: innconf.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/confparse.h \
  ../include/inn/innconf.h ../include/inn/messages.h \
@@ -184,21 +167,13 @@ makedir.o: makedir.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 md5.o: md5.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/md5.h
-memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h
 messages.o: messages.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
-mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h
 mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/mmap.h \
  ../include/inn/messages.h ../include/inn/mmap.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
-perl.o: perl.c ../include/config.h ../include/inn/defines.h
-pread.o: pread.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
 qio.o: qio.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h
@@ -223,25 +198,9 @@ sendpass.o: sendpass.c ../include/config.h ../include/inn/defines.h \
  ../include/macros.h ../include/nntp.h ../include/paths.h
 sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/sequence.h
-setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-setproctitle.o: setproctitle.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/portable/setproctitle.h ../include/inn/messages.h
 sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/socket.h \
  ../include/libinn.h
-strcasecmp.o: strcasecmp.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h
-strerror.o: strerror.c ../include/config.h ../include/inn/defines.h
-strlcat.o: strlcat.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-strlcpy.o: strlcpy.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-strspn.o: strspn.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h \
  ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h
@@ -263,3 +222,41 @@ xsignal.o: xsignal.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
 xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
+fseeko.o: fseeko.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+ftello.o: ftello.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+getpagesize.o: getpagesize.c ../include/config.h \
+ ../include/inn/defines.h
+hstrerror.o: hstrerror.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h
+mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/portable/time.h
+pread.o: pread.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+setproctitle.o: setproctitle.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h \
+ ../include/portable/setproctitle.h ../include/inn/messages.h
+strcasecmp.o: strcasecmp.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+strerror.o: strerror.c ../include/config.h ../include/inn/defines.h
+strlcat.o: strlcat.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+strlcpy.o: strlcpy.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+strspn.o: strspn.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+perl.o: perl.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/ppport.h ../include/innperl.h
