@@ -2217,6 +2217,10 @@ ARTpost(cp, Replic, ihave)
     if (Replic)
 	j = Replic->Used + 1;
 
+    /* Add enough extra room for time pathname */
+    if (TimeSpool)
+        j += 48;
+
     /* Make sure the filename buffer has room. */
     if (Files.Data == NULL) {
 	Files.Size = j;
@@ -2267,9 +2271,18 @@ ARTpost(cp, Replic, ihave)
 
 	if (Data.Name[0] == '\0') {
 	    /* Write the article the first time. */
-	    (void)sprintf(Data.Name, "%s/%lu", ngp->Dir, ngp->Filenum);
-	    if (ARTwrite(Data.Name, article, &Data) < 0
-	     && (!MakeSpoolDirectory(ngp->Dir)
+	    if (TimeSpool) {
+	    	i--;
+	    	ngp->PostCount = 1;
+		/* Pull the bottom 14 bits off and split them into two levels of hierarchy */
+		sprintf(dirname, "time/%02x/%02x", (Now.time >> 13) &0x7f, (Now.time >> 6) & 0x7f);
+	    	sprintf(Data.Name, "%s/%08x-%04x", dirname, Now.time, SeqNum);
+	    	SeqNum = (SeqNum + 1) % (64*1024);
+	    } else {
+	        sprintf(Data.Name, "%s/%lu", ngp->Dir, ngp->Filenum);
+	        strcpy(dirname, ngp->Dir);
+	    }	    if (ARTwrite(Data.Name, article, &Data) < 0
+	     && (!MakeSpoolDirectory(dirname)
 	      || ARTwrite(Data.Name, article, &Data) < 0)) {
 		i = errno;
 		syslog(L_ERROR, "%s cant write %s %m", LogName, Data.Name);

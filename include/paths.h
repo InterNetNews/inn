@@ -183,6 +183,8 @@
 #define _CONF_WIREFORMAT        "wireformat"
     /* Toggle for Xref: slaving */
 #define _CONF_XREFSLAVE         "xrefslave"
+    /* Toggle for the time spool format */
+#define _CONF_TIMESPOOL         "timespool"
 
 /*
 **  13.  TCL Support

@@ -390,6 +390,8 @@ extern BOOL		StreamingOff;
 extern BOOL		Tracing;
 EXTERN BOOL		XrefSlave;
 EXTERN BOOL		WireFormat;
+EXTERN BOOL		TimeSpool;
+EXTERN int		SeqNum;
 EXTERN STRING		path;
 EXTERN BUFFER		Path;
 EXTERN char		*ModeReason;	/* NNTP reject message		*/

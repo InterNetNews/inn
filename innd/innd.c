@@ -590,6 +590,7 @@ main(ac, av)
     char		*p;
     char		*wireformat;
     char		*xrefslave;
+    char                *timespool;
     FILE		*F;
     BOOL		ShouldFork;
     BOOL		ShouldRenumber;
@@ -776,6 +777,15 @@ main(ac, av)
 	XrefSlave = TRUE;
     else
 	XrefSlave = FALSE;
+
+    /* Get the setting for time spool */
+    if ((timespool = GetConfigValue(_CONF_TIMESPOOL)) == NULL)
+	TimeSpool = FALSE;
+
+    if (caseEQ(timespool, "on") || caseEQ(timespool, "true") || caseEQ(timespool, "yes"))
+	TimeSpool = TRUE;
+    else
+        TimeSpool = FALSE;
 
     /* Get the Path entry. */
     if ((path = GetConfigValue(_CONF_PATHHOST)) == NULL) {
