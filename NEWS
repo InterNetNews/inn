@@ -7,6 +7,10 @@ Upgrading from 2.3 to 2.4
 
 Changes from 2.3 to 2.4
 
+    * Variables can now be used in the newsfeeds file to make it easier to
+      specify a lot of similar feeds or feed patterns.  See the newsfeeds(5)
+      man page for more details.
+
     * Local connections to INN support a new special mode, MODE CANCEL, that
       allows efficient batch cancellation of messages.  This is intended to
       be the preferred interface for external spam and abuse filters like
@@ -15,6 +19,14 @@ Changes from 2.3 to 2.4
     * Thanks to code contributed by CMU, innfeed can now feed an IMAP server
       as well as other NNTP servers.  See the man page for innfeed for more
       information.
+
+    * INN now checks to ensure that the configured temporary directory is
+      not world-writeable since INN doesn't currently create all temporary
+      files in a manner that's safe against symlink attacks.
+
+    * Two configure options have changed names:  --with-tmp-path is now
+      --with-tmp-dir and --with-largefiles is now --enable-largefiles to
+      improve consistency and better match the autoconf option guidelines.
 
 Upgrading from 2.2 to 2.3
 
