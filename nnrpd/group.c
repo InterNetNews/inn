@@ -34,7 +34,7 @@ void CMDgroup(int ac, char *av[])
         if (PERMspecified)
 	    Reply("%d Permission denied\r\n", NNTP_ACCESS_VAL);
         else
-            Reply("%d Authenticatino required\r\n", NNTP_AUTH_NEEDED_VAL);
+            Reply("%d Authentication required\r\n", NNTP_AUTH_NEEDED_VAL);
 	return;
     }
 
