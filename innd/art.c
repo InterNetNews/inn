@@ -94,7 +94,8 @@ const char	*filterPath;
 **  Mark that the site gets this article.
 */
 void
-SITEmark(SITE *sp, NEWSGROUP *ngp) {
+SITEmark(SITE *sp, NEWSGROUP *ngp)
+{
   SITE	*funnel;
 
   sp->Sendit = TRUE;
@@ -382,7 +383,8 @@ ARTheaderpcmp(const void *p1, const void *p2)
 /* Write an article using the storage api.  Put it together in memory and
    call out to the api. */
 static TOKEN
-ARTstore(CHANNEL *cp) {
+ARTstore(CHANNEL *cp)
+{
   BUFFER	*Article = &cp->In;
   ARTDATA	*data = &cp->Data;
   HDRCONTENT	*hc = data->HdrContent;
@@ -740,7 +742,8 @@ ARTprepare(CHANNEL *cp)
 **  This is called by NCproc().
 */
 void
-ARTparse(CHANNEL *cp) {
+ARTparse(CHANNEL *cp)
+{
   BUFFER	*bp = &cp->In;
   ARTDATA	*data = &cp->Data;
   int		i, j, limit, hopcount;
@@ -1329,7 +1332,7 @@ ARTparsedist(const char *p, int size, LISTBUFFER *list)
   /* loop over text and copy */
   for (i = 0, q = list->Data, dp = list->List ; *p ; p++, *q++ = '\0') { 
     /* skip leading separators. */
-    for (; *p && (*p == ',') && ISWHITE(*p) ; p++)
+    for (; *p && ((*p == ',') || ISWHITE(*p)) ; p++)
       continue;
     if (*p == '\0')
       break;
