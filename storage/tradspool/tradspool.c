@@ -839,6 +839,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	SMseterror(SMERR_UNDEFINED, NULL);
 	syslog(L_ERROR, "tradspool: could not fstat article: %m");
 	DISPOSE(art);
+	close(fd);
 	return NULL;
     }
 
@@ -853,6 +854,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
 	    DISPOSE(art->private);
 	    DISPOSE(art);
+	    close(fd);
 	    return NULL;
 	}
 	/* consider coexisting both wireformatted and nonwireformatted */
@@ -866,6 +868,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    munmap(private->artbase, private->artlen);
 	    DISPOSE(art->private);
 	    DISPOSE(art);
+	    close(fd);
 	    return NULL;
 	}
 	if (p[-1] == '\r') {
@@ -889,6 +892,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    DISPOSE(private->artbase);
 	    DISPOSE(art->private);
 	    DISPOSE(art);
+	    close(fd);
 	    return NULL;
 	}
 	p = memchr(private->artbase, '\n', private->artlen);
@@ -897,6 +901,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
 	    DISPOSE(art->private);
 	    DISPOSE(art);
+	    close(fd);
 	    return NULL;
 	}
 	if (p[-1] != '\r') {
