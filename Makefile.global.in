@@ -84,3 +84,7 @@ LIBNEWS = ../storage/libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 DESTDIR =
 D	= $(DESTDIR)
 
+# Standard library functions that your system doesn't have.
+MISSING_MAN     = @MISSING_MAN@
+MISSING_SRC     = @MISSING_SRC@
+MISSING_OBJ     = @MISSING_OBJ@
