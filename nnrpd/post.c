@@ -62,9 +62,9 @@ HEADER Table[] = {
     {   "Posted",               false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Posting-Version",      false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Relay-Version",        false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Cc",                   true, HTstd,  0,    NULL,    NULL, 0 },
-    {   "Bcc",                  true, HTstd,  0,    NULL,    NULL, 0 },
-    {   "To",                   true, HTstd,  0,    NULL,    NULL, 0 },
+    {   "Cc",                   true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Bcc",                  true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "To",                   true,   HTstd,  0,    NULL,    NULL, 0 },
 };
 
 HEADER *EndOfTable = ARRAY_END(Table);
