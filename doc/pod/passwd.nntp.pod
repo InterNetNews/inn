@@ -40,7 +40,7 @@ This file should not be world-readable.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  This is
-revision \\$3, dated \\$4.
+revision $Revision$, dated $Date$.
 
 $Id$
 
