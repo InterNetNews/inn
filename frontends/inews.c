@@ -398,7 +398,7 @@ AnAdministrator(name, group)
 	return TRUE;
 
     /* See if the we're in the right group. */
-    if ((grp = getgrnam(NEWSGID)) == NULL || (mem = grp->gr_mem) == NULL)
+    if ((grp = getgrnam(NEWSGRP)) == NULL || (mem = grp->gr_mem) == NULL)
 	/* Silent falure; clients might not have the group. */
 	return FALSE;
     if (group == grp->gr_gid)
