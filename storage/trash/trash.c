@@ -58,6 +58,10 @@ BOOL trash_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }
 }
 
+BOOL trash_flushcacheddata(FLUSHTYPE type) {
+    return TRUE;
+}
+
 ARTHANDLE *trash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return (ARTHANDLE *)NULL;
 }
