@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.165 
+# From configure.in Revision: 1.166 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -2386,7 +2386,7 @@ fi
 case "$host" in
 
 *hpux*)
-    if test "$GCC" != xyes ; then
+    if test x"$GCC" != xyes ; then
                 CFLAGS="$CFLAGS -Ae"
 
                 case "$CFLAGS" in
@@ -5260,7 +5260,7 @@ else
 #include "confdefs.h"
 #include <time.h>
 int main() {
-timezone = 100
+timezone = 3600; altzone = 7200
 ; return 0; }
 EOF
 if { (eval echo configure:5267: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then

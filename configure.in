@@ -317,7 +317,7 @@ case "$host" in
 dnl HP-UX's native compiler needs a special flag to turn on ANSI, and needs
 dnl -g on link as well as compile for debugging to work.
 *hpux*)
-    if test "$GCC" != xyes ; then
+    if test x"$GCC" != xyes ; then
         dnl Need flag to turn on ANSI.
         CFLAGS="$CFLAGS -Ae"
 
@@ -859,9 +859,10 @@ dnl Many System V hosts have an external variable timezone containing the
 dnl offset of local time from GMT/UTC.  We can use this for the timezone
 dnl offset for current time, although it's not usable for anything else.
 dnl Unfortunately, some BSD varients have a function named timezone instead.
+dnl HP-UX has timezone but doesn't have altzone, which isn't good enough.
 AC_DEFUN([INN_VAR_TIMEZONE],
 [AC_CACHE_CHECK(for timezone variable, inn_cv_var_timezone,
-    AC_TRY_LINK([#include <time.h>], [timezone = 100],
+    AC_TRY_LINK([#include <time.h>], [timezone = 3600; altzone = 7200],
         inn_cv_var_timezone=yes,
         inn_cv_var_timezone=no))
 if test x"$inn_cv_var_timezone" = xyes ; then
