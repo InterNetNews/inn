@@ -1,7 +1,4 @@
 ;;  $Id$
 ;;  List of InterNetNews files that are fed to subst.
 ;;  Lines beginning with a semi-colon are comment lines.
-../include/clibrary.h
 ../include/configdata.h
-../include/libinn.h
-../storage/cnfs/cnfs-private.h
