@@ -69,14 +69,12 @@ contrib/archivegz                     Compressing version of archive
 contrib/backupfeed                    Suck down news via a reading connection
 contrib/batchpurge.pl                 Remove expired articles from batches
 contrib/cleannewsgroups.pl            Script to clean newsgroups file
-contrib/cleanoi                       Script to clean overview index files
 contrib/count_overview.pl             Count overview entries
 contrib/expirectl                     Generate expire.ctl from template
 contrib/findmissing.pl                Locate articles not in history
 contrib/findreadgroups.pl             Track which groups are being read
 contrib/fixhist                       Script to clean history
 contrib/format_overview.pl            Format output of count_overview.pl
-contrib/listoi.c                      Display an overview.index file
 contrib/makeexpctl.pl                 Create expire.ctl based on read articles
 contrib/makestorconf.pl               Create storage.conf from read articles
 contrib/mkbuf                         Create cycbuff for HP-UX
