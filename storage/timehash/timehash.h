@@ -17,6 +17,7 @@ void timehash_freearticle(ARTHANDLE *article);
 BOOL timehash_cancel(TOKEN token);
 BOOL timehash_ctl(PROBETYPE type, TOKEN *token, void *value);
 BOOL timehash_flushcacheddata(FLUSHTYPE type);
+void timehash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups);
 void timehash_shutdown(void);
 
 #endif

@@ -519,5 +519,14 @@ BOOL timehash_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 
+void timehash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+    int time, seqnum;
+    char *path;
+    
+    BreakToken(token, &time, &seqnum);
+    path = MakePath(time, seqnum, token.class);
+    fprintf(file, "%s\n", path);
+}
+
 void timehash_shutdown(void) {
 }
