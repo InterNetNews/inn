@@ -91,6 +91,49 @@ in F<doc/IPv6-info>.
 
 =item *
 
+A new option tradindexedmmap has been added to inn.conf.  If set to true
+(the default) then the tradindexed overview method will use mmap() to
+access its overview data (in 2.3 you couldn't control this, it always used
+mmap).
+
+=item *
+
+Two new options nfsreader and nfswriter have been added to inn.conf to aid
+in building NFS based shared reader/writer platforms.  On the writer
+server configure nfswriter to true and on all of the readers configure
+nfsreader to true; these options add calls to force data out to the NFS
+server and force it to be read directly from the NFS server at the
+appropriate moments.  Note that it has only been tested on Solaris 8,
+using CNFS as the storage mechanism and tradindexed as the overview
+method.
+
+=item *
+
+nnrpd now supports article injection via IHAVE. Any articles injected this
+way must have Date, From, Message-ID, Newsgroups, Path and Subject
+headers.  X-Trace and X-Complaints-To headers will be added if the
+appropriate options are set in readers.conf, but other headers will not be
+modified/inserted (i.e. NNTP-Posting-Host, NNTP-Posting-Date,
+Organization, Lines, Cc, Bcc and To headers).
+
+=item *
+
+nnrpd now handles arbitrarily long lines in POST and IHAVE; administrators
+who want to limit the length of lines in locally posted articles will need
+to add this to their local filters instead.
+
+=item *
+
+nnrpd no longer handles the poorly-specified RFC 977 optional fourth
+argument to the NEWGROUPS command specifying the "distributions" that the
+command was supposed to apply to.
+
+Clients that use that argument will break.  There is not believed to be
+any such clients, and it's easy enough to just filter the returned list of
+newsgroups (which is generally fairly short) to achieve the same results.
+
+=item *
+
 All of the applicable bug fixes from the INN 2.3 STABLE series are also
 included in INN 2.4.
 
