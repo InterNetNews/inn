@@ -744,9 +744,7 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
         if (Group != NULL) {
             free(Group);
         }
-        Group = xmalloc(strlen(group) + 2);
-        strcpy(Group, group);
-        strcat(Group, ":");
+        Group = concat(group, ":", (char *) 0);
         Xref = Group;
     } else {
         if ((Xref = strchr(Xref, ' ')) == NULL) {
