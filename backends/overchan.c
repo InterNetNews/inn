@@ -227,7 +227,7 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 	    }
 	}  else {
 	    /* Find the groups and article numbers. */
-	    if ((Xref = strstr(Data, "Xref:")) == NULL) {
+	    if ((Xref = strstr(Data, "\tXref:")) == NULL) {
 		fprintf(stderr, "overchan missing xref header\n");
 		continue;
 	    }
