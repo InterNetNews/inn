@@ -98,7 +98,7 @@ makedate(time_t clock, bool local, char *buff, size_t buflen)
     const char *tz_name;
 
     /* Make sure the buffer is large enough. */
-    if (buflen < DATE_LENGTH + 1) return FALSE;
+    if (buflen < DATE_LENGTH + 1) return false;
 
     /* Get the current time if the provided time is 0. */
     realclock = (clock == 0) ? time(NULL) : clock;
@@ -126,7 +126,7 @@ makedate(time_t clock, bool local, char *buff, size_t buflen)
     /* tz_min_offset cannot be larger than 60 (by basic mathematics).  In
        some insane circumstances, tz_hour_offset could be larger; if it is,
        fail.  Otherwise, we could overflow our buffer. */
-    if (tz_hour_offset > 24) return FALSE;
+    if (tz_hour_offset > 24) return false;
 
     /* Generate the actual date string, sans the trailing time zone comment
        but with the day of the week and the seconds (both of which are
@@ -156,5 +156,5 @@ makedate(time_t clock, bool local, char *buff, size_t buflen)
     if (tz_name != NULL && date_length + 4 + strlen(tz_name) <= buflen) {
         sprintf(buff + date_length, " (%s)", tz_name);
     }
-    return TRUE;
+    return true;
 }
