@@ -406,7 +406,7 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	OVdelayrm = ((OVGE *)val)->delayrm;
 	OVusepost = ((OVGE *)val)->usepost;
 	OVrealnow = ((OVGE *)val)->now;
-	OVnow = ((OVGE *)val)->now + (time_t)(((OVGE *)val)->timewarp * 86400.);
+	OVnow = ((OVGE *)val)->now + (time_t)((OVGE *)val)->timewarp;
 	OVquiet = ((OVGE *)val)->quiet;
 	OVkeep = ((OVGE *)val)->keep;
 	OVearliest = ((OVGE *)val)->earliest;
