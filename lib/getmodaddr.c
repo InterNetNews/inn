@@ -33,7 +33,7 @@ void GMAclose(void)
 /*
 **  Internal library routine.
 */
-FILE *GMA_listopen(char *pathname, FILE *FromServer, FILE *ToServer)
+FILE *GMA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request)
 {
     char	buff[BUFSIZ];
     char	*p;
