@@ -801,7 +801,6 @@ main(int argc, char **argv)
     int i, val;
     char *HistoryDir;
     char *p;
-    char *OldHistoryPath;
     dbzoptions opt;
     char *buff;
     
@@ -810,11 +809,10 @@ main(int argc, char **argv)
 	
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
-    HistoryPath = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
-    OldHistoryPath = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
-    ActivePath = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    HistoryPath = concatpath(innconf->pathdb, _PATH_HISTORY);
+    ActivePath = concatpath(innconf->pathdb, _PATH_ACTIVE);
     TmpDir = innconf->pathtmp;
-    SchemaPath = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+    SchemaPath = concatpath(innconf->pathetc, _PATH_SCHEMA);
 
     OverTmpSegSize = DEFAULT_SEGSIZE;
     OverTmpSegCount = 0;
