@@ -47,7 +47,6 @@ port:                   119
 refusecybercancels:     false
 remembertrash:          true
 sourceaddress:
-usecontrolchan:         false
 verifycancels:          false
 wanttrash:              false
 wipcheck:               5
