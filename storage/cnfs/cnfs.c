@@ -1125,10 +1125,10 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	  cycbuff->currentbuff = false;
 	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	  if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-	  syslog(L_NOTICE, "%s: metacycbuff %s cycbuff is moved to %s remain calm",
-	       LocalLogName, metacycbuff->name, cycbuff->name);
 	  metacycbuff->memb_next = (metacycbuff->memb_next + 1) % metacycbuff->count;
 	  cycbuff = metacycbuff->members[metacycbuff->memb_next];  
+	  syslog(L_NOTICE, "%s: metacycbuff %s cycbuff is moved to %s remain calm",
+	       LocalLogName, metacycbuff->name, cycbuff->name);
 	  if (!SMpreopen && !CNFSinit_disks(cycbuff)) {
 	      SMseterror(SMERR_INTERNAL, "cycbuff initialization fail");
 	      syslog(L_ERROR, "%s: cycbuff '%s' initialization fail", LocalLogName, cycbuff->name);
