@@ -370,13 +370,15 @@ Choosing an Article Storage Format
 
     If your news server will be supporting readers, you'll also need to
     choose an overview storage mechanism (by setting ovmethod in inn.conf). 
-    There are two overview mechanisms to choose from, tradindexed and
-    buffindexed.  tradindexed very fast for readers, but it has to update
-    two files for every incoming article and can be quite slow to write. 
-    buffindexed can keep up with a large feed more easily, since it uses
-    large buffers to store all overview information in, but it's somewhat
-    slower for readers (although not as slow as the unified overview in INN
-    2.2).
+    There are three overview mechanisms to choose from, tradindexed,
+    buffindexed, and ovdb.  tradindexed is very fast for readers, but it has
+    to update two files for every incoming article and can be quite slow to
+    write.  buffindexed can keep up with a large feed more easily, since it
+    uses large buffers to store all overview information in, but it's
+    somewhat slower for readers (although not as slow as the unified
+    overview in INN 2.2).  ovdb stores overview data into a BerkeleyDB
+    database.  It is fast and very robust, but requires more disk space. 
+    See the ovdb(5) man page for more information.
 
     If buffindexed is chosen, you will need to create the buffers for it to
     use (very similar to creating CNFS buffers) and list the available

@@ -32,8 +32,9 @@ MANPAGESTYLE    = SOURCE
 CC              = @CC@
 COPT            = @CFLAGS@
 GCFLAGS         = $(COPT) -I../include @CPPFLAGS@ $(LFS_CFLAGS)
+BERKELEY_DB_CFLAGS = @BERKELEY_DB_CFLAGS@
 
-LDFLAGS         = @LDFLAGS@ $(LFS_LDFLAGS)
+LDFLAGS         = @LDFLAGS@ $(LFS_LDFLAGS) @BERKELEY_DB_LDFLAGS@
 LIBS            = @LIBS@ $(LFS_LIBS)
 
 LFS_CFLAGS      = @LFS_CFLAGS@
@@ -61,12 +62,12 @@ UPLIBCC         = $(UPLIBTOOL) $(CC)
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is
-##  linked against libstorage.  LIBNEWS is for legacy support and will
-##  eventually be deleted.
+##  linked against libstorage.  EXTSTORAGELIBS is for external libraries
+##  needed by libstorage.
 
 LIBINN          = ../lib/libinn.$(EXTLIB)
 LIBSTORAGE      = ../storage/libstorage.$(EXTLIB)
-LIBNEWS         = $(LIBSTORAGE) $(LIBINN)
+EXTSTORAGELIBS  = @BERKELEY_DB_LIB@
 
 DBMLIB          = @DBM_LIB@
 

@@ -228,6 +228,33 @@ esac
 AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
 
+AC_ARG_WITH(berkeleydb,
+    [  --with-berkeleydb[=PATH]  Enable BerkeleyDB (for ovdb overview method)],
+    BERKELEY_DB_DIR=$with_berkeleydb,
+    BERKELEY_DB_DIR=no)
+
+case "$BERKELEY_DB_DIR" in
+  no)
+    BERKELEY_DB_LDFLAGS=
+    BERKELEY_DB_CFLAGS=
+    BERKELEY_DB_LIB=
+    BERKELEY_DB_BINDIR=
+    ;;
+  *)
+    if test "$BERKELEY_DB_DIR" = yes ; then
+      BERKELEY_DB_DIR=/usr/local/BerkeleyDB
+    fi
+    BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
+    BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
+    BERKELEY_DB_LIB="-ldb"
+    BERKELEY_DB_BINDIR="$BERKELEY_DB_DIR/bin"
+    AC_DEFINE(USE_BERKELEY_DB)
+esac
+AC_SUBST(BERKELEY_DB_LDFLAGS)
+AC_SUBST(BERKELEY_DB_CFLAGS)
+AC_SUBST(BERKELEY_DB_LIB)
+AC_SUBST(BERKELEY_DB_BINDIR)
+
 dnl Set some configuration file defaults from the machine hostname.
 HOSTNAME=`hostname 2> /dev/null || uname -n`
 AC_SUBST(HOSTNAME)

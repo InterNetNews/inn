@@ -79,6 +79,7 @@ contrib/newsbot             1 Grep articles and trigger actions
 contrib/pathinfo            1 Scan news headers for various information
 contrib/pullart.c           1 Recover text articles from cyclic buffers
 contrib/reset-cnfs.c        1 Reset the state parts of a CNFS buffer
+contrib/sample.init.script  1 Example SysV-style init.d script
 contrib/showtoken           1 Decode SM tokens
 contrib/tunefeed            1 Tune a remote feed by comparing active files
 doc                         1 Manpages (Directory)
@@ -159,6 +160,9 @@ doc/man/nnrpd.track.5       1 Manpage for nnrpd.track config file
 doc/man/nntpget.1           1 Manpage for nntpget
 doc/man/nntpsend.8          1 Manpage for nntpsend
 doc/man/nntpsend.ctl.5      1 Manpage for nntpsend.ctl config file
+doc/man/ovdb.5              1 Manpage for the ovdb storage module
+doc/man/ovdb_recover.8      1 Manpage for ovdb_recover
+doc/man/ovdb_upgrade.8      1 Manpage for ovdb_upgrade
 doc/man/overchan.8          1 Manpage for overchan backend
 doc/man/overview.ctl.5      1 Manpage for overview.ctl config file
 doc/man/overview.fmt.5      1 Manpage for overview.fmt config file
@@ -193,6 +197,9 @@ doc/pod/inn.conf.pod        1 Master file for inn.conf.5
 doc/pod/inndstart.pod       1 Master file for inndstart.8
 doc/pod/install.pod         1 Master file for INSTALL
 doc/pod/news.pod            1 Master file for NEWS
+doc/pod/ovdb.pod            1 Master file for ovdb.5
+doc/pod/ovdb_recover.pod    1 Master file for ovdb_recover.8
+doc/pod/ovdb_upgrade.pod    1 Master file for ovdb_upgrade.8
 doc/pod/readme.pod          1 Master file for README
 doc/sample-control          1 Sample pgp signed control message
 doc/sgml                    1 SGML version (Directory)
@@ -227,6 +234,7 @@ frontends/getlist.c         1 Get active or other file from NNTP server
 frontends/inews.c           1 Send article to local NNTP server
 frontends/innconfval.c      1 Get an INN configuration parameter
 frontends/mailpost.in       1 Email to news gateway
+frontends/ovdb_recover.c    1 OVDB crash recovery tool
 frontends/pullnews.in       1 sucking feeder
 frontends/rnews.c           1 UUCP unbatcher
 frontends/scanspool.in      1 Scan spool directory for trash
@@ -439,6 +447,7 @@ samples/nnrpd_auth.py.in    1 Sample nnrpd authorization script for python
 samples/nntpsend.ctl        1 Sample control file for nntpsend
 samples/overview.fmt        1 Format of news overview database
 samples/parsecontrol.in     1 Initial parsing of control messages
+samples/ovdb.conf           1 Sample ovdb.conf file
 samples/passwd.nntp         1 Sample passwd.nntp(5) file
 samples/radius.conf         1 Sample radius.conf file
 samples/readers.conf        1 Sample readers.conf(5) file
@@ -458,6 +467,7 @@ samples/version.in          1 Version control message handler
 samples/version.pl          1 Version control message handler for controlchan
 scripts                     1 Script files (Directory)
 scripts/Makefile            1 Makefile for script files
+scripts/dbprocs.in          1 Script to start or stop ovdb housekeeping procs
 scripts/inncheck.in         1 Perl script to syntax-check INN config files
 scripts/innmail.in          1 Perl front-end to sendmail.
 scripts/innreport.in        1 Script to report inn statistics
@@ -501,6 +511,10 @@ storage/ov3/ov3.c           1 tradindexed routine
 storage/ov3/ovmethod.config 1 Definition file used by ovbuildconfig
 storage/ov3/tradindexed.h   1 Header file for tradindexed
 storage/ovbuildconfig.in    1 Template of ovbuildconfig file
+storage/ovdb/Makefile       1 Makefile for ovdb ovmethod
+storage/ovdb/ovdb.c         1 ovdb code
+storage/ovdb/ovdb.h         1 ovdb header
+storage/ovdb/ovmethod.config 1 Definition file used by ovbuildconfig
 storage/ovinterface.h       1 OV header
 storage/timecaf             1 Timecaf method (Directory)
 storage/timecaf/Makefile    1 Makefile for timecaf method
