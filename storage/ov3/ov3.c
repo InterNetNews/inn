@@ -1,34 +1,33 @@
 /*  $Id$
 **
-**  indexed overview method
+**  Indexed overview method.
 */
-
-#include <unistd.h>
+#include "config.h"
+#include "clibrary.h"
+#include <assert.h>
 #include <ctype.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <errno.h>
 #include <syslog.h>
 #include <sys/mman.h>
-#include <assert.h>
-#include <errno.h>
-#include <string.h>
-#include "configdata.h"
-#if	defined(HAVE_RLIMIT)
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include <sys/resource.h>
-#endif	/* defined(HAVE_RLIMIT) */
-#include "macros.h"
-#include "clibrary.h"
+#include <sys/stat.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef HAVE_RLIMIT
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# endif
+# include <sys/resource.h>
+#endif
+
 #include "libinn.h"
-#include "paths.h"
-#include "storage.h"
-#include "qio.h"
+#include "macros.h"
 #include "ov.h"
+#include "paths.h"
+#include "qio.h"
+#include "storage.h"
 
 /* Data structure for specifying a location in the group index */
 typedef struct {
@@ -110,18 +109,6 @@ typedef struct _BUFFER {
     int		Size;
     char	*Data;
 } BUFFER;
-
-/*
-**  Information about the schema of the news overview files.
-*/
-typedef struct _ARTOVERFIELD {
-    char                *Header;
-    int                 Length;
-    BOOL                HasHeader;
-} ARTOVERFIELD;
-
-STATIC int              ARTfieldsize;
-STATIC ARTOVERFIELD	*ARTfields;
 
 #define CACHETABLESIZE 128
 #define MAXCACHETIME (60*5)
@@ -848,6 +835,7 @@ BOOL tradindexed_add(TOKEN token, char *data, int len, time_t arrived) {
 }
 
 BOOL tradindexed_cancel(TOKEN token) {
+    return TRUE;
 }
 
 void *tradindexed_opensearch(char *group, int low, int high) {
