@@ -38,7 +38,7 @@ ROWNER	= -O news -G uucp
 NNTPLIB	= 
 ##  =()<LIBS	= @<LIBS>@>()=
 LIBS	= 
-LIBNEWS	= ../libstorage.a ../libinn.a
+LIBNEWS	= ../libstorage.a ../libinn.a 
 LINTLIB	= ../llib-linn.ln
 
 SOURCES	= ctlinnd.c inews.c rnews.c
@@ -63,7 +63,7 @@ tags ctags:	$(SOURCES)
 inews:		$(P) inews.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ inews.o $(NNTPLIB) $(LIBNEWS) $(LIBS)
 rnews:		$(P) rnews.o $(LIBNEWS)
-	$(CC) $(LDFLAGS) -o $@ rnews.o $(NNTPLIB) $(LIBNEWS) $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ rnews.o $(NNTPLIB) $(LIBNEWS) $(LIBNEWS) $(LIBS)
 ctlinnd:	$(P) ctlinnd.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ ctlinnd.o $(LIBNEWS) $(LIBS)
 getlist:	$(P) getlist.o $(LIBNEWS)

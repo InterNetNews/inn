@@ -65,7 +65,7 @@ tags ctags:	$(SOURCES)
 profiled:
 	cp /dev/null profiled
 
-archive:	$(P) archive.o $(LIBNEWS)
+archive:	$(P) archive.o $(LIBNEWS) 
 	$(CC) $(LDFLAGS) -o $@ archive.o $(LIBNEWS) $(LIBS)
 
 batcher:	$(P) batcher.o $(LIBNEWS)

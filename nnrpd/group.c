@@ -337,16 +337,14 @@ ARTcompare(p1, p2)
 **  Fill in ARTnumbers with the numbers of the articles in the current
 **  group.
 */
-STATIC void
-GRPscandir(dir)
-    char		*dir;
+STATIC void GRPscandir(char *dir)
 {
     static char		SPOOL[] = _PATH_SPOOL;
     static int		ARTarraysize;
-    register DIRENTRY	*ep;
-    register DIR	*dp;
-    register char	*p;
-    register ARTNUM	i;
+    DIRENTRY	        *ep;
+    DIR	                *dp;
+    char	        *p;
+    ARTNUM	        i;
 
     /* Go to the directory. */
     if (chdir(SPOOL) < 0) {

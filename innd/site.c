@@ -656,13 +656,9 @@ SITEbuffer(sp)
 /*
 **  Link a site at the head of the "currently writing to a file" list
 */
-static void
-SITEmovetohead(sp)
-    SITE		*sp;
+static void SITEmovetohead(SITE *sp)
 {
-    if (SITEhead == NOSITE
-     && (sp->Next != NOSITE || sp->Prev != NOSITE
-      || sp == &Sites[SITEhead] || sp == &Sites[SITEtail]))
+    if ((SITEhead == NOSITE) && ((sp->Next != NOSITE) || (sp->Prev != NOSITE)))
 	SITEunlink(sp);
 
     if ((sp->Next = SITEhead) != NOSITE)

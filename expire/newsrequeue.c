@@ -651,11 +651,7 @@ ParseDistribs(p)
 /*
 **  Process a single file.
 */
-STATIC void
-QueueArticle(name, id, art)
-    char		*name;
-    char		*id;
-    register FILE	*art;
+STATIC void QueueArticle(char *name, char *id, FILE *art)
 {
     static char		SEPS[] = ",";
     static char		DISTRIBUTION[] = "Distribution";
@@ -663,12 +659,12 @@ QueueArticle(name, id, art)
     static char		NG[] = "Newsgroups";
     static char		*Buffer;
     static int		Size;
-    register SITE	*sp;
-    register int	i;
-    register char	*p;
-    register BOOL	Dirty;
-    register char	*nl;
-    register NEWSGROUP	*ngp;
+    SITE	        *sp;
+    int	                i;
+    char	        *p;
+    BOOL	        Dirty;
+    char	        *nl;
+    NEWSGROUP	        *ngp;
     struct stat		Sb;
     char		**Path;
     char		**Distribs;
@@ -700,18 +696,18 @@ QueueArticle(name, id, art)
 	sp->Sent = FALSE;
 
     /* Parse the Path and Distribution headers. */
-    if ((p = (char *)HeaderFind(Buffer, PATH, STRLEN(PATH))) == NULL) {
+    if ((p = (char *)HeaderFindMem(Buffer, strlen(Buffer), PATH, STRLEN(PATH))) == NULL) {
 	(void)fprintf(stderr, "No \"Path\" header in \"%s\"\n", name);
 	return;
     }
     Path = ParsePath(p);
-    if ((p = (char *)HeaderFind(Buffer, DISTRIBUTION, STRLEN(DISTRIBUTION))) == NULL)
+    if ((p = (char *)HeaderFindMem(Buffer, strlen(Buffer), DISTRIBUTION, STRLEN(DISTRIBUTION))) == NULL)
 	Distribs = NULL;
     else
 	Distribs = ParseDistribs(p);
 
     /* Look at the newsgroups, see who gets the article. */
-    if ((p = (char *)HeaderFind(Buffer, NG, STRLEN(NG))) == NULL) {
+    if ((p = (char *)HeaderFindMem(Buffer, strlen(Buffer), NG, STRLEN(NG))) == NULL) {
 	(void)fprintf(stderr, "No \"Newsgroups\" header in \"%s\"\n", name);
 	return;
     }

@@ -4,6 +4,7 @@
 */
 #include <stdio.h>
 #include <sys/types.h>
+#include <string.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include <errno.h>
@@ -16,15 +17,10 @@
 #include "qio.h"
 
 
-STATIC BOOL	InSpoolDir;
-
-
 /*
 **  Try to make one directory.  Return FALSE on error.
 */
-STATIC BOOL
-MakeDir(Name)
-    char		*Name;
+STATIC BOOL MakeDir(char *Name)
 {
     struct stat		Sb;
 
@@ -40,15 +36,10 @@ MakeDir(Name)
 **  Make overview directory if not in spool directory.  Return 0 if ok,
 **  else -1.
 */
-STATIC BOOL
-MakeOverDir(Name)
-    register char	*Name;
+STATIC BOOL MakeOverDir(char *Name)
 {
-    register char	*p;
+    char	        *p;
     BOOL		made;
-
-    if (InSpoolDir)
-	return FALSE;
 
     /* Optimize common case -- parent almost always exists. */
     if (MakeDir(Name))
@@ -72,23 +63,18 @@ MakeOverDir(Name)
 **  Get the lock for the group, then open the data file and append the
 **  new data.  Return FALSE on error.
 */
-STATIC BOOL
-WriteData(Dir, Art, Rest, Complain)
-    char		*Dir;
-    char		*Art;
-    char		*Rest;
-    BOOL		Complain;
+STATIC BOOL WriteData(TOKEN Token, char *Dir, char *Art, char *Rest, BOOL Complain)
 {
     static char		TAB[] = "\t";
     static char		NL[] = "\n";
     struct iovec	iov[4];
-    register int	fd;
+    int	                fd;
     char		file[SPOOLNAMEBUFF];
-    register int	ifd;
+    int	                ifd;
     char		ifile[SPOOLNAMEBUFF];
     OVERINDEX		index;
-    register int	i;
-    register BOOL	ok;
+    int	                i;
+    BOOL	        ok;
     struct stat		Sb;
 
     /* Build the I/O vector. */
@@ -155,6 +141,8 @@ WriteData(Dir, Art, Rest, Complain)
     }
     
     index.artnum = atol(Art);
+    index.token = Token;
+    index.cancelled = FALSE;
     if (xwrite(ifd, (char *)&index, sizeof(OVERINDEX)) < 0) {
 	(void)fprintf(stderr, "overchan cant write %s %s\n",
 		ifile, strerror(errno));
@@ -184,19 +172,18 @@ WriteData(Dir, Art, Rest, Complain)
 **  or from mkov:
 **	news/group/name \t number \t data
 */
-STATIC void
-ProcessIncoming(INNinput, qp)
-    BOOL		INNinput;
-    QIOSTATE		*qp;
+STATIC void ProcessIncoming(QIOSTATE *qp)
 {
-    register char	*Dir;
-    register char	*Art;
-    register char	*Rest;
-    register char	*p;
+    char	        *Xref;
+    char                *Data;
+    char                *Dir;
+    char	        *Art;
+    TOKEN               Token;
+    char	        *p;
 
     for ( ; ; ) {
 	/* Read the first line of data. */
-	if ((p = QIOread(qp)) == NULL) {
+	if ((Data = QIOread(qp)) == NULL) {
 	    if (QIOtoolong(qp)) {
 		(void)fprintf(stderr, "overchan line too long\n");
 		continue;
@@ -204,61 +191,61 @@ ProcessIncoming(INNinput, qp)
 	    break;
 	}
 
-	/* If doing mkov output, process that line and continue. */
-	if (!INNinput) {
-	    /* Split up the fields. */
-	    Dir = p;
-	    if ((p = strchr(p, '\t')) == NULL || p[1] == '\0') {
-		(void)fprintf(stderr, "overchan missing field 1: %s\n", Dir);
-		return;
+	/* Check if we're handling a token and if so split it out from
+	 * the rest of the data */
+	if (Data[0] == '@') {
+	    p = strchr(Data, '\t');
+	    *p = '\0';
+	    if (!IsToken(Data)) {
+		fprintf(stderr, "overchan malformed token\n");
+		continue;
 	    }
-	    *p++ = '\0';
-	    Art = p;
-	    if ((p = strchr(p, '\t')) == NULL || p[1] == '\0') {
-		(void)fprintf(stderr, "overchan missing field 2: %s\n", Dir);
-		return;
-	    }
-	    *p++ = '\0';
-
-	    /* Write data. */
-	    if (!WriteData(Dir, Art, p, FALSE)
-	     && (!MakeOverDir(Dir) || !WriteData(Dir, Art, p, TRUE)))
-		(void)fprintf(stderr, "overchan cant update %s %s\n",
-			Dir, strerror(errno));
-	    continue;
+	    Token = TextToToken(Data);
+	    Data = p + 1;
+	}  else {
+	    memset(&Token, '\0', sizeof(TOKEN));
+	    Token.type = TOKEN_EMPTY;
 	}
 
-	/* Nip off the first part. */
-	Dir = p;
-	if ((Rest = strchr(p, '\t')) == NULL) {
-	    (void)fprintf(stderr, "overchan bad input\n");
+	/* Find the groups and article numbers. */
+	if ((Xref = strstr(Data, "Xref:")) == NULL) {
+	    fprintf(stderr, "overchan missing xref header\n");
 	    continue;
 	}
-	*Rest++ = '\0';
+	if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
+	    fprintf(stderr, "overchan malformed xref header\n");
+	    continue;
+	}
+	Xref = COPY(Xref + 1);
+	for (p = Xref; *p; p++)
+	    if (*p == '.')
+		*p = '/';
+
 
 	/* Process all fields in the first part. */
-	for ( ; *Dir; Dir = p) {
+	for (; *Xref; Xref = p) {
 
 	    /* Split up this field, then split it up. */
-	    for (p = Dir; *p; p++)
+	    for (p = Dir = Xref; *p; p++)
 		if (ISWHITE(*p)) {
 		    *p++ = '\0';
 		    break;
 		}
 
-	    if ((Art = strrchr(Dir, '/')) == NULL || Art[1] == '\0') {
+	    if ((Art = strrchr(Dir, ':')) == NULL || Art[1] == '\0') {
 		(void)fprintf(stderr, "overchan bad entry %s\n", Dir);
 		continue;
 	    }
 	    *Art++ = '\0';
 
 	    /* Write data. */
-	    if (!WriteData(Dir, Art, Rest, FALSE)
-	     && (!MakeOverDir(Dir) || !WriteData(Dir, Art, Rest, TRUE)))
+	    if (!WriteData(Token, Dir, Art, Data, FALSE)
+	     && (!MakeOverDir(Dir) || !WriteData(Token, Dir, Art, Data, TRUE)))
 		(void)fprintf(stderr, "overchan cant update %s %s\n",
 			Dir, strerror(errno));
 	}
     }
+    DISPOSE(Xref);
 
     if (QIOerror(qp))
 	(void)fprintf(stderr, "overchan cant read %s\n", strerror(errno));
@@ -266,45 +253,35 @@ ProcessIncoming(INNinput, qp)
 }
 
 
-STATIC NORETURN
-Usage()
+STATIC NORETURN Usage(void)
 {
     (void)fprintf(stderr, "usage:  overchan [-c] [-D dir] [files...]\n");
     exit(1);
 }
 
 
-int
-main(ac, av)
-    int			ac;
-    char		*av[];
+int main(int ac, char *av[])
 {
-    register int	i;
+    int 	        i;
     QIOSTATE		*qp;
     char		*Dir;
-    BOOL		INNinput;
 
     /* Set defaults. */
     Dir = _PATH_OVERVIEWDIR;
-    INNinput = TRUE;
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "cD:")) != EOF)
+    while ((i = getopt(ac, av, "D:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
-	case 'c':
-	    INNinput = FALSE;
-	    break;
 	case 'D':
 	    Dir = optarg;
 	    break;
 	}
     ac -= optind;
     av += optind;
-    InSpoolDir = EQ(Dir, _PATH_SPOOL);
 
     if (chdir(Dir) < 0) {
 	(void)fprintf(stderr, "overchan cant chdir %s %s\n",
@@ -313,16 +290,16 @@ main(ac, av)
     }
 
     if (ac == 0)
-	ProcessIncoming(INNinput, QIOfdopen(STDIN));
+	ProcessIncoming(QIOfdopen(STDIN));
     else {
 	for ( ; *av; av++)
 	    if (EQ(*av, "-"))
-		ProcessIncoming(INNinput, QIOfdopen(STDIN));
+		ProcessIncoming(QIOfdopen(STDIN));
 	    else if ((qp = QIOopen(*av)) == NULL)
 		(void)fprintf(stderr, "overchan cant open %s %s\n",
 			*av, strerror(errno));
 	    else
-		ProcessIncoming(INNinput, qp);
+		ProcessIncoming(qp);
     }
 
     exit(0);

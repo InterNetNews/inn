@@ -342,124 +342,6 @@ void ARTclose(void)
     ARTfreetree(ARTheadertree);
 }
 
-
-/*
-**  Read in a file, return a pointer to static space that is reused.
-*/
-STATIC const char *ARTreadfile(char *name)
-{
-    static BUFFER	File;
-    struct stat		Sb;
-    int			fd;
-    int			oerrno;
-    static ARTHANDLE    *art = NULL;
-
-    if (IsToken(name)) {
-	if (art != NULL)
-	    SMfreearticle(art);
-	if ((art = SMretrieve(TextToToken(name + 1), RETR_ALL)) == NULL)
-	    return NULL;
-	return art->data;
-    } else {
-	/* Open the file, get its size. */
-	if ((fd = open(name, O_RDONLY)) < 0)
-	    return NULL;
-	if (fstat(fd, &Sb) < 0) {
-	    oerrno = errno;
-	    (void)close(fd);
-	    errno = oerrno;
-	    return NULL;
-	}
-	
-	/* Make sure we have enough space. */
-	if (File.Size == 0) {
-	    File.Size = Sb.st_size;
-	    File.Data = NEW(char, File.Size + 1);
-	}
-	else if (File.Size <= Sb.st_size) {
-	    File.Size = Sb.st_size + 16;
-	    RENEW(File.Data, char, File.Size + 1);
-	}
-	
-	/* Read in the file. */
-	if (xread(fd, File.Data, Sb.st_size) < 0) {
-	    oerrno = errno;
-	    (void)close(fd);
-	    errno = oerrno;
-	    return NULL;
-	}
-	
-	/* Clean up and return the data. */
-	File.Data[Sb.st_size] = '\0';
-	(void)close(fd);
-	return File.Data;
-    }
-}
-
-
-/*
-**  Open the article file and return a copy of it.  The files parameter is
-**  actually a whitespace-separated list of names.
-*/
-const char *ARTreadarticle(char *files)
-{
-    char	        *p;
-    BOOL	        more;
-    const char		*art;
-
-    if (files == NULL)
-	return NULL;
-
-    /* Loop over all filenames until we can open one. */
-    for ( ; *files; files = p + 1) {
-	/* Snip off next name, turn dots to slashes. */
-	for (p = files; ISWHITE(*p); p++)
-	    continue;
-	for (files = p; *p && *p != ' '; p++)
-	    if (*p == '.')
-		*p = '/';
-	more = *p == ' ';
-	if (more)
-	    *p = '\0';
-	art = ARTreadfile(files);
-	if (more)
-	    *p = ' ';
-	if (art != NULL)
-	    return art;
-	if (!more)
-	    break;
-    }
-    return NULL;
-}
-
-
-/*
-**  Open the article file and return a copy of the headers.
-*/
-char *ARTreadheader(char *files)
-{
-    const char	        *p;
-    const char	        *head;
-    static char         *header = NULL;
-
-    if ((head = ARTreadarticle(files)) == NULL)
-	return NULL;
-
-    /* Find \n\n which means the end of the header. */
-    for (p = head; (p = strchr(p, '\n')) != NULL; p++)
-	if (p[1] == '\n' || ((p[1] == '\r') && (p[2] == '\n'))) {
-	    if (header)
-		DISPOSE(header);
-	    header = NEW(char, p - head + 1);
-	    memcpy(header, head, p - head);
-	    header[p - head + (WireFormat ? 1 : 0)] = '\0';
-	    return header;
-	}
-    syslog(L_NOTICE, "%s bad_article %s is all headers", LogName, files);
-    return NULL;
-}
-
-
 /*
 **  Parse a Path line, splitting it up into NULL-terminated array of strings.
 **  The argument is modified!
@@ -524,7 +406,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 
     result.type = TOKEN_EMPTY;
 
-    if (((path = (char *)HeaderFind(Article->Data, "Path", 4)) == NULL)
+    if (((path = (char *)HeaderFindMem(Article->Data, Article->Used, "Path", 4)) == NULL)
 	|| (path == Article->Data)) {
 	/* This should not happen */
 	syslog(L_ERROR, "%s internal %s no Path header",
@@ -532,7 +414,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 	return result;
     }
 
-    size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + 64;
+    size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + 64 + 1;
     p =  artbuff = NEW(char, size);
     
     if (strncmp(Path.Data, path, Path.Used != 0)) {
@@ -638,7 +520,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     char		bytesbuff[SMBUF];
     int			i;
 
-    if ((p = (char *)HeaderFind(Article->Data, "Path", 4)) == NULL
+    if ((p = (char *)HeaderFindMem(Article->Data, Article->Used, "Path", 4)) == NULL
      || p == Article->Data) {
 	/* This should not happen. */
 	syslog(L_ERROR, "%s internal %s no Path header",
@@ -1175,20 +1057,22 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
     char	        *files;
     char	        *p;
     char	        *local;
-    char		*head;
     char		buff[SMBUF];
 
     files = HISfilesfor(hash);
-    if ((head = ARTreadheader(files)) == NULL)
-	return NULL;
 
     /* Get the author header. */
-    if ((local = (char *)HeaderFind(head, "Sender", 6)) == NULL
-     && (local = (char *)HeaderFind(head, "From", 4)) == NULL) {
+    if ((p = strchr(files, ' ')) != NULL)
+	*p = '\0';
+    if ((local = (char *)HeaderFindDisk(files, "Sender", 6)) == NULL
+     && (local = (char *)HeaderFindDisk(files, "From", 4)) == NULL) {
 	syslog(L_ERROR, "%s bad_article [%s] checking cancel",
 	    LogName, HashToText(hash));
 	return NULL;
     }
+    if (p)
+	*p = ' ';
+    
     HeaderCleanFrom(local);
 
     /* Compare canonical forms. */
@@ -1201,6 +1085,7 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
 	ARTlog(Data, ART_REJECT, buff);
     }
     DISPOSE(p);
+    DISPOSE(local);
     return files;
 }
 #endif	/* defined(DO_VERIFY_CANCELS) */
@@ -1216,13 +1101,16 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, cons
     BOOL	        more;
     char		buff[SMBUF+16];
 
+    TMRstart(TMR_ARTCNCL);
     if (!DoCancels && !Trusted) {
+	TMRstop(TMR_ARTCNCL);
 	return;
     }
 
     if (!ARTidok(MessageID)) {
 	syslog(L_NOTICE, "%s bad cancel Message-ID %s", Data->Feedsite,
 	       MaxLength(MessageID, MessageID));
+	TMRstop(TMR_ARTCNCL);
         return;
     }
     
@@ -1231,12 +1119,14 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, cons
 	 * most of the information from the cancel message. */
 #if	defined(DO_VERIFY_CANCELS)
 	if (!Trusted) {
+	    TMRstop(TMR_ARTCNCL);
 	    return;
 	}
 #endif	/* defined(DO_VERIFY_CANCELS) */
 	HISremember(hash);
 	(void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
 	ARTlog(Data, ART_CANC, buff);
+	TMRstop(TMR_ARTCNCL);
 	return;
     }
 #if	defined(DO_VERIFY_CANCELS)
@@ -1245,8 +1135,10 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, cons
 #else
     files = HISfilesfor(hash);
 #endif	/* !defined(DO_VERIFY_CANCELS) */
-    if (files == NULL)
+    if (files == NULL) {
+	TMRstop(TMR_ARTCNCL);
 	return;
+    }
     
     /* Get the files where the message is stored and and zap them. */
     for ( ; *files; files = p + 1) {
@@ -1271,6 +1163,7 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const HASH hash, cons
 	if (!more)
 	    break;
     }
+    TMRstop(TMR_ARTCNCL);
 }
 
 
@@ -1766,26 +1659,27 @@ STATIC void ARTmakeoverview(ARTDATA *Data)
     char		        *p;
     int		                i;
 
-    /* Setup. */
-    if (Overview.Data == NULL)
-	Overview.Data = NEW(char, 1);
-    Data->Overview = &Overview;
-    if ((p = strchr(HDR(_xref),' ')) == NULL)
-    	return;
-    p++;
-    BUFFset(&Overview, p, ARTheaders[_xref].Length - (p-HDR(_xref))); 
-    for (i = Overview.Left, p = Overview.Data; --i >= 0; p++)
-	if (*p == '.' || *p == ':')
-	    *p = '/';
-	    
+
     if (ARTfields == NULL) {
 	/* User error. */
 	return;
     }
+    
+    /* Setup. */
+    if (Overview.Data == NULL)
+	Overview.Data = NEW(char, 1);
+    Data->Overview = &Overview;
+
+    /* If we're using the Storage API then pass the token to overchan also. */
+    if (StorageAPI) {
+	BUFFset(&Overview, Data->Name, strlen(Data->Name));
+        BUFFappend(&Overview, SEP, STRLEN(SEP));
+    } else {
+	BUFFset(&Overview, "", 0);
+    }
 
     /* Write the data, a field at a time. */
     for (fp = ARTfields; fp->Header; fp++) {
-	BUFFappend(&Overview, SEP, STRLEN(SEP));
 	hp = fp->Header;
 	if (!hp->Found)
 	    continue;
@@ -1798,7 +1692,9 @@ STATIC void ARTmakeoverview(ARTDATA *Data)
 	 for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
 	     if (*p == '\t' || *p == '\n' || *p == '\r')
 		 *p = ' ';
+	BUFFappend(&Overview, SEP, STRLEN(SEP));
     }
+    Overview.Used--;
 }
 
 
@@ -1901,7 +1797,7 @@ STRING ARTpost(CHANNEL *cp)
     }
 
 #if defined(DO_PERL)
-    pathForPerl = HeaderFind(article->Data, "Path", 4) ;
+    pathForPerl = HeaderFindMem(article->Data, article->Used, "Path", 4) ;
     if ((perlrc = (char *)HandleArticle()) != NULL) {
         (void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, perlrc);
         syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(_message_id), buff);
@@ -2225,6 +2121,10 @@ STRING ARTpost(CHANNEL *cp)
     if (TimeSpool)
         j += 48;
 
+    /* Allocate exactly enough space for the textual representation */
+    if (StorageAPI)
+	j = (sizeof(TOKEN) * 2) + 3;
+
     /* Make sure the filename buffer has room. */
     if (Files.Data == NULL) {
 	Files.Size = j;
@@ -2423,9 +2323,7 @@ STRING ARTpost(CHANNEL *cp)
 	}
 	p = HDR(_supersedes);
 	if (*p && ARTidok(p)) {
-	    TMRstart(TMR_ARTCNCL);
 	    ARTcancel(&Data, p, hash, FALSE);
-	    TMRstop(TMR_ARTCNCL);
 	}
     }
 

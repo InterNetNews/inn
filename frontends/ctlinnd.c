@@ -74,8 +74,6 @@ STATIC COMMAND	Commands[] = {
 #endif /* defined(DO_PERL) */
     {	"readers",	"flag text...\t\tEnable or disable newsreading",
 	2,	SC_READERS,	TRUE	},
-    {	"refile",	"path group\t\tRefile an article",
-	2,	SC_REFILE,	FALSE	},
     {	"reject",	"reason...\t\t\tReject remote connections",
 	1,	SC_REJECT,	TRUE	},
     {	"reload",	"what reason...\t\tRe-read config files*",

@@ -163,9 +163,7 @@ WaitForChildren(i)
 /*
 **  Clean up the NNTP escapes from a line.
 */
-STATIC char *
-REMclean(buff)
-    char	*buff;
+STATIC char *REMclean(char *buff)
 {
     char	*p;
 
@@ -182,11 +180,7 @@ REMclean(buff)
 /*
 **  Write an article to the rejected directory.
 */
-STATIC void
-Reject(article, reason, arg)
-    char	*article;
-    char	*reason;
-    char	*arg;
+STATIC void Reject(const char *article, const char *reason, const char *arg)
 {
 #if	defined(DO_RNEWS_SAVE_BAD)
     char	buff[SMBUF];
@@ -240,7 +234,7 @@ STATIC BOOL Process(char *article)
 
     /* Make sure that all the headers are there, note the ID. */
     for (hp = RequiredHeaders; hp < ENDOF(RequiredHeaders); hp++) {
-	if ((p = (char *)HeaderFind(article, hp->Name, hp->size)) == NULL) {
+	if ((p = (char *)HeaderFindMem(article, strlen(article), hp->Name, hp->size)) == NULL) {
 	    Reject(article, "bad_article missing %s", hp->Name);
 	    return FALSE;
 	}

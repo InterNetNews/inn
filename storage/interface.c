@@ -292,7 +292,7 @@ TOKEN SMstore(const ARTHANDLE article) {
     if (!article.data || !article.len)
 	return result;
 
-    if ((groups = (char *)HeaderFind(article.data, "Newsgroups", 10)) == NULL)
+    if ((groups = (char *)HeaderFindMem(article.data, article.len, "Newsgroups", 10)) == NULL)
 	return result;
 
     for (sub = subscriptions; sub != NULL; sub = sub->next) {

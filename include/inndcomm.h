@@ -41,7 +41,6 @@ typedef char ICC_PROTOCOLTYPE ;
 #define SC_PAUSE	'm'
 #define SC_PERL		'P'
 #define SC_READERS	'v'
-#define SC_REFILE	't'
 #define SC_REJECT	'C'
 #define SC_RELOAD	'o'
 #define SC_RENUMBER	'n'

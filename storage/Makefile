@@ -43,7 +43,7 @@ OBJECTS = interface.o methods.o qio.o
 
 
 methods: 
-	if [ ! -d objs ] ; then \
+	@if [ ! -d objs ] ; then \
 		mkdir objs; \
 	fi ;
 	@for D in $(SUBDIR); do \

@@ -5,6 +5,7 @@
 
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <storage.h>
 
 /* Memory allocation. */
     /* Worst-case alignment, in order to shut lint up. */
@@ -15,7 +16,8 @@ extern ALIGNPTR	xrealloc(char *p, unsigned int i);
 
 /* Headers. */
 extern char	        *GenerateMessageID(void);
-extern const char	*HeaderFind(const char *Article, const char *Header, const int size);
+extern const char	*HeaderFindMem(const char *Article, const int ArtLen, const char *Header, const int HeaderLen);
+extern const char       *HeaderFindDisk(const char *file, const char *Header, const int HeaderLen);
 extern void	        HeaderCleanFrom(char *from);
 extern struct _DDHANDLE	*DDstart(FILE *FromServer, FILE *ToServer);
 extern void		DDcheck(struct _DDHANDLE *h, char *group);
@@ -69,8 +71,10 @@ typedef struct _OVERINDEX {
     long    artnum;
 /* =()<    @<LSEEKVAL>@   offset;>()= */
     off_t   offset;
-    int     size;
+    TOKEN   token;
+    BOOL    cancelled;
 } OVERINDEX;
+
 
 extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
 extern int	getfdcount(void);
