@@ -245,6 +245,14 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     
     if ((p = SMFindBody(private->base, private->len)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
+	if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	    madvise(private->base, private->len, MADV_DONTNEED);
+#endif
+	    munmap(private->base, private->len);
+	} else {
+	    DISPOSE(private->base);
+	}
 	DISPOSE(art->private);
 	DISPOSE(art);
 	return NULL;
@@ -262,6 +270,14 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
+    if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	madvise(private->base, private->len, MADV_DONTNEED);
+#endif
+	munmap(private->base, private->len);
+    } else {
+	DISPOSE(private->base);
+    }
     DISPOSE(art->private);
     DISPOSE(art);
     return NULL;
