@@ -594,11 +594,10 @@ bool cxnConnect (Connection cxn)
     }
 
   /* set our file descriptor to non-blocking */
-#if defined (NBIO_FCNTL)
-#if ! defined (FNDELAY)
-#define FNDELAY O_NDELAY
-#endif
-  rval = fcntl (fd, F_SETFL, FNDELAY) ;
+#if defined (O_NONBLOCK)
+  rval = fcntl (fd, F_GETFL, 0) ;
+  if (rval >= 0)
+    rval = fcntl (fd, F_SETFL, rval | O_NONBLOCK) ;
 #else
   {
     int state = 1 ;
