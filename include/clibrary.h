@@ -204,11 +204,6 @@ typedef pid_t           PID_T;
    others).  Just always use socklen_t and let autoconf take care of it. */
 #define	ARGTYPE         socklen_t
 
-/* These are in C9X, and autoconf makes sure they exist, so again occurances
-   of the typedefs should be replaced by the standard type. */
-typedef int32_t         INT32_T;
-typedef uint32_t        U_INT32_T;
-
 /* autoconf deals with these; just use them directly. */
 typedef caddr_t         MMAP_PTR;
 
