@@ -31,6 +31,11 @@ fi
 
 ##  File exist locally?
 if [ -f ${DEST} ] ; then
+    cmp ${SRC} ${DEST}
+    if [ $? -eq 0 ] ; then
+	touch ${DEST}
+	exit 0
+    fi
     echo "${SRC} has changed; please update ${DEST}"
     exit 1
 fi
