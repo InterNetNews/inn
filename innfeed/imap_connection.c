@@ -2444,12 +2444,12 @@ static conn_ret imap_sendAuthStep(connection_t *cxn, char *str)
 
 static conn_ret imap_sendAuthenticate(connection_t *cxn)
 {
-    const char *mechusing;
     int result;
 
     char *p;
 
 #ifdef HAVE_SASL
+    const char *mechusing;
     int saslresult=SASL_NOMECH;
 
     sasl_interact_t *client_interact=NULL;
@@ -2518,7 +2518,6 @@ static conn_ret imap_sendAuthenticate(connection_t *cxn)
 		 sasl_errstring(saslresult, NULL, NULL), mechusing);
 	return RET_FAIL;
     }
-#endif /* HAVE_SASL */
 
     d_printf(1,"%s:%d:IMAP Trying to authenticate to imap with %s mechanism\n",
 	     hostPeerName (cxn->myHost), cxn->ident,
@@ -2533,6 +2532,7 @@ static conn_ret imap_sendAuthenticate(connection_t *cxn)
     cxn->imap_state = IMAP_WRITING_STARTAUTH;
 
     return RET_OK;
+#endif /* HAVE_SASL */
 }
 
 static conn_ret imap_CreateGroup(connection_t *cxn, char *bboard)
