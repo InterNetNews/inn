@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Here be a set of NNTP response codes as defined in RFC977 and elsewhere.
 **  The reponse codes are three digits, RFI, defined like this:
@@ -139,3 +139,9 @@
 #define NNTP_XBATCH_BADSIZE	"501 Invalid or missing size for xbatch"
 
 #define NNTP_STRLEN			512
+
+/* RFC 977 limits each line of the NNTP protocol to 512 octets, including
+   the terminating CRLF.  For a message ID to be passed using the TAKETHIS
+   command, it can therefore be a maximum of 501 octets.  The November 1999
+   draft of the replacement RFC limits it to 497 octets. */
+#define NNTP_MSGID_MAXLEN       497
