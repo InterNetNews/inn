@@ -1,0 +1,99 @@
+=head1 NAME
+
+radius.conf - Configuration for nnrpd RADIUS authenticator
+
+=head1 DESCRIPTION
+
+This describes the format and attributes of the configuration file for the
+nnrpd RADIUS authenticator.  See radius(1) for more information about the
+authenticator program.  The default location for this file is
+F<radius.conf> in I<pathetc>.
+
+Blank lines and lines beginning with C<#> are ignored, as is anything
+after a C<#> on a line.  All other lines should begin with a parameter
+name followed by a colon and the value of that key.  The available
+parameters are:
+
+=over 4
+
+=item I<radhost>
+
+The hostname of the RADIUS server to use for authentication.  This
+parameter must be set.
+
+=item I<radport>
+
+The port to query on the RADIUS server.  Defaults to 1645 if not set.
+
+=item I<lochost>
+
+The hostname or IP address making the request.  The RADIUS server expects
+an IP address; a hostname will be translated into an IP address with
+gethostbyname().  If not given, this information isn't included in the
+request (not all RADIUS setups require this information).
+
+=item I<locport>
+
+The port the client being authenticated is connecting to.  If not given,
+defaults to 119.  This doesn't need to be set unless readers are
+connecting to a non-standard port.
+
+=item I<secret>
+
+The shared secret with the RADIUS server.  Be careful not to include a
+C<#> in your secret, since this will be taken to be the beginning of a
+comment rather than part of the secret.  This parameter must be set.
+
+=item I<prefix>
+
+Prepend the value of this parameter to all usernames before passing them
+to the RADIUS server.  Can be used to prepend something like C<news-> to
+all usernames in order to put news users into a different namespace from
+other accounts served by the same server.  If not set, nothing is
+prepended.
+
+=item I<suffix>
+
+Append the value of this parameter to all usernames before passing them to
+the RADIUS server.  This is often something like C<@example.com>,
+depending on how your RADIUS server is set up.  If not set, nothing is
+appended.
+
+=item I<ignore-source>
+
+Can be set to C<true> or C<false>.  If set to false, the RADIUS
+authenticator will check to ensure that the response it receives is from
+the same IP address as it sent the request to (for some added security).
+If set to true, it will skip this verification check (if your RADIUS
+server has multiple IP addresses or if other odd things are going on, it
+may be perfectly normal for the response to come from a different IP
+address).
+
+=back
+
+=head1 EXAMPLE
+
+Here is a configuration for a news server named news.example.com,
+authenticating users against radius.example.com and appending
+C<@example.com> to all client-supplied usernames before passing them to
+the RADIUS server:
+
+    radhost: radius.example.com
+    lochost: news.example.com
+    secret: IamARADIUSsecRET
+    suffix: @example.com
+
+The shared secret with the RADIUS server is C<IamARADIUSsecRET>.
+
+=head1 HISTORY
+
+This documentation was written by Russ Allbery <rra@stanford.edu> based on
+the comments in the sample radius.conf file by Yury B. Razbegin.
+
+$Id$
+
+=head1 SEE ALSO
+
+radius(1)
+
+=cut

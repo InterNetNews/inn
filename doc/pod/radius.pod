@@ -1,0 +1,77 @@
+=head1 NAME
+
+radius - nnrpd RADIUS password authenticator
+
+=head1 SYNOPSIS
+
+B<radius> [B<-h>] [B<-f> I<config>]
+
+=head1 DESCRIPTION
+
+B<radius> is an nnrpd authenticator, accepting a username and password
+from nnrpd (given to nnrpd by a reader connection) and attempting to
+authenticate that username and password against a RADIUS server.  See
+readers.conf(5) for more information on how to configure an nnrpd
+authenticator.  It is useful for a site that already does user
+authentication via RADIUS and wants to authenticate news reading
+connections as well.
+
+By default, B<radius> reads I<pathetc>/radius.conf for configuration
+information, but a different configuration file can be specified with
+B<-f>.  See radius.conf(5) for a description of the configuration file.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-f> I<config>
+
+Read I<config> instead of I<pathetc>/radius.conf for configuration
+information.
+
+=item B<-h>
+
+Print out a usage message and exit.
+
+=back
+
+=head1 EXAMPLE
+
+The following readers.conf(5) fragment tells nnrpd to authenticate all
+connections using this authenticator:
+
+    auth radius {
+        auth: radius
+        default: <FAIL>
+        default-domain: example.com
+    }
+
+C<@example.com> will be appended to the user-supplied identity, and if
+RADIUS authentication failes, the user will be assigned an identity of
+C<E<lt>FAILE<gt>@example.com>.
+
+=head1 BUGS
+
+It has been reported that this authenticator doesn't work with Ascend
+RADIUS servers, but does work with Cistron RADIUS servers.  It's also
+believed to work with Livingston's RADIUS server.  Contributions to make
+it work better with different types of RADIUS servers would be gratefully
+accepted.
+
+This code has not been audited against the RADIUS protocol and may not
+implement it correctly.
+
+=head1 HISTORY
+
+The RADIUS authenticator was originally written by Aidan Cully.  This
+documentation was written by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+nnrpd(8), radius.conf(5), readers.conf(5)
+
+RFC 2865, Remote Authentication Dial In User Service.
+
+=cut

@@ -11,13 +11,13 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 	../hook-python ../checklist
 
 MAN1	= ../man/ckpasswd.1 ../man/convdate.1 ../man/fastrm.1 \
-	../man/innconfval.1 ../man/innmail.1
+	../man/innconfval.1 ../man/innmail.1 ../man/radius.1
 
 MAN3	= ../man/libinnhist.3 ../man/qio.3 ../man/uwildmat.3
 
 MAN5	= ../man/control.ctl.5 ../man/inn.conf.5 ../man/newsfeeds.5 \
-	../man/ovdb.5 ../man/passwd.nntp.5 ../man/readers.conf.5 \
-	../man/sasl.conf.5 ../man/subscriptions.5
+	../man/ovdb.5 ../man/passwd.nntp.5 ../man/radius.conf.5 \
+	../man/readers.conf.5 ../man/sasl.conf.5 ../man/subscriptions.5
 
 MAN8	= ../man/expireover.8 ../man/innd.8 ../man/inndf.8 ../man/nnrpd.8 \
 	../man/inndstart.8 ../man/innupgrade.8 ../man/makehistory.8 \
@@ -40,6 +40,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/fastrm.1:	fastrm.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/innconfval.1:	innconfval.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/innmail.1:	innmail.pod		; $(POD2MAN) -s 1 $? > $@
+../man/radius.1:	radius.pod		; $(POD2MAN) -s 1 $? > $@
 
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
@@ -50,6 +51,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/newsfeeds.5:	newsfeeds.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/passwd.nntp.5:	passwd.nntp.pod		; $(POD2MAN) -s 5 $? > $@
+../man/radius.conf.5:	radius.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/readers.conf.5:	readers.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/sasl.conf.5:	sasl.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/subscriptions.5:	subscriptions.pod	; $(POD2MAN) -s 5 $? > $@
