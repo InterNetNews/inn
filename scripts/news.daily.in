@@ -53,6 +53,7 @@ EXPDIR=
 EXPIREFLAGS="-v1"
 EXPIREOVER=expireover
 LOWMARKFILE=
+RMFILE=
 
 HISTDIR="`dirname ${HISTORY}`"
 TOUT=600   # timeout value for ctlinnd commands
@@ -73,7 +74,6 @@ EXPIREOVERFLAGS=
 PROGRAMS=
 POSTPROGRAMS=
 REASON=
-RMFILE=
 SCANARG=
 DOGROUPBASEEXPIRY=false
 
@@ -194,7 +194,7 @@ test -n "${EXPDIR}" && {
 }
 
 test -n "${RMFILE}" && {
-	if [ ${DOGROUPBASEEXPIRY} ] ; then
+	if ${DOGROUPBASEEXPIRY} ; then
 	    EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z${RMFILE}"
 	else
 	    EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
