@@ -361,12 +361,13 @@ Perl Authentication Support for nnrpd
     If type was "authenticate", `$attributes{username}' will contain the
     provided username and `$attributes{password}' the password.
 
-    authenticate() should return a four-element array.  The first element is
+    authenticate() should return a five-element array.  The first element is
     the NNTP response code to return to the client, the second element is a
     boolean value indicating whether the client is allowed to read, the
     third element is a boolean value indicating whether the client is
-    allowed to post, and the fourth element is a wildmat(3) expression that
-    says what groups the client is allowed to read.
+    allowed to post, the fourth element is a wildmat(3) expression that
+    says what groups the client is allowed to read, and the fifth element is
+    maximum bytes per second a client can use for retrieving article.
 
     If type is connect, the NNTP response code should probably be chosen
     from one of the following values:  200 (reading and posting allowd), 201
