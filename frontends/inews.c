@@ -1079,7 +1079,7 @@ main(int ac, char *av[])
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
     if (atoi(buff) != NNTP_POSTEDOK_VAL)
-        sysdie("cannot send article to server: %s", buff);
+        die("cannot send article to server: %s", buff);
 
     /* Close up. */
     QuitServer(0);
