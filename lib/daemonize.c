@@ -22,7 +22,8 @@
 void
 daemonize(const char *path)
 {
-    int fd, status;
+    int status;
+    int fd UNUSED;
 
     /* Fork and exit in the parent to disassociate from the current process
        group and become the leader of a new process group. */
