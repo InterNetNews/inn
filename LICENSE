@@ -63,6 +63,10 @@ not comprehensively):
    lib/md5.c is covered under the standard free MD5 license from RSA Data
    Security.  See the file for more details.
 
+   libhist/his.c and libhist/hisv6/hisv6.c are under a license very
+   similar to the new BSD license but with Thus plc as the copyright
+   holder.  See those files for details.
+
    tests/runtests.c is covered under a license very similar to the MIT/X
    Consortium license (less restrictive than INN's licese).  See the
    beginning of the file for details.
