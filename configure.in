@@ -421,11 +421,15 @@ AC_CACHE_CHECK(for return type of qsort, ac_cv_type_qsort, AC_TRY_COMPILE([#ifde
 #include <stdlib.h>
 #endif],[int a;a=qsort(0,0,0,0)],ac_cv_type_qsort=int,ac_cv_type_qsort=void))
 AC_SUBST(ac_cv_type_qsort)
-AC_CACHE_CHECK(for return type of free, ac_cv_type_free, AC_TRY_COMPILE([#ifdef HAVE_MALLOC_H
+AC_CACHE_CHECK(for return type of free, ac_cv_type_free, AC_TRY_COMPILE([#ifdef _AIX41
+#include <stdlib.h>
+#else
+#ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #else
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #endif
 #endif],[int a;a=free(0)],ac_cv_type_free=int,ac_cv_type_free=void))
 AC_SUBST(ac_cv_type_free)
@@ -534,10 +538,14 @@ yes
 	AC_MSG_RESULT(LOG_LOCAL1))
 
 AC_CACHE_CHECK(generic pointer, ac_cv_type_generic,
-AC_TRY_COMPILE([#ifdef HAVE_MALLOC_H
+AC_TRY_COMPILE([#ifdef _AIX41
+#include <stdlib.h>
+#else
+#ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #else
 #include <stdlib.h>
+#endif
 #endif],[void *a; a = malloc(sizeof(a))], ac_cv_type_generic=void,
 ac_cv_type_generic=char));
 AC_SUBST(ac_cv_type_generic)
