@@ -697,11 +697,8 @@ DoArt(ARTHANDLE *art)
     if (!NoHistory) {
 	bool r;
 
-	if (Expires > 0)
-	    r = HISwrite(History, MessageID,
-			 Arrived, Posted, Expires, art->token);
-	else
-	    r = HISremember(History, MessageID, Arrived);
+	r = HISwrite(History, MessageID,
+		     Arrived, Posted, Expires, art->token);
 	if (r == false) {
 	    (void)fprintf(stderr, "makehistory: Can't write history line, %s\n", strerror(errno));
 	    exit(1);
