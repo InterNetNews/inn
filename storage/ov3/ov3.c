@@ -981,7 +981,7 @@ static bool OV3packgroup(char *group, int delta) {
     }
 
     /* stat old index file so we know its actual size. */
-    if (fstat(fd, &sb) < 0) {
+    if (fstat(gh->indexfd, &sb) < 0) {
 	syslog(L_ERROR, "tradindexed: could not stat %s: %m", newidx);
 	close(fd);
 	OV3closegroup(gh, FALSE);
@@ -1003,7 +1003,7 @@ static bool OV3packgroup(char *group, int delta) {
     }
 
     if (pwrite(fd, &gh->indexmem[ge->low - ge->base] , nbytes,
-	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta)) != nbytes) {
+	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta - 1)) != nbytes) {
 	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
 	close(fd);
 	OV3closegroup(gh, FALSE);
