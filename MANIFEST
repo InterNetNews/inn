@@ -330,7 +330,6 @@ lib/genid.c                           Generate a message ID
 lib/getconfig.c                       Parse the inn.conf file
 lib/getfqdn.c                         Get FQDN of local host
 lib/getmodaddr.c                      Get a moderator's address
-lib/getopt.c                          Help parse command line
 lib/gettime.c                         Get time and timezone info
 lib/grpalias.c                        Group alias code used for OV3
 lib/hash.c                            Create hash from message ID
@@ -343,11 +342,8 @@ lib/lockfile.c                        Try to lock a file descriptor
 lib/makedir.c                         Make directory recursively
 lib/malloc.c                          A debugging malloc package
 lib/md5.c                             MD5 checksum calculation
-lib/memchr.c                          Find a byte in a buffer (BSD)
-lib/memcmp.c                          Compare two buffers (BSD)
-lib/memmove.c                         Copy two (overlapping) buffers (BSD)
-lib/memset.c                          Set a buffer to a value (BSD)
-lib/mkversion                         Generate version.c with INN version
+lib/memcmp.c                          memcmp replacement
+lib/mkversion                         Generate inn/version.h with INN version
 lib/nonblocking.c                     Set or clear non-blocking I/O
 lib/parsedate.y                       Date parsing
 lib/perl.c                            Perl hook support for nnrpd and innd
@@ -370,6 +366,7 @@ lib/strerror.c                        String representation of errno
 lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
 lib/tempname.c                        Temporary filename generator
+lib/version.c                         INN version constants
 lib/waitnb.c                          Non-blocking wait wrapper
 lib/wildmat.c                         Pattern match routine
 lib/xfopena.c                         Open a FILE in append mode
