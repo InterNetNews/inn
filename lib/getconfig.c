@@ -328,8 +328,8 @@ int CheckInnConf()
     static int dirlen = 0;
 
     if (GetFQDN() == NULL) {
-	syslog(L_FATAL, "Must set 'domain' in inn.conf");
-	(void)fprintf(stderr, "Must set 'domain' in inn.conf");
+	syslog(L_FATAL, "Hostname does not resolve or 'domain' in inn.conf is missing");
+	(void)fprintf(stderr, "Hostname does not resolve or 'domain' in inn.conf is missing");
 	return(-1);
     }
     if (innconf->fromhost == NULL) {
