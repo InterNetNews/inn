@@ -51,7 +51,7 @@ void CMDgroup(int ac, char *av[])
         char    *reply;
 
 	/* Authorize user at a Python authorization module */
-	if (PY_authorize(ClientHost, ClientIp, ServerHost, PERMuser, group, FALSE, &reply) < 0) {
+	if (PY_authorize(ClientHost, ClientIpString, ServerHost, PERMuser, group, FALSE, &reply) < 0) {
 	    syslog(L_NOTICE, "PY_authorize(): authorization skipped due to no Python authorization method defined.");
 	} else {
 	    if (reply != NULL) {
