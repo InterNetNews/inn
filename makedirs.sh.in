@@ -3,7 +3,7 @@
 ##  Script to make INN directories.
 
 PATHNEWS=@prefix@
-PATHBIN=${PATHNEWS}/bin
+PATHBIN=@bindir@
 PATHETC=@ETCDIR@
 PATHLIB=@LIBDIR@
 PATHCONTROL=@CONTROLDIR@
@@ -18,7 +18,7 @@ PATHOUTGOING=${PATHSPOOL}/outgoing
 PATHINCOMING=${PATHSPOOL}/incoming
 PATHARCHIVE=${PATHSPOOL}/archive
 PATHTAPE=${PATHSPOOL}/innfeed
-PATHMAN=@MANDIR@
+PATHMAN=@mandir@
 PATHTMP=@TMPPATH@
 
 ##  Some systems don't support -x, so we have to use -f.
