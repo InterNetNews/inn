@@ -13,6 +13,7 @@
 #include "paths.h"
 #include "storage.h"
 #include "ov.h"
+#include <syslog.h>
 
 void usage(void) {
     fprintf(stderr, "Usage: expireover [flags]\n");
@@ -30,6 +31,9 @@ int main(int argc, char *argv[]) {
     FILE			*F;
     BOOL			LowmarkFile = FALSE;
     char			*lofile;
+
+    /* First thing, set up logging and our identity. */
+    openlog("expireover", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     while ((i = getopt(argc, argv, "f:Z:")) != EOF) {
 	switch (i) {
