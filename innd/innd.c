@@ -910,7 +910,7 @@ int main(int ac, char *av[])
 #if defined(DO_PERL)
     /* Load the Perl code */
     /* Make a temp copy because the path is a static var */
-    p = COPY(cpcatpath(innconf->pathfilter, _PATH_PERL_STARTUP_INND);
+    p = COPY(cpcatpath(innconf->pathfilter, _PATH_PERL_STARTUP_INND));
     PERLsetup(p, cpcatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND),
 				"filter_art");
     PerlFilter (TRUE) ;
