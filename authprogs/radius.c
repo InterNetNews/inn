@@ -151,7 +151,7 @@ int read_config(FILE *f, rad_config_t *radconfig)
 
 int alarmhit;
 
-void alarmfunc()
+SIGHANDLER alarmfunc(int dummy)
 {
     alarmhit = 1;
 }
@@ -271,7 +271,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     }
 
     /* send out the packet and wait for reply. */
-    if (sendto(sock, &req, reqlen, 0, (struct sockaddr*) &sinr,
+    if (sendto(sock, (char *)&req, reqlen, 0, (struct sockaddr*) &sinr,
                sizeof(sinr)) < 0) {
 	fprintf(stderr, "radius: cant send auth_req: %s\n", strerror(errno));
 	close(sock);
@@ -286,7 +286,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     memcpy(secbuf+sizeof(req.vector), req.vector, sizeof(req.vector));
     while (!done && !alarmhit) {
 	jlen = sizeof(sinl);
-	if ((jlen = recvfrom(sock, &req, sizeof(req)-sizeof(int), 0, 
+	if ((jlen = recvfrom(sock, (char *)&req, sizeof(req)-sizeof(int), 0, 
 	                     (struct sockaddr*) &sinl, &jlen)) < 0) {
 	    fprintf(stderr, "radius: couldnt recvfrom: %s\n", strerror(errno));
 	    break;

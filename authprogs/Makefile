@@ -34,7 +34,7 @@ pwcheck:	$(P) pwcheck.o
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ pwcheck.o $(LIBS)
 
 radius:	$(P) radius.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ radius.o ../lib/libinn.a $(LIBS)
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ radius.o ../lib/libinn.a $(LIBS) $(LIBNEWS)
 
 ckpasswd:	$(P) ckpasswd.o
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ckpasswd.o $(LIBS)
