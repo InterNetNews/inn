@@ -77,22 +77,22 @@ Before You Begin
       make to build INN should be sufficient.
 
     * If you want to enable support for authenticated control messages (this
-      is NOT required) then you will need to install PGP.  Unfortunately,
-      the licensing restrictions on PGP inside the United States are
-      extremely unclear; it's possible that if you are installing INN for a
-      company in the U.S., even if the news server is not part of the
-      business of that company, you would need to purchase a commercial
-      license for PGP.  For an educational or non-profit organization, this
-      shouldn't be a problem.  See <http://www.pgp.com/> for more
-      information about PGP, including the licensing restrictions.
+      is not required but is highly recommended) then you will need to
+      install some version of PGP.  The recommended version is GnuPG, since
+      it's actively developed, supports OpenPGP, is freely available and
+      free to use for any purpose (including in the US), and (as of version
+      1.0.4 at least) supports RSA signatures used by most current control
+      message senders.  You need to install both GnuPG and pgpgpg from
+      <http://www.gnupg.org/>; a link for pgpgpg is under "Front ends."
 
-      You may also want to look at GnuPG from <http://www.gnupg.org/>, a
-      free software OpenPGP implementation.  Unfortunately, most control
-      message signatures are currently PGP 2.6.2-compatible signatures,
-      which cannot be handled by stock GnuPG for patent reasons.  However,
-      there are add-on modules for GnuPG that allow verification of those
-      types of signatures, particularly if you are outside the United
-      States.
+      Alternately, you can install PGP from <http://www.pgp.com/> or one of
+      the international versions of it.  Be warned, however, that the
+      licensing restrictions on PGP inside the United States are extremely
+      unclear; it's possible that if you are installing INN for a company in
+      the U.S., even if the news server is not part of the business of that
+      company, you would need to purchase a commercial license for PGP.  For
+      an educational or non-profit organization, this shouldn't be a
+      problem.
 
     Also, if you want to use either the Tcl or Python embedded hooks, you'll
     need to have suitable versions of Tcl and/or Python installed.  See
