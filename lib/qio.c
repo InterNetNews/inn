@@ -1,199 +1,179 @@
-/*  $Revision$
+/*  $Id$
 **
-**  Quick I/O package -- optimized for reading through a file.
+**  Quick I/O package.
+**
+**  A set of routines optimized for reading through files line by line.
+**  This package uses internal buffering like stdio, but is even more
+**  aggressive about its buffering.  The basic read call reads a single line
+**  and returns the whole line, provided that it can fit in the buffer.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <fcntl.h>
-#include <ctype.h>
 #include <sys/stat.h>
-#include <errno.h>
+
+#include "inn/qio.h"
 #include "libinn.h"
-#include "qio.h"
 #include "macros.h"
+
+/* A reasonable default buffer size to use. */
+#define QIO_BUFFERSIZE  8192
+
+/*
+**  Given a file descriptor, return a reasonable buffer size to use for that
+**  file.  Uses st_blksize if available and reasonable, QIO_BUFFERSIZE
+**  otherwise.
+*/
+static size_t
+buffer_size(int fd)
+{
+    size_t size = QIO_BUFFERSIZE;
+
+#if HAVE_ST_BLKSIZE
+    struct stat st;
+
+    /* The Solaris 2.6 man page says that st_blksize is not defined for
+       block or character special devices (and could contain garbage), so
+       only use this value for regular files. */
+    if (fstat(fd, &st) == 0 && S_ISREG(st.st_mode)) {
+        size = st.st_blksize;
+        if (size > (4 * QIO_BUFFERSIZE) || size < (QIO_BUFFERSIZE / 2))
+            size = QIO_BUFFERSIZE;
+    }
+#endif /* HAVE_ST_BLKSIZE */
+
+    return size;
+}
 
 
 /*
 **  Open a quick file from a descriptor.
 */
-QIOSTATE *QIOfdopen(const int fd)
+QIOSTATE *
+QIOfdopen(const int fd)
 {
-    QIOSTATE	*qp;
-#if	defined(HAVE_ST_BLKSIZE)
-    struct stat	Sb;
-#endif	/* defined(HAVE_ST_BLKSIZE) */
+    QIOSTATE *qp;
 
-    qp = NEW(QIOSTATE, 1);
-    qp->flag = QIO_ok;
-    qp->fd = fd;
-    qp->Size = QIO_BUFFER;
-#if     defined(HAVE_ST_BLKSIZE)
-    /* For regular files, use st_blksize hint from the filesystem. */
-    if (fstat(fd, &Sb) >= 0 &&
-       (S_ISREG(Sb.st_mode) || S_ISCHR(Sb.st_mode) || S_ISBLK(Sb.st_mode))) {
-	qp->Size = (int)Sb.st_blksize;
-	/* The size must be reasonable */
-	if (qp->Size > (4 * QIO_BUFFER) || qp->Size < (QIO_BUFFER / 2))
-	    qp->Size = QIO_BUFFER;
-    }
-#endif  /* defined(HAVE_ST_BLKSIZE) */
-    qp->Buffer = NEW(char, qp->Size);
-    qp->Count = 0;
-    qp->Start = qp->Buffer;
-    qp->End = qp->Buffer;
+    qp = xmalloc(sizeof(*qp));
+    qp->_fd = fd;
+    qp->_length = 0;
+    qp->_size = buffer_size(fd);
+    qp->_buffer = xmalloc(qp->_size);
+    qp->_start = qp->_buffer;
+    qp->_end = qp->_buffer;
+    qp->_count = 0;
+    qp->_flag = QIO_ok;
 
     return qp;
 }
 
 
 /*
-**  Open a file for reading.
+**  Open a quick file from a file name.
 */
-QIOSTATE *QIOopen(const char *name)
+QIOSTATE *
+QIOopen(const char *name)
 {
-    int		fd;
+    int fd;
 
-    /* Open the file, read in the first chunk. */
-    if ((fd = open(name, O_RDONLY)) < 0)
-	return NULL;
+    fd = open(name, O_RDONLY);
+    if (fd < 0) return NULL;
     return QIOfdopen(fd);
 }
 
 
 /*
-**  Close an open stream.
+**  Close an open quick file.
 */
-void QIOclose(QIOSTATE *qp)
+void
+QIOclose(QIOSTATE *qp)
 {
-    (void)close(qp->fd);
-    DISPOSE(qp->Buffer);
-    DISPOSE(qp);
+    close(qp->_fd);
+    free(qp->_buffer);
+    free(qp);
 }
 
 
 /*
-**  Rewind an open stream.
+**  Rewind a quick file.  Reads the first buffer full of data automatically,
+**  anticipating the first read from the file.  Returns -1 on error, 0 on
+**  success.
 */
-int QIOrewind(QIOSTATE *qp)
+int
+QIOrewind(QIOSTATE *qp)
 {
-    int		i;
+    ssize_t nread;
 
-    if (lseek(qp->fd, (OFFSET_T) 0, SEEK_SET) == -1)
-	return -1;
-    i = read(qp->fd, qp->Buffer, (SIZE_T)qp->Size);
-    if (i < 0)
-	return i;
-    qp->Count = i;
-    qp->Start = qp->Buffer;
-    qp->End = &qp->Buffer[i];
+    if (lseek(qp->_fd, 0, SEEK_SET) < 0) return -1;
+    nread = read(qp->_fd, qp->_buffer, qp->_size);
+    if (nread < 0) return nread;
+    qp->_count = nread;
+    qp->_start = qp->_buffer;
+    qp->_end = qp->_buffer + nread;
     return 0;
 }
 
 
 /*
-**  Get the next line from the input.
+**  Get the next newline-terminated line from a quick file, replacing the
+**  newline with a nul.  Returns a pointer to that line on success and NULL
+**  on failure or end of file, with _flag set appropriately.
 */
-char * QIOread(QIOSTATE *qp)
+char *
+QIOread(QIOSTATE *qp)
 {
-    char	*p;
-    char	*q;
-    char	*save;
-    int		i;
+    char *p, *line;
+    ssize_t nread;
+    size_t nleft;
 
-    while (TRUE) {
-        
-        /* Read from buffer if there is any data there. */
-        if (qp->End > qp->Start) {
+    /* Loop until we get a result or fill the buffer. */
+    while (1) {
+        nleft = qp->_end - qp->_start;
 
-            /* Find the newline. */
-            p = memchr((POINTER)qp->Start,'\n',(SIZE_T)(qp->End - qp->Start));
+        /* If nleft <= 0, the buffer currently contains no data that hasn't
+           previously been returned by QIOread, so we can overwrite the
+           buffer with new data.  Otherwise, first check the existing data
+           to see if we have a full line. */
+        if (nleft <= 0) {
+            qp->_start = qp->_buffer;
+            qp->_end = qp->_buffer;
+        } else {
+            p = memchr(qp->_start, '\n', nleft);
             if (p != NULL) {
                 *p = '\0';
-                qp->Length = p - qp->Start;
-                save = qp->Start;
-                qp->Start = p + 1;
-                qp->flag = QIO_ok;
-                return save;
+                qp->_length = p - qp->_start;
+                line = qp->_start;
+                qp->_start = p + 1;
+                qp->_flag = QIO_ok;
+                return line;
             }
 
-            /* Not there; move unread part down to start of buffer. */
-            for (p = qp->Buffer, q = qp->Start; q < qp->End; )
-                *p++ = *q++;
-        }
-        else
-            p = qp->Buffer;
+            /* Not there.  See if our buffer is full. */
+            if (nleft >= qp->_size) {
+                qp->_flag = QIO_long;
+                qp->_start = qp->_end;
+                return NULL;
+            }
 
-        /* Read data, reset the pointers. */
-        i = read(qp->fd, p, (SIZE_T)(&qp->Buffer[qp->Size] - p));
-        if (i < 0) {
-            qp->flag = QIO_error;
-            return NULL;
+            /* We need to read more data.  If there's read data in buffer,
+               then move the unread data down to the beginning of the buffer
+               first. */
+            if (qp->_start > qp->_buffer) {
+                memmove(qp->_buffer, qp->_start, nleft);
+                qp->_start = qp->_buffer;
+                qp->_end = qp->_buffer + nleft;
+            }
         }
-        if (i == 0) {
-            qp->flag = QIO_ok;
-            return NULL;
-        }
-        qp->Count += i;
-        qp->Start = qp->Buffer;
-        qp->End = &p[i];
 
-        /* Now try to find it. */
-        p = memchr((POINTER)qp->Start, '\n', (SIZE_T)(qp->End - qp->Start));
-        if (p != NULL) {
-            *p = '\0';
-            qp->Length = p - qp->Start;
-            save = qp->Start;
-            qp->Start = p + 1;
-            qp->flag = QIO_ok;
-            return save;
-        }
-        
-        if ((qp->End - qp->Start) >= qp->Size) {
-            /* Still not there and buffer is full -- line is too long. */
-            qp->flag = QIO_long;
-            qp->Start = qp->End;
+        /* Read in some more data, and then let the loop try to find the
+           newline again or discover that the line is too long. */
+        nread = read(qp->_fd, qp->_end, qp->_size - nleft);
+        if (nread <= 0) {
+            qp->_flag = (nread < 0) ? QIO_error : QIO_ok;
             return NULL;
         }
-        /* otherwise, try to read more (in case we're reading from a pipe or
- 	   something that won't always give us a full block at once.) */
+        qp->_count += nread;
+        qp->_end += nread;
     }
 }
-
-
-
-#if	defined(TEST)
-int
-main(ac, av)
-    int		ac;
-    char	*av[];
-{
-    QIOSTATE	*h;
-    char	*p;
-    long	where;
-
-    h = QIOopen(ac > 1 ? av[1] : "/usr/lib/news/history", 0);
-    if (h == NULL) {
-	perror("Can't open file");
-	exit(1);
-    }
-
-    where = QIOtell(h);
-    while ((p = QIOread(h)) != NULL) {
-	printf("%5ld %3d %s\n", where, QIOlength(h), p);
-	where = QIOtell(h);
-    }
-    if (QIOtoolong(h)) {
-	fprintf(stderr, "Line too line at %ld\n", QIOtell(h));
-	exit(1);
-    }
-    if (QIOerror(h)) {
-	perror("Can't read");
-	exit(1);
-    }
-    QIOclose(h);
-    exit(0);
-    /* NOTREACHED */
-}
-#endif	/* defined(TEST) */
