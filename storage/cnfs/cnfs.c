@@ -812,8 +812,8 @@ STATIC void CNFSmunmapbitfields(void) {
 }
 
 STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cycnum) {
-    time_t      lastupdate = 0;
-    CYCBUFF	*tmp;
+    STATIC time_t       lastupdate = 0;
+    CYCBUFF	        *tmp;
 
     if (SMpreopen) {
 	if ((time(NULL) - lastupdate) > 30) {	/* XXX Changed to refresh every 30sec - cmo*/
