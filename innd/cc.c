@@ -1758,7 +1758,6 @@ CCreader(CHANNEL *cp)
     static char		TOOLONG[] = "0 Reply too long for server to send";
     CCDISPATCH		*dp;
     const char *	p;
-    char		*q;
     ICC_MSGLENTYPE	bufflen;
     ICC_PROTOCOLTYPE	protocol ;
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
@@ -1768,11 +1767,13 @@ CCreader(CHANNEL *cp)
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     int			i;
     char                buff[BIG_BUFFER + 2];
-    char                copy[BIG_BUFFER + 2];
     char		*argv[SC_MAXFIELDS + 2];
     int			argc;
     int			len;
     char		*tbuff ;
+    const char *start;
+    char *copy;
+    size_t offset;
 
     if (cp != CCchan) {
 	syslog(L_ERROR, "%s internal CCreader wrong channel 0x%p not 0x%p",
@@ -1852,15 +1853,22 @@ CCreader(CHANNEL *cp)
 
 #endif /* defined (HAVE_UNIX_DOMAIN_SOCKETS) */
     
-    /* Copy to a printable buffer, and log. */
-    strcpy(copy, buff);
-    for (p = NULL, q = copy; *q; q++)
-	if (*q == SC_SEP) {
-	    *q = ':';
-	    if (p == NULL)
-		p = q + 1;
-	}
-    syslog(L_CC_CMD, "%s", p ? p : copy);
+    /* Copy to a printable buffer, and log.  We skip the first
+       SC_SEP-delimited field.  Note that the protocol allows for nuls in the
+       message, which we'll replace with ? for logging. */
+    copy = xmalloc(bufflen + 1);
+    memcpy(copy, buff, bufflen);
+    copy[bufflen] = '\0';
+    for (offset = 0, start = NULL; offset < (size_t) bufflen; offset++)
+        if (copy[offset] == SC_SEP) {
+            copy[offset] = ':';
+            if (start == NULL)
+                start = copy + offset + 1;
+        } else if (copy[offset] == '\0') {
+            copy[offset] = '?';
+        }
+    notice("ctlinnd command %s", start != NULL ? start : copy);
+    free(copy);
 
     /* Split up the fields, get the command letter. */
     if ((argc = CCargsplit(buff, &buff[i], argv, ARRAY_SIZE(argv))) < 2
