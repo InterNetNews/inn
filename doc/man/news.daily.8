@@ -20,8 +20,10 @@ and collecting the output.
 By default, 
 .I news.daily
 performs all of its functions and mails the output to the news administrator,
-.\" =()<.IR @<NEWSMASTER>@ .>()=
-.IR usenet .
+.I <NEWSMASTER in config.data> 
+(typically
+.\" =()<.IR @<typNEWSMASTER>@ .)>()=
+.IR usenet .)
 By specifying ``keywords'' on the command line, it is possible to
 modify the functions performed, as well as change the arguments given to
 .IR expire (8)
@@ -101,8 +103,10 @@ Using this keyword disables this function.
 .I noexplog
 .I Expire
 normally appends information to
-.\" =()<.I @<_PATH_MOST_LOGS>@/expire.log>()=
-.I /var/log/news/expire.log
+.I <_PATH_MOST_LOGS in config.data>/expire.log
+(typically 
+.\" =()<.I @<typ_PATH_MOST_LOGS>@/expire.log)>()=
+.I /var/log/news/expire.log)
 (see
 .IR newslog (5)).
 Using this keyword causes the

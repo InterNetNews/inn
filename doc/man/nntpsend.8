@@ -76,16 +76,20 @@ All
 processes are spawned in the background and the script waits for
 them all to finish before returning.
 Output is sent to the file
-.\" =()<.IR @<_PATH_MOST_LOGS>@/nntpsend.log .>()=
-.IR /var/log/news/nntpsend.log .
+.I <_PATH_MOST_LOGS in config.data>/nntpsend.log .
+(typically
+.\" =()<.IR @<typ_PATH_MOST_LOGS>@/nntpsend.log .)>()=
+.IR /var/log/news/nntpsend.log .)
 In order to keep from overwhelming the local system, 
 .I nntpsend
 waits five seconds before spawned each child.
 .PP
 .I Nntpsend
 expects that the batchfile for a site is named
-.\" =()<.IR @<_PATH_BATCHDIR>@/sitename .>()=
-.IR /var/news/spool/out.going/sitename .
+.I <_PATH_BATCHDIR in config.data>/sitename .
+(typically
+.\" =()<.IR @<typ_PATH_BATCHDIR>@/sitename .)>()=
+.IR /var/news/spool/out.going/sitename .)
 To prevent batchfile corruption,
 .IR shlock (1)
 is used to ``lock'' these files.
@@ -108,12 +112,14 @@ for the site.
 .SH OPTIONS
 .TP
 .B "\-d \-D"
-The ``\-D'' flag causes
+The ``\-d'' flag causes
 .I nntpsend
 to send output to stdout rather than the log file
-.\" =()<.IR @<_PATH_MOST_LOGS>@/nntpsend.log .>()=
-.IR /var/log/news/nntpsend.log .
-The ``\-d'' flag does the same
+.I <_PATH_MOST_LOGS in config.data>/nntpsend.log .
+(typically
+.\" =()<.IR @<typ_PATH_MOST_LOGS>@/nntpsend.log .)>()=
+.IR /var/log/news/nntpsend.log .)
+The ``\-D'' flag does the same
 and it passes ``\-d'' to all
 .I innxmit
 invocatins which in turn causes

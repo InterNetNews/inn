@@ -4,7 +4,9 @@
 newsfeeds \- determine where Usenet articles get sent
 .SH DESCRIPTION
 The file
-.\" =()<.I @<_PATH_NEWSFEEDS>@>()=
+.I <_PATH_NEWSFEEDS in config.data>
+(typically
+.\" =()<.I @<typ_PATH_NEWSFEEDS>@>()=
 .I /var/news/etc/newsfeeds
 specifies how incoming articles should be distributed to other sites.
 It is parsed by the InterNetNews server
@@ -202,8 +204,10 @@ necessary to begin spooling for the site (see below).
 If
 .I name
 is not an absolute pathname, it is taken to be relative to
-.\" =()<.IR @<_PATH_BATCHDIR>@ .>()=
-.IR /var/news/spool/out.going .
+.I <_PATH_BATCHDIR in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_BATCHDIR>@ .)>()=
+.IR /var/news/spool/out.going .)
 Then, if the destination is a directory, the file
 .I togo
 in that directory will be used as filename.
@@ -235,8 +239,9 @@ be buffered internally in least-recently-used order.
 If the internal buffer grows bigger then
 .I size
 bytes, however, the data will be written out to the appropriate file.
-.\" =()<The default value is @<SITE_BUFFER_SIZE>@ bytes.>()=
-The default value is (16 * 1024) bytes.
+The default value is <SITE_BUFFER_SIZE in config.data> bytes
+.\" =()<(typically @<typSITE_BUFFER_SIZE>@ .)>()=
+(typically (16 * 1024 ) .)
 .TP
 .BI N modifiers
 The newsgroups that a site receives are modified according to the
@@ -265,8 +270,10 @@ If the amount of data queued for the site gets to be larger than
 .I size
 bytes, then the server will switch to spooling, appending to a file
 specified by the ``F'' flag, or
-.\" =()<.I @<_PATH_BATCHDIR>@/ sitename>()=
-.I /var/news/spool/out.going/ sitename
+.I <_PATH_BATCHDIR in config.data>/ sitename
+(typically
+.\" =()<.I @<typ_PATH_BATCHDIR>@/ sitename)>()=
+.I /var/news/spool/out.going/ sitename)
 if the ``F'' flag is not specified.
 Spooling usually happens only for channel or exploder feeds.
 .TP
@@ -360,7 +367,7 @@ It can be omitted.
 The site named
 .I ME
 is special.
-There should only be one such entry, and it should be the first entry
+There must be exactly one such entry, and it should be the first entry
 in the file.
 If the
 .I ME
@@ -384,7 +391,7 @@ entry has a distribution subfield, then only articles that match
 the distribution list are accepted; all other articles are rejected.
 A commercial news server, for example, might have ``/!local'' to reject
 local postings from other, misconfigured, sites.
-.SS "FEED TYPES"
+.SH "FEED TYPES"
 .I Innd
 provides four basic types of feeds: log, file, program, and channel.
 An exploder is a special type of channel.
@@ -395,9 +402,11 @@ does not transfer articles, but reports that an article should be sent to
 the site.
 .PP
 The simplest feed is one that is fed by a log entry.
-Other than a mention in the news logfile
-.\" =()<.IR @<_PATH_LOGFILE>@ ,>()=
-.IR /var/log/news/news ,
+Other than a mention in the news logfile,
+.I <_PATH_LOGFILE in config.data>
+(typically
+.\" =()<.IR @<typ_PATH_LOGFILE>@ ),>()=
+.IR /var/log/news/news ),
 no data is ever written out.
 This is equivalent to a ``Tf'' entry writing to
 .I /dev/null
@@ -412,11 +421,15 @@ If
 .I param
 is not an absolute pathname, it is taken to be
 relative to
-.\" =()<.IR @<_PATH_BATCHDIR>@ .>()=
-.IR /var/news/spool/out.going .
+.I <_PATH_BATCHDIR in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_BATCHDIR>@ .)>()=
+.IR /var/news/spool/out.going .)
 If empty, the filename defaults to
-.\" =()<.IR @<_PATH_BATCHDIR>@/ sitename.>()=
-.IR /var/news/spool/out.going/ sitename.
+.I <_PATH_BATCHDIR in config.data>/sitename
+(typically
+.\" =()<.IR @<typ_PATH_BATCHDIR>@/sitename .)>()=
+.IR /var/news/spool/out.going/sitename .)
 This name should be unique.
 .PP
 When a site fed by a file is flushed (see
@@ -447,13 +460,17 @@ the article or
 .I /dev/null
 if the article cannot be opened for some reason.
 Standard output and error
-will be set to the error log
-.\" =()<.IR @<_PATH_ERRLOG>@ .>()=
-.IR /var/log/news/errlog .
+will be set to the error log (
+.I <_PATH_ERRLOG in config.data>
+, typically
+.\" =()<.IR @<typ_PATH_ERRLOG>@ .)>()=
+.IR /var/log/news/errlog .)
 The process will run with the user and group ID of the
-.\" =()<.I @<_PATH_INNDDIR>@>()=
-.I /var/news/run
-directory.
+.I <_PATH_INNDDIR in config.data>
+directory
+(typically .
+.\" =()<.I @<typ_PATH_INNDDIR>@.)>()=
+.I /var/news/run.)
 .I Innd
 will try to avoid spawning a shell if the command has no shell
 meta-characters; this feature can be defeated by appending a semi-colon
@@ -482,8 +499,10 @@ sub-process are set as for a program feed, above.
 If the process exits, it will be restarted.
 If the process cannot be started, the server will spool input to a
 file named
-.\" =()<.IR @<_PATH_BATCHDIR>@/ sitename.>()=
-.IR /var/news/spool/out.going/ sitename.
+.I <_PATH_BATCHDIR in config.data>/sitename
+(typically
+.\" =()<.IR @<typ_PATH_BATCHDIR>@/ sitename.)>()=
+.IR /var/news/spool/out.going/ sitename.)
 It will then try to start the process some time later.
 .PP
 When a site fed by a channel or exploder is flushed, the server closes down its
@@ -530,7 +549,7 @@ INN installation manual.
 ME:*,!junk,!foo.*/world,usa,na,ne,foo,ddn,gnu,inet\e
 	::
 ##  Feed all moderated source postings to an archiver
-.\" =()<.ds R$ @<_PATH_NEWSBIN>@>()=
+.\" =()<.ds R$ @<typ_PATH_NEWSBIN>@>()=
 .ds R$ /usr/news/bin
 source-archive!:!*,*sources*,!*wanted*,!*.d\e
 	:Tc,Wn:\*(R$/archive \-f \-i \e
@@ -554,7 +573,7 @@ mailer!:!*\e
 feed1::Tf,Wnm:feed1.domain.name
 peer.foo.com:foo.*:Tf,Wnm:peer.foo.com
 ##  Real-time transmission.
-.\" =()<.ds R$ @<_PATH_NEWSBIN>@>()=
+.\" =()<.ds R$ @<typ_PATH_NEWSBIN>@>()=
 .ds R$ /usr/news/bin
 mit.edu:/world,usa,na,ne,ddn,gnu,inet\e
 	:Tc,Wnm:\*(R$/nntplink -i stdin mit.edu

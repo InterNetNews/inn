@@ -3,8 +3,10 @@
 newslog \- description of Usenet log files
 .SH DESCRIPTION
 Most log files created by Usenet programs reside in the
-.\" =()<.I @<_PATH_MOST_LOGS>@>()=
-.I /var/log/news
+.I <_PATH_MOST_LOGS in config.data>
+(typically
+.\" =()<.I @<typ_PATH_MOST_LOGS>@ )>()=
+.I /var/log/news )
 directory and have a ``.log'' extension.
 Several versions are usually kept with an additional extension such as ``.1'',
 ``.2'', etc. \(em the higher the number, the older the log.
@@ -81,8 +83,10 @@ This file contains the standard output and standard error of any program
 spawned by
 .IR innd (8).
 The most common programs are the control-message handlers found in
-.\" =()<.IR @<_PATH_CONTROLPROGS>@ .>()=
-.IR /usr/news/bin/control .
+.I <_PATH_CONTROLPROGS in config.data> .
+(typically
+.\" =()<.IR @<typ_PATH_CONTROLPROGS>@ )>()=
+.IR /usr/news/bin/control )
 This file should be empty.
 .I Scanlogs
 will print the entire contents of this log file if it is non-empty.
@@ -128,10 +132,11 @@ This log file should be empty.
 will print the entire contents of this log file if it is non-empty.
 You should have the following line in your
 .IR syslog.conf (5)
-file:
+file.  (A typical entry is shown; it should agree with
+.I <_PATH_MOST_LOGS in config.data>)
 .RS
 .RS
-.\" =()<news.crit  @<_PATH_MOST_LOGS>@/news.crit>()=
+.\" =()<news.crit  @<typ_PATH_MOST_LOGS>@/news.crit>()=
 news.crit  /var/log/news/news.crit
 .RE
 .RE
@@ -147,9 +152,11 @@ will print the entire contents of this log file if it is non-empty.
 You should have the following line in your
 .I syslog.conf (5)
 file:
+(A typical entry is shown; it should agree with
+.I <_PATH_MOST_LOGS in config.data>)
 .RS
 .RS
-.\" =()<news.err  @<_PATH_MOST_LOGS>@/news.err>()=
+.\" =()<news.err  @<typ_PATH_MOST_LOGS>@/news.err>()=
 news.err  /var/log/news/news.err
 .RE
 .RE
@@ -168,9 +175,11 @@ to summarize this file.
 You should have the following line in your
 .I syslog.conf (5)
 file:
+(A typical entry is shown; it should agree with
+.I <_PATH_MOST_LOGS in config.data>)
 .RS
 .RS
-.\" =()<news.notice  @<_PATH_MOST_LOGS>@/news.notice>()=
+.\" =()<news.notice  @<typ_PATH_MOST_LOGS>@/news.notice>()=
 news.notice  /var/log/news/news.notice
 .RE
 .RE

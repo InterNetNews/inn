@@ -15,8 +15,10 @@ makeactive \- tool to recover Usenet active file.
 invokes
 .IR find (1)
 to get a list of all directories in the news spool tree,
-.\" =()<.IR @<_PATH_SPOOL>@ .>()=
-.IR /var/news/spool/articles .
+.I <_PATH_SPOOL in config.data>
+(typically
+.\" =()<.IR @<typ_PATH_SPOOL>@ .)>()=
+.IR /var/news/spool/articles .)
 It discards directories named
 .I lost+found
 as well as those that have a period in them.
@@ -77,9 +79,10 @@ commands:
 .DT
 .nf
 ctlinnd throttle "Rebuilding active file"
-.\" =()<.ds R$ @<_PATH_ACTIVE>@>()=
+.\" =()<.ds R$ @<typ_PATH_ACTIVE>@>()=
 .ds R$ /var/news/etc/active
-.\" =()<TEMP=${TMPDIR-@<_PATH_TMP>@}/act$$>()=
+#Next line should use <_PATH_TMP in config.data>
+.\" =()<TEMP=${TMPDIR-@<typ_PATH_TMP>@}/act$$>()=
 TEMP=${TMPDIR-/var/tmp}/act$$
 if [ \-f \*(R$ ] ; then
     if makeactive \-o >${TEMP} ; then

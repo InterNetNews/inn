@@ -6,8 +6,10 @@ moderators \- mail addresses for moderated Usenet newsgroups
 The
 .IR GetModeratorAddress (3)
 routine reads the file
-.\" =()<.I @<_PATH_MODERATORS>@>()=
-.I /var/news/etc/moderators
+.I <_PATH_MODERATORS in config.data>
+(typically 
+.\" =()<.I @<typ_PATH_MODERATORS>@ )>()=
+.I /var/news/etc/moderators )
 to determine how to reach the moderator of a newsgroup.
 This is used by
 .IR inews (1)

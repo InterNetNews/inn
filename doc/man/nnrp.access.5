@@ -4,8 +4,10 @@
 nnrp.access \- access file for NNTP news readers.
 .SH DESCRIPTION
 The file
-.\" =()<.I @<_PATH_NNRPACCESS>@>()=
-.I /var/news/etc/nnrp.access
+.I <_PATH_NNRPACCESS in config.data>
+(typically
+.\" =()<.I @<typ_PATH_NNRPACCESS>@)>()=
+.I /var/news/etc/nnrp.access)
 specifies the access control for those NNTP sites that are not
 handled by the main InterNetNews daemon
 .IR innd (8).
@@ -64,13 +66,12 @@ is required for newsreading.
 If they are empty, then no password is required.
 Whitespace in these fields will result in the client being unable
 to properly authenticate themselves and may be used to disable access.
-.\" =()<.ie '@<HAVE_SHADOW>@'DO' \{\>()=
-.ie 'DO'DO' \{\
-If third field is ``+'', then
+When <HAVE_SHADOW in config.data> == DO and
+the third field is ``+'', then
 .IR nnrpd (8)
 uses
 .IR crypt (3)
-to authenticate passed username and password.\}
+to authenticate passed username and password.
 .PP
 The fifth field is a set of patterns identifying the newsgroups that
 the client is allowed to access.

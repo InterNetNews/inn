@@ -35,13 +35,13 @@ makehistory \- tools to recover Usenet history database.
 .B \-n
 ]
 [
-.B \-O
+.B \-o
 ]
 [
 .B \-o
 ]
 [
-.B \-R
+.B \-r
 ]
 [
 .B \-r
@@ -59,7 +59,7 @@ makehistory \- tools to recover Usenet history database.
 .B \-t " [ H|h|S|s ]"
 ]
 [
-.B \-U
+.B \-u
 ]
 [
 .B \-u
@@ -76,15 +76,19 @@ text file and the associated
 .IR dbz (3)
 database.
 The default name of the text file is
-.\" =()<.IR @<_PATH_HISTORY>@ ;>()=
-.IR /var/news/etc/history ;
+.I <_PATH_HISTORY in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_HISTORY>@ );>()=
+.IR /var/news/etc/history );
 to specify a different name, use the ``\fB\-f\fP'' flag.
 .I Makehistory
 scans the
 .IR active (5)
 file to determine which newsgroup directories within the spool directory,
-.\" =()<.IR @<_PATH_SPOOL>@ ,>()=
-.IR /var/news/spool/articles ,
+.I <_PATH_SPOOL in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_SPOOL>@ ,)>()=
+.IR /var/news/spool/articles ,)
 should be scanned.
 (If a group is removed, but its spool directory still exists,
 .I makehistory
@@ -113,8 +117,10 @@ history entries).
 .B \-a
 If the ``\fB\-a\fP'' flag is given then the argument is the active file to
 use rather than the default one of
-.\" =()<.IR @<_PATH_ACTIVE>@ .>()=
-.IR /var/news/etc/active .
+.I <_PATH_ACTIVE in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_ACTIVE>@ .)>()=
+.IR /var/news/etc/active .)
 .TP
 .B \-b
 If the ``\-b'' flag is used, then
@@ -127,8 +133,10 @@ If the ``\fB\-D\fP'' flag is used, then
 is used as traditional spool directory.  This directory is used for
 translating traditional stored articles into new storing method through storage
 api.  The default is
-.\" =()<.IR @<_PATH_SPOOL>@ .>()=
-.IR /var/news/spool/articles .
+.I <_PATH_SPOOL in config.data>
+(typically
+.\" =()<.IR @<typ_PATH_SPOOL>@ .)>()=
+.IR /var/news/spool/articles .)
 This flag is valid if ``\fB\-t\fP'' flag is used.
 .TP
 .B \-d
@@ -137,8 +145,10 @@ If the ``\fB\-d\fP'' flag is used, then
 is used as overview directory.  This directory is used for
 translating traditional stored articles into new storing method through storage
 api.  The default is
-.\" =()<.IR @<_PATH_OVERVIEWDIR>@ .>()=
-.IR /var/news/spool/over.view .
+.I <_PATH_OVERVIEW in config.data>
+(typically
+.\" =()<.IR @<typ_PATH_OVERVIEWDIR>@ .)>()=
+.IR /var/news/spool/over.view .)
 This flag is valid if ``\fB\-t\fP'' flag is used.
 .TP
 .B \-f
@@ -163,8 +173,10 @@ If the ``\fB\-h\fP'' flag is used, then
 is used as old history.  This file is used for translating traditional
 stored articles into new storing method through storage api.  The default
 is
-.\" =()<.IR @<_PATH_HISTORY>@ .>()=
-.IR /var/news/etc/history .
+.I <_PATH_HISTORY in config.data>
+(typically
+.\" =()<.IR @<typ_PATH_HISTORY>@ .)>()=
+.IR /var/news/etc/history .)
 This flag is valid if ``\fB\-t\fP'' flag is used.
 .TP
 .B \-I
@@ -172,13 +184,13 @@ If the ``\fB\-I\fP'' flag is used, then the index of article overview are
 appended to the specified
 .IR file .
 This file is created if translating traditional stored articles are stored
-into new storing method through storage api.  Whih this
+into new storing method through storage api.  With this
 .IR file ,
 you can make new overview index file.  To do this,
 .PP
 .RS
 .nf
-.\" =()<sort -t' ' +1 -2 file \&| @<_PATH_NEWSBIN>@/expireindex -a -o -z>()=
+.\" =()<sort -t' ' +1 -2 file \&| @<typ_PATH_NEWSBIN>@/expireindex -a -o -z>()=
 sort -t' ' +1 -2 file \&| /usr/news/bin/expireindex -a -o -z
 .fi
 .sp 1
@@ -249,8 +261,10 @@ in
 needs to create a temporary file that contains one line for each article
 it finds, which can become very large.
 This file is created in the
-.\" =()<.I @<_PATH_TMP>@>()=
-.I /var/tmp
+.I <_PATH_TMP in config.data>
+(typically
+.\" =()<.I @<typ_PATH_TMP>@)>()=
+.I /var/tmp)
 directory.  The ``TMPDIR'' environment variable may be used to specify a
 different directory.  Alternatively, the ``\fB\-T\fP'' flag may be used to
 specify a temporary directory.  In addition, the
@@ -340,7 +354,7 @@ commands:
 .RS
 .nf
 ctlinnd throttle "Rebuilding history file"
-.\" =()<cd @<_PATH_NEWSLIB>@>()=
+.\" =()<cd @<typ_PATH_NEWSLIB>@>()=
 cd /var/news/etc
 if makehistory \-n \-f history.n ; then
     :
@@ -369,7 +383,7 @@ If the news spool area is split across multiple partitions, the following
 commands should probably be run before the database is regenerated:
 .RS
 .nf
-.\" =()<cd @<_PATH_SPOOL>@>()=
+.\" =()<cd @<typ_PATH_SPOOL>@>()=
 cd /var/news/spool/articles
 find . -type l -name '[1-9][0-9]*' -print | xargs -t rm
 .fi
