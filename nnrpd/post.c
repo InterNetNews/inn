@@ -320,7 +320,6 @@ STATIC STRING
 ProcessHeaders(int linecount, char *idbuff)
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
-    static char		WEEKS[] = "SunMonTueWedThuFriSat";
     static char		datebuff[40];
     static char		localdatebuff[40];
     static char		orgbuff[SMBUF];
@@ -332,7 +331,7 @@ ProcessHeaders(int linecount, char *idbuff)
     HEADER		*hp;
     char		*p;
     time_t		t;
-    struct tm		*gmt, *local;
+    struct tm		*gmt;
     TIMEINFO		Now;
     STRING		error;
     pid_t               pid;
@@ -373,40 +372,23 @@ ProcessHeaders(int linecount, char *idbuff)
 	    HDR(_sender) = NULL;
     }
 
-    /* Set Date. */
-    if (GetTimeInfo(&Now) < 0) {
-	(void)sprintf(Error, "Can't get the time, %s", strerror(errno));
-	return Error;
-    }
-
-    if ((gmt = gmtime(&Now.time)) == NULL)
-	return "Can't get the time";
-    (void)sprintf(datebuff, "%d %3.3s %d %02d:%02d:%02d GMT",
-	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
-	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+    /* Set Date.  datebuff is used later for NNTP-Posting-Date, so we have
+       to set it and it has to be the UTC date. */
+    if (!makedate(0, FALSE, datebuff, sizeof(datebuff)))
+        return "Can't generate date header";
     if (HDR(_date) == NULL) {
         if (PERMaccessconf->localtime) {
-	    if ((local = localtime(&Now.time)) == NULL)
-	        return "Can't get the time";
-	    (void)sprintf(localdatebuff,
-	        "%3.3s, %d %3.3s %d %02d:%02d:%02d %+04.4d (%3.3s)",
-	        &WEEKS[3 * local->tm_wday],
-	        local->tm_mday, &MONTHS[3 * local->tm_mon], 1900 + local->tm_year,
-	        local->tm_hour, local->tm_min, local->tm_sec,
-#ifdef HAVE_TM_GMTOFF
-#if defined(__bsdi__) || defined (__FreeBSD__)
-		local->tm_gmtoff/36, local->tm_zone);
-#else
-	        local->tm_gmtoff/36, tzname[0]);
-#endif
-#else
-	        -timezone/36, tzname[0]);
-#endif /* HAVE_TM_GMTOFF */
+            if (!makedate(0, TRUE, localdatebuff, sizeof(localdatebuff)))
+                return "Can't generate local date header";
 	    HDR(_date) = localdatebuff;
 	} else {
 	    HDR(_date) = datebuff;
 	}
     } else {
+        if (GetTimeInfo(&Now) < 0) {
+            sprintf(Error, "Can't get the time, %s", strerror(errno));
+            return Error;
+        }
 	if ((t = parsedate(HDR(_date), &Now)) == -1)
 	    return "Can't parse \"Date\" header";
 	if (t > Now.time + DATE_FUZZ)
