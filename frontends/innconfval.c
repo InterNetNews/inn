@@ -69,13 +69,13 @@ printit(char *v, const char *val)
 	    else {
                 int i;
 
-                printf("set inn_%s {", v);
+                printf("set inn_%s [lindex {", v);
                 for (i = 0; val[i] != '\0'; i++) {
-                    if (strchr ("{}", val[i]))
+                    if (strchr ("\\{}", val[i]) != NULL)
                         putchar('\\');
                     putchar(val[i]);
                 }
-	    	printf("}\n");
+	    	printf("} 0]\n");
             }
 	    break;
     }
