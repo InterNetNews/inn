@@ -104,10 +104,9 @@ struct group_entry {
     int         flag;           /* Posting/moderation status. */
     time_t      deleted;        /* When this group was deleted, or 0 if the
                                    group is still valid. */    
-    ino_t       indexinode;     /* Intended to be the inode of the index file
-                                   for the group, used to detect when the
-                                   file has been recreated and swapped out.
-                                   Not currently used. */
+    ino_t       indexinode;     /* The inode of the index file for the group,
+                                   used to detect when the file has been
+                                   recreated and swapped out. */
     GROUPLOC    next;           /* Next block in this chain. */
 };
 
@@ -120,8 +119,7 @@ struct index_entry {
     TOKEN       token;
 };
 
-/* Legacy names for the structures.  The code should be changed to use the
-   regular struct name directly. */
+/* Legacy names for the structures. */
 typedef struct group_header GROUPHEADER;
 typedef struct group_entry  GROUPENTRY;
 typedef struct index_entry  INDEXENTRY;
