@@ -1058,7 +1058,7 @@ void CMDxover(int ac, char *av[])
 
 
 /*
-**  XHDR, XPAT and PAT extensions.
+**  [X]HDR and XPAT extensions.
 */
 /* ARGSUSED */
 void CMDpat(int ac, char *av[])
@@ -1087,7 +1087,7 @@ void CMDpat(int ac, char *av[])
     header = av[1];
     IsLines = caseEQ(header, "lines");
 
-    if (ac > 3)
+    if (ac > 3) /* XPAT */
 	pattern = Glom(&av[3]);
     else
 	pattern = NULL;
@@ -1098,22 +1098,22 @@ void CMDpat(int ac, char *av[])
 	    p = av[2];
 	    if (!ARTopenbyid(p, &artnum)) {
 		Printf("%d No such article.\r\n", NNTP_DONTHAVEIT_VAL);
-		return;
+		break;
 	    }
 	    Printf("%d %s matches follow (ID)\r\n", NNTP_HEAD_FOLLOWS_VAL,
 		   header);
 	    if ((text = GetHeader(header, FALSE)) != NULL
-		&& (!pattern || wildmat(text, pattern)))
+		&& (!pattern || wildmat_simple(text, pattern)))
 		Printf("%s %s\r\n", p, text);
 
 	    ARTclose();
 	    Printf(".\r\n");
-	    return;
+	    break;
 	}
 
 	if (GRPcount == 0) {
 	    Reply("%s\r\n", ARTnotingroup);
-	    return;
+	    break;
 	}
 
 	/* Range specified. */
@@ -1122,7 +1122,7 @@ void CMDpat(int ac, char *av[])
 		Reply("%d %s no matches follow (range)\r\n",
 		      NNTP_HEAD_FOLLOWS_VAL, header ? header : "\"\"");
 		Printf(".\r\n");
-		return;
+		break;
 	    }
 	}
 
@@ -1141,7 +1141,7 @@ void CMDpat(int ac, char *av[])
 		if (!ARTopen(i))
 		    continue;
 		p = GetHeader(header, FALSE);
-		if (p && (!pattern || wildmat(p, pattern))) {
+		if (p && (!pattern || wildmat_simple(p, pattern))) {
 		    sprintf(buff, "%lu ", i);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
@@ -1151,7 +1151,7 @@ void CMDpat(int ac, char *av[])
 	    }
 	    SendIOb(".\r\n", 3);
 	    PushIOb();
-	    return;
+	    break;
 	}
 
 	/* Okay then, we can grab values from overview. */
@@ -1159,7 +1159,7 @@ void CMDpat(int ac, char *av[])
 	if (handle == NULL) {
 	    Reply("%d %s no matches follow (NOV)\r\n.\r\n",
 		  NNTP_HEAD_FOLLOWS_VAL, header);
-	    return;
+	    break;
 	}	
 	
 	Printf("%d %s matches follow (NOV)\r\n", NNTP_HEAD_FOLLOWS_VAL,
@@ -1169,7 +1169,7 @@ void CMDpat(int ac, char *av[])
 		&& !ARTinstorebytoken(token))
 		continue;
 	    if ((p = OVERGetHeader(data, Overview)) != NULL) {
-		if (!pattern || wildmat(p, pattern)) {
+		if (!pattern || wildmat_simple(p, pattern)) {
 		    sprintf(buff, "%lu ", artnum);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
