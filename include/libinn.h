@@ -39,7 +39,7 @@ extern void *   concat();
 #endif    
 
 /* Headers. */
-extern char	        *GenerateMessageID(void);
+extern char	        *GenerateMessageID(char *domain);
 extern const char	*HeaderFindMem(const char *Article, const int ArtLen, const char *Header, const int HeaderLen);
 extern const char       *HeaderFindDisk(const char *file, const char *Header, const int HeaderLen);
 extern void	        HeaderCleanFrom(char *from);
@@ -212,11 +212,11 @@ struct conf_vars {
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
-extern char	*GetFQDN(void);
+extern char	*GetFQDN(char *domain);
 extern char	*GetConfigValue(char *value);
 extern char	*GetFileConfigValue(char *value);
 extern BOOL      GetBooleanConfigValue(char *value, BOOL DefaultValue);
-extern char	*GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group);
+extern char	*GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group, char *moderatormailer);
 extern int ReadInnConf();
 extern char *cpcatpath(char *p, char *f);
 
