@@ -29,7 +29,7 @@ PyObject	*PYFilterObject = NULL;
 PyObject	*PYFilterModule = NULL;
 
 /* article filter bits and pieces */
-extern ARTHEADER ARTheaders[], *ARTheadersENDOF;
+extern ARTHEADER ARTheaders[];
 PyObject	*PYheaders = NULL;
 PyObject	**PYheaditem;
 PyObject	**PYheadkey;
@@ -93,7 +93,7 @@ PYcontrol(char **av)
 **  Reject articles we don't like.
 */
 char *
-PYartfilter(const ARTDATA *Data, char *artBody, long artLen, int lines)
+PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 {
     ARTHEADER	*hp;
     HDRCONTENT	*hc = data->HdrContent;
@@ -108,7 +108,7 @@ PYartfilter(const ARTDATA *Data, char *artBody, long artLen, int lines)
 
     /* Add headers to the dictionary... */
     hdrnum = 0;
-    for (i = 0 ; i < MAX_ARTHEADER ; i++, hc++) {
+    for (i = 0 ; i < MAX_ARTHEADER ; i++) {
 	if (HDR_FOUND(i)) {
 	    hp = &ARTheaders[i];
 	    PYheaditem[hdrnum] = PyBuffer_FromMemory(HDR(i), HDR_LEN(i));
@@ -680,11 +680,11 @@ PYsetup(void)
 
     /* Grab space for these so we aren't forever recreating them. */
     PYheaders = PyDict_New();
-    PYheaditem = NEW(PyObject *, ARTheadersENDOF - ARTheaders);
-    PYheadkey = NEW(PyObject *, ARTheadersENDOF - ARTheaders);
+    PYheaditem = NEW(PyObject *, ENDOF(ARTheaders) - ARTheaders);
+    PYheadkey = NEW(PyObject *, ENDOF(ARTheaders) - ARTheaders);
 
     /* Preallocate keys for the article dictionary */
-    for (hp = ARTheaders; hp < ARTheadersENDOF; hp++)
+    for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
 	PYheadkey[hp - ARTheaders] = PyString_InternFromString(hp->Name);
     PYpathkey = PyString_InternFromString("Path");
     PYlineskey = PyString_InternFromString("__LINES__");
