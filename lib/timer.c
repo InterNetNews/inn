@@ -268,6 +268,22 @@ TMRnow(void)
 
 
 /*
+**  Return the label associated with timer number id.  Used internally
+**  to do the right thing when fetching from the timer_name or labels
+**  arrays
+*/
+static const char *
+TMRlabel(const char *const *labels, unsigned int id)
+{
+    if (id >= TMR_APPLICATION)
+        return labels[id - TMR_APPLICATION];
+    else
+        return timer_name[id];
+}
+
+
+
+/*
 **  Recursively summarize a single timer tree into the supplied buffer,
 **  returning the number of characters added to the buffer.
 */
@@ -283,12 +299,14 @@ TMRsumone(const char *const *labels, struct timer *timer, char *buf,
        snprintf semantics, it's safe to defer checking for overflow until
        after formatting all of the timer data. */
     for (node = timer; node != NULL; node = node->parent)
-        off += snprintf(buf + off, len - off, "%s/", labels[node->id]);
+        off += snprintf(buf + off, len - off, "%s/",
+                        TMRlabel(labels, node->id));
     off--;
     off += snprintf(buf + off, len - off, " %lu(%lu) ", timer->total,
                     timer->count);
     if (off == len) {
-        warn("timer log too long while processing %s", labels[timer->id]);
+        warn("timer log too long while processing %s",
+             TMRlabel(labels, timer->id));
         return 0;
     }
 
