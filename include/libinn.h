@@ -237,6 +237,7 @@ typedef struct _TIMEINFO {
     long	tzone;
 } TIMEINFO;
 extern time_t	parsedate(char *p, TIMEINFO *now);
+extern BOOL     makedate(time_t, BOOL local, char *buff, size_t buflen);
 extern int	GetTimeInfo(TIMEINFO *Now);
 
 /* Hash functions */
