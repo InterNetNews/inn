@@ -48,6 +48,7 @@ BEGIN_DECLS
 enum tst_constants {
     TST_OK,
     TST_NULL_KEY,
+    TST_NULL_DATA,
     TST_DUPLICATE_KEY,
     TST_REPLACE
 };

@@ -137,17 +137,16 @@ tst_init(int width)
 **  duplicate key is inserted is controlled by option.  If key is already in
 **  the tree then TST_DUPLICATE_KEY is returned, and the data pointer for the
 **  existing key is placed in exist_ptr.  If option is set to TST_REPLACE then
-**  the existing data pointer for the existing key is replaced by data.  Note
-**  that the old data pointer will still be placed in exist_ptr.
+**  the existing data pointer for the existing key is replaced by data.  The
+**  old data pointer will still be placed in exist_ptr.
 **
 **  If a duplicate key is encountered and option is not set to TST_REPLACE
-**  then TST_DUPLICATE_KEY is returned.  If key is zero length then
+**  then TST_DUPLICATE_KEY is returned.  If key is zero-length, then
 **  TST_NULL_KEY is returned.  A successful insert or replace returns TST_OK.
 **
-**  The data argument must NEVER be NULL.  If it is, then calls to tst_search
-**  will fail for a key that exists because the data value was set to NULL,
-**  which is what tst_search returns when the key doesn't exist.  If you just
-**  want a simple existence tree, use the tst pointer as the data pointer.
+**  The data argument may not be NULL; if it is, TST_NULL_DATA is returned.
+**  If you just want a simple existence tree, use the tst pointer as the data
+**  pointer.
 */
 int
 tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
@@ -156,12 +155,12 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
     struct node *current_node;
     struct node *new_node_tree_begin = NULL;
     int key_index;
-    int perform_loop = 1;
+    bool perform_loop = true;
 
-    if (key == NULL)
-        return TST_NULL_KEY;
+    if (data == NULL)
+        return TST_NULL_DATA;
 
-    if (key[0] == 0)
+    if (key == NULL || *key == '\0')
         return TST_NULL_KEY;
 
     if (tst->head[*key] == NULL) {
@@ -171,18 +170,18 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
         tst->free_list = tst->free_list->middle;
         current_node = tst->head[*key];
         current_node->value = key[1];
-        if (key[1] == 0) {
+        if (key[1] == '\0') {
             current_node->middle = data;
             return TST_OK;
         } else
-            perform_loop = 0;
+            perform_loop = false;
     }
 
     current_node = tst->head[*key];
     key_index = 1;
-    while (perform_loop == 1) {
+    while (perform_loop) {
         if (key[key_index] == current_node->value) {
-            if (key[key_index] == 0) {
+            if (key[key_index] == '\0') {
                 if (option == TST_REPLACE) {
                     if (exist_ptr != NULL)
                         *exist_ptr = current_node->middle;
@@ -222,7 +221,7 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
                 new_node_tree_begin = current_node;
                 current_node = current_node->left;
                 current_node->value = key[key_index];
-                if (key[key_index] == 0) {
+                if (key[key_index] == '\0') {
                     current_node->middle = data;
                     return TST_OK;
                 } else
@@ -256,7 +255,7 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
         tst->free_list = tst->free_list->middle;
         current_node = current_node->middle;
         current_node->value = key[key_index];
-    } while (key[key_index] != 0);
+    } while (key[key_index] != '\0');
 
     current_node->middle = data;
     return TST_OK;
@@ -265,11 +264,7 @@ tst_insert(const unsigned char *key, void *data, struct tst *tst, int option,
 
 /*
 **  tst_search finds the string key in the tree if it exists and returns the
-**  data pointer associated with that key.  If key is not found, then NULL is
-**  returned.  Since the success of the search is indicated by the return of a
-**  valid data pointer, it is essential that the data argument provided to
-**  tst_insert is NEVER NULL.  If you just want a simple existence tree, use
-**  the tst pointer as the data pointer.
+**  data pointer associated with that key or NULL if it's not found.
 */
 void *
 tst_search(const unsigned char *key, struct tst *tst)
@@ -277,18 +272,17 @@ tst_search(const unsigned char *key, struct tst *tst)
     struct node *current_node;
     int key_index;
 
-    if (key[0] == 0)
+    if (key == NULL || *key == '\0')
         return NULL;
 
-    if (tst->head[(int) key[0]] == NULL)
+    if (tst->head[*key] == NULL)
         return NULL;
 
     current_node = tst->head[*key];
     key_index = 1;
-
     while (current_node != NULL) {
         if (key[key_index] == current_node->value) {
-            if (current_node->value == 0)
+            if (current_node->value == '\0')
                 return current_node->middle;
             else {
                 current_node = current_node->middle;
@@ -311,8 +305,7 @@ tst_search(const unsigned char *key, struct tst *tst)
 
 /*
 **  tst_delete deletes the string key from the tree if it exists and returns
-**  the data pointer assocaited with that key.  If key is not found, then NULL
-**  is returned.
+**  the data pointer assocaited with that key, or NULL if it wasn't found.
 */
 void *
 tst_delete(const unsigned char *key, struct tst *tst)
@@ -326,7 +319,7 @@ tst_delete(const unsigned char *key, struct tst *tst)
     struct node *last_branch_dangling_child;
     int key_index;
 
-    if (key[0] == 0)
+    if (key == NULL || *key == '\0')
         return NULL;
 
     if (tst->head[*key] == NULL)
@@ -343,7 +336,7 @@ tst_delete(const unsigned char *key, struct tst *tst)
                 last_branch = current_node;
                 last_branch_parent = current_node_parent;
             }
-            if (key[key_index] == 0)
+            if (key[key_index] == '\0')
                 break;
             else {
                 current_node_parent = current_node;
