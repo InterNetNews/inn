@@ -30,7 +30,7 @@ int main(int argc UNUSED, char **argv UNUSED)
 #else /* USE_BERKELEY_DB */
 
 static int signalled = 0;
-static void sigfunc(int signum)
+static void sigfunc(int signum UNUSED)
 {
     signalled = 1;
 }
@@ -57,10 +57,10 @@ struct datatab {
     ssize_t a;
     ssize_t b;
     ssize_t c;
-    char *desc;
+    const char *desc;
 };
 
-static void display_heading(char *str)
+static void display_heading(const char *str)
 {
     if(html)
 	printf("<h2>%s<h2>\n", str);
@@ -71,45 +71,46 @@ static void display_heading(char *str)
 
 static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 {
-    int mode;
-    u_int32_t a, b, c, bytes, kbytes, mbytes, gbytes;
+    int mode = 0;
+    u_int32_t a = 0, b = 0, c = 0, bytes = 0, mbytes = 0, gbytes = 0;
     char *cp = p;
-    time_t tm;
-    size_t sz;
-    DB_LSN *dl;
+    char **tmp = NULL;
+    time_t tm = 0;
+    size_t sz = 0;
+    DB_LSN *dl = NULL;
 
     val[0] = 0;
     sufx[0] = 0;
 
     switch(tab[i].type) {
     case INT32:	/* 'a' points to u_int32_t */
-	a = *((u_int32_t *)(cp + tab[i].a));
+        memcpy(&a, cp + tab[i].a, sizeof(a));
 	sprintf(val, "%u", a);
 	break;
     case HEX32:	/* 'a' printed in hex */
-	a = *((u_int32_t *)(cp + tab[i].a));
+        memcpy(&a, cp + tab[i].a, sizeof(a));
 	sprintf(val, "%x", a);
 	break;
     case DIFF32:	/* 'a' - 'b' - 'c' */
-	a = *((u_int32_t *)(cp + tab[i].a));
-	b = *((u_int32_t *)(cp + tab[i].b));
+        memcpy(&a, cp + tab[i].a, sizeof(a));
+        memcpy(&b, cp + tab[i].b, sizeof(b));
 	if(tab[i].c != -1) {
-	    c = *((u_int32_t *)(cp + tab[i].c));
+            memcpy(&c, cp + tab[i].c, sizeof(c));
 	    sprintf(val, "%d", a - b - c);
 	} else {
 	    sprintf(val, "%d", a - b);
 	}
 	break;
     case PCT32:	/* 100 * 'a' / ('a' + 'b') */
-	a = *((u_int32_t *)(cp + tab[i].a));
-	b = *((u_int32_t *)(cp + tab[i].b));
+        memcpy(&a, cp + tab[i].a, sizeof(a));
+        memcpy(&b, cp + tab[i].b, sizeof(b));
 	sprintf(val, "%.0f", (double) a / (a + b) * 100.0);
 	strcpy(sufx, "%");
 	break;
     case FF:	/* 'a' = freebytes, 'b' = npages, 'c' = pagesize */
-	a = *((u_int32_t *)(cp + tab[i].a));
-	b = *((u_int32_t *)(cp + tab[i].b));
-	c = *((u_int32_t *)(cp + tab[i].c));
+        memcpy(&a, cp + tab[i].a, sizeof(a));
+        memcpy(&b, cp + tab[i].b, sizeof(b));
+        memcpy(&c, cp + tab[i].c, sizeof(c));
 	if(b == 0) {
 	    sprintf(val, "%.0f", 0.0);
 	} else {
@@ -119,15 +120,15 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	break;
     case BYTES:	/* 'a' = bytes, 'b' = mbytes, 'c' = gbytes */
 	if(tab[i].a != -1)
-	    bytes = *((u_int32_t *)(cp + tab[i].a));
+            memcpy(&bytes, cp + tab[i].a, sizeof(bytes));
 	else
 	    bytes = 0;
 	if(tab[i].b != -1)
-	    mbytes = *((u_int32_t *)(cp + tab[i].b));
+            memcpy(&mbytes, cp + tab[i].b, sizeof(mbytes));
 	else
 	    mbytes = 0;
 	if(tab[i].c != -1)
-	    gbytes = *((u_int32_t *)(cp + tab[i].c));
+            memcpy(&gbytes, cp + tab[i].c, sizeof(gbytes));
 	else
 	    gbytes = 0;
 	if(gbytes > 0 || mbytes > 0) {
@@ -141,11 +142,11 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	}
 	break;
     case MODE:	/* 'a' points to int, printed as octal mode */
-	mode = *((int *)(cp + tab[i].a));
+        memcpy(&mode, cp + tab[i].a, sizeof(mode));
 	sprintf(val, "%04o", mode);
 	break;	
     case TIME:	/* 'a' points to time_t, printed as date/time */
-	tm = *((time_t *)(cp + tab[i].a));
+        memcpy(&tm, cp + tab[i].a, sizeof(tm));
 	if(tm == 0) {
 	    strcpy(val, "none");
 	} else {
@@ -153,7 +154,7 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	}
 	break;
     case LSN:	/* 'a' points to DB_LSN */
-	dl = (DB_LSN *)(cp + tab[i].a);
+        memcpy(&dl, cp + tab[i].a, sizeof(dl));
 	if(dl->file == 0) {
 	    strcpy(val, "none");
 	} else {
@@ -161,12 +162,15 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	}
 	break;
     case STR:	/* 'a' points to char* */
-	strcpy(val, *(char **)(cp + tab[i].a));
+        memcpy(&tmp, cp + tab[i].a, sizeof(tmp));
+	strcpy(val, *tmp);
 	break;
     case SIZE:	/* 'a' points to size_t */
-	sz = *((size_t *)(cp + tab[i].a));
+        memcpy(&sz, cp + tab[i].a, sizeof(sz));
 	sprintf(val, "%d", sz);
 	break;
+    case END:
+        break;
     }
 }
 
@@ -194,7 +198,7 @@ static void display_data(void *p, struct datatab *tab)
 	puts("</table><p>");
 }
 
-static void start_table(char *label, struct datatab *tab)
+static void start_table(const char *label, struct datatab *tab)
 {
     int i;
     if(html) {
@@ -273,7 +277,7 @@ static struct datatab LOCK_tab[] = {
  { END, -1, -1, -1, NULL }
 };
 
-static int display_lock()
+static int display_lock(void)
 {
     DB_LOCK_STAT *sp;
 
@@ -331,7 +335,7 @@ static struct datatab LOG_tab[] = {
  { END, -1, -1, -1, NULL }
 };
 
-static int display_log()
+static int display_log(void)
 {
     DB_LOG_STAT *sp;
 
@@ -439,12 +443,11 @@ static int display_mem(int all)
     return 0;
 }
 
-static int txn_compare(a, b)
-        const void *a, *b;
+static int txn_compare(const void *a, const void *b)
 {
-    if (((DB_TXN_ACTIVE *)a)->txnid > ((DB_TXN_ACTIVE *)b)->txnid)
+    if (((const DB_TXN_ACTIVE *)a)->txnid > ((const DB_TXN_ACTIVE *)b)->txnid)
 	return 1;
-    if (((DB_TXN_ACTIVE *)a)->txnid < ((DB_TXN_ACTIVE *)b)->txnid)
+    if (((const DB_TXN_ACTIVE *)a)->txnid < ((const DB_TXN_ACTIVE *)b)->txnid)
 	return -1;
     return 0;
 }
@@ -486,11 +489,10 @@ static struct datatab TXNA_tab[] = {
  { END, -1, -1, -1, NULL }
 };
 
-static int display_txn()
+static int display_txn(void)
 {
     DB_TXN_STAT *sp;
     u_int32_t i;
-    char *p;
 
 #if DB_VERSION_MAJOR == 2
     if(txn_stat(OVDBenv->tx_info, &sp, NULL) != 0)
@@ -517,7 +519,7 @@ static int display_txn()
     return 0;
 }
 
-static int display_ver()
+static int display_ver(void)
 {
     if(html) puts("<p>");
     printf("ovdb data version: %d\n", DATA_VERSION);
@@ -665,6 +667,9 @@ static int display_db(char *dbfile)
     case DB_HASH:
 	ret = display_hash(db);
 	break;
+    default:
+        ret = 1;
+        break;
     }
     db->close(db, 0);
     return ret;
@@ -689,7 +694,7 @@ static int parse_artrange(char *str, ARTNUM *start, ARTNUM *stop)
 	*stop = atoi(str+1);
 	return (*stop == 0);
     }
-    if(strlen(str) == (c - str + 1)) {
+    if (strlen(str) == (size_t)(c - str + 1)) {
 	*start = atoi(str);
 	*stop = 0xffffffff;
 	return (*start == 0);
@@ -702,7 +707,7 @@ static int parse_artrange(char *str, ARTNUM *start, ARTNUM *stop)
     return 0;
 }
 
-void htwrite(char *data, int len)
+static void htwrite(char *data, int len)
 {
     int i;
     for(i = 0; i < len; i++) {
@@ -891,7 +896,8 @@ Usage:\n\
 	    }
 	    if(getcount) {
 		low = high = count = 0;
-		if(s = ovdb_opensearch(argv[o], 1, 0xffffffff)) {
+                s = ovdb_opensearch(argv[o], 1, 0xffffffff);
+		if (s != NULL) {
 		    while(ovdb_search(s, &a, NULL, NULL, NULL, NULL)) {
 			if(low == 0 || a < low)
 			    low = a;
@@ -905,9 +911,9 @@ Usage:\n\
 		    if(signalled)
 			goto out;
 		    if(html)
-			printf("<td>%d<td>%d<td>%d", low, high, count);
+			printf("<td>%ld<td>%ld<td>%d", low, high, count);
 		    else
-			printf("%s:    counted: low: %d, high: %d, count: %d\n",
+			printf("%s:    counted: low: %ld, high: %ld, count: %d\n",
 				argv[o], low, high, count);
 		}
 	    }
@@ -915,7 +921,8 @@ Usage:\n\
 		int ret;
 		struct groupinfo gi;
 
-		if(ret = ovdb_getgroupinfo(argv[o], &gi, FALSE, NULL, 0)) {
+                ret = ovdb_getgroupinfo(argv[o], &gi, FALSE, NULL, 0);
+		if (ret != 0) {
 		    fprintf(stderr, "%s: ovdb_getgroupinfo error: %s\n", argv[o], db_strerror(ret));
 		    continue;
 		}
@@ -931,7 +938,8 @@ Usage:\n\
 		    else
 			printf("<td>&nbsp;<td>&nbsp;");
 		    if(gi.expired)
-			printf("<td>%s<td>%d", myctime(&gi.expired), gi.expiregrouppid);
+			printf("<td>%s<td>%lu", myctime(&gi.expired),
+                               (unsigned long) gi.expiregrouppid);
 		    else
 			printf("<td>&nbsp;<td>&nbsp;");
 		    putchar('\n');
@@ -947,7 +955,8 @@ Usage:\n\
 			printf("%s: pending gid: %d;  pending db: ov%05d\n", argv[o], gi.new_gid, gi.new_db);
 		    if(gi.expired) {
 			printf("%s: last expired: %s\n", argv[o], myctime(&gi.expired));
-			printf("%s: by process id: %d\n", argv[o], gi.expiregrouppid);
+			printf("%s: by process id: %lu\n", argv[o],
+                               (unsigned long) gi.expiregrouppid);
 		    }
 		}
 	    }
@@ -961,7 +970,8 @@ Usage:\n\
 	if(html)
 	    puts("<pre>");
 	for(o = optind ; o < argc; o++) {
-	    if(s = ovdb_opensearch(argv[o], start, stop)) {
+            s = ovdb_opensearch(argv[o], start, stop);
+	    if (s != NULL) {
 		while(ovdb_search(s, &a, &data, &len, NULL, NULL)) {
 		    if(html)
 			htwrite(data, len);

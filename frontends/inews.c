@@ -51,57 +51,57 @@ static FILE	*FromServer;
 static FILE	*ToServer;
 static int	OtherCount;
 static int	OtherSize;
-static char	*Exclusions = "";
+static const char *Exclusions = "";
 static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
 
 static HEADER	Table[] = {
     /* 	Name			Canset	Type	*/
-    {	"Path",			TRUE,	HTstd },
+    {	"Path",			TRUE,	HTstd,  0, NULL },
 #define _path		 0
-    {	"From",			TRUE,	HTstd },
+    {	"From",			TRUE,	HTstd,  0, NULL },
 #define _from		 1
-    {	"Newsgroups",		TRUE,	HTreq },
+    {	"Newsgroups",		TRUE,	HTreq,  0, NULL },
 #define _newsgroups	 2
-    {	"Subject",		TRUE,	HTreq },
+    {	"Subject",		TRUE,	HTreq,  0, NULL },
 #define _subject	 3
-    {	"Control",		TRUE,	HTstd },
+    {	"Control",		TRUE,	HTstd,  0, NULL },
 #define _control	 4
-    {	"Supersedes",		TRUE,	HTstd },
+    {	"Supersedes",		TRUE,	HTstd,  0, NULL },
 #define _supersedes	 5
-    {	"Followup-To",		TRUE,	HTstd },
+    {	"Followup-To",		TRUE,	HTstd,  0, NULL },
 #define _followupto	 6
-    {	"Date",			TRUE,	HTstd },
+    {	"Date",			TRUE,	HTstd,  0, NULL },
 #define _date		 7
-    {	"Organization",		TRUE,	HTstd },
+    {	"Organization",		TRUE,	HTstd,  0, NULL },
 #define _organization	 8
-    {	"Lines",		TRUE,	HTstd },
+    {	"Lines",		TRUE,	HTstd,  0, NULL },
 #define _lines		 9
-    {	"Sender",		TRUE,	HTstd },
+    {	"Sender",		TRUE,	HTstd,  0, NULL },
 #define _sender		10
-    {	"Approved",		TRUE,	HTstd },
+    {	"Approved",		TRUE,	HTstd,  0, NULL },
 #define _approved	11
-    {	"Distribution",		TRUE,	HTstd },
+    {	"Distribution",		TRUE,	HTstd,  0, NULL },
 #define _distribution	12
-    {	"Expires",		TRUE,	HTstd },
+    {	"Expires",		TRUE,	HTstd,  0, NULL },
 #define _expires	13
-    {	"Message-ID",		TRUE,	HTstd },
+    {	"Message-ID",		TRUE,	HTstd,  0, NULL },
 #define _messageid	14
-    {	"References",		TRUE,	HTstd },
+    {	"References",		TRUE,	HTstd,  0, NULL },
 #define _references	15
-    {	"Reply-To",		TRUE,	HTstd },
+    {	"Reply-To",		TRUE,	HTstd,  0, NULL },
 #define _replyto	16
-    {	"Also-Control",		TRUE,	HTstd },
+    {	"Also-Control",		TRUE,	HTstd,  0, NULL },
 #define _alsocontrol	17
-    {	"Xref",			FALSE,	HTstd },
-    {	"Summary",		TRUE,	HTstd },
-    {	"Keywords",		TRUE,	HTstd },
-    {	"Date-Received",	FALSE,	HTobs },
-    {	"Received",		FALSE,	HTobs },
-    {	"Posted",		FALSE,	HTobs },
-    {	"Posting-Version",	FALSE,	HTobs },
-    {	"Relay-Version",	FALSE,	HTobs },
+    {	"Xref",			FALSE,	HTstd,  0, NULL },
+    {	"Summary",		TRUE,	HTstd,  0, NULL },
+    {	"Keywords",		TRUE,	HTstd,  0, NULL },
+    {	"Date-Received",	FALSE,	HTobs,  0, NULL },
+    {	"Received",		FALSE,	HTobs,  0, NULL },
+    {	"Posted",		FALSE,	HTobs,  0, NULL },
+    {	"Posting-Version",	FALSE,	HTobs,  0, NULL },
+    {	"Relay-Version",	FALSE,	HTobs,  0, NULL },
 };
 
 #define HDR(_x)	(Table[(_x)].Value)
@@ -497,7 +497,7 @@ FormatUserName(struct passwd *pwp, char *node)
 	if (*p == '&') {
 	    strncpy(out, pwp->pw_name, left);
 	    if (CTYPE(islower, *out)
-	     && (out == outbuff || !isalpha(out[-1])))
+	     && (out == outbuff || !CTYPE(isalpha, out[-1])))
 		*out = toupper(*out);
 	    while (*out) {
 		out++;
@@ -506,7 +506,8 @@ FormatUserName(struct passwd *pwp, char *node)
 	}
 	else if (*p == '-'
 	      && p > pwp->pw_gecos
-              && (isdigit(p[-1]) || isspace(p[-1]) || p[-1] == ']')) {
+              && (CTYPE(isdigit, p[-1]) || CTYPE(isspace, p[-1])
+                  || p[-1] == ']')) {
 	    out = outbuff;
             left = SMBUF - 1;
         }
@@ -523,15 +524,10 @@ FormatUserName(struct passwd *pwp, char *node)
 #endif	/* !defined(DONT_MUNGE_GETENV) */
 
     out = TrimSpaces(outbuff);
-    if (out[0]) {
-        buff = NEW(char, (strlen(pwp->pw_name) + 1 + strlen(node) + 2
-                          + strlen(out) + 2));
-	sprintf(buff, "%s@%s (%s)", pwp->pw_name, node, out);
-    }
-    else {
-        buff = NEW(char, strlen(pwp->pw_name) + 1 + strlen(node) + 1);
-	sprintf(buff, "%s@%s", pwp->pw_name, node);
-    }
+    if (out[0])
+        buff = concat(pwp->pw_name, "@", node, " (", out, ")", (char *) 0);
+    else
+        buff = concat(pwp->pw_name, "@", node);
     return buff;
 }
 
@@ -1015,8 +1011,7 @@ main(int ac, char *av[])
 	    Mode = i;
 	    break;
 	case 'x':
-	    Exclusions = NEW(char, strlen(optarg) + 1 + 1);
-	    (void)sprintf(Exclusions, "%s!", optarg);
+            Exclusions = concat(optarg, "!", (char *) 0);
 	    break;
 	 case 'p':
 	    port = atoi(optarg);

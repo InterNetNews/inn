@@ -26,24 +26,26 @@ int main(int argc UNUSED, char **argv UNUSED)
 
 #else /* USE_BERKELEY_DB */
 
-static int open_db(DB **db, char *name, int type)
+static int open_db(DB **db, const char *name, int type)
 {
     int ret;
 #if DB_VERSION_MAJOR == 2
     DB_INFO dbinfo;
     memset(&dbinfo, 0, sizeof dbinfo);
 
-    if(ret = db_open(name, type, DB_CREATE, 0666, OVDBenv,
-		    &dbinfo, db)) {
+    ret = db_open(name, type, DB_CREATE, 0666, OVDBenv, &dbinfo, db)
+    if (ret != 0) {
 	fprintf(stderr, "ovdb_init: db_open failed: %s\n", db_strerror(ret));
 	return ret;
     }
 #else
-    if(ret = db_create(db, OVDBenv, 0)) {
+    ret = db_create(db, OVDBenv, 0);
+    if (ret != 0) {
 	fprintf(stderr, "ovdb_init: db_create: %s\n", db_strerror(ret));
 	return ret;
     }
-    if(ret = (*db)->open(*db, name, NULL, type, DB_CREATE, 0666)) {
+    ret = (*db)->open(*db, name, NULL, type, DB_CREATE, 0666);
+    if (ret != 0) {
 	(*db)->close(*db, 0);
 	fprintf(stderr, "ovdb_init: %s->open: %s\n", name, db_strerror(ret));
 	return ret;
@@ -53,7 +55,7 @@ static int open_db(DB **db, char *name, int type)
 }
 
 /* Upgrade BerkeleyDB version */
-static int upgrade_database(char *name)
+static int upgrade_database(const char *name)
 {
 #if DB_VERSION_MAJOR == 2
     return 0;
@@ -61,11 +63,13 @@ static int upgrade_database(char *name)
     int ret;
     DB *db;
 
-    if(ret = db_create(&db, OVDBenv, 0))
+    ret = db_create(&db, OVDBenv, 0);
+    if (ret != 0)
 	return ret;
 
     printf("ovdb_init: upgrading %s...\n", name);
-    if(ret = db->upgrade(db, name, 0))
+    ret = db->upgrade(db, name, 0);
+    if (ret != 0)
 	fprintf(stderr, "ovdb_init: db->upgrade(%s): %s\n", name, db_strerror(ret));
 
     db->close(db, 0);
@@ -94,7 +98,7 @@ static int v1_which_db(char *group)
 
 /* Upgrade ovdb data format version 1 to 2 */
 /* groupstats and groupsbyname are replaced by groupinfo */
-static int upgrade_v1_to_v2()
+static int upgrade_v1_to_v2(void)
 {
     DB *groupstats, *groupsbyname, *groupinfo, *vdb;
     DBT key, val, ikey, ival;
@@ -105,14 +109,16 @@ static int upgrade_v1_to_v2()
     char group[MAXHEADERSIZE];
     u_int32_t v2 = 2;
     int ret;
-    char *p;
 
     printf("ovdb_init: Upgrading data to version 2\n");
-    if(ret = open_db(&groupstats, "groupstats", DB_BTREE))
+    ret = open_db(&groupstats, "groupstats", DB_BTREE);
+    if (ret != 0)
 	return ret;
-    if(ret = open_db(&groupsbyname, "groupsbyname", DB_HASH))
+    ret = open_db(&groupsbyname, "groupsbyname", DB_HASH);
+    if (ret != 0)
 	return ret;
-    if(ret = open_db(&groupinfo, "groupinfo", DB_BTREE))
+    ret = open_db(&groupinfo, "groupinfo", DB_BTREE);
+    if (ret != 0)
 	return ret;
 
     memset(&key, 0, sizeof key);
@@ -120,7 +126,8 @@ static int upgrade_v1_to_v2()
     memset(&ikey, 0, sizeof ikey);
     memset(&ival, 0, sizeof ival);
 
-    if(ret = groupsbyname->cursor(groupsbyname, NULL, &cursor, 0))
+    ret = groupsbyname->cursor(groupsbyname, NULL, &cursor, 0);
+    if (ret != 0)
 	return ret;
 
     while((ret = cursor->c_get(cursor, &key, &val, DB_NEXT)) == 0) {
@@ -142,7 +149,8 @@ static int upgrade_v1_to_v2()
 	ikey.data = &gid;
 	ikey.size = sizeof(group_id_t);
 
-	if(ret = groupstats->get(groupstats, NULL, &ikey, &ival, 0))
+        ret = groupstats->get(groupstats, NULL, &ikey, &ival, 0);
+	if (ret != 0)
 	    continue;
 	if(ival.size != sizeof(struct groupstats))
 	    continue;
@@ -159,7 +167,8 @@ static int upgrade_v1_to_v2()
 
 	val.data = &gi;
 	val.size = sizeof(gi);
-	if(ret = groupinfo->put(groupinfo, NULL, &key, &val, 0)) {
+        ret = groupinfo->put(groupinfo, NULL, &key, &val, 0);
+	if (ret != 0) {
 	    fprintf(stderr, "ovdb_init: groupinfo->put failed: %s\n", db_strerror(ret));
 	    cursor->c_close(cursor);
 	    return ret;
@@ -175,25 +184,28 @@ static int upgrade_v1_to_v2()
     if(higidbang > higid)
 	higid = higidbang;
 
-    key.data = "!groupid_freelist";
+    key.data = (char *) "!groupid_freelist";
     key.size = sizeof("!groupid_freelist");
     val.data = &higid;
     val.size = sizeof(group_id_t);
 
-    if(ret = groupinfo->put(groupinfo, NULL, &key, &val, 0)) {
+    ret = groupinfo->put(groupinfo, NULL, &key, &val, 0);
+    if (ret != 0) {
 	fprintf(stderr, "ovdb_init: groupinfo->put failed: %s\n", db_strerror(ret));
 	return ret;
     }
 
-    if(ret = open_db(&vdb, "version", DB_BTREE))
+    ret = open_db(&vdb, "version", DB_BTREE);
+    if (ret != 0)
 	return ret;
 
-    key.data = "dataversion";
+    key.data = (char *) "dataversion";
     key.size = sizeof("dataversion");
     val.data = &v2;
     val.size = sizeof v2;
 
-    if(ret = vdb->put(vdb, NULL, &key, &val, 0)) {
+    ret = vdb->put(vdb, NULL, &key, &val, 0);
+    if (ret != 0) {
 	fprintf(stderr, "ovdb_init: version->put failed: %s\n", db_strerror(ret));
 	return ret;
     }
@@ -204,10 +216,12 @@ static int upgrade_v1_to_v2()
     vdb->close(vdb, 0);
     
 #if DB_VERSION_MAJOR == 3
-    if(ret = db_create(&groupstats, OVDBenv, 0))
+    ret = db_create(&groupstats, OVDBenv, 0);
+    if (ret != 0)
 	return ret;
     groupstats->remove(groupstats, "groupstats", NULL, 0);
-    if(ret = db_create(&groupsbyname, OVDBenv, 0))
+    ret = db_create(&groupsbyname, OVDBenv, 0);
+    if (ret != 0)
 	return ret;
     groupsbyname->remove(groupsbyname, "groupsbyname", NULL, 0);
 #else
@@ -234,14 +248,16 @@ static int check_upgrade(int do_upgrade)
     if(do_upgrade && (ret = upgrade_database("version")))
 	return ret;
 
-    if(ret = open_db(&db, "version", DB_BTREE))
+    ret = open_db(&db, "version", DB_BTREE);
+    if (ret != 0)
 	return ret;
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
-    key.data = "dataversion";
+    key.data = (char *) "dataversion";
     key.size = sizeof("dataversion");
-    if(ret = db->get(db, NULL, &key, &val, 0)) {
+    ret = db->get(db, NULL, &key, &val, 0);
+    if (ret != 0) {
 	if(ret != DB_NOTFOUND) {
 	    fprintf(stderr, "ovdb_init: can't retrieve version: %s\n", db_strerror(ret));
 	    db->close(db, 0);
@@ -253,7 +269,8 @@ static int check_upgrade(int do_upgrade)
 
 	val.data = &dv;
 	val.size = sizeof dv;
-	if(ret = db->put(db, NULL, &key, &val, 0)) {
+        ret = db->put(db, NULL, &key, &val, 0);
+	if (ret != 0) {
 	    fprintf(stderr, "ovdb_init: can't store version: %s\n", db_strerror(ret));
 	    db->close(db, 0);
 	    return ret;
@@ -261,28 +278,33 @@ static int check_upgrade(int do_upgrade)
     } else
 	memcpy(&dv, val.data, sizeof dv);
 
-    key.data = "numdbfiles";
+    key.data = (char *) "numdbfiles";
     key.size = sizeof("numdbfiles");
-    if(ret = db->get(db, NULL, &key, &val, 0) == 0)
+    if ((ret = db->get(db, NULL, &key, &val, 0)) == 0)
 	if(val.size == sizeof(ovdb_conf.numdbfiles))
 	    memcpy(&(ovdb_conf.numdbfiles), val.data, sizeof(ovdb_conf.numdbfiles));
     db->close(db, 0);
 
     if(do_upgrade) {
 	if(dv == 1) {
-	    if(ret = upgrade_database("groupstats"))
+            ret = upgrade_database("groupstats");
+	    if (ret != 0)
 		return ret;
-	    if(ret = upgrade_database("groupsbyname"))
+            ret = upgrade_database("groupsbyname");
+	    if (ret != 0)
 		return ret;
 	} else {
-	    if(ret = upgrade_database("groupinfo"))
+            ret = upgrade_database("groupinfo");
+	    if (ret != 0)
 		return ret;
 	}
-	if(ret = upgrade_database("groupaliases"))
+        ret = upgrade_database("groupaliases");
+	if (ret != 0)
 	    return ret;
 	for(i = 0; i < ovdb_conf.numdbfiles; i++) {
-	    sprintf(name, "ov%05d", i);
-	    if(ret = upgrade_database(name))
+	    snprintf(name, sizeof(name), "ov%05d", i);
+            ret = upgrade_database(name);
+	    if (ret != 0)
 		return ret;
 	}
     }

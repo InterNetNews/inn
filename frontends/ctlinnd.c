@@ -318,7 +318,7 @@ int main(int ac, char *av[])
 	if (stat(p, &Sb) < 0)
 	    (void)fprintf(stderr, "No innd.pid file; did server die?\n");
         free(p);
-	(void)sprintf(buff, "send \"%s\" command", cp->Command);
+	snprintf(buff, sizeof(buff), "send \"%s\" command", cp->Command);
 	errno = i;
 	Failed(buff);
     }

@@ -90,7 +90,8 @@ main(ac, av)
     int		i;
     FILE	*F;
     char	buff[BUFSIZ];
-    char	mesgid[SMBUF];
+    char	*mesgid = NULL;
+    size_t      length;
     char	*p;
     char	*q;
     bool	PostMode;
@@ -107,16 +108,19 @@ main(ac, av)
 	    /* NOTREACHED */
 	case 'm':			/* Specified Message-ID */
 	    if (*optarg == '<')
-		(void)strcpy(mesgid, optarg);
+		mesgid = optarg;
 	    else
-		(void)sprintf(mesgid, "<%s>", optarg);
+                mesgid = concat("<", optarg, ">", (char *) 0);
 	    break;
 	case 'p':			/* Use Post, not ihave	*/
 	    PostMode = TRUE;
 	    break;
 	case 'r':			/* Random Message-ID	*/
-	    (void)sprintf(mesgid, "<%ld@%ld>",
-		    (long) getpid(), (long)time((time_t *)NULL));
+            length = snprintf(NULL, 0, "<%ld@%ld>", (long) getpid(),
+                              (long) time(NULL));
+            mesgid = xmalloc(length + 1);
+            snprintf(mesgid, length, "<%ld@%ld>", (long) getpid(),
+                     (long) time(NULL));
 	    break;
 	case 't':
 	    Tracing = TRUE;
@@ -132,7 +136,7 @@ main(ac, av)
 	PerrorExit("Can't open input");
 
     /* Scan for the message-id. */
-    if (mesgid[0] == '\0') {
+    if (mesgid == NULL) {
 	while (fgets(buff, sizeof buff, F) != NULL)
 	    if (caseEQn(buff, MESGIDHDR, STRLEN(MESGIDHDR))) {
 		if ((p = strchr(buff, '<')) == NULL
@@ -141,10 +145,10 @@ main(ac, av)
 		    exit(1);
 		}
 		q[1] = '\0';
-		(void)strcpy(mesgid, p);
+                mesgid = xstrdup(p);
 		break;
 	    }
-	if (mesgid[0] == '\0') {
+	if (mesgid == NULL) {
 	    (void)fprintf(stderr, "No Message-ID.\n");
 	    exit(1);
 	}

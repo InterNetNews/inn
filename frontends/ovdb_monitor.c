@@ -50,7 +50,7 @@ static char     *TITLEend;
 #endif
 #endif
 
-static void TITLEset(char *what)
+static void TITLEset(const char *what)
 {
 #if defined(HAVE_SETPROCTITLE)
     setproctitle("%s", what);
@@ -69,7 +69,8 @@ static void TITLEset(char *what)
 
     p = TITLEstart;
 
-    strcpy(buff, what);
+    strncpy(buff, what, sizeof(buff));
+    buff[sizeof(buff) - 1] = '\0';
     i = strlen(buff);
     if (i > TITLEend - p - 2) {
         i = TITLEend - p - 2;
@@ -85,7 +86,7 @@ static void TITLEset(char *what)
 
 
 static int signalled = 0;
-static void sigfunc(int sig)
+static void sigfunc(int sig UNUSED)
 {
     signalled = 1;
 }
@@ -103,7 +104,7 @@ static int putpid(const char *path)
 	syslog(L_FATAL, "can't open %s: %m", path);
 	return -1;
     }
-    sprintf(buf, "%d\n", getpid());
+    snprintf(buf, sizeof(buf), "%d\n", getpid());
     if(write(fd, buf, strlen(buf)) < 0) {
 	syslog(L_FATAL, "can't write to %s: %m", path);
 	close(fd);
@@ -167,11 +168,13 @@ static void checkpoint(void)
         _exit(1);
     }
 #else
-    if(ret = db_create(&db, OVDBenv, 0)) {
+    ret = db_create(&db, OVDBenv, 0);
+    if (ret != 0) {
         syslog(L_ERROR, "OVDB: checkpoint: db_create: %s\n", db_strerror(ret));
         _exit(1);
     }
-    if(ret = db->open(db, "version", NULL, DB_BTREE, DB_CREATE, 0666)) {
+    ret = db->open(db, "version", NULL, DB_BTREE, DB_CREATE, 0666);
+    if (ret != 0) {
         db->close(db, 0);
         syslog(L_ERROR, "OVDB: checkpoint: version open: %s\n", db_strerror(ret));
         _exit(1);
@@ -286,7 +289,7 @@ static void cleanup(int status)
     exit(status);
 }
 
-static int monitorloop(void)
+static void monitorloop(void)
 {
     int cs, restartit;
     pid_t child;
@@ -371,7 +374,9 @@ int main(int argc, char **argv)
 	cleanup(1);
 
     monitorloop();
-    /*NOTREACHED*/
+
+    /* Never reached. */
+    return 1;
 }
 
 #endif /* USE_BERKELEY_DB */

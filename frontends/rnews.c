@@ -218,8 +218,10 @@ static void Reject(const char *article, const char *reason, const char *arg)
 static bool Process(char *article)
 {
     HEADER	        *hp;
-    char	        *p;
-    char		*id = NULL;
+    const char	        *p;
+    char                *q;
+    const char		*id = NULL;
+    char                *msgid;
     char		buff[SMBUF];
 #if	defined(FILE_RNEWS_LOG_DUPS)
     FILE		*F;
@@ -234,7 +236,7 @@ static bool Process(char *article)
 
     /* Make sure that all the headers are there, note the ID. */
     for (hp = RequiredHeaders; hp < ENDOF(RequiredHeaders); hp++) {
-	if ((p = (char *)HeaderFindMem(article, strlen(article), hp->Name, hp->size)) == NULL) {
+	if ((p = HeaderFindMem(article, strlen(article), hp->Name, hp->size)) == NULL) {
 	    Reject(article, "bad_article missing %s", hp->Name);
 	    return FALSE;
 	}
@@ -246,8 +248,8 @@ static bool Process(char *article)
 	if (IS_PATH(hp)) {
 	    (void)strncpy(path, p, sizeof path);
 	    path[sizeof path - 1] = '\0';
-	    if ((p = strchr(path, '\n')) != NULL)
-		*p = '\0';
+	    if ((q = strchr(path, '\n')) != NULL)
+		*q = '\0';
 	}
 #endif	/* !defined(DONT_RNEWS_LOG_DUPS) */
     }
@@ -257,12 +259,12 @@ static bool Process(char *article)
 	Reject(article, "bad_article unterminated %s header", "Message-ID");
 	return FALSE;
     }
-    *p = '\0';
-    (void)fprintf(ToServer, "ihave %s\r\n", id);
-    (void)fflush(ToServer);
+    msgid = xstrndup(id, p - id);
+    fprintf(ToServer, "ihave %s\r\n", msgid);
+    fflush(ToServer);
     if (UUCPHost)
-	syslog(L_NOTICE, "offered %s %s", id, UUCPHost);
-    *p = '\n';
+	syslog(L_NOTICE, "offered %s %s", msgid, UUCPHost);
+    free(msgid);
 
     /* Get a reply, see if they want the article. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
@@ -573,11 +575,11 @@ UnpackOne(int *fdp, size_t *countp)
 	else
 	    p = &buff[3];
 	if (strchr(_PATH_RNEWSPROGS, '/') == NULL) {
-	    (void)sprintf(path, "%s/%s/%s", innconf->pathbin,
-					_PATH_RNEWSPROGS, p);
+	    snprintf(path, sizeof(path), "%s/%s/%s", innconf->pathbin,
+                     _PATH_RNEWSPROGS, p);
 	    len = strlen(innconf->pathbin) + 1 + sizeof _PATH_RNEWSPROGS;
 	} else {
-	    (void)sprintf(path, "%s/%s", _PATH_RNEWSPROGS, p);
+	    snprintf(path, sizeof(path), "%s/%s", _PATH_RNEWSPROGS, p);
 	    len = sizeof _PATH_RNEWSPROGS;
 	}
 	for (p = &path[len]; *p; p++)

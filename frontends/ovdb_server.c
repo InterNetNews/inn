@@ -95,7 +95,7 @@ static char     *TITLEend;
 #endif
 #endif
 
-static void TITLEset(char *what)
+static void TITLEset(const char *what)
 {
 #if defined(HAVE_SETPROCTITLE)
     setproctitle("%s", what);
@@ -114,7 +114,8 @@ static void TITLEset(char *what)
 
     p = TITLEstart;
 
-    strcpy(buff, what);
+    strncpy(buff, what, sizeof(buff));
+    buff[sizeof(buff) - 1] = '\0';
     i = strlen(buff);
     if (i > TITLEend - p - 2) {
         i = TITLEend - p - 2;
@@ -134,7 +135,7 @@ typedef void (*SIG_HANDLER_T)(int);
 
 /* like xsignal, but does not set SA_RESTART */
 
-SIG_HANDLER_T
+static SIG_HANDLER_T
 xrsignal(int signum, SIG_HANDLER_T sigfunc)
 {
     struct sigaction act, oact;
@@ -200,20 +201,20 @@ static struct child *children;
 
 static int signalled = 0;
 static void
-sigfunc(int sig)
+sigfunc(int sig UNUSED)
 {
     signalled = 1;
 }
 
 static int updated = 0;
 static void
-childsig(int sig)
+childsig(int sig UNUSED)
 {
     updated = 1;
 }
 
 static void
-parentsig(int sig)
+parentsig(int sig UNUSED)
 {
     int i, which, smallest;
     if(wholistens < 0) {
@@ -246,7 +247,7 @@ static int putpid(const char *path)
         syslog(L_FATAL, "can't open %s: %m", path);
         return -1;
     }
-    sprintf(buf, "%d\n", getpid());
+    snprintf(buf, sizeof(buf), "%d\n", getpid());
     if(write(fd, buf, strlen(buf)) < 0) {
         syslog(L_FATAL, "can't write to %s: %m", path);
         close(fd);
@@ -259,7 +260,6 @@ static int putpid(const char *path)
 static void
 do_groupstats(struct reader *r)
 {
-    struct rs_cmd *cmd = r->buf;
     struct rs_groupstats *reply;
     char *group = (char *)(r->buf) + sizeof(struct rs_cmd);
     reply = NEW(struct rs_groupstats, 1);
@@ -351,8 +351,6 @@ do_artinfo(struct reader *r)
     struct rs_artinfo *reply;
     char *group = (char *)(r->buf) + sizeof(struct rs_cmd);
     TOKEN token;
-    char *data;
-    int len;
 
     /*syslog(LOG_DEBUG, "OVDB: rs: do_artinfo: '%s' %d", group, cmd->artlo);*/
     if(ovdb_getartinfo(group, cmd->artlo, &token)) {
@@ -541,10 +539,11 @@ serverproc(int me)
     char string[50];
     pid_t pid;
 
-    if(pid = fork())
+    pid = fork();
+    if (pid != 0)
 	return pid;
 
-    if(!ovdb_open(OV_READ|OVDB_SERVER)) {
+    if (!ovdb_open(OV_READ|OVDB_SERVER)) {
 	syslog(L_FATAL, "ovdb_server: cant open overview");
 	exit(1);
     }
@@ -576,8 +575,8 @@ serverproc(int me)
 	    if(!ovdb_conf.maxrsconn || numreaders < ovdb_conf.maxrsconn) {
 		FD_SET(listensock, &rdset);
 		lastfd = listensock;
-		sprintf(string, "ovdb_server: %d client%s *", numreaders,
-			numreaders == 1 ? "" : "s");
+		snprintf(string, sizeof(string), "ovdb_server: %d client%s *",
+                        numreaders, numreaders == 1 ? "" : "s");
 		TITLEset(string);
 	    } else {
 		wholistens = -1;
@@ -650,8 +649,8 @@ serverproc(int me)
         }
 	if(numreaders != lastnumreaders) {
 	    lastnumreaders = numreaders;
-	    sprintf(string, "ovdb_server: %d client%s", numreaders,
-		    numreaders == 1 ? "" : "s");
+	    snprintf(string, sizeof(string), "ovdb_server: %d client%s",
+                     numreaders, numreaders == 1 ? "" : "s");
 	    TITLEset(string);
 	}
     }
@@ -663,7 +662,7 @@ serverproc(int me)
 static int
 reap(void)
 {
-    int i, cs, restart = 0;
+    int i, cs;
     pid_t c;
 
     while((c = waitpid(-1, &cs, WNOHANG)) > 0) {
@@ -696,7 +695,7 @@ reap(void)
 #endif
 #endif
 
-void *
+static void *
 sharemem(size_t len)
 {
 #ifdef MAP_ANON

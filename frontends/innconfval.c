@@ -21,7 +21,7 @@ static int isnum(const char *v)
 {
     if (!*v) return(0);
     for (; *v; v++)
-	if (!isdigit(*v)) return(0);
+	if (!CTYPE(isdigit, *v)) return(0);
     return(1);
 }
 
