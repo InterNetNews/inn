@@ -2,10 +2,11 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
-''' Revision 1.76  1999/07/15 08:32:32  rra
-''' Reorganized and largely rewritten, removing documentation for inn.conf
-''' parameters which are no longer used and written in POD with generated
-''' *roff and SGML.
+''' Revision 1.77  1999/07/16 06:22:03  rra
+''' Added documentation for ovmethod, enableoverview, overcache,
+''' addnntppostingdate, and addnntppostinghost.  Clarified why one would want
+''' to turn off wireformat, and added documentation of why one would want to
+''' change blockbackoff.
 '''
 '''
 .de Sh
@@ -98,7 +99,7 @@
 .nr % 0
 .rr F
 .\}
-.TH INN.CONF 1 "perl 5.005, patch 02" "15/Jul/99" "User Contributed Perl Documentation"
+.TH INN.CONF 1 "INN 2.3" "15/Jul/99" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -410,11 +411,35 @@ cycbuffs is checked against \fImaxartsize\fR plus this value, and if larger,
 the \s-1CNFS\s0 cycbuff is considered corrupt.  This can be useful as a sanity
 check after a system crash, but be careful using this parameter if you
 have changed \fImaxartsize\fR recently.  The default value is \f(CW0\fR.
+.Ip "\fIenableoverview\fR" 4
+Whether to write out overview data for articles.  If set to false, \s-1INN\s0
+will run much faster, but reading news from the system will be slow or
+impossible since there will be no overview files for readers.  This is a
+boolean value and the default is true.
 .Ip "\fImergetogroups\fR" 4
 Whether to file all postings to \f(CWto.*\fR groups in the pseudonewsgroup
 \f(CWto\fR.  If this is set to true, the newsgroup \f(CWto\fR must exist in the
 \fIactive\fR file or \s-1INN\s0 will not start.  This is a boolean value and the
 default is false.
+.Ip "\fIovercachesize\fR" 4
+How many cache slots to reserve for open overview files.  If \s-1INN\s0 is
+writing overview files (see \fIenableoverview\fR) and this is set to a value
+other than \f(CW0\fR, \s-1INN\s0 will keep around and open that many recently
+written-to overview files in case more articles come in for those
+newsgroups.  Every overview cache slot consumes two file descriptors, so
+be careful not to set this value too high.  You may be able to use the
+\f(CWlimit\fR command to see how many open file descriptors your operating
+system allows.  \fIinnd\fR\|(8) also uses an open file descriptor for each
+incoming feed and outgoing channel or batch file, and if it runs out of
+open file descriptors it may throttle and stop accepting new news.  The
+default value is \f(CW15\fR (which is probably way too low if you have a large
+number of file descriptors available).
+.Ip "\fIovmethod\fR" 4
+What overview storage method to use.  The only currently supported value
+is \f(CWtradindexed\fR, which stores two files per newsgroup, one containing
+the overview data and one containing the index.  There is no default
+value; this parameter must be set if \fIenableoverview\fR is true (the
+default).
 .Ip "\fIstoreonxref\fR" 4
 If set to true, articles will be stored based on the newsgroup names in
 the Xref: header rather than in the Newsgroups: header.  This affects what
@@ -430,9 +455,11 @@ the end of each line and with periods at the beginning of lines doubled,
 the article format required by the \s-1NNTP\s0 protocol.  Articles stored in this
 format are suitable for sending directly to a network connection without
 requiring conversion, and therefore setting this to true can make the
-server more efficient.  Storage methods other than tradspool always store
-articles in wire format.  This is a boolean value and the default is
-false.
+server more efficient.  The primary reason not to set this is if you have
+old existing software that looks around in the spool and doesn't
+understand how to read wire format.  Storage methods other than tradspool
+always store articles in wire format.  This is a boolean value and the
+default is false.
 .Ip "\fIxrefslave\fR" 4
 Whether to act as the slave of another server.  If set, \s-1INN\s0 attempts to
 duplicate exactly the article numbering of the server feeding it by
@@ -532,6 +559,13 @@ default value is \f(CW250\fR.
 These parameters are only used by \fInnrpd\fR\|(8), \fIinews\fR\|(1), and other programs
 that accept or generate postings.  There are some special sets of settings
 that are broken out separately after the initial alphabetized list.
+.Ip "\fIaddnntppostingdate\fR" 4
+Whether to add an \s-1NNTP\s0\-Posting-Date: header to all local posts.  This is a
+boolean value and the default is true.
+.Ip "\fIaddnntppostinghost\fR" 4
+Whether to add an \s-1NNTP\s0\-Posting-Host: header to all local posts giving the
+\s-1FQDN\s0 or \s-1IP\s0 address of the system from which the post was received.  This
+is a boolean value and the default is true.
 .Ip "\fIcheckincludedtext\fR" 4
 Whether to check local postings for the ratio of new to quoted text and
 reject them if that ratio is under 50%.  Included text is recognized by
@@ -760,14 +794,17 @@ produce a nice summary of the timings.  The default value is \f(CW0\fR.
 .Sh "System Tuning"
 The following parameters can be modified to tune the low-level operation
 of \s-1INN\s0.  In general, you shouldn't need to modify any of them except
-possibly \fIrlimitnofile\fR.
+possibly \fIrlimitnofile\fR unless the server is having difficulty.
 .Ip "\fIbadiocount\fR" 4
 How many read or write failures until a channel is put to sleep or
 closed.  The default value is \f(CW5\fR.
 .Ip "\fIblockbackoff\fR" 4
 Each time an attempted write returns \s-1EWOULDBLOCK\s0, \fIinnd\fR\|(8) will wait for an
 increasing number of seconds before trying it again.  This is the
-multiplier for the sleep time.  The default value is \f(CW120\fR.
+multiplier for the sleep time.  If you're having trouble with channel
+feeds not keeping up, it may be good to change this value to \f(CW2\fR or \f(CW3\fR,
+since then when the channel fills \s-1INN\s0 will try again in a couple of
+seconds rather than waiting two minutes.  The default value is \f(CW120\fR.
 .Ip "\fIchaninacttime\fR" 4
 The time (in seconds) to wait between noticing inactive channels.  The
 default value is \f(CW600\fR.
@@ -895,8 +932,9 @@ and defaults to \fIpathnews\fR/tmp.
 Here is a very minimalist example that only sets those parameters that are
 required.
 .PP
-.Vb 3
+.Vb 4
 \&    mta:                /usr/lib/sendmail -oi -oem %s
+\&    ovmethod:           tradindexed
 \&    pathhost:           news.example.com
 \&    pathnews:           /usr/local/news
 .Ve
@@ -976,7 +1014,13 @@ above are just the major and most frequently mentioned ones.
 
 .IX Item "\fIcnfscheckfudgesize\fR"
 
+.IX Item "\fIenableoverview\fR"
+
 .IX Item "\fImergetogroups\fR"
+
+.IX Item "\fIovercachesize\fR"
+
+.IX Item "\fIovmethod\fR"
 
 .IX Item "\fIstoreonxref\fR"
 
@@ -1011,6 +1055,10 @@ above are just the major and most frequently mentioned ones.
 .IX Item "\fIkeymaxwords\fR"
 
 .IX Subsection "Posting"
+
+.IX Item "\fIaddnntppostingdate\fR"
+
+.IX Item "\fIaddnntppostinghost\fR"
 
 .IX Item "\fIcheckincludedtext\fR"
 

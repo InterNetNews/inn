@@ -3,10 +3,11 @@
 <!-- $Id$ -->
 <!-- -->
 <!-- $Log$
-<!-- Revision 1.1  1999/07/15 08:32:46  rra
-<!-- Reorganized and largely rewritten, removing documentation for inn.conf
-<!-- parameters which are no longer used and written in POD with generated
-<!-- *roff and SGML.
+<!-- Revision 1.2  1999/07/16 06:22:06  rra
+<!-- Added documentation for ovmethod, enableoverview, overcache,
+<!-- addnntppostingdate, and addnntppostinghost.  Clarified why one would want
+<!-- to turn off wireformat, and added documentation of why one would want to
+<!-- change blockbackoff.
 <!-- -->
 <!-- -->
 <!-- General reminders: -->
@@ -551,6 +552,21 @@ using this parameter if you have changed <emphasis>maxartsize</emphasis> recentl
 </para>
 
 </listitem></varlistentry>
+<varlistentry><term><emphasis>enableoverview
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to write out overview data for articles. If set to false, INN will
+run much faster, but reading news from the system will be slow or
+impossible since there will be no overview files for readers. This is a
+boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
 <varlistentry><term><emphasis>mergetogroups
 
 </emphasis></term>
@@ -561,6 +577,42 @@ Whether to file all postings to <literal>to.*</literal> groups in the pseudonews
 <literal>to</literal>. If this is set to true, the newsgroup <literal>to</literal> must exist in the
 <emphasis>active</emphasis> file or INN will not start. This is a boolean value and the default is
 false.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>overcachesize
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+How many cache slots to reserve for open overview files. If INN is writing
+overview files (see <emphasis>enableoverview</emphasis>) and this is set to a value other than <literal>0</literal>, INN will keep around and open that many recently written-to overview
+files in case more articles come in for those newsgroups. Every overview
+cache slot consumes two file descriptors, so be careful not to set this
+value too high. You may be able to use the
+<literal>limit</literal> command to see how many open file descriptors your operating system allows.
+<literal>innd(8)</literal> also uses an open file descriptor for each
+incoming feed and outgoing channel or batch file, and if it runs out of
+open file descriptors it may throttle and stop accepting new news. The
+default value is <literal>15</literal> (which is probably way too low if you have a large number of file
+descriptors available).
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>ovmethod
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+What overview storage method to use. The only currently supported value is <literal>tradindexed</literal>, which stores two files per newsgroup, one containing the overview data
+and one containing the index. There is no default value; this parameter
+must be set if <emphasis>enableoverview</emphasis> is true (the default).
 
 
 </para>
@@ -596,7 +648,9 @@ the end of each line and with periods at the beginning of lines doubled,
 the article format required by the NNTP protocol. Articles stored in this
 format are suitable for sending directly to a network connection without
 requiring conversion, and therefore setting this to true can make the
-server more efficient. Storage methods other than tradspool always store
+server more efficient. The primary reason not to set this is if you have
+old existing software that looks around in the spool and doesn't understand
+how to read wire format. Storage methods other than tradspool always store
 articles in wire format. This is a boolean value and the default is false.
 
 
@@ -879,6 +933,33 @@ separately after the initial alphabetized list.
 </para>
 
 <variableList>
+<varlistentry><term><emphasis>addnntppostingdate
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to add an NNTP-Posting-Date: header to all local posts. This is a
+boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>addnntppostinghost
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Whether to add an NNTP-Posting-Host: header to all local posts giving the
+FQDN or IP address of the system from which the post was received. This is
+a boolean value and the default is true.
+
+
+</para>
+
+</listitem></varlistentry>
 <varlistentry><term><emphasis>checkincludedtext
 
 </emphasis></term>
@@ -1568,7 +1649,7 @@ The default value is <literal>0</literal>.
 
 <para>
 The following parameters can be modified to tune the low-level operation of
-INN. In general, you shouldn't need to modify any of them except possibly <emphasis>rlimitnofile</emphasis>.
+INN. In general, you shouldn't need to modify any of them except possibly <emphasis>rlimitnofile</emphasis> unless the server is having difficulty.
 
 
 </para>
@@ -1595,8 +1676,10 @@ The default value is <literal>5</literal>.
 <para>
 Each time an attempted write returns EWOULDBLOCK,
 <literal>innd(8)</literal> will wait for an increasing number of seconds
-before trying it again. This is the multiplier for the sleep time. The
-default value is <literal>120</literal>.
+before trying it again. This is the multiplier for the sleep time. If
+you're having trouble with channel feeds not keeping up, it may be good to
+change this value to <literal>2</literal> or <literal>3</literal>, since then when the channel fills INN will try again in a couple of
+seconds rather than waiting two minutes. The default value is <literal>120</literal>.
 
 
 </para>
@@ -2032,6 +2115,7 @@ required.
 <para>
 <screen>
     mta:                /usr/lib/sendmail -oi -oem %s
+    ovmethod:           tradindexed
     pathhost:           news.example.com
     pathnews:           /usr/local/news
 </screen>

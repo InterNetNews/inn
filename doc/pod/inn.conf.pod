@@ -282,12 +282,42 @@ the CNFS cycbuff is considered corrupt.  This can be useful as a sanity
 check after a system crash, but be careful using this parameter if you
 have changed I<maxartsize> recently.  The default value is C<0>.
 
+=item I<enableoverview>
+
+Whether to write out overview data for articles.  If set to false, INN
+will run much faster, but reading news from the system will be slow or
+impossible since there will be no overview files for readers.  This is a
+boolean value and the default is true.
+
 =item I<mergetogroups>
 
 Whether to file all postings to C<to.*> groups in the pseudonewsgroup
 C<to>.  If this is set to true, the newsgroup C<to> must exist in the
 F<active> file or INN will not start.  This is a boolean value and the
 default is false.
+
+=item I<overcachesize>
+
+How many cache slots to reserve for open overview files.  If INN is
+writing overview files (see I<enableoverview>) and this is set to a value
+other than C<0>, INN will keep around and open that many recently
+written-to overview files in case more articles come in for those
+newsgroups.  Every overview cache slot consumes two file descriptors, so
+be careful not to set this value too high.  You may be able to use the
+C<limit> command to see how many open file descriptors your operating
+system allows.  innd(8) also uses an open file descriptor for each
+incoming feed and outgoing channel or batch file, and if it runs out of
+open file descriptors it may throttle and stop accepting new news.  The
+default value is C<15> (which is probably way too low if you have a large
+number of file descriptors available).
+
+=item I<ovmethod>
+
+What overview storage method to use.  The only currently supported value
+is C<tradindexed>, which stores two files per newsgroup, one containing
+the overview data and one containing the index.  There is no default
+value; this parameter must be set if I<enableoverview> is true (the
+default).
 
 =item I<storeonxref>
 
@@ -307,9 +337,11 @@ the end of each line and with periods at the beginning of lines doubled,
 the article format required by the NNTP protocol.  Articles stored in this
 format are suitable for sending directly to a network connection without
 requiring conversion, and therefore setting this to true can make the
-server more efficient.  Storage methods other than tradspool always store
-articles in wire format.  This is a boolean value and the default is
-false.
+server more efficient.  The primary reason not to set this is if you have
+old existing software that looks around in the spool and doesn't
+understand how to read wire format.  Storage methods other than tradspool
+always store articles in wire format.  This is a boolean value and the
+default is false.
 
 =item I<xrefslave>
 
@@ -451,6 +483,17 @@ that accept or generate postings.  There are some special sets of settings
 that are broken out separately after the initial alphabetized list.
 
 =over 4
+
+=item I<addnntppostingdate>
+
+Whether to add an NNTP-Posting-Date: header to all local posts.  This is a
+boolean value and the default is true.
+
+=item I<addnntppostinghost>
+
+Whether to add an NNTP-Posting-Host: header to all local posts giving the
+FQDN or IP address of the system from which the post was received.  This
+is a boolean value and the default is true.
 
 =item I<checkincludedtext>
 
@@ -779,7 +822,7 @@ produce a nice summary of the timings.  The default value is C<0>.
 
 The following parameters can be modified to tune the low-level operation
 of INN.  In general, you shouldn't need to modify any of them except
-possibly I<rlimitnofile>.
+possibly I<rlimitnofile> unless the server is having difficulty.
 
 =over 4
 
@@ -792,7 +835,10 @@ closed.  The default value is C<5>.
 
 Each time an attempted write returns EWOULDBLOCK, innd(8) will wait for an
 increasing number of seconds before trying it again.  This is the
-multiplier for the sleep time.  The default value is C<120>.
+multiplier for the sleep time.  If you're having trouble with channel
+feeds not keeping up, it may be good to change this value to C<2> or C<3>,
+since then when the channel fills INN will try again in a couple of
+seconds rather than waiting two minutes.  The default value is C<120>.
 
 =item I<chaninacttime>
 
@@ -984,6 +1030,7 @@ Here is a very minimalist example that only sets those parameters that are
 required.
 
     mta:                /usr/lib/sendmail -oi -oem %s
+    ovmethod:           tradindexed
     pathhost:           news.example.com
     pathnews:           /usr/local/news
 
