@@ -18,6 +18,15 @@
 #include "inn/network.h"
 #include "libinn.h"
 
+/* Macros to set the len attribute of sockaddrs. */
+#if HAVE_STRUCT_SOCKADDR_SA_LEN
+# define sin_set_length(s)      ((s)->sin_len  = sizeof(struct sockaddr_in))
+# define sin6_set_length(s)     ((s)->sin6_len = sizeof(struct sockaddr_in6))
+#else
+# define sin_set_length(s)      /* empty */
+# define sin6_set_length(s)     /* empty */
+#endif
+
 /* If SO_REUSEADDR isn't available, make calls to set_reuseaddr go away. */
 #ifndef SO_REUSEADDR
 # define network_set_reuseaddr(fd)      /* empty */
@@ -46,16 +55,14 @@ network_set_reuseaddr(int fd)
 **  number, and returns true on success and false on failure.
 */
 static bool
-network_bind(int fd, int family, const char *address, unsigned short port)
+network_innbind(int fd, int family, const char *address, unsigned short port)
 {
     char *path;
     char spec[128];
     pid_t child;
     int result, status;
 
-    /* Run innbind to bind the socket.  A nice optimization would be to only
-       run innbind when the port is < 1024 and otherwise bind it directly, but
-       this is simple and binding new sockets is rare. */
+    /* Run innbind to bind the socket. */
     path = concatpath(innconf->pathbin, "innbind");
     snprintf(spec, sizeof(spec), "%d,%d,%s,%hu", fd, family, address, port);
     child = fork();
@@ -93,7 +100,10 @@ int
 network_bind_ipv4(const char *address, unsigned short port)
 {
     int fd;
+    struct sockaddr_in server;
+    struct in_addr addr;
 
+    /* Create the socket. */
     fd = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
     if (fd < 0) {
         syswarn("cannot create IPv4 socket for %s,%hu", address, port);
@@ -104,23 +114,49 @@ network_bind_ipv4(const char *address, unsigned short port)
     /* Accept "any" or "all" in the bind address to mean 0.0.0.0. */
     if (!strcmp(address, "any") || !strcmp(address, "all"))
         address = "0.0.0.0";
-    return network_bind(fd, AF_INET, address, port) ? fd : -1;
+
+    /* Flesh out the socket and do the bind if we can.  Otherwise, call
+       network_innbind to do the work. */
+    if (port < 1024 && geteuid() != 0)
+        return network_innbind(fd, AF_INET, address, port) ? fd : -1;
+    else {
+        server.sin_family = AF_INET;
+        server.sin_port = htons(port);
+        if (!inet_aton(address, &addr)) {
+            warn("invalid IPv4 address %s", address);
+            return -1;
+        }
+        server.sin_addr = addr;
+        sin_set_length(&server);
+        if (bind(fd, (struct sockaddr *) &server, sizeof(server)) < 0) {
+            syswarn("cannot bind socket for %s,%hu", address, port);
+            return -1;
+        }
+        return fd;
+    }
 }
 
 
 /*
 **  Create an IPv6 socket and start listening on it, returning the resulting
-**  file descriptor (or -1 on a failure).
+**  file descriptor (or -1 on a failure).  Note that we don't warn (but still
+**  return failure) if the reason for the socket creation failure is that IPv6
+**  isn't supported; this is to handle systems like many Linux hosts where
+**  IPv6 is available in userland but the kernel doesn't support it.
 */
 #if HAVE_INET6
 int
 network_bind_ipv6(const char *address, unsigned short port)
 {
     int fd;
+    struct sockaddr_in6 server;
+    struct in6_addr addr;
 
+    /* Create the socket. */
     fd = socket(PF_INET6, SOCK_STREAM, IPPROTO_IP);
     if (fd < 0) {
-        syswarn("cannot create IPv6 socket for %s,%hu", address, port);
+        if (errno != EAFNOSUPPORT && errno != EPROTONOSUPPORT)
+            syswarn("cannot create IPv6 socket for %s,%hu", address, port);
         return -1;
     }
     network_set_reuseaddr(fd);
@@ -128,7 +164,28 @@ network_bind_ipv6(const char *address, unsigned short port)
     /* Accept "any" or "all" in the bind address to mean 0.0.0.0. */
     if (!strcmp(address, "any") || !strcmp(address, "all"))
         address = "::";
-    return network_bind(fd, AF_INET6, address, port) ? fd : -1;
+
+    /* Flesh out the socket and do the bind if we can.  Otherwise, call
+       network_innbind to do the work. */
+    if (port < 1024 && geteuid() != 0)
+        return network_innbind(fd, AF_INET6, address, port) ? fd : -1;
+    else {
+        server.sin6_family = AF_INET6;
+        server.sin6_port = htons(port);
+        if (inet_pton(AF_INET6, address, &addr) < 1) {
+            warn("invalid IPv6 address %s", address);
+            close(fd);
+            return -1;
+        }
+        server.sin6_addr = addr;
+        sin6_set_length(&server);
+        if (bind(fd, (struct sockaddr *) &server, sizeof(server)) < 0) {
+            syswarn("cannot bind socket for %s,%hu", address, port);
+            close(fd);
+            return -1;
+        }
+        return fd;
+    }
 }
 #else /* HAVE_INET6 */
 int
@@ -174,18 +231,15 @@ network_bind_all(unsigned short port, int **fds, int *count)
     size = 2;
     *fds = xmalloc(size * sizeof(int));
     for (addr = addrs; addr != NULL; addr = addr->ai_next) {
-        fd = socket(addr->ai_family, SOCK_STREAM, IPPROTO_IP);
-        if (fd < 0) {
-            if (errno != EAFNOSUPPORT && errno != EPROTONOSUPPORT)
-                syswarn("cannot create socket for %s,%hu",
-                        sprint_sockaddr(addr->ai_addr), port);
-            continue;
-        }
-        network_set_reuseaddr(fd);
         strlcpy(name, sprint_sockaddr(addr->ai_addr), sizeof(name));
-        if (!network_bind(fd, addr->ai_family, name, port))
-            close(fd);
-        else {
+        if (addr->ai_family == AF_INET)
+            fd = network_bind_ipv4(name, port);
+        else if (addr->ai_family == AF_INET6)
+            fd = network_bind_ipv6(name, port);
+        else
+            continue;
+        if (fd >= 0) {
+            network_set_reuseaddr(fd);
             if (*count >= size) {
                 size += 2;
                 *fds = xrealloc(*fds, size * sizeof(int));
