@@ -144,7 +144,7 @@ typedef struct {
 				   last index */
   int		count;		/* Number of articles in group */
   int		flag;		/* Posting/Moderation Status */
-  time_t	deleted;	/* When this was deleted, 0 otherwise */    
+  time_t	deleted;	/* When this was deleted, 0 otherwise */
   GROUPLOC	next;		/* Next block in this chain */
   OV		baseindex;	/* base index buff */
   OV		curindex;	/* current index buff */
@@ -299,14 +299,14 @@ STATIC BOOL ovparse_part_line(char *l) {
   return TRUE;
 }
 
-/*      
+/*
 ** ovbuffread_config() -- Read the overview partition/file configuration file.
-*/  
-    
+*/
+
 STATIC BOOL ovbuffread_config(void) {
   char		*config, *from, *to, **ctab = (char **)NULL;
   int		ctab_free = 0;  /* Index to next free slot in ctab */
-  int		ctab_i; 
+  int		ctab_i;
   int		update, refresh;
 
   if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_OVBUFFCONFIG),
@@ -315,13 +315,13 @@ STATIC BOOL ovbuffread_config(void) {
 	cpcatpath(innconf->pathetc, _PATH_OVBUFFCONFIG), NULL);
     DISPOSE(config);
     return FALSE;
-  }       
+  }
   for (from = to = config; *from; ) {
     if (ctab_free == 0)
       ctab = NEW(char *, 1);
     else
       RENEW(ctab, char *, ctab_free+1);
-    if (*from == '#') {	/* Comment line? */ 
+    if (*from == '#') {	/* Comment line? */
       while (*from && *from != '\n')
 	from++;	/* Skip past it */
       from++;
@@ -430,7 +430,7 @@ STATIC OFFSET_T hex2offt(char *hex) {
 
 STATIC void ovreadhead(OVBUFF *ovbuff) {
   OVBUFFHEAD	rpx;
-  char		*buff[OVBUFFLASIZ+1];
+  char		buff[OVBUFFLASIZ+1];
 
   memcpy(&rpx, ovbuff->bitfield, sizeof(OVBUFFHEAD));
   strncpy((char *)buff, rpx.useda, OVBUFFLASIZ);
@@ -473,11 +473,11 @@ STATIC BOOL ovbuffinit_disks() {
   OVBUFFHEAD	*rpx;
   int		i, fd, bytes;
   OFFSET_T	tmpo;
-    
-  /*  
-  ** Discover the state of our ovbuffs.  If any of them are in icky shape, 
+
+  /*
+  ** Discover the state of our ovbuffs.  If any of them are in icky shape,
   ** duck shamelessly & return FALSE.
-  */    
+  */
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
     if (ovbuff->fd < 0) {
       if ((fd = open(ovbuff->path, ovbuffmode & OV_WRITE ? O_RDWR : O_RDONLY)) < 0) {
@@ -485,8 +485,8 @@ STATIC BOOL ovbuffinit_disks() {
 	return FALSE;
       } else {
 	CloseOnExec(fd, 1);
-	ovbuff->fd = fd; 
-      }   
+	ovbuff->fd = fd;
+      }
     }
     if ((ovbuff->bitfield =
 	 mmap((caddr_t) 0, ovbuff->base, ovbuffmode & OV_WRITE ? (PROT_READ | PROT_WRITE) : PROT_READ,
@@ -589,7 +589,7 @@ STATIC int ovusedblock(OVBUFF *ovbuff, int blocknum, BOOL set_operation, BOOL se
 STATIC void ovnextblock(OVBUFF *ovbuff) {
   OFFSET_T	longoffset;
   int		bitoffset;	/* From the 'left' side of the long */
-  int		i, j, last, left;
+  int		i, j, last, lastbit, left;
   static int	next = 1;
   ULONG		*table;
 
@@ -613,15 +613,15 @@ STATIC void ovnextblock(OVBUFF *ovbuff) {
     }
   }
   if ((i - 1) >= 0 && (last - 1 == i) && left != 0) {
-    last = left;
+    lastbit = left;
   } else {
-    last = sizeof(long) * 8;
+    lastbit = sizeof(long) * 8;
   }
-  for (j = 0 ; j < last ; j++) {
+  for (j = 0 ; j < lastbit ; j++) {
     if ((table[i] & onarray[j]) == 0)
       break;
   }
-  if (j == last) {
+  if (j == lastbit) {
     ovbuff->freeblk = ovbuff->totalblk;
     return;
   }
@@ -790,7 +790,7 @@ BOOL buffindexed_open(int mode) {
     DISPOSE(groupfn);
     return FALSE;
   }
-    
+
   if (fstat(GROUPfd, &sb) < 0) {
     syslog(L_FATAL, "%s: Could not fstat %s: %m", LocalLogName, groupfn);
     DISPOSE(groupfn);
@@ -801,8 +801,8 @@ BOOL buffindexed_open(int mode) {
     if (mode & OV_READ)
       flag |= PROT_READ;
     if (mode & OV_WRITE) {
-      /* 
-       * Note: below mapping of groupheader won't work unless we have 
+      /*
+       * Note: below mapping of groupheader won't work unless we have
        * both PROT_READ and PROT_WRITE perms.
        */
       flag |= PROT_WRITE|PROT_READ;
@@ -825,7 +825,7 @@ BOOL buffindexed_open(int mode) {
     }
   }
   CloseOnExec(GROUPfd, 1);
-    
+
   DISPOSE(groupfn);
 
   return TRUE;
@@ -835,7 +835,7 @@ STATIC GROUPLOC GROUPfind(char *group) {
   HASH		grouphash;
   unsigned int	i;
   GROUPLOC	loc;
-    
+
   grouphash = Hash(group, strlen(group));
   memcpy(&i, &grouphash, sizeof(i));
 
@@ -851,7 +851,7 @@ STATIC GROUPLOC GROUPfind(char *group) {
     loc = GROUPentries[loc.recno].next;
   }
   return GROUPemptyloc;
-} 
+}
 
 BOOL buffindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag) {
   GROUPLOC	gloc;
@@ -926,7 +926,7 @@ STATIC BOOL GROUPfilesize(int count) {
 */
 STATIC BOOL GROUPremapifneeded(GROUPLOC loc) {
   struct stat	sb;
-    
+
   if (loc.recno < GROUPcount)
     return TRUE;
 
@@ -958,7 +958,7 @@ STATIC BOOL GROUPremapifneeded(GROUPLOC loc) {
 STATIC BOOL GROUPexpand(int mode) {
   int	i;
   int	flag = 0;
-    
+
   if (GROUPheader) {
     if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
       syslog(L_FATAL, "%s: Could not munmap group.index in GROUPexpand: %m", LocalLogName);
@@ -973,7 +973,7 @@ STATIC BOOL GROUPexpand(int mode) {
   if (mode & OV_READ)
     flag |= PROT_READ;
   if (mode & OV_WRITE) {
-    /* 
+    /*
      * Note: below check of magic won't work unless we have both PROT_READ
      * and PROT_WRITE perms.
      */
@@ -1215,9 +1215,9 @@ BOOL buffindexed_add(TOKEN token, char *data, int len) {
    * find last Xref: in the overview line.  Note we need to find the *last*
    * Xref:, since there have been corrupted articles on Usenet with Xref:
    * fragments stuck in other header lines.  The last Xref: is guaranteed
-   * to be from our server. 
+   * to be from our server.
    */
-     
+
   for (next = data; ((len - (next - data)) > 6 ) && ((next = memchr(next, 'X', len - (next - data))) != NULL); ) {
     if (memcmp(next, "Xref: ", 6) == 0) {
       found =  TRUE;
@@ -1225,7 +1225,7 @@ BOOL buffindexed_add(TOKEN token, char *data, int len) {
     }
     next++;
   }
-    
+
   if (!found)
     return FALSE;
 
@@ -1463,7 +1463,7 @@ STATIC void *ovopensearch(char *group, int low, int high, BOOL needov) {
   GROUPENTRY		*ge;
   GROUPINDEXBLOCK	*gib;
   OVSEARCH		*search;
-    
+
   gloc = GROUPfind(group);
   if (GROUPLOCempty(gloc))
     return NULL;
@@ -1477,7 +1477,7 @@ STATIC void *ovopensearch(char *group, int low, int high, BOOL needov) {
   if (!ovgroupmmap(ge, &gib, low, high, needov)) {
     return NULL;
   }
-    
+
   search = NEW(OVSEARCH, 1);
   search->hi = high;
   search->lo = low;
@@ -1801,11 +1801,11 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
 }
 
 BOOL buffindexed_probe(OVPROBETYPE type, void *result) {
-  int		total, used, *i; 
+  int		total, used, *i;
   OVBUFF	*ovbuff = ovbufftab;
 
   switch (type) {
-  case OVSPACE:  
+  case OVSPACE:
     for (total = used = 0 ; ovbuff != (OVBUFF *)NULL ; ovbuff = ovbuff->next) {
       ovlock(ovbuff, LOCK_READ);
       ovreadhead(ovbuff);
