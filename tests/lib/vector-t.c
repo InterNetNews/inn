@@ -6,12 +6,7 @@
 
 #include "inn/vector.h"
 #include "libinn.h"
-
-static void
-ok(int n, int success)
-{
-    printf("%sok %d\n", success ? "" : "not ", n);
-}
+#include "libtest.h"
 
 int
 main(void)
@@ -103,7 +98,7 @@ main(void)
     ok(44, strcmp(vector->strings[0], "This is a\t") == 0);
     ok(45, strcmp(vector->strings[1], "es") == 0);
     ok(46, strcmp(vector->strings[2], ".  ") == 0);
-    ok(47, vector->strings[0] != string);
+    ok(47, vector->strings[0] != cstring);
     p = vector_join(vector, "fe");
     ok(48, strcmp(p, "This is a\tfeesfe.  ") == 0);
     free(p);
