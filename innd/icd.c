@@ -257,7 +257,7 @@ BOOL ICDchangegroup(NEWSGROUP *ngp, char *Rest)
     ICDiovrelease(&iov[2]);
 
     if (ret) {
-	if (innconf->enableoverview && !OV3groupadd(ngp->Name, Rest))
+	if (innconf->enableoverview && !OV3groupadd((--ngp)->Name, Rest))
 	    return FALSE;
     }
     return ret;
