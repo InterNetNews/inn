@@ -1666,7 +1666,7 @@ char *argv[];
     FILE *fpi;
     char ibuf[2048], *p;
     HASH key;
-    long where, val;
+    OFFSET_T where;
     int  initialize = 0, size = 2500000;
     char *history = NULL;
     dbzoptions opt;
