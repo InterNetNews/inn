@@ -4,7 +4,7 @@
 #
 # written April 1996, tale@isc.org (David C Lawrence)
 # Currently maintained by Russ Allbery <rra@stanford.edu>
-# Version 1.25, 2003-12-10
+# Version 1.26, 2005-01-17
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN is the
 # same as the version that I make available to the rest of the world
@@ -15,6 +15,10 @@
 # and your Perl is too old, please contact me (rra@stanford.edu) and tell
 # me about it; I want to know what old versions of Perl are still used in
 # practice.
+#
+# Changes from 1.25 -> 1.26
+# -- Return the correct status code when the message isn't verified
+#    instead of always returning 255.
 #
 # Changes from 1.24 -> 1.25
 # -- Fix the -test switch to actually do something.
@@ -253,7 +257,7 @@ unless ($gpgv) {
 }
 print "$signer\n" if $signer;
 unless ($ok == 0) {
-  &fail("$0: verification failed\n");
+  &errmsg("$0: verification failed\n");
 }
 exit $ok;
 
