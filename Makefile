@@ -48,11 +48,12 @@ all-include:			; cd include   && $(MAKE) all
 all-lib:	all-include	; cd lib       && $(MAKE) all
 all-storage:	all-include	; cd storage   && $(MAKE) all
 
-all-programs:	all-innd all-nnrpd all-innfeed all-expire all-frontends \
-		all-backends all-authprogs all-scripts
+all-programs:	all-innd all-nnrpd all-innfeed all-control all-expire \
+		all-frontends all-backends all-authprogs all-scripts
 
 all-authprogs:	all-lib		; cd authprogs && $(MAKE) all
 all-backends:	all-libraries	; cd backends  && $(MAKE) all
+all-control:			; cd control   && $(MAKE) all
 all-expire:	all-libraries	; cd expire    && $(MAKE) all
 all-frontends:	all-libraries	; cd frontends && $(MAKE) all
 all-innd:	all-libraries	; cd innd      && $(MAKE) all
