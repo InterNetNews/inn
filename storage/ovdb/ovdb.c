@@ -200,28 +200,19 @@ static CONFTOKEN toks[] = {
 
 static int clientfd = -1;
 
-/* read client send and recieve functions.  If there is
-   connection trouble, we just bail out. */
+/* read client send and recieve functions. */
 
-static int csend(void *data, int n)
+static int
+csend(void *data, int n)
 {
-    int r, p = 0;
+    ssize_t status;
 
-    if(n == 0)
+    if (n == 0)
 	return 0;
-
-    while(p < n) {
-	r = write(clientfd, (char *)data + p, n - p);
-	if(r <= 0) {
-	    if(r < 0 && errno == EINTR)
-		continue;
-	    syslog(LOG_ERR, "OVDB: rc: cant write: %m");
-	    clientfd = -1;
-	    exit(1);
-	}
-	p+= r;
-    }
-    return p;
+    status = xwrite(clientfd, data, n);
+    if (status < 0)
+        syswarn("OVDB: rc: cant write");
+    return status;
 }
 
 static int crecv(void *data, int n)
@@ -335,13 +326,14 @@ static int client_connect()
     return 0;
 }
 
-static void client_disconnect(void)
+static void
+client_disconnect(void)
 {
     struct rs_cmd rs;
-    if(clientfd != -1) {
-	rs.what = CMD_QUIT;
 
-	csend(&rs, sizeof rs);
+    if (clientfd != -1) {
+	rs.what = CMD_QUIT;
+	csend(&rs, sizeof(rs));
     }
     clientfd = -1;
 }
@@ -1571,20 +1563,23 @@ bool ovdb_open(int mode)
 }
 
 
-bool ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
+bool
+ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 {
     int ret;
     struct groupinfo gi;
 
-    if(clientmode) {
+    if (clientmode) {
 	struct rs_cmd rs;
 	struct rs_groupstats repl;
 
 	rs.what = CMD_GROUPSTATS;
 	rs.grouplen = strlen(group)+1;
 
-	csend(&rs, sizeof(rs));
-	csend(group, rs.grouplen);
+	if (csend(&rs, sizeof(rs)) < 0)
+            return false;
+	if (csend(group, rs.grouplen) < 0)
+            return false;
 	crecv(&repl, sizeof(repl));
 
 	if(repl.status != CMD_GROUPSTATS)
@@ -2012,7 +2007,8 @@ static struct ovdbsearch **searches = NULL;
 static int nsearches = 0;
 static int maxsearches = 0;
 
-void *ovdb_opensearch(char *group, int low, int high)
+void *
+ovdb_opensearch(char *group, int low, int high)
 {
     DB *db;
     struct ovdbsearch *s;
@@ -2028,8 +2024,10 @@ void *ovdb_opensearch(char *group, int low, int high)
 	rs.artlo = low;
 	rs.arthi = high;
 
-	csend(&rs, sizeof(rs));
-	csend(group, rs.grouplen);
+	if (csend(&rs, sizeof(rs)) < 0)
+            return NULL;
+	if (csend(group, rs.grouplen) < 0)
+            return NULL;
 	crecv(&repl, sizeof(repl));
 
 	if(repl.status != CMD_OPENSRCH)
@@ -2084,7 +2082,9 @@ void *ovdb_opensearch(char *group, int low, int high)
     return (void *)s;
 }
 
-bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived)
+bool
+ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len,
+            TOKEN *token, time_t *arrived)
 {
     struct ovdbsearch *s = (struct ovdbsearch *)handle;
     DBT key, val;
@@ -2093,7 +2093,7 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
     struct datakey dk;
     int ret;
 
-    if(clientmode) {
+    if (clientmode) {
 	struct rs_cmd rs;
 	struct rs_srch repl;
 	static char *databuf;
@@ -2102,8 +2102,10 @@ bool ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	rs.what = CMD_SRCH;
 	rs.handle = handle;
 
-	csend(&rs, sizeof(rs));
-	crecv(&repl, sizeof(repl));
+	if (csend(&rs, sizeof(rs)) < 0)
+            return false;
+	if (crecv(&repl, sizeof(repl)) < 0)
+            return false;
 
 	if(repl.status != CMD_SRCH)
 	    return false;
@@ -2276,8 +2278,10 @@ bool ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 	rs.grouplen = strlen(group)+1;
 	rs.artlo = artnum;
 
-	csend(&rs, sizeof(rs));
-	csend(group, rs.grouplen);
+	if (csend(&rs, sizeof(rs)) < 0)
+            return false;
+	if (csend(group, rs.grouplen) < 0)
+            return false;
 	crecv(&repl, sizeof(repl));
 
 	if(repl.status != CMD_ARTINFO)
