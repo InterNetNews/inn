@@ -403,6 +403,11 @@ Configuring INN
 
   3. incoming.conf (REQUIRED)
 
+  The incoming.conf file describes what machines are allowed to connect to
+  your host to feed articles. In previous versions of INN a different
+  file (hosts.nntp) was used to do some of what incoming.conf can do. See
+  the incoming.conf manpage for more details.
+
   4. cycbuff.conf (Required only if using the CNFS article storage method)
 
   CNFS stores articles in logical objects called "metacycbuffs." Each of the
@@ -531,6 +536,9 @@ Configuring INN
   expiration process.
 
   6. expire.ctl (REQUIRED)
+
+  The expire.ctl file is the configuration for the expiration policy. See
+  the expire.ctl man page for more details.
 
 Creating the db files
 
