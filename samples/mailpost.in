@@ -1,6 +1,7 @@
 #!@_PATH_PERL@
 
 # mailpost - yet another mail-to-news filter
+# 21feb00 [added "lc" to duplicate header fixer stmt to make it case-insensitive]
 # doka 11may99 [fixed duplicate headers problem]
 # brister 19oct98 cleaned up somewhat for perl v. 5. and made a little more robust.
 # vixie 29jan95 RCS'd [$Id$]
@@ -261,7 +262,7 @@ $real_news_hdrs .= "References: ${references}\n"     if defined($references);
 
 # Remove duplicate headers.
 my %headers = ();
-$real_news_hdrs =~ s/((.*?:) .*?($|\n)([ \t]+.*?($|\n))*)/$headers{$2}++?"":"$1"/ges;
+$real_news_hdrs =~ s/((.*?:) .*?($|\n)([ \t]+.*?($|\n))*)/$headers{lc$2}++?"":"$1"/ges;
 
 # Inews writes error messages to stdout. We want to capture those and mail
 # them back to the newsmaster. Trying to write and read from a subprocess is 
