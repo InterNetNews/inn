@@ -908,110 +908,6 @@ char *OVERGetHeader(char *p, int field)
     return buff;
 }
 
-/*
-**  XHDR, a common extension.  Retrieve specified header from a
-**  Message-ID or article range.
-*/
-FUNCTYPE CMDxhdr(int ac, char *av[])
-{
-    int		        i;
-    char	        *p;
-    int			Overview;
-    BOOL		IsLines;
-    BOOL		DidReply;
-    ARTRANGE		range;
-    char		buff[SPOOLNAMEBUFF];
-    ARTNUM 		artnum;
-    void                *handle;
-    char                *data;
-    int                 len;
-    TOKEN               token;
-    
-
-    if (!PERMcanread) {
-	Reply("%s\r\n", NOACCESS);
-	return;
-    }
-    IsLines = caseEQ(av[1], "lines");
-
-    /* Message-ID specified? */
-    if (ac == 3 && av[2][0] == '<') {
-	if (!ARTopenbyid(av[2], &artnum)) {
-	    Reply("%d No such article\r\n", NNTP_DONTHAVEIT_VAL);
-	    return;
-	}
-	Reply("%d %ld %s header of article %s.\r\n",
-	   NNTP_HEAD_FOLLOWS_VAL, artnum, av[1], av[2]);
-	p = GetHeader(av[1], IsLines);
-	Printf("%s %s\r\n", av[2], p ? p : "(none)");
-	ARTclose();
-	Printf(".\r\n");
-	return;
-    }
-    
-    if (GRPcount == 0) {
-	Reply("%s\r\n", ARTnotingroup);
-	return;
-    }
-
-    /* Range specified. */
-    if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
-	if (!DidReply) {
-	    Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL,
-		av[1] ? av[1] : "\"\"");
-	    Printf(".\r\n");
-	    return;
-	}
-    }
-
-    /* Is this a header in our overview? */
-    for (Overview = -1, i = 0; i < ARTfieldsize; i++)
-	if (caseEQ(ARTfields[i].Header, av[1])) {
-	    Overview = i;
-	    break;
-	}
-
-    if (Overview < 0 ) {
-        Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-        for (i = range.Low; i <= range.High && range.High > 0; i++) {
-            if (!ARTopen(i))
-                continue;
-            p = GetHeader(av[1], IsLines);
-            if (!p)
-                continue;
-            (void)sprintf(buff, "%d ", i);
-            SendIOb(buff, strlen(buff));
-            SendIOb(p, strlen(p));
-            SendIOb("\r\n", 2);
-            ARTclose();
-        }
-        SendIOb(".\r\n", 3);
-        PushIOb();
-	return;
-    }
-
-    if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
-	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-	return;
-    }
-
-    Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-    while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
-	if (len == 0 || PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
-	    continue;
-	p = OVERGetHeader(data, Overview);
-	if (!p)
-	    continue;
-	sprintf(buff, "%lu ", artnum);
-	SendIOb(buff, strlen(buff));
-	SendIOb(p, strlen(p));
-	SendIOb("\r\n", 2);	
-    }
-    SendIOb(".\r\n", 3);
-    PushIOb();
-    OVclosesearch(handle);
-}
-
 
 /*
 **  XOVER another extension.  Dump parts of the overview database.
@@ -1154,14 +1050,15 @@ FUNCTYPE CMDxover(int ac, char *av[])
 
 
 /*
-**  XPAT, an uncommon extension.  Print only headers that match the pattern.
+**  XHDR, XPAT and PAT extensions.
 */
 /* ARGSUSED */
-FUNCTYPE CMDxpat(int ac, char *av[])
+FUNCTYPE CMDpat(int ac, char *av[])
 {
     char	        *p;
     int	        	i;
     ARTRANGE		range;
+    BOOL		IsLines;
     BOOL		DidReply;
     char		*header;
     char		*pattern;
@@ -1180,31 +1077,41 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     }
 
     header = av[1];
+    IsLines = caseEQ(header, "lines");
+
+    if (ac > 3)
+	pattern = Glom(&av[3]);
+    else
+	pattern = NULL;
 
     /* Message-ID specified? */
-    if (av[2][0] == '<') {
+    if (ac > 2 && av[2][0] == '<') {
 	p = av[2];
 	if (!ARTopenbyid(p, &artnum)) {
 	    Printf("%d No such article.\r\n", NNTP_DONTHAVEIT_VAL);
 	    return;
 	}
-
-	Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
-	pattern = Glom(&av[3]);
+	Printf("%d %s matches follow (ID)\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
 	if ((text = GetHeader(header, FALSE)) != NULL
-	 && wildmat(text, pattern))
+	    && (!pattern || wildmat(text, pattern)))
 	    Printf("%s %s\r\n", p, text);
 
 	ARTclose();
 	Printf(".\r\n");
-	DISPOSE(pattern);
+	if (pattern)
+	    DISPOSE(pattern);
+	return;
+    }
+
+    if (GRPcount == 0) {
+	Reply("%s\r\n", ARTnotingroup);
 	return;
     }
 
     /* Range specified. */
     if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
 	if (!DidReply) {
-	    Reply("%d %s matches follow\r\n", NNTP_HEAD_FOLLOWS_VAL,
+	    Reply("%d %s no matches follow (range)\r\n", NNTP_HEAD_FOLLOWS_VAL,
 		av[1] ? av[1] : "\"\"");
 	    Printf(".\r\n");
 	    return;
@@ -1220,13 +1127,12 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 
     /* Not in overview, we have to fish headers out from the articles */
     if (Overview < 0 ) {
-        Reply("%d %s matches follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-	pattern = Glom(&av[3]);
+        Reply("%d %s matches follow (art)\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
         for (i = range.Low; i <= range.High && range.High > 0; i++) {
             if (!ARTopen(i))
                 continue;
             p = GetHeader(header, FALSE);
-	    if (p && wildmat(p, pattern)) {
+	    if (p && (!pattern || wildmat(p, pattern))) {
 		sprintf(buff, "%lu ", i);
 		SendIOb(buff, strlen(buff));
 		SendIOb(p, strlen(p));
@@ -1236,23 +1142,23 @@ FUNCTYPE CMDxpat(int ac, char *av[])
         }
         SendIOb(".\r\n", 3);
         PushIOb();
-        DISPOSE(pattern);
+	if (pattern)
+	    DISPOSE(pattern);
 	return;
     }
 
     /* Okay then, we can grab values from overview. */
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
-	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
+	Reply("%d %s no matches follow (NOV)\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
 	return;
     }	
 	
-    Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
-    pattern = Glom(&av[3]);
+    Printf("%d %s matches follow (NOV)\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	if (len == 0 || PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	if ((p = OVERGetHeader(data, Overview)) != NULL) {
-	    if (wildmat(p, pattern)) {
+	    if (!pattern || wildmat(p, pattern)) {
 		sprintf(buff, "%lu ", artnum);
 		SendIOb(buff, strlen(buff));
 		SendIOb(p, strlen(p));
@@ -1263,5 +1169,6 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     SendIOb(".\r\n", 3);
     PushIOb();
     OVclosesearch(handle);
-    DISPOSE(pattern);
+    if (pattern)
+	DISPOSE(pattern);
 }

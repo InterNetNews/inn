@@ -103,9 +103,8 @@ extern FUNCTYPE	CMDnewnews();
 extern FUNCTYPE	CMDnextlast();
 extern FUNCTYPE	CMDpost();
 extern FUNCTYPE	CMDxgtitle();
-extern FUNCTYPE	CMDxhdr();
 extern FUNCTYPE	CMDxover();
-extern FUNCTYPE	CMDxpat();
+extern FUNCTYPE	CMDpat();
 extern FUNCTYPE	CMDxpath();
 extern FUNCTYPE	CMD_unimp();
 #ifdef HAVE_SSL
@@ -152,6 +151,10 @@ STATIC CMDENT	CMDtable[] = {
 	"newsgroups [YY]yymmdd hhmmss [\"GMT\"|\"UTC\"] [<distributions>]" },
     {	"next",		CMDnextlast,	TRUE,	1,	1,
 	NULL },
+    {	"over",		CMDxover,	TRUE,	1,	2,
+	"[range]" },
+    {	"pat",		CMDpat,		TRUE,	3,	CMDany,
+	"header range|MessageID [pat [morepat...]]" },
     {	"post",		CMDpost,	TRUE,	1,	1,
 	NULL },
     {	"slave",	CMD_unimp,	FALSE,	1,	1,
@@ -160,11 +163,11 @@ STATIC CMDENT	CMDtable[] = {
 	CMDfetchhelp },
     {	"xgtitle",	CMDxgtitle,	TRUE,	1,	2,
 	"[group_pattern]" },
-    {	"xhdr",		CMDxhdr,	TRUE,	2,	3,
+    {	"xhdr",		CMDpat,		TRUE,	2,	3,
 	"header [range|MessageID]" },
     {	"xover",	CMDxover,	TRUE,	1,	2,
 	"[range]" },
-    {	"xpat",		CMDxpat,	TRUE,	4,	CMDany,
+    {	"xpat",		CMDpat,		TRUE,	4,	CMDany,
 	"header range|MessageID pat [morepat...]" },
     {	"xpath",	CMDxpath,	TRUE,	2,	2,
 	"MessageID" },

@@ -48,6 +48,10 @@ STATIC LISTINFO		INFOdistribpats = {
     NULL, _PATH_DISTPATS, FALSE, "distribution patterns",
     "Default distributions in form \"weight:pattern:value\""
 };
+STATIC LISTINFO		INFOextensions = {
+    NULL, NULL, FALSE, "supported extensions",
+    "Supported NNTP extensions"
+};
 STATIC LISTINFO		INFOgroups = {
     NULL, _PATH_NEWSGROUPS, FALSE, "newsgroup descriptions",
     "Descriptions in form \"group description\""
@@ -438,6 +442,12 @@ CMDlist(int ac, char *av[])
 	lp = &INFOsubs;
     else if (caseEQ(p, "distrib.pats"))
 	lp = &INFOdistribpats;
+    else if (caseEQ(p, "extensions")) {
+	lp = &INFOextensions;
+	    Reply("%d %s.\r\n", NNTP_SLAVEOK_VAL, lp->Format);
+	    Printf(" LISTGROUP\r\n OVER\r\n PAT\r\n.\r\n");
+	    return;
+    }
     else if (caseEQ(p, "moderators"))
 	lp = &INFOmoderators;
     else if (caseEQ(p,"motd"))
