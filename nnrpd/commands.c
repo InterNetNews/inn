@@ -696,11 +696,14 @@ CMDpost(ac, av)
 	size = 4096;
 	article = NEW(char, size);
     }
+    idbuff[0] = 0;
+    if ((p = GenerateMessageID()) != NULL)
+        strcpy(idbuff, p);
+    Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);
+    (void)fflush(stdout);
+
     p = article;
     end = &article[size];
-
-    Reply("%d Ok\r\n", NNTP_START_POST_VAL);
-    (void)fflush(stdout);
 
     for (l = 0, longline = 0; ; l++) {
 	/* Need more room? */
@@ -767,7 +770,7 @@ CMDpost(ac, av)
     response = ARTpost(article, idbuff);
     if (response == NULL) {
 	syslog(L_NOTICE, "%s post ok %s", ClientHost, idbuff);
-	Reply("%s\r\n", NNTP_POSTEDOK);
+	Reply("%s %s\r\n", NNTP_POSTEDOK, idbuff);
 	POSTreceived++;
     }
     else {

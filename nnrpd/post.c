@@ -323,8 +323,9 @@ CheckDistribution(p)
 **  Return NULL if okay, or an error message.
 */
 STATIC STRING
-ProcessHeaders(linecount)
+ProcessHeaders(linecount, idbuff)
     int			linecount;
+    char                *idbuff;
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     static char		datebuff[40];
@@ -414,12 +415,7 @@ ProcessHeaders(linecount)
 
     /* Set Message-ID */
     if (HDR(_messageid) == NULL) {
-	if ((p = GenerateMessageID()) == NULL) {
-	    (void)sprintf(Error, "Can't generate Message-ID, %s",
-		    strerror(errno));
-	    return Error;
-	}
-	HDR(_messageid) = p;
+	HDR(_messageid) = idbuff;
     }
 
     /* Set Path */
@@ -911,7 +907,7 @@ ARTpost(article, idbuff)
 	if ((error = CheckIncludedText(article, i)) != NULL)
 		return error;
     }
-    if ((error = ProcessHeaders(i)) != NULL)
+    if ((error = ProcessHeaders(i, idbuff)) != NULL)
 	return error;
     if (i == 0 && HDR(_control) == NULL)
 	return "Article is empty";
