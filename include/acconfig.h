@@ -287,6 +287,17 @@ typedef void *          ALIGNPTR;
 typedef char const *    STRING;
 typedef char * const    CSTRING;
 
+/* Programming convenience.  This has to be here because of all the headers
+   and prototypes that depend on it.  Might be better to just use bool with
+   autoconf magic if it doesn't exist. */
+typedef int             BOOL;
+
+/* Currently unconditionally an off_t.  This may not be the right choice on
+   some systems for large file support, so keeping the typedef may be the
+   right choice.  Be nice if we could find a package that supports large
+   files on systems other than Solaris to be sure. */
+#define OFFSET_T        off_t
+
 /* How to tell the compiler that a function won't return.  The level of
    optimization gained by this probably isn't worth it.  __dead is 4.4BSD,
    volatile void is GCC. */

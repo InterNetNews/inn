@@ -17,7 +17,7 @@
 **  adding them to INN's library.  vfork.h is included if it exists.  If
 **  the system doesn't define a SUN_LEN macro, one will be provided.  Also
 **  provides some standard #defines and typedefs (TRUE, FALSE, STDIN,
-**  STDOUT, STDERR, BOOL, PIPE_READ, PIPE_WRITE).
+**  STDOUT, STDERR, PIPE_READ, PIPE_WRITE).
 **
 **  This file also does some additional things that it shouldn't be doing
 **  any more; those are all below the LEGACY comment.  Those will eventually
@@ -195,9 +195,6 @@ extern size_t strspn();
 #define PIPE_READ               0
 #define PIPE_WRITE              1
 
-/* Programming convenience. */
-typedef int                     BOOL;
-
 
 /*
 **  LEGACY
@@ -239,12 +236,6 @@ typedef uint32_t        U_INT32_T;
 
 /* autoconf deals with these; just use them directly. */
 typedef caddr_t         MMAP_PTR;
-
-/* Currently unconditionally an off_t.  This may not be the right choice on
-   some systems for large file support, so keeping the typedef may be the
-   right choice.  Be nice if we could find a package that supports large
-   files on systems other than Solaris to be sure. */
-typedef off_t           OFFSET_T;
 
 /* Return type of signal handlers.  autoconf defines RETSIGTYPE for this
    purpose; use that instead. */
