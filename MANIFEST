@@ -291,6 +291,17 @@ frontends/scanspool.in                Scan spool directory for trash
 frontends/signcontrol.in              PGP control message signing program
 frontends/sm.c                        Get article or overview data from token
 frontends/sys2nf.c                    Sys file to newsfeeds conversion aide
+history                               History library routines (Directory)
+history/Make.hismethods               Makefile for history methods
+history/Makefile                      Makefile for history library
+history/his.c                         History API glue implementation
+history/hisbuildconfig.in             Construct history interface
+history/hisinterface.h                History API interface
+history/hisv6/Makefile                Makefile for v6 history
+history/hisv6/hismethod.config        hisbuildconfig definition
+history/hisv6/hisv6-private.h         Private header file for hisv6
+history/hisv6/hisv6.c                 hisv6 history method
+history/hisv6/hisv6.h                 Header for hisv6 history
 include                               Header files (Directory)
 include/Makefile                      Makefile for header files
 include/acconfig.h                    Master file for config.h.in
@@ -445,17 +456,6 @@ lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper
 lib/xsignal.c                         signal() wrapper using sigaction
 lib/xwrite.c                          write that handles partial transfers
-libhist                               History library routines (Directory)
-libhist/Make.hismethods               Makefile for history methods
-libhist/Makefile                      Makefile for history library
-libhist/his.c                         History API glue implementation
-libhist/hisbuildconfig.in             Construct history interface
-libhist/hisinterface.h                History API interface
-libhist/hisv6/Makefile                Makefile for v6 history
-libhist/hisv6/hismethod.config        hisbuildconfig definition
-libhist/hisv6/hisv6-private.h         Private header file for hisv6
-libhist/hisv6/hisv6.c                 hisv6 history method
-libhist/hisv6/hisv6.h                 Header for hisv6 history
 nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
