@@ -259,16 +259,16 @@ foreach my $server (@servers) {
 	print LOG "done.\n" unless $quiet ;
     }
 
-    if ($username && !$upstream->authinfo($username, $passwd)) {
-	warn sprintf ("failed to authorize: %s %s\n",
-		      $upstream->code(), $upstream->message());
-	next;
-    }
-
     if (!$upstream->reader()) {
 	warn sprintf ("Cant issue MODE READER command: %s %s\n",
 		      $upstream->code(), $upstream->message());
 	warn "We\'ll try anyway\n" ;
+    }
+
+    if ($username && !$upstream->authinfo($username, $passwd)) {
+	warn sprintf ("failed to authorize: %s %s\n",
+		      $upstream->code(), $upstream->message());
+	next;
     }
 
     foreach my $group (sort keys %{$servers->{$server}}) {
