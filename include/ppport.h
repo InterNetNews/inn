@@ -13,6 +13,11 @@
 /* If you needed to customize this file for your project, please mention
    your changes. */
 
+/*
+   Modified for Perl 5.6.0 by Russ Allbery (use PERL_VERSION instead of
+   PERL_PATCHLEVEL).
+*/
+
 
 /*
    In order for a Perl extension module to be as portable as possible
@@ -139,21 +144,25 @@ __DATA__
 */
 
 
-#ifndef PERL_PATCHLEVEL
+#if !defined(PERL_VERSION) && !defined(PERL_PATCHLEVEL)
 #	ifndef __PATCHLEVEL_H_INCLUDED__
 #		include <patchlevel.h>
 #	endif
 #endif
-#ifndef PERL_PATCHLEVEL
-#	define PERL_PATCHLEVEL PATCHLEVEL
-#	define PERL_SUBVERSION SUBVERSION
+#ifndef PERL_VERSION
+#       ifdef PERL_PATCHLEVEL
+#               define PERL_VERSION    PERL_PATCHLEVEL
+#       else
+#               define PERL_VERSION    PATCHLEVEL
+#               define PERL_SUBVERSION SUBVERSION
+#       endif
 #endif
 
 #ifndef ERRSV
 #	define ERRSV perl_get_sv("@",FALSE)
 #endif
 
-#if (PERL_PATCHLEVEL < 4) || ((PERL_PATCHLEVEL == 4) && (PERL_SUBVERSION <= 4))
+#if (PERL_VERSION < 4) || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4))
 #	define PL_sv_undef	sv_undef
 #	define PL_sv_yes	sv_yes
 #	define PL_sv_no		sv_no
@@ -165,7 +174,7 @@ __DATA__
 #	define PL_copline	copline
 #endif
 
-#if (PERL_PATCHLEVEL < 5)
+#if (PERL_VERSION < 5)
 #  ifdef WIN32
 #	define dTHR extern int Perl___notused
 #  else
