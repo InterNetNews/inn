@@ -28,15 +28,16 @@ variables, and some file parameters may be used to mask real data, such
 as when hiding a cluster of hosts behind a single electronic mail hostname.
 If the same parameter is specified more than twice, the first one is
 used for that parameter.
+Some parameters take boolean value.  The value can be one of ``true'', ``yes''
+or ``on'' to turn on, and can be one of ``false'', ``no'' or ``off'' to turn
+off.  The case of those value is not significant.
 The current set of parameters is as follows:
-.\" BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||DOC
 .TP
 .I fromhost
 This is the name of the host to use when building the From header line.
 The default is the fully-qualified domain name of the local host.
 The value of the FROMHOST environment variable, if it exists,
 overrides this.
-.\" END_AUTO_INSERTED_SECTION from ../include/libinn.h ||DOC
 .TP
 .I moderatormailer
 This names the default machine that contains forwarding aliases for all
@@ -46,21 +47,30 @@ It is only used if the
 file doesn't exist, or if the group is not matched by that file.
 The value is interpreted as a pattern match; see
 .IR moderators (5).
+The default value is unset.
 .TP
 .I organization
 This specifies what to put in the Organization header if it is blank.
 The value of the ORGANIZATION environment variable, if it exists,
 overrides this.
+The default value is unset.
 .TP
 .I pathhost
 This specifies how to name the local site when building the Path header line.
 The default is the fully-qualified domain name of the local host.
 .TP
 .I server
-This specifies the name of the NNTP server to which an article should be
-posted.
-The value of the NNTPSERVER environment variable, if it exists,
-overrides this.
+This specifies the name of the NNTP server, and if the server does not use UNIX
+domain socket, articles passed by
+.IR nnrpd (8)
+are get through INET domain socket to this server.
+.IR actsync (8),
+.IR nntpget (8)
+and
+.IR getlist (8)
+also use the server to get where to connect.
+The value of the NNTPSERVER environment variable, if it exists, overrides this.
+The default value is unset.
 .TP
 .I domain
 This should be the domain name of the local host.
@@ -76,21 +86,22 @@ or
 calls.
 The check is very simple; if either routine returns a name with a period
 in it, then it is assumed to have the full domain name.
+The default value is unset.
 .TP
 .I overviewmmap
-If this is false then nnrpd, expire and makehistory will use regular file access to access overviews 
-and overview indices, otherwise it will
+If this is ``false'' then nnrpd, expire and makehistory will use regular file
+access to access overviews and overview indices, otherwise it will
 .IR mmap (2)
-them.  Setting this to true
+them.  Setting this to ``true''
 will give better performance on most system, but some system do have problems
 with
 .IR mmap (2).
-The default value is ``true.''
+This is boolean value and the default value is ``true''.
 .TP
 .I storageapi
 If this is true then all articles will be stored through storage api and
 all articles are assumed to be stored through storage api.
-The default value is ``false.''
+This is boolean value and the default is ``false''.
 To use storage api, you need to edit storage.ctl to determine which method will
 be used.
 If storage api is used, any overview database will be stored as unified
@@ -103,16 +114,19 @@ If you run innd as a feeder only, you do not need overview.ctl.
 How many times to attempt a
 .IR fork (2)
 before giving up.
+The default value is <MAX_FORKS in config.data>.
 .TP
 .I maxartsize
 The maximum size article (in bytes) that will be accepted by the
 server. ``0'' allows any size.
+The default value is ``1000000''.
 .TP
 .I nicekids
 If set to anything other than ``0'', all child processes will have
 this
 .IR nice (1)
 value.
+The default value is ``4''.
 .TP
 .I mta
 This specifies the message transfer agent (mta) to be used when mailing
@@ -122,46 +136,55 @@ parameter will be replaced with the moderator email address(es). See
 .IR moderators (5)
 for more info on the moderator email address(es). The ``mta'' option
 is compulsory.
+The default value is unset, but this will note fatal error through syslog.
+This must be set.
 .TP
 .I mailcmd
 This is the path/program to be used for mailing reports and control
 messages. The default path is pathbin/innmail.
 .TP
 .I verifycancels
-Set this to ``yes'' to verify that a poster is the person doing the cancel.
+Set this to ``true'' to verify that a poster is the person doing the cancel.
 This can't be done if the cancel arrives before the article does.
+This is boolean value and the default is ``false''.
 .TP
 .I logcancelcomm
-Set this to ``yes'' to log ``ctlinnd cancel'' commands to syslog.
+Set this to ``true'' to log ``ctlinnd cancel'' commands to syslog.
+This is boolean value and the default is ``false''.
 .TP
 .I wanttrash
-Set this to ``yes'' if you want to file articles in unknown newsgroups
+Set this to ``true'' if you want to file articles in unknown newsgroups
 into the ``junk'' newsgroup.
+This is boolean value and the default is ``false''.
 .TP
 .I remembertrash
-Set this to ``no'' if you don't want to record rejected articles in
+Set this to ``false'' if you don't want to record rejected articles in
 history. This might cause duplicate articles to be offered to you,
 so be careful with it.
+This is boolean value and the default is ``false''.
 .TP
 .I linecountfuzz
 If this number is set to any number other than ``0'', the article
 linecounts are checked against the Lines: header and the header is
 adjusted if it is out by more than this amount. A suitable figure
 is ``5'' which is the number of suitable .signature lines + 1.
+The default value is ``0''.
 .TP
 .I logartsize
 Should the article size be put into the article log file. This is
 useful for statistics.
+This is boolean value and the default is ``true''.
 .TP
 .I logipaddr
 Should the IP address of a host be logged rather than the entry in
 the Path: line. This is useful for tracking forged postings.
+This is boolean value and the default is ``true''.
 .TP
 .I logsitename
 Should the site names be put into the article log file.  Those names
 are used by
 .IR newsrequeue (8).
-The default value is ``true''.
+This is boolean value and the default is ``true''.
 .TP
 .I overviewname
 What file name to use for storing overview data. Defaults to
@@ -192,20 +215,29 @@ is ignored and always treated as ``false''.
 is available only if
 .IR <DBZ_TAGGED_HASH\ in\ config.data>
 is ``DONT''.
+This is boolean value and the default is ``false''.
 .TP
 .I nnrpdoverstats
 Should nnrpd overview statistics report be logged to syslog.
 This can be useful to see overview performance.
+This is boolean value and the default is ``false''.
 .TP
 .I storeonxref
 Should storage api stores articles based on newsgroup name in Xref header.
 If this is ``false'', it stores articles based on newsgroup name in
 Newsgroups header.
-The default value is ``true.''
+This is boolean value and the default is ``true''.
+.TP
+.I nnrpdcheckart
+Should nnrpd check the existense of article before responding nntp command.
+This can be useful, if article are gone but their overview data still exist.
+This is boolean value and the default is ``true''.
 .TP
 .I keywords
 Should keywords be generated in the overview databases. Must be a boolean
-value. Default is false. Changing this requires also changing
+value.
+This is boolean value and the default is ``false''.
+Changing this requires also changing
 .IR <pathetc\ in\ inn.conf>/overview.fmt
 and removing the existing overview database.
 .I keywords
@@ -215,12 +247,15 @@ is ``DO''.
 .TP
 .I keylimit
 Maximum number of bytes allocated internally for building keyword data.
+The default value is ``512''.
 .TP
 .I keyartlimit
 Maximum size of a an article that will have keywords generated for it.
+The default value is ``100000''.
 .TP
 .I keymaxwords
 Maximum number of keywords that will be generated for an article.
+The default value is ``250''.
 .TP
 .I refusecybercancels
 Refuse articles that start with a Message-ID: of ``<cancel.''. This
@@ -229,70 +264,87 @@ to the history file. The preferred way to do this is to ask your
 upstream feeder to alias out ``cyberspam'' in the newsfeed to you.
 This can also be done using the ``filter_messageid'' perl hook
 if perl filtering is turned on, in which case this option can be
-set to ``no''. The default is ``no''.
+set to ``false''.
+This is boolean value and the default is ``false''.
 .TP
 .I pathnews
 The news user home directory and sometimes the root of the news
 hierarchy.
+The default value is unset, but this will note fatal error through syslog.
 .TP
 .I pathbin
 The path to the news binaries.
+The default value is ``<pathnews>/bin''.
 .TP
 .I pathfilter
 The path to the perl and TCL filters
+The default value is ``<pathnews>/filter''.
 .TP
 .I pathcontrol
 The path to the news control files. The files in this directory represent
 the commands that will be executed based on the Control: line in
 news articles. Be careful what you put in here, as it can become a
 security risk.
+The default value is ``<pathnews>/control''.
 .TP
 .I pathdb
 The path to the database files used and changed by the server. Files
 currently in this directory are: active, history* and newsgroups.
 Historically, this defaulted to pathetc, but is not split.
+The default value is ``<pathnews>/db''.
 .TP
 .I pathetc
 The news configuration files.
+The default value is ``<pathnews>/etc''.
 .TP
 .I pathrun
 Files required while the server is running. This includes locks and
 the channel socket.
+The default value is ``<pathnews>/run''.
 .TP
 .I pathlog
 Where the news log files are written.
+The default value is ``<pathnews>/log''.
 .TP
 .I pathhttp
-Where to place any HTML files (e.g: status report). Defaults to
-``pathlog''.
+Where to place any HTML files (e.g: status report).
+The default value is ``<pathlog>''.
 .TP
 .I pathtmp
 Where the various programs place their tempfiles. For security reasons
 this is not the same as the system temporary files directory.
+The default value is ``<PATH specified with \-\-with\-tmp\-path at configure>''.
 .TP
 .I pathspool
 The root of the news spool hierarchy. This isn't actually used at
 the moment.
+The default value is ``<pathnews>/spool''.
 .TP
 .I patharticles
 Path where the news articles are stored.
+The default value is ``<pathspool>/spool''.
 .TP
 .I pathoverview
 Path to news overview files. Can be set to the same as ``patharticles''
 if ``overviewname'' is set to something sensible.
+The default value is ``<pathspool>/overview''.
 .TP
 .I pathoutgoing
 Default path for outgoing feed files.
+The default value is ``<pathspool>/outgoing''.
 .TP
 .I pathincoming
 Path where incoming batched news is stored.
+The default value is ``<pathspool>/incoming''.
 .TP
 .I patharchive
 A path to store archived news.
+The default value is ``<pathspool>/archive''.
 .PP
 .TP
 .I pathuniover
 A path to unified overview files.
+The default value is ``<pathspool>/uniover''.
 .PP
 The following parameters are used only by 
 .I nnrpd
@@ -338,31 +390,36 @@ backoff:
 .TP
 .I backoff_k
 An integer value representing the amount to multiply the previous
-sleep time by. The default is 1. A value of 2 works to double the
+sleep time by. A value of 2 works to double the
 sleep time for each excessive post. 
+The default value is ``1''.
 .TP
 .I backoff_postfast
 Postings from the same IP which arrive in less than this amount of
 time (in seconds) will trigger increasing sleeptime in the backoff
-algorithm. The default is 0. 
+algorithm.
+The default value is ``0''.
 .TP
 .I backoff_postslow
 Postings from the same IP which arrive in greater than this amount of
-time (in seconds) will reset the backoff algorithm. The default is 1.
+time (in seconds) will reset the backoff algorithm.
 Another way to look at this constant is to compute 86400/
 .I backoff_postslow
 which will give you the maximum number of articles per day that you will allow
 users to post.
+The default value is ``1''.
 .TP
 .I backoff_trigger
 This many postings are allowed before the backoff algorithm is
-triggered. The default is 10000. 
+triggered.
+The default value is ``10000''.
 .TP
 .I backoff_db
 Pathname to a directory (must be writable by news) that is to contain
 the backoff database. There is no default for this parameter, you must
 provide an existing and writable pathname value or users will not be
 able to post.
+The default value is unset.
 .TP 
 .I backoff_auth
 This is a boolean value. If on, posting backoffs are indexed on a per
@@ -370,20 +427,23 @@ user basis instead of a per IP basis. You must be using authentication
 in 
 .I nnrpd
 for the on value of this constant to have any meaning.
+This is boolean value and the default is ``false''.
 .TP
 .I readertrack
 This is a boolean value. If on, the article tracking system is
 enabled for client reading/posting. See the
 .IR nnrpd.track (5)
-man page for details. The default is ``no''.
+man page for details.
+This is boolean value and the default is ``false''.
 .TP
 .I strippostcc
 This is a boolean value. If on, To:, Cc: and Bcc: lines are stripped from
 local posts through
 .IR nnrpd (8).
-Default is ``no''. This is aimed mainly at stopping abuse of posting
+This is aimed mainly at stopping abuse of posting
 to moderated newsgroups, whereby those headers are added by the client
 and honoured by the mailer when mailed to the moderator.
+This is boolean value and the default is ``false''.
 .PP
 The following parameters are used only by
 .I innd.
@@ -392,19 +452,21 @@ The following parameters are used only by
 This specifies the name prepended before pathhost, if it is not appeared
 in the Path header line.
 If this is not specified, nothing is prepended before pathhost.
+The default value is unset.
 .TP
 .I hiscachesize
 If this is set to a non-zero number then history file lookups are cached.
 This number is the amount of memory to dedicate to the lookup cache in 
 kilobytes.  It is generally useful to have memory allocated to history
 cache if dbz mmaping is turned on.
+The default value is ``0''.
 .TP
 .I xrefslave
 If this is true, innd will use the information in the Xref:
 header for replication.  And if this is true,
 .I nnrpdposthost
 should be set to hand articles to the master server.
-The default is ``no''.
+This is boolean value and the default is ``false''.
 .TP
 .I nnrpdposthost
 If this is specified,
@@ -415,6 +477,7 @@ pass articles to the specified host.
 This should be set, if
 .I xrefslave
 is ``true''.
+The default value is unset.
 .TP
 .I wireformat
 If this is true then innd will write articles in wire format.  Wire format
@@ -426,6 +489,7 @@ If
 is ``true'', 
 .I wireformat
 is discarded and articles are always stored in wire format.
+This is boolean value and the default is ``false''.
 .TP
 .I writelinks
 If this is true innd will write all the crossposts of an article to
@@ -437,54 +501,67 @@ If
 is ``true'', 
 .I writelinks
 is discarded.
+This is boolean value and the default is ``true''.
 .TP
 .I timer
 If this is '0' or 'off', then performance monitoring will be disabled by
 default.  Otherwise, it would be how often to report performance
 statistics, in seconds.  If turned on statistics will be logged to syslog.
+The default value is ``0''.
 .TP
 .I peertimeout
 How long (in seconds) an innd incoming channel can be inactive before
 innd closes the channel.
+The default value is ``3600''.
 .TP
 .I allowreaders
 Allow readers to connect even when the server is paused or throttled.
-The default is ``no''.
+This is boolean value and the default is ``false''.
 .TP
 .I allownewnews
 Allow use of the ``NEWNEWS'' command by clients. Allowing this can be
 a performance problem on the server, but is recommended by RFC 977.
-The default is ``yes''.
+This is boolean value and the default is ``true''.
 .TP
 .I chaninacttime
 The time (in seconds) to wait between noticing inactive channels.
+The default value is ``600''.
 .TP
 .I chanretrytime
 How many seconds to wait before a channel restarts.
+The default value is ``300''.
 .TP
 .I maxconnections
 The maximum number of incoming NNTP connections.
+The default value is ``50''.
 .TP
 .I artcutoff
-Articles older than this number of days are dropped.
+Articles older than this number of seconds are dropped.
+The default value is ``1209600''(14 days).
 .TP
 .I nntplinklog
 Should we put nntplink info (filename) into the log.
+This is boolean value and the default is ``false''.
 .TP
 .I nntpactsync
 How many articles to process before logging NNTP activity.
+The default value is ``200''.
 .TP
 .I badiocount
 How many read/write failures until a channel is put to sleep or closed.
+The default value is ``5''.
 .TP
 .I pauseretrytime
 Wait for this many seconds between noticing inactive channels.
+The default value is ``300''.
 .TP
 .I blockbackoff
 A multiplier (in seconds) for sleep in ``EWOULDBLOCK'' writes.
+The default value is ``120''.
 .TP
 .I icdsynccount
 How many article writes between active and history file updates.
+The default value is ``10''.
 .TP
 .I bindaddress
 Which interface IP address
@@ -495,11 +572,13 @@ If set to ``all'' or not set at all,
 defaults to listening on all interfaces.
 The value of the INND_BIND_ADDRESS environment variable, if it exists,
 overrides this.
+The default value is unset.
 .TP
 .I port
 Which TCP port
 .I innd
-should listen on. Defaults to the 119 - the standard nntp port.
+should listen on.
+The default value is ``119'' - the standard nntp port.
 .PP
 The following parameters are used only by
 .I nnrpd
@@ -508,11 +587,13 @@ The following parameters are used only by
 when accepting postings from clients:
 .TP
 .I checkincludedtext
-If set to ``yes'' then local postings must have under  50% inclusion
+If set to ``true'' then local postings must have under  50% inclusion
 (">") lines.
+This is boolean value and the default is ``false''.
 .TP
 .I localmaxartsize
 The maximum article size (in bytes) for locally posted articles.
+The default value is ``1000000''.
 .TP
 .I mimeversion
 If this parameter is present, then
@@ -520,6 +601,7 @@ If this parameter is present, then
 will add the necessary MIME (Multipurpose Internet Mail Extensions)
 headers to all any articles that do not have a Mime-Version header.
 This parameter specifies the MIME version, and should normally be ``1.0''.
+The default value is unset.
 .TP
 .I mimecontenttype
 If MIME headers are being added, this parameter specifies the value
@@ -539,6 +621,7 @@ innd.  Setting this to true can be useful if you want nnrpd to
 respond to the client as fast as possible, however, nnrpd will not
 report articles that are not accepted by innd to the client if they
 are spool.
+This is boolean value and the default is ``false''.
 .TP
 .I complaints
 If this is set, then it contains the value of the X-Complaints-To:
@@ -550,9 +633,11 @@ If this is false then nnrpd will use regular file access to access
 articles, otherwise it will mmap() the articles.  Setting this to true
 will give better performance on most systems, but some systems do have 
 problems with mmap().
+This is boolean value and the default is ``false''.
 .TP
 .I clienttimeout
 How long (in seconds) an nnrpd can be inactive before it exits.
+The default value is ``600''.
 .PP
 The following flags are only used by the startup script ``rc.news''.
 .TP
@@ -561,16 +646,18 @@ The following flags are only used by the startup script ``rc.news''.
 Use this value as the domain to be used for clients connecting via DECNET.
 Support for this is only compiled into INN if ``AF_DECnet'' is defined
 and compile time.
+The default value is unset.
 .TP
 .I innflags
 The flags to pass to INN on startup. See the
 .IR innd (8)
-man page for details. The default flags are ``-i0''.
+man page for details.
+The default value is unset.
 .TP
 .I doinnwatch
-If set to ``no'' then do not start
+If set to ``false'' then do not start
 .IR innwatch (8).
-Default is to start it.
+This is boolean value and the default is ``true''.
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE
@@ -595,4 +682,4 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-libinn(3), moderators(5), makehistory(8), newsrequeue(8).
+libinn(3), moderators(5), makehistory(8), newsrequeue(8), nnrpd(8).
