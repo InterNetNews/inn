@@ -84,7 +84,9 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/mmap.h"
+#include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -243,6 +245,35 @@ index_map(struct group_index *index)
 }
 
 
+static bool
+file_open_group_index(struct group_index *index, struct stat *st)
+{
+    int open_mode;
+
+    index->header = NULL;
+    open_mode = index->writable ? O_RDWR | O_CREAT : O_RDONLY;
+    index->fd = open(index->path, open_mode, ARTFILE_MODE);
+    if (index->fd < 0) {
+        syswarn("tradindexed: cannot open %s", index->path);
+        goto fail;
+    }
+
+    if (fstat(index->fd, st) < 0) {
+        syswarn("tradindexed: cannot fstat %s", index->path);
+        goto fail;
+    }
+    close_on_exec(index->fd, true);
+    return true;
+
+ fail:
+    if (index->fd >= 0) {
+        close(index->fd);
+        index->fd = -1;
+    }
+    return false;
+}
+
+
 /*
 **  Given a group location, remap the index file if our existing mapping isn't
 **  large enough to include that group.  (This can be the case when another
@@ -253,17 +284,25 @@ index_maybe_remap(struct group_index *index, long loc)
 {
     struct stat st;
     int count;
+    int r;
 
     if (loc < index->count)
         return true;
 
     /* Don't remap if remapping wouldn't actually help. */
-    if (fstat(index->fd, &st) < 0) {
-        syswarn("tradindexed: cannot stat %s", index->path);
-        return false;
+    r = fstat(index->fd, &st);
+    if (r == -1) {
+	if (errno == ESTALE) {
+	    index_unmap(index);
+	    if (!file_open_group_index(index, &st))
+		return false;
+	} else {
+	    syswarn("tradindexed: cannot stat %s", index->path);
+	    return false;
+	}
     }
     count = index_entry_count(st.st_size);
-    if (count < loc)
+    if (count < loc && index->header != NULL)
         return true;
 
     /* Okay, remapping will actually help. */
@@ -354,23 +393,13 @@ struct group_index *
 tdx_index_open(bool writable)
 {
     struct group_index *index;
-    int open_mode;
     struct stat st;
 
     index = xmalloc(sizeof(struct group_index));
     index->path = concatpath(innconf->pathoverview, "group.index");
     index->writable = writable;
-    index->header = NULL;
-    open_mode = index->writable ? O_RDWR | O_CREAT : O_RDONLY;
-    index->fd = open(index->path, open_mode, ARTFILE_MODE);
-    if (index->fd < 0) {
-        syswarn("tradindexed: cannot open %s", index->path);
-        goto fail;
-    }
-
-    if (fstat(index->fd, &st) < 0) {
-        syswarn("tradindexed: cannot fstat %s", index->path);
-        goto fail;
+    if (!file_open_group_index(index, &st)) {
+	goto fail;
     }
     if ((size_t) st.st_size > sizeof(struct group_header)) {
         index->count = index_entry_count(st.st_size);
@@ -388,7 +417,6 @@ tdx_index_open(bool writable)
             index->entries = NULL;
         }
     }
-    close_on_exec(index->fd, true);
     return index;
 
  fail:
@@ -469,6 +497,8 @@ index_find(struct group_index *index, const char *group)
     if (index->header == NULL || index->entries == NULL)
         return -1;
     hash = Hash(group, strlen(group));
+    if (innconf->nfsreader && !index_maybe_remap(index, LONG_MAX))
+	return -1;
     loc = index->header->hash[index_bucket(hash)].recno;
 
     while (loc >= 0) {
@@ -562,11 +592,15 @@ struct group_entry *
 tdx_index_entry(struct group_index *index, const char *group)
 {
     long loc;
+    struct group_entry *entry;
 
     loc = index_find(index, group);
     if (loc == -1)
         return NULL;
-    return index->entries + loc;
+    entry = index->entries + loc;
+    if (innconf->tradindexedmmap && innconf->nfsreader)
+	mapcntl(entry, sizeof *entry, MS_INVALIDATE);
+    return entry;
 }
 
 
@@ -680,8 +714,10 @@ void
 tdx_index_close(struct group_index *index)
 {
     index_unmap(index);
-    if (index->fd >= 0)
+    if (index->fd >= 0) {
         close(index->fd);
+        index->fd = -1;
+    }
     free(index->path);
     free(index);
 }
