@@ -146,7 +146,7 @@ chmod 0644 "$out"
 # Try to sync off of the host.  If unable to connect/sync then retry
 # up to 9 more times waiting 6 minutes between each try.
 #
-echo "=-= `date` for $host"
+echo "=-= `date` for $host" >>$out 2>&1
 for loop in 1 2 3 4 5 6 7 8 9 10; do
 
     # pause the server
@@ -283,6 +283,6 @@ done
 
 # give up
 #
-echo "FATAL: `date` for $host failed to connect/sync 10 times" >>$out
-sed -e 's/^/    /' < "$tmp"
+echo "FATAL: `date` for $host failed to connect/sync 10 times" >>$out 2>&1
+sed -e 's/^/    /' < "$out"
 exit "$status"
