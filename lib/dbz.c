@@ -104,18 +104,18 @@ static int dbzversion = 6;	/* for validating .dir file format */
 #endif
 
 #if defined(__SUNPRO_C) || defined(_nec_ews) || defined (sgi)
-#if !defined(lint) && !defined(sgi)
+#if !defined(lint) && defined(__SUNPRO_C)
 #pragma pack(1)
-#endif /* nor lint, nor sgi */
+#endif /* nor lint, nor sgi, nor _nec_ews */
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];
 } erec;
 typedef struct {
     unsigned long      offset;
 } idxrec;
-#if !defined(lint) && !defined(sgi)
+#if !defined(lint) && defined(__SUNPRO_C)
 #pragma pack()
-#endif /* nor lint, nor sgi */
+#endif /* nor lint, nor sgi, nor _nec_ews */
 #else
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];

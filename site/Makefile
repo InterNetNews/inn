@@ -104,7 +104,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(NEWSBIN)/nntpsend $D$(NEWSLIB)/send-ihave $D$(NEWSLIB)/send-nntp \
 	$D$(NEWSLIB)/send-uucp $D$(NEWSBIN)/sendbatch $D$(NEWSBIN)/inncheck \
 	$D$(NEWSBIN)/innstat $D$(NEWSBIN)/pgpverify $D$(NEWSBIN)/innwatch \
-	$D$(NEWSBIN)/innreport.pl $D$(NEWSLIB)/storage.ctl $D$(PATH_SHELLVARS) \
+	$D$(NEWSBIN)/innreport.pl $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_CSH_SHELLVARS) \
@@ -240,8 +240,8 @@ $D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
 $D$(NEWSBIN)/innreport.pl: innreport.pl	; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
-$D$(PATH_STORAGECTL)/storage.ctl: storage.ctl	; $(COPY_RPRI) $? $@
-$D$(PATH_OVERVIEWCTL)/overview.ctl: overview.ctl	; $(COPY_RPRI) $? $@
+$D$(PATH_STORAGECTL): storage.ctl	; $(COPY_RPRI) $? $@
+$D$(PATH_OVERVIEWCTL): overview.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPRI) $? $@
