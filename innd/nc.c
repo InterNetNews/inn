@@ -745,8 +745,9 @@ NCproc(CHANNEL *cp)
 
   for ( ; ; ) {
     if (Tracing || cp->Tracing) {
-      syslog(L_TRACE, "%s cp->Start=%d cp->Next=%d bp->Used=%lu",
-        CHANname(cp), cp->Start, cp->Next, (unsigned long) bp->used);
+      syslog(L_TRACE, "%s cp->Start=%lu cp->Next=%lu bp->Used=%lu",
+        CHANname(cp), (unsigned long) cp->Start, (unsigned long) cp->Next,
+        (unsigned long) bp->used);
       if (bp->used > 15)
 	syslog(L_TRACE, "%s NCproc state=%d next \"%.15s\"", CHANname(cp),
 	  cp->State, &bp->data[cp->Next]);
@@ -1120,9 +1121,9 @@ NCproc(CHANNEL *cp)
     if (cp->State == CSwritegoodbye || cp->Type == CTfree)
       break;
     if (Tracing || cp->Tracing)
-      syslog(L_TRACE, "%s NCproc state=%d Start=%d Next=%d Used=%lu",
-	CHANname(cp), cp->State, cp->Start, cp->Next,
-        (unsigned long) bp->used);
+      syslog(L_TRACE, "%s NCproc state=%d Start=%lu Next=%lu Used=%lu",
+	CHANname(cp), cp->State, (unsigned long) cp->Start,
+        (unsigned long) cp->Next, (unsigned long) bp->used);
 
     if (movedata) { /* move data rather than extend buffer */
       TMRstart(TMR_DATAMOVE);

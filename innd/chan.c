@@ -640,7 +640,7 @@ WCHANsetfrombuffer(CHANNEL *cp, struct buffer *bp)
 int
 CHANreadtext(CHANNEL *cp)
 {
-    int	                i, j;
+    ptrdiff_t           i, j;
     struct buffer       *bp;
     char		*p;
     int			oerrno;
@@ -918,7 +918,7 @@ CHANreadloop(void)
 {
     static char		EXITING[] = "INND exiting because of signal\n";
     static int		fd;
-    int			i, j;
+    ptrdiff_t		i, j;
     int			startpoint;
     int			count;
     int			lastfd;
