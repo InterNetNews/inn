@@ -67,8 +67,8 @@ AC_SUBST(LOGDIR)
 
 AC_ARG_WITH(tmp-path,
 	[  --with-tmp-path=PATH    Temporary files directory [PREFIX/tmp]], 
-	LOGDIR=$with_tmp_path, 
-	LOGDIR=$prefix/tmp)
+	TMPPATH=$with_tmp_path, 
+	TMPPATH=$prefix/tmp)
 AC_SUBST(TMPPATH)
 
 AC_ARG_WITH(news-user,

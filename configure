@@ -649,9 +649,9 @@ fi
 # Check whether --with-tmp-path or --without-tmp-path was given.
 if test "${with_tmp_path+set}" = set; then
   withval="$with_tmp_path"
-  LOGDIR=$with_tmp_path
+  TMPPATH=$with_tmp_path
 else
-  LOGDIR=$prefix/tmp
+  TMPPATH=$prefix/tmp
 fi
 
 
