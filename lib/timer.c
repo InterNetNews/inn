@@ -200,6 +200,10 @@ TMRstart(unsigned int timer)
 {
     struct timer *search;
 
+    if (timer_count == 0) {
+        warn("timer %u started before TMRinit was called", timer);
+        return;
+    }
     if (timer >= timer_count) {
         warn("timer %u is larger than the maximum timer %u, ignored",
              timer, timer_count - 1);
