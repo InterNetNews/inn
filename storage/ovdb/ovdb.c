@@ -2,6 +2,7 @@
  * ovdb.c
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-06-08 : Added BerkeleyDB 3.1.x compatibility
  * 2000-04-09 : Tweak some default parameters; store aliased group info
  * 2000-03-29 : Add DB_RMW flag to the 'get' of get-modify-put sequences
  * 2000-02-17 : Update expire behavior to be consistent with current
@@ -659,7 +660,12 @@ int ovdb_open_berkeleydb(int mode, int flags)
     OVDBenv->set_errcall(OVDBenv, OVDBerror);
     OVDBenv->set_cachesize(OVDBenv, 0, ovdb_conf.cachesize, 1);
 
+#if DB_VERSION_MINOR == 0
     if(ret = OVDBenv->open(OVDBenv, ovdb_conf.home, NULL, ai_flags, 0666)) {
+#else
+    if(ret = OVDBenv->open(OVDBenv, ovdb_conf.home, ai_flags, 0666)) {
+#endif
+
 	OVDBenv->close(OVDBenv, 0);
 	OVDBenv = NULL;
 	syslog(L_FATAL, "OVDB: OVDBenv->open: %s", db_strerror(ret));
