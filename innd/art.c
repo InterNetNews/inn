@@ -387,7 +387,7 @@ ARTstore(CHANNEL *cp)
   const char	*p;
   ARTHANDLE	arth;
   int		i, j, iovcnt = 0;
-  long		headersize;
+  long		headersize = 0;
   TOKEN		result;
   BUFFER	*headers = &data->Headers;
   struct iovec	iov[ARTIOVCNT];
@@ -414,7 +414,7 @@ ARTstore(CHANNEL *cp)
       case HDR__PATH:
 	if (!Hassamepath || AddAlias) {
 	  /* write heading data */
-	  iov[iovcnt].iov_base = (caddr_t)p;
+	  iov[iovcnt].iov_base = (char *) p;
 	  iov[iovcnt++].iov_len = HDR(HDR__PATH) - p;
 	  arth.len += HDR(HDR__PATH) - p;
 	  /* now append new one */
@@ -433,7 +433,7 @@ ARTstore(CHANNEL *cp)
       case HDR__XREF:
 	if (!innconf->xrefslave) {
 	  /* write heading data */
-	  iov[iovcnt].iov_base = (caddr_t)p;
+	  iov[iovcnt].iov_base = (char *) p;
 	  iov[iovcnt++].iov_len = HDR(HDR__XREF) - p;
 	  arth.len += HDR(HDR__XREF) - p;
 	  /* replace with new one */
@@ -448,7 +448,7 @@ ARTstore(CHANNEL *cp)
       case HDR__BYTES:
 	/* ditch whole Byte header */
 	/* write heading data */
-	iov[iovcnt].iov_base = (caddr_t)p;
+	iov[iovcnt].iov_base = (char *) p;
 	iov[iovcnt++].iov_len = data->BytesHeader - p;
 	arth.len += data->BytesHeader - p;
 	/* next to write */
@@ -463,11 +463,11 @@ ARTstore(CHANNEL *cp)
   /* in case Xref is not included in orignal article */
   if (!HDR_FOUND(HDR__XREF)) {
     /* write heading data */
-    iov[iovcnt].iov_base = (caddr_t)p;
+    iov[iovcnt].iov_base = (char *) p;
     iov[iovcnt++].iov_len = Article->Data + (data->Body - 2) - p;
     arth.len += Article->Data + (data->Body - 2) - p;
     /* Xref needs to be inserted */
-    iov[iovcnt].iov_base = "Xref: ";
+    iov[iovcnt].iov_base = (char *) "Xref: ";
     iov[iovcnt++].iov_len = sizeof("Xref: ") - 1;
     arth.len += sizeof("Xref: ") - 1;
     iov[iovcnt].iov_base = data->Xref;
@@ -476,7 +476,7 @@ ARTstore(CHANNEL *cp)
     p = Article->Data + (data->Body - 2);
   }
   /* write rest of data */
-  iov[iovcnt].iov_base = (caddr_t)p;
+  iov[iovcnt].iov_base = (char *) p;
   iov[iovcnt++].iov_len = Article->Data + cp->Next - p;
   arth.len += Article->Data + cp->Next - p;
 
