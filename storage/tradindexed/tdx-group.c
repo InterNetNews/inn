@@ -114,22 +114,21 @@ struct group_index {
 static const GROUPLOC empty_loc = { -1 };
 
 /* Internal prototypes. */
-static int group_index_entry_count(size_t size);
-static size_t group_index_file_size(int count);
-static bool group_index_lock(int fd, enum inn_locktype type);
-static bool group_index_lock_group(int fd, GROUPLOC loc, 
-                                   enum inn_locktype type);
-static bool group_index_map(struct group_index *);
-static bool group_index_maybe_remap(struct group_index *, GROUPLOC loc);
-static bool group_index_expand(struct group_index *);
-static GROUPLOC group_index_find(struct group_index *, const char *group);
+static int index_entry_count(size_t size);
+static size_t index_file_size(int count);
+static bool index_lock(int fd, enum inn_locktype type);
+static bool index_lock_group(int fd, GROUPLOC loc, enum inn_locktype type);
+static bool index_map(struct group_index *);
+static bool index_maybe_remap(struct group_index *, GROUPLOC loc);
+static bool index_expand(struct group_index *);
+static GROUPLOC index_find(struct group_index *, const char *group);
 
 
 /*
 **  Given a file size, return the number of group entries that it contains.
 */
 static int
-group_index_entry_count(size_t size)
+index_entry_count(size_t size)
 {
     return (size - sizeof(struct group_header)) / sizeof(struct group_entry);
 }
@@ -139,7 +138,7 @@ group_index_entry_count(size_t size)
 **  Given a number of group entries, return the required file size.
 */
 static size_t
-group_index_file_size(int count)
+index_file_size(int count)
 {
     return sizeof(struct group_header) + count * sizeof(struct group_entry);
 }
@@ -150,7 +149,7 @@ group_index_file_size(int count)
 **  the group index when updating it.
 */
 static bool
-group_index_lock(int fd, enum inn_locktype type)
+index_lock(int fd, enum inn_locktype type)
 {
     return inn_lock_range(fd, type, true, 0, sizeof(struct group_header));
 }
@@ -161,7 +160,7 @@ group_index_lock(int fd, enum inn_locktype type)
 **  coordinating opening a group when it was just updated.
 */
 static bool
-group_index_lock_group(int fd, GROUPLOC group, enum inn_locktype type)
+index_lock_group(int fd, GROUPLOC group, enum inn_locktype type)
 {
     off_t offset = sizeof(struct group_header);
 
@@ -176,7 +175,7 @@ group_index_lock_group(int fd, GROUPLOC group, enum inn_locktype type)
 **  and false on failure.
 */
 static bool
-group_index_map(struct group_index *index)
+index_map(struct group_index *index)
 {
     if (NFSREADER && (index->mode & OV_WRITE)) {
         warn("tradindexed: cannot open for writing without mmap");
@@ -213,7 +212,7 @@ group_index_map(struct group_index *index)
 
         if (index->mode & OV_WRITE)
             flag = PROT_READ | PROT_WRITE;
-        size = group_index_file_size(index->count);
+        size = index_file_size(index->count);
         data = mmap(NULL, size, flag, MAP_SHARED, index->fd, 0);
         if (data == MAP_FAILED) {
             syswarn("tradindexed: cannot mmap %s", index->path);
@@ -233,7 +232,7 @@ group_index_map(struct group_index *index)
 **  writer is appending entries to the group index.)  Not yet implemented.
 */
 static bool
-group_index_maybe_remap(struct group_index *index UNUSED, GROUPLOC loc UNUSED)
+index_maybe_remap(struct group_index *index UNUSED, GROUPLOC loc UNUSED)
 {
     return true;
 }
@@ -244,7 +243,7 @@ group_index_maybe_remap(struct group_index *index UNUSED, GROUPLOC loc UNUSED)
 **  initial file.  Not yet implemented.
 */
 static bool
-group_index_expand(struct group_index *index UNUSED)
+index_expand(struct group_index *index UNUSED)
 {
     return false;
 }
@@ -256,7 +255,7 @@ group_index_expand(struct group_index *index UNUSED)
 **  combination of OV_READ and OV_WRITE.
 */
 struct group_index *
-tdx_group_index_open(int mode)
+tdx_index_open(int mode)
 {
     struct group_index *index;
     int open_mode;
@@ -278,13 +277,13 @@ tdx_group_index_open(int mode)
         goto fail;
     }
     if ((size_t) st.st_size > sizeof(struct group_header)) {
-        index->count = group_index_entry_count(st.st_size);
-        if (!group_index_map(index))
+        index->count = index_entry_count(st.st_size);
+        if (!index_map(index))
             goto fail;
     } else {
         index->count = 0;
         if (mode & OV_WRITE) {
-            if (!group_index_expand(index))
+            if (!index_expand(index))
                 goto fail;
         } else {
             index->count = 0;
@@ -296,7 +295,7 @@ tdx_group_index_open(int mode)
     return index;
 
  fail:
-    tdx_group_index_close(index);
+    tdx_index_close(index);
     return NULL;
 }
 
@@ -305,7 +304,7 @@ tdx_group_index_open(int mode)
 **  Find a group in the index file, returning the GROUPLOC for that group.
 */
 static GROUPLOC
-group_index_find(struct group_index *index, const char *group)
+index_find(struct group_index *index, const char *group)
 {
     HASH grouphash;
     unsigned int bucket;
@@ -314,7 +313,7 @@ group_index_find(struct group_index *index, const char *group)
     grouphash = Hash(group, strlen(group));
     memcpy(&bucket, &grouphash, sizeof(index));
     loc = index->header->hash[bucket % GROUPHEADERHASHSIZE];
-    if (!group_index_maybe_remap(index, loc))
+    if (!index_maybe_remap(index, loc))
         return empty_loc;
 
     while (loc.recno >= 0) {
@@ -333,12 +332,12 @@ group_index_find(struct group_index *index, const char *group)
 /*
 **  Return the information stored about a given group in the group index.
 */
-struct group_entry *
-tdx_group_index_entry(struct group_index *index, const char *group)
+const struct group_entry *
+tdx_index_entry(struct group_index *index, const char *group)
 {
     GROUPLOC loc;
 
-    loc = group_index_find(index, group);
+    loc = index_find(index, group);
     if (loc.recno == empty_loc.recno)
         return false;
     return index->entries + loc.recno;
@@ -351,7 +350,7 @@ tdx_group_index_entry(struct group_index *index, const char *group)
 **  after this call.
 */
 void
-tdx_group_index_close(struct group_index *index)
+tdx_index_close(struct group_index *index)
 {
     if (index->header != NULL) {
         if (NFSREADER) {
@@ -360,7 +359,7 @@ tdx_group_index_close(struct group_index *index)
         } else {
             size_t count;
 
-            count = group_index_file_size(index->count);
+            count = index_file_size(index->count);
             if (munmap((void *) index->header, count) < 0)
                 syswarn("tradindexed: cannot munmap %s", index->path);
         }
@@ -386,7 +385,7 @@ tdx_data_open(struct group_index *index, const char *group)
     struct group_data *data;
     ARTNUM high, base;
 
-    loc = group_index_find(index, group);
+    loc = index_find(index, group);
     if (loc.recno == empty_loc.recno)
         return NULL;
     entry = &index->entries[loc.recno];
@@ -412,7 +411,7 @@ tdx_data_open(struct group_index *index, const char *group)
     high = entry->high;
     base = entry->base;
     if (entry->indexinode != data->indexinode) {
-        if (!group_index_lock_group(index->fd, loc, INN_LOCK_READ))
+        if (!index_lock_group(index->fd, loc, INN_LOCK_READ))
             syswarn("tradindexed: cannot lock group entry for %s", group);
         if (!tdx_data_open_files(data))
             goto fail;
@@ -420,7 +419,7 @@ tdx_data_open(struct group_index *index, const char *group)
             warn("tradindexed: index inode mismatch for %s", group);
         high = entry->high;
         base = entry->base;
-        if (!group_index_lock_group(index->fd, loc, INN_LOCK_UNLOCK))
+        if (!index_lock_group(index->fd, loc, INN_LOCK_UNLOCK))
             syswarn("tradindexed: cannot unlock group entry for %s", group);
     }
     data->high = high;
@@ -544,7 +543,7 @@ hashmap_load(void)
 **  all on one line.  Name is passed into this function.
 */
 void
-tdx_group_index_print(const char *name, struct group_entry *entry)
+tdx_index_print(const char *name, const struct group_entry *entry)
 {
     printf("%s %lu %lu %lu %lu %c %lu %lu\n", name, entry->high,
            entry->low, entry->base, (unsigned long) entry->count,
@@ -557,7 +556,7 @@ tdx_group_index_print(const char *name, struct group_entry *entry)
 **  to stdout, one line per group.
 */
 void
-tdx_group_index_dump(struct group_index *index)
+tdx_index_dump(struct group_index *index)
 {
     int bucket;
     GROUPLOC current;
@@ -570,7 +569,7 @@ tdx_group_index_dump(struct group_index *index)
     for (bucket = 0; bucket < GROUPHEADERHASHSIZE; bucket++) {
         current = index->header->hash[bucket];
         while (current.recno != empty_loc.recno) {
-            if (!group_index_maybe_remap(index, current)) {
+            if (!index_maybe_remap(index, current)) {
                 warn("tradindexed: cannot remap %s", index->path);
                 return;
             }
@@ -583,7 +582,7 @@ tdx_group_index_dump(struct group_index *index)
             }
             if (name == NULL)
                 name = HashToText(entry->hash);
-            tdx_group_index_print(name, entry);
+            tdx_index_print(name, entry);
             current = entry->next;
         }
     }

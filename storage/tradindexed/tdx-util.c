@@ -24,11 +24,11 @@ dump_index(void)
 {
     struct group_index *index;
 
-    index = tdx_group_index_open(OV_READ);
+    index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
-    tdx_group_index_dump(index);
-    tdx_group_index_close(index);
+    tdx_index_dump(index);
+    tdx_index_close(index);
 }
 
 
@@ -39,18 +39,18 @@ static void
 dump_group(const char *group)
 {
     struct group_index *index;
-    struct group_entry *entry;
+    const struct group_entry *entry;
 
-    index = tdx_group_index_open(OV_READ);
+    index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
-    entry = tdx_group_index_entry(index, group);
+    entry = tdx_index_entry(index, group);
     if (entry == NULL) {
         warn("cannot find group %s", group);
         return;
     }
-    tdx_group_index_print(group, entry);
-    tdx_group_index_close(index);
+    tdx_index_print(group, entry);
+    tdx_index_close(index);
 }
 
 
@@ -63,7 +63,7 @@ dump_group_index(const char *group)
     struct group_index *index;
     struct group_data *data;
 
-    index = tdx_group_index_open(OV_READ);
+    index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
     data = tdx_data_open(index, group);
@@ -73,7 +73,7 @@ dump_group_index(const char *group)
     }
     tdx_data_index_dump(data);
     tdx_data_close(data);
-    tdx_group_index_close(index);
+    tdx_index_close(index);
 }
 
 
@@ -88,12 +88,12 @@ dump_overview(const char *group, ARTNUM number)
 {
     struct group_index *index;
     struct group_data *data;
-    struct group_entry *entry;
+    const struct group_entry *entry;
     struct article article;
     struct search *search;
     char datestring[256];
 
-    index = tdx_group_index_open(OV_READ);
+    index = tdx_index_open(OV_READ);
     if (index == NULL)
         return;
     data = tdx_data_open(index, group);
@@ -102,7 +102,7 @@ dump_overview(const char *group, ARTNUM number)
         return;
     }
 
-    entry = tdx_group_index_entry(index, group);
+    entry = tdx_index_entry(index, group);
     if (entry == NULL) {
         warn("cannot find group %s", group);
         return;
@@ -133,7 +133,7 @@ dump_overview(const char *group, ARTNUM number)
     }
     tdx_search_close(search);
     tdx_data_close(data);
-    tdx_group_index_close(index);
+    tdx_index_close(index);
 }
 
 

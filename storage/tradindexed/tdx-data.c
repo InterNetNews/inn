@@ -259,7 +259,7 @@ unmap_file(void *data, off_t length, const char *base, const char *suffix)
 **  stuff we can return without opening the data file).  Takes the article
 **  number and returns a pointer to the index entry.
 */
-struct index_entry *
+const struct index_entry *
 tdx_article_entry(struct group_data *data, ARTNUM article)
 {
     struct index_entry *entry;
