@@ -1,7 +1,7 @@
 
 Here are the changes for the latest version of INN.
 
-Version 2.1:
+Version 2.2:
 
 	- New storage.conf file (replaces storage.ctl).
 	- New (optional) way of handling non-cancel control 
