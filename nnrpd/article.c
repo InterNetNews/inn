@@ -1567,6 +1567,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	if (!ARTinstore(i)) {
 	    if (innconf->storageapi)
 		OVERmiss++;
+	    continue;
 	}
 
 	if (Opened && (p = OVERfind(ARTnumbers[i].ArtNum, &linelen)) != NULL) {
