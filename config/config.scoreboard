@@ -92,7 +92,7 @@
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  Flags for lint.  AIX wants "-wkD"; it and others don't want "-z".
   ||#### =()<LINTFLAGS		@<LINTFLAGS>@>()=
-  ||LINTFLAGS		-b -h -z $(DEFS)
+  ||LINTFLAGS		-b -h -z  -I../include $(DEFS)
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  Some lints insist on putting out the filename and other crap.
   ||##  Possible values:
