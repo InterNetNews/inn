@@ -532,7 +532,6 @@ ARTwrite(name, Article, Data)
     register IOVEC	*vp;
     register long	size;
     register char	*p;
-    struct stat		sb;
     IOVEC		iov[8];
     IOVEC		*end;
     char		bytesbuff[SMBUF];
@@ -687,7 +686,6 @@ ARTparseheader(in, out, deltap, errorp)
     register ARTHEADER	*hp;
     register char	c;
     register char	*p;
-    register char	*dest;
     register int	i;
     register char	*colon;
 
@@ -1839,7 +1837,7 @@ ARTpost(cp, Replic, ihave)
     Data.MessageID = ihave;
     error = ARTclean(article, &Data);
     if (HIShavearticle(Data.MessageID)) {
-	strcpy(buff, "Article already recieved\n");
+	sprintf(buff, "%d Article already recieved", NNTP_REJECTIT_VAL);
 	ARTlog(&Data, ART_REJECT, buff);
 	ARTreject(buff, article);
 	return buff;
@@ -2314,8 +2312,10 @@ ARTpost(cp, Replic, ihave)
 		}
 #endif	/* defined(DONT_HAVE_SYMLINK) */
 	    }
-	    *p++ = ' ';
-	    p += strlen(strcpy(p, linkname));
+	    if (WriteLinks) {
+		*p++ = ' ';
+		p += strlen(strcpy(p, linkname));
+	    }
 	}
     }
 
