@@ -68,6 +68,7 @@ char *OverTmpPath = NULL;
 bool NoHistory;
 OVSORTTYPE sorttype;
 int RetrMode;
+bool WriteStdout = false;
 
 TIMEINFO Now;
 
@@ -296,8 +297,10 @@ FlushOverTmpFile(void)
 	    
 
 /*
- * Write a line to the overview temp file. 
- */
+**  Write a line to the overview temp file, standard output, our child process
+**  that's doing the writing, or directly to overview, whichever is
+**  appropriate.
+*/
 static void
 WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen, 
 	      char *overdata, int overlen, time_t arrived, time_t expires)
@@ -306,6 +309,19 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
     const char *p, *q, *r;
     int i, fd;
 
+    /* If WriteStdout is set, just print the overview information to standard
+       output and return. */
+    if (WriteStdout) {
+        printf("%s %ld %ld ", TokenToText(*token), (long) arrived,
+               (long) expires);
+        fwrite(overdata, 1, overlen, stdout);
+        fputc('\n', stdout);
+        return;
+    }
+
+    /* If the overview method doesn't care about sorted data, don't bother
+       with the temporary file and just write the data out to our child
+       process or to the overview database directly. */
     if (sorttype == OVNOSORT) {
 	if (Fork) {
 	    fprintf(Overchan, "%s %ld %ld ", TokenToText(*token), (long)arrived, (long)expires);
@@ -323,6 +339,9 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
 	}
 	return;
     }
+
+    /* Otherwise, we need the temporary file.  Create it if it doesn't already
+       exist. */
     if (OverTmpPath == NULL) {
 	/* need new temp file, so create it. */
         OverTmpPath = concatpath(TmpDir, "histXXXXXX");
@@ -334,6 +353,9 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
             sysdie("cannot open %s", OverTmpPath);
 	OverTmpSegCount = 0;
     }
+
+    /* Print out the data to the teporary file with the appropriate keys for
+       sorting. */
     if (sorttype == OVNEWSGROUP) {
 	/* find first ng name in xref. */
 	for (p = xrefs, q=NULL ; p < xrefs+xrefslen ; ++p) {
@@ -495,7 +517,7 @@ static void
 DoArt(ARTHANDLE *art)
 {
     ARTOVERFIELD		*fp;
-    const char                  *p;
+    const char                  *p, *end;
     char                        *q;
     static struct buffer        buffer = { 0, 0, 0, NULL };
     static char			SEP[] = "\t";
@@ -642,10 +664,21 @@ DoArt(ARTHANDLE *art)
                 buffer_append(&buffer, COLONSPACE, strlen(COLONSPACE));
 	    }
 	    i = buffer.left;
-            buffer_append(&buffer, fp->Header, fp->HeaderLength);
-	    for (q = &buffer.data[i]; i < buffer.left; q++, i++)
-		if (*q == '\t' || *q == '\n' || *q == '\r')
-		    *q = ' ';
+            if (fp->HeaderLength == 0)
+                continue;
+            buffer_resize(&buffer, buffer.left + fp->HeaderLength);
+            end = fp->Header + fp->HeaderLength - 1;
+            for (p = fp->Header, q = &buffer.data[i]; p <= end; p++) {
+                if (*p == '\r' && p < end && p[1] == '\n') {
+                    p++;
+                    continue;
+                }
+                if (*p == '\0' || *p == '\t' || *p == '\n' || *p == '\r')
+                    *q++ = ' ';
+                else
+                    *q++ = *p;
+                buffer.left++;
+            }
 	}
 	WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
 		      buffer.data, buffer.left, Arrived, Expires);
@@ -760,19 +793,19 @@ main(int argc, char **argv)
     NoHistory = false;
     RetrMode = RETR_HEAD;
 
-    while ((i = getopt(argc, argv, "aebf:Il:OT:xFs:")) != EOF) {
+    while ((i = getopt(argc, argv, "abeFf:Il:OSs:T:x")) != EOF) {
 	switch(i) {
-	case 'T':
-	    TmpDir = optarg;
-	    break;
-	case 'x':
-	    NoHistory = true;
-	    break;
 	case 'a':
 	    AppendMode = true;
 	    break;
 	case 'b':
 	    NukeBadArts = true;
+	    break;
+	case 'e':
+	    RetrMode = RETR_ALL;
+	    break;
+	case 'F':
+	    Fork = true;
 	    break;
 	case 'f':
 	    HistoryPath = optarg;
@@ -786,14 +819,18 @@ main(int argc, char **argv)
 	case 'O':
 	    DoOverview = true;
 	    break;
-	case 'F':
-	    Fork = true;
-	    break;
-	case 'e':
-	    RetrMode = RETR_ALL;
-	    break;
+        case 'S':
+            WriteStdout = true;
+            OverTmpSegSize = 0;
+            break;
 	case 's':
 	    npairs = atoi(optarg);
+	    break;
+	case 'T':
+	    TmpDir = optarg;
+	    break;
+	case 'x':
+	    NoHistory = true;
 	    break;
 	    
 	default:
@@ -809,25 +846,27 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    if ((p = strrchr(HistoryPath, '/')) == NULL) {
-	/* find the default history file directory */
-	HistoryDir = innconf->pathdb;
-    } else {
-	*p = '\0';
-	HistoryDir = xstrdup(HistoryPath);
-	*p = '/';
+    if (!NoHistory) {
+        if ((p = strrchr(HistoryPath, '/')) == NULL) {
+            /* find the default history file directory */
+            HistoryDir = innconf->pathdb;
+        } else {
+            *p = '\0';
+            HistoryDir = xstrdup(HistoryPath);
+            *p = '/';
+        }
+        if (chdir(HistoryDir) < 0)
+            sysdie("cannot chdir to %s", HistoryDir);
     }
 
-    if (chdir(HistoryDir) < 0)
-        sysdie("cannot chdir to %s", HistoryDir);
-
     /* Change users if necessary. */
-    setuid_news();
+    if (!NoHistory || !WriteStdout)
+        setuid_news();
 
     /* Read in the overview schema */
     ARTreadschema(DoOverview);
     
-    if (DoOverview) {
+    if (DoOverview && !WriteStdout) {
 	/* init the overview setup. */
 	if (!OVopen(OV_WRITE))
             sysdie("cannot open overview");
@@ -898,19 +937,21 @@ main(int argc, char **argv)
 	if (sorttype == OVNOSORT && Fork)
 	    if (fflush(Overchan) == EOF || ferror(Overchan) || pclose(Overchan) == EOF)
                 sysdie("cannot flush overview data");
-	if (sorttype != OVNOSORT) {
+	if (sorttype != OVNOSORT && !WriteStdout) {
 	    int status;
 	    FlushOverTmpFile();
 	    if(Fork)
 		wait(&status);
 	}
-	if ((F = fopen(RebuiltflagPath, "w")) == NULL)
-            sysdie("cannot open %s", RebuiltflagPath);
-	if (fprintf(F, "%ld\n", (long) Now.time) == EOF || ferror(F))
-	    sysdie("cannot write rebuilt flag file");
-	fclose(F);
+        if (!WriteStdout) {
+            if ((F = fopen(RebuiltflagPath, "w")) == NULL)
+                sysdie("cannot open %s", RebuiltflagPath);
+            if (fprintf(F, "%ld\n", (long) Now.time) == EOF || ferror(F))
+                sysdie("cannot write rebuilt flag file");
+            fclose(F);
+        }
     }
-    if(!Fork)
+    if (!Fork && !WriteStdout)
 	OVclose();
     exit(0);
 }

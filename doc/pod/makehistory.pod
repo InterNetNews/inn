@@ -100,6 +100,13 @@ needed for a transit-only server (see I<enableoverview> in inn.conf(5)).
 If you are using the C<buffindexed> overview storage method, erase all of
 your overview buffers before running B<makehistory> with B<-O>.
 
+=item B<-S>
+
+Rather than store the overview data into the overview database, just write
+it to standard output in a form suitable for feeding to B<overchan> later
+if wished.  When this option is used, B<-F>, B<-I>, B<-l>, and B<-T> are
+ignored.  This option only makes sense in combination with B<-O>.
+
 =item B<-s> I<size>
 
 Size the history database for approximately I<size> pairs.  Accurately

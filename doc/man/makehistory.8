@@ -218,6 +218,12 @@ information is only required if the server supports readers; it is not
 needed for a transit-only server (see \fIenableoverview\fR in \fIinn.conf\fR\|(5)).
 If you are using the \f(CW\*(C`buffindexed\*(C'\fR overview storage method, erase all of
 your overview buffers before running \fBmakehistory\fR with \fB\-O\fR.
+.IP "\fB\-S\fR" 4
+.IX Item "-S"
+Rather than store the overview data into the overview database, just write
+it to standard output in a form suitable for feeding to \fBoverchan\fR later
+if wished.  When this option is used, \fB\-F\fR, \fB\-I\fR, \fB\-l\fR, and \fB\-T\fR are
+ignored.  This option only makes sense in combination with \fB\-O\fR.
 .IP "\fB\-s\fR \fIsize\fR" 4
 .IX Item "-s size"
 Size the history database for approximately \fIsize\fR pairs.  Accurately
