@@ -15,6 +15,13 @@
 #include <errno.h>
 #include <string.h>
 #include "configdata.h"
+#if	defined(HAVE_RLIMIT)
+#if	defined(DO_NEED_TIME)
+#include <time.h>
+#endif	/* defined(DO_NEED_TIME) */
+#include <sys/time.h>
+#endif	/* defined(HAVE_RLIMIT) */
+#include <sys/resource.h>
 #include "macros.h"
 #include "clibrary.h"
 #include "libinn.h"
@@ -153,12 +160,21 @@ BOOL tradindexed_open(int mode) {
     char                *groupfn;
     struct stat         sb;
     int                 flag = 0;
+    struct rlimit	rl;
 
     OV3mode = mode;
     if (OV3mode & OV_READ)
 	CACHEmaxentries = 1;
     else
 	CACHEmaxentries = innconf->overcachesize;
+    if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
+        syslog(L_FATAL, "tradindexed: cant getrlimit(NOFILE) %m");
+        return;
+    }
+    if (rl.rlim_cur < CACHEmaxentries * 2) {
+        syslog(L_FATAL, "tradindexed: overcachesize is too large or maximum fd number is too small");
+        return;
+    }
     memset(&CACHEdata, '\0', sizeof(CACHEdata));
     
     strcpy(dirname, innconf->pathoverview);
@@ -167,13 +183,13 @@ BOOL tradindexed_open(int mode) {
     strcat(groupfn, "/group.index");
     GROUPfd = open(groupfn, O_RDWR | O_CREAT, ARTFILE_MODE);
     if (GROUPfd < 0) {
-	syslog(L_FATAL, "Could not create %s: %m", groupfn);
+	syslog(L_FATAL, "tradindexed: could not create %s: %m", groupfn);
 	DISPOSE(groupfn);
 	return FALSE;
     }
     
     if (fstat(GROUPfd, &sb) < 0) {
-	syslog(L_FATAL, "Could not fstat %s: %m", groupfn);
+	syslog(L_FATAL, "tradindexed: could not fstat %s: %m", groupfn);
 	DISPOSE(groupfn);
 	close(GROUPfd);
 	return FALSE;
@@ -191,7 +207,7 @@ BOOL tradindexed_open(int mode) {
 	GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
 	if ((GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount), flag,
 					       MAP_SHARED, GROUPfd, 0)) == (GROUPHEADER *) -1) {
-	    syslog(L_FATAL, "Could not mmap %s in tradindexed_open: %m", groupfn);
+	    syslog(L_FATAL, "tradindexed: could not mmap %s in tradindexed_open: %m", groupfn);
 	    DISPOSE(groupfn);
 	    close(GROUPfd);
 	    return FALSE;
@@ -299,7 +315,7 @@ STATIC BOOL GROUPremapifneeded(GROUPLOC loc) {
 
     if (GROUPheader) {
 	if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-	    syslog(L_FATAL, "Could not munmap group.index in GROUPremapifneeded: %m");
+	    syslog(L_FATAL, "tradindexed: could not munmap group.index in GROUPremapifneeded: %m");
 	    return FALSE;
 	}
     }
@@ -308,7 +324,7 @@ STATIC BOOL GROUPremapifneeded(GROUPLOC loc) {
     GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
 				     PROT_READ | PROT_WRITE, MAP_SHARED, GROUPfd, 0);
     if (GROUPheader == (GROUPHEADER *) -1) {
-	syslog(L_FATAL, "Could not mmap group.index in GROUPremapifneeded: %m");
+	syslog(L_FATAL, "tradindexed: could not mmap group.index in GROUPremapifneeded: %m");
 	return FALSE;
     }
     GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
@@ -322,13 +338,13 @@ STATIC BOOL GROUPexpand(int mode) {
     
     if (GROUPheader) {
 	if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-	    syslog(L_FATAL, "Could not munmap group.index in GROUPexpand: %m");
+	    syslog(L_FATAL, "tradindexed: could not munmap group.index in GROUPexpand: %m");
 	    return FALSE;
 	}
     }
     GROUPcount += 1024;
     if (ftruncate(GROUPfd, GROUPfilesize(GROUPcount)) < 0) {
-	syslog(L_FATAL, "Could not extend group.index: %m");
+	syslog(L_FATAL, "tradindexed: could not extend group.index: %m");
 	return FALSE;
     }
     if (mode & OV_READ)
@@ -343,7 +359,7 @@ STATIC BOOL GROUPexpand(int mode) {
     GROUPheader = (GROUPHEADER *)mmap(0, GROUPfilesize(GROUPcount),
 				     flag, MAP_SHARED, GROUPfd, 0);
     if (GROUPheader == (GROUPHEADER *) -1) {
-	syslog(L_FATAL, "Could not mmap group.index in GROUPexpand: %m");
+	syslog(L_FATAL, "tradindexed: could not mmap group.index in GROUPexpand: %m");
 	return FALSE;
     }
     GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
@@ -412,26 +428,26 @@ STATIC BOOL OV3mmapgroup(GROUPHANDLE *gh) {
     struct stat         sb;
     
     if (fstat(gh->datafd, &sb) < 0) {
-	syslog(L_ERROR, "OV3mmapgroup could not fstat data file for %s: %m", gh->group);
+	syslog(L_ERROR, "tradindexed: could not fstat data file for %s: %m", gh->group);
 	return FALSE;
     }
     gh->datalen = sb.st_size;
     if (fstat(gh->indexfd, &sb) < 0) {
-	syslog(L_ERROR, "OV3mmapgroup could not fstat index file for %s: %m", gh->group);
+	syslog(L_ERROR, "tradindexed: could not fstat index file for %s: %m", gh->group);
 	return FALSE;
     }
     gh->indexlen = sb.st_size;
     if (!gh->datamem) {
 	if ((gh->datamem = (char *)mmap(0, gh->datalen, PROT_READ, MAP_SHARED,
 					gh->datafd, 0)) == (char *)-1) {
-	    syslog(L_ERROR, "OV3 could not mmap data file for %s: %m", gh->group);
+	    syslog(L_ERROR, "tradindexed: could not mmap data file for %s: %m", gh->group);
 	    return FALSE;
 	}
     }
     if (!gh->indexmem) {
 	if ((gh->indexmem = (INDEXENTRY *)mmap(0, gh->indexlen, PROT_READ, MAP_SHARED, 
 					       gh->indexfd, 0)) == (INDEXENTRY *)-1) {
-	    syslog(L_ERROR, "OV3 could not mmap index file for  %s: %m", gh->group);
+	    syslog(L_ERROR, "tradindexed: could not mmap index file for  %s: %m", gh->group);
 	    munmap(gh->datamem, gh->datalen);
 	    return FALSE;
 	}
@@ -475,7 +491,7 @@ STATIC GROUPHANDLE *OV3opengroupfiles(char *group) {
 	p = strrchr(IDXpath, '/');
 	*p = '\0';
 	if (!MakeDirectory(IDXpath, TRUE)) {
-	    syslog(L_ERROR, "Could not create directory %s", IDXpath);
+	    syslog(L_ERROR, "tradindexed: could not create directory %s", IDXpath);
 	    return NULL;
 	}
 	*p = '/';
@@ -483,21 +499,21 @@ STATIC GROUPHANDLE *OV3opengroupfiles(char *group) {
 	    DISPOSE(gh);
 	    if (errno == ENOENT)
 		return NULL;
-	    syslog(L_ERROR, "OV3 could not open %s: %m", DATpath);
+	    syslog(L_ERROR, "tradindexed: could not open %s: %m", DATpath);
 	    return NULL;
 	}
     }
     if ((gh->indexfd = open(IDXpath, O_RDWR | O_CREAT, 0660)) < 0) {
 	close(gh->datafd);
 	DISPOSE(gh);
-	syslog(L_ERROR, "OV3 could not open %s: %m", IDXpath);
+	syslog(L_ERROR, "tradindexed: could not open %s: %m", IDXpath);
 	return NULL;
     }
     if (fstat(gh->indexfd, &sb) < 0) {
 	close(gh->datafd);
 	close(gh->indexfd);
 	DISPOSE(gh);
-	syslog(L_ERROR, "OV3 could not fstat %s: %m", IDXpath);
+	syslog(L_ERROR, "tradindexed: could not fstat %s: %m", IDXpath);
 	return NULL;
     }
     CloseOnExec(gh->datafd, 1);
@@ -554,7 +570,7 @@ STATIC void OV3cleancache(void) {
 	    CACHEentries--;
 	    return;
 	}
-	syslog(L_NOTICE, "OV3 group cache is full, waiting 10 seconds");
+	syslog(L_NOTICE, "tradindexed: group cache is full, waiting 10 seconds");
 	sleep(10);
     }
 }
@@ -626,14 +642,24 @@ STATIC GROUPHANDLE *OV3opengroup(char *group) {
 STATIC BOOL OV3closegroup(GROUPHANDLE *gh) {
     unsigned int        i;
     CACHEENTRY          *ce;
+    CACHEENTRY          *sprev = NULL;
 
     memcpy(&i, &gh->hash, sizeof(i));
     i %= CACHETABLESIZE;
     for (ce = CACHEdata[i]; ce != NULL; ce = ce->next) {
 	if (memcmp(&ce->gh->hash, &gh->hash, sizeof(HASH)) == 0) {
-	    ce->refcount--;
+	    if (--ce->refcount == 0) {
+		OV3closegroupfiles(ce->gh);
+		if (sprev) {
+		    sprev->next = ce->next;
+		} else {
+		    CACHEdata[i] = ce->next;
+		}
+		DISPOSE(ce);
+	    }
 	    break;
 	}
+	sprev = ce;
     }
     return TRUE;
 }
@@ -647,17 +673,17 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     } else {
 	base = ge->base;
 	if (ge->base > artnum) {
-	    syslog(L_ERROR, "Could not add %s:%d, base == %d", gh->group, artnum, ge->base);
+	    syslog(L_ERROR, "tradindexed: could not add %s:%d, base == %d", gh->group, artnum, ge->base);
 	    return TRUE;
 	}
     }
     memset(&ie, '\0', sizeof(ie));
     if (write(gh->datafd, data, len) != len) {
-	syslog(L_ERROR, "Could not append overview record to %s: %m", gh->group);
+	syslog(L_ERROR, "tradindexed: could not append overview record to %s: %m", gh->group);
 	return TRUE;
     }
     if ((ie.offset = lseek(gh->datafd, 0, SEEK_CUR)) < 0) {
-	syslog(L_ERROR, "Could not get offset of overview record in %s: %m", gh->group);
+	syslog(L_ERROR, "tradindexed: could not get offset of overview record in %s: %m", gh->group);
 	return TRUE;
     }
     ie.length = len;
@@ -665,7 +691,7 @@ STATIC BOOL OV3addrec(GROUPENTRY *ge, GROUPHANDLE *gh, int artnum, TOKEN token, 
     ie.token = token;
     
     if (pwrite(gh->indexfd, &ie, sizeof(ie), (artnum - base) * sizeof(ie)) != sizeof(ie)) {
-	syslog(L_ERROR, "Could not write index record for %s:%d", gh->group, artnum);
+	syslog(L_ERROR, "tradindexed: could not write index record for %s:%d", gh->group, artnum);
 	return TRUE;
     }
     if ((ge->low <= 0) || (ge->low > artnum))
@@ -820,7 +846,7 @@ BOOL tradindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 	return FALSE;
 
     if ((char *)&ie[search->cur] >= (char *)search->gh->indexmem + search->gh->indexlen) {
-	syslog(L_ERROR, "Truncated overview results for %s", search->group);
+	syslog(L_ERROR, "tradindexed: truncated overview results for %s", search->group);
 	return FALSE;
     }
 
@@ -921,7 +947,7 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     if (ge->count == 0)
 	return TRUE;
 
-    syslog(L_NOTICE, "OV3 repacking group %s, offset %d", group, delta);
+    syslog(L_NOTICE, "tradindexed: repacking group %s, offset %d", group, delta);
     GROUPlock(gloc, LOCK_WRITE);
 
     if (delta > ge->base) delta = ge->base;
@@ -948,7 +974,7 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     }
 
     if ((fd = open(newidx, O_RDWR | O_CREAT, 0660)) < 0) {
-	syslog(L_ERROR, "OV3 could not open %s: %m", newidx);
+	syslog(L_ERROR, "tradindexed: could not open %s: %m", newidx);
 	OV3closegroup(gh);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
@@ -959,13 +985,14 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     nbytes = numentries * sizeof(INDEXENTRY);
     if (pwrite(fd, &gh->indexmem[ge->low - ge->base] , nbytes,
 	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta)) != nbytes) {
-	syslog(L_ERROR, "OV3 packgroup cant write to %s: %m", newidx);
+	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
+	close(fd);
 	OV3closegroup(gh);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
     }	
     if (close(fd) < 0) {
-	syslog(L_ERROR, "OV3 packgroup cant close %s: %m", newidx);
+	syslog(L_ERROR, "tradindexed: packgroup cant close %s: %m", newidx);
 	OV3closegroup(gh);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
@@ -973,18 +1000,18 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     do {
 	if (stat(newidx, &sb) < 0) {
 	    unlink(newidx);
-	    syslog(L_ERROR, "Could not stat %s", newidx);
+	    syslog(L_ERROR, "tradindexed: could not stat %s", newidx);
 	    break;
 	}
 	if (rename(oldidx, bakidx) < 0) {
 	    unlink(newidx);
-	    syslog(L_ERROR, "Could not rename %s -> %s", oldidx, bakidx);
+	    syslog(L_ERROR, "tradindexed: could not rename %s -> %s", oldidx, bakidx);
 	    break;
 	}
 	if (rename(newidx, oldidx) < 0) {
 	    rename(bakidx, oldidx);
 	    unlink(newidx);
-	    syslog(L_ERROR, "Could not rename %s -> %s", newidx, oldidx);
+	    syslog(L_ERROR, "tradindexed: could not rename %s -> %s", newidx, oldidx);
 	    break;
 	}
 	unlink(bakidx);
@@ -1071,15 +1098,15 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
 	if (atoi(data) != artnum) {
 	    printf("misnumbered article %s:%d\n", group, artnum);
 	    if ((p = strstr(data, "Xref: ")) == NULL) {
-		syslog(L_ERROR, "Could not find Xref header in %s:%d", group, artnum);
+		syslog(L_ERROR, "tradindexed: could not find Xref header in %s:%d", group, artnum);
 		continue;
 	    }
 	    if ((p = strchr(p, ' ')) == NULL) {
-		syslog(L_ERROR, "Could not find space after Xref header in %s:%d", group, artnum);
+		syslog(L_ERROR, "tradindexed: could not find space after Xref header in %s:%d", group, artnum);
 		continue;
 	    }
 	    if ((p = strstr(p, group)) == NULL) {
-		syslog(L_ERROR, "Could not find group name in Xref header in %s:%d", group, artnum);
+		syslog(L_ERROR, "tradindexed: could not find group name in Xref header in %s:%d", group, artnum);
 		continue;
 	    }
 	    p += strlen(group) + 1;
@@ -1091,32 +1118,32 @@ BOOL tradindexed_expiregroup(char *group, int *lo) {
     do {
 	if (stat(newidx, &sb) < 0) {
 	    unlink(newidx);
-	    syslog(L_ERROR, "Could not stat %s", newidx);
+	    syslog(L_ERROR, "tradindexed: could not stat %s", newidx);
 	    break;
 	}
 	if (rename(oldidx, bakidx) < 0) {
 	    unlink(newidx);
-	    syslog(L_ERROR, "Could not rename %s -> %s", oldidx, bakidx);
+	    syslog(L_ERROR, "tradindexed: could not rename %s -> %s", oldidx, bakidx);
 	    break;
 	}
 	if (rename(olddat, bakdat) < 0) {
 	    rename(bakidx, oldidx);
 	    unlink(newidx);
-	    syslog(L_ERROR, "Could not rename %s -> %s", olddat, bakdat);
+	    syslog(L_ERROR, "tradindexed: could not rename %s -> %s", olddat, bakdat);
 	    break;
 	}
 	if (rename(newidx, oldidx) < 0) {
 	    rename(bakidx, oldidx);
 	    rename(bakdat, olddat);
 	    unlink(newidx);
-	    syslog(L_ERROR, "Could not rename %s -> %s", newidx, oldidx);
+	    syslog(L_ERROR, "tradindexed: could not rename %s -> %s", newidx, oldidx);
 	    break;
 	}
 	if (rename(newdat, olddat) < 0) {
 	    rename(bakidx, oldidx);
 	    rename(bakdat, olddat);
 	    unlink(newidx);
-	    syslog(L_ERROR, "Could not rename %s -> %s", newdat, olddat);
+	    syslog(L_ERROR, "tradindexed: could not rename %s -> %s", newdat, olddat);
 	    break;
 	}
 	unlink(bakidx);
@@ -1161,7 +1188,7 @@ void tradindexed_close(void) {
 
     if (GROUPheader) {
 	if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-	    syslog(L_FATAL, "Could not munmap group.index in tradindexed_close: %m");
+	    syslog(L_FATAL, "tradindexed: could not munmap group.index in tradindexed_close: %m");
 	    return;
 	}
     }
