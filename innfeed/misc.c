@@ -130,7 +130,8 @@ void d_printf (unsigned int level, const char *fmt, ...)
     return ;
   
   now = theTime() ;
-  strcpy (timeString, ctime (&now) + 4) ; /* strip off leading day name */
+  /* strip off leading day name */
+  strlcpy (timeString, ctime (&now) + 4, sizeof (timeString)) ;
   timeString [15] = '\0' ;      /* strip off trailing year and newline */
 
   va_start (ap, fmt) ;
@@ -393,7 +394,7 @@ bool lockFile (const char *fileName)
   int fd, i ;
   pid_t pid = getpid () ;
 
-  strcpy (realName,fileName) ;
+  strlcpy (realName,fileName,sizeof (realName)) ;
   if ((p = strrchr (realName, '/')) != NULL)
     {
       *p = '\0' ;
@@ -630,19 +631,19 @@ char *buildFilename (const char *directory, const char *fname)
   if (directory == NULL)
     directory = "." ;
   
-  len = strlen (directory) + strlen (fname) + 2 ;
+  len = strlen (directory) + strlen (fname) + 2 + 1 ;
 
   if (len < pathMax(directory) - 2)
     {
-      p = malloc (len + 1) ;
+      p = xmalloc (len) ;
       p [0] = '\0' ;
       if (fname [0] != '/')
         {
-          strcat (p,directory) ;
+          strlcat (p,directory,len) ;
           if (p [strlen(p) - 1] != '/')
-            strcat (p,"/") ;
+            strlcat (p,"/",len) ;
         }
-      strcat (p,fname) ;
+      strlcat (p,fname,len) ;
     }
 
   return p ;
