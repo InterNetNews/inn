@@ -1,6 +1,9 @@
 #!_PATH_PERL -ws
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.7
+# Version 1.8
+#
+# Changes from 1.7 -> 1.8
+# -- ignore final dot-CRLF if article is in NNTP format
 #
 # Changes from 1.6 -> 1.7
 # -- parse PGP 5.0 'good signature' lines.
@@ -10,7 +13,7 @@
 #
 # Changes from 1.5 -> 1.6
 # -- handle articles encoded in NNTP format ('.' starting line is doubled,
-#    \r\n at line end) by string NNTP encoding.
+#    \r\n at line end) by stripping NNTP encoding.
 # -- exit 255 with pointer to $HOME or $PGPPATH if pgp can't find key ring.
 #    (probably doesn't match the necessary error message with ViaCrypt PGP)
 # -- failures also report message-id so the article can be looked up to retry.
@@ -109,6 +112,11 @@ $message .= "\n";               # end of headers
 
 while (<>) {                    # read body lines
   if ($nntp_format) {
+    # check for end of article; some news servers (eg, Highwind's "Breeze")
+    # include the dot-CRLF of the NNTP protocol in the article data passed
+    # to this script
+    last if $_ eq ".\r\n";
+
     # remove NNTP encoding
     s/^\.\./\./;
     s/\r\n$/\n/;
