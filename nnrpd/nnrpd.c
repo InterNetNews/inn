@@ -645,6 +645,7 @@ main(int argc, char *argv[])
     int                 one = 1;
     FILE                *pidfile;
     struct passwd	*pwd;
+    int			clienttimeout;
 #if HAVE_GETSPNAM
     struct group	*grp;
     GID_T		shadowgid;
@@ -916,10 +917,15 @@ main(int argc, char *argv[])
 	ExitWithStats(0, FALSE);
     }
 
-    if (PERMaccessconf->readertrack)
-	PERMaccessconf->readertrack=TrackClient(ClientHost,Username);
+    if (PERMaccessconf) {
+	if (PERMaccessconf->readertrack)
+	    PERMaccessconf->readertrack=TrackClient(ClientHost,Username);
+    } else {
+	if (innconf->readertrack)
+	    innconf->readertrack=TrackClient(ClientHost,Username);
+    }
 
-    if (PERMaccessconf->readertrack) {
+    if (PERMaccessconf && PERMaccessconf->readertrack || !PERMaccessconf && innconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Enabled (%s)", ClientHost, Username);
 	pid=getpid();
 	gettimeofday(&tv,NULL);
@@ -936,17 +942,26 @@ main(int argc, char *argv[])
 	}
     }
 
-    Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
+    if (PERMaccessconf) {
+        Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
 	   PERMaccessconf->pathhost, INNVersion(),
 	   PERMcanpost ? "posting ok" : "no posting");
+	clienttimeout = PERMaccessconf->clienttimeout;
+    } else {
+        Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
+	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
+	   innconf->pathhost, INNVersion(),
+	   PERMcanpost ? "posting ok" : "no posting");
+	clienttimeout = innconf->clienttimeout;
+    }
 
     /* Exponential posting backoff */
     (void)InitBackoffConstants();
 
     /* Main dispatch loop. */
     for (timeout = INITIAL_TIMEOUT, av = NULL; ;
-			timeout = PERMaccessconf->clienttimeout) {
+			timeout = clienttimeout) {
 	(void)fflush(stdout);
 	if (ChangeTrace) {
 	    Tracing = Tracing ? FALSE : TRUE;
@@ -966,7 +981,7 @@ main(int argc, char *argv[])
 		syslog(L_ERROR, "%s internal %d in main", ClientHost, r);
 		/* FALLTHROUGH */
 	    case RTtimeout:
-		if (timeout < PERMaccessconf->clienttimeout)
+		if (timeout < clienttimeout)
 		    syslog(L_NOTICE, "%s timeout short", ClientHost);
 		else
 		    syslog(L_NOTICE, "%s timeout", ClientHost);

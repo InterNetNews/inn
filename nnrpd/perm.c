@@ -1111,8 +1111,8 @@ void PERMgetaccess(void)
     access_realms   = NULL;
     success_auth    = NULL;
 
-    PERMcanread	    = PERMcanpost   = 0;
-    PERMreadlist    = PERMpostlist  = 0;
+    PERMcanread	    = PERMcanpost   = FALSE;
+    PERMreadlist    = PERMpostlist  = FALSE;
     PERMaccessconf = NULL;
 
     if (ConfigBit == NULL) {
@@ -1154,7 +1154,7 @@ void PERMgetaccess(void)
 	    strcat(PERMuser, "@");
 	    strcat(PERMuser, auth_realms[i]->default_domain);
 	}
-	PERMneedauth = 0;
+	PERMneedauth = FALSE;
 	success_auth = auth_realms[i];
 	syslog(L_TRACE, "%s res %s", ClientHost, PERMuser);
     } else if (!canauthenticate) {
@@ -1163,8 +1163,10 @@ void PERMgetaccess(void)
 	Printf("%d Could not get your access name.  Goodbye.\r\n",
 	  NNTP_ACCESS_VAL);
 	ExitWithStats(1, TRUE);
-    } else
-	PERMneedauth = 1;
+    } else {
+	PERMneedauth = TRUE;
+	success_auth = auth_realms[i];
+    }
     /* check maximum allowed permissions for any host that matches (for
      * the greeting string) */
     for (i = 0; access_realms[i]; i++) {
@@ -1176,7 +1178,7 @@ void PERMgetaccess(void)
     if (!i) {
 	/* no applicable access groups. Zeroing all these makes INN 
 	 * return permission denied to client. */
-	PERMcanread = PERMcanpost = PERMneedauth = 0;
+	PERMcanread = PERMcanpost = PERMneedauth = FALSE;
     }
 }
 
@@ -1196,7 +1198,7 @@ void PERMlogin(char *uname, char *pass)
     /* The check in CMDauthinfo uses the value of PERMneedauth to know if
      * authentication succeeded or not.  By default, authentication doesn't
      * succeed. */
-    PERMneedauth = 1;
+    PERMneedauth = TRUE;
 
     if(auth_realms != NULL) {
 	for (i = 0; auth_realms[i]; i++) {
@@ -1216,7 +1218,7 @@ void PERMlogin(char *uname, char *pass)
 	    strcat(PERMuser, "@");
 	    strcat(PERMuser, auth_realms[i]->default_domain);
 	}
-	PERMneedauth = 0;
+	PERMneedauth = FALSE;
 	success_auth = auth_realms[i];
     }
 }
@@ -1294,18 +1296,18 @@ void PERMgetpermissions()
 	if (access_realms[i]->read) {
 	    cp = COPY(access_realms[i]->read);
 	    PERMspecified = NGgetlist(&PERMreadlist, cp);
-	    PERMcanread = 1;
+	    PERMcanread = TRUE;
 	} else {
 	    syslog(L_TRACE, "%s no_read %s", ClientHost, access_realms[i]->name);
-	    PERMcanread = 0;
+	    PERMcanread = FALSE;
 	}
 	if (access_realms[i]->post) {
 	    cp = COPY(access_realms[i]->post);
 	    NGgetlist(&PERMpostlist, cp);
-	    PERMcanpost = 1;
+	    PERMcanpost = TRUE;
 	} else {
 	    syslog(L_TRACE, "%s no_post %s", ClientHost, access_realms[i]->name);
-	    PERMcanpost = 0;
+	    PERMcanpost = FALSE;
 	}
 	PERMaccessconf = access_realms[i];
     } else
