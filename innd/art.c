@@ -1202,7 +1202,6 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
 	ARTlog(Data, ART_REJECT, buff);
     }
     DISPOSE(p);
-    DISPOSE(local);
     return files;
 }
 
