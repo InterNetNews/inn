@@ -1631,7 +1631,7 @@ STATIC BOOL ListHas(char **list, char *p)
     char	        c;
 
     for (c = *p; (q = *list) != NULL; list++)
-	if (c == *q && caseEQ(p, q))
+	if (caseEQ(p, q))
 	    return TRUE;
     return FALSE;
 }
