@@ -339,6 +339,13 @@ fi
 ])
 fi
 
+AC_MSG_CHECKING(for msync args)
+AC_TRY_LINK([#include <sys/types.h>
+#include <sys/mman.h>],
+            [char *p; int psize; msync(p,psize,MS_ASYNC); ],
+            [AC_DEFINE(HAVE_MSYNC_3_ARG) AC_MSG_RESULT(3 args)],
+            AC_MSG_RESULT(no))
+
 dnl
 AC_CACHE_CHECK(for return type of abort, ac_cv_type_abort, AC_TRY_COMPILE([#ifdef HAVE_STDLIB_H
 #include <stdlib.h>

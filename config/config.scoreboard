@@ -317,11 +317,6 @@
   ||##  with some slightly broken mmap implementations. (like HPUX and BSD/OS).
   ||#### =()<MMAP_SYNC		@<MMAP_SYNC>@>()=
   ||MMAP_SYNC		DONT
-[IN1.7=@6][WDF=autoconf][WOR=no][P=high]
-  ||##  Should we call your msync() with 3 args? (addr,len,flags)
-  ||##  Choose DO or DONT.
-  ||#### =()<MSYNC_3_ARG		@<MSYNC_3_ARG>@>()=
-  ||MSYNC_3_ARG		DONT
 [IN1.7=@6][WDF=confparam][WOR=no][P=low]
   ||##  Do clients use our NNTP-server-open routine, or the one in NNTP?
   ||##  INND is nicer, but you must install inn.conf files everywhere; NNTP

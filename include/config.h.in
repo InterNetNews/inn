@@ -52,6 +52,12 @@
 #undef CLX_FCNTL
 #undef CLX_IOCTL
 
+/* Define if you have msync() with 3 args */
+#undef HAVE_MSYNC_3_ARG
+#ifdef HAVE_MSYNC_3_ARG 
+# define DO_MSYNC_3_ARG
+#endif
+
 /* Define if you have <string.h> */
 #undef HAVE_STRING_H 
 

@@ -113,9 +113,6 @@ typedef char		*CSTRING;
     /* Should the routines that use mmap() also do a msync(). */
     /* =()<#define @<MMAP_SYNC>@_MMAP_SYNC>()= */
 #define DONT_MMAP_SYNC
-    /* Does the msync() function take 3 arguments? DO or DONT */
-    /* =()<#define @<MSYNC_3_ARG>@_MSYNC_3_ARG>()= */
-#define DONT_MSYNC_3_ARG
     /* Use our NNTP-server-open routine, or the one in NNTP? */
     /* INND is nicer, but you must install inn.conf files everywhere; NNTP */
     /* is better if you already have lots of /usr/lib/news/server files. */
