@@ -28,13 +28,10 @@
 # include <shadow.h>
 #endif
 
+#include "tls.h"
+#include "sasl_config.h"
+
 #ifdef HAVE_SSL
-# include <openssl/ssl.h>
-# include <openssl/err.h>
-# include <openssl/bio.h>
-# include <openssl/pem.h>
-# include "tls.h"
-# include "sasl_config.h"
 extern SSL *tls_conn;
 int nnrpd_starttls_done = 0;
 #endif 

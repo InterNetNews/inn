@@ -13,15 +13,8 @@
 #endif
 
 #include "nnrpd.h"
-
-#ifdef HAVE_SSL
-# include <openssl/ssl.h>
-# include <openssl/err.h>
-# include <openssl/bio.h>
-# include <openssl/pem.h>
-# include "tls.h"
-# include "sasl_config.h"
-#endif 
+#include "tls.h"
+#include "sasl_config.h"
 
 #ifdef HAVE_SSL
 extern SSL *tls_conn;

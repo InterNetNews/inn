@@ -7,8 +7,6 @@
 
 #include "config.h"
 
-#ifdef HAVE_SSL
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +17,8 @@
 #include "nnrpd.h"
 #include "paths.h"
 #include "sasl_config.h"
+
+#ifdef HAVE_SSL
 
 struct configlist {
     char *key;

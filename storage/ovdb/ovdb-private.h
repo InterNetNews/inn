@@ -1,3 +1,6 @@
+#ifdef USE_BERKELEY_DB
+
+#include <db.h>
 
 #if DB_VERSION_MAJOR == 2
 #if DB_VERSION_MINOR < 6
@@ -205,3 +208,4 @@ label: { \
 
 #endif /* DB_VERSION_MAJOR == 2 */
 
+#endif /* USE_BERKELEY_DB */

@@ -13,13 +13,9 @@
 
 #include "nnrpd.h"
 #include "ov.h"
+#include "tls.h"
 
 #ifdef HAVE_SSL
-# include <openssl/ssl.h>
-# include <openssl/err.h>
-# include <openssl/bio.h>
-# include <openssl/pem.h>
-# include "tls.h"
 extern SSL *tls_conn;
 #endif 
 

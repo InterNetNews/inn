@@ -22,6 +22,13 @@
 #ifndef TLS_H
 #define TLS_H
 
+#include <openssl/lhash.h>
+#include <openssl/bn.h>
+#include <openssl/err.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
+#include <openssl/ssl.h>
+
 /* init tls */
 int tls_init_serverengine(int verifydepth, /* depth to verify */
 			  int askcert,     /* 1 = verify client */

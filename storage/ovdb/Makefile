@@ -39,6 +39,5 @@ ovdb.o: ovdb.c ../../include/config.h ../../include/inn/defines.h \
  ../../include/clibrary.h ../../include/macros.h \
  ../../include/conffile.h ../../include/libinn.h ../../include/paths.h \
  ../../include/storage.h ../../include/ov.h \
- ../../include/inn/history.h ../ovinterface.h ovdb.h \
- ../../include/inn/version.h ../../include/portable/time.h \
- ovdb-private.h
+ ../../include/inn/history.h ../ovinterface.h ovdb.h ovdb-private.h \
+ ../../include/inn/version.h ../../include/portable/time.h

@@ -93,6 +93,7 @@
 #include "ov.h"
 #include "ovinterface.h"
 #include "ovdb.h"
+#include "ovdb-private.h"
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>
@@ -171,10 +172,6 @@ BOOL ovdb_ctl(OVCTLTYPE type, void *val)
 void ovdb_close(void) { }
 
 #else /* USE_BERKELEY_DB */
-
-#include <db.h>
-
-#include "ovdb-private.h"
 
 #define EXPIREGROUP_TXN_SIZE 100
 

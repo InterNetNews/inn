@@ -62,19 +62,12 @@
 #endif
 
 
+#endif
 
-/* OpenSSL library. */
-
-#include <openssl/lhash.h>
-#include <openssl/bn.h>
-#include <openssl/err.h>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
-#include <openssl/ssl.h>
-
-/* Application-specific. */
-
+/* outside the ifdef so `make depend` works even ifndef HAVE_SSL */
 #include "tls.h"
+
+#ifdef HAVE_SSL
 
 /* We must keep some of the info available */
 static const char hexcodes[] = "0123456789ABCDEF";
