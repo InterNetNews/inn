@@ -982,7 +982,7 @@ void CMDxover(int ac, char *av[])
 	    for (field = ARTxreffield, p = data ; field-- >= 0 && p < data + len; p++)
 		if ((p = strchr(p, '\t')) == NULL)
 		    continue;
-	    if (*p == '\0')
+	    if (!p || *p == '\0')
 		continue;
 	    fp = &ARTfields[ARTxreffield];
 	    if (fp->NeedsHeader) {
