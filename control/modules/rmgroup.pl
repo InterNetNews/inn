@@ -53,7 +53,7 @@ END
         shlock("$inn::locks/LOCK.newsgroups");
         open(NEWSGROUPS, $inn::newsgroups)
             or logdie("Cannot open $inn::newsgroups: $!");
-        my $tempfile = "$inn::tmpdir/rmgroup.$$";
+        my $tempfile = "$inn::newsgroups.$$";
         open(TEMPFILE, ">$tempfile") or logdie("Cannot open $tempfile: $!");
         while (<NEWSGROUPS>) {
             print TEMPFILE $_ if not /^\Q$groupname\E\s/;
