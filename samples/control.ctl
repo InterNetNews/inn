@@ -289,17 +289,19 @@ newgroup:news@*netuse.de:bda.*:doit
 rmgroup:news@*netuse.de:bda.*:doit
 
 ## BE  (Belgique/Belgie/Belgien/Belgium )
-# Contact: usenet@innet.be
-# URL: ftp://ftp.innet.be/pub/staff/stef/
+# Contact: be-hierarchy-admin@usenet.be
+# URL: http://usenet.be/
+# Key URL: http://usenet.be/be.announce.newgroups.asc
+# Key fingerprint = 30 2A 45 94 70 DE 1F D5  81 8C 58 64 D2 F7 08 71
 # *PGP*   See comment at top of file.
 newgroup:*:be.*:drop
 rmgroup:*:be.*:drop
-checkgroups:news@*innet.be:be.*:verify-be.announce.newgroups
-newgroup:news@*innet.be:be.*:verify-be.announce.newgroups
-rmgroup:news@*innet.be:be.*:verify-be.announce.newgroups
+checkgroups:group-admin@usenet.be:be.*:verify-be.announce.newgroups
+newgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
+rmgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 
-# newgroup:news@innet.be:be.*:doit
-# rmgroup:news@innet.be:be.*:doit
+# newgroup:group-admin@usenet.be:be.*:doit
+# rmgroup:group-admin@usenet.be:be.*:doit
 
 ## BERMUDA
 newgroup:news@*ibl.bm:bermuda.*:doit
