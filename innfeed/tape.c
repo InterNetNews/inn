@@ -126,7 +126,7 @@ struct tape_s
     /* the tape holds a small output queue in memory to avoid thrashing. */
     QueueElem head ;            
     QueueElem tail ;
-    u_int qLength ;             /* amount on the queue */
+    unsigned int qLength ;             /* amount on the queue */
 #endif
     
     long outputSize ;           /* the current size of the output file. */
@@ -176,8 +176,8 @@ static TimeoutId checkPtId ;
 static TimeoutId ckNewFileId ;
 
 /* number of seconds between tape checkpoints. */
-static u_int tapeCkPtPeriod ;
-static u_int tapeCkNewFilePeriod ;
+static unsigned int tapeCkPtPeriod ;
+static unsigned int tapeCkNewFilePeriod ;
 
 /* the callback ID of the tape rotation timer callback. */
 static TimeoutId rotateId ;     /* XXX */
@@ -198,7 +198,7 @@ static size_t activeTapeIdx ;
 static long defaultSizeLimit ;
 #endif
 
-u_int tapeHighwater ;
+unsigned int tapeHighwater ;
 
 bool debugShrinking = false ;
 
@@ -262,7 +262,7 @@ int tapeConfigLoadCbk (void *data)
     }
   else
     iv = TAPE_HIGHWATER ;
-  tapeHighwater = (u_int) iv ;
+  tapeHighwater = (unsigned int) iv ;
 
 
   
@@ -278,7 +278,7 @@ int tapeConfigLoadCbk (void *data)
     }
   else
     iv = TAPE_ROTATE_PERIOD ;
-  rotatePeriod = (u_int) iv ;
+  rotatePeriod = (unsigned int) iv ;
 
 
   if (getInteger (topScope,"backlog-ckpt-period",&iv,NO_INHERIT))
@@ -293,7 +293,7 @@ int tapeConfigLoadCbk (void *data)
     }
   else
     iv = TAPE_CHECKPOINT_PERIOD ;
-  tapeCkPtPeriod = (u_int) iv ;
+  tapeCkPtPeriod = (unsigned int) iv ;
 
 
   if (getInteger (topScope,"backlog-newfile-period",&iv,NO_INHERIT))
@@ -308,7 +308,7 @@ int tapeConfigLoadCbk (void *data)
     }
   else
     iv = TAPE_NEWFILE_PERIOD ;
-  tapeCkNewFilePeriod = (u_int) iv ;
+  tapeCkNewFilePeriod = (unsigned int) iv ;
 
 
   if (getBool (topScope,"debug-shrinking",&bv,NO_INHERIT))
@@ -468,7 +468,7 @@ static void initTape (Tape nt)
 
 void gFlushTapes (void)
 {
-  u_int i ;
+  unsigned int i ;
 
   syslog (LOG_NOTICE,FLUSHING_TAPES) ;
   for (i = 0 ; i < activeTapeIdx ; i++)
@@ -495,10 +495,10 @@ void tapeFlush (Tape tape)
 
 
 
-void gPrintTapeInfo (FILE *fp, u_int indentAmt)
+void gPrintTapeInfo (FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -547,10 +547,10 @@ void tapeLogStatus (Tape tape, FILE *fp)
     }
 }
 
-void printTapeInfo (Tape tape, FILE *fp, u_int indentAmt)
+void printTapeInfo (Tape tape, FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
 #if 0
   QueueElem qe ;
 #endif
@@ -852,7 +852,7 @@ Article getArticle (Tape tape)
 /* Cause all the Tapes to checkpoint themselves. */
 void checkPointTapes (void)
 {
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < activeTapeIdx ; i++)
     checkpointTape (activeTapes [i]) ;
@@ -862,7 +862,7 @@ void checkPointTapes (void)
 /* make all the tapes set their checkNew flag. */
 static void tapesSetCheckNew (void) 
 {
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < activeTapeIdx ; i++)
     activeTapes[i]->checkNew = true ;
@@ -931,7 +931,7 @@ static void addTapeGlobally (Tape tape)
   
   if (activeTapeSize == activeTapeIdx)
     {
-      u_int i ;
+      unsigned int i ;
       
       activeTapeSize += 10 ;
       if (activeTapes != NULL)
@@ -951,7 +951,7 @@ static void addTapeGlobally (Tape tape)
 /* Remove a tape for the class-level list of active tapes. */
 static void removeTapeGlobally (Tape tape)
 {
-  u_int i ;
+  unsigned int i ;
 
   if (tape == NULL)
     return ;
@@ -1157,7 +1157,7 @@ static void prepareFiles (Tape tape)
             }
           else
             {
-              u_int len = strlen (buffer) ;
+              unsigned int len = strlen (buffer) ;
               long newPos = 0 ;
 
               if (len > 0 && buffer [len - 1] == '\n')

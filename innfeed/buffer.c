@@ -50,8 +50,8 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 static Buffer gBufferList = NULL ;
 static Buffer bufferPool = NULL ;
-static u_int bufferCount = 0 ;
-static u_int bufferByteCount = 0 ;
+static unsigned int bufferCount = 0 ;
+static unsigned int bufferByteCount = 0 ;
 
 
 struct buffer_s 
@@ -193,11 +193,11 @@ Buffer bufferTakeRef (Buffer buff)
 }
 
 
-void gPrintBufferInfo (FILE *fp, u_int indentAmt)
+void gPrintBufferInfo (FILE *fp, unsigned int indentAmt)
 {
   Buffer b ;
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -211,11 +211,11 @@ void gPrintBufferInfo (FILE *fp, u_int indentAmt)
   fprintf (fp,"%s}\n",indent) ;
 }
 
-void printBufferInfo (Buffer buffer, FILE *fp, u_int indentAmt)
+void printBufferInfo (Buffer buffer, FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
   char bufferStart [256] ;
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -357,9 +357,9 @@ Buffer *dupBufferArray (Buffer *array)
 }
 
 
-u_int bufferArrayLen (Buffer *array)
+unsigned int bufferArrayLen (Buffer *array)
 {
-  u_int count = 0 ;
+  unsigned int count = 0 ;
 
   if (array != NULL)
     while (*array != NULL)
@@ -376,7 +376,7 @@ bool copyBuffer (Buffer dest, Buffer src)
 {
   char *baseDest = bufferBase (dest) ;
   char *baseSrc = bufferBase (src) ;
-  u_int amt = bufferDataSize (src) ;
+  unsigned int amt = bufferDataSize (src) ;
 
   if (amt > bufferSize (dest))
     return false ;
@@ -389,7 +389,7 @@ bool copyBuffer (Buffer dest, Buffer src)
 }
 
 
-u_int bufferRefCount (Buffer buf)
+unsigned int bufferRefCount (Buffer buf)
 {
   return buf->refCount ;
 }

@@ -281,7 +281,7 @@ typedef struct connection_s {
     time_t lmtp_timeCon ;
 
     EndPoint lmtp_endpoint;
-    u_int ident ;               /* an identifier for syslogging. */
+    unsigned int ident ;               /* an identifier for syslogging. */
 
     lmtp_capabilities_t *lmtp_capabilities;
 
@@ -295,21 +295,21 @@ typedef struct connection_s {
 
     /* Timer for the max amount of time to wait for a response from the
        remote */
-    u_int lmtp_readTimeout ;
+    unsigned int lmtp_readTimeout ;
     TimeoutId lmtp_readBlockedTimerId ;
 
     /* Timer for the max amount of time to wait for a any amount of data
        to be written to the remote */
-    u_int lmtp_writeTimeout ;
+    unsigned int lmtp_writeTimeout ;
     TimeoutId lmtp_writeBlockedTimerId ;
 
     /* Timer for the number of seconds to sleep before attempting a
        reconnect. */
-    u_int lmtp_sleepTimeout ;
+    unsigned int lmtp_sleepTimeout ;
     TimeoutId lmtp_sleepTimerId ;
 
     /* Timer for max amount between queueing some articles and trying to send them */
-    u_int dosomethingTimeout ;
+    unsigned int dosomethingTimeout ;
     TimeoutId dosomethingTimerId ;
 
     Q_t lmtp_todeliver_q;
@@ -341,17 +341,17 @@ typedef struct connection_s {
 
     /* Timer for the max amount of time to wait for a response from the
        remote */
-    u_int imap_readTimeout ;
+    unsigned int imap_readTimeout ;
     TimeoutId imap_readBlockedTimerId ;
 
     /* Timer for the max amount of time to wait for a any amount of data
        to be written to the remote */
-    u_int imap_writeTimeout ;
+    unsigned int imap_writeTimeout ;
     TimeoutId imap_writeBlockedTimerId ;
 
     /* Timer for the number of seconds to sleep before attempting a
        reconnect. */
-    u_int imap_sleepTimeout ;
+    unsigned int imap_sleepTimeout ;
     TimeoutId imap_sleepTimerId ;
 
     Q_t imap_controlMsg_q;
@@ -363,9 +363,9 @@ typedef struct connection_s {
 } connection_t;
 
 static Connection gCxnList = NULL ;
-static u_int gCxnCount= 0 ;
-static u_int max_reconnect_period = MAX_RECON_PER ;
-static u_int init_reconnect_period = INIT_RECON_PER;
+static unsigned int gCxnCount= 0 ;
+static unsigned int max_reconnect_period = MAX_RECON_PER ;
+static unsigned int init_reconnect_period = INIT_RECON_PER;
 
 typedef enum {
     RET_OK = 0,
@@ -4220,12 +4220,12 @@ static void delConnection (Connection cxn)
    */
 
 Connection newConnection (Host host,
-                          u_int ident,
+                          unsigned int ident,
                           const char *ipname,
-                          u_int artTout UNUSED,
-                          u_int portNum UNUSED,
-                          u_int respTimeout,
-                          u_int closePeriod UNUSED,
+                          unsigned int artTout UNUSED,
+                          unsigned int portNum UNUSED,
+                          unsigned int respTimeout,
+                          unsigned int closePeriod UNUSED,
                           double lowPassLow UNUSED,
                           double lowPassHigh UNUSED,
 			  double lowPassFilter UNUSED)
@@ -4552,10 +4552,10 @@ void cxnSetCheckThresholds (Connection cxn,
 }
 
 /* print some debugging info. */
-void gPrintCxnInfo (FILE *fp, u_int indentAmt)
+void gPrintCxnInfo (FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   Connection cxn ;
 
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
@@ -4569,10 +4569,10 @@ void gPrintCxnInfo (FILE *fp, u_int indentAmt)
   fprintf (fp,"%s}\n",indent) ;
 }
 
-void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt)
+void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   article_queue_t *artH ;
 
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
@@ -4659,7 +4659,7 @@ int cxnConfigLoadCbk (void *data)
     }
   else
     iv = MAX_RECON_PER ;
-  max_reconnect_period = (u_int) iv ;
+  max_reconnect_period = (unsigned int) iv ;
 
   if (getInteger (topScope,"initial-reconnect-time",&iv,NO_INHERIT))
     {
@@ -4673,7 +4673,7 @@ int cxnConfigLoadCbk (void *data)
     }
   else
     iv = INIT_RECON_PER ;
-  init_reconnect_period = (u_int) iv ;
+  init_reconnect_period = (unsigned int) iv ;
 
   return rval ;
 }

@@ -62,20 +62,14 @@ typedef void (*EndpTCB) (TimeoutId tid, void *d) ; /* see endpoint.h */
 typedef void (*EndpWorkCbk) (EndPoint ep, void *data) ;
 
 
-#if defined (DO_NEED_U_INT)
-typedef unsigned long u_long ;
-typedef unsigned int u_int ;
-typedef unsigned short u_short ;
-#endif
-
 /* debugging information */
-extern u_int loggingLevel ;     /* if 0 then d_printf is a no-op */
+extern unsigned int loggingLevel ;     /* if 0 then d_printf is a no-op */
 
 /* the current count of file desccriptors */
-extern u_int openfds ;
+extern unsigned int openfds ;
 
 /* if level <= loggingLevel then print */
-void d_printf (u_int level, const char *fmt, ...) __attribute__ ((__format__ (printf, 2, 3)));
+void d_printf (unsigned int level, const char *fmt, ...) __attribute__ ((__format__ (printf, 2, 3)));
 
 /* for the gethostbyname() error code */
 const char *host_err_str (void) ;

@@ -250,12 +250,6 @@ extern void syslog (int, const char *,...) __attribute__ ((__format__ (printf, 2
 # define MAX_STDIO_FD 0
 #endif
 
-/* define DONT_NEED_U_INT or DO_NEED_U_INT depending on if you
-   have a `u_long', `u_int', `u_short' in your system include path or not */
-#if ! defined (DO_NEED_U_INT) && ! defined (DONT_NEED_U_INT)
-#define DONT_NEED_U_INT 1
-#endif
-
 /* some timer constants */
 
 typedef enum { TMR_IDLE = TMR_APPLICATION, TMR_BACKLOGSTATS,

@@ -68,9 +68,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "msgs.h"
 #include "tape.h"
 
-u_int openfds ;
+unsigned int openfds ;
 int debuggingOutput ;
-u_int loggingLevel ;
+unsigned int loggingLevel ;
 char **PointersFreedOnExit ;
 
 bool debuggingDump = true ;
@@ -146,7 +146,7 @@ logAndExit(int status, const char *format, ...)
 
 
 
-void d_printf (u_int level, const char *fmt, ...) 
+void d_printf (unsigned int level, const char *fmt, ...) 
 {
   static pid_t myPid ;
   char timeString [30] ;
@@ -357,7 +357,7 @@ char *mystrtok (char *line, const char *sep)
 void trim_ws (char *string)
 {
   char *p ;
-  u_int len ;
+  unsigned int len ;
 
   assert (string != NULL) ;
 

@@ -66,10 +66,10 @@ Buffer newBufferByCharP (const char *ptr, size_t size, size_t dataSize) ;
 void delBuffer (Buffer buff) ;
 
   /* print some debugging information about the buffer. */
-void printBufferInfo (Buffer buffer, FILE *fp, u_int indentAmt) ;
+void printBufferInfo (Buffer buffer, FILE *fp, unsigned int indentAmt) ;
 
   /* print debugging information about all outstanding buffers. */
-void gPrintBufferInfo (FILE *fp, u_int indentAmt) ;
+void gPrintBufferInfo (FILE *fp, unsigned int indentAmt) ;
 
 /* increment reference counts so that the buffer object can be */
 /* handed off to another function without it being deleted when that */
@@ -115,14 +115,14 @@ bool isDeletable (Buffer buff) ;
 Buffer *dupBufferArray (Buffer *array) ;
 
 /* return the number of non-NULL elements in the array. */
-u_int bufferArrayLen (Buffer *array) ;
+unsigned int bufferArrayLen (Buffer *array) ;
 
 /* copies the contents of the SRC buffer into the DEST buffer and sets the
    data size appropriately. Returns false if src is bigger than dest. */
 bool copyBuffer (Buffer dest, Buffer src) ;
 
 /* return the ref count on the buffer */
-u_int bufferRefCount (Buffer buff) ;
+unsigned int bufferRefCount (Buffer buff) ;
 
 /* insert a null byte at the end of the data region */
 void bufferAddNullByte (Buffer buff) ;

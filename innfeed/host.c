@@ -112,22 +112,22 @@ typedef struct host_param_s
 {
   char *peerName;
   char *ipName;
-  u_int articleTimeout;
-  u_int responseTimeout;
-  u_int initialConnections;
-  u_int absMaxConnections;
-  u_int maxChecks;
-  u_short portNum;
-  u_int closePeriod;
-  u_int dynamicMethod;
+  unsigned int articleTimeout;
+  unsigned int responseTimeout;
+  unsigned int initialConnections;
+  unsigned int absMaxConnections;
+  unsigned int maxChecks;
+  unsigned short portNum;
+  unsigned int closePeriod;
+  unsigned int dynamicMethod;
   bool wantStreaming;
   bool dropDeferred;
   bool minQueueCxn;
   double lowPassLow; /* as percentages */
   double lowPassHigh;
   double lowPassFilter;
-  u_int backlogLimit ;
-  u_int backlogLimitHigh ;
+  unsigned int backlogLimit ;
+  unsigned int backlogLimitHigh ;
   double backlogFactor ;
   double dynBacklogFilter ;
   double dynBacklogLowWaterMark ;
@@ -143,9 +143,9 @@ struct host_s
     Connection *connections ;   /* NULL-terminated list of all connections */
     bool *cxnActive ;           /* true if the corresponding cxn is active */
     bool *cxnSleeping ;         /* true if the connection is sleeping */
-    u_int maxConnections;       /* maximum no of cxns controlled by method */
-    u_int activeCxns ;          /* number of connections currently active */
-    u_int sleepingCxns ;        /* number of connections currently sleeping */
+    unsigned int maxConnections;       /* maximum no of cxns controlled by method */
+    unsigned int activeCxns ;          /* number of connections currently active */
+    unsigned int sleepingCxns ;        /* number of connections currently sleeping */
     Connection blockedCxn ;     /* the first connection to get the 400 banner*/
     Connection notThisCxn ;	/* don't offer articles to this connection */
 
@@ -169,8 +169,8 @@ struct host_s
     Tape myTape ;
     
     bool backedUp ;             /* set to true when all cxns are full */
-    u_int backlog ;             /* number of arts in `queued' queue */
-    u_int deferLen ;		/* number of arts in `deferred' queue */
+    unsigned int backlog ;             /* number of arts in `queued' queue */
+    unsigned int deferLen ;		/* number of arts in `deferred' queue */
 
     bool loggedModeOn ;         /* true if we logged going into no-CHECK mode */
     bool loggedModeOff ;        /* true if we logged going out of no-CHECK mode */
@@ -183,51 +183,51 @@ struct host_s
     bool isDynamic;             /* true if host created dynamically */
 
     /* these numbers get reset periodically (after a 'final' logging). */
-    u_int artsOffered ;         /* # of articles we offered to remote. */
-    u_int artsAccepted ;        /* # of articles succesfully transferred */
-    u_int artsNotWanted ;       /* # of articles remote already had */
-    u_int artsRejected ;        /* # of articles remote rejected */
-    u_int artsDeferred ;        /* # of articles remote asked us to retry */
-    u_int artsMissing ;         /* # of articles whose file was missing. */
-    u_int artsToTape ;          /* # of articles given to tape */
-    u_int artsQueueOverflow ;   /* # of articles that overflowed `queued' */
-    u_int artsCxnDrop ;         /* # of articles caught in dead cxn */
-    u_int artsHostSleep ;       /* # of articles spooled by sleeping host */
-    u_int artsHostClose ;       /* # of articles caught by closing host */
-    u_int artsFromTape ;        /* # of articles we pulled off tape */
+    unsigned int artsOffered ;         /* # of articles we offered to remote. */
+    unsigned int artsAccepted ;        /* # of articles succesfully transferred */
+    unsigned int artsNotWanted ;       /* # of articles remote already had */
+    unsigned int artsRejected ;        /* # of articles remote rejected */
+    unsigned int artsDeferred ;        /* # of articles remote asked us to retry */
+    unsigned int artsMissing ;         /* # of articles whose file was missing. */
+    unsigned int artsToTape ;          /* # of articles given to tape */
+    unsigned int artsQueueOverflow ;   /* # of articles that overflowed `queued' */
+    unsigned int artsCxnDrop ;         /* # of articles caught in dead cxn */
+    unsigned int artsHostSleep ;       /* # of articles spooled by sleeping host */
+    unsigned int artsHostClose ;       /* # of articles caught by closing host */
+    unsigned int artsFromTape ;        /* # of articles we pulled off tape */
     double artsSizeAccepted ;	/* size of articles succesfully transferred */
     double artsSizeRejected ;	/* size of articles remote rejected */
 
     /* Dynamic Peerage - MGF */
-    u_int artsProcLastPeriod ;  /* # of articles processed in last period */
-    u_int secsInLastPeriod ;    /* Number of seconds in last period */
-    u_int lastCheckPoint ;      /* total articles at end of last period */
-    u_int lastSentCheckPoint ;  /* total articles sent end of last period */
-    u_int lastTotalCheckPoint ; /* total articles total end of last period */
+    unsigned int artsProcLastPeriod ;  /* # of articles processed in last period */
+    unsigned int secsInLastPeriod ;    /* Number of seconds in last period */
+    unsigned int lastCheckPoint ;      /* total articles at end of last period */
+    unsigned int lastSentCheckPoint ;  /* total articles sent end of last period */
+    unsigned int lastTotalCheckPoint ; /* total articles total end of last period */
     bool maxCxnChk ;            /* check for maxConnections */
     time_t lastMaxCxnTime ;     /* last time a maxConnections increased */
     time_t lastChkTime;         /* last time a check was made for maxConnect */
-    u_int nextCxnTimeChk ;      /* next check for maxConnect */
+    unsigned int nextCxnTimeChk ;      /* next check for maxConnect */
 
     double backlogFilter;        /* IIR filter for size of backlog */
 
     /* These numbers are as above, but for the life of the process. */
-    u_int gArtsOffered ;        
-    u_int gArtsAccepted ;
-    u_int gArtsNotWanted ;
-    u_int gArtsRejected ;
-    u_int gArtsDeferred ;
-    u_int gArtsMissing ;
-    u_int gArtsToTape ;
-    u_int gArtsQueueOverflow ;
-    u_int gArtsCxnDrop ;
-    u_int gArtsHostSleep ;
-    u_int gArtsHostClose ;
-    u_int gArtsFromTape ;
+    unsigned int gArtsOffered ;        
+    unsigned int gArtsAccepted ;
+    unsigned int gArtsNotWanted ;
+    unsigned int gArtsRejected ;
+    unsigned int gArtsDeferred ;
+    unsigned int gArtsMissing ;
+    unsigned int gArtsToTape ;
+    unsigned int gArtsQueueOverflow ;
+    unsigned int gArtsCxnDrop ;
+    unsigned int gArtsHostSleep ;
+    unsigned int gArtsHostClose ;
+    unsigned int gArtsFromTape ;
     double gArtsSizeAccepted ;
     double gArtsSizeRejected ;
-    u_int gCxnQueue ;
-    u_int gNoQueue ;
+    unsigned int gCxnQueue ;
+    unsigned int gNoQueue ;
 
     time_t firstConnectTime ;   /* time of first connect. */
     time_t connectTime ;        /* the time the first connection was fully
@@ -243,12 +243,12 @@ struct host_s
     
     Host next ;                 /* for global list of hosts. */
 
-    u_long dlAccum ;		/* cumulative deferLen */
-    u_int blNone ;              /* number of times the backlog was 0 */
-    u_int blFull ;              /* number of times the backlog was full */
-    u_int blQuartile[4] ;       /* number of times in each quartile */
-    u_long blAccum ;            /* cumulative backlog for computing mean */
-    u_int blCount ;             /* the sample count */
+    unsigned long dlAccum ;		/* cumulative deferLen */
+    unsigned int blNone ;              /* number of times the backlog was 0 */
+    unsigned int blFull ;              /* number of times the backlog was full */
+    unsigned int blQuartile[4] ;       /* number of times in each quartile */
+    unsigned long blAccum ;            /* cumulative backlog for computing mean */
+    unsigned int blCount ;             /* the sample count */
 };
 
 /* A holder for the info we got out of the config file, but couldn't create
@@ -296,13 +296,13 @@ static void hostLogStatus (void) ;
 static void hostPrintStatus (Host host, FILE *fp) ;
 static int validateBool (FILE *fp, const char *name,
                          int required, bool setval,
-			 scope * sc, u_int inh);
+			 scope * sc, unsigned int inh);
 static int validateReal (FILE *fp, const char *name, double low,
 			 double high, int required, double setval,
-			 scope * sc, u_int inh);
+			 scope * sc, unsigned int inh);
 static int validateInteger (FILE *fp, const char *name,
 			    long low, long high, int required, long setval,
-			    scope * sc, u_int inh);
+			    scope * sc, unsigned int inh);
 
 static HostParams newHostParams(HostParams p);
 static void freeHostParams(HostParams params);
@@ -321,7 +321,7 @@ static HostParams hostDetails (scope *s,
 static Host findHostByName (char *name) ;
 static void hostCleanup (void) ;
 static void hostAlterMaxConnections(Host host,
-				    u_int absMaxCxns, u_int maxCxns,
+				    unsigned int absMaxCxns, unsigned int maxCxns,
 				    bool makeConnect);
 
 /* article queue management functions */
@@ -348,19 +348,19 @@ static time_t statsResetPeriod = STATS_RESET_PERIOD ;
 
 static Host gHostList = NULL ;
 
-static u_int gHostCount = 0 ;
+static unsigned int gHostCount = 0 ;
 
-static u_int maxIpNameLen = 0 ;
-static u_int maxPeerNameLen = 0 ;
+static unsigned int maxIpNameLen = 0 ;
+static unsigned int maxPeerNameLen = 0 ;
 
-static u_int hostHighwater = HOST_HIGHWATER ;
+static unsigned int hostHighwater = HOST_HIGHWATER ;
 static time_t start ;
 static char startTime [30] ;    /* for ctime(3) */
 static pid_t myPid ;
 
 static char *statusFile = NULL ;
-static u_int dnsRetPeriod ;
-static u_int dnsExpPeriod ;
+static unsigned int dnsRetPeriod ;
+static unsigned int dnsExpPeriod ;
 
 bool genHtml = false ;
 
@@ -399,7 +399,7 @@ int hostConfigLoadCbk (void *data)
     }
   else
     iv = DNS_RETRY_PERIOD ;
-  dnsRetPeriod = (u_int) iv ;
+  dnsRetPeriod = (unsigned int) iv ;
   
   
   if (getInteger (topScope,"dns-expire",&iv,NO_INHERIT))
@@ -414,7 +414,7 @@ int hostConfigLoadCbk (void *data)
     }
   else
     iv = DNS_EXPIRE_PERIOD ;
-  dnsExpPeriod = (u_int) iv ;
+  dnsExpPeriod = (unsigned int) iv ;
 
   if (getBool (topScope,"gen-html",&bval,NO_INHERIT))
     genHtml = (bval ? true : false) ;
@@ -448,7 +448,7 @@ int hostConfigLoadCbk (void *data)
     }
   else
     iv = HOST_HIGHWATER ;
-  hostHighwater = (u_int) iv ;
+  hostHighwater = (unsigned int) iv ;
 
   if (getInteger (topScope,"stats-period",&iv,NO_INHERIT))
     {
@@ -462,7 +462,7 @@ int hostConfigLoadCbk (void *data)
     }
   else
     iv = STATS_PERIOD ;
-  statsPeriod = (u_int) iv ;
+  statsPeriod = (unsigned int) iv ;
 
 
   if (getInteger (topScope,"stats-reset",&iv,NO_INHERIT))
@@ -477,7 +477,7 @@ int hostConfigLoadCbk (void *data)
     }
   else
     iv = STATS_RESET_PERIOD ;
-  statsResetPeriod = (u_int) iv ;
+  statsResetPeriod = (unsigned int) iv ;
   
   defaultParams=hostDetails(topScope, NULL, true, fp);
   ASSERT(defaultParams!=NULL);
@@ -551,7 +551,7 @@ void freeHostParams(HostParams params)
 
 static void hostReconfigure(Host h, HostParams params)
 {
-  u_int i, absMaxCxns ;
+  unsigned int i, absMaxCxns ;
   double oldBacklogFilter ;
   
   if (strcmp(h->params->ipName, params->ipName) != 0)
@@ -688,11 +688,11 @@ void configHosts (bool talkSelf)
 
 
 void hostAlterMaxConnections(Host host,
-			     u_int absMaxCxns, u_int maxCxns,
+			     unsigned int absMaxCxns, unsigned int maxCxns,
 			     bool makeConnect)
 {
-  u_int lAbsMaxCxns;
-  u_int i;
+  unsigned int lAbsMaxCxns;
+  unsigned int i;
   
   /* Fix 0 unlimited case */
   lAbsMaxCxns = MAXCONLIMIT(absMaxCxns);
@@ -1263,11 +1263,11 @@ void hostIpFailed (Host host)
 }
 
 
-void gPrintHostInfo (FILE *fp, u_int indentAmt)
+void gPrintHostInfo (FILE *fp, unsigned int indentAmt)
 {
   Host h ;
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -1282,10 +1282,10 @@ void gPrintHostInfo (FILE *fp, u_int indentAmt)
 }
 
 
-void printHostInfo (Host host, FILE *fp, u_int indentAmt)
+void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   ProcQElem qe ;
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
   
@@ -1528,8 +1528,8 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
  */
 void hostClose (Host host)
 {
-  u_int i ;
-  u_int cxnCount ;
+  unsigned int i ;
+  unsigned int cxnCount ;
 
   d_printf (1,"Closing host %s\n",host->params->peerName) ;
   
@@ -1563,7 +1563,7 @@ void hostClose (Host host)
  */
 void hostChkCxns(TimeoutId tid UNUSED, void *data) {
   Host host = (Host) data;
-  u_int currArticles, currSentArticles, currTotalArticles, newMaxCxns ;
+  unsigned int currArticles, currSentArticles, currTotalArticles, newMaxCxns ;
   double lastAPS, currAPS, percentTaken, ratio ;
   double backlogRatio, backlogMult;
 
@@ -1719,7 +1719,7 @@ void hostSendArticle (Host host, Article article)
   /* at least one connection is feeding or waiting and there's no backlog */
   if (host->queued == NULL)
     {
-      u_int idx ;
+      unsigned int idx ;
       Article extraRef ;
       Connection cxn ;
       
@@ -1730,7 +1730,7 @@ void hostSendArticle (Host host, Article article)
 
       if (host->params->minQueueCxn) {
         Connection x_cxn = NULL ;
-        u_int x_queue = host->params->maxChecks + 1 ;
+        unsigned int x_queue = host->params->maxChecks + 1 ;
 
         for (idx = 0 ; x_queue > 0 && idx < host->maxConnections ; idx++)
           if ((cxn = host->connections[idx]) != host->notThisCxn) {
@@ -1744,7 +1744,7 @@ void hostSendArticle (Host host, Article article)
                            host->params->peerName,idx) ;
               }
             } else {
-              u_int queue = host->params->maxChecks - cxnQueueSpace (cxn) ;
+              unsigned int queue = host->params->maxChecks - cxnQueueSpace (cxn) ;
               if (queue < x_queue) {
                 x_queue = queue ;
                 x_cxn = cxn ;
@@ -1769,7 +1769,7 @@ void hostSendArticle (Host host, Article article)
             if (host->cxnActive [idx] &&
                 (cxn = host->connections[idx]) != host->notThisCxn &&
                 cxnTakeArticle (cxn, extraRef)) {
-              u_int queue = host->params->maxChecks - cxnQueueSpace (cxn) - 1;
+              unsigned int queue = host->params->maxChecks - cxnQueueSpace (cxn) - 1;
               if (queue == 0) host->gNoQueue++ ;
               else            host->gCxnQueue += queue ;
 	      return ;
@@ -1782,7 +1782,7 @@ void hostSendArticle (Host host, Article article)
               (cxn = host->connections[idx]) != host->notThisCxn)
             {
               if (cxnTakeArticle (cxn, extraRef)) {
-                u_int queue = host->params->maxChecks - cxnQueueSpace (cxn) - 1;
+                unsigned int queue = host->params->maxChecks - cxnQueueSpace (cxn) - 1;
                 if (queue == 0) host->gNoQueue++ ;
                 else            host->gCxnQueue += queue ;
                 return ;
@@ -1832,7 +1832,7 @@ void hostCxnBlocked (Host host, Connection cxn, char *reason)
   ASSERT(host->params != NULL);
 #ifndef NDEBUG
   {
-    u_int i ;
+    unsigned int i ;
     
     for (i = 0 ; i < host->maxConnections ; i++)
       if (host->connections [i] == cxn)
@@ -1872,7 +1872,7 @@ void hostCxnBlocked (Host host, Connection cxn, char *reason)
  */
 void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
 {
-  u_int i ;
+  unsigned int i ;
 
   host->blockedCxn = NULL ;
   if (host->blockedReason != NULL)
@@ -1944,7 +1944,7 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
  */
 void hostCxnDead (Host host, Connection cxn)
 {
-  u_int i ;
+  unsigned int i ;
     
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->connections [i] == cxn)
@@ -1987,7 +1987,7 @@ void hostCxnDead (Host host, Connection cxn)
  */
 void hostCxnSleeping (Host host, Connection cxn)
 {
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->connections [i] == cxn)
@@ -2020,7 +2020,7 @@ void hostCxnSleeping (Host host, Connection cxn)
  */
 void hostCxnWaiting (Host host, Connection cxn)
 {
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->connections [i] == cxn)
@@ -2050,7 +2050,7 @@ void hostCxnWaiting (Host host, Connection cxn)
  */
 bool hostCxnGone (Host host, Connection cxn)
 {
-  u_int i;
+  unsigned int i;
   bool oneThere = false ;
   char msgstr[SMBUF] ;
 
@@ -2082,7 +2082,7 @@ bool hostCxnGone (Host host, Connection cxn)
   if ( !oneThere )
     {
       time_t now = theTime() ;
-      u_int hostsLeft ;
+      unsigned int hostsLeft ;
 
       if (host->firstConnectTime > 0) {
         snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
@@ -2364,7 +2364,7 @@ bool hostGimmeArticle (Host host, Connection cxn)
   while (amtToGive > 0)
     {
       bool tookIt ;
-      u_int queue = host->params->maxChecks - amtToGive ;
+      unsigned int queue = host->params->maxChecks - amtToGive ;
       
       if ((article = remHead (&host->queued,&host->queuedTail)) != NULL)
         {
@@ -2436,7 +2436,7 @@ bool hostWantsStreaming (Host host)
   return host->params->wantStreaming ;
 }
 
-u_int hostMaxChecks (Host host)
+unsigned int hostMaxChecks (Host host)
 {
   return host->params->maxChecks ;
 }
@@ -2602,7 +2602,7 @@ static HostParams hostDetails (scope *s,
   } while(0);                                           \
   iv = 0 ;                                              \
   (void) getInteger (sc,n,&iv,inh) ;                    \
-  val = (u_int) iv ;                                    \
+  val = (unsigned int) iv ;                                    \
 
 #define GETREAL(sc,f,n,min,max,req,val,inh)             \
   vival = validateReal(f,n,min,max,req,val,sc,inh);     \
@@ -2897,7 +2897,7 @@ static void hostLogStats (Host host, bool final)
 
   if (logConnectionStats) 
     {
-      u_int i ;
+      unsigned int i ;
       
       for (i = 0 ; i < host->maxConnections ; i++)
         if (host->connections [i] != NULL && host->cxnActive [i])
@@ -2990,7 +2990,7 @@ static void hostLogStatus (void)
   FILE *fp = NULL ;
   Host h ;
   bool anyToLog = false ;
-  u_int peerNum = 0, actConn = 0, slpConn = 0, maxcon = 0 ;
+  unsigned int peerNum = 0, actConn = 0, slpConn = 0, maxcon = 0 ;
   static bool logged = false ;
   static bool flogged = false ;
 
@@ -3645,7 +3645,7 @@ static Article remHead (ProcQElem *head, ProcQElem *tail)
 
 static int validateInteger (FILE *fp, const char *name,
                      long low, long high, int required, long setval,
-		     scope * sc, u_int inh)
+		     scope * sc, unsigned int inh)
 {
   int rval = VALUE_OK ;
   value *v ;
@@ -3692,7 +3692,7 @@ static int validateInteger (FILE *fp, const char *name,
 
 static int validateReal (FILE *fp, const char *name, double low,
                          double high, int required, double setval,
-			 scope * sc, u_int inh)
+			 scope * sc, unsigned int inh)
 {
   int rval = VALUE_OK ;
   value *v ;
@@ -3734,7 +3734,7 @@ static int validateReal (FILE *fp, const char *name, double low,
 
 
 static int validateBool (FILE *fp, const char *name, int required, bool setval,
-			 scope * sc, u_int inh)
+			 scope * sc, unsigned int inh)
 {
   int rval = VALUE_OK ;
   value *v ;

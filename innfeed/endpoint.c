@@ -100,7 +100,7 @@ struct endpoint_s
 {
       /* fields for managing multiple reads into the inBuffer. */
     Buffer *inBuffer ;          /* list of buffers to read into */
-    u_int inBufferIdx ;         /* where is list we're at. */
+    unsigned int inBufferIdx ;         /* where is list we're at. */
     size_t inIndex ;            /* where in current read we're at */
     size_t inMinLen ;           /* minimum amount to read */
     size_t inAmtRead ;          /* amount read so far */
@@ -109,7 +109,7 @@ struct endpoint_s
     
       /* fields for managing multiple writes from the outBuffer */
     Buffer *outBuffer ;         /* list of buffers to write */
-    u_int outBufferIdx ;        /* index into buffer list to start write */
+    unsigned int outBufferIdx ;        /* index into buffer list to start write */
     size_t outIndex ;           /* where in current buffer we write from */
     size_t outSize ;            /* total of all the buffers */
     size_t outAmtWritten ;      /* amount written so far */
@@ -148,7 +148,7 @@ extern const char *InputFile ;
 
 static EndPoint mainEndPoint ;
 static bool mainEpIsReg = false ;
-static u_int stdioFdMax = MAX_STDIO_FD ;
+static unsigned int stdioFdMax = MAX_STDIO_FD ;
 
 time_t  PrivateTime;
 
@@ -175,8 +175,8 @@ static void doTimeout (void) ;
 static void handleSignals (void) ;
 
 #if 0
-static int ff_set (fd_set *set, u_int start) ;
-static int ff_free (fd_set *set, u_int start) ;
+static int ff_set (fd_set *set, unsigned int start) ;
+static int ff_free (fd_set *set, unsigned int start) ;
 #endif
 static void endpointCleanup (void) ;
 
@@ -189,8 +189,8 @@ static EndPoint *priorityList ; /* endpoints indexed on priority */
 
 static int absHighestFd = 0 ;       /* never goes down */
 static int highestFd = -1 ;
-static u_int endPointCount = 0 ;
-static u_int priorityCount = 0 ;
+static unsigned int endPointCount = 0 ;
+static unsigned int priorityCount = 0 ;
 
 static fd_set rdSet ;
 static fd_set wrSet ;
@@ -227,7 +227,7 @@ EndPoint newEndPoint (int fd)
 
   /* try to dup the fd to a larger number to leave lower values free for
      broken stdio implementations. */
-  if (stdioFdMax > 0 && ((u_int) fd) <= stdioFdMax)
+  if (stdioFdMax > 0 && ((unsigned int) fd) <= stdioFdMax)
     {
       int newfd = fcntl(fd, F_DUPFD, stdioFdMax + 1);
       if (newfd >= 0)
@@ -245,9 +245,9 @@ EndPoint newEndPoint (int fd)
       fd = newfd ;
     }
 
-  if ((u_int) fd >= maxEndPoints)
+  if ((unsigned int) fd >= maxEndPoints)
     {
-      u_int i = maxEndPoints ;
+      unsigned int i = maxEndPoints ;
       
       maxEndPoints = (((fd + 256) / 256) * 256); /* round up to nearest 256 */ 
       if (endPoints == NULL)
@@ -335,7 +335,7 @@ EndPoint newEndPoint (int fd)
 
 void delEndPoint (EndPoint ep) 
 {
-  u_int idx ;
+  unsigned int idx ;
 
   if (ep == NULL)
     return ;
@@ -640,7 +640,7 @@ void Run (void)
       struct timeval timeout ;
       struct timeval *twait ;
       int sval ;
-      u_int idx ;
+      unsigned int idx ;
       bool modifiedTime = false ;
       
       twait = getTimeout (&timeout) ;
@@ -980,11 +980,11 @@ void freeTimeoutQueue (void)
 static IoStatus doRead (EndPoint endp) 
 {
   int i = 0 ;
-  u_int idx ;
-  u_int bCount = 0 ;
+  unsigned int idx ;
+  unsigned int bCount = 0 ;
   struct iovec *vp = NULL ;
   Buffer *buffers = endp->inBuffer ;
-  u_int currIdx = endp->inBufferIdx ;
+  unsigned int currIdx = endp->inBufferIdx ;
   size_t amt = 0 ;
   IoStatus rval = IoIncomplete ;
 
@@ -1104,13 +1104,13 @@ static IoStatus doRead (EndPoint endp)
 /* called when the file descriptor on the endpoint is write ready. */
 static IoStatus doWrite (EndPoint endp)
 {
-  u_int idx ;
+  unsigned int idx ;
   int i = 0 ;
   size_t amt = 0 ;
-  u_int bCount = 0 ;
+  unsigned int bCount = 0 ;
   struct iovec *vp = NULL ;
   Buffer *buffers = endp->outBuffer ;
-  u_int currIdx = endp->outBufferIdx ;
+  unsigned int currIdx = endp->outBufferIdx ;
   IoStatus rval = IoIncomplete ;
   
   TMRstart(TMR_WRITE);
@@ -1634,7 +1634,7 @@ int main (int argc, char **argv)
   EndPoint accConn ;
   struct sockaddr_in accNet ;
   int accFd = socket (AF_INET,SOCK_STREAM,0) ;
-  u_short port = atoi (argc > 1 ? argv[1] : "10000") ;
+  unsigned short port = atoi (argc > 1 ? argv[1] : "10000") ;
   time_t t = theTime() ;
 
 
@@ -1686,7 +1686,7 @@ int main (int argc, char **argv)
 /* Probably doesn't do the right thing for SIGCHLD */
 void setSigHandler (int signum, void (*ptr)(int))
 {
-  u_int i ;
+  unsigned int i ;
 
   if (sigHandlers == NULL)
     {
@@ -1810,9 +1810,9 @@ int endpointConfigLoadCbk (void *data)
 #if 0
 /* definitely not the fastest, but the most portable way to find the first
   set bit in a mask  */
-static int ff_set (fd_set *set,u_int start)
+static int ff_set (fd_set *set,unsigned int start)
 {
-  u_int i ;
+  unsigned int i ;
 
   for (i = start ; i < FD_SETSIZE ; i++)
     if (FD_ISSET (i,set))
@@ -1822,9 +1822,9 @@ static int ff_set (fd_set *set,u_int start)
 }
 
 
-static int ff_free (fd_set *set, u_int start)
+static int ff_free (fd_set *set, unsigned int start)
 {
-  u_int i ;
+  unsigned int i ;
 
   for (i = start ; i < FD_SETSIZE ; i++)
     if (!FD_ISSET (i,set))

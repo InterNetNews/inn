@@ -50,10 +50,10 @@ Article newArticle (const char *filename, const char *msgid) ;
      refcount is 0. */
 void delArticle (Article article) ;
 
-void gPrintArticleInfo (FILE *fp, u_int indentAmt) ;
+void gPrintArticleInfo (FILE *fp, unsigned int indentAmt) ;
 
   /* print some debugging info about the article. */
-void printArticleInfo (Article art, FILE *fp, u_int indentAmt) ;
+void printArticleInfo (Article art, FILE *fp, unsigned int indentAmt) ;
 
   /* return true if this article's file still exists. */
 bool artFileIsValid (Article article) ;
@@ -80,7 +80,7 @@ const char *artMsgId (Article article) ;
 int artSize (Article article) ;
 
   /* return the number of buffers that artGetNntpBuffers() would return. */
-u_int artNntpBufferCount (Article article) ;
+unsigned int artNntpBufferCount (Article article) ;
 
   /* tell the Article class to log (or not) missing articles as they occur. */
 void artLogMissingArticles (bool val) ;
@@ -94,6 +94,6 @@ void artBitFiddleContents (bool val) ;
 
   /* set the limit on the number of bytes in all articles (this is not a hard
      limit). Can only be called one time before any articles are created. */
-void artSetMaxBytesInUse (u_int val) ;
+void artSetMaxBytesInUse (unsigned int val) ;
 
 #endif /* article_h__ */

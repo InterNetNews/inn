@@ -151,7 +151,7 @@ struct connection_s
 {
     Host myHost ;               /* the host who owns the connection */
     EndPoint myEp ;             /* the endpoint the connection talks through */
-    u_int ident ;               /* an identifier for syslogging. */
+    unsigned int ident ;               /* an identifier for syslogging. */
     CxnState state ;            /* the state the connection is in */
 
 
@@ -165,7 +165,7 @@ struct connection_s
                                    TAKETHIS/IHAVE-body */
     ArtHolder takeRespHead ;    /* list of articles waiting on
                                    TAKETHIS/IHAVE-body response */
-    u_int articleQTotal ;       /* number of articles in all four queues */
+    unsigned int articleQTotal ;       /* number of articles in all four queues */
     ArtHolder missing ;         /* head of missing list */
 
 
@@ -173,8 +173,8 @@ struct connection_s
 
     char *ipName ;              /* the ip name (possibly quad) of the remote */
 
-    u_int maxCheck ;            /* the max number of CHECKs to send */
-    u_short port ;              /* the port number to use */
+    unsigned int maxCheck ;            /* the max number of CHECKs to send */
+    unsigned short port ;              /* the port number to use */
 
     /*
      * Timeout values and their callback IDs
@@ -182,27 +182,27 @@ struct connection_s
 
     /* Timer for max amount of time between receiving articles from the
        Host */
-    u_int articleReceiptTimeout ;
+    unsigned int articleReceiptTimeout ;
     TimeoutId artReceiptTimerId ;
 
     /* Timer for the max amount of time to wait for a response from the
        remote */
-    u_int readTimeout ;
+    unsigned int readTimeout ;
     TimeoutId readBlockedTimerId ;
 
     /* Timer for the max amount of time to wait for a any amount of data
        to be written to the remote */
-    u_int writeTimeout ;
+    unsigned int writeTimeout ;
     TimeoutId writeBlockedTimerId ;
 
     /* Timer for the max number of seconds to keep the network connection
        up (long lasting connections give older nntp servers problems). */
-    u_int flushTimeout ;
+    unsigned int flushTimeout ;
     TimeoutId flushTimerId ;
 
     /* Timer for the number of seconds to sleep before attempting a
        reconnect. */
-    u_int sleepTimeout ;
+    unsigned int sleepTimeout ;
     TimeoutId sleepTimerId ;
 
 
@@ -220,14 +220,14 @@ struct connection_s
     /*
      * STATISTICS
      */
-    u_int artsTaken ;           /* the number of articles INN gave this cxn */
-    u_int checksIssued ;        /* the number of CHECKS/IHAVES we
+    unsigned int artsTaken ;           /* the number of articles INN gave this cxn */
+    unsigned int checksIssued ;        /* the number of CHECKS/IHAVES we
                                    sent. Note that if we're running in
                                    no-CHECK mode, then we add in the
                                    TAKETHIS commands too */
-    u_int checksRefused ;       /* the number of response 435/438 */
-    u_int takesRejected ;       /* the number of response 437/439 recevied */
-    u_int takesOkayed ;         /* the number of response 235/239 received */
+    unsigned int checksRefused ;       /* the number of response 435/438 */
+    unsigned int takesRejected ;       /* the number of response 437/439 recevied */
+    unsigned int takesOkayed ;         /* the number of response 235/239 received */
 
     double takesSizeRejected ;
     double takesSizeOkayed ;
@@ -241,9 +241,9 @@ struct connection_s
 };
 
 static Connection gCxnList = NULL ;
-static u_int gCxnCount = 0 ;
-static u_int max_reconnect_period = MAX_RECON_PER ;
-static u_int init_reconnect_period = INIT_RECON_PER ;
+static unsigned int gCxnCount = 0 ;
+static unsigned int max_reconnect_period = MAX_RECON_PER ;
+static unsigned int init_reconnect_period = INIT_RECON_PER ;
 static struct sockaddr_in *bind_addr = NULL;
 static struct sockaddr_in6 *bind_addr6 = NULL;
 #if 0
@@ -306,7 +306,7 @@ static void processResponse480 (Connection cxn, char *response) ;
 static void cxnSleep (Connection cxn) ;
 static void cxnDead (Connection cxn) ;
 static void cxnIdle (Connection cxn) ;
-static void noSuchMessageId (Connection cxn, u_int responseCode,
+static void noSuchMessageId (Connection cxn, unsigned int responseCode,
                            const char *msgid, const char *response) ;
 static void abortConnection (Connection cxn) ;
 static void resetConnection (Connection cxn) ;
@@ -335,8 +335,8 @@ static void prepareReopenCbk (Connection cxn) ;
 /* Article queue management routines. */
 static ArtHolder newArtHolder (Article art) ;
 static void delArtHolder (ArtHolder artH) ;
-static bool remArtHolder (ArtHolder art, ArtHolder *head, u_int *count) ;
-static void appendArtHolder (ArtHolder artH, ArtHolder *head, u_int *count) ;
+static bool remArtHolder (ArtHolder art, ArtHolder *head, unsigned int *count) ;
+static void appendArtHolder (ArtHolder artH, ArtHolder *head, unsigned int *count) ;
 static ArtHolder artHolderByMsgId (const char *msgid, ArtHolder head) ;
 
 static int fudgeFactor (int initVal) ;
@@ -370,7 +370,7 @@ int cxnConfigLoadCbk (void *data UNUSED)
     }
   else
     iv = MAX_RECON_PER ;
-  max_reconnect_period = (u_int) iv ;
+  max_reconnect_period = (unsigned int) iv ;
 
   if (getInteger (topScope,"initial-reconnect-time",&iv,NO_INHERIT))
     {
@@ -384,7 +384,7 @@ int cxnConfigLoadCbk (void *data UNUSED)
     }
   else
     iv = INIT_RECON_PER ;
-  init_reconnect_period = (u_int) iv ;
+  init_reconnect_period = (unsigned int) iv ;
 
 #ifdef HAVE_INET6
   if (getString (topScope,"bindaddress6",&sv,NO_INHERIT))
@@ -435,12 +435,12 @@ int cxnConfigLoadCbk (void *data UNUSED)
  * initialized to reasonable values.
  */
 Connection newConnection (Host host,
-                          u_int id,
+                          unsigned int id,
                           const char *ipname,
-                          u_int articleReceiptTimeout,
-                          u_int portNum,
-                          u_int respTimeout,
-                          u_int flushTimeout,
+                          unsigned int articleReceiptTimeout,
+                          unsigned int portNum,
+                          unsigned int respTimeout,
+                          unsigned int flushTimeout,
                           double lowPassLow,
                           double lowPassHigh,
 			  double lowPassFilter)
@@ -1165,10 +1165,10 @@ size_t cxnQueueSpace (Connection cxn)
 /*
  * Print info on all the connections that currently exist.
  */
-void gPrintCxnInfo (FILE *fp, u_int indentAmt)
+void gPrintCxnInfo (FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   Connection cxn ;
 
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
@@ -1189,10 +1189,10 @@ void gPrintCxnInfo (FILE *fp, u_int indentAmt)
 /*
  * Print the info about the given connection.
  */
-void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt)
+void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   ArtHolder artH ;
 
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
@@ -1670,7 +1670,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
   char *response ;
   char *endr ;
   char *bufBase ;
-  u_int respSize ;
+  unsigned int respSize ;
   int code ;
   char *rest = NULL ;
   Buffer buf ;
@@ -1910,7 +1910,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
            next read. */
         if (*response != '\0')
           {                       /* partial response */
-            u_int leftAmt = respSize - (response - bufBase) ;
+            unsigned int leftAmt = respSize - (response - bufBase) ;
 
             d_printf (2,"%s:%d handling a partial response\n",
                      hostPeerName (cxn->myHost),cxn->ident) ;
@@ -3295,7 +3295,7 @@ ASSERT (cxn->readBlockedTimerId == 0) ;
  * message-id. The network connection is aborted and the Connection
  * object goes into sleep mode.
  */
-static void noSuchMessageId (Connection cxn, u_int responseCode,
+static void noSuchMessageId (Connection cxn, unsigned int responseCode,
                              const char *msgid, const char *response)
 {
   const char *peerName = hostPeerName (cxn->myHost) ;
@@ -3563,7 +3563,7 @@ static bool issueIHAVE (Connection cxn)
   Article article ;
   const char *msgid ;
   char *p ;
-  u_int tmp ;
+  unsigned int tmp ;
   size_t bufLen = 256 ;
   bool rval = false ;
 
@@ -3856,8 +3856,8 @@ static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer)
   if (cxn->takeHead != NULL)    /* some TAKETHIS commands to be done. */
     {
       Buffer takeBuffer ;
-      u_int takeBuffLen  ;
-      u_int writeIdx = 0 ;
+      unsigned int takeBuffLen  ;
+      unsigned int writeIdx = 0 ;
 
       /* count up all the buffers we'll be writing. One extra each time for
          the TAKETHIS command buffer*/
@@ -4186,8 +4186,8 @@ static bool writesNeeded (Connection cxn)
  */
 static void validateConnection (Connection cxn)
 {
-  u_int i ;
-  u_int old ;
+  unsigned int i ;
+  unsigned int old ;
   ArtHolder p ;
 
   i = 0 ;
@@ -4412,7 +4412,7 @@ static void delArtHolder (ArtHolder artH)
  * remove the article holder from the queue. Adjust the count and if nxtPtr
  * points at the element then adjust that too.
  */
-static bool remArtHolder (ArtHolder artH, ArtHolder *head, u_int *count)
+static bool remArtHolder (ArtHolder artH, ArtHolder *head, unsigned int *count)
 {
   ArtHolder h, i ;
 
@@ -4447,7 +4447,7 @@ static bool remArtHolder (ArtHolder artH, ArtHolder *head, u_int *count)
 /*
  * append the ArticleHolder to the queue
  */
-static void appendArtHolder (ArtHolder artH, ArtHolder *head, u_int *count)
+static void appendArtHolder (ArtHolder artH, ArtHolder *head, unsigned int *count)
 {
   ArtHolder p ;
 

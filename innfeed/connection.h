@@ -74,12 +74,12 @@
    *     no close down.
    */
 Connection newConnection (Host host,
-                          u_int ident,
+                          unsigned int ident,
                           const char *ipname,
-                          u_int artTout,
-                          u_int portNum,
-                          u_int respTimeout,
-                          u_int closePeriod,
+                          unsigned int artTout,
+                          unsigned int portNum,
+                          unsigned int respTimeout,
+                          unsigned int closePeriod,
                           double lowPassLow,
                           double lowPassHigh,
 			  double lowPassFilter) ;
@@ -131,8 +131,8 @@ void cxnSetCheckThresholds (Connection cxn,
 			    double lowPassFilter) ;
 
   /* print some debugging info. */
-void gPrintCxnInfo (FILE *fp, u_int indentAmt) ;
-void printCxnInfo (Connection cxn, FILE *fp, u_int indentAmt) ;
+void gPrintCxnInfo (FILE *fp, unsigned int indentAmt) ;
+void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt) ;
 
 /* config file load callback */
 int cxnConfigLoadCbk (void *data) ;

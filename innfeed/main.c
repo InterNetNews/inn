@@ -129,7 +129,7 @@ static bool Mopt = false ;
 static bool Zopt = false ;
 static bool Dopt = false ;
 static int debugLevel = 0 ;
-static u_int initialSleep = 2 ;
+static unsigned int initialSleep = 2 ;
 static char *sopt = NULL ;
 static char *lopt = NULL ;
 static bool eopt = false ;
@@ -801,11 +801,11 @@ static int mainConfigLoadCbk (void *data)
     pidFile = buildFilename (innconf->pathrun,PID_FILE) ;
   
   if (getInteger (topScope,"debug-level",&ival,NO_INHERIT))
-    loggingLevel = (u_int) ival ;
+    loggingLevel = (unsigned int) ival ;
   
   
   if (getInteger (topScope,"initial-sleep",&ival,NO_INHERIT))
-    initialSleep = (u_int) ival ;
+    initialSleep = (unsigned int) ival ;
   
   
   if (getBool (topScope,"use-mmap",&bval,NO_INHERIT))

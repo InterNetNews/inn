@@ -92,7 +92,7 @@ struct hash_entry_s {
     struct hash_entry_s *prev ;
     struct hash_entry_s *nextTime ;
     struct hash_entry_s *prevTime ;
-    u_int hash ;
+    unsigned int hash ;
     Article article ;
 };
 
@@ -130,7 +130,7 @@ static void artUnmap (Article art, int size) ; /* munmap an mmap()ed article */
    */
 
   /* Returns a has value for the given string */
-static u_int hashString (const char *string) ;
+static unsigned int hashString (const char *string) ;
 
   /* Locates the article with the given message ID, in the has table. */
 static Article hashFindArticle (const char *msgid) ;
@@ -151,36 +151,36 @@ static void hashValidateTable (void) ;
    */
 
 
-static u_int missingArticleCount ;  /* Number of articles that were missing */
+static unsigned int missingArticleCount ;  /* Number of articles that were missing */
 
 static bool logMissingArticles ;  /* if true then we log the details on a
                                      missing article. */ 
 
-static u_int preparedBytes ;  /* The number of areticle bytes read in so
+static unsigned int preparedBytes ;  /* The number of areticle bytes read in so
                                  far of disk (will wrap around) */
 
-static u_int preparedNewlines ; /* The number of newlines found in all the
+static unsigned int preparedNewlines ; /* The number of newlines found in all the
                                    preparedBytes */
 
-static u_int avgCharsPerLine ;  /* The average number of characters per
+static unsigned int avgCharsPerLine ;  /* The average number of characters per
                                    line over all articles. */
 
 static bool rolledOver ;  /* true if preparedBytes wrapped around */
 
-static u_int bytesInUse ;   /* count of article contents bytes in use--just
+static unsigned int bytesInUse ;   /* count of article contents bytes in use--just
                                the amount read from the article files, not
                                all memory involved in. */
 
-static u_int maxBytesInUse ;   /* the limit we want to stay under for total
+static unsigned int maxBytesInUse ;   /* the limit we want to stay under for total
                                   bytes resident in memory dedicated to
                                   article contents. */
 
-static u_int articlesInUse ;  /* number of articles currently allocated. */
+static unsigned int articlesInUse ;  /* number of articles currently allocated. */
 
-static u_int byteTotal ;        /* number of bytes for article contents
+static unsigned int byteTotal ;        /* number of bytes for article contents
                                    allocated totally since last log. */
 
-static u_int articleTotal ; /* number of articles alloced since last log. */
+static unsigned int articleTotal ; /* number of articles alloced since last log. */
 
 static TimeoutId articleStatsId ; /* The timer callback id. */
 
@@ -312,10 +312,10 @@ void delArticle (Article article)
 }
 
 
-void gPrintArticleInfo (FILE *fp, u_int indentAmt)
+void gPrintArticleInfo (FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -348,11 +348,11 @@ void gPrintArticleInfo (FILE *fp, u_int indentAmt)
 }
 
 
-void printArticleInfo (Article art, FILE *fp, u_int indentAmt)
+void printArticleInfo (Article art, FILE *fp, unsigned int indentAmt)
 {
   Buffer *b ;
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -448,7 +448,7 @@ int artSize (Article article)
 
 
   /* return how many NNTP-ready buffers the article contains */
-u_int artNntpBufferCount (Article article)
+unsigned int artNntpBufferCount (Article article)
 {
   if ( !prepareArticleForNNTP (article) )
     return 0 ;
@@ -465,7 +465,7 @@ void artLogMissingArticles (bool val)
 
 
   /* set the limit we want to stay under. */
-void artSetMaxBytesInUse (u_int val)
+void artSetMaxBytesInUse (unsigned int val)
 {
   ASSERT (maxBytesInUse > 0) ;  /* can only set one time. */
   ASSERT (val > 0) ;
@@ -717,7 +717,7 @@ static bool fillContents (Article article)
 		    size_t diff =
 			(bufferDataSize (article->contents) - articlesize) ;
 		    
-		    if (((u_int) UINT_MAX) - diff <= preparedBytes) {
+		    if (((unsigned int) UINT_MAX) - diff <= preparedBytes) {
 			d_printf (2,"Newline ratio so far: %02.2f\n",
 				 ((double) preparedBytes / preparedNewlines)) ;
 			syslog (LOG_NOTICE,PREPARED_NEWLINES,
@@ -906,9 +906,9 @@ static bool artFreeContents (Article art)
 
 
   /* Hash function lifted from perl 5 */
-static u_int hashString (const char *string)
+static unsigned int hashString (const char *string)
 {
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; string && *string ; string++)
     i = 33 * i + (u_char) *string ;
@@ -920,7 +920,7 @@ static u_int hashString (const char *string)
   /* find the article in the has table and return it. */
 static Article hashFindArticle (const char *msgid)
 {
-  u_int hash = hashString (msgid) ;
+  unsigned int hash = hashString (msgid) ;
   HashEntry h ;
 
   for (h = hashTable [TABLE_ENTRY(hash)] ; h != NULL ; h = h->next)
@@ -934,7 +934,7 @@ static Article hashFindArticle (const char *msgid)
   /* add the article to the hash table. */
 static void hashAddArticle (Article article)
 {
-  u_int hash = hashString (article->msgid) ;
+  unsigned int hash = hashString (article->msgid) ;
   HashEntry h ;
   HashEntry ne ;
 
@@ -967,7 +967,7 @@ static void hashAddArticle (Article article)
      Does not delete the article itself. */
 static bool hashRemoveArticle (Article article)
 {
-  u_int hash = hashString (article->msgid) ;
+  unsigned int hash = hashString (article->msgid) ;
   HashEntry h ;
 
   for (h = hashTable [TABLE_ENTRY(hash)] ; h != NULL ; h = h->next)

@@ -87,8 +87,8 @@ extern void mainLogStatus (FILE *fp) ;
 void configHosts (bool talkSelf) ;
 
 /* print some debugging info. */
-void gPrintHostInfo (FILE *fp, u_int indentAmt) ;
-void printHostInfo (Host host, FILE *fp, u_int indentAmt) ;
+void gPrintHostInfo (FILE *fp, unsigned int indentAmt) ;
+void printHostInfo (Host host, FILE *fp, unsigned int indentAmt) ;
 
 /* Delete the host object. Drops all the active connections immediately
    (i.e. no QUIT) . */
@@ -182,20 +182,20 @@ bool hostLogConnectionStatsP (void) ;
 
 #if 0
 /* Set the frequency (in seconds) with which we log statistics */
-void hostSetStatsPeriod (u_int period) ;
+void hostSetStatsPeriod (unsigned int period) ;
 #endif
 
 /* return whether or not the Connections should attempt to stream. */
 bool hostWantsStreaming (Host host) ;
 
 /* return maxChecks */
-u_int hostmaxChecks (Host host);
+unsigned int hostmaxChecks (Host host);
 
 /* return if we should drop deferred articles */
 bool hostDropDeferred (Host host);
 
 /* return the maximum number of CHECKs that can be outstanding */
-u_int hostMaxChecks (Host host) ;
+unsigned int hostMaxChecks (Host host) ;
 
 /* Called by the Host's connections when they go into (true) or out of
    (false) no-CHECK mode. */

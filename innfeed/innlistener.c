@@ -76,7 +76,7 @@ struct innlistener_s
     InnListener next ;
 };
 
-static u_int listenerCount = 0 ;
+static unsigned int listenerCount = 0 ;
 static InnListener listenerList = NULL ;
 
 InnListener mainListener ;
@@ -152,11 +152,11 @@ InnListener newListener (EndPoint endp, bool isDummy, bool dynamicPeers)
   return l ;
 }
 
-void gPrintListenerInfo (FILE *fp, u_int indentAmt)
+void gPrintListenerInfo (FILE *fp, unsigned int indentAmt)
 {
   InnListener p ;
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -171,10 +171,10 @@ void gPrintListenerInfo (FILE *fp, u_int indentAmt)
 
 
 
-void printListenerInfo (InnListener listener, FILE *fp, u_int indentAmt)
+void printListenerInfo (InnListener listener, FILE *fp, unsigned int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
+  unsigned int i ;
   
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
@@ -226,8 +226,8 @@ static void unlinkPidFile (void)
      Listener will be deleted. */
 void shutDown (InnListener l)
 {
-  u_int i ;
-  u_int count ;
+  unsigned int i ;
+  unsigned int count ;
 
   d_printf (1,"Shutting down the listener\n") ;
 
@@ -280,7 +280,7 @@ void shutDown (InnListener l)
 
 bool listenerAddPeer (InnListener listener, Host hostObj)
 {
-  u_int i ;
+  unsigned int i ;
 
   d_printf (1,"Adding peer: %s\n", hostPeerName (hostObj)) ;
   
@@ -305,10 +305,10 @@ bool listenerIsDummy (InnListener listener)
 }
 
 /* Called by the Host when it (the Host) is about to delete itself. */
-u_int listenerHostGone (InnListener listener, Host host)
+unsigned int listenerHostGone (InnListener listener, Host host)
 {
-  u_int i ;
-  u_int someThere = 0 ;
+  unsigned int i ;
+  unsigned int someThere = 0 ;
 
   d_printf (1,"Host is gone: %s\n", hostPeerName (host)) ;
   
@@ -591,7 +591,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
       if (*cmd != '\0')         /* partial command left in buffer */
         {
           Buffer *bArr ;
-          u_int leftAmt = blen - (cmd - bbase) ;
+          unsigned int leftAmt = blen - (cmd - bbase) ;
 
           ASSERT (cmd != bbase) ;
           /* first we shift whats left in the buffer down to the bottom */
@@ -651,7 +651,7 @@ static void wakeUp (TimeoutId id, void *data)
 static void giveArticleToPeer (InnListener lis,
                                Article article, const char *peerName)
 {
-  u_int i ;
+  unsigned int i ;
 
   for (i = 0 ; i < lis->hostLen ; i++)
     if (lis->myHosts[i] != NULL)

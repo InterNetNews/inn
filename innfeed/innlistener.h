@@ -53,11 +53,11 @@ InnListener newListener (EndPoint endp, bool isDummy, bool dynamicPeers) ;
 /* print some useful debugging information about the Listener and all its
  * Hosts and all their Connecitons/Article/Buffers etc. to the given FILE.
  */
-void gPrintListenerInfo (FILE *fp, u_int indentAmt) ;
-void printListenerInfo (InnListener listener, FILE *fp, u_int indentAmt) ;
+void gPrintListenerInfo (FILE *fp, unsigned int indentAmt) ;
+void printListenerInfo (InnListener listener, FILE *fp, unsigned int indentAmt) ;
 
 /* Called by the Host when it is about to delete itself */
-u_int listenerHostGone (InnListener listener, Host host) ;
+unsigned int listenerHostGone (InnListener listener, Host host) ;
 
 /* Called to hook up the given Host to the Listener. */
 bool listenerAddPeer (InnListener listener, Host hostObj) ;

@@ -52,8 +52,8 @@
    temporarily rejected them. */
 Tape newTape (const char *peerName, bool dontRotate) ;
 
-void gPrintTapeInfo (FILE *fp, u_int inedntAmt) ;
-void printTapeInfo (Tape tape, FILE *fp, u_int indentAmt) ;
+void gPrintTapeInfo (FILE *fp, unsigned int inedntAmt) ;
+void printTapeInfo (Tape tape, FILE *fp, unsigned int indentAmt) ;
 
 /* deletes the tape objects. If it has any articles cached then it dumps
    them to the disk. */
