@@ -72,6 +72,7 @@ $awk = "@_PATH_AWK@" ;
 $sed = "@_PATH_SED@" ;
 $inndf = "${newsbin}/inndf" ;
 $egrep = "@_PATH_EGREP@" ;
+$gpgv = "@PATH_GPGV@" ;
 $perl = "@_PATH_PERL@" ;
 $pgp = "@_PATH_PGP@" ;
 $sort = "@_PATH_SORT@" ;
