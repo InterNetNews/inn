@@ -693,6 +693,8 @@ For each new newsgroup (i.e., selected groups found on host2 that
 were not found on host), the newsgroup directory under
 .B spool_dir
 will be examined.
+If storageapi is turned on, this should be the same name as pathoverview in
+.IR inn.conf .
 If this newsgroup directory exists, then the
 hi & low (2nd & 3rd active fields)
 values of the active entry will be changed to
@@ -1077,7 +1079,7 @@ Thus, a much better and safer version of the above would be:
 .in +0.5i
 ctlinnd pause 'running actsync'
 rm -f active.new
-actsync ... flags ... \-o a1 -S <patharticles in inn.conf> erehwon.honey.edu > active.new
+actsync ... flags ... \-o a1 -S <patharticles or pathoverview in inn.conf> erehwon.honey.edu > active.new
 rm -f active.old
 ln active active.old
 mv active.new active
