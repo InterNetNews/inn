@@ -3,6 +3,9 @@
 **  The default username/password authenticator.
 */
 
+#include "config.h"
+#include "clibrary.h"
+
 #include "libauth.h"
 
 #if HAVE_CRYPT_H
@@ -140,7 +143,7 @@ GetDBPass(char *name, char *file)
         dbm_close(D);
         return(0);
     }
-    if (val.dsize > sizeof(pass) - 1)
+    if ((size_t) val.dsize > sizeof(pass) - 1)
         return NULL;
     strncpy(pass, val.dptr, val.dsize);
     pass[val.dsize] = 0;
@@ -155,7 +158,7 @@ main(int argc, char *argv[])
     int opt;
     int do_shadow, do_file, do_db;
     char *fname;
-    char uname[SMBUF], pass[SMBUF];
+    struct authinfo *authinfo;
     char *rpass;
 
     do_shadow = do_file = do_db = 0;
@@ -195,24 +198,29 @@ main(int argc, char *argv[])
     if (argc != optind)
 	exit(2);
 
-    if (get_auth(uname,pass) != 0) {
+    authinfo = get_auth();
+    if (authinfo == NULL) {
 	fprintf(stderr, "ckpasswd: internal error.\n");
+	exit(1);
+    }
+    if (authinfo->username[0] == '\0') {
+	fprintf(stderr, "ckpasswd: null username.\n");
 	exit(1);
     }
 
     /* got username and password, check if they're valid */
 #if HAVE_GETSPNAM
     if (do_shadow) {
-	if ((rpass = GetShadowPass(uname)) == (char*) 0)
-	    rpass = GetPass(uname);
+	if ((rpass = GetShadowPass(authinfo->username)) == (char*) 0)
+	    rpass = GetPass(authinfo->username);
     } else
 #endif
     if (do_file)
-	rpass = GetFilePass(uname, fname);
+	rpass = GetFilePass(authinfo->username, fname);
     else
 #if HAVE_DBM
     if (do_db)
-	rpass = GetDBPass(uname, fname);
+	rpass = GetDBPass(authinfo->username, fname);
     else
 #endif
 #if HAVE_PAM
@@ -220,8 +228,9 @@ main(int argc, char *argv[])
         pam_handle_t *pamh;
 	int res;
 	
-	conv.appdata_ptr = (void *)pass;
-	if ((res = pam_start ("nnrpd", uname, &conv, &pamh)) != PAM_SUCCESS) {
+	conv.appdata_ptr = authinfo->password;
+        res = pam_start ("nnrpd", authinfo->username, &conv, &pamh);
+	if (res != PAM_SUCCESS) {
             fprintf (stderr, "Failed: pam_start(): %s\n",
 			    pam_strerror(pamh, res));
             exit (1);
@@ -246,21 +255,23 @@ main(int argc, char *argv[])
         }
 
 	/* If it gets this far, the user has been successfully authenticated. */
-        fprintf (stdout, "User:%s\n", uname);
+        fprintf (stdout, "User:%s\n", authinfo->username);
         exit (0);
     }
 #else /* HAVE_PAM */
-	rpass = GetPass(uname);
+	rpass = GetPass(authinfo->username);
 #endif /* HAVE_PAM */
 
     if (!rpass) {
-	fprintf(stderr, "ckpasswd: user %s does not exist.\n", uname);
+	fprintf(stderr, "ckpasswd: user %s does not exist.\n",
+                authinfo->username);
 	exit(1);
     }
-    if (strcmp(rpass, crypt(pass, rpass)) == 0) {
-	printf("User:%s\n", uname);
+    if (strcmp(rpass, crypt(authinfo->password, rpass)) == 0) {
+	printf("User:%s\n", authinfo->username);
 	exit(0);
     }
-    fprintf(stderr, "ckpasswd: user %s password doesn't match.\n", uname);
+    fprintf(stderr, "ckpasswd: user %s password doesn't match.\n",
+            authinfo->username);
     exit(1);
 }
