@@ -1007,7 +1007,7 @@ retry:
 	key.data = group;
 	key.size = strlen(group);
 	val.data = flag + 1;
-	val.size = strlen(flag + 1);
+	val.size = strcspn(flag, "\n") - 1;
 
 	switch(ret = groupaliases->put(groupaliases, tid, &key, &val, 0)) {
 	case 0:
