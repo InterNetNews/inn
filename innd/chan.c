@@ -893,6 +893,20 @@ CHANreadloop()
 		}
 	    }
 
+	    /* Check and see if the buffer is grossly overallocated and shrink
+	       if needed */
+	    if (cp->In.Size > (BIG_BUFFER)) {
+		if (cp->In.Used) {
+		    if ((cp->In.Size / cp->In.Used) > 10) {
+			cp->In.Size = (cp->In.Used * 2) < START_BUFF_SIZE ? (cp->In.Used * 2) :  START_BUFF_SIZE;
+			cp->In.Data = RENEW(cp->In.Data, char, cp->In.Size);
+			cp->In.Left = cp->In.Size - cp->In.Used;
+		    }
+		} else {
+		    cp->In.Data = RENEW(cp->In.Data, char, START_BUFF_SIZE);
+		    cp->In.Size = cp->In.Left = START_BUFF_SIZE;
+		}
+	    }
 	    /* Possibly recheck for dead children so we don't get SIGPIPE
 	     * on readerless channels. */
 	    if (PROCneedscan)
