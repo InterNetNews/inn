@@ -271,6 +271,7 @@ void SetDefaults()
     innconf->ignorenewsgroups = FALSE;
     innconf->overcachesize = 15;
     innconf->enableoverview = TRUE;
+    innconf->wireformat = FALSE;
 }
 
 void ClearInnConf()
@@ -979,6 +980,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_ENABLEOVERVIEW, bit);
 		if (!bit && boolval != -1 ) innconf->enableoverview = boolval;
 		SET_CONFIG(CONF_VAR_ENABLEOVERVIEW);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_WIREFORMAT)) {
+		TEST_CONFIG(CONF_VAR_WIREFORMAT, bit);
+		if (!bit && boolval != -1 ) innconf->wireformat = boolval;
+		SET_CONFIG(CONF_VAR_WIREFORMAT);
 	    }
 	}
 	(void)Fclose(F);

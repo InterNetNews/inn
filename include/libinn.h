@@ -179,6 +179,7 @@ struct conf_vars {
 	int ignorenewsgroups;
 	int overcachesize;
 	int enableoverview;
+	int wireformat; /* enable/disable wire format for tradspool */
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;

@@ -72,21 +72,6 @@ NGTREENODE *NGTree;
 BOOL NGTableUpdated; /* set to TRUE if we've added any entries since reading 
 			in the database file */
 
-/*
-**  Searches through the given string and find the begining of the
-**  message body and returns that if it finds it.  If not, it returns
-**  NULL.  This is only for traditional.
-*/
-static char *TradFindBody(char *article, int len) {
-    char                *p;
-
-    for (p = article; p < (article + len - 2); p++) {
-        if (!memcmp(p, "\n\n", 2))
-            return p+2;
-    }
-    return NULL;
-}
-
 /* 
 ** Convert all .s to /s in a newsgroup name.  Modifies the passed string 
 ** inplace.
@@ -444,7 +429,85 @@ CheckNeedReloadDB(void) {
     }
 }
 
-    
+
+/* Functions to convert to/from wireformat. */
+
+/*
+** Given an article and length in non-wire format, return a malloced region
+** containing the article in wire format.  Set *newlen to the length of the
+** new article.
+*/ 
+char *
+ToWireFmt(const char *article, int len, int *newlen)
+{
+    int bytes;
+    char *newart;
+    const char *p;
+    char  *dest;
+
+    /* First go thru article and count number of bytes we need. */
+    for (bytes = 0, p=article ; p < &article[len] ; ++p) {
+	++bytes;
+	if (*p == '\n') ++bytes; /* need another byte for CR */
+    }
+    bytes += 3; /* for .\r\n */
+    newart = NEW(char, bytes);
+    *newlen = bytes;
+
+    /* now copy the article, making changes */
+    for (p=article, dest=newart ; p < &article[len] ; ++p) {
+	if (*p == '\n') {
+	    *dest++ = '\r';
+	    *dest++ = '\n';
+	} else {
+	    *dest++ = *p;
+	}
+    }
+    *dest++ = '.';
+    *dest++ = '\r';
+    *dest++ = '\n';
+    return newart;
+}
+
+char *
+FromWireFmt(const char *article, int len, int *newlen)
+{
+    int bytes;
+    char *newart;
+    const char *p;
+    char *dest;
+
+    /* First go thru article and count number of bytes we need */
+    for (bytes = 0, p=article ; p < &article[len] ; ) {
+	/* check for terminating .\r\n and if so break */
+	if (p == &article[len-3] && *p == '.' && p[1] == '\r' && p[2] == '\n')
+	    break;
+	/* check for \r\n */
+	if (p < &article[len-1] && *p == '\r' && p[1] == '\n') {
+	    bytes++; /* \r\n counts as only one byte in output */
+	    p += 2;
+	} else {
+	    bytes++;
+	    p++;
+	}
+    }
+    newart = NEW(char, bytes);
+    *newlen = bytes;
+    for (p = article, dest = newart ; p < &article[len]; ) {
+	/* check for terminating .\r\n and if so break */
+	if (p == &article[len-3] && *p == '.' && p[1] == '\r' && p[2] == '\n')
+	    break;
+	/* check for \r\n */
+	if (p < &article[len-1] && *p == '\r' && p[1] == '\n') {
+	    *dest++ = '\n';
+	    p += 2;
+	} else {
+	    *dest++ = *p++;
+	}
+    }
+    return newart;
+}
+
 
 /* Init routine, called by SMinit */
 
@@ -571,6 +634,8 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     char *path, *linkpath, *dirname;
     int fd;
     int i;
+    char *nonwfarticle; /* copy of article converted to non-wire format */
+    int nonwflen;
     
     xrefhdr = (char *)HeaderFindMem(article.data, article.len, "Xref", 4);
     if (xrefhdr == NULL) {
@@ -629,16 +694,33 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    }
 	}
     }
-    if (write(fd, article.data, article.len) != article.len) {
-	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "timehash error writing %s %m", path);
-	close(fd);
-	token.type = TOKEN_EMPTY;
-	unlink(path);
-	DISPOSE(path);
-	for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
-	DISPOSE(xrefs);
-	return token;
+    if (innconf->wireformat) {
+	if (write(fd, article.data, article.len) != article.len) {
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    syslog(L_ERROR, "tradspool error writing %s %m", path);
+	    close(fd);
+	    token.type = TOKEN_EMPTY;
+	    unlink(path);
+	    DISPOSE(path);
+	    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+	    DISPOSE(xrefs);
+	    return token;
+	}
+    } else {
+	nonwfarticle = FromWireFmt(article.data, article.len, &nonwflen);
+	if (write(fd, nonwfarticle, nonwflen) != nonwflen) {
+	    DISPOSE(nonwfarticle);
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    syslog(L_ERROR, "tradspool error writing %s %m", path);
+	    close(fd);
+	    token.type = TOKEN_EMPTY;
+	    unlink(path);
+	    DISPOSE(path);
+	    for (i = 0 ; i < numxrefs; ++i) DISPOSE(xrefs[i]);
+	    DISPOSE(xrefs);
+	    return token;
+	}
+	DISPOSE(nonwfarticle);
     }
     close(fd);
 
@@ -739,7 +821,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
     private = NEW(PRIV_TRADSPOOL, 1);
     art->private = (void *)private;
     private->artlen = sb.st_size;
-    if (innconf->articlemmap) {
+    if (innconf->articlemmap && innconf->wireformat) {
 	if ((private->artbase = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
@@ -748,6 +830,9 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    return NULL;
 	}
     } else {
+	char *wfarticle;
+	int wflen;
+
 	private->artbase = NEW(char, private->artlen);
 	if (read(fd, private->artbase, private->artlen) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
@@ -756,6 +841,13 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    DISPOSE(art->private);
 	    DISPOSE(art);
 	    return NULL;
+	}
+	if (!innconf->wireformat) {
+	    /* need to make a wireformat copy of the article */
+	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
+	    DISPOSE(private->artbase);
+	    private->artbase = wfarticle;
+	    private->artlen = wflen;
 	}
     }
     close(fd);
@@ -771,9 +863,8 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     
-    if (((p = SMFindBody(private->artbase, private->artlen)) == NULL) &&
-        ((p = TradFindBody(private->artbase, private->artlen)) == NULL)) {
-	if (innconf->articlemmap) {
+    if (((p = SMFindBody(private->artbase, private->artlen)) == NULL)) {
+	if (innconf->articlemmap && innconf->wireformat) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
 #endif
@@ -798,7 +889,8 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	art->len = private->artlen - (p - private->artbase);
 	return art;
     }
-    if (innconf->articlemmap) {
+    SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
+    if (innconf->articlemmap && innconf->wireformat) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	madvise(private->artbase, private->artlen, MADV_DONTNEED);
 #endif
@@ -806,7 +898,6 @@ OpenArticle(const char *path, RETRTYPE amount) {
     } else {
 	DISPOSE(private->artbase);
     }
-    SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
     DISPOSE(art->private);
     DISPOSE(art);
     return NULL;
@@ -841,7 +932,7 @@ tradspool_freearticle(ARTHANDLE *article) {
 
     if (article->private) {
 	private = (PRIV_TRADSPOOL *) article->private;
-	if (innconf->articlemmap) {
+	if (innconf->articlemmap && innconf->wireformat) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
 #endif
@@ -990,7 +1081,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	DISPOSE(article->private);
 	DISPOSE(article);
 	if (priv.artbase != NULL) {
-	    if (innconf->articlemmap) {
+	    if (innconf->articlemmap && innconf->wireformat) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 		madvise(priv.artbase, priv.artlen, MADV_DONTNEED);
 #endif

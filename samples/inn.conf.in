@@ -95,6 +95,7 @@ xrefslave:		false
 nnrpdposthost:
 nnrpdpostport:		119
 spoolfirst:		false
+wireformat:		false
 writelinks:		true
 articlemmap:		false
 bindaddress:		all

@@ -326,7 +326,10 @@ struct conf_rec conf_defaults[] = {
     { _CONF_OVERCACHESIZE,			"",	2, 1 },
 #define _CONF_ENABLEOVERVIEW			"enableoverview"
 #define CONF_VAR_ENABLEOVERVIEW			101
-    { _CONF_ENABLEOVERVIEW,			"",	2, 1 }
+    { _CONF_ENABLEOVERVIEW,			"",	2, 1 },
+#define _CONF_WIREFORMAT			"wireformat"
+#define CONF_VAR_WIREFORMAT			102
+    { _CONF_WIREFORMAT,				"",	2, 1 }
 };
-#define MAX_CONF_VAR 102
+#define MAX_CONF_VAR 103
 

@@ -383,6 +383,7 @@ incoming_conf
     'ignorenewsgroups',		0,
     'overcachesize',		0,
     'enableoverview',		0,
+    'wireformat',		0,
     'addnntppostinghost',	0,
     'addnntppostingdate',	0
 );
