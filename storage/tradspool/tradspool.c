@@ -688,17 +688,6 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 		dirname = xstrdup(linkpath);
 		*p = '/';
 		if (!MakeDirectory(dirname, true) || link(path, linkpath) < 0) {
-#if !defined(HAVE_SYMLINK)
-		    SMseterror(SMERR_UNDEFINED, NULL);
-		    syslog(L_ERROR, "tradspool: could not link %s to %s %m", path, linkpath);
-		    token.type = TOKEN_EMPTY;
-		    free(dirname);
-		    free(linkpath);
-		    free(path);
-		    for (i = 0 ; i < numxrefs; ++i) free(xrefs[i]);
-		    free(xrefs);
-		    return token;
-#else
 		    if (symlink(path, linkpath) < 0) {
 			SMseterror(SMERR_UNDEFINED, NULL);
 			syslog(L_ERROR, "tradspool: could not symlink %s to %s %m", path, linkpath);
@@ -710,7 +699,6 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 			free(xrefs);
 			return token;
 		    }
-#endif  /* !defined(HAVE_SYMLINK) */
 		}
 		free(dirname);
 	    }
