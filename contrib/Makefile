@@ -22,7 +22,7 @@ clean clobber distclean:
 
 ##  Compilation rules.
 
-LINK 		= $(lIBLD) $(LDFLAGS) -o $@
+LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 FIX		= $(FIXSCRIPT)
 
 expirectl:	expirectl.o	; $(LINK) expirectl.o
