@@ -129,6 +129,7 @@ ARTHEADER	ARTheaders[] = {
     {	"Relay-Version",	HTobs },
     {	"NNTP-Posting-Host",	HTstd },
     {	"Followup-To",		HTstd },
+#define _followup_to		26
     {	"Organization",		HTstd },
     {	"Content-Type",		HTstd },
     {	"Content-Base",		HTstd },
@@ -1632,12 +1633,16 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
     int	                i;
     int	                j;
     int 	        Groupcount;
+    int			Followcount;
+    int			Crosscount;
     char	        *p;
     SITE	        *funnel;
     BUFFER	        *bp;
 
     /* Work out which sites should really get it. */
     Groupcount = Data->Groupcount;
+    Followcount = Data->Followcount;
+    Crosscount = Groupcount + Followcount * Followcount;
     for (sp = Sites, i = nSites; --i >= 0; sp++) {
 	if ((sp->IgnoreControl && ControlStore) ||
 	    (sp->NeedOverviewCreation && !OverviewCreated))
@@ -1674,6 +1679,8 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
 	if ((sp->Hops && hopcount > sp->Hops)
 	 || (!sp->IgnorePath && ListHas(hops, sp->Name))
 	 || (sp->Groupcount && Groupcount > sp->Groupcount))
+	 || (sp->Followcount && Followcount > sp->Followcount))
+	 || (sp->Crosscount && Crosscount > sp->Crosscount))
 	    /* Site already saw the article; path too long; or too much
 	     * cross-posting. */
 	    continue;
@@ -2306,10 +2313,16 @@ STRING ARTpost(CHANNEL *cp)
     }
 
     /* Parse the Control or Also-Control header. */
+    groups = NGsplit(HDR(_followup_to));
+    for (i = 0; groups[i] != NULL; i++)
+	continue;
+    Data.Followcount = i;
     groups = NGsplit(HDR(_newsgroups));
     for (i = 0; groups[i] != NULL; i++)
 	continue;
     Data.Groupcount = i;
+    if (Data.Followcount == 0)
+	Data.Followcount = Data.Groupcount;
 
     if (HDR(_control)[0] != '\0')
 	ControlHeader = _control;

@@ -258,6 +258,8 @@ typedef struct _SITE {
     BOOL		NeedOverviewCreation;
     int			Hops;
     int			Groupcount;
+    int			Followcount;
+    int			Crosscount;
     FEEDTYPE		Type;
     NEWSGROUP		*ng;
     BOOL		Spooling;
@@ -323,6 +325,7 @@ typedef struct _ARTDATA {
     time_t	Arrived;
     time_t	Expires;
     int		Groupcount;
+    int		Followcount;
     int		LinesValue;
     char	Lines[SMBUF];
     long	SizeValue;

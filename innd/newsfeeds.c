@@ -283,6 +283,12 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		    sp->StopWriting = atoi(p);
 	    }
 	    break;
+	case 'C':
+	    if (*++p && CTYPE(isdigit, *p))
+		sp->Crosscount = atoi(p);
+	    else
+		sp->Crosscount = 1;
+	    break;
 	case 'F':
 	    if (*++p == '\0')
 		return "missing file name for F param in field 3";
@@ -341,6 +347,12 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    case 'p': sp->Type = FTprogram;	break;
 	    case 'x': sp->Type = FTexploder;	break;
 	    }
+	    break;
+	case 'U':
+	    if (*++p && CTYPE(isdigit, *p))
+		sp->Followcount = atoi(p);
+	    else
+		sp->Followcount = 1;
 	    break;
 	case 'W':
 	    for (i = 0; *++p && i < FEED_MAXFLAGS; ) {
