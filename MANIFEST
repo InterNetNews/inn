@@ -640,6 +640,7 @@ tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/config                      Testing config files (Directory)
 tests/lib/config/errors               Various config files with errors
+tests/lib/config/line-endings         A config file with varied line endings
 tests/lib/config/no-newline           A config file without an ending newline
 tests/lib/config/null                 A config file containing a nul character
 tests/lib/config/valid                Various valid config parameters

@@ -203,6 +203,9 @@ static void token_quoted_string(struct config_file *);
 /* Handles whitespace for the rest of the lexer. */
 static bool token_skip_whitespace(struct config_file *);
 
+/* Handles comments for the rest of the lexer. */
+static bool token_skip_comment(struct config_file *);
+
 /* Parser functions to parse the named syntactic element. */
 static bool parse_group_contents(struct config_group *, struct config_file *);
 static enum token_type parse_parameter(struct config_group *,
@@ -336,21 +339,34 @@ token_simple(struct config_file *file, enum token_type type)
 static void
 token_newline(struct config_file *file)
 {
+    /* If we're actually positioned on a newline, update file->line and skip
+       over it.  Try to handle CRLF correctly, as a single line terminator
+       that only increments the line count once, while still treating either
+       CR or LF alone as line terminators in their own regard. */
     if (*file->current == '\n') {
         file->current++;
         file->line++;
+    } else if (*file->current == '\r') {
+        if (file->current[1] == '\n')
+            file->current += 2;
+        else if (file->current[1] != '\0')
+            file->current++;
+        else {
+            if (!file_read(file)) {
+                file->current++;
+                return;
+            }
+            if (*file->current == '\n')
+                file->current++;
+        }
+        file->line++;
     }
+
     if (!token_skip_whitespace(file))
         return;
     while (*file->current == '#') {
-        file->current = strchr(file->current, '\n');
-        while (file->current == NULL) {
-            if (!file_read(file))
-                return;
-            file->current = strchr(file->current, '\n');
-        }
-        file->current++;
-        file->line++;
+        if (!token_skip_comment(file))
+            return;
         if (!token_skip_whitespace(file))
             return;
     }
@@ -382,7 +398,7 @@ token_string(struct config_file *file)
     i = 0;
     while (!done) {
         switch (file->current[i]) {
-        case '\t':  case '\n':  case ' ':   case ';':
+        case '\t':  case '\r':  case '\n':  case ' ':   case ';':
             done = true;
             break;
         case '"':   case '<':   case '>':   case '[':
@@ -444,17 +460,28 @@ token_quoted_string(struct config_file *file)
         case '"':
             done = true;
             break;
-        case '\\':
-            i++;
-            if (file->current[i] == '\n')
-                file->line++;
-            break;
+        case '\r':
         case '\n':
             warn("%s:%u: no close quote seen for quoted string",
                  file->filename, file->line);
             file->token.type = TOKEN_ERROR;
             file->error = true;
             return;
+        case '\\':
+            i++;
+            if (file->current[i] == '\n')
+                file->line++;
+
+            /* CRLF should count as one line terminator.  Handle most cases of
+               that here, but the case where CR is at the end of one buffer
+               and LF at the beginning of the next has to be handled in the \0
+               case below. */
+            if (file->current[i] == '\r') {
+                file->line++;
+                if (file->current[i + 1] == '\n')
+                    i++;
+            }
+            break;
         case '\0':
             offset = file->current - file->buffer;
             status = file_read_more(file, offset);
@@ -467,6 +494,14 @@ token_quoted_string(struct config_file *file)
                 file->error = true;
                 return;
             }
+
+            /* If the last character of the previous buffer was CR and the
+               first character that we just read was LF, the CR must have been
+               escaped which means that the LF is part of it, forming a CRLF
+               line terminator.  Skip over the LF. */
+            if (file->current[i] == '\r' && file->current[i + 1] == '\n')
+                i++;
+
             break;
         default:
             break;
@@ -477,6 +512,48 @@ token_quoted_string(struct config_file *file)
     file->current += i;
 }
 
+
+/*
+**  Skip over a comment line at file->current, reading more data as necessary.
+**  Stop when an end of line is encountered, positioning file->current
+**  directly after the end of line.  Returns false on end of file or a read
+**  error, true otherwise.
+*/
+static bool
+token_skip_comment(struct config_file *file)
+{
+    char *p = file->current;
+
+    while (*p != '\0' && *p != '\n' && *p != '\r')
+        p++;
+    while (*p == '\0') {
+        if (!file_read(file))
+            return false;
+        p = file->current;
+        while (*p != '\0' && *p != '\n' && *p != '\r')
+            p++;
+    }
+
+    /* CRLF should count as a single line terminator, but it may be split
+       across a read boundary.  Try to handle that case correctly. */
+    if (*p == '\n')
+        p++;
+    else if (*p == '\r') {
+        p++;
+        if (*p == '\n')
+            p++;
+        else if (*p == '\0') {
+            if (!file_read(file))
+                return false;
+            p = file->current;
+            if (*p == '\n')
+                p++;
+        }
+    }
+    file->current = p;
+    file->line++;
+    return true;
+}
 
 /*
 **  Skip over all whitespace at file->current, reading more data as
@@ -545,6 +622,7 @@ token_next(struct config_file *file)
     case '[':   token_simple(file, TOKEN_LBRACKET);     break;
     case ']':   token_simple(file, TOKEN_RBRACKET);     break;
     case ';':   token_simple(file, TOKEN_SEMICOLON);    break;
+    case '\r':  token_newline(file);                    break;
     case '\n':  token_newline(file);                    break;
     case '"':   token_quoted_string(file);              break;
     default:    token_string(file);                     break;

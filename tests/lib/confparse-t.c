@@ -255,7 +255,7 @@ main(void)
     int n;
     FILE *tmpconfig;
 
-    puts("102");
+    puts("121");
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
@@ -386,12 +386,32 @@ main(void)
     unlink("config/tmp");
     free(long_param);
 
+    /* Alternate line endings. */
+    group = config_parse_file("config/line-endings");
+    ok(53, group != NULL);
+    if (group == NULL)
+        exit(1);
+    ok(54, config_param_boolean(group, "param1", &b_value));
+    ok(55, b_value);
+    b_value = false;
+    ok(56, config_param_boolean(group, "param2", &b_value));
+    ok(57, b_value);
+    b_value = false;
+    ok(58, config_param_boolean(group, "param3", &b_value));
+    ok(59, b_value);
+    ok(60, config_param_boolean(group, "param4", &b_value));
+    ok(61, !b_value);
+    ok(62, config_param_integer(group, "int1", &l_value));
+    ok(63, l_value == 0);
+    ok(64, config_param_integer(group, "int2", &l_value));
+    ok(65, l_value == -3);
+
     /* Errors. */
     group = parse_error_config("config/null");
-    ok(53, group == NULL);
-    ok_string(54, "config/null: invalid NUL character found in file\n",
+    ok(66, group == NULL);
+    ok_string(67, "config/null: invalid NUL character found in file\n",
               errors);
-    n = test_errors(55);
+    n = test_errors(68);
     n = test_warnings(n);
     n = test_warnings_bool(n);
     n = test_warnings_int(n);
