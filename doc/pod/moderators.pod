@@ -1,0 +1,83 @@
+=head1 NAME
+
+moderators - Submission addresses for moderated groups
+
+=head1 DESCRIPTION
+
+When an unapproved article is posted locally to a moderated newsgroup,
+it is not passed off to B<innd> for normal handling; instead, it is sent
+via e-mail to the submission address for that newsgroup.  The submission
+address is determined using this configuration file.
+
+The F<moderators> file is a list of associations between uwildmat(3)
+patterns matching newsgroups and the submission address for those
+newsgroups.  Blank lines and lines starting with a number sign (C<#>) are
+ignored.  All other lines should consist of two fields separated by a
+colon:
+
+    <pattern>:<address>
+
+The first field is a uwildmat(3) pattern matching the group or groups to
+which this line applies.  The first matching line is used, so more
+specific patterns should be listed before general patterns.
+
+The second field, the submission address, should be a simple e-mail
+adddress with one exception:  At most C<%s> may occur anywhere in the
+address.  If present, it will be replaced by the name of the newsgroup,
+with all periods in the name changed to dashes (C<->).  If there is a
+literal C<%> in the submission address, it must be written as C<%%>, even
+if not followed by an C<s>.
+
+Periods are converted to dashes for historical reasons, from back in the
+days when periods in the local part of addresses were not always handled
+correctly.  It's probably no longer necessary, but so much now depends on
+it that it can't be easily changed.
+
+It's intended that the sample moderators file included in the INN
+distribution always be sufficient for all world-wide newsgroups.  The
+hosts behind moderators.isc.org have graciously volunteered to handle
+forwarding tasks for all world-wide newsgroups so that individual sites
+don't have to keep track of the submission addresses for moderated groups.
+The forwarding database used by moderators.isc.org is coordinated by
+moderators-request@isc.org; if you know of a world-wide newsgroup
+hierarchy that is not correctly handled by moderators.isc.org, please send
+the details to that address.
+
+Given that, the only thing you should have to add to the sample file under
+normal circumstances are the forwarding addresses for local or
+limited-distribution moderated groups.
+
+If this file doesn't exist, or if a post is made to a moderated group that
+has no matching entry in this file, B<nnrpd> falls back on the value of
+I<moderatormailer> set in F<inn.conf> and, failing that, rejects the post.
+
+=head1 EXAMPLES
+
+Here is a sample file:
+
+    example.important:announce@example.com
+    example.*:%s@smtp.example.com
+    *:%s@moderators.isc.org
+
+Using the above file, postings to the moderated newsgroup in the left
+column below will be sent to the address shown in the right column below:
+
+    example.important   announce@example.com
+    example.x-announce  example-x-announce@smtp.example.com
+    alt.dev.null        alt-dev-null@moderators.isc.org
+
+Note that periods are changed to dashes and dashes are left alone, so two
+moderated newsgroups whose names differ only by changing a period to a
+dash would go to the same address.  Such newsgroup pairs should therefore
+not be created.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
+POD by Russ Allbery <rra@stanford.edu>.
+
+=head1 SEE ALSO
+
+inn.conf(5), nnrpd(8), uwildmat(3)
+
+=cut
