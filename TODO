@@ -134,10 +134,6 @@ High Priority Projects
   for maintainers to routinely compile INN with make warnings to catch
   problems.
 
-* Add man pages for the default authenticators, as well as documentation
-  on the readers.conf external program interface.  A good place to start
-  is authprogs/README.readers.conf.  [Jeff is working on this.]
-
 * Add documentation of adding and removing CNFS cycbuffs.
 
 * INN shouldn't flush all feeds (particularly all program feeds) on
