@@ -2,6 +2,7 @@
 **
 **  I/O channel (and buffer) processing.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -14,6 +15,17 @@
 
 #include "innd.h"
 
+/* These errno values don't exist on all systems, but may be returned as an
+   (ignorable) error to setting the accept socket nonblocking.  Define them
+   to 0 if they don't exist so that we can unconditionally compare errno to
+   them in the code. */
+#ifndef ENOTSOCK
+# define ENOTSOCK 0
+#endif
+#ifndef ENOTTY
+# define ENOTTY 0
+#endif
+
 /* Minutes - basically, keep the connection open but idle */
 #define PAUSE_BEFORE_DROP               5
 
@@ -22,22 +34,22 @@
    readloop */
 #define COMP_THRESHOLD 10
 
-STATIC FDSET	RCHANmask;
-STATIC FDSET	SCHANmask;
-STATIC FDSET	WCHANmask;
-STATIC int	SCHANcount;
-STATIC int	CHANlastfd;
-STATIC int	CHANlastsleepfd;
-STATIC int	CHANccfd;
-STATIC int	CHANtablesize;
-STATIC CHANNEL	*CHANtable;
-STATIC CHANNEL	*CHANcc;
-STATIC CHANNEL	CHANnull = { CTfree, CSerror, -1 };
+static fd_set	RCHANmask;
+static fd_set	SCHANmask;
+static fd_set	WCHANmask;
+static int	SCHANcount;
+static int	CHANlastfd;
+static int	CHANlastsleepfd;
+static int	CHANccfd;
+static int	CHANtablesize;
+static CHANNEL	*CHANtable;
+static CHANNEL	*CHANcc;
+static CHANNEL	CHANnull = { CTfree, CSerror, -1 };
 
 #define PRIORITISE_REMCONN
 #ifdef PRIORITISE_REMCONN
-STATIC int	CHANrcfd;
-STATIC CHANNEL	*CHANrc;
+static int	CHANrcfd;
+static CHANNEL	*CHANrc;
 #endif /* PRIORITISE_REMCONN */
 
 /*
@@ -56,7 +68,7 @@ void BUFFappend(BUFFER *bp, const char *p, const int len) {
 	RENEW(bp->Data, char, bp->Size);
     }
     bp->Left += len;
-    memcpy((POINTER)&bp->Data[i], (POINTER)p, len);
+    memcpy(&bp->Data[i], p, len);
 }
 
 /*
@@ -73,7 +85,7 @@ void BUFFset(BUFFER *bp, const char *p, const int length)
 	}
 	
 	/* Try to test for non-overlapping copies. */
-	memmove((POINTER)bp->Data, (POINTER)p, (SIZE_T)length);
+	memmove(bp->Data, p, length);
     }
     bp->Used = 0;
 }
@@ -144,8 +156,7 @@ void CHANsetup(int i)
     CHANshutdown();
     CHANtablesize = i;
     CHANtable = NEW(CHANNEL, CHANtablesize);
-    (void)memset((POINTER)CHANtable, 0,
-	    (SIZE_T)(CHANtablesize * sizeof *CHANtable));
+    memset(CHANtable, 0, CHANtablesize * sizeof *CHANtable);
     CHANnull.NextLog = innconf->chaninacttime;
     CHANnull.Address.s_addr = MyAddress.s_addr;
     for (cp = CHANtable; --i >= 0; cp++)
@@ -215,21 +226,14 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     memset(cp->PrecommitWIP, '\0', sizeof(cp->PrecommitWIP));
     cp->PrecommitiCachenext=0;
 
-    /* Make the descriptor close-on-exec and non-blocking. */
-    CloseOnExec(fd, TRUE);
-#if !defined(_HPUX_SOURCE)
-    /* Stupid HPUX 11.0 has a broken listen/accept where setting the
-     * listensocket to nonblocking prevents you from successfully setting the
-     * socket returned by accept(2) back to blocking mode, no matter what,
-     * resulting in all kinds of funny behaviour, data loss, etc. etc.  */
-    if (SetNonBlocking(fd, TRUE) < 0
-#if	defined(ENOTSOCK)
-	    && errno != ENOTSOCK
-#endif	/* defined(ENOTSOCK) */
-#if	defined(ENOTTY)
-	    && errno != ENOTTY
-#endif	/* defined(ENOTTY) */
-    )
+    close_on_exec(fd, true);
+
+#ifndef _HPUX_SOURCE
+    /* Stupid HPUX 11.00 has a broken listen/accept where setting the listen
+       socket to nonblocking prevents you from successfully setting the
+       socket returned by accept(2) back to blocking mode, no matter what,
+       resulting in all kinds of funny behaviour, data loss, etc. etc.  */
+    if (nonblocking(fd, true) < 0 && errno != ENOTSOCK && errno != ENOTTY)
 	syslog(L_ERROR, "%s cant nonblock %d %m", LogName, fd);
 #endif
 
@@ -252,7 +256,7 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
 /*
 **  Start tracing a channel.
 */
-void CHANtracing(CHANNEL *cp, BOOL Flag)
+void CHANtracing(CHANNEL *cp, bool Flag)
 {
     char		*p;
 
@@ -371,9 +375,9 @@ char *CHANname(const CHANNEL *cp)
 {
     static char		buff[SMBUF];
     int	                i;
-    SITE	        *sp;
-    STRING		p;
-    PID_T		pid;
+    SITE *	        sp;
+    const char *	p;
+    pid_t		pid;
 
     switch (cp->Type) {
     default:
@@ -498,8 +502,8 @@ void RCHANremove(CHANNEL *cp)
 **  Note that the Argument must be NULL or allocated memory!
 */
 void
-SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event,
-         innd_callback_t Waker, POINTER Argument)
+SCHANadd(CHANNEL *cp, time_t Waketime, void *Event, innd_callback_t Waker,
+         void *Argument)
 {
     if (!FD_ISSET(cp->fd, &SCHANmask)) {
 	SCHANcount++;
@@ -539,7 +543,7 @@ void SCHANremove(CHANNEL *cp)
 /*
 **  Is a channel on the sleep list?
 */
-BOOL CHANsleeping(CHANNEL *cp)
+bool CHANsleeping(CHANNEL *cp)
 {
     return FD_ISSET(cp->fd, &SCHANmask);
 }
@@ -548,7 +552,8 @@ BOOL CHANsleeping(CHANNEL *cp)
 /*
 **  Wake up channels waiting for a specific event.
 */
-void SCHANwakeup(POINTER *Event)
+void
+SCHANwakeup(void *Event)
 {
     CHANNEL	        *cp;
     int	                i;
@@ -682,7 +687,7 @@ int CHANreadtext(CHANNEL *cp)
 **  happens we want to do the I/O in chunks.  We assume stdio's BUFSIZ is
 **  a good chunk value.
 */
-STATIC int
+static int
 CHANwrite(int fd, char *p, long length)
 {
     int	i;
@@ -690,14 +695,14 @@ CHANwrite(int fd, char *p, long length)
 
     do {
 	/* Try the standard case -- write it all. */
-	i = write(fd, (POINTER)p, (SIZE_T)length);
+	i = write(fd, p, length);
 	if (i > 0 || (i < 0 && errno != EMSGSIZE && errno != EINTR))
 	    return i;
     } while (i < 0 && errno == EINTR);
 
     /* Write it in pieces. */
     for (save = p, i = 0; length; p += i, length -= i) {
-	i = write(fd, (POINTER)p, (SIZE_T)(length > BUFSIZ ? BUFSIZ : length));
+	i = write(fd, p, (length > BUFSIZ ? BUFSIZ : length));
 	if (i <= 0)
 	    break;
     }
@@ -710,7 +715,7 @@ CHANwrite(int fd, char *p, long length)
 /*
 **  Try to flush out the buffer.  Use this only on file channels!
 */
-BOOL WCHANflush(CHANNEL *cp)
+bool WCHANflush(CHANNEL *cp)
 {
     BUFFER	        *bp;
     int	                i;
@@ -738,7 +743,7 @@ BOOL WCHANflush(CHANNEL *cp)
 /*
 **  Wakeup routine called after a write channel was put to sleep.
 */
-STATIC FUNCTYPE
+static void
 CHANwakeup(CHANNEL *cp)
 {
     syslog(L_NOTICE, "%s wakeup", CHANname(cp));
@@ -749,7 +754,7 @@ CHANwakeup(CHANNEL *cp)
 /*
 **  Attempting to write would block; stop output or give up.
 */
-STATIC void
+static void
 CHANwritesleep(CHANNEL *cp, char *p)
 {
     int			i;
@@ -770,8 +775,7 @@ CHANwritesleep(CHANNEL *cp, char *p)
 	}
     i *= innconf->blockbackoff;
     syslog(L_ERROR, "%s blocked sleeping %d", p, i);
-    SCHANadd(cp, (time_t)(Now.time + i), (POINTER)NULL,
-	CHANwakeup, (POINTER)NULL);
+    SCHANadd(cp, Now.time + i, NULL, CHANwakeup, NULL);
 }
 
 
@@ -780,10 +784,10 @@ CHANwritesleep(CHANNEL *cp, char *p)
 **  We got an unknown error in select.  Find out the culprit.
 **  Not really ready for production use yet, and it's expensive, too.
 */
-STATIC void
+static void
 CHANdiagnose(void)
 {
-    FDSET		Test;
+    fd_set		Test;
     int			i;
     struct timeval	t;
 
@@ -793,7 +797,7 @@ CHANdiagnose(void)
 	    FD_SET(i, &Test);
 	    t.tv_sec = 0;
 	    t.tv_usec = 0;
-	    if (select(i + 1, &Test, (FDSET *)NULL, (FDSET *)NULL, &t) < 0
+	    if (select(i + 1, &Test, NULL, NULL, &t) < 0
 	      && errno != EINTR) {
 		syslog(L_ERROR, "%s Bad Read File %d", LogName, i);
 		FD_CLR(i, &RCHANmask);
@@ -806,7 +810,7 @@ CHANdiagnose(void)
 	    FD_SET(i, &Test);
 	    t.tv_sec = 0;
 	    t.tv_usec = 0;
-	    if (select(i + 1, (FDSET *)NULL, &Test, (FDSET *)NULL, &t) < 0
+	    if (select(i + 1, NULL, &Test, NULL, &t) < 0
 	     && errno != EINTR) {
 		syslog(L_ERROR, "%s Bad Write File %d", LogName, i);
 		FD_CLR(i, &WCHANmask);
@@ -862,8 +866,8 @@ void CHANreadloop(void)
     int			oerrno;
     CHANNEL		*cp;
     BUFFER		*bp;
-    FDSET		MyRead;
-    FDSET		MyWrite;
+    fd_set		MyRead;
+    fd_set		MyWrite;
     struct timeval	MyTime;
     long		silence;
     char		*p;
@@ -884,8 +888,7 @@ void CHANreadloop(void)
         i = TMRmainloophook();
         if (i != 0) MyTime.tv_sec = i;
 	TMRstart(TMR_IDLE);
-	count = select(CHANlastfd + 1, &MyRead, &MyWrite, (FDSET *)NULL,
-		&MyTime);
+	count = select(CHANlastfd + 1, &MyRead, &MyWrite, NULL, &MyTime);
 	TMRstop(TMR_IDLE);
 
 	STATUSmainloophook();
@@ -1047,8 +1050,8 @@ void CHANreadloop(void)
 				syslog(L_ERROR, "%s sleeping", p);
 				WCHANremove(cp);
 				SCHANadd(cp,
-				    (time_t)(Now.time + innconf->pauseretrytime),
-				    (POINTER)NULL, CHANwakeup, (POINTER)NULL);
+                                         Now.time + innconf->pauseretrytime,
+                                         NULL, CHANwakeup, NULL);
 			    }
 			}
 			else {
