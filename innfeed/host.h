@@ -183,6 +183,9 @@ bool hostWantsStreaming (Host host) ;
 /* return maxChecks */
 u_int hostmaxChecks (Host host);
 
+/* return if we should drop deferred articles */
+bool hostDropDeferred (Host host);
+
 /* return the maximum number of CHECKs that can be outstanding */
 u_int hostMaxChecks (Host host) ;
 

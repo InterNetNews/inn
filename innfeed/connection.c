@@ -1738,7 +1738,10 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
 
           case 431:             /* try again later (also for TAKETHIS) */
             decrFilter (cxn) ;
-            processResponse431 (cxn, response) ;
+            if (hostDropDeferred (cxn->myHost))
+                processResponse438 (cxn, response) ;
+            else
+                processResponse431 (cxn, response) ;
             break ;
 
           case 438:             /* already have it */

@@ -121,6 +121,7 @@ typedef struct host_param_s
   u_int closePeriod;
   u_int dynamicMethod;
   bool wantStreaming;
+  bool dropDeferred;
   double lowPassLow; /* as percentages */
   double lowPassHigh;
   double lowPassFilter;
@@ -509,6 +510,7 @@ HostParams newHostParams(HostParams p)
       params->closePeriod=CLOSE_PERIOD;
       params->dynamicMethod=METHOD_STATIC;
       params->wantStreaming=STREAM;
+      params->dropDeferred=FALSE;
       params->lowPassLow=NOCHECKLOW;
       params->lowPassHigh=NOCHECKHIGH;
       params->lowPassFilter=FILTERVALUE;
@@ -1235,6 +1237,8 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
 	   host->params->initialConnections) ;
   fprintf (fp,"%s    want-streaming : %s\n",indent,
            boolToString (host->params->wantStreaming)) ;
+  fprintf (fp,"%s    drop-deferred : %s\n",indent,
+           boolToString (host->params->dropDeferred)) ;
   fprintf (fp,"%s    remote-streams : %s\n",indent,
            boolToString (host->remoteStreams)) ;
   fprintf (fp,"%s    max-checks : %d\n",indent,host->params->maxChecks) ;
@@ -2281,6 +2285,11 @@ u_int hostMaxChecks (Host host)
   return host->params->maxChecks ;
 }
 
+bool hostDropDeferred (Host host)
+{
+  return host->params->dropDeferred ;
+}
+
 
 
 
@@ -2460,6 +2469,7 @@ static HostParams hostDetails (scope *s,
   GETINT(s,fp,"max-connections",0,LONG_MAX,REQ,p->absMaxConnections, inherit);
   GETINT(s,fp,"max-queue-size",1,LONG_MAX,REQ,p->maxChecks, inherit);
   GETBOOL(s,fp,"streaming",REQ,p->wantStreaming, inherit);
+  GETBOOL(s,fp,"drop-deferred",REQ,p->dropDeferred, inherit);
   GETREAL(s,fp,"no-check-high",0.0,100.0,REQ,p->lowPassHigh, inherit);
   GETREAL(s,fp,"no-check-low",0.0,100.0,REQ,p->lowPassLow, inherit);
   GETREAL(s,fp,"no-check-filter",0.1,DBL_MAX,REQ,p->lowPassFilter, inherit);

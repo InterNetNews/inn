@@ -81,7 +81,7 @@ void configCleanup (void) ;
 #define PORT_NUMBER "port-number"
 #define RESP_TIMEOUT "response-timeout"
 #define STREAMING "streaming"
-
+#define DROP_DEFERRED "drop-deferred"
 
 #define ISPEER(V) (ISSCOPE(V) && strcmp ((V)->v.scope_val->scope_type,"peer") == 0)
 #define ISSCOPE(V) (V->type == scopeval)
