@@ -105,8 +105,8 @@ file descriptor limits and bind to the news port, and nothing else.
 
 =head1 DIAGNOSTICS
 
-B<inndstart> may log the following messages to syslog (like the rest of
-INN, syslog is the best place to find detailed debugging information):
+B<inndstart> may log the following messages to syslog and print them to
+stderr.
 
 =over 4
 
@@ -117,66 +117,72 @@ something else is already running on the news port.  Check with
 netstat(8) and make sure that inetd(8) doesn't think it's running a
 service on the same port you're trying to run B<innd> on.
 
+=item can't bind to restricted port %d
+
+(Fatal) B<inndstart> was told to bind to a low numbered port (under 1024)
+other than 119, 433, or a port number given at configure time.  This is
+not allowed for security reasons.  If you're running B<innd> on a port
+other than 119 or 433, you need to give the --with-innd-port flag to
+configure when you compile INN.
+
 =item can't exec %s: %s
 
 (Fatal) B<inndstart> was unable to execute B<innd>.  Make sure that
 I<pathbin> is set correctly in inn.conf and that B<innd> is located in
 that directory and is executable by the news user.
 
-=item can't getrlimit(NOFILE)
+=item can't getgrnam(%s)
 
-(Warning) Unable to obtain the current system resource limit on file
-descriptors.  Chances are something is wrong with the *rlimit()
-functions.  The file descriptor limit was left unchanged from the system
-default.
+(Fatal) Unable to determine the GID for the compiled-in news group.  Is
+the news group listed in /etc/group?
+
+=item can't getpwnam(%s)
+
+(Fatal) Unable to determine the UID for the compiled-in news user.  Is the
+news user listed in /etc/passwd?
 
 =item can't open socket: %s
 
 (Fatal) Something went wrong in creating the network socket.  Chances are
 your system is out of resources of some kind.
 
-=item can't setgid(%d): %s
-
-(Fatal) Dropping privileges to the news group failed for some reason.
-
-=item can't setgroups: %s
-
-(Warning) Dropping all supplemental groups except the news group failed
-for some reason, and the process group membership was left unchanged.
-This message may indicate a minor security hole if the news user is in
-extra groups.
-
-=item can't setrlimit(NOFILE, %d)
+=item can't set file descriptor limit to %d: %s
 
 (Warning) Unable to set the system file descriptor limit to the specified
 value.  Either that value is too high for your system or something else
 went wrong.  The file descriptor limit was left unchanged.  Try changing
 I<rlimitnofile> in inn.conf to a smaller value.
 
-=item can't setsockopt: %s
+=item can't set SO_REUSEADDR: %s
 
 (Warning) B<inndstart> attempts to set SO_REUSEADDR so that if B<innd>
 exits, it can be restarted again immediately without waiting for the port
 to time out.  For some reason, this failed, and that option was not set on
 the port.
 
-=item can't setuid(%d): %s
+=item can't seteuid to %d: %s
+
+(Fatal) Unable to change the effective UID.  If B<inndstart> has the
+correct permissions (setuid root) and seteuid() to root (UID 0) is
+failing, this may mean that your system has seteuid() but doesn't have
+support for POSIX saved UIDs.  If this is the case, please report this to
+the INN maintainers.
+
+=item can't setgid to %d: %s
+
+(Fatal) Dropping privileges to the news group failed for some reason.
+
+=item can't setgroups (is inndstart setuid root?): %s
+
+(Warning) Dropping all supplemental groups except the news group failed
+for some reason, and the process group membership was left unchanged.
+This almost always indicates that B<inndstart> isn't setuid root as it has
+to be to do what it does.  Make sure that B<inndstart> is setuid root,
+owned by group news, and mode 4710.
+
+=item can't setuid to %d: %s
 
 (Fatal) Dropping privileges to the news user failed for some reason.
-
-=item can't stat pathrun (%s): %s
-
-(Fatal) I<pathrun> as specified in inn.conf doesn't exist.
-
-=item getgrnam(%s) failed
-
-(Fatal) Unable to determine the GID for the compiled-in news group.  Is
-the news group listed in /etc/group?
-
-=item getpwnam(%s) failed
-
-(Fatal) Unable to determine the UID for the compiled-in news user.  Is the
-news user listed in /etc/passwd?
 
 =item invalid address %s
 
@@ -188,7 +194,7 @@ valid address.  Addresses must be given as numeric IP addresses.
 (Fatal) The I<bindaddress> specified in inn.conf could not be converted to
 an IP address.  See inn.conf(5) for more information about valid values.
 
-=item invalid port %s
+=item invalid port %s (must be a number)
 
 (Fatal) B<-P> was specified on the command line, but the argument wasn't a
 valid port.  Ports must be port numbers; service names are not allowed.
@@ -203,53 +209,10 @@ after the option.
 (Fatal) B<-P> was given on the command line, but no port was given after
 the option.
 
-=item pathrun (%s) not a directory
-
-(Fatal) I<pathrun> as specified in inn.conf isn't a directory.  This is
-where B<innd> will create its local control socket; it should always be a
-directory.
-
-=item pathrun (%s) owned by group %d, not %s (%d)
-
-(Fatal) I<pathrun> specified in inn.conf must be owned by the news group.
-This is checked for security reasons.
-
-=item pathrun (%s) owned by user %d, not %s (%d)
-
-(Fatal) I<pathrun> specified in inn.conf must be owned by the news user.
-This is checked for security reasons.
-
-=item ran by GID %d, who isn't %s (%d)
-
-(Fatal) Someone not in the news group attempted to run B<inndstart>.  If
-you were running B<inndstart> as the news user, make sure that the news
-user's default group is the news group you picked at compile time (C<news>
-by default).
-
-=item ran by UID %d, who isn't %s (%d)
+=item must be run by user %s (%d), not %d
 
 (Fatal) Someone other than the news user attempted to run B<inndstart>.
 B<inndstart> may only be run by the news user for security reasons.
-
-=item seteuid(%d) failed: %s
-
-(Fatal) Unable to change the effective UID.  This usually means that
-B<inndstart> was installed with the wrong permissions.  If it does have
-the correct permissions (setuid root) and seteuid() to root (UID 0) is
-failing, this may mean that your system has seteuid() but doesn't have
-support for POSIX saved UIDs.  If this is the case, please report this to
-the INN maintainers.
-
-=item setreuid(%d, %d) failed: %s
-
-(Fatal) Unable to change the real and effective UIDs.  This message
-usually means that B<inndstart> was installed with the wrong permissions.
-
-=item tried to bind to port %d
-
-(Fatal) B<inndstart> was told to bind to a low numbered port (under 1024)
-other than 119, 433, or a port number given at configure time.  This is
-not allowed for security reasons.
 
 =back
 
@@ -288,8 +251,9 @@ and sets only the following variables:
 
 =item BIND_INADDR
 
-Passed verbatim from B<inndstart>'s environment.  This is apparently used
-on Linux.
+Passed verbatim from B<inndstart>'s environment.  This is used by various
+programs to override the I<bindaddress> parameter in inn.conf(5) and
+therefore must be in B<innd>'s environment for programs like innfeed(8).
 
 =item HOME
 
@@ -329,16 +293,12 @@ Set to the news master, as determined at configure time.
 
 =item inn.conf
 
-Read for I<pathnews>, I<pathbin>, I<pathrun>, I<pathtmp>, I<rlimitnofile>,
+Read for I<pathnews>, I<pathbin>, I<pathtmp>, I<rlimitnofile>,
 I<bindaddress>, and I<port>.
 
 =item I<pathbin>/innd
 
 The binary that is executed as B<innd> and passed the open network socket.
-
-=item I<pathrun>
-
-Checked for existence and the right ownership.
 
 =back
 
