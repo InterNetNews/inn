@@ -215,14 +215,14 @@ sub collect {
     # running
     return 1 if $left =~ /\S+ running$/o;
     # sleeping
-    if ($left =~ /(\S+):\d+:\proc:\d+ sleeping$/o) {
+    if ($left =~ /(\S+):\d+:proc:\d+ sleeping$/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_blocked{$server}++;
       return 1;
     }
     # blocked sleeping
-    if ($left =~ /(\S+):\d+:\proc:\d+ blocked sleeping/o) {
+    if ($left =~ /(\S+):\d+:proc:\d+ blocked sleeping/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_blocked{$server}++;
