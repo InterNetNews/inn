@@ -42,15 +42,22 @@ main(void)
     ok(4, (status == 0) && value && *value == 0);
 
     /* We're run by a shell script wrapper that sets resource limits such
-       that we can allocate one string of this size but not two. */
+       that we can allocate one string of this size but not two.  Note that
+       Linux doesn't support data limits, so skip if we get an unexpected
+       success here. */
     value = xmalloc(50 * 1024);
     memset(value, 'A', 50 * 1024 - 1);
     value[50 * 1024 - 1] = 0;
     status = test_setenv(test_var, value, 0);
     ok(5, (status == 0) && !strcmp(getenv(test_var), ""));
     status = test_setenv(test_var, value, 1);
-    ok(6, (status == -1) && (errno == ENOMEM));
-    ok(7, !strcmp(getenv(test_var), ""));
+    if (status == 0) {
+        puts("ok 6 # skip - no data limit support");
+        puts("ok 7 # skip - no data limit support");
+    } else {
+        ok(6, (status == -1) && (errno == ENOMEM));
+        ok(7, !strcmp(getenv(test_var), ""));
+    }
 
     return 0;
 }
