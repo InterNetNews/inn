@@ -39,7 +39,8 @@ tags ctags:	$(SOURCES)
 
 libinnhist.la:	$(P) $(OBJECTS) $(LOBJECTS) $(LHIS_OBJECTS)
 	$(LIBLD) $(LDFLAGS) -o libinnhist.la $(LOBJECTS) $(LHIS_OBJECTS) \
-		-rpath $(PATHLIB) -version-info 2:0:0
+	    $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \
+	    -rpath $(PATHLIB) -version-info 2:0:0
 
 libinnhist.a:         $(P) $(OBJECTS) $(HIS_OBJECTS)
 	ar r $@ $(OBJECTS) $(HIS_OBJECTS)
