@@ -31,15 +31,12 @@ STATIC int		ConfigBitsize;
     }
 /*
   To add a new config value, add it to the following:
-	Use the comment embedded method in include/libinn.h, then
-	run developconfig.sh, which splits items out to the other
-	locations.
-  OR:
-	include/paths.h		:	Add #define _CONF_VARNAME "varname"
+
 	include/innconf.h	:	Add to conf_defaults
 	include/libinn.h	:	Add varname to conf_vars struct
 	lib/getconfig.c		:	SetDefaults() & ReadInnConf(), ClearInnConf()
 	samples/inn.conf	:	Set the default value
+	samples/inncheck.in	:	So we can check it
 	doc/inn.conf.5		:	Document it!
 	wherever you need it	:	Use as innconf->varname
 */
@@ -230,6 +227,7 @@ void SetDefaults()
     innconf->keyartlimit = 100000;
     innconf->keymaxwords = 250;
     innconf->nnrpdposthost = NULL;
+    innconf->nnrpdpostport = NNTP_PORT;
     innconf->nnrpperlauth = FALSE;
 
     innconf->pathnews = NULL;
@@ -860,6 +858,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_NNRPDPOSTHOST, bit);
 		if (!bit) innconf->nnrpdposthost = COPY(p);
 		SET_CONFIG(CONF_VAR_NNRPDPOSTHOST);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_NNRPDPOSTPORT)) {
+		TEST_CONFIG(CONF_VAR_NNRPDPOSTPORT, bit);
+		if (!bit) innconf->nnrpdpostport = atol(p);
+		SET_CONFIG(CONF_VAR_NNRPDPOSTPORT);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_EXTENDEDDBZ)) {
 		TEST_CONFIG(CONF_VAR_EXTENDEDDBZ, bit);
