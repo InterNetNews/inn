@@ -136,6 +136,11 @@ TAGS etags:
 	etags */*.c */*.h */*/*.c */*/*.h
 
 
+##  Run the test suite.
+check test tests:
+	cd tests && $(MAKE) test
+
+
 ##  Make a release.  We create a release by recreating the directory
 ##  structure and then copying over all files listed in the MANIFEST.  If it
 ##  isn't in the MANIFEST, it doesn't go into the release.  We also update
