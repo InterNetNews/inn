@@ -401,7 +401,7 @@ RCreader(CHANNEL *cp)
     ** There are three parameters controlling the use of the table not
     ** counting the starting index and count.
     **
-    ** L = per host incoming connects per X seconds allowed
+    ** H = per host incoming connects per X seconds allowed
     ** T = total incoming connects per X seconds allowed
     ** X = number of seconds to remember a successful connect
     **
@@ -417,7 +417,7 @@ RCreader(CHANNEL *cp)
     ** 504 Server overloaded, try later
     **
     ** Third, if the number of entries now in the table which match
-    ** the incoming connection's host address is equal to the ``L''
+    ** the incoming connection's host address is equal to the ``H''
     ** parameter, reject the connection with the ``505'' error code.
     **
     ** 505 Connection rejected, you're making too many connects per minute
