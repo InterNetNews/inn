@@ -130,6 +130,7 @@ doc                                   Documentation (Directory)
 doc/GPL                               The GNU General Public License 2.0
 doc/IPv6-info                         Nathan Lutchansky's IPv6 notes
 doc/Makefile                          Makefile for documentation
+doc/checklist                         Checklist for installing INN
 doc/compliance-nntp                   INN compliance with the NNTP standard
 doc/config-design                     Configuration parser design principles
 doc/config-semantics                  Configuration file semantics
@@ -247,11 +248,10 @@ doc/pod/hook-python.pod               Master file for doc/hook-python
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
-doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/inndstart.pod                 Master file for inndstart.8
+doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libinnhist.pod                Master file for libinnhist.3
-doc/pod/qio.pod                       Master file for qio.3
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/newsfeeds.pod                 Master file for newsfeeds.5
@@ -261,6 +261,7 @@ doc/pod/ovdb_monitor.pod              Master file for ovdb_monitor.8
 doc/pod/ovdb_server.pod               Master file for ovdb_server.8
 doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
 doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
+doc/pod/qio.pod                       Master file for qio.3
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
@@ -507,14 +508,14 @@ samples/innreport.conf.in             Log summary configuration
 samples/innwatch.ctl                  INN monitoring configuration
 samples/moderators                    Moderation submission addresses
 samples/motd.news                     Sample MOTD file
-samples/newsgroups.minimal            Minimal starting newsgroups file
 samples/news2mail.cf                  news2mail config file
 samples/newsfeeds.in                  innd feed configuration
+samples/newsgroups.minimal            Minimal starting newsgroups file
 samples/nnrpd.py                      Python hooks for nnrpd
 samples/nnrpd.track                   Reader tracking configuration
 samples/nnrpd_access.pl.in            Sample nnrpd Perl access hooks
 samples/nnrpd_auth.pl.in              Sample nnrpd Perl authorization hooks
-samples/nnrpd_auth.py.in              Sample nnrpd Python authorization hooks
+samples/nnrpd_auth.py                 Sample nnrpd Python authorization hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
 samples/ovdb.conf                     Berkeley DB overview configuration
 samples/overview.fmt                  Format of news overview database
@@ -522,7 +523,7 @@ samples/passwd.nntp                   Passwords for remote connections
 samples/radius.conf                   Sample config for RADIUS authentication
 samples/readers.conf                  Reader connection configuration
 samples/sasl.conf.in                  SASL configuration
-samples/startup.tcl.in                Tcl startup code for innd
+samples/startup.tcl                   Tcl startup code for innd
 samples/startup_innd.pl               Perl startup code for innd
 samples/storage.conf                  Sample storage configuration
 samples/subscriptions                 Sample default subscriptions list
@@ -566,18 +567,15 @@ storage/interface.h                   Storage API interface
 storage/ov.c                          Overview API glue implementation
 storage/ov3                           tradindexed overview method (Directory)
 storage/ov3/Makefile                  Makefile for tradindexed overview
-storage/ov3/group.c                   Group index handling for tradindexed
 storage/ov3/ov3.c                     tradindexed overview routines
 storage/ov3/ovmethod.config           ovbuildconfig definition
-storage/ov3/private.h                 Private interface for tradindexed
 storage/ov3/structure.h               On-disk data structures for tradindexed
-storage/ov3/tdx-util.c                Utility program for tradindexed
 storage/ov3/tradindexed.h             Header file for tradindexed overview
 storage/ovdb                          ovdb overview method (Directory)
 storage/ovdb/Makefile                 Makefile for ovdb overview method
+storage/ovdb/ovdb-private.h           Private header file for ovdb
 storage/ovdb/ovdb.c                   ovdb (Berkeley DB) overview method
 storage/ovdb/ovdb.h                   Header for ovdb (Berkeley DB) overview
-storage/ovdb/ovdb-private.h           Private header file for ovdb
 storage/ovdb/ovmethod.config          ovbuildconfig definition
 storage/ovinterface.h                 Overview API interface
 storage/timecaf                       timecaf storage method (Directory)
@@ -593,6 +591,12 @@ storage/timehash/Makefile             Makefile for timehash storage method
 storage/timehash/method.config        buildconfig definition
 storage/timehash/timehash.c           timehash storage routines
 storage/timehash/timehash.h           Header for timehash
+storage/tradindexed                   tradindexed overview method (Directory)
+storage/tradindexed/Makefile          Makefile for tradindexed overview method
+storage/tradindexed/group.c           Group index handling for tradindexed
+storage/tradindexed/tdx-private.h     Private header file for tradindexed
+storage/tradindexed/tdx-structure.h   On disk layout of tradindexed files
+storage/tradindexed/tdx-util.c        Utility functions for tradindexed
 storage/tradspool                     tradspool storage method (Directory)
 storage/tradspool/Makefile            Makefile for tradspool storage method
 storage/tradspool/README.tradspool    Docs for tradspool storage method
@@ -609,11 +613,12 @@ support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
 support/fixlog                        Clean up CVS log messages for cvs2cl
 support/fixscript.in                  Interpreter path fixup script
+support/indent                        A mostly working wrapper around indent
 support/install-sh                    Installation utility
-support/ltconfig                      Configure libtool
 support/ltmain.sh                     Source for libtool utility
 support/makedepend                    Generate dependencies for C files
 support/mkchangelog                   Generate ChangeLog from CVS
+support/mkmanifest                    Generate a list of files for the manifest
 support/mksystem                      Generate <inn/system.h> from config.h
 support/mkversion                     Generate <inn/version.h> with INN version
 tests                                 Test suite for INN (Directory)
