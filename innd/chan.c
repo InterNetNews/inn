@@ -281,7 +281,7 @@ void CHANtracing(CHANNEL *cp, BOOL Flag)
 */
 void CHANclose(CHANNEL *cp, char *name)
 {
-    char	*label, *tmplabel;
+    char	*label, *tmplabel, buff[SMBUF];
 
     if (cp->Type == CTfree)
 	syslog(L_ERROR, "%s internal closing free channel %d", name, cp->fd);
@@ -294,12 +294,14 @@ void CHANclose(CHANNEL *cp, char *name)
                "%s closed seconds %ld cancels %ld",
                name, (long)(Now.time - cp->Started),
                cp->Received);
-            else
+            else {
+	    sprintf(buff, "accepted size %.0f duplicate size %.0f", cp->Size, cp->DuplicateSize);
 	    syslog(L_NOTICE,
-		"%s closed seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld accepted size %.0f duplicate size %.0f",
+		"%s closed seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
 		name, (long)(Now.time - cp->Started),
 		cp->Received, cp->Refused, cp->Rejected,
-		cp->Duplicate, cp->Size, cp->DuplicateSize);
+		cp->Duplicate, buff);
+	    }
 	} else if (cp->Type == CTreject)
 	    syslog(L_NOTICE, "%s %ld", name, cp->Rejected);
 	else if (cp->Out.Left)

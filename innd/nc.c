@@ -182,7 +182,8 @@ NCbadid(CHANNEL *cp, char *p)
 STATIC void
 NCpostit(CHANNEL *cp)
 {
-    STRING		response;
+    STRING	response;
+    char	buff[SMBUF];
 
     /* Note that some use break, some use return here. */
     switch (Mode) {
@@ -212,11 +213,12 @@ NCpostit(CHANNEL *cp)
         }
 	cp->Reported++;
 	if (cp->Reported >= innconf->nntpactsync) {
+	    sprintf(buff, "accepted size %.0f duplicate size %.0f", cp->Size, cp->DuplicateSize);
 	    syslog(L_NOTICE,
-	    "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld accepted size %.0f duplicate size %.0f",
+	    "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
 		CHANname(cp), (long)(Now.time - cp->Started),
 		cp->Received, cp->Refused, cp->Rejected,
-		cp->Duplicate, cp->Size, cp->DuplicateSize);
+		cp->Duplicate, buff);
 	    cp->Reported = 0;
 	}
 	if (Mode == OMthrottled) {

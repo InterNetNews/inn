@@ -687,7 +687,7 @@ char *buildFilename (const char *directory, const char *fname)
 /* borrows heavily from the shrinkfile program by chongo. */
 bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
 {
-  off_t currlen = ftello (fp) ;
+  long currlen = ftello (fp) ;
   char *tmpname ;
   char buffer [BUFSIZ] ;
   FILE *tmpFp ;

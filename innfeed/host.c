@@ -1135,7 +1135,6 @@ struct in_addr *hostIpAddr (Host host)
   char **newIpAddrs = NULL;
   struct in_addr ipAddr, *returnAddr ;
   struct hostent *hostEnt ;
-  char *msgstr[SMBUF] ;
 
   ASSERT(host->params != NULL);
 
@@ -2000,6 +1999,7 @@ bool hostCxnGone (Host host, Connection cxn)
 {
   u_int i;
   bool oneThere = false ;
+  char *msgstr[SMBUF] ;
 
   /* forget about the Connection and see if we are still holding any live
      connections still. */
@@ -2031,27 +2031,29 @@ bool hostCxnGone (Host host, Connection cxn)
       time_t now = theTime() ;
       u_int hostsLeft ;
 
-      if (host->firstConnectTime > 0)
+      if (host->firstConnectTime > 0) {
+        sprintf(msgstr, "accsize %.0f rejsize %.0f", host->gArtsSizeAccepted, host->gArtsSizeRejected);
         syslog (LOG_NOTICE,REALLY_FINAL_STATS,
                 host->params->peerName,
                 (long) (now - host->firstConnectTime),
                 host->gArtsOffered, host->gArtsAccepted,
                 host->gArtsNotWanted, host->gArtsRejected,
-                host->gArtsMissing, host->gArtsSizeAccepted,
-                host->gArtsSizeRejected, host->gArtsToTape,
-		host->gArtsFromTape) ;
+                host->gArtsMissing, msgstr,
+                host->gArtsToTape, host->gArtsFromTape) ;
+      }
 
       hostsLeft = listenerHostGone (host->listener, host) ;
       delHost (host) ;
 
-      if (hostsLeft == 0)
+      if (hostsLeft == 0) {
+        sprintf(msgstr, "accsize %.0f rejsize %.0f", procArtsSizeAccepted, procArtsSizeRejected);
         syslog (LOG_NOTICE,PROCESS_FINAL_STATS,
                 (long) (now - start),
                 procArtsOffered, procArtsAccepted,
                 procArtsNotWanted,procArtsRejected,
-                procArtsMissing, procArtsSizeAccepted,
-                procArtsSizeRejected, procArtsToTape,
-		procArtsFromTape) ;
+                procArtsMissing, msgstr,
+                procArtsToTape, procArtsFromTape) ;
+      }
       
       /* return true if that was the last host */
       return (hostsLeft == 0 ? true : false) ;
@@ -2470,17 +2472,19 @@ void gHostStats (void)
 {
   Host h ;
   time_t now = theTime() ;
+  char *msgstr[SMBUF] ;
 
   for (h = gHostList ; h != NULL ; h = h->next)
-      if (h->firstConnectTime > 0)
+      if (h->firstConnectTime > 0) {
+        sprintf(msgstr, "accsize %.0f rejsize %.0f", h->gArtsSizeAccepted, h->gArtsSizeRejected);
         syslog (LOG_NOTICE,REALLY_FINAL_STATS,
                 h->params->peerName,
                 (long) (now - h->firstConnectTime),
                 h->gArtsOffered, h->gArtsAccepted,
                 h->gArtsNotWanted, h->gArtsRejected,
-                h->gArtsMissing, h->gArtsSizeAccepted,
-                h->gArtsSizeRejected, h->gArtsToTape,
-		h->gArtsFromTape) ;
+                h->gArtsMissing, msgstr,
+                h->gArtsToTape, h->gArtsFromTape) ;
+      }
 }
 
 
@@ -2799,6 +2803,7 @@ static void hostLogStats (Host host, bool final)
   time_t now = theTime() ;
   time_t *startPeriod ;
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
+  char *msgstr[SMBUF] ;
 
   if (host->spoolTime == 0 && host->connectTime == 0)
     return ;        /* host has never connected and never started spooling*/
@@ -2813,14 +2818,15 @@ static void hostLogStats (Host host, bool final)
             (final ? "final" : "checkpoint"),
             (long) (now - host->spoolTime), host->artsToTape,
             host->artsHostClose, host->artsHostSleep) ;
-  else
+  else {
+    sprintf(msgstr, "accsize %.0f rejsize %.0f", host->artsSizeAccepted, host->artsSizeRejected);
     syslog (LOG_NOTICE, HOST_STATS_MSG, host->params->peerName, 
             (final ? "final" : "checkpoint"),
             (long) (now - host->connectTime),
             host->artsOffered, host->artsAccepted,
             host->artsNotWanted, host->artsRejected,
-            host->artsMissing, host->artsSizeAccepted,
-            host->artsSizeRejected, host->artsToTape,
+            host->artsMissing, msgstr,
+            host->artsToTape,
             host->artsHostClose, host->artsFromTape,
             host->artsDeferred, (double)host->dlAccum/cnt,
             host->artsCxnDrop,
@@ -2829,6 +2835,7 @@ static void hostLogStats (Host host, bool final)
             (100.0*host->blQuartile[0])/cnt, (100.0*host->blQuartile[1])/cnt,
             (100.0*host->blQuartile[2])/cnt, (100.0*host->blQuartile[3])/cnt,
             (100.0*host->blFull)/cnt) ;
+  }
 
   if (logConnectionStats) 
     {
