@@ -443,6 +443,7 @@ NCihave(CHANNEL *cp)
     char	*p;
 #if defined(DO_PERL)
     char	*perlrc;
+    int		msglen;
 #endif /* DO_PERL */
 
     cp->Ihave++;
@@ -463,6 +464,13 @@ NCihave(CHANNEL *cp)
     /*  invoke a perl message filter on the message id */
     if ((perlrc = (char *)HandleMessageID(p)) != NULL) {
 	cp->Refused++;
+	msglen = strlen(p) + 5; /* 3 digits + space + id + null */
+	if (cp->Sendid.Size < msglen) {
+	    if (cp->Sendid.Size > 0) DISPOSE(cp->Sendid.Data);
+	    if (msglen > MAXHEADERSIZE) cp->Sendid.Size = msglen;
+	    else cp->Sendid.Size = MAXHEADERSIZE;
+	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
+	}
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
 	return;
