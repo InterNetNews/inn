@@ -340,7 +340,6 @@ lib/malloc.c                1 A malloc package
 lib/md5.c                   1 Process md5 calculation
 lib/memchr.c                1 Find a byte in a buffer (BSD)
 lib/memcmp.c                1 Compare two buffers (BSD)
-lib/memcpy.c                1 Copy two buffers (BSD)
 lib/memmove.c               1 Copy two (possibly overlapping) buffers (BSD)
 lib/memset.c                1 Set a buffer to a value (BSD)
 lib/mkfifo.c                1 Make a fifo
@@ -359,9 +358,7 @@ lib/rwlock.c                1 Wrlock routine
 lib/sendarticle.c           1 Send an article, NNTP style
 lib/sendpass.c              1 Send NNTP authentication
 lib/strcasecmp.c            1 Case-insenstive string comparison (BSD)
-lib/strchr.c                1 Find first char in a string (BSD)
 lib/strerror.c              1 String representation of errno
-lib/strrchr.c               1 Find last char in a string (BSD)
 lib/strspn.c                1 Skip bytes in a string (BSD)
 lib/strtok.c                1 Split a string into tokens (BSD)
 lib/tempname.c              1 Temp filename generator.
@@ -442,7 +439,6 @@ samples/news.daily.in       1 Front-end script to run expire, etc.
 samples/news2mail.cf        1 news2mail config file
 samples/news2mail.in        1 News to mail gateway
 samples/newsfeeds.in        1 Sample newsfeeds(5) file
-samples/nnrp.access         1 Sample nnrp.access(5) file
 samples/nnrpd.track         1 Sample nnrpd.track(5) file
 samples/nnrpd_auth.pl.in    1 Sample nnrpd authorization script
 samples/nntpsend.ctl        1 Sample control file for nntpsend
@@ -474,14 +470,12 @@ samples/simpleftp.in        1 Rudimentary perl ftp client
 samples/startup.tcl.in      1 tcl startup code.
 samples/startup_innd.pl     1 perl startup code for innd
 samples/storage.conf        1 Sample storage.conf(5) file
-samples/storage.ctl         1 Sample storage.ctl(5) file
 samples/tally.control.in    1 Count newgroup/rmgroup messages
 samples/version.in          1 Version control message handler
 samples/version.pl.in       1 Version control message handler for controlchan
 samples/writelog.in         1 Write a log entry or mail it
 site                        1 Site-local files (Directory)
 site/Makefile               1 Makefile for site-local files
-site/do-subst.sh            1 Run subst on site config file
 site/getsafe.sh             1 Safely get config file from samples directory
 storage                     1 Storage api library routines (Directory)
 storage/Make.methods        1 Include file for Makefile (for SM)
