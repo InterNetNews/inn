@@ -2460,6 +2460,22 @@ void hostSetStatusFile (const char *filename)
     fclose (fp) ;
 }
 
+void gHostStats (void)
+{
+  Host h ;
+
+  for (h = gHostList ; h != NULL ; h = h->next)
+      if (h->firstConnectTime > 0)
+        syslog (LOG_NOTICE,REALLY_FINAL_STATS,
+                h->params->peerName,
+                (long) (now - h->firstConnectTime),
+                h->gArtsOffered, h->gArtsAccepted,
+                h->gArtsNotWanted, h->gArtsRejected,
+                h->gArtsMissing, h->gArtsSizeAccepted,
+                h->gArtsSizeRejected, h->gArtsToTape,
+		h->gArtsFromTape) ;
+}
+
 
 
 /**********************************************************************/

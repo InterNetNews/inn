@@ -196,6 +196,9 @@ void hostLogNoCheckMode (Host host, bool on, double low, double cur, double high
 /* calculate host backlog statistics */
 void gCalcHostBlStat (void) ;
 
+/* calculate host global statistics */
+void gHostStats (void) ;
+
 /* set the pathname of the file to use instead of innfeed.status */
 void hostSetStatusFile (const char *filename) ;
 

@@ -262,6 +262,7 @@ void shutDown (InnListener l)
       time_t now = theTime () ;
       char dateString [30] ;
 
+      gHostStats();
       strcpy (dateString,ctime (&now)) ;
       dateString [24] = '\0' ;
 
