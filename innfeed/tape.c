@@ -785,6 +785,17 @@ Article getArticle (Tape tape)
                 filename = NULL ; /* line only had one field */
             }
 
+          /* See if message ID looks valid. */
+          if (msgid) {
+            for (p = msgid; *p; p++)
+              ;
+            if (p > msgid) p--;
+            if (*msgid != '<' || *p != '>') {
+              syslog (LOG_ERR,TAPE_SPAGHETTI,tape->inputFilename,msgid);
+              msgid = NULL;
+            }
+          }
+
           if (filename != NULL && msgid != NULL)
             art = newArticle (filename, msgid) ;
 

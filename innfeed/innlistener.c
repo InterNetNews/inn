@@ -52,6 +52,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <fcntl.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "innlistener.h"
 #include "endpoint.h"
@@ -208,6 +209,20 @@ void printListenerInfo (InnListener listener, FILE *fp, u_int indentAmt)
   fprintf (fp,"%s}\n",indent) ;
 }
 
+  /* Unlink the pidFile if and only if it is our pidFile.
+     There is still a racecondition here but very small. */
+static void unlinkPidFile (void)
+{
+  FILE *fp;
+  char buf[32];
+
+  if ((fp = fopen(pidFile, "r")) == NULL)
+    return;
+
+  if (fgets(buf, 32, fp) != NULL && atoi(buf) == getpid())
+    unlink(pidFile);
+  fclose(fp);
+}
 
   /* Close down all hosts on this listener. When they're all gone the
      Listener will be deleted. */
@@ -218,8 +233,16 @@ void shutDown (InnListener l)
 
   d_printf (1,"Shutting down the listener\n") ;
 
+  /* When shutting down the mainListener, stop writing to the
+     StatusFile and remove our pidFile. */
+  if (l == mainListener)
+    {
+      /*hostCleanup (); should do this but .. */
+      hostSetStatusFile ("/dev/null");
+      unlinkPidFile();
+    }
+
   closeDroppedArticleFile () ;
-  unlink (pidFile) ;
   
   if (l->myep != NULL)
     {
@@ -250,6 +273,7 @@ void shutDown (InnListener l)
       else
         syslog (LOG_NOTICE,STOPPING_PROGRAM,dateString) ;
 
+      unlinkPidFile();
       exit (0) ;
     }
 }
@@ -386,6 +410,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
   size_t blen = bufferDataSize (buffs [0]) ;
   Buffer *readArray ;
   static int checkPointCounter ;
+  char *s;
 
   ASSERT (ep == lis->myep) ;
 
@@ -498,6 +523,12 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
           *fileNameEnd = ' ' ;
           *msgidEnd = ' ' ;
 
+          /* Check if message ID starts with < and ends with > */
+          if (*msgid != '<' || *(msgidEnd-1) != '>') {
+            syslog(LOG_ERR,INN_BAD_CMD,cmd);
+            *(msgidEnd+1) = '\0';
+          }
+
           /* now get all the peernames off the rest of the command lines */
           peerEnd = msgidEnd ;
           do 
@@ -510,6 +541,14 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
 
               *peerEnd = '\0' ;
               
+              /* See if this is a valid peername */
+              for(s = peer; *s; s++)
+                if (!isalnum(*s) && *s != '.' && *s != '-' && *s != '_')
+                  break;
+              if (*s != 0) {
+                  syslog(LOG_ERR,INVALID_PEER,peer);
+                  continue;
+              }
               if (article != NULL)
                 giveArticleToPeer (lis,article,peer) ;
             }

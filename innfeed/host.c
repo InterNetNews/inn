@@ -922,9 +922,6 @@ Host newDefaultHost (InnListener listener,
       p->ipName=strdup(name);
       
       h=newHost (listener,p);
-      h->isDynamic = true;
-      h->removeOnReload = true;
-
       if (h==NULL)
 	{
 	  /* Couldn't get a lock - add to list of blocked peers */
@@ -934,6 +931,9 @@ Host newDefaultHost (InnListener listener,
 
 	  return NULL;
 	}
+
+      h->isDynamic = true;
+      h->removeOnReload = true;
 
       syslog (LOG_NOTICE,DYNAMIC_PEER,p->peerName) ;
 
@@ -2763,7 +2763,7 @@ static void hostLogStatus (void)
       strcpy (timeString,ctime (&now)) ;
 
       if (genHtml)
-        fprintf (fp,"<HTML><META HTTP-EQUIV=\"Refresh\" CONTENT=\"20;\"><PRE>\n\n") ;
+        fprintf (fp,"<HTML><META HTTP-EQUIV=\"Refresh\" CONTENT=\"300;\"><PRE>\n\n") ;
 
       fprintf (fp,"%s\npid %d started %s\nUpdated: %s",
                versionInfo,(int) myPid,startTime,timeString) ;
