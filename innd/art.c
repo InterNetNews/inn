@@ -1650,7 +1650,8 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
        * cross-posting. */
       continue;
 
-    if (list && sp->Distributions && !DISTwantany(sp->Distributions, list))
+    if (list && *list != NULL && sp->Distributions &&
+      !DISTwantany(sp->Distributions, list))
       /* Not in the site's desired list of distributions. */
       continue;
     if (sp->DistRequired && list == NULL)
