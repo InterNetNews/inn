@@ -516,6 +516,16 @@ If this is enabled, normal authentication with
 .IR readers.conf (5)
 will not be used.
 This is boolean value and the default is ``false''.
+.TP
+.I nnrpdauthsender
+This enables
+.IR nnrpd (8)
+to handle Sender header based on reader authentication.
+If this is enabled and the authentication is successful, authenticated user name
+and the reader's hostname is used for Sender header.
+If this is enabled but authentication is not successful, Sender header is
+removed even if it exists.
+This is boolean value and the default is ``false''.
 .PP
 The following parameters are used only by
 .I innd.
