@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#include "inn/innconf.h"
 #include "inn/hashtab.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
