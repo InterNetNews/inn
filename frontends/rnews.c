@@ -683,6 +683,7 @@ Unspool(void)
 	    if (rename(InputFile, badname) < 0)
                 sysdie("cannot rename %s to %s", InputFile, badname);
 	    close(fd);
+            free(badname);
 	    continue;
 	}
 
