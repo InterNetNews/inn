@@ -22,15 +22,11 @@
 /*
 **  Get the next filename from the history file.
 */
-STATIC BOOL
-GetName(F, buff, Againp)
-    register FILE	*F;
-    register char	*buff;
-    BOOL		*Againp;
+STATIC BOOL GetName(FILE *F, char *buff, BOOL *Againp)
 {
     static char		SPOOL[] = _PATH_SPOOL;
-    register int	c;
-    register char	*p;
+    int	                c;
+    char	        *p;
 
     /* Skip whitespace before filename. */
     while ((c = getc(F)) == ' ')
@@ -46,6 +42,9 @@ GetName(F, buff, Againp)
 	*p++ = (char)(c == '.' ? '/' : c);
     *p = '\0';
     *Againp = c != EOF && c != '\n';
+    p = &buff[STRLEN(SPOOL) + 1];
+    if (IsToken(p))
+	memmove(buff, p, strlen(p) + 1);
     return TRUE;
 }
 
@@ -284,7 +283,7 @@ main(ac, av)
     /* Loop until we find an existing file. */
     if (HistorySeek(F, offset))
 	while (GetName(F, Name, &More)) {
-	    if (stat(Name, &Sb) >= 0) {
+	    if (IsToken(Name) || (stat(Name, &Sb) >= 0)) {
 		(void)printf("%s\n", Name);
 		exit(0);
 	    }
