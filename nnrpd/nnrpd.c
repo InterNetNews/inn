@@ -6,8 +6,8 @@
 */
 #include "config.h"
 #include "clibrary.h"
-#include <arpa/inet.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include "libinn.h"
 #include "ov.h"

@@ -5,9 +5,9 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
 
 #include "conffile.h"
