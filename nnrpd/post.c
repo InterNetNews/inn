@@ -339,19 +339,17 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
         return Error;
     }
 
-    if (!ihave) {
-	/* Do some preliminary fix-ups. */
-	for (hp = Table; hp < ENDOF(Table); hp++) {
-	    if (!hp->CanSet && hp->Value) {
-		snprintf(Error, sizeof(Error),
-                         "Can't set system \"%s\" header", hp->Name);
-		return Error;
-	    }
-	    if (hp->Value) {
-		hp->Len = TrimSpaces(hp->Value);
-		if (hp->Len == 0)
-		    hp->Value = hp->Body = NULL;
-	    }
+    /* Do some preliminary fix-ups. */
+    for (hp = Table; hp < ENDOF(Table); hp++) {
+	if (!ihave && !hp->CanSet && hp->Value) {
+	    snprintf(Error, sizeof(Error),
+		     "Can't set system \"%s\" header", hp->Name);
+	    return Error;
+	}
+	if (hp->Value) {
+	    hp->Len = TrimSpaces(hp->Value);
+	    if (hp->Len == 0)
+		hp->Value = hp->Body = NULL;
 	}
     }
 
