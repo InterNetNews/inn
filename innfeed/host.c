@@ -711,6 +711,7 @@ void hostAlterMaxConnections(Host host,
 	     */
 	  if (host->connections[i - 1] != NULL)
 	    {
+	      cxnLogStats (host->connections [i-1], true) ;
 	      cxnNuke (host->connections[i-1]) ;
 	      host->connections[i-1] = NULL;
 	    }
