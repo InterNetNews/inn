@@ -1,6 +1,6 @@
 /*
  * ovdb.c
- * ovdb 2.00 beta1
+ * ovdb 2.00 beta2
  * Overview storage using BerkeleyDB 2.x/3.x
  *
  * 2000-10-05 : artnum member of struct datakey changed from ARTNUM to u_int32_t.
@@ -89,6 +89,9 @@
 #define INN_VERSION_MAJOR 2
 #define INN_VERSION_MINOR 3
 #define INN_VERSION_PATCH 0
+#endif
+
+#if INN_VERSION_MINOR == 3
 #define close_on_exec(fd, flag) CloseOnExec((fd), (flag))
 #endif
 
