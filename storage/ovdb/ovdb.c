@@ -2,6 +2,9 @@
  * ovdb.c
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-10-05 : From Dan Riley: struct datakey needs to be zero'd, for
+ *              64-bit OSs where the struct has internal padding bytes.
+ *              Artnum member of struct datakey changed from ARTNUM to u_int32_t.
  * 2000-07-11 : fix possible alignment problem; add test code
  * 2000-07-07 : bugfix: timestamp handling
  * 2000-06-10 : Modified groupnum() interface; fix ovdb_add() to return FALSE
@@ -143,7 +146,7 @@ typedef u_int32_t group_id_t;
 
 struct datakey {
     group_id_t groupnum;	/* must be the first member of this struct */
-    ARTNUM artnum;
+    u_int32_t artnum;
 };
 
 struct ovdata {
@@ -473,6 +476,7 @@ static void delete_all_records(group_id_t gno)
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
+    memset(&dk, 0, sizeof dk);
     dk.groupnum = gno;
     dk.artnum = 0;
 
@@ -1079,7 +1083,6 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 {
     static int  databuflen = 0;
     static char *databuf;
-    ARTNUM      bartnum;
     DB		*db;
     DBT		key, val;
     DB_TXN	*tid;
@@ -1178,9 +1181,10 @@ retry:
 	return FALSE;
     }
 
+    memset(&dk, 0, sizeof dk);
     /* store overview */
     dk.groupnum = gno;
-    dk.artnum = htonl(artnum);
+    dk.artnum = htonl((u_int32_t)artnum);
 
     key.data = &dk;
     key.size = sizeof dk;
@@ -1256,6 +1260,7 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
     switch(s->state) {
     case 0:
 	flags = DB_SET_RANGE;
+	memset(&dk, 0, sizeof dk);
 	key.data = &(s->lokey);
 	key.size = sizeof(struct datakey);
 	s->state = 1;
@@ -1347,8 +1352,9 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
     if(groupnum(group, &gno) != 0)
 	return FALSE;
 
+    memset(&dk, 0, sizeof dk);
     dk.groupnum = gno;
-    dk.artnum = htonl(artnum);
+    dk.artnum = htonl((u_int32_t)artnum);
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
@@ -1404,7 +1410,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     struct ovdata ovd;
     struct datakey dk;
     ARTHANDLE *ah;
-    ARTNUM newlo = 0, artnum, oldhi;
+    u_int32_t newlo = 0, artnum, oldhi;
     int newcount = 0;
 
     if(eo_start == 0)
@@ -1447,6 +1453,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	syslog(L_ERROR, "OVDB: expiregroup: db->cursor: %s", db_strerror(ret));
 	return FALSE;
     }
+    memset(&dk, 0, sizeof dk);
     dk.groupnum = gno;
     dk.artnum = 0;    
     key.data = &dk;
