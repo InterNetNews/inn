@@ -352,7 +352,8 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_BYTESIZE:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
-	    BUFFappend(bp, Data->Bytes + sizeof("Bytes: "), Data->BytesLength);
+	    BUFFappend(bp, Data->Bytes + sizeof("Bytes: ") - 1,
+		       Data->BytesLength);
 	    break;
 	case FEED_FULLNAME:
 	case FEED_NAME:
