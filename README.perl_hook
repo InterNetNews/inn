@@ -66,7 +66,7 @@ The innd Perl Filter
   defined after the file has been reloaded, filtering is turned on.
   Otherwise, filtering is turned off.
 
-  The Perl function filter_art() is the heard of a Perl filter.  Whenever an
+  The Perl function filter_art() is the heart of a Perl filter.  Whenever an
   article is received from a peer, via either IHAVE or TAKETHIS,
   filter_art() is called if Perl filtering is turned on.  It receives no
   arguments, and should return a single scalar value.  That value should be
