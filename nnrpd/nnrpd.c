@@ -347,7 +347,9 @@ TITLEset(what)
 
 
 #if	defined(DO_NNRP_GETHOSTBYADDR)
-
+#ifndef	INADDR_LOOPBACK
+#define	INADDR_LOOPBACK	0x7f000001
+#endif	/* INADDR_LOOPBACK */
 /*
 **  Convert an IP address to a hostname.  Don't trust the reverse lookup,
 **  since anyone can fake .in-addr.arpa entries.
