@@ -331,6 +331,8 @@ InndHisOpen(void)
 void
 InndHisClose(void)
 {
+    if (History == NULL)
+        return;
     if (!HISclose(History)) {
         char *histpath;
 

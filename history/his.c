@@ -39,6 +39,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "errno.h"
 #include "portable/time.h"
 #include <syslog.h>
 #include "libinn.h"
@@ -120,9 +121,11 @@ his_cachelookup(struct history *h, HASH MessageID)
 void
 his_seterror(struct history *h, const char *s)
 {
-    if (h->error)
-	free((void *)h->error);
-    h->error = s;
+    if (h != NULL) {
+	if (h->error)
+	    free((void *)h->error);
+	h->error = s;
+    }
     if (s != NULL)
 	warn("%s", s);
 }
@@ -163,8 +166,11 @@ HISclose(struct history *h)
 {
     bool r;
 
-    if (h == NULL)
+    if (h == NULL) {
+	errno = EBADF; /* similar to attempting to close() twice */
+	his_seterror(h, "can't close null history");
 	return false;
+    }
     r = (*h->methods->close)(h->sub);
     if (h->cache) {
 	free(h->cache);
