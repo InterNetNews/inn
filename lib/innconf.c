@@ -6,6 +6,21 @@
 **  innconf struct that's used throughout INN.  The code to collapse a
 **  configuration parse tree into a struct is fairly generic and should
 **  probably be moved into a separate library.
+**
+**  When adding new inn.conf parameters, make sure to add them in all of the
+**  following places:
+**
+**   * The table in this file.
+**   * include/inn/innconf.h
+**   * doc/pod/inn.conf.pod (and regenerate doc/man/inn.conf.5)
+**   * Add the default value to samples/inn.conf.in
+**
+**  Please maintain the current organization of parameters.  There are two
+**  different orders, one of which is a logical order used by the
+**  documentation, the include file, and the sample file, and the other of
+**  which is used in this file.  The order in this file is documentation of
+**  where each parameter is used, for later work at breaking up this mess
+**  of parameters into separate configuration groups for each INN subsystem.
 */
 
 #include "config.h"
