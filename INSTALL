@@ -177,6 +177,11 @@ Installing INN
                           written in Perl. You will need Perl 5.004 or later
                           installed on your system to enable this option.
 
+  --with-python           Enables support for Python, allowing you to
+                          install filter scripts written in Python. You will
+                          need Python 1.5.2 or later installed on your system
+                          to enable this option.
+
   --with-tcl              Enables support for TCL (Tool Command Language). This
                           allows you to install filter scripts written in TCL.
                           Most available filters seem to be written in Perl

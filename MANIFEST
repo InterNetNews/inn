@@ -15,6 +15,7 @@ Makefile.global.in          1 Template Makefile included by all Makefile
 NEWS                        1 Info about changes since last version
 README                      1 Assorted notes
 README.perl_hook            1 Notes on Christophe Wolfhugel's perl hook.
+README.python_hook          1 Notes on Greg Andruk's python hook.
 README.tcl_hook             1 Bob Halley's TCL hook notes.
 aclocal.m4                  1 M4 macro for libtool
 authprogs                   1 The authorization programs (Directory)
@@ -241,6 +242,7 @@ innd/newsfeeds.c            1 Routines to parse the newsfeeds file
 innd/ng.c                   1 Newsgroup routines
 innd/perl.c                 1 Perl routines for innd.
 innd/proc.c                 1 Process routines
+innd/python.c               1 Python routines for innd.
 innd/rc.c                   1 Remote channel accepting routines
 innd/site.c                 1 Site feeding routines
 innd/status.c               1 Status routines for innd
@@ -383,6 +385,7 @@ obsolete/innshellvars.csh.in 1 CSH Script to set config parameters
 obsolete/scanlogs-backend.pl 1 Summarize news log file
 obsolete/tally.unwanted     1 Summarize unwanted articles
 samples                     1 Prototype InterNetNews files (Directory)
+samples/INN.py              1 Stub Python functions
 samples/actsync.cfg.in      1 Config file for actsync
 samples/actsync.ign         1 Ignore file for actsync
 samples/checkgroups.in      1 Checkgroups control message handler
@@ -401,6 +404,7 @@ samples/expirerm.in         1 Remove articles from expire -z
 samples/filter.tcl          1 Sample tcl filter
 samples/filter_innd.pl      1 Sample perl filter for innd
 samples/filter_nnrpd.pl     1 Sample perl filter for nnrpd
+samples/filter_innd.py      1 Sample python filter for innd
 samples/ihave.in            1 Ihave control message handler
 samples/ihave.pl.in         1 Ihave control message handler for controlchan
 samples/incoming.conf       1 Sample incoming.conf(5) file
