@@ -213,7 +213,7 @@ CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
 
     /* Make the descriptor close-on-exec and non-blocking. */
     CloseOnExec(fd, TRUE);
-#if !defined(HPUX)
+#if !defined(_HPUX_SOURCE)
     /* Stupid HPUX 11.0 has a broken listen/accept where setting the
      * listensocket to nonblocking prevents you from successfully setting the
      * socket returned by accept(2) back to blocking mode, no matter what,
