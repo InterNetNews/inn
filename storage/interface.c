@@ -70,7 +70,7 @@ char *TokenToText(const TOKEN token) {
     static char         result[(sizeof(TOKEN) * 2) + 3];
     char                *p;
     char                *q;
-    char                i;
+    size_t              i;
 
     
     result[0] = '@';

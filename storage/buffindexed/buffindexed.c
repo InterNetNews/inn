@@ -547,7 +547,7 @@ static bool ovbuffinit_disks(void) {
 	 mmap(NULL, ovbuff->base, ovbuffmode & OV_WRITE ? (PROT_READ | PROT_WRITE) : PROT_READ,
 	      MAP_SHARED, ovbuff->fd, (off_t) 0)) == MAP_FAILED) {
       syslog(L_ERROR,
-	       "%s: ovinitdisks: mmap for %s offset %d len %d failed: %m",
+	       "%s: ovinitdisks: mmap for %s offset %d len %lu failed: %m",
 	       LocalLogName, ovbuff->path, 0, ovbuff->base);
       return FALSE;
     }
@@ -592,7 +592,7 @@ static bool ovbuffinit_disks(void) {
     } else {
 	ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
 	if (ovbuff->totalblk < 1) {
-	  syslog(L_ERROR, "%s: too small length '%d' for buffindexed %s",
+	  syslog(L_ERROR, "%s: too small length '%lu' for buffindexed %s",
 	    LocalLogName, ovbuff->len, ovbuff->path);
 	  ovlock(ovbuff, INN_LOCK_UNLOCK);
 	  return FALSE;
@@ -865,7 +865,7 @@ bool buffindexed_open(int mode) {
       return FALSE;
     }
     if ((pagesize > OV_HDR_PAGESIZE) || (OV_HDR_PAGESIZE % pagesize)) {
-      syslog(L_ERROR, "%s: OV_HDR_PAGESIZE (%d) is not a multiple of pagesize (%d)", LocalLogName, OV_HDR_PAGESIZE, pagesize);
+      syslog(L_ERROR, "%s: OV_HDR_PAGESIZE (%d) is not a multiple of pagesize (%ld)", LocalLogName, OV_HDR_PAGESIZE, pagesize);
       return FALSE;
     }
   }
@@ -1257,7 +1257,7 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
       return FALSE;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %d", LocalLogName, ov.index, ov.blocknum, artnum);
+      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %ld", LocalLogName, ov.index, ov.blocknum, artnum);
       return FALSE;
     }
     ge->curdata = ov;
@@ -1276,7 +1276,7 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
       return FALSE;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %d", LocalLogName, ov.index, ov.blocknum, artnum);
+      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %ld", LocalLogName, ov.index, ov.blocknum, artnum);
       return FALSE;
     }
     ge->curdata = ov;
@@ -1402,7 +1402,7 @@ bool buffindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int le
   return TRUE;
 }
 
-bool buffindexed_cancel(TOKEN token) {
+bool buffindexed_cancel(TOKEN token UNUSED) {
     return TRUE;
 }
 
@@ -1652,7 +1652,7 @@ void *buffindexed_opensearch(char *group, int low, int high) {
   return(handle);
 }
 
-bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
+static bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
   OVSEARCH		*search = (OVSEARCH *)handle;
   OV			srchov;
   GROUPDATABLOCK	*gdb;

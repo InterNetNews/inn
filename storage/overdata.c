@@ -155,7 +155,7 @@ overview_build(ARTNUM number, const char *article, size_t length,
     for (field = 0; field < SIZEOF(fields); field++) {
         buffer_append(overview, "\t", 1);
         if (field == 5) {
-            snprintf(buffer, sizeof(buffer), "%lu", length);
+            snprintf(buffer, sizeof(buffer), "%u", length);
             buffer_append(overview, buffer, strlen(buffer));
         } else
             build_header(article, length, fields[field], overview);

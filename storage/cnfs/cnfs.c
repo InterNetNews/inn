@@ -77,7 +77,7 @@ static bool CNFSBreakToken(TOKEN token, char *cycbuffname,
     int32_t	int32;
 
     if (cycbuffname == NULL || offset == NULL || cycnum == NULL) {
-	syslog(L_ERROR, "%s: BreakToken: invalid argument",
+	syslog(L_ERROR, "%s: BreakToken: invalid argument: %s",
 	       LocalLogName, cycbuffname);
 	SMseterror(SMERR_INTERNAL, "BreakToken: invalid argument");
 	return FALSE;
@@ -358,7 +358,7 @@ static bool CNFSparse_part_line(char *l) {
   len = strtoul(l, NULL, 10) * (CYCBUFF_OFF_T)1024;	/* This value in KB in decimal */
   if (S_ISREG(sb.st_mode) && len != sb.st_size) {
     if (sizeof(CYCBUFFEXTERN) > sb.st_size) {
-      syslog(L_NOTICE, "%s: length must be at least '%ld' for '%s' cycbuff(%ld bytes)",
+      syslog(L_NOTICE, "%s: length must be at least '%u' for '%s' cycbuff(%ld bytes)",
 	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, sb.st_size);
       DISPOSE(cycbuff);
       return FALSE;
@@ -968,7 +968,6 @@ static int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, uint32_t cyc
 }
 
 bool cnfs_init(SMATTRIBUTE *attr) {
-    int			ret;
     METACYCBUFF	*metacycbuff;
     CYCBUFF	*cycbuff;
 
@@ -995,7 +994,7 @@ bool cnfs_init(SMATTRIBUTE *attr) {
             return FALSE;
         }
 	if ((pagesize > CNFS_HDR_PAGESIZE) || (CNFS_HDR_PAGESIZE % pagesize)) {
-	    syslog(L_ERROR, "%s: CNFS_HDR_PAGESIZE (%d) is not a multiple of pagesize (%d)", LocalLogName, CNFS_HDR_PAGESIZE, pagesize);
+	    syslog(L_ERROR, "%s: CNFS_HDR_PAGESIZE (%d) is not a multiple of pagesize (%ld)", LocalLogName, CNFS_HDR_PAGESIZE, pagesize);
 	    SMseterror(SMERR_INTERNAL, "CNFS_HDR_PAGESIZE not multiple of pagesize");
 	    return FALSE;
 	}
@@ -1217,7 +1216,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     if ((cycbuff = CNFSgetcycbuffbyname(cycbuffname)) == NULL) {
 	SMseterror(SMERR_NOENT, NULL);
 	if (!nomessage) {
-	    syslog(L_ERROR, "%s: cnfs_retrieve: token %s: bogus cycbuff name: %s:0x%s:%ld",
+	    syslog(L_ERROR, "%s: cnfs_retrieve: token %s: bogus cycbuff name: %s:0x%s:%d",
 	       LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
 	    nomessage = TRUE;
 	}
@@ -1255,7 +1254,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     */
     if (pread(cycbuff->fd, &cah, sizeof(cah), offset) != sizeof(cah)) {
         SMseterror(SMERR_UNDEFINED, "read failed");
-        syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%ld: %m",
+        syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%d: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
         DISPOSE(art);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
@@ -1283,7 +1282,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     if (offset > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
         if (!SMpreopen) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
-	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %ld",
+	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%d: %d",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum, ntohl(cah.size));
 	    DISPOSE(art);
 	    CNFSshutdowncycbuff(cycbuff);
@@ -1292,7 +1291,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	CNFSReadFreeAndCycle(cycbuff);
 	if (offset > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
-	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %ld",
+	    syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%d: %d",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum, ntohl(cah.size));
 	    DISPOSE(art);
 	    return NULL;
@@ -1304,7 +1303,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	char buf1[24];
 	strcpy(buf1, CNFSofft2hex(cycbuff->free, FALSE));
 	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");
-	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s: %ld",
+	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s: %u",
 	LocalLogName, TokenToText(token), cycbuffname, buf1, ntohl(cah.size));
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	DISPOSE(art);
@@ -1321,7 +1320,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	if ((private->base = mmap(NULL, private->len, PROT_READ,
 		MAP_SHARED, cycbuff->fd, mmapoffset)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, "mmap failed");
-	    syslog(L_ERROR, "%s: could not mmap token %s %s:0x%s:%ld: %m",
+	    syslog(L_ERROR, "%s: could not mmap token %s %s:0x%s:%d: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
 	    DISPOSE(art->private);
 	    DISPOSE(art);
@@ -1335,7 +1334,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	pagefudge = 0;
 	if (pread(cycbuff->fd, private->base, ntohl(cah.size), offset) < 0) {
 	    SMseterror(SMERR_UNDEFINED, "read failed");
-	    syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%ld: %m",
+	    syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%d: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
 	    DISPOSE(private->base);
 	    DISPOSE(art->private);
