@@ -36,7 +36,7 @@ extern BOOL dbzfresh(const char *name, const long size, const int fillpercent);
 extern BOOL dbzagain(const char *name, const char *oldname);
 extern BOOL dbzexists(const HASH key);
 extern OFFSET_T dbzfetch(const HASH key);
-extern BOOL dbzstore(const HASH key, const off_t data);
+extern BOOL dbzstore(const HASH key, const OFFSET_T data);
 extern BOOL dbzsync(void);
 extern long dbzsize(const long contents);
 extern BOOL dbzdebug(const int value);
