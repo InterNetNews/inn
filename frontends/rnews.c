@@ -304,9 +304,15 @@ static bool Process(char *article)
     }
     free(wirefmt);
 
+    /* Flush the server buffer. */
+    if (fflush(ToServer) == EOF) {
+        syswarn("cant fflush after article");
+        return false;
+    }
+
     /* Process server reply code. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
-        syswarn("cannot fgets after article");
+        syswarn("cant fgets after article");
 	return false;
     }
     REMclean(buff);
