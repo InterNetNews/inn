@@ -303,7 +303,6 @@ incoming_conf
     'refusecybercancels',       0,
     'remembertrash',            0,
     'sourceaddress',            0,
-    'usecontrolchan',           0,
     'verifycancels',            0,
     'wipcheck',                 0,
     'wipexpire',                0,
@@ -890,10 +889,6 @@ intersect
     'archive', 'badnews', 'batchdir', 'ctlprogs', 'most_logs', 'newsbin',
     'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
 );
-@control_scripts = (
-    'checkgroups', 'default', 'ihave', 'newgroup', 'rmgroup',
-    'sendme', 'sendsys', 'senduuname', 'version'
-);
 @rnews_programs = (
     'c7unbatch', 'decode', 'encode', 'gunbatch'
 );
@@ -928,7 +923,6 @@ sub
 check_all_perms
 {
     local ($rnewsprogs) = $paths{'rnewsprogs'};
-    local ($ctlprogs) = $paths{'ctlprogs'};
     local ($newsbin) = $paths{'newsbin'};
     local ($newslib) = $paths{'newslib'};
 
@@ -957,9 +951,6 @@ check_all_perms
     }
     foreach ( @newsbin_public ) {
 	&checkperm("$newsbin/$_", 0555);
-    }
-    foreach ( @control_scripts ) {
-	&checkperm("$ctlprogs/$_", 0550);
     }
     foreach ( @rnews_programs ) {
 	&checkperm("$rnewsprogs/$_", 0555);
