@@ -5,8 +5,7 @@
 # If you compile with tcl support enabled then this file (even if empty),
 # must exist in the location defined in the config.data
 
-## =()<set o [open "@<_PATH_MOST_LOGS>@/tcl.log" "a+"]>()=
-set o [open "/var/log/news/tcl.log" "a+"]
+set o [open "@LOGDIR@/tcl.log" "a+"]
 
 proc filter_before_reload {} {
     global o
