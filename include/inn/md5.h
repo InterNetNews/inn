@@ -34,16 +34,16 @@
 #ifndef INN_MD5_H
 #define INN_MD5_H 1
 
-#include "config.h"
+#include <inn/defines.h>
 
 /* Make sure we have uint32_t. */
 #include <sys/types.h>
-#if HAVE_INTTYPES_H
+#if INN_HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 
 /* SCO OpenServer gets int32_t from here. */
-#if HAVE_SYS_BITYPES_H
+#if INN_HAVE_SYS_BITYPES_H
 # include <sys/bitypes.h>
 #endif
 
