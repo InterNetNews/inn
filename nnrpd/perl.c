@@ -38,6 +38,7 @@ typedef enum { false = 0, true = 1 } bool;
 extern BOOL PerlFilterActive;
 extern HEADER	Table[], *EndOfTable;
 extern char LogName[];
+extern char PERMuser[];
 
 extern char **OtherHeaders;
 extern int OtherCount;
@@ -103,7 +104,8 @@ HandleHeaders(article)
         s++;
         hv_store(hdr, p, (s - p) - 1, newSVpv(s, 0), 0);
    }
-
+   /* Store user */
+   sv_setpv(perl_get_sv("user",TRUE), PERMuser);
    
    /* Store body */
    body = perl_get_sv("body", TRUE);
@@ -165,6 +167,7 @@ HandleHeaders(article)
    }
 
    hv_undef (hdr);
+   sv_setsv (body, &sv_undef);
 
    buf [0] = '\0' ;
    

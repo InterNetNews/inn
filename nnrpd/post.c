@@ -661,9 +661,9 @@ MailArticle(group, article)
 **  moderated, etc.
 */
 STATIC STRING
-ValidNewsgroups(hdr, article)
+ValidNewsgroups(hdr, modgroup)
     char		*hdr;
-    char		*article;
+    char		**modgroup;
 {
     static char		distbuff[SMBUF];
     register char	*groups;
@@ -682,7 +682,7 @@ ValidNewsgroups(hdr, article)
 	return "Can't parse newsgroups line";
 
     /* Don't mail article if just checking Followup-To line. */
-    approved = HDR(_approved) != NULL || article == NULL;
+    approved = HDR(_approved) != NULL || modgroup == NULL;
 
     Error[0] = '\0';
     FoundOne = FALSE;
@@ -700,11 +700,8 @@ ValidNewsgroups(hdr, article)
 	case NF_FLAG_OK:
 	    break;
 	case NF_FLAG_MODERATED:
-	    if (!approved) {
-		DISPOSE(groups);
-		tmpPtr = DDend(h);
-		DISPOSE(tmpPtr);
-		return MailArticle(GPNAME(gp), article);
+	    if (!approved && !*modgroup) {
+		*modgroup = GPNAME(gp);
 	    }
 	    break;
 	case NF_FLAG_IGNORE:
@@ -794,9 +791,10 @@ OfferArticle(buff, buffsize, FromServer, ToServer)
 **  Spool article to temp file.
 */
 STATIC STRING
-Spoolit(article, Error)
+SpoolitTo(article, Error, SpoolDir)
     char 		*article;
     char		*Error;
+    char                *SpoolDir;
 {
     static char		CANTSPOOL[NNTP_STRLEN+2];
     register HEADER	*hp;
@@ -809,7 +807,7 @@ Spoolit(article, Error)
     sprintf(CANTSPOOL, "%s and can't write text to local spool file", Error);
 
     /* Try to write it to the spool dir. */
-    TempName(innconf->pathincoming, temp);
+    TempName(SpoolDir, temp);
     /* rnews -U ignores files starting with . */
     strrchr(temp, '/')[1] = '.';
     if ((F = fopen(temp, "w")) == NULL) {
@@ -847,7 +845,7 @@ Spoolit(article, Error)
     if (fclose(F))
 	return CANTSPOOL;
 
-    TempName(innconf->pathincoming, path);
+    TempName(SpoolDir, path);
     if (rename(temp, path) < 0) {
         syslog(L_FATAL, "cant rename %s %s %m", temp, path);
 	return CANTSPOOL;
@@ -856,6 +854,18 @@ Spoolit(article, Error)
     /* Article has been spooled */
     return NULL;
 }
+
+/*
+**  Spool article to temp file.
+*/
+STATIC STRING
+Spoolit(article, Error)
+    char 		*article;
+    char		*Error;
+{
+    return SpoolitTo(article, Error, innconf->pathincoming);
+}
+ 
 
 STRING
 ARTpost(article, idbuff)
@@ -870,10 +880,12 @@ ARTpost(article, idbuff)
     FILE		*ToServer;
     FILE		*FromServer;
     char		buff[NNTP_STRLEN + 2], frombuf[SMBUF];
+    char		*modgroup = NULL;
     STRING		error;
     char		TrackID[NNTP_STRLEN];
     FILE		*ftd;
     int			result;
+    char		SDir[255];
 
     sprintf(TrackID,"%s/trackposts/track.", innconf->pathlog);
 
@@ -904,13 +916,8 @@ ARTpost(article, idbuff)
     if (i == 0 && HDR(_control) == NULL)
 	return "Article is empty";
 
-    if (idbuff != NULL)
-      strcpy (idbuff,"(mailed to moderator)") ;
-    if ((error = ValidNewsgroups(HDR(_newsgroups), article)) != NULL
-     || WasMailed)
+    if ((error = ValidNewsgroups(HDR(_newsgroups), &modgroup)) != NULL)
 	return error;
-    if (idbuff != NULL)
-      idbuff [0] = '\0' ;
     
     strncpy(frombuf, HDR(_from), sizeof(frombuf) - 1);
     frombuf[sizeof(frombuf) - 1] = '\0';
@@ -931,7 +938,7 @@ ARTpost(article, idbuff)
 	return "From: address not in Internet syntax";
     if ((p = HDR(_followupto)) != NULL
      && !EQ(p, "poster")
-     && (error = ValidNewsgroups(p, (char *)NULL)) != NULL)
+     && (error = ValidNewsgroups(p, (char **)NULL)) != NULL)
 	return error;
     if ((innconf->localmaxartsize > 0) &&
 		(strlen(article) > innconf->localmaxartsize)) {
@@ -943,9 +950,31 @@ ARTpost(article, idbuff)
 
 #if defined(DO_PERL)
     /* Calls the Perl subroutine for headers management */
-    if ((p = (char *)HandleHeaders(article)) != NULL)
-        return p;
+    if ((p = (char *)HandleHeaders(article)) != NULL) {
+      if (strncmp(p, "DROP", 4) == 0) {
+          syslog(L_NOTICE, "%s post %s", ClientHost, p);
+          return NULL;
+      }
+      else if (strncmp(p, "SPOOL", 5) == 0) {
+          syslog(L_NOTICE, "%s post %s", ClientHost, p);
+          strcpy(SDir, innconf->pathincoming);
+          return SpoolitTo(article, p, modgroup ? strcat(SDir,"/spam/mod")
+                                                : strcat(SDir, "/spam"));
+      }
+      else
+          return p;
+    }
+
 #endif /* defined(DO_PERL) */
+
+    /* handle mailing to moderated groups */
+
+    if (modgroup)
+    {
+      if (idbuff != NULL)
+          strcpy (idbuff,"(mailed to moderator)") ;
+      return MailArticle(modgroup, article);
+    }
 
     if (innconf->spoolfirst)
 	return Spoolit(article, Error);
