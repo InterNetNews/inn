@@ -1,65 +1,38 @@
-/*  $Revision$
+/*  $Id$
 **
-**  This file has been modified to get it to compile more easily
-**  on pre-4.4BSD systems.  Rich $alz, January 1991.
+**  Replacement for a missing or broken inet_ntoa.
+**
+**  Written by Russ Allbery <rra@stanford.edu>
+**  This work is hereby placed in the public domain by its author.
+**
+**  Provides the same functionality as the standard library routine
+**  inet_ntoa for those platforms that don't have it or where it doesn't
+**  work right (such as on IRIX when using gcc to compile).  inet_ntoa is
+**  not thread-safe since it uses static storage (inet_ntop should be used
+**  instead when available).
 */
+
+#include "config.h"
+
+#include <netinet/in.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include "configdata.h"
-#include "clibrary.h"
 
+/* If we're running the test suite, rename inet_ntoa to avoid conflicts with
+   the system version. */
+#if TESTING
+# define inet_ntoa test_inet_ntoa
+#endif
 
-/*
- * Copyright (c) 1983 Regents of the University of California.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)inet_ntoa.c	5.6 (Berkeley) 2/24/91";
-#endif /* LIBC_SCCS and not lint */
-
-/*
- * Convert network-format internet address
- * to base 256 d.d.d.d representation.
- */
-#include <netinet/in.h>
-
-#define	UC(c)	(((int)c) & 0xFF)
-
-char *inet_ntoa(struct in_addr in)
+const char *
+inet_ntoa(const struct in_addr in)
 {
-    static char		buff[18];
-    char	        *p;
+    static char buf[16];
+    const unsigned char *p;
 
-    p = (char *)&in;
-    (void)sprintf(buff, "%d.%d.%d.%d", UC(p[0]), UC(p[1]), UC(p[2]), UC(p[3]));
-    return buff;
+    p = (const unsigned char *) &in.s_addr;
+    sprintf(buf, "%u.%u.%u.%u",
+            (unsigned int) (p[0] & 0xff), (unsigned int) (p[1] & 0xff),
+            (unsigned int) (p[2] & 0xff), (unsigned int) (p[3] & 0xff));
+    return buf;
 }

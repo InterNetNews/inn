@@ -1,64 +1,39 @@
-/*  $Revision$
+/*  $Id$
 **
-**  This file has been modified to get it to compile more easily
-**  on pre-4.4BSD systems.  Rich $alz, June 1991.
+**  Replacement for a missing or broken memcmp.
+**
+**  Written by Russ Allbery <rra@stanford.edu>
+**  This work is hereby placed in the public domain by its author.
+**
+**  Provides the same functionality as the standard library routine memcmp
+**  for those platforms that don't have it or where it doesn't work right
+**  (such as on SunOS where it can't deal with eight-bit characters).
 */
-#include <stdio.h>
+
+#include "config.h"
+
 #include <sys/types.h>
-#include "configdata.h"
-#include "clibrary.h"
 
-
-#define const /* NULL */
-#define void char
-#define size_t int
-#define NULL 0
-
-
-/*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Chris Torek.
- *
- * Redistribution and use in source and binary forms are permitted
- * provided that: (1) source distributions retain this entire copyright
- * notice and comment, and (2) distributions including binaries display
- * the following acknowledgement:  ``This product includes software
- * developed by the University of California, Berkeley and its contributors''
- * in the documentation or other materials provided with the distribution
- * and in all advertising materials mentioning features or use of this
- * software. Neither the name of the University nor the names of its
- * contributors may be used to endorse or promote products derived
- * from this software without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-
-#if 0
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)memcmp.c	5.5 (Berkeley) 5/15/90";
-#endif /* LIBC_SCCS and not lint */
-
-#include <string.h>
-#include <sys/stdc.h>
+/* If we're running the test suite, rename memcmp to avoid conflicts with
+   the system version. */
+#if TESTING
+# define memcmp test_memcmp
 #endif
 
-/*
- * Compare memory regions.
- */
-int memcmp(const void *s1, const void *s2, size_t n)
+int
+memcmp(const void *s1, const void *s2, size_t n)
 {
-	if (n != 0) {
-		const unsigned char *p1 = (unsigned char *)s1;
-		const unsigned char *p2 = (unsigned char *)s2;
+    size_t i;
+    const unsigned char *p1, *p2;
 
-		do {
-			if (*p1++ != *p2++)
-				return (*--p1 - *--p2);
-		} while (--n != 0);
-	}
-	return (0);
+    /* It's technically illegal to call memcmp with NULL pointers, but we
+       may as well check anyway. */
+    if (s1 == NULL) return (s2 == NULL) ? 0 : -1;
+    if (s2 == NULL) return 1;
+
+    p1 = (const unsigned char *) s1;
+    p2 = (const unsigned char *) s2;
+    for (i = 0; i < n; i++, p1++, p2++)
+        if (*p1 != *p2) return (int) *p1 - (int) *p2;
+    return 0;
 }

@@ -1,190 +1,129 @@
-/*
- * ++Copyright++ 1983, 1990, 1993
- * -
- * Copyright (c) 1983, 1990, 1993
- *    The Regents of the University of California.  All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- * 	This product includes software developed by the University of
- * 	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- * -
- * Portions Copyright (c) 1993 by Digital Equipment Corporation.
- * 
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies, and that
- * the name of Digital Equipment Corporation not be used in advertising or
- * publicity pertaining to distribution of the document or software without
- * specific, written prior permission.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND DIGITAL EQUIPMENT CORP. DISCLAIMS ALL
- * WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS.   IN NO EVENT SHALL DIGITAL EQUIPMENT
- * CORPORATION BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
- * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
- * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
- * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE.
- * -
- * --Copyright--
- */
+/*  $Id$
+**
+**  Replacement for a missing inet_aton.
+**
+**  Written by Russ Allbery <rra@stanford.edu>
+**  This work is hereby placed in the public domain by its author.
+**
+**  Provides the same functionality as the standard library routine
+**  inet_aton for those platforms that don't have it.  inet_aton is
+**  thread-safe.
+*/
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)inet_addr.c	8.1 (Berkeley) 6/17/93";
-static char rcsid[] = "$Id$";
-#endif /* LIBC_SCCS and not lint */
+#include "config.h"
 
-#include <sys/types.h>
-#include <sys/param.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include <ctype.h>
-#if 0
-#include "../conf/portability.h"
+
+/* If we're running the test suite, rename inet_ntoa to avoid conflicts with
+   the system version. */
+#if TESTING
+# define inet_aton test_inet_aton
 #endif
 
-/* these are compatibility routines, not needed on recent BSD releases */
-
-#if 0
-/* not needed for innfeed. */
-
-/*
- * Ascii internet address interpretation routine.
- * The value returned is in network order.
- */
-u_long
-inet_addr(cp)
-	register const char *cp;
-{
-	struct in_addr val;
-
-	if (inet_aton(cp, &val))
-		return (val.s_addr);
-	return (INADDR_NONE);
-}
-#endif
-
-/* 
- * Check whether "cp" is a valid ascii representation
- * of an Internet address and convert to a binary address.
- * Returns 1 if the address is valid, 0 if not.
- * This replaces inet_addr, the return value from which
- * cannot distinguish between failure and a local broadcast address.
- */
 int
-inet_aton(cp, addr)
-	register const char *cp;
-	struct in_addr *addr;
+inet_aton(const char *s, struct in_addr *addr)
 {
-	register u_long val;
-	register int base, n;
-	register char c;
-	u_int parts[4];
-	register u_int *pp = parts;
+    unsigned long octet[4], address;
+    const char *p;
+    int base, i;
+    int part = 0;
 
-	c = *cp;
-	for (;;) {
-		/*
-		 * Collect number up to ``.''.
-		 * Values are specified as for C:
-		 * 0x=hex, 0=octal, isdigit=decimal.
-		 */
-		if (!isdigit(c))
-			return (0);
-		val = 0; base = 10;
-		if (c == '0') {
-			c = *++cp;
-			if (c == 'x' || c == 'X')
-				base = 16, c = *++cp;
-			else
-				base = 8;
-		}
-		for (;;) {
-			if (isascii(c) && isdigit(c)) {
-				val = (val * base) + (c - '0');
-				c = *++cp;
-			} else if (base == 16 && isascii(c) && isxdigit(c)) {
-				val = (val << 4) |
-					(c + 10 - (islower(c) ? 'a' : 'A'));
-				c = *++cp;
-			} else
-				break;
-		}
-		if (c == '.') {
-			/*
-			 * Internet format:
-			 *	a.b.c.d
-			 *	a.b.c	(with c treated as 16 bits)
-			 *	a.b	(with b treated as 24 bits)
-			 */
-			if (pp >= parts + 3)
-				return (0);
-			*pp++ = val;
-			c = *++cp;
-		} else
-			break;
-	}
-	/*
-	 * Check for trailing characters.
-	 */
-	if (c != '\0' && (!isascii(c) || !isspace(c)))
-		return (0);
-	/*
-	 * Concoct the address according to
-	 * the number of parts specified.
-	 */
-	n = pp - parts + 1;
-	switch (n) {
+    if (s == NULL) return 0;
 
-	case 0:
-		return (0);		/* initial nondigit */
+    /* Step through each period-separated part of the address.  If we see
+       more than four parts, the address is invalid. */
+    for (p = s; *p != 0; part++) {
+        if (part > 3) return 0;
 
-	case 1:				/* a -- 32 bits */
-		break;
+        /* Determine the base of the section we're looking at.  Numbers are
+           represented the same as in C; octal starts with 0, hex starts
+           with 0x, and anything else is decimal. */
+        if (*p == '0') {
+            p++;
+            if (*p == 'x') {
+                p++;
+                base = 16;
+            } else {
+                base = 8;
+            }
+        } else {
+            base = 10;
+        }
 
-	case 2:				/* a.b -- 8.24 bits */
-		if (val > 0xffffff)
-			return (0);
-		val |= parts[0] << 24;
-		break;
+        /* Make sure there's actually a number.  (A section of just "0"
+           would set base to 8 and leave us pointing at a period; allow
+           that.) */
+        if (*p == '.' && base != 8) return 0;
+        octet[part] = 0;
 
-	case 3:				/* a.b.c -- 8.8.16 bits */
-		if (val > 0xffff)
-			return (0);
-		val |= (parts[0] << 24) | (parts[1] << 16);
-		break;
+        /* Now, parse this segment of the address.  For each digit, multiply
+           the result so far by the base and then add the value of the
+           digit.  Be careful of arithmetic overflow in cases where an
+           unsigned long is 32 bits; we need to detect it *before* we
+           multiply by the base since otherwise we could overflow and wrap
+           and then not detect the error. */
+        for (; *p != 0 && *p != '.'; p++) {
+            if (octet[part] > 0xffffffffUL / base) return 0;
 
-	case 4:				/* a.b.c.d -- 8.8.8.8 bits */
-		if (val > 0xff)
-			return (0);
-		val |= (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8);
-		break;
-	}
-	if (addr)
-		addr->s_addr = htonl(val);
-	return (1);
+            /* Use a switch statement to parse each digit rather than
+               assuming ASCII.  Probably pointless portability.... */
+            switch (*p) {
+                case '0':           i = 0;  break;
+                case '1':           i = 1;  break;
+                case '2':           i = 2;  break;
+                case '3':           i = 3;  break;
+                case '4':           i = 4;  break;
+                case '5':           i = 5;  break;
+                case '6':           i = 6;  break;
+                case '7':           i = 7;  break;
+                case '8':           i = 8;  break;
+                case '9':           i = 9;  break;
+                case 'A': case 'a': i = 10; break;
+                case 'B': case 'b': i = 11; break;
+                case 'C': case 'c': i = 12; break;
+                case 'D': case 'd': i = 13; break;
+                case 'E': case 'e': i = 14; break;
+                case 'F': case 'f': i = 15; break;
+                default:            return 0;
+            }
+            if (i >= base) return 0;
+            octet[part] = (octet[part] * base) + i;
+        }
+
+        /* Advance over periods; the top of the loop will increment the
+           count of parts we've seen.  We need a check here to detect an
+           illegal trailing period. */
+        if (*p == '.') {
+            p++;
+            if (*p == 0) return 0;
+        }
+    }
+    if (part == 0) return 0;
+
+    /* IPv4 allows three types of address specification:
+
+           a.b
+           a.b.c
+           a.b.c.d
+
+       If there are fewer than four segments, the final segment accounts for
+       all of the remaining portion of the address.  For example, in the a.b
+       form, b is the final 24 bits of the address.  We also allow a simple
+       number, which is interpreted as the 32-bit number corresponding to
+       the full IPv4 address.
+
+       The first for loop below ensures that any initial segments represent
+       only 8 bits of the address and builds the upper portion of the IPv4
+       address.  Then, the remaining segment is checked to make sure it's no
+       bigger than the remaining space in the address and then is added into
+       the result. */
+    address = 0;
+    for (i = 0; i < part - 1; i++) {
+        if (octet[i] > 0xff) return 0;
+        address |= octet[i] << (8 * (3 - i));
+    }
+    if (octet[i] > (0xffffffffUL >> (i * 8))) return 0;
+    address |= octet[i];
+    if (addr != NULL) addr->s_addr = htonl(address);
+    return 1;
 }
