@@ -48,13 +48,10 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "clibrary.h"
 
 #include <assert.h>
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <syslog.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
