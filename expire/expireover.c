@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     BOOL                RebuildData = FALSE;
     int				lo;
     FILE			*F;
-    BOOL			LowmarkFile;
+    BOOL			LowmarkFile = FALSE;
     char			*lofile;
 
     while ((i = getopt(argc, argv, "df:Z:")) != EOF) {
