@@ -1,32 +1,51 @@
-# makefile for smblib
-# Type make system, where system is ULTRIX, DU, DECOSF1, Solaris etc
+##  $Id$
 
 include ../../Makefile.global
 
-CFLAGS = $(GCFLAGS) -I../../include
+top	      = ../..
+CFLAGS	      = $(GCFLAGS)
 
-INCLUDES = smblib.h smblib-priv.h
+ALL	      = smbvalid.a
 
-RFCNB = session.o rfcnb-util.o rfcnb-io.o
+SOURCES	      = rfcnb-io.c rfcnb-util.c session.c smbdes.c \
+		smbencrypt.c smblib-util.c smblib.c valid.c
 
-OBJS = smblib.o smblib-util.o file.o smb-errors.o exper.o smblib-api.o smbencrypt.o smbdes.o md4.o
+OBJECTS	      = $(SOURCES:.c=.o)
 
-VALIDATE = valid.o session.o rfcnb-util.o \
-           rfcnb-io.o smblib-util.o smblib.o smbencrypt.o smbdes.o md4.o
+all: $(ALL)
 
-.SUFFIXES: .c .o .h
+warnings:
+	$(MAKE) COPT='$(WARNINGS)' all
 
-dummy: all
-
-smbvalid.a:	$(VALIDATE) 
-	ar rc $@ $(VALIDATE)
+smbvalid.a: $(OBJECTS)
+	ar rc $@ $(OBJECTS)
 	$(RANLIB) $@
 
-all: smbvalid.a
+clobber clean:
+	rm -f *.o smbvalid.a
 
-.c.o:	$(INCLUDES)
-	$(UPLIBCC) $(CFLAGS) -c $*.c
+depend: Makefile $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
-clean:
-	rm -f *.o *.lo smbvalid.a
-	rm -rf .libs
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+rfcnb-io.o: rfcnb-io.c ../../include/config.h \
+ ../../include/inn/defines.h ../../include/clibrary.h rfcnb-priv.h \
+ rfcnb-error.h rfcnb-common.h byteorder.h rfcnb-util.h rfcnb-io.h
+rfcnb-util.o: rfcnb-util.c ../../include/config.h \
+ ../../include/inn/defines.h ../../include/clibrary.h rfcnb-priv.h \
+ rfcnb-error.h rfcnb-common.h byteorder.h rfcnb-util.h rfcnb-io.h
+session.o: session.c ../../include/config.h \
+ ../../include/inn/defines.h ../../include/clibrary.h rfcnb-priv.h \
+ rfcnb-error.h rfcnb-common.h byteorder.h rfcnb-util.h
+smbdes.o: smbdes.c
+smbencrypt.o: smbencrypt.c ../../include/config.h \
+ ../../include/inn/defines.h ../../include/clibrary.h smblib-priv.h \
+ smblib-common.h byteorder.h
+smblib-util.o: smblib-util.c ../../include/config.h \
+ ../../include/inn/defines.h ../../include/clibrary.h smblib-priv.h \
+ smblib-common.h byteorder.h rfcnb.h rfcnb-error.h rfcnb-common.h
+smblib.o: smblib.c ../../include/config.h ../../include/inn/defines.h \
+ ../../include/clibrary.h smblib-priv.h smblib-common.h byteorder.h \
+ rfcnb.h rfcnb-error.h rfcnb-common.h
+valid.o: valid.c ../../include/config.h ../../include/inn/defines.h \
+ smblib-priv.h smblib-common.h byteorder.h valid.h
