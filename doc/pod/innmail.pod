@@ -14,7 +14,7 @@ problems.  It takes the body of a mail message on standard input and sends
 it to the specified addresses by invoking the value of I<mta> in
 F<inn.conf>.
 
-At least one address (formatted for the MTA specified in F<inn.conf> if it
+At least one address (formatted for the MTA specified in F<inn.conf>, if it
 matters) is required.  B<innmail> will sanitize the addresses so that they
 contain only alphanumerics and the symbols C<@>, C<.>, C<->, C<+>, C<_>,
 and C<%>.

@@ -18,7 +18,7 @@ connection. B<nnrpd> also supports running as a standalone daemon.
 Unlike innd(8) B<nnrpd> supports all NNTP commands for user-oriented
 reading and posting.
 
-B<nnrpd> uses the readers.conf(5) file to control who is authorized to
+B<nnrpd> uses the F<readers.conf> file to control who is authorized to
 access the Usenet database. When I<nnrpdloadlimit> in F<inn.conf> is
 not 0, it will also reject connections if the load average is greater
 than that value (typically 16).
@@ -168,7 +168,7 @@ when newsgroups where created, a list of valid distributions, a file
 specifying default distribution patterns, moderators list, a
 one-per-line description of the current set of newsgroups, a list of
 the automatic group subscriptions, or a listing of the
-F<overview.fmt>(5) file.
+F<overview.fmt> file.
 
 The command C<list active> is equivalent to the C<list> command. This
 is a common extension.

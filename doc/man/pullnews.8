@@ -57,12 +57,12 @@ system. This is part of the libnet bundle and can be found on CPAN or from
 Graham's site http://www.connect.net/gbarr/
 .SH OPTIONS
 .TP
-.B \-c
+.BI \-c " config"
 Normally the config file is stored in $HOME/.pullnews for the user running the 
 .I pullnews
 program. The ``\fB\-c\fP'' flag lets you change that.
 .TP
-.B \-g
+.BI \-g " groups"
 The ``\fB\-g\fP'' flag specifies a collection of groups to get.
 The value must be a single argument with commas between group names.
 Each group must be defined in the config file.
@@ -71,18 +71,19 @@ Only the remote hosts that carry those groups will be contacted.
 .B \-h
 The ``\fB\-h\fP'' flag just prints usage.
 .TP
-.B \-p
-The ``\fB\-p\fP'' flag can be used to change connecting port other than 119.
+.BI \-p " port"
+The ``\fB\-p\fP'' flag can be used to change connecting port to
+something other than 119.
 .TP
 .B \-q
 The ``\fB\-q\fP'' flag can be used to make things run more quietly.
 .TP
-.B \-r 
+.BI \-r " file"
 The ``\fB\-r\fP'' flag tells
 .I pullnews
-to create an rnews-compatible file, instead of feeding article.
+to create an rnews-compatible file, instead of feeding articles.
 .TP
-.B \-s 
+.BI \-s " downstream-server"
 Normally 
 .I pullnews
 will feed the articles it retrieves to the news server running on
@@ -93,7 +94,7 @@ The config file for
 .I pullnews
 is a series of sets of lines describing the upstream hosts to connect to and
 the newsgroups to get articles from. A host line has no leading white space and 
-just has the name of the host to connect to. Group lines com after a host line
+just has the name of the host to connect to. Group lines come after a host line
 and have leading white space followed by the group name.
 .PP
 .I pullnews
@@ -102,6 +103,7 @@ the highest numbered article successfully retrieved and transfered to the
 downstream server.
 .PP
 A sample configuration file might look like:
+.PP
 .RS
 .nf
 # Format group date high
@@ -116,7 +118,9 @@ nnrp.vix.com
 .PP
 The group entries for the two rec.* groups have been updated by an earlier run
 by
-.IR pullnews .
+.IR pullnews ,
+whereas the two comp.* groups were just inserted by the user and have
+not yet been checked.
 .SH HISTORY
 pullnews was written by James Brister for INN.
 .de R$
@@ -126,7 +130,7 @@ This is revision \\$3, dated \\$4.
 .SH BUGS
 .I pullnews
 is very simple and is lacking in more sophisticated features (like killing
-articles based on user-defined conditions) that better pull feeder most
+articles based on user-defined conditions) that better pull feeders most
 certainly have. It also doesn't keep or log much detail on articles transferred.
 .PP
 Due to a limitation in the Net::NNTP perl module, one of the functions in there 

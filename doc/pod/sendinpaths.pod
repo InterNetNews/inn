@@ -8,12 +8,13 @@ B<sendinpaths> [B<-n>]
 
 =head1 DESCRIPTION
 
-B<sendinpaths> checks I<pathlog>/path for B<ninpaths> dump files, and for
-each valid dump file generated in the past 30 days (checked by running
-B<ninpaths> on it and making sure B<ninpaths> exits with a zero exit
-status), pass it to B<ninpaths> to generate a cumulative report.  Mail
-that report to the e-mail addresses configured at the beginning of this
-script (by default pathsurvey@top1000.org and top1000@anthologeek.net).
+B<sendinpaths> checks I<pathlog>/path for B<ninpaths> dump files, finds
+dump files generated in the past 30 days, makes sure they are valid by
+running B<ninpaths> on each one and making sure the exit status is zero,
+and passes them to B<ninpaths> to generate a cumulative report.  That
+report is mailed to the e-mail addresses configured at the beginning of
+this script (by default "pathsurvey@top1000.org" and
+"top1000@anthologeek.net").
 
 When finished, B<sendinpaths> deletes all dump files in I<pathlog>/path
 that are older than 14 days (configurable at the beginning of the script).

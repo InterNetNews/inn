@@ -4,23 +4,28 @@
 moderators \- submission addresses for moderated newsgroups
 .SH DESCRIPTION
 When an unapproved article is posted locally to a moderated newsgroup,
-rather than being passed off to
+it is not passed off to
 .IR innd (8)
-for normal handling, it's instead sent via e-mail to the submission
+for normal handling; instead it's instead sent via e-mail to the submission
 address for that newsgroup.  The file
 .I <pathetc in inn.conf>/moderators
 lists the submission addresses for moderated newsgroups.
 This file is used by
 .IR nnrpd "(8), " inews (1),
 and any other program that uses the GetModeratorAddress() routine (see
-.IR libinn (3).)
+.IR libinn (3)).
 .PP
 The moderators file is a list of associations between
 .IR uwildmat(3)
 patterns matching newsgroups and the submission address for those
 newsgroups.
 Blank lines and lines starting with a number sign (``#'') are ignored.
-All other lines should consist of those two fields separated by a colon.
+All other lines should consist of two fields separated by a colon.
+.PP
+The first field specifies the group or groups to match using
+.IR uwildmat(3).
+The first matching line is used, so more specific patterns should occur
+earlier than general patterns.
 .PP
 The second field, the submission address, may have at most one
 .I %s
@@ -54,7 +59,7 @@ comp.sources.unix	comp-sources-unix@moderators.isc.org
 .fi
 .RE
 Periods are converted to dashes for historical reasons, from back in the
-days when periods in the local part of addresses may not be handled
+days when periods in the local part of addresses were not always handled
 correctly.  It's probably no longer necessary, but so much now depends on
 it that it can't be easily changed.
 .PP
@@ -69,8 +74,8 @@ hierarchy that is not correctly handled by moderators.isc.org, please send
 the details to that address.
 .PP
 Given that, the only thing you should have to add to the sample file under
-normal circumstances are the forwarding addresses for local or limited
-distribution moderated groups.
+normal circumstances are the forwarding addresses for local or 
+limited-distribution moderated groups.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$

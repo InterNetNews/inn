@@ -1,7 +1,7 @@
 .\" $Revision$
 .TH PRUNEHISTORY 8
 .SH NAME
-prunehistory \- remove file names from Usenet history file
+prunehistory \- remove tokens from Usenet history file
 .SH SYNOPSIS
 .B prunehistory
 [
@@ -12,27 +12,24 @@ prunehistory \- remove file names from Usenet history file
 ]
 .SH DESCRIPTION
 .I Prunehistory
-modifies the
-.IR history (5)
-text file to ``remove'' a set of filenames from it.
-The filenames are removed by overwriting them with spaces, so that the
-size and position of any following entries does not change.
+modifies a
+.IR history (5)-format
+text file to ``remove'' a set of tokens from it.
+The tokens are removed by overwriting them with spaces, so that the
+size and position of any following entries does not change.  This has an
+effect similar to expiring the article, in that it is still mentioned in
+the history database but cannot be retrieved.
 .PP
 .I Prunehistory
 reads the standard input.
 The input is taken as a set of lines.
 Blank lines and lines starting with a number sign (``#'') are ignored.
 All other lines are should consist of a Message-ID followed by zero or
-more filenames.
+more other fields (which are ignored).
 .PP
 The Message-ID is used as the
 .IR dbz (3)
 key to get an offset into the text file.
-If no filenames are mentioned on the input line, then all filenames in
-the text are ``removed.''
-If any filenames are mentioned, they are converted into the history file
-notation.
-If they appear in the line for the specified Message-ID then they are removed.
 .PP
 Since
 .IR innd (8)
@@ -53,7 +50,7 @@ This can be useful when
 is used as a filter for other programs such as
 .IR reap .
 .TP
-.B \-f
+.BI \-f " filename"
 The default name of the history file is
 .IR <pathdb\ in\ inn.conf>/history ;
 to specify a different name, use the ``\-f'' flag.

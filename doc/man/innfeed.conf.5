@@ -20,7 +20,7 @@ The file
 is used to control the innfeed(1) program. It is a fairly free-format file
 that consists of three types of entries: \fIkey/value\fP, \fIpeer\fP and
 \fIgroup\fP.
-Comments are taken from the hash character ``#'' to the end of the line.
+Comments are from the hash character ``#'' to the end of the line.
 .PP
 \fIKey/value\fP entries are a keyword and a value separated by a colon
 (which can itself be surrounded by whitespace). For example:
@@ -32,7 +32,7 @@ max-connections: 10
 .RE
 .PP
 A legal
-key starts with a letter and contains only letters, numbers and ``_'',
+key starts with a letter and contains only letters, digits, and ``_'',
 ``-''.
 .LP 
 There are 5 different type of values: integers, floating-point numbers,
@@ -134,16 +134,18 @@ bb.home.vix.com       20
 .fi
 .RE
 .PP
-Innfeed ignores key/value pairs it is not interested in. Any config file
-value that can be set via a command line option,
-is not used if the command-line option is given.
+Innfeed ignores key/value pairs it is not interested in. Some config file
+values can be set via a command line option, in which case that setting
+overrides the settings in the file.
 .PP
 Config files can be included in other config files via the syntax:
+.sp 1
 .nf
 .RS
 $INCLUDE filename
 .RE
 .fi
+.sp 1
 There is a maximum nesting depth of 10.
 .PP
 For a fuller example config file, see the supplied \fIinnfeed.conf\fP.
@@ -215,22 +217,22 @@ will re-offer more already-processed articles than necessary.
 .TP
 .B backlog-newfile-period
 This key requires a positive integer value. It specifies how many seconds
-between checks for externally generated backlog files that are to be picked
-up and processed.
+before each checks for externally generated backlog files that are to be
+picked up and processed.
 .\"..................................................
 .TP
 .B dns-retry
-The key requires a positive integer value. It defines the number of seconds
+This key requires a positive integer value. It defines the number of seconds
 between attempts to re-lookup host information that previous failed to be
 resolved.
 .TP
 .B dns-expire
-The key requires a positive integer value. It defines the number of seconds
-between refreshes of name to address DNS translation. This is so long running
-processes don't get stuck with stale data, should peer ip addresses change..
+This key requires a positive integer value. It defines the number of seconds
+between refreshes of name to address DNS translation. This is so long-running
+processes don't get stuck with stale data, should peer ip addresses change.
 .TP
 .B close-period
-The key requires a positive integer value. It is the maximum number of
+This key requires a positive integer value. It is the maximum number of
 seconds a connection should be kept open. Some NNTP servers don't deal well
 with connections being held open for long periods.
 .TP
@@ -289,14 +291,15 @@ this. SunOS 4.1.x usually requires a value of 128 and Solaris requires a
 value of 256. The default if this is not specified, is 0.
 .TP
 .B bindaddress
-Which outgoing IPv4 address innfeed should bind the local end of its
-connections to.
+This key requires a string value.  It specifies which outgoing IPv4 address
+innfeed should bind the local end of its connections to.
 Must be in dotted-quad format (nnn.nnn.nnn.nnn).
 If not set, innfeed defaults to letting the kernel choose this address.
 The default value is unset.
 .TP
 .B bindaddress6
-Like \fBbindaddress\fP but for outgoing IPv6 connections.
+This key requires a string value.  It behave like \fBbindaddress\fP except
+for outgoing IPv6 connections.
 .\"..................................................
 .SH "GLOBAL PEER DEFAULTS"
 .PP
@@ -333,14 +336,14 @@ of innfeed, a value of 1 had a special meaning. This is no longer the case,
 1 means a maximum of 1 connection ].
 .TP
 .B dynamic-method
-This key requires a value between 0 and 3. It controls how connections
-(up to max-connections) are opened up to the maximum specified by
+This key requires an integer value between 0 and 3. It controls how connections
+(up to max-connections) are opened, up to the maximum specified by
 \fBmax-connections\fP. In general (and specifically, with \fBdynamic-method\fP
-0) a new connection is opened when the current number of connections is
-below \fBmax-connections\fP, and an article is to be sent whilst no current
+0), a new connection is opened when the current number of connections is
+below \fBmax-connections\fP, and an article is to be sent while no current
 connections are idle. Without further restraint (i.e. using
 \fBdynamic-method\fP 0), in practice this means that \fBmax-connections\fP
-connections are established whilst articles are being sent. Use of other
+connections are established while articles are being sent. Use of other
 \fBdynamic-method\fP settings imposes a further limit on the amount of
 connections opened below that specified by \fBmax-connections\fP. This
 limit is calculated in different ways, depending of the value of
@@ -360,17 +363,17 @@ Increase of connections up to \fBmax-connections\fP is unrestrained.
 .TP
 .B 1 maximize articles per second
 Connections are increased (up to \fBmax-connections\fP) and decreased so as
-to maximize the number of articles per second sent, whilst using the fewest
+to maximize the number of articles per second sent, while using the fewest
 connections to do this.
 .TP
 .B 2 set target queue length
 Connections are increased (up to \fBmax-connections\fP) and decreased so as
 to keep the queue of articles to be sent within the bounds set by
 \fBdynamic-backlog-low\fP and \fBdynamic-backlog-high\fP,
-whilst using the minimum resource possible.
+while using the minimum resources possible.
 As the queue will tend to fill if the site is not keeping up, this method
 ensures that the maximum number of articles are offered to the peer
-whilst using the minimum number of connections to achieve this.
+while using the minimum number of connections to achieve this.
 .TP
 .B 3 combination
 This method uses a combination of methods 1 and 2 above. For sites
@@ -382,30 +385,30 @@ is used.
 .RE
 .TP
 .B dynamic-backlog-low
-This key takes a value between 0 and 100 and represents (as a percentage)
-the low water mark for the host queue. When the host queue falls below
-this level, when using \fBdynamic-method\fP 2 or 3, if 2 or more connections
-are open, innfeed will attempt to drop connections to the host. An IIR
-filter is applied to the value to prevent connection flap (see
+This key requires an integer value between 0 and 100.  It represents (as a
+percentage) the low water mark for the host queue. If the host queue falls
+below this level while using \fBdynamic-method\fP 2 or 3, and if 2 or more
+connections are open, innfeed will attempt to drop connections to the host.
+An IIR filter is applied to the value to prevent connection flap (see
 \fBdynamic-filter\fP). A value of 25.0 is recommended. This value
 must be smaller than \fBdynamic-backlog-high\fP.
 .TP
 .B dynamic-backlog-high
-This key takes a value between 0 and 100 and represents (as a percentage)
-the high water mark for the host queue. When the host queue rises above
-this level, when using \fBdynamic-method\fP 2 or 3, if less than
+This key requries an integer value between 0 and 100.  It represents (as a
+percentage) the high water mark for the host queue. If the host queue rises
+above this level while using \fBdynamic-method\fP 2 or 3, and if less than
 \fBmax-connections\fP are open to the host, innfeed will attempt
 to open further connections to the host. An IIR filter is applied to the value
 to prevent connection flap (see \fBdynamic-filter\fP). A value of 50.0
 is recommended.  This value must be larger than \fBdynamic-backlog-low\fP.
 .TP
 .B dynamic-backlog-filter
-This key takes a floating-point value between 0 and 1 which represents the
+This key requires a floating-point value between 0 and 1.  It represents the
 filter coefficient used by the IIR filter used to implement
 \fBdynamic-method\fP 2 and 3.
 The recommended value of this filter is 0.7, giving a time
 constant of 1/(1-0.7) articles. Higher values will result in slower
-response to queue fullness changes, lower values with faster response.
+response to queue fullness changes, lower values in faster response.
 .TP
 .B max-queue-size
 This key requires a positive integer value. It defines the maximum number
@@ -427,7 +430,7 @@ accepted gets larger than this number. If this value is set to 100.0, then
 this effectively turns off no-CHECK mode, as the percentage can never get
 above 100.0. If this value is too small, then the number of articles the
 peer rejects will get bigger (and your bandwidth will be wasted). A value
-of 95.0 is usually pretty good. NOTE: In innfeed 0.9.3 and earlier this
+of 95.0 usually works pretty well. NOTE: In innfeed 0.9.3 and earlier this
 value was in the range [0.0, 9.0].
 .TP
 .B no-check-low:
@@ -441,7 +444,7 @@ again. If there is small difference between this and the
 frequently go in and out of no-CHECK mode. If the difference is too big,
 then it will make it harder to get out of no-CHECK mode when necessary
 (wasting bandwidth). Keeping this to between 5.0 and 10.0 less than
-\fBno-check-high\fP is usually pretty good.
+\fBno-check-high\fP usually works pretty well.
 .TP
 .B no-check-filter
 This is a floating point value representing the time constant, in articles,

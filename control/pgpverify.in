@@ -695,7 +695,7 @@ control messages, and take action based on the PGP key User ID that signed
 the control message, not the name and address that appear in the control
 message's From or Sender headers.
 
-Thus, using the B<signcontrol> and B<pgpverify> programs appropriately
+Thus, appropriate use of the B<signcontrol> and B<pgpverify> programs
 essentially eliminates the possibility of malicious users forging Usenet
 control messages that sites will act upon, as such users would have to
 obtain the PGP private key in order to forge a control message that would

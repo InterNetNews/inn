@@ -18,7 +18,7 @@ It periodically \(em every
 seconds \(em examines the load average, and the number of free blocks
 and inodes on the spool partition, as described by its
 control file,
-.IR innwatch.ctl (5).
+.IR innwatch.ctl .
 .PP
 If the load gets too high, or the disk gets too full, it throttles the server.
 When the condition restores, it unblocks the server.
@@ -34,13 +34,15 @@ will report its status in the file
 .IR <pathrun\ in\ inn.conf>/innwatch.status .
 .SH OPTIONS
 .TP
-.B \-l 
+.B \-l logfile
 To specify a log file to watch, other than the default of 
 .IR news.crit ,
 use the ``\fB\-l\fP'' flag.
 .TP
-.B \-t
-To change the period between check from the default, use the ``\fB\-t\fP''
+.B \-t seconds
+To change the period between checks from the default from
+.I inn.conf ,
+use the ``\fB\-t\fP''
 flag.
 .SH HISTORY
 Written by Mike Cooper <mcooper@usc.edu>, with modifications by

@@ -28,12 +28,12 @@ The
 program provides a command line interface to the storage manager.
 If no options are specified, 
 .I sm
-shows the whole article associated with the token.
+by default shows the entire article associated with the token.
 The
 .I token
-is a token of the article, and it is stored as the third field of history line.
-Standard input is used to read tokens, unless token is given.  Each token is
-listed in each line in the case.
+is a token of the article, as is stored as the third field of history line.
+Tokens can be given on the commandline; if none are, they are read from
+standard input, one per line.
 .SH OPTIONS
 .TP
 .B \-d \-r
@@ -42,7 +42,7 @@ then the program removes the article associated with the token.
 .TP
 .B \-i
 If the ``\fB\-i\fP'' flag is used,
-then the program shows the newsgroup name and article number
+then the program shows only the newsgroup name and article number
 associated with the token.
 .TP
 .B \-q

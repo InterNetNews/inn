@@ -21,18 +21,18 @@ from local processes such as nnrpd(8) and rnews(1).
 As the master daemon, B<innd> should generally be started at boot and be
 always running.  It listens to a Unix-domain datagram socket for commands
 to control its activites, commands that can be sent using ctlinnd(8).  The
-current status of B<innd> can be obtained by running C<ctlinnd status>, or
+current status of B<innd> can be obtained by running C<ctlinnd mode>, or
 for more detailed output, innstat(8).
 
-B<innd> can be in one of three operating modes, running, paused, or
+B<innd> can be in one of three operating modes:  running, paused, or
 throttled.  Running is the normal mode; when the server is throttled, it
 closes connections and rejects new ones.  Paused is like a temporary
 throttle, suspending B<innd>'s activities but not causing the server to
-shut down connections.  The mode is normally changed via ctlinnd(8),
-either by various automated processes such as nightly article expiration
-or by the news administrator, but B<innd> will also throttle itself if it
-encounters ENOSPC errors in writing data or an excessive number of I/O
-errors (among other problems).
+shut down existing connections.  The mode is normally changed via
+ctlinnd(8), either by various automated processes (such as nightly article
+expiration) or manually by the news administrator, but B<innd> will also
+throttle itself if it encounters ENOSPC errors in writing data or an
+excessive number of I/O errors (among other problems).
 
 B<innd> normally takes care of spawning nnrpd(8) to handle connections
 from news reading clients, but it can be run on a separate port from
@@ -44,20 +44,21 @@ nnrpd(8) on separate ports, it's recommended that nnrpd(8) be given port
 port 433 be used for B<innd>.
 
 The primary configuration files that control B<innd>'s activities are
-incoming.conf(5), which specifies what remote sites B<innd> will accept
-connections from, newsfeeds(5), which specifies what is to be done with
-incoming articles besides storing them, and inn.conf(5), which sets a wide
+F<incoming.conf>, which specifies what remote sites B<innd> will accept
+connections from, F<newsfeeds>, which specifies what is to be done with
+incoming articles besides storing them, and F<inn.conf>, which sets a wide
 variety of configuration parameters.  Some parameters in inn.conf(5) can
-also be set with command-line flags; in this case, the command-line flags
+also be set with command-line flags; for these, the command-line flags
 take precedence if used.
 
 B<innd> should normally never be run directly.  Among other problems, it
 must run as the news user or all sorts of file ownership problems may
 result, and normally the port it listens on (119 or 433) is privileged and
 must be opened by root.  Instead, B<innd> should be started via
-inndstart(8), a small setuid root program that opens the appropriate port,
+inndstart(8), a small setuid-root program that opens the appropriate port,
 cleans up the environment, changes to the news user, and then runs
-B<innd>, passing along any command-line arguments it is given to B<innd>.
+B<innd>, passing along any command-line arguments.  (To use IPv6, B<innd>
+absolutely must be started by inndstart(8).)
 
 =head1 OPTIONS
 
@@ -79,7 +80,7 @@ would open the server up for all sorts of abuse.
 =item B<-c> I<days>
 
 B<innd> normally rejects any article that is older (in days) than the
-value of I<artcutoff> in inn.conf(5).  This option, if given, overrides
+value of I<artcutoff> in F<inn.conf>.  This option, if given, overrides
 the value of that setting.  If I<days> is 0, this check is suppressed and
 B<innd> will accept articles regardless of how old they are.
 
@@ -92,13 +93,13 @@ stronger authentication.
 
 =item B<-d>, B<-f>
 
-B<innd> normally puts itself into the background, repoints its standard
+B<innd> normally puts itself into the background, points its standard
 output and error to log files, and disassociates itself from the
 terminal.  Using B<-d> prevents all of this, resulting in log messages
 being written to standard output; this is generally useful only for
-debugging.  Using B<-f> prevents the backgrounding and disassociation
+debugging.  Using B<-f> prevents the backgrounding and disassociation but
 still redirects output; it may be useful if you want to monitor B<innd>
-with another program that would be confused by forks.
+with a program that would be confused by forks.
 
 =item B<-H> I<count>, B<-T> I<count>, B<-X> I<seconds>
 
@@ -109,48 +110,48 @@ probably only useful when B<innd> is spawning B<nnrpd>).  You probably
 should not use these options unless you're having problems.  The table
 used for this check is fixed at 128 entries and is used as a ring; the
 size was chosen to make calculating the index easy and to be fairly sure
-that it won't run out of space.  In practice, it is doubtful that even
+that it won't run out of space.  In practice, it is unlikely that even
 half the table will be used at any given moment.
 
 The B<-H> flag limits the number of times a host is allowed to connect to
-the server per the time interval given by B<-X>.  The default is 2.
+the server per the time interval given by B<-X>.  The default is C<2>.
 
 The B<-T> flag limits the total number of incoming connections per the
-time interval given by B<-X>.  The maximum value is 128, and the default
-is 60.
+time interval given by B<-X>.  The maximum value is C<128>, and the
+default is C<60>.
 
 =item B<-i> I<count>
 
 B<innd> normally allows a maximum number of concurrent NNTP connections
 given by the value of I<maxconnections> in F<inn.conf>.  This option, if
-given, overrides the value of that setting.  If I<count> is 0, this check
-is suppressed.
+given, overrides the value of that setting.  If I<count> is C<0>, this
+check is suppressed.
 
 =item B<-I> I<address>
 
-Normally if B<innd> binds to a port itself, it lets the operating system
-pick the source IP address unless I<bindaddress> is set in F<inn.conf>.
+Normally if B<innd> itself binds to a port, it lets the operating system
+pick the source IP address (unless I<bindaddress> is set in F<inn.conf>).
 If this option is given, it specifies the IP address that INN should bind
 as.  This is only relevant for servers with multiple local IP addresses.
-The IP address must be in dotted quad (nnn.nnn.nnn.nnn) format.
+The IP address must be in dotted quad (C<nnn.nnn.nnn.nnn>) format.
 
 This option is rarely useful since B<innd> should not be binding to a
-port.  Instead, use inndstart(8) and the equivalent B<-I> option to it.
+port itself.  Instead, use inndstart(8) and its analgous B<-I> option.
 
 =item B<-l> I<size>
 
 B<innd> normally rejects any article larger than the value of
 I<maxartsize> in F<inn.conf>.  This option, if given, overrides the value
 of that setting and specifies a maximum article size of I<size>.  If
-I<size> is 0, this check is suppressed.
+I<size> is C<0>, this check is suppressed.
 
 =item B<-m> I<mode>
 
-Normally B<innd> starts in the running mode.  If this option is given, it
-specifies what mode B<innd> should start in.  I<mode> should begin with
-one of C<g>, C<p>, or C<t>, and the starting mode will be set to running,
-paused, or throttled respectively based on that initial letter.  (C<g> is
-short for C<go>.)
+Normally B<innd> starts in the C<running> mode.  If this option is given,
+it specifies what mode B<innd> should start in.  I<mode> should begin with
+one of C<g>, C<p>, or C<t>, and the starting mode will be set to
+C<running>, C<paused>, or C<throttled>, respectively, based on that
+initial letter.  (C<g> is short for C<go>.)
 
 =item B<-N>
 
@@ -162,7 +163,7 @@ filters can be enabled after B<innd> has started with ctlinnd(8).
 
 Whether B<innd> allows (and hands off to B<nnrpd>) reader connections
 while paused or throttled is normally determined by the value of
-I<readerswhenstopped> in F<inn.conf>.  This option, if given, overrides
+I<readerswhenstopped> in F<inn.conf).  This option, if given, overrides
 that value.  If I<flag> is C<n>, B<innd> will not allow readers if it is
 paused or throttled.  If I<flag> is C<y>, readers will be allowed
 regardless of B<innd>'s operating mode.
@@ -177,7 +178,7 @@ B<innd> has more file feeds than I<count>, some of them will be buffered
 and only written out periodically.
 
 Normally you never need to use this option, since the number of outgoing
-feeds is fixed, being the number of file feeds configured in newsfeeds(5),
+feeds is fixed, being the number of file feeds configured in F<newsfeeds>,
 and is generally small (particularly given that innfeed(8) is now used for
 most outgoing feeds at large sites).
 
@@ -188,16 +189,17 @@ to already be open and bound to the appropriate local port and to be
 suitable for listening to for incoming connections.  This is how
 B<inndstart> tells B<innd> which open file descriptor is the network
 connection.  If this flag is not given, B<innd> will attempt to open its
-network socket itself; B<inndstart> always passes this flag to B<innd>.
+network socket itself.  B<inndstart> always passes this flag to B<innd>.
 
 =item B<-P> I<port>
 
 The port B<innd> should listen on is normally given by the value of
 I<port> in F<inn.conf>.  This option, if given, overrides that value and
-specifies the port that B<innd> should bind to.  Normally one should never
-use this option and instead use B<inndstart> and its equivalent B<-P>
-option.  Since B<innd> should never be run as root, I<port> has to be a
-non-privileged port (one larger than 1024).
+specifies the port that B<innd> should bind to.  This option is rarely
+useful since B<innd> normally does not bind itself; instead the analgous
+B<-P> option to inndstart(8) should be used.  Since B<innd> should never
+be run as root, I<port> has to be a non-privileged port (one larger than
+1024).
 
 =item B<-r>
 
@@ -226,8 +228,8 @@ is normally buffered.  This option changes the log to be unbuffered.
 =head1 CONTROL MESSAGES
 
 Arriving articles that have a Control header are called "control
-messages."  Except for cancel messages, these messages are handled by
-controlchan(8) via a feed set up in newsfeeds(5).
+messages".  Except for cancel messages, these messages are handled by
+controlchan(8) via a feed set up in F<newsfeeds>.
 
 (Cancel messages update the history database, so they must be handled
 internally; the cost of syncing, locking, then unlocking would be too high
@@ -246,7 +248,7 @@ If you want to specifically feed all control messages to a given site
 regardless of whether the control messages would affect the newsgroups
 you're feeding that site, you can put the appropriate control newsgroup in
 the subscription list.  For example, to feed all cancel messages to a
-given remote site (normally a bad idea), add C<control.cancel> to their
+given remote site (normally a bad idea), add C<control.cancel> to its
 subscription list.  Normally it's best to exclude the control newsgroups
 from feeds to keep from sending your peers more control messages than they
 care about.
@@ -278,7 +280,7 @@ C<.ctl> suffix may be removed in a future version of INN.
 Finally, articles posted to newsgroups beginning with C<to.> are treated
 specially.  Provided that either that newsgroup exists in the active file
 or I<mergetogroups> is set in F<inn.conf>, the remainder of the newsgroup
-is taken to be a site name, as configured in newsfeeds(5), and the article
+is taken to be a site name, as configured in F<newsfeeds>, and the article
 is sent to that site.  If I<mergetogroups> is set, the article will be
 filed in the group named C<to> (which must exist in the active file).  For
 example, with I<mergetogroups> set, an article posted to C<to.uunet> will
@@ -319,7 +321,7 @@ supported.
 A batch transfer command, XBATCH I<byte-count>, is provided.  This command
 will read I<byte-count> bytes and store them for later processing by
 rnews(1) (which must be run separately, probably from cron).  See
-innxbatch(8) and the sendxbatches program for more details on this
+innxbatch(8) and F<backends/sendxbatches> for more details on this
 extension.
 
 =item 6.
@@ -336,7 +338,7 @@ readers and are implemented by nnrpd(8).
 B<innd> modifies as few article headers as possible, although it could be
 better in this area.
 
-Empty headers and headers that consist of nothing but whitespace are also
+Empty headers and headers that consist of nothing but whitespace are
 dropped.
 
 The local site's name (as set with the I<pathhost> parameter in
@@ -350,7 +352,7 @@ The Xref: header is removed and a new one created.
 A Lines: header will be added if the article was missing one.
 
 B<innd> does not rewrite incorrect headers.  For example, it will not
-replace an incorrect Lines header, but instead may reject such an article
+replace an incorrect Lines header, though it may reject such an article
 depending on the value of I<linecountfuzz> in F<inn.conf>.
 
 =head1 CANCEL FEEDS
@@ -361,17 +363,19 @@ special feed mode available only to connections to the local Unix domain
 socket (not to connections to any network sockets).
 
 To enter this mode, connect to the Unix domain socket (I<pathrun>/nntpin)
-and send the command MODE CANCEL.  The response will have code 284.  Every
-subsequent line sent on that connection should consist of a single message
-ID.  An attempt will be made to cancel that message ID, and the server
-will reply 289 for success or 484 for failure.  (Failure can occur in
-circumstances such as the server being paused.)
+and send the command MODE CANCEL.  The response will have code C<284>.
+Every subsequent line sent on that connection should consist of a single
+message ID.  An attempt will be made to cancel that message ID, and the
+server will reply C<289> for success or C<484> for failure.  (Failure can
+occur, for example, if the server is paused or throttled, or the
+Message-ID is corrupt.  Failure does I<not> occur if the article to be
+cancelled does not exist.)
 
 =head1 LOGGING
 
-B<innd> reports all incoming articles in its log file.  This is a text
-file with a variable number of space-separated fields in one of the
-following formats:
+B<innd> reports all incoming articles in its log file (I<pathlog>/news).
+This is a text file with a variable number of space-separated fields in
+one of the following formats:
 
     mon dd hh:mm:ss.mmm + feed <message-id> site ...
     mon dd hh:mm:ss.mmm j feed <message-id> site ...
@@ -402,7 +406,7 @@ message was created so that B<innd> will reject that message if it arrives
 later.
 
 If the fourth field is a minus sign, then the article was rejected.  The
-reasons for rejection include:
+reasons for rejection generated by B<innd> include:
 
     "%s" header too long
     "%s" wants to cancel <%s> by "%s"
@@ -425,7 +429,9 @@ reasons for rejection include:
     Unwanted distribution "%s"
     Whitespace in "Newsgroups" header -- "%s"
 
-where C<%s>, above, is replaced by more specific information.
+where C<%s>, above, is replaced by more specific information.  (The Perl,
+Python, andr Tcl filters, if used, may reject articles with other
+reasons.)
 
 If the fourth field is the letter C<?>, the article contains strange
 strings, such as CR without LF or LF without CR.  (These characters should

@@ -19,7 +19,7 @@ active file is read and rewritten, which not only keeps
 .B innd
 from updating the active file but also locks against other instances
 of
-.B mod-active.
+.BR mod-active .
 .PP
 The input to
 .B mod-active
@@ -29,9 +29,9 @@ from the standard input.  Typically its input is the output from the
 or
 .B actsync
 commands.  Every line which contains the string "ctlinnd newgroup",
-"ctlinnd rmgroup" or "ctlinnd changegroup", optionally preceded by
+"ctlinnd rmgroup", or "ctlinnd changegroup", optionally preceded by
 whitespace and/or the path to 
-.B ctlinnd,
+.BR ctlinnd ,
 is noted for the update.  Redundant commands, such as a newgroup
 directive for a group that already exists, are silently ignored.  All
 other lines in the input are also silently ignored.
@@ -78,6 +78,7 @@ This is revision \\$3, dated \\$4.
 ..
 .SH "SEE ALSO"
 .IR active (5),
+.IR active.times (5),
 .IR actsync (8),
 .IR ctlinnd (8),
 .IR innd (8).

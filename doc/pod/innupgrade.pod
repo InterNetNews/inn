@@ -11,16 +11,16 @@ B<innupgrade> [B<-t> I<type>] B<-f> I<file>
 =head1 DESCRIPTION
 
 B<innupgrade> is intended to be run during a major upgrade of INN to fix
-the configuration files for any required changes.  If given a directory,
+the configuration files with any required changes.  If given a directory,
 it will scan that directory for any files that it has updates defined for,
-try to perform those updates, and replace the file with an updated version
-if applying the updates resulted in any changes.  The old version of the
-file will be saved with a .OLD extension.
+try to perform those updates, and replace the files with updated versions
+if applying the updates resulted in any changes.  The old versions of the
+files will be saved with a C<.OLD> extension.
 
 If the B<-f> flag is used, only that file will be updated.  If the file
 name doesn't match the standard file name of an INN configuration file,
-the optional B<-t> flag may be given to specify the type.  See L<EXAMPLES>
-for an example of this.
+the optional B<-t> flag may be given to specify the type.  See
+L<"EXAMPLES"> for an example of this.
 
 Currently, B<innupgrade> knows how to apply the following updates:
 
@@ -38,7 +38,7 @@ the parameter.
 
 Normally, B<innupgrade> should be run on the I<pathetc> directory after
 any upgrade of INN other than a patch release (any upgrade that changes
-the first or second version numbers).  This may be done automatically by
+the first or second version numbers).  This may occur automatically during
 the upgrade process.
 
 =head1 OPTIONS
@@ -73,7 +73,8 @@ as F<inn.conf>:
 
     innupgrade -t inn.conf -f inn-special.conf
 
-Any upgrade rules that apply to F<inn.conf> will be applied to that file.
+Any upgrade rules that apply to F<inn.conf> will be applied to the
+alternate file.
 
 =head1 HISTORY
 

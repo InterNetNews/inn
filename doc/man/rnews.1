@@ -84,17 +84,17 @@ directory.
 .SH OPTIONS
 .TP
 .B \-h
-If the ``\fB\-h\fP'' flag is given, or failing that, the
-environment variable
-.I <_ENV_UUCPHOST in include/paths.h>
-(typically
-.IR UU_MACHINE )
-is set, then
+If the ``\fB\-h\fP'' flag is given, then
 .I rnews
 will log the Message-ID and host via
 .IR syslog (3)
 for each article offered to the server.
 Logging will only be done if the value is not an empty string.
+If ``\fB\-h\fP'' is not set, the environment variable
+.I <_ENV_UUCPHOST in include/paths.h>
+(typically
+.IR $UU_MACHINE )
+will be examined for a similar string.
 .TP
 .B \-N
 Normally, if unpacking the input fails it is re-spooled to
@@ -132,7 +132,7 @@ Errors are always logged through
 .IR syslog (3).
 .SH BUGS
 .I Rnews
-cannot process articles that have embedded \e0's in them.
+cannot process articles that have embedded ``\e0'' characters in them.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$

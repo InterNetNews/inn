@@ -9,18 +9,21 @@ cvtbatch \- convert Usenet batch file to INN format
 ]
 .SH DESCRIPTION
 .I Cvtbatch
-reads standard input as a series of lines, converts each line, and
+reads standard input as a sequence of lines, converts each line, and
 writes it to standard output.
 It is used to convert simple batchfiles that contain just the article
 name to INN batchfiles that contain additional information about each
 article.
 .PP
-Each line is taken as the pathname to a Usenet article.
-If it is not an absolute pathname, it is taken relative to the spool
-directory,
-.IR <patharticles\ in\ inn.conf> .
+Each line is taken as a storage API token indicating a Usenet article.
 (Only the first word of each line is parsed; anything following
-whitespace is ignored.)
+whitespace is ignored.  Lines not starting with a valid token are also
+silently ignored.)
+.PP
+If the input file consists of a series of Message-ID's, then use
+.IR grephistory (1)
+with the `\fB`\-s\fP'' flag piped into
+.IR cvtbatch .
 .SH OPTIONS
 .TP
 .B \-w
@@ -29,6 +32,7 @@ The items for this flag should be chosen from the ``W'' flag items as
 specified in
 .IR newsfeeds (5).
 They may be chosen from the following set:
+.PP
 .RS
 .nf
 	b	Size of article in bytes
@@ -37,11 +41,6 @@ They may be chosen from the following set:
 	n	relative pathname of article
 .fi
 .RE
-.PP
-If the input file consists of a series of Message-ID's, then use
-.IR grephistory (1)
-with the `\fB`\-s\fP'' flag piped into
-.IR cvtbatch .
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$

@@ -7,7 +7,8 @@ Most log files created by Usenet programs reside in the
 directory and have a ``.log'' extension.
 Several versions are usually kept with an additional extension such as ``.1'',
 ``.2'', etc. \(em the higher the number, the older the log.
-The older versions are compressed.
+The older versions may be compressed and thus may have a ``.1.gz'',
+``.2.gz'', etc. extension.
 .PP
 The
 .I scanlogs
@@ -26,6 +27,7 @@ monitors the size of all log files.
 .PP
 The following files will only accumulate data under the direction of
 .IR control.ctl (5):
+.sp 1
 .RS
 control.log
 miscctl.log
@@ -33,9 +35,11 @@ newgroup.log
 rmgroup.log
 unwanted.log
 .RE
+.sp 1
 In order to create these files, the ``message'' and ``action'' fields of
 .I control.ctl
 should be chosen from the following table:
+.sp 1
 .RS
 .nf
 .ta \w'newgroup    'u +\w'doit=newgroup  'u
@@ -50,22 +54,26 @@ rmgroup	log=rmgroup	Log message
 ``other''	log=miscctl	Log message
 .fi
 .RE
+.sp 1
 Here, ``other'' refers to any other control message such as:
+.sp 1
 .RS
+.nf
 checkgroups
 ihave
 sendme
 sendsys
 senduuname
 version
+.fi
 .RE
 .PP
-The following is a list of log files.
+The following is a list of log files:
 .TP
 .I control.log
 This file maintains a count of the number of newgroup and rmgroup control
 messages seen for each newsgroup.
-The count is of the number of control messages with identical
+The count is of the number of control messages with the indicated
 arguments, regardless if they were actually processed.
 All control arguments, including invalid ones, are counted.
 This file is updated by
@@ -80,7 +88,7 @@ This file contains the standard output and standard error of any program
 spawned by
 .IR innd (8),
 such as channel feeds configured in
-.IR newsfeeds (5).
+.IR newsfeeds .
 This file should normally be empty.
 .I Scanlogs
 will print the entire contents of this log file if it is non-empty.
@@ -124,15 +132,18 @@ are appended to this file via
 This log file should be empty.
 .I Scanlogs
 will print the entire contents of this log file if it is non-empty.
-You should have the following line in your
-.IR syslog.conf (5)
-file.  (A typical entry is shown; it should agree with
-.I <pathlog in inn.conf>)
+You should have the following line in your system
+.I syslog.conf
+file, using a tab character for the delimiter:
+.sp 1
 .RS
 .RS
 news.crit  <pathlog in inn.conf>/news.crit
 .RE
 .RE
+.sp 1
+(A typical entry is shown; it should agree with
+.I <pathlog in inn.conf>.)
 .TP
 .I news.err
 All major error messages issued by
@@ -142,16 +153,18 @@ are appended to this file via
 This log file should be empty.
 .I Scanlogs
 will print the entire contents of this log file if it is non-empty.
-You should have the following line in your
-.IR syslog.conf (5)
-file:
-(A typical entry is shown; it should agree with
-.I <pathlog in inn.conf>)
+You should have the following line in your system
+.I syslog.conf
+file, using a tab character for the delimiter:
+.sp 1
 .RS
 .RS
 news.err  <pathlog in inn.conf>/news.err
 .RE
 .RE
+.sp 1
+(A typical entry is shown; it should agree with
+.I <pathlog in inn.conf>.)
 .TP
 .I news.notice
 All standard error messages and status messages issued by
@@ -164,16 +177,17 @@ uses the
 script
 .IR innreport (8)
 to summarize this file.
-You should have the following line in your
-.IR syslog.conf (5)
-file:
-(A typical entry is shown; it should agree with
-.I <pathlog in inn.conf>)
+You should have the following line in your system
+.I syslog.conf
+file, using a tab character for the delimiter:
+.sp 1
 .RS
 .RS
 news.notice  <pathlog in inn.conf>/news.notice
 .RE
 .RE
+(A typical entry is shown; it should agree with
+.I <pathlog in inn.conf>.)
 .TP
 .I nntpsend.log
 The
@@ -210,4 +224,5 @@ inn.conf(5),
 innd(8),
 news.daily(8),
 nntpsend(8),
-newslog(8).
+newslog(8),
+syslog.conf(5).

@@ -32,8 +32,8 @@ and
 should be run once a day, typically out of
 .IR cron (8).
 It may be run more often, but such invocations should at least use the
-\&``norotate'' keyword to prevent the log files from being processed
-and rotated too fast.
+\&``norotate'' keyword (or perhaps the \&``notdaily'' keyword) to
+prevent the log files from being processed and rotated too fast.
 .PP
 The
 .IR shlock (1)
@@ -102,7 +102,7 @@ By default,
 is invoked to remove old overview database, if
 .I enableoverview
 is set in
-.IR inn.conf (5).
+.IR inn.conf .
 Using this keyword disables this function.
 .TP
 .I noexplog
@@ -118,10 +118,10 @@ output to be handled as part of
 output.
 It has no effect if the ``noexpire'' keyword is used.
 .TP
-.IR flags= "'expire\ args'"
+.IR flags= "'args\ for\ expire'"
 By default, 
 .I expire
-is invoked with the an argument of ``\-v1''.
+is invoked with argument ``\-v1''.
 Using this keyword changes the arguments to those specified.
 Be careful to use quotes if multiple arguments are needed.
 This keyword has no effect if the ``noexpire'' keyword is used.
@@ -147,9 +147,9 @@ if it is invoked.
 This keyword disables the
 .IR ctlinnd (8)
 renumber operation.
-Normally, the low-water mark for all newsgroups (see
+Normally, the low-water marks for all newsgroups (see
 .IR active (5))
-is reset.
+are reset.
 .TP
 .I norm
 By default, any socket
@@ -173,7 +173,7 @@ If no overview data is created, the ``expireover''
 keyword is not needed.  This is the case that the server runs only for
 feeder(no reader).
 .TP
-.IR expireoverflags= "'expireover\ args'"
+.IR expireoverflags= "'args\ for\ expireover'"
 If the ``expireover'' keyword is used, this keyword may be used to specify
 the flags to be passed to
 .IR expireover .
@@ -196,7 +196,7 @@ Multiple programs may be specified; they will be invoked in order.
 If the ``lowmark'' keyword is used, 
 .IR ctlinnd (8)
 lowmark is used for renumbering
-.IR active (5).
+.IR active .
 Normal
 .IR ctlinnd (8)
 renumber operation will take long time.  With ``lowmark'' keyword this will

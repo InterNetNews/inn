@@ -158,8 +158,8 @@ datatype, as given above.
 uses the current time, process-ID, and fully-qualified domain name, which is
 passed as an argument and used if local host can not be resolved or it is
 different from ``domain'' set in
-.IR inn.conf (5)
-, to create a Message-ID header that is highly likely to be unique.
+.IR inn.conf ,
+to create a Message-ID header that is highly likely to be unique.
 The returned value points to static space that is reused on subsequent calls.
 .PP
 .I HeaderCleanFrom
@@ -201,7 +201,7 @@ provide news clients with access to the active file; the ``CA'' stands for
 .IR A ctive.
 .I CAopen
 opens the
-.IR active (5)
+.I active
 file for reading.
 It returns a pointer to an open FILE, or NULL on error.
 If a local or NFS-mounted copy exists,
@@ -258,7 +258,7 @@ are used to set the Distribution header; the ``DD'' stands for
 .IR D efault
 .IR D istribution.
 The
-.IR distrib.pats (5)
+.I distrib.pats
 file is consulted to determine the proper value for the Distribution
 header after all newsgroups have been checked.
 .I DDstart
@@ -433,7 +433,7 @@ It returns \-1 on failure, or zero on success.
 .I NNTPsendpassword
 sends authentication information to an NNTP server by finding the appropriate
 entry in the
-.IR passwd.nntp (5)
+.I passwd.nntp
 file.
 .I Server
 contains the name of the host; ``innconf->server'' will be used if

@@ -3,7 +3,7 @@
 .\" Copyright (c) Landon Curt Noll, 1993.
 .\" All rights reserved.
 .\"
-.\" Permission to use and modify is hereby granted so long as this 
+.\" Permission to use and modify is hereby granted so long as this
 .\" notice remains.  Use at your own risk.  No warranty is implied.
 .\"
 .\" @(#) $Id$
@@ -20,7 +20,7 @@ actsync, actsyncd \- synchronize newsgroups
 .br
 	   [\fB\-n\fP\fI name\fP] [\fB\-o\fP\fI fmt\fP] [\fB\-p\fP\fI min_%_unchg\fP] [\fB\-q\fP\fI hostid\fP]
 .br
-	   [\fB\-s\fP\fI size\fP] [\fB\-t\fP\fI hostid\fP] [\fB\-T\fP] [\fB\-v\fP\fI verbose_lvl\fP]
+	   [\fB\-s\fP\fI size\fP] [\fB\-t\fP\fI hostid\fP] [\fB\-T\fP] [\fB\-v\fP\fI verbosity\fP]
 .br
 	   [\fB\-z\fP\fI sec\fP] [\fIhost1\fP] \fIhost2\fP
 .sp 1
@@ -28,10 +28,10 @@ actsync, actsyncd \- synchronize newsgroups
 [\fB\-x\fP] \fIactsync.cfg\fP [\fIdebug_level\fP [\fIdebug_outfmt\fP] ]
 .SH DESCRIPTION
 .IR Actsync (8)
-permits one to synchronize, compare or merge two
-.IR active (5)
+permits one to synchronize, compare, or merge two
+.I active
 files.
-With this utility one may add, change or remove newsgroups on the
+With this utility one may add, change, or remove newsgroups on the
 local news server to make it similar to the list the newsgroups
 found on another system or file.
 The synchronization need not be exact.
@@ -50,37 +50,37 @@ A control message to add, change or remove a newsgroup
 may fail to reach your site.
 .sp 1
 Your
-.IR control.ctl (5)
-is out of date or incomplete.
+.I control.ctl
+may be out of date or incomplete.
 .sp 1
-News articles for a new newsgroup arrive ahead (sometimes days ahead)
+News articles for a new newsgroup can arrive ahead (sometimes days ahead)
 of the control message.
 .sp 1
 Control messages may be forged, thus bypassing the restrictions
 found in
-.IR control.ctl (5).
+.I control.ctl .
 .sp 1
 Your
-.IR active (5)
+.I active
 file may have been trashed.
 .sp 1
 .in -0.5i
 .PP
-If either
+If
 .I host1
 or
 .I host2
-begin with a
+begins with a
 .B ``.''
 or
 .BR ``/'' ,
-then they assumed to be a name of a file containing information in the
+then it is assumed to be a name of a file containing information in the
 .IR active (5)
 format.
 The
 .IR getlist (1)
-utility may be used to obtain copy a remote system's active file 
-via its NNTP server, or an FTP client program  can get retrieve such a
+utility may be used to obtain copy a remote system's active file
+via its NNTP server, or an FTP client program can retrieve such a
 file from an FTP archive (such as
 ftp://ftp.isc.org/pub/usenet/CONFIG/active; see more about this below).
 Newsgroup information from a file
@@ -102,10 +102,10 @@ In this case,
 will attempt to use the
 .B NNTP
 protocol to obtain a copy of the the specified system's active file.
-If the host argument contains a 
+If the host argument contains a
 .B ``:'' ,
 the right side will be considerd the port to connect to on the remote system.
-If no port number ist specified,
+If no port number is specified,
 .IR actsync (8)
 will connect to port 119.
 .PP
@@ -115,20 +115,20 @@ the actions of
 remain the same.
 .PP
 If only one host is specified, it is assumed to be
-.IR host2 .
-If
-.IR host1 ,
+.IR host2 ;
+if
+.IR host1
 is not specified, it assumed to be the default local
 NNTP server as specified by the
 .B NNTPSERVER
 environment variable, or by the
 .B server
 value found in
-.IR inn.conf (5).
+.IR inn.conf .
 .PP
-The newsgroup synchronization by default, involves all newsgroups
+The newsgroup synchronization, by default, involves all newsgroups
 found on both hosts.
-One may also synchronize on a subset of newsgroups by directing
+One may also synchronize a subset of newsgroups by directing
 .IR actsync (8)
 to ignore certain newsgroups from both systems.
 .PP
@@ -137,7 +137,7 @@ The
 daemon provides a convenient interface to configure and run
 .IR actsync (8).
 If a host is not initially reachable,
-the daemon will thrice retry 9 times, waiting 6 minutes before
+the daemon will retry up to 9 additional times, waiting 6 minutes before
 each retry.
 This daemon runs in the foreground, sending output to standard output
 and standard error.
@@ -145,17 +145,15 @@ and standard error.
 If the \fB\-x\fP flag is given to
 .IR actsyncd (8),
 then a
-.IR ctlinnd xexec
+.IR ctlinnd\ xexec
 will be used instead of a
-.IR ctlinnd reload
+.IR ctlinnd\ reload
 to load the newly modified active file.
 .PP
-The configuration filename for the daemon is given in the
-.I actsync.cfg
-argument.
-The
-.I actsync.cfg
-file understands the following options:
+The configuration filename for the daemon is given as a
+commandline argument, usually
+.I <pathetc in inn.conf>/actsync.cfg
+The config file can contain the following options:
 .sp 1
 .in +0.5i
 .nf
@@ -163,33 +161,34 @@ file understands the following options:
 \fBftppath=\fP\fI/remote/path/to/active/file\fP
 \fBspool=\fP\fI<normally patharticles in inn.conf>\fP
 \fBignore_file=\fP\fIignore_file\fP
-\fBflags=\fP\fIactsyncd\fP (8) options
+\fBflags=\fP\fIactsyncd\fP(8) options
 .fi
 .in -0.5i
 .sp 1
-The \fBhost\fP, \fBignore_file\fP and \fBflags\fP lines are mandatory.
+The \fBhost\fP, \fBignore_file\fP, and \fBflags\fP lines are mandatory.
 .sp 1
 The keyword must start at the beginning of the line, and there
 may be no whitespace before the
 .B ``=''
 character.
 Blank lines are ignored.
-Comments start with
+Comment lines start with
 .B ``#''
 and are ignored.
-All other lines may produce undefined results.
+Any other lines may produce undefined results.
 .sp 1
-The \fBhost\fP config file line refers to the \fIhost2\fP value to sync off of.
+The \fBhost\fP config file line refers to the \fIhost2\fP parameter to
+.IR actsync (8).
 The \fBftppath\fP directive causes the machine named in the \fBhost\fP
 line to accessed as an ftp server, retrieving the file named.  If
 the filename ends in \fB.gz\fP or \fB.Z\fP, then it will automatically
 be uncompressed after retrieval.
-The \fBspool\fP config file lines determines where top the
+The \fBspool\fP config file lines determines where the top of the
 news spool tree is to be found.
 The \fBignore_file\fP config file line names the ignore file to be
 used by
 .IR actsync (8).
-The \fBflags\fP config file line refers to all flags that you wish to pass to
+The \fBflags\fP config file line contains any flags that you wish to pass to
 .IR actsync (8).
 .sp 1
 Note that the \fB\-i ignore_file\fP option
@@ -202,7 +201,8 @@ INN is shipped with default values of \fIftp.isc.org\fP for \fBhost\fP
 and \fI/pub/usenet/CONFIG/active\fP for \fBftppath\fP.  You can read
 about the policies used for maintaining that active file at
 \fIftp://ftp.isc.org/pub/usenet/CONFIG/README\fP.  Consider
-sychronizing from this file on a daily basis by using \fIcron\fP.
+sychronizing from this file on a daily basis by using
+.IR cron (8).
 .SH OPTIONS
 The options to
 .IR actsync (8)
@@ -243,8 +243,8 @@ determines on which hosts this action is performed:
 .in -0.5i
 .sp 1
 The default is
-.BR "\-b 0" ,
-no bork newsgroups are ignored.
+.BR "\-b 0" ;
+no newsgroups are ignored because of bork-style names.
 .TP
 .BI \-d " hostid"
 This flag causes
@@ -266,8 +266,10 @@ linfield.class.envio_bio.101.d
 .in -0.5i
 .sp 1
 The newsgroups directory of a newsgroups with a all numeric component
-could conflict with an article from another group.  
-For example, the directory for the first newsgroup listed above 
+could conflict with an article from another group if stored using the
+``tradspool'' storage method; see
+.IR storage.conf (5).
+For example, the directory for the first newsgroup listed above
 is the same path as article number 23209 from the newsgroup:
 .sp
 .in +0.5i
@@ -277,7 +279,7 @@ alt.prime.chongo
 .in -0.5i
 .sp 1
 The default is
-.BR "\-d 0" ,
+.BR "\-d 0" ;
 all numeric newsgroups from both hosts will be processed.
 .TP
 .BI \-g " max"
@@ -300,7 +302,7 @@ but would not ignore:
 .in +0.5i
 .nf
 alt.feinstien.acts.like.a.republican
-alt.exon.admendment
+alt.exon.amendment
 alt.crypto.export.laws
 .fi
 .in -0.5i
@@ -314,7 +316,9 @@ the max level feature is disabled.
 .TP
 .BI \-i " ignore_file"
 The
-.I ignore_file
+.I ignore_file ,
+usually
+.I <pathetc in inn.conf>/actsync.ign ,
 allows one to have a fine degree of control over which newsgroups are ignored.
 It contains a set of rules that specifies
 which newsgroups will be checked and which will be ignored.
@@ -330,7 +334,7 @@ If no
 if specified, or if the ignore file contains no rule lines,
 all newsgroups will be checked.
 .sp 1
-Blank lines, and text after a
+Blank lines and text after a
 .B ``#''
 are considered comments and are ignored.
 .sp 1
@@ -361,9 +365,8 @@ If one or more
 are specified, then the rule applies to the newsgroup only if
 is of the specified type.
 Types refer to the 4th field of the
-.IR active (5)
-file.
-A type may be one of:
+.I active
+file; that is, a type may be one of:
 .sp 1
 .in +0.5i
 .nf
@@ -378,7 +381,7 @@ A type may be one of:
 .sp 1
 Unlike active files, the
 .B group.name
-may be a newsgroup name or a
+in an alias type may be a newsgroup name or a
 .IR uwildmat (3)
 pattern.
 Also,
@@ -386,13 +389,13 @@ Also,
 is equivalent to
 .BR ``=*'' .
 .sp 1
-For given rule line may, one may not repeat a given pattern type.
+On each rule line, no pattern type may not be repeated.
 For example, one may not have more than one type that begins with
 .BR ``='' ,
 per line.
-However, one may achieve the effect of multiple
+However, one may achieve an effect equivalent to using multiple
 .B ``=''
-types by using multiple rule lines for the same group.
+types by using multiple rule lines affecting the same newsgroup.
 .sp 1
 By default, all newsgroups are candidates to be checked.
 If an ignore file is used, each newsgroup in turn is checked
@@ -410,22 +413,25 @@ i nsa.general
 .fi
 .in -0.5i
 .sp 1
-The newsgroup:
+The newsgroups
 .B ba.general
-would be ignored if it was not moderated.
-The newsgroup:
+and
 .B mod.general
-would be checked if it was moderated.
-The newsgroup:
+would be synchronized if moderated and ignored if not moderated.
+The newsgroup
 .B nsa.general
-would be ignored even if it was moderated.
+would be ignored regardless of moderation status.
+All newsgroups not matching
+.B *.general
+would be synchronized by default.
 .TP
 .BI \-I " hostid"
-This flag restricts which hosts, the ignore file applies.
+This flag restricts which hosts are affected by the ignore file.
 The
 .B hostid
 value is interpreted the same as in
-.BR \-b .
+.BR \-b
+described above.
 .sp 1
 This flag may be useful in conjunction with the
 .B \-m
@@ -433,18 +439,23 @@ merge flag.
 For example:
 .sp 1
 .in +0.5i
-actsync \-i actsync.ign \-I 2 \-m host1 host2
+actsync \-i actsync.ign \-I 2 \-m
+.I host1
+.I host2
 .in -0.5i
 .sp 1
-will keep all newsgroups currently on host1.
-It will also will only compare host1 groups with
-non-ignored newsgroups from host2.
+will keep all newsgroups currently on
+.I host1 .
+It will also will only compare
+.I host1
+groups with non-ignored newsgroups from
+.I host2 .
 .sp 1
 The default is
 .BR "\-I 12" ,
-newsgroups from both hosts to be ignored per the 
-.I \-I " hostid"
-flag.
+newsgroups from both hosts to be ignored per the
+.I \-i " actsync.ign"
+file.
 .TP
 .B \-k
 By default, any newsgroup on
@@ -453,18 +464,18 @@ that is in error will be considered for removal.
 This causes
 .IR actsync (8)
 simply ignore such newsgroups.
-This flag, in combination with
-.I \-m
+This flag, used in combination with
+.I \-m ,
 will prevent any newsgroup from being scheduled for removal.
 .TP
 .BR \-l " hostid"
-Flag problem newsgroups of type
+This flag causes ``problem newsgroups'' of type
 .B ``=''
 from
 .B host1
 or
 .B host2
-as errors.
+to be considered as errors.
 The
 .B hostid
 value is interpreted the same as in
@@ -473,17 +484,22 @@ Newsgroups of type
 .B ``=''
 are newsgroups active entries that have 4th field
 that begins with
-.BR ``='' .
-I.e., a newsgroup that is equivalent to another newsgroup.
+.BR ``='' ,
+i.e. newsgroups that are equivalent to other newsgroups.  A ``problem''
+newsgroup is one which is:
 .sp 1
-A newsgroup that is equivalent to itself, or that is in a equivalence
-chain that loops around to itself is a problem.
-A newsgroup that is in a chain that is longer than
-.B 16
-is a problem group.
-A newsgroup that is equivalent to a non-existent newsgroup is a problem.
-A newsgroup that is equivalent to a newsgroup that is has a error
-of some kind a problem.
+.in +0.5i
+.nf
+*  equivalent to itself
+*  in an equivalence chain that loops around
+   to itself
+*  in an equivalence chain longer than 16 groups
+*  equivalent to a non-existant newsgroup
+*  equivalent to a newsgroup that has an error
+   of some kind
+.fi
+.in -0.5i
+.sp 1
 However, a newsgroup that is equivalent to an ignored newsgroup is
 not a problem.
 .sp 1
@@ -502,9 +518,9 @@ This flag disables this process, permitting newsgroups unique to
 to be kept.
 .TP
 .B \-n " name"
-Newsgroups that are created, are created via the
+The
 .IR ctlinnd (8)
-command.
+command is used to create newsgroups as necessary.
 By default, the creator name used is
 .BR "actsync" .
 This flag changes the creator name to
@@ -518,29 +534,29 @@ may one of:
 .sp 1
 .in +0.5i
 .nf
-\fBa\fP	output in \fIactive\fP\fR(5)\fP\fR format,\fP
+\fBa\fP	output in \fIactive\fP\fR(5)\fP\fR format\fP
 \fBa1\fP	output in \fIactive\fP\fR(5)\fP\fR format,\fP
-	    and output host1 non-error ignored groups
+	and output host1 non-error ignored groups
 \fBak\fP	output in \fIactive\fP\fR(5)\fP\fR format, but use host2\fP
-	    hi & low (2nd & 3rd active fields) values
-	    for any newsgroup being created
+	hi & low (2nd & 3rd active fields) values
+	for any newsgroup being created
 \fBaK\fP	output in \fIactive\fP\fR(5)\fP\fR format, but use host2\fP
-	    hi & low (2nd & 3rd active fields) values
-	    for all newsgroups found in host2
+	hi & low (2nd & 3rd active fields) values
+	for all newsgroups found in host2
 \fBa1k\fP	output in \fIactive\fP\fR(5)\fP\fR format, but use host2\fP
-	    hi & low (2nd & 3rd active fields) values
-	    for any newsgroup being created,
+	hi & low (2nd & 3rd active fields) values
+	for any newsgroup being created,
 	and output host1 non-error ignored groups
 \fBa1K\fP	output in \fIactive\fP\fR(5)\fP\fR format, but use host2\fP
-	    hi & low (2nd & 3rd active fields) values
-	    for all newsgroups found in host2,
+	hi & low (2nd & 3rd active fields) values
+	for all newsgroups found in host2,
 	and output host1 non-error ignored groups
 \fBak1\fP	same as \fBa1k\fP
 \fBaK1\fP	same as \fBa1K\fP
 \fBc\fP	output in \fIctlinnd\fP\fR(8)\fP\fR format\fP
 \fBx\fP	no output, directly exec \fIctlinnd\fP\fR(8)\fP\fR commands\fP
 \fBxi\fP	no output, directly exec \fIctlinnd\fP\fR(8)\fP\fR commands,\fP
-	    in an interactive mode
+	in an interactive mode
 .fi
 .in -0.5i
 .sp 1
@@ -570,7 +586,7 @@ No actions are taken because
 simply prints
 .IR ctlinnd (8)
 commands on standard output.
-The sync (or merge if \fI\-m\fP) with
+The sync (or merge) with
 .B host2
 may be accomplished by piping this output into
 .IR sh (1).
@@ -580,22 +596,22 @@ that might be interpreted by
 .IR sh (1).
 Even so, this output format is useful to let you see how
 .B host1
-may be synced (or merge) with
+will be affected by the sync (or merge) with
 .BR host2 .
 .sp 1
-The sync (or merge if \fI\-m\fP) may be accomplished directly
-by use of the \fBx\fP.
+The sync (or merge) may be accomplished directly
+by use of the \fBx\fP format.
 With this format,
 .IR actsync (8)
 uses the
 .IR execl (2)
-system call to directly executes
+system call to directly execute
 .IR ctlinnd (8)
 commands.
 Because of the exec, there is no risk
 of bogus newsgroups containing bogus characters causing
 a shell to do bogus (or dangerous) things.
-The output of such execs may be seen of the verbosity level
+The output of such exec calls may be seen if the verbosity level
 is at least
 .BR 2 .
 .sp 1
@@ -608,7 +624,7 @@ seconds before each command is executed if
 is selected.
 See the
 .BR \-z " sec"
-flag below.
+flag below for discussion of this delay and how to customize it.
 .sp 1
 The \fBxi\fP format interactively prompts on standard output
 and reads directives on standard input.
@@ -620,9 +636,9 @@ One should check to be sure that
 .IR actsync (8)
 exited with a zero status prior to using such output.
 Also one should realize that such output will not
-contain lines ignored by the
+contain lines ignored due to
 .BI \-i " ignore_file"
-process even if
+even if
 .BI \-p " 100"
 is used.
 .sp 1
@@ -644,13 +660,12 @@ are performed and
 exits with a non-zero exit status.
 The
 .B min_%_unchg
-may be a floating point value such as 
-.BR 66.666 .
+may be a floating point value such as
+.BR 66.667 .
 .sp 1
-A change is considered a 
+A change is considered a
 .B host1
-line that was found to be in error,
-was removed, was added or was changed.
+line that was removed, added, changed, or found to be in error.
 Changing the 2nd or 3rd active fields via
 .BI \-o "ak"
 or
@@ -670,8 +685,8 @@ to reject any changes, use the
 option.
 .sp 1
 Care should be taken when producing
-\fIactive\fP\fR(5)\fP\fR formatted output\fP.
-One should check to be sure that
+\fIactive\fP\fR(5)\fP\fR-formatted output\fP;
+be sure to check that
 .IR actsync (8)
 exited with a zero status prior to using such output.
 Also one should realize that such output will not
@@ -684,11 +699,11 @@ is used.
 By default, 96% of the lines not ignored in host1 must
 be unchanged.
 That is, by default,
-.BI \-p " 90"
+.BI \-p " 96"
 is assumed.
 .TP
 .BI \-q " hostid"
-By default, all newsgroup errors are reported on standard errors.
+By default, all newsgroup errors are reported on standard error.
 This flag quiets errors from
 .B host1
 or
@@ -699,20 +714,22 @@ value is interpreted the same as in
 .BR \-b .
 .TP
 .BR \-s " size"
-If 
-.BR size >0,
+If
+.BR size\ >\ 0,
 then ignore newsgroups with names longer than
 .BR size ,
-and ignore newsgroups equivalenced to names longer than
+and ignore newsgroups equivalent (by following
+.B ``=''
+chains) to names longer than
 .BR size .
-Length checking is perform on both the local and remote hosts.
+Length checking is performed on both the local and remote hosts.
 .sp 1
 By default,
 .B size
 is 0 and thus no length checking is performed.
 .TP
 .BR \-t " hostid"
-Ignore improper newsgroups with only a top component
+Ignore improper newsgroups consisting of only a top component
 from
 .B host1
 or
@@ -722,7 +739,7 @@ The
 value is interpreted the same as in
 .BR \-b .
 The following newsgroups are considered proper newsgroups
-for top only names:
+despite top only names and therefore are exempt from this flag:
 .sp 1
 .in +0.5i
 .nf
@@ -742,34 +759,34 @@ only contain a top level component:
 dole_for_pres
 dos
 microsoft
-windoes95
+windows95
 .fi
 .in -0.5i
 .sp 1
-By default, all improper top level only newsgroups from the remote (
-.BI \-t " 2"
-) are ignored.
+The default is
+.BR "\-t 2" ,
+that is, all improper top-level-only newsgroups from the remote
+are ignored.
 .TP
 .B \-T
-This flag causes 
-.B host2 
-newsgroups from new hierarchies to be ignored.
-Normally if only 
+This flag causes
 .B host2
-has the newsgroup
-.B chongo.was.here
-then it will be created for
+newsgroups from new hierarchies to be ignored.
+Normally a newsgroup which only exists on
+.B host2 ,
+for example
+.B chongo.was.here ,
+will be created for
 .BR host1 .
-However if
+However, if this flag is given and
 .B host1
-does not have any '\fBchongo.*\fP' newsgroups and this
-flag is given, then
-.B chongo.was.here
+does not have any other newsgroups in the same hierarchy,
+e.g. ``\fBchongo.*\fP'', then the newsgroup in question
 will be ignored and will not be created on
 .BR host1 .
 .TP
-.BI \-v " verbose_lvl"
-No default,
+.BI \-v " verbosity"
+By default,
 .IR actsync (8)
 is not verbose.
 This flag controls the verbosity level as follows:
@@ -778,10 +795,10 @@ This flag controls the verbosity level as follows:
 .nf
 \fB0\fP	no debug or status reports (default)
 \fB1\fP	print summary,
-	    if work was needed or done
-\fB2\fP	print actions, exec output & summary,
-	    if work was needed or done
-\fB3\fP	print actions, exec output & summary
+	but only if work was needed or done
+\fB2\fP	print actions, exec output, and summary,
+	but only if work was needed or done
+\fB3\fP	print actions, exec output, and summary
 \fB4\fP	full debug output
 .fi
 .TP
@@ -798,7 +815,7 @@ This helps prevent
 from being busied-out if a large number of
 .IR ctlinnd (8)
 commands are needed.
-One can disable this sleeping by using
+One can entirely disable this sleeping by using
 .BI \-z " 0".
 .sp 1
 By default,
@@ -920,7 +937,7 @@ file:
 host=news.uu.net
 
 # location of the ignore file
-ignore_file=<PREFIX specified with \-\-prefix at configure>/etc/actsync.ign
+ignore_file=<pathetc in inn.conf>/actsync.ign
 
 # where news articles are kept
 spool=<patharticles in inn.conf>
@@ -930,7 +947,7 @@ spool=<patharticles in inn.conf>
 # Automatic execs, report if something was done,
 #	otherwise don't say anything, don't report
 #	uunet active file problems, just ignore
-#	the effect entries.
+#	the affected entries.
 flags=\-o x \-v 2 \-q 2
 .fi
 .in -0.5i
@@ -938,19 +955,19 @@ flags=\-o x \-v 2 \-q 2
 and then by running
 .IR actsyncd (8)
 with the path to the config
-file.
+file:
 .PP
 .in +0.5i
-actsyncd <PREFIX specified with \-\-prefix at configure>/etc/actsync.cfg
+actsyncd <pathetc in inn.conf>/actsync.cfg
 .in -0.5i
 .PP
-One may produce a trial 
+One may produce a trial
 .IR actsyncd (8)
 run without changing anything
 on the server by supplying the \fBdebug_level\fP arg:
 .sp 1
 .in +0.5i
-actsyncd <PREFIX specified with \-\-prefix at configure>/etc/actsync.cfg 2
+actsyncd <pathetc in inn.conf>/actsync.cfg 2
 .in -0.5i
 .PP
 The \fBdebug_level\fP causes
@@ -959,28 +976,31 @@ to run
 .IR actsync (8)
 with an \fB\-v debug_level\fP (overriding any \fB\-v\fP
 flag on the \fBflags\fP line),
-prevents any changes from being made to the
-.IR active (5)
-file, writes a new active file to \fIstandard output\fP
-and writes debug messages to \fIstandard error\fP.
+not make any changes to the
+.I active
+file, write a new active file to \fIstandard output\fP,
+and write debug messages to \fIstandard error\fP.
 .PP
 If the \fBdebug_outfmt\fP arg is also given to
 .IR actsyncd (8)
-then the data written to \fIstandard output\fP will 
+then the data written to \fIstandard output\fP will
 be in \fB\-o debug_outfmt\fP instead of in \fB\-o a1\fP format.
-The following /bin/sh command:
+The /bin/sh command
 .sp 1
 .in +0.5i
-actsyncd <PREFIX specified with \-\-prefix at configure>/etc/actsync.cfg 4 >cmd 2>dbg
+.nf
+actsyncd <pathetc in inn.conf>/actsync.cfg 4 \\
+	>cmd.log 2>dbg.log
+.fi
 .in -0.5i
 .PP
-Will operate in debug mode,
+will operate in debug mode,
 not change the
-.IR active (5)
+.I active
 file, write
 .IR ctlinnd (8)
-style commands to \fBcmd\fP and
-write debug statements to \fBdbg\fP.
+style commands to \fBcmd.log\fP, and
+write debug statements to \fBdbg.log\fP.
 .PP
 To check only the major hierarchies against news.uu,net, use the following
 .B actsync.ign
@@ -1004,7 +1024,7 @@ c	talk.*
 .fi
 .in -0.5i
 .PP
-and running:
+and the command:
 .PP
 .in +0.5i
 actsync \-i actsync.ign news.uu.net
@@ -1035,13 +1055,13 @@ actsync \-b 2 \- \-
 The active file produced by:
 .PP
 .in +0.5i
-actsync ... flags ... \-o x erehwon.honey.edu
+actsync ...flags... \-o x erehwon.honey.edu
 .in -0.5i
 .PP
 or by:
 .PP
 .in +0.5i
-actsync ... flags ... \-o c erehwon.honey.edu | sh
+actsync ...flags... \-o c erehwon.honey.edu | sh
 .in -0.5i
 .PP
 is effectively the same as the active file produced by:
@@ -1050,7 +1070,7 @@ is effectively the same as the active file produced by:
 .in +0.5i
 ctlinnd pause 'running actsync'
 rm -f active.new
-actsync ... flags ... \-o a1 erehwon.honey.edu > active.new
+actsync ...flags... \-o a1 erehwon.honey.edu > active.new
 rm -f active.old
 ln active active.old
 mv active.new active
@@ -1059,12 +1079,14 @@ ctlinnd go 'running actsync'
 .in -0.5i
 .fi
 .PP
-It should be noted that the above 'pause', 'actsync', 'reload' and 'go'
-method is faster.
+It should be noted that the final method above, pausing the server
+and simply replacing the
+.I active
+file, is faster.
 .PP
 .SH CAUTION
-Careless use of this tool may result in the addition
-change or removal of newsgroups that you don't want.
+Careless use of this tool may result in the unintended
+addition, change, or removal of newsgroups.
 You should avoid using the \fRx\fP output format until
 you are sure it will do what you want.
 .SH BUGS

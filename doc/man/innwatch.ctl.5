@@ -12,10 +12,17 @@ supervisions by
 The file consists of a series of lines; blank lines and lines beginning
 with a number sign (``#'') are ignored.
 All other lines consist of seven fields, each preceded by a delimiting
-character:
+character, for example:
+.sp 1
+.nf
 .RS
 :label:state:condition:test:limit:command:reason
 .RE
+or
+.RS
+@label@state@condition@test@limit@command@reason
+.RE
+.fi
 .PP
 The delimiter can be any one of several non-alphanumeric characters that does
 not appear elsewhere in the line; there is no way to quote it to
@@ -24,18 +31,18 @@ Any of ``!'', ``,'', ``:'', ``@'', ``;'', or ``?'' is a good choice.
 Each line can have a different delimiter; the first character on each line
 is the delimiter for that line.
 White space surrounding delimiters, except before the first, is ignored,
-and does not form part of the fields, white space within fields is
+and does not form part of the fields; white space within fields is
 permitted.
 All delimiters must be present.
 .PP
-The first field is a label for the control line.
+The first field is a label for this control line.
 It is used as an internal state indicator and in
 .I ctlinnd
 messages to control the server.
-If omitted, the line number is used.
+If this field is empty, the line number is used.
 .PP
 The second field specifies when this control line should be used.
-It consists of a list of labels,
+It consists of a list of labels
 and special indicators,
 separated by whitespace.
 If the current state matches against any of the labels in this field,
@@ -43,16 +50,16 @@ this line will be used as described below.
 The values that may be used are:
 .IP "\-"
 This line matches if the current state is the same as the label on
-this line, or if the current state is ``run,'' the initial state.
+this line, or if the current state is ``run'', the initial state.
 This is also the default state if this field is empty.
 .IP "+"
-This line matches if the current state is ``run.''
+This line matches if the current state is ``run''.
 .IP "*"
 This line always matches.
 .IP "label"
-This line matches if the current state is the specified ``label.''
+This line matches if the current state is the specified ``label''.
 .IP "\-label"
-This line matches if the current state is not the specified ``label.''
+This line matches if the current state is not the specified ``label''.
 .PP
 The third field specifies a shell command that is invoked if this line matches.
 Do not use any shell filename expansion characters such as ``*'', ``?'',
@@ -62,7 +69,7 @@ to have printed a single integer to standard output.
 This gives the value of this control line, to be used below.
 If the command fails, the line is ignored.
 The command is executed with its current directory set to the news spool
-directory,
+articles directory,
 .IR <patharticles\ in\ inn.conf> .
 .PP
 The fourth field specifies the operator to use to test the value returned above.
@@ -74,9 +81,11 @@ The leading dash (``\-'') should not be included.
 The fifth field specifies a constant with which to compare the value using
 the operator just defined.
 This is done by invoking the command:
+.sp 1
 .RS
 test value -operator constant
 .RE
+.sp 1
 The line is said to ``succeed'' if it returns true.
 .PP
 The sixth field specifies what should be done if the line succeeds,
@@ -107,14 +116,14 @@ Sends a ``flush'' command to the server.
 .IP go
 Causes
 .I innwatch
-to send a ``go'' command to the server and to set the state to ``run.''
+to send a ``go'' command to the server and to set the state to ``run''.
 .IP exit
 Causes
 .I innwatch
 to exit.
 .PP
 .IP skip
-The result of the control file is skipped for the current pass.
+The remainder of the control file is skipped for the current pass.
 .PP
 The last field specifies the reason that is used in those
 .I ctlinnd
@@ -159,6 +168,7 @@ The second line does the same for inodes.
 The next three lines act as a group and should
 appear in the following order.
 It is easier to explain them, however, if they are described from the last up.
+.PP
 .RS
 .nf
 !load!load hiload!loadavg!lt!5!go!
@@ -166,6 +176,7 @@ It is easier to explain them, however, if they are described from the last up.
 /load/+/loadavg/ge/6/pause/loadav
 .fi
 .RE
+.PP
 The final line causes the server to be paused if
 .I innwatch
 is in the ``run'' state and the load average rises to, or above, six.

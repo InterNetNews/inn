@@ -43,7 +43,7 @@ inews \- send a Usenet article to the local news server for distribution
 .SH DESCRIPTION
 .I Inews
 reads a Usenet news article (perhaps with headers) from
-the named file or standard input if no file is given.
+the named file, or standard input if no file is given.
 It adds some headers and performs some consistency checks.
 If the article does not meet these checks (for example, too much
 quoting of old articles, or posting to non-existent newsgroups) then
@@ -52,7 +52,7 @@ If it passes the checks,
 .I inews
 sends the article to the local news
 server as specified in the
-.IR inn.conf (5)
+.I inn.conf
 file for distribution.
 .SH OPTIONS
 .TP
@@ -76,9 +76,8 @@ If there are no headers in the message, then this flag may be omitted.
 The C News ``\fB\-N\fP'' flag is treated as the ``\fB\-D\fP'' flag.
 .TP
 .B \-O
-The default Organization header will be provided if none is present
-in the article or if the ``\fB\-o\fP'' flag is not used.
-To prevent adding the default, use the ``\fB\-O\fP'' flag.
+By default, an Organization header will be provided if none is present
+in the article.  To prevent adding the default, use the ``\fB\-O\fP'' flag.
 .TP
 .B \-p
 If the ``\fB\-p\fP'' flag is used, then the articles will be sent through the
@@ -90,7 +89,7 @@ If the ``\fB\-R\fP'' flag is used then
 will reject any attempts to post control messages.
 .TP
 .B \-S
-If a file named
+By default, if a file named
 .I .signature
 exists in the user's home directory,
 .I inews
@@ -107,7 +106,7 @@ synopsis above as
 Each of these flags takes a single parameter; if the value is more than
 one word (for example, almost all Subject lines) then quotes must be used
 to prevent the shell from splitting it into multiple words.
-The options, and their equivalent header, are as follows:
+The options, and their corresponding headers, are as follows:
 
 .RS
 .nf
@@ -136,7 +135,7 @@ offer the article to that site.
 If 
 .I <DO_INEWS_PATH in include/config.h> 
 is defined and the ``pathhost'' configuration parameter is specified in the
-.IR inn.conf (5)
+.I inn.conf
 file, then it will be added to the Path.
 Otherwise, if the ``server'' configuration parameter is specified,
 then the full domain name of the local host will be added to the Path.\}
@@ -151,8 +150,8 @@ If an unapproved posting is made to a moderated newsgroup,
 .I inews
 will try to mail the article to the moderator for posting.
 It will query the remote news server for a moderators listing. If
-that doesn't succeed, it will fallback to using the local
-.IR moderators (5)
+that fails, it will fallback to using the local
+.I moderators
 file to determine the mailing address.
 If no address is found, it will use ``moderatormailer'' in
 .IR inn.conf
@@ -164,7 +163,7 @@ will use the
 .IR NNTPsendpassword (3)
 routine to authenticate itself.
 In order to do this, the program will need read access to the
-.IR passwd.nntp (5)
+.I passwd.nntp
 file.
 This is typically done by having the file group-readable and making
 .I inews

@@ -5,7 +5,7 @@ libstorage \- InterNetNews Storage API library routines
 .SH SYNOPSIS
 .nf
 .ta \w'    unsigned long    'u
-.B
+
 #include "storage.h"
 
 .B "bool IsToken(const char *text);"
@@ -83,13 +83,13 @@ libstorage \- InterNetNews Storage API library routines
 .SH DESCRIPTION
 .I Libstorage
 is a library of common utility (the storage manager) routines for accessing
-Usenet articles and related data independent of particular storage method,
-and this is called storage api.
+Usenet articles and related data independent of particular storage method;
+this is known as the storage API.
 The storage manager's function is to isolate the applications from the
 individual methods and make the policy decisions as to which storage method
 should be called to store an article.
 .PP
-One of the core concepts in the storage api is that articles are not
+One of the core concepts in the storage API is that articles are not
 manipulated using the message-id or article number, but rather a token that
 uniquely identifies the article to the method that stored it.  This may seem
 to be redundant since the message-id already is a unique identifier for the
@@ -101,20 +101,20 @@ data independent of particular overview method.
 The ``OV'' function is to isolate the applications from the
 individual methods.
 .PP
-All articles passed through storage api are assumed to be wire formatted.
-Wire formatted means that ``\\CR\\LF'' at the end of lines, ``.'' at the
-beginnig of lines and ``.\\CR\\LF'' at the end of article on nntp stream are not
-stripped.  This has performance win when transferring articles.
-For ``tradspool'' method, wire format can be disabled.  This is just for
-compatibility which is needed by some old tool written for traditional
-spool.
+All articles passed through the storage API are assumed to be in wire
+format.  Wire format means ``\\CR\\LF'' at the end of lines, ``.'' at the
+beginning of lines, and ``.\\CR\\LF'' at the end of article on NNTP stream
+are not stripped.  This has a performance win when transferring articles.
+For the ``tradspool'' method, wire format can be disabled.  This is just
+for compatibility which is needed by some old tools written for
+traditional spool.
 .PP
 .I IsToken
 checks to see if the text is formatted as a text token string.
 It returns TRUE if formatted correctly or returns FALSE if not.
 .PP
 .I TokenToText
-converts token into text token string.
+converts token into text string for output.
 .PP
 .I TextToToken
 converts text into token.
@@ -127,21 +127,21 @@ is one of following.
 .in +0.5i
 .nf
 SM_RDWR	allow read/write open for storage
-	files(default is FALSE)
+	files (default is FALSE)
 SM_PREOPEN	open all storage files at startup
-	time and keep them(default is FALSE)
+	time and keep them (default is FALSE)
 .fi
 .in -0.5i
 .sp 1
 The
 .I value
 is the pointer which tells each type's value.
-It returns TRUE if setup is successful or returns FALSE if not.
+It returns TRUE if setup is successful, or FALSE if not.
 .PP
 .I SMinit
 calls the setup function for all of the configured methods based on
 .IR SMsetup .
-This function should be called prior to all other storage api functions which
+This function should be called prior to all other storage API functions which
 begin with ``SM'' except
 .IR SMsetup .
 It returns TRUE if initialization is successful or returns FALSE if not.
@@ -155,22 +155,23 @@ If
 .I arrived
 is specified,
 .I SMstore
-use its value as article's arrival time or
+uses its value as article's arrival time; otherwise
 .I SMstore
-use current time for it.
+uses the current time for it.
 .I SMstore
 returns token type as
 .IR type ,
 or returns
 .I TOKEN_EMPTY
-if article is not stored whichever error occures or simply does not match
+if article is not stored because some error occurs or simply does not
+match any
 .IR uwildmat (3)
 in
-.IR storage.conf (5).
+.IR storage.conf .
 .I SMstore
 fails if
 .I SM_RDWR
-is not set to true with
+has not been set to true with
 .IR SMsetup .
 .PP
 .I SMretrieve
@@ -207,9 +208,9 @@ Then
 returns
 .I ARTHANDLE
 which should be used for the next query.
-If NULL pointer
+If a NULL pointer
 .I ARTHANDLE
-is returned, no article is left to be queried.
+is returned, no articles are left to be queried.
 If
 .I data
 of
@@ -236,16 +237,16 @@ will be called with previously returned
 .I SMfreearticle
 should not be called as
 .I SMnext
-frees allocated memory in itself.
+frees allocated memory internally.
 .PP
 .I SMcancel
-removes an article specified with
+removes the article specified with
 .IR token .
 It returns TRUE if cancellation is successful or returns FALSE if not.
 .I SMcancel
 fails if
 .I SM_RDWR
-is not set to true with
+has not been set to true with
 .IR SMsetup .
 .PP
 .I SMprobe
@@ -284,17 +285,17 @@ SM_ALL	flushes all cached data
 .PP
 .I SMshutdown
 calls the shutdown for each configured storage method and
-then free any resources it has allocated for itself.
+then frees any resources it has allocated for itself.
 .PP
 .I SMerrno
 and
 .I SMerrorstr
-indicates the reason of the last error concerning storage manager.
+indicate the reason of the last error concerning storage manager.
 .PP
 .I OVopen
 calls the setup function for configured method which is specified as
 \&``ovmethod'' in
-.IR inn.conf (5).
+.IR inn.conf .
 .I Mode
 is constructed from following.
 .sp 1
@@ -311,13 +312,13 @@ This function should be called prior to all other OV functions which
 begin with ``OV''.
 .PP
 .I OVctl
-probes or set some parameters for overview method.
+probes or sets some parameters for overview method.
 .I Type
 is one of following.
 .sp 1
 .in +0.5i
 .nf
-OVGROUPBASEDEXPIRE	setup how group based expiry is
+OVGROUPBASEDEXPIRE	setup how group-based expiry is
 	done
 OVCUTOFFLOW	do not add overview data, if the
 	data is under lowest article
@@ -334,48 +335,56 @@ OVSTATALL	stat all articles when
 retrieves specified newsgroup information from overview method.
 .PP
 .I OVgroupadd
-informs overview method to specified newsgroup is added.
+informs overview method that specified newsgroup is being added.
 .PP
 .I OVgroupdel
-informs overview method to specified newsgroup is removed.
+informs overview method that specified newsgroup is being removed.
 .PP
 .I OVadd
 stores an overview data.
 .PP
 .I OVcancel
-requests overview method to delete an overview data specified with token.
+requests the overview method delete overview data specified with token.
 .PP
 .I OVopensearch
-requests overview method to prepare overview data retrieval.
-The request range is determined by low and high.
+requests the overview method prepare overview data retrieval.
+The request range is determined by
+.I low
+and
+.IR high .
 .PP
 .I OVsearch
-retrieves information; article number, overview data or arrival time.
+retrieves information; article number, overview data, or arrival time.
 .I OVsearch
-should be called with NULL handle when it is the 1st time.
-And subsequent
+should be called with NULL handle when it is the first time;
+subsequent
 .I OVsearch
-should be called with the handle which is got at preveous
+calls should use the handle returned by the previous call to
 .IR OVsearch .
 .I OVsearch
 returns TRUE, unless it reaches high which is specified by
 .IR OVopensearch .
-Retrieved overview data are sorted by article number, and len is 0 if
-there is no overview data for article.  Note that the retrieved data
-is not neccessarily null terminated, you should only rely on len octets
-of overview data being present.
+Retrieved overview data are sorted by article number, and
+.I len
+is ``0'' if there is no overview data for article.  Note that the
+retrieved data is not neccessarily null-terminated; you should only rely
+on
+.I len
+octets of overview data being present.
 .PP
 .I OVclosesearch
-frees all resources which is allocated by
+frees all resources which have been allocated by
 .IR OVopensearch .
 .PP
 .I OVgetartinfo
-retrieves overview data and token specified with artnum.
+retrieves overview data and token specified with
+.IR artnum .
 .PP
 .I OVexpiregroup
 expires overview data for the newsgroup.
 .I OVexpiregroup
-checks the existense of the article and purge overview data if it's gone.
+checks the existense of the article and purges overview data if the
+article no longer exists.
 If ``groupbaseexpiry'' in
 .I inn.conf
 is true,
@@ -383,7 +392,7 @@ is true,
 also expires articles.
 .PP
 .I OVclose
-frees all resources which is used by overview method.
+frees all resources which are used by the overview method.
 .SH HISTORY
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 .de R$

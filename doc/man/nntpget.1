@@ -61,9 +61,9 @@ all articles newer then the modification date of the specified
 .IR file .
 .TP
 .B \-u
-The ``\fB\-u\fP'' option is the same except that if the transfer succeeded, the
-file will be updated with a statistics line, modifying its timestamp so that
-it can be used in later invocations.
+The ``\fB\-u\fP'' option is like ``\fB\-f\fP'' except that if the transfer
+succeedes, the file will be updated with a statistics line, modifying its
+timestamp so that it can be used in later invocations.
 .TP
 .B \-t
 If the ``\-t'' option is used, then the specified
@@ -71,13 +71,13 @@ If the ``\-t'' option is used, then the specified
 is used as the time and date parameter to the ``newnews'' command.
 .TP
 .B \-n
-If either the ``\fB\-t\fP'' or ``\fB\-f\fP'' options are used, then 
+If either the ``\fB\-u\fP'' or ``\fB\-f\fP'' options are used, then 
 the ``\fB\-n\fP'' option
 may be used to specify a newsgroup list. The default is ``*''.
 .TP
 .B \-d
 The ``\fB\-d\fP'' option may be
-used to specify a distribution list when using the ``\fB\-t\fP''
+used to specify a distribution list when using the ``\fB\-u\fP''
 or ``\fB\-f\fP'' options.
 The default is no distribution list.
 .SH HISTORY

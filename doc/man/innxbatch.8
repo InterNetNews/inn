@@ -30,19 +30,6 @@ to lock the host name, followed by a
 .IR ctlinnd (8)
 command to flush the batchfile.
 .PP
-.I Innxbatch
-normally blocks until the connection is made.
-To specify a timeout on how long to try to make the connection, use
-the ``\-t'' flag.
-.br
-To specify the total amount of time that should be allowed for article
-transfers, use the ``\-T'' flag.
-.br
-The default is to wait until an I/O error occurs, or all the articles have
-been transferred. If the ``\-T'' flag is used, the time is checked
-just before an article is started; it will not abort a transfer that
-is in progress. Both values are measured in seconds.
-.PP
 Each file is removed after it has been successfully transferred.
 .PP
 If a communication error such as a
@@ -50,30 +37,49 @@ If a communication error such as a
 failure, or an unexpected reply from the remote server occurs,
 .I innxbatch
 will stop sending and leave all remaining files untouched for later retry.
-.PP
-.PP
+
+
+.SH OPTIONS
+.TP
+.B \-t seconds
+.I Innxbatch
+normally blocks until the connection is made.
+To specify a timeout on how long to try to make the connection, use
+the ``\-t'' flag.
+.TP
+.B \-T seconds
+To specify the total amount of time that should be allowed for article
+transfers, use the ``\-T'' flag.
+.br
+The default is to wait until an I/O error occurs, or all the articles have
+been transferred. If the ``\-T'' flag is used, the time is checked
+just before each article is started; it will not abort a transfer that
+is in progress.
+.TP
+.B \-v
 Upon exit,
 .I innxbatch
 reports transfer and CPU usage statistics via
 .IR syslog (3).
 If the ``\-v'' flag is used, they will also be printed on the standard
 output.
-.PP
+.TP
+.B \-D
 Use the ``\-D'' flag to print debugging information on standard error.
 This will show the protocol transactions between
 .I innxbatch
 and the NNTP server on the remote host.
-.PP
+.SH EXAMPLES
 A sample
 .I newsfeeds(5)
 entry to produce appropriate xbatch files (thanks to Karsten Leipold
 <poldi@dfn.de>):
-
+.sp 1
 .nf
   nase\e
     :*\e
     :Tc,Wnb\e
-.ds R$ <PREFIX specified with \-\-prefix at configure>
+.ds R$ <pathbin in inn.conf>
     :\*(R$/batcher \e
 .ds R$ <$ac_cv_path_COMPRESS in config.cache>
 .ds P$ <pathoutgoing in inn.conf>
@@ -81,11 +87,11 @@ entry to produce appropriate xbatch files (thanks to Karsten Leipold
        \*(P$/nase.\e$\e$)" \e
        nase.do.main
 .fi
-
+.sp 1
 A sample script to invoke
 .I innxbatch(8)
 is:
-
+.sp 1
 .nf
   #!/bin/sh
   ##  SH script to send xbatches for a site, wrapped around innxbatch
@@ -98,7 +104,7 @@ is:
 	exit 1
   fi
 
-  . <PREFIX specified with \-\-prefix at configure>/innshellvars
+  . <pathbin in inn.conf>/innshellvars
 
   site="$1"; host="$2"; shift; shift
 
@@ -106,7 +112,6 @@ is:
   && sleep 5 \e
   && exec $NEWSBIN/innxbatch -v -D "$host" $*
 .fi
-
 .SH HISTORY
 Written by Stefan Petri <petri@ibr.cs.tu-bs.de>, modelled after
 .IR innxmit (8)

@@ -277,7 +277,7 @@ exists in the active file.
 =item f
 
 Don't send articles rejected by filters.  This is only useful when
-I<dontrejectfiltered> is set in inn.conf(5).  With that variable set, this
+I<dontrejectfiltered> is set in F<inn.conf>.  With that variable set, this
 lets one accept all articles but not propagate filtered ones to some
 sites.
 
@@ -355,7 +355,7 @@ The flag specifies the size of the internal buffer for a file feed.  If
 there are more file feeds than allowed by the system, they will be
 buffered internally in least-recently-used order.  If the internal buffer
 grows bigger then I<size> bytes, however, the data will be written out to
-the appropriate file.  The default value is 16KB.
+the appropriate file.  The default value is 16 KB.
 
 =item B<N> I<status>
 
@@ -463,7 +463,7 @@ The time the article was posted a seconds since epoch.
 
 The site that fed the article to the server.  This is taken from either
 the Path: header or the IP address of the sending site depending on the
-value of I<logipaddr> in inn.conf(5).  If I<logipaddr> is true and the IP
+value of I<logipaddr> in F<inn.conf>.  If I<logipaddr> is true and the IP
 address is C<0.0.0.0> (meaning that the article was fed from localhost by
 a program like rnews(8)), the Path: header value will be sent instead.
 
@@ -734,8 +734,9 @@ messages described in innd(8) will send it all control messages except for
 cancel messages provided that control.cancel exists.  In this case, we
 also exclude any article with a distribution of C<collabra-internal>.
 B<controlchan> gets the storage API token, the name of the sending site
-(for processing old-style ihave and sendme control messages), and the
-message ID for each article.
+(for processing old-style ihave and sendme control messages, be sure to
+read about I<logipaddr> in controlchan(8)), and the message ID for each
+article.
 
 For many other examples, including examples of the special C<ME> site
 entry, see the example newsfeeds file distributed with INN.  Also see the

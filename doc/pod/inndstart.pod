@@ -12,9 +12,9 @@ The purpose of B<inndstart> is to raise system file descriptor limits,
 open the privileged news transfer port, and then start innd(8), passing it
 the open file descriptor for the news port.  B<inndstart> is used since
 only privileged programs can perform those two operations and since
-B<innd> should not run privileged.  It is installed setuid root and drops
-privileges to the news user (set at configure time) before running
-B<innd>.
+B<innd> should not run with elevated privileges.  It is installed setuid
+root and drops privileges to the news user (as set at configure time)
+before running B<innd>.
 
 Normally there is no need to run B<inndstart> directly.  Instead, run
 rc.news(8) as the news user, and it will handle running B<inndstart>
@@ -41,14 +41,14 @@ only those environment variables listed in L<"ENVIRONMENT">.
 =item B<-P> I<port>
 
 Bind to I<port> instead of whatever is specified by I<port> in
-inn.conf(5).  Note that this is subject to the constraints mentioned
+F<inn.conf>.  Note that this is subject to the constraints mentioned
 above.
 
 =item B<-I> I<address>
 
 Bind as I<address> instead of whatever is specified by I<bindaddress> in
-inn.conf(5).  The default behavior is to bind to INADDR_ANY, and that's
-what's desired almost all the time.  This option, and the inn.conf(5)
+F<inn.conf>.  The default behavior is to bind to INADDR_ANY, and that's
+what's desired almost all the time.  This option, and the F<inn.conf>
 parameter, may be useful if the machine has multiple interface cards and
 B<innd> should only be listening on a particular one.
 
@@ -68,7 +68,7 @@ by users in the news group.
 Ideally, everything about B<inndstart>'s operations would be hard-coded so
 that it could not be modified.  Fighting against this desire, however, is
 the ideal that as much of INN's operation as possible should be
-configurable at run-time using inn.conf(5), and the news system should be
+configurable at run-time using F<inn.conf>, and the news system should be
 able to an alternate inn.conf by setting INNCONF to the path to that file
 before starting any programs.  The configuration data therefore can't be
 trusted.
@@ -88,10 +88,10 @@ to the news account.
 
 =item *
 
-As mentioned above, B<inndstart> will only bind to a very limited set of
-ports below 1024.  There are various attacks that can be performed using
-random low-numbered ports, including exploits of the rsh family of
-commands on some systems.
+As mentioned above, B<inndstart> will only bind to a very limited subset
+of ports below 1024.  There are various attacks that can be performed
+using random low-numbered ports, including exploits of the rsh(1) family
+of commands on some systems.
 
 =item *
 
@@ -123,7 +123,7 @@ service on the same port you're trying to run B<innd> on.
 other than 119, 433, or a port number given at configure time.  This is
 not allowed for security reasons.  If you're running B<innd> on a port
 other than 119 or 433, you need to give the --with-innd-port flag to
-configure when you compile INN.
+C<configure> when you compile INN.
 
 =item can't exec %s: %s
 
@@ -133,13 +133,13 @@ that directory and is executable by the news user.
 
 =item can't getgrnam(%s)
 
-(Fatal) Unable to determine the GID for the compiled-in news group.  Is
-the news group listed in /etc/group?
+(Fatal) Unable to determine the GID for the compiled-in news group.
+Perhaps the news group is not listed in F</etc/group>.
 
 =item can't getpwnam(%s)
 
-(Fatal) Unable to determine the UID for the compiled-in news user.  Is the
-news user listed in /etc/passwd?
+(Fatal) Unable to determine the UID for the compiled-in news user.
+Perhaps the news user is not listed in F</etc/passwd>.
 
 =item can't open socket: %s
 
@@ -149,24 +149,24 @@ your system is out of resources of some kind.
 =item can't set file descriptor limit to %d: %s
 
 (Warning) Unable to set the system file descriptor limit to the specified
-value.  Either that value is too high for your system or something else
-went wrong.  The file descriptor limit was left unchanged.  Try changing
-I<rlimitnofile> in inn.conf to a smaller value.
+value; the limit was left unchanged.  Perhaps that value is too high for
+your system.  Try changing I<rlimitnofile> in F<inn.conf> to a smaller
+value.
 
 =item can't set SO_REUSEADDR: %s
 
-(Warning) B<inndstart> attempts to set SO_REUSEADDR so that if B<innd>
-exits, it can be restarted again immediately without waiting for the port
-to time out.  For some reason, this failed, and that option was not set on
-the port.
+(Warning) B<inndstart> attempts to set SO_REUSEADDR using setsockopt(2) so
+that if B<innd> exits, it can be restarted again immediately without
+waiting for the port to time out.  For some reason, this failed, and that
+option was not set on the port.
 
 =item can't seteuid to %d: %s
 
 (Fatal) Unable to change the effective UID.  If B<inndstart> has the
-correct permissions (setuid root) and seteuid() to root (UID 0) is
-failing, this may mean that your system has seteuid() but doesn't have
-support for POSIX saved UIDs.  If this is the case, please report this to
-the INN maintainers.
+correct permissions (setuid root) and seteuid to root (UID 0) is failing,
+this may mean that your system has seteuid(2) but doesn't have support for
+POSIX saved UIDs.  If this is the case, please report this to the INN
+maintainers.
 
 =item can't setgid to %d: %s
 
@@ -191,8 +191,9 @@ valid address.  Addresses must be given as numeric IP addresses.
 
 =item invalid bindaddress in inn.conf (%s)
 
-(Fatal) The I<bindaddress> specified in inn.conf could not be converted to
-an IP address.  See inn.conf(5) for more information about valid values.
+(Fatal) The I<bindaddress> specified in F<inn.conf> could not be converted
+to an IP address.  See inn.conf(5) for more information about valid
+values.
 
 =item invalid port %s (must be a number)
 
@@ -219,8 +220,9 @@ B<inndstart> may only be run by the news user for security reasons.
 =head1 EXAMPLES
 
 Normally, B<inndstart> is never run directly.  However, a simple way to
-just restart B<innd> without running any other auxilliary programs or
-performing any of the other checks done by rc.news(8) is to just run:
+just restart B<innd> (if it is not running) without running any other
+auxilliary programs or performing any of the other checks done by
+rc.news(8) is to just run:
 
     inndstart
 
@@ -252,12 +254,12 @@ and sets only the following variables:
 =item BIND_INADDR
 
 Passed verbatim from B<inndstart>'s environment.  This is used by various
-programs to override the I<bindaddress> parameter in inn.conf(5) and
+programs to override the I<bindaddress> parameter in F<inn.conf> and
 therefore must be in B<innd>'s environment for programs like innfeed(8).
 
 =item HOME
 
-Set to I<pathnews> from inn.conf.
+Set to I<pathnews> from F<inn.conf>.
 
 =item LOGNAME
 
@@ -265,13 +267,13 @@ Set to the news master, as determined at configure time.
 
 =item PATH
 
-Set to I<pathbin> from inn.conf, I<pathetc> from inn.conf, and then /bin,
-/usr/bin, and /usr/ucb in that order.
+Set to I<pathbin> from F<inn.conf>, I<pathetc> from F<inn.conf>, and then
+F</bin>, F</usr/bin>, and F</usr/ucb> in that order.
 
 =item SHELL
 
 Set to the path to the system Bourne shell as determined by configure
-(probably /bin/sh).
+(probably F</bin/sh>).
 
 =item TMPDIR
 

@@ -6,18 +6,18 @@ cycbuff.conf \- configuration file for CNFS method
 The file
 .I <pathetc in inn.conf>/cycbuff.conf
 is required if CNFS (Cyclic News File System) method is used.
-CNFS is one of storage method which can be defined at
-.IR storage.conf (5).
+CNFS is one of storage methods which can be used in
+.IR storage.conf .
 .PP
 The file consists of a series of lines;
 blank lines and lines beginning with a number sign (``#'') are ignored.
-There are four kinds of configuration lines: ``cycbuffupdate'',
-``refreshinterval'', ``cycbuff'' and ``metacycbuff.''
+There are four kinds of configuration lines: \%``cycbuffupdate'',
+\%``refreshinterval'', \%``cycbuff'' and \%``metacycbuff.''
 The order of lines in this file is not important among the same kind of
-configuration line.  But all ``cycbuff'' lines should be presented before
-any ``metacycbuff'' lines.
+configuration line.  But all \%``cycbuff'' lines should be presented before
+any \%``metacycbuff'' lines.
 .PP
-\&``Cycbuffupdate'' line is formatted as:
+A \&``cycbuffupdate'' line is formatted as:
 .PP
 .RS
 .nf
@@ -28,7 +28,7 @@ cycbuffupdate:update
 \&``Update'' is how many article-stores between cycbuff header updates.
 This line can be omitted and the default value is ``25.''
 .PP
-\&``Refreshinterval'' line is formatted as:
+A \&``refreshinterval'' line is formatted as:
 .PP
 .RS
 .nf
@@ -36,13 +36,13 @@ refreshinterval:interval
 .fi
 .RE
 .PP
-\&``Inerval'' is what interval (seconds) between rereading cycbuff header if
-cycbuff is preopend. (This is in the case
+\&``Interval'' is the interval (in seconds) between rereading cycbuff header if
+cycbuff is preopened. (This is relevant when
 .IR nnrpd (8)
-runs as a daemon.)
-This line can be omitted and the default value is ``30.''
+is running as a daemon.)
+This line can be omitted, and the default value is ``30.''
 .PP
-\&``Cycbuff'' line is formatted as:
+A \&``cycbuff'' line is formatted as:
 .PP
 .RS
 .nf
@@ -51,15 +51,15 @@ cycbuff:buffer_name:file_name:buffer_size
 .RE
 .PP
 \&``Buffer_name'' is the symbolic name of the buffer.
-The length of this name should be within 7 letters.
-This name is referred at ``metacycbuff'' lines.
+The length of this name should be not more than 7 letters.
+This name is referred to from the ``metacycbuff'' lines.
 \&``File_name'' is the path to buffer file.
-The length of this path should be within 63 letters.
+The length of this path should be not more than 63 letters.
 \&``Buffer_size'' is the length of buffer file in kilobytes
-in decimal (1KB = 1024 bytes).  If the ``file_name'' is not a special
-device, the file should be buffer_size * 1024 bytes.
+in decimal (1 KB = 1024 bytes).  If the ``file_name'' is not a special
+device, the file should be buffer_size * 1024 bytes long.
 .PP
-\&``Metacycbuff'' line is formatted as:
+A \&``metacycbuff'' line is formatted as:
 .PP
 .RS
 .nf
@@ -68,43 +68,51 @@ metacycbuff:meta_cyclic_buffer_name:buffer_names[:mode]
 .RE
 .PP
 \&``Meta_cyclic_buffer_name'' is the symbolic name of meta-cyclic buffer.
-This name is referred at ``options'' field at ``cnfs'' entries in
-.IR storage.conf (5).
-\&``Buffer_names'' is comma separated list of symbolic names of ``cycbuff.''
-These buffer names should be defined at ``cycbuff'' lines.
-If ``buffer_names'' has more than one buffer names, CNFS method
-stores articles into each ``cycbuff'' in order cyclically.
-\&``Mode'' is the mode of storing article.  Currently there are two mode;
-\&``INTERLEAVE'' and ``SEQUENTIAL''.  Mode ``INTERLEAVE'' is to store
-articles into each cycbuff in round robin way.  Mode ``SEQUENTIAL'' is to store
-articles sequentially into one cycbuff until it is filled up.  ``Mode'' is
-optional and the default value without this option is ``INTERLEAVE''.
+This name is referred to in the ``options'' field of ``cnfs'' entries in
+.IR storage.conf .
+\&``Buffer_names'' is comma separated list of symbolic names indicating
+which cycbuffs comprise this metacycbuff.
+These buffer names should be defined earlier by ``cycbuff'' lines.
+If ``buffer_names'' has multiple buffer names, the CNFS storage method
+has two modes for distributing articles between the buffers.
+\&``Mode'' is the mode for storing articles in this metacycbuff.  Currently
+there are two modes; \&``INTERLEAVE'' and ``SEQUENTIAL''.  Mode
+``INTERLEAVE'' is to store articles into each cycbuff in a round-robin way,
+one article per cycbuff, in order.  Note that this is unlikely to be what
+you want if the cycbuffs are of widely different sizes, since some cycbuffs
+will then cycle faster than others.  Mode ``SEQUENTIAL'' is to store
+articles sequentially into one cycbuff until it is filled up, and then move
+on to the next.  ``Mode'' is optional and the default value is
+``INTERLEAVE''.
 .PP
-Also it is necessary to set up ``options'' field at ``cnfs'' entries in
-.IR storage.conf (5)
-to use CNFS method.
-That field should be one of ``meta_cyclic_buffer_name'' defined at
+Also it is necessary to configure the ``options'' field of all ``cnfs''
+entries in
+.I storage.conf
+to be able to use the CNFS storage method.
+That field should be a ``meta_cyclic_buffer_name'' as defined by
 \&``metacycbuff'' lines.
 .PP
-To create new ``cycbuff'', there are two different methods for creating
-the cyclic buffer files.
+When creating a new ``cycbuff'', there are two different methods for
+creating the cyclic buffer files.
 .TP
 .BR 1. " Create a big file on top of a standard filesystem."
+.sp 1
 The use "dd" to create the ``cycbuff''
 files, such as "dd if=/dev/zero of=/path/to/cycbuff bs=32k count=N"
 where N is the buffer_size divided by 32.
 .TP
 .BR 2. " Use block disk devices directly."
+.sp 1
 If your operating system will allow you to
 .I mmap()
 block disk devices (Solaris does, FreeBSD does not), this is the
 recommended method.  Partition the disks to make each partition
-slightly larger (a few MB larger) than the intended size of each cycbuff.
+slightly larger (by a few MB) than the intended size of each cycbuff.
 It is not recommend to use the block device files already located in ``/dev.''
 Instead, use "mknod" to create a new set of block device files.
 In order to do this, do an "ls -Ll" of the /dev/dsk partition.
 The major and minor device numbers are in the fifth and sixth columns (right
-before the date) respectively.  This information should be fed to "mknod"
+before the date), respectively.  This information should be fed to "mknod"
 to make a "block-type special file" (b).
 Here is a short script that accomplishes this when fed the ``/dev/dsk/''
 partition name:
@@ -119,10 +127,11 @@ minor=`ls -l /dev/dsk/$link | awk '{print $6}`
 mkdir /cycbuff
 mknod /cycbuff/$disk b $major $minor
 .in -0.5i
+.sp 1
 .fi
 The created device files themselves consume very little space.
 .PP
-In either case, make certain that each overview buffer file is owned by
+In either case, make certain that each cycbuff file is owned by
 .IR <USER\ specified\ with\ \-\-with\-news\-user\ at\ configure> ,
 .IR <GROUP\ specified\ with\ \-\-with\-news\-group\ at\ configure> ,
 and has read/write modes for the owner and group (mode ``0664'' or ``0660'').

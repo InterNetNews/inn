@@ -69,9 +69,9 @@ The history structure is an opaque handle returned from HISopen.
 
 The B<HISopen> function opens the history file designated by I<path>
 using the mode I<flags> using the specified I<method>. I<flags> may be
-B<HIS_RDONLY> to indicate that read only access to the history
+B<HIS_RDONLY> to indicate that read-only access to the history
 database is desired, or B<HIS_RDWR> for read/write access. History
-methods are defined at build time; the current history method
+methods are defined at build time; the history method currently
 available is "hisv6". On success a newly initialised history handle is
 returned, or B<NULL> on failure.
 
@@ -80,7 +80,7 @@ into I<flags> to provide a hint to the underlying history manager as
 to how it should handle its data files; B<HIS_ONDISK> indicates that
 the caller would like as much of the data to be kept on disk (and out
 of memory), B<HIS_INCORE> indicates that the data files should be kept
-in main memory where possible and B<HIS_MMAP> that the files should
+in main memory where possible and B<HIS_MMAP> that the files should be
 mmap()ed into the processes address space. B<HIS_INCORE> is typically
 used where a mass rebuild of the history database is being performed;
 the underlying history manager may assume that the caller will call
@@ -101,16 +101,16 @@ The B<HISsync> function synchronises any outstanding transactions
 associated with I<history> to disk.
 
 B<HISsetcache> associates a cache used for speeding up HIScheck with
-I<history>. The cache will occuy approximately I<size> bytes.
+I<history>. The cache will occupy approximately I<size> bytes.
 
 B<HISlookup> retrieves a token from I<history> based on the passed
 I<key> (normally the Message-ID). If no entry with an associated token
 can be found, B<HISlookup> will return B<false>. If a token is found
-I<arrived>, I<expires> and I<posted> are filled in with the message
-arrival, expiry and posting times respectively (or zero if the time
+I<arrived>, I<expires>, and I<posted> are filled in with the message
+arrival, expiry, and posting times respectively (or zero, if the time
 component is not available), in addition to I<token> being set to the
 retrieved token and a function return value of B<true>. Any of
-arrived, expires, posted or token may be B<NULL> in which case that
+arrived, expires, posted, or token may be B<NULL> in which case that
 component is not returned to the caller, without affecting the return
 value.
 
@@ -119,8 +119,8 @@ Message-ID); if I<key> has previously been set via B<HISwrite>,
 B<HIScheck> returns B<true>, else B<false>.
 
 B<HISwrite> writes a new entry to the database I<history> associated
-with I<key>. I<arrived>, I<posted>, I<expired> specify the arrival,
-posting and expiry time respectively; I<posted> and I<expired> may be
+with I<key>. I<arrived>, I<posted>, and I<expired> specify the arrival,
+posting, and expiry time respectively; I<posted> and I<expired> may be
 specifed as <= 0 in which case that component shall be treated as
 absent in the database. I<token> is associated with the specified
 I<key>. B<HISwrite> returns B<true> on success, or B<false> on
@@ -153,11 +153,11 @@ is normally passed as B<true>, if you wish to inhibit writing of the
 new database (and so merely see the callbacks), I<writing> may be set
 B<false>.
 
-If the underlying history mechanism needs to pause the server the
-I<reason> string is used as an an argument to the `ctlinnd pause'
-command, as such prior to calling B<HISexpire> the server should be
-reserved by the caller; if the caller wishes to inhibit pausing of the
-server, passing B<NULL> will achieve this. If I<reason> is not
+If the underlying history mechanism needs to pause the server, the
+I<reason> string is used as the argument to the `ctlinnd pause'
+command, and as such the server should be reserved by the caller prior
+to calling B<HISexpire>; if the caller wishes to inhibit pausing of
+the server, passing B<NULL> will achieve this. If I<reason> is not
 B<NULL>, then on successful return from B<HISexpire> the server will
 be left paused and the caller should unpause it.
 
@@ -166,46 +166,47 @@ token are passed to the discrimination function I<exists>.
 
 If I<exists>() returns B<false> it indicates that stored entity
 associated with token is no longer available (or no longer required),
-but the history entry should be kept until it meets the I<threshold>
-constraint. If I<exists>() returns B<true> the entry is kept as is in
-the newly expired history database.
+and therefore the associated history entry may be expired once it
+meets the I<threshold> constraint. If I<exists>() returns B<true> the
+entry is kept as-is in the newly expired history database.
 
 The I<exists> function is passed the arrival, posting and expiry
 times, in addition to the token associated with the entry. Note that
-posting and/or expiry may be zero, but that token will never be
+posting and/or expiry may be zero, but that the token will never be
 B<NULL> (such entries are handled solely via the threshold
 mechanism). The storage token passed to the discrimination function
-may updated if required (for example as might be needed by a
+may updated if required (for example, as might be needed by a
 hierachical storage management implementation).
 
 Entries in the database with an arrival time less than I<threshold>
 with no token associated with them are deleted from the database.
 
-The parameter I<cookie> is passed to the discrimination function and
+The parameter I<cookie> is passed to the discrimination function, and
 may be used for any purpose required by the caller.
 
 If the discrimination function attempts to access the underlying
-database (for read or write) during the callback the behaviour is
+database (for read or write) during the callback, the behaviour is
 unspecified.
 
 B<HISwalk> provides an iteration function for the specified I<history>
-database. For every entry in the history database I<callback> is
-invoked passing the I<cookie>, arrival, posting and expiry times, in
+database. For every entry in the history database, I<callback> is
+invoked, passing the I<cookie>, arrival, posting, and expiry times, in
 addition to the token associated with the entry. If the I<callback>()
 returns B<false> the iteration is aborted and B<HISwalk> returns
 B<false> to the caller.
 
 To process the entire database in the presence of a running server,
-I<reason> may be passed; if this argument is not B<NULL> it is used as
-an an argument to the `ctlinnd (reserve|pause|go)' commands. If
-I<reason> is not passed and the server is running the behaviour of
+I<reason> may be passed; if this argument is not B<NULL>, it is used
+as an an argument to the `ctlinnd (reserve|pause|go)' commands. If
+I<reason> is B<NULL> and the server is running, the behaviour of
 B<HISwalk> is undefined.
 
 If the callback function attempts to access the underlying database
-during the callback the behaviour is unspecified.
+during the callback, the behaviour is unspecified.
 
 B<HISstats> returns statistics on the history cache mechanism; given a
-handle I<history> a struct histstats is returned detailing:
+handle I<history>, the return value is a I<struct histstats>
+detailing:
 
 =over 4
 
@@ -238,8 +239,8 @@ associated with I<history> are cleared.
 
 B<HISerror> returns a string describing the most recent error
 associated with I<history>; the format and content of these strings is
-history manager dependent. Note that on setting an error the history
-API will call libinn's B<warn> function.
+history manager dependent. Note that on setting an error, the history
+API will call the B<warn> function from libinn(3).
 
 B<HISctl> provides a control interface to the underlying history
 manager. The I<request> argument determines the type of the request
@@ -250,27 +251,31 @@ and the meaning of the I<val> argument. The values for I<request> are:
 =item C<HISCTLG_PATH> (const char **)
 
 Get the base file path which the history handle represents. I<val>
-should be a pointer to a value of type B<const char *>.
+should be a pointer to a location of type B<const char *>.  The
+result must not later be passed to free(3).
+
 
 =item C<HISCTLS_PATH> (const char *)
 
 Set the base file path which this history handle should use; typically
 this is used after an anonymous handle has been created using
 B<HISopen(NULL, ...)>. I<val> should be a value of type B<const char
-*>.
+*> and will be copied before being stored internally.
 
 =item C<HISCTLS_SYNCCOUNT> (size_t *)
 
 Set an upper bound on how many history operations may be pending in
 core before being synced to permanent storage; B<0> indicates
-unlimited. I<val> should be a pointer to a value of type B<size_t>.
+unlimited. I<val> should be a pointer to a value of type B<size_t> and
+will not be modified by the call.
 
 =item C<HISCTLS_NPAIRS> (size_t *)
 
 Set a hint to the to the underlying history manager as to how many
 entries there are expected to be in the history database; B<0>
 indicates that an automatic or default sizing should be made. I<val>
-should be a pointer to a value of type B<size_t>.
+should be a pointer to a value of type B<size_t> and will not be
+modified by the call.
 
 =item C<HISCTLS_IGNOREOLD> (bool *)
 
@@ -278,7 +283,7 @@ Instruct the underlying history manager to ignore existing database
 when creating new ones; typically this option may be set to B<true> if
 the administrator believes that the existing history database is
 corrupt and that ignoring it may help. I<val> should be a pointer to a
-value of type B<bool>.
+value of type B<bool> and will not be modified by the call.
 
 =item C<HISCTLS_STATINTERVAL> (time_t *)
 
@@ -286,7 +291,7 @@ For the history v6 and tagged hash managers, set the interval, in
 seconds, between stat(2)s of the history files checking for replaced
 files (as happens during expire); this option is typically used by
 nnrpd(8) like applications. I<val> should be a pointer to a value of
-type B<time_t>.
+type B<time_t> and will not be modified by the call.
 
 =head1 HISTORY
 

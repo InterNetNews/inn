@@ -17,18 +17,18 @@ and innstat(8), and now also reports various other usage information about
 INN's storage that df(1) doesn't understand.  B<inndf> doesn't sync, forks
 less, and is generally less complicated than df(1).
 
-It's default behavior is to report free kilobytes (not disk blocks) or
-free inodes if B<-i> is used in the file systems holding the directories
+Its default behavior is to report free kilobytes (not disk blocks), or
+free inodes if B<-i> is used, in the file systems holding the directories
 given on the command line.  (A kilobyte in this case is 1024 bytes.)  If
 only one directory is given, the output will be a simple number; if more
 than one directory is given, the output will be formatted for human
 readability.
 
-If I<enableoverview> set set to true in F<inn.conf>, B<inndf> can also be
+If I<enableoverview> is set to true in F<inn.conf>, B<inndf> can also be
 used to get information about the overview database.  With the B<-n>
 option, it reports a count of the total number of overview records stored.
 With B<-o>, it reports the percentage of space used in the overview
-database (for those overview methods where this is a meaningful question).
+database (for those overview methods where this is meaningful data).
 
 =head1 OPTIONS
 
@@ -54,7 +54,8 @@ Print a usage message and exit.
 
 =item B<-i>
 
-Report the number of free inodes rather than the number of free kilobytes.
+Report the number of free inodes rather than the amount of free disk
+space.
 
 =item B<-n>
 

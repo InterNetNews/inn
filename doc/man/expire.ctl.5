@@ -10,12 +10,12 @@ is the default control file for the
 or
 .IR expireover (8)
 program, which read it at start-up.
-It serves two purposes: it defines how long history entries for expired or
+It serves two purposes:  it defines how long history entries for expired or
 rejected articles are retained, and it determines how long articles not
 stored in a self-expiring storage method are retained.
 If all of the storage methods used by the server are self-expiring (such
-as CNFS), only the ``/remember/'' setting described below is necessary or
-used.
+as CNFS), all lines except the ``/remember/'' setting (described below) are
+ignored.
 .PP
 Blank lines and lines beginning with a number sign (``#'') are ignored.
 All other lines should be in one of two formats.
@@ -24,11 +24,13 @@ The first format specifies how long to keep history entries for articles
 that aren't present in the news spool.
 These are articles which have either already expired out of spool
 or which the server rejected (and ``remembertrash'' was set to true in
-.IR inn.conf (5)).
+.IR inn.conf ).
 There should only be one line in this format, which looks like:
+.sp 1
 .RS
 /remember/:days
 .RE
+.sp 1
 where
 .I days
 is a floating-point number that specifies the minimum number of days a
@@ -38,20 +40,21 @@ the article has expired.
 expires.)
 .PP
 The reason to retain a record of an old articles is to handle the case
-where a peer offers old articles that were previously accepted and then
+where a peer offers old articles that were previously accepted but then
 expired.
 Without a setting like this, the server would accept the article again and
 readers would see duplicate articles.
 Articles older than a certain number of days won't be accepted by the
 server at all (see the ``\fB-c\fP'' flag of
 .IR innd (8)),
-and this setting should probably match that time period (14 days by
+and this setting should probably match that time period (10 days by
 default) to ensure the server never accepts duplicates.
 .PP
 This setting does not affect article expirations.
 .PP
-Most of the lines in this file will be in the second format, either four
-or five colon-separated fields as follows:
+Most of the lines in this file will be in the second format, which has two
+variations consisting of four or five colon-separated fields as follows:
+.sp 1
 .RS
 .nf
 classnum:keep:default:purge
@@ -63,22 +66,24 @@ or
 pattern:modflag:keep:default:purge
 .fi
 .RE
-The former is used for class based expiry which means ``groupbaseexpiry'' in
-.IR inn.conf (5)
-is ``false'', and the latter is used for group based expiry which
+.sp 1
+The former is used for class-based expiry, which means ``groupbaseexpiry'' in
+.I inn.conf
+is ``false''; the latter is used for group-based expiry, which
 means ``groupbaseexpiry'' in
 .I inn.conf
 is ``true''.
-Both formats can not coexist each other.
+All lines must be in the format specified by ``groupbaseexpiry'' and
+therefore the two formats can never coexist.
 .PP
-Where
+The
 .IR classnum
-field used for class based expiry is the number that you specified in
-.IR storage.conf (5).
+field, used for class-based expiry, is the number that you specified in
+.I storage.conf .
 .PP
 The
 .I pattern
-field used for group based expiry is a list of
+field used for group-based expiry is a list of
 .IR uwildmat (3)-style
 patterns, separated by commas.
 This field specifies the newsgroups to which the line is applied.
@@ -89,8 +94,9 @@ specific settings.
 .PP
 The
 .I modflag
-field used for group based expiry can be used to further limit newsgroups to
+field used for group-based expiry can be used to further limit newsgroups to
 which the line applies, and should be chosen from the following set:
+.sp 1
 .RS
 .nf
 M	Only moderated groups
@@ -99,15 +105,16 @@ A	All groups
 X	Removes the article from all groups that it appears in
 .fi
 .RE
+.sp 1
 (The X flag is special; normally articles are not completely deleted until
 they expire out of every group they were posted to, but if an article is
 expired by a line with an X, it is deleted out of all newsgroups it was
 posted to immediately.)
 .PP
-The rest of three fields are used to determine how long an article
+The remaining three fields are used to determine how long an article
 should be kept.
 Each field should be either a number of days (fractions like ``8.5'' are
-allowed) or the word ``never.''
+allowed) or the word ``never''.
 The most common use is to specify the default value for how long an
 article should be kept.
 The first and third fields \(em 
@@ -118,9 +125,9 @@ and
 header will be honored.
 They are ignored if an article has no Expires header.
 (In other words, if an article does not have an Expires header,
-only
+only the
 .I default
-field is used and the Date header is be honored to expire.
+field is used and the Date header will be honored to expire.
 But if an article has an Expires header,
 .I default
 is not used, and articles are expired no faster than the time set with
@@ -137,11 +144,11 @@ The
 .I keep
 field specifies how many days an article should be kept before it will
 be removed.
-No article in the matching newsgroups or class will be removed if it has been
-received for less than
+No article in the matching newsgroups or class will be removed until it
+has been present for at least
 .I keep
 days, regardless of Expires header.
-If this field is the word ``never,'' no article in the matching newsgroups
+If this field is the word ``never'', no article in the matching newsgroups
 or class will ever be expired.
 .PP
 The
@@ -156,12 +163,12 @@ The
 field specifies the upper bound on how long an article can be kept.
 No article will be kept longer then the number of days specified by this
 field.
-All articles will be removed after then have been kept for
+All matching articles will be removed after then have been kept for
 .I purge
-days.
+days, even if the Expires header indicates they should remain longer.
 If
 .I purge
-is the word ``never'' then the article will never be deleted.
+is the word ``never'', then the article will never be deleted.
 .PP
 If the line for
 .I classnum
@@ -185,28 +192,31 @@ to never (or alternately set
 to some large number, like 365 days for a maximum article life of a year).
 To ignore any Expires header, set all three fields to the same value.
 .PP
-For group based expiry, there must be exactly one line with a
+For group-based expiry, there must be exactly one line with a
 .I pattern
 of ``*'' and a
 .I modflags
 of ``A'' \(em this matches all groups and is used to set the expiration
 default.
-And for class base expiry, there can be exactly one line with a
+And for class-based expiry, there can be exactly one line with a
 .I class
 of ``255'' \(em this matches all class and can be used to set the expiration
 default.
 In either case, it should be the first expiration line.
 .SH EXAMPLES
-For class based expiry;
+For class-based expiry:
+.sp 1
 .nf
 .in +0.5i
 ##  How long to keep expired history
 /remember/:5
 ##  class 0 stay for two weeks
 0:14:14:14
+.sp 1
 .in -0.5i
 .fi
-For group based expiry;
+For group-based expiry:
+.sp 1
 .nf
 .in +0.5i
 ##  How long to keep expired history

@@ -17,7 +17,7 @@ buffchan \- buffered file-writing backend for InterNetNews
 .BI \-d " directory"
 ]
 [
-.BI \-f " fields"
+.BI \-f " num_fields"
 ]
 [
 .BI \-m " map"
@@ -35,7 +35,7 @@ buffchan \- buffered file-writing backend for InterNetNews
 .B \-r
 ]
 [
-.BI \-s " file_format"
+.BI \-s " filename_format"
 ]
 [
 .B \-u
@@ -54,36 +54,34 @@ as an exploder feed.
 Once
 .I buffchan
 opens a file it keeps it open.
-The input must therefore never specify more files than can the
+The input must therefore never specify more files than the
 number of available descriptors can keep open.
 If the ``\fB\-b\fP'' flag is used, the program will allocate a buffer and
 attach it to the file using
 .IR setbuf (3).
 .TP
-.B \-c
-If the ``\fB\-c\fP'' flag is used with a number
-.IR n ,
-then
+.B \-c lines
+If the ``\fB\-c\fP'' flag is used,
 .I buffchan
 will close, and re-open, a file after every
-.I n
+.I lines
 lines are written to a file.
 .TP
-.B \-C
+.B \-C seconds
 Similarly, the ``\fB\-C\fP'' flag may be used to specify that all files should
 be closed and re-opened every
-.I n
+.I seconds
 seconds.
 .TP
-.B \-d
+.B \-d directory
 The ``\fB\-d\fP'' flag may be used to specify a directory the program should
 change to before starting.
 If this flag is used, then the default for the ``\fB\-s\fP'' flag is changed to
-be a simple ``%s.''
+be a simple ``%s''.
 .TP
-.B \-f
+.B \-f num_fields
 Buffchan
-input is interpreted as a set of lines.
+input is interpreted as a sequence of lines.
 Each line contains a fixed number of initial fields, followed by a
 variable number of filename fields.
 All fields in a line are separated by whitespace.
@@ -91,41 +89,37 @@ The default number of initial fields is one; the ``\fB\-f\fP''
 flag may be
 used to specify a different number of fields.
 .TP
-.B \-m
-See
+.B \-m map
+Map files specify short names as aliases for domain names; see
 .IR filechan (8)
-for an example.
+for details and an example.
 .TP
-.B \-p
+.B \-p pidfile
 If the ``\fB\-p\fP'' flag is used, the program will write a line containing
 its process ID (in text) to the specified file.
 .TP
-.B \-l
-If the ``\fB\-l\fP'' flag is used with a number
-.IR n ,
-then
+.B \-l lines
+If the ``\fB\-l\fP'' flag is used,
 .I buffchan
 will call
 .IR fflush (3)
 after every
-.I n
+.I lines
 lines are written to a file.
 .TP
-.B \-L
-If the ``\fB\-L\fP'' flag is used with a number
-.IR n ,
-then all files will be flushed every
+.B \-L seconds
+If the ``\fB\-L\fP'' flag is used,
+all files will be flushed every
 .I n
 seconds.
 .TP
 .B \-r
-By default, the program sets its standard error to
+By default, the program sends its error messages to
 .IR <pathlog\ in\ inn.conf>/errlog .
-
-
-To suppress this redirection, use the ``\fB\-r\fP'' flag.
+To suppress this redirection and send error messages to standard error,
+use the ``\fB\-r\fP'' flag.
 .TP
-.B \-s
+.B \-s filename_format
 After the initial fields, each remaining field names a file to
 write.
 The ``\fB\-s\fP'' flag may be used to specify a format string that maps
@@ -133,7 +127,7 @@ the field to a file name.
 This is a
 .IR sprintf (3)
 format string which should have a single ``%s'' parameter which will be given
-the field.
+the contents of a non-initial field.
 The default value is
 .IR <pathoutgoing\ in\ inn.conf>/%s .
 See the description of this flag in
@@ -170,8 +164,8 @@ output file.  It will change the modes back to read-only if it re-opens
 the same file.
 .TP
 .B drop
-The ``drop'' command is similar to the ``flush'' command except that any
-files are not re-opened.
+The ``drop'' command is similar to the ``flush'' command except that no
+files are re-opened.
 If given an argument, then the specified site is dropped, otherwise all
 sites are dropped.
 (Note that the site will be restarted if the input stream mentions the
@@ -182,7 +176,7 @@ When a
 .I innd
 will automatically forward the command to
 .I buffchan
-if the site is a funnel that feeds into this exploder.
+for sites listed as funnels feeding into this exploder.
 To drop all sites, use the
 .I ctlinnd
 \&``send buffchan-site drop'' command.

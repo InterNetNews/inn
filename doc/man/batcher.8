@@ -1,7 +1,7 @@
 .\" $Revision$
 .TH BATCHER 8
 .SH NAME
-batcher \- article batching backend for InterNetNews
+batcher \- article-batching backend for InterNetNews
 .SH SYNOPSIS
 .B batcher
 [
@@ -60,24 +60,25 @@ file, or standard input if no file is given.
 Relative pathnames are interpreted from the
 .I <pathoutgoing in inn.conf>
 directory.
-The input is taken as a set of lines.
-Blank lines and lines starting with a number sign (``#'') are ignored.
+The input is taken as a sequence of lines;
+blank lines and lines starting with a number sign (``#'') are ignored.
 All other lines should consist of one or two fields separated by a single space.
 The first field is the name of a file holding an article; if it is not an
-an absolute pathname it is taken relative to the news spool directory,
+an absolute pathname it is taken relative to
 .IR <patharticles\ in\ inn.conf> .
 The second field, if present, specifies the size of the article in bytes.
 .SH OPTIONS
 .TP
-.B \-S
+.B \-S alt_spool
 The ``\-S'' flag may be used to specify an alternate spool directory to
-use if the article is not found; this would normally be an NFS-mounted
+use if the article is not found; this would perhaps be an NFS-mounted
 spool directory of a master server with longer expiration times.
 .TP
 .B \-r
-By default, the program sets its standard error to
+By default, the program reports errors to
 .IR <pathlog\ in\ inn.conf>/errlog .
-To suppress this redirection, use the ``\-r'' flag.
+To suppress this redirection and report errors to standard error,
+use the ``\-r'' flag.
 .TP
 .B \-v
 Upon exit,
@@ -87,32 +88,32 @@ reports statistics via
 If the ``\-v'' flag is used, they will also be printed on the standard
 output.
 .TP
-.B \-b
+.B \-b size
 .I Batcher
 collects the text of the named articles into batches.
 To limit the size of each batch, use the ``\-b'' flag.
 The default size is 60 kilobytes.
-Using ``\-b0'' allows unlimited batch sizes.
+Using ``\-b\ 0'' allows unlimited batch sizes.
 .TP
-.B \-a
+.B \-a arts
 To limit the number of articles in each batch, use the ``\-a'' flag.
 The default is no limit.
 A new batch will be started when either the byte count or number of
 articles written exceeds the specified limits.
 .TP
-.B \-B
+.B \-B total_size
 To limit the total number of bytes written for all batches, use the ``\-B''
 flag.
 .TP
-.B \-A
+.B \-A total_arts
 To limit the total number of articles that can be batched use the ``\-A''
 flag.
 .TP
-.B \-N
+.B \-N num_batches
 To limit the total number of batches that should be created use the ``\-N''
 flag.
 .IP
-In all three cases, the default is zero, which is taken to mean no limit.
+In all three of the above cases, the default is zero, that is, no limit.
 .TP
 .B \-i string
 A batch starts with an identifying line to specify the unpacking method
@@ -122,7 +123,7 @@ When the ``\-i'' flag is used, the initial string,
 followed by a newline, will be output at the start of every batch.
 The default is to have no initial string.
 .TP
-.B \-s
+.B \-s separator
 Each article starts with a separator line to indicate the size of the article.
 To specify the separator use the ``\-s'' flag.
 This is a
@@ -131,9 +132,9 @@ format string which can have a single ``%ld'' parameter which will be given
 the size of the article.
 If the separator is not empty, then the string and a newline will be output
 before every article.
-The default separator is ``#! rnews %ld''.
+The default separator is ``#!\ rnews\ %ld''.
 .TP
-.B \-p
+.B \-p process
 By default, batches are written to standard output, which
 is not useful when more than one output batch is created.
 Use the ``\-p'' flag to specify the shell command that should be
@@ -141,7 +142,7 @@ created (via
 .IR popen (3))
 whenever a new batch is started.
 The process is a
-.I sprintf
+.IR sprintf (3)
 format string which can have a single ``%s'' parameter which will be given
 the host name.
 A common value is:
@@ -156,21 +157,22 @@ A common value is:
 If the input is exhausted,
 .I batcher
 will exit with a zero status.
-If any of the limits specified with the ``\-B,'' ``\-A,'' or ``\-N'' flags
+If any of the limits specified with the ``\-B'', ``\-A'', or ``\-N'' flags
 is reached, or if there is an error writing the batch, then
 .I batcher
-will try to spool the input, copying it to a file.
-If there was no input filename, the standard input will be copied to
+will try to spool the remaining input, copying it to a file.
+If there was no input filename, standard input will be copied to
 .I <pathoutgoing in inn.conf>/host
 and the program will exit.
-If an input filename was given, a temporary file named
+If an input filename was given, the input will be copied to 
+a temporary file named
 .IR input .bch
 (if
 .I input
 is an absolute pathname)
 or
 .I <pathoutgoing in inn.conf>/input.bch
-(if the filename does not begin with a slash) is created.
+(if the filename does not begin with a slash).
 Once the input is copied,
 .I batcher
 will try to rename this temporary file to be the name of the input file,

@@ -55,35 +55,38 @@ expire \- Usenet article and history expiration program
 .SH DESCRIPTION
 .I Expire
 scans the
-.IR history (5)
+.IR history (5)-format
 text file
 .I <pathdb in inn.conf>/history
-and uses the information recorded in it to purge itself or old news articles.
-And if the article whose storage method
-has self expire functionality, the
-control file is ignored except ``/remember/'' line for that article by default.
-In this case,
+and uses the information recorded in it to purge itself of old news articles.
+Articles stored using a storage method that has self-expire
+functionality are by default not affected by
+.IR expire 's
+primary behavior (but see the ``\fB\-N\fP'' flag to disable this).  In
+this case,
+.I expire.ctl
+is ignored except ``/remember/'' line for that article;
 .I expire
-probes the article to see if it still exists.
-If it does not exist,
-.I expire
-purges the relevant entries.
-To disable this, use the ``\fB\-N\fP'' flag.
-If ``groupbaseexpiry'' in
+does still probe to see if the article still exists and purges the
+relevant history and overview entries if appropriate.
+However, if ``groupbaseexpiry'' in
 .I inn.conf
 is true,
 .I expire
-always treats all stored articles whose storage method have self expire
-functionality regardless of its actual method.  In this case ``\fB\-e\fP'',
-\&``\fB\-k\fP'', ``\fB\-N\fP'', ``\fB\-p\fP'', ``\fB\-q\fP'', ``\fB\-w\fP''
-and ``\fB\-z\fP'' flags are ignored.
+acts on all articles as specified by
+.I expire.ctl
+regardless of whether their storage methods have self-expire
+functionality.  In this case, the ``\fB\-e\fP'', \&``\fB\-k\fP'',
+``\fB\-N\fP'', ``\fB\-p\fP'', ``\fB\-q\fP'', ``\fB\-w\fP'' and
+``\fB\-z\fP'' flags are ignored.
 .PP
 Note that
 .I expire
-never purges articles which do not match any entry.
+never purges articles which do not match any entry in
+.IR expire.ctl .
 .SH OPTIONS
 .TP
-.B \-d
+.B \-d dir
 If the ``\fB\-d\fP'' flag is used, then the new history file and database is
 created in the specified directory,
 .IR dir .
@@ -97,26 +100,26 @@ it has successfully completed the expiration.
 The calling script should install the new history file and un-pause the server.
 The ``\fB\-r\fP'' flag should be used with this flag.
 .TP
-.B \-f
+.B \-f file
 To specify an alternate history file, use the ``\fB\-f\fP'' flag.
-This flag is valid if ``\fB\-d\fP'' flag is used together, and the output will
-be written to this file.
-The default without ``\fB\-f\fP'' flag is ``history.''
+This flag is valid when used with the ``\fB\-d\fP'', and the output will
+be written to the specified file.
+The default without ``\fB\-f\fP'' flag is ``history''.
 .TP
-.B \-g
+.B \-g file
 If the ``\fB\-g\fP'' flag is given, then a one-line summary equivalent to the
-output of ``\fB\-v\fP 1'' and preceded by the current time, will be appended to
-the specified
+output of ``\fB\-v\fP 1'', except preceded by the current time, will be
+appended to the specified
 .IR file .
 .TP
-.B \-h
+.B \-h file
 To specify an alternate input text history file, use the ``\fB\-h\fP'' flag.
 .I Expire
 uses the old
 .IR dbz (3)
 database to determine the size of the new one.
-If ``\fB\-d\fP'' flag is not used together, and the output file name will be
-with an extension of ``.n.''
+(If ``\fB\-d\fP'' flag is not used, the output filename will be the same
+as the input filename with an extension of ``.n''.)
 The default without ``\fB\-h\fP'' flag is
 .IR <pathdb\ in\ inn.conf>/history .
 .TP
@@ -124,12 +127,11 @@ The default without ``\fB\-h\fP'' flag is
 To ignore the old database, use the ``\fB\-i\fP'' flag.
 .TP
 .B \-N
-If the article whose storage method
-has self expire functionality, then the control file is ignored for that
-article by default.
+The control file is normally ignored for articles in storage methods
+which have self-expire functionality.
 If the ``\fB\-N\fP'' flag is used,
 .I expire
-still uses the control file in this case.
+still uses the control file for these articles.
 .TP
 .B \-n
 If
@@ -155,7 +157,7 @@ expiration programs that base their decisions on the article's posting
 date.
 To use the article's posting date, use the ``\fB\-p\fP'' flag.
 .TP
-.B \-r
+.B \-r reason
 .I Expire
 normally sends a ``pause'' command to the local
 .IR innd (8)
@@ -166,13 +168,16 @@ The process ID will be appended to the reason.
 When
 .I expire
 is finished and the new history file is ready, it sends a ``go'' command.
+See also the ``\fB\-n\fP'' flag.
 .TP
-.B \-s
-Size the history database for approximately 
+.B \-s size
+Optimize the new history database for approximately 
 .I size
-pairs.  Accurately specifying the size is an optimization that will
-create a more efficient database.  (The size should be the estimated
-eventual size of the file, typically the size of the old file.)
+pairs (lines in
+.IR history ).
+Accurately specifying the size will create a more efficient database.
+(The size should be the estimated eventual size of the file, typically
+the size of the old file.)
 .TP
 .B \-t
 If the ``\fB\-t\fP'' flag is used, then
@@ -189,23 +194,23 @@ flags.  Note that if the ``\fB\-f\fP'' flag is used, then the
 name specified with that flag will be used instead of
 .IR history .
 .TP
-.B \-v
+.B \-v level
 The ``\fB\-v\fP'' flag is used to increase the verbosity of the program,
 generating messages to standard output.
 The
 .I level
 should be a number, where higher numbers result in more output.
 Level one will print totals of the various actions done (not valid if a
-new history file is not written), level two will print report on each
-individual file, while level five results in more than one line of output
-for every line processed.
+new history file is not written), level two will print a report on each
+individual file, while level five results in multiple lines of output
+for every history line processed.
 .TP
-.B \-w
+.B \-w number
 Use the ``\fB\-w\fP'' flag to ``warp'' time so that
 .I expire
 thinks it is running at some time other then the current time.
-The value should be a signed floating point number of the number of days
-to use as the offset.
+The value should be a signed floating point number indicating the number
+of days to use as the offset.
 .TP
 .B \-x
 If the ``\fB\-x\fP'' flag is used, then
@@ -214,7 +219,7 @@ will not create any new history files.  This is most useful when combined
 with the ``\fB\-n\fP'' and `\fB`\-t\fP'' flags to see how
 different expiration policies would change the amount of disk space used.
 .TP
-.B \-z
+.B \-z file
 If the ``\fB\-z\fP'' flag is used, then articles are not removed, but their
 names are appended to the specified
 .IR file .
@@ -225,7 +230,7 @@ in
 .PP
 If a filename is specified, it is taken as the control file and parsed
 according to the rules in
-.IR expire.ctl (5).
+.IR expire.ctl .
 A single dash (``\-'') may be used to read the file from standard input.
 If no file is specified, the file
 .I <pathetc in inn.conf>/expire.ctl

@@ -30,13 +30,13 @@ are ignored. All other lines have two fields on them. The first is the list
 name and is what innd uses (i.e. the site field of the entry in the newsfeeds
 file). The second field is the actual email address to send the article to. In
 the email message, the ``To'' header will have the mailing list name (i.e. the
-first field)
+first field).
 .PP
 .RS
 .nf
-# list-name	address
-big-red-ants@ucsd.edu	big-red-ants-digest@ucsd.edu		
-news-software@ucsd.edu	news-software-digest@ucsd.edu
+# list-name             address
+big-red-ants@ucsd.edu   big-red-ants-digest@ucsd.edu		
+news-software@ucsd.edu  news-software-digest@ucsd.edu
 .fi
 .RE
 .PP
@@ -44,7 +44,7 @@ a set of newsfeeds entries for these lists would be:
 .PP
 .RS
 .nf
-.ds R$ <PREFIX specified with --prefix at configure>/bin
+.ds R$ <pathbin in inn.conf>
 n2m!:!*:Tc,Ac,Wn*:\*(R$/news2mail
 
 big-red-ants@ucsd.edu:rec.pets.redants.*:Tm:n2m!
@@ -58,8 +58,8 @@ strips most article headers from the article before mailing. It leaves: From, Su
 Date, Organization and Message-ID in there. It add a To header with the mailing 
 list name in it.
 .SH HISTORY
-news2mail was written by Brian Kantor. This man pagewas written by James
-Brister
+news2mail was written by Brian Kantor. This man page was written by James
+Brister.
 .de R$
 This is revision \\$3, dated \\$4.
 ..

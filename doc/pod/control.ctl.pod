@@ -63,7 +63,7 @@ high.
 The action is performed as in B<doit>, and additionally a log entry is
 written to the specified log file I<file>.  If I<file> is the word
 C<mail>, the log entry is mailed to the news administrator instead.  An
-empty string is equivalent to /dev/null and says to log nothing.
+empty string is equivalent to F</dev/null> and says to log nothing.
 
 If I<file> starts with a slash, it is taken as the absolute filename to
 use for the log file.  Otherwise, the filename is formed by prepending
@@ -141,7 +141,7 @@ messages and the URL for downloading the PGP keys of major hierarchies,
 see pgpverify(8).
 
 Control messages of type cancel are handled internally by B<innd> and
-cannot be controlled by any of the mechanisms described here.
+cannot be affected by any of the mechanisms described here.
 
 =head1 EXAMPLE
 

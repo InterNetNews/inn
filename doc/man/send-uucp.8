@@ -44,10 +44,10 @@ pairs but just as a sitename.
 .PP
 .I send-uucp
 compresses batches of news and sends the to the remote site with
-.I uux.
+.IR uux .
 .PP
 .I send-nntp
-Starts an innxmit to send the articles to the remote site.
+starts an innxmit to send the articles to the remote site.
 .PP
 .I send-ihave
 encapsulates the articles in an
@@ -76,18 +76,16 @@ to send output to stdout rather than the log file
 .IR <pathlog\ in\ inn.conf>/<program-name>.log .
 .SH NOTES
 You should probably not use send-nntp, but
-.I innfeed,
+.IR innfeed ,
 or if that is not possible,
-.I nntpsend.
+.IR nntpsend .
 .PP
 The usual flags in the
 .I newsfeed
 file to write a batch file suitable for processing by
-send-uucp are
-.B Tf,Wfb .
+send-uucp are ``\fBTf,Wfb\fP''.
 .PP
-The usual flags for a batch file for send-nntp are
-.B Tf,Wfm
+The usual flags for a batch file for send-nntp are ``\fBTf,Wfm\fP''.
 .SH "SEE ALSO"
 newsfeeds(5),
 nntpsend(8)

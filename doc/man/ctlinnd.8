@@ -33,8 +33,15 @@ will exit with a status of zero and print the reply on standard output.
 If the server could not perform the command (for example, it was told to
 remove a newsgroup that does not exist), it will direct
 .I ctlinnd
-to exit with a status of one.
-The ``shutdown,'' ``xabort,'' and ``xexec'' commands do not generate a reply;
+to exit with a status of one.  (Note that
+.I ctlinnd
+need not always exit immediately, see the ``\fB-t\fP'' flag.)
+The ``shutdown'', ``xabort'', and ``xexec'' commands do not generate a
+reply (because once
+.I innd
+has successfully exited, it is too late to send a reply to
+.IR ctlinnd );
+after these commands,
 .I ctlinnd
 will always exit silently with a status of zero.
 .SH OPTIONS
@@ -43,12 +50,14 @@ will always exit silently with a status of zero.
 If the ``\fB\-s\fP'' flag is
 used, then no message will be printed if the command was successful.
 .TP
-.B \-t
+.B \-t timeout
 The ``\fB\-t\fP'' flag can be used to specify how long to wait for the reply
-from the server.
+from the server (for commands other than ``shutdown'', ``xabort'', and
+``xexec'').
 The timeout value specifies the number of seconds to wait.
 A value of zero waits forever, and a value less
-than zero indicates that no reply is needed.
+than zero indicates that no reply is needed (that is, exit immediately
+with status zero).
 When waiting for a reply,
 .I ctlinnd
 will try every two minutes to see if the server is still running, so it
@@ -56,7 +65,7 @@ is unlikely that ``\fB\-t0\fP'' will hang.
 The default is set as 
 .I <CTLINND_TIMEOUT in include/config.h> 
 (typically 
-.IR 0 .)
+.IR 0 ).
 .TP
 .B \-h
 To see a command summary, use the ``\fB\-h\fP'' flag.
@@ -70,7 +79,7 @@ Note that all commands have a fixed number of arguments.
 If a parameter can be an empty string, then it is necessary to
 specify it as two adjacent quotes, like "".
 .TP
-.BI addhist " <Message-ID> arr exp post paths"
+.BI addhist " <Message-ID> arr exp post token"
 Add an entry to the history database.
 This directs the server to create a history line for
 .IR Message-ID .
@@ -81,20 +90,15 @@ and
 .I post
 specify when the article arrived, what its expiration date is, and
 when it was posted.
-All three values are a number indicating the number of seconds since the
+All three values are numbers indicating the number of seconds since the
 epoch.
-If the article does not have an Expires header, then
-.I exp
-should be zero.
-.I Paths
-is the pathname within the news spool directory where the article is filed.
-If the article is cross-posted, then the names should be separated by
-whitespace and the
-.I paths
-argument should be inside double quotes.
+.I Exp
+being zero indicates the article does not have an Expires header.
+.I Token
+is the storage API token indicating where the article is stored.
 If the server is throttled manually, this command causes it to briefly
 open the history database.
-And if the server is paused or throttled except that case, this command
+If the server is paused or throttled for any other reason, this command
 is rejected.
 .TP
 .BI allow " reason"
@@ -108,10 +112,10 @@ empty string.
 Begin feeding
 .IR site .
 This will cause the server to rescan the
-.IR newsfeeds (5)
+.I newsfeeds
 file to find the specified site and set up a newsfeed for it.
 If the site already exists, a ``drop'' is done first.
-This command is forwarded; see below.
+This command is forwarded; see NOTES below.
 .TP
 .BI cancel " <Message-ID>"
 Remove the article with the specified Message-ID from the local system.
@@ -121,7 +125,7 @@ generate a cancel message.
 The angle brackets are optional.
 If the server is throttled manually, this command causes it to briefly
 open the history database.
-And if the server is paused or throttled except that case, this command
+If the server is paused or throttled for any other reason, this command
 is rejected.
 .TP
 .BI changegroup " group rest"
@@ -146,7 +150,7 @@ The details of the errors are reported to
 Flush and drop
 .I site
 from the server's list of active feeds.
-This command is forwarded; see below.
+This command is forwarded; see NOTES below.
 .TP
 .BI feedinfo " site"
 Print detailed information about the state of the
@@ -160,13 +164,13 @@ is an empty string.
 Flush the buffer for the specified site.
 The actions taken depend on the type of feed the site receives; see
 .IR newsfeeds (5).
-This is useful when the site is fed by a file and batching is going to start.
+This is useful when the site is fed by a file and batching is about to start.
 If
 .I site
 is an empty string, then all sites are flushed and the
 .I active
 file and history databases are also written out.
-This command is forwarded; see below.
+This command is forwarded; see NOTES below.
 .TP
 .B flushlogs
 Close the log and error log files and rename them to have a
@@ -217,7 +221,7 @@ is sent to the specified
 .IR site ,
 which must be a channel or exploder feed.
 .I Signal
-can be a numeric signal number or the word ``hup,'' ``int,'' or ``term'';
+can be a numeric signal number or the word ``hup'', ``int'', or ``term'';
 case is not significant.
 .TP
 .BI lowmark " file"
@@ -250,8 +254,8 @@ and operating state.
 .TP
 .BI name " nnn"
 Print the name and relevant information of channel number
-.I nnn
-or of all channels if it is an empty string.  Format is:
+.IR nnn ,
+or of all channels if it is an empty string.  The response is formatted as:
 .sp 1
 .in +0.5i
 .nf
@@ -259,20 +263,20 @@ f1:f2:f3:f4:f5
 .fi
 .in -0.5i
 .sp 1
-And meaning of each field is:
+Where the meanings of the fields are:
 .sp 1
 .in +0.5i
 .nf
 f1	name of this channel
 f2	channel number
 f3	channel type
-f4	idle time for this channel(nntp type)
-	or process id(process type)
-f5	channel status(nntp type)
+f4	idle time for this channel (nntp type)
+	or process id (process type)
+f5	channel status (nntp type)
 .fi
 .in -0.5i
 .sp 1
-F3 is one of followings:
+The channel type (f3) is one of following:
 .sp 1
 .in +0.5i
 .nf
@@ -291,12 +295,11 @@ remconn		remote channel which will be
 .fi
 .in -0.5i
 .sp 1
-Channel status shows if the channel is paused or not.  Nothing is
-shown unless the channel is paused.  Or ``paused'' is shown.
-\&``Paused'' status happens, if the number of remote connection
-for that label in
-.IR incoming.conf (5)
-is beyond ``max-connections'' within ``hold-time'' seconds since connected.
+Channel status indicates whether the channel is paused or not.  Nothing is
+shown unless the channel is paused, in which case ``paused'' is shown.
+A channel is paused if the number of remote connection for that label in
+.I incoming.conf
+is beyond ``max-connections'' within ``hold-time'' seconds of connection.
 .TP
 .BI newgroup " group rest creator"
 Create the specified newsgroup.
@@ -307,7 +310,8 @@ parameter should be the fourth field as described in
 if it is not an equal sign, only the first letter is used.
 The
 .I creator
-should be the name of the person creating the group.
+should be the identity of the person creating the group as described in
+.IR active (5).
 If the newsgroup already exists, this is equivalent to the ``changegroup''
 command.
 This is the only command that has defaults.
@@ -317,15 +321,14 @@ can be omitted and will default to the newsmaster (as specified at configure
 time, ``usenet'' by default), and the
 .I rest
 parameter can be omitted and will default to ``y''.
-This command can be done while the server is only throttled manually
+This command can only be done while the server is throttled manually
 or running; it will
 update its internal state when a ``go'' command is sent.
 This command updates the
 .I active.times
-(see
-.IR active (5))
-file.
-This command is forwarded; see below.
+file (see
+.IR active.times (5)).
+This command is forwarded; see NOTES below.
 .TP
 .BI param " letter value"
 Change the command-line parameters of the server.
@@ -341,7 +344,7 @@ For example, ``i 5'' directs the server to allow only five incoming
 connections.
 To enable or disable the action of the ``\fB\-n\fP'' flag, use the letter ``y''
 or ``n'', respectively, for the
-.IR value.
+.IR value .
 .TP
 .BI pause " reason"
 Pause the server so that no incoming articles are accepted.
@@ -368,7 +371,6 @@ If
 .I flag
 starts with the letter ``y'' then filtering is enabled.  If it starts with
 ``n'', then filtering is disabled.
-
 .TP
 .BI readers " flag text"
 Allow or disallow newsreaders.
@@ -404,18 +406,32 @@ given as the explanation.
 The server updates its in-memory copies of various configuration files.
 .I What
 identifies what should be reloaded.
-If it is an empty string or the word ``all'' then everything is reloaded;
+The
+.I reason
+is reported to
+.IR syslog .
+.sp 1
+There is no way to reload the
+.I inn.conf
+file; use
+.I "ctlinnd xexec innd"
+instead.
+.sp 1
+If
+.I what
+is an empty string or the word ``all'' then everything is reloaded;
 if it is the word ``history'' then the history database is closed and opened,
 if it is the word ``incoming.conf'' then the
-.IR incoming.conf (5)
+.I incoming.conf
 file is reloaded; if it is the word ``active'' or ``newsfeeds'' then both
 the
 .I active
 and
 .I newsfeeds
 files are reloaded; if it is the word ``overview.fmt'' then the
-.IR overview.fmt (5)
+.I overview.fmt
 file is reloaded.
+.sp 1
 If
 .I <\-\-with\-perl is specified at configure>
 and it is the word ``filter.perl'' then the
@@ -432,6 +448,7 @@ it is disabled; use
 to do this. The
 .I startup_innd.pl
 file cannot be reloaded.
+.sp 1
 If
 .I <\-\-with\-python is specified at configure>
 and it is the word ``filter.python'' then the
@@ -463,13 +480,6 @@ to do this.
 The
 .I startup.tcl
 file cannot be reloaded.
-The
-.I reason
-is reported to
-.IR syslog .
-There is no way to reload the data
-.IR inn.conf (5)
-file.
 .TP
 .BI renumber " group"
 Scan overview database for the specified newsgroup and update the
@@ -479,10 +489,10 @@ file.
 If
 .I group
 is an empty string then all newsgroups are scanned.
-Renumber never works, unless overview data is created.
-See the description of ``enableoverview'' in
+Renumber only works if overview data has been created.
+(See the description of ``enableoverview'' in
 .IR inn.conf (5)
-for overview creation.
+for details about overview creation.)
 .TP
 .BI renumberlow " file"
 This command does same as ``lowmark'' command.
@@ -503,12 +513,12 @@ This is done by editing the
 .I active
 file.
 The spool directory is not touched, and any articles in the group will
-be expired using the default expiration parameters.
+still be expired using the default expiration parameters.
 Unlike the ``newgroup'' command, this command does not update the
 .I active.times
 file.
 This command can be done while the server is only throttled manually or running.
-This command is forwarded; see below.
+This command is forwarded; see NOTES below.
 .TP
 .BI send " feed text..."
 The specified
@@ -519,28 +529,25 @@ is sent as a control line to the exploder
 .BI shutdown " reason"
 The server is shut down, with the specified reason recorded in the log
 and sent to all open connections.
-
+.sp 1
 It is a good idea to send a ``throttle'' command first.
-
-If
-.I <\-\-with\-python is specified at configure>
-and a Python method named ``filter_close'' exists,
-it will be called just before innd exits.
+.sp 1
+If Perl, Python, or TCL filtering is compiled in and enabled, certain
+functions are called at ``throttle'' or ``shutdown'' (for example, to
+save filter state to disk), consult the embedded filter documentation
+for details.
 .TP
-.BI stathist " flag"
-Enable or disable getting statistics of history performance.  It disables if
-.I flag
-is ``off''.  Otherwise
-.I flag
-is treated as a filename to be written.  The file can be parsed by
-I contrib/stathist.pl .
+.BI stathist " off|filename"
+Enable or disable generation of history performance statistics.  If the
+parameter is ``off'', no statistics are gathered.  Otherwise statistics
+are written to the specified file.  The file can be parsed by
+.IR contrib/stathist.pl .
 .TP
 .BI status " off|interval"
+Adjust frequency in seconds at which
 .I innd
-status reporting is turned off if ``off'' or ``0'' is specified,
-otherwise, status will be reported every
-.I interval
-seconds to syslog.  See ``status'' in
+reports status informatoin to syslog.  Status reporting is turned off if
+``off'' or ``0'' is specified.  See ``status'' in
 .IR inn.conf (5)
 for information on how to set the startup default.
 .TP
@@ -551,7 +558,6 @@ If
 .I flag
 starts with the letter ``y'' then filtering is enabled.  If it starts with
 ``n'', then filtering is disabled.
-
 .TP
 .BI throttle " reason"
 Input is throttled so that all existing connections are closed and new
@@ -580,7 +586,7 @@ Tracing is turned on or off for the specified
 should start with the letter ``y'' or ``n'' to turn tracing on or off.
 If
 .I item
-starts is a number, then tracing is set for the specified
+starts with a number, then tracing is set for the specified
 .I innd
 channel, which must be for an incoming NNTP feed.
 If it starts with the letter ``i'' then general
@@ -589,9 +595,9 @@ tracing is turned on or off.
 If it starts with the letter ``n'' then future
 .IR nnrpd 's
 will or will not have the ``\-t'' flag enabled, as appropriate.
-\&``n'' does not affect to
-.I nnrpd
-with ``-D'' (running as a daemon).
+The ``n'' flag does not affect
+.IR nnrpd 's
+already running or using ``-D'' (running as a daemon).
 .TP
 .BI xabort " reason"
 The server logs the specified
@@ -602,17 +608,18 @@ routine.
 .TP
 .BI xexec " path"
 The server gets ready to shut itself down, but instead of exiting it
-execs
-.I <PREFIX specified with \-\-prefix at configure>/inndstart
+.IR exec 's
+.I <pathbin in inn.conf>/inndstart
 with all of its original arguments except for ``\fB\-r\fP''.
 .I Path
-can be any of ``innd'', ``inndstart'' or an empty string.
-any other value is an error.
-.PP
+can be any of ``innd'', ``inndstart'', or an empty string, although all
+three valid parameters have exactly the same effect.
+Any other value is an error.
+.SH NOTES
 In addition to being acted upon within the server, certain commands can
 be forwarded to the appropriate child process.
 If the site receiving the command is an exploder (such as
-.IR buffchan (8))
+.IR buffchan (8)),
 or it is a funnel that feeds into an exploder, then the
 command can be forwarded.
 In this case, the server will send a command line to the exploder that
@@ -621,7 +628,7 @@ consists of the
 command name.
 If the site funnels into an exploder that has an asterisk (``*'') in its ``W''
 flag (see
-.IR newsfeed (5)),
+.IR newsfeeds (5)),
 then the site name will be appended to the command; otherwise no argument
 is appended.
 .SH BUGS
@@ -637,6 +644,7 @@ This is revision \\$3, dated \\$4.
 .R$ $Id$
 .SH "SEE ALSO"
 active(5),
+active.times(5),
 expire(8),
 innd(8),
 inndcomm(3),

@@ -10,13 +10,13 @@ B<makehistory> [B<-abeFIOx>] [B<-f> I<filename>] [B<-l> I<count>]
 =head1 DESCRIPTION
 
 B<makehistory> rebuilds the history(5) text file, which contains a list of
-message IDs of articles already seen by the server.  It can also be used
+Message-IDs of articles already seen by the server.  It can also be used
 to rebuild the overview database.  Note that the dbz(3) indexes for the
 history file are rebuilt by makedbz(8), not by B<makehistory> as in
 earlier versions of INN.
 
-The default name of the history text file is I<pathdb>/history; to specify
-a different name, use the B<-f> flag.
+The default location of the history text file is I<pathdb>/history; to
+specify an alternate location, use the B<-f> flag.
 
 By default, B<makehistory> will scan the entire spool, using the storage
 manager, and write a history line for every article.  To also generate
@@ -29,10 +29,10 @@ server is running.  Unless the existing overview is deleted, you may end
 up with problems like out-of-order overview entries, excessively large
 overview buffers, and the like.
 
-If you are using ovdb as your overview method, you will want to have the
-ovdb processes running while rebuilding overview; otherwise, the Berkeley
-DB transaction logs will be extremely large by the time makehistory
-finishes.  You can start them with ovdb_init(8).
+If I<ovmethod> in F<inn.conf> is C<ovdb>, you should have the ovdb
+processes running while rebuilding overview; otherwise, the Berkeley DB
+transaction logs will be extremely large by the time makehistory finishes.
+You can start them with ovdb_init(8).
 
 =head1 OPTIONS
 
@@ -42,7 +42,7 @@ finishes.  You can start them with ovdb_init(8).
 
 Append to the history file rather than generating a new one.  If you
 append to the main history file, make sure innd(8) is throttled or not
-running or you can corrupt the history.
+running, or you can corrupt the history.
 
 =item B<-b>
 
@@ -52,7 +52,7 @@ headers in them.
 =item B<-e>
 
 Compute Bytes headers which is used for overview data.  This option is valid
-only if B<-O> flag is specified and overview.fmt includes C<Bytes:>.
+only if B<-O> flag is specified and F<overview.fmt> includes C<Bytes:>.
 
 =item B<-f> I<filename>
 
@@ -72,8 +72,8 @@ C<buffindexed>, the C<overchan> program is invoked to write overview.
 =item B<-I>
 
 Don't store overview data for articles numbered lower than the lowest
-article number in active(5).  This is useful if there are old articles on
-disk for whatever reason that shouldn't be available to readers or put
+article number in F<active>.  This is useful if there are for whatever
+reason old articles on disk that shouldn't be available to readers or put
 into the overview database.
 
 =item B<-l> I<count>
@@ -96,25 +96,25 @@ overview and no batching is done.
 Size the history database for approximately I<size> pairs.  Accurately
 specifying the size is an optimization that will create a more
 efficient database.  (The size should be the estimated eventual size
-of the file, typically the size of the old file.)
+of the F<history> file, typically the size of the old file, in lines.)
 
 =item B<-O>
 
 Create the overview database as well as the history file.  Overview
 information is only required if the server supports readers; it is not
-needed for a transit-only server.  If you are using the C<buffindexed>
-overview storage method, erase all of your overview buffers before running
-B<makehistory> with B<-O>.
+needed for a transit-only server (see I<enableoverview> in inn.conf(5)).
+If you are using the C<buffindexed> overview storage method, erase all of
+your overview buffers before running B<makehistory> with B<-O>.
 
 =item B<-T> I<tmpdir>
 
 If B<-O> is given, B<makehistory> needs a location to write temporary
-overview data.  By default, it uses I<pathtmp>, set in inn.conf(5), but if
+overview data.  By default, it uses I<pathtmp>, set in F<inn.conf>, but if
 this option is given, the provided I<tmpdir> is used instead.  This is
 also used for temporary files created by sort(1) (which is invoked in the
 process of writing overview information since sorted overview information
-writes faster).  By default, sort usually uses /var/tmp; see the man page
-for sort on your system to be sure.
+writes faster).  By default, sort usually uses your system temporary
+directory; see the sort(1) man page on your system to be sure.
 
 =item B<-x>
 
@@ -129,15 +129,15 @@ a new history file.
 Here's a typical example of rebuilding the entire history and overview
 database, removing broken articles in the news spool.  This uses the
 default temporary file locations and should be done while innd isn't
-running or is throttled.
+running (or is throttled).
 
     makehistory -b -f history.n -O -l 30000 -I
 
 This will rebuild the overview (if using C<buffindexed>, erase the
 existing overview buffers before running this command) and leave a new
-history file in history.n in I<pathdb>.  To preserve all of the history
+history file as C<history.n> in I<pathdb>.  To preserve all of the history
 entries from the old history file that correspond to rejected articles or
-expired articles, use:
+expired articles, follow the above command with:
 
     cd /usr/local/news/db
     awk 'NF == 2 { print }' < history >> history.n
@@ -168,7 +168,7 @@ To just rebuild overview:
 
 =item inn.conf
 
-Read for I<pathdb> and I<pathtmp>.
+Read for I<pathdb>, I<pathtmp>, and other settings.
 
 =item I<pathdb>/history
 
@@ -190,6 +190,6 @@ $Id$
 =head1 SEE ALSO
 
 dbz(3), active(5), history(5), inn.conf(5), ctlinnd(8), innd(8),
-makedbz(8), ovdb_init(8).
+makedbz(8), ovdb_init(8), overview.fmt(5).
 
 =cut

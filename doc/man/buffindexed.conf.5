@@ -8,22 +8,21 @@ The file
 is required if buffindexed ovmethod is used.
 .PP
 Buffindexed is one of ovmethod which is specified in
-.IR inn.conf (5).
-It uses preconfigured buffer files which are used to store overview data
-and index, and never needs more disk space other than those files.
-The files are devided 8KB block internally and the block is allocated
-for each purpose; overview index and overview data.  The block is never
-shared by each newsgroup, so owned by one newsgroup.  There is a database
-file:
+.IR inn.conf .
+It uses preconfigured buffer files to store overview data and index, and
+never needs more disk space other than those files.  The files are divided
+into 8 KB blocks internally; a given block is allocated for either overview
+index or overview data.  A block is never shared among multiple newsgroups.
+There is a database file:
 .I <pathdb in inn.conf>/group.index
-which includes the information of the newsgroup; the pointer to the index
+that includes information about each  newsgroup:  the pointer to the index
 block for the group, high mark, low mark, flag of the group, the number of
-the articles and etc.  This file is created automatically when all buffers
+articles, and etc.  This file is created automatically when all buffers
 are initialized and must not be edited manually.  If all buffers are filled up,
 .IR innd (8)
 throttles itself.  Note that the buffer files are never rolled over and
-overwritten the way CNFS does.  You need to append another buffer file in the
-case.  You can see the buffer usage with
+overwritten the way CNFS does.  You need to append another buffer file in 
+this event.  You can see the buffer usage with
 .IR inndf (8)
 with ``-o'' option.
 .PP
@@ -41,39 +40,42 @@ index:file_name:buffer_size
 \&``Index'' is an index of overview buffer.
 \&``Index'' must be between 0 and 65535.
 \&``File_name'' is the path to overview buffer file.
-The length of this path should be within 63 letters.
+The length of this path should be not more than 63 characters.
 \&``Buffer_size'' is the length of buffer file in kilobytes
-in decimal (1KB = 1024 bytes).  If the ``file_name'' is not a special
-device, actucal file size must be buffer_size * 1024 bytes.
-You can NOT use buffers over 2GB even if you specify
-.IR <\-\-with\-largefiles\ at\ configure> .
-Or buffers will be broken.  It'll be fixed in the future.
+in decimal (1 KB = 1024 bytes).  If the ``file_name'' is not a special
+device, the actual file size must be buffer_size * 1024 bytes.
+You can NOT use buffers over 2 GB even if you specify
+.IR <\-\-with\-largefiles\ at\ configure> ,
+or buffers will be broken.  It'll be fixed in the future.
 .PP
-To create new overview buffer, there are two different methods for creating
-the files.
+When creating new overview buffer, there are two different methods for
+creating the files.
 .TP
 .BR 1. " Create a big file on top of a standard filesystem."
-The use "dd" to create the overview buffer
+.sp 1
+Use "dd" to create the overview buffer
 files, such as "dd if=/dev/zero of=/path/to/ovbuff bs=1024 count=N"
 where N is the buffer_size.
 .TP
 .BR 2. " Use block disk devices directly."
+.sp 1
 If your operating system will allow you to
 .I mmap()
 block disk devices (Solaris does, FreeBSD does not), this is the
-recommended method.  But note that Solaris(at least 2.6) seems to
+recommended method.  But note that Solaris (at least 2.6) seems to
 have a problem in regional locking of block disk devices, and should
-not be used.  Or overview data will be corrupted.
-Partition the disks to make each partition
-slightly larger (a few MB larger) than the intended size of each overview buffer.
-It is not recommend to use the block device files already located in ``/dev.''
-Instead, use "mknod" to create a new set of block device files.
+not be used as overview data will be corrupted.
+.sp 1
+Partition the disks to make each partition slightly larger (a few MB larger)
+than the intended size of each overview buffer.
+It is not recommend to use the block device files already located in
+``/dev''; instead, use "mknod" to create a new set of block device files.
 In order to do this, do an "ls -Ll" of the /dev/dsk partition.
 The major and minor device numbers are in the fifth and sixth columns (right
-before the date) respectively.  This information should be fed to "mknod"
+before the date), respectively.  This information should be fed to "mknod"
 to make a "block-type special file" (b).
-Here is a short script that accomplishes this when fed the ``/dev/dsk/''
-partition name:
+Here is a short script that accomplishes this when fed the name of the
+partition as listed in ``/dev/dsk/'':
 .sp 1
 .nf
 .in +0.5i
@@ -85,6 +87,7 @@ mkdir /ovbuff
 mknod /ovbuff/$disk b $major $minor
 .in -0.5i
 .fi
+.sp 1
 The created device files themselves consume very little space.
 .PP
 In either case, make certain that each overview buffer file is owned by
@@ -104,9 +107,9 @@ Aug 27 00:00:00 kevlar innd: buffindexed: No magic cookie found for buffindexed 
 .in -0.5i
 .fi
 .PP
-You MUST recreate whole overview, if you remove or relpace buffers.
-You need not recreate, if you just append new buffers.  And whenever
-recreate overview data base, you need to clean all buffers.
+You MUST entirely recreate overview if you remove or relpace buffers.
+You need not recreate if you just append new buffers.  And whenever you
+recreate the overview data base, you need to clean all the buffers.
 .SH HISTORY
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 .de R$

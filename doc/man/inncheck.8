@@ -28,7 +28,7 @@ inncheck \- check inn configuration and database files.
 .I Inncheck
 examines various configuration files and databases and verifies things
 about them. Things verified depend on the file being checked, but generally
-are things like permissions, ownership, syntax errors in config files etc.
+are things like permissions, ownership, syntax errors in config files, etc.
 .PP
 .I Inncheck
 does not make changes to any files \(em it just reports what it
@@ -37,7 +37,7 @@ thinks may be wrong, and it is up to the operator to fix the problem.
 The set of files checked may be restricted by using \fBfile\fP or
 \fBfile=value\fP arguments. For example, putting \fBincoming.conf\fP causes
 only the 
-.IR incoming.conf (5)
+.I incoming.conf
 file to be checked. Using \fBincoming.conf=/tmp/incoming.conf\fP on the
 command line will cause 
 .I inncheck
@@ -61,6 +61,7 @@ are:
     overview.fmt
     nntpsend.ctl
     passwd.nntp
+    readers.conf
 .fi
 .RE
 .SH OPTIONS
@@ -79,7 +80,7 @@ Use the ``\fB\-v\fP'' option to get more verbose output.
 .B \-pedantic
 Use the ``\fB\-pedantic\fP'' option to get reports on things that are not
 necessarily wrong, but may indicate a bad configuration \(em such as
-\fIinn.conf\fP(5) missing a key.
+\fIinn.conf\fP missing a key.
 .TP
 .B \-f
 Use the ``\fB\-f\fP'' flag to have inncheck print the appropriate
@@ -118,6 +119,15 @@ active and incoming.conf files do:
 .RS
 .nf
 inncheck -perm active incoming.conf
+.fi
+.RE
+.PP
+To fix the permissions problems noted in the output of the above
+command, modify it as follow:
+.PP
+.RS
+.nf
+inncheck -f -perm | sh
 .fi
 .RE
 .PP

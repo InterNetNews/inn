@@ -5,7 +5,7 @@ overchan \- update the news overview database
 .SH SYNOPSIS
 .B overchan
 [
-.B \- \&| file
+.BR file \ ...
 ]
 .SH DESCRIPTION
 .I Overchan
@@ -17,27 +17,29 @@ It uses this information to update the news overview database.
 .I Overchan
 was originally designed to be used by InterNetNews or the C News ``mkov'' packages
 to update the database as the articles come in.
-For current inn, the database is stored by overview method.
+For current INN, the database is stored in a selected overview method.
 This can be done within
 .IR innd (8)
-but, still
+itself, but
 .IR overchan (8)
-can do this, if
+can be used instead, if
 .I <useoverchan in inn.conf>
 is ``true'' and appropriate setup is done in
-.IR newsfeeds (5).
-file, for example:
+.IR newsfeeds ,
+for example:
 .PP
 .RS
 overview!:*:Tc,WnteO:<pathbin in inn.conf>/overchan
 .RE
 .PP
-This data consists of a line of text, separated into four parts by a space.
+.I Overchan
+input data consists of a line of text, separated into four parts by a space.
 The first part is a token for the article.
 The second part is time when the article was received.
-The third part is time when the article will be expired(which represents
-Expires header.)
+The third part is time when the article will be expired (which represents
+the Expires header).
 The fourth part is the data to be stored.
+.PP
 The data in the overview files should be expired by running
 .IR expireover (8).
 This is normally done by adding the ``expireover'' flag to the

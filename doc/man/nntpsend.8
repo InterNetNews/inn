@@ -65,7 +65,7 @@ pairs on the command line.
 If no such pairs are given,
 .I nntpsend
 defaults to the information given in the
-.IR nntpsend.ctl (5)
+.I nntpsend.ctl
 config file.
 .PP
 The
@@ -88,7 +88,7 @@ Output is sent to the file
 .IR <pathlog\ in\ inn.conf>/nntpsend.log .
 In order to keep from overwhelming the local system, 
 .I nntpsend
-waits five seconds before spawned each child.
+waits five seconds before spawning each child.
 .PP
 .I Nntpsend
 expects that the batchfile for a site is named
@@ -122,7 +122,7 @@ to send output to stdout rather than the log file
 The ``\-D'' flag does the same
 and it passes ``\-d'' to all
 .I innxmit
-invocations which in turn causes
+invocations, which in turn causes
 .I innxmit
 to go into debug mode.
 .TP
@@ -133,13 +133,13 @@ does not use
 .IR shlock (1)
 and does not lock batch files.
 .TP
-.B \-s
+.B \-s size
 If the ``\-s'' flag is used, then
 .IR shrinkfile (1)
 will be invoked to perform a head truncation on the batchfile and the flag
 will be passed to it.
 .TP
-.B \-w
+.B \-w delay
 If the ``\-w'' flag is used, then
 .I nntpsend
 waits for
@@ -152,7 +152,7 @@ The ``\fB\-a\fP'', ``\fB\-c\fP'', ``\fB\-l\fP'', ``\fB\-P\fP'', ``\fB\-p\fP'',
 ``\fB\-r\fP'', \``\fB\-S\fP'', ``\fB\-T\fP'' and ``\fB\-t\fP''
 flags are passed on to the child
 .I innxmit
-program. ``\-N'' flag is passed as ``\fB\-s\fP'' flag on to the child
+program. The ``\-N'' flag is passed as ``\fB\-s\fP'' flag to the child
 .I innxmit
 program.
 See 
@@ -166,7 +166,9 @@ invoke
 .I nntpsend
 with this flag in case a site cannot be reached for an extended period of time.
 .SH EXAMPLES
-With the following control file:
+With the following
+.IR nntpsend.ctl (5)
+control file:
 .PP
 .RS
 .nf

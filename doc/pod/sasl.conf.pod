@@ -8,7 +8,7 @@ The file F<sasl.conf> in I<pathetc> specifies Simple Authentication
 and Security Layer (SASL), defined in RFC 2222, for nnrpd.
 Now nnrpd implements only Security Layer support, which is an extension
 of RFC 2595. This means you can get SSL or TLS encrypted NNRP between
-your server and newsreaders. It requires OpenSSL 0.9.3 or newer
+your server and newsreaders. It requires OpenSSL 0.9.3 or newer from
 http://www.openssl.org/; it has been tested with versions 0.9.4 and 0.9.5.
 
 =head1 INSTALLATION
@@ -25,26 +25,22 @@ and are mode 0640 or 0660.
    chown news:news /usr/local/news/lib/cert.pem
    chmod 640 /usr/local/news/lib/cert.pem
 
-You also can make the keys by the root user as follows.
-
-   make cert
+You also can make the keys as the root user with C<make cert>.
 
 =head1 CONFIGURATION
 
 Comments begin with a number  sign  (C<#>)  and  continue through the 
 end of the line.  Blank lines and comments are ignored.
-All other lines specify parameters, and should be of the following form:
-
-Each line of the F<sasl.conf> in I<pathetc> has the form
+All other lines specify parameters, and should be of the form
 
     <option>: <value>
 
-where <option> is the name of the configuration option being set  and
+where <option> is the name of the configuration option being set and
 <value> is the value that the configuration option is being set to.
 
 Blank lines and lines beginning with (C<#>) are ignored.
 For boolean options, the values  C<yes>,  C<on>,  C<t>,
-and  C<1> turn the option on, the values C<no>, C<off>,
+and  C<1> turn the option on; the values C<no>, C<off>,
 C<f>, and C<0> turn the option off.
 
 =over 4
@@ -73,7 +69,7 @@ Implement methods of the authentication protocols of SASL.
 
 =head1 HISTORY
 
-Written by Kenichi OKADA E<lt>okada@opaopa.orgE<gt> for InterNetNews
+Written by Kenichi OKADA E<lt>okada@opaopa.orgE<gt> for InterNetNews.
 
 =head1 SEE ALSO
 

@@ -44,8 +44,8 @@ the tokens from a particular storage method together.
 Various additional optimizations for removing files can be turned on
 and/or tuned with options (see below).  Which options will be most
 effective depends heavily on the underlying structure of the file system,
-the way in which directories are stored and searched, and similar often
-underdocumented operating system implementation details.  The more
+the way in which directories are stored and searched, and similar, often
+underdocumented, operating system implementation details.  The more
 sophisticated the underlying operating system and file system, the more
 likely that it will already perform the equivalent of these optimizations
 internally.

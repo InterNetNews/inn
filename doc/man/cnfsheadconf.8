@@ -19,13 +19,13 @@ reads
 .I <pathetc in inn.conf>/cycbuff.conf
 and
 .I <pathetc in inn.conf>/storage.conf
-to determine which cycbuff is available, reads the specified cycbuff and
-modifies the header.
+to determine which cycbuffs are available, reads the specified cycbuff, and
+modifies the header as directed by the interactive user.
 .SH OPTIONS
 .TP
 .B \-c CLASS
 .I Cnfsheadconf
-prints status for the specified class.
+prints status of (and modifies, if appropriate) the specified class.
 .TP
 .B \-h
 .I Cnfsheadconf
@@ -33,7 +33,7 @@ prints usage information.
 .TP
 .B \-w
 .I Cnfsheadconf
-modifies cycbuff header.
+prompts for modifications to make to cycbuff header.
 .SH HISTORY
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 .de R$

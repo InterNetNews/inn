@@ -24,9 +24,9 @@ program shrinks files to a given
 .I size
 if the size is larger than
 .IR maxsize ,
- preserving the data at the end of the file.
+preserving the data at the end of the file.
 Truncation is performed on line boundaries, where a line is a series
-of bytes ending with a newline, \en.
+of bytes ending with a newline, ``\en''.
 There is no line length restriction and files may contain any binary data.
 .PP
 Temporary files are created in the
@@ -42,7 +42,7 @@ The maximum file size will not be exceeded by this addition.
 .B \-s
 By default, 
 .I size
-is assume to be zero and files are truncated to zero bytes.
+is assumed to be zero and files are truncated to zero bytes.
 By default,
 .I maxsize
 is the same as 

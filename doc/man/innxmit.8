@@ -44,7 +44,7 @@ innxmit \- send Usenet articles to a remote NNTP server
 connects to the NNTP server at the specified
 .I host
 (validating itself via
-.IR passwd.nntp (5)
+.IR passwd.nntp
 if possible) 
 and sends it the articles specified in the batchfile named
 .IR file .
@@ -62,7 +62,7 @@ is not an absolute pathname, it is taken relative to the
 .I <pathoutgoing in inn.conf>
 directory.
 It is normally written by specifying the ``Wnm'' flags in the
-.IR newsfeeds (5)
+.I newsfeeds
 file.
 Each line in the batchfile should be in one of the following formats:
 .PP
@@ -96,7 +96,7 @@ article and any other unsent articles.
 .B \-a
 If all articles were sent successfully,
 .I innxmit
-will remove the batchfile, otherwise it will rewrite it to contain the
+will remove the batchfile; otherwise it will rewrite it to contain the
 list of unsent articles.
 If no articles were sent or rejected, the file is left untouched.
 This can cause the batchfile to grow excessively large if many articles
@@ -104,7 +104,7 @@ have been expired and there are communication problems.
 To always rewrite the batchfile, use the ``\fB\-a\fP'' flag.
 .TP
 .B \-c
-In streaming mode a check of each message ID is still made to avoid sending
+In streaming mode, a check of each message ID is still made to avoid sending
 articles already on the server.
 The ``\fB\-c\fP'' flag will, if streaming mode is supported,
 result in sending articles without checking.
@@ -129,8 +129,8 @@ article.  ``\fB\-H\fP'' flag is useful for diablo reader.
 The ``\fB\-l\fP'' flag is used to turn on logging of reasons the remote gives
 for rejecting an article.
 .TP
-.B \-P
-To specify a port number other than the default, use the \-P flag.
+.B \-P portnum
+To specify a port number other than the default, use the ``\fB\-P\fP'' flag.
 .TP
 .B \-p
 If the ``\fB\-p\fP'' flag is given, then no connection is made and the batchfile
@@ -155,16 +155,15 @@ will revert to normal NNTP transfer mode.
 Use the ``\fB\-s\fP'' flag to disable the attempt to negotiate the streaming
 mode extension.
 .TP
-.B \-T
+.B \-T seconds
 To specify the total amount of time that should be allowed for article
 transfers, use the ``\fB\-T\fP'' flag.
 The default is to wait until an I/O error occurs, or all the articles have
 been transferred.
-If the ``\fB\-T\fP'' flag is used, the time is checked just before an article
-is started; it will not abort a transfer that is in progress.
-Both values are measured in seconds.
+If the ``\fB\-T\fP'' flag is used, the time is checked just before each
+article is started; it will not abort a transfer that is in progress.
 .TP
-.B \-t
+.B \-t seconds
 .I Innxmit
 normally blocks until the connection is made.
 To specify a timeout on how long to try to make the connection, use 

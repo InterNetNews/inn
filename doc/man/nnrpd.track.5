@@ -4,14 +4,19 @@
 nnrpd.track \- file to specify hosts to be tracked by nnrpd.
 .SH DESCRIPTION
 This file, which is located in
-.I <PATH in configure>/etc
+.I <pathetc in inn.conf>,
 specifies which hosts are to have their activities recorded during an
 .I nnrpd
 session.
 The
 .I nnrpd
-server reads it then first spawned by
-.IR innd .
+server reads it when first spawned by
+.IR innd ,
+provided
+.I readertrack
+in
+.I inn.conf
+is true; otherwise this file is not used.
 .PP
 Entries consist of one host specification per line, each line having two
 fields, separated by a colon:

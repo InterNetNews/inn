@@ -4,11 +4,11 @@ The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
 change, options in F<inn.conf> that contain whitespace or a few other
 special characters must be quoted with double quotes, and empty parameters
 (parameters with no value) are not allowed.  INN 2.4 comes with a script,
-innupgrade, that is run automatically on C<make update> that will attempt
+innupgrade(8), run automatically during C<make update>, that will attempt
 to fix any problems that it finds with your F<inn.conf> file, saving the
-original as inn.conf.OLD.
+original as F<inn.conf.OLD>.
 
-This change is the beginning of standardizing the parsing and syntax
+This change is the beginning of standardization of parsing and syntax
 across all of INN's configuration files.
 
 The history subsystem now has a standard API that allows other backends to
@@ -20,8 +20,8 @@ F<inn.conf>.  Adding:
 will tell INN to use the same history backend as was used in previous
 versions.
 
-If you use Perl authentication for nnrpd (if nnrpdperlauth in inn.conf
-is true), however, there have been major changes.  See L<"Changes to
+If you use Perl authentication for nnrpd (if I<nnrpdperlauth> in
+F<inn.conf> is true), there have been major changes.  See L<"Changes to
 Perl Authentication Support for nnrpd"> in F<doc/hook-perl> for details.
 
 The wildmat API has been renamed (to uwildmat and friends; see uwildmat(3)
@@ -57,8 +57,8 @@ parts of INN.
 
 =item *
 
-Variables can now be used in the newsfeeds file to make it easier to
-specify a lot of similar feeds or feed patterns.  See the newsfeeds(5) man
+Variables can now be used in the F<newsfeeds> file to make it easier to
+specify many similar feeds or feed patterns.  See the newsfeeds(5) man
 page for more details.
 
 =item *
@@ -70,7 +70,7 @@ the preferred interface for external spam and abuse filters like NoCeM.
 =item *
 
 Thanks to code contributed by CMU, innfeed can now feed an IMAP server as
-well as other NNTP servers.  See the man page for innfeed for more
+well as other NNTP servers.  See the man page for innfeed(8) for more
 information.
 
 =item *
@@ -90,6 +90,7 @@ Unicode).  See uwildmat(3) for the details.
 
 The interface between external authenticators and nnrpd is now wrapped in
 a library, which should make it easier to write additional authenticators.
+For example, see F<authprogs/domain.c>.
 
 =item *
 
@@ -101,8 +102,8 @@ and safely.
 =item *
 
 Two configure options have changed names:  --with-tmp-path is now
---with-tmp-dir and --with-largefiles is now --enable-largefiles to improve
-consistency and better match the autoconf option guidelines.
+--with-tmp-dir, and --with-largefiles is now --enable-largefiles to
+improve consistency and better match the autoconf option guidelines.
 
 =item *
 
@@ -114,29 +115,29 @@ in F<doc/IPv6-info>.
 
 =item *
 
-A new option tradindexedmmap has been added to inn.conf.  If set to true
-(the default) then the tradindexed overview method will use mmap() to
-access its overview data (in 2.3 you couldn't control this, it always used
-mmap).
+A new option, I<tradindexedmmap>, has been added to F<inn.conf>.  If set
+to true (the default), then the tradindexed overview method will use
+mmap() to access its overview data (in 2.3 you couldn't control this; it
+always used mmap).
 
 =item *
 
-Two new options nfsreader and nfswriter have been added to inn.conf to aid
-in building NFS based shared reader/writer platforms.  On the writer
-server configure nfswriter to true and on all of the readers configure
-nfsreader to true; these options add calls to force data out to the NFS
-server and force it to be read directly from the NFS server at the
+Two new options, I<nfsreader> and I<nfswriter>, have been added to
+F<inn.conf> to aid in building NFS based shared reader/writer platforms.
+On the writer server configure nfswriter to true and on all of the readers
+configure nfsreader to true; these options add calls to force data out to
+the NFS server and force it to be read directly from the NFS server at the
 appropriate moments.  Note that it has only been tested on Solaris 8,
 using CNFS as the storage mechanism and tradindexed as the overview
 method.
 
 =item *
 
-nnrpd now supports article injection via IHAVE. Any articles injected this
-way must have Date, From, Message-ID, Newsgroups, Path and Subject
+nnrpd now supports article injection via IHAVE.  Any articles injected
+this way must have Date, From, Message-ID, Newsgroups, Path, and Subject
 headers.  X-Trace and X-Complaints-To headers will be added if the
-appropriate options are set in readers.conf, but other headers will not be
-modified/inserted (i.e. NNTP-Posting-Host, NNTP-Posting-Date,
+appropriate options are set in F<readers.conf>, but other headers will not
+be modified/inserted (e.g. NNTP-Posting-Host, NNTP-Posting-Date,
 Organization, Lines, Cc, Bcc and To headers).
 
 =item *
@@ -151,7 +152,7 @@ nnrpd no longer handles the poorly-specified RFC 977 optional fourth
 argument to the NEWGROUPS command specifying the "distributions" that the
 command was supposed to apply to.
 
-Clients that use that argument will break.  There is not believed to be
+Clients that use that argument will break.  There are not believed to be
 any such clients, and it's easy enough to just filter the returned list of
 newsgroups (which is generally fairly short) to achieve the same results.
 
@@ -182,32 +183,31 @@ rebuild your overview and history files.
 
 If you want to allow readers, or if you want to expire based on newsgroup
 name, you need to tell INN to generate overview data and pick an overview
-method by setting ovmethod in inn.conf.  See INSTALL and inn.conf(5) for
-more details.
+method by setting I<ovmethod> in F<inn.conf>.  See INSTALL and inn.conf(5)
+for more details.
 
 The code that generates the dbz index files has been split into a seperate
-program, makedbz.  makehistory still generates the base history file and
-the overview information, but some of its options have been changed.  To
-rebuild the history and overview files, use:
+program, F<makedbz>.  F<makehistory> still generates the base history file
+and the overview information, but some of its options have been changed.
+To rebuild the history and overview files, use something like:
 
     makehistory -b -f history.n -O -T/usr/local/news/tmp -l 600000
 
-(Change the /usr/local/news/tmp path to some directory that has plenty of
+(change the /usr/local/news/tmp path to some directory that has plenty of
 temporary space, and leave off -O if you're running a transit-only server
 and don't intend to expire based on group name, and therefore don't need
-overview.)  Or use:
+overview.)  Or if your overview is buffindexed, use:
 
     makehistory -b -f history.n -O -F
 
-(This is suitable for the "buffindexed" overview backend.)  Both will
-generate a new history file as history.n and rebuild overview at the same
-time.  If you want to preseve a record of expired message IDs in the
-history file, run:
+Both will generate a new history file as F<history.n> and rebuild overview
+at the same time.  If you want to preseve a record of expired message IDs
+in the history file, run:
 
     awk 'NF==2 { print; }' < history >> history.n
 
-to append them to the newly created history file.  Look over the new
-history file and make sure it looks right, then generate the new index
+to append them to the new history file you created above.  Look over the
+new history file and make sure it looks right, then generate the new index
 files and move them into place:
 
     makedbz -s `wc -l <history.n` -f history.n
@@ -219,34 +219,34 @@ files and move them into place:
 (Rather than .hash and .index files, you may have a .pag file if you're
 using tagged hash.)
 
-For a reader machine, F<nnrp.access> has been replaced by F<readers.conf>.
+For reader machines, F<nnrp.access> has been replaced by F<readers.conf>.
 There currently isn't a program to convert between the old format and the
 new format (if you'd like to contribute one, it would be welcomed
-gratefully).  The new file is unfortunately considerably more complex to
-support its new capabilities; please carefully read the example
+gratefully).  The new file is unfortunately considerably more complex as
+a result of its new capabilities; please carefully read the example
 F<readers.conf> provided and the man page when setting up your initial
 configuration.  The provided commented-out examples cover the most common
 installation (IP-based authentication for all machines on the local
 network).
 
-INN makes extensive use of mmap for the new overview mechanisms, so at the
-present time NFS-mounting the spool and overview from one central server
-on multiple reader machines probably isn't feasible in this version.  mmap
-tends to interact poorly with NFS (at the least, NFS clients won't see
-updates to the mapped files in situations where they should).  (The
+INN makes extensive use of mmap(2) for the new overview mechanisms, so at
+the present time NFS-mounting the spool and overview on multiple reader
+machines from one central server probably isn't feasible in this version.
+mmap tends to interact poorly with NFS (at the least, NFS clients won't
+see updates to the mapped files in situations where they should).  (The
 preferred way to fix this would, rather than backing out the use of mmap
 or making it optional, to add support for Diablo-style header feeds and
 pull-on-demand of articles from a master server.)
 
-The flags for overchan have changed, plus you probably don't want to run
-overchan at all any more.  Letting innd write overview data itself results
-in somewhat slower performance, but is more reliable and has a better
-failure mode under high loads.  Writing overview data directly is the
-default, so in a normal upgrade from 2.2 to 2.3 you'll want to comment out
-or remove your overchan entry in F<newsfeeds> and set useoverchan to false
-in F<inn.conf>.
+The flags for F<overchan> have changed, plus you probably don't want to
+run overchan at all any more.  Letting innd write overview data itself
+results in somewhat slower performance, but is more reliable and has a
+better failure mode under high loads.  Writing overview data directly is
+the default, so in a normal upgrade from 2.2 to 2.3 you'll want to comment
+out or remove your overchan entry in F<newsfeeds> and set useoverchan to
+false in F<inn.conf>.
 
-crosspost is no longer installed, and no longer works (even with
+F<crosspost> is no longer installed, and no longer works (even with
 traditional spool).  If you have an entry for crosspost in F<newsfeeds>,
 remove it.
 
@@ -256,7 +256,8 @@ new server rather than trying to build overview and history directly from
 the old spool.  It's more reliable and ensures that everything gets put
 into the right place.  The easiest way to do this is to generate, on your
 old server, a list of all of your existing article files and then feed
-that list to innxmit.
+that list to innxmit.  Further details can be found in the FAQ at
+I<http://www.eyrie.org/~eagle/faqs/inn.html>.
 
 If you are using a version of Cleanfeed that still has a line in it like:
 
@@ -288,7 +289,7 @@ second (buffindexed) uses large buffers rather than separate files for
 each group and can handle a higher incoming article rate while still being
 fast for readers.  The third (ovdb) uses Berkeley DB to store overview
 information (so you need to have Berkeley DB installed to use it).  The
-ovmethod key in F<inn.conf> chooses the overview method to use.
+I<ovmethod> key in F<inn.conf> chooses the overview method to use.
 
 Note that ovdb has not been as widely tested as the other overview
 mechanisms and should be considered experimental.
@@ -345,9 +346,9 @@ configured.)
 
 =item *
 
-The build and installation system has been substantially overhauled.  make
-update now updates scripts as well as binaries and documentation, there is
-better support for parallel builds (with make -j), there is less needless
+The build and installation system has been substantially overhauled.
+C<make update> now updates scripts as well as binaries and documentation,
+there is better support for parallel builds (C<make -j>), there is less
 make recursion, and far more of the system-dependent configuration is
 handled directly by autoconf.  libtool build support (including shared
 library support) should be better than previous releases.
@@ -388,7 +389,7 @@ pgp-verify).
 
 =item *
 
-inndf, a portable version of df(1) is supplied.
+inndf, a portable version of df(1), is supplied.
 
 =item *
 

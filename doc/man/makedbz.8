@@ -27,11 +27,10 @@ The default name of the text file is
 to specify a different name, use the ``\fB\-f\fP'' flag.
 .SH OPTIONS
 .TP
-.B \-f
+.B \-f file
 If the ``\fB\-f\fP'' flag is used, then the database files are named
-.I file.dir
-,
-.I file.index
+.IR file.dir ,
+.IR file.index ,
 and
 .IR file.hash .
 If the ``\fB\-f\fP'' flag is not used, then a temporary link to the name
@@ -45,7 +44,7 @@ and
 .TP
 .B \-i
 To ignore the old database use the ``\fB\-i\fP'' flag.
-Using the ``\fB\-o\fP'' or ``\fB\-s\fP'' flag implies the ``\fB\-i\fP'' flag.
+Using the ``\fB\-o\fP'' or ``\fB\-s\fP'' flags implies the ``\fB\-i\fP'' flag.
 .TP
 .B \-o
 If the ``\fB\-o\fP'' flag is used, then the link is not made and any existing
@@ -54,11 +53,11 @@ If the old database exists,
 .I makedbz
 will use it to determine the size of the new database.
 .TP
-.B \-s
+.B \-s size
 The program will also ignore any old database if the ``\fB\-s\fP'' flag is used
 to specify the approximate number of entries in the new database.
 Accurately specifying the size is an optimization that will create a more
-efficient database.
+efficient database.  Size is measured in key-value pairs (i.e., lines).
 (The size should be the estimated eventual size of the file, typically
 the size of the old file.)
 For more information, see the discussion of

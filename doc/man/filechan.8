@@ -8,7 +8,7 @@ filechan \- file-writing backend for InterNetNews
 .BI \-d " directory"
 ]
 [
-.BI \-f " fields"
+.BI \-f " num_fields"
 ]
 [
 .BI \-m " mapfile"
@@ -26,12 +26,12 @@ is intended to be called by
 as a channel feed.
 (It is not a full exploder and does not accept commands; see
 .IR newsfeeds (5)
-for a description of the difference and
+for a description of the difference, and
 .IR buffchan (8)
 for an exploder program.)
 .PP
 .I Filechan
-input is interpreted as a set of lines.
+input is interpreted as a sequence of lines.
 Each line contains a fixed number of initial fields, followed by a
 variable number of filename fields.
 All fields in a line are separated by whitespace.
@@ -46,13 +46,20 @@ When writing to a file,
 opens it in append mode and tries to lock it and change the
 ownership to the user and group who owns the directory where the file is
 being written.
+.PP
+Because the time window in which a file is open is very small, complicated
+flushing and locking protocols are not needed; a
+.IR mv (1)
+followed by a
+.IR sleep (1)
+for a couple of seconds is sufficient.
 .SH OPTIONS
 .TP
-.B \-f
+.B \-f num_fields
 The ``\fB\-f\fP'' flag may be
 used to specify a different number of initial fields.
 .TP
-.B \-d
+.B \-d directory
 By default,
 .I filechan
 writes its output into the directory
@@ -60,13 +67,33 @@ writes its output into the directory
 The ``\fB\-d\fP'' flag may be used to specify a directory the program should
 change to before starting.
 .TP
-.B \-p
+.B \-p pidfile
 If the ``\fB\-p\fP'' flag is used, the program will write a line containing
 its process ID (in text) to the specified file.
+.TP
+.B \-m mapfile
+A map file may be specified by using the ``\fB\-m\fP'' flag.
+Blank lines and lines starting with a number sign (``#'') are ignored.
+All other lines should have two host names separated by a colon.
+The first field is the name that may appear in the input stream;
+the second field names the file to be used when the name in the first
+field appears.
+For example, the following map file may be used to map the short
+names used in the example below to the full domain names:
 .PP
+.RS
+.nf
+# This is a comment
+uunet:news.uu.net
+foo:foo.com
+munnari:munnari.oz.au
+.fi
+.RE
+.SH EXAMPLES
 If
 .I filechan
 is invoked with ``\fB\-f 2\fP'' and given the following input:
+.PP
 .RS
 .nf
 news/software/b/132 <1643@munnari.oz.au> foo uunet
@@ -78,6 +105,7 @@ comp/sources/unix/2002 <999@news.foo.com> foo uunet munnari
 Then the file
 .I foo
 will have these lines:
+.PP
 .RS
 .nf
 news/software/b/132 <1643@munnari.oz.au>
@@ -88,6 +116,7 @@ comp/sources/unix/2002 <999@news.foo.com>
 the file
 .I munnari
 will have these lines:
+.PP
 .RS
 .nf
 news/software/b/133 <102060@litchi.foo.com>
@@ -98,36 +127,12 @@ comp/sources/unix/2002 <999@news.foo.com>
 and the file
 .I uunet
 will have these lines:
+.PP
 .RS
 .nf
 news/software/b/132 <1643@munnari.oz.au>
 news/software/b/133 <102060@litchi.foo.com>
 comp/sources/unix/2002 <999@news.foo.com>
-.fi
-.RE
-.PP
-Because the time window in which a file is open is very small, complicated
-flushing and locking protocols are not needed; a
-.IR mv (1)
-followed by a
-.IR sleep (1)
-for a couple of seconds is sufficient.
-.TP
-.B \-m
-A map file may be specified by using the ``\fB\-m\fP'' flag.
-Blank lines and lines starting with a number sign (``#'') are ignored.
-All other lines should have two host names separated by a colon.
-The first field is the name that may appear in the input stream;
-the second field names the file to be used when the name in the first
-field appears.
-For example, the following map file may be used to map the short
-names above to the full domain names:
-.RS
-.nf
-# This is a comment
-uunet:news.uu.net
-foo:foo.com
-munnari:munnari.oz.au
 .fi
 .RE
 .SH HISTORY

@@ -34,7 +34,7 @@ may be one of
 or
 .IR newsgroups .
 These values request the
-.IR active (5),
+.IR active ,
 .IR active.times ,
 .IR <pathetc\ in\ inn.conf>/distributions .
 or
@@ -43,14 +43,16 @@ files, respectively.
 .SH OPTIONS
 .TP
 .B \-A
-If the ``\fB\-A\fP'' flag is used, then the program tries to authenticates
+If the ``\fB\-A\fP'' flag is used, then the program tries to authenticate
+as per
+.I passwd.nntp
 before issuing LIST command.
 .TP
 .B \-h
 If the ``\fB\-h\fP'' flag is used, then the program connects to the server
 on the specified host.
 The default is to connect to the server specified in the
-.IR inn.conf (5)
+.I inn.conf
 file.
 .PP
 If the
@@ -94,4 +96,4 @@ Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.
 This is revision \\$3, dated \\$4.
 ..
 .SH "SEE ALSO"
-active(5), inn.conf(5), nnrpd(8), uwildmat(3).
+active(5), active.times(5), inn.conf(5), nnrpd(8), uwildmat(3).

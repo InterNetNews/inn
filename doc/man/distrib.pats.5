@@ -9,16 +9,17 @@ is used to determine the default value of the Distribution header.
 It consists of a series of lines; blank lines and lines beginning
 with a number sign (``#'') are ignored.
 All other lines consist of three fields separated by a colon:
+.sp 1
 .RS
 .nf
 weight:pattern:value
 .fi
 .RE
 .PP
-The first field is the weight to assign to this match.
-If a newsgroup matches multiple lines, the line with the highest weight
+The first field is the weight to assign to this match;
+if a newsgroup matches multiple lines, the line with the highest weight
 is used.
-This should be an arbitrary number greater than zero.
+This should be an arbitrary integer greater than zero.
 Unlike other INN files, the order of lines in this file is not important.
 .PP
 The second field is the name of the newsgroup or a
@@ -26,9 +27,9 @@ The second field is the name of the newsgroup or a
 pattern to specify a set of newsgroups.
 Multiple patterns are not allowed.
 .PP
-The third field is the value that should be used if this line is picked
-as the best match.
-It can be an empty string.
+The third field is the value that should be used for the Distribution header
+if this line is picked as the best match AND no Distribution header was
+supplied by the user.  It can be an empty string.
 .PP
 Programs such as
 .IR inews (1)

@@ -1,0 +1,144 @@
+.\"
+.\" $Id$
+.\"
+.\" This manual page was provided by James Ralston <qralston+@pitt.edu>
+.TH pgpverify 8
+.SH NAME
+pgpverify - cryptographically verify Usenet control messages
+.SH SYNOPSIS
+.B pgpverify
+[
+.B \-test
+]
+.SH DESCRIPTION
+The
+.I pgpverify
+program reads (on standard input) a Usenet control message that has
+been cryptographically signed using the
+.I signcontrol
+program.
+.I pgpverify
+then uses either
+.I pgp
+or
+.I gpgv
+(by preference, the latter)
+to determine who signed the control message.  If the control
+message was validly signed,
+.I pgpverify
+outputs (to stdout) the User ID of the key ID that signed the message.
+.SH OPTIONS
+The ``-test'' flag causes
+.I pgpverify
+to 
+print out the input it is passing to pgp (which is a reconstructed
+version of the input that supposedly created the control message) as
+well as the output of pgp's analysis of the message.
+.SH EXIT STATUS
+.I pgpverify
+returns the following exit statuses for various cases:
+.P
+.TP
+.B 0
+The control message had a good PGP signature.
+.TP
+.B 1
+The control message had no PGP signature.
+.TP
+.B 2
+The control message had an unknown PGP signature.
+.TP
+.B 3
+The control message had a bad PGP signature.
+.TP
+.B 255
+A problem occurred not directly related to PGP analysis of signature.
+.SH ENVIRONMENT
+.I pgpverify
+does not modify or otherwise alter the environment before invoking the
+.I pgp
+program.  It is the responsibility of the person who installs
+.I pgpverify
+to ensure that when
+.I pgp
+runs, it has the ability to locate and read a PGP key file that
+contains the PGP public keys for the appropriate Usenet hierarchy
+administrators.
+.SH FILES
+However, INN configures
+.I pgpverify
+to pass the following default keyring locations to child programs:
+.TP
+.IR <pathetc\ in\ inn.conf> /pgp/
+Default location passed to
+.I pgp
+in the
+.I PGPPATH
+environment variable.
+.TP
+.IR <pathetc\ in\ inn.conf> /pgp/pubring.gpg
+Default location passed to
+.I gpgv
+using
+.IR "--keyring=" .
+.SH HISTORY
+Written by David C Lawrence <tale@isc.org>.
+.SH SEE ALSO
+pgp(1)
+.SH NOTES
+Historically, Usenet news server administrators have configured their
+news servers to automatically honor Usenet control messages based on
+the originator of the control messages and the hierarchies for which
+the control messages applied.  For example, in the past, David C
+Lawrence <tale@uunet.uu.net> always issued control messages for the
+"Big 8" hierarchies (comp, humanities, misc, news, rec, sci, soc,
+talk).  Usenet news administrators would configure their news server
+software to automatically honor newgroup and rmgroup control messages
+that originated from David Lawrence and applied to any of the Big 8
+hierarchies.
+.P
+Unfortunately, Usenet news articles (including control messages) are
+notoriously easy to forge.  Soon, malicious users realized they could
+create or remove (at least temporarily) any Big 8 newsgroup they
+wanted by simply forging an appropriate control message in David
+Lawrence's name.  As Usenet became more widely used, forgeries became
+more common.
+.P
+The
+.I pgpverify
+program was designed to allow Usenet news administrators to configure
+their servers to cryptographically verify control messages before
+automatically acting on them.  Under the pgpverify system, a Usenet
+hierarchy maintainer creates a PGP public/private key pair and
+disseminates the public key.  Whenever the hierarchy maintainer issues
+a control message, he uses the
+.I signcontrol
+program to sign the control message with the PGP private key.  Usenet
+news administrators configure their news servers to run the
+.I pgpverify
+program on the appropriate control messages, and take action based on
+the PGP key User ID that signed the control message, not the name and
+address that appear in the control message's From or Sender headers.
+.P
+Thus, appropriately using
+.I signcontrol
+and
+.I pgpverify
+programs essentially eliminates the possibility of malicious
+users forging Usenet control messages that sites will act upon, as
+such users would have to obtain the PGP private key in order to forge
+a control message that would pass the cryptographic verification step.
+If the hierarchy administrators properly protect their PGP private
+keys, the only way a malicious user could forge a validly-signed
+control message would be by breaking the RSA encryption algorithm,
+which (at least at this time) is believed to be an NP-complete
+problem.  If this is indeed the case, discovering the PGP private key
+based on the PGP public key is computationally impossible for PGP keys
+of a sufficient bit length.
+.P
+<URL:ftp://ftp.isc.org/pub/pgpcontrol/> is where the most recent
+versions of
+.I signcontrol
+and
+.I pgpverify
+live, along with PGP public keys used for hierarchy administration.

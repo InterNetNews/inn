@@ -15,9 +15,9 @@ different file can be specified with the B<-f> option) and then removes
 from the overview database mentions of any articles that no longer exist
 in the news spool.
 
-If I<groupbaseexpiry> in inn.conf(5) is true, B<expireover> also removes
+If I<groupbaseexpiry> in I<inn.conf> is true, B<expireover> also removes
 old articles from the news spool according to the expiration rules in
-expire.ctl(5).  Otherwise it only removes overview entries for articles
+F<expire.ctl>.  Otherwise it only removes overview entries for articles
 that have already been removed by some other process, and B<-e>, B<-k>,
 B<-N>, B<-p>, B<-q>, B<-w>, and B<-z> are all ignored.
 
@@ -28,12 +28,12 @@ from the overview database of each newsgroup as soon as it expires out of
 that individual newsgroup.  The effect is that an article crossposted to
 several groups will be removed from the overview database from each group
 one-by-one as its age passes the expiration threshold for that group as
-set in expire.ctl(5), and then when it expires out of the last newsgroup,
+set in F<expire.ctl>, and then when it expires out of the last newsgroup,
 it will be deleted from the news spool.
 
 Articles that are stored in self-expiring storage backends such as CNFS
 are normally treated differently and not expired until they expire out of
-the backend regardless of expire.ctl(5).  See B<-N>, however.
+the backend regardless of F<expire.ctl>.  See B<-N>, however.
 
 By default, B<expireover> purges all overview information for newsgroups
 that have been removed from the server; this behavior is suppressed if
@@ -63,15 +63,15 @@ removed from the server.
 Retain all overview information for an article, as well as the article
 itself, until it expires out of all newsgroups to which it was posted.
 This can cause articles to stick around in a newsgroup for longer than the
-expire.ctl(5) rules say when they're crossposted.  B<-e> and B<-k> cannot
-be used at the same time.  This flag is ignored if I<groupbaseexpiry> is
-false.
+F<expire.ctl> rules indicate, when they're crossposted.  B<-e> and B<-k>
+cannot be used at the same time.  This flag is ignored if
+I<groupbaseexpiry> is false.
 
 =item B<-N>
 
-Apply control.ctl(5) rules to expire articles even from storage methods
+Apply F<expire.ctl> rules to expire articles even from storage methods
 that have self-expire functionality.  This may remove articles from
-self-expiring storage methods before the articles expire "naturally."
+self-expiring storage methods before the articles "naturally" expire.
 This flag is ignored if I<groupbaseexpiry> is false.
 
 =item B<-p>
@@ -101,7 +101,7 @@ flag.  See storage.conf(5) for more information about this metric.
 
 "Warps" time so that B<expireover> thinks that it's running at some time
 other than the current time.  This is occasionally useful to force groups
-to be expired or not expired without changing expire.ctl(5) for the expire
+to be expired or not expired without changing F<expire.ctl> for the expire
 run.  I<offset> should be a signed floating point number specifying the
 number of days difference from the current time to use as "now."  This
 flag is ignored if I<groupbaseexpiry> is false.
@@ -128,8 +128,8 @@ ctlinnd(8) for more information.
 
 Normally B<expireover> is invoked from news.daily(8), which handles such
 things as processing the I<rmfile> and I<lowmarkfile> if necessary.
-Sometimes it's convenient to expire a particular newsgroup, however.  This
-can be done with a command like:
+Sometimes it's convenient to manually expire a particular newsgroup,
+however.  This can be done with a command like:
 
     echo example.test | expireover -f - -Z /usr/local/news/tmp/lowmark
     ctlinnd lowmark /usr/local/news/tmp/lowmark

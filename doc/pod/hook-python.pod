@@ -263,11 +263,11 @@ features too.  Here is some sample Python code to show what you get:
 =head1 PYTHON AUTHENTICATION AND AUTHORIZATION SUPPORT FOR NNRPD
 
 Python authentication and authorization support in nnrpd along with
-filtering support in innd may be compiled in by giving C<--with-python>
-command line flag to configure script. Python authentication and
-authorization may be turned on by nnrppythonauth setting in F<inn.conf>.
+filtering support in innd may be compiled in by passing C<--with-python>
+C<configure>.  Python authentication and authorization may be enabled with
+the nnrppythonauth setting in F<inn.conf>.
 
-If nnrppythonauth is set to true in F<inn.conf>, nnrpd will load the
+If nnrppythonauth in F<inn.conf> is set to true, nnrpd will load the
 Python module defined in include/paths.h and located in the directory
 specified by pathfilter in F<inn.conf>.  Once that module is loaded, nnrpd
 will authenticate and authorize readers by calling a Python methods rather

@@ -26,7 +26,7 @@ of the news servers it peers with, those servers pass the articles along
 to their peers, and so on, resulting in "flood fill" propagation of news
 articles.
 
-A news server performs three basic functions:  It accepts articles from
+A news server performs three basic functions:  it accepts articles from
 other servers and stores them on disk, sends articles it has received out
 to other servers, and offers stored news articles to readers on demand.
 It additionally has to perform some periodic maintenance tasks, such as
@@ -45,12 +45,12 @@ uses to talk to another news server over TCP/IP is called NNTP (Network
 News Transport Protocol).
 
 INN supports accepting articles via either NNTP connections or via UUCP.
-innd, the heart of INN, handles NNTP feeding connections directly; UUCP
-newsfeeds use rnews (included in INN) to hand articles off to innd.  Other
-parts of INN handle feeding articles out to other news servers, most
-commonly innfeed (for real-time outgoing feeds) or nntpsend and innxmit
-(used to send batches of news created by innd to a remote site via
-TCP/IP).  INN can also handle outgoing UUCP feeds.
+B<innd>, the heart of INN, handles NNTP feeding connections directly;
+UUCP newsfeeds use B<rnews> (included in INN) to hand articles off to
+innd.  Other parts of INN handle feeding articles out to other news
+servers, most commonly B<innfeed> (for real-time outgoing feeds) or
+B<nntpsend> and B<innxmit> (used to send batches of news created by innd
+to a remote site via TCP/IP).  INN can also handle outgoing UUCP feeds.
 
 The part of INN that handles connections from newsreaders is nnrpd.
 
@@ -94,8 +94,8 @@ versions of Perl previous to 5.004 are buggy (including security problems)
 and have fewer features, installing Perl 5.004 or later is recommended.
 
 If you want to enable PGP verification of control messages (highly
-recommended), you will need to have PGP installed.  See F<INSTALL> for
-more details.
+recommended), you will need to have a PGP implementation installed.  See
+F<INSTALL> for more details.
 
 =head1 Getting Started
 
@@ -126,8 +126,8 @@ documentation too.  Please send I<all> such reports to
 
     inn-bugs@isc.org
 
-Even if you post to Usenet, please CC the above address.  All other INN
-mail should go to
+(patches are certainly welcome, see below).  Even if you post to Usenet,
+please CC the above address.  All other INN mail should go to
 
     inn@isc.org
 
@@ -148,13 +148,18 @@ inclusion into INN, please mail it to
 
     inn-patches@isc.org
 
+in the body of the message (not as an attachment), or put it on a
+webpage and send a link.  Patches included with a bug report as
+described above should follow the same procedure, but need not be sent
+to both addresses (either will do).
+
 Have fun!
 
 =head1 Mailing Lists
 
 There are various INN-related mailing lists you can join or send messages
 to if you like.  Some of them you must be a member of before you can send
-mail to them (thank the Spam gods for that policy), and one of them is
+mail to them (thank the spammers for that policy), and one of them is
 read-only (no postings allowed).
 
 =over 24
@@ -286,9 +291,9 @@ other.
 Note that INN is supported by the Internet Software Consortium, and
 although it is free for use and redistribution and incorporation into
 vendor products and export and anything else you can think of, it costs
-money to produce.  That money comes from ISP's, hardware and software
+money to produce.  That money comes from ISPs, hardware and software
 vendors, companies who make extensive use of the software, and generally
-kind hearted folk such as yourself.
+kind-hearted folk such as yourself.
 
 The Internet Software Consortium has also commissioned a DHCP server
 implementation, handles the official support/release of BIND, and supports

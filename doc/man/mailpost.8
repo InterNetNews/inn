@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH MAILPOST 1
+.TH MAILPOST 8
 .SH NAME
 mailpost \- feed an email message into a news group
 .SH SYNOPSIS
@@ -30,60 +30,70 @@ newsgroups
 The
 .I mailpost
 program reads a properly formatted email message from stdin and feeds it to
-inews for posting to a news server. Before feeding the article to inews it
-checks that the article has not been seen before, and it changes some headers
-(cleans some address headers up and puts ``X-'' in front of unknown headers).
+inews for posting to a news server.
+.I newsgroups
+is a whitespace-separated list of group names to which to post the article.
+.PP
+Before feeding the article to inews, it checks that the article has not
+been seen before, and it changes some headers (cleans up some address
+headers and puts ``X-'' in front of unknown headers).
 .PP
 If the article has been seen before
 .RI ( mailpost 
-records the message-id of all articles is handles), the the article will be
+records the message-id of each articles it handles), then the article will be
 silently dropped. Other errors will cause the article to be mailed to the
 newsmaster.
 .PP
-Normally mailpost is run by sendmail via an alias entry:
+Normally mailpost is run by
+.IR sendmail (8)
+via an alias entry:
 .PP
 .RS
 .nf
-.ds R$ <PREFIX specified with --prefix at configure>/bin
+.ds R$ <pathbin in inn.conf>
 local-mail-wreck-bikes: "|\*(R$/mailpost
          -d local local.mail.rec.bicycles.racing"
 .fi
 .RE
-.PP
-.I newsgroups
-is a list of group name separated by white spaces.
 .SH OPTIONS
 .TP
-.B \-a
+.B \-a addr
 If the ``\fB\-a\fP'' flag is used the value given is added to the article 
 as an Approved header.
 .TP
-.B \-b
-IF the ``\fB\-b\fP'' flag is used, then it defines the location of the database 
+.B \-b database
+If the ``\fB\-b\fP'' flag is used, then it defines the location of the database 
 used to store the message ids of articles sent on. This is to prevent articles
 looping around if a news to mail gateway sends them back here. This option may
 be required if the mailpost process doesn't have write access to the news tmp
-directory (the value of \fBpathtmp\fP in \fBinn.conf(5)\fP.
+directory (the value of \fBpathtmp\fP in \fBinn.conf\fP).
 .TP
-.B \-c
-If the ``\fB\-c\fP'' flag is used the sleep time before posting.  Until 
-timeout, if duplicated message are received, original message is considered as
-a crossposted article and its Newsgroup header is update to be so.
+.B \-c wait-time
+The ``\fB\-c\fP'' flag indicates a length of time to sleep before
+posting.  If duplicate messages are received in this interval (by any
+instance of
+.I mailpost
+using the same database), the article is only posted once, but with
+.I Newsgroups
+header modified to crosspost the article to all indicated groups.
 .TP
-.B \-d
+.B \-d distribution
 If the ``\fB\-d\fP'' flag is used the value given is added to the article 
 as a Distribution header.
 .TP
-.B \-f 
+.B \-f addr
 The ``\fB\-f\fP'' flag is a synonym for the ``\fB\-r\fP'' flag.
 .TP
-.B \-m 
+.B \-m mailing-list
 If the ``\fB\-m\fP'' flag is used the value given is added to the articles in a 
-Mailing-List header, if a Mailing-List header doesn't already exist.
+.I Mailing-List
+header, if such a header doesn't already exist.
 .TP
-.B \-r
-If the ``\fB\-r\fP'' flag is used the program will use the given address
-as the Path header, if no other value can be determined.
+.B \-r addr
+A heuristic is used to determine a reasonable value for the
+.I Path
+header.  The ``\fB\-r\fP'' flag indicates what to use if no other value
+can be determined.
 .SH HISTORY
 Written by Paul Vixie long ago and then hacked up by James Brister for INN 
 integration.

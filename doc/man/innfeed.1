@@ -76,11 +76,9 @@ innfeed \- multi-host, multi-connection, streaming NNTP feeder.
 .\"
 .SH DESCRIPTION
 .PP
-This man page describes version 1.0 of innfeed.
-.PP
 .I Innfeed
-implements the NNTP protocol for transferring news between computers. It
-handles both the standard IHAVE protocol as well as the CHECK/TAKETHIS
+implements the NNTP protocol for transferring news between computers.  It
+handles the standard IHAVE protocol as well as the CHECK/TAKETHIS
 streaming extension. Innfeed can feed any number of remote hosts at once
 and will open multiple connections to each host if configured to do so. The
 only limitations are the process limits for open file descriptors and memory.
@@ -150,7 +148,9 @@ Innfeed expects a couple of things to be able to run correctly: a directory
 where it can store backlog files and a configuration file to describe which
 peers it should handle.
 .PP
-The configuration file is described in innfeed.conf(5). The ``\fI\-c\fP''
+The configuration file is described in
+.IR innfeed.conf (5).
+The ``\fI\-c\fP''
 option can be used to specify a different file.
 .PP
 For each peer (say, ``\fIfoo\fP''), innfeed manages up to 4 files in the
@@ -180,7 +180,11 @@ innfeed, and the same as the first two fields of the lines of the batch
 file innd will write if innfeed is unavailable for some reason. When
 innfeed processes its own batch files it ignores everything after the first
 two whitespace separated fields, so moving the innd-created batch file to
-the appropriate spot will work, even though the lines are longer.
+the appropriate spot will work, even though the lines have extra fields.
+.PP
+The first field can also be a storage API token.  The two types of lines can
+be intermingled; innfeed will use the storage manager if appropriate and
+otherwise treat the first field as a filename to read directly.
 .PP
 Innfeed writes its current status to the file ``\fIinnfeed.status\fP'' (or
 the file given by the ``\fI-S\fP'' option). This file contains details on
@@ -207,15 +211,17 @@ Innfeed with catch SIGINT and will write a large debugging snapshot of the
 state of the running system.
 .PP 
 Innfeed will catch SIGHUP and will reload the config file. 
-See innfeed.conf(5) for more details.
+See
+.IR innfeed.conf (5)
+for more details.
 .PP
 Innfeed will catch SIGCHLD and will close and reopen all backlog files.
 .PP 
 Innfeed will catch SIGTERM and will do an orderly shutdown.
 .PP
 Upon receipt of a SIGUSR1 innfeed will increment the debugging level by
-one, receipt of a SIGUSR2 will decrement it by one. The debugging level
-starts at zero (unless the ``-d'' option it used), and no debugging
+one; receipt of a SIGUSR2 will decrement it by one. The debugging level
+starts at zero (unless the ``-d'' option it used), in which case no debugging
 information is emitted. A larger value for the level means more debugging
 information. Numbers up to 5 are currently useful.
 .\"
@@ -225,7 +231,7 @@ information. Numbers up to 5 are currently useful.
 .\"
 .SH SYSLOG ENTRIES
 .PP
-There are 3 different categories of syslog entries for statistics. Host,
+There are 3 different categories of syslog entries for statistics: Host,
 Connection and Global.
 .PP
 The Host statistics are generated for a given peer at regular intervals
@@ -384,11 +390,12 @@ file, report on any errors and then exit.
 .TP
 .B \-d 
 The ``\fI\-d\fP'' flag may be used to specify the initial logging level. All
-debugging messages to to stderr (see the ``\fI\-l\fP'' flag below.
+debugging messages go to stderr (which may not be what you want, see the
+``\fI\-l\fP'' flag below).
 .TP
 .B \-e
 The ``\fI\-e\fP'' flag may be used to specify the size limit (in bytes) for the
-\fI.output\fP backlog files innfeed creates. If the output file gets bigger
+\fI\%.output\fP backlog files innfeed creates. If the output file gets bigger
 than 10% more than the given number, innfeed will replace the output file
 with the tail of the original version. The default value is 0, which means
 there is no limit.
@@ -398,13 +405,13 @@ Use the ``\fI\-h\fP'' flag to print the usage message.
 .TP
 .B \-l
 The  ``\fI\-l\fP'' flag may be used to specify a different log file from
-stderr. As innd starts innfeed with stderr attached to /dev/null using this
-option can be useful in catching any abnormal error messages, or andy
+stderr. As innd starts innfeed with stderr attached to /dev/null, using this
+option can be useful in catching any abnormal error messages, or any
 debugging messages (all ``normal'' errors messages go to syslog).
 .TP
 .B \-M
 If innfeed has been built with mmap support, then the ``\fI\-M\fP'' flag
-turns OFF the use of mmap(), otherwise it has no effect.
+turns OFF the use of mmap(); otherwise it has no effect.
 .TP
 .B \-m
 The ``\fI\-m\fP'' flag is used to turn on logging of all missing
@@ -441,12 +448,12 @@ used and article information is received from innd that specifies an
 unknown peer, then the peer name is taken to be the IP name too, and an
 association with it is created. Using this it is possible to only 
 have the global defaults in the
-.IR innfeed.conf (5)
+.I innfeed.conf
 file, provided the peername as used by innd is the same as the ip name.
 Note that
 .I innfeed
 with ``\fI\-y\fP'' and no peer in
-.IR innfeed.conf (5)
+.I innfeed.conf
 would cause a problem that
 .I innfeed
 drops the first article.
@@ -465,9 +472,9 @@ prints its statistics.
 .PP
 When using the ``-x'' option, the config file entry's
 ``initial-connections'' field will be the total number of connections
-created and used--no matter how many big the batch file, and no
+created and used, no matter how many big the batch file, and no
 matter how big the ``max-connectiond'' field specifies. Thus a value
-of 0 for ``initial-connections'', means nothing will happen in ``-x''
+of 0 for ``initial-connections'' means nothing will happen in ``-x''
 mode.
 .PP
 Innfeed does not automatically grab the file out of out.going--this needs

@@ -36,7 +36,7 @@ grephistory \- display file names from Usenet history file
 queries the
 .IR dbz (3)
 index into the
-.IR history (5)
+.I history
 file for an article having a specified Message-ID.
 .PP
 If
@@ -47,6 +47,9 @@ If
 .I messageid
 is in the database, the program prints the token of the
 article and exits successfully.
+.PP
+Be sure to escape any special characters in the Message-ID from the shell.
+Single quotes are recommended for this purpose.
 .SH OPTIONS
 .TP
 .B \-e
@@ -76,8 +79,7 @@ If no pathname exists, the program will print ``/dev/null'' and exit
 successfully.
 This can happen when an article has been canceled, or if it has been
 expired but its history is still retained.
-This is default behavior, which can be obtained by using 
-the ``\fB\-n\fP'' flag.
+This is the default behavior.
 .TP
 .B \-q
 If the ``\fB\-q\fP'' flag is used, then no message is displayed.
