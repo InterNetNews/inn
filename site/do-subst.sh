@@ -52,7 +52,7 @@ LISTOFFILES=../${BASEDIRNAME}/files.$$
 for I in ${PLAIN} ${CONTROLLED} ; do
     echo ../${BASEDIRNAME}/${I}
 done >${LISTOFFILES}
-( cd ../config; make quiet FILE=${LISTOFFILES} )
+( cd ../config; ${MAKE:=make} quiet FILE=${LISTOFFILES} )
 rm -f ${LISTOFFILES}
 
 # check which files we really changed
