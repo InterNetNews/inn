@@ -121,7 +121,7 @@ NCwritereply(CHANNEL *cp, char *text)
     if (i == 0) {	/* if only data then try to write directly */
 	i = write(cp->fd, &bp->Data[bp->Used], bp->Left);
 	if (Tracing || cp->Tracing)
-	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %d)",
+	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %ld)",
 		CHANname(cp), i, cp->fd,  &bp->Data[bp->Used], bp->Left);
 	if (i > 0) bp->Used += i;
 	if (bp->Used == bp->Left) {
@@ -533,17 +533,17 @@ NCxbatch(CHANNEL *cp)
 	continue;
 
     if (cp->XBatchSize) {
-        syslog(L_FATAL, "NCxbatch(): oops, cp->XBatchSize already set to %ld",
+        syslog(L_FATAL, "NCxbatch(): oops, cp->XBatchSize already set to %d",
 	       cp->XBatchSize);
     }
 
     cp->XBatchSize = atoi(p);
     if (Tracing || cp->Tracing)
-        syslog(L_TRACE, "%s will read batch of size %ld",
+        syslog(L_TRACE, "%s will read batch of size %d",
 	       CHANname(cp), cp->XBatchSize);
 
     if (cp->XBatchSize <= 0 || ((innconf->maxartsize != 0) && (innconf->maxartsize < cp->XBatchSize))) {
-        syslog(L_NOTICE, "%s got bad xbatch size %ld",
+        syslog(L_NOTICE, "%s got bad xbatch size %d",
 	       CHANname(cp), cp->XBatchSize);
 	NCwritereply(cp, NNTP_XBATCH_BADSIZE);
 	return;
@@ -735,10 +735,10 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
     NCDISPATCH   	*dp;
     BUFFER	        *bp;
     char		buff[SMBUF];
-    int			i;
+    long		i;
 
     if (Tracing || cp->Tracing)
-	syslog(L_TRACE, "%s NCproc Used=%d",
+	syslog(L_TRACE, "%s NCproc Used=%ld",
 	    CHANname(cp), cp->In.Used);
 
     bp = &cp->In;
@@ -962,7 +962,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		    cp->Argument = NULL;
 		}
 		i = cp->LargeArtSize + bp->Used;
-		syslog(L_NOTICE, "%s internal rejecting huge article (%d > %d)",
+		syslog(L_NOTICE, "%s internal rejecting huge article (%ld > %ld)",
 		    CHANname(cp), i, innconf->maxartsize);
 		cp->LargeArtSize = 0;
 		(void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
@@ -1030,10 +1030,10 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		    cp->Argument = NULL;
 		}
 		i = cp->LargeCmdSize + bp->Used;
-		syslog(L_NOTICE, "%s internal rejecting too long command line (%d > %d)",
+		syslog(L_NOTICE, "%s internal rejecting too long command line (%ld > %d)",
 		    CHANname(cp), i, NNTP_STRLEN);
 		cp->LargeCmdSize = 0;
-		(void)sprintf(buff, "%d command exceeds local limit of %ld bytes",
+		(void)sprintf(buff, "%d command exceeds local limit of %d bytes",
 			NNTP_BAD_COMMAND_VAL, NNTP_STRLEN);
 		cp->State = CSgetcmd;
 		NCwritereply(cp, buff);
@@ -1070,7 +1070,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    * directory with an unique timestamp, and start rnews on it.
 	    */
 	    if (Tracing || cp->Tracing)
-		syslog(L_TRACE, "%s CSgetxbatch: now %ld of %ld bytes",
+		syslog(L_TRACE, "%s CSgetxbatch: now %ld of %d bytes",
 			CHANname(cp), bp->Used, cp->XBatchSize);
 
 	    if (bp->Used < cp->XBatchSize) {
@@ -1137,7 +1137,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		} else
 		    cp->Rejected++;
 	    }
-	    syslog(L_NOTICE, "%s accepted batch size %ld",
+	    syslog(L_NOTICE, "%s accepted batch size %d",
 		   CHANname(cp), cp->XBatchSize);
 	    cp->State = CSgetcmd;
 	    
@@ -1163,7 +1163,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	if (cp->State == CSwritegoodbye)
 	    break;
 	if (Tracing || cp->Tracing)
-		syslog(L_TRACE, "%s NCproc Rest=%d Used=%d SaveUsed=%d",
+		syslog(L_TRACE, "%s NCproc Rest=%d Used=%ld SaveUsed=%d",
 		    CHANname(cp), cp->Rest, bp->Used, cp->SaveUsed);
 
 	if (cp->Rest > 0) {
@@ -1194,7 +1194,7 @@ NCreader(CHANNEL *cp)
     int			i;
 
     if (Tracing || cp->Tracing)
-	syslog(L_TRACE, "%s NCreader Used=%d",
+	syslog(L_TRACE, "%s NCreader Used=%ld",
 	    CHANname(cp), cp->In.Used);
 
     /* Read any data that's there; ignore errors (retry next time it's our

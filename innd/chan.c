@@ -266,10 +266,10 @@ void CHANtracing(CHANNEL *cp, BOOL Flag)
 	    syslog(L_NOTICE, "%s trace sleeping %ld 0x%x",
 		p, (long)cp->Waketime, cp->Waker);
 	if (FD_ISSET(cp->fd, &RCHANmask))
-	    syslog(L_NOTICE, "%s trace reading %d %s",
+	    syslog(L_NOTICE, "%s trace reading %ld %s",
 		p, cp->In.Used, MaxLength(cp->In.Data, cp->In.Data));
 	if (FD_ISSET(cp->fd, &WCHANmask))
-	    syslog(L_NOTICE, "%s trace writing %d %s",
+	    syslog(L_NOTICE, "%s trace writing %ld %s",
 		p, cp->Out.Left, MaxLength(cp->Out.Data, cp->Out.Data));
     }
 }
@@ -296,7 +296,7 @@ void CHANclose(CHANNEL *cp, char *name)
 	} else if (cp->Type == CTreject)
 	    syslog(L_NOTICE, "%s %ld", name, cp->Rejected);
 	else if (cp->Out.Left)
-	    syslog(L_NOTICE, "%s closed lost %d", name, cp->Out.Left);
+	    syslog(L_NOTICE, "%s closed lost %ld", name, cp->Out.Left);
 	else
 	    syslog(L_NOTICE, "%s closed", name);
 	WCHANremove(cp);
@@ -707,12 +707,12 @@ BOOL WCHANflush(CHANNEL *cp)
     for (bp = &cp->Out; bp->Left > 0; bp->Left -= i, bp->Used += i) {
 	i = CHANwrite(cp->fd, &bp->Data[bp->Used], bp->Left);
 	if (i < 0) {
-	    syslog(L_ERROR, "%s cant flush count %d %m",
+	    syslog(L_ERROR, "%s cant flush count %ld %m",
 		CHANname(cp), bp->Left);
 	    return FALSE;
 	}
 	if (i == 0) {
-	    syslog(L_ERROR, "%s cant flush count %d",
+	    syslog(L_ERROR, "%s cant flush count %ld",
 		CHANname(cp), bp->Left);
 	    return FALSE;
 	}

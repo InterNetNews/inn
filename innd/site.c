@@ -196,7 +196,7 @@ STATIC BOOL SITECHANbilge(SITE *sp)
         i = write(fd, (POINTER) &sp->Channel->Out.Data[sp->Channel->Out.Used],
             (SIZE_T) sp->Channel->Out.Left);
         if(i <= 0) {
-            syslog(L_ERROR,"%s cant spool count %d",CHANname(sp->Channel),
+            syslog(L_ERROR,"%s cant spool count %ld",CHANname(sp->Channel),
                 sp->Channel->Out.Left);
             close(fd);
             return FALSE;
@@ -773,7 +773,7 @@ void SITEchanclose(CHANNEL *cp)
 	     * site spooling, copy any data that might be pending,
 	     * and arrange to retry later. */
 	    if (!SITEspool(sp, (CHANNEL *)NULL)) {
-		syslog(L_ERROR, "%s loss %d bytes", sp->Name, cp->Out.Left);
+		syslog(L_ERROR, "%s loss %ld bytes", sp->Name, cp->Out.Left);
 		return;
 	    }
 	    WCHANsetfrombuffer(sp->Channel, &cp->Out);
@@ -861,11 +861,11 @@ void SITEflush(SITE *sp, BOOL Restart)
     else if (cp != NULL && cp->Out.Left) {
 	if (sp->Type == FTfile || sp->Spooling) {
 	    /* Can't flush a file?  Hopeless. */
-	    syslog(L_ERROR, "%s dataloss %d", sp->Name, cp->Out.Left);
+	    syslog(L_ERROR, "%s dataloss %ld", sp->Name, cp->Out.Left);
 	    return;
 	}
 	/* Must be a working channel; spool and retry. */
-	syslog(L_ERROR, "%s spooling %d bytes", sp->Name, cp->Out.Left);
+	syslog(L_ERROR, "%s spooling %ld bytes", sp->Name, cp->Out.Left);
 	if (SITEspool(sp, cp))
 	    SITEflush(sp, FALSE);
 	return;
