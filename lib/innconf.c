@@ -358,7 +358,7 @@ innconf_parse(struct config_group *group)
     struct innconf *config;
 
     config = xmalloc(sizeof(struct innconf));
-    for (i = 0; i < SIZEOF(config_table); i++)
+    for (i = 0; i < ARRAY_SIZE(config_table); i++)
         switch (config_table[i].type) {
         case TYPE_BOOLEAN:
             bool_ptr = CONF_BOOL(config, config_table[i].location);
@@ -496,7 +496,7 @@ innconf_check(const char *path)
     params = config_params(group);
     for (set = 0; set < params->count; set++) {
         found = false;
-        for (known = 0; known < SIZEOF(config_table); known++)
+        for (known = 0; known < ARRAY_SIZE(config_table); known++)
             if (strcmp(params->strings[set], config_table[known].name) == 0)
                 found = true;
         if (!found) {
@@ -533,7 +533,7 @@ innconf_free(struct innconf *config)
     unsigned int i;
     char *p;
 
-    for (i = 0; i < SIZEOF(config_table); i++)
+    for (i = 0; i < ARRAY_SIZE(config_table); i++)
         if (config_table[i].type == TYPE_STRING) {
             p = *CONF_STRING(config, config_table[i].location);
             if (p != NULL)
@@ -696,7 +696,7 @@ innconf_print_value(FILE *file, const char *key, enum innconf_quoting quoting)
 {
     size_t i;
 
-    for (i = 0; i < SIZEOF(config_table); i++)
+    for (i = 0; i < ARRAY_SIZE(config_table); i++)
         if (strcmp(key, config_table[i].name) == 0) {
             print_parameter(file, i, quoting);
             return true;
@@ -713,7 +713,7 @@ innconf_dump(FILE *file, enum innconf_quoting quoting)
 {
     size_t i;
 
-    for (i = 0; i < SIZEOF(config_table); i++)
+    for (i = 0; i < ARRAY_SIZE(config_table); i++)
         print_parameter(file, i, quoting);
 }
 
@@ -734,7 +734,7 @@ innconf_compare(struct innconf *conf1, struct innconf *conf2)
     const char *string1, *string2;
     bool okay = true;
 
-    for (i = 0; i < SIZEOF(config_table); i++)
+    for (i = 0; i < ARRAY_SIZE(config_table); i++)
         switch (config_table[i].type) {
         case TYPE_BOOLEAN:
             bool1 = *CONF_BOOL(conf1, config_table[i].location);

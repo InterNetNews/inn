@@ -210,7 +210,7 @@ static bool EXPreadfile(FILE *F)
         }
         if (buff[0] == '\0')
 	    continue;
-	if ((j = EXPsplit(buff, ':', fields, SIZEOF(fields))) == -1) {
+	if ((j = EXPsplit(buff, ':', fields, ARRAY_SIZE(fields))) == -1) {
             warn("too many fields on line %d", i);
 	    return false;
 	}

@@ -8,8 +8,6 @@
 #include "libinn.h"
 #include "libtest.h"
 
-#define ARRAY_SIZE(array)       sizeof(array) / sizeof(array[0])
-
 static const time_t test_times[] = {
     28800UL,                    /* Thu,  1 Jan 1970 00:00:00 -0800 (PST) */
     362762400UL,                /* Tue, 30 Jun 1981 15:20:00 +0000 (UTC) */

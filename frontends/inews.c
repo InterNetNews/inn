@@ -241,7 +241,7 @@ StripOffHeaders(char *article)
 
 	/* See if it's a known header. */
 	c = CTYPE(islower, *p) ? toupper(*p) : *p;
-	for (hp = Table; hp < ENDOF(Table); hp++)
+	for (hp = Table; hp < ARRAY_END(Table); hp++)
 	    if (c == hp->Name[0]
 	     && p[hp->Size] == ':'
 	     && ISWHITE(p[hp->Size + 1])
@@ -261,7 +261,7 @@ StripOffHeaders(char *article)
             die("more than %d lines of header", i);
 
 	/* No; add it to the set of other headers. */
-	if (hp == ENDOF(Table)) {
+	if (hp == ARRAY_END(Table)) {
 	    if (OtherCount >= OtherSize - 1) {
 		OtherSize += HEADER_DELTA;
                 OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
@@ -533,7 +533,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     char		from[SMBUF];
 
     /* Do some preliminary fix-ups. */
-    for (hp = Table; hp < ENDOF(Table); hp++) {
+    for (hp = Table; hp < ARRAY_END(Table); hp++) {
 	if (!hp->CanSet && hp->Value)
             die("cannot set system header %s", hp->Name);
 	if (hp->Value) {
@@ -657,7 +657,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 	CheckCancel(HDR(_supersedes), true);
 
     /* Now make sure everything is there. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Type == HTreq && hp->Value == NULL)
             die("required header %s is missing or empty", hp->Name);
 }
@@ -828,7 +828,7 @@ Spoolit(char *article, size_t Length, char *deadfile)
         sysdie("cannot create spool file");
 
     /* Write the headers and a blank line. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value)
 	    fprintf(F, "%s: %s\n", hp->Name, hp->Value);
     for (i = 0; i < OtherCount; i++)
@@ -1003,7 +1003,7 @@ main(int ac, char *av[])
     }
 
     /* Basic processing. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	hp->Size = strlen(hp->Name);
     if (Mode == 'h')
 	article = StripOffHeaders(article);
@@ -1025,7 +1025,7 @@ main(int ac, char *av[])
     /* Do final checks. */
     if (i == 0 && HDR(_control) == NULL)
         die("article is empty");
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value && (int)strlen(hp->Value) + hp->Size > HEADER_STRLEN)
             die("%s header is too long", hp->Name);
     for (i = 0; i < OtherCount; i++)
@@ -1035,7 +1035,7 @@ main(int ac, char *av[])
 
     if (Dump) {
 	/* Write the headers and a blank line. */
-	for (hp = Table; hp < ENDOF(Table); hp++)
+	for (hp = Table; hp < ARRAY_END(Table); hp++)
 	    if (hp->Value)
 		printf("%s: %s\n", hp->Name, hp->Value);
 	for (i = 0; i < OtherCount; i++)
@@ -1070,7 +1070,7 @@ main(int ac, char *av[])
         die("server doesn't want the article: %s", buff);
 
     /* Write the headers, a blank line, then the article. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value)
 	    fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
     for (i = 0; i < OtherCount; i++)

@@ -59,8 +59,6 @@ static const char * const testhash[] = {
     "ce23eb027c63215b999b9f86d6a4f9cb"
 };
 
-#define ARRAY_SIZE(array)       sizeof(array) / sizeof(array[0])
-
 static void
 digest2hex(const unsigned char *digest, char *result)
 {

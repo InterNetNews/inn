@@ -11,11 +11,6 @@
 /* <ctype.h> usually includes \n, which is not what we want. */
 #define ISWHITE(c)              ((c) == ' ' || (c) == '\t')
 
-/* Get the number of elements in a fixed-size array, or a pointer just past
-   the end of it. */
-#define SIZEOF(array)           (sizeof array / sizeof array[0])
-#define ENDOF(array)            (&array[SIZEOF(array)])
-
 /* Turn a TIMEINFO into a floating point number. */
 #define TIMEINFOasDOUBLE(t)	\
     ((double)(t).time + ((double)(t).usec) / 1000000.0)

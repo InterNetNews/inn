@@ -1831,8 +1831,8 @@ CCreader(CHANNEL *cp)
     syslog(L_CC_CMD, "%s", p ? p : copy);
 
     /* Split up the fields, get the command letter. */
-    if ((argc = CCargsplit(buff, &buff[i], argv, SIZEOF(argv))) < 2
-     || argc == SIZEOF(argv)) {
+    if ((argc = CCargsplit(buff, &buff[i], argv, ARRAY_SIZE(argv))) < 2
+     || argc == ARRAY_SIZE(argv)) {
 	syslog(L_ERROR, "%s bad_fields CCreader", LogName);
 	return;
     }
@@ -1840,7 +1840,7 @@ CCreader(CHANNEL *cp)
     i = *p;
 
     /* Dispatch to the command function. */
-    for (argc -= 2, dp = CCcommands; dp < ENDOF(CCcommands); dp++)
+    for (argc -= 2, dp = CCcommands; dp < ARRAY_END(CCcommands); dp++)
 	if (i == dp->Name) {
 	    if (argc != dp->argc)
 		p = "1 Wrong number of parameters";
@@ -1848,7 +1848,7 @@ CCreader(CHANNEL *cp)
 		p = (*dp->Function)(&argv[2]);
 	    break;
 	}
-    if (dp == ENDOF(CCcommands)) {
+    if (dp == ARRAY_END(CCcommands)) {
 	syslog(L_NOTICE, "%s bad_message %c", LogName, i);
 	p = "1 Bad command";
     }

@@ -76,7 +76,7 @@ SITEsetup(void)
 {
     SITEHASH	*shp;
 
-    for (shp = SITEtable; shp < ENDOF(SITEtable); shp++) {
+    for (shp = SITEtable; shp < ARRAY_END(SITEtable); shp++) {
 	shp->Size = 3;
 	shp->Sites = xmalloc(shp->Size * sizeof(SITE));
 	shp->Used = 0;
@@ -111,7 +111,7 @@ SITEcloseall(void)
     SITE	*sp;
     int	i;
 
-    for (shp = SITEtable; shp < ENDOF(SITEtable); shp++)
+    for (shp = SITEtable; shp < ARRAY_END(SITEtable); shp++)
 	for (sp = shp->Sites, i = shp->Used; --i >= 0; sp++)
 	    SITEclose(sp);
 }
@@ -222,7 +222,7 @@ SITEflushall(void)
     SITE	*sp;
     int	i;
 
-    for (shp = SITEtable; shp < ENDOF(SITEtable); shp++)
+    for (shp = SITEtable; shp < ARRAY_END(SITEtable); shp++)
 	for (sp = shp->Sites, i = shp->Used; --i >= 0; sp++)
 	    SITEflush(sp);
 }

@@ -2,8 +2,7 @@
 /* snprintf test suite. */
 
 #include "config.h"
-#include <stdarg.h>
-#include <stdio.h>
+#include "clibrary.h"
 
 #include "libtest.h"
 
@@ -59,8 +58,6 @@ static unsigned long long ullong_nums[] = {
     134, 91340, 341,
     0
 };
-
-#define ARRAY_SIZE(array)       sizeof(array) / sizeof(array[0])
 
 static void
 test_format(int n, bool truncate, const char *expected, int count,

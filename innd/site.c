@@ -519,7 +519,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	else
 	    sprintf(buff, sp->Param, Data->TokenText);
 
-	if (NeedShell(buff, (const char **)argv, (const char **)ENDOF(argv))) {
+	if (NeedShell(buff, (const char **)argv, (const char **)ARRAY_END(argv))) {
 	    argv[0] = SITEshell;
 	    argv[1] = (char *) "-c";
 	    argv[2] = buff;
@@ -589,7 +589,7 @@ SITEstartprocess(SITE *sp)
 
     /* Set up the argument vector. */
     process = xstrdup(sp->Param);
-    if (NeedShell(process, (const char **)argv, (const char **)ENDOF(argv))) {
+    if (NeedShell(process, (const char **)argv, (const char **)ARRAY_END(argv))) {
 	argv[0] = SITEshell;
 	argv[1] = (char *) "-c";
 	argv[2] = process;

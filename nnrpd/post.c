@@ -66,7 +66,7 @@ HEADER	Table[] = {
     {   "To",			true, HTstd,  0,    NULL,    NULL, 0 },
 };
 
-HEADER *EndOfTable = ENDOF(Table);
+HEADER *EndOfTable = ARRAY_END(Table);
 
 
 
@@ -173,7 +173,7 @@ StripOffHeaders(char *article)
 
 	/* See if it's a known header. */
 	c = CTYPE(islower, (int)*p) ? toupper(*p) : *p;
-	for (hp = Table; hp < ENDOF(Table); hp++) {
+	for (hp = Table; hp < ARRAY_END(Table); hp++) {
 	    if (c == hp->Name[0]
 	     && p[hp->Size] == ':'
 	     && strncasecmp(p, hp->Name, hp->Size) == 0) {
@@ -198,7 +198,7 @@ StripOffHeaders(char *article)
 	}
 
 	/* No; add it to the set of other headers. */
-	if (hp == ENDOF(Table)) {
+	if (hp == ARRAY_END(Table)) {
 	    if (OtherCount >= OtherSize - 1) {
 		OtherSize += HEADER_DELTA;
                 OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
@@ -324,7 +324,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     }
 
     /* Do some preliminary fix-ups. */
-    for (hp = Table; hp < ENDOF(Table); hp++) {
+    for (hp = Table; hp < ARRAY_END(Table); hp++) {
 	if (!ihave && !hp->CanSet && hp->Value) {
 	    snprintf(Error, sizeof(Error),
 		     "Can't set system \"%s\" header", hp->Name);
@@ -529,7 +529,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	HDR_SET(HDR__TO, NULL);
     }
     /* Now make sure everything is there. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Type == HTreq && hp->Value == NULL) {
 	    snprintf(Error, sizeof(Error),
                      "Required \"%s\" header is missing", hp->Name);
@@ -627,7 +627,7 @@ MailArticle(char *group, char *article)
     }
 
     /* Write the headers, a blank line, then the article. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value) {
 	    fprintf(F, "%s: %s\n", hp->Name, hp->Value);
 	    if (FLUSH_ERROR(F)) {
@@ -835,7 +835,7 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     fchmod(fileno(F), BATCHFILE_MODE);
 
     /* Write the headers and a blank line. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value) {
 	    q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
             strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
@@ -972,7 +972,7 @@ ARTpost(char *article,
     /* Basic processing. */
     OtherCount = 0;
     WasMailed = false;
-    for (hp = Table; hp < ENDOF(Table); hp++) {
+    for (hp = Table; hp < ARRAY_END(Table); hp++) {
 	hp->Size = strlen(hp->Name);
 	hp->Value = hp->Body = NULL;
     }
@@ -1145,7 +1145,7 @@ ARTpost(char *article,
 	syslog(L_TRACE, "%s post starting", ClientHost);
 
     /* Write the headers and a blank line. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
+    for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Value) {
 	    q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
             strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
@@ -1230,7 +1230,7 @@ ARTpost(char *article,
 	    free(TrackID);
 	    return NULL;
 	}
-	for (hp = Table; hp < ENDOF(Table); hp++)
+	for (hp = Table; hp < ARRAY_END(Table); hp++)
 	    if (hp->Value) {
 		q = xmalloc(hp->Body - hp->Value + hp->Len + 1);
                 strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);

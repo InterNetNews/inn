@@ -223,7 +223,7 @@ BuildGroups(char *active)
 	if (*p == '.')
 	     continue;
         *q = '\0';
-        if (EXPsplit(p, ' ', fields, SIZEOF(fields)) != 4) {
+        if (EXPsplit(p, ' ', fields, ARRAY_SIZE(fields)) != 4) {
             fprintf(stderr, "%s: line %d wrong number of fields\n", ACTIVE, lines);
             exit(1);
         }
@@ -369,7 +369,7 @@ EXPreadfile(FILE *F)
         }
         if (buff[0] == '\0')
             continue;
-        if ((j = EXPsplit(buff, ':', fields, SIZEOF(fields))) == -1) {
+        if ((j = EXPsplit(buff, ':', fields, ARRAY_SIZE(fields))) == -1) {
             fprintf(stderr, "Line %d too many fields\n", i);
             free(patterns);
             return false;

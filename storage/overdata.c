@@ -65,7 +65,7 @@ overview_extra_fields(void)
             *p++ = '\0';
             full = (strcmp(p, "full") == 0);
         }
-        if (field >= SIZEOF(fields)) {
+        if (field >= ARRAY_SIZE(fields)) {
             if (!full)
                 warn("additional field %s not marked with :full", line);
             vector_add(list, line);
@@ -150,7 +150,7 @@ overview_build(ARTNUM number, const char *article, size_t length,
     if (overview == NULL)
         overview = buffer_new();
     buffer_set(overview, buffer, strlen(buffer));
-    for (field = 0; field < SIZEOF(fields); field++) {
+    for (field = 0; field < ARRAY_SIZE(fields); field++) {
         buffer_append(overview, "\t", 1);
         if (field == 5) {
             snprintf(buffer, sizeof(buffer), "%u", length);
@@ -353,17 +353,17 @@ overview_getheader(const struct cvector *vector, int element,
     const char *p;
 
     if ((element + 1) >= vector->count ||
-	(element >= SIZEOF(fields) &&
-	 (element - SIZEOF(fields)) >= extra->count)) {
+	(element >= ARRAY_SIZE(fields) &&
+	 (element - ARRAY_SIZE(fields)) >= extra->count)) {
 	warn("request for invalid overview field %d", element);
 	return NULL;
     }
     /* Note... this routine does not synthesise Newsgroups: on behalf
      * of the caller... */
-    if (element >= SIZEOF(fields)) {
+    if (element >= ARRAY_SIZE(fields)) {
 	/* +2 for `: ' */
 	p = vector->strings[element] +
-	    strlen(extra->strings[element - SIZEOF(fields)]) + 2;
+	    strlen(extra->strings[element - ARRAY_SIZE(fields)]) + 2;
 	len = vector->strings[element + 1] - p - 1;
     } else {
 	p = vector->strings[element];

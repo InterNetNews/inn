@@ -553,7 +553,7 @@ Convert(time_t Month, time_t Day, time_t Year, time_t Hours, time_t Minutes,
 	if (Year < EPOCH)
 	    Year += 100;
     }
-    for (mp = DaysNormal, yp = LeapYears; yp < ENDOF(LeapYears); yp++)
+    for (mp = DaysNormal, yp = LeapYears; yp < ARRAY_END(LeapYears); yp++)
 	if (Year == *yp) {
 	    mp = DaysLeap;
 	    break;
@@ -565,7 +565,7 @@ Convert(time_t Month, time_t Day, time_t Year, time_t Hours, time_t Minutes,
 	return -1;
 
     Julian = Day - 1 + (Year - EPOCH) * 365;
-    for (yp = LeapYears; yp < ENDOF(LeapYears); yp++, Julian++)
+    for (yp = LeapYears; yp < ARRAY_END(LeapYears); yp++, Julian++)
 	if (Year <= *yp)
 	    break;
     for (i = 1; i < Month; i++)
@@ -626,7 +626,7 @@ LookupWord(char *buff, int length)
 
     /* See if we have an abbreviation for a month. */
     if (length == 3 || (length == 4 && p[3] == '.'))
-	for (tp = MonthDayTable; tp < ENDOF(MonthDayTable); tp++) {
+	for (tp = MonthDayTable; tp < ARRAY_END(MonthDayTable); tp++) {
 	    q = tp->name;
 	    if (c == q[0] && p[1] == q[1] && p[2] == q[2]) {
 		yylval.Number = tp->value;
@@ -634,14 +634,14 @@ LookupWord(char *buff, int length)
 	    }
 	}
     else
-	for (tp = MonthDayTable; tp < ENDOF(MonthDayTable); tp++)
+	for (tp = MonthDayTable; tp < ARRAY_END(MonthDayTable); tp++)
 	    if (c == tp->name[0] && strcmp(p, tp->name) == 0) {
 		yylval.Number = tp->value;
 		return tp->type;
 	    }
 
     /* Try for a timezone. */
-    for (tp = TimezoneTable; tp < ENDOF(TimezoneTable); tp++)
+    for (tp = TimezoneTable; tp < ARRAY_END(TimezoneTable); tp++)
 	if (c == tp->name[0] && p[1] == tp->name[1]
 	 && strcmp(p, tp->name) == 0) {
 	    yylval.Number = tp->value;
@@ -649,7 +649,7 @@ LookupWord(char *buff, int length)
 	}
 
     /* Try the units table. */
-    for (tp = UnitsTable; tp < ENDOF(UnitsTable); tp++)
+    for (tp = UnitsTable; tp < ARRAY_END(UnitsTable); tp++)
 	if (c == tp->name[0] && strcmp(p, tp->name) == 0) {
 	    yylval.Number = tp->value;
 	    return tp->type;
@@ -658,7 +658,7 @@ LookupWord(char *buff, int length)
     /* Strip off any plural and try the units table again. */
     if (--length > 0 && p[length] == 's') {
 	p[length] = '\0';
-	for (tp = UnitsTable; tp < ENDOF(UnitsTable); tp++)
+	for (tp = UnitsTable; tp < ARRAY_END(UnitsTable); tp++)
 	    if (c == tp->name[0] && strcmp(p, tp->name) == 0) {
 		p[length] = 's';
 		yylval.Number = tp->value;
@@ -689,7 +689,7 @@ LookupWord(char *buff, int length)
     /* If we saw any periods, try the timezones again. */
     if (p - buff != length) {
 	c = buff[0];
-	for (p = buff, tp = TimezoneTable; tp < ENDOF(TimezoneTable); tp++)
+	for (p = buff, tp = TimezoneTable; tp < ARRAY_END(TimezoneTable); tp++)
 	    if (c == tp->name[0] && p[1] == tp->name[1]
 	    && strcmp(p, tp->name) == 0) {
 		yylval.Number = tp->value;

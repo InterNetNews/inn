@@ -409,7 +409,7 @@ NChelp(CHANNEL *cp)
 
     WCHANappend(cp, NNTP_HELP_FOLLOWS,strlen(NNTP_HELP_FOLLOWS));
     WCHANappend(cp, NCterm,strlen(NCterm));
-    for (dp = NCcommands; dp < ENDOF(NCcommands); dp++)
+    for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++)
 	if (dp->Function != NC_unimp) {
             if ((!StreamingOff && cp->Streaming) ||
                 (dp->Function != NCcheck && dp->Function != NCtakethis)) {
@@ -847,7 +847,7 @@ NCproc(CHANNEL *cp)
       }
 
       /* Loop through the command table. */
-      for (p = q, dp = NCcommands; dp < ENDOF(NCcommands); dp++) {
+      for (p = q, dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
 	if (strncasecmp(p, dp->Name, dp->Size) == 0) {
 	  /* ignore the streaming commands if necessary. */
 	  if (!StreamingOff || cp->Streaming ||
@@ -858,7 +858,7 @@ NCproc(CHANNEL *cp)
 	  }
 	}
       }
-      if (dp == ENDOF(NCcommands)) {
+      if (dp == ARRAY_END(NCcommands)) {
 	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT)
 	    cp->State = CSwritegoodbye;
 	NCwritereply(cp, NCbadcommand);

@@ -678,11 +678,11 @@ PYsetup(void)
 
     /* Grab space for these so we aren't forever recreating them. */
     PYheaders = PyDict_New();
-    PYheaditem = xmalloc((ENDOF(ARTheaders) - ARTheaders) * sizeof(PyObject *));
-    PYheadkey = xmalloc((ENDOF(ARTheaders) - ARTheaders) * sizeof(PyObject *));
+    PYheaditem = xmalloc((ARRAY_END(ARTheaders) - ARTheaders) * sizeof(PyObject *));
+    PYheadkey = xmalloc((ARRAY_END(ARTheaders) - ARTheaders) * sizeof(PyObject *));
 
     /* Preallocate keys for the article dictionary */
-    for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
+    for (hp = ARTheaders; hp < ARRAY_END(ARTheaders); hp++)
 	PYheadkey[hp - ARTheaders] = PyString_InternFromString(hp->Name);
     PYpathkey = PyString_InternFromString("Path");
     PYlineskey = PyString_InternFromString("__LINES__");

@@ -184,13 +184,13 @@ ARTreadschema(void)
       foundxref = true;
       foundxreffull = fp->NeedHeader;
     }
-    for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++) {
+    for (hp = ARTheaders; hp < ARRAY_END(ARTheaders); hp++) {
       if (strcasecmp(buff, hp->Name) == 0) {
 	fp->Header = hp;
 	break;
       }
     }
-    if (hp == ENDOF(ARTheaders)) {
+    if (hp == ARRAY_END(ARTheaders)) {
       syslog(L_ERROR, "%s bad_schema unknown header \"%s\"",
 		LogName, buff);
       ok = false;
@@ -280,11 +280,11 @@ ARTsetup(void)
   ARTcclass['_'] |= CC_HOSTNAME;
 
   /* Build the header tree. */
-  table = xmalloc(SIZEOF(ARTheaders) * sizeof(ARTHEADER *));
-  for (i = 0; i < SIZEOF(ARTheaders); i++)
+  table = xmalloc(ARRAY_SIZE(ARTheaders) * sizeof(ARTHEADER *));
+  for (i = 0; i < ARRAY_SIZE(ARTheaders); i++)
     table[i] = &ARTheaders[i];
-  qsort(table, SIZEOF(ARTheaders), sizeof *table, ARTcompare);
-  ARTheadertree = ARTbuildtree(table, 0, SIZEOF(ARTheaders));
+  qsort(table, ARRAY_SIZE(ARTheaders), sizeof *table, ARTcompare);
+  ARTheadertree = ARTbuildtree(table, 0, ARRAY_SIZE(ARTheaders));
   free(table);
 
   /* Get our Path name, kill trailing !. */

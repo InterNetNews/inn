@@ -183,7 +183,7 @@ DoSub(F, p)
     fprintf(F, "!*");
     len = 8 + 1 + 2;
     do {
-        for (matched = false, i = 0; i < SIZEOF(distributions); i++)
+        for (matched = false, i = 0; i < ARRAY_SIZE(distributions); i++)
             if (strcmp(s, distributions[i]) == 0) {
                 matched = true;
                 break;
@@ -219,7 +219,7 @@ DoSub(F, p)
 	if (SawAll)
 	    ;
 	else {
-            for (matched = false, i = 0; i < SIZEOF(distributions); i++)
+            for (matched = false, i = 0; i < ARRAY_SIZE(distributions); i++)
                 if (strcmp(s, hierarchies[i]) == 0) {
                     matched = true;
                     break;

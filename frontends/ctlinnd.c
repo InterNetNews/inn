@@ -128,13 +128,13 @@ Help(char *p)
 
     if (p == NULL) {
 	printf("Command summary:\n");
-	for (cp = Commands; cp < ENDOF(Commands); cp++)
+	for (cp = Commands; cp < ARRAY_END(Commands); cp++)
 	    printf("  %s %s\n", cp->Command, cp->Text);
 	printf("*   Empty string means all sites/groups/etc.\n");
 	printf("... All trailing words are glued together.\n");
 	exit(0);
     }
-    for (cp = Commands; cp < ENDOF(Commands); cp++)
+    for (cp = Commands; cp < ARRAY_END(Commands); cp++)
 	if (strcmp(p, cp->Command) == 0) {
 	    printf("Command usage:\n");
 	    printf("  %s %s\n", cp->Command, cp->Text);
@@ -235,10 +235,10 @@ int main(int ac, char *av[])
     /* Look up the command word and move to the arguments. */
     if (strcmp(av[0], "help") == 0)
 	Help(av[1]);
-    for (cp = Commands; cp < ENDOF(Commands); cp++)
+    for (cp = Commands; cp < ARRAY_END(Commands); cp++)
 	if (strcmp(av[0], cp->Command) == 0)
 	    break;
-    if (cp == ENDOF(Commands))
+    if (cp == ARRAY_END(Commands))
 	Usage("unknown command");
     ac--;
     av++;

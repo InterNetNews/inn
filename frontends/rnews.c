@@ -226,7 +226,7 @@ static bool Process(char *article)
     wirefmt = ToWireFmt(article, strlen(article), &length);
 
     /* Make sure that all the headers are there, note the ID. */
-    for (hp = RequiredHeaders; hp < ENDOF(RequiredHeaders); hp++) {
+    for (hp = RequiredHeaders; hp < ARRAY_END(RequiredHeaders); hp++) {
         p = wire_findheader(wirefmt, length, hp->Name);
         if (p == NULL) {
             free(wirefmt);

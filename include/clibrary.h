@@ -122,6 +122,8 @@ extern size_t           strlcpy(char *, const char *, size_t);
 extern int              vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
+END_DECLS
+
 /* "Good enough" replacements for standard functions. */
 #if !HAVE_ATEXIT
 # define atexit(arg) on_exit((arg), 0)
@@ -173,6 +175,12 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
 #define PIPE_READ       0
 #define PIPE_WRITE      1
 
-END_DECLS
+/* Used for iterating through arrays.  ARRAY_SIZE returns the number of
+   elements in the array (useful for a < upper bound in a for loop) and
+   ARRAY_END returns a pointer to the element past the end (ISO C99 makes it
+   legal to refer to such a pointer as long as it's never dereferenced). */
+#define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
+#define ARRAY_END(array)        (&(array)[ARRAY_SIZE(array)])
+
 
 #endif /* !CLIBRARY_H */

@@ -519,7 +519,7 @@ parse_legacy_timezone(const char *p, long *offset)
     if (end == p)
         return NULL;
     max = end - p;
-    for (i = 0; i < SIZEOF(ZONE_OFFSET); i++)
+    for (i = 0; i < ARRAY_SIZE(ZONE_OFFSET); i++)
         if (strncasecmp(ZONE_OFFSET[i].name, p, max) == 0) {
             p += strlen(ZONE_OFFSET[i].name);
             *offset = ZONE_OFFSET[i].offset;
@@ -580,9 +580,10 @@ parsedate_rfc2822(const char *date)
        optional. */
     p = skip_cfws(date);
     if (CTYPE(isalpha, *p))
-        p = parse_by_rule(p, base_rule, SIZEOF(base_rule), values);
+        p = parse_by_rule(p, base_rule, ARRAY_SIZE(base_rule), values);
     else
-        p = parse_by_rule(p, base_rule + 2, SIZEOF(base_rule) - 2, values + 2);
+        p = parse_by_rule(p, base_rule + 2, ARRAY_SIZE(base_rule) - 2,
+                          values + 2);
     if (p == NULL)
         return (time_t) -1;
 
@@ -596,7 +597,7 @@ parsedate_rfc2822(const char *date)
 
     /* Parse seconds if they're present. */
     if (*p == ':') {
-        p = parse_by_rule(p, seconds_rule, SIZEOF(seconds_rule), values);
+        p = parse_by_rule(p, seconds_rule, ARRAY_SIZE(seconds_rule), values);
         if (p == NULL)
             return (time_t) -1;
         tm.tm_sec = values[1];
@@ -606,7 +607,7 @@ parsedate_rfc2822(const char *date)
        parsing rules for it. */
     if (*p == '-' || *p == '+') {
         zone_sign = (*p == '+') ? 1 : -1;
-        p = parse_by_rule(p + 1, zone_rule, SIZEOF(zone_rule), values);
+        p = parse_by_rule(p + 1, zone_rule, ARRAY_SIZE(zone_rule), values);
         if (p == NULL)
             return (time_t) -1;
         zone_offset = ((values[0] / 100) * 60 + values[0] % 100) * 60;
