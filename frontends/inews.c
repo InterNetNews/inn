@@ -1313,7 +1313,7 @@ main(ac, av)
     if ((innconf->localmaxartsize > 0) && (Length > innconf->localmaxartsize)) {
 	(void)fprintf(stderr,
 		"Article is bigger then local limit of %ld bytes\n",
-		atoi(p));
+		innconf->localmaxartsize);
 	QuitServer(1);
     }
 
