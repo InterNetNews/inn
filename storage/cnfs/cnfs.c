@@ -1060,6 +1060,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     static TOKEN	ret_token;
     static BOOL		nomessage = FALSE;
     CYCBUFF_OFF_T	middle, limit;
+    int			plusoffset = 0;
 
     if (token.type != TOKEN_CNFS) {
 	SMseterror(SMERR_INTERNAL, NULL);
@@ -1140,7 +1141,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	cah.size = cahh.size;
 	cah.arrived = htonl(time(NULL));
 	cah.class = 0;
-	offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
+	plusoffset = sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
 #endif /* OLD_CNFS */
     if (offset > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
@@ -1163,8 +1164,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     }
     /* check the bitmap to ensure cah.size is not broken */
     /* cannot believe cycbuff->free, since it may not be updated by writer */
-    blockfudge = (sizeof(cah) + ntohl(cah.size)) % CNFS_BLOCKSIZE;
-    limit = offset + sizeof(cah) + ntohl(cah.size) - blockfudge + CNFS_BLOCKSIZE;
+    blockfudge = (sizeof(cah) + plusoffset + ntohl(cah.size)) % CNFS_BLOCKSIZE;
+    limit = offset + sizeof(cah) + plusoffset + ntohl(cah.size) - blockfudge + CNFS_BLOCKSIZE;
     for (middle = offset + CNFS_BLOCKSIZE; middle < limit;
 	middle += CNFS_BLOCKSIZE) {
 	if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) != 0)
@@ -1186,7 +1187,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     art->private = (void *)private;
     art->arrived = ntohl(cah.arrived);
     if (innconf->articlemmap) {
-	offset += sizeof(cah);
+	offset += sizeof(cah) + plusoffset;
 	pagefudge = offset % pagesize;
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
@@ -1346,6 +1347,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     int			tonextblock;
     CYCBUFF_OFF_T	mmapoffset;
     char		*p;
+    int			plusoffset = 0;
 
     if (article == (ARTHANDLE *)NULL) {
 	if ((cycbuff = cycbufftab) == (CYCBUFF *)NULL)
@@ -1374,7 +1376,10 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	cycbuff = priv.cycbuff;
     }
 
-    for (;cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
+    for (;cycbuff != (CYCBUFF *)NULL;
+    	    cycbuff = cycbuff->next,
+	    priv.offset = 0) {
+
 	if (!SMpreopen && !CNFSinit_disks(cycbuff)) {
 	    SMseterror(SMERR_INTERNAL, "cycbuff initialization fail");
 	    continue;
@@ -1385,11 +1390,13 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    continue;
 	}
 	if (priv.offset == 0) {
-	    priv.offset = cycbuff->minartoffset;
-	    if (cycbuff->cyclenum == 1)
+	    if (cycbuff->cyclenum == 1) {
+	    	priv.offset = cycbuff->minartoffset;
 		priv.rollover = TRUE;
-	    else
+	    } else {
+	    	priv.offset = cycbuff->free;
 		priv.rollover = FALSE;
+	    }
 	}
 	if (!priv.rollover) {
 	    for (middle = priv.offset ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
@@ -1400,8 +1407,8 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    if (middle >= cycbuff->len - CNFS_BLOCKSIZE - 1) {
 		priv.rollover = TRUE;
 		middle = cycbuff->minartoffset;
-	    } else
-		break;
+	    }
+	    break;
 	} else {
 	    for (middle = priv.offset ;middle < cycbuff->free;
 		middle += CNFS_BLOCKSIZE) {
@@ -1439,8 +1446,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	cah.size = cahh.size;
 	cah.arrived = htonl(time(NULL));
 	cah.class = 0;
-	priv.offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
-	offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
+	plusoffset = sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
 #endif /* OLD_CNFS */
     art = NEW(ARTHANDLE, 1);
@@ -1458,8 +1464,8 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	return art;
     }
     /* check the bitmap to ensure cah.size is not broken */
-    blockfudge = (sizeof(cah) + ntohl(cah.size)) % CNFS_BLOCKSIZE;
-    limit = private->offset + sizeof(cah) + ntohl(cah.size) - blockfudge + CNFS_BLOCKSIZE;
+    blockfudge = (sizeof(cah) + plusoffset + ntohl(cah.size)) % CNFS_BLOCKSIZE;
+    limit = private->offset + sizeof(cah) + plusoffset + ntohl(cah.size) - blockfudge + CNFS_BLOCKSIZE;
     if (offset < cycbuff->free) {
 	for (middle = offset + CNFS_BLOCKSIZE; (middle < cycbuff->free) && (middle < limit);
 	    middle += CNFS_BLOCKSIZE) {
@@ -1490,14 +1496,14 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	}
     }
 
-    private->offset += (CYCBUFF_OFF_T) ntohl(cah.size) + sizeof(cah);
+    private->offset += (CYCBUFF_OFF_T) ntohl(cah.size) + sizeof(cah) + plusoffset;
     tonextblock = CNFS_BLOCKSIZE - (private->offset & (CNFS_BLOCKSIZE - 1));
     private->offset += (CYCBUFF_OFF_T) tonextblock;
     art->arrived = ntohl(cah.arrived);
-    token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, ntohl(cah.class), (TOKEN *)NULL);
+    token = CNFSMakeToken(cycbuff->name, offset, (offset > cycbuff->free) ? cycbuff->cyclenum - 1 : cycbuff->cyclenum, ntohl(cah.class), (TOKEN *)NULL);
     art->token = &token;
     if (innconf->articlemmap) {
-	offset += sizeof(cah);
+	offset += sizeof(cah) + plusoffset;
 	pagefudge = offset % pagesize;
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
