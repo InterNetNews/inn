@@ -45,16 +45,22 @@ not comprehensively):
    Internet Service Providers and other entities for internal purposes.
    See the beginning of the file for full details.
 
-   authprogs/smbval/* are all under the GNU General Public License.
-
-   backends/pgpverify.in and frontends/signcontrol.in are under a license
-   very similar to the above but with UUNET Technologies, Inc. as the
-   copyright holder.  See the end of those files for details.
+   authprogs/smbval/* and control/perl-nocem.in are under the GNU General
+   Public License.  See doc/GPL for a copy of this license.
 
    backends/shrinkfile.c, frontends/scanspool.in, lib/concat.c,
    lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c, lib/memcmp.c,
    lib/parsedate.y, lib/pread.c, lib/pwrite.c, lib/setenv.c, lib/seteuid.c,
    and lib/strerror.c are in the public domain.
+
+   control/gpgverify.in, control/pgpverify.in and control/signcontrol.in
+   are under a license very similar to the above but with UUNET
+   Technologies, Inc. as the copyright holder.  See the end of those files
+   for details.
+
+   control/controlchan.in and control/modules/*.pl are covered by only the
+   first two license points of the license above; points 3 and 4 do not
+   apply to them.  See the beginning of those files for details.
 
    lib/strcasecmp.c, lib/strspn.c, and lib/strtok.c are taken from BSD
    sources and are covered by the standard BSD license.  See those files
@@ -70,6 +76,15 @@ not comprehensively):
    tests/runtests.c is covered under a license very similar to the MIT/X
    Consortium license (less restrictive than INN's licese).  See the
    beginning of the file for details.
+
+Note that all portions of INN that link with core INN code have to be
+convered by licenses compatible with the license at the top of this file.
+Some portions of this distribution are covered by incompatible licenses,
+but all of that code is completely stand-alone and compiles into a
+separate executable.  (This is why it's permissable to distribute some
+programs covered by the GPL as part of this distribution; they compile to
+stand-alone executables or are stand-alone scripts and therefore fall
+under the "mere aggregation" clause of the GPL.)
 
 Please note that the files in the contrib directory are not properly part
 of INN and may be under widely varying licenses.  Please each file and/or
