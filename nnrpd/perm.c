@@ -1706,7 +1706,7 @@ typedef void (*LineFunc)(char*);
 /* messages from a program's stdout */
 static void HandleProgLine(char *ln)
 {
-    if (!strncmp(ln, "User:", strlen("User:")))
+    if (caseEQn(ln, "User:", strlen("User:")))
 	strcpy(ubuf, ln+strlen("User:"));
 }
 
