@@ -696,6 +696,12 @@ static char *key ;
 %token WORD
 %token IP_ADDRESS
 
+%type <integer> IVAL
+%type <real> RVAL
+%type <string> XSTRING
+%type <chr> CHAR
+%type <name> TRUEBVAL FALSEBVAL WORD
+
 %%
 input: { 	
 		lineCount = 1 ;
@@ -715,42 +721,42 @@ entries:
 	;
 
 entry:	PEER WORD LBRACE {
-		errbuff = addScope (currScope,$2.name,newScope ("peer")) ;
-                free ($2.name) ;
+		errbuff = addScope (currScope,$2,newScope ("peer")) ;
+                free ($2) ;
 		if (errbuff != NULL) YYABORT ;
 	} scope RBRACE {
 		currScope = currScope->parent ;
 	}
 	| GROUP WORD LBRACE {
-		errbuff = addScope (currScope,$2.name,newScope ("group")) ;
-                free ($2.name) ;
+		errbuff = addScope (currScope,$2,newScope ("group")) ;
+                free ($2) ;
 		if (errbuff != NULL) YYABORT ;
 	} scope RBRACE {
 		currScope = currScope->parent ;
 	}
 	| WORD WORD LBRACE {
 		errbuff = malloc (strlen(UNKNOWN_SCOPE_TYPE) + 15 +
-					  strlen ($1.name)) ;
-		sprintf (errbuff,UNKNOWN_SCOPE_TYPE,lineCount,$1.name) ;
-                free ($1.name) ;
-                free ($2.name) ;
+					  strlen ($1)) ;
+		sprintf (errbuff,UNKNOWN_SCOPE_TYPE,lineCount,$1) ;
+                free ($1) ;
+                free ($2) ;
 		YYABORT ;
 	}
 	| WORD { 
-		if ((errbuff = keyOk($1.name)) != NULL) 
+		if ((errbuff = keyOk($1)) != NULL) {
 			YYABORT ;
-		else
-			key = $1.name ;
+		} else
+			key = $1 ;
 	} COLON value ;
 
 value:	WORD {
-		if ((errbuff = addString (currScope, key, $1.name)) != NULL)
+		if ((errbuff = addString (currScope, key, $1)) != NULL)
 			YYABORT ;
                 free (key) ;
-                free ($1.name) ;
+                free ($1) ;
 	}
 	| IVAL {
-		if ((errbuff = addInteger(currScope, key, $1.integer)) != NULL)
+		if ((errbuff = addInteger(currScope, key, $1)) != NULL)
 			YYABORT; 
                 free (key) ;
 	}
@@ -758,26 +764,26 @@ value:	WORD {
 		if ((errbuff = addBoolean (currScope, key, 1)) != NULL)
 			YYABORT ; 
                 free (key) ;
-                free ($1.name) ;
+                free ($1) ;
 	}
 	| FALSEBVAL {
 		if ((errbuff = addBoolean (currScope, key, 0)) != NULL)
 			YYABORT ; 
                 free (key) ;
-                free ($1.name) ;
+                free ($1) ;
 	}
 	| RVAL {
-		if ((errbuff = addReal (currScope, key, $1.real)) != NULL)
+		if ((errbuff = addReal (currScope, key, $1)) != NULL)
 			YYABORT ; 
                 free (key) ;
 	}
 	| XSTRING { 
-		if ((errbuff = addString (currScope, key, $1.string)) != NULL)
+		if ((errbuff = addString (currScope, key, $1)) != NULL)
 			YYABORT;
                 free (key) ;
 	}
 	| CHAR {
-		if ((errbuff = addChar (currScope, key, $1.chr)) != NULL)
+		if ((errbuff = addChar (currScope, key, $1)) != NULL)
 			YYABORT ;
                 free (key) ;
         }

@@ -126,6 +126,7 @@
 #define DO_NEED_STRERROR 1
 #define HAVE_MMAP
 #define MAX_STDIO_FD 128
+#define atexit(arg) on_exit (arg,0)
 #endif
 
 
