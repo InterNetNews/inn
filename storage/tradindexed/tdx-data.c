@@ -656,8 +656,7 @@ tdx_data_rebuild_start(const char *group)
 
 /*
 **  Finish a rebuild by renaming the new index and data files to their
-**  permanent names.  Takes the group_data struct corresponding to the new
-**  data files.
+**  permanent names.
 */
 bool
 tdx_data_rebuild_finish(const char *group)
@@ -725,6 +724,7 @@ tdx_data_expire_start(const char *group, struct group_data *data,
     ARTNUM high;
 
     new_data = tdx_data_rebuild_start(group);
+    index->indexinode = new_data->indexinode;
 
     /* Try to make sure that the search range is okay for even an empty group
        so that we can treat all errors on opening a search as errors. */
@@ -756,7 +756,7 @@ tdx_data_expire_start(const char *group, struct group_data *data,
         if (!tdx_data_store(new_data, &article))
             goto fail;
         if (index->base == 0) {
-            index->base = data->base;
+            index->base = new_data->base;
             index->low = article.number;
         }
         if (article.number > index->high)
