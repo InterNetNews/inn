@@ -159,6 +159,8 @@ responses will be traced by reporting them in syslog. This flag is set
 by innd(8) under the control of the ctlinnd(8) C<trace> command, and
 is toggled upon receipt of a C<SIGHUP>; see signal(2).
 
+=back
+
 =head1 PROTOCOL DIFFERENCES
 
 B<nnrpd> implements the NNTP commands defined in RFC 977, with the
@@ -232,6 +234,8 @@ The C<date> command is provided; this is based on the draft NNTP protocol
 revision (draft-ietf-nntpext-imp-04.txt).  It returns a one-line response
 code of C<111> followed by the GMT date and time on the server in the form
 C<YYYYMMDDhhmmss>.
+
+=back
 
 =head1 HISTORY
 
