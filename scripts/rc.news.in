@@ -158,12 +158,12 @@ eval ${WHAT} ${RFLAG} ${INNFLAGS}
 # Gee, looks like lisp, doesn't it?
 ${DOINNWATCH} && {
     echo "Scheduled start of ${INNWATCH}."
-    ( sleep 60 ; ${INNWATCH} ) &
+    ( sleep 60 ; ${INNWATCH} ) > /dev/null &
 }
 
 ${DOCNFSSTAT} && {
     echo "Scheduled start of cnfsstat."
-    ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l -P ) &
+    ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l -P ) > /dev/null &
 }
 
 RMFILE=${MOST_LOGS}/expire.rm
