@@ -226,7 +226,21 @@ struct conf_vars {
 	int extendeddbz;
 #define	CONF_VAR_NNRPDOVERSTATS 76
 	int nnrpdoverstats;
-#define	MAX_CONF_VAR 77
+#define CONF_VAR_DECNETDOMAIN 77
+	char *decnetdomain;
+#define CONF_VAR_BACKOFFAUTH 78
+	int backoff_auth;
+#define CONF_VAR_BACKOFFDB 79
+	char *backoff_db;
+#define CONF_VAR_BACKOFFK 80
+	long backoff_k;
+#define CONF_VAR_BACKOFFPOSTFAST 81
+	long backoff_postfast;
+#define CONF_VAR_BACKOFFPOSTSLOW 82
+	long backoff_postslow;
+#define CONF_VAR_BACKOFFTRIGGER 83
+	long backoff_trigger;
+#define	MAX_CONF_VAR 84
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
