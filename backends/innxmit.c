@@ -36,6 +36,12 @@ typedef enum _MIMEXFERTYPE {
     MTbase64
 } MIMEXFERTYPE;
 
+#if defined (HAVE_LONG_LONG)
+typedef unsigned long long arts_size ;
+#else
+typedef double arts_size ;
+#endif
+
 
 #define OUTPUT_BUFFER_SIZE	(16 * 1024)
 
@@ -85,7 +91,11 @@ static int logRejects = TRUE ;  /* syslog the 437 responses. */
 ** Syslog formats - collected together so they remain consistent
 */
 STATIC char	STAT1[] =
+#if defined (HAVE_LONG_LONG)
 	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %qu rejsize %qu";
+#else
+	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %.0f rejsize %.0f";
+#endif
 STATIC char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
 STATIC char	GOT_RESENDIT[] = "%s requeued %s %s";
 STATIC char	GOT_BADCOMMAND[] = "%s rejected %s %s";
@@ -129,8 +139,8 @@ STATIC unsigned long	STAToffered;
 STATIC unsigned long	STATrefused;
 STATIC unsigned long	STATrejected;
 STATIC unsigned long	STATmissing;
-STATIC long long	STATacceptedsize;
-STATIC long long	STATrejectedsize;
+STATIC arts_size	STATacceptedsize;
+STATIC arts_size	STATrejectedsize;
 STATIC char		*AltSpool;
 STATIC char		*AltPath;
 
@@ -839,14 +849,14 @@ REMsendarticle(Article, MessageID, qp)
 	break;
     case NNTP_TOOKIT_VAL:
 	STATaccepted++;
-	STATacceptedsize += (long long)length;
+	STATacceptedsize += (arts_size)length;
 	break;
     case NNTP_REJECTIT_VAL:
         if (logRejects)
             syslog(L_NOTICE, REJECTED, REMhost,
                    MessageID, Article, REMclean(buff));
 	STATrejected++;
-	STATrejectedsize += (long long)length;
+	STATrejectedsize += (arts_size)length;
 	break;
     }
 
@@ -1128,13 +1138,13 @@ strlisten()
 	    break;
 
 	case NNTP_OK_RECID_VAL:	/* remote received it OK */
-	    STATacceptedsize += (long long) stbuf[i].st_size;
+	    STATacceptedsize += (arts_size) stbuf[i].st_size;
 	    strel(i); /* release entry */
 	    STATaccepted++;
 	    break;
 		
 	case NNTP_ERR_FAILID_VAL:
-	    STATrejectedsize += (long long) stbuf[i].st_size;
+	    STATrejectedsize += (arts_size) stbuf[i].st_size;
 	    strel(i); /* release entry */
 	    STATrejected++;
 	    stnofail = 0;
