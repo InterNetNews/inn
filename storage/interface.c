@@ -9,6 +9,7 @@
 #include <paths.h>
 #include <methods.h>
 #include <interface.h>
+#include <errno.h>
 
 typedef struct {
     BOOL                initialized;
