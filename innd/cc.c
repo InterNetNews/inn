@@ -918,7 +918,7 @@ CCnewgroup(av)
     char		*Name;
     char		*Rest;
     STRING		who;
-    char		buff[SMBUF];
+    char		*buff;
     int			oerrno;
 
     Name = av[0];
@@ -955,12 +955,19 @@ CCnewgroup(av)
 	who = av[2];
 	if (*who == '\0')
 	    who = NEWSMASTER;
+
+	/* %s + ' ' + %ld + ' ' + %s + '\n' + terminator */
+	buff = NEW(char, strlen(Name) + 1 + 20 + 1 + strlen(who) + 1 + 1);
+
 	(void)sprintf(buff, "%s %ld %s\n", Name, Now.time, who);
 	if (xwrite(fd, buff, strlen(buff)) < 0) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write %s %m", LogName, TIMES);
 	    IOError(WHEN, oerrno);
 	}
+
+	DISPOSE(buff);
+	
 	if (close(fd) < 0) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant close %s %m", LogName, TIMES);
