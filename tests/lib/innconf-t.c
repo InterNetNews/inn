@@ -53,7 +53,7 @@ main(void)
     ok(7, !innconf_check("config/tmp"));
     unlink("config/tmp");
     ok_string(8, "config/tmp:25: unknown parameter foo\n", errors);
-    errors_uncapture;
+    errors_uncapture();
     free(errors);
     errors = NULL;
     innconf_free(innconf);

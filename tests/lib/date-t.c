@@ -77,6 +77,9 @@ main(void)
     int n;
     unsigned int i;
 
+    char PST8PDT[] = "TZ=PST8PDT";
+    char Newfoundland[] = "TZ=Canada/Newfoundland";
+
     printf("%d\n", 40 + ARRAY_SIZE(test_times) * 3 + 3);
 
     now = time(NULL);
@@ -94,10 +97,7 @@ main(void)
     }
     ok(2, status && diff >= 0 && diff < 10);
 
-    /* This next line may produce warnings because under SUSv2 putenv is
-       prototyped to take a char * instead of a const char *.  This is
-       obviously stupid; the lack of a cast is intentional. */
-    putenv("TZ=PST8PDT");
+    putenv(PST8PDT);
     tzset();
 
     status = makedate(100000000UL, false, buff, sizeof(buff));
@@ -122,16 +122,14 @@ main(void)
     ok(14, status);
     ok_string(15, "Wed, 4 Jul 1979 22:20:00 -0700", buff);
 
-    /* May produce warnings; see above. */
-    putenv("TZ=Canada/Newfoundland");
+    putenv(Newfoundland);
     tzset();
 
     status = makedate(900000045UL, true, buff, sizeof(buff));
     ok(16, status);
     ok_string(17, "Thu, 9 Jul 1998 13:30:45 -0230 (NDT)", buff);
 
-    /* May produce warnings; see above. */
-    putenv("TZ=PST8PDT");
+    putenv(PST8PDT);
     tzset();
 
     ok_time(18, (time_t) -1, "20000132", "000000", false);

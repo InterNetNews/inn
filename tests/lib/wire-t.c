@@ -13,12 +13,12 @@
 
 /* Read in a file and return the contents in newly allocated memory.  Fills in
    the provided stat buffer. */
-char *
+static char *
 read_file(const char *name, struct stat *st)
 {
     int fd;
     char *article;
-    size_t count;
+    ssize_t count;
 
     if (stat(name, st) < 0)
         sysdie("cannot stat %s", name);
@@ -42,7 +42,6 @@ main(void)
 {
     const char *p, *end;
     char *article;
-    size_t length;
     struct stat st;
 
     puts("34");

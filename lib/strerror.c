@@ -33,6 +33,7 @@ extern const char *sys_errlist[];
 #if TESTING
 # define strerror test_strerror
 const char *test_strerror(int);
+int snprintf(char *, size_t, const char *, ...);
 #endif
 
 const char *
