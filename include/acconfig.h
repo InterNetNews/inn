@@ -272,36 +272,9 @@ typedef unsigned long           ARTNUM;
 **  following the comments before each item and fixing it.
 */
 
-/* All occurrances of these typedefs anywhere should be replaced by their
-   ANSI/ISO/standard C definitions given in these typedefs and #defines. */
-#define STATIC          static
-#define FUNCTYPE        void
-
-typedef char const *    STRING;
-typedef char * const    CSTRING;
-
 /* Programming convenience.  Since we need bool anyway for Perl, we should
    use the lowercase version everywhere. */
 typedef bool            BOOL;
-
-/* Currently unconditionally an off_t.  This may not be the right choice on
-   some systems for large file support, so keeping the typedef may be the
-   right choice.  Be nice if we could find a package that supports large
-   files on systems other than Solaris to be sure. */
-#define OFFSET_T        off_t
-
-/* How to tell the compiler that a function won't return.  The level of
-   optimization gained by this probably isn't worth it.  __dead is 4.4BSD,
-   volatile void is GCC. */
-#ifdef __dead
-# define NORETURN       __dead void
-#else
-# ifdef __GNUC__
-#  define NORETURN      volatile void
-# else
-#  define NORETURN      void
-# endif
-#endif
 
 /* Only used in innd/art.c, should be moved there. */
 #define ART_ACCEPT              '+'
