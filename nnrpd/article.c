@@ -1517,7 +1517,8 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 	ARTclose();
     }
     Printf(".\r\n");
-    OVERclose();
+    if (innconf->storageapi)
+	OVERclose();
 }
 
 
@@ -1607,7 +1608,8 @@ FUNCTYPE CMDxover(int ac, char *av[])
     } else {
 	Printf(".\r\n");
     }
-    OVERclose();
+    if (innconf->storageapi)
+	OVERclose();
     gettimeofday(&etv, NULL);
     OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
     OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -1706,5 +1708,6 @@ FUNCTYPE CMDxpat(int ac, char *av[])
 
     Printf(".\r\n");
     DISPOSE(pattern);
-    OVERclose();
+    if (innconf->storageapi)
+	OVERclose();
 }
