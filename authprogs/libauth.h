@@ -5,25 +5,22 @@
 */
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
 
 
 /*********************** Authenticators ************************/
 
-#define NAMESTR "ClientAuthname: "
-#define PASSSTR "ClientPassword: "
+/* Holds the authentication information from nnrpd. */
+struct authinfo {
+    char *username;
+    char *password;
+};
 
-/* 
- * Takes in two buffers for the results and reads username and 
- * password as passed from nnrpd via stdin.  Exit values:
- * 0 - got nonnull username and password sucessfully
- * 3 - one of the inputs from nnrpd was an empty string
- *     (in this case, the result is usable if desired, just
- *      be aware that one of the strings starts with \0)
- */
-extern int
-get_auth(char* uname, char* pass);
+/* Reads authentication information from nnrpd and returns a new authinfo
+   struct, or returns NULL on failure.  Note that both the username and the
+   password may be empty.  The client is responsible for freeing the authinfo
+   struct. */
+extern struct authinfo *get_auth(void);
 
 
 

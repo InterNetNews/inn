@@ -1,43 +1,63 @@
-/*  
+/*  $Id$
 **
 **  Common code for authenticators and resolvers.
 **
+**  Collects common code to read information from nnrpd that should be done
+**  the same for all authenticators, and common code to get information about
+**  the incoming connection.
 */
 
+#include "config.h"
+#include "clibrary.h"
+#include "libinn.h"
+
 #include "libauth.h"
+
+#define NAMESTR "ClientAuthname: "
+#define PASSSTR "ClientPassword: "
 
 #ifdef HAVE_INET6
 # include <netdb.h>
 #endif
 
-
-int
-get_auth(char* uname, char* pass)
+/* Get a username and password from nnrpd, returning an allocated authinfo
+   struct on success. */
+struct authinfo *
+get_auth(void)
 {
+    struct authinfo *authinfo;
     char buff[SMBUF];
+    size_t length;
 
-    uname[0] = '\0';
-    pass[0] = '\0';
-    /* make sure that strlen(buff) is always less than sizeof(buff) */
-    buff[sizeof(buff)-1] = '\0';
-    /* get the username and password from stdin */
-    while (fgets(buff, sizeof(buff)-1, stdin) != (char*) 0) {
-        /* strip '\r\n' */
-        buff[strlen(buff)-1] = '\0';
-        if (strlen(buff) && (buff[strlen(buff)-1] == '\r'))
-            buff[strlen(buff)-1] = '\0';
+    /* Read input from nnrpd a line at a time, stripping \r\n. */
+    authinfo = xmalloc(sizeof(struct authinfo));
+    authinfo->username = NULL;
+    authinfo->password = NULL;
+    while (fgets(buff, sizeof(buff), stdin) != NULL) {
+        length = strlen(buff);
+        if (length == 0 || buff[length - 1] != '\n') {
+            free(authinfo);
+            return NULL;
+        }
+        buff[length - 1] = '\0';
+        if (length > 1 && buff[length - 2] == '\r')
+            buff[length - 2] = '\0';
 
-        if (!strncmp(buff, NAMESTR, strlen(NAMESTR)))
-            strcpy(uname, buff+sizeof(NAMESTR)-1);
-        if (!strncmp(buff, PASSSTR, strlen(PASSSTR)))
-            strcpy(pass, buff+sizeof(PASSSTR)-1);
+        /* See if the line is a username or password. */
+        if (strncmp(buff, NAMESTR, strlen(NAMESTR)) == 0)
+            authinfo->username = xstrdup(buff + strlen(NAMESTR));
+        if (strncmp(buff, PASSSTR, strlen(PASSSTR)) == 0)
+            authinfo->password = xstrdup(buff + strlen(PASSSTR));
     }
-    if (uname[0] == '\0' || pass[0] == '\0' )
-        return(3);
 
-    return(0);
+    /* Any information that nnrpd didn't give us is set to an empty string. */
+    if (authinfo->username == NULL)
+        authinfo->username = xstrdup("");
+    if (authinfo->password == NULL)
+        authinfo->password = xstrdup("");
+
+    return authinfo;
 }
-
 
 
 char
