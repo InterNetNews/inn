@@ -66,6 +66,7 @@ struct stbufs {		/* for each article we are procesing */
 	int   st_age;		/* age count */
 	QIOSTATE *st_qp;	/* IO to read article contents */
 	int   st_hash;		/* hash value to speed searches */
+	long  st_size;		/* article size */
 };
 static struct stbufs stbuf[STNBUF]; /* we keep track of this many articles */
 static int stnq;	/* current number of active entries in stbuf */
@@ -84,7 +85,7 @@ static int logRejects = TRUE ;  /* syslog the 437 responses. */
 ** Syslog formats - collected together so they remain consistent
 */
 STATIC char	STAT1[] =
-	"%s stats offered %lu accepted %lu refused %lu rejected %lu";
+	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %qu rejsize %qu";
 STATIC char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
 STATIC char	GOT_RESENDIT[] = "%s requeued %s %s";
 STATIC char	GOT_BADCOMMAND[] = "%s rejected %s %s";
@@ -127,6 +128,9 @@ STATIC unsigned long	STATaccepted;
 STATIC unsigned long	STAToffered;
 STATIC unsigned long	STATrefused;
 STATIC unsigned long	STATrejected;
+STATIC unsigned long	STATmissing;
+STATIC long long	STATacceptedsize;
+STATIC long long	STATrejectedsize;
 STATIC char		*AltSpool;
 STATIC char		*AltPath;
 
@@ -462,15 +466,15 @@ ExitWithStats(x)
     }
 
     if (STATprint) {
-	(void)printf(STAT1,
-	    REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
+	(void)printf(STAT1, REMhost, STAToffered, STATaccepted, STATrefused,
+		STATrejected, STATmissing, STATacceptedsize, STATrejectedsize);
 	(void)printf("\n");
 	(void)printf(STAT2, REMhost, usertime, systime, STATend - STATbegin);
 	(void)printf("\n");
     }
 
-    syslog(L_NOTICE, STAT1,
-	REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
+    syslog(L_NOTICE, STAT1, REMhost, STAToffered, STATaccepted, STATrefused,
+		STATrejected, STATmissing, STATacceptedsize, STATrejectedsize);
     syslog(L_NOTICE, STAT2, REMhost, usertime, systime, STATend - STATbegin);
     if (retries)
 	syslog(L_NOTICE, "%s %lu Streaming retries", REMhost, retries);
@@ -559,7 +563,8 @@ RequeueRestAndExit(Article, MessageID)
     register char	*p;
 
     if (!AlwaysRewrite
-     && STATaccepted == 0 && STATrejected == 0 && STATrefused == 0) {
+     && STATaccepted == 0 && STATrejected == 0 && STATrefused == 0
+     && STATmissing == 0) {
 	(void)fprintf(stderr, "Nothing sent -- leaving batchfile alone.\n");
 	ExitWithStats(1);
     }
@@ -834,12 +839,14 @@ REMsendarticle(Article, MessageID, qp)
 	break;
     case NNTP_TOOKIT_VAL:
 	STATaccepted++;
+	STATacceptedsize += (long long)length;
 	break;
     case NNTP_REJECTIT_VAL:
         if (logRejects)
             syslog(L_NOTICE, REJECTED, REMhost,
                    MessageID, Article, REMclean(buff));
 	STATrejected++;
+	STATrejectedsize += (long long)length;
 	break;
     }
 
@@ -1010,6 +1017,7 @@ takethis(i)
 	    }
 	    if (!(stbuf[i].st_qp)) {
 		strel(i);
+		++STATmissing;
 		return FALSE; /* Not an error. Could be canceled or expired */
 	    }
 	}
@@ -1028,6 +1036,7 @@ takethis(i)
     if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id,
 	    stbuf[i].st_qp))
 	return TRUE;
+    stbuf[i].st_size = QIOtell(stbuf[i].st_qp);
     QIOclose(stbuf[i].st_qp);	/* should not need file again */
     stbuf[i].st_qp = 0;		/* so close to free descriptor */
     stbuf[i].st_age = 0;
@@ -1119,11 +1128,13 @@ strlisten()
 	    break;
 
 	case NNTP_OK_RECID_VAL:	/* remote received it OK */
+	    STATacceptedsize += (long long) stbuf[i].st_size;
 	    strel(i); /* release entry */
 	    STATaccepted++;
 	    break;
 		
 	case NNTP_ERR_FAILID_VAL:
+	    STATrejectedsize += (long long) stbuf[i].st_size;
 	    strel(i); /* release entry */
 	    STATrejected++;
 	    stnofail = 0;
@@ -1488,9 +1499,10 @@ int main(int ac, char *av[])
 
 	if (qp == NULL) {
 	    if (IsToken(Article)) {
-		if ((SMerrno == SMERR_NOENT) || (SMerrno == SMERR_UNINIT))
+		if ((SMerrno == SMERR_NOENT) || (SMerrno == SMERR_UNINIT)) {
+		    ++STATmissing;
 		    continue;
-		else {
+		} else {
 		    (void)fprintf(stderr, "Requeue \"%s\", %s\n",
 			Article, SMerrorstr);
 		    Requeue(Article, MessageID);
@@ -1505,6 +1517,7 @@ int main(int ac, char *av[])
 	    case ENOENT:
 		/* Cancelled or expired.  We could look the file up
 		 * in the history database and see if it does exist. */
+		++STATmissing;
 		break;
 	    case ENOTDIR:
 		(void)fprintf(stderr, SKIPPING, Article, "mangled");
