@@ -1142,7 +1142,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     } else {
 	priv = *(PRIV_TRADSPOOL *) article->private;
 	DISPOSE(article->private);
-	DISPOSE(article);
+	DISPOSE((void*)article);
 	if (priv.artbase != NULL) {
 	    if (priv.mmapped) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
@@ -1289,7 +1289,7 @@ BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
 	artnum = ntohl(artnum);
 	ngnum = ntohl(ngnum);
 	ng = FindNGByNum(ngnum);
-	if (ng == NULL) return NULL;
+	if (ng == NULL) return FALSE;
 	namelen = strlen(ng) + 1;
 	ann->groupname = NEW(char, namelen);
 	ann->artnum = (ARTNUM)ntohl(artnum);
@@ -1297,6 +1297,10 @@ BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     default:
 	return FALSE;
     }       
+}
+
+BOOL tradspool_flushcacheddata(FLUSHTYPE type) {
+    return TRUE;
 }
 
 void
