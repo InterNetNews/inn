@@ -14,7 +14,7 @@ ninpaths.o: ninpaths.c
 	$(CC) $(CFLAGS) -o $@ -c ninpaths.c
 
 sendinpaths: sendinpaths.in
-	$(UPFIXSCRIPT) sendinpaths
+	$(UPFIXSCRIPT) sendinpaths.in
 
 clean:
-	rm -f ninpaths *.o *.out core
+	rm -f ninpaths sendinpaths *.o *.out core
