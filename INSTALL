@@ -69,12 +69,12 @@ Choosing an Article Storage Format
   INN supports three methods of storing articles on your system. Each method
   has specific advantages and disadvantages. These storage methods are:
 
-  traditional - This is the storage method used by all previous versions of INN.
-                Articles are stored as individual text files whose names are the
-                same as the article number. The articles are divided up into
-                directories based on the news group name. For example, article
-                12345 in news.software.nntp would be stored in the article spool
-                under the path "news/software/nntp/12345".
+  traditional - This is the storage method used by all previous versions of
+                INN.  Articles are stored as individual text files whose names
+                are the same as the article number. The articles are divided up
+                into directories based on the news group name. For example,
+                article 12345 in news.software.nntp would be stored in the
+                article spool under the path "news/software/nntp/12345".
 
                    Advantages: solid time-tested code, compatible with all of
                                the third-party INN add-ons available, gives you
@@ -601,18 +601,20 @@ Configuring INN
   only), you can leave this file empty and not run an overchan process (see
   above under newsfeeds).  As a result, no overview information will be
   generated and reading from the server will be impossible, but the server may
-  run faster.  If you choose to do this and you're using timehash, you'll need
+  run faster.  If you choose to do this, you won't be able to set expire times
+  on a newsgroup by newsgroup basis, and if you're using timehash you'll have
   to use a different syntax in expire.ctl.  See the expire.ctl man page for
   details.
 
-  The exact way in which you distribute articles across multiple overview
-  storage areas is not an exact science. As a start we suggest creating 27
-  storage areas; the first 26 will be for newsgroups "a*" through "z*", and the
-  27th will be for "*" (thus catching any groups that start with a non-letter,
-  of which there are several). You can change the layout in the future by
-  modifying this file and then waiting for the daily news expiration to run,
-  at which time the overview data will be re-arranged for you during the
-  expiration process.
+  The way in which you distribute articles across multiple overview storage
+  areas is not an exact science; the goal is to spread access out across a
+  number of smaller files rather than one large file. As a start we suggest
+  creating 27 storage areas; the first 26 will be for newsgroups "a*" through
+  "z*", and the 27th will be for "*" (thus catching any groups that start with
+  a non-letter, of which there are several). You can change the layout in the
+  future by modifying this file and then waiting for the daily news expiration
+  to run, at which time the overview data will be re-arranged for you during
+  the expiration process.
 
   7. expire.ctl (REQUIRED)
 
