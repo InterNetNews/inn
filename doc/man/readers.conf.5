@@ -16,6 +16,9 @@ server reads it when first spawned by
 Comments begin with a number sign (``#'') and continue through the end
 of the line.
 Blank lines and comments are ignored.
+If that character (``#'') is used in the raw, it should be
+escaped with ``\\''.
+The maximum number of character in each line is 255.
 There are three types of entries in the readers.conf file: key/value entries,
 authentication realms and access realms.
 .PP

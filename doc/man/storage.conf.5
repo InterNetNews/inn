@@ -13,6 +13,9 @@ The file consists of a series of storage method entries;
 blank lines and lines beginning with a number sign (``#'') are ignored.
 If spaces or tabs are included in the value, that value must be quoted
 with ``"''.
+If those characters (``#'' and ``"'') are used in the raw, they should be
+escaped with ``\\''.
+The maximum number of character in each line is 255.
 The order of entries in this file is important.
 .PP
 Each entry is formatted as:
