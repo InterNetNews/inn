@@ -797,7 +797,7 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
 	if (token->overlen > 0) {
 	    *Overlen = token->overlen;
 	} else {
-	    for (p = addr; p < config->base+config->size; p++)
+	    for (p = addr; p < config->base+config->len; p++)
 	        if ((*p == '\r') || (*p == '\n'))
 		    break;
 	    *Overlen = p - addr;

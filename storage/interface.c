@@ -152,6 +152,7 @@ static BOOL SMreadconfig(void) {
     int                 minsize;
     int                 maxsize;
     int                 class;
+    STORAGE_SUB         *checksub;
     STORAGE_SUB         *sub = NULL;
     STORAGE_SUB         *prev = NULL;
     char		*options;
@@ -243,9 +244,19 @@ static BOOL SMreadconfig(void) {
 		break;
 	    }
 	}
+	for (checksub = subscriptions; checksub != NULL; checksub = checksub->next) {
+	    if ((checksub->class == class) && (sub->type == checksub->type)) {
+		SMseterror(SMERR_CONFIG, "duplicated class");
+		syslog(L_ERROR, "SM duplicated class within the same storage method '%s', class %d, line %d", method, class, linenum);
+		DISPOSE(options);
+		DISPOSE(sub);
+		(void)Fclose(f);
+		return FALSE;
+	    }
+	}
 	if (sub->type == TOKEN_EMPTY) {
 	    SMseterror(SMERR_CONFIG, "Invalid storage method name");
-	    syslog(L_ERROR, "SM no configured storage methods are named '%s'", method);
+	    syslog(L_ERROR, "SM no configured storage methods are named '%s', line %d", method, linenum);
 	    DISPOSE(options);
 	    DISPOSE(sub);
 	    (void)Fclose(f);
@@ -314,6 +325,7 @@ BOOL SMinit(void) {
     Initialized = TRUE;
     
     if (!SMreadconfig()) {
+	SMshutdown();
 	Initialized = FALSE;
 	return FALSE;
     }
