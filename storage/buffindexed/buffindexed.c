@@ -857,10 +857,11 @@ BOOL buffindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag
   GROUPLOC	gloc;
 
   gloc = GROUPfind(group);
+  GROUPlock(gloc, LOCK_READ);
   if (GROUPLOCempty(gloc)) {
+    GROUPlock(gloc, LOCK_UNLOCK);
     return FALSE;
   }
-  GROUPlock(gloc, LOCK_READ);
   if (lo != NULL)
     *lo = GROUPentries[gloc.recno].low;
   if (hi != NULL)
@@ -1013,14 +1014,18 @@ BOOL buffindexed_groupdel(char *group) {
   void		*handle;
 
   gloc = GROUPfind(group);
-  if (GROUPLOCempty(gloc))
+  GROUPlock(gloc, LOCK_WRITE);
+  if (GROUPLOCempty(gloc)) {
+    GROUPlock(gloc, LOCK_UNLOCK);
     return TRUE;
+  }
   ge = &GROUPentries[gloc.recno];
   if (ge->count != 0 && (handle = ovopensearch(group, ge->low, ge->high, TRUE)) != NULL)
     ovclosesearch(handle, TRUE);
 
   GROUPentries[gloc.recno].deleted = time(NULL);
   HashClear(&GROUPentries[gloc.recno].hash);
+  GROUPlock(gloc, LOCK_UNLOCK);
   return TRUE;
 }
 
@@ -1257,9 +1262,11 @@ BOOL buffindexed_add(TOKEN token, char *data, int len) {
     }
 
     gloc = GROUPfind(group);
-    if (GROUPLOCempty(gloc))
-      continue;
     GROUPlock(gloc, LOCK_WRITE);
+    if (GROUPLOCempty(gloc)) {
+      GROUPlock(gloc, LOCK_UNLOCK);
+      continue;
+    }
     /* prepend block(s) if needed. */
     ge = &GROUPentries[gloc.recno];
     if (ge->base > artnum) {
@@ -1454,7 +1461,6 @@ STATIC void *ovopensearch(char *group, int low, int high, BOOL needov) {
   if (GROUPLOCempty(gloc))
     return NULL;
 
-  GROUPlock(gloc, LOCK_READ);
   ge = &GROUPentries[gloc.recno];
   if (low < ge->low)
     low = ge->low;
@@ -1462,7 +1468,6 @@ STATIC void *ovopensearch(char *group, int low, int high, BOOL needov) {
     high = ge->high;
 
   if (!ovgroupmmap(ge, &gib, low, high, needov)) {
-    GROUPlock(gloc, LOCK_UNLOCK);
     return NULL;
   }
     
@@ -1479,7 +1484,14 @@ STATIC void *ovopensearch(char *group, int low, int high, BOOL needov) {
 }
 
 void *buffindexed_opensearch(char *group, int low, int high) {
-  return(ovopensearch(group, low, high, TRUE));
+  GROUPLOC		gloc;
+  void			*handle;
+
+  gloc = GROUPfind(group);
+  GROUPlock(gloc, LOCK_WRITE);
+  if ((handle = ovopensearch(group, low, high, TRUE)) == NULL)
+    GROUPlock(gloc, LOCK_UNLOCK);
+  return(handle);
 }
 
 BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token) {
@@ -1524,24 +1536,34 @@ STATIC void ovclosesearch(void *handle, BOOL freeblock) {
   if (freeblock)
     freegroupblock(search->gib);
   ovgroupunmap(search->gib);
-  GROUPlock(search->gloc, LOCK_UNLOCK);
   DISPOSE(search->group);
   DISPOSE(search);
   return;
 }
 
 void buffindexed_closesearch(void *handle) {
+  OVSEARCH	*search = (OVSEARCH *)handle;
+  GROUPLOC	gloc;
+
+  gloc = search->gloc;
   ovclosesearch(handle, FALSE);
+  GROUPlock(gloc, LOCK_UNLOCK);
 }
 
 BOOL buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
-  void	*handle;
-  BOOL	retval;
+  GROUPLOC	gloc;
+  void		*handle;
+  BOOL		retval;
 
-  if (!(handle = ovopensearch(group, artnum, artnum, FALSE)))
+  gloc = GROUPfind(group);
+  GROUPlock(gloc, LOCK_WRITE);
+  if (!(handle = ovopensearch(group, artnum, artnum, FALSE))) {
+    GROUPlock(gloc, LOCK_UNLOCK);
     return FALSE;
+  }
   retval = buffindexed_search(handle, NULL, data, len, token);
   ovclosesearch(handle, FALSE);
+  GROUPlock(gloc, LOCK_UNLOCK);
   return retval;
 }
 
@@ -1716,10 +1738,12 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
   HASH		hash;
 
   gloc = GROUPfind(group);
-  if (GROUPLOCempty(gloc))
-    return FALSE;
-  ge = &GROUPentries[gloc.recno];
   GROUPlock(gloc, LOCK_WRITE);
+  if (GROUPLOCempty(gloc)) {
+    GROUPlock(gloc, LOCK_UNLOCK);
+    return FALSE;
+  }
+  ge = &GROUPentries[gloc.recno];
   if (ge->count == 0) {
     if (lo)
       *lo = ge->low;
@@ -1731,11 +1755,11 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
   next = ge->next;
   low = ge->low;
   high = ge->high;
-  GROUPlock(gloc, LOCK_UNLOCK);
 
   newge.low = 0;
   setinitialge(&newge, hash, &flag, next, 0, high);
   if ((handle = ovopensearch(group, low, high, TRUE)) == NULL) {
+    GROUPlock(gloc, LOCK_UNLOCK);
     syslog(L_ERROR, "%s: could not open overview for '%s'", LocalLogName, group);
     return FALSE;
   }
@@ -1745,6 +1769,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
     SMfreearticle(ah);
     if (!ovaddrec(&newge, artnum, token, data, len)) {
       ovclosesearch(handle, TRUE);
+      GROUPlock(gloc, LOCK_UNLOCK);
       syslog(L_ERROR, "%s: could not add new overview for '%s'", LocalLogName, group);
       return FALSE;
     }
@@ -1761,6 +1786,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
       *lo = ge->low;
   }
   ovclosesearch(handle, TRUE);
+  GROUPlock(gloc, LOCK_UNLOCK);
   return TRUE;
 }
 
@@ -1830,6 +1856,7 @@ main(int argc, char **argv) {
   }
   group = argv[1];
   gloc = GROUPfind(group);
+  GROUPlock(gloc, LOCK_READ);
   if (GROUPLOCempty(gloc)) {
     fprintf(stderr, "gloc is null\n");
   }
