@@ -121,7 +121,7 @@ log_syslog(int level, int len, const char *format, va_list args, int error)
         strcat(p, ": ");
         strcat(p, strerror(error));
     }
-    syslog(level, p);
+    syslog(level, "%s", p);
     free(p);
 }
 
