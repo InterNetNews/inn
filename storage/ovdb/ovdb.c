@@ -604,7 +604,7 @@ static int open_db_file(int which)
 	(dbs[which])->set_pagesize(dbs[which], ovdb_conf.pagesize);
 
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
-    TXN_START(t_open_db_file, tid);
+    TXN_START_NORETRY(t_open_db_file, tid);
     ret = (dbs[which])->open(dbs[which], tid, name, NULL, DB_BTREE, _db_flags,
                              0666);
     if (ret == 0)
@@ -1522,7 +1522,7 @@ bool ovdb_open(int mode)
 	return false;
     }
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
-    TXN_START(t_open_groupinfo, tid);
+    TXN_START_NORETRY(t_open_groupinfo, tid);
     ret = groupinfo->open(groupinfo, tid, "groupinfo", NULL, DB_BTREE,
                           _db_flags, 0666);
     if (ret == 0)
@@ -1542,7 +1542,7 @@ bool ovdb_open(int mode)
 	return false;
     }
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
-    TXN_START(t_open_groupaliases, tid);
+    TXN_START_NORETRY(t_open_groupaliases, tid);
     ret = groupaliases->open(groupaliases, tid, "groupaliases", NULL, DB_HASH,
                              _db_flags, 0666);
     if (ret == 0)

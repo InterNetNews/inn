@@ -170,8 +170,10 @@ struct rs_artinfo {
 #if DB_VERSION_MAJOR == 2
 char *db_strerror(int err);
 
-#define TXN_START(label, tid) \
-label: { \
+/* Used when TXN_RETRY will never be called, to avoid a warning about an
+   unused label. */
+#define TXN_START_NORETRY(label, tid) \
+{ \
   int txn_ret; \
   txn_ret = txn_begin(OVDBenv->tx_info, NULL, &tid); \
   if (txn_ret != 0) { \
@@ -179,6 +181,8 @@ label: { \
     tid = NULL; \
   } \
 }
+
+#define TXN_START(label, tid) label: TXN_START_NORETRY(label, tid)
 
 #define TXN_RETRY(label, tid) \
 { txn_abort(tid); goto label; }
@@ -190,8 +194,10 @@ label: { \
 
 #elif DB_VERSION_MAJOR == 3
 
-#define TXN_START(label, tid) \
-label: { \
+/* Used when TXN_RETRY will never be called, to avoid a warning about an
+   unused label. */
+#define TXN_START_NORETRY(label, tid) \
+{ \
   int txn_ret; \
   txn_ret = txn_begin(OVDBenv, NULL, &tid, 0); \
   if (txn_ret != 0) { \
@@ -199,6 +205,8 @@ label: { \
     tid = NULL; \
   } \
 }
+
+#define TXN_START(label, tid) label: TXN_START_NORETRY(label, tid)
 
 #define TXN_RETRY(label, tid) \
 { txn_abort(tid); goto label; }
@@ -210,8 +218,10 @@ label: { \
 
 #else /* DB_VERSION_MAJOR == 4 */
 
-#define TXN_START(label, tid) \
-label: { \
+/* Used when TXN_RETRY will never be called, to avoid a warning about an
+   unused label. */
+#define TXN_START_NORETRY(label, tid) \
+{ \
   int txn_ret; \
   txn_ret = OVDBenv->txn_begin(OVDBenv, NULL, &tid, 0); \
   if (txn_ret != 0) { \
@@ -219,6 +229,8 @@ label: { \
     tid = NULL; \
   } \
 }
+
+#define TXN_START(label, tid) label: TXN_START_NORETRY(label, tid)
 
 #define TXN_RETRY(label, tid) \
 { (tid)->abort(tid); goto label; }
