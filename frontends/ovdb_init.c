@@ -316,9 +316,11 @@ static int check_upgrade(int do_upgrade)
 	ret = ovdb_open_berkeleydb(OV_WRITE, OVDB_UPGRADE);
 	if (ret != 0)
 	    return ret;
+#if DB_VERSION_MAJOR >=3
 	ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, 0);
 	if (ret != 0)
 	    return ret;
+#endif
 	OVDBenv = NULL;
 	ret = ovdb_open_berkeleydb(OV_WRITE, 0);
 	if(ret != 0)
