@@ -1796,10 +1796,9 @@ ARTmakeoverview(Data)
 **  message to send back.
 */
 STRING
-ARTpost(cp, Replic, ihave)
+ARTpost(cp, Replic)
     CHANNEL		*cp;
     BUFFER		*Replic;
-    char		*ihave;
 {
     static BUFFER	Files;
     static BUFFER	Header;
@@ -1834,8 +1833,8 @@ ARTpost(cp, Replic, ihave)
 
     /* Preliminary clean-ups. */
     article = &cp->In;
-    Data.MessageID = ihave;
     error = ARTclean(article, &Data);
+    Data.MessageID = HDR(_message_id);
     if (HIShavearticle(Data.MessageID)) {
 	sprintf(buff, "%d Article already recieved", NNTP_REJECTIT_VAL);
 	ARTlog(&Data, ART_REJECT, buff);

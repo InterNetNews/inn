@@ -10,7 +10,7 @@
 #include "dbz.h"
 
 typedef struct __HISCACHE {
-    unsigned int        Hash;      /* Hash value of the message-id using dbzhash() */
+    unsigned int        Hash;      /* Hash value of the message-id using Hash() */
     BOOL		Found;     /* Whether this entry is in the dbz file yet */
 } _HIScache;
 
@@ -33,12 +33,12 @@ STATIC int              HISdne;    /* The entry was not in cache or history */
 */
 void HIScacheadd(char *MessageID, int len, BOOL Found) {
     unsigned int  i, hash, loc;
-    hash_t h;
+    HASH h;
     int tocopy;
 
     if (HIScache == NULL)
 	return;
-    h = dbzhash(MessageID, len);
+    h = Hash(MessageID, len);
     tocopy = (sizeof(h) < sizeof(hash)) ? sizeof(h) : sizeof(hash);
     memcpy(&hash, &h, tocopy);
     memcpy(&loc, ((char *)&h) + (sizeof(h) - tocopy), tocopy);
@@ -52,12 +52,12 @@ void HIScacheadd(char *MessageID, int len, BOOL Found) {
 */
 HISresult HIScachelookup(char *MessageID, int len) {
     unsigned int i, hash, loc;
-    hash_t h;
+    HASH h;
     int tocopy;
 
     if (HIScache == NULL)
 	return HIScachedne;
-    h = dbzhash(MessageID, len);
+    h = Hash(MessageID, len);
     tocopy = (sizeof(h) < sizeof(hash)) ? sizeof(h) : sizeof(hash);
     memcpy(&hash, &h, tocopy);
     memcpy(&loc, ((char *)&h) + (sizeof(h) - tocopy), tocopy);
@@ -114,15 +114,17 @@ HISsetup()
 	HIScache = NULL;
 	HIScachesize = 0;
     } else {
-	HIScachesize = atoi(HIScachesizestr);
-	if (HIScache != NULL)
-	    free(HIScache);
-	HIScache = NEW(_HIScache, HIScachesize);
-	memset((void *)&HIScache, '\0', sizeof(HIScache));
+	if ((HIScachesize = atoi(HIScachesizestr)) != 0) {
+	    HIScachesize *= 1024;
+	    if (HIScache != NULL)
+		free(HIScache);
+	    HIScache = NEW(_HIScache, HIScachesize);
+	    memset((void *)HIScache, '\0', HIScachesize);
+	    HIScachesize = (HIScachesize / sizeof(_HIScache));
+	}
     }
     HIShitpos = HIShitneg = HISmisses = HISdne = 0;
 }
-
 
 /*
 **  Synchronize the in-core history file (flush it).
@@ -283,7 +285,7 @@ HIShavearticle(MessageID)
     datum	   key;
     BOOL	   val;
     int            index;
-    hash_t	   hash;
+    HASH	   hash;
     STATIC time_t  lastlog;       /* Last time that we logged stats */   
     
 
@@ -344,7 +346,7 @@ HISwrite(Data, paths)
     datum		key;
     datum		val;
     int			i;
-    hash_t              hash;
+    HASH                hash;
 
     HISsetkey(Data->MessageID, &key);
     if (paths != NULL && paths[0] != '\0')

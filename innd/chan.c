@@ -31,7 +31,6 @@ STATIC int	CHANrcfd;
 STATIC CHANNEL	*CHANrc;
 #endif /* PRIORITISE_REMCONN */
 
-
 /*
 **  Append data to a buffer.
 */
@@ -163,7 +162,8 @@ CHANcreate(fd, Type, State, Reader, WriteDone)
     cp->In = in;
     cp->Out = out;
     cp->Tracing = Tracing;
-    cp->Sendid.Size=0;
+    cp->Sendid.Size = 0;
+    cp->Replic.Size = 0;
     cp->Rest=0;
     cp->SaveUsed=0;
     cp->Lastch=0;
@@ -275,6 +275,10 @@ CHANclose(cp, name)
     if (cp->Sendid.Size) {
 	cp->Sendid.Size = 0;
 	DISPOSE(cp->Sendid.Data);
+    }
+    if (cp->Replic.Size) {
+	cp->Replic.Size = 0;
+	DISPOSE(cp->Replic.Data);
     }
 }
 
@@ -791,7 +795,7 @@ CHANreadloop()
     long		silence;
     char		*p;
     time_t		LastUpdate;
-
+    
     LastUpdate = GetTimeInfo(&Now) < 0 ? 0 : Now.time;
     for ( ; ; ) {
 	/* See if any processes died. */
@@ -803,6 +807,7 @@ CHANreadloop()
 	MyTime = TimeOut;
 	count = select(CHANlastfd + 1, &MyRead, &MyWrite, (FDSET *)NULL,
 		&MyTime);
+	
 	if (GotTerminate) {
 	    (void)write(2, EXITING, STRLEN(EXITING));
 	    CleanupAndExit(0, (char *)NULL);

@@ -47,6 +47,14 @@ typedef struct _TIMEINFO {
 extern time_t	parsedate();
 extern int	GetTimeInfo();
 
+/* Hash functions */
+typedef struct {
+    char        hash[16];
+} HASH;
+HASH Hash(const void *value, size_t len);
+BOOL HashEmpty(const HASH hash);
+void HashClear(HASH *hash);
+
 /* Miscellaneous. */
 typedef struct _OVERINDEX {
     long    artnum;

@@ -47,11 +47,11 @@ TCL_LIB	=
 
 SOURCES	= \
 	art.c cc.c chan.c his.c icd.c innd.c lc.c nc.c newsfeeds.c ng.c \
-	proc.c rc.c site.c tcl.c perl.c
+	perl.c proc.c rc.c site.c tcl.c timer.c wip.c
 
 OBJECTS	= \
 	art.o cc.o chan.o his.o icd.o innd.o lc.o nc.o newsfeeds.o ng.o \
-	proc.o rc.o site.o tcl.o perl.o
+	perl.o proc.o rc.o site.o tcl.o timer.o wip.o
 
 ALL	= innd inndstart
 

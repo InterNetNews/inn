@@ -9,10 +9,10 @@
 #include "clibrary.h"
 #include "innd.h"
 #include "dbz.h"
+#include "timer.h"
 
 
 #define BAD_COMMAND_COUNT	10
-#define WIP_CHECK		(1 * 60)
 #define SAVE_AMT		10
 #define ART_EOF(c, s)		\
     ((c) >= 5 && (s)[-5] == '\r' && (s)[-4] == '\n' && (s)[-3] == '.' \
@@ -28,19 +28,6 @@ typedef struct _NCDISPATCH {
     FUNCPTR	Function;
     int		Size;
 } NCDISPATCH;
-
-
-/*
-**  Information about the work in progress on all our open channels.
-*/
-typedef struct _WIP {
-    char	*MessageID;
-    long	Size;
-    time_t	Timestamp;
-    BUFFER	Replic;
-    BOOL	Wanted;
-} WIP;
-
 
 #if	0
 static FUNCTYPE	NCarticle();
@@ -62,10 +49,6 @@ static FUNCTYPE	NCcheck();
 static FUNCTYPE	NCtakethis();
 
 STATIC int		NCcount;	/* Number of open connections	*/
-STATIC int		NCwipsize;	/* Size of NCwip array		*/
-STATIC char		*NCfreelist[5];	/* Free string list		*/
-STATIC WIP		*NCwip;		/* Work-in-progress		*/
-STATIC WIP		NCnullwip;
 STATIC NCDISPATCH	NCcommands[] = {
 #if	0
     {	"article",	NCarticle },
@@ -103,26 +86,13 @@ STATIC char		NCdotterm[] = ".\r\n";
 STATIC char		NCbadcommand[] = NNTP_BAD_COMMAND;
 STATIC STRING		NCgreeting;
 
-
 /*
-**  Clear the work-in-progress entry and wake up anyone who might
-**  have been waiting for us.
+** Clear the WIP entry for the given channel
 */
-STATIC void
-NCclearwip(wp)
-    register WIP	*wp;
-{
-    char		*p;
-
-    if ((p = wp->MessageID) != NULL)
-	*p = '\0';
-    wp->Size = 0;
-    if (wp->Wanted) {
-        wp->Wanted = FALSE;
-	SCHANwakeup((POINTER)wp);
-    }
+STATIC void NCclearwip(CHANNEL *cp) {
+    WIPfree(WIPbyhash(cp->CurrentMessageID));
+    HashClear(&cp->CurrentMessageID);
 }
-
 
 /*
 **  Write an NNTP reply message.
@@ -219,7 +189,6 @@ NCpostit(cp)
     register CHANNEL	*cp;
 {
     STRING		response;
-    WIP			*wp;
 
     /* Note that some use break, some use return here. */
     switch (Mode) {
@@ -231,8 +200,7 @@ NCpostit(cp)
 	    NCpostit, (POINTER)NULL);
 	return;
     case OMrunning:
-	wp = &NCwip[cp->fd];
-	response = ARTpost(cp, (AmSlave && !XrefSlave) ? &wp->Replic : NULL, wp->MessageID);
+	response = ARTpost(cp, (AmSlave && !XrefSlave) ? &cp->Replic : NULL);
 	if (atoi(response) == NNTP_TOOKIT_VAL) {
 	    cp->Received++;
 	    if (cp->Sendid.Size > 3) { /* We be streaming */
@@ -266,7 +234,7 @@ NCpostit(cp)
     }
 
     /* Clear the work-in-progress entry. */
-    NCclearwip(&NCwip[cp->fd]);
+    NCclearwip(cp);
 }
 
 
@@ -462,42 +430,6 @@ NCauthinfo(cp)
     }
 }
 
-
-/*
-**  Is someone already sending us this article?
-*/
-STATIC BOOL
-NCinprogress(cp, id, who)
-    CHANNEL		*cp;
-    register char	*id;
-    WIP			**who;
-{
-    register WIP	*wp;
-    register char	*p;
-    register int	i;
-
-    for (i = NCwipsize, wp = NCwip; --i >= 0; wp++)
-	if ((p = wp->MessageID) != NULL && *p == *id && EQ(p, id)
-	 && Now.time - wp->Timestamp < WIP_CHECK) {
-	    *who = wp;
-	    return TRUE;
-	}
-    wp = &NCwip[cp->fd];
-    if (wp->MessageID == NULL) {
-	for (i = SIZEOF(NCfreelist); --i >= 0; )
-	    if (NCfreelist[i] != NULL) {
-		wp->MessageID = NCfreelist[i];
-		NCfreelist[i] = NULL;
-		break;
-	    }
-	if (i < 0)
-	    wp->MessageID = NEW(char, DBZMAXKEY + 3);
-    }
-    (void)strcpy(wp->MessageID, id);
-    return FALSE;
-}
-
-
 /*
 **  The "help" command.
 */
@@ -526,40 +458,6 @@ NChelp(cp)
     WCHANappend(cp, NCdotterm, STRLEN(NCdotterm));
 }
 
-
-#if	!defined(NNTP_RESENDIT_LATER)
-/*
-**  We woke up because we got offered an article that was already in
-**  progress somewhere else.  If the other channel finished, then we
-**  don't want the article, otherwise let's accept it.
-*/
-STATIC FUNCTYPE
-NCwaitfor(cp)
-    register CHANNEL	*cp;
-{
-    WIP			*who;
-
-    if (HIShavearticle(cp->Argument)) {
-	cp->Refused++;
-	NCwritetext(cp, NNTP_HAVEIT);
-	DISPOSE(cp->Argument);
-	cp->Argument = NULL;
-    }
-    else if (NCinprogress(cp, cp->Argument, &who)) {
-	who->Wanted = TRUE;
-	SCHANadd(cp, (time_t)(Now.time + WIP_CHECK / 2 + 1), (POINTER)who,
-	    NCwaitfor, (POINTER)cp->Argument);
-    }
-    else {
-	NCwritetext(cp, NNTP_SENDIT);
-	cp->State = CSgetarticle;
-	DISPOSE(cp->Argument);
-	cp->Argument = NULL;
-    }
-}
-#endif	/* !defined(NNTP_RESENDIT_LATER) */
-
-
 /*
 **  The "ihave" command.  Check the Message-ID, and see if we want the
 **  article or not.  Set the state appropriately.
@@ -569,7 +467,6 @@ NCihave(cp)
     CHANNEL		*cp;
 {
     register char	*p;
-    WIP			*who;
 
     if (AmSlave && !XrefSlave) {
 	NCwritetext(cp, NCbadcommand);
@@ -586,17 +483,8 @@ NCihave(cp)
 	cp->Refused++;
 	NCwritetext(cp, NNTP_HAVEIT);
     }
-    else if (NCinprogress(cp, p, &who)) {
-#if	defined(NNTP_RESENDIT_LATER)
+    else if (WIPinprogress(p, cp, TRUE)) {
 	NCwritetext(cp, NNTP_RESENDIT_LATER);
-#else
-	/* Somebody else is sending it to us; wait until they're done. */
-	who->Wanted = TRUE;
-	SCHANadd(cp, (time_t)(Now.time + WIP_CHECK + 1), (POINTER)who,
-	    NCwaitfor, (POINTER)COPY(p));
-	/* Clear input buffer. */
-	cp->In.Used = 0;
-#endif	/* defined(NNTP_RESENDIT_LATER) */
     }
     else {
 	NCwritetext(cp, NNTP_SENDIT);
@@ -604,8 +492,8 @@ NCihave(cp)
     }
 }
 
-/* The "xbatch" command. We (ab)use WIP->Size to memorize the batch size.
-** Set the state appropriately.
+/* 
+** The "xbatch" command. Set the state appropriately.
 */
 
 STATIC FUNCTYPE
@@ -613,7 +501,6 @@ NCxbatch(cp)
     CHANNEL		*cp;
 {
     register char	*p;
-    WIP			*wp;
 
     if (AmSlave) {
 	NCwritetext(cp, NCbadcommand);
@@ -624,24 +511,19 @@ NCxbatch(cp)
     for (p = cp->In.Data + STRLEN("xbatch"); ISWHITE(*p); p++)
 	continue;
 
-    wp = &NCwip[cp->fd];
-
-    /* safety checks, unnecessary once we are running stable */
-    if (!wp)
-        syslog(L_FATAL, "NCxbatch(): oops, wp == NULL");
-    if (wp->Size) {
-        syslog(L_FATAL, "NCxbatch(): oops, wp->Size already set to %ld",
-	       wp->Size);
+    if (cp->XBatchSize) {
+        syslog(L_FATAL, "NCxbatch(): oops, cp->XBatchSize already set to %ld",
+	       cp->XBatchSize);
     }
 
-    wp->Size = atoi(p);
+    cp->XBatchSize = atoi(p);
     if (Tracing || cp->Tracing)
         syslog(L_TRACE, "%s will read batch of size %ld",
-	       CHANname(cp), wp->Size);
+	       CHANname(cp), cp->XBatchSize);
 
-    if (wp->Size <= 0) {
+    if (cp->XBatchSize <= 0) {
         syslog(L_NOTICE, "%s got bad xbatch size %ld",
-	       CHANname(cp), wp->Size);
+	       CHANname(cp), cp->XBatchSize);
 	NCwritetext(cp, NNTP_XBATCH_BADSIZE);
 	return;
     }
@@ -656,9 +538,9 @@ NCxbatch(cp)
      * LOW_WATER + 1 more than needed, so that CHANreadtext() will never
      * reallocate it.
      */
-    if (cp->In.Size < wp->Size + LOW_WATER + 1) {
+    if (cp->In.Size < cp->XBatchSize + LOW_WATER + 1) {
         DISPOSE(cp->In.Data);
-	cp->In.Left = cp->In.Size = wp->Size + LOW_WATER + 1;
+	cp->In.Left = cp->In.Size = cp->XBatchSize + LOW_WATER + 1;
 	cp->In.Used = 0;
 	cp->In.Data = NEW(char, cp->In.Size);
     }
@@ -750,26 +632,11 @@ NCmode(cp)
 /*
 **  The "quit" command.  Acknowledge, and set the state to closing down.
 */
-STATIC FUNCTYPE
-NCquit(cp)
-    CHANNEL		*cp;
+STATIC FUNCTYPE NCquit(CHANNEL *cp)
 {
-    register WIP	*wp;
-    register int	i;
+    int	                i;
 
-    wp = &NCwip[cp->fd];
-    for (i = SIZEOF(NCfreelist); --i >= 0; )
-	if (NCfreelist[i] == NULL) {
-	    NCfreelist[i] = wp->MessageID;
-	    wp->MessageID = NULL;
-	    break;
-	}
-#if	0
-    if (i < 0) {
-	DISPOSE(wp->MessageID);
-	wp->MessageID = NULL;
-    }
-#endif	/* 0 */
+    NCclearwip(cp);
     NCwritetext(cp, NNTP_GOODBYE_ACK);
     cp->State = CSwritegoodbye;
 }
@@ -830,7 +697,7 @@ NCxreplic(cp)
     for (p = cp->In.Data + STRLEN("xreplic"); ISWHITE(*p); p++)
 	continue;
     i = cp->In.Used - (p - cp->In.Data) + 1;
-    bp = &NCwip[cp->fd].Replic;
+    bp = &cp->Replic;
     if (bp->Data == NULL) {
 	bp->Size = i;
 	bp->Data = NEW(char, i);
@@ -904,7 +771,6 @@ NCproc(cp)
     register char	*p;
     register NCDISPATCH	*dp;
     register BUFFER	*bp;
-    register WIP	*wp;
     STRING		q;
     char		buff[SMBUF];
     char		*av[2];
@@ -915,10 +781,10 @@ NCproc(cp)
 	    CHANname(cp), cp->In.Used);
 
     bp = &cp->In;
-    if (bp->Used == 0) return;
+    if (bp->Used == 0)
+	return;
 
     p = &bp->Data[bp->Used];
-    wp = &NCwip[cp->fd];
     for ( ; ; ) {
 	cp->Rest = 0;
 	cp->SaveUsed = bp->Used;
@@ -1035,7 +901,7 @@ NCproc(cp)
 		bp->Used = 0;
 
 		/* Clear the work-in-progress entry. */
-		NCclearwip(wp);
+		NCclearwip(cp);
 		break;
 	    }
 	    /* Reading an article; look for "\r\n.\r\n" terminator. */
@@ -1059,7 +925,7 @@ NCproc(cp)
 		    /* Make some room, saving only the last few bytes. */
 		    for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
 			p[0] = p[bp->Used - SAVE_AMT];
-		    wp->Size += bp->Used - SAVE_AMT;
+		    cp->LargeArtSize += bp->Used - SAVE_AMT;
 		    bp->Used = cp->Lastch = SAVE_AMT;
 		    cp->State = CSeatarticle;
 		}
@@ -1111,10 +977,10 @@ NCproc(cp)
 		    DISPOSE(cp->Argument);
 		    cp->Argument = NULL;
 		}
-		p = wp->MessageID;
-		i = wp->Size + bp->Used;
-		syslog(L_ERROR, "%s internal rejecting huge article %s (%d > %d)",
-		    CHANname(cp), p ? p : "(null)", i, LargestArticle);
+		i = cp->LargeArtSize + bp->Used;
+		syslog(L_ERROR, "%s internal rejecting huge article (%d > %d)",
+		    CHANname(cp), i, LargestArticle);
+		cp->LargeArtSize = 0;
 		(void)sprintf(buff, "%d Article exceeds local limit of %ld bytes",
 			NNTP_REJECTIT_VAL, LargestArticle);
 		if (cp->Sendid.Size) NCwritetext(cp, cp->Sendid.Data);
@@ -1131,7 +997,7 @@ NCproc(cp)
 		}
 
 		/* Clear the work-in-progress entry. */
-		NCclearwip(wp);
+		NCclearwip(cp);
 
 		/*
 		 * only free and allocate the buffer back to
@@ -1155,7 +1021,7 @@ NCproc(cp)
 		/* Make some room; save the last few bytes of the article */
 		for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
 		    p[0] = p[bp->Used - SAVE_AMT + 0];
-		wp->Size += bp->Used - SAVE_AMT;
+		cp->LargeArtSize += bp->Used - SAVE_AMT;
 		bp->Used = cp->Lastch = SAVE_AMT;
 		cp->Rest = 0;
 	    }
@@ -1166,13 +1032,13 @@ NCproc(cp)
 	    */
 	    if (Tracing || cp->Tracing)
 		syslog(L_TRACE, "%s CSgetxbatch: now %ld of %ld bytes",
-			CHANname(cp), bp->Used, wp->Size);
+			CHANname(cp), bp->Used, cp->XBatchSize);
 
-	    if (bp->Used < wp->Size) {
+	    if (bp->Used < cp->XBatchSize) {
 		cp->Rest = 0;
 		break;	/* give us more data */
 	    }
-	    cp->Rest = wp->Size;
+	    cp->Rest = cp->XBatchSize;
 
 	    /* now do something with the batch */
 	    {
@@ -1194,7 +1060,7 @@ NCproc(cp)
 			    NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
 		    NCwritetext(cp, buff);
 		} else {
-		    if (write(fd, cp->In.Data, wp->Size) != wp->Size) {
+		    if (write(fd, cp->In.Data, cp->XBatchSize) != cp->XBatchSize) {
 			oerrno = errno;
 			syslog(L_ERROR, "%s cant write batch to file %s: %m",
 				CHANname(cp), buff);
@@ -1230,11 +1096,12 @@ NCproc(cp)
 		} else
 		    cp->Rejected++;
 	    }
-	    syslog(L_NOTICE, "%s accepted batch size %ld", CHANname(cp), wp->Size);
+	    syslog(L_NOTICE, "%s accepted batch size %ld",
+		   CHANname(cp), cp->XBatchSize);
 	    cp->State = CSgetcmd;
 	    
 	    /* Clear the work-in-progress entry. */
-	    NCclearwip(wp);
+	    NCclearwip(cp);
 
 #if 1
 	    /* leave the input buffer as it is, there is a fair chance
@@ -1281,7 +1148,6 @@ STATIC FUNCTYPE
 NCreader(cp)
     register CHANNEL	*cp;
 {
-    register WIP	*wp;
     int			i;
 
     if (Tracing || cp->Tracing)
@@ -1305,10 +1171,6 @@ NCreader(cp)
 	return;
     }
 
-    /* Update timestamp. */
-    wp = &NCwip[cp->fd];
-    wp->Timestamp = Now.time;
-
     NCproc(cp);	    /* check and process data */
 }
 
@@ -1321,7 +1183,6 @@ void
 NCsetup(i)
     register int	i;
 {
-    register WIP	*wp;
     register NCDISPATCH	*dp;
     char		*p;
     char		buff[SMBUF];
@@ -1333,10 +1194,6 @@ NCsetup(i)
     (void)sprintf(buff, "%d %s InterNetNews server %s ready",
 	    NNTP_POSTOK_VAL, p, Version);
     NCgreeting = COPY(buff);
-
-    /* Set up the work-in-progress structure. */
-    for (wp = NCwip = NEW(WIP, i), NCwipsize = i; --i >= 0; wp++)
-	*wp = NCnullwip;
 
     /* Get the length of every command. */
     for (dp = NCcommands; dp < ENDOF(NCcommands); dp++)
@@ -1350,7 +1207,6 @@ NCsetup(i)
 void
 NCclose()
 {
-    register WIP	*wp;
     register int	i;
     register CHANNEL	*cp;
     int			j;
@@ -1361,18 +1217,6 @@ NCclose()
 	    NCcount--;
 	CHANclose(cp, CHANname(cp));
     }
-
-    /* Free the WIP list. */
-    for (wp = NCwip, i = NCwipsize; --i >= 0; wp++) {
-	if (wp->MessageID)
-	    DISPOSE(wp->MessageID);
-	if (wp->Replic.Data)
-	    DISPOSE(wp->Replic.Data);
-    }
-    DISPOSE(NCwip);
-    for (i = SIZEOF(NCfreelist); --i >= 0; )
-	if (NCfreelist[i] != NULL)
-	    DISPOSE(NCfreelist[i]);
 }
 
 
@@ -1392,13 +1236,7 @@ NCcreate(fd, MustAuthorize, IsLocal)
     cp = CHANcreate(fd, CTnntp, MustAuthorize ? CSgetauth : CSgetcmd,
 	    NCreader, NCwritedone);
 
-    /* check for wip overflow */
-    if(fd > NCwipsize) {
-      NCwriteshutdown(cp, "too many file descriptors");
-      return cp;
-    }
-
-    NCclearwip(&NCwip[cp->fd]);
+    NCclearwip(cp);
 #if defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) 
 #if defined (DO_SET_SOCKOPT)
     i = 24 * 1024;
@@ -1461,7 +1299,6 @@ NCcheck(cp)
 {
     register char	*p;
     int			msglen;
-    WIP			*who;
 
     if (AmSlave && !XrefSlave) {
 	NCwritetext(cp, NCbadcommand);
@@ -1491,7 +1328,7 @@ NCcheck(cp)
 	cp->Refused++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
-    } else if (NCinprogress(cp, p, &who)) {
+    } else if (WIPinprogress(p, cp, FALSE)) {
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_RESENDID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
     } else {
@@ -1505,14 +1342,12 @@ NCcheck(cp)
 **  The "takethis" command.  Article follows.
 **  Remember <id> for later ack.
 */
-STATIC FUNCTYPE
-NCtakethis(cp)
-    CHANNEL		*cp;
+STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
 {
-    register char	*p;
+    char	        *p;
     int			msglen;
-    register WIP	*wp;
-    register int	i;
+    int	                i;
+    WIP                 *wp;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("takethis"); ISWHITE(*p); p++)
@@ -1533,19 +1368,7 @@ NCtakethis(cp)
     (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_FAILID_VAL, p);
 
     cp->State = CSgetarticle;
-    /* set wp->MessageID for benefit of later code in NCreader
-     * (especially while in CSeatarticle state)
-     */
-    wp = &NCwip[cp->fd];
-    if (wp->MessageID == NULL) {
-	for (i = SIZEOF(NCfreelist); --i >= 0; )
-	    if (NCfreelist[i] != NULL) {
-		wp->MessageID = NCfreelist[i];
-		NCfreelist[i] = NULL;
-		break;
-	    }
-	if (i < 0)
-	    wp->MessageID = NEW(char, DBZMAXKEY + 3);
-    }
-    (void)strcpy(wp->MessageID, p);
+    /* set WIP for benefit of later code in NCreader */
+    wp = WIPnew(p, cp);
+    cp->CurrentMessageID = wp->MessageID;
 }

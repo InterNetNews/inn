@@ -20,6 +20,7 @@
 **	RCHAN	A channel in "read" state
 **	SITE	Something that gets told when we get an article
 **	WCHAN	A channel in "write" state
+**      WIP     Work-In-Progress, keeps track of articles before committed.
 */
 #include <ctype.h>
 #include <errno.h>
@@ -37,6 +38,8 @@
 #include "logging.h"
 #include "libinn.h"
 #include "macros.h"
+#include "dbz.h"
+
 #if     defined(DO_TCL)
 #include <tcl.h>
 #undef EXTERN /* TCL defines EXTERN; this undef prevents error messages 
@@ -155,6 +158,10 @@ typedef struct _CHANNEL {
     BUFFER		Out;
     BOOL		Tracing;
     BUFFER		Sendid;
+    BUFFER              Replic;
+    HASH                CurrentMessageID;
+    int                 XBatchSize;
+    int                 LargeArtSize;
     int			Lastch;
     int			Rest;
     int			SaveUsed;
@@ -305,6 +312,14 @@ typedef struct _ARTDATA {
     BUFFER	*Overview;
 } ARTDATA;
 
+typedef struct _WIP {
+    HASH        MessageID;       /* Hash of the messageid.  Doing it like this saves
+			            us from haveing to allocate and deallocate memory
+			            a lot, and also means lookups are faster. */
+    time_t      Timestamp;       /* Time we last looked at this MessageID */
+    CHANNEL     *Chan;           /* Channel that this message is associated with */
+    struct _WIP *Next;           /* Next item in this bucket */
+} WIP;
 
 
 
@@ -530,7 +545,12 @@ extern void		SITEprocdied();
 extern void		SITEsend();
 extern void		SITEwrite();
 
-
+extern void             WIPsetup(void);
+extern WIP              *WIPnew(const char *messageid, CHANNEL *cp);
+extern void             WIPfree(WIP *wp);
+extern BOOL             WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Add);
+extern WIP              *WIPbyid(const char *mesageid);
+extern WIP              *WIPbyhash(const HASH hash);
 
 /*
 **  TCL Globals

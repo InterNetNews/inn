@@ -267,9 +267,6 @@ typedef char		*CSTRING;
     /* Do gethostbyaddr on client addresses in nnrp? */
     /* =()<#define @<NNRP_GETHOSTBYADDR>@_NNRP_GETHOSTBYADDR>()= */
 #define DO_NNRP_GETHOSTBYADDR
-    /* Should nnrpd do a dbzincore? */
-    /* =()<#define NNRP_DBZINCORE_DELAY	@<NNRP_DBZINCORE_DELAY>@>()= */
-#define NNRP_DBZINCORE_DELAY	40
     /*  Strip Sender from posts that did authenticate? */
     /* =()<#define @<NNRP_AUTH_SENDER>@_NNRP_AUTH_SENDER>()= */
 #define DO_NNRP_AUTH_SENDER

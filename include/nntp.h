@@ -56,6 +56,7 @@
 #define NNTP_REJECTIT_EMPTY		"437 Empty article"
 #define NNTP_DONTHAVEIT			"430"
 #define NNTP_DONTHAVEIT_VAL		430
+#define NNTP_RESENDIT_LATER             "436 Retry later"
 #define NNTP_RESENDIT_VAL		436
 #define NNTP_POSTEDOK			"240 Article posted"
 #define NNTP_POSTEDOK_VAL		240
@@ -108,14 +109,6 @@
 #define NNTP_CLASS_OK			'2'
 #define NNTP_CLASS_ERROR		'4'
 #define NNTP_CLASS_FATAL		'5'
-
-
-/*
-**  The NNTP protocol currently has no way to say "offer me this article
-**  later, but don't close the connection."  That will be fixed in NNTP2.
-#define NNTP_RESENDIT_LATER		"?"
-#define NNTP_RESENDIT_LATER_VAL		?
-*/
 
 
 /*

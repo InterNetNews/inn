@@ -46,7 +46,7 @@ MISSING_OBJ =
 SOURCES = $(MISSING_SRC) \
 	checkart.c cleanfrom.c clientactive.c clientlib.c closeonexec.c \
 	dbz.c defdist.c findheader.c genid.c getconfig.c getdtab.c \
-	getfqdn.c getmodaddr.c gettime.c inndcomm.c innvers.c localopen.c \
+	getfqdn.c getmodaddr.c gettime.c hash.c inndcomm.c innvers.c localopen.c \
 	lockfile.c md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c \
 	readin.c remopen.c resource.c sendarticle.c sendpass.c tempname.c \
 	waitnb.c wildmat.c xfopena.c xmalloc.c xmemerr.c xrealloc.c xwrite.c \
@@ -54,7 +54,7 @@ SOURCES = $(MISSING_SRC) \
 OBJECTS = $(MISSING_OBJ) \
 	checkart.o cleanfrom.o clientactive.o clientlib.o closeonexec.o \
 	dbz.o defdist.o findheader.o genid.o getconfig.o getdtab.o \
-	getfqdn.o getmodaddr.o gettime.o inndcomm.o innvers.o localopen.o \
+	getfqdn.o getmodaddr.o gettime.o hash.o inndcomm.o innvers.o localopen.o \
 	lockfile.o md5.o nonblocking.o parsedate.o perl.o qio.o radix32.o \
 	readin.o remopen.o resource.o sendarticle.o sendpass.o tempname.o \
 	waitnb.o wildmat.o xfopena.o xmalloc.o xmemerr.o xrealloc.o xwrite.o \
@@ -159,6 +159,9 @@ getconfig.o:	../include/paths.h
 getfqdn.o:	../include/paths.h
 getmodaddr.o:	../include/macros.h
 getmodaddr.o:	../include/paths.h
+hash.o:		../include/clibrary.h
+hash.o:		../include/libinn.h
+hash.o:		../include/md5.h
 inndcomm.o:	../include/inndcomm.h
 inndcomm.o:	../include/macros.h
 inndcomm.o:	../include/nntp.h

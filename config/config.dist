@@ -27,9 +27,6 @@ USE_CHAR_CONST		DUNNO
 ##  C compiler flags
 #### =()<CFLAGS			@<CFLAGS>@>()=
 CFLAGS			$(DEFS) -g
-##  C compiler flags to use when compiling dbz
-#### =()<DBZCFLAGS			@<DBZCFLAGS>@>()=
-DBZCFLAGS			$(CFLAGS)
 ##  What flags to use if profiling; -p or -pg, e.g.
 #### =()<PROF			@<PROF>@>()=
 PROF			-pg
@@ -448,10 +445,6 @@ NNRP_RESCAN_DELAY	60
 ##  (If DONT, then use only IP addresses in hosts.nnrp)
 #### =()<NNRP_GETHOSTBYADDR	@<NNRP_GETHOSTBYADDR>@>()=
 NNRP_GETHOSTBYADDR	DO
-##  How many Message-ID retrievals until nnrpd does a dbzincore?  Set
-##  to -1 to never do incore.
-#### =()<NNRP_DBZINCORE_DELAY	@<NNRP_DBZINCORE_DELAY>@>()=
-NNRP_DBZINCORE_DELAY	40
 ##  Strip Sender from posts that didn't authenticate?  Pick DO or DONT.
 #### =()<NNRP_AUTH_SENDER	@<NNRP_AUTH_SENDER>@>()=
 NNRP_AUTH_SENDER	DO

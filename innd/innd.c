@@ -892,6 +892,7 @@ main(ac, av)
     CCsetup();
     LCsetup();
     RCsetup(port, master);
+    WIPsetup();
     NCsetup(i);
     ARTsetup();
     ICDsetup(TRUE);

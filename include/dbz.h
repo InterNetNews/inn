@@ -11,17 +11,12 @@
  * part of the hash value stored also.
  */
 #define DBZ_INTERNAL_HASH_SIZE   6
-#define DBZ_EXTERNAL_HASH_SIZE   16
 
 /* for dbm and dbz */
 typedef struct {
 	char *dptr;
 	int dsize;
 } datum;
-
-typedef struct {
-    unsigned char hash[DBZ_EXTERNAL_HASH_SIZE];
-} hash_t;
 
 typedef enum {INCORE_NO, INCORE_MEM, INCORE_MMAP} dbz_incore_val;
 
@@ -45,7 +40,6 @@ extern datum fetch(const datum key);
 extern BOOL store(const datum key, const datum data);
 
 /* new stuff for dbz */
-extern hash_t dbzhash(const char *value, const int size);
 extern BOOL dbzfresh(const char *name, const long size, const int fillpercent);
 extern BOOL dbzagain(const char *name, const char *oldname);
 extern BOOL dbzexists(const datum key);

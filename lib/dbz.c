@@ -32,8 +32,7 @@ simple.  It contains no AT&T code.
 The dbz database exploits the fact that when news stores a <key,value>
 tuple, the `value' part is a seek offset into a text file, pointing to
 a copy of the `key' part.  This avoids the need to store a copy of
-the key in the dbz files.  However, the text file *must* exist and be
-consistent with the dbz files, or things will fail.
+the key in the dbz files. 
 
 The basic format of the database is two hash tables, each in it's own
 file. One contains the offsets into the history text file , and the
@@ -166,7 +165,7 @@ typedef struct {
 #		ifndef MAXRUN
 #		define	MAXRUN	100
 #		endif
-    hash_t hash;	        /* the key's hash code */
+    HASH hash;	        /* the key's hash code */
     unsigned long shorthash;    /* integer version of the hash, used for
 				   determining the entries location */
     int aborted;		/* has i/o error aborted search? */
@@ -232,7 +231,7 @@ static char idx[] = ".index";
 static char exists[] = ".hash";
 
 /* dbzfresh - set up a new database, no historical info
- * Return 0 for success, -1 for failure
+ * Return TRUE for success, FALSE for failure
  * name - base name; .dir and .pag must exist
  * size - table size (0 means default)
  * fillpercent - target percentage full
@@ -329,7 +328,7 @@ long dbzsize(const long contents) {
 }
 
 /* dbzagain - set up a new database to be a rebuild of an old one
- * Returns 0 on success, -1 on failure
+ * Returns TRUE on success, FALSE on failure
  * name - base name; .dir and .pag must exist
  * oldname - basename, all must exist
  */
@@ -494,7 +493,7 @@ void closehashtable(hash_table *tab) {
  *
  * We try to leave errno set plausibly, to the extent that underlying
  * functions permit this, since many people consult it if dbminit() fails.
- * return 0 for success, -1 for failure
+ * return TRUE for success, FALSE for failure
  */
 int dbminit(const char *name) {
     char *fname;
@@ -743,7 +742,7 @@ BOOL dbzstore(const datum key, const datum data)
 
 /*
  * store - add an entry to the database
- * returns 0 for sucess and -1 for failure 
+ * returns TRUE for success and FALSE for failure 
  */
 BOOL store(const datum key, const datum data)
 {
@@ -795,7 +794,7 @@ BOOL store(const datum key, const datum data)
  * getconf - get configuration from .dir file
  *   df    - NULL means just give me the default 
  *   pf    - NULL means don't care about .pag 
- *   returns 0 for success, -1 for failure
+ *   returns TRUE for success, FALSE for failure
  */
 static BOOL getconf(FILE *df, dbzconfig *cp) {
     int i;
@@ -938,10 +937,10 @@ static BOOL putcore(hash_table *tab) {
  * osp == NULL is acceptable
  */
 static void start(searcher *sp, const datum *kp, searcher *osp) {
-    hash_t h;
+    HASH h;
     int tocopy;
 
-    h = dbzhash(kp->dptr, kp->dsize);
+    h = Hash(kp->dptr, kp->dsize);
     if (osp != FRESH && !memcmp(&osp->hash, &h, sizeof(h))) {
 	if (sp != osp)
 	    *sp = *osp;
@@ -1090,23 +1089,6 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
 
     DEBUG(("set: succeeded\n"));
     return TRUE;
-}
-
-/* dbzhash - Variant of md5
- *
- * Returns: hash_t with the sizeof(hash_t) bytes of hash
- */
-hash_t dbzhash(const char *value, const int size) {
-    MD5_CTX context;
-    static hash_t hash;
-
-    MD5Init(&context);
-    MD5Update(&context, value, size);
-    MD5Final(&context);
-    memcpy(&hash,
-	   &context.digest,
-	   (sizeof(hash) < sizeof(context.digest)) ? sizeof(hash) : sizeof(context.digest));
-    return hash;
 }
 
 /* cipoint - where in this message-ID does it become case-insensitive?
@@ -1299,10 +1281,10 @@ int main(int argc, char **argv) {
 	if (memchr(data.dptr, '@', sizeof(msgid)) != NULL)
 	    continue;
 	if (memcmp(data.dptr, msgid, sizeof(msgid))) {
-	    hash_t hash1, hash2;
-	    hash1 = dbzhash((char *)msgid, sizeof(msgid));
-	    hash2 = dbzhash((char *)data.dptr, data.dsize);
-	    if (memcmp(&hash1, &hash2, sizeof(hash_t))) {
+	    HASH hash1, hash2;
+	    hash1 = Hash((char *)msgid, sizeof(msgid));
+	    hash2 = Hash((char *)data.dptr, data.dsize);
+	    if (memcmp(&hash1, &hash2, sizeof(HASH))) {
 		printf("data is wrong for %d (%d != %d)\n",
 		       *i, *i, *(int *)data.dptr);
 	    } else {
