@@ -1533,8 +1533,8 @@ sub collect {
     # control_XXgroup, foo.bar [moderated] who who /x/y/12, peer, action, 1
     if ($left =~ m/^control_(\S+),    # type of msg
 	          (?:\s\S+)?          # newsgroup name
-	          (\smoderated)?\s    # optional
-                  (\S+)               # email
+		  \s(moderated)?      # optional
+		  \s(\S+)             # email
                   \s\S+               # email
                   \s\S+,              # filename
                   \s\S+,              # server
@@ -1596,7 +1596,7 @@ sub collect {
                     \ Buffer\ (\S+),
                     \ len:\ (\d+)\s+Mbytes,
                     \ used:\ ([\d.]+)\ Mbytes\ \(\s*[\d.]+%\)
-                    \s+(\d+)\ cycles
+                    \s+(\d+)\ cycles\s*
                  $|ox) {
       my ($class, $buffer, $size, $used, $cycles) = ($1, $3, $4, $5, $6);
       my ($h, $m, $s) = $hour =~ m/^(\d+):(\d+):(\d+)$/;
