@@ -33,7 +33,7 @@ all:		libinn.$(EXTLIB) perl.o ../include/autoconfig.h
 install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:
-	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate qiotest
+	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate
 	rm -f profiled libinn_p.a endian version.c
 	rm -rf .libs
 
@@ -88,99 +88,142 @@ $(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend: Makefile $(SOURCES)
+depend: Makefile $(SOURCES) ../include/autoconfig.h
 	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-setenv.o: setenv.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h
 argparse.o: argparse.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h
-checkart.o: checkart.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/nntp.h
-cleanfrom.o: cleanfrom.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/macros.h
-clientactive.o: clientactive.c ../include/configdata.h \
- ../include/config.h ../include/clibrary.h ../include/paths.h \
- ../include/libinn.h ../include/nntp.h ../include/macros.h
-clientlib.o: clientlib.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/nntp.h
-closeonexec.o: closeonexec.c ../include/config.h ../include/libinn.h
-concat.o: concat.c ../include/config.h ../include/libinn.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h
-conffile.o: conffile.c ../include/config.h ../include/clibrary.h \
- ../include/conffile.h ../include/libinn.h ../include/macros.h
+checkart.o: checkart.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/nntp.h
+cleanfrom.o: cleanfrom.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/macros.h
+clientactive.o: clientactive.c ../include/configdata.h \
+ ../include/config.h ../include/inn/defines.h ../include/clibrary.h \
+ ../include/paths.h ../include/libinn.h ../include/nntp.h \
+ ../include/macros.h
+clientlib.o: clientlib.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/nntp.h
+closeonexec.o: closeonexec.c ../include/config.h \
+ ../include/inn/defines.h ../include/libinn.h
+concat.o: concat.c ../include/config.h ../include/inn/defines.h \
+ ../include/libinn.h
+conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/conffile.h ../include/libinn.h \
+ ../include/macros.h
+date.o: date.c ../include/config.h ../include/inn/defines.h \
+ ../include/libinn.h
 dbz.o: dbz.c
 defdist.o: defdist.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/paths.h \
- ../include/macros.h
-findheader.o: findheader.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/qio.h
-genid.o: genid.c ../include/config.h ../include/libinn.h
-getconfig.o: getconfig.c ../include/config.h ../include/clibrary.h \
- ../include/innconf.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h
-getdtab.o: getdtab.c ../include/config.h
-getfqdn.o: getfqdn.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/paths.h ../include/libinn.h
-getmodaddr.o: getmodaddr.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/paths.h ../include/libinn.h \
- ../include/macros.h ../include/nntp.h
-gettime.o: gettime.c ../include/config.h ../include/libinn.h
-grpalias.o: grpalias.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/macros.h ../include/libinn.h \
- ../include/paths.h ../include/qio.h
-hash.o: hash.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/md5.h
-inndcomm.o: inndcomm.c ../include/config.h ../include/clibrary.h \
- ../include/inndcomm.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h
-localopen.o: localopen.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/paths.h ../include/nntp.h \
- ../include/macros.h ../include/libinn.h
-lockfile.o: lockfile.c ../include/config.h ../include/libinn.h
-makedir.o: makedir.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/paths.h ../include/macros.h
+endian.o: endian.c
+error.o: error.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
+findheader.o: findheader.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/macros.h ../include/inn/qio.h
+genid.o: genid.c ../include/config.h ../include/inn/defines.h \
+ ../include/libinn.h
+getconfig.o: getconfig.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/innconf.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h
+getdtab.o: getdtab.c ../include/config.h ../include/inn/defines.h
+getfqdn.o: getfqdn.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/paths.h \
+ ../include/libinn.h
+getmodaddr.o: getmodaddr.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/paths.h \
+ ../include/libinn.h ../include/macros.h ../include/nntp.h
+getopt.o: getopt.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+gettime.o: gettime.c ../include/config.h ../include/inn/defines.h \
+ ../include/libinn.h
+grpalias.o: grpalias.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/macros.h \
+ ../include/libinn.h ../include/paths.h ../include/inn/qio.h
+hash.o: hash.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/macros.h ../include/md5.h
+hstrerror.o: hstrerror.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h
+inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h
+inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inndcomm.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h
+localopen.o: localopen.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/paths.h \
+ ../include/nntp.h ../include/macros.h ../include/libinn.h
+lockfile.o: lockfile.c ../include/config.h ../include/inn/defines.h \
+ ../include/libinn.h
+makedir.o: makedir.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h
 md5.o: md5.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/md5.h ../include/autoconfig.h
-nonblocking.o: nonblocking.c ../include/config.h
-parsedate.o: parsedate.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/macros.h
-perl.o: perl.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/md5.h \
+ ../include/autoconfig.h
+memchr.o: memchr.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h
+memmove.o: memmove.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+memset.o: memset.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+mkfifo.o: mkfifo.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+nonblocking.o: nonblocking.c ../include/config.h \
+ ../include/inn/defines.h
+parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h
+perl.o: perl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/ppport.h
-qio.o: qio.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/qio.h \
+pread.o: pread.c ../include/config.h ../include/inn/defines.h
+pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h
+qio.o: qio.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h \
  ../include/macros.h
 radix32.o: radix32.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
+ ../include/inn/defines.h ../include/clibrary.h
 readin.o: readin.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h
-remopen.o: remopen.c ../include/config.h ../include/clibrary.h \
- ../include/libinn.h ../include/nntp.h ../include/paths.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/macros.h
+remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/nntp.h \
+ ../include/paths.h
 reservedfd.o: reservedfd.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/macros.h ../include/libinn.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/macros.h \
+ ../include/libinn.h
 resource.o: resource.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/macros.h
+ ../include/inn/defines.h ../include/clibrary.h ../include/macros.h
 rwlock.o: rwlock.c ../include/rwlock.h
 sendarticle.o: sendarticle.c ../include/configdata.h \
- ../include/config.h ../include/clibrary.h ../include/libinn.h \
- ../include/nntp.h
+ ../include/config.h ../include/inn/defines.h ../include/clibrary.h \
+ ../include/libinn.h ../include/nntp.h
 sendpass.o: sendpass.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h ../include/nntp.h ../include/paths.h \
- ../include/libinn.h ../include/macros.h
-tempname.o: tempname.c ../include/config.h ../include/clibrary.h
-waitnb.o: waitnb.c ../include/config.h
-wildmat.o: wildmat.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/nntp.h \
+ ../include/paths.h ../include/libinn.h ../include/macros.h
+setenv.o: setenv.c ../include/config.h ../include/inn/defines.h
+strcasecmp.o: strcasecmp.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+strdup.o: strdup.c ../include/config.h ../include/inn/defines.h
+strerror.o: strerror.c ../include/config.h ../include/inn/defines.h
+strspn.o: strspn.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+strtok.o: strtok.c ../include/configdata.h ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h
+tempname.o: tempname.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
+waitnb.o: waitnb.c ../include/config.h ../include/inn/defines.h
+wildmat.o: wildmat.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h
 version.o: version.c
 xfopena.o: xfopena.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
-xmalloc.o: xmalloc.c ../include/config.h ../include/libinn.h
-xsignal.o: xsignal.c ../include/config.h ../include/libinn.h
-xwrite.o: xwrite.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
-xwritev.o: xwritev.c ../include/configdata.h ../include/config.h \
- ../include/clibrary.h
+ ../include/inn/defines.h ../include/clibrary.h
+xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
+ ../include/libinn.h
+xsignal.o: xsignal.c ../include/config.h ../include/inn/defines.h \
+ ../include/libinn.h
+xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \
+ ../include/libinn.h
