@@ -577,7 +577,9 @@ static int open_db_file(int which)
 {
     int ret;
     char name[10];
+#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     DB_TXN *tid;
+#endif
 
     if(dbs[which] != NULL)
 	return 0;
