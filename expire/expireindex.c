@@ -100,7 +100,7 @@ STATIC void LISTappend(LIST *Refresh, long Artnum, HASH *Hash)
         RENEW(Refresh->Articles, ARTNUM, Refresh->Size);
         if (Append) {
 	    p = (char *)Refresh->Index;
-	    RENEW(p, char, Refresh->Used * OVERINDEXPACKSIZE);
+	    RENEW(p, char, Refresh->Size * OVERINDEXPACKSIZE);
 	    Refresh->Index = (char (*)[OVERINDEXPACKSIZE])p;
 	    index.artnum = Artnum;
 	    index.hash = *Hash;
@@ -339,6 +339,7 @@ STATIC void RefreshLines(char *group, LIST *Refresh)
     if (ARTarraysize == 0) {
 	ARTnumbers = NEW(ARTLIST, OVERicount);
 	OVERindexnew = (char (*)[][OVERINDEXPACKSIZE])NEW(char, OVERicount * OVERINDEXPACKSIZE);
+	ARTarraysize = OVERicount;
     } else if (ARTarraysize < OVERicount) {
 	RENEW(ARTnumbers, ARTLIST, OVERicount);
 	p = (char *)OVERindexnew;
