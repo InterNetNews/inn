@@ -80,6 +80,12 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "host.h"
 #include "innlistener.h"
 
+#ifdef  XXX_RAWHACK
+#include <configdata.h>
+#include "raw.h"
+char *LogName = "innfeed";
+#endif  /* XXX_RAWHACK */
+
 #define INHERIT 1
 #define NO_INHERIT 0
 
@@ -167,9 +173,13 @@ int main (int argc, char **argv)
   useMMap = false ;
 #endif
 
+#ifdef	XXX_RAWHACK_CRLFSTORAGE
+  artBitFiddleContents (false) ;
+#else	/* XXX_RAWHACK_CRLFSTORAGE */
   /* always turn on copying into memory unless mmapping and the article
      data being in NNTP format. */
   artBitFiddleContents (true) ;
+#endif	/* XXX_RAWHACK_CRLFSTORAGE */
 
 #define OPT_STRING "a:b:c:Cd:e:hl:mMo:p:S:s:vxyz"
 
@@ -317,6 +327,11 @@ int main (int argc, char **argv)
       openlog (program,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_NEWS) ;
       syslog (LOG_NOTICE,STARTING_PROGRAM,versionInfo,dateString) ;
     }
+
+#ifdef  XXX_RAWHACK
+  syslog(LOG_NOTICE, "Calling RAWread_config()");
+  RAWread_config();
+#endif  /* XXX_RAWHACK */
 
   if (subProgram == NULL && talkToSelf == false)
     {

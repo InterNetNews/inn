@@ -180,6 +180,10 @@
 #define _BSD 44
 #endif
 
+#if ! defined (USE_SIGSET) && ! defined(USE_SIGVEC)
+#define USE_SIGACTION
+#endif
+
 
 
   /* Defaults below here. If you need to change something it should really

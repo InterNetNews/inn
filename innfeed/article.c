@@ -99,6 +99,12 @@ struct hash_entry_s {
 
 typedef struct hash_entry_s *HashEntry ;
 
+#ifdef	XXX_RAWHACK
+#include "configdata.h"
+#include "raw.h"
+/* This is a really ugly thing to do.... */
+extern RAWPART_OFF_T	RAWlastartsize;
+#endif	/* XXX_RAWHACK */
 
 
   /*
@@ -404,11 +410,25 @@ bool artFileIsValid (Article article)
     /* we may already know it's not valid */
   if (article->articleOk)       
     {
+#ifdef	XXX_RAWHACK
+      int	fd = RAWartopen(article->fname, article->msgid);
+
+      if (fd < 0) {
+	rval = false;	/* Redundant, but that's OK */
+      } else {
+	/* We're sharing this fd globally ... don't close.  close(fd); */
+	rval = true;
+      }
+#else	/* XXX_RAWHACK */
       if (article->contents != NULL)
         rval = true ;
       else if (fileExistsP (article->fname))
         rval = true ;
+#endif	/* XXX_RAWHACK */
 
+#ifdef	XXX_RAWHACK
+    notrval:
+#endif	/* XXX_RAWHACK */
       if (!rval)
         {
           article->articleOk = false ;
@@ -593,7 +613,11 @@ static bool fillContents (Article article)
   if (avgCharsPerLine == 0)
     avgCharsPerLine = 75 ;      /* roughly number of characters per line */
   
+#ifdef	XXX_RAWHACK
+  if ((fd = RAWartopen(article->fname, article->msgid)) < 0)
+#else	/* XXX_RAWHACK */
   if ((fd = open (article->fname,O_RDONLY,0)) < 0)
+#endif	/* XXX_RAWHACK */
     {
       article->articleOk = false ;
       missingArticleCount++ ;
@@ -604,6 +628,9 @@ static bool fillContents (Article article)
           article->loggedMissing = true ;
         }
     }
+#ifdef	XXX_RAWHACK
+  else if (1)
+#else	/* XXX_RAWHACK */
   else if (fstat (fd, &buf) < 0)
     {
       article->articleOk = false ;
@@ -620,11 +647,17 @@ static bool fillContents (Article article)
       syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
     }
   else
+#endif	/* XXX_RAWHACK */
     {
       char *buffer = NULL ;
       int amt = 0 ;
+#ifdef	XXX_RAWHACK
+      size_t idx = 0, amtToRead = (size_t) RAWlastartsize;
+      size_t newBufferSize = (size_t) RAWlastartsize;
+#else	/* XXX_RAWHACK */
       size_t idx = 0, amtToRead = (size_t) buf.st_size ;
       size_t newBufferSize = (size_t) buf.st_size ;
+#endif	/* XXX_RAWHACK */
       HashEntry h ;
 
       if (useMMap)
@@ -702,8 +735,13 @@ static bool fillContents (Article article)
           else
             {
               buffer = bufferBase (article->contents) ;
+#ifdef	XXX_RAWHACK
+              bytesInUse += RAWlastartsize;
+              byteTotal += RAWlastartsize;
+#else	/* XXX_RAWHACK */
               bytesInUse += buf.st_size ;
               byteTotal += buf.st_size ;
+#endif	/* XXX_RAWHACK */
             }
 
           if (article->mMapping && buffer != NULL)
@@ -719,8 +757,13 @@ static bool fillContents (Article article)
               if ((amt = read (fd, buffer + idx,amtToRead)) <= 0)
                 {
                   syslog (LOG_ERR,BAD_ART_READ, article->fname) ;
+#ifdef	XXX_RAWHACK
+                  bytesInUse -= RAWlastartsize;
+                  byteTotal -= RAWlastartsize;
+#else	/* XXX_RAWHACK */
                   bytesInUse -= buf.st_size ;
                   byteTotal -= buf.st_size ;
+#endif	/* XXX_RAWHACK */
                   amtToRead = 0 ;
 
                   delBuffer (article->contents) ;
@@ -735,7 +778,11 @@ static bool fillContents (Article article)
 
           if (article->contents != NULL)
             {
+#ifdef	XXX_RAWHACK
+              bufferSetDataSize (article->contents, (size_t) RAWlastartsize) ;
+#else	/* XXX_RAWHACK */
               bufferSetDataSize (article->contents, (size_t) buf.st_size) ;
+#endif	/* XXX_RAWHACK */
 
               if ((p = strchr(buffer, '\n')) == NULL)
                 {                  
@@ -749,8 +796,13 @@ static bool fillContents (Article article)
               else if (bitFiddleContents)
                 if ( nntpPrepareBuffer (article->contents) )
                   {
+#ifdef	XXX_RAWHACK
+                    size_t diff =
+                      (bufferDataSize (article->contents) - RAWlastartsize) ;
+#else	/* XXX_RAWHACK */
                     size_t diff =
                       (bufferDataSize (article->contents) - buf.st_size) ;
+#endif	/* XXX_RAWHACK */
 
                     if (((u_int) UINT_MAX) - diff <= preparedBytes)
                       {
@@ -764,7 +816,11 @@ static bool fillContents (Article article)
                         rolledOver = true ;
                       }
 
+#ifdef	XXX_RAWHACK
+                    preparedBytes += RAWlastartsize ;
+#else	/* XXX_RAWHACK */
                     preparedBytes += buf.st_size ;
+#endif	/* XXX_RAWHACK */
                     preparedNewlines += diff ;
                     bytesInUse += diff ;
                     byteTotal += diff ;
@@ -780,8 +836,13 @@ static bool fillContents (Article article)
                 else
                   {
                     syslog (LOG_ERR,PREPARE_FAILED) ;
+#ifdef	XXX_RAWHACK
+                    bytesInUse -= RAWlastartsize;
+                    byteTotal -= RAWlastartsize;
+#else	/* XXX_RAWHACK */
                     bytesInUse -= buf.st_size ;
                     byteTotal -= buf.st_size ;
+#endif	/* XXX_RAWHACK */
 
                     delBuffer (article->contents) ;
                     article->contents = NULL ;
@@ -790,8 +851,11 @@ static bool fillContents (Article article)
         }
     }
 
+#ifndef	XXX_RAWHACK
+  /* If we're not doin' RAW stuff, we should close a valid file descriptor */
   if (fd >= 0)
     close (fd) ;
+#endif	/* ! XXX_RAWHACK */
   
   return (article->contents != NULL ? true : false) ;
 }
@@ -864,12 +928,14 @@ static bool prepareArticleForNNTP (Article article)
           if (*end != '\0')
             end++ ;
           
+#ifndef	XXX_RAWHACK_CRLFSTORAGE
           if (*end == '.')              /* start of next line is a dot */
             appendBuffer (bufferTakeRef (dotFirstBuffer),&nntpBuffs,
                           &buffIdx,&buffLen);
           else
             appendBuffer (bufferTakeRef (crlfBuffer),&nntpBuffs,
                           &buffIdx,&buffLen) ;
+#endif	/* ! XXX_RAWHACK_CRLFSTORAGE */
         }
       while (*end != '\0') ;
       

@@ -113,6 +113,16 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <sys/file.h>
 #include <fcntl.h>
 
+#if defined (__FreeBSD__)
+#include <sys/ioctl.h>
+#endif
+
+#ifdef	XXX_RAWHACK
+/* From: Sang-yong Suh <sysuh@kigam.re.kr> */
+#if defined (linux) && ! defined (_SYS_IOCTL_H)
+#include <sys/ioctl.h>
+#endif
+#endif	/* XXX_RAWHACK */
 
 #include "buffer.h"
 #include "connection.h"
@@ -3502,6 +3512,10 @@ static void issueIHAVEBody (Connection cxn)
 {
   Buffer *writeArray ;
   Article article ;
+#ifdef	XXX_RAWHACK
+  static int XXXboguscount = 0;
+  time_t now = theTime();
+#endif	/* XXX_RAWHACK */
 
   ASSERT (cxn != NULL) ;
   ASSERT (!cxn->doesStreaming) ;

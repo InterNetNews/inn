@@ -2941,6 +2941,23 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   100.0 * host->blFull / cnt) ;
 
   tapeLogStatus (host->myTape,fp) ;
+#ifdef        XXX_STATSHACK
+  {
+  time_t      now = time(NULL), sec = (long) (now - host->connectTime);
+  float               or, ar, rr, jr;
+
+  if (sec != 0) {
+      or = (float) host->artsOffered / (float) sec;
+      ar = (float) host->artsAccepted / (float) sec;
+      rr = (float) host->artsNotWanted / (float) sec;
+      jr = (float) host->artsRejected / (float) sec;
+      fprintf(fp, "\t\tor %02.2f ar %02.2f rr %02.2f jr %02.2f\n",
+              or, ar, rr, jr);
+  }
+  fprintf(fp, "\tmissing %d spooled %d\n",
+      host->artsMissing,host->backlogSpooled);
+  }
+#endif        /* XXX_STATSHACK */
   
   fprintf (fp, "\n\n");
 }
