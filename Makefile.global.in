@@ -127,6 +127,7 @@ YACC            = @YACC@
 UNCOMPRESS      = @UNCOMPRESS@
 
 FIXSCRIPT       = ../support/fixscript
+UPFIXSCRIPT     = ../../support/fixscript
 
 PERLWHOAMI      = $(PERL) -e 'print scalar getpwuid($$>), "\n"'
 WHOAMI          = (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
