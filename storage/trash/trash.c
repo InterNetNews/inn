@@ -50,6 +50,14 @@ BOOL trash_cancel(TOKEN token) {
     return FALSE;
 }
 
+BOOL trash_ctl(PROBETYPE type, TOKEN *token, void *value) {
+    switch (type) {
+    case SMARTNGNUM:
+    default:
+	return FALSE;
+    }
+}
+
 ARTHANDLE *trash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return (ARTHANDLE *)NULL;
 }

@@ -15,6 +15,7 @@ ARTHANDLE *trash_retrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *trash_next(const ARTHANDLE *article, const RETRTYPE amount);
 void trash_freearticle(ARTHANDLE *article);
 BOOL trash_cancel(TOKEN token);
+BOOL trash_ctl(PROBETYPE type, TOKEN *token, void *value);
 void trash_shutdown(void);
 
 #endif
