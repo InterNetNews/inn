@@ -873,11 +873,12 @@ BOOL buffindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag
   return TRUE;
 }
 
-STATIC void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC next, ARTNUM lo) {
+STATIC void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC next, ARTNUM lo, ARTNUM hi) {
   ge->hash = grouphash;
   if (lo != 0)
     ge->low = lo;
-  ge->deleted = ge->high = ge->low = ge->base = ge->limit = ge->count = 0;
+  ge->high = hi;
+  ge->deleted = ge->low = ge->base = ge->limit = ge->count = 0;
   ge->flag = *flag;
   ge->baseindex = ge->curindex = ge->previndex = ge->nextindex = ge->curdata = ge->lastindex = ovnull;
   ge->baseinblock = 0;
@@ -885,7 +886,7 @@ STATIC void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC ne
   ge->next = next;
 }
 
-BOOL buffindexed_groupadd(char *group, ARTNUM lo, char *flag) {
+BOOL buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   unsigned int	i;
   HASH		grouphash;
   GROUPLOC	gloc;
@@ -902,7 +903,7 @@ BOOL buffindexed_groupadd(char *group, ARTNUM lo, char *flag) {
   GROUPlockhash(LOCK_WRITE);
   gloc = GROUPnewnode();
   ge = &GROUPentries[gloc.recno];
-  setinitialge(ge, grouphash, flag, GROUPheader->hash[i], lo);
+  setinitialge(ge, grouphash, flag, GROUPheader->hash[i], lo, hi);
   GROUPheader->hash[i] = gloc;
   GROUPlockhash(LOCK_UNLOCK);
   return TRUE;
@@ -1733,7 +1734,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
   GROUPlock(gloc, LOCK_UNLOCK);
 
   newge.low = 0;
-  setinitialge(&newge, hash, &flag, next, 0);
+  setinitialge(&newge, hash, &flag, next, 0, high);
   if ((handle = ovopensearch(group, low, high, TRUE)) == NULL) {
     syslog(L_ERROR, "%s: could not open overview for '%s'", LocalLogName, group);
     return FALSE;
