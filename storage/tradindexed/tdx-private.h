@@ -96,6 +96,9 @@ bool tdx_index_delete(struct group_index *, const char *group);
 /* Dump the contents of the index file to stdout in human-readable form. */
 void tdx_index_dump(struct group_index *, FILE *);
 
+/* Audit all of the overview data, optionally trying to fix it. */
+void tdx_index_audit(bool fix);
+
 /* Close the open index file and dispose of the opaque data structure. */
 void tdx_index_close(struct group_index *);
 
@@ -148,6 +151,9 @@ bool tdx_data_expire_finish(const char *group);
 
 /* Dump the contents of the index file for a group. */
 void tdx_data_index_dump(struct group_data *, FILE *);
+
+/* Audit the data for a particular group, optionally trying to fix it. */
+void tdx_data_audit(const char *group, struct group_entry *, bool fix);
 
 /* Close the open data files for a group and free the structure. */
 void tdx_data_close(struct group_data *);
