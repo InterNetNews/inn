@@ -4,7 +4,7 @@ include ../Makefile.global
 ##  =()<TCLINC	= @<TCL_INC>@>()=
 TCLINC	= 
 
-CFLAGS += $(PERLINC)
+CFLAGS = $(GCFLAGS) $(PERLINC)
 
 ## =()<TCL_LIB	= @<TCL_LIB>@>()=
 TCL_LIB	= 

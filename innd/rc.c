@@ -160,7 +160,8 @@ RCfix_options(int fd, struct sockaddr_in *remote)
 #if IP_OPTIONS
     unsigned char optbuf[BUFSIZ / 3], *cp;
     char    lbuf[BUFSIZ], *lp;
-    int     optsize = sizeof(optbuf), ipproto;
+    ARGTYPE optsize = sizeof(optbuf);
+    int     ipproto;
     struct protoent *ip;
 
     if ((ip = getprotobyname("ip")) != 0)
@@ -335,7 +336,7 @@ RCreader(CHANNEL *cp)
 {
     int			fd;
     struct sockaddr_in	remote;
-    int			size;
+    ARGTYPE		size;
     register int	i;
     register REMOTEHOST	*rp;
     CHANNEL		*new;

@@ -34,7 +34,7 @@ LCreader(cp)
 	return;
     }
 
-    if ((fd = accept(cp->fd, (struct sockaddr *)NULL, (int *)NULL)) < 0) {
+    if ((fd = accept(cp->fd, (struct sockaddr *)NULL, (ARGTYPE *)NULL)) < 0) {
 	syslog(L_ERROR, "%s cant accept CCreader %m", LogName);
 	return;
     }
