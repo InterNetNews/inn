@@ -13,15 +13,15 @@ all:			autoconfig
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) libstorage.$(EXTLIB)
 
 include Make.methods
+include Make.ovmethods
 
-SOURCES = interface.c methods.c qio.c ov3.c
-OBJECTS = interface.o methods.o qio.o ov3.o
-LOBJECTS = interface.lo methods.lo qio.lo ov3.lo
-
+SOURCES = interface.c methods.c ovmethods.c qio.c ov.c
+OBJECTS = interface.o methods.o ovmethods.o qio.o ov.o
+LOBJECTS = interface.lo methods.lo ovmethods.lo qio.lo ov.lo
 
 methods: 
 	@[ -d objs ] || mkdir objs
-	@for D in $(SUBDIR); do \
+	@for D in $(SUBDIR) $(OVSUBDIR); do \
 	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
 	done
 
@@ -31,9 +31,10 @@ clobber clean:
 	rm -f *.o *.lo libstorage.la libstorage.a
 	rm -rf objs .libs
 	rm -f methods.c methods.h qiotest
+	rm -f ovmethods.c ovmethods.h
 	rm -f profiled libstorage_p.a
 	rm -f all install 
-	@for D in $(SUBDIR); do \
+	@for D in $(SUBDIR) $(OVSUBDIR); do \
 		cd $$D; $(MAKE) clean; cd .. ;\
 	done
 
@@ -50,11 +51,12 @@ libstorage.a:         $(P) $(OBJECTS)
 
 qiotest: qio.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
-ov3test: ov3.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
-	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ov3test ov3.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) -L/shared/lib -ldb -lnsl -lsocket
+ovtest: ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
+	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ovtest ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) -L/shared/lib -ldb -lnsl -lsocket
 
 autoconfig:
 	@./buildconfig `find . -name method.config -print`
+	@./ovbuildconfig `find . -name ovmethod.config -print`
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:		../libstorage_p.a
@@ -80,7 +82,7 @@ depend:		Makefile $(SOURCES)
 
 interface.o: methods.h interface.h
 methods.o: interface.h
-ov3.c: ../include/ov3.h
+ov.c: ../include/ov.h ovmethods.h ovinterface.h
 
 
 
