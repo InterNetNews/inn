@@ -160,6 +160,10 @@ extern void	setproctitle();
 #include <osreldate.h>
 #endif
 
+#if defined (sun) && ! defined (__svr4__)
+#define atexit(arg) on_exit (arg,0)
+#endif
+
 #if defined(UIO_MAXIOV) && !defined(IOV_MAX)
 #define IOV_MAX		UIO_MAXIOV
 #endif

@@ -1483,7 +1483,7 @@ ARTxrefslave()
     char	*name;
     char	*next;
     NEWSGROUP	*ngp;
-    int	        i;
+    int	        i, len;
     char        xrefbuf[MAXHEADERSIZE*2];
 
     if (!ARTheaders[_xref].Found)
@@ -1531,7 +1531,8 @@ ARTxrefslave()
 	GroupPointers[i++] = ngp;
 
 	/* Turn news.group/# into news.group:#, append to Xref. */
-	p+=sprintf(p, " %s:%ld", name, ngp->Filenum);
+	len = sprintf(p, " %s:%ld", name, ngp->Filenum);
+	p += len;
 	
     }
     

@@ -71,7 +71,7 @@ lint:		$(ALL)
 	-lint $(LINTFLAGS) convdate.c     $(LINTLIB) $(LINTFILTER)  >lint
 	-lint $(LINTFLAGS) expire.c       $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) expireover.c   $(LINTLIB) $(LINTFILTER) >>lint
-	-lint $(LINTFLAGS) expireindex.   $(LINTLIB) $(LINTFILTER) >>lint
+	-lint $(LINTFLAGS) expireindex.c  $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) fastrm.c       $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) grephistory.c  $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) makeactive.c   $(LINTLIB) $(LINTFILTER) >>lint
