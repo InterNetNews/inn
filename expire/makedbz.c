@@ -50,6 +50,44 @@ RemoveDBZFiles(char *p)
 #endif
 }
 
+
+/*
+**  Count lines in the history text.  A long-winded way of saying "wc -l"
+*/
+static off_t
+Countlines(void)
+{
+    QIOSTATE *qp;
+    off_t count;
+
+    /* Open the text file. */
+    qp = QIOopen(TextFile);
+    if (qp == NULL) {
+	fprintf(stderr, "Can't open \"%s\", %s\n",
+		TextFile, strerror(errno));
+	exit(1);
+    }
+
+    /* Loop through all lines in the text file. */
+    count = 0;
+    for (; QIOread(qp) != NULL;)
+	count++;
+    if (QIOerror(qp)) {
+	fprintf(stderr, "Can't read \"%s\" near line %lu, %s\n",
+		TextFile, (unsigned long) count, strerror(errno));
+	exit(1);
+    }
+    if (QIOtoolong(qp)) {
+	fprintf(stderr, "Line %lu of \"%s\" is too long\n",
+                (unsigned long) count, TextFile);
+	exit(1);
+    }
+
+    QIOclose(qp);
+    return count;
+}
+
+
 /*
 **  Rebuild the DBZ file from the text file.
 */
@@ -68,6 +106,17 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     if (chdir(HistoryDir) < 0) {
 	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
 	exit(1);
+    }
+
+    /* If we are ignoring the old database and the user didn't specify a table
+       size, determine one ourselves from the size of the text history file.
+       Note that this will still use the defaults in dbz if the text file is
+       empty, since size will still be left set to 0. */
+    if (IgnoreOld == TRUE && size == 0) {
+	size = Countlines();
+	size += (size / 10);
+        if (size > 0)
+            fprintf(stderr, "no size specified, using %ld\n", size);
     }
 
     /* Open the text file. */
@@ -187,6 +236,8 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     if (temp[0])
 	(void)unlink(temp);
 }
+
+
 
 void
 Usage()
