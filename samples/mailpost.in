@@ -1,0 +1,437 @@
+#!@_PATH_PERL@
+
+# mailpost - yet another mail-to-news filter
+# brister 19oct98 cleaned up somewhat for perl v. 5. and made a little more robust.
+# vixie 29jan95 RCS'd [$Id$]
+# vixie 15jun93 [added -m]
+# vixie 30jun92 [added -a and -d]
+# vixie 17jun92 [attempt simple-minded fixup to $path]
+# vixie 14jun92 [original]
+
+use Getopt::Std ;
+use IPC::Open3;
+use IO::Select;
+use Sys::Syslog;
+use strict ;
+
+my $debugging = 0 ;
+my $tmpfile ;
+my $msg ;
+
+END {
+    unlink ($tmpfile) if $tmpfile ;		# incase we die()
+}
+
+require "@LIBDIR@/innshellvars.pl" ;
+
+my $LOCK_SH = 1;
+my $LOCK_EX = 2;
+my $LOCK_NB = 4;
+my $LOCK_UN = 8;
+
+my $usage = $0 ;
+$usage =~ s!.*/!! ;
+my $prog = $usage ;
+
+openlog $usage, "pid", "news" ;
+
+$usage .= "[ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
+    " [ -m mailing-list ][ -b database ][ -o output-path ] newsgroups" ;
+
+use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h) ;
+getopts("hr:f:a:d:m:b:no:") || die "usage: $usage\n" ;
+die "usage: $usage\n" if $opt_h ;
+
+#
+# $Submit is a program which takes no arguments and whose stdin is supposed
+# to be a news article (without the #!rnews header but with the news hdr).
+#
+
+my $Sendmail = $inn::mta ;
+my $Submit = $inn::inews . " -S -h";
+my $Database = $opt_b || $inn::pathdb . "/mailpost-msgid" ; 
+my $Maintainer = $inn::newsmaster || "usenet" ; 
+my $WhereTo = $opt_o || $Submit ;
+my $Mailname = $inn::fromhost ;
+
+# can't use $inn::tmpdir as we're usually not running as news
+my $Tmpdir = "/var/tmp" ;	
+
+if ($debugging || $opt_n) {
+    $Sendmail = "cat" ;
+    $WhereTo = "cat" ;
+}
+
+chop ($Mailname = `/bin/hostname`) if ! $Mailname ;
+
+
+#
+# our command-line argument(s) are the list of newsgroups to post to.
+#
+# there may be a "-r sender" or "-f sender" which becomes the $path
+# (which is in turn overridden below by various optional headers.)
+#
+# -d (distribution) and -a (approved) are also supported to supply
+# or override the mail headers by those names.
+#
+
+my $path = 'nobody';
+my $newsgroups = undef;
+my $approved = undef;
+my $distribution = undef;
+my $mailing_list = undef;
+my $references = undef;
+my @errorText = ();
+
+if ($opt_r || $opt_f) {
+    $path = $opt_r || $opt_f ;
+    push @errorText, "((path: $path))\n" ;
+}
+
+if ($opt_a) {
+    $approved = &fix_sender_addr($opt_a);
+    push @errorText, "((approved: $approved))\n";
+}
+
+if ($opt_d) {
+    $distribution = $opt_d ;
+    push @errorText, "((distribution: $distribution))\n";
+}
+
+if ($opt_m) {
+    $mailing_list = "<" . $opt_m . "> /dev/null";
+    push @errorText, "((mailing_list: $mailing_list))\n";
+}
+
+$newsgroups = join ", ", @ARGV ;
+
+die "usage:  $0 newsgroup [newsgroup]\n" unless $newsgroups;
+
+
+#
+# do the header.  our input is a mail message, with or without the From_
+#
+
+#$message_id = sprintf("<mailpost.%d.%d@%s>", time, $$, $Hostname);
+my $real_news_hdrs = '';
+my $weird_mail_hdrs = '';
+my $fromHdr = "MAILPOST-UNKNOWN-FROM" ;
+my $dateHdr= "MAILPOST-UNKNOWN-DATE" ;
+my $msgIdHdr = "MAILPOST-UNKNOWN-MESSAGE-ID" ;
+my $from = undef;
+my $date = undef;
+my $hdr = undef;
+my $txt = undef;
+my $message_id ;
+
+$_ = <STDIN>;
+if (!$_) {
+    if ( $debugging || -t STDERR ) {
+	die "empty input" ;
+    } else {
+	syslog "err", "empty input" ;
+	exit (0) ;
+    }
+}
+
+chomp $_;
+
+my $line = undef;
+if (/^From\s+([^\s]+)\s+/) {
+    $path = $1;
+    push @errorText, "((path: $path))\n";
+    $_ = $';
+    if (/ remote from /) {
+	$path = $' . '!' . $path;
+	$_ = $`;
+    }
+    $date = $_;
+} else {
+    $line = $_;
+}
+
+for (;;) {
+    $_ = <STDIN> ;
+    chomp ;
+
+    # gather up a single header with possible continuation lines into $line
+    if (/^\s+/) {
+	if (! $line) {
+	    $msg = "First line with leading whitespace!" ;
+	    syslog "err", $msg unless -t STDERR ;
+	    die "$msg\n" ;
+	}	    
+
+	$line .= "\n" . $_ ;
+	next ;
+    }
+
+    # On the first header $line will be undefined.
+    ($_, $line) = ($line, $_) ; # swap $line and $_ ;
+
+    last if defined($_) && /^$/ ;
+    next if /^$/ ;		# only on first header will this happen
+
+    push @errorText, "($_)\n";
+
+    next if /^Approved:\s/sio && defined($approved);
+    next if /^Distribution:\s/sio && defined($distribution);
+
+    if (/^(Subject|Organization|Distribution):\s*/sio) {
+	$real_news_hdrs .= "$_\n";
+	next;
+    }
+
+    if (/^Message-ID:\s*/sio) {
+	$message_id = $';
+	next;
+    }
+
+    if (/^Mailing-List:\s*/sio) {
+	$mailing_list = $';
+	next;
+    }
+
+    if (/^(Sender|Approved):\s*/sio) {
+	$real_news_hdrs .= "$&" . fix_sender_addr($') . "\n";
+	next;
+    }
+
+    if (/^Return-Path:\s*/sio) {
+	$path = $';
+	$path = $1 if ($path =~ /\<([^\>]*)\>/);
+	push@errorText, "((path: $path))\n";
+	next;
+    }
+
+    if (/^Date:\s*/sio) {
+	$date = $';
+	next;
+    }
+
+    if (/^From:\s*/sio) {
+	$from = &fix_sender_addr($');
+	next;
+    }
+
+    if (/^References:\s*/sio) {
+	$references = $';
+	next;
+    }
+
+    if (!defined($references) && /^In-Reply-To:[^\<]*\<([^\>]+)\>/sio) {
+	$references = "<$1>";
+	# FALLTHROUGH
+    }
+
+    if (/^(MIME|Content)-[^:]+:\s*/sio) {
+	$real_news_hdrs .= $_ . "\n" ;
+	next ;
+    }
+
+    # random unknown header.  prepend 'X-' if it's not already there.
+    $_ = "X-$_" unless /^X-/sio ;
+    $weird_mail_hdrs .= "$_\n";
+}
+
+
+$msgIdHdr = $message_id if $message_id ;
+$fromHdr = $from if $from ;
+$dateHdr = $date if $date ;
+
+if ($path !~ /\!/) {
+    $path = "$'!$`" if ($path =~ /\@/);
+}
+
+$real_news_hdrs .= "Message-ID: ${msgIdHdr}\n"     if defined($message_id);
+$real_news_hdrs .= "Mailing-List: ${mailing_list}\n" if defined($mailing_list);
+$real_news_hdrs .= "Distribution: ${distribution}\n" if defined($distribution);
+$real_news_hdrs .= "Approved: ${approved}\n"         if defined($approved);
+$real_news_hdrs .= "References: ${references}\n"     if defined($references);
+
+# Inews writes error messages to stdout. We want to capture those and mail
+# them back to the newsmaster. Trying to write and read from a subprocess is 
+# ugly and prone to deadlock, so we use a temp file.
+$tmpfile = sprintf "%s/mailpost.%d.%d", $Tmpdir, time, $$ ;
+
+if (!open TMPFILE,">$tmpfile") {
+    $msg = "cant open temp file ($tmpfile): $!" ;
+    $tmpfile = undef ;
+    syslog "err", "$msg\n" unless $debugging || -t STDERR ;
+    open TMPFILE, "|" . sprintf ($Sendmail, $Maintainer) ||
+	die "die(no tmpfile): sendmail: $!\n" ;
+    print TMPFILE <<"EOF";
+To: $Maintainer
+Subject: mailpost failure ($newsgroups): $msg
+
+-------- Article Contents
+
+EOF
+}
+	     
+print TMPFILE <<"EOF";
+Path: ${path}
+From: ${fromHdr}
+Newsgroups: ${newsgroups}
+${real_news_hdrs}Date: ${dateHdr}
+${weird_mail_hdrs}
+EOF
+    
+print TMPFILE $line, "\n" ;	# left over from header parsing loop
+print TMPFILE <STDIN>;
+# do we really want to add this next line? (inews will append a signature)
+print TMPFILE "---\n" ; 
+
+close TMPFILE ;
+
+if ( ! $tmpfile ) {
+    # we had to bail and mail the article to the admin.
+    exit (0) ;
+}
+
+
+##
+## We've got the article in a temp file and now we validate some of the 
+## data we found and update our message-id database.
+##
+
+mailArtAndDie ("no From: found") unless $from;
+mailArtAndDie ("no Date: found") unless $date;
+mailArtAndDie ("no Message-ID: found") unless $message_id;
+mailArtAndDie ("Malformed message ID ($message_id)") 
+    if ($message_id !~ /\<(\S+)\@(\S+)\>/);
+
+
+# update (with locking) our message-id database.  this is used to make sure we
+# don't loop our own gatewayed articles back through the mailing list.
+
+my ($lhs, $rhs) = ($1, $2);	# of message_id match above.
+$rhs =~ tr/A-Z/a-z/;
+
+$message_id = "${lhs}\@${rhs}";
+
+push @errorText, "(TAS message-id database for $message_id)\n";
+
+my $lockfile = sprintf("%s.lock", $Database);
+
+open LOCKFILE, "<$lockfile" || 
+    open LOCKFILE, ">$lockfile" ||
+    mailArtAndDie ("can't open $lockfile: $!") ;
+
+my $i ;
+for ($i = 0 ; $i < 5 ; $i++) {
+    flock LOCKFILE, $LOCK_EX && last ;
+    sleep 1 ;
+}
+
+mailArtAndDie ("can't lock $lockfile: $!") if ($i == 5) ;
+
+my %DATABASE ;
+dbmopen %DATABASE, $Database, 0666 || mailArtAndDie ("can't dbmopen $lockfile: $!");
+
+exit 0	if defined $DATABASE{$message_id}; # already seen.
+
+$DATABASE{$message_id} = sprintf "%d.%s", time, 'mailpost' ;
+
+mailArtAndDie ("TAS didn't set $message_id") unless defined $DATABASE{$message_id};
+
+dbmclose %DATABASE || mailArtAndDie ("can't dbmclose $lockfile: $!") ;
+
+flock LOCKFILE, $LOCK_UN || mailArtAndDie ("can't unlock $lockfile: $!");
+close LOCKFILE ;
+
+if (!open INEWS, "$WhereTo < $tmpfile 2>&1 |") {
+    mailArtAndDie ("cant start: $WhereTo: $!") ;
+}
+
+my @inews = <INEWS> ;
+close INEWS ;
+my $status = $? ;
+
+if (@inews) {
+    chomp @inews ;
+    mailArtAndDie ("inews failed: @inews") ;
+}
+
+unlink $tmpfile ;
+
+exit $status;
+
+sub mailArtAndDie {
+    my ($msg) = @_ ;
+    
+    print STDERR $msg,"\n" if -t STDERR ;
+    
+    open SENDMAIL, "|" . sprintf ($Sendmail,$Maintainer) ||
+	die "die($msg): sendmail: $!\n" ;
+    print SENDMAIL <<"EOF" ;
+To: $Maintainer
+Subject: mailpost failure ($newsgroups): $msg
+     
+$msg
+EOF
+	     
+    if ($tmpfile && -f $tmpfile) {
+	print SENDMAIL "\n-------- Article Contents\n\n" ;
+	open FILE, "<$tmpfile" || die "open($tmpfile): $!\n" ;
+	print SENDMAIL while <FILE> ;
+	close FILE ;
+    } else {
+	print "No article left to send back.\n" ;
+    }
+    close SENDMAIL ;
+    
+#    unlink $tmpfile ;
+    
+    exit (0) ;			# using a non-zero exit may cause problems.
+}
+
+
+#
+# take 822-format name (either "comment <addr> comment" or "addr (comment)")
+# and return in always-qualified 974-format ("addr (comment)").
+#
+sub fix_sender_addr {
+    my ($address) = @_;
+    my ($lcomment, $addr, $rcomment, $comment);
+    local ($',$`,$_) ;
+
+    if ($address =~ /\<([^\>]*)\>/) {
+	($lcomment, $addr, $rcomment) = (&dltb($`), &dltb($1), &dltb($'));
+    } elsif ($address =~ /\(([^\)]*)\)/) {
+	($lcomment, $addr, $rcomment) = ('', &dltb($`.$'), &dltb($1));
+    } else {
+	($lcomment, $addr, $rcomment) = ('', &dltb($address), '');
+    }
+    
+    #print STDERR "fix_sender_addr($address) == ($lcomment, $addr, $rcomment)\n";
+    
+    $addr .= "\@$Mailname" unless ($addr =~ /\@/);
+    
+    if ($lcomment && $rcomment) {
+	$comment = $lcomment . ' ' . $rcomment;
+    } else {
+	$comment = $lcomment . $rcomment;
+    }
+    
+    $_ = $addr;
+    $_ .= " ($comment)" if $comment;
+    
+    #print STDERR "\t-> $_\n";
+    
+    return $_;
+}
+
+#
+# delete leading and trailing blanks
+#
+
+sub dltb {
+    my ($str) = @_;
+    
+    $str =~ s/^\s+//o;
+    $str =~ s/\s+$//o;
+    
+    return $str;
+}
+
