@@ -25,7 +25,7 @@ main(void)
     ssize_t count;
     size_t offset;
 
-    puts("45");
+    puts("57");
 
     buffer_set(&one, test_string1, sizeof(test_string1));
     ok_int(1, 1024, one.size);
@@ -120,6 +120,35 @@ main(void)
     ok_int(45, 0, count);
     close(fd);
     unlink("buffer-test");
+    free(data);
+    buffer_free(three);
+
+    three = buffer_new();
+    buffer_sprintf(three, true, "testing %d testing", 6);
+    ok_int(46, 0, three->used);
+    ok_int(47, 17, three->left);
+    buffer_append(three, "", 1);
+    ok_int(48, 18, three->left);
+    ok_string(49, "testing 6 testing", three->data);
+    three->left--;
+    three->used += 5;
+    three->left -= 5;
+    buffer_sprintf(three, true, " %d", 7);
+    ok_int(50, 14, three->left);
+    buffer_append(three, "", 1);
+    ok_string(51, "testing 6 testing 7", three->data);
+    buffer_sprintf(three, false, "%d testing", 8);
+    ok_int(52, 9, three->left);
+    ok_string(53, "8 testing", three->data);
+    data = xmalloc(1050);
+    memset(data, 'a', 1049);
+    data[1049] = '\0';
+    ok_int(54, 1024, three->size);
+    buffer_sprintf(three, false, "%s", data);
+    ok_int(55, 2048, three->size);
+    ok_int(56, 1049, three->left);
+    buffer_append(three, "", 1);
+    ok_string(57, data, three->data);
     free(data);
     buffer_free(three);
 

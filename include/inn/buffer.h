@@ -17,6 +17,7 @@
 #ifndef INN_BUFFER_H
 #define INN_BUFFER_H 1
 
+#include <stdarg.h>
 #include <sys/types.h>
 #include <inn/defines.h>
 
@@ -48,6 +49,14 @@ void buffer_set(struct buffer *, const char *data, size_t length);
 
 /* Append data to the buffer. */
 void buffer_append(struct buffer *, const char *data, size_t length);
+
+/* Print data into the buffer, either appending or replacing the existing
+   data.  No trailing nul is added.  If false is returned by buffer_vsprintf,
+   the data didn't fit and was not written, but the buffer has been resized so
+   that if the call is retried, it will succeed.  This check is unnecessary
+   for buffer_sprintf. */
+void buffer_sprintf(struct buffer *, bool append, const char *, ...);
+bool buffer_vsprintf(struct buffer *, bool append, const char *, va_list);
 
 /* Swap the contents of two buffers. */
 void buffer_swap(struct buffer *, struct buffer *);

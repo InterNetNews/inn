@@ -82,6 +82,7 @@ buffer_compact(struct buffer *buffer)
 
 /*
 **  Replace whatever data is currently in the buffer with the provided data.
+**  Resize the buffer if needed.
 */
 void
 buffer_set(struct buffer *buffer, const char *data, size_t length)
@@ -97,7 +98,7 @@ buffer_set(struct buffer *buffer, const char *data, size_t length)
 
 /*
 **  Append data to a buffer.  The new data shows up as additional unused data
-**  at the end of the buffer.  Resize the buffer to multiples of 1KB.
+**  at the end of the buffer.  Resize the buffer if needed.
 */
 void
 buffer_append(struct buffer *buffer, const char *data, size_t length)
@@ -110,6 +111,61 @@ buffer_append(struct buffer *buffer, const char *data, size_t length)
     buffer_resize(buffer, total + length);
     buffer->left += length;
     memcpy(buffer->data + total, data, length);
+}
+
+
+/*
+**  Print data into a buffer from the supplied va_list, either appending to
+**  the end of it or replacing the existing contents.  The new data shows up
+**  as unused data at the end of the buffer.  Returns true if successful and
+**  false if there isn't enough room.  If there wasn't enough room, the buffer
+**  is also resized so that if the command is retried, it will succeed.  The
+**  trailing nul is not added to the buffer.
+*/
+bool
+buffer_vsprintf(struct buffer *buffer, bool append, const char *format,
+                va_list args)
+{
+    size_t total, avail;
+    ssize_t status;
+
+    if (!append)
+        buffer_set(buffer, NULL, 0);
+    total = buffer->used + buffer->left;
+    avail = buffer->size - total;
+    status = vsnprintf(buffer->data + total, avail, format, args);
+    if (status < 0)
+        return false;
+    if ((size_t) status + 1 <= avail) {
+        buffer->left += status;
+        return true;
+    } else {
+        buffer_resize(buffer, total + status + 1);
+        return false;
+    }
+}
+
+
+/*
+**  Print data into a buffer, either appending to the end of it or replacing
+**  the existing contents.  The new data shows up as unused data at the end of
+**  the buffer.  Resize the buffer if needed.  The trailing nul is not added
+**  to the buffer.
+*/
+void
+buffer_sprintf(struct buffer *buffer, bool append, const char *format, ...)
+{
+    va_list args;
+    bool done;
+
+    va_start(args, format);
+    done = buffer_vsprintf(buffer, append, format, args);
+    va_end(args);
+    if (!done) {
+        va_start(args, format);
+        buffer_vsprintf(buffer, append, format, args);
+        va_end(args);
+    }
 }
 
 
