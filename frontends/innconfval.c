@@ -50,8 +50,14 @@ printit(char *v, char *val)
 	case 3:   /* perl */
 	    if (isnum(val))
 	    	printf("$%s = %s;\n", v, val);
-	    else
-	    	printf("$%s = \'%s\';\n", v, val);
+	    else {
+	    	printf("$%s = '", v);
+		while (*val) {
+			if ((*val == '\'') || (*val == '\\')) printf("\\");
+			printf("%c", *val++);
+		    }
+	    	printf("';\n");
+	    }
 	    break;
 	case 4:   /* tcl */
 	    if (isnum(val))
