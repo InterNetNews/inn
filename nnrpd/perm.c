@@ -1640,9 +1640,6 @@ static void CompressList(char *list)
     *cpto = '\0';
 }
 
-/* FIXME - MatchHost is totally unaware of IPv6 yet, but it should be not
-   too much work to make it so.  I think.  -lutchann */
-
 static bool MatchHost(char *hostlist, char *host, char *ip)
 {
     char    **list;
@@ -1676,26 +1673,54 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
 	if (!ret && *ip) {
 	    ret = wildmat(ip, pat);
 	    if (!ret && (p = strchr(pat, '/')) != (char *)NULL) {
-		unsigned int bits, c;
+		unsigned int bits, c, b;
 		struct in_addr ia, net, tmp;
+#ifdef HAVE_INET6
+		struct in6_addr ia6, net6;
+		uint8_t	bits8;
+#endif
 		unsigned int mask;
 
 		*p = '\0';
                 if (inet_aton(ip, &ia) && inet_aton(pat, &net)) {
 		    if (strchr(p+1, '.') == (char *)NULL) {
+			/* string following / is a masklength */
 			mask = atoi(p+1);
 			for (bits = c = 0; c < mask && c < 32; c++)
 			    bits |= (1 << (31 - c));
 			mask = htonl(bits);
-		    } else {
+		    } else {	/* or it may be a dotted quad bitmask */
                         if (inet_aton(p+1, &tmp))
                             mask = tmp.s_addr;
-                        else
+                        else	/* otherwise skip it */
                             continue;
 		    }
 		    if ((ia.s_addr & mask) == (net.s_addr & mask))
 			ret = TRUE;
 		}
+#ifdef HAVE_INET6
+                else if (inet_pton(AF_INET6, ip, &ia6) && 
+			 inet_pton(AF_INET6, pat, &net6)) {
+		    mask = atoi(p+1);
+		    ret = TRUE;
+		    /* do a prefix match byte by byte */
+		    for (c = 0; c*8 < mask && c < sizeof(ia6); c++) {
+			if ( (c+1)*8 <= mask &&
+			    ia6.s6_addr[c] != net6.s6_addr[c] ) {
+			    ret = FALSE;
+			    break;
+			} else if ( (c+1)*8 > mask ) {
+			    for (bits8 = b = 0; b < mask && b < 8; b++)
+				bits8 |= (1 << (7 - b));
+			    if ((ia6.s6_addr[c] & bits8) !=
+			    	(net6.s6_addr[c] & bits8) ) {
+				ret = FALSE;
+				break;
+			    }
+			}
+		    }
+		}
+#endif
 	    }
         }
 	if (ret)
