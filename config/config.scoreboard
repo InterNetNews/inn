@@ -800,3 +800,12 @@
   ||##  use a different system call, namedly llseek().
   ||#### =()<CNFSseekcall		@<CNFSseekcall>@>()=
   ||CNFSseekcall		lseek
+  ||
+  ||
+  ||##  19. Keywords in Overview support
+  ||##
+[IN1.7=@NO][WDF=autoconf][WOR=no]
+  ||##  Should INN fabricate Keywords: data for overviews?  Pick DO or DONT.
+  ||#### =()<KEYWORDS	@<KEYWORDS>@>()=
+  ||KEYWORDS		@DO_KEYWORDS@
+ 

@@ -22,6 +22,9 @@ dnl
 AC_ARG_WITH(perl,[  --with-perl             Perl script support], DO_PERL=DO, DO_PERL=DONT)
 AC_SUBST(DO_PERL)
 dnl
+AC_ARG_WITH(keywords,[  --with-keywords         Overview keyword support],DO_KEYWORDS=DO,DO_KEYWORDS=DONT)
+AC_SUBST(DO_KEYWORDS)
+dnl
 AC_ARG_WITH(spool-dir,[  --with-spool-dir=PATH   News storage (default /var/news/spool)], SPOOLDIR=$with_spool_dir, SPOOLDIR=/var/news/spool)
 AC_SUBST(SPOOLDIR)
 dnl
@@ -207,6 +210,7 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(elf, nlist)
 dnl AIX needs flock from libbsd
 AC_CHECK_LIB(bsd,flock)
+AC_CHECK_LIB(regex,regexec)
 dnl Check for PERL location
 if test x${DO_PERL} = xDO ; then
 	AC_MSG_CHECKING(for Perl configuration)
@@ -283,6 +287,16 @@ AC_CHECK_FUNCS(mkdir mkfifo mktemp select setbuffer setproctitle)
 AC_CHECK_FUNCS(setsid socket strcasecmp strchr strcspn strerror)
 AC_CHECK_FUNCS(strrchr strspn strstr symlink sysconf syslog ulimit)
 AC_CHECK_FUNCS(waitpid)
+
+dnl
+if test $ac_cv_lib_regex_regexec = no; then
+	AC_CHECK_FUNC(regexec,[true],[
+if test "${with_keywords+set}" = set; then
+	AC_MSG_ERROR(``--with-keywords'' option used but can't find library with regexec(3) function)
+fi
+])
+fi
+
 dnl
 AC_CACHE_CHECK(for return type of abort, ac_cv_type_abort, AC_TRY_COMPILE([#ifdef HAVE_STDLIB_H
 #include <stdlib.h>

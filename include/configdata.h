@@ -328,4 +328,11 @@ typedef int		BOOL;
 #define DONT_PERL
 
 
+/*
+**  19. Keywords
+*/
+
+    /* =()<#define @<KEYWORDS>@_KEYWORDS>()= */
+#define DONT_KEYWORDS
+
 #endif /* ! defined (__configdata_h__) */
