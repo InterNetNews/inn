@@ -1,0 +1,647 @@
+#!/usr/bin/perl -w
+# fixscript will replace this line with require innshellvars.pl
+$ID='$Id$$';
+
+use POSIX ":fcntl_h";
+use SDBM_File;
+use Getopt::Std;
+
+# With the -M switch this program installs its own man page.
+#-----------------------------------------------------------------------------
+
+=head1 NAME
+
+thdexpire - dynamic expire daemon for timehash and timecaf storage
+
+=head1 SYNOPSIS
+
+B<thdexpire>
+[ B<-t> I<minutes> ]
+[ B<-f> I<kilobytes> ]
+[ B<-i> I<inodes> ]
+[ B<-m> I<mindays> ]
+[ B<-x> I<minseconds> ]
+[ B<-N> ]
+[ B<-v> I<level> ]
+
+B<thdexpire -r>
+
+=head1 DESCRIPTION
+
+This is a daemon, to be started along with B<innd>, which periodically
+looks if news spool space is getting tight, and frees space by removing
+articles until enough is free. It is an adjunct (not a replacement) to
+INNs B<expire> program.
+
+=head2 Setting Up
+
+=over 4
+
+=item 1.
+
+Configure your storage classes carefully. Let the default go in class
+100 and choose the storage classes as relative (percent) retention
+times. E.g. if you want to give C<alt.binaries.*> a fifth of the
+default time, put them in class 20. Storage classes above 200 are
+ignored by this program. 0 expires immediately. An example is given
+in L<"EXAMPLES">.
+
+=item 2.
+
+Set up your F<expire.ctl> in a way that it puts only a maximum cap on
+retention times. Run B<expire> from B<news.daily> as usual. However,
+it should only expire articles which have an Expires line or are in
+classes above 200. See L<"EXAMPLES">.
+
+=item 3.
+
+Ensure to start this daemon along with B<innd>.
+
+=item 4.
+
+To get information and statistics, run B<thdexpire -r> (in parallel to
+a running daemon). This will show you the current actual retention
+times.
+
+=back
+
+=head2 How It Works
+
+B<thdexpire> works directly on the spool. It assumes the layout
+described in the timehash and timecaf sections of L<storage.conf(5)> as of
+INN-2.x-CURRENT (Dec. 5, 1998). For every storage class associated
+with timehash/timecaf, B<thdexpire> keeps a I<work time> which is the
+modification time of the oldest article/CAF file in this class. This
+time is chosen so that the difference of the work time of class N to
+now (i.e. the I<retention time> for class N) will be N/100 of the
+retention time of class 100. The work time of all classes is
+continuously adjusted as time goes by. Articles and CAF files which
+are older than the work time are deleted.
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-t> I<minutes>
+
+Check for free space every I<minutes> minutes (default 30).
+
+=item B<-f> I<kilobytes>
+
+Leave I<kilobytes> kilobytes of free disk space on each spool
+filesystem (default 50000).
+
+=item B<-i> I<inodes>
+
+Leave I<inodes> inodes free on each spool filesystem (default 5000).
+
+=item B<-m> I<mindays>
+
+Set the minimum normal holding time for class 100 to I<mindays> days
+(default 7).
+
+=item B<-x> I<minseconds>
+
+Set the absolute minimum holding time for any article to I<minseconds>
+seconds (default 86400, i.e. 1 day).
+
+=item B<-N>
+
+Do not delete any articles, just print what would be done.
+
+=item B<-v> I<level>
+
+Set the verbosity level. Values from 1 to 3 are meaningful, where
+higher levels are mostly for debugging.
+
+=item B<-r>
+
+Do not run as a daemon, instead print a report from the database (see
+L<FILES>) on the available storage classes, current expire times and
+other stuff.
+
+=back
+
+=head1 EXAMPLES
+
+Here is an example F<storage.conf> file:
+
+ # Large postings in binary groups are expired fast:
+ # 20% retention time
+ method timehash {
+   newsgroups: *.binaries.*,*.binaer.*,*.dateien.*,alt.mag.*
+   size: 30000
+   class: 20
+ }
+
+ # Local groups and *.answers groups don't expire at all with
+ # thdexpire. These are handled by Expires lines and a cutoff
+ # in expire.ctl.
+ method timehash {
+   newsgroups: *.answers,news.announce.*,local.*
+   class: 201
+ }
+
+ # Expires lines are honored if they dont exceed 90 days.
+ # Exempt those postings from thdexpire handling.
+ method timehash {
+   newsgroups: *
+   expires: 1d,90d
+   class: 202
+ }
+
+ # Default: should be class 100 because thdexpire bases its
+ # calculations thereupon.
+ method timecaf {
+   newsgroups: *
+   class: 100
+ }
+
+And here is an F<expire.ctl> which fits:
+
+ # Our local groups are held 6 months
+ local.*:A:7:180:180
+ # Everything else is handled by thdexpire, or Expires lines
+ *:A:7:never:never
+
+Note that B<thdexpire> does not actually use these files, they just
+configure other parts of the news system in an appropriate way.
+
+=head1 FILES
+
+=over 4
+
+=item F<E<lt>inn::pathdbE<gt>/thdexpstat.{dir,pag}>
+
+Holds state information like classes, expire times, oldest articles.
+When this file is missing, it will be rebuilt the next time the daemon
+is started, which basically means scanning the spool directories to
+find the oldest articles. With the B<-r> option, the contents of this
+file are printed.
+
+=item F<E<lt>inn::innddirE<gt>/thdexpire.pid>
+
+Contains the PID of the running daemon.
+
+=back
+
+=head1 SIGNALS
+
+I<SIGINT> or I<SIGTERM> can be sent to the daemon at any time, causing
+it to gracefully exit immediately.
+
+=head1 SEE ALSO
+
+L<expire(8)>, L<news.daily(8)>, L<storage.conf(5)>
+
+=head1 NOTES
+
+This version needs the B<inndf> program supplied with newer releases of INN.
+
+The filenames for timecaf were wrong in older versions of the INN
+documentation. This program uses the true filenames, as found by
+reading the INN source.
+
+=head1 DIAGNOSTICS
+
+Any error messages are printed on standard error. Normal progress
+messages, as specified by the B<-v> option, are printed on standard
+output.
+
+=head1 BUGS
+
+Storage classes which are in I<storage.conf> but not on disk (i.e.
+which have never been filed into) when the daemon starts are ignored.
+
+The code is ugly and uses too many global variables.
+Should probably rewrite it in C.
+
+=head1 RESTRICTIONS
+
+Directories which are left empty are not removed.
+
+The overview database is not affected by B<thdexpire>, it has to be
+cleaned up by the daily regular B<news.daily> run. This may need a
+patch to B<expire>.
+
+=head1 AUTHOR
+
+Olaf Titz <olaf@bigred.inka.de>. Use and distribution of this work is
+permitted under the same terms as the B<INN> package.
+
+=head1 HISTORY
+
+Inspired by the old B<dexpire> program for the traditional spool.
+
+June 1998: wrote the first version for timehash.
+
+November 1998: added code for timecaf, works on multiple spool
+filesystems, PODed documentation.
+
+July 1999: bugfixes.
+
+=cut
+
+#-----------------------------------------------------------------------------
+
+chdir $inn::spool || die "chdir $inn::spool: $!";
+$opt_r=0;      # make a report
+$opt_t=30;     # check interval in minutes
+$opt_f=50000;  # required space in kilobytes
+$opt_i=5000;   # required space in inodes
+$opt_m=7;      # minimum normal (class 100) time in days
+$opt_x=86400;  # absolute minimum hold time in seconds
+$opt_N=0;      # dont actually delete articles
+$opt_v=0;      # verbosity level
+$opt_M=0;      # install man page
+getopts("rt:f:i:m:x:Nv:M");
+
+$_=$inn::pathdb; $_=$inn::pathnews; # shut up warning
+$sfile="$inn::pathdb/thdexpstat";
+$ID=~/ ([^,]+,v [^ ]+)/; $ID=$1;
+
+if ($opt_M) {
+    print "Installing thdexpire(8) man page\n";
+    $0=~m:^(.*)/([^/]+)$:;
+    chdir $1 || die "chdir $1";
+    exec "pod2man --section=8 --center='Contributed News Software'" .
+      " --release='$ID' $2 >$inn::pathnews/man/man8/thdexpire.8";
+}
+
+if ($opt_r) {
+    tie(%S, SDBM_File, $sfile, O_RDONLY, 0664) || die "open $sfile: $!";
+    &report;
+    untie %S;
+    exit 0;
+}
+
+(system "shlock", "-p", $$, "-f", "$inn::innddir/thdexpire.pid")>>8==0
+  || die "Already running";
+tie(%S, SDBM_File, $sfile, O_RDWR|O_CREAT, 0664) || die "open $sfile: $!";
+$SIG{'TERM'}=$SIG{'INT'}='finish';
+$|=1;
+printf "%s starting at %s\n", $ID, &wtime(time) if ($opt_v>0);
+
+undef @c;
+$NOW=time; $ac=$cc=0;
+opendir(CD, ".") || &err("opendir $inn::spool: $!");
+while ($cd=readdir(CD), defined($cd)) {
+    $cd=~/^time(caf)?-([0-9a-f][0-9a-f])$/i || next;
+    $c{hex($2)}=1 unless hex($2)>200;
+}
+closedir CD;
+@classes=sort {$a<=>$b} keys %c;
+foreach $c (@classes) {
+    &initclass($c);
+    $S{"work$;$c"}=$S{"oldest$;$c"}&0xFFFFFF00;
+}
+
+$S{"classes"}=join(",", @classes);
+$S{"inittime"}=time;
+$S{"ID"}=$ID;
+printf "Checked %d articles, %d CAFs in %d seconds\n", $ac, $cc, time-$NOW
+  if ($ac+$cc>0 && $opt_v>0);
+
+chdir $inn::spool || die "chdir $inn::spool: $!";
+while (1) {
+    $S{"lastrun"}=$NOW=time;
+    printf "%s\n", &wtime($NOW) if ($opt_v>0);
+    $nt=0;
+    foreach $c (@classes) {
+	$t=($NOW-$S{"work$;$c"})*100/$c;
+	$nt=$t if ($nt<$t);
+    }
+    printf "Normal time (class 100): %s\n", &xtime($NOW-$nt)
+        if ($opt_v>0);
+    if ($nt<$opt_m*24*60*60) {
+	printf " capped at minimum %d days\n", $opt_m
+	  if ($opt_v>0);
+	$nt=$opt_m*24*60*60;
+    }
+    if ($nt>180*24*60*60) {
+	print " capped at maximum 180 days\n"
+	  if ($opt_v>0);
+	$nt=180*24*60*60;
+    }
+    $S{"normaltime"}=$nt;
+    $decrement=$opt_t*60;
+    $pass=$need=0;
+    $x="/";
+    undef %needk; undef %needi;
+    foreach $c (@classes) {
+	$Dart{$c}=$Dcaf{$c}=$Dkb{$c}=$Dino{$c}=0;
+	$y=sprintf("time-%02x", $c);
+	if (-d $y) {
+	    @S=stat(_);
+	    if ($#S>=0) {
+		$dev{$y}=$S[0];
+		unless (defined($needk{$S[0]})) {
+		    $x.=" $y";
+		    $needk{$S[0]}=$needi{$S[0]}=-1;
+		}
+	    }
+	}
+	$y=sprintf("timecaf-%02x", $c);
+	if (-d $y) {
+	    @S=stat(_);
+	    if ($#S>=0) {
+		$dev{$y}=$S[0];
+		unless (defined($needk{$S[0]})) {
+		    $x.=" $y";
+		    $needk{$S[0]}=$needi{$S[0]}=-1;
+		}
+	    }
+	}
+    }
+    if (open(D, "inndf $x |")) {
+	while (<D>) {
+	    @S=split(/\s+/, $_);
+	    $needk{$dev{$S[0]}}=$opt_f-$S[1] unless ($S[0] eq "/");
+	}
+	close D;
+    }
+    if (open(D, "inndf -i $x |")) {
+	while (<D>) {
+	    @S=split(/\s+/, $_);
+	    $needi{$dev{$S[0]}}=$opt_i-$S[1] unless ($S[0] eq "/");
+	}
+	close D;
+    }
+    foreach $c (keys %needk) {
+	printf "Device %d needs to free %d kilobytes, %d inodes\n",
+	       $c, $needk{$c}<0?0:$needk{$c}, $needi{$c}<0?0:$needi{$c}
+	    if ($opt_v>0 && ($needk{$c}>0 || $needi{$c}>0));
+	if ($needk{$c}>0 || $needi{$c}>0) {
+	    ++$need;
+	}
+    }
+    if ($opt_v>0 && $need<=0) {
+	print "  (nothing to do)\n";
+	$tt=0;
+    } else {
+	$error=0;
+	while (!$error && $need>0) {
+	    if ($S{"normaltime"}-$decrement<$opt_m*24*60*60) {
+		print "  Normal time hit minimum\n" if ($opt_v>0);
+		last;
+	    }
+	    $S{"normaltime"}-=$decrement;
+	    printf "  normal time (100) becomes %ld\n", $S{"normaltime"}
+	    if ($opt_v>2);
+	    ++$pass;
+	    $Dart=$Dcaf=$Dkb=$Dino=$need=0;
+	    foreach $c (keys %needk) {
+		if ($needk{$c}>0 || $needi{$c}>0) {
+		    ++$need;
+		}
+	    }
+	    if ($need) {
+		foreach $c (@classes) {
+		    &worktime($c, $NOW-($S{"normaltime"}*$c/100));
+		    $Dart+=$dart; $Dcaf+=$dcaf; $Dkb+=$dbb>>10; $Dino+=$dino;
+		    $Dart{$c}+=$dart; $Dcaf{$c}+=$dcaf;
+		    $Dkb{$c}+=$dbb>>10; $Dino{$c}+=$dino;
+		    last if ($error);
+		}
+	    }
+	    if ($Dart+$Dcaf) {
+		printf "  pass %d deleted %d arts, %d CAFs, %d kb\n",
+		       $pass, $Dart, $Dcaf, $Dkb if ($opt_v>1);
+		$decrement-=$decrement>>2 if ($decrement>10*60);
+	    } else {
+		$decrement+=$decrement>>1 if ($decrement<4*60*60);
+	    }
+	}
+	$Dkb=$Dart=$Dcaf=$Dino=0;
+	foreach $c (@classes) {
+	    printf "  class %3d: deleted %6d arts %6d CAFs %10d kb\n",
+	           $c, $Dart{$c}, $Dcaf{$c}, $Dkb{$c} if ($opt_v>1);
+	    $Dkb+=$Dkb{$c}; $Dart+=$Dart{$c}; $Dcaf+=$Dcaf{$c};
+	}
+	$tt=time-$NOW;
+	printf " deleted %d articles, %d CAFs, %d kb in %d seconds\n",
+               $Dart, $Dcaf, $Dkb, time-$NOW if ($opt_v>0);
+	if ($tt>$opt_t*60) {
+	    printf STDERR "Round needed %d seconds, interval is %d\n",
+	    $tt, $opt_t*60;
+	    $tt=$opt_t*60;
+	}
+    }
+    sleep $opt_t*60-$tt;
+}
+&finish(0);
+
+
+sub initclass
+{
+    my $C=shift;
+    if (!$S{"blocksize$;$C$;CAF"}) {
+	# Determine filesystem blocksize
+	# unfortunately no way in perl to statfs
+	my $x=sprintf("%s/timecaf-%02x/test%d", $inn::spool, $C, $$);
+	if (open(A, ">$x")) {
+	    print A "X" x 4096;
+	    close A;
+	    @S=stat $x;
+	    $#S>=12 || die "stat: $!";
+	    if ($S[12]) {
+		$S{"blocksize$;$C$;CAF"}=$S[7]/$S[12];
+	    } else {
+		$S{"blocksize$;$C$;CAF"}=512;
+		warn "hack around broken stat blocksize";
+	    }
+	    unlink $x;
+	}
+    }
+    return if ($S{"oldest$;$C"});
+    my $oldest=time;
+    $S{"oldest$;$C"}=$oldest;
+    my $base=sprintf("%s/time-%02x", $inn::spool, $C);
+    my $count=0;
+    if (chdir $base) {
+	printf "Finding oldest in class %d (%s)\n", $C, $base if ($opt_v>0);
+	opendir(D0, ".");
+	while ($d1=readdir(D0), defined($d1)) {
+	    $d1=~/^[0-9a-f][0-9a-f]$/ || next;
+	    chdir $d1;
+	    opendir(D1, ".") || next;
+	    while ($d2=readdir(D1), defined($d2)) {
+		$d2=~/^[0-9a-f][0-9a-f]$/ || next;
+		chdir $d2;
+		opendir(D2, ".") || next;
+		while ($a=readdir(D2), defined($a)) {
+		    $a=~/^\./ && next;
+		    @S=stat($a);
+		    $oldest=$S[9] if ($S[9]<$oldest);
+		    ++$count;
+		}
+		closedir D2;
+		chdir "..";
+	    }
+	    closedir D1;
+	    chdir "..";
+	}
+	closedir D0;
+	$ac+=$count;
+    }
+    $base=sprintf("%s/timecaf-%02x", $inn::spool, $C);
+    if (chdir $base) {
+	printf "Finding oldest in class %d (%s)\n", $C, $base if ($opt_v>0);
+	opendir(D0, ".");
+	while ($d1=readdir(D0), defined($d1)) {
+	    $d1=~/^[0-9a-f][0-9a-f]$/ || next;
+	    chdir $d1;
+	    opendir(D1, ".") || next;
+	    while ($a=readdir(D1), defined($a)) {
+		$a=~/^\./ && next;
+		@S=stat($a);
+		$oldest=$S[9] if ($S[9]<$oldest);
+		++$count;
+	    }
+	    closedir D1;
+	    chdir "..";
+	}
+	closedir D0;
+	$cc+=$count;
+    }
+    $S{"count$;$C"}=$count;
+    $S{"oldest$;$C"}=$oldest;
+}
+
+sub worktime
+{
+    my $C=shift;
+    my $goal=shift;
+    $goal&=0xFFFFFF00;
+    printf "  goal for class %d becomes %s\n", $C, &xtime($goal)
+      if ($opt_v>2);
+    if ($goal>$NOW-$opt_x) {
+	printf "  goal for class %d cut off\n", $C
+	  if ($opt_v>1);
+	$error=1;
+	return;
+    }
+    $dart=$dcaf=$dbb=$dino=0;
+    $hdir=sprintf("time-%02x", $C);
+    $cdir=sprintf("timecaf-%02x", $C);
+    while (($_=$S{"work$;$C"})<$goal) {
+	printf "  running: %08x\n", $_ if ($opt_v>2);
+	($aa,$bb,$cc) = (($_>>24)&0xFF, ($_>>16)&0xFF, ($_>>8)&0xFF);
+	$dir=sprintf("%s/%02x/%02x", $hdir, $bb, $cc);
+	$pat=sprintf("[0-9a-f]{4}-%02x[0-9a-f]{2}", $aa);
+	if (opendir(D, $dir)) {
+	    while ($_=readdir(D), defined($_)) {
+		/^$pat$/ || next;
+		$art="$dir/$_";
+		@S=stat($art);
+		if ($#S>=7) {
+		    if ($opt_N) {
+			print "   would delete $art" if ($opt_v>2);
+		    } else {
+			print "   deleting $art" if ($opt_v>2);
+			unlink $art;
+		    }
+		    ++$dart; ++$dino;
+		    printf " %d kb\n", $S[7]>>10 if ($opt_v>2);
+		    $dbb+=$S[7];
+		    $needk{$dev{$hdir}}-=$S[7]>>10;
+		    $needi{$dev{$hdir}}--;
+		}
+	    }
+	} else {
+	    printf "  (no dir %s)\n", $dir if ($opt_v>2);
+	}
+	$caf=sprintf("%s/%02x/%02x%02x.CF", $cdir, $bb, $aa, $cc);
+	@S=stat($caf);
+	if ($#S>=12) {
+	    if ($opt_N) {
+		print "   would delete $caf" if ($opt_v>2);
+	    } else {
+		print "   deleting $caf" if ($opt_v>2);
+		unlink $caf;
+	    }
+	    $y=0;
+	    if (open(C, $caf)) {
+		# try to find how much there is in the CAF
+		sysread(C, $_, 16);
+		@C=unpack("a4LLL", $_);
+		if ($C[0] eq "CRMT") {
+		    $y=$C[3]-$C[1];
+		    $dart+=$y;
+		}
+		close C;
+	    }
+	    ++$dcaf; ++$dino;
+	    if ($S[12]) {
+		$x=$S[12]*$S{"blocksize$;$C$;CAF"};
+	    } else {
+		$x=$S[7];
+		warn "hack around broken stat blocksize";
+	    }
+	    printf " %d arts %d kb\n", $y, $x>>10 if ($opt_v>2);
+	    $dbb+=$x;
+	    $needk{$dev{$cdir}}-=$x>>10;
+	    $needi{$dev{$cdir}}--;
+	}
+	$S{"work$;$C"}+=0x100;
+	$S{"oldest$;$C"}=$S{"work$;$C"} unless ($opt_N);
+    }
+}
+
+sub report
+{
+    $NOW=time;
+    my $cc=$S{"classes"};
+    my $nt=$S{"normaltime"};
+    unless ($cc && $nt) {
+	print "Not initialized.\n";
+	return;
+    }
+    printf "Version: %s (this: %s)\n", $S{"ID"}, $ID;
+    printf "Started at: %s\n", &xtime($S{"inittime"}) if ($S{"inittime"});
+    printf "Last run: %s\n", &xtime($S{"lastrun"}) if ($S{"lastrun"});
+    printf "Classes: %s\n", $cc;
+    foreach $c (split(/,/, $cc)) {
+	printf "Class %d:\n", $c;
+	#printf "  Initial count %d articles\n", $S{"count$;$c"};
+	printf "  Oldest article: %s\n", &xtime($S{"oldest$;$c"});
+	printf "  Expiring at:    %s\n", &xtime($S{"work$;$c"});
+	printf "  Normal time:    %s\n", &xtime($NOW-$nt*$c/100);
+	printf "  Filesystem block size (CAF): %d\n", $S{"blocksize$;$c$;CAF"};
+    }
+}
+
+sub wtime
+{
+    my $t=shift;
+    my @T=localtime($t);
+    sprintf("%04d-%02d-%02d %02d:%02d",
+	    $T[5]+1900, $T[4]+1, $T[3], $T[2], $T[1]);
+}
+
+sub xtime
+{
+    my $t=shift;
+    if ($NOW-$t<0 || $NOW-$t>350*24*60*60) {
+	return &wtime($t);
+    }
+    my @T=localtime($t);
+    my @D=gmtime($NOW-$t);
+    sprintf("%04d-%02d-%02d %02d:%02d (%dd %dh %dm)",
+	    $T[5]+1900, $T[4]+1, $T[3], $T[2], $T[1],
+	    $D[7], $D[2], $D[1]);
+}
+
+sub err
+{
+    printf STDERR "%s\n", shift;
+    &finish(0);
+}
+
+sub finish
+{
+    untie(%S);
+    unlink "$inn::innddir/thdexpire.pid";
+    exit 0;
+}
+#-----------------------------------------------------------------------------
