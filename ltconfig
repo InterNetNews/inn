@@ -834,8 +834,11 @@ else
     ;;
 
   sco3.2v5*)
-    archive_cmds='$LD -G -o $lib$libobjs'
-    hardcode_direct=yes
+    archive_cmds='$LD -G -h $soname -o $lib$libobjs$deplibs'
+    hardcode_shlibpath_var=no
+    runpath_var=LD_RUN_PATH
+    hardcode_runpath_var=yes
+    ld_shlibs=yes
     ;;
 
   solaris2*)
