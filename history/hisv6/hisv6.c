@@ -925,6 +925,7 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
     QIOSTATE *qp;
     void *p;
     size_t line;
+    char location[HISV6_MAX_LOCATION];
 
     if ((qp = QIOopen(h->histpath)) == NULL) {
 	hisv6_seterror(h, concat("can't QIOopen history file ",
@@ -953,8 +954,6 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 		hisv6_seterror(h, concat("callback failed ",
 					  h->histpath, NULL));
 	} else {
-	    char location[HISV6_MAX_LOCATION];
-
 	    hisv6_errloc(location, line, (off_t)-1);
 	    hisv6_seterror(h, concat(error, " ", h->histpath, location,
 				      NULL));
@@ -967,16 +966,16 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 
     if (p == NULL) {
 	/* read or line-format error? */
-	if (QIOerror(qp)) {
-	    hisv6_seterror(h, concat("can't read line ",
-				      h->histpath, strerror(errno), NULL));
-	    r = false;
-	    goto fail;
-	}
-
-	if (QIOtoolong(qp)) {
-	    hisv6_seterror(h, concat("line too long ",
-				      h->histpath, strerror(errno), NULL));
+	if (QIOerror(qp) || QIOtoolong(qp)) {
+	    hisv6_errloc(location, line, (off_t)-1);
+	    if (QIOtoolong(qp)) {
+		    hisv6_seterror(h, concat("line too long ",
+					     h->histpath, location, NULL));
+	    } else {
+		    hisv6_seterror(h, concat("can't read line ",
+					     h->histpath, location, " ",
+					     strerror(errno), NULL));
+	    }
 	    r = false;
 	    goto fail;
 	}
