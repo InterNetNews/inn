@@ -269,6 +269,7 @@ typedef struct _SITE {
     BOOL		ControlOnly;
     BOOL		DontWantNonExist;
     BOOL		NeedOverviewCreation;
+    BOOL		FeedwithoutOriginator;
     int			Hops;
     int			Groupcount;
     int			Followcount;
@@ -297,7 +298,7 @@ typedef struct _SITE {
     long		Flushpoint;
     BUFFER		Buffer;
     BOOL		Buffered;
-    char                *Originator;
+    char                **Originator;
     int			Next;
     int			Prev;
 } SITE;

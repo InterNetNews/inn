@@ -160,6 +160,36 @@ SITEsetlist(patlist, subbed, poison, poisonEntry)
     }
 }
 
+/*
+**  Split text into slash-separated fields.  Return an allocated
+**  NULL-terminated array of the fields within the modified argument that
+**  the caller is expected to save or free.  We don't use strchr() since
+**  the text is expected to be either relatively short or "slash-dense."
+*/
+char **
+SlashSplit(text)
+    char		*text;
+{
+    register int	i;
+    register char	*p;
+    register char	**av;
+    char		**save;
+
+    /* How much space do we need? */
+    for (i = 2, p = text; *p; p++)
+	if (*p == '/')
+	    i++;
+
+    for (av = save = NEW(char*, i), *av++ = p = text; *p; )
+	if (*p == '/') {
+	    *p++ = '\0';
+	    *av++ = p;
+	}
+	else
+	    p++;
+    *av = NULL;
+    return save;
+}
 
 /*
 **  Parse an individual site entry.  Subbed is used to build the subscription
@@ -202,6 +232,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->ControlOnly = FALSE;
     sp->DontWantNonExist = FALSE;
     sp->NeedOverviewCreation = FALSE;
+    sp->FeedwithoutOriginator = FALSE;
 
     /* Nip off the first field, the site name. */
     if ((f2 = strchr(Entry, NF_FIELD_SEP)) == NULL)
@@ -273,6 +304,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		case 'd': sp->DistRequired = TRUE;	break;
 		case 'e': sp->DontWantNonExist = TRUE;	break;
 		case 'o': sp->NeedOverviewCreation = TRUE;	break;
+		case 'O': sp->FeedwithoutOriginator = TRUE;	break;
 		case 'p': sp->IgnorePath = TRUE;	break;
 		}
 	    break;
@@ -330,7 +362,7 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	case 'O':
 	    if (*++p == '\0')
 		return "missing originator name for O param in field 3";
-	    sp->Originator = COPY(p);
+	    sp->Originator = SlashSplit(p);
 	    break;
         case 'P':
             if (*++p && CTYPE(isdigit, *p))

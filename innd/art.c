@@ -1447,9 +1447,10 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
     int 	        Groupcount;
     int			Followcount;
     int			Crosscount;
-    char	        *p;
+    char	        *p, *q;
     SITE	        *funnel;
     BUFFER	        *bp;
+    BOOL		sendit;
 
     /* Work out which sites should really get it. */
     Groupcount = Data->Groupcount;
@@ -1464,17 +1465,29 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list, 
 	sp->Sendit = FALSE;
 	
 	if (sp->Originator) {
-	    if (!HDR(_xtrace)[0])
-	        continue;
-	    if ((p = strchr(HDR(_xtrace), ' ')) != NULL) {
-	        *p = '\0';
-		if (!wildmat(HDR(_xtrace), sp->Originator)) {
-		    *p = ' ';
+	    if (!HDR(_xtrace)[0]) {
+		if (!sp->FeedwithoutOriginator)
 		    continue;
-		}
-		*p = ' ';
-	    } else
-	        continue;
+	    } else {
+		if ((p = strchr(HDR(_xtrace), ' ')) != NULL) {
+		    *p = '\0';
+		    for (j = 0, sendit = FALSE; (q = sp->Originator[j]) != NULL; j++) {
+		        if (*q == '@') {
+			    if (wildmat(HDR(_xtrace), &q[1])) {
+			        *p = ' ';
+			        continue;
+			    }
+		        } else {
+			    if (wildmat(HDR(_xtrace), q))
+			        sendit = TRUE;
+		        }
+		    }
+		    *p = ' ';
+		    if (!sendit)
+			continue;
+		} else
+		    continue;
+	    }
 	}
 
 	if (sp->Master != NOSITE && Sites[sp->Master].Seenit)
