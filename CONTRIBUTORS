@@ -57,7 +57,7 @@ Clayton O'Neill:
         and regular storage mechanisms with it.  He made significant
         modifications to dbz.  Integrating innfeed, adding Xref slaving,
         the history cache, the WIP rewrite and various speedups were
-        also his doing.
+        also his doing.  Provided the tradindexed overview mechanism.
 
 Vincent Archer:
         Wrote the initial autoconf scripts.
@@ -86,12 +86,12 @@ Sang-yong Suh:
         Provided the fuzzy offset technique to dbz.
 
 Katsuhiro Kondou:
-        Provided unified overview, trash method, spool translation method,
-        traditional expire policy for articles stored through storage API
-        and expireindex, as well has hundreds of fixes to clean up defects
-        as changes were made.  Did a large amount of man page documentation
-        and clean up.  Has also been a major force in the CVS pool
-        maintenace.
+        Provided unified overview, the buffindexed overview method, trash
+        storage method, spool translation method, traditional expire
+        policy for articles stored through storage API and expireindex, as
+        well has hundreds of fixes to clean up defects as changes were
+        made.  Did a large amount of man page documentation and clean up.
+        Has also been a major force in the CVS pool maintenace.
 
 Russell Vincent
         Expanded inn.conf to make many of the old compile time options
@@ -118,6 +118,25 @@ Russ Allbery:
         (especially the documentation and build system), and has helped
         with the CVS pool maintenance.  Improved the speed and portability
         of the Perl filter.
+
+Heath Kehoe:
+        Various portability and bug fixes, wrote the ovdb overview
+        mechanism that uses Berkeley DB.
+
+Richard Todd:
+        Implemented the timecaf and tradspool storage mechanisms, as well
+        as many bug fixes and other contributions.
+
+Greg Andruk
+        Provided controlchan, the channel-based implementation of control
+        message handling that is far more resistant to load.  Also wrote
+        the Python extension.
+
+Brian Kantor
+        Wrote the news2mail gateway.
+
+Kenichi OKADA
+        Added SSL and SASL support for nnrpd.
 
 Also:
 
