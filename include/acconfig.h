@@ -57,11 +57,6 @@
    for the full algorithm. */
 #define DO_MUNGE_GECOS
 
-/* Define if nnrpd should resolve client IP addresses to names.  If you only
-   use IP-based restrictions in readers.conf and can handle IP addresses in
-   your logs, not defining this may result in some additional speed. */
-#define DO_NNRP_GETHOSTBYADDR
-
 /* Define if rnews should try to connect to the local host. */
 #define DO_RNEWSLOCALCONNECT
 
