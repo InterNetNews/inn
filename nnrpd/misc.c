@@ -443,12 +443,10 @@ StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
 int
 RateLimit(long *sleeptime, char *path) 
 {
-     TIMEINFO                      Now;
-     long                          prevpost,prevsleep,prevn,n;
+    time_t now;
+    long prevpost, prevsleep, prevn, n;
 
-     if (GetTimeInfo(&Now) < 0) 
-       return 0;
-     
+     now = time(NULL);
      prevpost = 0L; prevsleep = 0L; prevn = 0L; n = 0L;
      if (!GetPostRecord(path,&prevpost,&prevsleep,&prevn)) {
        syslog(L_ERROR, "%s can't get post record: %s",
@@ -471,7 +469,7 @@ RateLimit(long *sleeptime, char *path)
        prevpost = 0L;
        prevn = 1L;
      } else {
-       n = Now.time - prevpost;
+       n = now - prevpost;
        if (n < 0L) {
          syslog(L_NOTICE,"%s previous post was in the future (%ld sec)",
                 ClientHost,n);
@@ -499,7 +497,7 @@ RateLimit(long *sleeptime, char *path)
      }
   
      /* Store the postrecord */
-     if (!StorePostRecord(path,Now.time,*sleeptime,prevn)) {
+     if (!StorePostRecord(path,now,*sleeptime,prevn)) {
        syslog(L_ERROR, "%s can't store post record: %s", ClientHost, strerror(errno));
        return 0;
      }
