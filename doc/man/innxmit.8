@@ -65,22 +65,19 @@ Each line in the batchfile should be in one of the following formats:
 .PP
 .RS
 .nf
-filename Message-ID * (see note)
-filename
+token Message-ID * (see note)
+token
 .fi
 .RE
 .PP
 The
-.I filename
+.I token
 field names the article to be sent.
-If it is not an absolute pathname it is taken relative to the news
-spool directory,
-.IR <patharticles\ in\ inn.conf> .
 If the
 .I Message-ID
 field is not specified, it will be obtained by scanning the article.
 The
-.I filename
+.I token
 and
 .I Message-Id
 fields are separated by a space.
