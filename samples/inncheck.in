@@ -3,6 +3,8 @@
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
+require "@prefix@/etc/innshellvars.pl" ;
+
 $ST_MODE = 2;
 $ST_UID  = 4;
 $ST_GID  = 5;
@@ -13,38 +15,38 @@ $newsgroup = '@NEWSGRP@';
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
 %paths = (
-    'active',		'@prefix@/etc/active',
-    'archive',		'@SPOOLDIR@/archive',
-    'badnews',		'@SPOOLDIR@/in.coming/bad',
-    'batchdir',		'@SPOOLDIR@/out.going',
-    'control.ctl',	'@prefix@/etc/control.ctl',
-    'ctlprogs',		'@prefix@/bin/control',
-    'expire.ctl',	'@prefix@/etc/expire.ctl',
-    'history',		'@prefix@/etc/history',
-    'hosts.nntp',	'@prefix@/etc/hosts.nntp',
-    'inews',		'@prefix@/bin/inews',
-    'inn.conf',		'@prefix@/etc/inn.conf',
-    'innd',		'@prefix@/bin/innd',
-    'innddir',		'@prefix@/run',
-    'inndstart',	'@prefix@/bin/inndstart',
-    'moderators',	'@prefix@/etc/moderators',
-    'most_logs',	'@LOGDIR@',
-    'newsbin',		'@prefix@/bin',
-    'newsboot',		'@prefix@/bin/rc.news',
-    'newsfeeds',	'@prefix@/etc/newsfeeds',
-    'overview.fmt',	'@prefix@/etc/overview.fmt',
-    'newslib',		'@prefix@/etc',
-    'nnrp.access',	'@prefix@/etc/nnrp.access',
-    'nnrpd',		'@prefix@/bin/nnrpd',
-    'nntpsend.ctl',	'@prefix@/etc/nntpsend.ctl',
-    'oldlogs',		'@LOGDIR@/OLD',
-    'parsectl',		'@prefix@/bin/parsecontrol',
-    'passwd.nntp',	'@prefix@/etc/passwd.nntp',
-    'rnews',		'@prefix@/bin/rnews',
-    'rnewsprogs',	'@prefix@/bin/rnews.libexec',
-    'spooltemp',	'@TMPPATH@',
-    'spool',		'@SPOOLDIR@/articles',
-    'spoolnews',	'@SPOOLDIR@/in.coming'
+    'active',		"$inn::pathdb/active",
+    'archive',		"$inn::patharchive",
+    'badnews',		"$inn::pathincoming/bad",
+    'batchdir',		"$inn::pathoutgoing",
+    'control.ctl',	"$inn::pathetc/control.ctl",
+    'ctlprogs',		"$inn::pathcontrol",
+    'expire.ctl',	"$inn::pathetc/expire.ctl",
+    'history',		"$inn::pathdb/history",
+    'hosts.nntp',	"$inn::pathetc/hosts.nntp",
+    'inews',		"$inn::pathbin/inews",
+    'inn.conf',		"$inn::pathetc/inn.conf",
+    'innd',		"$inn::pathbin/innd",
+    'innddir',		"$inn::pathrun",
+    'inndstart',	"$inn::pathbin/inndstart",
+    'moderators',	"$inn::pathetc/moderators",
+    'most_logs',	"$inn::pathlog",
+    'newsbin',		"$inn::pathbin",
+    'newsboot',		"$inn::pathbin/rc.news",
+    'newsfeeds',	"$inn::pathetc/newsfeeds",
+    'overview.fmt',	"$inn::pathetc/overview.fmt",
+    'newslib',		"$inn::pathetc",
+    'nnrp.access',	"$inn::pathetc/nnrp.access",
+    'nnrpd',		"$inn::pathbin/nnrpd",
+    'nntpsend.ctl',	"$inn::pathetc/nntpsend.ctl",
+    'oldlogs',		"$inn::pathlog/OLD",
+    'parsectl',		"$inn::pathbin/parsecontrol",
+    'passwd.nntp',	"$inn::pathetc/passwd.nntp",
+    'rnews',		"$inn::pathbin/rnews",
+    'rnewsprogs',	"$inn::pathbin/rnews.libexec",
+    'spooltemp',	"$inn::pathtmp",
+    'spool',		"$inn::patharticles",
+    'spoolnews',	"$inn::pathincoming"
 );
 
 ##  The sub's that check the config files.
@@ -64,17 +66,17 @@ $newsgroup = '@NEWSGRP@';
 
 ##  The modes of the config files we can check.
 %modes = (
-    'active',		0644,
-    'control.ctl',	0440,
-    'expire.ctl',	0440,
-    'hosts.nntp',	0440,
-    'inn.conf',		0444,
-    'moderators',	0444,
-    'newsfeeds',	0444,
-    'overview.fmt',	0444,
-    'nnrp.access',	0440,
-    'nntpsend.ctl',	0440,
-    'passwd.nntp',	0440
+    'active',		0664,
+    'control.ctl',	0640,
+    'expire.ctl',	0640,
+    'hosts.nntp',	0640,
+    'inn.conf',		0644,
+    'moderators',	0644,
+    'newsfeeds',	0644,
+    'overview.fmt',	0644,
+    'nnrp.access',	0640,
+    'nntpsend.ctl',	0640,
+    'passwd.nntp',	0640
 );
 
 
@@ -326,7 +328,29 @@ hosts_nntp
     'overviewmmap',		0,
     'allowreaders',		0,
     'bindaddress',		0,
-    'port',			0
+    'port',			0,
+    'doinnwatch',		0,
+    'pathnews',			0,
+    'pathbin',			0,
+    'pathfilter',		0,
+    'pathcontrol',		0,
+    'pathdb',			0,
+    'pathetc',			0,
+    'pathrun',			0,
+    'pathlog',			0,
+    'pathspool',		0,
+    'patharticles',		0,
+    'pathoverview',		0,
+    'pathoutgoing',		0,
+    'pathincoming',		0,
+    'patharchive',		0,
+    'mailcmd',			0,
+    'readertrack',		0,
+    'strippostcc',		0,
+    'complaints',		0,
+    'overviewname',		0,
+    'innflags',			0,
+    'doinnwatch',		0
 );
 %inn_conf'optionals = (
     'mime-version',		0,
