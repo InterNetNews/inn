@@ -465,6 +465,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 
     result = SMstore(arth);
     if (result.type == TOKEN_EMPTY) {
+	IOError("SMstore", SMerrno);
 	DISPOSE(artbuff);
 	return result;
     }
@@ -2131,6 +2132,7 @@ STRING ARTpost(CHANNEL *cp)
 		DISPOSE(distributions);
 	    ARTreject(buff, article);
 	    TMRstop(TMR_ARTWRITE);
+	    return buff;
 	}
 	TMRstop(TMR_ARTWRITE);
         strcpy(Files.Data, TokenToText(token));
