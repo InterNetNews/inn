@@ -58,11 +58,15 @@ Before You Begin
     * In order to build INN, you will need a C compiler that understands
       ANSI C.  If you are trying to install INN on an operating system that
       doesn't have an ANSI C compiler (such as SunOS), installing gcc is
-      recommended.  You can get it from <ftp://ftp.gnu.org/gcc/> or its
+      recommended.  You can get it from <ftp://ftp.gnu.org/gnu/gcc/> or its
       mirrors.  INN is tested with gcc more thoroughly than with any other
       compiler, so even if you have another compiler available, you may wish
       to use gcc instead (note that gcc has some known problems compiling
       calls to inet_ntoa() on IRIX platforms).
+
+    * Currently, in order to build INN, you will need an implementation of
+      yacc.  GNU bison (from <ftp://ftp.gnu.org/gnu/bison/> or its mirrors)
+      will work fine.  We hope to remove this requirement in the future.
 
     * INN requires at least Perl 5.003 to build and to run several
       subsystems, and requires at least 5.004 for embedded Perl filters to
