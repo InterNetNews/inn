@@ -342,9 +342,7 @@ AC_MSG_ERROR([--enable-tagged-hash conflicts with --enable-largefiles.])
     *)   AC_MSG_ERROR(invalid argument to --enable-largefiles) ;;
     esac])
 
-dnl In order to not pick up the wrong path to sendmail, we're conservative
-dnl about which sendmail we're willing to use.  A user-given value is used
-dnl later on.
+dnl Override the automatically detected path to sendmail.  Used later on.
 AC_ARG_WITH(sendmail,
     [  --with-sendmail=PATH    Path to sendmail],
     SENDMAIL=$with_sendmail)
@@ -742,28 +740,14 @@ else
 fi
 AC_SUBST(UNCOMPRESS)
 
-dnl The sendmail code takes this philosophy:  We assume that there are some
-dnl sites which don't have sendmail in the path for a reason, whatever that
-dnl may be.  And we also assume that there are some of those sites which
-dnl don't want us to automatically pick one from a likely place.  So we
-dnl detect it, then search for it, but then notify the human.
+dnl Search for sendmail, checking the path first and then some common
+dnl locations.  If --with-sendmail was given, that path overrides.
 if test "${with_sendmail+set}" = set ; then
     AC_MSG_CHECKING(for sendmail)
     AC_MSG_RESULT($SENDMAIL)
 else
-    AC_PATH_PROG(SENDMAIL, sendmail)
+    AC_PATH_PROG(SENDMAIL, sendmail, , "$PATH:/usr/sbin:/usr/lib")
     if test -z "$SENDMAIL" ; then
-        echo ''
-        echo 'No sendmail in path.  Looking in likely places....'
-        echo ''
-        AC_PATH_PROG(SENDMAIL, sendmail, ,
-            $PATH:/usr/sbin:/usr/lib:/usr/ucblib)
-        echo ''
-        if test -n "$SENDMAIL" ; then
-            echo "sendmail was found at $SENDMAIL.  If this is correct, re-run"
-            echo "with --with-sendmail=$SENDMAIL."
-            echo ''
-        fi
         AC_MSG_ERROR(sendmail not found, re-run with --with-sendmail)
     fi
 fi
