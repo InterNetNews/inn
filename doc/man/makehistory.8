@@ -157,6 +157,11 @@ for the best results.  An overview rebuild should not be done while the
 server is running.  Unless the existing overview is deleted, you may end
 up with problems like out-of-order overview entries, excessively large
 overview buffers, and the like.
+.PP
+If you are using ovdb as your overview method, you will want to have the
+ovdb processes running while rebuilding overview; otherwise, the Berkeley
+\&\s-1DB\s0 transaction logs will be extremely large by the time makehistory
+finishes.  You can start them with \fIovdb_init\fR\|(8).
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 .IP "\fB\-a\fR" 4
@@ -299,4 +304,4 @@ $Id$
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\fIdbz\fR\|(3), \fIactive\fR\|(5), \fIhistory\fR\|(5), \fIinn.conf\fR\|(5), \fIctlinnd\fR\|(8), \fIinnd\fR\|(8),
-\&\fImakedbz\fR\|(8).
+\&\fImakedbz\fR\|(8), \fIovdb_init\fR\|(8).
