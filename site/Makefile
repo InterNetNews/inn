@@ -47,7 +47,7 @@ PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	rmgroup sendme sendsys senduuname version parsecontrol writelog \
-	docheckgroups news.daily scanlogs controlchan expirerm \
+	docheckgroups news.daily scanlogs controlbatch controlchan expirerm \
 	tally.control nntpsend send-ihave send-nntp send-uucp \
 	sendbatch inncheck innstat pgpverify innwatch innreport \
 	innshellvars \
@@ -67,7 +67,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHBIN)/nntpsend $D$(PATHBIN)/send-ihave $D$(PATHBIN)/send-nntp \
 	$D$(PATHBIN)/send-uucp $D$(PATHBIN)/sendbatch $D$(PATHBIN)/inncheck \
 	$D$(PATHBIN)/innstat $D$(PATHBIN)/pgpverify $D$(PATHBIN)/innwatch \
-	$D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
+	$D$(PATHBIN)/controlbatch $D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
@@ -187,6 +187,7 @@ $D$(PATHLIB)/docheckgroups: docheckgroups ; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/news.daily: news.daily	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/scanlogs:	scanlogs	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/expirerm:	expirerm	; $(COPY_XPRI) $? $@
+$D$(PATHBIN)/controlbatch:	controlbatch	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/controlchan:	controlchan	; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/innmail:	innmail		; $(COPY_XPRI) $? $@
 $D$(PATHBIN)/tally.control: tally.control ; $(COPY_XPRI) $? $@
@@ -244,6 +245,7 @@ actsync.ign:	../samples/actsync.ign		; $(COPY) $? $@
 checkgroups:	../samples/checkgroups		; $(COPY) $? $@
 checkgroups.pl:	../samples/checkgroups.pl		; $(COPY) $? $@
 control.ctl:	../samples/control.ctl		; $(COPY) $? $@
+controlbatch:	../samples/controlbatch		; $(COPY) $? $@
 controlchan:	../samples/controlchan		; $(COPY) $? $@
 default:	../samples/default		; $(COPY) $? $@
 docheckgroups:	../samples/docheckgroups	; $(COPY) $? $@
