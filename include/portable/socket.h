@@ -114,6 +114,9 @@ extern const char *hstrerror(int);
 # define NO_RECOVERY    3
 # define NO_DATA        4
 #endif
+#ifndef NETDB_INTERNAL
+# define NETDB_INTERNAL -1
+#endif
 
 /* POSIX requires AI_ADDRCONFIG and AI_NUMERICSERV, but some implementations
    don't have them yet.  It's only used in a bitwise OR of flags, so defining
