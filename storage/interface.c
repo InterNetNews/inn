@@ -425,7 +425,6 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
     ARTHANDLE           *art;
 
     if (method_data[typetoindex[token.type]].initialized == INIT_FAIL) {
-	syslog(L_ERROR, "SM method initialization was failed");
 	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
@@ -474,7 +473,6 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
 
 void SMfreearticle(ARTHANDLE *article) {
     if (method_data[typetoindex[article->type]].initialized == INIT_FAIL) {
-	syslog(L_ERROR, "SM can't free article with initialization failed method");
 	return;
     }
     if (method_data[typetoindex[article->type]].initialized == INIT_NO && !InitMethod(typetoindex[article->type])) {
@@ -487,7 +485,6 @@ void SMfreearticle(ARTHANDLE *article) {
 BOOL SMcancel(TOKEN token) {
     if (method_data[typetoindex[token.type]].initialized == INIT_FAIL) {
 	SMseterror(SMERR_UNINIT, NULL);
-	syslog(L_ERROR, "SM can't cancel article with initialization failed method");
 	return;
     }
     if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
