@@ -26,10 +26,8 @@ YACC		= yacc -d
 NEWSGROUP	= news
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
-
-# Uncomment the next line if you don't have a inet_aton() in your
-# libraries (Solaris is one such OS).
-# EXTRA_SRC	= inet_addr.c
+## =()<EXTRA_SRC =  @<MISSING_INET_ATON>@>()=
+EXTRA_SRC =  inet_addr.c
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z $(DEFS)

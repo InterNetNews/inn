@@ -214,7 +214,7 @@ AC_FUNC_VFORK
 AC_FUNC_VPRINTF
 dnl Actually INN doesn't care about the rusage argument AC_FUNC_WAIT3
 AC_CHECK_FUNCS(fchmod getdtab gethostname getrlimit getrusage gettimeofday memchr memcmp memcpy memmove memset mkdir mkfifo mktemp select setbuffer setproctitle setsid socket)
-AC_CHECK_FUNCS(strcasecmp strchr strcspn strerror strrchr strspn strstr symlink sysconf syslog ulimit)
+AC_CHECK_FUNCS(strcasecmp strchr strcspn strerror strrchr strspn strstr symlink sysconf syslog ulimit inet_aton)
 AC_CHECK_FUNCS(waitpid)
 dnl
 AC_CACHE_CHECK(for return type of abort, ac_cv_type_abort, AC_TRY_COMPILE([#ifdef HAVE_STDLIB_H
@@ -526,6 +526,7 @@ dnl Missing sources
 MISSING_MAN=""
 MISSING_SRC=""
 MISSING_OBJ=""
+MISSING_INET_ATON=""
 if test ${ac_cv_func_strcasecmp} = "no"
 then
 	MISSING_MAN="strcasecmp.3 "
@@ -590,9 +591,14 @@ then
 	MISSING_SRC="${MISSING_SRC}strrchr.c "
 	MISSING_OBJ="${MISSING_OBJ}strrchr.o "
 fi
+if test ${ac_cv_func_inet_aton} = "no"
+then
+	MISSING_INET_ATON="${MISSING_INET_ATON}inet_addr.c "
+fi
 AC_SUBST(MISSING_MAN)
 AC_SUBST(MISSING_SRC)
 AC_SUBST(MISSING_OBJ)
+AC_SUBST(MISSING_INET_ATON)
 
 
 AC_OUTPUT(config/config.data)

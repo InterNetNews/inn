@@ -3619,7 +3619,7 @@ else
 fi
 done
 
-for ac_func in strcasecmp strchr strcspn strerror strrchr strspn strstr symlink sysconf syslog ulimit
+for ac_func in strcasecmp strchr strcspn strerror strrchr strspn strstr symlink sysconf syslog ulimit inet_aton
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:3626: checking for $ac_func" >&5
@@ -4912,6 +4912,7 @@ fi
 MISSING_MAN=""
 MISSING_SRC=""
 MISSING_OBJ=""
+MISSING_INET_ATON=""
 if test ${ac_cv_func_strcasecmp} = "no"
 then
 	MISSING_MAN="strcasecmp.3 "
@@ -4968,6 +4969,10 @@ if test ${ac_cv_func_strrchr} = "no"
 then
 	MISSING_SRC="${MISSING_SRC}strrchr.c "
 	MISSING_OBJ="${MISSING_OBJ}strrchr.o "
+fi
+if test ${ac_cv_func_inet_aton} = "no"
+then
+	MISSING_INET_ATON="inet_addr.c"
 fi
 
 
@@ -5204,6 +5209,7 @@ s%@ac_cv_subst_act_style@%$ac_cv_subst_act_style%g
 s%@MISSING_MAN@%$MISSING_MAN%g
 s%@MISSING_SRC@%$MISSING_SRC%g
 s%@MISSING_OBJ@%$MISSING_OBJ%g
+s%@MISSING_INET_ATON@%$MISSING_INET_ATON%g
 
 CEOF
 EOF
