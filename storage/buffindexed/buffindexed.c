@@ -257,6 +257,8 @@ STATIC BOOL GROUPexpand(int mode);
 STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type);
 STATIC void *ovopensearch(char *group, int low, int high, BOOL needov);
 STATIC void ovclosesearch(void *handle, BOOL freeblock);
+STATIC OVBLOCK	*Gib;
+STATIC char	*Gdb;
 
 #ifdef HPUX
 /* With HP/UX, you definitely do not want to mix mmap-accesses of
@@ -1607,16 +1609,26 @@ STATIC void ovgroupunmap(GROUPINDEXBLOCK *gib) {
 
   for (; gib != NULL ; gib = gibnext) {
     gibnext = gib->next;
-    (void)munmap(gib->addr, gib->len);
+    if (Gib == NULL)
+      (void)munmap(gib->addr, gib->len);
     DISPOSE(gib);
   }
   for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
     for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdbnext) {
       gdbnext = gdb->next;
-      (void)munmap(gdb->addr, gdb->len);
+      if (Gdb == NULL)
+        (void)munmap(gdb->addr, gdb->len);
       DISPOSE(gdb);
     }
     groupdatablock[i] = NULL;
+  }
+  if (Gib != NULL) {
+    DISPOSE(Gib);
+    Gib = NULL;
+  }
+  if (Gdb != NULL) {
+    DISPOSE(Gdb);
+    Gdb = NULL;
   }
 }
 
@@ -1637,16 +1649,35 @@ STATIC GROUPDATABLOCK *searchgdb(OV *ov) {
   return gdb;
 }
 
+STATIC int countgdb(void) {
+  int			i, count = 0;
+  GROUPDATABLOCK	*gdb;
+
+  for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
+    for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next)
+      count++;
+  }
+  return count;
+}
+
 STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int high, BOOL needov) {
   OV			ov = ge->baseindex;
   OVBUFF		*ovbuff;
   GROUPINDEXBLOCK	*gib, *gibprev = NULL;
   GROUPDATABLOCK	*gdb;
-  int			pagefudge, len, base, limit, i;
+  int			pagefudge, len, base, limit, i, count;
   OFFSET_T		offset, mmapoffset;
   OVBLOCK		*ovblock;
 
   *gibp = NULL;
+  Gdb = NULL;
+  if (innconf->ovmmapthreshold >= 0 && ((high - low) > innconf->ovmmapthreshold)) {
+    i = 0;
+    count = ((high - low + 1) / OVINDEXMAX) + 2;
+    Gib = NEW(OVBLOCK, count);
+  } else {
+    Gib = NULL;
+  }
   while (ov.index != NULLINDEX) {
     ovbuff = getovbuff(ov);
     if (ovbuff == NULL) {
@@ -1667,54 +1698,118 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
     gib->ovblock = ovblock = (OVBLOCK *)(gib->addr + pagefudge);
     gib->base = ovblock->ovindexhead.base;
     gib->baseoffset = ovblock->ovindexhead.baseoffset;
+    if (low > gib->base - gib->baseoffset + OVINDEXMAX - 1) {
+      ov = ovblock->ovindexhead.next;
+      munmap(gib->addr, gib->len);
+      DISPOSE(gib);
+      continue;
+    }
+    if (Gib != NULL) {
+      memcpy(&Gib[i], ovblock, OV_BLOCKSIZE);
+      munmap(gib->addr, gib->len);
+      gib->ovblock = ovblock = &Gib[i];
+      gib->base = ovblock->ovindexhead.base;
+      gib->baseoffset = ovblock->ovindexhead.baseoffset;
+      i++;
+    }
     gib->next = NULL;
     gib->ov = ov;
     if (gibprev)
       gibprev->next = gib;
     else
       *gibp = gib;
+    if (high + gib->baseoffset < gib->base)
+      break;
     gibprev = gib;
     ov = ovblock->ovindexhead.next;
   }
   if (!needov)
     return TRUE;
-  for (gib = *gibp ; gib != NULL ; gib = gib->next) {
-    if (low > gib->base - gib->baseoffset + OVINDEXMAX - 1)
-      continue;
-    if (high + gib->baseoffset < gib->base)
-      break;
-    if (low + gib->baseoffset < gib->base)
-      base = gib->baseoffset;
-    else
-      base = low - (gib->base - gib->baseoffset);
-    if (high >= gib->base - gib->baseoffset + OVINDEXMAX - 1)
-      limit = OVINDEXMAX;
-    else
-      limit = high - (gib->base - gib->baseoffset - 1);
-    for (i = base ; i < limit ; i++) {
-      ov.index = gib->ovblock->ovindex[i].index;
-      ov.blocknum = gib->ovblock->ovindex[i].blocknum;
-      gdb = searchgdb(&ov);
-      if (gdb != NULL)
-	continue;
-      ovbuff = getovbuff(ov);
-      if (ovbuff == NULL)
-	continue;
-      gdb = NEW(GROUPDATABLOCK, 1);
-      offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
-      pagefudge = offset % pagesize;
-      mmapoffset = offset - pagefudge;
-      gdb->len = pagefudge + OV_BLOCKSIZE;
-      if ((gdb->addr = mmap((caddr_t) 0, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
-	syslog(L_ERROR, "%s: ovgroupmmap could not mmap data block: %m", LocalLogName);
-	DISPOSE(gdb);
-	ovgroupunmap(*gibp);
-	return FALSE;
+  if (Gib != NULL) {
+    count = 0;
+    for (gib = *gibp ; gib != NULL ; gib = gib->next) {
+      if (low + gib->baseoffset < gib->base)
+        base = gib->baseoffset;
+      else
+        base = low - (gib->base - gib->baseoffset);
+      if (high >= gib->base - gib->baseoffset + OVINDEXMAX - 1)
+        limit = OVINDEXMAX;
+      else
+        limit = high - (gib->base - gib->baseoffset - 1);
+      for (i = base ; i < limit ; i++) {
+        ov.index = gib->ovblock->ovindex[i].index;
+        ov.blocknum = gib->ovblock->ovindex[i].blocknum;
+        gdb = searchgdb(&ov);
+        if (gdb != NULL)
+	  continue;
+        ovbuff = getovbuff(ov);
+        if (ovbuff == NULL)
+	  continue;
+        gdb = NEW(GROUPDATABLOCK, 1);
+        gdb->datablk = ov;
+        gdb->next = NULL;
+        insertgdb(&ov, gdb);
+        count++;
       }
-      gdb->datablk = ov;
-      gdb->data = gdb->addr + pagefudge;
-      gdb->next = NULL;
-      insertgdb(&ov, gdb);
+    }
+    Gdb = NEW(char, count * OV_BLOCKSIZE);
+    count = 0;
+    for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
+      for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next) {
+	ov = gdb->datablk;
+        ovbuff = getovbuff(ov);
+        offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
+        pagefudge = offset % pagesize;
+        mmapoffset = offset - pagefudge;
+        gdb->len = pagefudge + OV_BLOCKSIZE;
+        if ((gdb->addr = mmap((caddr_t) 0, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+	  syslog(L_ERROR, "%s: ovgroupmmap could not mmap data block: %m", LocalLogName);
+	  DISPOSE(gdb);
+	  ovgroupunmap(*gibp);
+	  return FALSE;
+        }
+        gdb->data = gdb->addr + pagefudge;
+        memcpy(&Gdb[count * OV_BLOCKSIZE], gdb->data, OV_BLOCKSIZE);
+        munmap(gdb->addr, gdb->len);
+	gdb->data = &Gdb[count * OV_BLOCKSIZE];
+	count++;
+      }
+    }
+  } else {
+    for (gib = *gibp ; gib != NULL ; gib = gib->next) {
+      if (low + gib->baseoffset < gib->base)
+        base = gib->baseoffset;
+      else
+        base = low - (gib->base - gib->baseoffset);
+      if (high >= gib->base - gib->baseoffset + OVINDEXMAX - 1)
+        limit = OVINDEXMAX;
+      else
+        limit = high - (gib->base - gib->baseoffset - 1);
+      for (i = base ; i < limit ; i++) {
+        ov.index = gib->ovblock->ovindex[i].index;
+        ov.blocknum = gib->ovblock->ovindex[i].blocknum;
+        gdb = searchgdb(&ov);
+        if (gdb != NULL)
+	  continue;
+        ovbuff = getovbuff(ov);
+        if (ovbuff == NULL)
+	  continue;
+        gdb = NEW(GROUPDATABLOCK, 1);
+        offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
+        pagefudge = offset % pagesize;
+        mmapoffset = offset - pagefudge;
+        gdb->len = pagefudge + OV_BLOCKSIZE;
+        if ((gdb->addr = mmap((caddr_t) 0, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+	  syslog(L_ERROR, "%s: ovgroupmmap could not mmap data block: %m", LocalLogName);
+	  DISPOSE(gdb);
+	  ovgroupunmap(*gibp);
+	  return FALSE;
+        }
+        gdb->datablk = ov;
+        gdb->data = gdb->addr + pagefudge;
+        gdb->next = NULL;
+        insertgdb(&ov, gdb);
+      }
     }
   }
   return TRUE;
@@ -1900,6 +1995,7 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
   OVBLKS	*ovblks;
   OFFSET_T	offset, mmapoffset;
   caddr_t	addr;
+  char		*gib = NULL;
 
   if (type != PREPEND_BLK && type != APPEND_BLK)
     return FALSE;
@@ -1910,6 +2006,9 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
   ovblks = NEW(OVBLKS, nblocks);
   memset(ovblks, '\0', sizeof(OVBLKS) * nblocks);
 
+  if (innconf->ovmmapthreshold >= 0 && (delta > innconf->ovmmapthreshold)) {
+    gib = NEW(char, nblocks * OV_BLOCKSIZE);
+  }
   for (i = 0 ; i < nblocks ; i++ ) {
     if (type == PREPEND_BLK) {
       if (ge->base < ((nblocks - i) * OVINDEXMAX))
@@ -1932,15 +2031,19 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
       syslog(L_ERROR, "%s: ovaddblk could not get ovbuff block", LocalLogName);
       break;
     }
-    offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
-    pagefudge = offset % pagesize;
-    mmapoffset = offset - pagefudge;
-    ovblks[i].len = pagefudge + OV_BLOCKSIZE;
-    if ((ovblks[i].addr = mmap(0, ovblks[i].len, PROT_READ | PROT_WRITE, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR)-1) {
-      syslog(L_ERROR, "%s: ovaddblk could not mmap %dth block: %m", LocalLogName, i);
-      break;
+    if (gib == NULL) {
+      offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
+      pagefudge = offset % pagesize;
+      mmapoffset = offset - pagefudge;
+      ovblks[i].len = pagefudge + OV_BLOCKSIZE;
+      if ((ovblks[i].addr = mmap(0, ovblks[i].len, PROT_READ | PROT_WRITE, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR)-1) {
+        syslog(L_ERROR, "%s: ovaddblk could not mmap %dth block: %m", LocalLogName, i);
+        break;
+      }
+      ovblks[i].ovblock = (OVBLOCK *)(ovblks[i].addr + pagefudge);
+    } else {
+      ovblks[i].ovblock = (OVBLOCK *)&gib[i*OV_BLOCKSIZE];
     }
-    ovblks[i].ovblock = (OVBLOCK *)(ovblks[i].addr + pagefudge);
     memset(ovblks[i].ovblock, '\0', OV_BLOCKSIZE);
     for (j = 0 ; j < OVINDEXMAX ; j++)
       ovblks[i].ovblock->ovindex[j].index = NULLINDEX;
@@ -1956,9 +2059,11 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
 #else
       ovblockfree(ovblks[i].indexov);
 #endif /* OV_DEBUG */
-      if (ovblks[i].addr > (MMAP_PTR)0)
+      if (gib == NULL && ovblks[i].addr > (MMAP_PTR)0)
 	munmap(ovblks[i].addr, ovblks[i].len);
     }
+    if (gib != NULL)
+      DISPOSE(gib);
     DISPOSE(ovblks);
     return FALSE;
   }
@@ -1971,8 +2076,11 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
 #else
 	ovblockfree(ovblks[i].indexov);
 #endif /* OV_DEBUG */
-	munmap(ovblks[i].addr, ovblks[i].len);
+	if (gib == NULL)
+	  munmap(ovblks[i].addr, ovblks[i].len);
       }
+      if (gib != NULL)
+	DISPOSE(gib);
       DISPOSE(ovblks);
       return FALSE;
     }
@@ -1988,8 +2096,11 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
 #else
 	ovblockfree(ovblks[i].indexov);
 #endif /* OV_DEBUG */
-	munmap(ovblks[i].addr, ovblks[i].len);
+	if (gib == NULL)
+	  munmap(ovblks[i].addr, ovblks[i].len);
       }
+      if (gib != NULL)
+	DISPOSE(gib);
       DISPOSE(ovblks);
       return FALSE;
     }
@@ -2024,8 +2135,11 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
 #else
 	ovblockfree(ovblks[i].indexov);
 #endif /* OV_DEBUG */
-	munmap(ovblks[i].addr, ovblks[i].len);
+	if (gib == NULL)
+	  munmap(ovblks[i].addr, ovblks[i].len);
       }
+      if (gib != NULL)
+	DISPOSE(gib);
       DISPOSE(ovblks);
       return FALSE;
     }
@@ -2041,8 +2155,11 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
 #else
 	ovblockfree(ovblks[i].indexov);
 #endif /* OV_DEBUG */
-	munmap(ovblks[i].addr, ovblks[i].len);
+	if (gib == NULL)
+	  munmap(ovblks[i].addr, ovblks[i].len);
       }
+      if (gib != NULL)
+	DISPOSE(gib);
       DISPOSE(ovblks);
       return FALSE;
     }
@@ -2066,8 +2183,26 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
     }
   }
   munmap(addr, len);
-  for (i = 0 ; i < nblocks ; i++ )
-    munmap(ovblks[i].addr, ovblks[i].len);
+  if (gib == NULL) {
+    for (i = 0 ; i < nblocks ; i++ )
+      munmap(ovblks[i].addr, ovblks[i].len);
+  }
+  if (gib != NULL) {
+    for (i = 0 ; i < nblocks ; i++ ) {
+      ov = ovblks[i].indexov;
+      if ((ovbuff = getovbuff(ov)) == NULL)
+	break;
+#ifdef HPUX
+      if (mmapwrite(ovbuff->fd, (POINTER)ovblks[i].ovblock, sizeof(OVBLOCK), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(OVBLOCK)) {
+#else
+      if (pwrite(ovbuff->fd, (POINTER)ovblks[i].ovblock, sizeof(OVBLOCK), ovbuff->base + (ov.blocknum * OV_BLOCKSIZE)) != sizeof(OVBLOCK)) {
+#endif /* HPUX */
+	syslog(L_ERROR, "%s: ovaddblk could not append overview record index '%d', blocknum '%d': %m", LocalLogName, ov.index, ov.blocknum);
+	break;
+      }
+    }
+    DISPOSE(gib);
+  }
   DISPOSE(ovblks);
   return TRUE;
 }
