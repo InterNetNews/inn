@@ -267,34 +267,6 @@ administrator is already doing something special.
 
 ------------------------------
 
-  Summary: nnrpd doesn't handle zero-argument LISTGROUP
- Standard: draft-ietf-nntpext-base-13.txt, section 9.5.1.1
-  Version: 2.3 to CURRENT 2001-07-04
-Reference: nnrpd/group.c CMDgroup()
- Severity: Violates a MUST
-
-The standard says:
-
-    The LISTGROUP command is used to get a listing of all the article
-    numbers in a particular newsgroup.  The optional parameter ggg is the
-    name of the newsgroup to be selected (e.g. "news.software.b").  A list
-    of valid newsgroups may be obtained from the LIST command.  If no
-    group is specified, the current group is used as the default argument.
-
-nnrpd currently rejects LISTGROUP commands that don't specify a group,
-however (and with an error code of 481, which isn't one of the specified
-return codes for LISTGROUP).
-
-Impact:  A client that attempts to use LISTGROUP to list the valid
-articles in the current newsgroup will fail and get back a confusing error
-code.
-
-Suggested fix:  Add this functionality to the LISTGROUP implementation.
-It may be best (and will likely be cleaner) to split LISTGROUP out of the
-handler for GROUP into its own function.
-
-------------------------------
-
   Summary: nnrpd doesn't return 420 errors when there is no overview info
  Standard: draft-ietf-nntpext-base-13.txt, section 9.5.2.2
   Version: 1.4 to CURRENT 2001-07-07
