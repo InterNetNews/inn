@@ -39,7 +39,6 @@ backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
 backends/controlbatch.in              Batch program for controlchan
 backends/controlchan.in               Channel program for control messages
-backends/crosspost.c                  Crosspost link maker
 backends/cvtbatch.c                   Add fields to simple batchfile
 backends/filechan.c                   Split a funnel into separate files
 backends/inndf.c                      df used for innwatch
@@ -104,7 +103,6 @@ doc/man/cnfsstat.8                    Manpage for cnfsstat
 doc/man/control.ctl.5                 Manpage for control.ctl config file
 doc/man/controlchan.8                 Manpage for controlchan backend
 doc/man/convdate.1                    Manpage for convdate utility
-doc/man/crosspost.8                   Manpage for crosspost backend
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
 doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
@@ -113,7 +111,6 @@ doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
 doc/man/expire.8                      Manpage for expire
 doc/man/expire.ctl.5                  Manpage for expire.ctl config file
-doc/man/expireindex.8                 Manpage for expireindex
 doc/man/expireover.8                  Manpage for expireover
 doc/man/expirerm.8                    Manpage for expirerm
 doc/man/fastrm.8                      Manpage for fastrm utility
