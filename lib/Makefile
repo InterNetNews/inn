@@ -9,9 +9,9 @@ SOURCES = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
 	fdflags.c fdlimit.c findheader.c fseeko.c ftello.c genid.c \
 	getconfig.c getfqdn.c getmodaddr.c getpagesize.c gettime.c hash.c \
-	hashtab.c hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
-	lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c mmap.c \
-	parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
+	hashtab.c hstrerror.c inet_aton.c inet_ntoa.c innconf.c inndcomm.c \
+	localopen.c lockfile.c makedir.c md5.c memcmp.c messages.c mkstemp.c \
+	mmap.c parsedate.c perl.c pread.c pwrite.c qio.c radix32.c readin.c \
 	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
 	sequence.c setenv.c setproctitle.c sockaddr.c strcasecmp.c \
 	strerror.c strlcat.c strlcpy.c strspn.c strtok.c timer.c uwildmat.c \
@@ -21,11 +21,11 @@ OBJECTS = $(LIBOBJS) \
 	buffer.o cleanfrom.o clientactive.o clientlib.o concat.o conffile.o \
 	confparse.o daemonize.o date.o dbz.o defdist.o fdflags.o fdlimit.o \
 	findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o gettime.o \
-	hash.o hashtab.o inndcomm.o localopen.o lockfile.o makedir.o md5.o \
-	messages.o mmap.o parsedate.o qio.o radix32.o readin.o remopen.o \
-	reservedfd.o resource.o sendarticle.o sendpass.o sequence.o \
-	sockaddr.o timer.o uwildmat.o vector.o version.o wire.o xfopena.o \
-	xmalloc.o xsignal.o xwrite.o
+	hash.o hashtab.o innconf.o inndcomm.o localopen.o lockfile.o \
+	makedir.o md5.o messages.o mmap.o parsedate.o qio.o radix32.o \
+	readin.o remopen.o reservedfd.o resource.o sendarticle.o sendpass.o \
+	sequence.o sockaddr.o timer.o uwildmat.o vector.o version.o wire.o \
+	xfopena.o xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -160,6 +160,10 @@ inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
+innconf.o: innconf.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/confparse.h \
+ ../include/inn/innconf.h ../include/inn/messages.h \
+ ../include/libinn.h ../include/macros.h ../include/paths.h
 inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h \
  ../include/portable/socket.h ../include/inndcomm.h \
@@ -183,7 +187,9 @@ mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/messages.h ../include/inn/mmap.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
-perl.o: perl.c ../include/config.h ../include/inn/defines.h
+perl.o: perl.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/ppport.h ../include/innperl.h
 pread.o: pread.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
@@ -222,8 +228,10 @@ sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
 strcasecmp.o: strcasecmp.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h
 strerror.o: strerror.c ../include/config.h ../include/inn/defines.h
-strlcat.o: strlcat.c ../include/config.h ../include/inn/defines.h
-strlcpy.o: strlcpy.c ../include/config.h ../include/inn/defines.h
+strlcat.o: strlcat.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+strlcpy.o: strlcpy.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
 strspn.o: strspn.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
