@@ -34,7 +34,7 @@ STATIC CHANNEL	*CHANrc;
 /*
 **  Append data to a buffer.
 */
-void BUFFappend(BUFFER *bp, char *p, int len) {
+void BUFFappend(BUFFER *bp, const char *p, const int len) {
     int i;
     
     if (len == 0)
@@ -54,11 +54,7 @@ void BUFFappend(BUFFER *bp, char *p, int len) {
 **  Set a buffer's contents, ignoring anything that might have
 **  been there.
 */
-void
-BUFFset(bp, p, length)
-    register BUFFER	*bp;
-    register char	*p;
-    register int	length;
+void BUFFset(BUFFER *bp, const char *p, const int length)
 {
     if ((bp->Left = length) != 0) {
 	/* Need more space? */
@@ -77,10 +73,7 @@ BUFFset(bp, p, length)
 /*
 **  Swap the contents of two buffers.
 */
-void
-BUFFswap(b1, b2)
-    register BUFFER	*b1;
-    register BUFFER	*b2;
+void BUFFswap(BUFFER *b1, BUFFER *b2)
 {
     BUFFER		b;
 
@@ -93,11 +86,9 @@ BUFFswap(b1, b2)
 /*
 **  Initialize all the I/O channels.
 */
-void
-CHANsetup(i)
-    register int	i;
+void CHANsetup(int i)
 {
-    register CHANNEL	*cp;
+    CHANNEL	        *cp;
 
     FD_ZERO(&RCHANmask);
     FD_ZERO(&SCHANmask);
@@ -118,15 +109,10 @@ CHANsetup(i)
 /*
 **  Create a channel from a descriptor.
 */
-CHANNEL *
-CHANcreate(fd, Type, State, Reader, WriteDone)
-    int			fd;
-    CHANNELTYPE		Type;
-    CHANNELSTATE	State;
-    FUNCPTR		Reader;
-    FUNCPTR		WriteDone;
+CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
+		    FUNCPTR Reader, FUNCPTR WriteDone)
 {
-    register CHANNEL	*cp;
+    CHANNEL	        *cp;
     BUFFER		in;
     BUFFER		out;
 
@@ -198,10 +184,7 @@ CHANcreate(fd, Type, State, Reader, WriteDone)
 /*
 **  Start tracing a channel.
 */
-void
-CHANtracing(cp, Flag)
-    register CHANNEL	*cp;
-    BOOL		Flag;
+void CHANtracing(CHANNEL *cp, BOOL Flag)
 {
     char		*p;
 
@@ -229,10 +212,7 @@ CHANtracing(cp, Flag)
 /*
 **  Close a channel.
 */
-void
-CHANclose(cp, name)
-    register CHANNEL	*cp;
-    char		*name;
+void CHANclose(CHANNEL *cp, char *name)
 {
     if (cp->Type == CTfree)
 	syslog(L_ERROR, "%s internal closing free channel %d", name, cp->fd);
@@ -287,13 +267,11 @@ CHANclose(cp, name)
 /*
 **  Return a printable name for the channel.
 */
-char *
-CHANname(cp)
-    register CHANNEL	*cp;
+char *CHANname(const CHANNEL *cp)
 {
     static char		buff[SMBUF];
-    register int	i;
-    register SITE	*sp;
+    int	                i;
+    SITE	        *sp;
     STRING		p;
     PID_T		pid;
 
@@ -352,9 +330,7 @@ CHANname(cp)
 /*
 **  Return the channel for a specified descriptor.
 */
-CHANNEL *
-CHANfromdescriptor(fd)
-    int		fd;
+CHANNEL *CHANfromdescriptor(int fd)
 {
     if (fd <0 || fd > CHANtablesize)
 	return NULL;
@@ -365,13 +341,10 @@ CHANfromdescriptor(fd)
 /*
 **  Iterate over all channels of a specified type.
 */
-CHANNEL *
-CHANiter(ip, Type)
-    int			*ip;
-    CHANNELTYPE		Type;
+CHANNEL *CHANiter(int *ip, CHANNELTYPE Type)
 {
-    register CHANNEL	*cp;
-    register int	i;
+    CHANNEL	        *cp;
+    int	                i;
 
     if ((i = *ip) >= 0 && i < CHANtablesize) {
 	do {
@@ -391,9 +364,7 @@ CHANiter(ip, Type)
 /*
 **  Mark a channel as an active reader.
 */
-void
-RCHANadd(cp)
-    register CHANNEL	*cp;
+void RCHANadd(CHANNEL *cp)
 {
     FD_SET(cp->fd, &RCHANmask);
     if (cp->fd > CHANlastfd)
@@ -407,9 +378,7 @@ RCHANadd(cp)
 /*
 **  Remove a channel from the set of readers.
 */
-void
-RCHANremove(cp)
-    register CHANNEL	*cp;
+void RCHANremove(CHANNEL *cp)
 {
     if (FD_ISSET(cp->fd, &RCHANmask)) {
 	FD_CLR(cp->fd, &RCHANmask);
@@ -428,13 +397,7 @@ RCHANremove(cp)
 **  Put a channel to sleep, call a function when it wakes.
 **  Note that the Argument must be NULL or allocated memory!
 */
-void
-SCHANadd(cp, Waketime, Event, Waker, Argument)
-    register CHANNEL	*cp;
-    time_t		Waketime;
-    POINTER		Event;
-    FUNCPTR		Waker;
-    POINTER		Argument;
+void SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event, POINTER Waker, POINTER Argument)
 {
     if (!FD_ISSET(cp->fd, &SCHANmask)) {
 	SCHANcount++;
@@ -455,9 +418,7 @@ SCHANadd(cp, Waketime, Event, Waker, Argument)
 /*
 **  Take a channel off the sleep list.
 */
-void
-SCHANremove(cp)
-    register CHANNEL	*cp;
+void SCHANremove(CHANNEL *cp)
 {
     if (FD_ISSET(cp->fd, &SCHANmask)) {
 	FD_CLR(cp->fd, &SCHANmask);
@@ -476,9 +437,7 @@ SCHANremove(cp)
 /*
 **  Is a channel on the sleep list?
 */
-BOOL
-CHANsleeping(cp)
-    CHANNEL	*cp;
+BOOL CHANsleeping(CHANNEL *cp)
 {
     return FD_ISSET(cp->fd, &SCHANmask);
 }
@@ -487,12 +446,10 @@ CHANsleeping(cp)
 /*
 **  Wake up channels waiting for a specific event.
 */
-void
-SCHANwakeup(Event)
-    register POINTER	Event;
+void SCHANwakeup(POINTER *Event)
 {
-    register CHANNEL	*cp;
-    register int	i;
+    CHANNEL	        *cp;
+    int	                i;
 
     for (cp = CHANtable, i = CHANtablesize; --i >= 0; cp++)
 	if (cp->Type != CTfree && cp->Event == Event && CHANsleeping(cp))
@@ -504,9 +461,7 @@ SCHANwakeup(Event)
 **  Mark a channel as an active writer.  Don't reset the Out->Left field
 **  since we could have buffered I/O already in there.
 */
-void
-WCHANadd(cp)
-    register CHANNEL	*cp;
+void WCHANadd(CHANNEL *cp)
 {
     if (cp->Out.Left > 0) {
 	FD_SET(cp->fd, &WCHANmask);
@@ -519,9 +474,7 @@ WCHANadd(cp)
 /*
 **  Remove a channel from the set of writers.
 */
-void
-WCHANremove(cp)
-    register CHANNEL	*cp;
+void WCHANremove(CHANNEL *cp)
 {
     if (FD_ISSET(cp->fd, &WCHANmask)) {
 	FD_CLR(cp->fd, &WCHANmask);
@@ -544,10 +497,7 @@ WCHANremove(cp)
 /*
 **  Set a channel to start off with the contents of an existing channel.
 */
-void
-WCHANsetfrombuffer(cp, bp)
-    CHANNEL	*cp;
-    BUFFER	*bp;
+void WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp)
 {
     WCHANset(cp, &bp->Data[bp->Used], bp->Left);
 }
@@ -557,12 +507,10 @@ WCHANsetfrombuffer(cp, bp)
 /*
 **  Read in text data, return the amount we read.
 */
-int
-CHANreadtext(cp)
-    register CHANNEL	*cp;
+int CHANreadtext(CHANNEL *cp)
 {
-    register int	i;
-    register BUFFER	*bp;
+    int	                i;
+    BUFFER	        *bp;
     char		*p;
     int			oerrno;
 
@@ -655,12 +603,10 @@ CHANwrite(fd, p, length)
 /*
 **  Try to flush out the buffer.  Use this only on file channels!
 */
-BOOL
-WCHANflush(cp)
-    register CHANNEL	*cp;
+BOOL WCHANflush(CHANNEL *cp)
 {
-    register BUFFER	*bp;
-    register int	i;
+    BUFFER	        *bp;
+    int	                i;
 
     /* Write it. */
     for (bp = &cp->Out; bp->Left > 0; bp->Left -= i, bp->Used += i) {
@@ -778,8 +724,7 @@ CHANdiagnose()
 **
 **  Yes, the main code has really wandered over to the side a lot.
 */
-void
-CHANreadloop()
+void CHANreadloop(void)
 {
     static char		EXITING[] = "INND exiting because of signal\n";
     static int		fd;

@@ -146,15 +146,14 @@ void SITEmark(SITE *sp, NEWSGROUP *ngp) {
 /*
 **
 */
-BOOL
-ARTreadschema()
+BOOL ARTreadschema(void)
 {
     static char			SCHEMA[] = _PATH_SCHEMA;
-    register FILE		*F;
-    register int		i;
-    register char		*p;
-    register ARTOVERFIELD	*fp;
-    register ARTHEADER		*hp;
+    FILE		        *F;
+    int		                i;
+    char	 	        *p;
+    ARTOVERFIELD	        *fp;
+    ARTHEADER		        *hp;
     BOOL			ok;
     char			buff[SMBUF];
 
@@ -256,13 +255,12 @@ ARTcompare(p1, p2)
 /*
 **  Setup the article processing.
 */
-void
-ARTsetup()
+void ARTsetup(void)
 {
-    register STRING	p;
-    register ARTHEADER	*hp;
+    STRING	        p;
+    ARTHEADER	        *hp;
     ARTHEADER		**table;
-    register int	i;
+    int	                i;
 
     /* Set up the character class tables.  These are written a
      * little strangely to work around a GCC2.0 bug. */
@@ -327,10 +325,9 @@ ARTfreetree(tp)
 }
 
 
-void
-ARTclose()
+void ARTclose(void)
 {
-    register ARTHEADER	*hp;
+    ARTHEADER	*hp;
 
     /* Free space in the header table. */
     for (hp = ARTheaders; hp < ENDOF(ARTheaders); hp++)
@@ -396,12 +393,10 @@ ARTreadfile(name)
 **  Open the article file and return a copy of it.  The files parameter is
 **  actually a whitespace-separated list of names.
 */
-char *
-ARTreadarticle(files)
-    register char	*files;
+char *ARTreadarticle(char *files)
 {
-    register char	*p;
-    register BOOL	more;
+    char	        *p;
+    BOOL	        more;
     char		*art;
 
     if (files == NULL)
@@ -433,12 +428,10 @@ ARTreadarticle(files)
 /*
 **  Open the article file and return a copy of the headers.
 */
-char *
-ARTreadheader(files)
-    char		*files;
+char *ARTreadheader(char *files)
 {
-    register char	*p;
-    register char	*head;
+    char	        *p;
+    char	        *head;
 
     if ((head = ARTreadarticle(files)) == NULL)
 	return NULL;
@@ -798,15 +791,13 @@ ARTparseheader(in, out, deltap, errorp)
 **  in <#*tyo2'~n@twinsun.com>, with additional email discussion.
 **  Thanks, Paul.
 */
-BOOL
-ARTidok(save)
-    char		*save;
+BOOL ARTidok(char *MessageID)
 {
-    register int	c;
-    register char	*p;
+    int	                c;
+    char	        *p;
 
     /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
-    p = save;
+    p = MessageID;
     if (*p++ != '<')
 	return FALSE;
     for (; ; p++) {
@@ -1109,7 +1100,7 @@ STATIC char *ARTcancelverify(ARTDATA *Data, char *MessageID, HASH hash)
 /*
 **  Process a cancel message.
 */
-void ARTcancel(ARTDATA *Data, char *MessageID, BOOL Trusted)
+void ARTcancel(ARTDATA *Data, char *MessageID, const BOOL Trusted)
 {
     char	        *files;
     char	        *p;
@@ -2318,7 +2309,7 @@ STRING ARTpost(CHANNEL *cp)
     }
 
     /* Update history if we didn't get too many I/O errors above. */
-    if (Data.MessageID && (Mode != OMrunning) || !HISwrite(&Data, hash, Files.Data)) {
+    if (Data.MessageID && (Mode != OMrunning) && !HISwrite(&Data, hash, Files.Data)) {
 	i = errno;
 	syslog(L_ERROR, "%s cant write history %s %m", LogName, Data.MessageID);
 	(void)sprintf(buff, "%d cant write history, %s",

@@ -435,42 +435,41 @@ extern void		ThrottleIOError();
 extern void		ReopenLog();
 extern void		xchown();
 
-extern BOOL		ARTidok();
-extern BOOL		ARTreadschema();
-extern char		*ARTreadarticle();
-extern char		*ARTreadheader();
-extern STRING		ARTpost();
-extern void		ARTcancel();
-extern void		ARTclose();
-extern void		ARTsetup();
+extern BOOL		ARTidok(char *MessageID);
+extern BOOL		ARTreadschema(void);
+extern char		*ARTreadarticle(char *files);
+extern char		*ARTreadheader(char *files);
+extern STRING		ARTpost(CHANNEL *cp);
+extern void		ARTcancel(ARTDATA *Data, char *MessageID, const BOOL Trusted);
+extern void		ARTclose(void);
+extern void		ARTsetup(void);
 
-extern void		BUFFset();
-extern void		BUFFswap();
-extern void             BUFFappend();
+extern void		BUFFset(BUFFER *bp, const char *p, const int length);
+extern void		BUFFswap(BUFFER *b1, BUFFER *b2);
+extern void             BUFFappend(BUFFER *bp, const char *p, const int len);
 
-extern BOOL		CHANsleeping();
-extern CHANNEL		*CHANcreate();
-extern CHANNEL		*CHANiter();
-extern CHANNEL		*CHANfromdescriptor();
-extern char		*CHANname();
-extern int		CHANreadtext();
-extern void		CHANclose();
-extern void		CHANreadloop();
-extern void		CHANsetup();
-extern void		CHANtracing();
+extern BOOL		CHANsleeping(CHANNEL *cp);
+extern CHANNEL		*CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE STate, FUNCPTR Reader, FUNCPTR WriteDone);
+extern CHANNEL		*CHANiter(int *cp, CHANNELTYPE Type);
+extern CHANNEL		*CHANfromdescriptor(int fd);
+extern char		*CHANname(const CHANNEL *cp);
+extern int		CHANreadtext(CHANNEL *cp);
+extern void		CHANclose(CHANNEL *cp, char *name);
+extern void		CHANreadloop(void);
+extern void		CHANsetup(int i);
+extern void		CHANtracing(CHANNEL *cp, BOOL Flag);
 
-extern void		RCHANadd();
-extern void		RCHANremove();
+extern void		RCHANadd(CHANNEL *cp);
+extern void		RCHANremove(CHANNEL *cp);
 
-extern void		SCHANadd();
-extern void		SCHANremove();
-extern void		SCHANwakeup();
+extern void		SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event, POINTER Waker, POINTER Argument);
+extern void		SCHANremove(CHANNEL *cp);
+extern void		SCHANwakeup(POINTER *Event);
 
-extern BOOL		WCHANflush();
-extern void		WCHANadd();
-extern void		WCHANfappend();
-extern void		WCHANremove();
-extern void		WCHANsetfrombuffer();
+extern BOOL		WCHANflush(CHANNEL *cp);
+extern void		WCHANadd(CHANNEL *cp);
+extern void		WCHANremove(CHANNEL *cp);
+extern void		WCHANsetfrombuffer(CHANNEL *cp, BUFFER *bp);
 
 extern void		CCcopyargv();
 extern STRING		CCblock();

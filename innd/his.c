@@ -334,8 +334,6 @@ BOOL HISremember(const HASH hash)
 {
     long		offset;
     int			i;
-    char                *p;
-
 
     offset = ftell(HISwritefp);
     /* Convert the hash to hex */
