@@ -49,6 +49,7 @@ extendeddbz:		false
 nnrpdoverstats:		false
 storeonxref:		true
 nnrpdcheckart:		true
+storemsgid:		true
 backoff_auth:		false
 backoff_db:		@DBDIR@/backoff
 backoff_postfast:	0L

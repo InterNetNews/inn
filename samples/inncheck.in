@@ -351,6 +351,7 @@ incoming_conf
     'storeonxref',		0,
     'refusecybercancels',	0,
     'nnrpdcheckart',		0,
+    'storemsgid',		0,
     'activedenable',		0,
     'activedupdate',		0,
     'activedport',		0,
