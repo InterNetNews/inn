@@ -8,9 +8,14 @@
 ##  convert existing INN configuration files to the syntax expected by the
 ##  current version, if that's changed.
 ##
+##  Note that this script cannot use innshellvars.pl, since loading that file
+##  requires innconfval be able to parse inn.conf, and until this script runs,
+##  inn.conf may not be valid.
+##
 ##  Currently handles the following conversions:
 ##
 ##   * Clean up inn.conf for the new parser in INN 2.4.
+##   * Add the hismethod parameter to inn.conf if not found.
 
 require 5.003;
 
@@ -33,7 +38,7 @@ use Getopt::Long qw(GetOptions);
 sub fix_inn_conf {
     my ($input, $output, $file) = @_;
     my $line = 0;
-    my $raw;
+    my ($raw, $hismethod);
     local $_;
     for $raw (@$input) {
         $_ = $raw;
@@ -53,11 +58,17 @@ sub fix_inn_conf {
             push (@$output, "#$_\n");
             next;
         }
+        $hismethod = 1 if $key eq $hismethod;
         if ($value =~ /[\s;\"<>\[\]\\{}]/ && $value !~ /^\".*\"\s*$/) {
             $value =~ s/([\"\\])/\\$1/g;
             $value = '"' . $value . '"';
         }
         push (@$output, "$indent$key:$space$value\n");
+    }
+
+    # Add a setting of hismethod if one wasn't present in the original file.
+    unless ($hismethod) {
+        push (@$output, "\n# Added by innupgrade\nhismethod: hisv6\n");
     }
 }
 
@@ -74,6 +85,7 @@ sub upgrade_file {
     if (join ('', @input) ne join ('', @output)) {
         if (-e "$file.OLD") { die "$file: backup $file.OLD already exists\n" }
         print "Updating $file, old verion saved as $file.OLD\n";
+        my ($user, $group) = (stat $file)[4,5];
         open (OUTPUT, "> .$file.new.$$")
             or die "$file: cannot create .$file.new.$$: $!\n";
         print OUTPUT @output;
@@ -83,13 +95,11 @@ sub upgrade_file {
                 or die "$file: cannot rename to $file.OLD: $!\n";
         }
         if ($> == 0) {
-            my $user = getpwnam $inn::newsuser;
-            my $group = getgrnam $inn::newsgroup;
             if (defined ($user) && defined ($group)) {
                 chown ($user, $group, ".$file.new.$$")
                     or warn "$file: cannot chown .$file.new.$$: $!\n";
             } else {
-                warn "$file: cannot find UID and GID of $inn::newsuser\n";
+                warn "$file: cannot find owner and group of $file\n";
             }
         }
         rename (".$file.new.$$", $file)
