@@ -1286,6 +1286,7 @@ CCxexec(av)
 {
     char	*inndstart;
     char	*p;
+    int		i;
 
     if (CCargv == NULL)
 	return "1 no argv!";
@@ -1300,6 +1301,11 @@ CCxexec(av)
 
     JustCleanup();
     syslog(L_NOTICE, "%s execv %s", LogName, CCargv[0]);
+
+    /* Close all fds to protect possible fd leaking accross successive innds. */
+    for (i=3; i<30; i++)
+        (void)close(i);
+
     (void)execv(CCargv[0], CCargv);
     syslog(L_FATAL, "%s cant execv %s %m", LogName, CCargv[0]);
     _exit(1);

@@ -136,10 +136,10 @@ typedef enum _CHANNELSTATE {
 typedef struct _CHANNEL {
     CHANNELTYPE		Type;
     CHANNELSTATE	State;
+    int			fd;
     BOOL		Skip;
     BOOL		Streaming;
     BOOL		NoResendId;
-    int			fd;
     u_long		Duplicate;
     u_long		Unwanted_s;
     u_long		Unwanted_f;
