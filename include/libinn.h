@@ -2,6 +2,7 @@
 **
 **  Here be declarations of functions in the InterNetNews library.
 */
+
 #ifndef LIBINN_H
 #define LIBINN_H 1
 
@@ -139,8 +140,10 @@ extern bool     lock_range(int fd, enum locktype type, bool block,
 /*
 **  MISCELLANEOUS UTILITY FUNCTIONS
 */
+extern void     close_on_exec(int fd, bool flag);
 extern void *   concat(const char *first, ...);
 extern int      getfdlimit(void);
+extern int      nonblocking(int fd, bool flag);
 extern int      setfdlimit(int limit);
 extern void     (*xsignal(int signum, void (*sigfunc)(int)))(int);
 extern ssize_t  xwrite(int fd, const void *buffer, size_t size);
@@ -148,13 +151,15 @@ extern ssize_t  xwritev(int fd, const struct iovec iov[], int iovcnt);
 
 
 /* Headers. */
-extern char             *GenerateMessageID(char *domain);
-extern const char       *HeaderFindMem(const char *Article, const int ArtLen, const char *Header, const int HeaderLen);
-extern const char       *HeaderFindDisk(const char *file, const char *Header, const int HeaderLen);
+extern char *           GenerateMessageID(char *domain);
+extern const char *     HeaderFindMem(const char *Article, int ArtLen,
+                                      const char *Header, int HeaderLen); 
+extern const char *     HeaderFindDisk(const char *file, const char *Header,
+                                       int HeaderLen);
 extern void             HeaderCleanFrom(char *from);
-extern struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer);
-extern void             DDcheck(struct _DDHANDLE *h, char *group);
-extern char             *DDend(struct _DDHANDLE *h);
+extern struct _DDHANDLE * DDstart(FILE *FromServer, FILE *ToServer);
+extern void               DDcheck(struct _DDHANDLE *h, char *group);
+extern char *             DDend(struct _DDHANDLE *h);
 
 /* NNTP functions. */
 extern int      NNTPlocalopen(FILE **FromServerp, FILE **ToServerp,
@@ -163,7 +168,7 @@ extern int      NNTPremoteopen(int port, FILE **FromServerp,
                                FILE **ToServerp, char *errbuff);
 extern int      NNTPconnect(char *host, int port, FILE **FromServerp,
                             FILE **ToServerp, char *errbuff);
-extern int      NNTPsendarticle(char *, FILE *F, BOOL Terminate);
+extern int      NNTPsendarticle(char *, FILE *F, bool Terminate);
 extern int      NNTPsendpassword(char *server, FILE *FromServer,
                                  FILE *ToServer);
 extern int      server_init(char *host, int port);
@@ -314,7 +319,7 @@ extern char *    innconffile;
 extern char *    GetFQDN(char *domain);
 extern char *    GetConfigValue(char *value);
 extern char *    GetFileConfigValue(char *value);
-extern bool      GetBooleanConfigValue(char *value, BOOL DefaultValue);
+extern bool      GetBooleanConfigValue(char *value, bool DefaultValue);
 extern char *    GetModeratorAddress(FILE *FromServer, FILE *ToServer,
                                      char *group, char *moderatormailer); 
 extern void  ClearInnConf(void);
@@ -341,11 +346,9 @@ extern int      HashCompare(const HASH *h1, const HASH *h2);
 
 /* Miscellaneous. */
 extern int      dbzneedfilecount(void);
-extern bool     MakeDirectory(char *Name, BOOL Recurse);
+extern bool     MakeDirectory(char *Name, bool Recurse);
 extern int      xread(int fd, char *p, off_t i);
 extern int      GetResourceUsage(double *usertime, double *systime);
-extern int      SetNonBlocking(int fd, BOOL flag);
-extern void     CloseOnExec(int fd, int flag);
 extern void     Radix32(unsigned long, char *buff);
 extern char *   ReadInDescriptor(int fd, struct stat *Sbp);
 extern char *   ReadInFile(const char *name, struct stat *Sbp);
