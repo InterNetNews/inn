@@ -279,16 +279,13 @@ incoming_conf
     'mimecontenttype',		0,
     'mimeencoding',		0,
     'hiscachesize',		0,
-    'wireformat',		0,
     'xrefslave',		0,
     'complaints',		0,
     'spoolfirst',		0,
     'writelinks',		0,
     'timer',			0,
     'status',			0,
-    'storageapi',		0,
     'articlemmap',		0,
-    'overviewmmap',		0,
     'mta',			0,
     'mailcmd',			0,
     'checkincludedtext',	0,
@@ -345,7 +342,6 @@ incoming_conf
     'pathhttp',			0,
     'nnrpdposthost',		0,
     'nnrpdpostport',		0,
-    'extendeddbz',		0,
     'nnrpdoverstats',		0,
     'decnetdomain',		0,
     'backoffauth',		0,
@@ -384,7 +380,11 @@ incoming_conf
     'nnrpdauthsender',		0,
     'cnfscheckfudgesize',	0,
     'rlimitnofile',		0,
-    'ignorenewsgroups',		0
+    'ignorenewsgroups',		0,
+    'overcachesize',		0,
+    'enableoverview',		0,
+    'addnntppostinghost',	0,
+    'addnntppostingdate',	0
 );
 %inn_conf'optionals = (
     'innflags',			0,
