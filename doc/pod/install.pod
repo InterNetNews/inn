@@ -26,8 +26,7 @@ extension of .OLD so that you can easily back out.
 INN has been confirmed to work on the following operating systems:
 
   AIX 4.3
-  FreeBSD 2.2.x
-  FreeBSD 3.x
+  FreeBSD 2.2.x and up
   HP-UX 10.20
   Linux 2.x (tested with libc 5.4 or libc 6.0)
   SCO 5.0.4 (tested with gcc 2.8.1 and cc)
@@ -62,12 +61,13 @@ has some known problems compiling calls to inet_ntoa() on IRIX platforms).
 
 =item *
 
-INN requires Perl 5.003 to build and to run several subsystems, and
-requires 5.004 for embedded Perl filters to work.  All versions of Perl
-previous to 5.004 are buggy (including security problems) and INN is
-tested primarily under Perl 5.005 and 5.004, so it's highly recommended
-that you install the latest Perl before compiling INN.  For instructions
-on obtaining and installing Perl, see <http://www.perl.com/latest/>.
+INN requires at least Perl 5.003 to build and to run several subsystems,
+and requires at least 5.004 for embedded Perl filters to work.  All
+versions of Perl previous to 5.004 are buggy (including security problems)
+and INN is tested primarily with newer versions of Perl, so it's highly
+recommended that you install the latest stable distribution of Perl before
+compiling INN.  For instructions on obtaining and installing Perl, see
+<http://www.perl.com/latest/>.
 
 =item *
 
@@ -105,17 +105,27 @@ F<README.tcl_hook> and F<README.python_hook> for more information.
 
 =head1 Unpacking the Distribution
 
-Obtain the INN source distribution from ftp.isc.org in directory
-F</isc/inn/snapshots>.  The files in the snapshots directory are snapshots
-of the current inn source taken daily.  They are stored in date format; in
-other words, 0400 5 May 1998 GMT's file is named
-F<inn-1998-05-17_04-00.tar.gz>.  Choose the newest file.  The distribution
-is in gzip compressed tar archive format.  To extract it, execute:
+Released versions of INN are available from ftp.isc.org in F</isc/inn>.
+New major releases will be announed on inn-announce@isc.org (see
+F<README>) when they're made.
+
+If you want more a more cutting edge version, you can obtain current
+snapshots from from ftp.isc.org in directory F</isc/inn/snapshots>.  These
+are snapshots of the current INN CVS tree taken daily; there are two
+snapshots made every night (one of the current development branch, and one
+of the stable branch consisting of bug fixes to the previous major
+release).  They are stored in date format; in other words the snapshots
+from April 6th, 2000, would be named F<inn-CURRENT-20000406.tar.gz> and
+F<inn-STABLE-20000406.tar.gz>.  Choose the newest file.
+
+The distribution is in gzip compressed tar archive format.  To extract it,
+execute:
 
     gunzip -c <inn-src-file> | tar -xf -
 
-Extracting the source distribution will create a directory named inn where
-the source resides.
+Extracting the source distribution will create a directory named F<inn>
+(followed by a version number, -CURRENT, or -STABLE) where the source
+resides.
 
 =head1 Installing INN
 
@@ -712,6 +722,8 @@ remote.example.com and containing the message ID and storage token of each
 message to send to that site.  innxmit knows how to read this format of
 file and send those articles to the remote site.  For information on
 setting it up to run periodically, see L<Setting Up the Cron Jobs> below.
+You will also need to set up a config file for nntpsend; see the man page
+for F<nntpsend.ctl> for more information.
 
 If instead you want to use innfeed to send outgoing messages (recommended
 for sites with more than a couple of peers), you need some slightly more
