@@ -105,6 +105,8 @@
 ../samples/version
 ../samples/writelog
 ../site/Makefile
+../storage/Makefile
+../storage/timehash/Makefile
 ../syslog/syslog.c
 ../syslog/syslog.conf
 ../syslog/syslogd.c
