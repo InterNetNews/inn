@@ -582,10 +582,10 @@
   ||#### =()<_PATH_TMP		@<_PATH_TMP>@>()=
   ||_PATH_TMP		@TMPPATH@
 [IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Command to send mail (with -s "subject" allowed)
-  ||##[autoconf]
-  ||#### =()<_PATH_MAILCMD		@<_PATH_MAILCMD>@>()=
-  ||_PATH_MAILCMD		@ac_cv_subst_bindir@/innmail
+ # ||##  Command to send mail (with -s "subject" allowed)
+ # ||##[autoconf]
+ #||#### =()<_PATH_MAILCMD		@<_PATH_MAILCMD>@>()=
+ #||_PATH_MAILCMD		@ac_cv_subst_bindir@/innmail
 [IN1.7=@7][WDF=autoconf][WOR=yes]
   ||##  Where your GNU gzip binary is (for rnews to run on gzipped batches).
   ||##[autoconf]
