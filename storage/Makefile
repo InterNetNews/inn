@@ -14,9 +14,9 @@ all:			autoconfig
 
 include Make.methods
 
-SOURCES = interface.c methods.c qio.c overview.c
-OBJECTS = interface.o methods.o qio.o overview.o
-LOBJECTS = interface.lo methods.lo qio.lo overview.lo
+SOURCES = interface.c methods.c qio.c ov3.c
+OBJECTS = interface.o methods.o qio.o ov3.o
+LOBJECTS = interface.lo methods.lo qio.lo ov3.lo
 
 
 methods: 
@@ -50,6 +50,8 @@ libstorage.a:         $(P) $(OBJECTS)
 
 qiotest: qio.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
+ov3test: ov3.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
+	$(PURE) $(CC) $(CFLAGS) -I/shared/include -D_TEST_ -o ov3test ov3.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB) -L/shared/lib -ldb -lnsl -lsocket
 
 autoconfig:
 	@./buildconfig `find . -name method.config -print`
@@ -78,4 +80,7 @@ depend:		Makefile $(SOURCES)
 
 interface.o: methods.h interface.h
 methods.o: interface.h
-overview.o: overview.h
+ov3.c: ../include/ov3.h
+
+
+

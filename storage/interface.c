@@ -72,6 +72,7 @@ char *TokenToText(const TOKEN token) {
     char                *q;
     char                i;
 
+    
     result[0] = '@';
     for (q = result + 1, p = (char *)&token, i = 0; i < sizeof(TOKEN); i++, p++) {
 	*q++ = hex[(*p & 0xF0) >> 4];
@@ -599,7 +600,8 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
 	return NULL;
     }
     if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
-	syslog(L_ERROR, "SM could not find token type or method was not initialized");
+	syslog(L_ERROR, "SM could not find token type or method was not initialized (%d)",
+	       token.type);
 	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
