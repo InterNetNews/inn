@@ -24,50 +24,7 @@
 #include "tradindexed.h"
 #include "storage.h"
 
-/* Data structure for specifying a location in the group index */
-typedef struct {
-    int                 recno;             /* Record number in group index */
-} GROUPLOC;
-
-#define GROUPHEADERHASHSIZE (16 * 1024)
-#define GROUPHEADERMAGIC    (~(0xf1f0f33d))
-
-typedef struct {
-    int                 magic;
-    GROUPLOC            hash[GROUPHEADERHASHSIZE];
-    GROUPLOC            freelist;
-} GROUPHEADER;
-
-/* The group is matched based on the MD5 of the grouname. This may prove to
-   be inadequate in the future, if so, the right thing to do is to is
-   probably just to add a SHA1 hash into here also.  We get a really nice
-   benefit from this being fixed length, we should try to keep it that way.
-*/
-typedef struct {
-    HASH                hash;             /* MD5 hash of the group name, if */
-    HASH                alias;            /* If not empty then this is the hash
-					     of the group that this group is an
-					     alias for */
-    ARTNUM              high;             /* High water mark in group */
-    ARTNUM              low;              /* Low water mark in group */
-    ARTNUM              base;             /* Article number of the first entry
-					     in the index */
-    int                 count;            /* Number of articles in group */
-    int                 flag;             /* Posting/Moderation Status */
-    time_t              deleted;          /* When this was deleted, 0 otherwise */    
-    ino_t               indexinode;       /* inode of the index file for the group,
-					     used to detect when the file has been
-					     recreated and swapped out. */
-    GROUPLOC            next;             /* Next block in this chain */
-} GROUPENTRY;
-
-typedef struct {
-    off_t              offset;
-    int                length;
-    time_t             arrived;
-    time_t             expires;
-    TOKEN              token;
-} INDEXENTRY;
+#include "structure.h"
 
 typedef struct {
     HASH               hash;
