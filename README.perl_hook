@@ -99,7 +99,19 @@ a null string to accept the article, anything else will cause the article
 to be rejected and the reason sent back to the client will be the returned
 value of the ``filter_post'' function.  If $modify_headers is set to a
 non-zero value, then all headers in the associative array ``%hdr'' are written
-back to the posted message.
+back to the posted message.  Here are other items for filtering articles for
+nnrpd.
+
+  - can access to message bodies, in the $body variable.
+  - can access to the poster's authinfo username, in the $user variable.
+    Obviously this has no effect unless you use authinfo.
+  - check a returncode 'DROP' to the Perl interface.  If the string returned
+    by the Perl subroutine begins with 'DROP', the post will be discarded
+    and success returned to the client.
+  - check a returncode 'SPOOL' to the Perl interface.  If the string
+    returned by the Perl subroutine begins with 'SPOOL', success will be
+    returned to the client and the post will be saved to in.coming/spam
+    for manual inspection.
 
 --------------------------------------------------
 
