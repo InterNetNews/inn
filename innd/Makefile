@@ -1,7 +1,7 @@
 ##  $Revision$
 include ../Makefile.global
 
-CFLAGS = $(GCFLAGS) $(PERLINC) $(TCLINC) $(PYTHONINC)
+CFLAGS = $(GCFLAGS)
 
 SOURCES	= \
 	art.c cc.c chan.c his.c icd.c innd.c lc.c nc.c newsfeeds.c ng.c \
@@ -14,6 +14,21 @@ OBJECTS	= \
 ALL	= innd inndstart
 
 all:		$(ALL)
+
+art.o: art.c
+	$(CC) $(TCLINC) $(CFLAGS) -c art.c
+
+cc.o: cc.c
+	$(CC) $(PERLINC) $(CFLAGS) -c cc.c
+
+perl.o: perl.c
+	$(CC) $(PERLINC) $(CFLAGS) -c perl.c
+
+python.o: python.c
+	$(CC) $(PYTHONINC) $(CFLAGS) -c python.c
+
+tcl.o: tcl.c
+	$(CC) $(TCLINC) $(CFLAGS) -c tcl.c
 
 install: $D${PATHBIN}/innd $D${PATHBIN}/inndstart
 
