@@ -313,12 +313,12 @@ static bool ARTopen(ARTNUM artnum)
 **  Open the article for a given Message-ID.
 */
 static bool
-ARTopenbyid(char *msg_id, ARTNUM *ap)
+ARTopenbyid(char *msg_id, ARTNUM *ap, bool final)
 {
     TOKEN token;
 
     *ap = 0;
-    token = cache_get(HashMessageID(msg_id));
+    token = cache_get(HashMessageID(msg_id), final);
     if (token.type == TOKEN_EMPTY) {
 	if (History == NULL) {
 	    time_t statinterval;
@@ -610,15 +610,18 @@ void CMDfetch(int ac, char *av[])
     ARTNUM		art;
     char		*msgid;
     ARTNUM		tart;
+    bool final = false;
 
     /* Find what to send; get permissions. */
     ok = PERMcanread;
     switch (*av[0]) {
     default:
 	what = &SENDbody;
+	final = true;
 	break;
     case 'a': case 'A':
 	what = &SENDarticle;
+	final = true;
 	break;
     case 's': case 'S':
 	what = &SENDstat;
@@ -637,7 +640,7 @@ void CMDfetch(int ac, char *av[])
 
     /* Requesting by Message-ID? */
     if (ac == 2 && av[1][0] == '<') {
-	if (!ARTopenbyid(av[1], &art)) {
+	if (!ARTopenbyid(av[1], &art, final)) {
 	    Reply("%d No such article\r\n", NNTP_DONTHAVEIT_VAL);
 	    return;
 	}
@@ -910,6 +913,8 @@ void CMDxover(int ac, char *av[])
 	cache_add(HashMessageID(r), token);
 	free(r);
 	if (VirtualPathlen > 0 && overhdr_xref != -1) {
+	    if ((overhdr_xref + 1) >= vector->count)
+		continue;
 	    p = vector->strings[overhdr_xref] + sizeof("Xref: ") - 1;
 	    while ((p < data + len) && *p == ' ')
 		++p;
@@ -1031,7 +1036,7 @@ void CMDpat(int ac, char *av[])
 	/* Message-ID specified? */
 	if (ac > 2 && av[2][0] == '<') {
 	    p = av[2];
-	    if (!ARTopenbyid(p, &artnum)) {
+	    if (!ARTopenbyid(p, &artnum, false)) {
 		Printf("%d No such article.\r\n", NNTP_DONTHAVEIT_VAL);
 		break;
 	    }
