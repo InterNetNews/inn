@@ -42,6 +42,8 @@ Xstop)
     pid=`cat ${SERVERPID} 2>/dev/null`
     if [ "$pid" != "" ]; then
 	waitforpid $pid
+    else
+	printf "\n"
     fi
 
     # Turn off ovdb support procs, and close the DB environment
