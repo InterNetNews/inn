@@ -104,11 +104,8 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
-/* Define to 1 if you have the `fseeko' function. */
+/* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
 #undef HAVE_FSEEKO
-
-/* Define to 1 if you have the `ftello' function. */
-#undef HAVE_FTELLO
 
 /* Define to 1 if you have the <gdbm-ndbm.h> header file. */
 #undef HAVE_GDBM_NDBM_H
@@ -474,6 +471,9 @@
 /* Define if compiling with large file support on Linux to get the correct
    prototypes for pread and pwrite. */
 #undef _GNU_SOURCE
+
+/* Define to 1 to make fseeko visible on some hosts (e.g. glibc 2.2). */
+#undef _LARGEFILE_SOURCE
 
 /* Define for large files, on AIX-style hosts. */
 #undef _LARGE_FILES

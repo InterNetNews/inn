@@ -374,7 +374,7 @@ dnl gdbm-ndbm.h.
 AC_CHECK_HEADERS([ndbm.h db1/ndbm.h gdbm-ndbm.h], [break])
 
 dnl Check for whether various symbols are declared.
-AC_CHECK_DECLS([fseeko, ftello, pread, pwrite, snprintf, vsnprintf])
+AC_CHECK_DECLS([pread, pwrite, snprintf, vsnprintf])
 AC_CHECK_DECLS([h_errno], , , [#include <netdb.h>])
 AC_CHECK_DECLS([inet_aton, inet_ntoa], , ,
 [#include <sys/types.h>
@@ -466,11 +466,12 @@ AC_REPLACE_FUNCS(getaddrinfo getpagesize hstrerror inet_aton mkstemp pread \
                  setenv symlink)
 
 dnl Probe for fseeko and ftello, which take off_t instead of int.
-inn_need_fpos_t=0
-AC_REPLACE_FUNCS([fseeko], , [inn_need_fpos_t=1])
-AC_REPLACE_FUNCS([ftello], , [inn_need_fpos_t=1])
-if test x"$inn_need_fpos_t" = x1 ; then
+AC_FUNC_FSEEKO
+if test x"$ac_cv_func_fseeko" != xyes ; then
     INN_TYPE_FPOS_T_LARGE
+    AC_CHECK_DECLS([fseeko, ftello])
+    AC_LIBOBJ([fseeko])
+    AC_LIBOBJ([ftello])
 fi
 
 dnl Probe for mmap properties.

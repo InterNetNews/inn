@@ -81,10 +81,10 @@ BEGIN_DECLS
 /* Provide prototypes for functions not declared in system headers.  Use the
    HAVE_DECL macros for those functions that may be prototyped but
    implemented incorrectly or implemented without a prototype. */
-#if !HAVE_DECL_FSEEKO
+#if !defined(HAVE_FSEEKO) && !defined(HAVE_DECL_FSEEKO)
 extern int              fseeko(FILE *, off_t, int);
 #endif
-#if !HAVE_DECL_FTELLO
+#if !defined(HAVE_FTELLO) && !defined(HAVE_DECL_FTELLO)
 extern off_t            ftello(FILE *);
 #endif
 #if !HAVE_MKSTEMP
