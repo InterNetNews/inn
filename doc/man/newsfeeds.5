@@ -330,7 +330,8 @@ should be chosen from the following set:
 	e	The time article will be expired as
 		seconds since epoch
 		``0'' means there is no ``Expires'' header
-	f	Token of the article (equivalent to ``n'')
+	f	Token of the article (equivalent to ``n''),
+                use sm(8) to get the actual article
 	g	The newsgroup the article is in;
 		if cross-posted, then the first of the
 		groups this site gets (the differnece from
@@ -338,7 +339,8 @@ should be chosen from the following set:
 		newsgroup even if it is congrol message)
 	h	Article's Message-ID hash key
 	m	Article's Message-ID
-	n	Token of the article
+	n	Token of the article, use sm(8) to get the
+                actual article
 	p	The time the article was posted as seconds
 		since epoch
 	s	The site that fed the article to the
