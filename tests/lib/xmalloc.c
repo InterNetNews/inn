@@ -5,6 +5,13 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#include <unistd.h>
+
+/* Linux requires sys/time.h be included before sys/resource.h. */
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <sys/resource.h>
 
 #include "libinn.h"
 
@@ -128,13 +135,40 @@ test_calloc(size_t size)
 int
 main(int argc, char *argv[])
 {
-    size_t size;
+    size_t size, max;
+    size_t limit = 0;
+    int willfail = 0;
     unsigned char code;
+    struct rlimit rl;
 
-    if (argc < 2) die("Usage error.  Both type and size must be given.");
+    if (argc < 3) die("Usage error.  Type, size, and limit must be given.");
     errno = 0;
     size = strtol(argv[2], 0, 10);
-    if (size == 0 && errno != 0) sysdie("Invalid size");
+    if (size == 0 && errno != 0)
+        sysdie("Invalid size");
+    errno = 0;
+    limit = strtol(argv[3], 0, 10);
+    if (limit == 0 && errno != 0)
+        sysdie("Invalid limit");
+
+    /* If a memory limit was given and we can set memory limits, set it.
+       Otherwise, exit 2, signalling to the driver that the test should be
+       skipped.  We do this here rather than in the driver due to some
+       pathological problems with Linux (setting ulimit in the shell caused
+       the shell to die). */
+    if (limit > 0) {
+#if HAVE_SETRLIMIT && defined(RLIMIT_DATA)
+        rl.rlim_cur = limit;
+        rl.rlim_max = limit;
+        if (setrlimit(RLIMIT_DATA, &rl) < 0) {
+            syswarn("Can't set data limit to %lu", (unsigned long) limit);
+            exit(2);
+        }
+#else
+        warn("Data limits aren't supported.");
+        exit(2);
+#endif
+    }
 
     /* If the code is capitalized, install our customized error handler. */
     code = argv[1][0];
@@ -143,12 +177,21 @@ main(int argc, char *argv[])
         code = tolower(code);
     }
 
+    /* Decide if the allocation should fail.  If it should, set willfail to
+       2, so that if it unexpectedly succeeds, we exit with a status
+       indicating that the test should be skipped. */
+    max = size;
+    if (code == 's' || code == 'n')
+        max *= 2;
+    if (limit > 0 && max > limit)
+        willfail = 2;
+
     switch (code) {
-    case 'c': exit(test_calloc(size) ? 0 : 1);
-    case 'm': exit(test_malloc(size) ? 0 : 1);
-    case 'r': exit(test_realloc(size) ? 0 : 1);
-    case 's': exit(test_strdup(size) ? 0 : 1);
-    case 'n': exit(test_strndup(size) ? 0 : 1);
+    case 'c': exit(test_calloc(size) ? willfail : 1);
+    case 'm': exit(test_malloc(size) ? willfail : 1);
+    case 'r': exit(test_realloc(size) ? willfail : 1);
+    case 's': exit(test_strdup(size) ? willfail : 1);
+    case 'n': exit(test_strndup(size) ? willfail : 1);
     default:
         die("Unknown mode %c", argv[1][0]);
         break;
