@@ -35,8 +35,8 @@ delete old dump files.
 
 ninpaths(8)
 
-=head1 AUTHOR
+=head1 HISTORY
 
-Olaf Titz <olaf@bigred.inka.de>
+B<sendinpaths> was written by Olaf Titz <olaf@bigred.inka.de>.
 
 =cut

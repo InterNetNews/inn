@@ -164,11 +164,10 @@ all steps that follow with the full path to your \s-1INN\s0 log directory).
 Set up a channel feed using an entry like:
 .Sp
 .Vb 1
-\&    inpaths!:*:Tc,WP:<pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
+\&    inpaths!:*:Tc,WP:ninpaths -p -d <pathlog>/path/inpaths.%d
 .Ve
 if your version of \s-1INN\s0 supports \s-1WP\s0 (2.0 and later all do).  Replace
-<pathbin> with the full path to your \s-1INN\s0 binaries directory and <pathlog>
-with the full path to your \s-1INN\s0 log directory.
+<pathlog> with the full path to your \s-1INN\s0 log directory.
 .IP "3." 4
 Enter into your news user crontab something like:
 .Sp
@@ -209,7 +208,7 @@ If your \s-1INN\s0 doesn't have the \s-1WP\s0 feed flag (1.5 does not, 1.6 does,
 don't know, 2.0 and later all do), use the following newsfeeds entry:
 .PP
 .Vb 1
-\&   inpaths!:*:Tc,WH:<pathbin>/ginpaths
+\&   inpaths!:*:Tc,WH:ginpaths
 .Ve
 where \fBginpaths\fR is the following script:
 .PP
@@ -217,7 +216,7 @@ where \fBginpaths\fR is the following script:
 \&    #!/bin/sh
 \&    exec egrep '^Path: ' | ninpaths -p -d <pathlog>/path/inpaths.%d
 .Ve
-replacing <pathbin> and <pathlog> as above.
+replacing <pathlog> as above.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\fInewsfeeds\fR\|(5), \fIsendinpaths\fR\|(8)
@@ -225,11 +224,10 @@ replacing <pathbin> and <pathlog> as above.
 This is a slightly modified version of Olaf Titz's original ninpaths
 program, which is posted to alt.sources and kept on his \s-1WWW\s0 archive under
 <http://sites.inka.de/~bigred/sw/>.
-.SH "AUTHOR"
-.IX Header "AUTHOR"
-Olaf Titz <olaf@bigred.inka.de>
 .SH "HISTORY"
 .IX Header "HISTORY"
+\&\fBninpaths\fR was written by Olaf Titz <olaf@bigred.inka.de>.
+.PP
 The idea and some implementation details for ninpaths come from the
 original inpaths program, but most of the code has been rewritten for
 clarity.  This program is in the public domain.

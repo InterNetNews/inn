@@ -38,11 +38,10 @@ all steps that follow with the full path to your INN log directory).
 
 Set up a channel feed using an entry like:
 
-    inpaths!:*:Tc,WP:<pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
+    inpaths!:*:Tc,WP:ninpaths -p -d <pathlog>/path/inpaths.%d
 
 if your version of INN supports WP (2.0 and later all do).  Replace
-<pathbin> with the full path to your INN binaries directory and <pathlog>
-with the full path to your INN log directory.
+<pathlog> with the full path to your INN log directory.
 
 =item 3.
 
@@ -97,14 +96,14 @@ Set the verbosity level of the report.  Valid values for I<level> are 0,
 If your INN doesn't have the WP feed flag (1.5 does not, 1.6 does, 1.7 I
 don't know, 2.0 and later all do), use the following newsfeeds entry:
 
-   inpaths!:*:Tc,WH:<pathbin>/ginpaths
+   inpaths!:*:Tc,WH:ginpaths
 
 where B<ginpaths> is the following script:
 
     #!/bin/sh
     exec egrep '^Path: ' | ninpaths -p -d <pathlog>/path/inpaths.%d
 
-replacing <pathbin> and <pathlog> as above.
+replacing <pathlog> as above.
 
 =head1 SEE ALSO
 
@@ -114,11 +113,9 @@ This is a slightly modified version of Olaf Titz's original ninpaths
 program, which is posted to alt.sources and kept on his WWW archive under
 L<http://sites.inka.de/~bigred/sw/>.
 
-=head1 AUTHOR
-
-Olaf Titz <olaf@bigred.inka.de>
-
 =head1 HISTORY
+
+B<ninpaths> was written by Olaf Titz <olaf@bigred.inka.de>.
 
 The idea and some implementation details for ninpaths come from the
 original inpaths program, but most of the code has been rewritten for
