@@ -15,7 +15,7 @@
 #include "libinn.h"
 #include "macros.h"
 
-void out() {
+static void out(int sig UNUSED) {
     exit(1);
 }
 
@@ -25,15 +25,12 @@ int main(int argc, char *argv[])
     char buf[2048];
     struct sockaddr_storage loc, cli;
     int sock;
-    int opt;
-    int truncate = 0;
-    extern char *optarg;
+    int truncate_domain = 0;
     char *iter;
     char *p;
-    int got;
+    unsigned int got;
     int lport, cport, identport;
     char *endstr;
-    char result = 0;
 
     signal(SIGALRM,out);
     alarm(15);
@@ -46,8 +43,8 @@ int main(int argc, char *argv[])
     else
 	identport = ntohs(s->s_port);
 
-    while ((opt = getopt(argc, argv, "p:t")) != -1) {
-	switch (opt) {
+    while ((optind = getopt(argc, argv, "p:t")) != -1) {
+	switch (optind) {
 	  case 'p':
 	    for (iter = optarg; *iter; iter++)
 		if (*iter < '0' || *iter > '9')
@@ -63,7 +60,7 @@ int main(int argc, char *argv[])
 		identport = atoi(optarg);
 	    break;
 	case 't':
-	    truncate = 1;
+	    truncate_domain = 1;
 	    break;
 	}
     }
@@ -112,23 +109,23 @@ int main(int argc, char *argv[])
     sprintf(buf, "%d , %d\r\n", cport, lport);
     got = 0;
     while (got != strlen(buf)) {
-	opt = write(sock, buf+got, strlen(buf)-got);
-	if (opt < 0)
+	optind = write(sock, buf+got, strlen(buf)-got);
+	if (optind < 0)
 	    exit(1);
-	else if (!opt)
+	else if (!optind)
 	    exit(1);
-	got += opt;
+	got += optind;
     }
 
     /* get the answer back */
     got = 0;
     do {
-	opt = read(sock, buf+got, sizeof(buf)-got);
-	if (opt < 0)
+	optind = read(sock, buf+got, sizeof(buf)-got);
+	if (optind < 0)
 	    exit(1);
-	else if (!opt)
+	else if (!optind)
 	    exit(1);
-	while (opt--)
+	while (optind--)
 	    if (buf[got] != '\n')
 		got++;
     } while (buf[got] != '\n');
@@ -175,7 +172,7 @@ int main(int argc, char *argv[])
     if (!*iter || *iter == '[')
 	/* null, or encrypted response */
 	exit(1);
-    if ((truncate == 1) && ((p = strchr(iter, '@')) != NULL))
+    if ((truncate_domain == 1) && ((p = strchr(iter, '@')) != NULL))
 	*p = '\0';
     printf("User:%s\n", iter);
 

@@ -54,11 +54,8 @@
  * Keep calling the writev() system call with 'fd', 'iov', and 'iovcnt'
  * until all the data is written out or an error occurs.
  */
-int
-retry_writev(fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+static int
+retry_writev(int fd, struct iovec *iov, int iovcnt)
 {
     int n;
     int i;
@@ -74,7 +71,7 @@ int iovcnt;
 	if (!iovcnt) return written;
 
 	n = writev(fd, iov, iovcnt > iov_max ? iov_max : iovcnt);
-	if (n == -1) {
+	if (n < 0) {
 	    if (errno == EINVAL && iov_max > 10) {
 		iov_max /= 2;
 		continue;
@@ -86,7 +83,7 @@ int iovcnt;
 	written += n;
 
 	for (i = 0; i < iovcnt; i++) {
-	    if (iov[i].iov_len > n) {
+	    if (iov[i].iov_len > (size_t)n) {
 		iov[i].iov_base = (char *)iov[i].iov_base + n;
 		iov[i].iov_len -= n;
 		break;
@@ -99,53 +96,20 @@ int iovcnt;
     }
 }
 
-/* retry.c -- keep trying write system calls
- *
- * Keep calling the write() system call with 'fd', 'buf', and 'nbyte'
- * until all the data is written out or an error occurs.
- */
-int
-retry_write(fd, buf, nbyte)
-int fd;
-const char *buf;
-unsigned nbyte;
-{
-    int n;
-    int written = 0;
-
-    if (nbyte == 0) return 0;
-
-    for (;;) {
-	n = write(fd, buf, nbyte);
-	if (n == -1) {
-	    if (errno == EINTR) continue;
-	    return -1;
-	}
-
-	written += n;
-
-	if (n >= nbyte) return written;
-
-	buf += n;
-	nbyte -= n;
-    }
-}
-
 /*
  * Unix pwcheck daemon-authenticated login (shadow password)
  */
 
-int
-login_plaintext(user, pass)
-const char *user;
-const char *pass;
+static int
+login_plaintext(char *user, char *pass)
 {
     int s;
     struct sockaddr_un srvaddr;
     int r;
     struct iovec iov[10];
     static char response[1024];
-    int start, n;
+    unsigned int start;
+    int n;
 
     s = socket(AF_UNIX, SOCK_STREAM, 0);
     if (s == -1) return errno;
@@ -161,9 +125,9 @@ const char *pass;
 	return 1;
     }
 
-    iov[0].iov_base = (char *)user;
+    iov[0].iov_base = user;
     iov[0].iov_len = strlen(user)+1;
-    iov[1].iov_base = (char *)pass;
+    iov[1].iov_base = pass;
     iov[1].iov_len = strlen(pass)+1;
 
     retry_writev(s, iov, 2);
@@ -184,7 +148,7 @@ const char *pass;
 }
 
 
-int main()
+int main(void)
 {
 
     char uname[SMBUF], pass[SMBUF];

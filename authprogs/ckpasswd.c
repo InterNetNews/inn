@@ -41,7 +41,7 @@
  *
  * appdata_ptr contains the password we were given.
  */
-static int pass_conv (int num_msg, const struct pam_message **msgm,
+static int pass_conv (int num_msg, const struct pam_message **msgm UNUSED,
 		struct pam_response **response, void *appdata_ptr)
 {
     int i;
@@ -66,7 +66,7 @@ static struct pam_conv conv = {
 #endif /* HAVE_PAM */
 
 #if HAVE_GETSPNAM
-char *
+static char *
 GetShadowPass(char *user)
 {
     static struct spwd *spwd;
@@ -77,7 +77,7 @@ GetShadowPass(char *user)
 }
 #endif /* HAVE_GETSPNAM */
 
-char *
+static char *
 GetPass(char *user)
 {
     static struct passwd *pwd;
@@ -87,7 +87,7 @@ GetPass(char *user)
     return(0);
 }
 
-char *
+static char *
 GetFilePass(char *name, char *file)
 {
     FILE *pwfile;
@@ -101,27 +101,27 @@ GetFilePass(char *name, char *file)
 	return(0);
     found = 0;
     while ((!found) && fgets(buf, sizeof(buf), pwfile)) {
-	if (*buf != '#') {			/* ignore comment lines */
-	    buf[strlen(buf)-1] = 0;		/* clean off the \n */
-	    if ((colon = strchr(buf, ':'))) {	/* correct format */
+	if (*buf == '#')			/* ignore comment lines */
+	    continue;
+	buf[strlen(buf)-1] = 0;			/* clean off the \n */
+	if ((colon = strchr(buf, ':'))) {	/* correct format */
+	    *colon = 0;
+	    if (strcmp(buf, name))
+		continue;
+	    iter = colon+1;			/* user matches */
+	    if ((colon = strchr(iter, ':')) != NULL)
 		*colon = 0;
-		if (!strcmp(buf, name))
-    		    found = 1;
-	    }
+	    strcpy(pass, iter);
+	    fclose(pwfile);
+	    return(pass);
 	}
     }
     fclose(pwfile);
-    if (!found)
-	return(0);
-    iter = colon+1;
-    if ((colon = strchr(iter, ':')) != NULL)
-	*colon = 0;
-    strcpy(pass, iter);
-    return(pass);
+    return(0);
 }
 
 #if HAVE_DBM
-char *
+static char *
 GetDBPass(char *name, char *file)
 {
     datum key;
@@ -149,8 +149,6 @@ GetDBPass(char *name, char *file)
 int
 main(int argc, char *argv[])
 {
-    extern int optind;
-    extern char *optarg;
     int opt;
     int do_shadow, do_file, do_db;
     char *fname;

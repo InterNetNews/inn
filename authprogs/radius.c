@@ -52,7 +52,7 @@ typedef struct _rad_config_t {
     int ignore_source;
 } rad_config_t;
 
-int read_config(FILE *f, rad_config_t *radconfig)
+static int read_config(FILE *f, rad_config_t *radconfig)
 {
     char buf[SMBUF];
     char *keyword, *iter;
@@ -139,16 +139,19 @@ int read_config(FILE *f, rad_config_t *radconfig)
 #define PW_AUTH_UDP_PORT 1645
 
 #define PW_AUTHENTICATION_REQUEST 1
-#define		PW_USER_NAME 1
-#define		PW_PASSWORD 2
-#define		RAD_NAS_IP_ADDRESS	4	/* IP address */
-#define		RAD_NAS_PORT		5	/* Integer */
-#define		PW_SERVICE_TYPE 6
-#define			PW_SERVICE_AUTH_ONLY 8
-#define PW_AUTHENTICATION_ACK 2
-#define PW_AUTHENTICATION_REJECT 3
+#define PW_AUTHENTICATION_ACK     2
+#define PW_AUTHENTICATION_REJECT  3
 
-int rad_auth(rad_config_t *config, char *uname, char *pass)
+#define PW_USER_NAME            1
+#define PW_PASSWORD             2
+
+#define PW_SERVICE_TYPE         6
+#define PW_SERVICE_AUTH_ONLY    8
+
+#define RAD_NAS_IP_ADDRESS      4       /* IP address */
+#define RAD_NAS_PORT            5       /* Integer */
+
+static int rad_auth(rad_config_t *config, char *uname, char *pass)
 {
     auth_req req;
     int i, j, jlen, passstart;
@@ -158,8 +161,6 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     struct sockaddr_in sinl, sinr;
     int sock;
     struct hostent *hent;
-    int done;
-    int ret;
     int reqlen;
     int passlen;
     time_t now, end;
@@ -278,7 +279,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     /* "encrypt" the password */
     for (i = 0; i < req.data[passstart+1]-2; i += sizeof(HASH)) {
 	jlen = sizeof(HASH);
-	if (req.data[passstart+1]-i-2 < sizeof(HASH))
+	if (req.data[passstart+1]-(unsigned)i-2 < sizeof(HASH))
 	    jlen = req.data[passstart+1]-i-2;
 	for (j = 0; j < jlen; j++)
 	    req.data[passstart+2+i+j] ^= digest.hash[j];
@@ -308,8 +309,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	return(-1);
     }
 
-    done = 0;
-    while (!done && authtries--) {
+    for( ; authtries > 0; authtries--) {
 	/* send out the packet and wait for reply. */
 	if (sendto(sock, (char *)&req, reqlen, 0, (struct sockaddr*) &sinr,
 	       sizeof(sinr)) < 0) {
@@ -322,11 +322,9 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	end = now+5;
 	tmout.tv_sec = 6;
 	tmout.tv_usec = 0;
-	done = 0;
 	FD_ZERO(&rdfds);
 	/* store the old vector to verify next checksum */
 	memcpy(secbuf+sizeof(req.vector), req.vector, sizeof(req.vector));
-	ret = -2;
 	FD_SET(sock, &rdfds);
 	got = select(sock+1, &rdfds, 0, 0, &tmout);
 	if (got < 0) {
@@ -368,15 +366,16 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	    continue;
 	}
 	/* FINALLY!  Got back a known-good packet.  See if we're in. */
-	ret = (req.code == PW_AUTHENTICATION_ACK) ? 0 : -1;
-	done = 1;
+	close(sock);
+	return (req.code == PW_AUTHENTICATION_ACK) ? 0 : -1;
+	break;
     }
-    if (!done) {
-	fprintf(stderr, "radius: couldn't talk to remote radius server %s:%d\n",
-	  inet_ntoa(sinr.sin_addr), ntohs(sinr.sin_port));
+    if (authtries == 0) {
+	fprintf(stderr,
+		"radius: couldn't talk to remote radius server %s:%d\n",
+		inet_ntoa(sinr.sin_addr), ntohs(sinr.sin_port));
     }
-    close(sock);
-    return(ret);
+    return(-2);
 }
 
 #define RAD_HAVE_HOST 1
