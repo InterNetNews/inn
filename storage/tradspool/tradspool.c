@@ -41,18 +41,34 @@ typedef struct {
 } HASHEDNG;
 
 /*
-** Structures for our hash id->newsgroup mapping.
+** We have two structures here for facilitating newsgroup name->number mapping
+** and number->name mapping.  NGTable is a hash table based on hashing the
+** newsgroup name, and is used to give the name->number mapping.  NGTree is
+** a binary tree, indexed by newsgroup number, used for the number->name
+** mapping.
 */
 
 #define NGT_SIZE  2048
 
 typedef struct _ngtent {
     char *ngname;
-    HASHEDNG hash;
+/*    HASHEDNG hash; XXX */
+    unsigned long ngnumber;
     struct _ngtent *next;
 } NGTENT;
 
+typedef struct _ngtreenode {
+    unsigned long ngnumber;
+    struct _ngtreenode *left, *right;
+    NGTENT *ngtp;
+} NGTREENODE;
+
 NGTENT *NGTable[NGT_SIZE];
+unsigned long MaxNgNumber = 0;
+NGTREENODE *NGTree;
+
+BOOL NGTableUpdated; /* set to TRUE if we've added any entries since reading 
+			in the database file */
 
 /* 
 ** Convert all .s to /s in a newsgroup name.  Modifies the passed string 
@@ -69,7 +85,7 @@ DeDotify(char *ngname) {
 }
 
 /*
-** Hash a newsgroup name to a 32-bit int.  Basically, we convert all .s to 
+** Hash a newsgroup name to an 8-byte.  Basically, we convert all .s to 
 ** /s (so it doesn't matter if we're passed the spooldir name or newsgroup
 ** name) and then call Hash to MD5 the mess, then take 4 bytes worth of 
 ** data from the front of the hash.  This should be good enough for our
@@ -92,6 +108,7 @@ HashNGName(char *ng) {
     return return_hash;
 }
 
+#if 0 /* XXX */
 /* compare two hashes */
 static int
 CompareHash(HASHEDNG *h1, HASHEDNG *h2) {
@@ -103,14 +120,16 @@ CompareHash(HASHEDNG *h1, HASHEDNG *h2) {
     }
     return 0;
 }
+#endif
 
 /* Add a new newsgroup name to the NG table. */
 static void
-AddNG(char *ng) {
+AddNG(char *ng, unsigned long number) {
     char *p;
     unsigned int h;
     HASHEDNG hash;
     NGTENT *ngtp, **ngtpp;
+    NGTREENODE *newnode, *curnode, **nextnode;
 
     p = COPY(ng);
     DeDotify(p); /* canonicalize p to standard (/) form. */
@@ -126,22 +145,60 @@ AddNG(char *ng) {
     while (TRUE) {
 	if (ngtp == NULL) {
 	    /* ng wasn't in table, add new entry. */
+	    NGTableUpdated = TRUE;
+
 	    ngtp = NEW(NGTENT, 1);
 	    ngtp->ngname = p; /* note: we store canonicalized name */
-	    ngtp->hash = hash;
+	    /* ngtp->hash = hash XXX */
 	    ngtp->next = NULL;
-	    /* link new table entry into the chain. */
+
+	    /* assign a new NG number if needed (not given) */
+	    if (number == 0) {
+		number = ++MaxNgNumber;
+	    }
+	    ngtp->ngnumber = number;
+
+	    /* link new table entry into the hash table chain. */
 	    *ngtpp = ngtp;
-	    return;
+
+	    /* Now insert an appropriate record into the binary tree */
+	    newnode = NEW(NGTREENODE, 1);
+	    newnode->left = newnode->right = (NGTREENODE *) NULL;
+	    newnode->ngnumber = number;
+	    newnode->ngtp = ngtp;
+
+	    if (NGTree == NULL) {
+		/* tree was empty, so put our one element in and return */
+		NGTree = newnode;
+		return;
+	    } else {
+		nextnode = &NGTree;
+		while (*nextnode) {
+		    curnode = *nextnode;
+		    if (curnode->ngnumber < number) {
+			nextnode = &curnode->right;
+		    } else if (curnode->ngnumber > number) {
+			nextnode = &curnode->left;
+		    } else {
+			/* Error, same number is already in NGtree (shouldn't happen!) */
+			syslog(L_ERROR, "tradspool: AddNG: duplicate newsgroup number in NGtree: %d(%s)", number, p);
+			return;
+		    }
+		}
+		*nextnode = newnode;
+		return;
+	    }
 	} else if (strcmp(ngtp->ngname, p) == 0) {
 	    /* entry in table already, so return */
 	    DISPOSE(p);
 	    return;
+#if 0 /* XXX */
 	} else if (CompareHash(&ngtp->hash, &hash) == 0) {
 	    /* eep! we hit a hash collision. */
 	    syslog(L_ERROR, "tradspool: AddNG: Hash collison %s/%s", ngtp->ngname, p);
 	    DISPOSE(p);
 	    return;
+#endif 
 	} else {
 	    /* not found yet, so advance to next entry in chain */
 	    ngtpp = &(ngtp->next);
@@ -150,11 +207,17 @@ AddNG(char *ng) {
     }
 }
 
-/* find a newsgroup/spooldir name, given only the 8-byte hash. */
-static char *
-FindNG(HASHEDNG hash) {
+/* find a newsgroup table entry, given only the name. */
+NGTENT *
+FindNGByName(char *ngname) {
     NGTENT *ngtp;
     unsigned int h;
+    HASHEDNG hash;
+    char *p;
+
+    p = COPY(ngname);
+    DeDotify(p); /* canonicalize p to standard (/) form. */
+    hash = HashNGName(p);
 
     h = (unsigned char)hash.hash[0];
     h = h + (((unsigned char)hash.hash[1])<<8);
@@ -164,23 +227,127 @@ FindNG(HASHEDNG hash) {
     ngtp = NGTable[h];
 
     while (ngtp) {
-	if (CompareHash(&hash, &ngtp->hash) == 0) return ngtp->ngname;
+	if (strcmp(p, ngtp->ngname) == 0) {
+	    DISPOSE(p);
+	    return ngtp;
+	}
 	ngtp = ngtp->next;
     }
+    DISPOSE(p);
     return NULL; 
 }
 
-/* init NGTable from active. */
+/* find a newsgroup/spooldir name, given only the newsgroup number */
+static char *
+FindNGByNum(unsigned long ngnumber) {
+    NGTENT *ngtp;
+    NGTREENODE *curnode;
+
+    curnode = NGTree;
+
+    while (curnode) {
+	if (curnode->ngnumber == ngnumber) {
+	    ngtp = curnode->ngtp;
+	    return ngtp->ngname;
+	}
+	if (curnode->ngnumber < ngnumber) {
+	    curnode = curnode->right;
+	} else {
+	    curnode = curnode->left;
+	}
+    }
+    /* not in tree, return NULL */
+    return NULL; 
+}
+
+#define _PATH_TRADSPOOLNGDB "ts.ng.db"
+#define _PATH_NEWTSNGDB "ts.ng.db.new"
+
+
+/* dump DB to file. */
+void
+DumpDB(void) {
+    char *fname, *fnamenew;
+    NGTENT *ngtp;
+    unsigned int i;
+    FILE *out;
+
+    if (!SMopenmode) return; /* don't write if we're not in read/write mode. */
+    if (!NGTableUpdated) return; /* no need to dump new DB */
+
+    fname = COPY(cpcatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB));
+    fnamenew = COPY(cpcatpath(innconf->pathspool, _PATH_NEWTSNGDB));
+
+    if ((out = fopen(fnamenew, "w")) == NULL) {
+	syslog(L_ERROR, "tradspool: DumpDB: can't write %s: %m", fnamenew);
+	return;
+    }
+    for (i = 0 ; i < NGT_SIZE ; ++i) {
+	ngtp = NGTable[i];
+	for ( ; ngtp ; ngtp = ngtp->next) {
+	    fprintf(out, "%s %lu\n", ngtp->ngname, ngtp->ngnumber);
+	}
+    }
+    if (fclose(out) < 0) {
+	syslog(L_ERROR, "tradspool: DumpDB: can't close %s: %m", fnamenew);
+	return;
+    }
+    if (rename(fnamenew, fname) < 0) {
+	syslog(L_ERROR, "tradspool: can't rename %s\n", fnamenew);
+	return;
+    }
+    DISPOSE(fname);
+    DISPOSE(fnamenew);
+    NGTableUpdated = FALSE; /* reset modification flag. */
+    return;
+}
+
+/* 
+** init NGTable from saved database file and from active.  Note that
+** entries in the database file get added first,  and get their specifications
+** of newsgroup number from there. 
+*/
+
 BOOL
-InitNGTable(void) {
-    char *active;
+ReadDBFile(void) {
+    char *fname;
+    QIOSTATE *qp;
+    char *line;
+    char *p;
+    unsigned long number;
+
+    fname = COPY(cpcatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB));
+    if ((qp = QIOopen(fname)) == NULL) {
+	/* only warn if db not found. */
+	syslog(L_NOTICE, "tradspool: %s not found", fname);
+    } else {
+	while ((line = QIOread(qp)) != NULL) {
+	    p = strchr(line, ' ');
+	    if (p == NULL) {
+		syslog(L_FATAL, "tradspool: corrupt line in active %s", line);
+		return FALSE;
+	    }
+	    *p++ = 0;
+	    number = atol(p);
+	    AddNG(line, number);
+	    if (MaxNgNumber < number) MaxNgNumber = number;
+	}
+	QIOclose(qp);
+    }
+    DISPOSE(fname);
+    return TRUE;
+}
+
+BOOL
+ReadActiveFile(void) {
+    char *fname;
     QIOSTATE *qp;
     char *line;
     char *p;
 
-    active = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
-    if ((qp = QIOopen(active)) == NULL) {
-	syslog(L_FATAL, "tradspool: can't open %s", active);
+    fname = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+    if ((qp = QIOopen(fname)) == NULL) {
+	syslog(L_FATAL, "tradspool: can't open %s", fname);
 	return FALSE;
     }
 
@@ -191,11 +358,61 @@ InitNGTable(void) {
 	    return FALSE;
 	}
 	*p = 0;
-	AddNG(line);
+	AddNG(line, 0);
     }
     QIOclose(qp);
+    DISPOSE(fname);
+    /* dump any newly added changes to database */
+    DumpDB();
     return TRUE;
 }
+
+BOOL
+InitNGTable(void) {
+    if (!ReadDBFile()) return FALSE;
+
+    /*
+    ** set NGTableUpdated to false; that way we know if the load of active or
+    ** any AddNGs later on did in fact add new entries to the db.
+    */
+    NGTableUpdated = FALSE; 
+    return ReadActiveFile(); 
+}
+
+/* 
+** Routine called to check every so often to see if we need to reload the
+** database and add in any new groups that have been added.   This is primarily
+** for the benefit of innfeed in funnel mode, which otherwise would never
+** get word that any new newsgroups had been added. 
+*/
+
+#define RELOAD_TIME_CHECK 600
+
+void
+CheckNeedReloadDB(void) {
+    static TIMEINFO lastcheck, oldlastcheck, now;
+    struct stat sb;
+    char *fname;
+
+    if (GetTimeInfo(&now) < 0) return; /* anyone ever seen gettimeofday fail? :-) */
+    if (lastcheck.time + RELOAD_TIME_CHECK > now.time) return;
+
+    oldlastcheck = lastcheck;
+    lastcheck = now;
+
+    fname = COPY(cpcatpath(innconf->pathspool, _PATH_TRADSPOOLNGDB));
+    if (stat(fname, &sb) < 0) {
+	DISPOSE(fname);
+	return;
+    }
+    DISPOSE(fname);
+    if (sb.st_mtime > oldlastcheck.time) {
+	/* add any newly added ngs to our in-memory copy of the db. */
+	ReadDBFile();
+    }
+}
+
+    
 
 /* Init routine, called by SMinit */
 
@@ -209,25 +426,30 @@ tradspool_init(BOOL *selfexpire) {
 static TOKEN
 MakeToken(char *ng, unsigned long artnum) {
     TOKEN token;
-    HASHEDNG hash;
-    char *p;
+    NGTENT *ngtp;
+    unsigned long num;
+
     memset(&token, '\0', sizeof(token));
 
     token.type = TOKEN_TRADSPOOL;
     token.class = 0; /* "class" is irrelevant for traditional spool */
-    hash = HashNGName(ng);
 
     /* 
     ** if not already in the NG Table, be sure to add this ng! This way we
     ** catch things like newsgroups added since startup. 
     */
-    if ((p = FindNG(hash)) == NULL) {
-	AddNG(ng);
+    if ((ngtp = FindNGByName(ng)) == NULL) {
+	AddNG(ng, 0);
+	DumpDB(); /* flush to disk so other programs can see the change */
+	ngtp = FindNGByName(ng);
     } 
 
-    memcpy(token.token, hash.hash, HASHEDNGLEN);
+    num = ngtp->ngnumber;
+    num = htonl(num);
+
+    memcpy(token.token, &num, sizeof(num));
     artnum = htonl(artnum);
-    memcpy(&token.token[HASHEDNGLEN], &artnum, sizeof(artnum));
+    memcpy(&token.token[sizeof(num)], &artnum, sizeof(artnum));
     return token;
 }
 
@@ -236,18 +458,21 @@ MakeToken(char *ng, unsigned long artnum) {
 */
 static char *
 TokenToPath(TOKEN token) {
-    HASHEDNG hash;
+    unsigned long ngnum;
     unsigned long artnum;
     char *ng, *path;
 
-    memcpy(hash.hash, &token.token[0], HASHEDNGLEN);
-    memcpy(&artnum, &token.token[HASHEDNGLEN], sizeof(artnum));
-    artnum = ntohl(artnum);
+    CheckNeedReloadDB(); 
 
-    ng = FindNG(hash);
+    memcpy(&ngnum, &token.token[0], sizeof(ngnum));
+    memcpy(&artnum, &token.token[sizeof(ngnum)], sizeof(artnum));
+    artnum = ntohl(artnum);
+    ngnum = ntohl(ngnum);
+
+    ng = FindNGByNum(ngnum);
     if (ng == NULL) return NULL;
 
-    path = NEW(char, strlen(ng)+30);
+    path = NEW(char, strlen(ng)+20+strlen(innconf->patharticles));
     sprintf(path, "%s/%s/%lu", innconf->patharticles, ng, artnum);
     return path;
 }
@@ -747,4 +972,5 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 
 void
 tradspool_shutdown(void) {
+    DumpDB();
 }
