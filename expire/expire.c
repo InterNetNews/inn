@@ -97,11 +97,11 @@ STATIC long		EXPhistremember;
 STATIC long		EXPallgone;
 STATIC long		EXPstillhere;
 
-STATIC int		EXPsplit();
-
 #if ! defined (atof)            /* NEXT defines aotf as a macro */
 extern double		atof();
 #endif
+
+STATIC int EXPsplit(char *p, char sep, char **argv, int count);
 
 enum KRP {Keep, Remove, Poison};
 
@@ -110,14 +110,12 @@ enum KRP {Keep, Remove, Poison};
 /*
 **  Hash a newsgroup and see if we get it.
 */
-STATIC NEWSGROUP *
-NGfind(Name)
-    char		*Name;
+STATIC NEWSGROUP *NGfind(char *Name)
 {
-    register char	*p;
-    register int	i;
+    char	        *p;
+    int	                i;
     unsigned int	j;
-    register NEWSGROUP	**ngp;
+    NEWSGROUP	        **ngp;
     char		c;
     NGHASH		*htp;
 
@@ -134,10 +132,7 @@ NGfind(Name)
 /*
 **  Sorting predicate to put newsgroups in rough order of their activity.
 */
-STATIC int
-NGcompare(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+STATIC int NGcompare(CPOINTER p1, CPOINTER p2)
 {
     NEWSGROUP	**ng1;
     NEWSGROUP	**ng2;
@@ -151,17 +146,15 @@ NGcompare(p1, p2)
 /*
 **  Build the newsgroup structures from the active file.
 */
-STATIC void
-BuildGroups(active)
-    char		*active;
+STATIC void BuildGroups(char *active)
 {
-    register NGHASH	*htp;
-    register NEWSGROUP	*ngp;
-    register char	*p;
-    register char	*q;
-    register int	i;
-    register unsigned	j;
-    register int	lines;
+    NGHASH	        *htp;
+    NEWSGROUP	        *ngp;
+    char	        *p;
+    char	        *q;
+    int	                i;
+    unsigned	        j;
+    int	                lines;
     int			NGHbuckets;
     char		*fields[5];
 
@@ -223,11 +216,7 @@ BuildGroups(active)
 /*
 **  Open a file or give up.
 */
-STATIC FILE *
-EXPfopen(Remove, Name, Mode)
-    BOOL	Remove;
-    STRING	Name;
-    char	*Mode;
+STATIC FILE *EXPfopen(BOOL Remove, STRING Name, char *Mode)
 {
     FILE	*F;
 
@@ -247,14 +236,9 @@ EXPfopen(Remove, Name, Mode)
 **  Split a line at a specified field separator into a vector and return
 **  the number of fields found, or -1 on error.
 */
-STATIC int
-EXPsplit(p, sep, argv, count)
-    register char	*p;
-    register char	sep;
-    register char	**argv;
-    register int	count;
+STATIC int EXPsplit(char *p, char sep, char **argv, int count)
 {
-    register int	i;
+    int	                i;
 
     if (!p)
       return 0;
@@ -293,15 +277,10 @@ EXPsplit(p, sep, argv, count)
 **  just about everything you expect.  Print a message and return FALSE
 **  on error.
 */
-STATIC BOOL
-EXPgetnum(line, word, v, name)
-    int			line;
-    char		*word;
-    time_t		*v;
-    char		*name;
+STATIC BOOL EXPgetnum(int line, char *word, time_t *v, char *name)
 {
-    register char	*p;
-    register BOOL	SawDot;
+    char	        *p;
+    BOOL	        SawDot;
     double		d;
 
     if (caseEQ(word, "never")) {
@@ -339,15 +318,11 @@ EXPgetnum(line, word, v, name)
 /*
 **  Set the expiration fields for all groups that match this pattern.
 */
-STATIC void
-EXPmatch(p, v, mod)
-    register char	*p;
-    register NEWSGROUP	*v;
-    register char	mod;
+STATIC void EXPmatch(char *p, NEWSGROUP *v, char mod)
 {
-    register NEWSGROUP	*ngp;
-    register int	i;
-    register BOOL	negate;
+    NEWSGROUP	        *ngp;
+    int	                i;
+    BOOL	        negate;
 
     negate = *p == '!';
     if (negate)
@@ -375,15 +350,13 @@ EXPmatch(p, v, mod)
 /*
 **  Parse the expiration control file.  Return TRUE if okay.
 */
-STATIC BOOL
-EXPreadfile(F)
-    register FILE	*F;
+STATIC BOOL EXPreadfile(FILE *F)
 {
-    register char	*p;
-    register int	i;
-    register int	j;
-    register int	k;
-    register char	mod;
+    char	        *p;
+    int	                i;
+    int	                j;
+    int	                k;
+    char	        mod;
     NEWSGROUP		v;
     BOOL		SawDefault;
     char		buff[BUFSIZ];
@@ -500,13 +473,11 @@ EXPreadfile(F)
 /*
 **  Handle a newsgroup that isn't in the active file.
 */
-STATIC NEWSGROUP *
-EXPnotfound(Entry)
-    char		*Entry;
+STATIC NEWSGROUP *EXPnotfound(char *Entry)
 {
     static NEWSGROUP	Removeit;
-    register BADGROUP	*bg;
-    register char	*p;
+    BADGROUP	        *bg;
+    char	        *p;
     struct stat		Sb;
     char		buff[SPOOLNAMEBUFF];
 
@@ -550,14 +521,10 @@ EXPnotfound(Entry)
 /*
 **  Should we keep the specified article?
 */
-STATIC enum KRP
-EXPkeepit(Entry, when, Expires)
-    char		*Entry;
-    time_t		when;
-    time_t		Expires;
+STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
 {
-    register char	*p;
-    register NEWSGROUP	*ngp;
+    char	        *p;
+    NEWSGROUP	        *ngp;
 
     if ((p = strchr(Entry, '/')) == NULL) {
 	(void)fflush(stdout);
@@ -613,12 +580,9 @@ EXPkeepit(Entry, when, Expires)
 **  An article can be removed.  Either print a note, or actually remove it.
 **  Also fill in the article size.
 */
-STATIC void
-EXPremove(p, size)
-    char		*p;
-    long		*size;
+STATIC void EXPremove(char *p, long *size)
 {
-    register char	*q;
+    char	        *q;
     struct stat		Sb;
 
     /* Turn into a filename and get the size if we need it. */
@@ -654,13 +618,7 @@ EXPremove(p, size)
 /*
 **  Do the work of expiring one line.
 */
-STATIC BOOL
-EXPdoline(out, line, length, arts, krps)
-    FILE		*out;
-    char		*line;
-    int			length;
-    char		**arts;
-    enum KRP            *krps;
+STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *krps)
 {
     static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
     static long		Offset;
@@ -910,11 +868,7 @@ EXPdoline(out, line, length, arts, krps)
 /*
 **  Clean up link with the server and exit.
 */
-STATIC NORETURN
-CleanupAndExit(Server, Paused, x)
-    BOOL	Server;
-    BOOL	Paused;
-    int		x;
+STATIC NORETURN CleanupAndExit(BOOL Server,BOOL Paused, int x)
 {
     FILE	*F;
 
@@ -964,24 +918,20 @@ CleanupAndExit(Server, Paused, x)
 /*
 **  Print a usage message and exit.
 */
-STATIC NORETURN
-Usage()
+STATIC NORETURN Usage(void)
 {
     (void)fprintf(stderr, "Usage: expire [flags] [expire.ctl]\n");
     exit(1);
 }
 
 
-int
-main(ac, av)
-    int			ac;
-    char		*av[];
+int main(int ac, char *av[])
 {
     static char		CANTCD[] = "Can't cd to %s, %s\n";
-    register int	i;
-    register int	line;
-    register char	*p;
-    register QIOSTATE	*qp;
+    int                 i;
+    int	                line;
+    char 	        *p;
+    QIOSTATE 	        *qp;
     FILE		*F;
     char		*active;
     char		**arts;
@@ -1294,4 +1244,5 @@ main(ac, av)
 
     CleanupAndExit(Server, Paused, Bad ? 1 : 0);
     /* NOTREACHED */
+    abort();
 }
