@@ -406,7 +406,6 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
 {
     curaccess->allownewnews = innconf->allownewnews;;
     curaccess->locpost = FALSE;
-    curaccess->allowapproved = FALSE;
     curaccess->localtime = FALSE;
     curaccess->strippath = FALSE;
     curaccess->nnrpdperlfilter = TRUE;
