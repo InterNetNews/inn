@@ -909,14 +909,18 @@ static void PERMreadfile(char *filename)
     int		oldtype;
     char	*str	    = NULL;
 
-    cf		= NEW(CONFCHAIN, 1);
-    cf->f	= CONFfopen(filename);
-    cf->parent	= 0;
-
     if(filename != NULL) {
 	syslog(L_TRACE, "Reading access from %s", 
 	       filename == NULL ? "(NULL)" : filename);
     }
+
+    cf		= NEW(CONFCHAIN, 1);
+    if ((cf->f = CONFfopen(filename)) == NULL) {
+	syslog(L_ERROR, "%s cannot open %s: %m", ClientHost, filename);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1, TRUE);
+    }
+    cf->parent	= 0;
 
     /* are we editing an AUTH or ACCESS group? */
 
