@@ -167,12 +167,11 @@ Whether newsgroup creation control messages (newgroup and rmgroup) should
 be fed as if they were posted to the newsgroup they are creating or
 deleting rather than to the newsgroups listed in the Newsgroups: header.
 If this parameter is set, the newsgroup affected by the control message
-will be extracted from the Control: or Subject: header and the article
-will be fed as if its Newsgroups: header contained solely that newsgroup.
-This is useful for routing control messages to peers when they are posted
-to irrelevant newsgroups that shouldn't be matched against the peer's
-desired newsgroups in F<newsfeeds>.  This is a boolean value and the
-default is false.
+will be extracted from the Control: header and the article will be fed as
+if its Newsgroups: header contained solely that newsgroup.  This is useful
+for routing control messages to peers when they are posted to irrelevant
+newsgroups that shouldn't be matched against the peer's desired newsgroups
+in F<newsfeeds>.  This is a boolean value and the default is false.
 
 =item I<immediatecancel>
 
@@ -697,8 +696,9 @@ with an error.
 
 Whether to generate a Sender: header based on reader authentication.  If
 this parameter is set, a Sender: header will be added to local posts
-containing the authenticated user name and the reader's hostname.  If this
-is enabled but authentication does not return a username, the Sender:
+containing the identity assigned by F<readers.conf>.; if the assigned
+identity does not include an C<@>, the reader's hostname is used.  If
+this parameter is set but no identity can be assigned, the Sender:
 header will be removed from all posts even if the poster includes one.
 This is a boolean value and the default is false.
 

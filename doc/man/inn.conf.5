@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2002-12-07" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -280,12 +280,11 @@ Whether newsgroup creation control messages (newgroup and rmgroup) should
 be fed as if they were posted to the newsgroup they are creating or
 deleting rather than to the newsgroups listed in the Newsgroups: header.
 If this parameter is set, the newsgroup affected by the control message
-will be extracted from the Control: or Subject: header and the article
-will be fed as if its Newsgroups: header contained solely that newsgroup.
-This is useful for routing control messages to peers when they are posted
-to irrelevant newsgroups that shouldn't be matched against the peer's
-desired newsgroups in \fInewsfeeds\fR.  This is a boolean value and the
-default is false.
+will be extracted from the Control: header and the article will be fed as
+if its Newsgroups: header contained solely that newsgroup.  This is useful
+for routing control messages to peers when they are posted to irrelevant
+newsgroups that shouldn't be matched against the peer's desired newsgroups
+in \fInewsfeeds\fR.  This is a boolean value and the default is false.
 .IP "\fIimmediatecancel\fR" 4
 .IX Item "immediatecancel"
 When using the timecaf storage method, article cancels are normally just
@@ -738,8 +737,9 @@ with an error.
 .IX Item "nnrpdauthsender"
 Whether to generate a Sender: header based on reader authentication.  If
 this parameter is set, a Sender: header will be added to local posts
-containing the authenticated user name and the reader's hostname.  If this
-is enabled but authentication does not return a username, the Sender:
+containing the identity assigned by \fIreaders.conf\fR.; if the assigned
+identity does not include an \f(CW\*(C`@\*(C'\fR, the reader's hostname is used.  If
+this parameter is set but no identity can be assigned, the Sender:
 header will be removed from all posts even if the poster includes one.
 This is a boolean value and the default is false.
 .IP "\fInnrpdposthost\fR" 4
