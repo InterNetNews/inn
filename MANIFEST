@@ -1,7 +1,6 @@
    File Name		Archive #	Description
 ----------------------------------------------------------
 .now_do                     1 Notification file used by configure
-CHANGES                     1 RCS logs
 CONTRIBUTORS                1 Contributors info
 COPYRIGHT                   1 Legal mumbo-jumbo
 HACKING                     1 Docs for INN coders and maintainers
@@ -21,21 +20,23 @@ aclocal.m4                  1 M4 macro for libtool
 authprogs                   1 The authorization programs (Directory)
 authprogs/Makefile          1 Makefile for authprograms
 authprogs/README.auth_pass  1 The authprogs README
+authprogs/README.readers.conf 1 Developer docs for readers.conf
 authprogs/auth_pass.c       1 A sample prog for use with authinfo generic
 authprogs/ckpasswd.c        1 Prog for checking password
 authprogs/domain.c          1 Prog to get username from remote user's hostname
 authprogs/ident.c           1 Prog for checking ident
 authprogs/pwcheck.c         1 Prog for checking password thru socket
 authprogs/radius.c          1 Prog for checking thru radius server
-authprogs/README.readers.conf 1 Developer docs for readers.conf
 backends                    1 Outgoing feed programs (Directory)
 backends/Makefile           1 Makefile for outgoing feed programs
-backends/actmerge.sh.in     1 Merge two active files to stdout.
+backends/actmerge.in        1 Merge two active files to stdout.
 backends/actsync.c          1 Polling remote(s) for active file & merge.
-backends/actsyncd.sh.in     1 Deamon to run actsync periodically
+backends/actsyncd.in        1 Deamon to run actsync periodically
 backends/archive.c          1 Simple article archiver
 backends/batcher.c          1 Make news batches
 backends/buffchan.c         1 Buffered split a funnel into separate files
+backends/controlbatch.in    1 Batch program for controlchan
+backends/controlchan.in     1 Channel program for control messages
 backends/crosspost.c        1 Crosspost link maker
 backends/cvtbatch.c         1 Add fields to simple batchfile
 backends/filechan.c         1 Split a funnel into separate files
@@ -43,16 +44,21 @@ backends/inndf.c            1 df used for innwatch
 backends/innxbatch.c        1 Send batches using XBATCH command to remote.
 backends/innxmit.c          1 Send articles to remote site
 backends/map.c              1 Site name to filename mapping routines
+backends/mod-active.in      1 Batch do ctlinnd newgroup/rmgroup/changegroup
+backends/news2mail.in       1 News to mail gateway
 backends/nntpget.c          1 Get articles from remote site
+backends/nntpsend.in        1 Invoke all innxmit's at once
 backends/overchan.c         1 Update news overview database
+backends/pgpverify.in       1 Sample pgpverify program
 backends/rcompress.c        1 Compress on a remote host
-backends/sendxbatches.sh.in 1 Shell wrapper around innxbatch
+backends/send-ihave.in      1 Script to post ihave messages
+backends/send-nntp.in       1 Shell script to call innxmit
+backends/send-uucp.in       1 Script to call batcher
+backends/sendbatch.in       1 B News-like script to send UUCP batches
+backends/sendxbatches.in    1 Shell wrapper around innxbatch
 backends/shlock.c           1 Program to make lockfiles in scripts
 backends/shrinkfile.c       1 Shrink file by removing data from beginning
 config                      1 Configuration files (Directory)
-config.guess                1 Script for libtool
-config.sub                  1 Script for libtool
-config/fixinterps.pl        1 Interpreter path fixup script.
 configure                   1 Script to setup configuration before making inn
 configure.in                1 File to create configure
 contrib                     1 External contributions (Directory)
@@ -87,8 +93,8 @@ doc/man/actsync.8           1 Manpage for active file synchro. program.
 doc/man/actsyncd.8          1 Manpage for active file synchro. program.
 doc/man/archive.8           1 Manpage for archive
 doc/man/batcher.8           1 Manpage for batcher
-doc/man/buffindexed.conf.5  1 Manpage for buffindexed.conf
 doc/man/buffchan.8          1 Manpage for buffchan backend
+doc/man/buffindexed.conf.5  1 Manpage for buffindexed.conf
 doc/man/clientlib.3         1 Manpage for part of InterNetNews library
 doc/man/cnfsheadconf.8      1 Manpage for cnfsheadconf
 doc/man/cnfsstat.8          1 Manpage for cnfsstat
@@ -185,7 +191,9 @@ doc/pod/hook-perl.pod       1 Master file for README.perl_hook
 doc/pod/inn.conf.pod        1 Master file for inn.conf.5
 doc/pod/inndstart.pod       1 Master file for inndstart.8
 doc/pod/install.pod         1 Master file for INSTALL
+doc/pod/news.pod            1 Master file for NEWS
 doc/pod/readme.pod          1 Master file for README
+doc/sample-control          1 Sample pgp signed control message
 doc/sgml                    1 SGML version (Directory)
 doc/sgml/.placemarker       1 Marker file
 doc/sgml/Makefile           1 Makefile for sgml documentation
@@ -199,6 +207,7 @@ expire/Makefile             1 Makefile for expiration
 expire/convdate.c           1 Date string conversions
 expire/expire.c             1 Expire old articles and history lines
 expire/expireover.c         1 Expire news overview data
+expire/expirerm.in          1 Remove articles from expire -z
 expire/fastrm.c             1 Remove list of files
 expire/grephistory.c        1 Find entries in history database
 expire/makedbz.c            1 Recover dbz
@@ -207,19 +216,22 @@ expire/newsrequeue.c        1 Write filechan input from history file
 expire/prunehistory.c       1 Prune file names from history file
 frontends                   1 Inews, rnews, ctlinnd (Directory)
 frontends/Makefile          1 Makefile for frontends
-frontends/c7unbatch.sh.in   1 Decode and uncompress input
+frontends/cnfsheadconf.in   1 Setup cycbuff header
+frontends/cnfsstat.in       1 Show cycbuff status
 frontends/ctlinnd.c         1 Send control request to innd
 frontends/decode.c          1 Decode 7-bit data into binary file
 frontends/encode.c          1 Encode binary file into 7-bit data
 frontends/feedone.c         1 Test rig to feed a single NNTP article
 frontends/getlist.c         1 Get active or other file from NNTP server
-frontends/gunbatch.sh.in    1 Decode and gunzip input
 frontends/inews.c           1 Send article to local NNTP server
 frontends/innconfval.c      1 Get an INN configuration parameter
+frontends/mailpost.in       1 Email to news gateway
+frontends/pullnews.in       1 sucking feeder
 frontends/rnews.c           1 UUCP unbatcher
+frontends/scanspool.in      1 Scan spool directory for trash
+frontends/signcontrol.in    1 pgp control message signing program.
 frontends/sm.c              1 Get article or overview data from token
 frontends/sys2nf.c          1 Sys file to newsfeeds conversion aide
-iftrue.sh                   1 Execute command if test(1) is true
 include                     1 Header files (Directory)
 include/acconfig.h          1 Master file for config.h.in
 include/clibrary.h          1 C library portability
@@ -236,6 +248,7 @@ include/md5.h               1 Header file for processing md5
 include/nntp.h              1 NNTP command and reply codes
 include/ov.h                1 Header file for OV
 include/paths.h.in          1 Paths to common programs and files
+include/ppport.h            1 Header file for perl support
 include/qio.h               1 Header file for quick I/O package
 include/rwlock.h            1 Header file for rwlock
 include/storage.h           1 Header file for storageAPI
@@ -273,7 +286,6 @@ innfeed/article.c           1 Implementation of the Article class
 innfeed/article.h           1 Public interface to articles
 innfeed/buffer.c            1 Implementation of the Buffer class
 innfeed/buffer.h            1 Public interface to the Buffer class
-innfeed/config.h            1 Application configuration values
 innfeed/config_l.c          1 A flex input file for the innfeed config file
 innfeed/configfile.h        1 Header file for configfile.y
 innfeed/configfile.l        1 A flex input file for innfeed config file
@@ -288,6 +300,7 @@ innfeed/endpoint.h          1 Public interface to the EndPoint class
 innfeed/host.c              1 Implementation of the Host class
 innfeed/host.h              1 Public interface to the Host class
 innfeed/innfeed-convcfg.in  1 Script to convert old innfeed.conf
+innfeed/innfeed.h           1 Application configuration values
 innfeed/innlistener.c       1 Implementation of the InnListener class
 innfeed/innlistener.h       1 Public interface of the things that listens to
 innfeed/main.c              1 Main routines for the innfeed program
@@ -298,13 +311,10 @@ innfeed/misc.h              1 Header file for misc.c
 innfeed/msgs.h              1 Log message definition
 innfeed/procbatch.in        1 Script to process dropped articles
 innfeed/startinnfeed.c      1 Start innfeed and pass it all the arguments given
-innfeed/sysconfig.h         1 Header file for system dependent definition
 innfeed/tape.c              1 Implementation of the Tape class
 innfeed/tape.h              1 Public interface to the Tape class
 innfeed/testListener.pl     1 Script to hand 
 innfeed/uio_maxiov.c        1 Test program to get element number of writev
-install-sh                  1 Script for libtool
-installit.sh                1 File/directory installation tool
 lib                         1 InterNetNews library routines (Directory)
 lib/Makefile                1 Makefile for library
 lib/argparse.c              1 Used for OV3
@@ -328,7 +338,7 @@ lib/getopt.c                1 Help parse command line
 lib/gettime.c               1 Get time and timezone info
 lib/grpalias.c              1 Used for OV3
 lib/hash.c                  1 Create hash from msgid
-lib/inet_addr.c             1 Extra source for inet_aton() routine
+lib/inet_aton.c             1 Extra source for inet_aton() routine
 lib/inet_ntoa.c             1 Convert in_addr to string (BSD)
 lib/inndcomm.c              1 Library routines to talk to innd
 lib/innvers.c               1 Return InterNetNews version string
@@ -358,7 +368,9 @@ lib/resource.c              1 Get process CPU usage
 lib/rwlock.c                1 Wrlock routine
 lib/sendarticle.c           1 Send an article, NNTP style
 lib/sendpass.c              1 Send NNTP authentication
+lib/setenv.c                1 Setenv() routine
 lib/strcasecmp.c            1 Case-insenstive string comparison (BSD)
+lib/strdup.c                1 Strdup() routine
 lib/strerror.c              1 String representation of errno
 lib/strspn.c                1 Skip bytes in a string (BSD)
 lib/strtok.c                1 Split a string into tokens (BSD)
@@ -368,14 +380,9 @@ lib/wildmat.c               1 Pattern match routine
 lib/writev.c                1 Fake writev for sites without it
 lib/xfopena.c               1 Open a FILE in append mode
 lib/xmalloc.c               1 Failsafe memory allocation wrapper
-lib/xmemerr.c               1 Memory allocation error routine
-lib/xrealloc.c              1 Failsafe memory reallocation wrapper
 lib/xsignal.c               1 signal() wrapper using sigaction
 lib/xwrite.c                1 Write that handles partial transfers
 lib/xwritev.c               1 Writev that handles partial transfers
-ltconfig                    1 Script for libtool
-ltmain.sh                   1 Script for libtool
-makedirs.sh.in              1 Script to make INN directories
 nnrpd                       1 Net News Reader server (Directory)
 nnrpd/Makefile              1 Makefile for nnrpd
 nnrpd/article.c             1 Article-related routines
@@ -394,87 +401,74 @@ nnrpd/track.c               1 Track client
 nnrpd/udp.c                 1 Udp handling for actived
 samples                     1 Prototype InterNetNews files (Directory)
 samples/INN.py              1 Stub Python functions
+samples/Makefile            1 Makefile for samples
 samples/actsync.cfg.in      1 Config file for actsync
 samples/actsync.ign         1 Ignore file for actsync
 samples/buffindexed.conf    1 Sample file for buffindexed.conf
 samples/checkgroups.in      1 Checkgroups control message handler
-samples/checkgroups.pl.in   1 Checkgroups handler for controlchan
-samples/cnfsheadconf.in     1 Setup cycbuff header
-samples/cnfsstat.in         1 Show cycbuff status
+samples/checkgroups.pl      1 Checkgroups handler for controlchan
 samples/control.ctl         1 Access control for control messages
-samples/controlbatch.in     1 Batch program for controlchan
-samples/controlchan.in      1 Channel program for control messages
 samples/cycbuff.conf        1 Sample cycbuff.conf(5) file
 samples/default.in          1 Default control message handler
 samples/distrib.pats        1 Default values for Distribution header
 samples/docheckgroups.in    1 Script to execute checkgroups text
 samples/expire.ctl          1 Sample expire.ctl(5) file
-samples/expirerm.in         1 Remove articles from expire -z
 samples/filter.tcl          1 Sample tcl filter
 samples/filter_innd.pl      1 Sample perl filter for innd
 samples/filter_innd.py      1 Sample python filter for innd
 samples/filter_nnrpd.pl     1 Sample perl filter for nnrpd
 samples/ihave.in            1 Ihave control message handler
-samples/ihave.pl.in         1 Ihave control message handler for controlchan
+samples/ihave.pl            1 Ihave control message handler for controlchan
 samples/incoming.conf       1 Sample incoming.conf(5) file
 samples/inn.conf.in         1 Sample inn.conf(5) file
-samples/inncheck.in         1 Perl script to syntax-check INN config files
 samples/innfeed.conf        1 Sample innfeed.conf(5) file
-samples/innmail.in          1 Perl front-end to sendmail.
 samples/innreport.conf.in   1 Sample innreport.conf file
-samples/innreport.in        1 Script to report inn statistics
-samples/innreport_inn.pm    1 Config file for innreport
-samples/innshellvars.in     1 Script to set config parameters
-samples/innshellvars.pl.in  1 Perl Script to set config parameters
-samples/innshellvars.tcl.in 1 TCL Script to set config parameters
-samples/innstat.in          1 Display INN status snapshot
 samples/innwatch.ctl.in     1 Sample innwatch.ctl(5) file
-samples/innwatch.in         1 Throttle innd based on load and disk space
-samples/mailpost.in         1 Email to news gateway
-samples/mod-active.in       1 Batch do ctlinnd newgroup/rmgroup/changegroup
 samples/moderators          1 Sample moderators(5) file
 samples/motd.news           1 Sample motd.news(5) file
 samples/newgroup.in         1 Newgroup control message handler
-samples/newgroup.pl.in      1 Newgroup control message handler for controlchan
-samples/news.daily.in       1 Front-end script to run expire, etc.
+samples/newgroup.pl         1 Newgroup control message handler for controlchan
 samples/news2mail.cf        1 news2mail config file
-samples/news2mail.in        1 News to mail gateway
 samples/newsfeeds.in        1 Sample newsfeeds(5) file
 samples/nnrpd.track         1 Sample nnrpd.track(5) file
 samples/nnrpd_auth.pl.in    1 Sample nnrpd authorization script
 samples/nntpsend.ctl        1 Sample control file for nntpsend
-samples/nntpsend.in         1 Invoke all innxmit's at once
 samples/overview.fmt        1 Format of news overview database
 samples/parsecontrol.in     1 Initial parsing of control messages
 samples/passwd.nntp         1 Sample passwd.nntp(5) file
-samples/pgpverify.in        1 Sample pgpverify program
-samples/pullnews.in         1 sucking feeder
-samples/rc.news.in          1 News boot script
+samples/radius.conf         1 Sample radius.conf file
 samples/readers.conf        1 Sample readers.conf(5) file
 samples/rmgroup.in          1 Rmgroup control message handler
-samples/rmgroup.pl.in       1 Rmgroup control message handler for controlchan
+samples/rmgroup.pl          1 Rmgroup control message handler for controlchan
 samples/sample.control      1 Control message for testing PGP
-samples/scanlogs.in         1 Summarize log files
-samples/scanspool.in        1 Scan spool directory for trash
-samples/send-ihave.in       1 Script to post ihave messages
-samples/send-nntp.in        1 Shell script to call innxmit
-samples/send-uucp.in        1 Script to call batcher
-samples/sendbatch.in        1 B News-like script to send UUCP batches
 samples/sendme.in           1 Sendme control message handler
-samples/sendme.pl.in        1 Sendme control message handler for controlchan
+samples/sendme.pl           1 Sendme control message handler for controlchan
 samples/sendsys.in          1 Sendsys control message handler
-samples/sendsys.pl.in       1 Sendsys control message handler for controlchan
+samples/sendsys.pl          1 Sendsys control message handler for controlchan
 samples/senduuname.in       1 Senduuname control message handler
-samples/senduuname.pl.in    1 Senduuname control message handler for controlchan
-samples/signcontrol.in      1 pgp control message signing program.
-samples/simpleftp.in        1 Rudimentary perl ftp client
+samples/senduuname.pl       1 Senduuname control message handler for controlchan
 samples/startup.tcl.in      1 tcl startup code.
 samples/startup_innd.pl     1 perl startup code for innd
 samples/storage.conf        1 Sample storage.conf(5) file
-samples/tally.control.in    1 Count newgroup/rmgroup messages
 samples/version.in          1 Version control message handler
-samples/version.pl.in       1 Version control message handler for controlchan
-samples/writelog.in         1 Write a log entry or mail it
+samples/version.pl          1 Version control message handler for controlchan
+scripts                     1 Script files (Directory)
+scripts/Makefile            1 Makefile for script files
+scripts/inncheck.in         1 Perl script to syntax-check INN config files
+scripts/innmail.in          1 Perl front-end to sendmail.
+scripts/innreport.in        1 Script to report inn statistics
+scripts/innreport_inn.pm    1 Config file for innreport
+scripts/innshellvars.in     1 Script to set config parameters
+scripts/innshellvars.pl.in  1 Perl Script to set config parameters
+scripts/innshellvars.tcl.in 1 TCL Script to set config parameters
+scripts/innstat.in          1 Display INN status snapshot
+scripts/innwatch.in         1 Throttle innd based on load and disk space
+scripts/news.daily.in       1 Front-end script to run expire, etc.
+scripts/rc.news.in          1 News boot script
+scripts/scanlogs.in         1 Summarize log files
+scripts/simpleftp.in        1 Rudimentary perl ftp client
+scripts/tally.control.in    1 Count newgroup/rmgroup messages
+scripts/writelog.in         1 Write a log entry or mail it
 site                        1 Site-local files (Directory)
 site/Makefile               1 Makefile for site-local files
 site/getsafe.sh             1 Safely get config file from samples directory
@@ -528,3 +522,10 @@ storage/trash/Makefile      1 Makefile for trash method
 storage/trash/method.config 1 Definition file used by buildconfig
 storage/trash/trash.c       1 Trash routines
 storage/trash/trash.h       1 Header file for timehash
+support                     1 Tools for creating INN family  files (Directory)
+support/config.guess        1 Script for libtool
+support/config.sub          1 Script for libtool
+support/fixscript.in        1 Interpreter path fixup script
+support/install-sh          1 Script for libtool
+support/ltconfig            1 Script for libtool
+support/ltmain.sh           1 Script for libtool
