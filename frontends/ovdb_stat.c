@@ -341,7 +341,7 @@ static struct datatab MEM_tab[] = {
 #endif
  { INT32, F(st_map),           -1, -1, "Memory mapped pages"},
  { INT32, F(st_page_create),   -1, -1, "Pages created in the cache"},
- { INT32, F(st_page_in),       -1, -1, "Pages read in the cache"},
+ { INT32, F(st_page_in),       -1, -1, "Pages read into the cache"},
  { INT32, F(st_page_out),      -1, -1, "Pages written from the cache to the backing file"},
  { INT32, F(st_ro_evict),      -1, -1, "Clean pages forced from the cache"},
  { INT32, F(st_rw_evict),      -1, -1, "Dirty pages forced from the cache"},
