@@ -7,12 +7,6 @@
 .\" RCSId:        $Id$
 .\" Description:  Man page for innfeed(1)
 .\"
-.de t$
-/var/news/spool/innfeed
-..
-.de c$
-innfeed.conf
-..
 .TH INNFEED 1
 .\"
 .\"
@@ -124,12 +118,12 @@ will close the file and open the new file created by innd. Something like:
 .PP
 .RS
 .nf
-innfeed -p /var/tmp/innfeed.pid my-funnel-file &
+innfeed -p /var/run/news/innfeed.pid my-funnel-file &
 while true; do
 	sleep 43200
 	rm -f my-funnel-file
 	ctlinnd flush funnel-file-site
-	kill -ALRM `cat /var/tmp/innfeed.pid`
+	kill -ALRM `cat /var/run/news/innfeed.pid`
 done
 .fi
 .RE
@@ -364,18 +358,17 @@ summary of the statistics over the entire life of the process.
 .B \-a
 The ``\fI\-a\fP'' flag is used to specify the top of the article spool
 tree. Innfeed does a chdir(2) to this directory, so it should probably be
-an absolute path.
+an absolute path. The default is <pathspool\ in\ inn.conf>.
 .TP
 .B \-b
 The ``\fI\-b\fP'' flag may be used to specify a different directory for backlog
-file storage and retrieval. The default is normally
-.t$
+file storage and retrieval. If the path is relative then it is relative
+to <pathspool\ in\ inn.conf>. The default is ``\fIinnfeed\fP''.
 .TP
 .B \-c
 The ``\fI\-c\fP'' flag may be used to specify a different config file from the
-default value. If the path is relative then it is relative to the backlog
-directory. The default is 
-.c$
+default value. If the path is relative then it is relative to
+<pathetc\ in\ inn.conf>. The default is ``\fIinnfeed.conf\fP''.
 .TP
 .B \-C 
 The ``\fI\-C\fP'' flag is used to have innfeed simply check the config
@@ -417,13 +410,13 @@ data innfeed is supposed to keep in memory. This doesn't work properly yet.
 .TP
 .B \-p 
 The ``\fI\-p\fP'' flag is used to specify the filename to write the pid of the
-process into. A relative path is relative to the backlog directory. The
+process into. A relative path is relative to <pathrun\ in\ inn.conf>. The
 default is ``\fIinnfeed.pid\fP''.
 .TP
 .B \-S
 The ``\fI\-S\fP'' flag specifies the name of the file to write the periodic
-staus to. If the path is relative it is considered relative to the backlog
-directory. The default is ``\fIinnfeed.status\fP''.
+staus to. If the path is relative it is considered relative to
+<pathlog\ in\ inn.conf>. The default is ``\fIinnfeed.status\fP''.
 .TP
 .B \-v
 When the ``\fI\-v\fP'' flag is given, version information is printed to stderr
@@ -472,9 +465,9 @@ Probably too many other bugs to count.
 .\"
 .\"
 .SH FILES
-.c$	config file.
+infeed.conf	config file.
 .br
-.t$	directory for backlog files.
+innfeed		directory for backlog files.
 .\"
 .\"
 .\"

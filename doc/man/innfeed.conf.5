@@ -89,9 +89,6 @@ A small example could be:
 .PP
 .RS
 .nf
-# Global value for the process
-news-spool:			/var/news/spool/articles
-
 # Global value applied to all peers that have 
 # no value of their own.
 max-connections: 5
@@ -521,14 +518,13 @@ Below is the sample innfeed.conf file.
 ## will override these values.
 ##
 
-news-spool:             /var/news/spool/articles
 pid-file:               innfeed.pid
 debug-level:            0
 use-mmap:               false
 log-file:               innfeed.log
 stdio-fdmax:            0
 
-backlog-directory:      /var/news/spool/innfeed
+backlog-directory:      innfeed
 backlog-rotate-period:  60
 backlog-ckpt-period:    30
 backlog-newfile-period: 600

@@ -14,7 +14,8 @@ MISSING_MAN =
 MANFLAGS = $(OWNER) -m 0444
 
 SEC1	= convdate.1 getlist.1 grephistory.1 inews.1 innconfval.1 installit.1 \
-	nntpget.1 rnews.1 shlock.1 shrinkfile.1 subst.1 innfeed.1
+	nntpget.1 rnews.1 shlock.1 shrinkfile.1 subst.1 innfeed.1 \
+	startinnfeed.1
 SEC3	= $(MISSING_MAN) \
 	clientlib.3 dbz.3 inndcomm.3 libinn.3 libstorage.3 parsedate.3 qio.3 \
 	wildmat.3
@@ -36,7 +37,8 @@ INSTALLED_SEC1 =	$D$(MAN1)/convdate.1 $D$(MAN1)/getlist.1 \
 			$D$(MAN1)/innconfval.1 $D$(MAN1)/installit.1 \
 			$D$(MAN1)/nntpget.1 $D$(MAN1)/rnews.1 \
 			$D$(MAN1)/shlock.1 $D$(MAN1)/shrinkfile.1 \
-			$D$(MAN1)/subst.1 $D$(MAN1)/innfeed.1
+			$D$(MAN1)/subst.1 $D$(MAN1)/innfeed.1 \
+			$D$(MAN1)/startinnfeed.1
 
 INSTALLED_SEC3 =	$D$(MAN3)/clientlib.3 $D$(MAN3)/dbz.3 \
 			$D$(MAN3)/inndcomm.3 $D$(MAN3)/libinn.3 \
@@ -116,6 +118,7 @@ $D$(MAN1)/shlock.1:		shlock.1	   ; $(COPY) $? $@
 $D$(MAN1)/shrinkfile.1:		shrinkfile.1	   ; $(COPY) $? $@
 $D$(MAN1)/subst.1:		subst.1		   ; $(COPY) $? $@
 $D$(MAN1)/innfeed.1:		innfeed.1	   ; $(COPY) $? $@
+$D$(MAN1)/startinnfeed.1:	startinnfeed.1	   ; $(COPY) $? $@
 
 $D$(MAN3)/clientlib.3:		clientlib.3	   ; $(COPY) $? $@
 $D$(MAN3)/dbz.3:		dbz.3		   ; $(COPY) $? $@
