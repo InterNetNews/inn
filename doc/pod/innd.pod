@@ -51,14 +51,15 @@ variety of configuration parameters.  Some parameters in inn.conf(5) can
 also be set with command-line flags; for these, the command-line flags
 take precedence if used.
 
-B<innd> should normally never be run directly.  Among other problems, it
-must run as the news user or all sorts of file ownership problems may
-result, and normally the port it listens on (119 or 433) is privileged and
-must be opened by root.  Instead, B<innd> should be started via
-inndstart(8), a small setuid-root program that opens the appropriate port,
-cleans up the environment, changes to the news user, and then runs
-B<innd>, passing along any command-line arguments.  (To use IPv6, B<innd>
-absolutely must be started by inndstart(8).)
+B<innd> should normally not run directly.  It must run as the news user or
+all sorts of file ownership problems may result, and normally the port it
+listens on (119 or 433) is privileged and must be opened by root.
+Instead, B<innd> should normally be started via inndstart(8), a small
+setuid-root program that opens the appropriate port, cleans up the
+environment, changes to the news user, and then runs B<innd>, passing
+along any command-line arguments.
+
+To use IPv6, B<innd> must be started by B<inndstart>.
 
 =head1 OPTIONS
 
@@ -467,6 +468,15 @@ SIGINT will also be caught and will result in an orderly shutdown.
 
 B<innd> will catch the SIGUSR1 signal and recreate the control channel
 used by ctlinnd(8).
+
+=head1 BUGS
+
+B<innd> normally attempts to strip IP options from incoming connections,
+since it uses IP-based authentication and source routing can confuse that.
+However, this doesn't work on all systems, and it doesn't work at all in
+the presence of IPv6 support (and is disabled in that case).  Hence, if
+using B<innd> with IPv6 support, make sure that your kernel or router
+disables source routing.
 
 =head1 HISTORY
 

@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INND 8"
-.TH INND 8 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
+.TH INND 8 "2002-12-29" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 innd \- InterNetNews daemon
 .SH "SYNOPSIS"
@@ -180,14 +180,15 @@ variety of configuration parameters.  Some parameters in \fIinn.conf\fR\|(5) can
 also be set with command-line flags; for these, the command-line flags
 take precedence if used.
 .PP
-\&\fBinnd\fR should normally never be run directly.  Among other problems, it
-must run as the news user or all sorts of file ownership problems may
-result, and normally the port it listens on (119 or 433) is privileged and
-must be opened by root.  Instead, \fBinnd\fR should be started via
-\&\fIinndstart\fR\|(8), a small setuid-root program that opens the appropriate port,
-cleans up the environment, changes to the news user, and then runs
-\&\fBinnd\fR, passing along any command-line arguments.  (To use IPv6, \fBinnd\fR
-absolutely must be started by \fIinndstart\fR\|(8).)
+\&\fBinnd\fR should normally not run directly.  It must run as the news user or
+all sorts of file ownership problems may result, and normally the port it
+listens on (119 or 433) is privileged and must be opened by root.
+Instead, \fBinnd\fR should normally be started via \fIinndstart\fR\|(8), a small
+setuid-root program that opens the appropriate port, cleans up the
+environment, changes to the news user, and then runs \fBinnd\fR, passing
+along any command-line arguments.
+.PP
+To use IPv6, \fBinnd\fR must be started by \fBinndstart\fR.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 For the options below that override \fIinn.conf\fR settings, see \fIinn.conf\fR\|(5)
@@ -555,6 +556,14 @@ word \f(CW\*(C`internal\*(C'\fR generally indicates an internal logic error.
 .PP
 \&\fBinnd\fR will catch the \s-1SIGUSR1\s0 signal and recreate the control channel
 used by \fIctlinnd\fR\|(8).
+.SH "BUGS"
+.IX Header "BUGS"
+\&\fBinnd\fR normally attempts to strip \s-1IP\s0 options from incoming connections,
+since it uses IP-based authentication and source routing can confuse that.
+However, this doesn't work on all systems, and it doesn't work at all in
+the presence of IPv6 support (and is disabled in that case).  Hence, if
+using \fBinnd\fR with IPv6 support, make sure that your kernel or router
+disables source routing.
 .SH "HISTORY"
 .IX Header "HISTORY"
 Written by Rich \f(CW$alz\fR <rsalz@uunet.uu.net> for InterNetNews.

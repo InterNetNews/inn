@@ -23,12 +23,6 @@ changes easier and will be *greatly* appreciated.
 Last modified $Id$.
 
 
-Scheduled for INN 2.4
-
-* There are some outstanding issues with the IPv6 that probably need not
-  be fixed, but should be documented, see doc/IPv6-info.
-
-
 Scheduled for INN 2.5
 
 * Rewrite configure, breaking all of the tests out into separate files
