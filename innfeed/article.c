@@ -79,7 +79,7 @@ struct article_s
     char *msgid ;               /* the msgid of the article (INN tells us) */
     Buffer contents ;           /* the buffer of the actual on disk stuff */
     Buffer *nntpBuffers ;       /* list of buffers for transmisson */
-    caddr_t mMapping ;          /* base of memory mapping, or NULL if none */
+    void *mMapping ;            /* base of memory mapping, or NULL if none */
     bool loggedMissing ;        /* true if article is missing and we logged */
     bool articleOk ;            /* true until we know otherwise. */
     bool inWireFormat ;         /* true if ->contents is \r\n/dot-escaped */
@@ -617,7 +617,7 @@ static bool fillContents (Article article)
 	if (article->arthandle)
 	    article->mMapping = article->arthandle->data;
 	else 
-	    article->mMapping = mmap((caddr_t) 0, (size_t) articlesize,
+	    article->mMapping = mmap(NULL, (size_t) articlesize,
 				     PROT_READ, MAP_SHARED, fd, 0);
 	
 	if (article->mMapping == MAP_FAILED) {
