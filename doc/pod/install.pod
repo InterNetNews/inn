@@ -188,6 +188,8 @@ following formula:
 If you don't have at least that much RAM, try rebuilding INN with tagged
 hash enabled.
 
+NOTE: --with-largefiles can not be used with --enable-tagged-hash
+
 =item B<--with-perl>
 
 Enables support for embedded Perl, allowing you to install filter scripts
