@@ -38,10 +38,9 @@
 #if HAVE_SETRLIMIT && defined(RLIMIT_NOFILE)
 
 int
-setfdlimit(int limit)
+setfdlimit(unsigned int limit)
 {
     struct rlimit rl;
-    int status;
 
 #ifdef FD_SETSIZE
     if (limit > FD_SETSIZE) {
@@ -61,14 +60,15 @@ setfdlimit(int limit)
 #endif
 
     rl.rlim_cur = limit;
-    if (limit > rl.rlim_max) rl.rlim_max = limit;
+    if (limit > rl.rlim_max)
+        rl.rlim_max = limit;
     return setrlimit(RLIMIT_NOFILE, &rl);
 }
 
 #else /* !(HAVE_SETRLIMIT && RLIMIT_NOFILE) */
 
 int
-setfdlimit(int limit UNUSED)
+setfdlimit(unsigned int limit UNUSED)
 {
     /* Unimplemented system call is close enough. */
     errno = ENOSYS;
