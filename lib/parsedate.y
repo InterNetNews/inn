@@ -684,7 +684,7 @@ static int date_lex(void)
     for ( ; ; ) {
 	/* Get first character after the whitespace. */
 	for ( ; ; ) {
-	    while (CTYPE(isspace, *yyInput))
+	    while (CTYPE(isspace, (int)*yyInput))
 		yyInput++;
 	    c = *yyInput;
 
@@ -702,17 +702,17 @@ static int date_lex(void)
 	}
 
 	/* A number? */
-	if (CTYPE(isdigit, c) || c == '-' || c == '+') {
+	if (CTYPE(isdigit, (int)c) || c == '-' || c == '+') {
 	    if (c == '-' || c == '+') {
 		sign = c == '-' ? -1 : 1;
 		yyInput++;
-		if (!CTYPE(isdigit, *yyInput))
+		if (!CTYPE(isdigit, (int)*yyInput))
 		    /* Skip the plus or minus sign. */
 		    continue;
 	    }
 	    else
 		sign = 0;
-	    for (i = 0; (c = *yyInput++) != '\0' && CTYPE(isdigit, c); )
+	    for (i = 0; (c = *yyInput++) != '\0' && CTYPE(isdigit, (int)c); )
 		i = 10 * i + c - '0';
 	    yyInput--;
 	    yylval.Number = sign < 0 ? -i : i;
@@ -720,10 +720,10 @@ static int date_lex(void)
 	}
 
 	/* A word? */
-	if (CTYPE(isalpha, c)) {
-	    for (p = buff; (c = *yyInput++) == '.' || CTYPE(isalpha, c); )
+	if (CTYPE(isalpha, (int)c)) {
+	    for (p = buff; (c = *yyInput++) == '.' || CTYPE(isalpha, (int)c); )
 		if (p < &buff[sizeof buff - 1])
-		    *p++ = CTYPE(isupper, c) ? tolower(c) : c;
+		    *p++ = CTYPE(isupper, (int)c) ? tolower(c) : c;
 	    *p = '\0';
 	    yyInput--;
 	    return LookupWord(buff, p - buff);

@@ -1093,7 +1093,6 @@ DBZSTORE_RESULT dbzstore(const HASH key, void *ivalue) {
     idxrec	*ionevalue = (idxrec *)ivalue;
     idxrecext	*iextvalue = (idxrecext *)ivalue;
     erec     evalue;
-    int	     offset;
 #endif
 
     if (!opendb) {

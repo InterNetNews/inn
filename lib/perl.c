@@ -18,11 +18,12 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <syslog.h> 
+#include <fcntl.h>
 #include "configdata.h"
 #include "clibrary.h"
-#include <syslog.h> 
-#include "fcntl.h"
-
+#include "libinn.h"
+#include "macros.h"
 
 #if defined(DO_PERL)
 
@@ -33,8 +34,6 @@ typedef enum { false = 0, true = 1 } bool;
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
-
-#include "macros.h"
 
 extern void xs_init    _((void));
 extern void boot_DynaLoader _((CV* cv));
@@ -70,7 +69,7 @@ PerlFilter(value)
             if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
                 syslog (L_ERROR,"%s perl function filter_end died: %s",
                         LogName, SvPV(GvSV(errgv), na)) ;
-                POPs ;
+                (void)POPs ;
             }
         } else {
             PerlFilterActive = value ;
@@ -112,8 +111,7 @@ PerlParse ()
 ** function name that must be defined after the file file is loaded for
 ** filtering to be turned on to start with.
 */
-int
-PERLsetup (startupfile, filterfile, function)
+void PERLsetup (startupfile, filterfile, function)
     char *startupfile, *filterfile, *function;
 {
     if (PerlCode == NULL) {
@@ -179,7 +177,7 @@ PERLreadfilter(filterfile, function)
         if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
             syslog (L_ERROR,"%s perl function filter_before_reload died: %s",
                     LogName, SvPV(GvSV(errgv), na)) ;
-            POPs ;
+            (void)POPs ;
             PerlFilter (FALSE) ;
         }
     }
@@ -213,7 +211,7 @@ PERLreadfilter(filterfile, function)
         if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
             syslog (L_ERROR,"%s perl function filter_after_reload died: %s",
                     LogName, SvPV(GvSV(errgv), na)) ;
-            POPs ;
+            (void)POPs ;
             PerlFilter (FALSE) ;
         }
     }

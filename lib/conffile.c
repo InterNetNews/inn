@@ -9,6 +9,7 @@
 #include <macros.h>
 #include <clibrary.h>
 #include <conffile.h>
+#include <libinn.h>
 
 static char *CONFgetword(CONFFILE *F)
 {

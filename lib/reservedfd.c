@@ -3,10 +3,11 @@
 */
 #include <stdio.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "macros.h"
-#include <fcntl.h>
+#include "libinn.h"
 
 
 STATIC FILE **Reserved_fd = NULL;

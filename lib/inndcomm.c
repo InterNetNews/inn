@@ -385,8 +385,8 @@ ICCcommand(cmd, argv, replyp)
     /* Parse the rest of the reply; expected to be like
        <exitcode><space><text>" */
     i = 0;
-    if (CTYPE(isdigit, buff[0])) {
-	for (p = buff; *p && CTYPE(isdigit, *p); p++)
+    if (CTYPE(isdigit, (int)buff[0])) {
+	for (p = buff; *p && CTYPE(isdigit, (int)*p); p++)
 	    continue;
 	if (*p) {
 	    save = *p;

@@ -118,7 +118,7 @@ char *HashToText(const HASH hash) {
 /*
 ** Converts a hex digit and converts it to a int
 */
-STATIC int hextodec(const char c) {
+STATIC int hextodec(const int c) {
     return isdigit(c) ? (c - '0') : ((c - 'A') + 10);
 }
 
