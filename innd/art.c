@@ -516,7 +516,7 @@ ARTstore(CHANNEL *cp) {
     if (NeedHeaders && (i + 1 == iovcnt)) {
       /* body begins at last iov */
       headersize = data->BytesValue +
-	Article->Data + data->Body - iov[i].iov_base;
+	Article->Data + data->Body - (char *) iov[i].iov_base;
       break;
     }
     data->BytesValue += iov[i].iov_len;
@@ -542,7 +542,7 @@ ARTstore(CHANNEL *cp) {
   for (i = 0 ; i < iovcnt ; i++) {
     if (i + 1 == iovcnt)
       BUFFappend(headers, iov[i].iov_base,
-	Article->Data+ data->Body - iov[i].iov_base);
+	Article->Data+ data->Body - (char *) iov[i].iov_base);
     else
       BUFFappend(headers, iov[i].iov_base, iov[i].iov_len);
   }
