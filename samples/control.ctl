@@ -1024,10 +1024,6 @@ newgroup:*@*.law.vill.edu:law.*:doit
 rmgroup:*@*.kentlaw.edu:law.*:doit
 rmgroup:*@*.law.vill.edu:law.*:doit
 
-## LIU (Sweden?)
-newgroup:linus@tiny.lysator.liu.se:liu.*:doit
-rmgroup:linus@tiny.lysator.liu.se:liu.*:doit
-
 ## LINUX (Gated Linux mailing lists)
 # Contact: Marco d'Itri <md@toglimi.linux.it>
 # Key fingerprint = 81 B3 27 99 4F CE 32 D1  1B C9 01 0D BB B3 2E 41
