@@ -773,6 +773,10 @@ _PATH_INNWSTATUS	/var/news/run/innwatch.status
 ##  Format of news overview database
 #### =()<_PATH_SCHEMA		@<_PATH_SCHEMA>@>()=
 _PATH_SCHEMA		/var/news/etc/overview.fmt
+## Location of the MOTD file.
+#### =()<_PATH_MOTD		@<_PATH_MOTD>@>()=
+_PATH_MOTD		/var/news/etc/motd.news
+
 
 
 ##
