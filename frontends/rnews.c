@@ -593,7 +593,7 @@ Unspool(void)
     register bool	ok;
     struct stat		Sb;
     char		hostname[10];
-    int			fd;
+    int			fd, lockfd;
     size_t		i;
     char                *badname, *uuhost;
 
@@ -625,8 +625,20 @@ Unspool(void)
 	    continue;
 	}
 
-	/* Make sure multiple Unspools don't stomp on eachother */
-	if (!inn_lock_file(fd, INN_LOCK_READ, 0)) {
+	/*
+	** Make sure multiple Unspools don't stomp on eachother.
+	** Because of stupid POSIX locking semantics, we need to lock
+	** on a seperate fd. Otherwise, dup()ing and then close()ing
+	** the dup()ed fd removes the lock we're holding (sigh).
+	*/
+	if ((lockfd = open(InputFile, O_RDONLY)) < 0) {
+	    if (errno != ENOENT)
+                syswarn("cannot open %s", InputFile);
+	    close(fd);
+	    continue;
+	}
+	if (!inn_lock_file(lockfd, INN_LOCK_READ, 0)) {
+	    close(lockfd);
 	    close(fd);
 	    continue;
 	}
@@ -657,12 +669,14 @@ Unspool(void)
 	    if (rename(InputFile, badname) < 0)
                 sysdie("cannot rename %s to %s", InputFile, badname);
 	    (void)close(fd);
+	    (void)close(lockfd);
 	    continue;
 	}
 
 	if (unlink(InputFile) < 0)
             syswarn("cannot remove %s", InputFile);
 	(void)close(fd);
+	(void)close(lockfd);
     }
     (void)closedir(dp);
 
