@@ -32,15 +32,12 @@
  * Written 1996 July 6 by Douglas Wade Needham (dneedham@oucsace.cs.ohiou.edu).
  *	
  */
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+
+#include "config.h"
+#include "clibrary.h"
+#include "portable/socket.h"
 #include <netdb.h>
 #include <pwd.h>
-#include <unistd.h>
 
 
 main(int argc, char** argv)
@@ -111,7 +108,7 @@ main(int argc, char** argv)
             fprintf(stderr, "cant getpeername()::%s:+:!*\n", username);
             exit(1);
         }
-        strcpy(peername, "stdin");
+        strlcpy(peername, "stdin", sizeof(peername));
     } else if (sin.sin_family != AF_INET) {
         fprintf(stderr, "Bad address family %ld::%s:+:!*\n",
                 (long)sin.sin_family, username);
