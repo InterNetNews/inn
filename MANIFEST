@@ -730,6 +730,7 @@ tests/libtest.h                       Interface to libtest
 tests/overview                        Test suite for overview (Directory)
 tests/overview/data                   Test overview data (Directory)
 tests/overview/data/basic             Basic set of overview test data
+tests/overview/data/bogus             Bad newsgroup name test data
 tests/overview/data/high-numbered     High-numbered article test data
 tests/overview/data/reversed          Same as basic, but in reverse order
 tests/overview/munge-data             Support script to generate test data
