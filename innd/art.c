@@ -2505,7 +2505,7 @@ STRING ARTpost(CHANNEL *cp)
 	RENEW(Files.Data, char, Files.Size + 1);
     }
 
-    if (innconf->xrefslave != NULL) {
+    if (innconf->xrefslave) {
     	if (ARTxrefslave() == FALSE) {
     	    if (HDR(_xref)) {
                 (void)sprintf(buff, "%d Invalid Xref header \"%s\"",
