@@ -906,7 +906,7 @@ ARTparseheader(CHANNEL *cp)
             }
             if (bp->data[i] == '\r' && bp->data[i + 1] == '\n') {
                 cp->Next = i + 2;
-                data->Body = i;
+                data->Body = i + 2;
                 cp->State = CSgetbody;
                 return ARTparsebody(cp);
             } else if (bp->data[i] != ' ' && bp->data[i] != '\t') {
