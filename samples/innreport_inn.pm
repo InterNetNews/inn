@@ -154,6 +154,15 @@ sub collect {
       $inn_badart{$server}++;
       return 1;
     }
+    # 437 article includes "....."
+    if ($left =~ /(\S+) <[^>]+> 437 article includes/o) {
+      my $server = $1;
+      $server = lc $server unless $CASE_SENSITIVE;
+      $innd_strange_strings{$server}++;
+      $innd_others{$server}++;
+      $inn_badart{$server}++;
+      return 1;
+    }
     # all others are just counted as "Other"
     if ($left =~ /(\S+) /o) {
       my $server = $1;
@@ -1986,6 +1995,13 @@ sub adjust
     my $msg = 'Blocked server feeds';
     foreach $key (keys %innd_blocked) {
       $innd_misc_stat{$msg}{$key} = $innd_blocked{$key};
+    }
+  }
+  if (%innd_strange_strings) {
+    my $key;
+    my $msg = 'Including strange strings';
+    foreach $key (keys %innd_strange_strings) {
+      $innd_misc_stat{$msg}{$key} = $innd_strange_strings{$key};
     }
   }
   if (%rnews_bogus_ng) {
