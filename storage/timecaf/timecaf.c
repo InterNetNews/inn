@@ -446,6 +446,9 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	    DISPOSE(art);
 	    return NULL;
 	}
+#ifdef MMAP_MISSES_WRITES
+	msync(private->mmapbase, private->mmaplen, MS_INVALIDATE);
+#endif
 	private->artdata = private->mmapbase + delta;
     } else {
         private->artdata = NEW(char, private->artlen);
@@ -477,6 +480,14 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
     
     if ((p = SMFindBody(private->artdata, private->artlen)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
+	if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	    madvise(private->mmapbase, private->mmaplen, MADV_DONTNEED);
+#endif
+	    munmap(private->mmapbase, private->mmaplen);
+	} else {
+	    DISPOSE(private->artdata);
+	}
 	DISPOSE(art->private);
 	DISPOSE(art);
 	return NULL;
@@ -494,6 +505,14 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
+    if (innconf->articlemmap) {
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	madvise(private->mmapbase, private->mmaplen, MADV_DONTNEED);
+#endif
+	munmap(private->mmapbase, private->mmaplen);
+    } else {
+	DISPOSE(private->artdata);
+    }
     DISPOSE(art->private);
     DISPOSE(art);
     return NULL;
