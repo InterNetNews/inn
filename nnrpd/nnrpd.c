@@ -1190,7 +1190,7 @@ main(int argc, char *argv[])
     }
 
     /* Proceed with initialization. */
-    setproctitle("connect");
+    setproctitle("%s connect", ClientHost);
 
     /* Were we told to reject connections? */
     if (Reject) {
@@ -1338,7 +1338,7 @@ main(int argc, char *argv[])
 		NNTP_AUTH_NEEDED_VAL);
 	    continue;
 	}
-	setproctitle("%s", av[0]);
+	setproctitle("%s %s", ClientHost, av[0]);
 	(*cp->Function)(ac, av);
 	if (PushedBack)
 	    break;
