@@ -453,11 +453,12 @@ int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_messa
 void
 PY_close_python(void)
 {
-    hash_traverse(files, file_trav, NULL);
-
-    hash_free(files);
-    
-    free(dynamic_file);
+    if (files != NULL) {
+	hash_traverse(files, file_trav, NULL);
+	hash_free(files);
+    }
+    if (dynamic_file != NULL)
+	free(dynamic_file);
 }
 
 /*
