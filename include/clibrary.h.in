@@ -68,6 +68,7 @@ typedef sig_atomic_t SIGVAR;
 #endif
 
 #include <stdlib.h>
+#include <arpa/inet.h>
 
 
 /*
@@ -125,7 +126,6 @@ extern char		*strerror();
 #endif	/* !defined(strerror) */
 extern long		atol();
 extern time_t		time();
-extern unsigned long	inet_addr();
 extern FREEVAL		free();
 extern POINTER		malloc();
 extern POINTER		realloc();
