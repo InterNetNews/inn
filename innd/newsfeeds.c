@@ -9,9 +9,22 @@
 
 #include "innd.h"
 
+/*
+** List of variables assigned in the configuration file.
+*/
+typedef struct _SITEVARIABLES {
+    char      *Name;
+    char      *Value;
+    int               Elements;
+    struct _SITEVARIABLES     *Next;
+} SITEVARIABLES;
+
+/* The character which introduces a variable assignment or reference. */
+#define VARIABLE_CHAR '$'
 
 static SITE	SITEnull;
 static char	*SITEfeedspath = NULL;
+static SITEVARIABLES  *SITEvariables = NULL;
 
 
 /*
@@ -32,6 +45,225 @@ SITEcopystrings(char **av)
     return save;
 }
 
+/*
+** Adds a variable from a line.
+*/
+bool
+SITEaddvariable(char *line)
+{
+    char *p, *q;
+    SITEVARIABLES *v, *w;
+    
+    if (*line != VARIABLE_CHAR)
+    	return FALSE;
+    	
+    for (p = line + 1; *p != '\0' && CTYPE(isalnum, *p); p++)
+        ;
+    if (*p != '=')
+    	return FALSE;
+    if (p - line > 32) {
+	syslog(L_FATAL, "%s bad_newsfeed variable name '%s' too long", 
+               LogName, line+1);
+	return FALSE;
+    }
+
+    /* Chop off trailing spaces. */
+    q = p + strlen(p) - 1;
+    while (q > p && (*q == ' ' || *q == '\t'))
+    	*q-- = '\0';
+
+    /* Seperate variable name from contents. */
+    *p++ = '\0';	
+    if (*p == '\0')
+    	return FALSE;
+
+    /* Is variable already defined?  Free and reassign. */
+    w = NULL;
+    v = SITEvariables;
+    while (v && strcmp(line + 1, v->Name)) {
+        w = v;
+    	v = v->Next;
+    }
+    if (v)
+    	DISPOSE(v->Value);
+    else {
+    	v = NEW(SITEVARIABLES, 1);
+    	if (!SITEvariables)
+    	    SITEvariables = v;
+    	if (w)
+            w->Next = v;
+    	v->Name = COPY(line + 1);
+    	v->Next = NULL;
+    }
+
+    /* Add variable's contents. */
+    v->Elements = 1;
+    for (q = v->Value = NEW(char, (strlen(p) + 1)); *p != '\0'; p++) {
+        if (*p != ' ' && *p != '\t')
+            *q++ = *p;
+        if (*p == ',')
+            v->Elements++;
+    }
+    *q = '\0';
+    return TRUE;        
+}
+
+void
+SITEclearvariables(void)
+{
+    SITEVARIABLES *v, *w;
+    
+    v = SITEvariables;
+    while (v) {
+    	DISPOSE(v->Name);
+    	DISPOSE(v->Value);
+    	w = v;
+    	v = v->Next;
+    	DISPOSE(w);
+    }
+    SITEvariables = NULL;
+}
+
+SITEVARIABLES *
+SITEfindvariable(char *name)
+{
+    SITEVARIABLES *v;
+
+    v = SITEvariables;
+    while (v && strcmp(v->Name, name) != 0)
+	v = v->Next;
+    return v;
+}
+
+static char *
+SITEexpandvariables(char *site)
+{
+    char *p, *q, *r, *s;
+    int c = 0;
+    char modifier;
+    char varname[64];
+    SITEVARIABLES *v;
+
+    /* Count characters. */
+    *varname = '\0';
+    modifier = '\0';
+    for (p = site; p <= site + strlen(site); p++) {
+        /* In variable name. */
+        if (*varname) {
+            if (CTYPE(isalnum, *p)) {
+                if (q - varname > 32) {
+                    /* Add ignored modifier. */
+                    if (modifier)
+                        c++;
+                    /* Add ignored $ and characters. */
+                    c += strlen(varname);
+                    /* Add this character. */
+                    c++;
+                    *varname = '\0';
+                    modifier = '\0';
+                    continue;
+                }
+                /* Append to variable name. */
+                *q++ = *p;
+                continue;
+            } else {
+                v = SITEfindvariable(varname + 1);
+                if (v != NULL) {
+                    /* Add length of contents. */
+                    c += strlen(v->Value);
+                    /* If modified add number of mods. */
+                    if (modifier)
+                        c += v->Elements;
+                } else {
+                    /* Add ignored modifier. */
+                    if (modifier)
+                        c++;
+                    c += strlen(varname); /* add ignored $ and characters */
+                }
+                *varname = '\0';
+                modifier = '\0';
+            }
+        }
+        /* New variable starts */
+        if (*p == VARIABLE_CHAR) {
+            q = varname;
+            memset(varname, 0, sizeof(varname));
+            *q++ = VARIABLE_CHAR;
+            continue;
+        }
+        if (modifier) {
+            /* Add last modifier */
+            c++;
+            modifier = '\0';
+        }
+        if (*p == SUB_NEGATE || *p == SUB_POISON) {
+            modifier = *p;
+        } else {
+            /* Add this character. */
+            c++;
+        }
+    }
+
+    /* Copy contents. */
+    s = r = NEW(char, c + 1);
+    *varname = '\0';
+    modifier = '\0';
+    for (p = site; p <= site + strlen(site); p++) {
+        /* In variable name. */
+        if (*varname) {
+            if (CTYPE(isalnum, *p)) {
+                if (q - varname > 32) {
+                    if (modifier)
+                        *s++ = modifier;
+                    for (q = varname; *q; q++)
+                        *s++ = *q;
+                    *s++ = *p;
+                    *varname = '\0';
+                    modifier = '\0';
+                    continue;
+                }
+                *q++ = *p;
+                continue;
+            } else {
+                v = SITEfindvariable(varname + 1);
+                if (v != NULL) {
+                    if (modifier)
+                        *s++ = modifier;
+                    for (q = v->Value; *q; q++) {
+                        *s++ = *q;
+                        if (*q == ',' && modifier)
+                            *s++ = modifier;
+                    }
+                } else {
+                    if (modifier)
+                        *s++ = modifier;
+                    for (q = varname; *q; q++)
+                        *s++ = *q;
+                }
+                *varname = '\0';
+                modifier = '\0';
+            }
+        }
+        /* New variable starts. */
+        if (*p == VARIABLE_CHAR) {
+            q = varname;
+            memset(varname, 0, sizeof(varname));
+            *q++ = VARIABLE_CHAR;
+            continue;
+        }
+        if (modifier) {
+            *s++ = modifier;
+            modifier = '\0';
+        }
+        if (*p == SUB_NEGATE || *p == SUB_POISON)
+            modifier = *p;
+        else
+            *s++ = *p;
+    }
+    *s++ = '\0';
+
+    return r;
+}
 
 /*
 **  Read the newsfeeds file, return a string array of entries.
@@ -96,12 +328,18 @@ SITEreadfile(const bool ReadOnly)
 	*to++ = '\0';
 	if (*site == COMMENT_CHAR || *site == '\0')
             continue ;
+        if (*site == VARIABLE_CHAR && SITEaddvariable(site))
+	    continue ;        
         if (strspn(site," \t") == strlen (site))
 	    continue;
-	old_strings[i++] = COPY(site);
+	if (SITEvariables)
+	    old_strings[i++] = SITEexpandvariables(site);
+	else
+	    old_strings[i++] = COPY(site);
     }
     old_strings[i] = NULL;
-
+    
+    SITEclearvariables();
     DISPOSE(data);
     return ReadOnly ? old_strings : SITEcopystrings(old_strings);
 }
