@@ -80,6 +80,8 @@ contrib/README                        Contents of the contrib directory
 contrib/archivegz.in                  Compressing version of archive
 contrib/auth_pass.README              README corresponding to auth_pass.c
 contrib/auth_pass.c                   Sample for use with AUTHINFO GENERIC
+contrib/authmysql                     Authenticator using MySQL table
+contrib/authmysql.config              Configuration for authmysql
 contrib/backlogstat.in                Analyze innfeed's backlog status
 contrib/backupfeed.in                 Suck down news via a reading connection
 contrib/cleannewsgroups.in            Script to clean newsgroups file
