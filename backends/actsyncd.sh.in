@@ -133,7 +133,7 @@ origdir=`pwd`
 workdir="${TMPDIR}/actsyncd"
 ctlinndcmds="cc_commands"
 out="sync.msg"
-cleanup="$SED -e 's/^/    /' < $out; rm -rf '$workdir' '$LOCK'"
+cleanup="$SED -e 's/^/    /' < $out; cd ${origdir}; rm -rf '$workdir' '$LOCK'"
 trap "eval $cleanup; exit 123" 1 2 3 15
 
 set -e
