@@ -1,5 +1,3 @@
-##  $Id$
-
 # This rule requires a compiler that supports -o with -c.  Since it's normally
 # used by developers, that should be acceptable.
 buffindexed/buffindexed_d.o: buffindexed/buffindexed.c

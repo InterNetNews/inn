@@ -11,7 +11,6 @@ INSTALLED       = $(D)$(PATHBIN)/tdx-util
 
 
 ##  Included from buffindexed/ovmethod.mk
-##  $Id$
 
 # This rule requires a compiler that supports -o with -c.  Since it's normally
 # used by developers, that should be acceptable.
@@ -24,7 +23,6 @@ buffindexed/debug: buffindexed/buffindexed_d.o libstorage.$(EXTLIB) $(LIBHIST)
 
 
 ##  Included from tradindexed/ovmethod.mk
-##  $Id$
 
 tradindexed/tdx-util: tradindexed/tdx-util.o libstorage.$(EXTLIB) $(LIBHIST)
 	$(LIBLD) $(LDFLAGS) -o $@ tradindexed/tdx-util.o \
