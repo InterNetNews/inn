@@ -378,15 +378,13 @@ dnl rather than using default actions so as not to clutter config.h with
 dnl defines we never use.
 
 dnl Several OSes have crypt() in a seperate library for legal reasons.
-AC_CHECK_LIB(crypt, crypt, LIBS="$LIBS -lcrypt")
+AC_CHECK_FUNC(crypt, , [AC_CHECK_LIB(crypt, crypt, LIBS="$LIBS -lcrypt")])
 
 dnl Check for setproctitle in libc first, then libutil if not found there.
-AC_CHECK_FUNCS(setproctitle, AC_DEFINE(HAVE_SETPROCTITLE),
-    AC_CHECK_LIB(util, setproctitle, [
+AC_CHECK_FUNCS(setproctitle, , [
+    AC_CHECK_LIB(util, setproctitle,
         LIBS="$LIBS -lutil"
-        AC_DEFINE(HAVE_SETPROCTITLE)
-        inn_lib_util=1
-    ]))
+        AC_DEFINE(HAVE_SETPROCTITLE))])
 
 dnl FIXME: What platform is this actually needed on?
 AC_CHECK_LIB(44bsd, inet_addr, LIBS="$LIBS -l44bsd")
@@ -525,19 +523,15 @@ AC_HEADER_TIME
 AC_HEADER_SYS_WAIT      dnl NOTUSED
 
 dnl Generic checks for header files.
-dnl NOTUSED: getopt.h sgtty.h sys/file.h sys/ioctl.h sys/time.h
-dnl
-dnl FIXME: The checks for sys/filio.h and sys/ioctl.h should be included
-dnl in the check for what type of close-on-exec method to use, and that
-dnl should preferrably be in source code rather than configure hackage.
-
-AC_CHECK_HEADERS(fcntl.h getopt.h limits.h sgtty.h stddef.h stdint.h \
+dnl NOTUSED: sys/file.h sys/ioctl.h
+AC_CHECK_HEADERS(fcntl.h limits.h ndbm.h sgtty.h stddef.h stdint.h \
                  sys/file.h sys/filio.h sys/ioctl.h sys/select.h \
                  sys/sysinfo.h sys/time.h unistd.h wait.h)
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.
-AC_CHECK_HEADER(ndbm.h, AC_DEFINE(HAVE_NDBM_H),
-    AC_CHECK_HEADERS(db1/ndbm.h))
+if test x"$ac_cv_header_ndbm_h" = xno ; then
+    AC_CHECK_HEADERS(db1/ndbm.h)
+fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_STRUCT_ST_BLKSIZE
@@ -733,17 +727,23 @@ AC_CHECK_FUNC(syslog, , AC_MSG_ERROR(syslog not found, required by INN))
 
 AC_CHECK_FUNCS(atexit fchmod fcntl gethostname getpagesize getrusage \
                getspnam gettimeofday mkfifo pread pwrite setbuffer \
-               sigaction setsid socketpair strcspn strncasecmp strstr \
-               strtoul symlink waitpid)
+               sigaction setsid socketpair statvfs strcspn strncasecmp \
+               strstr strtoul symlink waitpid)
 
 dnl We only care if we have setreuid() if we don't have seteuid().
 AC_CHECK_FUNCS(seteuid setreuid, break)
 
 dnl We need both *rlimit functions.
+dnl
+dnl FIXME: Better to use the standard #defines.
 AC_CHECK_FUNC(getrlimit, AC_CHECK_FUNC(setrlimit, AC_DEFINE(HAVE_RLIMIT)))
 
 dnl Check for sysconf, getdtablesize, and then ulimit in that order; we'll
 dnl use them to figure out our current file descriptor limit.
+dnl
+dnl FIXME: sysconf should go into the main check loop, and instead here we
+dnl should see if we have sysconf or getrlimit and only in the absense of
+dnl either fall back on the CHECK_FUNCS.
 AC_CHECK_FUNCS(sysconf getdtablesize ulimit, break)
 
 dnl If we don't have fcntl, try to find another locking function.
@@ -755,9 +755,14 @@ if test x"$ac_cv_func_fcntl" = xno ; then
                      [AC_CHECK_FUNCS(lockf)]))
 fi
 
+dnl If we don't have statvfs, gather some more information for inndf.
+if test x"$ac_cv_func_statvfs" = xno ; then
+    AC_CHECK_FUNCS(statfs)
+    AC_CHECK_HEADERS(sys/vfs.h sys/param.h sys/mount.h)
+fi
+
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(getopt memchr memcpy memmove memset strcasecmp strchr \
-                 strerror strrchr strspn)
+AC_REPLACE_FUNCS(getopt strcasecmp strerror strspn)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
@@ -771,12 +776,6 @@ fi
 AC_SUBST(MISSING_MAN)
 AC_SUBST(MISSING_SRC)
 AC_SUBST(MISSING_OBJ)
-
-dnl Figure out how to get file system information for inndf.
-AC_CHECK_FUNCS(statvfs, AC_DEFINE(HAVE_STATVFS), [
-    AC_CHECK_FUNCS(statfs)
-    AC_CHECK_HEADERS(sys/vfs.h sys/param.h sys/mount.h)
-])
 
 dnl See if mmap sees writes. 
 dnl ========================================================
@@ -1081,45 +1080,6 @@ yes
         AC_MSG_RESULT(yes)
     ],
     AC_MSG_RESULT(no))
-
-dnl How to set file descriptors close on exec.  -- fjc mibsoftware.com
-dnl
-dnl FIXME: This belongs in the source code, not in configure.  configure has
-dnl already done the necessary probes and the results are only used in a
-dnl single place, lib/closeonexec.c.
-AC_MSG_CHECKING(for close on exec style)
-CLX_STYLE=unknown
-if test "$ac_cv_header_fcntl_h" = yes ; then
-    AC_EGREP_CPP(yes, [
-#include <fcntl.h>
-#ifdef FD_CLOEXEC
-yes
-#else
-# ifdef F_SETFD
-yes
-# endif
-#endif], [
-        AC_DEFINE(CLX_FCNTL)
-        AC_MSG_RESULT(FCNTL)
-        CLX_STYLE=fcntl
-    ])
-fi
-if test "$CLX_STYLE" = unknown ; then
-    if test "$ac_cv_header_sys_filio_h" = yes ; then
-        AC_EGREP_CPP(yes, [
-#include <sys/filio.h>
-#ifdef FIOCLEX
-yes
-#endif], [
-            AC_DEFINE(CLX_IOCTL)
-            AC_MSG_RESULT(IOCTL)
-            CLX_STYLE=ioctl
-        ])
-    fi
-fi
-if test "$CLX_STYLE" = unknown ; then
-    AC_MSG_ERROR(Must set CLX_STYLE)
-fi
 
 dnl How to set non-blocking I/O.  -- fjc mibsoftware.com
 dnl
