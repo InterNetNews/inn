@@ -630,40 +630,6 @@ CCfilter(av)
 #endif /* defined(DO_TCL) */
 
 
-#if defined(DO_PERL)
-
-#include <EXTERN.h>
-#include <perl.h>
-
-extern CV *perl_filter_cv ;
-
-STATIC STRING
-CCperl(av)
-    char	*av[];
-{
-    extern int	PerlFilterActive;
-
-    switch (av[0][0]) {
-    default:
-	return "1 Bad flag";
-    case 'y':
-	if (PerlFilterActive)
-	    return "1 Perl filter already enabled";
-        else if (perl_filter_cv == NULL)
-            return "1 Perl filter not defined" ;
-	PerlFilter(TRUE);
-	break;
-    case 'n':
-	if (!PerlFilterActive)
-	    return "1 Perl filter already disabled";
-	PerlFilter(FALSE);
-	break;
-    }
-    return NULL;
-}
-#endif /* defined(DO_PERL) */
-
-
 #if defined(DO_PYTHON)
 STATIC STRING
 CCpython(av)
@@ -2098,3 +2064,41 @@ STATIC STRING CClowmark(char *av[])
     ICDwrite();
     return ret;
 }
+
+
+
+/* This is last because Perl 5.8.0 does some really odd things with
+   redefinitions of standard functions. */
+
+#if defined(DO_PERL)
+
+#include <EXTERN.h>
+#include <perl.h>
+
+extern CV *perl_filter_cv ;
+
+STATIC STRING
+CCperl(av)
+    char	*av[];
+{
+    extern int	PerlFilterActive;
+
+    switch (av[0][0]) {
+    default:
+	return "1 Bad flag";
+    case 'y':
+	if (PerlFilterActive)
+	    return "1 Perl filter already enabled";
+        else if (perl_filter_cv == NULL)
+            return "1 Perl filter not defined" ;
+	PerlFilter(TRUE);
+	break;
+    case 'n':
+	if (!PerlFilterActive)
+	    return "1 Perl filter already disabled";
+	PerlFilter(FALSE);
+	break;
+    }
+    return NULL;
+}
+#endif /* defined(DO_PERL) */
