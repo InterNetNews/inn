@@ -59,7 +59,8 @@ it directly.  The advantage of this is that it allows B<makehistory> to
 continue to collect more data from the spool while the first batch of data
 is being written to the overview database.  The disadvantage is that up to
 twice as much temporary disk space will be used for the generated overview
-data.  This option only makes sense in combination with B<-O>.
+data.  This option only makes sense in combination with B<-O>.  With
+C<buffindexed>, the C<overchan> program is invoked to write overview.
 
 =item B<-I>
 
@@ -72,13 +73,16 @@ into the overview database.
 
 This option specifies how many articles to process before writing the
 accumulated overview information out to the overview database.  The
-default is C<100000>.  A setting of C<0> won't flush overview data until
-B<makehistory> has completely finished.  B<makehistory> will run faster
-with larger settings, but note that the larger this setting the more
-temporary space will be needed to store temporary overview data.  At a
-rough estimate, about 300 * I<count> bytes of temporary space will be
-required.  See the description of the B<-T> option for how to specify the
-temporary storage location.
+default is C<10000>.  Since overview write performance is faster with
+sorted data, each "batch" gets sorted.  Increasing the batch size
+with this option may further improve write performance, at the cost
+of longer sort times.  Also, temporary space will be needed to store
+the overview batches.  At a rough estimate, about 300 * I<count> bytes
+of temporary space will be required (not counting temp files created
+by sort(1)).  See the description of the B<-T> option for how to
+specify the temporary storage location.  This option has no effect
+with C<buffindexed>, because C<buffindexed> does not need sorted
+overview and no batching is done.
 
 =item B<-O>
 
@@ -113,7 +117,7 @@ database, removing broken articles in the news spool.  This uses the
 default temporary file locations and should be done while innd isn't
 running or is throttled.
 
-    makehistory -b -f history.n -O -l 300000 -I
+    makehistory -b -f history.n -O -l 30000 -I
 
 This will rebuild the overview (if using C<buffindexed>, erase the
 existing overview buffers before running this command) and leave a new
@@ -139,6 +143,10 @@ For a simpler example:
 
 will scan the spool, removing broken articles and generating history and
 overview entries for articles missing from history.
+
+To just rebuild overview:
+
+    makehistory -O -x -F
 
 =head1 FILES
 
