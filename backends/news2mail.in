@@ -94,8 +94,6 @@ syslog ("info", "end") ;
 
 exit 0;
 
-use strict;
-
 sub mailto {
 	my($t, $l, @a) = @_ ;
 
