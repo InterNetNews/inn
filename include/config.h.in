@@ -234,4 +234,7 @@ typedef char * const    CSTRING;
 /* define to compile in Python filter support */
 #@DO_PYTHON@ DO_PYTHON
 
+/* sort program for makehistory */
+#define SORT_PGM	"@_PATH_SORT@"
+
 #endif /* __CONFIG_H__ */
