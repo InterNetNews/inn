@@ -627,7 +627,7 @@ RCwritedone(CHANNEL *unused)
  *  into one file called incoming.conf (to avoid confusion).
  *  See ../samples/incoming.conf for the new syntax.
  *
- *  Fabien Tassin <tassin@eerie.fr>, 21-Dec-1997.
+ *  Fabien Tassin <fta@sofaraway.org>, 21-Dec-1997.
  */
 
 
