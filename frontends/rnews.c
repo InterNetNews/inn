@@ -713,7 +713,7 @@ Spool(int fd, int mode)
         syslog(L_FATAL, "cant create temporary batch file %m");
         exit(1);
     }
-    if (fchmod(fd, BATCHFILE_MODE) < 0) {
+    if (fchmod(spfd, BATCHFILE_MODE) < 0) {
         syslog(L_FATAL, "cant chmod temporary batch file %s %m", tmpspool);
         exit(1);
     }
