@@ -535,7 +535,8 @@ very robust, but requires more disk space.  See the ovdb(5) man page for
 more information on it.
 
 Note that ovdb has not been as widely tested as the other overview
-mechanisms and should be considered experimental.
+mechanisms and should be considered experimental.  tradindexed is the best
+tested and most widely used of the overview implementations.
 
 If buffindexed is chosen, you will need to create the buffers for it to
 use (very similar to creating CNFS buffers) and list the available buffers
