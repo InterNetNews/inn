@@ -274,23 +274,24 @@ CMDauthinfo(int ac, char *av[])
 
 
 /*
-**  The "DATE" command.  Part of NNTPv2.
+**  The "DATE" command.  Useful mainly in conjunction with NEWNEWS.
 */
-/* ARGSUSED0 */
 void
 CMDdate(int ac UNUSED, char *av[] UNUSED)
 {
-    TIMEINFO	t;
-    struct tm	*gmt;
+    time_t now;
+    struct tm *gmt;
 
-    if (GetTimeInfo(&t) < 0 || (gmt = gmtime(&t.time)) == NULL) {
-	Reply("%d Can't get time, %s\r\n", NNTP_TEMPERR_VAL, strerror(errno));
-	return;
+    now = time(NULL);
+    gmt = gmtime(&now);
+    if (now == (time_t) -1 || gmt == NULL) {
+        Reply("%d Can't get time, %s\r\n", NNTP_TEMPERR_VAL, strerror(errno));
+        return;
     }
     Reply("%d %04.4d%02.2d%02.2d%02.2d%02.2d%02.2d\r\n",
-	NNTP_DATE_FOLLOWS_VAL,
-	gmt->tm_year + 1900, gmt->tm_mon + 1, gmt->tm_mday,
-	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+          NNTP_DATE_FOLLOWS_VAL,
+          gmt->tm_year + 1900, gmt->tm_mon + 1, gmt->tm_mday,
+          gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
 }
 
 
