@@ -1,4 +1,69 @@
 /* newsresp.c - EUnet - bilse */
+
+/*
+ * From: Koen De Vleeschauwer <koen@eu.net>
+ * Subject: Re: innfeed-users: innfeed: measuring server response time
+ * To: jeff.garzik@spinne.com (Jeff Garzik)
+ * Date: Tue, 13 May 1997 16:33:27 +0200 (MET DST)
+ * Cc: innfeed-users@vix.com
+ * 
+ * > Is there an easy way to measure server response time, and print it out
+ * > on the innfeed status page?  Cyclone's nntpTime measures login banner
+ * > response time and an article add and lookup operation. 
+ * > 
+ * > It seems to me that innfeed could do something very similar.  It could
+ * > very easily sample gettimeofday() or Time.Now to determine a remote
+ * > server's average response time for lookups, lookup failures, article
+ * > send throughput, whatever.
+ * > 
+ * > These statistics might be invaluable to developers creating advanced
+ * > connection and article delivery algorithms.  If I knew, for example,
+ * > that a site's article send/save throughput was really fast, but history
+ * > lookups were really slow, my algorithm could reserve a channel or two
+ * > for TAKETHIS-only use.
+ * 
+ * We use a stand-alone program which opens up an additional nntp channel
+ * from time to time and takes a peek at the various response times.
+ * It's also interesting to tune one's own box.
+ * I've included the source code; please consider this supplied 'as is';
+ * bugs and features alike. SunOS, Solaris and Irix ought to be ok;
+ * eg. gcc -traditional -o newsresp ./newsresp.c -lnsl -lsocket on S0laris.
+ * If a host has an uncommonly long banner you may have to change a constant 
+ * somewhere; forget. Please note one has to interpret the output; 
+ * eg. whether one is measuring rtt or history lookup time.
+ * 
+ * Basic usage is:
+ * news 1 % newsresp -n 5 news.eu.net
+ * ---------------------------------
+ * news.eu.net is 134.222.90.2 port 119
+ *  elap  diff
+ *   0.0   0.0  Connecting ...
+ *   0.0   0.0  OK, waiting for prompt
+ *   0.0   0.0  <<< 200 EU.net InterNetNews server INN 1.5.1 17-Dec-1996 re [...]
+ *   0.0   0.0  >>> ihave <244796399@a>
+ *   0.0   0.0  <<< 335 
+ *   0.0   0.0  >>> .
+ *   0.0   0.0  <<< 437 Empty article 
+ *   0.0   0.0  >>> ihave <244796398@a>
+ *   0.0   0.0  <<< 335 
+ *   0.0   0.0  >>> .
+ *   0.0   0.0  <<< 437 Empty article 
+ *   0.0   0.0  >>> ihave <244796397@a>
+ *   0.0   0.0  <<< 335 
+ *   0.0   0.0  >>> .
+ *   0.0   0.0  <<< 437 Empty article 
+ *   0.0   0.0  >>> ihave <244796396@a>
+ *   0.1   0.0  <<< 335 
+ *   0.1   0.0  >>> .
+ *   0.1   0.0  <<< 437 Empty article 
+ *   0.1   0.0  >>> ihave <244796395@a>
+ *   0.1   0.0  <<< 335 
+ *   0.1   0.0  >>> .
+ *   0.1   0.0  <<< 437 Empty article 
+ *   0.1   0.0  >>> quit
+ *   0.1   0.0  <<< 205 . 
+ */
+
 #define FD_SETSIZE 32
 
 #include <stdio.h>
