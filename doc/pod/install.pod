@@ -343,20 +343,21 @@ do).  Installing inews setgid was the default prior to INN 2.3.
 Enables support for Berkeley DB (2.x or 3.x), which means that it will
 then be possible to use the ovdb overview method if you wish.  Enabling
 this configure option doesn't mean you'll be required to use ovdb, but it
-does require that Berkeley DB be installed on your system.  If a path is
-given, it sets the installed directory of Berkeley DB (configure will
-search for it in some standard locations, but if you have it installed
-elsewhere, you may need this option).
+does require that Berkeley DB be installed on your system (including the
+header files, not just the runtime libraries).  If a path is given, it
+sets the installed directory of Berkeley DB (configure will search for it
+in some standard locations, but if you have it installed elsewhere, you
+may need this option).
 
 =item B<--with-openssl=PATH>
 
 Enables support for SSL for news reading, which means it will be possible
 to have SSL or TLS encrypted NNTP connections between your server and
-newsreaders.  This option requires OpenSSL be installed on your system.
-If a path is given, it sets the installed directory of OpenSSL.  After
-compiling and installing INN with this option, you'll still need to make a
-certificate and private key to use SSL.  See below for details on how to
-do that.
+newsreaders.  This option requires OpenSSL be installed on your system
+(including the header files, not just the runtime libraries).  If a path
+is given, it sets the installed directory of OpenSSL.  After compiling and
+installing INN with this option, you'll still need to make a certificate
+and private key to use SSL.  See below for details on how to do that.
 
 =item B<--enable-ipv6>
 
