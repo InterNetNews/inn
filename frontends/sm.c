@@ -16,12 +16,13 @@
 #define MAXOVERLINE	4096
 
 void Usage(void) {
-    fprintf(stderr, "Usage sm [-r] [-d] [-o] token [token] [token] ...\n");
+    fprintf(stderr, "Usage sm [-q] [-r] [-d] [-o] token [token] [token] ...\n");
     exit(1);
 }
 
 int main(int argc, char **argv) {
     int                 c;
+    BOOL                Quiet = FALSE;
     BOOL                Delete = FALSE;
     BOOL                Overview = FALSE;
     BOOL		OVERmmap;
@@ -32,8 +33,11 @@ int main(int argc, char **argv) {
     TOKEN		token;
     int			linelen;
     
-    while ((c = getopt(argc, argv, "rdo")) != EOF) {
+    while ((c = getopt(argc, argv, "qrdo")) != EOF) {
 	switch (c) {
+	case 'q':
+	    Quiet = TRUE;
+	    break;
 	case 'r':
 	case 'd':
 	    Delete = TRUE;
@@ -46,7 +50,8 @@ int main(int argc, char **argv) {
 	}
     }
     if (Delete && Overview) {
-	fprintf(stderr, "-o cannot be used with -r or -d\n");
+	if (!Quiet)
+	    fprintf(stderr, "-o cannot be used with -r or -d\n");
 	exit(1);
     }
 
@@ -57,52 +62,65 @@ int main(int argc, char **argv) {
 	else
 	    val = FALSE;
 	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
-	    fprintf(stderr, "Can't setup unified overview mmap: %s\n", strerror(errno));
+	    if (!Quiet)
+		fprintf(stderr, "Can't setup unified overview mmap: %s\n", strerror(errno));
 	    exit(1);
 	}
 	if (!OVERsetup(OVER_MODE, "r")) {
-	    fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
+	    if (!Quiet)
+		fprintf(stderr, "Can't setup unified overview mode: %s\n", strerror(errno));
 	    exit(1);
 	}
 	if (!OVERinit()) {
-	    fprintf(stderr, "Can't initialize unified overview mode: %s\n", strerror(errno));
+	    if (!Quiet)
+		fprintf(stderr, "Can't initialize unified overview mode: %s\n", strerror(errno));
 	    exit(1);
 	}
     } else if (!SMinit()) {
-	fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
+	if (!Quiet)
+	    fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
 	exit(1);
     }
     
     for (i = optind; i < argc; i++) {
 	if (Delete) {
 	    if (!IsToken(argv[i])) {
-		fprintf(stderr, "%s is not a storage token\n", argv[i]);
+		if (!Quiet)
+		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
 		continue;
 	    }
-	    if (!SMcancel(TextToToken(argv[i])))
-		fprintf(stderr, "Could not remove %s: %s\n", argv[i], SMerrorstr);
+	    if (!SMcancel(TextToToken(argv[i]))) {
+		if (!Quiet)
+		    fprintf(stderr, "Could not remove %s: %s\n", argv[i], SMerrorstr);
+	    }
 	} else if (Overview) {
 	    if (!IsToken(argv[i])) {
-		fprintf(stderr, "%s is not a storage token\n", argv[i]);
+		if (!Quiet)
+		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
 		continue;
 	    }
 	    token = TextToToken(argv[i]);
-	    if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL)
-		fprintf(stderr, "Could not retrieve %s\n", argv[i]);
+	    if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL) {
+		if (!Quiet)
+		    fprintf(stderr, "Could not retrieve %s\n", argv[i]);
+	    }
 	    if (fwrite(p, linelen, 1, stdout) != 1) {
-		fprintf(stderr, "Output failed: %s\n", strerror(errno));
+		if (!Quiet)
+		    fprintf(stderr, "Output failed: %s\n", strerror(errno));
 		exit(1);
 	    }
 	    printf("\n");
 	} else {
 	    if ((qp = QIOopen(argv[i])) == NULL) {
-		fprintf(stderr, "Coult not open %s\n", argv[i]);
+		if (!Quiet)
+		    fprintf(stderr, "Coult not open %s\n", argv[i]);
 		continue;
 	    } else {
 		while ((p = QIOread(qp)) != NULL) {
 		    if (QIOlength(qp) != 0)
 			if (fwrite(p, QIOlength(qp), 1, stdout) != 1) {
-			    fprintf(stderr, "Output failed: %s\n", strerror(errno));
+			    if (!Quiet)
+				fprintf(stderr, "Output failed: %s\n", strerror(errno));
 			    exit(1);
 			}
 		    printf("\n");
