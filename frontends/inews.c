@@ -356,7 +356,8 @@ CheckCancel(msgid, JustReturn)
     HeaderCleanFrom(remotefrom);
 
     /* Get the local user. */
-    (void)strcpy(localfrom, HDR(_sender) ? HDR(_sender) : HDR(_from));
+    (void)strncpy(localfrom, HDR(_sender) ? HDR(_sender) : HDR(_from), SMBUF);
+    localfrom[SMBUF - 1] = '\0';
     HeaderCleanFrom(localfrom);
 
     /* Is the right person cancelling? */
@@ -597,7 +598,8 @@ ProcessHeaders(AddOrg, linecount, pwp)
 	HDR(_from) = FormatUserName(pwp, p);
     else {
       (void)sprintf(buff, "%s@%s", pwp->pw_name, p);
-      (void)strcpy(from, HDR(_from));
+      (void)strncpy(from, HDR(_from), SMBUF);
+      from[SMBUF - 1] = '\0';
       HeaderCleanFrom(from);
       if (!EQ(from, buff))
         HDR(_sender) = COPY(buff);
