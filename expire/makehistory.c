@@ -677,7 +677,7 @@ main(int argc, char **argv)
     OverTmpSegSize = 100000;
     OverTmpSegCount = 0;
     NukeBadArts = FALSE;
-    DoOverview = TRUE;
+    DoOverview = FALSE;
     AppendMode = FALSE;
     UpdateMode = FALSE;
     NoHistory = FALSE;
@@ -706,7 +706,7 @@ main(int argc, char **argv)
 	    OverTmpSegSize = atoi(optarg);
 	    break;
 	case 'O':
-	    DoOverview = FALSE;
+	    DoOverview = TRUE;
 	    break;
 	default:
 	    Usage();
