@@ -343,6 +343,9 @@ SITEparseone(Entry, sp, subbed, poison)
 		case FEED_OVERVIEW:
 		    NeedOverview = TRUE;	/* Overview data	*/
 		    break;
+		case FEED_PATH:			/* Path			*/
+		    NeedPath = TRUE;
+		    break;
 		case FEED_BYTESIZE:		/* Size in bytes	*/
 		case FEED_FULLNAME:		/* Full filename	*/
 		case FEED_HDR_DISTRIB:		/* Distribution header	*/

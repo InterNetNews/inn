@@ -554,6 +554,13 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
         
     vp->iov_base = p;
     vp->iov_len  = Data->Body - p - (WireFormat == 1);
+    if (NeedPath) {
+	Data->Path = p;
+	for (i = Data->Body - p; --i >= 0; p++)
+	    if (*p == '\n')
+		break;
+	Data->PathLength = p - Data->Path;
+    }
     size += (vp++)->iov_len;
     if (ARTheaders[_lines].Found == 0) {
 	(void)sprintf(Data->Lines, "Lines: %d%s\n", Data->LinesValue, WireFormat ? "\r" : "");

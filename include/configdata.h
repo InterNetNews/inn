@@ -393,6 +393,7 @@ typedef int		BOOL;
 #define FEED_NAME		'n'
 #define FEED_NEWSGROUP		'g'
 #define FEED_OVERVIEW		'O'
+#define FEED_PATH		'P'
 #define FEED_REPLIC		'R'
 #define FEED_SITE		's'
 #define FEED_TIMERECEIVED	't'

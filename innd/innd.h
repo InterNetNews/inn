@@ -305,6 +305,8 @@ typedef struct _ARTDATA {
     int		DistributionLength;
     STRING	Feedsite;
     int		FeedsiteLength;
+    STRING      Path;
+    int		PathLength;
     STRING	Replic;
     int		ReplicLength;
     BUFFER	*Headers;
@@ -357,6 +359,7 @@ extern BOOL		Debug;
 EXTERN BOOL		ICDneedsetup;
 EXTERN BOOL		NeedHeaders;
 EXTERN BOOL		NeedOverview;
+EXTERN BOOL		NeedPath;
 EXTERN BOOL		NNRPFollows;
 extern BOOL		NNRPTracing;
 extern BOOL		StreamingOff;

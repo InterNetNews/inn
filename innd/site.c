@@ -388,6 +388,12 @@ SITEwritefromflags(sp, Data)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
 	    BUFFappend(bp, Data->Overview->Data, Data->Overview->Left);
 	    break;
+	case FEED_PATH:
+	    if (Dirty)
+		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
+	    BUFFappend(bp, Path.Data, Path.Used);
+	    BUFFappend(bp, Data->Path, Data->PathLength);
+	    break;
 	case FEED_REPLIC:
 	    if (Dirty)
 		BUFFappend(bp, ITEMSEP, STRLEN(ITEMSEP));
