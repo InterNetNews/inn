@@ -57,13 +57,16 @@ BOOL fdreserve(int fdnum) {
 }
 
 FILE *Fopen(const char *p, char *type, int index) {
+    FILE *nfp;
+    if (p == NULL || *p == NULL)
+	return NULL;
     if (index < 0 || index > Maxfd || Reserved_fd[index] == NULL)
 	return fopen(p, type);
-    if ((Reserved_fd[index] = freopen(p, type, Reserved_fd[index])) == NULL) {
+    if ((nfp = freopen(p, type, Reserved_fd[index])) == NULL) {
 	Reserved_fd[index] = freopen("/dev/null", "r", Reserved_fd[index]);
 	return NULL;
     }
-    return Reserved_fd[index];
+    return (Reserved_fd[index] = nfp);
 }
 
 int Fclose(FILE *fp) {
