@@ -2002,7 +2002,7 @@ STRING ARTpost(CHANNEL *cp)
 	Data.Feedsite = RChostname(cp);
 	if (Data.Feedsite == NULL)
 	    Data.Feedsite = CHANname(cp);
-	if (strcmp("0.0.0.0", Data.Feedsite) == 0)
+	if (strcmp("0.0.0.0", Data.Feedsite) == 0 || Data.Feedsite[0] == '\0')
 	    Data.Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
     } else {
 	Data.Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
