@@ -2,31 +2,30 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 dnl
 dnl Please try to follow GNU conventions and autoconf manual conventions as
-dnl much as possible in this file so that any macros we develop can be
-dnl easily contributed to the macro archive and possibly rolled into future
-dnl versions of autoconf so that we can stop supporting them.  This means,
-dnl for example, that code excerpts should probably follow the GNU coding
-dnl standards rather than INN's.
+dnl much as possible in this file so that any macros we develop can be easily
+dnl contributed to the macro archive and possibly rolled into future versions
+dnl of autoconf so that we can stop supporting them.  This means, for example,
+dnl that code excerpts should probably follow the GNU coding standards rather
+dnl than INN's.
 dnl
-dnl The macro archive is at <http://cryp.to/autoconf-archive/>.  Due to the
-dnl submission format and significant changes to autoconf's internal
-dnl architecture and building-block macros, I'm waiting until autoconf 2.50
-dnl is released and we can convert this file into a bunch of separate files
-dnl before submitting macros to that archive.
+dnl The macro archive is at <http://www.gnu.org/software/ac-archive/>.  Due to
+dnl the submission format and significant changes to autoconf's internal
+dnl architecture and building-block macros, I'm waiting until INN is switched
+dnl to autoconf 2.52 or later and we can convert this file into a bunch of
+dnl separate files before submitting macros to that archive.
 dnl
 dnl If a check is any way non-trivial, please package it up in a macro with
-dnl AC_DEFUN.  This will allow us to easily break up this (far too long)
-dnl file into a directory full of .m4 files for particular checks once
-dnl autoconf 2.50 is released and offers that capability.  Please also put
-dnl any long code blocks into a separate macro rather than in-line in the
-dnl test macro; this will make quoting issues much easier.  See the existing
-dnl tests for details on how to do this.
+dnl AC_DEFUN.  This will allow us to easily break up this (far too long) file
+dnl into a directory full of .m4 files for particular checks once we switch to
+dnl autoconf 2.52 or later.  Please also put any long code blocks into a
+dnl separate macro rather than in-line in the test macro; this will make
+dnl quoting issues much easier.  See the existing tests for details on how to
+dnl do this.
 dnl
 dnl Try to do as much with AC_DEFINE and as little with AC_SUBST as is
-dnl reasonable; obviously, makefile things like library paths and so forth
-dnl and paths to programs have to use AC_SUBST, but any compile-time
-dnl parameters are easier to handle with AC_DEFINE.  (And AC_SUBST is
-dnl slower.)
+dnl reasonable; obviously, makefile things like library paths and so forth and
+dnl paths to programs have to use AC_SUBST, but any compile-time parameters
+dnl are easier to handle with AC_DEFINE.  (And AC_SUBST is slower.)
 dnl
 dnl And remember:  If you don't have any alternative available if your check
 dnl for something fails, and there's no purpose served in aborting configure
@@ -51,10 +50,9 @@ if test x"$with_largefiles" != x ; then
     AC_MSG_ERROR([Use --enable-largefiles instead of --with-largefiles])
 fi
 
-dnl Check to see if the user wants to use libtool.  We only invoke the
-dnl libtool setup macros if they do.  Keep this call together with the
-dnl libtool setup so that the arguments to configure will be together in
-dnl configure --help.
+dnl Check to see if the user wants to use libtool.  We only invoke the libtool
+dnl setup macros if they do.  Keep this call together with the libtool setup
+dnl so that the arguments to configure will be together in configure --help.
 inn_use_libtool=no
 AC_ARG_ENABLE(libtool,
     [  --enable-libtool        Use libtool for lib generation [default=no]],
@@ -91,9 +89,9 @@ AC_SUBST(UPLIBTOOLLD)
 
 dnl INN has quite a few more configurable paths than autoconf supports by
 dnl default.  For right now, those additional paths are configured with
-dnl --with-*-dir options.  This is the generic macro for those arguments;
-dnl it takes the name of the directory, the path relative to $prefix if
-dnl none given to configure, the variable to set, and the help string.
+dnl --with-*-dir options.  This is the generic macro for those arguments; it
+dnl takes the name of the directory, the path relative to $prefix if none
+dnl given to configure, the variable to set, and the help string.
 AC_DEFUN([INN_ARG_DIR],
 [AC_ARG_WITH([$1-dir], [$4], [$3=$with_$1_dir], [$3=$prefix/$2])
 AC_SUBST($3)])
@@ -130,11 +128,11 @@ AC_ARG_WITH(syslog-facility,
     SYSLOG_FACILITY=$with_syslog_facility,
     SYSLOG_FACILITY=none)
 
-dnl INN allows the user and group INN will run as to be specified, as well
-dnl as the user to receive nightly reports and the like.  These are all
-dnl fairly similar, so factor the commonality into this macro.  Takes the
-dnl name of what we're looking for, the default, the variable to set, the
-dnl help string, and the comment for config.h.
+dnl INN allows the user and group INN will run as to be specified, as well as
+dnl the user to receive nightly reports and the like.  These are all fairly
+dnl similar, so factor the commonality into this macro.  Takes the name of
+dnl what we're looking for, the default, the variable to set, the help string,
+dnl and the comment for config.h.
 AC_DEFUN([INN_ARG_USER],
 [AC_ARG_WITH([news-$1], [$4], [$3=$with_news_$1], [$3=$2])
 AC_SUBST($3)
@@ -151,9 +149,9 @@ INN_ARG_USER(master, usenet, NEWSMASTER,
     [  --with-news-master=USER News master (address for reports) [usenet]],
     [The user who gets all INN-related e-mail.])
 
-dnl INN defaults to a umask of 002 with the corresponding directory and
-dnl file permissions, mostly for historical reasons.  If the user sets the
-dnl umask to something else, change all of the permissions.
+dnl INN defaults to a umask of 002 with the corresponding directory and file
+dnl permissions, mostly for historical reasons.  If the user sets the umask to
+dnl something else, change all of the permissions.
 NEWSUMASK=02
 FILEMODE=0664
 DIRMODE=0775
@@ -184,8 +182,8 @@ AC_DEFINE_UNQUOTED(GROUPDIR_MODE, $DIRMODE,
 AC_DEFINE_UNQUOTED(NEWSUMASK, $NEWSUMASK,
     [The umask used by all INN programs.])
 
-dnl inews used to be installed setgid, but may not be secure.  Only do this
-dnl if it's explicitly requested at configure time.
+dnl inews used to be installed setgid, but may not be secure.  Only do this if
+dnl it's explicitly requested at configure time.
 INEWSMODE=0550
 AC_ARG_ENABLE(setgid-inews,
     [  --enable-setgid-inews   Install inews setgid],
@@ -194,9 +192,9 @@ AC_ARG_ENABLE(setgid-inews,
     fi)
 AC_SUBST(INEWSMODE)
 
-dnl rnews used to be installed setuid root so that it could be run by the
-dnl uucp user for incoming batches, but this isn't necessary unless you're
-dnl using UUCP (which most people aren't).  Only do this if it's explicitly
+dnl rnews used to be installed setuid root so that it could be run by the uucp
+dnl user for incoming batches, but this isn't necessary unless you're using
+dnl UUCP (which most people aren't).  Only do this if it's explicitly
 dnl requested at configure time.
 RNEWSGRP=$NEWSGRP
 RNEWSMODE=0500
@@ -209,8 +207,8 @@ AC_ARG_ENABLE(uucp-rnews,
 AC_SUBST(RNEWSGRP)
 AC_SUBST(RNEWSMODE)
 
-dnl Choose the log compression method; the argument should not be a full
-dnl path, just the name of the compression type.
+dnl Choose the log compression method; the argument should not be a full path,
+dnl just the name of the compression type.
 AC_ARG_WITH(log-compress,
     [  --with-log-compress=METHOD   Log compression method [gzip]],
     LOG_COMPRESS=$with_log_compress,
@@ -223,8 +221,8 @@ esac
 AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
 
-dnl inndstart by default only allows ports 119 and 433 below 1024; if the
-dnl user wants to use some other port as well, they must use this option.
+dnl inndstart by default only allows ports 119 and 433 below 1024; if the user
+dnl wants to use some other port as well, they must use this option.
 AC_ARG_WITH(innd-port,
     [  --with-innd-port=PORT   Additional low-numbered port for inndstart],
     AC_DEFINE_UNQUOTED(INND_PORT, $with_innd_port,
@@ -325,8 +323,8 @@ AC_SUBST(BERKELEY_DB_CFLAGS)
 AC_SUBST(BERKELEY_DB_LIB)])
 INN_LIB_BERKELEYDB
 
-dnl Check for whether the user wants to compile with OpenSSL, and if so
-dnl what the path to the various components of it is.
+dnl Check for whether the user wants to compile with OpenSSL, and if so what
+dnl the path to the various components of it is.
 AC_DEFUN([INN_LIB_OPENSSL],
 [AC_ARG_WITH(openssl,
     [  --with-openssl=PATH     Enable OpenSSL (for NNTP over SSL support)],
@@ -353,23 +351,34 @@ else
     if test x"$OPENSSL_DIR" = xyes ; then
         AC_MSG_ERROR(Can not find OpenSSL)
     else
+        AC_MSG_RESULT($OPENSSL_DIR)
 	SSL_BIN="${OPENSSL_DIR}/bin"
 	SSL_INC="-I${OPENSSL_DIR}/include"
-        AC_MSG_RESULT($OPENSSL_DIR)
-	SSL_LIB="-L${OPENSSL_DIR}/lib"
+
+        # This is mildly tricky.  In order to satisfy most linkers, libraries
+        # have to be listed in the right order, which means that libraries
+        # with dependencies on other libraries need to be listed first.  But
+        # the -L flag for the OpenSSL library directory needs to go first of
+        # all.  So put the -L flag into LIBS and accumulate actual libraries
+        # into SSL_LIB, and then at the end, restore LIBS and move -L to the
+        # beginning of SSL_LIB.
+        inn_save_LIBS=$LIBS
+        LIBS="$LIBS -L${OPENSSL_DIR}/lib"
+	SSL_LIB=''
 	AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
 	    [AC_CHECK_LIB(RSAglue, RSAPublicEncrypt,
-	        SSL_LIB="-lRSAglue -lrsaref ${SSL_LIB}",,-lrsaref $SSL_LIB)]
-	    ,,$SSL_LIB)
-	AC_CHECK_LIB(ssl, SSL_CTX_new,
-		SSL_LIB="${SSL_LIB} -lssl";
-		[AC_MSG_ERROR(Can not find OpenSSL)],
-		$SSL_LIB)
-	AC_CHECK_LIB(crypto,BIO_accept,
-		SSL_LIB="${SSL_LIB} -lcrypto",
-		[AC_DEFINE(HAVE_SSL, 1, [Define if OpenSSL is available.])],
-		[AC_MSG_ERROR(Can not find OpenSSL)],
-		$SSL_LIB)
+                          [SSL_LIB="-lRSAglue -lrsaref"], , -lrsaref)])
+	AC_CHECK_LIB(crypto, BIO_new,
+		     SSL_LIB="-lcrypto $SSL_LIB",
+                     [AC_MSG_ERROR(Can not find OpenSSL)],
+                     $SSL_LIB)
+	AC_CHECK_LIB(ssl, SSL_library_init,
+                     [SSL_LIB="-lssl $SSL_LIB"],
+                     [AC_MSG_ERROR(Can not find OpenSSL)],
+                     $SSL_LIB)
+        SSL_LIB="-L${OPENSSL_DIR}/lib $SSL_LIB"
+        LIBS=$inn_save_LIBS
+        AC_DEFINE(HAVE_SSL, 1, [Define if OpenSSL is available.])
     fi
 fi
 AC_SUBST(SSL_BIN)
@@ -408,6 +417,8 @@ dnl Tcl support.  For Tcl, the user can supply the path to the Tcl include
 dnl files and libraries (for Perl and Python, this is determined
 dnl automatically from little scripts run by the binary found in the user's
 dnl path).
+dnl
+dnl FIXME: This should really use tclConfig.sh.
 AC_DEFUN([INN_LIB_TCL],
 [AC_ARG_WITH(tcl,
     [  --with-tcl=PATH         Embedded TCL script support [default=no]],
@@ -615,7 +626,7 @@ dnl adding libraries when the function is found in libc.  In several
 dnl cases, we explicitly just add the library to LIBS on success rather
 dnl than using default actions so as not to clutter config.h with defines
 dnl we never use.
-
+dnl
 dnl FIXME: This should go into a separate make variable that's only used
 dnl by those programs that need crypt.
 AC_SEARCH_LIBS(crypt, crypt)
@@ -644,7 +655,7 @@ dnl FIXME: These shouldn't go into the global LIBS variable.  getspnam() is
 dnl only used by the authentication programs.
 AC_CHECK_LIB(shadow, getspnam)
 
-dnl FIXME: This should be combined with AC_FUNC_GETLOADAVG
+dnl FIXME: This should be combined with AC_FUNC_GETLOADAVG.
 AC_CHECK_LIB(elf, nlist)
 
 dnl FIXME: This is only used by the keywords code in innd/art.c and
@@ -713,6 +724,7 @@ AC_SUBST(PERL_INC)
 AC_SUBST(PERL_LIB)
 
 dnl Libraries and flags for embedded Python.
+dnl
 dnl FIXME: I wish there was a less icky way to get this.
 if test x"$DO_PYTHON" = xdefine ; then
     AC_MSG_CHECKING(for Python linkage)
@@ -740,7 +752,7 @@ AC_SUBST(PYTHON_INC)
 dnl If configuring with large file support, determine the right flags to
 dnl use based on the platform.  This is the wrong approach; autoconf 2.50
 dnl comes with a macro that takes the right approach.  But this works well
-dnl enough until autoconf 2.50 is released.
+dnl enough until we switch to autoconf 2.50 or later.
 if test x"$inn_enable_largefiles" = xyes ; then
     AC_MSG_CHECKING(for largefile linkage)
     case "$host" in
@@ -763,6 +775,14 @@ if test x"$inn_enable_largefiles" = xyes ; then
     *-irix*)
         AC_MSG_RESULT(no)
         AC_MSG_ERROR([Large files not supported on this platform])
+        ;;
+    *-linux*)
+        AC_MSG_RESULT(maybe)
+        LFS_CFLAGS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+        LFS_LDFLAGS=""
+        LFS_LIBS=""
+        AC_DEFINE([_GNU_SOURCE], 1,
+                  [Some versions of glibc need this defined for pread/pwrite.])
         ;;
     *-solaris*)
         AC_MSG_RESULT(ok)
@@ -787,10 +807,10 @@ if test x"$inn_enable_largefiles" = xyes ; then
 fi
 
 dnl Start by checking for standard C headers.  AC_HEADER_STDC will set
-dnl STDC_HEADERS if stdlib.h, stdarg.h, string.h, and float.h all exist,
-dnl if memchr (and probably the other mem functions) is in string.h,
-dnl if free (and probably malloc and friends) are in stdlib.h, and if
-dnl ctype.h will work on high-bit characters.
+dnl STDC_HEADERS if stdlib.h, stdarg.h, string.h, and float.h all exist, if
+dnl memchr (and probably the other mem functions) is in string.h, if free (and
+dnl probably malloc and friends) are in stdlib.h, and if ctype.h will work on
+dnl high-bit characters.
 AC_HEADER_STDC
 
 dnl Only if that wasn't set do we need to go hunting for other headers to
@@ -859,11 +879,10 @@ define([_INN_HEADER_SOURCE],
 # include <unistd.h>
 #endif])
 
-dnl See if a given function needs a declaration by seeing if we can access
-dnl a function pointer for that function.  This is done in a really ugly
-dnl way with hacks so that autoheader will pick up the defines properly;
-dnl it's a stop-gap solution until the release of autoconf 2.50 which
-dnl fully supports this.
+dnl See if a given function needs a declaration by seeing if we can access a
+dnl function pointer for that function.  This is done in a really ugly way
+dnl with hacks so that autoheader will pick up the defines properly; it's a
+dnl stop-gap solution until switching to autoconf 2.50.
 AC_DEFUN([INN_NEED_DECLARATION],
 [AC_MSG_CHECKING([whether $1 must be declared])
 AC_CACHE_VAL([inn_cv_decl_needed_$1],
@@ -912,10 +931,9 @@ if test $inn_cv_c_long_long = yes ; then
 fi)])
 INN_C_LONG_LONG
 
-dnl From Paul D. Smith <psmith@baynetworks.com> on the autoconf mailing
-dnl list, this is a version of AC_CHECK_TYPE that allows specification of
-dnl additional headers.  It's a modified version of the standard autoconf
-dnl macro.
+dnl From Paul D. Smith <psmith@baynetworks.com> on the autoconf mailing list,
+dnl this is a version of AC_CHECK_TYPE that allows specification of additional
+dnl headers.  It's a modified version of the standard autoconf macro.
 AC_DEFUN([INN_CHECK_TYPE],
 [AC_REQUIRE([AC_HEADER_STDC])
 AC_MSG_CHECKING(for $1)
@@ -990,12 +1008,12 @@ main ()
 }]])
 
 dnl Check for the number of elements in an iovec (IOV_MAX).  SVr4 systems
-dnl appear to use that name for this limit (checked Solaris 2.6, IRIX 6.5,
-dnl and HP-UX 11.00).  Linux doesn't have it, but instead has UIO_MAXIOV
-dnl defined in <iovec.h> included from <sys/uio.h>.  The platforms that
-dnl have IOV_MAX appear to also offer it via sysconf(3), but it should be
-dnl a constant for a given implementation.  Set IOV_MAX if it's not
-dnl defined in <sys/uio.h> or <limits.h>.
+dnl appear to use that name for this limit (checked Solaris 2.6, IRIX 6.5, and
+dnl HP-UX 11.00).  Linux doesn't have it, but instead has UIO_MAXIOV defined
+dnl in <iovec.h> included from <sys/uio.h>.  The platforms that have IOV_MAX
+dnl appear to also offer it via sysconf(3), but it should be a constant for a
+dnl given implementation.  Set IOV_MAX if it's not defined in <sys/uio.h> or
+dnl <limits.h>.
 AC_DEFUN([INN_MACRO_IOV_MAX],
 [AC_MSG_CHECKING(value of IOV_MAX)
 AC_CACHE_VAL(inn_cv_macro_iov_max,
@@ -1033,9 +1051,9 @@ if test x"$inn_cv_macro_sun_len" = xyes ; then
 fi])
 INN_MACRO_SUN_LEN
 
-dnl BSD hosts have a tm_gmtoff element in struct tm containing the offset
-dnl from GMT/UTC for that time.  This is the strongly preferred way of
-dnl getting time zone information.
+dnl BSD hosts have a tm_gmtoff element in struct tm containing the offset from
+dnl GMT/UTC for that time.  This is the strongly preferred way of getting time
+dnl zone information.
 AC_DEFUN([INN_STRUCT_TM_GMTOFF],
 [AC_CACHE_CHECK(for tm_gmtoff in struct tm, inn_cv_struct_tm_gmtoff,
 [AC_TRY_LINK([#include <time.h>],
@@ -1048,9 +1066,9 @@ if test x"$inn_cv_struct_tm_gmtoff" = xyes ; then
 fi])
 INN_STRUCT_TM_GMTOFF
 
-dnl BSD hosts have the name of the local time zone in struct tm, which is
-dnl much nicer to use than the tzname variable (and also potentially handles
-dnl renamings of the time zone in the  past).
+dnl BSD hosts have the name of the local time zone in struct tm, which is much
+dnl nicer to use than the tzname variable (and also potentially handles
+dnl renamings of the time zone in the past).
 AC_DEFUN([INN_STRUCT_TM_ZONE],
 [AC_CACHE_CHECK(for tm_zone in struct tm, inn_cv_struct_tm_zone,
 [AC_TRY_LINK([#include <time.h>],
@@ -1079,11 +1097,11 @@ if test x"$inn_cv_var_timezone" = xyes ; then
 fi])
 INN_VAR_TIMEZONE
 
-dnl Many System V hosts and some BSD systems have an external variable
-dnl tzname containing the abbreviations of the main and alternate time
-dnl zone.  We can use these as a reasonable approximation of the correct
-dnl time zone names, although they could be incorrect if the time zone
-dnl name has changed in the past.
+dnl Many System V hosts and some BSD systems have an external variable tzname
+dnl containing the abbreviations of the main and alternate time zone.  We can
+dnl use these as a reasonable approximation of the correct time zone names,
+dnl although they could be incorrect if the time zone name has changed in the
+dnl past.
 AC_DEFUN([INN_VAR_TZNAME],
 [AC_CACHE_CHECK(for tzname variable, inn_cv_var_tzname,
 [AC_TRY_LINK([#include <time.h>], [*tzname = "UTC"],
@@ -1096,8 +1114,8 @@ fi])
 INN_VAR_TZNAME
 
 dnl A modified version of AC_CHECK_SIZEOF that doesn't always AC_DEFINE, but
-dnl instead lets you execute shell code based on success or failure.  This
-dnl is to avoid config.h clutter.
+dnl instead lets you execute shell code based on success or failure.  This is
+dnl to avoid config.h clutter.
 AC_DEFUN(INN_IF_SIZEOF,
 [changequote(<<, >>)dnl
 dnl The name to #define.
@@ -1127,8 +1145,8 @@ undefine([AC_TYPE_NAME])dnl
 undefine([AC_CV_NAME])dnl
 ])
 
-dnl Find a 32 bit type, by trying likely candidates.  First, check for the
-dnl C9X int32_t, then look for something else with a size of four bytes.
+dnl Find a 32 bit type, by trying likely candidates.  First, check for the C9X
+dnl int32_t, then look for something else with a size of four bytes.
 INN_IF_SIZEOF(int, 4, 4, INN_INT32=int,
     [INN_IF_SIZEOF(long, 4, 4, INN_INT32=long,
         [INN_IF_SIZEOF(short, 2, 4, INN_INT32=short)])])
@@ -1175,9 +1193,8 @@ main ()
 }])
 
 dnl Check whether inet_ntoa is present and working.  Since calling inet_ntoa
-dnl involves passing small structs on the stack, present and working
-dnl versions may still not function with gcc on some platforms (such as
-dnl IRIX).
+dnl involves passing small structs on the stack, present and working versions
+dnl may still not function with gcc on some platforms (such as IRIX).
 AC_DEFUN([INN_FUNC_INET_NTOA],
 [AC_CACHE_CHECK(for working inet_ntoa, inn_cv_func_inet_ntoa_works,
 [AC_TRY_RUN(_INN_FUNC_INET_NTOA_SOURCE(),
@@ -1218,10 +1235,10 @@ main ()
            && snprintf(NULL, 0, "%s", "abcd") == 4) ? 0 : 1);
 }]])
 
-dnl Check for a working snprintf.  Some systems have snprintf, but it
-dnl doesn't null-terminate if the buffer isn't large enough or it returns -1
-dnl if the string doesn't fit instead of returning the number of characters
-dnl that would have been formatted.
+dnl Check for a working snprintf.  Some systems have snprintf, but it doesn't
+dnl null-terminate if the buffer isn't large enough or it returns -1 if the
+dnl string doesn't fit instead of returning the number of characters that
+dnl would have been formatted.
 AC_DEFUN([INN_FUNC_SNPRINTF],
 [AC_CACHE_CHECK(for working snprintf, inn_cv_func_snprintf_works,
 [AC_TRY_RUN(_INN_FUNC_SNPRINTF_SOURCE(),
@@ -1271,8 +1288,8 @@ main ()
 }])
 
 dnl Check whether fpos_t is 64 bits and can be assigned to an off_t.  If so,
-dnl sets HAVE_LARGE_FPOS_T; this means that a missing fseeko or ftello can
-dnl be emulated usint fgetpos and fsetpos.
+dnl sets HAVE_LARGE_FPOS_T; this means that a missing fseeko or ftello can be
+dnl emulated usint fgetpos and fsetpos.
 AC_DEFUN([INN_TYPE_FPOS_T_LARGE],
 [AC_CACHE_CHECK(for off_t-compatible fpos_t, inn_cv_type_fpos_t_large,
 [AC_TRY_RUN(_INN_TYPE_FPOS_T_LARGE_SOURCE(),
@@ -1385,9 +1402,9 @@ main()
   return 0;
 }]])
 
-dnl Check whether the data read from an open file sees the changes made to
-dnl an mmaped region, or if msync has to be called for other applications to
-dnl see those changes.
+dnl Check whether the data read from an open file sees the changes made to an
+dnl mmaped region, or if msync has to be called for other applications to see
+dnl those changes.
 AC_DEFUN([INN_FUNC_MMAP_NEEDS_MSYNC],
 [AC_CACHE_CHECK(whether msync is needed, inn_cv_func_mmap_need_msync,
 [AC_TRY_RUN(_INN_FUNC_MMAP_NEEDS_MSYNC_SOURCE(),
@@ -1448,8 +1465,8 @@ if test $inn_cv_func_mmap_sees_writes = no ; then
               [Define if you need to call msync after writes.])
 fi])
 
-dnl Check whether msync takes three arguments.  (It takes three arguments
-dnl on Solaris and Linux, two arguments on BSDI.)
+dnl Check whether msync takes three arguments.  (It takes three arguments on
+dnl Solaris and Linux, two arguments on BSDI.)
 AC_DEFUN([INN_FUNC_MSYNC_ARGS],
 [AC_CACHE_CHECK(how many arguments msync takes, inn_cv_func_msync_args,
 [AC_TRY_COMPILE(
@@ -1547,8 +1564,8 @@ everything was set correctly.
 EOM
 
 dnl Finally, double-check the configured temporary directory.  Some people
-dnl point this at the system temporary directories or at other
-dnl world-writeable directories, which can be a local security hole.
+dnl point this at the system temporary directories or at other world-writeable
+dnl directories, which can be a local security hole.
 if $_PATH_PERL -e "exit((stat('$tmpdir'))[[2]] & 2)" > /dev/null ; then
     :
 else
