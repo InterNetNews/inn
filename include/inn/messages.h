@@ -15,6 +15,7 @@
 #define INN_MESSAGES_H 1
 
 #include <inn/defines.h>
+#include <stdarg.h>
 
 BEGIN_DECLS
 
@@ -46,9 +47,9 @@ extern void sysdie(const char *, ...)
    support for variadic macros, though; otherwise, the function just won't do
    anything. */
 #if !defined(DEBUG) && (INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS)
-# if HAVE_C99_VAMACROS
+# if INN_HAVE_C99_VAMACROS
 #  define debug(format, __VA_ARGS__)    /* empty */
-# elif HAVE_GNU_VAMACROS
+# elif INN_HAVE_GNU_VAMACROS
 #  define debug(format, args...)        /* empty */
 # endif
 #else
