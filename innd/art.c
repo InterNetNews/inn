@@ -1830,7 +1830,6 @@ ARTpost(cp, Replic, ihave)
     char		ControlWord[SMBUF];
     int			ControlHeader;
     int			oerrno;
-    int			adupe;
 #if defined(DO_PERL)
     char		*perlrc;
 #endif /* DO_PERL */
@@ -1839,6 +1838,12 @@ ARTpost(cp, Replic, ihave)
     article = &cp->In;
     Data.MessageID = ihave;
     error = ARTclean(article, &Data);
+    if (HIShavearticle(Data.MessageID)) {
+	strcpy(buff, "Article already recieved\n");
+	ARTlog(&Data, ART_REJECT, buff);
+	ARTreject(buff, article);
+	return buff;
+    }
     
     /* Fill in other Data fields. */
     Data.Poster = HDR(_sender);
@@ -1859,13 +1864,6 @@ ARTpost(cp, Replic, ihave)
     (void)sprintf(Data.TimeReceived, "%lu", Now.time);
     Data.TimeReceivedLength = strlen(Data.TimeReceived);
 
-    /* A duplicate? */
-    adupe = 0;
-    if (error == NULL && HIShavearticle(Data.MessageID)) {
-	error = "Duplicate article";
-	adupe = 1;
-    }
-
     /* And now check the path for unwanted sites -- Andy */
     for( j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++ ) {
         if( ListHas(hops, ME.Exclusions[j]) ) {
@@ -1880,11 +1878,9 @@ ARTpost(cp, Replic, ihave)
 	(void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
 	ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-	if (adupe == 0) {
 	    if (Data.MessageID && Mode == OMrunning && !HISwrite(&Data, ""))
 		syslog(L_ERROR, "%s cant write history %s %m",
 		       LogName, Data.MessageID);
-	}
 #endif	/* defined(DO_REMEMBER_TRASH) */
 	ARTreject(buff, article);
 	return buff;
