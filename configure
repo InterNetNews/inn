@@ -5231,7 +5231,7 @@ done
 
 ac_given_srcdir=$srcdir
 
-trap 'rm -fr `echo "config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefile innd/Makefile innfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/Makefile Makefile include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/Makefile include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefile innd/Makefile innfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/cnfs/Makefile storage/Makefile Makefile include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/Makefile include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -5374,7 +5374,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefile innd/Makefile innfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/Makefile Makefile include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/Makefile"}
+CONFIG_FILES=\${CONFIG_FILES-"config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefile innd/Makefile innfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/cnfs/Makefile storage/Makefile Makefile include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/Makefile"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
