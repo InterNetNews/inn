@@ -777,10 +777,13 @@ tests/overview/munge-data             Support script to generate test data
 tests/overview/overview-t.c           Basic tests for overview methods
 tests/runtests.c                      The test suite driver program
 tests/storage                         Test suite for storage (Directory)
+tests/storage/archive.t               Tests for backends/archive
 tests/storage/articles                Testing news articles (Directory)
 tests/storage/articles/1              News article for testing
 tests/storage/articles/2              News article for testing
 tests/storage/articles/3              News article for testing
+tests/storage/articles/bad-msgid      News article without a message ID
+tests/storage/articles/bad-subj       News article without a Subject
 tests/storage/db                      Skeleton database for testing (Directory)
 tests/storage/db/active               Skeleton active file for testing
 tests/storage/etc                     Configuration for testing (Directory)
