@@ -104,7 +104,7 @@ END
 sub update_desc {
     my ($name, $desc) = @_;
     shlock("$inn::locks/LOCK.newsgroups");
-    my $tempfile = "$inn::tmpdir/newgroup.$$";
+    my $tempfile = "$inn::newsgroups.$$";
     open(NEWSGROUPS, $inn::newsgroups)
         or logdie("Cannot open $inn::newsgroups: $!");
     open(TEMPFILE, ">$tempfile") or logdie("Cannot open $tempfile: $!");
@@ -123,6 +123,8 @@ sub update_desc {
     if ($desc ne $olddesc) {
         rename($tempfile, $inn::newsgroups)
             or logdie("Cannot rename $tempfile: $!");
+    } else {
+        unlink($tempfile);
     }
     unlink("$inn::locks/LOCK.newsgroups", $tempfile);
 }
