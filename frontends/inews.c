@@ -29,7 +29,7 @@
 #define HEADER_DELTA		20
 #define GECOSTERM(c)		\
 	    ((c) == ',' || (c) == ';' || (c) == ':' || (c) == LPAREN)
-
+#define HEADER_STRLEN		998
 
 typedef enum _HEADERTYPE {
     HTobs,
@@ -44,7 +44,7 @@ typedef struct _HEADER {
     int		Size;
     char	*Value;
 } HEADER;
-
+/
 
 STATIC char     *tmpPtr ;
 STATIC BOOL	Dump;
@@ -121,7 +121,7 @@ STATIC NORETURN
 QuitServer(x)
     int		x;
 {
-    char	buff[NNTP_STRLEN + 2];
+    char	buff[HEADER_STRLEN];
     char	*p;
 
     if (Spooling)
@@ -1085,7 +1085,7 @@ OfferArticle(buff, Authorized)
 {
     (void)fprintf(ToServer, "post\r\n");
     SafeFlush(ToServer);
-    if (fgets(buff, NNTP_STRLEN, FromServer) == NULL)
+    if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
 	PerrorExit(TRUE,
 	    Authorized ? "Can't offer article to server (authorized)"
 		       : "Can't offer article to server");
@@ -1174,8 +1174,8 @@ main(ac, av)
     struct passwd	*pwp;
     char		*article;
     char		*deadfile;
-    char		buff[NNTP_STRLEN + 2];
-    char		SpoolMessage[NNTP_STRLEN + 2];
+    char		buff[HEADER_STRLEN];
+    char		SpoolMessage[HEADER_STRLEN];
     BOOL		DoSignature;
     BOOL		AddOrg;
     SIZE_T		Length;
@@ -1283,7 +1283,7 @@ main(ac, av)
 	setbuf(ToServer, NEW(char, BUFSIZ));
 	(void)fprintf(ToServer, "mode reader\r\n");
 	SafeFlush(ToServer);
-	if (fgets(buff, NNTP_STRLEN, FromServer) == NULL)
+	if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
 	    PerrorExit(TRUE, "Can't tell server we're reading");
 	if ((j = atoi(buff)) != NNTP_BAD_COMMAND_VAL)
 	    i = j;
@@ -1323,15 +1323,15 @@ main(ac, av)
 	QuitServer(1);
     }
     for (hp = Table; hp < ENDOF(Table); hp++)
-	if (hp->Value && (int)strlen(hp->Value) + hp->Size > NNTP_STRLEN) {
+	if (hp->Value && (int)strlen(hp->Value) + hp->Size > HEADER_STRLEN) {
 	    (void)fprintf(stderr, "\"%s\" header is too long.\n", hp->Name);
 	    QuitServer(1);
 	}
     for (i = 0; i < OtherCount; i++)
-	if ((int)strlen(OtherHeaders[i]) > NNTP_STRLEN) {
+	if ((int)strlen(OtherHeaders[i]) > HEADER_STRLEN) {
 	    (void)fprintf(stderr,
 		    "Header too long (%d characters max):\n\t%40.40s...\n",
-		    NNTP_STRLEN, OtherHeaders[i]);
+		    HEADER_STRLEN, OtherHeaders[i]);
 	    QuitServer(1);
 	}
 
