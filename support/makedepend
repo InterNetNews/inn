@@ -22,10 +22,13 @@ for source in "$@" ; do
     */*)
         base=`echo "$source" | sed 's/\..*//'`
         gcc -MM $flags "$source" | sed "s%^[^.: ][^.: ]*%$base%" \
+            | sed -e 's%\(^\|  *\)/[^ ]* *%\1%g' -e '/^ *\\$/d' \
             >> .makefile.tmp
         ;;
     *)
-        gcc -MM $flags "$source" >> .makefile.tmp
+        gcc -MM $flags "$source" \
+            | sed -e 's%\(^\|  *\)/[^ ]*%\1%g' -e '/^ *\\$/d' \
+            >> .makefile.tmp
         ;;
     esac
     if [ $? != 0 ] ; then
