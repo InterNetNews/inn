@@ -2462,6 +2462,10 @@ STRING ARTpost(CHANNEL *cp)
     if (innconf->enableoverview && !innconf->useoverchan) {
 	TMRstart(TMR_OVERV);
 	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left)) {
+	    if (OVprobe(OVSPACE, (void *)&i) && i == OV_NOSPACE)
+		IOError("creating overview", ENOSPC);
+	    else
+		IOError("creating overview", 0);
 	    syslog(L_ERROR, "%s cant store overview for %s", LogName, TokenToText(token));
 	    OverviewCreated = FALSE;
 	} else {
