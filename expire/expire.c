@@ -856,7 +856,7 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
      * since it had to have been clean to get in there. */
     if (EXPverbose > 4)
 	(void)printf("\tdbz %s@%ld\n", fields[0], where);
-    if (!dbzstore(key, where)) {
+    if (dbzstore(key, where) == DBZSTORE_ERROR) {
 	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
 	return FALSE;
     }
