@@ -222,6 +222,11 @@ if [ -n "${PROGRAMS}" ] ; then
     done
 fi
 
+${DOLOGS} && {
+    echo ''
+    scanlogs ${SCANARG}
+}
+
 ##  The heart of the matter:  prologs, expire, epilogs.
 if ${DOEXPIRE} ; then
 
@@ -321,12 +326,6 @@ if ${DOEXPIRE} ; then
 	echo "	all done `date`" >>${EXPLOG}
     fi
 fi
-
-
-${DOLOGS} && {
-    echo ''
-    scanlogs ${SCANARG}
-}
 
 ##  Remove old sockets.
 ${DORM} &&
