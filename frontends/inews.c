@@ -880,6 +880,7 @@ MailArticle(group, article)
     register int	i;
     char		*address;
     char		buff[SMBUF];
+    char		*mta;
 
     /* Try to get the address first. */
     if ((address = GetModeratorAddress(FromServer, ToServer, group)) == NULL) {
@@ -898,7 +899,12 @@ MailArticle(group, article)
 
     /* Now build up the command (ignore format/argument mismatch errors,
      * in case %s isn't in _PATH_SENDMAIL) and send the headers. */
-    (void)sprintf(buff, _PATH_SENDMAIL, address);
+    if ((mta = GetConfigValue(_CONF_MTA)) == NULL) {
+	(void)sprintf(buff, _PATH_SENDMAIL, address);
+    }
+    else {
+	(void)sprintf(buff, mta, address);
+    }
     if ((F = popen(buff, "w")) == NULL)
 	PerrorExit(TRUE, "Can't start mailer");
     (void)fprintf(F, "To: %s\n", address);

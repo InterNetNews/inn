@@ -209,6 +209,8 @@
 #define _CONF_ARTMMAP           "articlemmap"
    /* Whether or not to mmap overviews and indices */
 #define _CONF_OVERMMAP          "overviewmmap"
+   /* Path to MTA */
+#define _CONF_MTA               "mta"
      
 /*
 **  13.  TCL Support

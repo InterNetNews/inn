@@ -92,6 +92,14 @@ overview which is needed if nnrpd will be used.
 To specify which index is used for unified overview, you need to edit
 overview.ctl.
 If you run innd as a feeder only, you do not need overview.ctl.
+.TP
+.I mta
+This specifies the message transfer agent (mta) to be used when mailing
+moderated postings. The article, with headers and an added To: line,
+will be piped into this program and an optional ``%s'' parameter will
+be replaced with the moderator email address(es). See
+.IR moderators (5)
+for more info on the moderator email address(es).
 .PP
 Three parameters are used only by
 .I nnrpd
