@@ -46,6 +46,8 @@ int
 main(int argc, char *argv[])
 {
     int option;
+    char mode = '\0';
+    const char *newsgroup;
 
     error_program_name = "tdx-util";
 
@@ -53,18 +55,39 @@ main(int argc, char *argv[])
         exit(1);
 
     /* Parse options. */
-    while ((option = getopt(argc, argv, "di:")) != EOF) {
+    while ((option = getopt(argc, argv, "di:o:")) != EOF) {
         switch (option) {
         case 'd':
-            dump_index();
+            if (mode != '\0')
+                die("only one of -d and -i allowed");
+            mode = 'd';
             break;
         case 'i':
-            dump_group(optarg);
+            if (mode != '\0')
+                die("only one of -d and -i allowed");
+            mode = 'i';
+            newsgroup = optarg;
+            break;
+        case 'o':
+            innconf->pathoverview = xstrdup(optarg);
             break;
         default:
             die("invalid option %c", option);
             break;
         }
+    }
+
+    /* Run the specified function. */
+    switch (mode) {
+    case 'd':
+        dump_index();
+        break;
+    case 'i':
+        dump_group(newsgroup);
+        break;
+    default:
+        die("one of -d or -i must be specified");
+        break;
     }
     exit(0);
 }
