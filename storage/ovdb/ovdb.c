@@ -275,6 +275,7 @@ static int crecv(void *data, int n)
 static int client_connect()
 {
     int r, p = 0;
+    char *path;
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     struct sockaddr_un sa;
 #else
@@ -296,7 +297,9 @@ static int client_connect()
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     sa.sun_family = AF_UNIX;
-    strcpy(sa.sun_path, cpcatpath(innconf->pathrun, OVDB_SERVER_SOCKET));
+    path = concatpath(innconf->pathrun, OVDB_SERVER_SOCKET);
+    strcpy(sa.sun_path, path);
+    free(path);
 #else
     sa.sin_family = AF_INET;
     sa.sin_port = 0;
@@ -411,6 +414,7 @@ void read_ovdb_conf(void)
 {
     static int confread = 0;
     int done = 0;
+    char *path;
     CONFFILE *f;
     CONFTOKEN *tok;
     BOOL b;
@@ -434,7 +438,9 @@ void read_ovdb_conf(void)
     ovdb_conf.useshm = 0;
     ovdb_conf.shmkey = 6400;
 
-    f = CONFfopen(cpcatpath(innconf->pathetc, _PATH_OVDBCONF));
+    path = concatpath(innconf->pathetc, _PATH_OVDBCONF);
+    f = CONFfopen(path);
+    free(path);
 
     if(f) {
 	while(!done && (tok = CONFgettoken(toks, f))) {
@@ -1080,7 +1086,7 @@ static int lockfd = -1;
 BOOL ovdb_getlock(int mode)
 {
     if(lockfd == -1) {
-	char *lockfn = COPY(cpcatpath(innconf->pathrun, OVDB_LOCKFN));
+	char *lockfn = concatpath(innconf->pathrun, OVDB_LOCKFN);
 	lockfd = open(lockfn,
 		mode == OVDB_LOCK_NORMAL ? O_RDWR : O_CREAT|O_RDWR, 0660);
 	if(lockfd == -1) {
@@ -1132,7 +1138,7 @@ BOOL ovdb_check_pidfile(char *file)
 {
     int f, pid;
     char buf[SMBUF];
-    char *pidfn = COPY(cpcatpath(innconf->pathrun, file));
+    char *pidfn = concatpath(innconf->pathrun, file);
 
     f = open(pidfn, O_RDONLY);
     if(f == -1) {
