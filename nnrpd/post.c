@@ -1018,7 +1018,7 @@ ARTpost(article, idbuff)
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 	i = NNTPlocalopen(&FromServer, &ToServer, buff);
 #else
-	i = NNTPremoteopen(innconf->nnrpdpostport, &FromServer,
+	i = NNTPremoteopen(innconf->port, &FromServer,
 					&ToServer, buff);
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     }
