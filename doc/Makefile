@@ -34,5 +34,5 @@ install-doc:
 	    $(CP_RPUB) $$F $D$(PATHDOC)/$$F ; \
 	done
 	if [ -e $(top)/README.snapshot ] ; then \
-	    $(CP_RPUB) $(top)/README.snapshot $D$(PATHDOC)/README.snapshot \
+	    $(CP_RPUB) $(top)/README.snapshot $D$(PATHDOC)/README.snapshot ; \
 	fi
