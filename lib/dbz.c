@@ -1053,10 +1053,6 @@ dbzfetch(const HASH key, off_t *value)
     if (search(&srch) == TRUE) {
 	/* Actually get the data now */
 	if ((options.pag_incore != INCORE_NO) && (srch.place < conf.tsize)) {
-	    if (innconf->nfsreader && options.pag_incore == INCORE_MMAP) {
-		mapcntl(&((of_t *)idxtab.core)[srch.place],
-			sizeof(of_t), MS_INVALIDATE);
-	    }
 	    memcpy(value, &((of_t *)idxtab.core)[srch.place], sizeof(of_t));
 	} else {
 	    if (pread(idxtab.fd, value, sizeof(of_t), srch.place * idxtab.reclen) != sizeof(of_t)) {
@@ -1517,10 +1513,6 @@ search(searcher *sp)
 	/* get the value */
 	if ((options.exists_incore != INCORE_NO) && (sp->place < conf.tsize)) {
 	    DEBUG(("search: in core\n"));
-	    if (innconf->nfsreader && options.exists_incore == INCORE_MMAP) {
-		mapcntl(&((erec *)etab.core)[sp->place], sizeof(erec),
-			MS_INVALIDATE);
-	    }
 	    memcpy(&value, &((erec *)etab.core)[sp->place], sizeof(erec)); 
 	} else {
 	    off_t dest;
