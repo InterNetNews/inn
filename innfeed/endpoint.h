@@ -195,6 +195,9 @@ int endPointErrno (EndPoint endp) ;
    considered first for servicing (i.e. the EndPoint connectied to innd) */
 void setMainEndPoint (EndPoint endp) ;
 
+/* returns the fd of the main endpoint */
+int getMainEndPointFd (void) ;
+
 void freeTimeoutQueue (void) ;
 
 int endpointConfigLoadCbk (void *data) ;

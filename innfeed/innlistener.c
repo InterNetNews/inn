@@ -324,7 +324,7 @@ void listenerHostIsIdle (InnListener listener, Host host)
 
 void openInputFile (void)
 {
-  int fd, i ;
+  int fd, i, mainFd ;
   off_t offset ;
   char buf [32], *p ;
 
@@ -334,12 +334,15 @@ void openInputFile (void)
   if (fd < 0)
     die ("open %s: %s\n", InputFile, strerror(errno)) ;
 
-  if ( dup2(fd, 0) < 0 )
-    die ("dup2 %d 0: %s\n", fd, strerror(errno)) ;
+  mainFd = getMainEndPointFd() ;
+  if (fd != mainFd)
+    {
+      if (dup2(fd, mainFd) < 0)
+	die ("dup2 %d %d: %s\n", fd, mainFd, strerror(errno)) ;
+      (void) close (fd);
+    }
 
-  (void) close (fd);
-
-  i = read(0, buf, sizeof (buf)) ;
+  i = read(mainFd, buf, sizeof (buf)) ;
   if (i < 0)
     die ("read %s: %s\n", InputFile, strerror(errno)) ;
   else if (i > 0)
@@ -348,9 +351,9 @@ void openInputFile (void)
       buf [ sizeof(buf) - 1 ] = '\0';
       offset = (off_t) strtol (p, &p, 10) ;
       if (offset > 0 && *p == '\n')
-	lseek (0, offset, SEEK_SET) ;
+	lseek (mainFd, offset, SEEK_SET) ;
       else
-	lseek (0, 0, SEEK_SET) ;
+	lseek (mainFd, 0, SEEK_SET) ;
     }
   syslog(LOG_NOTICE, "ME opened %s", InputFile);
 }
@@ -702,24 +705,25 @@ static void writeCheckPoint (int offsetAdjust)
 {
   char offsetString[16], *writePointer ;
   off_t offset ;
-  int writeBytes, writeReturn ;
+  int writeBytes, writeReturn, mainFd ;
 	      
-  offset = lseek (0, 0L, SEEK_CUR) ;
+  mainFd = getMainEndPointFd() ;
+  offset = lseek (mainFd, 0L, SEEK_CUR) ;
   if (offset < 0)
-    syslog (LOG_ERR, "ME tell(0): %m") ;
+    syslog (LOG_ERR, "ME tell(mainFd): %m") ;
   else
     {
       (void) sprintf (offsetString, "%ld\n",
 		      (long)(offset - offsetAdjust) ) ;
-      if ( lseek (0, 0L, SEEK_SET) != 0 )
-	syslog (LOG_ERR, "ME seek(0, 0, 0): %m") ;
+      if ( lseek (mainFd, 0L, SEEK_SET) != 0 )
+	syslog (LOG_ERR, "ME seek(mainFd, 0, 0): %m") ;
       else
 	{
 	  writeBytes = strlen (offsetString) ;
 	  writePointer = offsetString ;
 	  do
 	    { 
-	      writeReturn = write (0, writePointer, writeBytes) ;
+	      writeReturn = write (mainFd, writePointer, writeBytes) ;
 	      if (writeReturn < 0)
 		{
 		  syslog (LOG_ERR,"ME write input checkpoint: %m") ;
@@ -728,8 +732,8 @@ static void writeCheckPoint (int offsetAdjust)
 	      writePointer += writeReturn ;
 	      writeBytes -= writeReturn ;
 	    } while (writeBytes) ;
-	  if ( lseek (0, offset, SEEK_SET) != offset )
-	    die ("ME seek(0, %ld, SEEK_SET): %s\n", (long)offset,
+	  if ( lseek (mainFd, offset, SEEK_SET) != offset )
+	    die ("ME seek(mainFd, %ld, SEEK_SET): %s\n", (long)offset,
 		 strerror(errno) ) ;
 	}
     }

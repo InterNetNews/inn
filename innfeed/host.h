@@ -208,3 +208,7 @@ int hostConfigLoadCbk (void *data) ;
 
 #endif /* host_h__ */
 
+#ifdef DYNAMIC_CONNECTIONS
+void hostChkCxns(TimeoutId tid, void *data);
+#endif
+

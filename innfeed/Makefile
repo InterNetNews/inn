@@ -23,7 +23,7 @@ LEX		= lex -d
 YACC		= yacc -t -d
 
 # Debug option for compiler -g or -O (or both if using gcc).
-DBFLAGS		= -g
+DBFLAGS		= -g 
 
 # Add any architecture specific defines, flags etc. you need
 OSFLAGS		=

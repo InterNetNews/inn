@@ -956,6 +956,11 @@ void setMainEndPoint (EndPoint endp)
     mainEpIsReg = (S_ISREG(buf.st_mode) ? true : false) ;
 }
 
+int getMainEndPointFd (void)
+{
+  return(mainEndPoint->myFd) ;
+}
+
 void freeTimeoutQueue (void)
 {
   TimerElem p, n ;
