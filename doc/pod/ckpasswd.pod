@@ -4,7 +4,7 @@ ckpasswd - nnrpd password authenticator
 
 =head1 SYNOPSIS
 
-B<ckpasswd> [B<-s>] [B<-d> I<database>] [B<-f> I<filename>]
+B<ckpasswd> [B<-gs>] [B<-d> I<database>] [B<-f> I<filename>]
 [B<-u> I<username> B<-p> I<password>]
 
 =head1 DESCRIPTION
