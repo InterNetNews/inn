@@ -773,24 +773,24 @@ Configuring INN
 
         cycbuff:BUFFNAME:/path/to/buffer:SIZE
 
-    BUFFNAME must be unique and must be < 8 characters in length.  Something
-    simple like "BUFF00", "BUFF01", etc. is a decent choice, or you may want
-    to use something that includes the SCSI target and slice number of the
-    partition.  SIZE is the buffer size in kilobytes (if you're trying to
-    stay under 2GB, keep your sizes below 2097152).
+    BUFFNAME must be unique and must be at most seven characters long. 
+    Something simple like "BUFF00", "BUFF01", etc. is a decent choice, or
+    you may want to use something that includes the SCSI target and slice
+    number of the partition.  SIZE is the buffer size in kilobytes (if
+    you're trying to stay under 2GB, keep your sizes below 2097152).
 
     Now, you need to tell INN how to group your cycbuffs into metacycbuffs. 
     This is similar to creating cycbuff entries:
 
         metacycbuff:BUFFNAME:CYCBUFF,CYCBUFF,CYCBUFF
 
-    BUFFNAME is the name of the metacycbuff, and like cycbuff names must be
-    unique and <= 8 characters long.  These should be a bit more meaningful
-    than the cycbuff names since they will be used in other config files as
-    well.  Try to name them after what will be stored in them; for example,
-    if this metacycbuff will hold alt.binaries postings, "BINARIES" would be
-    a good choice.  The last part of the entry is a comma-separated list of
-    all of the cycbuffs that should be used to build this metacycbuff.  Each
+    BUFFNAME is the name of the metacycbuff and must be unique and at most
+    eight characters long.  These should be a bit more meaningful than the
+    cycbuff names since they will be used in other config files as well. 
+    Try to name them after what will be stored in them; for example, if this
+    metacycbuff will hold alt.binaries postings, "BINARIES" would be a good
+    choice.  The last part of the entry is a comma-separated list of all of
+    the cycbuffs that should be used to build this metacycbuff.  Each
     cycbuff should only appear in one metacycbuff line, and all metacycbuff
     lines must occur after all cycbuff lines in the file.
 
