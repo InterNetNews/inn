@@ -30,6 +30,7 @@ typedef struct {
     char		*curdirname;
     DIR			*curdir;
     struct _ngtent	*ngtp;
+    BOOL 		mmapped;
 } PRIV_TRADSPOOL;
 
 /*
@@ -844,7 +845,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
     private = NEW(PRIV_TRADSPOOL, 1);
     art->private = (void *)private;
     private->artlen = sb.st_size;
-    if (innconf->articlemmap && innconf->wireformat) {
+    if (innconf->articlemmap) {
 	if ((private->artbase = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
@@ -852,9 +853,35 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    DISPOSE(art);
 	    return NULL;
 	}
+	/* consider coexisting both wireformatted and nonwireformatted */
+	p = memchr(private->artbase, '\n', private->artlen);
+	if (p == NULL || p == private->artbase) {
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
+#endif
+	    munmap(private->artbase, private->artlen);
+	    DISPOSE(art->private);
+	    DISPOSE(art);
+	    return NULL;
+	}
+	if (p[-1] == '\r') {
+	    private->mmapped = TRUE;
+	} else {
+	    private->mmapped = FALSE;
+#if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
+	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
+#endif
+	    munmap(private->artbase, private->artlen);
+	}
     } else {
+	private->mmapped = FALSE;
+    }
+    if (!innconf->articlemmap || !private->mmapped) {
 	char *wfarticle;
 	int wflen;
+	BOOL needtranslate;
 
 	private->artbase = NEW(char, private->artlen);
 	if (read(fd, private->artbase, private->artlen) < 0) {
@@ -865,7 +892,20 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    DISPOSE(art);
 	    return NULL;
 	}
-	if (!innconf->wireformat) {
+	p = memchr(private->artbase, '\n', private->artlen);
+	if (p == NULL || p == private->artbase) {
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    syslog(L_ERROR, "tradspool: could not mmap article: %m");
+	    DISPOSE(art->private);
+	    DISPOSE(art);
+	    return NULL;
+	}
+	if (p[-1] == '\r') {
+	    needtranslate = FALSE;
+	} else {
+	    needtranslate = TRUE;
+	}
+	if (needtranslate || (innconf->wireformat && !private->mmapped)) {
 	    /* need to make a wireformat copy of the article */
 	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
 	    DISPOSE(private->artbase);
@@ -887,7 +927,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
     }
     
     if (((p = SMFindBody(private->artbase, private->artlen)) == NULL)) {
-	if (innconf->articlemmap && innconf->wireformat) {
+	if (private->mmapped) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
 #endif
@@ -913,7 +953,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
-    if (innconf->articlemmap && innconf->wireformat) {
+    if (private->mmapped) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	madvise(private->artbase, private->artlen, MADV_DONTNEED);
 #endif
@@ -955,7 +995,7 @@ tradspool_freearticle(ARTHANDLE *article) {
 
     if (article->private) {
 	private = (PRIV_TRADSPOOL *) article->private;
-	if (innconf->articlemmap && innconf->wireformat) {
+	if (private->mmapped) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 	    madvise(private->artbase, private->artlen, MADV_DONTNEED);
 #endif
@@ -1104,7 +1144,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	DISPOSE(article->private);
 	DISPOSE(article);
 	if (priv.artbase != NULL) {
-	    if (innconf->articlemmap && innconf->wireformat) {
+	    if (priv.mmapped) {
 #if defined(MADV_DONTNEED) && defined(HAVE_MADVISE)
 		madvise(priv.artbase, priv.artlen, MADV_DONTNEED);
 #endif
