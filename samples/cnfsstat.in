@@ -121,6 +121,13 @@ sub read_cycbuffconf {
 
     while(<CONFFILE>) {
 	$_ =~ s/^\s*(.*?)\s*$/$1/;
+	# Here we handle continuation lines
+	while (m/\\$/) {
+	    $contline = <CONFFILE>;
+	    $contline =~ s/^\s*(.*?)\s*$/$1/;
+	    chop;
+	    $_ .= $contline;
+	}
 	# \x23 below is #.  Emacs perl-mode gets confused by the "comment"
 	next if($_ =~ /^\s*$/ || $_ =~ /^\x23/);
 	next if($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
