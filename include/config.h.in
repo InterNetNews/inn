@@ -16,9 +16,7 @@
 #define CONFIG_H 1
 
 /* Portable defines that don't rely on autoconf results come from here. */
-#ifndef INN_DEFINES_H
-# include "inn/defines.h"
-#endif
+#include "inn/defines.h"
 
 /*
 **  GENERAL SETTINGS
@@ -422,6 +420,9 @@
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
+/* Define if you have the <inttypes.h> header file.  */
+#undef HAVE_INTTYPES_H
+
 /* Define if you have the <limits.h> header file.  */
 #undef HAVE_LIMITS_H
 
@@ -443,8 +444,14 @@
 /* Define if you have the <stdint.h> header file.  */
 #undef HAVE_STDINT_H
 
+/* Define if you have the <stdlib.h> header file.  */
+#undef HAVE_STDLIB_H
+
 /* Define if you have the <string.h> header file.  */
 #undef HAVE_STRING_H
+
+/* Define if you have the <strings.h> header file.  */
+#undef HAVE_STRINGS_H
 
 /* Define if you have the <sys/bitypes.h> header file.  */
 #undef HAVE_SYS_BITYPES_H
