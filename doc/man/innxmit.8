@@ -5,9 +5,6 @@ innxmit \- send Usenet articles to a remote NNTP server
 .SH SYNOPSIS
 .I innxmit
 [
-.BI \-A " alt_spool"
-]
-[
 .B \-a
 ]
 [
@@ -18,9 +15,6 @@ innxmit \- send Usenet articles to a remote NNTP server
 ]
 [
 .B \-l
-]
-[
-.B \-M
 ]
 [
 .B \-r
@@ -166,18 +160,6 @@ and the NNTP server on the remote host.
 .B \-l
 The ``\fB\-l\fP'' flag is used to turn off logging of reasons the remote gives
 for rejecting an article.
-.TP
-.B \-M
-If the ``\fB\-M\fP'' flag is used then
-.I innxmit
-will scan an article's headers before sending it.
-If the article appears to be a MIME article that is not in seven-bit
-format, the article will be sent in ``quoted-printable'' form.
-.TP
-.B \-A
-The ``\fB\-A\fP'' flag may be used to specify an alternate spool directory to
-use if the article is not found; this would normally be an NFS-mounted
-spool directory of a master server with longer expiration times.
 .TP
 .B \-s
 .I Innxmit
