@@ -336,6 +336,10 @@ tradindexed_expiregroup(char *group, int *low, struct history *history)
     ARTNUM new_low;
     bool status;
 
+    /* tradindexed doesn't have any periodic cleanup. */
+    if (group == NULL)
+        return true;
+
     status = tdx_expire(group, &new_low, history);
     if (status && low != NULL)
         *low = (int) new_low;
