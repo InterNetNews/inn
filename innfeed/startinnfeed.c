@@ -33,37 +33,6 @@
 #endif
 
 
-/*
-**  Drop or regain privileges.  On systems with POSIX saved UIDs, we can
-**  simply set the effective UID directly, since the saved UID preserves our
-**  ability to get back root access.  Otherwise, we have to swap the real
-**  and effective UIDs (which doesn't work correctly on AIX).  Assume any
-**  system with seteuid() has POSIX saved UIDs.  First argument is the new
-**  effective UID, second argument is the UID to preserve (not used if the
-**  system has saved UIDs).
-*/
-static void
-set_user (uid_t euid, uid_t ruid)
-{
-#ifdef HAVE_SETEUID
-    if (seteuid(euid) < 0) {
-        syslog(L_ERROR, "seteuid(%d) failed: %m", euid);
-        exit(1);
-    }
-#else
-# ifdef HAVE_SETREUID
-#  ifdef _POSIX_SAVED_IDS
-    ruid = -1;
-#  endif
-    if (setreuid(ruid, euid) < 0) {
-        syslog(L_ERROR, "setreuid(%d, %d) failed: %m", ruid, euid);
-        exit(1);
-    }
-# endif /* HAVE_SETREUID */
-#endif /* HAVE_SETEUID */
-}
-
-
 int
 main(int argc, char *argv[])
 {
@@ -79,41 +48,38 @@ main(int argc, char *argv[])
 #endif
 
     openlog("innfeed", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    warn_set_handlers(1, error_log_syslog_warning);
+    die_set_handlers(1, error_log_syslog_err);
 
     /* Convert NEWSUSER and NEWSGRP to a UID and GID.  getpwnam() and
        getgrnam() don't set errno normally, so don't print strerror() on
        failure; it probably contains garbage.*/
     pwd = getpwnam(NEWSUSER);
-    if (!pwd) {
-        syslog(L_FATAL, "getpwnam(%s) failed", NEWSUSER);
-        exit(1);
-    }
+    if (!pwd) die("can't getpwnam(%s)", NEWSUSER);
     news_uid = pwd->pw_uid;
     grp = getgrnam(NEWSGRP);
-    if (!grp) {
-        syslog(L_FATAL, "getgrnam(%s) failed", NEWSGRP);
-        exit(1);
-    }
+    if (!grp) die("can't getgrnam(%s)", NEWSGRP);
     news_gid = grp->gr_gid;
 
     /* Exit if run by another user. */
-    if (getuid() != news_uid) {
-        syslog(L_FATAL, "ran by UID %d, who isn't %s (%d)", getuid(),
-               NEWSUSER, news_uid);
-        exit(1);
-    }
+    if (getuid() != news_uid)
+        die("ran by UID %d, who isn't %s (%d)", getuid(), NEWSUSER,
+            news_uid);
 
     /* Drop privileges to read inn.conf. */
-    set_user(news_uid, 0);
+    if (seteuid(news_uid) < 0) sysdie("can't seteuid(%d)", news_uid);
     if (ReadInnConf() < 0) exit(1);
 
     /* Regain privileges to increase system limits. */
-    set_user(0, news_uid);
+    if (seteuid(0) < 0) sysdie("can't seteuid(0)");
     if (innconf->rlimitnofile >= 0)
         if (setfdlimit(innconf->rlimitnofile) < 0)
-            syslog(LOG_WARNING, "can't set file descriptor limit to %d: %m",
-                   innconf->rlimitnofile);
+            syswarn("can't set file descriptor limit to %d",
+                    innconf->rlimitnofile);
 
+    /* These calls will fail on some systems, such as HP-UX 11.00.  On those
+       systems, we just blindly assume that the stack and data limits are
+       high enough (they generally are).
 #if HAVE_SETRLIMIT
     rl.rlim_cur = RLIM_INFINITY;
     rl.rlim_max = RLIM_INFINITY;
@@ -126,13 +92,11 @@ main(int argc, char *argv[])
 #endif /* HAVE_SETRLIMIT */
 
     /* Permanently drop privileges. */
-    if (setuid(news_uid) < 0 || getuid() != news_uid) {
-        syslog(LOG_ERR, "can't setuid(%d): %m", news_uid);
-        exit(1);
-    }
+    if (setuid(news_uid) < 0 || getuid() != news_uid)
+        sysdie("can't setuid to %d", news_uid);
 
     /* Build the argument vector for innfeed. */
-    innfeed_argv = NEW(char *, argc + 1);
+    innfeed_argv = xmalloc((argc + 1) * sizeof(char *));
     innfeed_argv[0] = concat(innconf->pathbin, "/innfeed", (char *) 0);
     for (i = 1; i <= argc; i++)
         innfeed_argv[i] = argv[i];
@@ -145,9 +109,8 @@ main(int argc, char *argv[])
 
     /* Exec innfeed. */
     execv(innfeed_argv[0], innfeed_argv);
-    syslog(LOG_ERR, "can't exec %s: %m", innfeed_argv[0]);
-    _exit(1);
+    sysdie("can't exec %s", innfeed_argv[0]);
 
-    /* NOTREACHED */
+    /* Not reached. */
     return 1;
 }
