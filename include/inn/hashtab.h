@@ -13,7 +13,8 @@
 **  hash_create creates a hash and hash_free frees all the space allocated
 **  by one.  hash_insert, hash_replace, and hash_delete modify it, and
 **  hash_lookup extracts values.  hash_traverse can be used to walk the
-**  hash, and hash_searches, hash_collisions, and hash_expansions extract
+**  hash, and hash_count returns the number of elements currently stored in
+**  the hash.  hash_searches, hash_collisions, and hash_expansions extract
 **  performance and debugging statistics.
 */
 
@@ -43,6 +44,7 @@ bool            hash_insert(struct hash *, const void *key, void *datum);
 bool            hash_replace(struct hash *, const void *key, void *datum);
 bool            hash_delete(struct hash *, const void *key);
 void            hash_traverse(struct hash *, hash_traverse_func, void *);
+unsigned long   hash_count(struct hash *);
 unsigned long   hash_searches(struct hash *);
 unsigned long   hash_collisions(struct hash *);
 unsigned long   hash_expansions(struct hash *);

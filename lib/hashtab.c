@@ -304,6 +304,16 @@ hash_traverse(struct hash *hash, hash_traverse_func callback, void *data)
 
 
 /*
+**  Returns a count of undeleted elements in the hash.
+*/
+unsigned long
+hash_count(struct hash *hash)
+{
+    return hash->nelements - hash->ndeleted;
+}
+
+
+/*
 **  Accessor functions for the debugging statistics.
 */
 unsigned long
