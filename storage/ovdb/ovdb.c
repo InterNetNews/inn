@@ -3,6 +3,8 @@
  * ovdb 2.00 beta2
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-10-10 : ovdb_search now closes the cursor right after the last
+ *              record is read.
  * 2000-10-05 : artnum member of struct datakey changed from ARTNUM to u_int32_t.
  *              OS's where sizeof(long)==8 will have to rebuild their databases
  *              after this update.
@@ -1630,6 +1632,7 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	flags = DB_NEXT;
 	break;
     case 2:
+	s->state = 3;
 	return FALSE;
     default:
 	syslog(L_ERROR, "OVDB: OVsearch called again after FALSE return");
@@ -1655,20 +1658,28 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	break;
     case DB_NOTFOUND:
 	s->state = 3;
+	s->cursor->c_close(s->cursor);
+	s->cursor = NULL;
 	return FALSE;
     default:
 	syslog(L_ERROR, "OVDB: search: c_get: %s", db_strerror(ret));
 	s->state = 3;
+	s->cursor->c_close(s->cursor);
+	s->cursor = NULL;
 	return FALSE;
     }
 
     if(key.size != sizeof(struct datakey)) {
 	s->state = 3;
+	s->cursor->c_close(s->cursor);
+	s->cursor = NULL;
 	return FALSE;
     }
 
     if(dk.groupnum != s->gid || ntohl(dk.artnum) > s->lastart) {
 	s->state = 3;
+	s->cursor->c_close(s->cursor);
+	s->cursor = NULL;
 	return FALSE;
     }
 
@@ -1676,11 +1687,16 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	|| ((token || arrived) && val.size < sizeof(struct ovdata)) ) {
 	syslog(L_ERROR, "OVDB: search: bad value length");
 	s->state = 3;
+	s->cursor->c_close(s->cursor);
+	s->cursor = NULL;
 	return FALSE;
     }
 
-    if(ntohl(dk.artnum) == s->lastart)
+    if(ntohl(dk.artnum) == s->lastart) {
 	s->state = 2;
+	s->cursor->c_close(s->cursor);
+	s->cursor = NULL;
+    }
 
     if(artnum)
 	*artnum = ntohl(dk.artnum);
@@ -1704,7 +1720,8 @@ void ovdb_closesearch(void *handle)
 {
     struct ovdbsearch *s = (struct ovdbsearch *)handle;
 
-    s->cursor->c_close(s->cursor);
+    if(s->cursor)
+	s->cursor->c_close(s->cursor);
    
     DISPOSE(s);
 }
@@ -2149,7 +2166,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     }
 
     if(compact) {
-	if(delete_all_records(old_db, old_gid)) {
+	if(ret = delete_all_records(old_db, old_gid)) {
 	    syslog(L_ERROR, "OVDB: expiregroup: delete_all_records: %s", db_strerror(ret));
 	    return FALSE;
 	}
