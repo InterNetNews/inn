@@ -548,38 +548,50 @@ ProcessHeaders(int linecount, char *idbuff)
 
 
 /*
-**  See if the user has more included text than new text.  Simple-minded, but
-**  reasonably effective for catching neophyte's mistakes.  A line starting
-**  with > is included text.  Decrement the count on lines starting with <
-**  so that we don't reject diff(1) output.
+**  See if the user has more included text than new text.  Simple-minded,
+**  but reasonably effective for catching neophyte's mistakes.  Son-of-1036
+**  says:
+**
+**      NOTE: While encouraging trimming is desirable, the 50% rule imposed
+**      by some old posting agents is both inadequate and counterproductive.
+**      Posters do not respond to it by being more selective about quoting;
+**      they respond by padding short responses, or by using different
+**      quoting styles to defeat automatic analysis.  The former adds
+**      unnecessary noise and volume, while the latter also defeats more
+**      useful forms of automatic analysis that reading agents might wish to
+**      do.
+**
+**      NOTE:  At the very least, if a minimum-unquoted quota is being set,
+**      article bodies shorter than (say) 20 lines, or perhaps articles
+**      which exceed the quota by only a few lines, should be exempt.  This
+**      avoids the ridiculous situation of complaining about a 5-line
+**      response to a 6-line quote.
+**
+**  Accordingly, bodies shorter than 20 lines are exempt.  A line starting
+**  with >, |, or : is included text.  Decrement the count on lines starting
+**  with < so that we don't reject diff(1) output.
 */
 static const char *
-CheckIncludedText(p, lines)
-    register char	*p;
-    register int	lines;
+CheckIncludedText(const char *p, int lines)
 {
-    register int	i;
+    int i;
 
+    if (lines < 20)
+        return NULL;
     for (i = 0; ; p++) {
-	switch (*p) {
-	case '>':
-	    i++;
-	    break;
-	case '|':
-	    i++;
-	    break;
-	case ':':
-	    i++;
-	    break;
-	case '<':
-	    i--;
-	    break;
-	}
-	if ((p = strchr(p, '\n')) == NULL)
-	    break;
+        switch (*p) {
+            case '>': i++; break;
+            case '|': i++; break;
+            case ':': i++; break;
+            case '<': i--; break;
+            default:       break;
+        }
+        p = strchr(p, '\n');
+        if (p == NULL)
+            break;
     }
     if (i * 2 > lines)
-	return "Article not posted -- more included text than new text";
+        return "Article not posted -- more included text than new text";
     return NULL;
 }
 
