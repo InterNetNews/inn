@@ -115,11 +115,11 @@ void TMRmainloophook(void)
 {
     unsigned now;
     
-    if (!TimerInterval)
+    if (!innconf->timer)
 	return;
     now = gettime();
     
-    if (now - last_summary > (TimerInterval * 1000)) {
+    if (now - last_summary > (innconf->timer * 1000)) {
 	dosummary(now - last_summary);
 	last_summary = now;
     }
@@ -128,7 +128,7 @@ void TMRmainloophook(void)
 
 void		TMRstart(TMRTYPE t)
 {
-    if (!TimerInterval)
+    if (!innconf->timer)
 	return;
     if (t >= maxtimer) {
 	maxtimer = t + 1;
@@ -139,7 +139,7 @@ void		TMRstart(TMRTYPE t)
 
 void		TMRstop(TMRTYPE t)
 {
-    if (!TimerInterval)
+    if (!innconf->timer)
 	return;
     cumulative[t] += gettime() - start[t];
     count[t]++;

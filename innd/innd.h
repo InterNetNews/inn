@@ -400,8 +400,6 @@ extern BOOL		StreamingOff;
 extern BOOL		Tracing;
 EXTERN int              Overfdcount;
 EXTERN int		SeqNum;
-EXTERN int		StatusInterval;
-EXTERN int              TimerInterval;
 EXTERN STRING		path;
 EXTERN BUFFER		Path;
 EXTERN char		*ModeReason;	/* NNTP reject message		*/
@@ -417,7 +415,6 @@ EXTERN INADDR		MyAddress;
 extern int		ErrorCount;
 EXTERN int		ICDactivedirty;
 EXTERN int		KillerSignal;
-extern int		MaxIncoming;
 EXTERN int		MaxOutgoing;
 EXTERN int		nGroups;
 EXTERN SITEIDX		nSites;
@@ -433,7 +430,6 @@ EXTERN SITE		*Sites;
 EXTERN SITE		ME;
 EXTERN struct timeval	TimeOut;
 EXTERN TIMEINFO		Now;		/* Reasonably accurate time	*/
-extern time_t		Cutoff;
 
 /*
 ** Table size for limiting incoming connects.  Do not change the table

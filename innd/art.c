@@ -970,7 +970,7 @@ STATIC STRING ARTclean(BUFFER *Article, ARTDATA *Data)
 	(void)sprintf(buff, "Bad \"Date\" header -- \"%s\"", MaxLength(p, p));
 	return buff;
     }
-    if (Cutoff && Data->Posted < Now.time - Cutoff) {
+    if (innconf->artcutoff && Data->Posted < Now.time - innconf->artcutoff) {
 	(void)sprintf(buff, "Too old -- \"%s\"", MaxLength(p, p));
 	return buff;
     }

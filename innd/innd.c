@@ -38,10 +38,8 @@ BOOL		DoCancels = TRUE;
 char		LogName[] = "SERVER";
 char		SPOOL[] = _PATH_SPOOL;
 int		ErrorCount = IO_ERROR_COUNT;
-int		MaxIncoming = 50;
 int		SPOOLlen = STRLEN(SPOOL);
 OPERATINGMODE	Mode = OMrunning;
-time_t		Cutoff = 14 * 24 * 60 * 60;
 int		RemoteLimit = REMOTELIMIT;
 time_t		RemoteTimer = REMOTETIMER;
 int		RemoteTotal = REMOTETOTAL;
@@ -589,9 +587,6 @@ int main(int ac, char *av[])
     if (innconf->allowreaders)
 	NNRPFollows = TRUE;
 
-    MaxIncoming = innconf->maxconnections;
-    Cutoff = innconf->artcutoff * 24 * 60 * 60;
-
     /* Parse JCL. */
     CCcopyargv(av);
     while ((i = getopt(ac, av, "ac:Cdfi:l:Lm:o:n:p:P:rsS:t:uH:T:X:")) != EOF)
@@ -603,7 +598,7 @@ int main(int ac, char *av[])
 	    AnyIncoming = TRUE;
 	    break;
 	case 'c':
-	    Cutoff = atoi(optarg) * 24 * 60 * 60;
+	    innconf->artcutoff = atoi(optarg) * 24 * 60 * 60;
 	    break;
 	case 'd':
 	    Debug = TRUE;
@@ -618,7 +613,7 @@ int main(int ac, char *av[])
 	    RemoteLimit = atoi(optarg);
 	    break;
 	case 'i':
-	    MaxIncoming = atoi(optarg);
+	    innconf->maxconnections = atoi(optarg);
 	    break;
 	case 'I':
 	    if (innconf->bindaddress) DISPOSE(innconf->bindaddress);
@@ -721,24 +716,6 @@ int main(int ac, char *av[])
 	exit(1);
     }
 
-    if (GetBooleanConfigValue(_CONF_TIMER, TRUE) == TRUE) {
-	if ((p = GetConfigValue(_CONF_TIMER)) == NULL) {
-	    TimerInterval = 0;
-	} else {
-	    TimerInterval = atoi(p);
-	}
-    } else
-	TimerInterval = 0;
-    
-    if (GetBooleanConfigValue(_CONF_STATUS, TRUE) == TRUE) {
-	if ((p = GetConfigValue(_CONF_STATUS)) == NULL) {
-	    StatusInterval = 0;
-	} else {
-	    StatusInterval = atoi(p);
-	}
-    } else
-	StatusInterval = 0;
-    
     val = FALSE;
     if (!OVERsetup(OVER_MMAP, &val)) {
 	syslog(L_FATAL, "%s cant setup for the unified overview %m");

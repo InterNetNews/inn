@@ -1223,11 +1223,12 @@ NCcreate(fd, MustAuthorize, IsLocal)
     }
 
     /* See if we have too many channels. */
-    if (!IsLocal && MaxIncoming && NCcount >= MaxIncoming && !RCnolimit(cp)) {
+    if (!IsLocal && innconf->maxconnections && 
+			NCcount >= innconf->maxconnections && !RCnolimit(cp)) {
 	/* Recount, just in case we got out of sync. */
 	for (NCcount = 0, i = 0; CHANiter(&i, CTnntp) != NULL; )
 	    NCcount++;
-	if (NCcount >= MaxIncoming) {
+	if (NCcount >= innconf->maxconnections) {
 	    NCwriteshutdown(cp, "Too many connections");
 	    return cp;
 	}

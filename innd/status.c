@@ -117,7 +117,7 @@ static void STATUSsummary(void)
   /* HTML Header */
 
   fprintf (F,"<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"Refresh\" CONTENT=\"%d;\">\n",
-	   StatusInterval < MIN_REFRESH ? MIN_REFRESH : StatusInterval);
+	   innconf->status < MIN_REFRESH ? MIN_REFRESH : innconf->status);
   fprintf (F, "<TITLE>%s: incoming feeds</TITLE>\n", Path.Data);
   fprintf (F, "</HEAD>\n<BODY>\n<PRE>\n") ;
 #endif /* defined(HTML_STATUS) */
@@ -211,14 +211,14 @@ static void STATUSsummary(void)
   fprintf (F, "Global configuration parameters:\n");
   fprintf (F, "              Largest Article: %ld bytes\n", innconf->maxartsize);
   fprintf (F, "     Max Incoming connections: ");
-  if (MaxIncoming)
-    fprintf (F, "%d\n", MaxIncoming);
+  if (innconf->maxconnections)
+    fprintf (F, "%d\n", innconf->maxconnections);
   else
     fprintf (F, "unlimited\n");
   fprintf (F, "      Max Outgoing file feeds: %d\n", MaxOutgoing);
   fprintf (F, "                       Cutoff: ");
-  if (Cutoff)
-    fprintf (F, "%d days\n", (int) (Cutoff / 3600L / 24L));
+  if (innconf->artcutoff)
+    fprintf (F, "%d days\n", (int) (innconf->artcutoff / 3600L / 24L));
   else
     fprintf (F, "none\n");
   fprintf (F, "               Timeout period: %d seconds\n",
@@ -305,11 +305,11 @@ void STATUSmainloophook(void)
 {
   unsigned now;
     
-  if (!StatusInterval)
+  if (!innconf->status)
     return;
   now = STATUSgettime();
   
-  if (now - STATUSlast_time > (StatusInterval * 1000)) {
+  if (now - STATUSlast_time > (innconf->status * 1000)) {
     STATUSsummary();
     STATUSlast_time = now;
   }

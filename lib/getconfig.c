@@ -334,7 +334,7 @@ int ReadInnConf(char *configfile)
 		innconf->chanretrytime = atoi(p);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_ART_CUTOFF)) {
-		innconf->artcutoff = atoi(p);
+		innconf->artcutoff = atoi(p) * 24 * 60 * 60;
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PAUSE_RETRY_TIME)) {
 		innconf->pauseretrytime = atoi(p);

@@ -822,8 +822,8 @@ CCmode(av)
 	i++;
     *p++ = '\n';
     (void)sprintf(p, "Parameters c %ld i %d (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
-	    (long)Cutoff / (24L * 60L * 60L),
-	    MaxIncoming, i,
+	    (long)innconf->artcutoff / (24L * 60L * 60L),
+	    innconf->maxconnections, i,
 	    innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
 	    RemoteLimit, RemoteTotal, (int) RemoteTimer,
 	    AmSlave ? "slave" : "normal",
@@ -1063,12 +1063,12 @@ CCparam(av)
 	    return BADVAL;
 	break;
     case 'c':
-	Cutoff = atoi(p) * 24 * 60 * 60;
-	syslog(L_NOTICE, "%s changed -c %d", LogName, Cutoff);
+	innconf->artcutoff = atoi(p) * 24 * 60 * 60;
+	syslog(L_NOTICE, "%s changed -c %d", LogName, innconf->artcutoff);
 	break;
     case 'i':
-	MaxIncoming = atoi(p);
-	syslog(L_NOTICE, "%s changed -i %d", LogName, MaxIncoming);
+	innconf->maxconnections = atoi(p);
+	syslog(L_NOTICE, "%s changed -i %d", LogName, innconf->maxconnections);
 	break;
     case 'l':
 	innconf->maxartsize = atol(p);
@@ -1561,7 +1561,7 @@ STATIC STRING CCtimer(char *av[]) {
 	}
 	value = atoi(av[0]);
     }
-    TimerInterval = value;
+    innconf->timer = value;
     return NULL;
 }
 
@@ -1581,7 +1581,7 @@ STATIC STRING CCstatus(char *av[]) {
 	}
 	value = atoi(av[0]);
     }
-    StatusInterval = value;
+    innconf->status = value;
     return NULL;
 }
 
