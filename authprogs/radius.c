@@ -181,6 +181,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     fd_set rdfds;
     uint32_t nvalue;
     ARGTYPE slen;
+    int authtries= 3; /* number of times to try reaching the radius server */
 
     /* first, build the sockaddrs */
     memset(&sinl, '\0', sizeof(sinl));
@@ -328,24 +329,24 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	return(-1);
     }
 
-    /* send out the packet and wait for reply. */
-    if (sendto(sock, (char *)&req, reqlen, 0, (struct sockaddr*) &sinr,
-               sizeof(sinr)) < 0) {
-	fprintf(stderr, "radius: cant send auth_req: %s\n", strerror(errno));
-	close(sock);
-	return(-1);
-    }
-    /* wait 5 seconds maximum for a radius reply. */
-    now = time(0);
-    end = now+5;
-    tmout.tv_sec = 6;
-    tmout.tv_usec = 0;
-    done = 0;
-    FD_ZERO(&rdfds);
-    /* store the old vector to verify next checksum */
-    memcpy(secbuf+sizeof(req.vector), req.vector, sizeof(req.vector));
-    ret = -2;
-    while (!done && end >= now) {
+    while (!done && authtries--) {
+	/* send out the packet and wait for reply. */
+	if (sendto(sock, (char *)&req, reqlen, 0, (struct sockaddr*) &sinr,
+	       sizeof(sinr)) < 0) {
+	    fprintf(stderr, "radius: cant send auth_req: %s\n", strerror(errno));
+	    close(sock);
+	    return(-1);
+	}
+	/* wait 5 seconds maximum for a radius reply. */
+	now = time(0);
+	end = now+5;
+	tmout.tv_sec = 6;
+	tmout.tv_usec = 0;
+	done = 0;
+	FD_ZERO(&rdfds);
+	/* store the old vector to verify next checksum */
+	memcpy(secbuf+sizeof(req.vector), req.vector, sizeof(req.vector));
+	ret = -2;
 	FD_SET(sock, &rdfds);
 	got = select(sock+1, &rdfds, 0, 0, &tmout);
 	if (got < 0) {
