@@ -56,8 +56,7 @@ ICCsettimeout(int i)
 int
 ICCopen(void)
 {
-    int		mask;
-    int		oerrno;
+    int mask, oerrno, fd;
 
     if (innconf == NULL) {
 	if (!innconf_read(NULL)) {
@@ -65,10 +64,21 @@ ICCopen(void)
 	    return -1;
 	}
     }
-    /* Create a temporary name. */
+    /* Create a temporary name.  mkstemp is complete overkill here and is used
+       only because it's convenient.  We don't use it properly, since we
+       actually need to create a socket or named pipe, so there is a race
+       condition here.  It doesn't matter, since pathrun isn't world-writable
+       (conceivably two processes could end up using the same temporary name
+       at the same time, but the worst that will happen is that one process
+       will delete the other's temporary socket). */
     if (ICCsockname == NULL)
 	ICCsockname = concatpath(innconf->pathrun, _PATH_TEMPSOCK);
-    (void)mktemp(ICCsockname);
+    fd = mkstemp(ICCsockname);
+    if (fd < 0) {
+        ICCfailure = "mkstemp";
+        return -1;
+    }
+    close(fd);
     if (unlink(ICCsockname) < 0 && errno != ENOENT) {
 	ICCfailure = "unlink";
 	return -1;
