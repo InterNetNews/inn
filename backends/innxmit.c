@@ -606,8 +606,10 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	return FALSE;
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
-    if (Debug)
+    if (Debug) {
+	(void)fprintf(stderr, "> [ article %d ]\n", art->len);
 	(void)fprintf(stderr, "> .\n");
+    }
 
     if (CanStream) return TRUE;	/* streaming mode does not wait for ACK */
 
