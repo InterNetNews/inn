@@ -703,8 +703,6 @@ ARTidok(const char *MessageID)
 
   /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
   p = MessageID;
-  while (*p != '\0' && ISSPACE(*p))
-    p++;
   if (*p++ != '<')
     return false;
   for (; ; p++) {
@@ -764,8 +762,6 @@ ARTidok(const char *MessageID)
       break;
   }
 
-  while (*p != '\0' && ISSPACE(*p))
-    p++;
   return *p == '>' && *++p == '\0';
 }
 
