@@ -4,6 +4,7 @@
 */
 
 #include <stdio.h>
+#include <sys/types.h>
 #include <configdata.h>
 #include <macros.h>
 #include <clibrary.h>
