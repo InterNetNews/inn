@@ -47,6 +47,7 @@ HASH Hash(const void *value, const size_t len) {
 
     MD5Init(&context);
     MD5Update(&context, value, len);
+    MD5COUNT(&context, len);
     MD5Final(&context);
     memcpy(&hash,
 	   &context.digest,
