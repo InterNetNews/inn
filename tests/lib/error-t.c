@@ -22,9 +22,9 @@ typedef void (*test_function_t)(void);
 static int
 run_test(test_function_t function, char *buf, size_t buflen)
 {
-    int fds[2], status;
+    int fds[2];
     pid_t child;
-    ssize_t count;
+    ssize_t count, status;
 
     /* Flush stdout before we start to avoid odd forking issues. */
     fflush(stdout);
@@ -47,7 +47,12 @@ run_test(test_function_t function, char *buf, size_t buflen)
         /* In the parent; close the extra file descriptor, read the output
            if any, and then collect the exit status. */
         close(fds[1]);
-        count = read(fds[0], buf, buflen - 1);
+        count = 0;
+        do {
+            status = read(fds[0], buf + count, buflen - count - 1);
+            if (status > 0)
+                count += status;
+        } while (status > 0);
         buf[count < 0 ? 0 : count] = '\0';
         if (waitpid(child, &status, 0) == (pid_t) -1)
             sysdie("waitpid failed");
