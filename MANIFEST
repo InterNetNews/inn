@@ -226,8 +226,6 @@ innfeed/buffer.c            1 Implementation of the Buffer class
 innfeed/buffer.h            1 Public interface to the Buffer class
 innfeed/config.h            1 Application configuration values
 innfeed/config_l.c          1 A flex input file for the innfeed config file
-innfeed/config_y.c          1 Soure file created from configfile.y
-innfeed/config_y.h          1 Header file created from configfile.y
 innfeed/configfile.h        1 Header file for configfile.y
 innfeed/configfile.l        1 A flex input file for innfeed config file
 innfeed/configfile.y        1 A bison input file for innfeed config file
