@@ -59,10 +59,10 @@ STATIC void err_exit(char *s)
 
 
 static int
-err_alloc(const char *what, size_t size)
+err_alloc(const char *what, size_t size, const char *file, int line)
 {
-    fprintf(stderr, "%s: Can't %s %lu bytes: %s", MyName, what, size,
-            strerror(errno));
+    fprintf(stderr, "%s: Can't %s %lu bytes at line %d of %s: %s", MyName,
+            what, size, line, file, strerror(errno));
     SMshutdown();
     exit(1);
 }
