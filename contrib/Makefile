@@ -33,7 +33,7 @@ STORELIBS	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 expirectl:	expirectl.o	; $(LINK) expirectl.o
 mlockfile:	mlockfile.o	; $(LINK) mlockfile.o
 newsresp:	newsresp.o	; $(LINK) newsresp.o $(LIBS)
-pullart:	pullart.o	; $(LINK) pullart.o
+pullart:	pullart.o	; $(LINK) pullart.o $(LIBINN)
 respool:	respool.o	; $(LINK) respool.o $(STORELIBS)
 
 archivegz:       archivegz.in       $(FIX) ; $(FIX) -i archivegz.in
