@@ -1,5 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_REVISION($Id$)dnl
+AC_PREREQ(2.13)
 
 dnl FIXME: This file currently contains a lot of useful tests for things
 dnl that autoconf doesn't know how to do natively.  Some of those have since
@@ -238,7 +239,7 @@ AC_PROG_RANLIB
 AC_PROG_YACC
 
 dnl System specific checks.
-AC_AIX                  dnl NOTUSED
+AC_AIX
 AC_ISC_POSIX
 
 dnl Checks for pathnames.
@@ -378,16 +379,10 @@ dnl rather than using default actions so as not to clutter config.h with
 dnl defines we never use.
 
 dnl Several OSes have crypt() in a seperate library for legal reasons.
-AC_CHECK_FUNC(crypt, , [AC_CHECK_LIB(crypt, crypt, LIBS="$LIBS -lcrypt")])
+AC_SEARCH_LIBS(crypt, crypt)
 
 dnl Check for setproctitle in libc first, then libutil if not found there.
-AC_CHECK_FUNCS(setproctitle, , [
-    AC_CHECK_LIB(util, setproctitle,
-        LIBS="$LIBS -lutil"
-        AC_DEFINE(HAVE_SETPROCTITLE))])
-
-dnl FIXME: What platform is this actually needed on?
-AC_CHECK_LIB(44bsd, inet_addr, LIBS="$LIBS -l44bsd")
+AC_SEARCH_LIBS(setproctitle, util, AC_DEFINE(HAVE_SETPROCTITLE))
 
 dnl The rat's nest of networking libraries.  The common cases are not to
 dnl need any extra libraries, or to need -lsocket -lnsl.  We need to avoid
@@ -395,18 +390,23 @@ dnl linking with libnsl unless we need it, though, since on some OSes where
 dnl it isn't necessary it will totally break networking.  Unisys also
 dnl includes gethostbyname in libsocket but needs libnsl for socket().
 dnl Always link with libresolv if it's found.
-AC_CHECK_FUNC(gethostbyname, , [
-    AC_CHECK_LIB(nsl, gethostbyname, LIBS="$LIBS -lnsl")
-])
-AC_CHECK_LIB(resolv, gethostbyname, LIBS="$LIBS -lresolv")
+AC_SEARCH_LIBS(gethostbyname, nsl)
+AC_CHECK_LIB(resolv, gethostbyname, LIBS="-lresolv $LIBS")
 AC_CHECK_FUNC(socket, , [
     AC_CHECK_LIB(socket, socket, LIBS="$LIBS -lsocket", [
         AC_CHECK_LIB(nsl, socket, LIBS="$LIBS -lsocket -lnsl", , -lsocket)
     ], "$LIBS")
 ])
 
+dnl FIXME: What platform is this actually needed on?
+AC_SEARCH_LIBS(inet_addr, 44bsd, , , "$LIBS")
+
 dnl By this point, we almost certainly have inet_aton, but if we don't,
 dnl check in another place.  If we still can't find it, add it to LIBOBJS.
+dnl
+dnl FIXME: This is a mangled version of an earlier test that looked for a
+dnl malfunctioning inet_aton on IRIX when compiling with gcc.  It needs to
+dnl be replaced by a real test for that particular problem.
 AC_CHECK_FUNC(inet_aton, , [
     AC_CHECK_LIB(bind, inet_aton, LIBS="$LIBS -bind",
                  LIBOBJS="$LIBOBJS inet_addr.o")
@@ -441,8 +441,10 @@ dnl shouldn't be in the global LIBS variable.
 AC_CHECK_LIB(regex, regexec)
 
 dnl Some of the authentication programs want to be able to open dbm files.
-AC_CHECK_LIB(ndbm, dbm_open, DBM_LIB="-lndbm")
+dnl
+dnl FIXME: These conflict.  What order should they really be in?
 AC_CHECK_LIB(dbm, dbm_open, DBM_LIB="-ldbm")
+AC_CHECK_LIB(ndbm, dbm_open, DBM_LIB="-lndbm")
 AC_SUBST(DBM_LIB)
 
 dnl Libraries and flags for embedded Perl.
@@ -711,7 +713,6 @@ dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_FUNC_SETVBUF_REVERSED        dnl NOTUSED
 AC_FUNC_VFORK
-AC_FUNC_VPRINTF                 dnl NOTUSED
 AC_TYPE_SIGNAL
 
 dnl Check for various other functions.
@@ -1081,44 +1082,6 @@ yes
     ],
     AC_MSG_RESULT(no))
 
-dnl How to set non-blocking I/O.  -- fjc mibsoftware.com
-dnl
-dnl Want to avoid fcntl(FNDELAY) which is inconsistent.  If O_NONBLOCK is
-dnl present, we use that, otherwise fall back to FIONBIO.
-dnl
-dnl FIXME: This belongs in the source code, not in configure.  configure has
-dnl already done the necessary probes and the results are only used in
-dnl lib/nonblocking.c and in innfeed/connection.c.
-AC_MSG_CHECKING(for non-blocking I/O style)
-NBIO_STYLE=unknown
-if test "$ac_cv_header_fcntl_h" = yes ; then
-    AC_EGREP_CPP(yes, [
-#include <fcntl.h>
-#ifdef O_NONBLOCK
-yes
-#endif], [
-        AC_DEFINE(NBIO_FCNTL)
-        AC_MSG_RESULT(FCNTL)
-        NBIO_STYLE=FCNTL
-    ])
-fi
-if test "$NBIO_STYLE" = unknown ; then
-    if test "$ac_cv_header_sys_filio_h" = yes ; then
-        AC_EGREP_CPP(yes, [
-#include <sys/filio.h>
-#ifdef FIONBIO
-yes
-#endif], [
-            AC_DEFINE(NBIO_IOCTL)
-            AC_MSG_RESULT(IOCTL)
-            NBIO_STYLE=IOCTL
-        ])
-    fi
-fi
-if test "$NBIO_STYLE" = unknown ; then
-    AC_MSG_ERROR(Must set NBIO_STYLE)
-fi
-
 dnl FIXME: This is totally the wrong way to do this.  First, it should be
 dnl using the results of config.guess and should be done at the top of
 dnl configure, and second, it should use autoconf's standard check for
@@ -1246,7 +1209,7 @@ AC_DEFINE_UNQUOTED(LOG_INN_PROG, $SYSLOG_FACILITY)
 AC_SUBST(SYSLOG_FACILITY)
 
 dnl Clean up our LIBS, just for grins.
-LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g'`
+LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 
 AC_CONFIG_HEADER(include/config.h)
 AC_OUTPUT(
