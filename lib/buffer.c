@@ -21,16 +21,45 @@
 #include "libinn.h"
 
 /*
+**  Allocate a new struct buffer and initialize it.
+*/
+struct buffer *
+buffer_new(void)
+{
+    struct buffer *buffer;
+
+    buffer = xmalloc(sizeof(struct buffer));
+    buffer->size = 0;
+    buffer->used = 0;
+    buffer->left = 0;
+    buffer->data = NULL;
+    return buffer;
+}
+
+
+/*
+**  Resize a buffer to be at least as large as the provided second argument.
+**  Resize buffers to multiples of 1KB to keep the number of reallocations to
+**  a minimum.  Refuse to resize a buffer to make it smaller.
+*/
+void
+buffer_resize(struct buffer *buffer, size_t size)
+{
+    if (size < buffer->size)
+        return;
+    buffer->size = (size + 1023) & ~1023UL;
+    buffer->data = xrealloc(buffer->data, buffer->size);
+}
+
+
+/*
 **  Replace whatever data is currently in the buffer with the provided data.
 */
 void
 buffer_set(struct buffer *buffer, const char *data, size_t length)
 {
     if (length > 0) {
-        if (buffer->size < length) {
-            buffer->size = length;
-            buffer->data = xrealloc(buffer->data, buffer->size);
-        }
+        buffer_resize(buffer, length);
         memmove(buffer->data, data, length);
     }
     buffer->left = length;
@@ -50,10 +79,7 @@ buffer_append(struct buffer *buffer, const char *data, size_t length)
     if (length == 0)
         return;
     total = buffer->used + buffer->left;
-    if (total + length > buffer->size) {
-        buffer->size = (buffer->size + length + 1023) & ~1023UL;
-        buffer->data = xrealloc(buffer->data, buffer->size);
-    }
+    buffer_resize(buffer, total + length);
     buffer->left += length;
     memcpy(buffer->data + total, data, length);
 }

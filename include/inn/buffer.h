@@ -26,6 +26,12 @@ struct buffer {
 
 BEGIN_DECLS
 
+/* Allocate a new buffer and initialize its contents. */
+struct buffer *buffer_new(void);
+
+/* Resize a buffer to be at least as large as the provided size. */
+void buffer_resize(struct buffer *, size_t);
+
 /* Set the buffer contents, ignoring anything currently there. */
 void buffer_set(struct buffer *, const char *data, size_t length);
 
