@@ -58,7 +58,7 @@ case "$interpretor" in
     lib=". $LIBDIR/innshellvars"
     ;;
 */perl*|*PERL*)
-    path=`echo "$interpretor" | sed 's%^#! *[^ ][^ ]*$%'"$PERLPATH%"`
+    path=`echo "$interpretor" | sed 's%^#! *[^ ][^ ]*%'"$PERLPATH%"`
     lib="require '$LIBDIR/innshellvars.pl';"
     ;;
 *)
