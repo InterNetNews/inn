@@ -20,14 +20,6 @@
 # include <sys/time.h>
 #endif
 
-#ifdef HAVE_NDBM_H
-# include <ndbm.h>
-#else
-# ifdef HAVE_DB1_NDBM_H
-#  include <db1/ndbm.h>
-# endif
-#endif
-
 #include "macros.h"
 #include "md5.h"
 #include "libinn.h"
