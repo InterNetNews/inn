@@ -56,25 +56,22 @@
  * notice remains.  Use at your own risk.  No warranty is implied.
  */
 
-#include "configdata.h"
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <syslog.h>
-#include <ctype.h>
-#include <math.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <dirent.h>
+#include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
+#include <ctype.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <math.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <syslog.h>
+#include <signal.h>
+
 #include "inn/qio.h"
-#include "paths.h"
+#include "libinn.h"
 #include "macros.h"
+#include "paths.h"
 
 /* wait portability mess.  Per autoconf, #define macros ourself. */
 #ifdef HAVE_SYS_WAIT_H

@@ -1,9 +1,8 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include "libinn.h"
 #include "nntp.h"

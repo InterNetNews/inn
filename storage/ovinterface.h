@@ -6,9 +6,9 @@
 #ifndef __OVINTERFACE_H__
 #define __OVINTERFACE_H__
 
-#include <configdata.h>
-#include <storage.h>
-#include <ov.h>
+#include "config.h"
+#include "ov.h"
+#include "storage.h"
 
 typedef struct {
     char	*name;

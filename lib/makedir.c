@@ -1,9 +1,8 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <errno.h>
+#include <sys/stat.h>
+
 #include "libinn.h"
 
 /*

@@ -1,13 +1,13 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
-#include <netdb.h>
+
+#include "config.h"
 #include "clibrary.h"
-#include "paths.h"
+#include <netdb.h>
+
 #include "libinn.h"
+#include "paths.h"
 
 
 /*

@@ -1,13 +1,13 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
-#include "macros.h"
+#include <fcntl.h>
+
 #include "libinn.h"
+#include "macros.h"
 
 
 STATIC FILE **Reserved_fd = NULL;

@@ -1,17 +1,11 @@
-/*  $Revision$
+/*  $Id$
 **
 **  This file has been modified to get it to compile more easily
 **  on pre-4.4BSD systems.  Rich $alz, June 1991.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
-
-
-#define const /* NULL */
-#define size_t int
-#define NULL 0
 
 
 /*

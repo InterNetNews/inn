@@ -51,13 +51,12 @@
 
 
 #define MD5_IO
-#include <stdio.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "md5.h"
+#include <ctype.h>
+
 #include "autoconfig.h"
+#include "md5.h"
 
 char *MD5_what="@(#)";	/* #(@) if checked in */
 

@@ -9,9 +9,7 @@
  * Slightly hacked by Matthias Urlichs (urlichs@smurf.sub.org)
  * to fit into INND; 91/08/28.
  */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 
 

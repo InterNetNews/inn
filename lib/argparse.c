@@ -1,8 +1,7 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
+
 #include "libinn.h"
 #include "macros.h"
 

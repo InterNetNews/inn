@@ -1,12 +1,13 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "nnrpd.h"
+
 #if	NNRP_LOADLIMIT > 0
 #ifdef linux
 #ifdef HAVE_SYS_SYSINFO_H

@@ -1,5 +1,4 @@
-/*
-**  $Id$
+/*  $Id$
 **
 **  python.c: Embed Python in the style of innd's TCL and Perl stuff.
 ** 
@@ -12,13 +11,12 @@
 **  against Python's OO model here.  Don't tell Guido.
 */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "innd.h"
+#include <netinet/in.h>
+
 #include "art.h"
+#include "innd.h"
 
 
 #if defined(DO_PYTHON)

@@ -3,13 +3,13 @@
 **  Routine for the in-core data structures for the active and newsfeeds
 **  files.
 */
-#include <stdio.h>
-#include <sys/types.h>
+
+#include "config.h"
+#include "clibrary.h"
+#include <dirent.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
-#include <dirent.h>
-#include "configdata.h"
-#include "clibrary.h"
+
 #include "innd.h"
 #include "ov.h"
 

@@ -1,13 +1,12 @@
-#include <sys/types.h>
-#include <stdio.h>
-#include <syslog.h>
-#include <ctype.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "macros.h"
-#include "libinn.h"
-#include "paths.h"
+#include <ctype.h>
+#include <syslog.h>
+
 #include "inn/qio.h"
+#include "libinn.h"
+#include "macros.h"
+#include "paths.h"
 
 #define TABLESIZE       1024;
 

@@ -5,12 +5,10 @@
 **  By Bob Heiney, Network Systems Laboratory, Digital Equipment Corporation
 */
 
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "innd.h"
 
 #if     defined(DO_TCL)

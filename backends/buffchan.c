@@ -1,20 +1,20 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Buffered file exploder for innd.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
-#include <sys/stat.h>
 #include <ctype.h>
 #include <errno.h>
-#include "paths.h"
-#include "libinn.h"
-#include "inn/qio.h"
-#include "macros.h"
-#include <syslog.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <syslog.h>
+
+#include "inn/qio.h"
+#include "libinn.h"
+#include "macros.h"
+#include "paths.h"
 
 extern void	MAPread();
 extern char	*MAPname();

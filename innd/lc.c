@@ -5,14 +5,16 @@
 **  connection is set up, we speak NNTP.  The connect channel is used only
 **  by rnews to feed in articles from the UUCP sites.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "innd.h"
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-#include <sys/un.h>
+
+
+#if HAVE_UNIX_DOMAIN_SOCKETS
+# include <sys/un.h>
 
 STATIC char	*LCpath = NULL;
 STATIC CHANNEL	*LCchan;
@@ -54,7 +56,8 @@ LCwritedone()
 {
     syslog(L_ERROR, "%s internal LCwritedone", LogName);
 }
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+
+#endif /* HAVE_UNIX_DOMAIN_SOCKETS */
 
 
 /*

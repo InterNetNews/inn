@@ -6,8 +6,8 @@
 #ifndef __TIMEHASH_H__
 #define __TIMEHASH_H__
 
-#include <configdata.h>
-#include <interface.h>
+#include "config.h"
+#include "interface.h"
 
 BOOL timehash_init(BOOL *selfexpire);
 TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class);

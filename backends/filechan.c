@@ -1,20 +1,20 @@
-/*  $Revision$
+/*  $Id$
 **
 **  An InterNetNews channel process that splits a funnel entry into
 **  separate files.  Originally from Robert Elz <kre@munnari.oz.au>.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
-#include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/file.h>
-#include "paths.h"
+#include <sys/stat.h>
+#include <syslog.h>  
+
 #include "libinn.h"
 #include "macros.h"
-#include <syslog.h>  
+#include "paths.h"
 
 extern void	MAPread();
 extern char	*MAPname();

@@ -1,15 +1,15 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Connect to the NNTP server and feed one article.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <errno.h>
-#include "nntp.h"
+
 #include "libinn.h"
 #include "macros.h"
+#include "nntp.h"
 
 
 STATIC FILE	*FromServer;

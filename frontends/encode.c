@@ -1,7 +1,7 @@
-/*  $Revision$
+/*  $Id$
+**
 **  Produce a seven-bit printable encoding of stdin on stdout.
 **  From @(#)encode.c 1.3 5/15/85, distributed with B2.11 News.
-**
 **
 **  The encoding uses characters from 0x20 (' ') through 0x7A ('z').
 **  (That fits nicely into the UUCP 'f' protocol by Piet Beertema.) First,
@@ -15,9 +15,8 @@
 **  And if you thought that was unclear, then we won't even get into the
 **  terminating conditions!
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 
 

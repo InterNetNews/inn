@@ -11,9 +11,8 @@
 **  Got that?  All the remaining work in this program is to get the
 **  ending conditions right.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 
 

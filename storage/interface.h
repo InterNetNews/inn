@@ -6,8 +6,8 @@
 #ifndef __INTERFACE_H__
 #define __INTERFACE_H__
 
-#include <configdata.h>
-#include <storage.h>
+#include "config.h"
+#include "storage.h"
 
 typedef struct {
     char                *name;

@@ -6,8 +6,8 @@
 #ifndef __TRASH_H__
 #define __TRASH_H__
 
-#include <configdata.h>
-#include <interface.h>
+#include "config.h"
+#include "interface.h"
 
 BOOL trash_init(BOOL *selfexpire);
 TOKEN trash_store(const ARTHANDLE article, const STORAGECLASS class);

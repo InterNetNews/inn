@@ -1,19 +1,20 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
-#include <sys/socket.h>
 #include <errno.h>
-#include "paths.h"
-#include "nntp.h"
-#include "macros.h"
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-#include <sys/un.h>
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+#include <sys/socket.h>
+
 #include "libinn.h"
+#include "macros.h"
+#include "nntp.h"
+#include "paths.h"
+
+#if HAVE_UNIX_DOMAIN_SOCKETS
+# include <sys/un.h>
+#endif
 
 
 /*

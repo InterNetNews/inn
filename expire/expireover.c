@@ -1,20 +1,20 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Expire overview database.
 */
-#include <sys/types.h>
-#include <stdio.h>
+
+#include "config.h"
+#include "clibrary.h"
 #include <errno.h>
 #include <signal.h>
-#include "configdata.h"
-#include "clibrary.h"
+#include <syslog.h>
+
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
+#include "ov.h"
 #include "paths.h"
 #include "storage.h"
-#include "ov.h"
-#include <syslog.h>
 
 void usage(void) {
     fprintf(stderr, "Usage: expireover [flags]\n");

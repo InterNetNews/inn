@@ -1,4 +1,5 @@
-/*  $Revision$
+/*  $Id$
+**
 **  Shrink files on line boundaries.
 **  Written by Landon Curt Noll <chongo@toad.com>, and placed in the
 **  public domain.  Rewritten for INN by Rich Salz.
@@ -19,15 +20,15 @@
 **  The -n flag may be used to determine of any file is too large.  No
 **  files will be altered in this mode.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <syslog.h>
+
 #include "libinn.h"
 #include "macros.h"
 

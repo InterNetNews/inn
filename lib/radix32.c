@@ -1,11 +1,10 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Radix-32 strings divide a number into five-bit nibbles and use the
 **  alphabet 0..9a..v to represent 0..32.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <time.h>
 

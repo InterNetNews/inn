@@ -2,11 +2,11 @@
 **
 **  Routines for the in-core data structures for the newsfeeds file.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "innd.h"
 
 

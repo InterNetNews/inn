@@ -6,8 +6,8 @@
 #ifndef __TRADSPOOL_H__
 #define __TRADSPOOL_H__
 
-#include <configdata.h>
-#include <interface.h>
+#include "config.h"
+#include "interface.h"
 
 BOOL tradspool_init(BOOL *selfexpire);
 TOKEN tradspool_store(const ARTHANDLE article, const STORAGECLASS class);

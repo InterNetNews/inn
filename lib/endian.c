@@ -27,11 +27,9 @@
  * endianness and if longs must be aligned.  
  */
 
-#include <stdio.h>
+#include "config.h"
+#include "clibrary.h"
 #include <signal.h>
-#include <sys/types.h>
-#include <configdata.h>
-#include <clibrary.h>
 
 /*
  * buserr - catch an alignment error

@@ -1,4 +1,4 @@
-/*
+/*  $Id$
 **
 **  python.c: Embed Python in the style of nnrpd's TCL and Perl stuff
 **            (authentication and authorization hooks only at this point).
@@ -10,11 +10,10 @@
 **  TCL/Perl work done by Bob Heiney and Christophe Wolfhugel.
 */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "nnrpd.h"
 
 #if defined(DO_PYTHON)

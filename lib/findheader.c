@@ -1,14 +1,14 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
+
+#include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
-#include "inn/qio.h"
 
 
 /*

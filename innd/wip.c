@@ -6,13 +6,12 @@
 ** WIP stands for work-in-progress
 */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "innd.h"
+#include <netinet/in.h>
+
 #include "dbz.h"
+#include "innd.h"
 
 #define WIPTABLESIZE        1024
 #define WIP_ARTMAX          300		/* innfeed default max send time */

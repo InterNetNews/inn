@@ -1,28 +1,25 @@
-/* $Revision$
-** Library routines needed for handling CAF (Crunched Article Files)
-** Written by Richard Todd (rmtodd@mailhost.ecn.uoknor.edu) 3/24/96,
-** modified extensively since then.  Altered to work with storage manager
-** in INN1.8 by rmtodd 3/27/98.
+/*  $Id$
+**
+**  Library routines needed for handling CAF (Crunched Article Files)
+**  Written by Richard Todd (rmtodd@mailhost.ecn.uoknor.edu) 3/24/96,
+**  modified extensively since then.  Altered to work with storage manager
+**  in INN1.8 by rmtodd 3/27/98.
 */
 
-#include "configdata.h"
-#include <stdio.h>
-#include <sys/types.h>
+#include "config.h"
+#include "clibrary.h"
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "clibrary.h"
-#define CAF_INNARDS
-#include "caf.h"
-#include <errno.h>
-#include "macros.h"
-#include "libinn.h"
 #include <time.h>
 
-/* following code lifted from inndf.c */
+#include "libinn.h"
+#include "macros.h"
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
+#define CAF_INNARDS
+#include "caf.h"
+
+/* following code lifted from inndf.c */
 
 #ifdef HAVE_STATVFS
 #include <sys/statvfs.h>		/* specific includes */

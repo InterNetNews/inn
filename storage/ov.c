@@ -1,24 +1,21 @@
-#include <unistd.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <syslog.h>
-#include <sys/mman.h>
-#include <assert.h>
-#include <errno.h>
-#include <string.h>
-#include "dbz.h"
-#include "configdata.h"
-#include "macros.h"
+#include "config.h"
 #include "clibrary.h"
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <syslog.h>
+
+#include "dbz.h"
+#include "macros.h"
 #include "libinn.h"
+#include "ov.h"
+#include "ovinterface.h"
+#include "ovmethods.h"
 #include "paths.h"
 #include "storage.h"
-#include "ov.h"
-#include "ovmethods.h"
-#include "ovinterface.h"
 
 STATIC int	OVnumpatterns;
 STATIC char	**OVpatterns;

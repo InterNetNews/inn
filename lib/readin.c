@@ -1,13 +1,13 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <errno.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+
 #include "libinn.h"
 #include "macros.h"
 

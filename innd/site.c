@@ -3,11 +3,11 @@
 **  Routines to implement site-feeding.  Mainly working with channels to
 **  do buffering and determine what to send.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
+#include <netinet/in.h>
+
 #include "innd.h"
 
 

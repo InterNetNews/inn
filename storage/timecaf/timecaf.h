@@ -1,15 +1,15 @@
-/*
-** $Id$
-** timecaf -- like the timehash storage method (and heavily inspired
-** by it), but uses the CAF library to store multiple articles in a
-** single file. 
+/*  $Id$
+**
+**  timecaf -- like the timehash storage method (and heavily inspired
+**  by it), but uses the CAF library to store multiple articles in a
+**  single file. 
 */
 
 #ifndef __TIMECAF_H__
 #define __TIMECAF_H__
 
-#include <configdata.h>
-#include <interface.h>
+#include "config.h"
+#include "interface.h"
 
 BOOL timecaf_init(BOOL *selfexpire);
 TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class);

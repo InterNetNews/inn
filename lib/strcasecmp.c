@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 
 
@@ -23,9 +21,6 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#define const /* NULL */
-#define size_t int
 
 #if defined(LIBC_SCCS) && !defined(lint)
 static const char sccsid[] = "@(#)strcasecmp.c	5.9 (Berkeley) 6/1/90";

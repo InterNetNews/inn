@@ -1,18 +1,18 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Prune file names from history file.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <errno.h>
 #include <fcntl.h>
-#include "paths.h"
-#include "libinn.h"
+#include <syslog.h>
+
 #include "dbz.h"
+#include "libinn.h"
 #include "macros.h"
-#include <syslog.h>  
+#include "paths.h"
 
 
 /*

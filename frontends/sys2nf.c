@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Read a C news "sys" file and split it up into a set of INN
 **  newsfeeds entries.  Also works with B news.
@@ -6,16 +6,16 @@
 **  Once done, edit all files that have HELP or all in them.
 **  Review all files, anyway.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include "nntp.h"
+
 #include "libinn.h"
 #include "macros.h"
+#include "nntp.h"
 
 #define TEMPFILE	":tmp"
 static char		**Groups;

@@ -1,15 +1,15 @@
-/*  $Revision$
+/*  $Id$
 **
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+
+#include "config.h"
 #include "clibrary.h"
 #include <errno.h>
-#include "paths.h"
+
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
+#include "paths.h"
 
 
 STATIC char	GMApathname[256];

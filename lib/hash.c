@@ -2,11 +2,10 @@
    is implemented using MD5, but should probably have a mechanism for
    choosing the hash algorithm and tagging the hash with the algorithm
    used */
-#include <stdio.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
+
 #include "libinn.h"
 #include "macros.h"
 #include "md5.h"
