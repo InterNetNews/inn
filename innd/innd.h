@@ -533,7 +533,7 @@ extern STRING		CCaddhist(char *av[]);
 extern BOOL		HIShavearticle(const HASH MessageID);
 extern BOOL		HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token);
 extern BOOL             HISremember(const HASH MessageID);
-extern char		*HISfilesfor(const HASH MessageID);
+extern TOKEN		*HISfilesfor(const HASH MessageID);
 extern void		HISclose(void);
 extern void		HISsetup(void);
 extern void		HISsync(void);

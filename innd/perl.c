@@ -76,7 +76,7 @@ PLartfilter(char *artBody, int lines)
     HV          *hdr;
     CV          *filter;
     int         rc;
-    char        *p;
+    char        *p, save;
     static SV   *body = NULL;
     static char buf[256];
 
@@ -93,10 +93,13 @@ PLartfilter(char *artBody, int lines)
                      newSVpv(hp->Value, 0), 0);
     }
     if (filterPath) {
-        p = strchr(filterPath, '\n');
-        if (p) *p = '\0';
+        p = strpbrk(filterPath, "\r\n");
+        if (p) {
+	    save = *p;
+	    *p = '\0';
+	}
         hv_store(hdr, "Path", 4, newSVpv(filterPath, 0), 0);
-        if (p) *p = '\n';
+        if (p) *p = save;
     }
 
     /* Store the article body.  We don't want to make another copy of it,
@@ -329,15 +332,15 @@ XS(XS_INN_filesfor)
 {
     dXSARGS;
     char        *msgid;
-    char        *files;
+    TOKEN       *token;
 
     if (items != 1)
         croak("Usage: INN::filesfor(msgid)");
 
     msgid = (char *) SvPV(ST(0), PL_na);
-    files = HISfilesfor(HashMessageID(msgid));
-    if (files) {
-        XSRETURN_PV(files);
+    token = HISfilesfor(HashMessageID(msgid));
+    if (token) {
+        XSRETURN_PV(TokenToText(*token));
     } else {
         XSRETURN_UNDEF;
     }

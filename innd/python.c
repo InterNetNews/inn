@@ -74,7 +74,7 @@ PYartfilter(artBody, artLen, lines)
     ARTHEADER	*hp;
     int		hdrnum;
     int		i;
-    char	*p;
+    char	*p, save;
     static char buf[256];
     PyObject	*result;
 
@@ -94,14 +94,16 @@ PYartfilter(artBody, artLen, lines)
 
     /* ...then the path, done separately to get the info innd adds... */
     if (filterPath != NULL) {
-	p = strchr(filterPath,'\n');
-	if (p)
+	p = strpbrk(filterPath,"\r\n");
+	if (p) {
+	    save = *p;
 	    *p = '\0';
+	}
 	PYheaditem[hdrnum] = PyBuffer_FromMemory(filterPath,
 						 strlen(filterPath));
 	PyDict_SetItem(PYheaders, PYpathkey, PYheaditem[hdrnum++]);
 	if (p)
-	    *p = '\n';
+	    *p = save;
     }
 
     /* ...then the body... */
@@ -345,44 +347,28 @@ PY_head(self, args)
     char	*msgid;
     int		msgidlen;
     char	*p;
-    char	*q;
-    char	*bufptr;
-    QIOSTATE	*qp;
+    TOKEN	*token;
+    ARTHANDLE	*art;
     PyObject	*header;
     int		headerlen;
-    int		bytesused = 0;
     char	*headertxt;
 
     if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
 	return NULL;
 
     /* Get the article filenames/token; open the first */
-    if ((q = HISfilesfor(HashMessageID(msgid))) == NULL)
+    if ((token = HISfilesfor(HashMessageID(msgid))) == NULL)
 	return Py_BuildValue("s", "");	
-
-    if ((p = strchr(q, ' ')))	/* probably obsolete in 2.3 */
-	*p = '\0';
-    if ((qp = QIOopen(q)) == NULL)
-	return PyString_FromStringAndSize(NULL, 0);
-
-    headerlen = START_BUFF_SIZE;
+    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
+	return Py_BuildValue("s", "");	
+    p = FromWireFmt(art->data, art->len, &headerlen);
+    SMfreearticle(art);
+    headerlen++;
     header = PyString_FromStringAndSize(NULL, headerlen);
     headertxt = PyString_AS_STRING(header);
+    strncpy(headertxt, p, headerlen);
+    DISPOSE(p);
 
-    for (p = QIOread(qp); (p != NULL) && (*p != '\0'); p = QIOread(qp)) {
-	if (headerlen < (bytesused + qp->Length + 1)) {
-	    headerlen += GROW_AMOUNT(headerlen);
-	    _PyString_Resize (&header, headerlen);
-	    headertxt = PyString_AS_STRING(header);
-	}
-	strncpy(&headertxt[bytesused], p, qp->Length);
-	bytesused += qp->Length;
-	headertxt[bytesused++] = '\n';
-    }
-
-    QIOclose(qp);
-    if (bytesused != headerlen)
-	_PyString_Resize(&header, bytesused);
     return header;
 }
 
@@ -398,43 +384,27 @@ PY_article(self, args)
     char	*msgid;
     int		msgidlen;
     char	*p;
-    char	*q;
-    char	*bufptr;
-    QIOSTATE	*qp;
+    TOKEN	*token;
+    ARTHANDLE	*arth;
     PyObject	*art;
     int		artlen;
-    int		bytesused = 0;
     char	*arttxt;
 
     if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
 	return NULL;
 
     /* Get the article filenames; open the first file */
-    if ((q = HISfilesfor(HashMessageID(msgid))) == NULL)
+    if ((token = HISfilesfor(HashMessageID(msgid))) == NULL)
 	return Py_BuildValue("s", "");
-    if (p = strchr(q, ' '))
-	*p = '\0';
-    if ((qp = QIOopen(q)) == NULL)
-	return PyString_FromStringAndSize(NULL, 0);
-
-    artlen = START_BUFF_SIZE;
+    if ((arth = SMretrieve(*token, RETR_ALL)) == NULL)
+	return Py_BuildValue("s", "");	
+    p = FromWireFmt(arth->data, arth->len, &artlen);
+    SMfreearticle(arth);
+    artlen++;
     art = PyString_FromStringAndSize(NULL, artlen);
-    arttxt = PyString_AS_STRING(art);
-
-    for (p = QIOread(qp); (p != NULL); p = QIOread(qp)) {
-	if (artlen < (bytesused + QIOlength(qp) + 1)) {
-	    artlen += GROW_AMOUNT(artlen);
-	    _PyString_Resize (&art, artlen);
-	    arttxt = PyString_AS_STRING(art);
-	}
-	strncpy(&arttxt[bytesused], p, QIOlength(qp));
-	bytesused += QIOlength(qp);
-	arttxt[bytesused++] = '\n';
-    }
-    QIOclose(qp);
-
-    if (bytesused != artlen)
-	_PyString_Resize(&art, bytesused);
+    arttxt = PyString_AS_STRING(header);
+    strncpy(arttxt, p, artlen);
+    DISPOSE(p);
 
     return art;
 }

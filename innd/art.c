@@ -441,8 +441,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
 
     size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + Pathalias.Used + 64 + 1;
     p = artbuff = NEW(char, size);
-    
-    if (strncmp(Path.Data, path, Path.Used) != 0) {
+    if ((Path.Used >= Article->Used - (int)(path - Article->Data)) || strncmp(Path.Data, path, Path.Used) != 0) {
 	Hassamepath = FALSE;
 	memcpy(p, Article->Data, path - Article->Data);
 	p += path - Article->Data;
@@ -978,47 +977,50 @@ ARTreject(code, cp, buff, article)
 **  matches the user who posted the article, return the list of filenames
 **  otherwise return NULL.
 */
-STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const HASH hash)
+STATIC TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const HASH hash)
 {
-    char	        *files;
-    char	        *p;
+    char	        *p, *q;
     char	        *local;
     char		buff[SMBUF];
+    ARTHANDLE		*art;
+    TOKEN		*token;
+    int			len;
 
-    if ((files = HISfilesfor(hash)) == NULL)
+    if ((token = HISfilesfor(hash)) == NULL)
 	return NULL;
-
-    /* Get the author header. */
-    if ((p = strchr(files, ' ')) != NULL)
-	*p = '\0';
-    if ((local = (char *)HeaderFindDisk(files, "Sender:", 7)) == NULL
-     && (local = (char *)HeaderFindDisk(files, "From:", 5)) == NULL) {
+    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
+	return NULL;
+    if ((local = (char *)HeaderFindMem(art->data, art->len, "Sender", 6)) == NULL
+     && (local = (char *)HeaderFindMem(art->data, art->len, "From", 4)) == NULL) {
+	SMfreearticle(art);
 	return NULL;
     }
-    if (p)
-	*p = ' ';
-    if (*local == 'S') {
-	local += 7;
-    } else {
-	local += 5;
+    for (p = local; p < art->data + art->len; p++) {
+	if (*p == '\r' || *p == '\n')
+	    break;
     }
-    for (local++; *local == ' '; local++);
-    if (*local == '\0')
+    if (p == art->data + art->len) {
+	SMfreearticle(art);
 	return NULL;
-    
-    HeaderCleanFrom(local);
+    }
+    q = NEW(char, p - local + 1);
+    memcpy(q, local, p - local);
+    SMfreearticle(art);
+    q[p - local] = '\0';
+    HeaderCleanFrom(q);
 
     /* Compare canonical forms. */
     p = COPY(Data->Poster);
     HeaderCleanFrom(p);
-    if (!EQ(local, p)) {
-	files = NULL;
+    if (!EQ(q, p)) {
+	token = NULL;
 	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
-		      p, MessageID, local);
+		      p, MessageID, q);
 	ARTlog(Data, ART_REJECT, buff);
     }
     DISPOSE(p);
-    return files;
+    DISPOSE(q);
+    return token;
 }
 
 
@@ -1027,11 +1029,11 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
 */
 void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 {
-    char	        *files;
     char	        *p;
     BOOL	        more;
     char		buff[SMBUF+16];
     HASH                hash;
+    TOKEN		*token;
 
     TMRstart(TMR_ARTCNCL);
     if (!DoCancels && !Trusted) {
@@ -1062,26 +1064,24 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 	return;
     }
     if (innconf->verifycancels) {
-	files = Trusted ? HISfilesfor(hash)
+	token = Trusted ? HISfilesfor(hash)
 	    : ARTcancelverify(Data, MessageID, hash);
     } else {
-	files = HISfilesfor(hash);
+	token = HISfilesfor(hash);
     }
-    if (files == NULL) {
+    if (token == NULL) {
 	TMRstop(TMR_ARTCNCL);
+	syslog(L_ERROR, "%s cant cancel %s (not token)", LogName, TokenToText(*token));
 	return;
     }
     
     /* Get stored message and zap them. */
-    if (IsToken(files)) {
-	if (!SMcancel(TextToToken(files + 1)) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-	    syslog(L_ERROR, "%s cant cancel %s", LogName, files);
-	if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELEDART))
-	    syslog(L_ERROR, "%s cant cancel cached %s", LogName, files);
-	(void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
-	ARTlog(Data, ART_CANC, buff);
-    } else
-	    syslog(L_ERROR, "%s cant cancel %s (not token)", LogName, files);
+    if (!SMcancel(*token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
+	syslog(L_ERROR, "%s cant cancel %s", LogName, TokenToText(*token));
+    if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELEDART))
+	syslog(L_ERROR, "%s cant cancel cached %s", LogName, TokenToText(*token));
+    (void)sprintf(buff, "Cancelling %s", MaxLength(MessageID, MessageID));
+    ARTlog(Data, ART_CANC, buff);
     TMRstop(TMR_ARTCNCL);
 }
 

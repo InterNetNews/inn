@@ -2103,8 +2103,9 @@ XS(XS_INN_head)
     dXSARGS;
     char*		msgid;
     char*		p;
-    char*		q;
-    QIOSTATE*		qp;
+    TOKEN*		token;
+    ARTHANDLE		*art;
+    int			len;
 
     if (items != 1)
         croak("Usage: INN::head(msgid)");
@@ -2112,32 +2113,19 @@ XS(XS_INN_head)
     msgid = (char *)SvPV(ST(0),PL_na);
 
     /* Get the article filenames; open the first file */
-    if ((q = HISfilesfor(HashMessageID(msgid))) == NULL) {
+    if ((token = HISfilesfor(HashMessageID(msgid))) == NULL) {
 	XSRETURN_UNDEF;
     }
-    if ((p = strchr(q, ' ')))
-	*p = '\0';
-
-    if ((qp = QIOopen(q)) == NULL) {
+    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL) {
 	XSRETURN_UNDEF;
     }
-
-    if (CCperlbuff.Data == NULL) {
-	CCperlbuff.Size = SITE_BUFFER_SIZE;
-	CCperlbuff.Data = NEW(char, CCperlbuff.Size);
+    p = FromWireFmt(art->data, art->len, &len);
+    SMfreearticle(art);
+    if (CCperlbuff.Data != NULL) {
+	DISPOSE(CCperlbuff.Data);
     }
-                                        
-    strcpy(CCperlbuff.Data, "");
-
-    for (p = QIOread(qp); (p != NULL) && (*p != '\0'); p = QIOread(qp)) {
-	if (CCperlbuff.Size < (qp->Count + 3)) {
-	    CCperlbuff.Size += SITE_BUFFER_SIZE;
-	    RENEW(CCperlbuff.Data, char, CCperlbuff.Size);
-        }
-	strncat(CCperlbuff.Data, p, QIOlength(qp));
-	strncat(CCperlbuff.Data, "\n", 1);
-    }
-    QIOclose(qp);
+    CCperlbuff.Size = len;
+    CCperlbuff.Data = p;
     XSRETURN_PV(CCperlbuff.Data);
 }
 
@@ -2146,8 +2134,9 @@ XS(XS_INN_article)
     dXSARGS;
     char*		msgid;
     char*		p;
-    char*		q;
-    QIOSTATE*		qp;
+    TOKEN*		token;
+    ARTHANDLE		*art;
+    int			len;
 
     if (items != 1)
 	croak("Usage: INN::article(msgid)");
@@ -2155,32 +2144,19 @@ XS(XS_INN_article)
     msgid = (char *)SvPV(ST(0),PL_na);
 
     /* Get the article filenames; open the first file */
-    if ((q = HISfilesfor(HashMessageID(msgid))) == NULL) {
+    if ((token = HISfilesfor(HashMessageID(msgid))) == NULL) {
 	XSRETURN_UNDEF;
     }
-    if ((p = strchr(q, ' ')))
-	*p = '\0';
-
-    if ((qp = QIOopen(q)) == NULL) {
+    if ((art = SMretrieve(*token, RETR_ALL)) == NULL) {
 	XSRETURN_UNDEF;
     }
-
-    if (CCperlbuff.Data == NULL) {
-	CCperlbuff.Size = SITE_BUFFER_SIZE;
-	CCperlbuff.Data = NEW(char, CCperlbuff.Size);
+    p = FromWireFmt(art->data, art->len, &len);
+    SMfreearticle(art);
+    if (CCperlbuff.Data != NULL) {
+	DISPOSE(CCperlbuff.Data);
     }
-                                        
-    strcpy(CCperlbuff.Data, "");
-
-    for (p = QIOread(qp); (p != NULL); p = QIOread(qp)) {
-	if (CCperlbuff.Size < (qp->Count + 3)) {
-	    CCperlbuff.Size += SITE_BUFFER_SIZE;
-	    RENEW(CCperlbuff.Data, char, CCperlbuff.Size);
-	}
-	strncat(CCperlbuff.Data, p, QIOlength(qp));
-	strcat(CCperlbuff.Data, "\n");
-    }
-    QIOclose(qp);
+    CCperlbuff.Size = len;
+    CCperlbuff.Data = p;
     XSRETURN_PV(CCperlbuff.Data);
 }
 

@@ -274,8 +274,8 @@ NCwritedone(CHANNEL *cp)
 STATIC FUNCTYPE NChead(CHANNEL *cp)
 {
     char	        *p;
-    char	        *q;
-    QIOSTATE            *qp;
+    TOKEN		*token;
+    ARTHANDLE		*art;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("head"); ISWHITE(*p); p++)
@@ -284,14 +284,11 @@ STATIC FUNCTYPE NChead(CHANNEL *cp)
 	return;
 
     /* Get the article filenames; open the first file */
-    if ((q = HISfilesfor(HashMessageID(p))) == NULL) {
+    if ((token = HISfilesfor(HashMessageID(p))) == NULL) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
-    if ((p = strchr(q, ' ')))
-	*p = '\0';
-    
-    if ((qp = QIOopen(q)) == NULL) {
+    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
@@ -299,16 +296,11 @@ STATIC FUNCTYPE NChead(CHANNEL *cp)
     /* Write it. */
     WCHANappend(cp, NNTP_HEAD_FOLLOWS, STRLEN(NNTP_HEAD_FOLLOWS));
     WCHANappend(cp, NCterm, STRLEN(NCterm));
-    for (p = QIOread(qp); (p != NULL) && (*p != '\0'); p = QIOread(qp)) {
-	if (*p == '.')
-	    WCHANappend(cp, ".", 1);
-	WCHANappend(cp, p, QIOlength(qp));
-	WCHANappend(cp, NCterm, STRLEN(NCterm));
-    }
+    WCHANappend(cp, art->data, art->len);
 
     /* Write the terminator. */
     NCwritereply(cp, NCdot);
-    QIOclose(qp);
+    SMfreearticle(art);
 }
 
 
@@ -318,9 +310,9 @@ STATIC FUNCTYPE NChead(CHANNEL *cp)
 STATIC FUNCTYPE NCstat(CHANNEL *cp)
 {
     char	        *p;
-    char                *q;
+    TOKEN		*token;
+    ARTHANDLE		*art;
     char		*buff;
-    QIOSTATE            *qp;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("stat"); ISWHITE(*p); p++)
@@ -330,20 +322,18 @@ STATIC FUNCTYPE NCstat(CHANNEL *cp)
 
     /* Get the article filenames; open the first file (to make sure
      * the article is still here). */
-    if ((buff = HISfilesfor(HashMessageID(p))) == NULL) {
+    if ((token = HISfilesfor(HashMessageID(p))) == NULL) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
-    if ((q = strchr(buff, ' ')))
-	*q = '\0';
-    
-    if ((qp = QIOopen(buff)) == NULL) {
+    if ((art = SMretrieve(*token, RETR_STAT)) == NULL) {
 	NCwritereply(cp, NNTP_DONTHAVEIT);
 	return;
     }
-    QIOclose(qp);
+    SMfreearticle(art);
 
     /* Write the message. */
+    p = TokenToText(*token);
     buff = NEW(char, strlen(p) + 16);
     (void)sprintf(buff, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p);
     NCwritereply(cp, buff);

@@ -183,13 +183,14 @@ void HISclose(void)
 /*
 **  Get the list of files under which a Message-ID is stored.
 */
-char *HISfilesfor(const HASH MessageID)
+TOKEN *HISfilesfor(const HASH MessageID)
 {
     static BUFFER	Files;
     char		*dest;
     OFFSET_T		offset;
     char	        *p;
     int	                i;
+    static TOKEN	token;
 
     TMRstart(TMR_HISGREP);
     
@@ -238,12 +239,11 @@ char *HISfilesfor(const HASH MessageID)
 	return NULL;
     if ((p = strchr(p + 1, HIS_FIELDSEP)) == NULL)
 	return NULL;
-
-    /* Translate newsgroup separators to slashes, return the fieldstart. */
-    for (dest = ++p; *p; p++)
-	if (*p == '.')
-	    *p = '/';
-    return dest;
+    if (!IsToken(++p)) {
+	return NULL;
+    }
+    token = TextToToken(p);
+    return &token;
 }
 
 
