@@ -44,8 +44,8 @@ all: all-include all-libraries all-programs
 all-libraries:	all-lib all-storage
 
 all-include:			; cd include   && $(MAKE) all
-all-lib:			; cd lib       && $(MAKE) all
-all-storage:			; cd storage   && $(MAKE) all
+all-lib:	all-include	; cd lib       && $(MAKE) all
+all-storage:	all-include	; cd storage   && $(MAKE) all
 
 all-programs:	all-innd all-nnrpd all-innfeed all-expire all-frontends \
 		all-backends all-authprogs all-scripts
