@@ -2,6 +2,7 @@
 
 include ../Makefile.global
 
+top	        = ..
 CFLAGS		= $(GCFLAGS)
 
 ALL		= innfeed procbatch startinnfeed imapfeed

@@ -2,6 +2,8 @@
 
 include ../../Makefile.global
 
+top	= ../..
+
 ##  Edit these if you need to.
 MANFLAGS = -c $(OWNER) -m 0444 -B .OLD
 

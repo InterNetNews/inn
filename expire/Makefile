@@ -2,6 +2,7 @@
 
 include ../Makefile.global
 
+top           = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL           = convdate expire expireover expirerm fastrm grephistory \

@@ -1,5 +1,6 @@
 ##  $Revision$
 include ../Makefile.global
+top = ..
 
 ##  If you want to do ctlinnd pause/reload/go, uncomment these lines.
 #PAUSE		= pause

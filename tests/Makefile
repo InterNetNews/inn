@@ -2,6 +2,7 @@
 
 include ../Makefile.global
 
+top	= ..
 CFLAGS	= $(GCFLAGS) -I.
 
 ##  The tests that need to be built.  Tests in the form of shell scripts

@@ -8,6 +8,8 @@
 
 include ../Makefile.global
 
+top	      = ..
+
 ALL           = innmail innreport innstat innwatch rc.news scanlogs \
 		simpleftp tally.control writelog
 

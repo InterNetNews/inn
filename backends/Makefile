@@ -2,6 +2,7 @@
 
 include ../Makefile.global
 
+top	      = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL           = actmerge actsync actsyncd archive batcher buffchan \

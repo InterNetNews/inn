@@ -2,6 +2,7 @@
 
 include ../Makefile.global
 
+top	      = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL           = auth_smb ckpasswd domain ident pwcheck radius

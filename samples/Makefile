@@ -9,6 +9,8 @@
 
 include ../Makefile.global
 
+top	      = ..
+
 ALL           = nnrpd_auth.pl nnrpd_access.pl
 
 EXTRA         = inn.conf innreport.conf newsfeeds sasl.conf
@@ -28,5 +30,5 @@ install:
 
 FIX             = $(FIXSCRIPT)
 
-nnrpd_auth.pl:	nnrpd_auth.pl.in $(FIX)	; $(FIX) nnrpd_auth.pl.in
+nnrpd_auth.pl:		nnrpd_auth.pl.in $(FIX)	  ; $(FIX) nnrpd_auth.pl.in
 nnrpd_access.pl:	nnrpd_access.pl.in $(FIX) ; $(FIX) nnrpd_access.pl.in
