@@ -554,6 +554,24 @@ Configuring INN
   The expire.ctl file is the configuration for the expiration policy. See
   the expire.ctl man page for more details.
 
+Creating the article spool (CNFS only)
+
+  If you are using actual files as your CNFS buffers then you will need to
+  pre-create these files with the Unix "dd" program.  For each cycbuff in your
+  cycbuff.conf file, create the buffer with the following commands as the news
+  user:
+
+        dd if=/dev/zero of=/path/to/buffer bs=1k count=BUFFERSIZE
+        chmod 0664 /path/to/buffer
+
+   Substitute the buffer pathname and the buffer size (as listed in the
+   cycbuff.conf file) in the appropriate spots in the commands. This will
+   create a zero- filled file of the correct length; it may take a while to
+   run, so be prepared to wait.
+
+   Once you have created all of your cycbuffs, you are ready to continue with
+   the next step of the installation.
+
 Creating the db files
 
   At this point you need to set up the news database directory (~news/db).
@@ -582,24 +600,6 @@ Creating the db files
         chmod 0664 *
 
   Your news database files are now ready to go.
-
-Creating the article spool (CNFS only)
-
-  If you are using actual files as your CNFS buffers then you will need to
-  pre-create these files with the Unix "dd" program.  For each cycbuff in your
-  cycbuff.conf file, create the buffer with the following commands as the news
-  user:
-
-        dd if=/dev/zero of=/path/to/buffer bs=1k count=BUFFERSIZE
-        chmod 0664 /path/to/buffer
-
-   Substitute the buffer pathname and the buffer size (as listed in the
-   cycbuff.conf file) in the appropriate spots in the commands. This will
-   create a zero- filled file of the correct length; it may take a while to
-   run, so be prepared to wait.
-
-   Once you have created all of your cycbuffs, you are ready to continue with
-   the next step of the installation.
 
 Setting up the news.daily cron job
 
