@@ -14,6 +14,9 @@ inews \- send a Usenet article to the local news server for distribution
 .B \-O
 ]
 [
+.BI \-p " port"
+]
+[
 .B \-R
 ]
 [
@@ -46,6 +49,9 @@ In the standard mode of operation, the input consists of the article
 headers, a blank line, and the message body.
 For compatibility with older software, the ``\fB\-h\fP'' flag must be used.
 If there are no headers in the message, then this flag may be omitted.
+.B \-p
+If the ``\fB\-p\fP'' flag is used, then the articles will be sent to the
+specified port on the remote host.
 .TP
 .B \-O
 The default Organization header will be provided if none is present
@@ -108,23 +114,22 @@ The options, and their equivalent header, are as follows:
 .RE
 .IP
 If
-.I <INEWS_PATH in config.data> 
-is ``DO'', The Path header is built according to the following rules.
+.I <DO_INEWS_PATH in include/config.h> 
+is defined, the Path header is built according to the following rules.
 If the ``\fB\-x\fP'' flag is used, then its value will be the start of the
 header.
 Any other host will see the site in the header, and therefore not
 offer the article to that site.
 If 
-.I <INEWS_PATH in config.data> 
-is ``DO'' and the ``pathhost'' configuration parameter is specified in the
+.I <DO_INEWS_PATH in include/config.h> 
+is defined and the ``pathhost'' configuration parameter is specified in the
 .IR inn.conf (5)
 file, then it will be added to the Path.
 Otherwise, if the ``server'' configuration parameter is specified,
 then the full domain name of the local host will be added to the Path.\}
 The Path will always end
-.I <PATHMASTER in config.data>
+.I <PATHMASTER in include/config.h>
 (typically
-.\" =()<.IR @<typPATHMASTER>@ )>()=
 .IR not-for-mail )
 
 .SH NOTES
