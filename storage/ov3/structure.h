@@ -106,7 +106,7 @@ struct group_entry {
                                    file has been recreated and swapped out.
                                    Not currently used. */
     GROUPLOC    next;           /* Next block in this chain. */
-}
+};
 
 /* An entry in the per-group .IDX index file. */
 struct index_entry {
@@ -115,7 +115,7 @@ struct index_entry {
     time_t      arrived;
     time_t      expires;        /* Expiration time from Expires: header. */
     TOKEN       token;
-}
+};
 
 /* Legacy names for the structures.  The code should be changed to use the
    regular struct name directly. */
