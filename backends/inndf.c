@@ -48,9 +48,9 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/overview.h"
 #include "inn/qio.h"
 #include "libinn.h"
-#include "ov.h"
 #include "paths.h"
 
 /* The portability mess.  Hide everything in macros so that the actual code
@@ -210,14 +210,17 @@ readline(QIOSTATE *qp)
 int
 main(int argc, char *argv[])
 {
-    int option, i, count;
+    int option, i;
     unsigned long total;
     QIOSTATE *qp;
     char *active, *group, *line, *p;
+    struct overview *overview = NULL;
+    struct overview_group stats;
+    float used;
     char *file = NULL;
     bool inode = false;
-    bool overview = false;
     bool ovcount = false;
+    bool ovused = false;
     bool use_filesystems = false;
 
     while ((option = getopt(argc, argv, "hinof:F")) != EOF) {
@@ -234,7 +237,7 @@ main(int argc, char *argv[])
             ovcount = true;
             break;
         case 'o':
-            overview = true;
+            ovused = true;
             break;
         case 'f':
             if (file != NULL)
@@ -254,7 +257,7 @@ main(int argc, char *argv[])
     argc -= optind;
     argv += optind;
 
-    if (argc == 0 && !overview && !ovcount && file == NULL)
+    if (argc == 0 && !ovused && !ovcount && file == NULL)
         die(usage);
 
     /* Set the program name now rather than earlier so that it doesn't get
@@ -265,7 +268,7 @@ main(int argc, char *argv[])
        one was given, just print out the number without the path or any
        explanatory text; this mode is used by e.g. innwatch.  Otherwise,
        format things nicely. */
-    if (argc == 1 && !overview && !ovcount && file == NULL) {
+    if (argc == 1 && !ovused && !ovcount && file == NULL) {
         printspace(argv[0], inode, false);
         printf("\n");
     } else {
@@ -290,12 +293,13 @@ main(int argc, char *argv[])
 
     /* If we're going to be getting information from overview, do the icky
        initialization stuff. */
-    if (overview || ovcount) {
+    if (ovused || ovcount) {
         if (!use_filesystems)
             if (!innconf_read(NULL))
                 exit(1);
-        if (!OVopen(OV_READ))
-            die("OVopen failed");
+        overview = overview_open(OV_READ);
+        if (overview == NULL)
+            die("can't open overview");
     }
 
     /* For the count, we have to troll through the active file and query the
@@ -312,8 +316,8 @@ main(int argc, char *argv[])
             p = strchr(group, ' ');
             if (p != NULL)
                 *p = '\0';
-            if (OVgroupstats(group, NULL, NULL, &count, NULL))
-		total += count;
+            if (overview_group(overview, group, &stats))
+                total += stats.count;
             group = QIOread(qp);
         }
         QIOclose(qp);
@@ -322,14 +326,15 @@ main(int argc, char *argv[])
 
     /* Percentage used is simpler, but only some overview methods understand
        that query. */
-    if (overview) {
-        if (OVctl(OVSPACE, &count)) {
-            if (count == -1)
-                printf("Space used is meaningless for the %s method\n",
-                       innconf->ovmethod);
-            else
-                printf("%d%% overview space used\n", count);
-        }
+    if (ovused) {
+        used = overview_free_space(overview);
+        if (used == -1)
+            printf("Space used is meaningless for the %s method\n",
+                   innconf->ovmethod);
+        else
+            printf("%.2f%% overview space used\n", used);
     }
+    if (overview != NULL)
+        overview_close(overview);
     exit(0);
 }
