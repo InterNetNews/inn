@@ -1433,7 +1433,6 @@ main(int ac, char *av[])
     char		*tv[2];
     STRING		tmpdir;
     STRING		OverPath;
-    char		*Tflag;
     char		*mode;
     char		*oldtemp;
     ARTHANDLE		*art = (ARTHANDLE *)NULL;
@@ -1464,7 +1463,6 @@ main(int ac, char *av[])
     Translate = NO_TRANS;
     Tradspooldir = innconf->patharticles;
     OldHistory = HISTORY;
-    Tflag = "";
     mode = "w";
     size = 0;
     oldtemp = NULL;
@@ -1530,8 +1528,6 @@ main(int ac, char *av[])
 	    break;
 	case 'T':
 	    tmpdir = optarg;
-	    Tflag = NEW(char, 3 + strlen(optarg) + 1);
-	    (void)sprintf(Tflag, "-T %s", optarg);
 	    break;
 	case 't':
 	    switch(*optarg) {
@@ -1756,10 +1752,10 @@ main(int ac, char *av[])
     /* Make a temporary file, sort the text file into it. */
     (void)sprintf(temp, "%s/histXXXXXX", tmpdir);
     (void)mktemp(temp);
-    i = 50 + strlen(TempTextFile ? TempTextFile : TextFile) + strlen(temp) + strlen(Tflag);
+    i = 50 + strlen(TempTextFile ? TempTextFile : TextFile) + strlen(temp) + 3 + strlen(tmpdir);
     p = NEW(char, i);
-    (void)sprintf(p, "exec sort %s -t'%c' +1n -o %s %s",
-	    Tflag, HIS_FIELDSEP, temp, TempTextFile ? TempTextFile : TextFile);
+    (void)sprintf(p, "exec sort -T %s -t'%c' +1n -o %s %s",
+	    tmpdir, HIS_FIELDSEP, temp, TempTextFile ? TempTextFile : TextFile);
 
     i = system(p) >> 8;
     if (i != 0) {
