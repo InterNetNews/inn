@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/types.h>
 #include <macros.h>
 #include <configdata.h>
 #include <clibrary.h>

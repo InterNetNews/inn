@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"

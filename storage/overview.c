@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <ctype.h>
+#include <sys/types.h>
 #include <macros.h>
 #include <configdata.h>
 #include <clibrary.h>

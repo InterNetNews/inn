@@ -7,6 +7,7 @@
 */
 
 #include <stdio.h>
+#include <sys/types.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"

@@ -17,6 +17,6 @@ typedef struct {
 } STORAGE_METHOD;
 
 char *SMFindBody(char *article, int len);
-void SMseterror(int errno, char *error);
+void SMseterror(int errorno, char *error);
 
 #endif /* __INTERFACE_H__ */
