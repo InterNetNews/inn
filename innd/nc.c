@@ -255,6 +255,7 @@ NCwritedone(CHANNEL *cp)
     case CSgetheader:
     case CSgetbody:
     case CSgetxbatch:
+    case CSgotlargearticle:
     case CScancel:
 	RCHANadd(cp);
 	break;
@@ -896,23 +897,9 @@ NCproc(CHANNEL *cp)
 	break;
       }
 
-      if (*cp->Error != '\0') {
-	cp->Rejected++;
-	cp->State = CSgetcmd;
-	cp->Start = cp->Next;
-	NCclearwip(cp);
-	if (cp->Sendid.size > 3)
-	  NCwritereply(cp, cp->Sendid.data);
-	else
-	  NCwritereply(cp, cp->Error);
-	readmore = false;
-	movedata = false;
-	break;
-      }
-
       if (cp->State == CSgotlargearticle) {
 	syslog(L_NOTICE, "%s internal rejecting huge article (%d > %ld)",
-	  CHANname(cp), cp->LargeArtSize, innconf->maxartsize);
+	  CHANname(cp), cp->Next - cp->Start, innconf->maxartsize);
 	if (cp->Sendid.size)
 	  NCwritereply(cp, cp->Sendid.data);
 	else {
@@ -921,7 +908,6 @@ NCproc(CHANNEL *cp)
                    NNTP_REJECTIT_VAL, innconf->maxartsize);
 	  NCwritereply(cp, buff);
         }
-	cp->LargeArtSize = 0;
 	cp->State = CSgetcmd;
 	cp->Rejected++;
 	cp->Start = cp->Next;
@@ -935,6 +921,20 @@ NCproc(CHANNEL *cp)
 	}
 	/* Clear the work-in-progress entry. */
 	NCclearwip(cp);
+	readmore = false;
+	movedata = false;
+	break;
+      }
+
+      if (*cp->Error != '\0') {
+	cp->Rejected++;
+	cp->State = CSgetcmd;
+	cp->Start = cp->Next;
+	NCclearwip(cp);
+	if (cp->Sendid.size > 3)
+	  NCwritereply(cp, cp->Sendid.data);
+	else
+	  NCwritereply(cp, cp->Error);
 	readmore = false;
 	movedata = false;
 	break;
