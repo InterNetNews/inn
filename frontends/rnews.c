@@ -19,10 +19,12 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
 #include "paths.h"
+#include "storage.h"
 
 
 typedef struct _HEADER {
@@ -204,7 +206,8 @@ static bool Process(char *article)
 {
     HEADER	        *hp;
     const char	        *p;
-    char                *q;
+    size_t              length;
+    char                *wirefmt, *q;
     const char		*id = NULL;
     char                *msgid;
     char		buff[SMBUF];
@@ -219,9 +222,14 @@ static bool Process(char *article)
     if (*article == '\0')
 	return TRUE;
 
+    /* Convert the article to wire format. */
+    wirefmt = ToWireFmt(article, strlen(article), &length);
+
     /* Make sure that all the headers are there, note the ID. */
     for (hp = RequiredHeaders; hp < ENDOF(RequiredHeaders); hp++) {
-	if ((p = HeaderFindMem(article, strlen(article), hp->Name, hp->size)) == NULL) {
+        p = wire_findheader(wirefmt, length, hp->Name);
+        if (p == NULL) {
+            free(wirefmt);
 	    Reject(article, "bad_article missing %s", hp->Name);
 	    return FALSE;
 	}
@@ -233,14 +241,15 @@ static bool Process(char *article)
 	if (IS_PATH(hp)) {
 	    (void)strncpy(path, p, sizeof path);
 	    path[sizeof path - 1] = '\0';
-	    if ((q = strchr(path, '\n')) != NULL)
+	    if ((q = strchr(path, '\r')) != NULL)
 		*q = '\0';
 	}
 #endif	/* !defined(DONT_RNEWS_LOG_DUPS) */
     }
 
     /* Send the NNTP "ihave" message. */
-    if ((p = strchr(id, '\n')) == NULL) {
+    if ((p = strchr(id, '\r')) == NULL) {
+        free(wirefmt);
 	Reject(article, "bad_article unterminated %s header", "Message-ID");
 	return FALSE;
     }
@@ -253,19 +262,23 @@ static bool Process(char *article)
 
     /* Get a reply, see if they want the article. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
+        free(wirefmt);
         syswarn("cannot fgets after ihave");
 	return FALSE;
     }
     (void)REMclean(buff);
     if (!CTYPE(isdigit, buff[0])) {
+        free(wirefmt);
         notice("bad_reply after ihave %s", buff);
 	return FALSE;
     }
     switch (atoi(buff)) {
     default:
+        free(wirefmt);
 	Reject(article, "unknown_reply after ihave %s", buff);
 	return TRUE;
     case NNTP_RESENDIT_VAL:
+        free(wirefmt);
 	return FALSE;
     case NNTP_SENDIT_VAL:
 	break;
@@ -281,14 +294,17 @@ static bool Process(char *article)
 	    (void)fclose(F);
 	}
 #endif	/* defined(FILE_RNEWS_LOG_DUPS) */
+        free(wirefmt);
 	return TRUE;
     }
 
-    /* Send all the lines in the article, escaping periods. */
-    if (NNTPsendarticle(article, ToServer, TRUE) < 0) {
+    /* Send the article to the server. */
+    if (fwrite(wirefmt, length, 1, ToServer) != 1) {
+        free(wirefmt);
         sysnotice("cant sendarticle");
 	return FALSE;
     }
+    free(wirefmt);
 
     /* Process server reply code. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
