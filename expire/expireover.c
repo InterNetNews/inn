@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <errno.h>
+#include <signal.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "qio.h"
@@ -18,6 +19,13 @@
 void usage(void) {
     fprintf(stderr, "Usage: expireover [flags]\n");
 	exit(1);
+}
+
+static int signalled = 0;
+void sigfunc(int sig)
+{
+    signalled = 1;
+    xsignal(sig, SIG_DFL);
 }
 
 int main(int argc, char *argv[]) {
@@ -104,6 +112,10 @@ int main(int argc, char *argv[]) {
 	exit(1);
 	}
 
+    xsignal(SIGTERM, sigfunc);
+    xsignal(SIGINT, sigfunc);
+    xsignal(SIGHUP, sigfunc);
+
     if (!OVopen(OV_READ | OV_WRITE)) {
 	fprintf(stderr, "expireover: could not open OV database\n");
 	exit(1);
@@ -132,6 +144,8 @@ int main(int argc, char *argv[]) {
 	}
     }
     while ((line = QIOread(qp)) != NULL) {
+	if(signalled)
+	    break;
 	if ((p = strchr(line, ' ')) != NULL)
 	    *p = '\0';
 	if ((p = strchr(line, '\t')) != NULL)
@@ -146,9 +160,12 @@ int main(int argc, char *argv[]) {
 	}
     }
     /* purge deleted newsgroups */
-    if (!Nonull && !OVexpiregroup(NULL, NULL)) {
+    if (!signalled && !Nonull && !OVexpiregroup(NULL, NULL)) {
 	fprintf(stderr, "expireover: could not expire purged newsgroups\n");
     }
+    if(signalled)
+	fprintf(stderr, "expireover: received signal; exiting\n");
+
     QIOclose(qp);
 
     OVclose();
