@@ -1,8 +1,8 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Default control-message handler
 
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 ##  Set prog to null; that will leave the name of the message in $1
 PROG=default

@@ -1,8 +1,8 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Checkgroups control-message handler.
 
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 PROG=checkgroups
 ##  Some shells don't pass in $* unless we explicitly pass it in here.

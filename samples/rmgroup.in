@@ -1,8 +1,8 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Rmgroup control-message handler
 
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 PROG=rmgroup
 ##  Some shells don't pass in $* unless we explicitly pass it in here.

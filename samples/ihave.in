@@ -1,7 +1,7 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Ihave control-message handler
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 PROG=ihave
 ##  Some shells don't pass in $* unless we explicitly pass it in here.

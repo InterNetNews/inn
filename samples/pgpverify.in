@@ -53,7 +53,7 @@ die "Usage: $0 < message\n" if @ARGV != 0;
 
 $0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
 
-do "_INNSHELLVARS_.pl";
+do "@prefix@/etc/innshellvars.pl";
 $pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
 
 if (! -x $pgp) {

@@ -1,7 +1,7 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Sendme control-message handler
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 PROG=sendme
 . ${PATHBIN}/parsecontrol "$@"

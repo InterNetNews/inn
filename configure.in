@@ -634,19 +634,43 @@ AC_OUTPUT(
 	config/config.data 
 	include/paths.h 
 	samples/actsync.cfg 
+	samples/checkgroups
+	samples/default
+	samples/docheckgroups
+	samples/expirerm
+	samples/ihave
 	samples/inncheck 
 	samples/innmail
 	samples/innreport
+	samples/innreport.conf 
 	samples/innshellvars 
 	samples/innshellvars.csh 
 	samples/innshellvars.pl 
 	samples/innshellvars.tcl 
-	samples/innreport.conf 
+	samples/innstat
+	samples/innwatch
 	samples/innwatch.ctl 
+	samples/news.daily
+	samples/newgroup
+	samples/nntpsend
+	samples/parsecontrol
 	samples/pgpverify
+	samples/rc.news
+	samples/rmgroup
+	samples/scanlogs
 	samples/scanspool
+	samples/send-ihave
+	samples/send-nntp
+	samples/send-uucp
+	samples/sendbatch
+	samples/sendme
+	samples/sendsys
+	samples/senduuname
 	samples/signcontrol
 	samples/startup.tcl 
+	samples/tally.control
+	samples/version
+	samples/writelog
 	site/subst.pl 
 	storage/buildconfig 
 	syslog/syslog.conf

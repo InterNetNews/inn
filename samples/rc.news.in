@@ -1,10 +1,10 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  News boot script.  Runs as "news" user.  Requires inndstart be
 ##  setuid root.  Run from rc.whatever as:
 ##     su news -c /path/to/rc.news >/dev/console
 
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INNDSTART}

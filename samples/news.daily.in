@@ -1,4 +1,4 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Daily news maintenance.
 ##  Optional arguments:
@@ -18,7 +18,7 @@
 ##	delayrm		Delay unlink files, then do it quicker (expire -z)
 ##	/full/path	Path to a program to run before expiring
 
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 EXPLOG=${MOST_LOGS}/expire.log
 INNSTAT=${PATHBIN}/innstat

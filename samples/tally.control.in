@@ -1,4 +1,4 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Tally/update the newgroup/rmgroup control log.
 ##  Merge in a log that contains newgroup/rmgroup control messages so that
@@ -6,7 +6,7 @@
 ##  often each group has been newgroup'd or rmgroup'd.  This is run by
 ##  scanlogs, which prepares this from the control-message handlers if
 ##  control.ctl specifies logging.
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 CONTROL=${MOST_LOGS}/control.log
 CONTROL_NEW=${CONTROL}.new

@@ -1,9 +1,9 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Display status of INN.
 ##  Written by Landon Curt Noll <chongo@toad.com>.
 
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 SYSLOG_CRIT=news.crit
 SYSLOG_ERR=news.err

@@ -1,8 +1,8 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Initial parsing of control messages.
 
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 WRITELOG=${PATHBIN}/writelog
 SM="${PATHBIN}/sm -q"

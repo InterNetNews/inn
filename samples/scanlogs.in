@@ -1,9 +1,9 @@
-#!_PATH_SH
+#!@_PATH_SH@
 ##  $Revision$
 ##  Summarize INN log files.
 ##  Optional arguments:
 ##	norotate	Do not rotate logfiles
-. _INNSHELLVARS_
+. @prefix@/etc/innshellvars
 
 ##  If you get an error from this line:
 ##	sh -c 'egrep "`ls /etc`" /dev/null'
