@@ -690,10 +690,8 @@ ValidNewsgroups(hdr, modgroup)
     FoundOne = FALSE;
     h = DDstart((FILE *)NULL, (FILE *)NULL);
     do {
-#if	defined(DO_MERGE_TO_GROUPS)
-	if (p[0] == 't' && p[1] == 'o' && p[2] == '.')
+	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
 	    p = "to";
-#endif	/* defined(DO_MERGE_TO_GROUPS) */
 	if ((gp = GRPfind(p)) == NULL)
 	    continue;
 	FoundOne = TRUE;
