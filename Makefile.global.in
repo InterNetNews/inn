@@ -19,7 +19,7 @@ NNTPLIB 	=
 # need to look before here .. you can though, if you really want
 
 CC	= @CC@
-CFLAGS	= -I../include @CPPFLAGS@ @CFLAGS@
+GCFLAGS	= -I../include @CPPFLAGS@ @CFLAGS@
 LDFLAGS	= @LDFLAGS@
 LIBS	= @LIBS@
 PERLLIB	= @PERL_LIB@

@@ -2,6 +2,8 @@
 
 include Makefile.global
 
+CFLAGS = $(GCFLAGS)
+
 RELEASE=1
 PATCHLEVEL=8-current
 VERSION=$(RELEASE).$(PATCHLEVEL)
