@@ -164,6 +164,7 @@ for (;;) {
     last if defined($line) && ($line =~ /^$/) ;
 
     $_ = <STDIN> ;
+    last unless defined $_ ;
     chomp ;
 
     # gather up a single header with possible continuation lines into $line
