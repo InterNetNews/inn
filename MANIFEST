@@ -126,7 +126,6 @@ doc/compliance-nntp                   INN compliance with the NNTP standard
 doc/config-design                     Configuration parser design principles
 doc/config-semantics                  Configuration file semantics
 doc/config-syntax                     Configuration file syntax
-doc/control-messages                  tal's description of control messages
 doc/history                           Messages of historical significance
 doc/hook-perl                         Christophe Wolfhugel's Perl hook notes
 doc/hook-python                       Python hook notes
