@@ -238,6 +238,7 @@ sub readctlfile {
             s/\?/./g;
             s/(.*)/^$1\$/;
             s/:/\$:^/g;
+            s/\|/\$\|^/g;
             push(@ctllist, $_);
             #print $_,"\n";
         }
