@@ -422,6 +422,7 @@ int main(int argc, char *argv[])
 
     bzero(&radconfig, sizeof(rad_config_t));
     haveother = havefile = 0;
+    if (ReadInnConf() < 0) exit(1);
 
     while ((opt = getopt(argc, argv, "f:h:p:P:q:s:l:S")) != -1) {
 	switch (opt) {
