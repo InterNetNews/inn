@@ -1,12 +1,15 @@
 #!@_PATH_PERL@ -ws
 # written April 1996, tale@isc.org (David C Lawrence)
-# Version 1.12, 20 May 1999
+# Version 1.13, 14 Dec 1999
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN
 # is the same as the version that I make available to the rest of the
 # world (including non-INN sites), so please make all changes through me.
 #
 # This program is intended to be compatible with Perl 4 and Perl 5.
+#
+# Changes from 1.12 -> 1.13
+# -- Use INN's syslog_facility if available.
 #
 # Changes from 1.11 -> 1.12
 # -- support for GnuPG
@@ -72,19 +75,11 @@ $pgp = '/usr/local/bin/pgp';
 # uncomment the next line and set appropriately.
 # $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
 
+# If you have INN and the script is able to successfully include you
+# innshellvars.pl file, the value of $inn::pathtmp and $inn::locks will
+# override these.
 $tmpdir = "/tmp";
 $lockdir = $tmpdir;
-
-# Set to have the script use syslog for errors instead of stderr.
-# Value should be the facility and level to use, as would be found
-# in syslog.conf; ie, "news.err" is the "news" facility and "err" level.
-# For various reasons, it is impossible to economically have the script
-# figure out how to do syslogging correctly on the machine.
-#
-$syslog = lc("@SYSLOG_FACILITY@");
-$syslog =~ s/log_//;
-$syslog = "$syslog.err";
-# $syslog = '';  # an empty value means don't try to do syslogging.
 
 # How should syslog be accessed?
 # As it turns out, syslogging is very hard to do portably in all
@@ -105,7 +100,18 @@ $syslog = "$syslog.err";
 #
 # $syslog_method = 'unix';    # Unix doman socket, perl5.004_03 or higher
 # $syslog_method = 'inet';    # UDP to port 514 of localhost
-$syslog_method = 'logger';
+# $syslog_method = '';        # Don't ever try to do syslogging.
+$syslog_method = 'logger';    # search for the logger program
+
+# The next two variables are the values to be used for syslog's facility and
+# level to use, as would be found in syslog.conf.  For various reasons, it is
+# impossible to economically have the script figure out how to do syslogging
+# correctly on the machine.  If you have INN and the script is able to
+# successfully include you innshellvars.pl file, then the value of
+# $inn::syslog_facility will override this value of $syslog_facility;
+# $syslog_level is unaffected.
+$syslog_facility = 'news';
+$syslog_level = 'err';
 
 # Prepend the error message with a timestamp?
 # This is only relevant if not syslogging, when errors go to stderr.
@@ -131,6 +137,7 @@ do '@LIBDIR@/innshellvars.pl';
 $pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
 $tmp = ($inn'pathtmp ? $inn'pathtmp : $tmpdir) . "/pgp$$";
 $lockdir = $inn'locks if $inn'locks;
+$syslog_facility = $inn'syslog_facility if $inn'syslog_facility;
 #
 # ... and it is expected some day that an INN variable will let perl
 # scripts know how syslogging should be done.
@@ -307,10 +314,10 @@ errmsg
         last;
       }
     }
-    $syslog = '' if $syslog_method eq 'logger';
+    $syslog_method = '' if $syslog_method eq 'logger';
   }
 
-  if ($syslog && $syslog_method !~ m%/logger$%) {
+  if ($syslog_method ne '' && $syslog_method !~ m%/logger$%) {
     if ($] >= 5) {
       eval "use Sys::Syslog";
     } else { 
@@ -318,7 +325,7 @@ errmsg
     }
   }
 
-  if ($@ || $syslog eq '') {
+  if ($@ || $syslog_method eq '') {
     warn $date, "$0: trying to use perl's syslog: $@\n" if $@;
     warn $date, $_[0], "\n";
     warn $date, "... while processing $header{'Message-ID'}\n"
@@ -329,13 +336,14 @@ errmsg
       if $header{'Message-ID'};
 
     if ($syslog_method =~ m%/logger$%) {
-      unless (system($syslog_method, "-i", "-p", $syslog, $_[0]) == 0) {
+      unless (system($syslog_method, "-i", "-p",
+                     "$syslog_facility.$syslog_level", $_[0]) == 0) {
         if ($? >> 8) {
           warn $date, "$0: $syslog_method exited status ",  $? >>  8, "\n";
         } else {
           warn $date, "$0: $syslog_method died on signal ", $? & 255, "\n";
         }
-        $syslog = '';
+        $syslog_method = '';
         &errmsg($_[0]);
       }
 
@@ -349,22 +357,19 @@ errmsg
         }
         if ($] <= 5.00403 || ! eval "setlogsock('unix')") {
           warn $date, "$0: cannot use syslog_method 'unix' on this system\n";
-          $syslog = '';
+          $syslog_method = '';
           &errmsg($_[0]);
         }
       }
       
-      ($facility, $level) = ($syslog =~ /^(\w+)\.(\w+)$/);
-
       # unfortunately, there is no way to definitively know in this program if
       # the message was logged.  I wish there were a way to send a message
       # to stderr if and only if the syslog attempt failed.
-      &openlog($0, 'pid', $facility);
-      &syslog($level, $_[0]);
+      &openlog($0, 'pid', $syslog_facility);
+      &syslog($syslog_level, $_[0]);
       &closelog();
     }
   }
-
 }
 
 sub
