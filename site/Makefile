@@ -99,7 +99,7 @@ REST_INSTALLED	= \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_SCHEMA) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(PATH_MOTD) $D$(PATH_STORAGECONF) \
-	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG) \
+	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG) $D$(PATH_BUFFINDEXED) \
 	$D$(PATH_INNFEEDCTL) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_PYTHON_FILTER_INND) $D$(PATH_PYTHON_INN_MODULE) \
@@ -230,7 +230,7 @@ $D$(PATHLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_STORAGECONF): storage.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPRI) $? $@
-$D$(PATH_BUFFINDEXED): cycbuff.conf	; $(COPY_RPRI) $? $@
+$D$(PATH_BUFFINDEXED): buffindexed.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPRI) $? $@
