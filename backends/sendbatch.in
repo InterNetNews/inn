@@ -1,24 +1,29 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
+##  $Id$
+##
 ##  SH script to send UUCP batches out.  By Mike Cooper and Rich $alz.
+##
 ##  Based on B News sendbatch 1.22 10/29/89.
 
 ##  Place to run a df, and amount of space needed.
 UUSPOOL=/var/spool/uucp
 SPOOLFREE=20000
+
 ##  Program names and flags.  Most can be set on the command-line.
-C7=
 COMP=
-COMPFLAGS=
-# Use the COMPRESS variable as it is in innshellvars
-# COMPRESS=/usr/ucb/compress
+COMPFLAGS=-f
+GZIPFLAGS=-f
 ECHO=
+
 ##  Not a config param since this is the remote rnews.
 RNEWS=rnews
+
+##  UUCP command execution program.
 UUX=uux
 UUXFLAGS="- -r -n -gd"
+
 ##  Desired size of each batch, total number of bytes we want to queue.
 DEFBYTES=50000
 BYTESQUEUED=1000000000
@@ -27,7 +32,6 @@ PROG=`basename $0`
 
 ##  Go to where the action is.
 cd ${BATCH}
-
 
 ##  Loop over command line.
 for SITE
@@ -76,9 +80,13 @@ do
 	ECHO="echo '#! cunbatch'"
 	continue
 	;;
+    -g)
+        COMP="; exec ${GZIP} ${GZIPFLAGS}"
+        ECHO="echo '#! gunbatch'"
+        continue
+        ;;
     +c)
 	COMP=''
-	C7=''
 	ECHO=''
 	COMPFLAGS=''
 	continue
@@ -140,25 +148,14 @@ do
     fi
 
     ##  Check free space on the partition?
-#    if [ -n "${UUSPOOL}" ] ; then
-#	FREE=`(cd ${UUSPOOL}; df . | ${AWK} '
-#		$6 == "'${UUSPOOL}'" { print $4 ; exit }
-#		$1 == "'${UUSPOOL}'" && NF == 7 { print $4 ; exit }
-#		$2 == "'${UUSPOOL}'" { print $5 ; exit }
-#		$1 == "'${UUSPOOL}'" { print $3 ; exit }
-#	    ')`
-## = ()<	POS=@<INNWATCH_BLOCKS>@>()=
-	POS=4
-	DOLLAR="$"
-	FREE=`${INNDF} ${UUSPOOL}`
-	if [ -n "${FREE}" ]; then
-	  if [ "${FREE}" -lt ${SPOOLFREE} ] ; then
+    FREE=`${INNDF} ${UUSPOOL}`
+    if [ -n "${FREE}" ]; then
+        if [ "${FREE}" -lt ${SPOOLFREE} ] ; then
 	    echo "${PROG}:  No space on ${UUSPOOL} for ${SITE} (${FREE})."
 	    rm -f ${LOCK}
 	    continue
-	  fi
-	fi
-#    fi
+        fi
+    fi
 
     ##  Check the host's queue size?
     QUEUE=0
@@ -167,11 +164,11 @@ do
 	    # Get queue size from directory size
 	    QUEUE=`du -s "${UUSPOOL}/${SITE}" \
 		    | ${AWK} '{ printf("%s000\n", $1); }'`
-
 	else
 	    ##  Get queue size from uuq command.
-	    QUEUE=`uustat -s${SITE} -Sq 2>/dev/null | ${AWK} 'BEGIN {printf "expr "} /queued/ {printf "%s + ", $(NF-1)} END {printf "0\n"}' | sh`
-	fi
+	    QUEUE=`uustat -s${SITE} -Sq 2>/dev/null \
+                    | ${AWK} '/queued/ {total += $(NF-1)} END {print total}'`
+        fi
 	test -z "${QUEUE}" && QUEUE=0
 	if [ "${QUEUE}" -gt ${BYTESQUEUED} ] ; then
 	    echo "${PROG}:  ${SITE} has ${QUEUE} bytes queued."
