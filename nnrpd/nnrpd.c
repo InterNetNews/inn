@@ -1211,6 +1211,10 @@ main(int argc, char *argv[])
 	(*cp->Function)(ac, av);
 	if (PushedBack)
 	    break;
+	if (PERMaccessconf)
+	    clienttimeout = PERMaccessconf->clienttimeout;
+	else
+	    clienttimeout = innconf->clienttimeout;
     }
 
     Reply("%s\r\n", NNTP_GOODBYE_ACK);
