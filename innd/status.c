@@ -138,7 +138,7 @@ static void STATUSsummary(void)
   fprintf (F, "%s\n", Version);
   fprintf (F, "pid %d started %s\n", (int) getpid(), start_time);
 
-  head = NULL;
+  tmp = head = NULL;
   for (i = 0; (cp = CHANiter(&i, CTnntp)) != NULL; ) {
     j = 0;
     strcpy(TempString, cp->Address.s_addr == 0 ? "localhost" : RChostname(cp));
@@ -170,7 +170,8 @@ static void STATUSsummary(void)
       if (head == NULL)
 	head = status;
       else
-	head->next = status;
+	tmp->next = status;
+      tmp = status;
     }
     if (Now.time - cp->Started > status->seconds)
       status->seconds = Now.time - cp->Started;
