@@ -937,4 +937,5 @@ int main(int ac, char *av[])
     CHANreadloop();
     CleanupAndExit(1, "CHANreadloop returned");
     /* NOTREACHED */
+    return 1;
 }
