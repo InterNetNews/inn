@@ -603,8 +603,8 @@ char *GetHeader(const char *header, bool IsLines)
 	/* Lines estimation taken from Tor Lillqvist <tml@tik.vtt.fi>'s
 	 * posting <TML.92Jul10031233@hemuli.tik.vtt.fi> in
 	 * news.sysadmin. */
-	(void)sprintf(buff, "%d",
-		      (int)(6.4e-8 * ARThandle->len * ARThandle->len + 0.023 * ARThandle->len - 12));
+	snprintf(buff, sizeof(buff), "%d",
+                 (int)(6.4e-8 * ARThandle->len * ARThandle->len + 0.023 * ARThandle->len - 12));
 	return buff;
     }
     return NULL;
@@ -678,7 +678,7 @@ void CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnocurrart);
 	    return;
 	}
-	(void)sprintf(buff, "%d", ARTnumber);
+	snprintf(buff, sizeof(buff), "%d", ARTnumber);
 	tart=ARTnumber;
     }
     else {
@@ -696,7 +696,7 @@ void CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnoartingroup);
 	    return;
 	}
-	(void)sprintf(buff, "%d", ARTnumber);
+	snprintf(buff, sizeof(buff), "%d", ARTnumber);
 	tart=ARTnumber;
     }
     if (ac > 1)
@@ -1149,7 +1149,7 @@ void CMDpat(int ac, char *av[])
 		    continue;
 		p = GetHeader(header, FALSE);
 		if (p && (!pattern || uwildmat_simple(p, pattern))) {
-		    sprintf(buff, "%u ", i);
+		    snprintf(buff, sizeof(buff), "%u ", i);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
 		    SendIOb("\r\n", 2);
@@ -1177,7 +1177,7 @@ void CMDpat(int ac, char *av[])
 		continue;
 	    if ((p = OVERGetHeader(data, len, Overview)) != NULL) {
 		if (!pattern || uwildmat_simple(p, pattern)) {
-		    sprintf(buff, "%lu ", artnum);
+		    snprintf(buff, sizeof(buff), "%lu ", artnum);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
 		    SendIOb("\r\n", 2);

@@ -148,7 +148,8 @@ GRPreport()
     char		repbuff[1024];
 
     if (GRPcur) {
-	(void)strcpy(buff, GRPcur);
+	strncpy(buff, GRPcur, sizeof(buff) - 1);
+        buff[sizeof(buff) - 1] = '\0';
 	syslog(L_NOTICE, "%s group %s %ld", ClientHost, buff, GRParticles);
 	GRParticles = 0;
 	repbuff[0]='\0';

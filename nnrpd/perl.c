@@ -131,8 +131,6 @@ char *HandleHeaders(char *article)
 
      hv_iterinit(hdr);
      while ((scan = hv_iternext(hdr)) != NULL) {
-       register int x;
-       
        /* Get the values */
        p = HePV(scan, PL_na);  
        s = SvPV(HeVAL(scan), PL_na);
@@ -155,11 +153,9 @@ char *HandleHeaders(char *article)
          OtherSize += 20; 
          RENEW(OtherHeaders, char*, OtherSize);
        }
-       x = strlen(p) + strlen(s) + 3;
-       t = NEW(char, x);
-       sprintf(t,"%s: %s",p,s);
+       t = concat(p, ": ", s, (char *) 0);
        OtherHeaders[i++] = t;
-       HeaderLen += x; 
+       HeaderLen += strlen(t) + 1;
      }
      OtherCount = i;
 #ifdef DEBUG_MODIFY

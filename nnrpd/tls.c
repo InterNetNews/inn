@@ -272,7 +272,7 @@ static int tls_dump(const char *s, int len)
     }
 #ifdef TRUNCATE
     if (trunc > 0) {
-	sprintf(buf, "%04x - <SPACES/NULS>\n", len+ trunc);
+	snprintf(buf, sizeof(buf), "%04x - <SPACES/NULS>\n", len+ trunc);
 	if (tls_loglevel>0)
 	  Printf("%s", buf);
 	ret += strlen(buf);

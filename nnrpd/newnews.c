@@ -81,7 +81,7 @@ static char *GetMsgid(ARTHANDLE *art) {
 static char **GetGroups(char *p) {
   static int	size;
   static char	**list;
-  int		i, len;
+  int		i;
   char		*q;
   static char	*Xrefbuf = NULL;
   char		*Xref = p;
@@ -182,7 +182,7 @@ void CMDnewnews(int ac, char *av[]) {
   if (innconf->nicenewnews > 0)
     nice(innconf->nicenewnews);
 
-  (void)sprintf(line, "%s %s %s %s %s", av[1], av[2], av[3],
+  snprintf(line, sizeof(line), "%s %s %s %s %s", av[1], av[2], av[3],
     (ac >= 5 && (*av[4] == 'G' || *av[4] == 'U')) ? "GMT" : "local",
     (ac >= 5 && *av[ac - 1] == '<') ? av[ac - 1] : "none");
   syslog(L_NOTICE, "%s newnews %s", ClientHost, line);

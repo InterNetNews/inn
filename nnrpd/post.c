@@ -28,61 +28,61 @@ static const char * const BadDistribs[] = {
 
 HEADER	Table[] = {
     /* 	Name			Canset	Type	Size  Value */
-    {	"Path",			TRUE,	HTstd,  0,    NULL },
+    {	"Path",			TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__PATH	      0
-    {	"From",			TRUE,	HTreq,  0,    NULL },
+    {	"From",			TRUE,	HTreq,  0,    NULL,    NULL, 0 },
 #define HDR__FROM	      1
-    {	"Newsgroups",	 	TRUE,	HTreq,  0,    NULL },
+    {	"Newsgroups",	 	TRUE,	HTreq,  0,    NULL,    NULL, 0 },
 #define HDR__NEWSGROUPS	      2
-    {	"Subject",		TRUE,	HTreq,  0,    NULL },
+    {	"Subject",		TRUE,	HTreq,  0,    NULL,    NULL, 0 },
 #define HDR__SUBJECT	      3
-    {	"Control",		TRUE,	HTstd,  0,    NULL },
+    {	"Control",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__CONTROL	      4
-    {	"Supersedes",		TRUE,	HTstd,  0,    NULL },
-    {	"Followup-To",		TRUE,	HTstd,  0,    NULL },
+    {	"Supersedes",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Followup-To",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__FOLLOWUPTO	      6
-    {	"Date",			TRUE,	HTstd,  0,    NULL },
+    {	"Date",			TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__DATE	      7
-    {	"Organization",		TRUE,	HTstd,  0,    NULL },
+    {	"Organization",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__ORGANIZATION     8
-    {	"Lines",		TRUE,	HTstd,  0,    NULL },
+    {	"Lines",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__LINES	      9
-    {	"Sender",		TRUE,	HTstd,  0,    NULL },
+    {	"Sender",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__SENDER	     10
-    {	"Approved",		TRUE,	HTstd,  0,    NULL },
+    {	"Approved",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__APPROVED	     11
-    {	"Distribution",		TRUE,	HTstd,  0,    NULL },
+    {	"Distribution",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__DISTRIBUTION    12
-    {	"Expires",		TRUE,	HTstd,  0,    NULL },
+    {	"Expires",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__EXPIRES	     13
-    {	"Message-ID",		TRUE,	HTstd,  0,    NULL },
+    {	"Message-ID",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__MESSAGEID	     14
-    {	"References",		TRUE,	HTstd,  0,    NULL },
-    {	"Reply-To",		TRUE,	HTstd,  0,    NULL },
-    {	"NNTP-Posting-Host",	FALSE,	HTstd,  0,    NULL },
+    {	"References",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Reply-To",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"NNTP-Posting-Host",	FALSE,	HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__NNTPPOSTINGHOST 17
-    {	"Mime-Version",		TRUE,	HTstd,  0,    NULL },
-    {	"Content-Type",		TRUE,	HTstd,  0,    NULL },
-    {	"Content-Transfer-Encoding", TRUE, HTstd,  0,    NULL },
-    {   "X-Trace",              FALSE, HTstd,  0,    NULL },
+    {	"Mime-Version",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Content-Type",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Content-Transfer-Encoding", TRUE, HTstd,  0,    NULL,    NULL, 0 },
+    {   "X-Trace",              FALSE, HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__XTRACE          21
-    {   "X-Complaints-To",	FALSE, HTstd,  0,    NULL },
+    {   "X-Complaints-To",	FALSE, HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__XCOMPLAINTSTO   22
-    {   "NNTP-Posting-Date",	FALSE, HTstd,  0,    NULL },
+    {   "NNTP-Posting-Date",	FALSE, HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__NNTPPOSTINGDATE 23
-    {	"Xref",			FALSE,	HTstd,  0,    NULL },
-    {	"Summary",		TRUE,	HTstd,  0,    NULL },
-    {	"Keywords",		TRUE,	HTstd,  0,    NULL },
-    {	"Date-Received",	FALSE,	HTobs,  0,    NULL },
-    {	"Received",		FALSE,	HTobs,  0,    NULL },
-    {	"Posted",		FALSE,	HTobs,  0,    NULL },
-    {	"Posting-Version",	FALSE,	HTobs,  0,    NULL },
-    {	"Relay-Version",	FALSE,	HTobs,  0,    NULL },
-    {   "Cc",			TRUE, HTstd,  0,    NULL },
+    {	"Xref",			FALSE,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Summary",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Keywords",		TRUE,	HTstd,  0,    NULL,    NULL, 0 },
+    {	"Date-Received",	FALSE,	HTobs,  0,    NULL,    NULL, 0 },
+    {	"Received",		FALSE,	HTobs,  0,    NULL,    NULL, 0 },
+    {	"Posted",		FALSE,	HTobs,  0,    NULL,    NULL, 0 },
+    {	"Posting-Version",	FALSE,	HTobs,  0,    NULL,    NULL, 0 },
+    {	"Relay-Version",	FALSE,	HTobs,  0,    NULL,    NULL, 0 },
+    {   "Cc",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__CC		     32
-    {   "Bcc",			TRUE, HTstd,  0,    NULL },
+    {   "Bcc",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__BCC		    33
-    {   "To",			TRUE, HTstd,  0,    NULL },
+    {   "To",			TRUE, HTstd,  0,    NULL,    NULL, 0 },
 #define HDR__TO		     34
 };
 
@@ -198,11 +198,13 @@ StripOffHeaders(char *article)
 	     && p[hp->Size] == ':'
 	     && caseEQn(p, hp->Name, hp->Size)) {
 		if (hp->Type == HTobs) {
-		    (void)sprintf(Error, "Obsolete \"%s\" header", hp->Name);
+		    snprintf(Error, sizeof(Error), "Obsolete \"%s\" header",
+                             hp->Name);
 		    return NULL;
 		}
 		if (hp->Value) {
-		    (void)sprintf(Error, "Duplicate \"%s\" header", hp->Name);
+		    snprintf(Error, sizeof(Error), "Duplicate \"%s\" header",
+                             hp->Name);
 		    return NULL;
 		}
 		hp->Value = &p[hp->Size + 1];
@@ -272,8 +274,9 @@ CheckControl(char *ctrl)
 	/* SUPPRESS 530 *//* Empty body for statement */
 	;
     else {
-	(void)sprintf(Error, "\"%s\" is not a valid control message",
-		MaxLength(ctrl,ctrl));
+	snprintf(Error, sizeof(Error),
+                 "\"%s\" is not a valid control message",
+                 MaxLength(ctrl,ctrl));
 	return Error;
     }
     *p = save;
@@ -295,7 +298,8 @@ CheckDistribution(char *p)
     do {
 	for (dp = BadDistribs; *dp; dp++)
 	    if (uwildmat(p, *dp)) {
-		(void)sprintf(Error, "Illegal distribution \"%s\"", MaxLength(p,p));
+		snprintf(Error, sizeof(Error), "Illegal distribution \"%s\"",
+                         MaxLength(p,p));
 		return Error;
 	    }
     } while ((p = strtok((char *)NULL, SEPS)) != NULL);
@@ -330,7 +334,8 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 
     /* Various things need Now to be set. */
     if (GetTimeInfo(&Now) < 0) {
-        sprintf(Error, "Can't get the time, %s", strerror(errno));
+        snprintf(Error, sizeof(Error), "Can't get the time, %s",
+                 strerror(errno));
         return Error;
     }
 
@@ -338,7 +343,8 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	/* Do some preliminary fix-ups. */
 	for (hp = Table; hp < ENDOF(Table); hp++) {
 	    if (!hp->CanSet && hp->Value) {
-		sprintf(Error, "Can't set system \"%s\" header", hp->Name);
+		snprintf(Error, sizeof(Error),
+                         "Can't set system \"%s\" header", hp->Name);
 		return Error;
 	    }
 	    if (hp->Value) {
@@ -355,12 +361,14 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
          * data. */
 	if (PERMauthorized) {
 	    if (PERMuser[0] == '\0') {
-		(void)sprintf(sendbuff, "%s@%s", "UNKNOWN", ClientHost);
+		snprintf(sendbuff, sizeof(sendbuff), "%s@%s", "UNKNOWN",
+                         ClientHost);
 	    } else {
 		if ((p = strchr(PERMuser, '@')) == NULL) {
-		    (void)sprintf(sendbuff, "%s@%s", PERMuser, ClientHost);
+		    snprintf(sendbuff, sizeof(sendbuff), "%s@%s", PERMuser,
+                             ClientHost);
 		} else {
-		    (void)sprintf(sendbuff, "%s", PERMuser);
+		    snprintf(sendbuff, sizeof(sendbuff), "%s", PERMuser);
 		}
 	    }
 	    HDR_SET(HDR__SENDER, sendbuff);
@@ -450,8 +458,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     if (addvirtual) {
 	if (newpath != NULL)
 	    DISPOSE(newpath);
-	newpath = NEW(char, VirtualPathlen + strlen(HDR(HDR__PATH)) + 1);
-	sprintf(newpath, "%s%s", VirtualPath, HDR(HDR__PATH));
+        newpath = concat(VirtualPath, HDR(HDR__PATH), (char *) 0);
 	HDR_SET(HDR__PATH, newpath);
     }
     
@@ -488,7 +495,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 
     /* Set Lines */
     if (!ihave) {
-	(void)sprintf(linebuff, "%d", linecount);
+	snprintf(linebuff, sizeof(linebuff), "%d", linecount);
 	HDR_SET(HDR__LINES, linebuff);
     }
 
@@ -511,22 +518,25 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     else
 	if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
 	    p = "unknown";
-    sprintf(tracebuff, "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
-	p, (long) t, (long) pid, ClientIpString,
-	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
-	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+    snprintf(tracebuff, sizeof(tracebuff),
+             "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
+             p, (long) t, (long) pid, ClientIpString,
+             gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
+             gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR_SET(HDR__XTRACE, tracebuff);
 
     /* X-Complaints-To; set */
     if ((p = PERMaccessconf->complaints) != NULL)
-	sprintf (complaintsbuff, "%s", p) ;
+	snprintf (complaintsbuff, sizeof(complaintsbuff), "%s", p);
     else {
 	static const char newsmaster[] = NEWSMASTER;
 
 	if ((p = PERMaccessconf->fromhost) != NULL && strchr(newsmaster, '@') == NULL)
-	    sprintf (complaintsbuff, "%s@%s", newsmaster, p);
+	    snprintf (complaintsbuff, sizeof(complaintsbuff), "%s@%s",
+                      newsmaster, p);
 	else
-	    sprintf (complaintsbuff, "%s", newsmaster);
+	    snprintf (complaintsbuff, sizeof(complaintsbuff), "%s",
+                      newsmaster);
     }
     HDR_SET(HDR__XCOMPLAINTSTO, complaintsbuff);
 
@@ -539,7 +549,8 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     /* Now make sure everything is there. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Type == HTreq && hp->Value == NULL) {
-	    (void)sprintf(Error, "Required \"%s\" header is missing", hp->Name);
+	    snprintf(Error, sizeof(Error),
+                     "Required \"%s\" header is missing", hp->Name);
 	    return Error;
 	}
 
@@ -613,8 +624,8 @@ MailArticle(char *group, char *article)
 
     /* Try to get the address first. */
     if ((address = GetModeratorAddress(NULL, NULL, group, PERMaccessconf->moderatormailer)) == NULL) {
-	(void)sprintf(Error, "No mailing address for \"%s\" -- %s",
-		group, "ask your news administrator to fix this");
+	snprintf(Error, sizeof(Error), "No mailing address for \"%s\" -- %s",
+                 group, "ask your news administrator to fix this");
 	DISPOSE(group);  
 	return Error;
     }
@@ -624,7 +635,7 @@ MailArticle(char *group, char *article)
      * in case %s isn't in inconf->mta) and send the headers. */
     if ((mta = innconf->mta) == NULL)
 	return "Can't start mailer - mta not set";
-    (void)sprintf(buff, innconf->mta, address);
+    snprintf(buff, sizeof(buff), innconf->mta, address);
     if ((F = popen(buff, "w")) == NULL)
 	return "Can't start mailer";
     (void)fprintf(F, "To: %s\n", address);
@@ -659,8 +670,8 @@ MailArticle(char *group, char *article)
     }
     i = pclose(F);
     if (i) {
-	(void)sprintf(Error, "Mailer exited with status %d -- %s",
-		i, "Article might not have been mailed");
+	snprintf(Error, sizeof(Error), "Mailer exited with status %d -- %s",
+                 i, "Article might not have been mailed");
 	return Error;
     }
     WasMailed = TRUE;
@@ -704,7 +715,8 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	    grplist[0] = p;
 	    grplist[1] = NULL;
 	    if (!PERMmatch(PERMpostlist, grplist)) {
-		sprintf(Error, "You are not allowed to post to %s\r\n", p);
+		snprintf(Error, sizeof(Error),
+                         "You are not allowed to post to %s\r\n", p);
 	    }
         }
 	if (!OVgroupstats(p, NULL, NULL, NULL, &flag))
@@ -723,7 +735,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	    } else {
 	        if (reply != NULL) {
 		    syslog(L_TRACE, "PY_authorize() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
-		    (void)sprintf(Error, "%s\r\n", reply);
+		    snprintf(Error, sizeof(Error), "%s\r\n", reply);
 		    break;
 		}
 	    }
@@ -732,7 +744,8 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	    break;
 	case NF_FLAG_MODERATED:
 	    if (approved && !PERMaccessconf->allowapproved) {
-		(void)sprintf(Error, "You are not allowed to approve postings");
+		snprintf(Error, sizeof(Error),
+                         "You are not allowed to approve postings");
 	    } else if (!approved && !*modgroup) {
 		*modgroup = COPY(p);
 	    }
@@ -740,22 +753,23 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	case NF_FLAG_IGNORE:
 	case NF_FLAG_NOLOCAL:
 	    if (!PERMaccessconf->locpost)
-		(void)sprintf(Error, "Postings to \"%s\" are not allowed here.",
-			      p);
+		snprintf(Error, sizeof(Error),
+                         "Postings to \"%s\" are not allowed here.", p);
 	    break;
 	case NF_FLAG_EXCLUDED:
 	    /* Do NOT return an error. */
 	    break;
 	case NF_FLAG_ALIAS:
-	    (void)sprintf(Error,
-		    "The newsgroup \"%s\" has been renamed.\n", p);
+	    snprintf(Error, sizeof(Error),
+                     "The newsgroup \"%s\" has been renamed.\n", p);
 	    break;
 	}
     } while ((p = strtok((char *)NULL, NGSEPS)) != NULL);
     DISPOSE(groups);
 
     if (!FoundOne && !IsNewgroup)
-	(void)sprintf(Error, "No valid newsgroups in \"%s\"", MaxLength(hdr,hdr));
+	snprintf(Error, sizeof(Error), "No valid newsgroups in \"%s\"",
+                 MaxLength(hdr,hdr));
     if (Error[0]) {
         tmpPtr = DDend(h);
 	DISPOSE(tmpPtr) ;
@@ -799,7 +813,7 @@ OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
     (void)fprintf(ToServer, "ihave %s\r\n", HDR(HDR__MESSAGEID));
     if (FLUSH_ERROR(ToServer)
      || fgets(buff, buffsize, FromServer) == NULL) {
-	(void)sprintf(buff, CANTSEND, "IHAVE", strerror(errno));
+	snprintf(buff, sizeof(buff), CANTSEND, "IHAVE", strerror(errno));
 	return -1;
     }
     return atoi(buff);
@@ -821,7 +835,8 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     char *q;
 
     /* Initialize the returned error message */
-    sprintf(CANTSPOOL, "%s and can't write text to local spool file", err);
+    snprintf(CANTSPOOL, sizeof(CANTSPOOL),
+             "%s and can't write text to local spool file", err);
 
     /* Try to write it to the spool dir. */
     tmpspool = concatpath(SpoolDir, ".XXXXXX");
@@ -950,7 +965,7 @@ ARTpost(char *article,
 {
     static char	CANTSEND[] = "Can't send %s to server, %s";
     int		i;
-    char	*p, *q, c;
+    char	*p, *q;
     char	*next;
     HEADER	*hp;
     FILE	*ToServer;
@@ -961,7 +976,6 @@ ARTpost(char *article,
     char	*TrackID;
     char	*DirTrackID;
     FILE	*ftd;
-    int		len;
     char	SDir[255];
 
     /* Assume errors are permanent, until we discover otherwise */
@@ -1029,12 +1043,12 @@ ARTpost(char *article,
     }
     if ((PERMaccessconf->localmaxartsize > 0) &&
 		(strlen(article) > (unsigned)PERMaccessconf->localmaxartsize)) {
-	    (void)sprintf(Error,
-		"Article is bigger then local limit of %ld bytes\n",
-		PERMaccessconf->localmaxartsize);
-	    if (modgroup)
-		DISPOSE(modgroup);
-	    return Error;
+        snprintf(Error, sizeof(Error),
+                 "Article is bigger then local limit of %ld bytes\n",
+                 PERMaccessconf->localmaxartsize);
+        if (modgroup)
+            DISPOSE(modgroup);
+        return Error;
     }
 
 #if defined(DO_PERL)
@@ -1042,7 +1056,8 @@ ARTpost(char *article,
     if ((p = (char *)HandleHeaders(article)) != NULL) {
 	if (idbuff) {
 	    if (modgroup)
-		sprintf(idbuff, "(mailed to moderator for %s)", modgroup);
+		snprintf(idbuff, sizeof(idbuff),
+                         "(mailed to moderator for %s)", modgroup);
 	    else
 		(void)strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
 	    idbuff[SMBUF - 1] = '\0';
@@ -1110,7 +1125,8 @@ ARTpost(char *article,
 	if (buff[0])
 	    (void)strcpy(Error, buff);
 	else
-	    (void)sprintf(Error, CANTSEND, "connect request", strerror(errno));
+	    snprintf(Error, sizeof(Error), CANTSEND, "connect request",
+                     strerror(errno));
         return Spoolit(article,Error);
     }
     if (Tracing)
@@ -1126,8 +1142,8 @@ ARTpost(char *article,
     if (i == NNTP_AUTH_NEEDED_VAL) {
         /* Send authorization. */
         if (NNTPsendpassword(PERMaccessconf->nnrpdposthost, FromServer, ToServer) < 0) {
-            (void)sprintf(Error, "Can't authorize with %s",
-                          PERMaccessconf->nnrpdposthost ? PERMaccessconf->nnrpdposthost : "innd");
+            snprintf(Error, sizeof(Error), "Can't authorize with %s",
+                     PERMaccessconf->nnrpdposthost ? PERMaccessconf->nnrpdposthost : "innd");
             return Spoolit(article,Error);
         }
         i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
@@ -1179,7 +1195,7 @@ ARTpost(char *article,
     }
     (void)fprintf(ToServer, "\r\n");
     if (FLUSH_ERROR(ToServer)) {
-	(void)sprintf(Error, CANTSEND, "headers", strerror(errno));
+	snprintf(Error, sizeof(Error), CANTSEND, "headers", strerror(errno));
 	(void)fclose(FromServer);
 	(void)fclose(ToServer);
 	return Spoolit(article, Error);
@@ -1188,7 +1204,7 @@ ARTpost(char *article,
     /* Send the article, get the server's reply. */
     if (NNTPsendarticle(article, ToServer, TRUE) < 0
      || fgets(buff, sizeof buff, FromServer) == NULL) {
-	(void)sprintf(Error, CANTSEND, "article", strerror(errno));
+	snprintf(Error, sizeof(Error), CANTSEND, "article", strerror(errno));
 	(void)fclose(FromServer);
 	(void)fclose(ToServer);
 	return Spoolit(article, Error);
@@ -1214,12 +1230,10 @@ ARTpost(char *article,
 
     /* Tracking */
     if (PERMaccessconf->readertrack) {
-	len = strlen(innconf->pathlog) + strlen("/trackposts/track.") + strlen(HDR(HDR__MESSAGEID)) + 1;
-	TrackID = NEW(char, len);
-	sprintf(TrackID, "%s/trackposts/track.%s", innconf->pathlog, HDR(HDR__MESSAGEID));
+        TrackID = concat(innconf->pathlog, "/trackposts/track.",
+                         HDR(HDR__MESSAGEID), (char *) 0);
 	if ((ftd = fopen(TrackID,"w")) == NULL) {
-	    DirTrackID = NEW(char, len);
-	    sprintf(DirTrackID, "%s/trackposts", innconf->pathlog);
+	    DirTrackID = concatpath(innconf->pathlog, "trackposts");
 	    MakeDirectory(DirTrackID, FALSE);
 	    DISPOSE(DirTrackID);
 	}

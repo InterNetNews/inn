@@ -237,7 +237,6 @@ ExitWithStats(int x, bool readconf)
     if (LocalLogFileName != NULL)
 	DISPOSE(LocalLogFileName);
     closelog();
-    free((void *)message_program_name);
     exit(x);
 }
 
@@ -330,7 +329,7 @@ TITLEset(const char* what)
     p = TITLEstart;
     *p++ = '-';
 
-    (void)sprintf(buff, "%s %s", ClientHost, what);
+    snprintf(buff, sizeof(buff), "%s %s", ClientHost, what);
     i = strlen(buff);
     if (i > TITLEend - p - 2) {
 	i = TITLEend - p - 2;
@@ -343,7 +342,7 @@ TITLEset(const char* what)
     char		buff[BUFSIZ];
     union pstun un;
     
-    (void)sprintf(buff, "(nnrpd) %s %s", ClientHost, what);
+    snprintf(buff, sizeof(buff), "(nnrpd) %s %s", ClientHost, what);
     un.pst_command = buff;
     (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
 #endif	/* !defined(_HPUX_SOURCE) */
@@ -540,11 +539,11 @@ static void StartConnection(void)
     if (getpeername(STDIN_FILENO, (struct sockaddr *)&ssc, &length) < 0) {
       if (!isatty(STDIN_FILENO)) {
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
-            (void)strcpy(ClientHost, "?"); /* so stats generation looks correct. */
+            strcpy(ClientHost, "?"); /* so stats generation looks correct. */
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
 	}
-	(void)strcpy(ClientHost, "stdin");
+        strcpy(ClientHost, "stdin");
     }
 
     else {
@@ -580,9 +579,13 @@ static void StartConnection(void)
                 syslog(L_NOTICE,
                        "? reverse lookup for %s failed: %s -- using IP address for access",
                        ClientIpString, HostErrorStr);
-	        strcpy( ClientHost, ClientIpString );
+	        strncpy( ClientHost, ClientIpString, sizeof(ClientHost) - 1 );
+                ClientHost[sizeof(ClientHost) - 1] = '\0';
 	    }
-	} else strcpy( ClientHost, ClientIpString );
+	} else {
+            strncpy( ClientHost, ClientIpString, sizeof(ClientHost) - 1 );
+            ClientHost[sizeof(ClientHost) - 1] = '\0';
+        }
 
 	/* figure out server's IP address/hostname */
 	HostErrorStr = default_host_error;
@@ -598,9 +601,13 @@ static void StartConnection(void)
                 syslog(L_NOTICE,
                        "? reverse lookup for %s failed: %s -- using IP address for access",
                        ServerIpString, HostErrorStr);
-	        strcpy( ServerHost, ServerIpString );
+	        strncpy( ServerHost, ServerIpString, sizeof(ServerHost) -1 );
+                ServerHost[sizeof(ServerHost) - 1] = '\0';
 	    }
-	} else strcpy( ServerHost, ServerIpString );
+	} else {
+            strncpy( ServerHost, ServerIpString, sizeof(ServerHost) - 1 );
+            ServerHost[sizeof(ServerHost) - 1] = '\0';
+        }
 
 	/* get port numbers */
 	switch( ssc.ss_family ) {
@@ -663,7 +670,7 @@ Reply(const char *fmt, ...)
 #ifdef HAVE_SSL
     if (tls_conn) {
       va_start(args, fmt);
-      vsprintf(buff,fmt, args);
+      vsnprintf(buff, sizeof(buff), fmt, args);
       va_end(args);
       SSL_write(tls_conn, buff, strlen(buff));
     } else {
@@ -682,7 +689,7 @@ Reply(const char *fmt, ...)
 
         /* Copy output, but strip trailing CR-LF.  Note we're assuming here
            that no output line can ever be longer than 2045 characters. */
-        vsprintf(buff, fmt, args);
+        vsnprintf(buff, sizeof(buff), fmt, args);
         va_end(args);
         p = buff + strlen(buff) - 1;
         while (p >= buff && (*p == '\n' || *p == '\r'))
@@ -702,7 +709,7 @@ Printf(const char *fmt, ...)
 
     if (tls_conn) {
       va_start(args, fmt);
-      vsprintf(buff, fmt, args);
+      vsnprintf(buff, sizeof(buff), fmt, args);
       va_end(args);
       SSL_write(tls_conn, buff, strlen(buff));
     } else {
@@ -1087,7 +1094,7 @@ main(int argc, char *argv[])
 	if (ListenPort == NNTP_PORT)
 	    strcpy(buff, "nnrpd.pid");
 	else
-	    sprintf(buff, "nnrpd-%d.pid", ListenPort);
+	    snprintf(buff, sizeof(buff), "nnrpd-%d.pid", ListenPort);
         path = concatpath(innconf->pathrun, buff);
         pidfile = fopen(path, "w");
         free(path);
@@ -1251,8 +1258,7 @@ main(int argc, char *argv[])
 	LocalLogFileName = NEW(char, len);
 	sprintf(LocalLogFileName, "%s/tracklogs/log-%d", innconf->pathlog, vid);
 	if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
-	    LocalLogDirName = NEW(char, len);
-	    sprintf(LocalLogDirName, "%s/tracklogs", innconf->pathlog);
+            LocalLogDirName = concatpath(innconf->pathlog, "tracklogs");
 	    MakeDirectory(LocalLogDirName, FALSE);
 	    DISPOSE(LocalLogDirName);
 	}

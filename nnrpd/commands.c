@@ -110,11 +110,11 @@ PERMgeneric(char *av[], char *accesslist)
 	}
 
     if (strchr(_PATH_AUTHDIR,'/') == NULL)
-	(void)sprintf(path, "%s/%s/%s/%s", innconf->pathbin, _PATH_AUTHDIR,
-	  _PATH_AUTHDIR_GENERIC, av[0]);
+	snprintf(path, sizeof(path), "%s/%s/%s/%s", innconf->pathbin,
+                 _PATH_AUTHDIR, _PATH_AUTHDIR_GENERIC, av[0]);
     else
-	(void)sprintf(path, "%s/%s/%s", _PATH_AUTHDIR, _PATH_AUTHDIR_GENERIC,
-	  av[0]);
+	snprintf(path, sizeof(path), "%s/%s/%s", _PATH_AUTHDIR,
+                 _PATH_AUTHDIR_GENERIC, av[0]);
 
 #if !defined(S_IXUSR) && defined(_S_IXUSR)
 #define S_IXUSR _S_IXUSR
@@ -202,8 +202,9 @@ PERMgeneric(char *av[], char *accesslist)
     PERMaccessconf->locpost = strchr(fields[1], 'L') != NULL;
     PERMaccessconf->allowihave = strchr(fields[1], 'I') != NULL;
     if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = TRUE;
-    sprintf(PERMuser, "%s@%s", fields[2], fields[0]);
-    (void)strcpy(PERMpass, fields[3]);
+    snprintf(PERMuser, sizeof(PERMuser), "%s@%s", fields[2], fields[0]);
+    strncpy(PERMpass, fields[3], sizeof(PERMpass) - 1);
+    PERMpass[sizeof(PERMpass) - 1] = '\0';
     (void)strcpy(accesslist, fields[4]);
     /*(void)strcpy(writeaccess, fields[5]); future work? */
 
@@ -230,7 +231,8 @@ CMDauthinfo(ac, av)
     if (caseEQ(av[1], "generic")) {
 	char *logrec = Glom(av);
 
-	strcpy(PERMuser, "<none>");
+	strncpy(PERMuser, "<none>", sizeof(PERMuser) - 1);
+        PERMuser[sizeof(PERMuser) - 1] = '\0';
 
 	switch (PERMgeneric(av, accesslist)) {
 	    case 1:
@@ -302,8 +304,10 @@ CMDauthinfo(ac, av)
 			}
 			Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
 			/* save these values in case you need them later */
-			strcpy(PERMuser, User);
-			strcpy(PERMpass, Password);
+			strncpy(PERMuser, User, sizeof(PERMuser) - 1);
+                        PERMuser[sizeof(PERMuser) - 1] = '\0';
+			strncpy(PERMpass, Password, sizeof(PERMpass) - 1);
+                        PERMpass[sizeof(PERMpass) - 1] = '\0';
 			PERMneedauth = FALSE;
 			PERMauthorized = TRUE;
 			return;
@@ -577,10 +581,8 @@ static int GroupCompare(const void *a1, const void* b1) {
 */
 void CMDnewgroups(int ac, char *av[])
 {
-    static char		**distlist;
     char	        *p;
     char	        *q;
-    char	        **dp;
     QIOSTATE	        *qp;
     time_t		date;
     char		*grplist[2];
@@ -774,11 +776,12 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 		q = p;
 		if ((p = strchr(p, '@')) != NULL) {
 		    *p = '\0';
-		    sprintf(idbuff, "%s%s@%s>", q, NNRPinstance,
-			    PERMaccessconf->domain);
+		    snprintf(idbuff, sizeof(idbuff), "%s%s@%s>", q,
+                             NNRPinstance, PERMaccessconf->domain);
 		}
 	    } else {
-		strcpy(idbuff, p);
+		strncpy(idbuff, p, sizeof(idbuff) - 1);
+                idbuff[sizeof(idbuff) - 1] = '\0';
 	    }
 	}
 	Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);
@@ -830,7 +833,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	/* +2 because of the \n\0 we append; note we don't add the 2
 	 * when increasing the size of the buffer as ART_LINE_MALLOC
 	 * will always be larger than 2 bytes */
-	if ((len + 2) > (end - p)) {
+	if ((len + 2) > (size_t)(end - p)) {
 	    i = p - article;
 	    size += len + ART_LINE_MALLOC;
 	    RENEW(article, char, size);

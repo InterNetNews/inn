@@ -78,8 +78,7 @@ const char *partition;
     char buf[80];
 
     if (strlen(partition) > 70) return 0;
-    strcpy(buf, "partition-");
-    strcat(buf, partition);
+    snprintf(buf, sizeof(buf), "partition-%s", partition);
 
     return sasl_config_getstring(buf, (char *)0);
 }

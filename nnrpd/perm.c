@@ -616,7 +616,8 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
     }
     TEST_CONFIG(oldtype, bit);
     if (bit) {
-	sprintf(buff, "Duplicated '%s' field in authgroup.", oldname);
+	snprintf(buff, sizeof(buff), "Duplicated '%s' field in authgroup.",
+                 oldname);
 	ReportError(f, buff);
     }
 
@@ -759,7 +760,8 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
     }
     TEST_CONFIG(oldtype, bit);
     if (bit) {
-	sprintf(buff, "Duplicated '%s' field in accessgroup.", oldname);
+	snprintf(buff, sizeof(buff), "Duplicated '%s' field in accessgroup.",
+                 oldname);
 	ReportError(f, buff);
     }
     if (caseEQ(tok->name, "on") || caseEQ(tok->name, "true") || caseEQ(tok->name, "yes"))
@@ -1367,7 +1369,8 @@ void PERMgetaccess(char *nnrpaccess)
 	    uname = auth_realms[i]->default_user;
     }
     if (uname) {
-	strcpy(PERMuser, uname);
+	strncpy(PERMuser, uname, sizeof(PERMuser) - 1);
+        PERMuser[sizeof(PERMuser) - 1] = '\0';
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
 	    /* append the default domain to the username */
@@ -1430,7 +1433,8 @@ void PERMlogin(char *uname, char *pass, char *errorstr)
     while (runame == NULL && i--)
 	runame = AuthenticateUser(auth_realms[i], uname, pass, errorstr);
     if (runame) {
-	strcpy(PERMuser, runame);
+	strncpy(PERMuser, runame, sizeof(PERMuser) - 1);
+        PERMuser[sizeof(PERMuser) - 1] = '\0';
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
 	    /* append the default domain to the username */
@@ -1607,14 +1611,12 @@ void PERMgetpermissions()
 		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 		    ExitWithStats(1, TRUE);
 		}
-		VirtualPathlen = strlen(PERMaccessconf->domain) + strlen("!");
-		VirtualPath = NEW(char, VirtualPathlen + 1);
-		sprintf(VirtualPath, "%s!", PERMaccessconf->domain);
+                VirtualPath = concat(PERMaccessconf->domain, "!", (char *) 0);
 	    } else {
-		VirtualPathlen = strlen(PERMaccessconf->pathhost) + strlen("!");
-		VirtualPath = NEW(char, VirtualPathlen + 1);
-		sprintf(VirtualPath, "%s!", PERMaccessconf->pathhost);
+                VirtualPath = concat(PERMaccessconf->pathhost, "!",
+                                     (char *) 0);
 	    }
+            VirtualPathlen = strlen(VirtualPath);
 	} else
 	    VirtualPathlen = 0;
     } else {
@@ -1680,7 +1682,7 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
 	if (!ret && *ip) {
 	    ret = uwildmat(ip, pat);
 	    if (!ret && (p = strchr(pat, '/')) != (char *)NULL) {
-		unsigned int bits, c, b;
+		unsigned int bits, c;
 		struct in_addr ia, net, tmp;
 #ifdef HAVE_INET6
 		struct in6_addr ia6, net6;
@@ -1932,8 +1934,10 @@ typedef void (*LineFunc)(char*);
 /* messages from a program's stdout */
 static void HandleProgLine(char *ln)
 {
-    if (caseEQn(ln, "User:", strlen("User:")))
-	strcpy(ubuf, ln+strlen("User:"));
+    if (caseEQn(ln, "User:", strlen("User:"))) {
+	strncpy(ubuf, ln+strlen("User:"), sizeof(ubuf) - 1);
+        ubuf[sizeof(ubuf) - 1] = '\0';
+    }
 }
 
 /* messages from a programs stderr */
@@ -2203,8 +2207,10 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
 	foo = ExecProg(arg0, args);
 	if (foo) {
 	    GetConnInfo(auth->auth_methods[i], buf);
-	    sprintf(buf+strlen(buf), "ClientAuthname: %s\r\n", username);
-	    sprintf(buf+strlen(buf), "ClientPassword: %s\r\n", password);
+	    snprintf(buf+strlen(buf), sizeof(buf) - strlen(buf) - 3,
+                     "ClientAuthname: %s\r\n", username);
+	    snprintf(buf+strlen(buf), sizeof(buf) - strlen(buf) - 3,
+                     "ClientPassword: %s\r\n", password);
 	    strcat(buf, ".\r\n");
 	    xwrite(foo->wrfd, buf, strlen(buf));
 	    close(foo->wrfd);
