@@ -119,6 +119,7 @@ control/modules/sendme.pl             sendme controlchan handler
 control/modules/sendsys.pl            sendsys controlchan handler
 control/modules/senduuname.pl         senduuname controlchan handler
 control/modules/version.pl            version controlchan handler
+control/perl-nocem.in                 NoCeM on spool implementation
 control/pgpverify.in                  Verify control messages with PGP
 control/signcontrol.in                PGP control message signing program
 doc                                   Documentation (Directory)
