@@ -88,6 +88,8 @@
 
 # use strict;
 
+require "@prefix@/etc/innshellvars.pl" ;
+
 ## Do you want to create a Web page. Pick DO or DONT.
 my $HTML = "DO";
 
@@ -95,7 +97,7 @@ my $HTML = "DO";
 my $GRAPH = "DO";
 
 ## Directory for the Web pages (used only if the previous line is active)
-my $HTML_dir = "/var/www/News/stats";
+my $HTML_dir = "$inn::pathhttp";
 
 ## Directory for the GIF pictures (need HTML support) in the file space
 my $IMG_dir = "$HTML_dir/pics";
