@@ -1224,11 +1224,7 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
 static void
 ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp)
 {
-  HDRCONTENT	*hc = data->HdrContent;
-  char		*p, buff[SMBUF], ControlWord[16], *av[6], c;
-  struct stat	Sb;
-  const char	**hops;
-  int		hopcount;
+  char *p, c;
 
   /* See if it's a cancel message. */
   c = *Control;
@@ -1239,81 +1235,6 @@ ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp)
       ARTcancel(data, p, FALSE);
     return;
   }
-
-  if (innconf->usecontrolchan)
-    return;
-
-  /* Nip off the first word into lowercase. */
-  strncpy(ControlWord, HDR(HDR__CONTROL), sizeof ControlWord);
-  ControlWord[sizeof ControlWord - 1] = '\0';
-  for (p = ControlWord; *p && !ISWHITE(*p); p++)
-    if (CTYPE(isupper, *p))
-      *p = tolower(*p);
-  if (*p)
-    *p++ = '\0';
-
-  /* Treat the control message as a place to send the article, if
-   * the name is "safe" -- no slashes in the pathname. */
-  if (p - ControlWord + STRLEN( _PATH_BADCONTROLPROG) >= SMBUF-4
-    || strchr(ControlWord, '/') != NULL)
-    FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
-  else {
-    FileGlue(buff, innconf->pathcontrol, '/', ControlWord);
-    if (stat(buff, &Sb) < 0 || (Sb.st_mode & EXECUTE_BITS) == 0)
-      FileGlue(buff, innconf->pathcontrol, '/', _PATH_BADCONTROLPROG);
-  }
-
-  /* If it's an ihave or sendme, check the site named in the message. */
-  if ((c == 'i' && EQ(ControlWord, "ihave"))
-    || (c == 's' && EQ(ControlWord, "sendme"))) {
-    while (ISWHITE(*p))
-      p++;
-    if (*p == '\0') {
-      syslog(L_NOTICE, "%s malformed %s no site %s",
-	LogName, ControlWord, data->TokenText);
-      return;
-    }
-    if (EQ(p, ARTpathme)) {
-      /* Do nothing -- must have come from a replicant. */
-      syslog(L_NOTICE, "%s %s_from_me %s", data->Feedsite, ControlWord,
-	data->TokenText);
-      return;
-    }
-    if (!SITEfind(p)) {
-      if (c == 'i')
-	syslog(L_ERROR, "%s bad_ihave in %s", data->Feedsite,
-	  data->Newsgroups.Data);
-      else
-	syslog(L_ERROR, "%s bad_sendme dont feed %s",
-	  data->Feedsite, data->TokenText);
-      return;
-    }
-  }
-
-  /* Build the command vector and execute it. */
-  av[0] = buff;
-  av[1] = COPY(data->Poster);
-  av[2] = COPY(data->Replyto);
-  av[3] = data->TokenText;
-  p = NULL;
-  if (innconf->logipaddr) {
-    hops = (const char **)data->Path.List;
-    av[4] = (char *)(hops && hops[0] ? hops[0] : CHANname(cp));
-  } else {
-    av[4] = (char *)(data->Feedsite);
-  }
-  av[5] = NULL;
-  HeaderCleanFrom(av[1]);
-  HeaderCleanFrom(av[2]);
-  if (Spawn(innconf->nicekids, STDIN_FILENO, fileno(Errlog), fileno(Errlog),
-    (char * const *)av) < 0)
-    /* We know the strrchr below can't fail. */
-    syslog(L_ERROR, "%s cant spawn %s for %s %m", LogName, MaxLength(av[0],
-      strrchr(av[0], '/')), data->TokenText);
-  DISPOSE(av[1]);
-  DISPOSE(av[2]);
-  if (p != NULL)
-    DISPOSE(p);
 }
 
 /*
@@ -2678,9 +2599,7 @@ ARTpost(CHANNEL *cp)
    * seem to be worth it. */
   if (Accepted) {
     if (IsControl) {
-      TMRstart(TMR_ARTCTRL);
       ARTcontrol(data, HDR(HDR__CONTROL), cp);
-      TMRstop(TMR_ARTCTRL);
     }
     if (DoCancels && HDR_FOUND(HDR__SUPERSEDES)) {
       if (ARTidok(HDR(HDR__SUPERSEDES)))
