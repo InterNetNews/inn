@@ -722,6 +722,7 @@ extern char	    *	PLartfilter(const ARTDATA *Data, char *artBody, long artLen, i
 extern char	    *   PLmidfilter(char *messageID);
 extern void		PLmode(OPERATINGMODE mode, OPERATINGMODE NewMode,
 			       char *reason);
+extern char         *   PLstats(void);
 extern void		PLxsinit(void);
 
 extern int		PROCwatch(pid_t pid, int site);
