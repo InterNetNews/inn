@@ -1,4 +1,4 @@
-C/*  $Revision$
+/*  $Revision$
 **
 **  Expire news articles.
 */
