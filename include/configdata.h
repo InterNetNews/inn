@@ -160,8 +160,6 @@ typedef FUNCTYPE	(*FUNCPTR)();
 /* Some default values that can be overridden by values inn.conf
       These values used to be in config.data */
 #define	MAX_FORKS		10
-#define DO_VERIFY_CANCELS		/* Incl the code */
-#define DO_LOG_CANCEL_COMMANDS		/* Incl the code */
 
     /* While reading input, if we have less than LOW_WATER bytes free, we
      * use the current buffersize as input to GROW_AMOUNT to determine how
