@@ -250,13 +250,6 @@ extern void syslog (int, const char *,...) __attribute__ ((__format__ (printf, 2
 # define MAX_STDIO_FD 0
 #endif
 
-/* If you compiler doesn't support `volatile' then add a line like
-              #define VOLATILE
-   above */
-#if ! defined (VOLATILE)
-#define VOLATILE volatile
-#endif
-
 /* define DONT_NEED_U_INT or DO_NEED_U_INT depending on if you
    have a `u_long', `u_int', `u_short' in your system include path or not */
 #if ! defined (DO_NEED_U_INT) && ! defined (DONT_NEED_U_INT)
