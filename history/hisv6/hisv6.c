@@ -62,14 +62,10 @@ static struct hisv6 *hisv6_dbzowner;
 **  set error status to that indicated by s; doesn't copy the string,
 **  assumes the caller did that for us
 */
-static void
+void
 hisv6_seterror(struct hisv6 *h, const char *s)
 {
-    if (h->error)
-	free((void *)h->error);
-    h->error = s;
-    if (s != NULL)
-	warn("%s", s);
+    his_seterror(h->history, s);
 }
 
 
@@ -221,6 +217,7 @@ hisv6_dbzclose(struct hisv6 *h)
 				      strerror(errno), NULL));
 	    r = false;
 	}
+	hisv6_dbzowner = NULL;
     }
     return r;
 }
@@ -321,6 +318,11 @@ hisv6_reopen(struct hisv6 *h)
 	goto fail;
     }
     close_on_exec(h->readfd, true);
+    
+    /* if there's no current dbz owner, claim it here */
+    if (hisv6_dbzowner == NULL) {
+	hisv6_dbzowner = h;
+    }
 
     /* During expiry we need two history structures in place, so we
        have to select which one gets the dbz file */
@@ -416,14 +418,6 @@ hisv6_dispose(struct hisv6 *h)
     bool r;
 
     r = hisv6_closefiles(h);
-    if (h == hisv6_dbzowner)
-	hisv6_dbzowner = NULL;
-
-    if (h->error) {
-	free((void *)h->error);
-	h->error = NULL;
-    }
-
     if (h->histpath) {
 	free(h->histpath);
 	h->histpath = NULL;
@@ -438,7 +432,7 @@ hisv6_dispose(struct hisv6 *h)
 **  return a newly constructed, but empty, history structure
 */
 static struct hisv6 *
-hisv6_new(const char *path, int flags)
+hisv6_new(const char *path, int flags, struct history *history)
 {
     struct hisv6 *h;
 
@@ -446,13 +440,13 @@ hisv6_new(const char *path, int flags)
     h->histpath = path ? COPY(path) : NULL;
     h->flags = flags;
     h->writefp = NULL;
+    h->history = history;
     h->readfd = -1;
     h->nextcheck = 0;
     h->statinterval = 0;
     h->npairs = 0;
     h->dirty = 0;
     h->synccount = 0;
-    h->error = NULL;
     h->st.st_ino = (ino_t)-1;
     h->st.st_dev = (dev_t)-1;
     return h;
@@ -463,18 +457,14 @@ hisv6_new(const char *path, int flags)
 **  open the history database identified by path in mode flags
 */
 void *
-hisv6_open(const char *path, int flags)
+hisv6_open(const char *path, int flags, struct history *history)
 {
     struct hisv6 *h;
 
     his_logger("HISsetup begin", S_HISsetup);
 
-    h = hisv6_new(path, flags);
+    h = hisv6_new(path, flags, history);
     if (path) {
-	if (hisv6_dbzowner == NULL) {
-	    /* if there's no current dbz owner, claim it here */
-	    hisv6_dbzowner = h;
-	}
 	if (!hisv6_reopen(h)) {
 	    hisv6_dispose(h);
 	    h = NULL;
@@ -726,7 +716,6 @@ static bool
 hisv6_writedbz(struct hisv6 *h, const HASH *hash, off_t offset)
 {
     bool r;
-    char hisline[HISV6_MAXLINE + 1];
     char location[HISV6_MAX_LOCATION];
     const char *error;
 
@@ -914,7 +903,6 @@ hisv6_replace(void *history, const char *key, time_t arrived,
 	    }
 	}
     }
- fail:
     return r;
 }
 
@@ -1013,55 +1001,6 @@ hisv6_traverse(struct hisv6 *h, struct hisv6_walkstate *cookie,
 
 
 /*
-**  open control channel to server and reserve it
-*/
-static bool
-hisv6_reserve(struct hisv6 *h, const char *reason)
-{
-    bool r = true;
-
-    if (ICCopen() < 0) {
-	hisv6_seterror(h, concat("can't open channel to server ",
-				 h->histpath, strerror(errno), NULL));
-	r = false;
-    } else if (ICCreserve(reason) != 0) {
-	hisv6_seterror(h, concat("can't reserve server ",
-				 h->histpath, NULL));
-	r = false;
-	ICCclose();
-    }
-    return r;
-}
-
-
-/*
-**  unpause server if necessary and unreserve it
-*/
-static bool
-hisv6_unreserve(struct hisv6 *h, const char *reason, bool paused)
-{
-    bool r;
-
-    if (ICCreserve("") != 0) {
-	hisv6_seterror(h, concat("can't unreserve server ",
-				  h->histpath, strerror(errno), NULL));
-	r = false;
-    }
-    if (paused && ICCgo(reason) != 0) {
-	hisv6_seterror(h, concat("can't unpause server ",
-				  h->histpath, strerror(errno), NULL));
-	r = false;
-    }
-    if (ICCclose() < 0) {
-	hisv6_seterror(h, concat("can't close connection to server ",
-				  h->histpath, strerror(errno), NULL));
-	r = false;
-    }
-    return r;
-}
-
-
-/*
 **  internal callback used during hisv6_traverse; we just pass on the
 **  parameters the user callback expects
 **/
@@ -1095,18 +1034,8 @@ hisv6_walk(void *history, const char *reason, void *cookie,
     hiscookie.cb.walk = callback;
     hiscookie.cookie = cookie;
 
-    if (reason) {
-	r = hisv6_reserve(h, reason);
-	if (r == false)
-	    goto fail;
-    }
-
     r = hisv6_traverse(h, &hiscookie, NULL, hisv6_traversecb);
 
-    if (reason && !hisv6_unreserve(h, reason, hiscookie.paused))
-	r = false;
-
- fail:
     return r;
 }
 
@@ -1248,7 +1177,6 @@ hisv6_expire(void *history, const char *path, const char *reason,
     dbzoptions opt;
     bool r;
     struct hisv6_walkstate hiscookie;
-    bool reserved = false;
 
     /* this flag is always tested in the fail clause, so initialise it
        now */
@@ -1261,20 +1189,20 @@ hisv6_expire(void *history, const char *path, const char *reason,
 	goto fail;
     }
 
-    if (reason) {
-	r = hisv6_reserve(h, reason);
-	if (r == false)
-	    goto fail;
-	else
-	    reserved = true;
-    }
-
     if (writing) {
 	/* form base name for new history file */
-	if (path) {
+	if (path != NULL) {
 	    nhistory = concat(path, ".n", NULL);
 	} else {
 	    nhistory = concat(h->histpath, ".n", NULL);
+	}
+
+	hnew = hisv6_new(nhistory, HIS_RDWR | HIS_INCORE, h->history);
+	if (!hisv6_reopen(hnew)) {
+	    hisv6_dispose(hnew);
+	    hnew = NULL;
+	    r = false;
+	    goto fail;
 	}
 
 	/* this is icky... we can only have one dbz open at a time; we
@@ -1285,15 +1213,6 @@ hisv6_expire(void *history, const char *path, const char *reason,
 	    r = false;
 	    goto fail;
 	}
-	hisv6_dbzowner = NULL;
-
-	hnew = hisv6_new(nhistory, HIS_RDWR | HIS_INCORE);
-	if (!hisv6_reopen(hnew)) {
-	    hisv6_dispose(hnew);
-	    r = false;
-	    goto fail;
-	}
-	hisv6_dbzowner = hnew;
 
 	dbzgetoptions(&opt);
 	opt.writethrough = false;
@@ -1320,8 +1239,10 @@ hisv6_expire(void *history, const char *path, const char *reason,
 					 hnew->histpath, ":", h->histpath, 
 					 strerror(errno), NULL));
 		r = false;
+		goto fail;
 	    }
 	}
+	hisv6_dbzowner = hnew;
     }
 
     /* set up the callback handler */
@@ -1348,7 +1269,7 @@ hisv6_expire(void *history, const char *path, const char *reason,
 	    /* if the new path was explicitly specified don't move the
 	       files around, our caller is planning to do it out of
 	       band */
-	    if (nhistory != path) {
+	    if (path == NULL) {
 		/* unlink the old files */
 		r = hisv6_unlink(h);
 	    
@@ -1362,31 +1283,18 @@ hisv6_expire(void *history, const char *path, const char *reason,
 	}
 
 	/* re-enable dbz on the old history file */
-	hisv6_dbzowner = h;
 	if (!hisv6_reopen(h)) {
 	    hisv6_closefiles(h);
 	}
     }
-    if (reserved && !hisv6_unreserve(h, reason, hiscookie.paused))
-	r = false;
 
     if (hnew && !hisv6_dispose(hnew))
 	r = false;
     if (nhistory && nhistory != path)
 	free((char *)nhistory);
+    if (r == false && hiscookie.paused)
+	ICCgo(reason);
     return r;
-}
-
-
-/*
-**  return current error status to caller
-*/
-const char *
-hisv6_error(void *history)
-{
-    struct hisv6 *h = history;
-
-    return h->error;
 }
 
 
@@ -1410,10 +1318,6 @@ hisv6_ctl(void *history, int selector, void *val)
 	    r = false;
 	} else {
 	    h->histpath = COPY((char *)val);
-	    if (hisv6_dbzowner == NULL) {
-		/* if there's no current dbz owner, claim it here */
-		hisv6_dbzowner = h;
-	    }
 	    if (!hisv6_reopen(h)) {
 		free(h->histpath);
 		h->histpath = NULL;

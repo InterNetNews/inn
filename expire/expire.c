@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include "inndcomm.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -51,7 +52,7 @@ static long		EXPstillhere;
 static struct history	*History;
 static char		*NHistory;
 
-static void CleanupAndExit(int x);
+static void CleanupAndExit(bool Server, bool Paused, int x);
 #if ! defined (atof)            /* NEXT defines aotf as a macro */
 extern double		atof();
 #endif
@@ -66,7 +67,8 @@ enum KR {Keep, Remove};
 **  Open a file or give up.
 */
 static FILE *
-EXPfopen(bool Remove, const char *Name, char *Mode, bool Needclean)
+EXPfopen(bool Remove, const char *Name, char *Mode, bool Needclean,
+	 bool Server, bool Paused)
 {
     FILE *F;
 
@@ -77,7 +79,7 @@ EXPfopen(bool Remove, const char *Name, char *Mode, bool Needclean)
 	(void)fprintf(stderr, "Can't open %s in %s mode, %s\n",
 		Name, Mode, strerror(errno));
 	if (Needclean)
-	    CleanupAndExit(1);
+	    CleanupAndExit(Server, Paused, 1);
 	else
 	    exit(1);
     }
@@ -433,10 +435,22 @@ EXPdoline(void *cookie, time_t arrived, time_t posted, time_t expires,
 **  Clean up link with the server and exit.
 */
 static void
-CleanupAndExit(int x)
+CleanupAndExit(bool Server, bool Paused, int x)
 {
     FILE	*F;
 
+    if (Server)
+	(void)ICCreserve("");
+    if (Paused && ICCgo(EXPreason) != 0) {
+	(void)fprintf(stderr, "Can't unpause server, %s\n",
+		strerror(errno));
+	x = 1;
+    }
+    if (Server && ICCclose() < 0) {
+	(void)fprintf(stderr, "Can't close communication link, %s\n",
+		strerror(errno));
+	x = 1;
+    }
     if (EXPunlinkfile && fclose(EXPunlinkfile) == EOF) {
 	(void)fprintf(stderr, "Can't close -z file, %s\n", strerror(errno));
 	x = 1;
@@ -453,7 +467,7 @@ CleanupAndExit(int x)
 
     /* Append statistics to a summary file */
     if (EXPgraph) {
-	F = EXPfopen(FALSE, EXPgraph, "a", FALSE);
+	F = EXPfopen(FALSE, EXPgraph, "a", FALSE, FALSE, FALSE);
 	(void)fprintf(F, "%ld %ld %ld %ld %ld\n",
 		      (long)Now, EXPprocessed, EXPstillhere, EXPallgone,
 		      EXPunlinked);
@@ -574,7 +588,7 @@ int main(int ac, char *av[])
 	    Writing = FALSE;
 	    break;
 	case 'z':
-	    EXPunlinkfile = EXPfopen(TRUE, optarg, "a", FALSE);
+	    EXPunlinkfile = EXPfopen(TRUE, optarg, "a", FALSE, FALSE, FALSE);
 	    UnlinkFile = TRUE;
 	    break;
 	}
@@ -602,12 +616,12 @@ int main(int ac, char *av[])
 
     /* Parse the control file. */
     if (av[0])
-	F = EQ(av[0], "-") ? stdin : EXPfopen(FALSE, av[0], "r", FALSE);
+	F = EQ(av[0], "-") ? stdin : EXPfopen(FALSE, av[0], "r", FALSE, FALSE, FALSE);
     else {
         char *path;
 
         path = concatpath(innconf->pathetc, _PATH_EXPIRECTL);
-	F = EXPfopen(FALSE, path, "r", FALSE);
+	F = EXPfopen(FALSE, path, "r", FALSE, FALSE, FALSE);
         free(path);
     }
     if (!EXPreadfile(F)) {
@@ -628,10 +642,23 @@ int main(int ac, char *av[])
 	EXPreason = NULL;
     }
 
+    if (Server) {
+	/* If we fail, leave evidence behind. */
+	if (ICCopen() < 0) {
+	    (void)fprintf(stderr, "Can't open channel to server, %s\n",
+		    strerror(errno));
+	    CleanupAndExit(FALSE, FALSE, 1);
+	}
+	if (ICCreserve((char *)EXPreason) != 0) {
+	    (void)fprintf(stderr, "Can't reserve server\n");
+	    CleanupAndExit(FALSE, FALSE, 1);
+	}
+    }
+
     History = HISopen(HistoryText, innconf->hismethod, HIS_RDONLY);
     if (!History) {
 	fprintf(stderr, "Can't setup history manager\n");
-	CleanupAndExit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
 
     /* Ignore failure on the HISctl()s, if the underlying history
@@ -644,19 +671,15 @@ int main(int ac, char *av[])
     val = TRUE;
     if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
 	fprintf(stderr, "Can't setup storage manager\n");
-	CleanupAndExit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
     if (!SMinit()) {
 	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
-	CleanupAndExit(1);
+	CleanupAndExit(Server, FALSE, 1);
     }
     if (chdir(EXPhistdir) < 0) {
 	(void)fprintf(stderr, CANTCD, EXPhistdir, strerror(errno));
-	CleanupAndExit(1);
-    }
-    if (EXPtracing && EXPreason != NULL) {
-	free(EXPreason);
-	EXPreason = NULL;
+	CleanupAndExit(Server, FALSE, 1);
     }
 
     Bad = HISexpire(History, NHistory, EXPreason, Writing, NULL,
@@ -676,10 +699,11 @@ int main(int ac, char *av[])
 
     if (!Bad && NHistory != NULL) {
 	(void)sprintf(buff, "%s.done", NHistory);
-	(void)fclose(EXPfopen(FALSE, buff, "w", TRUE));
+	(void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
+	CleanupAndExit(Server, FALSE, Bad ? 1 : 0);
     }
 
-    CleanupAndExit(Bad ? 1 : 0);
+    CleanupAndExit(Server, !Bad, Bad ? 1 : 0);
     /* NOTREACHED */
     abort();
 }

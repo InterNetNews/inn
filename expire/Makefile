@@ -56,6 +56,7 @@ expirerm:	expirerm.in    $(FIX)    ; $(FIX) expirerm.in
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+$(LIBHIST):	; (cd ../history ; $(MAKE))
 
 
 ##  Profiling.  These rules have not been checked for a while and may need
@@ -97,8 +98,9 @@ depend:	Makefile $(SOURCES)
 convdate.o: convdate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 expire.o: expire.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/paths.h ../include/storage.h ../include/inn/history.h
+ ../include/clibrary.h ../include/inndcomm.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h ../include/storage.h \
+ ../include/inn/history.h
 expireover.o: expireover.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
  ../include/libinn.h ../include/macros.h ../include/ov.h \

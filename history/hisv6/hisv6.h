@@ -8,8 +8,9 @@
 
 struct token;
 struct histopts;
+struct history;
 
-void *hisv6_open(const char *path, int flags);
+void *hisv6_open(const char *path, int flags, struct history *);
 
 bool hisv6_close(void *);
 

@@ -42,7 +42,7 @@ struct hisv6 {
     char *histpath;
     FILE *writefp;
     unsigned long nextcheck;
-    const char *error;
+    struct history *history;
     time_t statinterval;
     size_t synccount;
     size_t dirty;
