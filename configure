@@ -6358,6 +6358,7 @@ trap 'rm -fr `echo "Makefile.global
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/checkgroups.pl
+	samples/cnfsheadconf
 	samples/cnfsstat
 	samples/controlbatch
 	samples/controlchan
@@ -6586,6 +6587,7 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile.global
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/checkgroups.pl
+	samples/cnfsheadconf
 	samples/cnfsstat
 	samples/controlbatch
 	samples/controlchan

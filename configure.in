@@ -1014,6 +1014,7 @@ AC_OUTPUT(
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/checkgroups.pl
+	samples/cnfsheadconf
 	samples/cnfsstat
 	samples/controlbatch
 	samples/controlchan

@@ -382,6 +382,7 @@ samples/actsync.cfg.in      1 Config file for actsync
 samples/actsync.ign         1 Ignore file for actsync
 samples/checkgroups.in      1 Checkgroups control message handler
 samples/checkgroups.pl.in   1 Checkgroups control message handler for controlchan
+samples/cnfsheadconf.in     1 Setup cycbuff header
 samples/cnfsstat.in         1 Show cycbuff status
 samples/control.ctl         1 Access control for control messages
 samples/controlbatch.in     1 Batch program for controlchan
