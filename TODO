@@ -487,6 +487,10 @@ Requested New Features:
   Possibly the server should also refuse to send malformatted lines to
   the client.
 
+* ctlinnd reload incoming.conf could return a count of the hosts that
+  failed, or even better a list of them.  This would make pruning old
+  stuff out of incoming.conf much easier.
+
 
 General Projects:
 
