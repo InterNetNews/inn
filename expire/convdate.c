@@ -38,7 +38,7 @@ static bool
 isdigits(const char *p)
 {
     for (; *p; p++)
-        if (!CTYPE(isdigit, (unsigned char) *p))
+        if (!CTYPE(isdigit, *p))
             return false;
     return true;
 }
@@ -57,7 +57,7 @@ print_date(time_t date)
     char *result;
 
     if (date_format) {
-        if (!makedate(date, date_local, date_buffer, 128)) {
+        if (!makedate(date, date_local, date_buffer, sizeof(date_buffer))) {
             warn("can't format %ld", (long) date);
             return false;
         } else {
