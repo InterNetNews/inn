@@ -252,7 +252,7 @@ static DH *tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
 		r = dh4096;
 		break;
 	default:
-		/* we should check current keylength vs. requested keylength* /
+		/* we should check current keylength vs. requested keylength */
 		/* also, this is an extremely expensive operation! */
 		dh = DH_generate_parameters(keylength, DH_GENERATOR_2, NULL, NULL);
 		r = dh;
