@@ -83,6 +83,12 @@ with Apache) can do so and it's a quick job with Perl (see the example
 script under B<-d>).  If using Apache's B<htpasswd> program, be sure to
 give it the B<-d> option so that it will use crypt(3).
 
+=item B<-g>
+
+Attempt to look up system group corresponding to username and return a
+string like "user@group" to be matched against in readers.conf(5).  This
+option is incompatible with the B<-d> and B<-f> options.
+
 =item B<-p> I<password>
 
 Use I<password> as the password for authentication rather than reading a

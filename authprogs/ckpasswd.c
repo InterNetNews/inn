@@ -23,6 +23,7 @@
 #endif
 #include <fcntl.h>
 #include <pwd.h>
+#include <grp.h>
 
 #if HAVE_DBM
 # if HAVE_NDBM_H
@@ -246,6 +247,45 @@ password_system(const char *username)
 
 
 /*
+**  Try to get the name of a user's primary group out of the system group 
+**  file.  The group, if found, is returned as a newly allocated string;
+**  otherwise, NULL is returned.  If the username is not found, NULL is
+**  returned.
+*/
+static char *
+group_system(const char *username)
+{
+    struct passwd *pwd;
+    struct group *gr;
+
+    pwd = getpwnam(username);
+    if (pwd == NULL)
+        return NULL;
+    gr = getgrgid(pwd->pw_gid);
+    if (gr == NULL)
+        return NULL;
+    return xstrdup(gr->gr_name);
+}
+
+
+/*
+**  Output username (and group, if desired) in correct return format.
+*/
+static void
+output_user(const char *username, bool wantgroup)
+{
+    if (wantgroup) {
+        char *group = group_system(username);
+        if (group == NULL)
+            die("group info for user %s not available", username);
+        printf("User:%s@%s\n", username, group);
+    }
+    else
+        printf("User:%s\n", username);
+}
+
+
+/*
 **  Main routine.
 **
 **  We handle the variences between systems with #if blocks above, so that
@@ -258,23 +298,33 @@ main(int argc, char *argv[])
 
     int opt;
     enum authtype type = AUTH_NONE;
+    bool wantgroup = false;
     const char *filename = NULL;
     struct authinfo *authinfo = NULL;
     char *password = NULL;
 
     message_program_name = "ckpasswd";
 
-    while ((opt = getopt(argc, argv, "f:u:p:" OPT_DBM OPT_SHADOW)) != -1) {
+    while ((opt = getopt(argc, argv, "gf:u:p:" OPT_DBM OPT_SHADOW)) != -1) {
         switch (opt) {
+        case 'g':
+            if (type == AUTH_DBM || type == AUTH_FILE)
+                die("-g option is incompatible with -d or -f");
+            wantgroup = true;
+            break;
         case 'd':
             if (type != AUTH_NONE)
                 die("only one of -s, -f, or -d allowed");
+            if (wantgroup)
+                die("-g option is incompatible with -d or -f");
             type = AUTH_DBM;
             filename = optarg;
             break;
         case 'f':
             if (type != AUTH_NONE)
                 die("only one of -s, -f, or -d allowed");
+            if (wantgroup)
+                die("-g option is incompatible with -d or -f");
             type = AUTH_FILE;
             filename = optarg;
             break;
@@ -332,7 +382,7 @@ main(int argc, char *argv[])
         break;
     case AUTH_NONE:
         if (auth_pam(authinfo->username, authinfo->password)) {
-            printf("User:%s\n", authinfo->username);
+            output_user(authinfo->username, wantgroup);
             exit(0);
         }
         password = password_system(authinfo->username);
@@ -345,6 +395,6 @@ main(int argc, char *argv[])
         die("invalid password for user %s", authinfo->username);
 
     /* The password matched. */
-    printf("User:%s\n", authinfo->username);
+    output_user(authinfo->username, wantgroup);
     exit(0);
 }
