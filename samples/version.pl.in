@@ -31,7 +31,7 @@ sub control_version {
 		     "news software version.\n\n",
 		     "If this is acceptable, type:\n",
 		     "  echo \"InterNetNews\ $VERSION\" | ",
-		     "@inn::mailcmd -s \"version reply from ",
+		     "$inn::mailcmd -s \"version reply from ",
 		     "$inn::pathhost\" $replyto\n\n",
 		     "The control message follows:\n\n");
     
@@ -54,7 +54,7 @@ sub control_version {
     if (($action eq "doifarg") && ($params[0] ne $inn::pathhost)) {
       logmsg ('notice', 'skipped version %s', $sender);
     } else {
-      $kid = open2 (\*R, \*MAIL, @inn::mailcmd, "-s",
+      $kid = open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
 	     "version reply from $inn::pathhost", $replyto);
       print MAIL "InterNetNews $VERSION\n";
       close R;

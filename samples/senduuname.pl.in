@@ -28,7 +28,7 @@ sub control_senduuname {
 		    "UUCP name.\n\n",
 		    "If this is acceptable, type:\n",
 		    "  uuname | ",
-		    "@inn::mailcmd -s \"senduuname reply from ",
+		    "$inn::mailcmd -s \"senduuname reply from ",
 		    "$inn::pathhost\" $replyto\n\n",
 		    "The control message follows:\n\n");
     
@@ -52,7 +52,7 @@ sub control_senduuname {
       logmsg ('notice', 'skipped senduuname %s', $sender);
     } else {
       open UUNAME, "uuname|";
-      $kid = open2 (\*R, \*MAIL, @inn::mailcmd, "-s",
+      $kid = open2 (\*R, \*MAIL, $inn::mailcmd, "-s",
 	     "senduuname reply from $inn::pathhost", $replyto);
       print MAIL $_ while <UUNAME>;  
       close UUNAME;
