@@ -25,7 +25,7 @@ static const char MONTH[12][4] = {
 
 /* The maximum length of the date specification, not including the time zone
    comment.  Used to make sure the buffer is large enough. */
-#define DATE_LENGTH     23
+#define DATE_LENGTH     32
 
 
 /*
@@ -104,7 +104,7 @@ makedate(time_t clock, bool local, char *buff, size_t buflen)
     realclock = (clock == 0) ? time(NULL) : clock;
 
     /* RFC 822 says the timezone offset is given as [+-]HHMM, so we have to
-       separate the hour into a sign, hours, and minutes.  Dividing the
+       separate the offset into a sign, hours, and minutes.  Dividing the
        offset by 36 looks like it works, but will fail for any offset that
        isn't an even number of hours, and there are half-hour timezones. */
     if (local) {
