@@ -1,9 +1,9 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 ##  $Revision$
 ##  Display status of INN.
 ##  Written by Landon Curt Noll <chongo@toad.com>.
-
-. @LIBDIR@/innshellvars
 
 SYSLOG_CRIT=news.crit
 SYSLOG_ERR=news.err

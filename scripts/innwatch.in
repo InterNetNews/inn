@@ -1,4 +1,6 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 ##  $Revision$
 ##  Watch the state of the system relative to the news subsystem.
 ##  As controlled by the control file, when space or inodes are almost
@@ -11,8 +13,6 @@
 ##	Steve Groom <stevo@elroy.Jpl.Nasa.Gov>
 ##  Steve's extensions merged in innwatch by
 ##	<Christophe.Wolfhugel@grasp.insa-lyon.fr>
-
-. @LIBDIR@/innshellvars
 
 PROGNAME=innwatch
 LOCK=${LOCKS}/LOCK.${PROGNAME}

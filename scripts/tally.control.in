@@ -1,4 +1,6 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 ##  $Revision$
 ##  Tally/update the newgroup/rmgroup control log.
 ##  Merge in a log that contains newgroup/rmgroup control messages so that
@@ -6,7 +8,6 @@
 ##  often each group has been newgroup'd or rmgroup'd.  This is run by
 ##  scanlogs, which prepares this from the control-message handlers if
 ##  control.ctl specifies logging.
-. @LIBDIR@/innshellvars
 
 CONTROL=${MOST_LOGS}/control.log
 CONTROL_NEW=${CONTROL}.new

@@ -1,4 +1,6 @@
-#! @_PATH_PERL@ -T
+#! /usr/bin/perl -T
+# fixscript will replace this line with require innshellvars.pl
+
 # simpleftp
 # Author: David Lawrence <tale@isc.org>
 #
@@ -21,7 +23,6 @@
 use strict;
 use Sys::Hostname;
 
-require '@LIBDIR@/innshellvars.pl';
 # $ENV{'PATH'} = '/bin:/usr/bin:/usr/ucb';
 
 # trick ftp.pl into not demanding this file.

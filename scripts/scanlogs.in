@@ -1,9 +1,10 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 ##  $Revision$
 ##  Summarize INN log files.
 ##  Optional arguments:
 ##	norotate	Do not rotate logfiles
-. @LIBDIR@/innshellvars
 
 ##  If you get an error from this line:
 ##	sh -c 'egrep "`ls /etc`" /dev/null'

@@ -8,6 +8,12 @@
 
 include ../Makefile.global
 
+ALL           = innmail innstat innwatch rc.news scanlogs simpleftp \
+		tally.control writelog
+
+EXTRA         = inncheck innreport innshellvars innshellvars.pl \
+		innshellvars.tcl news.daily
+
 INSTALLED     = $(D)$(PATHBIN)/inncheck		\
 		$(D)$(PATHBIN)/innmail		\
 		$(D)$(PATHBIN)/innreport	\
@@ -24,18 +30,32 @@ INSTALLED     = $(D)$(PATHBIN)/inncheck		\
 		$(D)$(PATHLIB)/innshellvars.pl	\
 		$(D)$(PATHLIB)/innshellvars.tcl
 
-all:
+all: $(ALL)
 
 clean:
+	rm -f $(ALL)
 
-##  Installation rules.
+clobber: clean
+	rm -f $(EXTRA)
+
+
+##  Build rules.
+
+FIX             = $(FIXSCRIPT)
+
+innmail:	innmail.in       $(FIX)	; $(FIX) innmail.in
+innstat:	innstat.in       $(FIX)	; $(FIX) innstat.in
+innwatch:	innwatch.in      $(FIX)	; $(FIX) innwatch.in
+rc.news:	rc.news.in       $(FIX)	; $(FIX) rc.news.in
+scanlogs:	scanlogs.in      $(FIX)	; $(FIX) scanlogs.in
+simpleftp:	simpleftp.in     $(FIX)	; $(FIX) simpleftp.in
+tally.control:	tally.control.in $(FIX)	; $(FIX) tally.control.in
+writelog:	writelog.in      $(FIX)	; $(FIX) writelog.in
+
+
+##  Installation rules.  Installation commands set in Makefile.global.
 
 install: $(INSTALLED)
-
-CP_RPRI = $(SHELL) ../installit.sh $(OWNER) -m 0640 -b .OLD
-CP_RPUB = $(SHELL) ../installit.sh $(OWNER) -m 0644 -b .OLD
-CP_XPRI = $(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD
-CP_XPUB = $(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD
 
 $(D)$(PATHBIN)/inncheck:            inncheck            ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/innmail:             innmail             ; $(CP_XPUB) $? $@
