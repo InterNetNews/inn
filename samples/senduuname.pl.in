@@ -29,7 +29,7 @@ sub control_senduuname {
         print TEMPFILE ("UUCP name.\n\n");
         print TEMPFILE ("If this is acceptable, type:\n");
         print TEMPFILE ("  uuname | ",
-                        "$inn::newsbin/innmail -s \"senduuname reply from ",
+                        "$inn::mailcmd -s \"senduuname reply from ",
                         "$inn::pathhost\" $replyto\n\n");
         print TEMPFILE ("The control message follows:\n\n");
         open(ARTICLE, "$SM $token|");
@@ -54,7 +54,7 @@ sub control_senduuname {
         }
         else {
             system("uuname | " .
-                   "$inn::newsbin/innmail -s \"senduuname reply from " .
+                   "$inn::mailcmd -s \"senduuname reply from " .
                    "$inn::pathhost\" $replyto\n\n");
             if ($logging) {
                 $errmsg = "senduuname $sender to $replyto";

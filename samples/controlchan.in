@@ -3,13 +3,15 @@
 # controlchan - read a feed, sniff out control messages, and send them to
 # the appropriate script.
 #
+# updated Mon Aug 31 1998
+#
 # Give this program its own newsfeed.  Make sure that you've created the
 # newsgroup control.cancel so that you don't have to scan through cancels,
 # which this program won't process anyway.
 #
 # Make a newsfeeds entry like this:
 #
-# controlchan\
+# controlchan!\
 #    :!*,control,control.*,!control.cancel\
 #    :Tc,Wnsm\
 #    :@prefix@/bin/controlchan
@@ -22,6 +24,15 @@ require 5.004;
 ## *** Change this to be correct for your site. *** ##
 require "@LIBDIR@/innshellvars.pl" ;
 
+$use_syslog = 0;
+## Comment out this eval line if you don't want to try to syslog
+eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
+
+if ($use_syslog) {
+    openlog ('controlchan', 'pid', 'news');
+    syslog ('notice', 'starting');
+}
+
 my $lastctl = 0;
 
 my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
@@ -32,12 +43,8 @@ my (@headers, %hdrcount, %hdrval, $msgid, $token, $progname, @progparams,
 # Otherwise, we'll plop in the cat command to fake it on older
 # servers.  Sure it would be more efficient to open the article
 # directly when it's possible, but I'm lazy.
-if (-e "$inn::newsbin/sm") {
-    $SM = "$inn::newsbin/sm -q";
-}
-else {
-    $SM = "cat";
-}
+if (-e "$inn::newsbin/sm") { $SM = "$inn::newsbin/sm -q" }
+else { $SM = "cat" }
 
 # Scan the control directory and load *.pl.  This will bring in the
 # new-style control scripts.  For controlchan to use a perl control
@@ -45,12 +52,13 @@ else {
 # as a sub in the form control_xxx.  For example, if control_newgroup()
 # exists, we will use that when encountering a newgroup control.  If
 # control_newgroup() is undefined, we'll use the old shell version.
-opendir(CTLDIR, $inn::controlprogs);
-@ctlprogs = grep(/\.pl$/, readdir(CTLDIR));
-closedir(CTLDIR);
+chdir $inn::controlprogs;
+@ctlprogs = <*.pl>;
 for (@ctlprogs) {
+    next if (/filter_(?:innd|nnrpd)|startup_innd/); #thanks Jeremy
     s/^/$inn::controlprogs\//;
     do($_);
+    syslog ('notice', 'loaded %s', $_) if ($use_syslog);
 }
 
 CHANITEM:
@@ -84,20 +92,28 @@ while (<STDIN>) {
     # warn on failed header retrieval?
 if (1) {
     if (! @headers) {
-        print(scalar localtime, ": No headers in article $msgid\n");
+	if ($use_syslog) {
+	    syslog ('notice', 'No headers in article %s', $msgid);
+	}
+	else {
+	    print(scalar localtime, ": No headers in article $msgid\n");
+	}
         next CHANITEM;
     }
 } # (0/1)
 
-    if (! exists $hdrcount{approved}) {
-        $hdrcount{approved} = 0;
-    }
+    if (! exists $hdrcount{approved}) { $hdrcount{approved} = 0 }
 
     # check for duplicate controls/supersedes; these are goof-ups or
     # denial-of-service attacks, don't process.
     if ($hdrcount{control} > 1) {
-           print (scalar localtime,
-                 ": Multiple control headers in in article $msgid\n");
+	if ($use_syslog) {
+	    syslog ('notice', 'Multiple control headers in article %s', $msgid);
+	}
+	else {
+	    print scalar localtime,
+		   ": Multiple control headers in article $msgid\n";
+	}
         next CHANITEM;
     }
 
@@ -126,7 +142,7 @@ if (1) {
     $hdrval{Sender} = CleanAddy($hdrval{Sender});
 
     if (! defined($hdrval{'Reply-To'})) {
-        $hdrval{'Reply-To'} = $hdrval{From};
+        $hdrval{'Reply-To'} = $hdrval{From}
     }
     $hdrval{'Reply-To'} = CleanAddy($hdrval{'Reply-To'});
 
@@ -136,16 +152,19 @@ if (1) {
         $hdrval{Control} =~ /^(\S+)(\s+)?(.+)?/;
         $progname = lc($1);
         @progparams = split(/\s+/, lc($3));
-    } else {
-        $progname = lc($hdrval{Control});
     }
+    else { $progname = lc($hdrval{Control}) }
 
     next CHANITEM if ($progname =~ /^(cancel)$/);
 
-    if ($progname =~ /[^\w\d-]/) {
-                logger($token, "controlchan",
-                       "Naughty control in article $msgid");
-                next CHANITEM;
+    if ($progname =~ /[^\w\d]/) {
+	if ($use_syslog) {
+	    syslog ('notice', 'Naughty control in article %s', $msgid);
+	}
+	else {
+	    print scalar localtime,
+		   ": Naughty control in article $msgid\n";
+	}
     }
 
     # Do we want to process the message?  Let's check the permissions.
@@ -158,30 +177,37 @@ if (1) {
     #       ": $progname:$hdrval{Sender}:@progparams:$action=$logname\n");
 
     if ($action eq "drop") {
-	next CHANITEM;
+        next CHANITEM
     }
     elsif ($action =~ /^_pgp/) {
         $errmsg = "skipping $progname ";
         if ($progparams[0] eq "newgroup") {
-            if ($progparams[1] eq "moderated") {
-                $errmsg .= "m ";
-            } else {
-                $errmsg .= "y ";
-            }
+            if ($progparams[1] eq "moderated") { $errmsg .= "m " }
+            else { $errmsg .= "y " }
         }
         $errmsg .= $hdrval{Sender} . " (pgpverify failed)";
 
-        print scalar localtime, ": $errmsg in $msgid\n";
+	if ($use_syslog) {
+	    syslog ('err', '%s in %s', $errmsg, $msgid);
+	}
+	else { print scalar localtime, ": $errmsg in $msgid\n" }
         #logger($token, $logname, $errmsg);
 	next CHANITEM;
     }
 
     $subfind = "control_$progname";
     if (defined (&$subfind)) {	# It's a new-style control message.
-	print "$subfind, ", join(" ", @progparams),
-              ", $hdrval{Sender}, $hdrval{'Reply-To'}, $token, ",
-              "$sitepath, $act_log, $hdrcount{approved}\n";
-
+        if ($use_syslog) {
+	    syslog ('notice', '%s, %s %s %s %s, %s, %s, %s',
+		    $subfind, join(" ", @progparams), $hdrval{Sender},
+		    $hdrval{'Reply-To'}, $token, $sitepath, $act_log,
+		    $hdrcount{approved});
+	}
+	else {
+	    print scalar localtime, ": $subfind, ", join(" ", @progparams),
+	    ", $hdrval{Sender}, $hdrval{'Reply-To'}, $token, ",
+	    "$sitepath, $act_log, $hdrcount{approved}\n";
+	}
         &$subfind (join(" ", @progparams), $hdrval{Sender},
 	           $hdrval{'Reply-To'}, $token, $sitepath,
 	           $act_log, $hdrcount{approved});
@@ -193,22 +219,27 @@ if (1) {
                    "'$hdrval{'Reply-To'}' '$token' '$sitepath'");
         }
         else {                  # This replaces the 'default' script.
-            if ($logname eq "mail") {
-                logger($token, "mail",
-                       "Unknown control message by $hdrval{Sender}");
-            }
-            elsif ($logname) {
-                logger($token, "control",
+            if ($logname) {
+                logger($token, $logname,
                        "Unknown control message by $hdrval{Sender}");
             }
             else {
             	$progname =~ s/.*\///;
-                print(scalar localtime,
-                      ": Unknown \"$progname\" control by $hdrval{Sender}\n");
+		if ($use_syslog) {
+		    syslog ('notice', 'Unknown "%s" control by %s',
+			    $progname, $hdrval{Sender});
+		}
+		else {
+		    print(scalar localtime,
+		        ": Unknown \"$progname\" control by " .
+		        "$hdrval{Sender}\n");
+		}
             }
         }
     }
 }
+
+closelog() if ($use_syslog);
 
 
 # Strip a mail address, innd-style.
@@ -282,12 +313,8 @@ sub ctlperm {
 	$pgpresult = <PGPCHECK>;
 	close PGPCHECK;
 	chomp $pgpresult;
-        if ($keyowner eq $pgpresult) {
-            $action =~ s/^[^=]+/doit/;
-        }
-        else {
-            $action =~ s/^[^=]+/_pgpfail/;
-        }
+        if ($keyowner eq $pgpresult) { $action =~ s/^[^=]+/doit/ }
+        else { $action =~ s/^[^=]+/_pgpfail/ }
     }
     return($action);
 }
@@ -301,19 +328,16 @@ sub logger {
     my ($lockfile, $locktry, $lockpid);
     my $pid = $$;
 
-    if (($logfile !~ /\//) && ($logfile ne "mail")) {
-        $logfile = "$inn::most_logs/$logfile.log";
-    }
-
     if ($logfile eq "mail") {
         open(LOGFILE,
-	     "|$inn::newsbin/innmail -s '$message' $inn::newsmaster");
+	     "|$inn::mailcmd -s '$message' $inn::newsmaster");
         open(ARTICLE, "$SM $token|");
         for (<ARTICLE>) { print LOGFILE ("    ", $_) }
         close (ARTICLE);
         close (LOGFILE);
         return;
     }
+    elsif ($logfile !~ /\//) { $logfile = "$inn::most_logs/$logfile.log" }
 
     my $shlock = "$inn::newsbin/shlock";
 
@@ -325,12 +349,12 @@ sub logger {
     # We want to make sure the log is ours.  Use shlock so as not
     # to confuse other programs.
     $locktry = 0;
-    GETLOGLOCK:
-    while ($locktry < 60) {
+    GETLOGLOCK: while ($locktry < 60) {
         if (system("$shlock -p $pid -f $lockfile")) {
             $locktry++;
             sleep(2);
-        } else {
+        }
+        else {
             $locktry = -1;
             last GETLOGLOCK;
         }
@@ -345,10 +369,15 @@ sub logger {
         close (ARTICLE);
         close (LOGFILE);
         unlink $lockfile;
-    } else {
+    }
+    else {
         open LOCKFILE, $lockfile;
         $lockpid = <LOCKFILE>;
         close LOCKFILE;
-        print "Cannot get lock $lockfile, held by: $lockpid\n"
+	if ($use_syslog) {
+	    syslog ('err', 'Cannot get lock %s, held by %s',
+		    $lockfile, $lockpid);
+	}
+	else { print "Cannot get lock $lockfile, held by: $lockpid\n" }
     }
 }

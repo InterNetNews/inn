@@ -26,7 +26,7 @@ sub control_sendsys {
         print TEMPFILE ("$sender has requested that you send a copy\n");
         print TEMPFILE ("of your newsgroups file.\n\n");
         print TEMPFILE ("If this is acceptable, type:\n");
-        print TEMPFILE ("  $inn::newsbin/innmail -s \"sendsys reply from ",
+        print TEMPFILE ("  $inn::mailcmd -s \"sendsys reply from ",
                         "$inn::pathhost\" $replyto < $inn::newsfeeds\n\n");
         print TEMPFILE ("The control message follows:\n\n");
         open(ARTICLE, "$SM $token|");
@@ -51,7 +51,7 @@ sub control_sendsys {
 	}
 	else {
             # Send the file.
-            system("$inn::newsbin/innmail -s \"sendsys reply from " .
+            system("$inn::mailcmd -s \"sendsys reply from " .
                     "$inn::pathhost\" $replyto < $inn::newsfeeds\n\n");
             # Now, log what we did.
             if ($logging) {

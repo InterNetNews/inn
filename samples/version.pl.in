@@ -31,7 +31,7 @@ sub control_version {
         print TEMPFILE ("news software version.\n\n");
         print TEMPFILE ("If this is acceptable, type:\n");
         print TEMPFILE ("  echo \"InterNetNews $VERSION\" | ",
-                        "$inn::newsbin/innmail -s \"version reply from ",
+                        "$inn::mailcmd -s \"version reply from ",
                         "$inn::pathhost\" $replyto\n\n");
         print TEMPFILE ("The control message follows:\n\n");
         open(ARTICLE, "$SM $token|");
@@ -56,7 +56,7 @@ sub control_version {
         }
         else {
             system("echo \"InterNetNews $VERSION\" | " .
-                   "$inn::newsbin/innmail -s \"version reply from " .
+                   "$inn::mailcmd -s \"version reply from " .
                    "$inn::pathhost\" $replyto\n\n");
             # Now, log what we did.
             if ($logging) {

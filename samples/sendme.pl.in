@@ -31,7 +31,7 @@ sub control_sendme {
         }
         close(ARTICLE);
         close(TEMPFILE);
-        system("$inn::newsbin/innmail ".
+        system("$inn::mailcmd ".
                "-s \"sendme by $sender\" $inn::newsmaster < $tempfile");
         unlink($tempfile);
     }

@@ -31,7 +31,7 @@ sub control_ihave {
         }
         close(ARTICLE);
         close(TEMPFILE);
-        system("$inn::newsbin/innmail ".
+        system("$inn::mailcmd ".
                "-s \"ihave by $sender\" $inn::newsmaster < $tempfile");
         unlink($tempfile);
     }
@@ -44,7 +44,7 @@ sub control_ihave {
         }
     }
     elsif ($action eq "doit") {
-        open(GREPHIST, "|grephistory -s -i > $tempfile");
+        open(GREPHIST, "|grephistory -i > $tempfile");
         open(ARTICLE, "$SM $token|");
         SMHEAD2: while(<ARTICLE>) { last SMHEAD2 if /^$/ }
         while (<ARTICLE>) { print GREPHIST $_ }
