@@ -28,7 +28,7 @@ Some comments as of the completion of the original patch:
 
     Modifications by Marco and myself were made so that if IPv6 support is
     not explicitly enabled with the --enable-ipv6 flag to the configure
-    script, the old networking code won't be used.  Hopefully, nobody will
+    script, the old networking code will be used.  Hopefully, nobody will
     notice any problems with the default configuration, although some
     changes have been made to data structures even when IPv6 is disabled.
 
