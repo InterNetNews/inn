@@ -292,23 +292,21 @@ overview_check(const char *data, size_t length, ARTNUM article)
 
 
 /*
-**  Given an overview header, return the offset of the field within
-**  the overview data, or -1 if the field is not present in the
-**  overview schema for this installation.
+**  Given an overview header, return the offset of the field within the
+**  overview data, or -1 if the field is not present in the overview schema
+**  for this installation.
 */
 int
 overview_index(const char *field, const struct vector *extra)
 {
-    int i;
+    size_t i;
 
-    for (i = 0; i < (sizeof fields / sizeof fields[0]); ++i) {
+    for (i = 0; i < ARRAY_SIZE(fields); i++)
 	if (strcasecmp(field, fields[i]) == 0)
 	    return i;
-    }
-    for (i = 0; i < extra->count; i++) {
+    for (i = 0; i < extra->count; i++)
 	if (strcasecmp(field, extra->strings[i]) == 0)
-	    return i + (sizeof fields / sizeof fields[0]);
-    }
+	    return i + ARRAY_SIZE(fields);
     return -1;
 }
 
@@ -366,16 +364,15 @@ overview_split(const char *line, size_t length, ARTNUM *number,
 **  the member which the caller is interested in (and must free).
 */
 char *
-overview_getheader(const struct cvector *vector, int element,
+overview_getheader(const struct cvector *vector, unsigned int element,
 		   const struct vector *extra)
 {
     char *field = NULL;
     size_t len;
     const char *p;
+    size_t max = ARRAY_SIZE(fields) + extra->count - 1;
 
-    if ((element + 1) >= vector->count ||
-	(element >= ARRAY_SIZE(fields) &&
-	 (element - ARRAY_SIZE(fields)) >= extra->count)) {
+    if ((element + 1) >= vector->count || element > max) {
 	warn("request for invalid overview field %d", element);
 	return NULL;
     }
