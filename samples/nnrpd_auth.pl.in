@@ -1,149 +1,190 @@
-#
-# $Id$
-#
-# Sample authentication code for nnrpd hook.
-#
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
 
-#
-# This file is loaded when nnrpd starts up. If it defines a sub named
-# `authenticate', then that function will be called during processing of a
-# connect, auth request or disconnect.  Attributes about the connection are 
-# passed to the program in the %attributes global variable.  It should return 
-# an array with 5 elements:
-#
-# 1) NNTP response code.  Should be one of the codes from %connectcodes or %authcodes
-# 2) Reading Allowed. Should be a boolean value.
-# 3) Posting Allowed. Should be a boolean value.
-# 4) Wildmat expression that says what groups to provide access to.
-# 5) Maximum bytes per second a client is permitted to use for retrieving
-#    articles
-#
-# All five of these are required.  If there is a problem with them then nnrpd
-# will die and syslog the exact reason.
+##  $Id$
+##
+##  Sample code for the nnrpd Perl authentication hooks.
+##
+##  This file is loaded when nnrpd starts up.  If it defines a sub named
+##  authenticate, that function will be called during processing of a
+##  connection, an authentication request, or a disconnection.  Attributes
+##  about the connection are passed to the program in the %attributes global
+##  variable.  It should return an array with five elements:
+##
+##  1) NNTP response code.  Should be one of the codes from %connectcodes
+##     or %authcodes below to not risk violating the protocol.
+##  2) Whether reading is allowed.  Should be a boolean value.
+##  3) Whether posting is allowed.  Should be a boolean value.
+##  4) A wildmat expression giving what newsgroups to provide access to.
+##  5) Maximum bytes per second a client is permitted to use for retrieving
+##     articles (0 indicates no limit).
+##
+##  All five are required.  If there is a problem, nnrpd will die and syslog
+##  the exact error.
 
-#
-# Sample Auth program
-#
+##  The default behavior of the following code is to look for nnrp.access
+##  in INN's configuration file directory and to attempt to implement about
+##  the same host-based access control as the previous nnrp.access code in
+##  earlier versions of INN.  This may be useful for backward compatibility.
+##
+##  Usernames and passwords are not implemented.  There is code below to use
+##  a user database based on CDB_File, but it is not enabled by default and
+##  is here just as an example of what this code can do.  By default, this
+##  code just always returns permission denied for authentication requests.
 
-use vars qw(@readerconfig);
-use CDB_File;
+##  This file cannot be run as a standalone script, although it would be
+##  worthwhile to add some code so that it could so that one could test the
+##  results of various authentication and connection queries from the
+##  command line.  The #! line at the top is just so that fixscript will
+##  work.
 
-$authfile = "@DBDIR@/users.cdb";
-$defaultgroups = "*";
+use strict;
+use vars qw(%attributes %authcodes %connectcodes @hosts %users);
 
-require "@LIBDIR@/innshellvars.pl";
+# The following codes are mandated by the NNTP protocol in RFC 977 except
+# for authneeded, which is a widely implemented de facto standard.
+%connectcodes = ('read/post'  => 200,
+                 'read'       => 201,
+                 'authneeded' => 480,
+                 'permdenied' => 502);
 
-my (%connectcodes) = ("read/post" => 200, "read" => 201, "authneeded" => 480, "permdenied" => 502);
-my (%authcodes)    = ("allowed" => 281, "denied" => 502);
+# These codes are a widely implemented de facto standard.
+%authcodes = ('allowed' => 281, 'denied' => 502);
 
-sub loadnnrp {
-  my($file) = shift(@_);
-  my($block, $perm, $user, $pass, %tmp);
-  
-  open(F, $file) || die "Could not open $file: $!\n";
-  
-  while (<F>) {
-    my (%tmp);
-    
-    chomp;	
-    s/\#.*//g;
-    ($block, $perm, $user, $pass, $tmp{groups}) = split(/:/);
-    if (!defined($tmp{groups})) {
-      undef %tmp;
-      next;
-    }
-    #   Change the glob-type pattern to a regexp
-    if ( ! ($block =~ /(\d+\.\d+\.\d+\.\d+)\/(\d+)/))
-    {
-      #   turn a glob type pattern into a regexp
-      #       escape dots
-      $block =~ s/\./\./g;
-      #       turn ? into .
-      $block =~ s/\?/./g;
-      #       turn * into .*
-      $block =~ s/\*/.*/g;
-    }
-    $tmp{block} = $block;
 
-    $tmp{canread} = 1 if ($perm =~ /r/i);
-    $tmp{canpost} = 1 if ($perm =~ /p/i);
-    unshift(@readerconfig, \%tmp);
-  }
-  close(F);    
-}
-
-# This is called by nnrpd when it first starts up.
+# This is called by nnrpd when it first starts up.  This sub should perform
+# any initialization work that the authentication stuff needs.
 sub auth_init {
-  &loadnnrp($inn::newsetc . "/nnrp.access");
-  tie(%users, 'CDB_File', $authfile) || warn "Could not open CDB file for users: $!\n";
+    &loadnnrp($inn::newsetc . '/nnrp.access');
+
+    #require CDB_File;
+    #tie (%users, 'CDB_File', $inn::pathdb . '/users.cdb')
+    #    or warn "Could not open $inn::pathdb/users.cdb for users: $!\n";
 }
 
-# This is called when a user connects or authenticates
+# This function is called for all connections, disconnections, and
+# authentication requests.  For details on all the information passed to it,
+# see ~news/doc/hook-perl.
 sub authenticate {
-  my $key;
-  foreach $key (keys %attributes) {
-  }
-  if ($attributes{type} eq "connect") {
-    my (@results) = checkhost();
-    return @results;
-  } elsif ($attributes{type} eq "authenticate") {
-    return checkuser();
-  } elsif ($attributes{type} eq "disconnect") {
-  }
-  return 502;
+    if ($attributes{type} eq 'connect') {
+        return &checkhost($attributes{hostname}, $attributes{ipaddress});
+    } elsif ($attributes{type} eq 'authenticate') {
+        return ($connectcodes{permdenied}, undef, undef, undef, undef);
+        #return &checkuser();
+    } elsif ($attributes{type} eq 'disconnect') {
+        # Do nothing.
+    } else {
+        # This should never be reached.
+        return ($connectcodes{permdenied}, undef, undef, undef, undef);
+    }
 }
 
-sub checkuser {
-  my $user = $attributes{'username'};
-  my $pass = $attributes{'password'};
 
-  if (!defined($users{$user})) {
-    return ($authcodes{'denied'}, undef, undef, undef, undef);
-  }
-  my ($password, $news_post, $maxcon, $subscription) = split(/\t/, $users{$user});
-  my ($salt) = substr($password, 0, 2);
-  if (crypt($pass, $salt) ne $password) {
-    return ($authcodes{'denied'}, undef, undef, undef, undef);
-  }
-  $news_post = lc($news_post);
-  $news_post = ($news_post eq 'y') ? 1 : 0;
-  if (!defined($subscription)) {
-    $subscription = $defaultgroups;
-  }
-  return ($authcodes{'allowed'}, 1, $news_post , $subscription, undef);
+# Called at startup, this loads the nnrp.access file and converts it into a
+# convenient internal format for later queries.
+sub loadnnrp {
+    my $file = shift;
+    my ($block, $perm, $user, $pass);
+
+    open (ACCESS, $file) or die "Could not open $file: $!\n";
+    local $_;
+    while (<ACCESS>) {
+        my %tmp;
+
+        chomp;
+        s/\#.*//;
+        ($block, $perm, $user, $pass, $tmp{groups}) = split /:/;
+        next unless (defined $tmp{groups});
+
+        # We don't support username/password entries, so be safe.
+        next if ($user || $pass);
+
+        # Change the wildmat pattern to a regex (this isn't thorough, as
+        # some ranges won't be converted properly, but it should be good
+        # enough for this purpose).
+        if ($block !~ m%^(?:\d+\.){3}\d+/\d+$%) {
+            $block =~ s/\./\\./g;
+            $block =~ s/\?/./g;
+            $block =~ s/\*/.*/g;
+        }
+        $tmp{block} = $block;
+
+        $tmp{canread} = ($perm =~ /r/i);
+        $tmp{canpost} = ($perm =~ /p/i);
+
+        unshift(@hosts, { %tmp });
+    }
+    close ACCESS;
 }
 
+# Given two boolean values saying whether one can read and whether one can
+# post, convert this to a connection code and return the appropriate one.
+# If the user can neither read nor post, return permdenied.  If you use the
+# checkuser code or some other code to verify authentication requests, this
+# should be changed to return authneeded instead.
 sub permtocode {
-  my ($read, $post) = @_;
+    my ($read, $post) = @_;
 
-  return $connectcodes{'read/post'} if ($post);
-  return $connectcodes{'read'} if ($read);
-  return $connectcodes{'authneeded'};
+    return $connectcodes{'read/post'} if $post;
+    return $connectcodes{'read'} if $read;
+
+    #return $connectcodes{'authneeded'};
+    return $connectcodes{'permdenied'};
 }
 
+# Given the hostname and IP address of a connecting host, use our @hosts
+# array constructed from nnrp.access and see what permissions that host has.
 sub checkhost {
-  my ($key, $block, $mask, $ip);
+    my ($host, $ip) = @_;
 
-  foreach $key (@readerconfig) {
-    # Process CIDR style entries first
-    my ($read, $post) = ($key->{canread}, $key->{canpost});
+    my $key;
+    for $key (@hosts) {
+        my ($read, $post) = ($key->{canread}, $key->{canpost});
+        my $code = permtocode($read, $post);
 
-    if ($key->{block} =~ /(\d+\.\d+\.\d+\.\d+)\/(\d+)/) {
-      $block = unpack('N', pack('C4', split(/\./, $1)));
-      $mask = (0xffffffff << (32 - $2)) & 0xffffffff;
-      $block = $block & $mask;
-      $ip = unpack('N', pack('C4', split(/\./, $attributes{ipaddress})));
-      if (($ip & $mask) == $block) {
-        return (permtocode($read, $post) , $read, $post, $key->{groups}, undef);
-      }
+        # First check for CIDR-style blocks.
+        if ($key->{block} =~ m%^(\d+\.\d+\.\d+\.\d+)/(\d+)$%) {
+            my $block = unpack('N', pack('C4', split(/\./, $1)));
+            my $mask = (0xffffffff << (32 - $2)) & 0xffffffff;
+            $block = $block & $mask;
+            my $packedip = unpack('N', pack('C4', split(/\./, $ip)));
+            if (($packedip & $mask) == $block) {
+                return ($code, $read, $post, $key->{groups}, undef);
+            }
+        }
+
+        if ($ip =~ /^$key->{block}$/) {
+            return ($code, $read, $post, $key->{groups}, undef);
+        }
+
+        if ($host =~ /^$key->{block}$/) {
+            return ($code, $read, $post, $key->{groups}, undef);
+        }
     }
-    if ($attributes{ipaddress} =~ /$key->{block}/) {
-      return (permtocode($read, $post), $read, $post, $key->{groups}, undef);
-    }
-    if ($attributes{hostname} =~ /$key->{block}/) {
-      return (permtocode($read, $post), $read, $post, $key->{groups}, undef);
-    }
-  }
-  return ($connectcodes{'permdenied'}, undef, undef, undef, undef);
+
+    # If we fell through to here, nothing matched, so we should deny
+    # permissions.
+    return ($connectcodes{permdenied}, undef, undef, undef, undef);
 }
 
+# This function isn't called by default; it assumes that there's a database
+# tied as %users that contains, keyed by users, a tab-separated list of the
+# password (in crypt format), whether they can post, a wildmat matching what
+# newsgroups they have access to, and the number of bytes per second they're
+# allowed to use.
+sub checkuser {
+    my $user = $attributes{'username'};
+    my $pass = $attributes{'password'};
+
+    return ($authcodes{denied}, undef, undef, undef, undef)
+        unless defined $users{$user};
+
+    my ($password, $post, $speed, $subscription) = split(/\t/, $users{$user});
+    return ($authcodes{denied}, undef, undef, undef, undef)
+        if (crypt($pass, $password) ne $password);
+
+    $post = lc $post;
+    $post = ($post eq 'y') ? 1 : 0;
+    $subscription ||= '*';
+    return ($authcodes{allowed}, 1, $post, $subscription, $speed);
+}
