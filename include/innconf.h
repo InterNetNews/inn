@@ -317,7 +317,10 @@ struct conf_rec conf_defaults[] = {
     { _CONF_SOURCEADDRESS,			"",	1, 1 },
 #define _CONF_NNRPPERLAUTH			"nnrpperlauth"
 #define CONF_VAR_NNRPPERLAUTH			98
-    { _CONF_NNRPPERLAUTH,			"",	2, 1 }
+    { _CONF_NNRPPERLAUTH,			"",	2, 1 },
+#define _CONF_NNRPDPOSTPORT			"nnrpdpostport"
+#define CONF_VAR_NNRPDPOSTPORT			99
+    { _CONF_NNRPDPOSTPORT,			"",	2, 1 }
 };
-#define MAX_CONF_VAR 99
+#define MAX_CONF_VAR 100
 
