@@ -540,6 +540,11 @@ void PERMlogin(char *uname, char *pass)
     int i;
     char *runame;
 
+    /* The check in CMDauthinfo uses the value of PERMneedauth to know if
+     * authentication succeeded or not.  By default, authentication doesn't
+     * succeed. */
+    PERMneedauth = 1;
+
     for (i = 0; auth_realms[i]; i++)
 	;
     runame = 0;
