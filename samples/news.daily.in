@@ -19,7 +19,7 @@
 ##	/full/path	Path to a program to run before expiring
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. @CONFPATH@/innshellvars
 
 EXPLOG=${MOST_LOGS}/expire.log
 INNSTAT=${NEWSBIN}/innstat

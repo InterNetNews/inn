@@ -3,7 +3,7 @@
 ##  SH script to send IHAVE batches out.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. @CONFPATH@/innshellvars
 
 PROGNAME=`basename $0`
 LOCK=${LOCKS}/LOCK.${PROGNAME}

@@ -15,7 +15,7 @@ require 5.001 ;
 require 'getopts.pl' ;
 
 # =()<require "@<_PATH_PERL_SHELLVARS>@" ;>()=
-require "/var/news/etc/innshellvars.pl" ;
+require "@CONFPATH@/innshellvars.pl" ;
 
 die "$0: No \$inn::sendmail  variable defined.\n" 
     if ! defined ($inn::sendmail);

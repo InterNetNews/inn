@@ -1,16 +1,16 @@
 ##  $Revision$
 
-.include ../Makefile.global
+.include "../Makefile.global"
 
 ##  =()<P	= @<P>@>()=
 P	= 
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
-LINTFLAGS	= -b -h -z -I../include $(DEFS)
+LINTFLAGS	= -b -h -z  -I../include $(DEFS)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
 LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= ctags -t -w
+CTAGS		= /usr/bin/ctags -t -w
 
 ##  =()<NNTPLIB	= @<NNTPLIB>@>()=
 NNTPLIB	= 

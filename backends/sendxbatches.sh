@@ -15,7 +15,7 @@ then
 fi
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. @CONFPATH@/innshellvars
 
 LOCK=${LOCKS}/LOCK.sendxbatches
 shlock -p $$ -f ${LOCK}

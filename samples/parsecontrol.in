@@ -3,7 +3,7 @@
 ##  Initial parsing of control messages.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. @CONFPATH@/innshellvars
 WRITELOG=${NEWSBIN}/writelog
 SM=${NEWSBIN}/sm
 

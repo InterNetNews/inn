@@ -383,12 +383,6 @@ struct eqgrp {
 
 #define MIN_UNCHG (double)96.0	/* min % of host1 lines unchanged allowed */
 
-/*
- * path to ctlinnd command
- */
-/* =()<#define CTLINND_PATH "@<_PATH_NEWSBIN>@/ctlinnd">()= */
-#define CTLINND_PATH "/usr/local/news/bin/ctlinnd"
-
 #define DEV_NULL "/dev/null"	/* path to the bit bucket */
 #define CTLINND_NAME "ctlinnd"	/* basename of ctlinnd command */
 #define CTLINND_TIME_OUT "-t30"	/* seconds to wait before timeout */
@@ -3236,13 +3230,13 @@ exec_cmd(mode, cmd, grp, type, who)
 
 	/* exec the ctlinnd command */
 	if (type == NULL) {
-	    execl(CTLINND_PATH,
+	    execl(_PATH_CTLINND,
 		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, NULL);
 	} else if (who == NULL) {
-	    execl(CTLINND_PATH,
+	    execl(_PATH_CTLINND,
 		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, NULL);
 	} else {
-	    execl(CTLINND_PATH,
+	    execl(_PATH_CTLINND,
 		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, who, NULL);
 	}
 

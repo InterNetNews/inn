@@ -16,6 +16,7 @@
 #define _PATH_NNTPD		"@prefix@/bin/nnrpd"
 #define _PATH_RNEWS		"@prefix@/bin/rnews"
 #define _PATH_AUTHDIR		"@prefix@/bin/auth"
+#define _PATH_CTLINND		"@prefix@/bin/ctlinnd"
 #define _PATH_RNEWSPROGS	"@prefix@/bin/rnews.libexec"
 #define _PATH_CONTROLPROGS	"@prefix@/bin/control"
 #define _PATH_TCL_STARTUP	"@prefix@/bin/control/startup.tcl"

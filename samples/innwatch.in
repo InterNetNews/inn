@@ -13,7 +13,7 @@
 ##	<Christophe.Wolfhugel@grasp.insa-lyon.fr>
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. @CONFPATH@/innshellvars
 
 PROGNAME=innwatch
 LOCK=${LOCKS}/LOCK.${PROGNAME}

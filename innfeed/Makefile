@@ -1,11 +1,11 @@
 ##  $Revision$
-.include ../Makefile.global
+.include "../Makefile.global"
 
 ##  =()<P	= @<P>@>()=
 P	= 
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
-LINTFLAGS	= -b -h -z -I../include $(DEFS)
+LINTFLAGS	= -b -h -z  -I../include $(DEFS)
 
 ######################################################################
 ####           NOTHING BELOW HERE IS REALLY CONFIGURABLE          ####

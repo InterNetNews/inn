@@ -1,5 +1,5 @@
 ##  $Revision$
-.include ../Makefile.global
+.include "../Makefile.global"
 
 ##  =()<P	= @<P>@>()=
 P	= 
@@ -48,7 +48,8 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	rmgroup sendme sendsys senduuname version parsecontrol writelog \
 	docheckgroups news.daily scanlogs expirerm \
 	tally.control nntpsend send-ihave send-nntp send-uucp \
-	sendbatch inncheck innstat pgpverify innwatch innreport.pl innshellvars \
+	sendbatch inncheck innstat pgpverify innwatch innreport.pl \
+	innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	actsync.cfg actsync.ign scanspool innmail
@@ -220,7 +221,7 @@ replace:
 	$(MAKE) COPY=cp all
 
 ##  Get files from the samples directory.
-COPY	= @$(SHELL) ./getsafe.sh
+COPY	= $(SHELL) ./getsafe.sh
 actsync.cfg:	../samples/actsync.cfg		; $(COPY) $? $@
 actsync.ign:	../samples/actsync.ign		; $(COPY) $? $@
 checkgroups:	../samples/checkgroups		; $(COPY) $? $@

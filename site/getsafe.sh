@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh 
 ##  $Revision$
 ##
 ##  Safely get a file from the samples directory.  Usage:
@@ -36,6 +36,6 @@ if [ -f ${DEST} ] ; then
 fi
 
 echo Using sample version of ${DEST}
-cp ${SRC} ${DEST}
+cat ${SRC} | ./subst.pl > ${DEST}
 
 exit 0

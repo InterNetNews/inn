@@ -1,5 +1,5 @@
 ##  $Revision$
-.include ../../Makefile.global
+.include "../../Makefile.global"
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 

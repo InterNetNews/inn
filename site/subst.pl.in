@@ -1,0 +1,8 @@
+#!@_PATH_PERL@
+
+$innshellvarspath = "@prefix@/etc/innshellvars";
+
+while(<STDIN> {
+  $_ =~ s/_INNSHELLVARS_/$innshellvarspath/g;
+  print $_;
+}

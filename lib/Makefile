@@ -1,5 +1,5 @@
 ##  $Revision$
-.include ../Makefile.global
+.include "../Makefile.global"
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
@@ -11,11 +11,11 @@ PERLINC =
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
 LINTLIBSTYLE	= NONE
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC)>()=
-LINTFLAGS	= -b -h -z -I../include $(DEFS) $(PERLINC)
+LINTFLAGS	= -b -h -z  -I../include $(DEFS) $(PERLINC)
 ##  =()<LINTFILTER	= @<LINTFILTER>@>()=
 LINTFILTER	= | sed -n -f ../sedf.sun
 ##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= ctags -t -w
+CTAGS		= /usr/bin/ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 

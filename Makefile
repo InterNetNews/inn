@@ -1,6 +1,6 @@
 ##  $Revision$
 
-.include Makefile.global
+.include "Makefile.global"
 
 RELEASE=1
 PATCHLEVEL=8-current

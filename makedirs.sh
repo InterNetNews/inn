@@ -19,13 +19,13 @@ if [ ${CHOWN} = chown ] ; then
 fi
 
 ##  =()<MAN1=@<MAN1>@>()=
-MAN1=/home/staff/news/inn/man/man1
+MAN1=@ac_cv_subst_manpath@/man1
 ##  =()<MAN3=@<MAN3>@>()=
-MAN3=/home/staff/news/inn/man/man3
+MAN3=@ac_cv_subst_manpath@/man3
 ##  =()<MAN5=@<MAN5>@>()=
-MAN5=/home/staff/news/inn/man/man5
+MAN5=@ac_cv_subst_manpath@/man5
 ##  =()<MAN8=@<MAN8>@>()=
-MAN8=/home/staff/news/inn/man/man8
+MAN8=@ac_cv_subst_manpath@/man8
 MAN=`echo $MAN8 | sed -e 's@\(.*\)/[^/]*@\1@'`
 
 ##  =()<SPOOL=@<_PATH_SPOOL>@>()=

@@ -18,7 +18,7 @@
 ##  If no "host fqdn" pairs appear on the command line, then ${CTLFILE}
 ##  file is read.
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. @CONFPATH@/innshellvars
 
 PROGNAME=`basename $0`
 LOCK=${LOCKS}/LOCK.${PROGNAME}
