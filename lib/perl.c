@@ -288,6 +288,7 @@ PerlSilence()
     savestderr = 0;
     return;
   }
+  close(newfd);
 }
 
 void
@@ -296,12 +297,16 @@ PerlUnSilence() {
     if (dup2(savestdout,1) < 0) {
       syslog(L_ERROR,"%s perl silence cant restore stdout: %m",LogName);
     }
+    close(savestdout);
+    savestdout = 0;
   }
 
   if (savestderr != 0) {
     if (dup2(savestderr,2) < 0) {
       syslog(L_ERROR,"%s perl silence cant restore stderr: %m",LogName);
     }
+    close(savestderr);
+    savestderr = 0;
   }
 }
 
