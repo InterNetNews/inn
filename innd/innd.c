@@ -286,7 +286,7 @@ main(int ac, char *av[])
     struct group *grp;
     static char		WHEN[] = "PID file";
     int			i;
-    char		buff[SMBUF], *path1, *path2;
+    char		buff[SMBUF];
     FILE		*F;
     bool		ShouldFork;
     bool		ShouldRenumber;
@@ -296,6 +296,9 @@ main(int ac, char *av[])
 #if	defined(_DEBUG_MALLOC_INC)
     union malloptarg	m;
 #endif	/* defined(_DEBUG_MALLOC_INC) */
+#if DO_PERL
+    char                *path1, *path2;
+#endif
 
     /* Set up the pathname, first thing, and teach our error handlers about
        the name of the program. */

@@ -962,7 +962,6 @@ ARTpost(char *article,
     char	*TrackID;
     char	*DirTrackID;
     FILE	*ftd;
-    char	SDir[255];
 
     /* Assume errors are permanent, until we discover otherwise */
     *permanent = true;
@@ -1040,6 +1039,8 @@ ARTpost(char *article,
     /* Calls the Perl subroutine for headers management */
     p = PERMaccessconf->nnrpdperlfilter ? HandleHeaders(article) : NULL;
     if (p != NULL) {
+        char SDir[255];
+
 	if (idbuff) {
 	    if (modgroup)
 		sprintf(idbuff, "(mailed to moderator for %s)", modgroup);

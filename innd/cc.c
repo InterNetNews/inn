@@ -591,7 +591,7 @@ CCfilter(char *av[] UNUSED)
 
 
 static const char *
-CCperl(char *av[])
+CCperl(char *av[] UNUSED)
 {
 #if defined(DO_PERL)
     switch (av[0][0]) {
@@ -1307,12 +1307,12 @@ CCreload(char *av[])
     static char	BADSCHEMA[] = "1 Can't read schema";
 #if defined(DO_PERL)
     static char BADPERLRELOAD[] = "1 Failed to define filter_art" ;
+    char *path;
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
     static char BADPYRELOAD[] = "1 Failed to reload filter_innd.py" ;
 #endif /* defined(DO_PYTHON) */
     const char *p;
-    char *path;
 
     p = av[0];
     if (*p == '\0' || strcmp(p, "all") == 0) {

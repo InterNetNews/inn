@@ -84,7 +84,7 @@ static char *ResolveUser(AUTHGROUP*);
 static char *AuthenticateUser(AUTHGROUP*, char*, char*, char*);
 
 static void GrowArray(void***, void*);
-static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *acccess_vec);
+static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *acccess_vec) UNUSED;
 
 /* global variables */
 static AUTHGROUP **auth_realms;
@@ -1524,10 +1524,6 @@ void PERMgetpermissions()
     char *cp, **list;
     char *user[2];
     static ACCESSGROUP *noaccessconf;
-    char *uname;
-    char *cpp, *script_path;
-    char **args;
-    struct vector *access_vec;
 
     if (ConfigBit == NULL) {
 	if (PERMMAX % 8 == 0)
@@ -1546,6 +1542,11 @@ void PERMgetpermissions()
 	return;
 #ifdef DO_PERL
     } else if (success_auth->access_script != NULL) {
+      char *uname;
+      char *cpp, *script_path;
+      char **args;
+      struct vector *access_vec;
+
       i = 0;
       cpp = xstrdup(success_auth->access_script);
       args = 0;
@@ -1580,6 +1581,11 @@ void PERMgetpermissions()
 #endif /* DO_PERL */
 #ifdef DO_PYTHON
     } else if ((success_auth->access_script != NULL) && (success_auth->access_type == PERMpython_access)) {
+        char *uname;
+        char *cpp, *script_path;
+        char **args;
+        struct vector *access_vec;
+
         i = 0;
         cpp = xstrdup(success_auth->access_script);
         args = 0;
@@ -2209,7 +2215,7 @@ static char *ResolveUser(AUTHGROUP *auth)
 }
 
 /* execute a series of authenticators to get the remote username */
-static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, char *errorstr)
+static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, char *errorstr UNUSED)
 {
     int i, j;
     char *cp;
@@ -2217,11 +2223,9 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
     char *arg0;
     char *resdir;
     char *tmp;
-    char *script_path;
     char newUser[BIG_BUFFER];
     EXECSTUFF *foo;
     int done	    = 0;
-    int code;
     char buf[BIG_BUFFER];
 
     if (!auth->auth_methods)
@@ -2236,6 +2240,9 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
     for (i = 0; auth->auth_methods[i]; i++) {
       if (auth->auth_methods[i]->type == PERMperl_auth) {
 #ifdef DO_PERL
+            int code;
+            char *script_path;
+
             cp = xstrdup(auth->auth_methods[i]->program);
             args = 0;
             Argify(cp, &args);
@@ -2272,6 +2279,9 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
 #endif	/* DO_PERL */    
       } else if (auth->auth_methods[i]->type == PERMpython_auth) {
 #ifdef DO_PYTHON
+        int code;
+        char *script_path;
+
 	cp = xstrdup(auth->auth_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
