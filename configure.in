@@ -721,15 +721,13 @@ dnl NOTUSED: gethostname mkfifo strcspn strstr
 dnl
 dnl FIXME: fchmod and gettimeofday are checked some of the places they're
 dnl used, but not all of them.
-dnl
-dnl FIXME: pwrite and pread should be in REPLACE_FUNCS instead.
 
 AC_CHECK_FUNC(syslog, , AC_MSG_ERROR(syslog not found, required by INN))
 
 AC_CHECK_FUNCS(atexit fchmod fcntl gethostname getpagesize getrusage \
-               getspnam gettimeofday mkfifo pread pwrite setbuffer \
-               sigaction setsid socketpair statvfs strcspn strncasecmp \
-               strstr strtoul symlink waitpid)
+               getspnam gettimeofday mkfifo setbuffer sigaction setsid \
+               socketpair statvfs strcspn strncasecmp strstr strtoul \
+               symlink waitpid)
 
 dnl We only care if we have setreuid() if we don't have seteuid().
 AC_CHECK_FUNCS(seteuid setreuid, break)
@@ -763,7 +761,7 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(getopt strcasecmp strerror strspn)
+AC_REPLACE_FUNCS(getopt pread pwrite strcasecmp strerror strspn)
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
