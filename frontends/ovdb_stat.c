@@ -5,15 +5,15 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
-#include <stdlib.h>
-#include <string.h>
-#include <syslog.h>
 #include <errno.h>
 #include <signal.h>
+#include <syslog.h>
+
+#include "libinn.h"
 #include "macros.h"
 #include "paths.h"
 #include "storage.h"
+
 #include "ov.h"
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"

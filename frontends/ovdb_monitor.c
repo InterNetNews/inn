@@ -5,31 +5,19 @@
  *   + Deadlock detection
  *   + Transaction log removal
  */
+
 #include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
-#include <syslog.h>
-#include <string.h>
-#include <signal.h>
+#include "portable/wait.h"
 #include <fcntl.h>
+#include <signal.h>
+#include <syslog.h>
+
+#include "libinn.h"
 
 #include "ov.h"
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
-
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-#ifndef WEXITSTATUS
-# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
-#endif
-#ifndef WIFEXITED
-# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
-#endif
-#ifndef WIFSIGNALED
-# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
-                                 && (((unsigned)(status)) & 0xFF00) == 0)
-#endif
 
 #ifndef USE_BERKELEY_DB
 

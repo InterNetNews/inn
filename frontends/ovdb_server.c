@@ -5,52 +5,20 @@
 
 #include "config.h"
 #include "clibrary.h"
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#include <stdlib.h>
-#include <string.h>
-#include <syslog.h>
+#include "portable/mmap.h"
+#include "portable/time.h"
+#include "portable/socket.h"
+#include "portable/wait.h"
 #include <errno.h>
-#include <signal.h>
 #include <fcntl.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
+#include <signal.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
-#ifdef HAVE_MMAP
-# include <sys/mman.h>
-#endif
+#include <syslog.h>
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>
-#endif
-
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-#ifndef WEXITSTATUS
-# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
-#endif
-#ifndef WIFEXITED
-# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
-#endif
-#ifndef WIFSIGNALED
-# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
-                                 && (((unsigned)(status)) & 0xFF00) == 0)
-#endif
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
 #endif
 
 #include "libinn.h"
@@ -58,18 +26,9 @@
 #include "paths.h"
 #include "storage.h"
 #include "ov.h"
+
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
-
-#ifdef HAVE_INN_VERSION_H
-#include "inn/version.h"
-#else
-/* 2.3.0 doesn't have version.h */
-#define INN_VERSION_MAJOR 2
-#define INN_VERSION_MINOR 3
-#define INN_VERSION_PATCH 0
-#endif
-
 
 #ifndef USE_BERKELEY_DB
 
@@ -81,10 +40,6 @@ main(int argc UNUSED, char **argv UNUSED)
 }
 
 #else /* USE_BERKELEY_DB */
-
-#if INN_VERSION_MINOR == 3
-#define nonblocking SetNonBlocking
-#endif
 
 #ifdef _HPUX_SOURCE
 #include <sys/pstat.h>
