@@ -130,6 +130,10 @@ typedef struct _ARTOVERFIELD {
 enum timer {
     TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
     TMR_NEWNEWS,                /* Executing NEWNEWS command */
+    TMR_READART,                /* Reading an article (SMretrieve) */
+    TMR_CHECKART,               /* Checking an article (ARTinstorebytoken) */
+    TMR_NNTPREAD,               /* Reading from the peer */
+    TMR_NNTPWRITE,              /* Writing to the peer */
     TMR_MAX
 };
 
@@ -172,8 +176,6 @@ extern char	*ACTIVE;
 extern char	*NEWSGROUPS;
 extern char	*NNRPACCESS;
 extern char	NOACCESS[];
-EXTERN ARTOVERFIELD	*ARTfields;
-EXTERN int	ARTfieldsize;
 EXTERN int	SPOOLlen;
 EXTERN char	PERMpass[SMBUF];
 EXTERN char	PERMuser[SMBUF];
@@ -208,6 +210,8 @@ EXTERN char	*VirtualPath;
 EXTERN int	VirtualPathlen;
 EXTERN struct history *History;
 EXTERN struct line NNTPline;
+EXTERN struct vector *OVextra;
+EXTERN int	overhdr_xref;
 
 extern const char	*ARTpost(char *article, char *idbuff, bool ihave,
 				 bool *permanent);
@@ -232,15 +236,9 @@ extern void		PERMgetpermissions(void);
 extern void		PERMlogin(char *uname, char *pass, char *errorstr);
 extern bool		PERMmatch(char **Pats, char **list);
 extern bool		ParseDistlist(char ***argvp, char *list);
-extern char		*OVERGetHeader(char *p, int len, int field);
 extern void 		SetDefaultAccess(ACCESSGROUP*);
 extern void		Reply(const char *fmt, ...);
-
-#ifdef HAVE_SSL
 extern void             Printf(const char *fmt, ...);
-#else
-#define Printf printf
-#endif
 
 extern void		CMDauthinfo  (int ac, char** av);
 extern void		CMDdate      (int ac, char** av);
