@@ -376,7 +376,9 @@ incoming_conf
     'innwatchspoolspace',	0,
     'innwatchbatchspace',	0,
     'innwatchlibspace',		0,
-    'innwatchspoolnodes',	0
+    'innwatchspoolnodes',	0,
+    'nnrpperlauth',		0,
+    'docnfsstat',		0
 );
 %inn_conf'optionals = (
     'innflags',			0,
