@@ -41,10 +41,12 @@ See STORAGE METHODS section for those method.
 Matching newsgroup is against newsgroup name in ``Xref'' header, if
 \&``storeonxref'' in inn.conf is ``true.''
 Otherwise, it is against newsgroup name in ``Newsgroups'' header.
-\&``!'' and ``@'' are allowed at the start of the wildmat and
+\&``@'' is allowed at the start of the wildmat and
 refer to pattern exclusions. See
 .IR newsfeeds (5)
-for a description of their use.  The ``wildmat'' is matched in order.
+for a description of their use.
+Note that ``!'' cannot be used to negate newsgroup.
+The ``wildmat'' is matched in order.
 There is no default ``wildmat'' pattern, so specified ``wildmat''
 is only used for matching.
 \&``Storage_class'' is an identifier among all entries.
