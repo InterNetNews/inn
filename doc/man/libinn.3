@@ -116,10 +116,6 @@ libinn \- InterNetNews library routines
 .B "    char	*errbuff;"
 
 .B "int"
-.B "NNTPcheckarticle(text)"
-.B "    char	*text;"
-
-.B "int"
 .B "NNTPsendarticle(text, ToServer, Terminate)"
 .B "    char	*text;"
 .B "    FILE	*ToServer;"
@@ -146,8 +142,6 @@ libinn \- InterNetNews library routines
 .B "    int	fd;"
 .B "    struct stat	*Sbp;"
 
-.B "char *"
-.B "INNVersion()"
 .fi
 .SH DESCRIPTION
 .I Libinn
@@ -426,12 +420,6 @@ except that the desired host is given as the
 .I host
 parameter.
 .PP
-.I NNTPcheckarticle
-verifies that the
-.I text
-meets the NNTP limitations on line length.
-It returns \-1 on failure, or zero if the text is valid.
-.PP
 .I NNTPsendarticle
 writes
 .I text
@@ -496,10 +484,6 @@ performs the same function as
 except that
 .I fd
 refers to an already-open file.
-.PP
-.I INNVersion
-returns a pointer to a string identifying the INN version, suitable for
-printing in logon banners.
 .SH EXAMPLES
 .RS
 .nf
