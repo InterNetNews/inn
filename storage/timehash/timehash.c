@@ -202,12 +202,24 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     private = NEW(PRIV_TIMEHASH, 1);
     art->private = (void *)private;
     private->len = sb.st_size;
-    if ((private->base = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
-	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "timehash: could not mmap article: %m");
-	DISPOSE(art->private);
-	DISPOSE(art);
-	return NULL;
+    if (innconf->articlemmap) {
+	if ((private->base = mmap((MMAP_PTR)0, sb.st_size, PROT_READ, MAP__ARG, fd, 0)) == (MMAP_PTR)-1) {
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    syslog(L_ERROR, "timehash: could not mmap article: %m");
+	    DISPOSE(art->private);
+	    DISPOSE(art);
+	    return NULL;
+	}
+    } else {
+	private->base = NEW(char, private->len);
+	if (read(fd, private->base, private->len) < 0) {
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    syslog(L_ERROR, "timehash: could not read article: %m");
+	    DISPOSE(private->base);
+	    DISPOSE(art->private);
+	    DISPOSE(art);
+	    return NULL;
+	}
     }
     close(fd);
 
@@ -280,10 +292,14 @@ void timehash_freearticle(ARTHANDLE *article) {
     
     if (article->private) {
 	private = (PRIV_TIMEHASH *)article->private;
+	if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && !defined(_nec_ews)
-	madvise(private->base, private->len, MADV_DONTNEED);
+	    madvise(private->base, private->len, MADV_DONTNEED);
 #endif
-	munmap(private->base, private->len);
+	    munmap(private->base, private->len);
+	} else {
+	    DISPOSE(private->base);
+	}
 	if (private->top)
 	    closedir(private->top);
 	if (private->sec)
@@ -367,10 +383,14 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 	priv = *(PRIV_TIMEHASH *)article->private;
 	DISPOSE(article->private);
 	DISPOSE(article);
+	if (innconf->articlemmap) {
 #if defined(MADV_DONTNEED) && !defined(_nec_ews)
-	madvise(priv.base, priv.len, MADV_DONTNEED);
+	    madvise(priv.base, priv.len, MADV_DONTNEED);
 #endif
-	munmap(priv.base, priv.len);
+	    munmap(priv.base, priv.len);
+	} else {
+	    DISPOSE(priv.base);
+	}
     }
 
     while (!priv.artdir || ((de = FindDir(priv.artdir, FIND_ART)) == NULL)) {
