@@ -165,6 +165,7 @@ if (p = getenv(_ENV_FROMHOST)) { innconf->fromhost = COPY(p); }
     innconf->bindaddress = NULL;
     innconf->port = NNTP_PORT;
     innconf->readertrack = FALSE;
+    innconf->strippostcc = FALSE;
 }
 
 void ClearInnConf()
@@ -375,6 +376,9 @@ if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
 	    } else
 	    if (EQ(ConfigBuff,_CONF_READERTRACK)) {
 		if (boolval != -1) innconf->readertrack = boolval;
+	    } else
+	    if (EQ(ConfigBuff,_CONF_STRIPPOSTCC)) {
+		if (boolval != -1) innconf->strippostcc = boolval;
 	    }
 	}
 	(void)fclose(F);
