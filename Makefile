@@ -4,8 +4,8 @@ include Makefile.global
 
 CFLAGS = $(GCFLAGS)
 
-RELEASE=1
-PATCHLEVEL=8-current
+RELEASE=2
+PATCHLEVEL=0
 VERSION=$(RELEASE).$(PATCHLEVEL)
 
 #TARDIR=inn
