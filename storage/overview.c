@@ -791,7 +791,7 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
 	    return (char *)NULL;
 	if (config->size <= token->offset)
 	    return (char *)NULL;
-	if (!OVERcheckmmap(config, (OFFSET_T)token->offset, token->overlen))
+	if (!OVERcheckmmap(config, (OFFSET_T)token->offset, token->overlen == 0 ? 0xffff : token->overlen))
 	    return (char *)NULL;
 	addr = config->base + token->offset - config->mappedoffset;
 	if (token->overlen > 0) {
@@ -819,7 +819,7 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
 	line[MAXOVERLINE - 1] = '\0';
 	if (config->fp != (FILE *)NULL) {
 	    if (token->overlen > 0) {
-		if (fgets(line, token->overlen, config->fp) == NULL)
+		if (fgets(line, token->overlen + 1, config->fp) == NULL)
 		    return NULL;
 		line[token->overlen] = '\0';
 		config->offset += token->overlen;
@@ -829,7 +829,7 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
 		    return NULL;
 		if ((*Overlen = strlen(line)) < 10)
 		    return (char *)NULL;
-		if (*Overlen  >= MAXOVERLINE - 1) {
+		if (*Overlen >= MAXOVERLINE - 1) {
 		    config->offset = ftell(config->fp);
 		    *Overlen = MAXOVERLINE - 1;
 		    line[*Overlen-1] = '\0';
