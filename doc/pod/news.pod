@@ -1,3 +1,24 @@
+=head1 Changes from 2.3.2 to 2.3.3 (in progress)
+
+=over 2
+
+=item *
+
+An item that was noted in NEWS below but was inadvertently left out of
+nnrpd: Users can no longer post articles containing Approved: headers to
+moderated groups by default; they must be specifically given that
+permission with the access: parameter in readers.conf.  See the man page
+for more details.
+
+=item *
+
+An off-by-one bug in repacking overview index files and a reliability bug
+with writing overview data were both fixed in the tradindexed overview
+method, hopefully making it somewhat more reliable, particularly for
+makehistory.
+
+=back
+
 =head1 Changes from 2.3.1 to 2.3.2
 
 =over 2
