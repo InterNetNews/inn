@@ -10,7 +10,7 @@ extern "C" {
 #define OV_READ  1
 #define OV_WRITE 2
 
-typedef enum {OVSPACE, OVSORT, OVCUTOFFLOW, OVGROUPBASEDEXPIRE, OVSTATICSEARCH} OVCTLTYPE;
+typedef enum {OVSPACE, OVSORT, OVCUTOFFLOW, OVGROUPBASEDEXPIRE, OVSTATICSEARCH, OVSTATALL} OVCTLTYPE;
 #define OV_NOSPACE 100
 typedef enum {OVNEWSGROUP, OVARRIVED, OVNOSORT} OVSORTTYPE;
 
@@ -31,6 +31,7 @@ typedef struct _OVGE {
     float	timewarp;	  /* used to bias expiry time */
 } OVGE;
 
+extern BOOL	OVstatall;
 BOOL OVopen(int mode);
 BOOL OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag);
 BOOL OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag);
