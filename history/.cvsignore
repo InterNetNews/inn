@@ -1,4 +1,5 @@
 .libs
+.pure
 hisbuildconfig
 hismethods.c
 hismethods.h

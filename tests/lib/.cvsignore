@@ -1,4 +1,5 @@
 .libs
+.pure
 concat.t
 confparse.t
 date.t

@@ -1,4 +1,5 @@
 .libs
+.pure
 buildconfig
 methods.c
 methods.h
