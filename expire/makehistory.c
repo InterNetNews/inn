@@ -91,7 +91,6 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
     long	        count;
     long		where;
     HASH		key;
-    OFFSET_T		offset;
     char		temp[SMBUF];
     dbzoptions          opt;
 
@@ -171,7 +170,7 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 	    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
 	    continue;
 	}
-	switch (dbzstore(key, offset)) {
+	switch (dbzstore(key, (OFFSET_T)where)) {
 	case DBZSTORE_EXISTS:
             fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
 	    break;
