@@ -66,19 +66,9 @@ AC_ARG_WITH(log-dir,
 AC_SUBST(LOGDIR)
 
 AC_ARG_WITH(tmp-path,
-	[  --with-tmp-path=PATH    Temporary files directory], 
-	TMPPATH=$with_tmp_path, 
-if test -d /var/tmp
-then
-	TMPPATH=/var/tmp
-else
-	if test -d /usr/tmp
-	then
-		TMPPATH=/usr/tmp
-	else
-		TMPPATH=/tmp
-	fi
-fi) 
+	[  --with-tmp-path=PATH    Temporary files directory [PREFIX/tmp]], 
+	LOGDIR=$with_tmp_path, 
+	LOGDIR=$prefix/tmp)
 AC_SUBST(TMPPATH)
 
 AC_ARG_WITH(news-user,
@@ -728,6 +718,8 @@ AC_OUTPUT(
 	include/clibrary.h
 	include/config.h
 	include/paths.h 
+	innfeed/innfeed-convcfg
+	innfeed/procbatch
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/default
