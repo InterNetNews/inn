@@ -540,12 +540,12 @@ DoArt(ARTHANDLE *art)
                peel off the \r\n (we're guaranteed we're dealing with
                wire-format articles. */
             fp->HeaderLength = p - fp->Header - 1;
-	} else if (RetrMode == RETR_ALL && strcmp(fp->Headername, "Bytes") == 0)
-	{
-		snprintf(bytes, sizeof(bytes), "%d", art->len);
-		fp->HasHeader = true;
-		fp->Header = bytes;
-		fp->HeaderLength = strlen(bytes);
+	} else if (RetrMode == RETR_ALL 
+                   && strcmp(fp->Headername, "Bytes") == 0) {
+            snprintf(bytes, sizeof(bytes), "%lu", (unsigned long) art->len);
+	    fp->HasHeader = true;
+	    fp->Header = bytes;
+	    fp->HeaderLength = strlen(bytes);
 	}
     }
     if (Missfieldsize > 0) {

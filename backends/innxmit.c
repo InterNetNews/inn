@@ -590,7 +590,8 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	vec[0].iov_base = (char *) art->data;
 	vec[0].iov_len = len;
 	/* Add 14 bytes, which maybe will be the length of the Bytes header */
-	snprintf(buf, sizeof(buf), "Bytes: %d\r\n", art->len + 14);
+	snprintf(buf, sizeof(buf), "Bytes: %lu\r\n",
+                 (unsigned long) art->len + 14);
 	vec[1].iov_base = buf;
 	vec[1].iov_len = strlen(buf);
 	if (iscmsg) {
@@ -608,7 +609,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
     if (Debug) {
-	fprintf(stderr, "> [ article %d ]\n", art->len);
+	fprintf(stderr, "> [ article %lu ]\n", (unsigned long) art->len);
 	fprintf(stderr, "> .\n");
     }
 

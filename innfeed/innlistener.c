@@ -650,7 +650,8 @@ static void giveArticleToPeer (InnListener lis,
             {
               /* XXX need to remember we've gone over the limit and not try
                  to add any more. */
-              warn ("ME internal too many hosts. (max is %d)", lis->hostLen) ;
+              warn ("ME internal too many hosts. (max is %lu)",
+                    (unsigned long) lis->hostLen) ;
               dropArticle (peerName,article) ;
             }
           else

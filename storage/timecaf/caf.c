@@ -1509,7 +1509,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	    CAFTOCENT *tocp2;
 
 	    if (verbose) {
-		printf("Compacting   %s: Free=%d (%f%%)\n", path, head.Free, percentfree);
+		printf("Compacting   %s: Free=%lu (%f%%)\n", path,
+                       (unsigned long) head.Free, percentfree);
 	    }
 
 	    delta = newlow - head.Low;
@@ -1562,7 +1563,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	} else {
 	    /* need neither full cleaning nor compaction, so return. */
 	    if (verbose) {
-		printf("Not cleaning %s: Free=%d (%f%%)\n", path, head.Free, percentfree);
+		printf("Not cleaning %s: Free=%lu (%f%%)\n", path,
+                       (unsigned long) head.Free, percentfree);
 	    }
 	    fclose(infile);
 	    free(tocarray);

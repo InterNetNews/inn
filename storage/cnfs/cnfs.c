@@ -375,8 +375,9 @@ static bool CNFSparse_part_line(char *l) {
   len = strtoul(l, NULL, 10) * (off_t)1024;	/* This value in KB in decimal */
   if (S_ISREG(sb.st_mode) && len != sb.st_size) {
     if (sizeof(CYCBUFFEXTERN) > (size_t) sb.st_size) {
-      syslog(L_NOTICE, "%s: length must be at least '%u' for '%s' cycbuff(%ld bytes)",
-	LocalLogName, sizeof(CYCBUFFEXTERN), cycbuff->name, (long)sb.st_size);
+      syslog(L_NOTICE, "%s: length must be at least '%lu' for '%s' cycbuff(%lu bytes)",
+	LocalLogName, (unsigned long) sizeof(CYCBUFFEXTERN), cycbuff->name,
+        (unsigned long) sb.st_size);
       free(cycbuff);
       return false;
     }

@@ -483,8 +483,8 @@ void gPrintTapeInfo (FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sGlobal Tape List : (count %d) {\n",
-           indent,activeTapeIdx) ;
+  fprintf (fp,"%sGlobal Tape List : (count %lu) {\n",
+           indent,(unsigned long) activeTapeIdx) ;
 
   for (i = 0 ; i < activeTapeIdx ; i++)
     printTapeInfo (activeTapes [i],fp,indentAmt + INDENT_INCR) ;

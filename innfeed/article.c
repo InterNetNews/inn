@@ -636,7 +636,8 @@ static bool fillContents (Article article)
 	if ((amtToRead + bytesInUse) > maxBytesInUse && maxLimitNotified == false) {
 	    maxLimitNotified = true ;
             notice ("ME exceeding maximum article byte limit: %d (max),"
-                    " %d (cur)", maxBytesInUse, amtToRead + bytesInUse) ;
+                    " %lu (cur)", maxBytesInUse, 
+                    (unsigned long) (amtToRead + bytesInUse)) ;
 	}
 	
 	if ((article->contents = newBuffer (newBufferSize)) == NULL)
