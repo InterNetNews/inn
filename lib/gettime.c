@@ -29,9 +29,7 @@ GetTimeInfo(TIMEINFO *Now)
     struct tm           *tm;
     int                 secondsUntilNextHour;
 
-#ifdef HAVE_GETTIMEOFDAY
     struct timeval      tv;
-#endif
 
 #ifndef HAVE_TM_GMTOFF
     struct tm           local;
@@ -39,16 +37,10 @@ GetTimeInfo(TIMEINFO *Now)
 #endif
 
     /* Get the basic time. */
-#ifdef HAVE_GETTIMEOFDAY
     if (gettimeofday(&tv, (struct timezone *) 0) == -1)
         return -1;
     Now->time = tv.tv_sec;
     Now->usec = tv.tv_usec;
-#else
-    /* Can't check for -1 since that might be a time, I guess. */
-    time(&Now->time);
-    Now->usec = 0;
-#endif /* HAVE_GETTIMEOFDAY */
 
     /* Now get the timezone if the last time < HH:00:00 <= now for some HH.  */
     if (NextHour <= Now->time) {
