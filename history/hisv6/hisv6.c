@@ -62,7 +62,7 @@ static struct hisv6 *hisv6_dbzowner;
 **  set error status to that indicated by s; doesn't copy the string,
 **  assumes the caller did that for us
 */
-void
+static void
 hisv6_seterror(struct hisv6 *h, const char *s)
 {
     his_seterror(h->history, s);
