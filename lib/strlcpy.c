@@ -16,7 +16,7 @@
 #include "config.h"
 #include <string.h>
 
-/* If we're running the test suite, rename strerror to avoid conflicts with
+/* If we're running the test suite, rename strlcpy to avoid conflicts with
    the system version. */
 #if TESTING
 # define strlcpy test_strlcpy
