@@ -1,0 +1,121 @@
+#! /usr/bin/perl
+
+##  $Id$
+##
+##  Convert INN configuration files to the current syntax.
+##
+##  Intended to be run during a major version upgrade, this script tries to
+##  convert existing INN configuration files to the syntax expected by the
+##  current version, if that's changed.
+##
+##  Currently handles the following conversions:
+##
+##   * Clean up inn.conf for the new parser in INN 2.4.
+
+require 5.003;
+
+use strict;
+use vars qw(%FIXES);
+use subs qw(fix_inn_conf);
+
+use Getopt::Long qw(GetOptions);
+
+# The mappings of file names to fixes.
+%FIXES = ('inn.conf' => \&fix_inn_conf);
+
+# Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without
+# values) need to be commented out since they're no longer allowed (don't just
+# remove them entirely since people may want them there as examples), and
+# string values must be quoted if they contain any special characters.  Takes
+# a reference to an array containing the contents of the file, a reference to
+# an array into which the output should be put, and the file name for error
+# reporting.
+sub fix_inn_conf {
+    my ($input, $output, $file) = @_;
+    my $line = 0;
+    my $raw;
+    local $_;
+    for $raw (@$input) {
+        $_ = $raw;
+        $line++;
+        if (/^\s*\#/ || /^\s*$/) {
+            push (@$output, $_);
+            next;
+        }
+        chomp;
+        unless (/^(\s*)(\S+):(\s*)(.*)/) {
+            warn "$file:$line: cannot parse line: $_\n";
+            push (@$output, $_);
+            next;
+        }
+        my ($indent, $key, $space, $value) = ($1, $2, $3, $4);
+        if ($value eq '') {
+            push (@$output, "#$_\n");
+            next;
+        }
+        if ($value =~ /[\s;\"<>\[\]\\{}]/ && $value !~ /^\".*\"\s*$/) {
+            $value =~ s/([\"\\])/\\$1/g;
+            $value = '"' . $value . '"';
+        }
+        push (@$output, "$indent$key:$space$value\n");
+    }
+}
+
+# Upgrade a particular file.  Open the file, read it into an array, and then
+# run the fix function on it.  If the fix function generates different output
+# than the current contents of the file, change the file.
+sub upgrade_file {
+    my ($file, $function) = @_;
+    open (INPUT, $file) or die "$file: cannot open: $!\n";
+    my @input = <INPUT>;
+    close INPUT;
+    my @output;
+    &$function (\@input, \@output, $file);
+    if (join ('', @input) ne join ('', @output)) {
+        if (-e "$file.OLD") { die "$file: backup $file.OLD already exists\n" }
+        print "Updating $file, old verion saved as $file.OLD\n";
+        open (OUTPUT, "> .$file.new.$$")
+            or die "$file: cannot create .$file.new.$$: $!\n";
+        print OUTPUT @output;
+        close OUTPUT or die "$file: cannot flush new file: $!\n";
+        unless (link ($file, "$file.OLD")) {
+            rename ($file, "$file.OLD")
+                or die "$file: cannot rename to $file.OLD: $!\n";
+        }
+        rename (".$file.new.$$", $file)
+            or die "$file: cannot replace with .$file.new.$$: $!\n";
+    }
+}
+
+# Upgrade a directory.  Scan the directory for files that have upgrade rules
+# defined and for each one of those, try running the upgrade rule.
+sub upgrade_directory {
+    my $directory = shift;
+    chdir $directory or die "Can't chdir to $directory: $!\n";
+    opendir (DIR, ".") or die "Can't opendir $directory: $!\n";
+    for (readdir DIR) {
+        if ($FIXES{$_}) {
+            upgrade_file ($_, $FIXES{$_});
+        }
+    }
+    closedir DIR;
+}
+
+
+# The main routine.  Parse command-line options to figure out what we're
+# doing.
+my ($file, $type);
+Getopt::Long::config ('bundling');
+GetOptions ('file|f=s' => $file,
+            'type|t=s' => $type) or exit 1;
+if ($file) {
+    my $basename = $file;
+    $basename =~ s%.*/%%;
+    $type ||= $FIXES{$basename};
+    if (!$type) { die "No upgrade rules defined for $basename\n" }
+    upgrade_file ($file, $type);
+} else {
+    if (@ARGV != 1) { die "Usage: innupgrade <directory>\n" }
+    my $directory = shift;
+    upgrade_directory ($directory);
+}

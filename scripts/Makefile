@@ -50,6 +50,7 @@ FIX             = $(FIXSCRIPT)
 innmail:	innmail.in       $(FIX)	; $(FIX) innmail.in
 innreport:	innreport.in     $(FIX)	; $(FIX) innreport.in
 innstat:	innstat.in       $(FIX)	; $(FIX) innstat.in
+innupgrade:	innupgrade.in    $(FIX) ; $(FIX) -i innupgrade.in
 innwatch:	innwatch.in      $(FIX)	; $(FIX) innwatch.in
 rc.news:	rc.news.in       $(FIX)	; $(FIX) rc.news.in
 scanlogs:	scanlogs.in      $(FIX)	; $(FIX) scanlogs.in

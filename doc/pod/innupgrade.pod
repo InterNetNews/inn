@@ -1,0 +1,84 @@
+=head1 NAME
+
+innupgrade - Upgrade INN configuration files
+
+=head1 SYNOPSIS
+
+B<innupgrade> I<directory>
+
+B<innupgrade> [B<-t> I<type>] B<-f> I<file>
+
+=head1 DESCRIPTION
+
+B<innupgrade> is intended to be run during a major upgrade of INN to fix
+the configuration files for any required changes.  If given a directory,
+it will scan that directory for any files that it has updates defined for,
+try to perform those updates, and replace the file with an updated version
+if applying the updates resulted in any changes.  The old version of the
+file will be saved with a .OLD extension.
+
+If the B<-f> flag is used, only that file will be updated.  If the file
+name doesn't match the standard file name of an INN configuration file,
+the optional B<-t> flag may be given to specify the type.  See L<EXAMPLES>
+for an example of this.
+
+Currently, B<innupgrade> knows how to apply the following updates:
+
+=over 2
+
+=item *
+
+F<inn.conf>:  Quote values with whitespace and comment out keys with no
+values, required for the change in configuration parsers introduced in INN
+2.4.  The new format is not backward compatible with the previous parser,
+since the previous parser will include the double-quotes in the value of
+the parameter.
+
+=back
+
+Normally, B<innupgrade> should be run on the I<pathetc> directory after
+any upgrade of INN other than a patch release (any upgrade that changes
+the first or second version numbers).  This may be done automatically by
+the upgrade process.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-f> I<file>
+
+Only act on I<file> rather than working on an entire directory.
+
+=item B<-t> I<type>
+
+For a file specified with B<-f>, parse it and upgrade it as if it were
+named I<type>.  Used for upgrading files with the same syntax as normal
+INN configuration files but with different names.  Only makes sense in
+combination with B<-f>.
+
+=back
+
+=head1 EXAMPLES
+
+Upgrade any configuration files found in F</usr/local/news/etc>:
+
+    innupgrade /usr/local/news/etc
+
+Upgrade only F</news/etc/inn.conf>:
+
+    innupgrade -f /news/etc/inn.conf
+
+Upgrade a file named F<inn-special.conf> that should have the same syntax
+as F<inn.conf>:
+
+    innupgrade -t inn.conf -f inn-special.conf
+
+Any upgrade rules that apply to F<inn.conf> will be applied to that file.
+
+=head1 HISTORY
+
+Written by Russ Allbery <rra@stanford.edu> for InterNetNews.
+
+$Id$
+
+=cut
