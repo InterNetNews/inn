@@ -906,7 +906,7 @@ main(int argc, char **argv)
 	}
 	if ((F = fopen(RebuiltflagPath, "w")) == NULL)
             sysdie("cannot open %s", RebuiltflagPath);
-	if (fprintf(F, "%d\n", Now.time) == EOF || ferror(F))
+	if (fprintf(F, "%ld\n", (long) Now.time) == EOF || ferror(F))
 	    sysdie("cannot write rebuilt flag file");
 	fclose(F);
     }
