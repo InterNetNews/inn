@@ -10,10 +10,18 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
+#include "inn/buffer.h"
+#include "inn/history.h"
 #include "inn/messages.h"
+#include "inn/vector.h"
 #include "libinn.h"
 #include "ov.h"
+#include "ovinterface.h"
+#include "paths.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
@@ -135,6 +143,160 @@ dump_overview(const char *group, ARTNUM number)
 
 
 /*
+**  Check a string to see if its a valid number.
+*/
+static bool
+check_number(const char *string)
+{
+    const char *p;
+
+    for (p = string; *p != '\0'; p++)
+        if (!CTYPE(isdigit, *p))
+            return false;
+    return true;
+}
+
+
+/*
+**  Find the message ID in the group overview data and return a copy of it.
+**  Caller is responsible for freeing.
+*/
+static char *
+extract_messageid(const char *overview)
+{
+    const char *p, *end;
+    int count;
+
+    for (p = overview, count = 0; count < 4; count++) {
+        p = strchr(p + 1, '\t');
+        if (p == NULL)
+            return NULL;
+    }
+    p++;
+    end = strchr(p, '\t');
+    if (end == NULL)
+        return NULL;
+    return xstrndup(p, end - p);
+}
+
+
+/*
+**  Rebuild the overview data for a particular group.  Takes a path to a
+**  directory containing all the articles, as individual files, that should be
+**  in that group.  The names of the files should be the article numbers in
+**  the group.
+*/
+static void
+group_rebuild(const char *group, const char *path)
+{
+    DIR *articles;
+    char *filename, *histpath, *article, *wireformat, *p;
+    size_t size;
+    int flags, length;
+    struct buffer *overview = NULL;
+    struct vector *extra;
+    struct history *history;
+    struct dirent *file;
+    struct group_index *index;
+    struct group_data *data;
+    struct group_entry *entry, info;
+    struct article artdata;
+    struct stat st;
+
+    index = tdx_index_open(OV_READ);
+    if (index == NULL)
+        die("cannot open group index");
+    entry = tdx_index_entry(index, group);
+    if (entry == NULL)
+        die("cannot find group %s", group);
+    info = *entry;
+    data = tdx_data_rebuild_start(group);
+    if (data == NULL)
+        die("cannot start data rebuild for %s", group);
+    if (!tdx_index_rebuild_start(index, entry))
+        die("cannot start index rebuild for %s", group);
+
+    histpath = concatpath(innconf->pathdb, _PATH_HISTORY);
+    flags = HIS_RDONLY | HIS_ONDISK;
+    history = HISopen(histpath, innconf->hismethod, flags);
+    if (history == NULL)
+        sysdie("cannot open history %s", histpath);
+    free(histpath);
+
+    articles = opendir(path);
+    if (articles == NULL)
+        sysdie("cannot open directory %s", path);
+
+    extra = overview_extra_fields();
+
+    info.count = 0;
+    info.high = 0;
+    info.low = 0;
+    while ((file = readdir(articles)) != NULL) {
+        if (!check_number(file->d_name))
+            continue;
+        filename = concatpath(path, file->d_name);
+        article = ReadInFile(filename, &st);
+        size = st.st_size;
+        if (article == NULL) {
+            syswarn("cannot read in %s", filename);
+            free(filename);
+            continue;
+        }
+
+        /* Check to see if the article is not in wire format.  If it isn't,
+           convert it.  We only check the first line ending. */
+        p = strchr(article, '\n');
+        if (p != NULL && (p == article || p[-1] != '\r')) {
+            wireformat = ToWireFmt(article, size, &length);
+            free(article);
+            article = wireformat;
+            size = length;
+        }
+
+        artdata.number = strtoul(file->d_name, NULL, 10);
+        if (artdata.number > info.high)
+            info.high = artdata.number;
+        if (artdata.number < info.low || info.low == 0)
+            info.low = artdata.number;
+        info.count++;
+        overview = overview_build(artdata.number, article, size, extra,
+                                  overview);
+        artdata.overview = overview->data;
+        artdata.overlen = overview->left;
+        p = extract_messageid(overview->data);
+        if (p == NULL) {
+            warn("cannot find message ID in %s", filename);
+            free(filename);
+            free(article);
+            continue;
+        }
+        if (HISlookup(history, p, &artdata.arrived, NULL, &artdata.expires,
+                      &artdata.token)) {
+            if (!tdx_data_store(data, &artdata))
+                warn("cannot store data for %s", filename);
+        } else {
+            warn("cannot find article %s in history", p);
+        }
+        free(p);
+        free(filename);
+        free(article);
+    }
+    closedir(articles);
+
+    info.indexinode = data->indexinode;
+    info.base = data->base;
+    if (!tdx_index_rebuild_finish(index, entry, &info))
+        die("cannot update group index for %s", group);
+    if (!tdx_data_rebuild_finish(group))
+        die("cannot finish rebuilding data for group %s", group);
+    tdx_data_close(data);
+    HISclose(history);
+    vector_free(extra);
+}
+
+
+/*
 **  Main routine.  Load inn.conf, parse the arguments, and dispatch to the
 **  appropriate function.
 */
@@ -144,6 +306,7 @@ main(int argc, char *argv[])
     int option;
     char mode = '\0';
     const char *newsgroup = NULL;
+    const char *path = NULL;
     ARTNUM article = 0;
 
     message_program_name = "tdx-util";
@@ -153,7 +316,7 @@ main(int argc, char *argv[])
 
     /* Parse options. */
     opterr = 0;
-    while ((option = getopt(argc, argv, "a:n:p:Agio")) != EOF) {
+    while ((option = getopt(argc, argv, "a:n:p:AR:gio")) != EOF) {
         switch (option) {
         case 'a':
             article = strtoul(optarg, NULL, 10);
@@ -170,6 +333,12 @@ main(int argc, char *argv[])
             if (mode != '\0')
                 die("only one mode option allowed");
             mode = 'A';
+            break;
+        case 'R':
+            if (mode != '\0')
+                die("only one mode option allowed");
+            mode = 'R';
+            path = optarg;
             break;
         case 'g':
             if (mode != '\0')
@@ -193,13 +362,16 @@ main(int argc, char *argv[])
     }
 
     /* Modes g and o require a group be specified. */
-    if ((mode == 'g' || mode == 'o') && newsgroup == NULL)
+    if ((mode == 'g' || mode == 'o' || mode == 'R') && newsgroup == NULL)
         die("group must be specified for -%c", mode);
 
     /* Run the specified function. */
     switch (mode) {
     case 'A':
         tdx_index_audit(false);
+        break;
+    case 'R':
+        group_rebuild(newsgroup, path);
         break;
     case 'i':
         dump_index(newsgroup);
