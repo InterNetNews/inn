@@ -2,17 +2,12 @@
 **
 **  Generate a message ID.
 */
-#include "config.h"
-#include <sys/types.h>
 
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
+#include "config.h"
+#include "clibrary.h"
 
 #include "inn/innconf.h"
 #include "libinn.h"
-#include "macros.h"
-#include "string.h"
 
 /* Scale time back a bit, for shorter Message-ID's. */
 #define OFFSET	673416000L

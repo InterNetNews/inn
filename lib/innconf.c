@@ -32,7 +32,6 @@
 #include "inn/messages.h"
 #include "inn/vector.h"
 #include "libinn.h"
-#include "macros.h"
 #include "paths.h"
 
 /* Instantiation of the global innconf variable. */

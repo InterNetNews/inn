@@ -19,7 +19,6 @@
 
 #include "inn/innconf.h"
 #include "libinn.h"
-#include "macros.h"
 #include "ov.h"
 #include "paths.h"
 #include "ovinterface.h"

@@ -25,7 +25,6 @@
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
-#include "macros.h"
 #include "storage.h"
 
 /* We reject any path names longer than this. */

@@ -9,7 +9,6 @@
 
 #include "inn/innconf.h"
 #include "libinn.h"
-#include "macros.h"
 #include "nntp.h"
 #include "paths.h"
 

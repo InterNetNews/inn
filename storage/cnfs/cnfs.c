@@ -21,7 +21,6 @@
 #include "inn/innconf.h"
 #include "interface.h"
 #include "libinn.h"
-#include "macros.h"
 #include "methods.h"
 #include "paths.h"
 #include "inn/wire.h"

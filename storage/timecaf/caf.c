@@ -14,7 +14,6 @@
 #include <time.h>
 
 #include "libinn.h"
-#include "macros.h"
 
 #define CAF_INNARDS
 #include "caf.h"

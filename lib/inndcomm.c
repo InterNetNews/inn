@@ -25,7 +25,6 @@
 #include "inn/innconf.h"
 #include "inndcomm.h"
 #include "libinn.h"
-#include "macros.h"
 #include "paths.h"
 
 #define MIN_BUFFER_SIZE		4096

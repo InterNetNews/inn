@@ -27,7 +27,6 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
-#include "macros.h"
 
 /* Options for debugging malloc. */
 #ifdef USE_DMALLOC

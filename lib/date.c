@@ -13,7 +13,6 @@
 #include <time.h>
 
 #include "libinn.h"
-#include "macros.h"
 
 /*
 **  Time constants.

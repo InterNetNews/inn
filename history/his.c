@@ -39,17 +39,18 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "errno.h"
 #include "portable/time.h"
+#include <errno.h>
 #include <syslog.h>
-#include "libinn.h"
-#include "macros.h"
+
 #include "inn/history.h"
 #include "inn/messages.h"
 #include "inn/timer.h"
+#include "libinn.h"
+#include "storage.h"
+
 #include "hisinterface.h"
 #include "hismethods.h"
-#include "storage.h"
 
 struct hiscache {
     HASH Hash;	/* Hash value of the message-id using Hash() */

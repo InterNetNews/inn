@@ -18,7 +18,6 @@
 #include <syslog.h>
 
 #include "inn/innconf.h"
-#include "macros.h"
 #include "libinn.h"
 #include "ov.h"
 #include "ovinterface.h"

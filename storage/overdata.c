@@ -17,7 +17,6 @@
 #include "inn/wire.h"
 #include "inn/vector.h"
 #include "libinn.h"
-#include "macros.h"
 #include "ovinterface.h"
 #include "paths.h"
 

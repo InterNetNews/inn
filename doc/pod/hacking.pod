@@ -385,7 +385,7 @@ and uninstalled header files; the latter are those headers that are used
 only for compiling INN and aren't useful for users of INN's libraries
 (such as clibrary.h).  All of the installed headers will live in
 include/inn and be installed in a subdirectory named inn in the configured
-include directory.  This conversion is just beginning.
+include directory.  This conversion is still in progress.
 
 When writing header files, remember that C reserves all identifiers
 beginning with two underscores and all identifiers beginning with an

@@ -10,7 +10,6 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
-#include "macros.h"
 #include "libinn.h"
 #include "paths.h"
 

@@ -65,7 +65,6 @@
 #include "inn/messages.h"
 #include "inn/vector.h"
 #include "libinn.h"
-#include "macros.h"
 
 
 /* The types of tokens seen in configuration files. */

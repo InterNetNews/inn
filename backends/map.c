@@ -7,7 +7,6 @@
 #include <errno.h>
 
 #include "libinn.h"
-#include "macros.h"
 #include "paths.h"
 
 #include "map.h"

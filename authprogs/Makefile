@@ -82,25 +82,28 @@ depend: Makefile $(SOURCES)
 	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+auth_krb5.o: auth_krb5.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h libauth.h ../include/portable/socket.h \
+ ../include/inn/messages.h ../include/libinn.h
 auth_smb.o: auth_smb.c ../include/config.h ../include/inn/defines.h \
-  ../include/clibrary.h ../include/inn/messages.h libauth.h \
-  ../include/portable/socket.h smbval/valid.h
+ ../include/clibrary.h ../include/inn/messages.h libauth.h \
+ ../include/portable/socket.h smbval/valid.h
 ckpasswd.o: ckpasswd.c ../include/config.h ../include/inn/defines.h \
-  ../include/clibrary.h ../include/inn/messages.h ../include/inn/qio.h \
-  ../include/inn/vector.h ../include/libinn.h libauth.h \
-  ../include/portable/socket.h
+ ../include/clibrary.h ../include/inn/messages.h ../include/inn/qio.h \
+ ../include/inn/vector.h ../include/libinn.h libauth.h \
+ ../include/portable/socket.h
 domain.o: domain.c ../include/config.h ../include/inn/defines.h \
-  ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
-  libauth.h ../include/portable/socket.h
+ ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
+ libauth.h ../include/portable/socket.h
 ident.o: ident.c ../include/config.h ../include/inn/defines.h \
-  ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
-  ../include/macros.h libauth.h ../include/portable/socket.h
+ ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
+ libauth.h ../include/portable/socket.h
 libauth.o: libauth.c ../include/config.h ../include/inn/defines.h \
-  ../include/clibrary.h ../include/libinn.h libauth.h \
-  ../include/portable/socket.h ../include/inn/messages.h
+ ../include/clibrary.h ../include/libinn.h libauth.h \
+ ../include/portable/socket.h ../include/inn/messages.h
 radius.o: radius.c ../include/config.h ../include/inn/defines.h \
-  ../include/clibrary.h ../include/portable/time.h \
-  ../include/inn/innconf.h ../include/inn/md5.h ../include/inn/messages.h \
-  ../include/libinn.h ../include/macros.h ../include/nntp.h \
-  ../include/paths.h ../include/conffile.h libauth.h \
-  ../include/portable/socket.h
+ ../include/clibrary.h ../include/portable/time.h \
+ ../include/inn/innconf.h ../include/inn/md5.h \
+ ../include/inn/messages.h ../include/libinn.h ../include/nntp.h \
+ ../include/paths.h ../include/conffile.h libauth.h \
+ ../include/portable/socket.h

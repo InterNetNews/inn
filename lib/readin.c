@@ -9,7 +9,6 @@
 #include <sys/stat.h>
 
 #include "libinn.h"
-#include "macros.h"
 
 
 /*

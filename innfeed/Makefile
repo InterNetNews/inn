@@ -162,7 +162,7 @@ misc.o: misc.c innfeed.h ../include/inn/timer.h ../include/config.h \
 startinnfeed.o: startinnfeed.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h \
  ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h ../include/macros.h
+ ../include/libinn.h
 tape.o: tape.c innfeed.h ../include/inn/timer.h ../include/config.h \
  ../include/clibrary.h ../include/inn/innconf.h \
  ../include/inn/messages.h ../include/libinn.h article.h misc.h \

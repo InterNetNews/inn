@@ -85,7 +85,6 @@
 #include "conffile.h"
 #include "inn/innconf.h"
 #include "libinn.h"
-#include "macros.h"
 #include "paths.h"
 #include "storage.h"
 

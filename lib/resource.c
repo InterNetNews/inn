@@ -5,7 +5,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "libinn.h"
-#include "macros.h"
 
 #ifdef HAVE_GETRUSAGE
 

@@ -21,7 +21,6 @@
 #include <syslog.h>
 
 #include "libinn.h"
-#include "macros.h"
 
 #include <EXTERN.h>
 #include <perl.h>

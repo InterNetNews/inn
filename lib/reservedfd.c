@@ -7,7 +7,6 @@
 #include <fcntl.h>
 
 #include "libinn.h"
-#include "macros.h"
 
 
 static FILE **Reserved_fd = NULL;

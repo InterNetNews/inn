@@ -9,7 +9,6 @@
 #include "inn/history.h"
 #include "storage.h"
 #include "libinn.h"
-#include "macros.h"
 
 /* Used by lots of stuff that parses history file entries.  Should be moved
    into a header specifically for history parsing. */

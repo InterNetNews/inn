@@ -15,7 +15,6 @@
 
 #include "inn/innconf.h"
 #include "libinn.h"
-#include "macros.h"
 #include "nntp.h"
 
 #define TEMPFILE	":tmp"

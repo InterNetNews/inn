@@ -22,7 +22,6 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "libinn.h"
-#include "macros.h"
 #include "nntp.h"
 #include "paths.h"
 

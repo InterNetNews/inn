@@ -17,7 +17,6 @@
 #include "inn/messages.h"
 #include "inndcomm.h"
 #include "libinn.h"
-#include "macros.h"
 #include "paths.h"
 #include "storage.h"
 

@@ -36,7 +36,6 @@
 
 #include "inn/messages.h"
 #include "libinn.h"
-#include "macros.h"
 
 #include "buffer.h"
 #include "connection.h"

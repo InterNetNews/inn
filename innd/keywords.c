@@ -17,7 +17,6 @@
 #include "clibrary.h"
 
 #include "libinn.h"
-#include "macros.h"
 
 #include "inn/innconf.h"
 #include "innd.h"

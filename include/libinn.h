@@ -208,4 +208,7 @@ extern void	make_sin(struct sockaddr_in *s, const struct in_addr *src);
 
 END_DECLS
 
+/* <ctype.h>'s isspace includes \n, which is not what we want. */
+#define ISWHITE(c)              ((c) == ' ' || (c) == '\t')
+
 #endif /* LIBINN_H */

@@ -21,10 +21,9 @@
 #include <syslog.h>
 #include <sys/stat.h>
 
-#include "libinn.h"
-#include "macros.h"
-#include "paths.h"
 #include "inn/qio.h"
+#include "libinn.h"
+#include "paths.h"
 
 
 static char	*Dir;

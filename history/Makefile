@@ -92,15 +92,14 @@ depend:	$(SOURCES) $(EXTRA_SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 his.o: his.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h /usr/include/errno.h ../include/portable/time.h \
- ../include/libinn.h ../include/macros.h ../include/inn/history.h \
- ../include/inn/messages.h ../include/inn/timer.h hisinterface.h \
- hismethods.h ../include/storage.h
+ ../include/clibrary.h ../include/portable/time.h \
+ ../include/inn/history.h ../include/inn/messages.h \
+ ../include/inn/timer.h ../include/libinn.h ../include/storage.h \
+ hisinterface.h hismethods.h
 hismethods.o: hismethods.c hisinterface.h ../include/config.h \
  ../include/inn/defines.h hismethods.h hisv6/hisv6.h
 hisv6/hisv6.o: hisv6/hisv6.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h hisinterface.h hisv6/hisv6.h \
  hisv6/hisv6-private.h ../include/inn/history.h ../include/storage.h \
- ../include/libinn.h ../include/macros.h ../include/dbz.h \
- ../include/inn/timer.h ../include/inn/qio.h ../include/inn/sequence.h \
- ../include/inndcomm.h
+ ../include/libinn.h ../include/dbz.h ../include/inn/timer.h \
+ ../include/inn/qio.h ../include/inn/sequence.h ../include/inndcomm.h

@@ -32,7 +32,6 @@
 #endif
 
 #include "libinn.h"
-#include "macros.h"
 
 
 #define yylhs		date_yylhs

@@ -14,18 +14,17 @@
 */
 
 #include "config.h"
-
-/* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
-#if DO_PERL
-
 #include "clibrary.h"
 
 #include "inn/innconf.h"
-#include "macros.h"
 #include "nnrpd.h"
-#include "nntp.h"
 #include "paths.h"
 #include "post.h"
+
+#include "nntp.h"
+
+/* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
+#if DO_PERL
 
 #include <EXTERN.h>
 #include <perl.h>
