@@ -518,7 +518,7 @@ STATIC void ovflushhead(OVBUFF *ovbuff) {
   strncpy(rpx.freea, offt2hex(ovbuff->freeblk, TRUE), OVBUFFLASIZ);
   strncpy(rpx.updateda, offt2hex(ovbuff->updated, TRUE), OVBUFFLASIZ);
   memcpy(ovbuff->bitfield, &rpx, sizeof(OVBUFFHEAD));
-#if defined (DO_MMAP_SYNC)
+#if defined (MMAP_NEEDS_MSYNC)
 #if defined (HAVE_MSYNC_3_ARG)
   msync(ovbuff->bitfield, ovbuff->base, MS_ASYNC);
 #else
