@@ -3,6 +3,8 @@
  * ovdb 2.00 beta1
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-10-05 : from Dan Riley: struct datakey needs to be zero'd, for
+ *              64-bit OSs where the struct has internal padding bytes.
  * 2000-09-29 : ovdb_expiregroup can now fix incorrect counts; use new
  *              inn/version.h so can have same ovdb.c for 2.3.0, 2.3.1, and 2.4
  * 2000-09-28 : low mark in ovdb_expiregroup still wasn't right
@@ -563,6 +565,7 @@ static int delete_all_records(int whichdb, group_id_t gno)
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
+    memset(&dk, 0, sizeof dk);
     dk.groupnum = gno;
     dk.artnum = 0;
 
@@ -753,6 +756,7 @@ static int count_records(struct groupinfo *gi)
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
+    memset(&dk, 0, sizeof dk);
 
     db = get_db_bynum(gi->current_db);
     if(db == NULL)
@@ -1423,6 +1427,8 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     struct datakey dk;
     int ret;
 
+    memset(&dk, 0, sizeof dk);
+
     if(databuflen == 0) {
 	databuflen = BIG_BUFFER;
 	databuf = NEW(char, databuflen);
@@ -1609,6 +1615,7 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
     switch(s->state) {
     case 0:
 	flags = DB_SET_RANGE;
+	memset(&dk, 0, sizeof dk);
 	dk.groupnum = s->gid;
 	dk.artnum = htonl(s->firstart);
 	s->state = 1;
@@ -1732,6 +1739,7 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
 	if(db == NULL)
 	    return FALSE;
 
+	memset(&dk, 0, sizeof dk);
 	dk.groupnum = gi.current_gid;
 	dk.artnum = htonl(artnum);
 
@@ -1827,6 +1835,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     memset(&key, 0, sizeof key);
     memset(&nkey, 0, sizeof nkey);
     memset(&val, 0, sizeof val);
+    memset(&dk, 0, sizeof dk);
+    memset(&ndk, 0, sizeof ndk);
 
     TXN_START(t_expgroup_1, tid);
 
