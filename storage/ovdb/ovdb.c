@@ -3,6 +3,7 @@
  * ovdb 2.00 beta1
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-09-28 : low mark in ovdb_expiregroup still wasn't right
  * 2000-09-27 : Further improvements to ovdb_expiregroup: restructured the
  *              loop; now updates groupinfo as it goes along rather than
  *              counting records at the end, which prevents a possible
@@ -1794,7 +1795,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     group_id_t old_gid;
     ARTHANDLE *ah;
     ARTNUM artnum, currentart, low, high;
-    int i, lowest, newlowest, compact, done;
+    int i, lowest, compact, done;
 
     if(eo_start == 0) {
 	eo_start = time(NULL);
@@ -1933,7 +1934,6 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	if(tid==NULL)
 	    return FALSE;
         done = 0;
-	newlowest = 0;
 
 	switch(ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW)) {
 	case 0:
@@ -2055,8 +2055,8 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 			return FALSE;
 		    }
 		}
-		if(lowest == 0 && newlowest == 0)
-		    newlowest = artnum;
+		if(lowest == 0 || artnum < lowest)
+		    lowest = artnum;
 	    }
 	}
 	/* end of for loop */
@@ -2065,8 +2065,10 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	    TXN_RETRY(t_expgroup_loop, tid);
 	}
 
-	if(lowest == 0 && newlowest != 0)
-	    gi.low = newlowest;
+	if(lowest != 0)
+	    gi.low = lowest;
+	else if(gi.count == 0)
+	    gi.low = gi.high+1;
 
 	if(done) {
 	    if(compact) {
@@ -2095,7 +2097,7 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 
 	if(done)
 	    break;
-	lowest = newlowest;
+
 	currentart = artnum+1;
     }
 
