@@ -60,7 +60,7 @@ static void             xmalloc_abort(const char *what, size_t size,
 
 /* header table initialization */
 #define ARTHEADERINIT(name, type) {name, type, sizeof(name) - 1}
-ARTHEADER ARTheaders[] = {
+const ARTHEADER ARTheaders[] = {
   /*		 Name			Type */
   ARTHEADERINIT("Approved",		HTstd),
 /* #define HDR__APPROVED			0 */

@@ -549,7 +549,7 @@ enum timer {
 #else
 # define EXTERN		extern
 #endif
-extern ARTHEADER	ARTheaders[MAX_ARTHEADER];
+extern const ARTHEADER	ARTheaders[MAX_ARTHEADER];
 extern bool		BufferedLogs;
 EXTERN bool		AnyIncoming;
 extern bool		Debug;
@@ -795,6 +795,7 @@ extern void		TCLclose(void);
 #if DO_PYTHON
 extern bool		PythonFilterActive;
 
+void			PYfilter(bool value);
 extern const char   *	PYcontrol(char **av);
 extern int		PYreadfilter(void);
 extern char	    *	PYartfilter(const ARTDATA *Data, char *artBody, long artLen, int lines);

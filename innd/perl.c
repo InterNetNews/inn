@@ -53,7 +53,6 @@
 #include "innperl.h"
 
 /* From art.c.  Ew.  Need header parsing that doesn't use globals. */
-extern ARTHEADER        ARTheaders[];
 extern char             *filterPath;
 
 /*
@@ -64,8 +63,8 @@ char *
 PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 {
     dSP;
-    ARTHEADER * hp;
-    HDRCONTENT	*hc = data->HdrContent;
+    const ARTHEADER * hp;
+    const HDRCONTENT *hc = data->HdrContent;
     HV *        hdr;
     CV *        filter;
     int         i, rc;

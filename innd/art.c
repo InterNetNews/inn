@@ -49,7 +49,7 @@ typedef struct _HEADERP {
 */
 typedef struct _TREE {
   const char	*Name;
-  ARTHEADER	*Header;
+  const ARTHEADER *Header;
   struct _TREE	*Before;
   struct _TREE	*After;
 } TREE;
@@ -61,7 +61,7 @@ static TREE	*ARTheadertree;
 **  a flag saying if they're written in brief or full format.
 */
 typedef struct _ARTOVERFIELD {
-  ARTHEADER	*Header;
+  const ARTHEADER *Header;
   bool		NeedHeader;
 } ARTOVERFIELD;
 
@@ -145,7 +145,7 @@ ARTreadschema(void)
   int		i;
   char		*p;
   ARTOVERFIELD	*fp;
-  ARTHEADER	*hp;
+  const ARTHEADER *hp;
   bool		ok;
   char		buff[SMBUF];
   bool		foundxref = false;
@@ -215,7 +215,7 @@ ARTreadschema(void)
 **  so we don't bother to unroll the recursion.
 */
 static TREE *
-ARTbuildtree(ARTHEADER **Table, int lo, int hi)
+ARTbuildtree(const ARTHEADER **Table, int lo, int hi)
 {
   int	mid;
   TREE	*tp;
@@ -254,7 +254,7 @@ void
 ARTsetup(void)
 {
   const char *	p;
-  ARTHEADER **	table;
+  const ARTHEADER **	table;
   unsigned int	i;
 
   /* Set up the character class tables.  These are written a
@@ -582,7 +582,7 @@ ARTparseheader(CHANNEL *cp, int size)
   char		*header = cp->In.data + data->CurHeader;
   HDRCONTENT	*hc = cp->Data.HdrContent;
   TREE		*tp;
-  ARTHEADER	*hp;
+  const ARTHEADER *hp;
   char		c, *p, *colon;
   int		i;
 
@@ -992,7 +992,7 @@ static bool
 ARTclean(ARTDATA *data, char *buff)
 {
   HDRCONTENT	*hc = data->HdrContent;
-  ARTHEADER	*hp = ARTheaders;
+  const ARTHEADER *hp = ARTheaders;
   int		i;
   char		*p;
   int		delta;
@@ -1679,7 +1679,7 @@ ARTmakeoverview(CHANNEL *cp)
   static char	COLONSPACE[] = ": ";
   struct buffer	*overview = &data->Overview;
   ARTOVERFIELD	*fp;
-  ARTHEADER	*hp;
+  const ARTHEADER *hp;
   char		*p, *q;
   int		i, j, len;
   char		*key_old_value = NULL;
@@ -1919,7 +1919,7 @@ ARTpost(CHANNEL *cp)
 #if defined(DO_TCL)
   if (TCLFilterActive) {
     int code;
-    ARTHEADER *hp;
+    const ARTHEADER *hp;
 
     /* make info available to Tcl */
 

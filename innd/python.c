@@ -29,7 +29,6 @@ PyObject	*PYFilterObject = NULL;
 PyObject	*PYFilterModule = NULL;
 
 /* article filter bits and pieces */
-extern ARTHEADER ARTheaders[];
 PyObject	*PYheaders = NULL;
 PyObject	**PYheaditem;
 PyObject	**PYheadkey;
@@ -95,8 +94,8 @@ PYcontrol(char **av)
 char *
 PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 {
-    ARTHEADER	*hp;
-    HDRCONTENT	*hc = data->HdrContent;
+    const ARTHEADER *hp;
+    const HDRCONTENT *hc = data->HdrContent;
     int		hdrnum;
     int		i;
     char	*p, save;
@@ -644,7 +643,7 @@ PYreadfilter(void)
 void
 PYsetup(void)
 {
-    ARTHEADER	*hp;
+    const ARTHEADER *hp;
     int		hdrindex;
 
     setenv("PYTHONPATH", innconf->pathfilter, 1);
