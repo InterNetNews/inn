@@ -514,6 +514,7 @@ main(ac, av)
     struct stat		Sb;
     unsigned int	numgroups, numxrefs;
     int			j;
+    char		*base = NULL;
     BOOL		doit;
 
     /* First thing, set up logging and our identity. */
@@ -643,6 +644,10 @@ main(ac, av)
 	    }
 
 	    /* Process each newsgroup... */
+	    if (base) {
+		DISPOSE(base);
+		base = NULL;
+	    }
 	    for (i=0; i<numxrefs; i++) {
 		/* Check for group limits... -p flag */
 		if ((p=strchr(xrefs[i], ':')) == NULL) {
@@ -687,9 +692,36 @@ main(ac, av)
 			*p = '\0';
 		    }
 			
-		    if (!CopyArt(art, dest, Concat)) {
-		        fprintf(stderr, 
-			    "archive: %s->%s failed\n", buff, dest);
+		    if (base) {
+			/* Try to link the file into the archive. */
+			if (link(base, dest) < 0) {
+
+			    /* Make the archive directory. */
+			    if (!MakeArchiveDirectory(dest)) {
+				(void)fprintf(stderr, "Can't mkdir for \"%s\", %s\n",
+					dest, strerror(errno));
+				continue;
+			    }
+
+			    /* Try to link again; if that fails, make a copy. */
+			    if (link(base, dest) < 0) {
+#if	defined(HAVE_SYMLINK)
+				if (symlink(base, dest) < 0)
+				    (void)fprintf(stderr, "Can't symlink \"%s\" to \"%s\", %s\n",
+					    dest, base, strerror(errno));
+				else
+#endif	/* defined(HAVE_SYMLINK) */
+				if (!Copy(base, dest))
+				    continue;
+				continue;
+			    }
+			}
+		    } else {
+			if (!CopyArt(art, dest, Concat)) {
+			    fprintf(stderr, 
+				"archive: %s->%s failed\n", buff, dest);
+			}
+			base = COPY(dest);
 		    }
 
 	            /* Write index. */
