@@ -9,12 +9,11 @@
 
 include ../Makefile.global
 
-ALL           = default docheckgroups ihave newgroup parsecontrol rmgroup \
-		sendme sendsys senduuname version
+ALL           = checkgroups default docheckgroups ihave newgroup \
+		nnrpd_auth.pl parsecontrol rmgroup sendme sendsys \
+		senduuname version
 
-EXTRA         = actsync.cfg checkgroups inn.conf innreport.conf \
-		innwatch.ctl newsfeeds nnrpd_auth.pl startup.tcl \
-		nnrpd_auth.py sasl.conf
+EXTRA         = inn.conf innreport.conf newsfeeds sasl.conf
 
 all: $(ALL)
 
@@ -31,10 +30,12 @@ install:
 
 FIX             = $(FIXSCRIPT)
 
+checkgroups:	checkgroups.in   $(FIX)	; $(FIX) checkgroups.in
 default:	default.in       $(FIX)	; $(FIX) default.in
 docheckgroups:	docheckgroups.in $(FIX)	; $(FIX) docheckgroups.in
 ihave:		ihave.in         $(FIX)	; $(FIX) ihave.in
 newgroup:	newgroup.in      $(FIX)	; $(FIX) newgroup.in
+nnrpd_auth.pl:	nnrpd_auth.pl.in $(FIX)	; $(FIX) nnrpd_auth.pl.in
 parsecontrol:	parsecontrol.in  $(FIX)	; $(FIX) parsecontrol.in
 rmgroup:	rmgroup.in       $(FIX)	; $(FIX) rmgroup.in
 sendme:		sendme.in        $(FIX)	; $(FIX) sendme.in
