@@ -79,15 +79,15 @@ struct sockaddr_storage {
 /* Hack courtesy of the USAGI project. */
 #  if HAVE_INET6
 #   define SA_LEN(s) \
-    ((((struct sockaddr *)(s))->sa_family == AF_INET6)          \
-        ? sizeof(struct sockaddr_in6)                           \
-        : ((((struct sockaddr *)(s))->sa_family == AF_INET)     \
-            ? sizeof(struct sockaddr_in)                        \
+    ((((const struct sockaddr *)(s))->sa_family == AF_INET6)            \
+        ? sizeof(struct sockaddr_in6)                                   \
+        : ((((const struct sockaddr *)(s))->sa_family == AF_INET)       \
+            ? sizeof(struct sockaddr_in)                                \
             : sizeof(struct sockaddr)))
 #  else
 #   define SA_LEN(s) \
-    ((((struct sockaddr *)(s))->sa_family == AF_INET)           \
-        ? sizeof(struct sockaddr_in)                            \
+    ((((const struct sockaddr *)(s))->sa_family == AF_INET)             \
+        ? sizeof(struct sockaddr_in)                                    \
         : sizeof(struct sockaddr))
 #  endif
 # endif /* HAVE_SOCKADDR_LEN */
