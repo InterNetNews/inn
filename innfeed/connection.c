@@ -451,13 +451,14 @@ Connection newConnection (Host host,
   cxn->ipName = strdup (ipname) ;
   cxn->port = portNum ;
 
-  cxn->articleReceiptTimeout = fudgeFactor (articleReceiptTimeout) ;
+  /* Time out the higher numbered connections faster */
+  cxn->articleReceiptTimeout = articleReceiptTimeout * 10.0 / (10.0 + id) ;
   cxn->artReceiptTimerId = 0 ;
 
-  cxn->readTimeout = fudgeFactor (respTimeout) ;
+  cxn->readTimeout = respTimeout ;
   cxn->readBlockedTimerId = 0 ;
 
-  cxn->writeTimeout = fudgeFactor (respTimeout) ; /* XXX should be separate */
+  cxn->writeTimeout = respTimeout ; /* XXX should be a separate value */
   cxn->writeBlockedTimerId = 0 ;
 
   cxn->flushTimeout = fudgeFactor (flushTimeout) ;
@@ -1817,7 +1818,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
 
             doSomeWrites (cxn) ;
 
-            /* If the read tiemr is (still) running, update it to give
+            /* If the read timer is (still) running, update it to give
                those terminally slow hosts that take forever to drain
                the network buffers and just dribble out responses the
                benefit of the doubt.  XXX - maybe should just increase
@@ -1945,6 +1946,11 @@ static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
   freeBufferArray (b) ;
 
   clearTimer (cxn->writeBlockedTimerId) ;
+
+  /* Some(?) hosts return the 439 response even before we're done
+     sending, so don't go idle until here */
+  if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
+    cxnIdle (cxn) ;
 
   if (i != IoDone)
     {
@@ -2650,7 +2656,9 @@ static void processResponse439 (Connection cxn, char *response)
       cxn->takesRejected++ ;
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
-      if (cxn->articleQTotal == 0)
+      /* Some(?) hosts return the 439 response even before we're done
+          sending */
+      if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
         cxnIdle (cxn) ;
       hostArticleRejected (cxn->myHost, cxn, artHolder->article) ;
       delArtHolder (artHolder) ;
@@ -2749,10 +2757,6 @@ static void processResponse335 (Connection cxn, char *response)
       return ;
     }
 
-  ASSERT (cxn->articleQTotal == 1) ;
-  ASSERT (cxn->checkRespHead != NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
-
   if (cxn->checkRespHead == NULL)
     {
       syslog (LOG_NOTICE,BAD_RESPONSE,
@@ -2761,6 +2765,7 @@ static void processResponse335 (Connection cxn, char *response)
     }
   else 
     {
+      VALIDATE_CONNECTION (cxn) ;
       /* now move the article into the third queue */
       cxn->takeHead = cxn->checkRespHead ;
       cxn->checkRespHead = NULL ;
@@ -2800,24 +2805,30 @@ static void processResponse400 (Connection cxn, char *response)
   syslog (LOG_NOTICE,CXN_BLOCKED,hostPeerName(cxn->myHost),cxn->ident,
           response) ;
 
-  /* Defer the articles here so that cxnFlush() doesn't set up an
-    immediate reconnect. */
-  if (cxn->articleQTotal > 0)
-    {
-      deferAllArticles (cxn) ;
-      clearTimer (cxn->readBlockedTimerId) ;
-      cxnIdle (cxn) ; /* so cxnFlush doesn't croak in VALIDATE_CONNECTION */
-    }
-
-  /* right here there may still be data queued to write and so we'll fail
-    trying to issue the quit ('cause a write will be pending). Furthermore,
-    the data pending may be half way through an command, and so just
-    tossing the buffer is nt sufficient. But figuring out where we are and
-    doing a tidy job is hard */
-  cancelWrite (cxn->myEp,buffer,&len) ;
-  clearTimer (cxn->writeBlockedTimerId) ;
   
-  cxnFlush (cxn) ;
+  /* right here there may still be data queued to write and so we'll fail
+     trying to issue the quit ('cause a write will be pending). Furthermore,
+     the data pending may be half way through an command, and so just
+     tossing the buffer is nt sufficient. But figuring out where we are and
+     doing a tidy job is hard */
+  if (writeIsPending (cxn->myEp))
+    cxnSleepOrDie (cxn) ;
+  else
+    {
+      if (cxn->articleQTotal > 0)
+        {
+          /* Defer the articles here so that cxnFlush() doesn't set up an
+             immediate reconnect. */
+          deferAllArticles (cxn) ;
+          clearTimer (cxn->readBlockedTimerId) ;
+	  /* XXX - so cxnSleep() doesn't die when it validates the connection */
+          cxnIdle (cxn) ;
+        }
+      /* XXX - it would be nice if we QUIT first, but we'd have to go
+         into a state where we just search for the 205 response, and
+         only go into the sleep state at that point */
+      cxnSleepOrDie (cxn) ;
+    }
 }
 
 
@@ -3079,6 +3090,9 @@ static void cxnIdle (Connection cxn)
   ASSERT (cxn->state == cxnFeedingS || cxn->state == cxnConnectingS ||
           cxn->state == cxnFlushingS || cxn->state == cxnClosingS) ;
   ASSERT (cxn->articleQTotal == 0) ;
+  ASSERT (cxn->writeBlockedTimerId == 0) ;
+  ASSERT (!writeIsPending (cxn->myEp)) ;
+  ASSERT (cxn->sleepTimerId == 0) ;
 
   if (cxn->state == cxnFeedingS || cxn->state == cxnConnectingS)
     {
@@ -3094,6 +3108,7 @@ static void cxnIdle (Connection cxn)
         clearTimer (cxn->readBlockedTimerId) ;
 
       cxn->state = cxnIdleS ;
+ASSERT (cxn->readBlockedTimerId == 0) ;
     }
 }
 
@@ -3844,6 +3859,7 @@ static void issueQUIT (Connection cxn)
 static void initReadBlockedTimeout (Connection cxn)
 {
   ASSERT (cxn != NULL) ;
+ASSERT (cxn->state != cxnIdleS ) ;
 
   /* set up the response timer. */
   clearTimer (cxn->readBlockedTimerId) ;
@@ -3873,7 +3889,7 @@ static int prepareWriteWithTimeout (EndPoint endp,
   /* set up the write timer. */
   clearTimer (cxn->writeBlockedTimerId) ;
 
-  if (cxn->readTimeout > 0)
+  if (cxn->writeTimeout > 0)
     cxn->writeBlockedTimerId = prepareSleep (writeTimeoutCbk, cxn->writeTimeout,
                                              cxn) ;
 
@@ -4069,7 +4085,9 @@ static void validateConnection (Connection cxn)
 
       case cxnFeedingS:
         if (cxn->doesStreaming)
-          ASSERT (cxn->articleQTotal > 0) ;
+          /* Some(?) hosts return the 439 response even before we're done
+             sending, so don't go idle until here */
+          ASSERT (cxn->articleQTotal > 0 || writeIsPending (cxn->myEp)) ;
         else
           ASSERT (cxn->articleQTotal == 1) ;
         if (cxn->readTimeout > 0 && !writeIsPending (cxn->myEp) &&
@@ -4090,6 +4108,7 @@ static void validateConnection (Connection cxn)
         ASSERT (cxn->writeBlockedTimerId == 0) ;
         ASSERT (cxn->sleepTimerId == 0) ;
         ASSERT (cxn->timeCon != 0) ;
+        ASSERT (!writeIsPending (cxn->myEp)) ;
         break ;
 
       case cxnIdleTimeoutS:
@@ -4098,6 +4117,7 @@ static void validateConnection (Connection cxn)
         ASSERT (cxn->writeBlockedTimerId == 0) ;
         ASSERT (cxn->sleepTimerId == 0) ;
         ASSERT (cxn->timeCon != 0) ;
+        ASSERT (!writeIsPending (cxn->myEp)) ;
         break ;
 
       case cxnSleepingS:
