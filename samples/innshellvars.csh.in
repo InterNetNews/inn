@@ -11,10 +11,25 @@
 #               The contents should mirror innshellvars (the bourne-shell
 #               version). 
 
-set inn_newslib = @prefix@/etc
-set inn_newsbin = @prefix@/bin
-set inn_locks = @prefix@/locks
-set inn_innddir = @prefix@/run
+set inn_newshome = /usr/news
+set inn_spoolbase = @SPOOLDIR@
+set inn_most_logs = @LOGDIR@
+
+set inn_errlog = ${inn_most_logs}/errlog
+set inn_log = ${inn_most_logs}/news
+
+set inn_newslib = ${inn_newshome}/etc
+set inn_newsbin = ${inn_newshome}/bin
+set inn_locks = ${inn_newshome}/locks
+set inn_innddir = ${inn_newshome}/run
+
+set inn_spool = ${inn_spoolbase}/articles
+set inn_overviewdir = ${inn_spoolbase}/over.view
+set inn_batch = ${inn_spoolbase}/out.going
+set inn_archivedir = ${inn_spoolbase}/archive
+set inn_badnews = ${inn_spoolbase}/in.coming/bad
+set inn_spoolnews = ${inn_spoolbase}/in.coming
+set inn_incoming = ${inn_spoolbase}/in.coming
 
 set inn_active = ${inn_newslib}/active
 set inn_activetimes = ${inn_newslib}/active.times
@@ -54,11 +69,13 @@ set inn_watchpid = ${inn_innddir}/innwatch.pid
 set inn_tempsock = `basename ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's/XXXXXX$/*/'`
 set inn_tempsockdir = `echo ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's@/[^/]*$@@'`
 
-##  =()<set inn_awk = @<_PATH_AWK>@>()=
-set inn_awk = /usr/bin/awk
+set inn_awk	= @_PATH_AWK@
+set inn_sed	= @_PATH_SED@
+set inn_inndf	= "@_PATH_DF@"
+set inn_egrep	= @_PATH_EGREP@
+set inn_perl	= @_PATH_PERL@
+set inn_sort	= @_PATH_SORT@
 
-##  =()<set inn_batch = @<_PATH_BATCHDIR>@>()=
-set inn_batch = /var/news/spool/out.going
 
 ##  =()<set inn_sendmail = "@<_PATH_SENDMAIL>@">()=
 set inn_sendmail = "/usr/lib/sendmail -t"
@@ -69,23 +86,8 @@ set inn_compress = /usr/bin/compress
 ##  =()<set inn_cycles = @<LOG_CYCLES>@>()=
 set inn_cycles = 3
 
-##  =()<set inn_inndf = "@<INNWATCH_DF>@">()=
-set inn_inndf = "/bin/df"
-
-##  =()<set inn_egrep = @<_PATH_EGREP>@>()=
-set inn_egrep = /usr/bin/egrep
-
-##  =()<set inn_errlog = @<_PATH_ERRLOG>@>()=
-set inn_errlog = /var/log/news/errlog
-
 ##  =()<set inn_have_uustat = @<HAVE_UUSTAT>@>()=
 set inn_have_uustat = DO
-
-##  =()<set inn_incoming = @<_PATH_SPOOLNEWS>@>()=
-set inn_incoming = /var/news/spool/in.coming
-
-##  =()<set inn_log = @<_PATH_LOGFILE>@>()=
-set inn_log = /var/log/news/news
 
 ##  =()<set inn_mail_badcontrols = @<MAIL_BADCONTROLS>@>()=
 set inn_mail_badcontrols = DONT
@@ -93,32 +95,14 @@ set inn_mail_badcontrols = DONT
 ##  =()<set inn_mailcmd = "@<_PATH_MAILCMD>@">()=
 set inn_mailcmd = "/usr/bin/Mail"
 
-##  =()<set inn_most_logs = @<_PATH_MOST_LOGS>@>()=
-set inn_most_logs = /var/log/news
-
 ##  =()<set inn_newsmaster = @<NEWSMASTER>@>()=
 set inn_newsmaster = usenet
 
 ##  =()<set inn_newsuser = @<NEWSUSER>@>()=
 set inn_newsuser = news
 
-##  =()<set inn_perl = @<_PATH_PERL>@>()=
-set inn_perl = /usr/bin/perl
-
-##  =()<set inn_sed = @<_PATH_SED>@>()=
-set inn_sed = /usr/bin/sed
-
-##  =()<set inn_sort = "@<_PATH_SORT>@">()=
-set inn_sort = "/usr/bin/sort"
-
 ##  =()<set inn_sleeptime = @<INNWATCH_SLEEPTIME>@>()=
 set inn_sleeptime = 600
-
-##  =()<set inn_spool = @<_PATH_SPOOL>@>()=
-set inn_spool = /var/news/spool/articles
-
-##  =()<set inn_overviewdir = @<_PATH_OVERVIEWDIR>@>()=
-set inn_overviewdir = /var/news/spool/over.view
 
 ##  =()<set inn_want_pgpverify = @<WANT_PGPVERIFY>@>()=
 set inn_want_pgpverify = DO
@@ -134,18 +118,6 @@ set inn_tcl_support = DONT
 
 ##  =()<if ( ! $?TMPDIR ) setenv TMPDIR @<_PATH_TMP>@>()=
 if ( ! $?TMPDIR ) setenv TMPDIR /var/tmp
-
-##  =()<set inn_newshome = @<_PATH_NEWSHOME>@>()=
-set inn_newshome = /usr/news
-
-##  =()<set inn_archivedir = @<_PATH_ARCHIVEDIR>@>()=
-set inn_archivedir = /var/news/spool/archive
-
-##  =()<set inn_badnews = @<_PATH_BADNEWS>@>()=
-set inn_badnews = /var/news/spool/in.coming/bad
-
-## =()<set inn_spoolnews = @<_PATH_SPOOLNEWS>@>()=
-set inn_spoolnews = /var/news/spool/in.coming
 
 ## =()<set inn_spooltemp = @<_PATH_SPOOLTEMP>@>()=
 set inn_spooltemp = /var/tmp

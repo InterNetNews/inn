@@ -10,6 +10,19 @@
 package inn ;
 
 $newshome = "@prefix@" ;
+$spooldir = "@SPOOLDIR@" ;
+$most_logs = "@LOGDIR@" ;
+
+$errlog = "${most_logs}/errlog" ;
+$log = "${most_logs}/news" ;
+
+$spool = "${spooldir}/articles" ;
+$overviewdir = "${spooldir}/over.view" ;
+$archivedir = "${spooldir}/archive" ;
+$badnews = "${spooldir}/in.coming/bad" ;
+$spoolnews = "${spooldir}/in.coming" ;
+$batch = "${spooldir}/out.going" ;
+$incoming = "${spooldir}/in.coming" ;
 
 $locks = "${newshome}/locks" ;
 $newsbin = "${newshome}/bin" ;
@@ -55,12 +68,13 @@ $innwstatus = "${innddir}/innwatch.status" ;
 ($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
 $watchpid = "${innddir}/innwatch.pid" ;
 
+$awk = "@_PATH_AWK@" ;
+$sed = "@_PATH_SED@" ;
+$inndf = "@_PATH_DF@" ;
+$egrep = "@_PATH_EGREP@" ;
+$perl = "@_PATH_PERL@" ;
+$sort = "@_PATH_SORT@" ;
 
-##  =()<$awk = "@<_PATH_AWK>@" ;>()=
-$awk = "/usr/bin/awk" ;
-
-##  =()<$batch = "@<_PATH_BATCHDIR>@" ;>()=
-$batch = "/var/news/spool/out.going" ;
 
 ##  =()<$sendmail = "@<_PATH_SENDMAIL>@" ;>()=
 $sendmail = "/usr/lib/sendmail -t" ;
@@ -71,23 +85,8 @@ $compress = "/usr/bin/compress" ;
 ##  =()<$cycles = @<LOG_CYCLES>@ ;>()=
 $cycles = 3 ;
 
-##  =()<$inndf = "@<INNWATCH_DF>@" ;>()=
-$inndf = "/bin/df" ;
-
-##  =()<$egrep = "@<_PATH_EGREP>@" ;>()=
-$egrep = "/usr/bin/egrep" ;
-
-##  =()<$errlog = "@<_PATH_ERRLOG>@" ;>()=
-$errlog = "/var/log/news/errlog" ;
-
 ##  =()<$have_uustat = ("@<HAVE_UUSTAT>@" eq "DO" ? 1 : 0) ;>()=
 $have_uustat = ("DO" eq "DO" ? 1 : 0) ;
-
-##  =()<$incoming = "@<_PATH_SPOOLNEWS>@" ;>()=
-$incoming = "/var/news/spool/in.coming" ;
-
-##  =()<$log = "@<_PATH_LOGFILE>@" ;>()=
-$log = "/var/log/news/news" ;
 
 ##  =()<$mail_badcontrols = ("@<MAIL_BADCONTROLS>@" eq "DO" ? 1 : 0) ;>()=
 $mail_badcontrols = ("DONT" eq "DO" ? 1 : 0) ;
@@ -95,32 +94,14 @@ $mail_badcontrols = ("DONT" eq "DO" ? 1 : 0) ;
 ##  =()<$mailcmd = "@<_PATH_MAILCMD>@" ;>()=
 $mailcmd = "/usr/bin/Mail" ;
 
-##  =()<$most_logs = "@<_PATH_MOST_LOGS>@" ;>()=
-$most_logs = "/var/log/news" ;
-
 ##  =()<$newsmaster = '@<NEWSMASTER>@' ;>()=
 $newsmaster = 'usenet' ;
 
 ##  =()<$newsuser = "@<NEWSUSER>@" ;>()=
 $newsuser = "news" ;
 
-##  =()<$perl = "@<_PATH_PERL>@" ;>()=
-$perl = "/usr/bin/perl" ;
-
-##  =()<$sed = "@<_PATH_SED>@" ;>()=
-$sed = "/usr/bin/sed" ;
-
-##  =()<$sort = "@<_PATH_SORT>@" ;>()=
-$sort = "/usr/bin/sort" ;
-
 ##  =()<$sleeptime = @<INNWATCH_SLEEPTIME>@ ;>()=
 $sleeptime = 600 ;
-
-##  =()<$spool = "@<_PATH_SPOOL>@" ;>()=
-$spool = "/var/news/spool/articles" ;
-
-##  =()<$overviewdir = "@<_PATH_OVERVIEWDIR>@" ;>()=
-$overviewdir = "/var/news/spool/over.view" ;
 
 ##  =()<$want_pgpverify = ("@<WANT_PGPVERIFY>@" eq "DO" ? 1 : 0) ;>()=
 $want_pgpverify = ("DO" eq "DO" ? 1 : 0) ;
@@ -140,14 +121,6 @@ if ( ! defined ($ENV{'TMPDIR'}) ) {
 } 
 $tmpdir = $ENV{'TMPDIR'} ;
 
-##  =()<$archivedir = "@<_PATH_ARCHIVEDIR>@" ;>()=
-$archivedir = "/var/news/spool/archive" ;
-
-##  =()<$badnews = "@<_PATH_BADNEWS>@" ;>()=
-$badnews = "/var/news/spool/in.coming/bad" ;
-
-#### =()<$spoolnews = "@<_PATH_SPOOLNEWS>@" ;>()=
-$spoolnews = "/var/news/spool/in.coming" ;
 
 #### =()<$spooltemp = "@<_PATH_SPOOLTEMP>@" ;>()=
 $spooltemp = "/var/tmp" ;

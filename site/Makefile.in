@@ -14,71 +14,42 @@ P	=
 # rule which would overwite the innshellvars file.
 .csh:
 
-##  =()<CTLINND		= @<_PATH_NEWSBIN>@/ctlinnd>()=
-CTLINND		= /usr/local/news/bin/ctlinnd
-##  =()<PATH_CONFIG	= @<_PATH_CONFIG>@>()=
-PATH_CONFIG	= /var/news/etc/inn.conf
-##  =()<PATH_CONTROLCTL	= @<_PATH_CONTROLCTL>@>()=
-PATH_CONTROLCTL	= /var/news/etc/control.ctl
-##  =()<PATH_EXPIRECTL	= @<_PATH_EXPIRECTL>@>()=
-PATH_EXPIRECTL	= /var/news/etc/expire.ctl
-##  =()<PATH_INNDHOSTS	= @<_PATH_INNDHOSTS>@>()=
-PATH_INNDHOSTS	= /var/news/etc/incoming.conf
-##  =()<PATH_MODERATORS	= @<_PATH_MODERATORS>@>()=
-PATH_MODERATORS	= /var/news/etc/moderators
-##  =()<PATH_DISTPATS	= @<_PATH_DISTPATS>@>()=
-PATH_DISTPATS	= /var/news/etc/distrib.pats
-##  =()<PATH_NEWSBOOT	= @<_PATH_NEWSBOOT>@>()=
-PATH_NEWSBOOT	= /usr/local/news/bin/rc.news
-##  =()<PATH_NEWSFEEDS	= @<_PATH_NEWSFEEDS>@>()=
-PATH_NEWSFEEDS	= /var/news/etc/newsfeeds
-##  =()<PATH_NNRPACCESS	= @<_PATH_NNRPACCESS>@>()=
-PATH_NNRPACCESS	= /var/news/etc/nnrp.access
-##  =()<PATH_SCHEMA	= @<_PATH_SCHEMA>@>()=
-PATH_SCHEMA	= /var/news/etc/overview.fmt
-##  =()<PATH_PERL_SHELLVARS	= @<_PATH_PERL_SHELLVARS>@>()=
-PATH_PERL_SHELLVARS	= /var/news/etc/innshellvars.pl
-##  =()<PATH_TCL_SHELLVARS	= @<_PATH_TCL_SHELLVARS>@>()=
-PATH_TCL_SHELLVARS	= /var/news/etc/innshellvars.tcl
-##  =()<PATH_CSH_SHELLVARS	= @<_PATH_CSH_SHELLVARS>@>()=
-PATH_CSH_SHELLVARS	= /var/news/etc/innshellvars.csh
-##  =()<PATH_SHELLVARS	= @<_PATH_SHELLVARS>@>()=
-PATH_SHELLVARS	= /var/news/etc/innshellvars
-##  =()<PATH_NNTPPASS	= @<_PATH_NNTPPASS>@>()=
-PATH_NNTPPASS	= /var/news/etc/passwd.nntp
-##  =()<PATH_PARSECTL	= @<_PATH_PARSECTL>@>()=
-PATH_PARSECTL	= /usr/local/news/bin/parsecontrol
-##  =()<PATH_CTLWATCH	= @<_PATH_CTLWATCH>@>()=
-PATH_CTLWATCH	= /var/news/etc/innwatch.ctl
-##  =()<PATH_PERL_STARTUP_INND	= @<_PATH_PERL_STARTUP_INND>@>()=
-PATH_PERL_STARTUP_INND	= /usr/local/news/bin/control/startup_innd.pl
-##  =()<PATH_PERL_FILTER_INND	= @<_PATH_PERL_FILTER_INND>@>()=
-PATH_PERL_FILTER_INND	= /usr/local/news/bin/control/filter_innd.pl
-##  =()<PATH_PERL_FILTER_NNRPD	= @<_PATH_PERL_FILTER_NNRPD>@>()=
-PATH_PERL_FILTER_NNRPD	= /usr/local/news/bin/control/filter_nnrpd.pl
-##  =()<PATH_TCL_STARTUP	= @<_PATH_TCL_STARTUP>@>()=
-PATH_TCL_STARTUP	= /usr/local/news/bin/control/startup.tcl
-##  =()<PATH_TCL_FILTER	= @<_PATH_TCL_FILTER>@>()=
-PATH_TCL_FILTER	= /usr/local/news/bin/control/filter.tcl
-##  =()<PATH_ACTSYNC_IGN = @<_PATH_ACTSYNC_IGN>@>()=
-PATH_ACTSYNC_IGN = /var/news/etc/actsync.ign
-##  =()<PATH_ACTSYNC_CFG = @<_PATH_ACTSYNC_CFG>@>()=
-PATH_ACTSYNC_CFG = /var/news/etc/actsync.cfg
-##  =()<PATH_MOTD = @<_PATH_MOTD>@>()=
-PATH_MOTD = /var/news/etc/motd.news
-##  =()<PATH_STORAGECTL = @<_PATH_STORAGECTL>@>()=
-PATH_STORAGECTL = /var/news/etc/storage.ctl
-##  =()<PATH_OVERVIEWCTL = @<_PATH_OVERVIEWCTL>@>()=
-PATH_OVERVIEWCTL = /var/news/etc/overview.ctl
+AWK	= @_PATH_AWK@
 
-##  =()<AWK	= @<_PATH_AWK>@>()=
-AWK	= /usr/bin/awk
-##  =()<CTLBIN	= @<_PATH_CONTROLPROGS>@>()=
-CTLBIN	= /usr/local/news/bin/control
-##  =()<NEWSLIB	= @<_PATH_NEWSLIB>@>()=
-NEWSLIB	= /var/news/etc
-##  =()<NEWSBIN	= @<_PATH_NEWSBIN>@>()=
-NEWSBIN	= /usr/local/news/bin
+NEWSLIB	= @prefix@/etc
+NEWSBIN	= @prefix@/bin
+
+CTLINND			= ${NEWSBIN}/ctlinnd
+CTLBIN			= ${NEWSBIN}/control
+PATH_PERL_STARTUP_INND	= ${NEWSBIN}/control/startup_innd.pl
+PATH_PERL_FILTER_INND	= ${NEWSBIN}/control/filter_innd.pl
+PATH_PERL_FILTER_NNRPD	= ${NEWSBIN}/control/filter_nnrpd.pl
+PATH_TCL_STARTUP	= ${NEWSBIN}/control/startup.tcl
+PATH_TCL_FILTER		= ${NEWSBIN}/control/filter.tcl
+PATH_NEWSBOOT		= ${NEWSBIN}/rc.news
+PATH_PARSECTL		= ${NEWSBIN}/parsecontrol
+
+PATH_CONFIG		= ${NEWSLIB}/inn.conf
+PATH_CONTROLCTL		= ${NEWSLIB}/control.ctl
+PATH_EXPIRECTL		= ${NEWSLIB}/expire.ctl
+PATH_INNDHOSTS		= ${NEWSLIB}/incoming.conf
+PATH_MODERATORS		= ${NEWSLIB}/moderators
+PATH_DISTPATS		= ${NEWSLIB}/distrib.pats
+PATH_NEWSFEEDS		= ${NEWSLIB}/newsfeeds
+PATH_NNRPACCESS		= ${NEWSLIB}/nnrp.access
+PATH_SCHEMA		= ${NEWSLIB}/overview.fmt
+PATH_PERL_SHELLVARS	= ${NEWSLIB}/innshellvars.pl
+PATH_TCL_SHELLVARS	= ${NEWSLIB}/innshellvars.tcl
+PATH_CSH_SHELLVARS	= ${NEWSLIB}/innshellvars.csh
+PATH_SHELLVARS		= ${NEWSLIB}/innshellvars
+PATH_NNTPPASS		= ${NEWSLIB}/passwd.nntp
+PATH_CTLWATCH		= ${NEWSLIB}/innwatch.ctl
+PATH_ACTSYNC_IGN	= ${NEWSLIB}/actsync.ign
+PATH_ACTSYNC_CFG	= ${NEWSLIB}/actsync.cfg
+PATH_MOTD		= ${NEWSLIB}/motd.news
+PATH_STORAGECTL		= ${NEWSLIB}/storage.ctl
+PATH_OVERVIEWCTL	= ${NEWSLIB}/overview.ctl
+
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
 

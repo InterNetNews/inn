@@ -22,18 +22,6 @@ dnl
 AC_ARG_WITH(perl,[  --with-perl             Perl script support], DO_PERL=DO, DO_PERL=DONT)
 AC_SUBST(DO_PERL)
 dnl
-AC_ARG_WITH(config-path,[  --with-config-path=PATH Configurations pathname (default /var/news/etc)], CONFPATH=$with_config_path, CONFPATH=/var/news/etc)
-AC_SUBST(CONFPATH)
-dnl
-AC_ARG_WITH(var-path,[  --with-var-path=PATH    Data files (history, etc) pathname (default /var/news/etc)], VARPATH=$with_var_path, VARPATH=/var/news/etc)
-AC_SUBST(VARPATH)
-dnl
-AC_ARG_WITH(run-path,[  --with-run-path=PATH    Running information pathname (default /var/news/run)], RUNPATH=$with_run_path, RUNPATH=/var/news/run)
-AC_SUBST(RUNPATH)
-dnl
-AC_ARG_WITH(lock-path,[  --with-lock-path=PATH   Directory for file locking (default /var/news/lock)], LOCKPATH=$with_lock_path, LOCKPATH=/var/news/locks)
-AC_SUBST(LOCKPATH)
-dnl
 AC_ARG_WITH(spool-dir,[  --with-spool-dir=PATH   News storage (default /var/news/spool)], SPOOLDIR=$with_spool_dir, SPOOLDIR=/var/news/spool)
 AC_SUBST(SPOOLDIR)
 dnl
@@ -70,7 +58,6 @@ AC_CACHE_CHECK(for bindir,ac_cv_subst_binpath,
 AC_SUBST(ac_cv_subst_binpath)
 
 dnl Checks for programs.
-AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -125,7 +112,7 @@ fi
 ])
 
 AC_ENSURE_PATH_PROG(ac_cv_subst_innwatch_df,df)
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_awk,awk)
+AC_ENSURE_PATH_PROG(_PATH_AWK, awk)
 AC_PATH_PROG(ac_cv_subst_path_compress,compress,no-compress-found-during-configure)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_egrep,egrep)
 AC_PATH_PROG(ac_cv_subst_path_gzip,gzip,no-gzip-found-during-configure)
@@ -134,7 +121,7 @@ dnl a single interface.
 dnl AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_perl,perl)
 AC_PATH_PROG(ac_cv_subst_path_pgp,pgp,no-pgp-found-during-configure)
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_sed,sed)
+AC_ENSURE_PATH_PROG(_PATH_SED, sed)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sort,sort)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sh,sh)
 dnl Even though it is common to have sendmail in /usr/lib, we
@@ -593,4 +580,4 @@ AC_SUBST(MISSING_OBJ)
 
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 AC_CONFIG_HEADER(include/config.h)
-AC_OUTPUT(config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefile innd/Makefile innfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/Makefile Makefile include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl)
+AC_OUTPUT(config/config.data backends/Makefile config/Makefile expire/Makefile frontends/Makefile innd/Makefile innfeed/Makefile lib/Makefile nnrpd/Makefile storage/timehash/Makefile storage/Makefile Makefile include/paths.h samples/inncheck samples/innshellvars samples/innshellvars.pl samples/innshellvars.csh samples/innshellvars.tcl site/Makefile)

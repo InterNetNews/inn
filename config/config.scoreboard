@@ -586,31 +586,6 @@
   ||##  What extension your compress appends
   ||#### =()<_PATH_COMPRESSEXT	@<_PATH_COMPRESSEXT>@>()=
   ||_PATH_COMPRESSEXT	.Z
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where egrep lives (you might need the FSF one; see scanlogs)
-  ||##[autoconf]
-  ||#### =()<_PATH_EGREP		@<_PATH_EGREP>@>()=
-  ||_PATH_EGREP		@ac_cv_subst_path_egrep@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where perl lives
-  ||##[autoconf]
-  ||#### =()<_PATH_PERL		@<_PATH_PERL>@>()=
-  ||_PATH_PERL		@ac_cv_subst_path_perl@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where awk lives
-  ||##[autoconf]
-  ||#### =()<_PATH_AWK		@<_PATH_AWK>@>()=
-  ||_PATH_AWK		@ac_cv_subst_path_awk@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where sed lives (you might need the FSF one)
-  ||##[autoconf]
-  ||#### =()<_PATH_SED		@<_PATH_SED>@>()=
-  ||_PATH_SED		@ac_cv_subst_path_sed@
-[IN1.7=@7][WDF=autoconf][WOR=yes]
-  ||##  Where sort lives (you may want the FSF one).
-  ||##[autoconf]
-  ||#### =()<_PATH_SORT		@<_PATH_SORT>@>()=
-  ||_PATH_SORT		@ac_cv_subst_path_sort@
 [IN1.7=@7][WDF=confparam][WOR=yes]
   ||##  Where temporary files live on the server
   ||##[autoconf]
@@ -630,44 +605,19 @@
   ||
   ||##
   ||##  8.  PATHS RELATED TO THE SPOOL DIRECTORY
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Spool directory, where articles live.
-  ||##[autoconf]
-  ||#### =()<_PATH_SPOOL		@<_PATH_SPOOL>@>()=
-  ||_PATH_SPOOL		@SPOOLDIR@/articles
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Spool directory where overview data lives.
-  ||##[autoconf]
-  ||#### =()<_PATH_OVERVIEWDIR	@<_PATH_OVERVIEWDIR>@>()=
-  ||_PATH_OVERVIEWDIR	@SPOOLDIR@/over.view
 [IN1.7=@8][WDF=fixed][WOR=yes]
   ||##  Name of overview file within its spool directory.
   ||#### =()<_PATH_OVERVIEW		@<_PATH_OVERVIEW>@>()=
   ||_PATH_OVERVIEW		.overview
 [IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Where rnews spools its input.
-  ||##[autoconf]
-  ||#### =()<_PATH_SPOOLNEWS		@<_PATH_SPOOLNEWS>@>()=
-  ||_PATH_SPOOLNEWS		@SPOOLDIR@/in.coming
-[IN1.7=@8][WDF=confparam][WOR=yes]
   ||##  Where rnews creates temporary files until finished
   ||##[autoconf]
   ||#### =()<_PATH_SPOOLTEMP		@<_PATH_SPOOLTEMP>@>()=
   ||_PATH_SPOOLTEMP		@TMPPATH@
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||##  Where rnews puts bad input.
-  ||##[autoconf]
-  ||#### =()<_PATH_BADNEWS		@<_PATH_BADNEWS>@>()=
-  ||_PATH_BADNEWS		@SPOOLDIR@/in.coming/bad
 [IN1.7=@8][WDF=fixed][WOR=yes][P=low]
   ||##  Where rnews puts bad input, relative to _PATH_SPOOLNEWS.
   ||#### =()<_PATH_RELBAD		@<_PATH_RELBAD>@>()=
   ||_PATH_RELBAD		bad
-[IN1.7=@8][WDF=confparam][WOR=yes]
-  ||## Where the XBATCH command should put the batches. Normally same as
-  ||## _PATH_SPOOLNEWS so that 'rnews -U' can find it.
-  ||#### =()<_PATH_XBATCHES		@<_PATH_XBATCHES>@>()=
-  ||_PATH_XBATCHES		@SPOOLDIR@/in.coming
 [IN1.7=@9][comments]
   ||
   ||
@@ -711,34 +661,9 @@
   ||#### =()<RNEWS_GROUP		@<RNEWS_GROUP>@>()=
   ||RNEWS_GROUP		uucp
 [IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The server's log file.
-  ||##[autoconf]
-  ||#### =()<_PATH_LOGFILE		@<_PATH_LOGFILE>@>()=
-  ||_PATH_LOGFILE		@LOGDIR@/news
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  The server's error log file.
-  ||##[autoconf]
-  ||#### =()<_PATH_ERRLOG		@<_PATH_ERRLOG>@>()=
-  ||_PATH_ERRLOG		@LOGDIR@/errlog
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where most sylog log files go; see also scanlogs, innstat, etc.
-  ||##[autoconf]
-  ||#### =()<_PATH_MOST_LOGS		@<_PATH_MOST_LOGS>@>()=
-  ||_PATH_MOST_LOGS		@LOGDIR@
-[IN1.7=@11][WDF=confparam][WOR=yes]
   ||##  How many generates of log files to keep.
   ||#### =()<LOG_CYCLES		@<LOG_CYCLES>@>()=
   ||LOG_CYCLES		3
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where batch files are located.
-  ||##[autoconf]
-  ||#### =()<_PATH_BATCHDIR		@<_PATH_BATCHDIR>@>()=
-  ||_PATH_BATCHDIR		@SPOOLDIR@/out.going
-[IN1.7=@11][WDF=confparam][WOR=yes]
-  ||##  Where archives are kept.
-  ||##[autoconf]
-  ||#### =()<_PATH_ARCHIVEDIR	@<_PATH_ARCHIVEDIR>@>()=
-  ||_PATH_ARCHIVEDIR	@SPOOLDIR@/archive
 [IN1.7=@11][WDF=confparam][WOR=yes]
   ||##  A temporary file, for client inews to use.
   ||##[autoconf]

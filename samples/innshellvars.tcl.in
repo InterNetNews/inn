@@ -9,6 +9,19 @@
 #               might need.
 
 set inn_newshome "@prefix@"
+set inn_spooldir "@SPOOLDIR@"
+set inn_most_logs "@LOGDIR@"
+
+set inn_errlog "${inn_most_logs}/errlog"
+set inn_log "${inn_most_logs}/news"
+
+set inn_batch "${inn_spooldir}/out.going"
+set inn_incoming "${inn_spooldir}/in.coming"
+set inn_spool "${inn_spooldir}/articles"
+set inn_overviewdir "${inn_spooldir}/over.view"
+set inn_archivedir "${inn_spooldir}/archive"
+set inn_badnews "${inn_spooldir}/in.coming/bad"
+set inn_spoolnews "${inn_spooldir}/in.coming"
 
 set inn_newslbin "${inn_newshome}/local"
 set inn_innddir "${inn_newshome}/run"
@@ -54,11 +67,13 @@ set inn_tempsockdir [ exec echo ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s@/[
 set inn_watchpid "${inn_innddir}/innwatch.pid"
 set inn_serverpid "${inn_innddir}/innd.pid"
 
-##  =()<set inn_awk "@<_PATH_AWK>@">()=
-set inn_awk "/usr/bin/awk"
+set inn_awk "@_PATH_AWK@"
+set inn_sed "@_PATH_SED@"
+set inn_perl "@_PATH_PERL@"
+set inn_inndf "@_PATH_DF@"
+set inn_egrep "@_PATH_EGREP@"
+set inn_sort "@_PATH_SORT@"
 
-##  =()<set inn_batch "@<_PATH_BATCHDIR>@">()=
-set inn_batch "/var/news/spool/out.going"
 
 ##  =()<set inn_compress "@<_PATH_COMPRESS>@">()=
 set inn_compress "/usr/bin/compress"
@@ -69,23 +84,8 @@ set inn_sendmail "/usr/lib/sendmail -t"
 ##  =()<scan "@<LOG_CYCLES>@" "%d" inn_cycles>()=
 scan "3" "%d" inn_cycles
 
-##  =()<set inn_inndf "@<INNWATCH_DF>@">()=
-set inn_inndf "/bin/df"
-
-##  =()<set inn_egrep "@<_PATH_EGREP>@">()=
-set inn_egrep "/usr/bin/egrep"
-
-##  =()<set inn_errlog "@<_PATH_ERRLOG>@">()=
-set inn_errlog "/var/log/news/errlog"
-
 ##  =()<set inn_have_uustat [ expr { "@<HAVE_UUSTAT>@" == "DO" ? 1 : 0 } ]>()=
 set inn_have_uustat [ expr { "DO" == "DO" ? 1 : 0 } ]
-
-##  =()<set inn_incoming "@<_PATH_SPOOLNEWS>@">()=
-set inn_incoming "/var/news/spool/in.coming"
-
-##  =()<set inn_log "@<_PATH_LOGFILE>@">()=
-set inn_log "/var/log/news/news"
 
 ##  =()<set inn_mail_badcontrols [ expr { "@<MAIL_BADCONTROLS>@" == "DO" ? 1 : 0 } ]>()=
 set inn_mail_badcontrols [ expr { "DONT" == "DO" ? 1 : 0 } ]
@@ -93,32 +93,14 @@ set inn_mail_badcontrols [ expr { "DONT" == "DO" ? 1 : 0 } ]
 ##  =()<set inn_mailcmd "@<_PATH_MAILCMD>@">()=
 set inn_mailcmd "/usr/bin/Mail"
 
-##  =()<set inn_most_logs "@<_PATH_MOST_LOGS>@">()=
-set inn_most_logs "/var/log/news"
-
 ##  =()<set inn_newsmaster "@<NEWSMASTER>@">()=
 set inn_newsmaster "usenet"
 
 ##  =()<set inn_newsuser "@<NEWSUSER>@">()=
 set inn_newsuser "news"
 
-##  =()<set inn_perl "@<_PATH_PERL>@">()=
-set inn_perl "/usr/bin/perl"
-
-##  =()<set inn_sed "@<_PATH_SED>@">()=
-set inn_sed "/usr/bin/sed"
-
-##  =()<set inn_sort "@<_PATH_SORT>@">()=
-set inn_sort "/usr/bin/sort"
-
 ##  =()<scan "@<INNWATCH_SLEEPTIME>@" "%d" inn_sleeptime>()=
 scan "600" "%d" inn_sleeptime
-
-##  =()<set inn_spool "@<_PATH_SPOOL>@">()=
-set inn_spool "/var/news/spool/articles"
-
-##  =()<set inn_overviewdir "@<_PATH_OVERVIEWDIR>@">()=
-set inn_overviewdir "/var/news/spool/over.view"
 
 ##  =()<set inn_want_pgpverify [ expr { "@<WANT_PGPVERIFY>@" == "DO" ? 1 : 0 } ]>()=
 set inn_want_pgpverify [ expr { "DO" == "DO" ? 1 : 0 } ]
@@ -137,15 +119,6 @@ if {[info exists env(TMPDIR)] != 1} {
     set env(TMPDIR) "/var/tmp"
 }
 set inn_tmpdir $env(TMPDIR)
-
-##  =()<set inn_archivedir "@<_PATH_ARCHIVEDIR>@">()=
-set inn_archivedir "/var/news/spool/archive"
-
-##  =()<set inn_badnews "@<_PATH_BADNEWS>@">()=
-set inn_badnews "/var/news/spool/in.coming/bad"
-
-#### =()<set inn_spoolnews "@<_PATH_SPOOLNEWS>@">()=
-set inn_spoolnews "/var/news/spool/in.coming"
 
 #### =()<set inn_spooltemp "@<_PATH_SPOOLTEMP>@">()=
 set inn_spooltemp "/var/tmp"
