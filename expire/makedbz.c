@@ -203,7 +203,7 @@ main(int argc, char **argv)
 {
     BOOL	Overwrite;
     BOOL	IgnoreOld;
-    OFFSET_T	size;
+    OFFSET_T	size = 0;
     int		i;
     char	*p;
 
