@@ -312,9 +312,10 @@ How many article writes between active and history file updates.
 .I bindaddress
 Which interface IP address
 .I innd
-should bind to. Must be in dotted-quad
-format (nnn.nnn.nnn.nnn). Defaults to the first interface allocated
-by the system.
+should bind to. Must be in dotted-quad format (nnn.nnn.nnn.nnn).
+If set to ``all'' or not set at all,
+.I innd
+defaults to listening on all interfaces.
 .TP
 .I port
 Which TCP port

@@ -364,7 +364,7 @@ if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
 		innconf->icdsynccount = atoi(p);
 	    }
 	    if (EQ(ConfigBuff,_CONF_INNBINDADDR)) {
-		if (EQ(p,"any"))
+		if (EQ(p,"all") || EQ(p,"any"))
 		    innconf->bindaddress =  NULL;
 		else
 		    innconf->bindaddress =  COPY(p);
