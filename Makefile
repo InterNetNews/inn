@@ -176,13 +176,3 @@ check-manifest:
 	sed -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
 	find . -print | sed -e 's/^\.\///' -e /CVS/d | sort > LIST.real
 	diff -u LIST.manifest LIST.real
-
-
-##  Rules to regenerate the documentation files at the top level of the
-##  source tree whose canonical source is in POD.  Only used by
-##  maintainers.
-HACKING:		doc/pod/hacking.pod	; $(POD2TEXT) $? > $@
-INSTALL:		doc/pod/install.pod	; $(POD2TEXT) $? > $@
-NEWS:			doc/pod/news.pod	; $(POD2TEXT) $? > $@
-README:			doc/pod/readme.pod	; $(POD2TEXT) $? > $@
-README.perl_hook:	doc/pod/hook-perl.pod	; $(POD2TEXT) $? > $@
