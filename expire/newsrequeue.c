@@ -784,14 +784,15 @@ main(ac, av)
     int			ac;
     char		*av[];
 {
-    register int	i;
-    register QIOSTATE	*qp;
-    register char	*p;
-    register char	*q;
-    register char	*r;
-    register char	*line;
-    register FILE	*art;
-    register FILE	*F;
+    int	i;
+    QIOSTATE		*qp;
+    char		*p;
+    char		*q;
+    char		*r;
+    char		*s;
+    char		*line;
+    FILE		*art;
+    FILE		*F;
     STRING		Active;
     STRING		History;
     STRING		Newsfeeds;
@@ -930,31 +931,60 @@ main(ac, av)
 	save = *++q;
 	*q = '\0';
 
-	/* Open the article. */
-	if ((art = FindFile(F, p, name)) == NULL)
-	    continue;
+	if (innconf->storageapi) {
+	    /* Skip the (filename) if it's there. */
+	    if (save != '\0' && ((r = strchr(q + 1, '(')) != NULL) &&
+		((s = strchr(r + 1, ')')) != NULL)) {
+		*s = '\0';
+		if (innconf->logartsize) {
+		    if ((s = strchr(s + 1, ' ')) != NULL)
+			(void)printf("%s %s %s\n", r + 1, p, s + 1);
+		    else
+			continue;
+		} else
+		    (void)printf("%s %s %s\n", r + 1, p, s + 1);
+	    } else {
+		continue;
+	    }
+	} else {
+	    /* Open the article. */
+	    if ((art = FindFile(F, p, name)) == NULL)
+		continue;
 
-	if (Logfile) {
-	    if (nntplinklog) {
-		/* Skip the (filename) if it's there. */
-		if (save != '\0' && (r = strchr(q + 1, ')')) != NULL)
-		    (void)printf("%s %s%s\n", name, p, r + 1);
-		else {
+	    if (Logfile) {
+		if (nntplinklog) {
+		    /* Skip the (filename) if it's there. */
+		    if (save != '\0' && (r = strchr(q + 1, ')')) != NULL)
+			if (innconf->logartsize) {
+			    if ((s = strchr(r + 1, ' ')) != NULL)
+				(void)printf("%s %s%s\n", name, p, s + 1);
+			    else
+				continue;
+			} else
+			    (void)printf("%s %s%s\n", name, p, r + 1);
+		    else {
+			*q = save;
+			if (innconf->logartsize) {
+			    if ((r = strchr(q + 1, ' ')) != NULL)
+				(void)printf("%s %s\n", name, r + 1);
+			    else
+				continue;
+			} else
+			    (void)printf("%s %s\n", name, p);
+		    }
+		} else {
 		    *q = save;
 		    (void)printf("%s %s\n", name, p);
 		}
-	    } else {
-		*q = save;
-		(void)printf("%s %s\n", name, p);
-	    }
 
-	    if (fflush(stdout) == EOF || ferror(stdout))
-		(void)fprintf(stderr, "Can't write %s, %s\n",
-			p, strerror(errno));
+		if (fflush(stdout) == EOF || ferror(stdout))
+		    (void)fprintf(stderr, "Can't write %s, %s\n",
+			    p, strerror(errno));
+	    }
+	    else
+		QueueArticle(name, p, art);
+	    (void)fclose(art);
 	}
-	else
-	    QueueArticle(name, p, art);
-	(void)fclose(art);
     }
 
     /* That's all she wrote. */
