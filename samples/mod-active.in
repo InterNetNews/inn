@@ -95,7 +95,7 @@ ctlinnd
   local($command) = @_;
 
   print "ctlinnd $command\n" if $debug;
-  if (system("/usr/news/bin/ctlinnd -s $command")) {
+  if (system("$inn::newsbin/ctlinnd -s $command")) {
     die "$0: \"$command\" failed, aborting\n";
   }
 }
