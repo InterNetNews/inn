@@ -177,6 +177,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     int got;
     fd_set rdfds;
     uint32_t nvalue;
+    ARGTYPE slen;
 
     /* first, build the sockaddrs */
     memset(&sinl, '\0', sizeof(sinl));
@@ -346,9 +347,9 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	    tmout.tv_usec = 0;
 	    continue;
 	}
-	jlen = sizeof(sinl);
+	slen = sizeof(sinl);
 	if ((jlen = recvfrom(sock, (char *)&req, sizeof(req)-sizeof(int), 0, 
-	                     (struct sockaddr*) &sinl, &jlen)) < 0) {
+	                     (struct sockaddr*) &sinl, &slen)) < 0) {
 	    fprintf(stderr, "radius: couldnt recvfrom: %s\n", strerror(errno));
 	    break;
 	}
