@@ -140,7 +140,7 @@ STORAGE_SUB *SMGetConfig(STORAGETYPE type, STORAGE_SUB *sub) {
     return (STORAGE_SUB *)NULL;
 }
 
-static time_t parse_time(char *tmbuf)
+static time_t ParseTime(char *tmbuf)
 {
     char *startnum;
     time_t ret;
@@ -170,6 +170,7 @@ static time_t parse_time(char *tmbuf)
 	      default:
 		return(0);
 	    }
+	    startnum = tmbuf+1;
 	}
 	tmbuf++;
     }
@@ -295,9 +296,9 @@ static BOOL SMreadconfig(void) {
 		    q = strchr(p, ',');
 		    if (q)
 			*q++ = 0;
-		    minexpire = parse_time(p);
+		    minexpire = ParseTime(p);
 		    if (q)
-			maxexpire = parse_time(q);
+			maxexpire = ParseTime(q);
 		    break;
 		  case SMoptions:
 		    if (options)
