@@ -239,7 +239,7 @@ STATIC int ARTfind(ARTNUM i)
 	if (i == middle->ArtNum) {
 	    /* Found it; update cache. */
 	    ARTcache = middle;
-	    return middle->ArtNum - ARTnumbers->ArtNum;
+	    return middle- ARTnumbers;
 	}
 
 	if (i > middle->ArtNum)
