@@ -43,6 +43,7 @@ QIOfdopen(fd, size)
     qp->Count = 0;
     qp->Start = qp->Buffer;
     qp->End = qp->Buffer;
+    qp->WireFormat = -1;
 
     return qp;
 }
@@ -106,24 +107,35 @@ char *
 QIOread(qp)
     QIOSTATE	*qp;
 {
-    register char	*p;
-    register char	*q;
-    char		*save;
-    int			i;
+    register char       *p;
+    register char       *q;
+    char                *save;
+    int                 i;
 
     while (TRUE) {
-        
+
         /* Read from buffer if there is any data there. */
         if (qp->End > qp->Start) {
 
             /* Find the newline. */
-            p = memchr((POINTER)qp->Start,'\n',(SIZE_T)(qp->End - qp->Start));
+            p = memchr((POINTER)qp->Start, '\n', (SIZE_T)(qp->End - qp->Start));
             if (p != NULL) {
-                *p = '\0';
-                qp->Length = p - qp->Start;
+                if ((qp->WireFormat == 1) && (*(p-1) == '\r')) {
+                    *(p-1) = '\0';
+                    qp->Length = p - qp->Start - 1;
+                } else {
+                    *p = '\0';
+                    qp->Length = p - qp->Start;
+                }
                 save = qp->Start;
                 qp->Start = p + 1;
                 qp->flag = QIO_ok;
+                if (qp->WireFormat && (*save == '.')) {
+		    qp->Length--;
+                    if (qp->Length)
+                        return save + 1;
+                    return NULL;
+                }
                 return save;
             }
 
@@ -151,14 +163,29 @@ QIOread(qp)
         /* Now try to find it. */
         p = memchr((POINTER)qp->Start, '\n', (SIZE_T)(qp->End - qp->Start));
         if (p != NULL) {
-            *p = '\0';
-            qp->Length = p - qp->Start;
+            if ((qp->WireFormat == -1) && (p != qp->Start) && (*(p-1) == '\r'))
+                qp->WireFormat = 1;
+            else if (qp->WireFormat == -1)
+                qp->WireFormat = 0;
+            if ((qp->WireFormat == 1) && (*(p-1) == '\r')) {
+                *(p-1) = '\0';
+                qp->Length = p - qp->Start - 1;
+            } else {
+                *p = '\0';
+                qp->Length = p - qp->Start;
+            }
             save = qp->Start;
             qp->Start = p + 1;
             qp->flag = QIO_ok;
+            if (qp->WireFormat && (*save == '.')) {
+		qp->Length--;
+                if (qp->Length)
+                    return save + 1;
+                return NULL;
+            }
             return save;
         }
-        
+
         if ((qp->End - qp->Start) >= qp->Size) {
             /* Still not there and buffer is full -- line is too long. */
             qp->flag = QIO_long;

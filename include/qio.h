@@ -16,6 +16,7 @@ typedef struct _QIOSTATE {
     char	*End;
     char	*Start;
     long	Count;
+    int         WireFormat;
 } QIOSTATE;
 
     /* A reasonable buffersize to use. */
