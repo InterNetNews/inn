@@ -279,8 +279,12 @@ STATIC BOOL ovparse_part_line(char *l) {
   tonextblock = OV_HDR_PAGESIZE - (base & (OV_HDR_PAGESIZE - 1));
   ovbuff->base = base + tonextblock;
   if (S_ISREG(sb.st_mode) && (len != sb.st_size || ovbuff->base > sb.st_size)) {
-    syslog(L_NOTICE, "%s: length must be at least '%ld' for index '%d' (%ld bytes)",
-      LocalLogName, ovbuff->base, ovbuff->index, sb.st_size);
+    if (len != sb.st_size)
+      syslog(L_NOTICE, "%s: length mismatch '%ld' for index '%d' (%ld bytes)",
+        LocalLogName, len, ovbuff->index, sb.st_size);
+    if (ovbuff->base > sb.st_size)
+      syslog(L_NOTICE, "%s: length must be at least '%ld' for index '%d' (%ld bytes)",
+        LocalLogName, ovbuff->base, ovbuff->index, sb.st_size);
     DISPOSE(ovbuff);
     return FALSE;
   }
@@ -1631,7 +1635,7 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
     for (j = 0 ; j < OVINDEXMAX ; j++)
       ovblks[i].ovblock->ovindex[j].index = NULLINDEX;
     if (i == 0 && type == PREPEND_BLK && ge->base - 1 < nblocks * OVINDEXMAX)
-      ovblks[i].ovblock->ovindexhead.baseoffset = OVINDEXMAX - fudge;
+      ovblks[i].ovblock->ovindexhead.baseoffset = nblocks * OVINDEXMAX - ge->base;
     ovblks[i].ovblock->ovindexhead.base = base;
     ovblks[i].indexov = ov;
   }
@@ -1669,9 +1673,13 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
     }
     ovblock = (OVBLOCK *)(addr + pagefudge);
     for (i = 0 ; i < nblocks ; i++ ) {
-      if (i == 0)
+      if (i == 0) {
 	ovblks[i].ovblock->ovindexhead.prev = ovnull;
-      else
+	if (ovblks[i].ovblock->ovindexhead.baseoffset == 0)
+	  ge->base -= delta;
+	else
+	  ge->base = 1;
+      } else
 	ovblks[i].ovblock->ovindexhead.prev = ovblks[i-1].indexov;
       if (i < nblocks - 1)
 	ovblks[i].ovblock->ovindexhead.next = ovblks[i+1].indexov;
@@ -1680,7 +1688,6 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
 	ovblks[i].ovblock->ovindexhead.next = ge->baseindex;
       }
     }
-    ge->base -= delta;
     ge->baseinblock = ge->base;
     ge->nextindex = ovblks[0].ovblock->ovindexhead.next;
     ge->baseindex = ge->curindex = ovblks[0].indexov;
