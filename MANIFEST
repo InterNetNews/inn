@@ -13,9 +13,7 @@ TODO                                  The list of pending INN projects
 aclocal.m4                            M4 macro for libtool
 authprogs                             The authentication programs (Directory)
 authprogs/Makefile                    Makefile for auth programs
-authprogs/README.auth_pass            The auth programs README
 authprogs/README.readers.conf         Developer docs for readers.conf
-authprogs/auth_pass.c                 Sample for use with AUTHINFO GENERIC
 authprogs/auth_smb.c                  Authenticator against samba servers
 authprogs/ckpasswd.c                  Check password
 authprogs/domain.c                    Get username from remote user's hostname
@@ -80,6 +78,8 @@ contrib                               External contributions (Directory)
 contrib/Makefile                      Makefile for contrib programs
 contrib/README                        Contents of the contrib directory
 contrib/archivegz.in                  Compressing version of archive
+contrib/auth_pass.README              README corresponding to auth_pass.c
+contrib/auth_pass.c                   Sample for use with AUTHINFO GENERIC
 contrib/backupfeed.in                 Suck down news via a reading connection
 contrib/cleannewsgroups.in            Script to clean newsgroups file
 contrib/count_overview.pl             Count overview entries

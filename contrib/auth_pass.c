@@ -70,11 +70,8 @@ main(int argc, char** argv)
     int			length;
     char		password[256];
     char		peername[1024];
-#ifdef HAVE_INET6
-    char		tmpname[1048];
-#endif
     struct passwd *	pwd;
-    struct sockaddr_storage	ss;
+    struct sockaddr_in	sin;
     char		username[32];
 
     /*
@@ -108,39 +105,23 @@ main(int argc, char** argv)
     /*
      *  Get the hostname of the peer.
      */
-    length = sizeof(ss);
-    if (getpeername(0, (struct sockaddr *)&ss, &length) < 0) {
+    length = sizeof(sin);
+    if (getpeername(0, (struct sockaddr *)&sin, &length) < 0) {
         if (!isatty(0)) {
             fprintf(stderr, "cant getpeername()::%s:+:!*\n", username);
             exit(1);
         }
         (void)strcpy(peername, "stdin");
-    } else if (ss.ss_family != AF_INET
-#ifdef HAVE_INET6
-	    && ss.ss_family != AF_INET6
-#endif
-	    ) {
+    } else if (sin.sin_family != AF_INET) {
         fprintf(stderr, "Bad address family %ld::%s:+:!*\n",
-                (long)ss.ss_family, username);
+                (long)sin.sin_family, username);
         exit(1);
-#ifdef HAVE_INET6
-    } else {
-	getnameinfo((struct sockaddr *)&ss, SA_LEN((struct sockaddr *)&ss),
-		peername, sizeof peername, NULL, 0, 0);
-	if (strchr(peername, ':') != NULL) {
-	    sprintf(tmpname, "[%s]", peername);
-	    if (strlen(tmpname) < sizeof peername)
-		strcpy(peername, tmpname);
-	}
-    }
-#else
     } else if ((hp = gethostbyaddr((char *)&sin.sin_addr, sizeof(sin.sin_addr), AF_INET)) == NULL) {
         strcpy(peername, inet_ntoa(sin.sin_addr));
     } else {
         strncpy(peername, hp->h_name, sizeof(peername));
     }
-#endif
-
+   
     /*
      *  Get the user name in the passwd file.
      */
