@@ -75,7 +75,11 @@ main(int argc, char *argv[])
     char *p;
     char **innd_argv;
     char pflag[SMBUF];
+#ifdef PURIFY
+    char *innd_env[11];
+#else
     char *innd_env[9];
+#endif
 
     /* Set up the error handlers.  Always print to stderr, and for warnings
        also syslog with a priority of LOG_ERR.  For fatal errors, also
@@ -246,6 +250,15 @@ main(int argc, char *argv[])
     p = getenv("TZ");
     if (p != NULL)
         innd_env[i++] = concat("TZ=", p, (char *) 0);
+#ifdef PURIFY
+    /* you have to compile with `purify cc -DPURIFY' to get this */
+    p = getenv("DISPLAY");
+    if (p != NULL)
+        innd_env[i++] = concat("DISPLAY=", p, (char *) 0);
+    p = getenv("PURIFYOPTIONS");
+    if (p != NULL)
+        innd_env[i++] = concat("PURIFYOPTIONS=", p, (char *) 0);
+#endif
     innd_env[i] = 0;
 
     /* Go exec innd. */
