@@ -193,6 +193,7 @@ void CMDnewnews(int ac, char *av[]) {
   static char	**groups;
   char		*group;
   char		*p, *q;
+  char          *path;
   bool		AllDists;
   bool		AllGroups;
   char		**distribs;
@@ -264,15 +265,19 @@ void CMDnewnews(int ac, char *av[]) {
     AllDists = FALSE;
   }
 
-  if ((qp = QIOopen(cpcatpath(innconf->pathdb, _PATH_ACTIVE))) == NULL) {
+  path = concatpath(innconf->pathdb, _PATH_ACTIVE);
+  qp = QIOopen(path);
+  if (qp == NULL) {
     if (errno == ENOENT) {
       Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
     } else {
-      syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+      syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, path);
       Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
     }
+    free(path);
     return;
   }
+  free(path);
 
   Reply("%s\r\n", NNTP_NEWNEWSOK);
 

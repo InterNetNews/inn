@@ -96,7 +96,7 @@ sasl_config_read()
     static char *SASL_CONFIG = NULL;
 
     if (!SASL_CONFIG)
-	SASL_CONFIG = COPY(cpcatpath(innconf->pathetc, _PATH_SASL_CONFIG));
+	SASL_CONFIG = concatpath(innconf->pathetc, _PATH_SASL_CONFIG);
     infile = fopen(SASL_CONFIG, "r");
     if (!infile) {
       fprintf(stderr, "can't open configuration file %s\n", SASL_CONFIG);

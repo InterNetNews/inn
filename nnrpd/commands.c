@@ -412,6 +412,7 @@ CMDlist(int ac, char *av[])
     QIOSTATE	*qp;
     char	*p;
     char	*save;
+    char        *path;
     char		*q;
     char		*grplist[2];
     LISTINFO		*lp;
@@ -475,7 +476,10 @@ CMDlist(int ac, char *av[])
 		lp->Path = innconf->pathdb;
     if (strchr(lp->File, '/') != NULL)
 	lp->Path = "";
-    if ((qp = QIOopen(cpcatpath((char *)lp->Path, (char *)lp->File))) == NULL) {
+    path = concatpath(lp->Path, lp->File);
+    qp = QIOopen(path);
+    free(path);
+    if (qp == NULL) {
 	if (!lp->Required && errno == ENOENT) {
 	    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
 	    Printf(".\r\n");
