@@ -841,6 +841,7 @@ static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
     case DB_NOTFOUND:
 	break;
     default:
+        dbcursor->c_close(dbcursor);
 	return ret;
     }
 
@@ -853,6 +854,7 @@ static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
 	    break;
 	case DB_LOCK_DEADLOCK:
 	default:
+            dbcursor->c_close(dbcursor);
 	    return ret;
 	}
 	ret = dbcursor->c_get(dbcursor, &key, &val, DB_NEXT);
@@ -862,6 +864,7 @@ static int delete_all_records(int whichdb, group_id_t gno, DB_TXN *tid)
 	    break;
 	case DB_LOCK_DEADLOCK:
 	default:
+            dbcursor->c_close(dbcursor);
 	    return ret;
 	}
     }
