@@ -105,7 +105,7 @@ void HISsetup(void)
 #ifdef	DO_TAGGED_HASH
 	opt.pag_incore = INCORE_MMAP;
 #else
-	opt.idx_incore = INCORE_NO;
+	opt.pag_incore = INCORE_NO;
 	opt.exists_incore = HISincore ? INCORE_MMAP : INCORE_NO;
 #endif
 	dbzsetoptions(opt);
@@ -190,9 +190,6 @@ char *HISfilesfor(const HASH MessageID)
     OFFSET_T		offset;
     char	        *p;
     int	                i;
-#ifndef DO_TAGGED_HASH
-    idxrec		ionevalue;
-#endif
 
     TMRstart(TMR_HISGREP);
     
@@ -200,18 +197,10 @@ char *HISfilesfor(const HASH MessageID)
     	return NULL;
     
     /* Get the seek value into the history file. */
-#ifdef	DO_TAGGED_HASH
-    if ((offset = dbzfetch(MessageID)) < 0) {
+    if (!dbzfetch(MessageID, &offset)) {
 	TMRstop(TMR_HISGREP);
 	return NULL;
     }
-#else
-	if (!dbzfetch(MessageID, &ionevalue)) {
-	    TMRstop(TMR_HISGREP);
-	    return NULL;
-	}
-	offset = ionevalue.offset;
-#endif
     TMRstop(TMR_HISGREP);
 
     /* Get space. */
@@ -303,10 +292,6 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
     static char		NOPATHS[] = "";
     OFFSET_T		offset;
     int			i;
-#ifndef DO_TAGGED_HASH
-    void		*ivalue;
-    idxrec		ionevalue;
-#endif
     
     if (HISwritefp == NULL)
         return FALSE;
@@ -341,7 +326,6 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
     }
 
     /* Set up the database values and write them. */
-#ifdef	DO_TAGGED_HASH
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
@@ -349,17 +333,6 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
-#else
-        ionevalue.offset = offset;
-        ivalue = (void *)&ionevalue;
-    if (dbzstore(hash, ivalue) == DBZSTORE_ERROR) {
-	i = errno;
-	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
-	IOError("history database", i);
-	TMRstop(TMR_HISWRITE);
-	return FALSE;
-    }
-#endif
     HIScacheadd(hash, TRUE);
     TMRstop(TMR_HISWRITE);
     
@@ -375,10 +348,6 @@ BOOL HISremember(const HASH hash)
 {
     OFFSET_T		offset;
     int			i;
-#ifndef DO_TAGGED_HASH
-    void		*ivalue;
-    idxrec		ionevalue;
-#endif
 
     TMRstart(TMR_HISWRITE);
     
@@ -402,7 +371,6 @@ BOOL HISremember(const HASH hash)
     } 
 
     /* Set up the database values and write them. */
-#ifdef	DO_TAGGED_HASH
     if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
@@ -410,17 +378,6 @@ BOOL HISremember(const HASH hash)
 	TMRstop(TMR_HISWRITE);
 	return FALSE;
     }
-#else
-        ionevalue.offset = offset;
-        ivalue = (void *)&ionevalue;
-    if (dbzstore(hash, ivalue) == DBZSTORE_ERROR) {
-	i = errno;
-	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
-	IOError("history database", i);
-	TMRstop(TMR_HISWRITE);
-	return FALSE;
-    }
-#endif
     HIScacheadd(hash, TRUE);
     TMRstop(TMR_HISWRITE);
     
