@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <syslog.h>  
 
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -120,27 +121,18 @@ QuitServer(int x)
     if (Spooling)
 	exit(x);
     if (x)
-	(void)fprintf(stderr, "(Article not posted.)\n");
+        warn("article not posted");
     (void)fprintf(ToServer, "quit\r\n");
-    if (FLUSH_ERROR(ToServer)) {
-	(void)fprintf(stderr, "Can't send quit to server, %s\n",
-		strerror(errno));
-	exit(1);
-    }
-    if (fgets(buff, sizeof buff, FromServer) == NULL) {
-	(void)fprintf(stderr, "Warning -- server did not reply to quit, %s\n",
-		strerror(errno));
-	exit(1);
-    }
+    if (FLUSH_ERROR(ToServer))
+        sysdie("cannot send quit to server");
+    if (fgets(buff, sizeof buff, FromServer) == NULL)
+        sysdie("warning: server did not reply to quit");
     if ((p = strchr(buff, '\r')) != NULL)
 	*p = '\0';
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
-    if (atoi(buff) != NNTP_GOODBYE_ACK_VAL) {
-	(void)fprintf(stderr, "Server didn't reply to quit properly:\n\t%s\n",
-		buff);
-	exit(1);
-    }
+    if (atoi(buff) != NNTP_GOODBYE_ACK_VAL)
+        die("server did not reply to quit properly: %s", buff);
     (void)fclose(FromServer);
     (void)fclose(ToServer);
     exit(x);
@@ -148,17 +140,19 @@ QuitServer(int x)
 
 
 /*
-**  Print and error message (with errno) and exit with an error code.
+**  Failure handler, called by die.  Calls QuitServer to cleanly shut down the
+**  connection with the remote server before exiting.
 */
-static void
-PerrorExit(bool ShouldQuit, const char *s)
+static int
+fatal_cleanup(void)
 {
-    fprintf(stderr, "%s, %s.\n", s, strerror(errno));
-    if (ShouldQuit)
-	QuitServer(1);
-    exit(1);
-}
+    /* Don't recurse. */
+    message_fatal_cleanup = NULL;
 
+    /* QuitServer does all the work. */
+    QuitServer(1);
+    return 1;
+}
 
 
 /*
@@ -168,7 +162,7 @@ static void
 SafeFlush(FILE *F)
 {
     if (FLUSH_ERROR(F))
-	PerrorExit(TRUE, "Can't send text to server");
+        sysdie("cannot send text to server");
 }
 
 
@@ -196,10 +190,8 @@ static char *
 NextHeader(register char *p)
 {
     for ( ; ; p++) {
-	if ((p = strchr(p, '\n')) == NULL) {
-	    (void)fprintf(stderr, "Article is all headers.\n");
-	    QuitServer(1);
-	}
+	if ((p = strchr(p, '\n')) == NULL)
+            die("article is all headers");
 	if (!ISWHITE(p[1])) {
 	    *p = '\0';
 	    return p + 1;
@@ -228,11 +220,8 @@ StripOffHeaders(char *article)
     /* Scan through buffer, a header at a time. */
     for (i = 0, p = article; ; i++) {
 
-	if ((q = strchr(p, ':')) == NULL) {
-	    (void)fprintf(stderr, "No colon in header line \"%.20s...\"\n",
-		    p);
-	    QuitServer(1);
-	}
+	if ((q = strchr(p, ':')) == NULL)
+            die("no colon in header line \"%.30s...\"", p);
 	if (q[1] == '\n' && !ISWHITE(q[2])) {
 	    /* Empty header; ignore this one, get next line. */
 	    p = NextHeader(p);
@@ -243,8 +232,7 @@ StripOffHeaders(char *article)
 	if (q[1] != '\0' && !ISWHITE(q[1])) {
 	    if ((q = strchr(q, '\n')) != NULL)
 		*q = '\0';
-	    (void)fprintf(stderr, "No space after colon in \"%.20s...\"\n", p);
-	    QuitServer(1);
+            die("no space after colon in \"%.30s...\"", p);
 	}
 
 	/* See if it's a known header. */
@@ -254,16 +242,10 @@ StripOffHeaders(char *article)
 	     && p[hp->Size] == ':'
 	     && ISWHITE(p[hp->Size + 1])
 	     && caseEQn(p, hp->Name, hp->Size)) {
-		if (hp->Type == HTobs) {
-		    (void)fprintf(stderr, "Obsolete \"%s\" header.\n",
-			    hp->Name);
-		    QuitServer(1);
-		}
-		if (hp->Value) {
-		    (void)fprintf(stderr, "Duplicate \"%s\" header.\n",
-			    hp->Name);
-		    QuitServer(1);
-		}
+		if (hp->Type == HTobs)
+                    die("obsolete header: %s", hp->Name);
+		if (hp->Value)
+                    die("duplicate header: %s", hp->Name);
 		for (q = &p[hp->Size + 1]; ISWHITE(*q); q++)
 		    continue;
 		hp->Value = q;
@@ -271,10 +253,8 @@ StripOffHeaders(char *article)
 	    }
 
 	/* Too many headers? */
-	if (++i > 5 * HEADER_DELTA) {
-	    (void)fprintf(stderr, "More than %d lines of header.\n", i);
-	    QuitServer(1);
-	}
+	if (++i > 5 * HEADER_DELTA)
+            die("more than %d lines of header", i);
 
 	/* No; add it to the set of other headers. */
 	if (hp == ENDOF(Table)) {
@@ -315,8 +295,7 @@ CheckCancel(char *msgid, bool JustReturn)
      || atoi(buff) != NNTP_HEAD_FOLLOWS_VAL) {
 	if (JustReturn)
 	    return;
-	(void)fprintf(stderr, "Server has no such article.\n");
-	QuitServer(1);
+        die("server has no such article");
     }
 
     /* Read the headers, looking for the From or Sender. */
@@ -340,8 +319,7 @@ CheckCancel(char *msgid, bool JustReturn)
     if (remotefrom[0] == '\0') {
 	if (JustReturn)
 	    return;
-	(void)fprintf(stderr, "Article is garbled.\n");
-	QuitServer(1);
+        die("article is garbled");
     }
     HeaderCleanFrom(remotefrom);
 
@@ -351,12 +329,9 @@ CheckCancel(char *msgid, bool JustReturn)
     HeaderCleanFrom(localfrom);
 
     /* Is the right person cancelling? */
-    if (!caseEQ(localfrom, remotefrom)) {
-	(void)fprintf(stderr,
-		"Article was posted by \"%s\" and you are \"%s\".\n",
-		remotefrom, localfrom);
-	QuitServer(1);
-    }
+    if (!caseEQ(localfrom, remotefrom))
+        die("article was posted by \"%s\" and you are \"%s\"", remotefrom,
+            localfrom);
 }
 
 
@@ -410,20 +385,16 @@ CheckControl(char *ctrl, struct passwd *pwp)
 	continue;
     for (ctrl = p; *p && !ISWHITE(*p); p++)
 	continue;
-    if (p == ctrl) {
-	(void)fprintf(stderr, "Empty control message.\n");
-	QuitServer(1);
-    }
+    if (p == ctrl)
+        die("emtpy control message");
     save = *p;
     *p = '\0';
 
     if (EQ(ctrl, "cancel")) {
 	for (q = p + 1; ISWHITE(*q); q++)
 	    continue;
-	if (*q == '\0') {
-	    (void)fprintf(stderr, "Message-ID missing in cancel.\n");
-	    QuitServer(1);
-	}
+	if (*q == '\0')
+            die("message ID missing in cancel");
 	if (!Spooling)
 	    CheckCancel(q, FALSE);
     }
@@ -437,17 +408,11 @@ CheckControl(char *ctrl, struct passwd *pwp)
 	  || EQ(ctrl, "version")) {
 	strncpy(name, pwp->pw_name, SMBUF);
         name[SMBUF - 1] = '\0';
-	if (!AnAdministrator(name, pwp->pw_gid)) {
-	    (void)fprintf(stderr,
-		    "Ask your news administrator to do the \"%s\" for you.\n",
-		    ctrl);
-	    QuitServer(1);
-	}
+	if (!AnAdministrator(name, pwp->pw_gid))
+            die("ask your news administrator to do the %s for you", ctrl);
     }
     else {
-	(void)fprintf(stderr, "\"%s\" is not a valid control message.\n",
-		ctrl);
-	QuitServer(1);
+        die("%s is not a valid control message", ctrl);
     }
     *p = save;
 }
@@ -540,16 +505,12 @@ static void CheckDistribution(char *p)
     static char	SEPS[] = " \t,";
     const char  * const *dp;
 
-    if ((p = strtok(p, SEPS)) == NULL) {
-	(void)fprintf(stderr, "Can't parse Distribution line.\n");
-	QuitServer(1);
-    }
+    if ((p = strtok(p, SEPS)) == NULL)
+        die("cannot parse Distribution header");
     do {
 	for (dp = BadDistribs; *dp; dp++)
-	    if (uwildmat(p, *dp)) {
-		(void)fprintf(stderr, "Illegal distribution \"%s\"\n", p);
-		QuitServer(1);
-	    }
+	    if (uwildmat(p, *dp))
+                die("illegal distribution %s", p);
     } while ((p = strtok((char *)NULL, SEPS)) != NULL);
 }
 
@@ -566,15 +527,11 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     TIMEINFO		Now;
     char		buff[SMBUF];
     char		from[SMBUF];
-    int			i;
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ENDOF(Table); hp++) {
-	if (!hp->CanSet && hp->Value) {
-	    (void)fprintf(stderr, "Can't set system \"%s\" header.\n",
-		    hp->Name);
-	    QuitServer(1);
-	}
+	if (!hp->CanSet && hp->Value)
+            die("cannot set system header %s", hp->Name);
 	if (hp->Value) {
 	    hp->Value = TrimSpaces(hp->Value);
 	    if (*hp->Value == '\0')
@@ -584,14 +541,12 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 
     /* Set From or Sender. */
     if ((p = innconf->fromhost) == NULL)
-	PerrorExit(TRUE, "Can't get host name");
+        sysdie("cannot get hostname");
     if (HDR(_from) == NULL)
 	HDR(_from) = FormatUserName(pwp, p);
     else {
-      if (strlen(pwp->pw_name) + strlen(p) + 2 > sizeof(buff)) {
-          fprintf(stderr, "Username and host too long\n");
-          QuitServer(1);
-      }
+      if (strlen(pwp->pw_name) + strlen(p) + 2 > sizeof(buff))
+          die("username and host are too long");
       (void)sprintf(buff, "%s@%s", pwp->pw_name, p);
       (void)strncpy(from, HDR(_from), SMBUF);
       from[SMBUF - 1] = '\0';
@@ -601,10 +556,8 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     }
 
     /* Set Date. */
-    if (!makedate(-1, false, buff, sizeof(buff))) {
-        fprintf(stderr, "Can't generate \"Date\" header\n");
-        QuitServer(1);
-    }
+    if (!makedate(-1, false, buff, sizeof(buff)))
+        die("cannot generate Date header");
     HDR(_date) = COPY(buff);
 
     /* Newsgroups are checked later. */
@@ -615,66 +568,46 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     }
     else {
 	p = HDR(_subject);
-	if (p == NULL) {
-	    (void)fprintf(stderr,
-		    "Required \"Subject\" header is missing or empty.\n");
-	    QuitServer(1);
-	}
+	if (p == NULL)
+            die("required Subject header is missing or empty");
 	else if (HDR(_alsocontrol))
 	    CheckControl(HDR(_alsocontrol), pwp);
 #if	0
-	if (EQn(p, "Re: ", 4) && HDR(_references) == NULL) {
-	    (void)fprintf(stderr,
-		    "Article starts with \"Re: \" but has no references.\n");
-	    QuitServer(1);
-	}
+	if (EQn(p, "Re: ", 4) && HDR(_references) == NULL)
+            die("article subject begins with \"Re: \" but has no references");
 #endif	/* 0 */
     }
 
     /* Set Message-ID */
     if (HDR(_messageid) == NULL) {
-	if ((p = GenerateMessageID(innconf->domain)) == NULL) {
-	    (void)fprintf(stderr, "Can't generate Message-ID, %s\n",
-		    strerror(errno));
-	    QuitServer(1);
-	}
+	if ((p = GenerateMessageID(innconf->domain)) == NULL)
+            die("cannot generate Message-ID header");
 	HDR(_messageid) = COPY(p);
     }
     else if ((p = strchr(HDR(_messageid), '@')) == NULL
-	   || strchr(++p, '@') != NULL) {
-	(void)fprintf(stderr, "Message-ID must have exactly one '@'\n");
-	QuitServer(1);
+             || strchr(++p, '@') != NULL) {
+        die("message ID must have exactly one @");
     }
 
     /* Set Path */
     if (HDR(_path) == NULL) {
-	i = strlen(Exclusions) + STRLEN(PATHFLUFF);
 #if	defined(DO_INEWS_PATH)
 	if ((p = innconf->pathhost) != NULL) {
-	    i += strlen(p) + 1;
-	    HDR(_path) = NEW(char, i + 1);
 	    if (*p)
-		(void)sprintf(HDR(_path), "%s%s!%s", Exclusions, p, PATHFLUFF);
+                HDR(_path) = concat(Exclusions, p, "!", PATHFLUFF, (char *) 0);
 	    else
-		(void)sprintf(HDR(_path), "%s%s", Exclusions, PATHFLUFF);
+                HDR(_path) = concat(Exclusions, PATHFLUFF, (char *) 0);
 	}
 	else if (innconf->server != NULL) {
-	    if ((p = GetFQDN(innconf->domain)) == NULL) {
-		(void)fprintf(stderr, "Can't get host name, %s\n",
-			strerror(errno));
-		QuitServer(1);
-	    }
-	    i += strlen(p) + 1;
-	    HDR(_path) = NEW(char, i + 1);
-	    (void)sprintf(HDR(_path), "%s%s!%s", Exclusions, p, PATHFLUFF);
+	    if ((p = GetFQDN(innconf->domain)) == NULL)
+                sysdie("cannot get hostname");
+	    HDR(_path) = concat(Exclusions, p, "!", PATHFLUFF, (char *) 0);
 	}
 	else {
-	    HDR(_path) = NEW(char, i + 1);
-	    (void)sprintf(HDR(_path), "%s%s", Exclusions, PATHFLUFF);
+	    HDR(_path) = concat(Exclusions, PATHFLUFF, (char *) 0);
 	}
 #else
-	HDR(_path) = NEW(char, i + 1);
-	(void)sprintf(HDR(_path), "%s%s", Exclusions, PATHFLUFF);
+	HDR(_path) = concat(Exclusions, PATHFLUFF, (char *) 0);
 #endif	/* defined(DO_INEWS_PATH) */
     }
 
@@ -684,12 +617,9 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 
     /* Check Expires. */
     if (GetTimeInfo(&Now) < 0)
-	PerrorExit(TRUE, "Can't get the time");
-    if (HDR(_expires) && parsedate(HDR(_expires), &Now) == -1) {
-	(void)fprintf(stderr, "Can't parse \"%s\" as an expiration date.\n",
-		HDR(_expires));
-	QuitServer(1);
-    }
+        sysdie("cannot get the time");
+    if (HDR(_expires) && parsedate(HDR(_expires), &Now) == -1)
+        die("cannot parse \"%s\" as an expiration date", HDR(_expires));
 
     /* References; left alone. */
     /* Control; checked above. */
@@ -722,12 +652,8 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 
     /* Now make sure everything is there. */
     for (hp = Table; hp < ENDOF(Table); hp++)
-	if (hp->Type == HTreq && hp->Value == NULL) {
-	    (void)fprintf(stderr,
-		    "Required \"%s\" header is missing or empty.\n",
-		    hp->Name);
-	    QuitServer(1);
-	}
+	if (hp->Type == HTreq && hp->Value == NULL)
+            die("required header %s is missing or empty", hp->Name);
 }
 
 
@@ -748,10 +674,8 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
 
     /* Open the file. */
     *linesp = 0;
-    if (strlen(homedir) > sizeof(buff) - 14) {
-        fprintf(stderr, "Home directory path too long\n");
-        QuitServer(1);
-    }
+    if (strlen(homedir) > sizeof(buff) - 14)
+        die("home directory path too long");
     (void)sprintf(buff, "%s/.signature", homedir);
     if ((F = fopen(buff, "r")) == NULL) {
 	if (errno == ENOENT)
@@ -764,18 +688,12 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     length = fread(buff, 1, sizeof buff - 2, F);
     i = feof(F);
     (void)fclose(F);
-    if (length == 0) {
-	(void)fprintf(stderr, NOSIG, "empty file");
-	QuitServer(1);
-    }
-    if (length < 0) {
-	(void)fprintf(stderr, NOSIG, strerror(errno));
-	QuitServer(1);
-    }
-    if (length == sizeof buff - 2 && !i) {
-	(void)fprintf(stderr, NOSIG, "too big");
-	QuitServer(1);
-    }
+    if (length == 0)
+        die("signature file is empty");
+    if (length < 0)
+        sysdie("cannot read signature file");
+    if (length == sizeof buff - 2 && !i)
+        die("signature is too large");
 
     /* Make sure the buffer ends with \n\0. */
     if (buff[length - 1] != '\n')
@@ -784,10 +702,8 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
 
     /* Count the lines. */
     for (i = 0, p = buff; (p = strchr(p, '\n')) != NULL; p++)
-	if (++i > SIG_MAXLINES) {
-	    (void)fprintf(stderr, NOSIG, "too many lines");
-	    QuitServer(1);
-	}
+	if (++i > SIG_MAXLINES)
+            die("signature has too many lines");
     *linesp = 1 + i;
 
     /* Grow the article to have the signature. */
@@ -834,11 +750,8 @@ CheckIncludedText(register char *p, register int lines)
 	if ((p = strchr(p, '\n')) == NULL)
 	    break;
     }
-    if ((i * 2 > lines) && (lines > 40)) {
-	(void)fprintf(stderr,
-		"Article not posted -- more included text than new text\n");
-	QuitServer(1);
-    }
+    if ((i * 2 > lines) && (lines > 40))
+        die("more included text than new text");
 }
 
 
@@ -885,9 +798,8 @@ OfferArticle(char *buff, bool Authorized)
     (void)fprintf(ToServer, "post\r\n");
     SafeFlush(ToServer);
     if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
-	PerrorExit(TRUE,
-	    Authorized ? "Can't offer article to server (authorized)"
-		       : "Can't offer article to server");
+        sysdie(Authorized ? "Can't offer article to server (authorized)"
+                          : "Can't offer article to server");
     return atoi(buff);
 }
 
@@ -907,7 +819,7 @@ Spoolit(char *article, size_t Length, char *deadfile)
         return;
     F = xfopena(deadfile);
     if (F == NULL)
-        PerrorExit(FALSE, "Can't create spool file");
+        sysdie("cannot create spool file");
 
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
@@ -917,15 +829,15 @@ Spoolit(char *article, size_t Length, char *deadfile)
 	fprintf(F, "%s\n", OtherHeaders[i]);
     fprintf(F, "\n");
     if (FLUSH_ERROR(F))
-	PerrorExit(FALSE, "Can't write headers");
+        sysdie("cannot write headers");
 
     /* Write the article and exit. */
     if (fwrite(article, 1, Length, F) != Length)
-	PerrorExit(FALSE, "Can't write article");
+        sysdie("cannot write article");
     if (FLUSH_ERROR(F))
-	PerrorExit(FALSE, "Can't write article");
+        sysdie("cannot write article");
     if (fclose(F) == EOF)
-	PerrorExit(FALSE, "Can't close spool file");
+        sysdie("cannot close spool file");
 }
 
 
@@ -944,7 +856,7 @@ Usage(void)
 int
 main(int ac, char *av[])
 {
-    static char		NOCONNECT[] = "Can't connect to server";
+    static char		NOCONNECT[] = "cannot connect to server";
     int                 i;
     char                *p;
     HEADER              *hp;
@@ -963,14 +875,15 @@ main(int ac, char *av[])
     uid_t               uid;
 
     /* First thing, set up logging and our identity. */
-    openlog("inews", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);      
+    openlog("inews", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "inews";
 
     /* Find out who we are. */
     uid = geteuid();
     if (uid == (uid_t) -1)
-	PerrorExit(TRUE, "Can't get your user ID");
+        sysdie("cannot get your user ID");
     if ((pwp = getpwuid(uid)) == NULL)
-	PerrorExit(TRUE, "Can't get your password entry");
+        sysdie("cannot get your passwd entry");
 
     /* Set defaults. */
     Mode = '\0';
@@ -1045,7 +958,7 @@ main(int ac, char *av[])
 	/* Read named file. */
 	article = ReadInFile(av[0], (struct stat *)NULL);
 	if (article == NULL)
-	    PerrorExit(FALSE, "Can't read input file");
+            sysdie("cannot read input file");
 	break;
     }
 
@@ -1059,14 +972,12 @@ main(int ac, char *av[])
 	if ((p = strchr(buff, '\r')) != NULL)
 	    *p = '\0';
 	(void)strcpy(SpoolMessage, buff[0] ? buff : NOCONNECT);
-        if (strlen(pwp->pw_dir) > sizeof(buff) - 14) {
-            fprintf(stderr, "Home directory path too long\n");
-            exit(1);
-        }
-	(void)sprintf(buff, "%s/dead.article", pwp->pw_dir);
-	deadfile = COPY(buff);
+        deadfile = concatpath(pwp->pw_dir, "dead.article");
     }
     else {
+        /* We now have an open server connection, so close it on failure. */
+        message_fatal_cleanup = fatal_cleanup;
+
 	/* See if we can post. */
 	i = atoi(buff);
 
@@ -1076,15 +987,12 @@ main(int ac, char *av[])
 	(void)fprintf(ToServer, "mode reader\r\n");
 	SafeFlush(ToServer);
 	if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
-	    PerrorExit(TRUE, "Can't tell server we're reading");
+            sysdie("cannot tell server we're reading");
 	if ((j = atoi(buff)) != NNTP_BAD_COMMAND_VAL)
 	    i = j;
 
-	if (i != NNTP_POSTOK_VAL) {
-	    (void)fprintf(stderr, "You do not have permission to post.\n");
-	    QuitServer(1);
-	    exit(1);
-	}
+	if (i != NNTP_POSTOK_VAL)
+            die("you do not have permission to post");
 	deadfile = NULL;
     }
 
@@ -1104,30 +1012,20 @@ main(int ac, char *av[])
     ProcessHeaders(AddOrg, i + SigLines, pwp);
     Length = strlen(article);
     if ((innconf->localmaxartsize > 0)
-	    && (Length > (size_t)innconf->localmaxartsize)) {
-	(void)fprintf(stderr,
-		"Article is bigger then local limit of %ld bytes\n",
-		innconf->localmaxartsize);
-	QuitServer(1);
-    }
+	    && (Length > (size_t)innconf->localmaxartsize))
+        die("article is larger than local limit of %ld bytes",
+            innconf->localmaxartsize);
 
     /* Do final checks. */
-    if (i == 0 && HDR(_control) == NULL) {
-	(void)fprintf(stderr, "Article is empty.\n");
-	QuitServer(1);
-    }
+    if (i == 0 && HDR(_control) == NULL)
+        die("article is empty");
     for (hp = Table; hp < ENDOF(Table); hp++)
-	if (hp->Value && (int)strlen(hp->Value) + hp->Size > HEADER_STRLEN) {
-	    (void)fprintf(stderr, "\"%s\" header is too long.\n", hp->Name);
-	    QuitServer(1);
-	}
+	if (hp->Value && (int)strlen(hp->Value) + hp->Size > HEADER_STRLEN)
+            die("%s header is too long", hp->Name);
     for (i = 0; i < OtherCount; i++)
-	if ((int)strlen(OtherHeaders[i]) > HEADER_STRLEN) {
-	    (void)fprintf(stderr,
-		    "Header too long (%d characters max):\n\t%40.40s...\n",
-		    HEADER_STRLEN, OtherHeaders[i]);
-	    QuitServer(1);
-	}
+	if ((int)strlen(OtherHeaders[i]) > HEADER_STRLEN)
+            die("header too long (maximum length is %d): %.40s...",
+                HEADER_STRLEN, OtherHeaders[i]);
 
     if (Dump) {
 	/* Write the headers and a blank line. */
@@ -1138,18 +1036,18 @@ main(int ac, char *av[])
 	    (void)printf("%s\n", OtherHeaders[i]);
 	(void)printf("\n");
 	if (FLUSH_ERROR(stdout))
-	    PerrorExit(TRUE, "Can't write headers");
+            sysdie("cannot write headers");
 
 	/* Write the article and exit. */
 	if (fwrite(article, 1, Length, stdout) != Length)
-	    PerrorExit(TRUE, "Can't write article");
+            sysdie("cannot write article");
 	SafeFlush(stdout);
 	QuitServer(0);
     }
 
     if (Spooling) {
-	(void)fprintf(stderr, "Warning %s -- Article will be spooled.\n",
-		SpoolMessage);
+        warn("warning: %s", SpoolMessage);
+        warn("article will be spooled");
 	Spoolit(article, Length, deadfile);
 	exit(0);
     }
@@ -1159,14 +1057,11 @@ main(int ac, char *av[])
     if (i == NNTP_AUTH_NEEDED_VAL) {
 	/* Posting not allowed, try to authorize. */
 	if (NNTPsendpassword((char *)NULL, FromServer, ToServer) < 0)
-	    PerrorExit(TRUE, "Authorization error");
+            sysdie("authorization error");
 	i = OfferArticle(buff, TRUE);
     }
-    if (i != NNTP_START_POST_VAL) {
-	(void)fprintf(stderr, "Server doesn't want the article:\n\t%s\n",
-		buff);
-	QuitServer(1);
-    }
+    if (i != NNTP_START_POST_VAL)
+        die("server doesn't want the article: %s", buff);
 
     /* Write the headers, a blank line, then the article. */
     for (hp = Table; hp < ENDOF(Table); hp++)
@@ -1176,20 +1071,17 @@ main(int ac, char *av[])
 	(void)fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
     (void)fprintf(ToServer, "\r\n");
     if (NNTPsendarticle(article, ToServer, TRUE) < 0)
-	PerrorExit(TRUE, "Can't send article to server");
+        sysdie("cannot send article to server");
     SafeFlush(ToServer);
 
     if (fgets(buff, sizeof buff, FromServer) == NULL)
-	PerrorExit(TRUE, "No reply from server after sending the article");
+        sysdie("no reply from server after sending the article");
     if ((p = strchr(buff, '\r')) != NULL)
 	*p = '\0';
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
-    if (atoi(buff) != NNTP_POSTEDOK_VAL) {
-	(void)fprintf(stderr, "Can't send article to the server:\n\t%s\n",
-		buff);
-	QuitServer(1);
-    }
+    if (atoi(buff) != NNTP_POSTEDOK_VAL)
+        sysdie("cannot send article to server: %s", buff);
 
     /* Close up. */
     QuitServer(0);
