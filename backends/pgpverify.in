@@ -1,4 +1,6 @@
-#!@_PATH_PERL@ -ws
+#! /usr/bin/perl -ws
+do '@LIBDIR@/innshellvars.pl'  # This line replaced by INN's fixscript
+#
 # written April 1996, tale@isc.org (David C Lawrence)
 # Version 1.13, 14 Dec 1999
 #
@@ -133,7 +135,6 @@ die "Usage: $0 < message\n" if @ARGV != 0;
 
 $0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
 
-do '@LIBDIR@/innshellvars.pl';
 $pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
 $tmp = ($inn'pathtmp ? $inn'pathtmp : $tmpdir) . "/pgp$$";
 $lockdir = $inn'locks if $inn'locks;
