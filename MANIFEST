@@ -70,6 +70,7 @@ contrib/fixhist             1 Script to clean history
 contrib/format_overview.pl  1 Format output of count_overview.pl
 contrib/listoi.c            1 Display an overview.index file
 contrib/newsbot             1 Grep articles and trigger actions
+contrib/reset-cnfs.c        1 Reset the state parts of a CNFS buffer
 doc                         1 Manpages (Directory)
 doc/Makefile                1 Makefile for documentation
 doc/active.5                1 Manpage for active config file
