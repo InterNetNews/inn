@@ -4,7 +4,7 @@
 inn.conf \- configuration data for InterNetNews programs
 .SH DESCRIPTION
 The file
-.I <PREFIX specified with \-\-prefix at configure>/etc/inn.conf
+.IR <PREFIX\ specified\ with\ \-\-prefix\ at\ configure>/etc/inn.conf
 is used to determine various parameters.
 Blank lines and lines starting with a number sign (``#'') are ignored.
 All other lines specify parameters that may be read, and should be of
@@ -190,7 +190,7 @@ is ``false'',
 is ignored and always treated as ``false''.
 .I extendeddbz
 is available only if
-.I <DBZ_TAGGED_HASH in config.data>
+.IR <DBZ_TAGGED_HASH\ in\ config.data>
 is ``DONT''.
 .TP
 .I nnrpdoverstats
@@ -200,8 +200,12 @@ This can be useful to see overview performance.
 .I keywords
 Should keywords be generated in the overview databases. Must be a boolean
 value. Default is false. Changing this requires also changing
-.I <pathetc in inn.conf>/overview.fmt
+.IR <pathetc\ in\ inn.conf>/overview.fmt
 and removing the existing overview database.
+.I keywords
+is available only if
+.IR <KEYWORDS\ in\ config.data>
+is ``DO''.
 .TP
 .I keylimit
 Maximum number of bytes allocated internally for building keyword data.
