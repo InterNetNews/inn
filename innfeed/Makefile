@@ -79,6 +79,7 @@ tst: config_y.c config_l.c
 install: $(INSTALLED)
 
 $(D)$(PATHBIN)/innfeed:		innfeed		; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/imapfeed:	imapfeed	; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/procbatch:	procbatch	; $(CP_XPRI) $? $@
 
 $(D)$(PATHBIN)/startinnfeed: startinnfeed
