@@ -300,6 +300,9 @@
 /* Define if you have the <dirent.h> header file.  */
 #undef HAVE_DIRENT_H
 
+/* Define if you have the <dlfcn.h> header file.  */
+#undef HAVE_DLFCN_H
+
 /* Define if you have the <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H
 
@@ -651,11 +654,6 @@ typedef bool            BOOL;
    all over INN for doing that. */
 #define NG_SEPARATOR            ","
 #define NG_ISSEP(c)             ((c) == ',')
-
-/* Always use our NNTP server-open routine, not the one from the NNTP client
-   library implementation.  We could probably go clean out the old NNTP
-   client code at some point. */
-#define REM_INND
 
 /* Only used by rnews.  Should be moved there. */
 #define RNEWS_MAGIC1            '#'
