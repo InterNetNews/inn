@@ -16,19 +16,19 @@ SOURCES = $(MISSING_SRC) \
 	closeonexec.c concat.c conffile.c dbz.c defdist.c findheader.c \
 	genid.c getconfig.c getdtab.c getfqdn.c getmodaddr.c gettime.c \
 	grpalias.c hash.c inndcomm.c innvers.c localopen.c lockfile.c \
-	makedir.c md5.c nonblocking.c parsedate.c perl.c pread.c pwrite.c \
-	qio.c radix32.c readin.c remopen.c reservedfd.c resource.c rwlock.c \
-	sendarticle.c sendpass.c tempname.c waitnb.c wildmat.c xfopena.c \
-	xmalloc.c xmemerr.c xrealloc.c xsignal.c xwrite.c xwritev.c
+	makedir.c md5.c nonblocking.c parsedate.c perl.c qio.c radix32.c \
+	readin.c remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
+	sendpass.c tempname.c waitnb.c wildmat.c xfopena.c xmalloc.c \
+	xsignal.c xwrite.c xwritev.c
 OBJECTS = $(MISSING_OBJ) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
 	closeonexec.o concat.o conffile.o dbz.o defdist.o findheader.o \
 	genid.o getconfig.o getdtab.o getfqdn.o getmodaddr.o gettime.o \
 	grpalias.o hash.o inndcomm.o innvers.o localopen.o lockfile.o \
-	makedir.o md5.o nonblocking.o parsedate.o pread.o pwrite.o qio.o \
-	radix32.o readin.o remopen.o reservedfd.o resource.o rwlock.o \
-	sendarticle.o sendpass.o tempname.o waitnb.o wildmat.o xfopena.o \
-	xmalloc.o xmemerr.o xrealloc.o xsignal.o xwrite.o xwritev.o
+	makedir.o md5.o nonblocking.o parsedate.o qio.o radix32.o readin.o \
+	remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
+	sendpass.o tempname.o waitnb.o wildmat.o xfopena.o xmalloc.o \
+	xsignal.o xwrite.o xwritev.o
 LOBJECTS	= $(OBJECTS:.o=.lo)
 
 all:			libinn.$(EXTLIB) perl.o ../include/autoconfig.h
@@ -49,12 +49,6 @@ tags ctags:	$(SOURCES)
 libinn.la:		$(P) $(OBJECTS) $(LOBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $(LOBJECTS) \
 		-rpath $(PATHLIB) -version-info 2:0:0
-
-pread.o: pread.c
-	$(CC) -c $(CFLAGS) $(LFS_CFLAGS) -o $@ pread.c
-
-pwrite.o: pwrite.c
-	$(CC) -c $(CFLAGS) $(LFS_CFLAGS) -o $@ pwrite.c
 
 libinn.a:             $(P) $(OBJECTS)
 	ar r $@ $(OBJECTS)
@@ -87,12 +81,6 @@ parsedate.c:		parsedate.y
 
 parsedate:		$(P) parsedate.c gettime.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -DTEST -DYYDEBUG parsedate.c gettime.o
-
-##  These rules will only be triggered if syslog appears in the MISSING_xxx
-##  macros above.
-syslog.o:		syslog.c
-syslog.c:		../syslog/syslog.c
-	(cd .. ; $(MAKE) syslogfix )
 
 ##  This rule will only be triggered if $(OSXATTOBJ) is in MISSING_OBJ.
 version.o:
