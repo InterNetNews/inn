@@ -402,10 +402,9 @@ main(int ac, char *av[])
 	    }
 	}
 
-	/* Write the article.  In case of interrupts, retry the read but
-	 * not the fwrite because we can't check that reliably and
-	 * portably. */
-	if ((fprintf(F, "%s", artdata) == EOF) || ferror(F))
+        /* Write the article.  In case of interrupts, retry the read but not
+           the fwrite because we can't check that reliably and portably. */
+	if ((fwrite(artdata, 1, BytesInArt, F) != BytesInArt) || ferror(F))
 	    break;
 
 	/* Update the counts. */
@@ -423,7 +422,7 @@ main(int ac, char *av[])
 
     if (BATCHopen)
 	BATCHstatus = BATCHclose(F);
-    RequeueAndExit(Cookie, (char *)NULL, 0L);
-    /* NOTREACHED */
+    RequeueAndExit(Cookie, NULL, 0);
+
     return 0;
 }
