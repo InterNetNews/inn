@@ -27,11 +27,11 @@ VERSION_EXTRA   = CVS prerelease
 DESTDIR         =
 D               = $(DESTDIR)
 
-##  How to install man pages.  Pick one of SOURCE, BSD4.4, NROFF-PACK, or
-##  NROFF-PACK-SCO.  Used by doc/man/putman.sh; read that script for more
-##  information on what it does.
+##  The absolute path to the top of the build directory, used to find the
+##  libraries built as part of INN.  Using relative paths confuses libtool
+##  when linking the test suite.
 
-MANPAGESTYLE    = SOURCE
+builddir	= @builddir@
 
 ##  Basic compiler settings.  COPT is the variable to override on the make
 ##  command line to change the optimization or add warning flags (such as
@@ -104,9 +104,9 @@ UPLIBLD         = $(UPLIBTOOLLD) $(CC)
 ##  linked against libstorage.  EXTSTORAGELIBS is for external libraries
 ##  needed by libstorage.
 
-LIBINN          = ../lib/libinn.$(EXTLIB)
-LIBHIST         = ../history/libinnhist.$(EXTLIB)
-LIBSTORAGE      = ../storage/libstorage.$(EXTLIB)
+LIBINN          = $(builddir)/lib/libinn.$(EXTLIB)
+LIBHIST         = $(builddir)/history/libinnhist.$(EXTLIB)
+LIBSTORAGE      = $(builddir)/storage/libstorage.$(EXTLIB)
 EXTSTORAGELIBS  = @BERKELEY_DB_LIB@
 
 DBMLIB          = @DBM_LIB@
@@ -246,6 +246,12 @@ CP_RPRI         = $(INSTALL) $(OWNER) -m 0640 -B .OLD
 CP_RPUB         = $(INSTALL) $(OWNER) -m 0644 -B .OLD
 CP_XPRI         = $(INSTALL) $(OWNER) -m 0550 -B .OLD
 CP_XPUB         = $(INSTALL) $(OWNER) -m 0555 -B .OLD
+
+##  How to install man pages.  Pick one of SOURCE, BSD4.4, NROFF-PACK, or
+##  NROFF-PACK-SCO.  Used by doc/man/putman.sh; read that script for more
+##  information on what it does.
+
+MANPAGESTYLE    = SOURCE
 
 ##  Some additional definitions needed by some versions of make, to ensure a
 ##  consistant set of variables are available.
