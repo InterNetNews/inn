@@ -5,7 +5,7 @@
 # Tested with INN 2.3, 2.1, 1.7 and 1.5.1.
 #
 # (c) 1997, 1998 by Fabien Tassin <fta@oleane.net>
-# version 2.1.9_7
+# version 3.0.1
 ##########################################################
 
 # Default parameters
@@ -17,9 +17,9 @@ section default {
 	casesensitive   true;
 	module		"innreport_inn";  # ${libpath}/${module}.pm
 	unwanted_log	"unwanted.log";   # ${logpath}/${unwanted_log}
-        text            true;
-        html            false;
-        graph           true;        # need 'html'
+	text            true;
+	html            true;
+	graph           true;        # need 'html'
 	archive		true;  # use false to keep only the latest HTML report.
 	index		"index.html"; # name of the HTML index file.
       # html_dir        "/var/www/News/stats"; # default to pathhttp in inn.conf
@@ -174,33 +174,81 @@ section innd_newgroup {
 };
 
 section innd_changegroup {
-        title   "Newsgroups changed:";
-        data    "%innd_changegroup";
-        column {
-                name          "Group";
-                format        "%-68.68s";
-                value         "$key";
-                format_total  "TOTAL%-63.63s";
-                total         "";
-        };
-        column {
-                name          "New mode";
-                format        "%10s";
-                value         "$innd_changegroup{$key}";
-                total         "$num";
-        };
+	title	"Newsgroups changed:";
+	data	"%innd_changegroup";
+	column {
+		name          "Group";
+		format        "%-68.68s";
+		value         "$key";
+		format_total  "TOTAL%-63.63s";
+		total         "";
+	};
+	column {
+		name          "New mode";
+		format        "%10s";
+		value         "$innd_changegroup{$key}";
+		total         "$num";
+	};
 };
 
 section innd_rmgroup {
-        title   "Newsgroups removed:";
-        data    "%innd_rmgroup";
-        column {
-                name          "Group";
-                format        "%-78.78s";
-                value         "$key";
-                format_total  "TOTAL: %-71.71s";
-                total         "$num";
-        };
+	title	"Newsgroups removed:";
+	data	"%innd_rmgroup";
+	column {
+		name          "Group";
+		format        "%-78.78s";
+		value         "$key";
+		format_total  "TOTAL: %-71.71s";
+		total         "$num";
+	};
+};
+
+section controlchan {
+	title   "Control Channel:";
+	data    "%controlchan_who";
+	column {
+		name          "From";
+		format        "%-20.20s";
+		value         "$key";
+		format_total  "TOTAL%-15.15s";
+		total         "";
+	};
+	column {
+		name          "newgroup";
+		value         "$controlchan_new{$key}";
+		format        "%7s";
+		total         "total(%controlchan_new)";
+	};
+	column {
+		name          "rmgroup";
+		value         "$controlchan_rm{$key}";
+		format        "%7s";
+		total         "total(%controlchan_rm)";
+	};
+	column {
+		name          "Other";
+		value         "$controlchan_other{$key}";
+		format        "%7s";
+		total         "total(%controlchan_other)";
+	};
+	column {
+		name          "Bad PGP";
+		value         "$controlchan_skippgp{$key}";
+		format        "%7s";
+		total         "total(%controlchan_skippgp)";
+	};
+	column {
+		name          "DoIt";
+		value         "$controlchan_doit{$key}";
+		format        "%7s";
+		total         "total(%controlchan_doit)";
+	};
+	column {
+		name          "OK";
+		value         "$controlchan_ok{$key}";
+		format        "%7s";
+		total         "total(%controlchan_ok)";
+	};
 };
 
 section innd_connect {
@@ -369,72 +417,6 @@ section inn_flow {
 			  factor  3686400;   # 3600 * 1024
 			  value   "%inn_flow_size";
                 };
-        };
-};
-
-section cnfsstat {
-        title   "CNFS buffer status:";
-        data    "%cnfsstat";
-        column {
-                name          "Buffer";
-                format        "%-13.13s";
-                value         "$key";
-                format_total  "TOTAL: %-6.6s";
-                total         "$num";
-        };
-        column {
-                name          "Class";
-                format        "%-13.13s";
-                value         "$cnfsstat{$key}";
-                format_total  "-%12s";
-                total         "";
-        };
-        column {
-                name          "Size";
-                format        "%9s";
-                value         "bytes($cnfsstat_size{$key})";
-                total         "bytes(total(%cnfsstat_size))";
-        };
-        column {
-                name          "Used";
-                format        "%9s";
-                value         "bytes($cnfsstat_used{$key})";
-                total         "bytes(total(%cnfsstat_used))";
-        };
-        column {
-                name          "%Used";
-                format_name   "%7s";
-                value         "$cnfsstat_used{$key} /
-                                       $cnfsstat_size{$key} * 100";
-                format        "%6.1f%%";
-                total         "total(%cnfsstat_used) /
-                                       total(%cnfsstat_size) * 100";
-        };
-        column {
-                name          "Cycles";
-                format_name   "%6s";
-                format        "%6d";
-                value         "$cnfsstat_cycles{$key}";
-                total         "total(%cnfsstat_cycles)";
-        };
-        column {
-                name          "KB/sec";
-                format_name   "%7s";
-                value         "$cnfsstat_rate{$key} / 
-                                       $cnfsstat_samples{$key} / 1024";
-                format        "%7.2f";
-                total         "total(%cnfsstat_rate) /
-                                       total(%cnfsstat_samples) / 1024";
-        };
-        column {
-                name          "Days";
-                format_name   "%8s";
-                value         "$cnfsstat_size{$key} /
-                                 ($cnfsstat_rate{$key} /
-                                    $cnfsstat_samples{$key}) / 86400";
-                format        "%8.2f";
-                format_total  "%7s-";
-                total         "";
         };
 };
 
@@ -806,26 +788,6 @@ section nocem {
 		value		"$nocem_totalids{$key}";
 		total		"total(%nocem_totalids)";
 	};
-};
-
-section innd_no_permission {
-        title   "INND no permission servers:";
-        data    "%innd_no_permission";
-        sort    "$innd_no_permission{$b} <=> $innd_no_permission{$a}";
-        column {
-                name          "System";
-                format        "%-71.71s";
-                value         "$key";
-                format_total  "TOTAL: %-64.64s";
-                total         "$num";
-        };
-        column {
-                name          "Conn";
-                format_name   "%7s";
-                format        "%7d";
-                value         "$innd_no_permission{$key}";
-                total         "total(%innd_no_permission)";
-        };
 };
 
 section innd_no_permission {
@@ -2064,44 +2026,4 @@ section sendme_site {
 		value		"$controlchan_sendme_site{$key}";
 		total		"total(%controlchan_sendme_site)";
 	};
-};
-
-section ihave_site {
-        title   "IHAVE messages offered from:";
-	data    "%controlchan_ihave_site";
-	sort    "$controlchan_ihave_site{$b} <=> $controlchan_ihave_site{$a}";
-        column {
-                name          "System";
-                format        "%-71.71s";
-		value         "$key";
-		format_total  "TOTAL: %-64.64s";
-		total         "$num";
-        };
-        column {
-                name          "Offered";
-                format_name   "%7s";
-                format        "%7d";
-		value         "$controlchan_ihave_site{$key}";
-		total         "total(%controlchan_ihave_site)";
-        };
-};
-
-section sendme_site {
-        title   "SENDME messages offered from:";
-	data    "%controlchan_sendme_site";
-	sort    "$controlchan_sendme_site{$b} <=> $controlchan_sendme_site{$a}";
-        column {
-                name          "System";
-                format        "%-71.71s";
-		value         "$key";
-		format_total  "TOTAL: %-64.64s";
-		total         "$num";
-        };
-        column {
-                name          "Offered";
-                format_name   "%7s";
-                format        "%7d";
-		value         "$controlchan_sendme_site{$key}";
-		total         "total(%controlchan_sendme_site)";
-        };
 };
