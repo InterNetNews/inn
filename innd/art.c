@@ -1162,8 +1162,6 @@ STATIC char *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const H
 	*p = '\0';
     if ((local = (char *)HeaderFindDisk(files, "Sender", 6)) == NULL
      && (local = (char *)HeaderFindDisk(files, "From", 4)) == NULL) {
-	syslog(L_ERROR, "%s bad_article [%s] checking cancel",
-	    LogName, HashToText(hash));
 	return NULL;
     }
     if (p)
