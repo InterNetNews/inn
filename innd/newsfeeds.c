@@ -326,7 +326,9 @@ STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		}
 	    break;
 	case 'O':
-	    sp->Originator = COPY(++p);
+	    if (*++p == '\0')
+		return "missing originator name for O param in field 3";
+	    sp->Originator = COPY(p);
 	    break;
         case 'P':
             if (*++p && CTYPE(isdigit, *p))
