@@ -2166,7 +2166,7 @@ STRING ARTpost(CHANNEL *cp)
 		NNTP_REJECTIT_VAL,
 		MaxLength(p, p));
 	ARTlog(&Data, ART_REJECT, buff);
-        if (innconf->remembertrash && Mode == OMrunning && !HISwrite(&Data, ""))
+        if (innconf->remembertrash && Mode == OMrunning && !HISremember(hash))
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
 	DISPOSE(distributions);
