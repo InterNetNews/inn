@@ -883,7 +883,7 @@ static int mainOptionsProcess (void *data)
       if ((v = findValue (topScope,"backlog-limit",NO_INHERIT)) != NULL)
         v->v.int_val = elimit ;
       else
-        addInteger (topScope,"backlog-limit",debugLevel) ;
+        addInteger (topScope,"backlog-limit",elimit) ;
     }
 
   
