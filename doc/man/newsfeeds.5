@@ -444,17 +444,16 @@ field must be a
 .IR sprintf (3)
 format string that may have a single
 .I %s
-parameter, which will be given a pathname for the article, relative
-to the news spool directory.
-The full path name may be obtained by prefixing the
+parameter, which will be given a pathname for the article relative
+to the news spool directory or a token.
+If the name is not a token,
+the full path name may be obtained by prefixing the
 .I %s
 in the
 .I param
 field by the news spool directory prefix.
 Standard input will be set to
-the article or
-.I /dev/null
-if the article cannot be opened for some reason.
+the article, unless the article name is a token.
 Standard output and error
 will be set to the error log (
 .IR <pathlog in inn.conf>/errlog .
@@ -526,9 +525,6 @@ single output stream.
 For a site feeding into a funnel, the
 .I param
 field names the actual entry that does the feeding.
-.PP
-For more details on setting up different types of news feeds, see the
-INN installation manual.
 .SH EXAMPLES
 .RS
 .nf
