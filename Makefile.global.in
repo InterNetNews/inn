@@ -1,64 +1,118 @@
 ##  $Id$
+##
+##  This file is meant to be the central Makefile that configure works with
+##  and that all other Makefiles include.  No Makefile other than this one
+##  should have to be a configure substitution target.
+##
+##  For installation paths, see the bottom of this file.
 
-## This file is meant to be the central Makefile that configure works with
-## and that all other Makefiles include
+##  If you want to install INN relative to a root directory other than /,
+##  set DESTDIR to the path to the root directory of the file system.  This
+##  won't affect any of the paths compiled into INN; it's used primarily
+##  when building a software distribution, where software has to be
+##  installed into some file system that will later be mounted as / on the
+##  final system.
 
-##  If you have a parallel make, set this to "&"
-P	= # &
+DESTDIR         =
+D               = $(DESTDIR)
 
-##  What flags to use if profiling; -p or -pg, e.g.
-PROF	= #-pg
+##  How to install man pages.  Pick one of SOURCE, BSD4.4, NROFF-PACK, or
+##  NROFF-PACK-SCO.  Used by doc/man/putman.sh; read that script for more
+##  information on what it does.
 
-##  If you use the standard NNTP way of connecting, where is the library?
-NNTPLIB 	=
+MANPAGESTYLE    = SOURCE
 
-# Values below this point are generally set by configure ... you shouldn't
-# need to look before here .. you can though, if you really want
+##  Basic compiler settings.  COPT is the variable to override on the make
+##  command line to change the optimization or add warning flags (such as
+##  -Wall).  LFS_* is for large file support.  All of INN is built with the
+##  large file support flags if provided, just to be sure.  While configure
+##  searches out the appropriate flags, no part of INN is currently built
+##  threaded.
 
-CC		= @CC@
-LIBTOOL		= @LIBTOOL@
-UPLIBTOOL 	= @UPLIBTOOL@
-EXTOBJ  	= @EXTOBJ@
-EXTLIB  	= @EXTLIB@
-LIBCC		= $(LIBTOOL) @CC@
-LIBCCWITHOUTLIBTOOL	= @CC@
-UPLIBCC		= $(UPLIBTOOL) @CC@
-OUTPUT_OPTION	=
-GCFLAGS		= -I../include @CPPFLAGS@ @THREADFLAGS@ @CFLAGS@ $(LFS_CFLAGS)
-LFS_CFLAGS 	= @LFS_CFLAGS@
-LDFLAGS		= @LDFLAGS@ $(LFS_LDFLAGS)
-LFS_LDFLAGS 	= @LFS_LDFLAGS@
-LIBS		= @LIBS@ $(LFS_LIBS)
-LFS_LIBS 	= @LFS_LDFLAGS@
-THREAD_LIBS 	= @THREADLIB@
+CC              = @CC@
+COPT            = @CFLAGS@
+GCFLAGS         = $(COPT) -I../include @CPPFLAGS@ $(LFS_CFLAGS)
 
-LIBNEWS         = ../storage/libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
+LDFLAGS         = @LDFLAGS@ $(LFS_LDFLAGS)
+LIBS            = @LIBS@ $(LFS_LIBS)
 
-PERLLIB		= ../lib/perl.o @PERL_LIB@
-PERLINC		= @PERL_INC@
+LFS_CFLAGS      = @LFS_CFLAGS@
+LFS_LDFLAGS     = @LFS_LDFLAGS@
+LFS_LIBS        = @LFS_LIBS@
 
-TCLLIB		= @TCL_LIB@
-TCLINC		= @TCL_INC@
+THREAD_CFLAGS   = @THREADFLAGS@
+THREAD_LIBS     = @THREADLIB@
 
-PYTHONLIB 	= @PYTHON_LIB@
-PYTHONINC 	= @PYTHON_INC@
+PROF            = -pg
 
-DBMLIB 		= @DBM_LIB@
+##  libtool support.  Note that INN does not use Automake (and that
+##  retrofitting Automake is likely more work than it's worth), so
+##  libtool-aware rules have to be written by hand.  The UP* variants add
+##  ../.. instead of just .. and are for use in Makefiles in source
+##  directories two levels deep.
 
-LEX             = @LEX@ 
-YACC            = @YACC@
-RANLIB          = @RANLIB@
+LIBTOOL         = @LIBTOOL@
+UPLIBTOOL       = @UPLIBTOOL@
+EXTOBJ          = @EXTOBJ@
+EXTLIB          = @EXTLIB@
+
+LIBCC           = $(LIBTOOL) $(CC)
+UPLIBCC         = $(UPLIBTOOL) $(CC)
+
+##  INN libraries.  Nearly all INN programs are linked with libinn, and any
+##  INN program that reads from or writes to article storage or overview is
+##  linked against libstorage.  LIBNEWS is for legacy support and will
+##  eventually be deleted.
+
+LIBINN          = ../lib/libinn.$(EXTLIB)
+LIBSTORAGE      = ../storage/libstorage.$(EXTLIB)
+LIBNEWS         = $(LIBSTORAGE) $(LIBINN)
+
+DBMLIB          = @DBM_LIB@
+
+##  Embedding support.  Additional flags and libraries used when compiling
+##  or linking portions of INN that support embedded interpretors, set by
+##  configure based on what interpretor embeddings are selected.
+
+PERLLIB         = ../lib/perl.o @PERL_LIB@
+PERLINC         = @PERL_INC@
+
+TCLLIB          = @TCL_LIB@
+TCLINC          = @TCL_INC@
+
+PYTHONLIB       = @PYTHON_LIB@
+PYTHONINC       = @PYTHON_INC@
+
+##  Missing functions.  If non-empty, configure detected that your system
+##  was missing some standard functions, and INN will be providing its own
+##  replacements using the source and object files listed below.  In some
+##  cases, INN may have man pages for the functions as well.
+
+MISSING_MAN     = @MISSING_MAN@
+MISSING_SRC     = @MISSING_SRC@
+MISSING_OBJ     = @MISSING_OBJ@
+
+##  Paths to various standard programs used during the build process.
+##  Changes to this file will *not* be reflected in the paths compiled into
+##  programs; these paths are only used during the build process and for
+##  some autogenerated scripts.  To change the compiled paths, see
+##  include/paths.h.  You may also need to modify scripts/innshellvars*.
+
 AWK             = @_PATH_AWK@
-
-# Ctags command.  Use echo if you don't have ctags.
+COMPRESS        = @COMPRESS@
 CTAGS           = @CTAGS@
+GZIP            = @GZIP@
+LEX             = @LEX@ 
+RANLIB          = @RANLIB@
+YACC            = @YACC@
 
-OWNER		= -O @NEWSUSER@ -G @NEWSGRP@
-ROWNER		= -O @NEWSUSER@ -G @RNEWSGRP@
-NEWSGROUP	= @NEWSGRP@
+FIXSCRIPT       = ../support/fixscript
 
-INEWSMODE	= @INEWSMODE@
-RNEWSMODE	= @RNEWSMODE@
+##  Installation directories.  If any of the below are incorrect, don't just
+##  edit this file; these directories are substituted in all over the source
+##  tree by configure.  Instead, re-run configure with the correct
+##  command-line flags to set the directories.  Run configure --help for a
+##  list of supported flags.
 
 prefix          = @prefix@
 
@@ -83,17 +137,43 @@ MAN3            = @mandir@/man3
 MAN5            = @mandir@/man5
 MAN8            = @mandir@/man8
 
-# Pick on of SOURCE, NROFF-PACK or NROFF-PACK-SCO
-MANPAGESTYLE	= SOURCE
+##  Installation settings.  The file installation modes are determined by
+##  configure; inews and rnews are special and have configure flags to
+##  control how they're installed.  See INSTALL for more information.
+
+OWNER           = -O @NEWSUSER@ -G @NEWSGRP@
+ROWNER          = -O @NEWSUSER@ -G @RNEWSGRP@
+NEWSGROUP       = @NEWSGRP@
+
+INEWSMODE       = @INEWSMODE@
+RNEWSMODE       = @RNEWSMODE@
+
+INSTALL         = ../installit.sh
+
+##  Installation commands.  These commands are used by the installation
+##  rules of each separate subdirectory.  The naming scheme is as follows:
+##  the first two characters are CP (indicating a plain copy) or LI
+##  (indicating an installation that goes through libtool).  After an
+##  underscore is a one-character indicator of the file type (R for a
+##  regular file, X for an executable, S for a setuid root executable) and
+##  then PUB for a world-readable/world-executable file or PRI for a
+##  group-readable/group-executable file (only the news group).  inews and
+##  rnews have their own special installation rules.
+
+LI_XPRI         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0550 -b .OLD
+LI_XPUB         = $(LIBTOOL) $(INSTALL) $(OWNER) -m 0555 -b .OLD
+
+LI_INEWS        = $(LIBTOOL) $(INSTALL) $(OWNER) -m $(INEWSMODE) -b .OLD
+LI_RNEWS        = $(LIBTOOL) $(INSTALL) $(ROWNER) -m $(RNEWSMODE) -b .OLD
+
+CP_RPRI         = $(INSTALL) $(OWNER) -m 0640 -b .OLD
+CP_RPUB         = $(INSTALL) $(OWNER) -m 0644 -b .OLD
+CP_XPRI         = $(INSTALL) $(OWNER) -m 0550 -b .OLD
+CP_XPUB         = $(INSTALL) $(OWNER) -m 0555 -b .OLD
+
+##  Some additional definitions needed by some versions of make, to ensure a
+##  consistant set of variables are available.
 
 SHELL           = /bin/sh
 
 @SET_MAKE@
-
-DESTDIR         =
-D               = $(DESTDIR)
-
-# Standard library functions that your system doesn't have.
-MISSING_MAN     = @MISSING_MAN@
-MISSING_SRC     = @MISSING_SRC@
-MISSING_OBJ     = @MISSING_OBJ@
