@@ -1,0 +1,51 @@
+=head1 NAME
+
+passwd.nntp - passwords for connecting to remote NNTP servers
+
+=head1 DESCRIPTION
+
+The file F<passwd.nntp> in I<pathetc> contains host / name / password
+triplets for use when authenticating client programs to NNTP servers.
+This file is normally interpreted by NNTPsendpassword() in libinn(3).
+Blank lines and lines beginning with a number sign (C<#>) are ignored.
+All other lines should consist of three or four fields separated by
+colons:
+
+    host:name:password
+    host:name:password:style
+
+The first field is the name of a host, and is matched in a
+case-insensitive manner.  (No detailed matching, such as comparing IP
+addresses, is done.)
+
+The second field is a user name, and the third is a password.  If either
+the username or password is empty, then that portion of the
+authentication will not occur.  (For example, when connecting to a
+remote INN for peering, only the password is needed.)
+
+The optional fourth field specifies the type of authentication to use.
+At present, the only recognized "authentication style" is C<authinfo>;
+this is also the default.  It means that NNTP "authinfo" commands are
+used to authenticate to the remote host.  (The C<authinfo> command is a
+common extension to RFC 977.)
+
+For example:
+
+    ##  UUNET needs a password, MIT doesn't.
+    mit.edu:bbn::authinfo
+    uunet.uu.net:bbn:yoyoma:authinfo
+
+This file should not be world-readable.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  This is
+revision \\$3, dated \\$4.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5), innd(8), libinn(3).
+
+=cut
