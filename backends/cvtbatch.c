@@ -9,6 +9,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -74,7 +75,8 @@ main(int ac, char *av[]) {
 	token = TextToToken(line);
 	if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
 	    continue;
-	if ((text = HeaderFindMem(art->data, art->len, "Message-ID", 10)) == NULL) {
+        text = wire_findheader(art->data, art->len, "Message-ID");
+	if (text == NULL) {
 	    SMfreearticle(art);
 	    continue;
 	}

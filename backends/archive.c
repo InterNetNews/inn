@@ -16,6 +16,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -259,7 +260,7 @@ WriteArtIndex(ARTHANDLE *art, char *ShortName)
     char		MessageID[BUFSIZ];
 
     Subject[0] = '\0';		/* default to null string */
-    p = HeaderFindMem(art->data, art->len, "Subject", 7);
+    p = wire_findheader(art->data, art->len, "Subject");
     if (p != NULL) {
 	for (i=0; *p != '\r' && *p != '\n' && *p != '\0'; i++) {
 	    Subject[i] = *p++;
@@ -268,7 +269,7 @@ WriteArtIndex(ARTHANDLE *art, char *ShortName)
     }
 
     MessageID[0] = '\0';	/* default to null string */
-    p = HeaderFindMem(art->data, art->len, "Message-ID", 10);
+    p = wire_findheader(art->data, art->len, "Message-ID");
     if (p != NULL) {
 	for (i=0; *p != '\r' && *p != '\n' && *p != '\0'; i++) {
 	    MessageID[i] = *p++;
@@ -497,7 +498,7 @@ main(int ac, char *av[])
 	    }
 
 	    /* Determine groups from the Xref header */
-    	    xrefhdr = HeaderFindMem(art->data, art->len, "Xref", 4);
+    	    xrefhdr = wire_findheader(art->data, art->len, "Xref");
 	    if (xrefhdr == NULL) {
                 warn("cannot find Xref header");
 		SMfreearticle(art);

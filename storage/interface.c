@@ -11,6 +11,7 @@
 
 #include "conffile.h"
 #include "inn/innconf.h"
+#include "inn/wire.h"
 #include "interface.h"
 #include "libinn.h"
 #include "macros.h"
@@ -228,8 +229,10 @@ GetXref(ARTHANDLE *art)
   char	*buff;
   bool	Nocr = false;
 
-  if ((p = q = HeaderFindMem(art->data, art->len, "xref", sizeof("xref")-1)) == NULL)
+  p = wire_findheader(art->data, art->len, "xref");
+  if (p == NULL)
     return NULL;
+  q = p;
   for (p1 = NULL; p < art->data + art->len; p++) {
     if (p1 != (char *)NULL && *p1 == '\r' && *p == '\n') {
       Nocr = FALSE;

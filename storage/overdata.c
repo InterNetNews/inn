@@ -14,6 +14,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
+#include "inn/wire.h"
 #include "inn/vector.h"
 #include "libinn.h"
 #include "macros.h"
@@ -107,12 +108,10 @@ build_header(const char *article, size_t length, const char *header,
     size_t offset;
     const char *data, *end, *p;
 
-    data = HeaderFindMem(article, length, header, strlen(header));
+    data = wire_findheader(article, length, header);
     if (data == NULL)
         return;
-    end = strchr(data, '\n');
-    while (end != NULL && ISWHITE(end[1]))
-        end = strchr(end + 1, '\n');
+    end = wire_endheader(data, article + length - 1);
     if (end == NULL)
         return;
 
@@ -135,11 +134,10 @@ build_header(const char *article, size_t length, const char *header,
 
 
 /*
-**  Given an article and a vector of additional headers, generate overview
-**  data into the provided buffer.  If the buffer parameter is NULL, a new
-**  buffer is allocated.  This data doesn't include the article number.  The
-**  article should be in wire format.  Returns the buffer containing the
-**  overview data.
+**  Given an article number, an article, and a vector of additional headers,
+**  generate overview data into the provided buffer.  If the buffer parameter
+**  is NULL, a new buffer is allocated.  The article should be in wire format.
+**  Returns the buffer containing the overview data.
 */
 struct buffer *
 overview_build(ARTNUM number, const char *article, size_t length,

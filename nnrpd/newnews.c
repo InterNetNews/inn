@@ -7,6 +7,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/wire.h"
 #include "nnrpd.h"
 #include "ov.h"
 #include "cache.h"
@@ -19,8 +20,10 @@ static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
   const char *p, *p1, *q;
   bool Nocr = TRUE;
 
-  if ((p = q = HeaderFindMem(art->data, art->len, hdr, hdrlen - 1)) == NULL)
+  p = wire_findheader(art->data, art->len, hdr);
+  if (p == NULL)
     return false;
+  q = p;
   for (p1 = NULL; p < art->data + art->len; p++) {
     if (p1 != NULL && *p1 == '\r' && *p == '\n') {
       Nocr = FALSE;

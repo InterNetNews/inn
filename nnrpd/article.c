@@ -13,6 +13,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/wire.h"
 #include "nnrpd.h"
 #include "ov.h"
 #include "tls.h"
@@ -405,20 +406,25 @@ static void ARTsendmmap(SENDTYPE what)
 
     /* q points to the start of the article buffer, p to the end of it */
     if (VirtualPathlen > 0 && (what != STbody)) {
-	if ((path = HeaderFindMem(ARThandle->data, ARThandle->len, "path", sizeof("path") - 1)) == NULL) {
+        path = wire_findheader(ARThandle->data, ARThandle->len, "Path");
+        if (path == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
 	    ARTget++;
 	    return;
-	} else if ((xref = HeaderFindMem(ARThandle->data, ARThandle->len, "xref", sizeof("xref") - 1)) == NULL) {
-	    SendIOv(".\r\n", 3);
-	    ARTgetsize += 3;
-	    PushIOv();
-	    ARTget++;
-	    return;
-	}
-	if ((endofpath = FindEndOfHeader(path, ARThandle->data + ARThandle->len)) == NULL) {
+	} else {
+            xref = wire_findheader(ARThandle->data, ARThandle->len, "Xref");
+            if (xref == NULL) {
+                SendIOv(".\r\n", 3);
+                ARTgetsize += 3;
+                PushIOv();
+                ARTget++;
+                return;
+            }
+        }
+        endofpath = wire_endheader(path, ARThandle->data + ARThandle->len - 1);
+        if (endofpath == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
@@ -554,10 +560,13 @@ char *GetHeader(const char *header)
 		    }
 		}
 		if (pathheader && (VirtualPathlen > 0)) {
-			const char *endofpath;
+                    const char *endofpath;
+                    const char *endofarticle;
 
-			if ((endofpath = FindEndOfHeader(p, ARThandle->data + ARThandle->len)) == NULL)
-				return NULL;
+                    endofarticle = ARThandle->data + ARThandle->len - 1;
+                    endofpath = wire_endheader(p, endofarticle);
+                    if (endofpath == NULL)
+                        return NULL;
 		    for (s = p, prevchar = '\0';
 			s + VirtualPathlen + 1 < endofpath;
 			prevchar = *s++) {

@@ -8,6 +8,7 @@
 #include <sys/uio.h>
 
 #include "inn/innconf.h"
+#include "inn/wire.h"
 #include "innd.h"
 #include "ov.h"
 #include "storage.h"
@@ -1137,10 +1138,13 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
     return false;
   if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
     return false;
-  if ((local = HeaderFindMem(art->data, art->len, "Sender", 6)) == NULL
-    && (local = HeaderFindMem(art->data, art->len, "From", 4)) == NULL) {
-    SMfreearticle(art);
-    return false;
+  local = wire_findheader(art->data, art->len, "Sender");
+  if (local == NULL) {
+    local = wire_findheader(art->data, art->len, "From");
+    if (local == NULL) {
+      SMfreearticle(art);
+      return false;
+    }
   }
   for (p = local; p < art->data + art->len; p++) {
     if (*p == '\r' || *p == '\n')

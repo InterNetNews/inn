@@ -26,6 +26,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
@@ -668,7 +669,8 @@ GetMessageID(ARTHANDLE *art) {
     static int	buffsize = 0;
     const char	*p, *q;
 
-    if ((p = HeaderFindMem(art->data, art->len, "Message-ID", 10)) == NULL)
+    p = wire_findheader(art->data, art->len, "Message-ID");
+    if (p == NULL)
 	return NULL;
     for (q = p; q < art->data + art->len; q++) {
         if (*q == '\r' || *q == '\n')

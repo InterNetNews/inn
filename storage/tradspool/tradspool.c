@@ -951,7 +951,7 @@ tradspool_cancel(TOKEN token) {
         return FALSE;
     }
 
-    xrefhdr = (char *)HeaderFindMem(article->data, article->len, "Xref", 4);
+    xrefhdr = wire_findheader(article->data, article->len, "Xref");
     if (xrefhdr == NULL) {
 	/* for backwards compatibility; there is no Xref unless crossposted
 	   for 1.4 and 1.5 */
@@ -1135,7 +1135,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
            implications that might have for the callers of SMnext.
 
            Basically, this whole area really needs to be rethought. */
-	xrefhdr = (char *)HeaderFindMem(art->data, art->len, "Xref", 4);
+	xrefhdr = wire_findheader(art->data, art->len, "Xref");
 	if (xrefhdr != NULL) {
 	    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
 		art->len = 0;
@@ -1176,7 +1176,8 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    art->groupslen = 0;
 	}
 	if (!innconf->storeonxref) {
-	    if ((ng = (char *)HeaderFindMem(art->data, art->len, "Newsgroups", 10)) == NULL) {
+            ng = wire_findheader(art->data, art->len, "Newsgroups");
+	    if (ng == NULL) {
 		art->groups = NULL;
 		art->groupslen = 0;
 	    } else {
@@ -1185,7 +1186,8 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		art->groupslen = p - ng;
 	    }
 	}
-	if ((expires = (char *)HeaderFindMem(art->data, art->len, "Expires", 7)) == NULL) {
+        expires = wire_findheader(art->data, art->len, "Expires");
+        if (expires == NULL) {
 	    art->expires = 0;
 	} else {
             /* optionally parse expire header */
