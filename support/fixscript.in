@@ -53,11 +53,11 @@ fi
 
 interpretor=`head -1 "$input"`
 case "$interpretor" in
-*/sh)
+*/sh|*SH*)
     path="$SHPATH"
     lib=". $LIBDIR/innshellvars"
     ;;
-*/perl*)
+*/perl*|*PERL*)
     path=`echo "$interpretor" | sed 's%^#! *[^ ][^ ]*$%'"$PERLPATH%"`
     lib="require '$LIBDIR/innshellvars.pl';"
     ;;
