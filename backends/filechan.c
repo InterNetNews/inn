@@ -126,7 +126,7 @@ main(ac, av)
 	    fd = open(p, O_CREAT | O_WRONLY | O_APPEND, BATCHFILE_MODE);
 	    if (fd >= 0) {
 		/* Try to lock it and set the ownership right. */
-		lock_file(fd, LOCK_WRITE, TRUE);
+		inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
 		if (myuid == 0 && uid != 0)
 		    chown(p, uid, gid);
 

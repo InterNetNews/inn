@@ -132,8 +132,8 @@ static GROUPLOC GROUPnewnode(void);
 static bool GROUPremapifneeded(GROUPLOC loc);
 static void GROUPLOCclear(GROUPLOC *loc);
 static bool GROUPLOCempty(GROUPLOC loc);
-static bool GROUPlockhash(enum locktype type);
-static bool GROUPlock(GROUPLOC gloc, enum locktype type);
+static bool GROUPlockhash(enum inn_locktype type);
+static bool GROUPlock(GROUPLOC gloc, enum inn_locktype type);
 static bool GROUPfilesize(int count);
 static bool GROUPexpand(int mode);
 static bool OV3packgroup(char *group, int delta);
@@ -292,7 +292,7 @@ bool tradindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
     grouphash = Hash(group, strlen(group));
     memcpy(&i, &grouphash, sizeof(i));
     i = i % GROUPHEADERHASHSIZE;
-    GROUPlockhash(LOCK_WRITE);
+    GROUPlockhash(INN_LOCK_WRITE);
     loc = GROUPnewnode();
     ge = &GROUPentries[loc.recno];
     ge->hash = grouphash;
@@ -303,7 +303,7 @@ bool tradindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
     ge->flag = *flag;
     ge->next = GROUPheader->hash[i];
     GROUPheader->hash[i] = loc;
-    GROUPlockhash(LOCK_UNLOCK);
+    GROUPlockhash(INN_LOCK_UNLOCK);
     return TRUE;
 }
 
@@ -478,16 +478,16 @@ static bool GROUPLOCempty(GROUPLOC loc) {
     return (loc.recno < 0);
 }
 
-static bool GROUPlockhash(enum locktype type) {
-    return lock_range(GROUPfd, type, true, 0, sizeof(GROUPHEADER));
+static bool GROUPlockhash(enum inn_locktype type) {
+    return inn_lock_range(GROUPfd, type, true, 0, sizeof(GROUPHEADER));
 }
 
-static bool GROUPlock(GROUPLOC gloc, enum locktype type) {
-    return lock_range(GROUPfd,
-                      type,
-                      true,
-                      sizeof(GROUPHEADER) + (sizeof(GROUPENTRY) * gloc.recno),
-                      sizeof(GROUPENTRY));
+static bool GROUPlock(GROUPLOC gloc, enum inn_locktype type) {
+    return inn_lock_range(GROUPfd,
+			  type,
+			  true,
+			  sizeof(GROUPHEADER) + (sizeof(GROUPENTRY) * gloc.recno),
+			  sizeof(GROUPENTRY));
 }
 
 static bool OV3mmapgroup(GROUPHANDLE *gh) {
@@ -860,9 +860,9 @@ bool tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int le
 	if ((gh = OV3opengroup(group, TRUE)) == NULL)
 	    return FALSE;
     }
-    GROUPlock(gh->gloc, LOCK_WRITE);
+    GROUPlock(gh->gloc, INN_LOCK_WRITE);
     OV3addrec(ge, gh, artnum, token, data, len, arrived, expires);
-    GROUPlock(gh->gloc, LOCK_UNLOCK);
+    GROUPlock(gh->gloc, INN_LOCK_UNLOCK);
     OV3closegroup(gh, TRUE);
 
     return TRUE;
@@ -1050,7 +1050,7 @@ static bool OV3packgroup(char *group, int delta) {
 	return TRUE;
 
     syslog(L_NOTICE, "tradindexed: repacking group %s, offset %d", group, delta);
-    GROUPlock(gloc, LOCK_WRITE);
+    GROUPlock(gloc, INN_LOCK_WRITE);
 
     if (delta > ge->base) delta = ge->base;
 
@@ -1066,19 +1066,19 @@ static bool OV3packgroup(char *group, int delta) {
 
     /* open and mmap old group index */
     if ((gh = OV3opengroup(group, FALSE)) == NULL) {
-	GROUPlock(gloc, LOCK_UNLOCK);
+	GROUPlock(gloc, INN_LOCK_UNLOCK);
 	return FALSE;
     }
     if (!OV3mmapgroup(gh)) {
 	OV3closegroup(gh, FALSE);
-	GROUPlock(gloc, LOCK_UNLOCK);
+	GROUPlock(gloc, INN_LOCK_UNLOCK);
 	return FALSE;
     }
 
     if ((fd = open(newidx, O_RDWR | O_CREAT, 0660)) < 0) {
 	syslog(L_ERROR, "tradindexed: could not open %s: %m", newidx);
 	OV3closegroup(gh, FALSE);
-	GROUPlock(gloc, LOCK_UNLOCK);
+	GROUPlock(gloc, INN_LOCK_UNLOCK);
 	return FALSE;
     }
 
@@ -1087,7 +1087,7 @@ static bool OV3packgroup(char *group, int delta) {
 	syslog(L_ERROR, "tradindexed: could not stat %s: %m", newidx);
 	close(fd);
 	OV3closegroup(gh, FALSE);
-	GROUPlock(gloc, LOCK_UNLOCK);
+	GROUPlock(gloc, INN_LOCK_UNLOCK);
 	return FALSE;
     }
 	
@@ -1109,13 +1109,13 @@ static bool OV3packgroup(char *group, int delta) {
 	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
 	close(fd);
 	OV3closegroup(gh, FALSE);
-	GROUPlock(gloc, LOCK_UNLOCK);
+	GROUPlock(gloc, INN_LOCK_UNLOCK);
 	return FALSE;
     }	
     if (close(fd) < 0) {
 	syslog(L_ERROR, "tradindexed: packgroup cant close %s: %m", newidx);
 	OV3closegroup(gh, FALSE);
-	GROUPlock(gloc, LOCK_UNLOCK);
+	GROUPlock(gloc, INN_LOCK_UNLOCK);
 	return FALSE;
     }
     do {
@@ -1139,7 +1139,7 @@ static bool OV3packgroup(char *group, int delta) {
     } while (0);
     ge->indexinode = sb.st_ino;
     ge->base -= delta;
-    GROUPlock(gloc, LOCK_UNLOCK);
+    GROUPlock(gloc, INN_LOCK_UNLOCK);
     OV3closegroup(gh, FALSE);
     return TRUE;
 }
@@ -1188,13 +1188,13 @@ bool tradindexed_expiregroup(char *group, int *lo) {
     unlink(newidx);
     unlink(newdat);
 
-    GROUPlock(gloc, LOCK_WRITE);
+    GROUPlock(gloc, INN_LOCK_WRITE);
     if ((handle = tradindexed_opensearch(group, ge->low, ge->high)) == NULL) {
-	GROUPlock(gloc, LOCK_UNLOCK);
+	GROUPlock(gloc, INN_LOCK_UNLOCK);
 	return FALSE;
     }
     if ((newgh = OV3opengroupfiles(newgroup)) == NULL) {
-	GROUPlock(gloc, LOCK_UNLOCK);
+	GROUPlock(gloc, INN_LOCK_UNLOCK);
 	tradindexed_closesearch(handle);
 	return FALSE;
     }
@@ -1260,7 +1260,7 @@ bool tradindexed_expiregroup(char *group, int *lo) {
 	else
 	    *lo = ge->low;
     }
-    GROUPlock(gloc, LOCK_UNLOCK);
+    GROUPlock(gloc, INN_LOCK_UNLOCK);
     tradindexed_closesearch(handle);
     OV3closegroupfiles(newgh);
     return TRUE;

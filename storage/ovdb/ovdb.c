@@ -1101,14 +1101,14 @@ BOOL ovdb_getlock(int mode)
 	}
     }
     if(mode == OVDB_LOCK_EXCLUSIVE) {
-	if(!lock_file(lockfd, LOCK_WRITE, FALSE)) {
+	if(!inn_lock_file(lockfd, INN_LOCK_WRITE, FALSE)) {
 	    close(lockfd);
 	    lockfd = -1;
 	    return FALSE;
 	}
 	return TRUE;
     } else {
-	if(!lock_file(lockfd, LOCK_READ, FALSE)) {
+	if(!inn_lock_file(lockfd, INN_LOCK_READ, FALSE)) {
 	    close(lockfd);
 	    lockfd = -1;
 	    return FALSE;
@@ -1122,7 +1122,7 @@ BOOL ovdb_releaselock(void)
     BOOL r;
     if(lockfd == -1)
 	return TRUE;
-    r = lock_file(lockfd, LOCK_UNLOCK, FALSE);
+    r = inn_lock_file(lockfd, INN_LOCK_UNLOCK, FALSE);
     close(lockfd);
     lockfd = -1;
     return r;

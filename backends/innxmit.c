@@ -1143,7 +1143,7 @@ int main(int ac, char *av[]) {
 	SMshutdown();
 	exit(1);
     }
-    if (!lock_file(QIOfileno(BATCHqp), LOCK_WRITE, TRUE)) {
+    if (!inn_lock_file(QIOfileno(BATCHqp), INN_LOCK_WRITE, TRUE)) {
 #if	defined(EWOULDBLOCK)
 	if (errno == EWOULDBLOCK) {
 	    SMshutdown();

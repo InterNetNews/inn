@@ -27,7 +27,7 @@ struct mlock {
 char *progname;
 
 void
-lock_files(struct mlock *ml)
+inn_lock_files(struct mlock *ml)
 {
     int i;
 
@@ -110,7 +110,7 @@ main(int argc, char *argv[])
 
     /* loop over the list of paths, sleeping 60s between iterations */
     for (;;) {
-	lock_files(ml);
+	inn_lock_files(ml);
 	poll(NULL, 0, 60000);
     }
     return EX_OSERR;

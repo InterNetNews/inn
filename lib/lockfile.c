@@ -2,9 +2,9 @@
 **
 **  Lock a file or a range in a file.
 **
-**  Provides lock_file and lock_range functions to lock or unlock a file or
-**  ranges within a file with a more convenient syntax than fcntl.  Assume
-**  that fcntl is available.
+**  Provides inn_lock_file and inn_lock_range functions to lock or unlock a
+**  file or ranges within a file with a more convenient syntax than fcntl.
+**  Assume that fcntl is available.
 */
 
 #include "config.h"
@@ -13,22 +13,22 @@
 #include "libinn.h"
 
 bool
-lock_file(int fd, enum locktype type, bool block)
+inn_lock_file(int fd, enum inn_locktype type, bool block)
 {
-    return lock_range(fd, type, block, 0, 0);
+    return inn_lock_range(fd, type, block, 0, 0);
 }
 
 bool
-lock_range(int fd, enum locktype type, bool block, off_t offset, off_t size)
+inn_lock_range(int fd, enum inn_locktype type, bool block, off_t offset, off_t size)
 {
     struct flock fl;
     int status;
 
     switch (type) {
-        case LOCK_READ:         fl.l_type = F_RDLCK;    break;
-        case LOCK_WRITE:        fl.l_type = F_WRLCK;    break;
+        case INN_LOCK_READ:     fl.l_type = F_RDLCK;    break;
+        case INN_LOCK_WRITE:    fl.l_type = F_WRLCK;    break;
         default:
-        case LOCK_UNLOCK:       fl.l_type = F_UNLCK;    break;
+        case INN_LOCK_UNLOCK:   fl.l_type = F_UNLCK;    break;
     }
 
     fl.l_whence = SEEK_SET;

@@ -133,15 +133,15 @@ extern enum wildmat     wildmat_poison(const char *text, const char *pat);
 /*
 **  FILE LOCKING
 */
-enum locktype {
-    LOCK_READ,
-    LOCK_WRITE,
-    LOCK_UNLOCK
+enum inn_locktype {
+    INN_LOCK_READ,
+    INN_LOCK_WRITE,
+    INN_LOCK_UNLOCK
 };
 
-extern bool     lock_file(int fd, enum locktype type, bool block);
-extern bool     lock_range(int fd, enum locktype type, bool block,
-                           off_t offset, off_t size);
+extern bool     inn_lock_file(int fd, enum inn_locktype type, bool block);
+extern bool     inn_lock_range(int fd, enum inn_locktype type, bool block,
+			       off_t offset, off_t size);
 
 
 /*

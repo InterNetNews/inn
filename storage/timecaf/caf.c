@@ -762,7 +762,7 @@ char *temppath;
     }
     /* shouldn't be anyone else locking our file, since temp file has unique
        PID-based name ... */
-    if (!lock_file(fd, LOCK_WRITE, FALSE)) {
+    if (!inn_lock_file(fd, INN_LOCK_WRITE, FALSE)) {
 	CAFError(CAF_ERR_IO);
 	(void) close(fd);
 	return -1;
@@ -855,7 +855,7 @@ size_t size;
 	}
 
 	/* try a nonblocking lock attempt first. */
-	if (lock_file(fd, LOCK_WRITE, FALSE)) break;
+	if (inn_lock_file(fd, INN_LOCK_WRITE, FALSE)) break;
 
 	if (!waitlock) {
 	    CAFError(CAF_ERR_FILEBUSY);
@@ -863,7 +863,7 @@ size_t size;
 	    return -1;
 	}
 	/* wait around to try and get a lock. */
-	(void) lock_file(fd, LOCK_WRITE, TRUE);
+	(void) inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.
@@ -1236,10 +1236,10 @@ ARTNUM *artnums;
 	    }
 	}
 	/* try a nonblocking lock attempt first. */
-	if (lock_file(fd, LOCK_WRITE, FALSE)) break;
+	if (inn_lock_file(fd, INN_LOCK_WRITE, FALSE)) break;
 
 	/* wait around to try and get a lock. */
-	(void) lock_file(fd, LOCK_WRITE, TRUE);
+	(void) inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.
@@ -1464,10 +1464,10 @@ CAFClean(path, verbose, PercentFreeThreshold)
 	}
 
 	/* try a nonblocking lock attempt first. */
-	if (lock_file(fdin, LOCK_WRITE, FALSE)) break;
+	if (inn_lock_file(fdin, INN_LOCK_WRITE, FALSE)) break;
 
 	/* wait around to try and get a lock. */
-	(void) lock_file(fdin, LOCK_WRITE, TRUE);
+	(void) inn_lock_file(fdin, INN_LOCK_WRITE, TRUE);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.

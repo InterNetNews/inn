@@ -67,7 +67,7 @@ libinn \- InterNetNews library routines
 .B "    bool	flag;"
 
 .B "bool"
-.B "lock_file(fd, type, flag)"
+.B "inn_lock_file(fd, type, flag)"
 .B "    int	fd;"
 .B "    LOCKTYPE	type;"
 .B "    bool	block;"
@@ -300,7 +300,7 @@ is non-zero) or disables (if
 is zero) non-blocking I/O on the indicated descriptor.
 It returns \-1 on failure or zero on success.
 .PP
-.I lock_file
+.I inn_lock_file
 tries to lock the file descriptor
 .IR fd .
 If
@@ -308,7 +308,7 @@ If
 is TRUE it will block until the lock can be made, otherwise
 it will return FALSE if the file cannot be locked.
 .I type
-is one of: LOCK_READ, LOCK_WRITE, or LOCK_UNLOCK.
+is one of: INN_LOCK_READ, INN_LOCK_WRITE, or INN_LOCK_UNLOCK.
 It returns FALSE on failure or TRUE on success.
 .PP
 .I ReadInnConf
