@@ -17,22 +17,11 @@
 #include <syslog.h>
 
 #include "inn/messages.h"
+#include "libinn.h"
 #include "shmem.h"
   
 #ifndef MAP_FAILED
   #define MAP_FAILED ((caddr_t)-1)
-#endif
-
-#ifndef	L_NOTICE
-#define L_NOTICE	LOG_NOTICE
-#endif
-
-#ifndef	L_ERROR
-#define L_ERROR		LOG_ERR
-#endif
-
-#ifndef	L_FATAL
-#define L_FATAL		LOG_CRIT
 #endif
 
 static int smcGetSemaphore(const char *name)
@@ -41,7 +30,7 @@ static int smcGetSemaphore(const char *name)
     int   id = semget(kt, 0, S_IRWXU|S_IRWXG|S_IRWXO);
 
     if (id < 0) {
-        syslog( L_ERROR, "semget failed to get semaphore for %s: %m", name );
+        syswarn("semget failed to get semaphore for %s", name);
     }
     return id;
 }
@@ -57,7 +46,7 @@ static int smcCreateSemaphore(const char *name)
             id = semget(kt, 0, S_IRWXU|S_IRWXG|S_IRWXO);
             if (id < 0) {
                 /* couldn't even retrieve it. */
-                syslog( L_ERROR, "cant get semaphore using %s", name );
+                syswarn("cant get semaphore using %s", name);
                 return id;
             }
             /* try to remove it */
@@ -66,23 +55,22 @@ static int smcCreateSemaphore(const char *name)
                 union semun semArg;
                 semArg.val = 1;
                 if (semctl(id, 0, IPC_RMID, semArg) < 0) {
-                    syslog( L_FATAL, "cant remove semaphore %s", name );
-                    exit(1);
+                    syswarn("cant remove semaphore %s", name);
+                    return -1;
                 }
             }
 #else
             if (semctl(id, 0, IPC_RMID, NULL) < 0) {
-                syslog( L_FATAL, "cant remove semaphore %s", name );
-                exit(1);
+                syswarn("cant remove semaphore %s", name);
+                return -1;
             }
 #endif
             /* and retry creating it */
             id = semget(kt, 2, IPC_CREAT|S_IRWXU|S_IRWXG|S_IRWXO);
         }
     }
-    if (id < 0) {
-        syslog( L_ERROR, "cant create semaphore using %s", name );
-    }
+    if (id < 0)
+        syswarn("cant create semaphore using %s", name);
     return id;
 }
 
@@ -99,7 +87,7 @@ int smcGetExclusiveLock(smcd_t *this)
     if (semop(this->semap, sops, 3) < 0 &&
         semop(this->semap, sops, 3) < 0)
     {
-        syslog( L_ERROR, "semop failed to getExclusiveLock: %m" );
+        syswarn("semop failed to getExclusiveLock");
         return(-1);
     }
     return(0);
@@ -117,7 +105,7 @@ int smcGetSharedLock(smcd_t *this)
     if (semop(this->semap, sops, 2) < 0 &&
         semop(this->semap, sops, 2) < 0)
     {
-        syslog( L_ERROR, "semop failed to getSharedLock: %m" );
+        syswarn("semop failed to getSharedLock");
         return(-1);
     }
     return(0);
@@ -129,7 +117,7 @@ int smcReleaseSharedLock(smcd_t *this)
 
     /* Release the lock */
     if (semop(this->semap, &sops, 1) < 0) {
-        syslog( L_ERROR, "semop failed to release shared lock: %m" );
+        syswarn("semop failed to release shared lock");
         return(-1);
     }
     return(0);
@@ -141,7 +129,7 @@ int smcReleaseExclusiveLock(smcd_t *this)
 
     /* Release the lock */
     if (semop(this->semap, &sops, 1) < 0) {
-        syslog( L_ERROR, "semop failed to release exclusive lock: %m" );
+        syswarn("semop failed to release exclusive lock");
         return(-1);
     }
     return(0);
@@ -166,24 +154,23 @@ smcd_t* smcGetShmemBuffer(const char *name, int size)
 
     /* attach to shared memory buffer */
     if ((addr = (caddr_t)shmat(shmid,0,0)) == MAP_FAILED) {
-        syslog( L_ERROR, "cant attach shared memory" );
-        if (shmctl(shmid, IPC_RMID, 0) < 0) {
-            syslog( L_ERROR, "cant remove shared memory" );
-        }
+        syswarn("cant attach shared memory");
+        if (shmctl(shmid, IPC_RMID, 0) < 0)
+            syswarn("cant remove shared memory");
         return NULL;
     }
 
     /* Get control semaphore */
     if ((semap = smcGetSemaphore(name)) < 0) {
-        syslog( L_ERROR, "failed to get semaphore for key %s", name );
+        warn("failed to get semaphore for key %s", name);
         if (shmdt(addr) < 0)
-            syslog( L_ERROR, "cant detatch shared memory" );
+            syswarn("cant detatch shared memory");
         if (shmctl(shmid, IPC_RMID, 0) < 0)
-            syslog( L_ERROR, "cant remove shared memory" );
+            syswarn("cant remove shared memory");
         return NULL;
     }
 
-    this = malloc( sizeof(smcd_t) );
+    this = xmalloc(sizeof(smcd_t));
     this->addr = addr;
     this->size = size;
     this->shmid = shmid;
@@ -212,27 +199,26 @@ smcd_t* smcCreateShmemBuffer(const char *name, int size)
         /* try to get existing segment */
         shmid = shmget(fk, 4, S_IRWXU|S_IRGRP|S_IROTH);
         if (shmid >= 0) {
-            syslog( L_ERROR, "shmem segment already exists name %s", name );
+            syswarn("shmem segment already exists name %s", name);
             /* try to delete old segment */
             if (shmctl(shmid, IPC_RMID, 0) < 0) {
-                syslog( L_ERROR, "cant delete old memory segment" );
+                syswarn("cant delete old memory segment");
                 return NULL;
             }
-            syslog( L_NOTICE, "recreating another shmem segment." );
+            notice("recreating another shmem segment");
             shmid = shmget(fk, size, IPC_CREAT|S_IRWXU|S_IRGRP|S_IROTH);
         }
     }
     if (shmid < 0) {
-        syslog( L_ERROR, "cant create shared memory segment" );
+        syswarn("cant create shared memory segment");
         return NULL;
     }
 
     /* attach to shared memory buffer */
     if ((addr = (caddr_t)shmat(shmid,0,0)) == MAP_FAILED) {
-        syslog( L_ERROR, "cant attach shared memory" );
-        if (shmctl(shmid, IPC_RMID, 0) < 0) {
-            syslog( L_ERROR, "cant remove shared memory" );
-        }
+        syswarn("cant attach shared memory");
+        if (shmctl(shmid, IPC_RMID, 0) < 0)
+            syswarn("cant remove shared memory");
         return NULL;
     }
     /* clear the data */
@@ -240,15 +226,15 @@ smcd_t* smcCreateShmemBuffer(const char *name, int size)
 
     /* Create control semaphore */
     if ((semap = smcCreateSemaphore(name)) < 0) {
-        syslog( L_ERROR, "failed to create semaphore for %s", name );
+        warn("failed to create semaphore for %s", name);
         if (shmdt(addr) < 0)
-            syslog( L_ERROR, "cant detatch shared memory" );
+            syswarn("cant detatch shared memory");
         if (shmctl(shmid, IPC_RMID, 0) < 0)
-            syslog( L_ERROR, "cant remove shared memory" );
+            syswarn("cant remove shared memory");
         return NULL;
     }
 
-    this = malloc( sizeof(smcd_t) );
+    this = xmalloc(sizeof(smcd_t));
     this->addr = addr;
     this->size = size;
     this->shmid = shmid;
@@ -266,21 +252,19 @@ void smcClose( smcd_t *this )
 
     if (this->addr != MAP_FAILED) {
         /* detach shared memory segment */
-        if (shmdt(this->addr) < 0) {
-            syslog( L_ERROR, "cant detach shared memory segment: %m" );
-        }
+        if (shmdt(this->addr) < 0)
+            syswarn("cant detach shared memory segment");
         this->addr = MAP_FAILED;
     }
 
     /* delete shm if no one has attached it */
     if ( shmctl(this->shmid, IPC_STAT, &buf) < 0) {
-        syslog( L_ERROR, "cant stat shmid %d", this->shmid );
+        syswarn("cant stat shmid %d", this->shmid);
     } else if ( buf.shm_nattch == 0 ) {
-        if (shmctl(this->shmid, IPC_RMID, 0) < 0) {
-            syslog( L_ERROR, "cant delete shmid %d", this->shmid );
-        } else {
-            syslog( L_NOTICE, "shmid %d deleted", this->shmid );
-        }
+        if (shmctl(this->shmid, IPC_RMID, 0) < 0)
+            syswarn("cant delete shmid %d", this->shmid);
+        else
+            notice("shmid %d deleted", this->shmid);
     }
     free( this );
 }

@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include "inn/messages.h"
 #include "libinn.h"
 
 #define CAF_INNARDS
@@ -953,7 +954,7 @@ CAFFinishArtWrite(int fd)
 
     /* blah, really should handle multiple pending OpenArtWrites. */
     if (fd != CAF_fd_write) {
-	fprintf(stderr, "CAF: fd mismatch in CloseArtWrite.\n");
+        warn("CAF: fd mismatch in FinishArtWrite");
 	abort();
     }
 
@@ -987,7 +988,7 @@ CAFFinishArtWrite(int fd)
 	    ** for now core dump (might as well, if we've done this the CAF
 	    ** file is probably thoroughly hosed anyway.) 
 	    */
-	    fprintf(stderr, "CAF: article written overran declared size.\n");
+            warn("CAF: article written overran declared size");
 	    abort();
 	}
 

@@ -16,6 +16,7 @@
 #include <time.h>
 
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "inn/wire.h"
 #include "libinn.h"
 #include "methods.h"
@@ -98,14 +99,14 @@ static TOKEN *PathToToken(char *path) {
 
 bool timehash_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
-	syslog(L_ERROR, "timehash: attr is NULL");
+        warn("timehash: attr is NULL");
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
 	return false;
     }
     attr->selfexpire = false;
     attr->expensivestat = true;
     if (STORAGE_TOKEN_LENGTH < 6) {
-	syslog(L_FATAL, "timehash: token length is less than 6 bytes");
+        warn("timehash: token length is less than six bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);
 	return false;
     }
@@ -138,7 +139,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    p = strrchr(path, '/');
 	    *p = '\0';
 	    if (!MakeDirectory(path, true)) {
-	        syslog(L_ERROR, "timehash: could not make directory %s %m", path);
+                syswarn("timehash: could not make directory %s", path);
 	        token.type = TOKEN_EMPTY;
 	        free(path);
 	        SMseterror(SMERR_UNDEFINED, NULL);
@@ -147,7 +148,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
 	        *p = '/';
 	        if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
 		    SMseterror(SMERR_UNDEFINED, NULL);
-		    syslog(L_ERROR, "timehash: could not open %s %m", path);
+                    syswarn("timehash: could not create %s", path);
 		    token.type = TOKEN_EMPTY;
 		    free(path);
 		    return token;
@@ -158,7 +159,8 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
     }
     if (i == 0x10000) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "timehash: all sequence numbers for the time and class are reserved %lu %d", (unsigned long)now, class);
+        warn("timehash: all sequence numbers for time %lu and class %d are"
+             " reserved", (unsigned long) now, class);
 	token.type = TOKEN_EMPTY;
 	free(path);
 	return token;
@@ -167,7 +169,7 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
     result = xwritev(fd, article.iov, article.iovcnt);
     if (result != (ssize_t) article.len) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "timehash error writing %s %m", path);
+        syswarn("timehash: error writing %s", path);
 	close(fd);
 	token.type = TOKEN_EMPTY;
 	unlink(path);
@@ -209,7 +211,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 
     if (fstat(fd, &sb) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "timehash: could not fstat article: %m");
+        syswarn("timehash: could not fstat article");
 	free(art);
 	return NULL;
     }
@@ -220,7 +222,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     if (innconf->articlemmap) {
 	if ((private->base = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "timehash: could not mmap article: %m");
+            syswarn("timehash: could not mmap article");
 	    free(art->private);
 	    free(art);
 	    return NULL;
@@ -229,7 +231,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	private->base = xmalloc(private->len);
 	if (read(fd, private->base, private->len) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "timehash: could not read article: %m");
+            syswarn("timehash: could not read article");
 	    free(private->base);
 	    free(art->private);
 	    free(art);

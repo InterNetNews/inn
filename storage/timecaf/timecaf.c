@@ -17,6 +17,7 @@
 
 #include "caf.h"
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "inn/wire.h"
 #include "libinn.h"
 #include "methods.h"
@@ -164,14 +165,14 @@ static TOKEN *PathNumToToken(char *path, ARTNUM artnum) {
 
 bool timecaf_init(SMATTRIBUTE *attr) {
     if (attr == NULL) {
-	syslog(L_ERROR, "timecaf: attr is NULL");
+        warn("timecaf: attr is NULL");
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
 	return false;
     }
     attr->selfexpire = false;
     attr->expensivestat = false;
     if (STORAGE_TOKEN_LENGTH < 6) {
-	syslog(L_FATAL, "timecaf: token length is less than 6 bytes");
+        warn("timecaf: token length is less than six bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);
 	return false;
     }
@@ -348,7 +349,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 		p = strrchr(path, '/');
 		*p = '\0';
 		if (!MakeDirectory(path, true)) {
-		    syslog(L_ERROR, "timecaf: could not make directory %s %m", path);
+                    syswarn("timecaf: could not create directory %s", path);
 		    token.type = TOKEN_EMPTY;
 		    free(path);
 		    SMseterror(SMERR_UNDEFINED, NULL);
@@ -357,7 +358,8 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    *p = '/';
 		    fd = CAFOpenArtWrite(path, &art, true, article.len);
 		    if (fd < 0) {
-			syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%ld, %s", path, art, CAFErrorStr());
+                        warn("timecaf: could not OpenArtWrite %s/%ld: %s",
+                             path, art, CAFErrorStr());
 			SMseterror(SMERR_UNDEFINED, NULL);
 			free(path);
 			token.type = TOKEN_EMPTY;
@@ -365,7 +367,8 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    }
 		} 
 	    } else {
-		syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%ld, %s", path, art, CAFErrorStr());
+                warn("timecaf: could not OpenArtWrite %s/%ld: %s", path, art,
+                     CAFErrorStr());
 		SMseterror(SMERR_UNDEFINED, NULL);
 		free(path);
 		token.type = TOKEN_EMPTY;
@@ -381,7 +384,8 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 	path = WritingFile.path;
 
 	if (CAFStartWriteFd(fd, &art, article.len) < 0) {
-	    syslog(L_ERROR, "timecaf: could not OpenArtWrite %s/%ld, %s", path, art, CAFErrorStr());
+            warn("timecaf: could not OpenArtWriteFd %s/%ld: %s", path, art,
+                 CAFErrorStr());
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    free(path);
 	    token.type = TOKEN_EMPTY;
@@ -394,14 +398,14 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     result = xwritev(fd, article.iov, article.iovcnt);
     if (result != (ssize_t) article.len) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "timecaf error writing %s %m", path);
+        syswarn("timecaf: error writing %s", path);
 	token.type = TOKEN_EMPTY;
 	CloseOpenFile(&WritingFile);
 	return token;
     }
     if (CAFFinishArtWrite(fd) < 0) { 
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "timecaf error writing %s %s", path, CAFErrorStr());
+        warn("timecaf: error writing %s: %s", path, CAFErrorStr());
 	token.type = TOKEN_EMPTY;
 	CloseOpenFile(&WritingFile);
 	return token;
@@ -422,7 +426,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
     if (pagesize == 0) {
         pagesize = getpagesize();
         if (pagesize < 0) {
-	    syslog(L_ERROR, "timecaf getpagesize failed: %m");
+            syswarn("timecaf: getpagesize failed");
             pagesize = 0;
 	    return NULL;
         }
@@ -462,7 +466,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	private->mmaplen = len + delta;
 	if ((private->mmapbase = mmap(NULL, private->mmaplen, PROT_READ, MAP_SHARED, fd, tmpoff)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "timecaf: could not mmap article: %m");
+            syswarn("timecaf: could not mmap article");
 	    free(art->private);
 	    free(art);
 	    return NULL;
@@ -473,7 +477,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
         private->artdata = xmalloc(private->artlen);
 	if (read(fd, private->artdata, private->artlen) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
-	    syslog(L_ERROR, "timecaf: could not read article: %m");
+            syswarn("timecaf: could not read article");
 	    free(private->artdata);
 	    free(art->private);
 	    free(art);

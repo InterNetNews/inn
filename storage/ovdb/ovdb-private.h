@@ -87,11 +87,6 @@ struct ovdata {
 extern struct ovdb_conf ovdb_conf;
 extern DB_ENV *OVDBenv;
 
-#define OVDB_ERR_NONE   0
-#define OVDB_ERR_SYSLOG 1	/* default */
-#define OVDB_ERR_STDERR 2
-extern int ovdb_errmode;
-
 void read_ovdb_conf(void);
 int ovdb_open_berkeleydb(int mode, int flags);
 void ovdb_close_berkeleydb(void);

@@ -250,7 +250,6 @@ typedef enum {SRCH_FRWD, SRCH_BKWD} SRCH;
 
 #define	_PATH_OVBUFFCONFIG	"buffindexed.conf"
 
-static char LocalLogName[] = "buffindexed";
 static long		pagesize = 0;
 static OVBUFF		*ovbufftab = NULL;
 static OVBUFF           *ovbuffnext = NULL;
@@ -322,7 +321,7 @@ static bool ovparse_part_line(char *l) {
 
   /* ovbuff partition name */
   if ((p = strchr(l, ':')) == NULL || p - l <= 0 || p - l > OVMAXCYCBUFFNAME - 1) {
-    syslog(L_ERROR, "%s: bad index in line '%s'", LocalLogName, l);
+    warn("buffindexed: bad index in line '%s'", l);
     return false;
   }
   *p = '\0';
@@ -330,7 +329,7 @@ static bool ovparse_part_line(char *l) {
   ovbuff->index = strtoul(l, NULL, 10);
   for (; tmp != (OVBUFF *)NULL; tmp = tmp->next) {
     if (tmp->index == ovbuff->index) {
-      syslog(L_ERROR, "%s: dupulicate index in line '%s'", LocalLogName, l);
+      warn("buffindexed: dupulicate index in line '%s'", l);
       free(ovbuff);
       return false;
     }
@@ -339,7 +338,7 @@ static bool ovparse_part_line(char *l) {
 
   /* Path to ovbuff partition */
   if ((p = strchr(l, ':')) == NULL || p - l <= 0 || p - l > OVBUFFPASIZ - 1) {
-    syslog(L_ERROR, "%s: bad pathname in line '%s'", LocalLogName, l);
+    warn("buffindexed: bad pathname in line '%s'", l);
     free(ovbuff);
     return false;
   }
@@ -347,8 +346,8 @@ static bool ovparse_part_line(char *l) {
   memset(ovbuff->path, '\0', OVBUFFPASIZ);
   strlcpy(ovbuff->path, l, OVBUFFPASIZ);
   if (stat(ovbuff->path, &sb) < 0) {
-    syslog(L_ERROR, "%s: file '%s' does not exist, ignoring '%d'",
-	   LocalLogName, ovbuff->path, ovbuff->index);
+    warn("buffindexed: file '%s' does not exist, ignoring '%d'",
+	   ovbuff->path, ovbuff->index);
     free(ovbuff);
     return false;
   }
@@ -366,12 +365,12 @@ static bool ovparse_part_line(char *l) {
   ovbuff->base = base + tonextblock;
   if (S_ISREG(sb.st_mode) && (len != sb.st_size || ovbuff->base > sb.st_size)) {
     if (len != sb.st_size)
-      syslog(L_NOTICE, "%s: length mismatch '%lu' for index '%d' (%lu bytes)",
-	LocalLogName, (unsigned long) len, ovbuff->index,
+      notice("buffindexed: length mismatch '%lu' for index '%d' (%lu bytes)",
+	(unsigned long) len, ovbuff->index,
 	(unsigned long) sb.st_size);
     if (ovbuff->base > sb.st_size)
-      syslog(L_NOTICE, "%s: length must be at least '%lu' for index '%d' (%lu bytes)", 
-	LocalLogName, (unsigned long) ovbuff->base, ovbuff->index,
+      notice("buffindexed: length must be at least '%lu' for index '%d' (%lu bytes)", 
+	(unsigned long) ovbuff->base, ovbuff->index,
 	(unsigned long) sb.st_size);
     free(ovbuff);
     return false;
@@ -404,7 +403,7 @@ static bool ovbuffread_config(void) {
   path = concatpath(innconf->pathetc, _PATH_OVBUFFCONFIG);
   config = ReadInFile(path, NULL);
   if (config == NULL) {
-    syslog(L_ERROR, "%s: cannot read %s", LocalLogName, path);
+    warn("buffindexed: cannot read %s", path);
     free(config);
     free(path);
     return false;
@@ -455,7 +454,7 @@ static bool ovbuffread_config(void) {
   free(config);
   free(ctab);
   if (ovbufftab == (OVBUFF *)NULL) {
-    syslog(L_ERROR, "%s: no buffindexed defined", LocalLogName);
+    warn("buffindexed: no buffindexed defined");
     return false;
   }
   return true;
@@ -559,8 +558,7 @@ static void ovflushhead(OVBUFF *ovbuff) {
   memcpy(ovbuff->bitfield, &rpx, sizeof(OVBUFFHEAD));
 
   if (pwrite(ovbuff->fd, ovbuff->bitfield, ovbuff->base, 0) != ovbuff->base)
-    syslog(L_ERROR, "%s: ovflushhead: cant flush on %s: %m", LocalLogName,
-      ovbuff->path);
+    syswarn("buffindexed: ovflushhead: cant flush on %s", ovbuff->path);
   ovbuff->dirty = 0;
   return;
 }
@@ -608,7 +606,7 @@ static bool ovbuffinit_disks(void) {
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
     if (ovbuff->fd < 0) {
       if ((fd = open(ovbuff->path, ovbuffmode & OV_WRITE ? O_RDWR : O_RDONLY)) < 0) {
-	syslog(L_ERROR, "%s: ERROR opening '%s' : %m", LocalLogName, ovbuff->path);
+	syswarn("buffindexed: ERROR opening '%s'", ovbuff->path);
 	return false;
       } else {
 	close_on_exec(fd, true);
@@ -622,8 +620,8 @@ static bool ovbuffinit_disks(void) {
       /* No shared memory exists, create one. */
       smc = smcCreateShmemBuffer(ovbuff->path, ovbuff->base);
       if (!smc) {
-	syslog(L_ERROR, "%s: ovinitdisks: cant create shmem for %s len %lu: %m",
-	  LocalLogName, ovbuff->path, (unsigned long) ovbuff->base);
+	syswarn("buffindexed: ovinitdisks: cant create shmem for %s len %lu",
+                ovbuff->path, (unsigned long) ovbuff->base);
 	return false;
       }
     }
@@ -636,7 +634,7 @@ static bool ovbuffinit_disks(void) {
     ovlock(ovbuff, ovbuffmode & OV_WRITE ? INN_LOCK_WRITE : INN_LOCK_READ);
 
     if (pread(ovbuff->fd, &dpx, sizeof(OVBUFFHEAD), 0) < 0) {
-      syslog(L_ERROR, "%s: cant read from %s, %m", LocalLogName, ovbuff->path);
+      syswarn("buffindexed: cant read from %s", ovbuff->path);
       ovlock(ovbuff, INN_LOCK_UNLOCK);
       return false;
     }
@@ -650,8 +648,8 @@ static bool ovbuffinit_disks(void) {
       buf[OVBUFFLASIZ] = '\0';
       i = hex2offt(buf);
       if (i != ovbuff->index) {
-	syslog(L_ERROR, "%s: Mismatch: index '%d' for buffindexed %s",
-	  LocalLogName, i, ovbuff->path);
+	warn("buffindexed: Mismatch: index '%d' for buffindexed %s",
+	  i, ovbuff->path);
 	ovlock(ovbuff, INN_LOCK_UNLOCK);
 	return false;
       }
@@ -659,8 +657,8 @@ static bool ovbuffinit_disks(void) {
       buf[OVBUFFLASIZ] = '\0';
       tmpo = hex2offt(buf);
       if (tmpo != ovbuff->len) {
-	syslog(L_ERROR, "%s: Mismatch: read 0x%s length for buffindexed %s",
-	  LocalLogName, offt2hex(tmpo, false), ovbuff->path);
+	warn("buffindexed: Mismatch: read 0x%s length for buffindexed %s",
+	  offt2hex(tmpo, false), ovbuff->path);
 	ovlock(ovbuff, INN_LOCK_UNLOCK);
 	return false;
       }
@@ -676,8 +674,7 @@ static bool ovbuffinit_disks(void) {
 	 * Load shared memory with disk data.
 	 */
 	if (pread(ovbuff->fd, rpx, ovbuff->base, 0) < 0) {
-	  syslog(L_ERROR, "%s: cant read from %s, %m",
-	    LocalLogName, ovbuff->path);
+	  syswarn("buffindexed: cant read from %s", ovbuff->path);
 	  ovlock(ovbuff, INN_LOCK_UNLOCK);
 	  return false;
 	}
@@ -711,8 +708,8 @@ static bool ovbuffinit_disks(void) {
 
       ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
       if (ovbuff->totalblk < 1) {
-	syslog(L_ERROR, "%s: too small length '%lu' for buffindexed %s",
-	    LocalLogName, (unsigned long) ovbuff->len, ovbuff->path);
+	warn("buffindexed: too small length '%lu' for buffindexed %s",
+	    (unsigned long) ovbuff->len, ovbuff->path);
 	ovlock(ovbuff, INN_LOCK_UNLOCK);
 	return false;
       }
@@ -874,7 +871,7 @@ retry:
 #ifdef OV_DEBUG
   recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
   if (ovusedblock(ovbuff, ovbuff->freeblk, false, true)) {
-    syslog(L_FATAL, "%s: 0x%08x trying to occupy new block(%d, %d), but already occupied", LocalLogName, recno, ovbuff->index, ovbuff->freeblk);
+    warn("buffindexed: 0x%08x trying to occupy new block(%d, %d), but already occupied", recno, ovbuff->index, ovbuff->freeblk);
     buffindexed_close();
     abort();
   }
@@ -899,8 +896,8 @@ retry:
  
 #ifndef OV_DEBUG
   if (ovusedblock(ovbuff, ovbuff->freeblk, false, true)) {
-      syslog(L_NOTICE, "%s: fixing invalid free block(%d, %d).",
-	     LocalLogName, ovbuff->index, ovbuff->freeblk);
+      notice("buffindexed: fixing invalid free block(%d, %d).",
+	     ovbuff->index, ovbuff->freeblk);
   } else
       done = true;
 #endif /* OV_DEBUG */
@@ -942,7 +939,7 @@ static void ovblockfree(OV ov) {
 #ifdef OV_DEBUG
   recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
   if (!ovusedblock(ovbuff, ov.blocknum, false, false)) {
-    syslog(L_FATAL, "%s: 0x%08x trying to free block(%d, %d), but already freed", LocalLogName, recno, ov.index, ov.blocknum);
+    warn("buffindexed: 0x%08x trying to free block(%d, %d), but already freed", recno, ov.index, ov.blocknum);
     buffindexed_close();
     abort();
   }
@@ -965,8 +962,8 @@ static void ovblockfree(OV ov) {
 
 #ifndef OV_DEBUG
   if (!ovusedblock(ovbuff, ov.blocknum, false, false)) {
-    syslog(L_NOTICE, "%s: trying to free block(%d, %d), but already freed.",
-	   LocalLogName, ov.index, ov.blocknum);
+    notice("buffindexed: trying to free block(%d, %d), but already freed.",
+	   ov.index, ov.blocknum);
   }
 #endif
 
@@ -1005,12 +1002,12 @@ bool buffindexed_open(int mode) {
   if (pagesize == 0) {
     pagesize = getpagesize();
     if (pagesize == -1) {
-      syslog(L_ERROR, "%s: getpagesize failed: %m", LocalLogName);
+      syswarn("buffindexed: getpagesize failed");
       pagesize = 0;
       return false;
     }
     if ((pagesize > OV_HDR_PAGESIZE) || (OV_HDR_PAGESIZE % pagesize)) {
-      syslog(L_ERROR, "%s: OV_HDR_PAGESIZE (%d) is not a multiple of pagesize (%ld)", LocalLogName, OV_HDR_PAGESIZE, pagesize);
+      warn("buffindexed: OV_HDR_PAGESIZE (%d) is not a multiple of pagesize (%ld)", OV_HDR_PAGESIZE, pagesize);
       return false;
     }
   }
@@ -1025,17 +1022,17 @@ bool buffindexed_open(int mode) {
 
   groupfn = concatpath(innconf->pathdb, "group.index");
   if (Needunlink && unlink(groupfn) == 0) {
-    syslog(L_NOTICE, "%s: all buffers are brandnew, unlink '%s'", LocalLogName, groupfn);
+    notice("buffindexed: all buffers are brandnew, unlink '%s'", groupfn);
   }
   GROUPfd = open(groupfn, ovbuffmode & OV_WRITE ? O_RDWR | O_CREAT : O_RDONLY, 0660);
   if (GROUPfd < 0) {
-    syslog(L_FATAL, "%s: Could not create %s: %m", LocalLogName, groupfn);
+    syswarn("buffindexed: Could not create %s", groupfn);
     free(groupfn);
     return false;
   }
 
   if (fstat(GROUPfd, &sb) < 0) {
-    syslog(L_FATAL, "%s: Could not fstat %s: %m", LocalLogName, groupfn);
+    syswarn("buffindexed: Could not fstat %s", groupfn);
     free(groupfn);
     close(GROUPfd);
     return false;
@@ -1054,7 +1051,7 @@ bool buffindexed_open(int mode) {
     GROUPheader = mmap(0, GROUPfilesize(GROUPcount), flag, MAP_SHARED,
 		       GROUPfd, 0);
     if (GROUPheader == MAP_FAILED) {
-      syslog(L_FATAL, "%s: Could not mmap %s in buffindexed_open: %m", LocalLogName, groupfn);
+      syswarn("buffindexed: Could not mmap %s in buffindexed_open", groupfn);
       free(groupfn);
       close(GROUPfd);
       return false;
@@ -1195,7 +1192,7 @@ static bool GROUPremapifneeded(GROUPLOC loc) {
 
   if (GROUPheader) {
     if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-      syslog(L_FATAL, "%s: Could not munmap group.index in GROUPremapifneeded: %m", LocalLogName);
+      syswarn("buffindexed: Could not munmap group.index in GROUPremapifneeded");
       return false;
     }
   }
@@ -1204,7 +1201,7 @@ static bool GROUPremapifneeded(GROUPLOC loc) {
   GROUPheader = mmap(0, GROUPfilesize(GROUPcount), PROT_READ | PROT_WRITE,
 		     MAP_SHARED, GROUPfd, 0);
   if (GROUPheader == MAP_FAILED) {
-    syslog(L_FATAL, "%s: Could not mmap group.index in GROUPremapifneeded: %m", LocalLogName);
+    syswarn("buffindexed: Could not mmap group.index in GROUPremapifneeded");
     return false;
   }
   GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
@@ -1218,13 +1215,13 @@ static bool GROUPexpand(int mode) {
 
   if (GROUPheader) {
     if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-      syslog(L_FATAL, "%s: Could not munmap group.index in GROUPexpand: %m", LocalLogName);
+      syswarn("buffindexed: Could not munmap group.index in GROUPexpand");
       return false;
     }
   }
   GROUPcount += 1024;
   if (ftruncate(GROUPfd, GROUPfilesize(GROUPcount)) < 0) {
-    syslog(L_FATAL, "%s: Could not extend group.index: %m", LocalLogName);
+    syswarn("buffindexed: Could not extend group.index");
     return false;
   }
   if (mode & OV_READ)
@@ -1239,7 +1236,7 @@ static bool GROUPexpand(int mode) {
   GROUPheader = mmap(0, GROUPfilesize(GROUPcount), flag, MAP_SHARED,
 		     GROUPfd, 0);
   if (GROUPheader == MAP_FAILED) {
-    syslog(L_FATAL, "%s: Could not mmap group.index in GROUPexpand: %m", LocalLogName);
+    syswarn("buffindexed: Could not mmap group.index in GROUPexpand");
     return false;
   }
   GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
@@ -1324,18 +1321,19 @@ static bool ovsetcurindexblock(GROUPENTRY *ge) {
   ov = ovblocknew();
 #endif /* OV_DEBUG */
   if (ov.index == NULLINDEX) {
-    syslog(L_ERROR, "%s: ovsetcurindexblock could not get new block", LocalLogName);
+    warn("buffindexed: ovsetcurindexblock could not get new block");
     return false;
   }
   if ((ovbuff = getovbuff(ov)) == NULL) {
-    syslog(L_ERROR, "%s: ovsetcurindexblock could not get ovbuff block for new, %d, %d", LocalLogName, ov.index, ov.blocknum);
+    warn("buffindexed: ovsetcurindexblock could not get ovbuff block for new, %d, %d", ov.index, ov.blocknum);
     return false;
   }
   ovindexhead.next = ovnull;
   ovindexhead.low = 0;
   ovindexhead.high = 0;
   if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + ov.blocknum * OV_BLOCKSIZE) != sizeof(OVINDEXHEAD)) {
-    syslog(L_ERROR, "%s: could not write index record index '%d', blocknum '%d': %m", LocalLogName, ge->curindex.index, ge->curindex.blocknum);
+    syswarn("buffindexed: could not write index record index '%d', blocknum"
+            " '%d'", ge->curindex.index, ge->curindex.blocknum);
     return true;
   }
   if (ge->baseindex.index == NULLINDEX) {
@@ -1344,7 +1342,7 @@ static bool ovsetcurindexblock(GROUPENTRY *ge) {
     if ((ovbuff = getovbuff(ge->curindex)) == NULL)
       return false;
     if (!ovusedblock(ovbuff, ge->curindex.blocknum, false, false)) {
-      syslog(L_ERROR, "%s: block(%d, %d) not occupied (index)", LocalLogName, ovbuff->index, ge->curindex.blocknum);
+      warn("buffindexed: block(%d, %d) not occupied (index)", ovbuff->index, ge->curindex.blocknum);
 #ifdef OV_DEBUG
       abort();
 #else	/* OV_DEBUG */
@@ -1356,7 +1354,8 @@ static bool ovsetcurindexblock(GROUPENTRY *ge) {
     ovindexhead.low = ge->curlow;
     ovindexhead.high = ge->curhigh;
     if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE) != sizeof(OVINDEXHEAD)) {
-      syslog(L_ERROR, "%s: could not write index record index '%d', blocknum '%d': %m", LocalLogName, ge->curindex.index, ge->curindex.blocknum);
+      syswarn("buffindexed: could not write index record index '%d', blocknum"
+              " '%d'", ge->curindex.index, ge->curindex.blocknum);
       return false;
     }
   }
@@ -1383,7 +1382,7 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
 
   Nospace = false;
   if (OV_BLOCKSIZE < len) {
-    syslog(L_ERROR, "%s: overview data must be under %d (%d)", LocalLogName, OV_BLOCKSIZE, len);
+    warn("buffindexed: overview data must be under %d (%d)", OV_BLOCKSIZE, len);
     return false;
   }
   if (ge->curdata.index == NULLINDEX) {
@@ -1394,11 +1393,11 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     ov = ovblocknew();
 #endif /* OV_DEBUG */
     if (ov.index == NULLINDEX) {
-      syslog(L_ERROR, "%s: ovaddrec could not get new block", LocalLogName);
+      warn("buffindexed: ovaddrec could not get new block");
       return false;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %ld", LocalLogName, ov.index, ov.blocknum, artnum);
+      warn("buffindexed: ovaddrec could not get ovbuff block for new, %d, %d, %ld", ov.index, ov.blocknum, artnum);
       return false;
     }
     ge->curdata = ov;
@@ -1413,18 +1412,18 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     ov = ovblocknew();
 #endif /* OV_DEBUG */
     if (ov.index == NULLINDEX) {
-      syslog(L_ERROR, "%s: ovaddrec could not get new block", LocalLogName);
+      warn("buffindexed: ovaddrec could not get new block");
       return false;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-      syslog(L_ERROR, "%s: ovaddrec could not get ovbuff block for new, %d, %d, %ld", LocalLogName, ov.index, ov.blocknum, artnum);
+      warn("buffindexed: ovaddrec could not get ovbuff block for new, %d, %d, %ld", ov.index, ov.blocknum, artnum);
       return false;
     }
     ge->curdata = ov;
     ge->curoffset = 0;
   }
   if (!ovusedblock(ovbuff, ge->curdata.blocknum, false, false)) {
-    syslog(L_ERROR, "%s: block(%d, %d) not occupied", LocalLogName, ovbuff->index, ge->curdata.blocknum);
+    warn("buffindexed: block(%d, %d) not occupied", ovbuff->index, ge->curdata.blocknum);
 #ifdef OV_DEBUG
     buffindexed_close();
     abort();
@@ -1435,7 +1434,8 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   }
 
   if (PWRITE(ovbuff->fd, data, len, ovbuff->base + ge->curdata.blocknum * OV_BLOCKSIZE + ge->curoffset) != len) {
-    syslog(L_ERROR, "%s: could not append overview record index '%d', blocknum '%d': %m", LocalLogName, ge->curdata.index, ge->curdata.blocknum);
+    syswarn("buffindexed: could not append overview record index '%d',"
+            " blocknum '%d'", ge->curdata.index, ge->curdata.blocknum);
     return false;
   }
   memset(&ie, '\0', sizeof(ie));
@@ -1454,14 +1454,14 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
 #else
     if (!ovsetcurindexblock(ge)) {
 #endif /* OV_DEBUG */
-      syslog(L_ERROR, "%s: could not set current index", LocalLogName);
+      warn("buffindexed: could not set current index");
       return false;
     }
   }
   if ((ovbuff = getovbuff(ge->curindex)) == NULL)
     return false;
   if (!ovusedblock(ovbuff, ge->curindex.blocknum, false, false)) {
-    syslog(L_ERROR, "%s: block(%d, %d) not occupied (index)", LocalLogName, ovbuff->index, ge->curindex.blocknum);
+    warn("buffindexed: block(%d, %d) not occupied (index)", ovbuff->index, ge->curindex.blocknum);
 #ifdef OV_DEBUG
     buffindexed_close();
     abort();
@@ -1471,7 +1471,8 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
 #endif /* OV_DEBUG */
   }
   if (PWRITE(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE + sizeof(OVINDEXHEAD) + sizeof(ie) * ge->curindexoffset) != sizeof(ie)) {
-    syslog(L_ERROR, "%s: could not write index record index '%d', blocknum '%d': %m", LocalLogName, ge->curindex.index, ge->curindex.blocknum);
+    syswarn("buffindexed: could not write index record index '%d', blocknum"
+            " '%d'", ge->curindex.index, ge->curindex.blocknum);
     return true;
   }
   if ((ge->curlow <= 0) || (ge->curlow > artnum)) {
@@ -1487,7 +1488,8 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     ovindexhead.low = ge->curlow;
     ovindexhead.high = ge->curhigh;
     if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE) != sizeof(OVINDEXHEAD)) {
-      syslog(L_ERROR, "%s: could not write index record index '%d', blocknum '%d': %m", LocalLogName, ge->curindex.index, ge->curindex.blocknum);
+      syswarn("buffindexed: could not write index record index '%d', blocknum"
+              " '%d'", ge->curindex.index, ge->curindex.blocknum);
       return true;
     }
   }
@@ -1506,7 +1508,7 @@ bool buffindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int le
   GROUPENTRY	*ge;
 
   if (len > OV_BLOCKSIZE) {
-    syslog(L_ERROR, "%s: overview data is too large %d", LocalLogName, len);
+    warn("buffindexed: overview data is too large %d", len);
     return true;
   }
 
@@ -1528,10 +1530,10 @@ bool buffindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data, int le
 #endif /* OV_DEBUG */
     if (Nospace) {
       GROUPlock(gloc, INN_LOCK_UNLOCK);
-      syslog(L_ERROR, "%s: no space left for buffer, adding '%s'", LocalLogName, group);
+      warn("buffindexed: no space left for buffer, adding '%s'", group);
       return false;
     }
-    syslog(L_ERROR, "%s: could not add overview for '%s'", LocalLogName, group);
+    warn("buffindexed: could not add overview for '%s'", group);
   }
   GROUPlock(gloc, INN_LOCK_UNLOCK);
 
@@ -1645,7 +1647,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
   while (ov.index != NULLINDEX) {
     ovbuff = getovbuff(ov);
     if (ovbuff == NULL) {
-      syslog(L_ERROR, "%s: ovgroupmmap ovbuff is null(ovindex is %d, ovblock is %d", LocalLogName, ov.index, ov.blocknum);
+      warn("buffindexed: ovgroupmmap ovbuff is null(ovindex is %d, ovblock is %d", ov.index, ov.blocknum);
       ovgroupunmap();
       return false;
     }
@@ -1654,7 +1656,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
     mmapoffset = offset - pagefudge;
     len = pagefudge + OV_BLOCKSIZE;
     if ((addr = mmap(NULL, len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
-      syslog(L_ERROR, "%s: ovgroupmmap could not mmap index block: %m", LocalLogName);
+      syswarn("buffindexed: ovgroupmmap could not mmap index block");
       ovgroupunmap();
       return false;
     }
@@ -1722,7 +1724,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
       mmapoffset = offset - pagefudge;
       gdb->len = pagefudge + OV_BLOCKSIZE;
       if ((gdb->addr = mmap(NULL, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
-	syslog(L_ERROR, "%s: ovgroupmmap could not mmap data block: %m", LocalLogName);
+	syswarn("buffindexed: ovgroupmmap could not mmap data block");
 	free(gdb);
 	ovgroupunmap();
 	return false;
@@ -1856,7 +1858,7 @@ static bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN 
 	    mmapoffset = offset - pagefudge;
 	    search->gdb.len = pagefudge + OV_BLOCKSIZE;
 	    if ((search->gdb.addr = mmap(NULL, search->gdb.len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
-	      syslog(L_ERROR, "%s: ovsearch could not mmap data block: %m", LocalLogName);
+	      syswarn("buffindexed: ovsearch could not mmap data block");
 	      return false;
 	    }
 	    gdb->data = search->gdb.data = (char *)search->gdb.addr + pagefudge;
@@ -2056,7 +2058,7 @@ bool buffindexed_expiregroup(char *group, int *lo, struct history *h) {
       }
       if (!ovgroupmmap(ge, ge->low, ge->high, true)) {
 	GROUPlock(gloc, INN_LOCK_UNLOCK);
-	syslog(L_ERROR, "%s: could not mmap overview for hidden groups(%d)", LocalLogName, i);
+	warn("buffindexed: could not mmap overview for hidden groups(%d)", i);
 	continue;
       }
       search.hi = ge->high;
@@ -2106,7 +2108,7 @@ bool buffindexed_expiregroup(char *group, int *lo, struct history *h) {
   if ((handle = ovopensearch(group, low, high, true)) == NULL) {
     ge->expired = time(NULL);
     GROUPlock(gloc, INN_LOCK_UNLOCK);
-    syslog(L_ERROR, "%s: could not open overview for '%s'", LocalLogName, group);
+    warn("buffindexed: could not open overview for '%s'", group);
     return false;
   }
   while (ovsearch(handle, &artnum, &data, &len, &token, &arrived, &expires)) {
@@ -2131,7 +2133,7 @@ bool buffindexed_expiregroup(char *group, int *lo, struct history *h) {
       ovclosesearch(handle, true);
       ge->expired = time(NULL);
       GROUPlock(gloc, INN_LOCK_UNLOCK);
-      syslog(L_ERROR, "%s: could not add new overview for '%s'", LocalLogName, group);
+      warn("buffindexed: could not add new overview for '%s'", group);
       return false;
     }
   }
@@ -2241,7 +2243,7 @@ void buffindexed_close(void) {
 	    pid = getpid();
 	    snprintf(path, length, "%s/%d", innconf->pathtmp, pid);
 	    if ((F = fopen(path, "w")) == NULL) {
-	      syslog(L_ERROR, "%s: could not open %s: %m", LocalLogName, path);
+	      syswarn("buffindexed: could not open %s", path);
 	      break;
 	    }
 	  }
@@ -2260,7 +2262,7 @@ void buffindexed_close(void) {
       pid = getpid();
       sprintf(path, length, "%s/%d", innconf->pathtmp, pid);
       if ((F = fopen(path, "w")) == NULL) {
-	syslog(L_ERROR, "%s: could not open %s: %m", LocalLogName, path);
+	syswarn("buffindexed: could not open %s", path);
       }
     }
     if (F != NULL) {
@@ -2290,7 +2292,7 @@ void buffindexed_close(void) {
 
   if (GROUPheader) {
     if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-      syslog(L_FATAL, "%s: could not munmap group.index in buffindexed_close: %m", LocalLogName);
+      syswarn("buffindexed: could not munmap group.index in buffindexed_close");
       return;
     }
     GROUPheader = NULL;
