@@ -1237,11 +1237,11 @@ NCcreate(int fd, BOOL MustAuthorize, BOOL IsLocal)
     NCcount++;
     if (Mode == OMthrottled) {
 	NCwriteshutdown(cp, ModeReason);
-	return cp;
+	return NULL;
     }
     if (RejectReason) {
 	NCwriteshutdown(cp, RejectReason);
-	return cp;
+	return NULL;
     }
 
     /* See if we have too many channels. */
