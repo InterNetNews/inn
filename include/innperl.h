@@ -22,13 +22,6 @@
 
 BEGIN_DECLS
 
-/* From the embedded Perl source in nnrpd. */
-
-extern void loadPerl(void);
-
-
-/* From lib/perl.c. */
-
 extern bool PerlFilterActive;
 
 extern void PerlFilter(bool value);
