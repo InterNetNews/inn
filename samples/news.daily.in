@@ -26,6 +26,7 @@ HOSTNAME=`hostname`
 DATE=`date`
 AZ=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 az=abcdefghijklmnopqrstuvwxyz
+TAGGEDHASH=@DO_DBZ_TAGGED_HASH@
 
 ##  If your expire does not pause or throttle innd, enable this next line:
 #MESSAGE="Expiration script $$"
@@ -327,8 +328,12 @@ if ${DOEXPIRE} ; then
 	cp /dev/null ${HISTORY}
 	mv -f ${EXPDIR}/history.n ${HISTORY}
 	mv -f ${EXPDIR}/history.n.dir ${HISTORY}.dir
-	mv -f ${EXPDIR}/history.n.index ${HISTORY}.index
-	mv -f ${EXPDIR}/history.n.hash ${HISTORY}.hash
+	if [ X${TAGGEDHASH} = XDO ] ; then
+	    mv -f ${EXPDIR}/history.n.index ${HISTORY}.index
+	    mv -f ${EXPDIR}/history.n.hash ${HISTORY}.hash
+	else
+	    mv -f ${EXPDIR}/history.n.pag ${HISTORY}.pag
+	fi
 	rm -f ${EXPDIR}/history.n.done
 	case "${EXPIREFLAGS}" in
 	*-n*)
