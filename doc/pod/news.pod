@@ -1,8 +1,31 @@
+=head1 Upgrading from 2.3 to 2.4
+
+Currently, there are no incompatible differences between INN 2.3 and 2.4,
+so a simple C<make update> should be sufficient.  If you are upgrading
+from a version prior to INN 2.3, see L<"Upgrading from 2.2 to 2.3">.
+
+=head1 Changes from 2.3 to 2.4
+
+=over 2
+
+=item *
+
+Local connections to INN support a new special mode, MODE CANCEL, that
+allows efficient batch cancellation of messages.  This is intended to be
+the preferred interface for external spam and abuse filters like NoCeM.
+
+=item *
+
+Thanks to code contributed by CMU, innfeed can now feed an IMAP server as
+well as other NNTP servers.  See the man page for innfeed for more
+information.
+
+=back
+
 =head1 Upgrading from 2.2 to 2.3
 
-This section is still a work in progress.  There may be additional things
-to watch out for not listed here; if you run across any, please let
-inn-bugs@isc.org know about them.
+There may be additional things to watch out for not listed here; if you
+run across any, please let inn-bugs@isc.org know about them.
 
 Simply doing a make update is not sufficient to upgrade; the history and
 overview information will also have to be regenerated, since the formats
@@ -136,8 +159,8 @@ library support) should be better than previous releases.
 
 =item *
 
-All of the applicable bug fixes from INN 2.2.1 and 2.2.2 are also included
-in INN 2.3.
+All of the applicable bug fixes from the INN 2.2 STABLE series are also
+included in INN 2.3.
 
 =back
 
