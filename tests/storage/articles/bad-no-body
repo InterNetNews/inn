@@ -1,0 +1,6 @@
+Path: news.example.com!not-for-mail
+Newsgroups: example.test
+Subject: Bad article with no body
+From: user@example.com
+Date: Sat, 06 Mar 2004 21:39:44 -0800
+Message-ID: <bad-body@example.com>

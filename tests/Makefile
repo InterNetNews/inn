@@ -10,14 +10,14 @@ CFLAGS	= $(GCFLAGS) -I.
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= lib/buffer.t lib/concat.t lib/conffile.t lib/confparse.t \
-	lib/date.t lib/dispatch.t lib/getaddrinfo.t lib/hash.t lib/hashtab.t \
-	lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t lib/innconf.t \
-	lib/list.t lib/md5.t lib/memcmp.t lib/messages.t lib/mkstemp.t \
-	lib/pread.t lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t \
-	lib/strlcat.t lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t \
-	lib/wire.t lib/xwrite.t overview/buffindexed.t \
-	overview/tradindexed.t util/innbind.t
+TESTS	= innd/artparse.t lib/buffer.t lib/concat.t lib/conffile.t \
+	lib/confparse.t lib/date.t lib/dispatch.t lib/getaddrinfo.t \
+	lib/hash.t lib/hashtab.t lib/hstrerror.t lib/inet_aton.t \
+	lib/inet_ntoa.t lib/innconf.t lib/list.t lib/md5.t lib/memcmp.t \
+	lib/messages.t lib/mkstemp.t lib/pread.t lib/pwrite.t lib/qio.t \
+	lib/snprintf.t lib/strerror.t lib/strlcat.t lib/strlcpy.t lib/tst.t \
+	lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
+	overview/buffindexed.t overview/tradindexed.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -42,8 +42,23 @@ LINK		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
 STORAGEDEPS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 STORAGELIBS	= $(STORAGEDEPS) $(STORAGE_LIBS)
 
+# All of the innd object files other than innd.o, for INN unit testing.
+INNOBJS		= ../innd/art.o ../innd/cc.o ../innd/chan.o ../innd/icd.o \
+		../innd/keywords.o ../innd/lc.o ../innd/nc.o \
+		../innd/newsfeeds.o ../innd/ng.o ../innd/perl.o \
+		../innd/proc.o ../innd/python.o ../innd/rc.o ../innd/site.o \
+		../innd/status.o ../innd/util.o ../innd/wip.o
+
+# The libraries innd needs to link.
+INNDLIBS        = $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
+		$(PYTHON_LIBS) $(REGEX_LIBS) $(LIBS) $(PERL_LIBS)
+
 runtests: runtests.o
 	$(LINK) runtests.o
+
+innd/artparse.t: innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS)
+	$(LINK) innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS) \
+	    $(INNDLIBS)
 
 lib/buffer.t: lib/buffer-t.o libtest.o $(LIBINN)
 	$(LINK) lib/buffer-t.o libtest.o $(LIBINN)
