@@ -372,17 +372,19 @@ main(ac, av)
 	    }
 	    BytesInArt = -1;
 	    Token = TRUE;
-	} else if ((artfd = open(p, O_RDONLY)) < 0) {
-	    if (errno != ENOENT)
-		(void)fprintf(stderr, SKIPPING, Host, p, strerror(errno));
-	    if (AltSpool == NULL)
-		continue;
-	    (void)sprintf(buff, "%s/%s", AltSpool, p);
-	    if ((artfd = open(buff, O_RDONLY)) < 0) {
-		if (errno != ENOENT)
-		    (void)fprintf(stderr, SKIPPING,
-			    Host, buff, strerror(errno));
-		continue;
+	} else {
+	    if ((artfd = open(p, O_RDONLY)) < 0) {
+	        if (errno != ENOENT)
+		    (void)fprintf(stderr, SKIPPING, Host, p, strerror(errno));
+	        if (AltSpool == NULL)
+		    continue;
+	        (void)sprintf(buff, "%s/%s", AltSpool, p);
+	        if ((artfd = open(buff, O_RDONLY)) < 0) {
+		    if (errno != ENOENT)
+		        (void)fprintf(stderr, SKIPPING,
+			        Host, buff, strerror(errno));
+		    continue;
+	        }
 	    }
 	    Token = FALSE;
 	}
