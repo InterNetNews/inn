@@ -46,6 +46,7 @@
 #include "hisv6.h"
 #include "hisv6-private.h"
 #include "dbz.h"
+#include "inn/innconf.h"
 #include "inn/timer.h"
 #include "inn/qio.h"
 #include "inn/sequence.h"
