@@ -25,10 +25,9 @@
 **  innreport wouldn't handle such nested timers correctly without some
 **  changes, however.
 **
-**  This code is written with the assumption that TMRmainloophook() will be
-**  called with none of the timers started.  The statistics are generated
-**  here.  It may not be fatal to have a timer running, but it will not be
-**  properly accounted for (at least within that time slice).
+**  TMRmainloophook() must be called with none of the timers started.  If
+**  there is a timer running at the time that it's called, that timer may
+**  report strange results later (such as extremely large times).
 **
 **  Note that this code is not thread-safe and in fact would need to be
 **  completely overhauled for a threaded server (since the idea of global
