@@ -13,6 +13,7 @@
 #include <syslog.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <time.h>
 
 /* Needed for htonl() and friends on AIX 4.1. */
 #include <netinet/in.h>
@@ -189,7 +190,7 @@ AddNG(char *ng, unsigned long number) {
 			nextnode = &curnode->left;
 		    } else {
 			/* Error, same number is already in NGtree (shouldn't happen!) */
-			syslog(L_ERROR, "tradspool: AddNG: duplicate newsgroup number in NGtree: %d(%s)", number, p);
+			syslog(L_ERROR, "tradspool: AddNG: duplicate newsgroup number in NGtree: %ld(%s)", number, p);
 			return;
 		    }
 		}
