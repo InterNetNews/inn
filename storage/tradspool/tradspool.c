@@ -214,7 +214,7 @@ AddNG(char *ng, unsigned long number) {
 }
 
 /* find a newsgroup table entry, given only the name. */
-NGTENT *
+static NGTENT *
 FindNGByName(char *ngname) {
     NGTENT *ngtp;
     unsigned int h;
@@ -271,8 +271,9 @@ FindNGByNum(unsigned long ngnumber) {
 
 
 /* dump DB to file. */
-void
-DumpDB(void) {
+static void
+DumpDB(void)
+{
     char *fname, *fnamenew;
     NGTENT *ngtp;
     unsigned int i;
@@ -320,8 +321,9 @@ DumpDB(void) {
 ** of newsgroup number from there. 
 */
 
-bool
-ReadDBFile(void) {
+static bool
+ReadDBFile(void)
+{
     char *fname;
     QIOSTATE *qp;
     char *line;
@@ -352,8 +354,9 @@ ReadDBFile(void) {
     return TRUE;
 }
 
-bool
-ReadActiveFile(void) {
+static bool
+ReadActiveFile(void)
+{
     char *fname;
     QIOSTATE *qp;
     char *line;
@@ -384,8 +387,9 @@ ReadActiveFile(void) {
     return TRUE;
 }
 
-bool
-InitNGTable(void) {
+static bool
+InitNGTable(void)
+{
     if (!ReadDBFile()) return FALSE;
 
     /*
@@ -408,8 +412,9 @@ InitNGTable(void) {
 
 #define RELOAD_TIME_CHECK 600
 
-void
-CheckNeedReloadDB(bool force) {
+static void
+CheckNeedReloadDB(bool force)
+{
     static TIMEINFO lastcheck, oldlastcheck, now;
     struct stat sb;
     char *fname;
@@ -490,6 +495,7 @@ TokenToPath(TOKEN token) {
     unsigned long ngnum;
     unsigned long artnum;
     char *ng, *path;
+    size_t length;
 
     CheckNeedReloadDB(FALSE);
 
@@ -506,8 +512,9 @@ TokenToPath(TOKEN token) {
 	    return NULL;
     }
 
-    path = NEW(char, strlen(ng)+20+strlen(innconf->patharticles));
-    sprintf(path, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+    length = strlen(ng) + 20 + strlen(innconf->patharticles);
+    path = NEW(char, length);
+    snprintf(path, length, "%s/%s/%lu", innconf->patharticles, ng, artnum);
     return path;
 }
 
@@ -567,9 +574,10 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     unsigned long artnum;
     char *path, *linkpath, *dirname;
     int fd;
-    int i;
+    unsigned int i;
     char *nonwfarticle; /* copy of article converted to non-wire format */
     int nonwflen, used;
+    size_t length;
     
     xrefhdr = article.groups;
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
@@ -594,8 +602,9 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     
     token = MakeToken(ng, artnum, class);
 
-    path = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
-    sprintf(path, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+    length = strlen(innconf->patharticles) + strlen(ng) + 32;
+    path = NEW(char, length);
+    snprintf(path, length, "%s/%s/%lu", innconf->patharticles, ng, artnum);
 
     /* following chunk of code boldly stolen from timehash.c  :-) */
     if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
@@ -671,8 +680,10 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    DeDotify(ng);
 	    artnum = atol(p);
 
-	    linkpath = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
-	    sprintf(linkpath, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+            length = strlen(innconf->patharticles) + strlen(ng) + 32;
+	    linkpath = NEW(char, length);
+	    snprintf(linkpath, length, "%s/%s/%lu", innconf->patharticles,
+                     ng, artnum);
 	    if (link(path, linkpath) < 0) {
 		p = strrchr(linkpath, '/');
 		*p = '\0';
@@ -915,6 +926,7 @@ tradspool_cancel(TOKEN token) {
     int i;
     bool result = TRUE;
     unsigned long artnum;
+    size_t length;
 
     if ((path = TokenToPath(token)) == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
@@ -958,8 +970,10 @@ tradspool_cancel(TOKEN token) {
 	DeDotify(ng);
 	artnum = atol(p);
 
-	linkpath = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
-	sprintf(linkpath, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+        length = strlen(innconf->patharticles) + strlen(ng) + 32;
+	linkpath = NEW(char, length);
+	snprintf(linkpath, length, "%s/%s/%lu", innconf->patharticles, ng,
+                 artnum);
 	/* repeated unlinkings of a crossposted article may fail on account
 	   of the file no longer existing without it truly being an error */
 	if (unlink(linkpath) < 0)
@@ -995,7 +1009,7 @@ FindDir(DIR *dir, char *dirname) {
     while ((de = readdir(dir)) != NULL) {
 	namelen = strlen(de->d_name);
 	for (i = 0, flag = TRUE ; i < namelen ; ++i) {
-	    if (!isdigit(de->d_name[i])) {
+	    if (!CTYPE(isdigit, de->d_name[i])) {
 		flag = FALSE;
 		break;
 	    }
@@ -1028,11 +1042,11 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     unsigned long artnum;
     int i;
     static TOKEN token;
-    unsigned char namelen;
     char **xrefs;
     char *xrefhdr, *ng, *p, *expires, *x;
     unsigned int numxrefs;
     STORAGE_SUB	*sub;
+    size_t length;
 
     if (article == NULL) {
 	priv.ngtp = NULL;
@@ -1078,18 +1092,12 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		break;
 	}
 
-	priv.curdirname = NEW(char, strlen(innconf->patharticles)+strlen(priv.ngtp->ngname)+2);
-	sprintf(priv.curdirname, "%s/%s",innconf->patharticles,priv.ngtp->ngname);
+        priv.curdirname = concatpath(innconf->patharticles, priv.ngtp->ngname);
 	priv.curdir = opendir(priv.curdirname);
     }
 
-    namelen = strlen(de->d_name);
-    path = NEW(char, strlen(priv.curdirname) + 2 + namelen);
-    strcpy(path, priv.curdirname);
-    strcat(path, "/");
+    path = concatpath(priv.curdirname, de->d_name);
     i = strlen(priv.curdirname);
-    strncpy(&path[i+1], de->d_name, namelen);
-    path[i+namelen+1] = '\0';
     /* get the article number while we're here, we'll need it later. */
     artnum = atol(&path[i+1]);
 
@@ -1133,8 +1141,9 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		    DeDotify(ng);
 		    artnum = atol(p);
 
-		    linkpath = NEW(char, strlen(innconf->patharticles) + strlen(ng) + 32);
-		    sprintf(linkpath, "%s/%s/%lu", innconf->patharticles, ng, artnum);
+                    length = strlen(innconf->patharticles) + strlen(ng) + 32;
+		    snprintf(linkpath, length, "%s/%s/%lu",
+                             innconf->patharticles, ng, artnum);
 		    if (strcmp(path, linkpath) != 0) {
 			/* this is linked article, skip it */
 			art->len = 0;
@@ -1213,8 +1222,9 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return art;
 }
 
-void
-FreeNGTree(void) {
+static void
+FreeNGTree(void)
+{
     unsigned int i;
     NGTENT *ngtp, *nextngtp;
 
@@ -1262,11 +1272,15 @@ bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }       
 }
 
-bool tradspool_flushcacheddata(FLUSHTYPE type) {
+bool
+tradspool_flushcacheddata(FLUSHTYPE type UNUSED)
+{
     return TRUE;
 }
 
-void tradspool_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+void
+tradspool_printfiles(FILE *file, TOKEN token UNUSED, char **xref, int ngroups)
+{
     int i;
     char *path, *p;
 

@@ -171,8 +171,9 @@ char *db_strerror(int err);
 
 #define TXN_START(label, tid) \
 label: { \
-  int ret; \
-  if(ret = txn_begin(OVDBenv->tx_info, NULL, &tid)) { \
+  int txn_ret; \
+  txn_ret = txn_begin(OVDBenv->tx_info, NULL, &tid); \
+  if (txn_ret != 0) { \
     syslog(L_ERROR, "OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
     tid = NULL; \
   } \
@@ -191,8 +192,9 @@ label: { \
 
 #define TXN_START(label, tid) \
 label: { \
-  int ret; \
-  if(ret = txn_begin(OVDBenv, NULL, &tid, 0)) { \
+  int txn_ret; \
+  txn_ret = txn_begin(OVDBenv, NULL, &tid, 0); \
+  if (txn_ret != 0) { \
     syslog(L_ERROR, "OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
     tid = NULL; \
   } \

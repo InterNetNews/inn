@@ -304,7 +304,8 @@ static bool ovparse_part_line(char *l) {
   }
   *p = '\0';
   memset(ovbuff->path, '\0', OVBUFFPASIZ);
-  strcpy(ovbuff->path, l);
+  strncpy(ovbuff->path, l, OVBUFFPASIZ - 1);
+  ovbuff->path[OVBUFFPASIZ - 1] = '\0';
   if (stat(ovbuff->path, &sb) < 0) {
     syslog(L_ERROR, "%s: file '%s' does not exist, ignoring '%d'",
            LocalLogName, ovbuff->path, ovbuff->index);
@@ -426,7 +427,7 @@ static char *offt2hex(off_t offset, bool leadingzeros) {
   char	*p;
 
   if (sizeof(off_t) <= 4) {
-    sprintf(buf, (leadingzeros) ? "%016lx" : "%lx", offset);
+    snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx", offset);
   } else {
     int	i;
 
@@ -450,7 +451,8 @@ static char *offt2hex(off_t offset, bool leadingzeros) {
 
 static off_t hex2offt(char *hex) {
   if (sizeof(off_t) <= 4) {
-    off_t	rpofft;
+    unsigned long rpofft;
+
     sscanf(hex, "%lx", &rpofft);
     return rpofft;
   } else {
@@ -834,7 +836,6 @@ static void ovblockfree(OV ov) {
 }
 
 bool buffindexed_open(int mode) {
-  char		dirname[1024];
   char		*groupfn;
   struct stat	sb;
   int		i, flag = 0;
@@ -880,10 +881,7 @@ bool buffindexed_open(int mode) {
     return FALSE;
   }
 
-  strcpy(dirname, innconf->pathdb);
-  groupfn = NEW(char, strlen(dirname) + strlen("/group.index") + 1);
-  strcpy(groupfn, dirname);
-  strcat(groupfn, "/group.index");
+  groupfn = concatpath(innconf->pathdb, "group.index");
   if (Needunlink && unlink(groupfn) == 0) {
     syslog(L_NOTICE, "%s: all buffers are brandnew, unlink '%s'", LocalLogName, groupfn);
   }
@@ -2082,6 +2080,7 @@ void buffindexed_close(void) {
   int		i,j;
   struct ov_trace_array *trace;
   struct ov_name_table	*ntp;
+  size_t length;
 #endif /* OV_DEBUG */
 
 #ifdef OV_DEBUG
@@ -2094,9 +2093,10 @@ void buffindexed_close(void) {
 	if (trace->ov_trace[j].occupied != 0 ||
 	  trace->ov_trace[j].freed != 0) {
 	  if (F == NULL) {
-	    path = NEW(char, strlen(innconf->pathtmp) + 10);
+            length = strlen(innconf->pathtmp) + 11;
+	    path = NEW(char, length);
 	    pid = getpid();
-	    sprintf(path, "%s/%d", innconf->pathtmp, pid);
+	    snprintf(path, length, "%s/%d", innconf->pathtmp, pid);
 	    if ((F = fopen(path, "w")) == NULL) {
 	      syslog(L_ERROR, "%s: could not open %s: %m", LocalLogName, path);
 	      break;
@@ -2112,9 +2112,10 @@ void buffindexed_close(void) {
   }
   if ((ntp = name_table) != NULL) {
     if (F == NULL) {
-      path = NEW(char, strlen(innconf->pathtmp) + 10);
+      length = strlen(innconf->pathtmp) + 11;
+      path = NEW(char, length);
       pid = getpid();
-      sprintf(path, "%s/%d", innconf->pathtmp, pid);
+      sprintf(path, length, "%s/%d", innconf->pathtmp, pid);
       if ((F = fopen(path, "w")) == NULL) {
         syslog(L_ERROR, "%s: could not open %s: %m", LocalLogName, path);
       }

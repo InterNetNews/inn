@@ -7,7 +7,11 @@
 #include "libinn.h"
 #include "methods.h"
 
-bool trash_init(SMATTRIBUTE *attr) {
+#include "trash.h"
+
+bool
+trash_init(SMATTRIBUTE *attr)
+{
     if (attr == NULL) {
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
 	return FALSE;
@@ -17,7 +21,9 @@ bool trash_init(SMATTRIBUTE *attr) {
     return TRUE;
 }
 
-TOKEN trash_store(const ARTHANDLE article, const STORAGECLASS class) {
+TOKEN
+trash_store(const ARTHANDLE article, const STORAGECLASS class)
+{
     TOKEN               token;
 
     if (article.token == (TOKEN *)NULL)
@@ -31,7 +37,9 @@ TOKEN trash_store(const ARTHANDLE article, const STORAGECLASS class) {
     return token;
 }
 
-ARTHANDLE *trash_retrieve(const TOKEN token, const RETRTYPE amount) {
+ARTHANDLE *
+trash_retrieve(const TOKEN token, const RETRTYPE amount UNUSED)
+{
     if (token.type != TOKEN_TRASH) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return (ARTHANDLE *)NULL;
@@ -40,15 +48,21 @@ ARTHANDLE *trash_retrieve(const TOKEN token, const RETRTYPE amount) {
     return (ARTHANDLE *)NULL;
 }
 
-void trash_freearticle(ARTHANDLE *article) {
+void
+trash_freearticle(ARTHANDLE *article UNUSED)
+{
 }
 
-bool trash_cancel(TOKEN token) {
+bool
+trash_cancel(TOKEN token UNUSED)
+{
     SMseterror(SMERR_NOENT, NULL);
     return FALSE;
 }
 
-bool trash_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool
+trash_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value UNUSED)
+{
     switch (type) {
     case SMARTNGNUM:
     default:
@@ -56,16 +70,25 @@ bool trash_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }
 }
 
-bool trash_flushcacheddata(FLUSHTYPE type) {
+bool
+trash_flushcacheddata(FLUSHTYPE type UNUSED)
+{
     return TRUE;
 }
 
-void trash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+void
+trash_printfiles(FILE *file UNUSED, TOKEN token UNUSED, char **xref UNUSED,
+                 int ngroups UNUSED)
+{
 }
 
-ARTHANDLE *trash_next(const ARTHANDLE *article, const RETRTYPE amount) {
-    return (ARTHANDLE *)NULL;
+ARTHANDLE *
+trash_next(const ARTHANDLE *article UNUSED, const RETRTYPE amount UNUSED)
+{
+    return NULL;
 }
 
-void trash_shutdown(void) {
+void
+trash_shutdown(void)
+{
 }

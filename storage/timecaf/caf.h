@@ -114,36 +114,30 @@ typedef struct _CAFTOCENT {
 */
 #define CAF_NAME "CF"
 
-#ifdef __STDC__
-#define PROTO(x) x
-#else
-#define PROTO(x) ()
-#endif
-
-extern int CAFOpenArtRead PROTO((char *cfpath, ARTNUM art, size_t *len));
-extern int CAFOpenArtWrite PROTO((char *cfpath, ARTNUM *art, int WaitLock, size_t size));
-extern int CAFStartWriteFd PROTO((int fd, ARTNUM *art, size_t size));
-extern int CAFFinishWriteFd PROTO((int fd));
-extern int CAFFinishArtWrite PROTO((int fd));
-extern int CAFCreateCAFFile PROTO((char *cfpath, ARTNUM lowart, ARTNUM tocsize, size_t cfsize, int nolink, char *temppath));
-extern char *CAFErrorStr PROTO((void));
-extern CAFTOCENT *CAFReadTOC PROTO((char *cfpath, CAFHEADER *ch));
-extern int CAFRemoveMultArts PROTO((char *cfpath, unsigned int narts, ARTNUM *arts));
-extern int CAFStatArticle PROTO((char *path, ARTNUM art, struct stat *st));
+extern int CAFOpenArtRead(const char *cfpath, ARTNUM art, size_t *len);
+extern int CAFOpenArtWrite(char *cfpath, ARTNUM *art, int WaitLock, size_t size);
+extern int CAFStartWriteFd(int fd, ARTNUM *art, size_t size);
+extern int CAFFinishWriteFd(int fd);
+extern int CAFFinishArtWrite(int fd);
+extern int CAFCreateCAFFile(char *cfpath, ARTNUM lowart, ARTNUM tocsize, size_t cfsize, int nolink, char *temppath);
+extern const char *CAFErrorStr(void);
+extern CAFTOCENT *CAFReadTOC(char *cfpath, CAFHEADER *ch);
+extern int CAFRemoveMultArts(char *cfpath, unsigned int narts, ARTNUM *arts);
+extern int CAFStatArticle(char *path, ARTNUM art, struct stat *st);
 
 #ifdef CAF_INNARDS
 /* functions used internally by caf.c, and by the cleaner program, and cafls
    but probably aren't useful/desirable to be used by others. */
-extern int CAFOpenReadTOC PROTO((char *cfpath, CAFHEADER *ch, CAFTOCENT **tocpp));
-extern int CAFReadHeader PROTO((int fd, CAFHEADER *h));
-extern off_t CAFRoundOffsetUp PROTO((off_t offt, unsigned int bsize));
-extern CAFBITMAP * CAFReadFreeBM PROTO((int fd, CAFHEADER *h));
-extern void CAFDisposeBitmap PROTO((CAFBITMAP *cbm));
+extern int CAFOpenReadTOC(char *cfpath, CAFHEADER *ch, CAFTOCENT **tocpp);
+extern int CAFReadHeader(int fd, CAFHEADER *h);
+extern off_t CAFRoundOffsetUp(off_t offt, unsigned int bsize);
+extern CAFBITMAP * CAFReadFreeBM(int fd, CAFHEADER *h);
+extern void CAFDisposeBitmap(CAFBITMAP *cbm);
 /*
 ** note! CAFIsBlockFree needs the fd, since blocks of the free bitmap may 
 ** need to be fetched from disk.
 */
-extern int CAFIsBlockFree PROTO((CAFBITMAP *bm, int fd, off_t block));
+extern int CAFIsBlockFree(CAFBITMAP *bm, int fd, off_t block);
 #endif
 
 extern int caf_error; /* last error encountered by library. */

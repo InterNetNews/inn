@@ -37,7 +37,7 @@ typedef enum {FIND_DIR, FIND_ART, FIND_TOPDIR} FINDTYPE;
 
 static int SeqNum = 0;
 
-static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
+static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     unsigned int        i;
     unsigned short      s;
@@ -48,7 +48,7 @@ static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class, TOKEN *oldto
 	memcpy(&token, oldtoken, sizeof(token));
     token.type = TOKEN_TIMEHASH;
     token.class = class;
-    i = htonl(time);
+    i = htonl(now);
     memcpy(token.token, &i, sizeof(i));
     if (sizeof(i) > 4)
 	memmove(token.token, &token.token[sizeof(i) - 4], 4);
@@ -57,38 +57,41 @@ static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class, TOKEN *oldto
     return token;
 }
 
-static void BreakToken(TOKEN token, int *time, int *seqnum) {
+static void BreakToken(TOKEN token, int *now, int *seqnum) {
     unsigned int        i;
     unsigned short      s = 0;
 
     memcpy(&i, token.token, sizeof(i));
     memcpy(&s, &token.token[4], sizeof(s));
-    *time = ntohl(i);
+    *now = ntohl(i);
     *seqnum = (int)ntohs(s);
 }
 
-static char *MakePath(int time, int seqnum, const STORAGECLASS class) {
+static char *MakePath(int now, int seqnum, const STORAGECLASS class) {
     char *path;
+    size_t length;
     
     /* innconf->patharticles + '/time-zz/xx/xx/yyyy-xxxx' */
-    path = NEW(char, strlen(innconf->patharticles) + 32);
-    sprintf(path, "%s/time-%02x/%02x/%02x/%04x-%04x", innconf->patharticles,
-	    class, (time >> 16) & 0xff, (time >> 8) & 0xff, seqnum,
-	    (time & 0xff) | ((time >> 16 & 0xff00)));
+    length = strlen(innconf->patharticles) + 32;
+    path = NEW(char, length);
+    snprintf(path, length, "%s/time-%02x/%02x/%02x/%04x-%04x",
+             innconf->patharticles, class,
+             (now >> 16) & 0xff, (now >> 8) & 0xff, seqnum,
+             (now & 0xff) | ((now >> 16 & 0xff00)));
     return path;
 }
 
 static TOKEN *PathToToken(char *path) {
     int			n;
     unsigned int	t1, t2, t3, seqnum, class;
-    time_t		time;
+    time_t		now;
     static TOKEN	token;
 
     n = sscanf(path, "time-%02x/%02x/%02x/%04x-%04x", &class, &t1, &t2, &seqnum, &t3);
     if (n != 5)
 	return (TOKEN *)NULL;
-    time = ((t1 << 16) & 0xff0000) | ((t2 << 8) & 0xff00) | ((t3 << 16) & 0xff000000) | (t3 & 0xff);
-    token = MakeToken(time, seqnum, class, (TOKEN *)NULL);
+    now = ((t1 << 16) & 0xff0000) | ((t2 << 8) & 0xff00) | ((t3 << 16) & 0xff000000) | (t3 & 0xff);
+    token = MakeToken(now, seqnum, class, (TOKEN *)NULL);
     return &token;
 }
 
@@ -280,7 +283,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 }
 
 ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount) {
-    int                 time;
+    int                 now;
     int                 seqnum;
     char                *path;
     ARTHANDLE           *art;
@@ -291,10 +294,10 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount) {
 	return NULL;
     }
 
-    BreakToken(token, &time, &seqnum);
-    path = MakePath(time, seqnum, token.class);
+    BreakToken(token, &now, &seqnum);
+    path = MakePath(now, seqnum, token.class);
     if ((art = OpenArticle(path, amount)) != (ARTHANDLE *)NULL) {
-	art->arrived = time;
+	art->arrived = now;
 	ret_token = token;
 	art->token = &ret_token;
     }
@@ -328,13 +331,13 @@ void timehash_freearticle(ARTHANDLE *article) {
 }
 
 bool timehash_cancel(TOKEN token) {
-    int                 time;
+    int                 now;
     int                 seqnum;
     char                *path;
     int                 result;
 
-    BreakToken(token, &time, &seqnum);
-    path = MakePath(time, seqnum, token.class);
+    BreakToken(token, &now, &seqnum);
+    path = MakePath(now, seqnum, token.class);
     result = unlink(path);
     DISPOSE(path);
     if (result < 0) {
@@ -383,8 +386,10 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     struct dirent       *de;
     ARTHANDLE           *art;
     int                 seqnum;
+    size_t              length;
 
-    path = NEW(char, strlen(innconf->patharticles) + 32);
+    length = strlen(innconf->patharticles) + 32;
+    path = NEW(char, length);
     if (article == NULL) {
 	priv.top = NULL;
 	priv.sec = NULL;
@@ -428,7 +433,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
 			DISPOSE(path);
 			return NULL;
 		    }
-		    sprintf(path, "%s", innconf->patharticles);
+		    snprintf(path, length, "%s", innconf->patharticles);
 		    if ((priv.top = opendir(path)) == NULL) {
 			SMseterror(SMERR_UNDEFINED, NULL);
 			DISPOSE(path);
@@ -441,21 +446,21 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
 			return NULL;
 		    }
 		}
-		sprintf(path, "%s/%s", innconf->patharticles, priv.topde->d_name);
+		snprintf(path, length, "%s/%s", innconf->patharticles, priv.topde->d_name);
 		if ((priv.sec = opendir(path)) == NULL)
 		    continue;
 	    }
-	    sprintf(path, "%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name);
+	    snprintf(path, length, "%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name);
 	    if ((priv.ter = opendir(path)) == NULL)
 		continue;
 	}
-	sprintf(path, "%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
+	snprintf(path, length, "%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
 	if ((priv.artdir = opendir(path)) == NULL)
 	    continue;
     }
     if (de == NULL)
 	return NULL;
-    sprintf(path, "%s/%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
+    snprintf(path, length, "%s/%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
 
     art = OpenArticle(path, amount);
     if (art == (ARTHANDLE *)NULL) {
@@ -475,14 +480,14 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     newpriv->topde = priv.topde;
     newpriv->secde = priv.secde;
     newpriv->terde = priv.terde;
-    sprintf(path, "%s/%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
+    snprintf(path, length, "%s/%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
     art->token = PathToToken(path);
     BreakToken(*art->token, (int *)&(art->arrived), &seqnum);
     DISPOSE(path);
     return art;
 }
 
-bool timehash_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool timehash_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value) {
     struct artngnum *ann;
 
     switch (type) {
@@ -497,16 +502,21 @@ bool timehash_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }
 }
 
-bool timehash_flushcacheddata(FLUSHTYPE type) {
+bool
+timehash_flushcacheddata(FLUSHTYPE type UNUSED)
+{
     return TRUE;
 }
 
-void timehash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
-    int time, seqnum;
+void
+timehash_printfiles(FILE *file, TOKEN token, char **xref UNUSED,
+                    int ngroups UNUSED)
+{
+    int now, seqnum;
     char *path;
     
-    BreakToken(token, &time, &seqnum);
-    path = MakePath(time, seqnum, token.class);
+    BreakToken(token, &now, &seqnum);
+    path = MakePath(now, seqnum, token.class);
     fprintf(file, "%s\n", path);
 }
 

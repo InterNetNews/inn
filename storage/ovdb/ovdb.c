@@ -3,6 +3,7 @@
  * ovdb 2.00 beta4
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2002-08-11 : Cleaned up use of sprintf and fixed a bunch of warnings.
  * 2002-02-28 : Update getartinfo for the overview API change in 2.4.  This
  *              breaks compatibility with INN 2.3.x....
  * 2000-12-12 : Add support for BerkeleyDB DB_SYSTEM_MEM option, controlled
@@ -273,7 +274,8 @@ static int crecv(void *data, int n)
 
 static int client_connect()
 {
-    int r, p = 0;
+    ssize_t r;
+    size_t p = 0;
     char *path;
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     struct sockaddr_un sa;
@@ -581,7 +583,7 @@ void read_ovdb_conf(void)
 
 
 /* Function that db will use to report errors */
-static void OVDBerror(char *db_errpfx, char *buffer)
+static void OVDBerror(char *db_errpfx UNUSED, char *buffer)
 {
     switch(ovdb_errmode) {
     case OVDB_ERR_SYSLOG:
@@ -606,7 +608,7 @@ static int open_db_file(int which)
     if(dbs[which] != NULL)
 	return 0;
 
-    sprintf(name, "ov%05d", which);
+    snprintf(name, sizeof(name), "ov%05d", which);
 
 #if DB_VERSION_MAJOR == 2
     if(ret = db_open(name, DB_BTREE, _db_flags, 0666, OVDBenv,
@@ -615,7 +617,8 @@ static int open_db_file(int which)
 	return ret;
     }
 #else
-    if(ret = db_create(&(dbs[which]), OVDBenv, 0))
+    ret = db_create(&(dbs[which]), OVDBenv, 0);
+    if (ret != 0)
 	return ret;
 
     if(ovdb_conf.minkey > 0)
@@ -623,8 +626,9 @@ static int open_db_file(int which)
     if(ovdb_conf.pagesize > 0)
 	(dbs[which])->set_pagesize(dbs[which], ovdb_conf.pagesize);
 
-    if(ret = (dbs[which])->open(dbs[which], name, NULL, DB_BTREE,
-		_db_flags, 0666)) {
+    ret = (dbs[which])->open(dbs[which], name, NULL, DB_BTREE, _db_flags,
+                             0666);
+    if (ret != 0) {
 	(dbs[which])->close(dbs[which], 0);
 	dbs[which] = NULL;
 	return ret;
@@ -661,7 +665,8 @@ static DB *get_db_bynum(int which)
 	if(which != current_db && current_db != -1)
 	    close_db_file(current_db);
 
-	if(ret = open_db_file(which))
+        ret = open_db_file(which);
+	if (ret != 0)
 	    syslog(L_ERROR, "OVDB: open_db_file failed: %s", db_strerror(ret));
 
 	current_db = which;
@@ -687,7 +692,8 @@ int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_T
     val.ulen = sizeof(struct groupinfo);
     val.flags = DB_DBT_USERMEM;
 
-    if(ret = groupinfo->get(groupinfo, tid, &key, &val, getflags))
+    ret = groupinfo->get(groupinfo, tid, &key, &val, getflags);
+    if (ret != 0)
 	return ret;
 
     if(val.size != sizeof(struct groupinfo)) {
@@ -716,10 +722,11 @@ static int groupid_new(group_id_t *gno, DB_TXN *tid)
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
 
-    key.data = "!groupid_freelist";
+    key.data = (char *) "!groupid_freelist";
     key.size = sizeof("!groupid_freelist");
 
-    if(ret = groupinfo->get(groupinfo, tid, &key, &val, DB_RMW)) {
+    ret = groupinfo->get(groupinfo, tid, &key, &val, DB_RMW);
+    if (ret != 0) {
 	if(ret == DB_NOTFOUND) {
 	    val.size = sizeof(group_id_t);
 	    val.data = &one;
@@ -748,7 +755,8 @@ static int groupid_new(group_id_t *gno, DB_TXN *tid)
 	val.size -= sizeof(group_id_t);
     }
 
-    if(ret = groupinfo->put(groupinfo, tid, &key, &val, 0)) {
+    ret = groupinfo->put(groupinfo, tid, &key, &val, 0);
+    if (ret != 0) {
 	DISPOSE(freelist);
 	return ret;
     }
@@ -769,10 +777,11 @@ static int groupid_free(group_id_t gno, DB_TXN *tid)
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
 
-    key.data = "!groupid_freelist";
+    key.data = (char *) "!groupid_freelist";
     key.size = sizeof("!groupid_freelist");
 
-    if(ret = groupinfo->get(groupinfo, tid, &key, &val, DB_RMW)) {
+    ret = groupinfo->get(groupinfo, tid, &key, &val, DB_RMW);
+    if (ret != 0) {
 	return ret;
     }
 
@@ -830,7 +839,8 @@ static int delete_all_records(int whichdb, group_id_t gno)
 	return DB_NOTFOUND;
 
     /* get a cursor to traverse the ov records and delete them */
-    if(ret = db->cursor(db, NULL, &dbcursor, 0)) {
+    ret = db->cursor(db, NULL, &dbcursor, 0);
+    if (ret != 0) {
 	if(ret != TRYAGAIN)
 	    syslog(L_ERROR, "OVDB: delete_all_records: db->cursor: %s", db_strerror(ret));
 	return ret;
@@ -840,7 +850,9 @@ static int delete_all_records(int whichdb, group_id_t gno)
     key.size = sizeof dk;
     val.flags = DB_DBT_PARTIAL;
 
-    switch(ret = dbcursor->c_get(dbcursor, &key, &val, DB_SET_RANGE)) {
+    ret = dbcursor->c_get(dbcursor, &key, &val, DB_SET_RANGE);
+    switch (ret)
+    {
     case 0:
     case DB_NOTFOUND:
 	break;
@@ -852,7 +864,8 @@ static int delete_all_records(int whichdb, group_id_t gno)
 	&& key.size == sizeof dk
 	&& !memcmp(key.data, &(dk.groupnum), sizeof(dk.groupnum))) {
 
-	if(ret = dbcursor->c_del(dbcursor, 0))
+        ret = dbcursor->c_del(dbcursor, 0);
+	if (ret != 0)
 	    break;
 
 	ret = dbcursor->c_get(dbcursor, &key, &val, DB_NEXT);
@@ -886,7 +899,8 @@ static BOOL delete_old_stuff(int forgotton)
     val.flags = DB_DBT_USERMEM | DB_DBT_PARTIAL;
 
     /* get a cursor to traverse all of the groupinfo records */
-    if(ret = groupinfo->cursor(groupinfo, NULL, &cursor, 0)) {
+    ret = groupinfo->cursor(groupinfo, NULL, &cursor, 0);
+    if (ret != 0) {
 	syslog(L_ERROR, "OVDB: delete_old_stuff: groupinfo->cursor: %s", db_strerror(ret));
 	DISPOSE(dellist);
 	return FALSE;
@@ -922,7 +936,9 @@ static BOOL delete_old_stuff(int forgotton)
 	if(tid==NULL)
 	    goto out;
 
-	switch(ret = ovdb_getgroupinfo(dellist[i], &gi, FALSE, tid, DB_RMW)) {
+        ret = ovdb_getgroupinfo(dellist[i], &gi, FALSE, tid, DB_RMW);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -1027,10 +1043,13 @@ static int count_records(struct groupinfo *gi)
 
     gi->count = 0;
 
-    if(ret = db->cursor(db, NULL, &cursor, 0))
+    ret = db->cursor(db, NULL, &cursor, 0);
+    if (ret)
 	return ret;
 
-    switch(ret = cursor->c_get(cursor, &key, &val, DB_SET_RANGE)) {
+    ret = cursor->c_get(cursor, &key, &val, DB_SET_RANGE);
+    switch (ret)
+    {
     case 0:
     case DB_NOTFOUND:
 	break;
@@ -1182,7 +1201,7 @@ BOOL ovdb_check_user(void)
     return result;
 }
 
-static int check_version()
+static int check_version(void)
 {
     int ret;
     DB *vdb;
@@ -1193,19 +1212,21 @@ static int check_version()
     DB_INFO dbinfo;
     memset(&dbinfo, 0, sizeof dbinfo);
 
-    if(ret = db_open("version", DB_BTREE, _db_flags, 0666, OVDBenv,
-		    &dbinfo, &vdb)) {
+    ret = db_open("version", DB_BTREE, _db_flags, 0666, OVDBenv, &dbinfo,
+                  &vdb);
+    if (ret != 0) {
 	syslog(L_FATAL, "OVDB: db_open failed: %s", db_strerror(ret));
 	return ret;
     }
 #else
     /* open version db */
-    if(ret = db_create(&vdb, OVDBenv, 0)) {
+    ret = db_create(&vdb, OVDBenv, 0);
+    if (ret != 0) {
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return ret;
     }
-    if(ret = vdb->open(vdb, "version", NULL, DB_BTREE,
-		_db_flags, 0666)) {
+    ret = vdb->open(vdb, "version", NULL, DB_BTREE, _db_flags, 0666);
+    if (ret != 0) {
 	vdb->close(vdb, 0);
 	syslog(L_FATAL, "OVDB: open: version->open: %s", db_strerror(ret));
 	return ret;
@@ -1213,9 +1234,10 @@ static int check_version()
 #endif
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
-    key.data = "dataversion";
+    key.data = (char *) "dataversion";
     key.size = sizeof("dataversion");
-    if(ret = vdb->get(vdb, NULL, &key, &val, 0)) {
+    ret = vdb->get(vdb, NULL, &key, &val, 0);
+    if (ret != 0) {
 	if(ret != DB_NOTFOUND) {
 	    syslog(L_FATAL, "OVDB: open: can't retrieve version: %s", db_strerror(ret));
 	    vdb->close(vdb, 0);
@@ -1230,7 +1252,8 @@ static int check_version()
 	}
 	val.data = &dv;
 	val.size = sizeof dv;
-	if(ret = vdb->put(vdb, NULL, &key, &val, 0)) {
+        ret = vdb->put(vdb, NULL, &key, &val, 0);
+	if (ret != 0) {
 	    syslog(L_FATAL, "OVDB: open: can't store version: %s", db_strerror(ret));
 	    vdb->close(vdb, 0);
 	    return ret;
@@ -1252,9 +1275,10 @@ static int check_version()
     /* The version db also stores some config values, which will override the
        corresponding ovdb.conf setting. */
 
-    key.data = "numdbfiles";
+    key.data = (char *) "numdbfiles";
     key.size = sizeof("numdbfiles");
-    if(ret = vdb->get(vdb, NULL, &key, &val, 0)) {
+    ret = vdb->get(vdb, NULL, &key, &val, 0);
+    if (ret != 0) {
 	if(ret != DB_NOTFOUND) {
 	    syslog(L_FATAL, "OVDB: open: can't retrieve numdbfiles: %s", db_strerror(ret));
 	    vdb->close(vdb, 0);
@@ -1268,7 +1292,8 @@ static int check_version()
 	}
 	val.data = &(ovdb_conf.numdbfiles);
 	val.size = sizeof(ovdb_conf.numdbfiles);
-	if(ret = vdb->put(vdb, NULL, &key, &val, 0)) {
+        ret = vdb->put(vdb, NULL, &key, &val, 0);
+	if (ret != 0) {
 	    syslog(L_FATAL, "OVDB: open: can't store numdbfiles: %s", db_strerror(ret));
 	    vdb->close(vdb, 0);
 	    return ret;
@@ -1317,14 +1342,16 @@ int ovdb_open_berkeleydb(int mode, int flags)
     OVDBenv->lk_max = ovdb_conf.maxlocks;
 
     /* initialize environment */
-    if(ret = db_appinit(ovdb_conf.home, NULL, OVDBenv, ai_flags)) {
+    ret = db_appinit(ovdb_conf.home, NULL, OVDBenv, ai_flags);
+    if (ret != 0) {
 	DISPOSE(OVDBenv);
 	OVDBenv = NULL;
 	syslog(L_FATAL, "OVDB: db_appinit failed: %s", db_strerror(ret));
 	return ret;
     }
 #else
-    if(ret = db_env_create(&OVDBenv, 0)) {
+    ret = db_env_create(&OVDBenv, 0);
+    if (ret != 0) {
 	syslog(L_FATAL, "OVDB: db_env_create: %s", db_strerror(ret));
 	return ret;
     }
@@ -1345,11 +1372,11 @@ int ovdb_open_berkeleydb(int mode, int flags)
 #endif
 
 #if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
-    if(ret = OVDBenv->open(OVDBenv, ovdb_conf.home, NULL, ai_flags, 0666)) {
+    ret = OVDBenv->open(OVDBenv, ovdb_conf.home, NULL, ai_flags, 0666);
 #else
-    if(ret = OVDBenv->open(OVDBenv, ovdb_conf.home, ai_flags, 0666)) {
+    ret = OVDBenv->open(OVDBenv, ovdb_conf.home, ai_flags, 0666);
 #endif
-
+    if (ret != 0) {
 	OVDBenv->close(OVDBenv, 0);
 	OVDBenv = NULL;
 	syslog(L_FATAL, "OVDB: OVDBenv->open: %s", db_strerror(ret));
@@ -1363,8 +1390,6 @@ int ovdb_open_berkeleydb(int mode, int flags)
 BOOL ovdb_open(int mode)
 {
     int i, ret;
-    char name[50];
-    DBT key, val;
 
 #if DB_VERSION_MAJOR == 2
     DB_INFO dbinfo;
@@ -1419,7 +1444,8 @@ BOOL ovdb_open(int mode)
     
     if(!oneatatime) {
 	for(i = 0; i < ovdb_conf.numdbfiles; i++) {
-	    if(ret = open_db_file(i)) {
+            ret = open_db_file(i);
+	    if (ret != 0) {
 		syslog(L_FATAL, "OVDB: open_db_file failed: %s", db_strerror(ret));
 		return FALSE;
 	    }
@@ -1429,34 +1455,40 @@ BOOL ovdb_open(int mode)
 #if DB_VERSION_MAJOR == 2
     memset(&dbinfo, 0, sizeof dbinfo);
 
-    if(ret = db_open("groupinfo", DB_BTREE, _db_flags, 0666, OVDBenv,
-		    &dbinfo, &groupinfo)) {
+    ret = db_open("groupinfo", DB_BTREE, _db_flags, 0666, OVDBenv,
+                  &dbinfo, &groupinfo);
+    if (ret != 0) {
 	syslog(L_FATAL, "OVDB: db_open failed: %s", db_strerror(ret));
 	return FALSE;
     }
 
-    if(ret = db_open("groupaliases", DB_HASH, _db_flags, 0666, OVDBenv,
-		    &dbinfo, &groupaliases)) {
+    ret = db_open("groupaliases", DB_HASH, _db_flags, 0666, OVDBenv,
+                  &dbinfo, &groupaliases);
+    if (ret != 0) {
 	syslog(L_FATAL, "OVDB: db_open failed: %s", db_strerror(ret));
 	return FALSE;
     }
 #else
-    if(ret = db_create(&groupinfo, OVDBenv, 0)) {
+    ret = db_create(&groupinfo, OVDBenv, 0);
+    if (ret != 0) {
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return FALSE;
     }
-    if(ret = groupinfo->open(groupinfo, "groupinfo", NULL, DB_BTREE,
-		_db_flags, 0666)) {
+    ret = groupinfo->open(groupinfo, "groupinfo", NULL, DB_BTREE,
+                          _db_flags, 0666);
+    if (ret != 0) {
 	groupinfo->close(groupinfo, 0);
 	syslog(L_FATAL, "OVDB: open: groupinfo->open: %s", db_strerror(ret));
 	return FALSE;
     }
-    if(ret = db_create(&groupaliases, OVDBenv, 0)) {
+    ret = db_create(&groupaliases, OVDBenv, 0);
+    if (ret != 0) {
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
 	return FALSE;
     }
-    if(ret = groupaliases->open(groupaliases, "groupaliases", NULL, DB_HASH,
-		_db_flags, 0666)) {
+    ret = groupaliases->open(groupaliases, "groupaliases", NULL, DB_HASH,
+                             _db_flags, 0666);
+    if (ret != 0) {
 	groupaliases->close(groupaliases, 0);
 	syslog(L_FATAL, "OVDB: open: groupaliases->open: %s", db_strerror(ret));
 	return FALSE;
@@ -1506,7 +1538,9 @@ BOOL ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 	return TRUE;
     }
 
-    switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0)) {
+    ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0);
+    switch (ret)
+    {
     case 0:
 	break;
     case DB_NOTFOUND:
@@ -1532,7 +1566,8 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     DBT key, val;
     struct groupinfo gi;
     DB_TXN *tid;
-    int ret, new;
+    int ret = 0;
+    int new;
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
@@ -1543,7 +1578,9 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	return FALSE;
 
     new = 0;
-    switch(ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW)) {
+    ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW);
+    switch (ret)
+    {
     case DB_NOTFOUND:
 	new = 1;
     case 0:
@@ -1562,7 +1599,8 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	int s, c = 0;
 	char g[MAXHEADERSIZE];
 
-	strcpy(g, group);
+	strncpy(g, group, sizeof(g) - 1);
+        g[sizeof(g) - 1] = '\0';
 	s = strlen(g) + 1;
 	key.data = g;
 	key.size = s + sizeof(int);
@@ -1576,7 +1614,9 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	}
 	val.data = &gi;
 	val.size = sizeof(gi);
-	switch(ret = groupinfo->put(groupinfo, tid, &key, &val, 0)) {
+        ret = groupinfo->put(groupinfo, tid, &key, &val, 0);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -1588,7 +1628,9 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	}
 	key.data = group;
 	key.size = strlen(group);
-	switch(ret = groupinfo->del(groupinfo, tid, &key, 0)) {
+        ret = groupinfo->del(groupinfo, tid, &key, 0);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -1602,7 +1644,9 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     }
 
     if(new) {
-	switch(ret = groupid_new(&gi.current_gid, tid)) {
+        ret = groupid_new(&gi.current_gid, tid);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -1630,7 +1674,8 @@ BOOL ovdb_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     val.data = &gi;
     val.size = sizeof gi;
 
-    switch(ret = groupinfo->put(groupinfo, tid, &key, &val, 0)) {
+    ret = groupinfo->put(groupinfo, tid, &key, &val, 0);
+    switch (ret) {
     case 0:
 	break;
     case TRYAGAIN:
@@ -1668,7 +1713,7 @@ BOOL ovdb_groupdel(char *group)
     DBT key, val;
     struct groupinfo gi;
     DB_TXN *tid;
-    int ret;
+    int ret = 0;
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
@@ -1684,7 +1729,9 @@ BOOL ovdb_groupdel(char *group)
     if(tid==NULL)
 	return FALSE;
 
-    switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW)) {
+    ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW);
+    switch (ret)
+    {
     case DB_NOTFOUND:
 	return TRUE;
     case 0:
@@ -1733,15 +1780,14 @@ BOOL ovdb_groupdel(char *group)
 
 BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires)
 {
-    static int  databuflen = 0;
+    static size_t databuflen = 0;
     static char *databuf;
-    ARTNUM      bartnum;
     DB		*db;
     DBT		key, val;
     DB_TXN	*tid;
     struct groupinfo gi;
     struct datakey dk;
-    int ret;
+    int ret = 0;
 
     memset(&dk, 0, sizeof dk);
 
@@ -1773,7 +1819,9 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 	return FALSE;
 
     /* first, retrieve groupinfo */
-    switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW)) {
+    ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW);
+    switch (ret)
+    {
     case 0:
 	break;
     case DB_NOTFOUND:
@@ -1804,7 +1852,9 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     val.data = &gi;
     val.size = sizeof gi;
 
-    switch(ret = groupinfo->put(groupinfo, tid, &key, &val, 0)) {
+    ret = groupinfo->put(groupinfo, tid, &key, &val, 0);
+    switch (ret)
+    {
     case 0:
 	break;
     case TRYAGAIN:
@@ -1829,7 +1879,9 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     val.data = databuf;
     val.size = len;
 
-    switch(ret = db->put(db, tid, &key, &val, 0)) {
+    ret = db->put(db, tid, &key, &val, 0);
+    switch (ret)
+    {
     case 0:
 	break;
     case TRYAGAIN:
@@ -1852,7 +1904,9 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
 	}
 	dk.groupnum = gi.new_gid;
 
-	switch(ret = db->put(db, tid, &key, &val, 0)) {
+        ret = db->put(db, tid, &key, &val, 0);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -1868,7 +1922,7 @@ BOOL ovdb_add(char *group, ARTNUM artnum, TOKEN token, char *data, int len, time
     return TRUE;
 }
 
-BOOL ovdb_cancel(TOKEN token)
+BOOL ovdb_cancel(TOKEN token UNUSED)
 {
     return TRUE;
 }
@@ -1907,7 +1961,9 @@ void *ovdb_opensearch(char *group, int low, int high)
 	return repl.handle;
     }
 
-    switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0)) {
+    ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0);
+    switch (ret)
+    {
     case 0:
 	break;
     case DB_NOTFOUND:
@@ -1924,7 +1980,8 @@ void *ovdb_opensearch(char *group, int low, int high)
 	return NULL;
     }
 
-    if(ret = db->cursor(db, NULL, &(s->cursor), 0)) {
+    ret = db->cursor(db, NULL, &(s->cursor), 0);
+    if (ret != 0) {
 	syslog(L_ERROR, "OVDB: opensearch: s->db->cursor: %s", db_strerror(ret));
 	DISPOSE(s);
 	return NULL;
@@ -2102,8 +2159,8 @@ void ovdb_closesearch(void *handle)
 
 BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 {
-    int ret, cdb;
-    group_id_t cgid;
+    int ret, cdb = 0;
+    group_id_t cgid = 0;
     DB *db;
     DBT key, val;
     struct ovdata ovd;
@@ -2114,7 +2171,6 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
     if(clientmode) {
 	struct rs_cmd rs;
 	struct rs_artinfo repl;
-	static int buflen = 0;
 
 	rs.what = CMD_ARTINFO;
 	rs.grouplen = strlen(group)+1;
@@ -2134,7 +2190,9 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
     }
 
     while(1) {
-	switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0)) {
+        ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case DB_NOTFOUND:
@@ -2213,17 +2271,17 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, TOKEN *token)
 
 BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 {
-    DB *db, *ndb;
+    DB *db, *ndb = NULL;
     DBT key, val, nkey, gkey, gval;
     DB_TXN *tid;
     DBC *cursor = NULL;
-    int ret, delete, old_db;
+    int ret = 0, delete, old_db = 0;
     struct groupinfo gi;
     struct ovdata ovd;
     struct datakey dk, ndk;
-    group_id_t old_gid;
+    group_id_t old_gid = 0;
     ARTHANDLE *ah;
-    u_int32_t artnum, currentart, lowest;
+    u_int32_t artnum = 0, currentart, lowest;
     int i, compact, done, currentcount, newcount;
 
     if(eo_start == 0) {
@@ -2254,7 +2312,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
     if(tid==NULL)
 	return FALSE;
 
-    switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW)) {
+    ret = ovdb_getgroupinfo(group, &gi, TRUE, tid, DB_RMW);
+    switch (ret)
+    {
     case 0:
 	break;
     case TRYAGAIN:
@@ -2268,7 +2328,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 
     if(gi.status & GROUPINFO_EXPIRING) {
 	/* is there another expireover working on this group? */
-	switch(ret = kill(gi.expiregrouppid, 0)) {
+        ret = kill(gi.expiregrouppid, 0);
+	switch(ret)
+        {
 	case 0:
 	case EPERM:
 	    TXN_ABORT(t_expgroup_1, tid);
@@ -2309,7 +2371,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 	gi.status |= GROUPINFO_MOVING;
 	gi.new_db = gi.current_db;
 	ndb = db;
-	switch(ret = groupid_new(&gi.new_gid, tid)) {
+        ret = groupid_new(&gi.new_gid, tid);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -2326,7 +2390,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
     val.data = &gi;
     val.size = sizeof gi;
 
-    switch(ret = groupinfo->put(groupinfo, tid, &key, &val, 0)) {
+    ret = groupinfo->put(groupinfo, tid, &key, &val, 0);
+    switch (ret)
+    {
     case 0:
 	break;
     case TRYAGAIN:
@@ -2367,7 +2433,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
         done = 0;
 	newcount = 0;
 
-	switch(ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW)) {
+        ret = ovdb_getgroupinfo(group, &gi, FALSE, tid, DB_RMW);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -2378,7 +2446,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 	    return FALSE;
 	}
 
-	switch(ret = db->cursor(db, tid, &cursor, 0)) {
+        ret = db->cursor(db, tid, &cursor, 0);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -2396,7 +2466,10 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 	key.flags = DB_DBT_USERMEM;
 
 	for(i=0; i < EXPIREGROUP_TXN_SIZE; i++) {
-	    switch(ret = cursor->c_get(cursor, &key, &val, i == 0 ? DB_SET_RANGE : DB_NEXT)) {
+            ret = cursor->c_get(cursor, &key, &val,
+                                i == 0 ? DB_SET_RANGE : DB_NEXT);
+	    switch (ret)
+            {
 	    case 0:
 	    case DB_NOTFOUND:
 		break;
@@ -2531,7 +2604,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 		gi.low = gi.high+1;
 	}
 
-	switch(ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0)) {
+        ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -2554,7 +2629,8 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
     }
 
     if(compact) {
-	if(ret = delete_all_records(old_db, old_gid)) {
+        ret = delete_all_records(old_db, old_gid);
+	if (ret) {
 	    syslog(L_ERROR, "OVDB: expiregroup: delete_all_records: %s", db_strerror(ret));
 	    return FALSE;
 	}
@@ -2563,7 +2639,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 	if(tid == NULL)
 	    return FALSE;
 
-	switch(ret = groupid_free(old_gid, tid)) {
+        ret = groupid_free(old_gid, tid);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:
@@ -2600,7 +2678,9 @@ BOOL ovdb_expiregroup(char *group, int *lo, struct history *h)
 	    return FALSE;
 	}
 
-	switch(ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0)) {
+        ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0);
+	switch (ret)
+        {
 	case 0:
 	    break;
 	case TRYAGAIN:

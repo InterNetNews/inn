@@ -60,15 +60,10 @@ int caf_error = 0;
 int caf_errno = 0;
 
 /* check assertions in code (lifted from lib/malloc.c) */
-#ifdef __STDC__
-#define	ASSERT(p)   if (!(p)) botch(__FILE__, __LINE__, #p); else
-#else
-#define	ASSERT(p)   if (!(p)) botch(__FILE__, __LINE__, "p"); else
-#endif
+#define	ASSERT(p)   do { if (!(p)) botch(__FILE__, __LINE__, #p); } while (0)
+
 static void
-botch(f, l, s)
-char *f, *s;
-int l;
+botch(const char *f, int l, const char *s)
 {
 
 	fprintf(stderr, "assertion botched: %s:%d:%s\n", f,l,s);
@@ -79,8 +74,7 @@ int l;
 
 /* set error code appropriately. */
 static void
-CAFError(code)
-int code;
+CAFError(int code)
 {
     caf_error = code;
     if (caf_error == CAF_ERR_IO) {
@@ -93,18 +87,16 @@ int code;
 */
 
 static int
-OurRead(fd, buf, n)
-int fd;
-void *buf;
-size_t n;
+OurRead(int fd, void *buf, size_t n)
 {
-    int rval;
+    ssize_t rval;
+
     rval = read(fd, buf, n);
     if (rval < 0) {
 	CAFError(CAF_ERR_IO);
 	return -1;
     }
-    if (rval < n) {
+    if ((size_t) rval < n) {
 	/* not enough data! */
 	CAFError(CAF_ERR_BADFILE);
 	return -1;
@@ -114,18 +106,16 @@ size_t n;
 
 /* Same as OurRead except for writes. */
 static int
-OurWrite(fd, buf, n)
-int fd;
-const void *buf;
-size_t n;
+OurWrite(int fd, const void *buf, size_t n)
 {
-    int rval;
+    ssize_t rval;
+
     rval = write(fd, buf, n);
     if (rval < 0) {
 	CAFError(CAF_ERR_IO);
 	return -1;
     }
-    if (rval < n) {
+    if ((size_t) rval < n) {
 	/* not enough data written */
 	CAFError(CAF_ERR_IO);
 	return -1;
@@ -138,9 +128,7 @@ size_t n;
 */
 
 int
-CAFReadHeader(fd, h)
-int fd;
-CAFHEADER *h;
+CAFReadHeader(int fd, CAFHEADER *h)
 {
     /* probably already at start anyway, but paranoia is good. */
     if (lseek(fd, 0L, SEEK_SET) < 0) {
@@ -162,10 +150,7 @@ CAFHEADER *h;
 */
 
 static int
-CAFSeekTOCEnt(fd, head, art)
-int fd;
-CAFHEADER *head;
-ARTNUM art;
+CAFSeekTOCEnt(int fd, CAFHEADER *head, ARTNUM art)
 {
     off_t offset;
 
@@ -182,11 +167,7 @@ ARTNUM art;
 ** Fetch the TOC entry for a  given article.  As usual -1 for error, 0 success */
 
 static int
-CAFGetTOCEnt(fd, head, art, tocp)
-int fd;
-CAFHEADER *head;
-ARTNUM art;
-CAFTOCENT *tocp;
+CAFGetTOCEnt(int fd, CAFHEADER *head, ARTNUM art, CAFTOCENT *tocp)
 {
     if (CAFSeekTOCEnt(fd, head, art) < 0) {
 	return -1;
@@ -202,9 +183,7 @@ CAFTOCENT *tocp;
 ** to find out what the blocksize is.
 */
 off_t
-CAFRoundOffsetUp(off, blocksize)
-off_t off;
-unsigned int blocksize;
+CAFRoundOffsetUp(off_t off, unsigned int blocksize)
 {
     off_t off2;
 
@@ -222,8 +201,7 @@ unsigned int blocksize;
 ** Dispose of an already-allocated CAFBITMAP.
 */
 void
-CAFDisposeBitmap(bm)
-CAFBITMAP *bm;
+CAFDisposeBitmap(CAFBITMAP *bm)
 {
     unsigned int i;
     CAFBMB *bmb;
@@ -248,13 +226,12 @@ CAFBITMAP *bm;
 #define BYTEWIDTH 8
 
 CAFBITMAP *
-CAFReadFreeBM(fd, h)
-int fd;
-CAFHEADER *h;
+CAFReadFreeBM(int fd, CAFHEADER *h)
 {
-    int i;
+    size_t i;
     struct stat statbuf;
     CAFBITMAP *bm;
+
     if (lseek(fd, sizeof(CAFHEADER), SEEK_SET) < 0) {
 	CAFError(CAF_ERR_IO);
 	return NULL;
@@ -297,14 +274,10 @@ CAFHEADER *h;
 ** the new BMB appropriately.  Return NULL on failure, and the BMB * on success.
 */
 static CAFBMB *
-CAFFetchBMB(blkno, fd, bm)
-int blkno;
-int fd;
-CAFBITMAP *bm;
+CAFFetchBMB(unsigned int blkno, int fd, CAFBITMAP *bm)
 {
     CAFBMB *newbmb;
 
-    ASSERT(blkno >= 0);
     ASSERT(blkno < bm->NumBMB);
     /* if already in memory, don't need to do anything. */
     if (bm->Blocks[blkno]) return bm->Blocks[blkno];
@@ -344,14 +317,10 @@ CAFBITMAP *bm;
 */
 
 static int
-CAFFlushBMB(blkno, fd, bm)
-int blkno;
-int fd;
-CAFBITMAP *bm;
+CAFFlushBMB(unsigned int blkno, int fd, CAFBITMAP *bm)
 {
     CAFBMB *bmb;
 
-    ASSERT(blkno >= 0);
     ASSERT(blkno < bm->NumBMB);
 
     if (bm->Blocks[blkno] == NULL) return 0; /* nothing to do. */
@@ -374,12 +343,10 @@ CAFBITMAP *bm;
 /*
 ** Write the free bit map to the CAF file.  Return 0 on success, -1 on failure.
 */
-int
-CAFWriteFreeBM(fd, bm)
-int fd;
-CAFBITMAP *bm;
+static int
+CAFWriteFreeBM(int fd, CAFBITMAP *bm)
 {
-    int blkno;
+    size_t blkno;
     
     for (blkno = 0 ; blkno < bm->NumBMB ; ++blkno) {
 	if (CAFFlushBMB(blkno, fd, bm) < 0) {
@@ -403,10 +370,7 @@ CAFBITMAP *bm;
 */
 
 int
-CAFIsBlockFree(bm, fd, block)
-CAFBITMAP *bm;
-off_t block;
-int fd;
+CAFIsBlockFree(CAFBITMAP *bm, int fd, off_t block)
 {
     unsigned int ind;
     char mask;
@@ -445,9 +409,7 @@ int fd;
 ** Check if a bitmap chunk is all zeros or not.
 */
 static int
-IsMapAllZero(data, len)
-char *data;
-int len;
+IsMapAllZero(char *data, int len)
 {
     int i;
     for (i = 0 ; i < len ; ++i) {
@@ -457,12 +419,8 @@ int len;
 }
 
 /* Set the free bitmap entry for a given block to be a given value (1 or 0). */
-void
-CAFSetBlockFree(bm, fd, block, free)
-CAFBITMAP *bm;
-int fd;
-off_t block;
-int free;
+static void
+CAFSetBlockFree(CAFBITMAP *bm, int fd, off_t block, int isfree)
 {
     unsigned int ind;
     char mask;
@@ -494,7 +452,7 @@ int free;
 
     ASSERT(ind < bm->BlockSize);
 
-    if (free) {
+    if (isfree) {
 	bmb->BMBBits[ind] |= mask; /* set bit */
     } else {
 	bmb->BMBBits[ind] &= ~mask; /* clear bit. */
@@ -527,10 +485,7 @@ int free;
 ** though not optimally (some BMBs will get scanned several times).  
 */
 static off_t
-CAFFindFreeBlocks(bm, fd, n)
-CAFBITMAP *bm;
-int fd;
-unsigned int n;
+CAFFindFreeBlocks(CAFBITMAP *bm, int fd, unsigned int n)
 {
     off_t startblk, curblk;
     unsigned int i, ind, blkno, j;
@@ -591,10 +546,7 @@ unsigned int n;
 */
 
 int
-CAFOpenArtRead(path, art, len)
-char *path;
-ARTNUM art;
-size_t *len;
+CAFOpenArtRead(const char *path, ARTNUM art, size_t *len)
 {
     CAFHEADER head;
     int fd;
@@ -671,9 +623,7 @@ static unsigned int CAF_numblks_write;
 */
 
 static unsigned int
-CAFFindOptimalBlocksize(tocsize, cfsize)
-ARTNUM tocsize;
-size_t cfsize;
+CAFFindOptimalBlocksize(ARTNUM tocsize UNUSED, size_t cfsize)
 {
 
     if (cfsize == 0) return CAF_DEFAULT_BLOCKSIZE; /* no size given, use default. */
@@ -693,23 +643,18 @@ size_t cfsize;
 ** be, used to automatically select a good blocksize.
 */
 int
-CAFCreateCAFFile(cfpath, artnum, tocsize, estcfsize, nolink, temppath)
-char *cfpath;
-ARTNUM artnum;
-ARTNUM tocsize;
-size_t estcfsize;
-int nolink;
-char *temppath;
+CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
+                 size_t estcfsize, int nolink, char *temppath)
 {
     CAFHEADER head;
     int fd;
     char path[SPOOLNAMEBUFF];
-    char realpath[SPOOLNAMEBUFF];
+    char finalpath[SPOOLNAMEBUFF];
     off_t offset;
     char nulls[1];
 
-    strncpy(realpath, cfpath, SPOOLNAMEBUFF);
-    sprintf(path, "%s.%d", cfpath, getpid());/* create path with PID attached */
+    strncpy(finalpath, cfpath, SPOOLNAMEBUFF);
+    snprintf(path, sizeof(path), "%s.%d", cfpath, getpid());/* create path with PID attached */
     /* 
     ** Shouldn't be anyone else with our pid trying to write to the temp.
     ** file, but there might be an old one lying around.  Nuke it.
@@ -779,7 +724,7 @@ char *temppath;
     ** Try to link to the real one. NOTE: we may get EEXIST here, which we
     ** will handle specially in OpenArtWrite.
     */
-    if (link(path, realpath) < 0) {
+    if (link(path, finalpath) < 0) {
 	CAFError(CAF_ERR_IO);
 	/* bounced on the link attempt, go ahead and unlink the temp file and return. */
 	(void) unlink(path);
@@ -807,11 +752,7 @@ char *temppath;
 */
 
 int
-CAFOpenArtWrite(path, artp, waitlock, size)
-char *path;
-ARTNUM *artp;
-int waitlock;
-size_t size;
+CAFOpenArtWrite(char *path, ARTNUM *artp, int waitlock, size_t size)
 {
     int fd;
 
@@ -878,15 +819,12 @@ size_t size;
 ** open/locked, and we have an open fd to it.
 */
 int
-CAFStartWriteFd(fd, artp, size)
-int fd;
-ARTNUM *artp;
-size_t size;
+CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
 {
     CAFHEADER head;
     CAFTOCENT tocent;
     off_t offset, startoffset;
-    unsigned int numblks;
+    unsigned int numblks = 0;
     CAFBITMAP *freebm;
     ARTNUM art;
 
@@ -994,8 +932,7 @@ size_t size;
 */
 
 int
-CAFFinishArtWrite(fd)
-int fd;
+CAFFinishArtWrite(int fd)
 {
     off_t curpos;
     CAFTOCENT tocentry;
@@ -1091,11 +1028,11 @@ int fd;
 
 static char errbuf[512];
 
-char *
-CAFErrorStr()
+const char *
+CAFErrorStr(void)
 {
     if (caf_error == CAF_ERR_IO || caf_error == CAF_ERR_CANTCREATECAF) {
-	sprintf(errbuf, "%s errno=%s\n",
+	snprintf(errbuf, sizeof(errbuf), "%s errno=%s\n",
 		(caf_error == CAF_ERR_IO) ? "CAF_ERR_IO" : "CAF_ERR_CANTCREATECAF",
 		strerror(errno));
 	return errbuf;
@@ -1114,7 +1051,7 @@ CAFErrorStr()
 	  case CAF_ERR_BOGUSPATH:
 	    return "CAF_ERR_BOGUSPATH";
 	  default:
-	    sprintf(errbuf, "CAF error %d", caf_error);
+	    snprintf(errbuf, sizeof(errbuf), "CAF error %d", caf_error);
 	    return errbuf;
 	}
     }
@@ -1134,9 +1071,7 @@ CAFErrorStr()
 */
 
 CAFTOCENT *
-CAFReadTOC(path, ch)
-char *path;
-CAFHEADER *ch;
+CAFReadTOC(char *path, CAFHEADER *ch)
 {
     CAFTOCENT *tocp;
     int fd;
@@ -1150,10 +1085,7 @@ CAFHEADER *ch;
 }
 
 int
-CAFOpenReadTOC(path, ch, tocpp)
-char *path;
-CAFHEADER *ch;
-CAFTOCENT **tocpp;
+CAFOpenReadTOC(char *path, CAFHEADER *ch, CAFTOCENT **tocpp)
 {
     int fd;
     int nb;
@@ -1209,10 +1141,7 @@ CAFTOCENT **tocpp;
 */
 
 int
-CAFRemoveMultArts(path, narts, artnums)
-char *path;
-unsigned int narts;
-ARTNUM *artnums;
+CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 {
     int fd;
     CAFHEADER head;
@@ -1340,10 +1269,7 @@ ARTNUM *artnums;
 */
 
 int
-CAFStatArticle(path, art, stbuf)
-char *path;
-ARTNUM art;
-struct stat *stbuf;
+CAFStatArticle(char *path, ARTNUM art, struct stat *stbuf)
 {
     CAFHEADER head;
     int fd;
@@ -1415,10 +1341,7 @@ struct stat *stbuf;
 #define TOC_COMPACT_RATIO 5
 
 int
-CAFClean(path, verbose, PercentFreeThreshold)
-    char *path;
-    int verbose;
-    double PercentFreeThreshold;
+CAFClean(char *path, int verbose, double PercentFreeThreshold)
 {
     char *newpath;
     CAFHEADER head, newhead;
@@ -1427,7 +1350,7 @@ CAFClean(path, verbose, PercentFreeThreshold)
     ARTNUM i;
     CAFTOCENT *tocarray, *tocp;
     CAFTOCENT *newtocarray, *newtocp;
-    int newtocsize;
+    size_t newtocsize;
     FILE *infile, *outfile;
     off_t startoffset, newstartoffset;
     char  buf[BUFSIZ];
@@ -1528,7 +1451,7 @@ CAFClean(path, verbose, PercentFreeThreshold)
 	return -1;
     }
 
-    if (n < (head.High - head.Low +1)) {
+    if ((unsigned long) n < (head.High - head.Low +1)) {
 	CAFError(CAF_ERR_BADFILE);
 	(void)fclose(infile);
 	DISPOSE(tocarray);
@@ -1668,7 +1591,8 @@ CAFClean(path, verbose, PercentFreeThreshold)
 	if (num_diskblocks_needed > fsinfo.STATAVAIL) {
 	    if (verbose) {
 		printf("CANNOT clean %s: needs %ld blocks, only %ld avail.\n",
-		       path, num_diskblocks_needed, fsinfo.f_bavail);
+		       path, num_diskblocks_needed,
+                       (unsigned long) fsinfo.f_bavail);
 	    }
 	    (void) fclose(infile);
 	    DISPOSE(tocarray);

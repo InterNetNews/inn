@@ -97,7 +97,7 @@ static CAFTOCL3CACHE *TOCCache[256]; /* indexed by storage class! */
 static int TOCCacheHits, TOCCacheMisses;
 
     
-static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
+static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     unsigned int        i;
     unsigned short      s;
@@ -108,7 +108,7 @@ static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class, TOKEN *oldto
 	memcpy(&token, oldtoken, sizeof(token));
     token.type = TOKEN_TIMECAF;
     token.class = class;
-    i = htonl(time);
+    i = htonl(now);
     memcpy(token.token, &i, sizeof(i));
     if (sizeof(i) > 4)
 	memmove(token.token, &token.token[sizeof(i) - 4], 4);
@@ -118,13 +118,13 @@ static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class, TOKEN *oldto
 }
 
 
-static void BreakToken(TOKEN token, int *time, int *seqnum) {
+static void BreakToken(TOKEN token, int *now, int *seqnum) {
     unsigned int        i;
     unsigned short      s = 0;
 
     memcpy(&i, token.token, sizeof(i));
     memcpy(&s, &token.token[4], sizeof(s));
-    *time = ntohl(i);
+    *now = ntohl(i);
     *seqnum = (int)ntohs(s);
 }
 
@@ -132,13 +132,16 @@ static void BreakToken(TOKEN token, int *time, int *seqnum) {
 ** Note: the time here is really "time>>8", i.e. a timestamp that's been
 ** shifted right by 8 bits.
 */
-static char *MakePath(int time, const STORAGECLASS class) {
+static char *MakePath(int now, const STORAGECLASS class) {
     char *path;
+    size_t length;
     
     /* innconf->patharticles + '/timecaf-zz/xx/xxxx.CF' */
-    path = NEW(char, strlen(innconf->patharticles) + 32);
-    sprintf(path, "%s/timecaf-%02x/%02x/%02x%02x.CF", innconf->patharticles,
-	    class, (time >> 8) & 0xff, (time >> 16) & 0xff, time & 0xff);
+    length = strlen(innconf->patharticles) + 32;
+    path = NEW(char, length);
+    snprintf(path, length, "%s/timecaf-%02x/%02x/%02x%02x.CF",
+             innconf->patharticles, class,
+             (now >> 8) & 0xff, (now >> 16) & 0xff, now & 0xff);
 
     return path;
 }
@@ -625,12 +628,12 @@ DoCancels(void) {
 }
 	    
 bool timecaf_cancel(TOKEN token) {
-    int                 time;
+    int                 now;
     int                 seqnum;
     char                *path;
 
-    BreakToken(token, &time, &seqnum);
-    path = MakePath(time, token.class);
+    BreakToken(token, &now, &seqnum);
+    path = MakePath(now, token.class);
     if (DeletePath == NULL) {
 	DeletePath = path;
     } else if (strcmp(DeletePath, path) != 0) {
@@ -661,20 +664,22 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
         if (type == FIND_TOPDIR)
 	    if ((strlen(de->d_name) == 10) &&
 		(strncmp(de->d_name, "timecaf-", 8) == 0) &&
-		isxdigit(de->d_name[8]) &&
-		isxdigit(de->d_name[9]))
+		CTYPE(isxdigit, de->d_name[8]) &&
+		CTYPE(isxdigit, de->d_name[9]))
 	        return de;
 
 	if (type == FIND_DIR)
-	    if ((strlen(de->d_name) == 2) && isxdigit(de->d_name[0]) && isxdigit(de->d_name[1]))
+	    if ((strlen(de->d_name) == 2)
+                && CTYPE(isxdigit, de->d_name[0])
+                && CTYPE(isxdigit, de->d_name[1]))
 		return de;
 
 	if (type == FIND_CAF)
 	    if ((strlen(de->d_name) == 7) &&
-		isxdigit(de->d_name[0]) &&
-		isxdigit(de->d_name[1]) &&
-		isxdigit(de->d_name[2]) &&
-		isxdigit(de->d_name[3]) &&
+		CTYPE(isxdigit, de->d_name[0]) &&
+		CTYPE(isxdigit, de->d_name[1]) &&
+		CTYPE(isxdigit, de->d_name[2]) &&
+		CTYPE(isxdigit, de->d_name[3]) &&
 		(de->d_name[4] == '.') &&
 		(de->d_name[5] == 'C') &&
 		(de->d_name[6] == 'F'))
@@ -685,7 +690,7 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
 }
 
 /* Grovel thru a CAF table-of-contents finding the next still-existing article */
-int
+static int
 FindNextArt(const CAFHEADER *head, CAFTOCENT *toc, ARTNUM *artp)
 {
     ARTNUM art;
@@ -713,8 +718,10 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
     PRIV_TIMECAF	priv, *newpriv;
     char                *path;
     ARTHANDLE           *art;
+    size_t              length;
 
-    path = NEW(char, strlen(innconf->patharticles) + 32);
+    length = strlen(innconf->patharticles) + 32;
+    path = NEW(char, length);
     if (article == NULL) {
 	priv.top = NULL;
 	priv.sec = NULL;
@@ -756,7 +763,7 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
 			DISPOSE(path);
 			return NULL;
 		    }
-		    sprintf(path, "%s", innconf->patharticles);
+		    snprintf(path, length, "%s", innconf->patharticles);
 		    if ((priv.top = opendir(path)) == NULL) {
 			SMseterror(SMERR_UNDEFINED, NULL);
 			DISPOSE(path);
@@ -769,20 +776,20 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
 			return NULL;
 		    }
 		}
-		sprintf(path, "%s/%s", innconf->patharticles, priv.topde->d_name);
+		snprintf(path, length, "%s/%s", innconf->patharticles, priv.topde->d_name);
 		if ((priv.sec = opendir(path)) == NULL)
 		    continue;
 	    }
-	    sprintf(path, "%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name);
+	    snprintf(path, length, "%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name);
 	    if ((priv.ter = opendir(path)) == NULL)
 		continue;
 	}
-	sprintf(path, "%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
+	snprintf(path, length, "%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
 	if ((priv.curtoc = CAFReadTOC(path, &priv.curheader)) == NULL)
 	    continue;
 	priv.curartnum = 0;
     }
-    sprintf(path, "%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
+    snprintf(path, length, "%s/%s/%s/%s", innconf->patharticles, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
     art = OpenArticle(path, priv.curartnum, amount);
     if (art == (ARTHANDLE *)NULL) {
 	art = NEW(ARTHANDLE, 1);
@@ -802,14 +809,14 @@ ARTHANDLE *timecaf_next(const ARTHANDLE *article, const RETRTYPE amount) {
     newpriv->curtoc = priv.curtoc;
     newpriv->curartnum = priv.curartnum;
     
-    sprintf(path, "%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
+    snprintf(path, length, "%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
     art->token = PathNumToToken(path, priv.curartnum);
     art->arrived = priv.curtoc[priv.curartnum - priv.curheader.Low].ModTime;
     DISPOSE(path);
     return art;
 }
 
-bool timecaf_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool timecaf_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value) {
     struct artngnum *ann;
 
     switch (type) {
@@ -830,7 +837,10 @@ bool timecaf_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
 }
 
-void timecaf_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+void
+timecaf_printfiles(FILE *file, TOKEN token, char **xref UNUSED,
+                   int ngroups UNUSED)
+{
     fprintf(file, "%s\n", TokenToText(token));
 }
 

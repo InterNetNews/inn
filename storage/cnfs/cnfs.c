@@ -103,7 +103,7 @@ static char * CNFSofft2hex(CYCBUFF_OFF_T offset, bool leadingzeros) {
     char	*p;
 
     if (sizeof(CYCBUFF_OFF_T) <= 4) {
-	sprintf(buf, (leadingzeros) ? "%016lx" : "%lx", offset);
+	snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx", offset);
     } else { 
 	int	i;
 
@@ -329,7 +329,8 @@ static bool CNFSparse_part_line(char *l) {
   }
   cycbuff = NEW(CYCBUFF, 1);
   memset(cycbuff->name, '\0', CNFSNASIZ);
-  strcpy(cycbuff->name, l);
+  strncpy(cycbuff->name, l, CNFSNASIZ - 1);
+  cycbuff->name[CNFSNASIZ - 1] = '\0';
   l = ++p;
 
   /* Path to cnfs partition */
@@ -340,7 +341,8 @@ static bool CNFSparse_part_line(char *l) {
   }
   *p = '\0';
   memset(cycbuff->path, '\0', CNFSPASIZ);
-  strcpy(cycbuff->path, l);
+  strncpy(cycbuff->path, l, CNFSPASIZ - 1);
+  cycbuff->path[CNFSPASIZ - 1] = '\0';
   if (stat(cycbuff->path, &sb) < 0) {
     syslog(L_ERROR, "%s: file '%s' : %m, ignoring '%s' cycbuff",
 	   LocalLogName, cycbuff->path, cycbuff->name);
@@ -476,7 +478,7 @@ static bool CNFSparse_metapart_line(char *l) {
   return TRUE;
 }
 
-static bool CNFSparse_groups_line() {
+static bool CNFSparse_groups_line(void) {
   METACYCBUFF	*mrp;
   STORAGE_SUB	*sub = (STORAGE_SUB *)NULL;
   CNFSEXPIRERULES	*metaexprule, *tmp;
@@ -558,7 +560,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
     errno = 0;
     cycbuff->bitfield = mmap(NULL, cycbuff->minartoffset,
 			     SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
-			     MAP_SHARED, fd, (off_t) 0);
+			     MAP_SHARED, cycbuff->fd, (off_t) 0);
     if (cycbuff->bitfield == MAP_FAILED || errno != 0) {
 	syslog(L_ERROR,
 	       "%s: CNFSinitdisks: mmap for %s offset %d len %d failed: %m",
@@ -1668,7 +1670,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return art;
 }
 
-bool cnfs_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool cnfs_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value) {
     struct artngnum *ann;
 
     switch (type) {
@@ -1689,7 +1691,10 @@ bool cnfs_flushcacheddata(FLUSHTYPE type) {
     return TRUE; 
 }
 
-void cnfs_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+void
+cnfs_printfiles(FILE *file, TOKEN token, char **xref UNUSED,
+                int ngroups UNUSED)
+{
     fprintf(file, "%s\n", TokenToText(token));
 }
 
