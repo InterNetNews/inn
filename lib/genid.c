@@ -1,21 +1,21 @@
-/*  $Revision$
+/*  $Id$
 **
+**  Generate a message ID.
 */
-#include <stdio.h>
+#include "config.h"
 #include <sys/types.h>
-#include "configdata.h"
-#include "clibrary.h"
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include "libinn.h"
 
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
+#include "libinn.h"
 
 /* Scale time back a bit, for shorter Message-ID's. */
 #define OFFSET	673416000L
 
-char *GenerateMessageID(void)
+char *
+GenerateMessageID(void)
 {
     static char		buff[SMBUF];
     static int		count;
@@ -26,10 +26,10 @@ char *GenerateMessageID(void)
 
     if (GetTimeInfo(&Now) < 0)
 	return NULL;
-    Radix32((unsigned long)Now.time - OFFSET, sec32);
-    Radix32((unsigned long)getpid(), pid32);
+    Radix32(Now.time - OFFSET, sec32);
+    Radix32(getpid(), pid32);
     if ((p = GetFQDN()) == NULL)
 	return NULL;
-    (void)sprintf(buff, "<%s$%s$%d@%s>", sec32, pid32, ++count, p);
+    sprintf(buff, "<%s$%s$%d@%s>", sec32, pid32, ++count, p);
     return buff;
 }
