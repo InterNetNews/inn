@@ -156,8 +156,9 @@ void CHANsetup(int i)
 /*
 **  Create a channel from a descriptor.
 */
-CHANNEL *CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
-		    FUNCPTR Reader, FUNCPTR WriteDone)
+CHANNEL *
+CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
+           innd_callback_t Reader, innd_callback_t WriteDone)
 {
     CHANNEL	        *cp;
     BUFFER		in;
@@ -496,7 +497,9 @@ void RCHANremove(CHANNEL *cp)
 **  Put a channel to sleep, call a function when it wakes.
 **  Note that the Argument must be NULL or allocated memory!
 */
-void SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event, FUNCPTR Waker, POINTER Argument)
+void
+SCHANadd(CHANNEL *cp, time_t Waketime, POINTER Event,
+         innd_callback_t Waker, POINTER Argument)
 {
     if (!FD_ISSET(cp->fd, &SCHANmask)) {
 	SCHANcount++;

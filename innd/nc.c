@@ -23,9 +23,9 @@
 **  of every command we support.
 */
 typedef struct _NCDISPATCH {
-    STRING	Name;
-    FUNCPTR	Function;
-    int		Size;
+    const char *        Name;
+    innd_callback_t     Function;
+    int                 Size;
 } NCDISPATCH;
 
 static FUNCTYPE	NCauthinfo();
