@@ -1058,13 +1058,13 @@ AC_DEFUN([INN_FUNC_INET_NTOA],
 [AC_TRY_RUN(_INN_FUNC_INET_NTOA_SOURCE(),
             [inn_cv_func_inet_ntoa_works=yes],
             [inn_cv_func_inet_ntoa_works=no],
-            [inn_cv_func_inet_ntoa_works=no])
+            [inn_cv_func_inet_ntoa_works=no])])
 if test "$inn_cv_func_inet_ntoa_works" = yes ; then
     AC_DEFINE([HAVE_INET_NTOA], 1,
         [Define if your system has a working inet_ntoa function.])
 else
     LIBOBJS="$LIBOBJS inet_ntoa.${ac_objext}"
-fi])])
+fi])
 INN_FUNC_INET_NTOA
 
 dnl Source used by INN_FUNC_SNPRINTF.
@@ -1102,13 +1102,13 @@ AC_DEFUN([INN_FUNC_SNPRINTF],
 [AC_TRY_RUN(_INN_FUNC_SNPRINTF_SOURCE(),
             [inn_cv_func_snprintf_works=yes],
             [inn_cv_func_snprintf_works=no],
-            [inn_cv_func_snprintf_works=no])
+            [inn_cv_func_snprintf_works=no])])
 if test "$inn_cv_func_snprintf_works" = yes ; then
     AC_DEFINE([HAVE_SNPRINTF], 1,
         [Define if your system has a working snprintf function.])
 else
     LIBOBJS="$LIBOBJS snprintf.${ac_objext}"
-fi])])
+fi])
 INN_FUNC_SNPRINTF
 
 dnl Check for various other functions.
@@ -1483,11 +1483,11 @@ AC_DEFUN([INN_NEED_HERRNO_DECLARATION],
 [AC_CACHE_CHECK([whether h_errno must be declared], inn_cv_herrno_need_decl,
 [AC_TRY_COMPILE([#include <netdb.h>], [h_errno = 0;],
                inn_cv_herrno_need_decl=no,
-               inn_cv_herrno_need_decl=yes)]
+               inn_cv_herrno_need_decl=yes)])
 if test "$inn_cv_herrno_need_decl" = yes ; then
     AC_DEFINE([NEED_HERRNO_DECLARATION], 1,
               [Define if <netdb.h> does not declare h_errno.])
-fi)])
+fi])
 INN_NEED_HERRNO_DECLARATION
 
 dnl The set of standard includes, used for checking if functions need to be

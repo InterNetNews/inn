@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.179 
+# From configure.in Revision: 1.180 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -5977,6 +5977,9 @@ fi
 rm -fr conftest*
 fi
 
+fi
+
+echo "$ac_t""$inn_cv_func_inet_ntoa_works" 1>&6
 if test "$inn_cv_func_inet_ntoa_works" = yes ; then
     cat >> confdefs.h <<\EOF
 #define HAVE_INET_NTOA 1
@@ -5985,9 +5988,6 @@ EOF
 else
     LIBOBJS="$LIBOBJS inet_ntoa.${ac_objext}"
 fi
-fi
-
-echo "$ac_t""$inn_cv_func_inet_ntoa_works" 1>&6
 
 
 
@@ -6039,6 +6039,9 @@ fi
 rm -fr conftest*
 fi
 
+fi
+
+echo "$ac_t""$inn_cv_func_snprintf_works" 1>&6
 if test "$inn_cv_func_snprintf_works" = yes ; then
     cat >> confdefs.h <<\EOF
 #define HAVE_SNPRINTF 1
@@ -6047,9 +6050,6 @@ EOF
 else
     LIBOBJS="$LIBOBJS snprintf.${ac_objext}"
 fi
-fi
-
-echo "$ac_t""$inn_cv_func_snprintf_works" 1>&6
 
 for ac_func in atexit fchmod fcntl gethostname getpagesize getrlimit \
                getrusage getspnam gettimeofday mkfifo setbuffer sigaction \
@@ -7099,15 +7099,15 @@ else
   inn_cv_herrno_need_decl=yes
 fi
 rm -f conftest*
+fi
+
+echo "$ac_t""$inn_cv_herrno_need_decl" 1>&6
 if test "$inn_cv_herrno_need_decl" = yes ; then
     cat >> confdefs.h <<\EOF
 #define NEED_HERRNO_DECLARATION 1
 EOF
 
 fi
-fi
-
-echo "$ac_t""$inn_cv_herrno_need_decl" 1>&6
 
 
 
