@@ -147,17 +147,12 @@ struct ovdata {
     time_t expires;
 };
 
-#define SEARCHQUEUELEN  (IOV_MAX+5)
-
 struct ovdbsearch {
     DB *db;
     DBC *cursor;
     struct datakey lokey;
     struct datakey hikey;
     int state;
-    void *queue[SEARCHQUEUELEN];
-    int queuelen;
-    int queuehead;
 };
 
 
@@ -1224,8 +1219,6 @@ void *ovdb_opensearch(char *group, int low, int high)
     s->hikey.groupnum = gno;
     s->hikey.artnum = htonl(high);
     s->state = 0;
-    s->queuelen = 0;
-    s->queuehead = 0;
 
     return (void *)s;
 }
@@ -1241,7 +1234,6 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
-    val.flags = DB_DBT_MALLOC;
 
     switch(s->state) {
     case 0:
@@ -1280,13 +1272,11 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 
     if(key.size != sizeof(struct datakey)) {
 	s->state = 2;
-	free(val.data);
 	return FALSE;
     }
 
     if(memcmp(key.data, &(s->hikey), sizeof(struct datakey)) > 0) {
 	s->state = 2;
-	free(val.data);
 	return FALSE;
     }
 
@@ -1294,7 +1284,6 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 	|| ((token || arrived) && val.size < sizeof(struct ovdata)) ) {
 	syslog(L_ERROR, "OVDB: search: bad value length");
 	s->state = 2;
-	free(val.data);
 	return FALSE;
     }
 
@@ -1311,31 +1300,18 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 
     if(len)
 	*len = val.size - sizeof(struct ovdata);
-    if(data) {
+    if(data)
 	*data = (char *)val.data + sizeof(struct ovdata);
-	if(s->queuelen < SEARCHQUEUELEN) {
-	    s->queuelen++;
-	} else {
-	    free(s->queue[s->queuehead]);
-	}
-	s->queue[s->queuehead] = val.data;
-	s->queuehead = (1 + s->queuehead) % SEARCHQUEUELEN;
-    } else {
-	free(val.data);
-    }
+
     return TRUE;
 }
 
 void ovdb_closesearch(void *handle)
 {
-    int i;
     struct ovdbsearch *s = (struct ovdbsearch *)handle;
 
     s->cursor->c_close(s->cursor);
    
-    for(i = 0; i < s->queuelen; i++)
-	free(s->queue[i]);
-
     DISPOSE(s);
 }
 
@@ -1618,6 +1594,10 @@ BOOL ovdb_ctl(OVCTLTYPE type, void *val)
     case OVCUTOFFLOW:
         Cutofflow = *(BOOL *)val;
         return TRUE;
+    case OVSTATICSEARCH:
+	i = (int *)val;
+	*i = TRUE;
+	return TRUE;
     default:
         return FALSE;
     }
