@@ -222,7 +222,7 @@ HISlookup(struct history *h, const char *key, time_t *arrived,
 bool
 HIScheck(struct history *h, const char *key)
 {
-    bool r;
+    bool r = false;
     HASH hash;
 
     if (his_checknull(h))

@@ -1456,7 +1456,7 @@ ARTassignnumbers(ARTDATA *data)
 static bool
 ARTxrefslave(ARTDATA *data)
 {
-  char		*p, *q, *name, *next, c;
+  char		*p, *q, *name, *next, c = 0;
   NEWSGROUP	*ngp;
   int	        i;
   bool		nogroup = true;

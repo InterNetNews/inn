@@ -632,7 +632,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 
 static bool CNFS_setcurrent(METACYCBUFF *metacycbuff) {
   CYCBUFF	*cycbuff;
-  int		i, currentcycbuff, order = -1;
+  int		i, currentcycbuff = 0, order = -1;
   bool		foundcurrent = false;
   for (i = 0 ; i < metacycbuff->count ; i++) {
     cycbuff = metacycbuff->members[i];
@@ -1458,7 +1458,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     ARTHANDLE           *art;
     CYCBUFF		*cycbuff;
     PRIV_CNFS		priv, *private;
-    off_t               middle, limit;
+    off_t               middle = 0, limit;
     CNFSARTHEADER	cah;
     off_t               offset;
     long		pagefudge, blockfudge;
