@@ -173,12 +173,6 @@
    checking on the fd from inn again.... */
 #define SELECT_RATIO 3
 
-#if defined (DO_BIND_USE_SIZEOF)
-#define AF_UNIX_SOCKSIZE(S)     (sizeof S)  
-#else
-#define AF_UNIX_SOCKSIZE(S)     (sizeof S.sun_family + strlen(S.sun_path) + 1)
-#endif  /* defined(DO_BIND_USE_SIZEOF) */
-
 
 #if ! defined (USE_DMALLOC)
 
