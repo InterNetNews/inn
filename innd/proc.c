@@ -40,7 +40,7 @@ PROCreap(void)
 		PROCneedscan = true;
 		pp->Status = WEXITSTATUS(status);
 		pp->State = PSdead;
-		pp->Collected = Now.time;
+		pp->Collected = Now.tv_sec;
 		break;
 	    }
     }
@@ -153,7 +153,7 @@ PROCwatch(pid_t pid, int site)
 
     pp->State = PSrunning;
     pp->Pid = pid;
-    pp->Started = Now.time;
+    pp->Started = Now.tv_sec;
     pp->Site = site;
     return pp - PROCtable;
 }

@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <time.h>
 
 #include "inn/innconf.h"
 #include "libinn.h"
@@ -20,11 +21,10 @@ GenerateMessageID(char *domain)
     char		*p;
     char		sec32[10];
     char		pid32[10];
-    TIMEINFO		Now;
+    time_t		now;
 
-    if (GetTimeInfo(&Now) < 0)
-	return NULL;
-    Radix32(Now.time - OFFSET, sec32);
+    now = time(NULL);
+    Radix32(now - OFFSET, sec32);
     Radix32(getpid(), pid32);
     if ((domain != NULL && innconf->domain == NULL) ||
 	(domain != NULL && innconf->domain != NULL

@@ -223,14 +223,6 @@ Code Cleanup Projects
 * Update all INN code to use include/inn/nntp.h for NNTP codes and
   eliminate include/nntp.h.
 
-* Get rid of GetTimeInfo and TIMEINFO.  All the struct is is a struct
-  timeval plus time zone information.  All of the parts of INN that deal
-  with time zone information are isolated in lib/date.c.  The rest of INN
-  uses GetTimeInfo where a plain call to time would often work fine, or
-  at most gettimeofday, and there's no reason to compute the time zone
-  everywhere.  Plus, it makes the code more readable to use standard
-  functions and data types.
-
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
 

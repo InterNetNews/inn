@@ -419,12 +419,13 @@ InitNGTable(void)
 static void
 CheckNeedReloadDB(bool force)
 {
-    static TIMEINFO lastcheck, oldlastcheck, now;
+    static time_t lastcheck, oldlastcheck, now;
     struct stat sb;
     char *fname;
 
-    if (GetTimeInfo(&now) < 0) return; /* anyone ever seen gettimeofday fail? :-) */
-    if (!force && lastcheck.time + RELOAD_TIME_CHECK > now.time) return;
+    now = time(NULL);
+    if (!force && lastcheck + RELOAD_TIME_CHECK > now)
+        return;
 
     oldlastcheck = lastcheck;
     lastcheck = now;
@@ -435,7 +436,7 @@ CheckNeedReloadDB(bool force)
 	return;
     }
     free(fname);
-    if (sb.st_mtime > oldlastcheck.time) {
+    if (sb.st_mtime > oldlastcheck) {
 	/* add any newly added ngs to our in-memory copy of the db. */
 	ReadDBFile();
     }

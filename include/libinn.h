@@ -63,13 +63,6 @@ extern xmalloc_handler_t xmalloc_error_handler;
 /*
 **  TIME AND DATE PARSING, GENERATION, AND HANDLING
 */
-typedef struct _TIMEINFO {
-    time_t      time;
-    long        usec;
-    long        tzone;
-} TIMEINFO;
-
-extern int      GetTimeInfo(TIMEINFO *Now);
 extern bool     makedate(time_t, bool local, char *buff, size_t buflen);
 extern time_t   parsedate_nntp(const char *, const char *, bool local);
 extern time_t   parsedate_rfc2822(const char *);

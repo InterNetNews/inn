@@ -570,8 +570,8 @@ main(int ac, char *av[])
 	fclose(F);
     }
 
-    if (GetTimeInfo(&Now) < 0)
-	syslog(L_ERROR, "%s cant gettimeinfo %m", LogName);
+    if (gettimeofday(&Now, NULL) < 0)
+	syslog(L_ERROR, "%s cant gettimeofday %m", LogName);
 
     /* Set up signal and error handlers. */
     xmalloc_error_handler = xmalloc_abort;

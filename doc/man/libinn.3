@@ -8,12 +8,6 @@ libinn \- InterNetNews library routines
 .B
 #include "libinn.h"
 
-.B "typedef struct _TIMEINFO {"
-.B "    time_t	time;"
-.B "    long	usec;"
-.B "    long	tzone;
-.B "} TIMEINFO;"
-
 .B "char *"
 .B "GenerateMessageID(domain)"
 .B "    char    *domain;"
@@ -89,10 +83,6 @@ libinn \- InterNetNews library routines
 .B "    double	*systime;"
 
 .B "int"
-.B "GetTimeInfo(now)"
-.B "    TIMEINFO	*now;"
-
-.B "int"
 .B "NNTPlocalopen(FromServerp, ToServerp, errbuff, len)"
 .B "    FILE	**FromServerp;"
 .B "    FILE	**ToServerp;"
@@ -151,11 +141,6 @@ libinn \- InterNetNews library routines
 .I Libinn
 is a library of utility routines for manipulating Usenet articles and
 related data.
-It is not necessary to use the header file
-.IR libinn.h ;
-if it is not available, it is only necessary to properly declare the
-.I TIMEINFO
-datatype, as given above.
 .PP
 .I GenerateMessageID
 uses the current time, process-ID, and fully-qualified domain name, which is
@@ -353,35 +338,6 @@ is defined, it gets the values by doing a
 system call; otherwise it calls
 .IR times (2).
 It returns \-1 on failure, or zero on success.
-.PP
-.I GetTimeInfo
-fills in the
-.I now
-parameter with information about the current time and tzone.
-The ``time'' and ``usec'' fields will be filled in by a call to
-.IR gettimeofday (2)
-if
-.I <$ac_cv_func_gettimeofday in config.cache>
-is ``yes''.  Otherwise, the ``time'' field will be filled in by a call to
-.IR time (2),
-and the ``usec'' field will be set to zero.
-The ``tzone'' field will be filled in with the current offset from GMT.
-If
-.I <HAVE_TM_GMTOFF in include/config.h>
-is defined, this is done by calling
-.IR localtime (3)
-and taking the value of the ``tm_gmtoff'' field, negating it, and dividing
-it by 60.
-Otherwise, this is done by calling
-.IR localtime (3)
-and comparing the value with that returned by a call to
-.IR gmtime (3).
-
-For efficiency, the ``tzone'' field is only recalculated if more than an
-hour pass passed since the last time
-.I GetTimeInfo
-has been called.
-This routine returns \-1 on failure, or zero on success.
 .PP
 .I NNTPlocalopen
 opens a connection to the private port of an InterNetNews server running on

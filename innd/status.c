@@ -179,10 +179,10 @@ STATUSsummary(void)
 	tmp->next = status;
       tmp = status;
     }
-    if (Now.time - cp->Started > status->seconds)
-      status->seconds = Now.time - cp->Started;
-    if (Now.time - cp->Started > seconds)
-      seconds = Now.time - cp->Started;
+    if (Now.tv_sec - cp->Started > status->seconds)
+      status->seconds = Now.tv_sec - cp->Started;
+    if (Now.tv_sec - cp->Started > seconds)
+      seconds = Now.tv_sec - cp->Started;
     status->accepted += cp->Received;
     accepted += cp->Received;
     status->refused += cp->Refused;

@@ -574,7 +574,7 @@ EXTERN sig_atomic_t	GotTerminate;
 EXTERN SITE	    *	Sites;
 EXTERN SITE		ME;
 EXTERN struct timeval	TimeOut;
-EXTERN TIMEINFO		Now;		/* Reasonably accurate time     */
+EXTERN struct timeval	Now;		/* Reasonably accurate time     */
 EXTERN bool		ThrottledbyIOError;
 EXTERN char	    *   NCgreeting;
 EXTERN struct history   *History;

@@ -39,7 +39,7 @@ WIPnew(const char *messageid, CHANNEL *cp)
     
     new = xmalloc(sizeof(WIP));
     new->MessageID = hash;
-    new->Timestamp = Now.time;
+    new->Timestamp = Now.tv_sec;
     new->Chan = cp;
     /* Link the new entry into the list */
     new->Next = WIPtable[bucket];
@@ -117,9 +117,9 @@ WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
 		i = WIP_ARTMAX;
 	}
  
-	if ((Now.time - wp->Timestamp) < (i + innconf->wipcheck))
+	if ((Now.tv_sec - wp->Timestamp) < (i + innconf->wipcheck))
 	    return true;
-	if ((Now.time - wp->Timestamp) > (i + innconf->wipexpire)) {
+	if ((Now.tv_sec - wp->Timestamp) > (i + innconf->wipexpire)) {
 	    for (i = 0 ; i < PRECOMMITCACHESIZE ; i++) {
 		if (wp->Chan->PrecommitWIP[i] == wp) {
 		    wp->Chan->PrecommitWIP[i] = (WIP *)NULL;

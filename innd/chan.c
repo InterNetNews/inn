@@ -146,7 +146,7 @@ CHANcreate(int fd, CHANNELTYPE Type, CHANNELSTATE State,
     cp->State = State;
     cp->Reader = Reader;
     cp->WriteDone = WriteDone;
-    cp->Started = cp->LastActive = Now.time;
+    cp->Started = cp->LastActive = Now.tv_sec;
     cp->In = in;
     cp->Out = out;
     cp->Tracing = Tracing;
@@ -259,7 +259,7 @@ CHANclose(CHANNEL *cp, const char *name)
             if (cp->State == CScancel)
                 syslog(L_NOTICE,
                "%s closed seconds %ld cancels %ld",
-               name, (long)(Now.time - cp->Started),
+               name, (long)(Now.tv_sec - cp->Started),
                cp->Received);
             else {
 	    snprintf(buff, sizeof(buff),
@@ -267,7 +267,7 @@ CHANclose(CHANNEL *cp, const char *name)
                 cp->DuplicateSize, cp->RejectSize);
 	    syslog(L_NOTICE,
 		"%s closed seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
-		name, (long)(Now.time - cp->Started),
+		name, (long)(Now.tv_sec - cp->Started),
 		cp->Received, cp->Refused, cp->Rejected,
 		cp->Duplicate, buff);
 	    }
@@ -829,7 +829,7 @@ CHANwritesleep(CHANNEL *cp, char *p)
 	}
     i *= innconf->blockbackoff;
     syslog(L_ERROR, "%s blocked sleeping %d", p, i);
-    SCHANadd(cp, Now.time + i, NULL, CHANwakeup, NULL);
+    SCHANadd(cp, Now.tv_sec + i, NULL, CHANwakeup, NULL);
 }
 
 
@@ -931,8 +931,8 @@ CHANreadloop(void)
     HDRCONTENT		*hc;
 
     STATUSinit();
-    
-    LastUpdate = GetTimeInfo(&Now) < 0 ? 0 : Now.time;
+
+    LastUpdate = gettimeofday(&Now, NULL) < 0 ? 0 : Now.tv_sec;
     for ( ; ; ) {
 	/* See if any processes died. */
 	PROCscan();
@@ -973,15 +973,15 @@ CHANreadloop(void)
 	}
 
 	/* Update the "reasonably accurate" time. */
-	if (GetTimeInfo(&Now) < 0)
+	if (gettimeofday(&Now, NULL) < 0)
 	    syslog(L_ERROR, "%s cant gettimeinfo %m", LogName);
-	if (Now.time > LastUpdate + TimeOut.tv_sec) {
+	if (Now.tv_sec > LastUpdate + TimeOut.tv_sec) {
 	    HISsync(History);
 	    if (ICDactivedirty) {
 		ICDwriteactive();
 		ICDactivedirty = 0;
 	    }
-            LastUpdate = Now.time;
+            LastUpdate = Now.tv_sec;
 	}
 
 	if (count == 0) {
@@ -1033,7 +1033,7 @@ CHANreadloop(void)
             if (cp->MaxCnx > 0 && cp->HoldTime > 0) {
 		CHANsetActiveCnx(cp);
                 if((cp->ActiveCnx > cp->MaxCnx) && (cp->fd > 0)) {
-		    if(cp->Started + cp->HoldTime < Now.time) {
+		    if(cp->Started + cp->HoldTime < Now.tv_sec) {
                         CHANclose(cp, CHANname(cp));
                     } else {
                         if (fd >= lastfd)
@@ -1058,7 +1058,7 @@ CHANreadloop(void)
 		    close(fd);
 		}
 		else {
-		    cp->LastActive = Now.time;
+		    cp->LastActive = Now.tv_sec;
 		    (*cp->Reader)(cp);
 		}
 	    }
@@ -1132,7 +1132,7 @@ CHANreadloop(void)
 		else {
 		    bp = &cp->Out;
 		    if (bp->left) {
-			cp->LastActive = Now.time;
+			cp->LastActive = Now.tv_sec;
 			i = CHANwrite(fd, &bp->data[bp->used], bp->left);
 			if (i <= 0) {
 			    oerrno = errno;
@@ -1157,7 +1157,7 @@ CHANreadloop(void)
 				syslog(L_ERROR, "%s sleeping", p);
 				WCHANremove(cp);
 				SCHANadd(cp,
-                                         Now.time + innconf->pauseretrytime,
+                                         Now.tv_sec + innconf->pauseretrytime,
                                          NULL, CHANwakeup, NULL);
 			    }
 			}
@@ -1184,13 +1184,13 @@ CHANreadloop(void)
 	    }
 
 	    /* Coming off a sleep? */
-	    if (FD_ISSET(fd, &SCHANmask) && cp->Waketime <= Now.time) {
+	    if (FD_ISSET(fd, &SCHANmask) && cp->Waketime <= Now.tv_sec) {
 		if (cp->Type == CTfree) {
 		    syslog(L_ERROR,"%s ERROR s-select free %d",CHANname(cp),fd);
 		    FD_CLR(fd, &SCHANmask);
 		     close(fd);
 		} else {
-		    cp->LastActive = Now.time;
+		    cp->LastActive = Now.tv_sec;
 		    SCHANremove(cp);
 		    (*cp->Waker)(cp);
 		}
@@ -1198,7 +1198,7 @@ CHANreadloop(void)
 
 	    /* Toss CTreject channel early if it's inactive. */
 	    if (cp->Type == CTreject
-	     && cp->LastActive + REJECT_TIMEOUT < Now.time) {
+	     && cp->LastActive + REJECT_TIMEOUT < Now.tv_sec) {
 		p = CHANname(cp);
 		syslog(L_NOTICE, "%s timeout reject", p);
 		CHANclose(cp, p);
@@ -1206,9 +1206,9 @@ CHANreadloop(void)
 
 	    /* Has this channel been inactive very long? */
 	    if (cp->Type == CTnntp
-	     && cp->LastActive + cp->NextLog < Now.time) {
+	     && cp->LastActive + cp->NextLog < Now.tv_sec) {
 		p = CHANname(cp);
-		silence = Now.time - cp->LastActive;
+		silence = Now.tv_sec - cp->LastActive;
 		cp->NextLog += innconf->chaninacttime;
 		syslog(L_NOTICE, "%s inactive %ld", p, silence / 60L);
 		if (silence > innconf->peertimeout) {

@@ -421,7 +421,7 @@ CCcancel(char *av[])
     ARTDATA	Data;
     const char *	p, *msgid;
 
-    Data.Posted = Data.Arrived = Now.time;
+    Data.Posted = Data.Arrived = Now.tv_sec;
     Data.Expires = 0;
     Data.Feedsite = "?";
     if ((p = CCgetid(av[0], &msgid)) != NULL)
@@ -935,7 +935,7 @@ CCname(char *av[])
             mode = (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "";
             buffer_sprintf(&CCreply, true, ":%s:%ld:%s",
                            cp->State == CScancel ? "cancel" : "nntp",
-                           (long) Now.time - cp->LastActive, mode);
+                           (long) Now.tv_sec - cp->LastActive, mode);
 	    break;
 	case CTlocalconn:
             buffer_sprintf(&CCreply, true, ":localconn::");
@@ -1021,9 +1021,9 @@ CCnewgroup(char *av[])
 	if (*who == '\0')
 	    who = NEWSMASTER;
 
-        length = snprintf(NULL, 0, "%s %ld %s\n", Name, (long) Now.time, who) + 1;
+        length = snprintf(NULL, 0, "%s %ld %s\n", Name, (long) Now.tv_sec, who) + 1;
         buff = xmalloc(length);
-        snprintf(buff, length, "%s %ld %s\n", Name, (long) Now.time, who);
+        snprintf(buff, length, "%s %ld %s\n", Name, (long) Now.tv_sec, who);
 	if (xwrite(fd, buff, strlen(buff)) < 0) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write %s %m", LogName, TIMES);

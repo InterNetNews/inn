@@ -219,7 +219,7 @@ NCpostit(CHANNEL *cp)
        cp->Size, cp->DuplicateSize, cp->RejectSize);
     syslog(L_NOTICE,
       "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
-      CHANname(cp), (long)(Now.time - cp->Started),
+      CHANname(cp), (long)(Now.tv_sec - cp->Started),
     cp->Received, cp->Refused, cp->Rejected,
     cp->Duplicate, buff);
     cp->Reported = 0;
@@ -528,7 +528,7 @@ NCihave(CHANNEL *cp)
 	}
 	cp->Ihave_SendIt++;
 	NCwritereply(cp, NNTP_SENDIT);
-	cp->ArtBeg = Now.time;
+	cp->ArtBeg = Now.tv_sec;
 	cp->State = CSgetheader;
 	ARTprepare(cp);
     }
@@ -924,7 +924,7 @@ NCproc(CHANNEL *cp)
       movedata = false;
       if (Mode == OMpaused) { /* defer processing while paused */
 	RCHANremove(cp); /* don't bother trying to read more for now */
-	SCHANadd(cp, Now.time + innconf->pauseretrytime, &Mode, NCproc, NULL);
+	SCHANadd(cp, Now.tv_sec + innconf->pauseretrytime, &Mode, NCproc, NULL);
 	return;
       } else if (Mode == OMthrottled) {
 	/* Clear the work-in-progress entry. */
@@ -1378,7 +1378,7 @@ NCtakethis(CHANNEL *cp)
     snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s", NNTP_ERR_FAILID_VAL,
              p);
 
-    cp->ArtBeg = Now.time;
+    cp->ArtBeg = Now.tv_sec;
     cp->State = CSgetheader;
     ARTprepare(cp);
     /* set WIP for benefit of later code in NCreader */

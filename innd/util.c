@@ -349,7 +349,7 @@ InndHisWrite(const char *key, time_t arrived, time_t posted, time_t expires,
 bool
 InndHisRemember(const char *key)
 {
-    bool r = HISremember(History, key, Now.time);
+    bool r = HISremember(History, key, Now.tv_sec);
 
     if (r != true)
 	IOError("history remember", errno);

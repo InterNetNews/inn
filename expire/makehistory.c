@@ -9,7 +9,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <pwd.h>
-#include <syslog.h>  
+#include <syslog.h>
+#include <time.h>
 
 #include "inn/buffer.h"
 #include "inn/history.h"
@@ -69,8 +70,6 @@ bool NoHistory;
 OVSORTTYPE sorttype;
 int RetrMode;
 bool WriteStdout = false;
-
-TIMEINFO Now;
 
 /* Misc variables needed for the overview creation code. */
 static char		MESSAGEID[] = "Message-ID";
@@ -892,10 +891,6 @@ main(int argc, char **argv)
             sysdie("cannot open %s", HistoryPath);
     }
 
-    /* Get the time.  Only get it once, which is good enough. */
-    if (GetTimeInfo(&Now) < 0)
-        sysdie("cannot get the time");
-
     /*
      * Scan the entire spool, nuke any bad arts if needed, and process each
      * article.
@@ -929,7 +924,7 @@ main(int argc, char **argv)
         if (!WriteStdout) {
             if ((F = fopen(RebuiltflagPath, "w")) == NULL)
                 sysdie("cannot open %s", RebuiltflagPath);
-            if (fprintf(F, "%ld\n", (long) Now.time) == EOF || ferror(F))
+            if (fprintf(F, "%ld\n", (long) time (NULL)) == EOF || ferror(F))
                 sysdie("cannot write rebuilt flag file");
             fclose(F);
         }

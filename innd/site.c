@@ -285,7 +285,7 @@ SITEflushcheck(SITE *sp, struct buffer *bp)
 	    WCHANadd(cp);
     }
 
-    cp->LastActive = Now.time;
+    cp->LastActive = Now.tv_sec;
 
     /* If we're a channel that's getting big, see if we need to spool. */
     if (sp->Type == FTfile || sp->StartSpooling == 0 || i < sp->StartSpooling)
@@ -313,7 +313,7 @@ SITEwrite(SITE *sp, const char *text)
     else {
 	if (sp->Channel == NULL)
 	    return;
-	sp->Channel->LastActive = Now.time;
+	sp->Channel->LastActive = Now.tv_sec;
 	bp = &sp->Channel->Out;
     }
     buffer_append(bp, PREFIX, strlen(PREFIX));
@@ -632,7 +632,7 @@ SITEstartprocess(SITE *sp)
     syslog(L_ERROR, "%s cant spawn spooling %m", sp->Name);
     ip = xmalloc(sizeof(int));
     *ip = sp - Sites;
-    SCHANadd(sp->Channel, Now.time + innconf->chanretrytime, NULL,
+    SCHANadd(sp->Channel, Now.tv_sec + innconf->chanretrytime, NULL,
              SITEspoolwake, ip);
     return true;
 }
@@ -780,7 +780,7 @@ SITEchanclose(CHANNEL *cp)
 	    WCHANadd(sp->Channel);
 	    ip = xmalloc(sizeof(int));
 	    *ip = sp - Sites;
-	    SCHANadd(sp->Channel, Now.time + innconf->chanretrytime, NULL,
+	    SCHANadd(sp->Channel, Now.tv_sec + innconf->chanretrytime, NULL,
                      SITEspoolwake, ip);
 	    break;
 	}
@@ -1209,7 +1209,7 @@ common:
                            ctime(&cp->Started) + 4);
             buffer_sprintf(bp, true, ", last active %.12s\n",
                            ctime(&cp->LastActive) + 4);
-	    if (cp->Waketime > Now.time)
+	    if (cp->Waketime > Now.tv_sec)
                 buffer_sprintf(bp, true, "\tSleeping until %.12s\n",
                                ctime(&cp->Waketime) + 4);
 	}

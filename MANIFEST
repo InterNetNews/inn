@@ -471,7 +471,6 @@ lib/getaddrinfo.c                     getaddrinfo replacement
 lib/getfqdn.c                         Get FQDN of local host
 lib/getmodaddr.c                      Get a moderator's address
 lib/getpagesize.c                     getpagesize replacement
-lib/gettime.c                         Get time and timezone info
 lib/hash.c                            Create hash from message ID
 lib/hashtab.c                         Generic hash table
 lib/hstrerror.c                       Error reporting for resolver

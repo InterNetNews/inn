@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -64,7 +65,7 @@ static int	CloseSeconds;
 static int	FlushSeconds;
 static sig_atomic_t	GotInterrupt;
 static SITEHASH	SITEtable[SITE_SIZE];
-static TIMEINFO	Now;
+static time_t	Now;
 
 
 /*
@@ -140,8 +141,8 @@ static void SITEopen(SITE *sp)
     /* Reset all counters. */
     sp->FlushLines = 0;
     sp->CloseLines = 0;
-    sp->LastFlushed = Now.time;
-    sp->LastClosed = Now.time;
+    sp->LastFlushed = Now;
+    sp->LastClosed = Now;
     sp->Dropped = false;
 }
 
@@ -246,20 +247,20 @@ SITEwrite(char *name, char *text, size_t len)
 	SITEflush(sp);
 	return;
     }
-    if (CloseSeconds && sp->LastClosed + CloseSeconds < Now.time) {
+    if (CloseSeconds && sp->LastClosed + CloseSeconds < Now) {
 	SITEflush(sp);
 	return;
     }
     if (FlushEvery && ++(sp->FlushLines) >= FlushEvery) {
 	if (fflush(sp->F) == EOF || ferror(sp->F))
             syswarn("%s cannot flush %s", sp->Name, sp->Filename);
-	sp->LastFlushed = Now.time;
+	sp->LastFlushed = Now;
 	sp->FlushLines = 0;
     }
-    else if (FlushSeconds && sp->LastFlushed + FlushSeconds < Now.time) {
+    else if (FlushSeconds && sp->LastFlushed + FlushSeconds < Now) {
 	if (fflush(sp->F) == EOF || ferror(sp->F))
             syswarn("%s cannot flush %s", sp->Name, sp->Filename);
-	sp->LastFlushed = Now.time;
+	sp->LastFlushed = Now;
 	sp->FlushLines = 0;
     }
 }
@@ -456,10 +457,8 @@ main(int ac, char *av[])
 	*p++ = '\n';
 	i = p - line;
 
-	if (GetTimeInfo(&Now) < 0) {
-            syswarn("cannot get time");
-	    break;
-	}
+        /* Update the current time. */
+        Now = time(NULL);
 
 	/* Rest of the line is space-separated list of filenames. */
 	for (; *p; p = next) {

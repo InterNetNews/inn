@@ -337,12 +337,12 @@ ARTlog(const ARTDATA *data, char code, const char *text)
   Done = code == ART_ACCEPT || code == ART_JUNK;
   if (text)
     i = fprintf(Log, "%.15s.%03d %c %s %s %s%s",
-      ctime(&Now.time) + 4, (int)(Now.usec / 1000), code, data->Feedsite,
+      ctime(&Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code, data->Feedsite,
       HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "(null)",
       text, Done ? "" : "\n");
   else
     i = fprintf(Log, "%.15s.%03d %c %s %s%s",
-      ctime(&Now.time) + 4, (int)(Now.usec / 1000), code, data->Feedsite,
+      ctime(&Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code, data->Feedsite,
       HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "(null)",
       Done ? "" : "\n");
   if (i == EOF || (Done && !BufferedLogs && fflush(Log)) || ferror(Log)) {
@@ -992,7 +992,7 @@ ARTclean(ARTDATA *data, char *buff)
   int		delta;
 
   TMRstart(TMR_ARTCLEAN);
-  data->Arrived = Now.time;
+  data->Arrived = Now.tv_sec;
   data->Expires = 0;
 
   /* replace trailing '\r\n' with '\0\n' of all system header to be handled
@@ -1046,14 +1046,14 @@ ARTclean(ARTDATA *data, char *buff)
   if (innconf->artcutoff) {
       long cutoff = innconf->artcutoff * 24 * 60 * 60;
 
-      if (data->Posted < Now.time - cutoff) {
+      if (data->Posted < Now.tv_sec - cutoff) {
           sprintf(buff, "%d Too old -- \"%s\"", NNTP_REJECTIT_VAL,
                   MaxLength(p, p));
           TMRstop(TMR_ARTCLEAN);
           return false;
       }
   }
-  if (data->Posted > Now.time + DATE_FUZZ) {
+  if (data->Posted > Now.tv_sec + DATE_FUZZ) {
     sprintf(buff, "%d Article posted in the future -- \"%s\"",
       NNTP_REJECTIT_VAL, MaxLength(p, p));
     TMRstop(TMR_ARTCLEAN);
@@ -2321,7 +2321,7 @@ ARTpost(CHANNEL *cp)
     clearerr(Log);
   }
   /* Calculate Max Article Time */
-  i = Now.time - cp->ArtBeg;
+  i = Now.tv_sec - cp->ArtBeg;
   if(i > cp->ArtMax)
     cp->ArtMax = i;
   cp->ArtBeg = 0;
