@@ -82,7 +82,7 @@ sub control_rmgroup {
     }
     
     if ($locktry > -1) {
-      logmsg ('notice', 'Cannot get lock %s', "$inn::locks/LOCK.newsgroups");
+      logmsg ('err', 'Cannot get lock %s', "$inn::locks/LOCK.newsgroups");
     } else {
       open(NEWSGROUPS, "<$inn::newsgroups");
       open(TEMPFILE, ">$tempfile");

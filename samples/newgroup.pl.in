@@ -191,7 +191,7 @@ sub control_newgroup {
 	}
 	
 	if ($locktry > -1) {
-	  logmsg ('notice', 'Cannot get lock %s',
+	  logmsg ('err', 'Cannot get lock %s',
 		  "$inn::locks/LOCK.newsgroups");
 	} else {
 	  open(NEWSGROUPS, "<$inn::newsgroups");
