@@ -788,7 +788,12 @@ STATIC int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
     }
     /* It's a read operation */
     mask = onarray[bitoffset];
-    return bitlong & mask;
+
+/* 
+ * return bitlong & mask; doesn't work if sizeof(ulong) > sizeof(int)
+ */
+    if ( bitlong & mask ) return 1; else return 0;
+
 }
 
 /*
