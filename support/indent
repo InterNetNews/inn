@@ -1,0 +1,29 @@
+#! /bin/sh
+
+##  $Id$
+##
+##  Run indent on source files with INN options.
+##
+##  This is a simple wrapper around GNU indent to call it with all of the
+##  options suitable for INN's coding style and typedefs.  These options
+##  are also documented in HACKING.  Assumes indent is on the user's path.
+##
+##  The order of options matches the order in which they're described in
+##  the GNU indent info manual.  In order, each line sets options for:
+##  blank lines, comments, statements, declarations, indentation, breaking
+##  long lines, and typedefs used by INN.
+##
+##  Note that the resulting output should not be used without manual review,
+##  nor should this script be run automatically.  indent still has a few
+##  bugs, tends to mangle case statements written compactly, and varies from
+##  the prevailing INN style in a few ways that can't be changed.
+
+indent \
+    -bad -bap -nsob \
+    -fca -lc78 -cd32 -cp1 \
+    -br -ce -cdw -cli0 -ss -npcs -cs \
+    -di1 -nbc -psl -brs \
+    -i4 -ci4 -lp -ts8 -nut -ip5 -lps \
+    -l78 -bbo -hnl \
+    -T off_t -T size_t -T uint32_t -T time_t -T FILE \
+    $*
