@@ -51,7 +51,9 @@ test "x$prefix" = xNONE && prefix=$ac_default_prefix
 test "x$exec_prefix" = xNONE && exec_prefix=$ac_default_prefix
 
 AC_CACHE_CHECK(for MANDIR,MANDIR, MANDIR=`eval echo $mandir`)
+ac_cv_subst_manpath="$MANDIR"
 AC_SUBST(MANDIR)
+AC_SUBST(ac_cv_subst_manpath)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -110,10 +112,17 @@ fi
 AC_ENSURE_PATH_PROG(_PATH_AWK,awk)
 AC_ENSURE_PATH_PROG(_PATH_PERL,perl)
 AC_ENSURE_PATH_PROG(_PATH_SED,sed)
+
 AC_ENSURE_PATH_PROG(_PATH_DF,df)
+ac_cv_subst_innwatch_df=$ac_cv_path__PATH_DF
+
 AC_ENSURE_PATH_PROG(_PATH_EGREP,egrep)
 AC_ENSURE_PATH_PROG(_PATH_SORT,sort)
+
 AC_ENSURE_PATH_PROG(_PATH_SH,sh)
+ac_cv_subst_path_sh=$ac_cv_path__PATH_SH
+AC_SUBST(ac_cv_subst_path_sh)
+
 AC_MSG_CHECKING(for Perl version)
 $_PATH_PERL -e 'require 5.004' > /dev/null 2>&1
 if test $? -ne 0 ; then
@@ -183,13 +192,16 @@ dnl Checks for libraries.
 dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
-AC_CHECK_LIB(resolv, gethostbyname, ac_need_libresolv=1)
-AC_CHECK_LIB(resolv, inet_aton, ac_need_libresolv=1)
+AC_CHECK_LIB(resolv, gethostbyname, ac_need_libresolv=1, ac_try_bind=1)
+AC_CHECK_LIB(resolv, inet_aton, ac_need_libresolv=1, ac_try_bind=1)
 if test x$ac_need_libresolv = x1
 then
 LIBS="$LIBS -lresolv"
 fi
-AC_CHECK_LIB(bind, inet_aton)
+if test x$ac_try_bind = x1
+then
+	AC_CHECK_LIB(bind, inet_aton)
+fi
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(elf, nlist)
@@ -536,7 +548,8 @@ YN_to_cv_subst(ac_cv_type_off_t, ac_cv_subst_lseekval, off_t, long)
 YN_to_cv_subst(ac_cv_struct_tm_gmtoff, ac_cv_subst_have_tm_gmtoff, DO, DONT)
 YN_to_cv_subst(ac_cv_struct_st_blksize, ac_cv_subst_have_st_blksize, DO, DONT)
 YN_to_cv_subst(ac_cv_union_wait, ac_cv_subst_have_union_wait, DO, DONT)
-YN_to_cv_subst(ac_cv_func_vfork_works, ac_cv_subst_fork, fork, vfork)
+YN_to_cv_subst(ac_cv_func_vfork_works, ac_cv_subst_fork, vfork, fork)
+YN_to_cv_subst(ac_cv_header_vfork_h, ac_cv_subst_have_vfork, DO, DONT)
 YN_to_cv_subst(ac_cv_func_getrusage, ac_cv_subst_res_style, RUSAGE, TIMES)
 YN_to_cv_subst(ac_cv_header_time, ac_cv_subst_need_time, DO, DONT)
 YN_to_cv_subst(ac_cv_func_mmap_fixed_mapped, ac_cv_subst_act_style, MMAP, READ)
