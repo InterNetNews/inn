@@ -72,9 +72,7 @@ struct artngnum {
     ARTNUM	artnum;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+BEGIN_DECLS
 
 char *      TokenToText(const TOKEN token);
 TOKEN       TextToToken(const char *text);
@@ -94,8 +92,6 @@ bool        SMflushcacheddata(FLUSHTYPE type);
 void        SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups);
 void        SMshutdown(void);
 
-#ifdef __cplusplus
-}
-#endif
+END_DECLS
     
 #endif

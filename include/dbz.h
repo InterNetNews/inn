@@ -4,9 +4,7 @@
 /* Need the definition of HASH. */
 #include "libinn.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+BEGIN_DECLS
 
 /* This is the number of bytes of the md5 to actually store in
  * the .pag file.  This number directly effects the collision
@@ -74,8 +72,6 @@ extern bool dbzdebug(const int value);
 extern void dbzsetoptions(const dbzoptions options);
 extern void dbzgetoptions(dbzoptions *options);
 
-#ifdef __cplusplus
-}
-#endif
+END_DECLS
 
 #endif /* __DBZ_H__ */
