@@ -393,14 +393,21 @@ sub bigsysseek {
 
 	seek($handle, 0, 0);
 	while($offset > 2000000000) {
-	    sysseek($handle, 2000000000, 1);
+	    sysseek($handle, 2000000000, 1) || return 0;
 	    $offset -= 2000000000;
 	}
-	sysseek($handle, $offset, 1);
+	sysseek($handle, $offset, 1) || return 0;
 	return 1;
     } else {
 	return sysseek($handle, $offset, 0);
     }
+}
+
+sub check_read_return {
+  my $result = shift;
+  die "read: $!\n" unless defined($result);
+  die "read reached eof\n" unless $result;
+  return $result;
 }
 
 sub get_cycbuff_info {
@@ -456,10 +463,9 @@ sub get_cycbuff_info {
 	my $offset = $cyclenum == 0 ? $minartoffset : $free + $pagesize;
 
 	bigsysseek (BUFF, $offset) || die "sysseek: $!\n";
-	sysread (BUFF, $buff, $pagesize)
-		|| die "read: $!\n";
+	check_read_return (sysread (BUFF, $buff, $pagesize));
 	do {
-	    sysread (BUFF, $chunk, $pagesize) || die "read: $!\n";
+	    check_read_return (sysread (BUFF, $chunk, $pagesize));
 	    
 	    $buff .= $chunk;
 	    while ($buff =~ /^message-id:\s+(<.*?>)/mi) {
