@@ -240,24 +240,19 @@ if [ -s ${OLD_EXPLOG} ] ; then
 fi
 rm -f ${OLD_EXPLOG}
 
-##  Scan for various problems in articles we were offered or sent.
+##  Scan for various problems in articles we were offered or sent...
 BASE=`basename ${LOG}`
 OLD_LOG=${OLD}/${BASE}.0
-if [ -f ${OLD_LOG} ]; then
-    scanlogs-backend.pl < ${OLD_LOG}
-fi
-rm -f ${OLD_LOG}
 
-##  Summarize syslog information
+##  and summarize syslog information.
 BASE=`basename ${SYSLOG_NOTICE}`
 OLD_SYSLOG=${OLD}/${BASE}.0
-if [ -s ${OLD_SYSLOG} ] ; then
-    echo Syslog summary:
-    ${PERL} ${NEWSLIB}/innlog.pl -c -g -d -a < ${OLD_SYSLOG}
+if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ] ; then
+    ${NEWSBIN}/innreport.pl -f ${NEWSLIB}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
     echo ---------
     echo ''
 fi
-rm -f ${OLD_SYSLOG}
+rm -f ${OLD_LOG} ${OLD_SYSLOG}
 
 ##  Compress and rotate the logs.
 if ${ROTATE} ; then
