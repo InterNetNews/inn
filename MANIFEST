@@ -209,6 +209,7 @@ include/myserver.h          1 Replacement for rrn server.h
 include/mystring.h          1 Default <string.h>
 include/nntp.h              1 NNTP command and reply codes
 include/paths.h.in          1 Paths to common programs and files
+include/ppport.h            1 Perl portability and pollution macros
 include/qio.h               1 Header file for quick I/O package
 include/storage.h           1 Header file for storageAPI
 include/uio.h               1 Minimal <sys/uio.h> for sites without writev

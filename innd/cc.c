@@ -632,14 +632,7 @@ typedef enum { false = 0, true = 1 } bool;
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
-
-/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
-#ifndef ERRSV
-# define ERRSV GvSV(errgv)
-#endif
-#ifndef PL_na
-# define PL_na na
-#endif
+#include "ppport.h"
 
 extern CV *perl_filter_cv ;
 
@@ -2053,11 +2046,6 @@ CCresetup(s)
 
 #if defined(DO_PERL)
 
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-
-
 XS(XS_INN_havehist)
 {
     dXSARGS;
@@ -2066,7 +2054,7 @@ XS(XS_INN_havehist)
     if (items != 1)
         croak("Usage: INN::havehist(msgid)");
 
-    msgid = (char *)SvPV(ST(0),na);
+    msgid = (char *)SvPV(ST(0),PL_na);
     if (HIShavearticle(HashMessageID(msgid)))
 	XSRETURN_YES;
     else
@@ -2082,7 +2070,7 @@ XS(XS_INN_cancel)
     if (items != 1)
         croak("Usage: INN::cancel(msgid)");
 
-    msgid = (char *)SvPV(ST(0),na);
+    msgid = (char *)SvPV(ST(0),PL_na);
     parambuf[0]=msgid;
     parambuf[1]= 0;
     /* CCcancel returns NULL on success, hence reversed return codes */
@@ -2108,7 +2096,7 @@ XS(XS_INN_addhist)
 
 
     /* we will always have a message id */
-    msgid = (char *)SvPV(ST(0),na);
+    msgid = (char *)SvPV(ST(0),PL_na);
 
     /* set up sensible defaults for the time values */
     sprintf(tbuff, "%d",time((long *)0));
@@ -2116,24 +2104,24 @@ XS(XS_INN_addhist)
 
     switch (items) {
     case 2:
-	arrivaltime = (char *)SvPV(ST(1),na);
+	arrivaltime = (char *)SvPV(ST(1),PL_na);
 	articletime = expiretime = arrivaltime;
 	break;
     case 3: 
-	arrivaltime = (char *)SvPV(ST(1),na);
-	articletime = (char *)SvPV(ST(2),na);
+	arrivaltime = (char *)SvPV(ST(1),PL_na);
+	articletime = (char *)SvPV(ST(2),PL_na);
 	expiretime = arrivaltime;
 	break;
     case 4:
-	arrivaltime = (char *)SvPV(ST(1),na);
-	articletime = (char *)SvPV(ST(2),na);
-	expiretime =  (char *)SvPV(ST(3),na);
+	arrivaltime = (char *)SvPV(ST(1),PL_na);
+	articletime = (char *)SvPV(ST(2),PL_na);
+	expiretime =  (char *)SvPV(ST(3),PL_na);
 	break;
     case 5:
-	arrivaltime = (char *)SvPV(ST(1),na);
-	articletime = (char *)SvPV(ST(2),na);
-	expiretime =  (char *)SvPV(ST(3),na);
-	articlepaths =  (char *)SvPV(ST(4),na);
+	arrivaltime = (char *)SvPV(ST(1),PL_na);
+	articletime = (char *)SvPV(ST(2),PL_na);
+	expiretime =  (char *)SvPV(ST(3),PL_na);
+	articlepaths =  (char *)SvPV(ST(4),PL_na);
 	break;
     }
     parambuf[0] = msgid;
@@ -2161,7 +2149,7 @@ XS(XS_INN_newsgroup)
 
     if (items != 1)
         croak("Usage: INN::newsgroup(msgid)");
-    newsgroup = (char *)SvPV(ST(0),na);
+    newsgroup = (char *)SvPV(ST(0),PL_na);
 
     if ((ngp = NGfind(newsgroup)) == NULL)
 	XSRETURN_UNDEF;
@@ -2198,7 +2186,7 @@ XS(XS_INN_filesfor)
     if (items != 1)
         croak("Usage: INN::filesfor(msgid)");
 
-    msgid = (char *)SvPV(ST(0),na);
+    msgid = (char *)SvPV(ST(0),PL_na);
     files = HISfilesfor(HashMessageID(msgid));
     if (files) {
         XSRETURN_PV(files);

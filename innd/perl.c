@@ -32,14 +32,7 @@ typedef enum { false = 0, true = 1 } bool;
 
 #include <EXTERN.h>
 #include <perl.h>
-
-/* Perl 5.004 didn't define ERRSV and PL_na was called na. */
-#ifndef ERRSV
-# define ERRSV GvSV(errgv)
-#endif
-#ifndef PL_na
-# define PL_na na
-#endif
+#include "ppport.h"
 
 extern BOOL		PerlFilterActive;
 extern ARTHEADER	ARTheaders[], *ARTheadersENDOF;
