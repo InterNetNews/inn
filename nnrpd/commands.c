@@ -325,6 +325,7 @@ CMDlist(ac, av)
 	static time_t	last_time;
 	time_t		now;
 	(void)time(&now);
+	lp = &INFOactive;
 	if (ac < 3 || now > last_time + NNRP_RESCAN_DELAY * 3) {
 	    if (last_time && !GetGroupList()) {
 		syslog(L_NOTICE, "%s cant getgroupslist for list %m", ClientHost);
@@ -336,10 +337,15 @@ CMDlist(ac, av)
 	if (ac == 3) {
 	    GROUPENTRY *gp = GRPfind(av[2]);
 	    if (gp) {
+		grplist[0] = av[2];
+		grplist[1] = NULL;
 		Reply("%d list:\r\n", NNTP_LIST_FOLLOWS_VAL);
-		Printf("%s %ld %ld %c%s\r\n.\r\n",
-		      GPNAME(gp), (long)GPHIGH(gp), (long)GPLOW(gp),
-		      GPFLAG(gp), GPALIAS(gp) ? GPALIAS(gp) : "");
+		if (PERMmatch(PERMdefault, PERMlist, grplist))
+			Printf("%s %ld %ld %c%s\r\n.\r\n",
+		      		GPNAME(gp), (long)GPHIGH(gp), (long)GPLOW(gp),
+		      		GPFLAG(gp), GPALIAS(gp) ? GPALIAS(gp) : "");
+		else
+			Printf(".\r\n");
 		return;
 	    }
 	    wildarg = av[2];
