@@ -15,7 +15,7 @@ main(void)
     struct list list;
     struct node a, b, c;
 
-    puts("28");
+    test_init(28);
 
     list_new(&list);
     ok(1, list_isempty(&list));

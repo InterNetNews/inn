@@ -32,7 +32,7 @@ main(void)
     char Strange[] = "Strange";
     char change[] = "çhange";
 
-    puts("38");
+    test_init(38);
 
     tst = tst_init(2);
     ok(1, tst != NULL);

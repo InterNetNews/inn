@@ -24,7 +24,7 @@ main(void)
     if (getenv(test_var))
         die("%s already in the environment!", test_var);
 
-    puts("12");
+    test_init(12);
 
     ok(1, test_setenv(test_var, test_value1, 0) == 0);
     ok_string(2, test_value1, getenv(test_var));

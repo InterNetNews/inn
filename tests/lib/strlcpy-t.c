@@ -13,7 +13,7 @@ main(void)
 {
     char buffer[10];
 
-    puts("23");
+    test_init(23);
 
     ok_int(1, 3, test_strlcpy(buffer, "foo", sizeof(buffer)));
     ok_string(2, "foo", buffer);

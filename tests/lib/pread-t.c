@@ -35,7 +35,7 @@ main(void)
         sysdie("Can't rewind .testout");
     memset(result, 0, sizeof(result));
 
-    puts("6");
+    test_init(6);
 
     status = test_pread(fd, result, 128, 128);
     ok(1, (status == 128) && !memcmp(result, buf + 128, 128));

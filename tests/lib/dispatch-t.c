@@ -85,7 +85,7 @@ main(void)
 {
     struct cvector *command;
 
-    puts("18");
+    test_init(18);
 
     command = cvector_new();
     cvector_resize(command, 6);

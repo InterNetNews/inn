@@ -10,6 +10,7 @@
 
 #include "inn/messages.h"
 #include "libinn.h"
+#include "libtest.h"
 
 #define END     (char *) 0
 
@@ -212,7 +213,7 @@ main(void)
 {
     char buff[32];
 
-    puts("24");
+    test_init(24);
 
     test_error(1, 0, "warning\n", test1);
     test_error(2, 1, "fatal\n", test2);

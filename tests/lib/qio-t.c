@@ -80,7 +80,7 @@ main(void)
     output(fd, line, 256);
     close(fd);
 
-    puts("36");
+    test_init(36);
 
     /* Now make sure we can read all that back correctly. */
     qio = QIOopen(".testout");

@@ -21,7 +21,7 @@ main(void)
     char *string;
     char *p;
 
-    puts("87");
+    test_init(87);
 
     vector = vector_new();
     ok(1, vector != NULL);

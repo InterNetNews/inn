@@ -78,7 +78,7 @@ main(void)
     char PST8PDT[] = "TZ=PST8PDT";
     char Newfoundland[] = "TZ=Canada/Newfoundland";
 
-    printf("%d\n", 40 + ARRAY_SIZE(test_times) * 3 + 3);
+    test_init(40 + ARRAY_SIZE(test_times) * 3 + 3);
 
     now = time(NULL);
     status = makedate(-1, false, buff, sizeof(buff));

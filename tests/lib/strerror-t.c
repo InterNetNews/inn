@@ -12,7 +12,7 @@ const char *test_strerror(int);
 int
 main(void)
 {
-    puts("5");
+    test_init(5);
 
 #if HAVE_STRERROR
     ok_string(1, strerror(EACCES), test_strerror(EACCES));

@@ -6,6 +6,7 @@
 #include <sys/uio.h>
 
 #include "libinn.h"
+#include "libtest.h"
 
 /* The data array we'll use to do testing. */
 char data[256];
@@ -33,7 +34,7 @@ main(void)
     int i;
     struct iovec iov[4];
 
-    puts("19");
+    test_init(19);
 
     /* Test xwrite. */
     for (i = 0; i < 256; i++)

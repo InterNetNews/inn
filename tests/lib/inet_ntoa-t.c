@@ -21,7 +21,7 @@ test_addr(int n, const char *expected, unsigned long addr)
 int
 main(void)
 {
-    puts("5");
+    test_init(5);
 
     test_addr(1,         "0.0.0.0", 0x0);
     test_addr(2,       "127.0.0.0", 0x7f000000UL);

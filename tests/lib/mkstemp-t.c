@@ -22,7 +22,7 @@ main(void)
     struct stat st1, st2;
     ssize_t length;
 
-    puts("20");
+    test_init(20);
 
     /* First, test a few error messages. */
     errno = 0;

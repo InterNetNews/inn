@@ -18,7 +18,7 @@ test_error(int n, const char *expected, int error)
 int
 main(void)
 {
-    puts("7");
+    test_init(7);
 
     test_error(1, "Internal resolver error", -1);
     test_error(2, "No resolver error", 0);

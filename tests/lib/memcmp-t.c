@@ -12,7 +12,7 @@ int test_memcmp(const void *, const void *, size_t);
 int
 main(void)
 {
-    puts("15");
+    test_init(15);
 
     ok( 1, test_memcmp("",             "",             0) == 0);
     ok( 2, test_memcmp("",             "",             1) == 0);

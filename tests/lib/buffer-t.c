@@ -25,7 +25,7 @@ main(void)
     ssize_t count;
     size_t offset;
 
-    puts("77");
+    test_init(77);
 
     /* buffer_set, buffer_append, buffer_swap */
     buffer_set(&one, test_string1, sizeof(test_string1));

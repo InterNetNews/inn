@@ -70,7 +70,7 @@ main(void)
     strange = xstrdup("strange");
     change = xstrdup("change");
 
-    puts("38");
+    test_init(38);
     hash = hash_create(4, hash_string, string_key, string_equal,
                        string_delete);
     ok(1, hash != NULL);

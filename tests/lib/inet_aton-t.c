@@ -5,6 +5,8 @@
 #include "clibrary.h"
 #include <netinet/in.h>
 
+#include "libtest.h"
+
 int test_inet_aton(const char *, struct in_addr *);
 
 static void
@@ -38,7 +40,7 @@ test_fail(int n, const char *string)
 int
 main(void)
 {
-    puts("46");
+    test_init(46);
 
     test_addr( 1,             "0.0.0.0", 0);
     test_addr( 2,      "127.0.0.000000", 0x7f000000UL);

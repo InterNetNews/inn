@@ -89,12 +89,11 @@ main(void)
     long lcount;
     char lgbuf[128];
 
-    printf("%d\n",
-           (25 + (ARRAY_SIZE(fp_formats) - 1) * ARRAY_SIZE(fp_nums)
-            + (ARRAY_SIZE(int_formats) - 1) * ARRAY_SIZE(int_nums)
-            + (ARRAY_SIZE(uint_formats) - 1) * ARRAY_SIZE(uint_nums)
-            + (ARRAY_SIZE(llong_formats) - 1) * ARRAY_SIZE(llong_nums)
-            + (ARRAY_SIZE(ullong_formats) - 1) * ARRAY_SIZE(ullong_nums)));
+    test_init((25 + (ARRAY_SIZE(fp_formats) - 1) * ARRAY_SIZE(fp_nums)
+              + (ARRAY_SIZE(int_formats) - 1) * ARRAY_SIZE(int_nums)
+              + (ARRAY_SIZE(uint_formats) - 1) * ARRAY_SIZE(uint_nums)
+              + (ARRAY_SIZE(llong_formats) - 1) * ARRAY_SIZE(llong_nums)
+              + (ARRAY_SIZE(ullong_formats) - 1) * ARRAY_SIZE(ullong_nums)));
 
     ok(1, test_snprintf(NULL, 0, "%s", "abcd") == 4);
     ok(2, test_snprintf(NULL, 0, "%d", 20) == 2);

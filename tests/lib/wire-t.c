@@ -44,7 +44,7 @@ main(void)
     char *article;
     struct stat st;
 
-    puts("34");
+    test_init(34);
 
     end = ta + sizeof(ta) - 1;
     p = end - 4;

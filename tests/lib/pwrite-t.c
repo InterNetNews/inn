@@ -29,7 +29,7 @@ main(void)
         sysdie("Can't unlink .testout");
     memset(result, 0, sizeof(result));
 
-    puts("6");
+    test_init(6);
 
     ok(1, test_pwrite(fd, buf + 129, 127, 129) == 127);
     ok(2, write(fd, buf, 64) == 64);

@@ -22,7 +22,7 @@ main(void)
         if (access("lib/config/valid", F_OK) == 0)
             chdir("lib");
 
-    puts("9");
+    test_init(9);
 
     ok(1, innconf_read("../../samples/inn.conf"));
     standard = innconf;

@@ -93,7 +93,7 @@ main(void)
     struct md5_context context;
     char hexdigest[33];
 
-    printf("%d\n", 12 + ARRAY_SIZE(testdata));
+    test_init(12 + ARRAY_SIZE(testdata));
 
     test_md5(1, "93b885adfe0da089cdf634904fd59f71", U"\0", 1);
     test_md5(2, "e94a053c3fbfcfb22b4debaa11af7718", U"\0ab\n", 4);

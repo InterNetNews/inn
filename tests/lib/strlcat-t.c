@@ -13,7 +13,7 @@ main(void)
 {
     char buffer[10] = "";
 
-    puts("27");
+    test_init(27);
 
     ok_int(1, 3, test_strlcat(buffer, "foo", sizeof(buffer)));
     ok_string(2, "foo", buffer);

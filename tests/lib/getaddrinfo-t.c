@@ -31,7 +31,7 @@ main(void)
     int i;
     bool found;
 
-    puts("75");
+    test_init(75);
 
     ok_string(1, "Host name lookup failure", test_gai_strerror(1));
     ok_string(2, "System error", test_gai_strerror(9));

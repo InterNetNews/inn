@@ -495,7 +495,7 @@ main(void)
     struct hash *groups;
     bool status;
 
-    puts("21");
+    test_init(21);
 
     fake_innconf();
     if (!overview_init())

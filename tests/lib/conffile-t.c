@@ -27,7 +27,7 @@ main(void)
     CONFTOKEN *token;
     unsigned int n, i;
 
-    puts("16");
+    test_init(16);
 
     config = fopen(".testout", "w");
     if (config == NULL)

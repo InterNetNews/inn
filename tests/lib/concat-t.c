@@ -12,7 +12,7 @@
 int
 main(void)
 {
-    printf("11\n");
+    test_init(11);
 
     ok_string( 1, "a",     concat("a",                   END));
     ok_string( 2, "ab",    concat("a", "b",              END));

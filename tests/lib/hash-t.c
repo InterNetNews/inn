@@ -12,7 +12,7 @@ main(void)
 {
     HASH h1, h2;
 
-    puts("12");
+    test_init(12);
 
     h1 = HashMessageID("<lhs@test.invalid>");
     h2 = HashMessageID("<lhs@TEST.invalid>");

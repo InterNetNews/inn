@@ -8,6 +8,7 @@
 
 #include "clibrary.h"
 #include "libinn.h"
+#include "libtest.h"
 
 static void
 test_r(int n, const char *text, const char *pattern, bool matches)
@@ -46,7 +47,7 @@ test_s(int n, const char *text, const char *pattern, bool matches)
 int
 main(void)
 {
-    puts("174");
+    test_init(174);
 
     /* Basic wildmat features. */
     test_r(  1, "foo",            "foo",               true);
