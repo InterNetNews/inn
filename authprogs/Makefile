@@ -41,7 +41,7 @@ NEWSLIBS        = $(LIBINN) $(LIBS)
 AUTHLIBS	= $(LIBAUTH) $(LIBS)
 AUTH_INN	= $(LIBINN) $(LIBAUTH)
 
-CK_LIBS		= $(DBMLIB) $(AUTHLIBS)
+CK_LIBS		= $(PAMLIB) $(DBMLIB) $(AUTHLIBS)
 RAD_LIBS	= $(AUTH_INN) $(LIBS)
 
 auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(LIBSMB) $(LIBS)

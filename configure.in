@@ -685,6 +685,15 @@ AC_SEARCH_LIBS(dbm_open, ndbm dbm,
 LIBS=$inn_save_LIBS
 AC_SUBST(DBM_LIB)
 
+dnl Look for PAM
+inn_save_LIBS=$LIBS
+LIBS=
+AC_SEARCH_LIBS(pam_start, pam,
+               [PAM_LIB=$LIBS
+	        AC_DEFINE(HAVE_PAM, 1, [Define if you have PAM.])])
+LIBS=$inn_save_LIBS
+AC_SUBST(PAM_LIB)
+
 dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
 dnl Perl linked with gdbm but don't normally have gdbm installed, so on that
 dnl platform only strip -lgdbm out of the Perl libraries.  Leave it in on

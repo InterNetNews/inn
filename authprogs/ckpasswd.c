@@ -23,6 +23,48 @@
 # include <shadow.h>
 #endif
 
+#if HAVE_PAM
+# include <security/pam_appl.h>
+#endif
+
+#if HAVE_PAM
+/*
+ * PAM conversation function.  Since we can't very well ask the user for
+ * a password interactively, this function returns the password to every
+ * question PAM asks.  There appears to be no generic way to determine
+ * whether the message in question is indeed asking for the password which
+ * is less than ideal...
+ *
+ * NOTE: This function allocates an array of 'struct pam_response' which
+ * needs to be free()'d later on.  For this program though, it's not exactly
+ * an issue because it will get called once and the program will exit...
+ *
+ * appdata_ptr contains the password we were given.
+ */
+static int pass_conv (int num_msg, const struct pam_message **msgm,
+		struct pam_response **response, void *appdata_ptr)
+{
+    int i;
+
+    *response = (struct pam_response *)malloc (num_msg *
+		    sizeof(struct pam_response));
+    if (*response == NULL)
+        return PAM_CONV_ERR;
+
+    for (i = 0; i < num_msg; i++) {
+	/* Construct the response */
+	(*response)[i].resp = strdup((char *)appdata_ptr);
+	(*response)[i].resp_retcode = 0;
+    }
+    return PAM_SUCCESS;
+}
+
+static struct pam_conv conv = {
+    pass_conv,
+    NULL
+};
+#endif /* HAVE_PAM */
+
 #if HAVE_GETSPNAM
 char *
 GetShadowPass(char *user)
@@ -173,7 +215,43 @@ main(int argc, char *argv[])
 	rpass = GetDBPass(uname, fname);
     else
 #endif
+#if HAVE_PAM
+    {
+        pam_handle_t *pamh;
+	int res;
+	
+	conv.appdata_ptr = (void *)pass;
+	if ((res = pam_start ("nnrpd", uname, &conv, &pamh)) != PAM_SUCCESS) {
+            fprintf (stderr, "Failed: pam_start(): %s\n",
+			    pam_strerror(pamh, res));
+            exit (1);
+        }
+
+        if ((res = pam_authenticate (pamh, 0)) != PAM_SUCCESS) {
+            fprintf (stderr, "Failed: pam_authenticate(): %s\n",
+			    pam_strerror(pamh, res));
+            exit (1);
+        }
+
+        if ((res = pam_acct_mgmt (pamh, 0)) != PAM_SUCCESS) {
+	    fprintf (stderr, "Failed: pam_acct_mgmt(): %s\n",
+			    pam_strerror (pamh, res));
+	    exit (1);
+        }
+
+        if ((res = pam_end (pamh, res) != PAM_SUCCESS)) {
+            fprintf (stderr, "Failed: pam_end(): %s\n",
+			    pam_strerror (pamh, res));
+	    exit (1);
+        }
+
+	/* If it gets this far, the user has been successfully authenticated. */
+        fprintf (stdout, "User:%s\n", uname);
+        exit (0);
+    }
+#else /* HAVE_PAM */
 	rpass = GetPass(uname);
+#endif /* HAVE_PAM */
 
     if (!rpass) {
 	fprintf(stderr, "ckpasswd: user %s does not exist.\n", uname);

@@ -492,7 +492,8 @@
 /* Syslog facility to use for INN program logs. */
 #undef LOG_INN_PROG
 
-
+/* Define if you have PAM */
+#undef HAVE_PAM
 
 /*
 **  BUFFER SIZES AND DATA LENGTHS

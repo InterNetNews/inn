@@ -1,0 +1,18 @@
+#
+# Sample entries for pam.conf for the nnrpd service
+#
+
+# Disallows other than root logins when /etc/nologin exists
+# (Replaces the `NOLOGINS_FILE' option from login.defs)
+nnrpd	auth		requisite	pam_nologin.so
+
+# Ensure that system users cannot login -- this is probably a bit
+# hacky, but it'll do for now.
+nnrpd	auth		required	pam_listfile.so \
+	onerr=succeed item=user sense=deny file=/etc/news/readers.deny
+
+# Standard Un*x authentication. The "nullok" line allows passwordless
+# accounts.
+nnrpd	auth		required	pam_unix.so
+
+nnrpd	account		required	pam_unix.so
