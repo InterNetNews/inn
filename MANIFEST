@@ -319,6 +319,7 @@ lib/clientlib.c                       Replacement for C News library routine
 lib/closeonexec.c                     Make a descriptor close-on-exec
 lib/concat.c                          Concatenate strings with dynamic memory
 lib/conffile.c                        Routines for reading *.conf files
+lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution header
 lib/endian.c                          Determine system's endianness
