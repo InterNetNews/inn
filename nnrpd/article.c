@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <assert.h>
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
@@ -73,7 +74,7 @@ static bool PushIOvRateLimited(void) {
     struct timeval      start, end;
     struct iovec        newiov[IOV_MAX];
     int                 newiov_len;
-    int                 sentiov = 0;
+    int                 sentiov;
     int                 i;
     int                 bytesfound;
     int                 chunkbittenoff;
@@ -83,6 +84,7 @@ static bool PushIOvRateLimited(void) {
 
     while (queued_iov) {
 	bytesfound = newiov_len = 0;
+	sentiov = 0;
 	for (i = 0; (i < queued_iov) && (bytesfound < MaxBytesPerSecond); i++) {
 	    if ((signed)iov[i].iov_len + bytesfound > MaxBytesPerSecond) {
 		chunkbittenoff = MaxBytesPerSecond - bytesfound;
@@ -97,6 +99,7 @@ static bool PushIOvRateLimited(void) {
 		bytesfound += iov[i].iov_len;
 	    }
 	}
+	assert(sentiov <= queued_iov);
 	gettimeofday(&start, NULL);
 	if (PushIOvHelper(newiov, &newiov_len) == FALSE)
 	    return FALSE;
@@ -991,10 +994,12 @@ void CMDxover(int ac, char *av[])
 	}
 	if (VirtualPathlen > 0) {
 	    /* replace path part */
-	    for (field = ARTxreffield, p = data ; field-- >= 0 && p < data + len; p++)
+	    for (field = ARTxreffield, p = data ; field-- >= 0 && p < data + len; ) {
 		if ((p = strchr(p, '\t')) == NULL)
-		    continue;
-	    if (!p || *p == '\0')
+		    break;
+		++p;
+	    }
+	    if (!p || p >= data + len || *p == '\0')
 		continue;
 	    fp = &ARTfields[ARTxreffield];
 	    if (fp->NeedsHeader) {
