@@ -6,12 +6,11 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/time.h"
+#include "portable/socket.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <netinet/in.h>
 #include <signal.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
