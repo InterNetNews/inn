@@ -1827,8 +1827,11 @@ BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
       }
     }
   }
-  if (token)
+  if (token) {
+    if (ovblock->ovindex[search->cur].index == NULLINDEX)
+      return FALSE;
     *token = ovblock->ovindex[search->cur].token;
+  }
 
   return TRUE;
 }
