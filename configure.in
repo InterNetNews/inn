@@ -116,10 +116,8 @@ else
 fi
 ])
 
-AC_CACHE_CHECK(for MANDIR,MANDIR, MANDIR=`eval echo $mandir`)
-ac_cv_subst_manpath="$MANDIR"
+MANDIR=`eval echo $mandir`
 AC_SUBST(MANDIR)
-AC_SUBST(ac_cv_subst_manpath)
 
 HOSTNAME=`uname -n`
 AC_SUBST(HOSTNAME)
