@@ -536,11 +536,11 @@ static void StartConnection()
 {
     struct sockaddr_storage	ssc, sss;
     socklen_t		length;
-    char		buff[SMBUF];
+#ifdef DO_PYTHON
     char		accesslist[BIG_BUFFER];
     int                 code;
     static ACCESSGROUP	*authconf;
-    struct in_addr      client_addr;
+#endif
     char		*default_host_error = "unknown error";
 
     ClientIpAddr = 0L;
@@ -1211,7 +1211,8 @@ main(int argc, char *argv[])
 	    innconf->readertrack=TrackClient(ClientHost,Username);
     }
 
-    if (PERMaccessconf && PERMaccessconf->readertrack || !PERMaccessconf && innconf->readertrack) {
+    if ((PERMaccessconf && PERMaccessconf->readertrack)
+        || (!PERMaccessconf && innconf->readertrack)) {
 	int len;
 	syslog(L_NOTICE, "%s Tracking Enabled (%s)", ClientHost, Username);
 	pid=getpid();
@@ -1220,7 +1221,7 @@ main(int argc, char *argv[])
 	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
 	len = strlen("innconf->pathlog") + strlen("/tracklogs/log-") + BUFSIZ;
 	LocalLogFileName = NEW(char, len);
-	sprintf(LocalLogFileName, "%s/tracklogs/log-%ld", innconf->pathlog, vid);
+	sprintf(LocalLogFileName, "%s/tracklogs/log-%d", innconf->pathlog, vid);
 	if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
 	    LocalLogDirName = NEW(char, len);
 	    sprintf(LocalLogDirName, "%s/tracklogs", innconf->pathlog);

@@ -324,7 +324,7 @@ InndHisOpen(void)
     }
     free(histpath);
     HISsetcache(History, 1024 * innconf->hiscachesize);
-    synccount = &innconf->icdsynccount;
+    synccount = innconf->icdsynccount;
     HISctl(History, HISCTLS_SYNCCOUNT, &synccount);
 }
 

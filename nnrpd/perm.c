@@ -2029,11 +2029,8 @@ static char *ResolveUser(AUTHGROUP *auth)
     char *arg0;
     char *resdir;
     char *tmp;
-    char *perl_path;
     EXECSTUFF *foo;
     int done	    = 0;
-    int code;
-    char accesslist[BIG_BUFFER];
     char buf[BIG_BUFFER];
 
     if (!auth->res_methods)

@@ -171,9 +171,9 @@ static void
 xmalloc_abort(const char *what, size_t size, const char *file, int line)
 {
     fprintf(stderr, "SERVER cant %s %lu bytes at %s line %d: %m", what,
-            (unsigned long) size, line, file);
+            (unsigned long) size, file, line);
     syslog(LOG_CRIT, "SERVER cant %s %lu bytes at %s line %d: %m", what,
-           (unsigned long) size, line, file);
+           (unsigned long) size, file, line);
     abort();
 }
 
@@ -285,12 +285,11 @@ main(int ac, char *av[])
     bool flag;
     static char		WHEN[] = "PID file";
     int			i, j, fd[MAX_SOCKETS + 1];
-    char		buff[SMBUF], *q, *path1, *path2;
+    char		buff[SMBUF], *path1, *path2;
     FILE		*F;
     bool		ShouldFork;
     bool		ShouldRenumber;
     bool		ShouldSyntaxCheck;
-    bool		val;
     bool		filter = TRUE;
     pid_t		pid;
 #if	defined(_DEBUG_MALLOC_INC)
@@ -421,7 +420,7 @@ main(int ac, char *av[])
 		fd[j++] = atoi(p);
 		if (j == MAX_SOCKETS)
 		    break;
-	    } while (p = strtok(NULL, ","));
+	    } while ((p = strtok(NULL, ",")) != NULL);
 	    fd[j] = -1;
 	    DISPOSE(t);
 	    break;

@@ -366,7 +366,6 @@ int cxnConfigLoadCbk (void *data UNUSED)
   char *sv ;
   int rval = 1 ;
   FILE *fp = (FILE *) data ;
-  struct in_addr addr ;
 
   if (getInteger (topScope,"max-reconnect-time",&iv,NO_INHERIT))
     {
@@ -413,6 +412,7 @@ int cxnConfigLoadCbk (void *data UNUSED)
 	  memcpy( bind_addr, res->ai_addr, res->ai_addrlen );
         }
 #else
+      struct in_addr addr ;
       if (!inet_aton(sv,&addr))
         {
 	  logOrPrint (LOG_ERR,fp,"innfeed unable to determine bind ip") ;

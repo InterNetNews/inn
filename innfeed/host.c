@@ -95,7 +95,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #define TRYBLOCKEDHOSTPERIOD 120
 
 extern char *configFile ;
-extern mainLogStatus (FILE *fp) ;
+extern void mainLogStatus (FILE *fp) ;
 #if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
 extern int h_errno;
 #endif
@@ -1731,7 +1731,7 @@ void hostSendArticle (Host host, Article article)
         u_int x_queue = host->params->maxChecks + 1 ;
 
         for (idx = 0 ; x_queue > 0 && idx < host->maxConnections ; idx++)
-          if ((cxn = host->connections[idx]) != host->notThisCxn)
+          if ((cxn = host->connections[idx]) != host->notThisCxn) {
             if (!host->cxnActive [idx]) {
               if (!host->cxnSleeping [idx]) {
                 if (cxnTakeArticle (cxn, extraRef)) {
@@ -1748,6 +1748,7 @@ void hostSendArticle (Host host, Article article)
                 x_cxn = cxn ;
               }
             }
+          }
 
         if (x_cxn != NULL && cxnTakeArticle (x_cxn, extraRef)) {
           if (x_queue == 0) host->gNoQueue++ ;
@@ -2576,10 +2577,12 @@ static HostParams hostDetails (scope *s,
 	}
   
       if (s != NULL)
-	if (getString (s,IP_NAME,&q,NO_INHERIT))
-	  p->ipName = q ;
-	else
-	  p->ipName = xstrdup (name) ;
+        {
+	  if (getString (s,IP_NAME,&q,NO_INHERIT))
+	    p->ipName = q ;
+	  else
+	    p->ipName = xstrdup (name) ;
+        }
     }
 
 
@@ -2989,7 +2992,6 @@ static void hostLogStatus (void)
   u_int peerNum = 0, actConn = 0, slpConn = 0, maxcon = 0 ;
   static bool logged = false ;
   static bool flogged = false ;
-  time_t now;
 
   if (statusFile == NULL && !logged)
     {
@@ -3347,7 +3349,7 @@ static void hostPrintStatus (Host host, FILE *fp)
 static void hostStatsTimeoutCbk (TimeoutId tid, void *data)
 {
   Host host = (Host) data ;
-  time_t delta, now = theTime () ;
+  time_t now = theTime () ;
 
   (void) tid ;                  /* keep lint happy */
 

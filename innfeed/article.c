@@ -866,6 +866,7 @@ static bool artFreeContents (Article art)
     return false ;
 
   if (art->nntpBuffers != NULL)
+    {
     if (bufferRefCount (art->nntpBuffers[0]) > 1)
       return false ;
     else
@@ -873,6 +874,7 @@ static bool artFreeContents (Article art)
         freeBufferArray (art->nntpBuffers) ;    
         art->nntpBuffers = NULL ;
       }
+    }
 
   ASSERT (bufferRefCount (art->contents) == 1) ;
 

@@ -243,8 +243,6 @@ CCaddhist(char *av[])
     ARTDATA		Data;
     const char *	p, *msgid;
     bool		ok;
-    HASH                hash;
-    int			i;
     TOKEN		token;
 
     /* You must pass a <message-id> ID, the history API will hash it as it

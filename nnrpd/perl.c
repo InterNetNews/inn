@@ -175,7 +175,7 @@ char *HandleHeaders(char *article)
    if (SvTRUE(ERRSV))     /* check $@ */ {
        syslog (L_ERROR,"Perl function filter_post died: %s",
                SvPV(ERRSV, PL_na)) ;
-       POPs ;
+       (void)POPs ;
        PerlFilter (FALSE) ;
    } else if (rc == 1) {
        p = POPp;
@@ -204,7 +204,6 @@ void loadPerl(void) {
 }
 
 char *itoa(int n) {
-  int i = 0;
   char *s = "";
   char *tmp;
 
@@ -222,7 +221,7 @@ char **perlAccess(char *ClientHost, char *ClientIP, char *ServerHost, char *user
   dSP;
   HV              *attribs;
   SV              *sv;
-  int             rc, code, i;
+  int             rc, i;
   char            *p, *key, *val, **access_array;
 
   if (!PerlFilterActive)
@@ -315,7 +314,7 @@ int perlAuthInit(void) {
     }
 
     while (rc--) {
-	POPs;
+	(void)POPs;
     }
 
     PUTBACK;
@@ -328,7 +327,6 @@ int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *u
     dSP;
     HV              *attribs;
     int             rc;
-    SV              *sv;
     char            *p;
     int             code;
     

@@ -64,7 +64,7 @@ int read_config(FILE *f, rad_config_t *radconfig)
 	lineno++;
 	buf[strlen(buf)-1] = '\0';	/* strip '\n' */
 
-	if (iter = strchr(buf, '#'))
+	if ((iter = strchr(buf, '#')) != NULL)
 	    *iter = '\0';		/* strip comments */
 
 	iter = buf+strlen(buf)-1;	/* strip trailing whitespace */
@@ -155,7 +155,6 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     char secbuf[128];
     HASH digest;
     struct timeval seed;
-    struct md5_context context;
     struct sockaddr_in sinl, sinr;
     int sock;
     struct hostent *hent;

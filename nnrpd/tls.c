@@ -452,8 +452,6 @@ static long bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi,
 int tls_start_servertls(int readfd, int writefd)
 {
     int     sts;
-    int     j;
-    unsigned int n;
     SSL_SESSION *session;
     SSL_CIPHER *cipher;
 

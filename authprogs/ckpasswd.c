@@ -114,7 +114,7 @@ GetFilePass(char *name, char *file)
     if (!found)
 	return(0);
     iter = colon+1;
-    if (colon = strchr(iter, ':'))
+    if ((colon = strchr(iter, ':')) != NULL)
 	*colon = 0;
     strcpy(pass, iter);
     return(pass);
@@ -155,7 +155,6 @@ main(int argc, char *argv[])
     int do_shadow, do_file, do_db;
     char *fname;
     char uname[SMBUF], pass[SMBUF];
-    char buff[SMBUF];
     char *rpass;
 
     do_shadow = do_file = do_db = 0;

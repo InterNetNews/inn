@@ -224,7 +224,9 @@ CMDauthinfo(ac, av)
     static char	Password[30];
     char	accesslist[BIG_BUFFER];
     char        errorstr[BIG_BUFFER];
+#ifdef DO_PYTHON
     int         code;
+#endif
 
     if (caseEQ(av[1], "generic")) {
 	char *logrec = Glom(av);

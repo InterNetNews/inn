@@ -4,6 +4,7 @@
    SMBlib Standard Includes
 
    Copyright (C) 1996, Richard Sharpe
+*/
 
 /* One day we will conditionalize these on OS types ... */
 

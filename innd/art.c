@@ -227,7 +227,6 @@ void
 ARTsetup(void)
 {
   const char *	p;
-  ARTHEADER *	hp;
   ARTHEADER **	table;
   unsigned int	i;
 
@@ -287,8 +286,6 @@ ARTfreetree(TREE *tp)
 void
 ARTclose(void)
 {
-  ARTHEADER	*hp;
-
   if (ARTfields != NULL) {
     DISPOSE(ARTfields);
     ARTfields = NULL;
@@ -388,7 +385,6 @@ ARTstore(CHANNEL *cp)
   ARTDATA	*data = &cp->Data;
   HDRCONTENT	*hc = data->HdrContent;
   const char	*p;
-  char		*end;
   ARTHANDLE	arth;
   int		i, j, iovcnt = 0;
   long		headersize;
@@ -744,8 +740,8 @@ ARTparse(CHANNEL *cp)
 {
   BUFFER	*bp = &cp->In;
   ARTDATA	*data = &cp->Data;
-  int		i, j, limit, hopcount;
-  char		*p, **hops;
+  int		i, limit, hopcount;
+  char		**hops;
   HDRCONTENT	*hc = data->HdrContent;
 
   /* Read through the buffer to find header, body and end of article */
@@ -965,11 +961,8 @@ ARTclean(ARTDATA *data, char *buff)
 {
   HDRCONTENT	*hc = data->HdrContent;
   ARTHEADER	*hp = ARTheaders;
-  char		*in;
-  char		*out;
   int		i;
   char		*p;
-  const char	*error;
   int		delta;
 
   TMRstart(TMR_ARTCLEAN);

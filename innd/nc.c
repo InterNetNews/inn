@@ -190,7 +190,7 @@ NCpostit(CHANNEL *cp)
   char	buff[SMBUF];
 
   /* Note that some use break, some use return here. */
-  if (postok = ARTpost(cp)) {
+  if ((postok = ARTpost(cp)) != 0) {
     cp->Received++;
     if (cp->Sendid.Size > 3) { /* We be streaming */
       cp->Takethis_Ok++;

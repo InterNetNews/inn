@@ -197,12 +197,12 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     char		*buff;
     char		*p;
     const char		*q;
-    char                *path;
     char		save;
     int			bufsiz;
     int			i ;
 #if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
     int			fd;
+    char                *path;
 #endif	/* !defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     int			len;
     fd_set		Rmask;

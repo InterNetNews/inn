@@ -72,7 +72,6 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     CV *        filter;
     int         i, rc;
     char *      p;
-    char        save = '\0';
     static SV * body = NULL;
     static char buf[256];
 
@@ -408,7 +407,7 @@ XS(XS_INN_head)
 
     /* Get the article token from the message ID and the history file. */
     msgid = (char *) SvPV(ST(0), PL_na);
-    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token)) XSRETURN_UNDEF;
+    if (!HISlookup(History, msgid, NULL, NULL, NULL, token)) XSRETURN_UNDEF;
 
     /* Retrieve the article header and convert it from wire format. */
     art = SMretrieve(*token, RETR_HEAD);

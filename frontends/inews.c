@@ -42,12 +42,10 @@ typedef struct _HEADER {
     char	*Value;
 } HEADER;
 
-static char     *tmpPtr ;
 static bool	Dump;
 static bool	Revoked;
 static bool	Spooling;
 static char	**OtherHeaders;
-static char	NGSEPS[] = NG_SEPARATOR;
 static char	SIGSEP[] = SIG_SEPARATOR;
 static FILE	*FromServer;
 static FILE	*ToServer;
@@ -585,11 +583,9 @@ ProcessHeaders(AddOrg, linecount, pwp)
     HEADER              *hp;
     char                *p;
     TIMEINFO		Now;
-    struct tm		*tm;
     char		buff[SMBUF];
     char		from[SMBUF];
     int			i;
-    long		zone;
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ENDOF(Table); hp++) {
@@ -985,7 +981,6 @@ main(ac, av)
     int			port;
     int			Mode;
     int			SigLines;
-    FILE		*F;
     struct passwd	*pwp;
     char		*article;
     char		*deadfile;

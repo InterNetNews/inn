@@ -25,12 +25,8 @@
 */
 int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char *errbuff)
 {
-    char		**ap;
-    char		*fakelist[2];
-    char	        *dest;
     char		mybuff[NNTP_STRLEN + 2];
     char		*buff;
-    char                *p;
     int	                i;
     int 	        j;
     int			oerrno;
@@ -40,6 +36,10 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
     char		portbuf[16];
     struct sockaddr_storage client;
 #else
+    char		**ap;
+    char	        *dest;
+    char		*fakelist[2];
+    char                *p;
     struct hostent	*hp;
     struct hostent	fakehp;
     struct in_addr	quadaddr;

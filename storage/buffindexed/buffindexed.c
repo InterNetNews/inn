@@ -994,7 +994,6 @@ bool buffindexed_groupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag) {
   HASH		grouphash;
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
-  void		*handle;
 #ifdef OV_DEBUG
   struct ov_name_table	*ntp;
 #endif /* OV_DEBUG */
@@ -1135,7 +1134,6 @@ static GROUPLOC GROUPnewnode(void) {
 bool buffindexed_groupdel(char *group) {
   GROUPLOC	gloc;
   GROUPENTRY	*ge;
-  void		*handle;
 
   gloc = GROUPfind(group, FALSE);
   if (GROUPLOCempty(gloc)) {
@@ -1176,7 +1174,6 @@ static bool ovsetcurindexblock(GROUPENTRY *ge) {
 #endif /* OV_DEBUG */
   OVBUFF	*ovbuff;
   OV		ov;
-  int		delta, i;
   OVINDEXHEAD	ovindexhead;
 
   /* there is no index */
@@ -1421,7 +1418,6 @@ static void freegroupblock(void) {
 #endif /* OV_DEBUG */
   GROUPDATABLOCK	*gdb;
   int			i;
-  OV			ov;
   GIBLIST		*giblist;
 
   for (giblist = Giblist ; giblist != NULL ; giblist = giblist->next) {
@@ -1500,7 +1496,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
   OV			ov = ge->baseindex;
   OVBUFF		*ovbuff;
   GROUPDATABLOCK	*gdb;
-  int			pagefudge, base, limit, i, count, len;
+  int			pagefudge, limit, i, count, len;
   off_t                 offset, mmapoffset;
   OVBLOCK		*ovblock;
   caddr_t		addr;
@@ -1663,7 +1659,6 @@ void *buffindexed_opensearch(char *group, int low, int high) {
 
 bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
   OVSEARCH		*search = (OVSEARCH *)handle;
-  OVBLOCK		*ovblock;
   OV			srchov;
   GROUPDATABLOCK	*gdb;
   off_t			offset, mmapoffset;

@@ -841,8 +841,12 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     char 		*p;
     char 		**q;
     char 		**r;
+#if     !defined( HAVE_INET6)
     struct hostent	*hp;
+#endif
+#if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
     struct in_addr      addr;
+#endif
     int                 i;
     int                 j;
     int			linecount;

@@ -23,10 +23,6 @@
 # include "sasl_config.h"
 #endif 
 
-static bool		setup = FALSE;
-static FILE		*hfp = NULL;
-static ino_t		ino = 0;
-
 #ifdef HAVE_SSL
 extern SSL *tls_conn;
 extern int nnrpd_starttls_done;
@@ -646,7 +642,6 @@ CMDstarttls(ac, av)
     int		ac;
     char	*av[];
 {
-  SSL_CTX *ctx;
   int result;
 
   sasl_config_read();

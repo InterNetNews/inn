@@ -249,7 +249,7 @@ OVADDRESULT OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expir
      * If there are other fields beyond Xref in overview, then
      * we must find Xref's end, or data following is misinterpreted.
      */
-    if (xrefend = memchr(next, '\t', xreflen))
+    if ((xrefend = memchr(next, '\t', xreflen)) != NULL)
 	xreflen = xrefend - next;
 
     if (xrefdatalen == 0) {
@@ -305,7 +305,7 @@ OVADDRESULT OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expir
         if (artnum <= 0)
             continue;
 
-        sprintf(overdata, "%d\t", artnum);
+        sprintf(overdata, "%ld\t", artnum);
         i = strlen(overdata);
         memcpy(overdata + i, data, len);
         i += len;
@@ -819,8 +819,6 @@ static NEWSGROUP *EXPnotfound(char *Entry)
 {
     static NEWSGROUP	Removeit;
     BADGROUP	        *bg;
-    char	        *p;
-    char		buff[SPOOLNAMEBUFF];
 
     /* See if we already know about this group. */
     for (bg = EXPbadgroups; bg; bg = bg->Next)
@@ -846,7 +844,6 @@ static NEWSGROUP *EXPnotfound(char *Entry)
 */
 static enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
 {
-    char	        *p;
     NEWSGROUP	        *ngp;
     enum KRP		retval = Remove;
 
@@ -969,7 +966,7 @@ static char *OVERGetHeader(char *p, int field)
     static int		buffsize;
     int	                i;
     ARTOVERFIELD	*fp;
-    char		*next, *q;
+    char		*next;
 
     fp = &ARTfields[field];
 
@@ -1070,13 +1067,11 @@ bool OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
     char	        *p;
     int	                i;
     int			count;
-    time_t		posted;
     time_t		when;
     bool                poisoned;
     bool		keeper;
     bool		remove;
     bool                purge;
-    ARTHANDLE		*article;
     char		*Xref;
 
     if (SMprobe(SELFEXPIRE, &token, NULL)) {

@@ -691,7 +691,7 @@ void CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnocurrart);
 	    return;
 	}
-	(void)sprintf(buff, "%ld", ARTnumber);
+	(void)sprintf(buff, "%d", ARTnumber);
 	tart=ARTnumber;
     }
     else {
@@ -709,7 +709,7 @@ void CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnoartingroup);
 	    return;
 	}
-	(void)sprintf(buff, "%ld", ARTnumber);
+	(void)sprintf(buff, "%d", ARTnumber);
 	tart=ARTnumber;
     }
     if (ac > 1)
@@ -856,7 +856,7 @@ char *OVERGetHeader(char *p, int field)
     }
 
     /* Skip leading headers. */
-    for (field; field >= 0 && *p; p++)
+    for ( ; field >= 0 && *p; p++)
 	if ((p = strchr(p, '\t')) == NULL)
 	    return NULL;
 	else
@@ -994,7 +994,7 @@ void CMDxover(int ac, char *av[])
 	    OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
 	    OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
 	}
-	if (len == 0 || PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token)) {
+	if (len == 0 || (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))) {
 	    if (PERMaccessconf->nnrpdoverstats) {
 		OVERmiss++;
 		gettimeofday(&stv, NULL);
@@ -1149,7 +1149,7 @@ void CMDpat(int ac, char *av[])
 		    continue;
 		p = GetHeader(header, FALSE);
 		if (p && (!pattern || wildmat_simple(p, pattern))) {
-		    sprintf(buff, "%lu ", i);
+		    sprintf(buff, "%u ", i);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
 		    SendIOb("\r\n", 2);
@@ -1172,8 +1172,8 @@ void CMDpat(int ac, char *av[])
 	Printf("%d %s matches follow (NOV)\r\n", NNTP_HEAD_FOLLOWS_VAL,
 	       header);
 	while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
-	    if (len == 0 || PERMaccessconf->nnrpdcheckart
-		&& !ARTinstorebytoken(token))
+	    if (len == 0 || (PERMaccessconf->nnrpdcheckart
+		&& !ARTinstorebytoken(token)))
 		continue;
 	    if ((p = OVERGetHeader(data, Overview)) != NULL) {
 		if (!pattern || wildmat_simple(p, pattern)) {
