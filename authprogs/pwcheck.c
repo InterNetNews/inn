@@ -76,7 +76,7 @@ int main()
     if (!uname[0] || !pass[0])
         exit(3);
 
-    if(login_plaintext(uname, pass)) {
+    if(!login_plaintext(uname, pass)) {
       fprintf(stderr, "valid passwd\n");
       printf("User:%s\n", uname);
       exit(0);
