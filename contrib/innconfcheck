@@ -1,0 +1,125 @@
+#!/bin/ksh
+
+### INNCONFcheck v1.1
+
+### Revision history:
+#   v1.0  B. Galliart  (designed to work with 2.3 inn.conf man page)
+#   v1.1  B. Galliart  (optional support for using inn.conf POD src instead)
+
+### Description:
+# This script is written to inner-mix the inn.conf settings with the
+# documentation from the inn.conf man page.  The concept was shamelessly
+# ripped off of a CGI application provided at Mib Software's Usenet Rapid
+# Knowledge Transfer (http://www.mibsoftware.com/userkt/inn2.0/).
+
+# The idea is that a news administrator usually must go through the
+# task of reading the inn.conf man page in parallel with the inn.conf
+# inn.conf to confirm that the settings are set as desired.  Manually
+# matching up the two files can become troublesome.  This script should
+# make the task easier and hopefully reduce the chance a misconfiguration
+# is missed.
+
+### Known bugs:
+#   - Is very dependent on the format of the man page.  It is know NOT to
+#     work with the inn.conf man pages written before INN 2.3 and may
+#     require minor rewriting to address future revisions of inn.conf
+#     Note: this known bug is addressed via the "EDITPOD" option below
+#     but is not enabled by default (details explained below).
+#
+#   - SECURITY!  While taken from the concept of a CGI script, it is not
+#     intended to be a CGI script itself.  It is *assumed* that the
+#     inn.conf file is provided by a "trusted" source.
+
+### License: this script is provided under the same terms as the majority
+#   of INN 2.3.0 as stated in the file "inn-2.3.0/LICENSE"
+
+### Warrenty/Disclaimer: There is no warrenty provided.  For details, please
+#   refer to the file "inn-2.3.0/LICENSE" from the INN 2.3 package
+
+                             ################
+
+###  The User Modifiable Parameters/Settings:
+
+# INNCONF should be set to the actual location of the inn.conf file
+INNCONF=/usr/local/news/etc/inn.conf
+
+# INNCONFMAN should be set to the location of the inn.conf man page
+INNCONFMAN=/usr/local/news/man/man5/inn.conf.5
+
+# INNCONFPOD should be set to the location of the inn.conf POD source
+# INNCONFPOD=/usr/local/src/inn-2.3.0/doc/pod/inn.conf.pod
+INNCONFPOD=/usr/local/news/man/man5/inn.conf.pod
+
+# NROFF should be set to an approbate program for formating the man page
+# this could be the vendor provided nroff, the FSF's groff (which could be
+# used for producing PostScript output) or Earl Hood's man2html from
+# http://www.oac.uci.edu/indiv/ehood/man2html.html
+
+# NROFF=man2html
+NROFF="nroff -man"
+
+# Pager should be set to an approbate binary for making the output
+# readable in the user's desired method.  Possible settings include
+# page, more, less, ghostview, lynx, mozilla, lpr, etc.  If no pager
+# application is desire then by setting it to "cat" will cause the output
+# to continue on to stdout.
+PAGER=less
+
+# By default the script uses the inn.conf man page before being processed
+# by nroff to edit in the actual inn.conf settings.  The problem with this
+# approach is that if the format of the inn.conf man page ever changes
+# assumptions about the format that this script makes will probably break.
+# Presently, the base/orginal format of the inn.conf man page is in perl
+# POD documentation.  The formating of this file is less likely to change
+# in the future and is a cleaner format for automated editing.  However, 
+# their is some disadvantages to using this file.  First disadvantage, 
+# the POD file is not installed by INN 2.3.0 by default (see INNCONFPOD 
+# enviromental variable for setting the script to find the file in the 
+# correct location).  Second disadvantage, pod2man does not appear to 
+# support using stdin so the edited POD must be temporarily stored as a 
+# file.  Finally, the last disadvantage, the script is slower due to the 
+# added processing time of pod2man.  Weighing the advantages and 
+# disadvantages to both approaches are left to the user.  If you wish to 
+# have innconfcheck edit the POD file then change the variable below to 
+# a setting of "1", otherwise leave it with the setting of "0"
+EDITPOD=0
+
+                             ################
+
+### The Script: (non-developers should not need to go beyond this point)
+
+# All variable settings in inn.conf should not contain a comment
+# character of "#" and should have a ":" in the line.   These variable names
+# should then be matched up with the man page "items" in the inn.conf file.
+# In the INN 2.3 man page, these items appear in the following format:
+#   .Ip "\fIvariable name\fR" 4
+# Hence, if there exists an entry in the inn.conf of "verifycancels: false"
+# then the awk script will produce:
+#   s#^.Ip "\fIvarifycancels\f$" 4#.Ip "\verifycancels: false\f$" 4#
+# once piped to sed, this expression will replace the man page item to
+# include the setting from the inn.conf file.  The nroff and pager
+# applications then polish the script off to provide a documented formated
+# in a way that is easier to find incorrect setting withen.
+
+if [ $EDITPOD -eq 0 ] ; then
+
+  grep -v "#" $INNCONF | grep ":" | \
+    awk 'BEGIN { FS = ":" }  { print "s#^.Ip \042\\\\fI"$1"\\\\fR\042 4#.Ip \042\\\\fI"$0"\\\\fR\042 4#" }' | \
+    sed -f - $INNCONFMAN | $NROFF | $PAGER
+
+else
+
+# The next part is similar to above but provides working from the POD source
+# instead of from the resulting nroff/man page.  This section is discussed
+# in more detail above with the "EDITPOD" setting.
+
+  grep -v "#" $INNCONF | grep ":" | \
+    awk 'BEGIN { FS = ":" }  { print "s#=item I<"$1">#=item I<"$0">#" }' | \
+    sed -f - $INNCONFPOD > /tmp/innconfcheck-$$
+  pod2man /tmp/innconfcheck-$$ | $NROFF | $PAGER
+  rm -f /tmp/innconfcheck-$$
+
+fi
+
+# That's all.
+# EOF
