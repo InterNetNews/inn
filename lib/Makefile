@@ -128,9 +128,6 @@ fdflags.o: fdflags.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
-findheader.o: findheader.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/inn/qio.h \
- ../include/libinn.h ../include/macros.h
 genid.o: genid.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/innconf.h ../include/libinn.h ../include/macros.h \
  /usr/include/string.h
