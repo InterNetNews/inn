@@ -773,7 +773,8 @@ main(argc, argv, env)
     unsigned long	ListenAddr = htonl(INADDR_ANY);
     int			lfd, fd;
     ARGTYPE		clen;
-    struct sockaddr_in	ssa, csa;
+    struct sockaddr_in	ssa;
+    struct sockaddr     csa;
     struct stat		Sb;
     PID_T		pid = -1;
     GID_T               NewsGID;
@@ -938,11 +939,11 @@ main(argc, argv, env)
  
 	TITLEset("nnrpd: accepting connections");
  	
-	listen(lfd, 5);	
+	listen(lfd, 5);
 
 listen_loop:
 	clen = sizeof(csa);
-	fd = accept(lfd, (struct sockaddr *) &csa, &clen);
+	fd = accept(lfd, &csa, &clen);
 	if (fd < 0)
 		goto listen_loop;
     
@@ -968,9 +969,14 @@ listen_loop:
 	dup2(0, 1);
 	dup2(0, 2);
 
+	/* if we are a daemon innd didn't make us nice, so be nice kids */
+	if (innconf->nicekids) {
+	    if (nice(innconf->nicekids) < 0)
+	        syslog(L_ERROR, "Could not nice child to %d: %m", innconf->nicekids);
+	}
+
 	/* Only automatically reap children in the listening process */
 	(void)signal(SIGCHLD, SIG_DFL);
- 
     } else {
 	SetupDaemon();
     }/* DaemonMode */
