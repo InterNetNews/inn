@@ -1,0 +1,78 @@
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
+
+# Author:       James Brister <brister@vix.com> -- berkeley-unix --
+# Start Date:   Fri, 25 Apr 1997 14:11:23 +0200
+# Project:      INN
+# File:         innmail.pl
+# RCSId:        $Id$
+# Description:  A simple replacement for UCB Mail to avoid nasty security
+#		problems. 
+# 
+
+$0 =~ s!.*/!! ;
+
+require 5.001 ;
+require 'getopts.pl' ;
+
+die "$0: No \$inn::mta  variable defined.\n" 
+    if ! defined ($inn::mta);
+
+$sm = $inn::mta ;
+
+die "$0: MTA path is not absolute\n" unless ($sm =~ m!^/!) ;
+
+$usage = "usage: $0 -s subject addresses\n\n" .
+    "Reads stdin for message body\n" ;
+
+&Getopts ("s:h") || die $usage ;
+
+die $usage if $opt_h ;
+
+if ( !$opt_s ) {
+    warn "No subject given. Hope that's ok\n" ;
+    $opt_s = "NO SUBJECT" ;
+} else {
+    $opt_s =~ s/\n+\Z//;
+}
+
+# fix up any addresses.
+foreach ( @ARGV ) {
+    s![^-a-zA-Z0-9+_.@%]!!g ;
+
+    push (@addrs,$_) if ($_ ne "") ;
+}
+
+die "$0: No addresses specified\n\n$usage" unless @addrs ;
+
+if ($sm =~ m!%s!) {
+    $sm = sprintf $sm,join (' ',@addrs);
+} else {
+    $sm .= " " . join(' ', @addrs);
+}
+
+@smarr = split(/\s+/,$sm);
+
+($t = $inn::mta) =~ s!\s.*!!;
+die "$0: MTA variable definition is changed after subsitution\n" 
+    if ($t ne $smarr[0]);
+
+die "$0: MTA excutable doesn't appear to exist: $smarr[0]\n"
+    if ! -x $smarr[0];
+
+# startup mta without using the shell
+$pid = open (MTA,"|-") ;
+if ($pid == 0) {
+    exec (@smarr) || die "$0: exec of $sm failed: $!\n" ;
+} elsif ($pid < 0) {
+    die "$0: Fork failed: $!\n" ;
+}
+
+print MTA "To: ", join (",\n\t",@addrs), "\n" ;
+print MTA "Subject: $opt_s\n" ;
+print MTA "\n" ;
+while (<STDIN>) {
+    print MTA $_ ;
+}
+close (MTA) ;
+exit ;

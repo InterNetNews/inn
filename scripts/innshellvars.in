@@ -1,0 +1,101 @@
+#!@_PATH_SH@
+##  $Revision$
+##  Set up any and all shell variables that an INN shell script
+##  might need.  Also sets umask.
+
+## NOTE: When adding stuff here, add the corresponding variables to 
+## innshellvars.pl and innshellvars.tcl and innshellvars.csh
+
+eval `@prefix@/bin/innconfval -s`
+
+NEWSHOME=${PATHNEWS}
+SPOOLBASE=${PATHSPOOL}
+MOST_LOGS=${PATHLOG}
+export NEWSHOME SPOOL MOST_LOGS
+
+NEWSBIN=${PATHBIN}
+NEWSETC=${PATHETC}
+INNDDIR=${PATHRUN}
+LOCKS=${PATHRUN}
+export NEWSBIN NEWSETC INNDDIR NEWSHOME
+
+ERRLOG=${MOST_LOGS}/errlog
+LOG=${MOST_LOGS}/news
+
+ARCHIVEDIR=${PATHARCHIVE}
+SPOOL=${PATHARTICLES}
+BATCH=${PATHOUTGOING}
+INCOMING=${PATHINCOMING}
+OVERVIEWDIR=${PATHOVERVIEW}
+SPOOLNEWS=${PATHINCOMING}
+BADNEWS=${PATHINCOMING}/bad
+
+ACTIVE=${PATHDB}/active
+ACTIVETIMES=${PATHDB}/active.times
+CTLFILE=${NEWSETC}/control.ctl
+CTLWATCH=${NEWSETC}/innwatch.ctl
+HISTORY=${PATHDB}/history
+NEWACTIVE=${PATHDB}/active.tmp
+NEWSFEEDS=${NEWSETC}/newsfeeds
+NEWSGROUPS=${PATHDB}/newsgroups
+OLDACTIVE=${PATHDB}/active.old
+PATH_MOTD=${NEWSETC}/motd.news
+PATH_STORAGECTL=${NEWSETC}/storage.ctl
+PATH_OVERVIEWCTL=${NEWSETC}/overview.ctl
+EXPIRECTL=${NEWSETC}/expire.ctl
+LOCALGROUPS=${NEWSETC}/localgroups
+
+CONTROLPROGS=${PATHCONTROL}
+INNCONFVAL=${NEWSBIN}/innconfval
+INND=${NEWSBIN}/innd
+INNDSTART=${NEWSBIN}/inndstart
+INNWATCH=${NEWSBIN}/innwatch
+INEWS=${NEWSBIN}/inews
+RNEWS=${NEWSBIN}/rnews
+PERL_STARTUP_INND=${PATHFILTER}/startup_innd.pl
+PERL_FILTER_INND=${PATHFILTER}/filter_innd.pl
+PERL_FILTER_NNRPD=${PATHFILTER}/filter_nnrpd.pl
+PYTHON_FILTER_INND=${PATHFILTER}/filter_innd.py
+PATH_PYTHON_INN_MODULE=${PATHFILTER}/INN.py
+PATH_TCL_STARTUP=${PATHFILTER}/startup.tcl
+PATH_TCL_FILTER=${PATHFILTER}/filter.tcl
+
+DAILY=${LOCKS}/LOCK.news.daily
+
+NEWSCONTROL=${INNDDIR}/control
+NNTPCONNECT=${INNDDIR}/nntpin
+SERVERPID=${INNDDIR}/innd.pid
+INNWSTATUS=${INNDDIR}/innwatch.status
+WATCHPID=${INNDDIR}/innwatch.pid
+
+AWK=@_PATH_AWK@
+SED=@_PATH_SED@
+INNDF=${NEWSBIN}/inndf
+EGREP=@_PATH_EGREP@
+PERL=@_PATH_PERL@
+PGP=@_PATH_PGP@
+SORT="@_PATH_SORT@"
+GETFTP="@GETFTP@"
+COMPRESS=@COMPRESS@
+LOG_COMPRESS=@LOG_COMPRESS@
+Z=@LOG_COMPRESSEXT@
+
+TEMPSOCK=`basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
+TEMPSOCKDIR=`echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
+
+HAVE_UUSTAT=@HAVE_UUSTAT@
+
+NEWSMASTER=@NEWSMASTER@
+NEWSUSER=@NEWSUSER@
+
+TMPDIR=${PATHTMP}; export TMPDIR;
+
+SPOOLTEMP=${PATHTMP}
+
+NEWSLBIN=${NEWSHOME}/local
+export NEWSLBIN
+
+umask @NEWSUMASK@
+
+PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin:/usr/ucb
+export PATH

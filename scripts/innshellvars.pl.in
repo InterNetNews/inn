@@ -1,0 +1,104 @@
+# 
+# Author:       James Brister <brister@vix.com> -- berkeley-unix --
+# Start Date:   Sat, 24 Aug 1996 22:08:19 +0200
+# Project:      INN 
+# File:         innshellvars.pl
+# RCSId:        $Id$
+# Description:  Set up any and all variables that an INN perl script
+#               might need.
+
+package inn ;
+
+eval `@prefix@/bin/innconfval -p`;
+
+$newshome = $pathnews;
+$spooldir = $pathspool;
+$most_logs = $pathlog;
+
+$errlog = "${most_logs}/errlog" ;
+$log = "${most_logs}/news" ;
+
+$spool = $patharticles;
+$overviewdir = $pathoverview;
+$archivedir = $patharchive;
+$badnews = "$pathincoming/bad";
+$spoolnews = $pathincoming;
+$batch = $pathoutgoing;
+$incoming = $pathincoming;
+
+$locks = $pathrun;
+$newsbin = $pathbin;
+$innddir = $pathrun;
+$newsetc = $pathetc;
+$newslbin = "$pathnews/local";
+
+$active = "${pathdb}/active" ;
+$activetimes = "${pathdb}/active.times" ;
+$ctlfile = "${newsetc}/control.ctl" ;
+$ctlwatch = "${newsetc}/innwatch.ctl" ;
+$history = "${pathdb}/history" ;
+$newactive = "${pathdb}/active.tmp" ;
+$newsfeeds = "${newsetc}/newsfeeds" ;
+$newsgroups = "${pathdb}/newsgroups" ;
+$oldactive = "${pathdb}/active.old" ;
+$path_motd = "${newsetc}/motd.news" ;
+$path_storagectl = "${newsetc}/storage.ctl" ;
+$path_overviewctl = "${newsetc}/overview.ctl" ;
+$localgroups = "$newsetc/localgroups" ;
+$expirectl = "${newsetc}/expire.ctl" ;
+
+$controlprogs = $pathcontrol;
+$inews = "${newsbin}/inews" ;
+$innconfval = "${newsbin}/innconfval" ;
+$innd = "${newsbin}/innd" ;
+$inndstart = "${newsbin}/inndstart" ;
+$innwatch = "${newsbin}/innwatch" ;
+$rnews = "${newsbin}/rnews" ;
+$perl_startup_innd = "$pathfilter/startup_innd.pl" ;
+$perl_filter_innd = "$pathfilter/filter_innd.pl" ;
+$perl_filter_nnrpd = "$pathfilter/filter_nnrpd.pl" ;
+$python_filter_innd = "$pathfilter/filter_innd.py" ;
+$path_python_inn_module ="$pathfilter/INN.py" ;
+$path_tcl_startup = "$pathfilter/startup.tcl" ;
+$path_tcl_filter = "$pathfilter/filter.tcl" ;
+
+$daily = "${locks}/LOCK.news.daily" ;
+
+$newscontrol = "${innddir}/control" ;
+$nntpconnect = "${innddir}/nntpin" ;
+$serverpid = "${innddir}/innd.pid" ;
+$innwstatus = "${innddir}/innwatch.status" ;
+$watchpid = "${innddir}/innwatch.pid" ;
+
+$awk = "@_PATH_AWK@" ;
+$sed = "@_PATH_SED@" ;
+$inndf = "${newsbin}/inndf" ;
+$egrep = "@_PATH_EGREP@" ;
+$perl = "@_PATH_PERL@" ;
+$pgp = "@_PATH_PGP@" ;
+$sort = "@_PATH_SORT@" ;
+$getftp = "@GETFTP@" ;
+$compress = "@COMPRESS@" ;
+$log_compress = "@LOG_COMPRESS@" ;
+$z = "@LOG_COMPRESSEXT@" ;
+
+($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
+($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
+
+$have_uustat = ("@HAVE_UUSTAT@" eq "DO" ? 1 : 0) ;
+
+$newsmaster = '@NEWSMASTER@' ;
+$newsuser = "@NEWSUSER@" ;
+
+$ENV{'TMPDIR'} = $pathtmp;
+$tmpdir = $pathtmp;
+$spooltemp = $pathtmp;
+
+$umask = @NEWSUMASK@ ;
+
+$syslog_facility = lc("@SYSLOG_FACILITY@");
+$syslog_facility =~ s/log_//;
+
+$ENV{'PATH'} = "${newslbin}:${newsbin}:$ENV{'PATH'}:/bin:/usr/bin:/usr/ucb" ;
+
+1 ;

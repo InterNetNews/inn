@@ -1,0 +1,122 @@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
+##  $Revision$
+##  News boot script.  Runs as "news" user.  Requires inndstart be
+##  setuid root.  Run from rc.whatever as:
+##     su news -c /path/to/rc.news >/dev/console
+
+AZ=ABCDEFGHIJKLMNOPQRSTUVWXYZ
+az=abcdefghijklmnopqrstuvwxyz
+##  Pick ${INND} or ${INNDSTART}
+WHAT=${INNDSTART}
+##  Set to true or false
+: ${DOINNWATCH:=true}
+DOINNWATCH=`echo ${DOINNWATCH} | tr ${AZ} ${az}`
+if [ -z "${DOINNWATCH}" \
+     -o "${DOINNWATCH}" = "on" \
+     -o "${DOINNWATCH}" = "true" \
+     -o "${DOINNWATCH}" = "yes" ]; then
+    DOINNWATCH=true
+else
+    DOINNWATCH=false
+fi
+
+: ${DOCNFSSTAT:=false}
+DOCNFSSTAT=`echo ${DOCNFSSTAT} | tr ${AZ} ${az}`
+if [ -z "${DOCNFSSTAT}" \
+     -o "${DOCNFSSTAT}" = "on" \
+     -o "${DOCNFSSTAT}" = "true" \
+     -o "${DOCNFSSTAT}" = "yes" ]; then
+    DOCNFSSTAT=true
+else
+    DOCNFSSTAT=false
+fi
+
+MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
+
+##  RFLAG is set below; set INNFLAGS in inn.conf(5)
+RFLAG=""
+
+##  Clean shutdown or already running?
+if [ -f ${SERVERPID} ] ; then
+    if kill -0 `cat ${SERVERPID}` 2>/dev/null; then
+	echo 'INND is running'
+	exit 0
+    fi
+    echo 'INND:  PID file exists -- unclean shutdown!'
+    RFLAG="-r"
+fi
+
+if [ ! -f ${PATHDB}/.news.daily ] ; then
+    case `find ${PATHBIN}/innd -mtime +1 -print 2>/dev/null` in
+    "")
+	;;
+    *)
+	echo 'No .news.daily file; need to run news.daily?' | eval ${MAIL}
+	;;
+    esac
+else
+    case `find ${PATHDB}/.news.daily -mtime +1 -print 2>/dev/null` in
+    "")
+	;;
+    *)
+	echo 'Old .news.daily file; need to run news.daily?' | eval ${MAIL}
+	;;
+    esac
+fi
+
+##  Active file recovery.
+if [ ! -s ${ACTIVE} ] ; then
+    if [ -s ${NEWACTIVE} ] ; then
+	mv ${NEWACTIVE} ${ACTIVE}
+    else
+	if [ -s ${OLDACTIVE} ] ; then
+	    cp ${OLDACTIVE} ${ACTIVE}
+	else
+	    echo 'INND:   No active file!'
+	    exit 1
+	fi
+    fi
+    RFLAG="-r"
+    # You might want to rebuild the DBZ database, too:
+    #cd ${PATHDB} \
+    #		&& makehistory -r \
+    #		&& mv history.n.dir history.dir \
+    #		&& mv history.n.index history.index \
+    #		&& mv history.n.hash history.hash
+fi
+
+##  Remove temporary batchfiles and lock files.
+( cd ${BATCH} && rm -f bch* )
+( cd ${LOCKS} && rm -f LOCK* )
+( cd ${TEMPSOCKDIR} && rm -f ${TEMPSOCK} )
+rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID}
+
+##  Start the show.
+echo 'Starting innd.'
+eval ${WHAT} ${RFLAG} ${INNFLAGS}
+
+# Gee, looks like lisp, doesn't it?
+${DOINNWATCH} && {
+    echo "Scheduled start of ${INNWATCH}."
+    ( sleep 60 ; ${INNWATCH} ) &
+}
+
+${DOCNFSSTAT} && {
+    echo "Scheduled start of cnfsstat."
+    ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l ) &
+}
+
+RMFILE=${MOST_LOGS}/expire.rm
+for F in ${RMFILE} ${RMFILE}.*; do
+    if [ -f $F -a -s $F ] ; then
+	echo "Removing articles from pre-downtime expire run (${F})."
+	(
+	    echo 'System shut down during expire.' \
+		'Unlinking articles listed in'
+	    echo ${F}
+	) | eval ${MAIL}
+	${PATHBIN}/expirerm ${F}
+    fi
+done &

@@ -1,0 +1,1071 @@
+#!@_PATH_PERL@ --
+##  $Revision$
+##  Sanity-check the configuration of an INN system
+##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
+
+require "@LIBDIR@/innshellvars.pl" ;
+
+$ST_MODE = 2;
+$ST_UID  = 4;
+$ST_GID  = 5;
+
+$newsuser = '@NEWSUSER@';
+$newsgroup = '@NEWSGRP@';
+
+##  We use simple names, mapping them to the real filenames only when
+##  we actually need a filename.
+%paths = (
+    'active',		"$inn::pathdb/active",
+    'archive',		"$inn::patharchive",
+    'badnews',		"$inn::pathincoming/bad",
+    'batchdir',		"$inn::pathoutgoing",
+    'control.ctl',	"$inn::pathetc/control.ctl",
+    'ctlprogs',		"$inn::pathcontrol",
+    'expire.ctl',	"$inn::pathetc/expire.ctl",
+    'history',		"$inn::pathdb/history",
+    'incoming.conf',	"$inn::pathetc/incoming.conf",
+    'inews',		"$inn::pathbin/inews",
+    'inn.conf',		"$inn::pathetc/inn.conf",
+    'innd',		"$inn::pathbin/innd",
+    'innddir',		"$inn::pathrun",
+    'inndstart',	"$inn::pathbin/inndstart",
+    'moderators',	"$inn::pathetc/moderators",
+    'most_logs',	"$inn::pathlog",
+    'newsbin',		"$inn::pathbin",
+    'newsboot',		"$inn::pathbin/rc.news",
+    'newsfeeds',	"$inn::pathetc/newsfeeds",
+    'overview.fmt',	"$inn::pathetc/overview.fmt",
+    'newsetc',		"$inn::pathetc",
+    'newslib',		"@LIBDIR@",
+    'nnrpd',		"$inn::pathbin/nnrpd",
+    'nntpsend.ctl',	"$inn::pathetc/nntpsend.ctl",
+    'oldlogs',		"$inn::pathlog/OLD",
+    'parsectl',		"$inn::pathbin/parsecontrol",
+    'passwd.nntp',	"$inn::pathetc/passwd.nntp",
+    'readers.conf',	"$inn::pathetc/readers.conf",
+    'rnews',		"$inn::pathbin/rnews",
+    'rnewsprogs',	"$inn::pathbin/rnews.libexec",
+    'spooltemp',	"$inn::pathtmp",
+    'spool',		"$inn::patharticles",
+    'spoolnews',	"$inn::pathincoming"
+);
+
+##  The sub's that check the config files.
+%checklist = (
+    'active',		'active',
+    'control.ctl',	'control_ctl',
+    'expire.ctl',	'expire_ctl',
+    'incoming.conf',	'incoming_conf',
+    'inn.conf',		'inn_conf',
+    'moderators',	'moderators',
+    'newsfeeds',	'newsfeeds',
+    'overview.fmt',	'overview_fmt',
+    'nntpsend.ctl',	'nntpsend_ctl',
+    'passwd.nntp',	'passwd_nntp',
+    'readers.conf',	'readers_conf'
+);
+
+##  The modes of the config files we can check.
+%modes = (
+    'active',		0664,
+    'control.ctl',	0640,
+    'expire.ctl',	0640,
+    'incoming.conf',	0640,
+    'inn.conf',		0644,
+    'moderators',	0644,
+    'newsfeeds',	0644,
+    'overview.fmt',	0644,
+    'nntpsend.ctl',	0640,
+    'passwd.nntp',	0640,
+    'readers.conf',	0640
+);
+
+
+sub
+spacious
+{
+    local ($i);
+
+    chop;
+    study;
+    if ( /^#/ || /^$/ ) {
+	$i = 1;
+    } elsif ( /^\s/ ) {
+	print "$file:$line: starts with whitespace\n";
+	$i = 1;
+    } elsif ( /\s$/ ) {
+	print "$file:$line: ends with whitespace\n";
+	$i = 1;
+    }
+    $i;
+}
+
+##
+##  These are the functions that verify each individual file, called
+##  from the main code.  Each function gets <IN> as the open file, $line
+##  as the linecount, and $file as the name of the file.
+##
+
+
+##
+##  active
+##
+sub
+active
+{
+    local ($group, $hi, $lo, $f, $alias, %groups, %aliases);
+
+    input: while ( <IN> ) {
+	$line++;
+	unless ( ($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+
+	print "$file:$line: group `$group' already appeared\n"
+	    if $groups{$group}++;
+	print "$file:$line: `$hi' <  '$lo'.\n"
+	    if $hi < $lo && $lo != $hi + 1;
+
+	next input if $f =~ /^[jmynx]$/;
+	unless ( ($alias) = $f =~ /^=(.*)$/ ) {
+	    print "$file:$line: bad flag `$f'.\n";
+	    next input;
+	}
+	if ($alias eq "") {
+	    print "$file:$line: empty alias.\n";
+	    next input;
+	}
+	$aliases{$alias} = $line
+	    unless defined $groups{$alias};
+    }
+    foreach $key ( keys %aliases ) {
+	print "$file:$aliases{$group} aliased to unknown group `$key'.\n"
+	    unless defined $groups{$key};
+    }
+    1;
+}
+
+
+##
+##  control.ctl
+##
+%control'messages = (
+    'all',		1,
+    'checkgroups',	1,
+    'ihave',		1,
+    'newgroup',		1,
+    'rmgroup',		1,
+    'sendme',		1,
+    'sendsys',		1,
+    'senduuname',	1,
+    'version',		1,
+);
+%control'actions = (
+    'drop',		1,
+    'log',		1,
+    'mail',		1,
+    'doit',		1,
+    'doifarg',		1,
+    'verify',           1
+);
+
+sub
+control_ctl
+{
+    local ($msg, $from, $ng, $act);
+
+    input: while ( <IN> ) {
+	next input if &spacious($file, ++$line);
+
+	unless ( ($msg, $from, $ng, $act) =
+		    /^([^:]+):([^:]+):([^:]+):(.+)$/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+	if ( !defined $control'messages{$msg} ) {
+	    print "$file:$line: unknown control message `$msg'.\n";
+	    next input;
+	}
+	print "$file:$line: action for unknown control messages is `doit'.\n"
+	    if $msg eq "default" && $act eq "doit";
+	print "$file:$line: empty from field.\n"
+	    if $from eq "";
+	print "$file:$line: bad email address.\n"
+	    if $from ne "*" && $from !~ /[@!]/;
+
+	##  Perhaps check for conflicting rules, or warn about the last-match
+	##  rule?  Maybe later...
+	print "$file:$line: may not match groups properly.\n"
+	    if $ng ne "*" && $ng !~ /\./;
+	if ( $act !~ /([^=]+)(=.+)?/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+	$act =~ s/=.*//;
+	$act = "verify" if ($act =~ /^verify-.+/) ;
+	print "$file:$line: unknown action `$act'\n"
+	    if !defined $control'actions{$act};
+    }
+    1;
+}
+
+
+##
+##  expire.ctl
+##
+sub
+expire_ctl
+{
+    local ($rem, $v, $def, $flag, $keep, $default, $purge);
+
+    input: while ( <IN> ) {
+	next input if &spacious($file, ++$line);
+
+	if ( ($v) = m@/remember/:(.+)@ ) {
+	    print "$file:$line: more than one /remember/ line.\n"
+		if $rem++;
+	    if ( $v !~ /[\d\.]+/ ) {
+		print "$file:$line: illegal value `$v' for remember.\n";
+		next input;
+	    }
+	    print "$file:$line: are you sure about your /remember/ value?\n"
+		##  These are arbitrary "sane" values.
+		if $v != 0 && ($v > 60.0 || $v < 5.0);
+	    next input;
+	}
+
+	##  Could check for conflicting lines, but that's hard.
+	unless ( ($class, $keep, $default, $purge) =
+         /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+	print "$file:$line: invalid class\n"
+	    if $class < 0;
+	print "$file:$line: purge `$purge' younger than default `$default'.\n"
+	    if $purge ne "never" && $default > $purge;
+	print "$file:$line: default `$default' younger than keep `$keep'.\n"
+	    if $default ne "never" && $keep ne "never" && $keep > $default;
+    }
+    1;
+}
+
+
+##
+##  incoming.conf
+##
+sub
+incoming_conf
+{
+    1;
+}
+
+
+##
+##  inn.conf
+##
+%inn_conf'fields = (
+    'fromhost',			0,
+    'server',			0,
+    'pathhost',			0,
+    'pathalias',		0,
+    'organization',		0,
+    'moderatormailer',		0,
+    'domain',			0,
+    'hiscachesize',		0,
+    'xrefslave',		0,
+    'complaints',		0,
+    'spoolfirst',		0,
+    'immediatecancel',		0,
+    'timer',			0,
+    'status',			0,
+    'articlemmap',		0,
+    'mta',			0,
+    'mailcmd',			0,
+    'checkincludedtext',	0,
+    'maxforks',			0,
+    'maxartsize',		0,
+    'nicekids',			0,
+    'verifycancels',		0,
+    'logcancelcomm',		0,
+    'wanttrash',		0,
+    'remembertrash',		0,
+    'linecountfuzz',		0,
+    'peertimeout',		0,
+    'clienttimeout',		0,
+    'readerswhenstopped',	0,
+    'allownewnews',		0,
+    'localmaxartsize',		0,
+    'logartsize',		0,
+    'logipaddr',		0,
+    'chaninacttime',		0,
+    'maxconnections',		0,
+    'chanretrytime',		0,
+    'artcutoff',		0,
+    'pauseretrytime',		0,
+    'nntplinklog',		0,
+    'nntpactsync',		0,
+    'badiocount',		0,
+    'blockbackoff',		0,
+    'icdsynccount',		0,
+    'bindaddress',		0,
+    'sourceaddress',		0,
+    'port',			0,
+    'readertrack',		0,
+    'strippostcc',		0,
+    'ovmethod',			0,
+    'keywords',			0,
+    'keylimit',			0,
+    'keyartlimit',		0,
+    'keymaxwords',		0,
+    'pathnews',			0,
+    'pathbin',			0,
+    'pathfilter',		0,
+    'pathcontrol',		0,
+    'pathdb',			0,
+    'pathetc',			0,
+    'pathrun',			0,
+    'pathlog',			0,
+    'pathspool',		0,
+    'patharticles',		0,
+    'pathoverview',		0,
+    'pathoutgoing',		0,
+    'pathincoming',		0,
+    'patharchive',		0,
+    'logsitename',		0,
+    'pathhttp',			0,
+    'nnrpdposthost',		0,
+    'nnrpdpostport',		0,
+    'nnrpdoverstats',		0,
+    'backoffauth',		0,
+    'backoffdb',		0,
+    'backoffk',			0,
+    'backoffpostfast',		0,
+    'backoffpostslow',		0,
+    'backofftrigger',		0,
+    'pathtmp',			0,
+    'storeonxref',		0,
+    'refusecybercancels',	0,
+    'nnrpdcheckart',		0,
+    'nicenewnews',		0,
+    'nicennrpd',		0,
+    'usecontrolchan',		0,
+    'mergetogroups',		0,
+    'noreader',			0,
+    'innwatchsleeptime',	0,
+    'pgpverify',		0,
+    'controlfailnotice',	0,
+    'logcycles',		0,
+    'innwatchpauseload',	0,
+    'innwatchhiload',		0,
+    'innwatchloload',		0,
+    'innwatchspoolspace',	0,
+    'innwatchbatchspace',	0,
+    'innwatchlibspace',		0,
+    'innwatchspoolnodes',	0,
+    'nnrpperlauth',		0,
+    'docnfsstat',		0,
+    'nnrpdauthsender',		0,
+    'cnfscheckfudgesize',	0,
+    'rlimitnofile',		0,
+    'ignorenewsgroups',		0,
+    'overcachesize',		0,
+    'enableoverview',		0,
+    'useoverchan',		0,
+    'wireformat',		0,
+    'addnntppostinghost',	0,
+    'addnntppostingdate',	0,
+    'ovgrouppat',		0,
+    'groupbaseexpiry',		0,
+    'wipcheck',			0,
+    'wipexpire',		0
+);
+%inn_conf'optionals = (
+    'innflags',			0,
+    'doinnwatch',		0
+);
+
+sub
+inn_conf
+{
+    local ($k, $v, $hostname, $fqdn);
+
+    chop($hostname = `hostname`);
+    $fqdn = (gethostbyname($hostname))[0];
+    foreach $key ( keys %inn_conf'fields ) {
+	$inn_conf'fields{$key} = 0;
+    }
+
+    input: while ( <IN> ) {
+	next input if &spacious($file, ++$line);
+
+	unless ( ($k, $v) = /^([^:]*):\s*(.*)$/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+	if ( !defined $inn_conf'fields{$k} ) {
+	    if ( !defined $inn_conf'optionals{$k} ) {
+		print "$file:$line: Invalid field `$k'\n";
+		next input;
+	    }	
+	}
+	if ( ++$inn_conf'fields{$k} > 1 ) {
+	    print "$file:$line: Duplicate field `$k'\n";
+	    next input;
+	}
+	if ( $k eq "domain" ) {
+	    print "$file:$line: domain (`$v') isn't local domain\n"
+		if $fqdn =~ /[^\.]+\(\..*\)/ && $v ne $1;
+	    print "$file:$line: domain should not have a leading period\n"
+		if $v =~ /^\./;
+	} elsif ( $k eq "fromhost" ) {
+	    print "$file:$line: fromhost isn't a valid FQDN\n"
+		if $v !~ /[\w\-]+\.[\w\-]+/;
+	} elsif ( $k eq "moderatormailer" ) {
+	    print "$file:$line: modmailer has bad address\n"
+		if $v !~ /[\w\-]+\.[\w\-]+/ && $v ne "%s";
+	} elsif ( $k eq "organization" ) {
+	    print "$file:$line: org is blank\n"
+		if $v eq "";
+	} elsif ( $k eq "pathhost" ) {
+	    print "$file:$line: pathhost has a ! in it\n"
+		if $v =~ /!/;
+	} elsif ( $k eq "pathalias" ) {
+	    print "$file:$line: pathalias has a ! in it\n"
+		if $v =~ /!/;
+	} elsif ( $k eq "server" ) {
+	    print "$file:$line: server (`$v') isn't local hostname\n"
+		if $pedantic && $fqdn !~ /^$v/;
+	}
+	else {
+#	    print "$file:$line: semi-known field\n";
+	}
+    }
+
+    key: foreach $key ( keys %inn_conf'fields ) {
+	next key if defined $inn_conf'fields{$key};
+	next key if defined $inn_conf'optionals{$key};
+	if ( $key eq "moderatormailer" ) {
+	    printf "$file:$line: missing $key and no moderators file.\n"
+		if ! -f $paths{"moderators"};
+	} elsif ( $pedantic ) {
+	    printf "$file:$line: missing $key\n";
+	}
+    }
+    1;
+}
+
+
+##
+##  moderators
+##
+sub
+moderators
+{
+    local ($k, $v);
+
+    input: while ( <IN> ) {
+	next input if &spacious($file, ++$line);
+
+	unless ( ($k, $v) = /^([^:]+):(.+)$/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+
+	if ( $k eq "" || $v eq "" ) {
+	    print "$file:$line: missing field\n";
+	    next input;
+	}
+	print "$file:$line: not an email address\n"
+	    if $pedantic && $v !~ /[@!]/;
+	print "$file:$line: `$v' goes to local address\n"
+	    if $pedantic && $v eq "%s";
+	print "$file:$line: more than one %s in address field\n"
+	    if $v =~ /%s.*%s/;
+    }
+    1;
+}
+
+
+##
+##  newsfeeds
+##
+%newsfeeds'flags = (
+    '<',	'^\d+$',
+    '>',	'^\d+$',
+    'A',	'^[cCdeop]+$',
+    'B',	'^\d+(/\d+)?$',
+    'C',	'^\d+$',
+    'F',	'^.+$',
+    'G',	'^\d+$',
+    'H',	'^\d+$',
+    'I',	'^\d+$',
+    'N',	'^[mu]$',
+    'O',	'^\S+$',
+    'P',	'^\d+$',
+    'S',	'^\d+$',
+    'T',	'^[cflmpx]$',
+    'W',	'^[bfghmnpst*DHNPOR]*$',
+);
+
+sub
+newsfeeds
+{
+    local ($next, $start, $me_empty, @muxes, %sites);
+    local ($site, $pats, $dists, $flags, $param, $type, $k, $v, $defsub);
+    local ($bang, $nobang, $prog, $dir);
+
+    input: while ( <IN> ) {
+	$line++;
+	next input if /^$/;
+	chop;
+	print "$file:$line: starts with whitespace\n"
+	    if /^\s+/;
+
+	##  Read continuation lines.
+	$start = $line;
+	while ( /\\$/ ) {
+	    chop;
+	    chop($next = <IN>);
+	    $line++;
+	    $next =~ s/^\s*//;
+	    $_ .= $next;
+	}
+	next input if /^#/;
+	print "$file:$line: ends with whitespace\n"
+	    if /\s+$/;
+
+	unless ( ($site, $pats, $flags, $param) =
+		    /^([^:]+):([^:]*):([^:]*):(.*)$/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+
+	print "$file:$line: Newsfeed `$site' has whitespace in its name\n"
+	    if $site =~ /\s/;
+	print "$file:$line: comma-space in site name\n"
+	    if $site =~ m@, @;
+	print "$file:$line: comma-space in subscription list\n"
+	    if $pats =~ m@, @;
+	print "$file:$line: comma-space in flags\n"
+	    if $flags =~ m@, @;
+
+	print "$file:$start: ME has exclusions\n"
+	    if $site =~ m@^ME/@;
+	print "$file:$start: multiple slashes in exclusions for `$site'\n"
+	    if $site =~ m@/.*/@;
+	$site =~ s@([^/]*)/.*@$1@;
+	print "$site, "
+	    if $verbose;
+
+	if ( $site eq "ME" ) {
+	    $defsub = $pats;
+	    $defsub =~ s@(.*)/.*@$1@;
+	} elsif  ( $defsub ne "" ) {
+	    $pats = "$defsub,$pats";
+	}
+	print "$file:$start: Multiple slashes in distribution for `$site'\n"
+	    if $pats =~ m@/.*/@;
+
+	if ( $site eq "ME" ) {
+	    print "$file:$start: ME flags should be empty\n"
+		if $flags ne "";
+	    print "$file:$start: ME param should be empty\n"
+		if $param ne "";
+	    $me_empty = 1
+		if $pats !~ "/.+";
+	}
+
+	##  If we don't have !junk,!control, give a helpful warning.
+#	if ( $site ne "ME" && $pats =~ /!\*,/ ) {
+#	    print "$file:$start: consider adding !junk to $site\n"
+#		if $pats !~ /!junk/;
+#	    print "$file:$start: consider adding !control to $site\n"
+#		if $pats !~ /!control/;
+#	}
+
+	##  Check distributions.
+	if ( ($dists) = $pats =~ m@.*/(.*)@ ) {
+	    $bang = $nobang = 0;
+	    dist: foreach $d ( split(/,/, $dists) ) {
+		if ( $d =~ /^!/ ) {
+		    $bang++;
+		}
+		else {
+		    $nobang++;
+		}
+		print "$file:$start: questionable distribution `$d'\n"
+		    if $d !~ /^!?[a-z0-9-]+$/;
+	    }
+	    print "$file:$start: both ! and non-! distributions\n"
+		if $bang && $nobang;
+	}
+	$type = "f";
+	flag: foreach $flag ( split(/,/, $flags) ) {
+	    ($k, $v) = $flag =~ /(.)(.*)/;
+	    if ( !defined $newsfeeds'flags{$k} ) {
+		print "$file:$start: unknown flag `$flag'\n";
+		next flag;
+	    }
+	    if ( $v !~ /$newsfeeds'flags{$k}/ ) {
+		print "$file:$start: bad value `$v' for flag `$k'\n";
+		next flag;
+	    }
+	    $type = $v
+		if $k eq "T";
+	}
+
+	##  Warn about multiple feeds.
+	if ( !defined $sites{$site} ) {
+	    $sites{$site} = $type;
+	} elsif ( $sites{$site} ne $type ) {
+	    print "$file:$start: feed $site multiple conflicting feeds\n";
+	}
+
+	if ( $type =~ /[cpx]/ ) {
+	    $prog = $param;
+	    $prog =~ s/\s.*//;
+	    print "$file:$start: relative path for $site\n"
+		if $prog !~ m@^/@;
+	    print "$file:$start: `$prog' is not executable for $site\n"
+		if ! -x $prog;
+	}
+	if ( $type eq "f" && $param =~ m@/@ ) {
+	    $dir = $param;
+	    $dir =~ s@(.*)/.*@$1@;
+	    $dir = $paths{'batchdir'} . "/" . $dir
+		unless $dir =~ m@^/@;
+	    print "$file:$start: directory `$dir' does not exist for $site\n"
+		if ! -d $dir;
+	}
+
+	##  If multiplex target not known, add to multiplex list.
+	push(@muxes, "$start: undefined multiplex `$param'")
+	    if $type eq "m" && !defined $sites{$param};
+    }
+
+    ##  Go through and make sure all referenced multiplex exist.
+    foreach (@muxes) {
+	print "$file:$_\n"
+	    if /`(.*)'/ && !defined $sites{$1};
+    }
+    print "$file:0: warning you accept all incoming article distributions\n"
+	if !defined $sites{"ME"} || $me_empty;
+
+    print "done.\n"
+	if $verbose;
+    1;
+}
+
+
+##
+##  overview.fmt
+##
+#%overview_fmtheaders = (
+#    'Approved',		1,
+#    'Bytes',		1,
+#    'Control',		1,
+#    'Date',		1,
+#    'Distribution',	1,
+#    'Expires',		1,
+#    'From',		1,
+#    'Lines',		1,
+#    'Message-ID',	1,
+#    'Newsgroups',	1,
+#    'Path',		1,
+#    'References',	1,
+#    'Reply-To',		1,
+#    'Sender',		1,
+#    'Subject',		1,
+#    'Supersedes',	1,
+#);
+
+sub
+overview_fmt
+{
+    local ($header, $mode, $sawfull);
+
+    $sawfull = 0;
+    input: while ( <IN> ) {
+	next input if &spacious($file, ++$line);
+
+	unless ( ($header, $mode) = /^([^:]+):([^:]*)$/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+
+	#print "$file:$line: unknown header `$header'\n"
+	#    if !defined $overview_fmtheaders{$header};
+	if ( $mode eq "full" ) {
+	    $sawfull++;
+	} elsif ( $mode eq "" ) {
+	    print "$file:$line: short header `$header' appears after full one\n"
+		if $sawfull;
+	} else {
+	    print "$file:$line: unknown mode `$mode'\n";
+	}
+    }
+    1;
+}
+
+
+##
+##  nntpsend.ctl
+##
+sub
+nntpsend_ctl
+{
+    local ($site, $fqdn, $flags, $f, $v);
+
+    input: while ( <IN> ) {
+	next input if &spacious($file, ++$line);
+
+	##  Ignore the size info for now.
+	unless ( ($site, $fqdn, $flags) =
+		    /^([\w\-\.]+):([^:]*):[^:]*:([^:]*)$/ ) {
+	    print "$file:$line: malformed line.\n";
+	    next input;
+	}
+	print "$file:$line: FQDN is empty for `$site'\n"
+	    if $fqdn eq "";
+
+	next input if $flags eq "";
+	flag: foreach (split(/ /, $flags)) {
+	    unless ( ($f, $v) = /^-([adrvtTpSP])(.*)$/ ) {
+		print "$file:$line: unknown argument for `$site'\n";
+		next flag;
+	    }
+	    print "$file:$line: unknown argument to option `$f': $flags\n"
+		if ( $f eq "t" || $f eq "T" || $f eq "P") && $v !~ /\d+/;
+	}
+    }
+    1;
+}
+
+
+##
+##  passwd.nntp
+##
+sub
+passwd_nntp
+{
+    local ($name, $pass);
+
+    input: while ( <IN> ) {
+	next input if &spacious($file, ++$line);
+
+	unless ( ($name, $pass) = /[\w\-\.]+:(.*):(.*)(:authinfo)?$/ ) {
+	    next input;
+	    print "$file:$line: malformed line.\n";
+	}
+	print "$file:$line: username/password must both be blank or non-blank\n"
+	    if ( $name eq "" && $pass ne "" ) || ($name ne "" && $pass eq "");
+    }
+    1;
+}
+
+
+##
+##  readers.conf
+##
+sub
+readers_conf
+{
+    1;
+}
+
+
+##
+##  Routines to check permissions
+##
+
+##  Given a file F, check its mode to be M, and its ownership to be by the
+##  user U in the group G.  U and G have defaults.
+sub
+checkperm
+{
+    local ($f, $m, $u, $g) = ( @_, $newsuser, $newsgroup);
+    local (@sb, $owner, $group, $mode);
+
+    die "Internal error, undefined name in perm from ", (caller(0))[2], "\n"
+	if !defined $f;
+    die "Internal error, undefined mode in perm from ", (caller(0))[2], "\n"
+	if !defined $m;
+
+    if ( ! -e $f ) {
+	print "$pfx$f:0: missing\n";
+    }
+    else {
+	@sb = stat _;
+	$owner = (getpwuid($sb[$ST_UID]))[0];
+	$group = (getgrgid($sb[$ST_GID]))[0];
+	$mode  = $sb[$ST_MODE] & ~0770000;
+
+	##  Ignore setgid bit on directories.
+	$mode &= ~0777000
+	    if -d _;
+
+	if ( $owner ne $u ) {
+	    print "$pfx$f:0: owned by $owner, should be $u\n";
+	    print "chown $u $f\n"
+		if $fix;
+	}
+	if ( $group ne $g ) {
+	    print "$pfx$f:0: in group $group, should be $g\n";
+	    print "chgrp $g $f\n"
+		if $fix;
+	}
+	if ( $mode ne $m ) {
+	    printf "$pfx$f:0: mode %o, should be %o\n", $mode, $m;
+	    printf "chmod %o $f\n", $m
+		if $fix;
+	}
+    }
+}
+
+##  Return 1 if the Intersection of the files in the DIR and FILES is empty.
+##  Otherwise, report an error for each illegal file, and return 0.
+sub
+intersect
+{
+    local ($dir, @files) = @_;
+    local (@in, %dummy, $i);
+
+    if ( !opendir(DH, $dir) ) {
+	print "$pfx$dir:0: can't open directory\n";
+    }
+    else {
+	@in = grep($_ ne "." && $_ ne "..", readdir(DH));
+	closedir(DH);
+    }
+
+    $i = 1;
+    if ( scalar(@in) ) {
+	foreach ( @files ) {
+	    $dummy{$_}++;
+	}
+	foreach ( grep ($dummy{$_} == 0, @in) ) {
+	    print "$pfx$dir:0: ERROR: illegal file `$_' in directory\n";
+	    $i = 0;
+	}
+    }
+    $i;
+}
+
+@directories = (
+    'archive', 'badnews', 'batchdir', 'ctlprogs', 'most_logs', 'newsbin',
+    'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
+);
+@control_scripts = (
+    'checkgroups', 'default', 'docheckgroups', 'ihave', 'newgroup', 'rmgroup',
+    'sendme', 'sendsys', 'senduuname', 'version'
+);
+@rnews_programs = (
+    'c7unbatch', 'decode', 'encode'
+);
+@newsbin_public = (
+    'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'expire',
+    'filechan', 'getlist', 'grephistory', 'innconfval', 'innxmit',
+    'makeactive', 'makehistory', 'newsrequeue', 'nntpget', 'overchan',
+    'prunehistory', 'shlock', 'shrinkfile'
+);
+@newsbin_private = (
+    'ctlinnd', 'expirerm', 'inncheck', 'innstat', 'innwatch',
+    'news.daily', 'nntpsend', 'scanlogs', 'sendbatch',
+    'tally.control', 'tally.unwanted', 'writelog',
+    'send-ihave', 'send-nntp', 'send-uucp'
+);
+#@newslib_private_read = (
+#    'innlog.pl'
+#);
+
+## The modes for the various programs.
+%prog_modes = (
+    'inews',		02555,
+    'innd',		 0550,
+    'newsboot',		 0550,
+    'nnrpd',		 0555,
+    'parsectl',		 0550,
+    'rnews',		02555
+);
+
+##  Check the permissions of nearly every file in an INN installation.
+sub
+check_all_perms
+{
+    local ($rnewsprogs) = $paths{'rnewsprogs'};
+    local ($ctlprogs) = $paths{'ctlprogs'};
+    local ($newsbin) = $paths{'newsbin'};
+    local ($newslib) = $paths{'newslib'};
+
+    foreach ( @directories ) {
+	&checkperm($paths{$_}, 0775);
+    }
+    &checkperm($paths{'innddir'}, 0770);
+    foreach ( keys %prog_modes ) {
+	&checkperm($paths{$_}, $prog_modes{$_});
+    }
+    &checkperm($paths{'inndstart'}, 04550);
+    foreach ( keys %paths ) {
+	&checkperm($paths{$_}, $modes{$_})
+	    if defined $modes{$_};
+    }
+    &checkperm($paths{'history'}, 0644);
+    &checkperm($paths{'history'} . ".dir", 0644);
+    &checkperm($paths{'history'} . ".index", 0644);
+    &checkperm($paths{'history'} . ".hash", 0644);
+    #foreach ( @newslib_private_read ) {
+    #   &checkperm("$newslib/$_", 0440);
+    #}
+    foreach ( @newsbin_private ) {
+	&checkperm("$newsbin/$_", 0550);
+    }
+    foreach ( @newsbin_public ) {
+	&checkperm("$newsbin/$_", 0555);
+    }
+    foreach ( @control_scripts ) {
+	&checkperm("$ctlprogs/$_", 0550);
+    }
+    foreach ( @rnews_programs ) {
+	&checkperm("$rnewsprogs/$_", 0555);
+    }
+
+    ##  Also make sure that @rnews_programs are the *only* programs in there;
+    ##  anything else is probably someone trying to spoof rnews into being bad.
+    &intersect($rnewsprogs, @rnews_programs);
+
+    1;
+}
+
+
+##
+##  Parsing, main routine.
+##
+
+sub
+Usage
+{
+    local ($i) = 0;
+
+    print "Usage error: @_.\n";
+    print
+"Usage:
+	$program [-v] [-noperm] [-pedantic] [-perms [-fix] ] [-a|file...]
+File to check may be followed by \"=path\" to use the specified path.  All
+files are checked if -a is used or if -perms is not used.  Files that may
+be checked are:\n";
+    foreach ( sort(keys %checklist) ) {
+	printf "     %-20s", $_;
+	if ( ++$i == 3) {
+	    print "\n";
+	    $i = 0;
+	}
+    }
+    print "\n"
+	if $i;
+    exit 0;
+}
+
+
+sub
+parse_flags
+{
+    $all = 0;
+    $fix = 0;
+    $perms = 0;
+    $noperms = 0;
+    $verbose = 0;
+    @todo = ();
+
+    arg: foreach ( @ARGV ) {
+	if ( /-a/ ) {
+	    $all++;
+	    next arg;
+	}
+	if ( /^-v/ ) {
+	    $verbose++;
+	    next arg;
+	}
+	if ( /^-ped/ ) {
+	    $pedantic++;
+	    next arg;
+	}
+	if ( /^-f/ ) {
+	    $fix++;
+	    next arg;
+	}
+	if ( /^-per/ ) {
+	    $perms++;
+	    next arg;
+	}
+	if ( /^-noperm/ ) {
+	    $noperms++;
+	    next arg;
+	}
+	if ( /^-/ ) {
+	    &Usage("Unknown flag `$_'");
+	}
+	if ( ($k, $v) = /(.*)=(.*)/ ) {
+	    &Usage("Can't check `$k'")
+		if !defined $checklist{$k};
+	    push(@todo, $k);
+	    $paths{$k} = $v;
+	    next arg;
+	}
+	&Usage("Can't check `$_'")
+	    if !defined $checklist{$_};
+	push(@todo, $_);
+    }
+
+    &Usage("Can't use `-fix' without `-perm'")
+	if $fix && !$perms;
+    &Usage("Can't use `-noperm' with `-perm'")
+	if $noperms && $perms;
+    $pfx = $fix ? '# ' : '';
+
+    @todo = grep(defined $checklist{$_}, sort(keys %paths))
+	if $all || (scalar(@todo) == 0 && ! $perms);
+}
+
+
+$program = $0;
+$program =~ s@.*/@@;
+$| = 1;
+&parse_flags();
+action: foreach $workfile ( @todo ) {
+    $file = $paths{$workfile};
+    if ( ! -f $file ) {
+	print "$file:0: file missing\n";
+	next action;
+    }
+    print "Looking at $file...\n"
+	if $verbose;
+    if ( !open(IN, $file) ) {
+	print "$pfx$workfile:0: can't open $!\n";
+	next action;
+    }
+    &checkperm($file, $modes{$workfile})
+	if $noperms == 0 && !$perms && defined $modes{$workfile};
+    $line = 0;
+    eval "&$checklist{$workfile}" || warn "$@";
+    close(IN);
+}
+
+&check_all_perms()
+    if $perms;
+exit(0);
+
+if ( 0 ) {
+    &active();
+    &control_ctl();
+    &incoming_conf();
+    &expire_ctl();
+    &inn_conf();
+    &moderators();
+    &nntpsend_ctl();
+    &newsfeeds();
+    &overview_fmt();
+    &passwd_nntp();
+    &readers_conf();
+}
