@@ -301,6 +301,11 @@ Configuring INN
                        capable of processing.  A value of 16384 (16 MB) is a
                        good choice if you can spare the RAM.
 
+  overviewmmap         Overview data is mmaped and reading overview would be
+                       faster with this.  Note that on some systems (NextStep
+                       is reported so far) it would be worse than ever.  For 
+                       those systems overviewmmap should be "no".
+
   2. newsfeeds (REQUIRED)
 
   The newsfeeds file determines how incoming articles are redistributed to
