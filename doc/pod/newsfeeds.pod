@@ -1,0 +1,755 @@
+=head1 NAME
+
+newsfeeds - Determine where Usenet articles are sent
+
+=head1 DESCRIPTION
+
+The file I<pathetc>/newsfeeds specifies how incoming articles should be
+distributed to other programs and files on the server.  It is parsed by
+the InterNetNews server innd(8) when it starts up, or when directed to by
+ctlinnd(8).  B<innd> doesn't send articles to remote sites itself, so
+F<newsfeeds> doesn't directly determine which remote news servers articles
+are sent to.  Instead, it specifies what batch files should be created or
+which programs should be run (and what information should be sent to
+them), and then this information is used by programs like innxmit(8) and
+innfeed(8) to feed articles to remote sites.
+
+The F<newsfeeds> file isn't used solely to set up feeding accepted
+articles to remote sites but also to pass them (or bits of information
+about them) to any local programs or files that want that data.  For
+example, controlchan(8), a daemon that processes incoming control
+messages, runs out of F<newsfeeds>, as could a news to mail gateway.
+
+The file is interpreted as a set of lines, parsed according to the
+following rules:  If a line ends with a backslash, the backslash, the
+newline, and any whitespace at the start of the next line is deleted.
+This is repeated until the entire "logical" line is collected.  If the
+logical line is blank or starts with a number sign (C<#>), it is ignored.
+
+All other lines are interpreted as feed entries.  An entry should consist
+of four colon-separated fields; two of the fields may have optional
+sub-fields, marked off by a slash.  Fields or sub-fields that take
+multiple parameters should be separated by a comma.  Extra whitespace can
+cause problems and should be avoided.  Except for the site names, case is
+significant.  The format of an entry is:
+
+    sitename[/exclude,exclude,...]\
+        :pattern,pattern...[/distribution,distribution...]\
+        :flag,flag...\
+        :parameter
+
+Each field is described below.
+
+The I<sitename> is the name of the site to which a news article can be
+sent.  It is used for writing log entries and for determining if an
+article should be forwarded to a site.  (A "site" is the generic term for
+some destination of newsfeed data; it often corresponds to a remote news
+peer, but doesn't have to.  For example, a local archiving program run
+from F<newsfeeds> is also a "site.")  If I<sitename> already appears in
+the article's Path: header, then the article will not be sent to the site.
+The name is usually whatever the remote site uses to identify itself in
+the Path: header, but can be almost any word.
+
+Be careful, though, to avoid having the I<sitename> accidentally match a
+Path: header entry unintentionally.  For this reason, special local
+entries (such as archivers or gateways) should probably end with an
+exclamation point to make sure that they do not have the same name as any
+real site.  For example, C<gateway> is an obvious name for the local entry
+that forwards articles out to a mailing list.  If a site with the name
+C<gateway> posts an article, when the local site receives the article it
+will see the name in the Path and not send the article to its own
+C<gateway> entry.  Since C<gateway!> can't appear as an individual Path:
+entry since C<!> is a delimiter in the Path: header, that would be a
+better thing to use for I<sitename>.
+
+(Another way to avoid this problem is with the C<Ap> flag; see the
+description below.)
+
+If an entry has an exclusion sub-field, the article will not be sent to
+that site if any of I<exclude> appear in the Path: header.  (It's
+sometimes convenient to have the I<sitename> be an abbreviated form of the
+name of the remote site, since all the I<sitename>s to which an article
+is sent are written to the log and using shorter I<sitename>s can
+therefore improve performance for large servers.  In this case, the Path:
+header entries of those sites should be given as I<exclude> entries and
+the C<Ap> flag used so that the abbreviated I<sitename> doesn't
+accidentally match some other Path: header entry.)
+
+The same I<sitename> can be used more than once and the appropriate action
+will be taken for each entry that should receive the article, but this is
+recommended only for program feeds to avoid confusion.  Case is not
+significant in site names.
+
+The comma-separated I<pattern> specifies which groups to send to the site;
+it is interpreted to build a "subscription list" for the site.  The
+default subscription is to get all groups carried by the server.  It is a
+wildmat(3) pattern supporting poison (C<@>) wildcards; see the wildmat(3)
+man page for full details on the pattern matching language.  I<pattern>
+will be matched against every newsgroup carried by the server and all
+newsgroups that match will be added to the subscription list for the site.
+
+Normally, a given article (or information about it) is sent to a site if
+any of the articles to which the article was posted are in that site's
+subscription list.  If a newsgroup matches a C<@> pattern in I<pattern>,
+then not only is it not added to the subscription list, but any articles
+crossposted to that newsgroup also will not be sent to that site even if
+other newsgroups to which it was crossposted are in that site's
+subscription list.  This is called a poison pattern (because matching
+groups are "poisoned").
+
+For example, to receive all comp.* groups, but only comp.sources.unix
+within the sources newsgroups, the following I<pattern> can be used:
+
+    comp.*,!comp.sources.*,comp.sources.unix
+
+Note that the trailing C<.*> is required; the pattern has to match the
+whole newsgroup name.  C<comp.sources.*> could be written C<comp.sources*>
+and would exclude the newsgroup comp.sources (if it exists) as well as the
+groups in the comp.sources.* hierarchy, but note that this would also
+exclude a newsgroup named comp.sources-only (whereas the above pattern
+would add that group to the site subscription list since it matches
+C<comp.*> and none of the other patterns.
+
+For another example, to feed alt.* and misc.* to a given site but not any
+articles posted to alt.binaries.warez (even if they're also crossposted to
+other alt.* or misc.* groups), the following pattern can be used:
+
+    alt.*,@alt.binaries.warez,misc.*
+
+Note, however, that if you reversed the C<alt.*> and <@alt.binaries.warez>
+entries, this pattern would be equivalent to C<alt.*,misc.*>, since the
+last matching pattern determines whether a given newsgroup matches and the
+poison logic only applies if the poison entry is the last matching entry.
+
+Control messages follow slightly different propagation rules than normal
+articles; see innd(8) for the details.  Note that most subscriptions
+should have C<!junk,!control*> in their pattern list due to those
+propagation rules (and since junk is a special internal newsgroup; see
+I<wanttrash> in inn.conf(5) for more details on what it's used for).
+
+A subscription can be further modified by specifying distributions that
+the site should or should not receive.  The default is to send all
+articles to all sites that subscribe to any of the groups where it has
+been posted, but if an article has a Distribution: header and any
+I<distribution>s are specified, then they are checked according to the
+following rules:
+
+=over 4
+
+=item 1.
+
+If the Distribution: header matches any of the values in the sub-field,
+the article is sent.
+
+=item 2.
+
+If a I<distribution> starts with an exclamation point, and it matches the
+Distribution: header, the article is not sent.
+
+=item 3.
+
+If the Distribution: header does not match any I<distribution> in the
+site's entry and no negations were used, the article is not sent.
+
+=item 4.
+
+If the Distribution: header does not match any I<distribution> in the
+site's entry and any I<distribution> started with an exclamation point,
+the article is sent.
+
+=back
+
+If an article has more than one distribution specified, then each one is
+handled according according to the above rules.  If any of the specified
+distributions indicate that the article should be sent, it is; if none do,
+it is not sent.  In other words, the rules are used as a logical or.
+
+It is almost definitely a mistake to have a single feed that specifies
+distributions that start with an exclamation point along with some that
+don't.
+
+Distributions are text words, not patterns; entries like C<*> or C<all>
+have no special meaning.
+
+The I<flag> field is described in L<"FLAG VALUES">.  The interpretation of
+the I<parameter> field depends on the type of feed and is explained in
+more detail in L<"FEED TYPES">.  It can be omitted for some types of
+feeds.
+
+The site named C<ME> is special.  There must be exactly one such entry,
+and it should be the first entry in the file.  If the C<ME> entry has an
+exclusion sub-field, incoming articles are rejected completely if any of
+the names specified in that exclusion sub-field appear in their Path:
+headers.  If the C<ME> entry has a subscription list, that list is
+prepended to the subscription list of all other entries.  For example,
+C<*,!control*,!junk,!foo.*> could be used to set the default subscription
+list for all other feeds so that local postings are not propagated unless
+C<foo.*> explicitly appears in the site's subscription list.  This feature
+tends to be somewhat confusing since the default subscription is prepended
+and can be overridden by other patterns.
+
+If the C<ME> entry has a distribution sub-field, only articles that match
+that distribution list are accepted and all other articles are rejected.
+A common use for this is to put something like C</!local> in the C<ME>
+entry to reject local postings from other misconfigured sites.
+
+Finally, it is also possible to set variables in F<newsfeeds> and use them
+later in the file.  A line starting with C<$> sets a variable.  For
+example:
+
+    $LOCALGROUPS=local.*,example.*
+
+This sets the variable C<LOCALGROUPS> to C<local.*,example.*>.  This
+variable can later be used elsewhere in the file, such as in a site entry
+like:
+
+    news.example.com:$LOCALGROUPS:Tf,Wnm:
+
+which is then completely equivalent to:
+
+    news.example.com:local.*,example.*:Tf,Wnm:
+
+Variables aren't solely simple substitution.  If either C<!> or C<@>
+immediately preceeds the variable and the value of the variable contains
+commas, that character will be duplicated before each comma.  This
+somewhat odd-sounding behavior is designed to make it easier to use
+variables to construct feed patterns.  The utility becomes more obvious
+when you observe that the line:
+
+    news.example.net:*,@$LOCALGROUPS:Tf,Wnm:
+
+is therefore equivalent to:
+
+    news.example.net:*,@local.*,@example.*:Tf,Wnm:
+
+which (as explained below) excludes all of the groups in $LOCALGROUPS from
+the feed to that site.
+
+=head1 FLAG VALUES
+
+The I<flags> parameter specifies miscellaneous parameters, including the
+type of feed, what information should be sent to it, and various
+limitations on what articles should be sent to a site.  They may be
+specified in any order and should be separated by commas.  Flags that take
+values should have the value immediately after the flag letter with no
+whitespace.  The valid flags are:
+
+=over 4
+
+=item B<E<lt>> I<size>
+
+An article will only be sent to this site if it is less than I<size> bytes
+long.  The default is no limit.
+
+=item B<E<gt>> I<size>
+
+An article will only be sent to this site if it is greater than I<size>
+bytes long.  The default is no limit.
+
+=item B<A> I<checks>
+
+An article will only be sent to this site if it meets the requirements
+specified in I<checks>, which should be chosen from the following set.
+I<checks> can be multiple letters if appropriate.
+
+=over 3
+
+=item c
+
+Exclude all kinds of control messages.
+
+=item C
+
+Only send control messages, not regular articles.
+
+=item d
+
+Only send articles with a Distribution header.  Combined with a particular
+distribution value in the I<distribution> part of the site entry, this can
+be used to limit articles sent to a site to just those with a particuliar
+distribution.
+
+=item e
+
+Only send articles where every newsgroup listed in the Newsgroups: header
+exists in the active file.
+
+=item f
+
+Don't send articles rejected by filters.  This is only useful when
+I<dontrejectfiltered> is set in inn.conf(5).  With that variable set, this
+lets one accept all articles but not propagate filtered ones to some
+sites.
+
+=item o
+
+Only send articles for which overview data was stored.
+
+=item O
+
+Send articles to this site that don't have an X-Trace: header, even if the
+C<O> flag is also given.
+
+=item p
+
+Only check the exclusions against the Path: header of articles; don't
+check the site name.  This is useful if your site names aren't the same as
+the Path: entries added by those remote sites, or for program feeds where
+the site name is arbitrary and unrelated to the Path: header.
+
+=back
+
+If both C<c> and C<C> are given, the last specified one takes precedence.
+
+=item B<B> I<high>/I<low>
+
+If a site is being fed by a file, channel, or exploder (see below), the
+server will normally start trying to write the information as soon as
+possible.  Providing a buffer may give better system performance and help
+smooth out overall load if a large batch of news comes in.  The value of
+the this flag should be two numbers separated by a slash.  I<high>
+specifies the point at which the server can start draining the feed's I/O
+buffer, and I<low> specifies when to stop writing and begin buffering
+again; the units are bytes.  The default is to do no buffering, sending
+output as soon as it is possible to do so.
+
+=item B<C> I<count>
+
+If this flag is specified, an article will only be sent to this site if
+the number of groups it is posted to, plus the square of the number of
+groups followups would appear in, is no more than I<count>.  C<30> is a
+good value for this flag, allowing crossposts to up to 29 groups when
+followups are set to a single group or poster and only allowing crossposts
+to 5 groups when followups aren't set.
+
+=item B<F> I<name>
+
+Specifies the name of the file that should be used if it's necessary to
+begin spooling for the site (see below).  If I<name> is not an absolute
+path, it is taken to be relative to I<pathoutgoing> in F<inn.conf>.  If
+I<name> is a directory, the file F<togo> in that directory will be used as
+the file name.
+
+=item B<G> I<count>
+
+If this flag is specified, an article will only be sent to this site if it
+is posted to no more than I<count> newsgroups.  This has the problem of
+filtering out many FAQs, as well as newsgroup creation postings and
+similar administrative announcements.  Either the B<C> flag or the B<U>
+flag is a better solution.
+
+=item B<H> I<count>
+
+If this flag is specified, an article will only be sent to this site if it
+has I<count> or fewer sites in its Path: line.  This flag should only be
+used as a rough guide because of the loose interpretation of the Path:
+header; some sites put the poster's name in the header, and some sites
+that might logically be considered to be one hop become two because they
+put the posting workstation's name in the header.  The default value for
+I<count> if not specified is one.  (Also see the B<O> flag, which is
+sometimes more appropriate for some uses of this flag.)
+
+=item B<I> I<size>
+
+The flag specifies the size of the internal buffer for a file feed.  If
+there are more file feeds than allowed by the system, they will be
+buffered internally in least-recently-used order.  If the internal buffer
+grows bigger then I<size> bytes, however, the data will be written out to
+the appropriate file.  The default value is 16KB.
+
+=item B<N> I<status>
+
+Restricts the articles sent to this site to those in newsgroups with the
+moderation status given by I<status>.  If I<status> is C<m>, only articles
+in moderated groups are sent; if I<status> is C<u>, only articles in
+unmoderated groups are sent.
+
+=item B<O> I<originator>
+
+If this flag is specified, an article will only be sent to this site if it
+contains an X-Trace: header and the first field of this header matches
+I<originator>.  I<originator> is a wildmat(3) expression without commas or
+a list of such expressions, separated by C</>.  The article is never sent
+if the first character of the pattern begins with C<@> and the rest of the
+pattern matches.  One use of this flag is to restrict the feed to locally
+generated posts by using an I<originator> pattern that matches the
+X-Trace: header added by the local server.
+
+=item B<P> I<priority>
+
+The nice priority that this channel or program feed should receive.  This
+should be a positive number between 0 and 20 and is the priority that the
+new process will run with.  This flag can be used to raise the priority to
+normal if you're using the I<nicekids> parameter in F<inn.conf>.
+
+=item B<S> I<size>
+
+If the amount of data queued for the site gets to be larger than I<size>
+bytes, the server will switch to spooling, appending to a file specified
+by the B<F> flag, or I<pathoutgoing>/I<sitename> if B<F> is not specified.
+Spooling usually happens only for channel or exploder feeds, when the
+spawned program isn't keeping up with its input.
+
+=item B<T> I<type>
+
+This flag specifies the type of feed for this site.  I<type> should be a
+letter chosen from the following set:
+
+    c        Channel
+    f        File
+    l        Log entry only
+    m        Funnel (multiple entries feed into one)
+    p        Program
+    x        Exploder
+
+Each feed is described below in L<"FEED TYPES">.  The default is B<Tf>,
+for a file feed.
+
+=item B<U> I<count>
+
+If this flag is specified, an article will only be sent to this site if
+followups to this article would be posted to no more than I<count>
+newsgroups.  (Also see B<C> for a more complex way of handling this.)
+
+=item B<W> I<items>
+
+For a file, channel, or exploder feed, this flag controls what information
+will be sent to this site.  For a program feed, only the asterisk (C<*>)
+has any effect.  I<items> should be chosen from the following set:
+
+=over 3
+
+=item b
+
+Size of the article (in wire format, meaning with CRLF at the end of each
+line, periods doubled at the beginning of lines, and ending in a line with
+a single period) in bytes.
+
+=item e
+
+The time the article will expire as seconds since epoch if it has an
+Expires: header, C<0> otherwise.
+
+=item f
+
+The storage API token of the article (the same as C<n>).
+
+=item g
+
+The newsgroup the article is in; if cross-posted, then the first of the
+groups to which the article was posted that this site gets.  (The
+difference from C<G> is that this sends the newsgroup to which the article
+was posted even if it's a control message.)
+
+=item h
+
+The history hash key of the article (derived from the message ID).
+
+=item m
+
+The message ID of the article.
+
+=item n
+
+The storage API token of the article.
+
+=item p
+
+The time the article was posted a seconds since epoch.
+
+=item s
+
+The site that fed the article to the server.  This is taken from either
+the Path: header or the IP address of the sending site depending on the
+value of I<logipaddr> in inn.conf(5).  If I<logipaddr> is true and the IP
+address is C<0.0.0.0> (meaning that the article was fed from localhost by
+a program like rnews(8)), the Path: header value will be sent instead.
+
+=item t
+
+The time the article was received as seconds since epoch.
+
+=item Z<>*
+
+The names of the appropriate funnel entries, or all sites that get the
+article (see below for more details).
+
+=item D
+
+The value of the Distribution: header of the article, or C<?> if there is
+no such header in the article.
+
+=item G
+
+Where the article is stored.  If the newsgroup is crossposted, this is
+generally the first of the groups to which it was posted that this site
+receives; however, control messages are filed in control or control.*
+(which is the difference between this item and C<g>).
+
+=item H
+
+All of the headers, followed by a blank line.  The Xref header will
+already be present, and a Bytes header containing the article's size in
+bytes as in the C<b> item will be added to the headers.  If used, this
+should be the only item in the list.
+
+=item N
+
+The value of the Newsgroups: header.
+
+=item P
+
+The value of the Path: header.
+
+=item O
+
+Overview data for the article.
+
+=item R
+
+Information needed for replication (the Xref header without the site
+name).
+
+=back
+
+More than one letter can be given.  If multiple items are specified, they
+will be written in the order specified separated by spaces.  (C<H> should
+be the only item if given, but if it's not a newline will be sent before
+the beginning of the headers.)  The default is B<Wn>.
+
+The C<H> and C<O> items are intended for use by programs that create news
+overview databases or require similar information.  B<WnteO> is the flag
+to generate input needed by the overchan(8) program.
+
+The asterisk (C<*>) has special meaning.  Normally it expands to a
+space-separated list of all sites that received the current article.  If,
+however, this site is a target of a funnel feed (in other words, if it is
+named by other sites which have the B<Tm> flag), then the asterisk expands
+to the names of the funnel feeds that received the article.  Similarly, if
+the site is a program feed, an asterisk in the I<parameter> field will be
+expanded into the list of funnel feeds that received the article.  A
+program feed cannot get the site list unless it is the target of other
+B<Tm> feeds.
+
+=back
+
+=head1 FEED TYPES
+
+B<innd> provides four basic types of feeds:  log, file, program, and
+channel.  An exploder is a special type of channel.  In addition, several
+entries can feed into the same feed; these are funnel feeds, which refer
+to an entry that is one of the other types.  Funnel feeds are partially
+described above with the description of the B<W*> flag.  A funnel feed
+gets every article that would be sent to any of the feeds that funnel into
+it and normally include the B<W*> flag in their flags so that the program
+processing that feed knows which sites received which articles.  The most
+common funnel feed is innfeed(8).
+
+Note that the term "feed" is technically a misnomer, since the server
+doesn't transfer articles itself and only writes data to a file, program,
+or log telling another program to transfer the articles.
+
+The simplest feed is a log feed (B<Tl>).  Other than a mention in the news
+log file, I<pathlog>/news, no data is written out.  This is equivalent to
+a B<Tf> entry writing to F</dev/null>, except that no file is ever opened.
+Flushing a log feed does nothing.
+
+A file feed (B<Tf>) is the next simplest type of feed.  When the site
+should receive an article, the specified data is written out to the file
+named by the I<parameter> field.  If I<parameter> is not an absolute path,
+it is taken to be relative to I<pathoutgoing> in F<inn.conf>.  If
+I<parameter> is not given, it defaults to I<pathoutgoing>/I<sitename>.
+The file name should be unique (two file feeds should not ever point to
+the same file).
+
+File feeds are designed for use by external programs that periodically
+process the written data.  To cooperate with B<innd> properly, such
+external programs should first rename the batch file and then send a flush
+command for that site to B<innd> using ctlinnd(8).  B<innd> will then
+write out any buffered data, close the file, and reopen it (under the
+original name), and the program can process the data in the renamed file
+at its leisure.  File feeds are most frequently used in combination with
+nntpsend(8).
+
+A program feed (B<Tp>) spawns a given program for every article that the
+site receives.  The I<paramter> field must be the command line to execute,
+and should contain one instance of C<%s>, which will be replaced by the
+storage API token of the article (the actual article can be retrieved by
+the program using sm(8)).  The program will not receive anything on
+standard input (unlike earlier versions of INN, where the article is sent
+to the program on stdin), and standard output and error from the program
+will be set to the error log (I<pathlog>/errlog).  B<innd> will try to
+avoid spawning a shell if the command has no shell meta-characters; this
+feature can be defeated if necessary for some reason by appending a
+semi-colon to the end of the command.  The full path name of the program
+to be run must be specified unless the command will be run by the shell.
+
+If a program feed is the target of a funnel, and if B<W*> appears in the
+flags of the site, a single asterisk may be present in the I<parameter>
+and will be replaced by a space-separated list of names of the sites
+feeding into the funnel which received the relevant article.  If the site
+is not the target of a funnel, or if the B<W*> flag is not used, the
+asterisk has no special meaning.
+
+Flushing a program feed does nothing.
+
+For a channel (B<Tc>) or exploder (B<Tx>) feed, the I<parameter> field
+again names the process to start.  As with program feeds, the full path to
+the program must be specified.  However, rather than spawning the program
+for every article, it is spawned once and then whenever the site receives
+an article, the data specified by the site flags is written to the
+standard input of the spawned program.  Standard output and error are set
+as with program feeds.  If the process exits, it will be restarted
+automatically.  If the process cannot be started, the server will spool
+input to a file named I<pathoutgoing>/I<sitename> and will try to start
+the process again later.
+
+When a channel or exploder feed is flushed, the server closes its end of
+the pipe to the program's standard input.  Any pending data that has not
+been written will be spooled; see the description of the B<S> flag above.
+The server will then spawn a new instance of the program.  No signal is
+sent to the program; it is up to the program handling a channel or
+exploder feed to notice end of file on its standard input and exit
+appropriately.
+
+Exploders are a special type of channel feed.  In addition to the channel
+feed behavior described above, exploders can also be sent command lines.
+These lines start with an exclamation point and their interpretation is up
+to the exploder.  The following commands are generated automatically by
+the server:
+
+    !newgroup group
+    !rmgroup group
+    !flush
+    !flush site
+
+These commands are sent whenever the ctlinnd(8) command of the same name
+is received by the server.  In addition, the ctlinnd(8) C<send> command
+can be used to send an arbitrary command line to an exploder.  The primary
+exploder is buffchan(8).
+
+Finally, B<Tm> feeds are the input to a funnel.  The I<parameter> field of
+the site should name the site handling articles for all of the funnel
+inputs.
+
+=head1 EXAMPLES
+
+All of the following examples assume that INN was installed with a prefix
+of F</usr/local/news>; if you installed it somewhere else, modify the
+paths as appropriate.
+
+The syntax of the F<newsfeeds> file is so complex because you can specify
+a staggering variety of feeds.  INN is capable of interacting with a wide
+variety of programs that do various things with news articles.  Far and
+away the most common two entries in F<newsfeeds>, however, are file feeds
+for nntpsend(8) and funnel feeds for innfeed(8).
+
+The former look like this:
+
+    feed.example.com:*,!control*,!junk:Tf,Wnm:
+
+which generates a file named I<pathoutgoing>/feed.example.com containing
+one line per article consisting of the storage API token, a space, and the
+message ID.
+
+The latter look like this:
+
+    feed.example.com:*,!control*,!junk:Tm:innfeed!
+
+Very similar, except that this is the input to a funnel feed named
+C<innfeed!>.  One could also write this as:
+
+    example/feed.example.com:*,!control*,!junk:Ap,Tm:innfeed!
+
+(note the B<Ap> so that articles that contain just C<example> in the Path:
+header will still be sent), which is completely equivalent except that
+this will be logged in I<pathlog>/news as going to the site C<example>
+rather than C<feed.example.com>.
+
+The typical feed entry for innfeed(8) is a good example of a channel feed
+that's the target of various funnel feeds:
+
+    innfeed!:!*:Tc,Wnm*:/usr/local/news/bin/startinnfeed -y
+
+Note that the I<pattern> for this feed is just C<!*> so that it won't
+receive any articles directly.  The feed should only receive those
+articles that would go to one of the funnel feeds that are feeding into
+it.  innfeed(8) (spawned by B<startinnfeed>) will receive one line per
+article on its standard input containing the storage API token, the
+message ID, and a space-separated list of sites that should receive that
+article.
+
+Here's a more esoteric example of a channel feed:
+
+    watcher!:*:Tc,Wbnm\
+        :exec awk '$1 > 1000000 { print "BIG", $2, $3 }' > /dev/console
+
+This receives the byte size of each article along with the storage API
+token and message ID, and prints to the console a line for every article
+that's over a million bytes.  This is actually rather a strange way to
+write this since INN can do the size check itself; the following is
+equivalent:
+
+    watcher!:*:Tc,>1000000,Wbnm\
+        :exec awk '{ print "BIG", $2, $3}' > /dev/console
+
+Here's a cute, really simple news to mail gateway that also serves as an
+example of a fairly fancy program feed:
+
+    mailer!:!*:W*,Tp\
+        :sm %s | innmail -s "News article" *
+
+Remember that C<%s> is replaced by the storage API token, so this
+retrieves the article and pipes it into B<innmail> (which is safer than
+programs like Mail(1) because it doesn't parse the body for tilde
+commands) with a given subject line.  Note the use of C<*> in the command
+line and B<W*> in the flags; this entry is designed to be used as the
+target of funnel feeds such as:
+
+    peter@example.com:news.software.nntp:Tm:mailer!
+    sue@example.com:news.admin.misc:Tm:mailer!
+
+Suppose that the server receives an article crossposted between
+news.admin.misc and news.software.nntp.  The server will notice that the
+article should be sent to the site C<peter@example.com> and the site
+C<bob@example.com>, both of which funnel into C<mailer!>, so it will look
+at the C<mailer!> site and end up executing the command line:
+
+    sm @...@ | innmail -s "News article" peter@example.com sue@example.com
+
+which will mail the article to both Peter and Sue.
+
+Finally, another very useful example of a channel feed:  the standard
+entry for controlchan(8).
+
+    controlchan!\
+        :!*,control,control.*,!control.cancel/!collabra-internal\
+        :Tc,Wnsm:/usr/local/news/bin/controlchan
+
+This program only wants information about articles posted to a control
+newsgroup other than control.cancel, which due to the sorting of control
+messages described in innd(8) will send it all control messages except for
+cancel messages provided that control.cancel exists.  In this case, we
+also exclude any article with a distribution of C<collabra-internal>.
+B<controlchan> gets the storage API token, the name of the sending site
+(for processing old-style ihave and sendme control messages), and the
+message ID for each article.
+
+For many other examples, including examples of the special C<ME> site
+entry, see the example newsfeeds file distributed with INN.  Also see the
+install documentation that comes with INN for information about setting up
+the standard newsfeeds entries used by most sites.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Reformatted
+and rewritten in POD by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+active(5), buffchan(8), controlchan(8), ctlinnd(8), inn.conf(5), innd(8),
+innfeed(8), innxmit(8), nntpsend(8), wildmat(3).
+
+=cut

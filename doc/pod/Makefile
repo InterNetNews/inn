@@ -14,8 +14,8 @@ MAN1	= ../man/ckpasswd.1 ../man/convdate.1 ../man/fastrm.1
 
 MAN3	= ../man/qio.3 ../man/wildmat.3
 
-MAN5	= ../man/inn.conf.5 ../man/ovdb.5 ../man/readers.conf.5 \
-	../man/sasl.conf.5
+MAN5	= ../man/inn.conf.5 ../man/newsfeeds.5 ../man/ovdb.5 \
+	../man/readers.conf.5 ../man/sasl.conf.5
 
 MAN8	= ../man/dbprocs.8 ../man/innd.8 ../man/inndstart.8 \
 	../man/makehistory.8 ../man/ovdb_init.8 ../man/ovdb_monitor.8 \
@@ -38,6 +38,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/wildmat.3:	wildmat.pod		; $(POD2MAN) -s 3 $? > $@
 
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
+../man/newsfeeds.5:	newsfeeds.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/readers.conf.5:	readers.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/sasl.conf.5:	sasl.conf.pod		; $(POD2MAN) -s 5 $? > $@
