@@ -173,7 +173,7 @@ startinnfeed.o: startinnfeed.c
 	$(COMPILE.c) $?
 
 startinnfeed: startinnfeed.o $(LIBINN)
-	$(LINK.c) -o $@ $? $(LIBINN) $(LIBS)
+	$(LINK.c) -o $@ startinnfeed.o $(LIBINN) $(LIBS)
 
 uio_maxiov: uio_maxiov.o
 	$(LINK.c) -o $@ uio_maxiov.o $(LIBS)
