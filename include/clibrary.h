@@ -4,13 +4,13 @@
 **  You must #include <sys/types.h> and <stdio.h> before this file.
 */
 
-#if	defined(DO_HAVE_UNISTD)
-#include <unistd.h>
-#endif	/* defined(DO_HAVE_UNISTD) */
+#if defined(HAVE_UNISTD_H)
+# include <unistd.h>
+#endif	/* defined(HAVE_UNISTD_H) */
 
-#if	defined(DO_HAVE_VFORK)
-#include <vfork.h>
-#endif	/* defined(DO_HAVE_VFORK) */
+#if defined(HAVE_VFORK_H)
+# include <vfork.h>
+#endif	/* defined(HAVE_VFORK_H) */
 
 #include <sys/time.h>
 

@@ -45,8 +45,8 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 #include "config.h"
 
-#if defined (DO_HAVE_UNISTD)
-#include <unistd.h>
+#if defined (HAVE_UNISTD_H)
+# include <unistd.h>
 #endif
 
 #include <stdlib.h>

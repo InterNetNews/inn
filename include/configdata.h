@@ -75,18 +75,12 @@ typedef char		*CSTRING;
 /*
 **  4.  C LIBRARY DIFFERENCES
 */
-    /* Use have stdargs, varargs, or neither? */
-    /* =()<#define VAR_@<VAR_STYLE>@>()= */
-/* #define VAR_STDARGS */
     /* Use BSD4.2 or Posix directory names? */
     /* =()<#define DIR_@<DIR_STYLE>@>()= */
 #define DIR_DIRENT
     /* Use flock, lockf, or nothing to lock files? */
     /* =()<#define LOCK_@<LOCK_STYLE>@>()= */
 #define LOCK_FLOCK
-    /* Do you have <unistd.h>? */
-    /* =()<#define @<HAVE_UNISTD>@_HAVE_UNISTD>()= */
-#define DO_HAVE_UNISTD
     /* Do you have setbuffer? */
     /* =()<#define @<HAVE_SETBUFFER>@_HAVE_SETBUFFER>()= */
 #define DO_HAVE_SETBUFFER

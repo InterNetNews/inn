@@ -12,9 +12,11 @@
 #include <sys/file.h>
 #endif	/* defined(LOCK_FLOCK) */
 #if	defined(LOCK_LOCKF)
-#if	defined(DO_HAVE_UNISTD)
-#include <unistd.h>
-#endif	/* defined(DO_HAVE_UNISTD) */
+
+#if defined(HAVE_UNISTD_H)
+# include <unistd.h>
+#endif	/* defined(HAVE_UNISTD_H) */
+
 #include <fcntl.h>
 #endif	/* defined(LOCK_LOCKF) */
 #if	defined(LOCK_FCNTL)

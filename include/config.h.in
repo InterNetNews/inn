@@ -16,6 +16,13 @@
 /* Define if you have <stdarg.h> */
 #undef HAVE_STDARG_H
 
+/* Define if you have <unistd.h> */
+#undef HAVE_UNISTD_H
+
+/* Define if you have <vfork.h> */
+#undef HAVE_VFORK_H
+
+
 #if defined(STDC_HEADERS) 
 # if defined(HAVE_STDARG_H)
 #  define VAR_STDARGS 1
