@@ -47,18 +47,18 @@
 ;subst clean ../doc/nnrpd.8
 ;subst clean ../doc/nntpsend.8
 ;subst clean ../doc/nntpsend.ctl.5
-../doc/overchan.8
+;subst clean ../doc/overchan.8
 ../doc/overview.ctl.5
-../doc/overview.fmt.5
-../doc/passwd.nntp.5
-../doc/prunehistory.8
-../doc/qio.3
-../doc/rnews.1
-../doc/shlock.1
-../doc/shrinkfile.1
+;subst clean ../doc/overview.fmt.5
+;subst clean ../doc/passwd.nntp.5
+;subst clean ../doc/prunehistory.8
+;subst clean ../doc/qio.3
+;subst clean ../doc/rnews.1
+;subst clean ../doc/shlock.1
+;subst clean ../doc/shrinkfile.1
 ../doc/sm.8
 ../doc/storage.ctl.5
-../doc/writelog.8
+;subst clean ../doc/writelog.8
 ../expire/Makefile
 ../frontends/Makefile
 ../include/clibrary.h
