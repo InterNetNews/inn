@@ -67,6 +67,9 @@ makehistory \- tools to recover Usenet history database.
 [
 .B \-v
 ]
+[
+.B \-x
+]
 .SH DESCRIPTION
 .PP
 .I Makehistory
@@ -165,8 +168,8 @@ This flag is valid if ``\fB\-t\fP'' flag is used.
 If the ``\fB\-I\fP'' flag is used, then the index of article overview are
 appended to the specified
 .IR file .
-This file is created if translating traditional stored articles are stored
-into new storing method through storage api.  With this
+This file can be created if storage api is used and ``\fB\-O\fP'' flag
+is used.  With this
 .IR file ,
 you can make new overview index file.  To do this,
 .PP
@@ -175,7 +178,13 @@ you can make new overview index file.  To do this,
 sort -t' ' +1 -2 file \&| <PREFIX specified with --prefix at configure>/expireindex -a -o -z
 .fi
 .sp 1
-This flag is valid if ``\fB\-t\fP'' flag is used.
+If translation is done based on history, the ``\fB\-I\fP'' and ``\fB\-O\fP''
+flag is used without ``\fB\-R\fP'' flag and the article is stored through
+storage api,
+.I makehistory
+just makes index for overview data and history.  In case that only index for
+overview data needed to be created, use the ``\fB\-x\fP'' flag not to
+create new history.
 .RE
 .TP
 .B \-i
@@ -186,7 +195,6 @@ Using the ``\fB\-o\fP'' flag implies the ``\fB\-i\fP'' flag.
 If the ``\fB\-O\fP'' flag is used, then overview database is also created.
 This is used for translating traditional stored articles into new storing
 method through storage api.
-This flag is valid if ``\fB\-t\fP'' flag is used.
 Note that if the ``\fB\-O\fP'' flag is used, existing overview database
 will be overwritten.  To avoid this behavior, use ``\fB\-d\fP'' flag to
 specify another overview directory.
@@ -325,6 +333,13 @@ consistent state.
 If the ``\fB\-v\fP'' flag is used with the ``\fB\-u\fP'' flag, then
 .I makehistory
 will put a copy of all added lines on its standard output.
+.TP
+.B \-x
+If the ``\fB\-x\fP'' flag is used,
+.I makehistory
+will never write history.
+This flag is valid only if the ``\fB\-t\fP'' with ``h'' and ``\fB\-O\fP'' is
+used without ``\fB\-R\fP'' flag.
 .TP
 .SH EXAMPLES
 .PP
