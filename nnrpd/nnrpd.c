@@ -984,11 +984,6 @@ main(int argc, char *argv[])
     SPOOLlen = strlen(innconf->patharticles);
 
     if (DaemonMode) {
-
-#ifdef HAVE_SSL
-        tls_init();
-#endif
-
 #ifdef HAVE_INET6
 	memset(&ssa, '\0', sizeof(struct sockaddr_in6));
 	ssa6->sin6_family = AF_INET6;
