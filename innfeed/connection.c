@@ -242,7 +242,8 @@ static Connection gCxnList = NULL ;
 static u_int gCxnCount = 0 ;
 static u_int max_reconnect_period = MAX_RECON_PER ;
 static u_int init_reconnect_period = INIT_RECON_PER ;
-static struct sockaddr *bind_addr = NULL;
+static struct sockaddr_in *bind_addr = NULL;
+static struct sockaddr_in6 *bind_addr6 = NULL;
 #if 0
 static bool inited = false ;
 #endif
@@ -383,34 +384,41 @@ int cxnConfigLoadCbk (void *data UNUSED)
     iv = INIT_RECON_PER ;
   init_reconnect_period = (u_int) iv ;
 
-  if (getString (topScope,"bindaddress",&sv,NO_INHERIT))
-    {
 #ifdef HAVE_INET6
+  if (getString (topScope,"bindaddress6",&sv,NO_INHERIT))
+    {
       struct addrinfo *res, hints;
 
       memset( &hints, 0, sizeof( hints ) );
       hints.ai_flags = AI_NUMERICHOST;
       if( getaddrinfo( sv, NULL, &hints, &res ) )
         {
-	  logOrPrint (LOG_ERR,fp,"innfeed unable to determine bind ip") ;
+	  logOrPrint (LOG_ERR, fp, 
+                      "innfeed unable to determine IPv6 bind address") ;
 	}
       else
         {
-	  bind_addr = (struct sockaddr *) MALLOC( res->ai_addrlen );
-	  memcpy( bind_addr, res->ai_addr, res->ai_addrlen );
+	  bind_addr6 = (struct sockaddr_in6 *) MALLOC( res->ai_addrlen );
+	  memcpy( bind_addr6, res->ai_addr, res->ai_addrlen );
         }
-#else
+    }
+#endif
+
+  if (getString (topScope,"bindaddress",&sv,NO_INHERIT))
+    {
       struct in_addr addr ;
+
       if (!inet_aton(sv,&addr))
         {
-	  logOrPrint (LOG_ERR,fp,"innfeed unable to determine bind ip") ;
+	  logOrPrint (LOG_ERR, fp,
+                      "innfeed unable to determine IPv4 bind address") ;
 	}
       else
         {
-	  bind_addr = (struct sockaddr *) MALLOC( sizeof(struct sockaddr_in) );
+	  bind_addr = (struct sockaddr_in *) 
+		      MALLOC( sizeof(struct sockaddr_in) );
 	  make_sin( (struct sockaddr_in *)bind_addr, &addr );
         }
-#endif
     }
 
   return rval ;
@@ -532,6 +540,10 @@ bool cxnConnect (Connection cxn)
   struct sockaddr *retAddr;
   int fd, rval ;
   const char *peerName = hostPeerName (cxn->myHost) ;
+  char msgbuf[100];
+#ifdef HAVE_INET6
+  char paddr[INET6_ADDRSTRLEN];
+#endif
 
   ASSERT (cxn->myEp == NULL) ;
 
@@ -585,14 +597,37 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
 
-  /* bind to a specified virtual host */
+#ifdef HAVE_INET6
+  /* bind to a specified IPv6 address */
+  if( (cxnAddr.ss_family == AF_INET6) && bind_addr6 )
+    {
+      memcpy( &cxnSelf, bind_addr6, sizeof(struct sockaddr_in6) );
+      if (bind (fd, (struct sockaddr *) &cxnSelf,
+		  sizeof(struct sockaddr_in6)) < 0)
+	{
+          snprintf(msgbuf, sizeof(msgbuf), "bind (%s): %%m",
+                   inet_ntop(AF_INET6, bind_addr6->sin6_addr.s6_addr,
+                             paddr, sizeof(paddr)) );
+
+	  syslog (LOG_ERR, msgbuf) ;
+
+	  cxnSleepOrDie (cxn) ;
+
+	  return false ;
+	}
+    }
+  else
+#endif
+  /* bind to a specified IPv4 address */
   if (bind_addr)
     {
-      memcpy( &cxnSelf, &bind_addr, SA_LEN(bind_addr) );
+      memcpy( &cxnSelf, bind_addr, sizeof(struct sockaddr_in) );
       if (bind (fd, (struct sockaddr *) &cxnSelf,
-		  SA_LEN((struct sockaddr *)&cxnAddr)) < 0)
+		  sizeof(struct sockaddr_in) ) < 0)
 	{
-	  syslog (LOG_ERR,"bind: %m") ;
+          snprintf(msgbuf, sizeof(msgbuf), "bind (%s): %%m",
+                   inet_ntoa(bind_addr->sin_addr));
+	  syslog (LOG_ERR, msgbuf) ;
 
 	  cxnSleepOrDie (cxn) ;
 

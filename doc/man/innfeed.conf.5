@@ -289,11 +289,14 @@ this. SunOS 4.1.x usually requires a value of 128 and Solaris requires a
 value of 256. The default if this is not specified, is 0.
 .TP
 .B bindaddress
-Which interface IP address innfeed should bind the local end of its
+Which outgoing IPv4 address innfeed should bind the local end of its
 connections to.
 Must be in dotted-quad format (nnn.nnn.nnn.nnn).
 If not set, innfeed defaults to letting the kernel choose this address.
 The default value is unset.
+.TP
+.B bindaddress6
+Like \fBbindaddress\fP but for outgoing IPv6 connections.
 .\"..................................................
 .SH "GLOBAL PEER DEFAULTS"
 .PP
