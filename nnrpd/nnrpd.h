@@ -120,7 +120,6 @@ extern char	NOACCESS[];
 EXTERN int	SPOOLlen;
 EXTERN char	PERMpass[20];
 EXTERN char	PERMuser[20];
-EXTERN char	*RemoteMaster;
 EXTERN ARTLIST	*ARTcache;
 EXTERN ARTLIST	*ARTnumbers;
 EXTERN FILE	*locallog;

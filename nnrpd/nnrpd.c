@@ -216,8 +216,12 @@ CMDhelp(ac, av)
 	    Printf("  %s\r\n", cp->Name);
 	else
 	    Printf("  %s %s\r\n", cp->Name, cp->Help);
-    Printf("Report problems to <%s@%s>\r\n",
-	NEWSMASTER, innconf->fromhost);
+    if (strchr(NEWSMASTER, '@') == NULL)
+	Printf("Report problems to <%s@%s>\r\n",
+	    NEWSMASTER, innconf->fromhost);
+    else
+	Printf("Report problems to <%s>\r\n",
+	    NEWSMASTER);
     Reply(".\r\n");
 }
 
@@ -704,7 +708,7 @@ main(argc, argv, env)
 
     if (ReadInnConf() < 0) exit(1);
 
-    while ((i = getopt(argc, argv, "b:Di:lop:Rr:S:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "b:Di:lop:Rr:s:t")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -735,9 +739,6 @@ main(argc, argv, env)
 	    break;
 	case 'r':			/* Reject connection message */
 	    Reject = COPY(optarg);
-	    break;
-	case 'S':			/* We're a slave to NNTP master */
-	    RemoteMaster = COPY(optarg);
 	    break;
 	case 's':			/* Unused title string */
 	    break;
