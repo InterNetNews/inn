@@ -365,7 +365,6 @@ int ReadInnConf()
 	return(-1);
     }
     SetDefaults();
-    syslog(L_NOTICE, "Reading config from %s", innconffile);
     /* Read the config file. */
     if ((F = fopen(innconffile, "r")) != NULL) {
 	while (fgets(ConfigBuff, sizeof ConfigBuff, F) != NULL) {
