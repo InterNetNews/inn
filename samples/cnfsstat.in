@@ -215,10 +215,7 @@ sub read_storageconf {
 	    $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
 	    $key{'SIZE'} =~ s/,/:/;
 	    
-	    if (defined $stor{$key{'OPTIONS'}}) {
-		print STDERR "storage.conf:$line: ".
-			"Class $key{'CLASS'} has several criteria\n";
-	    } else {
+	    if (!defined $stor{$key{'OPTIONS'}}) {
 		$stor{$key{'OPTIONS'}} = "$key{'NEWSGROUPS'}:$key{'CLASS'}:" .
 			"$key{'SIZE'}:$key{'OPTIONS'}";
 		push(@storsort, $key{'OPTIONS'});
@@ -453,8 +450,6 @@ sub get_cycbuff_info {
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
     
-    my ($nupdate_str, $nago_str) = &make_time ($update);
-    
     if ($opt_a) {
 	
 	# The 16384 is a fuzz factor.  New articles are actually
@@ -486,7 +481,7 @@ sub get_cycbuff_info {
 		}
 
 		# Is the article newer than the last update?
-		if ($time > $update) {
+		if ($time >= $update) {
 		    $update = $time;
 		    next do_seek;
 		}
@@ -496,6 +491,9 @@ sub get_cycbuff_info {
 	    }
 	}
     }
+    
+    my ($nupdate_str, $nago_str) = &make_time ($update);
+
     close(BUFF);
     return($name,$len,$free,$update,$cyclenum,$nupdate_str,$nago_str,$oupdate_str,$oago_str);
 }
