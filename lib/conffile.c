@@ -98,6 +98,7 @@ CONFFILE *CONFfopen(char *filename)
     fclose(f);
     return(0);
   }
+  ret->filename = COPY(filename);
   ret->buf = 0;
   ret->sbuf = 0;
   ret->lineno = 0;
@@ -111,6 +112,8 @@ void CONFfclose(CONFFILE *f)
   fclose(f->f);
   if (f->buf)
     DISPOSE(f->buf);
+  if (f->filename)
+    DISPOSE(f->filename);
   DISPOSE(f);
 }
 
