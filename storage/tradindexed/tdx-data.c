@@ -451,7 +451,7 @@ tdx_search_open(struct group_data *data, ARTNUM start, ARTNUM end, ARTNUM high)
 
     search = xmalloc(sizeof(struct search));
     search->limit = end - data->base;
-    search->current = (start < data->base) ? data->base : start - data->base;
+    search->current = (start < data->base) ? 0 : start - data->base;
     search->data = data;
     search->data->refcount++;
 
