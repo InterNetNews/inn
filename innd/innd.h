@@ -371,7 +371,6 @@ typedef struct _CHANNEL {
 typedef struct _NEWSGROUP {
   long			Start;	     /* Offset into the active file  */
   char		     *  Name;
-  char		     *  Dir;	     /* The name, as a directory     */
   int			NameLength;
   ARTNUM		Last;
   ARTNUM		Filenum;     /* File name to use             */

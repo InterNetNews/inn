@@ -39,7 +39,6 @@ typedef struct _NGHASH {
 } NGHASH;
 
 
-static BUFFER	NGdirs;
 static BUFFER	NGnames;
 static NGHASH	NGHtable[NGH_SIZE];
 static int	NGHbuckets;
@@ -57,18 +56,6 @@ NGcompare(const void *p1, const void *p2)
 {
     return ((const NEWSGROUP **)p1)[0]->Last -	
 	   ((const NEWSGROUP **)p2)[0]->Last;
-}
-
-
-/*
-**  Convert a newsgroup name into a directory name.
-*/
-static void
-NGdirname(char *p)
-{
-    for ( ; *p; p++)
-	if (*p == '.')
-	    *p = '/';
 }
 
 
@@ -96,12 +83,6 @@ NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
     strncpy(ngp->Name, p, i);
     ngp->Name[i] = '\0';
     NGnames.Used += i + 1;
-
-    ngp->Dir = &NGdirs.Data[NGdirs.Used];
-    strncpy(ngp->Dir, p, i);
-    ngp->Dir[i] = '\0';
-    NGdirs.Used += i + 1;
-    NGdirname(ngp->Dir);
 
     ngp->LastString = ++q;
     if ((q = strchr(q, ' ')) == NULL || q > end)
@@ -173,13 +154,10 @@ NGparsefile(void)
     Groups = NEW(NEWSGROUP, nGroups);
     GroupPointers = NEW(NEWSGROUP*, nGroups);
 
-    /* Get space to hold copies of the names and the directory names.
-     * This might take more space than individually allocating each
-     * element, but it is definitely easier on the system. */
+    /* Get space to hold copies of the names.  This might take more space
+     * than individually allocating each element, but it is definitely easier
+     * on the system. */
     i = end - active;
-    NGdirs.Size = i;
-    NGdirs.Data = NEW(char, NGdirs.Size + 1);
-    NGdirs.Used = 0;
     NGnames.Size = i;
     NGnames.Data = NEW(char, NGnames.Size + 1);
     NGnames.Used = 0;
@@ -258,7 +236,6 @@ NGclose(void)
 	DISPOSE(Groups);
 	Groups = NULL;
 	DISPOSE(GroupPointers);
-	DISPOSE(NGdirs.Data);
 	DISPOSE(NGnames.Data);
     }
 
