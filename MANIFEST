@@ -278,6 +278,7 @@ include/config.h.in                   Template configuration data
 include/dbz.h                         Header file for DBZ
 include/inn                           Installed header files (Directory)
 include/inn/defines.h                 Portable defs for installed headers
+include/inn/hashtab.h                 Header file for generic hash table
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/timer.h                   Header file for generic timers
@@ -376,6 +377,7 @@ lib/getmodaddr.c                      Get a moderator's address
 lib/gettime.c                         Get time and timezone info
 lib/grpalias.c                        Group alias code used for OV3
 lib/hash.c                            Create hash from message ID
+lib/hashtab.c                         Generic hash table
 lib/hstrerror.c                       Error reporting for resolver
 lib/inet_aton.c                       Extra source for inet_aton routine
 lib/inet_ntoa.c                       Convert inaddr to string (BSD)
@@ -589,6 +591,7 @@ tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/error-t.c                   Tests for lib/error.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
+tests/lib/hashtab-t.c                 Tests for lib/hashtab.c
 tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
