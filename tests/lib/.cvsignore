@@ -4,6 +4,7 @@ buffer.t
 concat.t
 confparse.t
 date.t
+dispatch.t
 getaddrinfo.t
 hash.t
 hashtab.t

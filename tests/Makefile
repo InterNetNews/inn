@@ -56,6 +56,9 @@ lib/confparse.t: lib/confparse-t.o libtest.o $(LIBINN)
 lib/date.t: lib/date-t.o libtest.o $(LIBINN)
 	$(LINK) lib/date-t.o libtest.o $(LIBINN)
 
+lib/dispatch.t: lib/dispatch-t.o libtest.o $(LIBINN)
+	$(LINK) lib/dispatch-t.o libtest.o $(LIBINN)
+
 lib/getaddrinfo.o: ../lib/getaddrinfo.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/getaddrinfo.c
 

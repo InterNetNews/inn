@@ -360,6 +360,7 @@ include/inn                           Installed header files (Directory)
 include/inn/buffer.h                  Header file for reusable counted buffers
 include/inn/confparse.h               Header file for configuration parser
 include/inn/defines.h                 Portable defs for installed headers
+include/inn/dispatch.h                Header file for command dispatching
 include/inn/hashtab.h                 Header file for generic hash table
 include/inn/history.h                 Header file for the history API
 include/inn/innconf.h                 Header file for the innconf struct
@@ -453,6 +454,7 @@ lib/daemonize.c                       Code necessary to become a daemon
 lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution header
+lib/dispatch.c                        Dispatch a command to a function
 lib/fdflags.c                         Set or clear file descriptor flags
 lib/fdlimit.c                         File descriptor limits
 lib/fseeko.c                          fseeko replacement
@@ -699,6 +701,7 @@ tests/lib/config/warn-int             Invalid integer parameters
 tests/lib/config/warnings             Various config files with warnings
 tests/lib/confparse-t.c               Tests for lib/confparse.c
 tests/lib/date-t.c                    Tests for lib/date.c
+tests/lib/dispatch-t.c                Tests for lib/dispatch.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
 tests/lib/getaddrinfo-t.c             Tests for lib/getaddrinfo.c
 tests/lib/hash-t.c                    Tests for lib/hash.c

@@ -4,6 +4,7 @@ lib/buffer
 lib/concat
 lib/confparse
 lib/date
+lib/dispatch
 lib/getaddrinfo
 lib/hash
 lib/hashtab
