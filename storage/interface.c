@@ -364,6 +364,15 @@ static BOOL SMreadconfig(void) {
 	    DISPOSE(patterns);
 	    patterns = NULL;
 
+	    if (i != sub->numpatterns) {
+	      /* Spurious ',' */
+	      SMseterror(SMERR_CONFIG, "extra ',' in pattern");
+	      syslog(L_ERROR, "SM extra ',' in pattern");
+	      DISPOSE(options);
+	      DISPOSE(sub);
+	      return FALSE;
+	    }
+
 	    if (prev)
 		prev->next = sub;
 	    prev = sub;
