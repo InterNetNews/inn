@@ -35,6 +35,9 @@ files.  Specifically (but possibly not comprehensively):
    lib/strlcat.c, lib/strlcpy.c, and lib/strerror.c are in the public
    domain.
 
+   lib/snprintf.c may be used for any purpose as long as the author's
+   notice remains intact in all source code distributions.
+
    control/gpgverify.in, control/pgpverify.in and control/signcontrol.in
    are under a BSD-style license (with the advertising clause) with UUNET
    Technologies, Inc. as the copyright holder.  See the end of those files
