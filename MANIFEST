@@ -123,6 +123,7 @@ control/perl-nocem.in                 NoCeM on spool implementation
 control/pgpverify.in                  Verify control messages with PGP
 control/signcontrol.in                PGP control message signing program
 doc                                   Documentation (Directory)
+doc/GPL                               The GNU General Public License 2.0
 doc/Makefile                          Makefile for documentation
 doc/compliance-nntp                   INN compliance with the NNTP standard
 doc/config-design                     Configuration parser design principles

@@ -8,7 +8,7 @@ include ../Makefile.global
 
 TOPDOCS	= CONTRIBUTORS HACKING INSTALL LICENSE NEWS README TODO
 
-DOCS	= compliance-nntp config-design config-semantics config-syntax \
+DOCS	= GPL compliance-nntp config-design config-semantics config-syntax \
 	history hook-perl hook-python hook-tcl sample-control
 
 DIRS = man
