@@ -2390,7 +2390,7 @@ STRING ARTpost(CHANNEL *cp)
 	for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++)
 	    if (*isp >= 0) {
 		sp = &Sites[*isp];
-		if (!sp->Poison)
+		if (!sp->Poison && !(sp->ControlOnly && (ControlHeader < 0)))
 		    SITEmark(sp, ngp);
 	    }
     }
