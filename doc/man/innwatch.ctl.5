@@ -143,15 +143,15 @@ be suspended again.
 .SH EXAMPLES
 .RS
 .nf
-@@@df .|awk 'NR==2 {print $4}'@lt@10000@throttle@No space
-@@@df -i .|awk 'NR==2 {print $4}'@lt@1000@throttle@No space (inodes)
+@@@inndf .@lt@10000@throttle@No space
+@@@inndf -i .@lt@1000@throttle@No space (inodes)
 .fi
 .RE
 .PP
 The first line causes the server to be throttled if the free space drops
 below 10000 units
 (using whatever units
-.I df
+.IR inndf (8)
 uses), and restarted again when free space increases above the threshold.
 .PP
 The second line does the same for inodes.

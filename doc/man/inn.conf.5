@@ -30,6 +30,8 @@ variables, and some file parameters may be used to mask real data, such
 as when hiding a cluster of hosts behind a single electronic mail hostname.
 If the same parameter is specified more than twice, the first one is
 used for that parameter.
+The term ``default'' means the case that the parameter is not defined in
+inn.conf.
 Some parameters take boolean value.  The value can be one of ``true'', ``yes''
 or ``on'' to turn on, and can be one of ``false'', ``no'' or ``off'' to turn
 off.  The case of those value is not significant.
@@ -757,6 +759,73 @@ How many logs does
 .IR scanlogs (8)
 ) keep before it overwrites.
 The default value is ``3''.
+.TP
+.I innwatchpauseload
+Load average (* 100) at which innd should be paused by
+.IR innwatch (8)
+with default
+.IR innwatch.ctl (5).
+The default value is ``1500''.
+.TP
+.I innwatchhiload
+Load average (* 100) at which innd should be throttled by
+.IR innwatch (8)
+with default
+.IR innwatch.ctl (5).
+The default value is ``2000''.
+.TP
+.I innwatchloload
+Load average (* 100) at which to restart innd (pause/throttle undone) by
+.IR innwatch (8)
+with default
+.IR innwatch.ctl (5).
+The default value is ``1000''.
+.TP
+.I innwatchspoolspace
+Space, in
+.IR inndf (8)
+output units, at which to throttle innd on
+.I patharticles
+and
+.I pathoverview
+by
+.IR innwatch (8)
+with default
+.IR innwatch.ctl (5).
+The default value is ``8000''.
+.TP
+.I innwatchbatchspace
+Space, in
+.IR inndf (8)
+output units, at which to throttle innd on
+.I pathoutgoing
+by
+.IR innwatch (8)
+with default
+.IR innwatch.ctl (5).
+The default value is ``800''.
+.TP
+.I innwatchlibspace
+Space, in
+.IR inndf (8)
+output units, at which to throttle innd on
+.I pathdb
+by
+.IR innwatch (8)
+with default
+.IR innwatch.ctl (5).
+The default value is ``25000''.
+.TP
+.I innwatchspoolnodes
+Space, in
+.IR inndf (8)
+output units, at which to throttle innd on
+.I patharticles
+by
+.IR innwatch (8)
+with default
+.IR innwatch.ctl (5).
+The default value is ``200''.
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE

@@ -14,10 +14,7 @@ innwatch \- monitor innd.
 is normally started by
 .IR rc.news .
 It periodically \(em every
-.I <INNWATCH_SLEEPTIME in config.data>
-(typically
-.\" =()<.I @<typINNWATCH_SLEEPTIME>@ )>()=
-.I 600 )
+.I <innwatchsleeptime in inn.conf>
 seconds \(em examines the load average, and the number of free blocks
 and inodes on the spool partition, as described by its
 control file,
