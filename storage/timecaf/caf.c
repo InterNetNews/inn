@@ -1518,8 +1518,8 @@ CAFClean(path, verbose, PercentFreeThreshold)
     /* Allocate memory for TOC. */
     tocarray = NEW(CAFTOCENT, (head.High - head.Low + 1));
 
-    (void) fseek(infile, (long)(sizeof(CAFHEADER) + head.FreeZoneTabSize),
-		 SEEK_SET);
+    fseeko(infile, (off_t) (sizeof(CAFHEADER) + head.FreeZoneTabSize),
+           SEEK_SET);
 
     n = fread(tocarray, sizeof(CAFTOCENT), (head.High - head.Low + 1), infile);
     if (n < 0) {
@@ -1605,7 +1605,7 @@ CAFClean(path, verbose, PercentFreeThreshold)
 	    /* (XXX: do we need a LastCompacted as well? might be nice.) */
 
 	    /*  write new header  on top of old */
-	    (void) fseek(infile, 0L, SEEK_SET);
+	    fseeko(infile, 0, SEEK_SET);
 	    if (fwrite(&head, sizeof(CAFHEADER), 1, infile) < 1) {
 		CAFError(CAF_ERR_IO);
 		DISPOSE(tocarray);
@@ -1614,11 +1614,11 @@ CAFClean(path, verbose, PercentFreeThreshold)
 		return -1;
 	    }
 	    /*
-	    ** this next fseek might actually fail, because we have buffered stuff
-	    ** that might fail on write.
+	    ** this next fseeko might actually fail, because we have buffered
+	    ** stuff that might fail on write.
 	    */
-	    if (fseek(infile, sizeof(CAFHEADER) + head.FreeZoneTabSize,
-		      SEEK_SET) < 0) {
+	    if (fseeko(infile, sizeof(CAFHEADER) + head.FreeZoneTabSize,
+		       SEEK_SET) < 0) {
 		perror(path);
 		DISPOSE(tocarray);
 		DISPOSE(newpath);
@@ -1712,7 +1712,7 @@ CAFClean(path, verbose, PercentFreeThreshold)
     newtocarray = NEW(CAFTOCENT, head.High - newlow + 1);
     (void) memset(newtocarray, 0, sizeof(CAFTOCENT)*(head.High - newlow+1));
 
-    if (fseek(outfile, 0L, SEEK_SET) < 0) {
+    if (fseeko(outfile, 0, SEEK_SET) < 0) {
 	perror(newpath);
 	DISPOSE(tocarray);
 	DISPOSE(newtocarray);
@@ -1743,10 +1743,10 @@ CAFClean(path, verbose, PercentFreeThreshold)
     memset(zerobuff, 0, blocksize);
 
     /* seek to end of output file/place to start writing new articles */
-    (void) fseek(outfile, 0L, SEEK_END);
-    startoffset = ftell(outfile);
+    fseeko(outfile, 0, SEEK_END);
+    startoffset = ftello(outfile);
     startoffset = CAFRoundOffsetUp(startoffset, blocksize);
-    (void) fseek(outfile, (long) startoffset, SEEK_SET);
+    fseeko(outfile, (off_t) startoffset, SEEK_SET);
 
     /*
     ** Note: startoffset will always give the start offset of the next
@@ -1766,7 +1766,7 @@ CAFClean(path, verbose, PercentFreeThreshold)
 	    newtocp->ModTime = tocp->ModTime;
 
 	    /* seek to right place in input. */
-	    (void) (fseek(infile, (long)tocp->Offset, SEEK_SET)); 
+	    fseeko(infile, (off_t) tocp->Offset, SEEK_SET); 
 
 	    nbytes = tocp->Size;
 	    while (nbytes > 0) {
@@ -1791,11 +1791,11 @@ CAFClean(path, verbose, PercentFreeThreshold)
 		}
 		nbytes -= ncur;
 	    }
-	    /* startoffset = ftell(outfile); */
+	    /* startoffset = ftello(outfile); */
 	    startoffset += tocp->Size;
 	    newstartoffset = CAFRoundOffsetUp(startoffset, blocksize);
-	    /* (void) fseek(outfile, (long) startoffset, SEEK_SET); */
-	    /* but we don't want to call fseek, since that seems to always 
+	    /* fseeko(outfile, (off_t) startoffset, SEEK_SET); */
+	    /* but we don't want to call fseeko, since that seems to always 
 	       force a write(2) syscall, even when the new location would
 	       still be inside stdio's buffer. */
 	    if (newstartoffset - startoffset > 0) {
@@ -1815,10 +1815,10 @@ CAFClean(path, verbose, PercentFreeThreshold)
 
     /* 
     ** set up new file header, TOC.
-    ** this next fseek might actually fail, because we have buffered stuff
+    ** this next fseeko might actually fail, because we have buffered stuff
     ** that might fail on write.
     */
-    if (fseek(outfile, 0L, SEEK_SET) < 0) {
+    if (fseeko(outfile, 0, SEEK_SET) < 0) {
 	perror(newpath);
 	DISPOSE(newtocarray);
 	(void) fclose(infile);
@@ -1846,11 +1846,11 @@ CAFClean(path, verbose, PercentFreeThreshold)
     }
 
     /*
-    ** this next fseek might actually fail, because we have buffered stuff
+    ** this next fseeko might actually fail, because we have buffered stuff
     ** that might fail on write.
     */
-    if (fseek(outfile, sizeof(CAFHEADER) + newhead.FreeZoneTabSize,
-	      SEEK_SET) < 0) {
+    if (fseeko(outfile, sizeof(CAFHEADER) + newhead.FreeZoneTabSize,
+	       SEEK_SET) < 0) {
 	perror(newpath);
 	DISPOSE(newtocarray);
 	(void) fclose(infile);

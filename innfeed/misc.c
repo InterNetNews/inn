@@ -734,7 +734,7 @@ char *buildFilename (const char *directory, const char *fname)
 /* borrows heavily from the shrinkfile program by chongo. */
 bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
 {
-  long currlen = ftell (fp) ;
+  off_t currlen = ftello (fp) ;
   char *tmpname ;
   char buffer [BUFSIZ] ;
   FILE *tmpFp ;
@@ -762,7 +762,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
       return false ;
     }
 
-  if (fseek (fp,currlen - size,SEEK_SET) != 0)
+  if (fseeko (fp,currlen - size,SEEK_SET) != 0)
     {
       fclose (tmpFp) ;
       syslog (LOG_ERR,SHRINK_SEEK,currlen - size,name) ;
@@ -776,7 +776,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
       {
         syslog (LOG_WARNING,SHRINK_NONL,name) ;
         fclose (tmpFp) ;
-        fseek (fp,currlen,SEEK_SET) ;
+        fseeko (fp,currlen,SEEK_SET) ;
         FREE(tmpname) ;
         return false ;
     }
@@ -788,7 +788,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
         {
           fclose (tmpFp) ;
           syslog (LOG_ERR,SHRINK_WRITETMP,tmpname) ;
-          fseek (fp,currlen, SEEK_SET) ;
+          fseeko (fp,currlen, SEEK_SET) ;
           FREE(tmpname) ;
           return false ;
         }
@@ -809,8 +809,8 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
   if (freopen (name,mode,fp) != fp)
     logAndExit (1,SHRINK_FREOPEN,name) ;
 
-  fseek (fp,0,SEEK_END) ;
-  size = ftell (fp) ;
+  fseeko (fp,0,SEEK_END) ;
+  size = ftello (fp) ;
   
   syslog (LOG_WARNING,FILE_SHRUNK,name,currlen,size) ;
 

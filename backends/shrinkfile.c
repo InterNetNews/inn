@@ -76,7 +76,7 @@ EndsWithNewline(F)
 {
     int		c;
 
-    if (fseek(F, (OFFSET_T)1, SEEK_END) < 0) {
+    if (fseeko(F, 1, SEEK_END) < 0) {
 	(void)fprintf(stderr, "%s: Can't seek to end of file, %s\n",
 		program, strerror(errno));
 	return TRUE;
@@ -207,9 +207,9 @@ Process(F, name, size, maxsize, Changedp)
     /* We now have a file that ends with a newline that is bigger than
      * we want.  Starting from {size} bytes from end, move forward
      * until we get a newline. */
-    if (fseek(F, -size, SEEK_END) < 0) {
+    if (fseeko(F, -size, SEEK_END) < 0) {
 	(void)fprintf(stderr,
-	  "%s: Can't fseek, %s\n", program, strerror(errno));
+	  "%s: Can't fseeko, %s\n", program, strerror(errno));
 	(void)fclose(F);
 	return FALSE;
     }
@@ -245,7 +245,7 @@ Process(F, name, size, maxsize, Changedp)
 	(void)fclose(tmp);
 	return FALSE;
     }
-    (void)fseek(tmp, (OFFSET_T)0, SEEK_SET);
+    fseeko(tmp, 0, SEEK_SET);
 
     while ((i = fread((POINTER)buff, (SIZE_T)1, (SIZE_T)sizeof buff, tmp)) > 0)
 	if (fwrite((POINTER)buff, (SIZE_T)1, (SIZE_T)i, F) != i) {

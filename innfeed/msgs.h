@@ -210,7 +210,7 @@
 
 /* tape.c */
 
-#define FSTAT_NE_FTELL		"ME fstat and ftell do not agree"
+#define FSTAT_NE_FTELL		"ME fstat and ftello do not agree"
 #define NO_FACTOR		"%s no backlog-factor or backlog-high-limit"
 #define NEW_HAND_FILE		"%s new hand-prepared backlog file."
 #define TAPE_OPEN_FAILED        "ME tape open failed (%s) %s: %m"
@@ -221,9 +221,9 @@
 #define FCLOSE_FAILED           "ME ioerr fclose %s : %m"
 #define UNLINK_FAILED           "ME oserr unlink %s : %m"
 #define RENAME_FAILED           "ME oserr rename %s,%s : %m"
-#define FTELL_FAILED            "ME oserr ftell %s : %m"
+#define FTELL_FAILED            "ME oserr ftello %s : %m"
 #define FGETS_FAILED            "ME oserr fgets %s : %m"
-#define FSEEK_FAILED            "ME oserr fseek %s,%ld,SEEK_SET : %m"
+#define FSEEK_FAILED            "ME oserr fseeko %s,%ld,SEEK_SET : %m"
 #define CHECKPOINT_OPEN         "ME oserr open checkpoint file: %s %m"
 #define BAD_CHECKPOINT          "ME internal bad data in checkpoint file: %s"
 #define CKPT_BNDRY		"ME internal checkpoint line boundary missed: %s %ld vs. %ld"

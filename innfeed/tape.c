@@ -678,7 +678,7 @@ void tapeTakeArticle (Tape tape, Article article)
 #else
 #if defined (NO_TRUST_STRLEN)
 
-  tape->outputSize = ftell (tape->outFp) ;
+  tape->outputSize = ftello (tape->outFp) ;
 
 #else
 
@@ -698,7 +698,7 @@ void tapeTakeArticle (Tape tape, Article article)
       if (fstat (fileno (tape->outFp),&sb) != 0)
         syslog (LOG_ERR,FSTAT_FAILURE,tape->outputFilename) ;
       else if (sb.st_size != tape->outputSize) 
-        syslog (LOG_ERR,"fstat and ftell do not agree: %ld %ld for %s\n",
+        syslog (LOG_ERR,"fstat and ftello do not agree: %ld %ld for %s\n",
                 (long)sb.st_size,tape->outputSize,tape->outputFilename) ;
     }
   
@@ -707,7 +707,7 @@ void tapeTakeArticle (Tape tape, Article article)
       long oldSize = tape->outputSize ;
       (void) shrinkfile (tape->outFp,
                          tape->outputLowLimit,tape->outputFilename,"a+") ;
-      tape->outputSize = ftell (tape->outFp) ;
+      tape->outputSize = ftello (tape->outFp) ;
       tape->lossage += oldSize - tape->outputSize ;
     }
 }
@@ -986,7 +986,7 @@ static void checkpointTape (Tape tape)
       return ;
     }
   
-  if ((tape->tellpos = ftell (tape->inFp)) < 0)
+  if ((tape->tellpos = ftello (tape->inFp)) < 0)
     {
       syslog (LOG_ERR,FTELL_FAILED,tape->inputFilename) ;
 
@@ -1026,7 +1026,7 @@ static void checkpointTape (Tape tape)
       
       fprintf (tape->inFp,"%ld",tape->tellpos) ;
 
-      if (fseek (tape->inFp,tape->tellpos,SEEK_SET) != 0)
+      if (fseeko (tape->inFp,tape->tellpos,SEEK_SET) != 0)
         syslog (LOG_ERR,FSEEK_FAILED,tape->inputFilename,tape->tellpos) ;
     }
   
@@ -1176,7 +1176,7 @@ static void prepareFiles (Tape tape)
                 }
               else if (tape->tellpos == 0)
                 rewind (tape->inFp) ;
-              else if (fseek (tape->inFp,tape->tellpos - 1,SEEK_SET) != 0)
+              else if (fseeko (tape->inFp,tape->tellpos - 1,SEEK_SET) != 0)
                 syslog (LOG_ERR,FSEEK_FAILED,tape->inputFilename,tape->tellpos);
               else if ((c = fgetc (tape->inFp)) != '\n')
                 {
@@ -1217,8 +1217,8 @@ static void prepareFiles (Tape tape)
           syslog (LOG_ERR,TAPE_OPEN_FAILED, "a+", tape->outputFilename) ;
           return ;
         }
-      fseek (tape->outFp,0,SEEK_END) ;
-      tape->outputSize = ftell (tape->outFp) ;
+      fseeko (tape->outFp,0,SEEK_END) ;
+      tape->outputSize = ftello (tape->outFp) ;
       tape->lossage = 0 ;
     }
 }
@@ -1278,7 +1278,7 @@ static void flushTape (Tape tape)
 
   /* I'd rather know where I am each time, and I don't trust all
      fprintf's to give me character counts. */
-  tape->outputSize = ftell (tape->outFp) ;
+  tape->outputSize = ftello (tape->outFp) ;
   if (debugShrinking)
     {
       struct stat buf ;
@@ -1301,7 +1301,7 @@ static void flushTape (Tape tape)
     {
       (void) shrinkfile (tape->outFp,
                          tape->outputLowLimit,tape->outputFilename,"a+") ;
-      tape->outputSize = ftell (tape->outFp) ;
+      tape->outputSize = ftello (tape->outFp) ;
     }
 }
 #endif

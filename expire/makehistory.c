@@ -428,7 +428,7 @@ static void ARTreadschema(BOOL Overview)
 	}
 	for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
 	    continue;
-	(void)fseek(F, (OFFSET_T)0, SEEK_SET);
+	fseeko(F, 0, SEEK_SET);
 	ARTfields = NEW(ARTOVERFIELD, i + 1);
 
 	/* Parse each field. */

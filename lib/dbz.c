@@ -973,7 +973,7 @@ BOOL dbzfetch(const HASH key, OFFSET_T *value) {
 	offset <<= conf.dropbits;
 	if (offset)		/* backspace 1 character to read '\n' */
 	    offset--;
-	if (fseek(basef, (OFFSET_T) offset, SEEK_SET) != 0) {
+	if (fseeko(basef, offset, SEEK_SET) != 0) {
 	    DEBUG(("fetch: seek failed\n"));
 	    return FALSE;
 	}
@@ -1222,8 +1222,8 @@ static int putconf(FILE *f, dbzconfig *cp) {
     int i;
     int ret = 0;
 
-    if (fseek(f, (OFFSET_T)0, SEEK_SET) != 0) {
-	DEBUG(("fseek failure in putconf\n"));
+    if (fseeko(f, 0, SEEK_SET) != 0) {
+	DEBUG(("fseeko failure in putconf\n"));
 	ret = -1;
     }
 
@@ -1724,8 +1724,8 @@ char *argv[];
     }
 
     gettimeofday(&start, NULL);
-    where = ftell(fpi);
-    for (line=1; fgets(ibuf, sizeof(ibuf), fpi); line++, where=ftell(fpi)) {
+    where = ftello(fpi);
+    for (line=1; fgets(ibuf, sizeof(ibuf), fpi); line++, where=ftello(fpi)) {
 	if (*ibuf == '<') {
 	    if ((p = strchr(ibuf, '\t')) == NULL) {
 		fprintf(stderr, "ignoreing bad line: %s\n", ibuf);

@@ -185,8 +185,8 @@ main(ac, av)
 	    continue;
 	}
 
-	if (fseek(rfp,  where, SEEK_SET) == -1) {
-	    (void)fprintf(stderr, "Can't fseek for \"%s\", %s\n",
+	if (fseeko(rfp, where, SEEK_SET) == -1) {
+	    (void)fprintf(stderr, "Can't fseeko for \"%s\", %s\n",
 		    buff, strerror(errno));
 	    continue;
 	}
@@ -200,10 +200,10 @@ main(ac, av)
 		    buff, strerror(errno));
 	    continue;
 	}
-	where = ftell(rfp);
+	where = ftello(rfp);
 
 	/* Read the the first chunk. */
-	i = fread((POINTER)Line.Data, (SIZE_T)1, BUFSIZ, rfp);
+	i = fread(Line.Data, 1, BUFSIZ, rfp);
 	if (i <= 0) {
 	    (void)fprintf(stderr, "Bad read for \"%s\", %s\n",
 		    buff, strerror(errno));
@@ -235,7 +235,7 @@ main(ac, av)
 
 	/* Get the write pointer ready. */
 	if (lseek(wfd, where, SEEK_SET) == -1) {
-	    (void)fprintf(stderr, "Can't fseek back for \"%s\", %s\n",
+	    (void)fprintf(stderr, "Can't lseek back for \"%s\", %s\n",
 		    buff, strerror(errno));
 	    continue;
 	}

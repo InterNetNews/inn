@@ -50,7 +50,7 @@ STATIC BOOL HistorySeek(FILE *F, OFFSET_T offset)
     int	c;
     int	i;
 
-    if (fseek(F, offset, SEEK_SET) == -1) {
+    if (fseeko(F, offset, SEEK_SET) == -1) {
 	(void)fprintf(stderr, "Can't seek to %ld, %s\n", offset, strerror(errno));
 	return FALSE;
     }
@@ -77,7 +77,7 @@ STATIC void FullLine(FILE *F, OFFSET_T offset)
 {
     int	                c;
 
-    if (fseek(F, offset, SEEK_SET) == -1) {
+    if (fseeko(F, offset, SEEK_SET) == -1) {
 	(void)fprintf(stderr, "Can't seek to %ld, %s\n", offset, strerror(errno));
 	exit(1);
     }

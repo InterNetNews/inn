@@ -81,11 +81,12 @@ void HISsetup(void)
 	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, HIShistpath);
 	    exit(1);
 	}
-	/* fseek to the end of file because the result of ftell() is undefined
-	   for files freopen()-ed in append mode according to POSIX 1003.1.
-	   ftell() is used later on to determine a new article's offset
-	   in the history file. Fopen() uses freopen() internally. */
-	if (fseek(HISwritefp, (OFFSET_T)0, SEEK_END) == -1) {
+	/* fseeko to the end of file because the result of ftello() is
+           undefined for files freopen()-ed in append mode according to
+           POSIX 1003.1.  ftello() is used later on to determine a new
+           article's offset in the history file. Fopen() uses freopen()
+           internally. */
+	if (fseeko(HISwritefp, 0, SEEK_END) == -1) {
 	    syslog(L_FATAL, "cant fseek to end of %s %m", HIShistpath);
 	    exit(1);
 	}
@@ -300,7 +301,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
     } else
 	paths = NOPATHS;
 
-    offset = ftell(HISwritefp);
+    offset = ftello(HISwritefp);
     if (Data->Expires > 0)
 	i = fprintf(HISwritefp, "[%s]%c%lu%c%lu%c%lu%c%s\n",
 		    HashToText(hash), HIS_FIELDSEP,
@@ -353,7 +354,7 @@ BOOL HISremember(const HASH hash)
     if (HISwritefp == NULL)
         return FALSE;
     
-    offset = ftell(HISwritefp);
+    offset = ftello(HISwritefp);
     /* Convert the hash to hex */
     i = fprintf(HISwritefp, "[%s]%c%lu%c%s%c%lu\n",
 		HashToText(hash), HIS_FIELDSEP,

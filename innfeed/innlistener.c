@@ -773,13 +773,13 @@ void openDroppedArticleFile (void)
 
 void closeDroppedArticleFile (void)
 {
-  long pos ;
+  off_t pos ;
 
   if (droppedFp == NULL)
     return ;
 
   fflush (droppedFp) ;
-  pos = ftell (droppedFp) ;
+  pos = ftello (droppedFp) ;
 
   fclose (droppedFp) ;
   droppedFp = NULL ;

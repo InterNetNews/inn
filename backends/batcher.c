@@ -6,13 +6,10 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <syslog.h> 
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #include "libinn.h"
 #include "macros.h"
@@ -143,13 +140,13 @@ RequeueAndExit(Cookie, line, BytesInArt)
 
     /* If we can back up to where the batch started, do so. */
     i = 0;
-    if (Cookie != -1 && fseek(stdin, Cookie, SEEK_SET) == -1) {
+    if (Cookie != -1 && fseeko(stdin, Cookie, SEEK_SET) == -1) {
 	(void)fprintf(stderr, "batcher %s cant seek %s\n",
 		Host, strerror(errno));
 	i = 1;
     }
 
-    /* Write the line we had; if the fseek worked, this will be an
+    /* Write the line we had; if the fseeko worked, this will be an
      * extra line, but that's okay. */
     if (line && fprintf(F, "%s %ld\n", line, BytesInArt) == EOF) {
 	(void)fprintf(stderr, NOWRITE, Host, strerror(errno));
@@ -334,10 +331,10 @@ main(ac, av)
     (void)SMinit();
     F = NULL;
     while (fgets(line, sizeof line, stdin) != NULL) {
-	/* Record line length in case we do an ftell. Not portable to
+	/* Record line length in case we do an ftello. Not portable to
 	 * systems with non-Unix file formats. */
 	length = strlen(line);
-	Cookie = ftell(stdin) - length;
+	Cookie = ftello(stdin) - length;
 
 	/* Get lines like "name size" */
 	if ((p = strchr(line, '\n')) == NULL) {

@@ -79,7 +79,7 @@ struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer)
 	return NULL;
     }
 
-    (void)fseek(F, (OFFSET_T)0, SEEK_SET);
+    fseeko(F, 0, SEEK_SET);
     for (ep = h->Entries; fgets(buff, sizeof buff, F) != NULL; ) {
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';

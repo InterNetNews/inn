@@ -161,7 +161,7 @@ STATIC FILE *HistorySeek(char *MessageID)
 	return NULL;
 
     /* Get the seek offset, and seek. */
-    if (fseek(F, offset, SEEK_SET) == -1)
+    if (fseeko(F, offset, SEEK_SET) == -1)
 	return NULL;
     return F;
 }

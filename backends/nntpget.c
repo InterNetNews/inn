@@ -381,7 +381,7 @@ main(ac, av)
 	    SITEquit(Remote);
 	    exit(1);
 	}
-	(void)fseek(F, (OFFSET_T)0, SEEK_SET);
+	fseeko(F, 0, SEEK_SET);
     }
 
     if (Offer) {

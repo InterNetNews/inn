@@ -64,7 +64,7 @@ MAPread(name)
     mp = MAPdata = NEW(PAIR, i + 1);
 
     /* Read each line; ignore blank and comment lines. */
-    (void)fseek(F, (OFFSET_T)0, SEEK_SET);
+    fseeko(F, 0, SEEK_SET);
     while (fgets(buff, sizeof buff, F) != NULL) {
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
