@@ -1401,7 +1401,8 @@ start(searcher *sp, const HASH hash, searcher *osp)
 	sp->hash = hash;
 	tocopy = sizeof(hash) < sizeof(sp->shorthash) ? sizeof(hash) : sizeof(sp->shorthash);
 	/* Copy the bottom half of thhe hash into sp->shorthash */
-	memcpy(&sp->shorthash, (char *)&hash + (sizeof(hash) - tocopy), tocopy);
+	memcpy(&sp->shorthash, (const char *)&hash + (sizeof(hash) - tocopy),
+               tocopy);
 	sp->shorthash >>= 1;
 	sp->tabno = 0;
 	sp->run = -1;
