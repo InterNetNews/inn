@@ -10,10 +10,10 @@ SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	fdflags.c fdlimit.c findheader.c fseeko.c ftello.c genid.c \
 	getconfig.c getfqdn.c getmodaddr.c gettime.c grpalias.c hash.c \
 	hashtab.c hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
-	lockfile.c makedir.c md5.c memcmp.c parsedate.c perl.c pread.c \
-	pwrite.c qio.c radix32.c readin.c remopen.c reservedfd.c resource.c \
-	rwlock.c sendarticle.c sendpass.c sequence.c setenv.c sockaddr.c \
-	strcasecmp.c strerror.c strspn.c strtok.c tempname.c timer.c \
+	lockfile.c makedir.c md5.c memcmp.c mkstemp.c parsedate.c perl.c \
+	pread.c pwrite.c qio.c radix32.c readin.c remopen.c reservedfd.c \
+	resource.c rwlock.c sendarticle.c sendpass.c sequence.c setenv.c \
+	sockaddr.c strcasecmp.c strerror.c strspn.c strtok.c timer.c \
 	wildmat.c vector.c version.c xfopena.c xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
@@ -23,8 +23,8 @@ OBJECTS = $(LIBOBJS) \
 	getmodaddr.o gettime.o grpalias.o hash.o hashtab.o inndcomm.o \
 	localopen.o lockfile.o makedir.o md5.o parsedate.o qio.o radix32.o \
 	readin.o remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
-	sendpass.o sequence.o sockaddr.o tempname.o timer.o wildmat.o \
-	vector.o version.o xfopena.o xmalloc.o xsignal.o xwrite.o
+	sendpass.o sequence.o sockaddr.o timer.o wildmat.o vector.o \
+	version.o xfopena.o xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -173,6 +173,8 @@ makedir.o: makedir.c ../include/config.h ../include/inn/defines.h \
 md5.o: md5.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/md5.h
 memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h
+mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/portable/time.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
@@ -217,8 +219,6 @@ strspn.o: strspn.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
-tempname.o: tempname.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/inn/timer.h \
  ../include/portable/time.h
@@ -235,4 +235,4 @@ xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
 xsignal.o: xsignal.c ../include/config.h ../include/inn/defines.h \
  ../include/libinn.h
 xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \
- ../include/libinn.h
+ ../include/clibrary.h ../include/libinn.h
