@@ -39,11 +39,9 @@ tags ctags: $(SOURCES)
 
 LINK		= $(LIBLD) $(LDFLAGS) -o $@
 NEWSLIBS        = $(LIBINN) $(LIBS)
-AUTHLIBS	= $(LIBAUTH) $(LIBS)
-AUTH_INN	= $(LIBINN) $(LIBAUTH)
+AUTHLIBS	= $(LIBAUTH) $(LIBINN) $(LIBS)
 
 CK_LIBS		= $(PAMLIB) $(DBMLIB) $(AUTHLIBS)
-RAD_LIBS	= $(AUTH_INN) $(LIBS)
 SMB_LIBS	= $(LIBSMB) $(AUTHLIBS)
 
 auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(SMB_LIBS)
@@ -51,7 +49,7 @@ ckpasswd:	ckpasswd.o  $(LIBAUTH)	; $(LINK) ckpasswd.o $(CK_LIBS)
 domain:		domain.o    $(LIBINN)	; $(LINK) domain.o   $(NEWSLIBS)
 ident:		ident.o     $(LIBAUTH)	; $(LINK) ident.o    $(AUTHLIBS)
 pwcheck:	pwcheck.o   $(LIBAUTH)	; $(LINK) pwcheck.o  $(AUTHLIBS)
-radius:		radius.o    $(AUTH_INN)	; $(LINK) radius.o   $(RAD_LIBS)
+radius:		radius.o    $(AUTH_INN)	; $(LINK) radius.o   $(AUTHLIBS)
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
