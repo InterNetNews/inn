@@ -374,7 +374,7 @@ dnl gdbm-ndbm.h.
 AC_CHECK_HEADERS([ndbm.h db1/ndbm.h gdbm-ndbm.h], [break])
 
 dnl Check for whether various symbols are declared.
-AC_CHECK_DECLS([pread, pwrite, snprintf, vsnprintf])
+AC_CHECK_DECLS([fseeko, ftello, pread, pwrite, snprintf, vsnprintf])
 AC_CHECK_DECLS([h_errno], , , [#include <netdb.h>])
 AC_CHECK_DECLS([inet_aton, inet_ntoa], , ,
 [#include <sys/types.h>
