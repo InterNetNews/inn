@@ -14,8 +14,9 @@
 **    - Not thread-safe due to gethostbyname and getservbyname.
 **    - SOCK_DGRAM and SOCK_STREAM only.
 **    - Multiple possible socket types only generate one addrinfo struct.
+**    - Protocol hints aren't used correctly.
 **
-**  The last three issues could probably be easily remedied, but weren't
+**  The last four issues could probably be easily remedied, but weren't
 **  needed for INN's purposes.  Adding IPv6 support isn't worth it; systems
 **  with IPv6 support should already support getaddrinfo natively.
 */
@@ -166,7 +167,7 @@ gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
     ai->ai_flags = 0;
     ai->ai_family = AF_INET;
     ai->ai_socktype = socktype;
-    ai->ai_protocol = IPPROTO_IP;
+    ai->ai_protocol = (socktype == SOCK_DGRAM) ? IPPROTO_UDP : IPPROTO_TCP;
     ai->ai_addrlen = sizeof(struct sockaddr_in);
     ((struct sockaddr_in *) ai->ai_addr)->sin_family = AF_INET;
     ((struct sockaddr_in *) ai->ai_addr)->sin_addr = addr;
@@ -319,9 +320,11 @@ getaddrinfo(const char *nodename, const char *servname,
             return EAI_SOCKTYPE;
 
         /* EAI_SOCKTYPE isn't quite right, but there isn't anything better. */
-        if (hints->ai_protocol != 0)
-            if (hints->ai_protocol != IPPROTO_IP)
+        if (hints->ai_protocol != 0) {
+            int protocol = hints->ai_protocol;
+            if (protocol != IPPROTO_TCP && protocol != IPPROTO_UDP)
                 return EAI_SOCKTYPE;
+        }
     } else {
         flags = 0;
         socktype = 0;
