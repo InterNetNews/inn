@@ -131,6 +131,12 @@ certain newsgroup patterns or size or expires ranges, assign them to the
 \&``trash'' storage method rather than having them not match any storage
 method entry.
 .SH STORAGE METHODS
+Currently, there are four storage methods available.  Each method has its
+characteristics.  You can choose any of them to be suitable for your
+environment.  Note that each method has an attribute ``EXPENSIVESTAT'' which
+means whether checking existense of article is expensive or not.  This is used
+to run
+.IR expireover (8).
 .TP
 .B cnfs
 The ``cnfs'' storage method stores articles in large cyclic buffers (CNFS
@@ -142,8 +148,9 @@ around to the beginning and stores new articles over top of the oldest
 articles in the buffer.  The expire time of articles stored in CNFS
 buffers is therefore entirely determined by how long it takes the buffer
 to wrap around, which depends on how much data is being stored in it.
-(This method is therefore said to have self-expire functionality.)  CNFS
-has its own configuration file,
+(This method is therefore said to have self-expire functionality.)
+\&``EXPENSIVESTAT'' is ``FALSE'' for this method.
+CNFS has its own configuration file,
 .IR cycbuff.conf (5).
 Storage method entries for the ``cnfs'' storage method must have an
 \&``options'' field specifying the metacycbuff into which articles matching
@@ -162,6 +169,7 @@ time in seconds since epoch is converted to hex and interpreted as
 method does not have self-expire functionality (meaning
 .IR expire (8)
 has to run periodically to delete old articles).
+\&``EXPENSIVESTAT'' is ``FALSE'' for this method.
 .TP
 .B timehash
 This method is very similar to ``timecaf'' except that each article is
@@ -173,6 +181,7 @@ hexadecimal sequence number, and ``bb'', ``cc'', and ``aadd'' are
 components of the arrival time in hexadecimal (the arrival time is
 converted to hex and interpreted as 0xaabbccdd).  This method does not
 have self-expire functionality.
+\&``EXPENSIVESTAT'' is ``TRUE'' for this method.
 .TP
 .B tradspool
 Traditional spool, or ``tradspool'', is the traditional news article
@@ -186,6 +195,7 @@ crossposted (using either hard or symbolic links).  This is the way all
 versions of INN prior to 2.0 stored all articles, as well as being the
 article storage format used by C News and earlier news systems.
 This method does not have self-expire functionality.
+\&``EXPENSIVESTAT'' is ``TRUE'' for this method.
 .TP
 .B trash
 This method silently discards all articles stored in it.  Its only real
@@ -193,6 +203,7 @@ uses are for testing and for silently discarding articles matching a
 particular storage method entry (for whatever reason).  Articles stored in
 this method take up no disk space and can never be retrieved, so this
 method has self-expire functionality of a sort.
+\&``EXPENSIVESTAT'' is ``FALSE'' for this method.
 .SH EXAMPLE
 The following sample storage.conf file would store all articles posted to
 alt.binaries.* in the ``BINARIES'' CNFS metacycbuff, all articles over
