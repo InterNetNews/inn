@@ -27,6 +27,8 @@ OBJECTS = $(LIBOBJS) \
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
+.SUFFIXES: .lo
+
 all:		libinn.$(EXTLIB) perl.o
 
 install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
@@ -47,7 +49,7 @@ libinn.a:       $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libinn.a
 
-.c.o:
+.c.o .c.lo:
 	$(LIBCC) $(CFLAGS) -c $*.c
 
 perl.o: perl.c
