@@ -9,7 +9,7 @@
 #include <configdata.h>
 #include <interface.h>
 
-BOOL tradspool_init(BOOL *selfexpire);
+BOOL tradspool_init(SMATTRIBUTE *attr);
 TOKEN tradspool_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *tradspool_retrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount);
