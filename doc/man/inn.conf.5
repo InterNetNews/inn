@@ -116,7 +116,8 @@ If you run innd as a feeder only, you do not need overview.ctl.
 How many times to attempt a
 .IR fork (2)
 before giving up.
-The default value is <MAX_FORKS in config.data>.
+The default value is
+.IR <MAX_FORKS\ in\ config.data> .
 .TP
 .I maxartsize
 The maximum size article (in bytes) that will be accepted by the
@@ -370,7 +371,8 @@ The default value is ``<pathlog>''.
 .I pathtmp
 Where the various programs place their tempfiles. For security reasons
 this is not the same as the system temporary files directory.
-The default value is ``<PATH specified with \-\-with\-tmp\-path at configure>''.
+The default value is
+.IR ``<PATH\ specified\ with\ \-\-with\-tmp\-path\ at\ configure>''.
 .TP
 .I pathspool
 The root of the news spool hierarchy. This isn't actually used at
@@ -412,7 +414,7 @@ run time.
 .PP
 Exponential posting backoff works as follows. News clients are 
 indexed by IP number (or username, see 
-.I backoff_auth 
+.I backoffauth 
 below). Each time that a specific IP number posts a message, the time of
 posting is stored (along with the previous sleep time, see below). 
 After a configurable number of posts in a configurable period of time,
@@ -426,59 +428,59 @@ the last posting and the current posting, assuming that backoff has
 been activated.
 .PP
 If this difference is less than 
-.I backoff_postfast
+.I backoffpostfast
 , the new sleep time will be 1 + (previous sleep time * 
-.I backoff_k
+.I backoffk
 ). 
 .PP
 If this difference is less than 
-.I backoff_postslow,
+.I backoffpostslow,
 but greater than 
-.I backoff_postfast,
+.I backoffpostfast,
 then the new sleep time will equal the previous sleep time.
 .PP
 If this difference is greater than 
-.I backoff_postslow
+.I backoffpostslow
 then the new sleep time is zero and the number of postings for this IP
 number is reset to zero.
 .PP
 Here are the parameters that control exponential posting
 backoff:
 .TP
-.I backoff_k
+.I backoffk
 An integer value representing the amount to multiply the previous
 sleep time by. A value of 2 works to double the
 sleep time for each excessive post. 
 The default value is ``1''.
 .TP
-.I backoff_postfast
+.I backoffpostfast
 Postings from the same IP which arrive in less than this amount of
 time (in seconds) will trigger increasing sleeptime in the backoff
 algorithm.
 The default value is ``0''.
 .TP
-.I backoff_postslow
+.I backoffpostslow
 Postings from the same IP which arrive in greater than this amount of
 time (in seconds) will reset the backoff algorithm.
 Another way to look at this constant is to compute 86400/
-.I backoff_postslow
+.I backoffpostslow
 which will give you the maximum number of articles per day that you will allow
 users to post.
 The default value is ``1''.
 .TP
-.I backoff_trigger
+.I backofftrigger
 This many postings are allowed before the backoff algorithm is
 triggered.
 The default value is ``10000''.
 .TP
-.I backoff_db
+.I backoffdb
 Pathname to a directory (must be writable by news) that is to contain
 the backoff database. There is no default for this parameter, you must
 provide an existing and writable pathname value or users will not be
 able to post.
 The default value is unset.
 .TP 
-.I backoff_auth
+.I backoffauth
 This is a boolean value. If on, posting backoffs are indexed on a per
 user basis instead of a per IP basis. You must be using authentication
 in 
