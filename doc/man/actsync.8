@@ -80,7 +80,10 @@ then they assumed to be a name of a file containing information in the
 format.
 The
 .IR getlist (1)
-utility may be used to obtain copy a remote system's active file.
+utility may be used to obtain copy a remote system's active file 
+via its NNTP server, or an FTP client program  can get retrieve such a
+file from an FTP archive (such as
+ftp://ftp.isc.org/pub/usenet/CONFIG/active; see more about this below).
 Newsgroup information from a file
 may be treated as if it was obtained from a host.
 In this man page
@@ -111,8 +114,7 @@ If only one host is specified, it is assumed to be
 If
 .IR host1 ,
 is not specified, it assumed to be the default local
-.B NNTP
-server as specified by the
+NNTP server as specified by the
 .B NNTPSERVER
 environment variable, or by the
 .B server
@@ -148,16 +150,19 @@ The configuration filename for the daemon is given in the
 argument.
 The
 .I actsync.cfg
-file is required to have 4 lines:
+file understands the following options:
 .sp 1
 .in +0.5i
 .nf
 \fBhost=\fP\fIhost2\fP
-\fBspool=\fP\fI<patharticles in inn.conf>\fP
+\fBftppath=\fP\fI/remote/path/to/active/file\fP
+\fBspool=\fP\fI<normally patharticles in inn.conf>\fP
 \fBignore_file=\fP\fIignore_file\fP
 \fBflags=\fP\fIactsyncd\fP (8) options
 .fi
 .in -0.5i
+.sp 1
+The \fBhost\fP, \fBignore_file\fP and \fBflags\fP lines are mandatory.
 .sp 1
 The keyword must start at the beginning of the line, and there
 may be no whitespace before the
@@ -170,6 +175,10 @@ and are ignored.
 All other lines may produce undefined results.
 .sp 1
 The \fBhost\fP config file line refers to the \fIhost2\fP value to sync off of.
+the \fBftppath\fP directive causes the machine named in the \fBhost\fP
+line to accessed as an ftp server, retrieving the file named.  If
+the filename ends in \fB.gz\fP or \fB.Z\fP, then it will automatically
+be uncompressed after retrieval.
 The \fBspool\fP config file lines determines where top the
 news spool tree is to be found.
 The \fBignore_file\fP config file line names the ignore file to be
@@ -184,6 +193,12 @@ and the \fB-S spool_dir\fP option
 should not be given
 in the \fBflags=\fP line because they are automatically taken care of by
 .IR actsyncd (8).
+.sp 1
+INN is shipped with default values of \fIftp.isc.org\fP for \fBhost\fP
+and \fI/pub/usenet/CONFIG/active\fP for \fBftppath\fP.  You can read
+about the policies used for maintaining that active file at
+\fIftp://ftp.isc.org/pub/usenet/CONFIG/README\fP.  Consider
+sychronizing from this file on a daily basis by using \fIcron\fP.
 .SH OPTIONS
 The options to
 .IR actsync (8)
@@ -1122,6 +1137,10 @@ Perhaps the timeout value should be controlled via a command line option?
 .SH "SEE ALSO"
 .IR active (5),
 .br
+.IR simpleftp (1),
+.br
+.IR mod-active (8),
+.br
 .IR ctlinnd (8),
 .br
 .IR getlist (8),
@@ -1129,3 +1148,4 @@ Perhaps the timeout value should be controlled via a command line option?
 .IR inn.conf (5).
 .SH HISTORY
 Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.
+Updated to support ftp fetching by David Lawrence <tale@isc.org>.
