@@ -343,6 +343,12 @@ else
     fi
   fi
 fi
+
+dnl innshellvars* wants to know if we have uustat, send-uucp expects it to
+dnl be in the old subst DO/DONT format.  Should fix to pass it a path....
+AC_CHECK_PROG(HAVE_UUSTAT, uustat, DO, DONT)
+AC_SUBST(HAVE_UUSTAT)
+
 PATH="$ac_save_path"
 dnl If the path mucking above must be done, redo the echo test.
 if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
