@@ -208,7 +208,7 @@ BOOL SendIOb(char *p, int len) {
 /*
 **  Read the overview schema.
 */
-void ARTreadschema(void)
+BOOL ARTreadschema(void)
 {
     static char			*SCHEMA = NULL;
     FILE			*F;
@@ -216,12 +216,16 @@ void ARTreadschema(void)
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
+    BOOL			foundxref = FALSE;
+    BOOL			foundxreffull = FALSE;
 
     /* Open file, count lines. */
     if (SCHEMA == NULL)
 	SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
-    if ((F = fopen(SCHEMA, "r")) == NULL)
-	return;
+    if ((F = fopen(SCHEMA, "r")) == NULL) {
+	syslog(L_ERROR, "%s Can't open %s, %s", ClientHost, SCHEMA, strerror(errno));
+	return FALSE;
+    }
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
 	continue;
     (void)fseek(F, (OFFSET_T)0, SEEK_SET);
@@ -249,6 +253,8 @@ void ARTreadschema(void)
 	fp->Length = strlen(buff);
 	fp++;
 	if (caseEQ(buff, "Xref")) {
+	    foundxref = TRUE;
+	    foundxreffull = fp->NeedsHeader;
 	    ARTxreffield = fp - ARTfields - 1;
 	    fp->HasHeader = FALSE;
 	    fp->Header = COPY("Newsgroups");
@@ -258,6 +264,11 @@ void ARTreadschema(void)
     }
     ARTfieldsize = fp - ARTfields;
     (void)fclose(F);
+    if (!foundxref || !foundxreffull) {
+	syslog(L_ERROR, "%s 'Xref:full' must be included in %s", ClientHost, SCHEMA);
+	return FALSE;
+    }
+    return TRUE;
 }
 
 
