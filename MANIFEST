@@ -122,6 +122,9 @@ control/modules/version.pl            version controlchan handler
 control/pgpverify.in                  Verify control messages with PGP
 doc                                   Documentation (Directory)
 doc/Makefile                          Makefile for documentation
+doc/config-design                     Configuration parser design principles
+doc/config-semantics                  Configuration file semantics
+doc/config-syntax                     Configuration file syntax
 doc/control-messages                  tal's description of control messages
 doc/history                           Messages of historical significance
 doc/hook-perl                         Christophe Wolfhugel's Perl hook notes
@@ -294,11 +297,13 @@ include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
 include/dbz.h                         Header file for DBZ
 include/inn                           Installed header files (Directory)
+include/inn/confparse.h               Header file for configuration parser
 include/inn/defines.h                 Portable defs for installed headers
 include/inn/hashtab.h                 Header file for generic hash table
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/timer.h                   Header file for generic timers
+include/inn/vector.h                  Header file for vectors of strings
 include/innconf.h                     Header file for inn.conf
 include/inndcomm.h                    innd control channel commands
 include/libinn.h                      INN library declarations
@@ -378,6 +383,7 @@ lib/clientlib.c                       Replacement for C News library routine
 lib/closeonexec.c                     Make a descriptor close-on-exec
 lib/concat.c                          Concatenate strings with dynamic memory
 lib/conffile.c                        Routines for reading *.conf files
+lib/confparse.c                       Generic configuration file parser
 lib/daemonize.c                       Code necessary to become a daemon
 lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
@@ -428,6 +434,7 @@ lib/strspn.c                          Skip bytes in a string (BSD)
 lib/strtok.c                          Split a string into tokens (BSD)
 lib/tempname.c                        Temporary filename generator
 lib/timer.c                           Generic profile timer
+lib/vector.c                          Manipulate vectors of strings
 lib/version.c                         INN version constants
 lib/wildmat.c                         Pattern match routine
 lib/xfopena.c                         Open a FILE in append mode
@@ -597,6 +604,9 @@ tests/Makefile                        Makefile for test suite
 tests/TESTS                           List of tests to run
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/concat-t.c                  Tests for lib/concat.c
+tests/lib/config                      Testing config files (Directory)
+tests/lib/config/valid                Various valid config parameters
+tests/lib/confparse-t.c               Tests for lib/confparse.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/error-t.c                   Tests for lib/error.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
@@ -613,6 +623,7 @@ tests/lib/setenv-t.c                  Tests for lib/setenv.c
 tests/lib/setenv.t                    Wrapper for setenv tests
 tests/lib/snprintf-t.c                Tests for lib/snprintf.c
 tests/lib/strerror-t.c                Tests for lib/strerror.c
+tests/lib/vector-t.c                  Tests for lib/vector.c
 tests/lib/wildmat-t.c                 Tests for lib/wildmat.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
 tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
