@@ -30,12 +30,15 @@
 #include "innperl.h"
 
 /* Provided by DynaLoader but not declared in Perl's header files. */
-extern void boot_DynaLoader(CV *cv);
+XS(boot_DynaLoader);
 
 /* Forward declarations. */
-void    PerlSilence(void);
-void    PerlUnSilence(void);
-void    xs_init(void);
+void PerlSilence(void);
+void PerlUnSilence(void);
+void xs_init(pTHX);
+
+/* Forward declarations of XS subs. */
+XS(XS_INN_syslog);
 
 /* Whether Perl filtering is currently active. */
 bool PerlFilterActive = false;
@@ -339,8 +342,8 @@ XS(XS_INN_syslog)
     XSRETURN_UNDEF;
 }
 
-extern void
-xs_init()
+void
+xs_init(pTHX)
 {
     dXSUB_SYS;
     newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, "perl.c");
