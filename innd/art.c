@@ -1779,7 +1779,6 @@ ARTpost(CHANNEL *cp)
   HDRCONTENT	*hc = data->HdrContent;
   bool		Approved, Accepted, LikeNewgroup, ToGroup, GroupMissing;
   bool		NoHistoryUpdate, artclean;
-  bool		MadeOverview = false;
   bool		ControlStore = false;
   bool		NonExist = false;
   bool		OverviewCreated = false;
@@ -2301,7 +2300,6 @@ ARTpost(CHANNEL *cp)
   if ((innconf->enableoverview && !innconf->useoverchan) || NeedOverview) {
     TMRstart(TMR_OVERV);
     ARTmakeoverview(cp);
-    MadeOverview = true;
     if (innconf->enableoverview && !innconf->useoverchan) {
       if ((result = OVadd(token, data->Overview.data, data->Overview.left,
 	data->Arrived, data->Expires)) == OVADDFAILED) {
