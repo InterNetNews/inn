@@ -188,7 +188,7 @@ tradindexed_add(char *group, ARTNUM artnum, TOKEN token, char *data,
        the article number is lower than the low water mark for the group. */
     entry = tdx_index_entry(tradindexed->index, group);
     if (entry == NULL)
-        return false;
+        return true;
     if (tradindexed->cutoff && entry->low > artnum)
         return true;
 
