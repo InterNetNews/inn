@@ -431,7 +431,6 @@ main(int ac, char *av[])
 	    }
 	    if (QIOtoolong(qp)) {
                 warn("long line");
-		QIOread(qp);
 		continue;
 	    }
 

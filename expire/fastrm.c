@@ -215,8 +215,6 @@ get_line(QIOSTATE *qp)
     while (QIOtoolong(qp) || (p != NULL && strlen(p) >= MAX_DIR_LEN)) {
         warn("line %d too long", count);
         error_count++;
-        while (p == NULL && QIOtoolong(qp))
-            p = QIOread(qp);
         p = QIOread(qp);
     }
     if (p == NULL) {

@@ -422,7 +422,6 @@ RequeueRestAndExit(char *Article, char *MessageID) {
 	if ((p = QIOread(BATCHqp)) == NULL) {
 	    if (QIOtoolong(BATCHqp)) {
                 warn("skipping long line in %s", BATCHname);
-		QIOread(BATCHqp);
 		continue;
 	    }
 	    if (QIOerror(BATCHqp)) {
@@ -1237,7 +1236,6 @@ int main(int ac, char *av[]) {
 	if ((Article = QIOread(BATCHqp)) == NULL) {
 	    if (QIOtoolong(BATCHqp)) {
                 warn("skipping long line in %s", BATCHname);
-		QIOread(BATCHqp);
 		continue;
 	    }
 	    if (QIOerror(BATCHqp)) {
