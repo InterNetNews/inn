@@ -1129,6 +1129,8 @@ main(int argc, char *argv[])
 	close(fd);
 	dup2(0, 1);
 	dup2(0, 2);
+        TMRinit(TMR_MAX);
+        STATstart = TMRnow_double();
 	SetupDaemon();
 
 	/* if we are a daemon innd didn't make us nice, so be nice kids */
@@ -1141,14 +1143,12 @@ main(int argc, char *argv[])
 	xsignal(SIGCHLD, SIG_DFL);
  
     } else {
+        TMRinit(TMR_MAX);
+        STATstart = TMRnow_double();
 	SetupDaemon();
 	/* Arrange to toggle tracing. */
 	xsignal(SIGHUP, ToggleTrace);
     }/* DaemonMode */
-
-    /* Setup. */
-    TMRinit(TMR_MAX);
-    STATstart = TMRnow_double();
 
 #ifdef HAVE_SSL
     ClientSSL = false;
