@@ -89,10 +89,41 @@ void CMDgroup(int ac, char *av[])
     if (caseEQ(av[0], "group")) {
 	if (count == 0)
 	    Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
-	else
+	else {
+	    /* if we're an NFS reader, check the last nfsreaderdelay
+	     * articles in the group to see if they arrived in the
+	     * last nfsreaderdelay (default 60) seconds. If they did,
+	     * don't report them as we don't want them to appear too
+	     * soon */
+	    if (innconf->nfsreader) {
+		ARTNUM low, prev;
+		time_t now, arrived;
+
+		time(&now);
+		if (ARTlow + innconf->nfsreaderdelay > ARThigh)
+		    low = ARTlow;
+		else
+		    low = ARThigh - innconf->nfsreaderdelay;
+		handle = OVopensearch(group, low, ARThigh);
+		if (!handle) {
+		    Reply("%d group disappeared\r\n", NNTP_TEMPERR_VAL);
+		    DISPOSE(group);
+		    return;
+		}
+		prev = low;
+		while (OVsearch(handle, &i, NULL, NULL, NULL, &arrived)) {
+		    if (arrived + innconf->nfsreaderdelay > now) {
+			ARThigh = prev;
+			break;
+		    }
+		    prev = i;
+		}
+		OVclosesearch(handle);
+	    }
 	    Reply("%d %d %ld %ld %s\r\n",
 		NNTP_GROUPOK_VAL,
 		count, ARTlow, ARThigh, group);
+	}
 	GRPcount++;
 	ARTnumber = ARTlow;
 	if (GRPcur) {
