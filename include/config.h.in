@@ -220,9 +220,6 @@
 /* Define if you have the setproctitle function.  */
 #undef HAVE_SETPROCTITLE
 
-/* Define if you have OpenSSL available. */
-#undef HAVE_SSL
-
 /* Define if <sys/un.h> defines the SUN_LEN macro.  */
 #undef HAVE_SUN_LEN
 
@@ -497,6 +494,12 @@
 
 /* Define if you have the shadow library (-lshadow).  */
 #undef HAVE_LIBSHADOW
+
+/* Define if you have a dbm library. */
+#undef HAVE_DBM
+
+/* Define if OpenSSL is available. */
+#undef HAVE_SSL
 
 /* Define if your struct tm has a tm_gmtoff member. */
 #undef HAVE_TM_GMTOFF
