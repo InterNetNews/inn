@@ -262,10 +262,6 @@
   ||##  If you are short in RAM, say DO, else DONT.
   ||#### =()<DBZ_TAGGED_HASH	@<DBZ_TAGGED_HASH>@>()=
   ||DBZ_TAGGED_HASH	@DO_DBZ_TAGGED_HASH@
-[IN1.7=NO][WDF=autoconf][WOR=yes][P=high]
-  ||##  Do you have shadow file?  Pick DO or DONT
-  ||#### =()<HAVE_SHADOW		@<HAVE_SHADOW>@>()=
-  ||HAVE_SHADOW		DO
 [IN1.7=@8][comments]
   ||
   ||##
