@@ -257,7 +257,7 @@ RemoveLines(group, Deletes)
 	sleep(i);
     }
     if (i >= 15) {
-	fprintf(stderr, "Can't open/lock %s, %s\n", file strerror(errno));
+	fprintf(stderr, "Can't open/lock %s, %s\n", file, strerror(errno));
 	close(fd);
 	return;
     }
