@@ -32,27 +32,269 @@ static int		Mode = 0;
 static int		NewMode = 0;
 static BOOL		OVERmmap = TRUE;
 static BOOL		OVERbuffered = FALSE;
+static BOOL		OVERpreopen = FALSE;
+static OVERMMAP		OVERmmapconfig[MAXMMAPCONFIG];
 #define DEFAULTMODE	"a"
-#define MAXOVERLINE	4096
 
 
 /*
 ** get offset and overindex from token.
 */
-void OVERsetoffset(TOKEN *token, OFFSET_T *offset, unsigned char *overindex)
+void OVERsetoffset(TOKEN *token, OFFSET_T *offset, unsigned char *overindex, unsigned short *len)
 {
     *overindex = token->index;
     *offset = token->offset;
+    *len = token->overlen;
 }
 
 /*
 ** make token.
 */
-void OVERmaketoken(TOKEN *token, OFFSET_T offset, unsigned char overindex)
+void OVERmaketoken(TOKEN *token, OFFSET_T offset, unsigned char overindex, unsigned short len)
 {
     token->index = overindex;
     token->offset = offset;
     token->cancelled = FALSE;
+    token->overlen = len;
+}
+
+/*
+** check mmap ovrerview file.
+*/
+STATIC BOOL OVERdommap(UNIOVER *config, OFFSET_T offset)
+{
+    int i, j, refcount = ~0;
+    OFFSET_T pagefudge;
+
+    pagefudge = offset % OVERPAGESIZE;
+    config->mappedoffset = offset - pagefudge;
+    if (config->mappedoffset > config->size - OVERMMAPLEN)
+	config->len = config->size - config->mappedoffset;
+    else
+	config->len = OVERMMAPLEN;
+    if ((config->base = (char *)mmap(0, config->len, PROT_READ, MAP_SHARED, config->fd, config->mappedoffset)) == (MMAP_PTR)-1) {
+	config->mappedoffset = 0;
+	config->len = 0;
+	syslog(L_ERROR, "OVER cant mmap overview file index %d length %l, offset %l: %m", config->index, config->len, config->mappedoffset);
+	return FALSE;
+    }
+    return TRUE;
+}
+
+/*
+** check mmap ovrerview file.
+*/
+STATIC BOOL OVERcheckmmap(UNIOVER *config, OFFSET_T offset, unsigned short len)
+{
+    int i, j, refcount = ~0;
+    OFFSET_T pagefudge;
+
+    if ((config == (UNIOVER *)NULL) || (config->size == 0))
+	return FALSE;
+    for (i = 0 ; i < MAXMMAPCONFIG ; i++) {
+	if (OVERmmapconfig[i].config == NULL)
+	    break;
+	if (OVERmmapconfig[i].config == config)
+	    break;
+	if (refcount < OVERmmapconfig[i].refcount) {
+	    /* find least referenced config */
+	    refcount = OVERmmapconfig[i].refcount;
+	    j = i;
+	}
+    }
+    if (i == MAXMMAPCONFIG) {
+	/* all OVERMMAP is occupied, drop least used one */
+	if (!(OVERmmapconfig[j].config->len == 0))
+	    munmap(OVERmmapconfig[j].config->base, OVERmmapconfig[j].config->len);
+	OVERmmapconfig[j].config->base = (char *)-1;
+	OVERmmapconfig[j].config->len = 0;
+	OVERmmapconfig[j].config->mappedoffset = 0;
+	OVERmmapconfig[j].config = config;
+	if (!OVERdommap(config, offset)) {
+	    OVERmmapconfig[j].refcount = 0;
+	    return FALSE;
+	}
+	OVERmmapconfig[j].refcount = 1;
+	return TRUE;
+    } else if (OVERmmapconfig[i].config == NULL) {
+	/* not mmaped yet */
+	OVERmmapconfig[i].config = config;
+	if (!OVERdommap(config, offset)) {
+	    OVERmmapconfig[i].refcount = 0;
+	    return FALSE;
+	}
+	OVERmmapconfig[i].refcount = 1;
+	return TRUE;
+    } else {
+	/* already mmaped */
+	if (!(OVERmmapconfig[i].config->base == (char *)-1)) {
+	    if (((OFFSET_T)OVERmmapconfig[i].config->mappedoffset < offset) &&
+		(((OFFSET_T)OVERmmapconfig[i].config->mappedoffset - len) > (offset - OVERmmapconfig[i].config->len))) {
+		/* within mmapped area */
+		OVERmmapconfig[i].refcount++;
+		return TRUE;
+	    }
+	    munmap(OVERmmapconfig[i].config->base, OVERmmapconfig[i].config->len);
+	}
+	if (!OVERdommap(config, offset)) {
+	    OVERmmapconfig[i].refcount = 0;
+	    return FALSE;
+	}
+	OVERmmapconfig[i].refcount++;
+	return TRUE;
+    }
+}
+
+/*
+** Open and some other processing on overview files.
+*/
+STATIC BOOL OVERopen(UNIOVER *config, BOOL New, BOOL Newconfig)
+{
+    char *dirpath;
+    char *newdirpath;
+    char *path;
+    char *newpath;
+    int pathlen;
+    int newpathlen;
+    int fd;
+    struct stat sb;
+    FILE *fp;
+
+    if (config == (UNIOVER *)NULL)
+	return FALSE;
+    pathlen = strlen(OVERdir);
+    newpathlen = strlen(OVERnewdir);
+    dirpath = NEW(char, pathlen + sizeof("/255") + 1);
+    newdirpath = NEW(char, newpathlen + sizeof("/255") + 1);
+    path = NEW(char, pathlen + sizeof("/255") + sizeof("/overview") + 1);
+    newpath = NEW(char, newpathlen + sizeof("/255") + sizeof("/overview.new") + 1);
+    sb.st_size = 0;
+    if (New) {
+	sprintf(newdirpath, "%s/%d", OVERnewdir, config->index);
+	sprintf(newpath, "%s/%d/overview.new", OVERnewdir, config->index);
+	if ((fd = open(newpath, NewMode, 0666)) < 0 &&
+	    (!MakeDirectory(newdirpath, TRUE) ||
+	    (fd = open(newpath, NewMode, 0666)) < 0)) {
+	    syslog(L_ERROR, "OVER cant open new overview file: %m");
+	    DISPOSE(dirpath);
+	    DISPOSE(newdirpath);
+	    DISPOSE(path);
+	    DISPOSE(newpath);
+	    return FALSE;
+	}
+	if (NewMode == (O_WRONLY | O_APPEND | O_CREAT))
+	    lseek(fd, 0L, SEEK_END);
+    } else {
+	sprintf(dirpath, "%s/%d", OVERdir, config->index);
+	sprintf(path, "%s/%d/overview", OVERdir, config->index);
+	if ((fd = open(path, Mode, 0666)) < 0 &&
+	    (!MakeDirectory(dirpath, TRUE) ||
+	    (fd = open(path, Mode, 0666)) < 0)) {
+	    syslog(L_ERROR, "OVER cant open overview file: %m");
+	    DISPOSE(dirpath);
+	    DISPOSE(newdirpath);
+	    DISPOSE(path);
+	    DISPOSE(newpath);
+	    return FALSE;
+	}
+	if (Mode == (O_WRONLY | O_APPEND | O_CREAT))
+	    lseek(fd, 0L, SEEK_END);
+	if (fstat(fd, &sb) != 0) {
+	    syslog(L_ERROR, "OVER cant stat overview file: %m");
+	    DISPOSE(dirpath);
+	    DISPOSE(newdirpath);
+	    DISPOSE(path);
+	    DISPOSE(newpath);
+	    (void)close(fd);
+	    return FALSE;
+	}
+    }
+    fp = (FILE *)NULL;
+    if (OVERbuffered) {
+	if ((fp = fdopen(fd, New ? OVERnewmode : OVERmode)) == (FILE *)NULL) {
+	    syslog(L_ERROR, "OVER cant fdopen overview file: %m");
+	    DISPOSE(dirpath);
+	    DISPOSE(newdirpath);
+	    DISPOSE(path);
+	    DISPOSE(newpath);
+	    (void)close(fd);
+	    return FALSE;
+	}
+    }
+    CloseOnExec(fd, 1);
+    if (Newconfig) {
+	config->base = (char *)-1;
+	config->len = 0;
+	if (New) {
+	    config->newfd = fd;
+	    config->newfp = fp;
+	    config->newsize = sb.st_size;
+	    config->newoffset = lseek(fd, 0, SEEK_CUR);
+	} else {
+	    config->fd = fd;
+	    config->fp = fp;
+	    config->size = sb.st_size;
+	    config->offset = lseek(fd, 0, SEEK_CUR);
+	    if (OVERmmap) {
+		if (!OVERcheckmmap(config, 0, 0)) {
+		    DISPOSE(dirpath);
+		    DISPOSE(newdirpath);
+		    DISPOSE(path);
+		    DISPOSE(newpath);
+		    (void)close(fd);
+		    return FALSE;
+		}
+	    }
+	}
+    } else {
+	if (New) {
+	    config->newfd = fd;
+	    config->newfp = fp;
+	    config->newsize = sb.st_size;
+	} else {
+	    config->fd = fd;
+	    config->fp = fp;
+	    config->size = sb.st_size;
+	}
+    }
+    return TRUE;
+}
+
+/*
+** Open and some other processing on overview files.
+*/
+STATIC void OVERclose(UNIOVER *config, BOOL New)
+{
+    if (config == (UNIOVER *)NULL)
+	return;
+    if (New) {
+	if (config->newfp != (FILE *)NULL) {
+	    (void)fflush(config->newfp);
+	    (void)fclose(config->newfp);
+	    config->newfp = (FILE *)NULL;
+	} else if (config->newfd >= 0) {
+	    (void)close(config->newfd);
+	    config->newfd = -1;
+	}
+	config->size = 0;
+	config->offset = 0;
+    } else {
+	if (config->base != (char *)-1) {
+	    munmap(config->base, config->len);
+	    config->base = (char *)-1;
+	}
+	if (config->fp != (FILE *)NULL) {
+	    (void)fflush(config->fp);
+	    (void)fclose(config->fp);
+	    config->fp = (FILE *)NULL;
+	} else if (config->fd >= 0) {
+	    (void)close(config->fd);
+	    config->fd = -1;
+	}
+	config->newsize = 0;
+	config->newoffset = 0;
+    }
+    return;
 }
 
 /*
@@ -68,28 +310,12 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
     char *patterns;
     UNIOVER *config, *newconfig, *prev = (UNIOVER *)NULL;
     unsigned char index;
-    int  fd;
-    FILE *fp;
-    char *dirpath;
-    char *newdirpath;
-    char *path;
-    char *newpath;
-    int pathlen;
-    int newpathlen;
-    struct stat sb;
-    char *addr;
 
     if ((f = Fopen(OVERctl, "r", TEMPORARYOPEN)) == NULL) {
 	syslog(L_ERROR, "OVER cannot open %s: %m", OVERctl);
 	return OVER_NULL; 
     }
 
-    pathlen = strlen(OVERdir);
-    newpathlen = strlen(OVERnewdir);
-    dirpath = NEW(char, pathlen + sizeof("/255") + 1);
-    newdirpath = NEW(char, newpathlen + sizeof("/255") + 1);
-    path = NEW(char, pathlen + sizeof("/255") + sizeof("/overview") + 1);
-    newpath = NEW(char, newpathlen + sizeof("/255") + sizeof("/overview.new") + 1);
     while(fgets(buf, 1024, f) != NULL) {
 	line++;
 	if ((p = strchr(buf, '#')) != NULL)
@@ -102,10 +328,6 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	    continue;
 	if ((p = strchr(buf, ':')) == NULL) {
 	    syslog(L_ERROR, "OVER Could not find end of the first field, line %d: %m", line);
-	    DISPOSE(dirpath);
-	    DISPOSE(newdirpath);
-	    DISPOSE(path);
-	    DISPOSE(newpath);
 	    (void)Fclose(f);
 	    return OVER_ERROR;
 	}
@@ -117,10 +339,6 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	index = atoi(overindex);
 	if (index >= OVER_NONE) {
 	    syslog(L_ERROR, "OVER index is out of range, line %d: %m", line);
-	    DISPOSE(dirpath);
-	    DISPOSE(newdirpath);
-	    DISPOSE(path);
-	    DISPOSE(newpath);
 	    (void)Fclose(f);
 	    return OVER_ERROR;
 	}
@@ -131,108 +349,32 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 		if (New) {
 		    newconfig = config;
 		} else {
-		    syslog(L_ERROR, "OVER duplicate index, line %d: %m", line);
-		    DISPOSE(dirpath);
-		    DISPOSE(newdirpath);
-		    DISPOSE(path);
-		    DISPOSE(newpath);
+		    syslog(L_ERROR, "OVER duplicate index, line %d", line);
 		    (void)Fclose(f);
 		    return OVER_ERROR;
 		}
 	    }
 	}
-	addr = (char *)-1;
-	sb.st_size = 0;
-	if (New) {
-	    sprintf(newdirpath, "%s/%d", OVERnewdir, index);
-	    sprintf(newpath, "%s/%d/overview.new", OVERnewdir, index);
-	    if ((fd = open(newpath, NewMode, 0666)) < 0 &&
-		(!MakeDirectory(newdirpath, TRUE) ||
-		(fd = open(newpath, NewMode, 0666)) < 0)) {
-		syslog(L_ERROR, "OVER cant open new overview file, line %d: %m", line);
-		DISPOSE(dirpath);
-		DISPOSE(newdirpath);
-		DISPOSE(path);
-		DISPOSE(newpath);
-		(void)Fclose(f);
-		return OVER_ERROR;
-	    }
-	    if (NewMode == (O_WRONLY | O_APPEND | O_CREAT))
-		lseek(fd, 0L, SEEK_END);
-	} else {
-	    sprintf(dirpath, "%s/%d", OVERdir, index);
-	    sprintf(path, "%s/%d/overview", OVERdir, index);
-	    if ((fd = open(path, Mode, 0666)) < 0 &&
-		(!MakeDirectory(dirpath, TRUE) ||
-		(fd = open(path, Mode, 0666)) < 0)) {
-		syslog(L_ERROR, "OVER cant open overview file, line %d: %m", line);
-		DISPOSE(dirpath);
-		DISPOSE(newdirpath);
-		DISPOSE(path);
-		DISPOSE(newpath);
-		(void)Fclose(f);
-		return OVER_ERROR;
-	    }
-	    if (Mode == (O_WRONLY | O_APPEND | O_CREAT))
-		lseek(fd, 0L, SEEK_END);
-	    if (fstat(fd, &sb) != 0) {
-		syslog(L_ERROR, "OVER cant stat overview file, line %d: %m", line);
-		DISPOSE(dirpath);
-		DISPOSE(newdirpath);
-		DISPOSE(path);
-		DISPOSE(newpath);
-		(void)close(fd);
-		(void)Fclose(f);
-		return OVER_ERROR;
-	    }
-	    if (OVERmmap) {
-		if (sb.st_size > 0 && (addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0)) == (MMAP_PTR)-1) {
-		    syslog(L_ERROR, "OVER cant mmap overview file, line %d: %m", line);
-		    DISPOSE(dirpath);
-		    DISPOSE(newdirpath);
-		    DISPOSE(path);
-		    DISPOSE(newpath);
-		    (void)close(fd);
-		    (void)Fclose(f);
-		    return OVER_ERROR;
-		}
-	    }
-	}
-	fp = (FILE *)NULL;
-	if (OVERbuffered) {
-	    if ((fp = fdopen(fd, New ? OVERnewmode : OVERmode)) == (FILE *)NULL) {
-		syslog(L_ERROR, "OVER cant fdopen overview file, line %d: %m", line);
-		DISPOSE(dirpath);
-		DISPOSE(newdirpath);
-		DISPOSE(path);
-		DISPOSE(newpath);
-		(void)close(fd);
-		(void)Fclose(f);
-		return OVER_ERROR;
-	    }
-	}
-	CloseOnExec(fd, 1);
 	if (newconfig == (UNIOVER *)NULL) {
 	    newconfig = NEW(UNIOVER, 1);
-	    if (New) {
-		newconfig->fd = -1;
-		newconfig->fp = (FILE *)NULL;
-		newconfig->newfd = fd;
-		newconfig->newfp = fp;
-		newconfig->newsize = sb.st_size;
-		newconfig->newoffset = lseek(fd, 0, SEEK_CUR);
-	    } else {
-		newconfig->fd = fd;
-		newconfig->fp = fp;
-		newconfig->newfd = -1;
-		newconfig->newfp = (FILE *)NULL;
-		newconfig->size = sb.st_size;
-		newconfig->offset = lseek(fd, 0, SEEK_CUR);
-	    }
 	    newconfig->index = index;
+	    newconfig->fd = -1;
+	    newconfig->fp = (FILE *)NULL;
+	    newconfig->size = 0;
+	    newconfig->offset = 0;
+	    newconfig->newfd = -1;
+	    newconfig->newfp = (FILE *)NULL;
+	    newconfig->newsize = 0;
+	    newconfig->newoffset = 0;
+	    newconfig->base = (char *)-1;
+	    if (OVERpreopen && OVERopen(newconfig, New, TRUE)) {
+		syslog(L_ERROR, "OVERopen failed, line %d", line);
+		DISPOSE(newconfig);
+		(void)Fclose(f);
+		return OVER_ERROR;
+	    }
 	    newconfig->numpatterns = i;
 	    newconfig->patterns = NEW(char *, i);
-	    newconfig->addr = addr;
 	    /* Store the patterns */
 	    for (i = 0, p = strtok(patterns, ","); p != NULL; i++, p = strtok(NULL, ","))
 	        newconfig->patterns[i] = COPY(p);
@@ -243,22 +385,13 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	    prev = newconfig;
 	    newconfig->next = (UNIOVER *)NULL;
 	} else {
-	    if (New) {
-		newconfig->newfd = fd;
-		newconfig->newfp = fp;
-		newconfig->newsize = sb.st_size;
-	    } else {
-		newconfig->fd = fd;
-		newconfig->fp = fp;
-		newconfig->size = sb.st_size;
+	    if (OVERpreopen && OVERopen(newconfig, New, FALSE)) {
+		(void)Fclose(f);
+		return OVER_ERROR;
 	    }
 	}
     }
     (void)Fclose(f);
-    DISPOSE(dirpath);
-    DISPOSE(newdirpath);
-    DISPOSE(path);
-    DISPOSE(newpath);
     return OVER_DONE;
 }
 
@@ -304,6 +437,9 @@ BOOL OVERsetup(OVERSETUP type, void *value) {
 	break;
     case OVER_BUFFERED:
 	OVERbuffered = *(BOOL *)value;
+	break;
+    case OVER_PREOPEN:
+	OVERpreopen = *(BOOL *)value;
 	break;
     default:
 	return FALSE;
@@ -379,6 +515,7 @@ BOOL OVERinit(void) {
     }
 
     Initialized = TRUE;
+    memset(OVERmmapconfig, '\0', sizeof(OVERMMAP) * MAXMMAPCONFIG);
     status = OVERreadconfig(FALSE);
     if (status == OVER_ERROR || (status == OVER_DONE && !once && atexit(OVERshutdown) < 0)) {
 	OVERshutdown();
@@ -422,47 +559,16 @@ BOOL OVERreinit(void) {
 
     if (!Initialized)
 	return FALSE;
-    path = NEW(char, strlen(OVERdir) + sizeof("/255") + sizeof("/overview") + 1);
     for(config=OVERconfig;config!=(UNIOVER *)NULL;config=config->next) {
 	if (config->fp != (FILE *)NULL || config->fd >= 0) {
-	    if (OVERmmap)
-		munmap(config->addr, config->size);
-	    if (config->fp != (FILE *)NULL)
-		(void)fclose(config->fp);
-	    else if (config->fd >= 0)
-		(void)close(config->fd);
-	    sprintf(path, "%s/%d/overview", OVERdir, config->index);
-	    if ((config->fd = open(path, Mode, 0666)) < 0) {
-		syslog(L_ERROR, "OVER cant reopen overview file, index %d: %m", config->index);
-		DISPOSE(path);
-	        return FALSE;
-	    }
-	    if (Mode == (O_WRONLY | O_APPEND | O_CREAT))
-		lseek(config->fd, 0L, SEEK_END);
-	    if (OVERmmap) {
-		if (fstat(config->fd, &sb) != 0) {
-		    syslog(L_ERROR, "OVER cant stat reopend overview file, index %d: %m", config->index);
-		    DISPOSE(path);
-	            return FALSE;
-		}
-		if (sb.st_size > 0 && (config->addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, config->fd, 0)) == (MMAP_PTR)-1) {
-		    syslog(L_ERROR, "OVER cant mmap reopend overview file, index %d: %m", config->index);
-		    DISPOSE(path);
-	            return FALSE;
-		}
-		config->size = sb.st_size;
-	    }
-	    if (OVERbuffered) {
-		if ((config->fp = fdopen(config->fd, OVERmode)) == (FILE *)NULL) {
-		    syslog(L_ERROR, "OVER cant fdopen reopend overview file, index %d: %m", config->index);
-		    DISPOSE(path);
-	            return FALSE;
-		}
-	    }
-	    CloseOnExec(config->fd, 1);
+	    OVERclose(config, FALSE);
+	    if (OVERpreopen && OVERopen(config, FALSE, TRUE)) {
+		syslog(L_ERROR, "OVER cant reopen overview file, index %d", config->index);
+                return FALSE;
+            }
 	}
     }
-    DISPOSE(path);
+    memset(OVERmmapconfig, '\0', sizeof(OVERMMAP) * MAXMMAPCONFIG);
     return TRUE;
 }
 
@@ -475,7 +581,6 @@ BOOL OVERreplace(void) {
     char *path;
     char *newpath;
     UNIOVER *config;
-    BOOL retval = TRUE;
 
     if (!Initialized || !Newfp)
 	return FALSE;
@@ -483,34 +588,29 @@ BOOL OVERreplace(void) {
     newpath = NEW(char, strlen(OVERnewdir) + sizeof("/255") + sizeof("/overview.new") + 1);
     for(config=OVERconfig;config!=(UNIOVER *)NULL;config=config->next) {
 	if (config->newfp != (FILE *)NULL) {
-	    (void)close(config->newfd);
-	    config->newfd = -1;
+	    OVERclose(config, TRUE);
+	    OVERclose(config, FALSE);
 	    sprintf(path, "%s/%d/overview", OVERdir, config->index);
 	    sprintf(newpath, "%s/%d/overview.new", OVERnewdir, config->index);
-	    if (config->fd > 0) {
-		(void)close(config->fd);
-		config->fd = -1;
-	    }
 	    if (rename(newpath, path) < 0) {
 		syslog(L_ERROR, "OVER cant rename overview file, index %d: %m", config->index);
 		DISPOSE(path);
 		DISPOSE(newpath);
 		return FALSE;
 	    }
-	    if ((config->fd = open(path, Mode, 0666)) < 0) {
-		syslog(L_ERROR, "OVER cant reopen overview file, index %d: %m", config->index);
+	    if (OVERpreopen && OVERopen(config, FALSE, TRUE)) {
+		syslog(L_ERROR, "OVER cant reopen overview file, index %d",config->index);
 		DISPOSE(path);
 		DISPOSE(newpath);
 		return FALSE;
 	    }
-	    if (Mode == (O_WRONLY | O_APPEND | O_CREAT))
-		lseek(config->fd, 0L, SEEK_END);
 	}
     }
     Newfp = FALSE;
+    memset(OVERmmapconfig, '\0', sizeof(OVERMMAP) * MAXMMAPCONFIG);
     DISPOSE(path);
     DISPOSE(newpath);
-    return retval;
+    return TRUE;
 }
 
 /*
@@ -610,6 +710,13 @@ BOOL OVERstore(TOKEN *token, char *Overdata, int Overlen) {
     for (Xref++; *Xref == ' '; Xref++);
     for (config=OVERconfig;config!=NULL;config=config->next) {
 	if (MatchGroups(Xref, config->numpatterns, config->patterns)) {
+	    if ((config->fp == (FILE *)NULL) && (config->fd < 0)) {
+		if (!OVERopen(config, FALSE, TRUE)) {
+		    token->index = OVER_NONE;
+		    token->cancelled = FALSE;
+		    return TRUE;
+		}
+	    }
 	    if (Newfp) {
 		offset = config->newsize;
 		if (config->newfp != (FILE *)NULL) {
@@ -624,7 +731,10 @@ BOOL OVERstore(TOKEN *token, char *Overdata, int Overlen) {
 			return FALSE;
 		    }
 		}
-		OVERmaketoken(token, offset, config->index);
+		if (Overlen > 0xffff)
+		    OVERmaketoken(token, offset, config->index, 0);
+		else
+		    OVERmaketoken(token, offset, config->index, (unsigned short)Overlen);
 		config->newsize += Overlen + 1;
 	    } else {
 		offset = config->size;
@@ -640,7 +750,10 @@ BOOL OVERstore(TOKEN *token, char *Overdata, int Overlen) {
 			return FALSE;
 		    }
 		}
-		OVERmaketoken(token, offset, config->index);
+		if (Overlen > 0xffff)
+		    OVERmaketoken(token, offset, config->index, 0);
+		else
+		    OVERmaketoken(token, offset, config->index, (unsigned short)Overlen);
 		config->size += Overlen + 1;
 	    }
 	    break;
@@ -668,16 +781,27 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
     }
     if (config == NULL)
 	return (char *)NULL;
+    if ((config->fp == (FILE *)NULL) && (config->fd < 0)) {
+	if (!OVERopen(config, FALSE, TRUE)) {
+	    return (char *)NULL;
+	}
+    }
     if (OVERmmap) {
 	if (config->size <= token->offset && !OVERreinit())
 	    return (char *)NULL;
 	if (config->size <= token->offset)
 	    return (char *)NULL;
-	addr = config->addr + token->offset;
-	for (p = addr; p < config->addr+config->size; p++)
-	    if ((*p == '\r') || (*p == '\n'))
-		break;
-	*Overlen = p - addr;
+	if (!OVERcheckmmap(config, (OFFSET_T)token->offset, token->overlen))
+	    return (char *)NULL;
+	addr = config->base + token->offset - config->mappedoffset;
+	if (token->overlen > 0) {
+	    *Overlen = token->overlen;
+	} else {
+	    for (p = addr; p < config->base+config->size; p++)
+	        if ((*p == '\r') || (*p == '\n'))
+		    break;
+	    *Overlen = p - addr;
+	}
 	return addr;
     } else {
 	if (config->offset != token->offset) {
@@ -694,41 +818,57 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
 	    line = NEW(char, MAXOVERLINE);
 	line[MAXOVERLINE - 1] = '\0';
 	if (config->fp != (FILE *)NULL) {
-	    if (fgets(line, MAXOVERLINE, config->fp) == NULL)
-		return NULL;
-	    if ((*Overlen = strlen(line)) < 10)
-		return (char *)NULL;
-	    if (*Overlen  >= MAXOVERLINE - 1) {
-	        config->offset = ftell(config->fp);
-	        *Overlen = MAXOVERLINE - 1;
-		line[*Overlen-1] = '\0';
+	    if (token->overlen > 0) {
+		if (fgets(line, token->overlen, config->fp) == NULL)
+		    return NULL;
+		line[token->overlen] = '\0';
+		config->offset += token->overlen;
+		*Overlen = token->overlen;
 	    } else {
-	        config->offset += *Overlen;
-		if (line[*Overlen-1] == '\n') {
+		if (fgets(line, MAXOVERLINE, config->fp) == NULL)
+		    return NULL;
+		if ((*Overlen = strlen(line)) < 10)
+		    return (char *)NULL;
+		if (*Overlen  >= MAXOVERLINE - 1) {
+		    config->offset = ftell(config->fp);
+		    *Overlen = MAXOVERLINE - 1;
 		    line[*Overlen-1] = '\0';
-		    *Overlen--;
+		} else {
+		    config->offset += *Overlen;
+		    if (line[*Overlen-1] == '\n') {
+			line[*Overlen-1] = '\0';
+			*Overlen--;
+		    }
 		}
 	    }
 	} else {
-	    if ((size = read(config->fd, line, MAXOVERLINE)) < 0)
-		return NULL;
-	    for (i=0;i<size;i++) {
-		if (line[i] == '\n') {
-		    line[i] = '\0';
-		    break;
-		}
-		if (line[i] == '\0') {
-		    break;
-		}
-	    }
-	    if ((*Overlen = i) < 9 )
-		return (char *)NULL;
-	    if (*Overlen  >= MAXOVERLINE - 1) {
-	        config->offset = lseek(config->fd, 0, SEEK_CUR);
-	        *Overlen = MAXOVERLINE - 1;
-		line[*Overlen-1] = '\0';
+	    if (token->overlen > 0) {
+		if ((size = read(config->fd, line, token->overlen)) < 0)
+		    return NULL;
+		line[token->overlen] = '\0';
+		config->offset += token->overlen;
+		*Overlen = token->overlen;
 	    } else {
-	        config->offset += MAXOVERLINE;
+		if ((size = read(config->fd, line, MAXOVERLINE)) < 0)
+		    return NULL;
+		for (i=0;i<size;i++) {
+		    if (line[i] == '\n') {
+			line[i] = '\0';
+			break;
+		    }
+		    if (line[i] == '\0') {
+			break;
+		    }
+		}
+		if ((*Overlen = i) < 9 )
+		    return (char *)NULL;
+		if (*Overlen  >= MAXOVERLINE - 1) {
+		    config->offset = lseek(config->fd, 0, SEEK_CUR);
+		    *Overlen = MAXOVERLINE - 1;
+		    line[*Overlen-1] = '\0';
+		} else {
+		    config->offset += MAXOVERLINE;
+		}
 	    }
 	}
 	return line;
@@ -750,22 +890,13 @@ void OVERshutdown(void) {
     while (OVERconfig != (UNIOVER *)NULL) {
 	config = OVERconfig;
 	OVERconfig = OVERconfig->next;
-	if (OVERmmap)
-	    munmap(config->addr, config->size);
-	if (config->fp != (FILE *)NULL) {
-	    (void)fflush(config->fp);
-	    (void)fclose(config->fp);
-	} else if (config->fd >= 0)
-	    (void)close(config->fd);
-	if (config->newfp != (FILE *)NULL) {
-	    (void)fflush(config->newfp);
-	    (void)fclose(config->newfp);
-	} else if (config->newfd >= 0)
-	    (void)close(config->newfd);
+	OVERclose(config, TRUE);
+	OVERclose(config, FALSE);
 	DISPOSE(config->patterns);
 	DISPOSE(config);
     }
     DISPOSE(Overbuff);
+    memset(OVERmmapconfig, '\0', sizeof(OVERMMAP) * MAXMMAPCONFIG);
     Overbuff = (char *)NULL;
     Initialized = FALSE;
     Newfp = FALSE;
