@@ -283,27 +283,32 @@ CopyArt(ARTHANDLE *art, char *dest, BOOL Concat)
 
     /* Copy the data. */
     article.data = NEW(char, art->len);
-    for (i=0, last=NULL, q=article.data, p=art->data; i<art->len; i++,p++) {
-	if (*p == '.' && *last == '\n') {
-	    last = p;
-	} else if (*p != '\r') {
-	    last = p;
-	    *q++ = *p;
+    for (i=0, last=NULL, q=article.data, p=art->data; p<art->data+art->len;) {
+	if (&p[1] < art->data + art->len && p[0] == '\r' && p[1] == '\n') {
+	    p += 2;
+	    *q++ = '\n';
+	    i++;
+	    if (&p[1] < art->data + art->len && p[0] == '.' && p[1] == '.') {
+		p += 2;
+		*q++ = '.';
+		i++;
+	    }
+	    if (&p[2] < art->data + art->len && p[0] == '.' && p[1] == '\r' && p[2] == '\n') {
+		break;
+	    }
+	} else {
+	    *q++ = *p++;
+	    i++;
 	}
     }
     *q++ = '\0';
-    if ( q >= article.data ) {
-	article.len = q - article.data;
-    } else {
-	article.len = article.data - q;
-    }
 
     /* Write the data. */
     if (Concat) {
 	/* Write a separator... */
 	fprintf(out, "-----------\n");
     }
-    if (fwrite(article.data, article.len, 1, out) != 1) {
+    if (fwrite(article.data, i, 1, out) != 1) {
 	(void)fprintf(stderr, "Can't write \"%s\", %s\n",
 		dest, strerror(errno));
 	(void)fclose(out);
