@@ -93,6 +93,7 @@ if ${ROTATE} ; then
 
     HERE=`pwd`
     cd ${MOST_LOGS}
+    test ! -d ${OLD} && mkdir ${OLD}
 
     ctlinnd -s logmode
     PAUSED=false
