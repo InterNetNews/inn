@@ -253,15 +253,46 @@ case "$BERKELEY_DB_DIR" in
     BERKELEY_DB_LIB=
     BERKELEY_DB_BINDIR=
     ;;
-  *)
-    if test "$BERKELEY_DB_DIR" = yes ; then
-      BERKELEY_DB_DIR=/usr/local/BerkeleyDB
+
+  yes)
+    AC_MSG_CHECKING(for BerkeleyDB location)
+    for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1
+    do
+      for d in /opt /usr /usr/local
+      do
+	if test -d "$d/$v" ; then
+	  BERKELEY_DB_DIR="$d/$v"  
+	fi
+      done
+    done
+
+    if test "$BERKELEY_DB_DIR" = "yes" ; then
+      if test -d /usr/local/include/db2 ; then
+	BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
+	BERKELEY_DB_CFLAGS="-I/usr/local/include/db2"
+	BERKELEY_DB_LIB="-ldb2"
+	BERKELEY_DB_BINDIR="/usr/local/bin"
+	AC_MSG_RESULT(FreeBSD locations)
+      else
+	AC_MSG_ERROR(Can not find BerkeleyDB)
+      fi
+    else
+      BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
+      BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
+      BERKELEY_DB_LIB="-ldb"
+      BERKELEY_DB_BINDIR="$BERKELEY_DB_DIR/bin"
+      AC_MSG_RESULT($BERKELEY_DB_DIR)
     fi
+    AC_DEFINE(USE_BERKELEY_DB)
+    ;;
+
+  *)
     BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
     BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
     BERKELEY_DB_LIB="-ldb"
     BERKELEY_DB_BINDIR="$BERKELEY_DB_DIR/bin"
     AC_DEFINE(USE_BERKELEY_DB)
+    ;;
 esac
 AC_SUBST(BERKELEY_DB_LDFLAGS)
 AC_SUBST(BERKELEY_DB_CFLAGS)
