@@ -106,10 +106,13 @@ update:
 cert:
 	$(SSLBIN)/openssl req -new -x509 -nodes \
 	    -out $(PATHLIB)/cert.pem -days 366 \
-	    -keyout $(PATHLIB)/cert.pem
+	    -keyout $(PATHLIB)/key.pem
 	chown $(NEWSUSER) $(PATHLIB)/cert.pem
 	chgrp $(NEWSGROUP) $(PATHLIB)/cert.pem
-	chmod 600 $(PATHLIB)/cert.pem
+	chmod 640 $(PATHLIB)/cert.pem
+	chown $(NEWSUSER) $(PATHLIB)/key.pem
+	chgrp $(NEWSGROUP) $(PATHLIB)/key.pem
+	chmod 600 $(PATHLIB)/key.pem
 
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the
