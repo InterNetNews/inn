@@ -91,7 +91,7 @@ concat VA_PARAM(const char *, first)
 int
 main ()
 {
-#ifdef VAR_STDARGS
+#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
     printf("Using stdargs:\n\n");
 #else
     printf("Using varargs:\n\n");
