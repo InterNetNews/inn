@@ -367,25 +367,29 @@ token_newline(config_file file)
 static void
 token_string(config_file file)
 {
-    char *p;
+    int i;
     bool status;
     ptrdiff_t offset;
     bool done = false;
     bool colon = false;
 
-    p = file->current;
+    /* Use an offset from file->current rather than a pointer that moves
+       through the buffer, since the base of file->current can change during a
+       file_read_more() call and we don't want to have to readjust a
+       pointer. */
+    i = 0;
     while (!done) {
-        switch (*p) {
+        switch (file->current[i]) {
         case '\t':  case '\n':  case ' ':   case ';':
             done = true;
             break;
         case '"':   case '<':   case '>':   case '[':
         case '\\':  case ']':   case '{':   case '}':
-            error_bad_unquoted_char(file, *p);
+            error_bad_unquoted_char(file, file->current[i]);
             return;
         case ':':
             if (colon) {
-                error_bad_unquoted_char(file, *p);
+                error_bad_unquoted_char(file, file->current[i]);
                 return;
             }
             colon = true;
@@ -393,7 +397,6 @@ token_string(config_file file)
         case '\0':
             offset = file->current - file->buffer;
             status = file_read_more(file, offset);
-            p -= offset;
             if (!status)
                 done = true;
             break;
@@ -404,11 +407,11 @@ token_string(config_file file)
             }
         }
         if (!done)
-            p++;
+            i++;
     }
     file->token.type = colon ? TOKEN_PARAM : TOKEN_STRING;
-    file->token.string = xstrndup(file->current, p - file->current - colon);
-    file->current = p;
+    file->token.string = xstrndup(file->current, i - colon);
+    file->current += i;
 }
 
 
@@ -625,10 +628,11 @@ file_read_more(config_file file, ptrdiff_t offset)
         start = file->buffer + left;
         amount = offset;
     } else {
+        file->buffer = xrealloc(file->buffer, file->bufsize + BUFSIZ);
+        file->current = file->buffer;
         start = file->buffer + file->bufsize - 1;
-        file->bufsize += BUFSIZ;
-        file->buffer = xrealloc(file->buffer, file->bufsize);
         amount = BUFSIZ;
+        file->bufsize += BUFSIZ;
     }
     status = read(file->fd, start, amount);
     if (status < 0)
