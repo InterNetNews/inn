@@ -45,17 +45,26 @@ PATH_CYCBUFFCONFIG	= ${PATHETC}/cycbuff.conf
 PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 
 ##  Order:  innd, control, expire, inews, sending, misc
-MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
+MOST	= rc.news checkgroups default ihave newgroup \
 	rmgroup sendme sendsys senduuname version parsecontrol writelog \
 	docheckgroups news.daily scanlogs controlbatch controlchan expirerm \
 	tally.control nntpsend send-ihave send-nntp send-uucp \
 	sendbatch inncheck innstat pgpverify innwatch innreport \
-	innshellvars \
-	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
-	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	actsync.cfg actsync.ign scanspool innmail checkgroups.pl \
-	ihave.pl newgroup.pl rmgroup.pl sendme.pl sendsys.pl senduuname.pl \
-	version.pl
+	innshellvars innshellvars.pl innshellvars.csh innshellvars.tcl \
+	scanspool innmail checkgroups.pl ihave.pl newgroup.pl rmgroup.pl \
+	sendme.pl sendsys.pl senduuname.pl version.pl
+
+##  Scripts from above, plus site-specific config files.
+REST		= \
+	newsfeeds incoming.conf nnrp.access nnrpd.track passwd.nntp \
+	inn.conf moderators innreport.conf innreport_inn.pm \
+	control.ctl expire.ctl nntpsend.ctl overview.fmt \
+	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
+	motd.news storage.conf overview.ctl cycbuff.conf \
+	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
+	startup.tcl filter.tcl actsync.cfg actsync.ign
+
+ALL		= $(MOST) $(REST)
 
 MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/default $D$(CTLBIN)/ihave $D$(CTLBIN)/newgroup \
@@ -68,25 +77,11 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 	$D$(PATHBIN)/send-uucp $D$(PATHBIN)/sendbatch $D$(PATHBIN)/inncheck \
 	$D$(PATHBIN)/innstat $D$(PATHBIN)/pgpverify $D$(PATHBIN)/innwatch \
 	$D$(PATHBIN)/controlbatch $D$(PATHBIN)/innreport $D$(PATH_SHELLVARS) \
-	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
-	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
-	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
+	$D$(PATH_PERL_SHELLVARS) $D$(PATH_TCL_SHELLVARS) \
 	$D$(PATH_CSH_SHELLVARS) $D$(PATHBIN)/scanspool \
 	$D$(PATH_MOTD) $D$(CTLBIN)/checkgroups.pl $D$(CTLBIN)/ihave.pl \
 	$D$(CTLBIN)/newgroup.pl $D$(CTLBIN)/rmgroup.pl $D$(CTLBIN)/sendme.pl \
 	$D$(CTLBIN)/sendsys.pl $D$(CTLBIN)/senduuname.pl $D$(CTLBIN)/version.pl
-
-##  Scripts from above, plus site-specific config files.
-REST		= \
-	newsfeeds incoming.conf nnrp.access nnrpd.track passwd.nntp \
-	inn.conf moderators innreport.conf innreport_inn.pm \
-	control.ctl expire.ctl nntpsend.ctl \
-	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
-	motd.news storage.conf overview.ctl cycbuff.conf \
-	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	startup.tcl filter.tcl
-
-ALL		= $(MOST) $(REST)
 
 REST_INSTALLED	= \
 	$D$(PATH_NEWSFEEDS) $D$(PATH_INNDHOSTS) \
@@ -98,7 +93,9 @@ REST_INSTALLED	= \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(PATH_MOTD) $D$(PATH_STORAGECONF) \
 	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG) \
-	$D$(PATH_INNFEEDCTL)
+	$D$(PATH_INNFEEDCTL) $D$(PATH_PERL_STARTUP_INND) \
+	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
+	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -131,6 +128,9 @@ install-config:		update $(REST_INSTALLED)
 
 ##  Install scripts, not per-host config files.
 update:		$(MOST_INSTALLED)
+	@echo "" ; echo inn.conf in site directory may have newly added parameters
+	@echo which installed inn.conf does not have.  Check those parameters
+	@echo before you run innd. ; echo ""
 	date >update
 
 ##  Remove files that are unchanged from the release version.
