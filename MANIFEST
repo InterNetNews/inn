@@ -178,16 +178,12 @@ expire                      1 Expiration and recovery (Directory)
 expire/Makefile             1 Makefile for expiration
 expire/convdate.c           1 Date string conversions
 expire/expire.c             1 Expire old articles and history lines
-expire/expire.pch           1 Patch to C News expire to talk to innd
-expire/expireindex.c        1 Expire old overview index
 expire/expireover.c         1 Expire news overview data
 expire/fastrm.c             1 Remove list of files
 expire/grephistory.c        1 Find entries in history database
-expire/makeactive.c         1 Recover the active file
 expire/makehistory.c        1 Recover the history database
 expire/newsrequeue.c        1 Write filechan input from history file
 expire/prunehistory.c       1 Prune file names from history file
-expire/reap.pch             1 Patch to reap to print files and Message-IDs
 frontends                   1 Inews, rnews, ctlinnd (Directory)
 frontends/Makefile          1 Makefile for frontends
 frontends/c7unbatch.sh.in   1 Decode and uncompress input
@@ -199,7 +195,6 @@ frontends/getlist.c         1 Get active or other file from NNTP server
 frontends/gunbatch.sh.in    1 Decode and gunzip input
 frontends/inews.c           1 Send article to local NNTP server
 frontends/innconfval.c      1 Get an INN configuration parameter
-frontends/rn.pch            1 Patch to RN to build with INN
 frontends/rnews.c           1 UUCP unbatcher
 frontends/sm.c              1 Get article or overview data from token
 frontends/sys2nf.c          1 Sys file to newsfeeds conversion aide
@@ -215,10 +210,6 @@ include/inndcomm.h          1 Innd control channel commands
 include/libinn.h            1 InterNetNews library declarations
 include/macros.h            1 Useful syntactic sugar
 include/md5.h               1 Header file for processing md5
-include/mydir.h             1 Encapsulate dirent/direct differences
-include/mymemory.h          1 Default <memory.h>
-include/myserver.h          1 Replacement for rrn server.h
-include/mystring.h          1 Default <string.h>
 include/nntp.h              1 NNTP command and reply codes
 include/patchlevel.h        1 Official change log
 include/paths.h.in          1 Paths to common programs and files
@@ -328,7 +319,6 @@ lib/memmove.c               1 Copy two (possibly overlapping) buffers (BSD)
 lib/memset.c                1 Set a buffer to a value (BSD)
 lib/mkfifo.c                1 Make a fifo
 lib/nonblocking.c           1 Set or clear non-blocking I/O
-lib/over.c                  1 Pack and unpack overview index 
 lib/parsedate.y             1 Date parsing
 lib/perl.c                  1 Perl hook routines for nnrpd and innd.
 lib/radix32.c               1 Encode a number as a radix-32 string
@@ -359,8 +349,6 @@ ltmain.sh                   1 Script for libtool
 makedirs.sh.in              1 Script to make INN directories
 nnrpd                       1 Net News Reader server (Directory)
 nnrpd/Makefile              1 Makefile for nnrpd
-nnrpd/actived.c             1 Active file server for readers
-nnrpd/activedstats.c        1 Statistics for actived
 nnrpd/article.c             1 Article-related routines
 nnrpd/commands.c            1 Assorted server commands
 nnrpd/group.c               1 Group-related routines
@@ -373,17 +361,8 @@ nnrpd/perl.c                1 Perl routines for nnrpd.
 nnrpd/perm.c                1 Reading readers.conf
 nnrpd/post.c                1 Article processing and posting
 nnrpd/post.h                1 Article data types
-nnrpd/protocol.h            1 Protocol header for actived
 nnrpd/track.c               1 Track client
 nnrpd/udp.c                 1 Udp handling for actived
-obsolete                    1 Depreciated programs area (Directory)
-obsolete/README.obsolete    1 README file for obsolete programs
-obsolete/hosts.nntp.nolimit 1 Sample hosts.nntp(5) file
-obsolete/innlog.awk         1 Summarize syslog log files
-obsolete/innlog.pl          1 Perl version of the syslog summary.
-obsolete/innshellvars.csh.in 1 CSH Script to set config parameters
-obsolete/scanlogs-backend.pl 1 Summarize news log file
-obsolete/tally.unwanted     1 Summarize unwanted articles
 samples                     1 Prototype InterNetNews files (Directory)
 samples/INN.py              1 Stub Python functions
 samples/actsync.cfg.in      1 Config file for actsync
@@ -436,7 +415,6 @@ samples/nnrpd_auth.pl.in    1 Sample nnrpd authorization script
 samples/nnrpd.track         1 Sample nnrpd.track(5) file
 samples/nntpsend.ctl        1 Sample control file for nntpsend
 samples/nntpsend.in         1 Invoke all innxmit's at once
-samples/overview.ctl        1 Sample overview.ctl(5) file
 samples/overview.fmt        1 Format of news overview database
 samples/parsecontrol.in     1 Initial parsing of control messages
 samples/passwd.nntp         1 Sample passwd.nntp(5) file
@@ -510,13 +488,3 @@ storage/trash/Makefile      1 Makefile for trash method
 storage/trash/method.config 1 Definition file used by buildconfig
 storage/trash/trash.c       1 Trash routines
 storage/trash/trash.h       1 Header file for timehash
-syslog                      1 Modern version of syslog (Directory)
-syslog/README               1 Installation notes for syslog
-syslog/logger.1             1 Manpage for logger program
-syslog/logger.c             1 Command interface to syslog
-syslog/syslog.3             1 Manpage for syslog library routine
-syslog/syslog.c             1 Syslog library routine
-syslog/syslog.conf.in       1 Config file for syslogd
-syslog/syslog.h             1 Header file for syslog
-syslog/syslogd.8            1 Manpage for syslogd
-syslog/syslogd.c            1 Syslog daemon

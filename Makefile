@@ -118,19 +118,9 @@ clobber realclean distclean:	clean
 	rm -f samples/signcontrol samples/simpleftp samples/startup.tcl
 	rm -f samples/tally.control samples/version samples/version.pl
 	rm -f samples/writelog site/config storage/buildconfig
-	rm -f syslog/syslog.conf
 	@echo ""
 	cd site ; make clobber ; cd ..
 	rm -f Makefile.global 
-
-##  Update syslog.
-syslogfix:
-	rm -f include/syslog.h lib/syslog.c
-	cp syslog/syslog.h include
-	cp syslog/syslog.c lib
-	cp syslog/syslog.3 doc
-	-cd syslog; $(CC) -I../include -o syslogd syslogd.c ; cd ..
-	@echo "Install syslogd and syslog.conf as appropriate"
 
 ##  Configure and compile
 world:		Install.ms
