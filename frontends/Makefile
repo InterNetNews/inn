@@ -41,9 +41,9 @@ LIBS	=
 LIBNEWS	= ../libstorage.a ../libinn.a 
 LINTLIB	= ../llib-linn.ln
 
-SOURCES	= ctlinnd.c inews.c rnews.c
+SOURCES	= ctlinnd.c inews.c rnews.c sm.c
 
-ALL	= inews rnews ctlinnd getlist innconfval decode encode
+ALL	= inews rnews ctlinnd getlist innconfval decode encode sm
 
 all:		$(ALL)
 	date >$@
@@ -51,7 +51,8 @@ all:		$(ALL)
 install:	$(INEWS) $(RNEWS) \
 		$(NEWSBIN)/ctlinnd $(NEWSBIN)/getlist $(NEWSBIN)/innconfval \
 		$(RNEWSPROGS)/c7unbatch \
-		$(RNEWSPROGS)/decode $(RNEWSPROGS)/encode
+		$(RNEWSPROGS)/decode $(RNEWSPROGS)/encode \
+		$(NEWSBIN)/sm
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -66,6 +67,8 @@ rnews:		$(P) rnews.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ rnews.o $(NNTPLIB) $(LIBNEWS) $(LIBNEWS) $(LIBS)
 ctlinnd:	$(P) ctlinnd.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ ctlinnd.o $(LIBNEWS) $(LIBS)
+sm:		$(P) sm.o $(LIBNEWS)
+	$(CC) $(LDFLAGS) -o $@ sm.o $(LIBNEWS) $(LIBNEWS)
 getlist:	$(P) getlist.o $(LIBNEWS)
 	$(CC) $(LDFLAGS) -o $@ getlist.o $(LIBNEWS) $(LIBS)
 innconfval:	$(P) innconfval.o $(LIBNEWS)
@@ -87,6 +90,7 @@ lint:		$(ALL)
 	-lint $(LINTFLAGS) inews.c      $(LINTLIB) $(LINTFILTER)  >lint
 	-lint $(LINTFLAGS) rnews.c      $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) ctlinnd.c    $(LINTLIB) $(LINTFILTER) >>lint
+	-lint $(LINTFLAGS) sm.c		$(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) innconfval.c $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) getlist.c    $(LINTLIB) $(LINTFILTER) >>lint
 	-lint $(LINTFLAGS) decode.c     $(LINTLIB) $(LINTFILTER) >>lint
@@ -110,6 +114,8 @@ $(RNEWS):		rnews
 	$(SHELL) ../installit.sh $(ROWNER) -m 04550 -b .OLD $? $@
 $(NEWSBIN)/ctlinnd:	ctlinnd
 	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
+$(NEWSBIN)/sm:	sm
+	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
 $(NEWSBIN)/getlist:	getlist
 	$(SHELL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
 $(NEWSBIN)/innconfval:	innconfval
@@ -132,6 +138,10 @@ ctlinnd.o:	../include/inndcomm.h
 ctlinnd.o:	../include/libinn.h
 ctlinnd.o:	../include/macros.h
 ctlinnd.o:	../include/paths.h
+sm.o:		../include/configdata.h
+sm.o:		../include/clibrary.h
+sm.o:		../include/libinn.h
+sm.o:		../include/macros.h
 decode.o:	../include/clibrary.h
 decode.o:	../include/configdata.h
 encode.o:	../include/clibrary.h
