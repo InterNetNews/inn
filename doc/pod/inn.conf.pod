@@ -385,6 +385,24 @@ Stores data into a Berkeley DB database.  See the ovdb(5) man page.
 
 =back
 
+=item I<hismethod>
+
+Which history storage method to use.  The only currently supported
+value is C<hisv6>.  There is no default value; this parameter must
+be set.
+
+=over 4
+
+=item C<hisv6>
+
+Stores history data in the INN history v6 format - history(5) text
+file and a number of dbz database files; this may be in true history
+v6 format, or tagged hash format depending on the build
+options. Separation of these two is a project which has not yet been
+undertaken.
+
+=back
+
 =item I<storeonxref>
 
 If set to true, articles will be stored based on the newsgroup names in
