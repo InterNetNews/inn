@@ -1462,6 +1462,15 @@ int main(int ac, char *av[])
 	}
 
 	if (qp == NULL) {
+	    if (IsToken(Article)) {
+		if ((SMerrno == SMERR_NOENT) || (SMerrno == SMERR_UNINIT))
+		    continue;
+		else {
+		    (void)fprintf(stderr, "Requeue \"%s\", %s\n",
+			Article, SMerrorstr);
+		    Requeue(Article, MessageID);
+		}
+	    }
 	    switch (errno) {
 	    default:
 		(void)fprintf(stderr, "Requeue \"%s\", %s\n",
