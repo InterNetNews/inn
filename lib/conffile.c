@@ -2,14 +2,11 @@
 **
 ** Routines for reading in incoming.conf-style config files.
 */
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <configdata.h>
-#include <macros.h>
-#include <clibrary.h>
-#include <conffile.h>
-#include <libinn.h>
+#include "config.h"
+#include "clibrary.h"
+#include "conffile.h"
+#include "libinn.h"
+#include "macros.h"
 
 static char *CONFgetword(CONFFILE *F)
 {
