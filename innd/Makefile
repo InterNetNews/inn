@@ -16,19 +16,19 @@ ALL	= innd inndstart
 all:		$(ALL)
 
 art.o: art.c
-	$(CC) $(CFLAGS) $(TCLINC) -c art.c
+	$(CC) $(CFLAGS) $(TCLINC) -c art.c -o $@
 
 cc.o: cc.c
-	$(CC) $(CFLAGS) $(PERLINC) -c cc.c
+	$(CC) $(CFLAGS) $(PERLINC) -c cc.c -o $@
 
 perl.o: perl.c
-	$(CC) $(CFLAGS) $(PERLINC) -c perl.c
+	$(CC) $(CFLAGS) $(PERLINC) -c perl.c -o $@
 
 python.o: python.c
-	$(CC) $(CFLAGS) $(PYTHONINC) -c python.c
+	$(CC) $(CFLAGS) $(PYTHONINC) -c python.c -o $@
 
 tcl.o: tcl.c
-	$(CC) $(CFLAGS) $(TCLINC) -c tcl.c
+	$(CC) $(CFLAGS) $(TCLINC) -c tcl.c -o $@
 
 install: $D${PATHBIN}/innd $D${PATHBIN}/inndstart
 
