@@ -154,12 +154,14 @@ struct host_s
 
 #ifdef DYNAMIC_CONNECTIONS
     /* Dynamic Peerage - MGF */
-    u_int absMaxConnections ; /* perHost limit on number of connections */
-    u_int artsProcessed ;     /* # of articles processed */
-    bool maxCxnChk ;          /* check for maxConnections */
-    time_t lastMaxCxnTime ;   /* last time a maxConnections increased */
+    u_int absMaxConnections ;   /* perHost limit on number of connections */
+    u_int artsProcLastPeriod ;  /* # of articles processed in last period */
+    u_int secsInLastPeriod ;    /* Number of seconds in last period */
+    u_int lastCheckPoint ;      /* total articles at end of last period */
+    bool maxCxnChk ;            /* check for maxConnections */
+    time_t lastMaxCxnTime ;     /* last time a maxConnections increased */
     time_t lastChkTime;         /* last time a check was made for maxConnect */
-    u_int nextCxnTimeChk ;    /* next check for maxConnect */
+    u_int nextCxnTimeChk ;      /* next check for maxConnect */
 #endif
 
     /* These numbers are as above, but for the life of the process. */
@@ -869,7 +871,9 @@ Host newHost (InnListener listener,
   nh->artsFromTape = 0 ;
 
 #ifdef DYNAMIC_CONNECTIONS
-  nh->artsProcessed = 0;
+  nh->artsProcLastPeriod = 0;
+  nh->secsInLastPeriod = 0;
+  nh->lastCheckPoint = 0;
   nh->maxCxnChk = true;
   nh->lastMaxCxnTime = time(0);
   nh->lastChkTime = time(0);
@@ -1045,7 +1049,6 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
 {
   char indent [INDENT_BUFFER_SIZE] ;
   u_int i ;
-  Connection *cxn ;
   ProcQElem qe ;
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
   
@@ -1228,7 +1231,6 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
 void hostClose (Host host)
 {
   u_int i ;
-  u_int mxCxns ;
   u_int cxnCount ;
 
   dprintf (1,"Closing host %s\n",host->peerName) ;
@@ -1265,53 +1267,42 @@ void hostClose (Host host)
  */
 void hostChkCxns(TimeoutId tid, void *data) {
   Host host = (Host) data;
-  u_int artCnt = host->gArtsAccepted + host->gArtsRejected +
-                (host->gArtsNotWanted / 4);
-  time_t now = time(0);
-  u_int lastTime = host->lastMaxCxnTime - host->firstConnectTime;
-  u_int thisTime = now - host->firstConnectTime;
   u_int absMaxCxns ;
-  float Chngs;
+  float lastAPS, currAPS ;
+
+  if(!host->maxCxnChk)
+    return;
+
+  if(host->secsInLastPeriod > 0) 
+    lastAPS = host->artsProcLastPeriod / (host->secsInLastPeriod * 1.0);
+
+  host->artsProcLastPeriod = (host->gArtsAccepted + 
+                              host->gArtsRejected +  
+                              (host->gArtsNotWanted / 4)) -
+                              host->lastCheckPoint ;
+  host->lastCheckPoint = host->gArtsAccepted +
+                         host->gArtsRejected +
+                        (host->gArtsNotWanted / 4) ;
+  host->secsInLastPeriod = host->nextCxnTimeChk ;
+
+  currAPS = host->artsProcLastPeriod / (host->secsInLastPeriod * 1.0) ;
 
   if(!host->absMaxConnections) absMaxCxns = host->maxConnections + 1 ;
   else absMaxCxns = host->absMaxConnections ;
 
-  /* First attempt at dynamic maxConnections - MGF */
-  if(!host->maxCxnChk)
-    return;
-
-  if(lastTime <= 0) lastTime = 1;
-
-  host->lastChkTime = now;
-
-  Chngs = (artCnt / (thisTime * 1.0)) -
-          (host->artsProcessed / (lastTime * 1.0));
-
   syslog(LOG_NOTICE, HOST_MAX_CONNECTIONS,
-         host->peerName,
-         artCnt / ((now - host->firstConnectTime) * 1.0),
-         host->artsProcessed / (lastTime * 1.0),
-         absMaxCxns, host->maxConnections);
+         host->peerName, currAPS, lastAPS, absMaxCxns, host->maxConnections);
  
-  /* - if new art/sec > old art/sec by .1 art/sec, increase by one
-     *   connection
-     */
-  dprintf(1, "hostChkCxns: Chngs %f\n", Chngs);
+  dprintf(1, "hostChkCxns: Chngs %f\n", currAPS - lastAPS);
  
-  if((Chngs >= 0.1) && (host->maxConnections < absMaxCxns)) {
-    u_int ii = host->maxConnections, maxCxns ;
+  if(((currAPS - lastAPS) >= 0.1) && (host->maxConnections < absMaxCxns)) {
+    u_int ii = host->maxConnections ;
     double lowFilter = host->lowPassLow ;   /* the off threshold */
     double highFilter = host->lowPassHigh ; /* the on threshold */
  
-    dprintf(1, "hostChkCxns increasing, Chngs %f\n", Chngs);
+    dprintf(1, "hostChkCxns increasing, Chngs %f\n", currAPS - lastAPS);
  
-    /* once every two minutes is short enough if we are rising */
-    host->nextCxnTimeChk = 120;
- 
-    /* need to set host->maxConnections before cxnWait() */
-    maxCxns = (int)Chngs + 1;
- 
-    host->maxConnections += maxCxns;
+    host->maxConnections += (int)(currAPS - lastAPS) + 1 ;
  
     host->connections =
       REALLOC (host->connections, Connection, host->maxConnections + 1);
@@ -1345,11 +1336,9 @@ void hostChkCxns(TimeoutId tid, void *data) {
       cxnConnect (host->connections [ii]) ;
       ii++;
     }
-    host->artsProcessed = artCnt;
-    host->lastMaxCxnTime = now;
   } else {
-    if (Chngs < -.2) {
-      dprintf(1, "hostChkCxns decreasing, Chngs %f\n", Chngs);
+    if ((currAPS - lastAPS) < -.2) {
+      dprintf(1, "hostChkCxns decreasing, Chngs %f\n", currAPS - lastAPS);
       if(host->maxConnections != 1) {
  
         u_int ii = host->maxConnections;
@@ -1369,22 +1358,12 @@ void hostChkCxns(TimeoutId tid, void *data) {
         ASSERT (host->cxnActive != NULL) ;
         host->cxnSleeping = REALLOC (host->cxnSleeping, bool, ii) ;
         ASSERT (host->cxnSleeping != NULL) ;
-        /* give enough time to settle down again */
-        host->nextCxnTimeChk = 240;
-      } else {
-        /* if we are at 1 channel, don't wait *too* long to check for
-         * ability/chance to open one more
-         */
-        host->nextCxnTimeChk = 120;
-      }
-      host->artsProcessed = artCnt;
-      host->lastMaxCxnTime = now;
-    } else {
-      dprintf(1, "hostChkCxns doing nothing, Chngs %f\n", Chngs);
-      if(host->nextCxnTimeChk <= 480)
-        host->nextCxnTimeChk *= 2;
-    }
+      } 
+    } else 
+      dprintf(1, "hostChkCxns doing nothing, Chngs %f\n", currAPS - lastAPS);
   }
+  if(host->nextCxnTimeChk <= 480)
+    host->nextCxnTimeChk *= 2;
   dprintf(1, "prepareSleep hostChkCxns, %d\n", host->nextCxnTimeChk);
   host->ChkCxnsId = prepareSleep(hostChkCxns, host->nextCxnTimeChk, host);
 }
@@ -3148,8 +3127,6 @@ static int validateBool (FILE *fp, const char *name, int required, bool setval)
 void gCalcHostBlStat (void)
 {
   Host h ;
-  char indent [INDENT_BUFFER_SIZE] ;
-  u_int i ;
   
   for (h = gHostList ; h != NULL ; h = h->next)
     {
