@@ -1275,7 +1275,10 @@ void hostChkCxns(TimeoutId tid, void *data) {
 
   if(host->secsInLastPeriod > 0) 
     lastAPS = host->artsProcLastPeriod / (host->secsInLastPeriod * 1.0);
-  if(lastAPS < 0.0) lastAPS = 0.0;
+  else
+    lastAPS = host->artsProcLastPeriod * 1.0;
+
+  
 
   currArticles = (host->gArtsAccepted + host->gArtsRejected +
                  (host->gArtsNotWanted / 4)) - host->lastCheckPoint ;
