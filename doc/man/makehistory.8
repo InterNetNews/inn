@@ -31,14 +31,17 @@ makehistory \- tools to recover Usenet history database.
 [
 .B \-x
 ]
+[
+.B \-F
+]
 .SH DESCRIPTION
 .PP
 .I Makehistory
 rebuilds the
 .IR history (5)
-text file.
+text file.  The
 .IR dbz (3)
-database is rebuild by
+database is rebuilt by
 .IR makedbz (8).
 The default name of the text file is
 .IR <pathdb\ in\ inn.conf>/history ;
@@ -48,13 +51,13 @@ scans spool through storage manager,
 reads each article, and writes a history line for it.
 .PP
 .I Makehistory
-can also rebuild overview database throuth overview method.
+can also rebuild the overview database.
 .SH OPTIONS
 .TP
 .B \-a
 If the ``\fB\-a\fP'' flag is given then the
 .IR history (5)
-is opened as appended mode.
+is opened in append mode.
 .TP
 .B \-b
 If the ``\-b'' flag is used, then
@@ -95,8 +98,19 @@ the space is (300 * val) bytes.
 If the ``\fB\-O\fP'' flag is used, then overview database is also created.
 Overview data is needed to provide reader service.  Overview data is not
 needed for feed only system.  For ``buffindexed'' ovmethod, all buffers
-need to be cleaned before
+need to be cleaned before running
 .IR makehistory (8).
+.TP
+.B \-F
+If the ``\fB\-F\fP'' flag is used, 
+.IR makehistory (8)
+will fork a new process to flush overview data.  That way, it can continue
+to collect more overview data from the spool while the first 'batch' is
+being stored into the overview database.  This could possibly cut the total
+run time of
+.IR makehistory (8)
+in half, at the expense of needing up to twice as much disk space for the
+temporary overview data for a given setting of ``\fB\-l\fP''.
 .TP
 .B \-T
 .I Makehistory
