@@ -83,7 +83,7 @@ LCsetup()
     (void)memset((POINTER)&server, 0, sizeof server);
     server.sun_family = AF_UNIX;
     (void)strcpy(server.sun_path, LCpath);
-    if (bind(i, (struct sockaddr *)&server, AF_UNIX_SOCKSIZE(server)) < 0) {
+    if (bind(i, (struct sockaddr *) &server, SUN_LEN(&server)) < 0) {
 	syslog(L_FATAL, "%s cant bind %s %m", LogName, LCpath);
 	exit(1);
     }

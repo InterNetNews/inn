@@ -92,8 +92,8 @@ ICCopen()
     ICCclient.sun_family = AF_UNIX;
     (void)strcpy(ICCclient.sun_path, ICCsockname);
     mask = umask(0);
-    if (bind(ICCfd, (struct sockaddr *)&ICCclient,
-		AF_UNIX_SOCKSIZE(ICCclient)) < 0) {
+    if (bind(ICCfd, (struct sockaddr *) &ICCclient,
+             SUN_LEN(&ICCclient)) < 0) {
 	oerrno = errno;
 	(void)umask(mask);
 	errno = oerrno;
@@ -269,7 +269,7 @@ ICCcommand(cmd, argv, replyp)
 
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     if (sendto(ICCfd, buff, len, 0,
-	    (struct sockaddr *)&ICCserv, AF_UNIX_SOCKSIZE(ICCserv)) < 0) {
+	    (struct sockaddr *)&ICCserv, SUN_LEN(&ICCserv)) < 0) {
 	DISPOSE(buff);
 	ICCfailure = "sendto";
 	return -1;

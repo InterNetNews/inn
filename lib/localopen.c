@@ -44,7 +44,7 @@ int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     (void)strcpy(server.sun_path, innconf->pathrun);
     (void)strcat(server.sun_path, "/");
     (void)strcat(server.sun_path, _PATH_NNTPCONNECT);
-    if (connect(i, (struct sockaddr *)&server, AF_UNIX_SOCKSIZE(server)) < 0) {
+    if (connect(i, (struct sockaddr *)&server, SUN_LEN(&server)) < 0) {
 	oerrno = errno;
 	(void)close(i);
 	errno = oerrno;
