@@ -75,7 +75,7 @@ WRITING AN INND FILTER:
                 Followup-To, Organization, Content-Type, Content-Base,
                 Content-Disposition, X-Newsreader, X-Mailer,
                 X-Newsposter, X-Cancelled-By, X-Canceled-By,
-                Cancel-Key, __LINES__, __BODY__
+                Cancel-Key, Injector-Info, __LINES__, __BODY__
 
             All the above values will be buffer objects holding the
             contents of the same named article headers, except for the
