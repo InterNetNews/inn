@@ -1,6 +1,8 @@
 ##  $Revision$
 include ../Makefile.global
 
+CFLAGS	= $(GCFLAGS)
+
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 CONF	= config.data
