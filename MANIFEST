@@ -252,7 +252,6 @@ include/ppport.h                      Header file for Perl support
 include/qio.h                         Header file for quick I/O package
 include/rwlock.h                      Header file for rwlock
 include/storage.h                     Header file for storage API
-include/uio.h                         Minimal <sys/uio.h>
 innd                                  Server (Directory)
 innd/Makefile                         Makefile for server
 innd/art.c                            Process a received article
