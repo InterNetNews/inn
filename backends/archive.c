@@ -601,7 +601,7 @@ main(ac, av)
 			*p = '\0';
 		    }
 			
-		    if (base) {
+		    if (base && !Concat) {
 			/* Try to link the file into the archive. */
 			if (link(base, dest) < 0) {
 
