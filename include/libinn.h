@@ -5,11 +5,13 @@
 #ifndef LIBINN_H
 #define LIBINN_H
 
+#include "config.h"
+
+#include <stdio.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <storage.h>
-
-#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,6 +50,16 @@ extern FILE	*CAlistopen(FILE *FromServer, FILE *ToServer, char *request);
 extern FILE     *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request);
 extern void	CAclose(void);
 
+/* File locking. */
+extern int      LockFile(int fd, BOOL block);
+
+#ifdef HAVE_FCNTL
+typedef enum { LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
+
+extern int      LockRange(int fd, LOCKTYPE type, BOOL block,
+                          OFFSET_T offset, OFFSET_T size);
+#endif
+    
 /* Parameter retrieval. */
 
 struct conf_vars {
@@ -225,7 +237,7 @@ extern int	dbzneedfilecount(void);
 extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
 extern int	getfdcount(void);
 extern int	wildmat(const char *text, const char *p);
-extern PID_T	waitnb(int *statusp);
+extern pid_t	waitnb(int *statusp);
 extern int	xread(int fd, char *p, OFFSET_T i);
 extern int	xwrite(int fd, char *p, int i);
 extern int	xwritev(int fd, struct iovec *vp, int vpcount);
@@ -235,9 +247,6 @@ extern OFFSET_T pread(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset);
 #ifndef HAVE_PWRITE
 extern OFFSET_T pwrite(int fd, void *buf, OFFSET_T nbyte, OFFSET_T offset);
 #endif /* HAVE_PWRITE */
-typedef enum {LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
-extern int	LockFile(int fd, BOOL Block);
-extern BOOL     LockRange(int fd, LOCKTYPE type, BOOL Block, OFFSET_T offset, OFFSET_T size);
 extern int	GetResourceUsage(double *usertime, double *systime);
 extern int	SetNonBlocking(int fd, BOOL flag);
 extern void	CloseOnExec(int fd, int flag);
