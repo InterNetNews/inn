@@ -137,7 +137,7 @@ static void STATUSsummary(void)
     strcpy(TempString, cp->Address.s_addr == 0 ? "localhost" : RChostname(cp));
     while ((j < peers) && (strcmp (TempString, status[j].name)))
       j++;
-    if (j > MAX_PEER) {
+    if (j >= MAX_PEER) {
       syslog(L_NOTICE, "%s: too many peers for STATUSsummary()", TempString);
       fprintf (F, "%s: too many peers for STATUSsummary()\n", TempString);
       continue;
