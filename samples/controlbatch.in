@@ -42,7 +42,7 @@ batchlock="${LOCKS}/LOCK.controlbatch"
 mypid=$$
 
 # A concession to INN 1.x
-if [ me${PATHBIN}ow == meow ] ; then
+if [ me${PATHBIN}ow = meow ] ; then
 	PATHBIN=${NEWSBIN}
 	export PATHBIN
 fi
@@ -50,7 +50,7 @@ fi
 # See if we have no arguments and should use the defaults. If there are
 # arguments, make sure we have enough to attempt something useful.
 if [ me${1}ow != meow ] ; then
-	if [ me${2}ow == meow ] ; then
+	if [ me${2}ow = meow ] ; then
 		echo "Usage: ${0} [feedsite batchfile]" >&2
 		exit 0
 	else
