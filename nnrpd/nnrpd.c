@@ -863,6 +863,7 @@ main(argc, argv, env)
 	    exit(1);
 	}
 
+	memset(&ssa, '\0', sizeof(ssa));
 	ssa.sin_family = AF_INET;
 	ssa.sin_addr.s_addr = ListenAddr;
 	ssa.sin_port = htons(ListenPort);
