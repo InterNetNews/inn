@@ -808,7 +808,7 @@ int yywrap (void)
 }
 
 extern FILE *yyin ;
-extern int yydebug ;
+int yydebug ;
 
 #define NO_INHERIT 0
 
