@@ -78,6 +78,9 @@ extern char *x_strdup(const char *, const char *, int);
 /* Failure handler takes the function, the size, the file, and the line. */
 typedef void (*xmalloc_handler_t)(const char *, size_t, const char *, int);
 
+/* The default error handler. */
+void xmalloc_fail(const char *, size_t, const char *, int);
+
 /* Assign to this variable to choose a handler other than the default, which
    just calls sysdie. */
 extern xmalloc_handler_t xmalloc_error_handler;
