@@ -426,7 +426,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
     }
     buff[entrysize] = '\0';
     if (strchr(buff, '\n') == NULL) {
-	syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
+	syslog(L_ERROR, "%s cant find end of line %ld", ClientHost, offset);
 	return NULL;
     }
     if (PERMaccessconf->nnrpdoverstats) {
