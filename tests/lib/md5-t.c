@@ -5,6 +5,7 @@
 #include "clibrary.h"
 #include "inn/md5.h"
 #include "libinn.h"
+#include "libtest.h"
 
 /* Used to initialize strings of unsigned characters. */
 #define U       (const unsigned char *)
@@ -60,7 +61,7 @@ static const char * const testhash[] = {
 
 #define ARRAY_SIZE(array)       sizeof(array) / sizeof(array[0])
 
-void
+static void
 digest2hex(const unsigned char *digest, char *result)
 {
     const unsigned char *p;
@@ -74,25 +75,15 @@ digest2hex(const unsigned char *digest, char *result)
 }
 
 static void
-ok(int n, const char *expected, const unsigned char *data, size_t length)
+test_md5(int n, const char *expected, const unsigned char *data,
+         size_t length)
 {
     unsigned char digest[16];
     char hexdigest[33];
 
     md5_hash(data, length, digest);
     digest2hex(digest, hexdigest);
-    if (!strcmp(expected, hexdigest)) {
-        printf("ok %d\n", n);
-    } else {
-        printf("not ok %d\n   saw: %s\n  want: %s\n", n, hexdigest,
-               expected);
-    }
-}
-
-static void
-ok_bool(int n, int success)
-{
-    printf("%sok %d\n", success ? "" : "not ", n);
+    ok_string(n, expected, hexdigest);
 }
 
 int
@@ -106,19 +97,19 @@ main(void)
 
     printf("%d\n", 12 + ARRAY_SIZE(testdata));
 
-    ok(1, "93b885adfe0da089cdf634904fd59f71", U"\0", 1);
-    ok(2, "e94a053c3fbfcfb22b4debaa11af7718", U"\0ab\n", 4);
+    test_md5(1, "93b885adfe0da089cdf634904fd59f71", U"\0", 1);
+    test_md5(2, "e94a053c3fbfcfb22b4debaa11af7718", U"\0ab\n", 4);
 
     data = xmalloc(64 * 1024);
     memset(data, 0, 64 * 1024);
-    ok(3, "fcd6bcb56c1689fcef28b57c22475bad", data, 64 * 1024);
+    test_md5(3, "fcd6bcb56c1689fcef28b57c22475bad", data, 64 * 1024);
     memset(data, 1, 32 * 1024);
-    ok(4, "3d8897b14254c9f86fbad3fe22f62edd", data, 64 * 1024);
-    ok(5, "25364962aa23b187942a24ae736c4e8c", data, 65000);
-    ok(6, "f9816b5d5363d15f14bb98d548309dcc", data, 55);
-    ok(7, "5e99dfddfb51c18cfc55911dee24ae7b", data, 56);
-    ok(8, "0871ffa021e2bc4da87eb93ac22d293c", data, 63);
-    ok(9, "784d68ba9112308689114a6816c628ce", data, 64);
+    test_md5(4, "3d8897b14254c9f86fbad3fe22f62edd", data, 64 * 1024);
+    test_md5(5, "25364962aa23b187942a24ae736c4e8c", data, 65000);
+    test_md5(6, "f9816b5d5363d15f14bb98d548309dcc", data, 55);
+    test_md5(7, "5e99dfddfb51c18cfc55911dee24ae7b", data, 56);
+    test_md5(8, "0871ffa021e2bc4da87eb93ac22d293c", data, 63);
+    test_md5(9, "784d68ba9112308689114a6816c628ce", data, 64);
 
     /* Check the individual functions. */
     md5_init(&context);
@@ -127,7 +118,7 @@ main(void)
     md5_update(&context, data + 64 * 1024 - 42, 42);
     md5_final(&context);
     digest2hex(context.digest, hexdigest);
-    ok_bool(10, !strcmp("3d8897b14254c9f86fbad3fe22f62edd", hexdigest));
+    ok_string(10, "3d8897b14254c9f86fbad3fe22f62edd", hexdigest);
 
     /* Part of the MD5 test suite from RFC 1321. */
     for (i = 0, n = 'A'; n <= 'Z'; i++, n++)
@@ -136,17 +127,17 @@ main(void)
         data[i] = n;
     for (i = 52, n = '0'; n <= '9'; i++, n++)
         data[i] = n;
-    ok(11, "d174ab98d277d9f5a5611c2c9f419d9f", data, 62);
+    test_md5(11, "d174ab98d277d9f5a5611c2c9f419d9f", data, 62);
     for (i = 0, j = 0; j < 8; j++) {
         for (n = '1'; n <= '9'; i++, n++)
             data[i] = n;
         data[i++] = '0';
     }
-    ok(12, "57edf4a22be3c955ac49da2e2107b67a", data, 80);
+    test_md5(12, "57edf4a22be3c955ac49da2e2107b67a", data, 80);
 
     n = 13;
     for (i = 0; i < ARRAY_SIZE(testdata); i++)
-        ok(n++, testhash[i], testdata[i], ustrlen(testdata[i]));
+        test_md5(n++, testhash[i], testdata[i], ustrlen(testdata[i]));
 
     return 0;
 }
