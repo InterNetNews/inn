@@ -2,9 +2,7 @@
 #define __DBZ_H__
 
 /* Need the definition of HASH. */
-#ifndef __LIBINN_H__
-# include "libinn.h"
-#endif
+#include "libinn.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,13 +31,13 @@ typedef struct {
     /* Whether to write to the filesystem in addition to updating the incore
        copy.  This will replace a single large write to disk when dbzsync is
        called.  */
-    BOOL             writethrough;
+    bool             writethrough;
     /* Whether to do hash lookups from disk, memory or a mmap'ed file */
     dbz_incore_val   pag_incore;
     dbz_incore_val   exists_incore;
     /* Whether dbzstore should update the database async or sync.  This
        is only applicable if you're not mmaping the database */
-    BOOL             nonblock;
+    bool             nonblock;
 } dbzoptions;
 
 #ifdef __GNUC__
@@ -61,18 +59,18 @@ typedef struct {
 #endif /* nor lint, nor__SUNPRO_C, nor _nec_ews */
 
 /* standard dbm functions */
-extern BOOL dbzinit(const char *name);
-extern BOOL dbzclose(void);
+extern bool dbzinit(const char *name);
+extern bool dbzclose(void);
 
 /* new stuff for dbz */
-extern BOOL dbzfresh(const char *name, const OFFSET_T size, const int fillpercent);
-extern BOOL dbzagain(const char *name, const char *oldname);
-extern BOOL dbzexists(const HASH key);
-extern BOOL dbzfetch(const HASH key, OFFSET_T *value);
-extern DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data);
-extern BOOL dbzsync(void);
-extern long dbzsize(const OFFSET_T contents);
-extern BOOL dbzdebug(const int value);
+extern bool dbzfresh(const char *name, off_t size, int fillpercent);
+extern bool dbzagain(const char *name, const char *oldname);
+extern bool dbzexists(const HASH key);
+extern bool dbzfetch(const HASH key, off_t *value);
+extern DBZSTORE_RESULT dbzstore(const HASH key, off_t data);
+extern bool dbzsync(void);
+extern long dbzsize(off_t contents);
+extern bool dbzdebug(const int value);
 extern void dbzsetoptions(const dbzoptions options);
 extern void dbzgetoptions(dbzoptions *options);
 
