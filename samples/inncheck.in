@@ -278,20 +278,59 @@ hosts_nntp
 ##  inn.conf
 ##
 %inn_conf'fields = (
-    'domain',		0,
-    'fromhost',		0,
-    'moderatormailer',	0,
-    'organization',	0,
-    'pathhost',		0,
-    'server',		0,
-    'mime-version',	0,
-    'mime-contenttype',	0,
-    'mime-encoding',	0
+    'domain',			0,
+    'fromhost',			0,
+    'moderatormailer',		0,
+    'organization',		0,
+    'pathhost',			0,
+    'server',			0,
+    'mime-version',		0,
+    'mime-contenttype',		0,
+    'mime-encoding',		0,
+    'mta',			0,
+    'checkincludedtext',	0,
+    'maxforks',			0,
+    'maxartsize',		0,
+    'nicekids',			0,
+    'verifycancels',		0,
+    'logcancelcomm',		0,
+    'wanttrash',		0,
+    'remembertrash',		0,
+    'linecountfuzz',		0,
+    'peertimeout',		0,
+    'clienttimeout',		0,
+    'allownewnews',		0,
+    'localmaxartsize',		0,
+    'logartsize',		0,
+    'logipaddr',		0,
+    'maxconnections',		0,
+    'artcutoff',		0,
+    'icdsynccount',		0,
+    'chaninacttime',		0,
+    'chanretrytime',		0,
+    'pauseretrytime',		0,
+    'nntplinklog',		0,
+    'nntpactsync',		0,
+    'badiocount',		0,
+    'blockbackoff',		0,
+    'hiscachesize',		0,
+    'wireformat',		0,
+    'xrefslave',    		0,
+    'spoolfirst',		0,
+    'writelinks',		0,
+    'timer',			0,
+    'status',			0,
+    'storageapi',		0,
+    'articlemmap',		0,
+    'overviewmmap',		0,
+    'allowreaders',		0,
+    'bindaddress',		0,
+    'port',			0
 );
 %inn_conf'optionals = (
-    'mime-version',	0,
-    'mime-contenttype',	0,
-    'mime-encoding',	0
+    'mime-version',		0,
+    'mime-contenttype',		0,
+    'mime-encoding',		0
 );
 
 sub
@@ -342,7 +381,7 @@ inn_conf
 		if $pedantic && $fqdn !~ /^$v/;
 	}
 	else {
-	    print "$file:$line: semi-known field\n";
+#	    print "$file:$line: semi-known field\n";
 	}
     }
 
