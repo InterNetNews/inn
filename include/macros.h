@@ -96,16 +96,6 @@ extern int (*xmemfailure)();
 
 
 /*
-**  Get the size when binding an AF_UNIX socket.
-*/
-#if	defined(DO_BIND_USE_SIZEOF)
-#define AF_UNIX_SOCKSIZE(S)	(sizeof S)  
-#else
-#define AF_UNIX_SOCKSIZE(S)	(sizeof S.sun_family + strlen(S.sun_path) + 1)
-#endif	/* defined(DO_BIND_USE_SIZEOF) */
-
-
-/*
 **  Use a read or recv call to read a descriptor.
 */
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
