@@ -42,6 +42,10 @@
 # distribution of "local" or "collabra-internal," accept all others.
 ME:!*/!local,!collabra-internal::
 
+# The same as the above, but would reject all posts that have
+# news.example.com in the path (posts passing through that site).
+#ME/news.example.com:!*/!local,!collabra-internal::
+
 ##  Uncomment if you're using innfeed.  This feed tells INN how to run
 ##  innfeed, and then every site you're feeding with innfeed has a
 ##  flag of Tm and an argument of "innfeed!" to funnel into this feed.
