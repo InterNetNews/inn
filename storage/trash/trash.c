@@ -13,11 +13,11 @@
 #include <methods.h>
 #include "paths.h"
 
-BOOL timehash_init(void) {
+BOOL trash_init(void) {
     return TRUE;
 }
 
-TOKEN timehash_store(const ARTHANDLE article, STORAGECLASS class) {
+TOKEN trash_store(const ARTHANDLE article, STORAGECLASS class) {
     TOKEN               token;
 
     if (article.token == (TOKEN *)NULL)
@@ -31,7 +31,7 @@ TOKEN timehash_store(const ARTHANDLE article, STORAGECLASS class) {
     return token;
 }
 
-ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
+ARTHANDLE *trash_retrieve(const TOKEN token, RETRTYPE amount) {
     if (token.type != TOKEN_TRASH) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return (ARTHANDLE *)NULL;
@@ -40,17 +40,17 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
     return (ARTHANDLE *)NULL;
 }
 
-void timehash_freearticle(ARTHANDLE *article) {
+void trash_freearticle(ARTHANDLE *article) {
 }
 
-BOOL timehash_cancel(TOKEN token) {
+BOOL trash_cancel(TOKEN token) {
     SMseterror(SMERR_UNDEFINED, NULL);
     return FALSE;
 }
 
-ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
+ARTHANDLE *trash_next(const ARTHANDLE *article, RETRTYPE amount) {
     return (ARTHANDLE *)NULL;
 }
 
-void timehash_shutdown(void) {
+void trash_shutdown(void) {
 }
