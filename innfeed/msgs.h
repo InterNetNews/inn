@@ -81,7 +81,11 @@
 #define CXN_BLOCKED             "%s:%d remote cannot accept articles: %s"
 
 			/* key word is "checkpoint" or "final" */
+#if defined (HAVE_LONG_LONG)
 #define STATS_MSG               "%s:%d %s seconds %ld offered %d accepted %d refused %d rejected %d accsize %qu rejsize %qu"
+#else
+#define STATS_MSG               "%s:%d %s seconds %ld offered %d accepted %d refused %d rejected %d accsize %.0f rejsize %.0f"
+#endif
 
 
 
@@ -93,10 +97,19 @@
 #define STREAMING_MODE_SWITCH   "%s mode no-CHECK entered [%.2f,%.2f,%.2f]"
 #define STREAMING_MODE_UNDO     "%s mode no-CHECK exited [%.2f,%.2f,%.2f]"
 
+#if defined (HAVE_LONG_LONG)
 #define REALLY_FINAL_STATS	"%s global seconds %ld offered %d accepted %d refused %d rejected %d missing %d accsize %qu rejsize %qu"
 #define PROCESS_FINAL_STATS	"ME global seconds %ld offered %ld accepted %ld refused %ld rejected %ld missing %ld accsize %qu rejsize %qu"
+#else
+#define REALLY_FINAL_STATS	"%s global seconds %ld offered %d accepted %d refused %d rejected %d missing %d accsize %.0f rejsize %.0f"
+#define PROCESS_FINAL_STATS	"ME global seconds %ld offered %ld accepted %ld refused %ld rejected %ld missing %ld accsize %.0f rejsize %.0f"
+#endif
 		/* key word in next two is "checkpoint" or "final" */
+#if defined (HAVE_LONG_LONG)
 #define HOST_STATS_MSG          "%s %s seconds %ld offered %d accepted %d refused %d rejected %d missing %d accsize %qu rejsize %qu spooled %d on_close %d unspooled %d deferred %d/%.1f requeued %d queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f"
+#else
+#define HOST_STATS_MSG          "%s %s seconds %ld offered %d accepted %d refused %d rejected %d missing %d accsize %.0f rejsize %.0f spooled %d on_close %d unspooled %d deferred %d/%.1f requeued %d queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f"
+#endif
 #define HOST_SPOOL_STATS        "%s %s seconds %ld spooled %d on_close %d sleeping %d"
 
 #define HOST_MAX_CONNECTIONS    "%s hostChkCxns - maxConnections was %d now %d"

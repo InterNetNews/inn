@@ -195,8 +195,8 @@ struct host_s
     u_int artsHostSleep ;       /* # of articles spooled by sleeping host */
     u_int artsHostClose ;       /* # of articles caught by closing host */
     u_int artsFromTape ;        /* # of articles we pulled off tape */
-    long long artsSizeAccepted ;/* size of articles succesfully transferred */
-    long long artsSizeRejected ;/* size of articles remote rejected */
+    arts_size artsSizeAccepted ;/* size of articles succesfully transferred */
+    arts_size artsSizeRejected ;/* size of articles remote rejected */
 
     /* Dynamic Peerage - MGF */
     u_int artsProcLastPeriod ;  /* # of articles processed in last period */
@@ -224,8 +224,8 @@ struct host_s
     u_int gArtsHostSleep ;
     u_int gArtsHostClose ;
     u_int gArtsFromTape ;
-    long long gArtsSizeAccepted ;
-    long long gArtsSizeRejected ;
+    arts_size gArtsSizeAccepted ;
+    arts_size gArtsSizeRejected ;
     u_int gCxnQueue ;
     u_int gNoQueue ;
 
@@ -269,8 +269,8 @@ long procArtsNotWanted ;
 long procArtsRejected ;
 long procArtsDeferred ;
 long procArtsMissing ;
-long long procArtsSizeAccepted ;
-long long procArtsSizeRejected ;
+arts_size procArtsSizeAccepted ;
+arts_size procArtsSizeRejected ;
 
 static HostParams defaultParams=NULL;
 
@@ -2068,7 +2068,7 @@ void hostArticleAccepted (Host host, Connection cxn, Article article)
 {
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
-  long long len = (long long) artSize (article);
+  arts_size len = (arts_size) artSize (article);
 
   d_printf (5,"Article %s (%s) was transferred\n", msgid, filename) ;
   
@@ -2131,7 +2131,7 @@ void hostArticleRejected (Host host, Connection cxn, Article article)
 {
   const char *filename = artFileName (article) ;
   const char *msgid = artMsgId (article) ;
-  long long len = (long long) artSize (article);
+  arts_size len = (arts_size) artSize (article);
 
   d_printf (5,"Article %s (%s) was rejected\n", msgid, filename) ;
   
@@ -2844,7 +2844,7 @@ static void hostLogStats (Host host, bool final)
 
 
 
-static double convsize(long long size, char **tsize)
+static double convsize(arts_size size, char **tsize)
 {
     double dsize;
     static char tGB[]="GB";
