@@ -308,8 +308,21 @@ index_expand(struct group_index *index)
         syswarn("tradindexed: cannot expand %s", index->path);
         return false;
     }
-    if (!index_map(index))
+
+    /* If mapping the index fails, we've already extended it but we haven't
+       done anything with the new portion of the file.  That means that it's
+       all zeroes, which means that it contains index entries who all think
+       their next entry is entry 0.  We don't want to leave things in this
+       state (particularly if this was the first expansion of the index file,
+       in which case entry 0 points to entry 0 and our walking functions may
+       go into infinite loops.  Undo the file expansion. */
+    if (!index_map(index)) {
+        index->count -= 1024;
+        if (ftruncate(index->fd, index_file_size(index->count)) < 0) {
+            syswarn("tradindexed: cannot shrink %s", index->path);
+        }
         return false;
+    }
 
     /* If the magic isn't right, assume this is a new index file. */
     if (index->header->magic != TDX_MAGIC) {
@@ -459,6 +472,10 @@ index_find(struct group_index *index, const char *group)
         if (entry->deleted == 0)
             if (memcmp(&hash, &entry->hash, sizeof(hash)) == 0)
                 return loc;
+        if (loc == entry->next.recno) {
+            syswarn("tradindexed: index loop for entry %ld", loc);
+            return -1;
+        }
         loc = entry->next.recno;
     }
     return -1;
@@ -504,6 +521,10 @@ index_unlink_hash(struct group_index *index, HASH hash)
                 entry_splice(entry, parent);
                 return current;
             }
+        if (current == entry->next.recno) {
+            syswarn("tradindexed: index loop for entry %ld", current);
+            return -1;
+        }
         parent = &entry->next.recno;
         current = *parent;
     }
@@ -1071,6 +1092,10 @@ index_audit_loc(struct group_index *index, int *loc, long number,
     if (*loc < 0 && *loc != -1) {
         warn("tradindexed: invalid negative index %d in %s %ld",
              *loc, (entry == NULL ? "bucket" : "entry"), number);
+        error = true;
+    }
+    if (entry != NULL && *loc == number) {
+        warn("tradindexed: index loop for entry %ld", number);
         error = true;
     }
 
