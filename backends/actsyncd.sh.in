@@ -80,10 +80,6 @@ if [ ! -s "$ign" ]; then
     exit 7
 fi
 
-# force -S spool_dir mode (overrides any -S arg in the command line)
-#
-flags="$flags -S $spool"
-
 # force -o c mode (overrides any -o argument in the command line)
 #
 if [ -z "$DEBUG" ]; then
