@@ -410,7 +410,7 @@ InitNGTable(void) {
 #define RELOAD_TIME_CHECK 600
 
 void
-CheckNeedReloadDB(bool force) {
+CheckNeedReloadDB(BOOL force) {
     static TIMEINFO lastcheck, oldlastcheck, now;
     struct stat sb;
     char *fname;
