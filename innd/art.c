@@ -2462,7 +2462,7 @@ STRING ARTpost(CHANNEL *cp)
     if (innconf->enableoverview && !innconf->useoverchan) {
 	TMRstart(TMR_OVERV);
 	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left)) {
-	    if (OVprobe(OVSPACE, (void *)&i) && i == OV_NOSPACE)
+	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE)
 		IOError("creating overview", ENOSPC);
 	    else
 		IOError("creating overview", 0);
