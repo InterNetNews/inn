@@ -642,6 +642,8 @@ storage/buffindexed/buffindexed.c     buffindexed overview routines
 storage/buffindexed/buffindexed.h     Header file for buffindexed overview
 storage/buffindexed/ovmethod.config   buildconfig definition
 storage/buffindexed/ovmethod.mk       Make rules for buffindexed overview
+storage/buffindexed/shmem.c           Shared memory used for buffindexed lock
+storage/buffindexed/shmem.h           Header file for shared memory
 storage/buildconfig.in                Construct method interface
 storage/cnfs                          CNFS storage method (Directory)
 storage/cnfs/cnfs-private.h           Private header file for CNFS
