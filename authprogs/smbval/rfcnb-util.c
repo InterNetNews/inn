@@ -24,7 +24,7 @@
 */
 
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "std-includes.h"
