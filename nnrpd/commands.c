@@ -456,6 +456,10 @@ CMDlist(ac, av)
 	    Printf("%s\r\n", p);
 	    continue;
 	}
+	if (p[0] == '.' && p[1] == '\0') {
+	    syslog(L_ERROR, "%s single dot in %s", ClientHost, lp->File);
+	    continue;
+	}
 	/* matching patterns against patterns is not that
 	   good but it's better than nothing ... */
 	if (lp == &INFOdistribpats) {
