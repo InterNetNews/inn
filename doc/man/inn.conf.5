@@ -485,7 +485,7 @@ This is a boolean value. If on, posting backoffs are indexed on a per
 user basis instead of a per IP basis. You must be using authentication
 in 
 .IR nnrpd (8)
-for the on value of this constant to have any meaning.
+for the ``true'' value of this parameter to have any meaning.
 This is boolean value and the default is ``false''.
 .TP
 .I readertrack
@@ -725,6 +725,32 @@ The default value is unset.
 If set to ``false'' then do not start
 .IR innwatch (8).
 This is boolean value and the default is ``true''.
+.TP
+.I innwatchsleeptime
+How long (in seconds) an innwatch will be sleep before it checks.
+The default value is ``600''.
+.TP
+.I pgpverify
+If set to ``true'' then enables pgp verification for handling control
+messages except cancel.
+This is boolean value and the default is ``false''.
+.TP
+.I controlfailnotice
+If set to ``true'' and
+.I controlchan
+is set to ``false'', then if there is a problem processing control message,
+it is reported to the administrator through mail.  If set to ``false'' or
+.I controlchan
+is set to ``true'', nothing is reported.
+This is boolean value and the default is ``false''.
+.TP
+.I logcycles
+How many logs does
+.IR news.daily (8)
+(
+.IR scanlogs (8)
+) keep before it overwrites.
+The default value is ``3''.
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE
@@ -749,4 +775,5 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-history(5), libinn(3), moderators(5), makehistory(8), newsrequeue(8), nnrpd(8).
+history(5), libinn(3), moderators(5), makehistory(8), news.daily(8),
+newsrequeue(8), nnrpd(8), scanlogs(8).
