@@ -27,7 +27,7 @@ dnl useful information for someone debugging a problem than configure-time
 dnl errors.
 
 AC_INIT([INN], [2.5.0])
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 AC_REVISION($Revision$)
 AC_CONFIG_AUX_DIR([support])
 
@@ -392,6 +392,9 @@ AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
 AC_TYPE_UID_T
 AC_CHECK_TYPES([long long])
+AC_CHECK_TYPE([ptrdiff_t], ,
+    [AC_DEFINE([ptrdiff_t], [long],
+        [Define to long if <sys/types.h> does not define.])])
 AC_CHECK_TYPE([ssize_t], ,
     [AC_DEFINE([ssize_t], [int],
         [Define to int if <sys/types.h> does not define.])])
