@@ -79,7 +79,7 @@ ME\
 
 ##  News overview       
 ## overchan is needed both enableoverview and useoverchan is true
-#overview!:*:Tc,WnO:@prefix@/bin/overchan
+#overview!:*:Tc,WntO:@prefix@/bin/overchan
 
 # Feed all local non-internal postings to nearnet; sent off-line via
 # nntpsend or send-nntp.
