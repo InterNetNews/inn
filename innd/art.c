@@ -902,7 +902,7 @@ bodyprocessing:
 		    HDR_PARSE_START(HDR__PATH);
 		    hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH),
 		      &data->Path);
-		    HDR_PARSE_STOP(HDR__PATH);
+		    HDR_PARSE_END(HDR__PATH);
 		    if (hopcount > 0) {
 		      hops = data->Path.List;
 		      if (innconf->logipaddr) {
