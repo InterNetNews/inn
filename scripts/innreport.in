@@ -1,4 +1,4 @@
-#!@_PATH_PERL@ -w
+#!@_PATH_PERL@
 
 ##########################################################################
 #
@@ -478,6 +478,10 @@ if ($HTML) {
       # it's the current year unless the last date is in the future.
       $dy-- if (&ConvDate ("$last_date") > $ts + 60 * ($tm + 60 * ($th + 24 *
          ($dd + substr("000031059090120151181212243273304334", $dm * 3, 3)))));
+      my $ld = &ConvDate($last_date);
+      $dy-- if $ld > $ts + 60 * ($tm + 60 * ($th + 24 * ($dd - 1 +
+        substr("000031059090120151181212243273304334", $dm * 3, 3)))) ||
+        $ld < &ConvDate($first_date);
       ($dm, $dd, $th, $tm, $ts) = ($ddm, $d, $h, $mn, $s);
     }
     $dm++; # because January = 0 and we prefer 1
