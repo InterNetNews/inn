@@ -17,6 +17,7 @@
 
 #include "caf.h"
 #include "libinn.h"
+#include "inn/wire.h"
 #include "macros.h"
 #include "methods.h"
 #include "timecaf.h"
@@ -498,7 +499,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	return art;
     }
     
-    if ((p = SMFindBody(private->artdata, private->artlen)) == NULL) {
+    if ((p = wire_findbody(private->artdata, private->artlen)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
 	if (innconf->articlemmap)
 	    munmap(private->mmapbase, private->mmaplen);

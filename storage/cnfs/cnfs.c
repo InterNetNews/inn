@@ -23,6 +23,8 @@
 #include "macros.h"
 #include "methods.h"
 #include "paths.h"
+#include "inn/wire.h"
+#include "inn/mmap.h"
 
 #include "cnfs.h"
 #include "cnfs-private.h"
@@ -822,14 +824,31 @@ static bool CNFSread_config(void) {
 
 /* Figure out what page an address is in and flush those pages */
 static void
-mapcntl(void *p, size_t length, int flags)
+cnfs_mapcntl(void *p, size_t length, int flags)
 {
     char *start, *end;
 
     start = (char *)((size_t)p & ~(size_t)(pagesize - 1));
     end = (char *)((size_t)((char *)p + length + pagesize) &
 		   ~(size_t)(pagesize - 1));
-    msync(start, end - start, flags);
+    if (flags == MS_INVALIDATE) {
+	msync(start, end - start, flags);
+    } else {
+	static char *sstart, *send;
+
+	/* Don't thrash the system with msync()s - keep the last value
+	 * and check each time, only if the pages which we should
+	 * flush change actually flush the previous ones. Calling
+	 * cnfs_mapcntl(NULL, 0, MS_ASYNC) then flushes the final
+	 * piece */
+	if (start != sstart || end != send) {
+	    if (sstart != NULL && send != NULL) {
+		msync(sstart, send - sstart, flags);
+	    }
+	    sstart = start;
+	    send = send;
+	}
+    }
 }
 
 /*
@@ -891,8 +910,8 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
     bitoffset = blocknum % (longsize * 8);
     where = (ULONG *)cycbuff->bitfield + (CNFS_BEFOREBITF / longsize)
 	+ longoffset;
-    if (innconf->nfsreader) {
-	mapcntl(where, sizeof *where, MS_INVALIDATE);
+    if (!set_operation && innconf->nfsreader) {
+	cnfs_mapcntl(where, sizeof *where, MS_INVALIDATE);
     }
     bitlong = *where;
     if (set_operation) {
@@ -905,7 +924,7 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
 	}
 	*where = bitlong;
 	if (innconf->nfswriter) {
-	    mapcntl(where, sizeof *where, MS_ASYNC);
+	    cnfs_mapcntl(where, sizeof *where, MS_ASYNC);
 	}
 	return 2;	/* XXX Clean up return semantics */
     }
@@ -1071,6 +1090,9 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    middle += CNFS_BLOCKSIZE) {
 	    CNFSUsedBlock(cycbuff, middle, TRUE, FALSE);
 	}
+	if (innconf->nfswriter) {
+	    cnfs_mapcntl(NULL, 0, MS_ASYNC);
+	}
 	cycbuff->free = cycbuff->minartoffset;
 	cycbuff->cyclenum++;
 	if (cycbuff->cyclenum == 0)
@@ -1164,6 +1186,9 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     for (middle = artoffset + CNFS_BLOCKSIZE; middle < cycbuff->free;
 	 middle += CNFS_BLOCKSIZE) {
 	CNFSUsedBlock(cycbuff, middle, TRUE, FALSE);
+    }
+    if (innconf->nfswriter) {
+	cnfs_mapcntl(NULL, 0, MS_ASYNC);
     }
     if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
     return CNFSMakeToken(artcycbuffname, artoffset, artcyclenum, class);
@@ -1330,7 +1355,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
-    if ((p = SMFindBody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
+    if ((p = wire_findbody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
         SMseterror(SMERR_NOBODY, NULL);
 	if (innconf->articlemmap)
 	    munmap(private->base, private->len);
@@ -1426,6 +1451,9 @@ bool cnfs_cancel(TOKEN token) {
 	return FALSE;
     }
     CNFSUsedBlock(cycbuff, offset, TRUE, FALSE);
+    if (innconf->nfswriter) {
+	cnfs_mapcntl(NULL, 0, MS_ASYNC);
+    }
     if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
     return TRUE;
 }
@@ -1636,7 +1664,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
-    if ((p = SMFindBody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
+    if ((p = wire_findbody(innconf->articlemmap ? private->base + pagefudge : private->base, art->len)) == NULL) {
 	art->data = NULL;
 	art->len = 0;
 	art->token = NULL;

@@ -16,6 +16,7 @@
 #include <time.h>
 
 #include "libinn.h"
+#include "inn/wire.h"
 #include "macros.h"
 #include "methods.h"
 #include "paths.h"
@@ -250,7 +251,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     
-    if ((p = SMFindBody(private->base, private->len)) == NULL) {
+    if ((p = wire_findbody(private->base, private->len)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
 	if (innconf->articlemmap)
 	    munmap(private->base, private->len);

@@ -263,21 +263,6 @@ static ARTNUM GetGroups(char *Xref) {
   return ((ARTNUM)atoi(p));
 }
 
-/*
-**  Searches through the given string and find the begining of the
-**  message body and returns that if it finds it.  If not, it returns
-**  NULL.
-*/
-char *SMFindBody(char *article, int len) {
-    char                *p;
-
-    for (p = article; p < (article + len - 4); p++) {
-	if (!memcmp(p, "\r\n\r\n", 4))
-	    return p+4;
-    }
-    return NULL;
-}
-
 STORAGE_SUB *SMGetConfig(STORAGETYPE type, STORAGE_SUB *sub) {
     if (sub == (STORAGE_SUB *)NULL)
 	sub = subscriptions;

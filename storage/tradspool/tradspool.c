@@ -18,6 +18,7 @@
 #include <netinet/in.h>
     
 #include "inn/qio.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -840,7 +841,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	return art;
     }
     
-    if (((p = SMFindBody(private->artbase, private->artlen)) == NULL)) {
+    if (((p = wire_findbody(private->artbase, private->artlen)) == NULL)) {
 	if (private->mmapped)
 	    munmap(private->artbase, private->artlen);
 	else
