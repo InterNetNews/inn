@@ -70,7 +70,8 @@ foreach $method (keys %methods) {
     print DEF "\t{ \"$method\", TOKEN_", uc($method), ", \n\t  ";
     print DEF $method, "_init, ", $method, "_store, \n\t  ", $method, "_retrieve, ";
     print DEF $method, "_next, \n\t  ", $method, "_freearticle, ", $method, "_cancel, \n\t  ";
-    print DEF $method, "_ctl, ", $method, "_flushcacheddata, ", $method, "_shutdown";
+    print DEF $method, "_ctl, ", $method, "_flushcacheddata, ";
+    print DEF $method, "_printfiles, ", $method, "_shutdown";
     $first++;
 }
 
