@@ -56,7 +56,7 @@ The generated files are checked into the CVS repository so that people
 working on INN don't have to have autoconf on their system, and to make
 packaging easier.
 
-At the time of this writing, autoconf 2.57 or later is required.
+At the time of this writing, autoconf 2.59 or later is required.
 
 The supporting files for autoconf are in the F<support> subdirectory,
 including the files F<config.guess> and F<config.sub> to determine the
@@ -65,26 +65,11 @@ comes from the libtool distribution; the canonical version of the former
 two are available from ftp.gnu.org in /gnu/config.  In addition,
 F<m4/libtool.m4> is just a copy of F<libtool.m4> from the libtool
 distribution.  (Using libtool without using automake requires a few odd
-hacks.)
+hacks.)  These files used to be on a separate vendor branch so that we
+could make local modifications, but local modifications have not been
+necessary for some time.  Now, new versions can just be checked in like
+any other file modifications.
 
-For maintainers with CVS access, these four files are on a separate vendor
-branch (the 1.1.2 branch in the repository).  When a new version of
-libtool is released, put F<aclocal.m4> in a subdirectory named F<m4> and
-F<ltmain.sh> in a subdirectory of that directory named F<support> and then
-import that directory onto that branch with something like
-
-    cvs import -m "Import of libtool 1.4 support files" -b 1.1.2 \
-    inn FSF LIBTOOL-1_4
-
-(all on one line) and then merge that vendor branch into the mainline.  Do
-something similar for new versions of F<config.guess> and F<config.sub>
-(but only import the support directory).  See the cvs manual under
-Tracking Sources and specifically Multiple Vendor Branches for more
-details.
-
-This process can also be done with just F<config.guess> and F<config.sub>
-when new versions of those are released.
-    
 INN should not compile with libtool by default, only when requested, since
 otherwise normal compilations are quite slow.  (Using libtool is not
 without some cost.)  Basic compilation with libtool works fine as of this
