@@ -1229,61 +1229,59 @@ void hostSendArticle (Host host, Article article)
       host->artsToTape++ ;
       host->gArtsToTape++ ;
       tapeTakeArticle (host->myTape, article) ;
+      return ;
     }
-  else                 /* at least one connection is feeding or waiting */
+
+  /* at least one connection is feeding or waiting and there's no backlog */
+  if (host->queued == NULL)
     {
       u_int idx ;
       Article extraRef ;
-      bool taken = false ;
       
       extraRef = artTakeRef (article) ; /* the referrence we give away */
       
+      /* stick on the queue of articles we've handed off--we're hopeful. */
+      queueArticle (article,&host->processed,&host->processedTail) ;
+
       /* first we try to give it to one of our active connections. We
          simply start at the bottom and work our way up. This way
          connections near the end of the list will get closed sooner from
          idleness. */
-      for (idx = 0 ; !taken && idx < host->maxConnections ; idx++)
+      for (idx = 0 ; idx < host->maxConnections ; idx++)
         {
           if (host->cxnActive [idx] &&
-              host->connections[idx] != host->notThisCxn)
-            taken = cxnTakeArticle (host->connections [idx],extraRef) ;
+              host->connections[idx] != host->notThisCxn &&
+              cxnTakeArticle (host->connections [idx],extraRef))
+	    return ;
         }
 
-      if ( taken )
-        queueArticle (article,&host->processed,&host->processedTail) ;
-      else
-        {
-          /* Wasn't taken so try to give it to one of the waiting
-             connections. */
-          for (idx = 0 ; idx < host->maxConnections ; idx++)
-            if (!host->cxnActive [idx] && !host->cxnSleeping [idx] &&
-                host->connections[idx] != host->notThisCxn)
-              {
-                if (cxnTakeArticle (host->connections [idx], extraRef))
-                  {
-                    queueArticle (article,&host->processed,&host->processedTail) ;
-                    break ;
-                  }
-                else
-                  dprintf (1,"%s Inactive connection %d refused an article\n",
-                           host->peerName,idx) ;
-              }
+      /* Wasn't taken so try to give it to one of the waiting connections. */
+      for (idx = 0 ; idx < host->maxConnections ; idx++)
+        if (!host->cxnActive [idx] && !host->cxnSleeping [idx] &&
+            host->connections[idx] != host->notThisCxn)
+          {
+            if (cxnTakeArticle (host->connections [idx], extraRef))
+              return ;
+            else
+              dprintf (1,"%s Inactive connection %d refused an article\n",
+                       host->peerName,idx) ;
+          }
 
-          if (idx == host->maxConnections)
-            {
-              /* this'll happen if all connections are feeding and all
-                 their queues are full, or if those not feeding are asleep. */
-              dprintf (1, "Couldn't give the article to a connection\n") ;
-              
-              delArticle (extraRef) ;
-                  
-              queueArticle (article,&host->queued,&host->queuedTail) ;
-              
-              host->backlog++ ;
-              backlogToTape (host) ;
-            }
-        }
+      /* this'll happen if all connections are feeding and all
+         their queues are full, or if those not feeding are asleep. */
+      dprintf (1, "Couldn't give the article to a connection\n") ;
+      
+      delArticle (extraRef) ;
+          
+      remArticle (article,&host->processed,&host->processedTail) ;
     }
+
+  /* either all the per connection queues were full or we already had
+     a backlog, so there was no sense in checking. */
+  queueArticle (article,&host->queued,&host->queuedTail) ;
+    
+  host->backlog++ ;
+  backlogToTape (host) ;
 }
 
 
@@ -2242,7 +2240,7 @@ static Host findHostByName (char *name)
 static void articleGone (Host host, Connection cxn, Article article)
 {
   if ( !remArticle (article,&host->processed,&host->processedTail) )
-    die ("remArticle in hostArticleDeferred failed") ;
+    die ("remArticle in articleGone failed") ;
 
   delArticle (article) ;
 
