@@ -1,7 +1,8 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Newsgroups and the active file.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -14,7 +15,7 @@
 **  Change to or list the specified newsgroup.  If invalid, stay in the old
 **  group.
 */
-FUNCTYPE CMDgroup(int ac, char *av[])
+void CMDgroup(int ac, char *av[])
 {
     static char		NOSUCHGROUP[] = NNTP_NOSUCHGROUP;
     ARTNUM              i;
@@ -134,7 +135,7 @@ GRPreport()
 /*
 **  Used by ANU-News clients.
 */
-FUNCTYPE
+void
 CMDxgtitle(ac, av)
     int			ac;
     char		*av[];
