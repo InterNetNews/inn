@@ -1,4 +1,4 @@
-##  $Revision$
+##  $Id$
 
 include ../Makefile.global
 
@@ -13,13 +13,34 @@ ALL	=	archive batcher buffchan cvtbatch filechan \
 		shrinkfile actsync actsyncd actmerge \
 		sendxbatches inndf overchan
 
-all:		$(ALL)
+INSTALLED     = $(D)$(PATHBIN)/actmerge		\
+		$(D)$(PATHBIN)/actsync		\
+		$(D)$(PATHBIN)/actsyncd		\
+		$(D)$(PATHBIN)/archive		\
+		$(D)$(PATHBIN)/batcher		\
+		$(D)$(PATHBIN)/buffchan		\
+		$(D)$(PATHBIN)/controlbatch	\
+		$(D)$(PATHBIN)/controlchan	\
+		$(D)$(PATHBIN)/cvtbatch		\
+		$(D)$(PATHBIN)/filechan		\
+		$(D)$(PATHBIN)/inndf		\
+		$(D)$(PATHBIN)/innxmit		\
+		$(D)$(PATHBIN)/innxbatch	\
+		$(D)$(PATHBIN)/mod-active	\
+		$(D)$(PATHBIN)/news2mail	\
+		$(D)$(PATHBIN)/nntpget		\
+		$(D)$(PATHBIN)/nntpsend		\
+		$(D)$(PATHBIN)/overchan		\
+		$(D)$(PATHBIN)/pgpverify	\
+		$(D)$(PATHBIN)/send-ihave	\
+		$(D)$(PATHBIN)/send-nntp	\
+		$(D)$(PATHBIN)/send-uucp	\
+		$(D)$(PATHBIN)/sendbatch	\
+		$(D)$(PATHBIN)/sendxbatches	\
+		$(D)$(PATHBIN)/shlock		\
+		$(D)$(PATHBIN)/shrinkfile
 
-install:	all
-	for i in ${ALL}; \
-		do $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 \
-			-b .OLD $${i} $D${PATHBIN}/$${i}; \
-	done
+all:		$(ALL)
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -56,23 +77,8 @@ innxmit:	$(P) innxmit.o $(LIBNEWS)
 innxbatch:	$(P) innxbatch.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ innxbatch.o $(LIBNEWS) $(LIBS)
 
-sendxbatches:	$(P) sendxbatches.sh
-	rm -f $@
-	cp $? $@
-	chmod +x $@
-
 actsync:	$(P) actsync.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ actsync.o $(LIBNEWS) $(LIBS)
-
-actsyncd:	$(P) actsyncd.sh
-	rm -f $@
-	cp $? $@
-	chmod +x $@
-
-actmerge: 	$(P) actmerge.sh
-	rm -f $@
-	cp $? $@
-	chmod +x $@
 
 shlock:		$(P) shlock.o
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shlock.o
@@ -89,6 +95,44 @@ inndf:	$(P) inndf.o
 
 $(LIBNEWS):
 	(cd ../lib ; $(MAKE) )
+
+
+##  Installation rules.
+
+install: $(INSTALLED)
+
+LT_XPRI = $(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD
+LT_XPUB = $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD
+CP_XPRI = ../installit.sh $(OWNER) -m 0550 -b .OLD
+CP_XPUB = ../installit.sh $(OWNER) -m 0555 -b .OLD
+
+$(D)$(PATHBIN)/actmerge:            actmerge            ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/actsync:             actsync             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/actsyncd:            actsyncd            ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/archive:             archive             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/batcher:             batcher             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/buffchan:            buffchan            ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/controlbatch:        controlbatch        ; $(CP_XPRI) $? $@
+$(D)$(PATHBIN)/controlchan:         controlchan         ; $(CP_XPRI) $? $@
+$(D)$(PATHBIN)/cvtbatch:            cvtbatch            ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/filechan:            filechan            ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/inndf:               inndf               ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/innxbatch:           innxbatch           ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/innxmit:             innxmit             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/mod-active:          mod-active          ; $(CP_XPRI) $? $@
+$(D)$(PATHBIN)/news2mail:           news2mail           ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/nntpget:             nntpget             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/nntpsend:            nntpsend            ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/overchan:            overchan            ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/pgpverify:           pgpverify           ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/send-ihave:          send-ihave          ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/send-nntp:           send-nntp           ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/send-uucp:           send-uucp           ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/sendbatch:           sendbatch           ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/sendxbatches:        sendxbatches        ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/shlock:              shlock              ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/shrinkfile:          shrinkfile          ; $(LT_XPUB) $? $@
+
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
