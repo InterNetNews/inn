@@ -13,18 +13,19 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/innconfval.1 \
 	../man/innmail.1 ../man/sm.1
 
-MAN3	= ../man/libinnhist.3 ../man/qio.3 ../man/uwildmat.3
+MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/qio.3 ../man/uwildmat.3
 
 MAN5	= ../man/control.ctl.5 ../man/inn.conf.5 ../man/newsfeeds.5 \
 	../man/ovdb.5 ../man/passwd.nntp.5 ../man/radius.conf.5 \
 	../man/readers.conf.5 ../man/sasl.conf.5 ../man/subscriptions.5
 
-MAN8	= ../man/auth_krb5.8 ../man/ckpasswd.8 ../man/expireover.8 \
-	../man/innd.8 ../man/inndf.8 ../man/nnrpd.8 ../man/inndstart.8 \
-	../man/innupgrade.8 ../man/makehistory.8 ../man/ninpaths.8 \
-	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
-	../man/ovdb_stat.8 ../man/radius.8 ../man/rc.news.8 \
-	../man/sendinpaths.8 ../man/tdx-util.8
+MAN8	= ../man/auth_krb5.8 ../man/auth_smb.8 ../man/ckpasswd.8 \
+	../man/domain.8 ../man/expireover.8 ../man/ident.8 ../man/innd.8 \
+	../man/inndf.8 ../man/nnrpd.8 ../man/inndstart.8 ../man/innupgrade.8 \
+	../man/makehistory.8 ../man/ninpaths.8 ../man/ovdb_init.8 \
+	../man/ovdb_monitor.8 ../man/ovdb_server.8 ../man/ovdb_stat.8 \
+	../man/radius.8 ../man/rc.news.8 ../man/sendinpaths.8 \
+	../man/tdx-util.8
 
 all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
@@ -43,6 +44,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/innmail.1:	innmail.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/sm.1:		sm.pod			; $(POD2MAN) -s 1 $? > $@
 
+../man/libauth.3:	libauth.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
 ../man/uwildmat.3:	uwildmat.pod		; $(POD2MAN) -s 3 $? > $@
@@ -58,8 +60,11 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/subscriptions.5:	subscriptions.pod	; $(POD2MAN) -s 5 $? > $@
 
 ../man/auth_krb5.8:	auth_krb5.pod		; $(POD2MAN) -s 8 $? > $@
+../man/auth_smb.8:	auth_smb.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ckpasswd.8:	ckpasswd.pod		; $(POD2MAN) -s 8 $? > $@
+../man/domain.8:	domain.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/expireover.8:	expireover.pod		; $(POD2MAN) -s 8 $? > $@
+../man/ident.8:		ident.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innd.8:		innd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inndf.8:		inndf.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inndstart.8:	inndstart.pod		; $(POD2MAN) -s 8 $? > $@

@@ -1,0 +1,60 @@
+=head1 NAME
+
+domain - nnrpd domain resolver
+
+=head1 SYNOPSIS
+
+B<domain> B<domainname>
+
+=head1 DESCRIPTION
+
+This program can be used in F<readers.conf> to grant access based on the
+subdomain part of the remote hostname.  In particular, it only returns
+success if the remote hostname ends in B<domainname>.  (A leading dot on
+B<domainname> is optional; even without it, the argument must match on
+dot-separated boundaries).  The "username" returned is whatever initial
+part of the remote hostname remains after B<domainname> is removed.  It
+is an error if there is no initial part (that is, if the remote hostname
+is I<exactly> the specified B<domainname>).
+
+=head1 EXAMPLE
+
+The following readers.conf(5) fragment grants access to hosts with
+internal domain names:
+
+    auth internal {
+        res: "domain .internal"
+	default-domain: "example.com"
+    }
+
+    access internal {
+        users: "*@example.com"
+        newsgroups: example.*
+    }
+
+Access is granted to the example.* groups for all connections from hosts
+that resolve to hostnames ending in C<.internal>; a connection from
+"foo.internal" would match access groups as "foo@example.com".
+
+=head1 BUGS
+
+It seems the code does not confirm that the matching part is actually at
+the end of the remote hostname (e.g., "domain: example.com" would match
+the remote host "foo.example.com.org" by ignoring the trailing ".org"
+part).
+
+Does this resolver actually provide any useful functionality not
+available by using wildcards in the readers.conf(5) I<hosts> parameter?
+If so, the example above should reflect this functionality.
+
+=head1 HISTORY
+
+This documentation was written by Jeffrey M. Vinocur <jeff@litech.org>.
+
+$Id$
+
+=head1 SEE ALSO
+
+nnrpd(8), readers.conf(5)
+
+=cut

@@ -1,0 +1,73 @@
+=head1 NAME
+
+libauth - routines for writing nnrpd resolvers and authenticators
+
+=head1 SYNOPSIS
+
+    #include "libauth.h"
+
+    struct res_info {
+        struct sockaddr *client;
+        struct sockaddr *local;
+        char *clienthostname;
+    };
+
+    struct auth_info {
+        char *username;
+        char *password;
+    };
+
+    struct auth_info *get_auth_info(FILE *);
+    struct res_info  *get_res_info (FILE *);
+
+    void free_auth_info(struct auth_info*);
+    void free_res_info (struct res_info*);
+
+=head1 DESCRIPTION
+
+These functions provide a convenient C frontend to the nnrpd external
+authentication interface documented in F<doc/external-auth>.  Use of
+this library is B<not> required; in particular, external resolvers and
+authenticators written in languages other than C will need to implement
+the necessary functionality themselves.
+
+The get_auth_info() and get_res_info() functions allocate sufficient
+memory for a B<struct auth_info> or B<struct res_info> and any necessary
+fields, and return a pointer to the struct with the fields filled in
+from information supplied by nnrpd (the B<FILE*> parameter generally
+should be C<stdin>).  Both functions return NULL on error.  The caller
+is responsible for deallocating the memory by using the functions below.
+
+The string fields of both structs are straightforward.  The B<client>
+and B<local> fields of B<struct res_info> actually point to instances of
+B<struct sockaddr_in> (or B<struct sockaddr_in6> if IPv6 support is
+compiled in).
+
+The free_auth_info() and free_res_info() functions free the struct
+passed in as argument and all necessary fields.
+
+=head1 BUGS
+
+In many cases, nnrpd provides more information than is normally useful
+(for example, even when calling an authenticator, the resolver
+information is often provided.)  On the other hand, in certain cases it
+provides less information than might be expected (for example, if nnrpd
+is reading from stdin rather than a socket).  The implementation is
+capable of handling at least the first of these issues, but that
+functionality is not exposed in the interface.
+
+At present, F<libauth.h> and its implementation are located in
+F<authprogs/>; perhaps they should be moved to F<include/> and F<lib/>,
+respectively?
+
+=head1 HISTORY
+
+Written by Jeffrey M. Vinocur <jeff@litech.org> for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+nnrpd(8), readers.conf(5), F<doc/external-auth>
+
+=cut

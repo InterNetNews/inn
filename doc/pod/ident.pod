@@ -1,0 +1,70 @@
+=head1 NAME
+
+ident - nnrpd ident resolver
+
+=head1 SYNOPSIS
+
+B<ident> [B<-p> I<port>] [B<-t>]
+
+=head1 DESCRIPTION
+
+This program attempts to resolve usernames for B<nnrpd> by using the
+ident protocol to query the remote host.  It contacts the remote host
+using either IPv4 or IPv6 depending on which protocol was used for the
+incoming NNTP connection.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-p> I<port>
+
+If this option is given, attempt to contact identd on the specified
+remote port (which can be a numeric or symbolic specification).
+Non-numeric values will be looked up using getservbyname(3).  The
+default value is the result of C<getservbyname("ident")> if available,
+or port 113 otherwise.
+
+=item B<-t>
+
+If this option is given, the identity returned will never have a domain
+part.  That is, if the remote server returns a result containing an C<@>
+character, B<ident> truncates the response at the C<@>.  This is useful
+to allow the I<default-domain> parameter in F<reaers.conf> to override
+the domain supplied by the remote host (particularly if the supplied
+domain part is an unqualified local machine name rather than a full
+domain name).
+
+=back
+
+=head1 EXAMPLE
+
+The following readers.conf(5) fragment tells nnrpd to trust ident
+information for hosts on a local network, but to replace the domain
+returned from the ident query:
+
+    auth LAN {
+	hosts: "192.168/16"
+        res: "ident -t"
+	default-domain: "internal.example.com"
+    }
+
+    access LAN {
+        users: "*@internal.example.com"
+        newsgroups: example.*
+    }
+
+Access is granted to the example.* groups for all users on the local
+network whose machines respond to ident queries.
+
+=head1 HISTORY
+
+This documentation was written by Jeffrey M. Vinocur <jeff@litech.org>.
+
+$Id$
+
+=head1 SEE ALSO
+
+nnrpd(8), readers.conf(5)
+
+=cut

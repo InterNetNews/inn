@@ -1,0 +1,55 @@
+=head1 NAME
+
+auth_smb - nnrpd Samba authenticator
+
+=head1 SYNOPSIS
+
+B<auth_smb> B<server> [B<backup_server>] B<domain>
+
+=head1 DESCRIPTION
+
+This program does authentication for B<nnrpd> against an SMB server.  It
+passes the received username and password to B<server> for validation in
+the specified SMB B<domain>.  A backup server may optionally be
+supplied; if it is missing, only B<server> is used.
+
+If authentication is successful, the original username is returned as
+the authentication identity.  Brief errors, including incorrect password
+and failure contacting the server, are logged.
+
+=head1 EXAMPLE
+
+The following readers.conf(5) fragment grants access to users who can
+authenticate against an SMB server:
+
+    auth windows {
+        auth: "auth_smb pdc.example.com bdc.example.com USERS"
+	default-domain: "users.example.com"
+    }
+
+    access internal {
+        users: "*@users.example.com"
+        newsgroups: example.*
+    }
+
+Access is granted to the example.* groups after successful
+authentication.
+
+=head1 BUGS
+
+We should link against an external SMB library rather than maintain one
+within the INN source tree.
+
+=head1 HISTORY
+
+Originally written October 2000 by Krischan Jodies <krischan@jodies.cx>,
+based heavily on pam_smb v1.1.6 by David Airlie <airlied@samba.org>.
+This documentation was written by Jeffrey M. Vinocur <jeff@litech.org>.
+
+$Id$
+
+=head1 SEE ALSO
+
+nnrpd(8), readers.conf(5)
+
+=cut
