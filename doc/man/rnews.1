@@ -53,28 +53,33 @@ This is for historical compatibility \(em there is no program named
 .IR cunbatch .
 A compressed batch will start with a ``#! cunbatch'' line, then contain a
 series of articles separated by ``#! rnews nnn'' lines.
-.\" =()<.if '@<RNEWSPROGS>@'DO' \{\>()=
-.if 'DO'DO' \{\
-.PP
-If the command is any other word, then
+If 
+.I <RNEWSPROGS in config.data>
+== DO
+and the command is any other word, then
 .I rnews
 will try to execute a program with that name in the directory
-.\" =()<.IR @<_PATH_RNEWSPROGS>@ .>()=
-.IR /usr/news/bin/rnews.libexec .
+.I <_PATH_RNEWSPROGS in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_RNEWSPROGS>@ .)>()=
+.IR /usr/news/bin/rnews.libexec .)
+
 The batch will be fed into the program's standard input, and the
 standard output will be read back as input into
-.IR rnews .\}
-.\" =()<.if '@<RNEWS_SAVE_BAD>@'DO' \{\>()=
-.if 'DONT'DO' \{\
-.PP
-If
+.IR rnews .
+If 
+.I <RNEWS_SAVE_BAD in config.data> 
+== DO
+and
 .I rnews
 detects any problems with an article such as a missing header, or
 an unintelligible reply from the server, it will save a copy of the article
 in the
-.\" =()<.I @<_PATH_BADNEWS>@>()=
-.I /var/news/spool/in.coming/bad
-directory.\}
+.I <_PATH_BADNEWS in config.data>
+directory
+(typically
+.\" =()<.IR @<typ_PATH_BADNEWS>@ .)>()=
+.IR /var/news/spool/in.coming/bad .)
 .SH OPTIONS
 .TP
 .B \-S
@@ -82,19 +87,24 @@ If the ``\fB\-S\fP'' flag is used, then
 .I rnews
 will connect to the specified host.
 If the flag is not used,
-.\" =()<.if '@<RNEWSLOCALCONNECT>@'DO' \{\>()=
-.if 'DO'DO' \{\
+and
+.I <RNEWSLOCALCONNECT in config.data>
+== DO, 
 it will try to connect to the server by opening a Unix-domain stream
 connection.
-If that fails,\}
+If the UDP connection fails, or 
+.I <RNEWSLOCALCONNECT in config.data> 
+is not DO
 it will try to open a TCP connection to the default remote server.
 .TP
 .B \-U
 If the server is not available, the message is spooled into a new file
 created in the
-.\" =()<.I @<_PATH_SPOOLNEWS>@>()=
-.I /var/news/spool/in.coming
-directory.
+.I <_PATH_SPOOLNEWS in config.data>
+directory
+(typically
+.\" =()<.IR @<typ_PATH_SPOOLNEWS>@ .)>()=
+.IR /var/news/spool/in.coming .)
 The ``\fB\-U\fP'' flag may be used to send all spooled messages to the
 server once it becomes available again, and can be invoked regularly
 by
@@ -102,8 +112,10 @@ by
 .TP
 .B \-N
 Normally, if unpacking the input fails it is re-spooled to
-.\" =()<.I @<_PATH_SPOOLNEWS>@>()=
-.I /var/news/spool/in.coming
+.I <_PATH_SPOOLNEWS in config.data>
+(typically
+.\" =()<.I @<typ_PATH_SPOOLNEWS>@ )>()=
+.I /var/news/spool/in.coming )
 for another attempt later.  If the ``\fB\-N\fP'' flag is used then no such
 re-spooling is done and rnews exits with status value ``9'' to indicate
 this.
@@ -118,8 +130,10 @@ Errors are always logged through
 .B \-h
 If the ``\fB\-h\fP'' flag is given, or failing that, the
 enviroment variable
-.\" =()<.I @<_ENV_UUCPHOST>@>()=
-.I UU_MACHINE
+.I <_ENV_UUCPHOST in config.data>
+(typically
+.\" =()<.IR @<typ_ENV_UUCPHOST>@ )>()=
+.IR UU_MACHINE )
 is set, then
 .I rnews
 will log the Message-ID, and host, for each article offered

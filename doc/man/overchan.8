@@ -24,8 +24,10 @@ It uses this information to update the news overview database.
 is designed to be used by InterNetNews or the C News ``mkov'' packages
 to update the database as the articles come in.
 The database for each newsgroup is stored in a file named
-.\" =()<.I @<_PATH_OVERVIEW>@>()=
-.I .overview
+.I <_PATH_OVERVIEW in config.data>
+(typically
+.\" =()<.I @<typ_PATH_OVERVIEW>@)>()=
+.I .overview)
 in a newsgroup directory within the overview database tree.
 .PP
 .I Overchan
@@ -42,7 +44,7 @@ in the
 file, for example:
 .PP
 .RS
-.\" =()<overview:*:Tc,WO:@<_PATH_NEWSBIN>@/overchan>()=
+.\" =()<overview:*:Tc,WO:@<typ_PATH_NEWSBIN>@/overchan>()=
 overview:*:Tc,WO:/usr/news/bin/overchan
 .RE
 .PP
@@ -65,7 +67,7 @@ following line in your
 file:
 .PP
 .RS
-.\" =()<overview:*:Tc,WhR:@<_PATH_NEWSBIN>@/overchan>()=
+.\" =()<overview:*:Tc,WhR:@<typ_PATH_NEWSBIN>@/overchan>()=
 overview:*:Tc,WhR:/usr/news/bin/overchan
 .RE
 .PP
@@ -90,8 +92,10 @@ This format is described in the ``nov'' distribution.
 .B \-D
 The ``\fB\-D\fP'' flag can be used to specify where the databases are stored.
 The default directory is
-.\" =()<.IR @<_PATH_OVERVIEWDIR>@ .>()=
-.IR /var/news/spool/over.view .
+.I <_PATH_OVERVIEWDIR in config.data> 
+(typically
+.\" =()<.IR @<typ_PATH_OVERVIEWDIR>@ .)>()=
+.IR /var/news/spool/over.view .)
 .SH HISTORY
 Written by Rob Robertson <rob@violet.berkeley.edu>
 and Rich $alz <rsalz@uunet.uu.net> for InterNetNews.

@@ -56,7 +56,9 @@ The following example shows how
 would be used within a shell script:
 .RS
 .nf
-.\" =()<LOCK=@<_PATH_LOCKS>@/LOCK.send>()=
+# The next line should be
+#LOCK=<_PATH_LOCKS in config.data>/LOCK.send
+.\" =()<LOCK=@<typ_PATH_LOCKS>@/LOCK.send>()=
 LOCK=/var/news/locks/LOCK.send
 trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
 if shlock -p $$ -f ${LOCK} ; then

@@ -74,12 +74,13 @@ The header file defines the constant QIO_BUFFER as a reasonable default.
 If
 .I size
 is zero, then
-.\" =()<.if '@<HAVE_ST_BLKSIZE>@'DO' \{\>()=
-.if 'DO'DO' \{\
+if 
+.I <HAVE_ST_BLKSIZE in config.data>
+== DO
 .I QIOopen
 will call
 .IR stat (2)
-and use the returned block size; if that fails\}
+and use the returned block size; if that fails (or HAVE_ST_BLKSIZE is not DO)
 it will use QIO_BUFFER.
 It returns NULL on error, or a pointer to a handle to be used in other calls.
 .I QIOfdopen

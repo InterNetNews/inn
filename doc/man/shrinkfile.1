@@ -30,8 +30,10 @@ of bytes ending with a newline, \en.
 There is no line length restriction and files may contain any binary data.
 .PP
 Temporary files are created in the
-.\" =()<.I @<_PATH_TMP>@>()=
-.I /var/tmp
+.I <_PATH_TMP in config.data>
+(typically
+.\" =()<.I @<typ_PATH_TMP>@)>()=
+.I /var/tmp)
 directory.
 The ``TMPDIR'' environment variable may be used to specify a
 different directory.
