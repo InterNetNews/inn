@@ -72,7 +72,7 @@ qiotest: qio.c ../libstorage.a ../libinn.a
 	$(CC) $(CFLAGS) -DTEST -o qiotest qio.c ../libstorage.a ../libinn.a
 
 autoconfig:
-	@./buildconfig `find . -name method.config`
+	@./buildconfig `find . -name method.config -print`
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:		../libstorage_p.a

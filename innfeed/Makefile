@@ -42,8 +42,8 @@ LINTFLAGS	= -b -h -z $(DEFS)
 
 CPP.c		= $(CC) $(CFLAGS) $(CPPFLAGS) -E -I.
 COMPILE.c	= $(CC) $(CFLAGS) $(CPPFLAGS) -c -I.
-LINK.o		= $(CC) $(LDFLAGS)
-LINK.c		= $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
+LINK.o		= $(CC) $(LDFLAGS) ($LIBS)
+LINK.c		= $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS)
 OUTPUT_OPTION	= -o $@
 
 ##  =()<NEWSBIN		= @<_PATH_NEWSBIN>@>()=
@@ -143,8 +143,8 @@ all: innfeed startinnfeed procbatch convertconfig
 
 install: $(ALL_INSTALLED)
 
-innfeed: $(OBJS) version.o $(MALLOC) $(LIBNEWS) $(LIB)
-	$(LINK.c) -o $@ $(OBJS) version.o $(LIBNEWS) $(LIBNEWS) $(LIB) 
+innfeed: $(OBJS) version.o $(MALLOC) $(LIBNEWS)
+	$(LINK.c) -o $@ $(OBJS) version.o $(LIBNEWS) $(LIBNEWS)
 
 $D$(NEWSBIN)/innfeed: innfeed
 	$(SHELL) ../installit.sh $(OWNER) -m 550 -b .OLD $? $@

@@ -593,10 +593,11 @@ static bool fillContents (Article article)
 
   if (IsToken(article->fname)) {
       opened = ((arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL);
-      article->arthandle = arthandle;
   } else {
       opened = ((fd = open (article->fname,O_RDONLY,0)) < 0);
+      arthandle = NULL;
   }
+  article->arthandle = arthandle;
   if (!opened) {
       article->articleOk = false ;
       missingArticleCount++ ;
@@ -907,8 +908,7 @@ static bool prepareArticleForNNTP (Article article)
       nntpBuffs [0] = newBufferByCharP (bufferBase (contents),
                                         bufferDataSize (contents),
                                         bufferDataSize (contents)) ;
-      nntpBuffs [1] = bufferTakeRef (dotBuffer) ;
-      nntpBuffs [2] = NULL ;
+      nntpBuffs [1] = NULL ;
     }
   
       

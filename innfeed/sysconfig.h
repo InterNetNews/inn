@@ -105,7 +105,7 @@
 **
 */
 
-#if defined (SOLARIS)
+#if defined (sun) && defined (__svr4__)
 /* #define DO_NEED_STRERROR 1 */  /* this is needed for version < 2.5 */
 #define GETSOCKOPT_ARG  char *
 #define MAX_WRITEV_VEC  16
@@ -116,14 +116,14 @@
  /* this may be needed for solaris version < 2.6 */
 /* #define wait3(a,b,c) waitpid(-1,a,b) */
 
-#endif /* defined (SOLARIS) */
+#endif /* defined (S) */
 
 
 /*
 ** SunOS 4.x
 */
 
-#if defined (sun) && ! defined (SOLARIS)
+#if defined (sun) && ! defined (__svr4__)
 #define MAX_WRITEV_VEC 16
 #define DO_NEED_STRERROR 1
 #define HAVE_MMAP
