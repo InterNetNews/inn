@@ -368,6 +368,12 @@ ParseDistlist(argvp, list)
 
 /*
 **  Read a line of input, with timeout.
+**
+**  'size' is both the size of the input buffer and the max line
+**  size as defined by the RFCs.  The max line size includes
+**  the trailing CR LF (which we strip off here), but not the '\0'.
+**  For NNTP commands, this limit is 512 (or 510 without the CR LF),
+**  and for POST data (article) lines it's 1000 (or 998 without the CR LF).
 */
 READTYPE
 READline(start, size, timeout)
@@ -384,6 +390,7 @@ READline(start, size, timeout)
     FDSET		rmask;
     int			i;
     char		c;
+    BOOL		toolong;
 
     for (p = start, end = &start[size - 1]; ; ) {
 	if (count == 0) {
@@ -407,25 +414,30 @@ READline(start, size, timeout)
 		syslog(L_TRACE, "%s cant read %m", ClientHost);
 		return RTtimeout;
 	    }
-	    if (count == 0)
+	    if (count == 0) {
+		*p = '\0';
 		return RTeof;
+	    }
 	    bp = buffer;
 	}
 
 	/* Process next character. */
 	count--;
 	c = *bp++;
-	if (c == '\n')
+	if (c == '\n') {
+	    /* If last two characters are \r\n, kill the \r as well as the \n. */
+	    if (!toolong && p > start && p[-1] == '\r')
+		p--;
 	    break;
+	}
 	if (p < end)
 	    *p++ = c;
+	else
+	    toolong = true;
     }
 
-    /* If last two characters are \r\n, kill the \r as well as the \n. */
-    if (p > start && p < end && p[-1] == '\r')
-	p--;
     *p = '\0';
-    return p == end ? RTlong : RTok;
+    return toolong ? RTlong : RTok;
 }
 
 /*********************************************************************
