@@ -1,7 +1,7 @@
 [IN1.7=NO][comments]
  #||This file is the source file for config.data.in.  
  #||   To generate config.data.in, run the following:
- #||       fgrep "  ||" config.scoreboard | sed 's/  ||//g' >config.data.in
+ #||       grep "^  ||" config.scoreboard | sed 's/  ||//g' >config.data.in
  #||
  #||   See the INN autoconf.readme for the rest of the documentation.
  #||
@@ -134,7 +134,7 @@
   ||##[autoconf]
   ||#### =()<YACC			@<YACC>@>()=
   ||YACC			@YACC@
-[IN1.7=@1][WDF=autoconf][WOR=no][P=low]
+[IN1.7=@1][WDF=autoconf][WOR=no]
   ||##  Ctags command.  Use echo if you don't have ctags.
   ||##[autoconf]
   ||#### =()<CTAGS			@<CTAGS>@>()=
@@ -465,11 +465,12 @@
   ||##[autoconf]
   ||#### =()<_EXITVAL		@<_EXITVAL>@>()=
   ||_EXITVAL		@ac_cv_type__exit@
-[IN1.7=@5][WDF=autoconf][WOR=no]
+[IN1.7=@5][comments]
   ||
   ||
   ||##
   ||##  5.  C LIBRARY OMISSIONS
+[IN1.7=@5][WDF=autoconf][WOR=no]
   ||##  Possible values:
   ||##	MISSING_MAN		strcasecmp.3 syslog.3
   ||##	MISSING_SRC		strcasecmp.c syslog.c strerror.c
@@ -549,7 +550,7 @@
   ||##  Require posts to have under 50% inclusion (">") lines?  Pick DO or DONT.
   ||##  (This is only for inews and nnrpd.)
   ||#### =()<CHECK_INCLUDED_TEXT	@<CHECK_INCLUDED_TEXT>@>()=
-  ||CHECK_INCLUDED_TEXT	DO
+  ||CHECK_INCLUDED_TEXT	DONT
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Put hosts in the inews Path header?  Pick DO or DONT.
   ||#### =()<INEWS_PATH		@<INEWS_PATH>@>()=
@@ -674,7 +675,7 @@
   ||##  sleep inserted before each ARTICLE command is processed. (With
   ||##  apologies to the Australians in the audience).
   ||#### =()<LIKE_PULLERS		@<LIKE_PULLERS>@>()=
-  ||LIKE_PULLERS		DONT
+  ||LIKE_PULLERS		DO
 [IN1.7=@6][WDF=confparam][WOR=yes][P=low]
   ||##  Allow the NEWNEWS NNTP command?   Pick DO or DONT.
   ||##  (RFC 977 says you should; your server performance may not agree...)
@@ -760,7 +761,7 @@
   ||##  Default number of bytes to hold in memory when buffered.
   ||#### =()<SITE_BUFFER_SIZE	@<SITE_BUFFER_SIZE>@>()=
   ||SITE_BUFFER_SIZE	(16 * 1024)
-[IN1.7=@6][WDF=autoconf][WOR=no]
+[IN1.7=@6][WDF=autoconf][WOR=no][P=medium]
   ||##  Do you have uustat, or just uuq?  Pick DO or DONT
   ||#### =()<HAVE_UUSTAT		@<HAVE_UUSTAT>@>()=
   ||HAVE_UUSTAT		DO
@@ -1051,7 +1052,7 @@
   ||##  File listing the sites that feed us news.
   ||##[autoconf]
   ||#### =()<_PATH_INNDHOSTS		@<_PATH_INNDHOSTS>@>()=
-  ||_PATH_INNDHOSTS		@CONFPATH@/hosts.nntp
+  ||_PATH_INNDHOSTS		@CONFPATH@/incoming.conf
 [IN1.7=@11][WDF=confparam][WOR=yes]
   ||##  The active file, on the server host.
   ||##[autoconf]
@@ -1175,6 +1176,20 @@
   ||##[autoconf]
   ||#### =()<_PATH_SCHEMA		@<_PATH_SCHEMA>@>()=
   ||_PATH_SCHEMA		@CONFPATH@/overview.fmt
+[IN1.7=@NO][WDF=confparam][WOR=yes]
+  ||## Location of the MOTD file.
+  ||##[autoconf]
+  ||#### =()<_PATH_MOTD           @<_PATH_MOTD>@>()=
+  ||_PATH_MOTD            @CONFPATH@/motd.news
+  ||## Location of the storage control file.
+  ||##[autoconf]
+  ||#### =()<_PATH_STORAGECTL     @<_PATH_STORAGECTL>@>()=
+  ||_PATH_STORAGECTL      @CONFPATH@/storage.ctl
+  ||## Location of the unified overview file.
+  ||##[autoconf]
+  ||#### =()<_PATH_OVERVIEWCTL    @<_PATH_OVERVIEWCTL>@>()=
+  ||_PATH_OVERVIEWCTL     @CONFPATH@/overview.ctl
+
 [IN1.7=@12][comments]
   ||
   ||
@@ -1219,15 +1234,13 @@
   ||##[autoconf]
   ||#### =()<INNWATCH_DF		@<INNWATCH_DF>@>()=
   ||INNWATCH_DF		@ac_cv_subst_innwatch_df@
-[IN1.7=@12][WDF=autoconf][WOR=yes]
+[IN1.7=@12][WDF=autoconf][WOR=yes][P=moderate]
   ||##  Field number of INNWATCH_DF (with -i) output that gives free
-  ||##[autoconf]
   ||##  inodes (starting at 1).
   ||#### =()<INNWATCH_INODES		@<INNWATCH_INODES>@>()=
   ||INNWATCH_INODES		7
-[IN1.7=@12][WDF=autoconf][WOR=yes]
+[IN1.7=@12][WDF=autoconf][WOR=yes][P=moderate]
   ||##  Field number of INNWATCH_DF output that gives the free block count.
-  ||##[autoconf]
   ||##### =()<INNWATCH_BLOCKS		@<INNWATCH_BLOCKS>@>()=
   ||INNWATCH_BLOCKS		4
 [IN1.7=@13][comments]

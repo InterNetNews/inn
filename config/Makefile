@@ -71,6 +71,14 @@ restore:
 	$(IFTRUE) '! -f $(BACKUP)' 'echo No $(BACKUP)! ; exit 1'
 	tar vxf $(BACKUP) $(LIST)
 
+
+config.data.in: config.scoreboard
+	grep "^  ||" config.scoreboard | sed 's/  ||//g' >config.data.in
+
+config.dist: config.data.in subst config.dist.subst
+	cp config.data.in config.dist
+	subst -f config.dist.subst config.dist
+
 config.data:		config.dist
 	$(IFTRUE) '-f config.new' 'echo config.new exists! ; exit 1'
 	$(IFTRUE) '-f config.old' 'echo config.old exists! ; exit 1'
