@@ -236,7 +236,7 @@ STATIC BOOL OVERopen(UNIOVER *config, BOOL New, BOOL Newconfig)
 	    config->size = sb.st_size;
 	    config->offset = lseek(fd, 0, SEEK_CUR);
 	    if (OVERmmap) {
-		if (!OVERcheckmmap(config, 0, 0)) {
+		if (config->size != 0 && !OVERcheckmmap(config, 0, 0)) {
 		    DISPOSE(dirpath);
 		    DISPOSE(newdirpath);
 		    DISPOSE(path);
