@@ -265,7 +265,7 @@ extern void		CMDstarttls  (int ac, char** av);
 extern char *HandleHeaders(char *article);
 extern bool ARTinstorebytoken(TOKEN token);
 
-extern int TrackClient(char *client, char* user);
+extern int TrackClient(char *client, char* user, size_t len);
 
 #ifdef  DO_PERL
 extern void loadPerl(void);

@@ -1044,7 +1044,8 @@ ARTpost(char *article,
 
 	if (idbuff) {
 	    if (modgroup)
-		sprintf(idbuff, "(mailed to moderator for %s)", modgroup);
+		snprintf(idbuff, SMBUF, "(mailed to moderator for %s)",
+                         modgroup);
 	    else
 		strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
 	}
@@ -1082,7 +1083,7 @@ ARTpost(char *article,
 	if (idbuff != NULL) {
 	    const char *retstr;
 	    retstr = MailArticle(modgroup, article);
-	    strcpy (idbuff,"(mailed to moderator)") ;
+	    strlcpy (idbuff, "(mailed to moderator)", SMBUF);
 	    return retstr;
 	}
 	return MailArticle(modgroup, article);

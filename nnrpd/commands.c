@@ -30,7 +30,7 @@ extern const char *NNRPinstance;
 static char *PERMauthstring;
 
 static int
-PERMgeneric(char *av[], char *accesslist)
+PERMgeneric(char *av[], char *accesslist, size_t size)
 {
     char path[BIG_BUFFER], *fields[6], *p;
     int i, pan[2], status;
@@ -153,7 +153,7 @@ PERMgeneric(char *av[], char *accesslist)
     if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = true;
     snprintf(PERMuser, sizeof(PERMuser), "%s@%s", fields[2], fields[0]);
     strlcpy(PERMpass, fields[3], sizeof(PERMpass));
-    strcpy(accesslist, fields[4]);
+    strlcpy(accesslist, fields[4], size);
     /*strcpy(writeaccess, fields[5]); future work? */
 
     /*for (i = 0; fields[i] && i < 6; i++)
@@ -178,7 +178,7 @@ CMDauthinfo(ac, av)
 
 	strlcpy(PERMuser, "<none>", sizeof(PERMuser));
 
-	switch (PERMgeneric(av, accesslist)) {
+	switch (PERMgeneric(av, accesslist, sizeof(accesslist))) {
 	    case 1:
 		PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 		PERMpostlist = PERMreadlist;

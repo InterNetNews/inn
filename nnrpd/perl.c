@@ -360,13 +360,16 @@ int perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
 	ExitWithStats(1, false);
     }
 
+    /* FIXME: Change the structure of the code so that we don't have to rely
+       on keeping these sizes in sync with the buffers that are passed into
+       this function. */
     if (rc == 3) {
       p = POPp;
-      strcpy(newUser, p);
+      strlcpy(newUser, p, BIG_BUFFER);
     } 
 
     p = POPp;
-    strcpy(errorstring, p);
+    strlcpy(errorstring, p, BIG_BUFFER);
 
     code = POPi;
 

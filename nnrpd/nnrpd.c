@@ -1173,10 +1173,12 @@ main(int argc, char *argv[])
 
     if (PERMaccessconf) {
 	if (PERMaccessconf->readertrack)
-	    PERMaccessconf->readertrack=TrackClient(ClientHost,Username);
+	    PERMaccessconf->readertrack =
+                TrackClient(ClientHost, Username, sizeof(Username));
     } else {
 	if (innconf->readertrack)
-	    innconf->readertrack=TrackClient(ClientHost,Username);
+	    innconf->readertrack =
+                TrackClient(ClientHost, Username, sizeof(Username));
     }
 
     if ((PERMaccessconf && PERMaccessconf->readertrack)

@@ -88,7 +88,10 @@ char*    dynamic_file;
 ** Return NNTP reply code as returned by Python method or -1 if method
 ** is not defined.
 */
-int PY_authenticate(char* file, char *Username, char *Password, char *errorstring, char *newUser) {
+int
+PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
+                char *newUser)
+{
     PyObject    *result, *item, *proc;
     int         authnum;
     int         code, i;
@@ -183,7 +186,7 @@ int PY_authenticate(char* file, char *Username, char *Password, char *errorstrin
 
     /* Store error string */
     temp = PyString_AS_STRING(item);
-    errorstring = xstrdup(temp);
+    strlcpy(errorstring, temp, BIG_BUFFER);
     
     if (PyTuple_Size(result) == 3) {
         
@@ -197,9 +200,9 @@ int PY_authenticate(char* file, char *Username, char *Password, char *errorstrin
             ExitWithStats(1, true);
         }
 
-        /* Store error string */
+        /* Store user string */
         temp = PyString_AS_STRING(item);
-        newUser = xstrdup(temp);
+        strlcpy(newUser, temp, BIG_BUFFER);
     }
 
     /* Clean up the dictionary object */

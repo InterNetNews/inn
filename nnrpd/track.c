@@ -23,7 +23,7 @@
 /* Format of the input line is <host>:<username>
 */
 
-int TrackClient(char *client, char *user)
+int TrackClient(char *client, char *user, size_t len)
 {
 	int RARTon;
 	FILE *fd;
@@ -33,7 +33,7 @@ int TrackClient(char *client, char *user)
         dbfile = concatpath(innconf->pathetc, "nnrpd.track");
 
 	RARTon=false;
-	strcpy(user, "unknown");
+	strlcpy(user, "unknown", len);
 
 	if ((fd=fopen(dbfile,"r"))!=NULL) {
 		while((fgets(line,(MAX_LEN - 1),fd))!=NULL) {
@@ -52,7 +52,7 @@ int TrackClient(char *client, char *user)
 			if (strstr(client,pp)!=NULL) {
 				RARTon=true;
 				if (p != NULL) 
-					strcpy(user,p);
+                                    strlcpy(user,p,len);
 				break;
 			}
 		}
