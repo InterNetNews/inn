@@ -3732,7 +3732,6 @@ static void addto(char *newrcpt, int newrcptlen, char *sep,
 		  char **out, int *outalloc)
 {
     int size = strlen(*out);
-    int fsize = size;
     int newsize = size + strlen(sep)+1+strlen(deliver_to_header)+newrcptlen+1;
     char c;
 

@@ -94,7 +94,7 @@
 #define STREAMING_MODE_UNDO     "%s mode no-CHECK exited [%.2f,%.2f,%.2f]"
 
 #define REALLY_FINAL_STATS	"%s global seconds %ld offered %d accepted %d refused %d rejected %d missing %d %s spooled %d unspooled %d"
-#define PROCESS_FINAL_STATS	"ME global seconds %ld offered %ld accepted %ld refused %ld rejected %ld missing %ld %s spooled %d unspooled %d"
+#define PROCESS_FINAL_STATS	"ME global seconds %ld offered %ld accepted %ld refused %ld rejected %ld missing %ld %s spooled %ld unspooled %ld"
 		/* key word in next two is "checkpoint" or "final" */
 #define HOST_STATS_MSG		"%s %s seconds %ld offered %d accepted %d refused %d rejected %d missing %d %s spooled %d on_close %d unspooled %d deferred %d/%.1f requeued %d queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f"
 #define HOST_SPOOL_STATS        "%s %s seconds %ld spooled %d on_close %d sleeping %d"
@@ -188,7 +188,7 @@
 #define PARSE_FAILURE           "ME config aborting Error parsing config file"
 #define NO_HOST			"ME locked cannot setup peer %s"
 #define NO_X_AND_S              "ME usage aborting Can't use both '-s' and '-x'"
-#define SETRLIM_FAILED		"ME oserr setrlimit(RLIM_NOFILE,%ld): %m"
+#define SETRLIM_FAILED		"ME oserr setrlimit(RLIM_NOFILE,%d): %m"
 #define GETRLIM_FAILED		"ME oserr getrlimit(RLIM_NOFILE): %m"
 #define PIPE_FAILURE            "ME fatal pipe: %m"
 #define FORK_FAILURE            "ME fatal fork: %m"
