@@ -140,14 +140,17 @@ AC_ENSURE_PATH_PROG(ac_cv_subst_path_awk,awk)
 AC_PATH_PROG(ac_cv_subst_path_compress,compress,no-compress-found-during-configure)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_egrep,egrep)
 AC_PATH_PROG(ac_cv_subst_path_gzip,gzip,no-gzip-found-during-configure)
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
+dnl Automatic check for Mail is frequently wrong.  Use innmail to have
+dnl a single interface.
+dnl AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_perl,perl)
 AC_PATH_PROG(ac_cv_subst_path_pgp,pgp,no-pgp-found-during-configure)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sed,sed)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sort,sort)
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sh,sh)
-dnl Common to have sendmail in /usr/lib.  We make sure to look there.
-PATH=$PATH:/usr/lib
+dnl Even though it is common to have sendmail in /usr/lib, we
+dnl have to trust the admin.
+dnl PATH=$PATH:/usr/lib
 AC_ENSURE_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
 PATH="$ac_save_path"
 dnl If the path mucking above must be done, redo the echo test.

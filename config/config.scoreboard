@@ -881,7 +881,7 @@
   ||##  Command to send mail (with -s "subject" allowed)
   ||##[autoconf]
   ||#### =()<_PATH_MAILCMD		@<_PATH_MAILCMD>@>()=
-  ||_PATH_MAILCMD		@ac_cv_subst_path_mail@
+  ||_PATH_MAILCMD		@ac_cv_subst_binpath@/innmail
 [IN1.7=@7][WDF=confparam][WOR=yes]
   ||##  Where scripts should have shlock create locks.
   ||#### =()<_PATH_LOCKS		@<_PATH_LOCKS>@>()=
