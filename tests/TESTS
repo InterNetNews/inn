@@ -20,6 +20,7 @@ lib/strlcat
 lib/strlcpy
 lib/uwildmat
 lib/vector
+lib/wire
 lib/xmalloc
 lib/xwrite
 overview/tradindexed

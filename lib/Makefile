@@ -15,7 +15,7 @@ SOURCES = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
 	sequence.c setenv.c sockaddr.c strcasecmp.c strerror.c strlcat.c \
 	strlcpy.c strspn.c strtok.c timer.c uwildmat.c vector.c version.c \
-	xfopena.c xmalloc.c xsignal.c xwrite.c
+	wire.c xfopena.c xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
 	buffer.o cleanfrom.o clientactive.o clientlib.o concat.o conffile.o \
@@ -24,7 +24,7 @@ OBJECTS = $(LIBOBJS) \
 	hash.o hashtab.o inndcomm.o localopen.o lockfile.o makedir.o md5.o \
 	messages.o mmap.o parsedate.o qio.o radix32.o readin.o remopen.o \
 	reservedfd.o resource.o sendarticle.o sendpass.o sequence.o \
-	sockaddr.o timer.o uwildmat.o vector.o version.o xfopena.o \
+	sockaddr.o timer.o uwildmat.o vector.o version.o wire.o xfopena.o \
 	xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
