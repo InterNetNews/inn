@@ -502,7 +502,7 @@ samples/incoming.conf                 Permissions for incoming feeds
 samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
 samples/innreport.conf.in             Log summary configuration
-samples/innwatch.ctl.in               INN monitoring configuration
+samples/innwatch.ctl                  INN monitoring configuration
 samples/moderators                    Moderation submission addresses
 samples/motd.news                     Sample MOTD file
 samples/newsgroups.minimal            Minimal starting newsgroups file
