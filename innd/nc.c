@@ -1280,7 +1280,7 @@ NCcheck(CHANNEL *cp)
 
     cp->Check++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.Data; !ISWHITE(*p); p++)
+    for (p = cp->In.Data; *p && !ISWHITE(*p); p++)
 	continue;
     for ( ; ISWHITE(*p); p++)
 	continue;
