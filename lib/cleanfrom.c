@@ -22,20 +22,48 @@ void HeaderCleanFrom(char *from)
 {
     char	        *p;
     char	        *end;
+    int			len;
 
-    /* Do the equivalent of sed's "1q" */
-    if ((p = strchr(from, '\n')) != NULL)
-	*p = '\0';
+    if ((len = strlen(from)) == 0)
+	return;
+    /* concatenate folded header */
+    for (p = end = from ; p < from + len ;) {
+	if (*p == '\n') {
+	    if ((p + 1 < from + len) && ISWHITE(p[1])) {
+		if ((p - 1 >= from) && (p[-1] == '\r')) {
+		    end--;
+		    *end = p[1];
+		    p += 2;
+		} else {
+		    *end = p[1];
+		    p++;
+		}
+	    } else {
+		*end = '\0';
+		break;
+	    }
+	} else
+	    *end++ = *p++;
+    }
+    if (end != from)
+	*end = '\0';
 
-    /* Do pretty much the equivalent of sed's "s/ (.*)//"; doesn't
-     * work for "(save (delete this)" but that's okay. */
-    if ((p = strchr(from, LPAREN))
-     && p > from
-     && *--p == ' '
-     && (end = strrchr(p, RPAREN))) {
-	while (*++end)
-	    *p++ = *end;
-	*p = '\0';
+    /* Do pretty much the equivalent of sed's "s/(.*)//g"; */
+    while (p = strchr(from, LPAREN)) {
+	if (end = strchr(p, RPAREN)) {
+	    while (*++end)
+		*p++ = *end;
+	    *p = '\0';
+	}
+    }
+
+    /* Do pretty much the equivalent of sed's "s/\".*\"//g"; */
+    while (p = strchr(from, '"')) {
+	if (end = strchr(p, '"')) {
+	    while (*++end)
+		*p++ = *end;
+	    *p = '\0';
+	}
     }
 
     /* Do the equivalent of sed's "s/.*<\(.*\)>/\1/" */
@@ -44,4 +72,17 @@ void HeaderCleanFrom(char *from)
 	    *from++ = *p;
 	*from = '\0';
     }
+
+    /* drop white spaces */
+    if ((len = strlen(from)) == 0)
+	return;
+    for (p = end = from ; p < from + len ;) {
+	if (ISWHITE(*p)) {
+	    p++;
+	    continue;
+	}
+	*end++ = *p++;
+    }
+    if (end != from)
+	*end = '\0';
 }
