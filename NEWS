@@ -1,5 +1,12 @@
 Changes from 2.3.2 to 2.3.3
 
+    * pgpverify now supports using GnuPG to check signatures (rather than
+      PGP) without the pgpgpg wrapper.  GnuPG can check both old-style RSA
+      signatures and new OpenPGP signatures and is recommended over PGP 2.6.
+      If you have GnuPG installed, pgpverify will use it rather than PGP,
+      which means that you may have to create a new key ring for GnuPG to
+      use to verify signatures if you were previously using PGP.
+
     * An item that was noted in NEWS below but was inadvertently left out of
       nnrpd: Users can no longer post articles containing Approved: headers
       to moderated groups by default; they must be specifically given that
@@ -10,10 +17,6 @@ Changes from 2.3.2 to 2.3.3
       writing overview data were all fixed in the tradindexed overview
       method, hopefully making it somewhat more reliable, particularly for
       makehistory.
-
-    * pgpverify now supports using GnuPG to check signatures (rather than
-      PGP) without the pgpgpg wrapper.  GnuPG can check both old-style RSA
-      signatures and new OpenPGP signatures and is recommended over PGP 2.6.
 
     * If rc.news.local exists in the INN binary directory, run it whenever
       rc.news is run, passing the start or stop argument to it.  This is

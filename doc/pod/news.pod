@@ -4,6 +4,15 @@
 
 =item *
 
+pgpverify now supports using GnuPG to check signatures (rather than PGP)
+without the pgpgpg wrapper.  GnuPG can check both old-style RSA signatures
+and new OpenPGP signatures and is recommended over PGP 2.6.  If you have
+GnuPG installed, pgpverify will use it rather than PGP, which means that
+you may have to create a new key ring for GnuPG to use to verify signatures
+if you were previously using PGP.
+
+=item *
+
 An item that was noted in NEWS below but was inadvertently left out of
 nnrpd: Users can no longer post articles containing Approved: headers to
 moderated groups by default; they must be specifically given that
@@ -15,12 +24,6 @@ for more details.
 Two bugs in repacking overview index files and a reliability bug with
 writing overview data were all fixed in the tradindexed overview method,
 hopefully making it somewhat more reliable, particularly for makehistory.
-
-=item *
-
-pgpverify now supports using GnuPG to check signatures (rather than PGP)
-without the pgpgpg wrapper.  GnuPG can check both old-style RSA signatures
-and new OpenPGP signatures and is recommended over PGP 2.6.
 
 =item *
 
