@@ -120,7 +120,7 @@ sub upgrade_file {
                 die "$file: backup $file.OLD already exists\n";
             }
         }
-        print "Updating $file, old verion saved as $file.OLD\n";
+        print "Updating $file, old version saved as $file.OLD\n";
         my ($user, $group) = (stat $file)[4,5];
         open (OUTPUT, "> .$file.new.$$")
             or die "$file: cannot create .$file.new.$$: $!\n";
