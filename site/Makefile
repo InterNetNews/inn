@@ -84,7 +84,7 @@ MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	rmgroup sendme sendsys senduuname version parsecontrol writelog \
 	docheckgroups news.daily scanlogs scanlogs-backend.pl expirerm \
 	tally.control tally.unwanted nntpsend send-ihave send-nntp send-uucp \
-	sendbatch inncheck innstat pgpverify innwatch innlog.pl innshellvars \
+	sendbatch inncheck innstat pgpverify innwatch innreport.pl innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	actsync.cfg actsync.ign scanspool storage.ctl motd.news
@@ -100,7 +100,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(NEWSBIN)/nntpsend $D$(NEWSLIB)/send-ihave $D$(NEWSLIB)/send-nntp \
 	$D$(NEWSLIB)/send-uucp $D$(NEWSBIN)/sendbatch $D$(NEWSBIN)/inncheck \
 	$D$(NEWSBIN)/innstat $D$(NEWSBIN)/pgpverify $D$(NEWSBIN)/innwatch \
-	$D$(NEWSLIB)/innlog.pl $D$(NEWSLIB)/storage.ctl $D$(PATH_SHELLVARS) \
+	$D$(NEWSBIN)/innreport.pl $D$(NEWSLIB)/storage.ctl $D$(PATH_SHELLVARS) \
 	$D$(PATH_PERL_SHELLVARS) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_TCL_SHELLVARS) $D$(PATH_TCL_STARTUP) $D$(PATH_CSH_SHELLVARS) \
@@ -110,7 +110,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 REST		= \
 	newsfeeds \
 	hosts.nntp hosts.nntp.nolimit nnrp.access passwd.nntp \
-	inn.conf moderators \
+	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
 	sample.control motd.news
@@ -123,6 +123,7 @@ REST_INSTALLED	= \
 	$D$(PATH_NNRPACCESS) $D$(PATH_NNTPPASS) \
 	$D$(PATH_CONFIG) $D$(PATH_MODERATORS) \
 	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(NEWSLIB)/nntpsend.ctl \
+	$D$(NEWSLIB)/innreport.conf $D$(NEWSLIB)/innreport_inn.pm \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(CTLBIN)/sample.control $D$(PATH_MOTD)
@@ -231,7 +232,9 @@ $D$(PATH_SHELLVARS):	innshellvars	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_SHELLVARS): innshellvars.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_TCL_SHELLVARS): innshellvars.tcl ; $(COPY_RPRI) $? $@
 $D$(PATH_CSH_SHELLVARS): innshellvars.csh ; $(COPY_RPRI) $? $@
-$D$(NEWSLIB)/innlog.pl: innlog.pl	; $(COPY_RPRI) $? $@
+$D$(NEWSBIN)/innreport.pl: innreport.pl	; $(COPY_RPRI) $? $@
+$D$(NEWSLIB)/innreport_inn.pm: innreport_inn.pm	; $(COPY_RPRI) $? $@
+$D$(NEWSLIB)/innreport.conf: innreport.conf	; $(COPY_RPRI) $? $@
 $D$(NEWSLIB)/storage.ctl: storage.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPRI) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPRI) $? $@
@@ -273,7 +276,9 @@ hosts.nntp.nolimit: ../samples/hosts.nntp.nolimit ; $(COPY) $? $@
 ihave:		../samples/ihave		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 inncheck:	../samples/inncheck		; $(COPY) $? $@
-innlog.pl:	../samples/innlog.pl		; $(COPY) $? $@
+innreport.pl:	../samples/innreport.pl		; $(COPY) $? $@
+innreport_inn.pm: ../samples/innreport_inn.pm	; $(COPY) $? $@
+innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
 storage.ctl:	../samples/storage.ctl		; $(COPY) $? $@
 innstat:	../samples/innstat		; $(COPY) $? $@
 innwatch:	../samples/innwatch		; $(COPY) $? $@
