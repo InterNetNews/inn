@@ -96,9 +96,9 @@ HEADER *EndOfTable = ENDOF(Table);
 **  headers into a single line.
 */
 static char *
-Join(register char	*text)
+Join(char	*text)
 {
-    register char	*p;
+    char	*p;
 
     for (p = text; *p; p++)
 	if (*p == '\n' || *p == '\r')
@@ -113,8 +113,8 @@ Join(register char	*text)
 static char *
 MaxLength(char *p, char *q)
 {
-    static char			buff[80];
-    register unsigned int	i;
+    static char		buff[80];
+    unsigned int	i;
 
     /* Already short enough? */
     i = strlen(p);
@@ -129,14 +129,12 @@ MaxLength(char *p, char *q)
     if ((size_t)(q - p) < sizeof buff - 4) {
 	(void)strncpy(buff, p, sizeof buff - 4);
 	(void)strcpy(&buff[sizeof buff - 4], "...");
-    }
-    /* Is getting last 10 characters good enough? */
-    else if ((p + i) - q < 10) {
+    } else if ((p + i) - q < 10) {
+	/* Is getting last 10 characters good enough? */
 	(void)strncpy(buff, p, sizeof buff - 14);
 	(void)strcpy(&buff[sizeof buff - 14], "...");
 	(void)strcpy(&buff[sizeof buff - 11], &p[i - 10]);
-    }
-    else {
+    } else {
 	/* Not in last 10 bytes, so use double elipses. */
 	(void)strncpy(buff, p, sizeof buff - 17);
 	(void)strcpy(&buff[sizeof buff - 17], "...");
@@ -148,16 +146,16 @@ MaxLength(char *p, char *q)
 /*
 **  Trim trailing spaces, return pointer to first non-space char.
 */
-static char *
-TrimSpaces(register char *p)
+static int
+TrimSpaces(char *p)
 {
-    register char	*start;
+    char	*start;
 
-    for (start = p; ISWHITE(*start); start++)
+    for (start = p; ISWHITE(*start) || *start == '\n'; start++)
 	continue;
-    for (p = start + strlen(start); p > start && CTYPE(isspace, (int)p[-1]); )
-	*--p = '\0';
-    return start;
+    for (p = start + strlen(start); p > start && CTYPE(isspace, (int)p[-1]); p--)
+	continue;
+    return (int)(p - start);
 }
 
 
@@ -166,7 +164,7 @@ TrimSpaces(register char *p)
 **  to the start of the next one or NULL.  Handles continuations.
 */
 static char *
-NextHeader(register char *p)
+NextHeader(char *p)
 {
     for ( ; (p = strchr(p, '\n')) != NULL; p++) {
 	if (ISWHITE(p[1]))
@@ -185,17 +183,17 @@ NextHeader(register char *p)
 static char *
 StripOffHeaders(char *article)
 {
-    register char	*p;
-    register char	*q;
-    register HEADER	*hp;
-    register char	c;
+    char	*p;
+    char	*q;
+    HEADER	*hp;
+    char	c;
 
     /* Scan through buffer, a header at a time. */
     for (p = article; ; ) {
 
 	/* See if it's a known header. */
 	c = CTYPE(islower, (int)*p) ? toupper(*p) : *p;
-	for (hp = Table; hp < ENDOF(Table); hp++)
+	for (hp = Table; hp < ENDOF(Table); hp++) {
 	    if (c == hp->Name[0]
 	     && p[hp->Size] == ':'
 	     && caseEQn(p, hp->Name, hp->Size)) {
@@ -207,11 +205,15 @@ StripOffHeaders(char *article)
 		    (void)sprintf(Error, "Duplicate \"%s\" header", hp->Name);
 		    return NULL;
 		}
-		for (q = &p[hp->Size + 1]; ISWHITE(*q); q++)
+		hp->Value = &p[hp->Size + 1];
+		/* '\r\n' is replaced with '\n', and unnecessary to consider
+		   '\r' */
+		for (q = &p[hp->Size + 1]; ISWHITE(*q) || *q == '\n'; q++)
 		    continue;
-		hp->Value = q;
+		hp->Body = q;
 		break;
 	    }
+	}
 
 	/* No; add it to the set of other headers. */
 	if (hp == ENDOF(Table)) {
@@ -243,9 +245,9 @@ StripOffHeaders(char *article)
 static const char *
 CheckControl(char *ctrl)
 {
-    register char	*p;
-    register char	*q;
-    char		save;
+    char	*p;
+    char	*q;
+    char	save;
 
     /* Snip off the first word. */
     for (p = ctrl; ISWHITE(*p); p++)
@@ -283,7 +285,7 @@ CheckControl(char *ctrl)
 **  Check the Distribution header, and exit on error.
 */
 static const char *
-CheckDistribution(register char *p)
+CheckDistribution(char *p)
 {
     static char	SEPS[] = " \t,";
     const char * const *dp;
@@ -340,9 +342,9 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 		return Error;
 	    }
 	    if (hp->Value) {
-		hp->Value = TrimSpaces(hp->Value);
-		if (*hp->Value == '\0')
-		    hp->Value = NULL;
+		hp->Len = TrimSpaces(hp->Value);
+		if (hp->Len == 0)
+		    hp->Value = hp->Body = NULL;
 	    }
 	}
     }
@@ -361,10 +363,10 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 		    (void)sprintf(sendbuff, "%s", PERMuser);
 		}
 	    }
-	    HDR(HDR__SENDER) = sendbuff;
+	    HDR_SET(HDR__SENDER, sendbuff);
 	}
 	else
-	    HDR(HDR__SENDER) = NULL;
+	    HDR_SET(HDR__SENDER, NULL);
     }
 
     /* Set Date.  datebuff is used later for NNTP-Posting-Date, so we have
@@ -377,9 +379,9 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
         if (PERMaccessconf->localtime) {
             if (!makedate(-1, true, localdatebuff, sizeof(localdatebuff)))
                 return "Can't generate local date header";
-	    HDR(HDR__DATE) = localdatebuff;
+	    HDR_SET(HDR__DATE, localdatebuff);
 	} else {
-	    HDR(HDR__DATE) = datebuff;
+	    HDR_SET(HDR__DATE, datebuff);
 	}
     } else {
 	if ((t = parsedate(HDR(HDR__DATE), &Now)) == -1)
@@ -393,13 +395,12 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     if (HDR(HDR__CONTROL)) {
 	if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
 	    return error;
-    }
-    else {
+    } else {
 	p = HDR(HDR__SUBJECT);
 	if (p == NULL)
 	    return "Required \"Subject\" header is missing";
         if (EQn(p, "cmsg ", 5)) {
-            HDR(HDR__CONTROL) = p + 5;
+            HDR_SET(HDR__CONTROL, p + 5);
             if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
                 return error;
         }
@@ -409,7 +410,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     if (HDR(HDR__MESSAGEID) == NULL) {
 	if (ihave)
 	    return "Missing \"Message-ID\" header";
-	HDR(HDR__MESSAGEID) = idbuff;
+	HDR_SET(HDR__MESSAGEID, idbuff);
     }
 
     /* Set Path */
@@ -417,7 +418,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
  	if (ihave)
 	    return "Missing \"Path\" header";
 	/* Note that innd will put host name here for us. */
-	HDR(HDR__PATH) = PATHMASTER;
+	HDR_SET(HDR__PATH, PATHMASTER);
 	if (VirtualPathlen > 0)
 	    addvirtual = TRUE;
     } else if (PERMaccessconf->strippath) {
@@ -425,11 +426,11 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	if ((p = strrchr(HDR(HDR__PATH), '!')) != NULL) {
 	    p++;
 	    if (*p == '\0') {
-		HDR(HDR__PATH) = PATHMASTER;
+		HDR_SET(HDR__PATH, PATHMASTER);
 		if (VirtualPathlen > 0)
 		    addvirtual = TRUE;
 	    } else {
-		HDR(HDR__PATH) = p;
+		HDR_SET(HDR__PATH, p);
 		if ((VirtualPathlen > 0) &&
 		    !EQ(p, PERMaccessconf->pathhost))
 		    addvirtual = TRUE;
@@ -451,7 +452,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	    DISPOSE(newpath);
 	newpath = NEW(char, VirtualPathlen + strlen(HDR(HDR__PATH)) + 1);
 	sprintf(newpath, "%s%s", VirtualPath, HDR(HDR__PATH));
-	HDR(HDR__PATH) = newpath;
+	HDR_SET(HDR__PATH, newpath);
     }
     
 
@@ -478,7 +479,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     if (!ihave && HDR(HDR__ORGANIZATION) == NULL
      && (p = PERMaccessconf->organization) != NULL) {
 	(void)strcpy(orgbuff, p);
-	HDR(HDR__ORGANIZATION) = orgbuff;
+	HDR_SET(HDR__ORGANIZATION, orgbuff);
     }
 
     /* Keywords; left alone. */
@@ -488,17 +489,17 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     /* Set Lines */
     if (!ihave) {
 	(void)sprintf(linebuff, "%d", linecount);
-	HDR(HDR__LINES) = linebuff;
+	HDR_SET(HDR__LINES, linebuff);
     }
 
     /* Supersedes; left alone. */
 
     /* NNTP-Posting host; set. */
     if (!ihave && PERMaccessconf->addnntppostinghost) 
-    HDR(HDR__NNTPPOSTINGHOST) = ClientHost;
+    HDR_SET(HDR__NNTPPOSTINGHOST, ClientHost);
     /* NNTP-Posting-Date - not in RFC (yet) */
     if (!ihave && PERMaccessconf->addnntppostingdate)
-    HDR(HDR__NNTPPOSTINGDATE) = datebuff;
+    HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
 
     /* X-Trace; set */
     t = time((time_t *)NULL) ;
@@ -514,7 +515,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	p, (long) t, (long) pid, ClientIpString,
 	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
 	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
-    HDR (HDR__XTRACE) = tracebuff ;
+    HDR_SET(HDR__XTRACE, tracebuff);
 
     /* X-Complaints-To; set */
     if ((p = PERMaccessconf->complaints) != NULL)
@@ -527,13 +528,13 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	else
 	    sprintf (complaintsbuff, "%s", newsmaster);
     }
-    HDR(HDR__XCOMPLAINTSTO) = complaintsbuff ;
+    HDR_SET(HDR__XCOMPLAINTSTO, complaintsbuff);
 
     /* Clear out some headers that should not be here */
     if (!ihave && PERMaccessconf->strippostcc) {
-	HDR(HDR__CC) = NULL;
-	HDR(HDR__BCC) = NULL;
-	HDR(HDR__TO) = NULL;
+	HDR_SET(HDR__CC, NULL);
+	HDR_SET(HDR__BCC, NULL);
+	HDR_SET(HDR__TO, NULL);
     }
     /* Now make sure everything is there. */
     for (hp = Table; hp < ENDOF(Table); hp++)
@@ -602,13 +603,13 @@ CheckIncludedText(const char *p, int lines)
 static const char *
 MailArticle(char *group, char *article)
 {
-    static char		CANTSEND[] = "Can't send text to mailer";
-    register FILE	*F;
-    register HEADER	*hp;
-    register int	i;
-    char		*address;
-    char		buff[SMBUF];
-    char		*mta;
+    static char	CANTSEND[] = "Can't send text to mailer";
+    FILE	*F;
+    HEADER	*hp;
+    int		i;
+    char	*address;
+    char	buff[SMBUF];
+    char	*mta;
 
     /* Try to get the address first. */
     if ((address = GetModeratorAddress(NULL, NULL, group, PERMaccessconf->moderatormailer)) == NULL) {
@@ -679,7 +680,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     char	        *p;
     bool	        approved;
     struct _DDHANDLE	*h;
-    char      *grplist[2];
+    char		*grplist[2];
     bool		IsNewgroup;
     bool		FoundOne;
     int                 flag;
@@ -764,7 +765,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     p = DDend(h);
     if (HDR(HDR__DISTRIBUTION) == NULL && *p) {
 	(void)strcpy(distbuff, p);
-	HDR(HDR__DISTRIBUTION) = distbuff;
+	HDR_SET(HDR__DISTRIBUTION, distbuff);
     }
     DISPOSE(p);
     return NULL;
@@ -817,6 +818,7 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     int	i, fd;
     char *tmpspool = NULL;
     char *spoolfile = NULL;
+    char *q;
 
     /* Initialize the returned error message */
     sprintf(CANTSPOOL, "%s and can't write text to local spool file", err);
@@ -838,11 +840,19 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Value) {
-	    fprintf(F, "%s: %s\n", hp->Name, hp->Value);
+	    q = NEW(char, hp->Body - hp->Value + hp->Len + 1);
+            strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
+	    *(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
+	    if (*hp->Value == ' ' || *hp->Value == '\t')
+		fprintf(F, "%s:%s\n", hp->Name, q);
+	    else
+		fprintf(F, "%s: %s\n", hp->Name, q);
 	    if (FLUSH_ERROR(F)) {
 		fclose(F);
+		DISPOSE(q);
                 goto fail;
 	    }
+	    DISPOSE(q);
 	}
     for (i = 0; i < OtherCount; i++) {
 	fprintf(F, "%s\n", OtherHeaders[i]);
@@ -938,21 +948,21 @@ ARTpost(char *article,
 	bool ihave,
 	bool *permanent)
 {
-    static char		CANTSEND[] = "Can't send %s to server, %s";
-    register int	i;
-    register char	*p;
-    register char	*next;
-    register HEADER	*hp;
-    FILE		*ToServer;
-    FILE		*FromServer;
-    char		buff[NNTP_STRLEN + 2], frombuf[SMBUF];
-    char		*modgroup = NULL;
-    const char		*error;
-    char		*TrackID;
-    char		*DirTrackID;
-    FILE		*ftd;
-    int			len;
-    char		SDir[255];
+    static char	CANTSEND[] = "Can't send %s to server, %s";
+    int		i;
+    char	*p, *q, c;
+    char	*next;
+    HEADER	*hp;
+    FILE	*ToServer;
+    FILE	*FromServer;
+    char	buff[NNTP_STRLEN + 2], frombuf[SMBUF];
+    char	*modgroup = NULL;
+    const char	*error;
+    char	*TrackID;
+    char	*DirTrackID;
+    FILE	*ftd;
+    int		len;
+    char	SDir[255];
 
     /* Assume errors are permanent, until we discover otherwise */
     *permanent = true;
@@ -968,7 +978,7 @@ ARTpost(char *article,
     WasMailed = FALSE;
     for (hp = Table; hp < ENDOF(Table); hp++) {
 	hp->Size = strlen(hp->Name);
-	hp->Value = NULL;
+	hp->Value = hp->Body = NULL;
     }
     if ((article = StripOffHeaders(article)) == NULL)
 	return Error;
@@ -1136,14 +1146,26 @@ ARTpost(char *article,
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Value) {
-	    if (strchr(hp->Value, '\n') != NULL) {
-		if ((p = Towire(hp->Value)) != NULL) {
-		    (void)fprintf(ToServer, "%s: %s\r\n", hp->Name, p);
+	    q = NEW(char, hp->Body - hp->Value + hp->Len + 1);
+            strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
+	    *(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
+	    if (strchr(q, '\n') != NULL) {
+		if ((p = Towire(q)) != NULL) {
+		    /* there is no white space, if hp->Value and hp->Body is the same */
+		    if (*hp->Value == ' ' || *hp->Value == '\t')
+			(void)fprintf(ToServer, "%s:%s\r\n", hp->Name, p);
+		    else
+			(void)fprintf(ToServer, "%s: %s\r\n", hp->Name, p);
 		    DISPOSE(p);
 		}
 	    } else {
-		(void)fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
+		/* there is no white space, if hp->Value and hp->Body is the same */
+		if (*hp->Value == ' ' || *hp->Value == '\t')
+		    (void)fprintf(ToServer, "%s:%s\r\n", hp->Name, q);
+		else
+		    (void)fprintf(ToServer, "%s: %s\r\n", hp->Name, q);
 	    }
+	    DISPOSE(q);
 	}
     for (i = 0; i < OtherCount; i++) {
 	if (strchr(OtherHeaders[i], '\n') != NULL) {
@@ -1209,17 +1231,37 @@ ARTpost(char *article,
 	}
 	for (hp = Table; hp < ENDOF(Table); hp++)
 	    if (hp->Value) {
-		if (strchr(hp->Value, '\n') != NULL) {
-		    if ((p = Towire(hp->Value)) != NULL) {
-			(void)fprintf(ftd, "%s: %s\r\n", hp->Name, p);
+		q = NEW(char, hp->Body - hp->Value + hp->Len + 1);
+                strncpy(q, hp->Value, hp->Body - hp->Value + hp->Len);
+		*(q + (int)(hp->Body - hp->Value) + hp->Len) = '\0';
+		if (strchr(q, '\n') != NULL) {
+		    if ((p = Towire(q)) != NULL) {
+			/* there is no white space, if hp->Value and hp->Body is the same */
+			if (*hp->Value == ' ' || *hp->Value == '\t')
+			    (void)fprintf(ftd, "%s:%s\r\n", hp->Name, p);
+			else
+			    (void)fprintf(ftd, "%s: %s\r\n", hp->Name, p);
 			DISPOSE(p);
 		    }
 		} else {
-		    (void)fprintf(ftd, "%s: %s\r\n", hp->Name, hp->Value);
+		    /* there is no white space, if hp->Value and hp->Body is the same */
+		    if (*hp->Value == ' ' || *hp->Value == '\t')
+			(void)fprintf(ftd, "%s:%s\r\n", hp->Name, q);
+		    else
+			(void)fprintf(ftd, "%s: %s\r\n", hp->Name, q);
 		}
+		DISPOSE(q);
 	    }
-	for (i=0; i<OtherCount; i++)
-	    (void)fprintf(ftd,"%s\r\n",OtherHeaders[i]);
+	for (i = 0 ; i < OtherCount ; i++) {
+	    if (strchr(OtherHeaders[i], '\n') != NULL) {
+	        if ((p = Towire(OtherHeaders[i])) != NULL) {
+		    (void)fprintf(ftd, "%s\r\n", p);
+		    DISPOSE(p);
+	        }
+	    } else {
+	        (void)fprintf(ftd, "%s\r\n", OtherHeaders[i]);
+	    }
+	}
 	(void)fprintf(ftd,"\r\n");
 	(void)NNTPsendarticle(article, ftd, TRUE);
 	if (fclose(ftd) != EOF) {
