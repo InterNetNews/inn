@@ -14,10 +14,15 @@
 #include <errno.h>
 #include <sys/types.h>
 #include "configdata.h"
+#if     defined(DO_NEED_TIME)
+#include <time.h>
+#endif  /* defined(DO_NEED_TIME) */
+#include <syslog.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <fcntl.h>
 #include "clibrary.h"
+#include "logging.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
@@ -30,8 +35,38 @@ STATIC char	*Dir;
 STATIC int	debug = FALSE;
 STATIC int	syncfiles = TRUE;
 
-#define MAXXPOST 256
+STATIC unsigned long STATTime    = 0;
+STATIC unsigned long STATMissing = 0; /* Source file missing */
+STATIC unsigned long STATTooLong = 0; /* Name Too Long (src or dest) */
+STATIC unsigned long STATLink    = 0; /* Link done */
+STATIC unsigned long STATLError  = 0; /* Link problem */
+STATIC unsigned long STATSymlink = 0; /* Symlink done */
+STATIC unsigned long STATSLError = 0; /* Symlink problem */
+STATIC unsigned long STATMkdir   = 0; /* Mkdir done */
+STATIC unsigned long STATMdError = 0; /* Mkdir problem */
+STATIC unsigned long STATOError  = 0; /* Other errors */
 
+#define MAXXPOST 256
+#define STATREFRESH 10800   /* 3 hours */
+
+/*
+**  Write some statistics and reset all counters.
+*/
+void
+ProcessStats()
+{
+  time_t Time;
+
+  Time = time (NULL);
+  syslog(L_NOTICE,
+	"seconds %lu links %lu %lu symlinks %lu %lu mkdirs %lu %lu missing %lu toolong %lu other %lu",
+	Time - STATTime, STATLink, STATLError, STATSymlink, STATSLError,
+	STATMkdir, STATMdError, STATMissing, STATTooLong, STATOError);
+
+  STATMissing = STATTooLong = STATLink = STATLError = 0;
+  STATSymlink = STATSLError = STATMkdir = STATMdError = STATOError = 0;
+  STATTime = Time;
+}
 
 /*
 **  Try to make one directory.  Return FALSE on error.
@@ -42,8 +77,10 @@ MakeDir(Name)
 {
     struct stat		Sb;
 
-    if (mkdir(Name, GROUPDIR_MODE) >= 0)
+    if (mkdir(Name, GROUPDIR_MODE) >= 0) {
+        STATMkdir++;
 	return TRUE;
+    }
 
     /* See if it failed because it already exists. */
     return stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode);
@@ -70,8 +107,10 @@ MakeSpoolDir(Name)
 	    *p = '\0';
 	    made = MakeDir(Name);
 	    *p = '/';
-	    if (!made)
-		return FALSE;
+	    if (!made) {
+	        STATMdError++;
+	        return FALSE;
+	    }
 	}
 
     return MakeDir(Name);
@@ -97,10 +136,15 @@ ProcessIncoming(qp)
 
 
     for ( ; ; ) {
+
+        if (time(NULL) - STATTime > STATREFRESH)
+	  ProcessStats();
+
 	/* Read the first line of data. */
 	if ((p = QIOread(qp)) == NULL) {
 	    if (QIOtoolong(qp)) {
 		(void)fprintf(stderr, "crosspost line too long\n");
+		STATTooLong++;
 		continue;
 	    }
 	    break;
@@ -130,6 +174,7 @@ ProcessIncoming(qp)
 
 	for (i = 1; i < nxp; i++) {
             lnval = link(names[0], names[i]) ;
+	    if (lnval == 0) STATLink++;
 	    if (lnval < 0 && errno != EXDEV) { /* first try to link */
 		register int j;
 		char path[SPOOLNAMEBUFF+2];
@@ -146,6 +191,7 @@ ProcessIncoming(qp)
 		    else {
 			/* 2nd try to link */
 			lnval = link(names[0], names[i]) ;
+			if (lnval == 0) STATLink++;
 			if (lnval < 0 && errno == EXDEV) {
 #if	defined(DONT_HAVE_SYMLINK)
 			    (void)fprintf(stderr, "crosspost cant link %s %s",
@@ -166,17 +212,26 @@ ProcessIncoming(qp)
 				    "crosspost cant symlink %s %s",
 				    path, names[i]);
 				perror(" ");
+				STATSLError++;
 			    }
+			    else
+			      STATSymlink++;
 #endif	/* defined(DONT_HAVE_SYMLINK) */
 			} else if (lnval < 0) {
-			    (void)fprintf(stderr, "crosspost cant link %s %s",
-				names[0], names[i]);
-			    perror(" ");
+			    if (lnval == ENOENT)
+			      STATMissing++;
+			    else {
+			      (void)fprintf(stderr, "crosspost cant link %s %s",
+					    names[0], names[i]);
+			      perror(" ");
+			      STATLError++;
+			    }
                         }
 		    }
 		} else {
 		    (void)fprintf(stderr, "crosspost bad path %s\n",
 			    names[i]);
+		    STATOError++;
 		}
 	    } else if (lnval < 0) {
 		register int j;
@@ -201,7 +256,10 @@ ProcessIncoming(qp)
                                   "crosspost cant symlink %s %s",
                                   path, names[i]);
                     perror(" ");
+		    STATSLError++;
                 }
+		else
+		  STATSymlink++;
 #endif	/* defined(DONT_HAVE_SYMLINK) */
             }
 	}
@@ -263,7 +321,8 @@ main(ac, av)
 		Dir, strerror(errno));
 	exit(1);
     }
-
+    openlog("crosspost", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    STATTime = time (NULL);
     if (ac == 0)
 	ProcessIncoming(QIOfdopen(STDIN));
     else {
@@ -277,6 +336,7 @@ main(ac, av)
 		ProcessIncoming(qp);
     }
 
+    ProcessStats();
     exit(0);
     /* NOTREACHED */
 }
