@@ -27,6 +27,10 @@
 
 /* Just define all the entry points */
 
+/* Initialize the library. */
+
+int SMB_Init(void);
+
 /* Connect to a server, but do not do a tree con etc ... */
 
 void *SMB_Connect_Server(void *Con, char *server, char *NTdomain);
@@ -39,3 +43,8 @@ int SMB_Negotiate(void *Con_Handle, char *Prots[]);
 /* handle.                                                                */
 
 int SMB_Discon(void *Con, bool KeepHandle);
+
+/* Log on to a server. */
+
+int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
+                     char *PassWord);

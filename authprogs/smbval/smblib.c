@@ -25,6 +25,8 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
+#include <signal.h>
 
 int SMBlib_errno;
 int SMBlib_SMB_Error;
@@ -33,9 +35,6 @@ typedef unsigned char uchar;
 #include "smblib-priv.h"
 
 #include "rfcnb.h"
-
-#include <signal.h>
-#include <string.h>
 
 /* Initialize the SMBlib package     */
 
@@ -63,7 +62,7 @@ SMB_Handle_Type SMB_Connect_Server(SMB_Handle_Type Con_Handle,
 				   char *server, char *NTdomain)
 
 { SMB_Handle_Type con;
-  char temp[80], called[80], calling[80], *address;
+  char called[80], calling[80], *address;
   int i;
 
   /* Get a connection structure if one does not exist */
@@ -151,7 +150,7 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
 		     char *PassWord)
 
 { struct RFCNB_Pkt *pkt;
-  int param_len, i, pkt_len, pass_len,a;
+  int param_len, pkt_len, pass_len;
   char *p, pword[128];
 
   /* First we need a packet etc ... but we need to know what protocol has  */
@@ -194,7 +193,7 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
 
     }
 
-    bzero(SMB_Hdr(pkt), SMB_ssetpLM_len);
+    memset(SMB_Hdr(pkt), 0, SMB_ssetpLM_len);
     SIVAL(SMB_Hdr(pkt), SMB_hdr_idf_offset, SMB_DEF_IDF);  /* Plunk in IDF */
     *(SMB_Hdr(pkt) + SMB_hdr_com_offset) = SMBsesssetupX;
     SSVAL(SMB_Hdr(pkt), SMB_hdr_pid_offset, Con_Handle -> pid);
@@ -259,7 +258,7 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
 
     }
 
-    bzero(SMB_Hdr(pkt), SMB_ssetpNTLM_len);
+    memset(SMB_Hdr(pkt), 0, SMB_ssetpNTLM_len);
     SIVAL(SMB_Hdr(pkt), SMB_hdr_idf_offset, SMB_DEF_IDF);  /* Plunk in IDF */
     *(SMB_Hdr(pkt) + SMB_hdr_com_offset) = SMBsesssetupX;
     SSVAL(SMB_Hdr(pkt), SMB_hdr_pid_offset, Con_Handle -> pid);

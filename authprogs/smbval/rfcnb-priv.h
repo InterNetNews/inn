@@ -99,9 +99,9 @@ typedef char RFCNB_Hdr[4]; /* The header is 4 bytes long with  */
 #define RFCNB_Pkt_Len(p)  (PVAL(p, 3) | (PVAL(p, 2) << 8) |     \
                           ((PVAL(p, RFCNB_Pkt_Flags_Offset) & 0x01) << 16))
 
-#define RFCNB_Put_Pkt_Len(p, v) (p[1] = ((v >> 16) & 1)); \
-				(p[2] = ((v >> 8) & 0xFF)); \
-				(p[3] = (v & 0xFF));
+#define RFCNB_Put_Pkt_Len(p, v) ((p)[1] = (((v) >> 16) & 1)); \
+				((p)[2] = (((v) >> 8) & 0xFF)); \
+				((p)[3] = ((v) & 0xFF));
 
 #define RFCNB_Pkt_Type(p) (CVAL(p, RFCNB_Pkt_Type_Offset))
 

@@ -25,9 +25,8 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
 #include <errno.h>
-#include <netdb.h>
-#include <sys/socket.h>
 
 #include "rfcnb-priv.h"
 #include "rfcnb-util.h"
@@ -106,7 +105,7 @@ struct RFCNB_Pkt *RFCNB_Alloc_Pkt(int n)
 
 /* Free up a packet */
 
-int RFCNB_Free_Pkt(struct RFCNB_Pkt *pkt)
+void RFCNB_Free_Pkt(struct RFCNB_Pkt *pkt)
 
 { struct RFCNB_Pkt *pkt_next; char *data_ptr;
 
@@ -196,7 +195,7 @@ int RFCNB_IP_Connect(struct in_addr Dest_IP, int port)
     return(RFCNBE_Bad);
     } 
 
-  bzero((char *)&Socket, sizeof(Socket));
+  memset(&Socket, 0, sizeof(Socket));
   memcpy((char *)&Socket.sin_addr, (char *)&Dest_IP, sizeof(Dest_IP));
 
   Socket.sin_port = htons(port);
@@ -232,7 +231,7 @@ int RFCNB_Session_Req(struct RFCNB_Con *con,
 
   /* Response packet should be no more than 9 bytes, make 16 jic */
 
-  char ln1[16], ln2[16], n1[32], n2[32], resp[16];
+  char resp[16];
   int len;
   struct RFCNB_Pkt *pkt, res_pkt;
 

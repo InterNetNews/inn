@@ -3,9 +3,8 @@
 #include <syslog.h>
 #include "config.h"
 #include "smblib-priv.h"
+#include "smblib.h"
 #include "valid.h"
-
-SMB_Handle_Type SMB_Connect_Server(void *, char *, char *);
 
 int Valid_User(char *USERNAME,char *PASSWORD,char *SERVER,char *BACKUP, char *DOMAIN)
 {
