@@ -234,6 +234,9 @@
 /* Define to 1 if you have the `strchr' function. */
 #undef HAVE_STRCHR
 
+/* Define if your system supports STREAMS file descriptor passing. */
+#undef HAVE_STREAMS_SENDFD
+
 /* Define to 1 if you have the `strerror' function. */
 #undef HAVE_STRERROR
 

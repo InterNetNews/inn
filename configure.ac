@@ -51,6 +51,7 @@ m4_include([m4/prog-ensure.m4])
 m4_include([m4/python.m4])
 m4_include([m4/sasl.m4])
 m4_include([m4/sendmail.m4])
+m4_include([m4/sendfd.m4])
 m4_include([m4/snprintf.m4])
 m4_include([m4/socket.m4])
 m4_include([m4/syslog.m4])
@@ -462,6 +463,7 @@ INN_FUNC_MMAP(
      INN_FUNC_MSYNC_ARGS])
 
 dnl Probes for system characteristics.
+INN_SYS_STREAMS_SENDFD
 INN_SYS_UNIX_SOCKETS
 INN_LOG_FACILITY
 
