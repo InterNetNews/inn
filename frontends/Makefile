@@ -86,7 +86,7 @@ profiled:
 $(NEWSBIN)/inews:		inews
 	$(SHELL) ../installit.sh $(OWNER) -m 02555 -b .OLD $? $@
 $(NEWSBIN)/rnews:		rnews
-	$(SHELL) ../installit.sh $(ROWNER) -m 04555 -b .OLD $? $@
+	$(SHELL) ../installit.sh $(ROWNER) -m 04550 -b .OLD $? $@
 $(NEWSBIN)/ctlinnd:	ctlinnd
 	$(SHELL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
 $(NEWSBIN)/sm:	sm
