@@ -224,11 +224,11 @@
   ||##
   ||##  4.  C LIBRARY DIFFERENCES
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Use stdargs, varargs, or neither?  Pick VARARGS STDARGS or NONE.
-  ||##  You need vfprintf and vfsprintf if not NONE.
-  ||##[autoconf]
-  ||#### =()<VAR_STYLE		@<VAR_STYLE>@>()=
-  ||VAR_STYLE		@ac_cv_subst_varstyle@
+ #||##  Use stdargs, varargs, or neither?  Pick VARARGS STDARGS or NONE.
+ #||##  You need vfprintf and vfsprintf if not NONE.
+ #||##[autoconf]
+ #||#### =()<VAR_STYLE		@<VAR_STYLE>@>()=
+ #||VAR_STYLE		@ac_cv_subst_varstyle@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  If you don't have <string.h>, set this to "mystring.h"
   ||##[autoconf]

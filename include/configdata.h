@@ -77,7 +77,7 @@ typedef char		*CSTRING;
 */
     /* Use have stdargs, varargs, or neither? */
     /* =()<#define VAR_@<VAR_STYLE>@>()= */
-#define VAR_STDARGS
+/* #define VAR_STDARGS */
     /* Use BSD4.2 or Posix directory names? */
     /* =()<#define DIR_@<DIR_STYLE>@>()= */
 #define DIR_DIRENT

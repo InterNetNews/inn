@@ -1,0 +1,37 @@
+/*  $Revision$
+**
+**  Here be configuration data used by various InterNetNews programs.
+**  The numbers refer to sections in the config.dist file.
+*/
+
+#ifndef __CONFIG_H__
+#define __CONFIG_H__ 
+
+/* Define if you have ANSI C headers */
+#undef STDC_HEADERS
+
+/* Define if you have <varargs.h> */
+#undef HAVE_VARARGS_H 
+
+/* Define if you have <stdarg.h> */
+#undef HAVE_STDARG_H
+
+#if defined(STDC_HEADERS) 
+# if defined(HAVE_STDARG_H)
+#  define VAR_STDARGS 1
+# else
+#  if defined(HAVE_VARARGS_H)
+#   define VAR_VARARGS 1
+#  else
+#   define VAR_NONE 1
+#  endif
+# endif
+#else
+# if defined(HAVE_VARARGS_H)
+#  define VAR_VARARGS 1
+# else
+#  define VAR_NONE
+# endif
+#endif
+
+#endif /* __CONFIG_H__ */
