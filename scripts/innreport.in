@@ -7,7 +7,7 @@
 #
 # version: 3.0.2
 #
-# Copyright (c) 1996-1999, Fabien Tassin (fta@oleane.net).
+# Copyright (c) 1996-1999, Fabien Tassin (fta@sofaraway.org).
 #
 ##########################################################################
 #
@@ -78,12 +78,7 @@
 #         Please also report unknown entries.
 #         Be sure your are using the latest version of this script before
 #         any report.
-#         (check <URL:ftp://ftp.oleane.net/pub/packages/usenet/innreport/>)
-#
-#         You can subscribe to the innreport mailing list by sending
-#         a message to "listserv@oleane.net" without subject and with
-#         "sub innreport FirstName LastName (organization)" in the body.
-#         To obtain more information, send "help" to "listserv@oleane.net".
+#         (check <URL:ftp://ftp.sofaraway.org/pub/innreport/>)
 #
 ##########################################################################
 
@@ -875,10 +870,10 @@ EOF
     $i++;
   }
   $result .= "</TABLE>\n</CENTER>\n<P><HR>";
-  $result .= "<A HREF=\"ftp://ftp.oleane.net/pub/packages/usenet/innreport/\">innreport";
+  $result .= "<A HREF=\"ftp://ftp.sofaraway.org/pub/innreport/\">innreport";
   $result .= "</A> $version (c) 1996-1999 ";
-  $result .= "by Fabien Tassin &lt;<A HREF=\"mailto:fta\@oleane.net\">";
-  $result .= "fta\@oleane.net</A>&gt;.\n";
+  $result .= "by Fabien Tassin &lt;<A HREF=\"mailto:fta\@sofaraway.org\">";
+  $result .= "fta\@sofaraway.org</A>&gt;.\n";
   if (defined ($output{'default'}{'footer'})) {
     my ($t) = $output{'default'}{'footer'} =~ m/^\"\s*(.*?)\s*\"$/o;
     $t =~ s/\\\"/\"/go;
@@ -1817,9 +1812,9 @@ sub Write_all_results {
   if ($HTML) {
     open (HTML, ">> $HTML_output") || die "Error: cant open $HTML_output\n";
     print HTML <<EOT;
-<A HREF="ftp://ftp.oleane.net/pub/packages/usenet/innreport/">innreport</A>
+<A HREF="ftp://ftp.sofaraway.org/pub/innreport/">innreport</A>
 $version (c) 1996-1999 by Fabien Tassin
-&lt;<A HREF="mailto:fta\@oleane.net">fta\@oleane.net</A>&gt;.
+&lt;<A HREF="mailto:fta\@sofaraway.org">fta\@sofaraway.org</A>&gt;.
 EOT
     if (defined $$h{'default'}{'footer'}) {
       my ($t) = $$h{'default'}{'footer'} =~ m/^\"\s*(.*?)\s*\"$/o;
@@ -2552,7 +2547,7 @@ sub Usage {
 
 sub Version {
   print "\nThis is INNreport version $version\n\n";
-  print "Copyright 1996-1999, Fabien Tassin <fta\@oleane.net>\n";
+  print "Copyright 1996-1999, Fabien Tassin <fta\@sofaraway.org>\n";
   exit 0;
 }
 
