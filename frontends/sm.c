@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
     BOOL                Overview = FALSE;
     BOOL                Rawformat = FALSE;
     BOOL		val;
+    BOOL		notinitialized = TRUE;
     int                 i;
     char                *p;
     QIOSTATE            *qp;
@@ -91,11 +92,6 @@ int main(int argc, char **argv) {
 		exit(1);
 	    }
 	}
-	if (!SMinit()) {
-	    if (!Quiet)
-		fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
-	    exit(1);
-	}
     }
     
     for (i = optind; i < argc; i++) {
@@ -104,6 +100,14 @@ int main(int argc, char **argv) {
 		if (!Quiet)
 		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
 		continue;
+	    }
+	    if (notinitialized) {
+		if (!SMinit()) {
+		    if (!Quiet)
+			fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
+		    exit(1);
+		}
+		notinitialized = FALSE;
 	    }
 	    if (!SMcancel(TextToToken(argv[i]))) {
 		if (!Quiet)
@@ -114,6 +118,14 @@ int main(int argc, char **argv) {
 		if (!Quiet)
 		    fprintf(stderr, "%s is not a storage token\n", argv[i]);
 		continue;
+	    }
+	    if (notinitialized) {
+		if (!SMinit()) {
+		    if (!Quiet)
+			fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
+		    exit(1);
+		}
+		notinitialized = FALSE;
 	    }
 	    token = TextToToken(argv[i]);
 	    if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL) {
@@ -135,6 +147,14 @@ int main(int argc, char **argv) {
 		    continue;
 		}
 		token = TextToToken(argv[i]);
+		if (notinitialized) {
+		    if (!SMinit()) {
+			if (!Quiet)
+			     fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
+			exit(1);
+		    }
+		    notinitialized = FALSE;
+		}
 		if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
 		    if (!Quiet)
 			fprintf(stderr, "Could not retrieve %s\n", argv[i]);
@@ -147,6 +167,16 @@ int main(int argc, char **argv) {
 		}
 		SMfreearticle(art);
 	    } else {
+		if (IsToken(argv[i])) {
+		    if (notinitialized) {
+			if (!SMinit()) {
+			    if (!Quiet)
+				fprintf(stderr, "Could not initialize the storage manager: %s", SMerrorstr);
+			    exit(1);
+			}
+			notinitialized = FALSE;
+		    }
+		}
 		if ((qp = QIOopen(argv[i])) == NULL) {
 		    if (!Quiet)
 			fprintf(stderr, "Could not open %s\n", argv[i]);
