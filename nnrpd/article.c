@@ -397,6 +397,7 @@ static void ARTsendmmap(SENDTYPE what)
 	}
     }
 
+    /* q points to the start of the article buffer, p to the end of it */
     if (VirtualPathlen > 0 && (what != STbody)) {
 	if ((path = HeaderFindMem(ARThandle->data, ARThandle->len, "path", sizeof("path") - 1)) == NULL) {
 	    SendIOv(".\r\n", 3);
@@ -411,30 +412,26 @@ static void ARTsendmmap(SENDTYPE what)
 	    ARTget++;
 	    return;
 	}
-	if ((r = memchr(xref, ' ', q - xref)) == NULL) {
+	if ((r = memchr(xref, ' ', p - xref)) == NULL || r == p) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
 	    PushIOv();
 	    ARTget++;
 	    return;
-	} else {
-	    for (; (r < q) && isspace((int)*r) ; r++);
-	    if (r == q) {
-		SendIOv(".\r\n", 3);
-		ARTgetsize += 3;
-		PushIOv();
-		ARTget++;
-		return;
-	    }
 	}
+	/* r points to the first space in the Xref header */
 	virtualpath = NEW(char, VirtualPathlen + 2);
 	sprintf(virtualpath, "!%s", VirtualPath);
-	for (s = path ; s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len ; s++) {
-	    if (*s != *virtualpath || !EQn(s, virtualpath, VirtualPathlen + 1))
+	for (s = path ; s + VirtualPathlen + 1 < p ; s++) {
+	    if (*s == '\r') {
+		s = NULL;
+		break;
+	    }
+	    if (*s != '!' || !EQn(s, virtualpath, VirtualPathlen + 1))
 		continue;
 	    break;
 	}
-	if (s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len) {
+	if (s != NULL) {
 	    if (xref > path) {
 	        SendIOv(q, path - q);
 	        SendIOv(s + 1, xref - (s + 1));
@@ -443,8 +440,8 @@ static void ARTsendmmap(SENDTYPE what)
 	    } else {
 	        SendIOv(q, xref - q);
 	        SendIOv(VirtualPath, VirtualPathlen - 1);
-	        SendIOv(xref, path - xref);
-	        SendIOv(s + VirtualPathlen, p - (s + VirtualPathlen));
+	        SendIOv(r, path - r);
+	        SendIOv(s + 1, p - (s + 1));
 	    }
 	} else {
 	    if (xref > path) {
@@ -456,7 +453,7 @@ static void ARTsendmmap(SENDTYPE what)
 	    } else {
 	        SendIOv(q, xref - q);
 	        SendIOv(VirtualPath, VirtualPathlen - 1);
-	        SendIOv(xref, path - xref);
+	        SendIOv(r, path - r);
 	        SendIOv(VirtualPath, VirtualPathlen);
 	        SendIOv(path, p - path);
 	    }
