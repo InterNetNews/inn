@@ -1,53 +1,51 @@
-/*
-** Cnfs disk/file mode header file
+/*  $Id$
+**
+**  CNFS disk/file mode header file.
 */
 
-#ifndef	___CNFS_PRIVATE_H
-#define ___CNFS_PRIVATE_H
+#ifndef	CNFS_PRIVATE_H
+#define CNFS_PRIVATE_H 1
 
-#include	<unistd.h>
-#include	<sys/types.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #define _PATH_CYCBUFFCONFIG	"cycbuff.conf"
 
-/* These values may have to be changed for 64-bit support on systems that
-   don't support compilation options that increase the size of off_t and the
-   size lseek() can handle (like Solaris does). */
-typedef off_t           CYCBUFF_OFF_T;
-#define	CNFSseek        lseek
-
-/* Page boundary on which to mmap() the CNFS article usage header.  Should
-   be a multiple of the pagesize for all the architectures you expect might
-   need access to your CNFS buffer.  If you don't expect to share your
-   buffer across several platforms, you can use 'pagesize' here. */
+/* Page boundary on which to mmap() the CNFS article usage header.  Should be
+   a multiple of the pagesize for all the architectures you expect might need
+   access to your CNFS buffer.  If you don't expect to share your buffer
+   across several platforms, you can use 'pagesize' here. */
 #define	CNFS_HDR_PAGESIZE       16384
 
 #define	CNFS_MAGICV1	"Cycbuff"	/* CNFSMASIZ bytes */
 #define	CNFS_MAGICV2	"CBuf1"		/* CNFSMASIZ bytes */
 #define	CNFS_MAGICV3	"CBuf3"		/* CNFSMASIZ bytes */
 #define	CNFS_BLOCKSIZE	512		/* Unit block size we'll work with */
+
 /* Amount of data stored at beginning of CYCBUFF before the bitfield */
 #define	CNFS_BEFOREBITF	(1 * CNFS_BLOCKSIZE)
 
 struct metacycbuff;		/* Definition comes below */
+
 #define	CNFSMAXCYCBUFFNAME	8
 #define	CNFSMASIZ	8
 #define	CNFSNASIZ	16	/* Effective size is 9, not 16 */
 #define	CNFSPASIZ	64
-#define	CNFSLASIZ	16	/* Match length of ASCII hex CYCBUFF_OFF_T
+#define	CNFSLASIZ	16	/* Match length of ASCII hex off_t
 				   representation */
+
 typedef struct _CYCBUFF {
   char		name[CNFSNASIZ];/* Symbolic name */
   char		path[CNFSPASIZ];/* Path to file */
-  CYCBUFF_OFF_T len;		/* Length of writable area, in bytes */
-  CYCBUFF_OFF_T free;		/* Offset (relative to byte 0 of file) to first
+  off_t         len;		/* Length of writable area, in bytes */
+  off_t         free;		/* Offset (relative to byte 0 of file) to first
 				   freely available byte */
   time_t	updated;	/* Time of last update to header */
   int		fd;		/* file descriptor for this cycbuff */
   uint32_t	cyclenum;	/* Number of current cycle, 0 = invalid */
   int		magicver;	/* Magic version number */
   void *	bitfield;	/* Bitfield for article in use */
-  CYCBUFF_OFF_T	minartoffset;	/* The minimum offset allowed for article
+  off_t         minartoffset;	/* The minimum offset allowed for article
 				   storage */
   bool		needflush;	/* true if CYCBUFFEXTERN is needed to be
 				   flushed */
@@ -110,4 +108,4 @@ typedef struct {
 	                       Message-ID, that should be good enough */
 } oldCNFSARTHEADER;
 
-#endif	/* ! ___CNFS_PRIVATE_H */
+#endif /* !CNFS_PRIVATE_H */

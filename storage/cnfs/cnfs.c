@@ -36,7 +36,7 @@ typedef struct {
     int			len;		/* Length of article (and thus
 					   mmap()ed art */
     CYCBUFF		*cycbuff;	/* pointer to current CYCBUFF */
-    CYCBUFF_OFF_T	offset;		/* offset to current article */
+    off_t               offset;		/* offset to current article */
     bool		rollover;	/* true if the search is rollovered */
 } PRIV_CNFS;
 
@@ -48,7 +48,7 @@ static long		pagesize = 0;
 static int		metabuff_update = METACYCBUFF_UPDATE;
 static int		refresh_interval = REFRESH_INTERVAL;
 
-static TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
+static TOKEN CNFSMakeToken(char *cycbuffname, off_t offset,
 		       uint32_t cycnum, STORAGECLASS class) {
     TOKEN               token;
     int32_t		int32;
@@ -73,7 +73,7 @@ static TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 */
 
 static bool CNFSBreakToken(TOKEN token, char *cycbuffname,
-			   CYCBUFF_OFF_T *offset, uint32_t *cycnum) {
+			   off_t *offset, uint32_t *cycnum) {
     int32_t	int32;
 
     if (cycbuffname == NULL || offset == NULL || cycnum == NULL) {
@@ -85,7 +85,7 @@ static bool CNFSBreakToken(TOKEN token, char *cycbuffname,
     memcpy(cycbuffname, token.token, CNFSMAXCYCBUFFNAME);
     *(cycbuffname + CNFSMAXCYCBUFFNAME) = '\0';	/* Just to be paranoid */
     memcpy(&int32, &token.token[8], sizeof(int32));
-    *offset = (CYCBUFF_OFF_T)ntohl(int32) * (CYCBUFF_OFF_T)CNFS_BLOCKSIZE;
+    *offset = (off_t)ntohl(int32) * (off_t)CNFS_BLOCKSIZE;
     memcpy(&int32, &token.token[12], sizeof(int32));
     *cycnum = ntohl(int32);
     return TRUE;
@@ -95,17 +95,17 @@ static char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e', 'f'};
 
 /*
-** CNFSofft2hex -- Given an argument of type CYCBUFF_OFF_T, return
+** CNFSofft2hex -- Given an argument of type off_t, return
 **	a static ASCII string representing its value in hexadecimal.
 **
 **	If "leadingzeros" is true, the number returned will have leading 0's.
 */
 
-static char * CNFSofft2hex(CYCBUFF_OFF_T offset, bool leadingzeros) {
+static char * CNFSofft2hex(off_t offset, bool leadingzeros) {
     static char	buf[24];
     char	*p;
 
-    if (sizeof(CYCBUFF_OFF_T) <= 4) {
+    if (sizeof(off_t) <= 4) {
 	snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx", offset);
     } else { 
 	int	i;
@@ -131,18 +131,18 @@ static char * CNFSofft2hex(CYCBUFF_OFF_T offset, bool leadingzeros) {
 
 /*
 ** CNFShex2offt -- Given an ASCII string containing a hexadecimal representation
-**	of a CYCBUFF_OFF_T, return a CYCBUFF_OFF_T.
+**	of a off_t, return a off_t.
 */
 
-static CYCBUFF_OFF_T CNFShex2offt(char *hex) {
-    if (sizeof(CYCBUFF_OFF_T) <= 4) {
+static off_t CNFShex2offt(char *hex) {
+    if (sizeof(off_t) <= 4) {
 	unsigned long rpofft;
 	/* I'm lazy */
 	sscanf(hex, "%lx", &rpofft);
 	return rpofft;
     } else {
 	char		diff;
-	CYCBUFF_OFF_T	n = (CYCBUFF_OFF_T) 0;
+	off_t           n = 0;
 
 	for (; *hex != '\0'; hex++) {
 	    if (*hex >= '0' && *hex <= '9')
@@ -315,7 +315,7 @@ static void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
 static bool CNFSparse_part_line(char *l) {
   char		*p;
   struct stat	sb;
-  CYCBUFF_OFF_T	len, minartoffset;
+  off_t         len, minartoffset;
   int		tonextblock;
   CYCBUFF	*cycbuff, *tmp;
 
@@ -355,7 +355,7 @@ static bool CNFSparse_part_line(char *l) {
   l = ++p;
 
   /* Length/size of symbolic partition */
-  len = strtoul(l, NULL, 10) * (CYCBUFF_OFF_T)1024;	/* This value in KB in decimal */
+  len = strtoul(l, NULL, 10) * (off_t)1024;	/* This value in KB in decimal */
   if (S_ISREG(sb.st_mode) && len != sb.st_size) {
     if (sizeof(CYCBUFFEXTERN) > sb.st_size) {
       syslog(L_NOTICE, "%s: length must be at least '%u' for '%s' cycbuff(%ld bytes)",
@@ -530,7 +530,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
   char		buf[64];
   CYCBUFFEXTERN	*rpx;
   int		fd;
-  CYCBUFF_OFF_T	tmpo;
+  off_t         tmpo;
   bool		oneshot;
 
   /*
@@ -563,7 +563,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
     errno = 0;
     cycbuff->bitfield = mmap(NULL, cycbuff->minartoffset,
 			     SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
-			     MAP_SHARED, cycbuff->fd, (off_t) 0);
+			     MAP_SHARED, cycbuff->fd, 0);
     if (cycbuff->bitfield == MAP_FAILED || errno != 0) {
 	syslog(L_ERROR,
 	       "%s: CNFSinitdisks: mmap for %s offset %d len %d failed: %m",
@@ -860,10 +860,10 @@ cnfs_mapcntl(void *p, size_t length, int flags)
 
 typedef unsigned long	ULONG;
 
-static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
+static int CNFSUsedBlock(CYCBUFF *cycbuff, off_t offset,
 	      bool set_operation, bool setbitvalue) {
-    CYCBUFF_OFF_T	blocknum;
-    CYCBUFF_OFF_T	longoffset;
+    off_t               blocknum;
+    off_t               longoffset;
     int			bitoffset;	/* From the 'left' side of the long */
     static int		uninitialized = 1;
     static int		longsize = sizeof(long);
@@ -939,7 +939,7 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
 
 }
 
-static int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, uint32_t cycnum) {
+static int CNFSArtMayBeHere(CYCBUFF *cycbuff, off_t offset, uint32_t cycnum) {
     static time_t       lastupdate = 0;
     CYCBUFF	        *tmp;
 
@@ -1047,7 +1047,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     int			i;
     static char		buf[1024];
     char		*artcycbuffname;
-    CYCBUFF_OFF_T	artoffset, middle;
+    off_t               artoffset, middle;
     uint32_t		artcyclenum;
     CNFSARTHEADER	cah;
     static struct iovec	*iov;
@@ -1131,9 +1131,9 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	cah.arrived = htonl(article.arrived);
     cah.class = class;
 
-    if (CNFSseek(cycbuff->fd, artoffset, SEEK_SET) < 0) {
-	SMseterror(SMERR_INTERNAL, "CNFSseek() failed");
-	syslog(L_ERROR, "%s: CNFSseek failed for '%s' offset 0x%s: %m",
+    if (lseek(cycbuff->fd, artoffset, SEEK_SET) < 0) {
+	SMseterror(SMERR_INTERNAL, "lseek failed");
+	syslog(L_ERROR, "%s: lseek failed for '%s' offset 0x%s: %m",
 	       LocalLogName, cycbuff->name, CNFSofft2hex(artoffset, FALSE));
 	token.type = TOKEN_EMPTY;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
@@ -1164,9 +1164,9 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     cycbuff->needflush = TRUE;
 
     /* Now that the article is written, advance the free pointer & flush */
-    cycbuff->free += (CYCBUFF_OFF_T) article.len + sizeof(cah);
+    cycbuff->free += (off_t) article.len + sizeof(cah);
     tonextblock = CNFS_BLOCKSIZE - (cycbuff->free & (CNFS_BLOCKSIZE - 1));
-    cycbuff->free += (CYCBUFF_OFF_T) tonextblock;
+    cycbuff->free += (off_t) tonextblock;
     /*
     ** If cycbuff->free > cycbuff->len, don't worry.  The next cnfs_store()
     ** will detect the situation & wrap around correctly.
@@ -1192,7 +1192,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 
 ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     char		cycbuffname[9];
-    CYCBUFF_OFF_T	offset;
+    off_t               offset;
     uint32_t		cycnum;
     CYCBUFF		*cycbuff;
     ARTHANDLE   	*art;
@@ -1200,7 +1200,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     PRIV_CNFS		*private;
     char		*p;
     long		pagefudge;
-    CYCBUFF_OFF_T	mmapoffset;
+    off_t               mmapoffset;
     static TOKEN	ret_token;
     static bool		nomessage = FALSE;
     int			plusoffset = 0;
@@ -1412,7 +1412,7 @@ void cnfs_freearticle(ARTHANDLE *article) {
 
 bool cnfs_cancel(TOKEN token) {
     char		cycbuffname[9];
-    CYCBUFF_OFF_T	offset;
+    off_t               offset;
     uint32_t		cycnum;
     CYCBUFF		*cycbuff;
 
@@ -1458,13 +1458,13 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     ARTHANDLE           *art;
     CYCBUFF		*cycbuff;
     PRIV_CNFS		priv, *private;
-    CYCBUFF_OFF_T	middle, limit;
+    off_t               middle, limit;
     CNFSARTHEADER	cah;
-    CYCBUFF_OFF_T	offset;
+    off_t               offset;
     long		pagefudge, blockfudge;
     static TOKEN	token;
     int			tonextblock;
-    CYCBUFF_OFF_T	mmapoffset;
+    off_t               mmapoffset;
     char		*p;
     int			plusoffset = 0;
 
@@ -1620,9 +1620,9 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	return art;
     }
 
-    private->offset += (CYCBUFF_OFF_T) ntohl(cah.size) + sizeof(cah) + plusoffset;
+    private->offset += (off_t) ntohl(cah.size) + sizeof(cah) + plusoffset;
     tonextblock = CNFS_BLOCKSIZE - (private->offset & (CNFS_BLOCKSIZE - 1));
-    private->offset += (CYCBUFF_OFF_T) tonextblock;
+    private->offset += (off_t) tonextblock;
     art->arrived = ntohl(cah.arrived);
     token = CNFSMakeToken(cycbuff->name, offset, (offset > cycbuff->free) ? cycbuff->cyclenum - 1 : cycbuff->cyclenum, cah.class);
     art->token = &token;
