@@ -767,7 +767,7 @@ STATIC BOOL OpenRemote(char *server, int port, char *buff)
 	return FALSE;
 
     *buff = '\0';
-    if (NNTPsendpassword((char *)NULL, FromServer, ToServer) < 0) {
+    if (NNTPsendpassword(server, FromServer, ToServer) < 0) {
 	int oerrno = errno;
 	(void)fclose(FromServer);
 	(void)fclose(ToServer);
