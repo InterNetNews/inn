@@ -269,13 +269,11 @@ Code Cleanup Projects
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
 
-* Phase out the rest of macros.h, moving the remaining functions to a
-  better include file and possibly renaming them.
-
 * Break up the remainder of libinn.h into multiple inn/* include files for
   specific functions (such as memory management, wildmat, date handling,
   NNTP commands, etc.), with an inn/util.h header to collect the remaining
-  random utilities.
+  random utilities.  Consider adding some sort of prefix, like inn_, to all
+  functions that aren't part of some other logical set with its own prefix.
 
 * Break the CNFS and tradspool code into multiple source files to make it
   easier to understand the logical divisions of the code and consider
