@@ -492,6 +492,7 @@ extern NORETURN		CleanupAndExit();
 extern void		FileGlue();
 extern void		JustCleanup();
 extern void		ThrottleIOError();
+extern void		ThrottleNoMatchError();
 extern void		ReopenLog();
 extern void		xchown();
 
