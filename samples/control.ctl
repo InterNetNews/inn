@@ -292,6 +292,15 @@ checkgroups:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 newgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 rmgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 
+## BELWUE (Baden-Wuerttemberg, Germany)
+# Admin group: belwue.infos
+# *PGP*   See comment at top of file.
+newgroup:*:belwue.*:drop
+rmgroup:*:belwue.*:drop
+checkgroups:news@news.belwue.de:belwue.*:verify-belwue-hir-control
+newgroup:news@news.belwue.de:belwue.*:verify-belwue-hir-control
+rmgroup:news@news.belwue.de:belwue.*:verify-belwue-hir-control
+
 ## BERMUDA (Bermuda)
 checkgroups:news@*ibl.bm:bermuda.*:doit
 newgroup:news@*ibl.bm:bermuda.*:doit
@@ -501,6 +510,7 @@ newgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 rmgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 
 ## CN.BBS (China)
+# URL: http://bbs.cn.news-admin.org/
 # Admin group: cn.bbs.admin.announce
 # Key URL: http://www.cn-bbs.org/pubkey-cn.bbs.admin.announce
 # *PGP*   See comment at top of file.
@@ -1629,8 +1639,9 @@ newgroup:*:pubnet.*:mail
 rmgroup:*:pubnet.*:doit
 
 ## RELCOM (Commonwealth of Independent States)
-# URL: ftp://kiarchive.relcom.ru/pub/relcom/netinfo/
+# URL: ftp://ftp.relcom.ru/pub/relcom/netinfo/
 # Admin group: relcom.netnews
+# Key URL: ftp://ftp.relcom.ru/pub/relcom/netinfo/coordpubkey.txt
 # *PGP*   See comment at top of file.
 newgroup:*:relcom.*:drop
 rmgroup:*:relcom.*:drop
