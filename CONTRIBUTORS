@@ -49,9 +49,11 @@ Greg Patten:
 	Wrote the perl innlog
 
 Clayton O'Neill:
-	Wrote the articles storage API and implemented the timehash and
-	regular storage mechanisms with it. He made significant
-	modifications to dbz.
+	Wrote the articles storage API and implemented the timehash
+	and regular storage mechanisms with it. He made significant
+	modifications to dbz. Integrating innfeed, adding Xref slaving,
+	the history cache, the WIP rewrite and various speedups were
+	also his doing.
 
 Vincent Archer:
 	Wrote the initial autoconf scripts.
