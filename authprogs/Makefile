@@ -66,7 +66,7 @@ $(LIBAUTH): 	libauth.h libauth.c
 
 install: $(INSTALLED) $(KRB5_AUTH)
 	if [ x"$(KRB5_AUTH)" != x ] ; then \
-	    $(LI_XPUB) auth_krb5 $(D)$(PATHAUTHPASSWD)/auth_krb5 \
+	    $(LI_XPUB) auth_krb5 $(D)$(PATHAUTHPASSWD)/auth_krb5 ; \
 	fi
 
 $(D)$(PATHAUTHPASSWD)/auth_smb:		auth_smb	; $(LI_XPUB) $? $@
