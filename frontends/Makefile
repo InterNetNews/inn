@@ -1,6 +1,8 @@
 ##  $Revision$
 include ../Makefile.global
 
+CFLAGS	= $(GCFLAGS)
+
 RNEWSPROGS	= ${PATHBIN}/rnews.libexec
 
 SOURCES	= ctlinnd.c inews.c rnews.c sm.c
