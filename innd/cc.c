@@ -255,7 +255,7 @@ CCaddhist(av)
 	index = OVER_NONE;
 	offset = 0;
 	len = 0;
-	OVERsetoffset(&token, &offset, &index, &len);
+	OVERmaketoken(&token, offset, index, len);
 	if (av[4] != NULL && *av[4] != '\0') {
 	    if (!IsToken(av[4]))
 		return "1 Bad Token";
