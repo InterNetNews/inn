@@ -16,6 +16,7 @@
 ##
 ##   * Clean up inn.conf for the new parser in INN 2.4.
 ##   * Add the hismethod parameter to inn.conf if not found.
+##   * Change startinnfeed to innfeed or imapfeed in newsfeeds.
 
 require 5.003;
 
@@ -26,7 +27,8 @@ use subs qw(fix_inn_conf);
 use Getopt::Long qw(GetOptions);
 
 # The mappings of file names to fixes.
-%FIXES = ('inn.conf' => \&fix_inn_conf);
+%FIXES = ('inn.conf'  => \&fix_inn_conf,
+          'newsfeeds' => \&fix_newsfeeds);
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without
 # values) need to be commented out since they're no longer allowed (don't just
@@ -70,6 +72,29 @@ sub fix_inn_conf {
     # Add a setting of hismethod if one wasn't present in the original file.
     unless ($hismethod) {
         push (@$output, "\n# Added by innupgrade\nhismethod: hisv6\n");
+    }
+}
+
+# Replace startinnfeed with the appropriate invocation of innfeed or imapfeed
+# in newsfeeds.  Takes a reference to an array containing the contents of the
+# file, a reference to an array into which the output should be put, and the
+# file name for error reporting.
+sub fix_newsfeeds {
+    my ($input, $output, $file) = @_;
+    my $line = 0;
+    my $raw;
+    local $_;
+    for $raw (@$input) {
+        $_ = $raw;
+        $line++;
+        if (/^\s*\#/ || /^\s*$/) {
+            push (@$output, $_);
+            next;
+        }
+        chomp;
+        s{(/\S+)/startinnfeed\b(\s+imapfeed)?\b}
+            {$2 ? "$1/imapfeed" : "$1/innfeed"}e;
+        push (@$output, "$_\n");
     }
 }
 
