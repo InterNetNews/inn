@@ -15,7 +15,7 @@ sub control_version {
     my ($action, $logging) = split(/=/, shift);
     my $approved = shift;
 
-    my $VERSION = "INN 2.1";
+    my $VERSION = "$inn::version";
 
     my $groupname = $params[0];
 
