@@ -8,11 +8,11 @@ ACTIVED	= ${PATHBIN}/actived
 
 SOURCES	= \
 	article.c group.c commands.c misc.c newnews.c nnrpd.c \
-	perl.c post.c loadave.c track.c udp.c
+	perl.c perm.c post.c loadave.c track.c udp.c
 
 OBJECTS	= \
 	article.o group.o commands.o misc.o newnews.o \
-	perl.o post.o loadave.o track.o udp.o
+	perl.o perm.o post.o loadave.o track.o udp.o
 
 ALL	= nnrpd actived
 

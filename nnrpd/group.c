@@ -734,7 +734,7 @@ FUNCTYPE CMDgroup(int ac, char *av[])
     if (PERMspecified) {
 	grplist[0] = group;
 	grplist[1] = NULL;
-	if (!PERMmatch(PERMlist, grplist)) {
+	if (!PERMmatch(PERMreadlist, grplist)) {
 	    Reply("%s %s\r\n", NOSUCHGROUP, group);
 	    return;
 	}
@@ -875,7 +875,7 @@ CMDxgtitle(ac, av)
 	    if (PERMspecified) {
 		grplist[0] = line;
 		grplist[1] = NULL;
-		if (!PERMmatch(PERMlist, grplist))
+		if (!PERMmatch(PERMreadlist, grplist))
 		    continue;
 	    }
 	    *q = save;

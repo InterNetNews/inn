@@ -98,9 +98,11 @@ PERMgeneric(av, accesslist)
 	}
 
     if (strchr(_PATH_AUTHDIR,'/') == NULL)
-	(void)sprintf(path, "%s/%s/%s", innconf->pathbin, _PATH_AUTHDIR, av[0]);
+	(void)sprintf(path, "%s/%s/%s/%s", innconf->pathbin, _PATH_AUTHDIR,
+	  _PATH_AUTHDIR_GENERIC, av[0]);
     else
-	(void)sprintf(path, "%s/%s", _PATH_AUTHDIR, av[0]);
+	(void)sprintf(path, "%s/%s/%s", _PATH_AUTHDIR, _PATH_AUTHDIR_GENERIC,
+	  av[0]);
 
 #if !defined(S_IXUSR) && defined(_S_IXUSR)
 #define S_IXUSR _S_IXUSR
@@ -215,7 +217,8 @@ CMDauthinfo(ac, av)
 
 	switch (PERMgeneric(av, accesslist)) {
 	    case 1:
-		PERMspecified = NGgetlist(&PERMlist, accesslist);
+		PERMspecified = NGgetlist(&PERMreadlist, accesslist);
+		PERMpostlist = PERMreadlist;
 		syslog(L_NOTICE, "%s auth %s (%s -> %s)", ClientHost, PERMuser,
 			logrec, PERMauthstring? PERMauthstring: "" );
 		Reply("%d Authentication succeeded\r\n", NNTP_AUTH_OK_VAL);
@@ -236,30 +239,43 @@ CMDauthinfo(ac, av)
 
     } else {
 
-	if (caseEQ(av[1], "user")) {
+	if (caseEQ(av[1], "simple")) {
+	    if (ac != 4) {
+		Reply("%d AUTHINFO SIMPLE <USER> <PASS>\r\n", NNTP_BAD_COMMAND_VAL);
+		return;
+	    }
 	    (void)strncpy(User, av[2], sizeof User - 1);
 	    User[sizeof User - 1] = 0;
-	    Reply("%d PASS required\r\n", NNTP_AUTH_NEXT_VAL);
-	    return;
-	}
 
-	if (!caseEQ(av[1], "pass")) {
-	    Reply("%d bad authinfo param\r\n", NNTP_BAD_COMMAND_VAL);
-	    return;
-	}
-	if (User[0] == '\0') {
-	    Reply("%d USER required\r\n", NNTP_AUTH_REJECT_VAL);
-	    return;
-	}
+	    (void)strncpy(Password, av[3], sizeof Password - 1);
+	    Password[sizeof Password - 1] = 0;
+	} else {
+	    if (caseEQ(av[1], "user")) {
+		(void)strncpy(User, av[2], sizeof User - 1);
+		User[sizeof User - 1] = 0;
+		Reply("%d PASS required\r\n", NNTP_AUTH_NEXT_VAL);
+		return;
+	    }
 
-	(void)strncpy(Password, av[2], sizeof Password - 1);
-	Password[sizeof Password - 1] = 0;
+	    if (!caseEQ(av[1], "pass")) {
+		Reply("%d bad authinfo param\r\n", NNTP_BAD_COMMAND_VAL);
+		return;
+	    }
+	    if (User[0] == '\0') {
+		Reply("%d USER required\r\n", NNTP_AUTH_REJECT_VAL);
+		return;
+	    }
+
+	    (void)strncpy(Password, av[2], sizeof Password - 1);
+	    Password[sizeof Password - 1] = 0;
+	}
 
 #ifdef DO_PERL
 	if (innconf->nnrpperlauth) {
 	    code = perlAuthenticate(ClientHost, ClientIp, User, Password, accesslist);
 	    if (code == NNTP_AUTH_OK_VAL) {
-		PERMspecified = NGgetlist(&PERMlist, accesslist);
+		PERMspecified = NGgetlist(&PERMreadlist, accesslist);
+		PERMpostlist = PERMreadlist;
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = FALSE;
@@ -279,9 +295,9 @@ CMDauthinfo(ac, av)
 		PERMauthorized = TRUE;
 		return;
 	    }
-	    if (PERMinfile((char *)NULL, (char *)NULL, User, Password,
-			   accesslist, NNRPACCESS)) {
-		PERMspecified = NGgetlist(&PERMlist, accesslist);
+	    PERMlogin(User, Password);
+	    PERMgetpermissions();
+	    if (!PERMneedauth) {
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = FALSE;
@@ -361,7 +377,7 @@ CMDlist(ac, av)
 		grplist[0] = av[2];
 		grplist[1] = NULL;
 		Reply("%d list:\r\n", NNTP_LIST_FOLLOWS_VAL);
-		if (PERMmatch(PERMlist, grplist))
+		if (PERMmatch(PERMreadlist, grplist))
 			Printf("%s %ld %ld %c%s\r\n.\r\n",
 		      		GPNAME(gp), (long)GPHIGH(gp), (long)GPLOW(gp),
 		      		GPFLAG(gp), GPALIAS(gp) ? GPALIAS(gp) : "");
@@ -449,7 +465,7 @@ CMDlist(ac, av)
 		    continue;
 		*save = '\0';
 		grplist[0] = q;
-		if (!PERMmatch(PERMlist, grplist))
+		if (!PERMmatch(PERMreadlist, grplist))
 		    continue;
 		*save = ':';
 	    }
@@ -473,7 +489,7 @@ CMDlist(ac, av)
 	      
 	if (PERMspecified) {
 	    grplist[0] = p;
-	    if (!PERMmatch(PERMlist, grplist))
+	    if (!PERMmatch(PERMreadlist, grplist))
 		continue;
 	}
 	if (wildarg && !wildmat(p, wildarg))
@@ -581,7 +597,7 @@ CMDnewgroups(ac, av)
 	if (PERMspecified) {
 	    grplist[0] = p;
 	    grplist[1] = NULL;
-	    if (!PERMmatch(PERMlist, grplist))
+	    if (!PERMmatch(PERMreadlist, grplist))
 		continue;
 	}
 	else 

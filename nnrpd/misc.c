@@ -143,7 +143,7 @@ PERMartok(qp)
 	/* No newgroups or null entry. */
 	return 1;
 
-    return PERMmatch(PERMlist, grplist);
+    return PERMmatch(PERMreadlist, grplist);
 }
 
 

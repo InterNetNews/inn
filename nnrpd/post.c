@@ -722,7 +722,7 @@ ValidNewsgroups(hdr, modgroup)
         if (PERMspecified) {
 	    grplist[0] = p;
 	    grplist[1] = NULL;
-	    if (!PERMmatch(PERMlist, grplist)) {
+	    if (!PERMmatch(PERMpostlist, grplist)) {
 		sprintf(Error,"%s: %s\r\n", NNTP_NOSUCHGROUP,p);
 	    }
         }

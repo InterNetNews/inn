@@ -355,177 +355,16 @@ Address2Name(ap, hostname, i)
 #endif	/* defined(DO_NNRP_GETHOSTBYADDR) */
 
 
-BOOL
-PERMinfile(hp, ip, user, pass, accesslist, accessfile)
-    char		*hp;
-    char		*ip;
-    char		*user;
-    char		*pass;
-    char		*accesslist;
-    char		*accessfile;
-{
-    register FILE	*F;
-    register char	*p;
-    register BOOL	found;
-    register int	i;
-    register int	lines;
-    struct passwd	*pwd;
-    char		buff[BIG_BUFFER];
-    char		*definelist[MAXPATTERNDEFINE];
-    char		filename[SMBUF];
-    char		*fields[5];
-#if HAVE_GETSPNAM
-    struct spwd		*spwd;
-#endif
-
-    if ((F = fopen(accessfile, "r")) == NULL) {
-	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, accessfile);
-	return FALSE;
-    }
-
-    PERMcanread = FALSE;
-    PERMcanpost = FALSE;
-    PERMlocpost = FALSE;
-    found = FALSE;
-    accesslist[0] = '\0';
-    filename[0] = '\0';
-    lines = 0;
-    for (i=0;i<MAXPATTERNDEFINE;i++) definelist[i] = NULL;
-    while (fgets(buff, sizeof buff, F) != NULL) {
-	lines++;
-	if ((p = strchr(buff, '\n')) != NULL)
-	    *p = '\0';
-	if ((p = strchr(buff, COMMENT_CHAR)) != NULL)
-	    *p = '\0';
-	if (buff[0] == '\0')
-	    continue;
-
-	/* Split "host:permissions:user:pass:groups" into fields. */
-	for (fields[0] = buff, i = 0, p = buff; *p; p++)
-	    if (*p == ':') {
-		*p = '\0';
-		fields[++i] = p + 1;
-	    }
-	if ((i != 4) && !((i == 1) && ((*fields[1] == '/') ||
-			(strncmp(fields[0],"%DEFINE", 7) == 0)))) {
-	    /* Malformed line. */
-	    syslog(L_ERROR, "Malformed line %d in access file", lines);
-	    continue;
-	}
-
-	if ((*fields[0] == '%') && (strncmp(fields[0],"%DEFINE", 7) == 0)) {
-	    p = fields[0]; p += 7;
-	    i = atoi(p);
-	    if ((i < 0) || (i >= MAXPATTERNDEFINE)) {
-		syslog(L_ERROR, "Too many defines in access file (line %d)", lines);
-		continue;
-	    }
-	    definelist[i] = COPY(fields[1]);
-	    continue;
-	}
-
-	if (hp) {
-	    /* Got an address; try to match either the IP address or as
-	     * a text hostname. */
-	    int ipmatch = FALSE;
-	    int hostmatch = FALSE;
-	    int netmatch = FALSE;
-
-	    /* compare IP number and first field */
-	    if (ip && wildmat(ip, fields[0]))
-		ipmatch = TRUE;
-
-	    /* compare hostname and first field */
-	    if (wildmat(hp, fields[0]))
-		hostmatch = TRUE;
-
-	    /* try a netmask match */
-	    if (ip && (p = strchr(fields[0], '/')) != (char *)NULL) {
-		int bits, c;
-		struct in_addr ia, net;
-		unsigned int mask;
-
-		*p = '\0';
-		ia.s_addr = inet_addr(ip);
-		net.s_addr = inet_addr(fields[0]);
-		if (ia.s_addr != (unsigned int)INADDR_NONE &&
-		    net.s_addr != (unsigned int)INADDR_NONE) {
-		    if (strchr(p+1, '.') == (char *)NULL) {
-			mask = atoi(p+1);
-			for (bits = c = 0; c < mask && c < 32; c++)
-			    bits |= (1 << (31 - c));
-			mask = htonl(bits);
-		    } else {
-			mask = inet_addr(p+1);
-		    }
-		    if ((ia.s_addr & mask) == (net.s_addr & mask))
-			netmatch = TRUE;
-		}
-	    }
-	    if (!ipmatch && !hostmatch && !netmatch)
-		continue;
-	}
-
-	/* If the PERM field starts with '/', then we go to another file */
-	if (*fields[1] == '/') {
-	    strncpy(filename, fields[1], sizeof(filename));
-	    continue;
-	} else
-	    filename[0] = '\0';
-
-	/* See if we should lookup a specific user in the passwd file */
-	if (user && pass && EQ(fields[2], "+")) {
-	    if ((pwd = getpwnam(user)) == NULL)
-		continue;
-#if HAVE_GETSPNAM
-	    if ((spwd = getspnam(user)) != NULL)
-		pwd->pw_passwd = spwd->sp_pwdp;
-#endif
-	    if (!EQ(pwd->pw_passwd, crypt(pass, pwd->pw_passwd)))
-		continue;
-	} else {
-	    /* Matching for a specific user or just the host? */
-	    if (user && (!EQ(user, fields[2]) || !EQ(pass, fields[3])))
-		continue;
-	}
-
-	PERMcanread = strchr(fields[1], 'R') != NULL;
-	PERMcanpost = strchr(fields[1], 'P') != NULL;
-	PERMlocpost = strchr(fields[1], 'L') != NULL;
-	if (strchr(fields[1], 'N') != NULL) PERMnewnews = TRUE;
-	if (ForceReadOnly) PERMcanpost=FALSE;
-	(void)strcpy(PERMuser, user ? user : fields[2]);
-	(void)strcpy(PERMpass, pass ? pass : fields[3]);
-	if (*fields[4] == '%') {
-	    p = fields[4] + 1;
-	    i = atoi(p);
-	    if ((i < 0) || (i >= MAXPATTERNDEFINE) || (definelist[i] == NULL)) {
-		syslog(L_ERROR, "No definition %d in access file (line %d)", i, lines);
-		continue;
-	    }
-	    (void)strcpy(accesslist, definelist[i]);
-	} else 
-	    (void)strcpy(accesslist, fields[4]);
-	found = TRUE;
-    }
-    (void)fclose(F);
-    for (i=0;i<MAXPATTERNDEFINE;i++)
-       if (definelist[i] != NULL) DISPOSE(definelist[i]);
-    if (found && (strlen(filename) > 0))
-	return(PERMinfile(hp, ip, user, pass, accesslist, filename));
-    return found;
-}
-
-
 /*
 **  Determine access rights of the client.
 */
-STATIC void StartConnection(char *accesslist)
+STATIC void StartConnection()
 {
     struct sockaddr_in	sin;
     ARGTYPE		length;
     char		buff[SMBUF];
     char		*ClientAddr;
+    char		accesslist[BIG_BUFFER];
     int                 code;
 
     /* Get the peer's name. */
@@ -598,16 +437,12 @@ STATIC void StartConnection(char *accesslist)
 		   NNTP_ACCESS_VAL);
 	    ExitWithStats(1);
 	}
+	NGgetlist(&PERMreadlist, accesslist);
+	PERMpostlist = PERMreadlist;
     } else {
 #endif	/* DO_PERL */
-	if (!PERMinfile(ClientHost, ClientAddr, (char *)NULL, (char *)NULL,
-			accesslist, NNRPACCESS)) {
-	    syslog(L_NOTICE, "%s no_access", ClientHost);
-	    Printf("%d You are not in my access file.  Goodbye.\r\n",
-		   NNTP_ACCESS_VAL);
-	    ExitWithStats(1);
-	}
-	PERMneedauth = PERMuser[0] != '\0' && PERMpass[0] != '\0';
+	PERMgetaccess();
+	PERMgetpermissions();
 #ifdef DO_PERL
     }
 #endif /* DO_PERL */
@@ -763,7 +598,6 @@ main(argc, argv, env)
     TIMEINFO		Now;
     register int	i;
     char		*Reject;
-    char		accesslist[BIG_BUFFER];
     int			timeout;
     BOOL		val;
     char		*p;
@@ -1018,7 +852,7 @@ listen_loop:
     (void)signal(SIGHUP, ToggleTrace);
 
     /* Get permissions and see if we can talk to this client */
-    StartConnection(accesslist);
+    StartConnection();
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
 	syslog(L_NOTICE, "%s no_permission", ClientHost);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
@@ -1027,7 +861,6 @@ listen_loop:
     }
 
     /* Proceed with initialization. */
-    PERMspecified = NGgetlist(&PERMlist, accesslist);
     TITLEset("connect");
 
     /* Were we told to reject connections? */
