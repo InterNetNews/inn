@@ -59,6 +59,7 @@ struct history {
     void *sub;
     struct hiscache *cache;
     size_t cachesize;
+    const char *error;
     struct histstats stats;
 };
 
@@ -112,6 +113,20 @@ his_cachelookup(struct history *h, HASH MessageID)
     }
 }
 
+/*
+**  set error status to that indicated by s; doesn't copy the string,
+**  assumes the caller did that for us
+*/
+void
+his_seterror(struct history *h, const char *s)
+{
+    if (h->error)
+	free((void *)h->error);
+    h->error = s;
+    if (s != NULL)
+	warn("%s", s);
+}
+
 struct history *
 HISopen(const char *path, const char *method, int flags)
 {
@@ -132,9 +147,10 @@ HISopen(const char *path, const char *method, int flags)
     h = xmalloc(sizeof *h);
     h->methods = &his_methods[i];
     h->cache = NULL;
+    h->error = NULL;
     h->cachesize = 0;
     h->stats = nullhist;
-    h->sub = (*h->methods->open)(path, flags);
+    h->sub = (*h->methods->open)(path, flags, h);
     if (h->sub == NULL) {
 	free(h);
 	h = NULL;
@@ -152,6 +168,11 @@ HISclose(struct history *h)
     r = (*h->methods->close)(h->sub);
     if (h->cache) {
 	free(h->cache);
+	h->cache = NULL;
+    }
+    if (h->error) {
+	free((void *)h->error);
+	h->error = NULL;
     }
     free(h);
     return r;
@@ -341,17 +362,14 @@ HISstats(struct history *h)
 
 
 /*
-**  return the latest error associated with h
+**  return current error status to caller
 */
 const char *
 HISerror(struct history *h)
 {
-    const char *r;
-
     if (h == NULL)
 	return NULL;
-    r = (*h->methods->error)(h->sub);
-    return r;
+    return h->error;
 }
 
 

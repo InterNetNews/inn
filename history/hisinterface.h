@@ -8,10 +8,11 @@
 
 struct token;
 struct histopts;
+struct history;
 
 typedef struct hismethod {
     const char *name;
-    void *(*open)(const char *path, int flags);
+    void *(*open)(const char *path, int flags, struct history *);
     bool (*close)(void *);
     bool (*sync)(void *);
     bool (*lookup)(void *, const char *, time_t *, time_t *, time_t *,
@@ -27,10 +28,12 @@ typedef struct hismethod {
     bool (*walk)(void *, const char *, void *,
 		 bool (*)(void *, time_t, time_t, time_t,
 			  const struct token *));
-    const char *(*error)(void *);
     bool (*remember)(void *, const char *, time_t);
     bool (*ctl)(void *, int, void *);
 } HIS_METHOD;
+
+/* subordinate history manager private methods */
+void his_seterror(struct history *, const char *);
 
 enum { S_HIScacheadd, S_HIScachelookup, S_HISsetup, S_HISsync,
        S_HISlogstats, S_HISclose, S_HISfilesfor, S_HIShavearticle,
