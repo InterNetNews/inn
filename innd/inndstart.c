@@ -1,225 +1,363 @@
 /*  $Id$
 **
 **  Open the privileged port, then exec innd.
+**
+**  inndstart, in a normal INN installation, is installed setuid root and
+**  executable only by users in the news group.  Because it is setuid root,
+**  it's very important to ensure that it be as simple and secure as
+**  possible so that news access can't be leveraged into root access.
+**
+**  Fighting against this desire, as much of INN's operation as possible
+**  should be configurable at run-time using inn.conf, and the news system
+**  should be able to an alternate inn.conf by setting INNCONF to the path
+**  to that file before starting any programs.  The configuration data
+**  therefore can't be trusted.
+**
+**  Our security model is therefore:
+**
+**   - The only three operations performed while privileged are determining
+**     the UID and GID of NEWSUSER and NEWSGRP, setting system limits, and
+**     opening the privileged port we're binding to.
+**
+**   - We can only be executed by the NEWSUSER and NEWSGRP, both compile-
+**     time constants; otherwise, we exit.  Similarly, we will only setuid()
+**     and setgid() to the NEWSUSER and NEWSGRP.  This is to prevent someone
+**     other than the NEWSUSER but still able to execute inndstart for
+**     whatever reason from using it to run innd as the news user with bogus
+**     configuration information, thereby possibly compromising the news
+**     account.
+**
+**   - The only port < 1024 that we'll bind to is 119.  This is to prevent
+**     the news user from taking over a service such as telnet or POP and
+**     potentially gaining access to user passwords.
+**
+**  This program therefore gives the news user the ability to revoke system
+**  file descriptor limits and bind to the news port, and nothing else.
+**
+**  Note that we do use getpwnam() to determine the UID of NEWSUSER, which
+**  potentially opens an exploitable hole on those systems that don't
+**  correctly prevent a user running a setuid program from interfering with
+**  the running process (replacing system calls, for example, or using
+**  things like LD_PRELOAD).  It may be desireable to map those to UIDs at
+**  configure time to prevent this attack.
 */
-#include <pwd.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <sys/types.h>
-#include <grp.h>
 #include "configdata.h"
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include "clibrary.h"
-#include <fcntl.h>
 #include "paths.h"
-#include <syslog.h> 
 #include "libinn.h"
 #include "macros.h"
-#if	defined(HAVE_RLIMIT)
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#endif	/* defined(HAVE_RLIMIT) */
-#include <sys/resource.h>
-#include <errno.h>
 
+#include <syslog.h>
+#include <pwd.h>
+#include <grp.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <fcntl.h>
+
+/* Some odd systems need the time headers included before sys/resource.h. */
+#ifdef HAVE_RLIMIT
+# ifdef DO_NEED_TIME
+#  include <time.h>
+# endif
+# include <sys/time.h>
+# include <sys/resource.h>
+#endif
+
+/* To run innd under the debugger, uncomment this and fix the path. */
 /* #define DEBUGGER "/usr/ucb/dbx" */
 
-#if	defined(HAVE_RLIMIT)
+#ifdef HAVE_RLIMIT
 /*
 **  Set the limit on the number of open files we can have.  I don't
 **  like having to do this.
 */
-STATIC void
-SetDescriptorLimit(i)
-    int			i;
+static void
+set_descriptor_limit(int n)
 {
-    struct rlimit	rl;
+    struct rlimit rl;
 
     if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-	syslog(L_ERROR, "inndstart cant getrlimit(NOFILE) %m");
-	return;
+        syslog(L_ERROR, "can't getrlimit(NOFILE): %m");
+        return;
     }
-    rl.rlim_cur = i;
+    rl.rlim_cur = n;
     if (setrlimit(RLIMIT_NOFILE, &rl) < 0) {
-	syslog(L_ERROR, "inndstart cant setrlimit(NOFILE) %d %m", i);
-	return;
+        syslog(L_ERROR, "can't setrlimit(NOFILE, %d): %m", n);
+        return;
     }
 }
-#endif	/* defined(HAVE_RLIMIT) */
+#endif /* HAVE_RLIMIT */
 
 
-int main(int ac, char *av[])
+/*
+**  Set the real and effective UID and GID to desired values, exiting on
+**  any error.
+*/
+static void
+set_user (uid_t ruid, gid_t rgid, uid_t euid, gid_t egid)
 {
-    GID_T		NewsGID;
-    UID_T		NewsUID;
-    struct sockaddr_in	server;
-    register int	i;
-    register int	j;
-    register int	sock;
-#if	defined(SO_REUSEADDR)
-    int			on;
-#endif	/* defined(SO_REUSEADDR) */
-    STRING		*argv;
-    char		*p;
-    char		pflag[SMBUF];
-    char		buff[BUFSIZ];
-    char *		env[8];
-    struct stat		Sb;
-    char		*inndpath;
-    struct passwd	*pwd;
+    if (setregid(rgid, egid) < 0) {
+        syslog(L_ERROR, "setregid(%d, %d) failed: %m", rgid, egid);
+        exit(1);
+    }
+    if (setreuid(ruid, euid) < 0) {
+        syslog(L_ERROR, "setreuid(%d, %d) failed: %m", ruid, euid);
+        exit(1);
+    }
+}
 
-    (void)openlog("inndstart", L_OPENLOG_FLAGS, LOG_INN_PROG);
 
+int
+main(int argc, char *argv[])
+{
+    struct passwd *     pwd;
+    struct group *      grp;
+    uid_t               news_uid;
+    gid_t               news_gid;
+    uid_t               real_uid;
+    gid_t               real_gid;
+    struct stat         Sb;
+    int                 port;
+    unsigned long       address;
+    int                 s;
+    struct sockaddr_in  server;
+    int                 i;
+    int                 j;
+    char *              p;
+    char **             innd_argv;
+    char                pflag[SMBUF];
+    char *              innd_env[9];
+
+    openlog("inndstart", L_OPENLOG_FLAGS, LOG_INN_PROG);
+
+    /* Convert NEWSUSER and NEWSGRP to a UID and GID.  getpwnam() and
+       getgrnam() don't set errno normally, so don't print strerror() on
+       failure; it probably contains garbage.*/
+    pwd = getpwnam(NEWSUSER);
+    if (!pwd) {
+        syslog(L_FATAL, "getpwnam(%s) failed", NEWSUSER);
+        exit(1);
+    }
+    news_uid = pwd->pw_uid;
+    grp = getgrnam(NEWSGRP);
+    if (!grp) {
+        syslog(L_FATAL, "getgrnam(%s) failed", NEWSGRP);
+        exit(1);
+    }
+    news_gid = grp->gr_gid;
+
+    /* Exit if run by any other user or group. */
+    real_uid = getuid();
+    if (real_uid != news_uid) {
+        syslog(L_FATAL, "ran by UID %d, who isn't %s (%d)", real_uid,
+               NEWSUSER, news_uid);
+        fprintf(stderr, "inndstart must be run by user %s\n", NEWSUSER);
+        exit(1);
+    }
+    real_gid = getgid();
+    if (real_gid != news_gid) {
+        syslog(L_FATAL, "ran by GID %d, who isn't %s (%d)", real_gid,
+               NEWSGRP, news_gid);
+        fprintf(stderr, "inndstart must be run by group %s\n", NEWSGRP);
+        exit(1);
+    }
+
+    /* Drop all supplemental groups and drop privileges to read inn.conf. */
+    if (setgroups(1, &news_gid) < 0) syslog(L_ERROR, "can't setgroups: %m");
+    set_user(0, 0, news_uid, news_gid);
     if (ReadInnConf() < 0) exit(1);
 
-    /* Make sure INND directory exists. */
-    if (stat(innconf->pathrun, &Sb) < 0 || !S_ISDIR(Sb.st_mode)) {
-	syslog(L_FATAL, "inndstart cant stat %s %m", innconf->pathrun);
-	exit(1);
+    /* Ensure that pathrun exists and that it has the right ownership. */
+    if (stat(innconf->pathrun, &Sb) < 0) {
+        syslog(L_FATAL, "can't stat pathrun (%s): %m", innconf->pathrun);
+        fprintf(stderr, "Can't stat pathrun (%s): %s\n", innconf->pathrun,
+                strerror(errno));
+        exit(1);
     }
-    if (Sb.st_uid == 0) {
-	syslog(L_FATAL, "inndstart %s must not be owned by root", innconf->pathrun);
-	exit(1);
+    if (!S_ISDIR(Sb.st_mode)) {
+        syslog(L_FATAL, "pathrun (%s) not a directory", innconf->pathrun);
+        fprintf(stderr, "pathrun (%s) not a directory\n", innconf->pathrun);
+        exit(1);
     }
-    pwd = getpwnam(NEWSUSER);
-    if (pwd == (struct passwd *)NULL) {
-	syslog(L_FATAL, "inndstart getpwnam(%s): %s", NEWSUSER, strerror(errno));
-	exit(1);
-    } else if (pwd->pw_gid != Sb.st_gid) {
-	syslog(L_FATAL, "inndstart %s must have group %s", innconf->pathrun, NEWSGRP);
-	exit(1);
-    } else if (pwd->pw_uid != Sb.st_uid) {
-	syslog(L_FATAL, "inndstart %s must be owned by %s", innconf->pathrun, NEWSUSER);
-	exit(1);
+    if (Sb.st_uid != news_uid) {
+        syslog(L_FATAL, "pathrun (%s) owned by user %d, not %s (%d)",
+               innconf->pathrun, Sb.st_uid, NEWSUSER, news_uid);
+        fprintf(stderr, "pathrun (%s) must be owned by user %s\n",
+                innconf->pathrun, NEWSUSER);
+        exit(1);
     }
-    NewsUID = Sb.st_uid;
-    NewsGID = Sb.st_gid;
+    if (Sb.st_gid != news_gid) {
+        syslog(L_FATAL, "pathrun (%s) owned by group %d, not %s (%d)",
+               innconf->pathrun, Sb.st_gid, NEWSGRP, news_gid);
+        fprintf(stderr, "pathrun (%s) must be owned by group %s\n",
+                innconf->pathrun, NEWSGRP);
+        exit(1);
+    }
 
-    if (setgroups(1, &NewsGID) < 0)
-        syslog(L_ERROR, "inndstart cant setgroups %m");
-    
-#if	defined(HAVE_RLIMIT)
-    if (innconf->rlimitnofile >= 0)
-	SetDescriptorLimit(innconf->rlimitnofile);
-#endif	/* defined(HAVE_RLIMIT) */
-
-    /* Create a socket and name it. */
-    if ((i = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-	syslog(L_FATAL, "inndstart cant socket %m");
-	exit(1);
-    }
-    sock = i;
-#if	defined(SO_REUSEADDR)
-    on = 1;
-    if (setsockopt(i, SOL_SOCKET, SO_REUSEADDR, (caddr_t)&on, sizeof on) < 0)
-	syslog(L_ERROR, "inndstart cant setsockopt %m");
-#endif	/* defined(SO_REUSEADDR) */
-    (void)memset((POINTER)&server, 0, sizeof server);
-    server.sin_port = htons(innconf->port);
-    for (j = 1; av[j]; j++) {
-	if (!strncmp("-P", av[j], 2)) {
-	    server.sin_port = htons(atoi(&av[j][2]));
-	    break;
-	}
-    }
-    server.sin_family = AF_INET;
-
-    server.sin_addr.s_addr = htonl(INADDR_ANY);
+    /* Check for a bind address specified in inn.conf.  "any" or "all" will
+       cause inndstart to bind to INADDR_ANY. */
+    address = htonl(INADDR_ANY);
     p = innconf->bindaddress;
-    if ((p != NULL) && !EQ(p, "all") && !EQ(p, "any")) {
-	server.sin_addr.s_addr = inet_addr(p);
-	if (server.sin_addr.s_addr == INADDR_NONE) {
-	    syslog(L_FATAL, "inndstart unable to determine bind ip (%s) %m", p);
-	    exit(1);
-	}
+    if (p && !EQ(p, "all") && !EQ(p, "any")) {
+        address = inet_addr(p);
+        if (address == (unsigned long) -1) {
+            syslog(L_FATAL, "invalid bindaddress in inn.conf (%s)", p);
+            exit(1);
+        }
     }
-    for (j = 1; av[j]; j++) {
-	if (!strncmp("-I", av[j], 2)) {
-	    server.sin_addr.s_addr = inet_addr(&av[j][2]);
-	    if (server.sin_addr.s_addr == INADDR_NONE) {
-		syslog(L_FATAL, "inndstart unable to determine bind ip (%s) %m",
-					&av[j][2]);
-	    	exit(1);
-	    }
-	}
-    }
-    if (bind(i, (struct sockaddr *)&server, sizeof server) < 0) {
-	syslog(L_FATAL, "inndstart cant bind %m");
-	exit(1);
-    }
-    (void)sprintf(pflag, "-p%d", i);
 
-    /* Build the new argument vector. */
-    argv = NEW(STRING, 2 + ac + 1);
-    j = 0;
-    inndpath = cpcatpath(innconf->pathbin, "innd");
-#if	defined(DEBUGGER)
-    argv[j++] = DEBUGGER;
-    argv[j++] = inndpath;
-    argv[j] = NULL;
-    (void)printf("Use -dp%d\n", i);
-#else
-    argv[j++] = inndpath;
-    argv[j++] = pflag;
-    for (i = 1; av[i]; ) {
-	if ((strncmp(av[i], "-p", 2) != 0) && (strncmp(av[i], "-P", 2) != 0) &&
-		(strncmp(av[i], "-I", 2) != 0))
-	argv[j++] = av[i++];
-	else
-	    i++;
+    /* Parse our command-line options.  The only options we take are -P,
+       which specifies what port number to bind to, and -I, which specifies
+       what IP address to bind to.  Both override inn.conf.  Support both
+       "-P <port>" and "-P<port>".  All other options are passed through to
+       innd. */
+    port = innconf->port;
+    for (i = 1; i < argc; i++) {
+        if (EQn("-P", argv[i], 2)) {
+            if (strlen(argv[i]) > 2) {
+                port = atoi(&argv[i][2]);
+            } else {
+                i++;
+                if (argv[i] == NULL) {
+                    syslog(L_FATAL, "missing port after -P");
+                    fprintf(stderr, "Missing port after -P\n");
+                    exit(1);
+                }
+                port = atoi(argv[i]);
+            }
+            if (port == 0) {
+                syslog(L_FATAL, "invalid port %s", argv[i]);
+                fprintf(stderr, "Invalid port %s (must be numeric)\n",
+                        argv[i]);
+                exit(1);
+            }
+        } else if (EQn("-I", argv[i], 2)) {
+            if (strlen(argv[i]) > 2) {
+                address = atol(&argv[i][2]);
+            } else {
+                i++;
+                if (argv[i] == NULL) {
+                    syslog(L_FATAL, "missing address after -I");
+                    fprintf(stderr, "Missing address after -I\n");
+                    exit(1);
+                }
+                address = atoi(argv[i]);
+            }
+            if (address == 0) {
+                syslog(L_FATAL, "invalid address %s", argv[i]);
+                fprintf(stderr, "Invalid address %s\n", argv[i]);
+                exit(1);
+            }
+            address = htonl(address);
+        }
     }
-    argv[j] = NULL;
-#endif	/* defined(DEBUGGER) */
+            
+    /* Make sure that the requested port is legitimate. */
+    if (port < 1024 && port != 119) {
+        syslog(L_FATAL, "tried to bind to port %d", port);
+        fprintf(stderr, "Can't bind to privileged port other than 119\n");
+        exit(1);
+    }
 
-    /* Set our user and group id. */
-    (void)setgid(NewsGID);
-    if (getgid() != NewsGID)
-	syslog(L_ERROR, "inndstart cant setgid to %d %m", NewsGID);
-    (void)setuid(NewsUID);
-    if (getuid() != NewsUID)
-	syslog(L_ERROR, "inndstart cant setuid to %d %m", NewsUID);
+    /* Now, regain privileges so that we can change system limits and bind
+       to our desired port. */
+    set_user(news_uid, news_gid, 0, 0);
+
+    /* innconf->rlimitnofile <= 0 says to leave it alone. */
+#ifdef HAVE_RLIMIT
+    if (innconf->rlimitnofile > 0)
+        set_descriptor_limit(innconf->rlimitnofile);
+#endif
+
+    /* Create a socket and name it.  innconf->bindaddress controls what
+       address we bind as, defaulting to INADDR_ANY. */
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s < 0) {
+        syslog(L_FATAL, "can't open socket: %m");
+        exit(1);
+    }
+#ifdef SO_REUSEADDR
+    i = 1;
+    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &i, sizeof i) < 0)
+        syslog(L_ERROR, "can't setsockopt: %m");
+#endif
+    memset(&server, 0, sizeof server);
+    server.sin_port = htons(port);
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = address;
+    if (bind(s, (struct sockaddr *) &server, sizeof server) < 0) {
+        syslog(L_FATAL, "can't bind: %m");
+        exit(1);
+    }
+
+    /* Now, permanently drop privileges. */
+    if (setgid(news_gid) < 0 || getgid() != news_gid) {
+        syslog(L_FATAL, "can't setgid(%d): %m", news_gid);
+        exit(1);
+    }
+    if (setuid(news_uid) < 0 || getuid() != news_uid) {
+        syslog(L_FATAL, "can't setuid(%d): %m", news_uid);
+        exit(1);
+    }
+
+    /* Build the argument vector for innd.  Pass -p<port> to innd to tell it
+       what port we just created and bound to for it. */
+    innd_argv = NEW(char *, 1 + argc + 1);
+    i = 0;
+#ifdef DEBUGGER
+    innd_argv[i++] = DEBUGGER;
+    innd_argv[i++] = cpcatpath(innconf->pathbin, "innd");
+    innd_argv[i] = 0;
+    printf("When starting innd, use -dp%d\n", s);
+#else /* DEBUGGER */
+    sprintf(pflag, "-p%d", s);
+    innd_argv[i++] = cpcatpath(innconf->pathbin, "innd");
+    innd_argv[i++] = pflag;
+
+    /* Don't pass along -p, -P, or -I.  Check the length of the argument
+       string, and if it's == 2 (meaning there's nothing after the -p or -P
+       or -I), skip the next argument too, to support leaving a space
+       between the argument and the value. */
+    for (j = 1; j < argc; j++) {
+        if (argv[j][0] == '-' && strchr("pPI", argv[j][1])) {
+            if (strlen(argv[j]) == 2) j++;
+        } else {
+            innd_argv[i++] = argv[j++];
+        }
+    }
+    innd_argv[i] = 0;
+#endif /* !DEBUGGER */
 
     /* Set up the environment.  Note that we're trusting BIND_INADDR and TZ;
-       everything else is either from inn.conf or from configure.  These
-       should be sanity-checked before being propagated, but that requires
-       knowledge of the range of possible values.  Just limiting their
-       length doesn't necessarily do anything to prevent exploits and may
-       stop things from working that should.  */
-    env[0] = NEW(char, (5 + strlen(innconf->pathbin) + 1
-                        + strlen(innconf->pathetc) + 23 + 1));
-    sprintf(env[0], "PATH=%s:%s:/bin:/usr/bin:/usr/ucb",
-            innconf->pathbin, innconf->pathetc);
-    env[1] = NEW(char, 7 + strlen(innconf->pathtmp) + 1);
-    sprintf(env[1], "TMPDIR=%s", innconf->pathtmp);
-    env[2] = NEW(char, 6 + strlen(_PATH_SH) + 1);
-    sprintf(env[2], "SHELL=%s", _PATH_SH);
-    env[3] = NEW(char, 8 + strlen(NEWSMASTER) + 1);
-    sprintf(env[3], "LOGNAME=%s", NEWSMASTER);
-    env[4] = NEW(char, 5 + strlen(NEWSMASTER) + 1);
-    sprintf(env[4], "USER=%s", NEWSMASTER);
-    env[5] = NEW(char, 5 + strlen(innconf->pathnews) + 1);
-    sprintf(env[5], "HOME=%s", innconf->pathnews);
+       everything else is either from inn.conf or from configure.
+       (BIND_INADDR is apparently needed by Linux?)  These should be
+       sanity-checked before being propagated, but that requires knowledge
+       of the range of possible values.  Just limiting their length doesn't
+       necessarily do anything to prevent exploits and may stop things from
+       working that should.  */
+    innd_env[0] = concat("PATH=", innconf->pathbin, ":", innconf->pathetc,
+                         ":/bin:/usr/bin:/usr/ucb", (char *) 0);
+    innd_env[1] = concat( "TMPDIR=", innconf->pathtmp,  (char *) 0);
+    innd_env[2] = concat(  "SHELL=", _PATH_SH,          (char *) 0);
+    innd_env[3] = concat("LOGNAME=", NEWSMASTER,        (char *) 0);
+    innd_env[4] = concat(   "USER=", NEWSMASTER,        (char *) 0);
+    innd_env[5] = concat(   "HOME=", innconf->pathnews, (char *) 0);
     i = 6;
-    if ((p = getenv("BIND_INADDR")) != NULL) {
-        env[i] = NEW(char, 12 + strlen(p) + 1);
-        sprintf(env[i], "BIND_INADDR=%s", p);
-        i++;
-    }
-    if ((p = getenv("TZ")) != NULL) {
-        env[i] = NEW(char, 3 + strlen(p) + 1);
-        sprintf(env[i], "TZ=%s", p);
-        i++;
-    }
-    env[i] = NULL;
+    p = getenv("BIND_INADDR");
+    if (p != NULL) innd_env[i++] = concat("BIND_INADDR=", p, (char *) 0);
+    p = getenv("TZ");
+    if (p != NULL) innd_env[i++] = concat("TZ=", p, (char *) 0);
+    innd_env[i] = 0;
 
     /* Go exec innd. */
-    (void)execve(argv[0], (CSTRING *)argv, (CSTRING *)env);
-    syslog(L_FATAL, "inndstart cant exec %s %m", argv[0]);
+    execve(innd_argv[0], innd_argv, innd_env);
+    syslog(L_FATAL, "can't exec %s: %m", innd_argv[0]);
     _exit(1);
+
     /* NOTREACHED */
-    return(1);
+    return 1;
 }
