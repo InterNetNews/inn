@@ -115,10 +115,10 @@ Here's the relevant portion of my innwatch.ctl:
 #define STATAVAIL	f_bavail
 #define STATMULTI	f_bsize
 #define STATINODE	f_ffree
-#define STATTYPES	long
+#define STATTYPES	unsigned long
 #endif
-#define STATFORMT	"%ld"
-#define STATFORMTPAD	"%*ld"
+#define STATFORMT	"%lu"
+#define STATFORMTPAD	"%*lu"
 #endif /* HAVE_STATFS */
 
 #define KILOBYTES	1024L
