@@ -34,12 +34,6 @@ void ICDiovset(IOVEC *iovp, char *base, int len) {
 }
 #define ICDiovrelease(iovp)		DISPOSE((iovp)->iov_base)
 
-#if	defined(MAP_FILE)
-#define MAP__ARG	(MAP_FILE | MAP_SHARED)
-#else
-#define MAP__ARG	(MAP_SHARED)
-#endif	/* defined(MAP_FILE) */
-
 #else
 
 #define ICDiovset(iovp, base, len)	\
