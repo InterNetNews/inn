@@ -22,6 +22,11 @@ By default, B<makehistory> will scan the entire spool, using the storage
 manager, and write a history line for every article.  To also generate
 overview information, use the B<-O> flag.
 
+WARNING: If you're trying to rebuild the overview database, be sure to
+delete or zero out the existing database before you start for the best
+results.  Otherwise, you may end up with problems like out-of-order
+overview entries, excessively large overview buffers, and the like.
+
 =head1 OPTIONS
 
 =over 4
