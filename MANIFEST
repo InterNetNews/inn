@@ -131,6 +131,7 @@ doc/putman.sh               1 Install a manpage
 doc/qio.3                   1 Manpage for part of InterNetNews library
 doc/rnews.1                 1 Manpage for rnews frontend
 doc/scanlogs.8              1 Manpage for scanlogs
+doc/send-uucp.8             1 Manpage for send-uucp
 doc/shlock.1                1 Manpage for shlock backend utility
 doc/shrinkfile.1            1 Manpage for shrinkfile
 doc/sm.8                    1 Manpage for sm
