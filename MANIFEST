@@ -28,7 +28,6 @@ authprogs/radius.c                    Get username from RADIUS server
 authprogs/smbval                      The smb auth libraries (Directory)
 authprogs/smbval/Makefile             Libraries for smb auth
 authprogs/smbval/byteorder.h          Libraries for smb auth
-authprogs/smbval/md4.c                Libraries for smb auth
 authprogs/smbval/rfcnb-common.h       Libraries for smb auth
 authprogs/smbval/rfcnb-error.h        Libraries for smb auth
 authprogs/smbval/rfcnb-io.c           Libraries for smb auth
@@ -45,8 +44,6 @@ authprogs/smbval/smblib-priv.h        Libraries for smb auth
 authprogs/smbval/smblib-util.c        Libraries for smb auth
 authprogs/smbval/smblib.c             Libraries for smb auth
 authprogs/smbval/smblib.h             Libraries for smb auth
-authprogs/smbval/std-defines.h        Libraries for smb auth
-authprogs/smbval/std-includes.h       Libraries for smb auth
 authprogs/smbval/valid.c              Libraries for smb auth
 authprogs/smbval/valid.h              Libraries for smb auth
 backends                              Outgoing feed programs (Directory)
@@ -238,6 +235,7 @@ doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
+doc/pod/checklist.pod                 Master file for doc/checklist
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.1
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/expireover.pod                Master file for expireover.8
