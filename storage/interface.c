@@ -283,6 +283,7 @@ BOOL SMinit(void) {
     int                 i;
     BOOL		allok = TRUE;
     BOOL		selfexpire;
+    static		BOOL once = FALSE;
 
     if (Initialized)
 	return TRUE;
@@ -315,12 +316,13 @@ BOOL SMinit(void) {
 	syslog(L_ERROR, "SM one or more storage methods failed initialization");
 	return FALSE;
     }
-    if (atexit(SMshutdown) < 0) {
+    if (!once && atexit(SMshutdown) < 0) {
 	SMshutdown();
 	Initialized = FALSE;
 	SMseterror(SMERR_UNDEFINED, NULL);
 	return FALSE;
     }
+    once = TRUE;
     return TRUE;
 }
 

@@ -252,6 +252,7 @@ BOOL OVERsetup(OVERSETUP type, void *value) {
 */
 BOOL OVERinit(void) {
     OVERCONFIG		status;
+    static BOOL		once = FALSE;
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
@@ -280,11 +281,12 @@ BOOL OVERinit(void) {
 
     Initialized = TRUE;
     status = OVERreadconfig(FALSE);
-    if (status == OVER_ERROR || (status == OVER_DONE && atexit(OVERshutdown) < 0)) {
+    if (status == OVER_ERROR || (status == OVER_DONE && !once && atexit(OVERshutdown) < 0)) {
 	OVERshutdown();
 	Initialized = FALSE;
 	return FALSE;
     }
+    once = TRUE;
     return TRUE;
 }
 
