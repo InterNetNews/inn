@@ -32,6 +32,24 @@ string_error(int len, const char *format, va_list args, int error UNUSED)
     free(message);
 }
 
+/* Turn on the capturing of warnings and errors. */
+static void
+capture_errors(void)
+{
+    if (errors != NULL) {
+        free(errors);
+        errors = NULL;
+    }
+    warn_set_handlers(1, string_error);
+}
+
+/* Turn off the capturing of warnings and errors. */
+static void
+uncapture_errors(void)
+{
+    warn_set_handlers(1, error_log_stderr);
+}
+
 /* Given a FILE *, read from that file, putting the results into a newly
    allocated buffer, until encountering a line consisting solely of "===".
    Returns the buffer, NULL on end of file, dies on error. */
@@ -94,14 +112,9 @@ parse_error_config(const char *filename)
 {
     struct config_group *group;
 
-    if (errors != NULL) {
-        free(errors);
-        errors = NULL;
-    }
-
-    warn_set_handlers(1, string_error);
+    capture_errors();
     group = config_parse_file(filename);
-    warn_set_handlers(1, error_log_stderr);
+    uncapture_errors();
     return group;
 }
 
@@ -169,6 +182,66 @@ test_warnings(int n)
     return n;
 }
 
+/* Test the warning test cases in config/warn-bool, ensuring that they all
+   parse successfully and produce the expected error messages when retrieved
+   as bools.  Takes the current test count and returns the new test count. */
+static int
+test_warnings_bool(int n)
+{
+    FILE *warnfile;
+    char *expected;
+    struct config_group *group;
+    bool b_value = false;
+
+    warnfile = fopen("config/warn-bool", "r");
+    if (warnfile == NULL)
+        sysdie("Cannot open config/warn-bool");
+    while (parse_test_config(warnfile, &group)) {
+        expected = read_section(warnfile);
+        if (expected == NULL)
+            die("Unexpected end of file while reading error tests");
+        ok(n++, group != NULL);
+        ok(n++, errors == NULL);
+        capture_errors();
+        ok(n++, !config_param_boolean(group, "parameter", &b_value));
+        ok_string(n++, expected, errors);
+        uncapture_errors();
+        free(expected);
+    }
+    fclose(warnfile);
+    return n;
+}
+
+/* Test the warning test cases in config/warn-int, ensuring that they all
+   parse successfully and produce the expected error messages when retrieved
+   as bools.  Takes the current test count and returns the new test count. */
+static int
+test_warnings_int(int n)
+{
+    FILE *warnfile;
+    char *expected;
+    struct config_group *group;
+    long l_value = 1;
+
+    warnfile = fopen("config/warn-int", "r");
+    if (warnfile == NULL)
+        sysdie("Cannot open config/warn-int");
+    while (parse_test_config(warnfile, &group)) {
+        expected = read_section(warnfile);
+        if (expected == NULL)
+            die("Unexpected end of file while reading error tests");
+        ok(n++, group != NULL);
+        ok(n++, errors == NULL);
+        capture_errors();
+        ok(n++, !config_param_integer(group, "parameter", &l_value));
+        ok_string(n++, expected, errors);
+        uncapture_errors();
+        free(expected);
+    }
+    fclose(warnfile);
+    return n;
+}
+
 int
 main(void)
 {
@@ -180,7 +253,7 @@ main(void)
     int n;
     FILE *tmpconfig;
 
-    puts("71");
+    puts("95");
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
@@ -289,6 +362,8 @@ main(void)
               errors);
     n = test_errors(50);
     n = test_warnings(n);
+    n = test_warnings_bool(n);
+    n = test_warnings_int(n);
 
     return 0;
 }
