@@ -229,7 +229,15 @@ for the on value of this constant to have any meaning.
 This is a boolean value. If on, the article tracking system is
 enabled for client reading/posting. See the
 .I nnrpd.track (5)
-man page for details. The default is ``off''.
+man page for details. The default is ``no''.
+.TP
+.I strippostcc
+This is a boolean value. If on, To:, CC: and BCC: lines are stripped from
+local posts through
+.I nnrpd (8).
+Default is ``no''. This is aimed mainly at stopping abuse of posting
+to moderated newsgroups, whereby those headers are added by the client
+and honoured by the mailer when mailed to the moderator.
 .PP
 The following parameters are used only by
 .I innd.
