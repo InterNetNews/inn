@@ -9,5 +9,6 @@ lib/pwrite
 lib/qio
 lib/setenv
 lib/strerror
+lib/wildmat
 lib/xmalloc
 lib/xwrite
