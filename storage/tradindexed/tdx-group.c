@@ -95,6 +95,7 @@
 #include "inn/messages.h"
 #include "inn/mmap.h"
 #include "inn/qio.h"
+#include "inn/vector.h"
 #include "libinn.h"
 #include "paths.h"
 #include "tdx-private.h"
@@ -972,6 +973,15 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
 struct hashmap {
     HASH hash;
     char *name;
+    char flag;
+};
+
+/* Holds information needed by hash traversal functions.  Right now, this is
+   just the pointer to the group index and a flag saying whether to fix
+   problems or not. */
+struct audit_data {
+    struct group_index *index;
+    bool fix;
 };
 
 
@@ -1026,7 +1036,8 @@ hashmap_load(void)
 {
     struct hash *hash;
     QIOSTATE *active;
-    char *activepath, *line, *p;
+    char *activepath, *line;
+    struct cvector *data = NULL;
     struct stat st;
     size_t hash_size;
     struct hashmap *group;
@@ -1046,16 +1057,20 @@ hashmap_load(void)
 
     line = QIOread(active);
     while (line != NULL) {
-        p = strchr(line, ' ');
-        if (p != NULL)
-            *p = '\0';
+        data = cvector_split_space(line, data);
+        if (data->count != 4) {
+            warn("tradindexed: malformed active file line %s", line);
+            continue;
+        }
         group = xmalloc(sizeof(struct hashmap));
-        group->name = xstrdup(line);
+        group->name = xstrdup(data->strings[0]);
+        group->flag = data->strings[3][0];
         grouphash = Hash(group->name, strlen(group->name));
         memcpy(&group->hash, &grouphash, sizeof(HASH));
         hash_insert(hash, &group->hash, group);
         line = QIOread(active);
     }
+    cvector_free(data);
     QIOclose(active);
     return hash;
 }
@@ -1231,6 +1246,8 @@ index_audit_header(struct group_index *index, bool fix)
                     reachable[current] = false;
                 }
             }
+            if (*next == current)
+                break;
             parent = next;
             current = *parent;
         }
@@ -1253,6 +1270,8 @@ index_audit_header(struct group_index *index, bool fix)
             }
         }
         index_audit_loc(index, &entry->next.recno, current, entry, fix);
+        if (entry->next.recno == current)
+            break;
         parent = &entry->next.recno;
         current = *parent;
     }
@@ -1266,8 +1285,11 @@ index_audit_header(struct group_index *index, bool fix)
                 entry = &index->entries[current];
                 if (!HashEmpty(entry->hash) && entry->deleted == 0)
                     index_add(index, entry);
-                else
+                else {
+                    HashClear(&entry->hash);
+                    entry->deleted = 0;
                     freelist_add(index, entry);
+                }
             }
         }
 
@@ -1303,9 +1325,37 @@ index_audit_group(struct group_index *index, struct group_entry *entry,
             freelist_add(index, entry);
         }
     } else {
+        if (entry->flag != group->flag) {
+            entry->flag = group->flag;
+            msync_page(entry, sizeof(*entry), MS_ASYNC);
+        }
         tdx_data_audit(group->name, entry, fix);
     }
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
+}
+
+
+/*
+**  Check to be sure that a given group exists in the overview index, and if
+**  missing, adds it.  Assumes that the index isn't locked, since it calls the
+**  normal functions for adding new groups (this should only be called after
+**  the index has already been repaired, for the same reason).  Called as a
+**  hash traversal function, walking the hash table of groups from the active
+**  file.
+*/
+static void
+index_audit_active(void *value, void *cookie)
+{
+    struct hashmap *group = value;
+    struct audit_data *data = cookie;
+    struct group_entry *entry;
+
+    entry = tdx_index_entry(data->index, group->name);
+    if (entry == NULL) {
+        warn("tradindexed: group %s missing from overview", group->name);
+        if (data->fix)
+            tdx_index_add(data->index, group->name, 0, 0, &group->flag);
+    }
 }
 
 
@@ -1323,6 +1373,7 @@ tdx_index_audit(bool fix)
     struct hash *hashmap;
     long bucket;
     struct group_entry *entry;
+    struct audit_data data;
 
     index = tdx_index_open(true);
     if (index == NULL)
@@ -1353,18 +1404,21 @@ tdx_index_audit(bool fix)
 
     /* Okay everything is now mapped and happy.  Validate the header. */
     index_audit_header(index, fix);
+    index_lock(index->fd, INN_LOCK_UNLOCK);
 
     /* Walk all the group entries and check them individually.  To do this, we
        need to map hashes to group names, so load a hash of the active file to
        do that resolution. */
     hashmap = hashmap_load();
+    data.index = index;
+    data.fix = fix;
+    hash_traverse(hashmap, index_audit_active, &data);
     for (bucket = 0; bucket < index->count; bucket++) {
         entry = &index->entries[bucket];
         if (HashEmpty(entry->hash) || entry->deleted != 0)
             continue;
         index_audit_group(index, entry, hashmap, fix);
     }
-    index_lock(index->fd, INN_LOCK_UNLOCK);
     if (hashmap != NULL)
         hash_free(hashmap);
 }
