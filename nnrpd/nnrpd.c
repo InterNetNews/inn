@@ -486,15 +486,7 @@ STATIC void StartConnection()
 	HostErrorStr = NULL;
 	if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
 	    strcpy(ServerHost, inet_ntoa(sin.sin_addr));
-	    if (HostErrorStr == NULL) {
-		syslog(L_NOTICE,
-		    "? cant gethostbyaddr %s %m -- using IP address for access",
-		    ServerHost);
-	    } else {
-		syslog(L_NOTICE,
-		    "? cant gethostbyaddr %s %s -- using IP address for access",
-		    ServerHost, HostErrorStr);
-	    }
+	    /* suppress error reason */
 	}
 #else
         strcpy(ServerHost, inet_ntoa(sin.sin_addr));
