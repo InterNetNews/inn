@@ -457,6 +457,10 @@ read-only for everyone else, and are exempted from the Perl filter.  For
 an additional twist, posts from dialup users have their Sender header
 replaced by their authenticated identity.
 
+Since this organization has some internal moderated newsgroups, the admin
+staff can also post messages with Approved: headers, but other users
+cannot.
+
     auth default {
         auth: "ckpasswd -f /usr/local/news/db/newsusers"
         default: <FAIL>
@@ -503,6 +507,7 @@ replaced by their authenticated identity.
     access admin {
         users: "joe@*,jane@*"
         newsgroups: *
+        access: "RPA"
         perlfilter: false
     }
 
