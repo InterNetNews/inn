@@ -13,7 +13,7 @@
 BEGIN_DECLS
 
 /* msync the page containing a section of memory. */
-void msync_page(void *, size_t, int flags);
+int msync_page(void *, size_t, int flags);
 
 /* Some platforms only support two arguments to msync.  On those platforms,
    make the third argument to msync_page always be zero, getting rid of
