@@ -8,10 +8,10 @@ DEFS=-DVERSION=\"$(VERSION)\"
 all: ninpaths sendinpaths
 
 ninpaths: ninpaths.o
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(LDFLAGS) -o $@ $<
 
 ninpaths.o: ninpaths.c
-	$(CC) $(LDLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 sendinpaths: sendinpaths.in
 	$(UPFIXSCRIPT) sendinpaths
