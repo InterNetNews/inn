@@ -231,12 +231,16 @@ by default).
 (Fatal) Someone other than the news user attempted to run B<inndstart>.
 B<inndstart> may only be run by the news user for security reasons.
 
-=item setregid(%d, %d) failed
+=item seteuid(%d) failed: %s
 
-(Fatal) Unable to change the real and effective GIDs.  This message
-usually means that B<inndstart> was installed with the wrong permissions.
+(Fatal) Unable to change the effective UID.  This usually means that
+B<inndstart> was installed with the wrong permissions.  If it does have
+the correct permissions (setuid root) and seteuid() to root (UID 0) is
+failing, this may mean that your system has seteuid() but doesn't have
+support for POSIX saved UIDs.  If this is the case, please report this to
+the INN maintainers.
 
-=item setreuid(%d, %d) failed
+=item setreuid(%d, %d) failed: %s
 
 (Fatal) Unable to change the real and effective UIDs.  This message
 usually means that B<inndstart> was installed with the wrong permissions.
