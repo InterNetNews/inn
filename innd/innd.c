@@ -95,7 +95,7 @@ ARTHEADER ARTheaders[] = {
 /* #define HDR__SUPERSEDES			13 */
   ARTHEADERINIT("Bytes",		HTstd),
 /* #define HDR__BYTES				14 */
-  ARTHEADERINIT("Also-Control",		HTstd),
+  ARTHEADERINIT("Also-Control",		HTobs),
 /* #define HDR__ALSOCONTROL			15 */
   ARTHEADERINIT("References",		HTstd),
 /* #define HDR__REFERENCES			16 */
@@ -137,10 +137,14 @@ ARTHEADER ARTheaders[] = {
 /* #define HDR__XCANCELLEDBY			34 */
   ARTHEADERINIT("X-Canceled-By",	HTstd),
 /* #define HDR__XCANCELEDBY			35 */
-  ARTHEADERINIT("Cancel-Key",		HTstd)
+  ARTHEADERINIT("Cancel-Key",		HTstd),
 /* #define HDR__CANCELKEY			36 */
+  ARTHEADERINIT("User-Agent",		HTstd),
+/* #define HDR__USER_AGENT			37 */
+  ARTHEADERINIT("X-Original-Message-ID",	HTstd)
+/* #define HDR__X_ORIGINAL_MESSAGE_ID		38 */
 };
-/* #define MAX_ARTHEADER			37 */
+/* #define MAX_ARTHEADER			39 */
 
 
 /*

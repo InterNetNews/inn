@@ -173,8 +173,10 @@ typedef struct _HDRCONTENT {
 #define HDR__XCANCELLEDBY	34
 #define HDR__XCANCELEDBY	35
 #define HDR__CANCELKEY		36
+#define HDR__USER_AGENT		37
+#define HDR__X_ORIGINAL_MESSAGE_ID		38
 
-#define MAX_ARTHEADER		37
+#define MAX_ARTHEADER		39
 
 /*
 **  Miscellaneous data we want to keep on an article.  All the fields
