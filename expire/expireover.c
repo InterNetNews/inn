@@ -2,6 +2,7 @@
 **
 **  Expire overview database.
 */
+#include <sys/types.h>
 #include <stdio.h>
 #include <errno.h>
 #include "configdata.h"
