@@ -127,6 +127,12 @@ static void test15(void) {
     errno = EPERM;
     sysdie("fatal");
 }
+static void test16(void) {
+    warn_set_handlers(2, error_log_stderr, log);
+    error_program_name = "test16";
+    errno = EPERM;
+    syswarn("warning");
+}
 
 /* Given the test number, intended exit status and message, and the actual
    exit status and message, print ok or not ok. */
@@ -156,7 +162,7 @@ main(void)
 {
     char buff[32];
 
-    puts("15");
+    puts("16");
 
     ok(1, 0, "warning\n", test1);
     ok(2, 1, "fatal\n", test2);
@@ -179,6 +185,9 @@ main(void)
        test14);
     ok(15, 10, concat("0 ", buff, " fatal\n5 ", buff, " fatal\n", END),
        test15);
+    ok(16, 0, concat("test16: warning: ", strerror(EPERM), "\n7 ", buff,
+                     " warning\n", END),
+       test16);
 
     return 0;
 }

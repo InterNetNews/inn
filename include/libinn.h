@@ -38,6 +38,7 @@ extern void sysdie(const char *, ...)
     __attribute__((__noreturn__, __format__(printf, 1, 2)));
 extern void warn_set_handlers(int count, ...);
 extern void die_set_handlers(int count, ...);
+extern int error_log_stderr(int length, const char *, va_list, int error);
 
 /* Log handling functions take the length of the resulting message, the
    format, the arguments, and the errno if any. */
