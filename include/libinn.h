@@ -25,6 +25,7 @@ extern "C" {
 */
 extern void *   xmalloc(size_t size, const char *file, int line);
 extern void *   xrealloc(void *p, size_t size, const char *file, int line);
+extern char *   xstrdup(const char *s, const char *file, int line);
 
 /* This function is called whenever a memory allocation fails. */
 extern int (*xmemfailure)(const char *, size_t, const char *, int);
