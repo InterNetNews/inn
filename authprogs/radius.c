@@ -418,6 +418,7 @@ int main(int argc, char *argv[])
     FILE *f;
     rad_config_t radconfig;
     int retval;
+    char *radius_config;
 
     bzero(&radconfig, sizeof(rad_config_t));
     haveother = havefile = 0;
@@ -510,13 +511,15 @@ int main(int argc, char *argv[])
     if (argc != optind)
 	exit(2);
     if (!havefile) {
-	if (!(f = fopen(_PATH_RADIUS_CONFIG, "r"))) {
-	    fprintf(stderr, "couldn't open config file %s: %s\n", optarg,
+	radius_config = cpcatpath(innconf->pathetc, _PATH_RADIUS_CONFIG);
+	if (!(f = fopen(radius_config, "r"))) {
+	    fprintf(stderr, "couldn't open config file %s: %s\n", radius_config,
                     strerror(errno));
 	} else {
             read_config(f, &radconfig);
             fclose(f);
         }
+	DISPOSE(radius_config);
     }
     if (!radconfig.radhost) {
 	fprintf(stderr, "No radius host to authenticate against.\n");
