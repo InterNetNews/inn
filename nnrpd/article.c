@@ -44,7 +44,6 @@ STATIC char		ARTnotingroup[] = NNTP_NOTINGROUP;
 STATIC char		ARTnoartingroup[] = NNTP_NOARTINGRP;
 STATIC char		ARTnocurrart[] = NNTP_NOCURRART;
 STATIC ARTHANDLE        *ARThandle = NULL;
-STATIC int		ARTfirstfullfield = 0;
 STATIC int              ARTxreffield = 0;
 STATIC SENDDATA		SENDbody = {
     STbody,	NNTP_BODY_FOLLOWS_VAL,		"body"
@@ -118,8 +117,6 @@ BOOL PushIOvRateLimited(void) {
 
 BOOL PushIOv(void) {
     fflush(stdout);
-    if (MaxBytesPerSecond != 0)
-	return PushIOvRateLimited();
 #ifdef HAVE_SSL
     if (tls_conn) {
       if (SSL_writev(tls_conn, iov, queued_iov) <= 0) {
@@ -133,6 +130,8 @@ BOOL PushIOv(void) {
       }
     }
 #else
+    if (MaxBytesPerSecond != 0)
+	return PushIOvRateLimited();
     if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
       queued_iov = 0;
       return FALSE;
@@ -208,7 +207,7 @@ BOOL SendIOb(char *p, int len) {
 /*
 **  Read the overview schema.
 */
-void ARTreadschema(void)
+BOOL ARTreadschema(void)
 {
     static char			*SCHEMA = NULL;
     FILE			*F;
@@ -216,12 +215,16 @@ void ARTreadschema(void)
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
+    BOOL			foundxref = FALSE;
+    BOOL			foundxreffull = FALSE;
 
     /* Open file, count lines. */
     if (SCHEMA == NULL)
 	SCHEMA = COPY(cpcatpath(innconf->pathetc, _PATH_SCHEMA));
-    if ((F = fopen(SCHEMA, "r")) == NULL)
-	return;
+    if ((F = fopen(SCHEMA, "r")) == NULL) {
+	syslog(L_ERROR, "%s Can't open %s, %s", ClientHost, SCHEMA, strerror(errno));
+	return FALSE;
+    }
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
 	continue;
     (void)fseek(F, (OFFSET_T)0, SEEK_SET);
@@ -239,25 +242,29 @@ void ARTreadschema(void)
 	if ((p = strchr(buff, ':')) != NULL) {
 	    *p++ = '\0';
 	    fp->NeedsHeader = EQ(p, "full");
-	    if (ARTfirstfullfield == 0)
-	      ARTfirstfullfield = fp - ARTfields + 1;
 	}
 	else
 	    fp->NeedsHeader = FALSE;
-	fp->HasHeader = FALSE;
 	fp->Header = COPY(buff);
 	fp->Length = strlen(buff);
-	fp++;
 	if (caseEQ(buff, "Xref")) {
+	    foundxref = TRUE;
+	    foundxreffull = fp->NeedsHeader;
+	    fp++;
 	    ARTxreffield = fp - ARTfields - 1;
-	    fp->HasHeader = FALSE;
 	    fp->Header = COPY("Newsgroups");
 	    fp->Length = strlen("Newsgroups");
-	    fp++;
+	    continue;
 	}
+	fp++;
     }
     ARTfieldsize = fp - ARTfields;
     (void)fclose(F);
+    if (!foundxref || !foundxreffull) {
+	syslog(L_ERROR, "%s 'Xref:full' must be included in %s", ClientHost, SCHEMA);
+	return FALSE;
+    }
+    return TRUE;
 }
 
 
@@ -370,7 +377,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 */
 STATIC void ARTsendmmap(SENDTYPE what)
 {
-    char		*p, *q;
+    char		*p, *q, *r, *s, *path, *xref, *virtualpath;
     struct timeval	stv, etv;
     long		bytecount;
     char		lastchar;
@@ -382,45 +389,123 @@ STATIC void ARTsendmmap(SENDTYPE what)
 
      gettimeofday(&stv, NULL);
     /* Get the headers and detect if wire format. */
-                if (what == STarticle) {
-	 q = ARThandle->data;
-	 p = ARThandle->data + ARThandle->len;
+    if (what == STarticle) {
+	q = ARThandle->data;
+	p = ARThandle->data + ARThandle->len;
      } else {
-	 for (q = p = ARThandle->data; p < (ARThandle->data + ARThandle->len); p++) {
-	     if (*p == '\r')
-            continue;
-        if (*p == '\n') {
-		 if (lastchar == '\n') {
-                if (what == SThead) {
-                    if (*(p-1) == '\r')
-                        p--;
-                    break;
-                } else {
-                        q = p + 1;
-			 p = ARThandle->data + ARThandle->len;
-                        break;
-                        }
-                    }
-                }
-        lastchar = *p;
+	for (q = p = ARThandle->data; p < (ARThandle->data + ARThandle->len); p++) {
+	    if (*p == '\r')
+		continue;
+	    if (*p == '\n') {
+		if (lastchar == '\n') {
+		    if (what == SThead) {
+			if (*(p-1) == '\r')
+			    p--;
+			break;
+		    } else {
+			q = p + 1;
+			p = ARThandle->data + ARThandle->len;
+			break;
+		    }
+		}
+	    }
+	    lastchar = *p;
+	}
     }
-     }
-    
-       SendIOv(q, p - q);
-       ARTgetsize += p - q;
-       if (what == SThead) {
-           SendIOv(".\r\n", 3);
-           ARTgetsize += 3;
+
+    if (VirtualPathlen > 0 && (what != STbody)) {
+	if ((path = (char *)HeaderFindMem(ARThandle->data, ARThandle->len, "path", sizeof("path") - 1)) == NULL) {
+	    SendIOv(".\r\n", 3);
+	    ARTgetsize += 3;
+	    PushIOv();
+	    gettimeofday(&etv, NULL);
+	    ARTget++;
+	    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
+	    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    return;
+	} else if ((xref = (char *)HeaderFindMem(ARThandle->data, ARThandle->len, "xref", sizeof("xref") - 1)) == NULL) {
+	    SendIOv(".\r\n", 3);
+	    ARTgetsize += 3;
+	    PushIOv();
+	    gettimeofday(&etv, NULL);
+	    ARTget++;
+	    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
+	    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    return;
+	}
+	if ((r = memchr(xref, ' ', q - xref)) == NULL) {
+	    SendIOv(".\r\n", 3);
+	    ARTgetsize += 3;
+	    PushIOv();
+	    gettimeofday(&etv, NULL);
+	    ARTget++;
+	    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
+	    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    return;
+	} else {
+	    for (; (r < q) && isspace((int)*r) ; r++);
+	    if (r == q) {
+		SendIOv(".\r\n", 3);
+		ARTgetsize += 3;
+		PushIOv();
+		gettimeofday(&etv, NULL);
+		ARTget++;
+		ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
+		ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
+		return;
+	    }
+	}
+	virtualpath = NEW(char, VirtualPathlen + 2);
+	sprintf(virtualpath, "!%s", VirtualPath);
+	for (s = path ; s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len ; s++) {
+	    if (*s != *virtualpath || !EQn(s, virtualpath, VirtualPathlen + 1))
+		continue;
+	    break;
+	}
+	if (s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len) {
+	    if (xref > path) {
+	        SendIOv(q, path - q);
+	        SendIOv(s + 1, xref - (s + 1));
+	        SendIOv(VirtualPath, VirtualPathlen - 1);
+	        SendIOv(r, p - r);
+	    } else {
+	        SendIOv(q, xref - q);
+	        SendIOv(VirtualPath, VirtualPathlen - 1);
+	        SendIOv(xref, path - xref);
+	        SendIOv(s + VirtualPathlen, p - (s + VirtualPathlen));
+	    }
+	} else {
+	    if (xref > path) {
+	        SendIOv(q, path - q);
+	        SendIOv(VirtualPath, VirtualPathlen);
+	        SendIOv(path, xref - path);
+	        SendIOv(VirtualPath, VirtualPathlen - 1);
+	        SendIOv(r, p - r);
+	    } else {
+	        SendIOv(q, xref - q);
+	        SendIOv(VirtualPath, VirtualPathlen - 1);
+	        SendIOv(xref, path - xref);
+	        SendIOv(VirtualPath, VirtualPathlen);
+	        SendIOv(path, p - path);
+	    }
+	}
+	DISPOSE(virtualpath);
+    } else
+	SendIOv(q, p - q);
+    ARTgetsize += p - q;
+    if (what == SThead) {
+	SendIOv(".\r\n", 3);
+	ARTgetsize += 3;
     } else if (memcmp((ARThandle->data + ARThandle->len - 5), "\r\n.\r\n", 5)) {
 	if (memcmp((ARThandle->data + ARThandle->len - 2), "\r\n", 2)) {
-               SendIOv("\r\n.\r\n", 5);
-               ARTgetsize += 5;
-		   } else {
-               SendIOv(".\r\n", 3);
-               ARTgetsize += 3;
-		   }
-       }
-       PushIOv();
+	    SendIOv("\r\n.\r\n", 5);
+	    ARTgetsize += 5;
+	} else {
+	    SendIOv(".\r\n", 3);
+	    ARTgetsize += 3;
+	}
+    }
+    PushIOv();
 
     gettimeofday(&etv, NULL);
     ARTget++;
@@ -435,44 +520,100 @@ STATIC void ARTsendmmap(SENDTYPE what)
 char *GetHeader(char *header, BOOL IsLines)
 {
     static char		buff[40];
-    char		*p;
-    char		*q;
+    char		*p, *q, *r, *s, *t, *virtualpath;
     /* Bogus value here to make sure that it isn't initialized to \n */
     char		lastchar = ' ';
     char		*limit;
     static char		*retval = NULL;
     static int		retlen = 0;
+    int			headerlen;
+    BOOL		pathheader = FALSE;
+    BOOL		xrefheader = FALSE;
 
     limit = ARThandle->data + ARThandle->len - strlen(header);
     for (p = ARThandle->data; p < limit; p++) {
-	    if (*p == '\r')
-		continue;
-	    if ((lastchar == '\n') && (*p == '\n')) {
-		return NULL;
-	    }
+	if (*p == '\r')
+	    continue;
+	if ((lastchar == '\n') && (*p == '\n')) {
+	    return NULL;
+	}
 	if ((lastchar == '\n') || (p == ARThandle->data)) {
-		if (!strncasecmp(p, header, strlen(header))) {
-		    for (; (p < limit) && !isspace((int)*p) ; p++);
-		    for (; (p < limit) && isspace((int)*p) ; p++);
-		    for (q = p; q < limit; q++) 
-			if ((*q == '\r') || (*q == '\n'))
+	    headerlen = strlen(header);
+	    if (caseEQn(p, header, headerlen)) {
+		for (; (p < limit) && !isspace((int)*p) ; p++);
+		for (; (p < limit) && isspace((int)*p) ; p++);
+		for (q = p; q < limit; q++) 
+		    if ((*q == '\r') || (*q == '\n')) {
+			/* Check for continuation header lines */
+			t = q + 1;
+			if (t < limit) {
+			    if ((*q == '\r' && *t == '\n')) {
+				t++;
+				if (t == limit)
+				    break;
+			    }
+			    if ((*t == '\t' || *t == ' ')) {
+				for (; (t < limit) && isspace((int)*t) ; t++);
+				q = t;
+			    } else {
+				break;
+			    }
+			} else {
 			    break;
-		    if (retval == NULL) {
-			retval = NEW(char, q - p + 1);
-		    } else {
-			if ((q - p +1) > retlen) {
-			    DISPOSE(retval);
-			    retval = NEW(char, q - p + 1);
 			}
 		    }
-		    retlen = q - p + 1;
-		    memcpy(retval, p, retlen - 1);
-		    *(retval + retlen - 1) = '\0';
-		    return retval;
+		if (q == limit)
+		    return NULL;
+		if (caseEQn("Path", header, headerlen))
+		    pathheader = TRUE;
+		else if (caseEQn("Xref", header, headerlen))
+		    xrefheader = TRUE;
+		if (retval == NULL) {
+		    retlen = q - p + VirtualPathlen + 1;
+		    retval = NEW(char, retlen);
+		} else {
+		    if ((q - p + VirtualPathlen + 1) > retlen) {
+			retlen = q - p + VirtualPathlen + 1;
+			RENEW(retval, char, retlen);
+		    }
 		}
+		if (pathheader && (VirtualPathlen > 0)) {
+		    virtualpath = NEW(char, VirtualPathlen + 1);
+		    sprintf(virtualpath, "!%s", VirtualPath);
+		    for (s = p ; s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len ; s++) {
+			if (*s != *virtualpath || !EQn(s, virtualpath, VirtualPathlen + 1))
+			    continue;
+			break;
+		    }
+		    if (s + VirtualPathlen + 1 < ARThandle->data + ARThandle->len) {
+			memcpy(retval, s + 1, q - (s + 1));
+		    } else {
+			memcpy(retval, VirtualPath, VirtualPathlen);
+			memcpy(retval + VirtualPathlen, p, q - p);
+			*(retval + (int)(q - p) + VirtualPathlen) = '\0';
+		    }
+		    DISPOSE(virtualpath);
+		} else if (xrefheader && (VirtualPathlen > 0)) {
+		    if ((r = memchr(p, ' ', q - p)) == NULL)
+			return NULL;
+		    for (; (r < q) && isspace((int)*r) ; r++);
+		    if (r == q)
+			return NULL;
+		    memcpy(retval, VirtualPath, VirtualPathlen - 1);
+		    memcpy(retval + VirtualPathlen - 1, r - 1, q - r + 1);
+		    *(retval + (int)(q - r) + VirtualPathlen) = '\0';
+		} else {
+		    memcpy(retval, p, q - p);
+		    *(retval + (int)(q - p)) = '\0';
+		}
+		for (p = retval; *p; p++)
+		    if (*p == '\n' || *p == '\r')
+			*p = ' ';
+		return retval;
 	    }
-	    lastchar = *p;
 	}
+	lastchar = *p;
+    }
 
     if (IsLines) {
 	/* Lines estimation taken from Tor Lillqvist <tml@tik.vtt.fi>'s
@@ -533,7 +674,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	    return;
 	}
 	tart=art;
-	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, what->Item, av[1]);
+	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, av[1], what->Item);
 	if (what->Type != STstat) {
 	    ARTsendmmap(what->Type);
 	}
@@ -706,7 +847,7 @@ char *OVERGetHeader(char *p, int field)
 {
     static char		*buff;
     static int		buffsize;
-    int	                i;
+    int	                i, j = field;
     ARTOVERFIELD	*fp;
     char		*next, *q;
     char                *newsgroupbuff;
@@ -719,26 +860,21 @@ char *OVERGetHeader(char *p, int field)
 	fp = &ARTfields[ARTxreffield];
     }
 
-    if (fp->NeedsHeader) 		/* we're going to need an exact match */
-      field = ARTfirstfullfield;
-
     /* Skip leading headers. */
-    for (; field-- >= 0 && *p; p++)
+    for (field; field >= 0 && *p; p++)
 	if ((p = strchr(p, '\t')) == NULL)
 	    return NULL;
+	else
+	    field--;
     if (*p == '\0')
 	return NULL;
 
-    if (fp->HasHeader)
-        p += fp->Length + 2;
-
     if (fp->NeedsHeader) {		/* find an exact match */
-	 while (strncmp(fp->Header, p, fp->Length) != 0) {
-	      if ((p = strchr(p, '\t')) == NULL) 
-		return NULL;
-	      p++;
-	 }
-	 p += fp->Length + 2;
+	if (!caseEQn(fp->Header, p, fp->Length))
+	    return NULL;
+	p += fp->Length + 2;
+	/* skip spaces */
+	for (; *p && *p == ' ' ; p++);
     }
 
     /* Figure out length; get space. */
@@ -748,16 +884,25 @@ char *OVERGetHeader(char *p, int field)
 	i = strlen(p);
     }
     if (buffsize == 0) {
-	buffsize = i;
+	buffsize = i + VirtualPathlen;
 	buff = NEW(char, buffsize + 1);
-    }
-    else if (buffsize < i) {
-	buffsize = i;
+    } else if (buffsize < i + VirtualPathlen) {
+	buffsize = i + VirtualPathlen;
 	RENEW(buff, char, buffsize + 1);
     }
 
-    (void)strncpy(buff, p, i);
-    buff[i] = '\0';
+    if ((VirtualPathlen > 0) && ARTxreffield == j) {
+	q = p;
+	if ((q = strchr(q, ' ')) == NULL) {
+	    return NULL;
+	}
+	memcpy(buff, VirtualPath, VirtualPathlen - 1);
+	memcpy(&buff[VirtualPathlen - 1], q, next - q);
+	buff[VirtualPathlen - 1 + next - q] = '\0';
+    } else {
+        (void)strncpy(buff, p, i);
+        buff[i] = '\0';
+    }
 
     if (BuildingNewsgroups) {
 	newsgroupbuff = p = COPY(buff);
@@ -769,15 +914,15 @@ char *OVERGetHeader(char *p, int field)
 	for (buff[0] = '\0', q = buff, p++; *p != '\0'; ) {
 	    if ((next = strchr(p, ':')) == NULL) {
 		DISPOSE(newsgroupbuff);
-	    return NULL;
-	}
+		return NULL;
+	    }
 	    *next++ = '\0';
 	    strcat(q, p);
 	    q += (next - p - 1);
 	    if ((p = strchr(next, ' ')) == NULL)
-	    break;
+		break;
 	    *p = ',';
-	    }
+	}
 	DISPOSE(newsgroupbuff);
     }
     return buff;
@@ -898,9 +1043,11 @@ FUNCTYPE CMDxover(int ac, char *av[])
     struct timeval	stv, etv;
     ARTNUM		artnum;
     void		*handle;
-    char		*data;
-    int			len;
+    char		*data, *p, *q;
+    int			len, useIOb = 0;
     TOKEN		token;
+    ARTOVERFIELD	*fp;
+    int	                field;
 
     if (!PERMcanread) {
 	Printf("%s\r\n", NOACCESS);
@@ -944,6 +1091,12 @@ FUNCTYPE CMDxover(int ac, char *av[])
     (void)fflush(stdout);
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
+
+    /* If OVSTATICSEARCH is true, then the data returned by OVsearch is only
+       valid until the next call to OVsearch.  In this case, we must use
+       SendIOb because it copies the data. */
+    OVctl(OVSTATICSEARCH, &useIOb);
+
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	if (PERMaccessconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
@@ -961,7 +1114,38 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    OVERhit++;
 	    OVERsize += len;
 	}
-	SendIOv(data, len);
+	if (VirtualPathlen > 0) {
+	    /* replace path part */
+	    for (field = ARTxreffield, p = data ; field-- >= 0 && p < data + len; p++)
+		if ((p = strchr(p, '\t')) == NULL)
+		    continue;
+	    if (*p == '\0')
+		continue;
+	    fp = &ARTfields[ARTxreffield];
+	    if (fp->NeedsHeader) {
+		if (!EQn(fp->Header, p, fp->Length))
+		    continue;
+		p += fp->Length + 2;
+		/* skip spaces */
+		for (; *p && *p == ' ' ; p++);
+	    }
+	    if ((q = strchr(p, ' ')) == NULL)
+		continue;
+	    if(useIOb) {
+		SendIOb(data, p - data);
+		SendIOb(VirtualPath, VirtualPathlen - 1);
+		SendIOb(q, len - (q - data));
+	    } else {
+		SendIOv(data, p - data);
+		SendIOv(VirtualPath, VirtualPathlen - 1);
+		SendIOv(q, len - (q - data));
+	    }
+	} else {
+	    if(useIOb)
+		SendIOb(data, len);
+	    else
+		SendIOv(data, len);
+	}
 	if (PERMaccessconf->nnrpdoverstats)
 	    gettimeofday(&stv, NULL);
     }
@@ -970,8 +1154,13 @@ FUNCTYPE CMDxover(int ac, char *av[])
         OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
         OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
-    SendIOv(".\r\n", 3);
-    PushIOv();
+    if(useIOb) {
+	SendIOb(".\r\n", 3);
+	PushIOb();
+    } else {
+	SendIOv(".\r\n", 3);
+	PushIOv();
+    }
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     OVclosesearch(handle);

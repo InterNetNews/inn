@@ -2,7 +2,6 @@
 
 include ../../Makefile.global
 
-CP	= $(UPLIBTOOL) cp
 CFLAGS	= $(GCFLAGS) -I../../include -I..
 
 SOURCES = timehash.c
@@ -10,13 +9,10 @@ OBJECTS = timehash.o
 LOBJECTS = timehash.lo
 ROBJECTS = timehash.$(EXTOBJ)
 
-all:			$(OBJECTS) moveobjs
+all:			$(OBJECTS)
 
 .c.o:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
-
-moveobjs: $(OBJECTS)
-	$(CP) -p $(ROBJECTS) ../objs
 
 clobber clean:
 	rm -f *.o *.lo obj/*.o profiled

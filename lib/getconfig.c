@@ -194,7 +194,7 @@ void SetDefaults()
     innconf->chaninacttime = 600;
     innconf->maxconnections = 50;
     innconf->chanretrytime = 300;
-    innconf->artcutoff = 14 * 24 * 60 * 60;
+    innconf->artcutoff = 10 * 24 * 60 * 60;
     innconf->pauseretrytime = 300;
     innconf->nntplinklog = FALSE;
     innconf->nntpactsync = 200;
@@ -334,8 +334,6 @@ int CheckInnConf()
 	(void)fprintf(stderr, "Must set 'mta' in inn.conf");
 	return(-1);
     }
-    if (innconf->mailcmd == NULL)
-	innconf->mailcmd = innconf->mta;
     if (innconf->pathnews == NULL) {
 	syslog(L_FATAL, "Must set 'pathnews' in inn.conf");
 	(void)fprintf(stderr, "Must set 'pathnews' in inn.conf");
@@ -386,6 +384,9 @@ int CheckInnConf()
     if (innconf->pathtmp == NULL) {
 	innconf->pathtmp = COPY(_PATH_TMP);
     }
+    if (innconf->mailcmd == NULL) {
+	innconf->mailcmd = COPY(cpcatpath(innconf->pathbin, "innmail"));
+    }
     /* Set the TMPDIR variable unconditionally and globally */
     if (8 + strlen(innconf->pathtmp) > dirlen)
 	dirlen = 8 + strlen(innconf->pathtmp);
@@ -398,7 +399,7 @@ int CheckInnConf()
     /* tmpdir should not be freed for some OS */
     if (innconf->enableoverview && innconf->ovmethod == NULL) {
 	syslog(L_FATAL, "'ovmethod' must be defined in inn.conf if enableoverview is true");
-	(void)fprintf(stderr, "'ovmethod' must be defined in inn.conf if enableoverview is true");
+	(void)fprintf(stderr, "'ovmethod' must be defined in inn.conf if enableoverview is true\n");
 	return(-1);
     }
 
@@ -408,7 +409,7 @@ int CheckInnConf()
 int ReadInnConf()
 {
     FILE	        *F;
-    char	        *p;
+    char	        *p, *q;
     int			boolval;
     BOOL		bit;
 
@@ -442,6 +443,12 @@ int ReadInnConf()
 	    for ( ; ISWHITE(*p); p++)
 		continue;
 	    if (!*p) continue;
+
+            /* trim trailing whitespace */
+	    q = &p[strlen(p)-1];
+	    while (q>p && ISWHITE(*q))
+		*q-- = '\0';
+
 	    boolval = -1;
 	    if (caseEQ(p, "on") || caseEQ(p, "true") || caseEQ(p, "yes"))
 		boolval = TRUE;
@@ -962,7 +969,7 @@ int ReadInnConf()
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_GROUPBASEEXPIRY)) {
 		TEST_CONFIG(CONF_VAR_GROUPBASEEXPIRY, bit);
-		if (!bit) innconf->groupbaseexpiry = boolval;
+		if (!bit && boolval != -1) innconf->groupbaseexpiry = boolval;
 		SET_CONFIG(CONF_VAR_GROUPBASEEXPIRY);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_WIPCHECK)) {

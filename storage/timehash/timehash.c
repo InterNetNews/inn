@@ -94,8 +94,14 @@ static TOKEN *PathToToken(char *path) {
     return &token;
 }
 
-BOOL timehash_init(BOOL *selfexpire) {
-    *selfexpire = FALSE;
+BOOL timehash_init(SMATTRIBUTE *attr) {
+    if (attr == NULL) {
+	syslog(L_ERROR, "timehash: attr is NULL");
+	SMseterror(SMERR_INTERNAL, "attr is NULL");
+	return FALSE;
+    }
+    attr->selfexpire = FALSE;
+    attr->expensivestat = TRUE;
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timehash: token length is less than 6 bytes");
 	SMseterror(SMERR_TOKENSHORT, NULL);
@@ -511,6 +517,15 @@ BOOL timehash_ctl(PROBETYPE type, TOKEN *token, void *value) {
 
 BOOL timehash_flushcacheddata(FLUSHTYPE type) {
     return TRUE;
+}
+
+void timehash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
+    int time, seqnum;
+    char *path;
+    
+    BreakToken(token, &time, &seqnum);
+    path = MakePath(time, seqnum, token.class);
+    fprintf(file, "%s\n", path);
 }
 
 void timehash_shutdown(void) {

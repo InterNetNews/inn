@@ -46,6 +46,7 @@ PATH_BUFFINDEXED	= ${PATHETC}/buffindexed.conf
 PATH_RADIUS_CONF	= ${PATHETC}/radius.conf
 PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
 PATH_SASL_CONF		= ${PATHETC}/sasl.conf
+PATH_SUBSCRIPTIONS	= ${PATHETC}/subscriptions
 
 PATH_ACTIVE		= ${PATHDB}/active
 PATH_ACTIVE_TIMES	= ${PATHDB}/active.times
@@ -69,7 +70,7 @@ REST		= \
 	filter_innd.py INN.py \
 	startup.tcl filter.tcl nnrpd_auth.pl news2mail.cf readers.conf \
 	radius.conf nnrpd_auth.py ovdb.conf sasl.conf active.minimal \
-	newsgroups.minimal
+	newsgroups.minimal subscriptions
 
 ALL		= $(MOST) $(REST)
 
@@ -98,7 +99,7 @@ REST_INSTALLED	= \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF) \
-	$D$(PATH_SASL_CONF)
+	$D$(PATH_SASL_CONF) $D$(PATH_SUBSCRIPTIONS)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -223,6 +224,7 @@ $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPRI) $? $@
 $D$(PATH_MOTD): motd.news		; $(COPY_RPRI) $? $@
 $D$(PATH_INNFEEDCTL): innfeed.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_SASL_CONF):	sasl.conf	; $(COPY_RPRI) $? $@
+$D$(PATH_SUBSCRIPTIONS): subscriptions	; $(COPY_RPUB) $? $@
 
 REASON	= 'Installing site config files from site/Makefile'
 go pause:
@@ -287,14 +289,9 @@ senduuname:	../samples/senduuname		; $(COPY) $? $@
 senduuname.pl:	../samples/senduuname.pl	; $(COPY) $? $@
 startup.tcl:	../samples/startup.tcl		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
+subscriptions:	../samples/subscriptions	; $(COPY) $? $@
 version:	../samples/version		; $(COPY) $? $@
 version.pl:	../samples/version.pl		; $(COPY) $? $@
 sasl.conf:	../samples/sasl.conf		; $(COPY) $? $@
 active.minimal:	../samples/active.minimal	; $(COPY) $? $@
 newsgroups.minimal: ../samples/newsgroups.minimal ; $(COPY) $? $@
-
-##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.

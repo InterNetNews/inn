@@ -16,25 +16,37 @@ case "$1" in
 
 stop)
 
-  if [ -f $PATHRUN/db_checkpoint.pid ]; then
-    kill `cat $PATHRUN/db_checkpoint.pid`
-  fi
   if [ -f $PATHRUN/db_deadlock.pid ]; then
     kill `cat $PATHRUN/db_deadlock.pid`
   fi
   if [ -f $PATHRUN/logremover.pid ]; then
     kill -HUP `cat $PATHRUN/logremover.pid`
   fi
-  sleep 5
-  # run one more checkpoint just to make sure
-  db_checkpoint -1
+  if [ -f $PATHRUN/db_checkpoint.pid ]; then
+    kill `cat $PATHRUN/db_checkpoint.pid`
+    sleep 1
+
+    # db_checkpoint may not exit right away if it is in the
+    # middle of a checkpoint.  So we wait for it here.
+    i=12
+    while [ $i -gt 0 ];
+    do
+      [ -f $PATHRUN/db_checkpoint.pid ] || break
+      sleep 5
+      i=`expr $i - 1`
+    done
+
+    # run one more checkpoint just to make sure, but not if
+    # the old one is still running
+    [ -f $PATHRUN/db_checkpoint.pid ] || db_checkpoint -1
+  fi
   ;;
 
 start)
 
   # Run checkpointer and deadlock detector
   (
-    db_checkpoint -p 1 -k 1000 &
+    db_checkpoint -p 1 -k 2000 &
     echo $! > $PATHRUN/db_checkpoint.pid
     wait
     rm -f $PATHRUN/db_checkpoint.pid
@@ -53,7 +65,7 @@ start)
 
     while [ 1 ];
     do
-      sleep 600
+      sleep 120
       db_archive -a >$PATHTMP/dba.$$
       if [ -s $PATHTMP/dba.$$ ]; then
 	xargs rm <$PATHTMP/dba.$$

@@ -2,7 +2,6 @@
 
 include ../Makefile.global
 
-CP	= $(LIBTOOL) cp
 CFLAGS	= $(GCFLAGS) -I.
 
 all:			autoconfig
@@ -17,7 +16,6 @@ OBJECTS = interface.o methods.o ovmethods.o ov.o
 LOBJECTS = interface.lo methods.lo ovmethods.lo ov.lo
 
 methods: 
-	@[ -d objs ] || mkdir objs
 	@for D in $(SUBDIR) $(OVSUBDIR); do \
 	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \
 	done
@@ -26,7 +24,7 @@ install:		all $(D)$(PATHLIB)/libstorage.$(EXTLIB)
 
 clobber clean:
 	rm -f *.o *.lo libstorage.la libstorage.a
-	rm -rf objs .libs
+	rm -rf .libs
 	rm -f methods.c methods.h
 	rm -f ovmethods.c ovmethods.h
 	rm -f profiled libstorage_p.a
@@ -38,12 +36,12 @@ clobber clean:
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
-libstorage.la:	$(P) $(OBJECTS) $(LOBJECTS)
-	$(LIBCC) $(LDFLAGS) -o libstorage.la $(LOBJECTS) objs/*.lo \
+libstorage.la:	$(P) $(OBJECTS) $(LOBJECTS) $(LSM_OBJECTS) $(LOV_OBJECTS)
+	$(LIBCC) $(LDFLAGS) -o libstorage.la $(LOBJECTS) $(LSM_OBJECTS) $(LOV_OBJECTS) \
 		-rpath $(PATHLIB) -version-info 2:0:0
 
-libstorage.a:         $(P) $(OBJECTS)
-	ar r $@ $(OBJECTS) objs/*
+libstorage.a:         $(P) $(OBJECTS) $(SM_OBJECTS) $(OV_OBJECTS)
+	ar r $@ $(OBJECTS) $(SM_OBJECTS) $(OV_OBJECTS)
 	$(RANLIB) libstorage.a
 
 .c.o:

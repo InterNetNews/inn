@@ -317,12 +317,9 @@ CheckDistribution(p)
 **  Return NULL if okay, or an error message.
 */
 STATIC STRING
-ProcessHeaders(linecount, idbuff)
-    int			linecount;
-    char                *idbuff;
+ProcessHeaders(int linecount, char *idbuff)
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
-    static char		WEEKS[] = "SunMonTueWedThuFriSat";
     static char		datebuff[40];
     static char		localdatebuff[40];
     static char		orgbuff[SMBUF];
@@ -330,14 +327,21 @@ ProcessHeaders(linecount, idbuff)
     static char		tracebuff[SMBUF];
     static char 	complaintsbuff[SMBUF];
     static char		sendbuff[SMBUF];
-    register HEADER	*hp;
-    register char	*p;
+    static char		*newpath = NULL;
+    HEADER		*hp;
+    char		*p;
     time_t		t;
-    struct tm		*gmt, *local;
+    struct tm		*gmt;
     TIMEINFO		Now;
     STRING		error;
     pid_t               pid;
-    char		*newpath;
+    BOOL		addvirtual = FALSE;
+
+    /* Various things need Now to be set. */
+    if (GetTimeInfo(&Now) < 0) {
+        sprintf(Error, "Can't get the time, %s", strerror(errno));
+        return Error;
+    }
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ENDOF(Table); hp++) {
@@ -353,47 +357,33 @@ ProcessHeaders(linecount, idbuff)
     }
 
     if (PERMaccessconf->nnrpdauthsender) {
-	/* If authorized and we didn't get a sender, add the header based on
-	 * our info.  If not authorized, zap the Sender so we don't put out
-	 * unauthenticated data. */
-	if (PERMauthorized && HDR(_sender) == NULL) {
-	    (void)sprintf(sendbuff, "%s@%s",
-		PERMuser[0] ? PERMuser : "UNKNOWN", ClientHost);
+	/* If authorized, add the header based on our info.  If not
+         * authorized, zap the Sender so we don't put out unauthenticated
+         * data. */
+	if (PERMauthorized) {
+	    if (PERMuser[0] == '\0') {
+		(void)sprintf(sendbuff, "%s@%s", "UNKNOWN", ClientHost);
+	    } else {
+		if ((p = strchr(PERMuser, '@')) == NULL) {
+		    (void)sprintf(sendbuff, "%s@%s", PERMuser, ClientHost);
+		} else {
+		    (void)sprintf(sendbuff, "%s", PERMuser);
+		}
+	    }
 	    HDR(_sender) = sendbuff;
 	}
-	else if (!PERMauthorized)
+	else
 	    HDR(_sender) = NULL;
     }
 
-    /* Set Date. */
-    if (GetTimeInfo(&Now) < 0) {
-	(void)sprintf(Error, "Can't get the time, %s", strerror(errno));
-	return Error;
-    }
-
-    if ((gmt = gmtime(&Now.time)) == NULL)
-	return "Can't get the time";
-    (void)sprintf(datebuff, "%d %3.3s %d %02d:%02d:%02d GMT",
-	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
-	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+    /* Set Date.  datebuff is used later for NNTP-Posting-Date, so we have
+       to set it and it has to be the UTC date. */
+    if (!makedate(0, FALSE, datebuff, sizeof(datebuff)))
+        return "Can't generate date header";
     if (HDR(_date) == NULL) {
         if (PERMaccessconf->localtime) {
-	    if ((local = localtime(&Now.time)) == NULL)
-	        return "Can't get the time";
-	    (void)sprintf(localdatebuff,
-	        "%3.3s, %d %3.3s %d %02d:%02d:%02d %+04.4d (%3.3s)",
-	        &WEEKS[3 * local->tm_wday],
-	        local->tm_mday, &MONTHS[3 * local->tm_mon], 1900 + local->tm_year,
-	        local->tm_hour, local->tm_min, local->tm_sec,
-#ifdef HAVE_TM_GMTOFF
-#ifdef __bsdi__
-		local->tm_gmtoff/36, local->tm_zone);
-#else
-	        local->tm_gmtoff/36, tzname[0]);
-#endif
-#else
-	        -timezone/36, tzname[0]);
-#endif /* HAVE_TM_GMTOFF */
+            if (!makedate(0, TRUE, localdatebuff, sizeof(localdatebuff)))
+                return "Can't generate local date header";
 	    HDR(_date) = localdatebuff;
 	} else {
 	    HDR(_date) = datebuff;
@@ -431,16 +421,40 @@ ProcessHeaders(linecount, idbuff)
     if (HDR(_path) == NULL) {
 	/* Note that innd will put host name here for us. */
 	HDR(_path) = PATHMASTER;
+	if (VirtualPathlen > 0)
+	    addvirtual = TRUE;
     } else if (PERMaccessconf->strippath) {
 	/* Here's where to do Path changes for new Posts. */
-	if ((newpath = strrchr(HDR(_path), '!')) != NULL) {
-	    newpath++;
-	    if (*newpath == '\0') {
-		HDR(_path) = NEWSMASTER;
+	if ((p = strrchr(HDR(_path), '!')) != NULL) {
+	    p++;
+	    if (*p == '\0') {
+		HDR(_path) = PATHMASTER;
+		if (VirtualPathlen > 0)
+		    addvirtual = TRUE;
 	    } else {
-		HDR(_path) = newpath;
+		HDR(_path) = p;
+		if ((VirtualPathlen > 0) &&
+		    !EQ(p, PERMaccessconf->pathhost))
+		    addvirtual = TRUE;
 	    }
-	}
+	} else if (VirtualPathlen > 0)
+	    addvirtual = TRUE;
+    } else {
+	if ((VirtualPathlen > 0) &&
+	    (p = strchr(HDR(_path), '!')) != NULL) {
+	    *p = '\0';
+	    if (!EQ(HDR(_path), PERMaccessconf->pathhost))
+		addvirtual = TRUE;
+	    *p = '!';
+	} else if (VirtualPathlen > 0)
+	    addvirtual = TRUE;
+    }
+    if (addvirtual) {
+	if (newpath != NULL)
+	    DISPOSE(newpath);
+	newpath = NEW(char, VirtualPathlen + strlen(HDR(_path)) + 1);
+	sprintf(newpath, "%s%s", VirtualPath, HDR(_path));
+	HDR(_path) = newpath;
     }
     
 
@@ -492,12 +506,15 @@ ProcessHeaders(linecount, idbuff)
     pid = (long) getpid() ;
     if ((gmt = gmtime(&Now.time)) == NULL)
 	return "Can't get the time";
-    if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
-	p = "unknown";
+    if (VirtualPathlen > 0)
+	p = PERMaccessconf->domain;
+    else
+	if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
+	    p = "unknown";
     sprintf(tracebuff, "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
-             GetFQDN(PERMaccessconf->domain), (long) t, (long) pid, ClientIp,
-	    gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
-	    gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+	p, (long) t, (long) pid, ClientIp,
+	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
+	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR (_xtrace) = tracebuff ;
 
     /* X-Complaints-To; set */
@@ -1100,8 +1117,16 @@ ARTpost(article, idbuff)
 		(void)fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
 	    }
 	}
-    for (i = 0; i < OtherCount; i++)
-	(void)fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
+    for (i = 0; i < OtherCount; i++) {
+	if (strchr(OtherHeaders[i], '\n') != NULL) {
+	    if ((p = Towire(OtherHeaders[i])) != NULL) {
+		(void)fprintf(ToServer, "%s\r\n", p);
+		DISPOSE(p);
+	    }
+	} else {
+	    (void)fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
+	}
+    }
     (void)fprintf(ToServer, "\r\n");
     if (FLUSH_ERROR(ToServer)) {
 	(void)sprintf(Error, CANTSEND, "headers", strerror(errno));

@@ -421,7 +421,6 @@ main(ac, av)
     register FILE	*F;
     register int	i;
     BOOL		Flat;
-    BOOL		Move;
     BOOL		Redirect;
     BOOL		Concat;
     char		*Index;
@@ -446,7 +445,6 @@ main(ac, av)
     Concat = FALSE;
     Flat = FALSE;
     Index = NULL;
-    Move = FALSE;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);
     ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
@@ -455,7 +453,7 @@ main(ac, av)
     numgroups = 0;
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "a:cfi:mp:r")) != EOF)
+    while ((i = getopt(ac, av, "a:cfi:p:r")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -473,9 +471,6 @@ main(ac, av)
 	case 'i':
 	    Index = optarg;
 	    break;
-	case 'm':
-	    Move = TRUE;
-	    break;
 	case 'p':
 	    groups = CrackGroups(optarg, &numgroups);
 	    break;
@@ -483,10 +478,6 @@ main(ac, av)
 	    Redirect = FALSE;
 	    break;
 	}
-#if !defined(HAVE_SYMLINK)
-	if (Move)
-	    (void)fprintf(stderr, "archive:  Ignoring ``-m'' flag\n");
-#endif	/* !defined(HAVE_SYMLINK) */
 
     /* Parse arguments -- at most one, the batchfile. */
     ac -= optind;

@@ -5,9 +5,10 @@ include ../Makefile.global
 CFLAGS        = $(GCFLAGS)
 
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
-		controlbatch cvtbatch filechan inndf innxmit innxbatch \
-		mod-active news2mail nntpget nntpsend overchan send-ihave \
-		send-nntp send-uucp sendbatch sendxbatches shlock shrinkfile
+		controlbatch cvtbatch filechan gpgverify inndf innxmit \
+		innxbatch mod-active news2mail nntpget nntpsend overchan \
+		send-ihave send-nntp send-uucp sendbatch sendxbatches \
+		shlock shrinkfile
 
 EXTRA         = controlchan pgpverify
 
@@ -25,6 +26,7 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/controlchan	\
 		$(D)$(PATHBIN)/cvtbatch		\
 		$(D)$(PATHBIN)/filechan		\
+		$(D)$(PATHBIN)/gpgverify	\
 		$(D)$(PATHBIN)/inndf		\
 		$(D)$(PATHBIN)/innxmit		\
 		$(D)$(PATHBIN)/innxbatch	\
@@ -86,6 +88,7 @@ filechan:	filechan.o map.o $(LIBINN)
 actmerge:	actmerge.in      $(FIX)	; $(FIX) actmerge.in
 actsyncd:	actsyncd.in      $(FIX)	; $(FIX) actsyncd.in
 controlbatch:	controlbatch.in  $(FIX)	; $(FIX) controlbatch.in
+gpgverify:	gpgverify.in     $(FIX) ; $(FIX) gpgverify.in
 mod-active:	mod-active.in    $(FIX)	; $(FIX) mod-active.in
 news2mail:	news2mail.in     $(FIX)	; $(FIX) news2mail.in
 nntpsend:	nntpsend.in      $(FIX)	; $(FIX) nntpsend.in
@@ -113,6 +116,7 @@ $(D)$(PATHBIN)/controlbatch:        controlbatch        ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/controlchan:         controlchan         ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/cvtbatch:            cvtbatch            ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/filechan:            filechan            ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/gpgverify:           gpgverify           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/inndf:               inndf               ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/innxbatch:           innxbatch           ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/innxmit:             innxmit             ; $(LI_XPUB) $? $@

@@ -140,6 +140,7 @@ sub mailto {
 		#
 		next if ($line =~ /^NNTP-Posting-Date:/i);
 		next if ($line =~ /^NNTP-Posting-Host:/i);
+		next if ($line =~ /^X-Trace:/i);
 		next if ($line =~ /^Xref:/i);
 		next if ($line =~ /^Path:/i);
 

@@ -3,22 +3,6 @@
 
    Author: Kenichi Okada <okada@opaopa.org>
    Created: 2000-03-04
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; see the file COPYING.
-   If not, write to the Free Software Foundation,
-   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
 */
 
 #include "config.h"
@@ -31,10 +15,10 @@
 #include <ctype.h>
 #include <syslog.h>
 
+#include "clibrary.h"
+#include "nnrpd.h"
 #include "paths.h"
 #include "sasl_config.h"
-
-extern char *xstrdup (const char *str);
 
 struct configlist {
     char *key;
@@ -109,10 +93,13 @@ sasl_config_read()
     int alloced = 0;
     char buf[4096];
     char *p, *key;
+    static char *SASL_CONFIG = NULL;
 
-    infile = fopen(_PATH_SASL_CONFIG, "r");
+    if (!SASL_CONFIG)
+	SASL_CONFIG = COPY(cpcatpath(innconf->pathetc, _PATH_SASL_CONFIG));
+    infile = fopen(SASL_CONFIG, "r");
     if (!infile) {
-      fprintf(stderr, "can't open configuration file %s\n", _PATH_SASL_CONFIG);
+      fprintf(stderr, "can't open configuration file %s\n", SASL_CONFIG);
       exit(1);
     }
     
@@ -146,12 +133,11 @@ sasl_config_read()
 
 	if (nconfiglist == alloced) {
 	    alloced += CONFIGLISTGROWSIZE;
-	    configlist = (struct configlist *)
-	      xrealloc((char *)configlist, alloced*sizeof(struct configlist));
+	    RENEW(configlist, struct configlist, alloced);
 	}
 
-	configlist[nconfiglist].key = xstrdup(key);
-	configlist[nconfiglist].value = xstrdup(p);
+	configlist[nconfiglist].key = COPY(key);
+	configlist[nconfiglist].value = COPY(p);
 	nconfiglist++;
     }
     fclose(infile);
@@ -170,8 +156,8 @@ void (*proc)();
 
     for (opt = 0; opt < nconfiglist; opt++) {
 	if (!strncmp(configlist[opt].key, "partition-", 10)) {
-	    s = xstrdup(configlist[opt].value);
-	    (*proc)(xstrdup(""), s, configlist[opt].key+10);
+	    s = COPY(configlist[opt].value);
+	    (*proc)(COPY(""), s, configlist[opt].key+10);
 	}
     }
 }

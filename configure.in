@@ -253,15 +253,57 @@ case "$BERKELEY_DB_DIR" in
     BERKELEY_DB_LIB=
     BERKELEY_DB_BINDIR=
     ;;
-  *)
-    if test "$BERKELEY_DB_DIR" = yes ; then
-      BERKELEY_DB_DIR=/usr/local/BerkeleyDB
+
+  yes)
+    AC_MSG_CHECKING(for BerkeleyDB location)
+    for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 ; do
+        for d in /usr /opt /usr/local ; do
+            test -d "$d/$v" && BERKELEY_DB_DIR="$d/$v"  
+        done
+    done
+
+    if test x"$BERKELEY_DB_DIR" = xyes ; then
+        for v in db3 db2 ; do
+            if test -d "/usr/local/include/$v" ; then
+                BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
+                BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
+                BERKELEY_DB_LIB="-l$v"
+                BERKELEY_DB_BINDIR="/usr/local/bin"
+                AC_MSG_RESULT(FreeBSD locations)
+                break
+            fi
+        done
+        if test x"$BERKELEY_DB_LIB" = x ; then
+            for v in db3 db2 ; do
+                if test -d "/usr/include/$v" ; then
+                    BERKELEY_DB_CFLAGS="-I/usr/include/$v"
+                    BERKELEY_DB_LIB="-l$v"
+                    BERKELEY_DB_BINDIR="/usr/bin"
+                    AC_MSG_RESULT(Linux locations)
+                    break
+                fi
+            done
+            if test x"$BERKELEY_DB_LIB" = x ; then        
+                AC_MSG_ERROR(Cannot find BerkeleyDB)
+            fi
+        fi
+    else
+        BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
+        BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
+        BERKELEY_DB_LIB="-ldb"
+        BERKELEY_DB_BINDIR="$BERKELEY_DB_DIR/bin"
+        AC_MSG_RESULT($BERKELEY_DB_DIR)
     fi
+    AC_DEFINE(USE_BERKELEY_DB)
+    ;;
+
+  *)
     BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
     BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
     BERKELEY_DB_LIB="-ldb"
     BERKELEY_DB_BINDIR="$BERKELEY_DB_DIR/bin"
     AC_DEFINE(USE_BERKELEY_DB)
+    ;;
 esac
 AC_SUBST(BERKELEY_DB_LDFLAGS)
 AC_SUBST(BERKELEY_DB_CFLAGS)
@@ -317,7 +359,7 @@ case "$host" in
 dnl HP-UX's native compiler needs a special flag to turn on ANSI, and needs
 dnl -g on link as well as compile for debugging to work.
 *hpux*)
-    if test "$GCC" != xyes ; then
+    if test x"$GCC" != xyes ; then
         dnl Need flag to turn on ANSI.
         CFLAGS="$CFLAGS -Ae"
 
@@ -384,9 +426,9 @@ else
     INN_PERL_VERSION(5.003)
 fi
 
-dnl Look for PGP 5.0's pgpv, or pgp if pgpv is not found.
+dnl Look for PGP 5.0's pgpv, or pgp/pgpgpg if pgpv is not found.
 pgpverify=true
-AC_PATH_PROGS(_PATH_PGP, pgpv pgp)
+AC_PATH_PROGS(_PATH_PGP, pgpv pgp pgpgpg)
 if test -z "$_PATH_PGP" ; then
     pgpverify=false
 fi
@@ -422,6 +464,16 @@ if test x"$LOG_COMPRESS" = xgzip ; then
     LOG_COMPRESS="$GZIP"
 fi
 
+dnl Figure out what program to use to uncompress .Z files.  On systems that
+dnl have gzip but don't have compress, we can use gzip for this purpose and
+dnl should rather than hoping compres will be found at runtime.
+if test x"$COMPRESS" = xcompress && test x"$GZIP" != xgzip ; then
+    UNCOMPRESS="$GZIP -d"
+else
+    UNCOMPRESS="$COMPRESS -d"
+fi
+AC_SUBST(UNCOMPRESS)
+
 dnl The sendmail code takes this philosophy:  We assume that there are some
 dnl sites which don't have sendmail in the path for a reason, whatever that
 dnl may be.  And we also assume that there are some of those sites which
@@ -437,7 +489,7 @@ else
         echo 'No sendmail in path.  Looking in likely places....'
         echo ''
         AC_PATH_PROG(SENDMAIL, sendmail, ,
-            $PATH:/usr/lib:/usr/sbin:/usr/ucblib)
+            $PATH:/usr/sbin:/usr/lib:/usr/ucblib)
         echo ''
         if test -n "$SENDMAIL" ; then
             echo "sendmail was found at $SENDMAIL.  If this is correct, re-run"
@@ -520,24 +572,35 @@ AC_CHECK_LIB(dbm, dbm_open, DBM_LIB="-ldbm")
 AC_CHECK_LIB(ndbm, dbm_open, DBM_LIB="-lndbm")
 AC_SUBST(DBM_LIB)
 
-dnl Libraries and flags for embedded Perl.
+dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
+dnl Perl linked with gdbm but don't normally have gdbm installed, so on that
+dnl platform only strip -lgdbm out of the Perl libraries.  Leave it in on
+dnl other platforms where it may be necessary (it isn't on Linux; Linux
+dnl shared libraries can manage their own dependencies).
 if test x"$DO_PERL" = xDO ; then
     AC_MSG_CHECKING(for Perl linkage)
-    inn_perl_core_path=`$_PATH_PERL -MConfig -e 'print $Config{archlib}'`
-    inn_perl_core_libs=`$_PATH_PERL -MExtUtils::Embed -e ldopts | tail -1`
+    inn_perl_core_path=`$_PATH_PERL -MConfig -e 'print $Config{archlibexp}'`
+    inn_perl_core_flags=`$_PATH_PERL -MExtUtils::Embed -e ccopts`
+    inn_perl_core_libs=`$_PATH_PERL -MExtUtils::Embed -e ldopts 2>&1 | tail -1`
     for i in $LIBS ; do
         inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed "s/ $i//"`
     done
+    case $host in
+    *-linux*)
+        inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lgdbm//'`
+        ;;
+    esac
+    inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/^  *//'`
     inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/^  *//'`
+    PERL_INC="$inn_perl_core_flags"
     PERL_LIB="$inn_perl_core_libs"
-    PERL_INC="-I${inn_perl_core_path}/CORE"
     AC_MSG_RESULT($inn_perl_core_path)
 else
-    PERL_LIB=''
     PERL_INC=''
+    PERL_LIB=''
 fi
-AC_SUBST(PERL_LIB)
 AC_SUBST(PERL_INC)
+AC_SUBST(PERL_LIB)
 
 dnl Libraries and flags for embedded Python.
 dnl FIXME: I wish there was a less icky way to get this.
@@ -561,6 +624,34 @@ else
 fi
 AC_SUBST(PYTHON_LIB)
 AC_SUBST(PYTHON_INC)
+
+dnl Source used by INN_TYPE_FPOS_T_LARGE.
+define([_INN_TYPE_FPOS_T_LARGE_SOURCE],
+[#include <stdio.h>
+#include <sys/types.h>
+
+int
+main ()
+{
+  fpos_t fpos = 9223372036854775807ULL;
+  off_t off;
+  off = fpos;
+  exit(off == (off_t) 9223372036854775807ULL ? 0 : 1);
+}])
+
+dnl Check whether fpos_t is 64 bits and can be assigned to an off_t.  If so,
+dnl sets HAVE_LARGE_FPOS_T; this means that a missing fseeko or ftello can
+dnl be emulated usint fgetpos and fsetpos.
+AC_DEFUN([INN_TYPE_FPOS_T_LARGE],
+[AC_CACHE_CHECK(for off_t-compatible fpos_t, inn_cv_type_fpos_t_large,
+[AC_TRY_RUN(_INN_TYPE_FPOS_T_LARGE_SOURCE(),
+            [inn_cv_type_fpos_t_large=yes],
+            [inn_cv_type_fpos_t_large=no],
+            [inn_cv_type_fpos_t_large=no])
+if test "$inn_cv_type_fpos_t_large" = yes ; then
+    AC_DEFINE([HAVE_LARGE_FPOS_T], 1,
+        [Define if fpos_t is at least 64 bits and compatible with off_t.])
+fi])])
 
 dnl If configuring with large file support, use getconf to set our compile
 dnl and link flags and check for some necessary functions.
@@ -607,7 +698,6 @@ if test x"$DO_LFS" = xDO ; then
     AC_SUBST(LFS_CFLAGS)
     AC_SUBST(LFS_LDFLAGS)
     AC_SUBST(LFS_LIBS)
-    AC_CHECK_FUNCS(ftello fseeko)
 fi
 
 dnl
@@ -646,9 +736,23 @@ AC_MSG_CHECKING(for openssl)
 AC_MSG_RESULT($OPENSSL_DIR)
 if test "$OPENSSL_DIR" != "no"; then
 	SSL_INC="-I${OPENSSL_DIR}/include"
-	SSL_LIB="-L${OPENSSL_DIR}/lib -lssl -lcrypto"
 	SSL_BIN="${OPENSSL_DIR}/bin"
-	AC_DEFINE(HAVE_SSL)
+	SSL_LIB="-L${OPENSSL_DIR}/lib"
+        AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
+            [AC_CHECK_LIB(RSAglue, RSAPublicEncrypt,
+                SSL_LIB="-lRSAglue -lrsaref ${SSL_LIB}",,-lrsaref $SSL_LIB)]
+             ,,$SSL_LIB)
+	AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
+		SSL_LIB="${SSL_LIB} -lRSAglue -lrsaref",,$SSL_LIB)
+	AC_CHECK_LIB(crypto,BIO_accept,
+		SSL_LIB="-lcrypto ${SSL_LIB}",
+		[AC_MSG_ERROR(Can not find OpenSSL)],
+		$SSL_LIB)
+	AC_CHECK_LIB(ssl, SSL_CTX_new,
+		SSL_LIB="-lssl ${SSL_LIB}";
+		[AC_DEFINE(HAVE_SSL, 1, [Define if OpenSSL is available.])],
+		[AC_MSG_ERROR(Can not find OpenSSL)],
+		$SSL_LIB)
 else
 	SSL_LIB=""
 	SSL_INC=""
@@ -740,7 +844,7 @@ dnl have IOV_MAX appear to also offer it via sysconf(3), but it should be
 dnl a constant for a given implementation.  Set IOV_MAX if it's not
 dnl defined in <sys/uio.h> or <limits.h>.
 AC_DEFUN(INN_MACRO_IOV_MAX, [
-    AC_MSG_CHECKING(IOV_MAX)
+    AC_MSG_CHECKING(value of IOV_MAX)
     AC_CACHE_VAL(inn_cv_macro_iov_max, [AC_TRY_RUN(dnl
 changequote(<<, >>)dnl
 <<
@@ -825,16 +929,65 @@ AC_DEFUN(INN_MACRO_SUN_LEN, [
 ])
 INN_MACRO_SUN_LEN
 
-dnl FIXME: The external variable timezone is available on some platforms and
-dnl accomplishes the same purpose.
-AC_CACHE_CHECK(for tm_gmtoff in struct tm, inn_cv_struct_tm_gmtoff,
+dnl BSD hosts have a tm_gmtoff element in struct tm containing the offset
+dnl from GMT/UTC for that time.  This is the strongly preferred way of
+dnl getting time zone information.
+AC_DEFUN([INN_STRUCT_TM_GMTOFF],
+[AC_CACHE_CHECK(for tm_gmtoff in struct tm, inn_cv_struct_tm_gmtoff,
     AC_TRY_LINK([#include <time.h>],
-        [struct tm t; t.tm_gmtoff = 0],
+        [struct tm t; t.tm_gmtoff = 3600],
         inn_cv_struct_tm_gmtoff=yes,
         inn_cv_struct_tm_gmtoff=no))
-if test "$inn_cv_struct_tm_gmtoff" = yes ; then
-    AC_DEFINE(HAVE_TM_GMTOFF)
-fi
+if test x"$inn_cv_struct_tm_gmtoff" = xyes ; then
+    AC_DEFINE([HAVE_TM_GMTOFF], 1,
+        [Define if your struct tm has a tm_gmtoff member.])
+fi])
+INN_STRUCT_TM_GMTOFF
+
+dnl BSD hosts have the name of the local time zone in struct tm, which is
+dnl much nicer to use than the tzname variable (and also potentially handles
+dnl renamings of the time zone in the  past).
+AC_DEFUN([INN_STRUCT_TM_ZONE],
+[AC_CACHE_CHECK(for tm_zone in struct tm, inn_cv_struct_tm_zone,
+    AC_TRY_LINK([#include <time.h>],
+        [struct tm t; t.tm_zone = "UTC"],
+        inn_cv_struct_tm_zone=yes,
+        inn_cv_struct_tm_zone=no))
+if test x"$inn_cv_struct_tm_zone" = xyes ; then
+    AC_DEFINE([HAVE_TM_ZONE], 1,
+        [Define if your struct tm has a tm_zone member.])
+fi])
+INN_STRUCT_TM_ZONE
+
+dnl Many System V hosts have an external variable timezone containing the
+dnl offset of local time from GMT/UTC.  We can use this for the timezone
+dnl offset for current time, although it's not usable for anything else.
+dnl Unfortunately, some BSD varients have a function named timezone instead.
+AC_DEFUN([INN_VAR_TIMEZONE],
+[AC_CACHE_CHECK(for timezone variable, inn_cv_var_timezone,
+    AC_TRY_LINK([#include <time.h>], [timezone = 3600; altzone = 7200],
+        inn_cv_var_timezone=yes,
+        inn_cv_var_timezone=no))
+if test x"$inn_cv_var_timezone" = xyes ; then
+    AC_DEFINE([HAVE_VAR_TIMEZONE], 1,
+        [Define if timezone is an external variable in <time.h>.])
+fi])
+INN_VAR_TIMEZONE
+
+dnl Many System V hosts and some BSD systems have an external variable
+dnl tzname containing the abbreviations of the main and alternate time
+dnl zone.  We can use these as a reasonable approximation of the correct
+dnl time zone names, although they could be incorrect if the time zone
+dnl name has changed in the past.
+AC_DEFUN([INN_VAR_TZNAME],
+[AC_CACHE_CHECK(for tzname variable, inn_cv_var_tzname,
+    AC_TRY_LINK([#include <time.h>], [*tzname = "UTC"],
+        inn_cv_var_tzname=yes, inn_cv_var_tzname=no))
+if test x"$inn_cv_var_tzname" = xyes ; then
+    AC_DEFINE([HAVE_VAR_TZNAME], 1,
+        [Define if tzname is an external variable in <time.h>.])
+fi])
+INN_VAR_TZNAME
 
 dnl A modified version of AC_CHECK_SIZEOF that doesn't always AC_DEFINE, but
 dnl instead lets you execute shell code based on success or failure.  This
@@ -942,8 +1095,13 @@ if test x"$ac_cv_func_statvfs" = xno ; then
 fi
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(getopt inet_aton inet_ntoa pread pwrite strcasecmp \
-                 strdup strerror strspn setenv)
+AC_REPLACE_FUNCS(fseeko ftello getopt inet_aton inet_ntoa pread pwrite \
+                 strcasecmp strdup strerror strspn setenv hstrerror)
+
+dnl If replacing fseeko or ftello, see if we can use fsetpos/fgetpos.
+if test "$ac_cv_func_fseeko" = no || test "$ac_cv_func_ftello" = no ; then
+   INN_TYPE_FPOS_T_LARGE
+fi
 
 MISSING_OBJ="$LIBOBJS"
 MISSING_SRC=`echo "$MISSING_OBJ" | sed 's/\.o/.c/g'`
@@ -1329,4 +1487,31 @@ NOTE: The owner and the group of "${RUNDIR}" which is specified by
       problems.
 EOF
     fi
+fi
+
+dnl Finally, double-check the configured temporary directory.  Some people
+dnl point this at the system temporary directories or at other
+dnl world-writeable directories, which can be a local security hole.
+if $_PATH_PERL -e "exit((stat('$TMPPATH'))[[2]] & 2)" > /dev/null ; then
+    :
+else
+    cat <<EOM
+
+WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+
+  The temporary directory you have configured is world-writeable.  It is
+  currently set to $TMPPATH.
+
+  This directory is used by INN for temporary files and should only be
+  writeable by the news user.  INN does not go to great lengths to prevent
+  symlink attacks and the like because it assumes this directory is not
+  world-writeable.  By configuring INN in this fashion, you may be
+  introducing a locally exploitable security hole.
+
+  It is STRONGLY recommended that you use a temporary directory reserved for
+  INN's exclusive use, one which is not world-writeable.  You can do this
+  either with --with-tmp-dir or by setting --prefix to something other than
+  /usr or /.
+
+EOM
 fi

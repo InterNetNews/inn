@@ -67,22 +67,19 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include "config.h"
+#include "clibrary.h"
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
-#include <configdata.h>
-#include <clibrary.h>
-#include <md5.h>
-#include <libinn.h>
-#include <macros.h>
-#include <dbz.h>
+#include "md5.h"
+#include "libinn.h"
+#include "macros.h"
+#include "dbz.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
@@ -166,12 +163,6 @@ static of_t tagboth;		/* tagbits|taghere */
 static int canttag_warned;		/* flag to control can't tag warning */
 
 #endif	/* DO_TAGGED_HASH */
-
-#ifdef MAP_FILE
-#define MAP__ARG	(MAP_FILE | MAP_SHARED)
-#else
-#define MAP__ARG	(MAP_SHARED)
-#endif
 
 /* Old dbz used a long as the record type for dbz entries, which became
  * really gross in places because of mixed references.  We define these to
@@ -794,10 +785,6 @@ int dbzinit(const char *name) {
     tagboth = tagbits | taghere;
     canttag_warned = 0;
 #else
-    if ((innconf == NULL) && (ReadInnConf() < 0)) {
-	Fclose(dirf);
-	return FALSE;
-    }
     if (!openhashtable(name, idx, &idxtab, sizeof(of_t), options.pag_incore)) {
 	Fclose(dirf);
 	return FALSE;
@@ -1393,7 +1380,7 @@ static of_t			/* NOTFOUND if we hit VACANT or error */
 search(searcher *sp)
 {
     of_t value;
-    unsigned long taboffset = 0;
+    unsigned long taboffset = sp->tabno * conf.tsize;
 
     if (sp->aborted)
 	return(NOTFOUND);
@@ -1426,10 +1413,9 @@ search(searcher *sp)
 		    return(NOTFOUND);
 		} else
 		    value = VACANT;
-	    }
-
-	    /* and finish up */
-	    pagtab.pos += sizeof(value);
+                pagtab.pos = -1;
+	    } else
+                pagtab.pos += sizeof(value);
 	}
 
 	/* vacant slot is always cause to return */

@@ -369,10 +369,6 @@ STATIC BOOL ovbuffread_config(void) {
     return FALSE;
   }
   for (from = to = config; *from; ) {
-    if (ctab_free == 0)
-      ctab = NEW(char *, 1);
-    else
-      RENEW(ctab, char *, ctab_free+1);
     if (*from == '#') {	/* Comment line? */
       while (*from && *from != '\n')
 	from++;	/* Skip past it */
@@ -383,6 +379,10 @@ STATIC BOOL ovbuffread_config(void) {
       from++;
       continue;		/* Back to top of loop */
     }
+    if (ctab_free == 0)
+      ctab = NEW(char *, 1);
+    else
+      RENEW(ctab, char *, ctab_free+1);
     /* If we're here, we've got the beginning of a real entry */
     ctab[ctab_free++] = to = from;
     while (1) {
@@ -562,8 +562,7 @@ STATIC BOOL ovbuffinit_disks(void) {
 	if (strncmp(rpx->path, ovbuff->path, OVBUFFPASIZ) != 0) {
 	  syslog(L_ERROR, "%s: Path mismatch: read %s for buffindexed %s",
 		   LocalLogName, rpx->path, ovbuff->path);
-	  ovlock(ovbuff, LOCK_UNLOCK);
-	  return FALSE;
+	  ovbuff->needflush = TRUE;
 	}
 	strncpy(buf, rpx->indexa, OVBUFFLASIZ);
 	buf[OVBUFFLASIZ] = '\0';
@@ -592,6 +591,7 @@ STATIC BOOL ovbuffinit_disks(void) {
 	strncpy(buf, rpx->freea, OVBUFFLASIZ);
 	buf[OVBUFFLASIZ] = '\0';
 	ovbuff->freeblk = hex2offt(buf);
+	ovflushhead(ovbuff);
 	Needunlink = FALSE;
     } else {
 	ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
@@ -1799,7 +1799,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
 	if (Gib[j].artnum == 0)
 	  continue;
 	/* this may be duplicated, but ignore it in this case */
-	OVEXPremove(Gib[j].token, TRUE);
+	OVEXPremove(Gib[j].token, TRUE, NULL, 0);
       }
       freegroupblock();
       ovgroupunmap();
@@ -1840,15 +1840,14 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
     ah = NULL;
     if (len == 0)
       continue; 
-    if (SMprobe(SELFEXPIRE, &token, NULL)) {
+    if (!SMprobe(EXPENSIVESTAT, &token, NULL) || OVstatall) {
       if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
         continue; 
+      SMfreearticle(ah);
     } else {
-      if (!innconf->groupbaseexpiry && !OVhisthasmsgid(data))
+      if (!OVhisthasmsgid(data))
 	continue; 
     }
-    if (ah)
-      SMfreearticle(ah);
     if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))
       continue;
 #ifdef OV_DEBUG
@@ -1899,10 +1898,14 @@ BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
     return TRUE;
   case OVSORT:
     sorttype = (OVSORTTYPE *)val;
-    *sorttype = OVARRIVED;
+    *sorttype = OVNOSORT;
     return TRUE;
   case OVCUTOFFLOW:
     Cutofflow = *(BOOL *)val;
+    return TRUE;
+  case OVSTATICSEARCH:
+    i = (int *)val;
+    *i = FALSE;
     return TRUE;
   default:
     return FALSE;
@@ -1911,9 +1914,9 @@ BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
 
 void buffindexed_close(void) {
   struct stat	sb;
+  OVBUFF	*ovbuffnext, *ovbuff = ovbufftab;
 #ifdef OV_DEBUG
   FILE		*F = NULL;
-  OVBUFF	*ovbuff = ovbufftab;
   PID_T		pid;
   char		*path = NULL;
   int		j;
@@ -1978,6 +1981,11 @@ void buffindexed_close(void) {
       return;
     }
   }
+  for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuffnext) {
+    ovbuffnext = ovbuff->next;
+    DISPOSE(ovbuff);
+  }
+  ovbufftab = NULL;
 }
 
 #ifdef DEBUG

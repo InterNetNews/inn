@@ -134,7 +134,7 @@ typedef enum _CHANNELSTATE {
     CSpaused,
     CSgetarticle,
     CSeatarticle,
-    CSgetrep,
+    CSeatcommand,
     CSgetxbatch
 } CHANNELSTATE;
 
@@ -201,12 +201,15 @@ typedef struct _CHANNEL {
     int                 PrecommitiCachenext;
     int                 XBatchSize;
     int                 LargeArtSize;
+    int                 LargeCmdSize;
     int			Lastch;
     int			Rest;
     int			SaveUsed;
     int			ActiveCnx;
     int			MaxCnx;
     int			HoldTime;
+    time_t		ArtBeg;
+    int			ArtMax;
 } CHANNEL;
 
 
@@ -490,6 +493,7 @@ extern NORETURN		CleanupAndExit();
 extern void		FileGlue();
 extern void		JustCleanup();
 extern void		ThrottleIOError();
+extern void		ThrottleNoMatchError();
 extern void		ReopenLog();
 extern void		xchown();
 

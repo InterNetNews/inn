@@ -24,6 +24,7 @@
 STATIC int	OVnumpatterns;
 STATIC char	**OVpatterns;
 time_t		OVrealnow;
+BOOL		OVstatall;
 
 STATIC BOOL	OVdelayrm;
 STATIC BOOL	OVusepost;
@@ -125,13 +126,23 @@ BOOL OVopen(int mode) {
 	    return FALSE;
 	}
     }
+    if (!innconf->enableoverview) {
+	syslog(L_FATAL, "enableoverview is not true");
+	(void)fprintf(stderr, "enableoverview is not true\n");
+	return FALSE;
+    }
+    if (innconf->ovmethod == NULL) {
+	syslog(L_FATAL, "ovmethod is not defined");
+	(void)fprintf(stderr, "ovmethod is not defined\n");
+	return FALSE;
+    }
     for (i=0;i<NUM_OV_METHODS;i++) {
 	if (!strcmp(innconf->ovmethod, ov_methods[i].name))
 	    break;
     }
     if (i == NUM_OV_METHODS) {
 	syslog(L_FATAL, "%s is not found for ovmethod", innconf->ovmethod);
-	(void)fprintf(stderr, "%s is not found for ovmethod", innconf->ovmethod);
+	(void)fprintf(stderr, "%s is not found for ovmethod\n", innconf->ovmethod);
 	return FALSE;
     }
     ov = ov_methods[i];
@@ -187,9 +198,9 @@ BOOL OVgroupdel(char *group) {
 }
 
 BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
-    char		*next;
+    char		*next, *nextcheck;
     static char		*xrefdata, *patcheck, *overdata;
-    char		*xrefstart;
+    char		*xrefstart, *xrefend;
     static int		xrefdatalen = 0, overdatalen = 0;
     BOOL		found = FALSE;
     int			xreflen;
@@ -229,6 +240,14 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
         next++;
     }
     xreflen = len - (next - data);
+
+    /*
+     * If there are other fields beyond Xref in overview, then
+     * we must find Xref's end, or data following is misinterpreted.
+     */
+    if (xrefend = memchr(next, '\t', xreflen))
+	xreflen = xrefend - next;
+
     if (xrefdatalen == 0) {
         xrefdatalen = BIG_BUFFER;
         xrefdata = NEW(char, xrefdatalen);
@@ -253,12 +272,12 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     if (innconf->ovgrouppat != NULL) {
         memcpy(patcheck, next, xreflen);
         patcheck[xreflen] = '\0';
-        for (group = patcheck; group && *group; group = memchr(next, ' ', next - patcheck)) {
+        for (group = patcheck; group && *group; group = memchr(nextcheck, ' ', xreflen - (nextcheck - patcheck))) {
             while (isspace((int)*group))
                 group++;
-            if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
+            if ((nextcheck = memchr(group, ':', xreflen - (patcheck - group))) == NULL)
                 return FALSE;
-            *next++ = '\0';
+            *nextcheck++ = '\0';
             if (!OVgroupmatch(group)) {
                 if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
                     /* this article will never be expired, since it does not
@@ -364,7 +383,8 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	(void)fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
-    if (type == OVGROUPBASEDEXPIRE) {
+    switch (type) {
+    case OVGROUPBASEDEXPIRE:
 	if (!innconf->groupbaseexpiry) {
 	    syslog(L_ERROR, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
 	    (void)fprintf(stderr, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
@@ -392,8 +412,12 @@ BOOL OVctl(OVCTLTYPE type, void *val) {
 	OVearliest = ((OVGE *)val)->earliest;
 	OVignoreselfexpire = ((OVGE *)val)->ignoreselfexpire;
 	return TRUE;
+    case OVSTATALL:
+	OVstatall = *(BOOL *)val;
+	return TRUE;
+    default:
+	return ((*ov.ctl)(type, val));
     }
-    return ((*ov.ctl)(type, val));
 }
 
 void OVclose(void) {
@@ -804,9 +828,6 @@ STATIC NEWSGROUP *EXPnotfound(char *Entry)
 	bg->Name = COPY(Entry);
 	bg->Next = EXPbadgroups;
 	EXPbadgroups = bg;
-	(void)fflush(stdout);
-	(void)fprintf(stderr, "Group not matched (removed?) %s -- %s\n",
-	    Entry, "Purging all articles");
     }
     /* remove it all now. */
     if (Removeit.Keep == 0) {
@@ -826,15 +847,8 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
     NEWSGROUP	        *ngp;
     enum KRP		retval = Remove;
 
-    if ((p = strchr(Entry, ':')) == NULL) {
-	(void)fflush(stdout);
-	(void)fprintf(stderr, "Bad entry, \"%s\"\n", Entry);
-	return Remove;
-    }
-    *p = '\0';
     if ((ngp = NGfind(Entry)) == NULL)
 	ngp = EXPnotfound(Entry);
-    /* '\0' is left to get newsgroup name later */
 
     /* Bad posting date? */
     if (when > OVrealnow + 86400) {
@@ -862,23 +876,23 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t expires)
 
 /*
 **  An article can be removed.  Either print a note, or actually remove it.
-**  Also fill in the article size.
+**  Takes in the Xref information so that it can pass this to the storage
+**  API callback used to generate the list of files to remove.
 */
-void OVEXPremove(TOKEN token, BOOL deletedgroups)
+void OVEXPremove(TOKEN token, BOOL deletedgroups, char **xref, int ngroups)
 {
     EXPunlinked++;
     if (deletedgroups) {
 	EXPprocessed++;
 	EXPoverindexdrop++;
     }
-    if (EXPunlinkfile) {
-	(void)fprintf(EXPunlinkfile, "%s\n", TokenToText(token));
+    if (EXPunlinkfile && xref != NULL) {
+        SMprintfiles(EXPunlinkfile, token, xref, ngroups);
 	if (!ferror(EXPunlinkfile))
 	    return;
-	(void)fprintf(stderr, "Can't write to -z file, %s\n",
-	    strerror(errno));
-	(void)fprintf(stderr, "(Will ignore it for rest of run.)\n");
-	(void)fclose(EXPunlinkfile);
+	fprintf(stderr, "Can't write to -z file, %s\n", strerror(errno));
+	fprintf(stderr, "(Will ignore it for rest of run.)\n");
+	fclose(EXPunlinkfile);
 	EXPunlinkfile = NULL;
     }
     if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
@@ -895,6 +909,8 @@ STATIC void ARTreadschema(void)
     ARTOVERFIELD		*fp;
     int				i;
     char			buff[SMBUF];
+    BOOL			foundxref = FALSE;
+    BOOL			foundxreffull = FALSE;
 
     /* Open file, count lines. */
     if ((F = fopen(cpcatpath(innconf->pathetc, _PATH_SCHEMA), "r")) == NULL)
@@ -922,10 +938,18 @@ STATIC void ARTreadschema(void)
 	fp->HasHeader = FALSE;
 	fp->Header = COPY(buff);
 	fp->Length = strlen(buff);
+	if (caseEQ(buff, "Xref")) {
+	    foundxref = TRUE;
+	    foundxreffull = fp->NeedsHeader;
+	}
 	fp++;
     }
     ARTfieldsize = fp - ARTfields;
     (void)fclose(F);
+    if (!foundxref || !foundxreffull) {
+	(void)fprintf(stderr, "'Xref:full' must be included in %s", cpcatpath(innconf->pathetc, _PATH_SCHEMA));
+	exit(1);
+    }
 }
 
 /*
@@ -1040,6 +1064,7 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
     BOOL                poisoned;
     BOOL		keeper;
     BOOL		remove;
+    BOOL                purge;
     ARTHANDLE		*article;
     char		*Xref;
 
@@ -1068,7 +1093,7 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
 	if (Group != NULL) {
 	    DISPOSE(Group);
 	}
-	Group = NEW(char, strlen(group) + 1);
+	Group = NEW(char, strlen(group) + 2);
 	strcpy(Group, group);
 	strcat(Group, ":");
 	Xref = Group;
@@ -1083,33 +1108,59 @@ BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t ar
 	EXPoverindexdrop++;
 	return TRUE;
     }
+
+    /* arts is now an array of strings, each of which is a group name, a
+       colon, and an article number.  EXPkeepit wants just pure group names,
+       so replace the colons with nuls (deleting the overview entry if it
+       isn't in the expected form). */
+    for (i = 0; i < count; i++) {
+        p = strchr(arts[i], ':');
+        if (p == NULL) {
+            fflush(stdout);
+            fprintf(stderr, "Bad entry, \"%s\"\n", arts[i]);
+            EXPoverindexdrop++;
+            return TRUE;
+        }
+        *p = '\0';
+    }
+
     /* First check all postings */
     poisoned = FALSE;
     keeper = FALSE;
     remove = FALSE;
+    purge = TRUE;
     for (i = 0; i < count; ++i) {
 	if ((krps[i] = EXPkeepit(arts[i], when, expires)) == Poison)
 	    poisoned = TRUE;
 	if (OVkeep && (krps[i] == Keep))
 	    keeper = TRUE;
-	if ((krps[i] == Remove))
+	if ((krps[i] == Remove) && EQ(group, arts[i]))
 	    remove = TRUE;
+        if ((krps[i] == Keep))
+            purge = FALSE;
     }
     EXPprocessed++;
 
     if (OVearliest) {
 	if (remove || poisoned || token.type == TOKEN_EMPTY) {
-	    if (strcmp(group, arts[0]) == 0)
-		/* delete article if this is first entry */
-		OVEXPremove(token, FALSE);
+	    /* delete article if this is first entry */
+	    if (EQ(group, arts[0])) {
+		for (i = 0; i < count; i++)
+		    arts[i][strlen(arts[i])] = ':';
+		OVEXPremove(token, FALSE, arts, count);
+	    }
 	    EXPoverindexdrop++;
 	    return TRUE;
 	}
     } else { /* not earliest mode */
-	if (!keeper || token.type == TOKEN_EMPTY) {
-	    if (strcmp(group, arts[0]) == 0)
-		/* delete article if this is first entry */
-		OVEXPremove(token, FALSE);
+	if ((!keeper && remove) || token.type == TOKEN_EMPTY) {
+	    /* delete article if purge is set, indicating that it has
+	       expired out of every group to which it was posted */
+	    if (purge) {
+		for (i = 0; i < count; i++)
+		    arts[i][strlen(arts[i])] = ':';
+		OVEXPremove(token, FALSE, arts, count);
+	    }
 	    EXPoverindexdrop++;
 	    return TRUE;
 	}
@@ -1124,6 +1175,9 @@ BOOL OVhisthasmsgid(char *data) {
     static STRING	History;
     HASH		key;
     OFFSET_T		offset;
+    static FILE		*F;
+    int			i, c;
+    char		buff[(sizeof(TOKEN) * 2) + 3];
 
     if (!ReadOverviewfmt) {
 	OVfindheaderindex();
@@ -1134,11 +1188,31 @@ BOOL OVhisthasmsgid(char *data) {
 	    syslog(L_ERROR, "OVhisthasmsgid: dbzinit failed '%s'", History);
 	    return FALSE;
 	}
+	if ((F = fopen(History, "r")) == NULL) {
+	    syslog(L_ERROR, "OVhisthasmsgid: fopen failed '%s', %m", History);
+	    return FALSE;
+	}
     }
     if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
 	return FALSE;
     key = HashMessageID(p);
-    if (dbzfetch(key, &offset))
+    if (!dbzfetch(key, &offset))
+	return FALSE;
+    if (fseek(F, offset, SEEK_SET) == -1) {
+	syslog(L_ERROR, "OVhisthasmsgid: fseek failed to %ld '%s', %m", offset, History);
+	return FALSE;
+    }
+    for (i = 2; (c = getc(F)) != EOF && c != '\n'; )
+	if (c == HIS_FIELDSEP && --i == 0)
+	    break;
+    if (c != HIS_FIELDSEP)
+	return FALSE;
+    i = 0;
+    while ((c = getc(F)) != EOF && c != ' ' && c != '\n' && i < (sizeof(TOKEN) * 2) + 2) {
+	buff[i++] = (char)c;
+    }
+    buff[i] = '\0';
+    if (IsToken(buff))
 	return TRUE;
     return FALSE;
 }

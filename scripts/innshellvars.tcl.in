@@ -43,8 +43,6 @@ set inn_oldactive "${inn_pathdb}/active.old"
 set inn_localgroups "${inn_newsetc}/localgroups"
 set inn_expirectl "${inn_newsetc}/expire.ctl"
 set inn_path_motd "${inn_newsetc}/motd.news"
-set inn_path_storagectl "${inn_newsetc}/storage.ctl"
-set inn_path_overviewctl "${inn_newsetc}/overview.ctl"
 
 set inn_daily "${inn_locks}/locks/LOCK.news.daily"
 
@@ -78,6 +76,8 @@ set inn_egrep "@_PATH_EGREP@"
 set inn_sort "@_PATH_SORT@"
 set inn_getftp "@GETFTP@"
 set inn_compress "@COMPRESS@"
+set inn_gzip "@GZIP@"
+set inn_uncompress "@UNCOMPRESS@"
 set inn_log_compress "@LOG_COMPRESS@"
 set inn_z "@LOG_COMPRESSEXT@"
 

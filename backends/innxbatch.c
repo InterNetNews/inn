@@ -366,6 +366,7 @@ char *av[];
   int			XBATCHbuffersize = 0;
   int			XBATCHsize;
 
+  (void)openlog("innxbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
   /* Set defaults. */
   if (ReadInnConf() < 0) exit(1);
   ConnectTimeout = 0;
@@ -406,8 +407,6 @@ char *av[];
   REMhost = av[0];
   ac--;
   av++;
-
-  (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
   /* Open a connection to the remote server. */
   if (ConnectTimeout) {

@@ -122,7 +122,7 @@ various inn.conf(5) parameters for just that group of users.
 Just like with auth groups, when matching access groups the last matching
 one in the file is used to determine the user's permissions.
 
-There is one additional special case to be aware of.  First, when forming
+There is one additional special case to be aware of.  When forming
 particularly complex authentication and authorization rules, it is
 sometimes useful for the identities provided by a given auth group to only
 apply to particular access groups; in other words, rather than checking
@@ -180,6 +180,8 @@ break that auth group into multiple auth groups, each with a portion of
 the hosts listed in its hosts: parameter, and each assigning the same user
 identity.
 
+All hosts match if this parameter does not exist.
+
 =item B<res:>
 
 A command line for a user resolver.  The program executed must be located
@@ -236,11 +238,8 @@ key parameter.
 
 The privileges given by this access group apply to any user identity which
 matches this comma-separated list of wildmat patterns.  If this parameter
-isn't given, the access group applies to all users.  Note that the absence
-of this parameter is not the same as C<users: *>; the latter will match
-all successful authentications and any client matching an auth group with
-a default: parameter, but the former will match any client including one
-that failed authentication and is in an auth group without a default.
+isn't given, the access group applies to all users (and is essentially
+equivalent to C<users: *>).
 
 =item B<newsgroups:>
 
@@ -257,7 +256,7 @@ parameter.
 =item B<post:>
 
 Like the newsgroups: parameter, but the client is only given permission to
-post to the matching newsgroups.  This parameter is often used with post:
+post to the matching newsgroups.  This parameter is often used with read:
 (above) to define the patterns for reading and posting separately (usually
 to give the user permission to read more newsgroups than they're permitted
 to post to).  It cannot be used in the same access group with a
@@ -278,6 +277,12 @@ The client may read articles.
 
 The client may post articles.
 
+=item A
+
+The client may post articles with Approved: headers (in other words, may
+approve articles for moderated newsgroups).  By default, this is not
+allowed.
+
 =item N
 
 The client may use the NEWNEWS command, overriding the global setting.
@@ -288,6 +293,12 @@ The client may post to newsgroups that are set to disallow local posting
 (mode C<n> in the active(5) file).
 
 =back
+
+Note that if this parameter is given, I<allownewnews> in inn.conf(5) is
+ignored for connections matching this access group and the ability of the
+client to use NEWNEWS is entirely determined by the presence of C<N> in
+the access string.  If you want to support NEWNEWS, make sure to include
+C<N> in the access string when you use this parameter.
 
 Note that if this parameter is given and C<R> isn't present in the access
 string, the client cannot read regardless of newsgroups: or read:
@@ -311,6 +322,11 @@ adds a new Date: header in UTC.  If this is set to true, the Date: header
 will be formatted in local time instead.  This is a boolean value and the
 default is false.
 
+=item B<newsmaster:>
+
+Used as the contact address in the help message returned by nnrpd(8) if
+the virtualhost: parameter is set to true.
+
 =item B<strippath:>
 
 If set to true, any Path: header provided by a user in a post is stripped
@@ -329,6 +345,18 @@ If set to false, posts made by these users do not pass through the Python
 filter even if it is otherwise enabled.  This is a boolean value and the
 default is true.
 
+=item B<virtualhost:>
+
+If set to true, nnrpd(8) will behave as if it's running on a server with a
+different name.  This affects the Path:, Message-ID:, and X-Trace: headers
+of posted articles, as well as the apparent Path: and Xref: headers of all
+articles read by the client.  One of pathhost: or domain: must be set in
+the same access group if this parameter is set to true, and nnrpd(8) will
+act as if the server name is the value of pathhost:, or domain: if
+pathhost: isn't set or is set to the same value as in inn.conf(5).  One of
+these parameters must be set to something different than that set in
+inn.conf.
+
 =back
 
 In addition, all of the following parameters are valid in access groups
@@ -339,6 +367,48 @@ backoff_trigger, checkincludedtext, clienttimeout, complaints, domain,
 fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
 nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
 pathhost, readertrack, spoolfirst, and strippostcc.
+
+=head1 SUMMARY
+
+Here's a basic summary of what happens when a client connects:
+
+=over 2
+
+=item *
+
+All auth groups are scanned and the ones that don't match the client IP
+address are eliminated.
+
+=item *
+
+Each remaining auth group is scanned from the last to the first, and an
+attempt is made to apply it to the current connection.  This means running
+res: programs, if any, and otherwise applying default:.  The first auth
+group to return a valid user is kept as the active auth group.
+
+=item *
+
+If no auth groups yield a valid user (none have default: parameters or
+successful res: programs) but some of the auth groups have auth: lines
+(indicating a possibility that the user can authenticate and then obtain
+permissions), the connection is considered to have no valid auth group
+(which means that the access groups are ignored completely) but the
+connection isn't closed.  Instead, 480 is returned for everything until
+the user authenticates.
+
+=item *
+
+When the user authenticates, all auth groups with auth: lines are then
+checked from the bottom up and the first one that returns a valid user is
+kept as the default auth group.
+
+=item *
+
+Regardless of how an auth group is established, as soon as one is, the
+user permissions are granted by scanning the access groups from bottom up
+and finding the first match.
+
+=back
 
 =head1 EXAMPLES
 
@@ -376,7 +446,7 @@ auth and access group:
     }
 
 If those are put in the file after the above example, they'll take
-precedent (because they're later in the file) for any user coming from a
+precedence (because they're later in the file) for any user coming from a
 machine in the lab.example.com domain, and those users will only have read
 access, not posting access.
 
@@ -390,32 +460,24 @@ usernames and passwords, and then against the system shadow password file:
         auth: "ckpasswd -s"
     }
 
-    access fail {
-        newsgroups: !*
-    }
-
     access full {
         users: *
         newsgroups: *
     }
 
-Note the use of two separate access groups.  When the user first connects,
-there are no res: keys and no default, so they get an empty identity.  An
-empty identity can't match a users: parameter, so they fall into the first
-access group and receive no access.
+When the user first connects, there are no res: keys and no default, so
+they don't receive any valid identity and the connection won't match any
+access groups (even ones with C<users: *>).  Such users receive nothing
+but authentication required responses from nnrpd until they authenticate.
 
 If they then later authenticate, the username and password are checked
 first by running B<ckpasswd> with the B<-d> option for an external dbm
 file of encrypted passwords, and then with the B<-s> option to check the
 shadow password database (note that ckpasswd may have to be setgid to a
 shadow group to use this option).  If both of those fail, the user will
-keep the empty identity; otherwise, they will acquire some other identity
-string (whatever username they specified, since the password was valid)
-and the first access group will match, giving them full access.
-
-Note that the order of the access groups is significant.  If the fail
-access group were last, it would always match, and no one would ever get
-access regardless of whether they authenticated.
+continue to have no identity; otherwise, they will acquire some other
+identity string (whatever username they specified, since the password was
+valid) and the access group will match, giving them full access.
 
 Finally, here's a very complicated example.  This is for an organization
 that has an internal hierarchy example.* only available to local shell
@@ -511,3 +573,5 @@ $Id$
 =head1 SEE ALSO
 
 inn.conf(5), innd(8), newsfeeds(5), nnrpd(8), wildmat(3).
+
+=cut

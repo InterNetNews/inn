@@ -127,6 +127,11 @@ STATIC double		STATacceptedsize;
 STATIC double		STATrejectedsize;
 
 
+/* Prototypes. */
+static ARTHANDLE *article_open(const char *path, const char *id);
+static void article_free(ARTHANDLE *);
+
+
 /*
 **  Find the history file entry for the Message-ID and return a file
 **  positioned at the third field.
@@ -199,7 +204,8 @@ Expired(char *MessageID) {
 **  Flush and reset the site's output buffer.  Return FALSE on error.
 */
 STATIC BOOL
-REMflush() {
+REMflush(void)
+{
     int		i;
 
     if (REMbuffptr == REMbuffer) return TRUE; /* nothing buffered */
@@ -288,7 +294,7 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
 STATIC void
 strel(int i) {
 	if (stbuf[i].art) {
-	    SMfreearticle(stbuf[i].art);
+            article_free(stbuf[i].art);
 	    stbuf[i].art = NULL;
 	}
 	if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
@@ -377,7 +383,8 @@ ExitWithStats(int x) {
 **  to be the batchfile.
 */
 STATIC void
-CloseAndRename() {
+CloseAndRename(void)
+{
     /* Close the files, rename the temporary. */
     if (BATCHqp) {
 	QIOclose(BATCHqp);
@@ -404,7 +411,7 @@ CloseAndRename() {
 **  a file write error, exit so that the original input is left alone.
 */
 STATIC void
-Requeue(char *Article, char *MessageID) {
+Requeue(const char *Article, const char *MessageID) {
     /* Temp file already open? */
     if (BATCHfp == NULL) {
 	(void)mktemp(BATCHtemp);
@@ -606,8 +613,10 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	return FALSE;
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
-    if (Debug)
+    if (Debug) {
+	(void)fprintf(stderr, "> [ article %d ]\n", art->len);
 	(void)fprintf(stderr, "> .\n");
+    }
 
     if (CanStream) return TRUE;	/* streaming mode does not wait for ACK */
 
@@ -669,9 +678,9 @@ STATIC char *
 GetMessageID(ARTHANDLE *art) {
     static char	*buff;
     static int	buffsize = 0;
-    char	*p, *q;
+    const char	*p, *q;
 
-    if ((p = (char *)HeaderFindMem(art->data, art->len, "Message-ID", 10)) == NULL)
+    if ((p = HeaderFindMem(art->data, art->len, "Message-ID", 10)) == NULL)
 	return NULL;
     for (q = p; q < art->data + art->len; q++) {
         if (*q == '\r' || *q == '\n')
@@ -748,41 +757,27 @@ check(int i) {
 STATIC BOOL
 takethis(int i) {
     char	buff[NNTP_STRLEN];
-    ARTHANDLE	*art;
-    TOKEN	token;
 
-    if (!stbuf[i].art) { /* should already be open but ... */
-	/* Open the article. */
-	if (!IsToken(stbuf[i].st_fname)) {
-	    strel(i);
-	    ++STATmissing;
-	    return FALSE; /* Not an error. Could be canceled or expired */
-	}
-	token = TextToToken(stbuf[i].st_fname);
-	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
-	    strel(i);
-	    ++STATmissing;
-	    return FALSE; /* Not an error. Could be canceled or expired */
-	}
-	stbuf[i].art = NEW(ARTHANDLE, 1);
-	*stbuf[i].art = *art;
+    if (!stbuf[i].art) {
+        fprintf(stderr, "Internal error: null article for %s in takethis\n",
+                stbuf[i].st_fname);
+        return TRUE;
     }
     /* send "takethis <ID>" to the other system */
     (void)sprintf(buff, "takethis %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
-	(void)fprintf(stderr, "Can't send takethis <id>, %s\n",
-		strerror(errno));
-	return TRUE;
+        (void)fprintf(stderr, "Can't send takethis <id>, %s\n",
+                      strerror(errno));
+        return TRUE;
     }
     if (Debug)
-	(void)fprintf(stderr, "> %s\n", buff);
+        (void)fprintf(stderr, "> %s\n", buff);
     if (GotInterrupt)
-	Interrupted((char *)0, (char *)0);
-    if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id,
-	    stbuf[i].art))
-	return TRUE;
+        Interrupted((char *)0, (char *)0);
+    if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id, stbuf[i].art))
+        return TRUE;
     stbuf[i].st_size = stbuf[i].art->len;
-    SMfreearticle(stbuf[i].art);	/* should not need file again */
+    article_free(stbuf[i].art); /* should not need file again */
     stbuf[i].art = 0;		/* so close to free descriptor */
     stbuf[i].st_age = 0;
     /* That all.  Response is checked later by strlisten() */
@@ -795,7 +790,8 @@ takethis(int i) {
 ** return TRUE on failure.
 */
 STATIC BOOL
-strlisten() {
+strlisten(void)
+{
     int		resp;
     int		i;
     char	*id, *p;
@@ -900,6 +896,89 @@ Usage() {
 }
 
 
+/*
+**  Open an article.  If the argument is a token, retrieve the article via
+**  the storage API.  Otherwise, open the file and fake up an ARTHANDLE for
+**  it.  Only fill in those fields that we'll need.  Articles not retrieved
+**  via the storage API will have a type of TOKEN_EMPTY.
+*/
+static ARTHANDLE *
+article_open(const char *path, const char *id)
+{
+    TOKEN token;
+    ARTHANDLE *article;
+    int fd, length;
+    struct stat st;
+    char *p;
+
+    if (IsToken(path)) {
+        token = TextToToken(path);
+        article = SMretrieve(token, RETR_ALL);
+        if (article == NULL) {
+            if (SMerrno == SMERR_NOENT || SMerrno == SMERR_UNINIT)
+                STATmissing++;
+            else {
+                fprintf(stderr, "Requeue %s: %s\n", path, SMerrorstr);
+                Requeue(path, id);
+            }
+        }
+        return article;
+    } else {
+        fd = open(path, O_RDONLY);
+        if (fd < 0)
+            return NULL;
+        if (fstat(fd, &st) < 0) {
+            fprintf(stderr, "Requeue %s: %s\n", path, strerror(errno));
+            Requeue(path, id);
+            return NULL;
+        }
+        article = NEW(ARTHANDLE, 1);
+        article->type = TOKEN_EMPTY;
+        article->len = st.st_size;
+        article->data = NEW(char, article->len);
+        if (xread(fd, article->data, article->len) < 0) {
+            fprintf(stderr, "Requeue %s: %s\n", path, strerror(errno));
+            free(article->data);
+            free(article);
+            close(fd);
+            Requeue(path, id);
+            return NULL;
+        }
+        close(fd);
+        p = memchr(article->data, '\n', article->len);
+        if (p == NULL || p == article->data) {
+            fprintf(stderr, "Requeue %s: can't find headers\n", path);
+            free(article->data);
+            free(article);
+            Requeue(path, id);
+            return NULL;
+        }
+        if (p[-1] != '\r') {
+            p = ToWireFmt(article->data, article->len, &length);
+            free(article->data);
+            article->data = p;
+            article->len = length;
+        }
+        return article;
+    }
+}
+
+
+/*
+**  Free an article, using the type field to determine whether to free it
+**  via the storage API.
+*/
+static void
+article_free(ARTHANDLE *article)
+{
+    if (article->type == TOKEN_EMPTY) {
+        free(article->data);
+        free(article);
+    } else
+        SMfreearticle(article);
+}
+
+
 int main(int ac, char *av[]) {
     static char		SKIPPING[] = "Skipping \"%s\" --%s?\n";
     int	                i;
@@ -916,8 +995,8 @@ int main(int ac, char *av[]) {
     unsigned int	TotalTimeout;
     int                 port = NNTP_PORT;
     BOOL		val;
-    TOKEN		token;
 
+    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
 
@@ -982,9 +1061,6 @@ int main(int ac, char *av[]) {
 	exit(1);
     }
 
-    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-
-    
     val = TRUE;
     if (!SMsetup(SM_PREOPEN,(void *)&val)) {
 	fprintf(stderr, "Can't setup the storage manager\n");
@@ -1007,7 +1083,7 @@ int main(int ac, char *av[]) {
 	SMshutdown();
 	exit(1);
     }
-    if (LockFile(QIOfileno(BATCHqp), TRUE) < 0) {
+    if (!lock_file(QIOfileno(BATCHqp), LOCK_WRITE, TRUE)) {
 #if	defined(EWOULDBLOCK)
 	if (errno == EWOULDBLOCK) {
 	    SMshutdown();
@@ -1120,8 +1196,6 @@ int main(int ac, char *av[]) {
 		}
 	    }
 	    if (CanStream) {
-		int i;
-
 		for (i = 0; i < STNBUF; i++) { /* reset buffers */
 		    stbuf[i].st_fname = 0;
 		    stbuf[i].st_id = 0;
@@ -1208,37 +1282,21 @@ int main(int ac, char *av[]) {
 	    continue;
 	}
 
-        /*
-         * If the IHAVE plus the "message-id", separating space and trailing
-	 * CR-NL will exceed the maximum command length permitted by the RFC
-	 * (i.e. NNTP_STRLEN), then reject the article and continue to avoid
-	 * overrunning buffers and throwing the server on the recieving end a
-	 * blow from behind.  
-         */
-        if (MessageID != NULL && (strlen(MessageID) > NNTP_STRLEN - 12)) {
+        /* Drop articles with a message ID longer than NNTP_MSGID_MAXLEN to
+           avoid overrunning buffers and throwing the server on the
+           receiving end a blow from behind. */
+        if (MessageID != NULL && strlen(MessageID) > NNTP_MSGID_MAXLEN) {
             (void)fprintf(stderr, "Dropping article in \"%s\" - long message id \"%s\"\n",
                           BATCHname, MessageID);
             continue;
         }
 
-	if (!IsToken(Article))
-            continue;
-	token = TextToToken(Article);
-	/* Open the article. */
-	if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
-	    if ((SMerrno == SMERR_NOENT) || (SMerrno == SMERR_UNINIT)) {
-		++STATmissing;
-		continue;
-	    } else {
-		(void)fprintf(stderr, "Requeue \"%s\", %s\n",
-		    Article, SMerrorstr);
-		Requeue(Article, MessageID);
-	    }
+        art = article_open(Article, MessageID);
+        if (art == NULL)
 	    continue;
-	}
 
 	if (Purging) {
-	    SMfreearticle(art);
+            article_free(art);
 	    Requeue(Article, MessageID);
 	    continue;
 	}
@@ -1247,7 +1305,7 @@ int main(int ac, char *av[]) {
 	if (MessageID == NULL) {
 	    if ((MessageID = GetMessageID(art)) == NULL) {
 		(void)fprintf(stderr, SKIPPING, Article, "no Message-ID");
-		SMfreearticle(art);
+                article_free(art);
 		continue;
 	    }
 	}
@@ -1256,7 +1314,6 @@ int main(int ac, char *av[]) {
 
 	/* Offer the article. */
 	if (CanStream) {
-	    int i;
 	    int lim;
 	    int hash;
 
@@ -1265,7 +1322,7 @@ int main(int ac, char *av[]) {
 		if (Debug)
 		    (void)fprintf(stderr, "Skipping duplicate ID %s\n",
 							    MessageID);
-		SMfreearticle(art);
+                article_free(art);
 		continue;
 	    }
 	    /* This code tries to optimize by sending a burst of "check"
@@ -1285,7 +1342,7 @@ int main(int ac, char *av[]) {
 	    /* save new article in the buffer */
 	    i = stalloc(Article, MessageID, art, hash);
 	    if (i < 0) {
-		SMfreearticle(art);
+                article_free(art);
 		RequeueRestAndExit(Article, MessageID);
 	    }
 	    if (DoCheck && (stnofail < STNC)) {
@@ -1322,7 +1379,7 @@ int main(int ac, char *av[]) {
 	if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
 	    (void)fprintf(stderr, "Can't offer article, %s\n",
 		    strerror(errno));
-	    SMfreearticle(art);
+            article_free(art);
 	    RequeueRestAndExit(Article, MessageID);
 	}
 	STAToffered++;
@@ -1334,7 +1391,7 @@ int main(int ac, char *av[]) {
 	/* Does he want it? */
 	if (!REMread(buff, (int)sizeof buff)) {
 	    (void)fprintf(stderr, "No reply to ihave, %s\n", strerror(errno));
-	    SMfreearticle(art);
+            article_free(art);
 	    RequeueRestAndExit(Article, MessageID);
 	}
 	if (GotInterrupt)
@@ -1378,7 +1435,7 @@ int main(int ac, char *av[]) {
 #endif	/* defined(NNTP_SENDIT_LATER) */
 	}
 
-	SMfreearticle(art);
+        article_free(art);
     }
     if (CanStream) { /* need to wait for rest of ACKs */
 	while (stnq > 0) {

@@ -53,11 +53,12 @@ typedef struct {
 #define SMERR_CONFIG           7
 #define SMERR_BADHANDLE        8
 #define SMERR_BADTOKEN         9
+#define SMERR_NOMATCH         10
 
 extern int              SMerrno;
 extern char             *SMerrorstr;
 
-typedef enum {SELFEXPIRE, SMARTNGNUM} PROBETYPE;
+typedef enum {SELFEXPIRE, SMARTNGNUM, EXPENSIVESTAT} PROBETYPE;
 typedef enum {SM_ALL, SM_HEAD, SM_CANCELEDART} FLUSHTYPE;
 
 struct artngnum {
@@ -84,6 +85,7 @@ void            SMfreearticle(ARTHANDLE *article);
 BOOL            SMcancel(TOKEN token);
 BOOL            SMprobe(PROBETYPE type, TOKEN *token, void *value);
 BOOL            SMflushcacheddata(FLUSHTYPE type);
+void		SMprintfiles(FILE *, TOKEN, char **xref, int ngroups);
 void            SMshutdown(void);
 
 #ifdef __cplusplus

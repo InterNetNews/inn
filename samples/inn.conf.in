@@ -32,7 +32,7 @@ server:
 
 # Feed Configuration
 
-artcutoff:              14
+artcutoff:              10
 bindaddress:
 hiscachesize:           0
 ignorenewsgroups:       false

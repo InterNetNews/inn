@@ -87,6 +87,7 @@ STATIC char		NCbadcommand[] = NNTP_BAD_COMMAND;
 void NCclearwip(CHANNEL *cp) {
     WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
     HashClear(&cp->CurrentMessageIDHash);
+    cp->ArtBeg = 0;
 }
 
 /*
@@ -259,7 +260,6 @@ NCwritedone(CHANNEL *cp)
     case CSgetcmd:
     case CSgetauth:
     case CSgetarticle:
-    case CSgetrep:
     case CSgetxbatch:
 	RCHANadd(cp);
 	break;
@@ -464,7 +464,7 @@ NCihave(CHANNEL *cp)
                 cp->Sendid.Size = MAXHEADERSIZE;
             cp->Sendid.Data = NEW(char, cp->Sendid.Size);
         }
-        sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, filterrc);
+        sprintf(cp->Sendid.Data, "%d %.200s", NNTP_HAVEIT_VAL, filterrc);
         NCwritereply(cp, cp->Sendid.Data);
         DISPOSE(cp->Sendid.Data);
         cp->Sendid.Size = 0;
@@ -490,7 +490,7 @@ NCihave(CHANNEL *cp)
 		cp->Sendid.Size = MAXHEADERSIZE;
 	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
 	}
-	sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, filterrc);
+	sprintf(cp->Sendid.Data, "%d %.200s", NNTP_HAVEIT_VAL, filterrc);
 	NCwritereply(cp, cp->Sendid.Data);
 	DISPOSE(cp->Sendid.Data);
 	cp->Sendid.Size = 0;
@@ -515,6 +515,7 @@ NCihave(CHANNEL *cp)
     else {
 	cp->Ihave_SendIt++;
 	NCwritereply(cp, NNTP_SENDIT);
+	cp->ArtBeg = Now.time;
 	cp->State = CSgetarticle;
     }
 }
@@ -542,7 +543,7 @@ NCxbatch(CHANNEL *cp)
         syslog(L_TRACE, "%s will read batch of size %ld",
 	       CHANname(cp), cp->XBatchSize);
 
-    if (cp->XBatchSize <= 0) {
+    if (cp->XBatchSize <= 0 || ((innconf->maxartsize != 0) && (innconf->maxartsize < cp->XBatchSize))) {
         syslog(L_NOTICE, "%s got bad xbatch size %ld",
 	       CHANname(cp), cp->XBatchSize);
 	NCwritereply(cp, NNTP_XBATCH_BADSIZE);
@@ -766,6 +767,15 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    if (i < bp->Used) cp->Rest = bp->Used = ++i;
 	    else {
 		cp->Rest = 0;
+		/* Check for too long command. */
+		if (bp->Used > NNTP_STRLEN) {
+		    /* Make some room, saving only the last few bytes. */
+		    for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
+			p[0] = p[bp->Used - SAVE_AMT];
+		    cp->LargeCmdSize += bp->Used - SAVE_AMT;
+		    bp->Used = cp->Lastch = SAVE_AMT;
+		    cp->State = CSeatcommand;
+		}
 		break;	/* come back later for rest of line */
 	    }
 	    if (cp->Rest < 2) break;
@@ -856,7 +866,6 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    break;
 
 	case CSgetarticle:
-	case CSgetrep:
 	    /* Check for the null article. */
 	    if ((bp->Used >= 3) && (bp->Data[0] == '.')
 	     && (bp->Data[1] == '\r') && (bp->Data[2] == '\n')) {
@@ -998,6 +1007,61 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
 		    p[0] = p[bp->Used - SAVE_AMT + 0];
 		cp->LargeArtSize += bp->Used - SAVE_AMT;
+		bp->Used = cp->Lastch = SAVE_AMT;
+		cp->Rest = 0;
+	    }
+	    break;
+	case CSeatcommand:
+	    /* Eat the command line and then complain that it was too large */
+	    /* Reading a line; look for "\r\n" terminator. */
+	    if (cp->Lastch > 5) i = cp->Lastch; /* only look at new data */
+	    else		i = 5;
+	    for ( ; i <= bp->Used; i++) {
+		if ((bp->Data[i - 2] == '\r') && (bp->Data[i - 1] == '\n')) {
+		    cp->Rest = bp->Used = i;
+		    p = &bp->Data[i];
+		    break;
+		}
+	    }
+	    if (i <= bp->Used) {	/* did find terminator */
+		/* Reached the end of the command line. */
+		SCHANremove(cp);
+		if (cp->Argument != NULL) {
+		    DISPOSE(cp->Argument);
+		    cp->Argument = NULL;
+		}
+		i = cp->LargeCmdSize + bp->Used;
+		syslog(L_NOTICE, "%s internal rejecting too long command line (%d > %d)",
+		    CHANname(cp), i, NNTP_STRLEN);
+		cp->LargeCmdSize = 0;
+		(void)sprintf(buff, "%d command exceeds local limit of %ld bytes",
+			NNTP_BAD_COMMAND_VAL, NNTP_STRLEN);
+		cp->State = CSgetcmd;
+		NCwritereply(cp, buff);
+
+		/*
+		 * only free and allocate the buffer back to
+		 * START_BUFF_SIZE if there's nothing in the buffer we
+		 * need to save (i.e., following commands.
+		 * if there is, then we're probably in streaming mode,
+		 * so probably not much point in trying to keep the
+		 * buffers minimal anyway...
+		 */
+		if (bp->Used == cp->SaveUsed) {
+		    /* Reset input buffer to the default size; don't let realloc
+		     * be lazy. */
+		    DISPOSE(bp->Data);
+		    bp->Size = START_BUFF_SIZE;
+		    bp->Used = 0;
+		    bp->Data = NEW(char, bp->Size);
+		    cp->SaveUsed = cp->Rest = cp->Lastch = 0;
+		}
+	    }
+	    else if (bp->Used > 8 * 1024) {
+		/* Make some room; save the last few bytes of the article */
+		for (p = bp->Data, i = 0; i < SAVE_AMT; p++, i++)
+		    p[0] = p[bp->Used - SAVE_AMT + 0];
+		cp->LargeCmdSize += bp->Used - SAVE_AMT;
 		bp->Used = cp->Lastch = SAVE_AMT;
 		cp->Rest = 0;
 	    }
@@ -1381,6 +1445,7 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
     /* save ID for later NACK or ACK */
     (void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_FAILID_VAL, p);
 
+    cp->ArtBeg = Now.time;
     cp->State = CSgetarticle;
     /* set WIP for benefit of later code in NCreader */
     if ((wp = WIPbyid(p)) == (WIP *)NULL)

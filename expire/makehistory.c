@@ -42,13 +42,14 @@ typedef struct _ARTOVERFIELD {
     BOOL	HasHeader;
 } ARTOVERFIELD;
 
-#define DEFAULT_SEGSIZE	100000;
+#define DEFAULT_SEGSIZE	10000;
 
 BOOL NukeBadArts;
 char *SchemaPath = NULL;
 char *ActivePath = NULL;
 char *HistoryPath = NULL;
 FILE *HistFile;
+FILE *Overchan;
 BOOL DoOverview;
 BOOL Fork;
 BOOL Cutofflow = FALSE;
@@ -56,9 +57,9 @@ char *TmpDir;
 int OverTmpSegSize, OverTmpSegCount;
 FILE *OverTmpFile;
 char *OverTmpPath = NULL;
-BOOL UpdateMode;
 BOOL NoHistory;
 OVSORTTYPE sorttype;
+int RetrMode;
 
 TIMEINFO Now;
 
@@ -175,7 +176,7 @@ GetMessageID(char *p)
  * The overview temp file is used to accumulate overview lines as articles are
  * scanned.  The format is
  * (1st) newsgroup name\tToken\toverview data.
- * When about 100000 lines of this overview data are accumulated, the data
+ * When about 10000 lines of this overview data are accumulated, the data
  * file is sorted and then read back in and the data added to overview.
  * The sorting/batching helps improve efficiency.
  */
@@ -230,19 +231,18 @@ FlushOverTmpFile(void)
 	/* init the overview setup. */
 	if (!OVopen(OV_WRITE)) {
 	    fprintf(stderr, "makehistory: OVopen failed\n");
-	    exit(1);
+	    _exit(1);
 	}
 	if (!OVctl(OVSORT, (void *)&sorttype)) {
 	    fprintf(stderr, "makehistory: OVctl(OVSORT) failed\n");
-	    exit(1);
+	    OVclose();
+	    _exit(1);
 	}
 	if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
 	    fprintf(stderr, "makehistory: OVctl(OVCUTOFFLOW) failed\n");
-	    exit(1);
+	    OVclose();
+	    _exit(1);
 	}
-
-	if(first)
-	    OverAddAllNewsgroups();
     }
 
     sprintf(temp, "%s/hisTXXXXXX", TmpDir);
@@ -257,7 +257,8 @@ FlushOverTmpFile(void)
 	fprintf(stderr,
                 "makehistory: Can't sort OverTmp file (%s exit %d), %s\n",
 		_PATH_SORT, i, strerror(errno));
-	exit(1);
+	OVclose();
+	Fork ? _exit(1) : exit(1);
     }
 
     /* don't need old path anymore. */
@@ -269,7 +270,8 @@ FlushOverTmpFile(void)
     if ((qp = QIOopen(SortedTmpPath)) == NULL) {
 	fprintf(stderr, "makehistory: Can't open sorted over file %s, %s\n",
 		SortedTmpPath, strerror(errno));
-	exit(1);
+	OVclose();
+	Fork ? _exit(1) : exit(1);
     }
 
     for (count = 1; (line = QIOread(qp)) != NULL ; ++count) {
@@ -278,7 +280,8 @@ FlushOverTmpFile(void)
 	    || (r = strchr(q+1, '\t')) == NULL) {
 	    fprintf(stderr, "makehistory: sorted over %s has bad line %d\n",
 		    SortedTmpPath, count);
-	    exit(1);
+	    OVclose();
+	    Fork ? _exit(1) : exit(1);
 	}
 	/* p+1 now points to start of token, q+1 points to start of overline. */
 	if (sorttype == OVNEWSGROUP) {
@@ -291,7 +294,8 @@ FlushOverTmpFile(void)
 	    if ((r = strchr(r, '\t')) == NULL) {
 	        fprintf(stderr, "makehistory: sorted over %s has bad line %d\n",
 		    SortedTmpPath, count);
-	        exit(1);
+		OVclose();
+		Fork ? _exit(1) : exit(1);
 	    }
 	    *r++ = '\0';
 	} else {
@@ -305,7 +309,8 @@ FlushOverTmpFile(void)
 	if (!OVadd(token, r, strlen(r), arrived, expires)) {
 	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
 		fprintf(stderr, "makehistory: no space left for overview\n");
-		exit(1);
+		OVclose();
+		Fork ? _exit(1) : exit(1);
 	    }
 	    fprintf(stderr, "makehistory: Can't write overview data \"%s\"\n", q);
 	}
@@ -313,12 +318,14 @@ FlushOverTmpFile(void)
     /* Check for errors and close. */
     if (QIOtoolong(qp)) {
 	fprintf(stderr, "makehistory: Line %d is too long\n", count);
-	exit(1);
+	OVclose();
+	Fork ? _exit(1) : exit(1);
     }
     if (QIOerror(qp)) {
 	(void)fprintf(stderr, "makehistory: Can't read sorted tmp file %s, %s\n", 
 		      SortedTmpPath, strerror(errno));
-	exit(1);
+	OVclose();
+	Fork ? _exit(1) : exit(1);
     }
     QIOclose(qp);
     /* unlink sorted tmp file */
@@ -326,7 +333,7 @@ FlushOverTmpFile(void)
     DISPOSE(SortedTmpPath);
     if(Fork) {
 	OVclose();
-	exit(0);
+	_exit(0);
     }
 }
 	    
@@ -340,7 +347,26 @@ WriteOverLine(TOKEN *token, char *xrefs, int xrefslen,
 {
     char temp[SMBUF];
     char *p, *q, *r;
+    int i;
 
+    if (sorttype == OVNOSORT) {
+	if (Fork) {
+	    (void)fprintf(Overchan, "%s %d %d ", TokenToText(*token), arrived, expires);
+	    if (fwrite((POINTER)overdata, (SIZE_T)1, (SIZE_T)overlen, Overchan) != overlen) {
+		fprintf(stderr, "makehistory: writing overview failed\n");
+		exit(1);
+	    }
+	    fputc('\n', Overchan);
+	} else if (!OVadd(*token, overdata, overlen, arrived, expires)) {
+	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
+		fprintf(stderr, "makehistory: no space left for overview\n");
+		OVclose();
+		exit(1);
+	    }
+	    fprintf(stderr, "makehistory: Can't write overview data for article \"%s\"\n", TokenToText(*token));
+	}
+	return;
+    }
     if (OverTmpPath == NULL) {
 	/* need new temp file, so create it. */
 	(void)sprintf(temp, "%s/histXXXXXX", TmpDir);
@@ -409,6 +435,7 @@ static void ARTreadschema(BOOL Overview)
     ARTOVERFIELD                *fp;
     int                         i;
     char                        buff[SMBUF];
+    BOOL                        foundxreffull = FALSE;
 
     if (Overview) {
 	/* Open file, count lines. */
@@ -447,8 +474,10 @@ static void ARTreadschema(BOOL Overview)
 		Msgidp = fp;
 	    if (caseEQn(buff, EXPIRES, STRLEN(EXPIRES)-1))
 		Expp = fp;
-	    if (caseEQn(buff, XREF, STRLEN(XREF)-1))
+	    if (caseEQn(buff, XREF, STRLEN(XREF)-1)) {
 		Xrefp = fp;
+		foundxreffull = fp->NeedHeadername;
+            }
 	    fp++;
 	}
 	ARTfieldsize = fp - ARTfields;
@@ -460,8 +489,10 @@ static void ARTreadschema(BOOL Overview)
 	Missfieldsize++;
     if (Expp == (ARTOVERFIELD *)NULL)
 	Missfieldsize++;
-    if (Xrefp == (ARTOVERFIELD *)NULL)
-	Missfieldsize++;
+    if (Overview && (Xrefp == (ARTOVERFIELD *)NULL || !foundxreffull)) {
+	(void)fprintf(stderr, "'Xref:full' must be included in %s\n", SchemaPath);
+	exit(1);
+    }
     if (Missfieldsize > 0) {
 	Missfields = NEW(ARTOVERFIELD, Missfieldsize);
         fp = Missfields;
@@ -492,7 +523,7 @@ static void ARTreadschema(BOOL Overview)
 	    fp->HeaderLength = 0;
 	    Expp = fp++;
 	}
-	if (Xrefp == (ARTOVERFIELD *)NULL) {
+        if (Overview && Xrefp == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = FALSE;
 	    fp->Headername = COPY(XREF);
 	    fp->HeadernameLength = strlen(XREF)-1;
@@ -524,6 +555,7 @@ DoArt(ARTHANDLE *art)
     char			*hash;
     HASH			key;
     char			overdata[BIG_BUFFER];
+    char			bytes[BIG_BUFFER];
     struct artngnum		ann;
 
     /* Set up place to store headers. */
@@ -559,6 +591,12 @@ DoArt(ARTHANDLE *art)
 		continue;
 	    }
             fp->HeaderLength = p2 - fp->Header;
+	} else if (RetrMode == RETR_ALL && strcmp(fp->Headername, "Bytes") == 0)
+	{
+		sprintf(bytes, "%d", art->len);
+		fp->HasHeader = TRUE;
+		fp->Header = bytes;
+		fp->HeaderLength = strlen(bytes);
 	}
     }
     if (Missfieldsize > 0) {
@@ -581,11 +619,14 @@ DoArt(ARTHANDLE *art)
 	    }
 	}
     }
-    if (Xrefp->HeaderLength == 0) {
+    if (DoOverview && Xrefp->HeaderLength == 0) {
 	if (!SMprobe(SMARTNGNUM, art->token, (void *)&ann)) {
 	    Xrefp->Header = NULL;
 	    Xrefp->HeaderLength = 0;
-	}
+	} else
+	    return;
+	if (ann.artnum == 0)
+	    return;
 	len = strlen(XREF) + 1 + strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1 + 16 + 1;
 	if (len > BIG_BUFFER) {
 	    Xrefp->Header = NULL;
@@ -631,10 +672,6 @@ DoArt(ARTHANDLE *art)
      */
     key = HashMessageID(MessageID);
     hash = HashToText(key);
-    if (UpdateMode) {
-	if (art->arrived > Now.time || dbzexists(key))
-	    return;
-    }
 
     if (!Datep->HasHeader) {
 	Posted = Arrived;
@@ -702,14 +739,14 @@ DoArt(ARTHANDLE *art)
 void
 Usage(void)
 {
-    fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-u] [-x] [-T tmpdir]\n");
+    fprintf(stderr, "Usage: makehistory [-b] [-f file] [-O] [-I] [-l overtmpsegsize [-a] [-x] [-T tmpdir]\n");
     fprintf(stderr, "\t-b -- delete bad articles from spool\n");
+    fprintf(stderr, "\t-e -- read entire articles to compute proper Bytes headers\n");
     fprintf(stderr, "\t-f -- write history entries to file (default $pathdb/history)\n");
     fprintf(stderr, "\t-a -- open output history file in append mode\n");
     fprintf(stderr, "\t-O -- create overview entries for articles\n");
     fprintf(stderr, "\t-I -- do not create overview entries for articles below lowmark in active\n");
-    fprintf(stderr, "\t-l nnn -- set size of batches too do overview updates in (default 100000)\n");
-    fprintf(stderr, "\t-u -- 'update mode' assume server running, only output to file\n");
+    fprintf(stderr, "\t-l nnn -- set size of batches too do overview updates in (default 10000)\n");
     fprintf(stderr,"\t\tentries not already in main history file.\n");
     fprintf(stderr, "\t-x -- don't bother writing any history entries at all\n");
     fprintf(stderr, "\t-T tmpdir -- use directory tmpdir for temp files. \n");
@@ -779,6 +816,7 @@ main(int argc, char **argv)
     char *p;
     char *OldHistoryPath;
     dbzoptions opt;
+    char *buff;
     
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
@@ -797,16 +835,13 @@ main(int argc, char **argv)
     DoOverview = FALSE;
     Fork = FALSE;
     AppendMode = FALSE;
-    UpdateMode = FALSE;
     NoHistory = FALSE;
+    RetrMode = RETR_HEAD;
 
-    while ((i = getopt(argc, argv, "abf:Il:OT:uxF")) != EOF) {
+    while ((i = getopt(argc, argv, "aebf:Il:OT:xF")) != EOF) {
 	switch(i) {
 	case 'T':
 	    TmpDir = optarg;
-	    break;
-	case 'u':
-	    UpdateMode = TRUE;
 	    break;
 	case 'x':
 	    NoHistory = TRUE;
@@ -832,6 +867,10 @@ main(int argc, char **argv)
 	case 'F':
 	    Fork = TRUE;
 	    break;
+	case 'e':
+	    RetrMode = RETR_ALL;
+	    break;
+	    
 	default:
 	    Usage();
 	    break;
@@ -860,7 +899,7 @@ main(int argc, char **argv)
     /* Read in the overview schema */
     ARTreadschema(DoOverview);
     
-    if (DoOverview && !Fork) {
+    if (DoOverview) {
 	/* init the overview setup. */
 	if (!OVopen(OV_WRITE)) {
 	    fprintf(stderr, "makehistory: OVopen failed\n");
@@ -870,11 +909,24 @@ main(int argc, char **argv)
 	    fprintf(stderr, "makehistory: OVctl(OVSORT) failed\n");
 	    exit(1);
 	}
-	if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
-	    fprintf(stderr, "makehistory: OVctl(OVCUTOFFLOW) failed\n");
-	    exit(1);
+	if (!Fork) {
+	    if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
+	        fprintf(stderr, "makehistory: OVctl(OVCUTOFFLOW) failed\n");
+	        exit(1);
+	    }
+	    OverAddAllNewsgroups();
+	} else {
+	    OverAddAllNewsgroups();
+	    if (sorttype == OVNOSORT) {
+		buff = concat(innconf->pathbin, "/", "overchan", NULL);
+		if ((Overchan = popen(buff, "w")) == NULL) {
+		    fprintf(stderr, "makehistory: forking overchan failed\n");
+		    exit(1);
+		}
+		DISPOSE(buff);
+	    }
+	    OVclose();
 	}
-	OverAddAllNewsgroups();
     }
 
     /* Init the Storage Manager */
@@ -886,26 +938,6 @@ main(int argc, char **argv)
     if (!SMinit()) {
 	fprintf(stderr, "makehistory: Can't initialize storage manager: %s\n", SMerrorstr);
 	exit(1);
-    }
-
-    /* if update mode, start mapping old history file */
-    if (UpdateMode) {
-	/* check if we're trying to write to oldhistory file, and if so complain */
-	if (!NoHistory && strcmp(HistoryPath, OldHistoryPath) == 0) {
-	    fprintf(stderr, "makehistory: can't write to main history file in -u mode, specify another file with -f\n");
-	    exit(1);
-	}
-	/* turn on mmaping of pag, since we'll be doing a lot of lookups. */
-	dbzgetoptions(&opt);
-	opt.pag_incore = INCORE_MMAP;
-#ifndef	DO_TAGGED_HASH
-	opt.exists_incore = INCORE_MMAP;
-#endif
-	dbzsetoptions(opt);
-	if (!dbzinit(OldHistoryPath)) {
-	    fprintf(stderr, "makehistory: can't open dbz for %s\n", OldHistoryPath);
-	    exit(1);
-	}
     }
 
     if (!NoHistory) {
@@ -927,7 +959,8 @@ main(int argc, char **argv)
      * Scan the entire spool, nuke any bad arts if needed, and process each
      * article.
      */
-    while ((art = SMnext(art, RETR_HEAD)) != NULL) {
+	
+    while ((art = SMnext(art, RetrMode)) != NULL) {
 	if (art->len == 0) {
 	    if (NukeBadArts && art->data == NULL && art->token != NULL)
 		(void)SMcancel(*art->token);
@@ -945,10 +978,18 @@ main(int argc, char **argv)
     }
 
     if (DoOverview) {
-	int status;
-	FlushOverTmpFile();
-	if(Fork)
-	    wait(&status);
+	if (sorttype == OVNOSORT && Fork) {
+	    if (fflush(Overchan) == EOF || ferror(Overchan) || pclose(Overchan) == EOF) {
+		(void)fprintf(stderr, "Can't flush overview data , %s\n", strerror(errno));
+		exit(1);
+	    }
+	}
+	if (sorttype != OVNOSORT) {
+	    int status;
+	    FlushOverTmpFile();
+	    if(Fork)
+		wait(&status);
+	}
     }
     if(!Fork)
 	OVclose();

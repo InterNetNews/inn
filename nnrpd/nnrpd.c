@@ -34,6 +34,10 @@ extern SSL *tls_conn;
 int nnrpd_starttls_done = 0;
 #endif 
 
+#if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
+extern int h_errno;
+#endif
+
 /*
 ** Here is some defensive code to protect the news server from hosts,
 ** mostly PC's, that sometimes make a connection and then never give
@@ -83,6 +87,9 @@ BOOL	DaemonMode = FALSE;
 #if HAVE_GETSPNAM
 STATIC char	*ShadowGroup;
 #endif
+#if	defined(DO_NNRP_GETHOSTBYADDR)
+STATIC char 	*HostErrorStr;
+#endif	/* defined(DO_NNRP_GETHOSTBYADDR) */
 
 extern FUNCTYPE	CMDauthinfo();
 extern FUNCTYPE	CMDdate();
@@ -203,7 +210,7 @@ ExitWithStats(int x, BOOL readconf)
 	}
     }
     if (ARTget)
-        syslog(L_NOTICE, "%s artstats get %d time %d size %d", ClientHost,
+        syslog(L_NOTICE, "%s artstats get %d time %d size %ld", ClientHost,
             ARTget, ARTgettime, ARTgetsize);
     if (!readconf && PERMaccessconf && PERMaccessconf->nnrpdoverstats && OVERcount)
         syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d dbz %d seek %d get %d artcheck %d", ClientHost,
@@ -237,11 +244,10 @@ ExitWithStats(int x, BOOL readconf)
 */
 /* ARGSUSED0 */
 STATIC FUNCTYPE
-CMDhelp(ac, av)
-    int		ac;
-    char	*av[];
+CMDhelp(int ac, char *av[])
 {
     CMDENT	*cp;
+    char	*p, *q;
 
     Reply("%s\r\n", NNTP_HELP_FOLLOWS);
     for (cp = CMDtable; cp->Name; cp++)
@@ -249,12 +255,37 @@ CMDhelp(ac, av)
 	    Printf("  %s\r\n", cp->Name);
 	else
 	    Printf("  %s %s\r\n", cp->Name, cp->Help);
-    if (strchr(NEWSMASTER, '@') == NULL)
-	Printf("Report problems to <%s@%s>\r\n",
-	    NEWSMASTER, innconf->fromhost);
-    else
-	Printf("Report problems to <%s>\r\n",
-	    NEWSMASTER);
+    if (PERMaccessconf && (VirtualPathlen > 0)) {
+	if (PERMaccessconf->newsmaster) {
+	    if (strchr(PERMaccessconf->newsmaster, '@') == NULL) {
+		Printf("Report problems to <%s@%s>\r\n",
+		    PERMaccessconf->newsmaster, PERMaccessconf->domain);
+	    } else {
+		Printf("Report problems to <%s>\r\n",
+		    PERMaccessconf->newsmaster);
+	    }
+	} else {
+	    /* sigh, pickup from NEWSMASTER anyway */
+	    if ((p = strchr(NEWSMASTER, '@')) == NULL)
+		Printf("Report problems to <%s@%s>\r\n",
+		    NEWSMASTER, PERMaccessconf->domain);
+	    else {
+		q = NEW(char, p - NEWSMASTER + 1);
+		strncpy(q, NEWSMASTER, p - NEWSMASTER);
+		q[p - NEWSMASTER] = '\0';
+		Printf("Report problems to <%s@%s>\r\n",
+		    q, PERMaccessconf->domain);
+		DISPOSE(q);
+	    }
+	}
+    } else {
+	if (strchr(NEWSMASTER, '@') == NULL)
+	    Printf("Report problems to <%s@%s>\r\n",
+		NEWSMASTER, innconf->fromhost);
+	else
+	    Printf("Report problems to <%s>\r\n",
+		NEWSMASTER);
+    }
     Reply(".\r\n");
 }
 
@@ -320,31 +351,35 @@ TITLEset(what)
 
 
 #if	defined(DO_NNRP_GETHOSTBYADDR)
+#ifndef	INADDR_LOOPBACK
+#define	INADDR_LOOPBACK	0x7f000001
+#endif	/* INADDR_LOOPBACK */
 /*
 **  Convert an IP address to a hostname.  Don't trust the reverse lookup,
 **  since anyone can fake .in-addr.arpa entries.
 */
 STATIC BOOL
-Address2Name(ap, hostname, i)
-    register INADDR		*ap;
-    register char		*hostname;
-    register int		i;
+Address2Name(INADDR *ap, char *hostname, int i)
 {
-    register char		*p;
-    register struct hostent	*hp;
+    char		*p;
+    struct hostent	*hp;
 #if	defined(h_addr)
-    register char		**pp;
+    char		**pp;
 #endif
 
     /* Get the official hostname, store it away. */
-    if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL)
+    if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL) {
+	HostErrorStr = (char *)hstrerror(h_errno);
 	return FALSE;
+    }
     (void)strncpy(hostname, hp->h_name, i);
     hostname[i - 1] = '\0';
 
     /* Get addresses for this host. */
-    if ((hp = gethostbyname(hostname)) == NULL)
+    if ((hp = gethostbyname(hostname)) == NULL) {
+	HostErrorStr = (char *)hstrerror(h_errno);
 	return FALSE;
+    }
 
     /* Make sure one of those addresses is the address we got. */
 #if	defined(h_addr)
@@ -363,7 +398,7 @@ Address2Name(ap, hostname, i)
 #endif
 
     /* Only needed for misconfigured YP/NIS systems. */
-    if (strchr(hostname, '.') == NULL
+    if (ap->s_addr != INADDR_LOOPBACK && strchr(hostname, '.') == NULL
      && (p = innconf->domain) != NULL) {
 	(void)strcat(hostname, ".");
 	(void)strcat(hostname, p);
@@ -389,6 +424,7 @@ STATIC void StartConnection()
     char		*ClientAddr;
     char		accesslist[BIG_BUFFER];
     int                 code;
+    static ACCESSGROUP	*authconf;
 
     /* Get the peer's name. */
     length = sizeof sin;
@@ -415,11 +451,18 @@ STATIC void StartConnection()
 
 	/* Get client's name. */
 #if	defined(DO_NNRP_GETHOSTBYADDR)
+	HostErrorStr = NULL;
 	if (!Address2Name(&sin.sin_addr, ClientHost, (int)sizeof ClientHost)) {
 	    (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
-	    syslog(L_NOTICE,
-		"? cant gethostbyaddr %s %m -- using IP address for access",
-		ClientHost);
+	    if (HostErrorStr == NULL) {
+		syslog(L_NOTICE,
+		    "? cant gethostbyaddr %s %m -- using IP address for access",
+		    ClientHost);
+	    } else {
+		syslog(L_NOTICE,
+		    "? cant gethostbyaddr %s %s -- using IP address for access",
+		    ClientHost, HostErrorStr);
+	    }
 	    ClientAddr = ClientHost;
             ClientIP = inet_addr(ClientHost);
 	}
@@ -439,12 +482,15 @@ STATIC void StartConnection()
 	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
 	}
+#ifdef DO_NNRP_GETHOSTBYADDR
+	HostErrorStr = NULL;
 	if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
 	    strcpy(ServerHost, inet_ntoa(sin.sin_addr));
-	    syslog(L_NOTICE,
-		   "? cant gethostbyaddr %s %m -- using IP address for access",
-		   ClientHost);
+	    /* suppress error reason */
 	}
+#else
+        strcpy(ServerHost, inet_ntoa(sin.sin_addr));
+#endif /* DO_NNRP_GETHOSTBYADDR */
     }
 
     strncpy (LogName,ClientHost,sizeof(LogName) - 1) ;
@@ -459,8 +505,12 @@ STATIC void StartConnection()
 		   NNTP_ACCESS_VAL);
 	    ExitWithStats(1, TRUE);
 	}
-	NGgetlist(&PERMreadlist, accesslist);
+	PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 	PERMpostlist = PERMreadlist;
+	if (!authconf)
+	    authconf = NEW(ACCESSGROUP, 1);
+	PERMaccessconf = authconf;
+	SetDefaultAccess(PERMaccessconf);
     } else {
 #endif	/* DO_PERL */
 
@@ -478,6 +528,10 @@ STATIC void StartConnection()
 	    PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 	    PERMpostlist = PERMreadlist;
 	}
+	if (!authconf)
+	    authconf = NEW(ACCESSGROUP, 1);
+	PERMaccessconf = authconf;
+	SetDefaultAccess(PERMaccessconf);
     } else {
 #endif	/* DO_PYTHON */
 	PERMgetaccess();
@@ -639,14 +693,17 @@ STATIC void SetupDaemon(void) {
     
     val = TRUE;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
-	syslog(L_NOTICE, "%s cant initialize storage method, %s", ClientHost, SMerrorstr);
+	syslog(L_NOTICE, "cant initialize storage method, %s", SMerrorstr);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
-    ARTreadschema();
+    if (!ARTreadschema()) {
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1, TRUE);
+    }
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
-	syslog(L_NOTICE, "%s cant open overview %m", ClientHost);
+	syslog(L_NOTICE, "cant open overview %m");
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
@@ -700,6 +757,10 @@ main(int argc, char *argv[])
     GID_T		shadowgid;
 #endif /* HAVE_GETSPNAM */
 
+#ifdef HAVE_SSL
+    int ssl_result;
+#endif /* HAVE_SSL */
+
 #if	!defined(_HPUX_SOURCE)
     /* Save start and extent of argv for TITLEset. */
     TITLEstart = argv[0];
@@ -718,7 +779,11 @@ main(int argc, char *argv[])
 
     if (ReadInnConf() < 0) exit(1);
 
+#ifdef HAVE_SSL
+    while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:tS")) != EOF)
+#else
     while ((i = getopt(argc, argv, "b:Di:g:op:Rr:s:t")) != EOF)
+#endif /* HAVE_SSL */
 	switch (i) {
 	default:
 	    Usage();
@@ -757,6 +822,11 @@ main(int argc, char *argv[])
 	case 't':			/* Tracing */
 	    Tracing = TRUE;
 	    break;
+#ifdef HAVE_SSL
+	case 'S':			/* SSL negotiation as soon as connected */
+	    initialSSL = TRUE;
+	    break;
+#endif /* HAVE_SSL */
 	}
     argc -= optind;
     if (argc)
@@ -859,8 +929,8 @@ main(int argc, char *argv[])
 
 	/* Detach */
 	if ((pid = fork()) < 0) {
-	    fprintf(stderr, "%s: can't fork (%s)\n", argv[0], strerror(errno));
-	    syslog(L_FATAL, "can't fork (%m)");
+	    fprintf(stderr, "%s: can't fork: %s\n", argv[0], strerror(errno));
+	    syslog(L_FATAL, "cant fork: %m");
 	    exit(1);
 	} else if (pid != 0) 
 	    exit(0);
@@ -877,7 +947,9 @@ main(int argc, char *argv[])
 
 	/* Set signal handle to care for dead children */
 	(void)xsignal(SIGCHLD, WaitChild);
-	SetupDaemon();
+
+	/* Arrange to toggle tracing. */
+	(void)xsignal(SIGHUP, ToggleTrace);
  
 	TITLEset("nnrpd: accepting connections");
  	
@@ -891,12 +963,16 @@ main(int argc, char *argv[])
 	    
 	    for (i = 0; (pid = fork()) < 0; i++) {
 		if (i == MAX_FORKS) {
-		    syslog(L_FATAL, "cant fork %m -- giving up");
-		    OVclose();
-		    exit(1);
+		    syslog(L_FATAL, "cant fork (dropping connection): %m");
+		    continue;
 		}
-		syslog(L_NOTICE, "cant fork %m -- waiting");
-		(void)sleep(1);
+		syslog(L_NOTICE, "cant fork (waiting): %m");
+		sleep(1);
+	    }
+	    if (ChangeTrace) {
+		Tracing = Tracing ? FALSE : TRUE;
+		syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
+		ChangeTrace = FALSE;
 	    }
 	    if (pid != 0)
 		close(fd);
@@ -909,6 +985,7 @@ main(int argc, char *argv[])
 	close(fd);
 	dup2(0, 1);
 	dup2(0, 2);
+	SetupDaemon();
 
 	/* if we are a daemon innd didn't make us nice, so be nice kids */
 	if (innconf->nicekids) {
@@ -921,6 +998,8 @@ main(int argc, char *argv[])
  
     } else {
 	SetupDaemon();
+	/* Arrange to toggle tracing. */
+	(void)xsignal(SIGHUP, ToggleTrace);
     }/* DaemonMode */
 
     /* Setup. */
@@ -930,6 +1009,39 @@ main(int argc, char *argv[])
 	exit(1);
     }
     STATstart = TIMEINFOasDOUBLE(Now);
+
+#ifdef HAVE_SSL
+    if (initialSSL) {
+      sasl_config_read();
+      ssl_result=tls_init_serverengine(5,        /* depth to verify */
+				       1,        /* can client auth? */
+				       0,        /* required client to auth? */
+				       (char *)sasl_config_getstring("tls_ca_file", ""),
+				       (char *)sasl_config_getstring("tls_ca_path", ""),
+				       (char *)sasl_config_getstring("tls_cert_file", ""),
+				       (char *)sasl_config_getstring("tls_key_file", ""));
+      if (ssl_result == -1) {
+	Reply("%d Error initializing TLS\r\n", NNTP_STARTTLS_BAD_VAL);
+	
+	syslog(L_ERROR, "error initializing TLS: "
+	       "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
+	       (char *) sasl_config_getstring("tls_ca_file", ""),
+	       (char *) sasl_config_getstring("tls_ca_path", ""),
+	       (char *) sasl_config_getstring("tls_cert_file", ""),
+	       (char *) sasl_config_getstring("tls_key_file", ""));
+	ExitWithStats(1, FALSE);
+      }
+
+      ssl_result=tls_start_servertls(0, /* read */
+				     1); /* write */
+      if (ssl_result==-1) {
+	Reply("%d SSL connection failed\r\n", NNTP_STARTTLS_BAD_VAL);
+	ExitWithStats(1, FALSE);
+      }
+
+      nnrpd_starttls_done=1;
+    }
+#endif /* HAVE_SSL */
 
 #if	NNRP_LOADLIMIT > 0
     if ((load = GetLoadAverage()) > NNRP_LOADLIMIT) {
@@ -943,9 +1055,6 @@ main(int argc, char *argv[])
 
     /* Catch SIGPIPE so that we can exit out of long write loops */
     (void)xsignal(SIGPIPE, CatchPipe);
-
-    /* Arrange to toggle tracing. */
-    (void)xsignal(SIGHUP, ToggleTrace);
 
     /* Get permissions and see if we can talk to this client */
     StartConnection();
@@ -1020,6 +1129,7 @@ main(int argc, char *argv[])
 	    if (Tracing)
 		syslog(L_TRACE, "%s < %s", ClientHost, PushedBack);
 	    ac = Argify(PushedBack, &av);
+	    r = RTok;
 	}
 	else
 	    switch (r = READline(buff, (int)sizeof buff, timeout)) {
@@ -1086,6 +1196,8 @@ main(int argc, char *argv[])
 	}
 	TITLEset(av[0]);
 	(*cp->Function)(ac, av);
+	if (PushedBack)
+	    break;
     }
 
     Reply("%s\r\n", NNTP_GOODBYE_ACK);

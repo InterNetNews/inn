@@ -174,9 +174,6 @@
 /* Define if <sys/un.h> defines the SUN_LEN macro.  */
 #undef HAVE_SUN_LEN
 
-/* Define if your `struct tm' has a `tm_gmtoff' member.  */
-#undef HAVE_TM_GMTOFF
-
 /* Define if you have unix domain sockets.  */
 #undef HAVE_UNIX_DOMAIN_SOCKETS
 

@@ -26,7 +26,7 @@
 **     to run innd as the news user with bogus configuration information,
 **     thereby possibly compromising the news account.
 **
-**   - The only ports < 1024 that we'll bind to are 119 and 443, or a port
+**   - The only ports < 1024 that we'll bind to are 119 and 433, or a port
 **     given at configure time with --with-innd-port.  This is to prevent
 **     the news user from taking over a service such as telnet or POP and
 **     potentially gaining access to user passwords.
@@ -41,24 +41,24 @@
 **  things like LD_PRELOAD).  It may be desireable to map those to UIDs at
 **  configure time to prevent this attack.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <syslog.h>
 #include <errno.h>
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 #include <grp.h>
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <syslog.h>
 
 /* Some odd systems need sys/time.h included before sys/resource.h. */
-#ifdef HAVE_RLIMIT
-# ifdef HAVE_SYS_TIME_H
+#if HAVE_RLIMIT
+# if HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # endif
 # include <sys/resource.h>
@@ -78,7 +78,7 @@
 /* #define DEBUGGER "/usr/ucb/dbx" */
 
 
-#ifdef HAVE_RLIMIT
+#if HAVE_RLIMIT
 /*
 **  Set the limit on the number of open files we can have.  I don't
 **  like having to do this.
@@ -93,6 +93,7 @@ set_descriptor_limit(int n)
         return;
     }
     rl.rlim_cur = n;
+    if (rl.rlim_max < n) rl.rlim_max = n;
     if (setrlimit(RLIMIT_NOFILE, &rl) < 0) {
         syslog(L_ERROR, "can't setrlimit(NOFILE, %d): %m", n);
         return;
@@ -113,22 +114,20 @@ set_descriptor_limit(int n)
 static void
 set_user (uid_t euid, uid_t ruid)
 {
-#ifdef HAVE_SETEUID
+#if HAVE_SETEUID
     if (seteuid(euid) < 0) {
         syslog(L_ERROR, "seteuid(%d) failed: %m", euid);
         exit(1);
     }
-#else
-# ifdef HAVE_SETREUID
-#  ifdef _POSIX_SAVED_IDS
+#elif HAVE_SETREUID
+# ifdef _POSIX_SAVED_IDS
     ruid = -1;
-#  endif
+# endif
     if (setreuid(ruid, euid) < 0) {
         syslog(L_ERROR, "setreuid(%d, %d) failed: %m", ruid, euid);
         exit(1);
     }
-# endif /* HAVE_SETREUID */
-#endif /* HAVE_SETEUID */
+#endif /* HAVE_SETREUID */
 }
 
 
@@ -293,7 +292,7 @@ main(int argc, char *argv[])
     set_user(0, news_uid);
 
     /* innconf->rlimitnofile <= 0 says to leave it alone. */
-#ifdef HAVE_RLIMIT
+#if HAVE_RLIMIT
     if (innconf->rlimitnofile > 0)
         set_descriptor_limit(innconf->rlimitnofile);
 #endif
@@ -359,12 +358,11 @@ main(int argc, char *argv[])
 #endif /* !DEBUGGER */
 
     /* Set up the environment.  Note that we're trusting BIND_INADDR and TZ;
-       everything else is either from inn.conf or from configure.
-       (BIND_INADDR is apparently needed by Linux?)  These should be
-       sanity-checked before being propagated, but that requires knowledge
-       of the range of possible values.  Just limiting their length doesn't
-       necessarily do anything to prevent exploits and may stop things from
-       working that should.  */
+       everything else is either from inn.conf or from configure.  These
+       should be sanity-checked before being propagated, but that requires
+       knowledge of the range of possible values.  Just limiting their
+       length doesn't necessarily do anything to prevent exploits and may
+       stop things from working that should.  */
     innd_env[0] = concat("PATH=", innconf->pathbin, ":", innconf->pathetc,
                          ":/bin:/usr/bin:/usr/ucb", (char *) 0);
     innd_env[1] = concat( "TMPDIR=", innconf->pathtmp,  (char *) 0);

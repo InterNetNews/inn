@@ -6,21 +6,6 @@
 
    Keywords: TLS, OpenSSL
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; see the file COPYING.
-   If not, write to the Free Software Foundation,
-   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
    Commentary:
 
    [RFC 2246] "The TLS Protocol Version 1.0"
@@ -44,6 +29,38 @@
 #include <string.h>
 #include <syslog.h>
 #include <sys/uio.h>
+
+/* taken from lib/parsedate.c */
+#ifndef WRITEV_USE_ALLOCA
+#ifdef alloca
+#define WRITEV_USE_ALLOCA
+#else /* alloca not defined */
+#ifdef __GNUC__
+#define WRITEV_USE_ALLOCA
+#define alloca __builtin_alloca
+#else /* not GNU C.  */
+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
+#define WRITEV_USE_ALLOCA
+#include <alloca.h>
+#else /* not sparc */
+#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
+#else /* not MSDOS, or __TURBOC__ */
+#if defined(_AIX)
+ #pragma alloca
+#define WRITEV_USE_ALLOCA
+#endif /* not _AIX */
+#endif /* not MSDOS, or __TURBOC__ */
+#endif /* not sparc */
+#endif /* not GNU C */
+#endif /* alloca not defined */
+#endif /* WRITEV_USE_ALLOCA not defined */
+#ifdef WRITEV_USE_ALLOCA
+#define WRITEV_ALLOC alloca
+#else
+#define WRITEV_ALLOC malloc
+#endif
+
+
 
 /* OpenSSL library. */
 
@@ -439,7 +456,6 @@ int tls_start_servertls(int readfd, int writefd)
     unsigned int n;
     SSL_SESSION *session;
     SSL_CIPHER *cipher;
-    X509   *peer;
 
     if (!tls_serverengine)
     {		
@@ -506,56 +522,6 @@ int tls_start_servertls(int readfd, int writefd)
       if (tls_loglevel < 4)
 	do_dump = 0;
 
-    /*
-     * Lets see, whether a peer certificate is availabe and what is
-     * the actual information. We want to save it for later use.
-     */
-    peer = SSL_get_peer_certificate(tls_conn);
-
-    if (peer != NULL) {
-      
-      syslog(L_ERROR,"GOT CLIENT CERTIFICATE!!!\n");
-
-	X509_NAME_oneline(X509_get_subject_name(peer),
-			  peer_subject, CCERT_BUFSIZ);
-	if (tls_loglevel >= 2)
-	  Printf("subject=%s", peer_subject);
-
-	syslog(L_ERROR, "subject=%s", peer_subject);
-	tls_peer_subject = peer_subject;
-	X509_NAME_oneline(X509_get_issuer_name(peer),
-			  peer_issuer, CCERT_BUFSIZ);
-	if (tls_loglevel >= 2)
-	   Printf("issuer=%s", peer_issuer);
-	tls_peer_issuer = peer_issuer;
-	if (X509_digest(peer, EVP_md5(), md, &n)) {
-	    for (j = 0; j < (int) n; j++)
-	    {
-		fingerprint[j * 3] = hexcodes[(md[j] & 0xf0) >> 4];
-		fingerprint[(j * 3) + 1] = hexcodes[(md[j] & 0x0f)];
-		if (j + 1 != (int) n)
-		    fingerprint[(j * 3) + 2] = '_';
-		else
-		    fingerprint[(j * 3) + 2] = '\0';
-	    }
-	    if (tls_loglevel >= 2)
-		Printf("fingerprint=%s", fingerprint);
-	    syslog(L_ERROR,"fingerprint=%s", fingerprint);
-	    tls_peer_fingerprint = fingerprint;
-	}
-	X509_NAME_get_text_by_NID(X509_get_subject_name(peer),
-			  NID_commonName, peer_CN, CCERT_BUFSIZ);
-	tls_peer_CN = peer_CN;
-	X509_NAME_get_text_by_NID(X509_get_issuer_name(peer),
-			  NID_commonName, issuer_CN, CCERT_BUFSIZ);
-	if (tls_loglevel >= 3)
-	   Printf("subject_CN=%s, issuer_CN=%s", peer_CN, issuer_CN);
-
-	syslog(L_ERROR,"subject_CN=%s, issuer_CN=%s", peer_CN, issuer_CN);
-
-	tls_issuer_CN = issuer_CN;
-	/* xxx	X509_free(peer);*/
-    }
     tls_protocol = SSL_get_version(tls_conn);
     cipher = SSL_get_current_cipher(tls_conn);
 
@@ -585,7 +551,7 @@ SSL_writev (ssl, vector, count)
   for (i = 0; i < count; ++i)
     bytes += vector[i].iov_len;
   /* Allocate a temporary buffer to hold the data.  */
-  buffer = (char *) alloca (bytes);
+  buffer = (char *) WRITEV_ALLOC (bytes);
   /* Copy the data into BUFFER.  */
   to_copy = bytes;
   bp = buffer;

@@ -9,7 +9,7 @@
 #include <configdata.h>
 #include <interface.h>
 
-BOOL timehash_init(BOOL *selfexpire);
+BOOL timehash_init(SMATTRIBUTE *attr);
 TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *timehash_next(const ARTHANDLE *article, const RETRTYPE amount);
@@ -17,6 +17,7 @@ void timehash_freearticle(ARTHANDLE *article);
 BOOL timehash_cancel(TOKEN token);
 BOOL timehash_ctl(PROBETYPE type, TOKEN *token, void *value);
 BOOL timehash_flushcacheddata(FLUSHTYPE type);
+void timehash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups);
 void timehash_shutdown(void);
 
 #endif

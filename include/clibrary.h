@@ -90,6 +90,12 @@ extern void *memset();
    other than an int (or that are very commonly replaced).  Don't bother
    with prototypes for the uncommonly replaced functions that return ints;
    they aren't necessary and just add clutter. */
+#ifndef HAVE_FSEEKO
+extern int fseeko(FILE *stream, off_t pos, int whence);
+#endif
+#ifndef HAVE_FTELLO
+extern OFFSET_T ftello(FILE *stream);
+#endif
 #ifndef HAVE_PREAD
 extern ssize_t pread(int fd, void *buf, size_t nbyte, OFFSET_T offset);
 #endif
@@ -120,13 +126,12 @@ extern size_t strspn();
 # define strtoul(a, b, c) strtol((a), (b), (c))
 #endif
 
-/* Large file support.  Use the off_t versions, if available. */
-#ifdef HAVE_FTELLO
-# define ftell ftello
-#endif
-#ifdef HAVE_FSEEKO
-# define fseek fseeko
-#endif
+/* Large file support.  Always use the off_t versions, which we provide if
+   not available. */
+#undef fseek
+#undef ftell
+#define fseek fseeko
+#define ftell ftello
 
 /* mmap() flags.  This really doesn't belong in this header file; it should
    be moved to a header file specifically for mmap-related things. */

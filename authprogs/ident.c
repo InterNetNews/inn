@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     char *endstr;
     int gotcliaddr, gotcliport, gotlocaddr, gotlocport;
 
-    bzero(&sin, sizeof(sin));
+    memset(&sin, '\0', sizeof(sin));
     sin.sin_family = AF_INET;
 
 #define IDENT_PORT 113
@@ -63,9 +63,9 @@ int main(int argc, char *argv[])
 #define PORTNAME "ClientPort: "
 #define LOCIP "LocalIP: "
 #define LOCPORT "LocalPort: "
-    bzero(&cli, sizeof(cli));
+    memset(&cli, '\0', sizeof(cli));
     cli.sin_family = AF_INET;
-    bzero(&loc, sizeof(loc));
+    memset(&loc, '\0', sizeof(loc));
     loc.sin_family = AF_INET;
 
     gotcliaddr = gotcliport = gotlocaddr = gotlocport = 0;

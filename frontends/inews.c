@@ -7,14 +7,13 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 #include <grp.h>
 #include <pwd.h>
 #include <syslog.h>  
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef TM_IN_SYS_TIME
 # include <sys/time.h>
@@ -569,7 +568,7 @@ FormatUserName(pwp, node)
 STATIC void CheckDistribution(char *p)
 {
     static char		SEPS[] = " \t,";
-    register STRING	*dp;
+    register STRING	**dp;
 
     if ((p = strtok(p, SEPS)) == NULL) {
 	(void)fprintf(stderr, "Can't parse Distribution line.\n");
@@ -594,11 +593,9 @@ ProcessHeaders(AddOrg, linecount, pwp)
     int			linecount;
     struct passwd	*pwp;
 {
-    static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     static char		PATHFLUFF[] = PATHMASTER;
-    static char		SIGNS[] = "+-";
-    register HEADER	*hp;
-    register char	*p;
+    HEADER              *hp;
+    char                *p;
     TIMEINFO		Now;
     struct tm		*tm;
     char		buff[SMBUF];
@@ -639,28 +636,10 @@ ProcessHeaders(AddOrg, linecount, pwp)
     }
 
     /* Set Date. */
-    if (GetTimeInfo(&Now) < 0)
-	PerrorExit(TRUE, "Can't get the time");
-    if ((tm = localtime(&Now.time)) == NULL)
-	PerrorExit(TRUE, "Can't convert to local time");
-
-    /* The %0n.nd contruct from <kre@munnari.oz.au> is clever.  Modern
-     * printf's treat it %02 (two digits wide) .2 (zero-fill to at least
-     * two digits), while old versions treat it as %02 (zero-fill two
-     * digits wide) .2 (noise).  You might want to check this on your
-     * system.  This shouldn't be able to overflow SMBUF... */
-    if (Now.tzone < 0) {
-	p = &SIGNS[0];
-	zone = -Now.tzone;
+    if (!makedate(0, FALSE, buff, sizeof(buff))) {
+        fprintf(stderr, "Can't generate \"Date\" header\n");
+        QuitServer(1);
     }
-    else {
-	p = &SIGNS[1];
-	zone = Now.tzone;
-    }
-    (void)sprintf(buff, "%d %3.3s %d %02d:%02d:%02d %c%04d",
-	tm->tm_mday, &MONTHS[3 * tm->tm_mon], 1900 + tm->tm_year,
-	tm->tm_hour, tm->tm_min, tm->tm_sec,
-	*p, (int)((zone / 60) * 100 + (zone % 60)));
     HDR(_date) = COPY(buff);
 
     /* Newsgroups are checked later. */
@@ -739,6 +718,8 @@ ProcessHeaders(AddOrg, linecount, pwp)
     /* Followup-To; checked with Newsgroups. */
 
     /* Check Expires. */
+    if (GetTimeInfo(&Now) < 0)
+	PerrorExit(TRUE, "Can't get the time");
     if (HDR(_expires) && parsedate(HDR(_expires), &Now) == -1) {
 	(void)fprintf(stderr, "Can't parse \"%s\" as an expiration date.\n",
 		HDR(_expires));
@@ -904,187 +885,6 @@ CheckIncludedText(p, lines)
 
 
 /*
-**  Try to mail an article to the moderator of the group.
-*/
-STATIC BOOL
-MailArticle(group, article)
-    char		*group;
-    char		*article;
-{
-    register FILE	*F;
-    register HEADER	*hp;
-    register int	i;
-    char		*address;
-    char		buff[SMBUF];
-
-    /* Try to get the address first. */
-    if ((address = GetModeratorAddress(FromServer, ToServer, group, innconf->moderatormailer)) == NULL) {
-	(void)fprintf(stderr,
-		"The \"%s\" newsgroup is moderated, but has no address;\n",
-		group);
-	(void)fprintf(stderr, "ask your news administrator to fix this.\n");
-	return FALSE;
-    }
-
-    /* Say what we're going to do. */
-    (void)printf(
-	"The \"%s\" newsgroup is moderated.  Your article will not be\n",
-	group);
-    (void)printf("posted, but mailed to the moderator for approval.\n");
-
-    /* Now build up the command (ignore format/argument mismatch errors,
-     * in case %s isn't in innconf->mta) and send the headers. */
-    if (innconf->mta == NULL)
-	PerrorExit(TRUE, "Can't start mailer - not set");
-    if (strlen(innconf->mta) > sizeof(buff)) {
-        fprintf(stderr, "Mailer command is too long\n");
-        QuitServer(1);
-    }
-    (void)sprintf(buff, innconf->mta, address);
-    if ((F = popen(buff, "w")) == NULL)
-	PerrorExit(TRUE, "Can't start mailer");
-    (void)fprintf(F, "To: %s\n", address);
-    SafeFlush(F);
-
-    /* Write the headers, a blank line, then the article. */
-    for (hp = Table; hp < ENDOF(Table); hp++)
-	if (hp->Value) {
-	    (void)fprintf(F, "%s: %s\n", hp->Name, hp->Value);
-	    SafeFlush(F);
-	}
-    for (i = 0; i < OtherCount; i++) {
-	(void)fprintf(F, "%s\n", OtherHeaders[i]);
-	SafeFlush(F);
-    }
-    (void)fprintf(F, "\n");
-    i = strlen(article);
-    if (fwrite((POINTER)article, (SIZE_T)1, (SIZE_T)i, F) != i)
-	PerrorExit(TRUE, "Can't send article");
-    SafeFlush(F);
-    i = pclose(F);
-    if (i) {
-	(void)fprintf(stderr, "Mailer exited with status %d;\n", i);
-	(void)fprintf(stderr, "Article might not have been mailed.\n");
-	return FALSE;
-    }
-    return TRUE;
-}
-
-
-/*
-**  Check the newsgroups, make sure they're all valid, that none are
-**  moderated, etc.
-*/
-STATIC BOOL
-ValidNewsgroups(hdr, F, article)
-    char		*hdr;
-    FILE		*F;
-    char		*article;
-{
-    register char	*groups;
-    register char	*p;
-    register int	i;
-    BOOL		approved;
-    BOOL		mailed;
-    BOOL		FoundOne;
-    char		*group;
-    char		*q;
-    char		buff[SMBUF];
-    struct _DDHANDLE	*h;
-    BOOL		IsNewgroup;
-
-    p = HDR(_control);
-    IsNewgroup = p && EQn(p, "newgroup", 8);
-
-    groups = COPY(hdr);
-    if ((p = strtok(groups, NGSEPS)) == NULL) {
-	(void)fprintf(stderr, "Can't parse newsgroups line.\n");
-	return FALSE;
-    }
-
-    /* Don't mail article if just checking Followup-To line. */
-    approved = HDR(_approved) != NULL || article == NULL;
-    FoundOne = FALSE;
-
-    h = DDstart(FromServer, ToServer);
-    do {
-	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
-	    p = "to";
-	i = strlen(p);
-	(void)fseek(F, (OFFSET_T)0, SEEK_SET);
-	while (fgets(buff, sizeof buff, F) != NULL)
-	    if (buff[0] == *p && EQn(buff, p, i) && buff[i] == ' ')
-		break;
-	if (feof(F))
-	    continue;
-	FoundOne = TRUE;
-	DDcheck(h, p);
-
-	/* Skip past the newsgroup name, the high and low counts, to find
-	 * the flags. */
-	for (group = p, p = &buff[i]; *p == ' ' || CTYPE(isdigit, *p); p++)
-	    continue;
-
-	switch (*p) {
-	case NF_FLAG_OK:
-	    break;
-	case NF_FLAG_MODERATED:
-	    if (!approved)
-		if (Dump)
-		    (void)fprintf(stderr,
-				"%s is moderated -- article would be mailed\n",
-				  group);
-		else {
-		    CAclose();
-		    mailed = MailArticle(group, article);
-                    tmpPtr = DDend(h) ;
-		    DISPOSE(tmpPtr);
-		    QuitServer(mailed ? 0 : 1);
-		}
-	    break;
-	case NF_FLAG_IGNORE:
-	case NF_FLAG_NOLOCAL:
-	    (void)fprintf(stderr, "Postings to \"%s\" are not allowed here.\n",
-		    group);
-            tmpPtr = DDend(h) ;
-	    DISPOSE(tmpPtr);
-	    return FALSE;
-	case NF_FLAG_EXCLUDED:
-	    (void)fprintf(stderr, "Warning:  \"%s\" is rejected here.\n",
-		    group);
-	    /* Do NOT return false. */
-	    break;
-	case NF_FLAG_ALIAS:
-	    if ((q = strchr(p, '\n')) != NULL)
-		*q = '\0';
-	    (void)fprintf(stderr,
-		    "The newsgroup \"%s\" has been renamed to \"%s\".\n",
-		    group, p + 1);
-            tmpPtr = DDend(h) ;
-	    DISPOSE(tmpPtr);
-	    return FALSE;
-	}
-
-    } while ((p = strtok((char *)NULL, NGSEPS)) != NULL);
-
-    if (!FoundOne && !IsNewgroup) {
-	(void)fprintf(stderr, "No such newsgroups as \"%s\".\n", hdr);
-        tmpPtr = DDend(h) ;
-	DISPOSE(tmpPtr);
-	return FALSE;
-    }
-
-    /* Set default distribution. */
-    p = DDend(h);
-    if (HDR(_distribution) == NULL && *p)
-	HDR(_distribution) = p;
-
-    return TRUE;
-}
-
-
-
-/*
 **  Read stdin into a string and return it.  Can't use ReadInDescriptor
 **  since that will fail if stdin is a tty.
 */
@@ -1147,20 +947,13 @@ Spoolit(article, Length, deadfile)
     register HEADER	*hp;
     register FILE	*F;
     register int	i;
-    char		temp[BUFSIZ];
-    char		buff[BUFSIZ];
-    struct stat		Sb;
 
-    /* Try to write to the spool dir, else the deadfile. */
-    if ((stat(innconf->pathincoming, &Sb) >= 0 && S_ISDIR(Sb.st_mode))
-     || (F = xfopena(deadfile)) == NULL) {
-	TempName(innconf->pathtmp, temp);
-	(void)umask(0);
-	if ((i = open(temp, O_WRONLY | O_CREAT, BATCHFILE_MODE)) < 0
-	 || (F = fdopen(i, "w")) == NULL)
-	    PerrorExit(FALSE, "Can't create spool file");
-	deadfile = NULL;
-    }
+    /* Try to write to the deadfile. */
+    if (deadfile == NULL)
+        return;
+    F = xfopena(deadfile);
+    if (F == NULL)
+        PerrorExit(FALSE, "Can't create spool file");
 
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ENDOF(Table); hp++)
@@ -1175,16 +968,10 @@ Spoolit(article, Length, deadfile)
     /* Write the article and exit. */
     if (fwrite((POINTER)article, (SIZE_T)1, Length, F) != Length)
 	PerrorExit(FALSE, "Can't write article");
-    SafeFlush(F);
+    if (FLUSH_ERROR(F))
+        PerrorExit(FALSE, "Can't write article");
     if (fclose(F) == EOF)
 	PerrorExit(FALSE, "Can't close spool file");
-
-    if (deadfile == NULL) {
-	/* Put the file in a good place. */
-	TempName(innconf->pathincoming, buff);
-	if (rename(temp, buff) < 0)
-	    PerrorExit(FALSE, "Can't rename spool file");
-    }
 }
 
 
@@ -1387,27 +1174,6 @@ main(ac, av)
 		    HEADER_STRLEN, OtherHeaders[i]);
 	    QuitServer(1);
 	}
-
-    /* Check the newsgroups. */
-    if ((F = CAlistopen(FromServer, ToServer, (char *)NULL)) == NULL) {
-	if (NNTPsendpassword((char *)NULL, FromServer, ToServer) >= 0)
-	    F = CAlistopen(FromServer, ToServer, (char *)NULL);
-    }
-    if (F != NULL) {
-	if (!ValidNewsgroups(HDR(_newsgroups), F, article)) {
-	    CAclose();
-	    QuitServer(1);
-	}
-	if ((p = HDR(_followupto)) != NULL
-	 && !EQ(p, "poster")
-	 && !ValidNewsgroups(p, F, (char *)NULL)) {
-	    CAclose();
-	    QuitServer(1);
-	}
-	CAclose();
-    }
-    else if (!Spooling)
-	PerrorExit(TRUE, "Can't get list of newsgroups");
 
     if (Dump) {
 	/* Write the headers and a blank line. */

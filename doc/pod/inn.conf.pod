@@ -29,6 +29,12 @@ variables.  Most parameters have default values if not specified in
 F<inn.conf>; those defaults are noted in the description of each
 parameter.
 
+For the time being, it is strongly recommended to include every parameter
+in F<inn.conf> even if it is set to the default value, since some shell
+scripts don't correctly handle missing keys that they care about.  This is
+a difficult-to-fix bug in the current parser that will be fixed in future
+versions of INN.
+
 Many parameters take a boolean value.  For all such parameters, the value
 may be specified as C<true>, C<yes>, or C<on> to turn it on and may be any
 of C<false>, C<no>, or C<off> to turn it off.  The case of these values is
@@ -38,7 +44,8 @@ This file is intended to be fairly static.  Any changes made to it will
 generally not affect any running programs until they restart.  Unlike
 nearly every other configuration file, F<inn.conf> cannot be reloaded
 dynamically using ctlinnd(8); innd(8) must be stopped and restarted for
-relevant changes to F<inn.conf> to take effect.
+relevant changes to F<inn.conf> to take effect (C<ctlinnd xexec innd> is
+the fastest way to do this.)
 
 This documentation is extremely long and organized as a reference manual
 rather than as a tutorial.  If this is your first exposure to INN and
@@ -127,7 +134,7 @@ stored and propagated, and other similar settings.
 
 Articles older than this number of days are dropped.  This setting should
 probably match the setting on the C</remember/> line in F<expire.ctl>.
-The default value is C<14>.
+The default value is C<10>.
 
 =item I<bindaddress>
 
@@ -163,7 +170,7 @@ default is false.
 
 =item I<immediatecancel>
 
-When using the timecaf storage methoc, article cancels are normally just
+When using the timecaf storage method, article cancels are normally just
 cached to be cancelled, not cancelled immediately.  If this is set to
 true, they will instead by cancelled as soon as the cancel is processed.
 This is a boolean value and the default is false.
@@ -203,7 +210,8 @@ Path: header.  The default value is unset.
 =item I<pgpverify>
 
 Whether to enable PGP verification of control messages other than cancel.
-This is a boolean value and the default is false.
+This is a boolean value and the default is based on whether configure found
+pgp or pgpv.
 
 =item I<port>
 
@@ -354,8 +362,8 @@ If set, restricts the overview data stored by INN to only the newsgroups
 matching this comma-separated list of wildmat expressions.  Newsgroups not
 matching this setting may not be readable, and if I<groupbaseexpiry> is
 set to true and the storage method for these newsgroups does not have
-self-expire functionality, storing overview data will fail.  This is a
-boolean value and the default is false.
+self-expire functionality, storing overview data will fail.
+The default is unset.
 
 =item I<ovmethod>
 
@@ -863,7 +871,7 @@ false.
 =item I<status>
 
 How frequently (in seconds) innd(8) should write out a status report.  The
-report is written to I<pathlog>/inn.status.  If this is set to C<0> or
+report is written to I<pathhttp>/inn_status.html.  If this is set to C<0> or
 C<false>, status reporting is disabled.  The default value is C<0>.
 
 =item I<timer>
