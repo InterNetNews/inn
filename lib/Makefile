@@ -33,7 +33,7 @@ install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:
 	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate
-	rm -f profiled libinn_p.a endian ../include/inn/version.h
+	rm -f profiled libinn_p.a
 	rm -rf .libs
 
 tags ctags:	$(SOURCES)
@@ -53,8 +53,8 @@ libinn.a:       $(OBJECTS)
 perl.o: perl.c
 	$(CC) $(CFLAGS) $(PERLINC) $(LDFLAGS) -c perl.c
 
-../include/inn/version.h:	mkversion ../Makefile.global
-	./mkversion '$(VERSION)' '$(VERSION_EXTRA)' $@
+../include/inn/version.h:
+	(cd ../include && $(MAKE))
 
 parsedate.c:	parsedate.y
 	@echo Expect 6 shift/reduce conflicts
