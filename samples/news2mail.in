@@ -8,8 +8,8 @@
 # localhost to get the actual article and stuff
 # it down sendmail's throat.
 # 
-# this program expect to find a file that maps listname to listaddrs,
-#	/var/news/etc/news2mail.cf
+# This program expect to find a file that maps listname to listaddrs,
+#	@prefix@/etc/news2mail.cf
 # which must contain address mapping pairs such as
 #
 #	big-red-ants@ucsd.edu	big-red-ants-digest@ucsd.edu		
@@ -21,7 +21,7 @@
 # the article to.
 #
 # In the INN newsfeeds file, you need to have a channel feed:
-#	n2m!:!*:Tc,Ac,Wn*:/var/news/local/news2mail
+#	n2m!:!*:Tc,Ac,Wn*:@prefix@/bin/news2mail
 # and a site for each of the various mailing lists you're feeding,
 # such as
 #	big-red-ants@ucsd.edu:rec.pets.redants.*:Tm:n2m!
@@ -106,8 +106,8 @@ sub mailto {
 
 	$sendmail = "|" . $inn::mta ;
 	$sendmail =~ s!%s!! ;
-	$sendmail .= " -ee '-f<nobody>' -odq " . $a;
-#	$sendmail = "|/usr/local/bin/debug -oi -ee '-f<nobody>' -odq " . $a;
+	$sendmail .= " -ee '-f<news>' -odq " . $a;
+#	$sendmail = "|/usr/local/bin/debug -oi -ee '-f<news>' -odq " . $a;
 
 	syslog('info', $sendmail);
 
