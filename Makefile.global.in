@@ -61,7 +61,7 @@ INEWSMODE	= @INEWSMODE@
 RNEWSMODE	= @RNEWSMODE@
 
 PATHNEWS        = @prefix@
-PATHBIN         = @bindir@
+PATHBIN         = $(PATHNEWS)/bin
 PATHETC         = @ETCDIR@
 PATHLIB         = @LIBDIR@
 PATHCONTROL     = @CONTROLDIR@
