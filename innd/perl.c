@@ -44,11 +44,6 @@
 
 #include "clibrary.h"
 #include "innd.h"
-
-#include <EXTERN.h>
-#include <perl.h>
-#include <XSUB.h>
-#include "ppport.h"
 #include "innperl.h"
 
 /* From art.c.  Ew.  Need header parsing that doesn't use globals. */

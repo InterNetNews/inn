@@ -27,10 +27,6 @@
 #include "post.h"
 
 #include "innperl.h"
-#include <EXTERN.h>
-#include <perl.h>
-#include <XSUB.h>
-#include "ppport.h"
 
 extern HEADER	Table[], *EndOfTable;
 extern char LogName[];
