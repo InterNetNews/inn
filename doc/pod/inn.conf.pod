@@ -127,7 +127,7 @@ stored and propagated, and other similar settings.
 
 Articles older than this number of days are dropped.  This setting should
 probably match the setting on the C</remember/> line in F<expire.ctl>.
-The default value is C<14>.
+The default value is C<10>.
 
 =item I<bindaddress>
 
