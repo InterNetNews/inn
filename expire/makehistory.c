@@ -80,23 +80,20 @@ RemoveDBZFiles(p)
 	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
 }
 
-
 /*
 **  Rebuild the DBZ file from the text file.
 */
-STATIC void
-Rebuild(size, IgnoreOld, Overwrite)
-    long		size;
-    BOOL		IgnoreOld;
-    BOOL		Overwrite;
+STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 {
-    register QIOSTATE	*qp;
-    register char	*p;
-    register char	*save;
-    register long	count;
+    QIOSTATE	        *qp;
+    char	        *p;
+    char                *q;
+    char	        *save;
+    int                 i;
+    long	        count;
     long		where;
-    datum		key;
-    datum		value;
+    HASH		key;
+    OFFSET_T		offset;
     char		temp[SMBUF];
     dbzoptions          opt;
 
@@ -150,10 +147,6 @@ Rebuild(size, IgnoreOld, Overwrite)
 	}
     }
 
-    /* Set up the value pointer. */
-    value.dptr = (char *)&where;
-    value.dsize = sizeof where;
-
     /* Loop through all lines in the text file. */
     count = 0;
     for (where = QIOtell(qp); (p = QIOread(qp)) != NULL; where = QIOtell(qp)) {
@@ -165,9 +158,22 @@ Rebuild(size, IgnoreOld, Overwrite)
 	    exit(1);
 	}
 	*save = '\0';
-	key.dptr = p;
-	key.dsize = save - p + 1;
-	if (!dbzstore(key, value)) {
+	switch (*p) {
+	case '[':
+	    if (strlen(p) != (sizeof(HASH) + 2)) {
+		fprintf(stderr, "Invalid length for hash %s, skipping\n", p);
+		continue;
+	    }
+	    key = TextToHash(p);
+	    break;
+	case '<':
+	    key = HashMessageID(p);
+	    break;
+	default:
+	    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
+	    continue;
+	}
+	if (!dbzstore(key, offset)) {
 	    if (dbzexists(key)) {
 	        fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
 	    } else {
@@ -300,8 +306,6 @@ DoArticle(qp, Sbp, name, out, RemoveBad, Update)
     time_t		Expires;
     time_t		Posted;
     int			i;
-    datum		key;
-    datum		value;
 
     /* Read the file for Message-ID and Expires header. */
     Arrived = Sbp->st_mtime;
@@ -371,12 +375,8 @@ DoArticle(qp, Sbp, name, out, RemoveBad, Update)
 
     if (Update) {
 	/* Server already know about this one? */
-	key.dptr = MessageID;
-	key.dsize = strlen(MessageID) + 1;
-	value = dbzfetch(key);
-	if (value.dptr != NULL) {
+	if (dbzexists(HashMessageID(MessageID)))
 	    return;
-	}
     }
 
     /* Output the line. */

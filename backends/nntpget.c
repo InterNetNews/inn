@@ -178,18 +178,7 @@ STATIC BOOL
 HIShaveit(mesgid)
     char		*mesgid;
 {
-    register char	*p;
-    datum		key;
-    datum		value;
-    char		buff[NNTP_STRLEN];
-
-    (void)strcpy(buff, mesgid);
-    for (p = key.dptr = buff; *p; p++)
-	if (*p == HIS_FIELDSEP || *p == '\n')
-	    *p = HIS_BADCHAR;
-    key.dsize = p - key.dptr + 1;
-    value = dbzfetch(key);
-    return value.dptr != NULL ? TRUE : FALSE;
+    return dbzexists(HashMessageID(mesgid));
 }
 
 

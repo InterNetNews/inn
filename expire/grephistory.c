@@ -122,8 +122,8 @@ IhaveSendme(History, What)
     register FILE	*F;
     register char	*p;
     register char	*q;
-    datum		key;
-    datum		value;
+    HASH		key;
+    OFFSET_T            offset;
     struct stat		Sb;
     BOOL		More;
     char		buff[BUFSIZ];
@@ -151,22 +151,22 @@ IhaveSendme(History, What)
 	if (*q != '>')
 	    continue;
 	*++q = '\0';
-	key.dptr = p;
-	key.dsize = q - key.dptr + 1;
-	value = dbzfetch(key);
+
+	key = HashMessageID(p);
+	offset = dbzfetch(key);
 
 	/* Ihave -- say if we want it, and continue. */
 	if (What == 'i') {
-	    if (value.dptr == NULL)
+	    if (offset < 0)
 		(void)printf("%s\n", p);
 	    continue;
 	}
 
 	/* Sendme -- print a filename for the message. */
-	if (value.dptr == NULL)
+	if (offset < 0)
 	    /* Doesn't exist. */
 	    continue;
-	if (HistorySeek(F, value.dptr))
+	if (HistorySeek(F, offset))
 	    while (GetName(F, Name, &More)) {
 		if (stat(Name, &Sb) >= 0) {
 		    (void)printf("%s\n", Name);
@@ -199,8 +199,9 @@ main(ac, av)
     register char	*p;
     register FILE	*F;
     STRING		History;
-    datum		key;
-    datum		value;
+    char                *keystr;
+    HASH		key;
+    OFFSET_T		offset;
     struct stat		Sb;
     BOOL		More;
     char		What;
@@ -258,20 +259,18 @@ main(ac, av)
 		strerror(errno));
 	exit(1);
     }
-    key.dptr = av[0];
-    if (*key.dptr != '<') {
+    
+    keystr = av[0];
+    if (*av[0] != '<') {
 	/* Add optional braces. */
-	key.dptr = NEW(char, 1 + strlen(av[0]) + 1 + 1);
-	(void)sprintf(key.dptr, "<%s>", av[0]);
+	keystr = NEW(char, 1 + strlen(av[0]) + 1 + 1);
+	(void)sprintf(keystr, "<%s>", av[0]);
     }
-    for (p = key.dptr; *p; p++)
-	if (*p == HIS_FIELDSEP || *p == '\n')
-	    *p = HIS_BADCHAR;
-    key.dsize = p - key.dptr + 1;
-    value = dbzfetch(key);
+
+    key = HashMessageID(keystr);
 
     /* Not found. */
-    if (value.dptr == NULL) {
+    if ((offset = dbzfetch(key)) < 0) {
 	if (What == 'n')
 	    (void)fprintf(stderr, "Not found.\n");
 	exit(1);
@@ -283,7 +282,7 @@ main(ac, av)
 
     /* Just give offset into history file */
     if (What == 't') {
-      (void)printf("%lu\n", *(long *) value.dptr);
+      (void)printf("%lu\n", offset);
       exit(0);
     }
 
@@ -294,12 +293,12 @@ main(ac, av)
 	exit(1);
     }
     if (What == 'l') {
-	FullLine(F, value.dptr);
+	FullLine(F, offset);
 	exit(0);
     }
 
     /* Loop until we find an existing file. */
-    if (HistorySeek(F, value.dptr))
+    if (HistorySeek(F, offset))
 	while (GetName(F, Name, &More)) {
 	    if (stat(Name, &Sb) >= 0) {
 		(void)printf("%s\n", Name);

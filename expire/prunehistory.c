@@ -87,7 +87,6 @@ main(ac, av)
 {
     static char		SEPS[] = " \t";
     register char	*p;
-    register char	*q;
     register FILE	*rfp;
     register int	wfd;
     register int	c;
@@ -95,8 +94,7 @@ main(ac, av)
     OFFSET_T		where;
     char		buff[BUFSIZ];
     char		*files;
-    datum		key;
-    datum		value;
+    HASH		key;
     STRING		History;
     BUFFER		Line;
     BOOL		Passing;
@@ -174,19 +172,14 @@ main(ac, av)
 	*++p = '\0';
 	files = p + 1;
 
-	/* Loop up the article. */
-	key.dsize = p - buff + 1;
-	key.dptr = buff;
-	value = dbzfetch(key);
-	if (value.dptr == NULL || value.dsize != sizeof where) {
+	/* Look up the article. */
+	key = HashMessageID(buff);
+	if ((where = dbzfetch(key)) < 0) {
 	    (void)fprintf(stderr, "No entry for \"%s\", %s\n",
 		    buff, strerror(errno));
 	    continue;
 	}
 
-	/* Copy the value to an aligned spot. */
-	for (p = value.dptr, q = (char *)&where, i = sizeof where; --i >= 0; )
-	    *q++ = *p++;
 	if (fseek(rfp,  where, SEEK_SET) == -1) {
 	    (void)fprintf(stderr, "Can't fseek for \"%s\", %s\n",
 		    buff, strerror(errno));

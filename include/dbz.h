@@ -12,12 +12,6 @@
  */
 #define DBZ_INTERNAL_HASH_SIZE   6
 
-/* for dbm and dbz */
-typedef struct {
-	char *dptr;
-	int dsize;
-} datum;
-
 typedef enum {INCORE_NO, INCORE_MEM, INCORE_MMAP} dbz_incore_val;
 
 typedef struct {
@@ -36,26 +30,17 @@ typedef struct {
 /* standard dbm functions */
 extern BOOL dbminit(const char *name);
 extern BOOL dbmclose(void);
-extern datum fetch(const datum key);
-extern BOOL store(const datum key, const datum data);
 
 /* new stuff for dbz */
 extern BOOL dbzfresh(const char *name, const long size, const int fillpercent);
 extern BOOL dbzagain(const char *name, const char *oldname);
-extern BOOL dbzexists(const datum key);
-extern datum dbzfetch(const datum key);
-extern BOOL dbzstore(const datum key, const datum data);
+extern BOOL dbzexists(const HASH key);
+extern OFFSET_T dbzfetch(const HASH key);
+extern BOOL dbzstore(const HASH key, const off_t data);
 extern BOOL dbzsync(void);
 extern long dbzsize(const long contents);
 extern BOOL dbzdebug(const int value);
 extern void dbzsetoptions(const dbzoptions options);
 extern void dbzgetoptions(dbzoptions *options);
-
-/*
- * In principle we could handle unlimited-length keys by operating a chunk
- * at a time, but it's not worth it in practice.  Setting a nice large
- * bound on them simplifies the code and doesn't hurt anything.
- */
-#define DBZMAXKEY	255
 
 #endif /* __DBZ_H__ */

@@ -679,8 +679,7 @@ EXPdoline(out, line, length, arts, krps)
     long		size;
     BOOL                poisoned;
     BOOL		keeper;
-    datum		key;
-    datum		value;
+    HASH		key;
     char		date[20];
 
     /* Split up the major fields. */
@@ -689,15 +688,24 @@ EXPdoline(out, line, length, arts, krps)
 	(void)fprintf(stderr, IGNORING, line);
 	return TRUE;
     }
-    if ( strlen(fields[0]) >= (DBZMAXKEY-1) ) { 
-      (void)fprintf(stderr, IGNORING, line);
-      return TRUE;
-    }
 
     /* Check to see if this messageid has already been written to the
        text file.  Unfortunately, this is the only clean way to do this */
-    key.dptr = fields[0];
-    key.dsize = strlen(key.dptr) + 1;
+    switch (fields[0][0]) {
+    case '[':
+	if (strlen(fields[0]) != (sizeof(HASH) + 2)) {
+	    fprintf(stderr, "Invalid length for hash %s, skipping\n", p);
+	    return TRUE;
+	}
+	key = TextToHash(fields[0]);
+	break;
+    case '<':
+	key = HashMessageID(fields[0]);
+	break;
+    default:
+	fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
+	return TRUE;
+    }
     if (dbzexists(key)) {
 	fprintf(stderr, "Duplicate message-id \"%s\" in history\n", fields[0]);
 	return TRUE;
@@ -888,11 +896,9 @@ EXPdoline(out, line, length, arts, krps)
 
     /* Set up the DBZ data.  We don't have to sanitize the Message-ID
      * since it had to have been clean to get in there. */
-    value.dptr = (char *)&where;
-    value.dsize = sizeof where;
     if (EXPverbose > 4)
-	(void)printf("\tdbz %s@%ld\n", key.dptr, where);
-    if (!dbzstore(key, value)) {
+	(void)printf("\tdbz %s@%ld\n", fields[0], where);
+    if (!dbzstore(key, where)) {
 	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
 	return FALSE;
     }

@@ -145,8 +145,7 @@ HistorySeek(MessageID)
     register char	*p;
     register char	*q;
     register int	i;
-    datum		key;
-    datum		val;
+    HASH		key;
     OFFSET_T		offset;
 
     /* Open the history file. */
@@ -164,15 +163,10 @@ HistorySeek(MessageID)
     }
 
     /* Do the lookup. */
-    key.dsize = strlen(MessageID) + 1;
-    key.dptr = MessageID;
-    val = dbzfetch(key);
-    if (val.dptr == NULL || val.dsize != sizeof offset)
+    if ((offset = dbzfetch(HashMessageID(MessageID))) < 0)
 	return NULL;
 
     /* Get the seek offset, and seek. */
-    for (p = val.dptr, q = (char *)&offset, i = sizeof offset; --i >= 0; )
-	*q++ = *p++;
     if (fseek(F, offset, SEEK_SET) == -1)
 	return NULL;
     return F;
@@ -849,7 +843,8 @@ GetMessageID(qp)
     register QIOSTATE	*qp;
 {
     static char		HDR[] = "Message-ID:";
-    static char		buff[DBZMAXKEY + 1];
+    static char		*buff;
+    static int          buffsize = 0;
     register char	*p;
 
     while ((p = QIOread(qp)) != NULL)
@@ -858,9 +853,16 @@ GetMessageID(qp)
 	    /* Found the header -- skip whitespace. */
 	    for (p += STRLEN(HDR); ISWHITE(*p); p++)
 		continue;
-	    if (*p == '\0' || (int)strlen(p) > DBZMAXKEY)
-		/* Header is empty or too long. */
+	    if (*p == '\0')
+		/* Header is empty*/
 		break;
+	    if (strlen(p) >= buffsize) {
+		if (buffsize)
+		    buff = RENEW(buff, char, strlen(p) + 1);
+		else
+		    buff = NEW(char, strlen(p) + 1);
+		
+	    }
 	    (void)strcpy(buff, p);
 	    return buff;
 	}

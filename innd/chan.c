@@ -60,8 +60,6 @@ BUFFset(bp, p, length)
     register char	*p;
     register int	length;
 {
-    register char	*dest;
-
     if ((bp->Left = length) != 0) {
 	/* Need more space? */
 	if (bp->Size < length) {
@@ -167,6 +165,7 @@ CHANcreate(fd, Type, State, Reader, WriteDone)
     cp->Rest=0;
     cp->SaveUsed=0;
     cp->Lastch=0;
+    HashClear(&cp->CurrentMessageIDHash);
 
     /* Make the descriptor close-on-exec and non-blocking. */
     CloseOnExec(fd, TRUE);

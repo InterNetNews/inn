@@ -88,8 +88,8 @@ STATIC STRING		NCgreeting;
 ** Clear the WIP entry for the given channel
 */
 STATIC void NCclearwip(CHANNEL *cp) {
-    WIPfree(WIPbyhash(cp->CurrentMessageID));
-    HashClear(&cp->CurrentMessageID);
+    WIPfree(WIPbyhash(cp->CurrentMessageIDHash));
+    HashClear(&cp->CurrentMessageIDHash);
 }
 
 /*
@@ -198,7 +198,7 @@ NCpostit(cp)
 	    NCpostit, (POINTER)NULL);
 	return;
     case OMrunning:
-	response = ARTpost(cp, (AmSlave && !XrefSlave) ? &cp->Replic : NULL);
+	response = ARTpost(cp);
 	if (atoi(response) == NNTP_TOOKIT_VAL) {
 	    cp->Received++;
 	    if (cp->Sendid.Size > 3) { /* We be streaming */
@@ -325,7 +325,7 @@ NChead(cp)
 	return;
 
     /* Get the article filenames, and the header. */
-    if ((head = ARTreadheader(HISfilesfor(p))) == NULL) {
+    if ((head = ARTreadheader(HISfilesfor(HashMessageID(p)))) == NULL) {
 	NCwritetext(cp, NNTP_DONTHAVEIT);
 	return;
     }
@@ -362,7 +362,7 @@ NCstat(cp)
 
     /* Get the article filenames; read the header (to make sure not
      * the article is still here). */
-    if (ARTreadheader(HISfilesfor(p)) == NULL) {
+    if (ARTreadheader(HISfilesfor(HashMessageID(p))) == NULL) {
 	NCwritetext(cp, NNTP_DONTHAVEIT);
 	return;
     }
@@ -477,7 +477,7 @@ NCihave(cp)
     if (NCbadid(cp, p))
 	return;
 
-    if (HIShavearticle(p)) {
+    if (HIShavearticle(HashMessageID(p))) {
 	cp->Refused++;
 	NCwritetext(cp, NNTP_HAVEIT);
     }
@@ -632,8 +632,6 @@ NCmode(cp)
 */
 STATIC FUNCTYPE NCquit(CHANNEL *cp)
 {
-    int	                i;
-
     NCclearwip(cp);
     NCwritetext(cp, NNTP_GOODBYE_ACK);
     cp->State = CSwritegoodbye;
@@ -657,7 +655,7 @@ NCxpath(cp)
     if (NCbadid(cp, p))
 	return;
 
-    if ((p = HISfilesfor(p)) == NULL) {
+    if ((p = HISfilesfor(HashMessageID(p))) == NULL) {
 	NCwritetext(cp, NNTP_DONTHAVEIT);
 	return;
     }
@@ -762,14 +760,12 @@ NCclean(bp)
 **  Check whatever data is available on the channel.  If we got the
 **  full amount (i.e., the command or the whole article) process it.
 */
-STATIC FUNCTYPE
-NCproc(cp)
-    register CHANNEL	*cp;
+STATIC FUNCTYPE NCproc(CHANNEL *cp)
 {
-    register char	*p;
-    register NCDISPATCH	*dp;
-    register BUFFER	*bp;
-    STRING		q;
+    char	        *p;
+    char                *q;
+    NCDISPATCH   	*dp;
+    BUFFER	        *bp;
     char		buff[SMBUF];
     char		*av[2];
     int			i;
@@ -987,14 +983,8 @@ NCproc(cp)
 		cp->Rejected++;
 
 		/* Write a local cancel entry so nobody else gives it to us. */
-		if (p) {
-		    av[0] = p;
-		    av[1] = NULL;
-#if 0		    
-		    if ((q = CCcancel(av)) != NULL)
+		    if (!HISremember(cp->CurrentMessageIDHash))
 			syslog(L_ERROR, "%s cant cancel %s %s", LogName, av[0], q); 
-#endif
-		}
 
 		/* Clear the work-in-progress entry. */
 		NCclearwip(cp);
@@ -1207,7 +1197,6 @@ NCsetup(i)
 void
 NCclose()
 {
-    register int	i;
     register CHANNEL	*cp;
     int			j;
 
@@ -1324,7 +1313,7 @@ NCcheck(cp)
 	return;
     }
 
-    if (HIShavearticle(p)) {
+    if (HIShavearticle(HashMessageID(p))) {
 	cp->Refused++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);
@@ -1346,7 +1335,6 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
 {
     char	        *p;
     int			msglen;
-    int	                i;
     WIP                 *wp;
 
     /* Snip off the Message-ID. */
@@ -1370,5 +1358,5 @@ STATIC FUNCTYPE NCtakethis(CHANNEL *cp)
     cp->State = CSgetarticle;
     /* set WIP for benefit of later code in NCreader */
     wp = WIPnew(p, cp);
-    cp->CurrentMessageID = wp->MessageID;
+    cp->CurrentMessageIDHash = wp->MessageID;
 }

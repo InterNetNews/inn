@@ -159,7 +159,7 @@ typedef struct _CHANNEL {
     BOOL		Tracing;
     BUFFER		Sendid;
     BUFFER              Replic;
-    HASH                CurrentMessageID;
+    HASH                CurrentMessageIDHash;
     int                 XBatchSize;
     int                 LargeArtSize;
     int			Lastch;
@@ -446,6 +446,7 @@ extern void		ARTsetup();
 
 extern void		BUFFset();
 extern void		BUFFswap();
+extern void             BUFFappend();
 
 extern BOOL		CHANsleeping();
 extern CHANNEL		*CHANcreate();
@@ -476,12 +477,13 @@ extern STRING		CCblock();
 extern STRING		CCcancel();
 extern STRING		CCcheckfile();
 
-extern BOOL		HIShavearticle();
-extern BOOL		HISwrite();
-extern char		*HISfilesfor();
-extern void		HISclose();
-extern void		HISsetup();
-extern void		HISsync();
+extern BOOL		HIShavearticle(const HASH MessageID);
+extern BOOL		HISwrite(const ARTDATA *Data, HASH hash, char *paths);
+extern BOOL             HISremember(const HASH MessageID);
+extern char		*HISfilesfor(const HASH MessageID);
+extern void		HISclose(void);
+extern void		HISsetup(void);
+extern void		HISsync(void);
 
 extern BOOL		ICDnewgroup();
 extern char		*ICDreadactive();

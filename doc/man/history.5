@@ -27,13 +27,17 @@ as
 .nf
 <Message\-ID>   \et   date
 <Message\-ID>   \et   date   \et   files
+[Hash]         \et   date   \et   files
 .fi
 .RE
 .PP
 The
 .I Message\-ID
 field is the value of the article's Message-ID header, including the
-angle brackets.
+angle brackets. The
+.I Hash
+field is the ASCII representation of the hash of the Message-ID header.  
+This is is used for articles that were discarded after being recieved.
 .PP
 The
 .I date

@@ -31,17 +31,15 @@ STATIC int              HISdne;    /* The entry was not in cache or history */
 /*
 ** Put an entry into the history cache 
 */
-void HIScacheadd(char *MessageID, int len, BOOL Found) {
+void HIScacheadd(HASH MessageID, BOOL Found) {
     unsigned int  i, hash, loc;
-    HASH h;
     int tocopy;
 
     if (HIScache == NULL)
 	return;
-    h = Hash(MessageID, len);
-    tocopy = (sizeof(h) < sizeof(hash)) ? sizeof(h) : sizeof(hash);
-    memcpy(&hash, &h, tocopy);
-    memcpy(&loc, ((char *)&h) + (sizeof(h) - tocopy), tocopy);
+    tocopy = (sizeof(HASH) < sizeof(hash)) ? sizeof(HASH) : sizeof(hash);
+    memcpy(&hash, &MessageID, tocopy);
+    memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - tocopy), tocopy);
     i = loc % HIScachesize;
     HIScache[i].Hash = hash;
     HIScache[i].Found = Found;
@@ -50,17 +48,15 @@ void HIScacheadd(char *MessageID, int len, BOOL Found) {
 /*
 ** Lookup an entry in the history cache
 */
-HISresult HIScachelookup(char *MessageID, int len) {
+HISresult HIScachelookup(HASH MessageID) {
     unsigned int i, hash, loc;
-    HASH h;
     int tocopy;
 
     if (HIScache == NULL)
 	return HIScachedne;
-    h = Hash(MessageID, len);
-    tocopy = (sizeof(h) < sizeof(hash)) ? sizeof(h) : sizeof(hash);
-    memcpy(&hash, &h, tocopy);
-    memcpy(&loc, ((char *)&h) + (sizeof(h) - tocopy), tocopy);
+    tocopy = (sizeof(HASH) < sizeof(hash)) ? sizeof(HASH) : sizeof(hash);
+    memcpy(&hash, &MessageID, tocopy);
+    memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - tocopy), tocopy);
     i = loc % HIScachesize;
     if (HIScache[i].Hash == hash) {
         if (HIScache[i].Found) {
@@ -78,8 +74,7 @@ HISresult HIScachelookup(char *MessageID, int len) {
 /*
 **  Set up the history files.
 */
-void
-HISsetup()
+void HISsetup(void)
 {
     char *HIScachesizestr;
     dbzoptions opt;
@@ -129,8 +124,7 @@ HISsetup()
 /*
 **  Synchronize the in-core history file (flush it).
 */
-void
-HISsync()
+void HISsync(void)
 {
     if (HISdirty) {
 	if (!dbzsync()) {
@@ -145,8 +139,7 @@ HISsync()
 /*
 **  Close the history files.
 */
-void
-HISclose()
+void HISclose(void)
 {
     if (HISwritefp != NULL) {
 	HISsync();
@@ -168,59 +161,18 @@ HISclose()
 
 
 /*
-**  File in the DBZ datum for a Message-ID, making sure not to copy any
-**  illegal characters.
-*/
-STATIC void
-HISsetkey(p, keyp)
-    register char	*p;
-    datum		*keyp;
-{
-    static BUFFER	MessageID;
-    register char	*dest;
-    register int	i;
-
-    /* Get space to hold the ID. */
-    i = strlen(p);
-    if (MessageID.Data == NULL) {
-	MessageID.Data = NEW(char, i + 1);
-	MessageID.Size = i;
-    }
-    else if (MessageID.Size < i) {
-	RENEW(MessageID.Data, char, i + 1);
-	MessageID.Size = i;
-    }
-
-    for (keyp->dptr = dest = MessageID.Data; *p; p++)
-	if (*p == HIS_FIELDSEP || *p == '\n')
-	    *dest++ = HIS_BADCHAR;
-	else
-	    *dest++ = *p;
-    *dest = '\0';
-
-    keyp->dsize = dest - MessageID.Data + 1;
-}
-
-
-/*
 **  Get the list of files under which a Message-ID is stored.
 */
-char *
-HISfilesfor(MessageID)
-    char		*MessageID;
+char *HISfilesfor(const HASH MessageID)
 {
     static BUFFER	Files;
     char		*dest;
-    datum		key;
-    datum		val;
-    long		offset;
-    register char	*p;
-    register int	i;
+    OFFSET_T		offset;
+    char	        *p;
+    int	                i;
 
     /* Get the seek value into the history file. */
-    HISsetkey(MessageID, &key);
-    val = dbzfetch(key);
-    if (val.dptr == NULL || val.dsize != sizeof offset)
+    if ((offset = dbzfetch(MessageID)) < 0)
 	return NULL;
 
     /* Get space. */
@@ -229,8 +181,7 @@ HISfilesfor(MessageID)
 	Files.Data = NEW(char, Files.Size);
     }
 
-    /* Copy the value to an aligned spot. */
-    memmove(&offset, val.dptr, sizeof(offset));
+    /* Seek to the specified location. */
     if (lseek(HISreadfd, offset, SEEK_SET) == -1)
 	return NULL;
 
@@ -278,35 +229,31 @@ STATIC void HISlogstats() {
 /*
 **  Have we already seen an article?
 */
-BOOL
-HIShavearticle(MessageID)
-    char	*MessageID;
+BOOL HIShavearticle(const HASH MessageID)
 {
-    datum	   key;
     BOOL	   val;
-    int            index;
-    HASH	   hash;
     STATIC time_t  lastlog;       /* Last time that we logged stats */   
     
-
     if ((Now.time - lastlog) > 3600) {
 	HISlogstats();
 	lastlog = Now.time;
     }
-    switch (HIScachelookup(MessageID, strlen(MessageID))) {
-    	case HIScachehit:
+
+    switch (HIScachelookup(MessageID)) {
+    case HIScachehit:
     	    return TRUE;
-    	case HIScachemiss:
+    case HIScachemiss:
     	    return FALSE;
+    case HIScachedne:
+	val = dbzexists(MessageID);
+	HIScacheadd(MessageID, val);
+	if (val)
+	    HISmisses++;
+	else
+	    HISdne++;
+	return val;
     }
-    HISsetkey(MessageID, &key);
-    val = dbzexists(key);
-    HIScacheadd(MessageID, strlen(MessageID), val);
-    if (val)
-	HISmisses++;
-    else
-	HISdne++;
-    return val;
+    return FALSE;
 }
 
 
@@ -314,11 +261,9 @@ HIShavearticle(MessageID)
 **  Turn a history filename entry from slashes to dots.  It's a pity
 **  we have to do this.
 */
-STATIC void
-HISslashify(p)
-    register char	*p;
+STATIC void HISslashify(char *p)
 {
-    register char	*last;
+    char	        *last;
 
     for (last = NULL; *p; p++) {
 	if (*p == '/') {
@@ -336,19 +281,12 @@ HISslashify(p)
 /*
 **  Write a history entry.
 */
-BOOL
-HISwrite(Data, paths)
-    ARTDATA		*Data;
-    char		*paths;
+BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 {
     static char		NOPATHS[] = "";
     long		offset;
-    datum		key;
-    datum		val;
     int			i;
-    HASH                hash;
 
-    HISsetkey(Data->MessageID, &key);
     if (paths != NULL && paths[0] != '\0')
 	HISslashify(paths);
     else
@@ -357,13 +295,13 @@ HISwrite(Data, paths)
     offset = ftell(HISwritefp);
     if (Data->Expires > 0)
 	i = fprintf(HISwritefp, "%s%c%ld%c%ld%c%ld%c%s\n",
-		key.dptr, HIS_FIELDSEP,
+		Data->MessageID, HIS_FIELDSEP,
 		(long)Data->Arrived, HIS_SUBFIELDSEP, (long)Data->Expires,
 		    HIS_SUBFIELDSEP, (long)Data->Posted, HIS_FIELDSEP,
 		paths);
     else
 	i = fprintf(HISwritefp, "%s%c%ld%c%s%c%ld%c%s\n",
-		key.dptr, HIS_FIELDSEP,
+		Data->MessageID, HIS_FIELDSEP,
 		(long)Data->Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
 		    HIS_SUBFIELDSEP, (long)Data->Posted, HIS_FIELDSEP,
 		paths);
@@ -376,15 +314,51 @@ HISwrite(Data, paths)
     }
 
     /* Set up the database values and write them. */
-    val.dptr = (char *)&offset;
-    val.dsize = sizeof offset;
-    if (!dbzstore(key, val)) {
+    if (!dbzstore(hash, offset)) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
 	IOError("history database", i);
 	return FALSE;
     }
-    HIScacheadd((char *)Data->MessageID, strlen(Data->MessageID), TRUE);
+    HIScacheadd(hash, TRUE);
+    
+    if (++HISdirty >= ICD_SYNC_COUNT)
+	HISsync();
+    return TRUE;
+}
+
+/*
+**  Write a bogus history entry to keep us from seeing this article again
+*/
+BOOL HISremember(const HASH hash)
+{
+    long		offset;
+    int			i;
+    char                *p;
+
+
+    offset = ftell(HISwritefp);
+    /* Convert the hash to hex */
+    i = fprintf(HISwritefp, "[%s]%c%ld%c%s%c%ld\n",
+		HashToText(hash), HIS_FIELDSEP,
+		Now.time, HIS_SUBFIELDSEP, HIS_NOEXP,
+		HIS_SUBFIELDSEP, Now.time);
+    if (i == EOF || fflush(HISwritefp) == EOF) {
+	/* The history line is now an orphan... */
+	i = errno;
+	syslog(L_ERROR, "%s cant write history %m", LogName);
+	IOError("history", i);
+	return FALSE;
+    }
+
+    /* Set up the database values and write them. */
+    if (!dbzstore(hash, offset)) {
+	i = errno;
+	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
+	IOError("history database", i);
+	return FALSE;
+    }
+    HIScacheadd(hash, TRUE);
     
     if (++HISdirty >= ICD_SYNC_COUNT)
 	HISsync();

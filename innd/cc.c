@@ -228,11 +228,13 @@ CCaddhist(av)
     ARTDATA		Data;
     STRING		p;
     BOOL		ok;
+    HASH                hash;
 
     /* Check the fields. */
     if ((p = CCgetid(av[0], &Data.MessageID)) != NULL)
 	return p;
-    if (HIShavearticle(Data.MessageID))
+    hash = HashMessageID(Data.MessageID);
+    if (HIShavearticle(hash))
 	return "1 Duplicate";
     if (strspn(av[1], DIGITS) != strlen(av[1]))
 	return "1 Bad arrival date";
@@ -245,11 +247,11 @@ CCaddhist(av)
     Data.Posted = atol(av[3]);
 
     if (Mode == OMrunning)
-	ok = HISwrite(&Data, av[4]);
+	ok = HISwrite(&Data, hash, av[4]);
     else {
 	/* Possible race condition, but documented in ctlinnd manpage. */
 	HISsetup();
-	ok = HISwrite(&Data, av[4]);
+	ok = HISwrite(&Data, hash, av[4]);
 	HISclose();
     }
     return ok ? NULL : "1 Write failed";

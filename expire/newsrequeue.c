@@ -119,28 +119,21 @@ FindFile(F, id, name)
 {
     static char		BADLINE[] = "Bad text line for \"%s\", %s\n";
     register char	*p;
-    register char	*q;
     register int	i;
     register int	c;
     register FILE	*art;
-    datum		key;
-    datum		val;
+    HASH		key;
     OFFSET_T		offset;
     char		date[SMBUF];
 
-    key.dsize = strlen(id) + 1;
-    key.dptr = id;
-
     /* Do the lookup. */
-    val = dbzfetch(key);
-    if (val.dptr == NULL || val.dsize != sizeof offset) {
-	(void)fprintf(stderr, "Can't find \"%s\"\n", key.dptr);
+    key = HashMessageID(id);
+    if ((offset = dbzfetch(key)) < 0) {
+	(void)fprintf(stderr, "Can't find \"%s\"\n", id);
 	return NULL;
     }
 
     /* Get the seek offset, and seek. */
-    for (p = val.dptr, q = (char *)&offset, i = sizeof offset; --i >= 0; )
-	*q++ = *p++;
     if (fseek(F, offset, SEEK_SET) == -1) {
 	(void)fprintf(stderr, "Can't seek to %ld, %s\n",
 		offset, strerror(errno));
@@ -156,13 +149,13 @@ FindFile(F, id, name)
 	    if (c == HIS_FIELDSEP)
 		break;
 	if (c != HIS_FIELDSEP) {
-	    (void)fprintf(stderr, BADLINE, key.dptr, strerror(errno));
+	    (void)fprintf(stderr, BADLINE, id, strerror(errno));
 	    return NULL;
 	}
 	for (p = date; (c = getc(F)) != EOF && CTYPE(isdigit, c); )
 	    *p++ = (char)c;
 	if (c == EOF) {
-	    (void)fprintf(stderr, BADLINE, key.dptr, strerror(errno));
+	    (void)fprintf(stderr, BADLINE, id, strerror(errno));
 	    return NULL;
 	}
 	*p = '\0';
@@ -175,7 +168,7 @@ FindFile(F, id, name)
 	    if (c == HIS_FIELDSEP && --i == 0)
 		break;
 	if (c != HIS_FIELDSEP) {
-	    (void)fprintf(stderr, BADLINE, key.dptr, strerror(errno));
+	    (void)fprintf(stderr, BADLINE, id, strerror(errno));
 	    return NULL;
 	}
     }

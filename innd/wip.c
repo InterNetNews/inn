@@ -27,7 +27,7 @@ void WIPsetup(void) {
 WIP *WIPnew(const char *messageid, CHANNEL *cp) {
     HASH hash;
     unsigned long bucket;
-    WIP *wp, *new;
+    WIP *new;
 
     hash = Hash(messageid, strlen(messageid));
     memcpy(&bucket, &hash,
@@ -77,7 +77,7 @@ void WIPfree(WIP *wp) {
 BOOL WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Add) {
     WIP *wp;
     
-    if (wp = WIPbyid(msgid)) {
+    if ((wp = WIPbyid(msgid)) != NULL) {
         if ((Now.time - wp->Timestamp) < WIPcheck)
 	    return TRUE;
 	if (wp->Chan == cp)
@@ -85,7 +85,7 @@ BOOL WIPinprogress(const char *msgid, CHANNEL *cp, const BOOL Add) {
     }
     if (Add) {
 	wp = WIPnew(msgid, cp);
-	cp->CurrentMessageID = wp->MessageID;
+	cp->CurrentMessageIDHash = wp->MessageID;
     }
     return FALSE;
 }

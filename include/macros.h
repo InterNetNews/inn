@@ -94,17 +94,6 @@ extern int (*xmemfailure)();
 
 
 /*
-**  Test data from a stat(2) call to see if it's a file or directory.
-*/
-#if	!defined(S_ISDIR)
-#define S_ISDIR(st_mode)	(((st_mode) & S_IFMT) == S_IFDIR)
-#endif	/* !defined(S_ISDIR) */
-#if	!defined(S_ISREG)
-#define S_ISREG(st_mode)	(((st_mode) & S_IFMT) == S_IFREG)
-#endif	/* !defined(S_ISREG) */
-
-
-/*
 **  Get the size when binding an AF_UNIX socket.
 */
 #if	defined(DO_BIND_USE_SIZEOF)

@@ -861,7 +861,7 @@ ARTidok(save)
 	    break;
     }
 
-    return *p == '>' && *++p == '\0' && (1 + p - save) < DBZMAXKEY;
+    return *p == '>' && *++p == '\0';
 }
 
 
@@ -915,12 +915,8 @@ ARTclean(Article, Data)
     if (*p) {
 	Data->MessageID = p;
 	Data->MessageIDLength = strlen(p);
-	if (error == NULL) {
-	    if (Data->MessageIDLength + 1 >= DBZMAXKEY)
-		error = "\"Message-ID\" header too long";
-	    else if (!ARTidok(p))
+	if (error == NULL && !ARTidok(p))
 		error = "Bad \"Message-ID\" header";
-	}
     }
 
     if (error)
@@ -1111,21 +1107,17 @@ ARTcancelverify(Data, MessageID)
 /*
 **  Process a cancel message.
 */
-/* ARGSUSED2 */
-void
-ARTcancel(Data, MessageID, Trusted)
-    ARTDATA		*Data;
-    char		*MessageID;
-    BOOL		Trusted;
+void ARTcancel(ARTDATA *Data, char *MessageID, BOOL Trusted)
 {
-    register char	*files;
-    register char	*p;
-    register char	*msgid;
-    register char	*next;
-    register BOOL	more;
+    char	        *files;
+    char	        *p;
+    char	        *msgid;
+    char	        *next;
+    BOOL	        more;
     STRING		save;
     char		buff[SMBUF+16];
     char		c;
+    HASH                hash;
 
     if (!DoCancels && !Trusted) {
 	return;
@@ -1151,7 +1143,8 @@ ARTcancel(Data, MessageID, Trusted)
 	    continue;
 	}
 
-	if (!HIShavearticle(msgid)) {
+	hash = HashMessageID(msgid);
+	if (!HIShavearticle(hash)) {
 	/* Article hasn't arrived here, so write a fake entry using
 	 * most of the information from the cancel message. */
 #if	defined(DO_VERIFY_CANCELS)
@@ -1163,7 +1156,7 @@ ARTcancel(Data, MessageID, Trusted)
 #endif	/* defined(DO_VERIFY_CANCELS) */
 	save = Data->MessageID;
 	    Data->MessageID = msgid;
-	(void)HISwrite(Data, (char *)NULL);
+	HISremember(hash);
 	    if (save != MessageID)
 	Data->MessageID = save;
 	    (void)sprintf(buff, "Cancelling %s", MaxLength(msgid, msgid));
@@ -1175,10 +1168,10 @@ ARTcancel(Data, MessageID, Trusted)
     }
 
 #if	defined(DO_VERIFY_CANCELS)
-	files = Trusted ? HISfilesfor(msgid)
+	files = Trusted ? HISfilesfor(hash)
 			: ARTcancelverify(Data, msgid);
 #else
-	files = HISfilesfor(msgid);
+	files = HISfilesfor(hash);
 #endif	/* !defined(DO_VERIFY_CANCELS) */
 	if (files == NULL) {
 	    if (c)
@@ -1795,22 +1788,19 @@ ARTmakeoverview(Data)
 **  file or reject it, feed it to the other sites.  Return the NNTP
 **  message to send back.
 */
-STRING
-ARTpost(cp, Replic)
-    CHANNEL		*cp;
-    BUFFER		*Replic;
+STRING ARTpost(CHANNEL *cp)
 {
     static BUFFER	Files;
     static BUFFER	Header;
     static char		buff[SPOOLNAMEBUFF];
     char		dirname[SPOOLNAMEBUFF];
-    register char	*p;
-    register int	i;
-    register int	j;
-    register NEWSGROUP	*ngp;
-    register NEWSGROUP	**ngptr;
-    register int	*isp;
-    register SITE	*sp;
+    char	        *p;
+    int	                i;
+    int	                j;
+    NEWSGROUP	        *ngp;
+    NEWSGROUP	        **ngptr;
+    int	                *isp;
+    SITE	        *sp;
     ARTDATA		Data;
     BOOL		Approved;
     BOOL		Accepted;
@@ -1818,6 +1808,7 @@ ARTpost(cp, Replic)
     BOOL		ToGroup;
     BOOL		GroupMissing;
     BUFFER		*article;
+    HASH                hash;
     char		linkname[SPOOLNAMEBUFF];
     char		**groups;
     char		**hops;
@@ -1835,7 +1826,8 @@ ARTpost(cp, Replic)
     article = &cp->In;
     error = ARTclean(article, &Data);
     Data.MessageID = HDR(_message_id);
-    if (HIShavearticle(Data.MessageID)) {
+    hash = HashMessageID(Data.MessageID);
+    if (HIShavearticle(hash)) {
 	sprintf(buff, "%d Article already recieved", NNTP_REJECTIT_VAL);
 	ARTlog(&Data, ART_REJECT, buff);
 	ARTreject(buff, article);
@@ -1875,7 +1867,8 @@ ARTpost(cp, Replic)
 	(void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
 	ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-	    if (Data.MessageID && Mode == OMrunning && !HISwrite(&Data, ""))
+	    if (Data.MessageID && Mode == OMrunning &&
+		!HISremember(hash))
 		syslog(L_ERROR, "%s cant write history %s %m",
 		       LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -1890,7 +1883,8 @@ ARTpost(cp, Replic)
         syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(_message_id), buff);
         ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-        if (Data.MessageID && Mode == OMrunning && !HISwrite(&Data, ""))
+        if (Data.MessageID && Mode == OMrunning &&
+	    !HISremember(HashMessageID(Data->MessageID)))
             syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -1934,7 +1928,8 @@ ARTpost(cp, Replic)
                        buff);
 		ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-                if (Data.MessageID && Mode == OMrunning && !HISwrite(&Data, ""))
+                if (Data.MessageID && Mode == OMrunning &&
+		    !HISremember(HashMessageID(Data.MessageID)))
                     syslog(L_ERROR, "%s cant write history %s %m",
                            LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -1977,7 +1972,7 @@ ARTpost(cp, Replic)
 		    MaxLength(distributions[0], distributions[0]));
 	    ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-            if (Mode == OMrunning && !HISwrite(&Data, ""))
+            if (Mode == OMrunning && !HISremember(HashMessageID(Data.MessageID)))
                 syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -2084,7 +2079,7 @@ ARTpost(cp, Replic)
 		    NNTP_REJECTIT_VAL, ngp->Name);
 	    ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-            if (Mode == OMrunning && !HISwrite(&Data, ""))
+            if (Mode == OMrunning && !HISremember(hash))
                 syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -2155,7 +2150,7 @@ ARTpost(cp, Replic)
 	    ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DONT_WANT_TRASH)
 #if	defined(DO_REMEMBER_TRASH)
-	    if (Mode == OMrunning && !HISwrite(&Data, ""))
+	    if (Mode == OMrunning && !HISremember(hash))
 		syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -2197,8 +2192,8 @@ ARTpost(cp, Replic)
     }
     *ngptr = NULL;
     j++;
-    if (Replic)
-	j = Replic->Used + 1;
+    if (cp->Replic.Used && AmSlave && !XrefSlave)
+	j = cp->Replic.Used + 1;
 
     /* Add enough extra room for time pathname */
     if (TimeSpool)
@@ -2231,10 +2226,10 @@ ARTpost(cp, Replic)
 	    return buff;
     	}
     } else {
-        if (Replic == NULL)
+        if (!AmSlave)
             ARTassignnumbers();
         else
-            ARTreplic(Replic);
+            ARTreplic(cp->Replic);
     }
     /* Optimize how we place the article on the disk. */
     ARTsortfordisk();
@@ -2273,7 +2268,7 @@ ARTpost(cp, Replic)
 			NNTP_RESENDIT_VAL, Data.Name, strerror(i));
 		ARTlog(&Data, ART_REJECT, buff);
 #if	defined(DO_REMEMBER_TRASH)
-                if (Mode == OMrunning && !HISwrite(&Data, ""))
+                if (Mode == OMrunning && !HISremember(hash))
                     syslog(L_ERROR, "%s cant write history %s %m",
                            LogName, Data.MessageID);
 #endif	/* defined(DO_REMEMBER_TRASH) */
@@ -2319,7 +2314,7 @@ ARTpost(cp, Replic)
     }
 
     /* Update history if we didn't get too many I/O errors above. */
-    if (Mode != OMrunning || !HISwrite(&Data, Files.Data)) {
+    if (Mode != OMrunning || !HISwrite(&Data, hash, Files.Data)) {
 	i = errno;
 	syslog(L_ERROR, "%s cant write history %s %m", LogName, Data.MessageID);
 	(void)sprintf(buff, "%d cant write history, %s",

@@ -159,7 +159,7 @@ static dbzoptions options = { FALSE, INCORE_NO, INCORE_MMAP, TRUE };
  * Data structure for recording info about searches.
  */
 typedef struct {
-    off_t place;		/* current location in file */
+    OFFSET_T place;		/* current location in file */
     int tabno;		        /* which table we're in */
     int run;		        /* how long we'll stay in this table */
 #		ifndef MAXRUN
@@ -215,13 +215,12 @@ static erec empty_rec;          /* empty rec to compare against
 				   initalized in dbminit */
 
 /* misc. forwards */
-static char *mapcase(char *dest, char *src, size_t size);
 static char *enstring(const char *s1, const char *s2);
 static BOOL getcore(hash_table *tab);
 static BOOL putcore(hash_table *tab);
 static BOOL getconf(FILE *df, dbzconfig *cp);
 static int putconf(FILE *f, dbzconfig *cp);
-static void start(searcher *sp, const datum *kp, searcher *osp);
+static void start(searcher *sp, const HASH hash, searcher *osp);
 static BOOL search(searcher *sp);
 static BOOL set(searcher *sp, hash_table *tab, void *value);
 
@@ -341,7 +340,7 @@ BOOL dbzagain(const char *name, const char *oldname)
     long top;
     FILE *f;
     int newtable;
-    off_t newsize;
+    OFFSET_T newsize;
 
     if (opendb) {
 	DEBUG(("dbzagain: database already open\n"));
@@ -633,9 +632,7 @@ BOOL dbzsync(void)
 }
 
 /* dbzexists - check if the given message-id is in the database */
-BOOL dbzexists(const datum key) {
-    datum mappedkey;
-    char buffer[DBZMAXKEY + 1];
+BOOL dbzexists(const HASH key) {
     
     if (!opendb) {
 	DEBUG(("dbzexists: database not open!\n"));
@@ -643,31 +640,11 @@ BOOL dbzexists(const datum key) {
     }
 
     prevp = FRESH;
-    mappedkey.dsize = (key.dsize < DBZMAXKEY) ? key.dsize : DBZMAXKEY;
-    mappedkey.dptr = mapcase(buffer, key.dptr, mappedkey.dsize);
-    start(&srch, &mappedkey, FRESH);
+    start(&srch, key, FRESH);
     return search(&srch);
 }
 
-/* dbzfetch - fetch() with case mapping built in
- */
-datum dbzfetch(const datum key)
-{
-    char buffer[DBZMAXKEY + 1];
-    datum mappedkey;
-
-    DEBUG(("dbzfetch: (%s)\n", key.dptr));
-
-    /* Key is supposed to be less than DBZMAXKEY */
-    mappedkey.dsize = (key.dsize < DBZMAXKEY) ? key.dsize : DBZMAXKEY;
-
-    mappedkey.dptr = mapcase(buffer, key.dptr, mappedkey.dsize);
-    buffer[mappedkey.dsize] = '\0';	/* just a debug aid */
-
-    return fetch(mappedkey);
-}
-
-/* fetch - get an entry from the database
+/* dbzfetch - get an entry from the database
  *
  * Disgusting fine point, in the name of backward compatibility:  if the
  * last character of "key" is a NUL, that character is (effectively) not
@@ -675,21 +652,17 @@ datum dbzfetch(const datum key)
  *
  * Returns: dtr == NULL && dsize == 0 on failure.
  */
-datum fetch(datum key) {
-    static unsigned long offset;
-    datum output;
+OFFSET_T dbzfetch(HASH key) {
+    unsigned long offset = -1;
 
-    DEBUG(("fetch: (%s)\n", key.dptr));
-    output.dptr = NULL;
-    output.dsize = 0;
     prevp = FRESH;
 
     if (!opendb) {
 	DEBUG(("fetch: database not open!\n"));
-	return output;
+	return offset;
     }
 
-    start(&srch, &key, FRESH);
+    start(&srch, key, FRESH);
     if (search(&srch) == TRUE) {
 	/* Actually get the data now */
 	if ((options.idx_incore != INCORE_NO) && (srch.place < conf.tsize)) {
@@ -700,51 +673,31 @@ datum fetch(datum key) {
 		DEBUG(("fetch: seek failed\n"));
 		idxtab.pos = -1;
 		srch.aborted = 1;
-		return output;
+		return offset;
 	    }
 	    if (read(idxtab.fd, &offset, sizeof(offset)) != sizeof(offset)) {
 		DEBUG(("fetch: read failed\n"));
 		idxtab.pos = -1;
 		srch.aborted = 1;
-		return output;
+		return offset;
 	    }
 	    offset = ntohl(offset);
 	}
-	output.dptr = (char *)&offset;
-	output.dsize = sizeof(offset); 
 	DEBUG(("fetch: successful\n"));
-	return output;
+	return offset;
     }
 
     /* we didn't find it */
     DEBUG(("fetch: failed\n"));
     prevp = &srch;			/* remember where we stopped */
-    return output;
-}
-
-/* dbzstore - store() with case mapping built in
- */
-BOOL dbzstore(const datum key, const datum data)
-{
-    char buffer[DBZMAXKEY + 1];
-    datum mappedkey;
-
-    DEBUG(("dbzstore: (%s)\n", key.dptr));
-
-    /* Key is supposed to be less than DBZMAXKEY */
-    mappedkey.dsize = (key.dsize < DBZMAXKEY) ? key.dsize : DBZMAXKEY;
-
-    mappedkey.dptr = mapcase(buffer, key.dptr, mappedkey.dsize);
-    buffer[mappedkey.dsize] = '\0';	/* just a debug aid */
-
-    return store(mappedkey, data);
+    return offset;
 }
 
 /*
- * store - add an entry to the database
+ * dbzstore - add an entry to the database
  * returns TRUE for success and FALSE for failure 
  */
-BOOL store(const datum key, const datum data)
+BOOL dbzstore(const HASH key, const OFFSET_T data)
 {
     idxrec ivalue;
     erec   evalue;
@@ -758,17 +711,9 @@ BOOL store(const datum key, const datum data)
 	DEBUG(("store: database open read-only\n"));
 	return FALSE;
     }
-    if (data.dsize != sizeof(ivalue)) {
-	DEBUG(("store: value size wrong (%d)\n", data.dsize));
-	return FALSE;
-    }
-    if (key.dsize >= DBZMAXKEY) {
-	DEBUG(("store: key size too big (%d)\n", key.dsize));
-	return FALSE;
-    }
 
     /* find the place, exploiting previous search if possible */
-    start(&srch, &key, prevp);
+    start(&srch, key, prevp);
     if (search(&srch) == TRUE)
 	return FALSE;
 
@@ -778,7 +723,7 @@ BOOL store(const datum key, const datum data)
     dirty = TRUE;
 
     /* copy the value in to ensure alignment */
-    memcpy(&offset, (POINTER)data.dptr, data.dsize);
+    memcpy(&offset, &data, sizeof(data) < sizeof(offset) ? sizeof(data) : sizeof(offset));
     offset = htonl(offset);
     memcpy(&ivalue.offset, &offset, sizeof(offset));
     memcpy(&evalue.hash, &srch.hash,
@@ -842,7 +787,7 @@ static int putconf(FILE *f, dbzconfig *cp) {
     int i;
     int ret = 0;
 
-    if (fseek(f, (off_t)0, SEEK_SET) != 0) {
+    if (fseek(f, (OFFSET_T)0, SEEK_SET) != 0) {
 	DEBUG(("fseek failure in putconf\n"));
 	ret = -1;
     }
@@ -883,7 +828,7 @@ static BOOL getcore(hash_table *tab) {
 	}
 	it = mmap((caddr_t)0, (size_t)conf.tsize * tab->reclen,
 		   readonly ? PROT_READ : PROT_WRITE | PROT_READ, MAP__ARG,
-		   tab->fd, (off_t)0);
+		   tab->fd, (OFFSET_T)0);
 	if (it == (char *)-1) {
 	    DEBUG(("getcore: mmap failed\n"));
 	    return FALSE;
@@ -919,7 +864,7 @@ static BOOL putcore(hash_table *tab) {
     
     if (tab->incore == INCORE_MEM) {
 	SetNonBlocking(tab->fd, FALSE);
-	if (lseek(tab->fd, (off_t)0, SEEK_SET) != 0) {
+	if (lseek(tab->fd, (OFFSET_T)0, SEEK_SET) != 0) {
 	    DEBUG(("fseek failure in putcore\n"));
 	    return FALSE;
 	}
@@ -936,21 +881,19 @@ static BOOL putcore(hash_table *tab) {
 /* start - set up to start or restart a search
  * osp == NULL is acceptable
  */
-static void start(searcher *sp, const datum *kp, searcher *osp) {
-    HASH h;
+static void start(searcher *sp, const HASH hash, searcher *osp) {
     int tocopy;
 
-    h = Hash(kp->dptr, kp->dsize);
-    if (osp != FRESH && !memcmp(&osp->hash, &h, sizeof(h))) {
+    if (osp != FRESH && !memcmp(&osp->hash, &hash, sizeof(hash))) {
 	if (sp != osp)
 	    *sp = *osp;
 	sp->run--;
 	DEBUG(("search restarted\n"));
     } else {
-	sp->hash = h;
-	tocopy = sizeof(h) < sizeof(sp->shorthash) ? sizeof(h) : sizeof(sp->shorthash);
+	sp->hash = hash;
+	tocopy = sizeof(hash) < sizeof(sp->shorthash) ? sizeof(hash) : sizeof(sp->shorthash);
 	/* Copy the bottom half of thhe hash into sp->shorthash */
-	memcpy(&sp->shorthash, (char *)&h + (sizeof(h) - tocopy), tocopy);
+	memcpy(&sp->shorthash, (char *)&hash + (sizeof(hash) - tocopy), tocopy);
 	sp->shorthash >>= 1;
 	sp->tabno = 0;
 	sp->run = -1;
@@ -985,7 +928,7 @@ static BOOL search(searcher *sp) {
 	    DEBUG(("search: in core\n"));
 	    memcpy(&value, &((erec *)etab.core)[sp->place], sizeof(erec)); 
 	} else {
-	    off_t dest = 0;
+	    OFFSET_T dest = 0;
 	    /* seek, if necessary */
 	    dest = sp->place * sizeof(erec);
 	    if (etab.pos != dest) {
@@ -1049,7 +992,7 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
 
     /* seek to spot */
     tab->pos = -1;		/* invalidate position memory */
-    if (lseek(tab->fd, (off_t)(sp->place * tab->reclen), SEEK_SET) == -1) {
+    if (lseek(tab->fd, (OFFSET_T)(sp->place * tab->reclen), SEEK_SET) == -1) {
 	DEBUG(("set: seek failed\n"));
 	sp->aborted = 1;
 	return FALSE;
@@ -1058,7 +1001,7 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
     /* write in data */
     while (write(tab->fd, (POINTER)value, tab->reclen) != tab->reclen) {
 	if (errno == EINTR) {
-	    if (lseek(tab->fd, (off_t)(sp->place * tab->reclen), SEEK_SET) == -1) {
+	    if (lseek(tab->fd, (OFFSET_T)(sp->place * tab->reclen), SEEK_SET) == -1) {
 		DEBUG(("set: seek failed\n"));
 		sp->aborted = 1;
 		return FALSE;
@@ -1075,7 +1018,7 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
 		sp->aborted = 1;
 		return FALSE;
 	    }
-	    if (lseek(tab->fd, (off_t)(sp->place * tab->reclen), SEEK_SET) == -1) {
+	    if (lseek(tab->fd, (OFFSET_T)(sp->place * tab->reclen), SEEK_SET) == -1) {
 		DEBUG(("set: seek failed\n"));
 		sp->aborted = 1;
 		return FALSE;
@@ -1089,52 +1032,6 @@ static BOOL set(searcher *sp, hash_table *tab, void *value) {
 
     DEBUG(("set: succeeded\n"));
     return TRUE;
-}
-
-/* cipoint - where in this message-ID does it become case-insensitive?
- *
- * The RFC822 code is not quite complete.  Absolute, total, full RFC822
- * compliance requires a horrible parsing job, because of the arcane
- * quoting conventions -- abc"def"ghi is not equivalent to abc"DEF"ghi,
- * for example.  There are three or four things that might occur in the
- * domain part of a message-id that are case-sensitive.  They don't seem
- * to ever occur in real news, thank Cthulhu.  (What?  You were expecting
- * a merciful and forgiving deity to be invoked in connection with RFC822?
- * Forget it; none of them would come near it.)
- *
- * Returns: pointer into s, or NULL for "nowhere"
- */
-static char *cipoint(char *s, size_t size) {
-    char *p;
-
-    if ((p = memchr(s, '@', size))== NULL)			/* no local/domain split */
-	return NULL;		/* assume all local */
-    if (!strncasecmp("postmaster", s+1, 10)) {
-	/* crazy -- "postmaster" is case-insensitive */
-	return s;
-    }
-    return p;
-}
-
-/* mapcase - do case-mapped copy
- * dest    - Destination for copy
- * src     - Source for copy (src == dest is legal)
- *
- * May return either src or dest
- */
-static char *mapcase(char *dest, char *src, size_t size) {
-    char *s;
-    char *d;
-    char *c;
-
-    if ((c = cipoint(src, size)) == NULL)
-	return src;
-
-    memcpy(dest, src, c-src);
-    for (s = c, d = dest + (c-src); s < (src + size); s++, d++)
-	*d = tolower(*s);
-
-    return dest;
 }
 
 /* dbzsetoptions - set runtime options for the database.
