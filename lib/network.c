@@ -232,7 +232,7 @@ network_source(int fd, int family)
         if (strcmp(innconf->sourceaddress6, "all") == 0)
             return true;
         memset(&saddr, 0, sizeof(saddr));
-        saddr.sin_family = AF_INET6;
+        saddr.sin6_family = AF_INET6;
         if (inet_pton(AF_INET6, innconf->sourceaddress6, &saddr) < 1)
             return false;
         return bind(fd, (struct sockaddr *) &saddr, sizeof(saddr)) == 0;
