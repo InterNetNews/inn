@@ -1,6 +1,12 @@
 lib/concat
 lib/date
 lib/error
+lib/inet_aton
+lib/inet_ntoa
+lib/memcmp
+lib/pread
+lib/pwrite
+lib/setenv
 lib/strerror
 lib/xmalloc
 lib/xwrite
