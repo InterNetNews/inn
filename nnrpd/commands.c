@@ -730,8 +730,9 @@ CMDxpath(ac, av)
     char	*av[];
 {
     char	*p;
+    HASH	hash = HashMessageID(av[1]);
 
-    if ((p = HISgetent(av[1], TRUE)) == NULL)
+    if ((p = HISgetent(&hash, TRUE)) == NULL)
 	Reply("%d Don't have it\r\n", NNTP_DONTHAVEIT_VAL);
     else
 	Reply("%d %s\r\n", NNTP_NOTHING_FOLLOWS_VAL, p);

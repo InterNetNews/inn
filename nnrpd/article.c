@@ -337,13 +337,18 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
     char		*q;
     struct stat		Sb;
     int			fd;
+    HASH		hash = HashMessageID(msg_id);
+    TOKEN		token;
 
     *ap = 0;
-    if ((p = HISgetent(msg_id, FALSE)) == NULL)
+    if ((p = HISgetent(&hash, FALSE)) == NULL)
 	return FALSE;
 
     if (IsToken(p)) {
-	if ((ARThandle = SMretrieve(TextToToken(p), RETR_ALL)) == NULL) {
+	token = TextToToken(p);
+	if (token.type == TOKEN_EMPTY || token.index == OVER_NONE || token.cancelled)
+	    return FALSE;
+	if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL) {
 	    return FALSE;
 	}
 	ARTmem = ARThandle->data;

@@ -232,7 +232,7 @@ LOCALtoGMT(t)
 **  Return the path name of an article if it is in the history file.
 **  Return a pointer to static data.
 */
-char *HISgetent(char *msg_id, BOOL fulldata)
+char *HISgetent(HASH *key, BOOL fulldata)
 {
     static BOOL		setup = FALSE;
     static FILE		*hfp;
@@ -241,7 +241,6 @@ char *HISgetent(char *msg_id, BOOL fulldata)
     char	        *q;
     char		*save;
     char		buff[BIG_BUFFER];
-    HASH		key;
     OFFSET_T		offset;
     struct stat		Sb;
 
@@ -254,11 +253,7 @@ char *HISgetent(char *msg_id, BOOL fulldata)
     }
 
     /* Set the key value, fetch the entry. */
-    if (StorageAPI)
-	key = *(HASH *)msg_id;
-    else
-	key = HashMessageID(msg_id);
-    if ((offset = dbzfetch(key)) < 0)
+    if ((offset = dbzfetch(*key)) < 0)
 	return NULL;
 
     /* Open history file if we need to. */
@@ -284,7 +279,7 @@ char *HISgetent(char *msg_id, BOOL fulldata)
 
     /* Skip first two fields. */
     if ((p = strchr(buff, '\t')) == NULL) {
-	syslog(L_ERROR, "%s bad_history at %ld for %s", ClientHost, offset, msg_id);
+	syslog(L_ERROR, "%s bad_history at %ld for %s", ClientHost, offset, (char *)key);
 	return NULL;
     }
     if ((p = strchr(p + 1, '\t')) == NULL)
