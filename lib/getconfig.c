@@ -398,7 +398,7 @@ int CheckInnConf()
     /* tmpdir should not be freed for some OS */
     if (innconf->enableoverview && innconf->ovmethod == NULL) {
 	syslog(L_FATAL, "'ovmethod' must be defined in inn.conf if enableoverview is true");
-	(void)fprintf(stderr, "'ovmethod' must be defined in inn.conf if enableoverview is true");
+	(void)fprintf(stderr, "'ovmethod' must be defined in inn.conf if enableoverview is true\n");
 	return(-1);
     }
 
