@@ -269,6 +269,7 @@ static void STATUSsummary(void)
   offered = accepted + refused + rejected;
   fprintf (F, "         offered: %-9ld\n", offered);
   if (!offered) offered = 1; /* to avoid division by zero */
+  if (!size) size = 1; /* avoid divide by zero here too */
   fprintf (F, "        accepted: %-9ld       %%accepted: %.1f%%\n",
 	   accepted, (float) accepted / offered * 100);
   fprintf (F, "         refused: %-9ld        %%refused: %.1f%%\n",

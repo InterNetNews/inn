@@ -108,7 +108,7 @@ PYartfilter(artBody, artLen, lines)
 
     /* ...then the body... */
     if (artBody != NULL) {
-	PYheaditem[hdrnum] = PyBuffer_FromMemory(artBody, artLen);
+	PYheaditem[hdrnum] = PyBuffer_FromMemory(artBody, --artLen);
 	PyDict_SetItem(PYheaders, PYbodykey, PYheaditem[hdrnum++]);
     }
 
@@ -351,7 +351,6 @@ PY_head(self, args)
     ARTHANDLE	*art;
     PyObject	*header;
     int		headerlen;
-    char	*headertxt;
 
     if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
 	return NULL;
@@ -363,10 +362,7 @@ PY_head(self, args)
 	return Py_BuildValue("s", "");	
     p = FromWireFmt(art->data, art->len, &headerlen);
     SMfreearticle(art);
-    headerlen++;
-    header = PyString_FromStringAndSize(NULL, headerlen);
-    headertxt = PyString_AS_STRING(header);
-    strncpy(headertxt, p, headerlen);
+    header = PyString_FromStringAndSize(p, headerlen);
     DISPOSE(p);
 
     return header;
@@ -388,7 +384,6 @@ PY_article(self, args)
     ARTHANDLE	*arth;
     PyObject	*art;
     int		artlen;
-    char	*arttxt;
 
     if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
 	return NULL;
@@ -400,10 +395,7 @@ PY_article(self, args)
 	return Py_BuildValue("s", "");	
     p = FromWireFmt(arth->data, arth->len, &artlen);
     SMfreearticle(arth);
-    artlen++;
-    art = PyString_FromStringAndSize(NULL, artlen);
-    arttxt = PyString_AS_STRING(header);
-    strncpy(arttxt, p, artlen);
+    art = PyString_FromStringAndSize(p, artlen);
     DISPOSE(p);
 
     return art;
@@ -450,6 +442,81 @@ PY_syslog(self, args)
 
 
 /*
+**  Compute a hash digest for a string.
+*/
+static PyObject *
+PY_hashstring(self, args)
+    PyObject *self, *args;
+{
+    char	*instring, *wpos, *p, *q;
+    char	*workstring = NULL;
+    int		insize, worksize, newsize, i, wasspace;
+    int		lines = 0;
+    HASH	myhash;
+
+    if (!PyArg_ParseTuple(args, "s#|i", &instring, &insize, &lines))
+	return NULL;
+
+    /* If a linecount is provided, munge before hashing. */
+    if (lines > 0) {
+	worksize = insize;
+
+	/* chop leading whitespace */
+	for (p=instring ; worksize>0 && isspace(*p) ; p++) {
+	    if (*p == '\n')
+		lines--;
+	    worksize--;
+	}
+	wpos = p;
+
+	/* and trailing */
+	for (p=&wpos[worksize] ; worksize>0 && isspace(*p) ; p--) {
+	    if (*p == '\n')
+		lines--;
+	    worksize--;
+	}
+
+	/* chop last 3 lines if we have >= 5.  From above chop the
+	 * last line has no CR so we use 1 less here. */
+	if (lines >= 4) {
+	    for (i=0, p=wpos+worksize ; i<2 ; p--)
+		if (*p == '\n')
+		    i++;
+	    worksize = p - wpos;
+	}
+
+	/* Compress out multiple whitespace in the trimmed string.  We
+	 * do a copy because this is probably an original art
+	 * buffer. */
+	workstring =  memcpy(NEW(char, worksize), wpos, worksize);
+	newsize = wasspace = 0;
+	p = wpos;
+	q = workstring;
+	for (i=0 ; i<worksize ; i++) {
+	    if isspace(*p) {
+		if (!wasspace)
+		    *q++ = ' ';
+		wasspace = 1;
+	    }
+	    else {
+		*q++ = tolower(*p);
+		wasspace = 0;
+	    }
+	    p++;
+	}
+	worksize = q - workstring;
+	myhash = Hash(workstring, worksize);
+	DISPOSE(workstring);
+    }
+    else
+	myhash = Hash(instring, insize);
+
+    return PyString_FromStringAndSize((const char *)&myhash, sizeof(myhash));
+}
+
+
+
+/*
 **  Make the internal INN module's functions visible to Python.
 */
 static PyMethodDef INNPyMethods[] = {
@@ -461,6 +528,7 @@ static PyMethodDef INNPyMethods[] = {
     {"head",		PY_head,		METH_VARARGS},
     {"article",		PY_article,		METH_VARARGS},
     {"syslog",		PY_syslog,		METH_VARARGS},
+    {"hashstring",	PY_hashstring,		METH_VARARGS},
     {NULL,		NULL}
 };
 
