@@ -293,6 +293,8 @@ tdx_search_open(struct group_data *data, ARTNUM low, ARTNUM high)
 
     if (high < data->base)
         return NULL;
+    if (low > data->high)
+        return NULL;
 
     if (data->index == NULL)
         if (!map_index(data))
