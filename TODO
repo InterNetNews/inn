@@ -152,8 +152,6 @@ High Priority Projects
   strings and because of such things as struct iovec; -Wcast-qual will be
   removed from make warnings when this task is reasonably complete.
 
-* Add documentation of adding and removing CNFS cycbuffs.
-
 * INN shouldn't flush all feeds (particularly all program feeds) on
   newgroup or rmgroup.  Currently it reloads newsfeeds to reparse all of
   the wildmat patterns and rebuild the peer lists associated with the
