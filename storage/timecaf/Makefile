@@ -24,9 +24,8 @@ ROBJECTS = caf.$(EXTOBJ) timecaf.$(EXTOBJ)
 all:			$(OBJECTS) moveobjs
 
 moveobjs: $(OBJECTS)
-	$(CP) -p $(ROBJECTS) ../objs
-#	$(CP) -p caf.lo ../objs
-#	$(CP) -p timecaf.lo ../objs
+	$(CP) -p caf.$(EXTOBJ) ../objs
+	$(CP) -p timecaf.$(EXTOBJ) ../objs
 
 
 clobber clean:
