@@ -769,7 +769,6 @@ date_lex(void)
 time_t
 parsedate(char *p, TIMEINFO *now)
 {
-    extern int		date_parse(void);
     struct tm		*tm;
     TIMEINFO		ti;
     time_t		Start;
