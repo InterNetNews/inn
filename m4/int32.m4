@@ -4,8 +4,7 @@ dnl
 dnl The public macro exposed by this file is INN_TYPE_INT32_T.  This macro
 dnl locates the appropriate header files to include for int32_t and uint32_t
 dnl or determines how to define those types, and then both includes the
-dnl appropriate defines into the generated config.h.  It also defines
-dnl HAVE_INT32_T and HAVE_UINT32_T as appropriate.
+dnl appropriate defines into the generated config.h.
 
 dnl Used to build the type cache name.
 AC_DEFUN([_INN_TYPE_CACHE], translit([ac_cv_sizeof_$1], [ *], [_p]))
