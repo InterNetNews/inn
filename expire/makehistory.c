@@ -126,7 +126,7 @@ Rebuild(size, IgnoreOld, Overwrite)
     (void)dbzincore(1);
     if (IgnoreOld) {
         /* 70 == average history file line length */
-	if (dbzfresh(p, dbzsize(size), HIS_FIELDSEP, 'C', dbztagmask(size*70)) < 0) {
+	if (dbzfresh(p, dbzsize(size)) < 0) {
 	    (void)fprintf(stderr, "Can't do dbzfresh, %s\n",
 		    strerror(errno));
 	    if (temp[0])

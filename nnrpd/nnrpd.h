@@ -20,6 +20,9 @@
 #include <time.h>
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
+#if defined(OVER_MMAP) || defined(ART_MMAP)
+#include <sys/mman.h>
+#endif
 #include "paths.h"
 #include "nntp.h"
 #include "logging.h"
@@ -39,7 +42,7 @@
 **  Some convenient shorthands.
 */
 typedef struct in_addr	INADDR;
-#define Printf		(void)printf
+#define Printf		printf
 #if	defined(VAR_NONE)
 #define Reply		(void)printf
 #endif	/* defined(VAR_NONE) */
@@ -107,6 +110,15 @@ EXTERN int	ARTindex;
 EXTERN int	ARTsize;
 extern int	PERMdefault;
 EXTERN long	ARTcount;
+EXTERN long	ARTget;
+EXTERN long	ARTgettime;
+EXTERN long	ARTgetsize;
+EXTERN long	OVERcount;	/* number of XOVER commands			*/
+EXTERN long	OVERhit;	/* number of XOVER records found in .overview	*/
+EXTERN long	OVERmiss;	/* number of XOVER records found in articles	*/
+EXTERN long	OVERtime;	/* number of ms spent sending XOVER data	*/
+EXTERN long	OVERread;	/* number of bytes of XOVER data read		*/
+EXTERN long	OVERsize;	/* number of bytes of XOVER data sent		*/
 EXTERN long	GRParticles;
 EXTERN long	GRPcount;
 EXTERN char	GRPlast[SPOOLNAMEBUFF];
@@ -124,6 +136,7 @@ extern char		*Glom();
 extern int		Argify();
 extern NORETURN		ExitWithStats();
 extern BOOL		GetGroupList();
+extern char		*GetHeader();
 extern void		GRPreport();
 extern GROUPENTRY	*GRPfind();
 extern char		*HISgetent();

@@ -29,7 +29,7 @@ OWNER	= -O news -G news
 ##  =()<NNTPLIB	= @<NNTPLIB>@>()=
 NNTPLIB	= 
 ##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= -lutil
+LIBS	= 
 LIBNEWS	= ../libinn.a
 LINTLIB	= ../llib-linn.ln
 

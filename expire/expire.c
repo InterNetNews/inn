@@ -1102,7 +1102,7 @@ main(ac, av)
 		    NHistory, NHistorydir, NHistorypag);
 	(void)dbzincore(1);
 	if (IgnoreOld) {
-	    if (dbzfresh(NHistory, dbzsize(0L), '\t', 'C', 0L) < 0) {
+	    if (dbzfresh(NHistory, dbzsize(0L)) < 0) {
 		(void)fprintf(stderr, "Can't create database, %s\n",
 			strerror(errno));
 		exit(1);

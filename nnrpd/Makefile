@@ -33,7 +33,7 @@ NNRPD	= /usr/news/bin/nnrpd
 OWNER	= -O news -G news
 
 ##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= -lutil
+LIBS	= 
 LIBNEWS	= ../libinn.a
 LINTLIB	= ../llib-linn.ln
 

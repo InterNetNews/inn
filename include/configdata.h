@@ -98,13 +98,13 @@ typedef char		*CSTRING;
 #define DO_HAVE_FCHMOD
     /* Do you have setproctitle()? */
     /* =()<#define @<HAVE_SETPROCTITLE>@_HAVE_SETPROCTITLE>()= */
-#define DO_HAVE_SETPROCTITLE
+#define DONT_HAVE_SETPROCTITLE
     /* Do you have setsid()? */
     /* =()<#define @<HAVE_SETSID>@_HAVE_SETSID>()= */
 #define DO_HAVE_SETSID
     /* Does your (struct tm) have a tm_gmtoff field? */
     /* =()<#define @<HAVE_TM_GMTOFF>@_HAVE_TM_GMTOFF>()= */
-#define DO_HAVE_TM_GMTOFF
+#define DONT_HAVE_TM_GMTOFF
     /* Does your (struct stat) have a st_blksize field? */
     /* =()<#define @<HAVE_ST_BLKSIZE>@_HAVE_ST_BLKSIZE>()= */
 #define DO_HAVE_ST_BLKSIZE
@@ -128,7 +128,7 @@ typedef char		*CSTRING;
 #define DO_HAVE_UNIX_DOMAIN
     /* How should close-on-exec be done? */
     /* =()<#define CLX_@<CLX_STYLE>@>()= */
-#define CLX_IOCTL
+#define CLX_FCNTL
     /* How should non-blocking I/O be done? */
     /* =()<#define NBIO_@<NBIO_STYLE>@>()= */
 #define NBIO_FCNTL
@@ -156,6 +156,12 @@ typedef char		*CSTRING;
     /* Use mmap() to read the active file, or read it in? */
     /* =()<#define ACT_@<ACT_STYLE>@>()= */
 #define ACT_READ
+    /* Use mmap() to read the article , or read it in? */
+    /* =()<#define ART_@<ART_STYLE>@>()= */
+#define ART_MMAP
+    /* Use mmap() to read the overview, or read it in? */
+    /* =()<#define OVER_@<OVER_STYLE>@>()= */
+#define OVER_MMAP
     /* Should the routines that use mmap() also do a msync(). */
     /* =()<#define @<MMAP_SYNC>@_MMAP_SYNC>()= */
 #define DONT_MMAP_SYNC

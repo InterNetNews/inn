@@ -39,7 +39,7 @@ OWNER	= -O news -G news
 NEWSGROUP	= news
 
 ##  =()<LIBS	= @<LIBS>@>()=
-LIBS	= -lutil
+LIBS	= 
 LIBNEWS	= ../libinn.a
 LINTLIB	= ../llib-linn.ln
 ## =()<TCL_LIB	= @<TCL_LIB>@>()=

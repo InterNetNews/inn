@@ -83,9 +83,12 @@ WriteData(Dir, Art, Rest, Complain)
     static char		NL[] = "\n";
     struct iovec	iov[4];
     register int	fd;
+    char		file[SPOOLNAMEBUFF];
+    register int	ifd;
+    char		ifile[SPOOLNAMEBUFF];
+    OVERINDEX		index;
     register int	i;
     register BOOL	ok;
-    char		file[SPOOLNAMEBUFF];
     struct stat		Sb;
 
     /* Build the I/O vector. */
@@ -101,6 +104,7 @@ WriteData(Dir, Art, Rest, Complain)
 
     /* Name the data file. */
     (void)sprintf(file, "%s/%s", Dir, _PATH_OVERVIEW);
+    (void)sprintf(ifile, "%s/%s.index", Dir, _PATH_OVERVIEW);
 
     /* Open and lock the file. */
     for ( ; ; ) {
@@ -128,17 +132,46 @@ WriteData(Dir, Art, Rest, Complain)
 	(void)close(fd);
     }
 
+    if ((ifd = open(ifile, O_WRONLY | O_CREAT | O_APPEND, ARTFILE_MODE)) < 0) {
+        (void)fprintf(stderr, "overchan cant open %s, %s\n",
+	    ifile, strerror(errno));
+	(void)close(fd);
+        return FALSE;
+    }
     ok = TRUE;
+    if ((index.offset = lseek(fd, 0, SEEK_END)) < 0) {
+        (void)fprintf(stderr, "overchan cant get offset %s, %s\n",
+	    file, strerror(errno));
+	(void)close(fd);
+        return FALSE;
+    }
+    
     if (xwritev(fd, iov, i) < 0) {
 	(void)fprintf(stderr, "overchan cant write %s %s\n",
 		file, strerror(errno));
-	ok = FALSE;
+	close(fd);
+	close(ifd);
+	return FALSE;
+    }
+    
+    index.artnum = atol(Art);
+    if (xwrite(ifd, &index, sizeof(OVERINDEX)) < 0) {
+	(void)fprintf(stderr, "overchan cant write %s %s\n",
+		ifile, strerror(errno));
+	close(fd);
+	close(ifd);
+	return FALSE;
     }
 
     /* Close up and return. */
     if (close(fd) < 0) {
 	(void)fprintf(stderr, "overchan cant close %s %s\n",
 		file, strerror(errno));
+	ok = FALSE;
+    }
+    if (close(ifd) < 0) {
+	(void)fprintf(stderr, "overchan cant close %s %s\n",
+		ifile, strerror(errno));
 	ok = FALSE;
     }
     return ok;

@@ -40,7 +40,13 @@ typedef struct _ARTOVERFIELD {
 STATIC char		ARTnotingroup[] = NNTP_NOTINGROUP;
 STATIC char		ARTnoartingroup[] = NNTP_NOARTINGRP;
 STATIC char		ARTnocurrart[] = NNTP_NOCURRART;
+#ifdef ART_MMAP
+STATIC char             *ARTmem;
+STATIC int		WireFormat = 0;
+#else
 STATIC QIOSTATE		*ARTqp;
+#endif
+STATIC int              ARTlen;
 STATIC ARTOVERFIELD	*ARTfields;
 STATIC int		ARTfieldsize;
 STATIC int		ARTfirstfullfield = 0;
@@ -61,11 +67,89 @@ STATIC SENDDATA		SENDhead = {
 /*
 **  Overview state information.
 */
-STATIC QIOSTATE		*OVERqp;		/* Open overview file	*/
-STATIC char		*OVERline;		/* Current line		*/
+#ifdef OVER_MMAP
+STATIC char *		OVERmem = NULL;		/* mmaped overview file */
+STATIC int		OVERlen;		/* Length of the overview file */
+#else
+#define MAXOVERLINE	4096
+STATIC FILE		*OVERfp = NULL;		/* Open overview file	*/
+STATIC char		OVERline[MAXOVERLINE];	/* Current line		*/
+STATIC int		OVERoffset;		/* Current offset */
+STATIC char		OVERline[MAXOVERLINE];	/* Current line		*/
+#endif
 STATIC ARTNUM		OVERarticle;		/* Current article	*/
 STATIC int		OVERopens;		/* Number of opens done	*/
+STATIC OVERINDEX	*OVERindex;		/* Array of the overview index */
+STATIC int		OVERicount;		/* Number of index entries */
+STATIC int		OVERioff;		/* Current index pointer */
 
+#if defined(OVER_MMAP) || defined(ART_MMAP)
+#include <sys/uio.h>
+
+#if defined(UIO_MAXIOV) && !defined(IOV_MAX)
+#define IOV_MAX		UIO_MAXIOV
+#endif
+
+#ifndef IOV_MAX
+/* Solaris */
+#if defined(sun) && defined(__svr4__)
+#define IOV_MAX 16
+#endif
+
+#endif
+
+STATIC struct iovec	iov[IOV_MAX];
+STATIC int		queued_iov = 0;
+
+BOOL PushIOv(void) {
+    fflush(stdout);
+    if (writev(STDOUT_FILENO, iov, queued_iov) <= 0) {
+        queued_iov = 0;
+	return FALSE;
+    }
+    queued_iov = 0;
+    return TRUE;
+}
+
+BOOL SendIOv(void *p, int len) {
+    iov[queued_iov].iov_base = p;
+    iov[queued_iov++].iov_len = len;
+    if (queued_iov == IOV_MAX)
+        return PushIOv();
+    return TRUE;
+}
+
+STATIC char		*_IO_buffer_ = NULL;
+STATIC int		highwater = 0;
+
+BOOL PushIOb(void) {
+    fflush(stdout);
+    if (write(STDOUT_FILENO, _IO_buffer_, highwater) != highwater) {
+        highwater = 0;
+        return FALSE;
+    }
+    highwater = 0;
+    return TRUE;
+}
+
+BOOL SendIOb(void *p, int len) {
+    int tocopy;
+    
+    if (_IO_buffer_ == NULL)
+        _IO_buffer_ = NEW(char, BIG_BUFFER);
+
+    while (len > 0) {
+        tocopy = (len > (BIG_BUFFER - highwater)) ? (BIG_BUFFER - highwater) : len;
+        memcpy(&_IO_buffer_[highwater], p, tocopy);
+        p += tocopy;
+        highwater += tocopy;
+        len -= tocopy;
+        if (highwater == BIG_BUFFER)
+            PushIOb();
+    }
+}
+
+#endif
 
 /*
 **  Read the overview schema.
@@ -74,10 +158,10 @@ void
 ARTreadschema()
 {
     static char			SCHEMA[] = _PATH_SCHEMA;
-    register FILE		*F;
-    register char		*p;
-    register ARTOVERFIELD	*fp;
-    register int		i;
+    FILE			*F;
+    char			*p;
+    ARTOVERFIELD		*fp;
+    int				i;
     char			buff[SMBUF];
 
     /* Open file, count lines. */
@@ -105,7 +189,7 @@ ARTreadschema()
 	}
 	else
 	    fp->NeedsHeader = FALSE;
-        fp->HasHeader = FALSE;
+	fp->HasHeader = FALSE;
 	fp->Header = COPY(buff);
 	fp->Length = strlen(buff);
 	fp++;
@@ -121,74 +205,72 @@ ARTreadschema()
 void
 ARTclose()
 {
+#ifdef ART_MMAP
+    if (ARTmem) {
+#if defined(MC_ADVISE) && defined(MADV_DONTNEED)
+        madvise(ARTmem, ARTlen, MADV_DONTNEED);
+#endif
+        munmap(ARTmem, ARTlen);
+        ARTmem = NULL;
+        WireFormat = 0;
+    }
+#else
     if (ARTqp) {
 	QIOclose(ARTqp);
 	ARTqp = NULL;
     }
+#endif
 }
-
-
-/*
-**  Get the Message-ID from a file.
-*/
-STATIC void
-ARTgetmsgid(qp, id)
-    register QIOSTATE	*qp;
-    char		*id;
-{
-    register char	*p;
-    register char	*q;
-
-    for (*id = '\0'; (p = QIOread(qp)) != NULL && *p != '\0'; ) {
-	if (*p != 'M' && *p != 'm')
-	    continue;
-	if ((q = strchr(p, ' ')) == NULL)
-	    continue;
-	*q++ = '\0';
-	if (caseEQ(p, "Message-ID:")) {
-	    (void)strcpy(id, q);
-	    break;
-	}
-    }
-    (void)QIOrewind(qp);
-}
-
 
 /*
 **  If the article name is valid, open it and stuff in the ID.
 */
 STATIC BOOL
-ARTopen(name, id)
+ARTopen(name)
     char		*name;
-    char		*id;
 {
     static ARTNUM	save_artnum;
-    static char		save_artid[BIG_BUFFER];
     struct stat		Sb;
+#ifdef ART_MMAP
+    int			fd;
 
     /* Re-use article if it's the same one. */
+    if (ARTmem != NULL) {
+        if (save_artnum == atol(name))
+#else
     if (ARTqp != NULL) {
-	if (save_artnum == atol(name) && QIOrewind(ARTqp) != -1) {
-	    if (id)
-		(void)strcpy(id, save_artid);
-	    return TRUE;
-	}
-	QIOclose(ARTqp);
+	if (save_artnum == atol(name) && QIOrewind(ARTqp) != -1)
+#endif
+            return TRUE;
+        ARTclose();
     }
 
     /* Open it, make sure it's a regular file. */
+#ifdef ART_MMAP
+    if ((fd = open(name, O_RDONLY)) < 0)
+        return FALSE;
+    if ((fstat(fd, &Sb) < 0) || !S_ISREG(Sb.st_mode)) {
+    	close(fd);
+    	return FALSE;
+    }
+    ARTlen = Sb.st_size;
+    if ((int)(ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+    	close(fd);
+    	return FALSE;
+    }
+    close(fd);
+#else
     if ((ARTqp = QIOopen(name, QIO_BUFFER)) == NULL)
 	return FALSE;
     if (fstat(QIOfileno(ARTqp), &Sb) < 0 || !S_ISREG(Sb.st_mode)) {
-	QIOclose(ARTqp);
-	ARTqp = NULL;
+	ARTclose();
 	return FALSE;
     }
+    ARTlen = Sb.st_size;
     CloseOnExec(QIOfileno(ARTqp), TRUE);
+#endif
 
     save_artnum = atol(name);
-    ARTgetmsgid(ARTqp, save_artid);
-    (void)strcpy(id, save_artid);
     return TRUE;
 }
 
@@ -196,64 +278,178 @@ ARTopen(name, id)
 /*
 **  Open the article for a given Message-ID.
 */
-STATIC QIOSTATE *
+STATIC BOOL
 ARTopenbyid(msg_id, ap)
-    char	*msg_id;
-    ARTNUM	*ap;
+    char		*msg_id;
+    ARTNUM		*ap;
 {
-    QIOSTATE	*qp;
-    char	*p;
-    char	*q;
+    char		*p;
+    char		*q;
+    struct stat		Sb;
+#ifdef ART_MMAP
+    int			fd;
+#endif
 
     *ap = 0;
     if ((p = HISgetent(msg_id, FALSE)) == NULL)
-	return NULL;
-    if ((qp = QIOopen(p, QIO_BUFFER)) == NULL)
-	return NULL;
-    CloseOnExec(QIOfileno(qp), TRUE);
+	return FALSE;
+#ifdef ART_MMAP
+    if ((fd = open(p, O_RDONLY)) < 0)
+        return FALSE;
+    if ((fstat(fd, &Sb) < 0) || !S_ISREG(Sb.st_mode)) {
+    	close(fd);
+    	return FALSE;
+    }
+    ARTlen = Sb.st_size;
+    if ((int)(ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+    	close(fd);
+    	return FALSE;
+    }
+    close(fd);
+#else
+    if ((ARTqp = QIOopen(p, QIO_BUFFER)) == NULL)
+	return FALSE;
+    if (fstat(QIOfileno(ARTqp), &Sb) < 0 || !S_ISREG(Sb.st_mode)) {
+	ARTclose();
+	return FALSE;
+    }
+    CloseOnExec(QIOfileno(ARTqp), TRUE);
+#endif
     p += strlen(_PATH_SPOOL) + 1;
     if ((q = strrchr(p, '/')) != NULL)
 	*q++ = '\0';
     if (GRPlast[0] && EQ(p, GRPlast))
 	*ap = atol(q);
-    return qp;
+    return TRUE;
 }
 
 
 /*
 **  Send a (part of) a file to stdout, doing newline and dot conversion.
 */
+#ifdef ART_MMAP
 STATIC void
-ARTsend(qp, what)
-    register QIOSTATE	*qp;
+ARTsend(what)
     SENDTYPE		what;
 {
-    register char	*p;
+    char		*p, *q;
+    struct timeval	stv, etv;
+    long		bytecount;
+    char		lastchar;
+    int			InBody;
+    int			FirstLine;
 
     ARTcount++;
     GRParticles++;
+    bytecount = 0;
+    InBody = 0;
+    lastchar = -1;
+    FirstLine = 1;
+
+     gettimeofday(&stv, NULL);
+    /* Get the headers and detect if wire format. */
+    for (q = p = ARTmem; p < (ARTmem + ARTlen); p++) {
+        if (*p == '\r') {
+            if (FirstLine) {
+                WireFormat = 1;
+                if (what == STarticle) {
+                    p = ARTmem + ARTlen;
+                    break;
+                    
+                }
+            }
+            continue;
+        }
+        if (*p == '\n') {
+            if (FirstLine)
+                FirstLine = 0;
+            if ((lastchar == '\n') && !InBody)
+                if (what == SThead) {
+                    if (*(p-1) == '\r')
+                        p--;
+                    break;
+                } else {
+                    if (WireFormat) {
+                        q = p + 1;
+                        p = ARTmem + ARTlen;
+                        break;
+                    } else {
+                        InBody = 1;
+                        if (what == STbody) {
+                            q = ++p;
+                            continue;
+                        }
+                    }
+                }
+            if (((what == STarticle) || 
+                    ((what == SThead) && !InBody) || 
+                    ((what == STbody) && InBody)) && 
+                    !WireFormat) {
+                if (*q == '.')
+                    SendIOb(".", 1);
+                SendIOb(q, p - q);
+                SendIOb("\r\n", 2);
+                ARTgetsize += p - q + 2;
+                q = p + 1;
+            }
+        }
+        lastchar = *p;
+    }
+    
+    if (!WireFormat) {
+        SendIOb(".\r\n", 3);
+        PushIOb();
+        ARTgetsize += 3;
+    } else {
+       SendIOv(q, p - q);
+       if (what == SThead) {
+           SendIOv(".\r\n", 3);
+           ARTgetsize += 3;
+       }
+       ARTgetsize += p - q;
+       if (memcmp((ARTmem+ARTlen-3), ".\r\n", 3)) {
+           SendIOv("\r\n.\r\n", 5);
+           ARTgetsize += 5;
+       }
+       PushIOv();
+    }
+    
+    gettimeofday(&etv, NULL);
+    ARTget++;
+    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
+    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
+}
+#else
+STATIC void
+ARTsend(what)
+    SENDTYPE		what;
+{
+    char		*p, *q;
+    struct timeval	stv, etv;
+    long		bytecount;
+    char		lastchar;
+
+    ARTcount++;
+    GRParticles++;
+    bytecount = 0;
 
 #if defined (DONT_LIKE_PULLERS)
     {
       static int count ;
 
       count++ ;
-      
+
       if (what == STarticle || count > 100)
         sleep (1) ;               /* slow down sucking readers */
     }
 #endif
 
-    /*
-     * it should never take 5 minutes to send an article line
-     */
-    alarm(DEFAULT_TIMEOUT);
-
+    gettimeofday(&stv, NULL);
     /* Get the headers. */
     for ( ; ; ) {
-	p = QIOread(qp);
+	p = QIOread(ARTqp);
 	if (p == NULL) {
-	    if (QIOtoolong(qp))
+	    if (QIOtoolong(ARTqp))
 		continue;
 	    break;
 	}
@@ -261,32 +457,37 @@ ARTsend(qp, what)
 	    break;
 	if (what == STbody)
 	    continue;
-	alarm(DEFAULT_TIMEOUT);	/* restart timer */
-	Printf("%s%s\r\n", *p == '.' ? "." : "", p);
+	ARTgetsize+=Printf("%s%s\r\n", *p == '.' ? "." : "", p);
     }
-
     if (what == SThead) {
 	Printf(".\r\n");
-	alarm(0);		/* cancel timer */
+	ARTgetsize+=3;
+        gettimeofday(&etv, NULL);
+        ARTget++;
+        ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
+        ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
 	return;
     }
 
     if (what == STarticle)
-	Printf("\r\n");
+	ARTgetsize+=Printf("\r\n");
     for ( ; ; ) {
-	p = QIOread(qp);
+	p = QIOread(ARTqp);
 	if (p == NULL) {
-	    if (QIOtoolong(qp))
+	    if (QIOtoolong(ARTqp))
 		continue;
 	    break;
 	}
-	alarm(DEFAULT_TIMEOUT);	/* restart timer */
-	Printf("%s%s\r\n", *p == '.' ? "." : "", p);
+	ARTgetsize+=Printf("%s%s\r\n", *p == '.' ? "." : "", p);
     }
-    Printf(".\r\n");
-    alarm(0);			/* cancel timer */
-}
+    ARTgetsize+=Printf(".\r\n");
+    gettimeofday(&etv, NULL);
+    ARTget++;
+    ARTgettime+=(etv.tv_sec - stv.tv_sec) * 1000;
+    ARTgettime+=(etv.tv_usec - stv.tv_usec) / 1000;
 
+}
+#endif /* ART_MMAP */
 
 /*
 **  Find an article number in the article array via a binary search;
@@ -295,11 +496,11 @@ ARTsend(qp, what)
 */
 STATIC int
 ARTfind(i)
-    register ARTNUM	i;
+    ARTNUM		i;
 {
-    register ARTNUM	*bottom;
-    register ARTNUM	*middle;
-    register ARTNUM	*top;
+    ARTNUM		*bottom;
+    ARTNUM		*middle;
+    ARTNUM		*top;
 
     if (ARTsize == 0)
 	return -1;
@@ -334,77 +535,83 @@ ARTfind(i)
     return -1;
 }
 
-
 /*
-**  Ask the innd server for the article.  Only called from CMDfetch,
-**  and only if history file is buffered.  Common case:  "oops, cancel
-**  that article I just posted."
+**  Return the header from the specified file, or NULL if not found.
+**  We can estimate the Lines header, if that's what's wanted.
 */
-STATIC QIOSTATE *
-ARTfromboss(what, id)
-    SENDDATA		*what;
-    char		*id;
+char *
+GetHeader(header, IsLines)
+    char		*header;
+    BOOL		IsLines;
 {
-    FILE		*FromServer;
-    FILE		*ToServer;
-    QIOSTATE		*qp;
-    char		buff[NNTP_STRLEN + 2];
-    char		*name;
+    static char		buff[40];
     char		*p;
-    BOOL		more;
+    char		*q;
+#ifdef ART_MMAP
+    char		lastchar;
+    char		*limit;
+    static char		*retval = NULL;
+    static int		retlen = 0;
 
-    /* If we can, open the connection. */
-    if (NNTPlocalopen(&FromServer, &ToServer, (char *)NULL) < 0)
-	return NULL;
-
-    /* Send the query to the server. */
-    qp = NULL;
-    (void)fprintf(ToServer, "XPATH %s\r\n", id);
-    (void)fflush(ToServer);
-    if (ferror(ToServer))
-	goto QuitClose;
-
-    /* Get the reply; article exist? */
-    if (fgets(buff, sizeof buff, FromServer) == NULL
-     || atoi(buff) != NNTP_NOTHING_FOLLOWS_VAL)
-	goto QuitClose;
-
-    /* Yes.  Be quick if just doing a stat. */
-    if (what == &SENDstat) {
-	qp = QIOopen("/dev/null", 0);
-	goto QuitClose;
+    limit = ARTmem + ARTlen - strlen(header);
+    for (p = ARTmem; p < limit; p++) {
+        if (*p == '\r')
+            continue;
+        if ((lastchar == '\n') && (*p == '\n')) {
+            return NULL;
+        }
+        if ((lastchar == '\n') || (p == ARTmem)) {
+            if (!strncasecmp(p, header, strlen(header))) {
+                for (; (p < limit) && !isspace(*p) ; p++);
+                for (; (p < limit) && isspace(*p) ; p++);
+                for (q = p; q < limit; q++) 
+                    if ((*q == '\r') || (*q == '\n'))
+                        break;
+                if (retval == NULL) {
+                    retval = NEW(char, q - p + 1);
+                } else {
+                    if ((q - p +1) > retlen) {
+                        DISPOSE(retval);
+                        retval = NEW(char, q - p + 1);
+                    }
+                }
+                retlen = q - p + 1;
+                memcpy(retval, p, retlen - 1);
+                *(retval + retlen - 1) = '\0';
+            	return retval;
+            }
+        }
+        lastchar = *p;
     }
-
-    /* Clean up response. */
-    if ((p = strchr(buff, '\r')) != NULL)
-	*p = '\0';
-    if ((p = strchr(buff, '\n')) != NULL)
-	*p = '\0';
-
-    /* Loop over all filenames until we can open one. */
-    for (name = buff; *name; name = p + 1) {
-	/* Snip off next name, turn dots to slashes. */
-	for (p = name; ISWHITE(*p); p++)
-	    continue;
-	for (name = p; *p && *p != ' '; p++)
-	    if (*p == '.')
-		*p = '/';
-	more = *p == ' ';
-	if (more)
-	    *p = '\0';
-	if ((qp = QIOopen(name, QIO_BUFFER)) != NULL || !more)
+#else
+    for ( ; ; ) {
+	if ((p = QIOread(ARTqp)) == NULL) {
+	    if (QIOtoolong(ARTqp))
+		continue;
 	    break;
+	}
+	if (*p == '\0')
+	    /* End of headers. */
+	    break;
+	if (ISWHITE(*p) || (q = strchr(p, ':')) == NULL)
+	    /* Continuation or bogus (shouldn't happen) line; ignore. */
+	    continue;
+	*q = '\0';
+	if (caseEQ(header, p))
+	    return *++q ? q + 1 : NULL;
     }
+#endif
 
-    /* Send quit, read server's reply, close up and return. */
-  QuitClose:
-    (void)fprintf(ToServer, "quit\r\n");
-    (void)fclose(ToServer);
-    (void)fgets(buff, sizeof buff, FromServer);
-    (void)fclose(FromServer);
-    return qp;
+    if (IsLines) {
+	/* Lines estimation taken from Tor Lillqvist <tml@tik.vtt.fi>'s
+	 * posting <TML.92Jul10031233@hemuli.tik.vtt.fi> in
+	 * news.sysadmin. */
+	(void)sprintf(buff, "%d",
+	    (int)(6.4e-8 * ARTlen * ARTlen + 0.023 * ARTlen - 12));
+	return buff;
+    }
+    return NULL;
 }
-
 
 /*
 **  Fetch part or all of an article and send it to the client.
@@ -415,11 +622,10 @@ CMDfetch(ac, av)
     char		*av[];
 {
     char		buff[SMBUF];
-    char		idbuff[BIG_BUFFER];
     SENDDATA		*what;
-    register QIOSTATE	*qp;
-    register BOOL	ok;
+    BOOL		ok;
     ARTNUM		art;
+    char		*msgid;
 
     /* Find what to send; get permissions. */
     ok = PERMcanread;
@@ -447,19 +653,19 @@ CMDfetch(ac, av)
 
     /* Requesting by Message-ID? */
     if (ac == 2 && av[1][0] == '<') {
-	if ((qp = ARTopenbyid(av[1], &art)) == NULL) {
+	if (!ARTopenbyid(av[1], &art)) {
 	    Reply("%d No such article\r\n", NNTP_DONTHAVEIT_VAL);
 	    return;
 	}
-	if (!PERMartok(qp)) {
-	    QIOclose(qp);
+	if (!PERMartok()) {
+	    ARTclose();
 	    Reply("%s\r\n", NOACCESS);
 	    return;
 	}
 	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, what->Item, av[1]);
 	if (what->Type != STstat)
-	    ARTsend(qp, what->Type);
-	QIOclose(qp);
+	    ARTsend(what->Type);
+	ARTclose();
 	return;
     }
 
@@ -486,17 +692,20 @@ CMDfetch(ac, av)
     }
 
     /* Move forward until we can find one. */
-    while (!ARTopen(buff, idbuff)) {
+    while (!ARTopen(buff)) {
 	if (ac > 1 || ++ARTindex >= ARTsize) {
 	    Reply("%s\r\n", ARTnoartingroup);
 	    return;
 	}
 	(void)sprintf(buff, "%ld", ARTnumbers[ARTindex]);
     }
-
-    Reply("%d %s %s %s\r\n", what->ReplyCode, buff, idbuff, what->Item);
+    if ((msgid = GetHeader("Message-ID", FALSE)) == NULL) {
+        Reply("%s\r\n", ARTnoartingroup);
+	return;
+    }
+    Reply("%d %s %s %s\r\n", what->ReplyCode, buff, GetHeader("Message-ID", FALSE), what->Item); 
     if (what->Type != STstat)
-	ARTsend(ARTqp, what->Type);
+	ARTsend(what->Type);
     if (ac > 1)
 	ARTindex = ARTfind((ARTNUM)atol(buff));
 }
@@ -570,50 +779,6 @@ CMDnextlast(ac, av)
 }
 
 
-/*
-**  Return the header from the specified file, or NULL if not found.
-**  We can estimate the Lines header, if that's what's wanted.
-*/
-STATIC char *
-GetHeader(qp, header, IsLines)
-    register QIOSTATE	*qp;
-    register char	*header;
-    BOOL		IsLines;
-{
-    static char		buff[40];
-    register char	*p;
-    register char	*q;
-    struct stat		Sb;
-
-    for ( ; ; ) {
-	if ((p = QIOread(qp)) == NULL) {
-	    if (QIOtoolong(qp))
-		continue;
-	    break;
-	}
-	if (*p == '\0')
-	    /* End of headers. */
-	    break;
-	if (ISWHITE(*p) || (q = strchr(p, ':')) == NULL)
-	    /* Continuation or bogus (shouldn't happen) line; ignore. */
-	    continue;
-	*q = '\0';
-	if (caseEQ(header, p))
-	    return *++q ? q + 1 : NULL;
-    }
-
-    if (IsLines && fstat(QIOfileno(qp), &Sb) >= 0) {
-	/* Lines estimation taken from Tor Lillqvist <tml@tik.vtt.fi>'s
-	 * posting <TML.92Jul10031233@hemuli.tik.vtt.fi> in
-	 * news.sysadmin. */
-	(void)sprintf(buff, "%d",
-	    (int)(6.4e-8 * Sb.st_size * Sb.st_size + 0.023 * Sb.st_size - 12));
-	return buff;
-    }
-    return NULL;
-}
-
-
 STATIC BOOL
 CMDgetrange(ac, av, rp)
     int			ac;
@@ -679,9 +844,9 @@ OVERGetHeader(p, field)
 
     fp = &ARTfields[field - 1];
 
-    if (fp->NeedsHeader)            /* we're going to need an exact match */
+    if (fp->NeedsHeader) 		/* we're going to need an exact match */
       field = ARTfirstfullfield;
- 
+
     /* Skip leading headers. */
     for (; --field >= 0 && *p; p++)
 	if ((p = strchr(p, '\t')) == NULL)
@@ -690,7 +855,7 @@ OVERGetHeader(p, field)
 	return NULL;
 
     if (fp->HasHeader)
-	p += fp->Length + 2;
+        p += fp->Length + 2;
 
     if (fp->NeedsHeader) {		/* find an exact match */
 	 while (strncmp(fp->Header, p, fp->Length) != 0) {
@@ -700,7 +865,7 @@ OVERGetHeader(p, field)
 	 }
 	 p += fp->Length + 2;
     }
-  
+
     /* Figure out length; get space. */
     if ((next = strchr(p, '\t')) != NULL)
 	i = next - p;
@@ -728,9 +893,16 @@ STATIC BOOL
 OVERopen()
 {
     char	name[SPOOLNAMEBUFF];
+    char	index[SPOOLNAMEBUFF];
+    int		fd;
+    struct stat	sb;
 
     /* Already open? */
-    if (OVERqp != NULL)
+#ifdef OVER_MMAP
+    if (OVERmem != NULL)
+#else
+    if (OVERfp != NULL)
+#endif
 	/* Don't rewind -- we are probably going forward via repeated
 	 * NNTP commands. */
 	return TRUE;
@@ -739,11 +911,51 @@ OVERopen()
     if (OVERopens++)
 	return FALSE;
 
-    OVERline = NULL;
     OVERarticle = 0;
+#ifndef OVER_MMAP
+    OVERoffset = 0;
+#endif
+    OVERioff = 0;
     (void)sprintf(name, "%s/%s/%s", _PATH_OVERVIEWDIR, GRPlast, _PATH_OVERVIEW);
-    OVERqp = QIOopen(name, QIO_BUFFER);
-    return OVERqp != NULL;
+#ifdef OVER_MMAP
+    if ((fd = open(name, O_RDONLY)) < 0)
+    	return FALSE;
+    if (fstat(fd, &sb) != 0) {
+    	close(fd);
+    	return FALSE;
+    }
+    OVERlen = sb.st_size;
+    if ((int)(OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+        OVERmem = NULL;
+    	close(fd);
+    	return FALSE;
+    }
+    close(fd);
+#else
+    if ((OVERfp = fopen(name, "r")) == NULL)
+    	return FALSE;
+#endif
+    (void)sprintf(index, "%s/%s/%s.index", _PATH_OVERVIEWDIR, GRPlast, _PATH_OVERVIEW);
+    
+    OVERindex = NULL;
+    if ((fd = open(index, O_RDONLY)) < 0)
+    	return TRUE;
+    if (fstat(fd, &sb) != 0) {
+    	close(fd);
+    	return TRUE;
+    }
+    OVERicount = sb.st_size / sizeof(OVERINDEX);
+    if ((OVERindex = malloc(OVERicount * sizeof(OVERINDEX))) == NULL) {
+    	close(fd);
+    	return TRUE;
+    }
+    if (read(fd, OVERindex, OVERicount * sizeof(OVERINDEX)) != (OVERicount * sizeof(OVERINDEX))) {
+    	free(OVERindex);
+    	OVERindex == NULL;
+    } else 
+        OVERread += OVERicount * sizeof(OVERINDEX);
+    close(fd);
+    return TRUE;
 }
 
 
@@ -753,10 +965,23 @@ OVERopen()
 void
 OVERclose()
 {
-    if (OVERqp != NULL) {
-	QIOclose(OVERqp);
-	OVERqp = NULL;
+#ifdef OVER_MMAP
+    if (OVERmem != NULL) {
+    	munmap(OVERmem, OVERlen);
+    	OVERmem = NULL;
+    	OVERopens = 0;
+    	OVERlen = 0;
+    }
+#else
+    if (OVERfp != NULL) {
+	fclose(OVERfp);
+	OVERfp = NULL;
 	OVERopens = 0;
+    }
+#endif
+    if (OVERindex != NULL) {
+    	free(OVERindex);
+    	OVERindex = NULL;
     }
 }
 
@@ -766,27 +991,82 @@ OVERclose()
 **  Assumes that what we return is never modified.
 */
 STATIC char *
-OVERfind(artnum)
+OVERfind(artnum, linelen)
     ARTNUM	artnum;
+    int		*linelen;
 {
-    if (OVERqp == NULL)
+    int		i, j;
+#ifdef OVER_MMAP
+    char	*OVERline, *q;
+
+    if (OVERmem == NULL)
+#else
+    if (OVERfp == NULL)
+#endif
 	return NULL;
 
-    if (OVERarticle > artnum) {
-	(void)QIOrewind(OVERqp);
-	OVERarticle = 0;
-	OVERline = NULL;
+    if (OVERindex != NULL) {
+    	for (i = 0; i < OVERicount; i++) {
+    	    j = (i + OVERioff) % OVERicount;
+    	    if (OVERindex[j].artnum == artnum) {
+#ifdef OVER_MMAP
+		OVERline = (char *)OVERmem + OVERindex[j].offset;
+                if ((OVERline >= (OVERmem + OVERlen)) || (OVERline < OVERmem))
+                    return NULL;
+                for (q = OVERline; q < (OVERmem+OVERlen); q++)
+                    if ((*q == '\r') || (*q == '\n'))
+                        break;
+
+                *linelen = q - OVERline;
+#else
+    	        if (OVERoffset != OVERindex[j].offset) {
+    	            fseek(OVERfp, OVERindex[j].offset, SEEK_SET);
+    	            OVERoffset = OVERindex[j].offset;
+    	        }
+    	        if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
+    	            return NULL;
+    	        if ((*linelen = strlen(OVERline)) < 10)
+    	            return NULL;
+    	        if (*linelen  >= MAXOVERLINE) {
+    	            OVERoffset = -1;
+    	            *linelen = MAXOVERLINE;
+    	        } else {
+    	            OVERoffset += *linelen;
+    	        }
+   	        OVERline[*linelen-1] = '\0';
+#endif    
+    	        OVERread += *linelen;
+    	        OVERioff = j;
+    	        return OVERline;
+            }
+        }
+        return NULL;
     }
 
-    for ( ; OVERarticle < artnum; OVERarticle = atol(OVERline))
-	if ((OVERline = QIOread(OVERqp)) == NULL) {
-	    if (QIOtoolong(OVERqp))
-		continue;
-	    /* Don't close file; we may rewind. */
-	    return NULL;
-	}
+#ifdef OVER_MMAP
+    return NULL;
+#else
+
+    if (OVERarticle > artnum) {
+	rewind(OVERfp);
+	OVERarticle = 0;
+	OVERline[0] = '\0';
+	OVERoffset = 0;
+    }
+    for ( ; OVERarticle < artnum; OVERarticle = atol(OVERline)) {
+        if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
+	     return NULL;
+	OVERread += strlen(OVERline);
+    	while ((strlen(OVERline) == MAXOVERLINE) && (OVERline[MAXOVERLINE-1] == '\n'))
+	    if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
+	         return NULL;
+	    else
+	        OVERread += (*linelen = strlen(OVERline));
+    }
+    OVERoffset = -1;
 
     return OVERarticle == artnum ? OVERline : NULL;
+#endif
 }
 
 
@@ -815,6 +1095,7 @@ OVERgen(name)
     long			t;
     char			value[10];
 
+    lines = 0;
     /* Open article. */
     if ((qp = QIOopen(name, QIO_BUFFER)) == NULL)
 	return NULL;
@@ -846,21 +1127,21 @@ OVERgen(name)
 	if (*line == '\0')
 	    break;
 
-	/* Is it a continuation line? */
-	if (ISWHITE(*line) && (hp - Headers) < ARTfieldsize) {
-	    /* Skip whitespace but one. */
-	    for (p = line; *p && ISWHITE(*p); p++)
-		continue;
-	    --p;
-	    /* Now append it. */
-	    hp->Length += strlen(p);
-	    RENEW(hp->Header, char, hp->Length + 1);
-	    (void)strcat(hp->Header, p);
-	    for (p = hp->Header; *p; p++)
-		if (*p == '\t' || *p == '\n')
-		    *p = ' ';
-	    continue;
-	}
+       /* Is it a continuation line? */
+       if (ISWHITE(*line) && (hp - Headers) < ARTfieldsize) {
+           /* Skip whitespace but one. */
+           for (p = line; *p && ISWHITE(*p); p++)
+               continue;
+           --p;
+           /* Now append it. */
+           hp->Length += strlen(p);
+           RENEW(hp->Header, char, hp->Length + 1);
+           (void)strcat(hp->Header, p);
+           for (p = hp->Header; *p; p++)
+               if (*p == '\t' || *p == '\n')
+                   *p = ' ';
+           continue;
+       }
 
 	/* See if we want this header. */
 	fp = ARTfields;
@@ -893,23 +1174,27 @@ OVERgen(name)
 	    for (p = hp->Header; *p; p++)
 		if (*p == '\t' || *p == '\n')
 		    *p = ' ';
+	    if (!strncmp(line, "Lines", 5)) {
+	    	lines = atoi(hp->Header);
+	    }
 	    hp->HasHeader = TRUE;
 	    break;
 	}
     }
 
     /* Read body of article, just to get lines. */
-    for (lines = 0; ; lines++)
-	if ((p = QIOread(qp)) == NULL) {
-	    if (QIOtoolong(qp))
-		continue;
-	    if (QIOerror(qp)) {
-		QIOclose(qp);
-		return NULL;
+    if (!lines)
+        for (lines = 0; ; lines++)
+	    if ((p = QIOread(qp)) == NULL) {
+	        if (QIOtoolong(qp))
+		    continue;
+	        if (QIOerror(qp)) {
+		    QIOclose(qp);
+		    return NULL;
+	        }
+	        break;
 	    }
-	    break;
-	}
-
+	
     /* Calculate total size, fix hardwired headers. */
     ov_size = strlen(name) + ARTfieldsize + 2;
     for (hp = Headers, fp = ARTfields, i = ARTfieldsize; --i >= 0; hp++, fp++) {
@@ -954,13 +1239,15 @@ OVERgen(name)
 	*p++ = '\t';
 	if (hp->HasHeader)
 	    p += strlen(strcpy(p, hp->Header));
+	    if (!strncmp(line, "Lines", 5)) {
+	    	lines = atoi(hp->Header);
+	    }
     }
     *p = '\0';
 
     QIOclose(qp);
     return buff;
 }
-
 
 /*
 **  XHDR, a common extension.  Retrieve specified header from a
@@ -971,7 +1258,6 @@ CMDxhdr(ac, av)
     int			ac;
     char		*av[];
 {
-    register QIOSTATE	*qp;
     register ARTNUM	i;
     register char	*p;
     int			Overview;
@@ -979,6 +1265,7 @@ CMDxhdr(ac, av)
     ARTRANGE		range;
     char		buff[SPOOLNAMEBUFF];
     ARTNUM		art;
+    int			linelen;
 
     if (!PERMcanread) {
 	Reply("%s\r\n", NOACCESS);
@@ -988,15 +1275,15 @@ CMDxhdr(ac, av)
 
     /* Message-ID specified? */
     if (ac == 3 && av[2][0] == '<') {
-	if ((qp = ARTopenbyid(av[2], &art)) == NULL) {
+	if (!ARTopenbyid(av[2], &art)) {
 	    Reply("%d No such article\r\n", NNTP_DONTHAVEIT_VAL);
 	    return;
 	}
 	Reply("%d %ld %s header of article %s.\r\n",
 	   NNTP_HEAD_FOLLOWS_VAL, art, av[1], av[2]);
-	p = GetHeader(qp, av[1], IsLines);
+	p = GetHeader(av[1], IsLines);
 	Printf("%s %s\r\n", av[2], p ? p : "(none)");
-	QIOclose(qp);
+	ARTclose();
 	Printf(".\r\n");
 	return;
     }
@@ -1015,32 +1302,24 @@ CMDxhdr(ac, av)
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
     for (i = range.Low; i <= range.High; i++) {
-	alarm(0);			/* stop timer */
 	if (ARTfind(i) < 0)
 	    continue;
 
-	/*
-	 * It should never take this long to send a single line
-	 * of overview information.
-	 */
-	alarm(DEFAULT_TIMEOUT);		/* start timer */
-
 	/* Get it from the overview? */
-	if (Overview && (p = OVERfind(i)) != NULL) {
+	if (Overview && (p = OVERfind(i, &linelen)) != NULL) {
 	    p = OVERGetHeader(p, Overview);
 	    Printf("%ld %s\r\n", i, p && *p ? p : "(none)");
 	    continue;
 	}
 
 	(void)sprintf(buff, "%ld", i);
-	if ((qp = QIOopen(buff, QIO_BUFFER)) == NULL)
+	if (!ARTopen(buff))
 	    continue;
-	p = GetHeader(qp, av[1], IsLines);
+	p = GetHeader(av[1], IsLines);
 	Printf("%ld %s\r\n", i, p ? p : "(none)");
-	QIOclose(qp);
+	ARTclose();
     }
     Printf(".\r\n");
-    alarm (0) ;
 }
 
 
@@ -1057,6 +1336,8 @@ CMDxover(ac, av)
     register BOOL	Opened;
     ARTRANGE		range;
     char		buff[SPOOLNAMEBUFF];
+    struct timeval	stv, etv;
+    int			linelen;
 
     if (!PERMcanread) {
 	Printf("%s\r\n", NOACCESS);
@@ -1073,21 +1354,48 @@ CMDxover(ac, av)
     if (!CMDgetrange(ac, av, &range))
 	return;
 
+    OVERcount++;
+    gettimeofday(&stv, NULL);
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
     for (Opened = OVERopen(), i = range.Low; i <= range.High; i++) {
 	if (ARTfind(i) < 0)
 	    continue;
 
-	if (Opened && (p = OVERfind(i)) != NULL) {
-	    Printf("%s\r\n", p);
+	if (Opened && (p = OVERfind(i, &linelen)) != NULL) {
+	    OVERhit++;
+	    OVERsize+=linelen;
+#ifdef OVER_MMAP
+	    SendIOb(p, linelen);
+	    SendIOb("\r\n", 2); 
+#else
+            Printf("%s\r\n", p);
+#endif
 	    continue;
 	}
 
 	(void)sprintf(buff, "%ld", i);
-	if ((p = OVERgen(buff)) != NULL)
-	    Printf("%s\r\n", p);
+	if ((p = OVERgen(buff)) != NULL) {
+	    OVERmiss++;
+	    linelen = strlen(p);
+	    OVERsize+=linelen;
+#ifdef OVER_MMAP
+	    SendIOb(p, linelen);
+	    SendIOb("\r\n", 2); 
+#else
+            Printf("%s\r\n", p);
+#endif
+	}
     }
+#ifdef OVER_MMAP
+    SendIOb(".\r\n", 3);
+    PushIOb(); 
+#else
     Printf(".\r\n");
+#endif
+    gettimeofday(&etv, NULL);
+    OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
+    OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
+
 }
 
 
@@ -1110,6 +1418,7 @@ CMDxpat(ac, av)
     int			Overview;
     char		buff[SPOOLNAMEBUFF];
     ARTNUM		art;
+    int			linelen;
 
     if (!PERMcanread) {
 	Printf("%s\r\n", NOACCESS);
@@ -1121,19 +1430,18 @@ CMDxpat(ac, av)
     /* Message-ID specified? */
     if (av[2][0] == '<') {
 	p = av[2];
-	qp = ARTopenbyid(p, &art);
-	if (qp == NULL) {
+	if (!ARTopenbyid(p, &art)) {
 	    Printf("%d No such article.\r\n", NNTP_DONTHAVEIT_VAL);
 	    return;
 	}
 
 	Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
 	pattern = Glom(&av[3]);
-	if ((text = GetHeader(qp, header, FALSE)) != NULL
+	if ((text = GetHeader(header, FALSE)) != NULL
 	 && wildmat(text, pattern))
 	    Printf("%s %s\r\n", p, text);
 
-	QIOclose(qp);
+	ARTclose();
 	Printf(".\r\n");
 	DISPOSE(pattern);
 	return;
@@ -1158,7 +1466,7 @@ CMDxpat(ac, av)
 
 	/* Get it from the Overview? */
 	if (Overview
-	 && (p = OVERfind(i)) != NULL
+	 && (p = OVERfind(i, &linelen)) != NULL
 	 && (p = OVERGetHeader(p, Overview)) != NULL) {
 	    if (wildmat(p, pattern))
 		Printf("%ld %s\r\n", i, p);
@@ -1166,13 +1474,14 @@ CMDxpat(ac, av)
 	}
 
 	(void)sprintf(buff, "%ld", i);
-	if ((qp = QIOopen(buff, QIO_BUFFER)) == NULL)
+	
+	if (!ARTopen(buff))
 	    continue;
-	if ((p = GetHeader(qp, av[1], FALSE)) == NULL)
+	if ((p = GetHeader(av[1], FALSE)) == NULL)
 	    p = "(none)";
 	if (wildmat(p, pattern))
 	    Printf("%ld %s\r\n", i, p);
-	QIOclose(qp);
+	ARTclose();
     }
 
     Printf(".\r\n");

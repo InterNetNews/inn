@@ -47,9 +47,17 @@ extern time_t	parsedate();
 extern int	GetTimeInfo();
 
 /* Miscellaneous. */
+typedef struct _OVERINDEX {
+    long    artnum;
+/* =()<    @<LSEEKVAL>@   offset;>()= */
+    off_t   offset;
+    int     size;
+} OVERINDEX;
+ 
 extern int	getfdcount();
 extern int	wildmat();
-extern PID_T	waitnb();
+/* =()<extern @<PID_T>@	waitnb();>()= */
+extern pid_t	waitnb();
 extern int	xread();
 extern int	xwrite();
 extern int	xwritev();
