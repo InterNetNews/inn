@@ -60,6 +60,7 @@ contrib/newsbot             1 Grep articles and trigger actions
 doc                         1 Manpages (Directory)
 doc/Makefile                1 Makefile for documentation
 doc/active.5                1 Manpage for active config file
+doc/actived.8                   1 Manpage for actived
 doc/actsync.8               1 Manpage for active file synchro. program.
 doc/archive.8               1 Manpage for archive
 doc/batcher.8               1 Manpage for batcher
@@ -322,6 +323,8 @@ lib/xwritev.c               1 Writev that handles partial transfers
 makedirs.sh.in              1 Script to make INN directories
 nnrpd                       1 Net News Reader server (Directory)
 nnrpd/Makefile              1 Makefile for nnrpd
+nnrpd/actived.c             1 Active file server for readers
+nnrpd/activedstats.c        1 Statistics for actived
 nnrpd/article.c             1 Article-related routines
 nnrpd/commands.c            1 Assorted server commands
 nnrpd/group.c               1 Group-related routines
@@ -333,7 +336,9 @@ nnrpd/nnrpd.h               1 Header file for nnrpd
 nnrpd/perl.c                1 Perl routines for nnrpd.
 nnrpd/post.c                1 Article processing and posting
 nnrpd/post.h                1 Article data types
+nnrpd/protocol.h            1 Protocol header for actived
 nnrpd/track.c               1 Track client
+nnrpd/udp.c                 1 Udp handling for actived
 obsolete                    1 Depreciated programs area (Directory)
 obsolete/README.obsolete    1 README file for obsolete programs
 obsolete/hosts.nntp.nolimit 1 Sample hosts.nntp(5) file
