@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "CKPASSWD 8"
-.TH CKPASSWD 8 "2002-12-03" "INN 2.4.0" "InterNetNews Documentation"
+.TH CKPASSWD 8 "2003-07-05" "INN 2.4.1" "InterNetNews Documentation"
 .SH "NAME"
 ckpasswd \- nnrpd password authenticator
 .SH "SYNOPSIS"
@@ -172,7 +172,7 @@ so.  Something like:
 \&    #!/usr/bin/perl
 \&    use NDBM_File;
 \&    use Fcntl;
-\&    tie (%db, 'NDBM_File', '/path/to/database', O_RDWR | O_CREAT, 0640)
+\&    tie (%db, 'NDBM_File', '/path/to/database', O_RDWR|O_CREAT, 0640)
 \&        or die "Cannot open /path/to/database: $!\en";
 \&    $| = 1;
 \&    print "Username: ";
@@ -251,6 +251,21 @@ also be given.
 .IX Header "EXAMPLES"
 See \fIreaders.conf\fR\|(5) for examples of \fInnrpd\fR\|(8) authentication configuration
 that uses \fBckpasswd\fR to check passwords.
+.PP
+To test to make sure that \fBckpasswd\fR is working correctly, you can run it
+manually and then give it the username (prefixed with \f(CW\*(C`ClientAuthname:\*(C'\fR)
+and password (prefixed with \f(CW\*(C`ClientPassword:\*(C'\fR) on standard input.  For
+example:
+.PP
+.Vb 2
+\&    (echo 'ClientAuthname: test' ; echo 'ClientPassword: testing') \e
+\&        | ckpasswd -f /path/to/passwd/file
+.Ve
+.PP
+will check a username of \f(CW\*(C`test\*(C'\fR and a password of \f(CW\*(C`testing\*(C'\fR against the
+username and passwords stored in \fI/path/to/passwd/file\fR.  On success,
+\&\fBckpasswd\fR will print \f(CW\*(C`User:test\*(C'\fR and exit with status 0.  On failure,
+it will print some sort of error message and exit a non-zero status.
 .SH "HISTORY"
 .IX Header "HISTORY"
 Written by Russ Allbery <rra@stanford.edu> for InterNetNews.

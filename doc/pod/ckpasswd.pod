@@ -45,7 +45,7 @@ so.  Something like:
     #!/usr/bin/perl
     use NDBM_File;
     use Fcntl;
-    tie (%db, 'NDBM_File', '/path/to/database', O_RDWR | O_CREAT, 0640)
+    tie (%db, 'NDBM_File', '/path/to/database', O_RDWR|O_CREAT, 0640)
         or die "Cannot open /path/to/database: $!\n";
     $| = 1;
     print "Username: ";
@@ -129,6 +129,19 @@ also be given.
 
 See readers.conf(5) for examples of nnrpd(8) authentication configuration
 that uses B<ckpasswd> to check passwords.
+
+To test to make sure that B<ckpasswd> is working correctly, you can run it
+manually and then give it the username (prefixed with C<ClientAuthname:>)
+and password (prefixed with C<ClientPassword:>) on standard input.  For
+example:
+
+    (echo 'ClientAuthname: test' ; echo 'ClientPassword: testing') \
+        | ckpasswd -f /path/to/passwd/file
+
+will check a username of C<test> and a password of C<testing> against the
+username and passwords stored in F</path/to/passwd/file>.  On success,
+B<ckpasswd> will print C<User:test> and exit with status 0.  On failure,
+it will print some sort of error message and exit a non-zero status.
 
 =head1 HISTORY
 
