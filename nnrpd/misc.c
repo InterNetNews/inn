@@ -310,14 +310,18 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 #endif
 
     if (entrysize == 0) {
-	HASH hash;
-	time_t dummy = ~(time_t)0;
-	TOKEN token;
-	sprintf(buff, "[%s]%c%lu%c%lu%c%lu%c%s\n", HashToText(hash),
-	    HIS_FIELDSEP, dummy, HIS_SUBFIELDSEP,
-	    dummy, HIS_SUBFIELDSEP,
-	    dummy, HIS_FIELDSEP, TokenToText(token));
-	entrysize = strlen(buff);
+	if (innconf->storageapi) {
+	    HASH hash;
+	    time_t dummy = ~(time_t)0;
+	    TOKEN token;
+	    sprintf(buff, "[%s]%c%lu%c%lu%c%lu%c%s\n", HashToText(hash),
+		HIS_FIELDSEP, dummy, HIS_SUBFIELDSEP,
+		dummy, HIS_SUBFIELDSEP,
+		dummy, HIS_FIELDSEP, TokenToText(token));
+	    entrysize = strlen(buff);
+	} else {
+	    entrysize = sizeof(buff) - 1;
+	}
     }
     if (!setup) {
 	if (!dbzinit(HISTORY)) {
