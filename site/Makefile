@@ -73,7 +73,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(CTLBIN)/checkgroups \
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
-	newsfeeds nnrp.access nnrpd.track passwd.nntp \
+	newsfeeds incoming.conf nnrp.access nnrpd.track passwd.nntp \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
