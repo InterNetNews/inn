@@ -16,10 +16,11 @@ all:			$(OBJECTS) moveobjs
 .c.o:
 	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
-ovdb:
+ovdb:	ovdb.c
 	rm -f ovdb.o ../objs/*.o
 	$(CC) $(CFLAGS) -DTEST_BDB -c ovdb.c
-	$(CC) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../methods.o ../../lib/libinn.$(EXTLIB) $(EXTSTORAGELIBS) $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ ../*/*.o ../interface.o ../ov.o ../methods.o ../ovmethods.o ../../lib/libinn.$(EXTLIB) $(EXTSTORAGELIBS) $(LIBS)
+	rm -f ovdb.o
 
 moveobjs: $(OBJECTS)
 	$(CP) -p $(ROBJECTS) ../objs

@@ -74,22 +74,24 @@ In general, the bigger the cache, the better.  Use C<db_stat -m> to see
 cache hit percentages.  If they're less than 80%, try increasing the
 cache size.  To make a change of this parameter take effect with an
 existing database, remove the F<__db*> files while there are no
-database processes running.  Default is 4096 K, which may be
+database processes running.  Default is 8000 K, which may be
 adequate for small to medium-sized servers.  Full-feed servers will
-probably need at least 10000.
+probably need at least 14000.
 
 =item pagesize
 
 Sets the page size for the DB files (in bytes).  Must be a power of 2.
-Best range will probably be between 2048 and 16384.  The default is
-whatever BerkeleyDB selects as its default (based on the I/O block
-size of the underlying filesystem).
+Best choices are 4096, 8192, or 16384.  The default is 8192.
+You can not change the pagesize of an existing DB, it must be recreated.
 
 =item minkey
 
 Sets the minimum number of keys per page.  See the BerkeleyDB
-documentation for more info.  Default is 2; a setting of 3 may work
-better with larger page sizes.
+documentation for more info.  Default is based on page size:
+
+ default_minkey = pagesize / 2048
+
+You can not change the minkey of an existing DB, it must be recreated.
 
 =back
 
@@ -139,6 +141,15 @@ other INN processes have been shut down.
 
 Problems relating to ovdb are logged to news.err with "OVDB" in the
 error message.
+
+If a program accessing the database crashes, or otherwise exits
+uncleanly, it might leave a stale lock in the database.  This lock
+could cause other processes to deadlock on that stale lock.  To
+fix this, shut down all processes that access overview (using
+C<kill -9> if necessary) then run C<ovdb_recover -f> as the
+news user, e.g.: C<su news -c "/PATHBIN/ovdb_recover -f">
+This will remove all locks plus repair any damage caused by
+killing deadlocked processes.
 
 =head1 FILES
 

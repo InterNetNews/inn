@@ -1,0 +1,28 @@
+=head1 NAME
+
+dbprocs - Start or stop ovdb housekeeping processes
+
+=head1 SYNOPSYS
+
+dbprocs start
+
+dbprocs stop
+
+=head1 DESCRIPTION
+
+B<dbprocs> is a script that starts or stops housekeeping processes needed by ovdb.
+These are: B<db_checkpoint> and B<db_deadlock>, which are assumed to be in
+$BERKELEY_DB_BINDIR.  The B<dbprocs> script also periodically removes old log
+files.
+
+This command is normally called automatically by rc.news(8).
+
+=head1 HISTORY
+
+Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+
+=head1 SEE ALSO
+
+ovdb(5), rc.news(8)
+
+=cut

@@ -2,6 +2,7 @@
  * ovdb.c
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-04-09 : Tweak some default parameters; store aliased group info
  * 2000-03-29 : Add DB_RMW flag to the 'get' of get-modify-put sequences
  * 2000-02-17 : Update expire behavior to be consistent with current
  *              ov3 and buffindexed
@@ -172,6 +173,7 @@ static int current_db = -1;
 
 static DB *groupstats = NULL;
 static DB *groupsbyname = NULL;
+static DB *groupaliases = NULL;
 
 #define OVDBtxn_nosync	1
 #define OVDBnumdbfiles	2
@@ -267,75 +269,86 @@ static void read_ovdb_conf(void)
     ovdb_conf.home = innconf->pathoverview;
     ovdb_conf.txn_nosync = 1;
     ovdb_conf.numdbfiles = 32;
-    ovdb_conf.pagesize = 0;
-    ovdb_conf.cachesize = 4 * 1024 * 1024;
+    ovdb_conf.pagesize = 8192;
+    ovdb_conf.cachesize = 8000 * 1024;
     ovdb_conf.minkey = 0;
 
     f = CONFfopen(cpcatpath(innconf->pathetc, _PATH_OVDBCONF));
-    if(!f)
-	return;
 
-    while(!done && (tok = CONFgettoken(toks, f))) {
-	switch(tok->type) {
-	case OVDBtxn_nosync:
-	    tok = CONFgettoken(0, f);
-	    if(!tok) {
-		done = 1;
-		continue;
+    if(f) {
+	while(!done && (tok = CONFgettoken(toks, f))) {
+	    switch(tok->type) {
+	    case OVDBtxn_nosync:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_bool_val(tok->name, &b)) {
+		    ovdb_conf.txn_nosync = b;
+		}
+		break;
+	    case OVDBnumdbfiles:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_long_val(tok->name, &l) && l > 0) {
+		    ovdb_conf.numdbfiles = l;
+		}
+		break;
+	    case OVDBpagesize:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_long_val(tok->name, &l) && l > 0) {
+		    ovdb_conf.pagesize = l;
+		}
+		break;
+	    case OVDBcachesize:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_long_val(tok->name, &l) && l > 0) {
+		    ovdb_conf.cachesize = l * 1024;
+		}
+		break;
+	    case OVDBminkey:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_long_val(tok->name, &l) && l > 1) {
+		    ovdb_conf.minkey = l;
+		}
+		break;
 	    }
-	    if(conf_bool_val(tok->name, &b)) {
-		ovdb_conf.txn_nosync = b;
-	    }
-	    break;
-	case OVDBnumdbfiles:
-	    tok = CONFgettoken(0, f);
-	    if(!tok) {
-		done = 1;
-		continue;
-	    }
-	    if(conf_long_val(tok->name, &l) && l > 0) {
-		ovdb_conf.numdbfiles = l;
-	    }
-	    break;
-	case OVDBpagesize:
-	    tok = CONFgettoken(0, f);
-	    if(!tok) {
-		done = 1;
-		continue;
-	    }
-	    if(conf_long_val(tok->name, &l) && l > 0) {
-		ovdb_conf.pagesize = l;
-	    }
-	    break;
-	case OVDBcachesize:
-	    tok = CONFgettoken(0, f);
-	    if(!tok) {
-		done = 1;
-		continue;
-	    }
-	    if(conf_long_val(tok->name, &l) && l > 0) {
-		ovdb_conf.cachesize = l * 1024;
-	    }
-	    break;
-	case OVDBminkey:
-	    tok = CONFgettoken(0, f);
-	    if(!tok) {
-		done = 1;
-		continue;
-	    }
-	    if(conf_long_val(tok->name, &l) && l > 0) {
-		ovdb_conf.minkey = l;
-	    }
-	    break;
 	}
+	CONFfclose(f);
     }
-    CONFfclose(f);
+
+    /* If user did not specify minkey, choose one based on pagesize */
+    if(ovdb_conf.minkey == 0) {
+	ovdb_conf.minkey = ovdb_conf.pagesize / 2048;
+	if(ovdb_conf.minkey < 2)
+	    ovdb_conf.minkey = 2;
+    }
 }
 
 /* Function that db will use to report errors */
 static void OVDBerror(char *db_errpfx, char *buffer)
 {
+#ifdef TEST_BDB
+    fprintf(stderr, "OVDB: %s\n", buffer);
+#else
     syslog(L_ERROR, "OVDB: %s", buffer);
+#endif
 }
 
 static u_int32_t _db_flags = 0;
@@ -574,6 +587,8 @@ static int upgrade_databases()
 	return ret;
     if(ret = upgrade_database("groupstats"))
 	return ret;
+    if(ret = upgrade_database("groupaliases"))
+	return ret;
     if(ret = upgrade_database("version"))
 	return ret;
     for(i = 0; i < ovdb_conf.numdbfiles; i++) {
@@ -671,7 +686,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
     if(ret = vdb->open(vdb, "version", NULL, DB_BTREE,
 		_db_flags, 0666)) {
 	vdb->close(vdb, 0);
-	syslog(L_FATAL, "OVDB: open: groupstats->open: %s", db_strerror(ret));
+	syslog(L_FATAL, "OVDB: open: version->open: %s", db_strerror(ret));
 	return ret;
     }
 #endif /* DB_VERSION_MAJOR == 2 */
@@ -772,6 +787,12 @@ BOOL ovdb_open(int mode)
 	syslog(L_FATAL, "OVDB: db_open failed: %s", db_strerror(ret));
 	return FALSE;
     }
+
+    if(ret = db_open("groupaliases", DB_HASH, _db_flags, 0666, OVDBenv,
+		    &dbinfo, &groupaliases)) {
+	syslog(L_FATAL, "OVDB: db_open failed: %s", db_strerror(ret));
+	return FALSE;
+    }
 #else
     if(ret = db_create(&groupstats, OVDBenv, 0)) {
 	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
@@ -791,6 +812,16 @@ BOOL ovdb_open(int mode)
 		_db_flags, 0666)) {
 	groupsbyname->close(groupsbyname, 0);
 	syslog(L_FATAL, "OVDB: open: groupsbyname->open: %s", db_strerror(ret));
+	return FALSE;
+    }
+    if(ret = db_create(&groupaliases, OVDBenv, 0)) {
+	syslog(L_FATAL, "OVDB: open: db_create: %s", db_strerror(ret));
+	return FALSE;
+    }
+    if(ret = groupaliases->open(groupaliases, "groupaliases", NULL, DB_HASH,
+		_db_flags, 0666)) {
+	groupaliases->close(groupaliases, 0);
+	syslog(L_FATAL, "OVDB: open: groupaliases->open: %s", db_strerror(ret));
 	return FALSE;
     }
 #endif
@@ -949,7 +980,7 @@ retry:
 	gs.high = hi;
 	gs.count = 0;
 	gs.flag = *flag;
-	gs.expired = 0;
+	gs.expired = time(NULL);
     } else {
 	gs.flag = *flag;
     }
@@ -970,6 +1001,25 @@ retry:
 	txn_abort(tid);
 	syslog(L_ERROR, "OVDB: groupadd: groupstats->put: %s", db_strerror(ret));
 	return FALSE;
+    }
+
+    if(*flag == '=') {
+	key.data = group;
+	key.size = strlen(group);
+	val.data = flag + 1;
+	val.size = strlen(flag + 1);
+
+	switch(ret = groupaliases->put(groupaliases, tid, &key, &val, 0)) {
+	case 0:
+	    break;
+	case TRYAGAIN:
+	    txn_abort(tid);
+	    goto retry;
+	default:
+	    txn_abort(tid);
+	    syslog(L_ERROR, "OVDB: groupadd: groupaliases->put: %s", db_strerror(ret));
+	    return FALSE;
+	}
     }
 
     my_txn_commit(tid);
@@ -998,6 +1048,15 @@ BOOL ovdb_groupdel(char *group)
 	break;
     default:
 	syslog(L_ERROR, "OVDB: groupdel: groupsbyname->del: %s", db_strerror(ret));
+	return FALSE;
+    }
+
+    switch(ret = groupaliases->del(groupaliases, NULL, &key, 0)) {
+    case 0:
+    case DB_NOTFOUND:
+	break;
+    default:
+	syslog(L_ERROR, "OVDB: groupdel: groupaliases->del: %s", db_strerror(ret));
 	return FALSE;
     }
 
@@ -1360,9 +1419,15 @@ BOOL ovdb_expiregroup(char *group, int *lo)
 	return delete_old_stuff();
 
     db = get_db(group);
-    gno = groupnum(group);
-    if(!db || !gno)
+    if(!db) {
+	syslog(L_ERROR, "OVDB: get_db(%s) failed (errno=%m)", group);
 	return FALSE;
+    }
+    gno = groupnum(group);
+    if(!gno) {
+	syslog(L_ERROR, "OVDB: groupnum(%s) failed (errno=%m)", group);
+	return FALSE;
+    }
 
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
@@ -1597,11 +1662,55 @@ void ovdb_close(void)
 	groupsbyname->close(groupsbyname, 0);
 	groupsbyname = NULL;
     }
+    if(groupaliases) {
+	groupaliases->close(groupaliases, 0);
+	groupaliases = NULL;
+    }
 
     ovdb_close_berkeleydb();
 }
 
 #ifdef TEST_BDB
+
+/* gather sizes of overview records, to get a distribution of
+   record sizes */
+static void ovdb_statistics()
+{
+    int ret;
+    DB *db = get_db_bynum(0);
+    DBC *cursor;
+    DBT key, val;
+    unsigned long count = 0;
+    unsigned long size = 0;
+    char *datafile = "/tmp/data";
+    FILE *fp;    
+
+    memset(&key, 0, sizeof key);
+    memset(&val, 0, sizeof val);
+
+    if(ret = db->cursor(db, NULL, &cursor, 0)) {
+	fprintf(stderr, "OVDB: ovdb_statistics: db->cursor: %s\n", db_strerror(ret));
+	return;
+    }
+
+    fp = fopen(datafile, "w");
+    if(!fp) {
+	fprintf(stderr, "can't open %s: %s\n", datafile, strerror(errno));
+	return;
+    }
+
+    while((ret = cursor->c_get(cursor, &key, &val, DB_NEXT)) == 0) {
+ 	fprintf(fp, "%d\n", val.size);
+	count++;
+	size+=val.size;
+    }
+    printf("ret = %s\n", db_strerror(ret));
+    cursor->c_close(cursor);
+    fclose(fp);
+
+    printf("Count: %d\nTotal Size: %d\nMean: %.2f\n", count, size, (double)size / count);
+}
+
 int main(int argc, char *argv[])
 {
     void *s;
@@ -1609,11 +1718,14 @@ int main(int argc, char *argv[])
     char *data;
     int len;
 
+/*
     if(argc != 2)
 	exit(1);
+*/
     ReadInnConf();
     if(!ovdb_open(OV_READ))
 	exit(1);
+/*
     s = ovdb_opensearch(argv[1], 1, 0x7fffffff);
     if(!s)
 	exit(1);
@@ -1621,6 +1733,8 @@ int main(int argc, char *argv[])
 	fwrite(data, len, 1, stdout);
     }
     ovdb_closesearch(s);
+*/
+    ovdb_statistics();
     ovdb_close();
     exit(0);
 }

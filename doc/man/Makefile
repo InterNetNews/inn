@@ -31,7 +31,7 @@ SEC8	= actived.8 actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 \
 	makedbz.8 makehistory.8 mod-active.8 news.daily.8 news2mail.8 \
 	newsrequeue.8 nnrpd.8 nntpsend.8 ovdb_recover.8 ovdb_upgrade.8 \
 	overchan.8 pgpverify.8 prunehistory.8 pullnews.8 scanlogs.8 \
-	send-uucp.8 sm.8 tally.control.8 writelog.8
+	send-uucp.8 sm.8 tally.control.8 writelog.8 dbprocs.8
 
 INSTALLED_SEC1 =	$D$(MAN1)/convdate.1 $D$(MAN1)/getlist.1 \
 			$D$(MAN1)/grephistory.1 $D$(MAN1)/inews.1 \
@@ -84,7 +84,8 @@ INSTALLED_SEC8 =	$D$(MAN8)/actived.8 $D$(MAN8)/actsync.8 \
 			$D$(MAN8)/pgpverify.8 $D$(MAN8)/prunehistory.8 \
 			$D$(MAN8)/pullnews.8 $D$(MAN8)/scanlogs.8 \
 			$D$(MAN8)/send-uucp.8 $D$(MAN8)/sm.8 \
-			$D$(MAN8)/tally.control.8 $D$(MAN8)/writelog.8
+			$D$(MAN8)/tally.control.8 $D$(MAN8)/writelog.8 \
+			$D$(MAN8)/dbprocs.8
 
 
 ALL	= $(SEC1) $(SEC3) $(SEC5) $(SEC8)
@@ -213,3 +214,4 @@ $D$(MAN8)/send-uucp.8:		send-uucp.8        ; $(COPY) $? $@
 $D$(MAN8)/sm.8:			sm.8               ; $(COPY) $? $@
 $D$(MAN8)/tally.control.8:	tally.control.8    ; $(COPY) $? $@
 $D$(MAN8)/writelog.8:		writelog.8         ; $(COPY) $? $@
+$D$(MAN8)/dbprocs.8:		dbprocs.8          ; $(COPY) $? $@

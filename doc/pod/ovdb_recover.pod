@@ -4,13 +4,18 @@ ovdb_recover - Perform recovery on the ovdb database, if needed
 
 =head1 SYNOPSYS
 
-ovdb_recover
+ovdb_recover [-f]
 
 =head1 DESCRIPTION
 
 Attempts to open the ovdb database, and if the database needs recovery,
 it attempts to perform the recovery.  Similar in function to the BerkeleyDB
 F<db_recover> command.
+
+Specify the C<-f> option to force a recovery, even if the database
+appears to not need it.  It is not an error to perform a recovery operation
+on a clean database.  However, do not run C<ovdb_recover -f> while the
+database is in use by any other processes.
 
 Returns exit status of 0 if the database did not need recovery or if
 recovery succeeded, and returns exit status 1 if recovery failed.  In

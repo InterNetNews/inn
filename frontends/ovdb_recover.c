@@ -49,7 +49,10 @@ int main(int argc, char **argv)
 	if(ret)
 	    exit(1);
     } else {
-	ret = ovdb_open_berkeleydb(OV_WRITE, 0);
+	if(!strcmp(argv[1], "-f"))
+	    ret = DB_RUNRECOVERY;
+	else
+	    ret = ovdb_open_berkeleydb(OV_WRITE, 0);
 
 	if(ret != 0) {
 	    if(ret == DB_RUNRECOVERY) {
