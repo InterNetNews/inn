@@ -26,6 +26,8 @@ Welcome to INN 2.3!
     versa).  If you don't remember what options you used but you have your
     old build tree, look at the comments at the beginning of config.status.
 
+    For more information about recent changes, see NEWS.
+
 Supported Systems
 
     INN has been confirmed to work on the following operating systems:
@@ -34,6 +36,7 @@ Supported Systems
       FreeBSD 2.2.x and up
       HP-UX 10.20 and up
       Linux 2.x (tested with libc 5.4 or glibc 2.0 and up)
+      OpenBSD 2.8 and up
       SCO 5.0.4 (tested with gcc 2.8.1 and cc)
       Solaris 2.5.x and up
       UnixWare 7.1
@@ -67,7 +70,7 @@ Before You Begin
       security problems) and INN is tested primarily with newer versions of
       Perl, so it's highly recommended that you install the latest stable
       distribution of Perl before compiling INN.  For instructions on
-      obtaining and installing Perl, see <http://www.perl.com/latest/>.
+      obtaining and installing Perl, see <http://www.perl.com/>.
 
     * The INN Makefiles use the syntax "include FILE", rather than the
       syntax expected by some BSDish systems of ".include <FILE>".  If your
@@ -82,8 +85,7 @@ Before You Begin
       it's actively developed, supports OpenPGP, is freely available and
       free to use for any purpose (including in the US), and (as of version
       1.0.4 at least) supports RSA signatures used by most current control
-      message senders.  You need to install both GnuPG and pgpgpg from
-      <http://www.gnupg.org/>; a link for pgpgpg is under "Front ends."
+      message senders.  You can get GnuPG from <http://www.gnupg.org/>.
 
       Alternately, you can install PGP from <http://www.pgp.com/> or one of
       the international versions of it.  Be warned, however, that the
@@ -486,10 +488,10 @@ Choosing an Article Storage Format
 Configuring INN
 
     All documentation from this point on assumes that you have set up the
-    news user on your system as suggested in the Installing INN entry
-    elsewhere in this document so that the root of your INN installation is
-    ~news/.  If you've moved things around by using options with configure,
-    you'll need to adjust the instructions to account for that.
+    news user on your system as suggested in "Installing INN" so that the
+    root of your INN installation is ~news/.  If you've moved things around
+    by using options with configure, you'll need to adjust the instructions
+    to account for that.
 
     All of INN's configuration files are located in ~news/etc.  Unless noted
     otherwise, any files referred to below are in this directory.  When you
@@ -624,8 +626,8 @@ Configuring INN
         have lots of incoming and outgoing feeds.  Note that the maximum
         value for this setting is very operating-system-dependent, and you
         may have to reconfigure your system (possibly even recompile your
-        kernel) to increase it.  See the File Descriptor Limits entry
-        elsewhere in this document for complete details.
+        kernel) to increase it.  See "File Descriptor Limits" for complete
+        details.
 
     usecontrolchan
         If set to true, all control messages except for cancels will be
@@ -749,10 +751,9 @@ Configuring INN
     named remote.example.com and containing the message ID and storage token
     of each message to send to that site.  innxmit knows how to read this
     format of file and send those articles to the remote site.  For
-    information on setting it up to run periodically, see the Setting Up the
-    Cron Jobs entry elsewhere in this document below.  You will also need to
-    set up a config file for nntpsend; see the man page for nntpsend.ctl for
-    more information.
+    information on setting it up to run periodically, see "Setting Up the
+    Cron Jobs" below.  You will also need to set up a config file for
+    nntpsend; see the man page for nntpsend.ctl for more information.
 
     If instead you want to use innfeed to send outgoing messages
     (recommended for sites with more than a couple of peers), you need some
@@ -881,9 +882,8 @@ Configuring INN
         but it requires your OS support mmap() on a block device.  Solaris
         supports this, FreeBSD and Linux (without patches) do not.  Also on
         many PC-based Unixes it is difficult to create more than eight
-        partitions, which may limit your options.  See the Creating the
-        Article Spool entry elsewhere in this document for more discussion
-        of how to set this up.
+        partitions, which may limit your options.  See "Creating the Article
+        Spool" for more discussion of how to set this up.
 
     2.  Use a real file on a filesystem.  This will be a bit slower than
         using a raw disk partition, but it should work on any Unix system.

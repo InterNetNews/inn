@@ -26,6 +26,8 @@ the data structures written by INN compiled without that flag and vice
 versa).  If you don't remember what options you used but you have your old
 build tree, look at the comments at the beginning of F<config.status>.
 
+For more information about recent changes, see F<NEWS>.
+
 =head1 Supported Systems
 
 INN has been confirmed to work on the following operating systems:
@@ -34,6 +36,7 @@ INN has been confirmed to work on the following operating systems:
   FreeBSD 2.2.x and up
   HP-UX 10.20 and up
   Linux 2.x (tested with libc 5.4 or glibc 2.0 and up)
+  OpenBSD 2.8 and up
   SCO 5.0.4 (tested with gcc 2.8.1 and cc)
   Solaris 2.5.x and up
   UnixWare 7.1
@@ -72,7 +75,7 @@ versions of Perl previous to 5.004 are buggy (including security problems)
 and INN is tested primarily with newer versions of Perl, so it's highly
 recommended that you install the latest stable distribution of Perl before
 compiling INN.  For instructions on obtaining and installing Perl, see
-<http://www.perl.com/latest/>.
+<http://www.perl.com/>.
 
 =item *
 
@@ -90,9 +93,8 @@ not required but is highly recommended) then you will need to install some
 version of PGP.  The recommended version is GnuPG, since it's actively
 developed, supports OpenPGP, is freely available and free to use for any
 purpose (including in the US), and (as of version 1.0.4 at least) supports
-RSA signatures used by most current control message senders.  You need to
-install both GnuPG and pgpgpg from <http://www.gnupg.org/>; a link for
-pgpgpg is under "Front ends."
+RSA signatures used by most current control message senders.  You can get
+GnuPG from <http://www.gnupg.org/>.
 
 Alternately, you can install PGP from <http://www.pgp.com/> or one of the
 international versions of it.  Be warned, however, that the licensing
