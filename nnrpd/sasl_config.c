@@ -15,10 +15,11 @@
 #include <ctype.h>
 #include <syslog.h>
 
+#include "configdata.h"
+#include "clibrary.h"
+#include "nnrpd.h"
 #include "paths.h"
 #include "sasl_config.h"
-
-extern char *xstrdup (const char *str);
 
 struct configlist {
     char *key;
@@ -133,12 +134,11 @@ sasl_config_read()
 
 	if (nconfiglist == alloced) {
 	    alloced += CONFIGLISTGROWSIZE;
-	    configlist = (struct configlist *)
-	      xrealloc((char *)configlist, alloced*sizeof(struct configlist));
+	    RENEW(configlist, struct configlist, alloced);
 	}
 
-	configlist[nconfiglist].key = xstrdup(key);
-	configlist[nconfiglist].value = xstrdup(p);
+	configlist[nconfiglist].key = COPY(key);
+	configlist[nconfiglist].value = COPY(p);
 	nconfiglist++;
     }
     fclose(infile);
@@ -157,8 +157,8 @@ void (*proc)();
 
     for (opt = 0; opt < nconfiglist; opt++) {
 	if (!strncmp(configlist[opt].key, "partition-", 10)) {
-	    s = xstrdup(configlist[opt].value);
-	    (*proc)(xstrdup(""), s, configlist[opt].key+10);
+	    s = COPY(configlist[opt].value);
+	    (*proc)(COPY(""), s, configlist[opt].key+10);
 	}
     }
 }
