@@ -50,6 +50,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <netdb.h>
 #include <syslog.h>
 #include <sys/param.h>
+#include <sys/socket.h>
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
