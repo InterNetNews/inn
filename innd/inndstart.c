@@ -118,8 +118,10 @@ main(int argc, char *argv[])
     /* Drop all supplemental groups and drop privileges to read inn.conf.
        setgroups() can only be invoked by root, so if inndstart isn't setuid
        root this is where we fail. */
+#ifndef __CYGWIN__
     if (setgroups(1, &news_gid) < 0)
         syswarn("can't setgroups (is inndstart setuid root?)");
+#endif
     if (seteuid(news_uid) < 0)
         sysdie("can't seteuid to %lu", news_uid);
     if (!innconf_read(NULL))
