@@ -195,7 +195,7 @@ static bool CNFSflushhead(CYCBUFF *cycbuff) {
 	strncpy(rpx.currentbuff, "FALSE", CNFSMASIZ);
     }
     memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
-    mmap_flush(cycbuff->bitfield, cycbuff->minartoffset);
+    msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
     cycbuff->needflush = FALSE;
   } else {
     syslog(L_ERROR, "%s: CNFSflushhead: bogus magicver for %s: %d",
