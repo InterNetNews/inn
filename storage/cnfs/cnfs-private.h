@@ -87,6 +87,8 @@ typedef struct {
   STORAGECLASS	class;		/* storage class */
 } CNFSARTHEADER;
 
+/* uncomment below for old cnfs spool */
+/* #ifdef OLD_CNFS */
 typedef struct {
   long      zottf;      /* This should always be 0x01234*/
   long      size;       /* Size of the article */
