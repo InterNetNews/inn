@@ -625,8 +625,8 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   int zpadlen = 0; 
   int caps = 0;
   int total = 0;
-  long intpart;
-  long fracpart;
+  LLONG intpart;
+  LLONG fracpart;
   
   /* 
    * AIX manpage says the default is 0, but Solaris says the default
