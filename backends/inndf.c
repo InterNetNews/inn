@@ -59,9 +59,20 @@ Here's the relevant portion of my innwatch.ctl:
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef linux
+#include <getopt.h>
+#endif
+#ifdef NeXT
+/* NeXT puts optind's declaration in libc.h. */
+#include <libc.h>
+#endif
 #include <sys/types.h>
 #include "config.h"
 #include "configdata.h"
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif /* HAVE_UNISTD_H */
 
 #ifdef HAVE_STATVFS
 #include <sys/statvfs.h>		/* specific includes */
