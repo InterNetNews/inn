@@ -83,7 +83,7 @@ trash_printfiles(FILE *file UNUSED, TOKEN token UNUSED, char **xref UNUSED,
 }
 
 ARTHANDLE *
-trash_next(const ARTHANDLE *article UNUSED, const RETRTYPE amount UNUSED)
+trash_next(ARTHANDLE *article UNUSED, const RETRTYPE amount UNUSED)
 {
     return NULL;
 }

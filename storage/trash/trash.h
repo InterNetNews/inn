@@ -12,7 +12,7 @@
 bool trash_init(SMATTRIBUTE *attr);
 TOKEN trash_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *trash_retrieve(const TOKEN token, const RETRTYPE amount);
-ARTHANDLE *trash_next(const ARTHANDLE *article, const RETRTYPE amount);
+ARTHANDLE *trash_next(ARTHANDLE *article, const RETRTYPE amount);
 void trash_freearticle(ARTHANDLE *article);
 bool trash_cancel(TOKEN token);
 bool trash_ctl(PROBETYPE type, TOKEN *token, void *value);
