@@ -47,12 +47,30 @@ extern const char *error_program_name;
 /*
 **  MEMORY MANAGEMENT
 */
-extern void *   xmalloc(size_t size, const char *file, int line);
-extern void *   xrealloc(void *p, size_t size, const char *file, int line);
-extern char *   xstrdup(const char *s, const char *file, int line);
 
-/* This function is called whenever a memory allocation fails. */
-extern int (*xmemfailure)(const char *, size_t, const char *, int);
+/* The xmalloc, xrealloc, and xstrdup functions are actually macros so that
+   we can pick up the file and line number information for debugging error
+   messages without the user having to pass those in every time. */
+#define xmalloc(size)           x_malloc((size), __FILE__, __LINE__)
+#define xrealloc(p, size)       x_realloc((p), (size), __FILE__, __LINE__)
+#define xstrdup(p)              x_strdup((p), __FILE__, __LINE__)
+
+/* Last two arguments are always file and line number.  These are internal
+   implementations that should not be called directly.  ISO C99 says that
+   identifiers beginning with _ and a lowercase letter are reserved for
+   identifiers of file scope, so while the position of libraries in the
+   standard isn't clear, it's probably not entirely kosher to use _xmalloc
+   here.  Use x_malloc instead. */
+extern void *x_malloc(size_t, const char *, int);
+extern void *x_realloc(void *, size_t, const char *, int);
+extern char *x_strdup(const char *, const char *, int);
+
+/* Failure handler takes the function, the size, the file, and the line. */
+typedef void (*xmalloc_handler_t)(const char *, size_t, const char *, int);
+
+/* Assign to this variable to choose a handler other than the default, which
+   just calls sysdie. */
+extern xmalloc_handler_t xmalloc_error_handler;
 
 
 /*
@@ -81,12 +99,13 @@ extern const char       inn_version_string[];
 extern const char *     INNVersion(void);
 
 
-/* String handling. */
-#if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
+/*
+**  MISCELLANEOUS UTILITY FUNCTIONS
+*/
 extern void *   concat(const char *first, ...);
-#else
-extern void *   concat();
-#endif    
+ssize_t         xwrite(int fd, const void *buffer, size_t size);
+ssize_t         xwritev(int fd, const struct iovec iov[], int iovcnt);
+
 
 /* Headers. */
 extern char	        *GenerateMessageID(char *domain);
@@ -288,8 +307,6 @@ extern int	getfdcount(void);
 extern int	wildmat(const char *text, const char *p);
 extern pid_t	waitnb(int *statusp);
 extern int	xread(int fd, char *p, OFFSET_T i);
-extern int	xwrite(int fd, char *p, int i);
-extern int	xwritev(int fd, struct iovec *vp, int vpcount);
 extern int	GetResourceUsage(double *usertime, double *systime);
 extern int	SetNonBlocking(int fd, BOOL flag);
 extern void	CloseOnExec(int fd, int flag);
