@@ -27,7 +27,8 @@
 **     configuration information, thereby possibly compromising the news
 **     account.
 **
-**   - The only port < 1024 that we'll bind to is 119.  This is to prevent
+**   - The only ports < 1024 that we'll bind to are 119 and 443, or a port
+**     given at configure time with --with-innd-port.  This is to prevent
 **     the news user from taking over a service such as telnet or POP and
 **     potentially gaining access to user passwords.
 **
@@ -43,6 +44,7 @@
 */
 #include <stdio.h>
 #include <sys/types.h>
+#include "config.h"
 #include "configdata.h"
 #include "clibrary.h"
 #include "paths.h"
@@ -257,9 +259,13 @@ main(int argc, char *argv[])
     }
             
     /* Make sure that the requested port is legitimate. */
-    if (port < 1024 && port != 119) {
+    if (port < 1024 && port != 119
+#ifdef INND_PORT
+        && port != INND_PORT
+#endif
+        && port != 433) {
         syslog(L_FATAL, "tried to bind to port %d", port);
-        fprintf(stderr, "Can't bind to privileged port other than 119\n");
+        fprintf(stderr, "Can't bind to restricted port\n");
         exit(1);
     }
 
@@ -356,6 +362,7 @@ main(int argc, char *argv[])
     /* Go exec innd. */
     execve(innd_argv[0], innd_argv, innd_env);
     syslog(L_FATAL, "can't exec %s: %m", innd_argv[0]);
+    fprintf(stderr, "Can't exec %s: %s", innd_argv[0], strerror(errno));
     _exit(1);
 
     /* NOTREACHED */
