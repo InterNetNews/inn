@@ -6,7 +6,8 @@ mailpost - feed an email message into a news group
 
 B<mailpost> [B<-a> I<addr>] [B<-b> I<database>] [B<-c> I<wait-time>]
 [B<-d> I<distribution>] [B<-f> I<addr>] [B<-m> I<mailing-list>]
-[B<-r> I<addr>] [B<-x> I<header>[B<:>I<header>...]] [I<newsgroups> ...]
+[B<-p> I<port>] [B<-r> I<addr>] [B<-x> I<header>[B<:>I<header>...]]
+[I<newsgroups> ...]
 
 =head1 DESCRIPTION
 
@@ -66,16 +67,21 @@ The B<-f> flag is a synonym for the B<-r> flag.
 If the B<-m> flag is used the value given is added to the articles in a 
 Mailing-List: header, if such a header doesn't already exist.
 
+=item B<-p> I<port>
+
+Specifies the port on which B<nnrpd> is listening, used for article posting.
+If given, B<-p> is passed along to inews.
+
 =item B<-r> I<addr>
 
 A heuristic is used to determine a reasonable value for the Path: header.
 The B<-r> flag indicates what to use if no other value can be determined.
 
-=item B<-x> I<header>[B<:>I<header>...]
+=item B<-x> I<header>[:I<header>...]
 
-A B<:> separated list of additional headers which should be treated as known
-headers; these headers will be passed through to inews(1) without being
-``X-'' prefixed.
+A colon-separated list of additional headers which should be treated as
+known headers; these headers will be passed through to inews(1) without
+having "X-" prepended.
 
 =back
 
