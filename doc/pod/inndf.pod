@@ -1,0 +1,97 @@
+=head1 NAME
+
+inndf - Report free disk, inodes, and overview information
+
+=head1 SYNOPSIS
+
+B<inndf> [B<-hi>] I<directory> [I<directory> ...]
+
+B<inndf> B<-n>
+
+B<inndf> B<-o>
+
+=head1 DESCRIPTION
+
+B<inndf> was originally a replacement for C<df | awk> in innwatch.ctl(5)
+and innstat(8), and now also reports various other usage information about
+INN's storage that df(1) doesn't understand.  B<inndf> doesn't sync, forks
+less, and is generally less complicated than df(1).
+
+It's default behavior is to report free kilobytes (not disk blocks) or
+free inodes if B<-i> is used in the file systems holding the directories
+given on the command line.  (A kilobyte in this case is 1024 bytes.)  If
+only one directory is given, the output will be a simple number; if more
+than one directory is given, the output will be formatted for human
+readability.
+
+If I<enableoverview> set set to true in F<inn.conf>, B<inndf> can also be
+used to get information about the overview database.  With the B<-n>
+option, it reports a count of the total number of overview records stored.
+With B<-o>, it reports the percentage of space used in the overview
+database (for those overview methods where this is a meaningful question).
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h>
+
+Print a usage message and exit.
+
+=item B<-i>
+
+Report the number of free inodes rather than the number of free kilobytes.
+
+=item B<-n>
+
+Report the total number of records in the overview database.  Note that
+crossposted articles will have one overview record for each newsgroup
+they're posted to.
+
+=item B<-o>
+
+Report the percentage usage of the overview database space.  This is only
+meaningful for overview methods that pre-allocate a certain amount of
+space rather than grow to accomodate more records.  Currently, this flag
+is only useful for the buffindexed overview method.
+
+=back
+
+=head1 EXAMPLES
+
+Print the free kilobytes in /news/spool as a simple number:
+
+    inndf /news/spool
+
+Report the free inodes in /usr/local/news and /news/spool in a format
+designed for human readability:
+
+    inndf -i /usr/local/news /news/spool
+
+Print out the number of overview records and the percentage space used by
+a buffindexed overview database:
+
+    inndf -no
+
+=head1 HISTORY
+
+B<inndf> was written by Ian Dickinson <idickins@fore.com>.  This manual
+page was written by Swa Frantzen <Swa.Frantzen@belgium.eu.net>.  Thanks
+also to the following folks for ports, patches, and comments:
+
+    Mahesh Ramachandran <rr@eel.ufl.edu>
+    Chuck Swiger <chuck@its.com>
+    Sang-yong Suh <sysuh@kigam.re.kr>
+    Brad Dickey <bdickey@haverford.edu>
+    Taso N. Devetzis <devetzis@snet.net>
+    Wei-Yeh Lee <weiyeh@columbia.edu>
+    Jeff Garzik <jeff.garzik@spinne.com>
+
+and to all the other folks I met and worked with during my 10 years as a
+newsadmin.
+
+=head1 SEE ALSO
+
+df(1), innwatch.ctl(5), innstat(8).
+
+=cut

@@ -209,6 +209,7 @@ doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for README.perl_hook
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innd.pod                      Master file for innd.8
+doc/pod/inndf.pod                     Master file for inndf.8
 doc/pod/inndstart.pod                 Master file for inndstart.8
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/qio.pod                       Master file for qio.3
