@@ -12,6 +12,7 @@ innxbatch
 innxmit
 mod-active
 news2mail
+ninpaths
 nntpget
 nntpsend
 overchan
@@ -19,6 +20,7 @@ send-ihave
 send-nntp
 send-uucp
 sendbatch
+sendinpaths
 sendxbatches
 shlock
 shrinkfile
