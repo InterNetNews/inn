@@ -24,21 +24,6 @@ use vars qw(@OVERVIEW @STORAGE);
 # Used to make heredocs more readable.
 sub unquote { my ($string) = @_; $string =~ s/^:( {0,7}|\t)//gm; $string }
 
-# Rename a file if it's different than the file already existing at the
-# final name.  If it isn't, still touch the final file so that make knows
-# that it's up-to-date.
-sub rename_if_changed {
-    my ($new, $orig) = @_;
-    my $status = system ('cmp', '-s', $new, $orig);
-    if ($? == 0) {
-        unlink $new or die "Can't unlink $new: $!\n";
-        my $now = time;
-        utime ($now, $now, $orig);
-    } else {
-        rename ($new, $orig) or die "Can't rename $new to $orig: $!\n";
-    }
-}
-
 # Parse a method.config file for a storage method, putting information about
 # that storage method into the given hash ref.
 sub parse_config {
@@ -132,7 +117,7 @@ EOE
         scalar (keys %{ $$storage{method} }), "] = {\n";
     write_methods (\*DEF, $storage, 'TOKEN', @STORAGE);
     close DEF;
-    rename_if_changed ('methods.c.new', 'methods.c');
+    rename ('methods.c.new', 'methods.c');
 
     open (H, '> methods.h.new') or die "Can't open methods.h.new: $!\n";
     print H unquote (<<'EOE');
@@ -154,7 +139,7 @@ EOE
 :       #endif /* METHODS_H */
 EOE
     close H;
-    rename_if_changed ('methods.h.new', 'methods.h');
+    rename ('methods.h.new', 'methods.h');
 }
 
 # Write out ovmethods.c and ovmethods.h for the interface to the overview
@@ -173,7 +158,7 @@ EOE
         scalar (keys %{ $$overview{method} }), "] = {\n";
     write_methods (\*DEF, $overview, undef, @OVERVIEW);
     close DEF;
-    rename_if_changed ('ovmethods.c.new', 'ovmethods.c');
+    rename ('ovmethods.c.new', 'ovmethods.c');
 
     open (H, '> ovmethods.h.new') or die "Can't open ovmethods.h.new: $!\n";
     print H unquote (<<'EOE');
@@ -194,7 +179,7 @@ EOE
 :       #endif /* OVMETHODS_H */
 EOE
     close H;
-    rename_if_changed ('ovmethods.h.new', 'ovmethods.h');
+    rename ('ovmethods.h.new', 'ovmethods.h');
 }
 
 # Write out the makefile fragment for overview and storage methods.
@@ -206,8 +191,24 @@ sub write_makefile {
     print MAKE "SUBDIRS = @$dirs\n";
     print MAKE "PROGDIRS = @$progdirs\n";
     print MAKE "METHOD_OBJECTS = @$objects\n";
+    print MAKE unquote (<<'EOE');
+:
+:       # The following dependencies ensure that all objects that are part of
+:       # methods are built via recursive make rather than using the implicit
+:       # make rules for building .c files from .o files.
+EOE
+    my %methods;
+    for (@$objects) {
+        my $dir = $_;
+        $dir =~ s%/+.*%%;
+        $methods{$dir} ||= [];
+        push (@{ $methods{$dir} }, $_);
+    }
+    for (sort keys %methods) {
+        print MAKE "@{ $methods{$_} }:\n\tcd $_ && make objects\n\n";
+    }
     close MAKE;
-    rename_if_changed ('Make.methods.new', 'Make.methods');
+    rename ('Make.methods.new', 'Make.methods');
 }
 
 my ($dir, %storage, %overview);

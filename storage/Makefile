@@ -1,27 +1,24 @@
 ##  $Id$
 
 include ../Makefile.global
-include Make.methods
 
 top	      = ..
 CFLAGS	      = $(GCFLAGS) -I.
 
 SOURCES	      = expire.c interface.c methods.c ov.c overdata.c ovmethods.c
-TOP_OBJECTS   = $(SOURCES:.c=.o)
-OBJECTS	      = $(TOP_OBJECTS) $(METHOD_OBJECTS)
+OBJECTS	      = $(SOURCES:.c=.o) $(METHOD_OBJECTS)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
 
-all: objects library programs
+all: library programs
+
+# Included here after the all target, since additional rules are defined in
+# Make.methods to be sure that we recurse properly to build the methods.
+include Make.methods
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
-
-objects: methods.c buildconfig $(TOP_OBJECTS)
-	@for D in $(SUBDIRS) ; do \
-	    cd $$D && $(MAKE) objects || exit 1 ; cd .. ; \
-	done
 
 library: libstorage.$(EXTLIB)
 
@@ -42,24 +39,22 @@ clobber clean distclean:
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h ../include/inn/*.h
 
-libstorage.la: objects
+libstorage.la: $(OBJECTS) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
-libstorage.a: objects
+libstorage.a: $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libstorage.a
 
-# Try to set up these rules so that buildconfig is only run once.
 # Make.methods is included in the distribution tarball since some non-GNU
 # makes can't deal with including a non-existent file, so don't depend on
 # it.  The dependencies aren't entirely accurate; you really want to re-run
 # buildconfig each time a new subdirectory is added to the directory.  But
 # adding a dependency on . is a bit too non-portable for my taste and causes
 # too many rebuilds.
-Make.methods methods.h ovmethods.c ovmethods.h: methods.c buildconfig
-methods.c: buildconfig
+Make.methods methods.h ovmethods.c ovmethods.h methods.c: buildconfig
 	./buildconfig
 
 buildconfig: buildconfig.in $(FIXSCRIPT)
@@ -68,7 +63,7 @@ buildconfig: buildconfig.in $(FIXSCRIPT)
 .c.o .c.lo:
 	$(LIBCC) $(CFLAGS) -c $*.c -o $@
 
-ovtest:		ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
+ovtest:	ov.c libstorage.$(EXTLIB) $(LIBINN)
 	$(CC) $(CFLAGS) -D_TEST_ -o ovtest ov.c \
 	    libstorage.$(EXTLIB) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
@@ -76,10 +71,10 @@ $(LIBINN):      ; (cd ../lib ; $(MAKE))
 
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
-profiled:	../libstorage_p.a
+profiled: ../libstorage_p.a
 	date >$@
 
-../libstorage_p.a:	$(SOURCES)
+../libstorage_p.a: $(SOURCES)
 	rm -f $(OBJECTS)
 	$(MAKE) libstorage.a CFLAGS="$(CFLAGS) $(PROF)"
 	mv libstorage.a ../libstorage_p.a
