@@ -77,7 +77,7 @@ config.data.in: config.scoreboard
 
 config.dist: config.data.in subst config.dist.subst
 	cp config.data.in config.dist
-	subst -f config.dist.subst config.dist
+	./subst -f config.dist.subst config.dist
 
 config.data:		config.dist
 	$(IFTRUE) '-f config.new' 'echo config.new exists! ; exit 1'
