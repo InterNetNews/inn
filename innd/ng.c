@@ -375,43 +375,43 @@ BOOL NGrenumber(NEWSGROUP *ngp)
 					innconf->overviewname);
 	if ((fi = Fopen(p, "r", TEMPORARYOPEN)) == NULL) {
 	    DISPOSE(p);
-	    return TRUE;
-	}
-	DISPOSE(p);
-	if (innconf->overviewmmap) {
-	    if (fstat(fileno(fi), &sb) < 0) {
-		Fclose(fi);
-		return TRUE;
-	    }
-	    count = sb.st_size / OVERINDEXPACKSIZE;
-	    if (count == 0) {
-		Fclose(fi);
-		return TRUE;
-	    }
-	    if ((mapped = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, count * OVERINDEXPACKSIZE,
-		PROT_READ, MAP__ARG, fileno(fi), 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
-		Fclose(fi);
-		return TRUE;
-	    }
-	    Fclose(fi);
-	    /* assumes .overview.index is sorted */
-	    UnpackOverIndex((*mapped)[0], &index);
-	    if (index.artnum < lomark)
-		lomark = index.artnum;
-	    UnpackOverIndex((*mapped)[count-1], &index);
-	    if (index.artnum > himark)
-		himark = index.artnum;
-	    if ((munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE)) < 0)
-		return TRUE;
 	} else {
-	    while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
-		UnpackOverIndex(packed, &index);
+	    DISPOSE(p);
+	    if (innconf->overviewmmap) {
+		if (fstat(fileno(fi), &sb) < 0) {
+		    Fclose(fi);
+		    return TRUE;
+		}
+		count = sb.st_size / OVERINDEXPACKSIZE;
+		if (count == 0) {
+		    Fclose(fi);
+		    return TRUE;
+		}
+		if ((mapped = (char (*)[][OVERINDEXPACKSIZE])mmap((MMAP_PTR)0, count * OVERINDEXPACKSIZE,
+		    PROT_READ, MAP__ARG, fileno(fi), 0)) == (char (*)[][OVERINDEXPACKSIZE])-1) {
+		    Fclose(fi);
+		    return TRUE;
+		}
+		Fclose(fi);
+		/* assumes .overview.index is sorted */
+		UnpackOverIndex((*mapped)[0], &index);
 		if (index.artnum < lomark)
 		    lomark = index.artnum;
+		UnpackOverIndex((*mapped)[count-1], &index);
 		if (index.artnum > himark)
 		    himark = index.artnum;
+		if ((munmap((MMAP_PTR)mapped, count * OVERINDEXPACKSIZE)) < 0)
+		    return TRUE;
+	    } else {
+		while (fread(&packed, OVERINDEXPACKSIZE, 1, fi) == 1) {
+		    UnpackOverIndex(packed, &index);
+		    if (index.artnum < lomark)
+			lomark = index.artnum;
+		    if (index.artnum > himark)
+			himark = index.artnum;
+		}
+		Fclose(fi);
 	    }
-	    Fclose(fi);
 	}
     } else {
         /* Scan the directory. */
