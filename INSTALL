@@ -752,8 +752,10 @@ Configuring INN
 
     This entry will cause innd to write out a file in ~news/spool/outgoing
     named remote.example.com and containing the message ID and storage token
-    of each message to send to that site.  innxmit knows how to read this
-    format of file and send those articles to the remote site.  For
+    of each message to send to that site.  (The storage token is INN's
+    internal pointer to where an article is stored; to retrieve an article
+    given its storage token, use the program sm).  innxmit knows how to read
+    this format of file and send those articles to the remote site.  For
     information on setting it up to run periodically, see "Setting Up the
     Cron Jobs" below.  You will also need to set up a config file for
     nntpsend; see the man page for nntpsend.ctl for more information.
