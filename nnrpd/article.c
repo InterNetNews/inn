@@ -900,7 +900,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
     OVERcount++;
     gettimeofday(&stv, NULL);
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
-	Reply("%d %s fields follow\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
+	Reply("%d %s fields follow\r\n.\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
 	return;
     }
     if (innconf->nnrpdoverstats) {
