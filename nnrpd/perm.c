@@ -388,7 +388,7 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
     if (orig->users)
 	ret->users = COPY(orig->users);
     if (orig->rejectwith)
-	ret->users = COPY(orig->rejectwith);
+	ret->rejectwith = COPY(orig->rejectwith);
     if (orig->fromhost)
 	ret->fromhost = COPY(orig->fromhost);
     if (orig->pathhost)
