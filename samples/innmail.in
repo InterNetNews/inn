@@ -33,6 +33,8 @@ die $usage if $opt_h ;
 if ( !$opt_s ) {
     warn "No subject given. Hope that's ok\n" ;
     $opt_s = "NO SUBJECT" ;
+} else {
+    $opt_s =~ s/\n+\Z//;
 }
 
 # fix up any addresses.
