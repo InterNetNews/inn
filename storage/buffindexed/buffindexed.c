@@ -94,6 +94,7 @@ typedef struct _OVINDEX {
   TOKEN		token;		/* token for this article */
   OFFSET_T	offset;		/* offset from the top in the block */
   int		len;		/* length of the data */
+  time_t	arrived;	/* arrived time of article */
 } OVINDEX;
 
 #define OVINDEXMAX	((OV_BLOCKSIZE-sizeof(OVINDEXHEAD))/sizeof(OVINDEX))
@@ -212,6 +213,7 @@ STATIC ULONG		onarray[64], offarray[64];
 STATIC int		longsize = sizeof(long);
 STATIC BOOL		Nospace;
 STATIC BOOL		Needunlink;
+STATIC BOOL		Cutofflow;
 
 STATIC int ovbuffmode;
 STATIC int ovpadamount = 128;
@@ -838,6 +840,7 @@ BOOL buffindexed_open(int mode) {
   CloseOnExec(GROUPfd, 1);
 
   DISPOSE(groupfn);
+  Cutofflow = FALSE;
 
   return TRUE;
 }
@@ -890,7 +893,7 @@ STATIC void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC ne
   if (lo != 0)
     ge->low = lo;
   ge->high = hi;
-  ge->deleted = ge->low = ge->base = ge->limit = ge->count = 0;
+  ge->deleted = ge->base = ge->limit = ge->count = 0;
   ge->flag = *flag;
   ge->baseindex = ge->curindex = ge->previndex = ge->nextindex = ge->curdata = ge->lastindex = ovnull;
   ge->baseinblock = 0;
@@ -1109,7 +1112,7 @@ STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset) {
       /* more block(s) needed */
       delta = artnum - ge->limit;
       if (!ovaddblk(ge, delta, APPEND_BLK)) {
-	syslog(L_ERROR, "%s: ovsetcurindexblock could not append new block block", LocalLogName);
+	syslog(L_ERROR, "%s: ovsetcurindexblock could not append new block", LocalLogName);
 	return FALSE;
       }
       *baseoffset = 0;
@@ -1143,7 +1146,7 @@ STATIC BOOL ovsetcurindexblock(GROUPENTRY *ge, ARTNUM artnum, int *baseoffset) {
   return TRUE;
 }
 
-STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len) {
+STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived) {
   OV		ov;
   OVINDEX	ie;
   OVBUFF	*ovbuff;
@@ -1185,6 +1188,7 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   ie.blocknum = ge->curdata.blocknum;
   ie.offset = ge->curoffset;
   ie.token = token;
+  ie.arrived = arrived;
 
   if (ge->limit == 0 || artnum < ge->baseinblock || ge->baseinblock + OVINDEXMAX <= artnum) {
     if (!ovsetcurindexblock(ge, artnum, &baseoffset)) {
@@ -1207,7 +1211,7 @@ STATIC BOOL ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   return TRUE;
 }
 
-BOOL buffindexed_add(TOKEN token, char *data, int len) {
+BOOL buffindexed_add(TOKEN token, char *data, int len, time_t arrived) {
   char		*next;
   static char	*xrefdata;
   char		*xrefstart;
@@ -1287,6 +1291,10 @@ BOOL buffindexed_add(TOKEN token, char *data, int len) {
     }
     /* prepend block(s) if needed. */
     ge = &GROUPentries[gloc.recno];
+    if (Cutofflow && ge->low > artnum) {
+      GROUPlock(gloc, LOCK_UNLOCK);
+      continue;
+    }
     if (ge->base > artnum) {
       if (!ovaddblk(ge, (ovpadamount > artnum) ? ge->base - 1 : ovpadamount + ge->base - artnum - 1, PREPEND_BLK)) {
 	syslog(L_ERROR, "%s: could not prepend new block", LocalLogName);
@@ -1294,7 +1302,7 @@ BOOL buffindexed_add(TOKEN token, char *data, int len) {
 	return FALSE;
       }
     }
-    if (!ovaddrec(ge, artnum, token, overdata, i)) {
+    if (!ovaddrec(ge, artnum, token, overdata, i, arrived)) {
       syslog(L_ERROR, "%s: could not add overview for '%s'", LocalLogName, group);
       if (Nospace) {
 	GROUPlock(gloc, LOCK_UNLOCK);
@@ -1382,6 +1390,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
     mmapoffset = offset - pagefudge;
     gib->len = pagefudge + OV_BLOCKSIZE;
     if ((gib->addr = mmap((caddr_t) 0, gib->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+      syslog(L_ERROR, "%s: ovgroupmmap could not mmap index block: %m", LocalLogName);
       DISPOSE(gib);
       ovgroupunmap(*gibp);
       return FALSE;
@@ -1428,6 +1437,7 @@ STATIC BOOL ovgroupmmap(GROUPENTRY *ge, GROUPINDEXBLOCK **gibp, int low, int hig
       mmapoffset = offset - pagefudge;
       gdb->len = pagefudge + OV_BLOCKSIZE;
       if ((gdb->addr = mmap((caddr_t) 0, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+	syslog(L_ERROR, "%s: ovgroupmmap could not mmap data block: %m", LocalLogName);
 	DISPOSE(gdb);
 	ovgroupunmap(*gibp);
 	return FALSE;
@@ -1512,7 +1522,7 @@ void *buffindexed_opensearch(char *group, int low, int high) {
   return(handle);
 }
 
-BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token) {
+BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
   OVSEARCH		*search = (OVSEARCH *)handle;
   OVBLOCK		*ovblock;
   OV			*ov, srchov;
@@ -1534,6 +1544,8 @@ BOOL buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOK
 	*artnum = ovblock->ovindexhead.base - ovblock->ovindexhead.baseoffset + search->cur;
       if (len)
 	*len = ovblock->ovindex[search->cur].len;
+      if (arrived)
+	*arrived = ovblock->ovindex[search->cur].arrived;
       if (data) {
 	srchov.index = ovblock->ovindex[search->cur].index;
 	srchov.blocknum = ovblock->ovindex[search->cur].blocknum;
@@ -1584,7 +1596,7 @@ BOOL buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, T
     GROUPlock(gloc, LOCK_UNLOCK);
     return FALSE;
   }
-  retval = buffindexed_search(handle, NULL, data, len, token);
+  retval = buffindexed_search(handle, NULL, data, len, token, NULL);
   ovclosesearch(handle, FALSE);
   GROUPlock(gloc, LOCK_UNLOCK);
   return retval;
@@ -1636,7 +1648,7 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
     mmapoffset = offset - pagefudge;
     ovblks[i].len = pagefudge + OV_BLOCKSIZE;
     if ((ovblks[i].addr = mmap(0, ovblks[i].len, PROT_READ | PROT_WRITE, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR)-1) {
-      syslog(L_ERROR, "%s: could not get ovbuff block", LocalLogName);
+      syslog(L_ERROR, "%s: ovaddblk could not mmap %dth block: %m", LocalLogName, i);
       break;
     }
     ovblks[i].ovblock = (OVBLOCK *)(ovblks[i].addr + pagefudge);
@@ -1672,7 +1684,7 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
     mmapoffset = offset - pagefudge;
     len = pagefudge + OV_BLOCKSIZE;
     if ((addr = mmap(0, len, PROT_READ | PROT_WRITE, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR)-1) {
-      syslog(L_ERROR, "%s: could not get ovbuff block", LocalLogName);
+      syslog(L_ERROR, "%s: ovaddblk could not mmap prepending current block: %m", LocalLogName);
       for (i = 0 ; i < nblocks ; i++ ) {
         ovblockfree(ovblks[i].indexov);
 	munmap(ovblks[i].addr, ovblks[i].len);
@@ -1685,7 +1697,7 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
       if (i == 0) {
 	ovblks[i].ovblock->ovindexhead.prev = ovnull;
 	if (ovblks[i].ovblock->ovindexhead.baseoffset == 0)
-	  ge->base -= delta;
+	  ge->base -= nblocks * OVINDEXMAX;
 	else
 	  ge->base = 1;
       } else
@@ -1717,7 +1729,7 @@ STATIC BOOL ovaddblk(GROUPENTRY *ge, int delta, ADDINDEX type) {
     mmapoffset = offset - pagefudge;
     len = pagefudge + OV_BLOCKSIZE;
     if ((addr = mmap(0, len, PROT_READ | PROT_WRITE, MAP_SHARED, ovbuff->fd, mmapoffset)) == (MMAP_PTR)-1) {
-      syslog(L_ERROR, "%s: could not get ovbuff block", LocalLogName);
+      syslog(L_ERROR, "%s: ovaddblk could not mmap appending current block: %m", LocalLogName);
       for (i = 0 ; i < nblocks ; i++ ) {
         ovblockfree(ovblks[i].indexov);
 	munmap(ovblks[i].addr, ovblks[i].len);
@@ -1762,6 +1774,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
   ARTHANDLE	*ah;
   char		flag;
   HASH		hash;
+  time_t	arrived;
 
   gloc = GROUPfind(group);
   GROUPlock(gloc, LOCK_WRITE);
@@ -1789,11 +1802,11 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
     syslog(L_ERROR, "%s: could not open overview for '%s'", LocalLogName, group);
     return FALSE;
   }
-  while (buffindexed_search(handle, &artnum, &data, &len, &token)) {
+  while (buffindexed_search(handle, &artnum, &data, &len, &token, &arrived)) {
     if (len == 0 || (ah = SMretrieve(token, RETR_STAT)) == NULL)
       continue;
     SMfreearticle(ah);
-    if (!ovaddrec(&newge, artnum, token, data, len)) {
+    if (!ovaddrec(&newge, artnum, token, data, len, arrived)) {
       ovclosesearch(handle, TRUE);
       GROUPlock(gloc, LOCK_UNLOCK);
       syslog(L_ERROR, "%s: could not add new overview for '%s'", LocalLogName, group);
@@ -1816,9 +1829,10 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
   return TRUE;
 }
 
-BOOL buffindexed_probe(OVPROBETYPE type, void *result) {
+BOOL buffindexed_ctl(OVCTLTYPE type, void *val) {
   int		total, used, *i;
   OVBUFF	*ovbuff = ovbufftab;
+  OVSORTTYPE	*sorttype;
 
   switch (type) {
   case OVSPACE:
@@ -1829,8 +1843,15 @@ BOOL buffindexed_probe(OVPROBETYPE type, void *result) {
       used += ovbuff->usedblk;
       ovlock(ovbuff, LOCK_UNLOCK);
     }
-    i = (int *)result;
+    i = (int *)val;
     *i = (used * 100) / total;
+    return TRUE;
+  case OVSORT:
+    sorttype = (OVSORTTYPE *)val;
+    *sorttype = OVARRIVED;
+    return TRUE;
+  case OVCUTOFFLOW:
+    Cutofflow = *(BOOL *)val;
     return TRUE;
   default:
     return FALSE;
@@ -1928,7 +1949,7 @@ main(int argc, char **argv) {
     char *data;
     int len;
     TOKEN token;
-    while (buffindexed_search((void *)search, &artnum, &data, &len, &token)) {
+    while (buffindexed_search((void *)search, &artnum, &data, &len, &token, NULL)) {
       if (len == 0)
 	fprintf(stdout, "%d: len is 0\n", artnum);
       else {
