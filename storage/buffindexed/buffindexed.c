@@ -1799,7 +1799,7 @@ BOOL buffindexed_expiregroup(char *group, int *lo) {
 	if (Gib[j].artnum == 0)
 	  continue;
 	/* this may be duplicated, but ignore it in this case */
-	OVEXPremove(Gib[j].token, TRUE);
+	OVEXPremove(Gib[j].token, TRUE, NULL, 0);
       }
       freegroupblock();
       ovgroupunmap();
