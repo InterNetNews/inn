@@ -13,10 +13,10 @@
 **  Try to avoid changing these.
 */
 #define RELEASE "2"
-#define PATCHLEVEL "2"
-#define DATE "23-Oct-1998"
+#define PATCHLEVEL "3experimental"
+#define DATE "20-Nov-1998"
 #define RELEASE_C 2
-#define PATCHLEVEL_C 2
+#define PATCHLEVEL_C 3
 #define SUB_PATCHLEVEL_C 0
 
 

@@ -325,5 +325,5 @@ struct conf_rec conf_defaults[] = {
 #define CONF_VAR_NNRPDAUTHSENDER		100
     { _CONF_NNRPDAUTHSENDER,			"",	2, 1 }
 };
-#define MAX_CONF_VAR 100
+#define MAX_CONF_VAR 101
 
