@@ -689,7 +689,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
 
     /* Set Message-ID */
     if (HDR(_messageid) == NULL) {
-	if ((p = GenerateMessageID()) == NULL) {
+	if ((p = GenerateMessageID(innconf->domain)) == NULL) {
 	    (void)fprintf(stderr, "Can't generate Message-ID, %s\n",
 		    strerror(errno));
 	    QuitServer(1);
@@ -715,7 +715,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
 		(void)sprintf(HDR(_path), "%s%s", Exclusions, PATHFLUFF);
 	}
 	else if (innconf->server != NULL) {
-	    if ((p = GetFQDN()) == NULL) {
+	    if ((p = GetFQDN(innconf->domain)) == NULL) {
 		(void)fprintf(stderr, "Can't get host name, %s\n",
 			strerror(errno));
 		QuitServer(1);
@@ -918,7 +918,7 @@ MailArticle(group, article)
     char		buff[SMBUF];
 
     /* Try to get the address first. */
-    if ((address = GetModeratorAddress(FromServer, ToServer, group)) == NULL) {
+    if ((address = GetModeratorAddress(FromServer, ToServer, group, innconf->moderatormailer)) == NULL) {
 	(void)fprintf(stderr,
 		"The \"%s\" newsgroup is moderated, but has no address;\n",
 		group);
