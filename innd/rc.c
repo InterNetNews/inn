@@ -547,45 +547,38 @@ RCreader(CHANNEL *cp)
     }
 #endif
 
-    /*
-    ** If RemoteTimer is not zero, then check the limits on incoming
-    ** connections on a total and per host basis.
-    **
-    ** The incoming connection table is fixed at 128 entries to make
-    ** calculating the index easy (i + 1) & 7, and to be pretty sure
-    ** that you won't run out of space.  The table is used as a ring
-    ** with new entries being added to the end (wrapping around) and
-    ** expired entries being deleted from the front (again wrapping
-    ** around).  It is doubtful that you will ever use even half of
-    ** the table.
-    **
-    ** There are three parameters controlling the use of the table not
-    ** counting the starting index and count.
-    **
-    ** H = per host incoming connects per X seconds allowed
-    ** T = total incoming connects per X seconds allowed
-    ** X = number of seconds to remember a successful connect
-    **
-    ** First, one pass is made over the live entries deleting any that
-    ** are over X seconds old.  If the entry hasn't expired, compare
-    ** the incoming connection's host address with the entry's host
-    ** address.  If equal, increment the ``found'' counter.
-    **
-    ** Second, if the number of entries now in the table is equal to
-    ** the ``T'' parameter, reject the connection with the ``504''
-    ** error code.
-    **
-    ** 504 Server overloaded, try later
-    **
-    ** Third, if the number of entries now in the table which match
-    ** the incoming connection's host address is equal to the ``H''
-    ** parameter, reject the connection with the ``505'' error code.
-    **
-    ** 505 Connection rejected, you're making too many connects per minute
-    **
-    ** Finally, if neither rejection happened, add the entry to the
-    ** table, and continue on as a normal connect.
-    */
+    /* If RemoteTimer is not zero, then check the limits on incoming
+       connections on a total and per host basis.
+
+       The incoming connection table is fixed at 128 entries to make
+       calculating the index easy (i + 1) & 7, and to be pretty sure that you
+       won't run out of space.  The table is used as a ring with new entries
+       being added to the end (wrapping around) and expired entries being
+       deleted from the front (again wrapping around).  It is doubtful that
+       you will ever use even half of the table.
+
+       There are three parameters controlling the use of the table not
+       counting the starting index and count:
+
+           H = per host incoming connects per X seconds allowed
+           T = total incoming connects per X seconds allowed
+           X = number of seconds to remember a successful connect
+
+       First, one pass is made over the live entries deleting any that are
+       over X seconds old.  If the entry hasn't expired, compare the incoming
+       connection's host address with the entry's host address.  If equal,
+       increment the "found" counter.
+
+       Second, if the number of entries now in the table is equal to the T
+       parameter, reject the connection with a message indicating that the
+       server is overloaded.
+
+       Third, if the number of entries now in the table which match the
+       incoming connection's host address is equal to the H parameter, reject
+       the connection.
+
+       Finally, if neither rejection happened, add the entry to the table, and
+       continue on as a normal connect. */
     memcpy(&tempchan.Address, &remote, SA_LEN((struct sockaddr *)&remote));
     reject_message = NULL;
     if (RemoteTimer != 0) {
@@ -605,12 +598,13 @@ RCreader(CHANNEL *cp)
 	    i = (i + 1) & (REMOTETABLESIZE - 1);
 	}
 	if (remotecount == RemoteTotal) {
-	    reject_val = NNTP_SERVER_TOOBUSY_VAL;
-	    reject_message = NNTP_SERVER_TOOBUSY;
+	    reject_val = NNTP_GOODBYE_VAL;
+	    reject_message = "400 Server overloaded, try later";
 	}
 	else if (found >= RemoteLimit && !RCnolimit(&tempchan)) {
-	    reject_val = NNTP_TOO_MANY_CONNECTS_VAL;
-	    reject_message = NNTP_TOO_MANY_CONNECTS;
+	    reject_val = NNTP_GOODBYE_VAL;
+	    reject_message = "400 Connection rejected, you're making too"
+                " many connects per minute";
 	}
 	else {
 	    i = (remotefirst + remotecount) & (REMOTETABLESIZE - 1);

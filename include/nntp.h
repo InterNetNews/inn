@@ -82,10 +82,6 @@
 #define NNTP_NOPREV_VAL			422
 #define NNTP_CANTPOST			"440 Posting not allowed"
 #define NNTP_CANTPOST_VAL		440
-#define NNTP_SERVER_TOOBUSY		"504 Server overloaded, try later"
-#define NNTP_SERVER_TOOBUSY_VAL		504
-#define NNTP_TOO_MANY_CONNECTS		"505 Connection rejected, you're making too many connects per minute"
-#define NNTP_TOO_MANY_CONNECTS_VAL	505
 
 /* new entries for the "streaming" protocol */
 /* response to "mode stream" else 500 if stream not supported */

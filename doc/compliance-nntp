@@ -261,33 +261,6 @@ allowed reading connections.
 
 ------------------------------
 
-  Summary: innd sends 504 or 505 on connection failures sometimes
- Standard: draft-ietf-nntpext-base-13.txt, section 7.1
-  Version: 1.5 to CURRENT 2001-07-04
-Reference: innd/rc.c RCreader()
- Severity: Violates MUST
-
-The standard says:
-
-    Otherwise the server MUST present a 400 or 502 greeting code and then
-    immediately close the connection.  502 MUST be used if the client is
-    not permitted under any circumstances to interact with the server and
-    400 otherwise.
-
-The connection limiting code in innd sometimes returns 504 or 505 instead
-where it should return 400.
-
-Impact:  Remote clients cannot recognize temporary failure and take
-appropriate action.
-
-Suggested fix:  Modify RCreader() to return 400 in these cases.
-
-Impact of fix:  Some clients may retry inappropriately quickly after a 400
-rejection, but this problem already exists for some clients with 504 or
-505 rejections.
-
-------------------------------
-
   Summary: innd doesn't support LIST EXTENSIONS
  Standard: draft-ietf-nntpext-base-13.txt, section 8.1
   Version: 1.0 to CURRENT 2001-07-04
