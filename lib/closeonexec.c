@@ -16,9 +16,7 @@
 **  Mark a file close-on-exec so that it doesn't get shared with our
 **  children.  Ignore any error codes.
 */
-void
-CloseOnExec(fd, flag)
-    int		fd, flag;
+void CloseOnExec(int fd, int flag)
 {
     int		oerrno;
 
@@ -38,10 +36,7 @@ CloseOnExec(fd, flag)
 **  Mark a file close-on-exec so that it doesn't get shared with our
 **  children.  Ignore any error codes.
 */
-void
-CloseOnExec(fd, flag)
-    int		fd;
-    int		flag;
+void CloseOnExec(int fd, int flag)
 {
     int		oerrno;
 

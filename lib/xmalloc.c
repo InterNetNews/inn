@@ -13,9 +13,7 @@
 /*
 **  Allocate some memory or call the memory failure handler.
 */
-ALIGNPTR
-xmalloc(i)
-    unsigned int	i;
+ALIGNPTR xmalloc(unsigned int i)
 {
     POINTER		new;
 

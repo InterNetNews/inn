@@ -13,13 +13,9 @@
 /*
 **  Find a header in an article.
 */
-char *
-HeaderFind(Article, Header, size)
-    char		*Article;
-    char		*Header;
-    register int	size;
+const char *HeaderFind(const char *Article, const char *Header, const int size)
 {
-    register char	*p;
+    const char	        *p;
 
     for (p = Article; ; ) {
 	/* Match first character, then colon, then whitespace (don't

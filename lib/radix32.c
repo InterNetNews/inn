@@ -18,13 +18,10 @@ static char	ALPHABET[] =
 **  Turn a number into a Radix-32 string.  Assume the number fits into
 **  32 bits.
 */
-void
-Radix32(l, buff)
-    register unsigned long	l;
-    register char		*buff;
+void Radix32(unsigned long l, char *buff)
 {
-    register char		*p;
-    register int		i;
+    char		        *p;
+    int		                i;
     char			temp[10];
 
     /* Simple sanity checks. */

@@ -54,12 +54,10 @@ static char sccsid[] = "@(#)inet_ntoa.c	5.6 (Berkeley) 2/24/91";
 
 #define	UC(c)	(((int)c) & 0xFF)
 
-char *
-inet_ntoa(in)
-    struct in_addr	in;
+char *inet_ntoa(struct in_addr in)
 {
     static char		buff[18];
-    register char	*p;
+    char	        *p;
 
     p = (char *)&in;
     (void)sprintf(buff, "%d.%d.%d.%d", UC(p[0]), UC(p[1]), UC(p[2]), UC(p[3]));

@@ -47,10 +47,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 **  Make a temporary filename that is unlikely to collide with mktemp
 **  or cause problems for sites with 14-character filename limits.
 */
-void
-TempName(dir, buff)
-    char	*dir;
-    char	*buff;
+void TempName(char *dir, char *buff)
 {
     time_t	now;
 

@@ -13,10 +13,7 @@
 /*
 **  Reallocate some memory or call the memory failure handler.
 */
-ALIGNPTR
-xrealloc(p, i)
-    char		*p;
-    unsigned int	i;
+ALIGNPTR xrealloc(char *p, unsigned int i)
 {
     POINTER		new;
 

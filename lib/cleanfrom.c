@@ -18,12 +18,10 @@
 **	address (stuff)		address
 **	stuff <address>		address
 */
-void
-HeaderCleanFrom(from)
-    char		*from;
+void HeaderCleanFrom(char *from)
 {
-    register char	*p;
-    register char	*end;
+    char	        *p;
+    char	        *end;
 
     /* Do the equivalent of sed's "1q" */
     if ((p = strchr(from, '\n')) != NULL)

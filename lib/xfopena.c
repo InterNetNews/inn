@@ -12,9 +12,7 @@
 **  Open a file in append mode.  Since not all fopen's set the O_APPEND
 **  flag, we do it by hand.
 */
-FILE *
-xfopena(p)
-    char	*p;
+FILE *xfopena(const char *p)
 {
     int		fd;
 

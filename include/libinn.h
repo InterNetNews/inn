@@ -3,41 +3,43 @@
 **  Here be declarations of functions in the InterNetNews library.
 */
 
+#include <sys/stat.h>
+#include <sys/uio.h>
+
 /* Memory allocation. */
     /* Worst-case alignment, in order to shut lint up. */
     /* =()<typedef @<ALIGNPTR>@	*ALIGNPTR;>()= */
 typedef int	*ALIGNPTR;
-extern ALIGNPTR	xmalloc();
-extern ALIGNPTR	xrealloc();
+extern ALIGNPTR	xmalloc(unsigned int i);
+extern ALIGNPTR	xrealloc(char *p, unsigned int i);
 
 /* Headers. */
-extern char	*GenerateMessageID();
-extern char	*HeaderFind();
-extern void	HeaderCleanFrom();
-
-extern struct _DDHANDLE	*DDstart();
-extern void		DDcheck();
-extern char		*DDend();
+extern char	        *GenerateMessageID(void);
+extern const char	*HeaderFind(const char *Article, const char *Header, const int size);
+extern void	        HeaderCleanFrom(char *from);
+extern struct _DDHANDLE	*DDstart(FILE *FromServer, FILE *ToServer);
+extern void		DDcheck(struct _DDHANDLE *h, char *group);
+extern char		*DDend(struct _DDHANDLE *h);
 
 /* NNTP functions. */
-extern int	NNTPlocalopen();
+extern int	NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff);
 extern int	NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff);
 extern int      NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char *errbuff);
-extern int	NNTPsendarticle();
-extern int	NNTPsendpassword();
+extern int	NNTPsendarticle(char *, FILE *F, BOOL Terminate);
+extern int	NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer);
 extern int      server_init(char *host, int port);
 
 /* Opening the active file on a client. */
-extern FILE	*CAopen();
-extern FILE	*CAlistopen();
-extern void	CAclose();
+extern FILE	*CAopen(FILE *FromServer, FILE *ToServer);
+extern FILE	*CAlistopen(FILE *FromServer, FILE *ToServer, char *request);
+extern void	CAclose(void);
 
 /* Parameter retrieval. */
-extern char	*GetFQDN();
-extern char	*GetConfigValue();
-extern char	*GetFileConfigValue();
-extern BOOL      GetBooleanConfigValue();
-extern char	*GetModeratorAddress();
+extern char	*GetFQDN(void);
+extern char	*GetConfigValue(char *value);
+extern char	*GetFileConfigValue(char *value);
+extern BOOL      GetBooleanConfigValue(char *value, BOOL DefaultValue);
+extern char	*GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group);
 
 /* Time functions. */
 typedef struct _TIMEINFO {
@@ -45,8 +47,8 @@ typedef struct _TIMEINFO {
     long	usec;
     long	tzone;
 } TIMEINFO;
-extern time_t	parsedate();
-extern int	GetTimeInfo();
+extern time_t	parsedate(char *p, TIMEINFO *now);
+extern int	GetTimeInfo(TIMEINFO *Now);
 
 /* Hash functions */
 typedef struct {
@@ -68,20 +70,19 @@ typedef struct _OVERINDEX {
     int     size;
 } OVERINDEX;
  
-extern int	getfdcount();
-extern int	wildmat();
-/* =()<extern @<PID_T>@	waitnb();>()= */
-extern pid_t	waitnb();
-extern int	xread();
-extern int	xwrite();
-extern int	xwritev();
-extern int	LockFile();
-extern int	GetResourceUsage();
-extern int	SetNonBlocking();
-extern void	CloseOnExec();
-extern void	Radix32();
-extern char	*INNVersion();
-extern char	*ReadInDescriptor();
-extern char	*ReadInFile();
-extern void	TempName();
-extern FILE	*xfopena();
+extern int	getfdcount(void);
+extern int	wildmat(const char *text, const char *p);
+extern PID_T	waitnb(int *statusp);
+extern int	xread(int fd, char *p, OFFSET_T i);
+extern int	xwrite(int fd, char *p, int i);
+extern int	xwritev(int fd, struct iovec *vp, int vpcount);
+extern int	LockFile(int fd, BOOL Block);
+extern int	GetResourceUsage(double *usertime, double *systime);
+extern int	SetNonBlocking(int fd, BOOL flag);
+extern void	CloseOnExec(int fd, int flag);
+extern void	Radix32(unsigned long, char *buff);
+extern char	*INNVersion(void);
+extern char	*ReadInDescriptor(int fd, struct stat *Sbp);
+extern char	*ReadInFile(const char *name, struct stat *Sbp);
+extern void	TempName(char *dir, char *buff);
+extern FILE	*xfopena(const char *p);

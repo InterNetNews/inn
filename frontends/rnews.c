@@ -221,12 +221,10 @@ Reject(article, reason, arg)
 **  whole batch needs to be saved (such as when the server goes down or if
 **  the file is corrupted).
 */
-STATIC BOOL
-Process(article)
-    char		*article;
+STATIC BOOL Process(char *article)
 {
-    register HEADER	*hp;
-    register char	*p;
+    HEADER	        *hp;
+    char	        *p;
     char		*id;
     char		buff[SMBUF];
 #if	defined(FILE_RNEWS_LOG_DUPS)
@@ -242,7 +240,7 @@ Process(article)
 
     /* Make sure that all the headers are there, note the ID. */
     for (hp = RequiredHeaders; hp < ENDOF(RequiredHeaders); hp++) {
-	if ((p = HeaderFind(article, hp->Name, hp->size)) == NULL) {
+	if ((p = (char *)HeaderFind(article, hp->Name, hp->size)) == NULL) {
 	    Reject(article, "bad_article missing %s", hp->Name);
 	    return FALSE;
 	}

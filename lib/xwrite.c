@@ -10,13 +10,9 @@
 /*
 **  Keep writing until everything has been written or we get an error.
 */
-int
-xwrite(fd, p, i)
-    register int	fd;
-    register char	*p;
-    register int	i;
+int xwrite(int fd, char *p, int i)
 {
-    register int	c;
+    int	                c;
 
     for ( ; i; p += c, i -= c)
 	if ((c = write(fd, (POINTER)p, (SIZE_T)i)) <= 0)

@@ -19,11 +19,7 @@
 **  Open a connection to the local InterNetNews NNTP server and optionally
 **  create stdio FILE's for talking to it.  Return -1 on error.
 */
-int
-NNTPlocalopen(FromServerp, ToServerp, errbuff)
-    FILE		**FromServerp;
-    FILE		**ToServerp;
-    char		*errbuff;
+int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
 {
 #if	defined(DO_HAVE_UNIX_DOMAIN)
     int			i;

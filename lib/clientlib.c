@@ -22,9 +22,7 @@ char	ser_line[NNTP_STRLEN + 2];
 **  our own configuration stuff.  Return pointer to static data.
 */
 /* ARGSUSED0 */
-char *
-getserverbyfile(file)
-    char	*file;
+char *getserverbyfile(char *file)
 {
     static char	buff[256];
     char	*p;
@@ -73,10 +71,7 @@ int server_init(char *host, int port)
 **  Print a message based on the the server's initial response.
 **  Return -1 if server wants us to go away.
 */
-int
-handle_server_response(response, host)
-    int		response;
-    char	*host;
+int handle_server_response(int response, char *host)
 {
     char	*p;
 
@@ -126,12 +121,9 @@ put_server(buff)
 **  Get a line of text from the server, strip trailing \r\n.
 **  Return -1 on error.
 */
-int
-get_server(buff, buffsize)
-    register char	*buff;
-    int			buffsize;
+int get_server(char *buff, int buffsize)
 {
-    register char	*p;
+    char	        *p;
 
     if (fgets(buff, buffsize, ser_rd_fp) == NULL)
 	return -1;

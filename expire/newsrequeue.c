@@ -700,18 +700,18 @@ QueueArticle(name, id, art)
 	sp->Sent = FALSE;
 
     /* Parse the Path and Distribution headers. */
-    if ((p = HeaderFind(Buffer, PATH, STRLEN(PATH))) == NULL) {
+    if ((p = (char *)HeaderFind(Buffer, PATH, STRLEN(PATH))) == NULL) {
 	(void)fprintf(stderr, "No \"Path\" header in \"%s\"\n", name);
 	return;
     }
     Path = ParsePath(p);
-    if ((p = HeaderFind(Buffer, DISTRIBUTION, STRLEN(DISTRIBUTION))) == NULL)
+    if ((p = (char *)HeaderFind(Buffer, DISTRIBUTION, STRLEN(DISTRIBUTION))) == NULL)
 	Distribs = NULL;
     else
 	Distribs = ParseDistribs(p);
 
     /* Look at the newsgroups, see who gets the article. */
-    if ((p = HeaderFind(Buffer, NG, STRLEN(NG))) == NULL) {
+    if ((p = (char *)HeaderFind(Buffer, NG, STRLEN(NG))) == NULL) {
 	(void)fprintf(stderr, "No \"Newsgroups\" header in \"%s\"\n", name);
 	return;
     }

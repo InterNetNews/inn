@@ -28,10 +28,7 @@
 /*
 **  Try to lock a file descriptor.
 */
-int
-LockFile(fd, Block)
-    int		fd;
-    BOOL	Block;
+int LockFile(int fd, BOOL Block)
 {
 #if	defined(LOCK_NONE)
     struct stat	Sb;

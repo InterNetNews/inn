@@ -18,11 +18,10 @@
 /*
 **  Return the version string.
 */
-char *
-INNVersion()
+char *INNVersion(void)
 {
     static char		buff[SIZE + 1];
-    register char	*p;
+    char	        *p;
     STRING		q;
 
     if (buff[0] == '\0') {

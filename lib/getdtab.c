@@ -9,8 +9,7 @@
 
 
 #if	defined(FDCOUNT_GETDTAB)
-int
-getfdcount()
+int getfdcount(void)
 {
     static int		size;
 
@@ -27,8 +26,7 @@ getfdcount()
 #include <sys/time.h>
 #include <sys/resource.h>
 
-int
-getfdcount()
+int getfdcount(void)
 {
     static int		size;
     struct rlimit	rl;
@@ -47,8 +45,7 @@ getfdcount()
 #include <unistd.h>
 #include <limits.h>
 
-int
-getfdcount()
+int getfdcount(void)
 {
     static int		size;
 
@@ -62,8 +59,7 @@ getfdcount()
 
 
 #if	defined(FDCOUNT_ULIMIT)
-int
-getfdcount()
+int getfdcount(void)
 {
     static int		size;
 
@@ -77,8 +73,7 @@ getfdcount()
 
 
 #if	defined(FDCOUNT_CONSTANT)
-int
-getfdcount()
+int getfdcount(void)
 {
 #if	defined(NOFILE)
     return NOFILE;

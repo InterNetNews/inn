@@ -18,10 +18,7 @@
 /*
 **  Open a quick file from a descriptor.
 */
-QIOSTATE *
-QIOfdopen(fd, size)
-    int		fd;
-    int		size;
+QIOSTATE *QIOfdopen(int fd, int size)
 {
     QIOSTATE	*qp;
 #if	defined(DO_HAVE_ST_BLKSIZE)
@@ -52,10 +49,7 @@ QIOfdopen(fd, size)
 /*
 **  Open a file for reading.
 */
-QIOSTATE *
-QIOopen(name, size)
-    char	*name;
-    int		size;
+QIOSTATE *QIOopen(char *name, int size)
 {
     int		fd;
 
@@ -69,9 +63,7 @@ QIOopen(name, size)
 /*
 **  Close an open stream.
 */
-void
-QIOclose(qp)
-    QIOSTATE	*qp;
+void QIOclose(QIOSTATE *qp)
 {
     (void)close(qp->fd);
     DISPOSE(qp->Buffer);
@@ -82,9 +74,7 @@ QIOclose(qp)
 /*
 **  Rewind an open stream.
 */
-int
-QIOrewind(qp)
-    QIOSTATE	*qp;
+int QIOrewind(QIOSTATE *qp)
 {
     int		i;
 
@@ -103,12 +93,10 @@ QIOrewind(qp)
 /*
 **  Get the next line from the input.
 */
-char *
-QIOread(qp)
-    QIOSTATE	*qp;
+char *QIOread(QIOSTATE *qp)
 {
-    register char       *p;
-    register char       *q;
+    char                *p;
+    char                *q;
     char                *save;
     int                 i;
 

@@ -20,10 +20,7 @@ STATIC FILE	*CAfp;
 **  Get a copy of the active file for a client host to use, locally or
 **  remotely.
 */
-FILE *
-CAopen(FromServer, ToServer)
-    FILE	*FromServer;
-    FILE	*ToServer;
+FILE *CAopen(FILE *FromServer, FILE *ToServer)
 {
     /* Use a local (or NFS-mounted) copy if available.  Make sure we don't
      * try to delete it when we close it. */
@@ -40,12 +37,7 @@ CAopen(FromServer, ToServer)
 /*
 **  Internal library routine.
 */
-FILE *
-CA_listopen(pathname, FromServer, ToServer, request)
-    char	*pathname;
-    FILE	*FromServer;
-    FILE	*ToServer;
-    char	*request;
+FILE *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request)
 {
     char	buff[BUFSIZ];
     char	*p;
@@ -99,11 +91,7 @@ CA_listopen(pathname, FromServer, ToServer, request)
 **  Use the NNTP list command to get a file from a server.  Default is
 **  the active file, otherwise ask for whatever is in the request param.
 */
-FILE *
-CAlistopen(FromServer, ToServer, request)
-    FILE	*FromServer;
-    FILE	*ToServer;
-    char	*request;
+FILE *CAlistopen(FILE *FromServer, FILE *ToServer, char *request)
 {
     /* Gotta talk to the server -- see if we can. */
     if (FromServer == NULL || ToServer == NULL)
@@ -119,8 +107,7 @@ CAlistopen(FromServer, ToServer, request)
 /*
 **  Close the file opened by CAopen or CAlistopen.
 */
-void
-CAclose()
+void CAclose(void)
 {
     if (CAfp) {
 	(void)fclose(CAfp);

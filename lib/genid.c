@@ -15,8 +15,7 @@
 /* Scale time back a bit, for shorter Message-ID's. */
 #define OFFSET	673416000L
 
-char *
-GenerateMessageID()
+char *GenerateMessageID(void)
 {
     static char		buff[SMBUF];
     static int		count;

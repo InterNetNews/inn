@@ -20,9 +20,7 @@ typedef int		WAITER;
 #define WAITVAL(x)	(((x) >> 8) & 0xFF)
 #endif	/* defined(DO_USE_UNION_WAIT) */
 
-PID_T
-waitnb(statusp)
-    int		*statusp;
+PID_T waitnb(int *statusp)
 {
     WAITER	w;
     PID_T	pid;

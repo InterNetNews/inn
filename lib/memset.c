@@ -46,15 +46,11 @@ static char sccsid[] = "@(#)memset.c	5.5 (Berkeley) 5/15/90";
 #include <sys/stdc.h>
 #endif
 
-void *
-memset(dst, c, n)
-	void *dst;
-	register int c;
-	register size_t n;
+void *memset(void *dst, int c, size_t n)
 {
 
 	if (n != 0) {
-		register char *d = dst;
+		char *d = dst;
 
 		do
 			*d++ = c;

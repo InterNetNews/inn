@@ -19,8 +19,7 @@ STATIC FILE	*GMAfp;
 /*
 **  Close the file opened by GMAlistopen.
 */
-void
-GMAclose()
+void GMAclose(void)
 {
     if (GMAfp) {
 	(void)fclose(GMAfp);
@@ -34,12 +33,7 @@ GMAclose()
 /*
 **  Internal library routine.
 */
-FILE *
-GMA_listopen(pathname, FromServer, ToServer, request)
-    char	*pathname;
-    FILE	*FromServer;
-    FILE	*ToServer;
-    char	*request;
+FILE *GMA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *request)
 {
     char	buff[BUFSIZ];
     char	*p;
@@ -91,14 +85,10 @@ GMA_listopen(pathname, FromServer, ToServer, request)
 /*
 **  Read the moderators file, looking for a moderator.
 */
-char *
-GetModeratorAddress(FromServer, ToServer, group)
-    FILE                *FromServer;
-    FILE                *ToServer;
-    char		*group;
+char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group)
 {
     static char		address[SMBUF];
-    register char	*p;
+    char	        *p;
     char		*save;
     char		buff[BUFSIZ];
     char		name[SMBUF];

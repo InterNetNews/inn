@@ -11,11 +11,9 @@
 /*
 **  See if an article is longer than the NNTP line-length limits.
 */
-int
-NNTPcheckarticle(p)
-    register char	*p;
+int NNTPcheckarticle(char *p)
 {
-    register char	*next;
+    char	        *next;
 
     for (; p && *p; p = next) {
 	if ((next = strchr(p, '\n')) == NULL)

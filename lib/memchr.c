@@ -47,14 +47,10 @@ static char sccsid[] = "@(#)memchr.c	5.5 (Berkeley) 5/15/90";
 #endif
 
 
-void *
-memchr(s, c, n)
-	const void *s;
-	register unsigned char c;
-	register size_t n;
+void * memchr(const void *s, unsigned char c, size_t n)
 {
 	if (n != 0) {
-		register const unsigned char *p = (unsigned char *)s;
+		const unsigned char *p = (unsigned char *)s;
 
 		do {
 			if (*p++ == c)

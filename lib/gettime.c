@@ -12,9 +12,7 @@
 #include "libinn.h"
 
 
-int
-GetTimeInfo(Now)
-    TIMEINFO		*Now;
+int GetTimeInfo(TIMEINFO *Now)
 {
     static time_t	NextHour;
     static long		LastTzone;

@@ -13,10 +13,7 @@
 /*
 **  Enable or disable non-blocking I/O mode.
 */
-int
-SetNonBlocking(fd, flag)
-    int		fd;
-    BOOL	flag;
+int SetNonBlocking(int fd, BOOL flag)
 {
     int		state;
 
@@ -39,10 +36,7 @@ SetNonBlocking(fd, flag)
 /*
 **  Enable or disable non-blocking I/O mode.
 */
-int
-SetNonBlocking(fd, flag)
-    int		fd;
-    BOOL	flag;
+int SetNonBlocking(int fd, BOOL flag)
 {
     int		mode;
 

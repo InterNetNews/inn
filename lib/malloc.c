@@ -115,13 +115,11 @@ botch(s)
 #endif
 #endif
 
-POINTER
-malloc(nbytes)
-	register SIZE_T nbytes;
+POINTER malloc(SIZE_T nbytes)
 {
-  	register union overhead *p;
-  	register int bucket = 0;
-  	register unsigned shiftr;
+  	union overhead *p;
+  	int bucket = 0;
+  	unsigned shiftr;
 
 	/*
 	 * Convert amount of memory requested into
@@ -174,14 +172,12 @@ malloc(nbytes)
 /*
  * Allocate more memory to the indicated bucket.
  */
-static
-morecore(bucket)
-	register int bucket;
+static morecore(int bucket)
 {
-  	register union overhead *op;
-  	register int rnu;       /* 2^rnu bytes will be requested */
-  	register int nblks;     /* become nblks blocks of the desired size */
-	register int siz;
+  	union overhead *op;
+  	int rnu;       /* 2^rnu bytes will be requested */
+  	int nblks;     /* become nblks blocks of the desired size */
+	int siz;
 
   	if (nextf[bucket])
   		return;
@@ -237,12 +233,10 @@ morecore(bucket)
   	}
 }
 
-FREEVAL
-free(cp)
-	POINTER cp;
+FREEVAL free(POINTER cp)
 {   
-  	register int size;
-	register union overhead *op;
+  	int size;
+	union overhead *op;
 
   	if (cp == NULL)
   		return;
@@ -284,15 +278,12 @@ free(cp)
  */
 int reall_srchlen = 4;	/* 4 should be plenty, -1 =>'s whole list */
 
-POINTER
-realloc(cp, nbytes)
-	POINTER cp; 
-	SIZE_T nbytes;
+POINTER realloc(POINTER cp, SIZE_T nbytes)
 {   
-  	register u_int onb;
+  	u_int onb;
 	union overhead *op;
   	char *res;
-	register int i;
+	int i;
 	int was_alloced = 0;
 
   	if (cp == NULL)
@@ -355,13 +346,10 @@ realloc(cp, nbytes)
  * header starts at ``freep''.  If srchlen is -1 search the whole list.
  * Return bucket number, or -1 if not found.
  */
-static
-findbucket(freep, srchlen)
-	union overhead *freep;
-	int srchlen;
+static findbucket(union overhead *freep, int srchlen)
 {
-	register union overhead *p;
-	register int i, j;
+	union overhead *p;
+	int i, j;
 
 	for (i = 0; i < NBUCKETS; i++) {
 		j = 0;
@@ -382,11 +370,10 @@ findbucket(freep, srchlen)
  * for each size category, the second showing the number of mallocs -
  * frees for each size category.
  */
-mstats(s)
-	char *s;
+mstats(char *s)
 {
-  	register int i, j;
-  	register union overhead *p;
+  	int i, j;
+        union overhead *p;
   	int totfree = 0,
   	totused = 0;
 

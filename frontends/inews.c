@@ -537,9 +537,7 @@ FormatUserName(pwp, node)
 /*
 **  Check the Distribution header, and exit on error.
 */
-STATIC void
-CheckDistribution(p)
-    register char	*p;
+STATIC void CheckDistribution(char *p)
 {
     static char		SEPS[] = " \t,";
     register STRING	*dp;

@@ -14,14 +14,12 @@
 STATIC char		ConfigBuff[SMBUF] = "";
 
 
-char *
-GetFileConfigValue(value)
-    register char	*value;
+char *GetFileConfigValue(char *value)
 {
-    register FILE	*F;
-    register int	i;
-    register char	*p;
-    register char	c;
+    FILE	        *F;
+    int	                i;
+    char	        *p;
+    char	        c;
 
     /* Read the config file. */
     if ((F = fopen(_PATH_CONFIG, "r")) != NULL) {
@@ -50,11 +48,9 @@ GetFileConfigValue(value)
 /*
 **  Get a configuration parameter, usually from reading the file.
 */
-char *
-GetConfigValue(value)
-    register char	*value;
+char *GetConfigValue(char *value)
 {
-    register char	*p;
+    char	        *p;
 
     /* Some environment variables override the file. */
     if (EQ(value, _CONF_SERVER)

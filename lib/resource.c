@@ -15,10 +15,7 @@
 #define TIMEVALasDOUBLE(t)	\
     ((double)(t).tv_sec + ((double)(t).tv_usec) / 1000000.0)
 
-int
-GetResourceUsage(usertime, systime)
-    double	*usertime;
-    double	*systime;
+int GetResourceUsage(double *usertime, double *systime)
 {
     struct rusage	R;
 
@@ -41,10 +38,7 @@ GetResourceUsage(usertime, systime)
 
 #define CPUTIMEasDOUBLE(t1, t2)		((double)(t1 + t2) / (double)HZ)
 
-int
-GetResourceUsage(usertime, systime)
-    double	*usertime;
-    double	*systime;
+int GetResourceUsage(double *usertime, double *systime)
 {
     struct tms	T;
 

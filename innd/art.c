@@ -523,7 +523,7 @@ STATIC int ARTwrite(char *name, BUFFER *Article, ARTDATA *Data)
     char		bytesbuff[SMBUF];
     int			i;
 
-    if ((p = HeaderFind(Article->Data, "Path", 4)) == NULL
+    if ((p = (char *)HeaderFind(Article->Data, "Path", 4)) == NULL
      || p == Article->Data) {
 	/* This should not happen. */
 	syslog(L_ERROR, "%s internal %s no Path header",

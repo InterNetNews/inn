@@ -13,8 +13,7 @@
 /*
 **  Get the fully-qualified domain name for this host.
 */
-char *
-GetFQDN()
+char *GetFQDN(void)
 {
     static char		buff[SMBUF];
     struct hostent	*hp;

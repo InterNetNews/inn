@@ -16,13 +16,9 @@
 **  Read a big amount, looping until it is all done.  Return TRUE if
 **  successful.
 */
-int
-xread(fd, p, i)
-    register int	fd;
-    register char	*p;
-    register OFFSET_T	i;
+int xread(int fd, char *p, OFFSET_T i)
 {
-    register int	count;
+    int	                count;
 
     for ( ; i; p += count, i -= count)
 	if ((count = read(fd, p, (SIZE_T)i)) <= 0)
@@ -34,10 +30,7 @@ xread(fd, p, i)
 /*
 **  Read an already-open file into memory.
 */
-char *
-ReadInDescriptor(fd, Sbp)
-    int		fd;
-    struct stat	*Sbp;
+char *ReadInDescriptor(int fd, struct stat *Sbp)
 {
     struct stat	mystat;
     char	*p;
@@ -74,10 +67,7 @@ ReadInDescriptor(fd, Sbp)
 **  Read a file into allocated memory.  Optionally fill in the stat(2) data.
 **  Return a pointer to the file contents, or NULL on error.
 */
-char *
-ReadInFile(name, Sbp)
-    char	*name;
-    struct stat	*Sbp;
+char *ReadInFile(const char *name, struct stat *Sbp)
 {
     char	*p;
     int		fd;

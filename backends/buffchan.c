@@ -134,9 +134,7 @@ SITEcloseall()
 /*
 **  Open the file for a site.
 */
-STATIC void
-SITEopen(sp)
-    register SITE	*sp;
+STATIC void SITEopen(SITE *sp)
 {
     int			e;
 

@@ -15,14 +15,10 @@
 **  wrote out, and update the fields in all of them to contain the new
 **  startpoints.
 */
-int
-xwritev(fd, vp, vpcount)
-    int			fd;
-    struct iovec	*vp;
-    register int	vpcount;
+int xwritev(int fd, struct iovec *vp, int vpcount)
 {
-    register int	i;
-    register long	left;
+    int	                i;
+    long	        left;
 
     /* Get the total bytecount. */
     for (left = 0, i = vpcount; --i >= 0; )

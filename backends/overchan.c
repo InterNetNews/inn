@@ -155,7 +155,7 @@ WriteData(Dir, Art, Rest, Complain)
     }
     
     index.artnum = atol(Art);
-    if (xwrite(ifd, &index, sizeof(OVERINDEX)) < 0) {
+    if (xwrite(ifd, (char *)&index, sizeof(OVERINDEX)) < 0) {
 	(void)fprintf(stderr, "overchan cant write %s %s\n",
 		ifile, strerror(errno));
 	close(fd);

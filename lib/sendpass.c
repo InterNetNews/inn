@@ -16,14 +16,10 @@
 /*
 **  Send authentication information to an NNTP server.
 */
-int
-NNTPsendpassword(server, FromServer, ToServer)
-    char		*server;
-    FILE		*FromServer;
-    FILE		*ToServer;
+int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 {
-    register FILE	*F;
-    register char	*p;
+    FILE	        *F;
+    char	        *p;
     char		buff[SMBUF];
     char		input[SMBUF];
     char		*user;

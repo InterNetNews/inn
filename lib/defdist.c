@@ -25,13 +25,7 @@ struct _DDHANDLE {
 };
 typedef struct _DDHANDLE	DDHANDLE;
 
-
-extern FILE	*CA_listopen();
-
-struct _DDHANDLE *
-DDstart(FromServer, ToServer)
-    FILE	*FromServer;
-    FILE	*ToServer;
+struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer)
 {
     DDHANDLE	*h;
     DDENTRY	*ep;
@@ -111,10 +105,7 @@ DDstart(FromServer, ToServer)
 }
 
 
-void
-DDcheck(h, group)
-    DDHANDLE	*h;
-    char	*group;
+void DDcheck(DDHANDLE *h, char *group)
 {
     DDENTRY	*ep;
     int		i;
@@ -132,9 +123,7 @@ DDcheck(h, group)
 }
 
 
-char *
-DDend(h)
-    DDHANDLE	*h;
+char *DDend(DDHANDLE *h)
 {
     static char	NIL[] = "";
     char	*p;

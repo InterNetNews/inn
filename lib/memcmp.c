@@ -49,14 +49,11 @@ static char sccsid[] = "@(#)memcmp.c	5.5 (Berkeley) 5/15/90";
 /*
  * Compare memory regions.
  */
-int
-memcmp(s1, s2, n)
-	const void *s1, *s2;
-	size_t n;
+int memcmp(const void *s1, const void *s2, size_t n)
 {
 	if (n != 0) {
-		register const unsigned char *p1 = (unsigned char *)s1;
-		register const unsigned char *p2 = (unsigned char *)s2;
+		const unsigned char *p1 = (unsigned char *)s1;
+		const unsigned char *p2 = (unsigned char *)s2;
 
 		do {
 			if (*p1++ != *p2++)
