@@ -74,8 +74,8 @@ actmerge: 	$(P) actmerge.sh
 	cp $? $@
 	chmod +x $@
 
-shlock:		$(P) shlock.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shlock.o $(LIBNEWS) $(LIBS)
+shlock:		$(P) shlock.o
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shlock.o
 
 shrinkfile:	$(P) shrinkfile.o $(LIBNEWS)
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shrinkfile.o $(LIBNEWS) $(LIBS)
