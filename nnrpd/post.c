@@ -337,6 +337,12 @@ ProcessHeaders(int linecount, char *idbuff)
     pid_t               pid;
     BOOL		addvirtual = FALSE;
 
+    /* Various things need Now to be set. */
+    if (GetTimeInfo(&Now) < 0) {
+        sprintf(Error, "Can't get the time, %s", strerror(errno));
+        return Error;
+    }
+
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ENDOF(Table); hp++) {
 	if (!hp->CanSet && hp->Value) {
@@ -385,10 +391,6 @@ ProcessHeaders(int linecount, char *idbuff)
 	    HDR(_date) = datebuff;
 	}
     } else {
-        if (GetTimeInfo(&Now) < 0) {
-            sprintf(Error, "Can't get the time, %s", strerror(errno));
-            return Error;
-        }
 	if ((t = parsedate(HDR(_date), &Now)) == -1)
 	    return "Can't parse \"Date\" header";
 	if (t > Now.time + DATE_FUZZ)
