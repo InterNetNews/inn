@@ -643,7 +643,10 @@ STATIC void SetupDaemon(void) {
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
-    ARTreadschema();
+    if (!ARTreadschema()) {
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1, TRUE);
+    }
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
 	syslog(L_NOTICE, "%s cant open overview %m", ClientHost);

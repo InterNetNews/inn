@@ -182,7 +182,7 @@ extern int		GetLoadAverage();
 #endif	/* NNRP_LOADLIMIT > 0 */
 extern STRING		ARTpost();
 extern void		ARTclose();
-extern void		ARTreadschema();
+extern BOOL		ARTreadschema();
 extern char		*Glom();
 extern int		Argify();
 extern NORETURN		ExitWithStats(int x, BOOL readconf);
