@@ -2667,8 +2667,10 @@ ARTpost(CHANNEL *cp)
       ARTcontrol(data, HDR(_control), cp);
       TMRstop(TMR_ARTCTRL);
     }
-    if (HDR_FOUND(_supersedes) && ARTidok(HDR(_supersedes))) {
-      ARTcancel(data, p, FALSE);
+    if (HDR_FOUND(_supersedes)) {
+      HDR_PARSE_START(_supersedes);
+      if (ARTidok(HDR(_supersedes)))
+	ARTcancel(data, HDR(_supersedes), FALSE);
     }
   }
 
