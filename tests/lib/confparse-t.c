@@ -89,10 +89,10 @@ write_test_config(FILE *file)
 /* Parse a given config file with errors, setting the appropriate error
    handler for the duration of the parse to save errors into the errors
    global.  Returns the resulting config_group. */
-static config_group
+static struct config_group *
 parse_error_config(const char *filename)
 {
-    config_group group;
+    struct config_group *group;
 
     if (errors != NULL) {
         free(errors);
@@ -110,7 +110,7 @@ parse_error_config(const char *filename)
    the pointer passed as the second parameter.  Returns true on success,
    false on end of file. */
 static bool
-parse_test_config(FILE *file, config_group *group)
+parse_test_config(FILE *file, struct config_group **group)
 {
     if (!write_test_config(file))
         return false;
@@ -127,7 +127,7 @@ test_errors(int n)
 {
     FILE *errfile;
     char *expected;
-    config_group group;
+    struct config_group *group;
 
     errfile = fopen("config/errors", "r");
     if (errfile == NULL)
@@ -152,7 +152,7 @@ test_warnings(int n)
 {
     FILE *warnfile;
     char *expected;
-    config_group group;
+    struct config_group *group;
 
     warnfile = fopen("config/warnings", "r");
     if (warnfile == NULL)
@@ -172,15 +172,15 @@ test_warnings(int n)
 int
 main(void)
 {
-    config_group group;
+    struct config_group *group;
     bool b_value = false;
     long l_value = 1;
     const char *s_value;
     char *long_param, *long_value;
     int n;
-    FILE *tmpfile;
+    FILE *tmpconfig;
 
-    puts("69");
+    puts("71");
 
     if (access("config/valid", F_OK) < 0)
         if (access("lib/config/valid", F_OK) == 0)
@@ -254,35 +254,40 @@ main(void)
     }
 
     /* Extremely long parameter and value. */
-    tmpfile = fopen("config/tmp", "w");
-    if (tmpfile == NULL)
+    tmpconfig = fopen("config/tmp", "w");
+    if (tmpconfig == NULL)
         sysdie("cannot create config/tmp");
     long_param = xcalloc(20001, 1);
     memset(long_param, 'a', 20000);
-    fprintf(tmpfile, "%s: ", long_param);
     long_value = xcalloc(64 * 1024 + 1, 1);
     memset(long_value, 'b', 64 * 1024);
-    fprintf(tmpfile, "%s", long_value);
-    fclose(tmpfile);
+    fprintf(tmpconfig, "%s: \"%s\"; two: %s", long_param, long_value,
+            long_value);
+    fclose(tmpconfig);
     group = config_parse_file("config/tmp");
     ok(43, group != NULL);
     if (group == NULL) {
         ok(44, false);
         ok(45, false);
+        ok(46, false);
+        ok(47, false);
     } else {
         ok(44, config_param_string(group, long_param, &s_value));
         ok_string(45, long_value, s_value);
+        ok(46, config_param_string(group, "two", &s_value));
+        ok_string(47, long_value, s_value);
         config_free(group);
     }
+    unlink("config/tmp");
     free(long_param);
     free(long_value);
 
     /* Errors. */
     group = parse_error_config("config/null");
-    ok(46, group == NULL);
-    ok_string(47, "config/null: invalid NUL character found in file\n",
+    ok(48, group == NULL);
+    ok_string(49, "config/null: invalid NUL character found in file\n",
               errors);
-    n = test_errors(48);
+    n = test_errors(50);
     n = test_warnings(n);
 
     return 0;
