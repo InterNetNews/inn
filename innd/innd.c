@@ -9,7 +9,7 @@
 #include "clibrary.h"
 #define DEFINE_DATA
 #include "innd.h"
-#include "ov3.h"
+#include "ov.h"
 #include <sys/ioctl.h>
 #include <sys/uio.h>
 #include <sys/resource.h>
@@ -439,7 +439,7 @@ JustCleanup()
     HISclose();
     ARTclose();
     if (innconf->enableoverview) 
-	OV3close();
+	OVclose();
     SMshutdown();
 
 #if defined(DO_TCL)
@@ -712,7 +712,7 @@ int main(int ac, char *av[])
     val = TRUE;
 
     if (innconf->enableoverview) {
-	if (!OV3open(innconf->overcachesize, OV3_WRITE)) {
+	if (!OVopen(OV_WRITE)) {
 	    syslog(L_FATAL, "%s cant open ov3");
 	    exit(1);
 	}

@@ -11,7 +11,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
-#include "ov3.h"
+#include "ov.h"
 
 
 /*
@@ -141,7 +141,7 @@ STATIC BOOL NGparseentry(NEWSGROUP *ngp, char *p, char *end)
     }
     htp->Groups[htp->Used++] = ngp;
 
-    if (innconf->enableoverview && !OV3groupadd(ngp->Name, ngp->Rest))
+    if (innconf->enableoverview && !OVgroupadd(ngp->Name, ngp->Rest))
 	return FALSE;
 
     return TRUE;
@@ -363,7 +363,7 @@ BOOL NGrenumber(NEWSGROUP *ngp)
     /* note these will be the low and himarks if the group turns out to be empty. */
 
     /* Check overview data for the group. */
-    if (!OV3groupstats(ngp->Name, &low, &high, &count, &flag)) return FALSE;
+    if (!OVgroupstats(ngp->Name, &low, &high, &count, &flag)) return FALSE;
     if (count != 0) {
 	/* non-empty group, so set low/himarks from overview. */
 	lomark = low;

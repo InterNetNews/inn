@@ -12,7 +12,7 @@
 #include "storage.h"
 #include "dbz.h"
 #include "art.h"
-#include "ov3.h"
+#include "ov.h"
 
 typedef struct iovec	IOVEC;
 
@@ -2461,7 +2461,7 @@ STRING ARTpost(CHANNEL *cp)
     MadeOverview = TRUE;
     if (innconf->enableoverview) {
 	TMRstart(TMR_OVERV);
-	if (!OV3add(token, Data.Overview->Data, Data.Overview->Left)) {
+	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left)) {
 	    syslog(L_ERROR, "%s cant store ov2 for %s", LogName, TokenToText(token));
 	    OverviewCreated = FALSE;
 	} else {

@@ -17,7 +17,6 @@
 #include "innd.h"
 #include "inndcomm.h"
 #include "qio.h"
-#include "ov3.h"
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
 #include <sys/un.h>
 #endif	

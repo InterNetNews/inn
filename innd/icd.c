@@ -10,7 +10,7 @@
 #include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
-#include "ov3.h"
+#include "ov.h"
 
 typedef struct iovec	IOVEC;
 
@@ -259,7 +259,7 @@ BOOL ICDchangegroup(NEWSGROUP *ngp, char *Rest)
     ICDiovrelease(&iov[2]);
 
     if (ret) {
-	if (innconf->enableoverview && !OV3groupadd(Name, Rest)) {
+	if (innconf->enableoverview && !OVgroupadd(Name, Rest)) {
 	    DISPOSE(Name);
 	    return FALSE;
 	}
@@ -291,7 +291,7 @@ BOOL ICDnewgroup(char *Name, char *Rest)
     ICDiovrelease(&iov[0]);
     ICDiovrelease(&iov[1]);
     if (ret) {
-	if (innconf->enableoverview && !OV3groupadd(Name, Rest))
+	if (innconf->enableoverview && !OVgroupadd(Name, Rest))
 	    return FALSE;
     }
     return ret;
@@ -333,7 +333,7 @@ BOOL ICDrmgroup(NEWSGROUP *ngp)
     ICDiovrelease(&iov[0]);
     ICDiovrelease(&iov[1]);
     if (ret) {
-	if (innconf->enableoverview && !OV3groupdel(ngp->Name))
+	if (innconf->enableoverview && !OVgroupdel(ngp->Name))
 	    return FALSE;
     }
     return ret;
