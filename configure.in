@@ -344,7 +344,12 @@ esac
 AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
 dnl
-AC_ARG_ENABLE(tagged-hash,[  --enable-tagged-hash    use tagged hash table for history], DO_DBZ_TAGGED_HASH=DO, DO_DBZ_TAGGED_HASH=DONT)
+AC_ARG_ENABLE(tagged-hash,[  --enable-tagged-hash    use tagged hash table for history],
+    if test "x$enableval" = xyes ; then
+	DO_DBZ_TAGGED_HASH=DO
+    else
+	DO_DBZ_TAGGED_HASH=DONT
+    fi)
 if test "x$DO_LFS" = "xDO"
 then
     if test "x$DO_DBZ_TAGGED_HASH" = "xDO"
