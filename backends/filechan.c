@@ -126,7 +126,7 @@ main(ac, av)
 	    fd = open(p, O_CREAT | O_WRONLY | O_APPEND, BATCHFILE_MODE);
 	    if (fd >= 0) {
 		/* Try to lock it and set the ownership right. */
-		(void)LockFile(fd, TRUE);
+		(void)lock_file(fd, LOCK_WRITE, TRUE);
 		if (myuid == 0 && uid != 0)
 		    (void)chown(p, uid, gid);
 
