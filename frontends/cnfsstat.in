@@ -63,7 +63,8 @@ if ($opt_s) {
 	    if ($OSNAME eq "dec_osf") {
 		sub Sys::Syslog::_PATH_LOG { "/dev/log" }
             }
-            Sys::Syslog::setlogsock('unix') if $OSNAME =~ /linux|freebsd|dec_osf/;
+            Sys::Syslog::setlogsock('unix') 
+                if $OSNAME =~ /linux|freebsd|dec_osf|darwin/;
         }
 	openlog ('cnfsstat', 'pid', $inn::syslog_facility);
     } else {
