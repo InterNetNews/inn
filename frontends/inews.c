@@ -969,7 +969,8 @@ main(int ac, char *av[])
 	    *p = '\0';
 	if ((p = strchr(buff, '\r')) != NULL)
 	    *p = '\0';
-	strcpy(SpoolMessage, buff[0] ? buff : NOCONNECT);
+	strlcpy(SpoolMessage, buff[0] ? buff : NOCONNECT,
+                sizeof(SpoolMessage));
         deadfile = concatpath(pwp->pw_dir, "dead.article");
     }
     else {
