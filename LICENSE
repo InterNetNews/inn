@@ -70,9 +70,8 @@ not comprehensively):
    similar to the new BSD license but with Thus plc as the copyright
    holder.  See those files for details.
 
-   lib/tst_cleanup.c, lib/tst_delete.c, lib/tst_grow_node_free_list.c,
-   lib/tst_init.c, lib/tst_insert.c, lib/tst_search.c, and include/tst.h are
-   taken from http://www.octavian.org/cs/tst1.3.tar.gz and are under the BSD
+   lib/tst.c, include/inn/tst.h and doc/pod/tst.pod are derived from
+   from http://www.octavian.org/cs/tst1.3.tar.gz and are under the BSD
    license, but with Peter A. Friend as the copyright holder.
 
    tests/runtests.c is covered under a license very similar to the MIT/X
