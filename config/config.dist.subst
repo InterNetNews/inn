@@ -247,6 +247,9 @@ _PATH_CTLWATCH		/var/news/etc/innwatch.ctl
 _PATH_WATCHPID		/var/news/run/innwatch.pid
 _PATH_INNWSTATUS	/var/news/run/innwatch.status
 _PATH_SCHEMA		/var/news/etc/overview.fmt
+_PATH_MOTD          /var/news/etc/motd.news
+_PATH_STORAGECTL            /var/news/etc/storage.ctl
+_PATH_OVERVIEWCTL           /var/news/etc/overview.ctl
 
 
 INNWATCH_PAUSELOAD	1500
