@@ -382,7 +382,7 @@ sub make_time {
 
 sub mrtg {
 	my $buffer = shift;
-	print "Buffer = $buff{$buffer}\n";
+	# print "Buffer = $buff{$buffer}\n";
 	@info = &get_cycbuff_info($buff{$buffer});
 	print "$info[1]\n";
 	print "$info[2]\n";
