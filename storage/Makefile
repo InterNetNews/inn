@@ -12,16 +12,19 @@ LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
 
-all:		methods libstorage.$(EXTLIB)
+all: objects programs
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-install:	all $(D)$(PATHLIB)/libstorage.$(EXTLIB) 
-
-methods: methods.c buildconfig
+objects: methods.c buildconfig
 	@for D in $(SUBDIRS) ; do \
-	    cd $$D && $(MAKE) all || exit 1 ; cd .. ; \
+	    cd $$D && $(MAKE) objects || exit 1 ; cd .. ; \
+	done
+
+programs: objects libstorage.$(EXTLIB)
+	@progdirs='$(PROGDIRS)' ; for D in $$progdirs ; do \
+	    cd $$D && $(MAKE) programs || exit 1 ; cd .. ; \
 	done
 
 clobber clean distclean:
@@ -33,15 +36,15 @@ clobber clean distclean:
 	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
 	done
 
-tags ctags:	$(SOURCES)
+tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h ../include/inn/*.h
 
-libstorage.la:	$(OBJECTS) $(LOBJECTS)
+libstorage.la: $(OBJECTS) $(LOBJECTS)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
-libstorage.a:	$(OBJECTS)
+libstorage.a: $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libstorage.a
 
@@ -68,6 +71,7 @@ ovtest:		ov.c libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 
 $(LIBINN):      ; (cd ../lib ; $(MAKE))
 
+
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:	../libstorage_p.a
 	date >$@
@@ -79,9 +83,17 @@ profiled:	../libstorage_p.a
 	$(RANLIB) ../libstorage_p.a
 	rm -f $(OBJECTS)
 
+
 ##  Low-level install actions.
+
+install: $(D)$(PATHLIB)/libstorage.$(EXTLIB)
+	@for D in $(SUBDIRS) ; do \
+	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
+	done
+
 $(D)$(PATHLIB)/libstorage.$(EXTLIB): libstorage.$(EXTLIB)
 	$(LI_XPUB) libstorage.$(EXTLIB) $@
+
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
