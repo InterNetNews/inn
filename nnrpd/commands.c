@@ -286,6 +286,9 @@ CMDauthinfo(ac, av)
 			fflush(locallog);
 		}
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+		/* save these values in case you need them later */
+		strcpy(PERMuser, User);
+		strcpy(PERMpass, Password);
 		PERMneedauth = FALSE;
 		PERMauthorized = TRUE;
 		return;
