@@ -448,7 +448,11 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	    return NULL;
 	}
 #ifdef MMAP_MISSES_WRITES
+# ifdef HAVE_MSYNC_3_ARG
 	msync(private->mmapbase, private->mmaplen, MS_INVALIDATE);
+# else
+        msync(private->mmapbase, private->mmaplen);
+# endif
 #endif
 	private->artdata = private->mmapbase + delta;
     } else {

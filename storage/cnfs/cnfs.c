@@ -276,12 +276,12 @@ STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
       }
     } else {
       memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
-#if defined (MMAP_NEEDS_MSYNC)
-#if defined (HAVE_MSYNC_3_ARG)
+#ifdef MMAP_NEEDS_MSYNC
+# ifdef HAVE_MSYNC_3_ARG
       msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
-#else
+# else
       msync(cycbuff->bitfield, cycbuff->minartoffset);
-#endif
+# endif
 #endif
     }
     cycbuff->needflush = FALSE;
@@ -1362,7 +1362,11 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    return NULL;
 	}
 #ifdef MMAP_MISSES_WRITES
+# ifdef HAVE_MSYNC_3_ARG
 	msync(private->base, private->len, MS_INVALIDATE);
+# else
+        msync(private->base, private->len);
+# endif
 #endif
 #if defined(MADV_SEQUENTIAL) && defined(HAVE_MADVISE)
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
@@ -1685,7 +1689,11 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    return art;
 	}
 #ifdef MMAP_MISSES_WRITES
+# ifdef HAVE_MSYNC_3_ARG
 	msync(private->base, private->len, MS_INVALIDATE);
+# else
+        msync(private->base, private->len);
+# endif
 #endif
 #if defined(MADV_SEQUENTIAL) && defined(HAVE_MADVISE)
 	madvise(private->base, private->len, MADV_SEQUENTIAL);
