@@ -1,6 +1,20 @@
 
 Here are the changes for the latest version of INN.
 
+Version 2.2.3
+
+	- INN no longer installs inews setgid news or rnews setuid root by
+	  default.  If you need the old behavior, --enable-uucp-rnews or
+	  --enable-setgid-inews must be given to configure.  See INSTALL
+	  for more information.
+	- A security hole when verifycancels is turned on in inn.conf (not
+	  the default) was fixed.
+	- Message IDs are now limited to 250 octets to prevent
+	  interoperability problems with other servers.
+	- Various other security paranoia fixes have been made.
+	- Embedded Perl filters fixed to work with Perl 5.6.0.
+	- Lots of bug fixes.
+
 Version 2.2.2
 
 	- Various minor bug fixes and a y2k bug fix. The y2k bug is in version 
