@@ -105,12 +105,9 @@ SSLBIN          = @SSL_BIN@
 
 ##  Missing functions.  If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own
-##  replacements using the source and object files listed below.  In some
-##  cases, INN may have man pages for the functions as well.
+##  replacements from the lib directory.
 
-MISSING_MAN     = @MISSING_MAN@
-MISSING_SRC     = @MISSING_SRC@
-MISSING_OBJ     = @MISSING_OBJ@
+LIBOBJS         = @LIBOBJS@
 
 ##  Paths to various standard programs used during the build process.
 ##  Changes to this file will *not* be reflected in the paths compiled into
