@@ -10,6 +10,26 @@
 /* Define if you have ANSI C headers */
 #undef STDC_HEADERS
 
+/* Define if you have <dirent.h> */
+#undef HAVE_DIRENT_H 
+#ifdef HAVE_DIRENT_H
+# define DIR_DIRENT
+#else
+# define DIR_DIRECT
+#endif
+
+/* Define if your 'struct stat' has a 'st_blksize' member */
+#undef HAVE_ST_BLKSIZE
+#ifdef HAVE_ST_BLKSIZE
+# define DO_HAVE_ST_BLKSIZE
+#endif
+
+/* Define if your 'struct tm' has a 'tm_gmtoff' member */
+#undef HAVE_TM_GMTOFF
+#ifdef HAVE_TM_GMTOFF
+# define DO_HAVE_TM_GMTOFF
+#endif
+
 /* Define if you have <varargs.h> */
 #undef HAVE_VARARGS_H 
 

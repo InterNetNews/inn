@@ -167,26 +167,11 @@
   ||#### =()<INT32_T			@<INT32_T>@>()=
   ||INT32_T			@ac_cv_subst_int32_t@
 [IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Use BSD4.2 or Posix directory names?  Pick DIRENT or DIRECT.
-  ||##[autoconf]
-  ||#### =()<DIR_STYLE		@<DIR_STYLE>@>()=
-  ||DIR_STYLE		@ac_cv_subst_dir_style@
-[IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Use flock, lockf, or nothing to lock files?
   ||##[autoconf]
   ||##  Pick FLOCK, LOCKF, FCNTL, or NONE
   ||#### =()<LOCK_STYLE		@<LOCK_STYLE>@>()=
   ||LOCK_STYLE		@ac_lock_style@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Does your (struct tm) have a tm_gmtoff field?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_TM_GMTOFF		@<HAVE_TM_GMTOFF>@>()=
-  ||HAVE_TM_GMTOFF		@ac_cv_subst_have_tm_gmtoff@
-[IN1.7=@4][WDF=autoconf][WOR=no]
-  ||##  Does your (struct stat) have a st_blksize field?  Pick DO or DONT.
-  ||##[autoconf]
-  ||#### =()<HAVE_ST_BLKSIZE		@<HAVE_ST_BLKSIZE>@>()=
-  ||HAVE_ST_BLKSIZE		@ac_cv_subst_have_st_blksize@
 [IN1.7=@4][WDF=autoconf][WOR=no]
   ||##  Use "union wait" instead of int?  Pick DO or DONT.
   ||##[autoconf]

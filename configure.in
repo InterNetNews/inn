@@ -269,7 +269,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h malloc.h memory.h sgtty.h stdarg.h)
 AC_CHECK_HEADERS(stdlib.h string.h sys/file.h sys/filio.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h sys/signal.h sys/time.h syslog.h unistd.h)
-AC_CHECK_HEADERS(varargs.h)
+AC_CHECK_HEADERS(varargs.h dirent.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -285,7 +285,13 @@ AC_CACHE_CHECK(for atomical variable, ac_cv_type_atomic, AC_TRY_COMPILE([#includ
 #endif],[sig_atomic_t i],ac_cv_type_atomic=sig_atomic_t,ac_cv_type_atomic=int))
 AC_SUBST(ac_cv_type_atomic)
 AC_HEADER_TIME
-AC_CACHE_CHECK(for tm_gmtoff in struct tm, ac_cv_struct_tm_gmtoff, AC_TRY_COMPILE([#include <time.h>],[struct tm t; t.tm_gmtoff = 0],ac_cv_struct_tm_gmtoff=yes,ac_cv_struct_tm_gmtoff=no))
+
+AC_MSG_CHECKING(for tm_gmtoff in struct tm)
+AC_TRY_LINK([#include <time.h>],
+	[struct tm t; t.tm_gmtoff = 0],
+	[AC_DEFINE(HAVE_TM_GMTOFF) AC_MSG_RESULT(yes)],
+	AC_MSG_RESULT(no))
+
 AC_CACHE_CHECK(for union wait, ac_cv_union_wait, AC_TRY_COMPILE([#include <wait.h>],[union wait w],ac_cv_union_wait=yes,ac_cv_union_wait=no))
 # Size of integers
 AC_CHECK_SIZEOF(int)
@@ -588,12 +594,9 @@ dnl Convert ac_cv_ yes or no values into subst values for config.data
 dnl (but only if the cv_subst value is not already defined.  This is
 dnl to permit overriding in config.cache
 YN_to_cv_subst(ac_cv_c_const, ac_cv_subst_use_char_const, DO, DONT)
-convert_to_cv_subst(ac_header_dirent,ac_cv_subst_dir_style, dirent.h,DIRENT, direct.h,DIRECT)
 YN_to_cv_subst(ac_cv_type_size_t, ac_cv_subst_size_t, size_t, unsigned)
 YN_to_cv_subst(ac_cv_type_pid_t, ac_cv_subst_pid_t, pid_t, int)
 YN_to_cv_subst(ac_cv_type_off_t, ac_cv_subst_lseekval, off_t, long)
-YN_to_cv_subst(ac_cv_struct_tm_gmtoff, ac_cv_subst_have_tm_gmtoff, DO, DONT)
-YN_to_cv_subst(ac_cv_struct_st_blksize, ac_cv_subst_have_st_blksize, DO, DONT)
 YN_to_cv_subst(ac_cv_union_wait, ac_cv_subst_have_union_wait, DO, DONT)
 YN_to_cv_subst(ac_cv_func_vfork_works, ac_cv_subst_fork, vfork, fork)
 YN_to_cv_subst(ac_cv_header_vfork_h, ac_cv_subst_have_vfork, DO, DONT)
