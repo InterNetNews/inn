@@ -510,9 +510,13 @@ ReadInMem(char *art, ARTHANDLE *arth, char *Tradspooldir)
     if (!FoundXref) {
 	/* assumes not crossposted */
 	sprintf(path, "%s %s %s\r\n\r\n", XREF, pathhost, art);
-	if ((p = strrchr(path, '/')) != (char *)NULL)
+	if ((p = strrchr(path, '/')) != (char *)NULL) {
 	    *p = ':';
-	else {
+	    for (p = path; *p; p++)
+	      if (*p == '/')
+		*p = '.';
+	    
+	} else {
 	    QIOclose(qp);
 	    return FALSE;
 	}
