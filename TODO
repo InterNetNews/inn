@@ -9,6 +9,8 @@ The list is divided into higher priority changes that will hopefully be
 done in the near future, small or medium-scale projects for the future,
 and long-term, large-scale problems.
 
+Last modified $Id$.
+
 
 High Priority Projects:
 
@@ -317,8 +319,6 @@ Future Projects:
   distributions, which means that if a peer sends you a bunch of mangled
   articles, you'll then also reject the correct versions of the articles
   from other peers.  This should probably be rethought.
-
-* There's no sample and no documentation for LIST SUBSCRIPTIONS.
 
 * Additional limits for readers.conf:  Limit on concurrent parallel reader
   streams, limit on KB/second download (preliminary support for this is
