@@ -54,7 +54,7 @@ static long long llong_nums[] = {
     0
 };
 static unsigned long long ullong_nums[] = {
-    ~(long long) 0,                     /* All-1 bit pattern. */
+    ~(unsigned long long) 0,            /* All-1 bit pattern. */
     (~(unsigned long long) 0) >> 1,     /* Largest signed long long. */
     134, 91340, 341,
     0
