@@ -5,7 +5,7 @@ makehistory - Initialize or rebuild INN history database
 =head1 SYNOPSIS
 
 B<makehistory> [B<-abeFIOx>] [B<-f> I<filename>] [B<-l> I<count>]
-[B<-T> I<tmpdir>]
+[B<-T> I<tmpdir>] [B<-s> I<size>]
 
 =head1 DESCRIPTION
 
@@ -83,6 +83,13 @@ by sort(1)).  See the description of the B<-T> option for how to
 specify the temporary storage location.  This option has no effect
 with C<buffindexed>, because C<buffindexed> does not need sorted
 overview and no batching is done.
+
+=item B<-s> I<size>
+
+Size the history database for approximately I<size> pairs.  Accurately
+specifying the size is an optimization that will create a more
+efficient database.  (The size should be the estimated eventual size
+of the file, typically the size of the old file.)
 
 =item B<-O>
 
