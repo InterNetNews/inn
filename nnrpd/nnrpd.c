@@ -944,8 +944,8 @@ main(int argc, char *argv[])
 
 	/* Detach */
 	if ((pid = fork()) < 0) {
-	    fprintf(stderr, "%s: can't fork (%s)\n", argv[0], strerror(errno));
-	    syslog(L_FATAL, "can't fork (%m)");
+	    fprintf(stderr, "%s: can't fork: %s\n", argv[0], strerror(errno));
+	    syslog(L_FATAL, "cant fork: %m");
 	    exit(1);
 	} else if (pid != 0) 
 	    exit(0);
@@ -975,11 +975,11 @@ main(int argc, char *argv[])
 	    
 	    for (i = 0; (pid = fork()) < 0; i++) {
 		if (i == MAX_FORKS) {
-		    syslog(L_FATAL, "cant fork %m -- giving up");
-		    exit(1);
+		    syslog(L_FATAL, "cant fork (dropping connection): %m");
+		    continue;
 		}
-		syslog(L_NOTICE, "cant fork %m -- waiting");
-		(void)sleep(1);
+		syslog(L_NOTICE, "cant fork (waiting): %m");
+		sleep(1);
 	    }
 	    if (pid != 0)
 		close(fd);
