@@ -77,29 +77,27 @@ backends/shrinkfile.c                 Shrink file from beginning
 configure                             Script to configure INN
 configure.in                          Source file for configure
 contrib                               External contributions (Directory)
-contrib/README.contrib                README file for the contrib contents
-contrib/README.newsresp_c             Docs for newsresp.c
-contrib/archivegz                     Compressing version of archive
-contrib/backupfeed                    Suck down news via a reading connection
-contrib/batchpurge.pl                 Remove expired articles from batches
-contrib/cleannewsgroups.pl            Script to clean newsgroups file
+contrib/Makefile                      Makefile for contrib programs
+contrib/README                        Contents of the contrib directory
+contrib/archivegz.in                  Compressing version of archive
+contrib/backupfeed.in                 Suck down news via a reading connection
+contrib/cleannewsgroups.in            Script to clean newsgroups file
 contrib/count_overview.pl             Count overview entries
-contrib/expirectl                     Generate expire.ctl from template
-contrib/findmissing.pl                Locate articles not in history
-contrib/findreadgroups.pl             Track which groups are being read
+contrib/delayer.in                    Delay data in a pipe, for innfeed
+contrib/expirectl.c                   Generate expire.ctl from template
+contrib/findreadgroups.in             Track which groups are being read
 contrib/fixhist                       Script to clean history
-contrib/format_overview.pl            Format output of count_overview.pl
-contrib/makeexpctl.pl                 Create expire.ctl based on read articles
-contrib/makestorconf.pl               Create storage.conf from read articles
+contrib/innconfcheck                  Merge inn.conf with its man page
+contrib/makeexpctl.in                 Create expire.ctl from read groups
+contrib/makestorconf.in               Create storage.conf from read groups
 contrib/mkbuf                         Create cycbuff for HP-UX
-contrib/newsbot                       Grep articles and trigger actions
 contrib/newsresp.c                    Measure responsiveness of remote server
-contrib/pathinfo                      Scan news headers for information
+contrib/pathinfo.in                   Scan news headers for information
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
 contrib/sample.init.script            Example SysV-style init.d script
-contrib/showtoken                     Decode SM tokens
-contrib/tunefeed                      Tune a feed by comparing active files
+contrib/showtoken.in                  Decode storage API tokens
+contrib/tunefeed.in                   Tune a feed by comparing active files
 doc                                   Documentation (Directory)
 doc/Makefile                          Makefile for documentation
 doc/control-messages                  tal's description of control messages
