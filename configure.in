@@ -124,6 +124,12 @@ AC_ARG_WITH(news-master,
     NEWSMASTER=usenet)
 AC_SUBST(NEWSMASTER)
 
+AC_ARG_WITH(syslog-facility,
+    [  --with-syslog-facility=LOG_FAC  Syslog facility [LOG_NEWS or LOG_LOCAL1]],
+    SYSLOG_FACILITY=$with_syslog_facility,
+    SYSLOG_FACILITY="LOG_NEWS")
+AC_SUBST(SYSLOG_FACILITY)
+
 NEWSUMASK=02
 FILEMODE=0664
 DIRMODE=0775
@@ -1233,6 +1239,19 @@ case "$inn_cv_sys_os" in
       # We are using built-in inline function
       CFLAGS="$CFLAGS -Kalloca"
       CXX="CC -DNO_CPLUSPLUS_ALLOCA"
+    fi
+  ;;
+
+  HP-UX)
+    if test "$GCC" != "yes"; then
+      # Need flag to turn on ANSI
+      CFLAGS="$CFLAGS -Ae"
+      # Need -g on link command for debug to work properly
+      case "$CFLAGS" in
+        *-g*)
+          LDFLAGS="$LDFLAGS -g"
+        ;;
+      esac
     fi
   ;;
 esac

@@ -213,6 +213,13 @@ Installing INN
         binaries.  When this option is used, inews will only be executable
         by users in the news group.
 
+    --with-syslog-facility=LOG_xxxx
+        Allows you to specify a syslog facility that INN programs log to.
+        The default is LOG_NEWS.  Usually, you'll only need this if you
+        are on an OS that doesn't have LOG_NEWS (such as HP/UX).  Be sure
+        to specify a facility that is not used by anything else on your
+        system, such as one of LOG_LOCAL0 through LOG_LOCAL7.
+
     For the most common installation, a standalone news server, a suggested
     set of options is:
 
