@@ -63,10 +63,10 @@ char **
 ReadSys(sys)
     char		*sys;
 {
-    register char	*p;
-    register char	*to;
-    register char	*site;
-    register int	i;
+    char	*p;
+    char	*to;
+    char	*site;
+    int	i;
     char		*data;
     char		**strings;
 
@@ -152,13 +152,13 @@ GroupPrefix(p)
 */
 static void
 DoSub(F, p)
-    register FILE	*F;
+    FILE	*F;
     char		*p;
 {
-    register char	*s;
-    register int	len;
-    register bool	SawBang;
-    register bool	SawAll;
+    char	*s;
+    int	len;
+    bool	SawBang;
+    bool	SawAll;
 
     if ((s = strtok(p, ",")) == NULL)
 	return;

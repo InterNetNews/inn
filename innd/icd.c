@@ -138,8 +138,8 @@ ICDclose(void)
 bool
 ICDrenumberactive(void)
 {
-    register int	i;
-    register NEWSGROUP	*ngp;
+    int	i;
+    NEWSGROUP	*ngp;
 
     for (i = nGroups, ngp = Groups; --i >= 0; ngp++)
 	if (!NGrenumber(ngp))

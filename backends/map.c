@@ -29,7 +29,7 @@ static PAIR	*MAPend;
 void
 MAPfree(void)
 {
-    register PAIR	*mp;
+    PAIR	*mp;
 
     for (mp = MAPdata; mp < MAPend; mp++) {
 	DISPOSE(mp->Key);
@@ -46,10 +46,10 @@ MAPfree(void)
 void
 MAPread(const char *name)
 {
-    register FILE	*F;
-    register int	i;
-    register PAIR	*mp;
-    register char	*p;
+    FILE	*F;
+    int	i;
+    PAIR	*mp;
+    char	*p;
     char		buff[BUFSIZ];
 
     if (MAPdata != NULL)
@@ -88,10 +88,10 @@ MAPread(const char *name)
 **  Look up a name in the map, return original value if not found.
 */
 char *
-MAPname(register char *p)
+MAPname(char *p)
 {
-    register PAIR	*mp;
-    register char	c;
+    PAIR	*mp;
+    char	c;
 
     for (c = *p, mp = MAPdata; mp < MAPend; mp++)
 	if (c == mp->First && EQ(p, mp->Key))

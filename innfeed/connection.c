@@ -4547,7 +4547,7 @@ static void delConnection (Connection cxn)
 	 XXX    listeners have gone */
       time_t now = theTime () ;
       char dateString [30] ;
-      register char **p = PointersFreedOnExit ;
+      char **p = PointersFreedOnExit ;
 
       /* finish out all outstanding memory */
       while (*p) 

@@ -84,9 +84,9 @@ TCLreadfilter(void)
 static uint32_t
 makechecksum(u_char *sumbuf, int buflen)
 {
-    register u_char *buf = (u_char *)sumbuf;
-    register int32_t len = buflen;
-    register int32_t sum;
+    u_char *buf = (u_char *)sumbuf;
+    int32_t len = buflen;
+    int32_t sum;
     uint32_t bwordl,bwordr,bword,suml,sumr;
     int rmdr;
     u_char tbuf[4];

@@ -33,8 +33,8 @@ FormatLong(char *p, unsigned long value, int width)
 **  filenames.
 */
 void
-FileGlue(register char *p, register const char *n1, char c,
-         register const char *n2)
+FileGlue(char *p, const char *n1, char c,
+         const char *n2)
 {
     p += strlen(strcpy(p, n1));
     *p++ = c;
@@ -47,9 +47,9 @@ FileGlue(register char *p, register const char *n1, char c,
 **  headers into a single line.
 */
 static char *
-Join(register char *text)
+Join(char *text)
 {
-    register char       *p;
+    char       *p;
 
     for (p = text; *p; p++)
         if (*p == '\n' || *p == '\r')

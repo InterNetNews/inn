@@ -59,8 +59,8 @@ char *HandleHeaders(char *article)
    int		rc;
    char		*p, *q;
    static char	buf[256];
-   register int   i;
-   register char *s,*t;
+   int   i;
+   char *s,*t;
    HE            *scan;
    SV            *modswitch;
    int            OtherSize;
@@ -388,7 +388,7 @@ dumpTable (msg)
 char *msg;
 {
       HEADER        *hp;
-      register int   i;
+      int   i;
 
       fprintf(flog,"===BEGIN TABLE DUMP: %s\n",msg);
       

@@ -184,7 +184,7 @@ massagebuff(bread,buf)
 int bread;
 char *buf;
 {
-  register char *p;
+  char *p;
 
   if ( bread > 55 )
     strcpy(buf+55," [...]\n");

@@ -606,7 +606,7 @@ void addPointerFreedOnExit (char *pointerToFree)
 
   if (nextPointer == 0 || nextPointer == totalPointers - 1)
     {
-      register int i;
+      int i;
 
       totalPointers += 16 ;
       if (PointersFreedOnExit == NULL)

@@ -32,9 +32,9 @@ Argify(line, argvp)
     char		*line;
     char		***argvp;
 {
-    register char	**argv;
-    register char	*p;
-    register int	i;
+    char	**argv;
+    char	*p;
+    int	i;
 
     if (*argvp != NULL) {
 	DISPOSE(*argvp[0]);
@@ -73,9 +73,9 @@ char *
 Glom(av)
     char		**av;
 {
-    register char	**v;
-    register char	*p;
-    register int	i;
+    char	**v;
+    char	*p;
+    int	i;
     char		*save;
 
     /* Get space. */
@@ -191,7 +191,7 @@ NGgetlist(argvp, list)
     char		***argvp;
     char		*list;
 {
-    register char	*p;
+    char	*p;
 
     for (p = list; *p; p++)
 	if (*p == ',')

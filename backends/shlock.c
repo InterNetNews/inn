@@ -24,8 +24,8 @@ static bool	BinaryLock;
 static bool
 ValidLock(char *name, bool JustChecking)
 {
-    register int	fd;
-    register int	i;
+    int	fd;
+    int	i;
     pid_t		pid;
     char		buff[BUFSIZ];
 
@@ -91,9 +91,9 @@ Usage(void)
 int
 main(int ac, char *av[])
 {
-    register int	i;
-    register char	*p;
-    register int	fd;
+    int	i;
+    char	*p;
+    int	fd;
     char		tmp[BUFSIZ];
     char		buff[BUFSIZ];
     char		*name;

@@ -49,10 +49,10 @@ void Radix32(unsigned long l, char *buff)
 */
 unsigned long
 Decode32(p)
-    register char		*p;
+    char		*p;
 {
-    register unsigned long	l;
-    register char		*cp;
+    unsigned long	l;
+    char		*cp;
 
     for (l = 0; *p; p++) {
 	if ((cp = strchr(ALPHABET, *p)) == NULL)

@@ -65,10 +65,10 @@ MakeDir(char *Name)
 **  parent directories needed.  Return FALSE on error.
 */
 static bool
-MakeArchiveDirectory(register char *Name)
+MakeArchiveDirectory(char *Name)
 {
-    register char	*p;
-    register char	*save;
+    char	*p;
+    char	*save;
     bool		made;
 
     if ((save = strrchr(Name, '/')) != NULL)
@@ -171,7 +171,7 @@ Copy(char *src, char *dest)
 static bool
 CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 {
-    register FILE	*out;
+    FILE	*out;
     const char		*p;
     char		*q, *article;
     size_t		i;
@@ -254,8 +254,8 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
 static void
 WriteArtIndex(ARTHANDLE *art, char *ShortName)
 {
-    register const char	*p;
-    register int	i;
+    const char	*p;
+    int	i;
     char		Subject[BUFSIZ];
     char		MessageID[BUFSIZ];
 
@@ -388,10 +388,10 @@ CrackGroups(char *group, unsigned int *lenp) {
 int
 main(int ac, char *av[])
 {
-    register char	*Name;
-    register char	*p;
-    register FILE	*F;
-    register int	i;
+    char	*Name;
+    char	*p;
+    FILE	*F;
+    int	i;
     bool		Flat;
     bool		Redirect;
     bool		Concat;

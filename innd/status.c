@@ -98,7 +98,7 @@ STATUSsummary(void)
 {
   FILE			*F;
   int			i, j;
-  register CHANNEL	*cp;
+  CHANNEL               *cp;
   int			activeCxn = 0;
   int			sleepingCxns = 0;
   time_t		seconds = 0;

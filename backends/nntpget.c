@@ -59,8 +59,8 @@ static struct history	*History;
 static bool
 SITEread(SITE *sp, char *start)
 {
-    register char	*p;
-    register char	*end;
+    char	*p;
+    char	*end;
     struct timeval	t;
     fd_set		rmask;
     int			i;

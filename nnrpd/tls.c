@@ -697,7 +697,7 @@ SSL_writev (ssl, vector, count)
      int count;
 {
   char *buffer;
-  register char *bp;
+  char *bp;
   size_t bytes, to_copy;
   int i;
   /* Find the total number of bytes to be written.  */

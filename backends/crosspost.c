@@ -89,9 +89,9 @@ MakeDir(Name)
 */
 static bool
 MakeSpoolDir(Name)
-    register char	*Name;
+    char	*Name;
 {
-    register char	*p;
+    char	*p;
     bool		made;
 
     /* Optimize common case -- parent almost always exists. */
@@ -124,8 +124,8 @@ static void
 ProcessIncoming(qp)
     QIOSTATE		*qp;
 {
-    register char	*p;
-    register int	i;
+    char	*p;
+    int	i;
     int			nxp;
     int			fd;
     int			lnval ;
@@ -173,7 +173,7 @@ ProcessIncoming(qp)
             lnval = link(names[0], names[i]) ;
 	    if (lnval == 0) STATLink++;
 	    if (lnval < 0 && errno != EXDEV) { /* first try to link */
-		register int j;
+		int j;
 		char path[SPOOLNAMEBUFF+2];
 
 		for (j = 0; (path[j] = names[i][j]) != '\0' ; j++) ;
@@ -231,7 +231,7 @@ ProcessIncoming(qp)
 		    STATOError++;
 		}
 	    } else if (lnval < 0) {
-		register int j;
+		int j;
 		char path[SPOOLNAMEBUFF+2];
 
 #if !defined(HAVE_SYMLINK)
@@ -286,7 +286,7 @@ main(ac, av)
     int			ac;
     char		*av[];
 {
-    register int	i;
+    int	i;
     QIOSTATE		*qp;
 
     /* Set defaults. */

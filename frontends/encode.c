@@ -34,10 +34,10 @@ static int	Count;
 
 
 static void
-dumpcode(register char *p, register int n)
+dumpcode(char *p, int n)
 {
-    register int	last;
-    register int	c;
+    int	last;
+    int	c;
 
     if (n == 13) {
 	n--;
@@ -71,11 +71,11 @@ flushout(void)
 
 
 static void
-encode(register char *dest, int n)
+encode(char *dest, int n)
 {
-    register char	*p;
-    register int	i;
-    register int	j;
+    char	*p;
+    int	i;
+    int	j;
     char		b4[4];
 
     b4[0] = (dest[0] >> 2) & 0x3F;
@@ -98,8 +98,8 @@ encode(register char *dest, int n)
 int
 main(void)
 {
-    register char	*p;
-    register int	c;
+    char	*p;
+    int	c;
     char		b3[3];
 
     for (p = b3; (c = getchar()) != EOF; ) {

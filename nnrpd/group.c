@@ -197,10 +197,10 @@ CMDxgtitle(ac, av)
     int			ac;
     char		*av[];
 {
-    register QIOSTATE	*qp;
-    register char	*line;
-    register char	*p;
-    register char	*q;
+    QIOSTATE	*qp;
+    char	*line;
+    char	*p;
+    char	*q;
     char		*grplist[2];
     char		save;
 

@@ -86,11 +86,11 @@ static unsigned long	STATrejected;
 **  Send a line to the server. \r\n will be appended
 */
 static bool
-REMwrite(register int fd, register char *p)
+REMwrite(int fd, char *p)
 {
-  register int		i;
-  register int		err;
-  register char		*dest;
+  int		i;
+  int		err;
+  char		*dest;
   static char		buff[NNTP_STRLEN];
 
   for (dest = buff, i = 0; p[i]; ) *dest++ = p[i++];
@@ -230,7 +230,7 @@ Interrupted(void)
 static bool
 REMsendxbatch(int fd, char *buf, int size)
 {
-  register char	*p;
+  char	*p;
   int		i;
   int		err;
 
@@ -329,7 +329,7 @@ int
 main(int ac, char *av[])
 {
   int			i;
-  register char		*p;
+  char		*p;
   TIMEINFO		Now;
   FILE			*From;
   FILE			*To;

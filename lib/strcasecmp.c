@@ -72,7 +72,7 @@ int
 strcasecmp(s1, s2)
 	const char *s1, *s2;
 {
-	register const u_char *cm = charmap,
+	const u_char *cm = charmap,
 			*us1 = (const u_char *)s1,
 			*us2 = (const u_char *)s2;
 
@@ -85,10 +85,10 @@ strcasecmp(s1, s2)
 int
 strncasecmp(s1, s2, n)
 	const char *s1, *s2;
-	register size_t n;
+	size_t n;
 {
 	if (n != 0) {
-		register const u_char *cm = charmap,
+		const u_char *cm = charmap,
 				*us1 = (const u_char *)s1,
 				*us2 = (const u_char *)s2;
 

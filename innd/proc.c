@@ -69,8 +69,8 @@ PROCcatchsignal(int s)
 void
 PROCscan(void)
 {
-    register PROCESS	*pp;
-    register int	i;
+    PROCESS	*pp;
+    int	i;
 
     for (pp = PROCtable, i = PROCtablesize; --i >= 0; pp++)
 	if (pp->State == PSdead) {
@@ -90,9 +90,9 @@ void
 PROCclose(Quickly)
     bool		Quickly;
 {
-    register int	sig;
-    register PROCESS	*pp;
-    register int	i;
+    int	sig;
+    PROCESS	*pp;
+    int	i;
 
     /* What signal are we sending? */
     sig = Quickly ? SIGKILL : SIGTERM;
@@ -119,8 +119,7 @@ PROCclose(Quickly)
 **  Stop watching a process -- we don't care about it any more.
 */
 void
-PROCunwatch(process)
-    int		process;
+PROCunwatch(int process)
 {
     if (process < 0 || process >= PROCtablesize) {
 	syslog(L_ERROR, "%s internal PROCunwatch %d", LogName, process);
@@ -164,9 +163,9 @@ PROCwatch(pid_t pid, int site)
 **  Setup.
 */
 void
-PROCsetup(register int i)
+PROCsetup(int i)
 {
-    register PROCESS	*pp;
+    PROCESS	*pp;
 
     if (PROCtable)
 	DISPOSE(PROCtable);

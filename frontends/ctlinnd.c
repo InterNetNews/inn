@@ -124,7 +124,7 @@ static COMMAND	Commands[] = {
 static void
 Help(char *p)
 {
-    register COMMAND	*cp;
+    COMMAND	*cp;
 
     if (p == NULL) {
 	(void)printf("Command summary:\n");

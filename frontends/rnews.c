@@ -337,15 +337,15 @@ static bool Process(char *article)
 **  this case and let it do the buffering.
 */
 static bool
-ReadRemainder(register int fd, char first, char second)
+ReadRemainder(int fd, char first, char second)
 {
-    register FILE	*F;
-    register char	*article;
-    register char       *p;
-    register int	size;
-    register int	used;
-    register int	left;
-    register int	i;
+    FILE	*F;
+    char	*article;
+    char       *p;
+    int	size;
+    int	used;
+    int	left;
+    int	i;
     bool		ok;
 
     /* Turn the descriptor into a stream. */
@@ -396,13 +396,13 @@ ReadRemainder(register int fd, char first, char second)
 **  Read an article from the input stream that is artsize bytes long.
 */
 static bool
-ReadBytecount(register int fd, int artsize)
+ReadBytecount(int fd, int artsize)
 {
     static char		*article;
     static int		oldsize;
-    register char	*p;
-    register int	left;
-    register int	i;
+    char	*p;
+    int	left;
+    int	i;
 
     /* If we haven't gotten any memory before, or we didn't get enough,
      * then get some. */
@@ -604,9 +604,9 @@ UnpackOne(int *fdp, size_t *countp)
 static void
 Unspool(void)
 {
-    register DIR	*dp;
+    DIR	*dp;
     struct dirent       *ep;
-    register bool	ok;
+    bool	ok;
     struct stat		Sb;
     char		hostname[10];
     int			fd, lockfd;

@@ -38,10 +38,10 @@ static char sccsid[] = "@(#)strtok.c	5.7 (Berkeley) 6/1/90";
 
 char *
 strtok(s, delim)
-	register char *s, *delim;
+	char *s, *delim;
 {
-	register char *spanp;
-	register int c, sc;
+	char *spanp;
+	int c, sc;
 	char *tok;
 	static char *last;
 

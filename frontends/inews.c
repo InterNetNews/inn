@@ -174,9 +174,9 @@ SafeFlush(FILE *F)
 **  Trim trailing spaces, return pointer to first non-space char.
 */
 static char *
-TrimSpaces(register char *p)
+TrimSpaces(char *p)
 {
-    register char	*start;
+    char	*start;
 
     for (start = p; ISWHITE(*start); start++)
 	continue;
@@ -191,7 +191,7 @@ TrimSpaces(register char *p)
 **  to the start of the next one.  Handles continuations.
 */
 static char *
-NextHeader(register char *p)
+NextHeader(char *p)
 {
     for ( ; ; p++) {
 	if ((p = strchr(p, '\n')) == NULL)
@@ -210,11 +210,11 @@ NextHeader(register char *p)
 static char *
 StripOffHeaders(char *article)
 {
-    register char	*p;
-    register char	*q;
-    register HEADER	*hp;
-    register char	c;
-    register int	i;
+    char	*p;
+    char	*q;
+    HEADER	*hp;
+    char	c;
+    int	i;
 
     /* Set up the other headers list. */
     OtherSize = HEADER_DELTA;
@@ -288,7 +288,7 @@ static void
 CheckCancel(char *msgid, bool JustReturn)
 {
     char		localfrom[SMBUF];
-    register char	*p;
+    char	*p;
     char		buff[BUFSIZ];
     char		remotefrom[SMBUF];
 
@@ -379,8 +379,8 @@ AnAdministrator(char *name, gid_t group)
 static void
 CheckControl(char *ctrl, struct passwd *pwp)
 {
-    register char	*p;
-    register char	*q;
+    char	*p;
+    char	*q;
     char		save;
     char		name[SMBUF];
 
@@ -734,9 +734,9 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
 **  so that we don't reject diff(1) output.
 */
 static void
-CheckIncludedText(register char *p, register int lines)
+CheckIncludedText(char *p, int lines)
 {
-    register int	i;
+    int	i;
 
     for (i = 0; ; p++) {
 	switch (*p) {
@@ -769,11 +769,11 @@ CheckIncludedText(register char *p, register int lines)
 static char *
 ReadStdin(void)
 {
-    register int	size;
-    register char	*p;
+    int	size;
+    char	*p;
     char		*article;
-    register char	*end;
-    register int	i;
+    char	*end;
+    int	i;
 
     size = BUFSIZ;
     article = NEW(char, size);

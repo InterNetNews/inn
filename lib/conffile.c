@@ -38,11 +38,11 @@ static int cfeof(CONFFILE *F) {
 
 static char *CONFgetword(CONFFILE *F)
 {
-  register char *p;
-  register char *s;
-  register char *t;
-  char          *word;
-  register bool flag;
+  char *p;
+  char *s;
+  char *t;
+  char *word;
+  bool flag;
 
   if (!F) return (NULL);	/* No conf file */
   if (!F->buf || !F->buf[0]) {

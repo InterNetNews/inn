@@ -74,7 +74,7 @@ static TIMEINFO	Now;
 static void
 SITEsetup(void)
 {
-    register SITEHASH	*shp;
+    SITEHASH	*shp;
 
     for (shp = SITEtable; shp < ENDOF(SITEtable); shp++) {
 	shp->Size = 3;
@@ -90,7 +90,7 @@ SITEsetup(void)
 static void
 SITEclose(SITE *sp)
 {
-    register FILE	*F;
+    FILE	*F;
 
     if ((F = sp->F) != NULL) {
 	if (fflush(F) == EOF || ferror(F)
@@ -107,9 +107,9 @@ SITEclose(SITE *sp)
 static void
 SITEcloseall(void)
 {
-    register SITEHASH	*shp;
-    register SITE	*sp;
-    register int	i;
+    SITEHASH	*shp;
+    SITE	*sp;
+    int	i;
 
     for (shp = SITEtable; shp < ENDOF(SITEtable); shp++)
 	for (sp = shp->Sites, i = shp->Used; --i >= 0; sp++)
@@ -153,10 +153,10 @@ static void SITEopen(SITE *sp)
 static SITE *
 SITEfind(char *Name, bool CanCreate)
 {
-    register char	*p;
-    register int	i;
+    char	*p;
+    int	i;
     unsigned int	j;
-    register SITE	*sp;
+    SITE	*sp;
     SITEHASH		*shp;
     char		c;
     char		buff[BUFSIZ];
@@ -196,9 +196,9 @@ SITEfind(char *Name, bool CanCreate)
 **  Flush a site -- close and re-open the file.
 */
 static void
-SITEflush(register SITE *sp)
+SITEflush(SITE *sp)
 {
-    register FILE	*F;
+    FILE	*F;
 
     if ((F = sp->F) != NULL) {
 	if (fflush(F) == EOF || ferror(F)
@@ -218,9 +218,9 @@ SITEflush(register SITE *sp)
 static void
 SITEflushall(void)
 {
-    register SITEHASH	*shp;
-    register SITE	*sp;
-    register int	i;
+    SITEHASH	*shp;
+    SITE	*sp;
+    int	i;
 
     for (shp = SITEtable; shp < ENDOF(SITEtable); shp++)
 	for (sp = shp->Sites, i = shp->Used; --i >= 0; sp++)
@@ -232,9 +232,9 @@ SITEflushall(void)
 **  Write data to a site.
 */
 static void
-SITEwrite(register char *name, register char *text, register size_t len)
+SITEwrite(char *name, char *text, size_t len)
 {
-    register SITE	*sp;
+    SITE	*sp;
 
     sp = SITEfind(name, TRUE);
     if (sp->F == NULL)
@@ -271,9 +271,9 @@ SITEwrite(register char *name, register char *text, register size_t len)
 **  Handle a command message.
 */
 static void
-Process(register char *p)
+Process(char *p)
 {
-    register SITE	*sp;
+    SITE	*sp;
 
     if (*p == 'b' && EQn(p, "begin", 5))
 	/* No-op. */
@@ -329,12 +329,12 @@ CATCHinterrupt(int s)
 int
 main(int ac, char *av[])
 {
-    register QIOSTATE	*qp;
-    register int	i;
-    register int	Fields;
-    register char	*p;
-    register char	*next;
-    register char	*line;
+    QIOSTATE	*qp;
+    int	i;
+    int	Fields;
+    char	*p;
+    char	*next;
+    char	*line;
     char		*Directory;
     bool		Redirect;
     FILE		*F;
