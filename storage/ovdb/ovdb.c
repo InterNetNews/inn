@@ -2,6 +2,7 @@
  * ovdb.c
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-07-07 : bugfix: timestamp handling
  * 2000-06-10 : Modified groupnum() interface; fix ovdb_add() to return FALSE
  *              for certain groupnum() errors
  * 2000-06-08 : Added BerkeleyDB 3.1.x compatibility
@@ -168,6 +169,7 @@ static DB_ENV *OVDBenv = NULL;
 static DB **dbs = NULL;
 static int oneatatime = 0;
 static int current_db = -1;
+static time_t eo_start = 0;
 
 static DB *groupstats = NULL;
 static DB *groupsbyname = NULL;
@@ -546,7 +548,7 @@ static BOOL delete_old_stuff()
 	if(val.size != sizeof(struct groupstats))
 	    continue;
 
-	if(gs.expired >= OVrealnow)
+	if(gs.expired >= eo_start)
 	    continue;
 
 	delete_all_records(gno);
@@ -1403,6 +1405,9 @@ BOOL ovdb_expiregroup(char *group, int *lo)
     ARTHANDLE *ah;
     ARTNUM newlo = 0, artnum, oldhi;
     int newcount = 0;
+
+    if(eo_start == 0)
+	eo_start = time(NULL);
 
     /* Special case:  when called with NULL group, we're to clean out
        records for deleted groups.  This will also clean out forgotton
