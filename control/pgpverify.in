@@ -4,7 +4,7 @@
 #
 # written April 1996, tale@isc.org (David C Lawrence)
 # Currently maintained by Russ Allbery <rra@stanford.edu>
-# Version 1.24, 2003-10-05
+# Version 1.25, 2003-12-10
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN is the
 # same as the version that I make available to the rest of the world
@@ -15,6 +15,10 @@
 # and your Perl is too old, please contact me (rra@stanford.edu) and tell
 # me about it; I want to know what old versions of Perl are still used in
 # practice.
+#
+# Changes from 1.24 -> 1.25
+# -- Fix the -test switch to actually do something.
+# -- Improve date generation when logging to standard output.
 #
 # Changes from 1.23 -> 1.24
 # -- Fix bug in the recognition of wire-format articles.
@@ -185,9 +189,10 @@ use vars qw($gpgv $pgp $keyring $tmp $tmpdir $lockdir $syslog_method
 use Fcntl qw(O_WRONLY O_CREAT O_EXCL);
 use FileHandle;
 use IPC::Open3 qw(open3);
+use POSIX qw(strftime);
 
 # Turn on test mode if the first argument is '-test'.
-if ($1 && $1 eq '-test') {
+if (@ARGV && $ARGV[0] eq '-test') {
   shift @ARGV;
   $test = 1;
 }
@@ -224,6 +229,10 @@ my ($nntp_format, $header, $dup) = &parse_header();
 exit 1 unless $$header{'X-PGP-Sig'};
 my ($message, $signature, $version)
     = &generate_message($nntp_format, $header, $dup);
+if ($test) {
+  print "-----MESSAGE-----\n$message\n-----END MESSAGE-----\n\n";
+  print "-----SIGNATURE-----\n$signature\n-----SIGNATURE-----\n\n";
+}
 
 # The call to pgp needs to be locked because it tries to both read and
 # write a file named randseed.bin but doesn't do its own locking as it
@@ -455,6 +464,7 @@ sub pgp_verify {
   my $signer;
   my $ok = 255;
   while (<$output>) {
+    print if $test;
     if ($pgpstyle eq 'GPG') {
       if (/\[GNUPG:\]\s+GOODSIG\s+\S+\s+(\S+)/) {
         $ok = 0;
@@ -500,7 +510,7 @@ sub errmsg {
 
   my $date = '';
   if ($log_date) {
-    ($date = localtime) =~ s/\d{4}\n//;
+    $date = strftime ('%Y-%m-%d %T ', localtime);
   }
 
   if ($syslog_method && $] >= 5.006) {
