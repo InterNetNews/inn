@@ -20,7 +20,6 @@
 #include "cache.h"
 
 #ifdef HAVE_SSL
-#include <openssl/e_os.h>
 extern SSL *tls_conn;
 #endif 
 
@@ -70,12 +69,10 @@ Again:
         result = SSL_writev(tls_conn, vec, *countp);
         switch (SSL_get_error(tls_conn, result)) {
         case SSL_ERROR_NONE:
+        case SSL_ERROR_SYSCALL:
             break;
         case SSL_ERROR_WANT_WRITE:
             goto Again;
-            break;
-        case SSL_ERROR_SYSCALL:
-            errno = get_last_socket_error();
             break;
         case SSL_ERROR_SSL:
             SSL_shutdown(tls_conn);
@@ -190,12 +187,10 @@ Again:
         r = SSL_write(tls_conn, _IO_buffer_, highwater);
         switch (SSL_get_error(tls_conn, r)) {
         case SSL_ERROR_NONE:
+        case SSL_ERROR_SYSCALL:
             break;
         case SSL_ERROR_WANT_WRITE:
             goto Again;
-            break;
-        case SSL_ERROR_SYSCALL:
-            errno = get_last_socket_error();
             break;
         case SSL_ERROR_SSL:
             SSL_shutdown(tls_conn);

@@ -23,7 +23,6 @@
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
-#include <openssl/e_os.h>
 extern SSL *tls_conn;
 #endif
 
@@ -66,7 +65,6 @@ line_doread(void *p, size_t len)
 	    err = SSL_get_error(tls_conn, n);
 	    switch (err) {
 	    case SSL_ERROR_SYSCALL:
-		errno = get_last_socket_error();
 		break;
 
 	    case SSL_ERROR_SSL:
