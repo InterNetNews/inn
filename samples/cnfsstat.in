@@ -77,6 +77,7 @@ sub read_cycbuffconf {
 	$_ =~ s/^\s*(.*?)\s*$/$1/;
 	# \x23 below is #.  Emacs perl-mode gets confused by the "comment"
 	next if($_ =~ /^\s*$/ || $_ =~ /^\x23/);
+	next if($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
 	
 	if($_ =~ /^metacycbuff:/) {
 	    @line = split(/:/, $_);
