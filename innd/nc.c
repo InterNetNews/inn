@@ -467,7 +467,7 @@ NCihave(CHANNEL *cp)
                 cp->Sendid.Size = MAXHEADERSIZE;
             cp->Sendid.Data = NEW(char, cp->Sendid.Size);
         }
-        sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, filterrc);
+        sprintf(cp->Sendid.Data, "%d %.200s", NNTP_HAVEIT_VAL, filterrc);
         NCwritereply(cp, cp->Sendid.Data);
         DISPOSE(cp->Sendid.Data);
         cp->Sendid.Size = 0;
@@ -493,7 +493,7 @@ NCihave(CHANNEL *cp)
 		cp->Sendid.Size = MAXHEADERSIZE;
 	    cp->Sendid.Data = NEW(char, cp->Sendid.Size);
 	}
-	sprintf(cp->Sendid.Data, "%d %s", NNTP_HAVEIT_VAL, filterrc);
+	sprintf(cp->Sendid.Data, "%d %.200s", NNTP_HAVEIT_VAL, filterrc);
 	NCwritereply(cp, cp->Sendid.Data);
 	DISPOSE(cp->Sendid.Data);
 	cp->Sendid.Size = 0;
