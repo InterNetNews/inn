@@ -501,6 +501,14 @@ Future Projects:
   made to use configure results.  Similarly (ideally) with its code for
   setproctitle.
 
+* INN currently uses hash tables to store the active file internally.  It
+  should probably use ternary search trees instead; the data structure is
+  simpler, performance is comparable or better for hits and significantly
+  better for misses, sizing and resizing becomes a non-issue, and the
+  space penalty isn't too bad.  For more information, see
+  <http://www.ddj.com/articles/1998/9804/9804a/9804a.htm>.  A generic
+  implementation in libinn may be usable in many places.
+
 
 Long-Term Projects:
 
