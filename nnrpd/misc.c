@@ -117,7 +117,7 @@ BOOL PERMmatch(char **Pats, char **list)
     char	        *p;
     int                 match = FALSE;
 
-    if (Pats[0] == NULL)
+    if (Pats == NULL || Pats[0] == NULL)
 	return TRUE;
 
     for ( ; *list; list++) {
