@@ -1621,12 +1621,10 @@ sub collect {
         my ($period, $added);
         $period = $time - $cnfsstat_time{$buffer};
         $period = 86400 - $cnfsstat_time{$buffer} + $time if $period < 0;
-        if ($cycles == $cnfsstat_cycles{$buffer}) {
-          $added = $used - $cnfsstat_used{$buffer};
-        }
-        elsif ($cycles > $cnfsstat_cycles{$buffer}) {
-          $added = $size * ($cycles - $cnfsstat_cycles{$buffer}) + $used;
-        }
+        $added = $used - $cnfsstat_used{$buffer};
+        if ($cycles > $cnfsstat_cycles{$buffer}) {
+          $added += $size * ($cycles - $cnfsstat_cycles{$buffer});
+        } 
         if ($added > 0) {
           $cnfsstat_rate{$buffer} += $added / $period;
           $cnfsstat_samples{$buffer}++;
