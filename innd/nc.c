@@ -643,6 +643,11 @@ NCxpath(CHANNEL *cp)
     char		*p;
     int			i;
 
+    if (innconf->storageapi) {
+	/* not available for storageapi */
+	NCwritereply(cp, NNTP_BAD_COMMAND);
+	return;
+    }
     /* Nip off the Message-ID. */
     for (p = cp->In.Data + STRLEN("xpath"); ISWHITE(*p); p++)
 	continue;
