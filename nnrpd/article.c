@@ -749,7 +749,7 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 FUNCTYPE CMDnextlast(int ac, char *av[])
 {
     char	buff[SPOOLNAMEBUFF];
-    char	idbuff[SMBUF];
+    char	*msgid;
     int		save;
     BOOL	next;
     int		delta;
@@ -800,8 +800,13 @@ FUNCTYPE CMDnextlast(int ac, char *av[])
 	(void)sprintf(buff, "%ld", ARTnumbers[ARTindex].ArtNum);
     }
 
+    if ((msgid = GetHeader("Message-ID", FALSE)) == NULL) {
+        Reply("%s\r\n", ARTnoartingroup);
+        return;
+    }
+
     Reply("%d %s %s Article retrieved; request text separately.\r\n",
-	   NNTP_NOTHING_FOLLOWS_VAL, buff, idbuff);
+	   NNTP_NOTHING_FOLLOWS_VAL, buff, msgid);
 
     if (ac > 1)
 	ARTindex = ARTfind((ARTNUM)atol(buff));
