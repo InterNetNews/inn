@@ -7,20 +7,35 @@
 
 #include <stdio.h>
 
+/* uncomment the below for LARGE_FILES support */ 
+/* #define LARGE_FILES */
+
 int main(int argc, char *argv[])
 {
     int fd;
     int i, j;
     char buf[512];
-    struct stat st;
+#ifdef LARGE_FILES 
+    struct stat64 st; 
+#else 
+    struct stat st; 
+#endif
     int numwr;
 
     bzero(buf, sizeof(buf));
     for (i = 1; i < argc; i++) {
-	if ((fd = open(argv[i], O_RDWR, 0664)) < 0)
+#ifdef LARGE_FILES 
+	if ((fd = open(argv[i], O_LARGEFILE | O_RDWR, 0664)) < 0) 
+#else 
+	if ((fd = open(argv[i], O_RDWR, 0664)) < 0) 
+#endif
 	    fprintf(stderr, "Could not open file %s: %s\n", argv[i], strerror(errno));
 	else {
-	    if (fstat(fd, &st) < 0) {
+#ifdef LARGE_FILES 
+	    if (fstat64(fd, &st) < 0) { 
+#else 
+	    if (fstat(fd, &st) < 0) { 
+#endif
 		fprintf(stderr, "Could not stat file %s: %s\n", argv[i], strerror(errno));
 	    } else {
 		/* each bit in the bitfield is 512 bytes of data.  Each byte
