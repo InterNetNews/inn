@@ -198,7 +198,7 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
   char		**distribs;
   char		**xrefs;
   char		line[BIG_BUFFER];
-  long		date;
+  time_t	date;
   TOKEN		token;
   ARTHANDLE	*art;
   QIOSTATE	*qp;
@@ -210,6 +210,7 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
   int		i, len;
   static int	Msgid = OVFMT_UNINIT;
   static int	Xref = OVFMT_UNINIT;
+  bool          local;
 
   if (!PERMaccessconf->allownewnews) {
     Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ACCESS_VAL);
@@ -245,25 +246,19 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
   }
 
   /* Parse the date. */
-  date = NNTPtoGMT(av[2], av[3]);
-  if (date < 0) {
+  local = (ac > 4 && (caseEQ(av[4], "GMT") || caseEQ(av[4], "UTC")));
+  date = parsedate_nntp(av[2], av[3], local);
+  if (date == (time_t) -1) {
     Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
     return;
   }
-  ac -= 4;
-  av += 4;
-  if (ac > 0 && (caseEQ(*av, "GMT") || caseEQ(*av, "UTC"))) {
-    ac--;
-    av++;
-  } else
-    date = LOCALtoGMT(date);
 
   /* Parse the distributions. */
-  if (ac == 0)
+  if (ac < 6)
     AllDists = TRUE;
   else {
-    if (!ParseDistlist(&distribs, *av)) {
-      Reply("%d Bad distribution %s\r\n", NNTP_SYNTAX_VAL, *av);
+    if (!ParseDistlist(&distribs, av[5])) {
+      Reply("%d Bad distribution %s\r\n", NNTP_SYNTAX_VAL, av[5]);
       return;
     }
     AllDists = FALSE;
