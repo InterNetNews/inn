@@ -143,7 +143,7 @@ STATIC BOOL NGparseentry(NEWSGROUP *ngp, char *p, char *end)
     }
     htp->Groups[htp->Used++] = ngp;
 
-    if (innconf->enableoverview && !OVgroupadd(ngp->Name, lo, ngp->Rest))
+    if (innconf->enableoverview && !OVgroupadd(ngp->Name, lo, ngp->Last, ngp->Rest))
 	return FALSE;
 
     return TRUE;
