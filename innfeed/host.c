@@ -1132,6 +1132,7 @@ struct in_addr *hostIpAddr (Host host)
   char **newIpAddrs = NULL;
   struct in_addr ipAddr, *returnAddr ;
   struct hostent *hostEnt ;
+  char *msgstr[SMBUF] ;
 
   ASSERT(host->params != NULL);
 
@@ -1142,8 +1143,11 @@ struct in_addr *hostIpAddr (Host host)
       if ( !inet_aton (host->params->ipName,&ipAddr) )
 	{
 	  if ((hostEnt = gethostbyname (host->params->ipName)) == NULL)
-	    syslog (LOG_ERR, HOST_RESOLV_ERROR, host->params->peerName,
-		    host->params->ipName, host_err_str ()) ;
+	    {
+	      herror (msgstr) ;
+	      syslog (LOG_ERR, HOST_RESOLV_ERROR, host->params->peerName,
+		    host->params->ipName, msgstr) ;
+	    }
 	  else
 	    {
 	      /* figure number of pointers that need space */
