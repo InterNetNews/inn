@@ -17,6 +17,7 @@ Supported Systems
   FreeBSD 2.2.x
   Linux 2.0.x (with libc 5.4 or libc 6.0)
   OpenBSD ?.?
+  SCO 5.0.4 (tested with gcc 2.8.1)
   Solaris 2.5.x
   Solaris 2.6.x
   SunOS 4.1.4
@@ -128,6 +129,11 @@ Installing INN
   defaults you can invoke the configure script with one or more command line
   options. The most commonly used options are described below.
 
+  Note for SCO 5.0.4... configure insists that syslog doesn't work for SCO
+  and so sets the following as missing: syslog.3 syslog.c syslog.o in the 
+  config/config.data file. You need to manually delete those entries before
+  trying to make the distribution.
+
   --prefix=PATH           Sets the installation prefix for INN. The default
                           is /usr/local/news. All of INN's programs and support
                           files will be installed under this directory. You
@@ -170,6 +176,10 @@ Installing INN
   distribution. From the root of the INN source tree, type:
 
         make
+
+  Again, please note that for SCO 5.0.4, you need to edit the 
+  config/config.data file to delete the references to syslog.3 syslog.c and 
+  syslog.o before running the make command.
 
   At this point you can step away from the computer for a little while and have
   a quick snack while INN compiles.  On a decently fast system it should only
