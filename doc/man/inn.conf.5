@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2002-02-02" "INN 2.4.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2002-03-23" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -993,8 +993,10 @@ for \fInnrpd\fR\|(8) processes spawned from \fIinnd\fR\|(8), this value will be 
 set to a value lower than \fInicekids\fR.
 .IP "\fIpauseretrytime\fR" 4
 .IX Item "pauseretrytime"
-Wait for this many seconds before noticing inactive channels.  The default
-value is \f(CW300\fR.
+Wait for this many seconds before noticing inactive channels.
+Wait for this many seconds before innd processes article when it's paused
+or the number of channel write failure exceeds \fIbadiocount\fR.  The
+default value is \f(CW300\fR.
 .IP "\fIpeertimeout\fR" 4
 .IX Item "peertimeout"
 How long (in seconds) an \fIinnd\fR\|(8) incoming channel may be inactive before
