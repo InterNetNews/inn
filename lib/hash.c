@@ -4,6 +4,7 @@
    used */
 #include <stdio.h>
 #include <sys/types.h>
+#include <ctype.h>
 #include "configdata.h"
 #include "clibrary.h"
 #include "libinn.h"
@@ -118,7 +119,6 @@ HASH TextToHash(const char *text) {
     char                *q;
     int                 i;
     HASH                hash;
-    int                 x, y;
 
     for (q = (char *)&hash, i = 0; i != sizeof(HASH); i++) {
 	q[i] = (hextodec(text[i * 2]) << 4) + hextodec(text[(i * 2) + 1]);

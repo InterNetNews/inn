@@ -1092,7 +1092,7 @@ get_active(host, hostid, len, grp, errs)
 
 	/* open a connection to the server */
 	buff[0] = '\0';
-	if (NNTPconnect(host, &FromServer, &ToServer, buff) < 0) {
+	if (NNTPconnect(host, NNTP_PORT, &FromServer, &ToServer, buff) < 0) {
 	    (void) fprintf(stderr, "can't connect to server, %s\n",
 		    buff[0] ? buff : strerror(errno));
 	    exit(NOT_REACHED);

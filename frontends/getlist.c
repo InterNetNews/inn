@@ -92,7 +92,7 @@ main(ac, av)
 	exit(1);
     }
     buff[0] = '\0';
-    if (NNTPconnect(host, &FromServer, &ToServer, buff) < 0) {
+    if (NNTPconnect(host, NNTP_PORT, &FromServer, &ToServer, buff) < 0) {
 	(void)fprintf(stderr, "Can't connect to server, %s\n",
 		buff[0] ? buff : strerror(errno));
 	exit(1);

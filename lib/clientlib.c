@@ -40,13 +40,11 @@ getserverbyfile(file)
 **  Get a connection to the remote news server.  Return server's reply
 **  code or -1 on error.
 */
-int
-server_init(host)
-    char	*host;
+int server_init(char *host, int port)
 {
     char	line2[NNTP_STRLEN];
 
-    if (NNTPconnect(host, &ser_rd_fp, &ser_wr_fp, ser_line) < 0) {
+    if (NNTPconnect(host, port, &ser_rd_fp, &ser_wr_fp, ser_line) < 0) {
 	if (ser_line[0] == '\0')
 	    /* I/O problem. */
 	    return -1;

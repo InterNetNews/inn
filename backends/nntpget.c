@@ -131,7 +131,7 @@ SITEconnect(host)
 
     /* Connect and identify ourselves. */
     if (host)
-	i = NNTPconnect(host, &From, &To, (char *)NULL);
+	i = NNTPconnect(host, NNTP_PORT, &From, &To, (char *)NULL);
     else {
 	host = GetConfigValue(_CONF_SERVER);
 	i = NNTPlocalopen(&From, &To, (char *)NULL);

@@ -25,26 +25,20 @@ extern unsigned short	ntohs();
 extern unsigned short	htons();
 #endif	/* !defined(ntohs) && !defined(NETSWAP) */
 
-char *nntp_port = NULL;
-
 /*
 **  Open a connection to an NNTP server and create stdio FILE's for talking
 **  to it.  Return -1 on error.
 */
-int
-NNTPconnect(p, FromServerp, ToServerp, errbuff)
-    register char	*p;
-    FILE		**FromServerp;
-    FILE		**ToServerp;
-    char		*errbuff;
+int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char *errbuff)
 {
     char		**ap;
     char		*fakelist[2];
-    register char	*dest;
+    char	        *dest;
     char		mybuff[NNTP_STRLEN + 2];
     char		*buff;
-    register int	i;
-    register int	j;
+    char                *p;
+    int	                i;
+    int 	        j;
     int			oerrno;
     FILE		*F;
     struct hostent	*hp;
@@ -54,7 +48,7 @@ NNTPconnect(p, FromServerp, ToServerp, errbuff)
 
     buff = errbuff ? errbuff : mybuff;
     *buff = '\0';
-    quadaddr.s_addr = inet_addr(p);
+    quadaddr.s_addr = inet_addr(host);
     if (quadaddr.s_addr != (unsigned int) -1) {
 	/* Host was specified as a dotted-quad internet address.  Fill in
 	 * the parts of the hostent struct that we need. */
@@ -65,7 +59,7 @@ NNTPconnect(p, FromServerp, ToServerp, errbuff)
 	fakelist[1] = NULL;
 	ap = fakelist;
     }
-    else if ((hp = gethostbyname(p)) != NULL) {
+    else if ((hp = gethostbyname(host)) != NULL) {
 	/* Symbolic host name. */
 #if	defined(h_addr)
 	ap = hp->h_addr_list;
@@ -83,10 +77,7 @@ NNTPconnect(p, FromServerp, ToServerp, errbuff)
     /* Set up the socket address. */
     (void)memset((POINTER)&server, 0, sizeof server);
     server.sin_family = hp->h_addrtype;
-    if (nntp_port)
- 	server.sin_port = htons(atoi(nntp_port));
-    else
-	server.sin_port = htons(NNTP_PORT);
+    server.sin_port = htons(port);
   
     /* Loop through the address list, trying to connect. */
     for (; ap && *ap; ap++) {
@@ -144,11 +135,7 @@ NNTPconnect(p, FromServerp, ToServerp, errbuff)
 
 #if	defined(REM_INND)
 
-int
-NNTPremoteopen(FromServerp, ToServerp, errbuff)
-    FILE		**FromServerp;
-    FILE		**ToServerp;
-    char		*errbuff;
+int NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff)
 {
     char		*p;
 
@@ -157,7 +144,7 @@ NNTPremoteopen(FromServerp, ToServerp, errbuff)
 	    (void)strcpy(errbuff, "What server?");
 	return -1;
     }
-    return NNTPconnect(p, FromServerp, ToServerp, errbuff);
+    return NNTPconnect(p, port, FromServerp, ToServerp, errbuff);
 }
 
 #endif	/* defined(REM_INND) */
@@ -173,8 +160,7 @@ NNTPremoteopen(FromServerp, ToServerp, errbuff)
 **  the connection (which is easy since clientlib has them as globals.)
 **  Return -1 on error.
 */
-int
-NNTPremoteopen(FromServerp, ToServerp, buff)
+int NNTPremoteopen(int port, FromServerp, ToServerp, buff)
     FILE		**FromServerp;
     FILE		**ToServerp;
     char		*buff;
@@ -189,8 +175,8 @@ NNTPremoteopen(FromServerp, ToServerp, buff)
 	(void)strcpy(buff, "Text unavailable");
     if ((p = getserverbyfile(_PATH_SERVER)) == NULL)
 	return -1;
-    if ((i = server_init(p)) < 0)
-	return -1;
+    if ((i = server_init(p, port)) < 0)
+ 	return -1;
     if (i != NNTP_POSTOK_VAL && i != NNTP_NOPOSTOK_VAL) {
 	errno = EPERM;
 	return -1;

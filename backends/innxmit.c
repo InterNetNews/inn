@@ -136,16 +136,10 @@ STATIC char		*AltPath;
 **  Find the history file entry for the Message-ID and return a file
 **  positioned at the third field.
 */
-STATIC FILE *
-HistorySeek(MessageID)
-    char		*MessageID;
+STATIC FILE *HistorySeek(char *MessageID)
 {
     static char		History[] = _PATH_HISTORY;
     static FILE		*F;
-    register char	*p;
-    register char	*q;
-    register int	i;
-    HASH		key;
     OFFSET_T		offset;
 
     /* Open the history file. */
@@ -330,7 +324,6 @@ REMwrite(p, i, escdot)
     static char		HDR[] = "Content-Transfer-Encoding:";
     static char		COD[] =
 		"Content-Transfer-Encoding: quoted-printable\r\n";
-    register char	*dest;
     int			size;
 
     /* Buffer too full? */
@@ -1154,7 +1147,7 @@ main(ac, av)
     SIGHANDLER		(*old)();
     unsigned int	ConnectTimeout;
     unsigned int	TotalTimeout;
-    extern char		*nntp_port;
+    int                 port;
 
     /* Set defaults. */
     ConnectTimeout = 0;
@@ -1173,7 +1166,7 @@ main(ac, av)
 	    AltPath = NEW(char, SPOOLNAMEBUFF + strlen(AltSpool));
 	    break;
 	case 'P':
-	    nntp_port = COPY(optarg);
+	    port = atoi(COPY(optarg));
 	    break;
 	case 'a':
 	    AlwaysRewrite = TRUE;
@@ -1284,7 +1277,7 @@ main(ac, av)
 		exit(1);
 	    }
 	}
-	if (NNTPconnect(REMhost, &From, &To, buff) < 0 || GotAlarm) {
+	if (NNTPconnect(REMhost, port, &From, &To, buff) < 0 || GotAlarm) {
 	    i = errno;
 	    (void)fprintf(stderr, "Can't connect to %s, %s\n",
 		    REMhost, buff[0] ? REMclean(buff) : strerror(errno));

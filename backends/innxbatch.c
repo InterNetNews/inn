@@ -416,7 +416,7 @@ char *av[];
       exit(1);
     }
   }
-  if (NNTPconnect(REMhost, &From, &To, buff) < 0 || GotAlarm) {
+  if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff) < 0 || GotAlarm) {
     i = errno;
     (void)fprintf(stderr, "Can't connect to %s, %s\n",
 		  REMhost, buff[0] ? REMclean(buff) : strerror(errno));

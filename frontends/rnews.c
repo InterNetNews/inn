@@ -747,18 +747,15 @@ Spool(fd, mode)
 **  Try to read the password file and open a connection to a remote
 **  NNTP server.
 */
-STATIC BOOL
-OpenRemote(server, buff)
-    char	*server;
-    char	*buff;
+STATIC BOOL OpenRemote(char *server, int port, char *buff)
 {
     int		i;
 
     /* Open the remote connection. */
     if (server)
-	i = NNTPconnect(server, &FromServer, &ToServer, buff);
+	i = NNTPconnect(server, port, &FromServer, &ToServer, buff);
     else
-	i = NNTPremoteopen(&FromServer, &ToServer, buff);
+	i = NNTPremoteopen(port, &FromServer, &ToServer, buff);
     if (i < 0)
 	return FALSE;
 
@@ -804,16 +801,14 @@ Usage()
 }
 
 
-int
-main(ac, av)
-    int		ac;
-    char	*av[];
+int main(int ac, char *av[])
 {
     int		fd;
     int		i;
     int		mode;
     char	buff[SMBUF];
     char	*Slave;
+    int         port;
 
     /* First thing, set up logging and our identity. */
     openlog("rnews", L_OPENLOG_FLAGS, LOG_INN_PROG);
@@ -834,7 +829,7 @@ main(ac, av)
     fd = STDIN;
     mode = '\0';
     Slave = NULL;
-    while ((i = getopt(ac, av, "h:S:NUv")) != EOF)
+    while ((i = getopt(ac, av, "h:S:P:NUv")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -848,6 +843,9 @@ main(ac, av)
 	case 'N':
 	case 'U':
 	    mode = i;
+	    break;
+	case 'P':
+	    port = atoi(optarg);
 	    break;
 	case 'v':
 	    Verbose = TRUE;
@@ -877,7 +875,7 @@ main(ac, av)
 
     /* Open the link to the server. */
     if (Slave) {
-	if (!OpenRemote(Slave, buff))
+	if (!OpenRemote(Slave, port, buff))
 	    CantConnect(buff, mode, fd);
     }
     else {
@@ -886,7 +884,7 @@ main(ac, av)
 	    /* If server rejected us, no point in continuing. */
 	    if (buff[0])
 		CantConnect(buff, mode, fd);
-	    if (!OpenRemote((char *)NULL, buff))
+	    if (!OpenRemote((char *)NULL, port, buff))
 		CantConnect(buff, mode, fd);
 	}
 #else

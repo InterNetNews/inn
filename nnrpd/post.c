@@ -776,7 +776,6 @@ Spoolit(article, Error)
     register int	i;
     char		temp[BUFSIZ];
     char		path[BUFSIZ];
-    struct stat		Sb;
 
     /* Initialize the returned error message */
     sprintf(CANTSPOOL, "%s and can't write text to local spool file", Error);
@@ -921,7 +920,7 @@ ARTpost(article, idbuff)
 
     /* Open a local connection to the server. */
     if (RemoteMaster)
-	i = NNTPconnect(RemoteMaster, &FromServer, &ToServer, buff);
+	i = NNTPconnect(RemoteMaster, NNTP_PORT, &FromServer, &ToServer, buff);
     else {
 #if	defined(DO_HAVE_UNIX_DOMAIN)
 	i = NNTPlocalopen(&FromServer, &ToServer, buff);

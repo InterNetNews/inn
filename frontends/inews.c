@@ -1262,7 +1262,7 @@ main(ac, av)
     }
 
     /* Try to open a connection to the server. */
-    if (NNTPremoteopen(&FromServer, &ToServer, buff) < 0) {
+    if (NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff) < 0) {
 	Spooling = TRUE;
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';

@@ -21,10 +21,11 @@ extern char		*DDend();
 
 /* NNTP functions. */
 extern int	NNTPlocalopen();
-extern int	NNTPremoteopen();
-extern int	NNTPconnect();
+extern int	NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff);
+extern int      NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char *errbuff);
 extern int	NNTPsendarticle();
 extern int	NNTPsendpassword();
+extern int      server_init(char *host, int port);
 
 /* Opening the active file on a client. */
 extern FILE	*CAopen();

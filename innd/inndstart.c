@@ -51,10 +51,7 @@ SetDescriptorLimit(i)
 #endif	/* NOFILE_LIMIT > 0 */
 
 
-int
-main(ac, av)
-    int			ac;
-    char		*av[];
+int main(int ac, char *av[])
 {
     static char		INNDDIR[] = _PATH_INNDDIR;
     GID_T		NewsGID;
@@ -101,6 +98,12 @@ main(ac, av)
 #endif	/* defined(SO_REUSEADDR) */
     (void)memset((POINTER)&server, 0, sizeof server);
     server.sin_port = htons(NNTP_PORT);
+    for (j = 1; av[j]; j++) {
+	if (!strncmp("-P", av[j], 2)) {
+	    server.sin_port = htons(atoi(&av[j][2]));
+	    break;
+	}
+    }
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = htonl(INADDR_ANY);
     if (bind(i, (struct sockaddr *)&server, sizeof server) < 0) {
@@ -121,7 +124,7 @@ main(ac, av)
     argv[j++] = _PATH_INND;
     argv[j++] = pflag;
     for (i = 1; av[i]; ) {
-	if (strncmp(av[i], "-p", 2) != 0)
+	if ((strncmp(av[i], "-p", 2) != 0) && (strncmp(av[i], "-P", 2) != 0))
 	argv[j++] = av[i++];
 	else
 	    i++;
