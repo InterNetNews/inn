@@ -761,7 +761,8 @@ main(int argc, char **argv)
 {
     ARTHANDLE *art = NULL;
     bool AppendMode;
-    int i, val;
+    int i;
+    bool val;
     char *HistoryDir;
     char *RebuiltflagPath;
     char *p;
