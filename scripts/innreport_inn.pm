@@ -1416,7 +1416,7 @@ sub collect {
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
       $nnrpd_bytes{$cust} += $bytes;
-      $nnrpd_dom_bytes{$cust} += $bytes;
+      $nnrpd_dom_bytes{$dom} += $bytes;
       return 1;
     }
     # timeout
