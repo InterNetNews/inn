@@ -1049,7 +1049,6 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
         SMseterror(SMERR_UNDEFINED, "CNFSseek failed");
         syslog(L_ERROR, "%s: could not lseek token %s %s:0x%s:%ld: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
-        DISPOSE(art->private);
         DISPOSE(art);
         return NULL;
     }
@@ -1057,7 +1056,6 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
         SMseterror(SMERR_UNDEFINED, "read failed");
         syslog(L_ERROR, "%s: could not read token %s %s:0x%s:%ld: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
-        DISPOSE(art->private);
         DISPOSE(art);
         return NULL;
     }
@@ -1065,7 +1063,6 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
         SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
         syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
-        DISPOSE(art->private);
         DISPOSE(art);
         return NULL;
     }
