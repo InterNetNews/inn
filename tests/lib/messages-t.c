@@ -161,6 +161,21 @@ static void test23(void) {
     message_program_name = "test23";
     debug("baz");
 }
+static void test24(void) {
+    message_handlers_die(0);
+    die("hi mom!");
+}
+static void test25(void) {
+    message_handlers_warn(0);
+    warn("this is a test");
+}
+static void test26(void) {
+    notice("first");
+    message_handlers_notice(0);
+    notice("second");
+    message_handlers_notice(1, message_log_stdout);
+    notice("third");
+}
 
 /* Given the test number, intended exit status and message, and the function
    to run, print ok or not ok. */
@@ -204,7 +219,7 @@ main(void)
 {
     char buff[32];
 
-    puts("23");
+    puts("26");
 
     test_error(1, 0, "warning\n", test1);
     test_error(2, 1, "fatal\n", test2);
@@ -240,6 +255,11 @@ main(void)
     test_error(21, 0, "3 0 foo\n", test21);
     test_error(22, 0, "3 0 foo\n", test22);
     test_error(23, 0, "test23: baz\n", test23);
+
+    /* Make sure that it's possible to turn off a message type entirely. */ 
+    test_error(24, 1, "", test24);
+    test_error(25, 0, "", test25);
+    test_error(26, 0, "first\nthird\n", test26);
 
     return 0;
 }
