@@ -259,7 +259,8 @@ if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
     if ${DOEXPLOG}; then
 	echo "${EXPIREOVER} start `date`: (${EXPIREOVERFLAGS})" >>${EXPLOG}
     fi
-    ( exec 2>&1 ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" >>${EXPLOG})
+    ( cd ${HISTDIR} ; exec 2>&1 ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" ) \
+        >>${EXPLOG}
     if ${DOEXPLOG}; then
 	echo "${EXPIREOVER} end `date`" >>${EXPLOG}
     fi
@@ -429,7 +430,7 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
 	    if ${DOEXPLOG}; then
 		echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
 	    fi
-	    eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 | \
+	    ( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
 	      grep -v 'No such file or directory'
 	    DOEXPIREOVER=false
 	    if ${DOEXPLOG}; then
@@ -449,7 +450,7 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
 	if ${DOEXPLOG}; then
 	    echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
 	fi
-	eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 | \
+	( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
 	    grep -v 'No such file or directory'
 	DOEXPIREOVER=false
 	if ${DOEXPLOG}; then
@@ -458,7 +459,7 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
 	test -n "${LOWMARKFILE}" && {
 	    echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
 	    ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	    echo "lowmarkrenumber end `date`"                           >>${EXPLOG}
+	    echo "lowmarkrenumber end `date`"                       >>${EXPLOG}
 	    rm -f ${MOST_LOGS}/expire.lastlowmark
 	    mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
 	}
@@ -469,7 +470,7 @@ if ${DOEXPIREOVER}; then
     if ${DOEXPLOG}; then
 	echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
     fi
-    eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 | \
+    ( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
 	grep -v 'No such file or directory'
     if ${DOEXPLOG}; then
 	echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
