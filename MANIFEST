@@ -256,6 +256,7 @@ doc/pod/auth_krb5.pod                 Master file for auth_krb5.8
 doc/pod/auth_smb.pod                  Master file for auth_smb.8
 doc/pod/batcher.pod                   Master file for batcher.8
 doc/pod/buffchan.pod                  Master file for buffchan.8
+doc/pod/buffindexed.conf.pod          Master file for buffindexed.conf.5
 doc/pod/checklist.pod                 Master file for doc/checklist
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5

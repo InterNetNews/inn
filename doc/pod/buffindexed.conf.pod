@@ -1,0 +1,147 @@
+=head1 NAME
+
+buffindexed.conf - Configuration for the buffindexed overview method
+
+=head1 DESCRIPTION
+
+F<buffindexed.conf>, found in I<pathetc>, specifies the buffers that the
+buffindexed overview method should use.  It is required if the server uses
+buffindexed (as configured by the I<ovmethod> parameter in F<inn.conf>).
+
+Buffindexed uses pre-built buffer files to store overview data and indexes
+to that data.  The buffers are divided into 8KB internally, and a given
+block is used either for overview data or for index data.  A block is
+always allocated to a single newsgroup and is never shared among
+newsgroups.
+
+In addition to the buffers, buffindexed also stores information in a file
+named F<group.index> in I<pathdb>.  It contains information about each
+newsgroup:  the pointer to the index block for the newsgroup, the high
+mark, the low mark, the flag of the group, the number of articles, and so
+forth.  This file is created automatically when all buffers are
+initialized and should not be manually edited.
+
+Buffindexed buffers are of fixed size, so buffindexed will never use more
+space than what is available in those buffers.  If all buffers are full,
+B<innd> will throttle when it attempts to store overview information for
+any additional articles until space is freed (with B<expireover>, for
+instance) or another buffer is added.  This is unlike the CNFS storage
+method.
+
+You can see the current usage of the buffers with the B<-o> option to
+B<inndf>.
+
+In the F<buffindexed.conf> file, blank lines and lines beginning with a
+number sign (C<#>) are ignored.  All other lines must be of the format:
+
+    <index>:<filename>:<size>
+
+The order of lines is not significant.
+
+<index> is the index of this overview buffer and must be unique.  Other
+than that constraint, it can be any number between 0 and 65535.
+
+<filename> is the path to the buffer.  The length of the path should not
+be longer than 63 characters.
+
+<size> is the length of the buffer in kilobytes (1KB = 1024 byte).  If
+<filename> does not specify a special device, the file size of the buffer
+must be <size> * 1024 bytes.  If it does specify a special device, that
+device must have at least <size> space available.  Buffers over 2GB are
+not supported (regardless of whether INN was compiled with large file
+support); this limitation may be fixed in the future.  For more
+information on setting up the buffers, see L<CREATING BUFFERS>.
+
+When you first start B<innd> with everything configured properly, you
+should see messages like this in I<pathlog>/news.notice:
+
+    Aug 27 00:00:00 kevlar innd: buffindexed: No magic cookie found
+        for buffindexed 0, initializing
+
+You MUST recreate overview completely using B<makehistory> if you remove
+or replace buffers.  However, new buffers can be added without any special
+care (other than restarting B<innd> after modifying F<buffindexed.conf>).
+If you need to rebuild overview, you should zero all of the buffers first.
+
+=head1 CREATING BUFFERS
+
+There are two methods to create a new buffindexed buffer:
+
+=over 4
+
+=item 1.
+
+Create a large file on top of a regular file system.  The easiest way to
+do this is probably with dd(1), using a command like:
+
+    dd if=/dev/zero of=/path/to/cycbuff bs=1024 count=<size>
+
+where <size> is the size from the relevant line in F<buffindexed.conf>.
+
+This is the simplest method, but has the disadvantage that very large
+files on regular file systems can be fairly slow to access, particularly
+at the end of the file, and INN incurs unnecessary file system overhead
+when accessing the buffer.
+
+=item 2.
+
+Use block devices directly.  If your operating system allows you to call
+mmap() on block devices (Solaris and recent versions of Linux do, FreeBSD
+at last report does not), this method can avoid all of the native file
+system overhead.  Note, however, that Solaris has problems with byte range
+locking on block devices, and therefore this method should not be used on
+Solaris.
+
+Partition the disk to make each partition equal to or smaller than 2GB.
+If you're using Solaris, set up your partitions to avoid the first
+cylinder of the disk (or otherwise the buffindexed header will overwrite
+the disk partition table and render the buffers inaccessible).  Then,
+create device files for each block device you're going to use.
+
+It's not recommended to use the block device files in F</dev>, since the
+news system doesn't have permission to write to them and changing the
+permissions of the system device files may affect something else.
+Instead, use mknod(1) to create a new set of block devices (in somewhere
+like I<pathspool>/overview that's only writable by the news user).  To do
+this, run C<ls -Ll> on the devices in F</dev> that correspond to the block
+devices that you want to use.  The major and minor device numbers are in
+the fifth and sixth columns (right before the date), respectively.  Then
+run mknod like:
+
+    mknod <filename> b <major> <minor>
+
+where <filename> is the path to the device to create (matching the
+<filename> part of the buffindexed configuration line) and <major> and
+<minor> are the major and minor device numbers as discovered above.
+
+Here's a short script to do this when given the path to the system device
+file as an argument:
+
+    #!/bin/sh
+    base=`echo "$1" | sed 's%.*/%%'`
+    major=`ls -Ll "$1" | awk '{print $5}' | tr -d ,`
+    minor=`ls -Ll "$1" | awk '{print $6}`
+    mkdir -p /usr/local/news/spool/overview
+    mknod /usr/local/news/spool/overvew/"$base" b "$major" "$minor"
+    chown news:news /usr/local/news/spool/overview/"$base"
+    chmod 644 /usr/local/news/spool/overview/"$base"
+
+Make sure that the created files are owned by the news user and news
+group, as specified at configure time (the default being C<news> for
+both).  Also make sure that the permissions on the devices allow the news
+user to read and write.
+
+=head1 HISTORY
+
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+Converted to POD by Russ Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+expireover(8),
+inn.conf(5),
+makehistory(8).
+
+=cut

@@ -16,11 +16,12 @@ MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/innconfval.1 \
 MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/list.3 ../man/qio.3 \
 	../man/tst.3 ../man/uwildmat.3
 
-MAN5	= ../man/active.5 ../man/active.times.5 ../man/control.ctl.5 \
-	../man/cycbuff.conf.5 ../man/distrib.pats.5 ../man/expire.ctl.5 \
-	../man/inn.conf.5 ../man/motd.news.5 ../man/newsfeeds.5 ../man/ovdb.5 \
-	../man/passwd.nntp.5 ../man/radius.conf.5 ../man/readers.conf.5 \
-	../man/sasl.conf.5 ../man/subscriptions.5
+MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
+	../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/distrib.pats.5 \
+	../man/expire.ctl.5 ../man/inn.conf.5 ../man/motd.news.5 \
+	../man/newsfeeds.5 ../man/ovdb.5 ../man/passwd.nntp.5 \
+	../man/radius.conf.5 ../man/readers.conf.5 ../man/sasl.conf.5 \
+	../man/subscriptions.5
 
 MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/auth_smb.8 ../man/batcher.8 ../man/buffchan.8 \
@@ -43,10 +44,10 @@ clean:
 ../../INSTALL:		install.pod		; $(POD2TEXT) $? > $@
 ../../NEWS:		news.pod		; $(POD2TEXT) $? > $@
 ../../README:		readme.pod		; $(POD2TEXT) $? > $@
+../checklist:		checklist.pod		; $(POD2TEXT) $? > $@
+../external-auth:	external-auth.pod	; $(POD2TEXT) $? > $@
 ../hook-perl:		hook-perl.pod		; $(POD2TEXT) $? > $@
 ../hook-python:		hook-python.pod		; $(POD2TEXT) $? > $@
-../external-auth:	external-auth.pod	; $(POD2TEXT) $? > $@
-../checklist:		checklist.pod		; $(POD2TEXT) $? > $@
 
 ../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/fastrm.1:	fastrm.pod		; $(POD2MAN) -s 1 $? > $@
@@ -64,6 +65,7 @@ clean:
 
 ../man/active.5:	active.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/active.times.5:	active.times.pod	; $(POD2MAN) -s 5 $? > $@
+../man/buffindexed.conf.5: buffindexed.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/control.ctl.5:	control.ctl.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/cycbuff.conf.5:	cycbuff.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/distrib.pats.5:	distrib.pats.pod	; $(POD2MAN) -s 5 $? > $@
