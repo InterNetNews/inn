@@ -385,6 +385,12 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 		}
 	        newconfig->patterns[i] = COPY(p);
 	    }
+	    if (newconfig->numpatterns != i) {
+		syslog(L_ERROR, "OVER null pattern, line %d", line);
+		DISPOSE(newconfig);
+		(void)Fclose(f);
+		return OVER_ERROR;
+	    }
 	    if (prev)
 		prev->next = newconfig;
 	    else
