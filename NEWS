@@ -60,11 +60,12 @@ Changes from 2.3 to 2.4
       should be considerably more robust in the face of system crashes.  A
       new utility, tdx-util, is provided to examine the contents of the
       overview database, repair inconsistencies, and rebuild the overview
-      for particular groups from a tradspool news spool.
+      for particular groups from a tradspool news spool.  See tdx-util(8)
+      for more details.
 
     * The Perl and Python authentication hooks for readers have been
       extensively overhauled and integrated better with readers.conf.  See
-      the changes sections in doc/hook-perl and doc/hook-python for more
+      the Changes sections in doc/hook-perl and doc/hook-python for more
       details.
 
     * nnrpd now optionally supports article injection via IHAVE, see

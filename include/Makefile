@@ -49,5 +49,5 @@ install:
 	done
 	$(top)/support/install-sh $(OWNER) -m 0755 -d $D$(PATHINCLUDE)/inn
 	for F in inn/*.h ; do \
-	    $(CP_RPUB) $$F $D$(PATHINCLUDE)/inn/$$F ; \
+	    $(CP_RPUB) $$F $D$(PATHINCLUDE)/$$F ; \
 	done
