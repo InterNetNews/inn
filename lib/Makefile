@@ -28,13 +28,13 @@ OBJECTS = $(LIBOBJS) \
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
-all:		libinn.$(EXTLIB) perl.o
+all:		../include/inn/version.h libinn.$(EXTLIB) perl.o
 
 install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:
 	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate
-	rm -f profiled libinn_p.a endian version.c
+	rm -f profiled libinn_p.a endian ../include/inn/version.h
 	rm -rf .libs
 
 tags ctags:	$(SOURCES)
@@ -54,8 +54,8 @@ libinn.a:       $(OBJECTS)
 perl.o: perl.c
 	$(CC) $(CFLAGS) $(PERLINC) $(LDFLAGS) -c perl.c
 
-version.c:	mkversion ../Makefile.global
-	./mkversion '$(VERSION)' '$(VERSION_EXTRA)'
+../include/inn/version.h:	mkversion ../Makefile.global
+	./mkversion '$(VERSION)' '$(VERSION_EXTRA)' $@
 
 parsedate.c:	parsedate.y
 	@echo Expect 6 shift/reduce conflicts
@@ -214,7 +214,7 @@ tempname.o: tempname.c ../include/config.h ../include/inn/defines.h \
 waitnb.o: waitnb.c ../include/config.h ../include/inn/defines.h
 wildmat.o: wildmat.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
-version.o: version.c
+version.o: version.c ../include/inn/version.h
 xfopena.o: xfopena.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
