@@ -70,10 +70,57 @@
 #include <syslog.h>
 #include <signal.h>
 
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
+
+static const char usage[] = "\
+Usage: actsync [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n\
+        [-l hostid][-m][-n name][-o fmt][-p min_%_unchg][-q hostid]\n\
+        [-s size][-t hostid][-T][-v verbose_lvl][-z sec]\n\
+        [host1] host2\n\
+\n\
+    -A          use authentication to server\n\
+    -b hostid   ignore *.bork.bork.bork groups from:    (def: -b 0)\n\
+                0       from neither host\n\
+                1       from host1\n\
+                2       from host2\n\
+                12      from host1 and host2\n\
+                21      from host1 and host2\n\
+    -d hostid   ignore grps with all numeric components (def: -d 0)\n\
+    -g max      ignore group >max levels (0=don't)      (def: -g 0)\n\
+    -i file     file with groups to ignore              (def: no file)\n\
+    -I hostid   ignore_file applies only to hostid      (def: -I 12)\n\
+    -k          keep host1 groups with errors           (def: remove)\n\
+    -l hostid   flag =group problems as errors          (def: -l 12)\n\
+    -m          merge, keep group not on host2          (def: sync)\n\
+    -n name     name given to ctlinnd newgroup cmds     (def: actsync)\n\
+    -o fmt      type of output:                         (def: -o c)\n\
+                a       output groups in active format\n\
+                a1      like 'a', but output ignored non-err host1 grps\n\
+                ak      like 'a', keep host2 hi/low values on new groups\n\
+                aK      like 'a', use host2 hi/low values always\n\
+                c       output in ctlinnd change commands\n\
+                x       no output, safely exec ctlinnd commands\n\
+                xi      no output, safely exec commands interactively\n\
+    -p %        min % host1 lines unchanged allowed     (def: -p 96)\n\
+    -q hostid   silence errors from a host (see -b)     (def: -q 0)\n\
+    -s size     ignore names > than size (0=no lim)     (def: -s 0)\n\
+    -t hostid   ignore bad top level grps from: (see -b)(def: -t 2)\n\
+    -T          no new hierarchies                      (def: allow)\n\
+    -v level    verbosity level                         (def: -v 0)\n\
+                0       no debug or status reports\n\
+                1       summary if work done\n\
+                2       summary & actions (if exec output) only if done\n\
+                3       summary & actions (if exec output)\n\
+                4       debug output plus all -v 3 messages\n\
+    -z sec      sleep sec seconds per exec if -o x      (def: -z 4)\n\
+\n\
+    host1       host to be changed                      (def: local server)\n\
+    host2       reference host used in merge\n";
+
 
 /*
  * pat - internal ignore/check pattern
@@ -230,7 +277,6 @@ struct eqgrp {
 #define D_SUMMARY (v_flag >= VER_REPORT)       /* TRUE => give summary always */
 
 /* flag and arg related defaults */
-char *program;		 	/* our name */
 int bork_host1_flag = 0; 	/* 1 => -b 1 or -b 12 or -b 21 given */
 int bork_host2_flag = 0; 	/* 1 => -b 2 or -b 12 or -b 21 given */
 int num_host1_flag = 0; 	/* 1 => -d 1 or -d 12 or -d 21 given */
@@ -243,7 +289,7 @@ int k_flag = 0;		 	/* 1 => -k given */
 int l_host1_flag = HOSTID1;	/* HOSTID1 => host1 =group error detection */
 int l_host2_flag = HOSTID2;	/* HOSTID2 => host2 =group error detection */
 int m_flag = 0;			/* 1 => merge active files, don't sync */
-char *new_name = DEF_NAME;	/* ctlinnd newgroup name */
+const char *new_name = DEF_NAME;	/* ctlinnd newgroup name */
 int o_flag = OUTPUT_CTLINND;	/* default output type */
 double p_flag = MIN_UNCHG;	/* min % host1 lines allowed to be unchanged */
 int host1_errs = 0;		/* errors found in host1 active file */
@@ -266,7 +312,6 @@ static struct grp *get_active();    /* get an active file from a remote host */
 static int bad_grpname();	    /* test if string is a valid group name */
 static struct pat *get_ignore();    /* read in an ignore file */
 static void ignore();		    /* ignore newsgroups given an ignore list */
-static void usage();		    /* print a usage message and exit */
 static int merge_cmp();		    /* qsort compare for active file merge */
 static void merge_grps();	    /* merge groups from active files */
 static int active_cmp();	    /* qsort compare for active file output */
@@ -292,17 +337,11 @@ main(argc, argv)
 
     /* First thing, set up logging and our identity. */
     openlog("actsync", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "actsync";
 
     /*read in default info from inn.conf*/
-    if(ReadInnConf() < 0) {
-fprintf(stderr, "Couldn't init inn.conf\n");
-        return(1);
-    }
-    /* process args */
-    if(ReadInnConf() < 0) {
-fprintf(stderr, "Couldn't init inn.conf\n");
-        return(1);
-    }
+    if(ReadInnConf() < 0)
+        die("cannot initialize inn.conf");
     process_args(argc, argv, &host1, &host2);
 
     /* obtain the active files */
@@ -356,7 +395,6 @@ process_args(argc, argv, host1, host2)
     int i;
 
     /* parse args */
-    program = argv[0];
     while ((i = getopt(argc,argv,"Ab:d:g:i:I:kl:mn:o:p:q:s:t:Tv:z:")) != EOF) {
 	switch (i) {
 	case 'A':
@@ -380,10 +418,8 @@ process_args(argc, argv, host1, host2)
 		bork_host2_flag = 1;
 		break;
 	    default:
-		fprintf(stderr,
-		    "%s: -b option must be 0, 1, 2, 12 or 21\n", program);
-		usage();
-		/* NOTREACHED */
+                warn("-b option must be 0, 1, 2, 12, or 21");
+                die("%s", usage);
 	    }
 	    break;
 	case 'd':		/* -d {0|1|2|12|21} */
@@ -404,10 +440,8 @@ process_args(argc, argv, host1, host2)
 		num_host2_flag = 1;
 		break;
 	    default:
-		fprintf(stderr,
-		    "%s: -d option must be 0, 1, 2, 12 or 21\n", program);
-		usage();
-		/* NOTREACHED */
+                warn("-d option must be 0, 1, 2, 12, or 21");
+		die("%s", usage);
 	    }
 	    break;
 	case 'g':		/* -g max */
@@ -436,10 +470,8 @@ process_args(argc, argv, host1, host2)
 		ign_host2_flag = 1;
 		break;
 	    default:
-		fprintf(stderr,
-		    "%s: -I option must be 0, 1, 2, 12 or 21\n", program);
-		usage();
-		/* NOTREACHED */
+                warn("-I option must be 0, 1, 2, 12, or 21");
+		die("%s", usage);
 	    }
 	    break;
 	case 'k':		/* -k */
@@ -465,10 +497,8 @@ process_args(argc, argv, host1, host2)
 		l_host2_flag = HOSTID2;
 		break;
 	    default:
-		fprintf(stderr,
-		    "%s: -l option must be 0, 1, 2, 12 or 21\n", program);
-		usage();
-		/* NOTREACHED */
+                warn("-l option must be 0, 1, 2, 12, or 21");
+		die("%s", usage);
 	    }
 	    break;
 	case 'm':		/* -m */
@@ -525,11 +555,8 @@ process_args(argc, argv, host1, host2)
 		case '\0':	/* -o a */
 		    break;
 		default:
-		    fprintf(stderr,
-			"%s: -o type must be: a, a1, ak, aK, ak1, aK1\n",
-			program);
-		    usage();
-		    /* NOTREACHED */
+                    warn("-o type must be a, a1, ak, aK, ak1, or aK1");
+		    die("%s", usage);
 		}
 		break;
 	    case 'c':
@@ -543,11 +570,8 @@ process_args(argc, argv, host1, host2)
 		}
 		break;
 	    default:
-		fprintf(stderr,
-		   "%s: -o type must be: a, a1, ak, aK, ak1, aK1, c, x or xi\n",
-		    program);
-		usage();
-		/* NOTREACHED */
+                warn("-o type must be a, a1, ak, aK, ak1, aK1, c, x, or xi");
+		die("%s", usage);
 	    }
 	    break;
 	case 'p':		/* -p %_min_host1_change */
@@ -577,10 +601,8 @@ process_args(argc, argv, host1, host2)
 		quiet_host2 = 1;
 		break;
 	    default:
-		fprintf(stderr,
-		    "%s: -q option must be 0, 1, 2, 12 or 21\n", program);
-		usage();
-		/* NOTREACHED */
+                warn("-q option must be 0, 1, 2, 12, or 21");
+		die("%s", usage);
 	    }
 	    break;
 	case 's':		/* -s size */
@@ -606,10 +628,8 @@ process_args(argc, argv, host1, host2)
 		t_host2_flag = HOSTID2;
 		break;
 	    default:
-		fprintf(stderr,
-		    "%s: -t option must be 0, 1, 2, 12 or 21\n", program);
-		usage();
-		/* NOTREACHED */
+                warn("-t option must be 0, 1, 2, 12, or 21");
+		die("%s", usage);
 	    }
 	    break;
 	case 'T':		/* -T */
@@ -618,20 +638,16 @@ process_args(argc, argv, host1, host2)
 	case 'v':		/* -v verbose_lvl */
 	    v_flag = atoi(optarg);
 	    if (v_flag < VER_MIN || v_flag > VER_MAX) {
-		fprintf(stderr,
-		    "%s: -v level must be >= %d and <= %d\n",
-		    program, VER_MIN, VER_MAX);
-		usage();
-		/* NOTREACHED */
+                warn("-v level must be >= %d and <= %d", VER_MIN, VER_MAX);
+		die("%s", usage);
 	    }
 	    break;
 	case 'z':		/* -z sec */
 	    z_flag = atoi(optarg);
 	    break;
 	default:
-	    fprintf(stderr, "%s: unknown flag\n", program);
-	    usage();
-	    /* NOTREACHED */
+            warn("unknown flag");
+	    die("%s", usage);
 	}
     }
 
@@ -649,10 +665,8 @@ process_args(argc, argv, host1, host2)
 	*host2 = argv[1];
 	break;
     default:
-	fprintf(stderr,
-	    "%s: expected 1 or 2 host args, found: %d\n", program, argc);
-	usage();
-	/* NOTREACHED */
+        warn("expected 1 or 2 host args, found %d", argc);
+	die("%s", usage);
     }
 
     /* determine default host name if needed */
@@ -664,111 +678,13 @@ process_args(argc, argv, host1, host2)
 	def_serv = innconf->server;
 	*host2 = def_serv;
     }
-    if (*host1 == NULL || *host2 == NULL) {
-	fprintf(stderr,
-	    "%s: unable to determine default server name\n", program);
-	exit(2);
-    }
-    if (D_BUG && def_serv != NULL) {
-	fprintf(stderr,
-	    "%s: STATUS: using default server: %s\n",
-	    program, def_serv);
-    }
+    if (*host1 == NULL || *host2 == NULL)
+        die("unable to determine default server name");
+    if (D_BUG && def_serv != NULL)
+        warn("STATUS: using default server: %s", def_serv);
 
     /* processing done */
     return;
-}
-
-/*
- * usage - print usage message and exit
- */
-static void
-usage()
-{
-    (void) fprintf(stderr,
-      "usage: %s [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n",
-	  program);
-    (void) fprintf(stderr,
-      "\t[-l hostid][-m][-n name][-o fmt][-p min_%%_unchg][-q hostid]\n");
-    (void) fprintf(stderr,
-      "\t[-s size][-t hostid][-T][-v verbose_lvl][-z sec]\n");
-    (void) fprintf(stderr, "\t[host1] host2\n\n");
-
-    (void) fprintf(stderr,
-	"    -A\tuse authentication to server\n");
-    (void) fprintf(stderr,
-	"    -b hostid\tignore *.bork.bork.bork groups from:\t(def: -b 0)\n");
-    (void) fprintf(stderr,
-	"\t0\t    from neither host\n");
-    (void) fprintf(stderr,
-	"\t1\t    from host1\n");
-    (void) fprintf(stderr,
-	"\t2\t    from host2\n");
-    (void) fprintf(stderr,
-	"\t12\t    from host1 and host2\n");
-    (void) fprintf(stderr,
-	"\t21\t    from host1 and host2\n");
-    (void) fprintf(stderr,
-	"    -d hostid\tignore grps with all numeric components (def: -d 0)\n");
-    (void) fprintf(stderr,
-	"    -g max\tignore group >max levels (0=don't)\t(def: -g 0)\n");
-    (void) fprintf(stderr,
-	"    -i ignore_file\tfile with groups to ignore\t(def: no file)\n");
-    (void) fprintf(stderr,
-	"    -I hostid\tignore_file applies only to hostid\t(def: -I 12)\n");
-    (void) fprintf(stderr,
-	"    -k\t\tkeep host1 groups with errors\t\t(def: remove)\n");
-    (void) fprintf(stderr,
-	"    -l hostid\tflag =group problems as errors\t\t(def: -l 12)\n");
-    (void) fprintf(stderr,
-	"    -m\t\tmerge, keep group not on host2\t\t(def: sync)\n");
-    (void) fprintf(stderr,
-	"    -n name\tname given to ctlinnd newgroup cmds\t(def: actsync)\n");
-    (void) fprintf(stderr,
-	"    -o fmt\ttype of output:\t\t\t\t(def: -o c)\n");
-    (void) fprintf(stderr,
-	"\ta\t    output groups in active format\n");
-    (void) fprintf(stderr,
-	"\ta1\t    like 'a', but output ignored non-err host1 grps\n");
-    (void) fprintf(stderr,
-	"\tak\t    like 'a', keep host2 hi/low values on new groups\n");
-    (void) fprintf(stderr,
-	"\taK\t    like 'a', use host2 hi/low values always\n");
-    (void) fprintf(stderr,
-	"\tc\t    output in ctlinnd change commands\n");
-    (void) fprintf(stderr,
-	"\tx\t    no output, safely exec ctlinnd commands\n");
-    (void) fprintf(stderr,
-	"\txi\t    no output, safely exec commands interactively\n");
-    (void) fprintf(stderr,
-	"    -p %%\t\tmin %% host1 lines unchanged allowed\t     (def: -p 96)\n");
-    (void) fprintf(stderr,
-     "    -q hostid\tsilence errors from a host (see -b)\t     (def: -q 0)\n");
-    (void) fprintf(stderr,
-	"    -s size\tignore names > than size (0=no lim)\t     (def: -s 0)\n");
-    (void) fprintf(stderr,
- "    -t hostid\tignore bad top level grps from: (see -b)     (def: -t 2)\n");
-    (void) fprintf(stderr,
-       "    -T\t\tno new hierarchies               \t     (def: allow)\n");
-    (void) fprintf(stderr,
-	"    -v verbose_lvl\tverbosity level\t\t\t     (def: -v 0)\n");
-    (void) fprintf(stderr,
-	"\t0\t    no debug or status reports\n");
-    (void) fprintf(stderr,
-	"\t1\t    summary if work done\n");
-    (void) fprintf(stderr,
-	"\t2\t    summary & actions (if exec output) only if done\n");
-    (void) fprintf(stderr,
-	"\t3\t    summary & actions (if exec output)\n");
-    (void) fprintf(stderr,
-	"\t4\t    debug output plus all -v 3 messages\n");
-    (void) fprintf(stderr,
-	"    -z sec\tsleep sec seconds per exec if -o x\t\t(def: -z 4)\n");
-    (void) fprintf(stderr,
-	"    host1\thost to be changed\t\t\t(def: local server)\n");
-    (void) fprintf(stderr,
-	"    host2\treference host used in merge\n");
-    exit(3);
 }
 
 /*
@@ -816,28 +732,16 @@ get_active(host, hostid, len, grp, errs)
     int i;
 
     /* firewall */
-    if (len == NULL) {
-	fprintf(stderr, "%s: internal error #1, len is NULL\n", program);
-	exit(4);
-    }
-    if (errs == NULL) {
-	fprintf(stderr, "%s: internal error #2, errs is NULL\n", program);
-	exit(5);
-    }
-    if (D_BUG) {
-	fprintf(stderr,
-	    "%s: STATUS: obtaining active file from %s\n",
-	    program, host);
-    }
+    if (len == NULL)
+        die("internal error #1: len is NULL");
+    if (errs == NULL)
+        die("internal error #2: errs in NULL");
+    if (D_BUG)
+        warn("STATUS: obtaining active file from %s", host);
 
     /* setup return array if needed */
     if (grp == NULL) {
-	ret = (struct grp *) malloc(CHUNK * sizeof(struct grp));
-	if (ret == NULL) {
-	    fprintf(stderr, "%s: malloc of %d grp elements failed\n",
-		program, CHUNK);
-	    exit(6);
-	}
+        ret = xmalloc(CHUNK * sizeof(struct grp));
 	max = CHUNK;
 	*len = 0;
 
@@ -854,11 +758,8 @@ get_active(host, hostid, len, grp, errs)
 	is_file = 1;
 
 	/* setup to read the local file quickly */
-	if ((qp = QIOopen(host)) == NULL) {
-	    (void) fprintf(stderr,
-		"%s: can't read active file, %s\n", program, strerror(errno));
-	    exit(NOT_REACHED);
-	}
+	if ((qp = QIOopen(host)) == NULL)
+            sysdie("cannot open active file");
 
     /* case: host is a hostname or NULL (default server) */
     } else {
@@ -879,39 +780,23 @@ get_active(host, hostid, len, grp, errs)
 
 	/* open a connection to the server */
 	buff[0] = '\0';
-	if (NNTPconnect(rhost, rport, &FromServer, &ToServer, buff) < 0) {
-	    (void) fprintf(stderr, "can't connect to server, %s\n",
-		    buff[0] ? buff : strerror(errno));
-	    DISPOSE(rhost);
-	    exit(NOT_REACHED);
-	}
+	if (NNTPconnect(rhost, rport, &FromServer, &ToServer, buff) < 0)
+            die("cannot connect to server: %s",
+                buff[0] ? buff : strerror(errno));
 
-        if(A_flag && NNTPsendpassword(rhost, FromServer, ToServer) < 0) {
-            (void) fprintf(stderr, "can't authenticate to server\n");
-            DISPOSE(rhost);
-            exit(NOT_REACHED);
-        }
+        if (A_flag && NNTPsendpassword(rhost, FromServer, ToServer) < 0)
+            die("cannot authenticate to server");
 
 	DISPOSE(rhost);
 
 	/* get the active data from the server */
 	active = CAlistopen(FromServer, ToServer, NULL);
-	if (active == NULL) {
-	    (void) fprintf(stderr,
-		"%s: can't retrieve data, %s\n", program, strerror(errno));
-	    (void) fclose(FromServer);
-	    (void) fclose(ToServer);
-	    exit(7);
-	}
+	if (active == NULL)
+            sysdie("cannot retrieve data");
 
 	/* setup to read the retrieved data quickly */
-	if ((qp = QIOfdopen((int)fileno(active))) == NULL) {
-	    (void) fprintf(stderr,
-		"%s: can't read temp file, %s\n", program, strerror(errno));
-	    (void) fclose(FromServer);
-	    (void) fclose(ToServer);
-	    exit(8);
-	}
+	if ((qp = QIOfdopen((int)fileno(active))) == NULL)
+            sysdie("cannot read temp file");
     }
 
     /* scan server's output, processing appropriate lines */
@@ -921,12 +806,7 @@ get_active(host, hostid, len, grp, errs)
 	/* expand return array if needed */
 	if (*len >= max) {
 	    max += CHUNK;
-	    ret = (struct grp *) realloc(ret, sizeof(struct grp)*max);
-	    if (ret == NULL) {
-		fprintf(stderr,
-		    "%s: unable to realloc %d grp elements\n", program, max);
-		exit(9);
-	    }
+            ret = xrealloc(ret, sizeof(struct grp) * max);
 	}
 
 	/* setup the next return element */
@@ -945,23 +825,13 @@ get_active(host, hostid, len, grp, errs)
 	cur->outtype = NULL;
 
 	/* obtain a copy of the current line */
-	cur->name = (char *) malloc(QIOlength(qp)+1);
-	if (cur->name == NULL) {
-	    fprintf(stderr,
-		"%s: unable to malloc %d char line buffer\n",
-		program, QIOlength(qp)+1);
-	    exit(10);
-	}
-	strncpy(cur->name, line, QIOlength(qp));
-	cur->name[QIOlength(qp)] = '\0';
+        cur->name = xstrdup(line);
 
 	/* get the group name */
 	if ((p = strchr(cur->name, ' ')) == NULL) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: line %d from %s is malformed, skipping line\n",
-		    program, cnt+1, host);
-	    }
+	    if (!QUIET(hostid))
+                warn("line %d from %s is malformed, skipping line", cnt + 1,
+                     host);
 
 	    /* don't form an entry for this group */
 	    --(*len);
@@ -973,11 +843,9 @@ get_active(host, hostid, len, grp, errs)
 	/* find the other 3 fields, ignore if not found */
 	cur->hi = p+1;
 	if ((p = strchr(p + 1, ' ')) == NULL) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: skipping malformed line %d (field 2) from %s\n",
-		    program, cnt+1, host);
-	    }
+	    if (!QUIET(hostid))
+                warn("skipping malformed line %d (field 2) from %s", cnt + 1,
+                     host);
 
 	    /* don't form an entry for this group */
 	    --(*len);
@@ -986,11 +854,9 @@ get_active(host, hostid, len, grp, errs)
 	*p = '\0';
 	cur->low = p+1;
 	if ((p = strchr(p + 1, ' ')) == NULL) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: skipping malformed line %d (field 3) from %s\n",
-		    program, cnt+1, host);
-	    }
+	    if (!QUIET(hostid))
+                warn("skipping malformed line %d (field 3) from %s", cnt + 1,
+                     host);
 
 	    /* don't form an entry for this group */
 	    --(*len);
@@ -999,11 +865,9 @@ get_active(host, hostid, len, grp, errs)
 	*p = '\0';
 	cur->type = p+1;
 	if ((p = strchr(p + 1, ' ')) != NULL) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: skipping line %d from %s, it has more than 4 fields\n",
-		    program, cnt+1, host);
-	    }
+	    if (!QUIET(hostid))
+                warn("skipping line %d from %s, it has more than 4 fields",
+                     cnt + 1, host);
 
 	    /* don't form an entry for this group */
 	    --(*len);
@@ -1012,22 +876,18 @@ get_active(host, hostid, len, grp, errs)
 
 	/* check for bad group name */
 	if (bad_grpname(cur->name, num_check)) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: line %d <%s> from %s has a bad newsgroup name\n",
-		    program, cnt+1, cur->name, host);
-	    }
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s has a bad newsgroup name",
+                     cnt + 1, cur->name, host);
 	    cur->ignore |= ERROR_BADNAME;
 	    continue;
 	}
 
 	/* check for long name if requested */
 	if (s_flag > 0 && strlen(cur->name) > (size_t)s_flag) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: line %d <%s> from %s has a name that is too long\n",
-		    program, cnt+1, cur->name, host);
-	    }
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s has a name that is too long",
+                     cnt + 1, cur->name, host);
 	    cur->ignore |= ERROR_BADNAME;
 	    continue;
 	}
@@ -1042,11 +902,9 @@ get_active(host, hostid, len, grp, errs)
 	        strcmp(cur->name, "test") != 0 && 
 	        strcmp(cur->name, "general") != 0 && 
 		strchr(cur->name, '.') == NULL) {
-		if (!QUIET(hostid)) {
-		    (void) fprintf(stderr,
-		    "%s: line %d <%s> from %s is an invalid top level name\n",
-			program, cnt+1, cur->name, host);
-		}
+		if (!QUIET(hostid))
+                    warn("line %d <%s> from %s is an invalid top level name",
+                         cnt + 1, cur->name, host);
 		cur->ignore |= ERROR_BADNAME;
 		continue;
 	    }
@@ -1085,11 +943,9 @@ get_active(host, hostid, len, grp, errs)
 	for (p=cur->hi, i=0; *p && isascii(*p) && isdigit((int)*p); ++p, ++i) {
 	}
 	if (*p) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: line %d <%s> from %s has non-digits in hi water\n",
-		    program, cnt+1, cur->name, cur->hi);
-	    }
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s has non-digits in hi water",
+                     cnt + 1, cur->name, cur->hi);
 	    cur->ignore |= ERROR_FORMAT;
 	    continue;
 	}
@@ -1098,11 +954,9 @@ get_active(host, hostid, len, grp, errs)
 	 * check for excessive hi water length
 	 */
 	if (i > WATER_LEN) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: line %d <%s> from %s hi water len: %d < %d\n",
-		    program, cnt+1, cur->name, cur->hi, i, WATER_LEN);
-	    }
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s hi water len: %d < %d",
+                     cnt + 1, cur->name, cur->hi, i, WATER_LEN);
 	    cur->ignore |= ERROR_FORMAT;
 	    continue;
 	}
@@ -1111,13 +965,7 @@ get_active(host, hostid, len, grp, errs)
 	 * if the hi water length is too small, malloc and resize
 	 */
 	if (i != WATER_LEN) {
-	    p = malloc(WATER_LEN+1);
-	    if (p == NULL) {
-		fprintf(stderr,
-		    "%s: unable to malloc %d char hi water string\n",
-		    program, WATER_LEN+1);
-		exit(11);
-	    }
+            p = xmalloc(WATER_LEN + 1);
 	    memcpy(p, cur->hi, ((i > WATER_LEN) ? WATER_LEN : i)+1);
 	}
 
@@ -1127,11 +975,9 @@ get_active(host, hostid, len, grp, errs)
 	for (p=cur->low, i=0; *p && isascii(*p) && isdigit((int)*p); ++p, ++i) {
 	}
 	if (*p) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: line %d <%s> from %s has non-digits in low water\n",
-		    program, cnt+1, cur->name, cur->low);
-	    }
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s has non-digits in low water",
+		     cnt + 1, cur->name, cur->low);
 	    cur->ignore |= ERROR_FORMAT;
 	    continue;
 	}
@@ -1140,11 +986,9 @@ get_active(host, hostid, len, grp, errs)
 	 * check for excessive low water length
 	 */
 	if (i > WATER_LEN) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: line %d <%s> from %s low water len: %d < %d\n",
-		    program, cnt+1, cur->name, cur->hi, i, WATER_LEN);
-	    }
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s low water len: %d < %d",
+		     cnt + 1, cur->name, cur->hi, i, WATER_LEN);
 	    cur->ignore |= ERROR_FORMAT;
 	    continue;
 	}
@@ -1153,13 +997,7 @@ get_active(host, hostid, len, grp, errs)
 	 * if the low water length is too small, malloc and resize
 	 */
 	if (i != WATER_LEN) {
-	    p = malloc(WATER_LEN+1);
-	    if (p == NULL) {
-		fprintf(stderr,
-		    "%s: unable to malloc %d char low water string\n",
-		    program, WATER_LEN+1);
-		exit(12);
-	    }
+            p = xmalloc(WATER_LEN + 1);
 	    memcpy(p, cur->low, ((i > WATER_LEN) ? WATER_LEN : i)+1);
 	}
 
@@ -1176,30 +1014,24 @@ get_active(host, hostid, len, grp, errs)
 	case 'n':
 	case 'x':
 	    if (cur->type[1] != '\0') {
-		if (!QUIET(hostid)) {
-		    (void) fprintf(stderr,
-			"%s: line %d <%s> from %s has a bad newsgroup type\n",
-			program, cnt+1, cur->name, host);
-		}
+		if (!QUIET(hostid))
+                    warn("line %d <%s> from %s has a bad newsgroup type",
+                         cnt + 1, cur->name, host);
 		cur->ignore |= ERROR_BADTYPE;
 	    }
 	    break;
 	case '=':
 	    if (cur->type[1] == '\0') {
-		if (!QUIET(hostid)) {
-		    (void) fprintf(stderr,
-			"%s: line %d <%s> from %s has an empty =group name\n",
-			program, cnt+1, cur->name, host);
-		}
+		if (!QUIET(hostid))
+                    warn("line %d <%s> from %s has an empty =group name",
+                         cnt + 1, cur->name, host);
 		cur->ignore |= ERROR_BADTYPE;
 	    }
 	    break;
 	default:
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-		    "%s: line %d <%s> from %s has an unknown newsgroup type\n",
-		    program, cnt+1, cur->name, host);
-	    }
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s has an unknown newsgroup type",
+                     cnt + 1, cur->name, host);
 	    cur->ignore |= ERROR_BADTYPE;
 	    break;
 	}
@@ -1209,12 +1041,10 @@ get_active(host, hostid, len, grp, errs)
 
 	/* if an = type, check for bad = name */
 	if (cur->type[0] == '=' && bad_grpname(&(cur->type[1]), num_check)) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-	       "%s: line %d <%s> from %s is equivalenced to a bad name: <%s>\n",
-		     program, cnt+1, cur->name, host,
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s is equivalenced to a bad name:"
+                     " <%s>", cnt+1, cur->name, host,
 		     (cur->type) ? cur->type : "NULL");
-	    }
 	    cur->ignore |= ERROR_EQNAME;
 	    continue;
 	}
@@ -1222,12 +1052,10 @@ get_active(host, hostid, len, grp, errs)
 	/* if an = type, check for long = name if requested */
 	if (cur->type[0] == '=' && s_flag > 0 &&
 	    strlen(&(cur->type[1])) > (size_t)s_flag) {
-	    if (!QUIET(hostid)) {
-		(void) fprintf(stderr,
-	      "%s: line %d <%s> from %s is equivalenced to a long name: <%s>\n",
-		     program, cnt+1, cur->name, host,
+	    if (!QUIET(hostid))
+                warn("line %d <%s> from %s is equivalenced to a long name:"
+                     " <%s>", cnt+1, cur->name, host,
 		     (cur->type) ? cur->type : "NULL");
-	    }
 	    cur->ignore |= ERROR_EQNAME;
 	    continue;
 	}
@@ -1235,32 +1063,20 @@ get_active(host, hostid, len, grp, errs)
 	/* count this entry which will be used */
 	++ucnt;
     }
-    if (D_BUG) {
-	fprintf(stderr,
-	    "%s: STATUS: read %d groups, will merge %d groups from %s\n",
-	    program, cnt, ucnt, host);
-    }
+    if (D_BUG)
+        warn("STATUS: read %d groups, will merge %d groups from %s",
+             cnt, ucnt, host);
 
     /* count the errors */
     *errs = cnt - ucnt;
-    if (D_BUG) {
-	fprintf(stderr,
-	    "%s: STATUS: found %d line errors from %s\n",
-	    program, *errs, host);
-    }
+    if (D_BUG)
+        warn("STATUS: found %d line errors from %s", *errs, host);
 
     /* determine why we stopped */
-    if (QIOerror(qp)) {
-	(void) fprintf(stderr,
-	    "%s: can't read temp file for %s at line %d, %s\n",
-	    program, host, cnt, strerror(errno));
-	exit(13);
-    } else if (QIOtoolong(qp)) {
-	(void) fprintf(stderr,
-	    "%s: line %d from host %s is too long\n",
-	    program, cnt, host);
-	exit(14);
-    }
+    if (QIOerror(qp))
+        sysdie("cannot read temp file for %s at line %d", host, cnt);
+    else if (QIOtoolong(qp))
+        sysdie("line %d from host %s is too long", cnt, host);
 
     /* all done */
     if (is_file) {
@@ -1446,36 +1262,20 @@ get_ignore(filename, len)
     int i;
 
     /* firewall */
-    if (filename == NULL) {
-	fprintf(stderr, "%s: internal error #3, filename is NULL\n", program);
-	exit(15);
-    }
-    if (len == NULL) {
-	fprintf(stderr, "%s: internal error #4, len is NULL\n", program);
-	exit(16);
-    }
-    if (D_BUG) {
-	fprintf(stderr,
-	    "%s: STATUS: reading ignore file: %s\n",
-	    program, filename);
-    }
+    if (filename == NULL)
+        die("internal error #3: filename is NULL");
+    if (len == NULL)
+        die("internal error #4: len is NULL");
+    if (D_BUG)
+        warn("STATUS: reading ignore file %s", filename);
 
     /* setup return array */
-    ret = (struct pat *) malloc(CHUNK * sizeof(struct grp));
-    if (ret == NULL) {
-	fprintf(stderr, "%s: malloc of %d grp elements failed\n",
-	    program, CHUNK);
-	exit(17);
-    }
+    ret = xmalloc(CHUNK * sizeof(struct grp));
     max = CHUNK;
 
     /* setup to read the ignore file data quickly */
-    if ((qp = QIOopen(filename)) == NULL) {
-	(void) fprintf(stderr,
-	    "%s: can't read ignore file: %s\n",
-	    program, filename);
-	exit(18);
-    }
+    if ((qp = QIOopen(filename)) == NULL)
+        sysdie("cannot read ignore file %s", filename);
 
     /* scan server's output, displaying appropriate lines */
     *len = 0;
@@ -1484,12 +1284,7 @@ get_ignore(filename, len)
 	/* expand return array if needed */
 	if (*len >= max) {
 	    max += CHUNK;
-	    ret = (struct pat *) realloc(ret, sizeof(struct pat)*max);
-	    if (ret == NULL) {
-		fprintf(stderr, "%s: unable to realloc %d pat elements\n",
-		    program, max);
-		exit(19);
-	    }
+            ret = xrealloc(ret, sizeof(struct pat) * max);
 	}
 
 	/* remove any trailing comments */
@@ -1512,20 +1307,15 @@ get_ignore(filename, len)
 
 	/* ensure that the line starts with an i or c token */
 	if ((line[0] != 'i' && line[0] != 'c') ||
-	    (line[1] != ' ' && line[1] != '\t')) {
-	    fprintf(stderr, "%s: first token is not i or c in line %d of %s\n",
-		program, linenum, filename);
-	    exit(20);
-	}
+	    (line[1] != ' ' && line[1] != '\t'))
+            die("first token is not i or c in line %d of %s", linenum,
+                filename);
 
 	/* ensure that the second newsgroup pattern token follows */
 	p = strtok(line+2, " \t");
-	if (p == NULL) {
-	    fprintf(stderr,
-		"%s: did not find 2nd field in line %d of %s\n",
-		program, linenum, filename);
-	    exit(21);
-	}
+	if (p == NULL)
+            die("did not find 2nd field in line %d of %s", linenum,
+                filename);
 
 	/* setup the next return element */
 	cur = &ret[*len];
@@ -1541,16 +1331,7 @@ get_ignore(filename, len)
 	cur->ignore = (line[0] == 'i');
 
 	/* obtain a copy of the newsgroup pattern token */
-	i = strlen(p);
-	cur->pat = (char *) malloc(i+1);
-	if (cur->pat == NULL) {
-	    fprintf(stderr,
-		"%s: unable to malloc %d char line buffer\n",
-		program, linenum+1);
-	    exit(22);
-	}
-	strncpy(cur->pat, p, i);
-	cur->pat[i] = '\0';
+        cur->pat = xstrdup(p);
 
 	/* process any other type tokens */
 	for (p=strtok(NULL, " \t"), i=3;
@@ -1565,26 +1346,18 @@ get_ignore(filename, len)
 	    case 'n':
 	    case 'x':
 		if (p[1] != '\0') {
-		    fprintf(stderr,
-			"%s: field %d on line %d of %s not a valid type\n",
-			program, i, linenum, filename);
-		    fprintf(stderr,
-			"%s: valid types are a char from [ymnjx=] or =name\n",
-			program);
-		    exit(23);
+                    warn("field %d on line %d of %s not a valid type",
+                         i, linenum, filename);
+                    die("valid types are a char from [ymnjx=] or =name");
 		}
 		break;
 	    case '=':
 		break;
 	    default:
-		fprintf(stderr,
-		    "%s: field %d on line %d of %s is not a valid type\n",
-		    program, i, linenum, filename);
-		fprintf(stderr,
-		    "%s: valid types are a char from [ymnjx=] or =name\n",
-		    program);
-		exit(24);
-	    }
+                warn("field %d on line %d of %s is not a valid type",
+                     i, linenum, filename);
+                die("valid types are a char from [ymnjx=] or =name");
+            }
 
 	    /* note that we have a type specific pattern */
 	    cur->type_match = 1;
@@ -1596,13 +1369,9 @@ get_ignore(filename, len)
 	        (p[0] == 'j' && cur->j_type) ||
 	        (p[0] == 'x' && cur->x_type) ||
 	        (p[0] == '=' && cur->eq_type)) {
-		fprintf(stderr,
-		    "%s: only one %c type allowed per line\n",
-		    program, p[0]);
-		fprintf(stderr,
-		    "%s: field %d on line %d of %s is a duplicate type\n",
-		    program, i, linenum, filename);
-		exit(25);
+                warn("only one %c type allowed per line", p[0]);
+                die("field %d on line %d of %s is a duplicate type",
+                    i, linenum, filename);
 	    }
 
 	    /* note what we have seen */
@@ -1624,29 +1393,14 @@ get_ignore(filename, len)
 		break;
 	    case '=':
 		cur->eq_type = 1;
-		if (p[0] == '=' && p[1] != '\0') {
-		    /* obtain a copy of the newsgroup type token */
-		    i = strlen(p+1);
-		    cur->epat = (char *) malloc(i+1);
-		    if (cur->epat == NULL) {
-			fprintf(stderr,
-			    "%s: unable to malloc %d char type buffer\n",
-			    program, i+1);
-			exit(26);
-		    }
-		    strncpy(cur->epat, p+1, i);
-		    cur->epat[i] = '\0';
-		}
+		if (p[0] == '=' && p[1] != '\0')
+                    cur->epat = xstrdup(p + 1);
 		break;
 	    }
 
 	    /* object if too many fields */
-	    if (i-3 > TYPECNT) {
-		fprintf(stderr,
-		    "%s: too many fields on line %d of %s\n",
-		    program, linenum, filename);
-		exit(27);
-	    }
+	    if (i-3 > TYPECNT)
+                die("too many fields on line %d of %s", linenum, filename);
 	}
 
 	/* count another pat element */
@@ -1682,19 +1436,12 @@ ignore(grp, grplen, igcl, iglen)
     int ccnt;			/* groups to be checked */
 
     /* firewall */
-    if (grp == NULL) {
-	fprintf(stderr, "%s: internal error #5, grp is NULL\n", program);
-	exit(28);
-    }
-    if (igcl == NULL) {
-	fprintf(stderr, "%s: internal error #6, igcl is NULL\n", program);
-	exit(29);
-    }
-    if (D_BUG) {
-	fprintf(stderr,
-	    "%s: STATUS: determining which groups to ignore\n",
-	    program);
-    }
+    if (grp == NULL)
+        die("internal error #5: grp is NULL");
+    if (igcl == NULL)
+        die("internal error $6: igcl is NULL");
+    if (D_BUG)
+        warn("STATUS: determining which groups to ignore");
 
     /* if nothing to do, return quickly */
     if (grplen <= 0 || iglen <= 0) {
@@ -1770,20 +1517,15 @@ ignore(grp, grplen, igcl, iglen)
 		}
 		break;
 	    default:
-		fprintf(stderr,
-		    "%s: newsgroup %s bad hostid: %d\n",
-		    program, gp->name, gp->hostid);
-		exit(30);
+                die("newsgroup %s bad hostid: %d", gp->name, gp->hostid);
 	    }
 	} else {
 	    ++ccnt;
 	}
     }
-    if (D_BUG) {
-	fprintf(stderr,
-	    "%s: STATUS: examined %d groups: %d ignored, %d to be checked\n",
-	    program, grplen, icnt, ccnt);
-    }
+    if (D_BUG)
+        warn("STATUS: examined %d groups: %d ignored, %d to be checked",
+             grplen, icnt, ccnt);
 }
 
 /*
@@ -1845,8 +1587,7 @@ merge_cmp(arg_a, arg_b)
     }
 
     /* two different elements match, this should not happen! */
-    fprintf(stderr, "%s: two internal grp elements match!\n", program);
-    exit(31);
+    die("two internal grp elements match!");
     /*NOTREACHED*/
 }
 
@@ -1876,15 +1617,12 @@ merge_grps(grp, grplen, host1, host2)
     int h2_probs;	/* =type problem groups from host2 */
 
     /* firewall */
-    if (grp == NULL) {
-	fprintf(stderr, "%s: internal error #7, grp is NULL\n", program);
-	exit(32);
-    }
+    if (grp == NULL)
+        die("internal error #7: grp is NULL");
 
     /* sort groups for the merge */
-    if (D_BUG) {
-	fprintf(stderr, "%s: STATUS: sorting groups\n", program);
-    }
+    if (D_BUG)
+        warn("STATUS: sorting groups");
     qsort((char *)grp, grplen, sizeof(grp[0]), merge_cmp);
 
     /* mark =type problem groups from host2, if needed */
@@ -1899,9 +1637,8 @@ merge_grps(grp, grplen, host1, host2)
      *
      * If both hosts have the name group, they will be next to each other.
      */
-    if (D_BUG) {
-	fprintf(stderr, "%s: STATUS: merging groups\n", program);
-    }
+    if (D_BUG)
+        warn("STATUS: merging groups");
     outcnt = 0;
     rmcnt = 0;
     for (cur=0; cur < grplen; cur=nxt) {
@@ -1922,12 +1659,10 @@ merge_grps(grp, grplen, host1, host2)
 	    if (grp[cur].hostid == grp[nxt].hostid &&
 	        strcmp(grp[cur].name, grp[nxt].name) == 0) {
 		grp[nxt].ignore |= ERROR_DUP;
-		if (!QUIET(grp[cur].hostid)) {
-		    fprintf(stderr,
-			"%s: lines %d and %d from %s refer to the same group\n",
-			program, grp[cur].linenum, grp[nxt].linenum,
-			((grp[cur].hostid == HOSTID1) ? host1 : host2));
-		}
+		if (!QUIET(grp[cur].hostid))
+                    warn("lines %d and %d from %s refer to the same group",
+                         grp[cur].linenum, grp[nxt].linenum,
+                         ((grp[cur].hostid == HOSTID1) ? host1 : host2));
 		++nxt;
 	    } else {
 		break;
@@ -1948,12 +1683,9 @@ merge_grps(grp, grplen, host1, host2)
 	if (nxt < grplen && strcmp(grp[cur].name, grp[nxt].name) == 0) {
 
 	    /* assert: cur is HOSTID1 */
-	    if (grp[cur].hostid != HOSTID1) {
-		fprintf(stderr,
-		    "%s: internal error #8, grp[%d].hostid:%d != %d\n",
-		    program, cur, grp[cur].hostid, HOSTID1);
-		exit(33);
-	    }
+	    if (grp[cur].hostid != HOSTID1)
+                die("internal error #8: grp[%d].hostid: %d != %d",
+		    cur, grp[cur].hostid, HOSTID1);
 
 	    /*
 	     * Both hosts have the same group.  Make host1 group type
@@ -2008,17 +1740,10 @@ merge_grps(grp, grplen, host1, host2)
 
     /* all done */
     if (D_BUG) {
-	fprintf(stderr,
-	    "%s: STATUS: sort-merge passed thru %d groups\n", program, outcnt);
-	fprintf(stderr,
-	    "%s: STATUS: sort-merge marked %d groups for removal\n",
-	    program, rmcnt);
-	fprintf(stderr,
-	    "%s: STATUS: marked %d =type error groups from host1\n",
-	    program, h1_probs);
-	fprintf(stderr,
-	    "%s: STATUS: marked %d =type error groups from host2\n",
-	    program, h2_probs);
+        warn("STATUS: sort-merge passed thru %d groups", outcnt);
+        warn("STATUS: sort-merge marked %d groups for removal", rmcnt);
+	warn("STATUS: marked %d =type error groups from host1", h1_probs);
+        warn("STATUS: marked %d =type error groups from host2", h2_probs);
     }
     return;
 }
@@ -2075,8 +1800,7 @@ active_cmp(arg_a, arg_b)
     }
 
     /* two different elements match, this should not happen! */
-    fprintf(stderr, "%s: two internal grp elements match!\n", program);
-    exit(34);
+    die("two internal grp elements match!");
     /*NOTREACHED*/
 }
 
@@ -2110,10 +1834,8 @@ output_grps(grp, grplen)
     int i;
 
     /* firewall */
-    if (grp == NULL) {
-	fprintf(stderr, "%s: internal error #9, grp is NULL\n", program);
-	exit(35);
-    }
+    if (grp == NULL)
+        die("internal error #9: grp is NULL");
 
     /*
      * If -a1 was given, mark for output any host1 newsgroup that was
@@ -2136,10 +1858,8 @@ output_grps(grp, grplen)
 		++restore;
 	    }
 	}
-	if (D_BUG) {
-	    fprintf(stderr,
-		"%s: STATUS: restored %d host1 groups\n", program, restore);
-	}
+	if (D_BUG)
+            warn("STATUS: restored %d host1 groups", restore);
     }
 
     /*
@@ -2155,28 +1875,21 @@ output_grps(grp, grplen)
 		 /* no top level ignore this new group */
 		 grp[i].ignore |= CHECK_HIER;
 		 grp[i].output = 0;
-		 if (D_BUG) {
-		     fprintf(stderr,
-			 "%s: ignore new newsgroup: %s, new hierarchy\n",
-			 program, grp[i].name);
-		 }
+		 if (D_BUG)
+                     warn("ignore new newsgroup: %s, new hierarchy",
+                          grp[i].name);
 		 ++top_ignore;
 	    }
 	}
-	if (D_SUMMARY) {
-	    fprintf(stderr,
-		"%s: STATUS: ignored %d new newsgroups due to new hierarchy\n",
-		program, top_ignore);
-	}
+	if (D_SUMMARY)
+            warn("STATUS: ignored %d new newsgroups due to new hierarchy",
+                 top_ignore);
     }
 
     /* sort by active file order if active style output (-a) */
     if (o_flag == OUTPUT_ACTIVE) {
-	if (D_BUG) {
-	    fprintf(stderr,
-		"%s: STATUS: sorting groups in output order\n",
-		program);
-	}
+	if (D_BUG)
+            warn("STATUS: sorting groups in output order");
 	qsort((char *)grp, grplen, sizeof(grp[0]), active_cmp);
     }
 
@@ -2231,15 +1944,12 @@ output_grps(grp, grplen)
 		     ((double)same / (double)(same+work+host1_errs));
     }
     if (D_BUG) {
-	fprintf(stderr,
-	    "%s: STATUS: same=%d add=%d, change=%d, remove=%d\n",
-	    program, same, add, change, remove);
-	fprintf(stderr,
-	    "%s: STATUS: ignore=%d, work=%d, err=%d\n",
-	    program, ignore, work, host1_errs);
-	fprintf(stderr,
-	    "%s: STATUS: same+work+err=%d, host1_same=%.2f%%\n",
-	    program, same+work+host1_errs, host1_same);
+        warn("STATUS: same=%d add=%d, change=%d, remove=%d",
+             same, add, change, remove);
+        warn("STATUS: ignore=%d, work=%d, err=%d",
+             ignore, work, host1_errs);
+        warn("STATUS: same+work+err=%d, host1_same=%.2f%%",
+             same+work+host1_errs, host1_same);
     }
 
     /* 
@@ -2254,16 +1964,11 @@ output_grps(grp, grplen)
      *	newsgroups to be change in host1
      */
     if (host1_same < p_flag) {
-	fprintf(stderr,
-	    "%s: HALT: lines unchanged: %.2f%% < min change limit: %.2f%%\n",
-	    program, host1_same, p_flag);
-	fprintf(stderr,
-	    "\tNo output or commands executed.  Determine if the degree of\n");
-	fprintf(stderr,
-	    "\tchanges is ok and re-execute with a lower -p value or\n");
-	fprintf(stderr,
-	    "\tfixed the problem.\n");
-	exit(36);
+        warn("HALT: lines unchanged: %.2f%% < min change limit: %.2f%%",
+             host1_same, p_flag);
+        warn("    No output or commands executed.  Determine if the degree");
+        warn("    of changes is okay and re-execute with a lower -p value");
+        die("    or with the problem fixed.");
     }
 
     /*
@@ -2387,11 +2092,9 @@ output_grps(grp, grplen)
 
 		/* warn about sleeping if needed and first time */
 		if (o_flag == OUTPUT_EXEC && z_flag > 0 && sleep_msg == 0) {
-		    if (D_SUMMARY) {
-			fprintf(stderr,
-			  "%s: will sleep %d seconds before each fork/exec\n",
-			  program, z_flag);
-		    }
+		    if (D_SUMMARY)
+                        warn("will sleep %d seconds before each fork/exec",
+                             z_flag);
 		    sleep_msg = 1;
 		}
 
@@ -2400,10 +2103,8 @@ output_grps(grp, grplen)
 
 		    /* exec rmgroup */
 		    if (rm_cycle) {
-			if (D_REPORT && o_flag == OUTPUT_EXEC) {
-			    fprintf(stderr,
-				"rmgroup %s\n", grp[i].name);
-			}
+			if (D_REPORT && o_flag == OUTPUT_EXEC)
+                            warn("rmgroup %s", grp[i].name);
 			if (! exec_cmd(o_flag, "rmgroup",
 			    grp[i].name, NULL, NULL)) {
 			    ++not_done;
@@ -2418,11 +2119,9 @@ output_grps(grp, grplen)
 
 		    /* exec newgroup */
 		    if (!rm_cycle) {
-			if (D_REPORT && o_flag == OUTPUT_EXEC) {
-			    fprintf(stderr,
-				"newgroup %s %s %s\n",
-				grp[i].name, grp[i].outtype, new_name);
-			}
+			if (D_REPORT && o_flag == OUTPUT_EXEC)
+                            warn("newgroup %s %s %s",
+                                 grp[i].name, grp[i].outtype, new_name);
 			if (! exec_cmd(o_flag, "newgroup", grp[i].name,
 				 grp[i].outtype, new_name)) {
 			    ++not_done;
@@ -2438,11 +2137,9 @@ output_grps(grp, grplen)
 
 		    /* exec changegroup */
 		    if (!rm_cycle) {
-			if (D_REPORT && o_flag == OUTPUT_EXEC) {
-			    fprintf(stderr,
-				"changegroup %s %s\n",
-				grp[i].name, grp[i].outtype);
-			}
+			if (D_REPORT && o_flag == OUTPUT_EXEC)
+                            warn("changegroup %s %s",
+                                 grp[i].name, grp[i].outtype);
 			if (! exec_cmd(o_flag, "changegroup", grp[i].name,
 				 grp[i].outtype, NULL)) {
 			    ++not_done;
@@ -2464,37 +2161,23 @@ output_grps(grp, grplen)
 
     /* final accounting, if -v */
     if (D_SUMMARY || (D_IF_SUMM && (work > 0 || not_done > 0))) {
-	fprintf(stderr,
-	    "%s: STATUS: %d group(s)\n", program, add+remove+change+same);
-	fprintf(stderr,
-	    "%s: STATUS: %d group(s)%s added\n", program,
-		add,
-		((o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) ?
-		    "" : " to be"));
-	fprintf(stderr,
-	    "%s: STATUS: %d group(s)%s removed\n", program,
-		remove,
-		((o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) ?
-		    "" : " to be"));
-	fprintf(stderr,
-	    "%s: STATUS: %d group(s)%s changed\n", program,
-		change,
-		((o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) ?
-		    "" : " to be"));
-	fprintf(stderr,
-	    "%s: STATUS: %d group(s) %s the same\n", program,
-		same,
-		((o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) ?
-		    "remain" : "are"));
-	fprintf(stderr,
-	    "%s: STATUS: %.2f%% of lines unchanged\n",
-	    program, host1_same);
-	fprintf(stderr,
-	    "%s: STATUS: %d group(s) ignored\n", program, ignore);
-	if (o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) {
-	    fprintf(stderr,
-		"%s: STATUS: %d exec(s) not performed\n", program, not_done);
-	}
+        warn("STATUS: %d group(s)", add+remove+change+same);
+        warn("STATUS: %d group(s)%s added", add,
+             ((o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) ?
+              "" : " to be"));
+        warn("STATUS: %d group(s)%s removed",	remove,
+             ((o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) ?
+              "" : " to be"));
+        warn("STATUS: %d group(s)%s changed", change,
+             ((o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) ?
+              "" : " to be"));
+        warn("STATUS: %d group(s) %s the same", same,
+             ((o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) ?
+              "remain" : "are"));
+        warn("STATUS: %.2f%% of lines unchanged", host1_same);
+        warn("STATUS: %d group(s) ignored", ignore);
+	if (o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC)
+            warn("STATUS: %d exec(s) not performed", not_done);
     }
 }
 
@@ -2516,10 +2199,8 @@ error_mark(grp, grplen, hostid)
     int errcnt;
 
     /* firewall */
-    if (grp == NULL) {
-	fprintf(stderr, "%s: internal error #11, grp is NULL\n", program);
-	exit(38);
-    }
+    if (grp == NULL)
+        die("internal error #11: grp is NULL");
 
     /* loop thru groups, looking for error groups from a given host */
     errcnt = 0;
@@ -2543,11 +2224,8 @@ error_mark(grp, grplen, hostid)
     }
 
     /* all done */
-    if (D_SUMMARY || (D_IF_SUMM && errcnt > 0)) {
-	fprintf(stderr,
-	    "%s: STATUS: marked %d error groups for removal\n",
-	    program, errcnt);
-    }
+    if (D_SUMMARY || (D_IF_SUMM && errcnt > 0))
+        warn("STATUS: marked %d error groups for removal", errcnt);
     return;
 }
 
@@ -2629,9 +2307,7 @@ eq_merge_cmp(arg_a, arg_b)
     }
 
     /* two different elements match, this should not happen! */
-    fprintf(stderr, "%s: two internal eqgrp elements match!\n", program);
-    exit(39);
-    /*NOTREACHED*/
+    die("two internal eqgrp elements match!");
 }
 
 /*
@@ -2666,10 +2342,8 @@ mark_eq_probs(grp, grplen, hostid, host1, host2)
     int j;
 
     /* firewall */
-    if (grp == NULL) {
-	fprintf(stderr, "%s: internal error #12, grp is NULL\n", program);
-	exit(40);
-    }
+    if (grp == NULL)
+        die("internal error #12: grp is NULL");
     if (hostid == NOHOST) {
 	/* nothing to detect, nothing else to do */
 	return 0;
@@ -2685,11 +2359,8 @@ mark_eq_probs(grp, grplen, hostid, host1, host2)
 	    ++eq_cnt;
 	}
     }
-    if (D_BUG && hostid != NOHOST) {
-	fprintf(stderr,
-	    "%s: STATUS: host%d has %d =type groups\n",
-	    program, hostid, eq_cnt);
-    }
+    if (D_BUG && hostid != NOHOST)
+        warn("STATUS: host%d has %d =type groups", hostid, eq_cnt);
 
     /* if no groups, then there is nothing to do */
     if (eq_cnt == 0) {
@@ -2697,13 +2368,7 @@ mark_eq_probs(grp, grplen, hostid, host1, host2)
     }
 
     /* setup the =group record array */
-    eqgrp = (struct eqgrp *)malloc(eq_cnt * sizeof(eqgrp[0]));
-    if (eqgrp == NULL) {
-	fprintf(stderr,
-	    "%s: unable to malloc %d grp pointers\n",
-	    program, eq_cnt);
-	exit(41);
-    }
+    eqgrp = xmalloc(eq_cnt * sizeof(eqgrp[0]));
     for (i=0, j=0; i < grplen && j < eq_cnt; ++i) {
 	if (grp[i].hostid == hostid &&
 	    ! IS_ERROR(grp[i].ignore) &&
@@ -2756,13 +2421,11 @@ mark_eq_probs(grp, grplen, hostid, host1, host2)
 		 if (strcmp(grp[i].name, eqgrp[j].g->name) == 0) {
 
 		    /* note the detected loop */
-		    if (! QUIET(hostid)) {
-			fprintf(stderr,
-			    "%s: %s from %s line %d =loops around to itself\n",
-			    program, eqgrp[j].g->name,
-			    ((eqgrp[j].g->hostid == HOSTID1) ? host1 : host2),
-			    eqgrp[j].g->linenum);
-		     }
+		    if (! QUIET(hostid))
+                        warn("%s from %s line %d =loops around to itself",
+                             eqgrp[j].g->name,
+                             ((eqgrp[j].g->hostid == HOSTID1) ? host1 : host2),
+                             eqgrp[j].g->linenum);
 		     eqgrp[j].g->ignore |= ERROR_EQLOOP;
 
 		    /* the =group is bad, so we don't need to bother with it */
@@ -2790,13 +2453,11 @@ mark_eq_probs(grp, grplen, hostid, host1, host2)
 
 		/* mark the eqgrp in error */
 		eqgrp[j].g->ignore |= ERROR_NONEQ;
-		if (! QUIET(hostid)) {
-		    fprintf(stderr,
-			"%s: %s from %s line %d not equiv to a valid group\n",
-			program, eqgrp[j].g->name,
-			((eqgrp[j].g->hostid == HOSTID1) ? host1 : host2),
-			eqgrp[j].g->linenum);
-		}
+		if (! QUIET(hostid))
+                    warn("%s from %s line %d not equiv to a valid group",
+                         eqgrp[j].g->name,
+                         ((eqgrp[j].g->hostid == HOSTID1) ? host1 : host2),
+                         eqgrp[j].g->linenum);
 
 		/* =group is bad, so we don't need to bother with it anymore */
 		eqgrp[j].skip = 1;
@@ -2811,13 +2472,11 @@ mark_eq_probs(grp, grplen, hostid, host1, host2)
 
 	    /* mark the eqgrp in error */
 	    eqgrp[j].g->ignore |= ERROR_NONEQ;
-	    if (! QUIET(hostid)) {
-		fprintf(stderr,
-		    "%s: %s from %s line %d isn't equiv to a valid group\n",
-		    program, eqgrp[j].g->name,
-		    ((hostid == HOSTID1) ? host1 : host2),
-		    eqgrp[j].g->linenum);
-	    }
+	    if (! QUIET(hostid))
+                warn("%s from %s line %d isn't equiv to a valid group",
+                     eqgrp[j].g->name,
+                     ((hostid == HOSTID1) ? host1 : host2),
+                     eqgrp[j].g->linenum);
 
 	    /* the =group is bad, so we don't need to bother with it anymore */
 	    eqgrp[j].skip = 1;
@@ -2839,26 +2498,21 @@ mark_eq_probs(grp, grplen, hostid, host1, host2)
 
 	/* mark as a long loop group */
 	eqgrp[j].g->ignore |= ERROR_LONGLOOP;
-	if (! QUIET(hostid)) {
-	    fprintf(stderr,
-		"%s: %s from %s line %d in a long equiv chain or loop > %d\n",
-		program, eqgrp[j].g->name,
-		((hostid == HOSTID1) ? host1 : host2),
-		eqgrp[j].g->linenum, EQ_LOOP);
-	}
+	if (! QUIET(hostid))
+            warn("%s from %s line %d in a long equiv chain or loop > %d",
+                 eqgrp[j].g->name,
+                 ((hostid == HOSTID1) ? host1 : host2),
+                 eqgrp[j].g->linenum, EQ_LOOP);
     }
 
     /* all done */
     if (D_BUG) {
-	fprintf(stderr,
-	    "%s: %d =type groups from %s are not equiv to a valid group\n",
-	    program, missing, ((hostid == HOSTID1) ? host1 : host2));
-	fprintf(stderr,
-	    "%s: %d =type groups from %s are equiv to themselves\n",
-	    program, cycled, ((hostid == HOSTID1) ? host1 : host2));
-	fprintf(stderr,
-	    "%s: %d =type groups from %s are in a long chain or loop > %d\n",
-	    program, chained, ((hostid == HOSTID1) ? host1 : host2), EQ_LOOP);
+        warn("%d =type groups from %s are not equiv to a valid group",
+             missing, ((hostid == HOSTID1) ? host1 : host2));
+        warn("%d =type groups from %s are equiv to themselves",
+             cycled, ((hostid == HOSTID1) ? host1 : host2));
+        warn("%d =type groups from %s are in a long chain or loop > %d",
+             chained, ((hostid == HOSTID1) ? host1 : host2), EQ_LOOP);
     }
     free(eqgrp);
     return missing+cycled+chained;
@@ -2895,11 +2549,8 @@ exec_cmd(mode, cmd, grp, type, who)
     char *p;
 
     /* firewall */
-    if (cmd == NULL || grp == NULL) {
-	fprintf(stderr,
-	    "%s: internal error #13, cmd or grp is NULL\n", program);
-	exit(42);
-    }
+    if (cmd == NULL || grp == NULL)
+        die("internal error #13, cmd or grp is NULL");
 
     /* if interactive, ask the question */
     if (mode == OUTPUT_IEXEC) {
@@ -2933,38 +2584,25 @@ exec_cmd(mode, cmd, grp, type, who)
 
     /* build a pipe for output from child interactive mode */
     if (mode == OUTPUT_IEXEC) {
-	if (pipe(io) < 0) {
-	    perror(program);
-	    fprintf(stderr, "%s: pipe create failed\n", program);
-	    exit(44);
-	}
+	if (pipe(io) < 0)
+            sysdie("pipe create failed");
 
     /* setup a fake pipe to /dev/null for non-interactive mode */
     } else {
 	io[READ_SIDE] = open(DEV_NULL, 0);
-	if (io[READ_SIDE] < 0) {
-	    perror(program);
-	    fprintf(stderr,
-		"%s: unable to open %s for reading\n", program, DEV_NULL);
-	    exit(45);
-	}
+	if (io[READ_SIDE] < 0)
+            sysdie("unable to open %s for reading", DEV_NULL);
 	io[WRITE_SIDE] = open(DEV_NULL, 1);
-	if (io[WRITE_SIDE] < 0) {
-	    perror(program);
-	    fprintf(stderr,
-		"%s: unable to open %s for writing\n", program, DEV_NULL);
-	    exit(46);
-	}
+	if (io[WRITE_SIDE] < 0)
+            sysdie("unable to open %s for writing", DEV_NULL);
     }
 
     /* pause if in non-interactive mode so as to not busy-out the server */
     if (mode == OUTPUT_EXEC && z_flag > 0) {
-	if (D_BUG) {
-	    fprintf(stderr, "%s: sleeping %d seconds before fork/exec\n",
-	      program, z_flag);
+	if (D_BUG)
+            warn("sleeping %d seconds before fork/exec", z_flag);
 	    /* be sure they know what we are stalling */
 	    fflush(stderr);
-	}
 	sleep(z_flag);
     }
 
@@ -2972,11 +2610,8 @@ exec_cmd(mode, cmd, grp, type, who)
     fflush(stdout);
     fflush(stderr);
     pid = fork();
-    if (pid == -1) {
-	perror(program);
-	fprintf(stderr, "%s: fork failed\n", program);
-	exit(47);
-    }
+    if (pid == -1)
+        sysdie("fork failed");
 
     /* case: child process */
     if (pid == 0) {
@@ -2986,20 +2621,10 @@ exec_cmd(mode, cmd, grp, type, who)
 	 */
 	fclose(stdin);
 	close(io[READ_SIDE]);
-	if (dup2(io[WRITE_SIDE], 1) < 0) {
-	    fprintf(stderr,
-		"%s: child: dup of write I/O pipe to stdout failed\n",
-		program);
-	    perror(program);
-	    exit(48);
-	}
-	if (dup2(io[WRITE_SIDE], 2) < 0) {
-	    fprintf(stderr,
-		"%s: child: dup of write I/O pipe to stderr failed\n",
-		program);
-	    perror(program);
-	    exit(49);
-	}
+	if (dup2(io[WRITE_SIDE], 1) < 0)
+            sysdie("child: dup of write I/O pipe to stdout failed");
+	if (dup2(io[WRITE_SIDE], 2) < 0)
+            sysdie("child: dup of write I/O pipe to stderr failed");
 
 	/* exec the ctlinnd command */
 	p = concatpath(innconf->pathbin, _PATH_CTLINND);
@@ -3015,8 +2640,7 @@ exec_cmd(mode, cmd, grp, type, who)
 	}
 
 	/* child exec failed */
-	perror("child process");
-	exit(50);
+        sysdie("child process exec failed");
 
     /* case: parent process */
     } else {
@@ -3034,19 +2658,15 @@ exec_cmd(mode, cmd, grp, type, who)
 	    buf[0] = '\0';
 	    buf[BUFSIZ] = '\0';
 	    ch_stream = fdopen(io[READ_SIDE], "r");
-	    if (ch_stream == NULL) {
-		fprintf(stderr, "%s: fdopen of pipe failed\n", program);
-		exit(51);
-	    }
+	    if (ch_stream == NULL)
+                sysdie("fdopen of pipe failed");
 	    p = fgets(buf, BUFSIZ, ch_stream);
 
 	    /* print what the child said, if anything */
 	    if (p != NULL) {
-		if (buf[strlen(buf)-1] == '\n') {
-		    fprintf(stderr, "\t%s", buf);
-		} else {
-		    fprintf(stderr, "\t%s\n", buf);
-		}
+		if (buf[strlen(buf)-1] == '\n')
+                    buf[strlen(buf)-1] = '\0';
+                warn("    %s", buf);
 	    }
 	}
 
@@ -3057,9 +2677,7 @@ exec_cmd(mode, cmd, grp, type, who)
 		/* just an interrupt, try to wait again */
 		errno = 0;
 	    } else {
-		perror(program);
-		fprintf(stderr, "%s: wait returned -1\n", program);
-		exit(52);
+                sysdie("wait returned -1");
 	    }
 	}
 	if (mode == OUTPUT_IEXEC) {
@@ -3067,38 +2685,35 @@ exec_cmd(mode, cmd, grp, type, who)
 	    fclose(ch_stream);
 	}
 	if (WIFSTOPPED(status)) {
-	    fprintf(stderr, "    %s %s %s%s%s%s%s stopped\n",
-		CTLINND_NAME, cmd, grp,
-		(type ? "" : " "), (type ? type : ""),
-		(who ? "" : " "), (who ? who : ""));
+            warn("    %s %s %s%s%s%s%s stopped",
+                 CTLINND_NAME, cmd, grp,
+                 (type ? "" : " "), (type ? type : ""),
+                 (who ? "" : " "), (who ? who : ""));
 	    /* assume no work was done */
 	    return 0;
 	}
 	if (WIFSIGNALED(status)) {
-	    fprintf(stderr,
-		"    %s %s %s%s%s%s%s killed by signal %d\n",
-		CTLINND_NAME, cmd, grp,
-		(type ? "" : " "), (type ? type : ""),
-		(who ? "" : " "), (who ? who : ""), WTERMSIG(status));
+            warn("    %s %s %s%s%s%s%s killed by signal %d",
+                 CTLINND_NAME, cmd, grp,
+                 (type ? "" : " "), (type ? type : ""),
+                 (who ? "" : " "), (who ? who : ""), WTERMSIG(status));
 	    /* assume no work was done */
 	    return 0;
 	}
 	if (!WIFEXITED(status)) {
-	    fprintf(stderr,
-		"    %s %s %s%s%s%s%s returned unknown wait status: 0x%x\n",
-		CTLINND_NAME, cmd, grp,
-		(type ? "" : " "), (type ? type : ""),
-		(who ? "" : " "), (who ? who : ""), status);
+            warn("    %s %s %s%s%s%s%s returned unknown wait status: 0x%x",
+                 CTLINND_NAME, cmd, grp,
+                 (type ? "" : " "), (type ? type : ""),
+                 (who ? "" : " "), (who ? who : ""), status);
 	    /* assume no work was done */
 	    return 0;
 	}
 	exitval = WEXITSTATUS(status);
 	if (exitval != 0) {
-	    fprintf(stderr,
-		"    %s %s %s%s%s%s%s exited with status: %d\n",
-		CTLINND_NAME, cmd, grp,
-		(type ? "" : " "), (type ? type : ""),
-		(who ? "" : " "), (who ? who : ""), exitval);
+            warn("    %s %s %s%s%s%s%s exited with status: %d",
+                 CTLINND_NAME, cmd, grp,
+                 (type ? "" : " "), (type ? type : ""),
+                 (who ? "" : " "), (who ? who : ""), exitval);
 	    /* assume no work was done */
 	    return 0;
 	}
