@@ -3,7 +3,7 @@
 ##  Initial parsing of control messages.
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /news/etc/innshellvars
+. /var/news/etc/innshellvars
 WRITELOG=${NEWSBIN}/writelog
 
 PGPVERIFY=false
