@@ -65,7 +65,7 @@
    the total time accrued by that timer since the last summary.  count is
    the number of times the timer has been stopped since the last summary. */
 struct timer {
-    unsigned int  id;
+    unsigned int id;
     unsigned long start;
     unsigned long total;
     unsigned long count;
@@ -80,7 +80,7 @@ unsigned int timer_count = 0;
 
 /* Names for all of the timers.  These must be given in the same order
    as the definition of the enum in timer.h. */
-static const char * const timer_name[TMR_APPLICATION] = {
+static const char *const timer_name[TMR_APPLICATION] = {
     "hishave", "hisgrep", "hiswrite", "hissync",
 };
 
@@ -97,13 +97,12 @@ TMRgettime(bool reset)
     unsigned long now;
     struct timeval tv;
 
-    /* The time of the last summary, used as a base for times returned
-       by TMRnow.  Formerly, times were relative to the last call to
-       TMRinit, which was only called once when innd was starting up;
-       with that approach, times may overflow a 32-bit unsigned long
-       about 50 days after the server starts up.  While this may still
-       work due to unsigned arithmetic, this approach is less
-       confusing to follow. */
+    /* The time of the last summary, used as a base for times returned by
+       TMRnow.  Formerly, times were relative to the last call to TMRinit,
+       which was only called once when innd was starting up; with that
+       approach, times may overflow a 32-bit unsigned long about 50 days
+       after the server starts up.  While this may still work due to unsigned 
+       arithmetic, this approach is less confusing to follow. */
     static struct timeval base;
 
     gettimeofday(&tv, NULL);
@@ -303,9 +302,9 @@ TMRsumone(const char *const *labels, struct timer *timer, char *buf,
     size_t off = 0;
 
     /* This results in "child/parent nn(nn)" instead of the arguably more
-       intuitive "parent/child" but it's easy.  Since we ensure sane
-       snprintf semantics, it's safe to defer checking for overflow until
-       after formatting all of the timer data. */
+       intuitive "parent/child" but it's easy.  Since we ensure sane snprintf 
+       semantics, it's safe to defer checking for overflow until after
+       formatting all of the timer data. */
     for (node = timer; node != NULL; node = node->parent)
         off += snprintf(buf + off, len - off, "%s/",
                         TMRlabel(labels, node->id));
@@ -340,13 +339,13 @@ TMRsummary(const char *const *labels)
     size_t len;
     size_t off = 0;
 
-    /* To find the needed buffer size, note that a 64-bit unsigned number
-       can be up to 20 digits long, so each timer can be 52 characters.  We
-       also allow another 29 characters for the introductory message.  We
-       may have timers recurring at multiple points in the structure, so
-       this may not be long enough, but this is over-sized enough that it
-       shouldn't be a problem.  We use snprintf, so if the buffer isn't
-       large enough it will just result in logged errors. */
+    /* To find the needed buffer size, note that a 64-bit unsigned number can 
+       be up to 20 digits long, so each timer can be 52 characters.  We also
+       allow another 29 characters for the introductory message.  We may have 
+       timers recurring at multiple points in the structure, so this may not
+       be long enough, but this is over-sized enough that it shouldn't be a
+       problem.  We use snprintf, so if the buffer isn't large enough it will 
+       just result in logged errors. */
     len = 52 * timer_count + 29 + 1;
     buf = xmalloc(len);
     off += snprintf(buf, len, "ME time %ld ", TMRgettime(true));
