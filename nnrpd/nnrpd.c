@@ -678,6 +678,15 @@ main(argc, argv, env)
     if (argc)
 	Usage();
 
+    /*
+     * Make other processes happier if someone is reading
+     * This allows other processes like 'overchan' to keep up when
+     * there are lots of readers. Note that this is cumulative with
+     * 'nicekids'
+    */
+    if (innconf->nicennrpd > 0)
+	nice(innconf->nicennrpd);
+
     HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
     ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     ACTIVETIMES = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVETIMES));
