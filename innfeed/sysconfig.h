@@ -85,7 +85,6 @@
 #define MAX_WRITEV_VEC 1
 #undef DO_NEED_SYS_SELECT 
 #define HAVE_MMAP 1
-#define NBIO_FCNTL 1
 #define USE_SIGACTION
 #endif
 
@@ -267,126 +266,6 @@
 #define USE_SIGACTION
 #endif
 
-
-/***************************************************************************
- **                      INN SHARED SECTION                               **
- ***************************************************************************/
-
-/*
- * If you compile with -DUSE_INN_INCLUDES (and an appropriate '-I' from
- * within) the INN source tree, then you shouldn't need to touch this next
- * section 
- */
-
-#if defined (USE_INN_INCLUDES)
 #include "configdata.h"
 #include "logging.h"
-#else
-
-/* all the defines below here match INN in its configdata.h or logging.h  */
-
-#if defined (__bsdi__)          /* BSD/OS */
-
-#elif defined (__NetBSD__)      /* NetBSD */
-
-#define DONT_USE_UNION_WAIT 1
-
-#elif defined (linux)             /* LINUX */
-
-#elif defined (__osf__)         /* DEC Unix */
-
-#define DONT_USE_UNION_WAIT 1
-
-#elif defined (SOLARIS)         /* SunOS 5.x */
-
-#define DO_HAVE_WAITPID 1
-#define LOG_PERROR 0
-
-#elif defined (sun) && !defined (SOLARIS) /* SunOS 4.x */
-
-#define LOG_PERROR 0
-
-#elif defined (_nec_ews)
-
-#define DO_HAVE_WAITPID 1
-#define LOG_PERROR 0
-
-#endif
-
-
-/*
- * how syslog should be opened. LOG_PID not needed--it is added
- * automatically.
- */
-#define L_OPENLOG_FLAGS (LOG_NDELAY)
-
-/* same as INN's define DO_HAVE_UNISTD or DONT_HAVE_UNISTD */
-#if ! defined (DO_HAVE_UNISTD) && ! defined (DONT_HAVE_UNISTD)
-#define DO_HAVE_UNISTD 1
-#endif
-
-/* same as INN's define DO_HAVE_UNIX_DOMAIN or DONT_HAVE_UNIX_DOMAIN */
-#if ! defined (DO_HAVE_UNIX_DOMAIN) && ! defined (DONT_HAVE_UNIX_DOMAIN)
-#define DO_HAVE_UNIX_DOMAIN 1
-#endif
-
-/* same as INN's for maximum number of file descriptors. Choose one of these */
-/* #define FDCOUNT_GETRLIMIT 1 */
-/* #define FDCOUNT_GETDTAB 1 */
-/* #define FDCOUNT_SYSCONF 1 */
-/* #define FDCOUNT_ULIMIT 1 */
-/* #define FDCOUNT_CONSTANT 1 */
-
-#if ! defined (FDCOUNT_GETRLIMIT) && ! defined (FDCOUNT_GETDTAB)
-#if ! defined (FDCOUNT_SYSCONF) && ! defined (FDCOUNT_ULIMIT)
-#if ! defined (FDCOUNT_CONSTANT)
-#define FDCOUNT_GETRLIMIT 1
-#endif
-#endif
-#endif
-
-
-/* Same as INN's. defined DO_USE_UNION_WAIT or DONT_USE_UNION_WAIT */
-#if ! defined (DO_USE_UNION_WAIT) && ! defined (DONT_USE_UNION_WAIT)
-#define DONT_USE_UNION_WAIT 1
-#endif
-
-/* define DO_HAVE_WAITPID or DONT_HAVE_WAITPID depending on if you have to
-   use waitpid() rather than wait3() */
-#if ! defined (DO_HAVE_WAITPID) && ! defined (DONT_HAVE_WAITPID)
-#define DONT_HAVE_WAITPID 1
-#endif
- 
-/* define NBIO_FCNTL or NBIO_IOCTL depending on the type of non-blocking
-   i/o you use. */
-#if ! defined (NBIO_FCNTL) && ! defined (NBIO_IOCTL)
-#define NBIO_FCNTL 1
-#endif
-
-/* define DO_NEED_TIME or DONT_NEED_TIME depending on if you need <time.h> as
-   well as <sys/time.h> */
-#if ! defined (DO_NEED_TIME) && ! defined (DONT_NEED_TIME)
-#define DO_NEED_TIME 1
-#endif
-
-/* define DO_BIND_USE_SIZEOF or DONT_BIND_USE_SIZEOF depending on your
-   AF_UNIX bind use sizeof for the socket size? */
-#if ! defined (DO_BIND_USE_SIZEOF) && ! defined (DONT_BIND_USE_SIZEOF)
-#define DO_BIND_USE_SIZEOF 1
-#endif
-
-/* define DIR_DIRENT or DIR_DIRECT depending on the type of your system's
-   directory reading routines */
-#if ! defined (DIR_DIRENT) && ! defined (DIR_DIRECT)
-#define DIR_DIRENT 1
-#endif
-
-
-/* define DO_HAVE_SETBUFFER if you have setbuffer(), or DONT_HAVE_SETBUFFER
-   to use setbuf(). */
-#if ! defined (DO_HAVE_SETBUFFER) && ! defined (DONT_HAVE_SETBUFFER)
-#define DONT_HAVE_SETBUFFER 1
-#endif
-
-#endif /* defined (USE_INN_INCLUDES) */
 #endif /* sysconfig_h__ */

@@ -604,7 +604,7 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
     if ((p = strchr(Entry, '/')) == NULL) {
 	(void)fflush(stdout);
 	(void)fprintf(stderr, "Bad entry, \"%s\"\n", Entry);
-	return Keep;
+	return Remove;
     }
     *p = '\0';
     if ((ngp = NGfind(Entry)) == NULL)

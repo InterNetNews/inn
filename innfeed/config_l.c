@@ -260,13 +260,9 @@ static void yy_flex_free YY_PROTO(( void * ));
 
 #define YY_AT_BOL() (yy_current_buffer->yy_at_bol)
 
-
-#define FLEX_DEBUG
 typedef unsigned char YY_CHAR;
 FILE *yyin = (FILE *) 0, *yyout = (FILE *) 0;
 typedef int yy_state_type;
-
-#define FLEX_DEBUG
 extern char *yytext;
 #define yytext_ptr yytext
 
@@ -399,15 +395,6 @@ static yyconst short int yy_chk[137] =
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
-extern int yy_flex_debug;
-int yy_flex_debug = 1;
-
-static yyconst short int yy_rule_linenum[19] =
-    {   0,
-       65,   67,   69,   71,   73,   75,   77,   79,  124,  126,
-      128,  130,  143,  145,  148,  233,  235,  237
-    } ;
-
 /* The intent behind this definition is that it'll catch
  * any uses of REJECT which flex missed.
  */
@@ -475,7 +462,7 @@ int include_stack_ptr = 0;
 
 #define incl 1
 
-#line 479 "lex.yy.c"
+#line 466 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -628,7 +615,7 @@ YY_DECL
 #line 63 "configfile.l"
 
 
-#line 632 "lex.yy.c"
+#line 619 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -702,21 +689,6 @@ yy_find_action:
 
 do_action:	/* This label is used only to access EOF actions. */
 
-		if ( yy_flex_debug )
-			{
-			if ( yy_act == 0 )
-				fprintf( stderr, "--scanner backing up\n" );
-			else if ( yy_act < 19 )
-				fprintf( stderr, "--accepting rule at line %d (\"%s\")\n",
-				         yy_rule_linenum[yy_act], yytext );
-			else if ( yy_act == 19 )
-				fprintf( stderr, "--accepting default rule (\"%s\")\n",
-				         yytext );
-			else if ( yy_act == 20 )
-				fprintf( stderr, "--(end of buffer or a NUL)\n" );
-			else
-				fprintf( stderr, "--EOF (start condition %d)\n", YY_START );
-			}
 
 		switch ( yy_act )
 	{ /* beginning of action switch */
@@ -901,7 +873,7 @@ YY_RULE_SETUP
                           yylval.string = strPtr ;
                           strPtr = 0 ;
                           strPtrLen = strIdx = 0 ;
-                          return (STRING) ;
+                          return (XSTRING) ;
                         }
                       break ;
 
@@ -938,7 +910,7 @@ YY_RULE_SETUP
               }
             else
               {
-                return (STRING) ;
+                return (XSTRING) ;
               }
           }
 }}
@@ -971,7 +943,7 @@ YY_RULE_SETUP
 #line 247 "configfile.l"
 ECHO;
 	YY_BREAK
-#line 975 "lex.yy.c"
+#line 947 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{

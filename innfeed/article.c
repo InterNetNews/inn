@@ -52,9 +52,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <stdlib.h>
 #include <assert.h>
 #include <sys/types.h>
-#ifdef HAVE_MMAP
 #include <sys/mman.h>
-#endif /* HAVE_MMAP */
 #include <sys/stat.h>
 #include <syslog.h>
 #include <fcntl.h>
@@ -62,6 +60,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <string.h>
 #include <limits.h>
 
+#include "configdata.h"
+#include "clibrary.h"
+#include "libinn.h"
 #include "article.h"
 #include "buffer.h"
 #include "endpoint.h"
@@ -86,6 +87,7 @@ struct article_s
     bool loggedMissing ;        /* true if article is missing and we logged */
     bool articleOk ;            /* true until we know otherwise. */
     bool inWireFormat ;         /* true if ->contents is \r\n/dot-escaped */
+    ARTHANDLE *arthandle ;       /* points to the stroage api handle if used, NULL otherwise */
 } ;
 
 struct hash_entry_s {
@@ -98,13 +100,6 @@ struct hash_entry_s {
 };
 
 typedef struct hash_entry_s *HashEntry ;
-
-#ifdef	XXX_RAWHACK
-#include "configdata.h"
-#include "raw.h"
-/* This is a really ugly thing to do.... */
-extern RAWPART_OFF_T	RAWlastartsize;
-#endif	/* XXX_RAWHACK */
 
 
   /*
@@ -164,9 +159,6 @@ static u_int missingArticleCount ;  /* Number of articles that were missing */
 
 static bool logMissingArticles ;  /* if true then we log the details on a
                                      missing article. */ 
-
-static bool bitFiddleContents ; /* If true then we memcpy() the contents
-                                   around to yield CR-LF on every line */
 
 static u_int preparedBytes ;  /* The number of areticle bytes read in so
                                  far of disk (will wrap around) */
@@ -260,6 +252,7 @@ Article newArticle (const char *filename, const char *msgid)
       newArt->loggedMissing = false ;
       newArt->articleOk = true ;
       newArt->inWireFormat = false ;
+      newArt->arthandle = NULL;
       
       dprintf (3,"Adding a new article(%p): %s\n", newArt, msgid) ;
       
@@ -336,7 +329,6 @@ void gPrintArticleInfo (FILE *fp, u_int indentAmt)
 
   fprintf (fp,"%s  missingArticleCount : %d\n",indent,missingArticleCount) ;
   fprintf (fp,"%s  logMissingArticles : %d\n",indent,logMissingArticles) ;
-  fprintf (fp,"%s  bitFiddleContents : %d\n",indent,bitFiddleContents) ;
   fprintf (fp,"%s  preparedBytes : %d\n",indent,preparedBytes) ;
   fprintf (fp,"%s  preparedNewlines : %d\n",indent,preparedNewlines) ;
   fprintf (fp,"%s  avgCharsPerLine : %d\n",indent,avgCharsPerLine) ;
@@ -405,30 +397,25 @@ void printArticleInfo (Article art, FILE *fp, u_int indentAmt)
      file is still OK). */
 bool artFileIsValid (Article article)
 {
-  bool rval = false ;
+  bool                  rval = false ;
+  ARTHANDLE             *art;
 
     /* we may already know it's not valid */
-  if (article->articleOk)       
-    {
-#ifdef	XXX_RAWHACK
-      int	fd = RAWartopen(article->fname, article->msgid);
-
-      if (fd < 0) {
-	rval = false;	/* Redundant, but that's OK */
+  if (article->articleOk) {
+      if (IsToken(article->fname)) {
+	  if ((art = SMretrieve(TextToToken(article->fname), RETR_STAT)) == NULL) {
+	      rval = false;
+	  } else {
+	      rval = true;
+	      SMfreearticle(art);
+	  }
       } else {
-	/* We're sharing this fd globally ... don't close.  close(fd); */
-	rval = true;
+	  if (article->contents != NULL)
+	      rval = true ;
+	  else if (fileExistsP (article->fname))
+	      rval = true ;
       }
-#else	/* XXX_RAWHACK */
-      if (article->contents != NULL)
-        rval = true ;
-      else if (fileExistsP (article->fname))
-        rval = true ;
-#endif	/* XXX_RAWHACK */
 
-#ifdef	XXX_RAWHACK
-    notrval:
-#endif	/* XXX_RAWHACK */
       if (!rval)
         {
           article->articleOk = false ;
@@ -513,18 +500,6 @@ void artLogMissingArticles (bool val)
 }
 
 
-  /* if VAL is true then when an article's contents are read off disk they're
-     modified to include the appropriate carriage returns */
-
-void artBitFiddleContents (bool val)
-{
-  ASSERT (val == true || bitFiddleContents == false ) ; /* can only set once */
-  ASSERT (hashTable == NULL) ;  /* must be called before any articles made */
-  
-  bitFiddleContents = val ;
-}
-
-
   /* set the limit we want to stay under. */
 void artSetMaxBytesInUse (u_int val)
 {
@@ -563,13 +538,14 @@ static Buffer artGetContents (Article article)
 
 static void artUnmap (Article article, int size)
 {
-
-#ifdef HAVE_MMAP
-  if (munmap(article->mMapping, size) < 0)
-    syslog (LOG_NOTICE, "munmap %s: %m", article->fname) ;
-#endif
-
-  article->mMapping = NULL ;
+    if (article->arthandle) {
+	SMfreearticle(article->arthandle);
+    } else {
+	if (munmap(article->mMapping, size) < 0)
+	    syslog (LOG_NOTICE, "munmap %s: %m", article->fname);
+    }
+    article->arthandle = NULL;
+    article->mMapping = NULL;
 }
 
 
@@ -601,9 +577,11 @@ static void logArticleStats (TimeoutId id, void *data)
 static bool fillContents (Article article)
 {
   int fd ;
-  register char *p;
+  char *p;
   struct stat buf ;
   static bool maxLimitNotified ;
+  BOOL opened;
+  ARTHANDLE *arthandle;
 
   ASSERT (article->contents == NULL) ;
 
@@ -612,13 +590,14 @@ static bool fillContents (Article article)
 
   if (avgCharsPerLine == 0)
     avgCharsPerLine = 75 ;      /* roughly number of characters per line */
-  
-#ifdef	XXX_RAWHACK
-  if ((fd = RAWartopen(article->fname, article->msgid)) < 0)
-#else	/* XXX_RAWHACK */
-  if ((fd = open (article->fname,O_RDONLY,0)) < 0)
-#endif	/* XXX_RAWHACK */
-    {
+
+  if (IsToken(article->fname)) {
+      opened = ((arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL);
+      article->arthandle = arthandle;
+  } else {
+      opened = ((fd = open (article->fname,O_RDONLY,0)) < 0);
+  }
+  if (!opened) {
       article->articleOk = false ;
       missingArticleCount++ ;
       
@@ -628,86 +607,78 @@ static bool fillContents (Article article)
           article->loggedMissing = true ;
         }
     }
-#ifdef	XXX_RAWHACK
-  else if (1)
-#else	/* XXX_RAWHACK */
-  else if (fstat (fd, &buf) < 0)
-    {
-      article->articleOk = false ;
-      syslog (LOG_ERR,FSTAT_FAILURE,article->fname) ;
-    }
-  else if (!S_ISREG (buf.st_mode))
-    {
-      article->articleOk = false ;
-      syslog (LOG_ERR,REGFILE_FAILURE,article->fname) ;
-    }
-  else if (buf.st_size == 0)
-    {
-      article->articleOk = false ;
-      syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
-    }
-  else
-#endif	/* XXX_RAWHACK */
-    {
+  else if (!arthandle) {
+      if (fstat (fd, &buf) < 0)
+      {
+	  article->articleOk = false ;
+	  syslog (LOG_ERR,FSTAT_FAILURE,article->fname) ;
+      }
+      else if (!S_ISREG (buf.st_mode))
+      {
+	  article->articleOk = false ;
+	  syslog (LOG_ERR,REGFILE_FAILURE,article->fname) ;
+      }
+      else if (buf.st_size == 0)
+      {
+	  article->articleOk = false ;
+	  syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
+      }
+  } else {
       char *buffer = NULL ;
       int amt = 0 ;
-#ifdef	XXX_RAWHACK
-      size_t idx = 0, amtToRead = (size_t) RAWlastartsize;
-      size_t newBufferSize = (size_t) RAWlastartsize;
-#else	/* XXX_RAWHACK */
-      size_t idx = 0, amtToRead = (size_t) buf.st_size ;
-      size_t newBufferSize = (size_t) buf.st_size ;
-#endif	/* XXX_RAWHACK */
+      size_t idx = 0;
+      size_t amtToRead;
+      size_t newBufferSize;
       HashEntry h ;
 
-      if (useMMap)
-        {
-          /* if HAVE_MMAP is not defined, useMMap should never be
-             true, so we don't have to worry about other effects
-             of this block.  We only have to make the function compile. */
+      if (arthandle) {
+	  amtToRead = (size_t) arthandle->len;
+	  newBufferSize = (size_t) arthandle->len;
+      } else {
+	  amtToRead = (size_t) buf.st_size ;
+	  newBufferSize = (size_t) buf.st_size ;
+      }
 
-#ifdef HAVE_MMAP
-          article->mMapping = mmap((caddr_t) 0, (size_t) buf.st_size,
-                          PROT_READ, MAP_SHARED, fd, 0);
-#endif
-
-          if (article->mMapping == (caddr_t) -1)
-            {                   /* dunno, but revert to plain reading */
-              article->mMapping = NULL ;
-              syslog (LOG_NOTICE, MMAP_FAILURE, article->fname) ;
-            }
-          else
-            {
+      if (arthandle || useMMap) {
+	  if (useMMap) {
+	      article->mMapping = mmap((caddr_t) 0, (size_t) buf.st_size,
+				       PROT_READ, MAP_SHARED, fd, 0);
+	  } else {
+	      article->mMapping = arthandle->data;
+	  }
+	  
+          if (article->mMapping == (caddr_t) -1) {
+                /* dunno, but revert to plain reading */
+	      article->mMapping = NULL ;
+	      syslog (LOG_NOTICE, MMAP_FAILURE, article->fname) ;
+	  } else {
               article->contents = newBufferByCharP((char *)article->mMapping,
-                                                   (size_t) buf.st_size,
-                                                   (size_t) buf.st_size);
+                                                   (size_t) newBufferSize,
+                                                   (size_t) newBufferSize);
               buffer = bufferBase (article->contents) ;
-              if ((p = strchr(buffer, '\n')) == NULL)
-                {                  
+              if ((p = memchr(buffer, '\n', newBufferSize)) == NULL)
+	      {                  
                   article->articleOk = false;
                   delBuffer (article->contents) ;
                   article->contents = NULL ;
                   syslog (LOG_NOTICE, MUNGED_ARTICLE, article->fname) ;
-                }
+	      }
               else if (p[-1] == '\r')
-                article->inWireFormat = true ;
-              else if (bitFiddleContents)
-                {
+		  article->inWireFormat = true ;
+              else 
+	      {
                   /* we need to copy the contents into a buffer below */
                   delBuffer (article->contents) ;
                   article->contents = NULL ;
-                }
-            }
-        }
+	      }
+	  }
+      }
 
       if (article->contents == NULL && article->articleOk)
-        {
-          if (bitFiddleContents)
-            {
-              /* an estimate to give some room for nntpPrepareBuffer to use. */
-              newBufferSize *= (1.0 + (1.0 / avgCharsPerLine)) ;
-              newBufferSize ++ ;
-            }
+      {
+	  /* an estimate to give some room for nntpPrepareBuffer to use. */
+	  newBufferSize *= (1.0 + (1.0 / avgCharsPerLine)) ;
+	  newBufferSize ++ ;
           
           /* if we're going over the limit try to free up some older article's
              contents.  */
@@ -735,13 +706,13 @@ static bool fillContents (Article article)
           else
             {
               buffer = bufferBase (article->contents) ;
-#ifdef	XXX_RAWHACK
-              bytesInUse += RAWlastartsize;
-              byteTotal += RAWlastartsize;
-#else	/* XXX_RAWHACK */
-              bytesInUse += buf.st_size ;
-              byteTotal += buf.st_size ;
-#endif	/* XXX_RAWHACK */
+	      if (article->arthandle) {
+		  bytesInUse += arthandle->len;
+		  byteTotal += arthandle->len;
+	      } else {
+		  bytesInUse += buf.st_size ;
+		  byteTotal += buf.st_size ;
+	      }
             }
 
           if (article->mMapping && buffer != NULL)
@@ -757,13 +728,13 @@ static bool fillContents (Article article)
               if ((amt = read (fd, buffer + idx,amtToRead)) <= 0)
                 {
                   syslog (LOG_ERR,BAD_ART_READ, article->fname) ;
-#ifdef	XXX_RAWHACK
-                  bytesInUse -= RAWlastartsize;
-                  byteTotal -= RAWlastartsize;
-#else	/* XXX_RAWHACK */
-                  bytesInUse -= buf.st_size ;
-                  byteTotal -= buf.st_size ;
-#endif	/* XXX_RAWHACK */
+		  if (article->arthandle) {
+		      bytesInUse -= arthandle->len;
+		      byteTotal -= arthandle->len;
+		  } else {
+		      bytesInUse -= buf.st_size ;
+		      byteTotal -= buf.st_size ;
+		  }
                   amtToRead = 0 ;
 
                   delBuffer (article->contents) ;
@@ -778,11 +749,10 @@ static bool fillContents (Article article)
 
           if (article->contents != NULL)
             {
-#ifdef	XXX_RAWHACK
-              bufferSetDataSize (article->contents, (size_t) RAWlastartsize) ;
-#else	/* XXX_RAWHACK */
-              bufferSetDataSize (article->contents, (size_t) buf.st_size) ;
-#endif	/* XXX_RAWHACK */
+	      if (article->arthandle) 
+		  bufferSetDataSize (article->contents, (size_t) arthandle->len);
+	      else 
+		  bufferSetDataSize (article->contents, (size_t) buf.st_size) ;
 
               if ((p = strchr(buffer, '\n')) == NULL)
                 {                  
@@ -793,16 +763,13 @@ static bool fillContents (Article article)
                 {
                   article->inWireFormat = true ;
                 }
-              else if (bitFiddleContents)
-                if ( nntpPrepareBuffer (article->contents) )
+              else if ( nntpPrepareBuffer (article->contents) )
                   {
-#ifdef	XXX_RAWHACK
-                    size_t diff =
-                      (bufferDataSize (article->contents) - RAWlastartsize) ;
-#else	/* XXX_RAWHACK */
-                    size_t diff =
-                      (bufferDataSize (article->contents) - buf.st_size) ;
-#endif	/* XXX_RAWHACK */
+		    size_t diff;
+		    if (article->arthandle)
+			diff = (bufferDataSize (article->contents) - arthandle->len) ;
+		    else
+                    diff = (bufferDataSize (article->contents) - buf.st_size) ;
 
                     if (((u_int) UINT_MAX) - diff <= preparedBytes)
                       {
@@ -816,11 +783,11 @@ static bool fillContents (Article article)
                         rolledOver = true ;
                       }
 
-#ifdef	XXX_RAWHACK
-                    preparedBytes += RAWlastartsize ;
-#else	/* XXX_RAWHACK */
-                    preparedBytes += buf.st_size ;
-#endif	/* XXX_RAWHACK */
+		    if (article->arthandle)
+			preparedBytes += arthandle->len ;
+		    else
+			preparedBytes += buf.st_size ;
+
                     preparedNewlines += diff ;
                     bytesInUse += diff ;
                     byteTotal += diff ;
@@ -836,13 +803,13 @@ static bool fillContents (Article article)
                 else
                   {
                     syslog (LOG_ERR,PREPARE_FAILED) ;
-#ifdef	XXX_RAWHACK
-                    bytesInUse -= RAWlastartsize;
-                    byteTotal -= RAWlastartsize;
-#else	/* XXX_RAWHACK */
-                    bytesInUse -= buf.st_size ;
-                    byteTotal -= buf.st_size ;
-#endif	/* XXX_RAWHACK */
+		    if (article->arthandle) {
+			bytesInUse -= arthandle->len;
+			byteTotal -= arthandle->len;
+		    } else {
+			bytesInUse -= buf.st_size ;
+			byteTotal -= buf.st_size ;
+		    }
 
                     delBuffer (article->contents) ;
                     article->contents = NULL ;
@@ -851,11 +818,9 @@ static bool fillContents (Article article)
         }
     }
 
-#ifndef	XXX_RAWHACK
   /* If we're not doin' RAW stuff, we should close a valid file descriptor */
-  if (fd >= 0)
+  if (!article->arthandle && (fd >= 0))
     close (fd) ;
-#endif	/* ! XXX_RAWHACK */
   
   return (article->contents != NULL ? true : false) ;
 }
@@ -927,15 +892,7 @@ static bool prepareArticleForNNTP (Article article)
           
           if (*end != '\0')
             end++ ;
-          
-#ifndef	XXX_RAWHACK_CRLFSTORAGE
-          if (*end == '.')              /* start of next line is a dot */
-            appendBuffer (bufferTakeRef (dotFirstBuffer),&nntpBuffs,
-                          &buffIdx,&buffLen);
-          else
-            appendBuffer (bufferTakeRef (crlfBuffer),&nntpBuffs,
-                          &buffIdx,&buffLen) ;
-#endif	/* ! XXX_RAWHACK_CRLFSTORAGE */
+
         }
       while (*end != '\0') ;
       

@@ -80,11 +80,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "host.h"
 #include "innlistener.h"
 
-#ifdef  XXX_RAWHACK
 #include <configdata.h>
-#include "raw.h"
-char *LogName = "innfeed";
-#endif  /* XXX_RAWHACK */
 
 #define INHERIT 1
 #define NO_INHERIT 0
@@ -172,14 +168,6 @@ int main (int argc, char **argv)
 #else
   useMMap = false ;
 #endif
-
-#ifdef	XXX_RAWHACK_CRLFSTORAGE
-  artBitFiddleContents (false) ;
-#else	/* XXX_RAWHACK_CRLFSTORAGE */
-  /* always turn on copying into memory unless mmapping and the article
-     data being in NNTP format. */
-  artBitFiddleContents (true) ;
-#endif	/* XXX_RAWHACK_CRLFSTORAGE */
 
 #define OPT_STRING "a:b:c:Cd:e:hl:mMo:p:S:s:vxyz"
 
@@ -328,10 +316,11 @@ int main (int argc, char **argv)
       syslog (LOG_NOTICE,STARTING_PROGRAM,versionInfo,dateString) ;
     }
 
-#ifdef  XXX_RAWHACK
-  syslog(LOG_NOTICE, "Calling RAWread_config()");
-  RAWread_config();
-#endif  /* XXX_RAWHACK */
+  if (!SMinit()) {
+      dprintf(0, "Storage manager initialization failed\n");
+      syslog(LOG_ERR, "Storage manager initialization failed\n");
+      exit(1);
+  }
 
   if (subProgram == NULL && talkToSelf == false)
     {
@@ -522,7 +511,7 @@ int main (int argc, char **argv)
   setSigHandler (SIGALRM,sigalrm) ;
 
   /* handle signal to flush all the backlog files */
-  setSigHandler (SIGEMT,sigemt) ;
+  setSigHandler (SIGCHLD,sigemt) ;
 
   /* we can increment and decrement logging levels by sending SIGUSR{1,2} */
   setSigHandler (SIGUSR1,sigusr) ;

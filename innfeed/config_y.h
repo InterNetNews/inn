@@ -1,10 +1,9 @@
-#define YYEMPTY (-1)
 #define PEER 257
 #define GROUP 258
 #define IVAL 259
 #define RVAL 260
 #define NAME 261
-#define STRING 262
+#define XSTRING 262
 #define SCOPE 263
 #define COLON 264
 #define LBRACE 265

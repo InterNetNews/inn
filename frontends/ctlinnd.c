@@ -174,16 +174,13 @@ Usage(what)
 }
 
 
-int
-main(ac, av)
-    int			ac;
-    char		*av[];
+int main(int ac, char *av[])
 {
     static char		Y[] = "y";
     static char		EMPTY[] = "";
-    register COMMAND	*cp;
-    register char	*p;
-    register int	i;
+    COMMAND	        *cp;
+    char	        *p;
+    int	                i;
     BOOL		Silent;
     BOOL		NeedHelp;
     char		*reply;

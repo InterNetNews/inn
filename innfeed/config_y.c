@@ -1,13 +1,10 @@
 #ifndef lint
-static char yysccsid[] = "@(#)yaccpar	1.9 (Berkeley) 02/21/93 (BSDI)";
+static char yysccsid[] = "@(#)yaccpar	1.9 (Berkeley) 02/21/93";
 #endif
-#include <stdlib.h>
 #define YYBYACC 1
 #define YYMAJOR 1
 #define YYMINOR 9
-#define YYEMPTY (-1)
-#define YYLEX yylex()
-#define yyclearin (yychar=YYEMPTY)
+#define yyclearin (yychar=(-1))
 #define yyerrok (yyerrflag=0)
 #define YYRECOVERING (yyerrflag!=0)
 #define YYPREFIX "yy"
@@ -691,13 +688,13 @@ typedef union{
     char *string ;
     char chr ;
 } YYSTYPE;
-#line 695 "y.tab.c"
+#line 692 "y.tab.c"
 #define PEER 257
 #define GROUP 258
 #define IVAL 259
 #define RVAL 260
 #define NAME 261
-#define STRING 262
+#define XSTRING 262
 #define SCOPE 263
 #define COLON 264
 #define LBRACE 265
@@ -753,7 +750,7 @@ short yycheck[] = {                                     256,
 };
 #define YYFINAL 1
 #ifndef YYDEBUG
-#define YYDEBUG 1
+#define YYDEBUG 0
 #endif
 #define YYMAXTOKEN 271
 #if YYDEBUG
@@ -765,8 +762,8 @@ char *yyname[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"PEER","GROUP","IVAL","RVAL",
-"NAME","STRING","SCOPE","COLON","LBRACE","RBRACE","TRUEBVAL","FALSEBVAL","CHAR",
-"WORD","IP_ADDRESS",
+"NAME","XSTRING","SCOPE","COLON","LBRACE","RBRACE","TRUEBVAL","FALSEBVAL",
+"CHAR","WORD","IP_ADDRESS",
 };
 char *yyrule[] = {
 "$accept : input",
@@ -788,7 +785,7 @@ char *yyrule[] = {
 "value : TRUEBVAL",
 "value : FALSEBVAL",
 "value : RVAL",
-"value : STRING",
+"value : XSTRING",
 "value : CHAR",
 };
 #endif
@@ -799,25 +796,22 @@ char *yyrule[] = {
 #ifdef YYMAXDEPTH
 #define YYSTACKSIZE YYMAXDEPTH
 #else
-#define YYSTACKSIZE 10000
-#define YYMAXDEPTH 10000
+#define YYSTACKSIZE 500
+#define YYMAXDEPTH 500
 #endif
 #endif
-#define YYINITSTACKSIZE 200
 int yydebug;
 int yynerrs;
-struct yystack {
-    short *ssp;
-    YYSTYPE *vsp;
-    short *ss;
-    YYSTYPE *vs;
-    int stacksize;
-    short *sslim;
-};
-int yychar; /* some people use this, so we copy it in & out */
-int yyerrflag; /* must be global for yyerrok & YYRECOVERING */
+int yyerrflag;
+int yychar;
+short *yyssp;
+YYSTYPE *yyvsp;
+YYSTYPE yyval;
 YYSTYPE yylval;
-#line 787 "configfile.y"
+short yyss[YYSTACKSIZE];
+YYSTYPE yyvs[YYSTACKSIZE];
+#define yystacksize YYSTACKSIZE
+#line 793 "configfile.y"
 
 int yyerror (const char *s)
 {
@@ -929,7 +923,7 @@ int readConfig (const char *file, FILE *errorDest, int justCheck, int dump)
         atexit (configCleanup) ;
     }
 
-  if (file == NULL || strlen (file) == NULL || !fileExistsP (file))
+  if (file == NULL || strlen (file) == 0 || !fileExistsP (file))
     {
       logOrPrint (LOG_ERR,errorDest,NOSUCH_CONFIG, file ? file : "(null)") ;
       dprintf (1,"No such config file: %s\n", file ? file : "(null)") ;
@@ -1110,60 +1104,7 @@ int main (int argc, char **argv) {
 #endif /* defined (WANT_MAIN) */
 
 
-#line 1114 "y.tab.c"
-/* allocate initial stack */
-#if defined(__STDC__) || defined(__cplusplus)
-static int yyinitstack(struct yystack *sp)
-#else
-static int yyinitstack(sp)
-    struct yystack *sp;
-#endif
-{
-    int newsize;
-    short *newss;
-    YYSTYPE *newvs;
-
-    newsize = YYINITSTACKSIZE;
-    newss = (short *)malloc(newsize * sizeof *newss);
-    newvs = (YYSTYPE *)malloc(newsize * sizeof *newvs);
-    sp->ss = sp->ssp = newss;
-    sp->vs = sp->vsp = newvs;
-    if (newss == NULL || newvs == NULL) return -1;
-    sp->stacksize = newsize;
-    sp->sslim = newss + newsize - 1;
-    return 0;
-}
-
-/* double stack size, up to YYMAXDEPTH */
-#if defined(__STDC__) || defined(__cplusplus)
-static int yygrowstack(struct yystack *sp)
-#else
-static int yygrowstack(sp)
-    struct yystack *sp;
-#endif
-{
-    int newsize, i;
-    short *newss;
-    YYSTYPE *newvs;
-
-    if ((newsize = sp->stacksize) >= YYMAXDEPTH) return -1;
-    if ((newsize *= 2) > YYMAXDEPTH) newsize = YYMAXDEPTH;
-    i = sp->ssp - sp->ss;
-    if ((newss = (short *)realloc(sp->ss, newsize * sizeof *newss)) == NULL)
-        return -1;
-    sp->ss = newss;
-    sp->ssp = newss + i;
-    if ((newvs = (YYSTYPE *)realloc(sp->vs, newsize * sizeof *newvs)) == NULL)
-        return -1;
-    sp->vs = newvs;
-    sp->vsp = newvs + i;
-    sp->stacksize = newsize;
-    sp->sslim = newss + newsize - 1;
-    return 0;
-}
-
-#define YYFREESTACK(sp) { free((sp)->ss); free((sp)->vs); }
-
+#line 1108 "y.tab.c"
 #define YYABORT goto yyabort
 #define YYREJECT goto yyabort
 #define YYACCEPT goto yyaccept
@@ -1171,10 +1112,7 @@ static int yygrowstack(sp)
 int
 yyparse()
 {
-    register int yym, yyn, yystate, yych;
-    register YYSTYPE *yyvsp;
-    YYSTYPE yyval;
-    struct yystack yystk;
+    register int yym, yyn, yystate;
 #if YYDEBUG
     register char *yys;
     extern char *getenv();
@@ -1189,46 +1127,48 @@ yyparse()
 
     yynerrs = 0;
     yyerrflag = 0;
-    yychar = yych = YYEMPTY;
+    yychar = (-1);
 
-    if (yyinitstack(&yystk)) goto yyoverflow;
-    *yystk.ssp = yystate = 0;
+    yyssp = yyss;
+    yyvsp = yyvs;
+    *yyssp = yystate = 0;
 
 yyloop:
     if (yyn = yydefred[yystate]) goto yyreduce;
-    if (yych < 0)
+    if (yychar < 0)
     {
-        if ((yych = YYLEX) < 0) yych = 0;
-        yychar = yych;
+        if ((yychar = yylex()) < 0) yychar = 0;
 #if YYDEBUG
         if (yydebug)
         {
             yys = 0;
-            if (yych <= YYMAXTOKEN) yys = yyname[yych];
+            if (yychar <= YYMAXTOKEN) yys = yyname[yychar];
             if (!yys) yys = "illegal-symbol";
             printf("%sdebug: state %d, reading %d (%s)\n",
-                    YYPREFIX, yystate, yych, yys);
+                    YYPREFIX, yystate, yychar, yys);
         }
 #endif
     }
-    if ((yyn = yysindex[yystate]) && (yyn += yych) >= 0 &&
-            yyn <= YYTABLESIZE && yycheck[yyn] == yych)
+    if ((yyn = yysindex[yystate]) && (yyn += yychar) >= 0 &&
+            yyn <= YYTABLESIZE && yycheck[yyn] == yychar)
     {
 #if YYDEBUG
         if (yydebug)
             printf("%sdebug: state %d, shifting to state %d\n",
                     YYPREFIX, yystate, yytable[yyn]);
 #endif
-        if (yystk.ssp >= yystk.sslim && yygrowstack(&yystk))
+        if (yyssp >= yyss + yystacksize - 1)
+        {
             goto yyoverflow;
-        *++yystk.ssp = yystate = yytable[yyn];
-        *++yystk.vsp = yylval;
-        yychar = yych = YYEMPTY;
+        }
+        *++yyssp = yystate = yytable[yyn];
+        *++yyvsp = yylval;
+        yychar = (-1);
         if (yyerrflag > 0)  --yyerrflag;
         goto yyloop;
     }
-    if ((yyn = yyrindex[yystate]) && (yyn += yych) >= 0 &&
-            yyn <= YYTABLESIZE && yycheck[yyn] == yych)
+    if ((yyn = yyrindex[yystate]) && (yyn += yychar) >= 0 &&
+            yyn <= YYTABLESIZE && yycheck[yyn] == yychar)
     {
         yyn = yytable[yyn];
         goto yyreduce;
@@ -1250,19 +1190,20 @@ yyinrecovery:
         yyerrflag = 3;
         for (;;)
         {
-            if ((yyn = yysindex[*yystk.ssp]) &&
-                    (yyn += YYERRCODE) >= 0 &&
+            if ((yyn = yysindex[*yyssp]) && (yyn += YYERRCODE) >= 0 &&
                     yyn <= YYTABLESIZE && yycheck[yyn] == YYERRCODE)
             {
 #if YYDEBUG
                 if (yydebug)
                     printf("%sdebug: state %d, error recovery shifting\
- to state %d\n", YYPREFIX, *yystk.ssp, yytable[yyn]);
+ to state %d\n", YYPREFIX, *yyssp, yytable[yyn]);
 #endif
-                if (yystk.ssp >= yystk.sslim && yygrowstack(&yystk))
+                if (yyssp >= yyss + yystacksize - 1)
+                {
                     goto yyoverflow;
-                *++yystk.ssp = yystate = yytable[yyn];
-                *++yystk.vsp = yylval;
+                }
+                *++yyssp = yystate = yytable[yyn];
+                *++yyvsp = yylval;
                 goto yyloop;
             }
             else
@@ -1270,28 +1211,28 @@ yyinrecovery:
 #if YYDEBUG
                 if (yydebug)
                     printf("%sdebug: error recovery discarding state %d\n",
-                            YYPREFIX, *yystk.ssp);
+                            YYPREFIX, *yyssp);
 #endif
-                if (yystk.ssp <= yystk.ss) goto yyabort;
-                --yystk.ssp;
-                --yystk.vsp;
+                if (yyssp <= yyss) goto yyabort;
+                --yyssp;
+                --yyvsp;
             }
         }
     }
     else
     {
-        if (yych == 0) goto yyabort;
+        if (yychar == 0) goto yyabort;
 #if YYDEBUG
         if (yydebug)
         {
             yys = 0;
-            if (yych <= YYMAXTOKEN) yys = yyname[yych];
+            if (yychar <= YYMAXTOKEN) yys = yyname[yychar];
             if (!yys) yys = "illegal-symbol";
             printf("%sdebug: state %d, error recovery discards token %d (%s)\n",
-                    YYPREFIX, yystate, yych, yys);
+                    YYPREFIX, yystate, yychar, yys);
         }
 #endif
-        yychar = yych = YYEMPTY;
+        yychar = (-1);
         goto yyloop;
     }
 yyreduce:
@@ -1301,12 +1242,11 @@ yyreduce:
                 YYPREFIX, yystate, yyn, yyrule[yyn]);
 #endif
     yym = yylen[yyn];
-    yyvsp = yystk.vsp; /* for speed in code under switch() */
     yyval = yyvsp[1-yym];
     switch (yyn)
     {
 case 1:
-#line 700 "configfile.y"
+#line 706 "configfile.y"
 { 	
 		lineCount = 1 ;
 		addScope (NULL,"",newScope ("")) ;
@@ -1314,11 +1254,11 @@ case 1:
 	}
 break;
 case 2:
-#line 704 "configfile.y"
+#line 710 "configfile.y"
 { if (!doCallbacks()) YYABORT ; }
 break;
 case 6:
-#line 710 "configfile.y"
+#line 716 "configfile.y"
 {
 		errbuff = malloc (strlen(SYNTAX_ERROR) + 12) ;
 		sprintf (errbuff,SYNTAX_ERROR,lineCount) ;
@@ -1326,7 +1266,7 @@ case 6:
 	}
 break;
 case 7:
-#line 717 "configfile.y"
+#line 723 "configfile.y"
 {
 		errbuff = addScope (currScope,yyvsp[-1].name,newScope ("peer")) ;
                 free (yyvsp[-1].name) ;
@@ -1334,13 +1274,13 @@ case 7:
 	}
 break;
 case 8:
-#line 721 "configfile.y"
+#line 727 "configfile.y"
 {
 		currScope = currScope->parent ;
 	}
 break;
 case 9:
-#line 724 "configfile.y"
+#line 730 "configfile.y"
 {
 		errbuff = addScope (currScope,yyvsp[-1].name,newScope ("group")) ;
                 free (yyvsp[-1].name) ;
@@ -1348,13 +1288,13 @@ case 9:
 	}
 break;
 case 10:
-#line 728 "configfile.y"
+#line 734 "configfile.y"
 {
 		currScope = currScope->parent ;
 	}
 break;
 case 11:
-#line 731 "configfile.y"
+#line 737 "configfile.y"
 {
 		errbuff = malloc (strlen(UNKNOWN_SCOPE_TYPE) + 15 +
 					  strlen (yyvsp[-2].name)) ;
@@ -1365,16 +1305,16 @@ case 11:
 	}
 break;
 case 12:
-#line 739 "configfile.y"
+#line 745 "configfile.y"
 { 
-		if ((errbuff = keyOk(yyvsp[0].name)) != NULL) 
+		if ((errbuff = keyOk(yyvsp[0].name)) != NULL) {
 			YYABORT ;
-		else
+		} else
 			key = yyvsp[0].name ;
 	}
 break;
 case 14:
-#line 746 "configfile.y"
+#line 752 "configfile.y"
 {
 		if ((errbuff = addString (currScope, key, yyvsp[0].name)) != NULL)
 			YYABORT ;
@@ -1383,7 +1323,7 @@ case 14:
 	}
 break;
 case 15:
-#line 752 "configfile.y"
+#line 758 "configfile.y"
 {
 		if ((errbuff = addInteger(currScope, key, yyvsp[0].integer)) != NULL)
 			YYABORT; 
@@ -1391,7 +1331,7 @@ case 15:
 	}
 break;
 case 16:
-#line 757 "configfile.y"
+#line 763 "configfile.y"
 {
 		if ((errbuff = addBoolean (currScope, key, 1)) != NULL)
 			YYABORT ; 
@@ -1400,7 +1340,7 @@ case 16:
 	}
 break;
 case 17:
-#line 763 "configfile.y"
+#line 769 "configfile.y"
 {
 		if ((errbuff = addBoolean (currScope, key, 0)) != NULL)
 			YYABORT ; 
@@ -1409,7 +1349,7 @@ case 17:
 	}
 break;
 case 18:
-#line 769 "configfile.y"
+#line 775 "configfile.y"
 {
 		if ((errbuff = addReal (currScope, key, yyvsp[0].real)) != NULL)
 			YYABORT ; 
@@ -1417,7 +1357,7 @@ case 18:
 	}
 break;
 case 19:
-#line 774 "configfile.y"
+#line 780 "configfile.y"
 { 
 		if ((errbuff = addString (currScope, key, yyvsp[0].string)) != NULL)
 			YYABORT;
@@ -1425,20 +1365,19 @@ case 19:
 	}
 break;
 case 20:
-#line 779 "configfile.y"
+#line 785 "configfile.y"
 {
 		if ((errbuff = addChar (currScope, key, yyvsp[0].chr)) != NULL)
 			YYABORT ;
                 free (key) ;
         }
 break;
-#line 1436 "y.tab.c"
+#line 1376 "y.tab.c"
     }
-    yystk.ssp -= yym;
-    yystate = *yystk.ssp;
-    yystk.vsp -= yym;
+    yyssp -= yym;
+    yystate = *yyssp;
+    yyvsp -= yym;
     yym = yylhs[yyn];
-    yych = yychar;
     if (yystate == 0 && yym == 0)
     {
 #if YYDEBUG
@@ -1447,24 +1386,23 @@ break;
  state %d\n", YYPREFIX, YYFINAL);
 #endif
         yystate = YYFINAL;
-        *++yystk.ssp = YYFINAL;
-        *++yystk.vsp = yyval;
-        if (yych < 0)
+        *++yyssp = YYFINAL;
+        *++yyvsp = yyval;
+        if (yychar < 0)
         {
-            if ((yych = YYLEX) < 0) yych = 0;
-            yychar = yych;
+            if ((yychar = yylex()) < 0) yychar = 0;
 #if YYDEBUG
             if (yydebug)
             {
                 yys = 0;
-                if (yych <= YYMAXTOKEN) yys = yyname[yych];
+                if (yychar <= YYMAXTOKEN) yys = yyname[yychar];
                 if (!yys) yys = "illegal-symbol";
                 printf("%sdebug: state %d, reading %d (%s)\n",
-                        YYPREFIX, YYFINAL, yych, yys);
+                        YYPREFIX, YYFINAL, yychar, yys);
             }
 #endif
         }
-        if (yych == 0) goto yyaccept;
+        if (yychar == 0) goto yyaccept;
         goto yyloop;
     }
     if ((yyn = yygindex[yym]) && (yyn += yystate) >= 0 &&
@@ -1475,19 +1413,19 @@ break;
 #if YYDEBUG
     if (yydebug)
         printf("%sdebug: after reduction, shifting from state %d \
-to state %d\n", YYPREFIX, *yystk.ssp, yystate);
+to state %d\n", YYPREFIX, *yyssp, yystate);
 #endif
-    if (yystk.ssp >= yystk.sslim && yygrowstack(&yystk))
+    if (yyssp >= yyss + yystacksize - 1)
+    {
         goto yyoverflow;
-    *++yystk.ssp = yystate;
-    *++yystk.vsp = yyval;
+    }
+    *++yyssp = yystate;
+    *++yyvsp = yyval;
     goto yyloop;
 yyoverflow:
     yyerror("yacc stack overflow");
 yyabort:
-    YYFREESTACK(&yystk);
     return (1);
 yyaccept:
-    YYFREESTACK(&yystk);
     return (0);
 }
