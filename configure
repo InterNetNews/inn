@@ -6909,3 +6909,17 @@ test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
 cat .now_do
+if test -d "${RUNDIR}"
+then
+	ownergroup=`echo "${RUNDIR}" | $_PATH_PERL -e 'local (@sb, $owner, $group); $_ = <>; chop; @sb = stat; $owner = (getpwuid($sb[4]))[0]; $group = (getgrgid($sb[5]))[0]; print "$owner:$group\n";'`
+	if test "${ownergroup}" != "${NEWSUSER}:${NEWSGRP}"
+	then
+		echo "NOTE: The owner and the group of \"${RUNDIR}\" which is specified by"
+		echo "      \"--with-run-dir=\" is incorrect."
+		echo "      It should be owned by \"${NEWSUSER}\" and grouped by \"${NEWSGRP}\"."
+		echo "      Set its owner and group correctly before you start innd, or configure"
+		echo "      again with \"--with-run-dir=\" to specify another directory.  Or you may"
+		echo "      get unwanted problem."
+		echo ""
+	fi
+fi
