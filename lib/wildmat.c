@@ -2,17 +2,16 @@
 **
 **  wildmat pattern matching.
 **
-**  Do shell-style pattern matching for ?, \, [], and * characters.
-**  Might not be robust in face of malformed patterns; e.g., "foo[a-"
-**  could cause a segmentation violation.  It is 8-bit clean.  (Robustness
-**  hopefully fixed July 2000; all malformed patterns should now just fail
-**  to match anything.)
+**  Do shell-style pattern matching for ?, \, [], and * characters.  Might not
+**  be robust in face of malformed patterns; e.g., "foo[a-" could cause a
+**  segmentation violation.  It is 8-bit clean.  (Robustness hopefully fixed
+**  July 2000; all malformed patterns should now just fail to match anything.)
 **
 **  Written by Rich $alz, mirror!rs, Wed Nov 26 19:03:17 EST 1986.
 **  Rich $alz is now <rsalz@osf.org>.
 **
-**  April, 1991:  Replaced mutually-recursive calls with in-line code
-**  for the star character.
+**  April, 1991:  Replaced mutually-recursive calls with in-line code for the
+**  star character.
 **
 **  Special thanks to Lars Mathiesen <thorinn@diku.dk> for the ABORT code.
 **  This can greatly speed up failing wildcard patterns.  For example:
@@ -25,42 +24,41 @@
 **  the ABORT code, it takes 22310 calls to fail.  Ugh.  The following
 **  explanation is from Lars:
 **
-**  The precondition that must be fulfilled is that DoMatch will consume
-**  at least one character in text.  This is true if *p is neither '*' nor
-**  '\0'.)  The last return has ABORT instead of FALSE to avoid quadratic
-**  behaviour in cases like pattern "*a*b*c*d" with text "abcxxxxx".  With
-**  FALSE, each star-loop has to run to the end of the text; with ABORT
-**  only the last one does.
+**  The precondition that must be fulfilled is that DoMatch will consume at
+**  least one character in text.  This is true if *p is neither '*' nor '\0'.)
+**  The last return has ABORT instead of FALSE to avoid quadratic behaviour in
+**  cases like pattern "*a*b*c*d" with text "abcxxxxx".  With FALSE, each
+**  star-loop has to run to the end of the text; with ABORT only the last one
+**  does.
 **
 **  Once the control of one instance of DoMatch enters the star-loop, that
-**  instance will return either TRUE or ABORT, and any calling instance
-**  will therefore return immediately after (without calling recursively
-**  again).  In effect, only one star-loop is ever active.  It would be
-**  possible to modify the code to maintain this context explicitly,
-**  eliminating all recursive calls at the cost of some complication and
-**  loss of clarity (and the ABORT stuff seems to be unclear enough by
-**  itself).  I think it would be unwise to try to get this into a
-**  released version unless you have a good test data base to try it out
-**  on.
+**  instance will return either TRUE or ABORT, and any calling instance will
+**  therefore return immediately after (without calling recursively again).
+**  In effect, only one star-loop is ever active.  It would be possible to
+**  modify the code to maintain this context explicitly, eliminating all
+**  recursive calls at the cost of some complication and loss of clarity (and
+**  the ABORT stuff seems to be unclear enough by itself).  I think it would
+**  be unwise to try to get this into a released version unless you have a
+**  good test data base to try it out on.
 **
-**  June, 1991:  Robert Elz <kre@munnari.oz.au> added minus and close
-**  bracket handling for character sets.
+**  June, 1991:  Robert Elz <kre@munnari.oz.au> added minus and close bracket
+**  handling for character sets.
 **
-**  July, 2000:  Largely rewritten by Russ Allbery <rra@stanford.edu> to
-**  add support for ',', '!', and optionally '@' to the core wildmat
-**  routine.  Broke the character class matching into a separate function
-**  for clarity since it's infrequently used in practice, and added some
-**  simple lookahead to significantly decrease the recursive calls in the
-**  '*' matching code.  Added support for UTF-8 as the default character
-**  set for any high-bit characters.
+**  July, 2000:  Largely rewritten by Russ Allbery <rra@stanford.edu> to add
+**  support for ',', '!', and optionally '@' to the core wildmat routine.
+**  Broke the character class matching into a separate function for clarity
+**  since it's infrequently used in practice, and added some simple lookahead
+**  to significantly decrease the recursive calls in the '*' matching code.
+**  Added support for UTF-8 as the default character set for any high-bit
+**  characters.
 **
 **  For more information on UTF-8, see RFC 2279.
 **
-**  Please note that this file is intentionally written so that
-**  conditionally executed expressions are on separate lines from the
-**  condition to facilitate analysis of the coverage of the test suite using
-**  purecov.  Please preserve this.  As of July 30, 2000, purecov reports
-**  that the accompanying test suite achieves 100% coverage of this file.
+**  Please note that this file is intentionally written so that conditionally
+**  executed expressions are on separate lines from the condition to
+**  facilitate analysis of the coverage of the test suite using purecov.
+**  Please preserve this.  As of March 11, 2001, purecov reports that the
+**  accompanying test suite achieves 100% coverage of this file.
 */
 
 #include "config.h"
@@ -75,11 +73,10 @@
 
 /*
 **  Determine the length of a non-ASCII character in octets (for advancing
-**  pointers when skipping over characters).  Takes a pointer to the start
-**  of the character and to the last octet of the string.  If end is NULL,
-**  expect the string pointed to by start to be nul-terminated.  If the
-**  character is malformed UTF-8, return 1 to treat it like an eight-bit
-**  local character.
+**  pointers when skipping over characters).  Takes a pointer to the start of
+**  the character and to the last octet of the string.  If end is NULL, expect
+**  the string pointed to by start to be nul-terminated.  If the character is
+**  malformed UTF-8, return 1 to treat it like an eight-bit local character.
 */
 static int
 utf8_length(const unsigned char *start, const unsigned char *end)
@@ -107,11 +104,11 @@ utf8_length(const unsigned char *start, const unsigned char *end)
 **  Convert a UTF-8 character to UCS-4.  Takes a pointer to the start of the
 **  character and to the last octet of the string, and to a uint32_t into
 **  which to put the decoded UCS-4 value.  If end is NULL, expect the string
-**  pointed to by start to be nul-terminated.  Returns the number of octets
-**  in the UTF-8 encoding.  If the UTF-8 character is malformed, set result
-**  to the decimal value of the first octet; this is wrong, but it will
-**  generally cause the rest of the wildmat matching to do the right thing
-**  for non-UTF-8 input.
+**  pointed to by start to be nul-terminated.  Returns the number of octets in
+**  the UTF-8 encoding.  If the UTF-8 character is malformed, set result to
+**  the decimal value of the first octet; this is wrong, but it will generally
+**  cause the rest of the wildmat matching to do the right thing for non-UTF-8
+**  input.
 */
 static int
 utf8_decode(const unsigned char *start, const unsigned char *end,
@@ -185,7 +182,7 @@ match_class(uint32_t text, const unsigned char *start,
     }
     return reversed;
 }
-    
+
 
 /*
 **  Match the text against the pattern between start and end.  This is a
@@ -231,11 +228,11 @@ match_pattern(const unsigned char *text, const unsigned char *start,
             if (p > end)
                 return true;
 
-            /* Basic algorithm:  Recurse at each point where the * could
+            /* Basic algorithm: Recurse at each point where the * could
                possibly match.  If the match succeeds or aborts, return
                immediately; otherwise, try the next position.
 
-               Optimization:  If the character after the * in the pattern
+               Optimization: If the character after the * in the pattern
                isn't a metacharacter (the common case), then the * has to
                consume characters at least up to the next occurance of that
                character in the text.  Scan forward for those points rather
@@ -246,7 +243,8 @@ match_pattern(const unsigned char *text, const unsigned char *start,
                 if (ismeta) {
                     matched = match_pattern(text++, p, end);
                 } else {
-                    while (*text && *text != *p) text++;
+                    while (*text && *text != *p)
+                        text++;
                     if (!*text)
                         return ABORT;
                     matched = match_pattern(++text, p + 1, end);
@@ -306,9 +304,9 @@ match_expression(const unsigned char *text, const unsigned char *start,
         return !*text ? WILDMAT_MATCH : WILDMAT_FAIL;
     end = start + strlen((const char *) start) - 1;
 
-    /* Main match loop.  Find each comma that separates patterns, and
-       attempt to match the text with each pattern in order.  The last
-       matching pattern determines whether the whole expression matches. */
+    /* Main match loop.  Find each comma that separates patterns, and attempt 
+       to match the text with each pattern in order.  The last matching
+       pattern determines whether the whole expression matches. */
     for (; p <= end + 1; p = split + 1) {
         if (allowpoison)
             poison = (*p == '@');
@@ -332,10 +330,11 @@ match_expression(const unsigned char *text, const unsigned char *start,
             escaped = (*split == '\\') ? !escaped : false;
         }
 
-        /* Optimization:  If match == !reverse and poison == poisoned,
-           this pattern can't change the result, so don't do any work. */
-        if (match == !reverse && poison == poisoned) continue;
-        if (match_pattern(text, p, split - 1) == TRUE) {
+        /* Optimization: If match == !reverse and poison == poisoned, this
+           pattern can't change the result, so don't do any work. */
+        if (match == !reverse && poison == poisoned)
+            continue;
+        if (match_pattern(text, p, split - 1) == true) {
             poisoned = poison;
             match = !reverse;
         }
@@ -354,7 +353,7 @@ bool
 wildmat(const char *text, const char *pat)
 {
     const unsigned char *utext = (const unsigned char *) text;
-    const unsigned char *upat  = (const unsigned char *) pat;
+    const unsigned char *upat = (const unsigned char *) pat;
 
     if (upat[0] == '*' && upat[1] == '\0')
         return true;
@@ -370,10 +369,29 @@ enum wildmat
 wildmat_poison(const char *text, const char *pat)
 {
     const unsigned char *utext = (const unsigned char *) text;
-    const unsigned char *upat  = (const unsigned char *) pat;
+    const unsigned char *upat = (const unsigned char *) pat;
 
     if (upat[0] == '*' && upat[1] == '\0')
         return WILDMAT_MATCH;
     else
         return match_expression(utext, upat, true);
+}
+
+
+/*
+**  User-level routine for simple expressions (neither , nor ! are special).
+*/
+bool
+wildmat_simple(const char *text, const char *pat)
+{
+    const unsigned char *utext = (const unsigned char *) text;
+    const unsigned char *upat = (const unsigned char *) pat;
+    size_t length;
+
+    if (upat[0] == '*' && upat[1] == '\0')
+        return true;
+    else {
+        length = strlen(pat);
+        return (match_pattern(utext, upat, upat + length - 1) == true);
+    }
 }

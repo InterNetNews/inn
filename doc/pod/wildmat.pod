@@ -1,12 +1,14 @@
 =head1 NAME
 
-wildmat, wildmat_poison - Perform wildmat matching
+wildmat, wildmat_simple, wildmat_poison - Perform wildmat matching
 
 =head1 SYNOPSIS
 
 B<#include E<lt>libinn.hE<gt>>
 
 B<bool wildmat(const char *>I<text>B<, const char *>I<pattern>B<);>
+
+B<bool wildmat_simple(const char *>I<text>B<, const char *>I<pattern>B<);>
 
 B<enum wildmat wildmat_poison(const char *>I<text>B<,
 const char *>I<pattern>B<);>
@@ -23,13 +25,19 @@ words, if you try to match ISO 8859-1 text with these routines everything
 should work as expected unless the ISO 8859-1 text contains valid UTF-8
 sequences, which thankfully is somewhat rare.)
 
-B<wildmat_poison> works similarly, except that C<@> as the first character
-of one of the patterns in the expression (see below) "poisons" the match
-if it matches.  B<wildmat_poison> returns B<WILDMAT_MATCH> if the
-expression matches the text, B<WILDMAT_FAIL> if it doesn't, and
-B<WILDMAT_POISON> if the expression doesn't match because a poisoned
-pattern matched the text.  These enumeration constants are defined in the
-B<libinn.h> header.
+B<wildmat_simple> is identical to B<wildmat> except that neither C<!> nor
+C<,> have any special meanting and I<pattern> is always treated as a
+single pattern.  This function exists solely to support legacy interfaces
+like NNTP's XPAT command, and should be avoided when implementing new
+features.
+
+B<wildmat_poison> works similarly to B<wildmat>, except that C<@> as the
+first character of one of the patterns in the expression (see below)
+"poisons" the match if it matches.  B<wildmat_poison> returns
+B<WILDMAT_MATCH> if the expression matches the text, B<WILDMAT_FAIL> if it
+doesn't, and B<WILDMAT_POISON> if the expression doesn't match because a
+poisoned pattern matched the text.  These enumeration constants are
+defined in the B<libinn.h> header.
 
 =head1 WILDMAT EXPRESSIONS
 
@@ -120,14 +128,18 @@ C<!> except that if an expression fails to match because the rightmost
 matching pattern began with C<@>, B<WILDMAT_POISON> is returned instead of
 B<WILDMAT_FAIL>.
 
+If the B<wildmat_simple> interface is used, the matching rules are the
+same as above except that none of C<!>, C<@>, or C<,> have any special
+meaning at all and only match those literal characters.
+
 =head1 BUGS
 
-Both B<wildmat> and B<wildmat_poison> internally convert the passed
-arguments to const unsigned char pointers.  The only reason why they take
-regular char pointers instead of unsigned char is for the convenience of
-INN and other callers that may not be using unsigned char everywhere they
-should.  In a future revision, the public interface should be changed to
-just take unsigned char pointers.
+All of these functions internally convert the passed arguments to const
+unsigned char pointers.  The only reason why they take regular char
+pointers instead of unsigned char is for the convenience of INN and other
+callers that may not be using unsigned char everywhere they should.  In a
+future revision, the public interface should be changed to just take
+unsigned char pointers.
 
 =head1 HISTORY
 

@@ -2,7 +2,7 @@
 **
 **  wildmat test suite.
 **
-**  As of July 30, 2000, this test suite achieves 100% coverage of the
+**  As of March 11, 2001, this test suite achieves 100% coverage of the
 **  wildmat source code at that time.
 */
 
@@ -32,10 +32,21 @@ ok_poi(int n, const char *text, const char *pattern, enum wildmat matches)
                (int) matches, (int) matched);
 }
 
+static void
+ok_sim(int n, const char *text, const char *pattern, bool matches)
+{
+    bool matched;
+
+    matched = wildmat_simple(text, pattern);
+    printf("%sok %d\n", matched == matches ? "" : "not ", n);
+    if (matched != matches)
+        printf("  %s\n  %s\n  expected %d\n", text, pattern, matches);
+}
+
 int
 main(void)
 {
-    puts("161");
+    puts("166");
 
     /* Basic wildmat features. */
     ok_reg(  1, "foo",            "foo",               true);
@@ -217,6 +228,13 @@ main(void)
     ok_reg(159, "-",              "[,-.]",             true);
     ok_reg(160, "+",              "[,-.]",             false);
     ok_reg(161, "-.]",            "[,-.]",             false);
+
+    /* Tests for the wildmat_simple interface. */
+    ok_sim(162, "ab,cd",          "ab,cd",             true);
+    ok_sim(163, "ab",             "ab,cd",             false);
+    ok_sim(164, "!aaabbb",        "!a*b*",             true);
+    ok_sim(165, "ccc",            "*,!a*",             false);
+    ok_sim(166, "foo",            "*",                 true);
 
     return 0;
 }

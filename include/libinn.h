@@ -126,6 +126,7 @@ enum wildmat {
 };
 
 extern bool             wildmat(const char *text, const char *pat);
+extern bool             wildmat_simple(const char *text, const char *pat);
 extern enum wildmat     wildmat_poison(const char *text, const char *pat);
 
 
