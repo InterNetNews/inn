@@ -7,14 +7,13 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 #include <grp.h>
 #include <pwd.h>
 #include <syslog.h>  
 #include <sys/stat.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef TM_IN_SYS_TIME
 # include <sys/time.h>
@@ -594,11 +593,9 @@ ProcessHeaders(AddOrg, linecount, pwp)
     int			linecount;
     struct passwd	*pwp;
 {
-    static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     static char		PATHFLUFF[] = PATHMASTER;
-    static char		SIGNS[] = "+-";
-    register HEADER	*hp;
-    register char	*p;
+    HEADER              *hp;
+    char                *p;
     TIMEINFO		Now;
     struct tm		*tm;
     char		buff[SMBUF];
@@ -639,28 +636,10 @@ ProcessHeaders(AddOrg, linecount, pwp)
     }
 
     /* Set Date. */
-    if (GetTimeInfo(&Now) < 0)
-	PerrorExit(TRUE, "Can't get the time");
-    if ((tm = localtime(&Now.time)) == NULL)
-	PerrorExit(TRUE, "Can't convert to local time");
-
-    /* The %0n.nd contruct from <kre@munnari.oz.au> is clever.  Modern
-     * printf's treat it %02 (two digits wide) .2 (zero-fill to at least
-     * two digits), while old versions treat it as %02 (zero-fill two
-     * digits wide) .2 (noise).  You might want to check this on your
-     * system.  This shouldn't be able to overflow SMBUF... */
-    if (Now.tzone < 0) {
-	p = &SIGNS[0];
-	zone = -Now.tzone;
+    if (!makedate(0, FALSE, buff, sizeof(buff))) {
+        fprintf(stderr, "Can't generate \"Date\" header\n");
+        QuitServer(1);
     }
-    else {
-	p = &SIGNS[1];
-	zone = Now.tzone;
-    }
-    (void)sprintf(buff, "%d %3.3s %d %02d:%02d:%02d %c%04d",
-	tm->tm_mday, &MONTHS[3 * tm->tm_mon], 1900 + tm->tm_year,
-	tm->tm_hour, tm->tm_min, tm->tm_sec,
-	*p, (int)((zone / 60) * 100 + (zone % 60)));
     HDR(_date) = COPY(buff);
 
     /* Newsgroups are checked later. */
@@ -739,6 +718,8 @@ ProcessHeaders(AddOrg, linecount, pwp)
     /* Followup-To; checked with Newsgroups. */
 
     /* Check Expires. */
+    if (GetTimeInfo(&Now) < 0)
+	PerrorExit(TRUE, "Can't get the time");
     if (HDR(_expires) && parsedate(HDR(_expires), &Now) == -1) {
 	(void)fprintf(stderr, "Can't parse \"%s\" as an expiration date.\n",
 		HDR(_expires));
