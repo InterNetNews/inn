@@ -14,9 +14,9 @@ BOOL OV3groupadd(char *group, char *flag);
 BOOL OV3groupdel(char *group);
 BOOL OV3add(TOKEN token, char *data, int len);
 void *OV3opensearch(char *group, int low, int high);
-BOOL OV3search(void *handle, int *artnum, char **data, int *len, TOKEN *token);
+BOOL OV3search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token);
 void OV3closesearch(void *handle);
-BOOL OV3getartinfo(char *group, int artnum, char **data, int *len, TOKEN *token);
+BOOL OV3getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token);
 BOOL OV3expiregroup(char *group, int *lo);
 void OV3close(void);
 
