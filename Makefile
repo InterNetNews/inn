@@ -77,16 +77,10 @@ update:
 subst c sh quiet sedtest:
 	cd config ; $(MAKE) $(FLAGS) $@ ; cd ..
 
-##  Build installation document.
-Install.ms:	Install.ms.1 Install.ms.2
-	@rm -f Install.ms
-	cat Install.ms.1 Install.ms.2 >Install.ms
-	chmod 444 Install.ms
-
 ##  Additional cleanups.
 clobber realclean distclean:	clean
 	@echo ""
-	rm -f Install.ms inn*.tar.Z inn*.tar.gz Part0? MANIFEST.BAK
+	rm -f inn*.tar.Z inn*.tar.gz Part0? MANIFEST.BAK
 	rm -rf inews.* rnews.* nntplib.*
 	rm -f tags */tags core */core a.out */a.out foo */foo
 	rm -f CHANGES *~
@@ -95,7 +89,7 @@ clobber realclean distclean:	clean
 	rm -f BUILD makedirs.sh config/config.data config/config.data.in
 	rm -f backends/actmerge.sh backends/actsyncd.sh
 	rm -f backends/sendxbatches.sh frontends/c7unbatch.sh
-	rm -f frontends/gunbatch.sh include/autoconfig.h include/clibrary.h
+	rm -f frontends/gunbatch.sh include/autoconfig.h
 	rm -f include/config.h include/paths.h innfeed/innfeed-convcfg
 	rm -f innfeed/procbatch samples/actsync.cfg samples/checkgroups
 	rm -f samples/checkgroups.pl samples/cnfsheadconf samples/cnfsstat
@@ -123,7 +117,7 @@ clobber realclean distclean:	clean
 	rm -f Makefile.global 
 
 ##  Configure and compile
-world:		Install.ms
+world:
 	cd config ; $(MAKE) $(FLAGS) subst quiet ; cd ..
 	cd lib ; $(MAKE) $(FLAGS) ; cd ..
 
