@@ -112,9 +112,6 @@
     /* Do gethostbyaddr on client addresses in nnrp? */
     /* =()<#define @<NNRP_GETHOSTBYADDR>@_NNRP_GETHOSTBYADDR>()= */
 #define DO_NNRP_GETHOSTBYADDR
-    /*  Strip Sender from posts that did authenticate? */
-    /* =()<#define @<NNRP_AUTH_SENDER>@_NNRP_AUTH_SENDER>()= */
-#define DO_NNRP_AUTH_SENDER
     /* Tell resolver _res.options to be fast? */
     /* =()<#define @<FAST_RESOLV>@_FAST_RESOLV>()= */
 #define DONT_FAST_RESOLV
