@@ -25,7 +25,10 @@ main ()
 
   pipe(fd);
   if (!isastream (fd[0]))
-    return 1;
+    {
+      fprintf (stderr, "%d is not a stream\n", fd[0]);
+      return 1;
+    }
   if (fork () == 0)
     {
       int child;
@@ -45,9 +48,15 @@ main ()
       memset (&fdrec, 0, sizeof(fdrec));
       close (fd[1]);
       if (ioctl (fd[0], I_RECVFD, &fdrec) < 0)
-        return 1;
+        {
+          perror("ioctl");
+          return 1;
+        }
       if (fdrec.fd < 0)
-        return 1;
+        {
+          fprintf(stderr, "Bad file descriptor %d\n", fd);
+          return 1;
+        }
       return 0;
     }
 }]])
