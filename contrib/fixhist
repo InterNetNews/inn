@@ -1,0 +1,76 @@
+#!/usr/local/bin/perl
+#
+# history database sanity checker
+# David Barr <barr@math.psu.edu>
+# version 1.3
+# for new history format
+# Katsuhiro Kondou <kondou@nec.co.jp>
+# version 1.1
+# Throw away history entries with:
+#   malformed lines (too long, contain nulls or special characters)
+#
+# INN Usage:
+#   ctlinnd throttle 'fixing history'
+#   ./fixhist <history >history.n
+#   makehistory -r -s `wc -l <history.n` -f history.n
+#      or use instructions from fixhist to avoid the `wc -l <history.n`
+#   mv history.n history
+#   mv history.n.dir history.dir
+### if TAGGED_HASH is DO or before inn2.0
+#   mv history.n.pag history.pag
+### if TAGGED_HASH is DONT
+#   mv history.n.hash history.hash
+#   mv history.n.index history.index
+### endif
+#   ctlinnd reload history x
+#   ctlinnd go 'fixing history'
+# any malformed entries will be output to stderr.
+
+
+$MAXKEYLEN=255;
+$count=0;
+
+while (<>) {
+	chop;
+	($msgid,$dates,$arts,$xtra) = split('\t');
+	if ($xtra) {
+		&tossit();		# too many fields
+		next;
+	}
+	if (!($dates) && (($arts) || ($xtra))) {
+		&tossit();		# if not date field, then the rest
+		next;			# should be empty
+	}
+	if (length($msgid) >= $MAXKEYLEN) {
+		&tossit();		# message-id too long
+		next;
+	}
+	if ($msgid !~ /^<[^<> ]*>$/) {
+		if ($msgid =~ /^\[[0-9A-F]{32}\]$/) {
+			if ($arts ne "" && $arts !~ /^\@[0-9A-F]{56}\@$/) {
+				&tossit();		# malformed msg-ids
+				next;
+			}
+		} else {
+			&tossit();		# malformed msg-ids
+			next;
+		}
+	}
+	if (/[\000-\010\012-\037\177-\237]/) { # non-control chars except tab
+		&tossit();		# illegal chars
+		next;
+	}
+	if ($dates) {
+		if ($dates =~ /[^\d~\-]/) {	# rudimentary check
+			&tossit();
+			next;
+		}
+	}
+	print "$_\n";
+	$count++;
+}
+print STDERR "Done.  Now run:\nmakehistory -r -s $count -f history.n\n";
+
+sub tossit {
+	print STDERR "$_\n";
+}
