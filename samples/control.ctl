@@ -612,6 +612,17 @@ checkgroups:newsmaster@easynet.net:easynet.*:verify-easynet.news
 newgroup:newsmaster@easynet.net:easynet.*:verify-easynet.news
 rmgroup:newsmaster@easynet.net:easynet.*:verify-easynet.news
 
+## EE (Estonia)
+# Contact: usenet@news.ut.ee
+# URL: http://news.ut.ee/
+# Key URL: http://news.ut.ee/pubkey.asc
+# *PGP*   See comment at top of file.
+newgroup:*:ee.*:drop
+rmgroup:*:ee.*:drop
+checkgroups:news@news.ut.ee:ee.*:verify-ee.news
+newgroup:news@news.ut.ee:ee.*:verify-ee.news
+rmgroup:news@news.ut.ee:ee.*:verify-ee.news
+
 ## EFN & EUG (Eugene Free Computer Network, Eugene/Springfield, Oregon, USA)
 # *PGP*   See comment at top of file.
 newgroup:*:eug.*:drop
