@@ -271,6 +271,9 @@ HASH Aliasgethashbygroup(const char *group);
 const char  *Aliasgetnamebygroup(const char *group);
 BOOL LoadGroupAliases(void);
 
+extern int      argify(char *line, char ***argvp);
+extern void     freeargify(char ***argvp);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
