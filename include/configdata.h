@@ -82,10 +82,10 @@ typedef char		*CSTRING;
 #define DIR_DIRENT
     /* Use flock, lockf, or nothing to lock files? */
     /* =()<#define LOCK_@<LOCK_STYLE>@>()= */
-#define LOCK_LOCKF
+#define LOCK_FLOCK
     /* Does your (struct tm) have a tm_gmtoff field? */
     /* =()<#define @<HAVE_TM_GMTOFF>@_HAVE_TM_GMTOFF>()= */
-#define DONT_HAVE_TM_GMTOFF
+#define DO_HAVE_TM_GMTOFF
     /* Does your (struct stat) have a st_blksize field? */
     /* =()<#define @<HAVE_ST_BLKSIZE>@_HAVE_ST_BLKSIZE>()= */
 #define DO_HAVE_ST_BLKSIZE
@@ -94,7 +94,7 @@ typedef char		*CSTRING;
 #define DONT_USE_UNION_WAIT
     /* How to fork? */
     /* =()<#define FORK()	@<FORK>@()>()= */
-#define FORK()	fork()
+#define FORK()	vfork()
     /* Does your AF_UNIX bind use sizeof for the socket size? */
     /* =()<#define @<BIND_USE_SIZEOF>@_BIND_USE_SIZEOF>()= */
 #define DO_BIND_USE_SIZEOF

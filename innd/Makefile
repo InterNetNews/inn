@@ -4,15 +4,6 @@ include ../Makefile.global
 ##  =()<TCLINC	= @<TCL_INC>@>()=
 TCLINC	= 
 
-##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC) $(TCLINC)>()=
-LINTFLAGS	= -b -h -z  -I../include $(DEFS) $(PERLINC) $(TCLINC)
-##  =()<LINTFILTER	= @<LINTFILTER>@>()=
-LINTFILTER	= | sed -n -f ../sedf.sun
-##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= /usr/bin/ctags -t -w
-##  =()<PROF	= @<PROF>@>()=
-PROF	= -pg
-
 CFLAGS += $(PERLINC)
 
 ## =()<TCL_LIB	= @<TCL_LIB>@>()=

@@ -5,8 +5,6 @@ SHELL	= /bin/sh
 MAKE	= make
 DESTDIR	=
 D	= $(DESTDIR)
-##  =()<LINTFILTER	= @<LINTFILTER>@>()=
-LINTFILTER	= | sed -n -f ../sedf.sun
 
 ##  =()<MANPAGESTYLE	= @<MANPAGESTYLE>@>()=
 MANPAGESTYLE	= SOURCE

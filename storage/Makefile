@@ -7,16 +7,6 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
-##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
-LINTLIBSTYLE	= NONE
-##  =()<LINTFLAGS	= @<LINTFLAGS>@ -I. $(PERLINC)>()=
-LINTFLAGS	= -b -h -z  -I../include $(DEFS) -I. $(PERLINC)
-##  =()<LINTFILTER	= @<LINTFILTER>@>()=
-LINTFILTER	= | sed -n -f ../sedf.sun
-##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= /usr/bin/ctags -t -w
-##  =()<PROF	= @<PROF>@>()=
-PROF	= -pg
 
 all:			autoconfig
 	@$(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) methods

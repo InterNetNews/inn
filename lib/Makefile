@@ -6,17 +6,6 @@ IFTRUE	= @$(SHELL) ../iftrue.sh
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
 
-##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
-LINTLIBSTYLE	= NONE
-##  =()<LINTFLAGS	= @<LINTFLAGS>@ $(PERLINC)>()=
-LINTFLAGS	= -b -h -z  -I../include $(DEFS) $(PERLINC)
-##  =()<LINTFILTER	= @<LINTFILTER>@>()=
-LINTFILTER	= | sed -n -f ../sedf.sun
-##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= /usr/bin/ctags -t -w
-##  =()<PROF	= @<PROF>@>()=
-PROF	= -pg
-
 CFLAGS += $(PERLINC)
 
 

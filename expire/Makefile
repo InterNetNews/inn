@@ -1,15 +1,6 @@
 ##  $Revision$
 include ../Makefile.global
 
-##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
-LINTFLAGS	= -b -h -z  -I../include $(DEFS)
-##  =()<LINTFILTER	= @<LINTFILTER>@>()=
-LINTFILTER	= | sed -n -f ../sedf.sun
-##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= /usr/bin/ctags -t -w
-##  =()<PROF	= @<PROF>@>()=
-PROF	= -pg
-
 SOURCES	=	convdate.c expire.c expireover.c fastrm.c grephistory.c \
 		makeactive.c makehistory.c newsrequeue.c prunehistory.c \
 		expireindex.c

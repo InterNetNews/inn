@@ -32,41 +32,14 @@
   ||#### =()<USE_CHAR_CONST		@<USE_CHAR_CONST>@>()=
   ||USE_CHAR_CONST		@ac_cv_subst_use_char_const@
 [IN1.7=@1][WDF=autoconf][WOR=no][P=low]
-  ||##  What flags to use if profiling; -p or -pg, e.g.
-  ||#### =()<PROF			@<PROF>@>()=
-  ||PROF			-pg
-[IN1.7=@1][WDF=autoconf][WOR=no][P=low]
   ||##  If you use the standard NNTP way of connecting, where is the library?
   ||#### =()<NNTPLIB		@<NNTPLIB>@>()=
   ||NNTPLIB		
-[IN1.7=@1][WDF=autoconf][WOR=no][P=low]
-  ||##  How to make a lint library; pick BSD, SYSV, or NONE.
-  ||#### =()<LINTLIBSTYLE		@<LINTLIBSTYLE>@>()=
-  ||LINTLIBSTYLE		NONE
-[IN1.7=@1][WDF=autoconf][WOR=no][P=low]
-  ||##  Flags for lint.  AIX wants "-wkD"; it and others don't want "-z".
-  ||#### =()<LINTFLAGS		@<LINTFLAGS>@>()=
-  ||LINTFLAGS		-b -h -z  -I../include $(DEFS)
-[IN1.7=@1][WDF=autoconf][WOR=no][P=low]
-  ||##  Some lints insist on putting out the filename and other crap.
-  ||##  Possible values:
-  ||##	LINTFILTER              | sed -n -f ../sedf.aix
-  ||##	LINTFILTER              | sed -n -f ../sedf.osx
-  ||##	LINTFILTER              | sed -n -f ../sedf.sun
-  ||##	LINTFILTER              | sed -n -f ../sedf.sysv
-  ||##	LINTFILTER
-  ||####  =()<LINTFILTER		@<LINTFILTER>@>()=
-  ||LINTFILTER		| sed -n -f ../sedf.sun
 [IN1.7=@1][WDF=confparam][WOR=no][P=low]
   ||##  How to install manpages; pick SOURCE, NROFF-PACK, NROFF-PACK-SCO,
   ||##  BSD4.4 or NONE.
   ||#### =()<MANPAGESTYLE		@<MANPAGESTYLE>@>()=
   ||MANPAGESTYLE		SOURCE
-[IN1.7=@1][WDF=autoconf][WOR=no]
-  ||##  Ctags command.  Use echo if you don't have ctags.
-  ||##[autoconf]
-  ||#### =()<CTAGS			@<CTAGS>@>()=
-  ||CTAGS			@ac_cv_subst_ctags@
 [IN1.7=@2][comments]
   ||
   ||

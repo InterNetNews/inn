@@ -5,11 +5,6 @@ CFLAGS +=	-I../../include -I..
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
-##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= /usr/bin/ctags -t -w
-##  =()<PROF	= @<PROF>@>()=
-PROF	= -pg
-
 SOURCES = timehash.c
 OBJECTS = timehash.o
 

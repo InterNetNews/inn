@@ -3,13 +3,6 @@ include ../Makefile.global
 
 RNEWSPROGS	= ${PATHBIN}/rnews.libexec
 
-##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
-LINTFLAGS	= -b -h -z  -I../include $(DEFS)
-##  =()<LINTFILTER	= @<LINTFILTER>@>()=
-LINTFILTER	= | sed -n -f ../sedf.sun
-##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= /usr/bin/ctags -t -w
-
 ##  =()<NNTPLIB	= @<NNTPLIB>@>()=
 NNTPLIB	= 
 
