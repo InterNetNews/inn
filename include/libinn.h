@@ -140,11 +140,10 @@ extern FILE     *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, c
 extern void	CAclose(void);
 
 /* File locking. */
-extern int      LockFile(int fd, BOOL block);
+typedef enum { LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
+extern BOOL      lock_file(int fd, LOCKTYPE type, BOOL block);
 
 #ifdef HAVE_FCNTL
-typedef enum { LOCK_READ, LOCK_WRITE, LOCK_UNLOCK } LOCKTYPE;
-
 extern BOOL     LockRange(int fd, LOCKTYPE type, BOOL block,
                           OFFSET_T offset, OFFSET_T size);
 #endif
