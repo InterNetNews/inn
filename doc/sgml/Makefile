@@ -1,5 +1,5 @@
 ##  $Revision$
-include ../Makefile.global
+include ../../Makefile.global
 
 CFLAGS	= $(GCFLAGS)
 SHELL	= /bin/sh
