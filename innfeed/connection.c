@@ -255,6 +255,7 @@ static Connection gCxnList = NULL ;
 static u_int gCxnCount = 0 ;
 static u_int max_reconnect_period = MAX_RECON_PER ;
 static u_int init_reconnect_period = INIT_RECON_PER ;
+static u_long bind_addr = INADDR_ANY;
 #if 0
 static bool inited = false ;
 #endif
@@ -363,6 +364,7 @@ static int fudgeFactor (int initVal) ;
 int cxnConfigLoadCbk (void *data)
 {
   long iv ;
+  char *sv ;
   int rval = 1 ;
   FILE *fp = (FILE *) data ;
 
@@ -395,6 +397,18 @@ int cxnConfigLoadCbk (void *data)
   else
     iv = INIT_RECON_PER ;
   init_reconnect_period = (u_int) iv ;
+
+  if (getString (topScope,"bindaddress",&sv,NO_INHERIT))
+    {
+      bind_addr = inet_addr(sv);
+      if (bind_addr == INADDR_NONE)
+	{
+	  logOrPrint (LOG_ERR,fp,"innfeed unable to determine bind ip") ;
+	  bind_addr = INADDR_ANY;
+	}
+    }
+  else
+    bind_addr = INADDR_ANY;
 
   return rval ;
 }
@@ -511,7 +525,7 @@ Connection newConnection (Host host,
  */
 bool cxnConnect (Connection cxn)
 {
-  struct sockaddr_in cxnAddr ;
+  struct sockaddr_in cxnAddr, cxnSelf ;
   int fd, rval ;
   struct in_addr *addr = NULL;
   const char *peerName = hostPeerName (cxn->myHost) ;
@@ -557,6 +571,23 @@ bool cxnConnect (Connection cxn)
       cxnSleepOrDie (cxn) ;
 
       return false ;
+    }
+
+  /* bind to a specified virtual host */
+  if (bind_addr != INADDR_ANY)
+    {
+      memset (&cxnSelf, 0, sizeof (cxnSelf)) ;
+      cxnSelf.sin_family = AF_INET ;
+      cxnSelf.sin_port = 0 ;
+      cxnSelf.sin_addr.s_addr = bind_addr;
+      if (bind (fd, (struct sockaddr *) &cxnSelf,sizeof (cxnSelf)) < 0)
+	{
+	  syslog (LOG_ERR,"bind: %m") ;
+
+	  cxnSleepOrDie (cxn) ;
+
+	  return false ;
+	}
     }
 
   /* set our file descriptor to non-blocking */
