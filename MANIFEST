@@ -375,6 +375,7 @@ lib/xfopena.c               1 Open a FILE in append mode
 lib/xmalloc.c               1 Failsafe memory allocation wrapper
 lib/xmemerr.c               1 Memory allocation error routine
 lib/xrealloc.c              1 Failsafe memory reallocation wrapper
+lib/xsignal.c               1 signal() wrapper using sigaction
 lib/xwrite.c                1 Write that handles partial transfers
 lib/xwritev.c               1 Writev that handles partial transfers
 ltconfig                    1 Script for libtool
