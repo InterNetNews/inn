@@ -489,11 +489,11 @@ STATIC void StartConnection()
 	    if (HostErrorStr == NULL) {
 		syslog(L_NOTICE,
 		    "? cant gethostbyaddr %s %m -- using IP address for access",
-		    ClientHost);
+		    ServerHost);
 	    } else {
 		syslog(L_NOTICE,
 		    "? cant gethostbyaddr %s %s -- using IP address for access",
-		    ClientHost, HostErrorStr);
+		    ServerHost, HostErrorStr);
 	    }
 	}
 #else
