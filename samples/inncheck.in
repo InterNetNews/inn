@@ -382,7 +382,8 @@ incoming_conf
     'nnrpperlauth',		0,
     'docnfsstat',		0,
     'nnrpdauthsender',		0,
-    'cnfscheckfudgesize',	0
+    'cnfscheckfudgesize',	0,
+    'rlimitnofile',		0
 );
 %inn_conf'optionals = (
     'innflags',			0,
@@ -909,7 +910,7 @@ check_all_perms
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
-    &checkperm($paths{'inndstart'}, 0555, 'root', 'bin');
+    &checkperm($paths{'inndstart'}, 4550, 'root', 'bin');
     foreach ( keys %paths ) {
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};
