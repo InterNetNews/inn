@@ -4,9 +4,9 @@ include ../Makefile.global
 
 CFLAGS	= $(GCFLAGS)
 
-SOURCES	=	ckpasswd.c ident.c pwcheck.c
+SOURCES	=	ckpasswd.c ident.c pwcheck.c radius.c
 
-ALLPASS	=	ckpasswd pwcheck
+ALLPASS	=	ckpasswd pwcheck radius
 ALLRES	=	ident
 ALL	=	$(ALLPASS) $(ALLRES)
 
@@ -32,6 +32,9 @@ tags ctags:	$(SOURCES)
 
 pwcheck:	$(P) pwcheck.o
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ pwcheck.o $(LIBS)
+
+radius:	$(P) radius.o
+	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ radius.o $(LIBS)
 
 ckpasswd:	$(P) ckpasswd.o
 	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ ckpasswd.o $(LIBS)
