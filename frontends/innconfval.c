@@ -65,8 +65,17 @@ printit(char *v, const char *val)
 	case 4:   /* tcl */
 	    if (isnum(val))
 	    	printf("set inn_%s %s\n", v, val);
-	    else
-	    	printf("set inn_%s \"%s\"\n", v, val);
+	    else {
+                int i;
+
+                printf("set inn_%s {", v);
+                for (i = 0; val[i] != '\0'; i++) {
+                    if (strchr ("{}", val[i]))
+                        putchar('\\');
+                    putchar(val[i]);
+                }
+	    	printf("}\n");
+            }
 	    break;
     }
 }
