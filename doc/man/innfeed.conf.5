@@ -502,6 +502,25 @@ than this value (in bytes), then the backlog file will be shrunk down to
 the size of \fBbacklog-limit\fP. If both \fBbacklog-factor\fP and
 \fBbacklog-limit-highwater\fP are defined, then the value of
 \fBbacklog-factor\fP is used.
+.TP
+.B deliver
+This key is used with imapfeed to authenticate to a remote host.  It is optional.
+There are several parameters that must be included with deliver:
+.RS
+.TP
+.B deliver-authname
+The authname is who you want to authenticate as.
+.TP
+.B deliver-password
+This is the appropriate password for authname.
+.TP
+.B deliver-username
+The username is who you want to "act" as, that is, who is actually going to be using the server.
+.TP
+.B deliver-realm
+In this case, the "realm" is the realm in which the specified authname is valid.  Currently this is only needed by the DIGEST-MD5 SASL
+mechanism.
+.RE
 .\"..................................................
 .SH "PEER VALUES"
 As previously explained, the peer definitions can contain redefinitions of

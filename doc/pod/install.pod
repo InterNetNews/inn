@@ -760,6 +760,25 @@ peer, news.example.com is what they put in the Path: header (if different
 than the actual name of the server), and <newsgroups> is the wildmat
 pattern of newsgroups they want.
 
+As an alternative to NNTP, inn may also be fed to an IMAP server, by
+creating a new executable almost identical to innfeed called imapfeed.
+The startinnfeed process is modified such that it can be told to start
+imapfeed instead of innfeed.  The feed entry for this is as follows:
+
+    imapfeed!\
+        :!*\
+        :Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed imapfeed
+
+And set up entries for each remote site like:
+
+    remote.example.com/news.example.com\
+        :<newsgroups>\
+        :Tm:imapfeed!
+
+For more information on imapfeed, look at the imap_connection.c in the
+innfeed directory.  For more information on IMAP in general, look at
+RFC 2060.
+
 Finally, if you set usecontrolchan to "true" in F<inn.conf>, you need to
 set up an entry for the controlchan program.  This entry should look like:
 
