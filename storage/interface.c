@@ -650,6 +650,7 @@ static BOOL MatchGroups(const char *g, int num, char **patterns) {
     const char          *p;
     int                 i;
     BOOL                wanted = FALSE;
+    BOOL                poisoned = FALSE;
 
     /* Find the end of the line */
     for (p = g+1; (*p != '\n') && (*(p - 1) != '\r'); p++);
@@ -668,19 +669,27 @@ static BOOL MatchGroups(const char *g, int num, char **patterns) {
 	for (i = 0; i < num; i++) {
 	    switch (patterns[i][0]) {
 	    case '!':
-		if (!wanted && wildmat(group, &patterns[i][1]))
-		    break;
+		if (wildmat(group, &patterns[i][1]))
+                    wanted = FALSE;
+                break;
 	    case '@':
 		if (wildmat(group, &patterns[i][1])) {
-		    DISPOSE(groups);
-		    return FALSE;
+                    wanted = FALSE;
+                    poisoned = TRUE;
 		}
 		break;
 	    default:
-		if (wildmat(group, patterns[i]))
+		if (wildmat(group, patterns[i])) {
 		    wanted = TRUE;
+                    poisoned = FALSE;
+                }
+                break;
 	    }
 	}
+        if (poisoned) {
+            DISPOSE(groups);
+            return FALSE;
+        }
     }
 
     DISPOSE(groups);
