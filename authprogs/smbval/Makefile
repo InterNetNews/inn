@@ -24,7 +24,7 @@ smbvalid.a:	$(VALIDATE)
 all: smbvalid.a
 
 .c.o:	$(INCLUDES)
-	$(LIBCC) $(CFLAGS) -c $*.c
+	$(UPLIBCC) $(CFLAGS) -c $*.c
 
 clean:
 	rm -f *.o smbvalid.a
