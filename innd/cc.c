@@ -458,6 +458,8 @@ CCcancel(char *av[])
     if ((p = CCgetid(av[0], &msgid)) != NULL)
 	return p;
 
+    Data.HdrContent[HDR__MESSAGE_ID].Value = (char *)msgid;
+    Data.HdrContent[HDR__MESSAGE_ID].Length = strlen(msgid);
     if (Mode == OMrunning)
 	ARTcancel(&Data, msgid, TRUE);
     else {
