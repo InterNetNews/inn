@@ -1,8 +1,9 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 ##  $Revision$
 ##  SH script to send UUCP batches out.  By Mike Cooper and Rich $alz.
 ##  Based on B News sendbatch 1.22 10/29/89.
-. @LIBDIR@/innshellvars
 
 ##  Place to run a df, and amount of space needed.
 UUSPOOL=/var/spool/uucp

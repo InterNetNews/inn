@@ -2,10 +2,13 @@
 
 include ../Makefile.global
 
-CFLAGS	= $(GCFLAGS)
+CFLAGS        = $(GCFLAGS)
 
-SOURCES	=	convdate.c expire.c expireover.c fastrm.c grephistory.c \
-		makehistory.c newsrequeue.c prunehistory.c makedbz.c
+ALL           = convdate expire expireover expirerm fastrm grephistory \
+		makedbz makehistory newsrequeue prunehistory
+
+SOURCES       = convdate.c expire.c expireover.c fastrm.c grephistory.c \
+		makedbz.c makehistory.c newsrequeue.c prunehistory.c
 
 INSTALLED     = $(D)$(PATHBIN)/convdate		\
 		$(D)$(PATHBIN)/expire		\
@@ -18,49 +21,42 @@ INSTALLED     = $(D)$(PATHBIN)/convdate		\
 		$(D)$(PATHBIN)/newsrequeue	\
 		$(D)$(PATHBIN)/prunehistory
 
-ALL	=	convdate expire expireover fastrm grephistory \
-		makehistory newsrequeue prunehistory makedbz
+all: $(ALL)
 
-all:		$(ALL)
-
-clobber clean:
+clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
-	rm -f expirep profiled
-	rm -f all install 
 
-tags ctags:	$(SOURCES)
-	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
+clobber: clean
+	rm -f tags
 
-convdate:	$(P) convdate.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ convdate.o $(LIBNEWS) $(LIBS)
+tags ctags: $(SOURCES)
+	$(CTAGS) $(SOURCES)
 
-expire:		$(P) expire.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ expire.o $(LIBNEWS) $(LIBS)
 
-expireover:	$(P) expireover.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ expireover.o $(LIBNEWS) $(LIBS)
+##  Compilation rules.
 
-fastrm:	$(P) fastrm.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ fastrm.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
+LINK            = $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+NEWSLIBS        = $(LIBNEWS) $(LIBS)
+FIX             = $(FIXSCRIPT)
 
-grephistory:	$(P) grephistory.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ grephistory.o $(LIBNEWS) $(LIBNEWS) $(LIBS)
+convdate:	convdate.o     $(LIBNEWS) ; $(LINK) convdate.o     $(NEWSLIBS)
+expire:		expire.o       $(LIBNEWS) ; $(LINK) expire.o       $(NEWSLIBS)
+expireover:	expireover.o   $(LIBNEWS) ; $(LINK) expireover.o   $(NEWSLIBS)
+fastrm:		fastrm.o       $(LIBNEWS) ; $(LINK) fastrm.o       $(NEWSLIBS)
+grephistory:	grephistory.o  $(LIBNEWS) ; $(LINK) grephistory.o  $(NEWSLIBS)
+makedbz:	makedbz.o      $(LIBNEWS) ; $(LINK) makedbz.o      $(NEWSLIBS)
+makehistory:	makehistory.o  $(LIBNEWS) ; $(LINK) makehistory.o  $(NEWSLIBS)
+newsrequeue:	newsrequeue.o  $(LIBNEWS) ; $(LINK) newsrequeue.o  $(NEWSLIBS)
+prunehistory:	prunehistory.o $(LIBNEWS) ; $(LINK) prunehistory.o $(NEWSLIBS)
 
-makehistory:	$(P) makehistory.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ makehistory.o $(LIBNEWS) $(LIBS)
+expirerm:	expirerm.in        $(FIX) ; $(FIX) expirerm.in
 
-newsrequeue:	$(P) newsrequeue.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ newsrequeue.o $(LIBNEWS) $(LIBS)
+$(LIBINN):
+	(cd ../lib ; $(MAKE))
+$(LIBSTORAGE):
+	(cd ../storage ; $(MAKE))
 
-prunehistory:	$(P) prunehistory.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ prunehistory.o $(LIBNEWS) $(LIBS)
-
-makedbz:	$(P) makedbz.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ makedbz.o $(LIBNEWS) $(LIBS)
-
-$(LIBNEWS):
-	(cd ../lib ; $(MAKE) )
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 profiled:	expirep 
@@ -74,31 +70,21 @@ expirep:	expire.c
 	mv expire expirep
 	rm -f expire.o
 
-##
-.SUFFIXES: .c .src
-.c.src:
-	#load $(CFLAGS) $<
 
-
-##  Installation rules.
+##  Installation rules.  Installation commands set in Makefile.global.
 
 install: $(INSTALLED)
 
-LT_XPRI = $(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD
-LT_XPUB = $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD
-CP_XPRI = ../installit.sh $(OWNER) -m 0550 -b .OLD
-CP_XPUB = ../installit.sh $(OWNER) -m 0555 -b .OLD
-
-$(D)$(PATHBIN)/convdate:            convdate            ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/expire:              expire              ; $(LT_XPRI) $? $@
-$(D)$(PATHBIN)/expireover:          expireover          ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/convdate:            convdate            ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/expire:              expire              ; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/expireover:          expireover          ; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/expirerm:            expirerm            ; $(CP_XPRI) $? $@
-$(D)$(PATHBIN)/fastrm:              fastrm              ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/grephistory:         grephistory         ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/makedbz:             makedbz             ; $(LT_XPRI) $? $@
-$(D)$(PATHBIN)/makehistory:         makehistory         ; $(LT_XPRI) $? $@
-$(D)$(PATHBIN)/newsrequeue:         newsrequeue         ; $(LT_XPRI) $? $@
-$(D)$(PATHBIN)/prunehistory:        prunehistory        ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/fastrm:              fastrm              ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/grephistory:         grephistory         ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/makedbz:             makedbz             ; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/makehistory:         makehistory         ; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/newsrequeue:         newsrequeue         ; $(LI_XPRI) $? $@
+$(D)$(PATHBIN)/prunehistory:        prunehistory        ; $(LI_XPRI) $? $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

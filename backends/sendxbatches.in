@@ -1,9 +1,11 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 # $Id$ 
 # By petri@ibr.cs.tu-bs.de with mods by libove@jerry.alf.dec.com
 #
 #  Script to send xbatches for a site, wrapped around innxbatch
-#  Invocation: sendxbatches.sh <sitename> <hostname> <xbatch file name> ...
+#  Invocation: sendxbatches <sitename> <hostname> <xbatch file name> ...
 #
 ##  TODO: - we should check the amount of queued batches for the site,
 ##          to prevent disk overflow due to unreachable sites.
@@ -13,8 +15,6 @@ then
 	echo "usage: $0 <sitename> <hostname> <xbatch file name>"
 	exit 1
 fi
-
-. @LIBDIR@/innshellvars
 
 LOCK=${LOCKS}/LOCK.sendxbatches
 shlock -p $$ -f ${LOCK}

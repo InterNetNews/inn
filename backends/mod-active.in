@@ -1,12 +1,12 @@
-#!@_PATH_PERL@ -w
+#! /usr/bin/perl -w
+# fixscript will replace this line with require innshellvars.pl
+
 # batch-active-update
 # Author: David Lawrence <tale@isc.org>
 
 # Reads a series of ctlinnd newgroup/rmgroup/changegroup commands, such as
 # is output by checkgroups and actsync, and efficiently handles them all at
 # once.  Input can come from command line files or stdin, a la awk/sed.
-
-require '@LIBDIR@/innshellvars.pl';
 
 $oldact = $inn::active;         # active file location
 $oldact = $inn::active;         # active file location (same; shut up, perl -w)

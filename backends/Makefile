@@ -2,16 +2,18 @@
 
 include ../Makefile.global
 
-CFLAGS	= $(GCFLAGS)
+CFLAGS        = $(GCFLAGS)
 
-SOURCES	=	archive.c batcher.c buffchan.c cvtbatch.c filechan.c \
-		innxmit.c innxbatch.c nntpget.c shlock.c \
-		shrinkfile.c actsync.c inndf.c overchan.c
+ALL           = actmerge actsync actsyncd archive batcher buffchan \
+		controlbatch cvtbatch filechan inndf innxmit innxbatch \
+		mod-active news2mail nntpget nntpsend overchan send-ihave \
+		send-nntp send-uucp sendbatch sendxbatches shlock shrinkfile
 
-ALL	=	archive batcher buffchan cvtbatch filechan \
-		innxmit innxbatch nntpget shlock \
-		shrinkfile actsync actsyncd actmerge \
-		sendxbatches inndf overchan
+EXTRA         = controlchan pgpverify
+
+SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
+		filechan.c inndf.c innxbatch.c innxmit.c nntpget.c \
+		overchan.c shlock.c shrinkfile.c
 
 INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/actsync		\
@@ -40,98 +42,91 @@ INSTALLED     = $(D)$(PATHBIN)/actmerge		\
 		$(D)$(PATHBIN)/shlock		\
 		$(D)$(PATHBIN)/shrinkfile
 
-all:		$(ALL)
+all: $(ALL)
 
-clobber clean:
+clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
-	rm -f all install profiled
 
-tags ctags:	$(SOURCES)
-	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
+clobber: clean
+	rm -f $(EXTRA) tags
 
-profiled:
-	cp /dev/null profiled
-
-archive:	$(P) archive.o $(LIBNEWS) 
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ archive.o $(LIBNEWS) $(LIBS)
-
-batcher:	$(P) batcher.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ batcher.o $(LIBNEWS) $(LIBS)
-
-buffchan:	$(P) buffchan.o map.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ buffchan.o map.o $(LIBNEWS) $(LIBS)
-
-cvtbatch:	$(P) cvtbatch.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ cvtbatch.o $(LIBNEWS) $(LIBS)
-
-filechan:	$(P) filechan.o map.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ filechan.o map.o $(LIBNEWS) $(LIBS)
-
-nntpget:	$(P) nntpget.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ nntpget.o $(LIBNEWS) $(LIBS)
-
-innxmit:	$(P) innxmit.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ innxmit.o $(LIBNEWS) $(LIBS)
-
-innxbatch:	$(P) innxbatch.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ innxbatch.o $(LIBNEWS) $(LIBS)
-
-actsync:	$(P) actsync.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ actsync.o $(LIBNEWS) $(LIBS)
-
-shlock:		$(P) shlock.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shlock.o
-
-shrinkfile:	$(P) shrinkfile.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ shrinkfile.o $(LIBNEWS) $(LIBS)
-
-overchan:	$(P) overchan.o $(LIBNEWS)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ overchan.o $(LIBNEWS) $(LIBS)
-
-inndf:	$(P) inndf.o
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndf.o $(LIBNEWS) $(LIBS)
+tags ctags: $(SOURCES)
+	$(CTAGS) $(SOURCES)
 
 
-$(LIBNEWS):
-	(cd ../lib ; $(MAKE) )
+##  Compilation rules.
+
+LINK 		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+NEWSLIBS	= $(LIBNEWS) $(LIBS)
+FIX		= $(FIXSCRIPT)
+
+actsync:	actsync.o    $(LIBNEWS)	; $(LINK) actsync.o    $(NEWSLIBS)
+archive:	archive.o    $(LIBNEWS)	; $(LINK) archive.o    $(NEWSLIBS)
+batcher:	batcher.o    $(LIBNEWS)	; $(LINK) batcher.o    $(NEWSLIBS)
+cvtbatch:	cvtbatch.o   $(LIBNEWS)	; $(LINK) cvtbatch.o   $(NEWSLIBS)
+inndf:		inndf.o      $(LIBNEWS)	; $(LINK) inndf.o      $(NEWSLIBS)
+innxbatch:	innxbatch.o  $(LIBNEWS)	; $(LINK) innxbatch.o  $(NEWSLIBS)
+innxmit:	innxmit.o    $(LIBNEWS)	; $(LINK) innxmit.o    $(NEWSLIBS)
+nntpget:	nntpget.o    $(LIBNEWS)	; $(LINK) nntpget.o    $(NEWSLIBS)
+overchan:	overchan.o   $(LIBNEWS)	; $(LINK) overchan.o   $(NEWSLIBS)
+shlock:		shlock.o		; $(LINK) shlock.o
+shrinkfile:	shrinkfile.o $(LIBNEWS)	; $(LINK) shrinkfile.o $(NEWSLIBS)
+
+buffchan:	buffchan.o map.o $(LIBNEWS)
+	$(LINK) buffchan.o map.o $(NEWSLIBS)
+
+filechan:	filechan.o map.o $(LIBNEWS)
+	$(LINK) filechan.o map.o $(NEWSLIBS)
+
+actmerge:	actmerge.in      $(FIX)	; $(FIX) actmerge.in
+actsyncd:	actsyncd.in      $(FIX)	; $(FIX) actsyncd.in
+controlbatch:	controlbatch.in  $(FIX)	; $(FIX) controlbatch.in
+mod-active:	mod-active.in    $(FIX)	; $(FIX) mod-active.in
+news2mail:	news2mail.in     $(FIX)	; $(FIX) news2mail.in
+nntpsend:	nntpsend.in      $(FIX)	; $(FIX) nntpsend.in
+send-ihave:	send-ihave.in    $(FIX)	; $(FIX) send-ihave.in
+send-nntp:	send-nntp.in     $(FIX)	; $(FIX) send-nntp.in
+send-uucp:	send-uucp.in     $(FIX)	; $(FIX) send-uucp.in
+sendbatch:	sendbatch.in     $(FIX)	; $(FIX) sendbatch.in
+sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in
+
+$(LIBINN):
+	(cd ../lib ; $(MAKE))
+$(LIBSTORAGE):
+	(cd ../storage ; $(MAKE))
 
 
-##  Installation rules.
+##  Installation rules.  Installation commands set in Makefile.global.
 
 install: $(INSTALLED)
 
-LT_XPRI = $(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD
-LT_XPUB = $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD
-CP_XPRI = ../installit.sh $(OWNER) -m 0550 -b .OLD
-CP_XPUB = ../installit.sh $(OWNER) -m 0555 -b .OLD
-
 $(D)$(PATHBIN)/actmerge:            actmerge            ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/actsync:             actsync             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/actsync:             actsync             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/actsyncd:            actsyncd            ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/archive:             archive             ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/batcher:             batcher             ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/buffchan:            buffchan            ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/archive:             archive             ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/batcher:             batcher             ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/buffchan:            buffchan            ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/controlbatch:        controlbatch        ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/controlchan:         controlchan         ; $(CP_XPRI) $? $@
-$(D)$(PATHBIN)/cvtbatch:            cvtbatch            ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/filechan:            filechan            ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/inndf:               inndf               ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/innxbatch:           innxbatch           ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/innxmit:             innxmit             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/cvtbatch:            cvtbatch            ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/filechan:            filechan            ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/inndf:               inndf               ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/innxbatch:           innxbatch           ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/innxmit:             innxmit             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/mod-active:          mod-active          ; $(CP_XPRI) $? $@
 $(D)$(PATHBIN)/news2mail:           news2mail           ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/nntpget:             nntpget             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/nntpget:             nntpget             ; $(LI_XPUB) $? $@
 $(D)$(PATHBIN)/nntpsend:            nntpsend            ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/overchan:            overchan            ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/overchan:            overchan            ; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/pgpverify:           pgpverify           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-ihave:          send-ihave          ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-nntp:           send-nntp           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/send-uucp:           send-uucp           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/sendbatch:           sendbatch           ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/sendxbatches:        sendxbatches        ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/shlock:              shlock              ; $(LT_XPUB) $? $@
-$(D)$(PATHBIN)/shrinkfile:          shrinkfile          ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/shlock:              shlock              ; $(LI_XPUB) $? $@
+$(D)$(PATHBIN)/shrinkfile:          shrinkfile          ; $(LI_XPUB) $? $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

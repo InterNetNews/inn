@@ -1,4 +1,6 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 # @(#) $Id$
 # @(#) Under RCS control in /usr/local/news/src/inn/local/RCS/actmerge.sh,v
 #
@@ -26,8 +28,6 @@
 
 # preset vars
 #
-
-. @LIBDIR@/innshellvars
 
 # Our lock file
 LOCK=${LOCKS}/LOCK.actmerge

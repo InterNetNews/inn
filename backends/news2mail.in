@@ -1,5 +1,6 @@
-#!@_PATH_PERL@
-#
+#! /usr/bin/perl
+# fixscript will replace this line with require innshellvars.pl
+
 # news to mail channel backend
 #
 # INN gives us
@@ -35,7 +36,6 @@ require 5.002;
 use FileHandle;
 use Sys::Syslog;
 
-require "@LIBDIR@/innshellvars.pl";
 my $cfFile = $inn::pathetc . "/news2mail.cf" ;
 my $sendmail = $inn::mta ;
 my $sm = $inn::pathbin . "/sm" ;

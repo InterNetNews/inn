@@ -1,4 +1,6 @@
-#!@_PATH_SH@
+#! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 ##  $Revision$
 ##  Send news via NNTP by running several innxmit processes in the background.
 ##  Usage:
@@ -17,7 +19,6 @@
 ##	host fqdn	send to host and qualified domain (def: nntpsend.ctl)
 ##  If no "host fqdn" pairs appear on the command line, then ${CTLFILE}
 ##  file is read.
-. @LIBDIR@/innshellvars
 
 PROGNAME=`basename $0`
 LOCK=${LOCKS}/LOCK.${PROGNAME}
