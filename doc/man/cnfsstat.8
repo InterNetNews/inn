@@ -20,6 +20,12 @@ seconds
 ]
 ]
 [
+.B \-m BUFFER
+]
+[
+.B \-p
+]
+[
 .B \-s
 ]
 .SH DESCRIPTION
@@ -56,6 +62,14 @@ prints the usage.
 never exits unless there is no error, and prints the snapshot every
 .IR seconds .
 The default interval is 600 seconds.
+.TP
+.B \-m
+.I Cnfsstat
+prints out information suitable for mrtg.
+.TP
+.B \-p
+.I Cnfsstat
+prints out an mrtg config file.
 .TP
 .B \-s
 .I Cnfsstat
