@@ -34,6 +34,7 @@ method <methodname> {
 	size: <minsize>[,<maxsize>]
 	expires: <mintime>[,<maxtime>]
 	options: <options>
+	exactmatch: <bool>
 }
 
 .fi
@@ -107,6 +108,12 @@ it.
 This key is for passing special options to storage methods that require
 them (currently only ``cnfs'').  See the STORAGE METHODS section below for
 a description of its use.
+.TP
+.B exactmatch
+If this key is set to ``true'', all newsgroups will be examined to see if
+they match newsgroups patterns.  This is a boolan value and ``true'', ``yes''
+and ``on'' are usable to enable this key.  The case of these values is not
+significant.  The default is false.
 .PP
 If an article matches all of the constraints of an entry, it is stored via
 that storage method and is associated with that <storage_class>.  This

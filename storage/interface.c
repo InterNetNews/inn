@@ -332,6 +332,7 @@ static time_t ParseTime(char *tmbuf)
 #define SMclass   13
 #define SMexpire  14
 #define SMoptions 15
+#define SMexactmatch 16
 
 static CONFTOKEN smtoks[] = {
   { SMlbrace,	"{" },
@@ -342,6 +343,7 @@ static CONFTOKEN smtoks[] = {
   { SMclass,	"class:" },
   { SMexpire,	"expires:" },
   { SMoptions,	"options:" },
+  { SMexactmatch,	"exactmatch:" },
   { 0, 0 }
 };
 
@@ -364,6 +366,7 @@ static bool SMreadconfig(void) {
     STORAGE_SUB         *prev = NULL;
     char		*options = 0;
     int			inbrace;
+    bool		exactmatch;
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
@@ -411,6 +414,7 @@ static bool SMreadconfig(void) {
 	    options = (char *)NULL;
 	    minexpire = 0;
 	    maxexpire = 0;
+	    exactmatch = FALSE;
 
 	} else {
 	    type = tok->type;
@@ -452,6 +456,10 @@ static bool SMreadconfig(void) {
 			DISPOSE(options);
 		    options = COPY(p);
 		    break;
+		  case SMexactmatch:
+		    if (strcasecmp(p, "true") || strcasecmp(p, "yes") || strcasecmp(p, "on"))
+			exactmatch = TRUE;
+		    break;
 		  default:
 		    SMseterror(SMERR_CONFIG, "Unknown keyword in method declaration");
 		    syslog(L_ERROR, "SM Unknown keyword in method declaration, line %d: %s", f->lineno, tok->name);
@@ -492,6 +500,7 @@ static bool SMreadconfig(void) {
 	    sub->options = options;
 	    sub->minexpire = minexpire;
 	    sub->maxexpire = maxexpire;
+	    sub->exactmatch = exactmatch;
 
 	    DISPOSE(method);
 	    method = 0;
@@ -639,7 +648,7 @@ static bool InitMethod(STORAGETYPE method) {
     return TRUE;
 }
 
-static bool MatchGroups(const char *g, int num, char **patterns) {
+static bool MatchGroups(const char *g, int num, char **patterns, bool exactmatch) {
     char                *group;
     char                *groups;
     char		*groupsep, *q;
@@ -663,9 +672,6 @@ static bool MatchGroups(const char *g, int num, char **patterns) {
 	    *q = '\0';
 	for (i = 0; i < num; i++) {
 	    switch (patterns[i][0]) {
-	    case '!':
-		if (!wanted && wildmat(group, &patterns[i][1]))
-		    break;
 	    case '@':
 		if (wildmat(group, &patterns[i][1])) {
 		    DISPOSE(groups);
@@ -675,6 +681,10 @@ static bool MatchGroups(const char *g, int num, char **patterns) {
 	    default:
 		if (wildmat(group, patterns[i]))
 		    wanted = TRUE;
+		else if (exactmatch) {
+		    DISPOSE(groups);
+		    return FALSE;
+		}
 	    }
 	}
     }
@@ -738,7 +748,7 @@ STORAGE_SUB *SMgetsub(const ARTHANDLE article) {
 	    (!sub->maxsize || (article.len <= sub->maxsize)) &&
 	    (!sub->minexpire || expiretime >= sub->minexpire) &&
 	    (!sub->maxexpire || (expiretime <= sub->maxexpire)) &&
-	    MatchGroups(groups, sub->numpatterns, sub->patterns)) {
+	    MatchGroups(groups, sub->numpatterns, sub->patterns, sub->exactmatch)) {
 	    if (InitMethod(typetoindex[sub->type]))
 		return sub;
 	}

@@ -41,6 +41,8 @@ typedef struct __S_SUB__ {
 					should go to this method */
     char		*options;    /* additional options specific to the
 				        method */
+    bool		exactmatch;  /* all newsgroups to which article belongs
+				        should match the patterns */
     struct __S_SUB__   *next;
 } STORAGE_SUB;
 
