@@ -4,6 +4,7 @@
 **  server.  Read list on stdin, or get it via NEWNEWS command.  Writes
 **  list of articles still needed to stdout.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
@@ -18,11 +19,12 @@
 # include <sys/select.h>
 #endif
 
+#include "inn/history.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
 #include "paths.h"
-#include "inn/history.h"
 
 /*
 **  All information about a site we are connected to.
@@ -131,25 +133,15 @@ SITEconnect(char *host)
 	i = NNTPconnect(host, NNTP_PORT, &From, &To, (char *)NULL);
     else {
 	host = innconf->server;
-        if (host == NULL) {
-            fprintf(stderr,
-                    "No server specified and server not set in inn.conf\n");
-            exit(1);
-        }
+        if (host == NULL)
+            die("no server specified and server not set in inn.conf");
 	i = NNTPlocalopen(&From, &To, (char *)NULL);
     }
-    if (i < 0) {
-	(void)fprintf(stderr, "Can't connect to \"%s\", %s\n",
-		host, strerror(errno));
-	exit(1);
-    }
+    if (i < 0)
+        sysdie("cannot connect to %s", host);
 
-    if (NNTPsendpassword(host, From, To) < 0) {
-	(void)fprintf(stderr, "Can't authenticate with %s, %s\n",
-		host, strerror(errno));
-	/* Don't send quit; we want the remote to print a message. */
-	exit(1);
-    }
+    if (NNTPsendpassword(host, From, To) < 0)
+        sysdie("cannot authenticate to %s", host);
 
     /* Build the structure. */
     sp = NEW(SITE, 1);
@@ -185,9 +177,9 @@ HIShaveit(char *mesgid)
 static void
 Usage(const char *p)
 {
-    (void)fprintf(stderr, "Usage error:  %s\n", p);
-    (void)fprintf(stderr,
-    "Usage:  nntpget [ -d dist -n grps [-f file | -t time -u file]] host\n");
+    warn("%s", p);
+    fprintf(stderr, "Usage: nntpget"
+            " [ -d dist -n grps [-f file | -t time -u file]] host\n");
     exit(1);
 }
 
@@ -217,7 +209,8 @@ main(int ac, char *av[])
     char	*p;
 
     /* First thing, set up logging and our identity. */
-    openlog("nntpget", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);           
+    openlog("nntpget", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "nntpget";
 
     /* Set defaults. */
     distributions = NULL;
@@ -234,7 +227,7 @@ main(int ac, char *av[])
     while ((i = getopt(ac, av, "d:f:n:t:ovu:")) != EOF)
 	switch (i) {
 	default:
-	    Usage("Bad flag");
+	    Usage("bad flag");
 	    /* NOTREACHED */
 	case 'd':
 	    distributions = optarg;
@@ -244,12 +237,9 @@ main(int ac, char *av[])
 	    /* FALLTHROUGH */
 	case 'f':
 	    if (Since)
-		Usage("Only one -f -t or -u flag");
-	    if (stat(optarg, &Sb) < 0) {
-		(void)fprintf(stderr, "Can't stat \"%s\", %s\n",
-			optarg, strerror(errno));
-		exit(1);
-	    }
+		Usage("only one of -f, -t, or -u may be given");
+	    if (stat(optarg, &Sb) < 0)
+                sysdie("cannot stat %s", optarg);
 	    gt = gmtime(&Sb.st_mtime);
 	    /* Y2K: NNTP Spec currently allows only two digit years. */
 	    snprintf(tbuff, sizeof(tbuff), "%02d%02d%02d %02d%02d%02d GMT",
@@ -264,17 +254,14 @@ main(int ac, char *av[])
 	    /* Open the history file. */
             path = concatpath(innconf->pathdb, _PATH_HISTORY);
 	    History = HISopen(path, innconf->hismethod, HIS_RDONLY);
-	    if (!History) {
-		(void)fprintf(stderr, "Can't open history, %s\n",
-		    strerror(errno));
-		exit(1);
-	    }
+	    if (!History)
+                sysdie("cannot open history");
             free(path);
 	    Offer = TRUE;
 	    break;
 	case 't':
 	    if (Since)
-		Usage("Only one -t or -f flag");
+		Usage("only one of -t or -f may be given");
 	    Since = optarg;
 	    break;
 	case 'v':
@@ -284,28 +271,23 @@ main(int ac, char *av[])
     ac -= optind;
     av += optind;
     if (ac != 1)
-	Usage("No host given");
+	Usage("no host given");
 
     /* Set up the scatter/gather vectors used by SITEwrite. */
     SITEvec[1].iov_base = SITEv1;
     SITEvec[1].iov_len = STRLEN(SITEv1);
 
     /* Connect to the remote server. */
-    if ((Remote = SITEconnect(av[0])) == NULL) {
-	(void)fprintf(stderr, "Can't connect to \"%s\", %s\n",
-		av[0], strerror(errno));
-	exit(1);
-    }
+    if ((Remote = SITEconnect(av[0])) == NULL)
+        sysdie("cannot connect to %s", av[0]);
     if (!SITEwrite(Remote, READER, (int)STRLEN(READER))
-     || !SITEread(Remote, buff)) {
-	(void)fprintf(stderr, "Can't start reading, %s\n", strerror(errno));
-	exit(1);
-    }
+     || !SITEread(Remote, buff))
+        sysdie("cannot start reading");
 
     if (Since == NULL) {
 	F = stdin;
 	if (distributions || Groups)
-	    Usage("No -d or -n when reading stdin");
+	    Usage("no -d or -n flags allowed when reading stdin");
     }
     else {
 	/* Ask the server for a list of what's new. */
@@ -317,37 +299,26 @@ main(int ac, char *av[])
 	else
 	    snprintf(buff, sizeof(buff), "NEWNEWS %s %s", Groups, Since);
 	if (!SITEwrite(Remote, buff, (int)strlen(buff))
-	 || !SITEread(Remote, buff)) {
-	    (void)fprintf(stderr, "Can't start list, %s\n", strerror(errno));
-	    exit(1);
-	}
+	 || !SITEread(Remote, buff))
+            sysdie("cannot start list");
 	if (buff[0] != NNTP_CLASS_OK) {
-	    (void)fprintf(stderr, "Protocol error from \"%s\", got \"%s\"\n",
-		    Remote->Name, buff);
 	    SITEquit(Remote);
-	    exit(1);
+            die("protocol error from %s, got %s", Remote->Name, buff);
 	}
 
         /* Create a temporary file. */
         msgidfile = concatpath(innconf->pathtmp, "nntpgetXXXXXX");
         msgidfd = mkstemp(msgidfile);
-        if (msgidfd < 0) {
-            fprintf(stderr, "Can't create a temporary file, %s\n",
-                    strerror(errno));
-            exit(1);
-        }
+        if (msgidfd < 0)
+            sysdie("cannot create a temporary file");
         F = fopen(msgidfile, "w+");
-        if (F == NULL) {
-            fprintf(stderr, "Can't open \"%s\", %s\n", msgidfile,
-                    strerror(errno));
-            exit(1);
-        }
+        if (F == NULL)
+            sysdie("cannot open %s", msgidfile);
 
 	/* Read and store the Message-ID list. */
 	for ( ; ; ) {
 	    if (!SITEread(Remote, buff)) {
-		(void)fprintf(stderr, "Can't read from \"%s\", %s\n",
-			Remote->Name, strerror(errno));
+                syswarn("cannot read from %s", Remote->Name);
 		(void)fclose(F);
 		SITEquit(Remote);
 		exit(1);
@@ -357,16 +328,14 @@ main(int ac, char *av[])
 	    if (Offer && HIShaveit(buff))
 		continue;
 	    if (fprintf(F, "%s\n", buff) == EOF || ferror(F)) {
-		(void)fprintf(stderr, "Can't write \"%s\", %s\n",
-			msgidfile, strerror(errno));
+                syswarn("cannot write %s", msgidfile);
 		(void)fclose(F);
 		SITEquit(Remote);
 		exit(1);
 	    }
 	}
 	if (fflush(F) == EOF) {
-	    (void)fprintf(stderr, "Can't flush \"%s\", %s\n",
-		    msgidfile, strerror(errno));
+            syswarn("cannot flush %s", msgidfile);
 	    (void)fclose(F);
 	    SITEquit(Remote);
 	    exit(1);
@@ -377,8 +346,7 @@ main(int ac, char *av[])
     if (Offer) {
 	/* Connect to the local server. */
 	if ((Local = SITEconnect((char *)NULL)) == NULL) {
-	    (void)fprintf(stderr, "Can't connect to local server, %s\n", 
-		    strerror(errno));
+            syswarn("cannot connect to local server");
 	    (void)fclose(F);
 	    exit(1);
 	}
@@ -396,8 +364,7 @@ main(int ac, char *av[])
 	    snprintf(buff, sizeof(buff), "ihave %s", mesgid);
 	    if (!SITEwrite(Local, buff, (int)strlen(buff))
 	     || !SITEread(Local, buff)) {
-		(void)fprintf(stderr, "Can't offer \"%s\", %s\n.",
-			mesgid, strerror(errno));
+                syswarn("cannot offer %s", mesgid);
 		break;
 	    }
 	    if (atoi(buff) != NNTP_SENDIT_VAL)
@@ -408,8 +375,7 @@ main(int ac, char *av[])
 	snprintf(buff, sizeof(buff), "article %s", mesgid);
 	if (!SITEwrite(Remote, buff, (int)strlen(buff))
 	 || !SITEread(Remote, buff)) {
-	    (void)fprintf(stderr, "Can't get \"%s\", %s\n",
-		    mesgid, strerror(errno));
+            syswarn("cannot get %s", mesgid);
 	    (void)printf("%s\n", mesgid);
 	    break;
 	}
@@ -417,8 +383,7 @@ main(int ac, char *av[])
           if (Offer) {
               (void)SITEwrite(Local, ".", 1);
               if (!SITEread(Local, buff)) {
-                  (void)fprintf(stderr, "No reply after \"%s\", %s\n",
-                                mesgid, strerror(errno));
+                  syswarn("no reply after %s", mesgid);
                   break;
               }
           }
@@ -426,20 +391,18 @@ main(int ac, char *av[])
 	}
 
 	if (Verbose)
-	    (void)fprintf(stderr, "%s...\n", mesgid);
+            notice("%s...", mesgid);
 
 	/* Read each line in the article and write it. */
 	for (Error = FALSE; ; ) {
 	    if (!SITEread(Remote, buff)) {
-		(void)fprintf(stderr, "Can't read \"%s\" from \"%s\", %s\n",
-			mesgid, Remote->Name, strerror(errno));
+                syswarn("cannot read %s from %s", mesgid, Remote->Name);
 		Error = TRUE;
 		break;
 	    }
 	    if (Offer) {
 		if (!SITEwrite(Local, buff, (int)strlen(buff))) {
-		    (void)fprintf(stderr, "Can't send \"%s\", %s\n",
-			    mesgid, strerror(errno));
+                    syswarn("cannot send %s", mesgid);
 		    Error = TRUE;
 		    break;
 		}
@@ -458,8 +421,7 @@ main(int ac, char *av[])
 	/* How did the local server respond? */
 	if (Offer) {
 	    if (!SITEread(Local, buff)) {
-		(void)fprintf(stderr, "No reply after \"%s\", %s\n",
-			mesgid, strerror(errno));
+                syswarn("no reply after %s", mesgid);
 		(void)printf("%s\n", mesgid);
 		break;
 	    }
@@ -470,7 +432,7 @@ main(int ac, char *av[])
 		(void)printf("%s\n", mesgid);
 		break;
 	    }
-	    (void)fprintf(stderr, "%s to \"%s\"\n", buff, mesgid);
+            syswarn("%s to %s", buff, mesgid);
 	    STATrejected++;
 	}
     }
@@ -487,8 +449,7 @@ main(int ac, char *av[])
 
     /* Remove our temp file. */
     if (msgidfile && unlink(msgidfile) < 0)
-	(void)fprintf(stderr, "Can't remove \"%s\", %s\n",
-		msgidfile, strerror(errno));
+        syswarn("cannot remove %s", msgidfile);
 
     /* All done. */
     SITEquit(Remote);
@@ -497,18 +458,12 @@ main(int ac, char *av[])
 
     /* Update timestamp file? */
     if (Update) {
-	if ((F = fopen(Update, "w")) == NULL) {
-	    (void)fprintf(stderr, "Can't update %s, %s\n",
-		    Update, strerror(errno));
-	    exit(1);
-	}
+	if ((F = fopen(Update, "w")) == NULL)
+            sysdie("cannot update %s", Update);
 	(void)fprintf(F, "got %ld offered %ld sent %ld rejected %ld\n",
 		STATgot, STAToffered, STATsent, STATrejected); 
-	if (ferror(F) || fclose(F) == EOF) {
-	    (void)fprintf(stderr, "Can't update %s, %s\n",
-		    Update, strerror(errno));
-	    exit(1);
-	}
+	if (ferror(F) || fclose(F) == EOF)
+            sysdie("cannot update %s", Update);
     }
 
     exit(0);
