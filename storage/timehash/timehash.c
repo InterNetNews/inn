@@ -1,27 +1,27 @@
 /*  $Id$
 **
-**  timehash based storing method
+**  Timehash based storage method.
 */
-
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <time.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <dirent.h>
+#include "config.h"
+#include "clibrary.h"
 #include <ctype.h>
-#include <configdata.h>
-#include <clibrary.h>
+#include <dirent.h>
+#include <errno.h>
+#include <netinet/in.h>
 #include <syslog.h>
-#include <macros.h>
-#include <libinn.h>
-#include <methods.h>
-#include "timehash.h"
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <time.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#include "libinn.h"
+#include "macros.h"
+#include "methods.h"
 #include "paths.h"
+#include "timehash.h"
 
 typedef struct {
     char                *base;    /* Base of the mmaped file */

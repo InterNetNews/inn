@@ -1,28 +1,36 @@
 /*  $Id$
 **
-**  cyclic news file system
+**  Cyclic News File System.
 */
-
-#include <stdio.h>
-#include <unistd.h>
-#include <time.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <dirent.h>
+#include "config.h"
+#include "clibrary.h"
 #include <ctype.h>
-#include <sys/types.h>
-#include <netinet/in.h>
 #include <errno.h>
-#include <limits.h>
+#include <netinet/in.h>
 #include <syslog.h> 
-#include <macros.h>
-#include <configdata.h>
-#include <clibrary.h>
-#include <libinn.h>
-#include <methods.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 
-#include <interface.h>
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
+#include "interface.h"
+#include "libinn.h"
+#include "macros.h"
+#include "methods.h"
+
 #include "cnfs.h"
 #include "cnfs-private.h"
 #include "paths.h"
