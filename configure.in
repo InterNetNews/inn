@@ -177,9 +177,6 @@ AC_ENSURE_PATH_PROG(_PATH_AWK,awk)
 AC_ENSURE_PATH_PROG(_PATH_PERL,perl)
 AC_ENSURE_PATH_PROG(_PATH_SED,sed)
 
-AC_ENSURE_PATH_PROG(_PATH_DF,df)
-ac_cv_subst_innwatch_df=$ac_cv_path__PATH_DF
-
 AC_ENSURE_PATH_PROG(_PATH_EGREP,egrep)
 AC_ENSURE_PATH_PROG(_PATH_SORT,sort)
 AC_ENSURE_PATH_PROG(_PATH_SH,sh)
@@ -416,6 +413,7 @@ AC_CHECK_FUNCS(mkdir mkfifo mktemp select setbuffer setproctitle)
 AC_CHECK_FUNCS(setsid socket strcasecmp strchr strcspn strerror)
 AC_CHECK_FUNCS(strrchr strspn strstr symlink sysconf syslog ulimit)
 AC_CHECK_FUNCS(waitpid socketpair getpagesize)
+AC_CHECK_FUNCS(statvfs, [AC_DEFINE(HAVE_STATVFS)], [AC_CHECK_FUNCS(statfs) AC_CHECK_HEADERS(sys/vfs.h, AC_DEFINE(HAVE_SYS_VFS_H)) AC_CHECK_HEADERS(sys/param.h, AC_DEFINE(HAVE_SYS_PARAM_H)) AC_CHECK_HEADERS(sys/mount.h, AC_DEFINE(HAVE_SYS_MOUNT_H))])
 
 
 dnl This portion is similar to what AC_FUNC_MMAP does, only
@@ -967,7 +965,6 @@ then
 	MISSING_SRC="${MISSING_SRC}strrchr.c "
 	MISSING_OBJ="${MISSING_OBJ}strrchr.o "
 fi
-AC_SUBST(ac_cv_subst_innwatch_df)
 AC_SUBST(MISSING_MAN)
 AC_SUBST(MISSING_SRC)
 AC_SUBST(MISSING_OBJ)

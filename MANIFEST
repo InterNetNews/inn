@@ -29,6 +29,7 @@ backends/buffchan.c         1 Buffered split a funnel into separate files
 backends/crosspost.c        1 Crosspost link maker
 backends/cvtbatch.c         1 Add fields to simple batchfile
 backends/filechan.c         1 Split a funnel into separate files
+backends/inndf.c            1 df used for innwatch
 backends/innxbatch.c        1 Send batches using XBATCH command to remote.
 backends/innxmit.c          1 Send articles to remote site
 backends/map.c              1 Site name to filename mapping routines
@@ -95,6 +96,7 @@ doc/inncheck.8              1 Manpage for inncheck
 doc/innconfval.1            1 Manpage for innconfval
 doc/innd.8                  1 Manpage for innd server
 doc/inndcomm.3              1 Manpage for part of InterNetNews library
+doc/inndf.8                 1 Manpage for inndf
 doc/innfeed.1               1 Manpage for innfeed
 doc/innfeed.conf.5          1 Manpage for innfeed.conf config file
 doc/innlog.pl.8             1 Manpage for innlog.pl
