@@ -179,6 +179,7 @@ doc/man/nntpsend.ctl.5                Manpage for nntpsend.ctl config file
 doc/man/ovdb.5                        Manpage for the ovdb storage module
 doc/man/ovdb_init.8                   Manpage for ovdb_init
 doc/man/ovdb_monitor.8                Manpage for ovdb_monitor
+doc/man/ovdb_server.8                 Manpage for ovdb_server
 doc/man/ovdb_stat.8                   Manpage for ovdb_stat
 doc/man/overchan.8                    Manpage for overchan backend
 doc/man/overview.fmt.5                Manpage for overview.fmt config file
@@ -218,6 +219,7 @@ doc/pod/news.pod                      Master file for NEWS
 doc/pod/ovdb.pod                      Master file for ovdb.5
 doc/pod/ovdb_init.pod                 Master file for ovdb_init.8
 doc/pod/ovdb_monitor.pod              Master file for ovdb_monitor.8
+doc/pod/ovdb_server.pod               Master file for ovdb_server.8
 doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
@@ -250,6 +252,7 @@ frontends/innconfval.c                Get an INN configuration parameter
 frontends/mailpost.in                 Mail to news gateway
 frontends/ovdb_init.c                 Prepare ovdb database for use
 frontends/ovdb_monitor.c              Database maintainance for ovdb
+frontends/ovdb_server.c               Helper server for ovdb
 frontends/ovdb_stat.c                 Display information from ovdb database
 frontends/pullnews.in                 Sucking news feeder
 frontends/rnews.c                     UUCP unbatcher
