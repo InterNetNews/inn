@@ -225,6 +225,13 @@ Related Packages
         file all the time.  It's useful when feeding peers who take limited
         and very specific feeds that change periodically.
 
+    inflow
+        URL: <http://www.switch.ch/netnews/wg/netnews-wg.html>
+
+        inflow generates graphs of news flow statistics in real time from
+        INN's logs (things like articles accepted per peer, volume accepted
+        per peer, and the like).
+
     PersonalINN
         URL: <http://www.ritual.org/summer/pinn/>
 
