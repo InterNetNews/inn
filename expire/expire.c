@@ -7,6 +7,7 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
+#include <pwd.h>
 #include <sys/stat.h>
 #include <syslog.h>
 #include <time.h>

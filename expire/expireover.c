@@ -11,6 +11,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <pwd.h>
 #include <signal.h>
 #include <syslog.h>
 

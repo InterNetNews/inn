@@ -7,6 +7,7 @@
 #include "clibrary.h"
 #include "portable/wait.h"
 #include <errno.h>
+#include <pwd.h>
 #include <syslog.h>  
 
 #include "inn/buffer.h"
