@@ -950,9 +950,7 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
     char                bakidx[BIG_BUFFER], oldidx[BIG_BUFFER], newidx[BIG_BUFFER];
     struct stat         sb;
     int			fd;
-    int			numentries;
     GROUPHANDLE		*gh;
-    OFFSET_T		nbytes;
 
     if (delta <= 0) return FALSE;
 
@@ -996,42 +994,22 @@ STATIC BOOL OV3packgroup(char *group, int delta) {
 	return FALSE;
     }
 
-    /* stat old index file so we know its actual size. */
-    if (fstat(gh->indexfd, &sb) < 0) {
-	syslog(L_ERROR, "tradindexed: could not stat %s: %m", newidx);
-	close(fd);
-	OV3closegroup(gh, FALSE);
-	GROUPlock(gloc, LOCK_UNLOCK);
-	return FALSE;
-    }
-	
-
-    /* write old index records to new file */
-    numentries = ge->high - ge->low + 1;
-    nbytes = numentries * sizeof(INDEXENTRY);
-
-    /*
-    ** check to see if the actual file length is less than nbytes (since the 
-    ** article numbers may be sparse) and if so, only read/write that amount. 
-    */
-    if (nbytes > sb.st_size) {
-	nbytes = sb.st_size;
-    }
-
-    if (xpwrite(fd, &gh->indexmem[ge->low - ge->base] , nbytes,
-	       sizeof(INDEXENTRY)*(ge->low - ge->base + delta)) != nbytes) {
+    if (xpwrite(fd, gh->indexmem, gh->indexlen,
+                sizeof(INDEXENTRY) * delta) < 0) {
 	syslog(L_ERROR, "tradindexed: packgroup cant write to %s: %m", newidx);
 	close(fd);
 	OV3closegroup(gh, FALSE);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
-    }	
+    }
+
     if (close(fd) < 0) {
 	syslog(L_ERROR, "tradindexed: packgroup cant close %s: %m", newidx);
 	OV3closegroup(gh, FALSE);
 	GROUPlock(gloc, LOCK_UNLOCK);
 	return FALSE;
     }
+
     do {
 	if (stat(newidx, &sb) < 0) {
 	    unlink(newidx);
