@@ -1,0 +1,88 @@
+From koen@eu.net  Tue May 13 16:56:18 1997
+Received: from hub.org (localhost [127.0.0.1]) by thelab.hub.org (8.8.5/8.8.2) with ESMTP id QAA03683 for <scrappy>; Tue, 13 May 1997 16:54:25 -0300 (ADT)
+Received: from gw.home.vix.com (gw.home.vix.com [192.5.5.1]) by hub.org (8.8.5/8.7.5) with ESMTP id LAA21958 for <scrappy@hub.org>; Tue, 13 May 1997 11:44:51 -0400 (EDT)
+Received: (from daemon@localhost) 
+	by gw.home.vix.com (8.8.4/) id HAA00708
+        for innfeed-users-outgoing; Tue, 13 May 1997 07:31:22 -0700
+        env-from (owner-innfeed-users)
+Received: from buri.EU.net (buri.EU.net [193.242.90.18]) 
+	by gw.home.vix.com (8.8.4/) via ESMTP id HAA00703
+        for <innfeed-users@vix.com>; Tue, 13 May 1997 07:31:18 -0700
+        env-from (koen@buri.EU.net)
+Received: (from koen@localhost) by buri.EU.net (8.7.4/8.7.3) id QAA16906; Tue, 13 May 1997 16:33:28 +0200 (MET DST)
+From: Koen De Vleeschauwer <koen@eu.net>
+Message-Id: <199705131433.QAA16906@buri.EU.net>
+Subject: Re: innfeed-users: innfeed: measuring server response time
+To: jeff.garzik@spinne.com (Jeff Garzik)
+Date: Tue, 13 May 1997 16:33:27 +0200 (MET DST)
+Cc: innfeed-users@vix.com
+In-Reply-To: <33780678.148D0186@spinne.com> from "Jeff Garzik" at May 13, 97 02:13:12 am
+X-Mailer: ELM [version 2.4 PL25]
+Content-Type: text
+Sender: owner-innfeed-users@vix.com
+Precedence: bulk
+Status: RO
+X-Status: 
+
+> 
+> Is there an easy way to measure server response time, and print it out
+> on the innfeed status page?  Cyclone's nntpTime measures login banner
+> response time and an article add and lookup operation. 
+> 
+> It seems to me that innfeed could do something very similar.  It could
+> very easily sample gettimeofday() or Time.Now to determine a remote
+> server's average response time for lookups, lookup failures, article
+> send throughput, whatever.
+> 
+> These statistics might be invaluable to developers creating advanced
+> connection and article delivery algorithms.  If I knew, for example,
+> that a site's article send/save throughput was really fast, but history
+> lookups were really slow, my algorithm could reserve a channel or two
+> for TAKETHIS-only use.
+> 
+> 	Jeff
+> 
+
+We use a stand-alone program which opens up an additional nntp channel
+from time to time and takes a peek at the various response times.
+It's also interesting to tune one's own box.
+I've included the source code; please consider this supplied 'as is';
+bugs and features alike. SunOS, Solaris and Irix ought to be ok;
+eg. gcc -traditional -o newsresp ./newsresp.c -lnsl -lsocket on S0laris.
+If a host has an uncommonly long banner you may have to change a constant 
+somewhere; forget. Please note one has to interpret the output; 
+eg. whether one is measuring rtt or history lookup time.
+
+Basic usage is:
+news 1 % newsresp -n 5 news.eu.net
+---------------------------------
+news.eu.net is 134.222.90.2 port 119
+ elap  diff
+  0.0   0.0  Connecting ...
+  0.0   0.0  OK, waiting for prompt
+  0.0   0.0  <<< 200 EU.net InterNetNews server INN 1.5.1 17-Dec-1996 re [...]
+  0.0   0.0  >>> ihave <244796399@a>
+  0.0   0.0  <<< 335 
+  0.0   0.0  >>> .
+  0.0   0.0  <<< 437 Empty article 
+  0.0   0.0  >>> ihave <244796398@a>
+  0.0   0.0  <<< 335 
+  0.0   0.0  >>> .
+  0.0   0.0  <<< 437 Empty article 
+  0.0   0.0  >>> ihave <244796397@a>
+  0.0   0.0  <<< 335 
+  0.0   0.0  >>> .
+  0.0   0.0  <<< 437 Empty article 
+  0.0   0.0  >>> ihave <244796396@a>
+  0.1   0.0  <<< 335 
+  0.1   0.0  >>> .
+  0.1   0.0  <<< 437 Empty article 
+  0.1   0.0  >>> ihave <244796395@a>
+  0.1   0.0  <<< 335 
+  0.1   0.0  >>> .
+  0.1   0.0  <<< 437 Empty article 
+  0.1   0.0  >>> quit
+  0.1   0.0  <<< 205 . 
+news 2 % 
+
+
