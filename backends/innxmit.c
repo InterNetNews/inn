@@ -17,13 +17,14 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+#include "inn/history.h"
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
 #include "nntp.h"
 #include "paths.h"
 #include "storage.h"
-#include "inn/history.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
@@ -311,8 +312,7 @@ ExitWithStats(int x)
 	syslog(L_NOTICE, "%s %lu Streaming retries", REMhost, retries);
 
     if (BATCHfp != NULL && unlink(BATCHtemp) < 0 && errno != ENOENT)
-	(void)fprintf(stderr, "Can't remove \"%s\", %s\n",
-		BATCHtemp, strerror(errno));
+        syswarn("cannot remove %s", BATCHtemp);
     (void)sleep(1);
     SMshutdown();
     HISclose(History);
@@ -337,13 +337,11 @@ CloseAndRename(void)
      || fflush(BATCHfp) == EOF
      || fclose(BATCHfp) == EOF) {
 	(void)unlink(BATCHtemp);
-	(void)fprintf(stderr, "Can't close \"%s\", %s\n",
-		BATCHtemp, strerror(errno));
+        syswarn("cannot close %s", BATCHtemp);
 	ExitWithStats(1);
     }
     if (rename(BATCHtemp, BATCHname) < 0) {
-	(void)fprintf(stderr, "Can't rename \"%s\", %s\n",
-		BATCHtemp, strerror(errno));
+        syswarn("cannot rename %s", BATCHtemp);
 	ExitWithStats(1);
     }
 }
@@ -362,14 +360,12 @@ Requeue(const char *Article, const char *MessageID)
     if (BATCHfp == NULL) {
         fd = mkstemp(BATCHtemp);
         if (fd < 0) {
-            fprintf(stderr, "Can't create a temporary file, %s\n",
-                    strerror(errno));
+            syswarn("cannot create a temporary file");
             ExitWithStats(1);
         }
         BATCHfp = fdopen(fd, "w");
         if (BATCHfp == NULL) {
-            fprintf(stderr, "Can't open \"%s\", %s\n", BATCHtemp,
-                    strerror(errno));
+            syswarn("cannot open %s", BATCHtemp);
             ExitWithStats(1);
         }
     }
@@ -383,8 +379,7 @@ Requeue(const char *Article, const char *MessageID)
     else
 	(void)fprintf(BATCHfp, "%s\n", Article);
     if (fflush(BATCHfp) == EOF || ferror(BATCHfp)) {
-	(void)fprintf(stderr, "Can't requeue \"%s\", %s\n",
-		Article, strerror(errno));
+        syswarn("cannot requeue %s", Article);
 	ExitWithStats(1);
     }
 }
@@ -400,11 +395,11 @@ RequeueRestAndExit(char *Article, char *MessageID) {
     if (!AlwaysRewrite
      && STATaccepted == 0 && STATrejected == 0 && STATrefused == 0
      && STATmissing == 0) {
-	(void)fprintf(stderr, "Nothing sent -- leaving batchfile alone.\n");
+        warn("nothing sent -- leaving batchfile alone");
 	ExitWithStats(1);
     }
 
-    (void)fprintf(stderr, "Rewriting batch file and exiting.\n");
+    warn("rewriting batch file and exiting");
     if (CanStream) {	/* streaming mode has a buffer of articles */
 	int i;
 
@@ -424,14 +419,12 @@ RequeueRestAndExit(char *Article, char *MessageID) {
     for ( ; BATCHqp; ) {
 	if ((p = QIOread(BATCHqp)) == NULL) {
 	    if (QIOtoolong(BATCHqp)) {
-		(void)fprintf(stderr, "Skipping long line in \"%s\".\n",
-			BATCHname);
+                warn("skipping long line in %s", BATCHname);
 		(void)QIOread(BATCHqp);
 		continue;
 	    }
 	    if (QIOerror(BATCHqp)) {
-		(void)fprintf(stderr, "Can't read \"%s\", %s\n",
-			BATCHname, strerror(errno));
+                syswarn("cannot read %s", BATCHname);
 		ExitWithStats(1);
 	    }
 
@@ -441,8 +434,7 @@ RequeueRestAndExit(char *Article, char *MessageID) {
 
 	if (fprintf(BATCHfp, "%s\n", p) == EOF
 	 || ferror(BATCHfp)) {
-	    (void)fprintf(stderr, "Can't requeue \"%s\", %s\n",
-		    p, strerror(errno));
+            syswarn("cannot requeue %s", p);
 	    ExitWithStats(1);
 	}
     }
@@ -546,7 +538,7 @@ REMread(char *start, int size) {
 */
 static void
 Interrupted(char *Article, char *MessageID) {
-    (void)fprintf(stderr, "Interrupted\n");
+    warn("interrupted");
     RequeueRestAndExit(Article, MessageID);
 }
 
@@ -622,8 +614,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 
     /* What did the remote site say? */
     if (!REMread(buff, (int)sizeof buff)) {
-	(void)fprintf(stderr, "No reply after sending \"%s\", %s\n",
-		Article, strerror(errno));
+        syswarn("no reply after sending %s", Article);
 	return FALSE;
     }
     if (GotInterrupt)
@@ -634,8 +625,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
     /* Parse the reply. */
     switch (atoi(buff)) {
     default:
-	(void)fprintf(stderr, "Unknown reply after \"%s\" -- %s",
-		Article, buff);
+        warn("unknown reply after %s -- %s", Article, buff);
 	if (DoRequeue)
 	    Requeue(Article, MessageID);
 	break;
@@ -731,8 +721,7 @@ check(int i) {
     /* send "check <ID>" to the other system */
     snprintf(buff, sizeof(buff), "check %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
-	(void)fprintf(stderr, "Can't check article, %s\n",
-		strerror(errno));
+        syswarn("cannot check article");
 	return TRUE;
     }
     STAToffered++;
@@ -757,15 +746,14 @@ takethis(int i) {
     char	buff[NNTP_STRLEN];
 
     if (!stbuf[i].art) {
-        fprintf(stderr, "Internal error: null article for %s in takethis\n",
-                stbuf[i].st_fname);
+        warn("internal error: null article for %s in takethis",
+             stbuf[i].st_fname);
         return TRUE;
     }
     /* send "takethis <ID>" to the other system */
     snprintf(buff, sizeof(buff), "takethis %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
-        (void)fprintf(stderr, "Can't send takethis <id>, %s\n",
-                      strerror(errno));
+        syswarn("cannot send takethis");
         return TRUE;
     }
     if (Debug)
@@ -798,7 +786,7 @@ strlisten(void)
 
     while(TRUE) {
 	if (!REMread(buff, (int)sizeof buff)) {
-	    (void)fprintf(stderr, "No reply to check, %s\n", strerror(errno));
+            syswarn("no reply to check");
 	    return TRUE;
 	}
 	if (GotInterrupt)
@@ -895,9 +883,7 @@ strlisten(void)
 static void
 Usage(void)
 {
-    (void)fprintf(stderr,
-	"Usage: innxmit [-a] [-c] [-d] [-H] [-l] [-p] [-r] [-s] [-t#] [-T#] host file\n");
-    exit(1);
+    die("Usage: innxmit [-acdHlprs] [-t#] [-T#] host file");
 }
 
 
@@ -923,7 +909,7 @@ article_open(const char *path, const char *id)
             if (SMerrno == SMERR_NOENT || SMerrno == SMERR_UNINIT)
                 STATmissing++;
             else {
-                fprintf(stderr, "Requeue %s: %s\n", path, SMerrorstr);
+                warn("requeue %s: %s", path, SMerrorstr);
                 Requeue(path, id);
             }
         }
@@ -933,7 +919,7 @@ article_open(const char *path, const char *id)
         if (fd < 0)
             return NULL;
         if (fstat(fd, &st) < 0) {
-            fprintf(stderr, "Requeue %s: %s\n", path, strerror(errno));
+            syswarn("requeue %s", path);
             Requeue(path, id);
             return NULL;
         }
@@ -942,7 +928,7 @@ article_open(const char *path, const char *id)
         article->len = st.st_size;
         article->data = NEW(char, article->len);
         if (xread(fd, article->data, article->len) < 0) {
-            fprintf(stderr, "Requeue %s: %s\n", path, strerror(errno));
+            syswarn("requeue %s", path);
             free(article->data);
             free(article);
             close(fd);
@@ -952,7 +938,7 @@ article_open(const char *path, const char *id)
         close(fd);
         p = memchr(article->data, '\n', article->len);
         if (p == NULL || p == article->data) {
-            fprintf(stderr, "Requeue %s: can't find headers\n", path);
+            warn("requeue %s: cannot find headers", path);
             free(article->data);
             free(article);
             Requeue(path, id);
@@ -1003,6 +989,8 @@ int main(int ac, char *av[]) {
     char                *path;
 
     (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "innxmit";
+
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
 
@@ -1064,29 +1052,21 @@ int main(int ac, char *av[]) {
     REMhost = av[0];
     BATCHname = av[1];
 
-    if (chdir(innconf->patharticles) < 0) {
-	(void)fprintf(stderr, "Can't cd to \"%s\", %s\n",
-		innconf->patharticles, strerror(errno));
-	exit(1);
-    }
+    if (chdir(innconf->patharticles) < 0)
+        sysdie("cannot cd to %s", innconf->patharticles);
 
     val = TRUE;
-    if (!SMsetup(SM_PREOPEN,(void *)&val)) {
-	fprintf(stderr, "Can't setup the storage manager\n");
-	exit(1);
-    }
-    if (!SMinit()) {
-	fprintf(stderr, "Can't initialize the storage manager: %s\n", SMerrorstr);
-	exit(1);
-    }
+    if (!SMsetup(SM_PREOPEN,(void *)&val))
+        die("cannot set up the storage manager");
+    if (!SMinit())
+        die("cannot initialize the storage manager: %s", SMerrorstr);
 
     /* Open the batch file and lock others out. */
     if (BATCHname[0] != '/') {
         BATCHname = concatpath(innconf->pathoutgoing, av[1]);
     }
     if (((i = open(BATCHname, O_RDWR)) < 0) || ((BATCHqp = QIOfdopen(i)) == NULL)) {
-	(void)fprintf(stderr, "Can't open \"%s\", %s\n",
-		BATCHname, strerror(errno));
+        syswarn("cannot open %s", BATCHname);
 	SMshutdown();
 	exit(1);
     }
@@ -1097,8 +1077,7 @@ int main(int ac, char *av[]) {
 	    exit(0);
 	}
 #endif	/* defined(EWOULDBLOCK) */
-	(void)fprintf(stderr, "Can't lock \"%s\", %s\n",
-		BATCHname, strerror(errno));
+        syswarn("cannot lock %s", BATCHname);
 	SMshutdown();
 	exit(1);
     }
@@ -1116,7 +1095,7 @@ int main(int ac, char *av[]) {
 
     /* Start timing. */
     if (GetTimeInfo(&Now) < 0) {
-	(void)fprintf(stderr, "Can't get time, %s\n", strerror(errno));
+        syswarn("cannot get time");
 	SMshutdown();
 	exit(1);
     }
@@ -1128,7 +1107,7 @@ int main(int ac, char *av[]) {
 	    GotAlarm = FALSE;
 	    old = xsignal(SIGALRM, CATCHalarm);
             if (setjmp(JMPwhere)) {
-                fprintf(stderr, "Can't connect to %s, timed out\n", REMhost);
+                warn("cannot connect to %s: timed out", REMhost);
                 SMshutdown();
                 exit(1);
             }
@@ -1137,8 +1116,8 @@ int main(int ac, char *av[]) {
 	}
 	if (NNTPconnect(REMhost, port, &From, &To, buff) < 0 || GotAlarm) {
 	    i = errno;
-	    (void)fprintf(stderr, "Can't connect to %s, %s\n",
-		    REMhost, buff[0] ? REMclean(buff) : strerror(errno));
+            warn("cannot connect to %s: %s", REMhost,
+                 buff[0] ? REMclean(buff) : strerror(errno));
 	    if (GotAlarm)
 		syslog(L_NOTICE, CANT_CONNECT, REMhost, "timeout");
 	    else 
@@ -1151,8 +1130,7 @@ int main(int ac, char *av[]) {
 	    (void)fprintf(stderr, "< %s\n", REMclean(buff));
 	if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
 	    i = errno;
-	    (void)fprintf(stderr, "Can't authenticate with %s, %s\n",
-		    REMhost, strerror(errno));
+            syswarn("cannot authenticate with %s", REMhost);
 	    syslog(L_ERROR, CANT_AUTHENTICATE,
 		REMhost, GotAlarm ? "timeout" : strerror(i));
 	    /* Don't send quit; we want the remote to print a message. */
@@ -1171,15 +1149,13 @@ int main(int ac, char *av[]) {
 
 	if (TryStream) {
 	    if (!REMwrite(modestream, (int)strlen(modestream), FALSE)) {
-		(void)fprintf(stderr, "Can't negotiate %s, %s\n",
-			modestream, strerror(errno));
+                syswarn("cannot negotiate %s", modestream);
 	    }
 	    if (Debug)
 		(void)fprintf(stderr, ">%s\n", modestream);
 	    /* Does he understand mode stream? */
 	    if (!REMread(buff, (int)sizeof buff)) {
-		(void)fprintf(stderr, "No reply to %s, %s\n",
-				modestream, strerror(errno));
+                syswarn("no reply to %s", modestream);
 	    } else {
 		if (Debug)
 		    (void)fprintf(stderr, "< %s", buff);
@@ -1187,8 +1163,7 @@ int main(int ac, char *av[]) {
 		/* Parse the reply. */
 		switch (atoi(buff)) {
 		default:
-		    (void)fprintf(stderr, "Unknown reply to \"%s\" -- %s",
-			    modestream, buff);
+                    warn("unknown reply to %s -- %s", modestream, buff);
 		    CanStream = FALSE;
 		    break;
 		case NNTP_OK_STREAM_VAL:	/* YES! */
@@ -1210,15 +1185,12 @@ int main(int ac, char *av[]) {
 	    }
 	}
 	if (HeadersFeed) {
-	    if (!REMwrite(modeheadfeed, strlen(modeheadfeed), FALSE)) {
-		fprintf(stderr, "Can't negotiate %s, %s\n",
-			modeheadfeed, strerror(errno));
-	    }
+	    if (!REMwrite(modeheadfeed, strlen(modeheadfeed), FALSE))
+                syswarn("cannot negotiate %s", modeheadfeed);
 	    if (Debug)
 		fprintf(stderr, ">%s\n", modeheadfeed);
 	    if (!REMread(buff, sizeof buff)) {
-		fprintf(stderr, "No reply to %s, %s\n",
-				modeheadfeed, strerror(errno));
+                syswarn("no reply to %s", modeheadfeed);
 	    } else {
 		if (Debug)
 		    fprintf(stderr, "< %s", buff);
@@ -1228,13 +1200,9 @@ int main(int ac, char *av[]) {
 		case 250:		/* YES! */
 		    break;
 		case NNTP_BAD_COMMAND_VAL: /* normal refusal */
-		    fprintf(stderr, "\"%s\" not allowed -- %s\n",
-			    modeheadfeed, buff);
-		    exit(1);
+                    die("%s not allowed -- %s", modeheadfeed, buff);
 		default:
-		    fprintf(stderr, "Unknown reply to \"%s\" -- %s",
-			    modeheadfeed, buff);
-		    exit(1);
+                    die("unknown reply to %s -- %s", modeheadfeed, buff);
 		}
 	    }
 	}
@@ -1259,7 +1227,7 @@ int main(int ac, char *av[]) {
     GotAlarm = FALSE;
     for (Article = NULL, MessageID = NULL; ; ) {
 	if (GotAlarm) {
-	    (void)fprintf(stderr, "Timed out\n");
+            warn("timed out");
 	    /* Don't resend the current article. */
 	    RequeueRestAndExit((char *)NULL, (char *)NULL);
 	}
@@ -1268,14 +1236,12 @@ int main(int ac, char *av[]) {
 
 	if ((Article = QIOread(BATCHqp)) == NULL) {
 	    if (QIOtoolong(BATCHqp)) {
-		(void)fprintf(stderr, "Skipping long line in \"%s\"\n",
-			BATCHname);
+                warn("skipping long line in %s", BATCHname);
 		(void)QIOread(BATCHqp);
 		continue;
 	    }
 	    if (QIOerror(BATCHqp)) {
-		(void)fprintf(stderr, "Can't read \"%s\", %s\n",
-			BATCHname, strerror(errno));
+                syswarn("cannot read %s", BATCHname);
 		ExitWithStats(1);
 	    }
 
@@ -1299,18 +1265,16 @@ int main(int ac, char *av[]) {
 	    if (*MessageID != '<'
 		|| (p = strrchr(MessageID, '>')) == NULL
 		|| *++p != '\0') {
-		(void)fprintf(stderr, "Ignoring line \"%s %s...\"\n",
-			      Article, MessageID);
+                warn("ignoring line %s %s...", Article, MessageID);
 		continue;
 	    }
 	}
 
 	if (*Article == '\0') {
 	    if (MessageID)
-		(void)fprintf(stderr, "Empty filename for \"%s\" in \"%s\"\n",
-		    MessageID, BATCHname);
-	    else (void)fprintf(stderr,
-		    "Empty filename, no Message-ID in \"%s\"\n", BATCHname);
+                warn("empty file name for %s in %s", MessageID, BATCHname);
+	    else
+                warn("empty file name, no message ID in %s", BATCHname);
 	    /* We could do a history lookup. */
 	    continue;
 	}
@@ -1324,8 +1288,8 @@ int main(int ac, char *av[]) {
            avoid overrunning buffers and throwing the server on the
            receiving end a blow from behind. */
         if (MessageID != NULL && strlen(MessageID) > NNTP_MSGID_MAXLEN) {
-            (void)fprintf(stderr, "Dropping article in \"%s\" - long message id \"%s\"\n",
-                          BATCHname, MessageID);
+            warn("dropping article in %s: long message ID %s", BATCHname,
+                 MessageID);
             continue;
         }
 
@@ -1342,7 +1306,7 @@ int main(int ac, char *av[]) {
 	/* Get the Message-ID from the article if we need to. */
 	if (MessageID == NULL) {
 	    if ((MessageID = GetMessageID(art)) == NULL) {
-		(void)fprintf(stderr, SKIPPING, Article, "no Message-ID");
+                warn(SKIPPING, Article, "no message ID");
                 article_free(art);
 		continue;
 	    }
@@ -1415,8 +1379,7 @@ int main(int ac, char *av[]) {
 	}
 	snprintf(buff, sizeof(buff), "ihave %s", MessageID);
 	if (!REMwrite(buff, (int)strlen(buff), FALSE)) {
-	    (void)fprintf(stderr, "Can't offer article, %s\n",
-		    strerror(errno));
+            syswarn("cannot offer article");
             article_free(art);
 	    RequeueRestAndExit(Article, MessageID);
 	}
@@ -1428,7 +1391,7 @@ int main(int ac, char *av[]) {
 
 	/* Does he want it? */
 	if (!REMread(buff, (int)sizeof buff)) {
-	    (void)fprintf(stderr, "No reply to ihave, %s\n", strerror(errno));
+            syswarn("no reply to ihave");
             article_free(art);
 	    RequeueRestAndExit(Article, MessageID);
 	}
@@ -1440,8 +1403,7 @@ int main(int ac, char *av[]) {
 	/* Parse the reply. */
 	switch (atoi(buff)) {
 	default:
-	    (void)fprintf(stderr, "Unknown reply to \"%s\" -- %s",
-		    Article, buff);
+            warn("unknown reply to %s -- %s", Article, buff);
 	    if (DoRequeue)
 		Requeue(Article, MessageID);
 	    break;
@@ -1487,8 +1449,7 @@ int main(int ac, char *av[]) {
 	/* We requeued something, so close the temp file. */
 	CloseAndRename();
     else if (unlink(BATCHname) < 0 && errno != ENOENT)
-	(void)fprintf(stderr, "Can't remove \"%s\", %s\n",
-		BATCHtemp, strerror(errno));
+        syswarn("cannot remove %s", BATCHtemp);
     ExitWithStats(0);
     /* NOTREACHED */
     return 0;
