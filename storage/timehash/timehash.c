@@ -239,8 +239,8 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     }
 
     if (amount == RETR_BODY) {
-	art->data = p + 4;
-	art->len = art->len - (private->base - p - 4);
+	art->data = p;
+	art->len = private->len - (p - private->base);
 	return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");

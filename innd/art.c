@@ -481,9 +481,11 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     arth.arrived = (time_t)0;
     arth.token = (TOKEN *)NULL;
 
+    SMerrno = SMERR_NOERROR;
     result = SMstore(arth);
     if (result.type == TOKEN_EMPTY) {
-	IOError("SMstore", SMerrno);
+	if (SMerrno != SMERR_NOERROR)
+	    IOError("SMstore", SMerrno);
 	DISPOSE(artbuff);
 	return result;
     }

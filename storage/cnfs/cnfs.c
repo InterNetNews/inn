@@ -1037,6 +1037,14 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
         DISPOSE(art);
         return NULL;
     }
+    if (cycbuff->free + ntohl(cah.size) > cycbuff->len - CNFS_BLOCKSIZE - 1) {
+        SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
+        syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %m",
+		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
+        DISPOSE(art->private);
+        DISPOSE(art);
+        return NULL;
+    }
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
     art->arrived = ntohl(cah.arrived);
@@ -1055,9 +1063,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     }
     ret_token = token;    
     art->token = &ret_token;
+    art->len = ntohl(cah.size);
     if (amount == RETR_ALL) {
 	art->data = private->base + pagefudge;
-	art->len = ntohl(cah.size);
 	return art;
     }
     if ((p = SMFindBody(private->base + pagefudge, art->len)) == NULL) {
@@ -1069,12 +1077,12 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
     }
     if (amount == RETR_HEAD) {
 	art->data = private->base + pagefudge;
-        art->len = p - private->base + pagefudge;
+        art->len = p - private->base - pagefudge;
         return art;
     }
     if (amount == RETR_BODY) {
-        art->data = p + 4;
-        art->len = art->len - (private->base + pagefudge - p - 4);
+        art->data = p;
+	art->len = art->len - (p - private->base - pagefudge);
         return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
@@ -1152,6 +1160,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
 	if ((cycbuff = cycbufftab) == (CYCBUFF *)NULL)
 	    return (ARTHANDLE *)NULL;
 	priv.offset = 0;
+	priv.rollover = FALSE;
     } else {        
 	priv = *(PRIV_CNFS *)article->private;
 	DISPOSE(article->private);
@@ -1178,23 +1187,22 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
 	if (!priv.rollover) {
 	    for (middle = priv.offset ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
 		middle += CNFS_BLOCKSIZE) {
-		if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) == 0)
-		    continue;
+		if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) != 0)
+		    break;
 	    }
 	    if (middle >= cycbuff->len - CNFS_BLOCKSIZE - 1) {
 		priv.rollover = TRUE;
-		priv.offset = cycbuff->minartoffset;
+		middle = cycbuff->minartoffset;
 	    } else
 		break;
-	}
-	if (priv.rollover) {
+	} else {
 	    for (middle = cycbuff->minartoffset ;middle < cycbuff->free;
 		middle += CNFS_BLOCKSIZE) {
-		if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) == 0)
-		    continue;
+		if (CNFSUsedBlock(cycbuff, middle, FALSE, FALSE) != 0)
+		    break;
 	    }
 	    if (middle >= cycbuff->free) {
-		priv.offset = 0;
+		middle = 0;
 		continue;
 	    } else
 		break;
@@ -1203,7 +1211,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     if (cycbuff == (CYCBUFF *)NULL)
 	return (ARTHANDLE *)NULL;
 
-    offset = priv.offset;
+    offset = middle;
     if (CNFSseek(cycbuff->fdrd, offset, SEEK_SET) < 0) {
 	return (ARTHANDLE *)NULL;
     }
@@ -1214,9 +1222,18 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     private = NEW(PRIV_CNFS, 1);
     art->private = (void *)private;
     art->type = TOKEN_CNFS;
-    priv.offset += (CYCBUFF_OFF_T) ntohl(cah.size) + sizeof(cah);
-    tonextblock = CNFS_BLOCKSIZE - (priv.offset & (CNFS_BLOCKSIZE - 1));
-    priv.offset += (CYCBUFF_OFF_T) tonextblock;
+    *private = priv;
+    private->cycbuff = cycbuff;
+    private->offset = middle;
+    if (cycbuff->free + ntohl(cah.size) > cycbuff->len - CNFS_BLOCKSIZE - 1) {
+	private->offset += CNFS_BLOCKSIZE;
+	art->data = NULL;
+	art->len = 0;
+	return art;
+    }
+    private->offset += (CYCBUFF_OFF_T) ntohl(cah.size) + sizeof(cah);
+    tonextblock = CNFS_BLOCKSIZE - (private->offset & (CNFS_BLOCKSIZE - 1));
+    private->offset += (CYCBUFF_OFF_T) tonextblock;
     art->arrived = ntohl(cah.arrived);
     token = CNFSMakeToken(cycbuff->name, offset, cycbuff->cyclenum, ntohl(cah.class), (TOKEN *)NULL);
     art->token = &token;
@@ -1230,9 +1247,9 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
 	art->len = 0;
 	return art;
     }
+    art->len = ntohl(cah.size);
     if (amount == RETR_ALL) {
 	art->data = private->base + pagefudge;
-	art->len = ntohl(cah.size);
 	return art;
     }
     if ((p = SMFindBody(private->base + pagefudge, art->len)) == NULL) {
@@ -1242,12 +1259,12 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     }
     if (amount == RETR_HEAD) {
 	art->data = private->base + pagefudge;
-	art->len = p - private->base + pagefudge;
+	art->len = p - private->base - pagefudge;
 	return art;
     }
     if (amount == RETR_BODY) {
-	art->data = p + 4;
-	art->len = art->len - (private->base + pagefudge - p - 4);
+	art->data = p;
+	art->len = art->len - (p - private->base - pagefudge);
 	return art;
     }
     art->data = NULL;

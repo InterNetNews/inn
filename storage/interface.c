@@ -459,7 +459,8 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
 	if (method_data[i].configured && (newart = storage_methods[i].next(article, amount)) != (ARTHANDLE *)NULL) {
 	    newart->nextmethod = i;
 	    break;
-	}
+	} else
+	    article = NULL;
     }
 
     return newart;
