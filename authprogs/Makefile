@@ -20,7 +20,7 @@ INSTALLED     = $(D)$(PATHAUTHPASSWD)/auth_smb \
 		$(D)$(PATHAUTHRESOLV)/domain \
 		$(D)$(PATHAUTHRESOLV)/ident
 
-all: $(LIBSMB) $(LIBAUTH) $(ALL)
+all: $(ALL)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -40,20 +40,26 @@ profiled:
 ##  Compilation rules.
 
 LINK		= $(LIBLD) $(LDFLAGS) -o $@
-NEWS_LIBS       = $(LIBINN) $(LIBS)
 AUTH_LIBS       = $(LIBAUTH) $(LIBINN) $(LIBS)
+CK_LIBS		= $(CRYPT_LIBS) $(SHADOW_LIBS) $(PAM_LIBS) $(DBM_LIBS)
 
-CK_LIBS		= $(CRYPT_LIBS) $(SHADOW_LIBS) $(PAM_LIBS) $(DBM_LIBS) \
-		  $(AUTH_LIBS)
-SMB_LIBS	= $(LIBSMB) $(AUTH_LIBS)
-KRB_LIBS	= $(AUTH_LIBS) $(KRB5_LDFLAGS) $(KRB5_LIBS)
+auth_krb5: auth_krb5.o $(LIBAUTH) $(LIBINN)
+	$(LINK) auth_krb5.o $(KRB5_LDFLAGS) $(KRB5_LIBS) $(AUTH_LIBS)
 
-auth_krb5:	auth_krb5.o $(LIBAUTH)	; $(LINK) auth_krb5.o $(KRB_LIBS)
-auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o  $(SMB_LIBS)
-ckpasswd:	ckpasswd.o  $(LIBAUTH)	; $(LINK) ckpasswd.o  $(CK_LIBS)
-domain:		domain.o    $(LIBAUTH)	; $(LINK) domain.o    $(AUTH_LIBS)
-ident:		ident.o     $(LIBAUTH)	; $(LINK) ident.o     $(AUTH_LIBS)
-radius:		radius.o    $(AUTH_INN)	; $(LINK) radius.o    $(AUTH_LIBS)
+auth_smb: auth_smb.o $(LIBSMB) $(LIBAUTH) $(LIBINN)
+	$(LINK) auth_smb.o $(LIBSMB) $(AUTH_LIBS)
+
+ckpasswd: ckpasswd.o $(LIBAUTH) $(LIBINN)
+	$(LINK) ckpasswd.o $(CK_LIBS) $(AUTH_LIBS)
+
+domain: domain.o $(LIBAUTH) $(LIBINN)
+	$(LINK) domain.o $(AUTH_LIBS)
+
+ident: ident.o $(LIBAUTH) $(LIBINN)
+	$(LINK) ident.o $(AUTH_LIBS)
+
+radius: radius.o $(LIBAUTH) $(LIBINN)
+	$(LINK) radius.o $(AUTH_LIBS)
 
 auth_krb5.o: auth_krb5.c
 	$(CC) $(CFLAGS) $(KRB5_CPPFLAGS) -c $<
