@@ -203,8 +203,9 @@ All local addresses match if this parameter is not given.
 
 =item B<res:>
 
-A command line for a user resolver.  The program executed must be located
-in I<pathbin>/auth/resolv.  A resolver is an authentication program which
+A simple command line for a user resolver (shell metacharacters are not
+supported).  If a full path is not given, the program executed must be in
+I<pathbin>/auth/resolv.  A resolver is an authentication program which
 attempts to figure out the identity of the connecting user using nothing
 but the connection information (in other words, a username and password
 aren't used).  An examples of a resolver would be a program that gets the
@@ -216,7 +217,8 @@ will be used.
 
 =item B<auth:>
 
-A command line for a user authenticator.  The program executed must be
+A simple command line for a user authenticator (shell metacharacters are
+not supported).  If a full path is not given, the program executed must be
 located in I<pathbin>/auth/passwd.  An authenticator is a program used to
 handle a user-supplied username and password, via a mechanism such as
 AUTHINFO USER/PASS.  Like with res:, one auth group can have multiple

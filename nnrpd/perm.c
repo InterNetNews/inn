@@ -2101,7 +2101,9 @@ static char *ResolveUser(AUTHGROUP *auth)
 	cp = COPY(auth->res_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
-        arg0 = concat(resdir, "/", args[0], (char *) 0);
+	arg0 = args[0];
+	if (args[0][0] != '/')
+	    arg0 = concat(resdir, "/", arg0, (char *) 0);
 	/* exec the resolver */
 	foo = ExecProg(arg0, args);
 	if (foo) {
@@ -2120,7 +2122,9 @@ static char *ResolveUser(AUTHGROUP *auth)
 	} else
 	    syslog(L_ERROR, "%s res couldnt start resolver: %m", ClientHost);
 	/* clean up */
-	DISPOSE(arg0);
+	if (args[0][0] != '/') {
+	    DISPOSE(arg0);
+	}
 	DISPOSE(args);
 	DISPOSE(cp);
 	if (done)
@@ -2204,7 +2208,9 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
 	cp = COPY(auth->auth_methods[i]->program);
 	args = 0;
 	Argify(cp, &args);
-        arg0 = concat(resdir, "/", args[0], (char *) 0);
+	arg0 = args[0];
+	if (args[0][0] != '/')
+	    arg0 = concat(resdir, "/", arg0, (char *) 0);
 	/* exec the authenticator */
 	foo = ExecProg(arg0, args);
 	if (foo) {
@@ -2227,7 +2233,9 @@ static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, c
 	} else
 	    syslog(L_ERROR, "%s auth couldnt start authenticator: %m", ClientHost);
 	/* clean up */
-	DISPOSE(arg0);
+	if (args[0][0] != '/') {
+	    DISPOSE(arg0);
+	}
 	DISPOSE(args);
 	DISPOSE(cp);
 	if (done)

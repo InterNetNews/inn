@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "READERS.CONF 5"
-.TH READERS.CONF 5 "2002-08-18" "INN 2.4.0" "InterNetNews Documentation"
+.TH READERS.CONF 5 "2002-11-13" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 readers.conf \- Access control and configuration for nnrpd
 .SH "DESCRIPTION"
@@ -344,8 +344,9 @@ multiple interfaces.)
 All local addresses match if this parameter is not given.
 .IP "\fBres:\fR" 4
 .IX Item "res:"
-A command line for a user resolver.  The program executed must be located
-in \fIpathbin\fR/auth/resolv.  A resolver is an authentication program which
+A simple command line for a user resolver (shell metacharacters are not
+supported).  If a full path is not given, the program executed must be in
+\&\fIpathbin\fR/auth/resolv.  A resolver is an authentication program which
 attempts to figure out the identity of the connecting user using nothing
 but the connection information (in other words, a username and password
 aren't used).  An examples of a resolver would be a program that gets the
@@ -356,7 +357,8 @@ in the order they're listed in and the results of the first successful one
 will be used.
 .IP "\fBauth:\fR" 4
 .IX Item "auth:"
-A command line for a user authenticator.  The program executed must be
+A simple command line for a user authenticator (shell metacharacters are
+not supported).  If a full path is not given, the program executed must be
 located in \fIpathbin\fR/auth/passwd.  An authenticator is a program used to
 handle a user-supplied username and password, via a mechanism such as
 \&\s-1AUTHINFO\s0 \s-1USER/PASS\s0.  Like with res:, one auth group can have multiple
