@@ -360,35 +360,35 @@ STATIC void GRPscandir(char *dir)
 	    return;
 	}
 	icount = sb.st_size / OVERINDEXPACKSIZE;
-	tmp = (char (*)[][OVERINDEXPACKSIZE])NEW(char, icount * OVERINDEXPACKSIZE);
-	if (read(fd, tmp, icount * OVERINDEXPACKSIZE) != (icount * OVERINDEXPACKSIZE)) {
-	    syslog(L_ERROR, "%s cant read index %s %m", ClientHost, dir);
+	if (icount > 0) {
+	    tmp = (char (*)[][OVERINDEXPACKSIZE])NEW(char, icount * OVERINDEXPACKSIZE);
+	    if (read(fd, tmp, icount * OVERINDEXPACKSIZE) != (icount * OVERINDEXPACKSIZE)) {
+		syslog(L_ERROR, "%s cant read index %s %m", ClientHost, dir);
+		close(fd);
+		return;
+	    }
 	    close(fd);
-	    return;
-	}
-	close(fd);
-	if (OVERindex)
-	    DISPOSE(OVERindex);
-	OVERindex = tmp;
-	OVERicount = icount;
-	
-	if (OVERicount > 0) {
+	    if (OVERindex)
+		DISPOSE(OVERindex);
+	    OVERindex = tmp;
+	    OVERicount = icount;
+
 	    if (ARTarraysize == 0) {
 		ARTnumbers = NEW(ARTLIST, OVERicount);
 	    } else {
 		ARTnumbers = RENEW(ARTnumbers, ARTLIST, OVERicount);
 	    }
+	    ARTarraysize = OVERicount;
+	    for (i = 0; i < OVERicount; i++) {
+		UnpackOverIndex((*OVERindex)[i], &index);
+		ARTnumbers[ARTsize].ArtNum = index.artnum;
+		ARTnumbers[ARTsize].Token.cancelled = FALSE;
+		ARTnumbers[ARTsize].Token.type = TOKEN_EMPTY;
+		ARTnumbers[ARTsize].Tokenretrieved = FALSE;
+		ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
+	    }
 	}
-	ARTarraysize = OVERicount;
-	for (i = 0; i < OVERicount; i++) {
-	    UnpackOverIndex((*OVERindex)[i], &index);
-	    ARTnumbers[ARTsize].ArtNum = index.artnum;
-	    ARTnumbers[ARTsize].Token.cancelled = FALSE;
-	    ARTnumbers[ARTsize].Token.type = TOKEN_EMPTY;
-	    ARTnumbers[ARTsize].Tokenretrieved = FALSE;
-	    ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
-	}
-	
+
     } else if (!innconf->storageapi) {
 	DISPOSE(path);
 	/* Go to the directory. */
@@ -432,10 +432,12 @@ STATIC void GRPscandir(char *dir)
 	    ARTnumbers[ARTsize++].Index = NULL;
 	}
 	(void)closedir(dp);
-    }
+    } else
+	DISPOSE(path);
 
     ARTcache = NULL;
-    qsort((POINTER)ARTnumbers, (SIZE_T)ARTsize, sizeof(ARTLIST), ARTcompare);
+    if (ARTsize > 0)
+	qsort((POINTER)ARTnumbers, (SIZE_T)ARTsize, sizeof(ARTLIST), ARTcompare);
 }
 
 

@@ -268,7 +268,7 @@ STATIC BOOL ARTopen(char *name)
     static ARTNUM	save_artnum;
     struct stat		Sb;
     int			fd;
-    int                 artnum;
+    ARTNUM              artnum;
     int                 i;
     OVERINDEX           index;
     char		*tokentext;
@@ -813,14 +813,17 @@ FUNCTYPE CMDnextlast(int ac, char *av[])
 }
 
 
-STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
+STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp, BOOL *DidReply)
 {
     char		*p, *tokentext;
     OVERINDEX		index;
-    ARTNUM		i, artnum;
+    int			i;
+    ARTNUM		artnum;
 
+    *DidReply = FALSE;
     if (GRPcount == 0) {
 	Reply("%s\r\n", ARTnotingroup);
+	*DidReply = TRUE;
 	return FALSE;
     }
 
@@ -828,6 +831,7 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	/* No argument, do only current article. */
 	if (ARTindex < 0 || ARTindex >= ARTsize) {
 	    Reply("%s\r\n", ARTnocurrart);
+	    *DidReply = TRUE;
 	    return FALSE;
 	}
 	rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
@@ -1122,7 +1126,8 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
     TOKEN		token;
 
     if (innconf->storageapi) {
-	i = ARTfind(artnum);
+	if ((i = ARTfind(artnum)) < 0)
+	    return NULL;
 	if ((ARTnumbers[i].Tokenretrieved && (ARTnumbers[i].Token.type == TOKEN_EMPTY)) || ARTnumbers[i].Token.index == OVER_NONE || ARTnumbers[i].Token.cancelled)
 	    return NULL;
 	if ((OVERline = OVERretrieve(&ARTnumbers[i].Token, linelen)) != (char *)NULL)
@@ -1133,7 +1138,7 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 	    return NULL;
 
 	i = ARTfind(artnum);
-	if (ARTnumbers[i].ArtNum != artnum)
+	if (i < 0 || ARTnumbers[i].ArtNum != artnum)
 	    return NULL;
 	if (OVERmem) {
 	    for (nextline = OVERmem; nextline < OVERmem + OVERlen; nextline++) {
@@ -1364,10 +1369,11 @@ STATIC char *OVERgen(char *name)
 */
 FUNCTYPE CMDxhdr(int ac, char *av[])
 {
-    ARTNUM	        i;
+    int		        i;
     char	        *p;
     int			Overview;
     BOOL		IsLines;
+    BOOL		DidReply;
     ARTRANGE		range;
     char		buff[SPOOLNAMEBUFF];
     ARTNUM		art;
@@ -1395,9 +1401,12 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
     }
 
     /* Range specified. */
-    if (!CMDgetrange(ac - 1, av + 1, &range)) {
-	Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-	Printf(".\r\n");
+    if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
+	if (!DidReply) {
+	    Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL,
+		av[1] ? av[1] : "\"\"");
+	    Printf(".\r\n");
+	}
 	return;
     }
 
@@ -1441,6 +1450,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
     char	        *p;
     ARTNUM	        i;
     BOOL	        Opened;
+    BOOL	        DidReply;
     ARTRANGE		range;
     char		buff[SPOOLNAMEBUFF];
     struct timeval	stv, etv;
@@ -1459,9 +1469,11 @@ FUNCTYPE CMDxover(int ac, char *av[])
 
     /* Parse range. */
     gettimeofday(&stv, NULL);
-    if (!CMDgetrange(ac, av, &range)) {
-	Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
-	Printf(".\r\n");
+    if (!CMDgetrange(ac, av, &range, &DidReply)) {
+	if (!DidReply) {
+	    Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
+	    Printf(".\r\n");
+	}
 	return;
     }
 
@@ -1523,8 +1535,9 @@ FUNCTYPE CMDxover(int ac, char *av[])
 FUNCTYPE CMDxpat(int ac, char *av[])
 {
     char	        *p;
-    ARTNUM	        i;
+    int	        	i;
     ARTRANGE		range;
+    BOOL		DidReply;
     char		*header;
     char		*pattern;
     char		*text;
@@ -1561,9 +1574,12 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     }
 
     /* Range specified. */
-    if (!CMDgetrange(ac - 1, av + 1, &range)) {
-	Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-	Printf(".\r\n");
+    if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
+	if (!DidReply) {
+	    Reply("%d %s matches follow\r\n", NNTP_HEAD_FOLLOWS_VAL,
+		av[1] ? av[1] : "\"\"");
+	    Printf(".\r\n");
+	}
 	return;
     }
 
