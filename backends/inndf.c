@@ -141,6 +141,10 @@ printspace(const char *path, bool inode, bool fancy)
                value of a signed long. */
             if (amount > (1UL << 31) - 1)
                 amount = (1UL << 31) - 1;
+
+	    /* 2.6 kernels show 0 available and used inodes, instead. */
+	    if (amount == 0 && df_files(info) == 0)
+		amount = (1UL << 31) - 1;
         } else {
             /* Do the multiplication in floating point to try to retain
                accuracy if the free space in bytes would overflow an
