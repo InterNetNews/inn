@@ -60,6 +60,7 @@ echo 'Server connections:'
 ctlinnd -t60 name '' 2>&1 \
   | ${PERL} -ne '
      next if m/((^((rem|local)conn|control)|:proc):|file$)/;
+     s/^(\S+):(\d+):.*:.*:.*$/${1}:${2}/;
      m/^(\S+):(\d+)$/;
      $c{$1} = [] unless $c{$1};
      @l = @{$c{$1}};
