@@ -6,6 +6,11 @@
 #ifndef INN_TDX_PRIVATE_H
 #define INN_TDX_PRIVATE_H 1
 
+#include "config.h"
+#include <sys/types.h>
+
+#include "storage.h"
+
 /* Opaque data structure returned by group index functions. */
 struct group_index;
 
@@ -39,6 +44,7 @@ struct article {
     time_t expires;
 };
 
+BEGIN_DECLS
 
 /* tdx-group.c */
 
@@ -110,5 +116,7 @@ void tdx_data_close(struct group_data *);
 
 /* Delete the data files for a group. */
 void tdx_data_delete(const char *group);
+
+END_DECLS
 
 #endif /* INN_TDX_PRIVATE_H */
