@@ -367,7 +367,7 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	    newconfig->newsize = 0;
 	    newconfig->newoffset = 0;
 	    newconfig->base = (char *)-1;
-	    if (OVERpreopen && OVERopen(newconfig, New, TRUE)) {
+	    if (OVERpreopen && !OVERopen(newconfig, New, TRUE)) {
 		syslog(L_ERROR, "OVERopen failed, line %d", line);
 		DISPOSE(newconfig);
 		(void)Fclose(f);
@@ -385,7 +385,7 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	    prev = newconfig;
 	    newconfig->next = (UNIOVER *)NULL;
 	} else {
-	    if (OVERpreopen && OVERopen(newconfig, New, FALSE)) {
+	    if (OVERpreopen && !OVERopen(newconfig, New, FALSE)) {
 		(void)Fclose(f);
 		return OVER_ERROR;
 	    }
@@ -562,7 +562,7 @@ BOOL OVERreinit(void) {
     for(config=OVERconfig;config!=(UNIOVER *)NULL;config=config->next) {
 	if (config->fp != (FILE *)NULL || config->fd >= 0) {
 	    OVERclose(config, FALSE);
-	    if (OVERpreopen && OVERopen(config, FALSE, TRUE)) {
+	    if (OVERpreopen && !OVERopen(config, FALSE, TRUE)) {
 		syslog(L_ERROR, "OVER cant reopen overview file, index %d", config->index);
                 return FALSE;
             }
@@ -598,7 +598,7 @@ BOOL OVERreplace(void) {
 		DISPOSE(newpath);
 		return FALSE;
 	    }
-	    if (OVERpreopen && OVERopen(config, FALSE, TRUE)) {
+	    if (OVERpreopen && !OVERopen(config, FALSE, TRUE)) {
 		syslog(L_ERROR, "OVER cant reopen overview file, index %d",config->index);
 		DISPOSE(path);
 		DISPOSE(newpath);
