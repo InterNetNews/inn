@@ -1,0 +1,38 @@
+##  $Id$
+##
+##  This Makefile contains rules to generate the files derived from POD
+##  source.  Normal make commands at the top level of the source tree don't
+##  recurse into this directory.  These targets are only used by
+##  maintainers.
+
+include ../../Makefile.global
+
+TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README
+
+MAN1	= ../man/convdate.1
+
+MAN5	= ../man/inn.conf.5 ../man/ovdb.5 ../man/readers.conf.5 \
+	../man/sasl.conf.5
+
+MAN8	= ../man/dbprocs.8 ../man/inndstart.8 ../man/makehistory.8 \
+	../man/ovdb_recover.8 ../man/ovdb_upgrade.8
+
+all: $(TEXT) $(MAN1) $(MAN5) $(MAN8)
+
+../../HACKING:		hacking.pod		; $(POD2TEXT) $? > $@
+../../INSTALL:		install.pod		; $(POD2TEXT) $? > $@
+../../NEWS:		news.pod		; $(POD2TEXT) $? > $@
+../../README:		readme.pod		; $(POD2TEXT) $? > $@
+
+../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
+
+../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
+../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@
+../man/readers.conf.5:	readers.conf.pod	; $(POD2MAN) -s 5 $? > $@
+../man/sasl.conf.5:	sasl.conf.pod		; $(POD2MAN) -s 5 $? > $@
+
+../man/dbprocs.8:	dbprocs.pod		; $(POD2MAN) -s 8 $? > $@
+../man/inndstart.8:	inndstart.pod		; $(POD2MAN) -s 8 $? > $@
+../man/makehistory.8:	makehistory.pod		; $(POD2MAN) -s 8 $? > $@
+../man/ovdb_recover.8:	ovdb_recover.pod	; $(POD2MAN) -s 8 $? > $@
+../man/ovdb_upgrade.8:	ovdb_upgrade.pod	; $(POD2MAN) -s 8 $? > $@
