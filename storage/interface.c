@@ -11,12 +11,6 @@
 #include <interface.h>
 #include <errno.h>
 
-typedef struct {
-    BOOL                initialized;
-} METHOD_DATA;
-
-METHOD_DATA method_data[NUM_STORAGE_METHODS];
-
 typedef struct __S_SUB__ {
     int                 type;        /* Index into storage_methods of the one to use */
     int                 minsize;     /* Minimum size to send to this method */
@@ -29,12 +23,25 @@ typedef struct __S_SUB__ {
     struct __S_SUB__   *next;
 } STORAGE_SUB;
 
+typedef struct {
+    void                *handle;
+    int                 type;
+} CLASS_INSTANCE;
+
+static void *class_handles[NUM_STORAGE_METHODS];
 static STORAGE_SUB      *subscriptions = NULL;
-static unsigned int     typetoindex[256];
 int                     SMerrno;
 char                    *SMerrorstr = NULL;
 static BOOL             ErrorAlloc = FALSE;
 static BOOL             Initialized = FALSE;
+
+/* Returns a token with a type of TOKEN_EMPTY */
+TOKEN EmptyToken(void) {
+    TOKEN               result;
+
+    result.type = TOKEN_EMPTY;
+    return result;
+}
 
 /*
 ** Checks to see if the token is valid
@@ -211,7 +218,7 @@ static BOOL SMreadconfig(void) {
 
 	sub->numpatterns = i;
 	sub->patterns = NEW(char *, i);
-	if (!subscriptions)
+	if (!prev)
 	    subscriptions = sub;
 
 	/* Store the patterns in reverse order since we need to match
@@ -248,12 +255,12 @@ BOOL SMinit(void) {
     }
 
     for (i = 0; i < NUM_STORAGE_METHODS; i++) {
-	method_data[i].initialized = storage_methods[i].init();
+	class_handles[i] = storage_methods[i].init();
 	typetoindex[storage_methods[i].type] = i;
-	if (!method_data[i].initialized)
+	if (class_handles[i] != NULL)
 	    break;
     }
-    if (!method_data[i - 1].initialized) {
+    if (class_handles[i - 1] != NULL) {
 	SMshutdown();
 	Initialized = FALSE;
 	SMseterror(SMERR_UNDEFINED, "One or more storage methods failed initialization");
@@ -274,10 +281,10 @@ static BOOL InitMethod(STORAGETYPE method) {
 	    Initialized = FALSE;
 	    return FALSE;
 	}
-    if (method_data[method].initialized)
+    if (class_handles[method] != NULL)
 	return TRUE;
 
-    if (!storage_methods[typetoindex[method]].init()) {
+    if ((class_handles[method] = storage_methods[typetoindex[method]].init()) == NULL) {
 	SMseterror(SMERR_UNDEFINED, "Could not initialize storage method late.");
 	return FALSE;
     }
@@ -351,7 +358,7 @@ TOKEN SMstore(const ARTHANDLE article) {
 ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
     ARTHANDLE           *art;
 
-    if (!method_data[typetoindex[token.type]].initialized && !InitMethod(typetoindex[token.type])) {
+    if (!method_data[typetoindex[token.type]].handle && !InitMethod(typetoindex[token.type])) {
 	syslog(L_ERROR, "SM could not find token type or method was not initialized");
 	SMseterror(SMERR_BADTOKEN, NULL);
 	return NULL;
