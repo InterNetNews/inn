@@ -310,53 +310,11 @@ typedef struct _ARTDATA {
 
 /*
 **  In-line macros for efficiency.
-*/
-
-#if	defined(lint) || defined(__CENTERLINE__)
-extern int	KeepLintQuiet;
-#define JUSTONCE	KeepLintQuiet
-#else
-#define JUSTONCE	0
-#endif	/* defined(lint) || defined(__CENTERLINE__) */
-
-/*
+**
 **  Set or append data to a channel's output buffer.
 */
 #define WCHANset(cp, p, l)	BUFFset(&(cp)->Out, (p), (l))
 #define WCHANappend(cp, p, l)	BUFFappend(&(cp)->Out, (p), (l))
-
-
-/*
-**  Append data to a buffer.
-*/
-#define BUFFappend(bp_parm, p_parm, l_parm) \
-    do { \
-	register int	l_; \
-	register BUFFER	*bp_; \
-	int		i_; \
-    \
-	if ((l_ = l_parm) != 0) { \
-	    bp_ = bp_parm; \
-	    /* Note end of buffer, grow it if we need more room. */ \
-	    i_ = bp_->Used + bp_->Left; \
-	    if (i_ + l_ > bp_->Size) { \
-		/* Round size up to next 1K. */ \
-		bp_->Size += (l_ + 0x3FF) & ~0x3FF; \
-		RENEW(bp_->Data, char, bp_->Size); \
-	    } \
-	    bp_->Left += l_; \
-	    if (l_ > MEMCPY_THRESHOLD) \
-		(void)memcpy((POINTER)&bp_->Data[i_], (POINTER)p_parm, (SIZE_T)l_); \
-	    else { \
-		register STRING	p_; \
-		register char	*dest_; \
-    \
-		for (p_ = p_parm, dest_ = &bp_->Data[i_], l_++; --l_ > 0; ) \
-		    *dest_++ = *p_++; \
-	    } \
-	} \
-    } while (JUSTONCE)
-
 
 /*
 **  Mark that an I/O error occurred, and block if we got too many.

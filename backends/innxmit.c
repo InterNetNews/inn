@@ -362,15 +362,8 @@ REMwrite(p, i, escdot)
     /* Dot escape, text of the line, line terminator. */
     if (escdot && (*p == '.'))
 	*REMbuffptr++ = '.';
-    if (i > MEMCPY_THRESHOLD) {
-	(void)memcpy((POINTER)REMbuffptr, (POINTER)p, (SIZE_T)i);
-	REMbuffptr += i;
-    }
-    else {
-	for (dest = REMbuffptr, i++; --i > 0; )
-	    *dest++ = *p++;
-	REMbuffptr = dest;
-    }
+    (void)memcpy((POINTER)REMbuffptr, (POINTER)p, (SIZE_T)i);
+    REMbuffptr += i;
     *REMbuffptr++ = '\r';
     *REMbuffptr++ = '\n';
 

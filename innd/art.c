@@ -782,15 +782,8 @@ ARTparseheader(in, out, deltap, errorp)
 	return NULL;
     }
     hp->Length = i;
-    if (i > MEMCPY_THRESHOLD) {
-	(void)memcpy((POINTER)hp->Value, (POINTER)p, (SIZE_T)i);
-	hp->Value[i] = '\0';
-    }
-    else {
-	for (dest = hp->Value, i++; --i > 0; )
-	    *dest++ = *p++;
-	*dest = '\0';
-    }
+    (void)memcpy((POINTER)hp->Value, (POINTER)p, (SIZE_T)i);
+    hp->Value[i] = '\0';
 
     return in;
 }

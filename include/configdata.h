@@ -368,7 +368,6 @@ typedef unsigned long	ARTNUM;
 typedef int		BOOL;
 
     /* General values that you should not have to change. */
-#define MEMCPY_THRESHOLD	12
 #define MAX_BUILTIN_ARGV	20
 #define NNTP_PORT		119
 #define TRUE			1

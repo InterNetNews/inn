@@ -33,6 +33,23 @@ STATIC CHANNEL	*CHANrc;
 
 
 /*
+**  Append data to a buffer.
+*/
+void BUFFappend(BUFFER *bp, char *p, int len) {
+    int i;
+    if (len == 0)
+	return;
+    /* Note end of buffer, grow it if we need more room */
+    i = bp->Used + bp->Left;
+    if (i + len > bp->Size) {
+	/* Round size up to next 1K */
+	bp-> Size += (len + 0x3FF) & ~0x3FF;
+	RENEW(bp->Data, char, bp->Size);
+    }
+    memcpy((POINTER)&bp->Data[i], (POINTER), p, len);
+}
+
+/*
 **  Set a buffer's contents, ignoring anything that might have
 **  been there.
 */
