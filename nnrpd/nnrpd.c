@@ -423,12 +423,13 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 		net.s_addr = inet_addr(fields[0]);
 		if (ia.s_addr != (unsigned int)INADDR_NONE &&
 		    net.s_addr != (unsigned int)INADDR_NONE) {
-		    mask = inet_addr(p+1);
 		    if (strchr(p+1, '.') == (char *)NULL) {
-		    /* if (mask == (unsigned int)INADDR_NONE) { */
+			mask = atoi(p+1);
 			for (bits = c = 0; c < mask && c < 32; c++)
 			    bits |= (1 << (31 - c));
 			mask = htonl(bits);
+		    } else {
+			mask = inet_addr(p+1);
 		    }
 		    if ((ia.s_addr & mask) == (net.s_addr & mask))
 			netmatch = TRUE;
