@@ -71,8 +71,10 @@ doc/archive.8               1 Manpage for archive
 doc/batcher.8               1 Manpage for batcher
 doc/buffchan.8              1 Manpage for buffchan backend
 doc/clientlib.3             1 Manpage for part of InterNetNews library
+doc/cnfsstat.8              1 Manpage for cnfsstat
 doc/control-messages        1 tal's description of control messages
 doc/control.ctl.5           1 Manpage for control.ctl config file
+doc/controlchan.8           1 Manpage for controlchan
 doc/convdate.1              1 Manpage for convdate
 doc/crosspost.8             1 Manpage for crosspost
 doc/ctlinnd.8               1 Manpage for ctlinnd frontend
