@@ -146,8 +146,8 @@ profiled:
 	cp /dev/null profiled
 
 ##  Commands to make private or public, read or executable files.
-COPY_RPRI	= $(SHELL) ../installit.sh $(OWNER) -m 0440 -b .OLD
-COPY_RPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0444 -b .OLD
+COPY_RPRI	= $(SHELL) ../installit.sh $(OWNER) -m 0640 -b .OLD
+COPY_RPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0644 -b .OLD
 COPY_XPRI	= $(SHELL) ../installit.sh $(OWNER) -m 0550 -b .OLD
 COPY_XPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD
 
