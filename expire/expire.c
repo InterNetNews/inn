@@ -460,7 +460,6 @@ EXPremove(TOKEN token, off_t *size, bool index)
 static bool EXPdoline(FILE *out, char *line, int length)
 {
     static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
-    static off_t	Offset;
     char	        *p;
     char	        *q;
     int	                i;
@@ -539,9 +538,8 @@ static bool EXPdoline(FILE *out, char *line, int length)
 
 	/* Not time to forget about this one yet. */
 	if (out) {
-	    where = Offset;
+	    where = ftello(out);
 	    (void)fprintf(out, "%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1]);
-	    Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1;
 	    if (EXPverbose > 3)
 		(void)printf("remember: %s\n", line);
 	    EXPhistremember++;
@@ -570,15 +568,13 @@ static bool EXPdoline(FILE *out, char *line, int length)
 	if (HasSelfexpire) {
 	    if (Selfexpired || token.type == TOKEN_EMPTY) {
 		if (EXPremember > 0 && out != NULL) {
-		    where = Offset;
+		    where = ftello(out);
 		    if (Arrived > RealNow)
 			Arrived = RealNow;
 		    (void)sprintf(date, "%lu", (unsigned long)Arrived);
 		    (void)fprintf(out, "%s%c%s%c%s\n",
 				  fields[0], HIS_FIELDSEP,
 				  date, HIS_SUBFIELDSEP, HIS_NOEXP);
-		    Offset += strlen(fields[0]) + 1
-			+ strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
 		    if (EXPverbose > 3)
 			(void)printf("remember history: %s%c%s%c%s\n",
 				     fields[0], HIS_FIELDSEP,
@@ -587,12 +583,10 @@ static bool EXPdoline(FILE *out, char *line, int length)
 		}
 	    } else if (out != NULL) {
 		tokentext = TokenToText(token);
-		where = Offset;
+		where = ftello(out);
 		(void)fprintf(out, "%s%c%s%c%s\n",
 			fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 			tokentext);
-		Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-			+ strlen(tokentext) + 1;
 		if (EXPverbose > 3)
 		    (void)printf("remember article: %s%c%s%c%s\n",
 			    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
@@ -605,14 +599,12 @@ static bool EXPdoline(FILE *out, char *line, int length)
 	      EXPremove(token, &size, FALSE);
 
 	      if (out) {
-		where = Offset;
+		where = ftello(out);
 		if (Arrived > RealNow)
 		    Arrived = RealNow;
 		(void)sprintf(date, "%lu", (unsigned long)Arrived);
 		(void)fprintf(out, "%s%c%s%c%s\n", fields[0], HIS_FIELDSEP,
 			      date, HIS_SUBFIELDSEP, HIS_NOEXP);
-		Offset += strlen(fields[0]) + 1
-		    + strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
 		if (EXPverbose > 3)
 		  (void)printf("remember history: %s%c%s%c%s\n",
 			fields[0], HIS_FIELDSEP, date, HIS_SUBFIELDSEP,
@@ -623,12 +615,10 @@ static bool EXPdoline(FILE *out, char *line, int length)
 	    
 	      if (out) {
 		tokentext = TokenToText(token);
-		where = Offset;
+		where = ftello(out);
 		(void)fprintf(out, "%s%c%s%c%s\n",
 			      fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
 			      tokentext);
-		Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-		        + strlen(tokentext) + 1;
 		if (EXPverbose > 3)
 		  (void)printf("keeping article: %s%c%s%c%s\n",
 			       fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
