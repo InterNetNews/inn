@@ -1089,7 +1089,7 @@ STATIC char *OVERGetHeader(char *p, int field)
     }
 
     /* Figure out length; get space. */
-    if ((next = strchr(p, '\t')) != NULL)
+    if ((next = strpbrk(p, "\t\r\n")) != NULL)
 	i = next - p;
     else
 	i = strlen(p);
