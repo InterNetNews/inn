@@ -7,7 +7,7 @@
 BEGIN_DECLS
 
 void cache_add(const HASH, const TOKEN);
-TOKEN cache_get(const HASH);
+TOKEN cache_get(const HASH, bool final);
 
 END_DECLS
 

@@ -15,6 +15,7 @@
 
 #include "inn/innconf.h"
 #include "inn/tst.h"
+#include "inn/list.h"
 #include "libinn.h"
 #include "storage.h"
 
@@ -32,6 +33,13 @@ static struct tst *msgidcache;
 */
 static int msgcachecount;
 
+struct cache_entry {
+    struct node node;
+    HASH hash;
+    TOKEN token;
+};
+
+static struct list unused, used;
 
 /*
 **  Add a translation from HASH, h, to TOKEN, t, to the message ID
@@ -40,24 +48,39 @@ static int msgcachecount;
 void
 cache_add(const HASH h, const TOKEN t)
 {
-    if (msgcachecount < innconf->msgidcachesize) {
-	if (!msgidcache)
-	    msgidcache = tst_init(innconf->msgidcachesize / 10);
-	if (msgidcache) {
-	    TOKEN *token = xmalloc(sizeof *token);
+    if (innconf->msgidcachesize != 0) {
+	struct cache_entry *entry;
+	const unsigned char *p;
+	struct cache_entry *exist;
 
-	    if (token) {
-		const unsigned char *p;
+	if (!msgidcache) {
+	    msgidcache = tst_init((innconf->msgidcachesize + 9) / 10);
+	    list_new(&unused);
+	    list_new(&used);
+	}
 
-		p = (unsigned char *) HashToText(h);
-		*token = t;
-		
-		if (tst_insert(msgidcache, p, token,
-			       0, NULL) == TST_DUPLICATE_KEY) {
-		    free(token);
-		} else {
-		    ++msgcachecount;
-		}
+	entry = xmalloc(sizeof *entry);
+	entry->hash = h;
+	entry->token = t;
+	p = (unsigned char *) HashToText(h);
+	if (tst_insert(msgidcache, p, entry,
+		       0, (void **)&exist) == TST_DUPLICATE_KEY) {
+	    free(entry);
+	    list_remove(&exist->node);
+	    list_addtail(&unused, &exist->node);
+	} else {
+	    list_addtail(&unused, &entry->node);
+	    ++msgcachecount;
+	}
+	if (msgcachecount >= innconf->msgidcachesize) {
+	    /* need to throw away a node */
+	    entry = (struct cache_entry *)list_remhead(&used);
+	    if (entry == NULL)
+		entry = (struct cache_entry *)list_remhead(&unused);
+	    if (entry != NULL) {
+		tst_delete(msgidcache,
+			   (unsigned char *) HashToText(entry->hash));
+		free(entry);
 	    }
 	}
     }
@@ -65,14 +88,14 @@ cache_add(const HASH h, const TOKEN t)
 
 
 /*
-**  Lookup (and remove if found) a MessageID to TOKEN mapping. We
-**  remove it if we find it since this matches the observed behaviour
-**  of most clients, but cache it just in case we can reuse it if they
-**  issue multiple commands against the same message ID (e.g. HEAD,
-**  BODY).
+**  Lookup (and remove if found) a MessageID to TOKEN mapping. If this
+**  is a final lookup (ARTICLE or BODY) we remove it if we find it
+**  since this matches the observed behaviour of most clients, but
+**  cache it just in case we can reuse it if they issue multiple
+**  commands against the same message ID (e.g. HEAD, BODY).
 */
 TOKEN
-cache_get(const HASH h)
+cache_get(const HASH h, bool final)
 {
     static HASH last_hash;
     static TOKEN last_token;
@@ -82,18 +105,17 @@ cache_get(const HASH h)
 	return last_token;
 
     if (msgidcache) {
-	TOKEN *t;
+	struct cache_entry *entry;
 
-	/* we can improve this... rather than delete the entry, make the pointer
-	   in the TST a structure which includes an LRU list. Then in _add
-	   expire entries from the front of the list as we need to steal them
-        */
-	t = tst_delete(msgidcache, (unsigned char *) HashToText(h));
-	if (t != NULL) {
-	    --msgcachecount;
-	    last_token = *t;
-	    last_hash = h;
-	    free(t);
+	entry = tst_search(msgidcache, (unsigned char *) HashToText(h));
+	if (entry != NULL) {
+	    list_remove(&entry->node);
+	    if (!final)
+		list_addtail(&unused, &entry->node);
+	    else
+		list_addtail(&used, &entry->node);
+	    last_hash = entry->hash;
+	    last_token = entry->token;
 	    return last_token;
 	}
     }
