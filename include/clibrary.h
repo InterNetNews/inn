@@ -115,6 +115,9 @@ extern size_t           strlcat(char *, const char *, size_t);
 #if !HAVE_STRLCPY
 extern size_t           strlcpy(char *, const char *, size_t);
 #endif
+#if !HAVE_SYMLINK
+extern int              symlink(const char *, const char *);
+#endif
 #if !HAVE_DECL_VSNPRINTF
 extern int              vsnprintf(char *, size_t, const char *, va_list);
 #endif
