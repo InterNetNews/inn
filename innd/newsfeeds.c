@@ -561,6 +561,7 @@ SITEparsefile(StartSite)
     char		*poison;
     STRING		error;
     int			errors;
+    int			setuperrors;
 
     /* Free old sites info. */
     if (Sites) {
@@ -583,7 +584,7 @@ SITEparsefile(StartSite)
     poison = NEW(char, nGroups);
 
     ME.Prev = 0; /* Used as a flag to ensure exactly one ME entry */
-    for (sp = Sites, errors = 0, i = 0; i < nSites; i++) {
+    for (sp = Sites, errors = 0, setuperrors = 0, i = 0; i < nSites; i++) {
 	p = strings[i];
 	if (p[0] == 'M' && p[1] == 'E' &&
             ((p[2] == NF_FIELD_SEP) || (p[2] == NF_SUBFIELD_SEP))) {
@@ -604,7 +605,7 @@ SITEparsefile(StartSite)
 	}
 	if (StartSite && !SITEsetup(sp)) {
 	    syslog(L_FATAL, "%s cant setup %m", sp->Name);
-	    errors++;
+	    setuperrors++;
 	    continue;
 	}
 	sp->Working = TRUE;
@@ -615,8 +616,11 @@ SITEparsefile(StartSite)
 	errors++;
     }
 
-    if (errors) {
-	syslog(L_FATAL, "%s syntax_error %s", LogName, SITEfeedspath);
+    if (errors && setuperrors) {
+	if (errors)
+	    syslog(L_FATAL, "%s syntax_error %s", LogName, SITEfeedspath);
+	if (setuperrors)
+	    syslog(L_FATAL, "%s setup_error %s", LogName, SITEfeedspath);
 	JustCleanup();
 	exit(1);
     }
