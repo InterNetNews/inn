@@ -1436,7 +1436,7 @@ get_active(host, hostid, len, grp, errs)
 	case 'y':
 		/* of COURSE: collabra has incompatible flags. but it	*/
 		/* looks like they can be fixed easily enough.		*/
-		if (cur->type[1] = 'g') {
+		if (cur->type[1] == 'g') {
 			cur->type[1] = '\0';
 		}
 	case 'm':
