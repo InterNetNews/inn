@@ -578,7 +578,7 @@ CCfeedinfo(char *av[])
 
 
 static const char *
-CCfilter(char *av[])
+CCfilter(char *av[] UNUSED)
 {
 #if defined(DO_TCL)
     char	*p;
@@ -631,7 +631,7 @@ CCperl(char *av[])
 
 
 static const char *
-CCpython(char *av[])
+CCpython(char *av[] UNUSED)
 {
 #if defined(DO_PYTHON)
     return PYcontrol(av);
@@ -834,7 +834,7 @@ CCmode(char *unused[] UNUSED)
     for (i = 0, h = 0; CHANiter(&h, CTnntp) != NULL; )
 	i++;
     *p++ = '\n';
-    (void)sprintf(p, "Parameters c %ld i %ld (%ld) l %ld o %d t %ld H %d T %d X %d %s %s",
+    (void)sprintf(p, "Parameters c %ld i %ld (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
                   innconf->artcutoff, innconf->maxconnections, i,
                   innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
                   RemoteLimit, RemoteTotal, (int) RemoteTimer,
@@ -1119,11 +1119,11 @@ CCparam(char *av[])
 	break;
     case 'c':
 	innconf->artcutoff = atoi(p);
-	syslog(L_NOTICE, "%s changed -c %d", LogName, innconf->artcutoff);
+	syslog(L_NOTICE, "%s changed -c %ld", LogName, innconf->artcutoff);
 	break;
     case 'i':
 	innconf->maxconnections = atoi(p);
-	syslog(L_NOTICE, "%s changed -i %d", LogName, innconf->maxconnections);
+	syslog(L_NOTICE, "%s changed -i %ld", LogName, innconf->maxconnections);
 	break;
     case 'l':
 	innconf->maxartsize = atol(p);
@@ -1761,7 +1761,7 @@ CCreader(CHANNEL *cp)
 
     if (cp != CCchan) {
 	syslog(L_ERROR, "%s internal CCreader wrong channel 0x%p not 0x%p",
-	    LogName, cp, CCchan);
+	    LogName, (void *)cp, (void *)CCchan);
 	return;
     }
 
@@ -2071,9 +2071,9 @@ CClowmark(char *av[])
 	    break;
 	}
 	*cp++ = '\0';
-	while (ISWHITE(cp))
+	while (ISWHITE(*cp))
 	    cp++;
-	if (strspn(cp, DIGITS) != strlen(cp)) {
+	if (strspn(cp, "0123456789") != strlen(cp)) {
 	    ret = "1 Malformed input line (non-digit in low mark)";
 	    break;
 	}
