@@ -21,8 +21,10 @@ int main(int argc, char *argv[])
     struct sockaddr_in sin, loc, cli;
     int sock;
     int opt;
+    int truncate = 0;
     extern char *optarg;
     char *iter;
+    char *p;
     int got;
     char *endstr;
     int gotcliaddr, gotcliport, gotlocaddr, gotlocport;
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
     else
 	sin.sin_port = s->s_port;
 
-    while ((opt = getopt(argc, argv, "p:")) != -1) {
+    while ((opt = getopt(argc, argv, "p:t")) != -1) {
 	switch (opt) {
 	  case 'p':
 	    for (iter = optarg; *iter; iter++)
@@ -54,6 +56,9 @@ int main(int argc, char *argv[])
 	    } else
 		sin.sin_port = atoi(optarg);
 	    sin.sin_port = htons(sin.sin_port);
+	    break;
+	case 't':
+	    truncate = 1;
 	    break;
 	}
     }
@@ -180,6 +185,8 @@ int main(int argc, char *argv[])
     if (!*iter || *iter == '[')
 	/* null, or encrypted response */
 	exit(1);
+    if ((truncate == 1) && ((p = strchr(iter, '@')) != NULL))
+	*p = '\0';
     printf("User:%s\n", iter);
 
     exit(0);
