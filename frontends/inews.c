@@ -492,7 +492,7 @@ FormatUserName(struct passwd *pwp, char *node)
     if (out[0])
         buff = concat(pwp->pw_name, "@", node, " (", out, ")", (char *) 0);
     else
-        buff = concat(pwp->pw_name, "@", node);
+        buff = concat(pwp->pw_name, "@", node, (char *) 0);
     return buff;
 }
 
