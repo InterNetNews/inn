@@ -1,0 +1,130 @@
+Hacking INN
+
+    This file is for people who are interested in making modifications to
+    INN.  Normal users can safely skip reading it.  It is intended primarily
+    as a guide, resource, and accumulation of tips for maintainers and
+    contributors, and secondarily as documentation of some of INN's
+    internals.
+
+    This is $Revision$ dated $Date$.
+
+Coding Style
+
+    INN has quite a variety of coding styles intermixed.  As with all
+    programs, it's preferrable when making minor modifications to keep the
+    coding style of the code you're modifying.  In INN, that will vary by
+    file.
+
+    If you're writing a substantial new piece of code, the prevailing
+    "standard" INN coding style appears to be something like the following:
+
+    *  Roughly BSD style (four space indents, no space before the parens
+       around function arguments, open brace on the same line as
+       if/while/for, and close and open brace on the same line as else).
+
+    *  Introductory comments for functions or files are generally written
+       as:
+
+           /*
+           **  Introductory comment.
+           */
+
+       Other multiline comments in the source are generally written as:
+
+           /* This is a
+              multiline comment. */
+
+       Comments before functions saying what they do are nice to have.  In
+       general, the RCS/CVS Id tag is on the first line of each source file.
+
+    *  Checks for NULL pointers are preferrably written out explicitly; in
+       other words, use:
+
+           if (p != NULL)
+
+       rather than:
+
+           if (p)
+
+       to make it clearer what the code is assuming.
+
+    The source is currently full of some rather odd casts, including a lot
+    of casts to void when calling standard functions.  These are historical,
+    designed to make lint shut up.  Don't feel like you have to preserve
+    them provided that gcc -Wall doesn't complain when they're removed.
+
+    Note that this is only a rough guideline and the maintainers aren't
+    style nazis; we're more interested in your code contribution than in how
+    you write it.
+
+    Finally, if possible, please don't use tabs in source files, since they
+    can expand differently in different environments.  In particular, please
+    try not to use the mix of tabs and spaces that is the default in emacs. 
+    If you use emacs to edit INN code, you may want to put:
+
+        ; Use only spaces when indenting or centering, no tabs.
+        (setq-default indent-tabs-mode nil)
+
+    in your ~/.emacs file.
+
+Documentation
+
+    INN's documentation is currently somewhat in a state of flux.  The vast
+    majority is still in the form of man pages written directly in nroff. 
+    Some parts of the documentation have been rewritten in POD; that
+    documentation can be found in doc/pod.  The canonical source for the
+    README, README.perl_hook, and INSTALL files is also in POD.  In
+    addition, DocBook SGML versions of the POD documentation are included
+    both for the use of DocBook translators and to make conversion to SGML
+    easier if necessary down the road.
+
+    If you're modifying some part of INN's documentation and see that it has
+    a POD version in doc/pod, it's preferred if you can make the
+    modifications to the POD source and then regenerate the derived files. 
+    For a quick introduction to POD, see the perlpod(1) man page on your
+    system (it should be installed if you have Perl installed).
+
+    When writing new documentation, write in whatever format you care to; if
+    necessary, we can always convert it to POD or whatever else we want to
+    use.  Having the documentation exist in *some* form is more important
+    than what language you write it in.  If you really don't have any
+    particular preference, there's a slight preference currently for POD.
+
+    The pod2text and pod2man scripts that come with Perl versions prior to
+    5.6 are adequate but not ideal for processing INN's documentation.  The
+    best converters are available as part of the podlators package,
+    available from CPAN (ftp.perl.org or another mirror) in
+    modules/by-module/Pod.  This module also requires installation of
+    PodParser, found in the same directory, and File::Spec for versions of
+    Perl before 5.005.  File::Spec you can find in modules/by-module/File.
+
+    To generate text documentation (like INSTALL or README), use:
+
+        pod2text -s -l install.pod > ../../INSTALL
+
+    from the doc/pod directory.  `-s' preserves two spaces after periods and
+    `-l' adds a blank line after major headings.
+
+    To generate a man page from POD source, use:
+
+        pod2roff -c "InterNetNews Documentation" -r "INN 2.3" in > out
+
+    where in is the name of the POD file and out is what to name the *roff
+    output.  For some documentation, you also have to provide -s <section>
+    to set the correct manual section (pod2roff will assume section 1 if -s
+    isn't given).  It's best to run pod2roff from the doc/pod directory,
+    directing the output to the appropriate file in the doc/man directory,
+    since it does some tricks with the name of the file to determine the
+    title of the man page and can be confused by longer paths.
+
+    At some point this should go into Makefile rules.
+
+    pod2text and pod2roff from podlators are included with Perl as of the
+    5.005_62 development version and will be included in Perl 5.6.
+
+    For conversion of POD to DocBook SGML, use Pod::DocBook, also found on
+    CPAN in modules/by-module/Pod.
+
+    The current versions of these tools as of this writing are podlators
+    0.08, PodParser 1.085, and Pod::DocBook 0.05.
+
