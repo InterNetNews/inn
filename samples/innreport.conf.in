@@ -1447,7 +1447,7 @@ section nnrpd_groups {
                 name          "Rej";
                 format_name   "%4s";
                 format        "%4d";
-		value         "$nnrpd_post_rej{$key} + $nnrpd_post_error{key}";
+		value         "$nnrpd_post_rej{$key} + $nnrpd_post_error{$key}";
 		total         "total(%nnrpd_post_rej) +
 		               total(%nnrpd_post_error)";
         };
