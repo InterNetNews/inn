@@ -59,7 +59,8 @@ for F in \
 	${PATHSPOOL} ${PATHARTICLES} ${PATHOVERVIEW} ${PATHARCHIVE} \
 	${PATHINCOMING} ${PATHOUTGOING} ${PATHINCOMING}/bad \
 	${PATHUNIOVER} ${PATHTAPE} ${PATHLIB} \
-	${PATHLOG} ${PATHLOG}/OLD ${PATHBIN}/rnews.libexec ${PATHBIN}/auth ; do
+	${PATHLOG} ${PATHLOG}/OLD ${PATHBIN}/rnews.libexec ${PATHBIN}/auth \
+	${PATHBIN}/auth/resolv ${PATHBIN}/auth/passwd ; do
     if [ ! -d ${DESTDIR}${F} ] ; then
 	mkdir ${PFLAG} ${DESTDIR}${F} || exit 1
 	${CHOWN} ${NEWSUSER} ${DESTDIR}${F} || exit 1
