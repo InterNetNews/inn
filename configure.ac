@@ -57,6 +57,7 @@ m4_include([m4/socket.m4])
 m4_include([m4/syslog.m4])
 m4_include([m4/users.m4])
 m4_include([m4/vamacros.m4])
+m4_include([m4/zlib.m4])
 
 dnl By default, INN installs into its own independent tree.  Support for FHS
 dnl is not yet implemented; once it is, this will need to become conditional
@@ -322,6 +323,7 @@ fi
 dnl Handle optional libraries and probing for their locations and component
 dnl libraries if needed.
 INN_LIB_BERKELEYDB
+INN_LIB_ZLIB
 INN_LIB_OPENSSL
 INN_LIB_SASL
 INN_LIB_KERBEROS
