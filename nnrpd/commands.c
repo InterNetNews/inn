@@ -597,7 +597,7 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
     char	        **dp;
     QIOSTATE	        *qp;
     BOOL		All;
-    long		date;
+    time_t		date;
     char		*grplist[2];
     int                 hi, lo, count, flag;
     GROUPDATA           *grouplist = NULL;
@@ -607,27 +607,17 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
     int                 numgroups = 0;
     int                 numfound = 0;
     int                 i;
+    bool                local;
 
     /* Parse the date. */
-    date = NNTPtoGMT(av[1], av[2]);
-    if (date < 0) {
-	Reply("%d Usage: %s\r\n", NNTP_SYNTAX_VAL, USAGE);
-	return;
-    }
-    ac -= 3;
-    av += 3;
-    if (ac > 0 && (caseEQ(*av, "GMT")|| caseEQ(*av, "UTC"))) {
-	av++;
-	ac--;
-    }
-    else
-	date = LOCALtoGMT(date);
+    local = (ac > 3 && (caseEQ(av[3], "GMT") || caseEQ(av[3], "UTC")));
+    date = parsedate_nntp(av[1], av[2], local);
 
-    if (ac == 0)
+    if (ac < 5)
 	All = TRUE;
     else {
-	if (!ParseDistlist(&distlist, *av)) {
-	    Reply("%d Bad distribution list: %s\r\n", NNTP_SYNTAX_VAL, *av);
+	if (!ParseDistlist(&distlist, av[4])) {
+	    Reply("%d Bad distribution list: %s\r\n", NNTP_SYNTAX_VAL, av[4]);
 	    return;
 	}
 	All = FALSE;
@@ -650,7 +640,9 @@ FUNCTYPE CMDnewgroups(int ac, char *av[])
 	if ((q = strchr(p, ' ')) == NULL)
 	    continue;
 	*q++ = '\0';
-	if ((atol(q) < date) || !OVgroupstats(p, &lo, &hi, &count, &flag))
+        if ((time_t) atol(q) < date)
+            continue;
+	if (!OVgroupstats(p, &lo, &hi, &count, &flag))
 	    continue;
 
 	if (PERMspecified) {
