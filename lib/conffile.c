@@ -12,11 +12,11 @@
 static int getconfline(CONFFILE *F, char *buffer, int length) {
   if (F->f) {
     fgets(buffer, length, F->f);
+    if (ferror(F->f)) {
+      return 1;
+    }
   } else if (F->array) {
     strncpy(buffer, F->array[F->lineno], length);
-  }
-  if (ferror(F->f)) {
-    return 1;
   }
   F->lineno++;
   if (strlen (F->buf) == F->sbuf) {
