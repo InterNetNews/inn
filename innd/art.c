@@ -2490,7 +2490,7 @@ ARTpost(CHANNEL *cp)
          * which you explicitly excluded in your active file. */
   	if (!GroupMissing) {
 	  if (innconf->remembertrash && (Mode == OMrunning) &&
-	    !HISremember(hash))
+	    !NoHistoryUpdate && !HISremember(hash))
 	    syslog(L_ERROR, "%s cant write history %s %m",
 	      LogName, HDR(_message_id));
 	  ARTreject(REJECT_GROUP, cp, article);
