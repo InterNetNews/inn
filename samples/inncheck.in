@@ -23,7 +23,7 @@ $newsgroup = '@NEWSGRP@';
     'ctlprogs',		"$inn::pathcontrol",
     'expire.ctl',	"$inn::pathetc/expire.ctl",
     'history',		"$inn::pathdb/history",
-    'hosts.nntp',	"$inn::pathetc/hosts.nntp",
+    'incoming.conf',	"$inn::pathetc/incoming.conf",
     'inews',		"$inn::pathbin/inews",
     'inn.conf',		"$inn::pathetc/inn.conf",
     'innd',		"$inn::pathbin/innd",
@@ -54,7 +54,7 @@ $newsgroup = '@NEWSGRP@';
     'active',		'active',
     'control.ctl',	'control_ctl',
     'expire.ctl',	'expire_ctl',
-    'hosts.nntp',	'hosts_nntp',
+    'incoming.conf',	'incoming_conf',
     'inn.conf',		'inn_conf',
     'moderators',	'moderators',
     'newsfeeds',	'newsfeeds',
@@ -69,7 +69,7 @@ $newsgroup = '@NEWSGRP@';
     'active',		0664,
     'control.ctl',	0640,
     'expire.ctl',	0640,
-    'hosts.nntp',	0640,
+    'incoming.conf',	0640,
     'inn.conf',		0644,
     'moderators',	0644,
     'newsfeeds',	0644,
@@ -254,24 +254,11 @@ expire_ctl
 
 
 ##
-##  hosts.nntp
+##  incoming.conf
 ##
 sub
-hosts_nntp
+incoming_conf
 {
-    local ($host, $pass);
-
-    input: while ( <IN> ) {
-	next input if &spacious($file, ++$line);
-
-	unless (($host, $pass) = /^([^:]+):(.*)/) {
-	    print "$file:$line: malformed line.\n";
-	    next input;
-	}
-
-	print "$file:$line bad format for host `$host'.\n"
-	    unless $host =~ /^[\w\/\.\-]+$/ || $host =~ /^(\d+\.){3}\d+$/;
-    }
     1;
 }
 
@@ -306,6 +293,7 @@ hosts_nntp
     'localmaxartsize',		0,
     'logartsize',		0,
     'logipaddr',		0,
+    'logsitename',		0,
     'maxconnections',		0,
     'artcutoff',		0,
     'icdsynccount',		0,
@@ -319,6 +307,7 @@ hosts_nntp
     'hiscachesize',		0,
     'wireformat',		0,
     'xrefslave',    		0,
+    'nnrpdposthost',   		0,
     'spoolfirst',		0,
     'writelinks',		0,
     'timer',			0,
@@ -327,8 +316,14 @@ hosts_nntp
     'articlemmap',		0,
     'overviewmmap',		0,
     'allowreaders',		0,
+    'extendeddbz',		0,
     'bindaddress',		0,
     'port',			0,
+    'keywords',			0,
+    'keylimit',			0,
+    'keyartlimit',		0,
+    'keymaxwords',		0,
+    'innflags',			0,
     'doinnwatch',		0,
     'pathnews',			0,
     'pathbin',			0,
@@ -338,6 +333,7 @@ hosts_nntp
     'pathetc',			0,
     'pathrun',			0,
     'pathlog',			0,
+    'pathhttp',			0,
     'pathspool',		0,
     'patharticles',		0,
     'pathoverview',		0,
@@ -349,8 +345,6 @@ hosts_nntp
     'strippostcc',		0,
     'complaints',		0,
     'overviewname',		0,
-    'innflags',			0,
-    'doinnwatch',		0
 );
 %inn_conf'optionals = (
     'mime-version',		0,
@@ -1047,7 +1041,7 @@ exit(0);
 if ( 0 ) {
     &active();
     &control_ctl();
-    &hosts_nntp();
+    &incoming_conf();
     &expire_ctl();
     &inn_conf();
     &moderators();
