@@ -1238,7 +1238,7 @@ int main(int ac, char *av[])
 
     (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
-    if (!SMinit()) {
+    if (innconf->storageapi && !SMinit()) {
 	fprintf(stderr, "Can't initialize the storage manager: %s\n", SMerrorstr);
 	exit(1);
     }
