@@ -100,6 +100,7 @@ CONFFILE *CONFfopen(char *filename)
   ret->sbuf = 0;
   ret->lineno = 0;
   ret->f = f;
+  return(ret);
 }
 
 void CONFfclose(CONFFILE *f)
