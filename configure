@@ -5283,6 +5283,7 @@ trap 'rm -fr `echo "BUILD
 	backends/actsyncd.sh
 	backends/sendxbatches.sh
 	include/clibrary.h
+	include/config.h
 	include/paths.h 
 	samples/actsync.cfg 
 	samples/checkgroups
@@ -5325,7 +5326,7 @@ trap 'rm -fr `echo "BUILD
 	samples/writelog
 	storage/buildconfig 
 	syslog/syslog.conf
- include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+ include/config.h:include/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -5478,6 +5479,7 @@ CONFIG_FILES=\${CONFIG_FILES-"BUILD
 	backends/actsyncd.sh
 	backends/sendxbatches.sh
 	include/clibrary.h
+	include/config.h
 	include/paths.h 
 	samples/actsync.cfg 
 	samples/checkgroups
@@ -5596,7 +5598,7 @@ ac_eD='%g'
 if test "${CONFIG_HEADERS+set}" != set; then
 EOF
 cat >> $CONFIG_STATUS <<EOF
-  CONFIG_HEADERS="include/config.h"
+  CONFIG_HEADERS="include/config.h:include/config.h"
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 fi
