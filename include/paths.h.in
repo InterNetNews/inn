@@ -68,13 +68,11 @@
 #define _PATH_SH		"/bin/sh"
     /* =()<#define _PATH_COMPRESS	"@<_PATH_COMPRESS>@">()= */
 #define _PATH_COMPRESS	"/usr/bin/compress"
-    /* =()<#define _PATH_TMP	"@<_PATH_TMP>@">()= */
-#define _PATH_TMP	"/var/tmp"
+#define _PATH_TMP	"@TMPPATH@"
     /* =()<#define _PATH_GZIP	"@<_PATH_GZIP>@">()= */
 #define _PATH_GZIP	"/usr/bin/gzip"
 
-    /* =()<#define _PATH_SPOOLTEMP	"@<_PATH_SPOOLTEMP>@">()= */
-#define _PATH_SPOOLTEMP	"/var/tmp"
+#define _PATH_SPOOLTEMP	"@TMPPATH@"
     /* =()<#define _PATH_RELBAD		"@<_PATH_RELBAD>@">()= */
 #define _PATH_RELBAD		"bad"
 
@@ -86,11 +84,8 @@
     /* =()<#define _PATH_BADCONTROLPROG	"@<_PATH_BADCONTROLPROG>@">()= */
 #define _PATH_BADCONTROLPROG	"default"
 
-
-    /* =()<#define _PATH_TEMPACTIVE	"@<_PATH_TEMPACTIVE>@">()= */
-#define _PATH_TEMPACTIVE	"/var/tmp/activeXXXXXX"
-    /* =()<#define _PATH_TEMPMODERATORS	"@<_PATH_TEMPMODERATORS>@">()= */
-#define _PATH_TEMPMODERATORS	"/var/tmp/moderatorsXXXXXX"
+#define _PATH_TEMPACTIVE	"@TMPPATH@/activeXXXXXX"
+#define _PATH_TEMPMODERATORS	"@TMPPATH@/moderatorsXXXXXX"
 
 /*
 **  ENVIRONMENT VARIABLES
