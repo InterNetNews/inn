@@ -49,9 +49,9 @@ void
 cache_add(const HASH h, const TOKEN t)
 {
     if (innconf->msgidcachesize != 0) {
-	struct cache_entry *entry;
+	struct cache_entry *entry, *old;
 	const unsigned char *p;
-	struct cache_entry *exist;
+        void *exist;
 
 	if (!msgidcache) {
 	    msgidcache = tst_init((innconf->msgidcachesize + 9) / 10);
@@ -63,11 +63,11 @@ cache_add(const HASH h, const TOKEN t)
 	entry->hash = h;
 	entry->token = t;
 	p = (unsigned char *) HashToText(h);
-	if (tst_insert(msgidcache, p, entry,
-		       0, (void **)&exist) == TST_DUPLICATE_KEY) {
+	if (tst_insert(msgidcache, p, entry, 0, &exist) == TST_DUPLICATE_KEY) {
 	    free(entry);
-	    list_remove(&exist->node);
-	    list_addtail(&unused, &exist->node);
+            old = exist;
+	    list_remove(&old->node);
+	    list_addtail(&unused, &old->node);
 	} else {
 	    list_addtail(&unused, &entry->node);
 	    ++msgcachecount;
