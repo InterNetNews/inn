@@ -417,7 +417,7 @@ CheckNeedReloadDB(void) {
 	return;
     }
     DISPOSE(fname);
-    if (sb.st_mtime > oldlastcheck.time) {
+    if (sb.st_mtime > oldlastcheck.time && oldlastcheck.time != 0) {
 	/* add any newly added ngs to our in-memory copy of the db. */
 	ReadDBFile();
     }
@@ -980,6 +980,8 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		return NULL;
 	    }
 	    priv.ngtp = NGTable[priv.nextindex];
+	    if (priv.ngtp != NULL)
+		break;
 	}
 
 	priv.curdirname = NEW(char, strlen(innconf->patharticles)+strlen(priv.ngtp->ngname)+2);
@@ -1016,7 +1018,7 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
 		/* assumes first one is the original */
 		if ((p = strchr(xrefs[0], ':')) != NULL) {
 		    *p++ = '\0';
-		    ng = xrefs[i];
+		    ng = xrefs[0];
 		    DeDotify(ng);
 		    artnum = atol(p);
 
