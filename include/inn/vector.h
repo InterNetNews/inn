@@ -68,8 +68,9 @@ void cvector_free(struct cvector *);
    provided one is reused.
 
    Empty strings will yield zero-length vectors.  Adjacent delimiters are
-   treated as a single delimiter (zero-length strings are not added to the
-   vector). */
+   treated as a single delimiter by *_split_space, but *not* by *_split, so
+   callers of *_split should be prepared for zero-length strings in the
+   vector. */
 struct vector *vector_split(const char *string, char sep, struct vector *);
 struct vector *vector_split_space(const char *string, struct vector *);
 struct cvector *cvector_split(char *string, char sep, struct cvector *);

@@ -201,9 +201,9 @@ split_count(const char *string, char separator)
     size_t count;
 
     if (*string == '\0')
-        return 0;
-    for (count = 1, p = string + 1; *p; p++)
-        if (*p == separator && *(p - 1) != separator)
+        return 1;
+    for (count = 1, p = string; *p; p++)
+        if (*p == separator)
             count++;
     return count;
 }
@@ -228,12 +228,10 @@ vector_split(const char *string, char separator, struct vector *vector)
 
     for (start = string, p = string, i = 0; *p; p++)
         if (*p == separator) {
-            if (start != p)
-                vector->strings[i++] = xstrndup(start, p - start);
+            vector->strings[i++] = xstrndup(start, p - start);
             start = p + 1;
         }
-    if (start != p)
-        vector->strings[i++] = xstrndup(start, p - start);
+    vector->strings[i++] = xstrndup(start, p - start);
     vector->count = i;
 
     return vector;
@@ -261,14 +259,11 @@ cvector_split(char *string, char separator, struct cvector *vector)
 
     for (start = string, p = string, i = 0; *p; p++)
         if (*p == separator) {
-            if (start != p) {
-                *p = '\0';
-                vector->strings[i++] = start;
-            }
+            *p = '\0';
+            vector->strings[i++] = start;
             start = p + 1;
         }
-    if (start != p)
-        vector->strings[i++] = start;
+    vector->strings[i++] = start;
     vector->count = i;
 
     return vector;
@@ -287,9 +282,14 @@ split_space_count(const char *string)
 
     if (*string == '\0')
         return 0;
-    for (count = 1, p = string + 1; *p; p++)
+    for (count = 1, p = string + 1; *p != '\0'; p++)
         if ((*p == ' ' || *p == '\t') && !(p[-1] == ' ' || p[-1] == '\t'))
             count++;
+
+    /* If the string ends in whitespace, we've overestimated the number of
+       strings by one. */
+    if (p[-1] == ' ' || p[-1] == '\t')
+        count--;
     return count;
 }
 
