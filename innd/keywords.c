@@ -23,7 +23,7 @@
 
 /* If keyword support wasn't requested, stub out the main function provided by
    this file. */
-#ifndef DO_KEYWORDS
+#if !DO_KEYWORDS
 static void
 KEYgenerate(HDRCONTENT *header UNUSED, const char *body UNUSED,
             const char *orig UNUSED, size_t length UNUSED)
@@ -270,4 +270,4 @@ out:
     free(orig_text);
 }
 
-#endif /* !DO_KEYWORDS */
+#endif /* DO_KEYWORDS */

@@ -262,13 +262,14 @@ AC_SUBST(DO_DBZ_TAGGED_HASH)
 
 dnl Whether to enable the keyword generation code in innd.  Use of this code
 dnl requires a regular expression library, which is checked for later on.
+inn_enable_keywords=0
 AC_ARG_ENABLE(keywords,
     [  --enable-keywords       Automatic keyword generation support],
     if test x"$enableval" = xyes ; then
-        inn_enable_keywords=yes
-        AC_DEFINE(DO_KEYWORDS, 1,
-         [Define to compile in support for automatic keyword generation code.])
+        inn_enable_keywords=1
     fi)
+AC_DEFINE_UNQUOTED(DO_KEYWORDS, $inn_enable_keywords,
+    [Define to 1 to compile in support for keyword generation code.])
 
 dnl Whether to use the OS flags to enable large file support.  Ideally this
 dnl should just always be turned on if possible and the various parts of INN
@@ -745,7 +746,7 @@ INN_SEARCH_AUX_LIBS(pam_start, pam, PAM_LIB,
 
 dnl If keyword generation support was requested, check for the appropriate
 dnl libraries.
-if test x"$inn_enable_keywords" = xyes ; then
+if test x"$inn_enable_keywords" = x1 ; then
     INN_SEARCH_AUX_LIBS(regexec, regex, REGEX_LIB, ,
         [AC_MSG_ERROR(no usable regular expression library found)])
 fi
