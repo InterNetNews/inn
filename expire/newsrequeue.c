@@ -74,7 +74,6 @@ STATIC SITE		*Sites;
 STATIC int		nSites;
 STATIC NEWSGROUP	*Groups;
 STATIC int		nGroups;
-STATIC long		Epoch;
 STATIC NGHASH		NGHtable[NGH_SIZE];
 
 
@@ -393,7 +392,6 @@ main(ac, av)
     STRING		Newsfeeds;
     char		*subbed;
     time_t		t;
-    BOOL		Logfile;
     char		save;
     int			nntplinklog;
 
@@ -406,11 +404,10 @@ main(ac, av)
     Active = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
     Newsfeeds = COPY(cpcatpath(innconf->pathetc, _PATH_NEWSFEEDS));
-    Logfile = TRUE;
     nntplinklog = innconf->nntplinklog;
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "a:d:h:ln:")) != EOF)
+    while ((i = getopt(ac, av, "a:h:n:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -418,15 +415,8 @@ main(ac, av)
 	case 'a':
 	    Active = optarg;
 	    break;
-	case 'd':
-	    (void)time(&t);
-	    Epoch = (long)t - atol(optarg) * 86400L;
-	    break;
 	case 'h':
 	    History = optarg;
-	    break;
-	case 'l':
-	    Logfile = TRUE;
 	    break;
 	case 'n':
 	    Newsfeeds = optarg;
@@ -434,8 +424,6 @@ main(ac, av)
 	}
     ac -= optind;
     av += optind;
-    if (Epoch && Logfile)
-	Usage();
 
     /* Parse positional parameters; at most one, the input file. */
     switch (ac) {
@@ -465,24 +453,6 @@ main(ac, av)
 		History, strerror(errno));
 	exit(1);
     }
-
-    if (!Logfile) {
-	/* Read the control files and build the subscription list. */
-	ParseActive(Active);
-	ParseNewsfeeds(Newsfeeds);
-	subbed = NEW(char, nGroups);
-	for (i = 0; i < nSites; i++)
-	    BuildSubList(&Sites[i], subbed);
-	DISPOSE(subbed);
-
-	/* Set up the character class tables. */
-	(void)memset((POINTER)ARTpathbits, 0, sizeof ARTpathbits);
-	p = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-";
-	while ((i = *p++) != 0)
-	    ARTpathbits[i] = TRUE;
-    }
-
-
     /* Now we're ready to start reading input. */
     for (i = 1; ; i++) {
 	if ((line = QIOread(qp)) == NULL) {
@@ -501,19 +471,17 @@ main(ac, av)
 	    break;
 	}
 
-	if (Logfile) {
-	    /* Check the log character (correct for zero-origin subscripts. */
-	    switch (line[STRLEN("Jan 23 12:52:12.631 +") - 1]) {
-	    default:
-		(void)fprintf(stderr, "Ignoring \"%s\"\n", line);
-		continue;
-	    case ART_CANC:
-	    case ART_REJECT:
-		continue;
-	    case ART_ACCEPT:
-	    case ART_JUNK:
-		break;
-	    }
+	/* Check the log character (correct for zero-origin subscripts. */
+	switch (line[STRLEN("Jan 23 12:52:12.631 +") - 1]) {
+	default:
+	    (void)fprintf(stderr, "Ignoring \"%s\"\n", line);
+	    continue;
+	case ART_CANC:
+	case ART_REJECT:
+	    continue;
+	case ART_ACCEPT:
+	case ART_JUNK:
+	    break;
 	}
 
 	/* Snip off the Message-ID. */
