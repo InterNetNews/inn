@@ -70,8 +70,9 @@ contrib/newsbot             1 Grep articles and trigger actions
 doc                         1 Manpages (Directory)
 doc/Makefile                1 Makefile for documentation
 doc/active.5                1 Manpage for active config file
-doc/actived.8                   1 Manpage for actived
+doc/actived.8               1 Manpage for actived
 doc/actsync.8               1 Manpage for active file synchro. program.
+doc/actsyncd.8              1 Manpage for active file synchro. program.
 doc/archive.8               1 Manpage for archive
 doc/batcher.8               1 Manpage for batcher
 doc/buffchan.8              1 Manpage for buffchan backend
