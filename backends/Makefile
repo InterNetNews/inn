@@ -58,26 +58,27 @@ tags ctags: $(SOURCES)
 ##  Compilation rules.
 
 LINK 		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
-NEWSLIBS	= $(LIBNEWS) $(LIBS)
+LIB_S_I		= $(LIBSTORAGE) $(LIBINN)
+ES		= $(EXTSTORAGELIBS)
 FIX		= $(FIXSCRIPT)
 
-actsync:	actsync.o    $(LIBNEWS)	; $(LINK) actsync.o    $(NEWSLIBS)
-archive:	archive.o    $(LIBNEWS)	; $(LINK) archive.o    $(NEWSLIBS)
-batcher:	batcher.o    $(LIBNEWS)	; $(LINK) batcher.o    $(NEWSLIBS)
-cvtbatch:	cvtbatch.o   $(LIBNEWS)	; $(LINK) cvtbatch.o   $(NEWSLIBS)
-inndf:		inndf.o      $(LIBNEWS)	; $(LINK) inndf.o      $(NEWSLIBS)
-innxbatch:	innxbatch.o  $(LIBNEWS)	; $(LINK) innxbatch.o  $(NEWSLIBS)
-innxmit:	innxmit.o    $(LIBNEWS)	; $(LINK) innxmit.o    $(NEWSLIBS)
-nntpget:	nntpget.o    $(LIBNEWS)	; $(LINK) nntpget.o    $(NEWSLIBS)
-overchan:	overchan.o   $(LIBNEWS)	; $(LINK) overchan.o   $(NEWSLIBS)
+actsync:	actsync.o    $(LIBINN)	; $(LINK) actsync.o    $(LIBINN) $(LIBS)
+archive:	archive.o    $(LIB_S_I)	; $(LINK) archive.o    $(LIB_S_I) $(ES) $(LIBS)
+batcher:	batcher.o    $(LIB_S_I)	; $(LINK) batcher.o    $(LIB_S_I) $(ES) $(LIBS)
+cvtbatch:	cvtbatch.o   $(LIB_S_I)	; $(LINK) cvtbatch.o   $(LIB_S_I) $(ES) $(LIBS)
+inndf:		inndf.o      $(LIB_S_I)	; $(LINK) inndf.o      $(LIB_S_I) $(ES) $(LIBS)
+innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(LIBINN) $(LIBS)
+innxmit:	innxmit.o    $(LIB_S_I)	; $(LINK) innxmit.o    $(LIB_S_I) $(ES) $(LIBS)
+nntpget:	nntpget.o    $(LIBINN)	; $(LINK) nntpget.o    $(LIBINN) $(LIBS)
+overchan:	overchan.o   $(LIB_S_I)	; $(LINK) overchan.o   $(LIB_S_I) $(ES) $(LIBS)
 shlock:		shlock.o		; $(LINK) shlock.o
-shrinkfile:	shrinkfile.o $(LIBNEWS)	; $(LINK) shrinkfile.o $(NEWSLIBS)
+shrinkfile:	shrinkfile.o $(LIBINN)	; $(LINK) shrinkfile.o $(LIBINN) $(LIBS)
 
-buffchan:	buffchan.o map.o $(LIBNEWS)
-	$(LINK) buffchan.o map.o $(NEWSLIBS)
+buffchan:	buffchan.o map.o $(LIBINN)
+	$(LINK) buffchan.o map.o $(LIBINN) $(LIBS)
 
-filechan:	filechan.o map.o $(LIBNEWS)
-	$(LINK) filechan.o map.o $(NEWSLIBS)
+filechan:	filechan.o map.o $(LIBINN)
+	$(LINK) filechan.o map.o $(LIBINN) $(LIBS)
 
 actmerge:	actmerge.in      $(FIX)	; $(FIX) actmerge.in
 actsyncd:	actsyncd.in      $(FIX)	; $(FIX) actsyncd.in

@@ -218,13 +218,14 @@ main(int argc, char **argv)
 	}
 	if (overview) {
 		int i;
+		/* Set defaults. */
+		if (ReadInnConf() < 0) exit(1);
+
 		if (!OVopen(OV_READ)) {
 			printf("OVopen failed\n");
 			exit(1);
 		}
 		if (numberofoverview) {
-			/* Set defaults. */
-			if (ReadInnConf() < 0) exit(1);
 			if ((qp = QIOopen(cpcatpath(innconf->pathdb, _PATH_ACTIVE))) == NULL) {
 				(void)fprintf(stderr, "inndf: cannot open %s\n",cpcatpath(innconf->pathdb, _PATH_ACTIVE));
 				exit(1);

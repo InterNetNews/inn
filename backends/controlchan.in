@@ -277,6 +277,7 @@ sub readctlfile {
     chomp;
     # Not a comment or blank? Convert wildmat to regex
     if (/^(\s+)?[^\#]/ && ! (/^$/)) {
+      s/^all:/\*:/i;
       s/([\@\$\+\.])/\\$1/g;
       s/\*/.*/g;
       s/\?/./g;
@@ -308,7 +309,7 @@ sub ctlperm {
   for (@ctllist) {
     @ctlline = split(/:/);
     if ((($controltype =~ /$ctlline[0]/) &&
-	 ($sender =~ /$ctlline[1]/)) &&
+	 ($sender =~ /$ctlline[1]/i)) &&
 	(($controltype !~ /^(newgroup|rmgroup)$/) ||
 	 ($newsgroup =~ $ctlline[2]))) {
       $action = $ctlline[3];
