@@ -177,7 +177,7 @@ ExitWithStats(int x, BOOL readconf)
 	ClientHost, usertime, systime, STATfinish - STATstart);
     /* Tracking code - Make entries in the logfile(s) to show that we have
 	finished with this session */
-    if (!readconf && PERMaccessconf->readertrack) {
+    if (!readconf && PERMaccessconf &&  PERMaccessconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Disabled (%s)", ClientHost, Username);
 	if (LLOGenable) {
 		fprintf(locallog, "%s Tracking Disabled (%s)\n", ClientHost, Username);
@@ -955,9 +955,6 @@ main(int argc, char *argv[])
 	   PERMcanpost ? "posting ok" : "no posting");
 	clienttimeout = innconf->clienttimeout;
     }
-
-    /* Exponential posting backoff */
-    (void)InitBackoffConstants();
 
     /* Main dispatch loop. */
     for (timeout = INITIAL_TIMEOUT, av = NULL; ;

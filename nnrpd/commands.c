@@ -722,11 +722,19 @@ CMDpost(ac, av)
     char               *path;
     STRING		response;
     char		idbuff[SMBUF];
+    static int		backoff_inited = FALSE;
+
 
     if (!PERMcanpost) {
 	syslog(L_NOTICE, "%s noperm post without permission", ClientHost);
 	Reply("%s\r\n", NNTP_CANTPOST);
 	return;
+    }
+
+    if (!backoff_inited) {
+	/* Exponential posting backoff */
+	(void)InitBackoffConstants();
+	backoff_inited = TRUE;
     }
 
     /* Dave's posting limiter - Limit postings to a certain rate
