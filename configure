@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.233 
+# From configure.in Revision: 1.234 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -6103,14 +6103,14 @@ echo "configure:6089: checking for SASL location" >&5
 
         inn_save_LIBS=$LIBS
         LIBS="$LIBS -L${SASL_DIR}/lib"
-	echo $ac_n "checking for sasl_getprop in -lsasl""... $ac_c" 1>&6
-echo "configure:6108: checking for sasl_getprop in -lsasl" >&5
-ac_lib_var=`echo sasl'_'sasl_getprop | sed 'y%./+-%__p_%'`
+	echo $ac_n "checking for sasl_getprop in -lsasl2""... $ac_c" 1>&6
+echo "configure:6108: checking for sasl_getprop in -lsasl2" >&5
+ac_lib_var=`echo sasl2'_'sasl_getprop | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   ac_save_LIBS="$LIBS"
-LIBS="-lsasl  $LIBS"
+LIBS="-lsasl2  $LIBS"
 cat > conftest.$ac_ext <<EOF
 #line 6116 "configure"
 #include "confdefs.h"
