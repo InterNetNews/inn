@@ -651,7 +651,8 @@ dnl other platforms where it may be necessary (it isn't on Linux; Linux
 dnl shared libraries can manage their own dependencies).
 if test x"$DO_PERL" = xDO ; then
     AC_MSG_CHECKING(for Perl linkage)
-    inn_perl_core_path=`$_PATH_PERL -MConfig -e 'print $Config{archlib}'`
+    inn_perl_core_path=`$_PATH_PERL -MConfig -e 'print $Config{archlibexp}'`
+    inn_perl_core_flags=`$_PATH_PERL -MExtUtils::Embed -e ccopts`
     inn_perl_core_libs=`$_PATH_PERL -MExtUtils::Embed -e ldopts 2>&1 | tail -1`
     for i in $LIBS ; do
         inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed "s/ $i//"`
@@ -661,16 +662,17 @@ if test x"$DO_PERL" = xDO ; then
         inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lgdbm//'`
         ;;
     esac
+    inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/^  *//'`
     inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/^  *//'`
+    PERL_INC="$inn_perl_core_flags"
     PERL_LIB="$inn_perl_core_libs"
-    PERL_INC="-I${inn_perl_core_path}/CORE"
     AC_MSG_RESULT($inn_perl_core_path)
 else
-    PERL_LIB=''
     PERL_INC=''
+    PERL_LIB=''
 fi
-AC_SUBST(PERL_LIB)
 AC_SUBST(PERL_INC)
+AC_SUBST(PERL_LIB)
 
 dnl Libraries and flags for embedded Python.
 dnl FIXME: I wish there was a less icky way to get this.
