@@ -3,7 +3,9 @@
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
-require "@LIBDIR@/innshellvars.pl" ;
+$prefix = '@prefix@';
+$exec_prefix = "@exec_prefix@";
+require "@libdir@/innshellvars.pl" ;
 
 $ST_MODE = 2;
 $ST_UID  = 4;

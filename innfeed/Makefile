@@ -30,7 +30,7 @@ warnings:
 
 clean:
 	rm -f *.o $(ALL) version.c innfeed-convcfg
-	rm -f profiled innfeedp
+	rm -f innfeedp
 	rm -rf .libs
 
 clobber distclean: clean 
@@ -46,8 +46,7 @@ $(FIXSCRIPT):
 
 ##  Compilation rules.
 
-INNFEEDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
-		  $(SASLLIB) $(LIBS)
+INNFEEDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
 config_y.c config_y.h: configfile.y
 	$(YACC) -d $?
@@ -62,11 +61,15 @@ version.c: Makefile ../Makefile.global
 	version=`echo '$(VERSION) ($(VERSION_EXTRA))' | sed 's/ ()//'` ; \
 	echo 'const char *versionInfo = "innfeed' "$$version\" ;" > $@
 
+imap_connection.o: imap_connection.c
+	$(CC) $(CFLAGS) $(SASL_CPPFLAGS) -c $<
+
 innfeed: $(OBJECTS) connection.o $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) connection.o $(INNFEEDLIBS)
 
 imapfeed: $(OBJECTS) imap_connection.o $(LIBSTORAGE) $(LIBINN)
-	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) imap_connection.o $(INNFEEDLIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) imap_connection.o \
+	    $(SASL_LDFLAGS) $(SASL_LIBS) $(INNFEEDLIBS)
 
 procbatch: procbatch.in $(FIXSCRIPT)
 	$(FIXSCRIPT) procbatch.in
@@ -91,10 +94,9 @@ $(D)$(PATHBIN)/procbatch:	procbatch	; $(CP_XPRI) $? $@
 ##  Profiling.  These rules have not been checked for a while and may need
 ##  some work.
 
-profiled:	innfeedp
-	date >$@
+profiled: innfeedp
 
-innfeedp:	$(SOURCES)
+innfeedp: $(SOURCES)
 	rm -f $(OBJECTS)
 	$(MAKEPROFILING) innfeed
 	mv innfeed innfeedp

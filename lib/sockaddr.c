@@ -23,7 +23,7 @@ char *sprint_sockaddr(const struct sockaddr *sa)
 		sizeof sin.sin_addr);
 	sin.sin_port = sin6->sin6_port;
 	sin.sin_family = AF_INET;
-#ifdef HAVE_SOCKADDR_LEN
+#ifdef HAVE_STRUCT_SOCKADDR_SA_LEN
 	sin.sin_len = sizeof(struct sockaddr_in);
 #endif
 	return inet_ntoa(sin.sin_addr);
@@ -40,7 +40,7 @@ void make_sin(struct sockaddr_in *s, const struct in_addr *src)
 {
     memset(s, 0, sizeof( struct sockaddr_in ));
     s->sin_family = AF_INET;
-#ifdef HAVE_SOCKADDR_LEN
+#ifdef HAVE_STRUCT_SOCKADDR_SA_LEN
     s->sin_len = sizeof( struct sockaddr_in );
 #endif
     s->sin_addr = *src;

@@ -35,11 +35,15 @@ tags ctags: $(SOURCES) $(INCLUDES)
 
 ##  Compilation rules.
 
-NNRPDLIBS	= $(LIBHIST) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) \
-		  $(PYTHONLIB) $(SSLLIB) $(LIBS) $(PERLLIB)
+NNRPDLIBS	= $(LIBHIST) $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) \
+		  $(PYTHON_LIBS) $(SSL_LDFLAGS) $(SSL_LIBS) $(LIBS) \
+		  $(PERL_LIBS)
 
-perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
-python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
+.c.o:
+	$(CC) $(CFLAGS) $(SSL_CPPFLAGS) -c $<
+
+perl.o:		perl.c   ; $(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
+python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
 
 nnrpd: $(OBJECTS) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)
@@ -59,10 +63,9 @@ $(LIBHIST):	; (cd ../history ; $(MAKE))
 ##  Profiling.  These rules have not been checked for a while and may need
 ##  some work.
 
-profiled:	nnrpdp
-	date >$@
+profiled: nnrpdp
 
-nnrpdp:		$(SOURCES)
+nnrpdp: $(SOURCES)
 	rm -f $(OBJECTS)
 	$(MAKEPROFILING) nnrpd
 	mv nnrpd nnrpdp
@@ -72,7 +75,8 @@ nnrpdp:		$(SOURCES)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	$(SOURCES)
-	$(MAKEDEPEND) '$(CFLAGS) $(PERLINC) $(PYTHONINC) $(TCLINC)' $(SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS) $(PERL_CPPFLAGS) $(PYTHON_CPPFLAGS)' \
+	    $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 article.o: article.c ../include/config.h ../include/inn/defines.h \

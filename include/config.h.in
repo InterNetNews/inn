@@ -1,400 +1,7 @@
-/* include/config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
-/*  $Id$
-**
-**  Here be configuration data used by various InterNetNews programs.  This
-**  file is used as source for the autoheader script, which from it and
-**  configure.in generates a config.h.in file that will be used by autoconf
-**  as the repository of all wisdom.
-**
-**  Stuff before TOP and after BOTTOM is copied verbatim to config.h.in;
-**  the rest of this file is in the desired form for autoconfiscation.
-**  Only stuff that autoconf 2.13 couldn't figure out for itself or that
-**  needs a larger comment is included here.
-*/
+/* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#ifndef CONFIG_H
-#define CONFIG_H 1
-
-/* Portable defines that don't rely on autoconf results come from here. */
 #include "inn/defines.h"
-
-/*
-**  GENERAL SETTINGS
-**
-**  Look over these settings and make sure they're correct for your site.
-**  These values don't come from configure and therefore may need manual
-**  editing.  The defaults normally should be fine.
-**
-**  For boolean #defines, uncomment and change #undef to #define to enable,
-**  do the reverse to disable.
-*/
-
-/* A null-terminated list of uwildmat(3) patterns matching illegal
-   distributions.  inews and nnrpd will reject posts with a distribution
-   matching one of these patterns. */
-#define BAD_DISTRIBS            "*.*", NULL
-
-/* Default timeout period for ctlinnd, overridden by the -t flag.  If set to
-   zero, ctlinnd will never time out, but will check every two minutes to
-   see if the server is still running so it won't hang forever on a dead
-   server. */
-#define CTLINND_TIMEOUT         0
-
-/* Reject articles posted more than this many seconds in the future. */
-#define DATE_FUZZ               (24L * 60L * 60L)
-
-/* innd will flush the history and active file after this many seconds. */
-#define DEFAULT_TIMEOUT         300
-
-/* Define if inews should put hostnames into the Path header itself. */
-#define DO_INEWS_PATH
-
-/* Define if inews should munge the GECOS entry of the passwd file when
-   attempting to determine a poster's real name.  Use this if your GECOS
-   entries have other stuff after trailing commas or before dashes, things
-   in parentheses that aren't part of the name, etc.  See frontends/inews.c
-   for the full algorithm. */
-#define DO_MUNGE_GECOS
-
-/* Define if rnews should try to connect to the local host. */
-#define DO_RNEWSLOCALCONNECT
-
-/* Define if rnews should syslog articles rejected as duplicates. */
-/* #undef DO_RNEWS_LOG_DUPS */
-
-/* Define if rnews should look in _PATH_RNEWSPROGS for batch unpackers. */
-#define DO_RNEWSPROGS
-
-/* Define if rnews should save articles rejected by the server. */
-/* #undef DO_RNEWS_SAVE_BAD */
-
-/* Value to pass to dbzincore() inside innd.  Under some bizarre low memory
-   circumstance you may want this not to be 1, but normally you always want
-   to load the full history indexes into innd's memory.  Has no effect if
-   using tagged hash (which is always in core). */
-#define INND_DBZINCORE          1
-
-/* A null-terminated list of unknown commands that, when seen by innd,
-   shouldn't be logged to syslog.  Normally innd logs all unknown commands,
-   but sometimes some are so frequent that it's not worth it. */
-#define INND_QUIET_BADLIST      NULL
-
-/* innd will throttle itself after this many I/O errors.  The count is reset
-   on a ctlinnd go.  (ENOSPC is special and will always cause an immediate
-   throttle.) */
-#define IO_ERROR_COUNT          50
-
-/* Length of listen queue for innd. */
-#define MAXLISTEN               25
-
-/* The standard NNTP port. */
-#define NNTP_PORT               119
-
-/* What to use for a Path tail for local posts. */
-#define PATHMASTER              "not-for-mail"
-
-
-/*
-**  CONFIGURE RESULTS
-**
-**  Things determined automatically by autoconf.  Nothing below this point
-**  should require manual editing; if anything here is wrong, see if you
-**  should be passing a flag to configure to set it correctly for your
-**  system.
-**
-**  Be aware that success of some tests will cause other tests to be skipped
-**  since their results aren't then needed.  For example, if you have
-**  standard C headers, INN won't bother looking for stdlib.h, and
-**  HAVE_STDLIB_H will be false whether you have it or not.  This is normal.
-**
-**  Fodder for autoheader is provided in sort -df order (alphabetical,
-**  case-insensitive, ignoring punctuation) to make it easier to check
-**  whether a given entry is in the file.
-*/
-
-/* Define if on AIX 3.
-   System headers sometimes define this.
-   We just want to avoid a redefinition error message.  */
-#ifndef _ALL_SOURCE
-#undef _ALL_SOURCE
-#endif
-
-/* Define to empty if the keyword does not work.  */
-#undef const
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef gid_t
-
-/* Define if you have a working `mmap' system call.  */
-#undef HAVE_MMAP
-
-/* Define if your struct stat has st_blksize.  */
-#undef HAVE_ST_BLKSIZE
-
-/* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
-#undef HAVE_SYS_WAIT_H
-
-/* Define to `long' if <sys/types.h> doesn't define.  */
-#undef off_t
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef pid_t
-
-/* Define if you need to in order for stat and other things to work.  */
-#undef _POSIX_SOURCE
-
-/* Define as the return type of signal handlers (int or void).  */
-#undef RETSIGTYPE
-
-/* Define to `unsigned' if <sys/types.h> doesn't define.  */
-#undef size_t
-
-/* Define if you have the ANSI C header files.  */
-#undef STDC_HEADERS
-
-/* Define if you can safely include both <sys/time.h> and <time.h>.  */
-#undef TIME_WITH_SYS_TIME
-
-/* Define if your <sys/time.h> declares struct tm.  */
-#undef TM_IN_SYS_TIME
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef uid_t
-
-/* Define if your processor stores words with the most significant
-   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
-#undef WORDS_BIGENDIAN
-
-/* Define to a suitable 32-bit type if standard headers don't define.  */
-#undef int32_t
-
-/* Define to `int' if <signal.h> doesn't define.  */
-#undef sig_atomic_t
-
-/* Define to `int' if <sys/socket.h> doesn't define.  */
-#undef socklen_t
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef ssize_t
-
-/* Define to a suitable 32-bit type if standard headers don't define.  */
-#undef uint32_t
-
-/* Define if you have the atexit function.  */
-#undef HAVE_ATEXIT
-
-/* Define if you have the fseeko function.  */
-#undef HAVE_FSEEKO
-
-/* Define if you have the ftello function.  */
-#undef HAVE_FTELLO
-
-/* Define if you have the getaddrinfo function.  */
-#undef HAVE_GETADDRINFO
-
-/* Define if you have the getdtablesize function.  */
-#undef HAVE_GETDTABLESIZE
-
-/* Define if you have the getloadavg function.  */
-#undef HAVE_GETLOADAVG
-
-/* Define if you have the getpagesize function.  */
-#undef HAVE_GETPAGESIZE
-
-/* Define if you have the getrlimit function.  */
-#undef HAVE_GETRLIMIT
-
-/* Define if you have the getrusage function.  */
-#undef HAVE_GETRUSAGE
-
-/* Define if you have the getspnam function.  */
-#undef HAVE_GETSPNAM
-
-/* Define if you have the hstrerror function.  */
-#undef HAVE_HSTRERROR
-
-/* Define if you have the inet_aton function.  */
-#undef HAVE_INET_ATON
-
-/* Define if you have the krb5_init_ets function.  */
-#undef HAVE_KRB5_INIT_ETS
-
-/* Define if you have the madvise function.  */
-#undef HAVE_MADVISE
-
-/* Define if you have the memcpy function.  */
-#undef HAVE_MEMCPY
-
-/* Define if you have the mkstemp function.  */
-#undef HAVE_MKSTEMP
-
-/* Define if you have the pread function.  */
-#undef HAVE_PREAD
-
-/* Define if you have the pstat function.  */
-#undef HAVE_PSTAT
-
-/* Define if you have the pwrite function.  */
-#undef HAVE_PWRITE
-
-/* Define if you have the setbuffer function.  */
-#undef HAVE_SETBUFFER
-
-/* Define if you have the setenv function.  */
-#undef HAVE_SETENV
-
-/* Define if you have the seteuid function.  */
-#undef HAVE_SETEUID
-
-/* Define if you have the setgroups function.  */
-#undef HAVE_SETGROUPS
-
-/* Define if you have the setrlimit function.  */
-#undef HAVE_SETRLIMIT
-
-/* Define if you have the setsid function.  */
-#undef HAVE_SETSID
-
-/* Define if you have the sigaction function.  */
-#undef HAVE_SIGACTION
-
-/* Define if you have the socketpair function.  */
-#undef HAVE_SOCKETPAIR
-
-/* Define if you have the statfs function.  */
-#undef HAVE_STATFS
-
-/* Define if you have the statvfs function.  */
-#undef HAVE_STATVFS
-
-/* Define if you have the strcasecmp function.  */
-#undef HAVE_STRCASECMP
-
-/* Define if you have the strchr function.  */
-#undef HAVE_STRCHR
-
-/* Define if you have the strerror function.  */
-#undef HAVE_STRERROR
-
-/* Define if you have the strlcat function.  */
-#undef HAVE_STRLCAT
-
-/* Define if you have the strlcpy function.  */
-#undef HAVE_STRLCPY
-
-/* Define if you have the strncasecmp function.  */
-#undef HAVE_STRNCASECMP
-
-/* Define if you have the strspn function.  */
-#undef HAVE_STRSPN
-
-/* Define if you have the strtoul function.  */
-#undef HAVE_STRTOUL
-
-/* Define if you have the symlink function.  */
-#undef HAVE_SYMLINK
-
-/* Define if you have the sysconf function.  */
-#undef HAVE_SYSCONF
-
-/* Define if you have the ulimit function.  */
-#undef HAVE_ULIMIT
-
-/* Define if you have the <crypt.h> header file.  */
-#undef HAVE_CRYPT_H
-
-/* Define if you have the <db1/ndbm.h> header file.  */
-#undef HAVE_DB1_NDBM_H
-
-/* Define if you have the <dirent.h> header file.  */
-#undef HAVE_DIRENT_H
-
-/* Define if you have the <dlfcn.h> header file.  */
-#undef HAVE_DLFCN_H
-
-/* Define if you have the <gdbm-ndbm.h> header file.  */
-#undef HAVE_GDBM_NDBM_H
-
-/* Define if you have the <inttypes.h> header file.  */
-#undef HAVE_INTTYPES_H
-
-/* Define if you have the <limits.h> header file.  */
-#undef HAVE_LIMITS_H
-
-/* Define if you have the <memory.h> header file.  */
-#undef HAVE_MEMORY_H
-
-/* Define if you have the <ndbm.h> header file.  */
-#undef HAVE_NDBM_H
-
-/* Define if you have the <ndir.h> header file.  */
-#undef HAVE_NDIR_H
-
-/* Define if you have the <pam/pam_appl.h> header file.  */
-#undef HAVE_PAM_PAM_APPL_H
-
-/* Define if you have the <stdbool.h> header file.  */
-#undef HAVE_STDBOOL_H
-
-/* Define if you have the <stddef.h> header file.  */
-#undef HAVE_STDDEF_H
-
-/* Define if you have the <stdint.h> header file.  */
-#undef HAVE_STDINT_H
-
-/* Define if you have the <stdlib.h> header file.  */
-#undef HAVE_STDLIB_H
-
-/* Define if you have the <string.h> header file.  */
-#undef HAVE_STRING_H
-
-/* Define if you have the <strings.h> header file.  */
-#undef HAVE_STRINGS_H
-
-/* Define if you have the <sys/bitypes.h> header file.  */
-#undef HAVE_SYS_BITYPES_H
-
-/* Define if you have the <sys/dir.h> header file.  */
-#undef HAVE_SYS_DIR_H
-
-/* Define if you have the <sys/filio.h> header file.  */
-#undef HAVE_SYS_FILIO_H
-
-/* Define if you have the <sys/loadavg.h> header file.  */
-#undef HAVE_SYS_LOADAVG_H
-
-/* Define if you have the <sys/mount.h> header file.  */
-#undef HAVE_SYS_MOUNT_H
-
-/* Define if you have the <sys/ndir.h> header file.  */
-#undef HAVE_SYS_NDIR_H
-
-/* Define if you have the <sys/param.h> header file.  */
-#undef HAVE_SYS_PARAM_H
-
-/* Define if you have the <sys/select.h> header file.  */
-#undef HAVE_SYS_SELECT_H
-
-/* Define if you have the <sys/sysinfo.h> header file.  */
-#undef HAVE_SYS_SYSINFO_H
-
-/* Define if you have the <sys/time.h> header file.  */
-#undef HAVE_SYS_TIME_H
-
-/* Define if you have the <sys/vfs.h> header file.  */
-#undef HAVE_SYS_VFS_H
-
-/* Define if you have the <unistd.h> header file.  */
-#undef HAVE_UNISTD_H
-
-/* The user that INN should run as. */
-#undef NEWSUSER
-
-/* The group that INN should run as. */
-#undef NEWSGRP
-
-/* The user who gets all INN-related e-mail. */
-#undef NEWSMASTER
+#include "inn/options.h"
 
 /* Mode that incoming articles are created with. */
 #undef ARTFILE_MODE
@@ -402,38 +9,8 @@
 /* Mode that batch files are created with. */
 #undef BATCHFILE_MODE
 
-/* Mode that directories are created with. */
-#undef GROUPDIR_MODE
-
-/* The umask used by all INN programs. */
-#undef NEWSUMASK
-
-/* Additional valid low-numbered port for innbind. */
-#undef INND_PORT
-
-/* Define to enable IPv6 support. */
-#undef HAVE_INET6
-
-/* Maximum number of sockets that innd can listen on. */
-#undef MAX_SOCKETS
-
-/* Define to use tagged hash for the history file. */
-#undef DO_TAGGED_HASH
-
 /* Define to 1 to compile in support for keyword generation code. */
 #undef DO_KEYWORDS
-
-/* Define if BerkeleyDB is available. */
-#undef USE_BERKELEY_DB
-
-/* Define if OpenSSL is available. */
-#undef HAVE_SSL
-
-/* Define if SASL is available. */
-#undef HAVE_SASL
-
-/* Define if SASL is available. */
-#undef HAVE_SASL
 
 /* Define to compile in Perl script support. */
 #undef DO_PERL
@@ -441,86 +18,343 @@
 /* Define to compile in Python module support. */
 #undef DO_PYTHON
 
-/* Define to compile in TCL script support. */
-#undef DO_TCL
+/* Define to use tagged hash for the history file. */
+#undef DO_TAGGED_HASH
 
-/* Define if you have the setproctitle function. */
-#undef HAVE_SETPROCTITLE
+/* Mode that directories are created with. */
+#undef GROUPDIR_MODE
 
-/* Define if you have a dbm library. */
-#undef HAVE_DBM
+/* Define to 1 if you have the `atexit' function. */
+#undef HAVE_ATEXIT
 
-/* Define if you have PAM. */
-#undef HAVE_PAM
-
-/* Some versions of glibc need this defined for pread/pwrite. */
-#undef _GNU_SOURCE
-
-/* Define if <netdb.h> does not declare h_errno. */
-#undef NEED_HERRNO_DECLARATION
-
-/* Define if inet_aton isn't declared in the system headers. */
-#undef NEED_DECLARATION_INET_ATON
-
-/* Define if inet_ntoa isn't declared in the system headers. */
-#undef NEED_DECLARATION_INET_NTOA
-
-/* Define if snprintf isn't declared in the system headers. */
-#undef NEED_DECLARATION_SNPRINTF
-
-/* Define if vsnprintf isn't declared in the system headers. */
-#undef NEED_DECLARATION_VSNPRINTF
+/* Define if your IN6_ARE_ADDR_EQUAL macro is broken. */
+#undef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
 
 /* Define if the compiler supports C99 variadic macros. */
 #undef HAVE_C99_VAMACROS
 
+/* Define to 1 if you have the <crypt.h> header file. */
+#undef HAVE_CRYPT_H
+
+/* Define to 1 if you have the <db1/ndbm.h> header file. */
+#undef HAVE_DB1_NDBM_H
+
+/* Define if you have a dbm library. */
+#undef HAVE_DBM
+
+/* Define to 1 if you have the declaration of `altzone', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ALTZONE
+
+/* Define to 1 if you have the declaration of `h_errno', and to 0 if you
+   don't. */
+#undef HAVE_DECL_H_ERRNO
+
+/* Define to 1 if you have the declaration of `inet_aton', and to 0 if you
+   don't. */
+#undef HAVE_DECL_INET_ATON
+
+/* Define to 1 if you have the declaration of `inet_ntoa', and to 0 if you
+   don't. */
+#undef HAVE_DECL_INET_NTOA
+
+/* Define to 1 if you have the declaration of `pread', and to 0 if you don't.
+   */
+#undef HAVE_DECL_PREAD
+
+/* Define to 1 if you have the declaration of `pwrite', and to 0 if you don't.
+   */
+#undef HAVE_DECL_PWRITE
+
+/* Define to 1 if you have the declaration of `snprintf', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SNPRINTF
+
+/* Define to 1 if you have the declaration of `vsnprintf', and to 0 if you
+   don't. */
+#undef HAVE_DECL_VSNPRINTF
+
+/* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
+   */
+#undef HAVE_DIRENT_H
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <gdbm-ndbm.h> header file. */
+#undef HAVE_GDBM_NDBM_H
+
+/* Define to 1 if you have the `getaddrinfo' function. */
+#undef HAVE_GETADDRINFO
+
+/* Define to 1 if you have the `getdtablesize' function. */
+#undef HAVE_GETDTABLESIZE
+
+/* Define to 1 if you have the `getloadavg' function. */
+#undef HAVE_GETLOADAVG
+
+/* Define to 1 if you have the `getpagesize' function. */
+#undef HAVE_GETPAGESIZE
+
+/* Define to 1 if you have the `getrlimit' function. */
+#undef HAVE_GETRLIMIT
+
+/* Define to 1 if you have the `getrusage' function. */
+#undef HAVE_GETRUSAGE
+
+/* Define to 1 if you have the `getspnam' function. */
+#undef HAVE_GETSPNAM
+
 /* Define if the compiler supports GNU-style variadic macros. */
 #undef HAVE_GNU_VAMACROS
 
-/* Define if the compiler supports long long int. */
-#undef HAVE_LONG_LONG
+/* Define to 1 if you have the `hstrerror' function. */
+#undef HAVE_HSTRERROR
 
-/* Define to the max vectors in an iovec. */
-#undef IOV_MAX
+/* Define to enable IPv6 support. */
+#undef HAVE_INET6
 
-/* Define if <sys/un.h> defines the SUN_LEN macro. */
-#undef HAVE_SUN_LEN
-
-/* Define if your struct tm has a tm_gmtoff member. */
-#undef HAVE_TM_GMTOFF
-
-/* Define if your struct tm has a tm_zone member. */
-#undef HAVE_TM_ZONE
-
-/* Define if timezone is an external variable in <time.h>. */
-#undef HAVE_VAR_TIMEZONE
-
-/* Define if tzname is an external variable in <time.h>. */
-#undef HAVE_VAR_TZNAME
+/* Define to 1 if you have the `inet_aton' function. */
+#undef HAVE_INET_ATON
 
 /* Define if your system has a working inet_ntoa function. */
 #undef HAVE_INET_NTOA
 
-/* Define if your system has a sa_len field in struct sockaddr */
-#undef HAVE_SOCKADDR_LEN
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
 
-/* Define if your system has a SA_LEN(s) macro */
-#undef HAVE_SA_LEN_MACRO
+/* Define if fpos_t is at least 64 bits and compatible with off_t. */
+#undef HAVE_LARGE_FPOS_T
 
-/* Define if your system has struct sockaddr_storage */
-#undef HAVE_SOCKADDR_STORAGE
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
 
-/* Define if your system has sockaddr_storage.__ss_family */
-#undef HAVE_2553_STYLE_SS_FAMILY
+/* Define to 1 if the system has the type `long long'. */
+#undef HAVE_LONG_LONG
 
-/* Define if your IN6_ARE_ADDR_EQUAL macro is broken */
-#undef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
+/* Define to 1 if you have the `madvise' function. */
+#undef HAVE_MADVISE
+
+/* Define to 1 if you have the `memcpy' function. */
+#undef HAVE_MEMCPY
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `mkstemp' function. */
+#undef HAVE_MKSTEMP
+
+/* Define if mmap exists and works for shared, non-fixed maps. */
+#undef HAVE_MMAP
+
+/* Define if your msync function takes three arguments. */
+#undef HAVE_MSYNC_3_ARG
+
+/* Define to 1 if you have the <ndbm.h> header file. */
+#undef HAVE_NDBM_H
+
+/* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
+#undef HAVE_NDIR_H
+
+/* Define if you have PAM. */
+#undef HAVE_PAM
+
+/* Define to 1 if you have the <pam/pam_appl.h> header file. */
+#undef HAVE_PAM_PAM_APPL_H
+
+/* Define to 1 if you have the `pread' function. */
+#undef HAVE_PREAD
+
+/* Define to 1 if you have the `pstat' function. */
+#undef HAVE_PSTAT
+
+/* Define to 1 if you have the `pwrite' function. */
+#undef HAVE_PWRITE
+
+/* Define if SASL is available. */
+#undef HAVE_SASL
+
+/* Define if <sys/socket.h> defines the SA_LEN macro */
+#undef HAVE_SA_LEN
+
+/* Define to 1 if you have the `setbuffer' function. */
+#undef HAVE_SETBUFFER
+
+/* Define to 1 if you have the `setenv' function. */
+#undef HAVE_SETENV
+
+/* Define to 1 if you have the `seteuid' function. */
+#undef HAVE_SETEUID
+
+/* Define to 1 if you have the `setgroups' function. */
+#undef HAVE_SETGROUPS
+
+/* Define if you have the setproctitle function. */
+#undef HAVE_SETPROCTITLE
+
+/* Define to 1 if you have the `setrlimit' function. */
+#undef HAVE_SETRLIMIT
+
+/* Define to 1 if you have the `setsid' function. */
+#undef HAVE_SETSID
+
+/* Define to 1 if you have the `sigaction' function. */
+#undef HAVE_SIGACTION
 
 /* Define if your system has a working snprintf function. */
 #undef HAVE_SNPRINTF
 
-/* Define if fpos_t is at least 64 bits and compatible with off_t. */
-#undef HAVE_LARGE_FPOS_T
+/* Define to 1 if you have the `socketpair' function. */
+#undef HAVE_SOCKETPAIR
+
+/* Define if OpenSSL is available. */
+#undef HAVE_SSL
+
+/* Define to 1 if you have the `statfs' function. */
+#undef HAVE_STATFS
+
+/* Define to 1 if you have the `statvfs' function. */
+#undef HAVE_STATVFS
+
+/* Define to 1 if stdbool.h conforms to C99. */
+#undef HAVE_STDBOOL_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strcasecmp' function. */
+#undef HAVE_STRCASECMP
+
+/* Define to 1 if you have the `strchr' function. */
+#undef HAVE_STRCHR
+
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the `strlcat' function. */
+#undef HAVE_STRLCAT
+
+/* Define to 1 if you have the `strlcpy' function. */
+#undef HAVE_STRLCPY
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#undef HAVE_STRNCASECMP
+
+/* Define to 1 if you have the `strspn' function. */
+#undef HAVE_STRSPN
+
+/* Define to 1 if you have the `strtoul' function. */
+#undef HAVE_STRTOUL
+
+/* Define to 1 if `sa_len' is member of `struct sockaddr'. */
+#undef HAVE_STRUCT_SOCKADDR_SA_LEN
+
+/* Define to 1 if the system has the type `struct sockaddr_storage'. */
+#undef HAVE_STRUCT_SOCKADDR_STORAGE
+
+/* Define to 1 if `ss_family' is member of `struct sockaddr_storage'. */
+#undef HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY
+
+/* Define to 1 if `st_blksize' is member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_BLKSIZE
+
+/* Define to 1 if `tm_gmtoff' is member of `struct tm'. */
+#undef HAVE_STRUCT_TM_TM_GMTOFF
+
+/* Define to 1 if `tm_zone' is member of `struct tm'. */
+#undef HAVE_STRUCT_TM_TM_ZONE
+
+/* Define to 1 if your `struct stat' has `st_blksize'. Deprecated, use
+   `HAVE_STRUCT_STAT_ST_BLKSIZE' instead. */
+#undef HAVE_ST_BLKSIZE
+
+/* Define if <sys/un.h> defines the SUN_LEN macro. */
+#undef HAVE_SUN_LEN
+
+/* Define to 1 if you have the `symlink' function. */
+#undef HAVE_SYMLINK
+
+/* Define to 1 if you have the `sysconf' function. */
+#undef HAVE_SYSCONF
+
+/* Define to 1 if you have the <sys/bitypes.h> header file. */
+#undef HAVE_SYS_BITYPES_H
+
+/* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
+   */
+#undef HAVE_SYS_DIR_H
+
+/* Define to 1 if you have the <sys/filio.h> header file. */
+#undef HAVE_SYS_FILIO_H
+
+/* Define to 1 if you have the <sys/loadavg.h> header file. */
+#undef HAVE_SYS_LOADAVG_H
+
+/* Define to 1 if you have the <sys/mount.h> header file. */
+#undef HAVE_SYS_MOUNT_H
+
+/* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
+   */
+#undef HAVE_SYS_NDIR_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/vfs.h> header file. */
+#undef HAVE_SYS_VFS_H
+
+/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if your `struct tm' has `tm_zone'. Deprecated, use
+   `HAVE_STRUCT_TM_TM_ZONE' instead. */
+#undef HAVE_TM_ZONE
+
+/* Define to 1 if you don't have `tm_zone' but do have the external array
+   `tzname'. */
+#undef HAVE_TZNAME
+
+/* Define to 1 if you have the `ulimit' function. */
+#undef HAVE_ULIMIT
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define if you have unix domain sockets. */
+#undef HAVE_UNIX_DOMAIN_SOCKETS
+
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
+/* Additional permitted low-numbered port for innbind. */
+#undef INND_PORT
+
+/* Define to the max vectors in an iovec. */
+#undef IOV_MAX
+
+/* Syslog facility to use for INN program logs. */
+#undef LOG_INN_PROG
+
+/* Syslog facility to use for innd logs. */
+#undef LOG_INN_SERVER
 
 /* Define if you need to call msync after writes. */
 #undef MMAP_MISSES_WRITES
@@ -528,144 +362,98 @@
 /* Define if you need to call msync for calls to read to see changes. */
 #undef MMAP_NEEDS_MSYNC
 
-/* Define if your msync function takes three arguments. */
-#undef HAVE_MSYNC_3_ARG
+/* The group that INN should run as. */
+#undef NEWSGRP
 
-/* Define if you have unix domain sockets. */
-#undef HAVE_UNIX_DOMAIN_SOCKETS
+/* The user who gets all INN-related e-mail. */
+#undef NEWSMASTER
 
-/* Syslog facility to use for innd logs. */
-#undef LOG_INN_SERVER
+/* The umask used by all INN programs. */
+#undef NEWSUMASK
 
-/* Syslog facility to use for INN program logs. */
-#undef LOG_INN_PROG
+/* The user that INN should run as. */
+#undef NEWSUSER
 
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
 
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
 
-/*
-**  BUFFER SIZES AND DATA LENGTHS
-**
-**  You shouldn't need to change any of the following, and changing some of
-**  them may cause other things to break.  Some standard buffer sizes and
-**  lengths of data types for various different things.
-*/
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
 
-/* The data type to use for article numbers.  This probably can't be
-   increased without a lot of work due to assumptions about the active file
-   format, etc. */
-typedef unsigned long           ARTNUM;
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
 
-/* Input buffers start at START_BUFF_SIZE.  While reading input, if we have
-   less than LOW_WATER bytes left free in the buffer, use the current
-   buffersize as input to GROW_AMOUNT to determine how much to realloc.
-   Growth must be at least NNTP_STRLEN bytes!  The default settings provide
-   aggressive, exponential buffer growth. */
-#define START_BUFF_SIZE         (4 * 1024)
-#define LOW_WATER               (1 * 1024)
-#define GROW_AMOUNT(x)          ((x) < 128 * 1024 ? (x) : 128 * 1024)
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
 
-/* The size of a large buffer.  Free dynamically allocated buffers larger
-   than this when we're done with them. */
-#define BIG_BUFFER              (2 * START_BUFF_SIZE)
+/* Define as the return type of signal handlers (`int' or `void'). */
+#undef RETSIGTYPE
 
-/* The maximum length of a single header, used as a good guess at a buffer
-   size for some header parsing code.  This is currently also used by innd
-   to determine whether to reject a message for an excessively long header;
-   this behavior should be fixed. */
-#define MAXHEADERSIZE           1024
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
 
-/* Default buffer size for outgoing feeds from innd. */
-#define SITE_BUFFER_SIZE        (16 * 1024)
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
 
-/* The size of a small buffer. */
-#define SMBUF                   256
+/* Define to 1 if your <sys/time.h> declares `struct tm'. */
+#undef TM_IN_SYS_TIME
 
-/* Maximum size of a pathname in the spool directory. */
-#define SPOOLNAMEBUFF           512
+/* Define if BerkeleyDB is available. */
+#undef USE_BERKELEY_DB
 
+/* Define to 1 if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
+#undef WORDS_BIGENDIAN
 
-/*
-**  LEGACY
-**
-**  Everything below this point is here so that parts of INN that haven't
-**  been tweaked to use more standard constructs don't break.  Don't count
-**  on any of this staying in this file.  If you have a chance, consider
-**  following the comments before each item and fixing it.
-*/
+/* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
+   `char[]'. */
+#undef YYTEXT_POINTER
 
-/* Used to send commands to exploders.  Should be moved into a more specific
-   header file; used by innd/site.c and backends/buffchan.c. */
-#define EXP_CONTROL             '!'
+/* Define to 1 if on AIX 3.
+   System headers sometimes define this.
+   We just want to avoid a redefinition error message.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
+#endif
 
-/* Only used by innd and cvtbatch, should be moved to a more specific header
-   file. */
-#define FEED_BYTESIZE           'b'
-#define FEED_FULLNAME           'f'
-#define FEED_HASH               'h'
-#define FEED_HDR_DISTRIB        'D'
-#define FEED_HDR_NEWSGROUP      'N'
-#define FEED_MESSAGEID          'm'
-#define FEED_FNLNAMES           '*'
-#define FEED_HEADERS            'H'
-#define FEED_NAME               'n'
-#define FEED_STOREDGROUP        'G'
-#define FEED_NEWSGROUP          'g'
-#define FEED_OVERVIEW           'O'
-#define FEED_PATH               'P'
-#define FEED_REPLIC             'R'
-#define FEED_SITE               's'
-#define FEED_TIMEEXPIRED        'e'
-#define FEED_TIMERECEIVED       't'
-#define FEED_TIMEPOSTED         'p'
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
 
-/* Maximum number of flags for a feed in newsfeeds.  Only used in innd,
-   should be moved there (or made dynamic). */
-#define FEED_MAXFLAGS           20
+/* Define for large files, on AIX-style hosts. */
+#undef _LARGE_FILES
 
-/* Maximum length of argv vectors used in innd/site.c.  This should be moved
-   out of here into that file, or even better hard-coded rather than
-   defined; this value isn't affected by user data and the right value can
-   be determined by looking at the code and seeing how big of an argv it
-   will attempt to construct. */
-#define MAX_BUILTIN_ARGV        20
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
 
-/* active file flags.  Should be moved to a more specific header file. */
-#define NF_FLAG_ALIAS		'='
-#define NF_FLAG_EXCLUDED	'j'
-#define NF_FLAG_MODERATED	'm'
-#define NF_FLAG_OK		'y'
-#define NF_FLAG_NOLOCAL		'n'
-#define NF_FLAG_IGNORE		'x'
+/* Define to `int' if <sys/types.h> doesn't define. */
+#undef gid_t
 
-/* Used for parsing the Newsgroups header.  Should be rolled into a library
-   for parsing headers, combining all the code that's currently scattered
-   all over INN for doing that. */
-#define NG_SEPARATOR            ","
-#define NG_ISSEP(c)             ((c) == ',')
+/* Define to a 4-byte signed type if <inttypes.h> does not define. */
+#undef int32_t
 
-/* There's no reason to make all of these #defines except possibly for
-   L_CC_CMD and even that's a stretch.  Since we're logging to our own
-   distinguished log facility, provided that we spread things out between a
-   reasonable variety of log levels, the sysadmin shouldn't have to change
-   any of this.  (Some of this is arguably wrong; L_NOTICE should be
-   LOG_NOTICE, for example.) */
+/* Define to `long' if <sys/types.h> does not define. */
+#undef off_t
 
-/* Flags to use in opening the logs; some programs add LOG_PID. */
-#define L_OPENLOG_FLAGS         (LOG_CONS | LOG_NDELAY)
+/* Define to `int' if <sys/types.h> does not define. */
+#undef pid_t
 
-/* Fatal error, program is about to exit. */
-#define L_FATAL                 LOG_CRIT
+/* Define to `int' if <sys/types.h> does not define. */
+#undef sig_atomic_t
 
-/* Log an error that might mean one or more articles get lost. */
-#define L_ERROR                 LOG_ERR
+/* Define to `unsigned' if <sys/types.h> does not define. */
+#undef size_t
 
-/* Informational notice, usually not worth caring about. */
-#define L_NOTICE                LOG_WARNING
+/* Define to `int' if <sys/types.h> does not define. */
+#undef socklen_t
 
-/* A protocol trace. */
-#define L_TRACE                 LOG_DEBUG
+/* Define to int if <sys/types.h> does not define. */
+#undef ssize_t
 
-/* All incoming control commands (ctlinnd, etc). */
-#define L_CC_CMD                LOG_INFO
+/* Define to `int' if <sys/types.h> doesn't define. */
+#undef uid_t
 
-#endif /* !CONFIG_H */
+/* Define to a 4-byte unsigned type if <inttypes.h> does not define. */
+#undef uint32_t

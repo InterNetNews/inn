@@ -17,7 +17,7 @@
 #include "libinn.h"
 
 /* Macros to set the len attribute of sockaddrs. */
-#if HAVE_SOCKADDR_LEN
+#if HAVE_STRUCT_SOCKADDR_SA_LEN
 # define sin_set_length(s)      ((s)->sin_len  = sizeof(struct sockaddr_in))
 # define sin6_set_length(s)     ((s)->sin6_len = sizeof(struct sockaddr_in6))
 #else

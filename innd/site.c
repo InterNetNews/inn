@@ -14,7 +14,7 @@
 static int	SITEcount;
 static int	SITEhead = NOSITE;
 static int	SITEtail = NOSITE;
-static char	SITEshell[] = _PATH_SH;
+static char	SITEshell[] = "/bin/sh";
 
 
 /*

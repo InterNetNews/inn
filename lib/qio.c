@@ -26,11 +26,11 @@
 **  otherwise.
 */
 static size_t
-buffer_size(int fd)
+buffer_size(int fd UNUSED)
 {
     size_t size = QIO_BUFFERSIZE;
 
-#if HAVE_ST_BLKSIZE
+#if HAVE_STRUCT_STAT_ST_BLKSIZE
     struct stat st;
 
     /* The Solaris 2.6 man page says that st_blksize is not defined for
@@ -41,7 +41,7 @@ buffer_size(int fd)
         if (size > (4 * QIO_BUFFERSIZE) || size < (QIO_BUFFERSIZE / 2))
             size = QIO_BUFFERSIZE;
     }
-#endif /* HAVE_ST_BLKSIZE */
+#endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
 
     return size;
 }

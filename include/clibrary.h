@@ -90,10 +90,10 @@ extern off_t            ftello(FILE *);
 #if !HAVE_MKSTEMP
 extern int              mkstemp(char *);
 #endif
-#if !HAVE_PREAD
+#if !HAVE_DECL_PREAD
 extern ssize_t          pread(int, void *, size_t, off_t);
 #endif
-#if !HAVE_PWRITE
+#if !HAVE_DECL_PWRITE
 extern ssize_t          pwrite(int, const void *, size_t, off_t);
 #endif
 #if !HAVE_SETENV
@@ -102,7 +102,7 @@ extern int              setenv(const char *, const char *, int);
 #if !HAVE_SETEUID
 extern int              seteuid(uid_t);
 #endif
-#if NEED_DECLARATION_SNPRINTF
+#if !HAVE_DECL_SNPRINTF
 extern int              snprintf(char *, size_t, const char *, ...)
     __attribute__((__format__(3, 4)));
 #endif
@@ -115,7 +115,7 @@ extern size_t           strlcat(char *, const char *, size_t);
 #if !HAVE_STRLCPY
 extern size_t           strlcpy(char *, const char *, size_t);
 #endif
-#if NEED_DECLARATION_VSNPRINTF
+#if !HAVE_DECL_VSNPRINTF
 extern int              vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
@@ -178,6 +178,5 @@ END_DECLS
    legal to refer to such a pointer as long as it's never dereferenced). */
 #define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
 #define ARRAY_END(array)        (&(array)[ARRAY_SIZE(array)])
-
 
 #endif /* !CLIBRARY_H */

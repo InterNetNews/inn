@@ -55,7 +55,7 @@ libinn.a: $(OBJECTS)
 	$(LIBCC) $(CFLAGS) -c $*.c
 
 perl.o: perl.c
-	$(CC) $(CFLAGS) $(PERLINC) $(LDFLAGS) -c perl.c
+	$(CC) $(CFLAGS) $(PERL_CPPFLAGS) $(LDFLAGS) -c perl.c
 
 ../include/inn/system.h:
 	(cd ../include && $(MAKE))
@@ -88,7 +88,8 @@ $(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend: Makefile $(SOURCES) $(EXTRA_SOURCES) perl.c ../include/inn/system.h
-	$(MAKEDEPEND) '$(CFLAGS) $(PERLINC)' $(SOURCES) $(EXTRA_SOURCES) perl.c
+	$(MAKEDEPEND) '$(CFLAGS) $(PERL_CPPFLAGS)' $(SOURCES) \
+	    $(EXTRA_SOURCES) perl.c
 
 # Special dependency to teach make to build the include directory properly.
 ../include/inn/defines.h: ../include/inn/system.h

@@ -25,13 +25,6 @@ Last modified $Id$.
 
 Scheduled for INN 2.5
 
-* Rewrite configure, breaking all of the tests out into separate files
-  using the new capabilities in autoconf 2.5x.  Replace our local macros
-  with the more general features provided by autoconf.  At the same time,
-  configure.in and Makefile.global.in should be fixed to use the same
-  names as each other for various parameters.  [Russ plans to work on
-  this.]
-
 * Add support for groups, nesting, and vectors to the new configuration
   parsing code.  [Russ plans on doing this.]
 

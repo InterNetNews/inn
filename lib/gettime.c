@@ -31,7 +31,7 @@ GetTimeInfo(TIMEINFO *Now)
 
     struct timeval      tv;
 
-#ifndef HAVE_TM_GMTOFF
+#ifndef HAVE_STRUCT_TM_TM_GMTOFF
     struct tm           local;
     struct tm           gmt;
 #endif
@@ -49,7 +49,7 @@ GetTimeInfo(TIMEINFO *Now)
             return -1;
         secondsUntilNextHour = 60 * (60 - tm->tm_min) - tm->tm_sec;
 
-#ifdef HAVE_TM_GMTOFF
+#ifdef HAVE_STRUCT_TM_TM_GMTOFF
         LastTzone = (0 - tm->tm_gmtoff) / 60;
 #else
         /* To get the timezone, compare localtime with GMT. */
@@ -71,7 +71,7 @@ GetTimeInfo(TIMEINFO *Now)
         LastTzone += gmt.tm_hour - local.tm_hour;
         LastTzone *= 60;
         LastTzone += gmt.tm_min - local.tm_min;
-#endif  /* defined(HAVE_TM_GMTOFF) */
+#endif  /* defined(HAVE_STRUCT_TM_TM_GMTOFF) */
 
         NextHour = Now->time + secondsUntilNextHour;
     }

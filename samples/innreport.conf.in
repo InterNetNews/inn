@@ -10,7 +10,7 @@
 
 # Default parameters
 section default {
-	libpath         "@LIBDIR@";
+	libpath         "@libdir@";
 	logpath		"@LOGDIR@";
 	unknown		true;        # want unknown entries.
 	max_unknown     50;          # max unknown entries to display.

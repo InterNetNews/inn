@@ -5,4 +5,4 @@ buffindexed/buffindexed_d.o: buffindexed/buffindexed.c
 
 buffindexed/debug: buffindexed/buffindexed_d.o libstorage.$(EXTLIB) $(LIBHIST)
 	$(LIBLD) $(LDFLAGS) -o $@ buffindexed/buffindexed_d.o \
-	    $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+	    $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(LIBS)

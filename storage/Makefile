@@ -29,7 +29,7 @@ clobber clean distclean:
 	rm -f *.o *.lo */*.o */*.lo libstorage.la libstorage.a
 	rm -f $(PROGRAMS) libstorage_pure_*.a .pure
 	rm -f buildconfig methods.c methods.h ovmethods.c ovmethods.h
-	rm -f profiled libstorage$(PROFSUFFIX).a
+	rm -f libstorage$(PROFSUFFIX).a
 	rm -rf .libs */.libs
 
 tags ctags: $(SOURCES)
@@ -41,7 +41,7 @@ $(FIXSCRIPT):
 
 libstorage.la: $(OBJECTS) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
-	    $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \
+	    $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
 libstorage.a: $(OBJECTS)
@@ -61,11 +61,11 @@ buildconfig: buildconfig.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i buildconfig.in
 
 .c.o .c.lo:
-	$(LIBCC) $(CFLAGS) $(CCOUTPUT)
+	$(LIBCC) $(CFLAGS) $(DB_CPPFLAGS) $(CCOUTPUT)
 
 ovtest:	ov.c libstorage.$(EXTLIB) $(LIBINN)
 	$(CC) $(CFLAGS) -D_TEST_ -o ovtest ov.c \
-	    libstorage.$(EXTLIB) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+	    libstorage.$(EXTLIB) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
 $(LIBINN):      ; (cd ../lib ; $(MAKE))
 $(LIBHIST):	; (cd ../history ; $(MAKE))
@@ -74,7 +74,6 @@ $(LIBHIST):	; (cd ../history ; $(MAKE))
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 
 profiled: libstorage$(PROFSUFFIX).a
-	date >$@
 
 libstorage$(PROFSUFFIX).a: $(SOURCES)
 	rm -f $(OBJECTS)

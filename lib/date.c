@@ -95,19 +95,19 @@ static long
 local_tz_offset(time_t date, bool current UNUSED)
 {
     struct tm *tm;
-#if !HAVE_TM_GMTOFF
+#if !HAVE_STRUCT_TM_TM_GMTOFF
     struct tm local, gmt;
     long offset;
 #endif
 
     tm = localtime(&date);
 
-#if !HAVE_TM_GMTOFF && HAVE_VAR_TIMEZONE
+#if !HAVE_STRUCT_TM_TM_GMTOFF && HAVE_DECL_ALTZONE
     if (current)
         return (tm->tm_isdst > 0) ? -altzone : -timezone;
 #endif
 
-#if HAVE_TM_GMTOFF
+#if HAVE_STRUCT_TM_TM_GMTOFF
     return tm->tm_gmtoff;
 #else
     /* We don't have any easy returnable value, so we call both localtime
@@ -161,8 +161,8 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
            Sat, 31 Aug 2002 23:45:18 +0000
 
        31 characters, plus another character for the trailing nul.  The buffer
-       will need to have another six characters of space to get the optional
-       trailing time zone comment. */
+       will need to have at least another six characters of space to get the
+       optional trailing time zone comment. */
     if (buflen < 32)
         return false;
 
@@ -210,9 +210,9 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
     if (!local) {
         tz_name = "UTC";
     } else {
-#if HAVE_TM_ZONE
+#if HAVE_STRUCT_TM_TM_ZONE
         tz_name = tm.tm_zone;
-#elif HAVE_VAR_TZNAME
+#elif HAVE_TZNAME
         tz_name = tzname[(tm.tm_isdst > 0) ? 1 : 0];
 #else
         tz_name = NULL;
@@ -391,9 +391,8 @@ skip_cfws(const char *p)
         case '\n':
             break;
         case '\r':
-            if (p[1] != '\n')
+            if (p[1] != '\n' && nesting == 0)
                 return p;
-            p++;
             break;
         case '(':
             nesting++;

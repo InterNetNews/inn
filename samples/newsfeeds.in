@@ -66,7 +66,7 @@ controlchan!\
 # innfeed funnel master.
 #innfeed!\
 #	:!*\
-#	:Tc,Wnm*:@prefix@/bin/innfeed
+#	:Tc,Wnm*:@bindir@/innfeed
 
 ##  Only uncomment this feed if both enableoverview and useoverchan are
 ##  set to true in inn.conf.  By default, innd will write out overview
@@ -75,7 +75,7 @@ controlchan!\
 ##  operations out of innd's main loop.
 
 # News overview.
-#overview!:*:Tc,WnteO:@prefix@/bin/overchan
+#overview!:*:Tc,WnteO:@bindir@/overchan
 
 
 ##  OUTGOING NORMAL FEED EXAMPLES
@@ -104,17 +104,17 @@ controlchan!\
 
 # Accumulate Path header statistics.  See ninpaths(8) for more details on
 # how to set this up.
-#inpaths!:*:Tc,WP:@prefix@/bin/ninpaths -p -d @LOGDIR@/path/inpaths.%d
+#inpaths!:*:Tc,WP:@bindir@/ninpaths -p -d @LOGDIR@/path/inpaths.%d
 
 # Feed all moderated source postings to an archiver.
 #source-archive!:!*,*sources*,!*wanted*,!*.d\
-#	:Tc,Wn:@prefix@/bin/archive -f -i @SPOOLDIR@/archive/INDEX
+#	:Tc,Wn:@bindir@/archive -f -i @SPOOLDIR@/archive/INDEX
 
 # News to mail gateway.  Similar to innfeed, this uses a master feed and
 # then individual feeds for every separate address that news is being
 # gated to.  This sends all posts to rec.pets.redants.* to the address
 # news-software@example.com.
-#news2mail!:!*:Tc,Ac,Wn*:@prefix@/bin/news2mail
+#news2mail!:!*:Tc,Ac,Wn*:@bindir@/news2mail
 #news-software@example.com:rec.pets.redants.*:Tm:news2mail!
 
 # Capture all local postings (with a distribution of "foo" and no more

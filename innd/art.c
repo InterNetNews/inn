@@ -1492,7 +1492,7 @@ ARTxrefslave(ARTDATA *data)
       while (*++next == ' ' || *next == '\t' || *next == '\r' || *next == '\n');
     } else {
       q = NULL;
-      next = "";
+      next = (char *) "";
     }
 
     /* Split into news.group:# */

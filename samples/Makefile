@@ -3,42 +3,45 @@
 ##  All the actual installation work of any files in the samples directory
 ##  is done via the site directory, so that one can maintain one's news
 ##  configuration in the site directory and use make commands to update the
-##  server automatically.  All this Makefile does is run fixscript on a few
-##  files that don't need the full power of configure (and clean up after
-##  them on make clean).
+##  server automatically.  All this Makefile does is run fixconfig or
+##  fixscript on a few files that need configure results (and remove them on
+##  make clean).
 
 include ../Makefile.global
 
 top	      = ..
 
-ALL           = nnrpd_auth.pl nnrpd_access.pl \
-                nnrpd_auth_wrapper.pl nnrpd_access_wrapper.pl
+ALL           = inn.conf innreport.conf newsfeeds nnrpd_auth.pl \
+		nnrpd_access.pl nnrpd_auth_wrapper.pl \
+		nnrpd_access_wrapper.pl sasl.conf
 
-EXTRA         = inn.conf innreport.conf newsfeeds sasl.conf
-
-all: $(ALL) $(EXTRA)
+all: $(ALL)
 
 clean:
 	rm -f $(ALL)
 
 clobber distclean: clean
-	rm -f $(EXTRA)
 
 install:
 depend:
 
 profiled: all
 
-$(EXTRA) $(FIXSCRIPT):
+$(FIXCONFIG) $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
 
 ##  Build rules.
 
-FIX             = $(FIXSCRIPT)
+FIXC		= $(FIXCONFIG)
+FIXS            = $(FIXSCRIPT)
 
-nnrpd_auth.pl:			nnrpd_auth.pl.in           $(FIX) ; $(FIX) $@.in
-nnrpd_access.pl:		nnrpd_access.pl.in         $(FIX) ; $(FIX) $@.in
-nnrpd_auth_wrapper.pl:		nnrpd_auth_wrapper.pl.in   $(FIX) ; $(FIX) $@.in
-nnrpd_access_wrapper.pl:	nnrpd_access_wrapper.pl.in $(FIX) ; $(FIX) $@.in
+inn.conf:                inn.conf.in                $(FIXC) ; $(FIXC) $@.in
+innreport.conf:          innreport.conf.in          $(FIXC) ; $(FIXC) $@.in
+newsfeeds:               newsfeeds.in               $(FIXC) ; $(FIXC) $@.in
+nnrpd_auth.pl:           nnrpd_auth.pl.in           $(FIXS) ; $(FIXS) $@.in
+nnrpd_access.pl:         nnrpd_access.pl.in         $(FIXS) ; $(FIXS) $@.in
+nnrpd_auth_wrapper.pl:   nnrpd_auth_wrapper.pl.in   $(FIXS) ; $(FIXS) $@.in
+nnrpd_access_wrapper.pl: nnrpd_access_wrapper.pl.in $(FIXS) ; $(FIXS) $@.in
+sasl.conf:               sasl.conf.in               $(FIXC) ; $(FIXC) $@.in

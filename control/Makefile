@@ -24,8 +24,8 @@ man: $(MAN)
 clean clobber distclean:
 	rm -f $(ALL)
 
-
 profiled: all
+
 depend:
 
 $(FIXSCRIPT):

@@ -2,6 +2,7 @@ CHANGES
 ChangeLog
 LIST.*
 Makefile.global
+autom4te.cache
 config.cache
 config.log
 config.status

@@ -8,10 +8,12 @@
 # Description:  Set up any and all variables that an INN tcl script
 #               might need.
 
-eval `@prefix@/bin/innconfval -t`
+set prefix "@prefix@"
+set exec_prefix "@exec_prefix@"
+eval `@bindir@/innconfval -t`
 
 set inn_newshome "$inn_pathnews"
-set inn_newslib "@LIBDIR@"
+set inn_newslib "@libdir@"
 set inn_spooldir "$inn_pathspool"
 set inn_most_logs "$inn_pathlog"
 
@@ -67,14 +69,14 @@ set inn_innwstatus "${inn_innddir}/innwatch.status"
 set inn_watchpid "${inn_innddir}/innwatch.pid"
 set inn_serverpid "${inn_innddir}/innd.pid"
 
-set inn_awk "@_PATH_AWK@"
-set inn_sed "@_PATH_SED@"
-set inn_perl "@_PATH_PERL@"
-set inn_gpgv "@PATH_GPGV@"
-set inn_pgp "@_PATH_PGP@"
+set inn_awk "@AWK@"
+set inn_sed "@SED@"
+set inn_perl "@PERL@"
+set inn_gpgv "@GPGV@"
+set inn_pgp "@PGP@"
 set inn_inndf "${inn_newsbin}/inndf"
-set inn_egrep "@_PATH_EGREP@"
-set inn_sort "@_PATH_SORT@"
+set inn_egrep "@EGREP@"
+set inn_sort "@SORT@"
 set inn_getftp "@GETFTP@"
 set inn_compress "@COMPRESS@"
 set inn_gzip "@GZIP@"
@@ -84,8 +86,6 @@ set inn_z "@LOG_COMPRESSEXT@"
 
 set inn_tempsock [ eval exec basename ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s/XXXXXX$/*/} ]
 set inn_tempsockdir [ exec echo ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s@/[^/]*$@@} ]
-
-set inn_have_uustat [ expr { "@HAVE_UUSTAT@" == "DO" ? 1 : 0 } ]
 
 set inn_newsmaster "@NEWSMASTER@"
 set inn_newsuser "@NEWSUSER@"
@@ -97,4 +97,4 @@ set inn_spooltemp "$inn_pathtmp"
 
 scan "@NEWSUMASK@" "%o" inn_umask
 
-set env(PATH) "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin:/usr/ucb"
+set env(PATH) "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin"

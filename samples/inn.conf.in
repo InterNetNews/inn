@@ -28,7 +28,7 @@ pathnews:               @prefix@
 
 #domain:
 #innflags:
-mailcmd:                @prefix@/bin/innmail
+mailcmd:                @bindir@/innmail
 #server:
 
 # Feed Configuration
@@ -44,7 +44,7 @@ linecountfuzz:          0
 maxartsize:             1000000
 maxconnections:         50
 #pathalias:
-pgpverify:              @pgpverify@
+pgpverify:              @DO_PGPVERIFY@
 port:                   119
 refusecybercancels:     false
 remembertrash:          true
@@ -168,10 +168,10 @@ rlimitnofile:           -1
 
 patharchive:            @SPOOLDIR@/archive
 patharticles:           @SPOOLDIR@/articles
-pathbin:                @prefix@/bin
+pathbin:                @bindir@
 pathcontrol:            @CONTROLDIR@
 pathdb:                 @DBDIR@
-pathetc:                @ETCDIR@
+pathetc:                @sysconfdir@
 pathfilter:             @FILTERDIR@
 pathhttp:               @LOGDIR@
 pathincoming:           @SPOOLDIR@/incoming

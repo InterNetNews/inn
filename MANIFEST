@@ -10,7 +10,6 @@ Makefile.global.in                    Make variables for all Makefiles
 NEWS                                  Changes since last version
 README                                Introduction to the INN package
 TODO                                  The list of pending INN projects
-aclocal.m4                            M4 macro for libtool
 authprogs                             The authentication programs (Directory)
 authprogs/Makefile                    Makefile for auth programs
 authprogs/auth_krb5.c                 Authenticator against Kerberos v5
@@ -74,7 +73,7 @@ backends/sendxbatches.in              Shell wrapper around innxbatch
 backends/shlock.c                     Program to make lockfiles in scripts
 backends/shrinkfile.c                 Shrink file from beginning
 configure                             Script to configure INN
-configure.in                          Source file for configure
+configure.ac                          Source file for configure
 contrib                               External contributions (Directory)
 contrib/Makefile                      Makefile for contrib programs
 contrib/README                        Contents of the contrib directory
@@ -352,7 +351,6 @@ history/hisv6/hisv6.c                 hisv6 history method
 history/hisv6/hisv6.h                 Header for hisv6 history
 include                               Header files (Directory)
 include/Makefile                      Makefile for header files
-include/acconfig.h                    Master file for config.h.in
 include/clibrary.h                    C library portability
 include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
@@ -371,6 +369,7 @@ include/inn/messages.h                Header file for message functions
 include/inn/mmap.h                    Header file for mmap() functions
 include/inn/nntp.h                    Header file for NNTP functions and codes
 include/inn/network.h                 Header file for network functions
+include/inn/options.h                 Header file for compile-time options
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/timer.h                   Header file for generic timers
@@ -519,6 +518,31 @@ lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper
 lib/xsignal.c                         signal() wrapper using sigaction
 lib/xwrite.c                          write that handles partial transfers
+m4                                    Autoconf support macros (Directory)
+m4/aux-libs.m4                        Autoconf macro for extra libraries
+m4/berkeleydb.m4                      Autoconf macro for Berkeley DB
+m4/cc-c-o.m4                          Autoconf macro for -c -o compiler support
+m4/compress.m4                        Autoconf macro for compress detection
+m4/inet-ntoa.m4                       Autoconf macro to check inet_ntoa
+m4/int32.m4                           Autoconf macro for int32_t
+m4/iov-max.m4                         Autoconf macro for IOV_MAX
+m4/krb5.m4                            Autoconf macro for Kerberos v5
+m4/large-fpos.m4                      Autoconf macro for large-file fpos_t
+m4/libtool.m4                         Autoconf macros for libtool
+m4/mmap.m4                            Autoconf macros for mmap facilities
+m4/modes.m4                           Autoconf macro for file modes
+m4/openssl.m4                         Autoconf macro for OpenSSL
+m4/paths.m4                           Autoconf macro for installation paths
+m4/perl.m4                            Autoconf macro for Perl support
+m4/prog-ensure.m4                     Autoconf macro for finding programs
+m4/python.m4                          Autoconf macro for Python support
+m4/sasl.m4                            Autoconf macro for SASL libraries
+m4/sendmail.m4                        Autoconf macro for finding sendmail
+m4/snprintf.m4                        Autoconf macro to check snprintf
+m4/socket.m4                          Autoconf macros to check socket support
+m4/syslog.m4                          Autoconf macro for syslog facility
+m4/users.m4                           Autoconf macro for INN users
+m4/vamacros.m4                        Autoconf macro to check variadic macros
 nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
@@ -669,6 +693,7 @@ support                               Tools for building INN (Directory)
 support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
 support/fixlog                        Clean up CVS log messages for cvs2cl
+support/fixconfig.in                  Config file path fixup script
 support/fixscript.in                  Interpreter path fixup script
 support/indent                        A mostly working wrapper around indent
 support/install-sh                    Installation utility

@@ -49,14 +49,18 @@
 #if INN_HAVE_STDBOOL_H
 # include <stdbool.h>
 #else
-# undef true
-# undef false
-# define true   (1)
-# define false  (0)
-# ifndef __cplusplus
-#  define bool int
+# if !INN_HAVE__BOOL
+#  ifdef __cplusplus
+typedef bool _Bool;
+#  else
+typedef unsigned char _Bool;
+#  endif
 # endif
-#endif /* INN_HAVE_STDBOOL_H */
+# define bool _Bool
+# define false 0
+# define true 1
+# define __bool_true_false_are_defined 1
+#endif
 
 /* Tell Perl that we have a bool type. */
 #ifndef HAS_BOOL

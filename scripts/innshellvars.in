@@ -1,4 +1,4 @@
-#!@_PATH_SH@
+#! /bin/sh
 ##  $Revision$
 ##  Set up any and all shell variables that an INN shell script
 ##  might need.  Also sets umask.
@@ -6,7 +6,9 @@
 ## NOTE: When adding stuff here, add the corresponding variables to 
 ## innshellvars.pl and innshellvars.tcl and innshellvars.csh
 
-eval `@prefix@/bin/innconfval -s`
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+eval `@bindir@/innconfval -s`
 
 NEWSHOME=${PATHNEWS}
 SPOOLBASE=${PATHSPOOL}
@@ -15,7 +17,7 @@ export NEWSHOME SPOOL MOST_LOGS
 
 NEWSBIN=${PATHBIN}
 NEWSETC=${PATHETC}
-NEWSLIB=@LIBDIR@
+NEWSLIB=@libdir@
 INNDDIR=${PATHRUN}
 LOCKS=${PATHRUN}
 export NEWSBIN NEWSETC INNDDIR NEWSHOME
@@ -66,20 +68,20 @@ SERVERPID=${INNDDIR}/innd.pid
 INNWSTATUS=${INNDDIR}/innwatch.status
 WATCHPID=${INNDDIR}/innwatch.pid
 
-AWK=@_PATH_AWK@
-SED=@_PATH_SED@
+AWK='@AWK@'
+SED='@SED@'
 INNDF=${NEWSBIN}/inndf
-EGREP=@_PATH_EGREP@
-PERL=@_PATH_PERL@
-GPGV=@PATH_GPGV@
-PGP=@_PATH_PGP@
-SORT="@_PATH_SORT@"
-GETFTP="@GETFTP@"
-COMPRESS=@COMPRESS@
-GZIP=@GZIP@
-UNCOMPRESS="@UNCOMPRESS@"
-LOG_COMPRESS=@LOG_COMPRESS@
-Z=@LOG_COMPRESSEXT@
+EGREP='@EGREP@'
+PERL='@PERL@'
+GPGV='@GPGV@'
+PGP='@PGP@'
+SORT='@SORT@'
+GETFTP='@GETFTP@'
+COMPRESS='@COMPRESS@'
+GZIP='@GZIP@'
+UNCOMPRESS='@UNCOMPRESS@'
+LOG_COMPRESS='@LOG_COMPRESS@'
+Z='@LOG_COMPRESSEXT@'
 
 if [ "$OVMETHOD" = "ovdb" ]; then
     DB_HOME="${PATHOVERVIEW}"
@@ -88,8 +90,6 @@ fi
 
 TEMPSOCK=`basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
 TEMPSOCKDIR=`echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
-
-HAVE_UUSTAT=@HAVE_UUSTAT@
 
 NEWSMASTER=@NEWSMASTER@
 NEWSUSER=@NEWSUSER@
@@ -104,5 +104,5 @@ export NEWSLBIN
 
 umask @NEWSUMASK@
 
-PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin:/usr/ucb
+PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin
 export PATH

@@ -65,7 +65,7 @@ BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
-STORELIBS	= $(BOTH) $(EXTSTORAGELIBS) $(LIBS)
+STORELIBS	= $(BOTH) $(STORAGE_LIBS) $(LIBS)
 
 FIX		= $(FIXSCRIPT)
 
@@ -83,16 +83,16 @@ rnews:		rnews.o        $(LIBINN) ; $(LINK) rnews.o        $(STORELIBS)
 sm:		sm.o           $(BOTH)   ; $(LINK) sm.o           $(STORELIBS)
 
 ovdb_init.o: ovdb_init.c
-	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
+	$(CC) $(CFLAGS) $(DB_CPPFLAGS) -c $<
 
 ovdb_monitor.o: ovdb_monitor.c
-	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
+	$(CC) $(CFLAGS) $(DB_CPPFLAGS) -c $<
 
 ovdb_server.o: ovdb_server.c
-	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
+	$(CC) $(CFLAGS) $(DB_CPPFLAGS) -c $<
 
 ovdb_stat.o: ovdb_stat.c
-	$(CC) $(CFLAGS) $(BERKELEY_DB_CFLAGS) -c $<
+	$(CC) $(CFLAGS) $(DB_CPPFLAGS) -c $<
 
 cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
 cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in

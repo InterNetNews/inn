@@ -33,7 +33,7 @@ $(FIXSCRIPT):
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 FIX		= $(FIXSCRIPT)
 
-STORELIBS	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+STORELIBS	= $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
 expirectl:	expirectl.o	; $(LINK) expirectl.o
 mlockfile:	mlockfile.o	; $(LINK) mlockfile.o

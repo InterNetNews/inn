@@ -57,7 +57,7 @@
 #define _PATH_DISTPATS		"distrib.pats"
 #define _PATH_NNRPDIST		"distributions"
 #define _PATH_NNRPSUBS		"subscriptions"
-#define _PATH_CONFIG		"@ETCDIR@/inn.conf"
+#define _PATH_CONFIG		"@PATH_CONFIG@/inn.conf"
 #define _PATH_CLIENTACTIVE	"active"
 #define _PATH_MODERATORS	"moderators"
 #define _PATH_SERVER		"server"
@@ -82,11 +82,10 @@
 /* Paths to various programs. */
 #define _PATH_COMPRESS		"@COMPRESS@"
 #define _PATH_GZIP		"@GZIP@"
-#define _PATH_SH		"@_PATH_SH@"
-#define _PATH_SORT              "@_PATH_SORT@"
+#define _PATH_SORT              "@SORT@"
 
 /* Absolute paths. */
-#define _PATH_TMP		"@tmpdir@"
+#define _PATH_TMP		"@PATH_TMP@"
 #define _PATH_RNEWS_DUP_LOG	"/dev/null"
 
 /* Always relative to pathtmp. */

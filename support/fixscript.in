@@ -1,4 +1,4 @@
-#! @_PATH_SH@
+#! /bin/sh
 
 ##  $Id$
 ##
@@ -20,11 +20,12 @@
 ##  path and don't modify the second line of the file to include the
 ##  appropriate innshellvars.
 
-SED='@_PATH_SED@'
+PERLPATH='@PERL@'
+LIBDIR='@libdir@'
 
-PERLPATH='@_PATH_PERL@'
-SHPATH='@_PATH_SH@'
-LIBDIR='@LIBDIR@'
+# We can probably just assume sed is on the path, but since we have it, we may
+# as well use it.
+SED='@SED@'
 
 options=true
 addlib=true
@@ -54,7 +55,7 @@ fi
 interpretor=`head -1 "$input"`
 case "$interpretor" in
 */sh|*SH*)
-    path="$SHPATH"
+    path="/bin/sh"
     lib=". $LIBDIR/innshellvars"
     ;;
 */perl*|*PERL*)

@@ -39,7 +39,7 @@ clean clobber distclean:
 
 LINK		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
 STORAGEDEPS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
-STORAGELIBS	= $(STORAGEDEPS) $(EXTSTORAGELIBS)
+STORAGELIBS	= $(STORAGEDEPS) $(STORAGE_LIBS)
 
 runtests: runtests.o
 	$(LINK) runtests.o

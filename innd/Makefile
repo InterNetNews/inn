@@ -21,7 +21,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 clean:
-	rm -f *.o $(ALL) inndp profiled
+	rm -f *.o $(ALL) inndp
 	rm -rf .libs
 
 clobber distclean: clean
@@ -33,11 +33,11 @@ tags ctags: $(SOURCES)
 
 ##  Compilation rules.
 
-INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
-		  $(TCLLIB) $(PYTHONLIB) $(REGEXLIB) $(LIBS) $(PERLLIB)
+INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
+		  $(PYTHON_LIBS) $(REGEX_LIBS) $(LIBS) $(PERL_LIBS)
 
-perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
-python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
+perl.o:		perl.c   ; $(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
+python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
 
 innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
@@ -57,10 +57,9 @@ $(LIBHIST):	; (cd ../history ; $(MAKE))
 ##  Profiling.  These rules have not been checked for a while and may need
 ##  some work.
 
-profiled:	inndp
-	date >$@
+profiled: inndp
 
-inndp:		$(SOURCES)
+inndp: $(SOURCES)
 	rm -f $(OBJECTS)
 	$(MAKEPROFILING) innd
 	mv innd inndp

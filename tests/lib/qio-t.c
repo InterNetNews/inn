@@ -30,7 +30,7 @@ main(void)
     QIOSTATE *qio;
     bool success;
 
-#if HAVE_ST_BLKSIZE
+#if HAVE_STRUCT_STAT_ST_BLKSIZE
     struct stat st;
 #endif
 
@@ -45,7 +45,7 @@ main(void)
     fd = open(".testout", O_RDWR | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) sysdie("Can't create .testout");
 
-#if HAVE_ST_BLKSIZE
+#if HAVE_STRUCT_STAT_ST_BLKSIZE
     /* Mostly duplicate the code from qio.c so that we can test with lines
        exactly as large as the buffer. */
     if (fstat(fd, &st) == 0 && S_ISREG(st.st_mode)) {

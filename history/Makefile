@@ -40,7 +40,7 @@ $(FIXSCRIPT):
 
 libinnhist.la: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
-	    $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \
+	    $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0
 
 libinnhist.a: $(OBJECTS)
