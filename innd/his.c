@@ -81,6 +81,14 @@ void HISsetup(void)
 	    syslog(L_FATAL, "%s cant fopen %s %m", LogName, HIShistpath);
 	    exit(1);
 	}
+	/* lseek to the end of file because on some OS's the first call to
+	   ftell() (before any writes are done) always returns 0
+	   because of a bug in freopen() when used with "a" (append)
+	   (freopen() is used in Fopen()) */
+	if (fseek(HISwritefp, 0L, SEEK_END) == -1) {
+	    syslog(L_FATAL, "cant fseek to end of %s %m", HIShistpath);
+	    exit(1);
+	}
 	CloseOnExec((int)fileno(HISwritefp), TRUE);
 
 	/* Open the history file for reading. */
