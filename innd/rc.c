@@ -1335,7 +1335,6 @@ RCsetup(port, i, master)
     register int	i;
     char		*master;
 {
-	register int i;
     struct sockaddr_in	server;
     struct hostent	*hp;
     INADDR		a;

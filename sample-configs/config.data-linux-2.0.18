@@ -519,6 +519,9 @@ HAVE_UUSTAT		DO
 ##  Some versions of Solaris should set to DONT (pre 2.4 it seems)
 #### =()<SET_SOCKOPT		@<SET_SOCKOPT>@>()=
 SET_SOCKOPT		DO
+##  Do you have shadow file?  Pick DO or DONT
+#### =()<HAVE_SHADOW		@<HAVE_SHADOW>@>()=
+HAVE_SHADOW		DO
 
 
 ##
@@ -698,7 +701,7 @@ _PATH_NEWSFEEDS		/var/news/etc/newsfeeds
 _PATH_HISTORY		/var/news/etc/history
 ##  File listing the sites that feed us news.
 #### =()<_PATH_INNDHOSTS		@<_PATH_INNDHOSTS>@>()=
-_PATH_INNDHOSTS		/var/news/etc/hosts.nntp
+_PATH_INNDHOSTS		/var/news/etc/incoming.conf
 ##  The active file, on the server host.
 #### =()<_PATH_ACTIVE		@<_PATH_ACTIVE>@>()=
 _PATH_ACTIVE		/var/news/etc/active

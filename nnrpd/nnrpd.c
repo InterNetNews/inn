@@ -370,15 +370,17 @@ PERMinfile(hp, ip, user, pass, accesslist, accessfile)
 	} else
 	    filename[0] = '\0';
 
+#ifdef DONT_HAVE_SHADOW
 	/* See if we should lookup a specific user in the passwd file */
 	if (user && pass && EQ(fields[2], "+")) {
 	    if ((pwd = getpwnam(user)) == NULL)
 		continue;
 	    if (!EQ(pwd->pw_passwd, crypt(pass, pwd->pw_passwd)))
 		continue;
-	}
+	} else
+#endif
 	/* Matching for a specific user or just the host? */
-	else if (user && (!EQ(user, fields[2]) || !EQ(pass, fields[3])))
+	if (user && (!EQ(user, fields[2]) || !EQ(pass, fields[3])))
 	    continue;
 
 	PERMcanread = strchr(fields[1], 'R') != NULL;

@@ -16,7 +16,7 @@ DEFS			-I../include
 CC			cc
 ##  Does your compiler properly do "char const *"? Pick DO DONT or DUNNO
 #### =()<USE_CHAR_CONST		@<USE_CHAR_CONST>@>()=
-USE_CHAR_CONST		DONT
+USE_CHAR_CONST		DO
 ##  C compiler flags
 #### =()<CFLAGS			@<CFLAGS>@>()=
 CFLAGS			$(DEFS) -g
@@ -169,7 +169,7 @@ ALIGNPTR		int
 SIGHANDLER		void
 ##  Type of variables can be modified in a signal handler? sig_atomic_t
 #### =()<SIGVAR			@<SIGVAR>@>()=
-SIGVAR			int
+SIGVAR			sig_atomic_t
 ##  Function that returns no value, and a pointer to it.  Pick int or void
 #### =()<FUNCTYPE		@<FUNCTYPE>@>()=
 FUNCTYPE		void
@@ -185,7 +185,7 @@ DIR_STYLE		DIRENT
 ##  Use flock, lockf, or nothing to lock files?
 ##  Pick FLOCK, LOCKF, FCNTL, or NONE
 #### =()<LOCK_STYLE		@<LOCK_STYLE>@>()=
-LOCK_STYLE		FCNTL
+LOCK_STYLE		LOCKF
 ##  Do you have <unistd.h>?  Pick DO or DONT
 #### =()<HAVE_UNISTD		@<HAVE_UNISTD>@>()=
 HAVE_UNISTD		DO
@@ -244,14 +244,14 @@ RES_STYLE		TIMES
 ##  How to get number of available descriptors?
 ##  Pick GETDTAB, GETRLIMIT, SYSCONF, ULIMIT, or CONSTANT.
 ####  =()<FDCOUNT_STYLE		@<FDCOUNT_STYLE>@>()=
-FDCOUNT_STYLE		GETRLIMIT
+FDCOUNT_STYLE		SYSCONF
 ##  If greater than -1, then use [gs]etrlimit to set that many descriptors.
 ##  If -1, then no [gs]etrlimit calls are done.
 #### =()<NOFILE_LIMIT		@<NOFILE_LIMIT>@>()=
 NOFILE_LIMIT		-1
 ##  Do you need <time.h> as well as <sys/time.h>?  Pick DO or DONT.
 #### =()<NEED_TIME		@<NEED_TIME>@>()=
-NEED_TIME		DONT
+NEED_TIME		DO
 ##  What predicate, if any, the <ctype.h> macros need
 #### =()<CTYPE			@<CTYPE>@>()=
 CTYPE			(isascii((c)) && isXXXXX((c)))
@@ -518,7 +518,10 @@ HAVE_UUSTAT		DO
 ##  Should INN do some setsockopts on network connections. Pick DO or DONT.
 ##  Some versions of Solaris should set to DONT (pre 2.4 it seems)
 #### =()<SET_SOCKOPT		@<SET_SOCKOPT>@>()=
-SET_SOCKOPT		DO
+SET_SOCKOPT		DONT
+##  Do you have shadow file?  Pick DO or DONT
+#### =()<HAVE_SHADOW		@<HAVE_SHADOW>@>()=
+HAVE_SHADOW		DONT
 
 
 ##
@@ -586,7 +589,7 @@ _PATH_NEWSBIN		/usr/news/bin
 _PATH_TMP		/var/tmp
 ##  Command to send mail (with -s "subject" allowed)
 #### =()<_PATH_MAILCMD		@<_PATH_MAILCMD>@>()=
-_PATH_MAILCMD		/usr/bin/Mail
+_PATH_MAILCMD		/usr/news/bin/innmail
 ##  Where scripts should have shlock create locks.
 #### =()<_PATH_LOCKS		@<_PATH_LOCKS>@>()=
 _PATH_LOCKS		/var/news/locks
@@ -698,7 +701,7 @@ _PATH_NEWSFEEDS		/var/news/etc/newsfeeds
 _PATH_HISTORY		/var/news/etc/history
 ##  File listing the sites that feed us news.
 #### =()<_PATH_INNDHOSTS		@<_PATH_INNDHOSTS>@>()=
-_PATH_INNDHOSTS		/var/news/etc/hosts.nntp
+_PATH_INNDHOSTS		/var/news/etc/incoming.conf
 ##  The active file, on the server host.
 #### =()<_PATH_ACTIVE		@<_PATH_ACTIVE>@>()=
 _PATH_ACTIVE		/var/news/etc/active

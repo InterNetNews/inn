@@ -16,6 +16,7 @@
 #include "paths.h"
 #include "qio.h"
 
+BOOL	StorageAPI;
 
 /*
 **  Try to make one directory.  Return FALSE on error.
@@ -196,7 +197,6 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
     char	        *Art;
     HASH                Hash;
     char	        *p;
-    BOOL                Unifiedover;
 
     for ( ; ; ) {
 	/* Read the first line of data. */
@@ -210,17 +210,21 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 
 	/* Check if we're handling a token and if so split it out from
 	 * the rest of the data */
-	if (Data[0] == '[') {
-	    p = strchr(Data, ' ');
-	    *p = '\0';
-	    if (!((p - Data == sizeof(HASH) * 2 + 2) && *(p-1) == ']')) {
-		fprintf(stderr, "overchan malformed token\n");
+	if (StorageAPI) {
+	    if (Data[0] == '[') {
+		p = strchr(Data, ' ');
+		*p = '\0';
+		if (!((p - Data == sizeof(HASH) * 2 + 2) && *(p-1) == ']')) {
+		    fprintf(stderr, "overchan malformed token, %s\n", Data);
+		    continue;
+		}
+		Hash = TextToHash(&Data[1]);
+		for (p++; *p == ' '; p++);
+		Xref = p;
+	    } else {
+		fprintf(stderr, "overchan malformed token, %s\n", Data);
 		continue;
 	    }
-	    Hash = TextToHash(&Data[1]);
-	    for (p++; *p == ' '; p++);
-	    Xref = p;
-	    Unifiedover = TRUE;
 	}  else {
 	    /* Find the groups and article numbers. */
 	    if ((Xref = strstr(Data, "Xref:")) == NULL) {
@@ -237,7 +241,6 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 		continue;
 	    }
 	    for (Xref++; *Xref == ' '; Xref++);
-	    Unifiedover = FALSE;
 	}
 	Xref = COPY(Xref);
 	for (p = Xref; *p; p++)
@@ -262,7 +265,7 @@ STATIC void ProcessIncoming(QIOSTATE *qp)
 	    *Art++ = '\0';
 
 	    /* Write data. */
-	    if (Unifiedover) {
+	    if (StorageAPI) {
 		if (!WriteUnifiedData(&Hash, Dir, Art) &&
 		    (!MakeOverDir(Dir) || !WriteUnifiedData(&Hash, Dir, Art)))
 		    (void)fprintf(stderr, "overchan cant update %s %s\n",
@@ -318,6 +321,7 @@ int main(int ac, char *av[])
 		Dir, strerror(errno));
 	exit(1);
     }
+    StorageAPI = GetBooleanConfigValue(_CONF_STORAGEAPI, FALSE);
 
     if (ac == 0)
 	ProcessIncoming(QIOfdopen(STDIN));
