@@ -1,3 +1,64 @@
+=head1 Changes from 2.4.0 to 2.4.1
+
+=over 2
+
+=item *
+
+SECURITY: Handle the special filing of control messages into per-type
+newsgroups more robust.  This closes a potentially exploitable buffer
+overflow.  Thanks to Dan Riley for his excellent bug report.
+
+=item *
+
+Fixed article handling in innd so that articles without a Path header
+(arising from peers sending malformatted articles or injecting
+malformatted articles through rnews) would not cause innd to crash.  (This
+was not exploitable.)
+
+=item *
+
+Fixed a serious bug in XPAT handling, thanks to Tommy van Leeuwen.
+
+=item *
+
+configure now looks for sendmail only in /usr/sbin and /usr/lib, not on
+the user's path.  This should reduce the need for --with-sendmail if your
+preferred sendmail is in a standard location.
+
+=item *
+
+The robustness of the tradindexed overview method has been further
+increased, handling more edge cases arising from corrupted databases and
+oddly-named newsgroups.
+
+=item *
+
+innd now never decreases the high water mark of a newsgroup when
+renumbering, which should help ameliorate overview and active file
+synchronization problems.
+
+=item *
+
+Do not close and reopen the history file on ctlinnd reload when the server
+is paused or throttled.  This was breaking ctlinnd reload all during a
+server pause.
+
+=item *
+
+Various minor portability and compilation issues fixed.  Substantial
+numbers of compiler warnings have been cleaned up, thanks largely to work
+by Ilya Kovalenko.
+
+=item *
+
+Multiple other more minor bugs have been fixed.
+
+=item *
+
+Documentation and man pages have been clarified and updated.
+
+=back
+
 =head1 Upgrading from 2.3 to 2.4
 
 The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
