@@ -161,16 +161,23 @@ HISopen(const char *path, const char *method, int flags)
     return h;
 }
 
+static bool
+his_checknull(struct history *h)
+{
+    if (h != NULL)
+	return true;
+    errno = EBADF;
+    return false;
+
+}
+
 bool 
 HISclose(struct history *h)
 {
     bool r;
 
-    if (h == NULL) {
-	errno = EBADF; /* similar to attempting to close() twice */
-	his_seterror(h, "can't close null history");
+    if (his_checknull(h))
 	return false;
-    }
     r = (*h->methods->close)(h->sub);
     if (h->cache) {
 	free(h->cache);
@@ -189,7 +196,7 @@ HISsync(struct history *h)
 {
     bool r = false;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     TMRstart(TMR_HISSYNC);
     r = (*h->methods->sync)(h->sub);
@@ -203,7 +210,7 @@ HISlookup(struct history *h, const char *key, time_t *arrived,
 {
     bool r;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     TMRstart(TMR_HISGREP);
     r = (*h->methods->lookup)(h->sub, key, arrived, posted, expires, token);
@@ -217,7 +224,7 @@ HIScheck(struct history *h, const char *key)
     bool r;
     HASH hash;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     TMRstart(TMR_HISHAVE);
     hash = HashMessageID(key);
@@ -251,7 +258,7 @@ HISwrite(struct history *h, const char *key, time_t arrived,
 {
     bool r;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     TMRstart(TMR_HISWRITE);
     r = (*h->methods->write)(h->sub, key, arrived, posted, expires, token);
@@ -272,7 +279,7 @@ HISremember(struct history *h, const char *key, time_t arrived)
 {
     bool r;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     TMRstart(TMR_HISWRITE);
     r = (*h->methods->remember)(h->sub, key, arrived);
@@ -294,7 +301,7 @@ HISreplace(struct history *h, const char *key, time_t arrived,
 {
     bool r;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     r = (*h->methods->replace)(h->sub, key, arrived, posted, expires, token);
     if (r == true) {
@@ -313,7 +320,7 @@ HISwalk(struct history *h, const char *reason, void *cookie,
 {
     bool r;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     r = (*h->methods->walk)(h->sub, reason, cookie, callback);
     return r;
@@ -326,7 +333,7 @@ HISexpire(struct history *h, const char *path, const char *reason,
 {
     bool r;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     r = (*h->methods->expire)(h->sub, path, reason, writing,
 			      cookie, threshold, exists);
@@ -387,7 +394,7 @@ HISctl(struct history *h, int selector, void *val)
 {
     bool r;
 
-    if (h == NULL)
+    if (his_checknull(h))
 	return false;
     r = (*h->methods->ctl)(h->sub, selector, val);
     return r;
