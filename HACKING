@@ -42,9 +42,7 @@ Configuring
     including the files config.guess and config.sub to determine the system
     name and the files ltconfig and ltmain.sh for libtool support.  The
     latter two files come from the libtool distribution; the canonical
-    version of the former are maintained in the autoconf repository but the
-    latest versions are available with the latest release of autoconf,
-    automake, or libtool.
+    version of the former two are available from ftp.gnu.org in /gnu/config.
 
     For maintainers with CVS access, these four files are on a separate
     vendor branch (the 1.1.2 branch in the repository).  When a new version
@@ -58,9 +56,8 @@ Configuring
     See the cvs manual under Tracking Sources and specifically Multiple
     Vendor Branches for more details.
 
-    This process can optionally be done with just config.guess and
-    config.sub when new versions of those are released between libtool
-    releases.
+    This process can also be done with just config.guess and config.sub when
+    new versions of those are released.
 
     INN should not compile with libtool by default, only when requested,
     since otherwise normal compilations are quite slow.  (Using libtool is
@@ -128,7 +125,42 @@ Documentation
     CPAN in modules/by-module/Pod.
 
     The current versions of these tools as of this writing are podlators
-    1.01, PodParser 1.13, and Pod::DocBook 0.05.
+    1.02, PodParser 1.13, and Pod::DocBook 0.05.
+
+Test Suite
+
+    The test suite for INN is located in the tests directory and is just
+    getting started.  The test suite consists of a set of programs listed in
+    tests/TESTS and the scaffolding in the runtests program.
+
+    Adding new tests is very straightforward and very flexible.  Just write
+    a program that tests some part of INN, put it in a directory under tests
+    named after the part of INN it's testing (all the tests so far are in
+    lib because they're testing libinn routines), and have it output first a
+    line containing the count of test cases in that file and then for each
+    test a line saying "ok n" or "not ok n" where n is the test case number.
+    (If a test is skipped for some reason, such as a test of an optional
+    feature that wasn't compiled into INN, the test program should output "
+    # skip" on the same line after "ok n".)  Add any rules necessary to
+    build the test to tests/Makefile (note that for simplicity it doesn't
+    recurse into subdirectories) and make sure it creates an executable
+    ending in .t.  Then add the name of the test to tests/TESTS, without the
+    .t ending.
+
+    One naming conventions:  To distinguish more easily between e.g.
+    lib/error.c (the implementation) and tests/lib/error-t.c (the test
+    suite), I've been adding -t to the end of the test file names.  So
+    tests/lib/error-t.c is the source that compiles into an executable
+    tests/lib/error.t which is run by putting a line in tests/TESTS of just
+    "lib/error".
+
+    Note that tests don't have to be written in C; in fact, lib/xmalloc.t is
+    just a shell script (that calls a supporting C program).  Tests can be
+    written in shell or Perl (but other languages should be avoided because
+    someone who wants to run the test suite may not have it) and just have
+    to follow the above output conventions.
+
+    Additions to the test suite, no matter how simple, are very welcome.
 
 Makefiles
 
@@ -241,10 +273,8 @@ Include Files
     NEW(), COPY(), and DISPOSE() macros that are used throughout INN for
     memory management rather than directly calling malloc(), strdup(), and
     free().  (They actually use xmalloc() instead so you don't have to check
-    the return value, they include the file name and line number in error
-    messages resulting from out-of-memory conditions, and they make it
-    easier to plug in a debugging memory allocator when trying to track down
-    memory leaks or clobbers.)
+    the return value.)  Alternately, xmalloc(), xstrdup(), and free() can be
+    called directly; the first two are provided by libinn.
 
     paths.h includes a wide variety of paths determined at configure time,
     both default paths to various parts of INN and paths to programs.  Don't
@@ -259,6 +289,13 @@ Include Files
     Finally, many INN source files still include configdata.h; this header
     file is now obsolete (merged into config.h and clibrary.h) and should be
     removed where it appears.
+
+    Eventually, the header files will be separated into installed header
+    files and uninstalled header files; the latter are those headers that
+    are used only for compiling INN and aren't useful for users of INN's
+    libraries (such as clibrary.h).  All of the installed headers will live
+    in include/inn and be installed in a subdirectory named inn in the
+    configured include directory.  This conversion is just beginning.
 
 Coding Style
 
@@ -287,7 +324,8 @@ Coding Style
               multiline comment. */
 
        Comments before functions saying what they do are nice to have.  In
-       general, the RCS/CVS Id tag is on the first line of each source file.
+       general, the RCS/CVS Id tag is on the first line of each source file
+       since it's useful to know when a file was last modified.
 
     *  Checks for NULL pointers are preferrably written out explicitly; in
        other words, use:
