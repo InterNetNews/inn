@@ -39,6 +39,7 @@ extern void die_set_handlers(int count, ...);
 /* Handlers intended to be passed to *_set_handlers.  error_log_stderr is
    the only handler enabled by default. */
 extern void error_log_stderr(int, const char *, va_list, int);
+extern void error_log_syslog_crit(int, const char *, va_list, int);
 extern void error_log_syslog_err(int, const char *, va_list, int);
 extern void error_log_syslog_warning(int, const char *, va_list, int);
 
@@ -141,7 +142,9 @@ extern bool     lock_range(int fd, enum locktype type, bool block,
 **  MISCELLANEOUS UTILITY FUNCTIONS
 */
 extern void     close_on_exec(int fd, bool flag);
-extern void *   concat(const char *first, ...);
+extern char *   concat(const char *first, ...);
+extern char *   concatpath(const char *base, const char *name);
+extern void     daemonize(const char *path);
 extern int      getfdlimit(void);
 extern int      nonblocking(int fd, bool flag);
 extern int      setfdlimit(int limit);
