@@ -1,11 +1,11 @@
-Welcome to INN 2.0!
+Welcome to INN 2.2.2!
 
   Please read this document thoroughly before trying to install INN. You'll be
   glad you did.
 
   If you are upgrading from a previous release of INN (pre-2.0) then it is
   recommended that you make copies of your old configuration files and use them
-  as guides for doing a clean installation and configuration of 2.0. Many
+  as guides for doing a clean installation and configuration of 2.2.2. Many
   config files have changed, some have been added, and some have been removed.
   You'll find it much easier to start with a fresh install than to try to
   update your old installation.
@@ -14,7 +14,7 @@ Supported Systems
 
   < Should list all supported OS/hardware configurations >
 
-  FreeBSD 2.2.x
+  FreeBSD 2.2.x, 3.x
   Linux 2.0.x (with libc 5.4 or libc 6.0)
   OpenBSD ?.?
   SCO 5.0.4 (tested with gcc 2.8.1)
@@ -135,7 +135,7 @@ Installing INN
   group. You can change these if you want but these are the defaults and it's
   easier to stick with them on a new installation.
 
-  INN 2.0 uses the GNU 'configure' program to make configuration rather
+  INN now uses the GNU 'configure' program to make configuration rather
   painless.  Unless you have a rather abnormal setup configure should be able
   to completely configure INN for your setup. If you want to change the
   defaults you can invoke the configure script with one or more command line
