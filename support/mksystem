@@ -33,16 +33,16 @@ EOF
 
 $1 '
 
-/^#define HAVE_C99_VAMACROS/    { print save $1 " INN_" $2 " " $3 "\n" }
-/^#define HAVE_GNU_VAMACROS/    { print save $1 " INN_" $2 " " $3 "\n" }
-/^#define HAVE_INET6/           { print save $1 " INN_" $2 " " $3 "\n" }
-/^#define HAVE_INTTYPES_H/      { print save $1 " INN_" $2 " " $3 "\n" }
-/^#define HAVE_MSYNC_3_ARG/     { print save $1 " INN_" $2 " " $3 "\n" }
-/^#define HAVE_STDBOOL_H/       { print save $1 " INN_" $2 " " $3 "\n" }
-/^#define HAVE_SYS_BITTYPES_H/  { print save $1 " INN_" $2 " " $3 "\n" }
-/^#define HAVE__BOOL/           { print save $1 " INN_" $2 " " $3 "\n" }
+/^#define HAVE_C99_VAMACROS/    { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_GNU_VAMACROS/    { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_INET6/           { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_INTTYPES_H/      { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_MSYNC_3_ARG/     { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_STDBOOL_H/       { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_SYS_BITTYPES_H/  { print $1 " INN_" $2 " " $3 }
+/^#define HAVE__BOOL/           { print $1 " INN_" $2 " " $3 }
 
-{ save = $0 "\n" }' $2
+' $2
 
 cat <<EOF
 #endif /* INN_SYSTEM_H */
