@@ -237,40 +237,6 @@ existing behavior.
 
 ------------------------------
 
-  Summary: innd doesn't generate overview correctly for non-printing chars
- Standard: draft-ietf-nntpext-base-15.txt, section 9.5.2.2
-  Version: 1.4 to CURRENT 2002-12-26
-Reference: innd/art.c ARTmakeoverview() and expire/makehistory.c DoArt()
- Severity: Violates a MUST
-
-The standard says:
-
-    The content of the rest of the fields is formed by taking the original
-    header content (such as the raw subject line from the article),
-    removing all US-ASCII CRLF pairs, and then replacing each remaining
-    US-ASCII NUL, TAB, CR, or LF character with a single US-ASCII space.
-
-innd has always just replaced tabs, newlines, and CRs with spaces in a
-one-to-one fashion (although older versions did, through an accident of
-implementation, collapse CRLF into a single space) and has never collapsed
-consecutive whitespace.
-
-Impact:  The headers are not unfolded properly, resulting in extraneous
-spaces in the overview version of the header that are not properly part of
-the content of the header.  NUL is also not handled correctly, but at
-present INN cannot handle NUL in article headers or bodies, so this is
-only part of a larger issue.
-
-Suggested fix:  Modify ARTmakeoverview() to remove CRLF pairs completely
-(RFC 2822 unfolding) and otherwise do the same as it does now.  The
-overview_build() function does this properly.
-
-Impact of fix:  After an upgrade, overview will have to be rebuilt from
-the spool in order to make all of the overview consistent again for folded
-headers.  This probably isn't significant enough to worry about.
-
-------------------------------
-
   Summary: HDR can return message IDs rather than article numbers
  Standard: draft-ietf-nntpext-base-17.txt, section 10.6.1.2
   Version: 1.0 to CURRENT 2003-05-04
