@@ -1,4 +1,4 @@
-This is the beta test version 0.9.3 of the INN feeder program `innfeed.'
+This is version 1.0 of the INN feeder program `innfeed.'
 It is written in ANSI C and tries to be POSIX.1 compliant. The features of
 it are:
 
