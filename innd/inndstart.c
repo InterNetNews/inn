@@ -136,6 +136,7 @@ main(int argc, char *argv[])
     if (p && strcmp(p, "all") != 0 && strcmp(p, "any") != 0) {
         if (!inet_aton(p, &address))
             die("invalid bindaddress in inn.conf (%s)", p);
+        addr_specified = true;
     }
 #ifdef HAVE_INET6
     address6 = in6addr_any;
@@ -143,6 +144,7 @@ main(int argc, char *argv[])
     if (p && strcmp(p, "all") != 0 && strcmp(p, "any") != 0) {
 	if (inet_pton(AF_INET6, p, &address6) < 1)
 	    die("invalid bindaddress6 in inn.conf (%s)", p);
+        addr6_specified = true;
     }
 #endif
 
