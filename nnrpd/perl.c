@@ -1,38 +1,30 @@
-/* -*- c -*-
- *
- * Author:      Christophe Wolfhugel <wolf@pasteur.fr>
- *		(although he wouldn't recognise it anymore so don't blame him)
- * File:        perl.c
- * RCSId:       $Id$
- * Description: Perl hooks for nnrpd.
- * 
- */
+/*  $Id$
+**
+**  Embedded Perl support for INN.
+**
+**  Originally written by Christophe Wolfhugel <wolf@pasteur.fr> (although
+**  he wouldn't recongize it any more, so don't blame him) and modified,
+**  expanded, and tweaked by James Brister, Dave Hayes, Andrew Gierth, and
+**  Russ Allbery among others.
+**
+**  This file should contain all innd-specific Perl linkage.  Linkage
+**  applicable to both innd and nnrpd should go into lib/perl.c instead.
+**
+**  We are assuming Perl 5.004 or later.
+*/
 
-#if ! defined (lint)
-static const char *rcsid = "$Id$" ;
-static void use_rcsid (const char *rid) {   /* Never called */
-  use_rcsid (rcsid) ; use_rcsid (rid) ;
-}
-#endif
+#include "config.h"
 
+/* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
+#if DO_PERL
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
 #include "clibrary.h"
+
+#include "macros.h"
+#include "nnrpd.h"
+#include "nntp.h"
 #include "paths.h"
 #include "post.h"
-#include <syslog.h> 
-#include "macros.h"
-#include "nntp.h"
-#include "nnrpd.h"
-
-#if defined(DO_PERL)
-
-#if defined (DO_NEED_BOOL)
-typedef enum { false = 0, true = 1 } bool;
-#endif
 
 #include <EXTERN.h>
 #include <perl.h>
@@ -370,5 +362,4 @@ char *msg;
 }
 #endif /* DEBUG_MODIFY */
 
-#endif /* defined(DO_PERL) */
-
+#endif /* DO_PERL */
