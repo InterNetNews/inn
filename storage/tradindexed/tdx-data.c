@@ -117,12 +117,13 @@ file_open(const char *base, const char *suffix, bool writable, bool append)
         *p = '/';
         fd = open(file, flags, ARTFILE_MODE);
     }
-    free(file);
     if (fd < 0) {
         if (errno != ENOENT)
             syswarn("tradindexed: cannot open %s", file);
+        free(file);
         return -1;
     }
+    free(file);
     return fd;
 }
 
@@ -146,7 +147,6 @@ file_open_index(struct group_data *data)
         return false;
     }
     data->indexinode = st.st_ino;
-    data->indexlen = st.st_size;
     close_on_exec(data->indexfd, true);
     return true;
 }
@@ -187,6 +187,7 @@ tdx_data_new(const char *group, bool writable)
     data->indexlen = 0;
     data->datalen = 0;
     data->indexinode = 0;
+    data->refcount = 0;
 
     return data;
 }
@@ -250,6 +251,13 @@ map_file(int fd, size_t length, const char *base, const char *suffix)
 static bool
 map_index(struct group_data *data)
 {
+    struct stat st;
+
+    if (fstat(data->indexfd, &st) < 0) {
+        syswarn("tradindexed: cannot stat %s.IDX", data->path);
+        return false;
+    }
+    data->indexlen = st.st_size;
     data->index = map_file(data->indexfd, data->indexlen, data->path, "IDX");
     return (data->index == NULL) ? false : true;
 }
@@ -296,14 +304,21 @@ unmap_file(void *data, off_t length, const char *base, const char *suffix)
 /*
 **  Retrieves the article metainformation stored in the index table (all the
 **  stuff we can return without opening the data file).  Takes the article
-**  number and returns a pointer to the index entry.
+**  number and returns a pointer to the index entry.  Also takes the high
+**  water mark from the group index; this is used to decide whether to attempt
+**  remapping of the index file if the current high water mark is too low.
 */
 const struct index_entry *
-tdx_article_entry(struct group_data *data, ARTNUM article)
+tdx_article_entry(struct group_data *data, ARTNUM article, ARTNUM high)
 {
     struct index_entry *entry;
     ARTNUM offset;
 
+    if (article > data->high && high > data->high) {
+        unmap_file(data->index, data->indexlen, data->path, "IDX");
+        map_index(data);
+        data->high = high;
+    }
     if (data->index == NULL)
         if (!map_index(data))
             return NULL;
@@ -321,18 +336,27 @@ tdx_article_entry(struct group_data *data, ARTNUM article)
 
 
 /*
-**  Begin an overview search.  We need both the group index and the open group
-**  data, since we have to get base information and double-check that we still
-**  have the right index files.
+**  Begin an overview search.  In addition to the bounds of the search, we
+**  also take the high water mark from the group index; this is used to decide
+**  whether or not to attempt remapping of the index file if the current high
+**  water mark is too low.
 */
 struct search *
-tdx_search_open(struct group_data *data, ARTNUM low, ARTNUM high)
+tdx_search_open(struct group_data *data, ARTNUM start, ARTNUM end, ARTNUM high)
 {
     struct search *search;
 
-    if (high < data->base)
+    if (end < data->base)
         return NULL;
-    if (low > data->high)
+    if (end < start)
+        return NULL;
+
+    if (end > data->high && high > data->high) {
+        unmap_file(data->index, data->indexlen, data->path, "IDX");
+        map_index(data);
+        data->high = high;
+    }
+    if (start > data->high)
         return NULL;
 
     if (data->index == NULL)
@@ -343,9 +367,10 @@ tdx_search_open(struct group_data *data, ARTNUM low, ARTNUM high)
             return NULL;
 
     search = xmalloc(sizeof(struct search));
-    search->limit = high - data->base;
-    search->current = (low < data->base) ? data->base : low - data->base;
+    search->limit = end - data->base;
+    search->current = (start < data->base) ? data->base : start - data->base;
     search->data = data;
+    search->data->refcount++;
 
     return search;
 }
@@ -360,6 +385,8 @@ tdx_search(struct search *search, struct article *artdata)
     struct index_entry *entry;
     size_t max;
 
+    if (search == NULL || search->data == NULL)
+        return false;
     if (search->data->index == NULL || search->data->data == NULL)
         return false;
 
@@ -409,8 +436,11 @@ tdx_search(struct search *search, struct article *artdata)
 void
 tdx_search_close(struct search *search)
 {
-    if (search->data != NULL)
-        tdx_data_close(search->data);
+    if (search->data != NULL) {
+        search->data->refcount--;
+        if (search->data->refcount == 0)
+            tdx_data_close(search->data);
+    }
     free(search);
 }
 
@@ -497,7 +527,6 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
     unsigned long delta;
     int fd;
     char *idxfile;
-    struct stat st;
 
     if (!data->writable)
         return false;
@@ -515,11 +544,6 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
 
     /* For convenience, memory map the old index file. */
     unmap_file(data->index, data->indexlen, data->path, "IDX");
-    if (fstat(data->indexfd, &st) < 0) {
-        syswarn("tradindexed: cannot stat %s.IDX", data->path);
-        goto fail;
-    }
-    data->indexlen = st.st_size;
     if (!map_index(data))
         goto fail;
 
