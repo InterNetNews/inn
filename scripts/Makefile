@@ -8,11 +8,11 @@
 
 include ../Makefile.global
 
-ALL           = innmail innstat innwatch rc.news scanlogs simpleftp \
-		tally.control writelog
+ALL           = innmail innreport innstat innwatch rc.news scanlogs \
+		simpleftp tally.control writelog
 
-EXTRA         = inncheck innreport innshellvars innshellvars.pl \
-		innshellvars.tcl news.daily
+EXTRA         = inncheck innshellvars innshellvars.pl innshellvars.tcl \
+		news.daily
 
 INSTALLED     = $(D)$(PATHBIN)/inncheck		\
 		$(D)$(PATHBIN)/innmail		\
@@ -44,6 +44,7 @@ clobber: clean
 FIX             = $(FIXSCRIPT)
 
 innmail:	innmail.in       $(FIX)	; $(FIX) innmail.in
+innreport:	innreport.in     $(FIX)	; $(FIX) innreport.in
 innstat:	innstat.in       $(FIX)	; $(FIX) innstat.in
 innwatch:	innwatch.in      $(FIX)	; $(FIX) innwatch.in
 rc.news:	rc.news.in       $(FIX)	; $(FIX) rc.news.in
