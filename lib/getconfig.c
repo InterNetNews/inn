@@ -228,7 +228,6 @@ SetDefaults(void)
     innconf->pathnews = NULL;
     innconf->pathbin = NULL;
     innconf->pathfilter = NULL;
-    innconf->pathcontrol = NULL;
     innconf->pathdb = NULL;
     innconf->pathetc = NULL;
     innconf->pathrun = NULL;
@@ -255,7 +254,6 @@ SetDefaults(void)
     innconf->nnrpdcheckart = TRUE;
     innconf->nicenewnews = 0;
     innconf->nicennrpd = 0;
-    innconf->usecontrolchan = FALSE;
     innconf->mergetogroups = FALSE;
     innconf->noreader = FALSE;
     innconf->nnrpdauthsender = FALSE;
@@ -298,7 +296,6 @@ ClearInnConf(void)
     if (innconf->pathnews != NULL) DISPOSE(innconf->pathnews);
     if (innconf->pathbin != NULL) DISPOSE(innconf->pathbin);
     if (innconf->pathfilter != NULL) DISPOSE(innconf->pathfilter);
-    if (innconf->pathcontrol != NULL) DISPOSE(innconf->pathcontrol);
     if (innconf->pathdb != NULL) DISPOSE(innconf->pathdb);
     if (innconf->pathetc != NULL) DISPOSE(innconf->pathetc);
     if (innconf->pathrun != NULL) DISPOSE(innconf->pathrun);
@@ -355,9 +352,6 @@ CheckInnConf(void)
     }
     if (innconf->pathfilter == NULL) {
 	innconf->pathfilter = COPY(cpcatpath(innconf->pathbin, "filter"));
-    }
-    if (innconf->pathcontrol == NULL) {
-	innconf->pathcontrol = COPY(cpcatpath(innconf->pathbin, "control"));
     }
     if (innconf->pathdb == NULL) {
 	innconf->pathdb = COPY(cpcatpath(innconf->pathnews, "db"));
@@ -769,11 +763,6 @@ ReadInnConf(void)
 		if (!bit) innconf->pathfilter = COPY(p);
 		SET_CONFIG(CONF_VAR_PATHFILTER);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_PATHCONTROL)) {
-		TEST_CONFIG(CONF_VAR_PATHCONTROL, bit);
-		if (!bit) innconf->pathcontrol = COPY(p);
-		SET_CONFIG(CONF_VAR_PATHCONTROL);
-	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHDB)) {
 		TEST_CONFIG(CONF_VAR_PATHDB, bit);
 		if (!bit) innconf->pathdb = COPY(p);
@@ -908,11 +897,6 @@ ReadInnConf(void)
 		TEST_CONFIG(CONF_VAR_NICENNRPD, bit);
 		if (!bit) innconf->nicennrpd = atoi(p);
 		SET_CONFIG(CONF_VAR_NICENNRPD);
-	    } else 
-	    if (EQ(ConfigBuff,_CONF_USECONTROLCHAN)) {
-		TEST_CONFIG(CONF_VAR_USECONTROLCHAN, bit);
-		if (!bit && boolval != -1) innconf->usecontrolchan = boolval;
-		SET_CONFIG(CONF_VAR_USECONTROLCHAN);
 	    } else 
 	    if (EQ(ConfigBuff,_CONF_MERGETOGROUPS)) {
 		TEST_CONFIG(CONF_VAR_MERGETOGROUPS, bit);
