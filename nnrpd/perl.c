@@ -140,7 +140,6 @@ HandleHeaders(article)
        for (hp = Table; hp < EndOfTable; hp++) {
          if (caseEQn(p, hp->Name, hp->Size)) {
            hp->Value = COPY(s);
-           i = 1;
            HeaderLen += strlen(s) + hp->Size + 3;
            break;
          }
@@ -155,9 +154,10 @@ HandleHeaders(article)
        x = strlen(p) + strlen(s) + 3;
        t = NEW(char, x);
        sprintf(t,"%s: %s",p,s);
-       OtherHeaders[OtherCount++] = t;
+       OtherHeaders[i++] = t;
        HeaderLen += x; 
      }
+     OtherCount = i;
 #ifdef DEBUG_MODIFY
      dumpTable("After Mod");
 #endif /* DEBUG_MODIFY */
