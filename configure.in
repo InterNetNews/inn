@@ -159,6 +159,12 @@ compress)
 esac
 AC_SUBST(LOG_COMPRESS)
 AC_SUBST(LOG_COMPRESSEXT)
+dnl
+AC_ARG_ENABLE(tagged-hash,[  --enable-tagged-hash    use tagged hash table for history], DO_DBZ_TAGGED_HASH=DO, DO_DBZ_TAGGED_HASH=DONT)
+AC_SUBST(DO_DBZ_TAGGED_HASH)
+dnl
+AC_ARG_ENABLE(merge-to-groups,[  --enable-merge-to-groups     merge to groups], DO_MERGE_TO_GROUPS=DO, DO_MERGE_TO_GROUPS=DONT)
+AC_SUBST(DO_MERGE_TO_GROUPS)
 dnl Automatic check for Mail is frequently wrong.  Use innmail to have
 dnl a single interface.
 dnl AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
@@ -668,6 +674,7 @@ AC_SUBST(EXTRA_SRC)
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 AC_CONFIG_HEADER(include/config.h)
 AC_OUTPUT(
+	BUILD
 	Makefile.global 
 	makedirs.sh 
 	config/config.data 

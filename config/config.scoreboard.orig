@@ -566,10 +566,6 @@
   ||##[autoconf]
   ||#### =()<_PATH_COMPRESS		@<_PATH_COMPRESS>@>()=
   ||_PATH_COMPRESS		@ac_cv_subst_path_compress@
-[IN1.7=@7][WDF=autoconf][WOR=yes][P=high]
-  ||##  What extension your compress appends
-  ||#### =()<_PATH_COMPRESSEXT	@<_PATH_COMPRESSEXT>@>()=
-  ||_PATH_COMPRESSEXT	.Z
 [IN1.7=@7][WDF=confparam][WOR=yes]
   ||##  Where temporary files live on the server
   ||##[autoconf]
