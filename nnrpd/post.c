@@ -357,18 +357,18 @@ ProcessHeaders(linecount, idbuff)
 	}
     }
 
-#if	defined(DO_NNRP_AUTH_SENDER)
-    /* If authorized and we didn't get a sender, add the header based on
-     * our info.  If not authorized, zap the Sender so we don't put out
-     * unauthenticated data. */
-    if (PERMauthorized && HDR(_sender) == NULL) {
-	(void)sprintf(sendbuff, "%s@%s",
-	    PERMuser ? PERMuser : "UNKNOWN", ClientHost);
-	HDR(_sender) = sendbuff;
+    if (innconf->nnrpdauthsender) {
+	/* If authorized and we didn't get a sender, add the header based on
+	 * our info.  If not authorized, zap the Sender so we don't put out
+	 * unauthenticated data. */
+	if (PERMauthorized && HDR(_sender) == NULL) {
+	    (void)sprintf(sendbuff, "%s@%s",
+		PERMuser ? PERMuser : "UNKNOWN", ClientHost);
+	    HDR(_sender) = sendbuff;
+	}
+	else if (!PERMauthorized)
+	    HDR(_sender) = NULL;
     }
-    else if (!PERMauthorized)
-	HDR(_sender) = NULL;
-#endif	/* defined(DO_NNRP_AUTH_SENDER) */
 
     /* Set Date. */
     if (GetTimeInfo(&Now) < 0) {
