@@ -291,3 +291,19 @@ overview_config_set(struct overview *overview, struct overview_config *config)
     overview->cutoff = config->cutoff;
     return overview->method->ctl(OVCUTOFFLOW, &overview->cutoff);
 }
+
+
+/*
+**  Return the free space of the overview method as a percentage, or -1 if
+**  that concept isn't meaningful for the overview method.
+*/
+float
+overview_free_space(struct overview *overview)
+{
+    int space;
+
+    if (overview->method->ctl(OVSPACE, &space))
+        return space;
+    else
+        return -1;
+}
