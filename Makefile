@@ -182,12 +182,12 @@ release: ChangeLog
 ##  run by a maintainer since it depends on cvs log working and also
 ##  requires cvs2cl be available somewhere.
 ChangeLog:
-	support/mkchangelog
+	$(PERL) support/mkchangelog
 
 
 ##  Check the MANIFEST against the files present in the current tree,
 ##  building a list with find and running diff between the lists.
 check-manifest:
 	sed -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
-	support/mkmanifest > LIST.real
+	$(PERL) support/mkmanifest > LIST.real
 	diff -u LIST.manifest LIST.real
