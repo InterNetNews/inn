@@ -74,28 +74,22 @@ if test x"$inn_use_libtool" = xyes ; then
     AC_PROG_LIBTOOL
     EXTLIB='la'
     EXTOBJ='lo'
-    LIBTOOL='../libtool'
-    LIBTOOLCC='../libtool --mode=compile'
-    UPLIBTOOLCC='../../libtool --mode=compile'
-    LIBTOOLLD='../libtool --mode=link'
-    UPLIBTOOLLD='../../libtool --mode=link'
+    LIBTOOL='$(top)/libtool'
+    LIBTOOLCC='$(top)/libtool --mode=compile'
+    LIBTOOLLD='$(top)/libtool --mode=link'
 else
     AC_CANONICAL_HOST
     EXTLIB='a'
     EXTOBJ='o'
     LIBTOOL=''
     LIBTOOLCC=''
-    UPLIBTOOLCC=''
     LIBTOOLLD=''
-    UPLIBTOOLLD=''
     AC_SUBST(LIBTOOL)
 fi
 AC_SUBST(EXTLIB)
 AC_SUBST(EXTOBJ)
 AC_SUBST(LIBTOOLCC)
-AC_SUBST(UPLIBTOOLCC)
 AC_SUBST(LIBTOOLLD)
-AC_SUBST(UPLIBTOOLLD)
 
 dnl INN has quite a few more configurable paths than autoconf supports by
 dnl default.  For right now, those additional paths are configured with
@@ -307,9 +301,13 @@ else
     AC_MSG_RESULT(yes)
     AC_MSG_CHECKING(for BerkeleyDB location)
     if test x"$BERKELEY_DB_DIR" = xyes ; then
-        for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 BerkeleyDB.3.3 BerkeleyDB.4.0 ; do
-            for d in /usr /opt /usr/local ; do
-                test -d "$d/$v" && BERKELEY_DB_DIR="$d/$v"  
+        for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
+                 BerkeleyDB.3.3 BerkeleyDB.4.0 ; do
+            for d in $prefix /usr/local /opt /usr ; do
+                if test -d "$d/$v" ; then
+                    BERKELEY_DB_DIR="$d/$v"
+                    break
+                fi
 	    done
         done
     fi
