@@ -91,6 +91,7 @@ sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+$(LIBHIST):	; (cd ../history ; $(MAKE))
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.

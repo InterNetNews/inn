@@ -100,6 +100,7 @@ sys2nf:		sys2nf.o      $(LIBINN)	; $(LINK) sys2nf.o  $(INNLIBS)
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+$(LIBHIST):	; (cd ../history ; $(MAKE))
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.

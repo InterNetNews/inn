@@ -73,6 +73,7 @@ $(D)$(PATHBIN)/inndstart: inndstart
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+$(LIBHIST):	; (cd ../history ; $(MAKE))
 
 
 ##  Profiling.  These rules have not been checked for a while and may need
