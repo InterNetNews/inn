@@ -1336,7 +1336,11 @@ FUNCTYPE CMDxover(int ac, char *av[])
 		SendIOb(p, linelen);
 		SendIOb("\r\n", 2);
 	    } else {
-		Printf("%s\r\n", p);
+	        if (StorageAPI) {
+		    Printf("%ld\t%s\r\n", i, p);
+		} else {
+		    Printf("%s\r\n", p);
+		}
 	    }
 	    continue;
 	}

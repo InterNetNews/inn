@@ -684,7 +684,7 @@ main(argc, argv, env)
 	val = TRUE;
     else
 	val = FALSE;
-    if (!OVERsetup(OVER_MMAP, &val)) {
+    if (!OVERsetup(OVER_MMAP, &val) || !OVERsetup(OVER_MODE, "r")) {
 	syslog(L_FATAL, "cant setup unified overview %m");
 	ExitWithStats(1);
     }
