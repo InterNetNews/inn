@@ -34,7 +34,7 @@ scope *topScope = NULL ;
 static scope *currScope = NULL ;
 char *errbuff = NULL ;
 
-static void appendName (scope *s, char *p) ;
+static void appendName (scope *s, char *p, size_t len) ;
 static char *valueScopedName (value *v) ;
 static void freeValue (value *v) ;
 static char *checkName (scope *s, const char *name) ;
@@ -316,15 +316,15 @@ scope *findScope (scope *s, const char *name, int mustExist)
 /****************************************************************************/
 
 
-static void appendName (scope *s, char *p) 
+static void appendName (scope *s, char *p, size_t len)
 {
   if (s == NULL)
     return ;
   else
     {
-      appendName (s->parent,p) ;
-      strcat (p,s->me->name) ;
-      strcat (p,":") ;
+      appendName (s->parent,p,len) ;
+      strlcat (p,s->me->name,len) ;
+      strlcat (p,":",len) ;
     }
 }
 
@@ -339,11 +339,12 @@ static char *valueScopedName (value *v)
       len += strlen (p->me->name) + 1 ;
       p = p->parent ;
     }
+  len++;
 
-  q = malloc (len + 1) ;
+  q = xmalloc (len) ;
   q [0] = '\0' ;
-  appendName (v->myscope,q) ;
-  strcat (q,v->name) ;
+  appendName (v->myscope,q,len) ;
+  strlcat (q,v->name,len) ;
 
   return q ;
 }
@@ -380,12 +381,8 @@ static char *checkName (scope *s, const char *name)
       char *n = NULL ;
       
       if (strcmp (name,s->values [i]->name) == 0) {
-
-#define FMT "Two definitions of %s"
-
         n = valueScopedName (s->values[i]) ;
-        error = malloc (strlen (FMT) + strlen (n) + 2) ;
-        sprintf (error,FMT,n) ;
+        error = concat ("Two definitions of ", n, (char *) 0) ;
         free (n) ;
         return error ;
       }
@@ -578,20 +575,20 @@ static char *keyOk (const char *key)
 
   if (key == NULL)
     {
-      rval = malloc (strlen ("line : NULL key") + 15) ;
+      rval = xmalloc (strlen ("line : NULL key") + 15) ;
       sprintf (rval,"line %d: NULL key", lineCount) ;
       return rval ;
     }
   else if (*key == '\0')
     {
-      rval = malloc (strlen ("line : EMPTY KEY") + 15) ;
+      rval = xmalloc (strlen ("line : EMPTY KEY") + 15) ;
       sprintf (rval,"line %d: EMPTY KEY", lineCount) ;
       return rval ;
     }
   
   if (!CTYPE(isalpha, *p))
     {
-      rval = malloc (strlen (NON_ALPHA) + strlen (key) + 15) ;
+      rval = xmalloc (strlen (NON_ALPHA) + strlen (key) + 15) ;
       sprintf (rval,NON_ALPHA,lineCount, key) ;
       return rval ;
     }
@@ -601,7 +598,7 @@ static char *keyOk (const char *key)
     {
       if (!(CTYPE (isalnum, *p) || *p == '_' || *p == '-'))
         {
-          rval = malloc (strlen (BAD_KEY) + strlen (key) + 15) ;
+          rval = xmalloc (strlen (BAD_KEY) + strlen (key) + 15) ;
           sprintf (rval,BAD_KEY,lineCount,key) ;
           return rval ;
         }
@@ -626,13 +623,13 @@ void configAddLoadCallback (PFIVP func,void *arg)
       funcCount += 10 ;
       if (funcs == NULL)
         {
-          funcs = (PFIVP *) malloc (sizeof (PFIVP) * funcCount);
-          args = (void **) malloc (sizeof (void *) * funcCount) ;
+          funcs = xmalloc (sizeof (PFIVP) * funcCount);
+          args = xmalloc (sizeof (void *) * funcCount) ;
         }
       else
         {
-          funcs = (PFIVP *) realloc (funcs,sizeof (PFIVP) * funcCount);
-          args = (void **) realloc (args,sizeof (void *) * funcCount) ;
+          funcs = xrealloc (funcs,sizeof (PFIVP) * funcCount);
+          args = xrealloc (args,sizeof (void *) * funcCount) ;
         }
     }
 
@@ -730,7 +727,7 @@ scope: entries ;
 entries:	
 	| entries entry
 	| entries error {
-		errbuff = malloc (strlen(SYNTAX_ERROR) + 12) ;
+		errbuff = xmalloc (strlen(SYNTAX_ERROR) + 12) ;
 		sprintf (errbuff,SYNTAX_ERROR,lineCount) ;
 		YYABORT ;
 	}
@@ -751,7 +748,7 @@ entry:	PEER WORD LBRACE {
 		currScope = currScope->parent ;
 	}
 	| WORD WORD LBRACE {
-		errbuff = malloc (strlen(UNKNOWN_SCOPE_TYPE) + 15 +
+		errbuff = xmalloc (strlen(UNKNOWN_SCOPE_TYPE) + 15 +
 					  strlen ($1)) ;
 		sprintf (errbuff,UNKNOWN_SCOPE_TYPE,lineCount,$1) ;
                 free ($1) ;
@@ -812,7 +809,7 @@ int yyerror (const char *s)
 #undef FMT
 #define FMT "line %d: %s"
   
-  errbuff = malloc (strlen (s) + strlen (FMT) + 20) ;
+  errbuff = xmalloc (strlen (s) + strlen (FMT) + 20) ;
   sprintf (errbuff,FMT,lineCount,s) ;
 
   return 0 ;
