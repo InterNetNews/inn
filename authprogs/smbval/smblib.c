@@ -35,6 +35,7 @@ typedef unsigned char uchar;
 #include "rfcnb.h"
 
 #include <signal.h>
+#include <string.h>
 
 SMB_State_Types SMBlib_State;
 
