@@ -115,7 +115,7 @@ file and is otherwise the same.\n\
 \n\
 The second form gives the total count of overview records stored.  The\n\
 third form gives the percentage space allocated to overview that's been\n\
-used (if the overview method used supports this query.";
+used (if the overview method used supports this query).";
 
 /*
 **  Given a path, a flag saying whether to look at inodes instead of free
