@@ -227,6 +227,7 @@ void SetDefaults()
     innconf->pathincoming = NULL;
     innconf->patharchive = NULL;
     innconf->pathtmp = NULL;
+    innconf->pathuniover = NULL;
 
     innconf->logsitename = TRUE;
     innconf->extendeddbz = FALSE;
@@ -275,6 +276,7 @@ void ClearInnConf()
     if (innconf->pathincoming != NULL) DISPOSE(innconf->pathincoming);
     if (innconf->patharchive != NULL) DISPOSE(innconf->patharchive);
     if (innconf->pathtmp != NULL) DISPOSE(innconf->pathtmp);
+    if (innconf->pathuniover != NULL) DISPOSE(innconf->pathuniover);
     if (innconf->decnetdomain != NULL) DISPOSE(innconf->decnetdomain);
     if (innconf->backoff_db != NULL) DISPOSE(innconf->backoff_db);
     memset(ConfigBit, '\0', ConfigBitsize);
@@ -363,6 +365,9 @@ int CheckInnConf()
     }
     if (innconf->pathtmp == NULL) {
 	innconf->pathtmp = COPY(_PATH_TMP);
+    }
+    if (innconf->pathuniover == NULL) {
+	innconf->pathuniover = COPY(cpcatpath(innconf->pathspool, "uniover"));
     }
     /* Set the TMPDIR variable unconditionally and globally */
     tmpdir = NEW(char, 8 + strlen(innconf->pathtmp));
@@ -795,6 +800,16 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_PATHARCHIVE, bit);
 		if (!bit) innconf->patharchive = COPY(p);
 		SET_CONFIG(CONF_VAR_PATHARCHIVE);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHTMP)) {
+		TEST_CONFIG(CONF_VAR_PATHTMP, bit);
+		if (!bit) innconf->pathtmp = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHTMP);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_PATHUNIOVER)) {
+		TEST_CONFIG(CONF_VAR_PATHUNIOVER, bit);
+		if (!bit) innconf->pathuniover = COPY(p);
+		SET_CONFIG(CONF_VAR_PATHUNIOVER);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_LOGSITENAME)) {
 		TEST_CONFIG(CONF_VAR_LOGSITENAME, bit);
