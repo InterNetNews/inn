@@ -127,8 +127,12 @@ typedef enum _CHANNELSTATE {
 /*
 **  I/O channel, the heart of the program.  A channel has input and output
 **  buffers, and functions to call when there is input to be read, or when
-**  all the output was been written.
+**  all the output was been written.  Many callback functions take a
+**  pointer to a channel, so set up a typedef for that.
 */
+struct _CHANNEL;
+typedef void (*innd_callback_t)(struct _CHANNEL *);
+
 typedef struct _CHANNEL {
     CHANNELTYPE         Type;
     CHANNELSTATE        State;
@@ -170,11 +174,11 @@ typedef struct _CHANNEL {
     time_t              LastActive;
     time_t              NextLog;
     struct in_addr      Address;
-    FUNCPTR             Reader;
-    FUNCPTR             WriteDone;
+    innd_callback_t     Reader;
+    innd_callback_t     WriteDone;
     time_t              Waketime;
     time_t              Started;
-    FUNCPTR             Waker;
+    innd_callback_t     Waker;
     POINTER             Argument;
     POINTER             Event;
     BUFFER              In;
@@ -528,8 +532,9 @@ extern void             BUFFtrimcr(BUFFER *bp);
 
 extern bool             CHANsleeping(CHANNEL *cp);
 extern CHANNEL *        CHANcreate(int fd, CHANNELTYPE Type,
-                                   CHANNELSTATE State, FUNCPTR Reader,
-                                   FUNCPTR WriteDone);
+                                   CHANNELSTATE State,
+                                   innd_callback_t Reader,
+                                   innd_callback_t WriteDone);
 extern CHANNEL *        CHANiter(int *cp, CHANNELTYPE Type);
 extern CHANNEL *        CHANfromdescriptor(int fd);
 extern char *           CHANname(const CHANNEL *cp);
@@ -545,7 +550,7 @@ extern void             RCHANadd(CHANNEL *cp);
 extern void             RCHANremove(CHANNEL *cp);
 
 extern void             SCHANadd(CHANNEL *cp, time_t Waketime,
-                                 POINTER Event, FUNCPTR Waker,
+                                 POINTER Event, innd_callback_t Waker,
                                  POINTER Argument);
 extern void             SCHANremove(CHANNEL *cp);
 extern void             SCHANwakeup(POINTER *Event);
