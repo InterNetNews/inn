@@ -113,9 +113,16 @@
 **  Things determined automatically by autoconf.  Nothing below this point
 **  should require manual editing; if anything here is wrong, see if you
 **  should be passing a flag to configure to set it correctly for your
-**  system.  Fodder for autoheader is provided in sort -df order
-**  (alphabetical, case-insensitive, ignoring punctuation) to make it easier
-**  to check whether a given entry is in the file.
+**  system.
+**
+**  Be aware that success of some tests will cause other tests to be skipped
+**  since their results aren't then needed.  For example, if you have fcntl,
+**  INN won't bother looking for flock and HAVE_FLOCK will be false whether
+**  you have it or not.  This is normal.
+**
+**  Fodder for autoheader is provided in sort -df order (alphabetical,
+**  case-insensitive, ignoring punctuation) to make it easier to check
+**  whether a given entry is in the file.
 */
 @TOP@
 
@@ -127,10 +134,6 @@
 
 /* Define to `char *' if <sys/types.h> doesn't define.  */
 #undef caddr_t
-
-/* Define one of the following for the close-on-exec style to use.  */
-#undef CLX_FCNTL
-#undef CLX_IOCTL
 
 /* Define to compile in support for automatic keyword generation.  */
 #undef DO_KEYWORDS
@@ -159,17 +162,8 @@
 /* Define if your msync() takes three arguments.  */
 #undef HAVE_MSYNC_3_ARG
 
-/* Define if you have the <ndbm.h> header file.  */
-#undef HAVE_NDBM_H
-
 /* Define if you have both setrlimit() and getrlimit().  */
 #undef HAVE_RLIMIT
-
-/* Define if you have the setproctitle function.  */
-#undef HAVE_SETPROCTITLE
-
-/* Define if you have the statvfs function.  */
-#undef HAVE_STATVFS
 
 /* Define if <sys/un.h> defines the SUN_LEN macro.  */
 #undef HAVE_SUN_LEN
@@ -196,10 +190,10 @@
 #undef LOG_INN_PROG
 #undef LOG_INN_SERVER
 
-/* Define if you need to msync() after writes.  */
+/* Define if you need to call msync after writes.  */
 #undef MMAP_MISSES_WRITES
 
-/* Define if you need to msync() for read() to see changes.  */
+/* Define if you need to call msync for calls to read to see changes.  */
 #undef MMAP_NEEDS_MSYNC
 
 /* Define one of the following for the non-blocking I/O style to use.  */
