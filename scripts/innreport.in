@@ -1850,10 +1850,12 @@ sub Write_Results {
   $TEXT = ($TEXT =~ m/^true$/io) ? 1 : 0;
 
   # Need an html report ?
-  $HTML = defined $output{$report}{'html'} ? $output{$report}{'html'} :
-    (defined $output{'default'}{'html'} ? $output{'default'}{'html'} : '');
-  die "Error in config file. Field 'html' is mandatory.\n" unless $HTML;
-  $HTML = ($HTML =~ m/^true$/io) ? 1 : 0;
+  if ($HTML_output) {
+    $HTML = defined $output{$report}{'html'} ? $output{$report}{'html'} :
+      (defined $output{'default'}{'html'} ? $output{'default'}{'html'} : '');
+    die "Error in config file. Field 'html' is mandatory.\n" unless $HTML;
+    $HTML = ($HTML =~ m/^true$/io) ? 1 : 0;
+  }
   # Double table ?
   $DOUBLE = defined $output{$report}{'double'} ?
     $output{$report}{'double'} : 0;
