@@ -127,7 +127,7 @@ Future Projects:
 
 * Currently only innd and innfeed increase their file descriptor limits.
   Other parts of INN, notably makehistory, may benefit from doing the same
-  thing (and it should really be a library function).
+  thing if they can without root privileges.
 
 * Consider implementing the HEADERS command as discussed rather
   extensively in news.software.nntp.  [Greg Andruk has a preliminary
@@ -157,12 +157,6 @@ Future Projects:
 
 * A PAM-based authenticator for the readers.conf external authentication
   support.
-
-* Currently, if open returns a file descriptor higher than select can
-  handle (such as on a Solaris system where the maximum file descriptor
-  limit has been increased above 1024 in /etc/system), INN will crash in a
-  fairly nasty fashion.  It may be possible to check this by comparing
-  with FD_SETSIZE.
 
 * If backoffdb is set in inn.conf and that directory doesn't exist, nnrpd
   refuses to start.  Either the directory should be created by the install
@@ -204,19 +198,13 @@ Future Projects:
 * Validity checks on the poster's address.  (Although this could also be
   handled by the nnrpd posting filter.)
 
-* There are a whole bunch of places in the INN source that apply wildmats,
-  possibly comma-separated, to comma-separated lists of newsgroups,
-  sometimes including poison support and sometimes not.  All this code
-  should be centralized into libinn with the basic wildmat code.
-
 * Get rid of GetTimeInfo and TIMEINFO.  All the struct is is a struct
   timeval plus time zone information.  All of the parts of INN that deal
-  with time zone information should be isolated in lib/date.c; the only
-  thing remaining to move there is the parsing of dates given to NEWNEWS
-  and NEWGROUPS.  The rest of INN uses GetTimeInfo where a plain call to
-  time would often work fine, or at most gettimeofday, and there's no
-  reason to compute the time zone everywhere.  Plus, it makes the code
-  more readable to use standard functions and data types.
+  with time zone information are isolated in lib/date.c.  The rest of INN
+  uses GetTimeInfo where a plain call to time would often work fine, or
+  at most gettimeofday, and there's no reason to compute the time zone
+  everywhere.  Plus, it makes the code more readable to use standard
+  functions and data types.
 
 * Revisit support for aliased groups and what nnrpd does with them.
   Should posts to the alias automatically be redirected to the real group?
@@ -285,6 +273,8 @@ Future Projects:
   with large file support using a server that wasn't so compiled (and vice
   versa).  The main one is the history file, but also reportedly affected
   is the buffindexed (and probably the tradindexed) overview method.
+  Ideally, all of INN's data files should be as portable as possible
+  (although network byte order is almost definitely too much effort).
 
 * makedbz should be more robust in the presence of malformed history
   lines, discarding with them or otherwise dealing with them.
