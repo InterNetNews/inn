@@ -236,10 +236,14 @@ STATIC char *GetXref(ARTHANDLE *art) {
   if (!Nocr)
     p = p1;
   /* skip pathhost */
-  for (; *q == ' '; q++);
-  if ((q = strchr(q, ' ')) == NULL)
-    return 0;
-  for (q++; *q == ' '; q++);
+  for (; (*q == ' ') && (q < p); q++);
+  if (q == p)
+    return NULL;
+  if ((q = memchr(q, ' ', p - q)) == NULL)
+    return NULL;
+  for (q++; (*q == ' ') && (q < p); q++);
+  if (q == p)
+    return NULL;
   buff = NEW(char, p - q + 1);
   memcpy(buff, q, p - q);
   buff[p - q] = '\0';
