@@ -543,7 +543,7 @@ parsedate_rfc2822(const char *date)
     int zone_sign;
     long zone_offset;
     struct tm tm;
-    int values[7];
+    int values[8];
     time_t result;
 
     /* The basic rules.  Note that we don't bother to check whether the day of
