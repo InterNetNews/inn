@@ -906,7 +906,7 @@ BOOL buffindexed_open(int mode) {
   groupfn = NEW(char, strlen(dirname) + strlen("/group.index") + 1);
   strcpy(groupfn, dirname);
   strcat(groupfn, "/group.index");
-  if (Needunlink && unlink(groupfn) == 0)
+  if (Needunlink && unlink(groupfn) == 0) {
     syslog(L_NOTICE, "%s: all buffers are brandnew, unlink '%s'", LocalLogName, groupfn);
   }
   GROUPfd = open(groupfn, O_RDWR | O_CREAT, ARTFILE_MODE);
