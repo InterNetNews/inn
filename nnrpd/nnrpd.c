@@ -1062,8 +1062,8 @@ main(int argc, char *argv[])
 	    if (fd < 0)
 		continue;
 	    
-	    for (i = 0; i <= MAX_FORKS && (pid = fork()) < 0; i++) {
-		if (i == MAX_FORKS) {
+	    for (i = 0; i <= innconf->maxforks && (pid = fork()) < 0; i++) {
+		if (i == innconf->maxforks) {
 		    syslog(L_FATAL, "cant fork (dropping connection): %m");
 		    continue;
 		}
