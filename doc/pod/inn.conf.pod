@@ -927,8 +927,8 @@ C<300>.
 The threshold whether moving already read data to the top of buffer or
 extending buffer.  The buffer described here is used for reading NNTP data.
 For those systems which do not have enough memory should not use higher value.
-The default value is 8192.  Acceptable value is between 0 and 1048576 and
-the value out of range is treated as 1048576.
+The default value is 8192.  The value is allowed to be between 0 and 1048576,
+and the value out of range is treated as 1048576.
 
 =item I<icdsynccount>
 
@@ -949,11 +949,12 @@ to buffindexed overview storage method.  The default value is C<1024>
 
 =item I<maxcmdreadsize>
 
-Maximun buffer size for reading NNTP command.  It should not be large for
-system which is slow to process and store articles.  Otherwise innd(8) will
-stay for long time at one channel to process and have other channels keep
-waiting for long time.
-The default value is BUFSIZ defined in stdio.h(C<1024> in most environment).
+If set to anything other than C<0>, maximun buffer size for reading NNTP
+command will have this value.  It should not be large for system which is
+slow to process and store articles.  Otherwise innd(8) will stay for long
+time at one channel to process and have other channels keep waiting for
+long time.  The default value is BUFSIZ defined in stdio.h(C<1024> in most
+environment).
 
 =item I<maxforks>
 
