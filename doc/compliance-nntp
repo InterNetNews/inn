@@ -1,0 +1,810 @@
+$Id$
+
+The following are outstanding issues regarding INN's compliance with the
+NNTP standard.  The reference document used in this analysis is the
+current NNTP IETF Working Group draft (draft-ietf-nntpext-base-13.txt or
+later), not RFC 977 (which is woefully out of date).
+
+This file documents only compliance issues with the latest version of the
+standard NNTP protocol.  It does not cover INN's private extensions or
+INN's implementation of widely available extensions not documented in the
+NNTP standard.  Specifically, it does not cover the extensions listed in
+RFC 2980.
+
+------------------------------
+
+  Summary: innd doesn't require whitespace between commands and arguments
+ Standard: draft-ietf-nntpext-base-13.txt, section 4
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/nc.c NCproc() and command handlers
+ Severity: Accepts invalid input
+
+The standard states:
+
+    Keywords and arguments MUST be each separated by one or more US-ASCII
+    SPACE or US-ASCII TAB characters.
+
+This is not checked in NCproc or in the individual command handlers in
+innd.  Commands followed immediately by their argument will be accepted by
+innd.  For example:
+
+    stat<9k6vjk.hg0@example.com> 
+    223 0 @0301543531000000000000079AAE0000006A@
+
+Impact:  Should one command be a prefix of another, innd could dispatch
+the handling of the command to the wrong handler, treating the remainder
+of the command verb as an argument.  This laxness also encourages sloppy
+client code.  Internally, the lack of argument parsing in NCproc also
+results in code duplication in all of the command handlers.
+
+Suggested fix:  Lift the argument parsing code into a function called from
+NCproc, breaking the command line into a vector of command and arguments.
+This will work for all commands implemented by innd and will simplify the
+implementation of command handlers, as well as fixing this problem.  This
+is what nnrpd already does.
+
+Impact of fix:  It's possible that some serving code is relying on this
+behavior and not sending spaces after commands.  Fixing this problem would
+break interoperability with that code.
+
+------------------------------
+
+  Summary: INN doesn't check argument length
+ Standard: draft-ietf-nntpext-base-13.txt, section 4
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/nc.c and nnrpd/nnrpd.c
+ Severity: Accepts invalid input
+
+The standard says:
+
+    Arguments MUST NOT exceed 497 octets.
+
+This is not checked by either innd or nnrpd, although both do check that
+the command itself does not exceed 512 octets.
+
+Impact:  Small.  May accept invalid commands in extremely rare edge cases.
+
+Suggested fix:  Probably not worth fixing separately, although if standard
+command parsing code is written to handle both innd and nnrpd, it wouldn't
+hurt to check this along with everything else.
+
+------------------------------
+
+  Summary: Initial activity timer is shorter than three minutes
+ Standard: draft-ietf-nntpext-base-13.txt, section 4
+  Version: 1.5 to CURRENT 2001-07-04
+Reference: nnrpd/nnrpd.c main()
+ Severity: Violates MUST
+
+The standard says:
+
+    An NNTP server MAY have an inactivity autologout timer.  Such a timer
+    MUST be of at least three minutes duration.
+
+nnrpd has a hard-coded timeout of 10 seconds for an initial command.  Once
+at least one command has been received, the timeout becomes whatever was
+configured in inn.conf, but the standard doesn't appear to make an
+exception for an initial timeout.
+
+Impact:  Valid connections over extremely slow links may see the news
+server drop the connection before the first command is received.  This
+behavior has been seen in practice (we have bug reports about it).  It's
+also slightly annoying when debugging problems by hand over protocol.
+
+Suggested fix:  Use either the standard inactivity timeout period or a
+value of at least three minutes for the initial timeout.  Alternately, if
+the impact of this fix is too grave, propose that the standard be changed
+to allow a shorter timeout for the initial command.  Another alternative
+would be to make this timeout separately configurable, with a default that
+complies with the standard and warnings about setting it lower than that.
+
+Impact of fix:  The code has the following justification for its current
+behavior:
+
+    /*
+    ** Here is some defensive code to protect the news server from hosts,
+    ** mostly PC's, that sometimes make a connection and then never give
+    ** any commands.  The connection is abandoned, but we're never told
+    ** about it.  The first time the connection is read, it will have a
+    ** timeout value of INITIAL_TIMEOUT seconds.  All subsequent reads
+    ** will have the standard timeout of CLIENT_TIMEOUT seconds.
+    */
+
+A proliferation of such clients could cause an unacceptable number of
+forked nnrpd processes on the news server, impacting performance for the
+rest of the server.  It is unknown how many clients in current use have
+this problem.
+
+------------------------------
+
+  Summary: Inactivity timer configuration isn't checked
+ Standard: draft-ietf-nntpext-base-13.txt, section 4
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/chan.c and nnrpd/nnrpd.c
+ Severity: Accepts invalid configuration
+
+The standard says:
+
+    An NNTP server MAY have an inactivity autologout timer.  Such a timer
+    MUST be of at least three minutes duration.
+
+The autologout timer for innd (peertimeout) and nnrpd (clienttimeout) are
+both configurable in inn.conf.  They can be configured to anything the
+user desires, and no warning is given for values that violate the NNTP
+standard.
+
+Impact:  An unsuspecting user may configure their server in violation of
+the NNTP standard without realizing it.
+
+Suggested fix:  Add this check to inncheck.  This configuration should
+still be allowed; sometimes there's a reason to configure a server to
+violate this sort of provision of the protocol.  But there should be a
+warning for this type of configuration, and INN already has the inncheck
+script to warn about possibly incorrect configurations.
+
+------------------------------
+
+  Summary: nnrpd sends a final message on inactivity timeout
+ Standard: draft-ietf-nntpext-base-13.txt, section 4
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: nnrpd/nnrpd.c
+ Severity: Violates "should"
+
+The standard says, concerning inactivity timeouts:
+
+    When the timer expires, the server should close the TCP connection
+    without sending any response to the client.
+
+nnrpd sends a final message like:
+
+    503 Timeout after 605 seconds, closing connection.
+
+before closing the connection.  It also does this with a timeout during a
+POST command.
+
+Impact:  Unclear.  Could have strange results for the client if it wasn't
+expecting a server response, and may possibly change the handling of the
+close in the TCP stack on the server and the client.
+
+Suggested fix:  Remove that final message.  The general consensus on the
+ietf-nntp list was that sending out-of-order responses was a bad idea on
+general principles, and many other servers (including innd) already just
+drop the connection.
+
+Impact of fix:  If the message is dropped, it's less clear why the
+connection was dropped, particularly when debugging things by hand.
+
+------------------------------
+
+  Summary: Reply codes other than x9x used for private extensions
+ Standard: draft-ietf-nntpext-base-13.txt, section 4.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: include/nntp.h
+ Severity: Violates SHOULD
+
+The standard says:
+
+    Response codes not specified in this standard MAY be used for any
+    installation-specific additional commands also not specified.  These
+    SHOULD be chosen to fit the pattern of x9x specified above.
+
+INN uses quite a few response codes that do not fit this pattern for
+various extensions.  Some of these will likely later be standardized with
+the response codes that INN uses (the streaming commands, the
+authentication reply codes, and possibly the STARTTLS reply codes), but
+the rest (XGTITLE, MODE CANCEL, and XBATCH) should have used response
+codes in the x9x range.
+
+Impact:  Additional ambiguity over the meaning of reply codes, as those
+reply codes could later be standardized as the reply codes for other
+commands.
+
+Suggested fix:  For XGTITLE and probably XBATCH, there is no way to fix
+this now.  Changing the reply codes would break all existing
+implementations.  It may still be possible to change the reply codes for
+MODE CANCEL (which should probably be MODE XCANCEL), but it may not be
+worth the effort.
+
+------------------------------
+
+  Summary: innd may return 480 instead of 500 for unrecognized commands
+ Standard: draft-ietf-nntpext-base-13.txt, section 4.1.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/nc.c NCauthinfo()
+ Severity: Violates MUST
+
+The standard says:
+
+    If the command is not recognized, or it is an optional command or
+    extension that is not implemented by the server, the response code 500
+    MUST be returned.
+
+In innd, if the connection is determined to need authentication, all
+incoming commands other than MODE are handed off to NCauthinfo() rather
+than their normal command handlers.  NCauthinfo() responds with a 480
+reply code to anything other than AUTHINFO USER, AUTHINFO PASS, or QUIT.
+
+Impact:  Unlikely to cause problems in practice, but may confuse clients
+that don't understand the rarely used innd-level authentication
+mechanisms.
+
+Suggested fix:  Restructure the command table so that each command also
+has a flag indicating whether it requires authentication for peers that
+are required to authenticate.  (Some commands, like HELP and MODE READER,
+should be allowed without authentication.)  Then eliminate the special
+casing of the state CSgetauth (it may be better to store whether the peer
+has authenticated in the channel rather than in the channel state) and the
+special handling in NCauthinfo.  This should also simplify the code.
+
+------------------------------
+
+  Summary: INN rejects invalid LIST and MODE commands with 500, not 501
+ Standard: draft-ietf-nntpext-base-13.txt, section 4.1.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/nc.c NClist() and NCmode(), nnrpd/commands.c CMDmode()
+ Severity: Violates MUST
+
+The standard says:
+
+    If there is a syntax error in the arguments of a recognized command,
+    the response code 501 MUST be returned.  Note that where a command has
+    variants depending on a keyword (e.g. LIST ACTIVE and LIST
+    NEWSGROUPS), then 501 MUST be used when the requested variant is not
+    implemented but the base command is.
+
+However, innd returns a reply code of 500 for invalid LIST keywords and
+MODE keywords, the same as for any other invalid command.  nnrpd gets LIST
+correct, but has the same problem with MODE.
+
+Impact:  Clients may think that LIST or MODE itself is not implemented.
+
+Suggested fix:  Change NClist() to return 501 for invalid LIST keywords
+and NCmode() to return 501 for invalid MODE keywords.  Change CMDmode()
+likewise.
+
+------------------------------
+
+  Summary: innd rejects reader commands with 500, not 502
+ Standard: draft-ietf-nntpext-base-13.txt, section 4.1.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/nc.c NC_unimp()
+ Severity: Violates MUST
+
+The standard says:
+
+    If the client is not authorized to use the specified facility when the
+    server is in its current state, the response code 502 MUST be
+    returned.  A different command MIGHT change the server state and
+    permit the command if it is retried.
+
+innd rejects all reader commands with 500 instead.
+
+Impact:  Likely none, but could potentially confuse a reader client into
+thinking that sending MODE READER won't help.
+
+Suggested fix:  Create a new handler like NC_unimp() that returns 502 to
+all commands instead of 500 and change the dispatch tables to dispatch
+reader commands in innd to that handler.
+
+------------------------------
+
+  Summary: innd always sends 200 for an accepted connection
+ Standard: draft-ietf-nntpext-base-13.txt, section 7.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/nc.c NCsetup() and rc.c RCreader()
+ Severity: Violates MUST
+
+The standard says:
+
+    If the server will accept further commands from the client including
+    POST, the server MUST present a 200 greeting code.  If the server will
+    accept further commands from the client, but it is not authorized to
+    post articles using the POST command, the server MUST present a 201
+    greeting code.
+
+The implication is that the greeting code from innd (which doesn't
+implement POST and therefore is never going to allow it) should always be
+201, at least for the case where innd never spawns nnrpd.  In the case
+where innd spawns nnrpd, it's unclear what the greeting code should be.
+
+The current implementation nevers send 201 unless one knows for certain
+that the connection will never be allowed to issue a POST command, which
+means that innd always sends 200.
+
+It's unknown whether there is any transit news software that would have
+difficulties with a 201 greeting.  Both innxmit and innfeed handle it
+correctly in CURRENT 2001-07-04 and NNTPconnect() handles it correctly in
+INN 1.0, so it seems likely that if any such software exists, it's rare.
+
+Impact:  It's almost certain that the current innd behavior isn't hurting
+anything.  Even a confused client that thought 200 meant that it could
+send a POST command would then try and be rejected with no damage done.
+
+Suggested fix:  The purpose of this return code is to give a hint to a
+reading client indicating whether it should even attempt POST, since
+attempting it may involve a lot of work by the user only to have the post
+rejected.  It's only relevant to reading connections, not to transit
+connections.
+
+It's known that some clients, upon seeing a 201 response, will never
+attempt POST, even if MODE READER then returns 200.  Therefore innd, when
+handing off connections to nnrpd, must return 200 to not confuse a client
+that will later send MODE READER.  For connections where innd won't do
+that handoff, it makes sense to always send 201 if all transit feeds can
+handle that and won't interpret it as unwillingness to accept IHAVE or
+streaming feeds.
+
+RCreader() should therefore be modified to send 201 if noreader is set,
+and otherwise send 200.
+
+Impact of fix:  Any feeding software that didn't consider 201 to be a
+valid greeting would be unable to feed a fixed innd unless that innd also
+allowed reading connections.
+
+------------------------------
+
+  Summary: innd sends 504 or 505 on connection failures sometimes
+ Standard: draft-ietf-nntpext-base-13.txt, section 7.1
+  Version: 1.5 to CURRENT 2001-07-04
+Reference: innd/rc.c RCreader()
+ Severity: Violates MUST
+
+The standard says:
+
+    Otherwise the server MUST present a 400 or 502 greeting code and then
+    immediately close the connection.  502 MUST be used if the client is
+    not permitted under any circumstances to interact with the server and
+    400 otherwise.
+
+The connection limiting code in innd sometimes returns 504 or 505 instead
+where it should return 400.
+
+Impact:  Remote clients cannot recognize temporary failure and take
+appropriate action.
+
+Suggested fix:  Modify RCreader() to return 400 in these cases.
+
+Impact of fix:  Some clients may retry inappropriately quickly after a 400
+rejection, but this problem already exists for some clients with 504 or
+505 rejections.
+
+------------------------------
+
+  Summary: innd doesn't support LIST EXTENSIONS
+ Standard: draft-ietf-nntpext-base-13.txt, section 8.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/nc.c NClist()
+ Severity: Not a violation
+
+Support for LIST EXTENSIONS is optional, and innd's current behavior
+(returning a 500 response) is permitted by the standard, but it means that
+innd cannot advertise any of the extensions that it supports.  Since this
+will eventually include streaming, support should be added.
+
+Suggested fix:  Add support for LIST EXTENSIONS to NClist().
+
+------------------------------
+
+  Summary: Xref slaving causes problems with article numbers
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.1
+  Version: 2.0 to CURRENT 2001-07-04
+Reference: innd/art.c ARTxrefslave() and innfeed
+ Severity: Violates a MUST
+
+The standard says:
+
+    The server MUST ensure that article numbers are issued in order of
+    arrival timestamp; that is, articles arriving later MUST have higher
+    numbers than those that arrive earlier.  The server SHOULD allocate
+    the next sequential unused number to each new article.
+
+This can only be done with Xref slaving if the master server feeds all of
+the articles in strict arrival order, not using multiple streams to feed
+the slave.  Otherwise, articles are very likely to arrive out of order, if
+only by a few seconds.  Furthermore, any backlog must be processed before
+new articles on a feed to a slave server.
+
+innxmit handles this correctly.  innfeed configured to use a single stream
+almost does, but it gives preference to new articles over backlog.
+
+Impact:  If a slave server falls behind, article numbers within the high
+and low water marks may not be present on the server when a reader first
+checks and then show up later, causing the reader to permanently miss
+those articles.
+
+Suggested fix:  Provide an option for innfeed to feed the backlog first
+before new articles.
+
+------------------------------
+
+  Summary: nnrpd can respond with 423 to a NEXT or LAST command
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.1.1.2.1
+  Version: 2.2 to CURRENT 2001-07-04
+Reference: nnrpd/article.c CMDnextlast()
+ Severity: Violates a MUST under unusual conditions
+
+423 is not a defined response to a NEXT or LAST command, but nnrpd returns
+that reply code under unusual circumstances (an article with a given
+article number is found, but doesn't contain a Message-ID header).
+
+Impact:  A client could become confused.
+
+Suggested fix:  Move the retrieval of the message ID inside the loop so
+that such articles are just skipped over like articles that don't exist.
+
+------------------------------
+
+  Summary: nnrpd improperly handles zero-argument ARTICLE w/missing articles
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.2.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: nnrpd/article.c CMDfetch()
+ Severity: Violates a MUST
+
+The standard says:
+
+    The server MUST NOT change the currently selected group as a result of
+    this command.  The server MUST NOT change the current selected article
+    except when an article number argument was provided and the article
+    exists; in particular, it MUST NOT change it following an unsuccessful
+    response.
+
+However, with a zero-argument ARTICLE command, if the current article
+pointer doesn't point to a valid article (if that article has since been
+cancelled or expired, for example), nnrpd increments the article pointer
+until it finds a valid article or reaches the high water mark.
+
+The standard seems to indicate that the correct thing to do here is to
+return a 423 error code.
+
+Impact:  The current behavior doesn't make as much sense in the presence
+of NEXT, since it means that one could advance the article pointer with
+NEXT to an interesting article and then give an ARTICLE command, only to
+have ARTICLE return some other article with a different message ID than
+that returned by NEXT.
+
+Suggested fix:  Reduce the intelligence of CMDfetch and have it return 423
+if the current article isn't valid on a zero-argument ARTICLE.  This also
+applies to HEAD, BODY, and STAT.
+
+Impact of fix:  This may confuse clients that rely on the current behavior
+and aren't prepared to handle a 423 return from this command.
+
+------------------------------
+
+  Summary: nnrpd fails on articles without Message-ID headers
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.2.1.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: nnrpd/article.c CMDfetch()
+ Severity: Lack of robustness
+
+The standard says:
+
+    The second parameter is the message-id of the article (within angle
+    brackets).  This is taken from the message-id header line of the
+    article (required by RFC 1036).
+
+    If there is no such line, the message-id "<0>" MUST be used instead
+    (without the double quotes).
+
+nnrpd instead returns a 423 error response if the selected article doesn't
+contain a Message-ID header.
+
+Impact:  Articles without Message-ID headers can't be retrieved.  This
+doesn't affect applications for netnews articles, since message IDs are
+required for them, but it's possible to use the NNTP protocol for other
+purposes.
+
+Suggested fix:  Return the article anyway with the above special
+message-id as part of the command return.
+
+Impact of fix:  An article could be returned that didn't satisfy the
+netnews article format standard, but the rest of INN currently won't
+accept such an article in the first place so if one is in the spool, the
+administrator is already doing something special.
+
+------------------------------
+
+  Summary: innd's response to HEAD isn't correct
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.2.2.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: innd/nc.c NChead()
+ Severity: Violates a MUST
+
+innd implements the HEAD command for debugging purposes, but in response
+to HEAD it only gives the reply code 221, not any of the additional
+information that is required to be in the first line of the response to a
+successful HEAD command (0, a space, and the message ID).
+
+Impact:  The returned reply doesn't follow the correct format for a reply
+with that reply code.
+
+Suggested fix:  All the necessary information is already available to
+NChead() and NChead() should be modified to send it to the client.
+
+------------------------------
+
+  Summary: innd's response to STAT isn't correct
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.2.4.1
+  Version: 2.3.0 to CURRENT 2001-07-04
+Reference: innd/nc.c NCstat()
+ Severity: Violates a MUST
+
+The STAT command returns the storage API token as its second word in its
+reply rather than the message ID like it's supposed to.
+
+Impact:  The returned reply doesn't follow the correct format for a reply
+with that reply code.
+
+Suggested fix:  Return the message ID instead, which we already have on
+hand.
+
+------------------------------
+
+  Summary: nnrpd rejects articles with lines over 998 octets
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.3.1
+  Version: 1.0 to CURRENT 2001-07-04
+Reference: nnrpd/commands.c CMDpost()
+ Severity: Lack of robustness
+
+nnrpd rejects articles with lines over 998 octets.  This isn't a violation
+of the standard, as news servers are permitted to reject anything they
+wish due to local policies or the like, but there is no line length limit
+in the protocol and nnrpd should be able to handle lines of arbitrary
+length.
+
+Impact:  Articles with very long lines can't be posted.  This primarily
+affects such things as HTML posts.
+
+Suggested fix:  The READline() code should be redesigned to permit lines
+of arbitrary length in articles.
+
+Impact of fix:  Administrators who want to limit the length of lines in
+locally posted articles will need to add this to their local filters
+instead.
+
+------------------------------
+
+  Summary: nnrpd responds with 480 to IHAVE
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.3.2.1
+  Version: 1.4 to CURRENT 2001-07-04
+Reference: nnrpd/nnrpc.c CMD_unimp()
+ Severity: Violates a MUST
+
+nnrpd responds to all IHAVE commands with a 480 response (saying that
+authentication is needed).  This is nonsensical; nnrpd will never accept
+an IHAVE command no matter how the user authenticates.
+
+Impact:  A client may think that IHAVE will be possible after
+authentication.
+
+Suggested fix:  Return 502 instead, which more clearly states that the
+user is not permitted to use that command in the current server state.
+
+------------------------------
+
+  Summary: nnrpd doesn't handle zero-argument LISTGROUP
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.5.1.1
+  Version: 2.3 to CURRENT 2001-07-04
+Reference: nnrpd/group.c CMDgroup()
+ Severity: Violates a MUST
+
+The standard says:
+
+    The LISTGROUP command is used to get a listing of all the article
+    numbers in a particular newsgroup.  The optional parameter ggg is the
+    name of the newsgroup to be selected (e.g. "news.software.b").  A list
+    of valid newsgroups may be obtained from the LIST command.  If no
+    group is specified, the current group is used as the default argument.
+
+nnrpd currently rejects LISTGROUP commands that don't specify a group,
+however (and with an error code of 481, which isn't one of the specified
+return codes for LISTGROUP).
+
+Impact:  A client that attempts to use LISTGROUP to list the valid
+articles in the current newsgroup will fail and get back a confusing error
+code.
+
+Suggested fix:  Add this functionality to the LISTGROUP implementation.
+It may be best (and will likely be cleaner) to split LISTGROUP out of the
+handler for GROUP into its own function.
+
+------------------------------
+
+  Summary: nnrpd doesn't return 420 errors when there is no overview info
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.5.2.2
+  Version: 1.4 to CURRENT 2001-07-07
+Reference: nnrpd/article.c CMDxover()
+ Severity: Violates a protocol description
+
+The standard says:
+
+    If no articles are in the range specified, the server returns a 420
+    error response.
+
+nnrpd (from the beginning of the XOVER command) has always returned a 224
+response with an empty multiline response instead.
+
+Impact:  Less information is communicated to the client about why there
+are no overview records returned.  An error response indicating there are
+no valid articles in that range is possibly more informative.
+
+Suggested fix:  Don't print out the initial 224 message until at least one
+overview entry has been found, so that CMDxover() can print a 420 response
+instead if no overview records are found.
+
+Impact of fix:  May confuse some clients that don't expect to get 420
+errors back from overview queries.  It may be necessary to do something
+different for OVER (where clients should expect this behavior since OVER
+is a new command) than for XOVER (where clients may be relying on the
+existing behavior.
+
+------------------------------
+
+  Summary: innd doesn't generate overview correctly for non-printing chars
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.5.2.2
+  Version: 1.4 to CURRENT 2001-07-07
+Reference: innd/art.c ARTmakeoverview()
+ Severity: Violates a MUST
+
+The standard says:
+
+    Any sequence of US-ASCII space or non-printing characters in a field
+    MUST be replaced by a single US-ASCII space.
+
+innd has always just replaced tabs, newlines, and CRs with spaces in a
+one-to-one fashion (although older versions did, through an accident of
+implementation, collapse CRLF into a single space) and has never collapsed
+consecutive whitespace.
+
+Banning ESC mangles ISO-2022-JP subjects.
+
+Impact:  Control characters could be passed back to a client not prepared
+to handle them.
+
+Suggested fix:  Clarify the standard to require RFC 2822 unfolding and
+otherwise leave characters other than CR, LF, TAB, and NUL alone.  Modify
+ARTmakeoverview() to remove CRLF pairs completely (RFC 2822 unfolding) and
+otherwise do the same as it does now.
+
+Impact of fix:  After an upgrade, overview will have to be rebuilt from
+the spool in order to make all of the overview consistent again for folded
+headers.  This probably isn't significant enough to worry about.
+
+------------------------------
+
+  Summary: HDR can return message IDs rather than article numbers
+ Standard: draft-ietf-nntpext-base-13.txt, section 9.5.3.1
+  Version: 1.0 to CURRENT 2001-07-07
+Reference: nnrpd/article.c CMDpat()
+ Severity: Violates a protocol description
+
+The standard says:
+
+    The HDR command is used to retrieve specific headers from specific
+    articles in the currently selected group.
+
+and:
+
+    A successful response consists of a 221 code followed by the output
+    from the command.  The output consists of one line for each article
+    where the relevant header line exists.  The line consists of the
+    article number, a US-ASCII space, and then the contents of the header
+    (without the header name).
+
+This indicates that the first word of any response should be the article
+number in the current group, that HDR can't be used outside the current
+group, and that in the case of a message ID argument, the server is
+required to map that to an article number.
+
+nnrpd instead returns the message ID as the first word of the line when
+HDR is given a message ID argument and allows use of HDR outside of any
+group.
+
+Impact:  A client may find having the article number useful for a later
+OVER command.
+
+Suggested fix:  Do nothing yet, as this section is still in flux in the
+draft and it's not clear that the current text is the intended meaning.
+
+------------------------------
+
+  Summary: NEWGROUPS and NEWNEWS support the UTC keyword
+ Standard: draft-ietf-nntpext-base-13.txt, section 11.3
+  Version: 2.3 to CURRENT 2001-07-07
+Reference: nnrpd/commands.c CMDnewgroups(), nnrpd/newnews.c CMDnewnews()
+ Severity: Allows non-standard behavior
+
+There was a short-lived attempt to add the UTC keyword in addition to the
+GMT keyword to specify that the given time was in UTC.  This was later
+shown to be a bad idea, but support for it had crept into INN.  It should
+be removed again before client authors get the wrong idea.
+
+Impact:  A client author may think that sending UTC instead of GMT is
+correct.
+
+Suggested fix:  Remove support for UTC, only allowing GMT.
+
+Impact of fix:  Clients that have switched to the unportable UTC keyword
+will need to change back.
+
+------------------------------
+
+  Summary: NEWGROUPS supports the obsolete distribution argument
+ Standard: draft-ietf-nntpext-base-13.txt, section 11.3
+  Version: 1.0 to CURRENT 2001-07-07
+Reference: nnrpd/commands.c CMDnewgroups()
+ Severity: Allows non-standard behavior
+
+RFC 977 had a poorly-specified optional fourth argument to the NEWGROUPS
+command specifying the "distributions" that the command was supposed to
+apply to.  This has always been implemented as meaning the first segment
+of the newsgroup name.  After some discussion on the ietf-nntp list, it
+was decided that no clients actually used this and that it was confusing
+and had nothing to do with real distributions and could be safely
+removed.
+
+Impact:  A client author may see this and think that it's a widely
+supported argument to the NEWGROUPS command.
+
+Suggested fix:  Remove support for the distribution argument.
+
+Impact of fix:  Clients that use that argument will break.  There is not
+believed to be any such clients, and it's easy enough to just filter the
+returned list of newsgroups (which is generally fairly short) to achieve
+the same results.
+
+------------------------------
+
+  Summary: NEWNEWS supports the obsolete distribution argument
+ Standard: draft-ietf-nntpext-base-13.txt, section 11.4
+  Version: 1.0 to CURRENT 2001-07-07
+Reference: nnrpd/newnews.c CMDnewnews()
+ Severity: Allows non-standard behavior
+
+RFC 977 had a poorly-specified optional fourth argument to the NEWGROUPS
+command specifying the "distributions" that the command was supposed to
+apply to.  This was specified as meaning the first segment of the
+newsgroup name, but was implemented by opening the article and checking
+against the Distribution header.  After some discussion on the ietf-nntp
+list, it was decided that no clients actually used this and that it could
+be safely removed.
+
+Impact:  A client author may see this and think that it's a widely
+supported argument to the NEWNEWS command.
+
+Suggested fix:  Remove support for the distribution argument.
+
+Impact of fix:  Clients that use that argument will break.  There is not
+believed to be any such clients, and distributions are no longer widely
+used, at least for any purpose that would be well-served by this
+technique.
+
+------------------------------
+
+  Summary: innd improperly caches DNS returns
+ Standard: draft-ietf-nntpext-base-13.txt, section 14.3
+  Version: 1.0 to CURRENT 2001-07-07
+Reference: innd/rc.c RCreadfile() and elsewhere
+ Severity: Violates a MUST
+
+The standard says:
+
+    If NNTP clients or servers cache the results of host name lookups in
+    order to achieve a performance improvement, they MUST observe the TTL
+    information reported by DNS.
+
+innd caches DNS lookups when reading incoming.conf and doesn't refresh its
+knowledge of DNS except when incoming.conf is reloaded.
+
+Impact:  An explicit reload is required whenever the IP address of any
+peer changes, and in the presence of network renumbering innd is
+vulnerable to spoofing if DNS is the only authentication mechanism used.
+
+Suggested fix:  This is hard to fix without unacceptable performance
+impact.  The only good fix is to either fork a separate helper process to
+do DNS lookups (since gethostbyname may block for essentially an
+arbitrarily long period) or to use the direct resolver library so that one
+can get access to a file descriptor and throw it into the select loop.
+Either way, this requires keeping a DNS file descriptor in the main select
+loop and updating knowledge of DNS periodically, which is a substantial
+amount of additional complexity.
