@@ -9,6 +9,8 @@
 #
 #  Modified by Robert R. Collier 1998
 #  <rob@lspace.org>
+# 
+#  bigint support added by Duane Currie (sandman@hub.org) 1998
 
 use vars qw($opt_l $opt_h $opt_a $opt_s);
 use Getopt::Long;
@@ -16,9 +18,53 @@ use Getopt::Long;
 # Set common paths (actually just $pathetc ...)
 require '@LIBDIR@/innshellvars.pl';
 
+# required for >32bit ints
+require 'bigint.pl';
+
 my($conffile) = "$inn::pathetc/cycbuff.conf";
 my($storagectl) = "$inn::pathetc/storage.ctl";
 my($storageconf) = "$inn::pathetc/storage.conf";
+
+# Hex to bigint conversion routine
+# bhex(HEXSTRING) returns BIGINT  (with leading + chopped off)
+#
+# In most langauge, unlimited size integers are done using string math
+# libraries usually called bigint.  (Java, Perl, etc...)
+
+# Bigint's are really just strings.
+
+# Mathematics routines for bigint's:
+
+#   bneg(BINT) return BINT              negation
+#   babs(BINT) return BINT              absolute value
+#   bcmp(BINT,BINT) return CODE         compare numbers (undef,<0,=0,>0)
+#   badd(BINT,BINT) return BINT         addition
+#   bsub(BINT,BINT) return BINT         subtraction
+#   bmul(BINT,BINT) return BINT         multiplication
+#   bdiv(BINT,BINT) return (BINT,BINT)  division (quo,rem) just quo if scalar
+#   bmod(BINT,BINT) return BINT         modulus
+#   bgcd(BINT,BINT) return BINT         greatest common divisor
+#   bnorm(BINT) return BINT             normalization
+
+sub bhex {
+    my $hexValue = shift;
+    $hexValue =~ s/^0x//;
+    
+    my $integerValue = '0';
+    for (my $i = 0; $i < length($hexValue); $i+=2) {
+        # Could be more efficient going at larger increments, but byte
+        # by byte is safer for the case of 9 byte values, 11 bytes, etc.. 
+ 
+        my $byte = substr($hexValue,$i,2);
+        my $byteIntValue = hex($byte);
+
+        $integerValue = bmul($integerValue,'256');        
+        $integerValue = badd($integerValue,"$byteIntValue");
+        }
+
+    $integerValue =~ s/^\+//;
+    return $integerValue;
+    }
 
 sub usage {
     print <<_end_;
@@ -283,7 +329,7 @@ sub print_cycbuff_head {
     } else {
         $name =~ s/\0//g;
 	print " Buffer $name, len: ";
-	print $len / (1024 * 1024);
+	printf("%.2f", $len / (1024 * 1024));
 	print " Mbytes, used: ";
 	printf("%.2f Mbytes", $free / (1024 * 1024));
 	printf(" (%4.1f%%) %3d cycles", 100 * $free/$len, $cyclenum);
@@ -395,7 +441,7 @@ sub get_cycbuff_info {
 	exit(1);
     }
     
-    my($len) = hex($lena);
+    my($len) = bhex($lena);
     my($free) = hex($freea);
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
