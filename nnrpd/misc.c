@@ -79,6 +79,7 @@ Glom(av)
     i++;
 
     save = xmalloc(i);
+    save[0] = '\0';
     for (v = av; *v; v++) {
 	if (v > av)
             strlcat(save, " ", i);
