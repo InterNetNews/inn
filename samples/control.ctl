@@ -1080,9 +1080,13 @@ rmgroup:*@*:pubnet.*:doit=rmgroup
 ## RELCOM ( Commonwealth of Independent States)
 ## The official list of relcom groups is supposed to be available from
 ## URL: ftp://ftp.kiae.su/relcom/netinfo/telconfs.txt
-checkgroups:dmart@new*.relcom.ru:relcom.*:mail
-newgroup:dmart@new*.relcom.ru:relcom.*:doit=newgroup
-rmgroup:dmart@new*.relcom.ru:relcom.*:doit=rmgroup
+checkgroups:dmart@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
+newgroup:dmart@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
+rmgroup:dmart@new*.relcom.ru:relcom.*:verify-relcom.newsgroups
+
+#checkgroups:dmart@new*.relcom.ru:relcom.*:doit
+#newgroup:dmart@new*.relcom.ru:relcom.*:doit=newgroup
+#rmgroup:dmart@new*.relcom.ru:relcom.*:doit=rmgroup
 
 ## RPI ( Rensselaer Polytechnic Institute, Troy, NY, USA)
 # Contact: sofkam@rpi.edu
