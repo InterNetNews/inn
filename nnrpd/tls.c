@@ -17,6 +17,7 @@
 
 */
 
+#include <sys/types.h>
 #include "config.h"
 #include "nnrpd.h"
 
@@ -24,7 +25,6 @@
 
 /* System library. */
 
-#include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
