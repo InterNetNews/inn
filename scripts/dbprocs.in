@@ -46,7 +46,7 @@ start)
 
   # Run checkpointer and deadlock detector
   (
-    db_checkpoint -p 1 -k 1000 &
+    db_checkpoint -p 1 -k 2000 &
     echo $! > $PATHRUN/db_checkpoint.pid
     wait
     rm -f $PATHRUN/db_checkpoint.pid
@@ -65,7 +65,7 @@ start)
 
     while [ 1 ];
     do
-      sleep 600
+      sleep 120
       db_archive -a >$PATHTMP/dba.$$
       if [ -s $PATHTMP/dba.$$ ]; then
 	xargs rm <$PATHTMP/dba.$$
