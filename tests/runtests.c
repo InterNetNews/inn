@@ -2,7 +2,7 @@
 
    Run a set of tests, reporting results.
 
-   Copyright 2000 Russ Allbery <rra@stanford.edu>
+   Copyright 2000, 2001 Russ Allbery <rra@stanford.edu>
 
    Please note that this file is maintained separately from INN by the above
    author (which is why the coding style is slightly different).  Any fixes
@@ -69,6 +69,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <time.h>
 
 /* sys/time.h must be included before sys/resource.h on some platforms. */
 #include <sys/resource.h>
