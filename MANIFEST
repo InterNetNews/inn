@@ -1,6 +1,7 @@
    File Name		Archive #	Description
 ----------------------------------------------------------
 .now_do                     1 Notification file used by configure
+CHANGES			    1 RCS logs
 CONTRIBUTORS                1 Contributors info.
 COPYRIGHT                   1 Legal mumbo-jumbo
 HISTORY                     1 Messages of historical significance
@@ -11,6 +12,7 @@ MakeLib                     1 Make an NNTP clientlib distribution kit
 MakeRnews                   1 Make an rnews distribution kit
 Makefile                    1 Top-level makefile
 Makefile.global.in          1 Template Makefile included by all Makefile
+NEWS			    1 Info about changes since last version
 README                      1 Assorted notes
 README.perl_hook            1 Notes on Christophe Wolfhugel's perl hook.
 README.tcl_hook             1 Bob Halley's TCL hook notes.
@@ -114,8 +116,10 @@ doc/libinn.3                1 Manpage for InterNetNews library routines
 doc/libstorage.3            1 Manpage for storageAPI library routines
 doc/makeactive.8            1 Manpage for makeactive
 doc/makehistory.8           1 Manpage for makhistory
+doc/mailpost.8		    1 Manpage for mailpost
 doc/moderators.5            1 Manpage for moderators mail addresses file
 doc/motd.news.5             1 Manpage for motd.news config file
+doc/news2mail.8		    1 Manpage for news2mail
 doc/news-recovery.8         1 Manpage for recovery programs
 doc/news.daily.8            1 Manpage for news.daily
 doc/newsfeeds.5             1 Manpage for innd's newsfeeds file
@@ -135,6 +139,7 @@ doc/parsedate.3             1 Manpage for parsedate library routine
 doc/passwd.nntp.5           1 Manpage for passwd.nntp config file
 doc/pgpverify.8             1 Manpage for pgpverify
 doc/prunehistory.8          1 Manpage for prunehistory
+doc/pullnews.8		    1 Manpage for pullnews
 doc/putman.sh               1 Install a manpage
 doc/qio.3                   1 Manpage for part of InterNetNews library
 doc/rnews.1                 1 Manpage for rnews frontend
@@ -360,6 +365,7 @@ obsolete/README.obsolete    1 README file for obsolete programs
 obsolete/hosts.nntp.nolimit 1 Sample hosts.nntp(5) file
 obsolete/innlog.awk         1 Summarize syslog log files
 obsolete/innlog.pl          1 Perl version of the syslog summary.
+obsolete/innshellvars.csh.in 1 CSH Script to set config parameters
 obsolete/scanlogs-backend.pl 1 Summarize news log file
 obsolete/tally.unwanted     1 Summarize unwanted articles
 samples                     1 Prototype InterNetNews files (Directory)
@@ -390,21 +396,24 @@ samples/innmail.in          1 Perl front-end to sendmail.
 samples/innreport.conf.in   1 Sample innreport.conf file
 samples/innreport.in        1 Script to report inn statistics
 samples/innreport_inn.pm    1 Config file for innreport
-samples/innshellvars.csh.in 1 Csh script to set config parameters.
 samples/innshellvars.in     1 Script to set config parameters
 samples/innshellvars.pl.in  1 Perl Script to set config parameters
 samples/innshellvars.tcl.in 1 TCL Script to set config parameters
 samples/innstat.in          1 Display INN status snapshot
 samples/innwatch.ctl.in     1 Sample innwatch.ctl(5) file
 samples/innwatch.in         1 Throttle innd based on load and disk space
+samples/mailpost.in	    1 Email to news gateway
 samples/mod-active.in       1 Batch do ctlinnd newgroup/rmgroup/changegroup
 samples/moderators          1 Sample moderators(5) file
 samples/motd.news           1 Sample motd.news(5) file
 samples/newgroup.in         1 Newgroup control message handler
 samples/newgroup.pl.in      1 Newgroup control message handler for controlchan
+samples/news2mail.cf	    1 news2mail config file
+samples/news2mail.in	    1 News to mail gateway
 samples/news.daily.in       1 Front-end script to run expire, etc.
 samples/newsfeeds.in        1 Sample newsfeeds(5) file
 samples/nnrp.access         1 Sample nnrp.access(5) file
+samples/nnrpd_auth.pl.in    1 Sample nnrpd authorization script
 samples/nnrpd.track         1 Sample nnrpd.track(5) file
 samples/nntpsend.ctl        1 Sample control file for nntpsend
 samples/nntpsend.in         1 Invoke all innxmit's at once
@@ -413,6 +422,7 @@ samples/overview.fmt        1 Format of news overview database
 samples/parsecontrol.in     1 Initial parsing of control messages
 samples/passwd.nntp         1 Sample passwd.nntp(5) file
 samples/pgpverify.in        1 Sample pgpverify program.
+samples/pullnews.in	    1 sucking feeder
 samples/rc.news.in          1 News boot script
 samples/rmgroup.in          1 Rmgroup control message handler
 samples/rmgroup.pl.in       1 Rmgroup control message handler for controlchan

@@ -298,7 +298,7 @@ dnl parse arguments
 
 dnl Checks for libraries.
 EXTRA_SRC=""
-dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
+AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
 AC_CHECK_LIB(bind,  __inet_addr)
@@ -366,7 +366,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h memory.h sgtty.h stdarg.h)
 AC_CHECK_HEADERS(stdlib.h string.h sys/file.h sys/filio.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h sys/signal.h sys/time.h syslog.h unistd.h)
-AC_CHECK_HEADERS(varargs.h dirent.h wait.h getopt.h)
+AC_CHECK_HEADERS(varargs.h dirent.h wait.h getopt.h sys/sysinfo.h)
 
 # Digital Unix malloc.h looks pretty broken (no function declarations).
 if test X${DECUNIX} = Xyes
@@ -1030,7 +1030,6 @@ AC_OUTPUT(
 	samples/innreport
 	samples/innreport.conf 
 	samples/innshellvars 
-	samples/innshellvars.csh 
 	samples/innshellvars.pl 
 	samples/innshellvars.tcl 
 	samples/innstat

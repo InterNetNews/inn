@@ -1,7 +1,7 @@
 
 Here are the changes for the latest version of INN.
 
-Version 2.1:
+Version 2.2:
 
 	- New storage.conf file (replaces storage.ctl).
 	- New (optional) way of handling non-cancel control 
@@ -15,3 +15,5 @@ Version 2.1:
 	- mailpost program for gateway'ing email to news is provided.
 	- pullnews program for doing a sucking feed is provided (not meant 
 	  for large feeds)
+	- The innshellvars.csh.in script is obsolete (and lives in the
+	  obsolete directory, for now).
