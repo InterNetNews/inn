@@ -320,6 +320,7 @@ incoming_conf
     'readertrack',		0,
     'strippostcc',		0,
     'overviewname',		0,
+    'ovmethod',			0,
     'keywords',			0,
     'keylimit',			0,
     'keyartlimit',		0,
