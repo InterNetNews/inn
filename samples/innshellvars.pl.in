@@ -71,7 +71,7 @@ $watchpid = "${innddir}/innwatch.pid" ;
 
 $awk = "@_PATH_AWK@" ;
 $sed = "@_PATH_SED@" ;
-$inndf = "@_PATH_DF@" ;
+$inndf = "${newsbin}/inndf" ;
 $egrep = "@_PATH_EGREP@" ;
 $perl = "@_PATH_PERL@" ;
 $pgp = "@_PATH_PGP@" ;

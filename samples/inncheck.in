@@ -369,7 +369,14 @@ incoming_conf
     'innwatchsleeptime',	0,
     'pgpverify',		0,
     'controlfailnotice',	0,
-    'logcycles'
+    'logcycles',		0,
+    'innwatchpauseload',	0,
+    'innwatchhiload',		0,
+    'innwatchloload',		0,
+    'innwatchspoolspace',	0,
+    'innwatchbatchspace',	0,
+    'innwatchlibspace',		0,
+    'innwatchspoolnodes',	0
 );
 %inn_conf'optionals = (
     'innflags',			0,

@@ -23,6 +23,15 @@ TIMESTAMP=${LOCKS}/${PROGNAME}.time
 ##  Logfile to watch. Comment out if no logwatch.
 LOGFILE=${MOST_LOGS}/news.crit
 
+## Default value in case there is no definition in inn.conf
+${INNWATCHPAUSELOAD:=1500}
+${INNWATCHHILOAD:=2000}
+${INNWATCHLOLOAD:=1000}
+${INNWATCHSPOOLSPACE:=8000}
+${INNWATCHBATCHSPACE:=800}
+${INNWATCHLIBSPACE:=25000}
+${INNWATCHSPOOLNODES:=200}
+
 if [ X${INNWATCHSLEEPTIME} = X ] ; then
     INNWATCHSLEEPTIME=600
 fi

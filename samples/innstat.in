@@ -31,7 +31,7 @@ ctlinnd mode 2>&1
 echo ''
 echo 'Disk usage:'
 ${INNDF} ${SPOOL} ${OVERVIEWDIR} ${PATHETC} ${INCOMING} ${BATCH} \
-	${PATHDB} ${MOST_LOGS} | grep '/dev/' | sort -u
+	${PATHDB} ${MOST_LOGS} | sort -u
 
 ##  Show size of batch files.
 echo ''

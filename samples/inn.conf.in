@@ -111,6 +111,13 @@ innwatchsleeptime:	600
 pgpverify:		@pgpverify@
 controlfailnotice:	false
 logcycles:		3
+innwatchpauseload:	1500
+innwatchhiload:		2000
+innwatchloload:		1000
+innwatchspoolspace:	8000
+innwatchbatchspace:	800
+innwatchlibspace:	25000
+innwatchspoolnodes:	200
 #
 # ---------------------------------
 # Paths to various aspects of the news system

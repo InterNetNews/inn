@@ -150,7 +150,7 @@ do
 ## = ()<	POS=@<INNWATCH_BLOCKS>@>()=
 	POS=4
 	DOLLAR="$"
-	FREE=`${INNDF} ${UUSPOOL} | ${AWK} "/^\// { print ${DOLLAR}${POS}; exit }"`
+	FREE=`${INNDF} ${UUSPOOL}`
 	if [ -n "${FREE}" ]; then
 	  if [ "${FREE}" -lt ${SPOOLFREE} ] ; then
 	    echo "${PROG}:  No space on ${UUSPOOL} for ${SITE} (${FREE})."
