@@ -286,7 +286,7 @@ struct conf_rec conf_defaults[] = {
 #define CONF_VAR_REFUSECYBERCANCELS		87
     { _CONF_REFUSECYBERCANCELS,			"",	2, 1 },
 #define _CONF_NNRPDCHECKART			"nnrpdcheckart"
-#define CONF_VAR_NNRPDCHECKART			87
+#define CONF_VAR_NNRPDCHECKART			88
     { _CONF_NNRPDCHECKART,			"",	2, 1 },
 };
 #define MAX_CONF_VAR 89
