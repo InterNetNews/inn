@@ -2074,6 +2074,16 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	    BUFFappend(&Overview, COLONSPACE, STRLEN(COLONSPACE));
 	}
 	i = Overview.Left;
+	if (caseEQ(hp->Name, "Newsgroups")) {
+	    /* HDR(_newsgroups) is separated by '\0', so use Data->Newsgroups
+	       instead */
+	    BUFFappend(&Overview, Data->Newsgroups, Data->NewsgroupsLength);
+	} else {
+	    BUFFappend(&Overview, hp->Value, hp->Length);
+	}
+	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
+	    if (*p == '\t' || *p == '\n' || *p == '\r')
+		*p = ' ';
 
 #if	defined(DO_KEYWORDS)
 	if (innconf->keywords) {
@@ -2087,11 +2097,6 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	    }
 	}
 #endif	/* defined(DO_KEYWORDS) */
-
-	BUFFappend(&Overview, hp->Value, hp->Length);
-	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
-	    if (*p == '\t' || *p == '\n' || *p == '\r')
-		*p = ' ';
     }
 }
 
