@@ -343,6 +343,21 @@ STATIC void GRPscandir(char *dir)
 
     ARTsize = 0;
     GRPcount++;
+
+    /* Go to the directory. */
+    if (chdir(SPOOL) < 0) {
+	syslog(L_FATAL, "%s cant cd %s %m", ClientHost, SPOOL);
+	ExitWithStats(1);
+    }
+    
+    if (ARTarraysize == 0) {
+	ARTarraysize = 1024;
+	ARTnumbers = NEW(ARTLIST, ARTarraysize);
+    }
+    
+    /* The newsgroup directory might not exist; treat it as empty. */
+    if (chdir(dir) < 0)
+	return;
     
     path = NEW(char, strlen(_PATH_OVERVIEWDIR) + strlen(dir) + strlen(_PATH_OVERVIEW) + 32);
     sprintf(path, "%s/%s/%s.index", _PATH_OVERVIEWDIR, dir, _PATH_OVERVIEW);
@@ -397,20 +412,7 @@ STATIC void GRPscandir(char *dir)
 	
     } else {
 	DISPOSE(path);
-	/* Go to the directory. */
-	if (chdir(SPOOL) < 0) {
-	    syslog(L_FATAL, "%s cant cd %s %m", ClientHost, SPOOL);
-	    ExitWithStats(1);
-	}
-	
-	if (ARTarraysize == 0) {
-	    ARTarraysize = 1024;
-	    ARTnumbers = NEW(ARTLIST, ARTarraysize);
-	}
-	
-	/* The newsgroup directory might not exist; treat it as empty. */
-	if (chdir(dir) < 0)
-	    return;
+
 	dp = opendir(".");
 	if (dp == NULL) {
 	    syslog(L_ERROR, "%s cant opendir %s %m", ClientHost, dir);
