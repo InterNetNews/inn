@@ -13,6 +13,10 @@
 #include <signal.h>
 #include <fcntl.h>
 
+#include "ov.h"
+#include "../storage/ovdb/ovdb.h"
+#include "../storage/ovdb/ovdb-private.h"
+
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
@@ -35,11 +39,6 @@ int main(int argc, char **argv)
 }
 
 #else /* USE_BERKELEY_DB */
-
-#include <db.h>
-#include "ov.h"
-#include "../storage/ovdb/ovdb.h"
-#include "../storage/ovdb/ovdb-private.h"
 
 
 #ifdef _HPUX_SOURCE

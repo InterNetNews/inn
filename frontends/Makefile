@@ -135,10 +135,8 @@ $(D)$(PATHRNEWS)/gunbatch:          gunbatch            ; $(CP_XPUB) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-DBFLAGS = -DUSE_BERKELEY_DB -DDB_VERSION_MAJOR=3
-
 depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) $(DBFLAGS) $(CFLAGS) $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 ctlinnd.o: ctlinnd.c ../include/config.h ../include/inn/defines.h \

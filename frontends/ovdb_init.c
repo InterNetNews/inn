@@ -12,6 +12,10 @@
 #include <syslog.h>
 #include <string.h>
 
+#include "ov.h"
+#include "../storage/ovdb/ovdb.h"
+#include "../storage/ovdb/ovdb-private.h"
+
 #ifndef USE_BERKELEY_DB
 
 int main(int argc, char **argv)
@@ -21,11 +25,6 @@ int main(int argc, char **argv)
 }
 
 #else /* USE_BERKELEY_DB */
-
-#include <db.h>
-#include "ov.h"
-#include "../storage/ovdb/ovdb.h"
-#include "../storage/ovdb/ovdb-private.h"
 
 static int open_db(DB **db, char *name, int type)
 {

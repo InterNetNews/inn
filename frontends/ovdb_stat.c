@@ -15,6 +15,9 @@
 #include "paths.h"
 #include "storage.h"
 #include "ov.h"
+#include "../storage/ovdb/ovdb.h"
+#include "../storage/ovdb/ovdb-private.h"
+
 
 #ifndef USE_BERKELEY_DB
 
@@ -25,11 +28,6 @@ int main(int argc, char **argv)
 }
 
 #else /* USE_BERKELEY_DB */
-
-#include <db.h>
-#include "../storage/ovdb/ovdb.h"
-#include "../storage/ovdb/ovdb-private.h"
-
 
 static int signalled = 0;
 static void sigfunc(int signum)

@@ -58,19 +58,6 @@
 #include "paths.h"
 #include "storage.h"
 #include "ov.h"
-
-#ifndef USE_BERKELEY_DB
-
-int
-main(int argc, char **argv)
-{
-    fprintf(stderr, "Error: BerkeleyDB not compiled in.\n");
-    exit(1);
-}
-
-#else /* USE_BERKELEY_DB */
-
-#include <db.h>
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
 
@@ -82,6 +69,18 @@ main(int argc, char **argv)
 #define INN_VERSION_MINOR 3
 #define INN_VERSION_PATCH 0
 #endif
+
+
+#ifndef USE_BERKELEY_DB
+
+int
+main(int argc, char **argv)
+{
+    fprintf(stderr, "Error: BerkeleyDB not compiled in.\n");
+    exit(1);
+}
+
+#else /* USE_BERKELEY_DB */
 
 #if INN_VERSION_MINOR == 3
 #define nonblocking SetNonBlocking
