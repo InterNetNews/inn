@@ -525,6 +525,7 @@ StartConnection(accesslist)
 	    syslog(L_NOTICE,
 		"? cant gethostbyaddr %s %m -- using IP address for access",
 		ClientHost);
+	    ClientAddr = ClientHost;
             ClientIP = inet_addr(ClientHost);
 	}
 	else {
