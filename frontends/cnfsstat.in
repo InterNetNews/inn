@@ -325,7 +325,7 @@ sub human_readable {
     my $unit = -1;
     my $oldscaled = $val / $base;
     my $scaled = $oldscaled;
-    while ( ( $scaled > 0 ) && ( $unit < $#name ) ) {
+    while ( ( int($scaled) > 0 ) && ( $unit < $#name ) ) {
 	$oldscaled = $scaled;
 	$scaled /= $factor;
 	$unit++;
