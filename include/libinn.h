@@ -91,15 +91,15 @@ extern const char       inn_version_string[];
 /*
 **  WILDMAT MATCHING
 */
-enum wildmat {
-    WILDMAT_FAIL   = 0,
-    WILDMAT_MATCH  = 1,
-    WILDMAT_POISON
+enum uwildmat {
+    UWILDMAT_FAIL   = 0,
+    UWILDMAT_MATCH  = 1,
+    UWILDMAT_POISON
 };
 
-extern bool             wildmat(const char *text, const char *pat);
-extern bool             wildmat_simple(const char *text, const char *pat);
-extern enum wildmat     wildmat_poison(const char *text, const char *pat);
+extern bool             uwildmat(const char *text, const char *pat);
+extern bool             uwildmat_simple(const char *text, const char *pat);
+extern enum uwildmat    uwildmat_poison(const char *text, const char *pat);
 
 
 /*
