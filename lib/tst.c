@@ -156,8 +156,6 @@ tst_grow_node_free_list(struct tst *tst)
 **  If a duplicate key is encountered and option is not set to TST_REPLACE
 **  then TST_DUPLICATE_KEY is returned.  If key is zero length then
 **  TST_NULL_KEY is returned.  A successful insert or replace returns TST_OK.
-**  A return value of TST_ERROR indicates that a memory allocation error
-**  occurred while trying to grow the node free list.
 **
 **  The data argument must NEVER be NULL.  If it is, then calls to tst_search
 **  will fail for a key that exists because the data value was set to NULL,
