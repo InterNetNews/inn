@@ -73,9 +73,10 @@
 #define _PATH_ERRLOG		"errlog"
 
 /* Paths to various programs. */
-#define _PATH_SH		"@_PATH_SH@"
 #define _PATH_COMPRESS		"@COMPRESS@"
 #define _PATH_GZIP		"@GZIP@"
+#define _PATH_SH		"@_PATH_SH@"
+#define _PATH_SORT              "@_PATH_SORT@"
 
 /* Absolute paths. */
 #define _PATH_TMP		"@TMPPATH@"
