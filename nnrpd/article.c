@@ -83,18 +83,18 @@ Again:
             break;
         }
     } else {
-        result = writev(STDOUT_FILENO, vec, *countp);
+        result = xwritev(STDOUT_FILENO, vec, *countp);
     }
 #else
     result = xwritev(STDOUT_FILENO, vec, *countp);
 #endif
     TMRstop(TMR_NNTPWRITE);
-    *countp = 0;
     if (result == -1) {
 	/* we can't recover, since we can't resynchronise with our
 	 * peer */
 	ExitWithStats(1, true);
     }
+    *countp = 0;
 }
 
 static void
