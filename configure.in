@@ -192,6 +192,7 @@ fi
 dnl parse arguments
 
 dnl Checks for libraries.
+EXTRA_SRC=""
 dnl Removed (only in auth_progs): AC_CHECK_LIB(crypt,  crypt)
 AC_CHECK_LIB(util,   setproctitle)
 AC_CHECK_LIB(44bsd,  inet_addr)
@@ -203,7 +204,11 @@ LIBS="$LIBS -lresolv"
 fi
 if test x$ac_try_bind = x1
 then
-	AC_CHECK_LIB(bind, inet_aton)
+	AC_CHECK_LIB(bind, inet_aton, ac_need_extra_inet_aton=1)
+	if test x$ac_need_extra_inet_aton = x
+	then
+		EXTRA_SRC="inet_addr.c"
+	fi
 fi
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
@@ -216,6 +221,9 @@ if test x${DO_PERL} = xDO ; then
 	AC_MSG_CHECKING(for Perl configuration)
 	perl_core_path=`$_PATH_PERL -e 'use Config; print $Config{archlib}'`
 	perl_core_libs=`$_PATH_PERL -MExtUtils::Embed -e ldopts`
+	for i in ${LIBS} ; do
+	    perl_core_libs=`echo ${perl_core_libs} | sed -e "s/${i}//"`
+	done
 	PERL_LIB="-L${perl_core_path}/CORE ${perl_core_libs}"
 	PERL_INC="-I${perl_core_path}/CORE"
 	AC_MSG_RESULT($perl_core_path)
@@ -588,6 +596,7 @@ if test ${ac_cv_func_strerror} = "no"
 then
 	MISSING_SRC="${MISSING_SRC}strerror.c "
 	MISSING_OBJ="${MISSING_OBJ}strerror.o "
+	EXTRA_SRC="${EXTRA_SRC} strerror.c"
 fi
 dnl *******************************************************
 dnl fjc mibsoftware.com getdtab is a fixed part of INN now.
@@ -639,6 +648,7 @@ fi
 AC_SUBST(MISSING_MAN)
 AC_SUBST(MISSING_SRC)
 AC_SUBST(MISSING_OBJ)
+AC_SUBST(EXTRA_SRC)
 
 grep "^  ||" config/config.scoreboard | sed 's/  ||//g' >config/config.data.in
 AC_CONFIG_HEADER(include/config.h)
@@ -647,6 +657,7 @@ AC_OUTPUT(
 	makedirs.sh 
 	config/config.data 
 	include/paths.h 
+	innfeed/Makefile
 	samples/actsync.cfg 
 	samples/checkgroups
 	samples/default
