@@ -52,11 +52,15 @@ typedef struct in_addr	INADDR;
 **  A group entry.
 */
 typedef struct _GROUPENTRY {
+#ifdef NOTDEF
     char	*Name;
     ARTNUM	High;
     ARTNUM	Low;
     char	Flag;
     char	*Alias;
+#endif
+    char        *Ptr;   
+    struct _GROUPENTRY *Next;
 } GROUPENTRY;
 
 
@@ -156,3 +160,10 @@ extern void		Reply(char *, ...);
 #if	defined(VAR_VARARGS)
 extern void		Reply();
 #endif	/* defined(VAR_VARARGS) */
+
+char *GPNAME(GROUPENTRY *gp);   
+ARTNUM GPLOW(GROUPENTRY *gp);
+ARTNUM GPHIGH(GROUPENTRY *gp);
+char GPFLAG(GROUPENTRY *gp);
+char *GPALIAS(GROUPENTRY *gp); 
+

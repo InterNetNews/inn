@@ -322,8 +322,8 @@ CMDlist(ac, av)
 	    if (gp) {
 		Reply("%d list:\r\n", NNTP_LIST_FOLLOWS_VAL);
 		Printf("%s %ld %ld %c%s\r\n.\r\n",
-		      gp->Name, (long)gp->High, (long)gp->Low,
-		      gp->Flag, gp->Alias ? gp->Alias : "");
+		      GPNAME(gp), (long)GPHIGH(gp), (long)GPLOW(gp),
+		      GPFLAG(gp), GPALIAS(gp) ? GPALIAS(gp) : "");
 		return;
 	    }
 	    wildarg = av[2];
@@ -528,8 +528,8 @@ CMDnewgroups(ac, av)
 		continue;
 	}
 	Printf("%s %ld %ld %c%s\r\n",
-	    p, (long)gp->High, (long)gp->Low,
-	    gp->Flag, gp->Alias ? gp->Alias : "");
+	    p, (long)GPHIGH(gp), (long)GPLOW(gp),
+	    GPFLAG(gp), GPALIAS(gp) ? GPALIAS(gp) : "");
     }
     QIOclose(qp);
     Printf(".\r\n");

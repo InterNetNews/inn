@@ -614,20 +614,20 @@ ValidNewsgroups(hdr, article)
 	    continue;
 	FoundOne = TRUE;
 	DDcheck(h, p);
-	switch (gp->Flag) {
+	switch (GPFLAG(gp)) {
 	case NF_FLAG_OK:
 	    break;
 	case NF_FLAG_MODERATED:
 	    if (!approved) {
 		DISPOSE(groups);
 		DISPOSE(DDend(h));
-		return MailArticle(gp->Name, article);
+		return MailArticle(GPNAME(gp), article);
 	    }
 	    break;
 	case NF_FLAG_IGNORE:
 	case NF_FLAG_NOLOCAL:
 	    (void)sprintf(Error, "Postings to \"%s\" are not allowed here.",
-		    gp->Name);
+		    GPNAME(gp));
 	    break;
 	case NF_FLAG_EXCLUDED:
 	    /* Do NOT return an error. */
@@ -635,7 +635,7 @@ ValidNewsgroups(hdr, article)
 	case NF_FLAG_ALIAS:
 	    (void)sprintf(Error,
 		    "The newsgroup \"%s\" has been renamed to \"%s\".\n",
-		    p, gp->Alias);
+		    p, GPALIAS(gp));
 	    break;
 	}
         if (PERMspecified) {
