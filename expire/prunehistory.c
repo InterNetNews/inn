@@ -8,9 +8,10 @@
 #include <errno.h>
 #include <syslog.h>
 
+#include "inn/history.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "paths.h"
-#include "inn/history.h"
 
 
 /*
@@ -20,6 +21,7 @@ static void
 Usage(void)
 {
     fprintf(stderr, "Usage:  prunehistory [-p] [-f file] [input]\n");
+    exit(1);
 }
 
 
@@ -35,7 +37,8 @@ main(int ac, char *av[])
     int			rc = 0;
 
     /* First thing, set up logging and our identity. */
-    openlog("prunehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);      
+    openlog("prunehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "prunehistory";
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -66,8 +69,7 @@ main(int ac, char *av[])
 
     history = HISopen(History, innconf->hismethod, HIS_RDWR);
     if (history == NULL) {
-	fprintf(stderr, "Can't set up \"%s\" database, %s\n",
-		History, strerror(errno));
+        syswarn("cannot set up %s database", History);
 	rc = 1;
 	goto fail;
     }
@@ -80,7 +82,7 @@ main(int ac, char *av[])
 	    if (Passing)
 		printf("%s\n", buff);
 	    else
-		fprintf(stderr, "Line too long, ignored:\n\t%s\n", buff);
+                warn("line too long, ignored: %.40s", buff);
 	    continue;
 	}
 	*p = '\0';
@@ -96,32 +98,26 @@ main(int ac, char *av[])
 	    if (Passing)
 		printf("%s\n", buff);
 	    else
-		fprintf(stderr,
-		    "Line doesn't start with a <Message-ID>, ignored:\n\t%s\n",
-		    buff);
+                warn("line doesn't start with a message ID, ignored: %.40s",
+                     buff);
 	    continue;
 	}
 	*++p = '\0';
 
 	if (HISlookup(history, buff, &arrived, &posted, &expires, NULL)) {
-	    if (!HISreplace(history, buff, arrived, posted, expires, NULL)) {
-		fprintf(stderr, "Can't write new text for \"%s\", %s\n",
-			buff, strerror(errno));
-	    }
-	} else {
-	    fprintf(stderr, "No entry for \"%s\", %s\n",
-		    buff, strerror(errno));
-	}
+	    if (!HISreplace(history, buff, arrived, posted, expires, NULL))
+                syswarn("cannot write new text for %s", buff);
+        } else {
+            syswarn("no entry for %s", buff);
+        }
     }
 
  fail:
     /* Close files; we're done. */
     if (history != NULL && !HISclose(history)) {
-	fprintf(stderr, "Can't close \"%s\", %s\n",
-		History, strerror(errno));
+        syswarn("cannot close %s", History);
 	rc = 1;
     }
 
-    closelog();
     return rc;
 }

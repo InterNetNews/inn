@@ -9,6 +9,7 @@
 #include <syslog.h>  
 
 #include "dbz.h"
+#include "inn/messages.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "macros.h"
@@ -30,23 +31,22 @@ char *HISTORY = NULL;
 static void
 RemoveDBZFiles(char *p)
 {
-    static char	NOCANDO[] = "Can't remove \"%s\", %s\n";
     char	buff[SMBUF];
 
     snprintf(buff, sizeof(buff), "%s.dir", p);
     if (unlink(buff) && errno != ENOENT)
-	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
+        syswarn("cannot unlink %s", buff);
 #ifdef	DO_TAGGED_HASH
     snprintf(buff, sizeof(buff), "%s.pag", p);
     if (unlink(buff) && errno != ENOENT)
-	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
+        syswarn("cannot unlink %s", buff);
 #else
     snprintf(buff, sizeof(buff), "%s.index", p);
     if (unlink(buff) && errno != ENOENT)
-	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
+        syswarn("cannot unlink %s", buff);
     snprintf(buff, sizeof(buff), "%s.hash", p);
     if (unlink(buff) && errno != ENOENT)
-	(void)fprintf(stderr, NOCANDO, buff, strerror(errno));
+        syswarn("cannot unlink %s", buff);
 #endif
 }
 
@@ -62,26 +62,19 @@ Countlines(void)
 
     /* Open the text file. */
     qp = QIOopen(TextFile);
-    if (qp == NULL) {
-	fprintf(stderr, "Can't open \"%s\", %s\n",
-		TextFile, strerror(errno));
-	exit(1);
-    }
+    if (qp == NULL)
+        sysdie("cannot open %s", TextFile);
 
     /* Loop through all lines in the text file. */
     count = 0;
     for (; QIOread(qp) != NULL;)
 	count++;
-    if (QIOerror(qp)) {
-	fprintf(stderr, "Can't read \"%s\" near line %lu, %s\n",
-		TextFile, (unsigned long) count, strerror(errno));
-	exit(1);
-    }
-    if (QIOtoolong(qp)) {
-	fprintf(stderr, "Line %lu of \"%s\" is too long\n",
-                (unsigned long) count, TextFile);
-	exit(1);
-    }
+    if (QIOerror(qp))
+        sysdie("cannot read %s near line %lu", TextFile,
+               (unsigned long) count);
+    if (QIOtoolong(qp))
+        sysdie("line %lu of %s is too long", (unsigned long) count,
+               TextFile);
 
     QIOclose(qp);
     return count;
@@ -103,10 +96,8 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     char		temp[SMBUF];
     dbzoptions          opt;
 
-    if (chdir(HistoryDir) < 0) {
-	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
-	exit(1);
-    }
+    if (chdir(HistoryDir) < 0)
+        sysdie("cannot chdir to %s", HistoryDir);
 
     /* If we are ignoring the old database and the user didn't specify a table
        size, determine one ourselves from the size of the text history file.
@@ -116,26 +107,19 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	size = Countlines();
 	size += (size / 10);
         if (size > 0)
-            fprintf(stderr, "no size specified, using %ld\n",
-                    (unsigned long) size);
+            warn("no size specified, using %ld", (unsigned long) size);
     }
 
     /* Open the text file. */
     qp = QIOopen(TextFile);
-    if (qp == NULL) {
-	(void)fprintf(stderr, "Can't open \"%s\", %s\n",
-		TextFile, strerror(errno));
-	exit(1);
-    }
+    if (qp == NULL)
+        sysdie("cannot open %s", TextFile);
 
     /* If using the standard history file, force DBZ to use history.n. */
     if (EQ(TextFile, HISTORY) && !Overwrite) {
 	snprintf(temp, sizeof(temp), "%s.n", HISTORY);
-	if (link(HISTORY, temp) < 0) {
-	    (void)fprintf(stderr, "Can't make temporary link to \"%s\", %s\n",
-		    temp, strerror(errno));
-	    exit(1);
-	}
+	if (link(HISTORY, temp) < 0)
+            sysdie("cannot create temporary link to %s", temp);
 	RemoveDBZFiles(temp);
 	p = temp;
     }
@@ -158,8 +142,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     dbzsetoptions(opt);
     if (IgnoreOld) {
 	if (!dbzfresh(p, dbzsize(size))) {
-	    (void)fprintf(stderr, "Can't do dbzfresh, %s\n",
-		    strerror(errno));
+            syswarn("cannot do dbzfresh");
 	    if (temp[0])
 		(void)unlink(temp);
 	    exit(1);
@@ -167,7 +150,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     }
     else {
 	if (!dbzagain(p, HISTORY)) {
-	    (void)fprintf(stderr, "Can't do dbzagain, %s\n", strerror(errno));
+            syswarn("cannot do dbzagain");
 	    if (temp[0])
 		(void)unlink(temp);
 	    exit(1);
@@ -179,8 +162,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     for (where = QIOtell(qp); (p = QIOread(qp)) != NULL; where = QIOtell(qp)) {
 	count++;
 	if ((save = strchr(p, HIS_FIELDSEP)) == NULL) {
-	    (void)fprintf(stderr, "Bad line #%ld \"%.30s...\"\n",
-                          (unsigned long) count, p);
+            warn("bad line #%lu: %.40s", (unsigned long) count, p);
 	    if (temp[0])
 		(void)unlink(temp);
 	    exit(1);
@@ -189,22 +171,21 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	switch (*p) {
 	case '[':
 	    if (strlen(p) != ((sizeof(HASH) * 2) + 2)) {
-		fprintf(stderr, "Invalid length for hash %s, skipping\n", p);
+                warn("invalid length for hash %s, skipping", p);
 		continue;
 	    }
 	    key = TextToHash(p+1);
 	    break;
 	default:
-	    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
+            warn("invalid message ID %s in history text", p);
 	    continue;
 	}
 	switch (dbzstore(key, where)) {
 	case DBZSTORE_EXISTS:
-            fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
+            warn("duplicate message ID %s in history text", p);
 	    break;
 	case DBZSTORE_ERROR:
-	    fprintf(stderr, "Can't store \"%s\", %s\n",
-		    p, strerror(errno));
+            syswarn("cannot store %s", p);
 	    if (temp[0])
 		(void)unlink(temp);
 	    exit(1);
@@ -213,14 +194,14 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	}
     }
     if (QIOerror(qp)) {
-	(void)fprintf(stderr, "Can't read \"%s\" near line %ld, %s\n",
-		TextFile, (unsigned long) count, strerror(errno));
+        syswarn("cannot read %s near line %lu", TextFile,
+                (unsigned long) count);
 	if (temp[0])
 	    (void)unlink(temp);
 	exit(1);
     }
     if (QIOtoolong(qp)) {
-	fprintf(stderr, "Line %ld is too long\n", (unsigned long) count);
+        warn("line %lu is too long", (unsigned long) count);
 	if (temp[0])
 	    (void)unlink(temp);
 	exit(1);
@@ -229,7 +210,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     /* Close files. */
     QIOclose(qp);
     if (!dbzclose()) {
-	(void)fprintf(stderr, "Can't close history, %s\n", strerror(errno));
+        syswarn("cannot close history");
 	if (temp[0])
 	    (void)unlink(temp);
 	exit(1);
@@ -256,7 +237,8 @@ main(int argc, char **argv)
     char	*p;
 
     /* First thing, set up logging and our identity. */
-    openlog("makedbz", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+    openlog("makedbz", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "makedbz";
 	
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -301,10 +283,8 @@ main(int argc, char **argv)
 	*p = '/';
     }
 
-    if (chdir(HistoryDir) < 0) {
-	fprintf(stderr, "makedbz: can't cd to %s\n", HistoryDir);
-	exit(1);
-    }
+    if (chdir(HistoryDir) < 0)
+        sysdie("cannot chdir to %s", HistoryDir);
 
     Rebuild(size, IgnoreOld, Overwrite);
     closelog();

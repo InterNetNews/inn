@@ -7,11 +7,12 @@
 #include <syslog.h>  
 #include <sys/stat.h>
 
+#include "inn/history.h"
+#include "inn/messages.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
 #include "storage.h"
-#include "inn/history.h"
 
 /*
 **  Read stdin for list of Message-ID's, output list of ones we
@@ -77,9 +78,9 @@ main(int ac, char *av[])
     time_t arrived, posted, expires;
     TOKEN token;
 
-
     /* First thing, set up logging and our identity. */
-    openlog("grephistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+    openlog("grephistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "grephistory";
 
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
@@ -104,8 +105,7 @@ main(int ac, char *av[])
 	case 'q':
 	case 's':
 	    if (What != '?') {
-		(void)fprintf(stderr, "Only one [eilnqs] flag allowed.\n");
-		exit(1);
+                die("only one [eilnqs] flag allowed");
 	    }
 	    What = (char)i;
 	    break;
@@ -114,10 +114,8 @@ main(int ac, char *av[])
     av += optind;
 
     history = HISopen(History, innconf->hismethod, HIS_RDONLY);
-    if (history == NULL) {
-	(void)fprintf(stderr, "Can't open history\n");
-	exit(1);
-    }
+    if (history == NULL)
+        die("cannot open history");
 
     /* Set operating mode. */
     switch (What) {
@@ -138,7 +136,7 @@ main(int ac, char *av[])
 
     key = av[0];
     if (*key == '[') {
-	(void)fprintf(stderr, "Accessing history by hash isn't supported\n");
+        warn("accessing history by hash isn't supported");
 	HISclose(history);
 	exit(1);
     } else {
@@ -149,7 +147,7 @@ main(int ac, char *av[])
 
     if (!HIScheck(history, key)) {
 	if (What == 'n')
-	    (void)fprintf(stderr, "Not found.\n");
+            warn("not found");
     }
     else if (What != 'q') {
 	if (HISlookup(history, key, &arrived, &posted, &expires, &token)) {

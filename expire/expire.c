@@ -11,12 +11,13 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include "inn/history.h"
+#include "inn/messages.h"
 #include "inndcomm.h"
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
 #include "storage.h"
-#include "inn/history.h"
 
 
 typedef struct _EXPIRECLASS {
@@ -70,11 +71,9 @@ EXPfopen(bool Unlink, const char *Name, const char *Mode, bool Needclean,
     FILE *F;
 
     if (Unlink && unlink(Name) < 0 && errno != ENOENT)
-	(void)fprintf(stderr, "Warning, can't remove %s, %s\n",
-		Name, strerror(errno));
+        syswarn("cannot remove %s", Name);
     if ((F = fopen(Name, Mode)) == NULL) {
-	(void)fprintf(stderr, "Can't open %s in %s mode, %s\n",
-		Name, Mode, strerror(errno));
+        syswarn("cannot open %s in %s mode", Name, Mode);
 	if (Needclean)
 	    CleanupAndExit(Server, Paused, 1);
 	else
@@ -157,8 +156,7 @@ static bool EXPgetnum(int line, char *word, time_t *v, const char *name)
 	else if (!CTYPE(isdigit, (int)*p))
 	    break;
     if (*p) {
-	(void)fprintf(stderr, "Line %d, bad `%c' character in %s field\n",
-		line, *p, name);
+        warn("bad '%c' character in %s field on line %d", *p, name, line);
 	return FALSE;
     }
     d = atof(word);
@@ -193,7 +191,7 @@ static bool EXPreadfile(FILE *F)
     
     for (i = 1; fgets(buff, sizeof buff, F) != NULL; i++) {
 	if ((p = strchr(buff, '\n')) == NULL) {
-	    (void)fprintf(stderr, "Line %d too long\n", i);
+            warn("line %d too long", i);
 	    return FALSE;
 	}
 	*p = '\0';
@@ -211,18 +209,18 @@ static bool EXPreadfile(FILE *F)
         if (buff[0] == '\0')
 	    continue;
 	if ((j = EXPsplit(buff, ':', fields, SIZEOF(fields))) == -1) {
-	    (void)fprintf(stderr, "Line %d too many fields\n", i);
+            warn("too many fields on line %d", i);
 	    return FALSE;
 	}
 
 	/* Expired-article remember line? */
 	if (EQ(fields[0], "/remember/")) {
 	    if (j != 2) {
-		(void)fprintf(stderr, "Line %d bad format\n", i);
+                warn("invalid format on line %d", i);
 		return FALSE;
 	    }
 	    if (EXPremember != -1) {
-		(void)fprintf(stderr, "Line %d duplicate /remember/\n", i);
+                warn("duplicate /remember/ on line %d", i);
 		return FALSE;
 	    }
 	    if (!EXPgetnum(i, fields[1], &EXPremember, "remember"))
@@ -235,16 +233,15 @@ static bool EXPreadfile(FILE *F)
             /* Is this the default line? */
             if (fields[0][0] == '*' && fields[0][1] == '\0') {
                 if (SawDefault) {
-                    (void)fprintf(stderr, "Line %d duplicate default\n", i);
+                    warn("duplicate default on line %d", i);
                     return FALSE;
                 }
                 j = NUM_STORAGE_CLASSES;
                 SawDefault = TRUE;
             } else {
                 j = atoi(fields[0]);
-                if ((j < 0) || (j >= NUM_STORAGE_CLASSES)) {
-                    fprintf(stderr, "Line %d bad storage class %d\n", i, j);
-                }
+                if ((j < 0) || (j >= NUM_STORAGE_CLASSES))
+                    warn("bad storage class %d on line %d", j, i);
             }
 	
 	    if (!EXPgetnum(i, fields[1], &EXPclasses[j].Keep,    "keep")
@@ -257,11 +254,11 @@ static bool EXPreadfile(FILE *F)
 	    if (EXPclasses[j].Purge) {
 		/* Some value not forever; make sure other values are in range. */
 		if (EXPclasses[j].Keep && EXPclasses[j].Keep < EXPclasses[j].Purge) {
-		    (void)fprintf(stderr, "Line %d keep>purge\n", i);
+                    warn("keep time longer than purge time on line %d", i);
 		    return FALSE;
 		}
 		if (EXPclasses[j].Default && EXPclasses[j].Default < EXPclasses[j].Purge) {
-		    (void)fprintf(stderr, "Line %d default>purge\n", i);
+                    warn("default time longer than purge time on line %d", i);
 		    return FALSE;
 		}
 	    }
@@ -271,7 +268,7 @@ static bool EXPreadfile(FILE *F)
 
 	/* Regular expiration line -- right number of fields? */
 	if (j != 5) {
-	    (void)fprintf(stderr, "Line %d bad format\n", i);
+            warn("bad format on line %d", i);
 	    return FALSE;
 	}
 	continue; /* don't process this line--per-group expiry is done by expireover */
@@ -292,8 +289,8 @@ static enum KR EXPkeepit(const TOKEN *token, time_t when, time_t Expires)
         if (EXPclasses[NUM_STORAGE_CLASSES].Missing) {
             /* no default */
             if (!class.ReportedMissing) {
-                fprintf(stderr, "Class definition %d is missing from control file, assuming never expiration\n",
-                        token->class);
+                warn("class definition for %d missing from control file,"
+                     " assuming it should never expire", token->class);
                 EXPclasses[token->class].ReportedMissing = TRUE;
             }
             return Keep;
@@ -362,14 +359,12 @@ EXPremove(const TOKEN *token)
 	(void)fprintf(EXPunlinkfile, "%s\n", TokenToText(*token));
 	if (!ferror(EXPunlinkfile))
 	    return;
-	(void)fprintf(stderr, "Can't write to -z file, %s\n",
-		      strerror(errno));
-	(void)fprintf(stderr, "(Will ignore it for rest of run.)\n");
+        syswarn("cannot write to -z file (will ignore it for rest of run)");
 	(void)fclose(EXPunlinkfile);
 	EXPunlinkfile = NULL;
     }
     if (!SMcancel(*token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-	fprintf(stderr, "Can't unlink %s\n", TokenToText(*token));
+        warn("cannot unlink %s", TokenToText(*token));
 }
 
 /*
@@ -439,17 +434,15 @@ CleanupAndExit(bool Server, bool Paused, int x)
     if (Server)
 	(void)ICCreserve("");
     if (Paused && ICCgo(EXPreason) != 0) {
-	(void)fprintf(stderr, "Can't unpause server, %s\n",
-		strerror(errno));
+        syswarn("cannot unpause server");
 	x = 1;
     }
     if (Server && ICCclose() < 0) {
-	(void)fprintf(stderr, "Can't close communication link, %s\n",
-		strerror(errno));
+        syswarn("cannot close communication link to server");
 	x = 1;
     }
     if (EXPunlinkfile && fclose(EXPunlinkfile) == EOF) {
-	(void)fprintf(stderr, "Can't close -z file, %s\n", strerror(errno));
+        syswarn("cannot close -z file");
 	x = 1;
     }
 
@@ -495,7 +488,6 @@ Usage(void)
 
 int main(int ac, char *av[])
 {
-    static char		CANTCD[] = "Can't cd to %s, %s\n";
     int                 i;
     char 	        *p;
     FILE		*F;
@@ -514,7 +506,8 @@ int main(int ac, char *av[])
     size_t              Size = 0;
 
     /* First thing, set up logging and our identity. */
-    openlog("expire", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
+    openlog("expire", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "expire";
 
     /* Set defaults. */
     Server = TRUE;
@@ -623,8 +616,7 @@ int main(int ac, char *av[])
     }
     if (!EXPreadfile(F)) {
 	(void)fclose(F);
-	(void)fprintf(stderr, "Format error in expire.ctl\n");
-	exit(1);
+        die("format error in expire.ctl");
     }
     (void)fclose(F);
 
@@ -643,19 +635,18 @@ int main(int ac, char *av[])
     if (Server) {
 	/* If we fail, leave evidence behind. */
 	if (ICCopen() < 0) {
-	    (void)fprintf(stderr, "Can't open channel to server, %s\n",
-		    strerror(errno));
+            syswarn("cannot open channel to server");
 	    CleanupAndExit(FALSE, FALSE, 1);
 	}
 	if (ICCreserve((char *)EXPreason) != 0) {
-	    (void)fprintf(stderr, "Can't reserve server\n");
+            warn("cannot reserve server");
 	    CleanupAndExit(FALSE, FALSE, 1);
 	}
     }
 
     History = HISopen(HistoryText, innconf->hismethod, HIS_RDONLY);
     if (!History) {
-	fprintf(stderr, "Can't setup history manager\n");
+        warn("cannot open history");
 	CleanupAndExit(Server, FALSE, 1);
     }
 
@@ -668,15 +659,15 @@ int main(int ac, char *av[])
 
     val = TRUE;
     if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
-	fprintf(stderr, "Can't setup storage manager\n");
+        warn("cannot set up storage manager");
 	CleanupAndExit(Server, FALSE, 1);
     }
     if (!SMinit()) {
-	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
+        warn("cannot initialize storage manager: %s", SMerrorstr);
 	CleanupAndExit(Server, FALSE, 1);
     }
     if (chdir(EXPhistdir) < 0) {
-	(void)fprintf(stderr, CANTCD, EXPhistdir, strerror(errno));
+        syswarn("cannot chdir to %s", EXPhistdir);
 	CleanupAndExit(Server, FALSE, 1);
     }
 
