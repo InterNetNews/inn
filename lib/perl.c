@@ -21,6 +21,7 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "configdata.h"
 #include "clibrary.h"
 #include "logging.h"
+#include "fcntl.h"
 
 
 #if defined(DO_PERL)
@@ -39,6 +40,9 @@ int	PerlFilterActive = FALSE;
 static PerlInterpreter	*PerlCode;
 CV *perl_filter_cv ;                 /* filter_art or filter_post holder */
 extern char	LogName[];
+
+void PerlSilence();
+void PerlUnSilence();
 
 void
 LogPerl()
@@ -124,8 +128,10 @@ PERLsetup (startupfile, filterfile, function)
     
         argv[0] = startupfile ;
         argv[1] = NULL ;
-        
+
+        PerlSilence();
         rc = perl_call_argv ("_load_",G_DISCARD, argv) ;
+        PerlUnSilence();
         
         SPAGAIN ;
         
@@ -174,7 +180,9 @@ PERLreadfilter(filterfile, function)
         }
     }
 
+    PerlSilence();
     perl_call_argv ("_load_", 0, argv) ;
+    PerlUnSilence();
 
     if (SvTRUE(GvSV(errgv)))     /* check $@ */ {
         syslog (L_ERROR,"%s perl loading %s failed: %s",
@@ -232,6 +240,66 @@ extern void xs_init()
     newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
 }
 
+/*
+** Redirects STDOUT/STDERR briefly (otherwise PERL complains to the net connection
+** for NNRPD and that just won't do) -- dave@jetcafe.org
+*/
+static int savestdout = 0;
+static int savestderr = 0;
+void
+PerlSilence()
+{
+  int newfd;
+
+  /* Save the descriptors */
+  if ( (savestdout = dup(1)) < 0) {
+    syslog(L_ERROR,"%s perl silence cant redirect stdout: %m",LogName);
+    savestdout = 0;
+    return;
+  }
+  if ( (savestderr = dup(2)) < 0) {
+    syslog(L_ERROR,"%s perl silence cant redirect stderr: %m",LogName);
+    savestdout = 0;
+    savestderr = 0;
+    return;
+  }
+
+  /* Open /dev/null */
+  if ((newfd = open("/dev/null",O_WRONLY)) < 0) {
+    syslog(L_ERROR,"%s perl silence cant open /dev/null: %m",LogName);
+    savestdout = 0;
+    savestderr = 0;
+    return;
+  }
+
+  /* Redirect descriptors */
+  if (dup2(newfd,1) < 0) {
+    syslog(L_ERROR,"%s perl silence cant redirect stdout: %m",LogName);
+    savestdout = 0;
+    return;
+  }
+    
+  if (dup2(newfd,2) < 0) {
+    syslog(L_ERROR,"%s perl silence cant redirect stderr: %m",LogName);
+    savestderr = 0;
+    return;
+  }
+}
+
+void
+PerlUnSilence() {
+  if (savestdout != 0) {
+    if (dup2(savestdout,1) < 0) {
+      syslog(L_ERROR,"%s perl silence cant restore stdout: %m",LogName);
+    }
+  }
+
+  if (savestderr != 0) {
+    if (dup2(savestderr,2) < 0) {
+      syslog(L_ERROR,"%s perl silence cant restore stderr: %m",LogName);
+    }
+  }
+}
 
 #endif /* defined(DO_PERL) */
 
