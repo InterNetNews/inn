@@ -31,12 +31,11 @@
 #include "rfcnb-priv.h"
 #include "rfcnb-util.h"
 #include "rfcnb-io.h"
+#include "rfcnb.h"
 
 #ifndef INADDR_NONE
 # define INADDR_NONE -1
 #endif
-
-extern void (*Prot_Print_Routine)(); /* Pointer to protocol print routine */
 
 /* Convert name and pad to 16 chars as needed */
 /* Name 1 is a C string with null termination, name 2 may not be */
@@ -130,7 +129,7 @@ void RFCNB_Free_Pkt(struct RFCNB_Pkt *pkt)
 
 int RFCNB_Name_To_IP(char *host, struct in_addr *Dest_IP)
 
-{ int addr;         /* Assumes IP4, 32 bit network addresses */
+{ unsigned int addr;            /* Assumes IP4, 32 bit network addresses */
   struct hostent *hp;
 
         /* Use inet_addr to try to convert the address */
@@ -150,13 +149,13 @@ int RFCNB_Name_To_IP(char *host, struct in_addr *Dest_IP)
     }
     else {  /* We got a name */
 
-       memcpy((void *)Dest_IP, (void *)hp -> h_addr_list[0], sizeof(struct in_addr));
+       memcpy(Dest_IP, hp->h_addr_list[0], sizeof(struct in_addr));
 
     }
   }
   else { /* It was an IP address */
 
-    memcpy((void *)Dest_IP, (void *)&addr, sizeof(struct in_addr));
+    memcpy(Dest_IP, &addr, sizeof(struct in_addr));
 
   }
 

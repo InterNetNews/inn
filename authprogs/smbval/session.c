@@ -37,10 +37,9 @@ int RFCNB_saved_errno = 0;
 #include "rfcnb-priv.h"
 #include "rfcnb-io.h"
 #include "rfcnb-util.h"
+#include "rfcnb.h"
 
 int RFCNB_Stats[RFCNB_MAX_STATS];
-
-void (*Prot_Print_Routine)() = NULL;      /* Pointer to print routine */
 
 /* Set up a session with a remote name. We are passed Called_Name as a
    string which we convert to a NetBIOS name, ie space terminated, up to
@@ -173,9 +172,11 @@ void *RFCNB_Call(char *Called_Name, char *Calling_Name, char *Called_Address,
    data as a series of pointers to blocks of data ... we should check the
    length ... */
 
-int RFCNB_Send(struct RFCNB_Con *Con_Handle, struct RFCNB_Pkt *udata, int Length)
-
-{ struct RFCNB_Pkt *pkt; char *hdr;
+int
+ RFCNB_Send(void *handle, struct RFCNB_Pkt *udata, int Length)
+{
+  struct RFCNB_Con *Con_Handle = handle;
+  struct RFCNB_Pkt *pkt; char *hdr;
   int len;
 
   /* Plug in the header and send the data */
@@ -278,9 +279,10 @@ int RFCNB_Recv(void *con_Handle, struct RFCNB_Pkt *Data, int Length)
 /* We just disconnect from the other end, as there is nothing in the RFCNB */
 /* protocol that specifies any exchange as far as I can see                */
 
-int RFCNB_Hangup(struct RFCNB_Con *con_Handle)
-
+int
+RFCNB_Hangup(void *handle)
 {
+  struct RFCNB_Con *con_Handle = handle;
 
   if (con_Handle != NULL) {
     RFCNB_Close(con_Handle -> fd);  /* Could this fail? */
@@ -289,16 +291,5 @@ int RFCNB_Hangup(struct RFCNB_Con *con_Handle)
 
   return 0;
 
-
-}
-
-/* Set TCP_NODELAY on the socket                                          */
-
-int RFCNB_Set_Sock_NoDelay(struct RFCNB_Con *con_Handle, bool yn)
-
-{
-
-  return(setsockopt(con_Handle -> fd, IPPROTO_TCP, TCP_NODELAY, 
-		    (char *)&yn, sizeof(yn)));
 
 }

@@ -45,7 +45,7 @@
    up with a different answer to the one above)
 */
 
-
+#include "smblib-priv.h"
 
 static int perm1[56] = {57, 49, 41, 33, 25, 17,  9,
 			 1, 58, 50, 42, 34, 26, 18,
@@ -316,22 +316,3 @@ void E_P24(unsigned char *p21, unsigned char *c8, unsigned char *p24)
 	smbhash(p24+8, c8, p21+7);
 	smbhash(p24+16, c8, p21+14);
 }
-
-void cred_hash1(unsigned char *out,unsigned char *in,unsigned char *key)
-{
-	unsigned char buf[8];
-
-	smbhash(buf, in, key);
-	smbhash(out, buf, key+9);
-}
-
-void cred_hash2(unsigned char *out,unsigned char *in,unsigned char *key)
-{
-	unsigned char buf[8];
-	static unsigned char key2[8];
-
-	smbhash(buf, in, key);
-	key2[0] = key[7];
-	smbhash(out, buf, key2);
-}
-

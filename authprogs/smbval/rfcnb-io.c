@@ -37,10 +37,12 @@ int RFCNB_Timeout = 0;    /* Timeout in seconds ... */
 /* Discard the rest of an incoming packet as we do not have space for it
    in the buffer we allocated or were passed ...                         */
 
-int RFCNB_Discard_Rest(struct RFCNB_Con *con, int len)
-
-{ char temp[100];   /* Read into here */
-  int rest, this_read, bytes_read;
+static int
+RFCNB_Discard_Rest(struct RFCNB_Con *con, int len)
+{
+  char temp[100];   /* Read into here */
+  size_t rest, this_read;
+  ssize_t bytes_read;
 
   /* len is the amount we should read */
 
@@ -162,7 +164,8 @@ int RFCNB_Put_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
 int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
-{ int read_len, pkt_len;
+{ ssize_t read_len = 0;
+  int pkt_len;
   char hdr[RFCNB_Pkt_Hdr_Len];      /* Local space for the header */
   struct RFCNB_Pkt *pkt_frag;
   int more, this_time, offset, frag_len, this_len;
@@ -207,7 +210,7 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
     }
 
-    if (RFCNB_Pkt_Type(hdr) != RFCNB_SESSION_KEEP_ALIVE) {
+    if (RFCNB_Pkt_Type(hdr) != (unsigned char) RFCNB_SESSION_KEEP_ALIVE) {
       seen_keep_alive = false;
     }
 
@@ -215,7 +218,7 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
  
   /* What if we got less than or equal to a hdr size in bytes? */
 
-  if (read_len < sizeof(hdr)) { /* We got a small packet */
+  if (read_len < (ssize_t) sizeof(hdr)) { /* We got a small packet */
 
     /* Now we need to copy the hdr portion we got into the supplied packet */
 
@@ -297,7 +300,7 @@ int RFCNB_Get_Pkt(struct RFCNB_Con *con, struct RFCNB_Pkt *pkt, int len)
 
   }
 
-  if (read_len < (pkt_len + sizeof(hdr))) {  /* Discard the rest */
+  if (read_len < (ssize_t) (pkt_len + sizeof(hdr))) {  /* Discard the rest */
 
     return(RFCNB_Discard_Rest(con, (pkt_len + sizeof(hdr)) - read_len));
 

@@ -27,6 +27,7 @@
 #include "clibrary.h"
 
 #include "smblib-priv.h"
+#include "smblib.h"
 #include "rfcnb.h"
 
 /* The following two arrays need to be in step!              */
@@ -64,7 +65,7 @@ int SMB_Types[] = {SMB_P_Core,
 /* We offered, and the index back from the server. We allow for a user      */
 /* supplied list, and assume that it is a subset of our list                */
 
-int SMB_Figure_Protocol(const char *dialects[], int prot_index)
+static int SMB_Figure_Protocol(const char *dialects[], int prot_index)
 
 { int i;
 
@@ -98,8 +99,10 @@ int SMB_Figure_Protocol(const char *dialects[], int prot_index)
 /* we return the index of the accepted protocol in NegProt, -1 indicates  */
 /* none acceptible, and our return value is 0 if ok, <0 if problems       */
 
-int SMB_Negotiate(SMB_Handle_Type Con_Handle, const char *Prots[])
+int 
+SMB_Negotiate(void *handle, const char *Prots[])
 {
+  SMB_Handle_Type Con_Handle = handle;
   struct RFCNB_Pkt *pkt;
   int prots_len, i, pkt_len, prot, alloc_len;
   char *p;

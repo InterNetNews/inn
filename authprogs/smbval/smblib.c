@@ -33,12 +33,13 @@ int SMBlib_SMB_Error;
 #define SMBLIB_ERRNO
 typedef unsigned char uchar;
 #include "smblib-priv.h"
+#include "smblib.h"
 
 #include "rfcnb.h"
 
 /* Initialize the SMBlib package     */
 
-int SMB_Init()
+int SMB_Init(void)
 
 {
   signal(SIGPIPE, SIG_IGN);   /* Ignore these ... */
@@ -47,23 +48,16 @@ int SMB_Init()
 
 }
 
-int SMB_Term()
-
-{
-
-  return 0;
-
-}
-
 /* SMB_Connect_Server: Connect to a server, but don't negotiate protocol */
 /* or anything else ...                                                  */
 
-SMB_Handle_Type SMB_Connect_Server(SMB_Handle_Type Con_Handle,
-				   char *server, char *NTdomain)
-
-{ SMB_Handle_Type con;
+void *
+SMB_Connect_Server(void *handle, char *server, char *NTdomain)
+{ 
+  SMB_Handle_Type Con_Handle = handle;
+  SMB_Handle_Type con;
   char called[80], calling[80], *address;
-  int i;
+  size_t i;
 
   /* Get a connection structure if one does not exist */
 
@@ -201,7 +195,7 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
     SSVAL(SMB_Hdr(pkt), SMB_hdr_mid_offset, Con_Handle -> mid);
     SSVAL(SMB_Hdr(pkt), SMB_hdr_uid_offset, Con_Handle -> uid);
     *(SMB_Hdr(pkt) + SMB_hdr_wct_offset) = 10;
-    *(SMB_Hdr(pkt) + SMB_hdr_axc_offset) = 0xFF;    /* No extra command */
+    *(SMB_Hdr(pkt) + SMB_hdr_axc_offset) = (char) 0xFF; /* No extra command */
     SSVAL(SMB_Hdr(pkt), SMB_hdr_axo_offset, 0);
 
     SSVAL(SMB_Hdr(pkt), SMB_ssetpLM_mbs_offset, SMBLIB_MAX_XMIT);
@@ -266,7 +260,7 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
     SSVAL(SMB_Hdr(pkt), SMB_hdr_mid_offset, Con_Handle -> mid);
     SSVAL(SMB_Hdr(pkt), SMB_hdr_uid_offset, Con_Handle -> uid);
     *(SMB_Hdr(pkt) + SMB_hdr_wct_offset) = 13;
-    *(SMB_Hdr(pkt) + SMB_hdr_axc_offset) = 0xFF;    /* No extra command */
+    *(SMB_Hdr(pkt) + SMB_hdr_axc_offset) = (char) 0xFF; /* No extra command */
     SSVAL(SMB_Hdr(pkt), SMB_hdr_axo_offset, 0);
 
     SSVAL(SMB_Hdr(pkt), SMB_ssetpNTLM_mbs_offset, SMBLIB_MAX_XMIT);
@@ -363,9 +357,10 @@ int SMB_Logon_Server(SMB_Handle_Type Con_Handle, char *UserName,
 
 /* Disconnect from the server, and disconnect all tree connects */
 
-int SMB_Discon(SMB_Handle_Type Con_Handle, bool KeepHandle)
-
+int
+SMB_Discon(void *handle, bool KeepHandle)
 {
+  SMB_Handle_Type Con_Handle = handle;
 
   /* We just disconnect the connection for now ... */
 

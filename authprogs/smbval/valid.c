@@ -8,15 +8,15 @@
 
 int Valid_User(char *USERNAME,char *PASSWORD,char *SERVER,char *BACKUP, char *DOMAIN)
 {
-  char *SMB_Prots[] = {"PC NETWORK PROGRAM 1.0",
-			    "MICROSOFT NETWORKS 1.03",
-			    "MICROSOFT NETWORKS 3.0",
-			    "LANMAN1.0",
-			    "LM1.2X002",
-			    "Samba",
-			    "NT LM 0.12",
-			    "NT LANMAN 1.0",
-			    NULL};
+  const char *SMB_Prots[] = {"PC NETWORK PROGRAM 1.0",
+                             "MICROSOFT NETWORKS 1.03",
+                             "MICROSOFT NETWORKS 3.0",
+                             "LANMAN1.0",
+                             "LM1.2X002",
+                             "Samba",
+                             "NT LM 0.12",
+                             "NT LANMAN 1.0",
+                             NULL};
   SMB_Handle_Type con;
 
   SMB_Init();

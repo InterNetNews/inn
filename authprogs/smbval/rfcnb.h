@@ -43,7 +43,7 @@ int RFCNB_Recv(void *Con_Handle, struct RFCNB_Pkt *Data, int Length);
 
 int RFCNB_Hangup(void *con_Handle);
 
-void *RFCNB_Listen();
+void *RFCNB_Listen(void);
 
 struct RFCNB_Pkt *RFCNB_Alloc_Pkt(int n);
 

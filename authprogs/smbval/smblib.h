@@ -37,7 +37,7 @@ void *SMB_Connect_Server(void *Con, char *server, char *NTdomain);
 
 /* Negotiate a protocol                                                  */
 
-int SMB_Negotiate(void *Con_Handle, char *Prots[]);
+int SMB_Negotiate(void *Con_Handle, const char *Prots[]);
 
 /* Disconnect from server. Has flag to specify whether or not we keep the */
 /* handle.                                                                */
