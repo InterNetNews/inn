@@ -54,7 +54,7 @@ ProcessStats()
   time_t Time;
 
   Time = time (NULL);
-  syslog(L_NOTICE,
+  syslog(LOG_NOTICE,
 	"seconds %lu links %lu %lu symlinks %lu %lu mkdirs %lu %lu missing %lu toolong %lu other %lu",
 	Time - STATTime, STATLink, STATLError, STATSymlink, STATSLError,
 	STATMkdir, STATMdError, STATMissing, STATTooLong, STATOError);
