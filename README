@@ -1,17 +1,16 @@
-Welcome to INN 2.0!
+Welcome to INN 2.1!
 
-  This is the public release of version 2.0 of InterNet News (INN). This work
+  This is the public release of version 2.1 of InterNet News (INN). This work
   is sponsored by the Internet Software Consortium.
 
-  This release is a major upgrade from previous versions, hence the change
-  from major version 1 to 2. Please see the INSTALL document for installation
-  and upgrade instructions.
+  This release is a bug-fix to the previous version.  Please see
+  the INSTALL document for installation instructions.
 
 Reporting Bugs
 
   We're gathering information on who uses INN. Please do the following
 
-        uname -a | Mail -s "2.0 usage survey" inn-survey@isc.org
+        uname -a | Mail -s "2.1 usage survey" inn-survey@isc.org
 
   We appreciate it. You won't get a reply.
 
