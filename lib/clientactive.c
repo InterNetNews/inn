@@ -12,8 +12,8 @@
 #include "paths.h"
 
 
-STATIC char	CApathname[256];
-STATIC FILE	*CAfp;
+static char	CApathname[256];
+static FILE	*CAfp;
 
 
 /*

@@ -12,8 +12,8 @@
 #include "paths.h"
 
 
-STATIC char	GMApathname[256];
-STATIC FILE	*GMAfp = NULL;
+static char	GMApathname[256];
+static FILE	*GMAfp = NULL;
 
 
 /*
