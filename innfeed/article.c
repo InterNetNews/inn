@@ -63,7 +63,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "article.h"
 #include "buffer.h"
 #include "endpoint.h"
-#include "msgs.h"
 
 #if defined (NDEBUG)
 #define VALIDATE_HASH_TABLE() (void (0))
@@ -254,7 +253,8 @@ Article newArticle (const char *filename, const char *msgid)
   else
     {
       if (strcmp (filename,newArt->fname) != 0)
-        syslog (LOG_ERR, DOUBLE_NAME, filename, newArt->fname) ;
+        warn ("ME two filenames for same article: %s, %s", filename,
+              newArt->fname) ;
       
       newArt->refCount++ ;
       d_printf (2,"Reusing existing article for %s\nx",msgid) ;
@@ -511,8 +511,8 @@ static void logArticleStats (TimeoutId id, void *data)
 
   (void) data ;                 /* keep lint happy */
 
-  syslog (LOG_NOTICE,ACTIVE_ARTICLES,articlesInUse,bytesInUse) ;
-  syslog (LOG_NOTICE,ARTICLE_ALLOCS,articleTotal,byteTotal) ;
+  notice ("ME articles active %d bytes %d", articlesInUse, bytesInUse) ;
+  notice ("ME articles total %d bytes %d", articleTotal, byteTotal) ;
   
   byteTotal = 0 ;
   articleTotal = 0 ;
@@ -531,11 +531,11 @@ static void logArticleStats (TimeoutId id, void *data)
 
 static bool fillContents (Article article)
 {
-    int fd ;
+    int fd = -1;
     char *p;
     static bool maxLimitNotified ;
     bool opened;
-    int articlesize;
+    int articlesize = 0;
     char *buffer = NULL ;
     int amt = 0 ;
     size_t idx = 0, amtToRead ;
@@ -572,19 +572,19 @@ static bool fillContents (Article article)
 	if (opened) {
 	    if (fstat (fd, &sb) < 0) {
 		article->articleOk = false ;
-		syslog (LOG_ERR,FSTAT_FAILURE,article->fname) ;
+                syswarn ("ME oserr fstat %s", article->fname) ;
 		TMRstop(TMR_READART);
 		return false;
 	    }
 	    if (!S_ISREG (sb.st_mode)) {
 		article->articleOk = false ;
-		syslog (LOG_ERR,REGFILE_FAILURE,article->fname) ;
+                warn ("ME article file-type: %s", article->fname) ;
 		TMRstop(TMR_READART);
 		return false;
 	    }
 	    if (sb.st_size == 0) {
 		article->articleOk = false ;
-		syslog (LOG_ERR,EMPTY_ARTICLE,article->fname) ;
+                warn ("ME article 0 bytes: %s", article->fname) ;
 		TMRstop(TMR_READART);
 		return false;
 	    }
@@ -598,7 +598,8 @@ static bool fillContents (Article article)
 	
 	if (logMissingArticles && !article->loggedMissing)
 	{
-	    syslog (LOG_NOTICE,NO_ARTICLE,article->msgid,article->fname) ;
+            notice ("ME article missing: %s, %s", article->msgid,
+                    article->fname) ;
 	    article->loggedMissing = true ;
 	}
 	TMRstop(TMR_READART);
@@ -617,7 +618,7 @@ static bool fillContents (Article article)
 	if (article->mMapping == MAP_FAILED) {
 	    /* dunno, but revert to plain reading */
 	    article->mMapping = NULL ;
-	    syslog (LOG_NOTICE, MMAP_FAILURE, article->fname) ;
+            syswarn ("ME mmap failure %s", article->fname) ;
 	} else {
 	    article->contents = newBufferByCharP((char *)article->mMapping,
 						 (size_t) articlesize,
@@ -627,7 +628,7 @@ static bool fillContents (Article article)
 		article->articleOk = false;
 		delBuffer (article->contents) ;
 		article->contents = NULL ;
-		syslog (LOG_NOTICE, MUNGED_ARTICLE, article->fname) ;
+                warn ("ME munged article %s", article->fname) ;
 	    } else {
 		if (p[-1] == '\r') {
 		    article->inWireFormat = true ;
@@ -660,8 +661,8 @@ static bool fillContents (Article article)
 	/* we we couldn't get below, then log it (one time only) */
 	if ((amtToRead + bytesInUse) > maxBytesInUse && maxLimitNotified == false) {
 	    maxLimitNotified = true ;
-	    syslog (LOG_NOTICE,MAX_BYTES_LIMIT,maxBytesInUse,
-		    amtToRead + bytesInUse) ;
+            notice ("ME exceeding maximum article byte limit: %d (max),"
+                    " %d (cur)", maxBytesInUse, amtToRead + bytesInUse) ;
 	}
 	
 	if ((article->contents = newBuffer (newBufferSize)) == NULL)
@@ -681,7 +682,7 @@ static bool fillContents (Article article)
 	
 	while (amtToRead > 0) {
 	    if ((amt = read (fd, buffer + idx,amtToRead)) <= 0) {
-		syslog (LOG_ERR,BAD_ART_READ, article->fname) ;
+                syswarn ("ME article read error: %s", article->fname) ;
 		bytesInUse -= articlesize ;
 		byteTotal -= articlesize ;
 		amtToRead = 0 ;
@@ -700,7 +701,7 @@ static bool fillContents (Article article)
 	    
 	    if ((p = strchr(buffer, '\n')) == NULL) {                  
 		article->articleOk = false;
-		syslog (LOG_NOTICE, MUNGED_ARTICLE, article->fname) ;
+                warn ("ME munged article %s", article->fname) ;
 	    }
 	    else if (p[-1] == '\r') {
 		article->inWireFormat = true ;
@@ -713,7 +714,7 @@ static bool fillContents (Article article)
 		    if (((unsigned int) UINT_MAX) - diff <= preparedBytes) {
 			d_printf (2,"Newline ratio so far: %02.2f\n",
 				 ((double) preparedBytes / preparedNewlines)) ;
-			syslog (LOG_NOTICE,PREPARED_NEWLINES,
+                        notice ("ME newline to file size ratio: %0.2f (%d/%d)",
 				((double) preparedBytes)/preparedNewlines,
 				preparedBytes,preparedNewlines) ;
 			preparedBytes = 0 ;
@@ -733,7 +734,7 @@ static bool fillContents (Article article)
 		    }
 		    article->inWireFormat = true ;
 		} else {
-		    syslog (LOG_ERR,PREPARE_FAILED) ;
+                    warn ("ME internal failed to prepare buffer for NNTP") ;
 		    bytesInUse -= articlesize ;
 		    byteTotal -= articlesize ;
 		    

@@ -68,7 +68,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "host.h"
 #include "innlistener.h"
 #include "misc.h"
-#include "msgs.h"
 #include "tape.h"
 
 #define INHERIT 1
@@ -79,9 +78,9 @@ bool talkToSelf ;
 extern int debugWrites ;
 bool sigFlag = false ;
 const char *InputFile ;
-const char *configFile = NULL ;
+char *configFile = NULL ;
 bool RollInputFile = false ;
-const char *pidFile = NULL ;
+char *pidFile = NULL ;
 bool useMMap = false ;
 void (*gPrintInfo) (void) ;
 char *dflTapeDir;
@@ -90,7 +89,7 @@ char *deliver_username  = NULL;
 char *deliver_authname  = NULL;
 char *deliver_password  = NULL;
 char *deliver_realm     = NULL;
-char *deliver_rcpt_to   = "+%s";
+const char *deliver_rcpt_to   = "+%s";
 char *deliver_to_header = NULL;
 
 /* imports */
@@ -175,7 +174,7 @@ int main (int argc, char **argv)
 #endif
 
   message_handlers_die (2, error_log_stderr_date, message_log_syslog_err) ;
-  message_handlers_warn (2, error_log_stderr_date, message_log_syslog_warning);
+  message_handlers_warn (2, message_log_syslog_warning);
   message_handlers_notice (1, message_log_syslog_notice) ;
 
 #define OPT_STRING "a:b:c:Cd:e:hl:mMo:p:S:s:vxyz"
@@ -321,7 +320,7 @@ int main (int argc, char **argv)
 
   if ( !checkConfig ) 
     {
-      syslog (LOG_NOTICE,STARTING_PROGRAM,versionInfo,dateString) ;
+      notice ("ME starting %s at %s", versionInfo, dateString) ;
     }
 
   val = TRUE;
@@ -340,7 +339,7 @@ int main (int argc, char **argv)
       struct stat buf ;
 
       if (fstat (0,&buf) < 0)
-        logAndExit (1,FSTAT_FAILURE,"stdin") ;
+        logAndExit (1,"ME oserr fstat stdin: %s", strerror (errno)) ;
       else if (S_ISREG (buf.st_mode))
         InputFile = "";
     }
@@ -407,15 +406,11 @@ int main (int argc, char **argv)
       int pid ;
 
       if (pipe (fds) < 0)
-        {
-          syslog (LOG_CRIT,PIPE_FAILURE) ;
-          exit (1) ;
-        }
+        sysdie ("ME fatal pipe") ;
 
       if ((pid = fork ()) < 0)
         {
-          syslog (LOG_CRIT,FORK_FAILURE) ;
-          exit (1) ;
+          sysdie ("ME fatal fork") ;
         }
       else if (pid == 0)
         {                       /* child */
@@ -446,10 +441,7 @@ int main (int argc, char **argv)
       int pipefds [2] ;
 
       if (pipe (pipefds) != 0)
-        {
-          syslog (LOG_ERR,PIPE_FAILURE) ;
-          exit (1) ;
-        }
+        sysdie ("ME fatal pipe") ;
 
       close (0) ;
       dup2 (pipefds [0], 0) ;
@@ -459,10 +451,7 @@ int main (int argc, char **argv)
     }
 
   if (chdir (newsspool) != 0)
-    {
-      syslog (LOG_ERR,CD_FAILED,newsspool) ;
-      exit (1) ;
-    }
+    sysdie ("ME fatal chdir %s", newsspool) ;
 
     /* hook up the endpoint to the source of new article information (usually
        innd). */
@@ -479,7 +468,7 @@ int main (int argc, char **argv)
 
   if (innconf->rlimitnofile >= 0)
     if (setfdlimit (innconf->rlimitnofile) < 0)
-      syslog (LOG_ERR,SETRLIM_FAILED,innconf->rlimitnofile);
+      syswarn ("ME oserr setrlimit(RLIM_NOFILE,%ld)", innconf->rlimitnofile) ;
 
   if (innconf->timer > 0)
     TMRinit (TMR_MAX) ;
@@ -585,8 +574,8 @@ static void usage (int val)
 static void sigterm (int sig)
 {
   (void) sig ;
-  
-  syslog(LOG_NOTICE, SHUTDOWN_SIGNAL);
+
+  notice ("ME received shutdown signal") ;
   shutDown (mainListener) ;
 }
 
@@ -608,12 +597,11 @@ static void sighup (int sig)
 {
   (void) sig ;
   
-  syslog(LOG_NOTICE, CONFIG_RELOAD, configFile);
+  notice ("ME reloading config file %s", configFile) ;
 
   if (!readConfig (configFile,NULL,false,loggingLevel > 0))
     {
-      syslog (LOG_ERR,PARSE_FAILURE) ;
-      exit (1) ;
+      die ("ME config aborting, error parsing config file") ;
     }
 
   configHosts (talkToSelf) ;
@@ -631,7 +619,7 @@ static void sigalrm (int sig)
   (void) sig ;
   
   if (InputFile == NULL)
-    syslog (LOG_ERR,IGNORE_SIGALRM) ;
+    warn ("ME signal SIGALRM in non-funnel-file mode ignored") ;
   else 
     {
       RollInputFile = true;
@@ -655,10 +643,10 @@ static void sigchld (int sig)
 static void sigusr (int sig)
 {
   if (sig == SIGUSR1) {
-    syslog(LOG_NOTICE, INCR_LOGLEVEL, loggingLevel);
+    notice ("ME increasing logging level to %d", loggingLevel) ;
     loggingLevel++ ;
   } else if (sig == SIGUSR2 && loggingLevel > 0) {
-    syslog(LOG_NOTICE, DECR_LOGLEVEL, loggingLevel);
+    notice ("ME decreasing logging level to %d", loggingLevel) ;
     loggingLevel-- ;
   }    
 }
@@ -730,7 +718,7 @@ static void gprintinfo (void)
   fp = fopen (snapshotFile,"a") ;
   if (fp == NULL)
     {
-      syslog (LOG_ERR,FOPEN_FAILURE,snapshotFile) ;
+      syswarn ("ME fopen %s", snapshotFile) ;
       free(snapshotFile);
       return ;
     }
@@ -770,14 +758,18 @@ static int mainConfigLoadCbk (void *data)
     {
       if ( !isDirectory (p) && isDirectory (innconf->patharticles) )
         {
-          logOrPrint (LOG_WARNING,fp,BADSPOOL_CHANGE,p,innconf->patharticles) ;
+          logOrPrint (LOG_WARNING,fp,
+                      "ME config: definition of news-spool (%s) is a"
+                      " non-existant directory. Using %s",p,
+                      innconf->patharticles) ;
           p = xstrdup (innconf->patharticles) ;
         }
       else if (!isDirectory (p))
         logAndExit (1,"Bad spool directories: %s, %s\n",p,innconf->patharticles) ;
     }
   else if (!isDirectory (innconf->patharticles))
-    logAndExit (1,SPOOL_NODEF,innconf->patharticles);
+    logAndExit (1,"ME config: no definition of news-spool, and %s is no good",
+                innconf->patharticles);
   else
     p = xstrdup (innconf->patharticles) ;
   newsspool = p ;

@@ -104,4 +104,7 @@ void configCleanup (void) ;
 #define INHERIT 1
 #define NO_INHERIT 0
 
+/* Interface between lexer and parser. */
+int yylex (void) ; 
+
 #endif /* configfile_h__ */

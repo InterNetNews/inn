@@ -41,7 +41,6 @@
 #include "host.h"
 #include "innfeed.h"
 #include "article.h"
-#include "msgs.h"
 #include "configfile.h"
 
 #ifdef HAVE_SASL
@@ -1802,7 +1801,7 @@ static void imap_readTimeoutCbk (TimeoutId id, void *data)
 
   peerName = hostPeerName (cxn->myHost) ;
 
-  syslog (LOG_WARNING, RESPONSE_TIMEOUT, peerName, cxn->ident) ;
+  warn ("%s:%d cxnsleep non-responsive connection", peerName, cxn->ident) ;
   d_printf(0, "%s:%d shutting down non-responsive IMAP connection (%s)\n",
 	   hostPeerName (cxn->myHost), cxn->ident,
 	   imap_stateToString(cxn->imap_state));
@@ -1836,8 +1835,9 @@ static void imap_reopenTimeoutCbk (TimeoutId id, void *data)
   
   if (cxn->imap_state != IMAP_DISCONNECTED)
     {
-      syslog (LOG_ERR,CXN_BAD_STATE,hostPeerName (cxn->myHost),
-              cxn->ident,imap_stateToString (cxn->imap_state)) ;
+      warn ("%s:%d cxnsleep connection in bad state: %s",
+            hostPeerName (cxn->myHost), cxn->ident,
+            imap_stateToString (cxn->imap_state)) ;
     }
   else {
       if (imap_Connect(cxn) != RET_OK)
@@ -1937,8 +1937,9 @@ static void lmtp_reopenTimeoutCbk (TimeoutId id, void *data)
         
   if (cxn->lmtp_state != LMTP_DISCONNECTED)
     {
-      syslog (LOG_ERR,CXN_BAD_STATE,hostPeerName (cxn->myHost),
-              cxn->ident,lmtp_stateToString (cxn->lmtp_state)) ;
+      warn ("%s:%d cxnsleep connection in bad state: %s",
+            hostPeerName (cxn->myHost), cxn->ident,
+            lmtp_stateToString (cxn->lmtp_state)) ;
     }
   else {
       if (lmtp_Connect(cxn) != RET_OK)
@@ -2001,7 +2002,7 @@ static void lmtp_readTimeoutCbk (TimeoutId id, void *data)
 
   peerName = hostPeerName (cxn->myHost) ;
 
-  syslog (LOG_WARNING, RESPONSE_TIMEOUT, peerName, cxn->ident) ;
+  warn ("%s:%d cxnsleep non-responsive connection", peerName, cxn->ident) ;
   d_printf(0,"%s:%d shutting down non-responsive LMTP connection (%s)\n",
            hostPeerName (cxn->myHost), cxn->ident,
 	   lmtp_stateToString(cxn->lmtp_state));
@@ -4188,8 +4189,8 @@ static void delConnection (Connection cxn)
 
       strcpy (dateString,ctime (&now)) ;
       dateString [24] = '\0' ;
-      
-      syslog (LOG_NOTICE,STOPPING_PROGRAM,dateString) ;
+
+      notice ("ME finishing at %s", dateString) ;
 
       exit (0) ;
     }
@@ -4491,9 +4492,9 @@ void cxnLogStats (Connection cxn, bool final)
   bad += cxn->cancel_failed;
   bad += cxn->create_failed;
   bad += cxn->remove_failed;
-  syslog (LOG_NOTICE, STATS_MSG, peerName, cxn->ident,
-          (final ? "final" : "checkpoint"), (long) (now - cxn->timeCon),
-	  total, 0, bad);
+  notice ("%s:%d %s seconds %ld accepted %d refused %d rejected %d",
+          peerName, cxn->ident, (final ? "final" : "checkpoint"),
+          (long) (now - cxn->timeCon), total, 0, bad);
   show_stats(cxn);
 
   if (final) {
@@ -4650,7 +4651,9 @@ int cxnConfigLoadCbk (void *data)
       if (iv < 1)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ONE,"max-reconnect-time",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 1. Using %ld", "max-reconnect-time",
                       iv,"global scope",(long) MAX_RECON_PER);
           iv = MAX_RECON_PER ;
         }
@@ -4664,7 +4667,9 @@ int cxnConfigLoadCbk (void *data)
       if (iv < 1)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ONE,"initial-reconnect-time",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 1. Using %ld", "initial-reconnect-time",
                       iv,"global scope",(long)INIT_RECON_PER);
           iv = INIT_RECON_PER ;
         }

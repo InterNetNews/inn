@@ -17,9 +17,11 @@
 #include <string.h>
 #include <syslog.h>
 
+#include "libinn.h"
+
 #include "configfile.h"
 #include "config_y.h"
-#include "libinn.h"
+#include "misc.h"
 
 #if ! defined (FLEX_SCANNER)
 #error "You must use FLEX to process the lex input file."
@@ -29,12 +31,16 @@
 #define YY_USER_INIT yy_flex_debug = (getenv ("YYDEBUG") == NULL ? 0 : 1)
 #endif
 
+/* We never use this function but flex always defines it, so silence the
+   warnings about it. */
+static void yyunput(int, char *) UNUSED;
+
 char *strPtr = 0 ;
 int strPtrLen = 0 ;
 int strIdx = 0 ;
 int sawBsl ;
 int lineCount = 0 ;
-int c ;
+int current ;
 
 static void strAppend (int ch);
 static void strAppend (int ch)
@@ -151,18 +157,18 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
 	for (i = 1, strIdx = 0, sawBsl = 0 ; ; i++)
           {
             if (i < yyleng)
-              c = yytext [i] ;
+              current = yytext [i] ;
             else
-              c = input() ;
+              current = input() ;
             
-            if (c != EOF)
+            if (current != EOF)
               {
-                switch (c)
+                switch (current)
                   {
                     case '\\':	
                       if (sawBsl)
                         {
-                          strAppend (c) ;
+                          strAppend (current) ;
                           sawBsl = 0 ;
                         }
                       else
@@ -171,7 +177,7 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
 
                     case '\n':	
                       if (!sawBsl)
-                        strAppend(c) ;
+                        strAppend(current) ;
                       sawBsl = 0 ;
                       lineCount++ ;
                       break ;
@@ -179,7 +185,7 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
                     case '\"':	
                       if (sawBsl)
                         { 
-                          strAppend (c) ;
+                          strAppend (current) ;
                           sawBsl = 0 ;
                         }
                       else
@@ -201,7 +207,7 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
                     case 'v':
                       if (sawBsl)
                         {
-                          switch (c) 
+                          switch (current) 
                             {
                               case 'a': strAppend (007) ; break ;
                               case 'b': strAppend (010) ; break ;
@@ -214,11 +220,11 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
                           sawBsl = 0 ;
                         }
                       else
-                        strAppend (c) ;
+                        strAppend (current) ;
                       break ;
 
                     default:	
-                      strAppend (c) ;
+                      strAppend (current) ;
                       sawBsl = 0 ;
                       break ;
                   }

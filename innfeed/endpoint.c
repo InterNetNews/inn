@@ -74,7 +74,6 @@ static void use_rcsid (const char *rId) {   /* Never called */
 #include "configfile.h"
 #include "endpoint.h"
 #include "host.h"
-#include "msgs.h"
 
 static const char *const timer_name[] = {
   "idle", "blstats", "stsfile", "newart", "readart", "prepart", "read",
@@ -235,7 +234,7 @@ EndPoint newEndPoint (int fd)
         {
           d_printf (1,"Dupped fd %d to %d\n",fd,newfd) ;
           if (close (fd) != 0)
-            syslog (LOG_ERR,CLOSE_FAILED,fd) ;
+            syswarn ("ME oserr close (%d)", fd) ;
         }
       else
         {
@@ -277,15 +276,16 @@ EndPoint newEndPoint (int fd)
       if (fd >= FD_SETSIZE)
         {
           sizelogged = true ;
-          syslog (LOG_ERR,FD_TOO_BIG,fd,FD_SETSIZE,"FD_SETSIZE") ;
+          warn ("ME fd (%d) looks too big (%d -- FD_SETSIZE)", fd,
+                FD_SETSIZE) ;
           return NULL ;
         }
 #else
       if (fd > (sizeof (fd_set) * CHAR_BIT))
         {
           sizelogged = true ;
-          syslog (LOG_ERR,FD_TOO_BIG,fd,(sizeof (fd_set) * CHAR_BIT),
-                  "(sizeof (fd_set) * CHAR_BIT)");
+          warn ("ME fd (%d) looks too big (%d -- sizeof (fd_set) * CHAR_BIT)",
+                fd, (sizeof (fd_set) * CHAR_BIT)) ;
           return NULL ;
         }
 #endif
@@ -682,7 +682,7 @@ void Run (void)
         {
 	  unsigned long now = TMRnow () ;
 	  if (last_summary == 0 
-	      || now - last_summary > (innconf->timer * 1000))
+	      || (long) (now - last_summary) > (innconf->timer * 1000))
 	    {
 	      TMRsummary ("ME", timer_name) ;
 	      last_summary = now;
@@ -697,7 +697,7 @@ void Run (void)
         }
       else if (sval < 0) 
         {
-          syslog (LOG_ERR,BAD_SELECT,sval) ;
+          syswarn ("ME exception: select failed: %d", sval) ;
           stopRun () ;
         }
       else if (sval > 0)
@@ -766,7 +766,8 @@ void Run (void)
                             }
                           else if (sval < 0)
                             {
-                              syslog (LOG_ERR,BAD_SELECT,sval) ;
+                              syswarn ("ME exception: select failed: %d",
+                                       sval) ;
                               stopRun () ;
                               return ;
                             }
@@ -1036,7 +1037,7 @@ static IoStatus doRead (EndPoint endp)
           endp->inAmtRead += readAmt ;
           
           /* check if we filled the first buffer */
-          if (readAmt >= vp[0].iov_len)
+          if (readAmt >= (size_t) vp[0].iov_len)
             {                   /* we did */
               bufferIncrDataSize (buffers[currIdx], vp[0].iov_len) ;
               readAmt -= vp [0].iov_len ;
@@ -1164,7 +1165,7 @@ static IoStatus doWrite (EndPoint endp)
           /* now figure out which buffers got completely written */
           for (idx = 0 ; writeAmt > 0 ; idx++)
             {
-              if (writeAmt >= vp [idx].iov_len)
+              if (writeAmt >= (size_t) vp[idx].iov_len)
                 {
                   endp->outBufferIdx++ ;
                   endp->outIndex = 0 ;
@@ -1217,14 +1218,14 @@ static IoStatus doExcept (EndPoint endp)
 
   if (getsockopt (fd, SOL_SOCKET, SO_ERROR,
                   (char *) &optval, &size) != 0)
-    syslog (LOG_ERR,GETSOCKOPT_FAILURE,fd) ;
+    syswarn ("ME exception: getsockopt (%d)", fd) ;
   else if (optval != 0)
     {
       errno = optval ;
-      syslog (LOG_ERR,EXCEPTION_NOTICE,fd) ;
+      syswarn ("ME exception: fd %d", fd) ;
     }
   else
-    syslog (LOG_ERR,UNKNOWN_EXCEPTION,fd) ;
+    syswarn ("ME exception: fd %d: Unknown error", fd) ;
 
 #if 0
   sleep (5) ;
@@ -1261,8 +1262,8 @@ static void pipeHandler (int s)
    endpoints on their relative activity */
 static int hitCompare (const void *v1, const void *v2)
 {
-  const EndPoint e1 = *((const EndPoint *) v1) ;
-  const EndPoint e2 = *((const EndPoint *) v2) ;
+  const struct endpoint_s *e1 = *((const struct endpoint_s * const *) v1) ;
+  const struct endpoint_s *e2 = *((const struct endpoint_s * const *) v2) ;
   double e1Hit = e1->selectHits ;
   double e2Hit = e2->selectHits ;
 
@@ -1787,7 +1788,10 @@ int endpointConfigLoadCbk (void *data)
 
       if (stdioFdMax > FD_SETSIZE)
         {
-          logOrPrint (LOG_ERR,fp,INT_TO_HIGH,"stdio-fdmax",ival,"global scope",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s is higher"
+                      " than maximum of %ld. Using %ld","stdio-fdmax",
+                      ival,"global scope",
                       (long) FD_SETSIZE, (long) FD_SETSIZE) ;
           stdioFdMax = FD_SETSIZE ;
           rval = 0 ;

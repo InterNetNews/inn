@@ -12,8 +12,7 @@ SOURCES		= article.c buffer.c config_l.c config_y.c \
 		  startinnfeed.c tape.c version.c
 
 INCLUDES	= article.h buffer.h configfile.h config_y.h connection.h \
-		  endpoint.h host.h innfeed.h innlistener.h misc.h msgs.h \
-		  tape.h
+		  endpoint.h host.h innfeed.h innlistener.h misc.h tape.h
 
 # The objects linked into innfeed.  All SOURCES except startinnfeed.
 OBJECTS		= article.o buffer.o config_l.o config_y.o \
@@ -113,42 +112,45 @@ depend: Makefile $(SOURCES)
 article.o: article.c innfeed.h ../include/inn/timer.h \
  ../include/config.h ../include/clibrary.h ../include/portable/mmap.h \
  ../include/inn/messages.h ../include/libinn.h ../include/storage.h \
- article.h misc.h buffer.h endpoint.h msgs.h
+ article.h misc.h buffer.h endpoint.h
 buffer.o: buffer.c innfeed.h ../include/inn/timer.h \
  ../include/config.h ../include/clibrary.h ../include/inn/messages.h \
  ../include/libinn.h buffer.h misc.h
-config_l.o: config_l.c innfeed.h ../include/inn/timer.h configfile.h \
- config_y.h ../include/libinn.h ../include/config.h
+config_l.o: config_l.c innfeed.h ../include/inn/timer.h \
+ ../include/libinn.h ../include/config.h configfile.h config_y.h \
+ misc.h
 config_y.o: config_y.c innfeed.h ../include/inn/timer.h \
- ../include/config.h ../include/clibrary.h configfile.h \
- ../include/libinn.h msgs.h misc.h
+ ../include/config.h ../include/clibrary.h ../include/inn/messages.h \
+ ../include/libinn.h configfile.h misc.h
 endpoint.o: endpoint.c innfeed.h ../include/inn/timer.h \
  ../include/config.h ../include/clibrary.h \
  ../include/portable/socket.h ../include/portable/time.h \
- ../include/inn/messages.h ../include/libinn.h buffer.h misc.h \
- configfile.h endpoint.h host.h msgs.h
+ ../include/inn/innconf.h ../include/inn/messages.h \
+ ../include/libinn.h buffer.h misc.h configfile.h endpoint.h host.h
 host.o: host.c innfeed.h ../include/inn/timer.h ../include/config.h \
  ../include/clibrary.h ../include/portable/socket.h \
- ../include/inn/messages.h ../include/libinn.h article.h misc.h \
- buffer.h configfile.h connection.h endpoint.h host.h innlistener.h \
- msgs.h tape.h
+ ../include/inn/innconf.h ../include/inn/messages.h \
+ ../include/libinn.h article.h misc.h buffer.h configfile.h \
+ connection.h endpoint.h host.h innlistener.h tape.h
 innlistener.o: innlistener.c innfeed.h ../include/inn/timer.h \
  ../include/config.h ../include/clibrary.h ../include/inn/messages.h \
  ../include/libinn.h article.h misc.h buffer.h configfile.h endpoint.h \
- host.h innlistener.h msgs.h ../include/nntp.h tape.h
+ host.h innlistener.h ../include/nntp.h tape.h
 main.o: main.c innfeed.h ../include/inn/timer.h ../include/config.h \
  ../include/clibrary.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/messages.h \
- ../include/libinn.h ../include/storage.h article.h misc.h buffer.h \
- configfile.h connection.h endpoint.h host.h innlistener.h msgs.h \
- tape.h
+ ../include/portable/time.h ../include/inn/innconf.h \
+ ../include/inn/messages.h ../include/libinn.h ../include/storage.h \
+ article.h misc.h buffer.h configfile.h connection.h endpoint.h host.h \
+ innlistener.h tape.h
 misc.o: misc.c innfeed.h ../include/inn/timer.h ../include/config.h \
  ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
- endpoint.h misc.h msgs.h tape.h
+ endpoint.h misc.h tape.h
 startinnfeed.o: startinnfeed.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/messages.h ../include/libinn.h ../include/macros.h
+ ../include/inn/innconf.h ../include/inn/messages.h \
+ ../include/libinn.h ../include/macros.h
 tape.o: tape.c innfeed.h ../include/inn/timer.h ../include/config.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
- article.h misc.h configfile.h endpoint.h msgs.h tape.h
+ ../include/clibrary.h ../include/inn/innconf.h \
+ ../include/inn/messages.h ../include/libinn.h article.h misc.h \
+ configfile.h endpoint.h tape.h
 version.o: version.c

@@ -63,7 +63,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 
 #include "endpoint.h"
 #include "misc.h"
-#include "msgs.h"
 #include "tape.h"
 
 unsigned int openfds ;
@@ -442,13 +441,13 @@ bool lockFile (const char *fileName)
         {
           default:
             unlink (tmpName) ;
-            syslog (LOG_ERR,NO_OPEN_LOCK,tmpName) ;
+            syswarn ("ME lock file open: %s", tmpName) ;
             return false ;
 
           case EEXIST:
             if (unlink (tmpName) < 0)
               {
-                syslog (LOG_ERR,NO_UNLINK_LOCK,tmpName) ;
+                syswarn ("ME lock file unlink: %s", tmpName) ;
                 return false ;
               }
             break;
@@ -459,7 +458,7 @@ bool lockFile (const char *fileName)
   snprintf (buff,sizeof(buff),"%ld\n",(long) pid) ;
   if (write (fd,buff,(size_t) strlen (buff)) != (int) strlen (buff))
     {
-      syslog (LOG_ERR,NO_WRITE_LOCK_PID) ;
+      syswarn ("ME lock file pid-write") ;
       close (fd) ;
       unlink (tmpName) ;
       return false ;
@@ -472,7 +471,7 @@ bool lockFile (const char *fileName)
       switch (errno) 
         {
           default:              /* opps. bailing out. */
-            syslog (LOG_ERR,NO_LINK_LOCK,realName) ;
+            syswarn ("ME lock file link: %s", realName) ;
             unlink (tmpName) ;
             return false ;
 
@@ -481,7 +480,7 @@ bool lockFile (const char *fileName)
                see if that process is still alive. */
             if ((fd = open (realName,O_RDONLY)) < 0)
               {
-                syslog (LOG_ERR,NO_OPEN_LOCK,realName) ;
+                syswarn ("ME lock file open: %s", realName) ;
                 unlink (tmpName) ;
                 return false ;
               }
@@ -498,7 +497,7 @@ bool lockFile (const char *fileName)
             pid = (pid_t) atol (buff) ;
             if (pid <= 0)
               {
-                syslog (LOG_ERR,BAD_PID,realName,buff) ;
+                warn ("ME lock bad-pid info in %s: %s", realName, buff) ;
                 unlink (tmpName) ;
                 return false ;
               }
@@ -507,7 +506,8 @@ bool lockFile (const char *fileName)
                it's still alive. */
             if (kill (pid,0) == 0)
               {
-                syslog (LOG_ERR,LOCK_EXISTS,realName,(int) pid) ;
+                warn ("ME lock in-use already: %s by pid %ld", realName,
+                      (unsigned long) pid);
                 unlink (tmpName) ;
                 return false ;    /* process is still alive */
               }
@@ -515,7 +515,7 @@ bool lockFile (const char *fileName)
             /* process that took out the lock is gone */
             if (unlink (realName) < 0)
               {
-                syslog (LOG_ERR,NO_UNLINK_LOCK,realName) ;
+                syswarn ("ME lock file unlink: %s", realName) ;
                 unlink (tmpName) ;
                 return false ;
               }
@@ -704,14 +704,14 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
 
   if (fd < 0)
     {
-      syslog (LOG_ERR,SHRINK_TEMP_CREATE,name) ;
+      syswarn ("ME error creating temp shrink file for %s", name) ;
       free (tmpname) ;
       return false ;
     }
 
   if ((tmpFp = fdopen (fd,"w")) == NULL)
     {
-      syslog (LOG_ERR,SHRINK_TEMP_OPEN,tmpname) ;
+      syswarn ("ME error opening temp shrink file %s", tmpname) ;
       free (tmpname) ;
       return false ;
     }
@@ -719,7 +719,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
   if (fseeko (fp,currlen - size,SEEK_SET) != 0)
     {
       fclose (tmpFp) ;
-      syslog (LOG_ERR,SHRINK_SEEK,currlen - size,name) ;
+      warn ("ME error seeking to point %ld in %s", currlen - size, name) ;
       free (tmpname) ;
       return false ;
     }
@@ -728,7 +728,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
   while ((c = fgetc (fp)) != '\n')
     if (c == EOF)
       {
-        syslog (LOG_WARNING,SHRINK_NONL,name) ;
+        warn ("ME no newline in shrinking file %s", name) ;
         fclose (tmpFp) ;
         fseeko (fp,currlen,SEEK_SET) ;
         free (tmpname) ;
@@ -741,7 +741,7 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
       if (fwrite (buffer,1,i,tmpFp) != (size_t) i)
         {
           fclose (tmpFp) ;
-          syslog (LOG_ERR,SHRINK_WRITETMP,tmpname) ;
+          syswarn ("ME fwrite failed to temp shrink file %s", tmpname) ;
           fseeko (fp,currlen, SEEK_SET) ;
           free (tmpname) ;
           return false ;
@@ -749,24 +749,26 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
     }
 
   if (i < 0)
-    logAndExit (1,SHRINK_READ,name) ;
+    logAndExit (1,"ME fread failed on file %s: %s",name, strerror (errno)) ;
 
   fclose (tmpFp) ;
 
   if (unlink (name) != 0)
-    logAndExit (1,UNLINK_FAILED,name) ;
+    logAndExit (1,"ME oserr unlink %s: %s",name, strerror (errno)) ;
 
   /* we're in the same directory so this is ok. */
   if (rename (tmpname,name) != 0)
-    logAndExit (1,RENAME_FAILED,tmpname,name) ;
+    logAndExit (1,"ME oserr rename %s, %s: %s", tmpname, name,
+                strerror (errno)) ;
   
   if (freopen (name,mode,fp) != fp)
-    logAndExit (1,SHRINK_FREOPEN,name) ;
+    logAndExit (1,"ME freopen on shrink file failed %s: %s", name,
+                strerror (errno)) ;
 
   fseeko (fp,0,SEEK_END) ;
   size = ftello (fp) ;
-  
-  syslog (LOG_WARNING,FILE_SHRUNK,name,currlen,size) ;
+
+  notice ("ME file %s shrunk from %ld to %ld", name, currlen, size) ;
 
   free (tmpname) ;
   

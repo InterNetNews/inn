@@ -425,9 +425,11 @@ char *yytext;
 #include <string.h>
 #include <syslog.h>
 
+#include "libinn.h"
+
 #include "configfile.h"
 #include "config_y.h"
-#include "libinn.h"
+#include "misc.h"
 
 #if ! defined (FLEX_SCANNER)
 #error "You must use FLEX to process the lex input file."
@@ -437,12 +439,16 @@ char *yytext;
 #define YY_USER_INIT yy_flex_debug = (getenv ("YYDEBUG") == NULL ? 0 : 1)
 #endif
 
+/* We never use this function but flex always defines it, so silence the
+   warnings about it. */
+static void yyunput(int, char *) UNUSED;
+
 char *strPtr = 0 ;
 int strPtrLen = 0 ;
 int strIdx = 0 ;
 int sawBsl ;
 int lineCount = 0 ;
-int c ;
+int current ;
 
 static void strAppend (int ch);
 static void strAppend (int ch)
@@ -466,7 +472,7 @@ int include_stack_ptr = 0;
 
 #define incl 1
 
-#line 470 "lex.yy.c"
+#line 476 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -620,10 +626,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 65 "configfile.l"
+#line 71 "configfile.l"
 
 
-#line 627 "lex.yy.c"
+#line 633 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -709,42 +715,42 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 67 "configfile.l"
+#line 73 "configfile.l"
 lineCount++ ;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 69 "configfile.l"
+#line 75 "configfile.l"
 { return (COLON) ; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 71 "configfile.l"
+#line 77 "configfile.l"
 { return (LBRACE) ; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 73 "configfile.l"
+#line 79 "configfile.l"
 { return (RBRACE) ; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 75 "configfile.l"
+#line 81 "configfile.l"
 { return (PEER) ; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 77 "configfile.l"
+#line 83 "configfile.l"
 BEGIN(incl);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 79 "configfile.l"
+#line 85 "configfile.l"
 /* eat the whitespace before include filename */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 81 "configfile.l"
+#line 87 "configfile.l"
 {
   if (include_stack_ptr == MAX_INCLUDE_DEPTH - 1)
     {
@@ -779,7 +785,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(incl):
-#line 113 "configfile.l"
+#line 119 "configfile.l"
 {
   if ( include_stack_ptr <= 0 )
     yyterminate();
@@ -793,22 +799,22 @@ case YY_STATE_EOF(incl):
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 124 "configfile.l"
+#line 130 "configfile.l"
 { return (GROUP) ; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 126 "configfile.l"
+#line 132 "configfile.l"
 { (void) 0 ; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 128 "configfile.l"
+#line 134 "configfile.l"
 { (void) 1 ; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 130 "configfile.l"
+#line 136 "configfile.l"
 {
 	switch (yytext[2]) {
 		case '\\': yylval.chr = '\\' ; break ;
@@ -824,36 +830,36 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 143 "configfile.l"
+#line 149 "configfile.l"
 { yylval.chr = yytext[1] ; return (CHAR) ; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 145 "configfile.l"
+#line 151 "configfile.l"
 { yylval.chr = (char)strtol(&yytext[2], (char **)NULL, 8);
 			  return (CHAR) ;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 148 "configfile.l"
+#line 154 "configfile.l"
 {{
 	int i ;
 
 	for (i = 1, strIdx = 0, sawBsl = 0 ; ; i++)
           {
             if (i < yyleng)
-              c = yytext [i] ;
+              current = yytext [i] ;
             else
-              c = input() ;
+              current = input() ;
             
-            if (c != EOF)
+            if (current != EOF)
               {
-                switch (c)
+                switch (current)
                   {
                     case '\\':	
                       if (sawBsl)
                         {
-                          strAppend (c) ;
+                          strAppend (current) ;
                           sawBsl = 0 ;
                         }
                       else
@@ -862,7 +868,7 @@ YY_RULE_SETUP
 
                     case '\n':	
                       if (!sawBsl)
-                        strAppend(c) ;
+                        strAppend(current) ;
                       sawBsl = 0 ;
                       lineCount++ ;
                       break ;
@@ -870,7 +876,7 @@ YY_RULE_SETUP
                     case '\"':	
                       if (sawBsl)
                         { 
-                          strAppend (c) ;
+                          strAppend (current) ;
                           sawBsl = 0 ;
                         }
                       else
@@ -892,7 +898,7 @@ YY_RULE_SETUP
                     case 'v':
                       if (sawBsl)
                         {
-                          switch (c) 
+                          switch (current) 
                             {
                               case 'a': strAppend (007) ; break ;
                               case 'b': strAppend (010) ; break ;
@@ -905,11 +911,11 @@ YY_RULE_SETUP
                           sawBsl = 0 ;
                         }
                       else
-                        strAppend (c) ;
+                        strAppend (current) ;
                       break ;
 
                     default:	
-                      strAppend (c) ;
+                      strAppend (current) ;
                       sawBsl = 0 ;
                       break ;
                   }
@@ -923,17 +929,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 233 "configfile.l"
+#line 239 "configfile.l"
 { yylval.integer = atoi (yytext) ; return (IVAL) ; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 235 "configfile.l"
+#line 241 "configfile.l"
 { yylval.real = atof (yytext) ; return (RVAL) ; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 237 "configfile.l"
+#line 243 "configfile.l"
 {
   yylval.name = xstrdup (yytext) ;
   if (strcasecmp (yylval.name,"false") == 0)
@@ -946,10 +952,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 247 "configfile.l"
+#line 253 "configfile.l"
 ECHO;
 	YY_BREAK
-#line 953 "lex.yy.c"
+#line 959 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1835,7 +1841,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 247 "configfile.l"
+#line 253 "configfile.l"
 
 
 

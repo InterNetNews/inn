@@ -65,7 +65,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "endpoint.h"
 #include "host.h"
 #include "innlistener.h"
-#include "msgs.h"
 #include "tape.h"
 
 #define REQ 1
@@ -395,7 +394,9 @@ int hostConfigLoadCbk (void *data)
       if (iv < 1)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ONE,"dns-retry",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 1. Using %ld","dns-retry",
                       iv,"global scope",(long)DNS_RETRY_PERIOD) ;
           iv = DNS_RETRY_PERIOD ;
         }
@@ -410,7 +411,9 @@ int hostConfigLoadCbk (void *data)
       if (iv < 1)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ONE,"dns-expire",iv,
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 1. Using %ld","dns-expire",iv,
                       "global scope",(long)DNS_EXPIRE_PERIOD) ;
           iv = DNS_EXPIRE_PERIOD ;
         }
@@ -444,7 +447,9 @@ int hostConfigLoadCbk (void *data)
       if (iv < 0)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ZERO,"host-queue-highwater",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 0. Using %ld","host-queue-highwater",
                       iv,"global scope",(long) HOST_HIGHWATER) ;
           iv = HOST_HIGHWATER ;
         }
@@ -458,7 +463,9 @@ int hostConfigLoadCbk (void *data)
       if (iv < 0)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ZERO,"stats-period",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 0. Using %ld","stats-period",
                       iv,"global scope",(long)STATS_PERIOD) ;
           iv = STATS_PERIOD ;
         }
@@ -473,7 +480,9 @@ int hostConfigLoadCbk (void *data)
       if (iv < 0)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ZERO,"stats-reset",iv,
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 0. Using %ld","stats-reset",iv,
                       "global scope",(long)STATS_RESET_PERIOD) ;
           iv = STATS_RESET_PERIOD ;
         }
@@ -645,13 +654,14 @@ void configHosts (bool talkSelf)
 	  if (nHost == NULL)
 	    {
 	      addBlockedHost(params);
-               
-	      syslog (LOG_ERR,NO_HOST,params->peerName) ;
+
+              warn ("ME locked cannot setup peer %s", params->peerName) ;
 	    }
 	  else 
 	    {
 	      if (params->initialConnections == 0 && talkSelf)
-		syslog (LOG_NOTICE,BATCH_AND_NO_CXNS,params->peerName) ;
+                notice ("%s config ignored batch mode with initial"
+                        " connection count of 0", params->peerName) ;
 
 	      if ( !listenerAddPeer (mainListener,nHost) )
 		die ("failed to add a new peer\n") ;
@@ -902,8 +912,8 @@ static void tryBlockedHosts(TimeoutId tid UNUSED , void *data UNUSED )
 	      if (nHost == NULL)
 		{
 		  addBlockedHost(params);
-               
-		  syslog (LOG_ERR,NO_HOST,params->peerName) ;
+
+                  warn ("ME locked cannot setup peer %s", params->peerName) ;
 		}
 	      else 
 		{
@@ -911,7 +921,8 @@ static void tryBlockedHosts(TimeoutId tid UNUSED , void *data UNUSED )
 
 		  if (params->initialConnections == 0 &&
 		      listenerIsDummy(mainListener) /*talk to self*/)
-		    syslog (LOG_NOTICE,BATCH_AND_NO_CXNS,params->peerName) ;
+                    notice ("%s config ignored batch mode with initial"
+                            " connection count of 0", params->peerName) ;
 
 		  if ( !listenerAddPeer (mainListener,nHost) )
 		    die ("failed to add a new peer\n") ;
@@ -950,8 +961,8 @@ Host newDefaultHost (InnListener listener,
 	{
 	  /* Couldn't get a lock - add to list of blocked peers */
 	  addBlockedHost(p);
-	  
-	  syslog (LOG_ERR,NO_HOST,p->peerName) ;
+
+          warn ("ME locked cannot setup peer %s", p->peerName);
 
 	  return NULL;
 	}
@@ -959,8 +970,7 @@ Host newDefaultHost (InnListener listener,
       h->isDynamic = true;
       h->removeOnReload = true;
 
-      syslog (LOG_NOTICE,DYNAMIC_PEER,p->peerName) ;
-
+      notice ("ME unconfigured peer %s added", p->peerName) ;
     }
   return h;
 }
@@ -1146,7 +1156,7 @@ struct sockaddr *hostIpAddr (Host host)
 		      || res == NULL )
 
 	{
-	  syslog (LOG_ERR, HOST_RESOLV_ERROR, host->params->peerName,
+          warn ("%s can't resolve hostname %s: %s", host->params->peerName,
 		host->params->ipName, gai_ret == 0 ? "no addresses returned"
 		: gai_strerror(gai_ret)) ;
 	}
@@ -1182,7 +1192,7 @@ struct sockaddr *hostIpAddr (Host host)
 	{
 	  if ((hostEnt = gethostbyname (host->params->ipName)) == NULL)
 	    {
-	      syslog (LOG_ERR, HOST_RESOLV_ERROR, host->params->peerName,
+              warn ("%s can't resolve hostname %s: %s", host->params->peerName,
 		    host->params->ipName, hstrerror(h_errno)) ;
 	    }
 	  else
@@ -1191,11 +1201,8 @@ struct sockaddr *hostIpAddr (Host host)
 	      for (i = 0 ; hostEnt->h_addr_list[i] ; i++)
 		;
 
-	      newIpAddrPtrs = (struct sockaddr **)
-		xmalloc ( (i + 1) * sizeof(struct sockaddr *) );
-
-	      newIpAddrs = (struct sockaddr_storage *)
-		xmalloc ( i * sizeof( struct sockaddr_storage ) );
+	      newIpAddrPtrs = xmalloc ((i + 1) * sizeof(struct sockaddr *));
+	      newIpAddrs = xmalloc (i * sizeof(struct sockaddr_storage));
 
 	      /* copy the addresses from gethostbyname() static space */
 	      i = 0;
@@ -1670,8 +1677,8 @@ void hostChkCxns(TimeoutId tid UNUSED, void *data) {
 
   if (newMaxCxns != host->maxConnections)
     {
-      syslog(LOG_NOTICE, HOST_MAX_CONNECTIONS,
-	     host->params->peerName, host->maxConnections,newMaxCxns);
+      notice ("%s hostChkCxns - maxConnections was %d now %d",
+              host->params->peerName, host->maxConnections,newMaxCxns);
  
       host->backlogFilter= ((host->params->dynBacklogLowWaterMark
 			     + host->params->dynBacklogHighWaterMark)
@@ -1715,7 +1722,7 @@ void hostSendArticle (Host host, Article article)
     {
       unsigned int idx ;
       Article extraRef ;
-      Connection cxn ;
+      Connection cxn = NULL ;
       
       extraRef = artTakeRef (article) ; /* the referrence we give away */
       
@@ -1840,16 +1847,19 @@ void hostCxnBlocked (Host host, Connection cxn, char *reason)
   if (host->activeCxns == 0 && host->spoolTime == 0)
     {
       host->blockedCxn = cxn ;  /* to limit log notices */
-      syslog (LOG_NOTICE,REMOTE_BLOCKED, host->params->peerName, reason) ;
+      notice ("%s remote cannot accept articles initial: %s",
+              host->params->peerName, reason) ;
     }
   else if (host->activeCxns > 0 && !host->notifiedChangedRemBlckd)
     {
-      syslog (LOG_NOTICE,CHANGED_REMOTE_BLOCKED, host->params->peerName,reason) ;
+      notice ("%s remote cannot accept articles change: %s",
+              host->params->peerName, reason) ;
       host->notifiedChangedRemBlckd = true ;
     }
   else if (host->spoolTime != 0 && host->blockedCxn == cxn)
     {
-      syslog (LOG_NOTICE,REMOTE_STILL_BLOCKED, host->params->peerName, reason) ;
+      notice ("%s remote cannot accept articles still: %s",
+              host->params->peerName, reason) ;
     }
   
 }
@@ -1881,11 +1891,11 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
   if (host->connectTime == 0)   /* first connection for this cycle. */
     {
       if (doesStreaming && host->params->wantStreaming)
-        syslog (LOG_NOTICE, REMOTE_DOES_STREAMING, host->params->peerName);
+        notice ("%s remote MODE STREAM", host->params->peerName) ;
       else if (doesStreaming)
-        syslog (LOG_NOTICE, REMOTE_STREAMING_OFF, host->params->peerName);
+        notice ("%s remote MODE STREAM disabled", host->params->peerName) ;
       else
-        syslog (LOG_NOTICE, REMOTE_NO_STREAMING, host->params->peerName);
+        notice ("%s remote MODE STREAM failed", host->params->peerName) ;
 
       if (host->spoolTime > 0)
         hostStopSpooling (host) ;
@@ -1906,7 +1916,7 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
         host->firstConnectTime = host->connectTime ;
     }
   else if (host->remoteStreams != doesStreaming && host->params->wantStreaming)
-    syslog (LOG_NOTICE,STREAMING_CHANGE,host->params->peerName) ;
+    notice ("%s remote MODE STREAM change", host->params->peerName) ;
 
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->connections [i] == cxn)
@@ -2055,7 +2065,7 @@ bool hostCxnGone (Host host, Connection cxn)
       {
         if (!amClosing (host))
           {
-            syslog (LOG_ERR,CONNECTION_DISAPPEARING,host->params->peerName,i) ;
+            warn ("%s:%d connection vanishing", host->params->peerName, i) ;
           }
         host->connections [i] = NULL ;
         if (host->cxnActive [i])
@@ -2081,9 +2091,9 @@ bool hostCxnGone (Host host, Connection cxn)
       if (host->firstConnectTime > 0) {
         snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
                  host->gArtsSizeAccepted, host->gArtsSizeRejected);
-        syslog (LOG_NOTICE,REALLY_FINAL_STATS,
-                host->params->peerName,
-                (long) (now - host->firstConnectTime),
+        notice ("%s global seconds %ld offered %d accepted %d refused %d"
+                " rejected %d missing %d %s spooled %d unspooled %d",
+                host->params->peerName, (long) (now - host->firstConnectTime),
                 host->gArtsOffered, host->gArtsAccepted,
                 host->gArtsNotWanted, host->gArtsRejected,
                 host->gArtsMissing, msgstr,
@@ -2096,7 +2106,8 @@ bool hostCxnGone (Host host, Connection cxn)
       if (hostsLeft == 0) {
         snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
                  procArtsSizeAccepted, procArtsSizeRejected);
-        syslog (LOG_NOTICE,PROCESS_FINAL_STATS,
+        notice ("ME global seconds %ld offered %ld accepted %ld refused %ld"
+                " rejected %ld missing %ld %s spooled %ld unspooled %ld",
                 (long) (now - start),
                 procArtsOffered, procArtsAccepted,
                 procArtsNotWanted,procArtsRejected,
@@ -2491,12 +2502,14 @@ void hostLogNoCheckMode (Host host, bool on, double low, double cur, double high
 {
   if (on && host->loggedModeOn == false)
     {
-      syslog (LOG_NOTICE, STREAMING_MODE_SWITCH, host->params->peerName, low, cur, high) ;
+      notice ("%s mode no-CHECK entered [%.2f,%.2f,%.2f]",
+              host->params->peerName, low, cur, high) ;
       host->loggedModeOn = true ;
     }
   else if (!on && host->loggedModeOff == false) 
     {
-      syslog (LOG_NOTICE, STREAMING_MODE_UNDO, host->params->peerName, low, cur, high) ;
+      notice ("%s mode no-CHECK exited [%.2f,%.2f,%.2f]",
+              host->params->peerName, low, cur, high) ;
       host->loggedModeOff = true ;
     }
 }
@@ -2538,7 +2551,8 @@ void gHostStats (void)
       if (h->firstConnectTime > 0) {
         snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
                  h->gArtsSizeAccepted, h->gArtsSizeRejected);
-        syslog (LOG_NOTICE,REALLY_FINAL_STATS,
+        notice ("%s global seconds %ld offered %d accepted %d refused %d"
+                " rejected %d missing %d %s spooled %d unspooled %d",
                 h->params->peerName,
                 (long) (now - h->firstConnectTime),
                 h->gArtsOffered, h->gArtsAccepted,
@@ -2674,7 +2688,10 @@ static HostParams hostDetails (scope *s,
   if (findValue (s,"backlog-factor",inherit) == NULL &&
       findValue (s,"backlog-limit-high",inherit) == NULL)
     {
-      logOrPrint (LOG_ERR,fp,NOFACTORHIGH,"backlog-factor",LIMIT_FUDGE) ;
+      logOrPrint (LOG_ERR,fp,
+                  "ME config: must define at least one of backlog-factor"
+                  " and backlog-limit-high. Adding %s: %f", "backlog-factor",
+                  LIMIT_FUDGE) ;
       addReal (s,"backlog-factor",LIMIT_FUDGE) ;
       rv = 0 ;
     }
@@ -2691,7 +2708,10 @@ static HostParams hostDetails (scope *s,
   h=p->lowPassHigh;
   if (l > h)
     {
-      logOrPrint (LOG_ERR,fp,NOCK_LOWVSHIGH,l,h,NOCHECKLOW,NOCHECKHIGH) ;
+      logOrPrint (LOG_ERR,fp,
+                  "ME config: no-check-low value greater than no-check-high"
+                  " (%f vs %f). Setting to %f and %f", l, h, NOCHECKLOW,
+                  NOCHECKHIGH) ;
       rv = 0 ;
       v = findValue (s,"no-check-low",NO_INHERIT) ;
       v->v.real_val = p->lowPassLow = NOCHECKLOW ;
@@ -2699,7 +2719,9 @@ static HostParams hostDetails (scope *s,
       v->v.real_val = p->lowPassHigh = NOCHECKHIGH ;
     }
   else if (h - l < 5.0)
-    logOrPrint (LOG_WARNING,fp,NOCK_LOWHIGHCLOSE,l,h) ;
+    logOrPrint (LOG_WARNING,fp,
+                "ME config: no-check-low and no-check-high are close"
+                " together (%f vs %f)",l,h) ;
 
   return p;
 }
@@ -2854,7 +2876,7 @@ static void hostStartSpooling (Host host)
   if (SPOOL_LOG_PERIOD > 0 &&
       (host->spoolTime - host->lastSpoolTime) > SPOOL_LOG_PERIOD)
     {
-      syslog (LOG_NOTICE,SPOOLING,host->params->peerName) ;
+      notice ("%s spooling no active connections", host->params->peerName) ;
       host->lastSpoolTime = host->spoolTime ;
     }
   
@@ -2892,15 +2914,18 @@ static void hostLogStats (Host host, bool final)
     final = true ;
   
   if (host->spoolTime != 0)
-    syslog (LOG_NOTICE, HOST_SPOOL_STATS, host->params->peerName,
-            (final ? "final" : "checkpoint"),
+    notice ("%s %s seconds %ld spooled %d on_close %d sleeping %d",
+            host->params->peerName, (final ? "final" : "checkpoint"),
             (long) (now - host->spoolTime), host->artsToTape,
             host->artsHostClose, host->artsHostSleep) ;
   else {
     snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
              host->artsSizeAccepted, host->artsSizeRejected);
-    syslog (LOG_NOTICE, HOST_STATS_MSG, host->params->peerName, 
-            (final ? "final" : "checkpoint"),
+    notice ("%s %s seconds %ld offered %d accepted %d refused %d rejected %d"
+            " missing %d %s spooled %d on_close %d unspooled %d"
+            " deferred %d/%.1f requeued %d"
+            " queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
+            host->params->peerName, (final ? "final" : "checkpoint"),
             (long) (now - host->connectTime),
             host->artsOffered, host->artsAccepted,
             host->artsNotWanted, host->artsRejected,
@@ -3043,7 +3068,7 @@ static void hostLogStatus (void)
   if ((fp = fopen (statusFile,"w")) == NULL)
     {
       if ( !flogged )
-        syslog (LOG_ERR,NO_STATUS,statusFile) ;
+        syswarn ("ME oserr status file open: %s", statusFile) ;
       flogged = true ;
     }
   else
@@ -3439,9 +3464,6 @@ static void backlogToTape (Host host)
     {
       if (!host->loggedBacklog)
 	{
-#if 0               /* this message is pretty useless and confuses people */
-	  syslog (LOG_NOTICE,BACKLOG_TO_TAPE,host->params->peerName /* ,host->backlog */) ;
-#endif
 	  host->loggedBacklog = true ;
 	}
   
@@ -3681,27 +3703,34 @@ static int validateInteger (FILE *fp, const char *name,
       if (required == REQ)
         {
           rval = VALUE_MISSING ;
-          logOrPrint (LOG_ERR,fp,NODEFN,name) ;
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: no definition for required key %s",name) ;
         }
       else if (required)
-        logOrPrint (LOG_INFO,fp,ADDMISSINGINT,name,setval) ;
+        logOrPrint (LOG_INFO,fp,
+                    "ME config: adding missing key/value %s: %ld",name
+                    ,setval) ;
     }
   else if (v != NULL && v->type != intval)
     {
       rval = VALUE_WRONG_TYPE ;
-      logOrPrint (LOG_ERR,fp,NOTINT,name) ;
+      logOrPrint (LOG_ERR,fp,"ME config: value of %s is not an integer",name) ;
     }
   else if (v != NULL && low != LONG_MIN && v->v.int_val < low)
     {
       rval = VALUE_TOO_LOW ;
-      logOrPrint (LOG_ERR,fp,INT_TO_LOW,name,v->v.int_val,
+      logOrPrint (LOG_ERR,fp,
+                  "ME config: value of %s (%ld) in %s is lower than minimum"
+                  " of %ld. Using %ld",name,v->v.int_val,
                   "global scope",low,low) ;
       v->v.int_val = low ;
     }
   else if (v != NULL && high != LONG_MAX && v->v.int_val > high)
     {
       rval = VALUE_TOO_HIGH ;
-      logOrPrint(LOG_ERR,fp,INT_TO_HIGH,name,v->v.int_val,
+      logOrPrint(LOG_ERR,fp,
+                 "ME config: value of %s (%ld) in %s is higher than maximum"
+                 " of %ld. Using %ld",name,v->v.int_val,
                  "global scope",high,high);
       v->v.int_val = high ;
     }
@@ -3728,24 +3757,33 @@ static int validateReal (FILE *fp, const char *name, double low,
       if (required == REQ)
         {
           rval = VALUE_MISSING ;
-          logOrPrint (LOG_ERR,fp,NODEFN,name) ;
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: no definition for required key %s",name) ;
         }
       else
-        logOrPrint (LOG_INFO,fp,ADDMISSINGREAL,name,setval) ;
+        logOrPrint (LOG_INFO,fp,
+                    "ME config: adding missing key/value %s: %f",name,
+                    setval) ;
     }
   else if (v != NULL && v->type != realval)
     {
       rval = VALUE_WRONG_TYPE ;
-      logOrPrint (LOG_ERR,fp,NOTREAL,name) ;
+      logOrPrint (LOG_ERR,fp,
+                  "ME config: value of %s is not a floating point number",
+                  name) ;
     }
   else if (v != NULL && low != -DBL_MAX && v->v.real_val < low)
     {
-      logOrPrint (LOG_ERR,fp,REALTOLOW,name,v->v.real_val,low) ; /* bleh */
+      logOrPrint (LOG_ERR,fp,
+                  "ME config: value of %s (%f) is lower than minimum of %f",
+                  name,v->v.real_val,low) ;
       v->v.real_val = setval ;
     }
   else if (high != DBL_MAX && v->v.real_val > high)
     {
-      logOrPrint (LOG_ERR,fp,REALTOHIGH,name,v->v.real_val,high) ;
+      logOrPrint (LOG_ERR,fp,
+                  "ME config: value of %s (%f) is higher than maximum of %f",
+                  name,v->v.real_val,high) ;
       v->v.real_val = setval ;
     }
     
@@ -3770,15 +3808,18 @@ static int validateBool (FILE *fp, const char *name, int required, bool setval,
       if (required == REQ)
         {
           rval = VALUE_MISSING ;
-          logOrPrint (LOG_ERR,fp,NODEFN,name) ;
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: no definition for required key %s",name) ;
         }
       else
-        logOrPrint (LOG_INFO,fp,ADDMISSINGBOOL,name,(setval?"true":"false")) ;
+        logOrPrint (LOG_INFO,fp,
+                    "ME config: adding missing key/value %s: %s",name,
+                    (setval ? "true" : "false")) ;
     }
   else if (v != NULL && v->type != boolval)
     {
       rval = VALUE_WRONG_TYPE ;
-      logOrPrint (LOG_ERR,fp,NOTBOOLEAN,name) ;
+      logOrPrint (LOG_ERR,fp,"ME config: value of %s is not a boolean",name) ;
     }
   
   return rval ;

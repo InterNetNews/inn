@@ -83,7 +83,6 @@ typedef struct direct DIRENTRY ;
 #include "article.h"
 #include "configfile.h"
 #include "endpoint.h"
-#include "msgs.h"
 #include "tape.h"
 
 extern char *dflTapeDir;
@@ -180,9 +179,6 @@ static TimeoutId ckNewFileId ;
 static unsigned int tapeCkPtPeriod ;
 static unsigned int tapeCkNewFilePeriod ;
 
-/* the callback ID of the tape rotation timer callback. */
-static TimeoutId rotateId ;     /* XXX */
-
 static time_t rotatePeriod = TAPE_ROTATE_PERIOD ;
 
 /* global list of tapes so we can checkpoint them periodically */
@@ -223,23 +219,27 @@ int tapeConfigLoadCbk (void *data)
       free(p);
       if (tapeDirectory != NULL && strcmp (tapeDirectory,dir) != 0)
         {
-          syslog (LOG_ERR,NO_CHANGE_BACKLOG) ;
+          warn ("ME config: cannot change backlog-directory of a running"
+                " process") ;
           free (dir) ;
           dir = xstrdup (tapeDirectory) ;
         }
 
       if (!isDirectory (dir) && isDirectory (dflTapeDir))
         {
-          logOrPrint (LOG_ERR,fp,BAD_TAPEDIR_CHANGE,dir,dflTapeDir) ;
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: definition of backlog-directory (%s) is a"
+                      " non-existant directory. Using %s",
+                      dir,dflTapeDir) ;
           free (dir) ;
           dir = xstrdup (dflTapeDir) ;
         }
       else if (!isDirectory (dir))
-        logAndExit (1,NO_TAPE_DIR) ;
+        logAndExit (1,"ME config: no usable value for backlog-directory") ;
     }
   else if (!isDirectory (dflTapeDir))
   {
-    logAndExit (1,NO_TAPE_DIR) ;
+    logAndExit (1,"ME config: no usable value for backlog-directory") ;
     return -1; /* not reached */
   }
   else
@@ -256,7 +256,9 @@ int tapeConfigLoadCbk (void *data)
       if (iv < 0)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ZERO,"backlog-highwater",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 0. Using %ld","backlog-highwater",
                       iv,"global scope",(long)TAPE_HIGHWATER);
           iv = TAPE_HIGHWATER ;
         }
@@ -272,7 +274,10 @@ int tapeConfigLoadCbk (void *data)
       if (iv < 0)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ZERO,"backlog-rotate-period",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 0. Using %ld",
+                      "backlog-rotate-period",
                       iv,"global scope",(long)TAPE_ROTATE_PERIOD);
           iv = TAPE_ROTATE_PERIOD ;
         }
@@ -287,7 +292,10 @@ int tapeConfigLoadCbk (void *data)
       if (iv < 0)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ZERO,"backlog-ckpt-period",iv,
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 0. Using %ld",
+                      "backlog-ckpt-period",iv,
                       "global scope",(long)TAPE_CHECKPOINT_PERIOD);
           iv = TAPE_CHECKPOINT_PERIOD ;
         }
@@ -302,7 +310,10 @@ int tapeConfigLoadCbk (void *data)
       if (iv < 0)
         {
           rval = 0 ;
-          logOrPrint (LOG_ERR,fp,LESS_THAN_ZERO,"backlog-newfile-period",
+          logOrPrint (LOG_ERR,fp,
+                      "ME config: value of %s (%ld) in %s cannot be less"
+                      " than 0. Using %ld",
+                      "backlog-newfile-period",
                       iv,"global scope",(long)TAPE_NEWFILE_PERIOD);
           iv = TAPE_NEWFILE_PERIOD ;
         }
@@ -367,7 +378,7 @@ Tape newTape (const char *peerName, bool dontRotate)
 
   if ( !lockFile (nt->lockFilename) )
     {
-      syslog (LOG_ERR,NO_LOCK_TAPE,nt->lockFilename) ;
+      warn ("ME lock failed for host: %s", nt->lockFilename) ;
       
       free (nt->handFilename) ;
       free (nt->lockFilename) ;
@@ -439,7 +450,8 @@ static void initTape (Tape nt)
               if (!getInteger (s,"backlog-limit-highwater",
                                &nt->outputHighLimit,INHERIT))
                 {
-                  syslog (LOG_WARNING,NO_FACTOR,nt->peerName) ;
+                  warn ("%s no backlog-factor or backlog-high-limit",
+                        nt->peerName) ;
                   nt->outputLowLimit = 0 ;
                   nt->outputHighLimit = 0 ;
                   nt->backlogFactor = 0.0 ;
@@ -449,7 +461,7 @@ static void initTape (Tape nt)
             nt->outputHighLimit = (long)(nt->outputLowLimit * nt->backlogFactor);
         }
       else
-        syslog (LOG_ERR,NODEFN,"backlog-limit") ;
+        warn ("ME config: no definition for required key backlog-limit") ;
     }
   
   d_printf (1, "%s spooling: %s\n", nt->peerName, 
@@ -467,7 +479,7 @@ void gFlushTapes (void)
 {
   unsigned int i ;
 
-  syslog (LOG_NOTICE,FLUSHING_TAPES) ;
+  notice ("ME flushing tapes") ;
   for (i = 0 ; i < activeTapeIdx ; i++)
     tapeFlush (activeTapes [i]) ;
 }
@@ -612,7 +624,7 @@ void delTape (Tape tape)
 #if 1
   
   if (tape->outFp != NULL && fclose (tape->outFp) != 0)
-    syslog (LOG_ERR,FCLOSE_FAILED, tape->outputFilename) ;
+    syswarn ("ME ioerr fclose %s", tape->outputFilename) ;
 
   if (stat(tape->outputFilename, &st) == 0 && st.st_size == 0)
     {
@@ -697,7 +709,7 @@ void tapeTakeArticle (Tape tape, Article article)
       fflush (tape->outFp) ;
       
       if (fstat (fileno (tape->outFp),&sb) != 0)
-        syslog (LOG_ERR,FSTAT_FAILURE,tape->outputFilename) ;
+        syswarn ("ME oserr fstat %s",tape->outputFilename) ;
       else if (sb.st_size != tape->outputSize) 
         syslog (LOG_ERR,"fstat and ftello do not agree: %ld %ld for %s\n",
                 (long)sb.st_size,tape->outputSize,tape->outputFilename) ;
@@ -736,12 +748,12 @@ Article getArticle (Tape tape)
       if (fgets (line,sizeof (line), tape->inFp) == NULL)
         {
           if (ferror (tape->inFp))
-            syslog (LOG_ERR,TAPE_INPUT_ERROR,tape->inputFilename) ;
+            syswarn ("ME ioerr on tape file %s", tape->inputFilename) ;
           else if ( !feof (tape->inFp) )
-            syslog (LOG_ERR,FGETS_FAILED,tape->inputFilename) ;
+            syswarn ("ME oserr fgets %s", tape->inputFilename) ;
           
           if (fclose (tape->inFp) != 0)
-            syslog (LOG_ERR,FCLOSE_FAILED, tape->inputFilename);
+            syswarn ("ME ioerr fclose %s", tape->inputFilename) ;
 
           d_printf (1,"No more articles on tape %s\n",tape->inputFilename) ;
 
@@ -757,7 +769,7 @@ Article getArticle (Tape tape)
         {
           msgid = filename = NULL ;
           
-          for (p = line ; *p && isspace (*p) ; p++) /* eat whitespace */
+          for (p = line ; *p && CTYPE(isspace, *p) ; p++) /* eat whitespace */
             /* nada */ ;
 
           if (*p != '\0')
@@ -769,7 +781,7 @@ Article getArticle (Tape tape)
                   filename = p ;
                   *q = '\0' ;
       
-                  for (q++ ; *q && isspace (*q) ; q++) /* eat more white */
+                  for (q++ ; *q && CTYPE(isspace, *q) ; q++)
                     /* nada */ ;
 
                   if (*q != '\0')
@@ -796,7 +808,8 @@ Article getArticle (Tape tape)
               ;
             if (p > msgid) p--;
             if (*msgid != '<' || *p != '>') {
-              syslog (LOG_ERR,TAPE_SPAGHETTI,tape->inputFilename,msgid);
+              warn ("ME tape invalid messageID in %s: %s",
+                    tape->inputFilename,msgid);
               msgid = NULL;
             }
           }
@@ -818,7 +831,7 @@ Article getArticle (Tape tape)
         {
           /* last article read was the end of the tape. */
           if (fclose (tape->inFp) != 0)
-            syslog (LOG_ERR,FCLOSE_FAILED,tape->inputFilename) ;
+            syswarn ("ME ioerr fclose %s", tape->inputFilename) ;
           
           tape->inFp = NULL ;
           tape->scribbled = false ;
@@ -987,8 +1000,7 @@ static void checkpointTape (Tape tape)
   
   if ((tape->tellpos = ftello (tape->inFp)) < 0)
     {
-      syslog (LOG_ERR,FTELL_FAILED,tape->inputFilename) ;
-
+      syswarn ("ME oserr ftello %s", tape->inputFilename) ;
       return ;
     }
 
@@ -1026,7 +1038,8 @@ static void checkpointTape (Tape tape)
       fprintf (tape->inFp,"%ld",tape->tellpos) ;
 
       if (fseeko (tape->inFp,tape->tellpos,SEEK_SET) != 0)
-        syslog (LOG_ERR,FSEEK_FAILED,tape->inputFilename,tape->tellpos) ;
+        syswarn ("ME oserr fseeko(%s,%ld,SEEK_SET)",tape->inputFilename,
+                 tape->tellpos) ;
     }
   
   tape->changed = false ;
@@ -1076,7 +1089,7 @@ static void prepareFiles (Tape tape)
     {
       newExists = fileExistsP (tape->handFilename) ;
       if (newExists)
-        syslog (LOG_NOTICE,NEW_HAND_FILE,tape->peerName) ;
+        notice ("%s new hand-prepared backlog file", tape->peerName) ;
     }
   else
     newExists = false ;
@@ -1097,10 +1110,11 @@ static void prepareFiles (Tape tape)
   if (newExists && !inpExists)
     {
       if (rename (tape->handFilename,tape->inputFilename) != 0)
-        syslog (LOG_ERR,RENAME_FAILED,tape->handFilename, tape->inputFilename);
+        syswarn ("ME oserr rename %s, %s", tape->handFilename,
+                 tape->inputFilename);
       else
         {
-          syslog (LOG_NOTICE,ROTATING_HAND_DROPPED,tape->peerName) ;
+          notice ("%s grabbing external tape file", tape->peerName) ;
           inpExists = true ;
         }
     }
@@ -1116,8 +1130,8 @@ static void prepareFiles (Tape tape)
         }
       
       if (rename (tape->outputFilename,tape->inputFilename) != 0)
-        syslog (LOG_ERR,RENAME_FAILED,
-                tape->outputFilename,tape->inputFilename);
+        syswarn ("ME oserr rename %s, %s", tape->outputFilename,
+                 tape->inputFilename) ;
       else
         inpExists = true ;
 
@@ -1131,7 +1145,7 @@ static void prepareFiles (Tape tape)
       long flength ;
       
       if ((tape->inFp = fopen (tape->inputFilename,"r+")) == NULL)
-        syslog (LOG_ERR,FOPEN_FAILURE,tape->inputFilename) ;
+        syswarn ("ME fopen %s", tape->inputFilename) ;
       else
         {
           char buffer [64] ;
@@ -1144,7 +1158,7 @@ static void prepareFiles (Tape tape)
                   unlink (tape->inputFilename) ;
                 }
               else
-                syslog (LOG_ERR,FGETS_FAILED,tape->inputFilename) ;
+                syswarn ("ME oserr fgets %s", tape->inputFilename) ;
               
               fclose (tape->inFp) ;
               tape->inFp = NULL ;
@@ -1169,14 +1183,15 @@ static void prepareFiles (Tape tape)
 
               if ((flength = fileLength (fileno (tape->inFp))) < tape->tellpos)
                 {
-                  syslog (LOG_ERR,FILE_SHORT,tape->inputFilename,
-                          flength, tape->tellpos);
+                  warn ("ME tape short: %s %ld %ld", tape->inputFilename,
+                        flength, tape->tellpos) ;
                   tape->tellpos = 0 ;
                 }
               else if (tape->tellpos == 0)
                 rewind (tape->inFp) ;
               else if (fseeko (tape->inFp,tape->tellpos - 1,SEEK_SET) != 0)
-                syslog (LOG_ERR,FSEEK_FAILED,tape->inputFilename,tape->tellpos);
+                syswarn ("ME oserr fseeko(%s,%ld,SEEK_SET)",
+                         tape->inputFilename,tape->tellpos) ;
               else if ((c = fgetc (tape->inFp)) != '\n')
                 {
                   while (c != EOF && c != '\n')
@@ -1196,8 +1211,9 @@ static void prepareFiles (Tape tape)
                       
                       tape->changed = true ;
                       checkpointTape (tape) ;
-                      
-                      syslog (LOG_ERR,CKPT_BNDRY,tape->inputFilename,
+
+                      warn ("ME internal checkpoint line boundary missed:"
+                            " %s %ld vs. %ld",tape->inputFilename,
                               tape->tellpos, oldPos) ;
                     }
                 }
@@ -1213,7 +1229,7 @@ static void prepareFiles (Tape tape)
     {
       if ((tape->outFp = fopen (tape->outputFilename,"a+")) == NULL)
         {
-          syslog (LOG_ERR,TAPE_OPEN_FAILED, "a+", tape->outputFilename) ;
+          syswarn ("ME tape open failed (a+) %s", tape->outputFilename) ;
           return ;
         }
       fseeko (tape->outFp,0,SEEK_END) ;
@@ -1291,7 +1307,8 @@ static void flushTape (Tape tape)
         }
       else if (buf.st_size != tape->outputSize)
         {
-          syslog (LOG_ERR,FSTAT_NE_FTELL,tape->outputFilename) ;
+          warn ("ME fstat and ftello do not agree for %s",
+                tape->outputFilename) ;
           logged = true ;
         }
     }

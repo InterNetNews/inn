@@ -13,6 +13,7 @@
 #include "innfeed.h"
 #include "config.h"
 #include "clibrary.h"
+#include <errno.h>
 #include <ctype.h>
 #include <syslog.h>
 
@@ -20,9 +21,10 @@
 # include <alloca.h>
 #endif
   
-#include "configfile.h"
+#include "inn/messages.h"
 #include "libinn.h"
-#include "msgs.h"
+
+#include "configfile.h"
 #include "misc.h"
 
 #define UNKNOWN_SCOPE_TYPE "line %d: unknown scope type: %s"
@@ -46,6 +48,8 @@ static scope *newScope (const char *type) ;
 static int strNCaseCmp (const char *a, const char *b, size_t len) ;
 #endif 
 
+int yyerror (const char *s) ;
+int yywrap (void) ;
 
 
 #if 0
@@ -249,7 +253,7 @@ value *findValue (scope *s, const char *name, int inherit)
 
       for (i = 0 ; i < s->value_idx ; i++)
         {
-          if (strlen (s->values[i]->name) == p - name &&
+          if (strlen (s->values[i]->name) == (size_t) (p - name) &&
               strncmp (s->values[i]->name,name,p - name) == 0)
             {
               if (*p == '\0')     /* last segment of name */
@@ -486,7 +490,7 @@ static void printValue (FILE *fp, value *v, int indent)
               break ;
 
             default:
-              if (isprint (v->v.char_val))
+              if (CTYPE (isprint, v->v.char_val))
                 fprintf (fp,"%c",v->v.char_val) ;
               else
                 fprintf (fp,"\\%03o",v->v.char_val) ;
@@ -586,7 +590,7 @@ static char *keyOk (const char *key)
       return rval ;
     }
   
-  if (!isalpha(*p))
+  if (!CTYPE(isalpha, *p))
     {
       rval = malloc (strlen (NON_ALPHA) + strlen (key) + 15) ;
       sprintf (rval,NON_ALPHA,lineCount, key) ;
@@ -596,7 +600,7 @@ static char *keyOk (const char *key)
   p++ ;
   while (*p)
     {
-      if (!(isalnum (*p) || *p == '_' || *p == '-'))
+      if (!(CTYPE (isalnum, *p) || *p == '_' || *p == '-'))
         {
           rval = malloc (strlen (BAD_KEY) + strlen (key) + 15) ;
           sprintf (rval,BAD_KEY,lineCount,key) ;
@@ -865,7 +869,9 @@ int buildPeerTable (FILE *fp, scope *s)
             {
               if (strcmp (peerTable[j].peerName,s->values[i]->name) == 0)
                 {
-                  logOrPrint (LOG_ERR,fp,DUP_PEER_NAME,peerTable[j].peerName) ;
+                  logOrPrint (LOG_ERR,fp,
+                              "ME config: two peers with the same name: %s",
+                              peerTable[j].peerName) ;
                   rval = 0 ;
                   break ;
                 }
@@ -918,14 +924,17 @@ int readConfig (const char *file, FILE *errorDest, int justCheck, int dump)
 
   if (file == NULL || strlen (file) == 0 || !fileExistsP (file))
     {
-      logOrPrint (LOG_ERR,errorDest,NOSUCH_CONFIG, file ? file : "(null)") ;
+      logOrPrint (LOG_ERR,errorDest,
+                  "ME config aborting, no such config file: %s",
+                  file ? file : "(null)") ;
       d_printf (1,"No such config file: %s\n", file ? file : "(null)") ;
       exit (1) ;
     }
 
   if ((fp = fopen (file,"r")) == NULL)
     {
-      logOrPrint (LOG_ERR,errorDest,CFG_FOPEN_FAILURE, file) ;
+      logOrPrint (LOG_ERR,errorDest, "ME config aborting fopen %s: %s",
+                  file, strerror (errno)) ;
       exit (1) ;
     }
 
@@ -951,9 +960,9 @@ int readConfig (const char *file, FILE *errorDest, int justCheck, int dump)
       if (errbuff != NULL)
         {
           if (errorDest != NULL)
-            fprintf (errorDest,CONFIG_PARSE_FAILED,"",errbuff) ;
+            fprintf (errorDest,"config file error: %s\n",errbuff) ;
           else
-            syslog (LOG_ERR,CONFIG_PARSE_FAILED,"ME ",errbuff) ;
+            warn ("ME config file error: %s", errbuff) ;
           
           free (errbuff) ;
         }

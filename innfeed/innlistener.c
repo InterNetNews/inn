@@ -55,7 +55,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "endpoint.h"
 #include "host.h"
 #include "innlistener.h"
-#include "msgs.h"
 #include "nntp.h"
 #include "tape.h"
 
@@ -265,9 +264,9 @@ void shutDown (InnListener l)
       dateString [24] = '\0' ;
 
       if (fastExit)
-        syslog (LOG_NOTICE,FAST_EXIT_PROGRAM,dateString) ;
+        notice ("ME finishing (quickly) at %s", dateString) ;
       else
-        syslog (LOG_NOTICE,STOPPING_PROGRAM,dateString) ;
+        notice ("ME finishing at %s", dateString) ;
 
       unlinkPidFile();
       exit (0) ;
@@ -434,7 +433,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
       else 
         {
           d_printf (1,"Got EOF on listener\n") ;
-          syslog (LOG_NOTICE,INN_GONE) ;
+          notice ("ME source lost . Exiting");
 	  shutDown (lis) ;
         }
     }
@@ -444,7 +443,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
 #if HAVE_SOCKETPAIR
       if (errno != ECONNABORTED)
 #endif
-      syslog (LOG_CRIT,INN_IO_ERROR) ;
+      syswarn ("ME source read error, exiting") ;
       d_printf (1,"Got IO Error on listener\n") ;
       shutDown (lis) ;
     }
@@ -454,21 +453,21 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
          precede the newline, we never get out of here */
       if (strlen(bbase) < blen)
         {
-          syslog (LOG_CRIT,INN_BAD_CMD,bbase) ;
+          warn ("ME source format bad, exiting: %s", bbase) ;
           shutDown (lis) ;
 
           return ;
         }
       if (blen == bufferSize(buffs [0])) {
         if (!expandBuffer (buffs [0], BUFFER_EXPAND_AMOUNT)) {
-          syslog (LOG_CRIT,L_BUFFER_EXPAND_ERROR);
+          warn ("ME error expanding input buffer") ;
           shutDown (lis) ;
           return ;
         }
       }
       readArray = makeBufferArray (bufferTakeRef (buffs [0]),NULL) ;
       if (!prepareRead (ep, readArray, newArticleCommand, data, 1)) {
-        syslog (LOG_CRIT,L_PREPARE_READ_FAILED) ;
+        warn ("ME error prepare read failed") ;
         freeBufferArray (readArray) ;
         shutDown (lis) ;
         return ;
@@ -496,7 +495,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
 	     by newline, we may skip a large chunk without noticing */
 	  if (*next == '\0' && next < bbase + blen)
             {
-              syslog (LOG_CRIT,INN_BAD_CMD,cmd) ;
+              warn ("ME source format bad, exiting: %s", cmd) ;
               shutDown (lis) ;
 
               return ;
@@ -507,7 +506,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
           /* pick out the leading string (the filename) */
           if ((fileName = findNonBlankString (cmd,&fileNameEnd)) == NULL)
             {
-              syslog (LOG_CRIT,INN_BAD_CMD,cmd) ;
+              warn ("ME source format bad, exiting: %s", cmd) ;
               shutDown (lis) ;
 
               return ;
@@ -519,7 +518,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
           if ((msgid = findNonBlankString (fileNameEnd + 1,&msgidEnd)) == NULL)
             {
               *fileNameEnd = ' ' ; /* to make syslog work properly */
-              syslog (LOG_CRIT,INN_BAD_CMD,cmd) ;
+              warn ("ME source format bad, exiting: %s", cmd) ;
               shutDown (lis) ;
 
               return ;
@@ -534,14 +533,15 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
 
           /* Check the message ID length */
           if (strlen(msgid) > NNTP_MSGID_MAXLEN) {
-            syslog(LOG_ERR,INN_MSGID_SIZE,NNTP_MSGID_MAXLEN,msgid) ;
+            warn ("ME message id exceeds limit of %d octets: %s",
+                  NNTP_MSGID_MAXLEN, msgid) ;
             *(msgidEnd+1) = '\0' ;
           }
           *msgidEnd = ' ' ;
 
           /* Check if message ID starts with < and ends with > */
           if (*msgid != '<' || *(msgidEnd-1) != '>') {
-            syslog(LOG_ERR,INN_BAD_CMD,cmd);
+            warn ("ME source format bad, exiting: %s", cmd) ;
             *(msgidEnd+1) = '\0';
           }
 
@@ -562,7 +562,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
                 if (!CTYPE(isalnum, *s) && *s != '.' && *s != '-' && *s != '_')
                   break;
               if (*s != 0) {
-                  syslog(LOG_ERR,INVALID_PEER,peer);
+                  warn ("ME invalid peername %s", peer) ;
                   continue;
               }
               if (article != NULL)
@@ -599,7 +599,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
       
           if ( !prepareRead (lis->myep, bArr, newArticleCommand, lis, 1) )
             {
-              syslog (LOG_CRIT,L_PREPARE_READ_FAILED) ;
+              warn ("ME error prepare read failed") ;
 
               freeBufferArray (bArr) ;
               
@@ -616,7 +616,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
       
           if ( !prepareRead (lis->myep, bArr, newArticleCommand, lis, 1) )
             {
-              syslog (LOG_CRIT,L_PREPARE_READ_FAILED) ;
+              warn ("ME error prepare read failed") ;
 
               shutDown (lis) ;
 
@@ -682,7 +682,7 @@ static void giveArticleToPeer (InnListener lis,
             {
               /* XXX need to remember we've gone over the limit and not try
                  to add any more. */
-              syslog (LOG_ERR, TOO_MANY_HOSTS, lis->hostLen) ;
+              warn ("ME internal too many hosts. (max is %d)", lis->hostLen) ;
               dropArticle (peerName,article) ;
             }
           else
@@ -754,15 +754,14 @@ void openDroppedArticleFile (void)
 
   if ((droppedFp = fopen (dropArtFile,"w")) == NULL)
     {
-      syslog (LOG_ERR,NO_DROPPED_FILE,dropArtFile) ;
+      syswarn ("ME cant open %s: loosing articles", dropArtFile) ;
 
       free (dropArtFile) ;
       dropArtFile = NULL ;
       
       if ((droppedFp = fopen ("/dev/null","w")) == NULL)
         {
-          syslog (LOG_ERR,NO_NULL_FILE) ;
-          die ("Error opening /dev/null") ;
+          die ("ME error opening /dev/null") ;
         }
     }
 
@@ -785,9 +784,9 @@ void closeDroppedArticleFile (void)
   if (pos == 0 && dropArtFile != NULL)
     unlink (dropArtFile) ;
   else if (pos != 0 && dropArtFile == NULL)
-    syslog (LOG_WARNING,LOST_ARTICLE_COUNT,droppedCount) ;
+    warn ("ME lost %ld articles", droppedCount) ;
   else if (pos != 0)
-    syslog (LOG_NOTICE,DROPPED_ARTICLE_COUNT,droppedCount) ;
+    notice ("ME dropped %ld articles", droppedCount) ;
      
   droppedFileCount = (droppedFileCount + 1) % 26 ;
   droppedCount = 0 ;
@@ -799,7 +798,7 @@ static void dropArticle (const char *peerName, Article article)
 
   if (!logged)
     {
-      syslog (LOG_WARNING,DROPPED_LOCATION,dropArtFile) ;
+      warn ("ME dropping articles into %s", dropArtFile) ;
       logged = true ;
     }
   
