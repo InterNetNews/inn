@@ -1,42 +1,21 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Wed Dec 27 09:55:07 1995
- * Project:     INN (innfeed)
- * File:        tape.h
- * RCSId:       $Id$
- *
- * Copyright:   Copyright (c) 1996 by Internet Software Consortium
- *
- *              Permission to use, copy, modify, and distribute this
- *              software for any purpose with or without fee is hereby
- *              granted, provided that the above copyright notice and this
- *              permission notice appear in all copies.
- *
- *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
- *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
- *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
- *              USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Description: The public interface to the Tape class.
- *
- *              The Tape class simulates a mag tape. It only reads or writes
- *              Articles. A tape is either in an Input or Output state. When
- *              an Article is given to a Tape it will store the Article in
- *              memory until it reaches a highwater mark at which point it
- *              dumps all it's articles to disk.
- *
- *              Input tapes generate article objects on request if the
- *              underlying tape file has info in it. The Tapes take care of
- *              cleaning up used-up files as needed.
- *
- */
+/*  $Id$
+**
+**  The public interface to the Tape class.
+**
+**  Written by James Brister <brister@vix.com>
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  For license terms, see the end of this file.
+**
+**  The Tape class simulates a mag tape.  It only reads or writes Articles.  A
+**  tape is either in an Input or Output state.  When an Article is given to a
+**  Tape it will store the Article in memory until it reaches a highwater mark
+**  at which point it dumps all it's articles to disk.
+**
+**  Input tapes generate article objects on request if the underlying tape
+**  file has info in it.  The Tapes take care of cleaning up used-up files as
+**  needed.
+*/
 
 #if ! defined ( tape_h__ )
 #define tape_h__
@@ -90,3 +69,20 @@ void tapeLogGlobalStatus (FILE *fp) ;
 void tapeLogStatus (Tape tape, FILE *fp) ;
 
 #endif /* tape_h__ */
+
+/*
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  Permission to use, copy, modify, and distribute this software for any
+**  purpose with or without fee is hereby granted, provided that the above
+**  copyright notice and this permission notice appear in all copies.
+**
+**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
+**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
+**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+**  PERFORMANCE OF THIS SOFTWARE.
+*/

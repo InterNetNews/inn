@@ -1,24 +1,27 @@
-/* feed articles to an IMAP server via LMTP and IMAP
-   Tim Martin
-
-   Instead of feeding articles via nntp to another host this feeds the
-   messages via lmtp to a host and the control messages (cancel's
-   etc..) it performs via IMAP. This means it has 2 active connections
-   at any given time and 2 queues.
-
-   When an article comes in it is immediatly placed in the lmtp
-   queue. When an article is picked off the lmtp queue for processing
-   first check if it's a control message. if so place it in the IMAP
-   queue. If not attempt to deliver via lmtp.
-
-   This attempts to follow the exact same api as connection.c.
-   
-   TODO:
-   
-   feed to smtp 
-   security layers?  <--punt on for now
-   authname/password per connection object
-   untagged IMAP messages
+/*  $Id$
+**
+**  Feed articles to an IMAP server via LMTP and IMAP.
+**
+**  Written by Tim Martin.
+**
+**  Instead of feeding articles via nntp to another host this feeds the
+**  messages via lmtp to a host and the control messages (cancel's etc..) it
+**  performs via IMAP.  This means it has 2 active connections at any given
+**  time and 2 queues.
+**
+**  When an article comes in it is immediatly placed in the lmtp queue. When
+**  an article is picked off the lmtp queue for processing first check if it's
+**  a control message.  If so, place it in the IMAP queue.  If not, attempt to
+**  deliver via LMTP.
+**
+**  This attempts to follow the exact same api as connection.c.
+**  
+**  TODO:
+**  
+**  feed to smtp 
+**  security layers?  <--punt on for now
+**  authname/password per connection object
+**  untagged IMAP messages
 */
 
 #include "config.h"
@@ -4693,4 +4696,3 @@ bool cxnCheckstate (Connection cxn)
 
     return true;
 }
-

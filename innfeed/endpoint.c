@@ -1,48 +1,19 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Wed Nov 29 23:08:24 1995
- * Project:     INN (innfeed)
- * File:        endpoint.c
- * RCSId:       $Id$
- *
- * Copyright:   Copyright (c) 1996 by Internet Software Consortium
- *
- *              Permission to use, copy, modify, and distribute this
- *              software for any purpose with or without fee is hereby
- *              granted, provided that the above copyright notice and this
- *              permission notice appear in all copies.
- *
- *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
- *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
- *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
- *              USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Description: The implementation of the EndPoint object class.
- *
- *              The EndPoint class is what gives the illusion 9sort
- *              of, kind of) of threading. Basically it controls a
- *              select loop and a set of EndPoint objects. Each
- *              EndPoint has a file descriptor it is interested
- *              in. The users of the EndPoint tell the EndPoints to
- *              notify them when a read or write has been completed
- *              (or simple if the file descriptor is read or write
- *              ready).
- *
- */
-
-#if ! defined (lint)
-static char rcsid [] = "$Id$" ;
-static void use_rcsid (const char *rId) {   /* Never called */
-  use_rcsid (rcsid) ; use_rcsid (rId) ;
-} 
-#endif
+/*  $Id$
+**
+**  The implementation of the innfeed EndPoint object class.
+**
+**  Written by James Brister <brister@vix.com>
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  For license terms, see the end of this file.
+**
+**  The EndPoint class is what gives the illusion (sort of, kind of) of
+**  threading.  Basically it controls a select loop and a set of EndPoint
+**  objects.  Each EndPoint has a file descriptor it is interested in.  The
+**  users of the EndPoint tell the EndPoints to notify them when a read or
+**  write has been completed (or simple if the file descriptor is read or
+**  write ready).
+*/
 
 #include "innfeed.h"
 #include "config.h"
@@ -79,16 +50,6 @@ static const char *const timer_name[] = {
   "idle", "blstats", "stsfile", "newart", "readart", "prepart", "read",
   "write", "cb"
 };
-
-#if defined (__bsdi__) && (defined (_ANSI_SOURCE) || defined (_POSIX_SOURCE))
-  /* why do I have to do this???? */
-struct timeval
-{
-    long tv_sec;                /* seconds */
-    long tv_usec;               /* and microseconds */
-};
-#endif
-
 
 #if ! defined (NSIG)
 #define NSIG 32
@@ -1846,3 +1807,20 @@ static void endpointCleanup (void)
   priorityList = NULL ;
   sigHandlers = NULL ;
 }
+
+/*
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  Permission to use, copy, modify, and distribute this software for any
+**  purpose with or without fee is hereby granted, provided that the above
+**  copyright notice and this permission notice appear in all copies.
+**
+**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
+**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
+**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+**  PERFORMANCE OF THIS SOFTWARE.
+*/

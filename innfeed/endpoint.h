@@ -1,50 +1,23 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Wed Nov 29 22:04:49 1995
- * Project:     INN (innfeed)
- * File:        endpoint.h
- * RCSId:       $Id$
- *
- * Copyright:   Copyright (c) 1996 by Internet Software Consortium
- *
- *              Permission to use, copy, modify, and distribute this
- *              software for any purpose with or without fee is hereby
- *              granted, provided that the above copyright notice and this
- *              permission notice appear in all copies.
- *
- *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
- *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
- *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
- *              USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Description: Public interface to the EndPoint class.
- *
- *              The EndPoint objects are encapsulations of file descriptors
- *              that normally do blocking i/o (i.e. NOT fd's hooked to a disk
- *              file). The EndPoint class provides methods for reqesting
- *              read/writes to happen when next possible and for the requestor
- *              to be notified when the i/o is complete (or failed for some
- *              reason). Facilities for timeout notifications are provided too.
- *
- */
+/*  $Id$
+**
+**  The public interface to the Endpoint class.
+**
+**  Written by James Brister <brister@vix.com>
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  For license terms, see the end of this file.
+**
+**  The EndPoint objects are encapsulations of file descriptors that normally
+**  do blocking i/o (i.e. NOT fd's hooked to a disk file).  The EndPoint class
+**  provides methods for reqesting read/writes to happen when next possible
+**  and for the requestor to be notified when the i/o is complete (or failed
+**  for some reason).  Facilities for timeout notifications are provided too.
+**
+**  We should add a way to cancel prepared read/write.
+*/
 
 #if ! defined ( endpoint_h__ )
 #define endpoint_h__
-
-#if 0
-
-/*
- * We should add a way to cancel prepared read/write.
- */
-
-#endif
 
 #include "misc.h"
 
@@ -212,3 +185,20 @@ extern time_t  PrivateTime;
 #define timePasses()    (PrivateTime = 0)
 
 #endif /* endpoint_h__ */
+
+/*
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  Permission to use, copy, modify, and distribute this software for any
+**  purpose with or without fee is hereby granted, provided that the above
+**  copyright notice and this permission notice appear in all copies.
+**
+**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
+**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
+**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+**  PERFORMANCE OF THIS SOFTWARE.
+*/

@@ -1,40 +1,18 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Wed Dec 27 08:44:20 1995
- * Project:     INN (innfeed)
- * File:        host.h
- * RCSId:       $Id$
- *
- * Copyright:   Copyright (c) 1996 by Internet Software Consortium
- *
- *              Permission to use, copy, modify, and distribute this
- *              software for any purpose with or without fee is hereby
- *              granted, provided that the above copyright notice and this
- *              permission notice appear in all copies.
- *
- *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
- *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
- *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
- *              USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Description: The public interface to the Host class.
- *
- *              The Host class represents the remote news system
- *              that we're feeding. A Host object has possibly
- *              multiple connections to the remote system which it
- *              sends articles down. It is given the articles by
- *              other objects (typically the InnListener), and once
- *              taken it assumes all responsibility for transmission
- *              or temporary storage on network failures etc.
- *
- */
+/*  $Id$
+**
+**  The public interface to the Host class.
+**
+**  Written by James Brister <brister@vix.com>
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  For license terms, see the end of this file.
+**
+**  The Host class represents the remote news system that we're feeding.  A
+**  Host object has possibly multiple connections to the remote system which
+**  it sends articles down.  It is given the articles by other objects
+**  (typically the InnListener), and once taken it assumes all responsibility
+**  for transmission or temporary storage on network failures etc.
+*/
 
 #if ! defined ( host_h__ )
 #define host_h__
@@ -217,11 +195,23 @@ void hostSetStatusFile (const char *filename) ;
 /* function called when config file is loaded. */
 int hostConfigLoadCbk (void *data) ;
 
-#endif /* host_h__ */
-
 void hostChkCxns(TimeoutId tid, void *data);
 
+#endif /* host_h__ */
 
-
-
-
+/*
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  Permission to use, copy, modify, and distribute this software for any
+**  purpose with or without fee is hereby granted, provided that the above
+**  copyright notice and this permission notice appear in all copies.
+**
+**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
+**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
+**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+**  PERFORMANCE OF THIS SOFTWARE.
+*/

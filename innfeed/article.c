@@ -1,47 +1,21 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Wed Dec 27 18:45:55 1995
- * Project:     INN (innfeed)
- * File:        article.c
- * RCSId:       $Id$
- * Copyright:   Copyright (c) 1996 by Internet Software Consortium
- *
- *              Permission to use, copy, modify, and distribute this
- *              software for any purpose with or without fee is hereby
- *              granted, provided that the above copyright notice and this
- *              permission notice appear in all copies.
- *
- *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
- *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
- *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
- *              USE OR PERFORMANCE OF THIS SOFTWARE.
- * Description: The implementation of the Article class. Articles are the
- *              abstraction for the actual news articles. They are a
- *              reference counted object because they need to be shared by
- *              multiple Host and Connection objects. When an Article is
- *              created it verifies that the actual file exists. When a
- *              Connection wants the article's contents for transmission
- *              the Article reads the data off disk and returns a set of
- *              Buffer objects. The Article holds onto these Buffers so
- *              that the next Connection that wants to transmit it won't
- *              have to wait for a disk read to be done again.
- *              
- * 
- */
-
-#if ! defined (lint)
-static const char *rcsid = "$Id$" ;
-static void use_rcsid (const char *rid) {   /* Never called */
-  use_rcsid (rcsid) ; use_rcsid (rid) ;
-}
-#endif
+/*  $Id$
+**
+**  The Article class for innfeed.
+**
+**  Written by James Brister <brister@vix.com>
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  For license terms, see the end of this file.
+**
+**  The implementation of the Article class. Articles are the abstraction for
+**  the actual news articles. They are a reference counted object because they
+**  need to be shared by multiple Host and Connection objects. When an Article
+**  is created it verifies that the actual file exists. When a Connection
+**  wants the article's contents for transmission the Article reads the data
+**  off disk and returns a set of Buffer objects. The Article holds onto these
+**  Buffers so that the next Connection that wants to transmit it won't have
+**  to wait for a disk read to be done again.
+*/
 
 #include "innfeed.h"
 #include "config.h"
@@ -1017,3 +991,20 @@ static void hashValidateTable (void)
     }
 #endif
 }
+
+/*
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  Permission to use, copy, modify, and distribute this software for any
+**  purpose with or without fee is hereby granted, provided that the above
+**  copyright notice and this permission notice appear in all copies.
+**
+**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
+**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
+**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+**  PERFORMANCE OF THIS SOFTWARE.
+*/

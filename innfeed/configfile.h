@@ -1,13 +1,9 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Fri, 17 Jan 1997 17:35:59 +0100
- * Project:     INN (innfeed)
- * File:        configfile.h
- * RCSId:       $Id$
- * Description: 
- * 
- */
+/*  $Id$
+**
+**  Interface to innfeed's configuration file parser.
+**
+**  Written by James Brister <brister@vix.com>
+*/
 
 #if ! defined ( configfile_h__ )
 #define configfile_h__

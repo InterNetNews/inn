@@ -1,88 +1,54 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Thu Dec 28 13:34:47 1995
- * Project:     INN (innfeed)
- * File:        connection.c
- * RCSId:       $Id$
- * Copyright:   Copyright (c) 1996 by Internet Software Consortium
- *
- *              Permission to use, copy, modify, and distribute this
- *              software for any purpose with or without fee is hereby
- *              granted, provided that the above copyright notice and this
- *              permission notice appear in all copies.
- *
- *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
- *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
- *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
- *              USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Description: The implementation of the Connection class.
- *
- *              The Connection object is what manages the NNTP
- *              protocol. If the remote doesn't do streaming, then the
- *              standard IHAVE lock-step protcol is performed. In the
- *              streaming situation we have two cases. One where we must
- *              send CHECK commands, and the other where we can directly
- *              send TAKETHIS commands without a prior CHECK.
- *
- *              The Connection object maintains four article queues. The first
- *              one is where new articles are put if they need to have an
- *              IHAVE or CHECK command sent for them. The second queue is
- *              where the articles move from the first after their IHAVE/CHECK
- *              command is sent, but the reply has not yet been seen. The
- *              third queue is where articles go after the IHAVE/CHECK reply
- *              has been seen (and the reply says to send the article). It is
- *              articles in the third queue that have the TAKETHIS command
- *              sent, or the body of an IHAVE.  The third queue is also where
- *              new articles go if the connection is running in no-CHECK
- *              mode. The fourth queue is where the articles move to from the
- *              third queue after their IHAVE-body or TAKETHIS command has
- *              been sent. When the response to the IHAVE-body or TAKETHIS is
- *              received the articles are removed from the fourth queue and
- *              the Host object controlling this Connection is notified of
- *              the success or failure of the transfer.
- *
- *              The whole system is event-driven by the EndPoint class and the
- *              Host via calls to prepareRead() and prepareWrite() and
- *              prepareSleep().
- *
- */
-
-/*
-
-  We should probably store the results of gethostbyname in the connection so
-  we can rotate through the address when one fails for connecting. Perhaps
-  the gethostbyname should be done in the Host and the connection should just
-  be given the address to use.
-
-  Should we worry about articles being stuck on a queue for ever if the
-  remote forgets to send a response to a CHECK?
-
-  Perhaps instead of killing the connection on some of the more simple
-  errors, we should perhaps try to flush the input and keep going.
-
-  Worry about counter overflow.
-
-  Worry about stats gathering when switch to no-check mode.
-
-  XXX if issueQUIT() has a problem and the state goes to cxnDeadS this is not
-  handled properly everywhere yet.
-  
-  */
-
-#if ! defined (lint)
-static const char *rcsid = "$Id$" ;
-static void use_rcsid (const char *rid) {   /* Never called */
-  use_rcsid (rcsid) ; use_rcsid (rid) ;
-}
-#endif
+/*  $Id$
+**
+**  The implementation of the innfeed Connection class.
+**
+**  Written by James Brister <brister@vix.com>
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  For license terms, see the end of this file.
+**
+**  The Connection object is what manages the NNTP protocol. If the remote
+**  doesn't do streaming, then the standard IHAVE lock-step protcol is
+**  performed. In the streaming situation we have two cases. One where we must
+**  send CHECK commands, and the other where we can directly send TAKETHIS
+**  commands without a prior CHECK.
+**
+**  The Connection object maintains four article queues. The first one is
+**  where new articles are put if they need to have an IHAVE or CHECK command
+**  sent for them. The second queue is where the articles move from the first
+**  after their IHAVE/CHECK command is sent, but the reply has not yet been
+**  seen. The third queue is where articles go after the IHAVE/CHECK reply has
+**  been seen (and the reply says to send the article). It is articles in the
+**  third queue that have the TAKETHIS command sent, or the body of an IHAVE.
+**  The third queue is also where new articles go if the connection is running
+**  in no-CHECK mode. The fourth queue is where the articles move to from the
+**  third queue after their IHAVE-body or TAKETHIS command has been sent. When
+**  the response to the IHAVE-body or TAKETHIS is received the articles are
+**  removed from the fourth queue and the Host object controlling this
+**  Connection is notified of the success or failure of the transfer.
+**
+**  The whole system is event-driven by the EndPoint class and the Host via
+**  calls to prepareRead() and prepareWrite() and prepareSleep().
+**
+**
+**  We should probably store the results of gethostbyname in the connection so
+**  we can rotate through the address when one fails for connecting. Perhaps
+**  the gethostbyname should be done in the Host and the connection should
+**  just be given the address to use.
+**
+**  Should we worry about articles being stuck on a queue for ever if the
+**  remote forgets to send a response to a CHECK?
+**
+**  Perhaps instead of killing the connection on some of the more simple
+**  errors, we should perhaps try to flush the input and keep going.
+**
+**  Worry about counter overflow.
+**
+**  Worry about stats gathering when switch to no-check mode.
+**
+**  XXX if issueQUIT() has a problem and the state goes to cxnDeadS this is
+**  not handled properly everywhere yet.
+*/
 
 #include "innfeed.h"
 #include "config.h"
@@ -4963,3 +4929,20 @@ static int fudgeFactor (int initVal)
 
   return newValue ;
 }
+
+/*
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  Permission to use, copy, modify, and distribute this software for any
+**  purpose with or without fee is hereby granted, provided that the above
+**  copyright notice and this permission notice appear in all copies.
+**
+**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
+**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
+**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+**  PERFORMANCE OF THIS SOFTWARE.
+*/

@@ -1,38 +1,22 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Wed Dec 27 10:09:28 1995
- * Project:     INN (innfeed)
- * File:        article.h
- * RCSId:       $Id$
- * Copyright:   Copyright (c) 1996 by Internet Software Consortium
- *
- *              Permission to use, copy, modify, and distribute this
- *              software for any purpose with or without fee is hereby
- *              granted, provided that the above copyright notice and this
- *              permission notice appear in all copies.
- *
- *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
- *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
- *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
- *              USE OR PERFORMANCE OF THIS SOFTWARE.
- * Description: The public interface to articles. The articles are
- *              implemented via reference counting. This interface
- *              provides the methods for getting the contents of the article.
- *
- *              When an Article is created there's a chance that another
- *              copy of it already exists. For example if the Article is
- *              pulled out of a Tape for a particular host it may already
- *              be in existance in some other host. This class will manage
- *              this situation to prevent multiple copies of the article
- *              being in core.
- */
+/*  $Id$
+**
+**  The public interface to articles.
+**
+**  Written by James Brister <brister@vix.com>
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  For license terms, see the end of this file.
+**
+**  The public interface to articles. The articles are implemented via
+**  reference counting.  This interface provides the methods for getting the
+**  contents of the article.
+**
+**  When an Article is created there's a chance that another copy of it
+**  already exists.  For example if the Article is pulled out of a Tape for a
+**  particular host it may already be in existance in some other host.  This
+**  class will manage this situation to prevent multiple copies of the article
+**  being in core.
+*/
 
 #if ! defined ( article_h__ )
 #define article_h__
@@ -97,3 +81,20 @@ void artBitFiddleContents (bool val) ;
 void artSetMaxBytesInUse (unsigned int val) ;
 
 #endif /* article_h__ */
+
+/*
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  Permission to use, copy, modify, and distribute this software for any
+**  purpose with or without fee is hereby granted, provided that the above
+**  copyright notice and this permission notice appear in all copies.
+**
+**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
+**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
+**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+**  PERFORMANCE OF THIS SOFTWARE.
+*/

@@ -407,16 +407,12 @@ char *yytext;
 #line 1 "configfile.l"
 #define INITIAL 0
 #line 2 "configfile.l"
-/* -*- text -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Fri, 17 Jan 1997 17:08:37 +0100
- * Project:     INN (innfeed)
- * File:        configfile.l
- * RCSId:       $Id$
- * Description: A flex input file for the innfeed config file. 
- *
- */
+/*  $Id$
+**
+**  A flex input file for the innfeed config file.
+**
+**  Written by James Brister <brister@vix.com>
+*/
 
 #include "innfeed.h"
 
@@ -472,7 +468,7 @@ int include_stack_ptr = 0;
 
 #define incl 1
 
-#line 476 "lex.yy.c"
+#line 472 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -626,10 +622,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 71 "configfile.l"
+#line 67 "configfile.l"
 
 
-#line 633 "lex.yy.c"
+#line 629 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -715,42 +711,42 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 73 "configfile.l"
+#line 69 "configfile.l"
 lineCount++ ;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 75 "configfile.l"
+#line 71 "configfile.l"
 { return (COLON) ; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 77 "configfile.l"
+#line 73 "configfile.l"
 { return (LBRACE) ; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 79 "configfile.l"
+#line 75 "configfile.l"
 { return (RBRACE) ; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 81 "configfile.l"
+#line 77 "configfile.l"
 { return (PEER) ; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 83 "configfile.l"
+#line 79 "configfile.l"
 BEGIN(incl);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 85 "configfile.l"
+#line 81 "configfile.l"
 /* eat the whitespace before include filename */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 87 "configfile.l"
+#line 83 "configfile.l"
 {
   if (include_stack_ptr == MAX_INCLUDE_DEPTH - 1)
     {
@@ -785,7 +781,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(incl):
-#line 119 "configfile.l"
+#line 115 "configfile.l"
 {
   if ( include_stack_ptr <= 0 )
     yyterminate();
@@ -799,22 +795,22 @@ case YY_STATE_EOF(incl):
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 130 "configfile.l"
+#line 126 "configfile.l"
 { return (GROUP) ; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 132 "configfile.l"
+#line 128 "configfile.l"
 { (void) 0 ; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 134 "configfile.l"
+#line 130 "configfile.l"
 { (void) 1 ; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 136 "configfile.l"
+#line 132 "configfile.l"
 {
 	switch (yytext[2]) {
 		case '\\': yylval.chr = '\\' ; break ;
@@ -830,18 +826,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 149 "configfile.l"
+#line 145 "configfile.l"
 { yylval.chr = yytext[1] ; return (CHAR) ; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 151 "configfile.l"
+#line 147 "configfile.l"
 { yylval.chr = (char)strtol(&yytext[2], (char **)NULL, 8);
 			  return (CHAR) ;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 154 "configfile.l"
+#line 150 "configfile.l"
 {{
 	int i ;
 
@@ -929,17 +925,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 239 "configfile.l"
+#line 235 "configfile.l"
 { yylval.integer = atoi (yytext) ; return (IVAL) ; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 241 "configfile.l"
+#line 237 "configfile.l"
 { yylval.real = atof (yytext) ; return (RVAL) ; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 243 "configfile.l"
+#line 239 "configfile.l"
 {
   yylval.name = xstrdup (yytext) ;
   if (strcasecmp (yylval.name,"false") == 0)
@@ -952,10 +948,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 253 "configfile.l"
+#line 249 "configfile.l"
 ECHO;
 	YY_BREAK
-#line 959 "lex.yy.c"
+#line 955 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1841,7 +1837,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 253 "configfile.l"
+#line 249 "configfile.l"
 
 
 

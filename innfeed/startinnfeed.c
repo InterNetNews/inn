@@ -8,6 +8,7 @@
 **  news user can run this program, and it attempts to drop privileges when
 **  doing operations that don't require it.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <syslog.h>

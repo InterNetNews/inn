@@ -1,50 +1,23 @@
-/* -*- c -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Sun Dec 31 18:52:04 1995
- * Project:     INN (innfeed)
- * File:        tape.c
- * RCSId:       $Id$
- *
- * Copyright:   Copyright (c) 1996 by Internet Software Consortium
- *
- *              Permission to use, copy, modify, and distribute this
- *              software for any purpose with or without fee is hereby
- *              granted, provided that the above copyright notice and this
- *              permission notice appear in all copies.
- *
- *              THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE
- *              CONSORTIUM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- *              SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *              MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET
- *              SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- *              INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *              WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- *              WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- *              TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
- *              USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Description: The implementation of the Tape class. Tapes are read-only
- *              or write-only files that are accessed sequentially. Their
- *              basic unit of i/o is an Article. Tapes work out of a single
- *              directory and manage all file names themselves.
- *
- *              Tapes will checkpoint themselves periodically so
- *              that when innfeed exits or crashes things can
- *              restart close to where they were last. The period
- *              checkpointing is handled entirely by the Tape class,
- *              but the checkpoint period needs to be set by some
- *              external user before the first tape is created.
- *
- */
-
- 
-#if ! defined (lint)
-static const char *rcsid = "$Id$" ;
-static void use_rcsid (const char *rid) {   /* Never called */
-  use_rcsid (rcsid) ; use_rcsid (rid) ;
-}
-#endif
+/*  $Id$
+**
+**  The implementation of the innfeed Tape class.
+**
+**  Written by James Brister <brister@vix.com>
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  For license terms, see the end of this file.
+**
+**  The implementation of the Tape class. Tapes are read-only or write-only
+**  files that are accessed sequentially. Their basic unit of i/o is an
+**  Article. Tapes work out of a single directory and manage all file names
+**  themselves.
+**
+**  Tapes will checkpoint themselves periodically so that when innfeed exits
+**  or crashes things can restart close to where they were last. The period
+**  checkpointing is handled entirely by the Tape class, but the checkpoint
+**  period needs to be set by some external user before the first tape is
+**  created.
+*/
 
 #include "innfeed.h"
 #include "config.h"
@@ -1328,3 +1301,20 @@ static void tapeCleanup (void)
   free (tapeDirectory) ;
   tapeDirectory = NULL ;
 }
+
+/*
+**  Copyright 1996 by the Internet Software Consortium
+**
+**  Permission to use, copy, modify, and distribute this software for any
+**  purpose with or without fee is hereby granted, provided that the above
+**  copyright notice and this permission notice appear in all copies.
+**
+**  THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
+**  DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+**  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL
+**  INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+**  OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+**  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+**  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+**  PERFORMANCE OF THIS SOFTWARE.
+*/

@@ -1,14 +1,10 @@
 %{
-/* -*- text -*-
- *
- * Author:      James Brister <brister@vix.com> -- berkeley-unix --
- * Start Date:  Fri, 17 Jan 1997 17:08:37 +0100
- * Project:     INN (innfeed)
- * File:        configfile.l
- * RCSId:       $Id$
- * Description: A flex input file for the innfeed config file. 
- *
- */
+/*  $Id$
+**
+**  A flex input file for the innfeed config file.
+**
+**  Written by James Brister <brister@vix.com>
+*/
 
 #include "innfeed.h"
 
