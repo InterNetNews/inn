@@ -209,6 +209,7 @@ doc/man/overchan.8                    Manpage for overchan backend
 doc/man/overview.fmt.5                Manpage for overview.fmt config file
 doc/man/parsedate.3                   Manpage for parsedate library routine
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
+doc/man/perl-nocem.8                  Manpage for perl-nocem
 doc/man/pgpverify.8                   Manpage for pgpverify
 doc/man/prunehistory.8                Manpage for prunehistory
 doc/man/pullnews.8                    Manpage for pullnews
