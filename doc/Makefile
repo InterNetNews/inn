@@ -33,6 +33,6 @@ install-doc:
 	for F in $(DOCS) ; do \
 	    $(CP_RPUB) $$F $D$(PATHDOC)/$$F ; \
 	done
-	if [ -e $(top)/README.snapshot ] ; then \
+	if [ -r $(top)/README.snapshot ] ; then \
 	    $(CP_RPUB) $(top)/README.snapshot $D$(PATHDOC)/README.snapshot ; \
 	fi
