@@ -27,6 +27,8 @@ Welcome to INN 2.4!
     your old build tree, look at the comments at the beginning of
     config.status.
 
+    For more information about recent changes, see NEWS.
+
 Supported Systems
 
     So far as possible, INN is written in portable C and should work on any
@@ -40,6 +42,7 @@ Supported Systems
       FreeBSD 2.2.x and up
       HP-UX 10.20 and up
       Linux 2.x (tested with libc 5.4 or glibc 2.0 and up)
+      OpenBSD 2.8 and up
       SCO 5.0.4 (tested with gcc 2.8.1 and cc)
       Solaris 2.5.x and up
       UnixWare 7.1
@@ -59,8 +62,7 @@ Before You Begin
       recommended.  You can get it from <ftp://ftp.gnu.org/gcc/> or its
       mirrors.  INN is tested with gcc more thoroughly than with any other
       compiler, so even if you have another compiler available, you may wish
-      to use gcc instead (note that gcc has some known problems compiling
-      calls to inet_ntoa() on IRIX platforms).
+      to use gcc instead.
 
     * INN requires at least Perl 5.004_03 to build and to run several
       subsystems.  INN is tested primarily with newer versions of Perl, so
