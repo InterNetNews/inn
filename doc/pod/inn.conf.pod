@@ -293,6 +293,13 @@ How long, in seconds, to keep track of message IDs offered on a channel
 before expiring articles that still haven't been sent.  The default value
 is C<10> and probably doesn't need to be changed.
 
+=item I<dontrejectfiltered>
+
+Normally innd(8) rejects article, if article filter (PERL, Python and TCL)
+is enabled and it tells innd to reject it.  It's never rejected if this is
+set to true.  This is useful when C<Af> is specified in newsfeeds(5) not
+to feed it for the site.
+
 =back
 
 =head2 Article Storage

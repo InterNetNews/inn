@@ -267,6 +267,7 @@ void SetDefaults()
     innconf->groupbaseexpiry = TRUE;
     innconf->wipcheck = 5;
     innconf->wipexpire = 10;
+    innconf->dontrejectfiltered = FALSE;
 }
 
 void ClearInnConf()
@@ -981,6 +982,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_WIPEXPIRE, bit);
 		if (!bit) innconf->wipexpire = atoi(p);
 		SET_CONFIG(CONF_VAR_WIPEXPIRE);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_DONTREJECTFILTERED)) {
+		TEST_CONFIG(CONF_VAR_DONTREJECTFILTERED, bit);
+		if (!bit && boolval != -1) innconf->dontrejectfiltered = boolval;
+		SET_CONFIG(CONF_VAR_DONTREJECTFILTERED);
 	    }
 	}
 	(void)Fclose(F);

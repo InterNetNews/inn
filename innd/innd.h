@@ -275,6 +275,7 @@ typedef struct _SITE {
     BOOL		DontWantNonExist;
     BOOL		NeedOverviewCreation;
     BOOL		FeedwithoutOriginator;
+    BOOL		DropFiltered;
     int			Hops;
     int			Groupcount;
     int			Followcount;

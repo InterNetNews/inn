@@ -1989,6 +1989,7 @@ STRING ARTpost(CHANNEL *cp)
     char		*filterrc;
 #endif /* defined(DO_PERL) || defined(DO_PYTHON) */
     BOOL		NoHistoryUpdate;
+    BOOL		Filtered = FALSE;
 
     /* Preliminary clean-ups. */
     article = &cp->In;
@@ -2068,15 +2069,19 @@ STRING ARTpost(CHANNEL *cp)
 			   Data.LinesValue);
     TMRstop(TMR_PYTHON);
     if (filterrc != NULL) {
-        (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
-        syslog(L_NOTICE, "rejecting[python] %s %s", Data.MessageID, buff);
-        ARTlog(&Data, ART_REJECT, buff);
-        if (innconf->remembertrash && (Mode == OMrunning) &&
+        if (innconf->dontrejectfiltered) {
+            Filtered = TRUE;
+        } else {
+            (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
+            syslog(L_NOTICE, "rejecting[python] %s %s", Data.MessageID, buff);
+            ARTlog(&Data, ART_REJECT, buff);
+            if (innconf->remembertrash && (Mode == OMrunning) &&
 			!HISremember(hash))
-            syslog(L_ERROR, "%s cant write history %s %m",
+                syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
-        ARTreject(REJECT_FILTER, cp, buff, article);
-        return buff;
+            ARTreject(REJECT_FILTER, cp, buff, article);
+            return buff;
+        }
     }
 #endif /* DO_PYTHON */
 
@@ -2087,15 +2092,19 @@ STRING ARTpost(CHANNEL *cp)
     filterrc = PLartfilter(Data.Body, Data.LinesValue);
     TMRstop(TMR_PERL);
     if (filterrc) {
-        sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
-        syslog(L_NOTICE, "rejecting[perl] %s %s", Data.MessageID, buff);
-        ARTlog(&Data, ART_REJECT, buff);
-        if (innconf->remembertrash && (Mode == OMrunning) &&
+        if (innconf->dontrejectfiltered) {
+            Filtered = TRUE;
+        } else {
+            sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, filterrc);
+            syslog(L_NOTICE, "rejecting[perl] %s %s", Data.MessageID, buff);
+            ARTlog(&Data, ART_REJECT, buff);
+            if (innconf->remembertrash && (Mode == OMrunning) &&
 			!HISremember(hash))
-            syslog(L_ERROR, "%s cant write history %s %m",
+                syslog(L_ERROR, "%s cant write history %s %m",
                    LogName, Data.MessageID);
-        ARTreject(REJECT_FILTER, cp, buff, article);
-        return buff;
+            ARTreject(REJECT_FILTER, cp, buff, article);
+            return buff;
+        }
     }
 #endif /* DO_PERL */
 
@@ -2128,16 +2137,20 @@ STRING ARTpost(CHANNEL *cp)
         (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
         if (code == TCL_OK) {
 	    if (strcmp(TCLInterpreter->result, "accept") != 0) {
-	        (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, 
+        	if (innconf->dontrejectfiltered) {
+		    Filtered = TRUE;
+        	} else {
+	            (void)sprintf(buff, "%d %.200s", NNTP_REJECTIT_VAL, 
 			      TCLInterpreter->result);
-		syslog(L_NOTICE, "rejecting[tcl] %s %s", Data.MessageID, buff);
-		ARTlog(&Data, ART_REJECT, buff);
-                if (innconf->remembertrash && (Mode == OMrunning) &&
+		    syslog(L_NOTICE, "rejecting[tcl] %s %s", Data.MessageID, buff);
+		    ARTlog(&Data, ART_REJECT, buff);
+                    if (innconf->remembertrash && (Mode == OMrunning) &&
 				!HISremember(hash))
-                    syslog(L_ERROR, "%s cant write history %s %m",
+                        syslog(L_ERROR, "%s cant write history %s %m",
                            LogName, Data.MessageID);
-		ARTreject(REJECT_FILTER, cp, buff, article);
-		return buff;
+		    ARTreject(REJECT_FILTER, cp, buff, article);
+		    return buff;
+		}
 	    }
 	} else {
 	    /* the filter failed: complain and then turn off filtering */
@@ -2632,9 +2645,11 @@ STRING ARTpost(CHANNEL *cp)
     /* And finally, send to everyone who should get it */
     for (sp = Sites, i = nSites; --i >= 0; sp++)
 	if (sp->Sendit) {
-    	    TMRstart(TMR_SITESEND);
-	    SITEsend(sp, &Data);
-    	    TMRstop(TMR_SITESEND);
+	    if (!Filtered || !sp->DropFiltered) {
+		TMRstart(TMR_SITESEND);
+		SITEsend(sp, &Data);
+		TMRstop(TMR_SITESEND);
+	    }
 	}
 
     return NNTP_TOOKIT;

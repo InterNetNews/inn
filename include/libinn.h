@@ -201,6 +201,7 @@ struct conf_vars {
     int wanttrash;              /* Put unwanted articles in junk */
     int wipcheck;               /* How long to defer other copies of article */
     int wipexpire;              /* How long to keep pending article record */
+    int dontrejectfiltered;     /* Don't reject filtered article? */
 
     /* Article Storage */
     long cnfscheckfudgesize;    /* Additional CNFS integrity checking */

@@ -400,6 +400,12 @@ default value is \f(CW\*(C`5\*(C'\fR and probably doesn't need to be changed.
 How long, in seconds, to keep track of message IDs offered on a channel
 before expiring articles that still haven't been sent.  The default value
 is \f(CW\*(C`10\*(C'\fR and probably doesn't need to be changed.
+.Ip "\fIdontrejectfiltered\fR" 4
+.IX Item "dontrejectfiltered"
+Normally \fIinnd\fR\|(8) rejects article, if article filter (\s-1PERL\s0, Python and \s-1TCL\s0)
+is enabled and it tells innd to reject it.  It's never rejected if this is
+set to true.  This is useful when \f(CW\*(C`Af\*(C'\fR is specified in \fInewsfeeds\fR\|(5) not
+to feed it for the site.
 .Sh "Article Storage"
 .IX Subsection "Article Storage"
 These parameters affect how articles are stored on disk.

@@ -329,7 +329,10 @@ struct conf_rec conf_defaults[] = {
     { _CONF_WIPCHECK,				"",	2, 1 },
 #define	_CONF_NNRPPYTHONAUTH			"nnrppythonauth"
 #define	CONF_VAR_NNRPPYTHONAUTH			103
-    { _CONF_NNRPPYTHONAUTH,			"",     2, 1 }
+    { _CONF_NNRPPYTHONAUTH,			"",     2, 1 },
+#define	_CONF_DONTREJECTFILTERED		"dontrejectfiltered"
+#define	CONF_VAR_DONTREJECTFILTERED		104
+    { _CONF_DONTREJECTFILTERED,			"",     2, 1 }
 };
-#define MAX_CONF_VAR 104
+#define MAX_CONF_VAR 105
 
