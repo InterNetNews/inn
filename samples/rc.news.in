@@ -75,7 +75,7 @@ eval ${WHAT} ${RFLAG} ${INNFLAGS}
 
 # Gee, looks like lisp, doesn't it?
 ${DOINNWATCH} && {
-    echo "Scheduled start of $INNWATCH}."
+    echo "Scheduled start of ${INNWATCH}."
     ( sleep 60 ; ${INNWATCH} ) &
 }
 
