@@ -2,8 +2,10 @@
 **
 **  Cyclic News File System.
 */
+
 #include "config.h"
 #include "clibrary.h"
+#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -16,15 +18,8 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
+#ifndef MAP_FAILED
+# define MAP_FAILED     (caddr_t) -1
 #endif
 
 #include "interface.h"
@@ -43,18 +38,18 @@ typedef struct {
 					   mmap()ed art */
     CYCBUFF		*cycbuff;	/* pointer to current CYCBUFF */
     CYCBUFF_OFF_T	offset;		/* offset to current article */
-    BOOL		rollover;	/* true if the search is rollovered */
+    bool		rollover;	/* true if the search is rollovered */
 } PRIV_CNFS;
 
-STATIC char LocalLogName[] = "CNFS-sm";
-STATIC CYCBUFF		*cycbufftab = (CYCBUFF *)NULL;
-STATIC METACYCBUFF 	*metacycbufftab = (METACYCBUFF *)NULL;
-STATIC CNFSEXPIRERULES	*metaexprulestab = (CNFSEXPIRERULES *)NULL;
-STATIC long		pagesize = 0;
-STATIC int		metabuff_update = METACYCBUFF_UPDATE;
-STATIC int		refresh_interval = REFRESH_INTERVAL;
+static char LocalLogName[] = "CNFS-sm";
+static CYCBUFF		*cycbufftab = (CYCBUFF *)NULL;
+static METACYCBUFF 	*metacycbufftab = (METACYCBUFF *)NULL;
+static CNFSEXPIRERULES	*metaexprulestab = (CNFSEXPIRERULES *)NULL;
+static long		pagesize = 0;
+static int		metabuff_update = METACYCBUFF_UPDATE;
+static int		refresh_interval = REFRESH_INTERVAL;
 
-STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
+static TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 		       uint32_t cycnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     int32_t		int32;
@@ -82,7 +77,7 @@ STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 ** NOTE: We assume that cycbuffname is 9 bytes long.
 */
 
-STATIC BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
+static bool CNFSBreakToken(TOKEN token, char *cycbuffname,
 			   CYCBUFF_OFF_T *offset, uint32_t *cycnum) {
     int32_t	int32;
 
@@ -101,7 +96,7 @@ STATIC BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
     return TRUE;
 }
 
-STATIC char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+static char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e', 'f'};
 
 /*
@@ -111,7 +106,7 @@ STATIC char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 **	If "leadingzeros" is true, the number returned will have leading 0's.
 */
 
-STATIC char * CNFSofft2hex(CYCBUFF_OFF_T offset, BOOL leadingzeros) {
+static char * CNFSofft2hex(CYCBUFF_OFF_T offset, bool leadingzeros) {
     static char	buf[24];
     char	*p;
 
@@ -144,7 +139,7 @@ STATIC char * CNFSofft2hex(CYCBUFF_OFF_T offset, BOOL leadingzeros) {
 **	of a CYCBUFF_OFF_T, return a CYCBUFF_OFF_T.
 */
 
-STATIC CYCBUFF_OFF_T CNFShex2offt(char *hex) {
+static CYCBUFF_OFF_T CNFShex2offt(char *hex) {
     if (sizeof(CYCBUFF_OFF_T) <= 4) {
 	CYCBUFF_OFF_T	rpofft;
 	/* I'm lazy */
@@ -176,7 +171,7 @@ STATIC CYCBUFF_OFF_T CNFShex2offt(char *hex) {
     }
 }
 
-STATIC void CNFScleancycbuff(void) {
+static void CNFScleancycbuff(void) {
     CYCBUFF	*cycbuff, *nextcycbuff;
 
     for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL;) {
@@ -190,7 +185,7 @@ STATIC void CNFScleancycbuff(void) {
     cycbufftab = (CYCBUFF *)NULL;
 }
 
-STATIC void CNFScleanmetacycbuff(void) {
+static void CNFScleanmetacycbuff(void) {
     METACYCBUFF	*metacycbuff, *nextmetacycbuff;
 
     for (metacycbuff = metacycbufftab; metacycbuff != (METACYCBUFF *)NULL;) {
@@ -203,7 +198,7 @@ STATIC void CNFScleanmetacycbuff(void) {
     metacycbufftab = (METACYCBUFF *)NULL;
 }
 
-STATIC void CNFScleanexpirerule(void) {
+static void CNFScleanexpirerule(void) {
     CNFSEXPIRERULES	*metaexprule, *nextmetaexprule;
 
     for (metaexprule = metaexprulestab; metaexprule != (CNFSEXPIRERULES *)NULL;) {
@@ -214,7 +209,7 @@ STATIC void CNFScleanexpirerule(void) {
     metaexprulestab = (CNFSEXPIRERULES *)NULL;
 }
 
-STATIC CYCBUFF *CNFSgetcycbuffbyname(char *name) {
+static CYCBUFF *CNFSgetcycbuffbyname(char *name) {
     CYCBUFF	*cycbuff;
  
     if (name == NULL)
@@ -225,7 +220,7 @@ STATIC CYCBUFF *CNFSgetcycbuffbyname(char *name) {
     return NULL;
 }
 
-STATIC METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
+static METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
   METACYCBUFF	*metacycbuff;
 
   if (name == NULL)
@@ -236,7 +231,7 @@ STATIC METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
   return NULL;
 }
 
-STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
+static bool CNFSflushhead(CYCBUFF *cycbuff) {
   int			b;
   CYCBUFFEXTERN		rpx;
 
@@ -290,7 +285,7 @@ STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
   return TRUE;
 }
 
-STATIC void CNFSflushallheads(void) {
+static void CNFSflushallheads(void) {
   CYCBUFF	*cycbuff;
 
   for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
@@ -305,7 +300,7 @@ STATIC void CNFSflushallheads(void) {
 **	free pointer and cycle number.  Return 1 on success, 0 otherwise.
 */
 
-STATIC void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
+static void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
     CYCBUFFEXTERN	rpx;
     char		buf[64];
 
@@ -336,7 +331,7 @@ STATIC void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
     return;
 }
 
-STATIC BOOL CNFSparse_part_line(char *l) {
+static bool CNFSparse_part_line(char *l) {
   char		*p;
   struct stat	sb;
   CYCBUFF_OFF_T	len, minartoffset;
@@ -406,7 +401,7 @@ STATIC BOOL CNFSparse_part_line(char *l) {
   return TRUE;
 }
 
-STATIC BOOL CNFSparse_metapart_line(char *l) {
+static bool CNFSparse_metapart_line(char *l) {
   char		*p, *cycbuff, *q = l;
   CYCBUFF	*rp;
   METACYCBUFF	*metacycbuff, *tmp;
@@ -493,7 +488,7 @@ STATIC BOOL CNFSparse_metapart_line(char *l) {
   return TRUE;
 }
 
-STATIC BOOL CNFSparse_groups_line() {
+static bool CNFSparse_groups_line() {
   METACYCBUFF	*mrp;
   STORAGE_SUB	*sub = (STORAGE_SUB *)NULL;
   CNFSEXPIRERULES	*metaexprule, *tmp;
@@ -538,12 +533,12 @@ STATIC BOOL CNFSparse_groups_line() {
 ** bad things will happen.
 */
 
-STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
+static bool CNFSinit_disks(CYCBUFF *cycbuff) {
   char		buf[64];
   CYCBUFFEXTERN	rpx;
   int		fd, bytes;
   CYCBUFF_OFF_T	tmpo;
-  BOOL		oneshot;
+  bool		oneshot;
 
   /*
   ** Discover the state of our cycbuffs.  If any of them are in icky shape,
@@ -568,7 +563,7 @@ STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
 		   LocalLogName, cycbuff->path);
 	    return FALSE;
 	} else {
-	    CloseOnExec(fd, 1);
+	    close_on_exec(fd, true);
 	    cycbuff->fd = fd;
 	}
     }
@@ -644,7 +639,7 @@ STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
     fd = cycbuff->fd;
     if ((cycbuff->bitfield =
 	 mmap((caddr_t) 0, cycbuff->minartoffset, SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
-	      MAP_SHARED, fd, (off_t) 0)) == (MMAP_PTR) -1 || errno != 0) {
+	      MAP_SHARED, fd, (off_t) 0)) == MAP_FAILED || errno != 0) {
 	syslog(L_ERROR,
 	       "%s: CNFSinitdisks: mmap for %s offset %d len %d failed: %m",
 	       LocalLogName, cycbuff->path, 0, cycbuff->minartoffset);
@@ -656,10 +651,10 @@ STATIC BOOL CNFSinit_disks(CYCBUFF *cycbuff) {
   return TRUE;
 }
 
-STATIC BOOL CNFS_setcurrent(METACYCBUFF *metacycbuff) {
+static bool CNFS_setcurrent(METACYCBUFF *metacycbuff) {
   CYCBUFF	*cycbuff;
   int		i, currentcycbuff, order = -1;
-  BOOL		foundcurrent = FALSE;
+  bool		foundcurrent = FALSE;
   for (i = 0 ; i < metacycbuff->count ; i++) {
     cycbuff = metacycbuff->members[i];
     if (strncmp(cycbuff->metaname, metacycbuff->name, CNFSNASIZ) != 0) {
@@ -713,13 +708,13 @@ STATIC BOOL CNFS_setcurrent(METACYCBUFF *metacycbuff) {
 ** C all that often anymore....
 */
 
-STATIC BOOL CNFSread_config(void) {
+static bool CNFSread_config(void) {
     char	*config, *from, *to, **ctab = (char **)NULL;
     int		ctab_free = 0;	/* Index to next free slot in ctab */
     int		ctab_i;
-    BOOL	metacycbufffound = FALSE;
-    BOOL	cycbuffupdatefound = FALSE;
-    BOOL	refreshintervalfound = FALSE;
+    bool	metacycbufffound = FALSE;
+    bool	cycbuffupdatefound = FALSE;
+    bool	refreshintervalfound = FALSE;
     int		update, refresh;
 
     if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG),
@@ -852,8 +847,8 @@ STATIC BOOL CNFSread_config(void) {
 
 typedef unsigned long	ULONG;
 
-STATIC int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
-	      BOOL set_operation, BOOL setbitvalue) {
+static int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
+	      bool set_operation, bool setbitvalue) {
     CYCBUFF_OFF_T	blocknum;
     CYCBUFF_OFF_T	longoffset;
     int			bitoffset;	/* From the 'left' side of the long */
@@ -929,7 +924,7 @@ STATIC int CNFSUsedBlock(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset,
 **	previously mmap()'ed.
 */
 
-STATIC void CNFSmunmapbitfields(void) {
+static void CNFSmunmapbitfields(void) {
     CYCBUFF	*cycbuff;
 
     for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
@@ -940,8 +935,8 @@ STATIC void CNFSmunmapbitfields(void) {
     }
 }
 
-STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, uint32_t cycnum) {
-    STATIC time_t       lastupdate = 0;
+static int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, uint32_t cycnum) {
+    static time_t       lastupdate = 0;
     CYCBUFF	        *tmp;
 
     if (SMpreopen && !SMopenmode) {
@@ -968,7 +963,7 @@ STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, uint32_t cyc
     return CNFSUsedBlock(cycbuff, offset, FALSE, FALSE);
 }
 
-STATIC void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
+static void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
     if (cycbuff == (CYCBUFF *)NULL)
 	return;
     if (cycbuff->needflush)
@@ -982,7 +977,7 @@ STATIC void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
     cycbuff->fd = -1;
 }
 
-BOOL cnfs_init(SMATTRIBUTE *attr) {
+bool cnfs_init(SMATTRIBUTE *attr) {
     int			ret;
     METACYCBUFF	*metacycbuff;
     CYCBUFF	*cycbuff;
@@ -1206,7 +1201,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     long		pagefudge, blockfudge;
     CYCBUFF_OFF_T	mmapoffset;
     static TOKEN	ret_token;
-    static BOOL		nomessage = FALSE;
+    static bool		nomessage = FALSE;
     CYCBUFF_OFF_T	middle, limit;
     int			plusoffset = 0;
 
@@ -1331,8 +1326,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	pagefudge = offset % pagesize;
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
-	if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ,
-		MAP__ARG, cycbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+	if ((private->base = mmap(NULL, private->len, PROT_READ,
+		MAP__ARG, cycbuff->fd, mmapoffset)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, "mmap failed");
 	    syslog(L_ERROR, "%s: could not mmap token %s %s:0x%s:%ld: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
@@ -1441,7 +1436,7 @@ void cnfs_freearticle(ARTHANDLE *article) {
     DISPOSE(article);
 }
 
-BOOL cnfs_cancel(TOKEN token) {
+bool cnfs_cancel(TOKEN token) {
     char		cycbuffname[9];
     CYCBUFF_OFF_T	offset;
     uint32_t		cycnum;
@@ -1665,8 +1660,8 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	pagefudge = offset % pagesize;
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
-	if ((private->base = mmap((MMAP_PTR)0, private->len, PROT_READ,
-	    MAP__ARG, cycbuff->fd, mmapoffset)) == (MMAP_PTR) -1) {
+	if ((private->base = mmap(0, private->len, PROT_READ,
+	    MAP__ARG, cycbuff->fd, mmapoffset)) == MAP_FAILED) {
 	    art->data = NULL;
 	    art->len = 0;
 	    art->token = NULL;
@@ -1736,7 +1731,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return art;
 }
 
-BOOL cnfs_ctl(PROBETYPE type, TOKEN *token, void *value) {
+bool cnfs_ctl(PROBETYPE type, TOKEN *token, void *value) {
     struct artngnum *ann;
 
     switch (type) {
@@ -1751,7 +1746,7 @@ BOOL cnfs_ctl(PROBETYPE type, TOKEN *token, void *value) {
     }   
 }
 
-BOOL cnfs_flushcacheddata(FLUSHTYPE type) {
+bool cnfs_flushcacheddata(FLUSHTYPE type) {
     if (type == SM_ALL || type == SM_HEAD)
 	CNFSflushallheads();
     return TRUE; 
