@@ -31,26 +31,32 @@ AC_ARG_WITH(perl,
 	DO_PERL=DONT)
 AC_SUBST(DO_PERL)
 
+AC_ARG_WITH(largefiles,
+	[  --with-largefiles       Support for files greater than 2gb], 
+	DO_LFS=DO, 
+	DO_LFS=DONT)
+AC_SUBST(DO_LFS)
+
 AC_ARG_WITH(db-dir,
-	[  --with-db-dir=PATH   News database files [PREFIX/db]], 
+	[  --with-db-dir=PATH      News database files [PREFIX/db]], 
 	DBDIR=$with_db_dir, 
 	DBDIR=$prefix/db)
 AC_SUBST(DBDIR)
 
 AC_ARG_WITH(run-dir,
-	[  --with-run-dir=PATH   News pid/runtime files [PREFIX/run]], 
+	[  --with-run-dir=PATH     News pid/runtime files [PREFIX/run]], 
 	RUNDIR=$with_run_dir, 
 	RUNDIR=$prefix/run)
 AC_SUBST(RUNDIR)
 
 AC_ARG_WITH(etc-dir,
-	[  --with-etc-dir=PATH   News config files [PREFIX/etc]], 
+	[  --with-etc-dir=PATH     News config files [PREFIX/etc]], 
 	ETCDIR=$with_etc_dir, 
 	ETCDIR=$prefix/etc)
 AC_SUBST(ETCDIR)
 
 AC_ARG_WITH(lib-dir,
-	[  --with-lib-dir=PATH   News lib files [PREFIX/lib]], 
+	[  --with-lib-dir=PATH     News lib files [PREFIX/lib]], 
 	LIBDIR=$with_lib_dir, 
 	LIBDIR=$prefix/lib)
 AC_SUBST(LIBDIR)
@@ -74,19 +80,19 @@ AC_ARG_WITH(tmp-path,
 AC_SUBST(TMPPATH)
 
 AC_ARG_WITH(news-user,
-	[  --with-news-user=USER    News user id [news]], 
+	[  --with-news-user=USER   News user id [news]], 
 	NEWSUSER=$with_news_user, 
 	NEWSUSER=news)
 AC_SUBST(NEWSUSER)
 
 AC_ARG_WITH(news-group,
-	[  --with-news-group=GROUP   News group id [news]], 
+	[  --with-news-group=GROUP News group id [news]], 
 	NEWSGRP=$with_news_group, 
 	NEWSGRP=news)
 AC_SUBST(NEWSGRP)
 
 AC_ARG_WITH(news-master,
-	[  --with-news-master=USER   News master [usenet]], 
+	[  --with-news-master=USER News master [usenet]], 
 	NEWSMASTER=$with_news_master, 
 	NEWSMASTER=usenet)
 AC_SUBST(NEWSMASTER)
@@ -207,13 +213,16 @@ fi
 fi
 AC_SUBST(pgpverify)
 
-AC_PATH_PROG(GETCONF, getconf)
-LFS_CFLAGS=`$GETCONF LFS_CFLAGS`
-LFS_LDFLAGS=`$GETCONF LFS_LDFLAGS`
-LFS_LIBS=`$GETCONF LFS_LIBS`
-AC_SUBST(LFS_CFLAGS)
-AC_SUBST(LFS_LDFLAGS)
-AC_SUBST(LFS_LFS_LIBS)
+if test "x$DO_LFS" = "xDO"
+then
+	AC_PATH_PROG(GETCONF, getconf)
+	LFS_CFLAGS=`$GETCONF LFS_CFLAGS`
+	LFS_LDFLAGS=`$GETCONF LFS_LDFLAGS`
+	LFS_LIBS=`$GETCONF LFS_LIBS`
+	AC_SUBST(LFS_CFLAGS)
+	AC_SUBST(LFS_LDFLAGS)
+	AC_SUBST(LFS_LFS_LIBS)
+fi
 
 AC_PATH_PROG(COMPRESS,compress,no-compress-found-during-configure)
 AC_PATH_PROGS(GZIP,gzip,no-gzip-found-during-configure)
