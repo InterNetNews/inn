@@ -51,6 +51,9 @@ xwrite(int fd, const void *buffer, size_t size)
     ssize_t status;
     int count = 0;
 
+    if (size == 0)
+	return 0;
+
     /* Abort the write if we try ten times with no forward progress. */
     for (total = 0; total < size; total += status) {
         if (++count > 10)
@@ -73,6 +76,9 @@ xpwrite(int fd, const void *buffer, size_t size, off_t offset)
     size_t total;
     ssize_t status;
     int count = 0;
+
+    if (size == 0)
+	return 0;
 
     /* Abort the write if we try ten times with no forward progress. */
     for (total = 0; total < size; total += status) {
@@ -99,9 +105,15 @@ xwritev(int fd, const struct iovec iov[], int iovcnt)
     int iovleft, i, count;
     struct iovec *tmpiov;
 
+    if (iovcnt == 0)
+	return 0;
+
     /* Get a count of the total number of bytes in the iov array. */
     for (total = 0, i = 0; i < iovcnt; i++)
         total += iov[i].iov_len;
+
+    if (total == 0)
+	return 0;
 
     /* First, try just writing it all out.  Most of the time this will
        succeed and save us lots of work.  Abort the write if we try ten times 
