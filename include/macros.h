@@ -26,11 +26,11 @@
 #endif
 
 /* Memory allocation macros. */
-#define NEW(T, c)       (xmalloc((sizeof(T) * (c)), __FILE__, __LINE__))
-#define COPY(p)         strcpy(NEW(char, strlen(p) + 1), p)
-#define DISPOSE(p)      free(p)
+#define NEW(T, c)               xmalloc(sizeof(T) * (c), __FILE__, __LINE__)
+#define COPY(p)                 xstrdup(p, __FILE__, __LINE__)
+#define DISPOSE(p)              free(p)
 #define RENEW(p, T, c)	\
-    (p = xrealloc((p), (sizeof(T) * (c)), __FILE__, __LINE__))
+    (p = xrealloc((p), sizeof(T) * (c), __FILE__, __LINE__))
 
 #define ONALLOCFAIL(func)       (xmemfailure = (func))
 
@@ -42,15 +42,15 @@
 #define caseEQn(a, b, n)	(strncasecmp((a), (b), (n)) == 0)
 
 /* <ctype.h> usually includes \n, which is not what we want. */
-#define ISWHITE(c)      ((c) == ' ' || (c) == '\t')
+#define ISWHITE(c)              ((c) == ' ' || (c) == '\t')
 
 /* Get the number of elements in a fixed-size array, or a pointer just past
    the end of it. */
-#define SIZEOF(array)	(sizeof array / sizeof array[0])
-#define ENDOF(array)	(&array[SIZEOF(array)])
+#define SIZEOF(array)           (sizeof array / sizeof array[0])
+#define ENDOF(array)            (&array[SIZEOF(array)])
 
 /* Get the length of a string constant. */
-#define STRLEN(string)  (sizeof string - 1)
+#define STRLEN(string)          (sizeof string - 1)
 
 /* Turn a TIMEINFO into a floating point number. */
 #define TIMEINFOasDOUBLE(t)	\
