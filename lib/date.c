@@ -93,7 +93,7 @@ local_tz_offset(time_t date, bool current UNUSED)
 **  Given a time_t, a flag saying whether to use local time, a buffer, and
 **  the length of the buffer, write the contents of a valid RFC 822 / RFC
 **  1036 Date header into the buffer (provided it's long enough).  Returns
-**  true on success, false if the buffer is too long.  Use sprintf rather
+**  true on success, false if the buffer is too long.  Use snprintf rather
 **  than strftime to be absolutely certain that locales don't result in the
 **  wrong output.  If the time is -1, obtain and use the current time.
 */
@@ -165,7 +165,7 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
 #endif
     }
     if (tz_name != NULL && date_length + 4 + strlen(tz_name) <= buflen) {
-        sprintf(buff + date_length, " (%s)", tz_name);
+        snprintf(buff + date_length, buflen - date_length, " (%s)", tz_name);
     }
     return true;
 }

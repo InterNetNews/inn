@@ -36,6 +36,6 @@ GenerateMessageID(char *domain)
 	if ((p = GetFQDN(domain)) == NULL)
 	    return NULL;
     }
-    sprintf(buff, "<%s$%s$%d@%s>", sec32, pid32, ++count, p);
+    snprintf(buff, sizeof(buff), "<%s$%s$%d@%s>", sec32, pid32, ++count, p);
     return buff;
 }

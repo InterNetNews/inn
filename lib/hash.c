@@ -66,9 +66,7 @@ HashMessageID(const char *MessageID)
     int                 len;
     HASH                hash;
 
-    len = strlen(MessageID);
-	    new = NEW(char, len + 1);
-    strcpy(new, MessageID);
+    new = xstrdup(MessageID);
     if ((cip = cipoint(new, len))) {
 	for (p = cip + 1; *p; p++)
 	    *p = tolower(*p);

@@ -1693,15 +1693,15 @@ RemoveDBZ(char *filename)
     char fn[1024];
 
 #ifdef	DO_TAGGED_HASH
-    sprintf(fn, "%s.pag", filename);
+    snprintf(fn, sizeof(fn), "%s.pag", filename);
     unlink(fn);
 #else
-    sprintf(fn, "%s.exists", filename);
+    snprintf(fn, sizeof(fn), "%s.exists", filename);
     unlink(fn);
-    sprintf(fn, "%s.index", filename);
+    snprintf(fn, sizeof(fn), "%s.index", filename);
     unlink(fn);
 #endif
-    sprintf(fn, "%s.dir", filename);
+    snprintf(fn, sizeof(fn), "%s.dir", filename);
     unlink(fn);
 }
 

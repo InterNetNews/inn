@@ -35,13 +35,10 @@ hstrerror(int error)
 {
     static char buf[32];
 
-    if (error == -1) return "Internal resolver error";
-    if (error >= 0 && error < nerrors) return errors[error];
-
-    /* Paranoia.  If an int is very large (like 128 bytes) one could
-       overflow the buffer here, so refuse to process particularly large
-       values of error. */
-    if (error > 999999 || error < -99999) return "";
-    sprintf(buf, "Resolver error %d", error);
+    if (error == -1)
+        return "Internal resolver error";
+    if (error >= 0 && error < nerrors)
+        return errors[error];
+    snprintf(buf, sizeof(buf), "Resolver error %d", error);
     return buf;
 }

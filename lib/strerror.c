@@ -43,14 +43,8 @@ strerror(int error)
 
     if (error >= 0 && error < sys_nerr)
         return sys_errlist[error];
-
-    /* Paranoia.  If an int is very large (like 128 bytes) one could overflow 
-       the buffer here, so refuse to process particularly large values of
-       error. */
-    if (error > 999999 || error < -99999)
-        return "";
     oerrno = errno;
-    sprintf(buff, "Error code %d", error);
+    snprintf(buff, sizeof(buff), "Error code %d", error);
     errno = oerrno;
     return buff;
 }
