@@ -49,7 +49,6 @@ STATIC STRING	CCnewgroup();
 STATIC STRING	CCparam();
 STATIC STRING	CCpause();
 STATIC STRING	CCreaders();
-STATIC STRING	CCrefile();
 STATIC STRING	CCreject();
 STATIC STRING	CCreload();
 STATIC STRING	CCrenumber();
@@ -107,7 +106,6 @@ STATIC CCDISPATCH	CCcommands[] = {
     {	SC_PARAM,	2, CCparam	},
     {	SC_PAUSE,	1, CCpause	},
     {	SC_READERS,	2, CCreaders	},
-    {	SC_REFILE,	2, CCrefile	},
     {	SC_REJECT,	1, CCreject	},
     {	SC_RENUMBER,	1, CCrenumber	},
     {	SC_RELOAD,	2, CCreload	},
@@ -418,9 +416,9 @@ CCcancel(av)
     Data.Posted = Data.Arrived = Now.time;
     Data.Expires = 0;
     Data.Feedsite = "?";
-    hash = HashMessageID(Data.MessageID);
     if ((p = CCgetid(av[0], &Data.MessageID)) != NULL)
 	return p;
+    hash = HashMessageID(Data.MessageID);
     if (Mode == OMrunning)
 	ARTcancel(&Data, Data.MessageID, hash, TRUE);
     else {
@@ -1217,28 +1215,6 @@ CCxexec(av)
     _exit(1);
     /* NOTREACHED */
 }
-
-
-/*
-**  Refile an article.
-*/
-STATIC STRING
-CCrefile(av)
-    char	*av[];
-{
-    char	*head;
-
-    /* xxx multiple groups? */
-    if (NGfind(av[1]) == NULL)
-	return CCnogroup;
-
-    head = ARTreadheader(av[0]);
-    if (head == NULL)
-	return "1 No such article";
-
-    return "1 Not yet implemented";
-}
-
 
 /*
 **  Reject remote readers.
