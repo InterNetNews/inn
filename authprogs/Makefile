@@ -88,8 +88,7 @@ auth_smb.o: auth_smb.c ../include/config.h ../include/inn/defines.h \
 ckpasswd.o: ckpasswd.c ../include/config.h ../include/inn/defines.h \
   ../include/clibrary.h ../include/inn/messages.h ../include/inn/qio.h \
   ../include/inn/vector.h ../include/libinn.h libauth.h \
-  ../include/portable/socket.h /usr/include/security/pam_modules.h \
-  /usr/include/security/_pam_compat.h
+  ../include/portable/socket.h
 domain.o: domain.c ../include/config.h ../include/inn/defines.h \
   ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h \
   libauth.h ../include/portable/socket.h
