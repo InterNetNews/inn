@@ -612,6 +612,7 @@ STATIC BOOL CNFSread_config(void) {
     int		ctab_i;
     BOOL	metacycbufffound = FALSE;
     BOOL	cycbuffupdatefound = FALSE;
+    BOOL	cycbuffupdatetimefound = FALSE;
     int		update;
 
     if ((config = ReadInFile(cpcatpath(innconf->pathetc, _PATH_CYCBUFFCONFIG),
@@ -874,7 +875,7 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
 	    syslog(L_ERROR, "%s: sysconf(_SC_PAGESIZE) failed: %m", LocalLogName);
 	    SMseterror(SMERR_INTERNAL, "sysconf(_SC_PAGESIZE) failed");
-	    return NULL;
+	    return FALSE;
 	}
 #else
 	pagesize = 16384;
