@@ -44,7 +44,6 @@ typedef struct _HEADER {
     int		Size;
     char	*Value;
 } HEADER;
-/
 
 STATIC char     *tmpPtr ;
 STATIC BOOL	Dump;
