@@ -42,7 +42,7 @@ struct options {
 **  options struct.  Calls warn and die to display error messages; -q is
 **  implemented by removing all the warn and die error handlers.
 */
-static void
+static bool
 process_token(const char *id, const struct options *options)
 {
     TOKEN token;
@@ -53,25 +53,28 @@ process_token(const char *id, const struct options *options)
 
     if (!IsToken(id)) {
         warn("%s is not a storage token", id);
-        return;
+        return false;
     }
     token = TextToToken(id);
 
     if (options->artinfo) {
         if (!SMprobe(SMARTNGNUM, &token, &artinfo)) {
             warn("could not get article information for %s", id);
+            return false;
         } else {
             printf("%s: %lu\n", artinfo.groupname, artinfo.artnum);
             free(artinfo.groupname);
         }
     } else if (options->delete) {
-        if (!SMcancel(token))
+        if (!SMcancel(token)) {
             warn("could not remove %s: %s", id, SMerrorstr);
+            return false;
+        }
     } else {
         article = SMretrieve(token, options->header ? RETR_HEAD : RETR_ALL);
         if (article == NULL) {
             warn("could not retrieve %s", id);
-            return;
+            return false;
         }
         if (options->raw) {
             if (fwrite(article->data, article->len, 1, stdout) != 1)
@@ -86,6 +89,7 @@ process_token(const char *id, const struct options *options)
         }
         SMfreearticle(article);
     }
+    return true;
 }
 
 
@@ -93,6 +97,7 @@ int
 main(int argc, char *argv[])
 {
     int option;
+    bool okay, status;
     struct options options = { false, false, false, false, false };
 
     message_program_name = "sm";
@@ -154,13 +159,16 @@ main(int argc, char *argv[])
     /* Process tokens.  If no arguments were given on the command line,
        process tokens from stdin.  Otherwise, walk through the remaining
        command line arguments. */
+    okay = true;
     if (optind == argc) {
         QIOSTATE *qp;
         char *line;
 
         qp = QIOfdopen(fileno(stdin));
-        for (line = QIOread(qp); line != NULL; line = QIOread(qp))
-            process_token(line, &options);
+        for (line = QIOread(qp); line != NULL; line = QIOread(qp)) {
+            status = process_token(line, &options);
+            okay = okay && status;
+        }
         if (QIOerror(qp)) {
             if (QIOtoolong(qp))
                 die("input line too long");
@@ -170,10 +178,12 @@ main(int argc, char *argv[])
     } else {
         int i;
 
-        for (i = optind; i < argc; i++)
-            process_token(argv[i], &options);
+        for (i = optind; i < argc; i++) {
+            status = process_token(argv[i], &options);
+            okay = okay && status;
+        }
     }
 
     SMshutdown();
-    exit(0);
+    exit(okay ? 0 : 1);
 }
