@@ -562,20 +562,23 @@ DoArt(ARTHANDLE *art)
 	if (!SMprobe(SMARTNGNUM, art->token, (void *)&ann)) {
 	    Xrefp->Header = NULL;
 	    Xrefp->HeaderLength = 0;
-	} else
-	    return;
-	if (ann.artnum == 0)
-	    return;
-	len = strlen(XREF) + 2 + strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1 + 16 + 1;
-	if (len > BIG_BUFFER) {
-	    Xrefp->Header = NULL;
-	    Xrefp->HeaderLength = 0;
 	} else {
-	    snprintf(overdata, sizeof(overdata), "%s: %s %s:%lu", XREF,
-                     innconf->pathhost, ann.groupname, ann.artnum);
-	    Xrefp->Header = overdata;
-	    Xrefp->HeaderLength = strlen(overdata);
-	}
+            if (ann.artnum == 0 || ann.groupname == NULL)
+                return;
+            len = strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1
+                + 16 + 1;
+            if (len > BIG_BUFFER) {
+                Xrefp->Header = NULL;
+                Xrefp->HeaderLength = 0;
+            } else {
+                snprintf(overdata, sizeof(overdata), "%s %s:%lu",
+                         innconf->pathhost, ann.groupname, ann.artnum);
+                Xrefp->Header = overdata;
+                Xrefp->HeaderLength = strlen(overdata);
+            }
+            if (ann.groupname != NULL)
+                free(ann.groupname);
+        }
     }
 
     MessageID = (char *)NULL;
