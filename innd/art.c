@@ -2461,7 +2461,7 @@ STRING ARTpost(CHANNEL *cp)
     MadeOverview = TRUE;
     if (innconf->enableoverview && !innconf->useoverchan) {
 	TMRstart(TMR_OVERV);
-	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left)) {
+	if (!OVadd(token, Data.Overview->Data, Data.Overview->Left, Data.Arrived)) {
 	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE)
 		IOError("creating overview", ENOSPC);
 	    else
