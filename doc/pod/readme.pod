@@ -1,6 +1,6 @@
 =head1 Welcome to INN 2.4!
 
-This work is sponsored by the Internet Systems Consortium.
+This work is sponsored by Internet Systems Consortium.
 
 Please see F<INSTALL> for installation instructions, F<NEWS> for what's
 changed from the previous release, and F<LICENSE> for the copyright,
@@ -60,7 +60,7 @@ INN also supports an extremely powerful filtering system that allows the
 server administrator to reject unwanted articles (such as spam and other
 abuses of Usenet).
 
-INN is free software, supported by the Internet Systems Consortium and
+INN is free software, supported by Internet Systems Consortium and
 volunteers around the world.  See L<"Supporting the INN Effort"> below.
 
 =head1 Prerequisites
@@ -288,14 +288,14 @@ other.
 
 =head1 Supporting the INN Effort
 
-Note that INN is supported by the Internet Systems Consortium, and
-although it is free for use and redistribution and incorporation into
-vendor products and export and anything else you can think of, it costs
-money to produce.  That money comes from ISPs, hardware and software
-vendors, companies who make extensive use of the software, and generally
-kind-hearted folk such as yourself.
+Note that INN is supported by Internet Systems Consortium, and although it
+is free for use and redistribution and incorporation into vendor products
+and export and anything else you can think of, it costs money to produce.
+That money comes from ISPs, hardware and software vendors, companies who
+make extensive use of the software, and generally kind-hearted folk such
+as yourself.
 
-The Internet Systems Consortium has also commissioned a DHCP server
+Internet Systems Consortium has also commissioned a DHCP server
 implementation and handles the official support/release of BIND.  You can
 learn more about the ISC's goals and accomplishments from the web page at
 <http://www.isc.org/>.
