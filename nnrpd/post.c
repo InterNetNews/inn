@@ -1157,6 +1157,7 @@ ARTpost(article, idbuff)
     if ((i = atoi(buff)) != NNTP_TOOKIT_VAL) {
 	(void)strcpy(Error, buff);
 	SendQuit(FromServer, ToServer);
+	syslog(L_TRACE, "%s server rejects %s from %s", ClientHost, HDR(HDR__MESSAGEID), HDR(HDR__PATH));
 	return (i != NNTP_REJECTIT_VAL ? Spoolit(article, Error) : Error) ;
     }
 
