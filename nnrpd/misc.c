@@ -239,7 +239,7 @@ void HIScheck(void)
 	/* not opened yet */
 	return;
     if ((stat(HISTORY, &Sb) < 0) || (Sb.st_ino != ino)) {
-	dbmclose();
+	dbzclose();
 	fclose(hfp);
 	ino = 0;
 	setup = FALSE;
@@ -247,11 +247,50 @@ void HIScheck(void)
     }
 }
 
+#ifndef DO_TAGGED_HASH
+/*
+**  Get overview offset
+*/
+BOOL OVERgetent(HASH *key, TOKEN *token)
+{
+    struct timeval	stv, etv;
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+
+    if (!setup) {
+	if (!dbzinit(HISTORY)) {
+	    syslog(L_ERROR, "%s cant dbzinit %s %m", ClientHost, HISTORY);
+	    return NULL;
+	}
+	setup = TRUE;
+    }
+
+    /* Set the key value, fetch the entry. */
+    if (innconf->extendeddbz) {
+	gettimeofday(&stv, NULL);
+	if (!dbzfetch(*key, &iextvalue)) {
+	    gettimeofday(&etv, NULL);
+	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    return NULL;
+	}
+	gettimeofday(&etv, NULL);
+	OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+	OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	OVERmaketoken(token, iextvalue.offset[OVEROFFSET], iextvalue.overindex);
+	token->type = 0; /* this is not true, but just dummy */
+    } else {
+	return FALSE;
+    }
+    return TRUE;
+}
+#endif
+
 /*
 **  Return the path name of an article if it is in the history file.
 **  Return a pointer to static data.
 */
-char *HISgetent(HASH *key, BOOL fulldata)
+char *HISgetent(HASH *key, BOOL flag, OFFSET_T *off)
 {
     static char		path[BIG_BUFFER];
     char	        *p;
@@ -260,18 +299,63 @@ char *HISgetent(HASH *key, BOOL fulldata)
     char		buff[BIG_BUFFER];
     OFFSET_T		offset;
     struct stat		Sb;
+    struct timeval	stv, etv;
+    const int		entrysize =  1+sizeof(HASH)*2+1+1+10+1+10+1+10+1+1+sizeof(TOKEN)*2+1+1;
+#ifndef DO_TAGGED_HASH
+    idxrec		ionevalue;
+    idxrecext		iextvalue;
+#endif
 
     if (!setup) {
-	if (!dbminit(HISTORY)) {
-	    syslog(L_ERROR, "%s cant dbminit %s %m", ClientHost, HISTORY);
+	if (!dbzinit(HISTORY)) {
+	    syslog(L_ERROR, "%s cant dbzinit %s %m", ClientHost, HISTORY);
 	    return NULL;
 	}
 	setup = TRUE;
     }
 
     /* Set the key value, fetch the entry. */
-    if ((offset = dbzfetch(*key)) < 0)
-	return NULL;
+    if (flag && (off != NULL)) {
+	offset = *off;
+	gettimeofday(&stv, NULL);
+    } else {
+	gettimeofday(&stv, NULL);
+#ifdef	DO_TAGGED_HASH
+	if ((offset = dbzfetch(*key)) < 0) {
+	    gettimeofday(&etv, NULL);
+	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	    return NULL;
+	}
+#else
+	if (innconf->extendeddbz) {
+	    if (!dbzfetch(*key, &iextvalue)) {
+		gettimeofday(&etv, NULL);
+		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+		return NULL;
+	    }
+	    offset = iextvalue.offset[HISTOFFSET];
+	} else {
+	    if (!dbzfetch(*key, &ionevalue)) {
+		gettimeofday(&etv, NULL);
+		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+		return NULL;
+	    }
+	    offset = ionevalue.offset;
+	}
+#endif
+	gettimeofday(&etv, NULL);
+	OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
+	OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
+	if (off != NULL) {
+	    *off = offset;
+	    /* just return dummy */
+	    return path;
+	}
+	stv = etv;
+    }
 
     /* Open history file if we need to. */
     if (hfp == NULL) {
@@ -292,16 +376,31 @@ char *HISgetent(HASH *key, BOOL fulldata)
 	syslog(L_ERROR, "%s cant fseek to %ld %m", ClientHost, offset);
 	return NULL;
     }
-    if (fgets(buff, sizeof buff, hfp) == NULL) {
-	syslog(L_ERROR, "%s cant fgets from %ld %m", ClientHost, offset);
-	return NULL;
+    gettimeofday(&etv, NULL);
+    OVERseek+=(etv.tv_sec - stv.tv_sec) * 1000;
+    OVERseek+=(etv.tv_usec - stv.tv_usec) / 1000;
+    stv = etv;
+    if (flag && (off == NULL)) {
+	if (fgets(buff, sizeof buff, hfp) == NULL) {
+	    syslog(L_ERROR, "%s cant fgets from %ld %m", ClientHost, offset);
+	    return NULL;
+	}
+    } else {
+	if (read(fileno(hfp), buff, entrysize) != entrysize) {
+	    syslog(L_ERROR, "%s cant read from %ld %m", ClientHost, offset);
+	    return NULL;
+	}
+	buff[entrysize+1] = '\0';
     }
+    gettimeofday(&etv, NULL);
+    OVERget+=(etv.tv_sec - stv.tv_sec) * 1000;
+    OVERget+=(etv.tv_usec - stv.tv_usec) / 1000;
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
 
     /* Skip first two fields. */
     if ((p = strchr(buff, '\t')) == NULL) {
-	syslog(L_ERROR, "%s bad_history at %ld for %s", ClientHost, offset, (char *)key);
+	syslog(L_ERROR, "%s bad_history at %ld for %s in %s", ClientHost, offset, HashToText(*key), buff);
 	return NULL;
     }
     if ((p = strchr(p + 1, '\t')) == NULL)
@@ -315,7 +414,7 @@ char *HISgetent(HASH *key, BOOL fulldata)
     }
 
     /* Want the full data? */
-    if (fulldata) {
+    if (flag) {
 	(void)strcpy(path, save);
 	for (p = path; *p; p++)
 	    if (*p == '.')

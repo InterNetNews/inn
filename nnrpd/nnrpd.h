@@ -88,6 +88,8 @@ typedef enum _READTYPE {
 typedef struct _ARTLIST {
     ARTNUM              ArtNum;
     char                (*Index)[OVERINDEXPACKSIZE];
+    TOKEN		Token; /* for overview */
+    OFFSET_T		Offset;
 } ARTLIST;
 
 
@@ -136,6 +138,9 @@ EXTERN long	OVERmiss;	/* number of XOVER records found in articles	*/
 EXTERN long	OVERtime;	/* number of ms spent sending XOVER data	*/
 EXTERN long	OVERread;	/* number of bytes of XOVER data read		*/
 EXTERN long	OVERsize;	/* number of bytes of XOVER data sent		*/
+EXTERN long	OVERdbz;	/* number of ms spent reading dbz data	*/
+EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
+EXTERN long	OVERget;	/* number of ms spent reading history	*/
 /* Pointer to memory containing overview index, may be read only */
 EXTERN char     (*OVERindex)[][OVERINDEXPACKSIZE];
 EXTERN int      OVERicount;      /* Number of OVERINDEX entries at OVERindex */
@@ -163,6 +168,7 @@ extern char		*GetHeader();
 extern void		GRPreport();
 extern GROUPENTRY	*GRPfind();
 extern void		HIScheck();
+extern BOOL		OVERgetent();
 extern char		*HISgetent();
 extern long		LOCALtoGMT();
 extern BOOL		NGgetlist();

@@ -183,8 +183,8 @@ ExitWithStats(x)
         syslog(L_NOTICE, "%s artstats get %d time %d size %d", ClientHost,
             ARTget, ARTgettime, ARTgetsize);
     if (OVERcount)
-        syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d read %d", ClientHost,
-            OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERread);
+        syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d read %d dbz %d seek %d get %d", ClientHost,
+            OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERread, OVERdbz, OVERseek, OVERget);
 
      if (DaemonMode) {
      	shutdown(STDIN, 2);

@@ -383,10 +383,12 @@ STATIC void GRPscandir(char *dir)
 	for (i = 0; i < OVERicount; i++) {
 	    UnpackOverIndex((*OVERindex)[i], &index);
 	    ARTnumbers[ARTsize].ArtNum = index.artnum;
+	    ARTnumbers[ARTsize].Token.cancelled = FALSE;
+	    ARTnumbers[ARTsize].Token.type = TOKEN_EMPTY;
 	    ARTnumbers[ARTsize++].Index = &(*OVERindex)[i];
 	}
 	
-    } else {
+    } else if (!innconf->storageapi) {
 	DISPOSE(path);
 	/* Go to the directory. */
 	if (chdir(innconf->patharticles) < 0) {

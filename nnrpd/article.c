@@ -286,19 +286,36 @@ STATIC BOOL ARTopen(char *name)
     if ((i = ARTfind(artnum)) < 0)
 	return FALSE;
 
-    if ((ARTnumbers[i].ArtNum == artnum) && ARTnumbers[i].Index) {
-	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	if ((tokentext = HISgetent(&(index.hash), FALSE)) == (char *)NULL)
+    if (ARTnumbers[i].ArtNum == artnum) {
+	if (ARTnumbers[i].Token.cancelled)
 	    return FALSE;
-	token = TextToToken(tokentext);
+	if (ARTnumbers[i].Token.type != TOKEN_EMPTY)
+	    token = ARTnumbers[i].Token;
+	else {
+	    if (!ARTnumbers[i].Index) {
+		/* index not found, the article is treat as cancelled */
+		ARTnumbers[i].Token.cancelled = TRUE;
+		return FALSE;
+	    }
+	    UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+	    if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
+		ARTnumbers[i].Token.cancelled = TRUE;
+		return FALSE;
+	    }
+	    token = ARTnumbers[i].Token = TextToToken(tokentext);
+	}
 	if (token.type != TOKEN_EMPTY && token.index != OVER_NONE && !token.cancelled) {
 	    if ((ARThandle = SMretrieve(token, RETR_ALL)) == NULL) {
+		ARTnumbers[i].Token.cancelled = TRUE;
 		return FALSE;
 	    }
 	    ARTmem = ARThandle->data;
 	    ARTlen = ARThandle->len;
 	    save_artnum = artnum;
 	    return TRUE;
+	} else {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    return FALSE;
 	}
     }
     /* Open it, make sure it's a regular file. */
@@ -344,7 +361,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
     TOKEN		token;
 
     *ap = 0;
-    if ((p = HISgetent(&hash, FALSE)) == NULL)
+    if ((p = HISgetent(&hash, FALSE, NULL)) == NULL)
 	return FALSE;
 
     if (IsToken(p)) {
@@ -792,7 +809,9 @@ FUNCTYPE CMDnextlast(int ac, char *av[])
 
 STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 {
-    char	        *p;
+    char		*p, *tokentext;
+    OVERINDEX		index;
+    ARTNUM		i, artnum;
 
     if (GRPcount == 0) {
 	Reply("%s\r\n", ARTnotingroup);
@@ -806,12 +825,52 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
 	    return FALSE;
 	}
 	rp->High = rp->Low = ARTnumbers[ARTindex].ArtNum;
+	if ((i = ARTfind(rp->High)) < 0)
+	    return FALSE;
+	if (ARTnumbers[i].Token.cancelled)
+	    return FALSE;
+	if (ARTnumbers[i].Token.type != TOKEN_EMPTY)
+	    return TRUE;
+	if ((ARTnumbers[i].ArtNum != rp->High) || !ARTnumbers[i].Index) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    return FALSE;
+	}
+	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+	if (index.artnum != rp->High) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    return FALSE;
+	}
+	if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    return FALSE;
+	}
+	ARTnumbers[i].Token = TextToToken(tokentext);
 	return TRUE;
     }
 
     /* Got just a single number? */
     if ((p = strchr(av[1], '-')) == NULL) {
 	rp->Low = rp->High = atol(av[1]);
+	if ((i = ARTfind(rp->Low)) < 0)
+	    return FALSE;
+	if (ARTnumbers[i].Token.cancelled)
+	    return FALSE;
+	if (ARTnumbers[i].Token.type != TOKEN_EMPTY)
+	    return TRUE;
+	if ((ARTnumbers[i].ArtNum != rp->Low) || !ARTnumbers[i].Index) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    return FALSE;
+	}
+	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+	if (index.artnum != rp->Low) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    return FALSE;
+	}
+	if ((tokentext = HISgetent(&index.hash, FALSE, NULL)) == (char *)NULL) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    return FALSE;
+	}
+	ARTnumbers[i].Token = TextToToken(tokentext);
 	return TRUE;
     }
 
@@ -830,6 +889,58 @@ STATIC BOOL CMDgetrange(int ac, char *av[], ARTRANGE *rp)
     else
 	/* No articles; make sure loops don't run. */
 	rp->High = rp->Low ? rp->Low - 1 : 0;
+    if (!innconf->storageapi)
+	return TRUE;
+    for (artnum = rp->Low; artnum <= rp->High; artnum++) {
+	if ((i = ARTfind(artnum)) < 0)
+	    continue;
+	if (ARTnumbers[i].Token.cancelled)
+	    continue;
+	if (ARTnumbers[i].Token.type != TOKEN_EMPTY)
+	    continue;
+	if ((ARTnumbers[i].ArtNum != artnum) || !ARTnumbers[i].Index) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    continue;
+	}
+	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
+	if (index.artnum != artnum) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    continue;
+	}
+#ifdef	DO_TAGGED_HASH
+	if (HISgetent(&index.hash, FALSE, &ARTnumbers[i].Offset) == (char *)NULL) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    continue;
+	}
+#else
+	if (innconf->extendeddbz) {
+	    if (!OVERgetent(&index.hash, &ARTnumbers[i].Token)) {
+		ARTnumbers[i].Token.cancelled = TRUE;
+		continue;
+	    }
+	} else {
+	    if (HISgetent(&index.hash, FALSE, &ARTnumbers[i].Offset) == (char *)NULL) {
+		ARTnumbers[i].Token.cancelled = TRUE;
+		continue;
+	    }
+	}
+#endif
+    }
+#ifndef	DO_TAGGED_HASH
+    if (innconf->extendeddbz)
+	return TRUE;
+#endif
+    for (artnum = rp->Low; artnum <= rp->High; artnum++) {
+	if ((i = ARTfind(artnum)) < 0)
+	    continue;
+	if (ARTnumbers[i].Token.cancelled)
+	    continue;
+	if ((tokentext = HISgetent(&index.hash, TRUE, &ARTnumbers[i].Offset)) == (char *)NULL) {
+	    ARTnumbers[i].Token.cancelled = TRUE;
+	    continue;
+	}
+	ARTnumbers[i].Token = TextToToken(tokentext);
+    }
     return TRUE;
 }
 
@@ -979,36 +1090,21 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
     char   	        *q;
     OVERINDEX           index;
     STATIC char         *OVERline = NULL;
-    STATIC int          last;
     char		*tokentext, *nextline;
     TOKEN		token;
 
     if (innconf->storageapi) {
-	if (((last + 1) < ARTsize) && (ARTnumbers[last + 1].ArtNum == artnum))
-	    i = last + 1;
-	else 
-	    i = ARTfind(artnum);
-	if ((ARTnumbers[i].ArtNum != artnum) || !ARTnumbers[i].Index)
+	i = ARTfind(artnum);
+	if (ARTnumbers[i].Token.type == TOKEN_EMPTY || ARTnumbers[i].Token.index == OVER_NONE || ARTnumbers[i].Token.cancelled)
 	    return NULL;
-	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	if (index.artnum != artnum)
-	    return NULL;
-	if ((tokentext = HISgetent(&(index.hash), FALSE)) == (char *)NULL)
-	    return NULL;
-	token = TextToToken(tokentext);
-	if (token.type == TOKEN_EMPTY || token.index == OVER_NONE || token.cancelled)
-	    return NULL;
-	if ((OVERline = OVERretrieve(&token, linelen)) != (char *)NULL)
+	if ((OVERline = OVERretrieve(&ARTnumbers[i].Token, linelen)) != (char *)NULL)
 	    OVERread += *linelen;
 	return OVERline;
     } else {
 	if (!OVERmem && !OVERfp)
 	    return NULL;
 
-	if (((last + 1) < ARTsize) && (ARTnumbers[last + 1].ArtNum == artnum))
-	    i = last + 1;
-	else
-	    i = ARTfind(artnum);
+	i = ARTfind(artnum);
 	if (ARTnumbers[i].ArtNum != artnum)
 	    return NULL;
 	if (OVERmem) {
@@ -1331,11 +1427,11 @@ FUNCTYPE CMDxover(int ac, char *av[])
     }
 
     /* Parse range. */
+    gettimeofday(&stv, NULL);
     if (!CMDgetrange(ac, av, &range))
 	return;
 
     OVERcount++;
-    gettimeofday(&stv, NULL);
     Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
     for (Opened = OVERopen(), i = range.Low; i <= range.High; i++) {
 	if (ARTfind(i) < 0)
