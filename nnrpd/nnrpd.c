@@ -633,6 +633,8 @@ write_buffer(const char *buff, ssize_t len)
 
 #ifdef HAVE_SSL
 	if (tls_conn) {
+            int r;
+
 Again:
 	    r = SSL_write(tls_conn, out, outlen);
 	    switch (SSL_get_error(tls_conn, r)) {
