@@ -35,6 +35,11 @@ wire_findbody(const char *article, size_t length)
     char *p;
     const char *end;
 
+    /* Handle the degenerate case of an article with no headers. */
+    if (length > 5 && article[0] == '\r' && article[1] == '\n')
+        return (char *) article + 2;
+
+    /* Jump from \r to \r and give up if we're too close to the end. */
     end = article + length;
     for (p = (char *) article; (p + 4) <= end; ++p) {
         p = memchr(p, '\r', end - p - 3);
