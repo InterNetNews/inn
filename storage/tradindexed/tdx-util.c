@@ -153,7 +153,7 @@ main(int argc, char *argv[])
 
     /* Parse options. */
     opterr = 0;
-    while ((option = getopt(argc, argv, "a:n:p:gio")) != EOF) {
+    while ((option = getopt(argc, argv, "a:n:p:Agio")) != EOF) {
         switch (option) {
         case 'a':
             article = strtoul(optarg, NULL, 10);
@@ -165,6 +165,11 @@ main(int argc, char *argv[])
             break;
         case 'p':
             innconf->pathoverview = xstrdup(optarg);
+            break;
+        case 'A':
+            if (mode != '\0')
+                die("only one mode option allowed");
+            mode = 'A';
             break;
         case 'g':
             if (mode != '\0')
@@ -193,6 +198,9 @@ main(int argc, char *argv[])
 
     /* Run the specified function. */
     switch (mode) {
+    case 'A':
+        tdx_index_audit(false);
+        break;
     case 'i':
         dump_index(newsgroup);
         break;
