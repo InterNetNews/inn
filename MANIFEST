@@ -669,6 +669,10 @@ tests/authprogs/ckpasswd.t            Tests for authprogs/ckpasswd
 tests/authprogs/domain.t              Tests for authprogs/domain
 tests/authprogs/passwd                Password data for ckpasswd tests
 tests/lib                             Test suite for libinn (Directory)
+tests/lib/articles                    Testing news articles (Directory)
+tests/lib/articles/no-body            An article without a body
+tests/lib/articles/strange            An article with CR and LF in headers
+tests/lib/articles/truncated          An article truncated in the headers
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/config                      Testing config files (Directory)
