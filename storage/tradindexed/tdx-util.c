@@ -47,7 +47,7 @@ main(int argc, char *argv[])
 {
     int option;
     char mode = '\0';
-    const char *newsgroup;
+    const char *newsgroup = NULL;
 
     error_program_name = "tdx-util";
 
