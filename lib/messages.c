@@ -247,7 +247,7 @@ debug(const char *format, ...)
         va_end(args);
     }
 }
-#else /* !DEBUG */
+#elif !INN_HAVE_C99_VAMACROS && !INN_HAVE_GNU_VAMACROS
 void debug(const char *format UNUSED, ...) { }
 #endif
 
