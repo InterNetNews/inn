@@ -631,6 +631,9 @@ support/mkversion                     Generate <inn/version.h> with INN version
 tests                                 Test suite for INN (Directory)
 tests/Makefile                        Makefile for test suite
 tests/TESTS                           List of tests to run
+tests/authprogs                       Test suite for auth programs (Directory)
+tests/authprogs/ckpasswd.t            Tests for authprogs/ckpasswd
+tests/authprogs/passwd                Password data for ckpasswd tests
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
