@@ -555,7 +555,7 @@ static GROUPHANDLE *OV3opengroupfiles(char *group) {
 	openmode = O_RDONLY;
     }
     gh->datafd = open(DATpath, openmode | O_APPEND, 0660);
-    if (gh->datafd < 0) {
+    if (gh->datafd < 0 && (OV3mode & OV_WRITE)) {
 	p = strrchr(IDXpath, '/');
 	*p = '\0';
 	if (!MakeDirectory(IDXpath, TRUE)) {
@@ -564,13 +564,13 @@ static GROUPHANDLE *OV3opengroupfiles(char *group) {
 	}
 	*p = '/';
 	gh->datafd = open(DATpath, openmode | O_APPEND, 0660);
-	if (gh->datafd < 0) {
-	    DISPOSE(gh);
-	    if (errno == ENOENT)
-		return NULL;
-	    syslog(L_ERROR, "tradindexed: could not open %s: %m", DATpath);
+    }
+    if (gh->datafd < 0) {
+	DISPOSE(gh);
+	if (errno == ENOENT)
 	    return NULL;
-	}
+	syslog(L_ERROR, "tradindexed: could not open %s: %m", DATpath);
+	return NULL;
     }
     gh->indexfd = open(IDXpath, openmode, 0660);
     if (gh->indexfd < 0) {
