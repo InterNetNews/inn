@@ -180,7 +180,6 @@ doc/man/simpleftp.1                   Manpage for simpleftp utility
 doc/man/sm.8                          Manpage for sm
 doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
-doc/man/subst.1                       Manpage for subst
 doc/man/tally.control.8               Manpage for tally.control
 doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
