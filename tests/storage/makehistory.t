@@ -59,7 +59,7 @@ mv spool/tokens.new spool/tokens
 # Run makehistory on the spool to generate only the overview information and
 # make sure the correct number of lines were generated.
 $makehistory -x -O -S > spool/overview
-lines=`wc -l spool/overview | sed 's/ .*//'`
+lines=`wc -l spool/overview | sed -e 's/^ *//' -e 's/ .*//'`
 if [ "$lines" = 4 ] ; then
     printcount "ok"
 else
