@@ -248,6 +248,7 @@ typedef struct _SITE {
     long		Flushpoint;
     BUFFER		Buffer;
     BOOL		Buffered;
+    char                *Originator;
     int			Next;
     int			Prev;
 } SITE;

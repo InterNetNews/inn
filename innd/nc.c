@@ -794,7 +794,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		syslog(L_NOTICE, "%s bad_command %s",
 		    CHANname(cp), MaxLength(tmpstr, tmpstr));
 		DISPOSE(tmpstr);
-	    
+
 		if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
 		    cp->State = CSwritegoodbye;
 		    NCwritereply(cp, NCbadcommand);

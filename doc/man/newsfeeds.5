@@ -252,6 +252,13 @@ This should be a positive number between 0 and 20, and is the priority
 that the new process will run with.  This can be used to raise the
 priority to normal if you are using the INND_NICE_KIDS config.data variable.
 .TP
+.BI O Originator
+If this is used then articles sent to this feed must contain a X-Trace
+header and the first field in the header must match the parameter used with
+this flag.  One use of this is to restrict the feed to locally generated
+posts.
+.I 
+.TP
 .BI S size
 If the amount of data queued for the site gets to be larger than
 .I size

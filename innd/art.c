@@ -116,6 +116,8 @@ ARTHEADER	ARTheaders[] = {
 #define _xref			17
     {	"Keywords",		HTstd },
 #define _keywords		18
+    {   "X-Trace",		HTstd },
+#define _xtrace			19
     {	"Date-Received",	HTobs },
     {	"Posted",		HTobs },
     {	"Posting-Version",	HTobs },
@@ -1571,6 +1573,20 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list)
 	if (sp->Seenit || !sp->Sendit)
 	    continue;
 	sp->Sendit = FALSE;
+	
+	if (sp->Originator) {
+	    if (!HDR(_xtrace)[0])
+	        continue;
+	    if ((p = strchr(HDR(_xtrace), ' ')) != NULL) {
+	        *p = '\0';
+		if (!wildmat(HDR(_xtrace), sp->Originator)) {
+		    *p = ' ';
+		    continue;
+		}
+		*p = ' ';
+	    } else
+	        continue;
+	}
 
 	if (sp->Master != NOSITE && Sites[sp->Master].Seenit)
 	    continue;
@@ -1773,7 +1789,6 @@ STRING ARTpost(CHANNEL *cp)
 	return buff;
     }
 
-
     /* And now check the path for unwanted sites -- Andy */
     for( j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++ ) {
         if( ListHas(hops, ME.Exclusions[j]) ) {
@@ -1782,7 +1797,7 @@ STRING ARTpost(CHANNEL *cp)
             break;
         }
     }
-
+    
     /* Now see if we got an error in the article. */
     if (error != NULL) {
 	(void)sprintf(buff, "%d %s", NNTP_REJECTIT_VAL, error);
@@ -1812,7 +1827,7 @@ STRING ARTpost(CHANNEL *cp)
     }
 #endif /* DO_PERL */
 
-    /* I suppose some masochist will run with both TCP and PERL in together */
+    /* I suppose some masochist will run with both TCL and PERL in together */
 
 #if defined(DO_TCL)
     if (TCLFilterActive) {

@@ -163,19 +163,14 @@ SITEsetlist(patlist, subbed, poison, poisonEntry)
 **  If subbed is NULL, we don't update the SITE array, since we're just
 **  doing syntax checking.
 */
-STRING
-SITEparseone(Entry, sp, subbed, poison)
-    char		*Entry;
-    SITE		*sp;
-    char		*subbed;
-    char		*poison;
+STRING SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 {
     static char		BATCH[] = _PATH_BATCHDIR;
-    register int	i;
-    register int	j;
-    register NEWSGROUP	*ngp;
-    register char	*p;
-    register char	*u;
+    int	                i;
+    int	                j;
+    NEWSGROUP	        *ngp;
+    char	        *p;
+    char	        *u;
     char		*f2;
     char		*f3;
     char		*f4;
@@ -196,6 +191,7 @@ SITEparseone(Entry, sp, subbed, poison)
     sp->Process = -1;
     sp->Next = sp->Prev = NOSITE;
     sp->Entry = Entry;
+    sp->Originator = NULL;
     sp->FileFlags[0] = FEED_NAME;
     sp->FileFlags[1] = '\0';
     sp->Nice = INND_NICE_VALUE;
@@ -308,6 +304,9 @@ SITEparseone(Entry, sp, subbed, poison)
 		case 'm': JustModerated = TRUE;		break;
 		case 'u': JustUnmoderated = TRUE;	break;
 		}
+	    break;
+	case 'O':
+	    sp->Originator = COPY(++p);
 	    break;
         case 'P':
             if (*++p && CTYPE(isdigit, *p))

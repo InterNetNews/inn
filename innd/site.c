@@ -1033,6 +1033,10 @@ SITEfree(sp)
 	DISPOSE(sp->Entry);
 	sp->Entry = NULL;
     }
+    if (sp->Originator) {
+    	DISPOSE(sp->Originator);
+    	sp->Originator = NULL;
+    }
     if (sp->Param) {
 	DISPOSE(sp->Param);
 	sp->Param = NULL;
