@@ -2,6 +2,7 @@
 
 include ../Makefile.global
 
+top           = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL	      = c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
@@ -151,30 +152,32 @@ getlist.o: getlist.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/qio.h ../include/macros.h \
  ../include/libinn.h ../include/paths.h
 inews.o: inews.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h
+ ../include/clibrary.h ../include/portable/time.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h
 innconfval.o: innconfval.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
  ../include/macros.h ../include/paths.h
 ovdb_init.o: ovdb_init.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/ov.h \
- ../include/storage.h ../storage/ovdb/ovdb.h \
+ ../include/storage.h ../include/inn/history.h ../storage/ovdb/ovdb.h \
  ../storage/ovdb/ovdb-private.h
 ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
- ../include/ov.h ../include/storage.h ../storage/ovdb/ovdb.h \
- ../storage/ovdb/ovdb-private.h
-ovdb_server.o: ovdb_server.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/macros.h ../include/paths.h \
- ../include/storage.h ../include/ov.h ../storage/ovdb/ovdb.h \
- ../storage/ovdb/ovdb-private.h
+ ../include/ov.h ../include/storage.h ../include/inn/history.h \
+ ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
+ovdb_server.o: ovdb_server.c ../include/config.h \
+ ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
+ ../include/macros.h ../include/paths.h ../include/storage.h \
+ ../include/ov.h ../include/inn/history.h ../storage/ovdb/ovdb.h \
+ ../storage/ovdb/ovdb-private.h ../include/inn/version.h
 ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/macros.h ../include/paths.h \
- ../include/storage.h ../include/ov.h ../storage/ovdb/ovdb.h \
+ ../include/clibrary.h ../include/libinn.h ../include/macros.h \
+ ../include/paths.h ../include/storage.h ../include/ov.h \
+ ../include/inn/history.h ../storage/ovdb/ovdb.h \
  ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h
+ ../include/clibrary.h ../include/portable/wait.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h
 sm.o: sm.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h ../include/storage.h

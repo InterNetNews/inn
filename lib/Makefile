@@ -2,6 +2,7 @@
 
 include ../Makefile.global
 
+top	= ..
 CFLAGS  = $(GCFLAGS)
 
 SOURCES = argparse.c cleanfrom.c clientactive.c clientlib.c concat.c \
@@ -206,6 +207,8 @@ sendpass.o: sendpass.c ../include/config.h ../include/inn/defines.h \
 sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/sequence.h
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h
+sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h
 strcasecmp.o: strcasecmp.c ../include/config.h \
  ../include/inn/defines.h ../include/clibrary.h

@@ -2,6 +2,7 @@
 
 include ../Makefile.global
 
+top		= ..
 CFLAGS		= $(GCFLAGS) $(SSLINC)
 
 ALL		= nnrpd
@@ -78,7 +79,7 @@ article.o: article.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h \
- ../include/ov.h ../include/inn/history.h
+ ../include/ov.h ../include/inn/history.h tls.h
 group.o: group.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
@@ -96,7 +97,8 @@ loadave.o: loadave.c ../include/config.h ../include/inn/defines.h \
 misc.o: misc.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h ../include/storage.h
+ ../include/nntp.h ../include/paths.h ../include/storage.h tls.h \
+ sasl_config.h
 newnews.o: newnews.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
@@ -106,7 +108,7 @@ nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/wait.h ../include/libinn.h \
  ../include/ov.h ../include/storage.h ../include/inn/history.h nnrpd.h \
  ../include/portable/time.h ../include/inn/qio.h ../include/macros.h \
- ../include/nntp.h ../include/paths.h
+ ../include/nntp.h ../include/paths.h tls.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/macros.h nnrpd.h \
  ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
@@ -127,8 +129,11 @@ python.o: python.c ../include/config.h ../include/inn/defines.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
  ../include/nntp.h ../include/paths.h ../include/storage.h
 sasl_config.o: sasl_config.c ../include/config.h \
- ../include/inn/defines.h
-tls.o: tls.c ../include/config.h ../include/inn/defines.h
+ ../include/inn/defines.h ../include/clibrary.h nnrpd.h \
+ ../include/portable/time.h ../include/inn/qio.h ../include/libinn.h \
+ ../include/macros.h ../include/nntp.h ../include/paths.h \
+ ../include/storage.h sasl_config.h
+tls.o: tls.c ../include/config.h ../include/inn/defines.h tls.h
 track.o: track.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h nnrpd.h ../include/portable/time.h \
  ../include/inn/qio.h ../include/libinn.h ../include/macros.h \
