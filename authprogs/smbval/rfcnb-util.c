@@ -27,6 +27,7 @@
 #include "clibrary.h"
 #include "portable/socket.h"
 #include <errno.h>
+#include <netdb.h>
 
 #include "rfcnb-priv.h"
 #include "rfcnb-util.h"
