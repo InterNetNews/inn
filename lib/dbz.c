@@ -103,15 +103,19 @@ static int dbzversion = 6;	/* for validating .dir file format */
 #define PACKED __attribute__ ((packed))
 #endif
 
-#if defined(__SUNPRO_C) || defined(_nec_ews)
+#if defined(__SUNPRO_C) || defined(_nec_ews) || defined (sgi)
+#if !defined(lint) && !defined(sgi)
 #pragma pack(1)
+#endif /* nor lint, nor sgi */
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];
 } erec;
 typedef struct {
     unsigned long      offset;
 } idxrec;
+#if !defined(lint) && !defined(sgi)
 #pragma pack()
+#endif /* nor lint, nor sgi */
 #else
 typedef struct {
     char               hash[DBZ_INTERNAL_HASH_SIZE];
@@ -1106,7 +1110,7 @@ int main(int argc, char **argv) {
 	exit(1);
     }
     gettimeofday(&end, NULL);
-    printf("dbzfresh(%s, %d): %d ms\n", argv[1], numiter,
+    printf("dbzfresh(%s, %d, 0): %d ms\n", argv[1], numiter,
 	   timediffms(start, end));
 
     i = (int *)msgid;
