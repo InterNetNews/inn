@@ -1,3 +1,3769 @@
+Tue Jun 22 01:01:49 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/group.c: nnrpd/group.c:
+		- reported by Kjetil Torgrim Homme <kjetilho@ifi.uio.no>
+		- aliased group name was not showed correctly
+
+Mon Jun 21 22:03:56 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innwatch.ctl.in: samples/innwatch.ctl.in:
+		- From: rmtodd@skywalker.ecn.ou.edu (Richard Todd)
+		- test should be 'ne' instead of 'eq'
+
+	* ltconfig: ltconfig:
+		- reported by Matus fantomas Uhlar <uhlar@fantomas.sk>
+		- fix for FreeBSD4
+
+Mon Jun 21 00:58:42 1999  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* samples/innmail.in:
+	trimming trailing newlines off of the subject; the controlchan
+	handler scripts variously send the subject with or without a
+	newline, so this clears it all up in one place.
+
+Sun Jun 20 22:12:38 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/nc.c, innd/perl.c, innd/cc.c, innd/innd.h, innd/art.c:
+	innd/art.c:
+	innd/cc.c:
+	innd/innd.h:
+	innd/nc.c:
+	innd/perl.c:
+		- From: Russ Allbery <rra@stanford.edu>
+		-  Pass the article body to the Perl filter directly, rather than
+		  copying.
+		- Use a faster and clearer Perl call syntax.
+		- Bring the function names more in line with INN coding style.
+		- Move innd-specific Perl linkage from cc.c to perl.c.
+		- General code cleanup, commenting, and style consistency.
+
+	* lib/Makefile: lib/Makefile:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Several files in config/files.list no longer contained any subst
+		  tokens, and lib/Makefile and doc/man/Makefile were using it for
+		  things that configure knew and could put in Makefile.global.  Also
+		  realphabetized stuff in the Makefiles.
+
+	* config/files.list: config/files.list:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Several files in config/files.list no longer contained any subst
+		  tokens, and lib/Makefile and doc/man/Makefile were using it for
+		  things that configure knew and could put in Makefile.global.  Also
+		  realphabetized stuff in the Makefiles.
+
+	* Makefile.global.in: Makefile.global.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Several files in config/files.list no longer contained any subst
+		  tokens, and lib/Makefile and doc/man/Makefile were using it for
+		  things that configure knew and could put in Makefile.global.  Also
+		  realphabetized stuff in the Makefiles.
+
+	* innd/status.c: innd/status.c:
+		- From: Russ Allbery <rra@stanford.edu>
+		- typo fixed
+
+Wed Jun 16 03:56:47 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* contrib/tunefeed: contrib/tunefeed:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Compare active files with a remote site to tune a feed
+
+	* contrib/pullart.c, contrib/pathinfo: contirb/pathinfo:
+		- From: brad@shub-internet.org (Brad Knowles)
+		- Scan news headers, record and print various bits of information
+	contrib/pullart.c:
+		- From: jrifkin@my-deja.com
+		- simple program to pull articles from cycbuffers
+
+Tue Jun 15 22:06:08 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/ov3.c: storage/ov3.c:
+		- From: Francis Swasey <fswasey@btv.ibm.com>
+		- patch to change artnum from an int to an ARTNUM in the ov3 code and
+		  the necessary mods to article.c, group.c, and perm.c in the nnrpd
+		  code to make the ANSI C strict xlc compiler be quiet and compile
+		  without errors
+
+	* nnrpd/perm.c, nnrpd/article.c, nnrpd/group.c: nnrpd/article.c:
+	nnrpd/group.c:
+	nnrpd/perm.c:
+		- From: Francis Swasey <fswasey@btv.ibm.com>
+		- patch to change artnum from an int to an ARTNUM in the ov3 code and
+		  the necessary mods to article.c, group.c, and perm.c in the nnrpd
+		  code to make the ANSI C strict xlc compiler be quiet and compile
+		  without errors
+
+	* include/ov3.h: include/ov3.h:
+		- From: Francis Swasey <fswasey@btv.ibm.com>
+		- patch to change artnum from an int to an ARTNUM in the ov3 code and
+		  the necessary mods to article.c, group.c, and perm.c in the nnrpd
+		  code to make the ANSI C strict xlc compiler be quiet and compile
+		  without errors
+
+	* samples/cnfsstat.in: samples/cnfsstat.in:
+		- From: Marg Suarez <marg@columbia.edu>
+		- fixed the bug in cnfsstat where it printed the wrong date in the case
+		  when a msgid was missing from the history file.
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- From: Olaf Titz <olaf@bigred.inka.de>
+		- answering 501 to an XHDR request which is not in the overview may be
+		  good for performance but confuses the hell out of readers. (trn sends
+		  a QUIT to the server then says "server closed connection"...)
+		  Just re-implemented pulling them out of the articles:
+
+	* backends/actsyncd.sh.in: backends/actsyncd.sh.in:
+		- '-S' is gone now
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- xover with single range was failed
+
+	* backends/actsync.c: backends/actsync.c:
+		- '-S' is already dropped
+
+Mon Jun 14 10:28:19 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- From: Uichi Katsuta <katsuta@cced.mt.nec.co.jp>
+		- nnrpdcheckart was not effective for range a-b
+
+	* innd/art.c: innd/art.c:
+		- From: Uichi Katsuta <katsuta@cced.mt.nec.co.jp>
+		- didn't log canceled article
+
+	* samples/innwatch.ctl.in, samples/innshellvars.pl.in, samples/innshellvars.tcl.in, samples/innshellvars.in:
+	sampels/innshellvars.in:
+	samples/innshellvars.pl.in:
+	samples/innshellvars.tcl.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Add a test for uustat to configure and use that instead of subst in
+		  innshellvars*.
+	samples/innwatch.ctl.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- innwatch should exit if its LOCK file no longer contains its PID.
+
+	* configure, configure.in: configure:
+	configure.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Add a test for uustat to configure and use that instead of subst in
+		  innshellvars*.
+
+	* storage/ov3.c: storage/ov3.c:
+		- MakeDirectory() is called if open(DATpath) is failed
+
+Sun Jun 13 07:59:02 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/ov3.c: storage/ov3.c:
+		- OV3addrec() incorrectly updated article count
+
+	* expire/makedbz.c: expire/makedbz.c:
+		- From: rmtodd@skywalker.ecn.ou.edu (Richard Todd)
+		- if -s isn't specified, the 'size' variable is never initialized.  Fix
+		  this by setting size to 0 at the beginning, which dbz.c interprets as
+		  a request for default size.
+
+Sat Jun 12 22:23:28 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* expire/makehistory.c: expire/makehistory.c:
+		- From: rmtodd@skywalker.ecn.ou.edu (Richard Todd)
+		- -O should mean 'make overview', not 'don't make overview. The code
+		  had it backwards.
+
+	* storage/ov3.c: storage/ov3.c:
+		- did not consider the case of no article at OV3expiregroup()
+
+	* authprogs/radius.c: authprogs/radius.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- As discussed on inn-workers, this patch adds an
+		  ignore-source: (true|false)
+		  field to the authrad.conf, and a -S command line option.  When -S is
+		  specified on the command line, or ignore-source: true is in the
+		  config file, we ignore the source IP/port for the reply packet from
+		  the radius server.
+
+	* doc/Attic/wildmat.3, doc/Attic/writelog.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/wildmat.3:
+	file wildmat.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/writelog.8:
+	file writelog.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/tally.control.8, doc/Attic/tally.unwanted.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/tally.unwanted.8:
+	file tally.unwanted.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/strcasecmp.3, doc/Attic/subst.1: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/subst.1:
+	file subst.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/tally.control.8:
+	file tally.control.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/storage.ctl.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/storage.ctl.5:
+	file storage.ctl.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/strcasecmp.3:
+	file strcasecmp.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/startinnfeed.1, doc/Attic/storage.conf.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/startinnfeed.1:
+	file startinnfeed.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/storage.conf.5:
+	file storage.conf.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/simpleftp.1, doc/Attic/sm.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/sm.8: file sm.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/shlock.1, doc/Attic/shrinkfile.1: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/shrinkfile.1:
+	file shrinkfile.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/simpleftp.1:
+	file simpleftp.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/send-uucp.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/send-uucp.8:
+	file send-uucp.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/shlock.1:
+	file shlock.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/rnews.1, doc/Attic/scanlogs.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/scanlogs.8:
+	file scanlogs.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/pullnews.8, doc/Attic/qio.3: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/qio.3: file qio.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/rnews.1:
+	file rnews.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/prunehistory.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/prunehistory.8:
+	file prunehistory.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/pullnews.8:
+	file pullnews.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/passwd.nntp.5, doc/Attic/pgpverify.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/passwd.nntp.5:
+	file passwd.nntp.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/pgpverify.8:
+	file pgpverify.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/overview.fmt.5, doc/Attic/parsedate.3: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/parsedate.3:
+	file parsedate.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/overchan.8, doc/Attic/overview.ctl.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/overview.ctl.5:
+	file overview.ctl.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/overview.fmt.5:
+	file overview.fmt.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/nntpsend.ctl.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/overchan.8:
+	file overchan.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/nntpsend.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/nntpsend.8:
+	file nntpsend.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/nntpsend.ctl.5:
+	file nntpsend.ctl.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/nnrpd.track.5, doc/Attic/nntpget.1: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/nnrpd.track.5:
+	file nnrpd.track.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/nntpget.1:
+	file nntpget.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/nnrp.access.5, doc/Attic/nnrpd.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/nnrpd.8:
+	file nnrpd.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/newsrequeue.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/newsrequeue.8:
+	file newsrequeue.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/nnrp.access.5:
+	file nnrp.access.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/newslog.5, doc/Attic/newslog.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/newslog.5:
+	file newslog.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/newslog.8:
+	file newslog.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/news2mail.8, doc/Attic/newsfeeds.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/newsfeeds.5:
+	file newsfeeds.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/news.daily.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/news.daily.8:
+	file news.daily.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/news2mail.8:
+	file news2mail.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/motd.news.5, doc/Attic/news-recovery.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/motd.news.5:
+	file motd.news.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/news-recovery.8:
+	file news-recovery.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/mod-active.8, doc/Attic/moderators.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/moderators.5:
+	file moderators.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/makehistory.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/makehistory.8:
+	file makehistory.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/mod-active.8:
+	file mod-active.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/mailpost.8, doc/Attic/makeactive.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/mailpost.8:
+	file mailpost.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/makeactive.8:
+	file makeactive.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/libinn.3, doc/Attic/libstorage.3: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/libstorage.3:
+	file libstorage.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/installit.1: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/installit.1:
+	file installit.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/libinn.3:
+	file libinn.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innxbatch.8, doc/Attic/innxmit.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/innxbatch.8:
+	file innxbatch.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innxmit.8:
+	file innxmit.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innwatch.8, doc/Attic/innwatch.ctl.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/innwatch.ctl.5:
+	file innwatch.ctl.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innstat.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/innstat.8:
+	file innstat.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innwatch.8:
+	file innwatch.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innlog.pl.8, doc/Attic/innreport.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/innlog.pl.8:
+	file innlog.pl.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innreport.8:
+	file innreport.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innfeed.conf.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/innfeed.conf.5:
+	file innfeed.conf.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/inndf.8, doc/Attic/innfeed.1: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/inndf.8:
+	file inndf.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innfeed.1:
+	file innfeed.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innd.8, doc/Attic/inndcomm.3: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/inndcomm.3:
+	file inndcomm.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innconfval.1: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/innconfval.1:
+	file innconfval.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/innd.8:
+	file innd.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/inn.conf.5, doc/Attic/inncheck.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/inncheck.8:
+	file inncheck.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/inews.1: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/inews.1:
+	file inews.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/inn.conf.5:
+	file inn.conf.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/history.5, doc/Attic/incoming.conf.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/history.5:
+	file history.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/incoming.conf.5:
+	file incoming.conf.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/getlist.1, doc/Attic/grephistory.1: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/grephistory.1:
+	file grephistory.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/filechan.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/filechan.8:
+	file filechan.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/getlist.1:
+	file getlist.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/expirerm.8, doc/Attic/fastrm.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/expirerm.8:
+	file expirerm.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/fastrm.8:
+	file fastrm.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/expireindex.8, doc/Attic/expireover.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/expireover.8:
+	file expireover.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/expire.ctl.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/expire.ctl.5:
+	file expire.ctl.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/expireindex.8:
+	file expireindex.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/distrib.pats.5, doc/Attic/expire.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/expire.8:
+	file expire.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/dbz.3: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/dbz.3: file dbz.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/distrib.pats.5:
+	file distrib.pats.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/cycbuff.conf.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/cycbuff.conf.5:
+	file cycbuff.conf.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/ctlinnd.8, doc/Attic/cvtbatch.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/cvtbatch.8:
+	file cvtbatch.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/convdate.1, doc/Attic/crosspost.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/crosspost.8:
+	file crosspost.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/ctlinnd.8:
+	file ctlinnd.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/controlchan.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/controlchan.8:
+	file controlchan.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/convdate.1:
+	file convdate.1 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/cnfsstat.8, doc/Attic/control.ctl.5: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/control.ctl.5:
+	file control.ctl.5 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/clientlib.3: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/clientlib.3:
+	file clientlib.3 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/cnfsstat.8:
+	file cnfsstat.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/batcher.8, doc/Attic/buffchan.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/batcher.8:
+	file batcher.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/buffchan.8:
+	file buffchan.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/actsyncd.8, doc/Attic/archive.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/archive.8:
+	file archive.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/actsync.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/actsync.8:
+	file actsync.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/actsyncd.8:
+	file actsyncd.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/active.5, doc/Attic/actived.8: doc/*:
+		- all man pages are backed to original directory
+
+	* doc/Attic/actived.8:
+	file actived.8 was initially added on branch STABLE-2_2.
+
+	* doc/Attic/active.5:
+	file active.5 was initially added on branch STABLE-2_2.
+
+Fri Jun 11 07:41:45 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* lib/dbz.c: lib/dbz.c:
+		- did not compile for non-tagged hash
+
+	* expire/makedbz.c: expire/makedbz.c:
+		- old code still left
+
+	* nnrpd/misc.c: nnrpd/misc.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- Now that innconf->extendeddbz is gone, it looks to me like the dbz.c
+		  API for tagged-hash vs. non-tagged-hash can be merged.  That's what
+		  this patch does.
+
+	* lib/dbz.c: lib/dbz.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- Now that innconf->extendeddbz is gone, it looks to me like the dbz.c
+		  API for tagged-hash vs. non-tagged-hash can be merged.  That's what
+		  this patch does.
+
+	* innd/his.c: innd/his.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- Now that innconf->extendeddbz is gone, it looks to me like the dbz.c
+		  API for tagged-hash vs. non-tagged-hash can be merged.  That's what
+		  this patch does.
+
+	* include/dbz.h: include/dbz.h:
+		- From: Aidan Cully <aidan@panix.com>
+		- Now that innconf->extendeddbz is gone, it looks to me like the dbz.c
+		  API for tagged-hash vs. non-tagged-hash can be merged.  That's what
+		  this patch does.
+
+	* expire/makehistory.c, expire/prunehistory.c, expire/makedbz.c, expire/expire.c, expire/grephistory.c:
+	expire/expire.c:
+	expire/grephistory.c:
+	expire/makedbz.c:
+	expire/makehistory.c:
+	expire/prunehistory.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- Now that innconf->extendeddbz is gone, it looks to me like the dbz.c
+		  API for tagged-hash vs. non-tagged-hash can be merged.  That's what
+		  this patch does.
+
+	* backends/innxmit.c: backends/innxmit.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- Now that innconf->extendeddbz is gone, it looks to me like the dbz.c
+		  API for tagged-hash vs. non-tagged-hash can be merged.  That's what
+		  this patch does.
+
+	* doc/Attic/putman.sh: doc/putman.sh:
+		- deleted (it's now empty)
+
+Fri Jun 11 03:27:09 1999  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* doc/Makefile, Makefile:
+	From: Richard Todd <rmtodd@skywalker.ecn.ou.edu>
+
+	When trying to do, e.g., a 'make clean' in the top level directory, the
+	Makefile
+	does basically
+	   for i in $DIRS
+	   do
+	      cd $i; make clean ; cd ..
+	   done
+	Now, with 'doc/man' and 'doc/sgml' in the directories list, this code does
+	      cd doc/man; make clean; cd ..
+	      cd doc/sgml; make clean; cd ..
+	See the problem? .. from doc/man is "doc", not the top-level dir.  The
+	following patch changes the top-level Makefile to go into the 'doc' dir
+	(and not its subdirs) and have the doc/Makefile do the Right Thing for
+	make clean/install etc.
+
+Fri Jun 11 03:19:34 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/nc.c: innd/nc.c:
+		- innd responds an illegal NNTP code for non streaming even if the
+		  article is accepted, after messageid filter rejects a messge
+
+Thu Jun 10 13:12:55 1999  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* samples/news2mail.in, samples/newsfeeds.in, CONTRIBUTORS, samples/controlchan.in, samples/expirerm.in:
+	From: Miquel van Smoorenburg <miquels@cistron.nl>
+	To: inn-patches@isc.org
+	Subject: patch to fix samples/* wrt $inn::storageapi
+
+	This patch fixes some scripts in samples/ that test for storageapi.
+	The statement $inn::storageapi =~ /true|yes|on/i is now false since
+	$inn::storageapi isn't defined anymore. However storageapi is ofcourse
+	always true now.
+
+	Also I fixed the sample newsfeeds file, and added myself to the
+	CONTRIBUTORS file ;)
+
+	* doc/Attic/putman.sh, Makefile, doc/Makefile:
+	From: Miquel van Smoorenburg <miquels@cistron.nl>
+	To: inn-patches@isc.org
+	Subject: Makefile fixes for doc/man etc
+
+	The man pages have moved from doc/ to doc/man. This patch fixes the
+	Makefiles so that inn compiles and installs correctly again.
+
+	Some files are moved around - please check that no zero-length files
+	stay behind after patching.
+
+Thu Jun 10 03:51:05 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* expire/expireover.c: expire/expireover.c:
+		- do not report lowmark, if lowmark is 0
+
+Tue Jun  8 21:43:36 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/ov3.c: storage/ov3.c:
+		- incorrect lowmark info was created for newsgroups which have no
+		  article
+
+	* include/patchlevel.h: include/patchlevel.h:
+		- From: miquels@cistron.nl (Miquel van Smoorenburg)
+		- Date is too old
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- From: miquels@cistron.nl (Miquel van Smoorenburg)
+		- suppresses a warning - NULL and 0 are 2 different thing
+
+	* lib/grpalias.c: lib/grpalias.c:
+		- From: miquels@cistron.nl (Miquel van Smoorenburg)
+		- I needed to add an include for <sys/types.h> to 2 files toget INN to
+		  compile with glibc-2.0
+
+	* expire/expireover.c: expire/expireover.c:
+		- From: miquels@cistron.nl (Miquel van Smoorenburg)
+		- I needed to add an include for <sys/types.h> to 2 files toget INN to
+		  compile with glibc-2.0
+
+	* expire/expireover.c: expire/expireover.c:
+		- From: rmtodd@skywalker.ecn.ou.edu (Richard Todd)
+		- Fix uninited variable in expireover
+
+Mon Jun  7 15:50:47 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/ov3.c: storage/ov3.c:
+		- add another argument for lowmark info into OV3expiregroup()
+		- hi mark was incorrectly cleared
+
+	* samples/news.daily.in: samples/news.daily.in:
+		- lowmark is now revived
+
+	* include/ov3.h: include/ov3.h:
+		- add another argument for lowmark info into OV3expiregroup()
+
+	* expire/expireover.c: expire/expireover.c:
+		- add -Z for creating lowmark info
+
+Mon Jun  7 05:52:16 1999  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* samples/inncheck.in, include/libinn.h, lib/getconfig.c, samples/inn.conf.in, expire/makehistory.c, include/innconf.h:
+	From: Richard Todd <rmtodd@skywalker.ecn.ou.edu>
+
+	This patch provides a new (well, resurrected) inn.conf option 'wireformat'.
+	The option now controls whether the tradspool storage manager module reads
+	or writes articles in "traditional" \n-only format (wireformat=false) or in
+	wire-format (\r\n, wireformat=true).  With wireformat=false, articles are
+	converted to the old format on write and from the old format on read; callers
+	of the storage manager only see wireformat articles.
+
+Sun Jun  6 04:51:31 1999  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* storage/ov3.c: From: Richard Todd <rmtodd@skywalker.ecn.ou.edu>
+
+	This patch fixes a memory leak that happens in the ov3.c code when expireover
+	is run.
+
+	* expire/expire.c: From: Richard Todd <rmtodd@skywalker.ecn.ou.edu>
+
+	This patch does 2 things: 1) fix a bug where a 0-length malloc was done,
+	because nGroups is 0 (since it was set in some of the old group-based expire
+	code that is no longer there) and 2) disable for now handling of the 5-field
+	newsgroup-based expire.ctl entries --- they weren't being processed correctly
+	anyway because we don't currently have a solution in place for group-based
+	expire, so better to report an error in expire.ctl than to continue.
+
+Fri Jun  4 23:35:53 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/ov3.c: storage/ov3.c:
+		- From: Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+		- The problem is that OV3add() looks at the Xref: part of the overview
+		  line to see what groups it should write the overview info into, and
+		  it searches for the first occurance of the string "Xref: " in the
+		  line, not the last one.
+
+	* expire/makehistory.c: expire/makehistory.c:
+		- makehistory fails for creating from traditional spool (not tradspool)
+		- consider '\n' for the case
+
+	* authprogs/radius.c: authprogs/radius.c:
+		- From: Dan Foster <dsf@frontiernet.net>
+		- It's caused us no end of problems because due to how we have our
+		  proxy RADIUS server set up
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- add newly introduced parameters and drop obsolete ones
+
+Thu Jun  3 21:53:03 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* lib/rwlock.c: lib/rwlock.c:
+		- codes were duplicated
+
+	* lib/makedir.c: lib/makedir.c:
+		- need to include errno.h
+
+	* lib/makedir.c: lib/makedir.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- clear errno if (stat(Name, &Sb) >= 0 && S_ISDIR(Sb.st_mode)) is true
+
+	* expire/makedbz.c: expire/makedbz.c:
+		- code were duplicated
+
+	* storage/ov3.c: storage/ov3.c:
+		- codes were duplicated
+
+	* lib/argparse.c, lib/grpalias.c: lib/argparse.c:
+	lib/grpalias.c:
+		- codes were duplicated
+
+	* lib/pread.c, lib/pwrite.c: lib/pread.c:
+	lib/pwrite.c:
+		- codes were duplicated
+
+	* expire/makedbz.c: expire/makedbz.c:
+		- still had makehistory log messages
+
+	* storage/ov3.c: storage/ov3.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* lib/pwrite.c, lib/rwlock.c, lib/threads.c, lib/grpalias.c, lib/pread.c, lib/argparse.c:
+	lib/argparse.c:
+	lib/grpalias.c:
+	lib/pread.c:
+	lib/pwrite.c:
+	lib/rwlock.c:
+	lib/threads.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* include/ov3.h, include/rwlock.h, include/threads.h: include/ov3.h:
+	include/rwlock.h:
+	include/threads.h:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* expire/makedbz.c: expire/makedbz.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* MANIFEST: MANIFEST:
+		- newly added files were missed
+
+	* syslog/Attic/syslog.conf.in, syslog/Attic/syslog.h, syslog/Attic/syslogd.8, syslog/Attic/syslogd.c, syslog/Attic/logger.1, syslog/Attic/logger.c, syslog/Attic/syslog.3, syslog/Attic/syslog.c, syslog/Attic/README:
+	syslog/README:
+	syslog/logger.1:
+	syslog/logger.c:
+	syslog/syslog.3:
+	syslog/syslog.c:
+	syslog/syslog.conf.in:
+	syslog/syslog.h:
+	syslog/syslogd.8:
+	syslog/syslogd.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* storage/Attic/overview.c, storage/Attic/overview.h, storage/interface.c, storage/Makefile:
+	storage/Makefile:
+	storage/interface.c:
+	storage/overview.c:
+	storage/overview.h:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* site/Makefile: site/Makefile:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* samples/Attic/overview.ctl, samples/news.daily.in, samples/innreport_inn.pm, samples/inn.conf.in:
+	samples/inn.conf.in:
+	samples/innreport_inn.pm:
+	samples/news.daily.in:
+	samples/overview.ctl:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* obsolete/Attic/scanlogs-backend.pl, obsolete/Attic/tally.unwanted, obsolete/Attic/hosts.nntp.nolimit, obsolete/Attic/innlog.awk, obsolete/Attic/innlog.pl, obsolete/Attic/innshellvars.csh.in, obsolete/Attic/README.obsolete:
+	obsolete/README.obsolete:
+	obsolete/hosts.nntp.nolimit:
+	obsolete/innlog.awk:
+	obsolete/innlog.pl:
+	obsolete/innshellvars.csh.in:
+	obsolete/scanlogs-backend.pl:
+	obsolete/tally.unwanted:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* nnrpd/Attic/protocol.h, nnrpd/post.c, nnrpd/track.c, nnrpd/nnrpd.h, nnrpd/perl.c, nnrpd/perm.c, nnrpd/newnews.c, nnrpd/nnrpd.c, nnrpd/commands.c, nnrpd/group.c, nnrpd/misc.c, nnrpd/Attic/activedstats.c, nnrpd/article.c, nnrpd/Attic/actived.c, nnrpd/Makefile:
+	nnrpd/Makefile:
+	nnrpd/article.c:
+	nnrpd/commands.c:
+	nnrpd/group.c:
+	nnrpd/misc.c:
+	nnrpd/newnews.c:
+	nnrpd/nnrpd.c:
+	nnrpd/nnrpd.h:
+	nnrpd/perl.c:
+	nnrpd/perm.c:
+	nnrpd/post.c:
+	nnrpd/track.c:
+	nnrpd/actived.c:
+	nnrpd/activedstats.c:
+	nnrpd/protocol.h:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* lib/Attic/over.c, lib/perl.c, lib/xmalloc.c, lib/getconfig.c, lib/hash.c, lib/lockfile.c, lib/clientlib.c, lib/dbz.c, lib/Makefile:
+	lib/Makefile:
+	lib/clientlib.c:
+	lib/dbz.c:
+	lib/getconfig.c:
+	lib/hash.c:
+	lib/lockfile.c:
+	lib/perl.c:
+	lib/xmalloc.c:
+	lib/over.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* innfeed/buffer.c, innfeed/main.c: innfeed/buffer.c:
+	innfeed/main.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* innd/rc.c, innd/site.c, innd/timer.c, innd/inndstart.c, innd/nc.c, innd/ng.c, innd/icd.c, innd/innd.c, innd/innd.h, innd/cc.c, innd/his.c, innd/Makefile, innd/art.c:
+	innd/Makefile:
+	innd/art.c:
+	innd/cc.c:
+	innd/his.c:
+	innd/icd.c:
+	innd/innd.c:
+	innd/innd.h:
+	innd/inndstart.c:
+	innd/nc.c:
+	innd/ng.c:
+	innd/rc.c:
+	innd/site.c:
+	innd/timer.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* include/storage.h, include/Attic/myserver.h, include/Attic/mystring.h, include/qio.h, include/Attic/mydir.h, include/Attic/mymemory.h, include/macros.h, include/md5.h, include/innconf.h, include/inndcomm.h, include/libinn.h, include/config.h.in, include/configdata.h, include/dbz.h, include/clibrary.h.in, include/conffile.h:
+	include/clibrary.h.in:
+	include/conffile.h:
+	include/config.h.in:
+	include/configdata.h:
+	include/dbz.h:
+	include/innconf.h:
+	include/inndcomm.h:
+	include/libinn.h:
+	include/macros.h:
+	include/md5.h:
+	include/qio.h:
+	include/storage.h:
+	include/mydir.h:
+	include/mymemory.h:
+	include/myserver.h:
+	include/mystring.h:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* frontends/sm.c, frontends/Attic/rn.pch, frontends/innconfval.c, frontends/rnews.c, frontends/Makefile:
+	frontends/Makefile:
+	frontends/innconfval.c:
+	frontends/rnews.c:
+	frontends/sm.c:
+	frontends/rn.pch:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* expire/Attic/reap.pch, expire/newsrequeue.c, expire/prunehistory.c, expire/Attic/makeactive.c, expire/grephistory.c, expire/makehistory.c, expire/Attic/expireindex.c, expire/expireover.c, expire/fastrm.c, expire/Attic/expire.pch, expire/Makefile, expire/expire.c:
+	expire/Makefile:
+	expire/expire.c:
+	expire/expireover.c:
+	expire/fastrm.c:
+	expire/grephistory.c:
+	expire/makehistory.c:
+	expire/newsrequeue.c:
+	expire/prunehistory.c:
+	expire/expire.pch:
+	expire/expireindex.c:
+	expire/makeactive.c:
+	expire/reap.pch:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* config/files.list, config/config.scoreboard:
+	config/config.scoreboard:
+	config/files.list:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* backends/archive.c, backends/innxmit.c, backends/actsync.c, backends/Makefile:
+	backends/Makefile:
+	backends/actsync.c:
+	backends/archive.c:
+	backends/innxmit.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* authprogs/domain.c, authprogs/ident.c, authprogs/radius.c, authprogs/ckpasswd.c:
+	authprogs/ckpasswd.c:
+	authprogs/domain.c:
+	authprogs/ident.c:
+	authprogs/radius.c:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+	* configure.in, configure, Makefile.global.in, MANIFEST, Makefile:
+	MANIFEST:
+	Makefile:
+	Makefile.global.in:
+	configure:
+	configure.in:
+		- incorporate patch from Clayton and Richard
+		- delete uninportant stuff(obsolete, syslog etc.)
+		- drop uniover stuff
+		- drop expireindex and overchan stuff
+		- drop traditional stuff
+
+Wed Jun  2 02:48:49 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- checking inndstart mode was wrong
+
+	* include/config.h.in: include/config.h.in:
+		- check dbm header
+		- check dbm library
+
+	* authprogs/radius.c, authprogs/Makefile, authprogs/ckpasswd.c:
+	authprogs/Makefile:
+	authprogs/ckpasswd.c:
+	authprogs/radius.c:
+		- check dbm header
+		- check dbm library
+
+	* configure.in, configure, Makefile.global.in: Makefile.global.in:
+	configure:
+	configure.in:
+		- check dbm header
+		- check dbm library
+
+Mon May 31 03:30:56 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/nnrpd.c: nnrpd/nnrpd.c:
+		- NEWSGRP should be used for news group
+
+	* innd/inndstart.c: innd/inndstart.c:
+		- NEWSGRP should be used for news group
+
+Thu May 20 14:59:02 1999  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* samples/pgpverify.in:
+	upgraded to pgpverify 1.12.  support for gnu pgp, more diddling with syslogging
+
+Thu May 20 09:23:53 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* site/Makefile: site/Makefile:
+		- From: greg andruk <meowing@banet.net>
+		- Python hooks for innd
+
+	* samples/innshellvars.in, samples/innshellvars.pl.in, samples/innshellvars.tcl.in, samples/INN.py, samples/filter_innd.py:
+	samples/INN.py:
+	samples/filter_innd.py:
+	samples/innshellvars.in:
+	samples/innshellvars.pl.in:
+	samples/innshellvars.tcl.in:
+		- From: greg andruk <meowing@banet.net>
+		- Python hooks for innd
+
+	* innd/nc.c, innd/python.c, innd/cc.c, innd/innd.c, innd/innd.h, innd/Makefile, innd/art.c:
+	innd/Makefile:
+	innd/art.c:
+	innd/cc.c:
+	innd/innd.c:
+	innd/innd.h:
+	innd/nc.c:
+	innd/python.c:
+		- From: greg andruk <meowing@banet.net>
+		- Python hooks for innd
+
+	* include/config.h.in, include/inndcomm.h, include/paths.h.in:
+	include/config.h.in:
+	include/inndcomm.h:
+	include/paths.h.in:
+		- From: greg andruk <meowing@banet.net>
+		- Python hooks for innd
+
+	* frontends/ctlinnd.c: frontends/ctlinnd.c:
+		- From: greg andruk <meowing@banet.net>
+		- Python hooks for innd
+
+	* configure, configure.in, README.python_hook, MANIFEST, Makefile.global.in, INSTALL:
+	INSTALL:
+	MANIFEST:
+	Makefile.global.in:
+	README.python_hook:
+	configure configure.in:
+		- From: greg andruk <meowing@banet.net>
+		- Python hooks for innd
+
+Tue May 18 21:45:30 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/Attic/overview.c: storage/overview.c:
+		- reported by root@news.netmar.com
+		- If someone enters an empty word in the overview.ctl file,
+		  (e.g. "1:alt*,biz*," or "1:,alt*" etc), you segfault.
+
+	* samples/news2mail.in: samples/news2mail.in:
+		- From: SAKAI Kiyotaka <ksakai@kso.netwk.ntt-at.co.jp>
+		- News2mail only preserve 'From', 'Subject', 'Date', 'Organization',
+		  'Message-ID' headers, but when multipart/mixed article are sent by
+		  news2mail, 'MIME-Version', 'Content-Type' are disappeared and the mail
+		  received looks broken.
+
+Thu May 13 22:05:50 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/nnrpd.c: nnrpd/nnrpd.c:
+		- pathrun must not be owned by root
+		- ensure pathrun owner is NEWSUSER
+
+	* innd/inndstart.c: innd/inndstart.c:
+		- pathrun must not be owned by root
+		- ensure pathrun owner is NEWSUSER
+
+Wed May 12 21:22:44 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/cc.c: innd/cc.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- cleanup code
+
+	* innd/cc.c: innd/cc.c:
+		- From: Michael Schroeder <Michael.Schroeder@informatik.uni-erlangen.de>
+		- CCaddhist() uses OVERsetoffset() instead of OVERmaketoken()
+
+	* INSTALL: INSTALL:
+		- From: Michael Schroeder <Michael.Schroeder@informatik.uni-erlangen.de>
+		- INSTALL talks about a 'domainname' inn.conf parameter. It should be
+		  'domain'.
+
+	* README: README:
+		- From: Russ Allbery <rra@stanford.edu>
+		- INN's README has always struck me as extremely sparse.  One of the
+		  major things it feels like it lacks is some general overview for
+		  someone who may not be entirely sure what a news server is or what
+		  INN consists of.
+
+Tue May 11 21:53:00 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/mailpost.in: samples/mailpost.in:
+		- From: Vladimir Litovka <doka@triton.kiev.sovam.com>
+		- inews always rejects messages if there are duplicate headers in
+		  message and it's right. But this is often error due to errors in
+		  sender's setup or errors in mailing software. For avoiding this
+		  problem I've patched mailpost to remove duplicate headers from
+		  message before passing it to inews.
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- argument of RENEW() which calls realloc() should not be null for
+		  SunOS4.1.4
+
+Mon May 10 22:36:19 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/commands.c: nnrpd/commands.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- If there is a single dot on a line in the newsgroups file etc., at
+		  the moment INN's nnrpd happily sends it to the client. The client on
+		  the other hand gets confused because there is additional data after
+		  the single dot, violating the NNTP protocol.
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- INN says "Must set 'domain' in inn.conf" even if the domain is set,
+		  but the FQDN of the machine does not resolve to a valid IP address
+		  (e.g. if you call your machine "foo" in domain "bar.com" and fail to
+		  add "foo" to your DNS zone or /etc/hosts file, there is no use
+		  setting "domain: bar.com" in inn.conf, the error message given by INN
+		  will stay the same). This is very confusing
+
+	* configure, configure.in: configure.in:
+	configure:
+		- check owner and group of pathrun directory if it exists
+
+	* contrib/makeexpctl.pl, contrib/makestorconf.pl, contrib/findreadgroups.pl:
+	contrib/findreadgroups.pl:
+		- From: Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+		- reads news.notice logs and updates a list of what groups have been
+		  recently read
+	contrib/makeexpctl.pl:
+		- From: Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+		- uses that list to write a new expire.ctl file every night
+	contrib/makestorconf.pl:
+		- From: Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+		- uses the same list to write a new storage.conf file, so as to put
+		  read newsgroups into a timecaf spool area instead of the big CNFS
+		  area
+
+	* MANIFEST: MANIFEST:
+		- From: Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+		- contrib/findreadgroups.pl, contrib/makeexpctl.pl and
+		  contrib/makestorconf.pl are included
+
+Sun May  9 00:36:53 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport.in: samples/innreport.in:
+		- From: Fabien Tassin <fta@oleane.net>
+		- I prefer to 'localize' $/ instead.  I've also changed '' to undef.
+
+Sat May  8 05:16:53 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* README.perl_hook: README.perl_hook:
+		- From: Russ Allbery <rra@stanford.edu>
+		- a complete replacement for the current README.perl_hook.  It's
+		  expanded, clarified, and updated from the existing one and I believe
+		  it comes close to fully documenting the current interface.  While I
+		  was at it, I reformatted the text into roughly the same style used in
+		  README and INSTALL.
+
+	* samples/innreport.in: samples/innreport.in:
+		- From: Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+		- When the 'html_header' or 'html_footer' options are turned on in
+		  innreport.conf, innreport fails to update innreport.db and the
+		  index.html files correctly.  The problem is that the code to read in
+		  the html headers/footers sets $/ to '' to read in the headers/footers
+		  all at once, and fails to set $/ back to newline afterwards.
+
+Fri May  7 23:47:27 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* Makefile: Makefile:
+		- The patchlevel of the stable code was set to 0.
+
+	* Makefile: Makefile:
+		- From: Russ Allbery <rra@stanford.edu>
+		- The patchlevel of the current development code was set to 0.  That
+		  didn't seem right.  This may not be right either, but it's at least
+		  more right.
+
+	* CONTRIBUTORS: CONTRIBUTORS:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Clean up some typos, grammar problems, and wrapping inconsistencies
+		  in CONTRIBUTORS.
+
+	* samples/checkgroups.pl.in, samples/controlchan.in:
+	samples/checkgroups.pl.in:
+	samples/controlchan.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- A doit (or a successful verify-*) action on a checkgroups message is
+		  fairly pointless unless the output goes somewhere.  The logical place
+		  to send the output if no log file or anything is specified is a mail
+		  message to the news administartor.  This patch implements that for
+		  the controlchan checkgroups.pl.
+
+Thu May  6 08:00:58 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* Makefile: Makefile:
+		- From: Russ Allbery <rra@stanford.edu>
+		- A patch against CURRENT to delete the other generated files with a
+		  make clobber is attached
+
+	* samples/innshellvars.pl.in, samples/innshellvars.tcl.in, samples/innshellvars.in:
+	samples/innshellvars.in:
+	samples/innshellvars.pl.in:
+	samples/innshellvars.tcl.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Adds --with-control-dir and --with-filter-dir to allow the paths to
+		  the control and filter programs to be set to something other than
+		  prefix/bin/{control,filter}.  The files in these directories often
+		  aren't executables, so I don't like having them under bin.
+
+		- Adds --with-news-umask to set the umask of INN, and also change the
+		  default article and directory modes.  (02 and 022 are the only umasks
+		  supported by this patch, since I didn't want to try to fake up octal
+		  arithmetic in shell and those are the two that seem generally useful.)
+
+		- Adds --disable-uucp-rnews to install rnews owned by news.news and mode
+		  500 instead of owned by news.uucp and mode 4550.  This is very useful
+		  if you don't have a uucp group at all, and good for systems that don't
+		  need rnews to be runnable by someone other than news.  (Cuts down on
+		  setuid programs, which is always good.)
+
+		- Adds --disable-setgid-inews, to install inews 550 instead of 2555
+		  (avoiding needless setgid programs on a standalone news server that
+		  doesn't have non-news programs running inews).
+
+	* include/config.h.in: include/config.h.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Adds --with-control-dir and --with-filter-dir to allow the paths to
+		  the control and filter programs to be set to something other than
+		  prefix/bin/{control,filter}.  The files in these directories often
+		  aren't executables, so I don't like having them under bin.
+
+		- Adds --with-news-umask to set the umask of INN, and also change the
+		  default article and directory modes.  (02 and 022 are the only umasks
+		  supported by this patch, since I didn't want to try to fake up octal
+		  arithmetic in shell and those are the two that seem generally useful.)
+
+		- Adds --disable-uucp-rnews to install rnews owned by news.news and mode
+		  500 instead of owned by news.uucp and mode 4550.  This is very useful
+		  if you don't have a uucp group at all, and good for systems that don't
+		  need rnews to be runnable by someone other than news.  (Cuts down on
+		  setuid programs, which is always good.)
+
+		- Adds --disable-setgid-inews, to install inews 550 instead of 2555
+		  (avoiding needless setgid programs on a standalone news server that
+		  doesn't have non-news programs running inews).
+
+	* frontends/Makefile: frontends/Makefile:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Adds --with-control-dir and --with-filter-dir to allow the paths to
+		  the control and filter programs to be set to something other than
+		  prefix/bin/{control,filter}.  The files in these directories often
+		  aren't executables, so I don't like having them under bin.
+
+		- Adds --with-news-umask to set the umask of INN, and also change the
+		  default article and directory modes.  (02 and 022 are the only umasks
+		  supported by this patch, since I didn't want to try to fake up octal
+		  arithmetic in shell and those are the two that seem generally useful.)
+
+		- Adds --disable-uucp-rnews to install rnews owned by news.news and mode
+		  500 instead of owned by news.uucp and mode 4550.  This is very useful
+		  if you don't have a uucp group at all, and good for systems that don't
+		  need rnews to be runnable by someone other than news.  (Cuts down on
+		  setuid programs, which is always good.)
+
+		- Adds --disable-setgid-inews, to install inews 550 instead of 2555
+		  (avoiding needless setgid programs on a standalone news server that
+		  doesn't have non-news programs running inews).
+
+	* configure.in, makedirs.sh.in, configure, Makefile.global.in:
+	Makefile.global.in:
+	configure:
+	configure.in:
+	makedirs.sh.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Adds --with-control-dir and --with-filter-dir to allow the paths to
+		  the control and filter programs to be set to something other than
+		  prefix/bin/{control,filter}.  The files in these directories often
+		  aren't executables, so I don't like having them under bin.
+
+		- Adds --with-news-umask to set the umask of INN, and also change the
+		  default article and directory modes.  (02 and 022 are the only umasks
+		  supported by this patch, since I didn't want to try to fake up octal
+		  arithmetic in shell and those are the two that seem generally useful.)
+
+		- Adds --disable-uucp-rnews to install rnews owned by news.news and mode
+		  500 instead of owned by news.uucp and mode 4550.  This is very useful
+		  if you don't have a uucp group at all, and good for systems that don't
+		  need rnews to be runnable by someone other than news.  (Cuts down on
+		  setuid programs, which is always good.)
+
+		- Adds --disable-setgid-inews, to install inews 550 instead of 2555
+		  (avoiding needless setgid programs on a standalone news server that
+		  doesn't have non-news programs running inews).
+
+	* innfeed/host.c: innfeed/host.c:
+		- From: Don Lewis <Don.Lewis@tsc.tdk.com>
+		- We started getting an excessive number of deferrals on one of our
+		  news peers, so I finally got around to fixing this in innfeed by
+		  adding another queue for each host to hold deferred articles so that
+		  their retries can be delayed.
+
+		  Articles that are added to this new queue are counted towards the
+		  host-queue-highwater limit.  If articles need to be spooled to the
+		  .output file, the deferred articles are spooled first, because they
+		  are more likely to be refused later and thus are less likely to need
+		  to be read from disk when the backlog is processed.
+
+Tue May  4 00:02:09 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/interface.c: storage/interface.c:
+		- break line was dropped for case '@' in MatchGroups()
+
+Mon May  3 23:58:11 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/art.c: innd/art.c:
+		- drop article with null character in it (to avoid EOF before end of
+		  post)
+
+Wed Apr 28 01:39:12 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/readers.conf: samples/readers.conf:
+		- From: Aidan Cully <aidan@panix.com>
+		- assuming the second patch I submitted last week got included, this
+		  patch accounts for the breaking changes in syntax between the
+		  previous format and the current.
+
+		  It takes me a while to work up to good documentation, and my limited
+		  understanding of nroff certainly hurts in this regard..  I should
+		  have a more complete document ready before 2.3 ships (and if I don't,
+		  feel free to harass me about it), but in the meantime, here's this.
+
+	* configure, configure.in: configure.in:
+	configure:
+		- MANDIR should be set to same as mandir
+
+	* innd/innd.c: innd/innd.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Active has
+		  misc.jobs 00'+,'/0)* 0000000001 y
+		  after ``ctlinnd renumber'' if .overview.index is bad.
+		  I know that misc.jobs is wrong newsgroup
+
+Mon Apr 26 08:40:47 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* frontends/inews.c: frontends/inews.c
+		- previous patch includes unwanted line which led to compilation error
+
+	* frontends/inews.c: frontends/inews.c:
+		- From: Christian Kurz <shorty@jupiter.rhein-neckar.de>
+		- It seems, as inews doesn't accept lines longer than 512 characters,
+		  if I'm not missing something. I have here an article, with a Reference
+		  line of 660 chars and the standard inews from 1.7.2 gives the
+		  following error:
+
+		  shorty@jupiter% inews -h < /home/shorty/dead.letter
+		  "References" header is too long.
+		  (Article not posted.)
+
+		  After I changed the inews source, the article will be acceppted by
+		  inews and posted.
+
+	* nnrpd/perm.c: nnrpd/perm.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- updated readers.conf overhaul
+		  I've regularized the syntax per discussion between me/Fabien Tassin,
+		  e.g.
+
+		  group "groupname" {
+		    auth "panixhosts" {
+		      hosts: "*.panix.com"
+		      key: "default"      # is optional.  no key matches no key.
+		      auth "radius" {
+		        program: "radius -f /news/etc/authrad.conf"
+		      }
+		    }
+		    access "users" {
+		      users: "*"
+		      key: "default"
+		      newsgroups: "*,!internal.*"
+		      access: "Read Post"
+		    }
+		    access "staffers" {
+		      users: "staffer1@panix.com"
+		      key: "default"
+		      newsgroups: "*"
+		      access "Read Post"
+		    }
+		  }
+
+	* lib/conffile.c: lib/conffile.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- updated readers.conf overhaul
+		  I've regularized the syntax per discussion between me/Fabien Tassin,
+		  e.g.
+
+		  group "groupname" {
+		    auth "panixhosts" {
+		      hosts: "*.panix.com"
+		      key: "default"      # is optional.  no key matches no key.
+		      auth "radius" {
+		        program: "radius -f /news/etc/authrad.conf"
+		      }
+		    }
+		    access "users" {
+		      users: "*"
+		      key: "default"
+		      newsgroups: "*,!internal.*"
+		      access: "Read Post"
+		    }
+		    access "staffers" {
+		      users: "staffer1@panix.com"
+		      key: "default"
+		      newsgroups: "*"
+		      access "Read Post"
+		    }
+		  }
+
+	* include/conffile.h: include/conffile.h:
+		- From: Aidan Cully <aidan@panix.com>
+		- updated readers.conf overhaul
+		  I've regularized the syntax per discussion between me/Fabien Tassin,
+		  e.g.
+
+		  group "groupname" {
+		    auth "panixhosts" {
+		      hosts: "*.panix.com"
+		      key: "default"      # is optional.  no key matches no key.
+		      auth "radius" {
+		        program: "radius -f /news/etc/authrad.conf"
+		      }
+		    }
+		    access "users" {
+		      users: "*"
+		      key: "default"
+		      newsgroups: "*,!internal.*"
+		      access: "Read Post"
+		    }
+		    access "staffers" {
+		      users: "staffer1@panix.com"
+		      key: "default"
+		      newsgroups: "*"
+		      access "Read Post"
+		    }
+		  }
+
+Thu Apr 22 04:30:49 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* backends/actsync.c: backends/actsync.c:
+		- From: Thomas Mike Michlmayr <mike@cosy.sbg.ac.at>
+		- attached are the patch to actsync that adds the capability to specify
+		  a port to hostnames and a patch to the manpage.
+
+Tue Apr 20 01:38:04 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- From: rmtodd@skywalker.ecn.ou.edu (Richard Todd)
+		- When using SEQUENTIAL mode in cycbuff.conf with cnfs, and starting
+		  innd after "dd if=/dev/zero"-ing the CNFS buffers, cnfs fails to set
+		  the 'memb_next' (pointer to the next cycbuff to dump articles to)
+		  correctly, causing later coredumps.  The problem is this: in
+		  CNFS_setcurrent, if the cycbuffs are previously uninitialized, the
+		  code near the top of CNFS_setcurrent treats the cycbuffs as if they
+		  were just moved in from another metacycbuff (which is not too
+		  unreasonable), and does not consider this as a possible candidate for
+		  the 'current' cycbuff (which is also reasonable).  The problem is
+		  that if all the cycbuffs are new, 'currentcycbuff' never gets set to
+		  anything, so whatever stack garbage is there gets used in setting the
+		  memb_next variable.  The following patch fixes this by arbitrarily
+		  picking cycbuff 0 as 'current' if no suitable current cycbuff was
+		  found.
+
+Mon Apr 19 07:05:23 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* ltconfig: ltconfig:
+		- From: "Boyd Lynn Gerber (801) 250-O795 Work" <gerberb@zenez.com>
+		- Here is a patch for your libtool when you use SCO OpenServer 5.0.X.  I
+		  have tested this on inn-2.1 and 2.2.  I do not get any errors once
+		  this has been applied on both version of inn.
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- article check was always done regardless of nnrpdcheckart
+
+	* innd/site.c: innd/site.c:
+		- drop 'DEBUG' message
+
+Thu Apr 15 07:01:40 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/cc.c: innd/cc.c:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- This fixes a logic bug when possibly setting/unsetting a reason
+		  for preventing readers. When we set/unset NNRPReason, we want to
+		  check that readerswhenstopped in _not_ set. NNRPReason being
+		  set prevents readers connecting when innd is paused.
+
+	* samples/mailpost.in: samples/mailpost.in:
+		- From: Geoff Gibbs <ggibbs@hgmp.mrc.ac.uk>
+		- There is a bug in mailpost, which produces the error message
+
+		  "First line with leading whitespace!"
+
+		  when it is fed an e-mail, where the body of the message starts with
+		  a space. (i.e. headers,blank line,space ...)
+
+		  The bug is in the code for handling header continuation lines. I
+		  believe that the following patch fixes the problem, although you may
+		  well be able to improve the Perl ;-)
+
+Tue Apr 13 14:49:18 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/inncheck.in, samples/inn.conf.in: samples/inn.conf.in:
+	samples/inncheck.in:
+		- add new parameter 'ignorenewsgroups' not to use Newsgroups header,
+		  if the article is cmsg newgroup/rmgroup.  It simply uses newsgroup
+		  name in Control header.  It is useful, if feeding newsgroup is
+		  restricted for some site not to feed based on Newsgroups header.
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- add new parameter 'ignorenewsgroups' not to use Newsgroups header,
+		  if the article is cmsg newgroup/rmgroup.  It simply uses newsgroup
+		  name in Control header.  It is useful, if feeding newsgroup is
+		  restricted for some site not to feed based on Newsgroups header.
+
+	* innd/art.c: innd/art.c:
+		- add new parameter 'ignorenewsgroups' not to use Newsgroups header,
+		  if the article is cmsg newgroup/rmgroup.  It simply uses newsgroup
+		  name in Control header.  It is useful, if feeding newsgroup is
+		  restricted for some site not to feed based on Newsgroups header.
+
+	* include/libinn.h, include/innconf.h: include/innconf.h:
+	include/libinn.h:
+		- add new parameter 'ignorenewsgroups' not to use Newsgroups header,
+		  if the article is cmsg newgroup/rmgroup.  It simply uses newsgroup
+		  name in Control header.  It is useful, if feeding newsgroup is
+		  restricted for some site not to feed based on Newsgroups header.
+
+Mon Apr 12 16:23:49 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fix for cycle calculation
+
+	* innfeed/article.c: innfeed/article.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- article size was incorrect
+
+	* samples/inn.conf.in: samples/inn.conf.in:
+		- add new parameter 'rlimitnofile' for {set|get}rlimit()
+
+	* lib/getconfig.c, lib/getdtab.c: lib/getconfig.c:
+	lib/getdtab.c:
+		- add new parameter 'rlimitnofile' for {set|get}rlimit()
+
+	* innfeed/main.c, innfeed/startinnfeed.c: innfeed/main.c:
+	innfeed/startinnfeed.c:
+		- add new parameter 'rlimitnofile' for {set|get}rlimit()
+
+	* innd/innd.c, innd/inndstart.c: innd/innd.c:
+	innd/inndstart.c:
+		- add new parameter 'rlimitnofile' for {set|get}rlimit()
+
+	* include/libinn.h, include/config.h.in, include/innconf.h:
+	include/config.h.in:
+	include/innconf.h:
+	include/libinn.h:
+		- add new parameter 'rlimitnofile' for {set|get}rlimit()
+
+	* configure, configure.in, INSTALL: INSTALL:
+	configure:
+	configure.in:
+		- add new parameter 'rlimitnofile' for {set|get}rlimit()
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- checking inndstart mode was incorrect
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- add new parameter 'rlimitnofile' for {set|get}rlimit()
+		- checking inndstart mode was incorrect
+
+	* innd/art.c: innd/art.c:
+		- show meaningful message, if article is not stored because it does not
+		  match any entry in storage.conf
+
+Fri Apr  9 01:10:29 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fix for parsing controlchan log
+
+	* INSTALL: INSTALL:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fix for 2.3
+
+Wed Apr  7 08:05:00 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* backends/actsyncd.sh.in: backends/actsyncd.sh.in:
+		- tried to remove directory where actsyncd sits
+
+Tue Apr  6 04:55:55 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innfeed/msgs.h, innfeed/host.c, innfeed/misc.h, innfeed/connection.c:
+	innfeed/connection.c:
+	innfeed/host.c:
+	innfeed/misc.h:
+	innfeed/msgs.h:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- use double instead of long long
+
+	* include/config.h.in: include/config.h.in:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- use double instead of long long
+
+	* backends/innxmit.c: backends/innxmit.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- use double instead of long long
+
+	* configure.in, configure: configure:
+	configure.in:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- use double instead of long long
+
+Mon Apr  5 02:32:04 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- some cosmetic fixes
+
+	* innfeed/host.c: innfeed/host.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- some cosmetic fixes
+
+Fri Apr  2 07:52:07 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innfeed/misc.h, innfeed/msgs.h: innfeed/misc.h:
+	innfeed/msgs.h:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- 'long long' format patch
+
+	* include/config.h.in: include/config.h.in:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- 'long long' format patch
+
+	* backends/innxmit.c: backends/innxmit.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- 'long long' format patch
+
+	* configure.in, configure: configure:
+	configure.in:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- 'long long' format patch
+
+Mon Mar 29 02:09:16 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* configure.in, configure: configure:
+	configure.in:
+		- print out meaningful message for 'long long'
+
+Sat Mar 27 15:01:17 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm, samples/innreport.conf.in:
+	samples/innreport.conf.in:
+		- defalult html is false
+	samples/innreport_inn.pm:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- long long patch
+
+	* innfeed/misc.h, innfeed/msgs.h, innfeed/connection.c, innfeed/host.c:
+	innfeed/connection.c:
+	innfeed/host.c:
+	innfeed/misc.h:
+	innfeed/msgs.h:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- long long patch
+
+	* include/config.h.in: include/config.h.in:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- long long patch
+
+	* backends/innxmit.c: backends/innxmit.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- long long patch
+
+	* configure.in, configure: configure:
+	configure.in:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- long long patch
+
+	* site/Makefile: site/Makefile:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- nnrp.access is obsoleted
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- added ``C'' newsfeeds flag to inncheck
+
+Fri Mar 26 02:11:35 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innfeed.conf: samples/innfeed.conf:
+		- add 'drop-deferred' and 'min-queue-connection' for sample
+		  configurations
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- reported by "Matthew Emmerton" <mattemme@enoreo.on.ca>
+		- tmpdir should not be DISPOSED(), since handed area is used by
+		  putenv() for some OSes
+
+Thu Mar 25 22:42:01 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- reported by "Matthew Emmerton" <mattemme@enoreo.on.ca>
+		- tmpdir should not be DISPOSED(), since handed area is used by
+		  putenv() for some OSes
+
+	* samples/innreport_inn.pm, samples/innreport.conf.in, samples/innreport.in:
+	samples/innreport.conf.in:
+	samples/innreport.in:
+	samples/innreport_inn.pm:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- here is set of patches against last (inn-1999-03-24_03-00) wich
+		  allow report of incoming volume (nnrp/innfeed/innxmit). innreport
+		  have 3.0.1 version (my server with all modification run
+		  innreport-3.0.1 last 3 weeks). innfeed have additional key
+		  ``min-queue-connection'' (see man page).
+
+	* innfeed/msgs.h, innfeed/tape.c, innfeed/connection.c, innfeed/host.c, innfeed/article.c, innfeed/article.h:
+	innfeed/article.c:
+	innfeed/article.h:
+	innfeed/connection.c:
+	innfeed/host.c:
+	innfeed/msgs.h:
+	innfeed/tape.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- here is set of patches against last (inn-1999-03-24_03-00) wich
+		  allow report of incoming volume (nnrp/innfeed/innxmit). innreport
+		  have 3.0.1 version (my server with all modification run
+		  innreport-3.0.1 last 3 weeks). innfeed have additional key
+		  ``min-queue-connection'' (see man page).
+
+	* backends/innxmit.c: backends/innxmit.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- here is set of patches against last (inn-1999-03-24_03-00) wich
+		  allow report of incoming volume (nnrp/innfeed/innxmit). innreport
+		  have 3.0.1 version (my server with all modification run
+		  innreport-3.0.1 last 3 weeks). innfeed have additional key
+		  ``min-queue-connection'' (see man page).
+
+	* storage/timehash/timehash.c: storage/timehash/timehash.c:
+		- might have freed unallocated area for article
+
+	* expire/makehistory.c: expire/makehistory.c:
+		- do not remove articles which don't have Xref (for tradspool)
+
+Wed Mar 24 02:48:34 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm, samples/innreport.conf.in:
+	samples/innreport.conf.in:
+	samples/innreport_inn.pm:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- What's about my version innreport_inn.pm and innreport.conf,
+		  which process both 502 and 505 codes correctly (and have
+		  volume(size) accounting, which fully compatible with old format
+		  of inn logs).
+
+Tue Mar 23 04:26:48 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- 505 is repored by innd instead of 502
+		- regexp was not correct for picking up above message
+
+Mon Mar 22 22:21:11 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/inn.conf.in, samples/inncheck.in: samples/inn.conf.in:
+	samples/inncheck.in:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add an option to set a nice value for nnrpd processes in inn.conf
+		  Allows overchan to run at a higher priority than nnrpd and hence
+		  keep up on heavily loaded reader machines.
+
+	* nnrpd/nnrpd.c: nnrpd/nnrpd.c:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add an option to set a nice value for nnrpd processes in inn.conf
+		  Allows overchan to run at a higher priority than nnrpd and hence
+		  keep up on heavily loaded reader machines.
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add an option to set a nice value for nnrpd processes in inn.conf
+		  Allows overchan to run at a higher priority than nnrpd and hence
+		  keep up on heavily loaded reader machines.
+
+	* include/libinn.h, include/innconf.h: include/innconf.h:
+	include/libinn.h:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add an option to set a nice value for nnrpd processes in inn.conf
+		  Allows overchan to run at a higher priority than nnrpd and hence
+		  keep up on heavily loaded reader machines.
+
+Sat Mar 20 16:03:41 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innfeed/connection.c: innfeed/connection.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Some site (news-feed.inet.tele.dk, #14 on Freenix top-1000)
+		  don't user stream mode. This patch was tested on
+		  newsfeed/news.gamma.ru for several months.
+
+Thu Mar 18 04:23:26 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innfeed/host.h, innfeed/connection.c, innfeed/host.c, innfeed/configfile.h:
+	innfeed/configfile.h:
+	innfeed/connection.c:
+	innfeed/host.c:
+	innfeed/host.h:
+		- From: miquels@cistron.nl (Miquel van Smoorenburg)
+		- This patch adds a "drop-deferred" option to innfeed.conf so you can
+		  have innfeed drop an article for some peers if it has been deferred.
+
+	* backends/actsync.c: backends/actsync.c:
+		- From: Thomas Mike Michlmayr <mike@cosy.sbg.ac.at>
+		- fixes a problem when syncing to a collabra-server, who returns
+		  "yg" as flag for a newsgroup (at least secnews.netscape.com).
+
+Tue Mar 16 02:30:25 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/moderators: samples/moderators:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- moderators.isc.org don't have all fido7.* aliases (at least).
+		  I (as fido7.* supporter) have many question about it.
+
+Mon Mar 15 05:29:02 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- reported by Pavel Gulchouck <gul@lucky.net>
+		- inews and nnrpd dumps core if size of posting article more then
+		  local size limit. It happans because in inews.c line 1316 and
+		  in nnrpd/post.c line 955 pointer p is out of core. I think
+		  atoi(p) should be changed to innconf->localmaxartsize in
+		  these lines.
+
+	* frontends/inews.c: frontends/inews.c:
+		- reported by Pavel Gulchouck <gul@lucky.net>
+		- inews and nnrpd dumps core if size of posting article more then
+		  local size limit. It happans because in inews.c line 1316 and
+		  in nnrpd/post.c line 955 pointer p is out of core. I think
+		  atoi(p) should be changed to innconf->localmaxartsize in
+		  these lines.
+
+Sun Mar  7 15:00:48 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fixed core dump
+
+	* innfeed/innlistener.c: innfeed/innlistener.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- innfeed -- memory leak. On heavy loaded server (FreeBSD-3.1)
+		  I got many ``partial read'' from innd (and each time
+		  innlistener expanded empty buffer):
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fixed core dump
+
+	* innfeed/innlistener.c: innfeed/innlistener.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- innfeed -- memory leak. On heavy loaded server (FreeBSD-3.1)
+		  I got many ``partial read'' from innd (and each time
+		  innlistener expanded empty buffer):
+
+Wed Mar  3 03:05:29 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/perl.c, innd/art.c: innd/art.c:
+	innd/perl.c:
+		- From: Russ Allbery <rra@stanford.edu>
+		- This patch adds a special __LINES__ key to the %hdr hash available to
+		  the Perl filter, containing an accurate line count of the article.
+
+	* README.perl_hook: README.perl_hook:
+		- From: Russ Allbery <rra@stanford.edu>
+		- This patch adds a special __LINES__ key to the %hdr hash available to
+		  the Perl filter, containing an accurate line count of the article.
+
+	* innd/art.c, innd/perl.c: innd/art.c:
+	innd/perl.c:
+		- From: Russ Allbery <rra@stanford.edu>
+		- This patch adds a special __LINES__ key to the %hdr hash available to
+		  the Perl filter, containing an accurate line count of the article.
+
+	* README.perl_hook: README.perl_hook:
+		- From: Russ Allbery <rra@stanford.edu>
+		- This patch adds a special __LINES__ key to the %hdr hash available to
+		  the Perl filter, containing an accurate line count of the article.
+
+Tue Mar  2 03:11:58 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/innd.h, innd/cc.c: innd/cc.c:
+	innd/innd.h:
+		- From: Russ Allbery <rra@stanford.edu>
+		- The INN::newsgroup() XS Perl function is supposed to return the flags
+		  for a given newsgroup (ngp->Rest).  Unfortunately, whoever wrote it
+		  originally was unaware that the Rest pointer in a NEWSGROUP is just a
+		  pointer into the in-memory copy of the active file, and therefore
+		  this field is *not* null-terminated.  As a result, whenever a Perl
+		  filter called INN::newsgroup, it would get not only the flags for
+		  that newsgroup but a complete copy of the active file from that point
+		  forward.
+
+	* innd/innd.h, innd/cc.c: innd/cc.c:
+	innd/innd.h:
+		- From: Russ Allbery <rra@stanford.edu>
+		- The INN::newsgroup() XS Perl function is supposed to return the flags 	  for a given newsgroup (ngp->Rest).  Unfortunately, whoever wrote it
+		  originally was unaware that the Rest pointer in a NEWSGROUP is just a
+		  pointer into the in-memory copy of the active file, and therefore
+		  this field is *not* null-terminated.  As a result, whenever a Perl
+		  filter called INN::newsgroup, it would get not only the flags for
+		  that newsgroup but a complete copy of the active file from that point
+		  forward.
+
+Tue Feb 23 18:43:50 1999  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* samples/sendsys.pl.in, samples/senduuname.pl.in, samples/version.pl.in:
+	fixed instances of @inn::mailcmd to $inn::mailcmd that prevented these scripts from being properly loaded
+
+	* samples/controlchan.in: syslog to /dev/log on dec_osf
+
+Wed Feb 17 05:03:34 1999  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* samples/rmgroup.in:
+	FIxed check for existing group to not use regular expression for matching
+	(would bogey *.lang.c++).
+
+	moved approval check earlier, before mailing news admin.
+
+Tue Feb 16 00:25:03 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* INSTALL: INSTALL:
+		- nnrp.access has already gone
+
+Mon Feb 15 21:09:46 1999  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* backends/actsyncd.sh.in:
+	the output file was not being created in the work directory, but in
+	whatever directory the program started from
+
+	made syncing directly from a local file work again
+
+Sun Feb 14 07:49:10 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* INSTALL: INSTALL:
+		- From: Richard Kettlewell <rjk@greenend.org.uk>
+		- Firstly the reference to a "pound sign" as the comment character is
+		  misleading to speakers of British English, where that phrase does not
+		  refer to the "#" sign at all.
+
+		  Secondly there is a complete absence of any reference to nnrp.access
+		  in the section on setting up config files.
+
+Sat Feb 13 10:56:47 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/news.daily.in: samples/news.daily.in:
+		- use ${SED} instead of sed
+
+	* samples/news.daily.in: samples/news.daily.in:
+		- From: Ken Makimura <macky@astem.or.jp>
+		- add -D${EXPDIR} if ${EXPDIR} is specified
+
+	* storage/timehash/timehash.c: storage/timehash/timehash.c:
+		- From: Olaf Titz <olaf@bigred.inka.de>
+		- Patch for more efficient timehash RETR_STAT
+
+Fri Feb 12 00:49:12 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- correct mistake in rev. 1.52
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- correct mistake in rev. 1.48.2.2
+
+Mon Feb  8 07:57:15 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/nnrpd.c: nnrpd/nnrpd.c:
+		- From: Andrew Gierth <andrew@erlenstar.demon.co.uk>
+		- The original code was correct in this respect. This is why accept()
+		  et. al. have an additional size parameter for the address. The cast
+		  is something of a historical crock, but is nevertheless correct.
+
+Sat Feb  6 03:17:21 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/controlchan.in, samples/cnfsstat.in: samples/cnfsstat.in:
+		- From: davidsen@tmr.com (bill davidsen)
+		- I don't see in the man pages that you can use continuation lines in
+		  the cycbufs.conf file, but there's code to handle it, and it makes
+		  the file a lot easier to read.
+
+		  The cnfsstat script doesn't know about this, here's how to make it
+		  work.  This is just the bugfix, I am not quite ready to release my
+		  enhancements yet, due to unexplained failure with raw partitions
+	samples/controlchan.in:
+		- From: Aidan Cully <aidan@panix.com>
+		- Adds a '-l' command line argument, that redirects 'stderr' output to		  an optional file, e.g.
+		    /news/bin/controlchan -l /news/log/controlchan.log
+		  for cases where, for some bizarre reason, Sys::syslog doesn't work,
+		  and we don't want to get 500 lines of control-message output in the
+		  innreport every night.
+
+	* nnrpd/nnrpd.c: nnrpd/nnrpd.c:
+		- This patch addresses one bug (wrong data type) and one missing
+		  feature (nicekids). The type was a struct defined as sockaddr_in and
+		  used with a case where sockaddr was required. Because I'm not sure
+		  all systems will have the same size for both, and my compiler whines
+		  about the original, I defined the value correctly and dropped the
+		  cast.
+
+		  When running from innd, a nice() value is gotten from the nicekids
+		  value in inn.conf. In daemon mode that wasn't being done, so I added
+		  the code here. Note: you do *not* want to just start the daemon
+		  niced, as it will then open sockets more slowly (I measured with
+		  NSLG). Nicekids is the way to go here.
+
+	* samples/cnfsstat.in: samples/cnfsstat.in:
+		- From: davidsen@tmr.com (bill davidsen)
+		- I don't see in the man pages that you can use continuation lines in
+		  the cycbufs.conf file, but there's code to handle it, and it makes
+		  the file a lot easier to read.
+
+		  The cnfsstat script doesn't know about this, here's how to make it
+		  work.  This is just the bugfix, I am not quite ready to release my
+		  enhancements yet, due to unexplained failure with raw partitions
+
+	* nnrpd/nnrpd.c: nnrpd/nnrpd:
+		- From: davidsen@tmr.com (bill davidsen)
+		- This patch addresses one bug (wrong data type) and one missing
+		  feature (nicekids). The type was a struct defined as sockaddr_in and
+		  used with a case where sockaddr was required. Because I'm not sure
+		  all systems will have the same size for both, and my compiler whines
+		  about the original, I defined the value correctly and dropped the
+		  cast.
+
+		  When running from innd, a nice() value is gotten from the nicekids
+		  value in inn.conf. In daemon mode that wasn't being done, so I added
+		  the code here. Note: you do *not* want to just start the daemon
+		  niced, as it will then open sockets more slowly (I measured with
+		  NSLG). Nicekids is the way to go here.
+
+Tue Feb  2 03:26:30 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- warn if null line is included in active
+		- warn if eol is not ended with '\n' in active
+
+Mon Feb  1 07:21:54 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport.in: samples/innreport.in:
+		- showed non-existent tag for html output
+
+	* innd/newsfeeds.c, innd/art.c: innd/art.c:
+		- couting Lines was incorrect for storageapi
+		- '@' was meaningless for groups with 'x' in active
+	innd/newsfeeds.c:
+		- '@' was meaningless for non existent groups
+
+	* samples/innreport.in: samples/innreport.in:
+		- showed non-existent tag for html output
+
+	* innd/newsfeeds.c, innd/art.c: innd/art.c:
+		- couting Lines was incorrect for storageapi
+		- '@' was meaningless for groups with 'x' in active
+	innd/newsfeeds.c:
+		- '@' was meaningless for non existent groups
+
+Sun Jan 31 03:57:23 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/inn.conf.in: samples/inn.conf.in:
+		- reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+		- default for readerswhenstopped is false
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+		- default for readerswhenstopped is false
+
+	* innd/innd.c: innd/innd.c:
+		- reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+		- default for readerswhenstopped is false
+
+	* samples/inn.conf.in: samples/inn.conf.in:
+		- reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+		- default for readerswhenstopped is false
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+		- default for readerswhenstopped is false
+
+	* innd/innd.c: innd/innd.c:
+		- reported by Uli Zappe <uli@tallowcross.uni-frankfurt.de>
+		- default for readerswhenstopped is false
+
+Fri Jan 29 11:54:57 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- From: Thomas Mechtersheimer <thomasm@nrw.net>
+		- it should be removed like the htonl() on cah.class at a different
+		  source location
+
+Wed Jan 27 21:55:25 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innfeed/Makefile: innfeed/Makefile:
+		- version update which was done for 2.2
+
+	* innd/newsfeeds.c: innd/newsfeeds.c:
+		- From: smurf@noris.de (Matthias Urlichs)
+		- mischecking errors
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- From: thomasm@csl33.csl-gmbh.net
+		- for articles with offset values beyond the cycbuff->free pointer,
+		  this should be cyclenum-1
+		- From: smurf@noris.de (Matthias Urlichs)
+		- CNFS next-article code is broken because it fails to clear the offset
+		  when it switches to the next buffer
+		- From the "while I'm at it" department: the following patch, to the
+		  same file, fixes reading of old-style CNFS buffers -- assuming there
+		  is anybody out there who still has a 1.x CNFS-INN server...
+
+	* samples/docheckgroups.in: samples/docheckgroups.in:
+		- From: Philippe Michel <Philippe.Michel@syseca.fr>
+		- maybe it would be better to use ${1:-.}, for backwards compatibility
+		  at least.
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- From: John Schmidt <js@saltmine.radix.net>
+		- It seemed more logical to skip the check entirely if the total number
+		  of lines is less than 40.
+
+	* innd/rc.c: innd/rc.c:
+		- From: smurf@noris.de (Matthias Urlichs)
+		- Some Perl installations have -Dbool=char, which clashes with
+		  innd/rc.c.
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- From: John Schmidt <js@saltmine.radix.net>
+		- It seemed more logical to skip the check entirely if the total number
+		  of lines is less than 40.
+
+	* innd/rc.c: innd/rc.c:
+		- From: smurf@noris.de (Matthias Urlichs)
+		- Some Perl installations have -Dbool=char, which clashes with
+		  innd/rc.c.
+
+Mon Jan 25 10:10:12 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/udp.c: nnrpd/udp.c:
+		- From: SUNAGAWA Keiki <Keiki_SUNAGAWA@yokogawa.co.jp>
+		- include syslog.h instead of sys/syslog.h
+
+	* nnrpd/commands.c: nnrpd/commands.c:
+		- From: Paul Tomblin <ptomblin@xcski.com>
+		- here's the patch again
+
+Sat Jan 23 04:14:24 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/status.c: innd/status.c:
+		- From: Paul Tomblin <ptomblin@xcski.com>
+		- it would be better to name it inn_status.html if HTML_STATUS is
+		  defined
+
+Fri Jan 22 15:29:40 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/cnfsstat.in: samples/cnfsstat.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- write pointer was not printed correctly
+
+	* nnrpd/perm.c: nnrpd/perm.c:
+		- From: Chris Panayis <chris@freedom2surf.net>
+		- Status from external permissions proggy not working
+
+Thu Jan 21 15:21:35 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* site/do-subst.sh: site/do-subst.sh:
+		- if there is a MAKE configure variable, use it
+
+Thu Jan 21 11:04:34 1999  James Brister  <brister@pub3.rc.vix.com>
+
+	* README, CONTRIBUTORS: 2.2 update
+
+	* innfeed/Makefile, include/patchlevel.h, Makefile:
+	Update for 2.2 release.
+
+Wed Jan 20 11:58:21 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* authprogs/domain.c: authprogs/domain.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- This resolver just strips a suffix off the remote-user's hostname to
+		  get the username.
+
+	* authprogs/Makefile: authprogs/Makefile:
+		- From: Aidan Cully <aidan@panix.com>
+		- This resolver just strips a suffix off the remote-user's hostname to
+		  get the username.
+
+	* MANIFEST: MANIFEST:
+		- add authprogs/domain.c
+
+Tue Jan 19 03:17:04 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/rc.c: innd/rc.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- In innd/rc.c(RCwritelist()): I think The DISPOSE(r) is wrong - via
+		  cpcatpath() p points to a static buffer and r is assigned to p.
+
+	* frontends/rnews.c: frontends/rnews.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- The value of PATHBADNEWS is combined using cpcatpath(), which only
+		  returns a pointer to a fixed buffer (pathbuff in lib/getconfig.c).
+		  Later - if you use a password protected NNTP connection - rnews calls
+		  NNTPsendpassword() (lib/sendpass.c) which also uses cpcatpath() to
+		  construct a path name -> pathbuff gets overwritten and the value of
+		  PATHBADNEWS is now pure nonsense.
+
+	* contrib/reset-cnfs.c: contrib/reset-cnfs.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- A QD hack to overwrite the state parts of a CNFS buffer with nulls.
+
+	* MANIFEST: MANIFEST:
+		- add contrib/reset-cnfs.c
+
+	* innd/rc.c: innd/rc.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- In innd/rc.c(RCwritelist()): I think The DISPOSE(r) is wrong - via
+		  cpcatpath() p points to a static buffer and r is assigned to p.
+
+	* frontends/rnews.c: frontends/rnews.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- The value of PATHBADNEWS is combined using cpcatpath(), which only
+		  returns a pointer to a fixed buffer (pathbuff in lib/getconfig.c).
+		  Later - if you use a password protected NNTP connection - rnews calls
+		  NNTPsendpassword() (lib/sendpass.c) which also uses cpcatpath() to
+		  construct a path name -> pathbuff gets overwritten and the value of
+		  PATHBADNEWS is now pure nonsense.
+
+Sun Jan 17 23:21:36 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/news.daily.in, samples/innreport.conf.in, samples/innreport_inn.pm, samples/incoming.conf:
+	samples/incoming.conf:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Add ``noresendid'' for non-stream mode.
+	samples/innreport.conf.in:
+	samples/innreport_inn.pm:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Used to be that the only no permission rejections would come from
+		  nnrpd, but now with the new noreader mode, innd may also reject
+		  connections.  This patch teaches innreport about those; it basically
+		  does exactly the same thing with them that it does with nnrpd
+		  rejects.
+
+		  Note that innd doesn't do reverse name resolution for the log
+		  messages, so all no-permission servers will be logged by IP address;
+		  this patch still does the case smashing just in case that someday
+		  changes.
+	samples/news.daily.in:
+		- From: davidsen@tmr.com (bill davidsen)
+		- The news.daily script doesn't properly use the user defined temp
+		  space for sorts. There's some logic to look and see if TMPDIR is
+		  defined, build the -T option for sort to use, and then ignore the
+		  whole issue.
+
+	* nnrpd/udp.c: nnrpd/udp.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- This eliminates the calls to perror() and replaces them by syslog()s.
+		  The perror()s make it impossible to use nnrpd from inetd, since the
+		  output goes to the NNTP channel, thus violating the NNTP specs.
+
+	* innd/nc.c: innd/nc.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Add ``noresendid'' for non-stream mode.
+
+	* Makefile: Makefile:
+		- From: Aidan Cully <aidan@panix.com>
+		- This patch should fix it..  I don't really know where the FLAGS
+		  variable comes from, since both GNU and BSD-make use MAKEFLAGS, but
+		  I'm more interested in making this work correctly than cleaning
+		  things up right now, so I just pass DESTDIR directly, like the
+		  install: target does to common.
+
+	* samples/incoming.conf, samples/news.daily.in: samples/incoming.conf:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Add ``noresendid'' for non-stream mode.
+	samples/news.daily.in:
+		- From: davidsen@tmr.com (bill davidsen)
+		- The news.daily script doesn't properly use the user defined temp
+		  space for sorts. There's some logic to look and see if TMPDIR is
+		  defined, build the -T option for sort to use, and then ignore the
+		  whole issue.
+
+	* nnrpd/udp.c: nnrpd/udp.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- This eliminates the calls to perror() and replaces them by syslog()s.
+		  The perror()s make it impossible to use nnrpd from inetd, since the
+		  output goes to the NNTP channel, thus violating the NNTP specs.
+
+	* innd/nc.c: innd/nc.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Add ``noresendid'' for non-stream mode.
+
+	* Makefile: Makefile:
+		- From: Aidan Cully <aidan@panix.com>
+		- This patch should fix it..  I don't really know where the FLAGS
+		  variable comes from, since both GNU and BSD-make use MAKEFLAGS, but
+		  I'm more interested in making this work correctly than cleaning
+		  things up right now, so I just pass DESTDIR directly, like the
+		  install: target does to common.
+
+Wed Jan 13 07:03:38 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innfeed/sysconfig.h: innfeed/sysconfig.h:
+		- From: "Mark Wedel" <mark@icp.siemens.com>
+		- avoid symbol duplication for sinix
+
+	* authprogs/radius.c: authprogs/radius.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- This makes the timeout work properly, and adds support for prefixes
+		  and suffixes for the username.  I still haven't added code to give it
+		  a default config file, but that's really a no-brainer.
+
+Tue Jan 12 14:11:36 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- sm dropped into infinite loop
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- From: Paul Tomblin <ptomblin@xcski.com>
+		- The test to see if PERMuser is set is wrong, because PERMuser is a
+		  char array, not a char pointer.
+
+Mon Jan 11 11:24:40 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs-private.h, storage/cnfs/cnfs.c:
+	storage/cnfs/cnfs-private.h:
+	storage/cnfs/cnfs.c:
+		- SEQUENTIAL mode is now available
+
+	* site/Makefile: site/Makefile:
+		- samples/cnfsheadconf.in is added
+
+	* samples/cnfsheadconf.in: samples/cnfsheadconf.in:
+		- manipulate cycbuff header script
+
+	* configure.in, configure, MANIFEST: MANIFEST:
+	configure:
+	configure.in:
+		- samples/cnfsheadconf.in is added
+
+	* nnrpd/commands.c: nnrpd/commands.c:
+		- From: Paul Tomblin <ptomblin@xcski.com>
+		- This patch sets PERMuser and PERMpass after perl authentication so
+		  that they reflect the user and password that successfully
+		  authenticated, just as when you're using regular authentication those
+		  variables are set to the required values from the nnrp.access file.
+		  This is useful especially if you've configured DO_NNRP_AUTH_SENDER
+
+	* innd/art.c: innd/art.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Add logging ``Too old'', ``No colon-space in header''
+
+Sat Jan  9 17:38:43 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- correct syslog messages (storage.ctl was gone already)
+
+	* authprogs/Makefile: authprogs/Makefile:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- $LIBNEWS include libinn already. libinn.a is incorrect, must be
+		  libinn.$(EXTLIB):
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- originally From: Russ Allbery <rra@stanford.edu>
+		- All this patch does is move the check against the posting permissions
+		  pattern above this check, and I believe implements precisely the
+		  following change: if a post goes to a group that would be disallowed
+		  by the posting permissions pattern, it will be refused regardless of
+		  whether we actually carry the group in question.
+
+	* innd/art.c: innd/art.c:
+		- if logipaddr is true and innd will pass 0.0.0.0 for 's', innd passes
+		  the site name retrieved from Path header instead
+
+	* samples/innreport.conf.in, samples/innreport_inn.pm:
+	samples/innreport.conf.in:
+	samples/innreport_inn.pm:
+		- From: Hiroaki Sengoku <sengoku@gcd.forus.or.jp>
+		- analyze ihave/sendme process from controlchan
+
+Fri Jan  8 22:03:32 1999  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* backends/nntpget.c:
+	y2k fix: pass only two digit date (RFC 977 rules) for newnews command
+
+	* nnrpd/misc.c:
+	y2k fix: accept three digit and four digit years for dates in  NNTP commands
+
+	* backends/nntpget.c:
+	y2k fix: pass only two digit date (RFC 977 rules) for newnews command
+
+	* nnrpd/misc.c:
+	y2k fix: accept three digit and four digit years for dates in  NNTP commands
+
+Fri Jan  8 08:12:59 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* INSTALL: INSTALL:
+		- describe logipaddr should be false if controlchan is used and ihave/
+		  sendme is required
+
+	* samples/innreport.in: samples/innreport.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- log from Sys::Syslog may have additional year on some system
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Small bug fix to the patch I sent a couple days ago.  If the
+		  percentage used of the buffer is under 10%, there's an extra space in
+		  the output, which was preventing the regex from matching.
+
+	* INSTALL: INSTALL:
+		- Add AIX 4.2 which works INN2.x
+
+Thu Jan  7 10:20:20 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/newsfeeds.c: innd/newsfeeds.c:
+		- claim 'setup_error' if SITEsetup() fails
+		  without this patch, innd exits with 'syntax_error' if SITEsetup()
+		  fails.  This is confusing for admins, even if there is no syntax
+		  error.
+
+	* authprogs/README.readers.conf: authprogs/README.readers.conf:
+		- From: Aidan Cully <aidan@panix.com>
+		- I also updated my CONTRIBUTORS entry to include the readers.conf.
+		  I'd fix the spelling on my name, but having it misspelled has become
+		  a kind of way of life for me, and I get a kind of perverse enjoyment
+		  out of it.
+
+	* CONTRIBUTORS, MANIFEST: CONTRIBUTORS:
+		- From: Aidan Cully <aidan@panix.com>
+		- I also updated my CONTRIBUTORS entry to include the readers.conf.
+		  I'd fix the spelling on my name, but having it misspelled has become
+		  a kind of way of life for me, and I get a kind of perverse enjoyment
+		  out of it.
+	MANIFEST:
+		- authprogs/README.readers.conf is added
+
+Wed Jan  6 14:51:45 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm, samples/innreport.conf.in:
+	samples/innreport.conf.in:
+	samples/innreport_inn.pm:
+		- From: Russ Allbery <rra@stanford.edu>
+		- The following patch will let innreport generate a report
+
+	* innd/art.c: innd/art.c
+		- do not (sym)link if writelinks is false
+
+	* INSTALL: INSTALL:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Patch to INSTALL attached to add more details on why you might need
+		  overview data and more detail of what the point of the different
+		  BUCKETS in overview.ctl is.  I also corrected one place where the
+		  file had an 80 column line, since it made it somewhat annoying to
+		  deal with in emacs.  (There's still another 80 column line, but
+		  that's a literal cron entry example that can't be easily shortened
+		  and is offset from regular text.)
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- From: Russ Allbery <rra@stanford.edu>
+		- this will suppress the cycbuff rollover messages, which otherwise
+		  show up as unknown log entries.  At some point, someone might want to
+		  do something more interesting with these, but for right now ignoring
+		  them seems the best.
+
+		  There's also a minor formatting fix with a comment in here.
+
+	* samples/innreport.conf.in, samples/innreport_inn.pm:
+	samples/innreport_inn.pm:
+	samples/innreport.conf.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- I always kind of wondered why innreport didn't report on rmgroups and
+		  group mode changes like the old innlog.pl script used to.  This patch
+		  adds that functionality, as well as allowing innreport to recognize
+		  the results of a:
+
+			ctlinnd newgroup some.group =some.other.group
+
+		  which will now show up as a new group creation with a mode of "=".
+
+Tue Jan  5 22:30:22 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/nnrpd_auth.pl.in: samples/nnrpd_auth.pl.in:
+		- From: Paul Tomblin <ptomblin@xcski.com>
+		- The nnrpd_auth.pl supplied with 2.2-STABLE assumes that the hostname
+		  patterns in nnrp.access are regular expressions, but they're not,
+		  they're glob-like.
+
+	* backends/archive.c: backends/archive.c:
+		- do not copy archive, just (sym)link
+
+	* backends/archive.c: backends/archive.c:
+		- just create one archive even if the article is crossposted
+
+	* innfeed/Makefile: innfeed/Makefile:
+		- EXTRA_SRC is removed, since inet_addr() and strerror() is now
+		  included in libinn
+
+	* innfeed/Attic/inet_addr.c, innfeed/Attic/strerror.c:
+	innfeed/inet_addr.c:
+	innfeed/strerror.c:
+		- innfeed/inet_addr.c is moved to lib/inet_addr.c
+		- innfeed/strerror.c is removed since lib/strerror.c exists already
+
+	* lib/inet_addr.c: lib/inet_addr.c:
+		- innfeed/inet_addr.c is moved to lib/inet_addr.c
+
+	* authprogs/Makefile, authprogs/radius.c: authprogs/Makefile:
+		- link LIBNEWS for radius(some OS don't have inet_addr())
+	authprogs/radius.c:
+		- shut up compilation warning
+
+	* configure.in, configure, MANIFEST, Makefile.global.in: MANIFEST:
+		- innfeed/inet_addr.c is moved to lib/inet_addr.c
+		- innfeed/strerror.c is removed
+	Makefile.global.in:
+	configure:
+	configure.in:
+		- EXTRA_SRC is removed, since inet_addr() and strerror() is now
+		  included in libinn
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- From: Russ Allbery <rra@stanford.edu>
+		- With this plus my previous patch that was already applied, I think
+		  innreport is at least quiet about all of the log messages generated
+		  routinely by the standard programs in INN 2.2.
+
+Mon Jan  4 21:27:26 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Better yet, fix innreport so that it ignores controlchan's output.
+		  There may be some statistical summary that I can think of that might
+		  be useful eventually, and that way you still have the logs there in
+		  case you ever want them.  Here's a patch:
+
+	* storage/Makefile: storage/Makefile:
+		- From: Russ Allbery <rra@stanford.edu>
+		- storage/Makefile creates a storage/objs directory on first build, but
+		  the clean target, while deleting everything in the directory, doesn't
+		  delete the directory itself.  That seems wrong to me, and makes CVS
+		  whine on an update after a build.  Patch following.
+
+	* innd/rc.c: innd/rc.c:
+		- From: Russ Allbery <rra@stanford.edu>
+		- I always liked the way innfeed.conf would let you leave off the
+		  ip-addr key if it was the same as the key of the entry, so I fixed
+		  incoming.conf so that it would do the same.  Patch attached.
+
+	* INSTALL, Makefile: INSTALL:
+		- From: Russ Allbery <rra@stanford.edu>
+		- explain transit only server does not need overview
+	Makefile:
+		- From: Russ Allbery <rra@stanford.edu>
+		- I'm not sure the intended semantics of realclean here, but I'm pretty
+		  sure it's intended to be the same as distclean.  If so, it's missing
+		  a goodly bit of stuff according to CVS, plus it's convenient to have
+		  distclean available as an alias for it as well.  Patch attached.
+
+		  This also removes the following over what was deleted before:
+
+		  ? config.status
+		  ? frontends/c7unbatch.sh
+		  ? frontends/gunbatch.sh
+		  ? include/autoconfig.h
+		  ? innfeed/innfeed-convcfg
+		  ? innfeed/procbatch
+		  ? samples/checkgroups.pl
+		  ? samples/cnfsstat
+		  ? samples/controlbatch
+		  ? samples/controlchan
+		  ? samples/ihave.pl
+		  ? samples/mailpost
+		  ? samples/mod-active
+		  ? samples/news2mail
+		  ? samples/newgroup.pl
+		  ? samples/nnrpd_auth.pl
+		  ? samples/pullnews
+		  ? samples/rmgroup.pl
+		  ? samples/sendme.pl
+		  ? samples/sendsys.pl
+		  ? samples/senduuname.pl
+		  ? samples/simpleftp
+		  ? samples/version.pl
+		  ? site/config
+
+	* storage/Makefile: storage/Makefile:
+		- From: Russ Allbery <rra@stanford.edu>
+		- storage/Makefile creates a storage/objs directory on first build, but
+		  the clean target, while deleting everything in the directory, doesn't
+		  delete the directory itself.  That seems wrong to me, and makes CVS
+		  whine on an update after a build.  Patch following.
+
+	* innd/rc.c: innd/rc.c:
+		- From: Russ Allbery <rra@stanford.edu>
+		- I always liked the way innfeed.conf would let you leave off the
+		  ip-addr key if it was the same as the key of the entry, so I fixed
+		  incoming.conf so that it would do the same.  Patch attached.
+
+	* Makefile, INSTALL: INSTALL:
+		- From: Russ Allbery <rra@stanford.edu>
+		- explain transit only server needs overview
+	Makefile:
+		- From: Russ Allbery <rra@stanford.edu>
+		- I'm not sure the intended semantics of realclean here, but I'm pretty
+		  sure it's intended to be the same as distclean.  If so, it's missing
+		  a goodly bit of stuff according to CVS, plus it's convenient to have
+		  distclean available as an alias for it as well.  Patch attached.
+
+		  This also removes the following over what was deleted before:
+
+		  ? config.status
+		  ? frontends/c7unbatch.sh
+		  ? frontends/gunbatch.sh
+		  ? include/autoconfig.h
+		  ? innfeed/innfeed-convcfg
+		  ? innfeed/procbatch
+		  ? samples/checkgroups.pl
+		  ? samples/cnfsstat
+		  ? samples/controlbatch
+		  ? samples/controlchan
+		  ? samples/ihave.pl
+		  ? samples/mailpost
+		  ? samples/mod-active
+		  ? samples/news2mail
+		  ? samples/newgroup.pl
+		  ? samples/nnrpd_auth.pl
+		  ? samples/pullnews
+		  ? samples/rmgroup.pl
+		  ? samples/sendme.pl
+		  ? samples/sendsys.pl
+		  ? samples/senduuname.pl
+		  ? samples/simpleftp
+		  ? samples/version.pl
+		  ? site/config
+
+Mon Jan  4 04:23:17 1999  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* authprogs/pwcheck.c:
+	had the return codes backwards...if it user entered an invalid passwd, it
+	was considered valid...and vice versa...
+
+Mon Jan  4 02:14:59 1999  kondou  <kondou@pub3.rc.vix.com>
+
+	* configure.in, configure: configure:
+	configure.in:
+		- From: Russ Allbery <rra@stanford.edu>
+		- Additional commands that should run after autoconf generates its
+		  output files should be put into the second argument of AC_OUTPUT
+		  rather than just raw into configure.in.  Raw commands will correctly
+		  get put into the generated configure script, but they *won't* be put
+		  into config.status.  config.status is very convenient when doing a
+		  first build and having to patch various things; if you run
+		  config.status, it will just redo the variable substitution without
+		  rerunning configure.  But when I was doing that, the build then
+		  failed because storage/buildconfig wasn't executable.
+
+		  configure just runs config.status to do the substitutions; with this
+		  patch, the chmod gets put in config.status rather than in configure
+		  and therefore works correctly both after running configure and after
+		  running config.status.
+
+Wed Dec 30 05:27:25 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/incoming.conf: samples/incoming.conf:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- This option is mentioned in the manpage but not in the sample
+		  configuration file.
+
+	* MANIFEST: MANIFEST:
+		- some man pages were lost
+		- radius.c and some stuff for readres.conf were lost
+
+	* samples/incoming.conf: samples/incoming:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- This option is mentioned in the manpage but not in the sample
+		  configuration file.
+
+	* MANIFEST: MANIFEST:
+		- some man pages were lost
+
+Tue Dec 29 18:41:56 1998  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* authprogs/radius.c, authprogs/Makefile:
+	sockaddr_in, under Solaris 2.6, doesn't have sin_len ... mimic how ident.c
+	does it by passing 'sizeof(sinl)' instead of 'sinl.sin_len'...
+
+	Makefile requires a call to ../lib/libinn.a for radius.c as well...
+
+	* authprogs/Makefile: Add radius authenticator to Makefile
+
+	* authprogs/radius.c: From: Aidan Cully <aidan@panix.com>
+
+	Still needs a default config file created, but at least this gets this into
+	the tree...
+
+
+Mon Dec 28 15:43:47 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/send-ihave.in, samples/ihave.pl.in: samples/ihave.pl.in:
+		- From: Hiroaki Sengoku <sengoku@gcd.forus.or.jp>
+		- $pathhost was still used
+	samples/send-ihave.in:
+		- From: Hiroaki Sengoku <sengoku@gcd.forus.or.jp>
+		- cleanup for send-ihave
+
+Sat Dec 26 16:16:35 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/his.c: innd/his.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Add output of history cache statistics on close history
+
+	* backends/archive.c: backends/archive.c:
+		- didn't handle wireformat correctly
+
+Fri Dec 25 01:29:41 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/cnfsstat.in: samples/cnfsstat.in:
+		- apply patch which Marc committed to stable tree (bug fix)
+
+Wed Dec 23 14:21:31 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/art.c, innd/his.c: innd/art.c:
+		- reverted to 1.92
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Duplicate HISsync()
+	innd/his.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- If storageapi is true we don't need HISslashify.
+
+Tue Dec 22 05:00:34 1998  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* samples/cnfsstat.in:
+	When a buffer exceeds ~3gig under FreeBSD (at least), cnfsstat reports an
+	Integer overflow around line 398 (old code)...by using bigint functions and
+	creating an appropriate bhex() function, this bug is eliminated...
+
+	Thanks to Duane Currie for pointing this out and building teh code for it...
+
+Sat Dec 19 16:26:39 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- From: "Mark Wedel" <mark@icp.siemens.com>
+		- Below is a bit of a hack for 64 bit only - for whatever reason on my
+		  system, the arithemetic on this was being done in 32 bit, so offset
+		  only got a 32 bit value back which definately caused problems.
+		  Casting to whatever offset's type is is probably a better fix.
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- fixed article mailed to moderator with an illegal message-id
+
+	* backends/archive.c: backends/archive.c:
+		- From: Francis Swasey <fswasey@btv.ibm.com>
+		- Found my memory leak
+
+	* innd/art.c: innd/art.c:
+		- reported by James Fidell <james@cloud9.co.uk>
+		- if the linecount is more than a few lines out, the article was
+		  dropped without being entered in the history file
+
+Wed Dec 16 07:15:22 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* authprogs/ident.c: authprogs/ident.c:
+		- From: Keith Lewis <keithl@mukluk.cc.monash.edu.au>
+		- fixes for old DECstations with and ancient version of identd
+
+	* backends/archive.c: backends/archive.c:
+		- From: Francis Swasey <fswasey@btv.ibm.com>
+		- if you didn't use -p in yesterday's version, it didn't archive
+		  anything
+		- yesterday's version didn't ever free up the xrefs storage and you
+		  could rather quickly exceed memory
+
+	* samples/innreport.conf.in: samples/innreport.conf.in:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- typo fixed
+
+	* contrib/fixhist: contrib/fixhist:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Add more strict check for pathname
+
+	* samples/innreport.conf.in: samples/innreport.conf.in:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- typo fixed
+
+	* contrib/fixhist: contrib/fixhist:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- Add more strict check for pathname
+
+Tue Dec 15 06:54:51 1998  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* nnrpd/Attic/pwcheck.c, authprogs/pwcheck.c:
+	update pwcheck.c to reflect a working copy of it...
+
+Tue Dec 15 00:34:46 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* authprogs/ckpasswd.c: authprogs/ckpasswd.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- I see that there's a small problem in the fgets(), where it doesn't
+		  make sure that strchr(buff, '\n') actually lands within sizeof(buff),
+		  but it should be _extremely_ rare that that actually opens a root
+		  hole to your system.  I can't even imagine the circumstances where it
+		  would.  The following patch fixes it, though:
+
+	* backends/archive.c: backends/archive.c:
+		- From: Francis Swasey <fswasey@btv.ibm.com>
+		- Here's the updates promised last week which add the -p and -c flags
+		  to archive.  In addition I've updated the archive.8 manual page.
+
+Mon Dec 14 22:01:44 1998  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* nnrpd/perm.c: From: Aidan Cully <aidan@panix.com>
+
+	BTW, this is a bug in the readers.conf implementation..  You should be
+	disconnected immediately when authentication fails, but if you have
+	permission to read without requiring authentication, PERMlogin()
+	defaults to this even if the login fails.  Could someone with CVS access
+	apply the following to fix this?
+
+Sun Dec 13 22:44:07 1998  Marc Fournier  <scrappy@pub3.rc.vix.com>
+
+	* authprogs/pwcheck.c: Merge in a couple of missing functions...
+
+	* authprogs/pwcheck.c, authprogs/Makefile:
+	an alternative password authentication method, pwcheck does a *non-root*,
+	*non-suid* check through a special authentication daemon as provided by
+	CMU's Cyrus IMAPd implementation...
+
+	Still a work in progress, since I'm just getting up to speed on the new
+	auth/access methods...
+
+	* nnrpd/Attic/pwcheck.c:
+	pwcheck is a daemon, distributed by CMU's Cyrus IMAPd implementation, that
+	allows reasonably secure password authentication by *non-root* users...it
+	does this by taking a userid/passwd from the user, and returning, effectively,
+	a 'yes' or 'no' answer...so, if not, the client doesn't see what the actual
+	'encrypted' string looks like...
+
+	Drawback to this authentication method, at this time, is the requirement to
+	have the pwcheck daemon running on your system, which means at least downloading
+	and compiling it in the IMAPd package...am working on somehow getting it
+	bundled seperately...
+
+	This doesn't work yet, just starting to add it in...
+
+Fri Dec 11 06:02:04 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/scanspool.in: samples/scanspool.in:
+		- $ctlinnd was mis-defined
+
+Thu Dec 10 23:46:21 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* backends/archive.c: backends/archive.c:
+		- From: Francis Swasey <fswasey@btv.ibm.com>
+		- Here's a patch to make archive work with tokens.  It is rough.  It
+		  uses the Xref header and just archives as many copies of the article
+		  as there are entries in the Xref header.
+
+Wed Dec  9 15:54:31 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/newsfeeds.in, samples/mailpost.in: samples/mailpost.in:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- In mailpost(8), -b is written as this.
+
+		  -b   IF the ``-b'' flag is used, then it defines  the  loca-
+		       tion  of  the database used to store the message ids of
+		       articles sent on. This is to prevent  articles  looping
+		       around  if a news to mail gateway sends them back here.
+		       This option may be required  if  the  mailpost  process
+		       doesn't  have  write  access  to the news tmp directory
+		       (the value of athtmp in inn.conf(5).
+
+		  If we obey this description, I think mailpost should be changed as
+		  this. Otherwise, manual should be changed.
+		- mailpost returns error mail with optional white spaces at Subject
+		  header
+		- I tried to post a news using mailpost with no subject header, but it
+		  failed because inews couldn't accept an article with no subject.
+
+		  I think this feature may confuse some user, so how about mailpost add
+		  subject header as follows if not exist.
+	samples/newsfeeds.in:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- This is a sample entry for newsfeeds to use news2mail
+
+	* lib/conffile.c: lib/conffile.c:
+		- do nothing if argument is null at CONFfclose()
+
+Wed Dec  2 22:13:30 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* lib/conffile.c: lib/conffile.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fix for noreader ture
+
+	* innd/nc.c: innd/nc.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fix for noreader ture
+
+	* lib/conffile.c: lib/conffile.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fix for noreader ture
+
+	* innd/nc.c: innd/nc.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- fix for noreader ture
+
+Tue Dec  1 06:14:10 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/newsfeeds.c: innd/newsfeeds.c:
+		- 'O' flag didn't work
+
+Sun Nov 29 02:15:02 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/newgroup.pl.in: samples/newgroup.pl.in:
+		- verify created newsgroup name
+
+Fri Nov 27 07:14:52 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* backends/innxmit.c: backends/innxmit.c:
+		- fixed memory leak, if traditional spool is used and batch file
+		  without msgid
+
+Thu Nov 26 14:12:21 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/art.c: innd/art.c:
+		- From: Ian Freislich <iang@iafrica.com>
+		- syntax error fixed
+
+	* samples/rc.news.in: samples/rc.news.in:
+		- sleep before invoking cnfsstat.  This avoids referring uninitialized
+		  cycbuffs.
+
+Wed Nov 25 22:44:00 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/newsfeeds.c, innd/art.c, innd/innd.h: innd/art.c:
+	innd/innd.h:
+	innd/newsfeeds.c:
+		- From: kaih@khms.westfalen.de (Kai Henningsen)
+		- This patch adds two options similar to, but more useful than, the
+		- newsfeeds G option.
+
+Sat Nov 21 15:27:03 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- add cnfscheckfudgesize to verify article in cycbuff
+
+	* samples/inn.conf.in, samples/inncheck.in: samples/inn.conf.in:
+	samples/inncheck.in:
+		- add cnfscheckfudgesize to verify article in cycbuff
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- add cnfscheckfudgesize to verify article in cycbuff
+
+	* include/innconf.h, include/libinn.h: include/innconf.h:
+	include/libinn.h:
+		- add cnfscheckfudgesize to verify article in cycbuff
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- cycbuff was not closed, if retrieval was failed and pre-opend
+
+	* lib/parsedate.y: lib/parsedate.y:
+		- fixed Y2K problem (this happened for relative, 'hh:mm' or 'MM/DD')
+
+	* innd/nc.c: innd/nc.c:
+		- didn't care return value for reading active.times or newsgroups
+
+	* include/innconf.h, include/patchlevel.h: include/innconf.h:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- MAX_CONF_VAR was not updated
+	include/patchlevel.h:
+		- update patch level '2.3experimental'
+
+Wed Nov 18 23:04:13 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/news2mail.in, samples/newsfeeds.in: samples/news2mail.in:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- examples are substituted
+		- envelope fixed
+	samples/newsfeeds.in:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- typo fixed
+		- examples are substituted
+
+	* README: README:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- typo fixed.
+
+	* samples/newsfeeds.in, samples/news2mail.in: samples/news2mail.in:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- examples are substituted
+		- envelope fixed
+	samples/newsfeeds.in:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- typo fixed
+		- examples are substituted
+
+	* README: README:
+		- From: SAKAI Kiyotaka <ksakai@netwk.ntt-at.co.jp>
+		- typo fixed.
+
+Mon Nov 16 01:13:57 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/control.ctl: samples/control.ctl:
+		- update for fj.*
+		- From: Ollivier Robert <roberto@keltia.freenix.fr>
+		- I looked at the snapshot from INN-STABLE on 11/4 and it still has the
+		  old and outdated e-mail address for Control for fr.*.
+
+Sun Nov 15 23:52:14 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- nnrpdauthsender is incorporated
+
+	* include/configdata.h: include/configdata.h:
+		- NNRP_AUTH_SENDER is replaced with nnrpdauthsender
+
+	* samples/inn.conf.in: samples/inn.conf.in:
+		- NNRP_AUTH_SENDER is replaced with nnrpdauthsender
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- NNRP_AUTH_SENDER is replaced with nnrpdauthsender
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- NNRP_AUTH_SENDER is replaced with nnrpdauthsender
+
+	* include/innconf.h, include/libinn.h: include/innconf.h:
+	include/libinn.h:
+		- NNRP_AUTH_SENDER is replaced with nnrpdauthsender
+
+	* config/config.scoreboard: config/config.scoreboard:
+		- NNRP_AUTH_SENDER is replaced with nnrpdauthsender
+
+	* nnrpd/post.c, nnrpd/commands.c, nnrpd/group.c, nnrpd/nnrpd.c, nnrpd/article.c:
+	nnrpd/article.c:
+	nnrpd/group.c:
+	nnrpd/nnrpd.c:
+	nnrpd/post.c:
+		- '-l' is deleted, since innconf->readertrack has already existed
+	nnrpd/commands.c:
+		- From: Robert Kiessling <robert@easynet.de>
+		- Appended is a patch that adds the user information to tracking files,
+		  which is handy so that in order to get full information about a
+		  session, you don't need to look at news.notice.
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- ARTopenbyid() failed if storageapi was false
+
+Sat Nov 14 08:35:57 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs.c: storage/cnfs/cnfs.c:
+		- class should not be tranlated by htonl()
+
+Wed Nov 11 23:03:35 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* site/Makefile: site/Makefile:
+		- From: Paul Eggert <eggert@twinsun.com>
+		- Without the following patch, the INN installation procedure has
+		  unintended behavior, since the obsolescent make variable
+		  $(PATH_CSH_SHELLVARS) is unset, which means the dependency is on the
+		  directory $D (whose time stamp is somewhat unreliable).
+
+	* innfeed/main.c: innfeed/main.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- When SMopenmode==TRUE (SM_RDWR whith TRUE) innfeed have a lot missing
+		  articles.
+
+	* innd/chan.c: innd/chan.c:
+		- From: "Jeff A. Earickson" <jaearick@colby.edu>
+		- Here's a quick'n'dirty patch to innd/chan.c that fixes a problem with
+		  nnrpd returning incomplete data after e.g. the LIST command. Might
+		  also apply to HPUX 10.x with broken listen/nonblocking/accept, and
+		  earlier versions of INN (might need patching by hand).
+
+	* innfeed/main.c: innfeed/main.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- When SMopenmode==TRUE (SM_RDWR whith TRUE) innfeed have a lot missing
+		  articles.
+
+	* innd/chan.c: innd/chan.c:
+		- From: "Jeff A. Earickson" <jaearick@colby.edu>
+		- Here's a quick'n'dirty patch to innd/chan.c that fixes a problem with
+		  nnrpd returning incomplete data after e.g. the LIST command. Might
+		  also apply to HPUX 10.x with broken listen/nonblocking/accept, and
+		  earlier versions of INN (might need patching by hand)
+
+Tue Nov 10 23:33:41 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- checking newsfeeds entry was incorrect for 'O'
+
+	* nnrpd/misc.c: nnrpd/misc.c:
+		- From: "Igor Timkin" <ivt@gamma.ru>
+		- overran buff if storageapi was false
+
+Mon Nov  9 22:59:45 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs-private.h, storage/cnfs/cnfs.c:
+	storage/cnfs/cnfs-private.h:
+	storage/cnfs/cnfs.c:
+		- comment out for old cnfs stuff.  this breaks retrieved article if its
+		  size matches ntohl(0x1234)
+		- check bitmaps for corrupted cycbuff
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- The variable "idbuff", which is used to give back the Message-ID to
+		  the CMDpost() function for logging purposes, is used uninitialized in
+		  case the article gets spooled instead of posted.
+
+	* frontends/rnews.c: frontends/rnews.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- here are again the patches discussed last week concerning innd on
+		  different ports than 119.
+
+	* storage/cnfs/cnfs.c, storage/cnfs/cnfs-private.h:
+	storage/cnfs/cnfs-private.h:
+	storage/cnfs/cnfs.c:
+		- comment out for old cnfs stuff.  this breaks retrieved article if its
+		  size matches ntohl(0x1234)
+		- check bitmaps for corrupted cycbuff
+
+	* nnrpd/post.c: nnrpd/post.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- The variable "idbuff", which is used to give back the Message-ID to
+		  the CMDpost() function for logging purposes, is used uninitialized in
+		  case the article gets spooled instead of posted.
+
+	* frontends/rnews.c: frontends/rnews.c:
+		- From: Sven Paulus <sven@karlsruhe.org>
+		- here are again the patches discussed last week concerning innd on
+		  different ports than 119.
+
+Sat Nov  7 03:42:52 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* MANIFEST: MANIFEST:
+		- From: Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+		- add new storage method 'timecaf' and 'tradspool'
+
+	* storage/interface.c: storage/interface.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- I had a largish bug in the parse_time function where it would only
+		  use the first integer in the time string for calculating the time
+		  offset.  I.e., 3d4h5m6s would be interpreted as 3d3h3m3s.  The
+		  attached patch should fix that.  I also changed the function name
+		  from parse_time to ParseTime to look more like the rest of INN.
+
+	* samples/inn.conf.in, samples/inncheck.in: samples/inn.conf.in:
+	samples/inncheck.in:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+
+	* nnrpd/misc.c, nnrpd/post.c, nnrpd/commands.c: nnrpd/commands.c:
+	nnrpd/misc.c:
+		- xpath returned token if storageapi is true
+	nnrpd/post.c
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+		- fixup comment on how to add new innconf variables
+
+	* innd/nc.c: innd/nc.c:
+	        - xpath returned token if storageapi is true
+
+	* include/libinn.h, include/innconf.h: include/innconf.h:
+	include/libinn.h
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+
+	* frontends/rnews.c: frontends/rnews.c:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+
+	* doc/Makefile: doc/inn.conf.5:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+	doc/rnews.1:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- document the '-P' (port) option
+
+	* samples/inn.conf.in, samples/inncheck.in: samples/inn.conf.in:
+	samples/inncheck.in:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+
+	* nnrpd/misc.c, nnrpd/post.c, nnrpd/commands.c: nnrpd/commands.c:
+	nnrpd/misc.c:
+		- xpath returns token if storageapi is true
+	nnrpd/post.c
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+
+	* lib/getconfig.c: lib/getconfig.c:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+		- fixup comment on how to add new innconf variables
+
+	* innd/nc.c: innd/nc.c:
+		- xpath returns token if storageapi is true
+
+	* include/libinn.h, include/innconf.h: include/innconf.h:
+	include/libinn.h
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+
+	* frontends/rnews.c: frontends/rnews.c:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- add new nnrpdposthost option to allow posting to different port
+
+Wed Nov  4 08:43:49 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/post.c, nnrpd/commands.c: nnrpd/commands.c:
+	nnrpd/post.c:
+		- posted on news.software.nntp by olaf@bigred.inka.de (Olaf Titz)
+		- I don't know if this has been proposed before, but it just has come
+		  up in a discussion about the cancel-lock feature:
+
+		  Often a client needs to know the Message-IDs of its own postings, for
+		  bookkeeping purposes or to generate a Cancel-Lock header. This means
+		  it has to generate its own IDs, which can lead to bogus domains and
+		  ambiguity problems. Or does it have to generate the IDs itself? A
+		  simple, backwards compatible NNTP protocol extension helps out:
+
+		  When the server sees a POST command, it generates the Message-ID it
+		  wants to use for the posting and returns this Message-ID in the 340
+		  response. This Message-ID constitutes only a recommendation; the
+		  client can use this ID, it can generate its own, or it can post
+		  without Message-ID in which case the server will use exactly this
+		  Message-ID for the posting.
+
+		  The client identifies that the 340 response contains in fact a
+		  Message-ID by the usual syntax /\<[^@>\s]+@[^@>\s]+\>/. If this
+		  pattern is not contained in the response, it proceeds as usual with
+		  generating its own ID.
+
+		  This way, the client knows the Message-ID before sending the article
+		  to the server and the server generates known good IDs.
+
+Tue Nov  3 23:48:40 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* site/Makefile: site/Makefile:
+		- add samples/readers.conf
+
+	* samples/readers.conf: samples/readers.conf:
+		- From: Aidan Cully <aidan@panix.com>
+		- add samples/readers.conf
+
+	* MANIFEST: MANIFEST:
+		- add samples/readers.conf
+
+Tue Nov  3 14:02:36 1998  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* NEWS: fix pointer to actsync manual page (instead of actsyncd page)
+
+	* MANIFEST, doc/Makefile:
+	Note new actsyncd manual page in MANIFEST, install via doc/Makefile.
+	Made more portable by not using ".so" directive; unfortunately now
+	people have to manually quit and visit the actsync page.
+
+	* NEWS: Note new ftp method in actsyncd.
+
+Mon Nov  2 12:44:51 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/Attic/buildconfig: storage:/buildconfig:
+		- buildconfig is created by configure
+
+	* MANIFEST: MANIFEST:
+		- buildconfig is created by configure
+
+	* storage/Attic/buildconfig: storage/buildconfig:
+		- buildconfig is created by configure
+
+	* MANIFEST: MANIFEST:
+		- buildconfig is created by configure
+
+Sun Nov  1 23:13:26 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* innfeed/host.c, innfeed/msgs.h: innfeed/host.c:
+	innfeed/msgs.h:
+		- From: Don Lewis <Don.Lewis@tsc.tdk.com>
+		- We started getting an excessive number of deferrals on one of our
+		  news peers, so I finally got around to fixing this in innfeed by
+		  adding another queue for each host to hold deferred articles so that
+		  their retries can be delayed.
+
+		  Articles that are added to this new queue are counted towards the
+		  host-queue-highwater limit.  If articles need to be spooled to the
+		  .output file, the deferred articles are spooled first, because they
+		  are more likely to be refused later and thus are less likely to need
+		  to be read from disk when the backlog is processed.
+
+		  Things to be aware of:
+
+		    This patch is against a pretty old version of innfeed, so most
+		    parts of it will have to be hand applied to the current version.
+
+		    The stats file should probably be reformatted a bit.  I just
+		    did a quick and dirty change.
+
+		    Things that parse news.notice might need to be tweeked, since
+		    the host status line changed from
+		    	... deferred #articles ...
+		    to
+		    	... deferred #articles/avg-deferred-queue-length ...
+
+		    The delay time is currently fixed at 5 seconds.  This should
+		    probably be made a tunable parameter in innfeed.conf.
+
+	* nnrpd/misc.c, nnrpd/article.c: nnrpd/article.c:
+	nnrpd/misc.c:
+		- From: Sven Paulus <sven@fun.de>
+		- fix for traditional spool (buffer was too small for history reading)
+
+Sat Oct 31 17:23:14 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* innd/his.c: innd/his.c:
+		- From: Arjan de Vet <Arjan.deVet@nl.origin-it.com>
+		- According to Steinar Haug on the freebsd-hackers list it's not
+		  strictly a bug according to POSIX 1003.1:
+
+		    The FreeBSD freopen() behavior may actually be correct according to
+		    the standards. My copy of POSIX 1003.1 (First edition, 1990-12-07)
+		    says the following about ftell():
+
+		    8.2.3.10 ftell()
+		    The underlying function is lseek(). ... If the stream is opened in
+		    append mode or if the O_APPEND flag is set as a consequence of
+		    dealing with other handles on the file, the result of ftell() on
+		    that stream is unspecified.
+
+		    So freopen() behaving differently than fopen() may be allowed by
+		    the standards - but it certainly violates POLA, and probably also
+		    the FreeBSD manual page, which says:
+		    [...]
+
+		  So it's actually required to do an fseek() after the history file has
+		  been freopen()-ed in append mode. Here's a new patch with the a new
+		  comment why this fseek is necessary:
+
+	* innd/his.c: innd/his.c:
+		- From: Arjan de Vet <Arjan.deVet@nl.origin-it.com>
+		- do an explicit fseek to the end of the history file after opening it
+		  in append mode:
+
+Fri Oct 30 16:02:39 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/nnrpd.c: nnrpd/nnrpd.c
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- The trace logging level is L_TRACE
+
+	* include/innconf.h: include/innconf.h:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- The config variable for NNRPPERLAUTH is actually _CONF_NNRPPERLAUTH
+
+	* nnrpd/nnrpd.c: nnrpd/nnrpd.c:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- The trace logging level is L_TRACE
+
+	* include/innconf.h: include/innconf.h:
+		- From: Russell Vincent <russellv@uk.uu.net>
+		- The config variable for NNRPPERLAUTH is actually _CONF_NNRPPERLAUTH
+
+	* makedirs.sh.in: makedirs.sh.in:
+		- create pathbin/auth/resolv and pathbin/auth/passwd
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- update for readers.conf
+
+	* nnrpd/post.c, nnrpd/nnrpd.h, nnrpd/perm.c, nnrpd/group.c, nnrpd/misc.c, nnrpd/nnrpd.c, nnrpd/Makefile, nnrpd/commands.c:
+	nnrpd/Makefile:
+	nnrpd/commands.c:
+	nnrpd/group.c:
+	nnrpd/misc.c:
+	nnrpd/nnrpd.c:
+	nnrpd/nnrpd.h:
+	nnrpd/perm.c:
+	nnrpd/post.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- new readers.conf/authenticator patches
+
+	* include/paths.h.in: include/paths.h.in:
+		- From: Aidan Cully <aidan@panix.com>
+		- new readers.conf/authenticator patches
+
+	* authprogs/ident.c, authprogs/Makefile, authprogs/ckpasswd.c:
+	authprogs/Makefile:
+	authprogs/ckpasswd.c:
+	authprogs/Makefiledent.c:
+		- From: Aidan Cully <aidan@panix.com>
+		- new readers.conf/authenticator patches
+
+	* Makefile, NEWS, MANIFEST: MANIFEST:
+		- append authprogs/Makefile, authprogs/ckpasswd.c, authprogs/ident.c,
+		  doc/readers.conf.5 and nnrpd/perm.c
+	Makefile:
+		- add authprogs
+	NEWS:
+		- update for readers.conf
+
+Thu Oct 29 17:18:36 1998  James Brister  <brister@pub3.rc.vix.com>
+
+	* nnrpd/nnrpd.c:
+	Want to use plain fork() when not calling exec() right away.
+
+	* nnrpd/nnrpd.c:
+	Want to use plain fork() when not immediately calling exec().
+
+Wed Oct 28 02:45:43 1998  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* samples/mod-active.in:
+	Fixed hardcoded path to ctlinnd to use $inn::newsbin
+
+Tue Oct 27 06:06:41 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* innfeed/sysconfig.h: innfeed/sysconfig.h:
+		- add some definition to avoid duplicate error when linking(for SunOS)
+
+Mon Oct 26 22:04:18 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* nnrpd/article.c: nnrpd/article.c:
+		-call ARTinstore() in CMDxover() only if storageapi is true
+
+	* innfeed/sysconfig.h: innfeed/sysconfig.h:
+		- add some definition to avoid duplicate error when linking
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- call ARTinstore() in CMDxover() only if storageapi is true
+
+	* innfeed/sysconfig.h: innfeed/sysconfig.h:
+		- add some definition to avoid duplicate error when linking
+
+	* configure.in, configure: configure:
+	configure.in:
+		- fixed a problem that $getftp does not have usable variable
+
+Sun Oct 25 08:06:10 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/innreport_inn.pm: samples/innreport_inn.pm:
+		- fixed article stats calculation problem
+
+	* samples/nnrp.access: samples/nnrp.access
+		- default line should not have non-null user and password
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- still nnrpdcheckart did not work correctly
+
+	* samples/nnrp.access: samples/nnrp.access:
+		- default line should not have non-null user and password
+
+	* nnrpd/article.c: nnrpd/article.c:
+		- still nnrpdcheckart did not work correctly
+
+Sun Oct 25 05:13:00 1998  coneill  <coneill@pub3.rc.vix.com>
+
+	* nnrpd/article.c:
+	Fixed the problem where if the first article in an xover range was missing
+	then the entire range was considered missing and the client didn't get any
+	results back.
+
+Sat Oct 24 04:36:16 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* storage/cnfs/cnfs.c, storage/cnfs/cnfs-private.h:
+	storage/cnfs/cnfs-private.h:
+	storage/cnfs/cnfs.c:
+		- apply the patch for STABLE-2_2
+
+	* site/Makefile: site/Makefile:
+		- apply the patch for STABLE-2_2
+
+	* samples/cnfsstat.in, samples/inncheck.in: samples/cnfsstat.in:
+	samples/inncheck.in:
+	samples/innreport_inn.pm:
+		- apply the patch for STABLE-2_2
+
+	* nnrpd/loadave.c, nnrpd/newnews.c, nnrpd/udp.c, nnrpd/Attic/actived.c, nnrpd/group.c:
+	nnrpd/actived.c:
+	nnrpd/group.c:
+	nnrpd/loadave.c:
+	nnrpd/newnews.c:
+	nnrpd/udp.c:
+		- apply the patch for STABLE-2_2
+
+	* include/config.h.in, include/innconf.h, include/patchlevel.h:
+	include/config.h.in:
+	include/innconf.h:
+	include/patchlevel.h:
+		- apply the patch for STABLE-2_2
+
+	* config/files.list: config/files.list:
+		- apply the patch for STABLE-2_2
+
+	* configure.in, README, configure, MANIFEST, NEWS: MANIFEST:
+	NEWS:
+	README:
+	configure:
+	configure.in:
+		- apply the patch for STABLE-2_2
+
+	* samples/inncheck.in: samples/inncheck.in:
+		- From: George Lindholm <George.Lindholm@ubc.ca>
+		- Inncheck was out of date
+
+Fri Oct 23 21:26:15 1998  David C Lawrence  <tale@pub3.rc.vix.com>
+
+	* samples/pgpverify.in:
+	Reverted 1.19.2.1; $pgp is set via innshellvars.pl if it loads successfully.
+
+Fri Oct 23 15:31:10 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* configure, configure.in: configure.in:
+	configure:
+		- need -lcrypt for debian 2.0
+
+	* samples/pgpverify.in: samples/pgpverify.in:
+		- reported by tom minchin <tom@interact.net.au>
+		- _PATH_PGP was not used for pgp
+
+	* nnrpd/loadave.c: nnrpd/loadave.c:
+		- From: Egil Kvaleberg <egil@kvaleberg.no>
+		- Not all Linuces have the sys/sysinfo.h, although they still support
+		  the sysinfo() call. The attached trivial patch fixes this.
+
+	* include/config.h.in: include/config.h.in:
+		- From: Egil Kvaleberg <egil@kvaleberg.no>
+		- Not all Linuces have the sys/sysinfo.h, although they still support
+		  the sysinfo() call. The attached trivial patch fixes this.
+
+	* configure, configure.in: configure.in:
+	configure:
+		- From: Egil Kvaleberg <egil@kvaleberg.no>
+		- Not all Linuces have the sys/sysinfo.h, although they still support
+		  the sysinfo() call. The attached trivial patch fixes this.
+
+Fri Oct 23 08:13:09 1998  James Brister  <brister@pub3.rc.vix.com>
+
+	* include/patchlevel.h, README: Update for 2.2b2 release.
+
+Thu Oct 22 23:10:43 1998  kondou  <kondou@pub3.rc.vix.com>
+
+	* samples/cnfsstat.in: samples/cnfsstat.in:
+		- skip cycbuffupdate and refreshinterval lines
+
+	* nnrpd/newnews.c, nnrpd/udp.c, nnrpd/Attic/actived.c, nnrpd/group.c:
+	nnrpd/newnews.c:
+		- usage of PERMmatch() was wrong
+	nnrpd/actived.c:
+	nnrpd/group.c:
+	nnrpd/udp.c:
+		- From: Jean-Francois Stenuit <jfs@skynet.be>
+		- When using actived under certain OS (I noticed it on linux boxes),
+		  you may end up in a situation like this :
+
+		  actived listen on port 1119 on localhost.
+		  nnrpd opens a connection (ask for a local port) to connect to this
+		  port and the system allocates 1119 as local port.
+
+		  It makes a connection from localhost.1119 to localhost.1119 with, on
+		  the same system a non blocking listen on localhost.1119. Not all
+		  systems like this !
+
+		  The result : error messages like :
+		  create_udp_socket: bind: Address already in use
+
+		  The solution lies in the following three patches (apply agains 2.1 inn
+		  distribution) :
+
+	* site/Makefile: site/Makefile:
+		- samples/innshellvars.csh is moved to obsolete
+
+	* storage/cnfs/cnfs-private.h, storage/cnfs/cnfs.c:
+	storage/cnfs/cnfs-private.h:
+	storage/cnfs/cnfs.c:
+		- refreshinterval is now configurable
+
+	* configure, configure.in: configure.in:
+	configure:
+		- samples/innshellvars.csh is moved to obsolete
+
+	* config/files.list: config/files.list:
+		- samples/innshellvars.csh line is deleted
+
+Thu Oct 22 10:09:07 1998  James Brister  <brister@pub3.rc.vix.com>
+
+	* NEWS: Fixed version number typo.
+
+	* include/patchlevel.h: Update for 2.2
+
+	* MANIFEST, NEWS: Put innshellvars.csh.in in the obsolete directory
+
+	* MANIFEST: Added a bunch of stuff and removed innshellvars.csh.in
+
+	* Attic/ChangeLog: RCS log since 2.1 release.
+
+	* Attic/ChangeLog:
+	file ChangeLog was initially added on branch STABLE-2_2.
+
+
 Wed Oct 21 23:12:40 1998  Katsuhiro Kondou  <kondou@inn-cvs.isc.org>
 
 	* samples/innreport_inn.pm: samples/innreport_inn.pm:
