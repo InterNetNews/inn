@@ -135,7 +135,7 @@ doc/man/expire.8                      Manpage for expire
 doc/man/expire.ctl.5                  Manpage for expire.ctl config file
 doc/man/expireover.8                  Manpage for expireover
 doc/man/expirerm.8                    Manpage for expirerm
-doc/man/fastrm.8                      Manpage for fastrm utility
+doc/man/fastrm.1                      Manpage for fastrm utility
 doc/man/filechan.8                    Manpage for filechan backend
 doc/man/getlist.1                     Manpage for getlist frontend
 doc/man/grephistory.1                 Manpage for grephistory
@@ -208,9 +208,11 @@ doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.1
 doc/pod/convdate.pod                  Master file for convdate.1
+doc/pod/fastrm.pod                    Master file for fastrm.1
 doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for README.perl_hook
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
+doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndstart.pod                 Master file for inndstart.8
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/qio.pod                       Master file for qio.3
