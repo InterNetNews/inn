@@ -298,9 +298,9 @@ ARTclose(void)
 static void
 ARTlog(const ARTDATA *data, char code, const char *text)
 {
-  HDRCONTENT	*hc = data->HdrContent;
-  int		i;
-  bool		Done;
+  const HDRCONTENT *hc = data->HdrContent;
+  int i;
+  bool Done;
 
   TMRstart(TMR_ARTLOG);
   /* We could be a bit faster by not dividing Now.usec by 1000,
