@@ -33,7 +33,6 @@ Argify(line, argvp)
 {
     char	**argv;
     char	*p;
-    int	i;
 
     if (*argvp != NULL) {
 	free(*argvp[0]);
@@ -46,7 +45,7 @@ Argify(line, argvp)
     p = xstrdup(line);
 
     /* Allocate worst-case amount of space. */
-    for (*argvp = argv = xmalloc((i + 2) * sizeof(char *)); *p; ) {
+    for (*argvp = argv = xmalloc((strlen(p) + 2) * sizeof(char *)); *p; ) {
 	/* Mark start of this word, find its end. */
 	for (*argv++ = p; *p && !ISWHITE(*p); )
 	    p++;
@@ -71,7 +70,6 @@ Glom(av)
     char		**av;
 {
     char	**v;
-    char	*p;
     int	i;
     char		*save;
 
