@@ -33,11 +33,11 @@ SEC8	= actived.8 actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 \
 	cnfsstat.8 controlchan.8 crosspost.8 ctlinnd.8 cvtbatch.8 expire.8 \
 	expireindex.8 expireover.8 expirerm.8 fastrm.8 filechan.8 inncheck.8 \
 	innd.8 inndf.8 innreport.8 innstat.8 innwatch.8 innxbatch.8 \
-	innxmit.8 mailpost.8 makeactive.8 makehistory.8 news-recovery.8 \
-	news.daily.8 news2mail.8 newslog.8 newsrequeue.8 nnrpd.8 nntpsend.8 \
-	overchan.8 pgpverify.8 prunehistory.8 pullnews.8 scanlogs.8 \
-	send-uucp.8 sm.8 tally.control.8 tally.unwanted.8 writelog.8 \
-	cnfsheadconf.8 makedbz.8
+	innxmit.8 mailpost.8 makeactive.8 makehistory.8 mod-active.8 \
+	news-recovery.8 news.daily.8 news2mail.8 newslog.8 newsrequeue.8 \
+	nnrpd.8 nntpsend.8 overchan.8 pgpverify.8 prunehistory.8 pullnews.8 \
+	scanlogs.8 send-uucp.8 sm.8 tally.control.8 tally.unwanted.8 \
+	writelog.8 cnfsheadconf.8 makedbz.8
 
 INSTALLED_SEC1 =	$D$(MAN1)/convdate.1 $D$(MAN1)/getlist.1 \
 			$D$(MAN1)/grephistory.1 $D$(MAN1)/inews.1 \
