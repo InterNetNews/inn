@@ -825,7 +825,8 @@ int main(int ac, char *av[])
      if (ReadInnConf() < 0) exit(1);
      UUCPHost = getenv(_ENV_UUCPHOST);
      PATHBADNEWS = cpcatpath(innconf->pathincoming, _PATH_BADNEWS);
-     
+     port = innconf->nnrpdpostport;
+
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
