@@ -90,15 +90,15 @@ sub bint2hex {
 
 sub usage {
     print <<_end_;
-Summary tool for cycbuff header manupilation
+Summary tool for cycbuff header manipulation
 
 Usage:
 	$0 [-c] CYCBUFF
 
 	If called without args, does a one-time status of all CNFS buffers
 	-c <cycbuff>:  prints out status of cycbuff
-	-w change header
-	-h:          This information
+	-w:            change header
+	-h:            This information
 _end_
     exit(1);
 }
