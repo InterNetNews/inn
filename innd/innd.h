@@ -24,21 +24,32 @@
 */
 #include <ctype.h>
 #include <errno.h>
-#include <signal.h>
-#include <sys/stat.h>
-#if	defined(DO_NEED_TIME)
-#include <time.h>
-#endif	/* defined(DO_NEED_TIME) */
-#include <sys/time.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
-#include <fcntl.h>
-#include "nntp.h"
-#include "paths.h"
+#include <signal.h>
 #include <syslog.h> 
+#include <sys/socket.h>
+#include <sys/stat.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
+#include "dbz.h"
 #include "libinn.h"
 #include "macros.h"
-#include "dbz.h"
+#include "nntp.h"
+#include "paths.h"
 #include "storage.h"
 
 #if     defined(DO_TCL)

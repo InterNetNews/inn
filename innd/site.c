@@ -546,7 +546,7 @@ STATIC FUNCTYPE SITEspoolwake(CHANNEL *cp)
     SITE	*sp;
     int		*ip;
 
-    ip = CAST(int*, cp->Argument);
+    ip = (int *) cp->Argument;
     sp = &Sites[*ip];
     DISPOSE(cp->Argument);
     cp->Argument = NULL;

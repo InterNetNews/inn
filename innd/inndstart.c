@@ -43,10 +43,7 @@
 */
 #include "config.h"
 #include "clibrary.h"
-#include "paths.h"
-#include "libinn.h"
-#include "macros.h"
-
+#include <arpa/inet.h>
 #include <syslog.h>
 #include <errno.h>
 #include <grp.h>
@@ -72,6 +69,10 @@
 #ifndef RLIMIT_NOFILE
 # undef HAVE_RLIMIT
 #endif
+
+#include "paths.h"
+#include "libinn.h"
+#include "macros.h"
 
 /* To run innd under the debugger, uncomment this and fix the path. */
 /* #define DEBUGGER "/usr/ucb/dbx" */

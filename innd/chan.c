@@ -2,17 +2,17 @@
 **
 **  I/O channel (and buffer) processing.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "innd.h"
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+
+#include "innd.h"
 
 /* Minutes - basically, keep the connection open but idle */
 #define PAUSE_BEFORE_DROP               5
@@ -854,9 +854,6 @@ void CHANreadloop(void)
     long		silence;
     char		*p;
     time_t		LastUpdate;
-    CHANNEL             *tempchan;
-    int                 found;
-    char		*label, *tmplabel;
 
     TMRinit();
     STATUSinit();

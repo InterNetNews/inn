@@ -1,17 +1,10 @@
-
-/* $Id$ */
-
-#include <stdio.h>
-#include <string.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <netinet/in.h>
-
-#include "configdata.h"
+/*  $Id$
+**
+**  Periodic status reporting.
+*/
 #include "clibrary.h"
 #include "innd.h"
-#include <syslog.h> 
+#include <arpa/inet.h>
 
 #define MIN_REFRESH   60  /* 1 min */
 #define HTML_STATUS

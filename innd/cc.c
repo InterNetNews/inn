@@ -960,7 +960,6 @@ CCname(char *av[])
 {
     static char		NL[] = "\n";
     static char		NIL[] = "\0";
-    static char		colon[] = ":";
     char		buff[SMBUF];
     CHANNEL		*cp;
     char		*p;

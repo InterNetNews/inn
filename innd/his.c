@@ -2,13 +2,12 @@
 **
 **  History file routines.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
-#include "innd.h"
+#include <netinet/in.h>
+
 #include "dbz.h"
+#include "innd.h"
 
 typedef struct __HISCACHE {
     HASH	Hash;	/* Hash value of the message-id using Hash() */
@@ -186,7 +185,6 @@ void HISclose(void)
 TOKEN *HISfilesfor(const HASH MessageID)
 {
     static BUFFER	Files;
-    char		*dest;
     OFFSET_T		offset;
     char	        *p;
     int	                i;

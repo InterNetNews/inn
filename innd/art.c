@@ -2,17 +2,16 @@
 **
 **  Article-processing.
 */
-#include <stdio.h>
-#include <sys/types.h>
+#include "config.h"
+#include "clibrary.h"
 #include <netinet/in.h>
 #include <sys/uio.h>
-#include "configdata.h"
-#include "clibrary.h"
-#include "innd.h"
-#include "storage.h"
-#include "dbz.h"
+
 #include "art.h"
+#include "dbz.h"
+#include "innd.h"
 #include "ov.h"
+#include "storage.h"
 
 typedef struct iovec	IOVEC;
 
@@ -274,8 +273,8 @@ ARTcompare(p1, p2)
     ARTHEADER	**h1;
     ARTHEADER	**h2;
 
-    h1 = CAST(ARTHEADER**, p1);
-    h2 = CAST(ARTHEADER**, p2);
+    h1 = (ARTHEADER **) p1;
+    h2 = (ARTHEADER **) p2;
     return strcasecmp(h1[0]->Name, h2[0]->Name);
 }
 
@@ -949,7 +948,6 @@ STATIC void
 ARTreject(code, cp, buff, article)
     Reject_type code;
     CHANNEL     *cp;
-    char	*buff;
     BUFFER	*article;
 {
   /* Remember why the article was rejected (for the status file) */
@@ -999,7 +997,6 @@ STATIC TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const 
     char		buff[SMBUF];
     ARTHANDLE		*art;
     TOKEN		*token;
-    int			len;
 
     if ((token = HISfilesfor(hash)) == NULL)
 	return NULL;
@@ -1044,8 +1041,6 @@ STATIC TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const 
 */
 void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 {
-    char	        *p;
-    BOOL	        more;
     char		buff[SMBUF+16];
     HASH                hash;
     TOKEN		*token;
@@ -1602,8 +1597,8 @@ wvec_freq_cmp(p1, p2)
 {
     struct word_entry *w1, *w2;
 
-    w1 = CAST(struct word_entry*, p1);
-    w2 = CAST(struct word_entry*, p2);
+    w1 = (struct word_entry *) p1;
+    w2 = (struct word_entry *) p2;
     return w2->count - w1->count;	/* decreasing sort */
 }
 
@@ -1618,8 +1613,8 @@ wvec_length_cmp(p1, p2)
 {
     struct word_entry *w1, *w2;
 
-    w1 = CAST(struct word_entry*, p1);
-    w2 = CAST(struct word_entry*, p2);
+    w1 = (struct word_entry *) p1;
+    w2 = (struct word_entry *) p2;
     return w2->length - w1->length;	/* decreasing sort */
 }
 
@@ -1635,8 +1630,8 @@ ptr_strcmp(p1, p2)
     int cdiff;
     char **s1, **s2;
 
-    s1 = CAST(char**, p1);
-    s2 = CAST(char**, p2);
+    s1 = (char **) p1;
+    s2 = (char **) p2;
     if (cdiff = (**s1)-(**s2))
 	return cdiff;
     return strcmp((*s1)+1, (*s2)+1);

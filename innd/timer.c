@@ -1,19 +1,9 @@
 /* $Id$
 **
-** Timer functions, to gather profiling data
-**
+** Timer functions, to gather profiling data.
 */
-
-#include <stdio.h>
-#include <string.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-
-#include "configdata.h"
 #include "clibrary.h"
 #include "innd.h"
-#include <syslog.h> 
 
 unsigned	start[TMR_MAX];
 unsigned	cumulative[TMR_MAX];

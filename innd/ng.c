@@ -61,8 +61,8 @@ NGcompare(p1, p2)
     NEWSGROUP	**ng1;
     NEWSGROUP	**ng2;
 
-    ng1 = CAST(NEWSGROUP**, p1);
-    ng2 = CAST(NEWSGROUP**, p2);
+    ng1 = (NEWSGROUP **) p1;
+    ng2 = (NEWSGROUP **) p2;
     return ng1[0]->Last - ng2[0]->Last;
 }
 
