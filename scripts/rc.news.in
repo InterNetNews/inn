@@ -182,3 +182,7 @@ for F in ${RMFILE} ${RMFILE}.*; do
     fi
 done &
 
+# Run any additional local startup commands.
+if [ -f ${PATHBIN}/rc.news.local ] ; then
+    . ${PATHBIN}/rc.news.local
+fi
