@@ -24,7 +24,6 @@
 **  Global variables.
 */
 static bool	BATCHopen;
-static bool	STATprint;
 static double	STATbegin;
 static double	STATend;
 static char	*Host;
@@ -86,8 +85,6 @@ BATCHclose(FILE *F)
 static void
 RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 {
-    static char	LINE1[] = "batcher %s times user %.3f system %.3f elapsed %.3f";
-    static char	LINE2[] ="batcher %s stats batches %d articles %d bytes %ld";
     char	*spool;
     char	buff[BIG_BUFFER];
     int		i;
@@ -102,15 +99,10 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 	systime = 0;
     }
 
-    if (STATprint) {
-	printf(LINE1, Host, usertime, systime, STATend - STATbegin);
-	printf("\n");
-	printf(LINE2, Host, BATCHcount, ArtsWritten, BytesWritten);
-	printf("\n");
-    }
-
-    syslog(L_NOTICE, LINE1, Host, usertime, systime, STATend - STATbegin);
-    syslog(L_NOTICE, LINE2, Host, BATCHcount, ArtsWritten, BytesWritten);
+    notice("batcher %s times user %.3f system %.3f elapsed %.3f",
+           Host, usertime, systime, STATend - STATbegin);
+    notice("batcher %s stats batches %d articles %d bytes %ld",
+           Host, BATCHcount, ArtsWritten, BytesWritten);
 
     /* Last batch exit okay? */
     if (BATCHstatus == 0) {
@@ -213,6 +205,9 @@ main(int ac, char *av[])
     umask(NEWSUMASK);
     ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
 
+    /* By default, statistics only go to syslog. */
+    message_handlers_notice(1, message_log_syslog_notice);
+
     /* Parse JCL. */
     while ((i = getopt(ac, av, "a:A:b:B:i:N:p:rs:S:v")) != EOF)
 	switch (i) {
@@ -250,7 +245,8 @@ main(int ac, char *av[])
 	    AltSpool = optarg;
 	    break;
 	case 'v':
-	    STATprint = true;
+            message_handlers_notice(2, message_log_syslog_notice,
+                                    message_log_stdout);
 	    break;
 	}
     if (MaxArts && ArtsInBatch == 0)
