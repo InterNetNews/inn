@@ -292,6 +292,26 @@ notice(const char *format, ...)
 }
 
 void
+sysnotice(const char *format, ...)
+{
+    va_list args;
+    message_handler_func *log;
+    int length;
+    int error = errno;
+
+    va_start(args, format);
+    length = vsnprintf(NULL, 0, format, args);
+    va_end(args);
+    if (length < 0)
+        return;
+    for (log = notice_handlers; *log != NULL; log++) {
+        va_start(args, format);
+        (**log)(length, format, args, error);
+        va_end(args);
+    }
+}
+
+void
 warn(const char *format, ...)
 {
     va_list args;

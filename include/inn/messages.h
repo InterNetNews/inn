@@ -33,6 +33,8 @@ extern void trace(enum message_trace, const char *, ...)
     __attribute__((__format__(printf, 2, 3)));
 extern void notice(const char *, ...)
     __attribute__((__format__(printf, 1, 2)));
+extern void sysnotice(const char *, ...)
+    __attribute__((__format__(printf, 1, 2)));
 extern void warn(const char *, ...)
     __attribute__((__format__(printf, 1, 2)));
 extern void syswarn(const char *, ...)
