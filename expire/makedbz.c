@@ -116,7 +116,8 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	size = Countlines();
 	size += (size / 10);
         if (size > 0)
-            fprintf(stderr, "no size specified, using %ld\n", size);
+            fprintf(stderr, "no size specified, using %ld\n",
+                    (unsigned long) size);
     }
 
     /* Open the text file. */
@@ -178,7 +179,8 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     for (where = QIOtell(qp); (p = QIOread(qp)) != NULL; where = QIOtell(qp)) {
 	count++;
 	if ((save = strchr(p, HIS_FIELDSEP)) == NULL) {
-	    (void)fprintf(stderr, "Bad line #%ld \"%.30s...\"\n", count, p);
+	    (void)fprintf(stderr, "Bad line #%ld \"%.30s...\"\n",
+                          (unsigned long) count, p);
 	    if (temp[0])
 		(void)unlink(temp);
 	    exit(1);
@@ -212,13 +214,13 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     }
     if (QIOerror(qp)) {
 	(void)fprintf(stderr, "Can't read \"%s\" near line %ld, %s\n",
-		TextFile, count, strerror(errno));
+		TextFile, (unsigned long) count, strerror(errno));
 	if (temp[0])
 	    (void)unlink(temp);
 	exit(1);
     }
     if (QIOtoolong(qp)) {
-	(void)fprintf(stderr, "Line %ld is too long\n", count);
+	fprintf(stderr, "Line %ld is too long\n", (unsigned long) count);
 	if (temp[0])
 	    (void)unlink(temp);
 	exit(1);
@@ -237,10 +239,8 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	(void)unlink(temp);
 }
 
-
-
-void
-Usage()
+static void
+Usage(void)
 {
     fprintf(stderr, "Usage: makedbz [-f histfile] [-s numlines] [-i] [-o]\n");
     exit(1);
