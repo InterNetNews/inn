@@ -1144,7 +1144,8 @@ ARTHANDLE *tradspool_next(const ARTHANDLE *article, const RETRTYPE amount) {
     if ((sub = SMgetsub(*art)) == NULL || sub->type != TOKEN_TRADSPOOL) {
 	/* maybe storage.conf is modified, after receiving article */
 	token = MakeToken(priv.ngtp->ngname, artnum, 0);
-	syslog(L_ERROR, "tradspool: can't determine class: %s", TokenToText(token));
+	syslog(L_ERROR, "tradspool: can't determine class: %s: %s",
+	       TokenToText(token), SMerrorstr);
     } else {
 	token = MakeToken(priv.ngtp->ngname, artnum, sub->class);
     }
