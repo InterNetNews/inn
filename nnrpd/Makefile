@@ -31,13 +31,13 @@ tags ctags: $(SOURCES) $(INCLUDES)
 
 ##  Compilation rules.
 
-NNRPDLIBS	= $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(PERLLIB) \
-		  $(PYTHONLIB) $(SSLLIB) $(LIBS)
+NNRPDLIBS	= $(LIBHIST) $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) \
+		  $(PERLLIB) $(PYTHONLIB) $(SSLLIB) $(LIBS)
 
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
 
-nnrpd: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
+nnrpd: $(OBJECTS) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)
 
 

@@ -363,16 +363,13 @@ static bool ARTopen(int artnum)
 */
 static bool ARTopenbyid(char *msg_id, ARTNUM *ap)
 {
-    char		*p;
-    HASH		hash = HashMessageID(msg_id);
     TOKEN		token;
     struct timeval	stv, etv;
 
     *ap = 0;
-    if ((p = HISgetent(&hash, FALSE, NULL)) == NULL)
+    if (!HISlookup(History, msg_id, NULL, NULL, NULL, &token))
 	return FALSE;
 
-    token = TextToToken(p);
     if (token.type == TOKEN_EMPTY)
 	return FALSE;
     gettimeofday(&stv, NULL);

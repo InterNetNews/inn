@@ -177,6 +177,7 @@ EXTERN bool     BACKOFFenabled;
 EXTERN long     ClientIP;                                 
 EXTERN char	*VirtualPath;
 EXTERN int	VirtualPathlen;
+EXTERN struct history *History;
 
 
 #if	NNRP_LOADLIMIT > 0
@@ -191,8 +192,6 @@ extern void		ExitWithStats(int x, bool readconf);
 extern bool		GetGroupList();
 extern char		*GetHeader();
 extern void		GRPreport();
-extern void		HIScheck();
-extern char		*HISgetent();
 extern long		LOCALtoGMT();
 extern bool		NGgetlist();
 extern long		NNTPtoGMT();

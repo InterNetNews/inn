@@ -10,8 +10,6 @@
 #include "ov.h"
 
 #define GROUP_LIST_DELTA	10
-#define GET_DATE(p, line)	\
-	((p = strchr(line, HIS_FIELDSEP)) == NULL ? 0 : atol(++p))
 #define OVFMT_UNINIT	-2
 #define OVFMT_NOMSGID	-1
 #define OVFMT_NOXREF	-1

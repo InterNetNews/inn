@@ -75,7 +75,6 @@ void CMDgroup(int ac, char *av[])
     /* Close out any existing article, report group stats. */
     ARTclose();
     GRPreport();
-    HIScheck();
 
     /* Doing a "group" command? */
     if (caseEQ(av[0], "group")) {

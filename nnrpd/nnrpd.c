@@ -79,6 +79,7 @@ char	*NNRPACCESS = NULL;
 bool	ForceReadOnly = FALSE;
 char 	LocalLogFileName[256];
 
+struct history *History;
 static double	STATstart;
 static double	STATfinish;
 static char	*PushedBack;
@@ -241,6 +242,7 @@ ExitWithStats(int x, bool readconf)
     }
 #endif	/* DO_PYTHON */
 
+    HISclose(History);
     exit(x);
 }
 
@@ -651,6 +653,7 @@ WaitChild(int s)
 
 static void SetupDaemon(void) {
     bool                val;
+    struct histopts	opts;
     char *path;
     
 #if defined(DO_PERL)
@@ -675,7 +678,14 @@ static void SetupDaemon(void) {
         PY_setup();
     }
 #endif /* defined(DO_PYTHON) */
-    
+
+    opts.u.hisv6.statinterval = 30;
+    History = HISopen(HISTORY, innconf->hismethod, HIS_RDONLY, &opts);
+    if (!History) {
+	syslog(L_NOTICE, "cant initialize history");
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1, TRUE);
+    }
     val = TRUE;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
 	syslog(L_NOTICE, "cant initialize storage method, %s", SMerrorstr);
