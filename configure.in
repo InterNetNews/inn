@@ -166,26 +166,53 @@ AC_SUBST(RNEWSGRP)
 AC_SUBST(RNEWSMODE)
 
 AC_ARG_WITH(perl,
-    [  --with-perl             Embedded Perl script support],
-    DO_PERL=DO
-    AC_DEFINE(DO_PERL))
+    [  --with-perl             Embedded Perl script support [default=no]],
+    [case "${withval}" in
+        yes) DO_PERL=DO
+             AC_DEFINE(DO_PERL)
+             ;;
+        no)  DO_PERL=DONT ;;
+        *)   AC_MSG_ERROR(invalid argument to --with-perl or --without-perl) ;;
+    esac],
+    DO_PERL=DONT)
 
 AC_ARG_WITH(python,
-    [  --with-python           Embedded Python module support],
-    DO_PYTHON=define
-    AC_DEFINE(DO_PYTHON))
+    [  --with-python           Embedded Python module support [default=no]],
+    [case "${withval}" in
+        yes) DO_PYTHON=define
+             AC_DEFINE(DO_PYTHON)
+             ;;
+        no)  DO_PYTHON=DONT ;;
+        *)   AC_MSG_ERROR(invalid argument to --with-python or --without-python) ;;
+    esac],
+    DO_PYTHON=DONT)
 
 AC_ARG_WITH(tcl,
-    [  --with-tcl              Embedded TCL script support],
-    DO_TCL=DO TCL_LIB="-ltcl -lm" TCL_INC="-I/usr/local/include"
-    AC_DEFINE(DO_TCL),
-    DO_TCL=DONT TCL_LIB="" TCL_INC="")
+    [  --with-tcl              Embedded TCL script support [default=no]],
+    [case "${withval}" in
+        yes) DO_TCL=DO ;;
+        no)  DO_TCL=DONT ;;
+        *)   AC_MSG_ERROR(invalid argument to --with-tcl or --without-tcl) ;;
+    esac],
+    DO_TCL=DONT)
+if test $DO_TCL = DO ; then
+  TCL_LIB="-ltcl -lm"
+  TCL_INC="-I/usr/local/include"
+  AC_DEFINE(DO_TCL)
+else
+  TCL_LIB=""
+  TCL_INC=""
+fi
 AC_SUBST(TCL_LIB)
 AC_SUBST(TCL_INC)
 
 AC_ARG_WITH(largefiles,
-    [  --with-largefiles       Support for files greater than 2GB],
-    DO_LFS=DO,
+    [  --with-largefiles       Support for files greater than 2GB [default=no]],
+    [case "${withval}" in
+        yes) DO_LFS=DO ;;
+        no)  DO_LFS=DONT ;;
+        *)   AC_MSG_ERROR(invalid argument to --with-largefiles or --without-largefiles) ;;
+    esac],
     DO_LFS=DONT)
 AC_SUBST(DO_LFS)
 
