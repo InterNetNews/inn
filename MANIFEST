@@ -260,6 +260,7 @@ doc/pod/checklist.pod                 Master file for doc/checklist
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
 doc/pod/convdate.pod                  Master file for convdate.1
+doc/pod/ctlinnd.pod                   Master file for ctlinnd.8
 doc/pod/cycbuff.conf.pod              Master file for cycbuff.conf.5
 doc/pod/distrib.pats.pod              Master file for distrib.pats.5
 doc/pod/domain.pod                    Master file for domain.8

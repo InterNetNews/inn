@@ -1,0 +1,483 @@
+=head1 NAME
+
+ctlinnd - Control the main InterNetNews daemon
+
+=head1 SYNOPSIS
+
+B<ctlinnd> [B<-hs>] [B<-t> I<timeout>] [I<command> [I<argument> ...]]
+
+=head1 DESCRIPTION
+
+B<ctlinnd> sends a message to the control channel of innd(8), the main
+InterNetNews daemon.
+
+In the normal mode of behavior, the message is sent to the server, which
+then performs the requested action and sends back a reply with a text
+message and an exit code for B<ctlinnd>.  If the server successfully
+performed the command, B<ctlinnd> will print the reply on standard output
+and exit with a status of zero.  If the server could not perform the
+command, it will direct B<ctlinnd> to exit with a status of one.  By
+default, B<ctlinnd> will wait forever for a response from B<innd>; this
+can be changed with the B<-t> flag.
+
+The C<shutdown>, C<xabort>, and C<xexec> commands do not generate a reply,
+since they cause B<innd> to exit.  After these commands, B<ctlinnd> will
+always exit silently with a status of zero.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h>
+
+Prints a command summary.  If a command is given along with the B<-h>
+flag, only the usage for that command will be given.
+
+=item B<-s>
+
+If the command was successful, don't print the output from B<innd>.
+
+=item B<-t> I<timeout>
+
+Specifies how long to wait for the reply from the server, for commands
+other than C<shutdown>, C<xabort>, and C<xexec>.  I<timeout> is the number
+of seconds to wait.  A value of zero says to wait forever, and a value
+less than zero says not to wait at all but just exit immediately with
+status zero.  When waiting for a reply, B<ctlinnd> will check every two
+minutes to be sure the server is still running, to make it less likely
+that B<ctlinnd> will just hang.
+
+The default is zero, indicating that B<ctlinnd> should wait forever.
+
+=back
+
+=head1 COMMANDS
+
+Here is the complete list of supported commands.  Note that nearly all
+commands have a fixed number of arguments.  If a parameter may be an empty
+string, it is still necessary to pass the empty string to B<ctlinnd> as an
+argument (specified in the shell as two adjacent quotes, like C<''>).
+
+=over 4
+
+=item addhist I<message-id> I<arrival> I<expires> I<posted> I<token>
+
+Add an entry to the history database for I<message-id>.  The angle
+brackets around the message ID are optional.  It should normally be
+protected from the shell with single quotes.
+
+I<arrival>, I<expires>, and I<posted> should be the number of seconds
+since epoch and indicate when the article arrived, when it expires (via
+the Expires header), and when it was posted (given in the Date header),
+respectively.  I<expires> should be 0 if the article doesn't have an
+Expires header.  I<token> is the storage API token for the article, and
+may be empty.
+
+This command can only be used while the server is running, and will be
+rejected if the server is paused or throttled.
+
+=item allow I<reason>
+
+Allow remote connections, reversing a prior C<reject> command.  I<reason>
+must be the same text given to the C<reject> command, or the empty string
+(which matches any reason).
+
+=item begin I<site>
+
+Begin feeding I<site>.  The server will rescan the F<newsfeeds> file to
+find the specified site and set up a newsfeed for it.  If the site already
+existed, a C<drop> for that site is done first.  This command is
+forwarded; see L<NOTES> below.
+
+=item cancel I<message-id>
+
+Remove the article with the specified message ID from the local system.
+This does not generate a cancel control message; it only affects the local
+system.  The angle brackets around the message ID are optional.  It should
+normally be protected from the shell with single quotes.
+
+If the server is throttled manually, this command causes it to briefly
+open the history database.  If the server is paused or throttled for any
+other reason, this command is rejected.
+
+=item changegroup I<group> I<mode>
+
+The newsgroup I<group> is changed so that its mode (the fourth field in
+the F<active> file) becomes I<mode>.  This may be used to make an existing
+group moderated or unmoderated, for example.
+
+This command, unlike C<newgroup> or C<rmgroup>, can only be used while the
+server is running, and will be rejected if the server is paused or
+throttled.
+
+=item checkfile
+
+Check the syntax of the F<newsfeeds> file and display a message if any
+errors are found.  The details of the errors are reported to syslog.
+
+=item drop I<site>
+
+Flush and drop I<site> from the server's list of active feeds.  This
+command is forwarded; see L<NOTES> below.
+
+=item feedinfo I<site>
+
+Print detailed information about the state of the feed to I<site>, or
+brief status about all feeds if I<site> is the empty string.
+
+=item flush I<site>
+
+Flush the buffer for the specified site.  The action taken depends on the
+type of feed the site receives; see newsfeeds(5) for more information.
+This is useful when the site is being fed by a file and batching is about
+to start.  If I<site> is an empty string, all sites are flushed and the
+F<active> file and history database are also flushed to disk.  This
+command is forwarded; see L<NOTES> below.
+
+=item flushlogs
+
+Close the news and error log files and rename them to add C<.old> to the
+file name, then open fresh news and error logs.  The F<active> file and
+history database are also flushed to disk.
+
+=item go I<reason>
+
+Re-open the history database and start accepting articles again, reversing
+a previous C<pause> or C<throttle> command.  I<reason> must be either the
+empty string or match the text that was given to the earlier C<pause> or
+C<throttle> command.
+
+If a C<reject> command is in effect, this will also reverse it by doing
+the equivalent of an C<allow> command if the reason matches I<reason>.
+Likewise, if a C<reserve> command had been given, this will clear the
+reservation if I<reason> matches the text that was given to C<reserve>.
+
+The history database is automatically closed on C<throttle> or C<pause>
+and reopened on C<go>, so the history database can be replaced during the
+pause or throttle without requiring an explicit C<reload> command.  If any
+other configuration files or the F<active> file were modified, a C<reload>
+command should be given to force the server to re-read those files.
+
+If the server throttled itself because it accumulated too many I/O errors,
+this command will reset the error count.
+
+If the server was not started with the B<-ny> flag, this command also does
+the equivalent of a C<readers> command with C<yes> as the flag and
+I<reason> as the text.
+
+=item hangup I<channel>
+
+Close the socket for the specified incoming channel.  This may be useful
+when an incoming connection appears to be hung (although B<innd> will
+close idle connections automatically after a timeout).
+
+=item help [I<command>]
+
+Print a command summary for all commands, or just I<command> if one is
+specified.  This is equivalent to the B<-h> option.
+
+=item kill I<signal> I<site>
+
+Signal I<signal> is sent to the process underlying the specified site,
+which must be a channel or exploder feed.  I<signal> may be a numeric
+signal number or one of C<hup>, C<int>, or C<term>; case is not
+significant.
+
+=item lowmark I<file>
+
+Reset the low-water marks in the F<active> file based on the contents of
+I<file>.  Each line in I<file> must be of the form:
+
+    group low-value
+
+For example:
+
+    comp.lang.c++ 243
+
+This command is mostly used by B<news.daily> to update the I<active> file
+after nightly expiration.
+
+=item logmode
+
+Cause the server to log its current operating mode to syslog.
+
+=item mode
+
+Print the server's operating mode as a multi-line summary of the
+parameters and the operating state.  The parameters in the output
+correspond to command-line flags to B<innd> and give the current settings
+of those parameters that can be overridden by command-line flags.
+
+=item name I<channel>
+
+Print the name and relevant information for the given incoming or outgoing
+channel, or for all channels if I<channel> is an empty string.  The
+respose is formatted as:
+
+    <name>:<number>:<type>:<idle>:<status>
+
+where <name> is the name of the channel, <number> is its number (generally
+the same as the file descriptor assigned to it), <idle> is the idle time
+for an NNTP channel or the process ID for a process channel, and <status>
+is the status for NNTP channels.
+
+The type is one of the following values:
+
+    control     Control channel for ctlinnd
+    file        An outgoing file feed
+    localconn   Local channel used by nnrpd and rnews for posting
+    nntp        NNTP channel for remote connections
+    proc        The process for a process feed
+    remconn     The channel that accepts new remote connections
+
+Channel status indicates whether the channel is paused or not.  Nothing is
+shown unless the channel is paused, in which case C<paused> is shown.  A
+channel will be paused automatically if the number of remote connections
+for that label in F<incoming.conf> is greater than I<max-connections>
+within I<hold-time> seconds.
+
+=item newgroup I<group> [I<mode> [I<creator>]]
+
+Create the specified newsgroup.  The I<mode> parameter is the fourth field
+of the F<active> file entry, as described in active(5).  If it is not an
+equal sign, only the first character is used.  I<creator> should be the
+identity of the person creating the group.  If the newsgroup already
+exists, this is equivalent to the C<changegroup> command.
+
+I<creator> may be omitted; if so, it will default to the newsmaster (as
+specified at configure time, normally C<usenet>).  I<mode> may also be
+omitted; if so, it will default to C<y> (a normal, unmoderated group).
+The combination of defaults make it possible to use the text of the
+Control header directly (although don't do this without checking the
+syntactic validity of the header first).
+
+This command can only be done while the server is running or throttled
+manually.  It will update its internal state when a C<go> command is
+sent.  This command updates the F<active.times> file as well.  This
+command is forwarded; see L<NOTES> below.
+
+=item param I<letter> I<value>
+
+Change the specified server parameter.  I<letter> is the B<innd>
+command-line option to set and I<value> is the new value.  For example:
+
+    ctlinnd param i 5
+
+would direct the server to allow only five incoming connections.  To
+enable or disable the action of the B<-n> flag, use C<n> for the letter
+and C<y> or C<n>, respectively, for the value.
+
+The supported values for I<letter> are a, c, H, i, l, n, o, T, t, and X.
+
+=item pause I<reason>
+
+Pause the server so that no incoming articles are accepted.  No existing
+connections are closed, but the history database is closed.  This should
+be used for short-term locks, such as when replacing the history
+database.  If the server was not started with the B<-ny> flag, this
+command also does the equivalent of a C<readers> command with C<no> as the
+flag and I<reason> as the text.
+
+=item perl I<flag>
+
+Enable or disable Perl filtering.  This command is only available if INN
+was built with Perl filtering support.  If I<flag> starts with C<y>,
+filtering is enabled; if it starts with C<n>, filtering is disabled.
+
+=item python I<flag>
+
+Enable or disable Python filtering.  This command is only available if INN
+was built with Python filtering support.  If I<flag> starts with C<y>,
+filtering is enabled; if it starts with C<n>, filtering is disabled.
+
+=item readers I<flag> I<text>
+
+Allow or disallow readers.  If I<flag> starts with the letter C<n>, then
+reading is disallowed by causing the server to pass I<text> as the value
+of the B<-r> flag to B<nnrpd>.  If I<flag> starts with the letter C<y> and
+I<text> is either an empty string or the same string that was used when
+reading was disabled, reading will be re-enabled.
+
+This command has no effect if B<nnrpd> is being run separately rather than
+spawned by B<innd>.
+
+=item reject I<reason>
+
+Remote connections (those that would not be handed off to B<nnrpd>) are
+rejected with I<reason> given as the explanation.  Existing connections
+are not closed.
+
+=item reload I<what> I<reason>
+
+Update the in-memory copy of server configuration files.  I<what>
+identifies what should be reloaded, and I<reason> is reported to syslog in
+the message noting the reload.
+
+There is no way to reload F<inn.conf>, F<storage.conf>, or other
+configuration files for the storage or overview backends.  To pick up
+changes to those files, use C<ctlinnd xexec innd> to restart B<innd>.
+
+If I<what> is the empty string or the word C<all>, everything is
+reloaded.  If it is the word C<history>, the history database is closed
+and re-opened.  If it is the word C<incoming.conf> or C<overvew.fmt>, the
+corresponding file is reloaded.  If it is the word C<active> or
+C<newsfeeds>, both the F<active> and F<newsfeeds> files are reloaded,
+which will also cause all outgoing feeds to be flushed and restarted.
+
+If I<what> is the word C<filter.perl>, the F<filter_innd.pl> file is
+reloaded.  If the Perl filter defined a function C<filter_before_reload>,
+it will be called prior to re-reading F<filter_innd.pl>.  If the Perl
+function C<filter_after_reload> is defined, it will be called after
+F<filter_innd.pl> has been reloaded.  Reloading the Perl filter does not
+enable filtering if it has been disabled; use C<perl y> to do this
+instead.  F<startup_innd.pl> cannot be reloaded.  This file is not
+available for reloading unless INN was compiled with Perl filtering
+support.
+
+If I<what> is the word C<filter.python>, the F<filter_innd.py> file is
+reloaded.  If a Python method named filter_before_reload() exists, it will
+be called prior to re-reading F<filter_innd.py>.  If a Python method named
+C<__init__> exists, it will be called after F<filter_innd.py> has been
+reloaded.  Reloading the Python filter does not enable filtering if it has
+been disabled; use C<python y> to do this.  This file is not available for
+reloading unless INN was compiled with Python filtering support.
+
+=item renumber I<group>
+
+Update the low-water and high-water marks for I<group> in the F<active>
+file based on the information in the overview database.  Regardless of the
+contents of the overview database, the high-water mark will not be
+decreased.  (Decreasing it may cause duplicate article numbers to be
+assigned after a crash, which can cause serious problems with the
+tradspool storage method.)  If I<group> is the empty string, all
+newsgroups are renumbered.  Renumber only works if overview data has been
+created (if I<enableoverview> is set to true in F<inn.conf>).
+
+=item renumberlow I<file>
+
+Identical to the C<lowmark> command.
+
+=item reserve I<reason>
+
+Require the next C<pause> or C<throttle> command to use I<reason> as its
+reason.  This reservation is cleared by giving an empty string for the
+reason.  This is used by programs like B<expire> to coordinate pauses and
+throttles of the server and avoid trampling on other instances of
+themselves.
+
+=item rmgroup I<group>
+
+Remove the specified newsgroup.  The group is removed from the F<active>
+file and its overview information is purged, making it immediately
+unavailable to readers.  Unlike the C<newgroup> command, this command does
+not update the F<active.times> file.
+
+This command can only be done while the server is running or throttled
+manually.  This command is forwarded; see L<NOTES> below.
+
+=item send I<feed> I<text>
+
+The specified I<text> is sent as a control line to the exploder I<feed>.
+
+=item shutdown I<reason>
+
+The server is shut down, with the specified reason recorded in the log and
+sent to all open connections.  It is a good idea to send a C<throttle>
+command first so that feeds can be shut down more gracefully.
+
+If Perl or Python filtering is compiled in and enabled, certain functions
+are called at C<throttle> or C<shutdown> (to save filter state to disk,
+for example).  Consult the embedded filter documentation for details.
+
+=item stathist (off | I<filename>)
+
+Enable or disable generation of history performance statistics.  If the
+parameter is C<off>, no statistics are gathered.  Otherwise, statistics
+are written to the specified file.  A parser for this file is provided in
+the contrib tree of the INN distribution.
+
+=item status (off | I<interval>)
+
+Adjust the frequency with which B<innd> reports status information to
+syslog.  Status reporting is turned off if C<off> or C<0> is given as the
+argument.  Otherwise, status will be reported every I<interval> seconds.
+See I<status> in inn.conf(5) for information on how to set the default.
+
+=item throttle I<reason>
+
+Close all existing incoming connections and outgoing feeds and reject new
+connections.  Close the history database.  This should be used for
+long-term locks or for running a large number of C<newgroup> and
+C<rmgroup> commands without restarting all outgoing feeds between each
+one.  If the server was not started with the B<-ny> flag, then this
+command also does the equivalent of a C<readers> command with C<no> as the
+flag and I<reason> as the text.
+
+=item timer (off | I<interval>)
+
+Adjust the frequency with which B<innd> reports performance information to
+syslog.  Performance monitoring is turned off if C<off> or C<0> is given
+as the argument.  Otherwise, statistics will be reported every I<interval>
+seconds to syslog.  See I<timer> in inn.conf(5) for information on how to
+set the default.
+
+=item trace I<item> I<flag>
+
+Turn tracing on or off for the specified I<item>.  I<flag> should start
+with the letter C<y> or C<n> to turn tracing on or off, respectively.  If
+I<item> starts with a number, tracing is set up for the specified B<innd>
+channel, which must be an incoming NNTP feed.  If it starts with the
+letter C<i>, general B<innd> tracing is turned on or off.  If it starts
+with the letter C<n>, future B<nnrpd> processes spawned by C<innd> will or
+will not be passed the B<-t> flag, as appropriate.  This will not affect
+any B<nnrpd> processes already running, or B<nnrpd> processes started by
+some means other than B<innd>.
+
+=item xabort I<reason>
+
+Log the specified I<reason> and then abort.  On most systems, this will
+cause B<innd> to dump a core file.  This is only useful for debugging.
+
+=item xexec I<path>
+
+Shut down the server, but then rather than exiting, exec B<innd> with all
+of its original arguments except for B<-r>.  I<path> may be either C<innd>
+or an empty string, both of which are equivalent.  Any other value is an
+error.
+
+This is the easiest way to start a new copy of B<innd> after upgrading or
+reload configuration files that can't be reloaded via the C<reload>
+command.
+
+=back
+
+=head1 NOTES
+
+In addition to being acted on by the server, certain commands can be
+forwarded to an appropriate child process.  If the site receiving the
+command is an exploder (such as B<buffchan>) or a funnel that feeds into
+an exploder, the command can be forwarded.  In this case, the server will
+send a command line to the exploder that consists of the B<ctlinnd>
+command name.  If the site funnels into an exploder that has an asterisk
+(C<*>) in its C<W> flag (see newsfeeds(5) for more information on feed
+specifications), the site name will be appended to the command; otherwise,
+no argument is appended.
+
+=head1 BUGS
+
+B<ctlinnd> uses Unix domain sockets on most systems to communicate with
+B<innd> and is therefore limited by whatever maximum packet size the
+operating system imposes on Unix domain datagrams.  This may mean that
+server replies are limited to 4KB on some systems.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
+POD by Russ Allbery <rra@stanford.edu>.
+
+=head1 SEE ALSO
+
+active(5), active.times(5), buffchan(8), incoming.conf(5), innd(8),
+inndcomm(3), inn.conf(5), newsfeeds(5), nnrpd(8), overview.fmt(5)
+
+=cut
