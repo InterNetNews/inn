@@ -73,6 +73,12 @@ contrib/makestorconf.pl               Create storage.conf from read articles
 contrib/mkbuf                         Create cycbuff for HP-UX
 contrib/newsbot                       Grep articles and trigger actions
 contrib/newsresp.c                    Measure responsiveness of remote server
+contrib/ninpaths-3.1.1                ninpath (Directory)
+contrib/ninpaths-3.1.1/Checksums      Checksum of ninpath tools
+contrib/ninpaths-3.1.1/Makefile       Makefile for ninpath
+contrib/ninpaths-3.1.1/ninpaths.README README file for ninpath
+contrib/ninpaths-3.1.1/ninpaths.c     New inpaths reporting program
+contrib/ninpaths-3.1.1/sendinpaths    Submit path statistics
 contrib/pathinfo                      Scan news headers for information
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
