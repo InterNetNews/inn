@@ -1157,7 +1157,7 @@ CCparam(char *av[])
     default:
 	return "1 Unknown parameter";
     case 'a':
-	if (!CCparsebool('a', &AnyIncoming, *p))
+	if (!CCparsebool('a', (bool *)&AnyIncoming, *p))
 	    return BADVAL;
 	break;
     case 'c':
@@ -1173,7 +1173,7 @@ CCparam(char *av[])
 	syslog(L_NOTICE, "%s changed -l %ld", LogName, innconf->maxartsize);
 	break;
     case 'n':
-	if (!CCparsebool('n', &innconf->readerswhenstopped, *p))
+	if (!CCparsebool('n', (bool *)&innconf->readerswhenstopped, *p))
 	    return BADVAL;
 	break;
     case 'o':
