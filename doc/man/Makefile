@@ -29,8 +29,8 @@ SEC8	= actsync.8 actsyncd.8 archive.8 batcher.8 buffchan.8 \
 	mod-active.8 news.daily.8 news2mail.8 ninpaths.8 nnrpd.8 nntpsend.8 \
 	ovdb_init.8 ovdb_monitor.8 ovdb_server.8 ovdb_stat.8 \
 	overchan.8 perl-nocem.8 prunehistory.8 pullnews.8 radius.8 \
-	scanlogs.8 send-uucp.8 sendinpaths.8 sm.8 tally.control.8 tdx-util.8 \
-	writelog.8
+	rc.news.8 scanlogs.8 send-uucp.8 sendinpaths.8 sm.8 tally.control.8 \
+	tdx-util.8 writelog.8
 
 COPY	= $(SHELL) ./putman.sh $(MANPAGESTYLE) "$(MANFLAGS)"
 
