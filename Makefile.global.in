@@ -201,6 +201,7 @@ PATHBIN         = $(PATHNEWS)/bin
 PATHDOC         = @DOCDIR@
 PATHETC         = @ETCDIR@
 PATHMAN         = @mandir@
+PATHINCLUDE     = @includedir@
 PATHLIB         = @LIBDIR@
 PATHCONTROL     = @CONTROLDIR@
 PATHFILTER      = @FILTERDIR@
