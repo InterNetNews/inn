@@ -298,7 +298,7 @@ unlink_node(n)
     if (unlink(p) < 0) {
 	if (errno != ENOENT) {
 	    oerrno = errno;
-	    (void)fprintf(stderr, "%s: unlink %s", MyName, p);
+	    (void)fprintf(stderr, "%s: unlink %s ", MyName, p);
 	    if (*p != '/')
 		(void)fprintf(stderr, "in %s ", cur_dir);
 	    (void)fprintf(stderr, "%s\n", strerror(oerrno));
