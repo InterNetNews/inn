@@ -43,6 +43,7 @@ OPERATINGMODE	Mode = OMrunning;
 int		RemoteLimit = REMOTELIMIT;
 time_t		RemoteTimer = REMOTETIMER;
 int		RemoteTotal = REMOTETOTAL;
+BOOL		ThrottledbyIOError = FALSE;
 
 #if	defined(__CENTERLINE__)
 BOOL		Debug = TRUE;
@@ -418,6 +419,7 @@ ThrottleIOError(when)
 	    syslog(L_ERROR, "%s cant throttle %s", LogName, p);
 	syslog(L_FATAL, "%s throttle %s", LogName, buff);
 	errno = oerrno;
+	ThrottledbyIOError = TRUE;
     }
 }
 

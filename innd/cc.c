@@ -260,13 +260,17 @@ CCaddhist(av)
 	hash = HashMessageID(Data.MessageID);
     }
 
-    /* If throttled, don't try to use the history database. */
-    if (Mode == OMthrottled)
-	return "1 Server throttled";
+    /* If paused, don't try to use the history database since expire may be
+       running */
+    if (Mode == OMpaused)
+	return "1 Server paused";
 
-    /* If paused, briefly open the history database. */
-    if (Mode != OMrunning)
+    /* If throttled by admin, briefly open the history database. */
+    if (Mode != OMrunning) {
+	if (ThrottledbyIOError)
+	    return "1 Server throttled";
 	HISsetup();
+    }
 
     if (HIShavearticle(hash)) {
 	if (Mode != OMrunning) HISclose();
@@ -458,6 +462,12 @@ CCcancel(av)
     if (Mode == OMrunning)
 	ARTcancel(&Data, Data.MessageID, TRUE);
     else {
+	/* If paused, don't try to use the history database since expire may be
+	   running */
+	if (Mode == OMpaused)
+	    return "1 Server paused";
+	if (ThrottledbyIOError)
+	    return "1 Server throttled";
 	/* Possible race condition, but documented in ctlinnd manpage. */
 	HISsetup();
 	ARTcancel(&Data, Data.MessageID, TRUE);
@@ -724,6 +734,7 @@ CCgo(av)
     DISPOSE(ModeReason);
     ModeReason = NULL;
     Mode = OMrunning;
+    ThrottledbyIOError = FALSE;
 
     if (NNRPReason && innconf->allowreaders) {
 	av[0] = YES;
@@ -1005,18 +1016,7 @@ CCnewgroup(av)
     if ((ngp = NGfind(Name)) != NULL)
 	return CCdochange(ngp, Rest);
 
-    /*
-     * See FAQ Q 6.3: INN shreds the active file when doing multiple
-     * newgroups/rmgroups if the server is throttled. So disallow that for now.
-     */
-   if (Mode == OMthrottled)
-	return "1 server throttled";
-
-    /*
-     * See FAQ Q 6.3: INN shreds the active file when doing multiple
-     * newgroups/rmgroups if the server is throttled. So disallow that for now.
-     */
-   if (Mode == OMthrottled)
+    if (Mode == OMthrottled && ThrottledbyIOError)
 	return "1 server throttled";
 
     /* Update the log of groups created.  Don't use stdio because SunOS
@@ -1505,18 +1505,7 @@ CCrmgroup(av)
     if ((ngp = NGfind(av[0])) == NULL)
 	return CCnogroup;
 
-    /*
-     * See FAQ Q 6.3: INN shreds the active file when doing multiple
-     * newgroups/rmgroups if the server is throttled. So disallow that for now.
-     */
-    if (Mode == OMthrottled)
-	return "1 server throttled";
-
-    /*
-     * See FAQ Q 6.3: INN shreds the active file when doing multiple
-     * newgroups/rmgroups if the server is throttled. So disallow that for now.
-     */
-    if (Mode == OMthrottled)
+    if (Mode == OMthrottled && ThrottledbyIOError)
 	return "1 server throttled";
 
     /* Update the in-core data. */
