@@ -1,3 +1,17 @@
+=head1 Changes from 2.3.1 to 2.3.2
+
+=over 2
+
+=item *
+
+An item that was actually changed in 2.3.0 but wasn't noted in NEWS when
+it should have been:  Users can no longer post articles containing
+Approved: headers to moderated groups by default; they must be
+specifically given that permission with the access: parameter in
+F<readers.conf>.  See the man page for more details.
+
+=back
+
 =head1 Changes from 2.3.0 to 2.3.1
 
 =over 2
@@ -179,6 +193,13 @@ and supports Python authentication hooks.
 =item *
 
 There is preliminary support for news reading over SSL, using OpenSSL.
+
+=item *
+
+Users can no longer post articles containing Approved: headers to
+moderated groups by default; they must be specifically given that
+permission with the access: parameter in F<readers.conf>.  See the man
+page for more details.
 
 =item *
 

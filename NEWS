@@ -1,3 +1,11 @@
+Changes from 2.3.1 to 2.3.2
+
+    * An item that was actually changed in 2.3.0 but wasn't noted in NEWS
+      when it should have been:  Users can no longer post articles
+      containing Approved: headers to moderated groups by default; they must
+      be specifically given that permission with the access: parameter in
+      readers.conf.  See the man page for more details.
+
 Changes from 2.3.0 to 2.3.1
 
     * inews no longer downloads the active file, no longer tries to send
@@ -152,6 +160,11 @@ Changes from 2.2 to 2.3
       filters, and supports Python authentication hooks.
 
     * There is preliminary support for news reading over SSL, using OpenSSL.
+
+    * Users can no longer post articles containing Approved: headers to
+      moderated groups by default; they must be specifically given that
+      permission with the access: parameter in readers.conf.  See the man
+      page for more details.
 
     * To simplify anti-abuse filtering, and to be more compliant with news
       standards and proposed standards, INN now treats as control messages
