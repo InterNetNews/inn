@@ -24,7 +24,7 @@
 /* If keyword support wasn't requested, stub out the main function provided by
    this file. */
 #if !DO_KEYWORDS
-static void
+void
 KEYgenerate(HDRCONTENT *header UNUSED, const char *body UNUSED,
             const char *orig UNUSED, size_t length UNUSED)
 {
