@@ -312,23 +312,6 @@ static int check_upgrade(int do_upgrade)
 	    if (ret != 0)
 		return ret;
 	}
-	ovdb_close_berkeleydb();
-	ret = ovdb_open_berkeleydb(OV_WRITE, OVDB_UPGRADE);
-	if (ret != 0)
-	    return ret;
-#if DB_VERSION_MAJOR >= 3
-#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
-	ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, NULL, 0);
-#else
-	ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, 0);
-#endif
-	if (ret != 0)
-	    return ret;
-	OVDBenv = NULL;
-	ret = ovdb_open_berkeleydb(OV_WRITE, 0);
-	if(ret != 0)
-	    return ret;
-#endif
     }
 
     if(dv > DATA_VERSION) {
@@ -345,10 +328,35 @@ static int check_upgrade(int do_upgrade)
     return 0;
 }
 
+int
+upgrade_environment(void)
+{
+    int ret;
+
+    ovdb_close_berkeleydb();
+    ret = ovdb_open_berkeleydb(OV_WRITE, OVDB_UPGRADE);
+    if (ret != 0)
+	return ret;
+#if DB_VERSION_MAJOR >= 3
+#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
+    ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, NULL, 0);
+#else
+    ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, 0);
+#endif
+    if (ret != 0)
+	return ret;
+    OVDBenv = NULL;
+    ret = ovdb_open_berkeleydb(OV_WRITE, 0);
+    if(ret != 0)
+	return ret;
+#endif
+}
+
 int main(int argc, char **argv)
 {
     int ret, c, do_upgrade = 0, recover_only = 0, err = 0;
     bool locked;
+    int flags;
 
     openlog("ovdb_init", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "ovdb_init";
@@ -390,10 +398,14 @@ int main(int argc, char **argv)
 
     locked = ovdb_getlock(OVDB_LOCK_EXCLUSIVE);
     if(locked) {
-	if(do_upgrade)
+	if(do_upgrade) {
             notice("database is quiescent, upgrading");
-	else
+	    flags = OVDB_RECOVER | OVDB_UPGRADE;
+	}
+	else {
             notice("database is quiescent, running normal recovery");
+	    flags = OVDB_RECOVER;
+	}
     } else {
         warn("database is active");
 	if(do_upgrade) {
@@ -403,9 +415,10 @@ int main(int argc, char **argv)
 	if(recover_only)
             die("recovery will not be attempted");
 	ovdb_getlock(OVDB_LOCK_ADMIN);
+	flags = 0;
     }
 
-    ret = ovdb_open_berkeleydb(OV_WRITE, (locked && !do_upgrade) ? OVDB_RECOVER : 0);
+    ret = ovdb_open_berkeleydb(OV_WRITE, flags);
     if(ret == DB_RUNRECOVERY) {
 	if(locked)
             die("database could not be recovered");
@@ -420,6 +433,12 @@ int main(int argc, char **argv)
 
     if(recover_only)
 	exit(0);
+
+    if(do_upgrade) {
+	ret = upgrade_environment();
+	if(ret != 0)
+	    die("cannot upgrade BerkeleyDB environment: %s", db_strerror(ret));
+    }
 
     if(check_upgrade(do_upgrade)) {
 	ovdb_close_berkeleydb();
