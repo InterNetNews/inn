@@ -1,9 +1,0 @@
-
-Please check the following files before running make, to ensure that 
-everything was set correctly.
-
-	Makefile.global
-	include/config.h
-	include/paths.h
-	innfeed/innfeed.h
-
