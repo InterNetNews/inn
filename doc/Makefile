@@ -27,10 +27,10 @@ SEC5	= active.5 control.ctl.5 distrib.pats.5 expire.ctl.5 history.5 \
 	incoming.conf.5
 SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 crosspost.8 ctlinnd.8 \
 	cvtbatch.8 expire.8 expireover.8 expirerm.8 fastrm.8 filechan.8 \
-	inncheck.8 innd.8 innlog.pl.8 innstat.8 innwatch.8 innxbatch.8 \
+	inncheck.8 innd.8 innreport.8 innstat.8 innwatch.8 innxbatch.8 \
 	innxmit.8 makeactive.8 makehistory.8 news-recovery.8 news.daily.8 \
 	newslog.8 newsrequeue.8 nnrpd.8 nntpsend.8 overchan.8 \
-	pgpverify.8 prunehistory.8 scanlogs.8 actived.8 \
+	pgpverify.8 prunehistory.8 scanlogs.8 actived.8 send-uucp.8 \
 	tally.control.8 tally.unwanted.8 writelog.8 expireindex.8 sm.8
 
 INSTALLED_SEC1 =	$D$(MAN1)/convdate.1 $D$(MAN1)/getlist.1 \
@@ -67,7 +67,7 @@ INSTALLED_SEC8 =	$D$(MAN8)/actsync.8 $D$(MAN8)/archive.8 \
 			$D$(MAN8)/expireover.8 $D$(MAN8)/expirerm.8 \
 			$D$(MAN8)/fastrm.8 $D$(MAN8)/filechan.8 \
 			$D$(MAN8)/inncheck.8 $D$(MAN8)/innd.8 \
-			$D$(MAN8)/innlog.pl.8 $D$(MAN8)/innstat.8 \
+			$D$(MAN8)/innreport.8 $D$(MAN8)/innstat.8 \
 			$D$(MAN8)/innwatch.8 $D$(MAN8)/innxbatch.8 \
 			$D$(MAN8)/innxmit.8 $D$(MAN8)/makeactive.8 \
 			$D$(MAN8)/makehistory.8 $D$(MAN8)/news-recovery.8 \
@@ -78,7 +78,7 @@ INSTALLED_SEC8 =	$D$(MAN8)/actsync.8 $D$(MAN8)/archive.8 \
 			$D$(MAN8)/scanlogs.8 $D$(MAN8)/tally.control.8 \
 			$D$(MAN8)/tally.unwanted.8 $D$(MAN8)/writelog.8 \
 			$D$(MAN8)/expireindex.8 $D$(MAN8)/sm.8 \
-			$D$(MAN8)/actived.8
+			$D$(MAN8)/actived.8 $D$(MAN8)/send-uucp.8
 
 ALL	= $(SEC1) $(SEC3) $(SEC5) $(SEC8)
 
@@ -166,7 +166,7 @@ $D$(MAN8)/fastrm.8:		fastrm.8           ; $(COPY) $? $@
 $D$(MAN8)/filechan.8:		filechan.8         ; $(COPY) $? $@
 $D$(MAN8)/inncheck.8:		inncheck.8         ; $(COPY) $? $@
 $D$(MAN8)/innd.8:		innd.8             ; $(COPY) $? $@
-$D$(MAN8)/innlog.pl.8:		innlog.pl.8        ; $(COPY) $? $@
+$D$(MAN8)/innreport.8:		innreport.8        ; $(COPY) $? $@
 $D$(MAN8)/innstat.8:		innstat.8          ; $(COPY) $? $@
 $D$(MAN8)/innwatch.8:		innwatch.8         ; $(COPY) $? $@
 $D$(MAN8)/innxbatch.8:		innxbatch.8        ; $(COPY) $? $@
@@ -189,6 +189,7 @@ $D$(MAN8)/writelog.8:		writelog.8         ; $(COPY) $? $@
 $D$(MAN8)/expireindex.8:	expireindex.8      ; $(COPY) $? $@
 $D$(MAN8)/sm.8:			sm.8               ; $(COPY) $? $@
 $D$(MAN8)/actived.8:		actived.8          ; $(COPY) $? $@
+$D$(MAN8)/send-uucp.8:		send-uucp.8        ; $(COPY) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
