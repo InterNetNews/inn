@@ -41,6 +41,10 @@ typedef struct {
 
 #ifdef __GNUC__
 #define PACKED __attribute__ ((packed))
+#else
+#if !defined(PACKED)
+#define PACKED /* THIS IS STUPID */
+#endif
 #endif
 
 #if defined(__SUNPRO_C) || defined(_nec_ews) || defined(sgi) || defined(sun) || defined(_HPUX_SOURCE)

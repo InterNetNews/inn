@@ -207,6 +207,6 @@ extern void	setproctitle();
 
 #endif
 
-#if ! defined(INADDR_NONE)
+#if ! defined(INADDR_NONE) && ! defined(_AIX41)
 #define		INADDR_NONE 	(unsigned long)0xffffffff
 #endif
