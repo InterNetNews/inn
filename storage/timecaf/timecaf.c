@@ -116,7 +116,6 @@ static TOKEN *PathNumToToken(char *path, ARTNUM artnum) {
 
 
 BOOL timecaf_init(BOOL *selfexpire) {
-    int ret;
     *selfexpire = FALSE;
     if (STORAGE_TOKEN_LENGTH < 6) {
 	syslog(L_FATAL, "timecaf: token length is less than 6 bytes");
@@ -277,6 +276,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	}
 	private->artdata = private->mmapbase + delta;
     } else {
+        private->artdata = NEW(char, private->artlen);
 	if (read(fd, private->artdata, private->artlen) < 0) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "timecaf: could not read article: %m");
