@@ -1,4 +1,5 @@
 authprogs/ckpasswd
+authprogs/domain
 lib/buffer
 lib/concat
 lib/confparse
