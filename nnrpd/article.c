@@ -277,12 +277,13 @@ STATIC int ARTfind(ARTNUM i, BOOL needcheck)
 
     top = &ARTnumbers[ARTsize - 1];
     if (ARTcache && (++ARTcache <= top) && (ARTcache->ArtNum <= i)) {
-	if (ARTcache->ArtNum == i)
+	if (ARTcache->ArtNum == i) {
 	    if (needcheck) {
 		return ARTinstore(ARTcache - ARTnumbers)
 		    ? (ARTcache - ARTnumbers) : -1;
 	    }
 	    return ARTcache - ARTnumbers;
+	}
 	bottom = ARTcache;
     }
     else {
