@@ -703,7 +703,14 @@ Spool(fd, mode)
 
     if(mode == 'N')
 	exit(9);
-    TempName(innconf->pathtmp, temp);
+    TempName(innconf->pathincoming, buff);
+    p = strrchr(buff, '/');
+    if (p == NULL)
+	exit(10);
+    *p = '\0';
+    strcpy(temp, buff);
+    strcat(temp, "/.");
+    strcat(temp, ++p);
     (void)umask(0);
     if ((spfd = open(temp, O_WRONLY | O_CREAT, BATCHFILE_MODE)) < 0) {
 	syslog(L_FATAL, "cant open %s %m", temp);
