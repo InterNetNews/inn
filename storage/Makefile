@@ -37,7 +37,7 @@ tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
 libstorage.la:	$(P) $(OBJECTS) $(LOBJECTS) $(LSM_OBJECTS) $(LOV_OBJECTS)
-	$(LIBCC) $(LDFLAGS) -o libstorage.la $(LOBJECTS) $(LSM_OBJECTS) $(LOV_OBJECTS) \
+	$(LIBLD) $(LDFLAGS) -o libstorage.la $(LOBJECTS) $(LSM_OBJECTS) $(LOV_OBJECTS) \
 		-rpath $(PATHLIB) -version-info 2:0:0
 
 libstorage.a:         $(P) $(OBJECTS) $(SM_OBJECTS) $(OV_OBJECTS)

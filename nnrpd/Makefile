@@ -38,7 +38,7 @@ perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
 python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
 
 nnrpd: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.

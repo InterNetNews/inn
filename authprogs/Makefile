@@ -30,7 +30,7 @@ tags ctags: $(SOURCES)
 
 ##  Compilation rules.
 
-LINK		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+LINK		= $(LIBLD) $(LDFLAGS) -o $@
 NEWSLIBS        = $(LIBINN) $(LIBS)
 
 ckpasswd:	ckpasswd.o		; $(LINK) ckpasswd.o $(DBMLIB) $(LIBS)

@@ -55,16 +55,16 @@ version.c: Makefile ../Makefile.global
 	echo 'const char *versionInfo = "innfeed' "$$version\" ;" > $@
 
 innfeed: $(OBJECTS) connection.o $(LIBSTORAGE) $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) connection.o $(INNFEEDLIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) connection.o $(INNFEEDLIBS)
 
 imapfeed: $(OBJECTS) imap_connection.o $(LIBSTORAGE) $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) imap_connection.o $(INNFEEDLIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) imap_connection.o $(INNFEEDLIBS)
 
 procbatch: procbatch.in $(FIXSCRIPT)
 	$(FIXSCRIPT) procbatch.in
 
 startinnfeed: startinnfeed.o $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ startinnfeed.o $(LIBINN) $(LIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ startinnfeed.o $(LIBINN) $(LIBS)
 
 # Not normally built.
 innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)

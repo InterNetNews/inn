@@ -43,10 +43,10 @@ python.o:	python.c	; $(CC) $(CFLAGS) $(PYTHONINC) -c python.c
 tcl.o:		tcl.c		; $(CC) $(CFLAGS) $(TCLINC) -c tcl.c
 
 innd: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
 
 inndstart: inndstart.o $(LIBINN)
-	$(LIBTOOL) $(CC) $(LDFLAGS) -o $@ inndstart.o $(LIBINN) $(LIBS)
+	$(LIBLD) $(LDFLAGS) -o $@ inndstart.o $(LIBINN) $(LIBS)
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.

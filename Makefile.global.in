@@ -69,8 +69,10 @@ UPLIBTOOL       = @UPLIBTOOL@
 EXTOBJ          = @EXTOBJ@
 EXTLIB          = @EXTLIB@
 
-LIBCC           = $(LIBTOOL) $(CC)
-UPLIBCC         = $(UPLIBTOOL) $(CC)
+LIBCC           = $(LIBTOOL) --mode=compile $(CC)
+LIBLD           = $(LIBTOOL) --mode=link $(CC)
+UPLIBCC         = $(UPLIBTOOL) --mode=compile $(CC)
+UPLIBLD         = $(UPLIBTOOL) --mode=link $(CC)
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is

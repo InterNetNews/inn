@@ -38,7 +38,7 @@ tags ctags: $(SOURCES)
 
 BOTH		= $(LIBSTORAGE) $(LIBINN)
 
-LINK            = $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+LINK            = $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
 STORELIBS	= $(BOTH) $(EXTSTORAGELIBS) $(LIBS)
 
