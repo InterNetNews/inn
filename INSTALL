@@ -465,7 +465,7 @@ Configuring INN
 
         cycbuff:BUFFNAME:/path/to/buffer:SIZE
 
-  BUFFNAME must be unique and must be <= 8 characters in length. Something
+  BUFFNAME must be unique and must be < 8 characters in length. Something
   simple like "BUFF00", "BUFF01", etc. is a decent choice. SIZE is the buffer
   size in kilobytes (1000000 KB is approximately one GB, so if you are
   trying to stay under 2 GB then cap your sizes at 2000000).
