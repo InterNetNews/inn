@@ -7,7 +7,8 @@
 
 include ../../Makefile.global
 
-TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README
+TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
+	../hook-python
 
 MAN1	= ../man/ckpasswd.1 ../man/convdate.1
 
@@ -25,6 +26,8 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../../INSTALL:		install.pod		; $(POD2TEXT) $? > $@
 ../../NEWS:		news.pod		; $(POD2TEXT) $? > $@
 ../../README:		readme.pod		; $(POD2TEXT) $? > $@
+../hook-perl:		hook-perl.pod		; $(POD2TEXT) $? > $@
+../hook-python:		hook-python.pod		; $(POD2TEXT) $? > $@
 
 ../man/ckpasswd.1:	ckpasswd.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
