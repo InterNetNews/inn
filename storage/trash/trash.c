@@ -19,7 +19,7 @@ BOOL trash_init(BOOL *selfexpire) {
     return TRUE;
 }
 
-TOKEN trash_store(const ARTHANDLE article, STORAGECLASS class) {
+TOKEN trash_store(const ARTHANDLE article, const STORAGECLASS class) {
     TOKEN               token;
 
     if (article.token == (TOKEN *)NULL)
@@ -33,7 +33,7 @@ TOKEN trash_store(const ARTHANDLE article, STORAGECLASS class) {
     return token;
 }
 
-ARTHANDLE *trash_retrieve(const TOKEN token, RETRTYPE amount) {
+ARTHANDLE *trash_retrieve(const TOKEN token, const RETRTYPE amount) {
     if (token.type != TOKEN_TRASH) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return (ARTHANDLE *)NULL;
@@ -50,7 +50,7 @@ BOOL trash_cancel(TOKEN token) {
     return FALSE;
 }
 
-ARTHANDLE *trash_next(const ARTHANDLE *article, RETRTYPE amount) {
+ARTHANDLE *trash_next(const ARTHANDLE *article, const RETRTYPE amount) {
     return (ARTHANDLE *)NULL;
 }
 
