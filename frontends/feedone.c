@@ -177,7 +177,7 @@ main(ac, av)
     }
 
     /* Send the file over. */
-    (void)fseek(F, (OFFSET_T)0, SEEK_SET);
+    fseeko(F, 0, SEEK_SET);
     while (fgets(buff, sizeof buff, F) != NULL) {
 	if (caseEQn(buff, MESGIDHDR, STRLEN(MESGIDHDR))) {
 	    (void)fprintf(ToServer, "%s %s\r\n", MESGIDHDR, mesgid);

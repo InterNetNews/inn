@@ -992,7 +992,7 @@ ValidNewsgroups(hdr, F, article)
 	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
 	    p = "to";
 	i = strlen(p);
-	(void)fseek(F, (OFFSET_T)0, SEEK_SET);
+	fseeko(F, 0, SEEK_SET);
 	while (fgets(buff, sizeof buff, F) != NULL)
 	    if (buff[0] == *p && EQn(buff, p, i) && buff[i] == ' ')
 		break;
