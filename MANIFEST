@@ -15,6 +15,7 @@ Makefile.global.in          1 Template Makefile included by all Makefile
 README                      1 Assorted notes
 README.perl_hook            1 Notes on Christophe Wolfhugel's perl hook.
 README.tcl_hook             1 Bob Halley's TCL hook notes.
+aclocal.m4                  1 M4 macro for libtool
 authprogs                   1 The authorization programs (Directory)
 authprogs/README.auth_pass  1 The authprogs README
 authprogs/auth_pass.c       1 A sample prog for use with authinfo generic.
@@ -39,6 +40,8 @@ backends/sendxbatches.sh.in 1 Shell wrapper around innxbatch
 backends/shlock.c           1 Program to make lockfiles in scripts
 backends/shrinkfile.c       1 Shrink file by removing data from beginning
 config                      1 Configuration files (Directory)
+config.guess                1 Script for libtool
+config.sub                  1 Script for libtool
 config/Makefile             1 Makefile for config changes
 config/checkconf.sh         1 Syntax-check the config.data file
 config/config.scoreboard    1 Template config.data file
@@ -258,6 +261,7 @@ innfeed/tape.c              1 Implementation of the Tape class
 innfeed/tape.h              1 Public interface to the Tape class
 innfeed/testListener.pl     1 Script to hand 
 innfeed/uio_maxiov.c        1 Test program to get element number of writev
+install-sh                  1 Script for libtool
 installit.sh                1 File/directory installation tool
 lib                         1 InterNetNews library routines (Directory)
 lib/Makefile                1 Makefile for library
@@ -321,6 +325,8 @@ lib/xmemerr.c               1 Memory allocation error routine
 lib/xrealloc.c              1 Failsafe memory reallocation wrapper
 lib/xwrite.c                1 Write that handles partial transfers
 lib/xwritev.c               1 Writev that handles partial transfers
+ltconfig                    1 Script for libtool
+ltmain.sh                   1 Script for libtool
 makedirs.sh.in              1 Script to make INN directories
 nnrpd                       1 Net News Reader server (Directory)
 nnrpd/Makefile              1 Makefile for nnrpd
