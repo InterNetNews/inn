@@ -2055,7 +2055,10 @@ XS(XS_INN_havehist)
         croak("Usage: INN::havehist(msgid)");
 
     msgid = (char *)SvPV(ST(0),na);
-    HIShavearticle(msgid) ? XSRETURN_YES : XSRETURN_NO;
+    if (HIShavearticle(HashMessageID(msgid)))
+	XSRETURN_YES;
+    else
+	XSRETURN_NO;
 }
 
 XS(XS_INN_cancel)
@@ -2071,7 +2074,10 @@ XS(XS_INN_cancel)
     parambuf[0]=msgid;
     parambuf[1]= 0;
     /* CCcancel returns NULL on success, hence reversed return codes */
-    CCcancel(parambuf) ? XSRETURN_NO : XSRETURN_YES;
+    if (CCcancel(parambuf))
+	XSRETURN_NO;
+    else
+	XSRETURN_YES;
 }
 
 XS(XS_INN_addhist)
@@ -2126,7 +2132,10 @@ XS(XS_INN_addhist)
     parambuf[5] = 0;
 
     /* CCaddhist returns NULL on success, hence reversed return codes */
-    CCaddhist(parambuf) ? XSRETURN_NO : XSRETURN_YES;
+    if (CCaddhist(parambuf))
+	XSRETURN_NO;
+    else
+	XSRETURN_YES;
 }
 
 XS(XS_INN_newsgroup)
