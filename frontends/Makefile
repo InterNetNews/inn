@@ -64,9 +64,9 @@ profiled:
 
 ##  Low-level install actions.
 $D$(PATHBIN)/inews:		inews
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 02555 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(OWNER) -m $(INEWSMODE) -b .OLD $? $@
 $D$(PATHBIN)/rnews:		rnews
-	$(LIBTOOL) ../installit.sh $(ROWNER) -m 04550 -b .OLD $? $@
+	$(LIBTOOL) ../installit.sh $(ROWNER) -m $(RNEWSMODE) -b .OLD $? $@
 $D$(PATHBIN)/ctlinnd:	ctlinnd
 	$(LIBTOOL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
 $D$(PATHBIN)/sm:	sm
