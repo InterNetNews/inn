@@ -1821,7 +1821,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
             if (response != bufBase)
               {
                 /* so next read appends */
-                memcpy (bufBase, response, leftAmt) ;
+                memmove (bufBase, response, leftAmt) ;
                 bufferSetDataSize (cxn->respBuffer, leftAmt) ;
               }
             else if (!expandBuffer (cxn->respBuffer, BUFFER_EXPAND_AMOUNT))

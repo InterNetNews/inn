@@ -420,12 +420,21 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
   else if (i == IoFailed)
     {
       errno = endPointErrno (ep) ;
-      syslog (LOG_ERR,INN_IO_ERROR) ;
+      syslog (LOG_CRIT,INN_IO_ERROR) ;
       d_printf (1,"Got IO Error on listener\n") ;
       shutDown (lis) ;
     }
   else if (strchr (bbase, '\n') == NULL) /* partial read */
     {
+      /* check for input corrupted by NULs - if they
+         precede the newline, we never get out of here */
+      if (strlen(bbase) < blen)
+        {
+          syslog (LOG_CRIT,INN_BAD_CMD,bbase) ;
+          shutDown (lis) ;
+
+          return ;
+        }
       expandBuffer (buffs [0], BUFFER_EXPAND_AMOUNT) ;
       readArray = makeBufferArray (bufferTakeRef (buffs [0]),NULL) ;
       prepareRead (ep, readArray, newArticleCommand, data, 1) ;
@@ -447,13 +456,23 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
             endc++ ;
 
           *endc = '\0' ;
+
+	  /* check for input corrupted by NULs - if they are preceded
+	     by newline, we may skip a large chunk without noticing */
+	  if (*next == '\0' && next < bbase + blen)
+            {
+              syslog (LOG_CRIT,INN_BAD_CMD,cmd) ;
+              shutDown (lis) ;
+
+              return ;
+            }
           
           d_printf (2,"INN Command: %s\n", cmd) ;
 
           /* pick out the leading string (the filename) */
           if ((fileName = findNonBlankString (cmd,&fileNameEnd)) == NULL)
             {
-              syslog (LOG_ERR,INN_BAD_CMD,cmd) ;
+              syslog (LOG_CRIT,INN_BAD_CMD,cmd) ;
               shutDown (lis) ;
 
               return ;
@@ -465,7 +484,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
           if ((msgid = findNonBlankString (fileNameEnd + 1,&msgidEnd)) == NULL)
             {
               *fileNameEnd = ' ' ; /* to make syslog work properly */
-              syslog (LOG_ERR,INN_BAD_CMD,cmd) ;
+              syslog (LOG_CRIT,INN_BAD_CMD,cmd) ;
               shutDown (lis) ;
 
               return ;
@@ -519,12 +538,12 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
           /* first we shift whats left in the buffer down to the bottom */
           if (cmd != bbase)
             {
-              memcpy (bbase,cmd,leftAmt) ;
+              memmove (bbase,cmd,leftAmt) ;
               bufferSetDataSize (buffs [0],leftAmt) ;
             }
           else if ( !expandBuffer (buffs[0],BUFFER_EXPAND_AMOUNT) )
             {
-              syslog (LOG_ERR,L_BUFFER_EXPAND_ERROR);
+              syslog (LOG_CRIT,L_BUFFER_EXPAND_ERROR);
 
               shutDown (lis) ;
 
@@ -535,7 +554,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
       
           if ( !prepareRead (lis->myep, bArr, newArticleCommand, lis, 1) )
             {
-              syslog (LOG_ERR,L_PREPARE_READ_FAILED) ;
+              syslog (LOG_CRIT,L_PREPARE_READ_FAILED) ;
 
               freeBufferArray (bArr) ;
               
@@ -552,7 +571,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
       
           if ( !prepareRead (lis->myep, bArr, newArticleCommand, lis, 1) )
             {
-              syslog (LOG_ERR,L_PREPARE_READ_FAILED) ;
+              syslog (LOG_CRIT,L_PREPARE_READ_FAILED) ;
 
               shutDown (lis) ;
 
