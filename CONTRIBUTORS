@@ -185,8 +185,9 @@ Krischan Jodies:
         Wrote the SMB authenticator.
 
 Alex Kiernan:
-        Generalized the timer code in innd and innfeed into a generic
-        timer library, contributed various other bug fixes.
+        Wrote the history API, generalized the timer code in innd and
+        innfeed into a generic timer library, and contributed various
+        other bug fixes.
 
 Marco d'Itri:
         Wrote gpgverify and overhauled controlchan and its modules.  Has
@@ -242,4 +243,5 @@ Thomas Mike Michlmayr, KIZU Takashi, Michael Hall, Jeff King,
 Edward S. Marshall, Michael Schroeder, George Lindholm, Don Lewis,
 Christopher Masto, Hiroaki Sengoku, Yury July, Yar Tikhiy, Kees Bakker,
 Peter da Silva, Matt McLeod, Ed Korthof, Jan Rychter, Winfried Magerl,
-Andreas Lamrecht, Duane Currie, Ian Dickinson, Bettina Fink
+Andreas Lamrecht, Duane Currie, Ian Dickinson, Bettina Fink,
+Jochen Erwied
