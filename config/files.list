@@ -26,16 +26,16 @@
 ;subst clean ../doc/expirerm.8
 ;subst clean ../doc/filechan.8
 ;subst clean ../doc/getlist.1
-../doc/history.5
-../doc/inews.1
+;subst clean ../doc/history.5
+;subst clean ../doc/inews.1
 ../doc/inn.conf.5
-../doc/innd.8
+;subst clean ../doc/innd.8
 ../doc/inndcomm.3
-../doc/innwatch.8
-../doc/innwatch.ctl.5
-../doc/innxbatch.8
-../doc/innxmit.8
-../doc/libinn.3
+;subst clean ../doc/innwatch.8
+;subst clean ../doc/innwatch.ctl.5
+;subst clean ../doc/innxbatch.8
+;subst clean ../doc/innxmit.8
+;subst clean ../doc/libinn.3
 ../doc/makeactive.8
 ../doc/makehistory.8
 ../doc/moderators.5
