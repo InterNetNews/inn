@@ -517,7 +517,9 @@ ToggleTrace(s)
     int		s;
 {
     ChangeTrace = TRUE;
-    (void)signal(s, ToggleTrace);
+#ifndef USE_SIGACTION
+    (void)xsignal(s, ToggleTrace);
+#endif
 }
 
 /*
@@ -545,7 +547,9 @@ WaitChild(s)
        if (pid <= 0)
        	    break;
     }
-    (void)signal(s, WaitChild);
+#ifndef USE_SIGACTION
+    (void)xsignal(s, WaitChild);
+#endif
 }
 
 STATIC void SetupDaemon(void) {
@@ -800,7 +804,7 @@ main(int argc, char *argv[], char *env[])
 	fclose(pidfile);
 
 	/* Set signal handle to care for dead children */
-	(void)signal(SIGCHLD, WaitChild);
+	(void)xsignal(SIGCHLD, WaitChild);
 	SetupDaemon();
  
 	TITLEset("nnrpd: accepting connections");
@@ -841,7 +845,7 @@ main(int argc, char *argv[], char *env[])
 	}
 
 	/* Only automatically reap children in the listening process */
-	(void)signal(SIGCHLD, SIG_DFL);
+	(void)xsignal(SIGCHLD, SIG_DFL);
  
     } else {
 	SetupDaemon();
@@ -868,10 +872,10 @@ main(int argc, char *argv[], char *env[])
     strcpy (LogName, "?");
 
     /* Catch SIGPIPE so that we can exit out of long write loops */
-    (void)signal(SIGPIPE, CatchPipe);
+    (void)xsignal(SIGPIPE, CatchPipe);
 
     /* Arrange to toggle tracing. */
-    (void)signal(SIGHUP, ToggleTrace);
+    (void)xsignal(SIGHUP, ToggleTrace);
 
     /* Get permissions and see if we can talk to this client */
     StartConnection();
