@@ -61,16 +61,16 @@ clean:
 common:
 	@for D in $(DIRS) ; do \
 	    echo "" ; \
-	    echo "cd $$D ; $(MAKE) $(FLAGS) $(WHAT_TO_MAKE) ; cd .." ; \
-	    cd $$D; $(MAKE) $(FLAGS) $(WHAT_TO_MAKE) || exit 1 ; cd .. ; \
+	    echo "cd $$D ; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $(WHAT_TO_MAKE) ; cd .." ; \
+	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) $(WHAT_TO_MAKE) || exit 1 ; cd .. ; \
 	done
 
 ##  Software update -- install just the programs and documentation.
 update:
 	@for D in $(PROGS) ; do \
 	    echo "" ; \
-	    echo "cd $$D ; $(MAKE) $(FLAGS) install ; cd .." ; \
-	    cd $$D; $(MAKE) $(FLAGS) install || exit 1 ; cd .. ; \
+	    echo "cd $$D ; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) install ; cd .." ; \
+	    cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) install || exit 1 ; cd .. ; \
 	done
 
 ##  Build subst (for configuration).
