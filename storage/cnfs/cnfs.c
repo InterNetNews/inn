@@ -1094,6 +1094,23 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, RETRTYPE amount) {
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return NULL;
     }
+    if(cah.size == htonl(0x1234) && ntohl(cah.arrived) < time(NULL)-10*365*24*3600) {
+	oldCNFSARTHEADER cahh;
+	*(CNFSARTHEADER *)&cahh = cah;
+	if(read(cycbuff->fd, ((char *)&cahh)+sizeof(CNFSARTHEADER), sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) != sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) {
+            SMseterror(SMERR_UNDEFINED, "read2 failed");
+            syslog(L_ERROR, "%s: could not read2 token %s %s:0x%s:%ld: %m",
+                    LocalLogName, TokenToText(token), cycbuffname,
+                    CNFSofft2hex(offset, FALSE), cycnum);
+            DISPOSE(art);
+            if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+            return NULL;
+	}
+	cah.size = cahh.size;
+	cah.arrived = htonl(time(NULL));
+	cah.class = 0;
+	offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
+    }
     if (cycbuff->free > cycbuff->len - CNFS_BLOCKSIZE - ntohl(cah.size) - 1) {
         SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
         syslog(L_ERROR, "%s: could not match article size token %s %s:0x%s:%ld: %ld",
@@ -1296,6 +1313,19 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, RETRTYPE amount) {
     if (read(cycbuff->fd, &cah, sizeof(cah)) != sizeof(cah)) {
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return (ARTHANDLE *)NULL;
+    }
+    if(cah.size == htonl(0x1234) && ntohl(cah.arrived) < time(NULL)-10*365*24*3600) {
+	oldCNFSARTHEADER cahh;
+	*(CNFSARTHEADER *)&cahh = cah;
+	if(read(cycbuff->fd, ((char *)&cahh)+sizeof(CNFSARTHEADER), sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) != sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) {
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
+	    return (ARTHANDLE *)NULL;
+	}
+	cah.size = cahh.size;
+	cah.arrived = htonl(time(NULL));
+	cah.class = 0;
+	priv.offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
+	offset += sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
     art = NEW(ARTHANDLE, 1);
     private = NEW(PRIV_CNFS, 1);

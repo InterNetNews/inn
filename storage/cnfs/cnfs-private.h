@@ -84,4 +84,11 @@ typedef struct {
   STORAGECLASS	class;		/* storage class */
 } CNFSARTHEADER;
 
+typedef struct {
+  long      zottf;      /* This should always be 0x01234*/
+  long      size;       /* Size of the article */
+  char      m_id[64];   /* We'll only store up to 63 bytes of the
+	                       Message-ID, that should be good enough */
+} oldCNFSARTHEADER;
+
 #endif	/* ! ___CNFS_PRIVATE_H */
