@@ -52,9 +52,12 @@
 #include <grp.h>
 #include <pwd.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 /* Some odd systems need sys/time.h included before sys/resource.h. */
 #ifdef HAVE_RLIMIT
@@ -104,7 +107,8 @@ set_descriptor_limit(int n)
 **  and effective UIDs (which doesn't work correctly on AIX).  Assume any
 **  system with seteuid() has POSIX saved UIDs.  First argument is the new
 **  effective UID, second argument is the UID to preserve (not used if the
-**  system has seteuid()).
+**  system has saved UIDs).  Assume all systems with seteuid() have POSIX
+**  saved UIDs.
 */
 static void
 set_user (uid_t euid, uid_t ruid)
@@ -116,6 +120,9 @@ set_user (uid_t euid, uid_t ruid)
     }
 #else
 # ifdef HAVE_SETREUID
+#  if defined(HAVE_SYSCONF) && defined(_SC_SAVED_IDS)
+    if (sysconf(_SC_SAVED_IDS)) ruid = -1;
+#  endif
     if (setreuid(ruid, euid) < 0) {
         syslog(L_ERROR, "setreuid(%d, %d) failed: %m", ruid, euid);
         exit(1);
