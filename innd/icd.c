@@ -83,6 +83,10 @@ ICDsetup(StartSites)
 	syslog(L_FATAL, "%s internal no control and/or junk group", LogName);
 	exit(1);
     }
+    if (innconf->usecontrolchan && NGfind("control.cancel") == NULL) {
+	syslog(L_FATAL, "%s internal no control.cancel group", LogName);
+	exit(1);
+    }
     if (innconf->mergetogroups && NGfind("to") == NULL) {
 	syslog(L_FATAL, "%s internal no to group", LogName);
 	exit(1);
