@@ -1037,7 +1037,9 @@ void CMDxover(int ac, char *av[])
 
 
 /*
-**  [X]HDR and XPAT extensions.
+**  XHDR and XPAT extensions.  Note that HDR as specified in the new NNTP
+**  draft works differently than XHDR has historically, so don't just use this
+**  function to implement it without reviewing the differences.
 */
 /* ARGSUSED */
 void CMDpat(int ac, char *av[])
