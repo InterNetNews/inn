@@ -561,6 +561,8 @@ CMDpost(ac, av)
     register READTYPE	r;
     int			i;
     long		l;
+    long                sleeptime;
+    char               *path;
     STRING		response;
     char		idbuff[SMBUF];
 
@@ -569,6 +571,46 @@ CMDpost(ac, av)
 	Reply("%s\r\n", NNTP_CANTPOST);
 	return;
     }
+
+    /* Dave's posting limiter - Limit postings to a certain rate
+     * And now we support multiprocess rate limits. Questions?
+     * Email dave@jetcafe.org.
+     */
+    if (BACKOFFenabled) {
+
+      /* Acquire lock (this could be in RateLimit but that would
+       * invoke the spaghetti factor). 
+       */
+      if ((path = (char *) PostRecFilename(ClientIP,PERMuser)) == NULL) {
+        syslog(L_ERROR,"%s Unable to create postrec directories: %s",
+               ClientHost,strerror(errno));
+        Reply("%s\r\n", NNTP_CANTPOST);
+        return;
+      }
+      
+      if (LockPostRec(path) == 0) {
+        syslog(L_ERROR, "%s Error write locking '%s'",
+               ClientHost, path);
+        Reply("%s\r\n", NNTP_CANTPOST);
+        return;
+      }
+      
+      if (!RateLimit(&sleeptime,path)) {
+	syslog(L_ERROR, "%s can't check rate limit info", ClientHost);
+	Reply("%s\r\n", NNTP_CANTPOST);
+        UnlockPostRec(path);
+	return;
+      } else if (sleeptime != 0L) {
+        syslog(L_NOTICE,"%s post sleep time is now %ld", ClientHost, sleeptime);
+        sleep(sleeptime);
+      }
+      
+      /* Remove the lock here so that only one nnrpd process does the
+       * backoff sleep at once. Other procs are sleeping for the lock.
+       */
+      UnlockPostRec(path);
+
+    } /* end backoff code */
 
     /* Start at beginning of buffer. */
     if (article == NULL) {

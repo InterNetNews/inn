@@ -405,6 +405,7 @@ StartConnection(accesslist)
 	    ExitWithStats(1);
 	}
 	(void)strcpy(ClientHost, "stdin");
+        ClientIP = 0L;
     }
 #if defined(AF_DECnet)
     else if (sin.sin_family == AF_DECnet) {
@@ -435,13 +436,16 @@ StartConnection(accesslist)
 	    syslog(L_NOTICE,
 		"? cant gethostbyaddr %s %m -- using IP address for access",
 		ClientHost);
+            ClientIP = inet_addr(ClientHost);
 	}
 	else {
 	    ClientAddr = buff;
 	    (void)strcpy(buff, inet_ntoa(sin.sin_addr));
+            ClientIP = inet_addr(buff);
 	}
 #else
 	(void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
+        ClientIP = inet_addr(ClientHost);
 #endif /* defined(DO_NNRP_GETHOSTBYADDR) */
 	(void)strncpy(ClientIp, inet_ntoa(sin.sin_addr), sizeof(ClientIp));
     }
@@ -694,6 +698,9 @@ main(argc, argv, env)
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
 	   MyHostName, INNVersion(),
 	   PERMcanpost ? "posting ok" : "no posting");
+
+    /* Exponential posting backoff */
+    (void)InitBackoffConstants();
 
     /* Main dispatch loop. */
     for (timeout = INITIAL_TIMEOUT, av = NULL; ; timeout = CLIENT_TIMEOUT) {

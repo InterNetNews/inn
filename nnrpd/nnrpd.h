@@ -142,6 +142,9 @@ EXTERN char	GRPlast[SPOOLNAMEBUFF];
 EXTERN long	POSTreceived;
 EXTERN long	POSTrejected;
 
+EXTERN BOOL     BACKOFFenabled;
+EXTERN long     ClientIP;                                 
+
 
 #if	NNRP_LOADLIMIT > 0
 extern int		GetLoadAverage();
