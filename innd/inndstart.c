@@ -38,8 +38,7 @@
 **  potentially opens an exploitable hole on those systems that don't
 **  correctly prevent a user running a setuid program from interfering with
 **  the running process (replacing system calls, for example, or using
-**  things like LD_PRELOAD).  It may be desireable to map those to UIDs at
-**  configure time to prevent this attack.
+**  things like LD_PRELOAD).
 */
 
 #include "config.h"
@@ -48,7 +47,6 @@
 #include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
-#include <sys/stat.h>
 #include <sys/socket.h>
 #include <syslog.h>
 
@@ -56,9 +54,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "paths.h"
 #include "libinn.h"
 #include "macros.h"
+#include "paths.h"
 
 /* To run innd under the debugger, uncomment this and fix the path. */
 /* #define DEBUGGER "/usr/ucb/dbx" */
@@ -67,30 +65,25 @@
 int
 main(int argc, char *argv[])
 {
-    struct passwd *     pwd;
-    struct group *      grp;
-    uid_t               news_uid;
-    gid_t               news_gid;
-    uid_t               real_uid;
-    struct stat         Sb;
-    int                 port;
-    struct in_addr      address;
-    int                 s;
-    struct sockaddr_in  server;
-    int                 i;
-    int                 j;
-    char *              p;
-    char **             innd_argv;
-    char                pflag[SMBUF];
-    char *              innd_env[9];
-
-    openlog("inndstart", L_OPENLOG_FLAGS, LOG_INN_PROG);
+    struct passwd *pwd;
+    struct group *grp;
+    uid_t news_uid, real_uid;
+    gid_t news_gid;
+    int port, s, i, j;
+    struct in_addr address;
+    struct sockaddr_in server;
+    char *p;
+    char **innd_argv;
+    char pflag[SMBUF];
+    char *innd_env[9];
 
     /* Set up the error handlers.  Always print to stderr, and for warnings
-       also syslog with a priority of LOG_WARNING.  For fatal errors, also
-       syslog with a priority of LOG_ERR. */
-    warn_set_handlers(2, error_log_stderr, error_log_syslog_warning);
-    die_set_handlers(2, error_log_stderr, error_log_syslog_err);
+       also syslog with a priority of LOG_ERR.  For fatal errors, also
+       syslog with a priority of LOG_CRIT.  These priority levels are a
+       little high, but they're chosen to match innd. */
+    openlog("inndstart", LOG_CONS, LOG_INN_PROG);
+    warn_set_handlers(2, error_log_stderr, error_log_syslog_err);
+    die_set_handlers(2, error_log_stderr, error_log_syslog_crit);
     error_program_name = "inndstart";
 
     /* Convert NEWSUSER and NEWSGRP to a UID and GID.  getpwnam() and
@@ -98,11 +91,11 @@ main(int argc, char *argv[])
        failure; it probably contains garbage.*/
     pwd = getpwnam(NEWSUSER);
     if (!pwd)
-        die("getpwnam(%s) failed", NEWSUSER);
+        die("can't getpwnam(%s)", NEWSUSER);
     news_uid = pwd->pw_uid;
     grp = getgrnam(NEWSGRP);
     if (!grp)
-        die("getgrnam(%s) failed", NEWSGRP);
+        die("can't getgrnam(%s)", NEWSGRP);
     news_gid = grp->gr_gid;
 
     /* Exit if run by any other user or group. */
@@ -111,25 +104,15 @@ main(int argc, char *argv[])
         die("must be run by user %s (%d), not %d", NEWSUSER, news_uid,
             real_uid);
 
-    /* Drop all supplemental groups and drop privileges to read inn.conf. */
+    /* Drop all supplemental groups and drop privileges to read inn.conf.
+       setgroups() can only be invoked by root, so if inndstart isn't setuid
+       root this is where we fail. */
     if (setgroups(1, &news_gid) < 0)
-        syswarn("can't setgroups");
+        syswarn("can't setgroups (is inndstart setuid root?)");
     if (seteuid(news_uid) < 0)
-        sysdie("can't seteuid(%d)", news_uid);
+        sysdie("can't seteuid to %d", news_uid);
     if (ReadInnConf() < 0)
         exit(1);
-
-    /* Ensure that pathrun exists and that it has the right ownership. */
-    if (stat(innconf->pathrun, &Sb) < 0)
-        sysdie("can't stat pathrun (%s)", innconf->pathrun);
-    if (!S_ISDIR(Sb.st_mode))
-        die("pathrun (%s) is not a directory", innconf->pathrun);
-    if (Sb.st_uid != news_uid)
-        die("pathrun (%s) owned by user %d, not %s (%d)", innconf->pathrun,
-            Sb.st_uid, NEWSUSER, news_uid);
-    if (Sb.st_gid != news_gid)
-        die("pathrun (%s) owned by group %d, not %s (%d)", innconf->pathrun,
-            Sb.st_gid, NEWSGRP, news_gid);
 
     /* Check for a bind address specified in inn.conf.  "any" or "all" will
        cause inndstart to bind to INADDR_ANY. */
@@ -183,15 +166,14 @@ main(int argc, char *argv[])
     /* Now, regain privileges so that we can change system limits and bind
        to our desired port. */
     if (seteuid(0) < 0)
-        sysdie("can't seteuid(0)");
+        sysdie("can't seteuid to 0");
 
     /* innconf->rlimitnofile <= 0 says to leave it alone. */
     if (innconf->rlimitnofile > 0 && setfdlimit(innconf->rlimitnofile) < 0)
-        sysdie("can't set file descriptor limit to %d",
-               innconf->rlimitnofile);
+        syswarn("can't set file descriptor limit to %d",
+                innconf->rlimitnofile);
 
-    /* Create a socket and name it.  innconf->bindaddress controls what
-       address we bind as, defaulting to INADDR_ANY. */
+    /* Create a socket and name it. */
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0)
         sysdie("can't open socket");
@@ -228,9 +210,9 @@ main(int argc, char *argv[])
     innd_argv[i++] = pflag;
 
     /* Don't pass along -p, -P, or -I.  Check the length of the argument
-       string, and if it's == 2 (meaning there's nothing after the -p or -P
-       or -I), skip the next argument too, to support leaving a space
-       between the argument and the value. */
+       string, and if it == 2 (meaning there's nothing after the -p or -P or
+       -I), skip the next argument too, to support leaving a space between
+       the argument and the value. */
     for (j = 1; j < argc; j++) {
         if (argv[j][0] == '-' && strchr("pPI", argv[j][1])) {
             if (strlen(argv[j]) == 2)
@@ -248,7 +230,8 @@ main(int argc, char *argv[])
        should be sanity-checked before being propagated, but that requires
        knowledge of the range of possible values.  Just limiting their
        length doesn't necessarily do anything to prevent exploits and may
-       stop things from working that should.  */
+       stop things from working that should.  We have to pass BIND_INADDR so
+       that it's set for programs, such as innfeed, that innd may spawn. */
     innd_env[0] = concat("PATH=", innconf->pathbin, ":", innconf->pathetc,
                          ":/bin:/usr/bin:/usr/ucb", (char *) 0);
     innd_env[1] = concat( "TMPDIR=", innconf->pathtmp,  (char *) 0);
