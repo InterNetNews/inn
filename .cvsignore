@@ -5,4 +5,5 @@ Makefile.global
 config.cache
 config.log
 config.status
+inn-*
 libtool
