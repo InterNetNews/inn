@@ -84,7 +84,7 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 	patterns = ++p;
 	for (i = 1, p = patterns; *p && (p = strchr(p+1, ',')); i++);
 	index = atoi(overindex);
-	if (index < 0 && index >= OVER_NONE) {
+	if (index >= OVER_NONE) {
 	    syslog(L_ERROR, "OVER index is out of range, line %d: %m", line);
 	    DISPOSE(dirpath);
 	    DISPOSE(newdirpath);

@@ -1322,7 +1322,7 @@ CCreload(av)
 	if (!ARTreadschema())
 	    return BADSCHEMA;
     }
-    else if (EQ(p, "over.ctl")) {
+    else if (EQ(p, "overview.ctl")) {
 	if (StorageAPI) {
 	    int fdcountold = Overfdcount;
 	    OVERshutdown();

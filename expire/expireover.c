@@ -191,26 +191,6 @@ STATIC int LINEcompare(CPOINTER p1, CPOINTER p2)
     return lp1->Article - lp2->Article;
 }
 
-STATIC void WriteIndex(int fd, unsigned long offset, char *line)
-{
-    STATIC OVERINDEX           buf[1024];
-    STATIC int                 i = 0;
-
-    if (!line) {
-        write(fd, buf, sizeof(OVERINDEX)*i);
-        i = 0;
-        return;
-    }
-    if (!offset)
-       i = 0;
-    buf[i++].artnum = atol(line);
-    if (i >= 1023) {
-        write(fd, buf, sizeof(OVERINDEX)*i);
-        i = 0;
-    }
-}
-
-
 /*
 **  Take in a sorted list of count article numbers in group, and delete
 **  them from the overview file.
@@ -231,11 +211,9 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
     struct iovec		iov[8];
     char			file[SPOOLNAMEBUFF];
     char			lockfile[SPOOLNAMEBUFF];
-    char			ifile[SPOOLNAMEBUFF];
-    char			ilockfile[SPOOLNAMEBUFF];
     int				fd;
     int				count;
-    int				lfd, ilfd;
+    int				lfd;
     int				offset;
     
     offset = 0;
@@ -256,20 +234,12 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 	return;
     }
 
-    (void)sprintf(ilockfile, "%s/.LCK%s.index", group, _PATH_OVERVIEW);
-    ilfd = open(ilockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
-    if (ilfd < 0) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", ilockfile, strerror(errno));
-	return;
-    }
-
     /* Open file, lock it. */
     (void)sprintf(file, "%s/%s", group, _PATH_OVERVIEW);
     for (i = 0; i < 15; i++) {
 	if ((fd = open(file, O_RDWR)) < 0) {
 	    (void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
 	    UnlockGroup(lfd, lockfile);
-	    UnlockGroup(ilfd, ilockfile);
 	    return;
 	}
 	if (LockFile(fd, FALSE) >= 0)
@@ -284,19 +254,16 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 	close(fd);
 	return;
     }
-    (void)sprintf(ifile, "%s/%s.index", group, _PATH_OVERVIEW);
 
     if (fstat(fd, &Sb) < 0) {
 	(void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
 	UnlockGroup(lfd, lockfile);
-	UnlockGroup(ilfd, ilockfile);
 	(void)close(fd);
 	return;
     }
     if (Sb.st_size == 0) {
 	/* Empty file; done deleting. */
 	UnlockGroup(lfd, lockfile);
-	UnlockGroup(ilfd, ilockfile);
 	(void)close(fd);
 	return;
     }
@@ -313,7 +280,6 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
     if (xread(fd, B.Data, Sb.st_size) < 0) {
 	(void)fprintf(stderr, "Can't read %s, %s\n", file, strerror(errno));
 	UnlockGroup(lfd, lockfile);
-	UnlockGroup(ilfd, ilockfile);
 	(void)close(fd);
 	return;
     }
@@ -375,7 +341,6 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 	    if (((char *) vp->iov_base) + vp->iov_len == lp->Start) {
 		/* Contiguous. */
 		vp->iov_len += lp->Length;
-		WriteIndex(ilfd, offset, lp->Start);
 		offset += lp->Length;
 		continue;
 	    }
@@ -386,7 +351,6 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 		    (void)fprintf(stderr, "Can't write %s, %s\n",
 			    lockfile, strerror(errno));
 		    UnlockGroup(lfd, lockfile);
-		    UnlockGroup(ilfd, ilockfile);
 		    (void)close(fd);
 		    return;
 		}
@@ -397,7 +361,6 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 	/* Start new element. */
 	vp->iov_base = lp->Start;
 	vp->iov_len = lp->Length;
-	WriteIndex(ilfd, offset, lp->Start);
 	offset += lp->Length;
     }
 
@@ -408,27 +371,18 @@ STATIC void RemoveLines(char *group, LIST *Deletes)
 	(void)fprintf(stderr, "Can't write %s, %s\n",
 		lockfile, strerror(errno));
 	UnlockGroup(lfd, lockfile);
-	UnlockGroup(ilfd, ilockfile);
 	(void)close(fd);
 	return;
     }
     
-    WriteIndex(ilfd, 0, NULL);
-
     if (rename(lockfile, file) < 0)
 	(void)fprintf(stderr, "Can't rename %s, %s\n",
 		lockfile, strerror(errno));
-    if (rename(ilockfile, ifile) < 0)
-	(void)fprintf(stderr, "Can't rename %s, %s\n",
-		ilockfile, strerror(errno));
 
     /* Don't call UnlockGroup; do it inline. */
     if (close(lfd) < 0)
 	(void)fprintf(stderr, "expireover cant close %s %s\n",
 		file, strerror(errno));
-    if (close(ilfd) < 0)
-	(void)fprintf(stderr, "expireover cant close %s %s\n",
-		ifile, strerror(errno));
     if (close(fd) < 0)
 	(void)fprintf(stderr, "expireover cant close unlinked %s %s\n",
 		file, strerror(errno));
@@ -634,11 +588,9 @@ STATIC void AddLines(char *group, LIST *Adds)
     char			*p;
     char			file[SPOOLNAMEBUFF];
     char			lockfile[SPOOLNAMEBUFF];
-    char			ifile[SPOOLNAMEBUFF];
-    char			ilockfile[SPOOLNAMEBUFF];
     int				LineUsed;
     int				fd;
-    int				lfd, ilfd;
+    int				lfd;
     int				offset;
 
     offset = 0;
@@ -698,12 +650,6 @@ STATIC void AddLines(char *group, LIST *Adds)
 	(void)fprintf(stderr, "Can't open %s, %s\n", lockfile, strerror(errno));
 	return;
     }
-    (void)sprintf(ilockfile, "%s/.LCK%s.index", group, _PATH_OVERVIEW);
-    ilfd = open(ilockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
-    if (ilfd < 0) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", ilockfile, strerror(errno));
-	return;
-    }
 
     /* Open file, lock it. */
     (void)sprintf(file, "%s/%s", group, _PATH_OVERVIEW);
@@ -711,7 +657,6 @@ STATIC void AddLines(char *group, LIST *Adds)
 	if ((fd = open(file, O_RDWR | O_CREAT, ARTFILE_MODE)) < 0) {
 	    (void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
 	    UnlockGroup(lfd, lockfile);
-	    UnlockGroup(ilfd, ilockfile);
 	    return;
 	}
 	if (LockFile(fd, FALSE) >= 0)
@@ -721,12 +666,9 @@ STATIC void AddLines(char *group, LIST *Adds)
 	(void)close(fd);
     }
 
-    (void)sprintf(ifile, "%s/%s.index", group, _PATH_OVERVIEW);
-
     if (fstat(fd, &Sb) < 0) {
 	(void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
 	UnlockGroup(lfd, lockfile);
-	UnlockGroup(ilfd, ilockfile);
 	(void)close(fd);
 	return;
     }
@@ -745,7 +687,6 @@ STATIC void AddLines(char *group, LIST *Adds)
 	    (void)fprintf(stderr, "Can't read %s, %s\n",
 		    file, strerror(errno));
 	    UnlockGroup(lfd, lockfile);
-	    UnlockGroup(ilfd, ilockfile);
 	    (void)close(fd);
 	    return;
 	}
@@ -790,7 +731,6 @@ STATIC void AddLines(char *group, LIST *Adds)
 	    if (((char *) vp->iov_base) + vp->iov_len == lp->Start) {
 		/* Contiguous. */
 		vp->iov_len += lp->Length;
-		WriteIndex(ilfd, offset, lp->Start);
 		offset += lp->Length;
 		continue;
 	    }
@@ -801,7 +741,6 @@ STATIC void AddLines(char *group, LIST *Adds)
 		    (void)fprintf(stderr, "Can't write %s, %s\n",
 			    lockfile, strerror(errno));
 		    UnlockGroup(lfd, lockfile);
-		    UnlockGroup(ilfd, ilockfile);
 		    (void)close(fd);
 		    return;
 		}
@@ -812,7 +751,6 @@ STATIC void AddLines(char *group, LIST *Adds)
 	/* Start new element. */
 	vp->iov_base = lp->Start;
 	vp->iov_len = lp->Length;
-	WriteIndex(ilfd, offset, lp->Start);
 	offset += lp->Length;
     }
 
@@ -824,20 +762,13 @@ STATIC void AddLines(char *group, LIST *Adds)
 	(void)fprintf(stderr, "Can't write %s, %s\n",
 		       lockfile, strerror(errno));
 	UnlockGroup(lfd, lockfile);
-	UnlockGroup(ilfd, ilockfile);
 	(void)close(fd);
 	return;
     }
 
-    WriteIndex(ilfd, 0, NULL);
-
     if (rename(lockfile, file) < 0)
 	(void)fprintf(stderr, "Can't rename %s, %s\n",
 		       lockfile, strerror(errno));
-
-    if (rename(ilockfile, ifile) < 0)
-	(void)fprintf(stderr, "Can't rename %s, %s\n",
-		       ilockfile, strerror(errno));
 
     /* Don't call UnlockGroup; do it inline. */
     if (close(lfd) < 0)
@@ -846,106 +777,6 @@ STATIC void AddLines(char *group, LIST *Adds)
     if (close(fd) < 0)
 	(void)fprintf(stderr, "expireover cant close unlinked %s %s\n",
 		file, strerror(errno));
-    if (close(ilfd) < 0)
-	(void)fprintf(stderr, "expireover cant close %s %s\n",
-		ifile, strerror(errno));
-}
-
-
-/*
-** Read through the overview files once and rewrite the index from it 
-*/
-STATIC void RebuildIndex(char *group)
-{
-    static BUFFER		B;
-    char			ifile[SPOOLNAMEBUFF];
-    char			file[SPOOLNAMEBUFF];
-    char			ilockfile[SPOOLNAMEBUFF];
-    char			lockfile[SPOOLNAMEBUFF];
-    char			*p;
-    int				fd;
-    int				lfd, ilfd;
-    struct stat			Sb;
-
-    /* Lock the group. */
-    (void)sprintf(lockfile, "%s/.LCK%s", group, _PATH_OVERVIEW);
-    lfd = open(lockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
-    if (lfd < 0) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", lockfile, strerror(errno));
-	return;
-    }
-    (void)sprintf(ilockfile, "%s/.LCK%s.index", group, _PATH_OVERVIEW);
-    ilfd = open(ilockfile, O_WRONLY | O_TRUNC | O_CREAT, ARTFILE_MODE);
-    if (ilfd < 0) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", ilockfile, strerror(errno));
-	return;
-    }
-
-    /* Open file, lock it. */
-    (void)sprintf(file, "%s/%s", group, _PATH_OVERVIEW);
-    for ( ; ; ) {
-	if ((fd = open(file, O_RDONLY)) < 0) {
-	    (void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
-	    UnlockGroup(lfd, lockfile);
-	    UnlockGroup(ilfd, ilockfile);
-	    return;
-	}
-	if (LockFile(fd, FALSE) >= 0)
-	    break;
-	/* Wait for lock; close file -- might be unlinked -- and try again. */
-	(void)LockFile(fd, TRUE);
-	(void)close(fd);
-    }
-
-    (void)sprintf(ifile, "%s/%s.index", group, _PATH_OVERVIEW);
-
-    if (fstat(fd, &Sb) < 0) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", file, strerror(errno));
-	UnlockGroup(lfd, lockfile);
-	UnlockGroup(ilfd, ilockfile);
-	(void)close(fd);
-	return;
-    }
-
-    if (Sb.st_size != 0) {
-        /* Read in the whole file. */
-	if (B.Size == 0) {
-	    B.Size = Sb.st_size + 1;
-	    B.Data = NEW(char, B.Size);
-	}
-	else if (B.Size < Sb.st_size) {
-	    B.Size = Sb.st_size + 1;
-	    RENEW(B.Data, char, B.Size);
-	}
-	if (xread(fd, B.Data, Sb.st_size) < 0) {
-	    (void)fprintf(stderr, "Can't read %s, %s\n",
-		    file, strerror(errno));
-	    UnlockGroup(lfd, lockfile);
-	    UnlockGroup(ilfd, ilockfile);
-	    (void)close(fd);
-	    return;
-	}
-	B.Data[Sb.st_size] = '\0';
-
-	/* Parse the overview data, write the index. */
-	for (p = B.Data; (p != NULL) && *(p+1); p = (strchr(p, '\n'))) {
-            if (*p == '\n')
-                p++;
-	    WriteIndex(ilfd, p-B.Data, p);
-	}
-	WriteIndex(ilfd, 0, NULL);
-    }
-    if (rename(ilockfile, ifile) < 0)
-	(void)fprintf(stderr, "Can't rename %s, %s\n",
-		       ilockfile, strerror(errno));
-
-    UnlockGroup(lfd, lockfile);
-    if (close(fd) < 0)
-	(void)fprintf(stderr, "expireover cant close unlinked %s %s\n",
-		file, strerror(errno));
-    if (close(ilfd) < 0)
-	(void)fprintf(stderr, "expireover cant close %s %s\n",
-		ifile, strerror(errno));
 }
 
 
@@ -1023,42 +854,6 @@ STATIC void Expire(BOOL SortedInput, QIOSTATE *qp)
     QIOclose(qp);
 }
 
-
-/*
-** Read the overview index file, return sorted list of all articles in it.
-*/
-STATIC LIST *GetOverviewIndex(char *group, int *numentries)
-{
-    char		file[SPOOLNAMEBUFF];
-    static LIST		List;
-    int			fd;
-    int			i;
-    int			bytesread;
-    OVERINDEX		buf[1024];
-    
-    (void)sprintf(file, "%s/%s.index", group, _PATH_OVERVIEW);
-    
-    if ((fd = open(file, O_RDONLY)) < 0) 
-        return NULL;
-    
-    /* Setup the article list. */
-    if (List.Articles == NULL) {
-	List.Size = START_LIST_SIZE;
-	List.Articles = NEW(ARTNUM, List.Size);
-    }
-    List.Used = 0;
-    
-    while ((bytesread = read(fd, &buf, 1024*sizeof(OVERINDEX))) > 0) {
-        for (i=0; i < (bytesread/sizeof(OVERINDEX)); i++)
-	    LISTappend(List, buf[i].artnum);
-	numentries+=(bytesread/2);
-    }
-    close(fd);
-    if (List.Used == 0)
-	return NULL;
-    LISTsort(&List);
-    return &List;
-}
 
 /*
 **  Read the overview file, return sorted list of all articles in it.
@@ -1247,7 +1042,6 @@ STATIC void SpoolUpdate(BOOL AddEntries, char *Name)
     char		*line;
     char		*p;
     LIST		*Over;
-    LIST		*Index;
     LIST		*Spool;
     LIST		*Missing;
     int			processed;
@@ -1324,18 +1118,6 @@ STATIC void SpoolUpdate(BOOL AddEntries, char *Name)
 	            continue;
 	    } else
 	        continue;
-	    if ((Index=GetOverviewIndex(line, &oidxentries)) == NULL) {
-	        RebuildIndex(line);
-                continue;
-            }
-            if (Index->Used != Over->Used) {
-                RebuildIndex(line);
-                continue;
-            }
-            if (memcmp(Index->Articles, Over->Articles, Index->Used)) {
-                RebuildIndex(line);
-                continue;
-            }
 	}
     }
 

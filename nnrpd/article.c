@@ -79,7 +79,6 @@ STATIC SENDDATA		SENDhead = {
 STATIC char *		OVERmem = NULL;		/* mmaped overview file */
 STATIC int		OVERlen;		/* Length of the overview file */
 STATIC FILE		*OVERfp = NULL;		/* Open overview file	*/
-STATIC int		OVERoffset;		/* Current offset */
 STATIC ARTNUM		OVERarticle;		/* Current article	*/
 STATIC int		OVERopens;		/* Number of opens done	*/
 
@@ -890,7 +889,6 @@ STATIC BOOL OVERopen(void)
 	    return FALSE;
 
 	OVERarticle = 0;
-	OVERoffset = 0;
 	(void)sprintf(name, "%s/%s/%s", _PATH_OVERVIEWDIR, GRPlast, _PATH_OVERVIEW);
 	if (OVERmmap) {
 	    if ((fd = open(name, O_RDONLY)) < 0)
@@ -950,7 +948,7 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
     OVERINDEX           index;
     STATIC char         *OVERline = NULL;
     STATIC int          last;
-    char		*tokentext;
+    char		*tokentext, *nextline;
     TOKEN		token;
 
     if (StorageAPI) {
@@ -961,9 +959,9 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 	if ((ARTnumbers[i].ArtNum != artnum) || !ARTnumbers[i].Index)
 	    return NULL;
 	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
-	if ((tokentext = HISgetent(&(index.hash), FALSE)) == (char *)NULL)
-	    return NULL;
 	if (index.artnum != artnum)
+	    return NULL;
+	if ((tokentext = HISgetent(&(index.hash), FALSE)) == (char *)NULL)
 	    return NULL;
 	token = TextToToken(tokentext);
 	if (token.type == TOKEN_EMPTY || token.index == OVER_NONE || token.cancelled)
@@ -975,28 +973,54 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 	if (!OVERmem && !OVERfp)
 	    return NULL;
 
-        if (OVERmem)
+	if (((last + 1) < ARTsize) && (ARTnumbers[last + 1].ArtNum == artnum))
+	    i = last + 1;
+	else
+	    i = ARTfind(artnum);
+	if (ARTnumbers[i].ArtNum != artnum)
 	    return NULL;
-
-        if (OVERarticle > artnum) {
+	if (OVERmem) {
+	    for (nextline = OVERmem; nextline < OVERmem + OVERlen; nextline++) {
+		OVERarticle = atol(nextline);
+		if (!(OVERarticle < artnum)) {
+		    OVERline = nextline;
+		    break;
+		}
+		OVERline = nextline;
+		if ((nextline = memchr(nextline, '\n', OVERmem + OVERlen - nextline)) == (char *)NULL)
+		    return NULL;
+	    }
+	    if (OVERarticle == artnum && (nextline = memchr(OVERline, '\n', OVERmem + OVERlen - OVERline)) != (char *)NULL) {
+		*linelen = nextline - OVERline;
+		OVERread += *linelen;
+		return OVERline;
+	    }
+	    return NULL;
+	}
+	if (OVERline == (char *)NULL)
+	    OVERline = NEW(char, MAXOVERLINE);
+	if (OVERarticle > artnum) {
 	    rewind(OVERfp);
 	    OVERarticle = 0;
 	    OVERline[0] = '\0';
-	    OVERoffset = 0;
-        }
-        for ( ; OVERarticle < artnum; OVERarticle = atol(OVERline)) {
-            if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
-	         return NULL;
+	}
+	for ( ; OVERarticle < artnum; OVERarticle = atol(OVERline)) {
+	    if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
+		 return NULL;
 	    OVERread += strlen(OVERline);
-    	    while ((strlen(OVERline) == MAXOVERLINE) && (OVERline[MAXOVERLINE-1] == '\n'))
-	        if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
-	             return NULL;
-	        else
-	            OVERread += (*linelen = strlen(OVERline));
-        }
-        OVERoffset = -1;
+	    while ((strlen(OVERline) == MAXOVERLINE) && (OVERline[MAXOVERLINE-1] == '\n'))
+		if (fgets(OVERline, MAXOVERLINE, OVERfp) == NULL)
+		     return NULL;
+		else
+		    OVERread += strlen(OVERline);
+	}
 
-        return OVERarticle == artnum ? OVERline : NULL;
+	if (OVERarticle == artnum) {
+	    *linelen = strlen(OVERline) - 1;
+	    OVERline[*linelen] = '\0';
+	    return OVERline;
+	}
+	return NULL;
     }
 }
 
@@ -1288,8 +1312,10 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    OVERhit++;
 	    OVERsize+=linelen;
 	    if ((StorageAPI && OVERmmap) || OVERmem) {
-		(void)sprintf(buff, "%ld\t", i);
-		SendIOb(buff, strlen(buff));
+		if (StorageAPI && OVERmmap) {
+		    (void)sprintf(buff, "%ld\t", i);
+		    SendIOb(buff, strlen(buff));
+		}
 		SendIOb(p, linelen);
 		SendIOb("\r\n", 2);
 	    } else {
@@ -1306,12 +1332,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    OVERmiss++;
 	    linelen = strlen(p);
 	    OVERsize+=linelen;
-	    if (OVERmem) {
-		SendIOb(p, linelen);
-		SendIOb("\r\n", 2); 
-	    } else {
-		Printf("%s\r\n", p);
-	    }
+	    Printf("%s\r\n", p);
 	}
     }
     if ((StorageAPI && OVERmmap) || OVERmem) {

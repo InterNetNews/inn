@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <unistd.h>
 #include <time.h>
 #include <netinet/in.h>
@@ -99,32 +100,48 @@ TOKEN timehash_store(const ARTHANDLE article, STORAGECLASS class) {
     int                 fd;
     int                 result;
     int                 seq;
+    int                 i;
 
-    now = time(NULL);
+    if (article.arrived == (time_t)0)
+	now = time(NULL);
+    else
+	now = article.arrived;
 
-    seq = SeqNum;
-    SeqNum = (SeqNum + 1) & 0xffff;
-    path = MakePath(now, seq, class);
+    for (i = 0; i < 0x10000; i++) {
+	seq = SeqNum;
+	SeqNum = (SeqNum + 1) & 0xffff;
+	path = MakePath(now, seq, class);
 
-    if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
-	p = strrchr(path, '/');
-	*p = '\0';
-	if (!MakeDirectory(path, TRUE)) {
-	    syslog(L_ERROR, "timehash: could not make directory %s %m", path);
-	    token.type = TOKEN_EMPTY;
-	    DISPOSE(path);
-	    SMseterror(SMERR_UNDEFINED, NULL);
-	    return token;
-	} else {
-	    *p = '/';
-	    if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
-		SMseterror(SMERR_UNDEFINED, NULL);
-		syslog(L_ERROR, "timehash: could not open %s %m", path);
-		token.type = TOKEN_EMPTY;
-		DISPOSE(path);
-		return token;
+        if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
+	    if (errno == EEXIST)
+		continue;
+	    p = strrchr(path, '/');
+	    *p = '\0';
+	    if (!MakeDirectory(path, TRUE)) {
+	        syslog(L_ERROR, "timehash: could not make directory %s %m", path);
+	        token.type = TOKEN_EMPTY;
+	        DISPOSE(path);
+	        SMseterror(SMERR_UNDEFINED, NULL);
+	        return token;
+	    } else {
+	        *p = '/';
+	        if ((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, ARTFILE_MODE)) < 0) {
+		    SMseterror(SMERR_UNDEFINED, NULL);
+		    syslog(L_ERROR, "timehash: could not open %s %m", path);
+		    token.type = TOKEN_EMPTY;
+		    DISPOSE(path);
+		    return token;
+	        }
 	    }
-	}
+        }
+	break;
+    }
+    if (i == 0x10000) {
+	SMseterror(SMERR_UNDEFINED, NULL);
+	syslog(L_ERROR, "timehash: all sequence numbers for the time and class are reserved %d %d", now, class);
+	token.type = TOKEN_EMPTY;
+	DISPOSE(path);
+	return token;
     }
 
     if ((result = write(fd, article.data, article.len)) != article.len) {
@@ -170,7 +187,6 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	DISPOSE(art);
 	return NULL;
     }
-    art->arrived = sb.st_mtime;
     
     private = NEW(PRIV_TIMEHASH, 1);
     art->private = (void *)private;
@@ -232,7 +248,8 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
 
     BreakToken(token, &time, &seqnum);
     path = MakePath(time, seqnum, token.class);
-    art = OpenArticle(path, amount);
+    if ((art = OpenArticle(path, amount)) != (ARTHANDLE *)NULL)
+	art->arrived = time;
     DISPOSE(path);
     return art;
 }
@@ -310,6 +327,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
     char                *path, *p;
     struct dirent       *de;
     ARTHANDLE           *art;
+    int                 seqnum;
 
     path = NEW(char, strlen(_PATH_SPOOL) + 32);
     if (article == NULL) {
@@ -381,6 +399,7 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 	newpriv->secde = priv.secde;
 	sprintf(path, "%s/%s/%s", priv.topde->d_name, priv.secde->d_name, de->d_name);
 	art->token = PathToToken(path);
+	BreakToken(*art->token, (int *)&(art->arrived), &seqnum);
     }
     DISPOSE(path);
     return art;

@@ -20,6 +20,7 @@
 #include "libinn.h"
 #include "inndcomm.h"
 #include "dbz.h"
+#include "storage.h"
 #include "qio.h"
 #include "macros.h"
 #include "mydir.h"
@@ -44,6 +45,9 @@ typedef struct _ARTOVERFIELD {
     BOOL	HasHeader;
 } ARTOVERFIELD;
 
+typedef enum {NO_TRANS, FROM_HIST, FROM_SPOOL} TRANS;
+#define MAXOVERLINE	4096
+
 STATIC char		*ACTIVE = _PATH_ACTIVE;
 STATIC char		SPOOL[] = _PATH_SPOOL;
 STATIC char		*HISTORYDIR;
@@ -66,6 +70,8 @@ STATIC ARTOVERFIELD	*Xrefp = (ARTOVERFIELD *)NULL;
 STATIC ARTOVERFIELD	*Missfields;
 STATIC int		Missfieldsize = 0;
 STATIC char		*IndexFile;
+STATIC BOOL		OVERmmap;
+STATIC char		*CRLF = "\r\n";
 
 /*
 **  Read the overview schema.
@@ -369,6 +375,126 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 	(void)unlink(temp);
 }
 
+STATIC int
+split(char *p, char sep, char **argv, int count)
+{
+    int                 i;
+
+    if (!p || !*p)
+      return 0;
+
+    for (i = 1, *argv++ = p; *p; )
+        if (*p++ == sep) {
+            if (++i == count)
+                /* Overflow. */
+                return -1;
+            p[-1] = '\0';
+            for (*argv++ = p; *p == sep; p++)
+                continue;
+        }
+    return i;
+}
+
+/*
+** read article into memory as wireformatted article
+** add Xref header if it does not exist
+*/
+STATIC BOOL
+ReadInMem(char *art, ARTHANDLE *arth, char *Tradspooldir)
+{
+    char		buff[SPOOLNAMEBUFF];
+    static char		*path = (char *)NULL;
+    QIOSTATE		*qp;
+    static BUFFER	artbuff;
+    char		*p;
+    BOOL		FoundXref = FALSE;
+    static char		*pathhost = (char *)NULL;
+    static int		pathhostlen;
+    int			len;
+    struct stat		sb;
+
+    if (pathhost == (char *)NULL) {
+	if ((pathhost = GetConfigValue(_CONF_PATHHOST)) == (char *)NULL) {
+	    (void)fprintf(stderr, "Can't get pathhost\n");
+	    return FALSE;
+	}
+	pathhostlen = (int)strlen(pathhost);
+    }
+    if (path == (char *)NULL) {
+	path = NEW(char, sizeof(XREF) + 1 + pathhostlen + 1 + SPOOLNAMEBUFF + sizeof(CRLF) * 2 + 1);
+    }
+    strcpy(path, art);
+    for (p = path; *p; p++)
+	if (*p == '.')
+	    *p = '/';
+    sprintf(buff, "%s/%s", Tradspooldir, path);
+    if ((qp = QIOopen(p)) == NULL) {
+	(void)fprintf(stderr, "Can't open %s, %s\n", buff, strerror(errno));
+	return FALSE;
+    }
+    if (artbuff.Left == 0) {
+	artbuff.Data = NEW(char, BIG_BUFFER);
+	artbuff.Left = BIG_BUFFER;
+    }
+    artbuff.Used = 0;
+    while ((p = QIOread(qp)) != NULL && *p != '\0') {
+	if (caseEQn(p, XREF, sizeof(XREF)))
+	    FoundXref = TRUE;
+	if (artbuff.Left - artbuff.Used < QIOlength(qp) + sizeof(CRLF) * 2 + 1) {
+	    artbuff.Data = RENEW(artbuff.Data, char, artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + sizeof(CRLF) * 2 + 1);
+	    artbuff.Left = artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + sizeof(CRLF) * 2 + 1;
+	}
+	if (*p == '.') {
+	    artbuff.Data[artbuff.Used++] = '.';
+	}
+	memcpy(artbuff.Data + artbuff.Used, p, QIOlength(qp));
+	artbuff.Used += QIOlength(qp);
+	memcpy(artbuff.Data + artbuff.Used, CRLF, sizeof(CRLF));
+	artbuff.Used += sizeof(CRLF);
+    }
+    if (!FoundXref) {
+	/* assumes not crossposted */
+	sprintf(path, "%s %s %s\r\n\r\n", XREF, pathhost, art);
+	if ((p = strrchr(path, '/')) != (char *)NULL)
+	    *p = ':';
+	else
+	    return FALSE;
+	len = strlen(path);
+	if (artbuff.Left - artbuff.Used < len) {
+	    artbuff.Data = RENEW(artbuff.Data, char, artbuff.Left * 2 + len - artbuff.Left + artbuff.Used + 1);
+	    artbuff.Left = artbuff.Left * 2 + len - artbuff.Left + artbuff.Used + 1;
+	}
+	memcpy(artbuff.Data + artbuff.Used, path, len);
+	artbuff.Used += len;
+    } else {
+	memcpy(artbuff.Data + artbuff.Used, CRLF, sizeof(CRLF));
+	artbuff.Used += sizeof(CRLF);
+    }
+    while ((p = QIOread(qp)) != NULL) {
+	if (artbuff.Left - artbuff.Used < QIOlength(qp) + sizeof(CRLF) * 2 + 1) {
+	    artbuff.Data = RENEW(artbuff.Data, char, artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + sizeof(CRLF) * 2 + 1);
+	    artbuff.Left = artbuff.Left * 2 + QIOlength(qp) - artbuff.Left + artbuff.Used + sizeof(CRLF) * 2 + 1;
+	}
+	if (*p == '.') {
+	    artbuff.Data[artbuff.Used++] = '.';
+	}
+	memcpy(artbuff.Data + artbuff.Used, p, QIOlength(qp));
+	artbuff.Used += QIOlength(qp);
+	memcpy(artbuff.Data + artbuff.Used, CRLF, sizeof(CRLF));
+	artbuff.Used += sizeof(CRLF);
+    }
+    artbuff.Data[artbuff.Used++] = '.';
+    memcpy(artbuff.Data + artbuff.Used, CRLF, sizeof(CRLF));
+    artbuff.Used += sizeof(CRLF);
+    if (arth->arrived == 0) {
+	if (fstat(QIOfileno(qp), &sb) < 0)
+	    return FALSE;
+	arth->arrived = sb.st_mtime;
+    }
+    arth->data = artbuff.Data;
+    arth->len = artbuff.Used;
+    return TRUE;
+}
 
 /*
 **  Remove a bad article.
@@ -626,6 +752,217 @@ DoMemArt(ARTHANDLE *art, BOOL Overview, BOOL Update, FILE *out, FILE *index, BOO
 }
 
 /*
+** read articles from history and store them thru storage api
+*/
+STATIC BOOL
+TranslateFromHistory(char *OldHistory, char *Tradspooldir, BOOL UnlinkCrosspost, BOOL RemoveOld, BOOL Overview, FILE *index)
+{
+    static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
+    QIOSTATE		*qp;
+    FILE		*out;
+    int			line;
+    int			linelen;
+    char		*p;
+    char		*fields[4];
+    int			i;
+    TOKEN		token;
+    static BUFFER	artbuff;
+    ARTHANDLE		arth, *art;
+    static char		*OVERline = NULL;
+    static char		*Xrefbuf = NULL;
+    char		*Xref;
+    char		**arts;
+    int			count;
+    int			crossnum;
+    time_t		Arrived;
+    char		buff[SPOOLNAMEBUFF];
+
+    if ((qp = QIOopen(ACTIVE)) == NULL) {
+	(void)fprintf(stderr, "Can't open %s, %s\n", ACTIVE, strerror(errno));
+	return FALSE;
+    }
+    for (count = 1; (p = QIOread(qp)) != NULL; count++) {
+	if ((p = strchr(p, ' ')) == NULL) {
+	    (void)fprintf(stderr, "Bad line %ld, \"%s\"\n", count, p);
+	    continue;
+	}
+    }
+    /* Test error conditions; QIOtoolong shouldn't happen. */
+    if (QIOtoolong(qp)) {
+	(void)fprintf(stderr, "Line %ld is too long\n", count);
+	QIOclose(qp);
+	return FALSE;
+    }
+    if (QIOerror(qp)) {
+	(void)fprintf(stderr, "Can't read %s around line %ld, %s\n",
+		ACTIVE, count, strerror(errno));
+	QIOclose(qp);
+	return FALSE;
+    }
+    QIOclose(qp);
+    arts = NEW(char*, count);
+
+    if ((qp = QIOopen(OldHistory)) == NULL) {
+	(void)fprintf(stderr, "Can't open old history file, %s\n",
+	    strerror(errno));
+	return FALSE;
+    }
+    if ((out = fopen(TextFile, "w")) == NULL) {
+	(void)fprintf(stderr, "Can't open history file, %s\n",
+	    strerror(errno));
+	QIOclose(qp);
+	return FALSE;
+    }
+    for (line = 1; ; line++) {
+	if ((p = QIOread(qp)) != NULL) {
+	    i = split(p, HIS_FIELDSEP, fields, SIZEOF(fields));
+	    if (i != 2 && i != 3) {
+		(void)fprintf(stderr, IGNORING, line);
+		continue;
+	    }
+	    switch (fields[0][0]) {
+	    case '[':
+		if (strlen(fields[0]) != ((sizeof(HASH) * 2) + 2)) {
+		    fprintf(stderr, "Invalid length for hash %s, skipping\n", fields[0]);   
+		    break;
+		}
+		if (i == 2) {
+		    i = fprintf(out, "%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1]);
+		    if (i == EOF || ferror(out)) {
+			(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			exit(1);
+		    }
+		    break;
+		} else if (!RemoveOld) {
+		    if (!IsToken(fields[2])) {
+			fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);   
+			break;
+		    }
+		    i = fprintf(out, "%s%c%s%c%s\n", fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP, fields[2]);
+		    if (i == EOF || ferror(out)) {
+			(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			exit(1);
+		    }
+		    if (Overview) {
+			token = TextToToken(fields[2]);
+			if (token.index < OVER_NONE) {
+			    if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL)
+				break;
+			    if (OVERmmap) {
+				if (!OVERline)
+				    OVERline = NEW(char, MAXOVERLINE);
+				if (linelen > MAXOVERLINE - 1)
+				    linelen = MAXOVERLINE - 1;
+				memcpy(OVERline, p, linelen);
+				OVERline[linelen] = '\0';
+			    } else {
+				OVERline = p;
+			    }
+			    if (index != (FILE *)NULL) {
+				if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
+				    break;
+				}
+				if (((Xref = strchr(Xref, ' ')) == NULL) || ((Xref = strchr(Xref + 1, ' ')) == NULL)) {
+				    break;
+				}
+				if (!Xrefbuf)
+				    Xrefbuf = NEW(char, MAXOVERLINE);
+				Xref++;
+				memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
+				Xrefbuf[linelen - (OVERline - Xref)] = '\0';
+				i = fprintf(index, "[%s] %s\n", fields[0], Xrefbuf);
+				if (i == EOF || ferror(index)) {
+				    (void)fprintf(stderr, "Can't write index line, %s\n", strerror(errno));
+				    exit(1);
+				}
+			    }
+			}
+		    }
+		    break;
+		}
+		if (!IsToken(fields[2])) {
+		    fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);   
+		    break;
+		}
+		token = TextToToken(fields[2]);
+		if ((art = SMretrieve(token, RETR_ALL)) == (ARTHANDLE *)NULL) {
+		    fprintf(stderr, "Cannot retrieve %s, skipping\n", fields[2]);   
+		    break;
+		}
+		if (artbuff.Left == 0) {
+		    artbuff.Data = NEW(char, art->len);
+		    artbuff.Left = art->len;
+		} else if (art->len > artbuff.Left) {
+		    artbuff.Data = RENEW(artbuff.Data, char, art->len);
+		    artbuff.Left = art->len;
+		}
+		arth.data = artbuff.Data;
+		arth.len = art->len;
+		arth.arrived = art->arrived;
+		(void)memcpy((POINTER)artbuff.Data, (POINTER)art->data, (SIZE_T)art->len);
+		artbuff.Used = art->len;
+		SMfreearticle(art);
+		(void)SMcancel(token);
+		token = SMstore(arth);
+		if (token.type == TOKEN_EMPTY) {
+		    fprintf(stderr, "Cannot store %s, skipping\n", fields[0]);
+		    break;
+		}
+		arth.token = &token;
+		DoMemArt(&arth, Overview, FALSE, out, index, TRUE);
+		break;
+	    case '<':
+		if (i == 2) {
+		    i = fprintf(out, "[%s]%c%s\n", HashToText(HashMessageID(fields[0])), HIS_FIELDSEP, fields[1]);
+		    if (i == EOF || ferror(out)) {
+			(void)fprintf(stderr, "Can't write history line, %s\n", strerror(errno));     
+			exit(1);
+		    }
+		    break;
+		}
+		if ((p = strchr(fields[1], HIS_SUBFIELDSEP)) == (char *)NULL)
+		    Arrived = atol(fields[1]);
+		else {
+		    *p = '\0';
+		    Arrived = atol(fields[1]);
+		}
+		arth.arrived = Arrived;
+		crossnum = split(fields[2], ' ', arts, count);
+		if (!ReadInMem(arts[0], &arth, Tradspooldir)) {
+		    fprintf(stderr, "Cannot read in memory %s, skipping\n", fields[0]);
+		    break;
+		}
+		if (RemoveOld)
+		    i = 0;
+		else
+		    i = 1;
+		if (!UnlinkCrosspost)
+		    crossnum = 1;
+		for (; i < crossnum; i++) {
+		    for (p = arts[i]; *p; p++)
+			if (*p == '.')
+			    *p = '/';
+		    sprintf(buff, "%s/%s", Tradspooldir, arts[i]);
+		    (void)unlink(buff);
+		}
+		token = SMstore(arth);
+		if (token.type == TOKEN_EMPTY) {
+		    fprintf(stderr, "Cannot store %s, skipping\n", fields[0]);
+		    break;
+		}
+		arth.token = &token;
+		DoMemArt(&arth, Overview, FALSE, out, index, TRUE);
+		break;
+	    default:
+		fprintf(stderr, "Invalid message-id \"%s\" in history text\n", fields[0]);
+		break;
+	    }
+	}
+    }
+    return TRUE;
+}
+
+/*
 **  Process a single article.
 */
 STATIC void
@@ -740,7 +1077,7 @@ DoArticle(QIOSTATE *qp, struct stat *Sbp, char *name, FILE *out, BOOL RemoveBad,
 **  Process one newsgroup directory.
 */
 STATIC void
-DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update)
+DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update, TRANS Translate, char *Tradspooldir, BOOL UnlinkCrosspost, BOOL RemoveOld, BOOL Overview, FILE *index)
 {
     DIR			*dp;
     DIRENTRY		*ep;
@@ -749,16 +1086,24 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update)
     char		*q;
     struct stat		Sb;
     char		buff[SPOOLNAMEBUFF];
+    char		artbuff[SPOOLNAMEBUFF];
 #if	defined(DO_HAVE_SYMLINK)
     char		linkbuff[SPOOLNAMEBUFF];
     int			oerrno;
 #endif	/* defined(DO_HAVE_SYMLINK) */
+    ARTHANDLE		arth;
+    char		*groupname;
+    TOKEN		token;
 
     (void)strcpy(buff, group);
+    groupname = COPY(group);
     for (p = group; *p; p++)
 	if (*p == '.')
 	    *p = '/';
-    xchdir(SPOOL);
+    if (Translate == FROM_SPOOL)
+	xchdir(Tradspooldir);
+    else
+	xchdir(SPOOL);
     if (chdir(group) < 0)
 	return;
 
@@ -775,7 +1120,6 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update)
 	p = ep->d_name;
 	if (!CTYPE(isdigit, *p) || strspn(p, "0123456789") != strlen(p))
 	    continue;
-	(void)strcpy(q, p);
 
 	/* Is this a regular file? */
 	if (stat(p, &Sb) < 0) {
@@ -794,6 +1138,8 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update)
 		    Removeit(buff);
 	    }
 #endif	/* defined(DO_HAVE_SYMLINK) */
+	    if (Translate == FROM_SPOOL && UnlinkCrosspost)
+		(void)unlink(p);
 	    continue;
 	}
 	if (!S_ISREG(Sb.st_mode)) {
@@ -807,15 +1153,38 @@ DoNewsgroup(char *group, FILE *out, BOOL RemoveBad, BOOL Update)
 	if (Sb.st_mtime > Now.time) {
 	    continue;
 	}
+	if (Translate == FROM_SPOOL && UnlinkCrosspost)
+	    if (Sb.st_nlink > 1) {
+		/* assumes crossposted, if st_nlink > 1 */
+		(void)unlink(p);
+		continue;
+	    }
 
-	/* Open the article. */
-	if ((qp = QIOopen(p)) == NULL) {
-	    (void)fprintf(stderr, "Can't open %s, %s\n",
-		    buff, strerror(errno));
-	    continue;
+	if (Translate == FROM_SPOOL) {
+	    arth.arrived = Sb.st_mtime;
+	    sprintf(artbuff, "%s/%s", group, p);
+	    if (!ReadInMem(artbuff, &arth, Tradspooldir)) {
+		fprintf(stderr, "Cannot read in memory %s, skipping\n", artbuff);
+		break;
+	    }
+	    (void)unlink(p);
+	    token = SMstore(arth);
+	    if (token.type == TOKEN_EMPTY) {
+		fprintf(stderr, "Cannot store %s, skipping\n", artbuff);
+		break;
+	    }
+	    arth.token = &token;
+	    DoMemArt(&arth, Overview, FALSE, out, index, TRUE);
+	} else {
+	    /* Open the article. */
+	    if ((qp = QIOopen(p)) == NULL) {
+		(void)fprintf(stderr, "Can't open %s, %s\n",
+			buff, strerror(errno));
+		continue;
+	    }
+	    DoArticle(qp, &Sb, buff, out, RemoveBad, Update);
+	    QIOclose(qp);
 	}
-	DoArticle(qp, &Sb, buff, out, RemoveBad, Update);
-	QIOclose(qp);
     }
 
     (void)closedir(dp);
@@ -897,7 +1266,7 @@ STATIC NORETURN
 Usage(void)
 {
     (void)fprintf(stderr,
-	    "Usage: makehistory [ -A file ][ -a file ][ -b ][ -d overdir ][ -f file ][ -I indexfile ][ -i ][ -n ][ -O ][ -o ][ -T dir ][ -v ][ -f file ][ -r ][ -s size ][ -u ]\n");
+	    "Usage: makehistory [ -A file ][ -a file ][ -b ][ -D traditional_spooldir ][ -d overdir ][ -f file ][ -h oldhistory ][ -I indexfile ][ -i ][ -n ][ -O ][ -o ][ -T dir ][ -t {H|h|S|s} ][ -v ][ -f file ][ -R ][ -r ][ -S ][ -s size ][ -U ][ -u ]\n");
     exit(1);
     /* NOTREACHED */
 }
@@ -924,9 +1293,14 @@ main(int ac, char *av[])
     BOOL		Verbose;
     BOOL		Overview;
     BOOL		Notraditional;
+    BOOL		RemoveOld;
+    BOOL		UnlinkCrosspost;
     BOOL		val;
+    TRANS		Translate;
     char		temp[SMBUF];
     char		*TempTextFile;
+    char		*Tradspooldir;
+    char		*OldHistory;
     char		*tv[2];
     STRING		tmpdir;
     STRING		OverPath;
@@ -948,6 +1322,11 @@ main(int ac, char *av[])
     IndexFile = NULL;
     Overview = FALSE;
     Notraditional = FALSE;
+    RemoveOld = FALSE;
+    UnlinkCrosspost = FALSE;
+    Translate = NO_TRANS;
+    Tradspooldir = SPOOL;
+    OldHistory = HISTORY;
     Tflag = "";
     mode = "w";
     size = 0;
@@ -958,7 +1337,7 @@ main(int ac, char *av[])
     (void)umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "A:a:bd:f:I:inOors:ST:uv")) != EOF)
+    while ((i = getopt(ac, av, "A:a:bD:d:f:h:I:inOoRrs:ST:t:uUv")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -973,11 +1352,17 @@ main(int ac, char *av[])
 	case 'b':
 	    RemoveBad = TRUE;
 	    break;
+	case 'D':
+	    Tradspooldir = optarg;
+	    break;
 	case 'd':
 	    OverPath = optarg;
 	    break;
 	case 'f':
 	    TextFile = optarg;
+	    break;
+	case 'h':
+	    OldHistory = optarg;
 	    break;
 	case 's':
 	    size = atol(optarg);
@@ -998,6 +1383,9 @@ main(int ac, char *av[])
 	case 'O':
 	    Overview = TRUE;
 	    break;
+	case 'R':
+	    RemoveOld = TRUE;
+	    break;
 	case 'r':
 	    JustRebuild = TRUE;
 	    break;
@@ -1009,6 +1397,27 @@ main(int ac, char *av[])
 	    Tflag = NEW(char, 3 + strlen(optarg) + 1);
 	    (void)sprintf(Tflag, "-T %s", optarg);
 	    break;
+	case 't':
+	    switch(*optarg) {
+	    case 'h':
+	    case 'H':
+		if (Translate != NO_TRANS)
+		    Usage();
+		Translate = FROM_HIST;
+		break;
+	    case 's':
+	    case 'S':
+		if (Translate != NO_TRANS)
+		    Usage();
+		Translate = FROM_SPOOL;
+		break;
+	    default:
+		Usage();
+	    }
+	    break;
+	case 'U':
+	    UnlinkCrosspost = TRUE;
+	    break;
 	case 'u':
 	    Update = TRUE;
 	    break;
@@ -1018,7 +1427,8 @@ main(int ac, char *av[])
 	}
     ac -= optind;
     av += optind;
-    if (ac || (Overwrite && Update) || (Verbose && !Update))
+    if (ac || (Overwrite && Update) || (Verbose && !Update) ||
+	(Update && Translate == FROM_HIST))
 	Usage();
     if ((p = strrchr(TextFile, '/')) == NULL) {
 	/* find the default history file directory */
@@ -1082,7 +1492,11 @@ main(int ac, char *av[])
     }
     ARTreadschema(Overview);
     if (Overview) {
-	val = FALSE;
+	OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
+	if (OVERmmap)
+	    val = TRUE;
+	else
+	    val = FALSE;
 	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
 	    (void)fprintf(stderr, "Can't setup unified overview mmap %m\n",
 		strerror(errno));
@@ -1107,38 +1521,45 @@ main(int ac, char *av[])
 	}
     }
 
-    if (!Notraditional) {
-	/* Start scanning the directories. */
-	if ((qp = QIOopen(ACTIVE)) == NULL) {
-	    (void)fprintf(stderr, "Can't open %s, %s\n", ACTIVE, strerror(errno));
-	    exit(1);
-	}
-	for (count = 1; (line = QIOread(qp)) != NULL; count++) {
-	    if ((p = strchr(line, ' ')) == NULL) {
-		(void)fprintf(stderr, "Bad line %ld, \"%s\"\n", count, line);
-		continue;
+    if (Translate == NO_TRANS || Translate == FROM_SPOOL) {
+	if (!Notraditional) {
+	    /* Start scanning the directories. */
+	    if ((qp = QIOopen(ACTIVE)) == NULL) {
+		(void)fprintf(stderr, "Can't open %s, %s\n", ACTIVE, strerror(errno));
+		exit(1);
 	    }
-	    *p = '\0';
-	    DoNewsgroup(line, out, RemoveBad, Update);
+	    for (count = 1; (line = QIOread(qp)) != NULL; count++) {
+		if ((p = strchr(line, ' ')) == NULL) {
+		    (void)fprintf(stderr, "Bad line %ld, \"%s\"\n", count, line);
+		    continue;
+		}
+		*p = '\0';
+		DoNewsgroup(line, out, RemoveBad, Update, Translate, Tradspooldir, UnlinkCrosspost, RemoveOld, Overview, index);
+	    }
+	    /* Test error conditions; QIOtoolong shouldn't happen. */
+	    if (QIOtoolong(qp)) {
+		(void)fprintf(stderr, "Line %ld is too long\n", count);
+		ErrorExit(Update, DoRebuild);
+	    }
+	    if (QIOerror(qp)) {
+		(void)fprintf(stderr, "Can't read %s around line %ld, %s\n",
+			ACTIVE, count, strerror(errno));
+		ErrorExit(Update, DoRebuild);
+	    }
+	    QIOclose(qp);
 	}
-	/* Test error conditions; QIOtoolong shouldn't happen. */
-	if (QIOtoolong(qp)) {
-	    (void)fprintf(stderr, "Line %ld is too long\n", count);
+	/* Start scanning articles stored by storage api */
+	/* we'll not tranlate from spool thru storage api */
+	while ((art = SMnext(art, RETR_HEAD)) != NULL)
+	    DoMemArt(art, Overview, Update, out, index, RemoveBad);
+	if (fflush(out) == EOF || ferror(out) || fclose(out) == EOF) {
+	    (void)fprintf(stderr, "Can't close history file, %s\n",
+	    strerror(errno));
 	    ErrorExit(Update, DoRebuild);
-	}
-	if (QIOerror(qp)) {
-	    (void)fprintf(stderr, "Can't read %s around line %ld, %s\n",
-		    ACTIVE, count, strerror(errno));
+        }
+    } else if (Translate == FROM_HIST) {
+	if (!TranslateFromHistory(OldHistory, Tradspooldir, UnlinkCrosspost, RemoveOld, Overview, index))
 	    ErrorExit(Update, DoRebuild);
-	}
-    }
-    /* Start scanning articles stored by storage api */
-    while ((art = SMnext(art, RETR_HEAD)) != NULL)
-	DoMemArt(art, Overview, Update, out, index, RemoveBad);
-    if (fflush(out) == EOF || ferror(out) || fclose(out) == EOF) {
-	(void)fprintf(stderr, "Can't close history file, %s\n",
-		strerror(errno));
-	ErrorExit(Update, DoRebuild);
     }
 
     /* Move. */
