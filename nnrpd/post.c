@@ -608,13 +608,10 @@ MailArticle(group, article)
     }
 
     /* Now build up the command (ignore format/argument mismatch errors,
-     * in case %s isn't in _PATH_SENDMAIL) and send the headers. */
-    if ((mta = innconf->mta) == NULL) {
-	(void)sprintf(buff, _PATH_SENDMAIL, address);
-    }
-    else {
-	(void)sprintf(buff, mta, address);
-    }
+     * in case %s isn't in inconf->mta) and send the headers. */
+    if ((mta = innconf->mta) == NULL)
+	return "Can't start mailer - mta not set";
+    (void)sprintf(buff, innconf->mta, address);
     if ((F = popen(buff, "w")) == NULL)
 	return "Can't start mailer";
     (void)fprintf(F, "To: %s\n", address);

@@ -77,8 +77,6 @@ SORT="@_PATH_SORT@"
 TEMPSOCK=`basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
 TEMPSOCKDIR=`echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
 
-##  =()<SENDMAIL="@<_PATH_SENDMAIL>@">()=
-SENDMAIL="/usr/lib/sendmail -t"
 ##  =()<COMPRESS=@<_PATH_COMPRESS>@>()=
 COMPRESS=/usr/bin/compress
 ##  =()<CYCLES=@<LOG_CYCLES>@>()=
@@ -87,8 +85,6 @@ CYCLES=3
 HAVE_UUSTAT=DO
 ##  =()<MAIL_BADCONTROLS=@<MAIL_BADCONTROLS>@>()=
 MAIL_BADCONTROLS=DONT
-##  =()<MAILCMD="@<_PATH_MAILCMD>@">()=
-MAILCMD="/usr/bin/Mail"
 ##  =()<NEWSMASTER=@<NEWSMASTER>@>()=
 NEWSMASTER=usenet
 

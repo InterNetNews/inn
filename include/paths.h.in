@@ -64,8 +64,6 @@
 #define _PATH_LOGFILE		"news"
 #define _PATH_ERRLOG		"errlog"
 
-    /* =()<#define _PATH_SENDMAIL	"@<_PATH_SENDMAIL>@">()= */
-#define _PATH_SENDMAIL	"/usr/sbin/sendmail -t"
     /* =()<#define _PATH_SH		"@<_PATH_SH>@">()= */
 #define _PATH_SH		"/bin/sh"
     /* =()<#define _PATH_COMPRESS	"@<_PATH_COMPRESS>@">()= */
@@ -156,8 +154,10 @@
 #define _CONF_ARTMMAP           "articlemmap"
    /* Whether or not to mmap overviews and indices */
 #define _CONF_OVERMMAP          "overviewmmap"
-   /* Path to MTA */
+   /* Path to MTA for moderated postings */
 #define _CONF_MTA               "mta"
+   /* The command for sending report/control type mail */
+#define _CONF_MAILCMD		"mailcmd"
    /* Check included text on local postings */
 #define _CONF_CHECK_INC_TEXT	"checkincludedtext"
    /* How many times to try to fork before giving up */

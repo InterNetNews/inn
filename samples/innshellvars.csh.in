@@ -80,9 +80,6 @@ set inn_sort	= @_PATH_SORT@
 set inn_tempsock = `basename ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's/XXXXXX$/*/'`
 set inn_tempsockdir = `echo ${inn_innddir}/ctlinndXXXXXX | ${inn_sed} -e 's@/[^/]*$@@'`
 
-##  =()<set inn_sendmail = "@<_PATH_SENDMAIL>@">()=
-set inn_sendmail = "/usr/lib/sendmail -t"
-
 ##  =()<set inn_compress = @<_PATH_COMPRESS>@>()=
 set inn_compress = /usr/bin/compress
 
@@ -95,12 +92,8 @@ set inn_have_uustat = DO
 ##  =()<set inn_mail_badcontrols = @<MAIL_BADCONTROLS>@>()=
 set inn_mail_badcontrols = DONT
 
-##  =()<set inn_mailcmd = "@<_PATH_MAILCMD>@">()=
-set inn_mailcmd = "/usr/bin/Mail"
-
 ##  =()<set inn_newsmaster = @<NEWSMASTER>@>()=
 set inn_newsmaster = usenet
-
 
 set inn_newsuser = @NEWSUSER@
 

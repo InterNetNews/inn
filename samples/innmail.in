@@ -16,12 +16,12 @@ require 'getopts.pl' ;
 
 require "_INNSHELLVARS_.pl" ;
 
-die "$0: No \$inn::sendmail  variable defined.\n" 
-    if ! defined ($inn::sendmail);
+die "$0: No \$inn::mta  variable defined.\n" 
+    if ! defined ($inn::mta);
 
-$sm = $inn::sendmail ;
+$sm = $inn::mta ;
 
-die "$0: Sendmail path is not absolute\n" unless ($sm =~ m!^/!) ;
+die "$0: MTA path is not absolute\n" unless ($sm =~ m!^/!) ;
 
 $usage = "usage: $0 -s subject addresses\n\n" .
     "Reads stdin for message body\n" ;
@@ -52,26 +52,26 @@ if ($sm =~ m!%s!) {
 
 @smarr = split(/\s+/,$sm);
 
-($t = $inn::sendmail) =~ s!\s.*!!;
-die "$0: Sendmail variable definition is changed after subsitution\n" 
+($t = $inn::mta) =~ s!\s.*!!;
+die "$0: MTA variable definition is changed after subsitution\n" 
     if ($t ne $smarr[0]);
 
-die "$0: Sendmail excutable doesn't appear to exist: $smarr[0]\n"
+die "$0: MTA excutable doesn't appear to exist: $smarr[0]\n"
     if ! -x $smarr[0];
 
-# startup sendmail without using the shell
-$pid = open (SENDMAIL,"|-") ;
+# startup mta without using the shell
+$pid = open (MTA,"|-") ;
 if ($pid == 0) {
     exec (@smarr) || die "$0: exec of $sm failed: $!\n" ;
 } elsif ($pid < 0) {
     die "$0: Fork failed: $!\n" ;
 }
 
-print SENDMAIL "To:\t", join (",\n\t",@addrs), "\n" ;
-print SENDMAIL "Subject: $opt_s\n" ;
-print SENDMAIL "\n" ;
+print MTA "To:\t", join (",\n\t",@addrs), "\n" ;
+print MTA "Subject: $opt_s\n" ;
+print MTA "\n" ;
 while (<STDIN>) {
-    print SENDMAIL $_ ;
+    print MTA $_ ;
 }
-close (SENDMAIL) ;
+close (MTA) ;
 exit ;

@@ -617,6 +617,8 @@ int main(int ac, char *av[])
     AmRoot = geteuid() == 0;
     empty_error = FALSE;
 
+    if (ReadInnConf() < 0) { exit(1); }
+
     while (ac > 2) {
 	if (*(p = av[1]) != '-')
 	    break;

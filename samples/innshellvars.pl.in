@@ -79,9 +79,6 @@ $sort = "@_PATH_SORT@" ;
 ($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
 ($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
 
-##  =()<$sendmail = "@<_PATH_SENDMAIL>@" ;>()=
-$sendmail = "/usr/lib/sendmail -t" ;
-
 ##  =()<$compress = "@<_PATH_COMPRESS>@" ;>()=
 $compress = "/usr/bin/compress" ;
 
@@ -93,9 +90,6 @@ $have_uustat = ("DO" eq "DO" ? 1 : 0) ;
 
 ##  =()<$mail_badcontrols = ("@<MAIL_BADCONTROLS>@" eq "DO" ? 1 : 0) ;>()=
 $mail_badcontrols = ("DONT" eq "DO" ? 1 : 0) ;
-
-##  =()<$mailcmd = "@<_PATH_MAILCMD>@" ;>()=
-$mailcmd = "/usr/bin/Mail" ;
 
 ##  =()<$newsmaster = '@<NEWSMASTER>@' ;>()=
 $newsmaster = 'usenet' ;

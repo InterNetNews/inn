@@ -112,11 +112,16 @@ value.
 .TP
 .I mta
 This specifies the message transfer agent (mta) to be used when mailing
-moderated postings. The article, with headers and an added To: line,
-will be piped into this program and an optional ``%s'' parameter will
-be replaced with the moderator email address(es). See
+moderated postings and for use for innmail. The article, with headers and
+an added To: line, will be piped into this program and an optional ``%s''
+parameter will be replaced with the moderator email address(es). See
 .IR moderators (5)
-for more info on the moderator email address(es).
+for more info on the moderator email address(es). The ``mta'' option
+is compulsory.
+.TP
+.I mailcmd
+This is the path/program to be used for mailing reports and control
+messages. The default path is pathbin/innmail.
 .TP
 .I verifycancels
 Set this to ``yes'' to verify that a poster is the person doing the cancel.

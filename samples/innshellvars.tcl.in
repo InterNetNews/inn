@@ -81,9 +81,6 @@ set inn_tempsockdir [ exec echo ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s@/[
 ##  =()<set inn_compress "@<_PATH_COMPRESS>@">()=
 set inn_compress "/usr/bin/compress"
 
-##  =()<set inn_sendmail "@<_PATH_SENDMAIL>@">()=
-set inn_sendmail "/usr/lib/sendmail -t"
-
 ##  =()<scan "@<LOG_CYCLES>@" "%d" inn_cycles>()=
 scan "3" "%d" inn_cycles
 
@@ -92,9 +89,6 @@ set inn_have_uustat [ expr { "DO" == "DO" ? 1 : 0 } ]
 
 ##  =()<set inn_mail_badcontrols [ expr { "@<MAIL_BADCONTROLS>@" == "DO" ? 1 : 0 } ]>()=
 set inn_mail_badcontrols [ expr { "DONT" == "DO" ? 1 : 0 } ]
-
-##  =()<set inn_mailcmd "@<_PATH_MAILCMD>@">()=
-set inn_mailcmd "/usr/bin/Mail"
 
 ##  =()<set inn_newsmaster "@<NEWSMASTER>@">()=
 set inn_newsmaster "usenet"

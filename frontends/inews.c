@@ -877,7 +877,6 @@ MailArticle(group, article)
     register int	i;
     char		*address;
     char		buff[SMBUF];
-    char		*mta;
 
     /* Try to get the address first. */
     if ((address = GetModeratorAddress(FromServer, ToServer, group)) == NULL) {
@@ -895,13 +894,10 @@ MailArticle(group, article)
     (void)printf("posted, but mailed to the moderator for approval.\n");
 
     /* Now build up the command (ignore format/argument mismatch errors,
-     * in case %s isn't in _PATH_SENDMAIL) and send the headers. */
-    if ((mta = innconf->mta) == NULL) {
-	(void)sprintf(buff, _PATH_SENDMAIL, address);
-    }
-    else {
-	(void)sprintf(buff, mta, address);
-    }
+     * in case %s isn't in innconf->mta) and send the headers. */
+    if (innconf->mta == NULL)
+	PerrorExit(TRUE, "Can't start mailer - not set");
+    (void)sprintf(buff, innconf->mta, address);
     if ((F = popen(buff, "w")) == NULL)
 	PerrorExit(TRUE, "Can't start mailer");
     (void)fprintf(F, "To: %s\n", address);

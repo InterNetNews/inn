@@ -91,6 +91,7 @@ struct conf_vars {
 	int articlemmap;	/* mmap articles? */
 	int overviewmmap;	/* mmap overviews and indices? */
 	char *mta;		/* Which MTA to mail moderated posts */
+	char *mailcmd;		/* Which command for report/control type mail */
 	int checkincludedtext;	/* Reject if too much included text */
 	int maxforks;		/* Give up after fork failure */
 	long maxartsize;	/* Reject articles bigger than this */

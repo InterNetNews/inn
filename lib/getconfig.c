@@ -152,6 +152,7 @@ if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
     innconf->articlemmap = FALSE;
     innconf->overviewmmap = TRUE;
     innconf->mta = NULL;
+    innconf->mailcmd = NULL;
     innconf->checkincludedtext = FALSE;
     innconf->maxforks = MAX_FORKS;
     innconf->maxartsize = 1000000L;
@@ -215,6 +216,7 @@ if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
     if (innconf->mimeencoding != NULL) DISPOSE(innconf->mimeencoding);
     if (innconf->complaints != NULL) DISPOSE(innconf->complaints);
     if (innconf->mta != NULL) DISPOSE(innconf->mta);
+    if (innconf->mailcmd != NULL) DISPOSE(innconf->mailcmd);
     if (innconf->bindaddress != NULL) DISPOSE(innconf->bindaddress);
     if (innconf->overviewname != NULL) DISPOSE(innconf->bindaddress);
 
@@ -240,8 +242,13 @@ if (innconf->fromhost != NULL) DISPOSE(innconf->fromhost);
 */
 int CheckInnConf()
 {
-    if (innconf->mta == NULL)
-	innconf->mta = COPY(_PATH_SENDMAIL);
+    if (innconf->mta == NULL) {
+	syslog(L_FATAL, "Must set 'mta' in inn.conf");
+	(void)fprintf(stderr, "Must set 'mta' in inn.conf");
+	return(-1);
+    }
+    if (innconf->mailcmd == NULL)
+	innconf->mailcmd = innconf->mta;
     if (innconf->overviewname == NULL) 
 	innconf->overviewname = COPY(".overview");
 
@@ -396,6 +403,9 @@ if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
 	    } else
 	    if (EQ(ConfigBuff,_CONF_MTA)) {
 		innconf->mta = COPY(p);
+	    } else
+	    if (EQ(ConfigBuff,_CONF_MAILCMD)) {
+		innconf->mailcmd = COPY(p);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_CHECK_INC_TEXT)) {
 		if (boolval != -1) innconf->checkincludedtext = boolval;
