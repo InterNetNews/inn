@@ -163,7 +163,7 @@ f\&i
 # It is not necessary for the history file to be sorted.
 # awk 'NF==2 { print; }' <history >>history.n
 # View history file for mistakes.
-if makedbz \-r \-s `wc \-l <history` \-f history.n; then
+if makedbz \-s `wc \-l <history` \-f history.n; then
     mv history.n history
     mv history.n.dir history.dir
 # if <DBZ_TAGGED_HASH in config.data> is DO
