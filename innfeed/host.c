@@ -2893,15 +2893,20 @@ static void hostLogStats (Host host, bool final)
 
 
 
-static double convsize(double size, char **tsize)
+static double
+convsize(double size, char **tsize)
 {
     double dsize;
+    static char tTB[]="TB";
     static char tGB[]="GB";
     static char tMB[]="MB";
     static char tKB[]="KB";
     static char tB []="B";
 
-    if (size/(1024*1024*1000)>=1.) {
+    if (size/((double)1024*1024*1024*1000)>=1.) {
+	dsize=size/((double)1024*1024*1024*1024);
+	*tsize=tTB;
+    } else if (size/(1024*1024*1000)>=1.) {
 	dsize=size/(1024*1024*1024);
 	*tsize=tGB;
     } else if (size/(1024*1000)>=1.) {
