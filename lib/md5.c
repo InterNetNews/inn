@@ -203,7 +203,7 @@ md5_update(struct md5_context *context, const unsigned char *data,
     }
 
     /* Now deal with count[0].  Add in the low 32 bits of count and
-       increment count[1] if count[0] wraps.  Isn't unsigned arthimetic
+       increment count[1] if count[0] wraps.  Isn't unsigned arithmetic
        cool? */
     low_count = count & 0xffffffffU;
     context->count[0] += low_count;
