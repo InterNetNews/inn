@@ -136,7 +136,7 @@ innconfval \- Get configuration parameters from inn.conf
 .IX Header "SYNOPSIS"
 \&\fBinnconfval\fR [\fB\-pstv\fR] [\fB\-i\fR \fIfile\fR] [\fIparameter\fR ...]
 .PP
-\&\fBinnconfval\fR \fB\-c\fR [\fB\-i\fR \fIfile\fR]
+\&\fBinnconfval\fR \fB\-C\fR [\fB\-i\fR \fIfile\fR]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
 \&\fBinnconfval\fR normally prints the values of the parameters specified on
@@ -150,13 +150,13 @@ of \fB\-p\fR, \fB\-s\fR, or \fB\-t\fR were specified).
 All parameters are taken from \fIinn.conf\fR except for \fIversion\fR, which is
 always the version string of \s-1INN\s0.
 .PP
-If given the \fB\-c\fR option, \fBinnconfval\fR instead checks \fIinn.conf\fR,
+If given the \fB\-C\fR option, \fBinnconfval\fR instead checks \fIinn.conf\fR,
 reporting any problems found to standard error.  \fBinnconfval\fR will exit
 with status 0 if no problems are found and with status 1 otherwise.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-.IP "\fB\-c\fR" 4
-.IX Item "-c"
+.IP "\fB\-C\fR" 4
+.IX Item "-C"
 Check \fIinn.conf\fR rather than printing out the values of parameters.
 .IP "\fB\-i\fR \fIfile\fR" 4
 .IX Item "-i file"

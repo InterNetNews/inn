@@ -282,7 +282,7 @@ incoming_conf
 sub
 inn_conf
 {
-    system ("$inn::pathbin/innconfval", '-c');
+    system ("$inn::pathbin/innconfval", '-C');
 
 #    if ( $k eq "domain" ) {
 #        print "$file:$line: domain (`$v') isn't local domain\n"

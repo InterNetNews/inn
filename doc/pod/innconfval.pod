@@ -6,7 +6,7 @@ innconfval - Get configuration parameters from inn.conf
 
 B<innconfval> [B<-pstv>] [B<-i> I<file>] [I<parameter> ...]
 
-B<innconfval> B<-c> [B<-i> I<file>]
+B<innconfval> B<-C> [B<-i> I<file>]
 
 =head1 DESCRIPTION
 
@@ -21,7 +21,7 @@ of B<-p>, B<-s>, or B<-t> were specified).
 All parameters are taken from F<inn.conf> except for I<version>, which is
 always the version string of INN.
 
-If given the B<-c> option, B<innconfval> instead checks F<inn.conf>,
+If given the B<-C> option, B<innconfval> instead checks F<inn.conf>,
 reporting any problems found to standard error.  B<innconfval> will exit
 with status 0 if no problems are found and with status 1 otherwise.
 
@@ -29,7 +29,7 @@ with status 0 if no problems are found and with status 1 otherwise.
 
 =over 4
 
-=item B<-c>
+=item B<-C>
 
 Check F<inn.conf> rather than printing out the values of parameters.
 

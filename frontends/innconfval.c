@@ -49,12 +49,12 @@ main(int argc, char *argv[])
 
     message_program_name = "innconfval";
 
-    while ((option = getopt(argc, argv, "ci:pstv")) != EOF)
+    while ((option = getopt(argc, argv, "Ci:pstv")) != EOF)
         switch (option) {
         default:
             die("usage error");
             break;
-        case 'c':
+        case 'C':
             checking = true;
             break;
         case 'i':
