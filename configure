@@ -4638,7 +4638,7 @@ else
 fi
 done
 
-for ac_func in waitpid socketpair
+for ac_func in waitpid socketpair getpagesize
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:4645: checking for $ac_func" >&5
