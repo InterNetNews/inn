@@ -56,7 +56,8 @@ install-man5:
 	    $(COPY) $$M $D$(MAN5)/$$M ; \
 	done
 
-# auth_krb5 is conditionally compiled, so handle it specially.
+# auth_krb5 is conditionally compiled, so handle it specially.  actsync(8)
+# also covers actsynd.
 install-man8:
 	for M in $(SEC8) ; do \
 	    $(COPY) $$M $D$(MAN8)/$$M ; \
