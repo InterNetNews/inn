@@ -605,6 +605,7 @@ rmgroup:news@mattress.atww.org:dc.*:doit
 # URL: http://www.dana.de/mod/
 # Admin group: de.admin.news.announce
 # Key URL: http://www.dana.de/mod/pgp/dana.asc
+# Key fingerprint = 5B B0 52 88 BF 55 19 4F  66 7D C2 AE 16 26 28 25
 # *PGP*   See comment at top of file.
 newgroup:*:de.*:drop
 rmgroup:*:de.*:drop
@@ -795,11 +796,11 @@ newgroup:committee@fj-news.org:fj.*:verify-fj.news.announce
 rmgroup:committee@fj-news.org:fj.*:verify-fj.news.announce
 
 ## FL (Florida, USA)
-checkgroups:hgoldste@news1.mpcs.com:fl.*:doit
+checkgroups:hgoldste@mpcs.com:fl.*:doit
 checkgroups:scheidell@fdma.fdma.com:fl.*:doit
-newgroup:hgoldste@news1.mpcs.com:fl.*:doit
+newgroup:hgoldste@mpcs.com:fl.*:doit
 newgroup:scheidell@fdma.fdma.com:fl.*:doit
-rmgroup:hgoldste@news1.mpcs.com:fl.*:doit
+rmgroup:hgoldste@mpcs.com:fl.*:doit
 rmgroup:scheidell@fdma.fdma.com:fl.*:doit
 
 ## FLORA (FLORA Community WEB, Canada)
