@@ -144,7 +144,7 @@ Future Projects:
 
 * rnews currently rejects articles with lines ending in CRLF, according to
   one report.  This should be checked, and if true, it should be more
-  flexible about line endings.
+  flexible about line endings.  [Matt McLeod is working on this.]
 
 * The Tcl filtering support code has undergone serious bitrot and needs
   some work to fix it and make it work with modern versions of Tcl and the
@@ -342,6 +342,12 @@ Future Projects:
   use the history file to get the storage API token so that it can open
   the article and get the real message ID).
 
+* timecaf should have more configurable parameters (at the least, how
+  frequently to switch to a new CAF file should be an option).
+  storage.conf should really be extended to allow method-specific
+  configuration for things like this (and to allow the cycbuff.conf file
+  to be merged into storage.conf).
+
 
 Long-Term Projects:
 
@@ -473,6 +479,12 @@ Long-Term Projects:
   bzip2, or some other technique.  Particularly useful for long lists like
   the active file information or the overview information, but possibly
   useful in general for other things.
+
+* Install wizards.  Configuring INN is currently very complex even for an
+  experienced news admin, and there are several fairly standard
+  configurations that shouldn't be nearly that complicated to get running
+  out of the box.  A little interactive Perl script asking some simple
+  questions could probably get a lot of cases easily right.
 
 
 Complete Code Reorganization
