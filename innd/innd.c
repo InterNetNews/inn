@@ -17,6 +17,7 @@
 #include <arpa/nameser.h>
 #include <resolv.h>
 #endif	/* defined(DO_FAST_RESOLV) */
+#include "../storage/cnfs/cnfs.h"       /* XXX Is this icky? */
 
 
 #if defined(HAVE_SETBUFFER)
@@ -569,6 +570,8 @@ int main(int ac, char *av[])
     logflags = L_OPENLOG_FLAGS | LOG_NOWAIT;
     fd = -1;
     master = NULL;
+    __CNFS_Write_Allowed = 1;	/* XXX Icky */
+    __CNFS_Cancel_Allowed = 1;	/* XXX Icky */
 
 #if	defined(DO_FAST_RESOLV)
     /* We only use FQDN's in the hosts.nntp file. */
