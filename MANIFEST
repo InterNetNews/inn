@@ -431,7 +431,6 @@ lib/inndcomm.c                        Library routines to talk to innd
 lib/localopen.c                       Open a local NNTP connection
 lib/lockfile.c                        Try to lock a file descriptor
 lib/makedir.c                         Make directory recursively
-lib/malloc.c                          A debugging malloc package
 lib/md5.c                             MD5 checksum calculation
 lib/memcmp.c                          memcmp replacement
 lib/parsedate.y                       Date parsing
