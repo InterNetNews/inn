@@ -131,8 +131,9 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 		 * size any more, just overwrite characters until they
 		 * stop, then discard the whole thing */
 		if (newsize == line->allocated) {
-		    warn("%s overflowed our line buffer, "
-			 "discarding further input", ClientHost);
+		    warn("%s overflowed our line buffer (%ld), "
+			 "discarding further input", ClientHost,
+			 PERMaccessconf->localmaxartsize);
 		    where = line->start;
 		    r = RTlong;
 		} else {
