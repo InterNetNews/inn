@@ -1,0 +1,599 @@
+Welcome to INN 2.0!
+
+  Please read this document thoroughly before trying to install INN. You'll be
+  glad you did.
+
+  If you are upgrading from a previous release of INN (pre-2.0) then it is
+  recommended that you make copies of your old configuration files and use them
+  as guides for doing a clean installation and configuration of 2.0. Many
+  config files have changed, some have been added, and some have been removed.
+  You'll find it much easier to start with a fresh install than to try to
+  update your old installation.
+
+Supported Systems
+
+  < Should list all supported OS/hardware configurations >
+
+  FreeBSD 2.2.x
+  Linux 2.0.x (with libc 5.4 or libc 6.0)
+  OpenBSD ?.?
+  Solaris 2.5.x
+  Solaris 2.6.x
+  SunOS 4.1.4
+  UX/4800 R11 and up
+
+Before You Begin  <A note here about required packages>
+
+  + INN requires perl 5.004 or greater to run.  If you don't have perl, INN
+    will fail to build.  For instructions on obtaining and installing perl, see
+    http://language.perl.com/info/software.html.
+
+  + If you want to enable support for authenticated control messages (this is
+    NOT required) then you will need to install PGP.  There are some questions
+    involving PGP's license if you are running a commercial installation of
+    INN (i.e. you are an ISP).  See http://www.pgp.com for more information
+    about PGP.
+
+    <I'm completely confused by the PGP site now.  Someone more familiar with
+     it needs to update this entry.  I always did a make install in FreeBSD
+     ports dirs :)>
+
+Unpacking the Distribution
+
+  Obtain the INN source distribution from ftp.isc.org in directory
+  /isc/inn/snapshots.  The files in the snapshots directory are snapshots of
+  the current inn source taken daily.  They are stored in date format, i.e.
+  0400 5 May 1998 GMT's file is named inn-1998-05-17_04-00.tar.gz.  Choose the
+  newest file.  The distribution is in gzip compressed tar archive format.  To
+  extract it, execute:
+
+     gunzip -c <inn-src-file> | tar -xf -
+
+  Extracting the source distribution will create a directory named inn where
+  the source resides.
+
+Choosing an Article Storage Format
+
+  INN supports three methods of storing articles on your system. Each method
+  has specific advantages and disadvantages. These storage methods are:
+
+  traditional - This is the storage method used by all previous versions of INN.
+                Articles are stored as individual text files whose names are the
+                same as the article number. The articles are divided up into
+                directories based on the news group name. For example, article
+                12345 in news.software.nntp would be stored in the article spool
+                under the path "news/software/nntp/12345".
+
+                   Advantages: solid time-tested code, compatible with all of
+                               the third-party INN add-ons available, gives you
+                               fine control over article retention times.
+
+                Disadvantages: takes a fast computer with a fast I/O system
+                               to keep up with current USENET traffic volumes
+                               due to file system overhead. Groups with heavy
+                               traffic tend to create a bottleneck because of
+                               inefficiencies in storing large numbers of
+                               article files in a single directory.
+                              
+    timehash  - Articles are stored as files like in the traditional storage
+                method, but are divided up into directories based on the
+                arrival time so so that no directory contains enough files to
+                cause a bottleneck.
+
+                   Advantages: Heavy traffic groups do not cause bottlenecks,
+                               fine control of article retention time still
+                               possible.
+
+                Disadvantages: Still suffers from speed degradation due to
+                               filesystem overhead.
+
+    cnfs      - CNFS stores articles sequentially in pre-configured buffer
+                files.  When the end of the buffer is reached articles new
+                articles are stored from the beginning of the buffer,
+                overwriting older articles.
+ 
+                   Advantages: Blazingly fast because no file creations or
+                               deletions are necessary to store an article.
+                               Does not require manual article expiration; old
+                               articles are deleted to make room for new ones
+                               when the buffers get too full. Also, with CNFS
+                               your server will never throttle itself due to a
+                               full spool disk, and you can restrict groups to
+                               just certain buffer files so that they can never
+                               use more than the amount of disk space you
+                               allocate to them.
+
+                Disadvantages: Article retention times are more difficult to
+                               control because old articles are overwritten
+                               automatically.
+
+  In general, if you plan to carry a full news feed and want to actually have
+  your server keep up with the traffic you should be using CNFS. If you just
+  want to carry a subset of the full newsgroup hierarchy (such as everything
+  but the binaries group) then we suggest the traditional storage method.
+
+Installing INN
+
+  Before beginning installation you should make sure that there is is a user
+  on your system named 'news', and that this user's primary group is set to
+  a group called 'news'. The home directory of this user should be set to
+  the directory under which you wish to install INN ("/usr/local/news" is the
+  default and is a good choice).  INN will install itself as this user and
+  group. You can change these if you want but these are the defaults and it's
+  easier to stick with them on a new installation.
+
+  INN 2.0 uses the GNU 'configure' program to make configuration rather
+  painless.  Unless you have a rather abnormal setup configure should be able
+  to completely configure INN for your setup. If you want to change the
+  defaults you can invoke the configure script with one or more command line
+  options. The most commonly used options are described below.
+
+  --prefix=PATH           Sets the installation prefix for INN. The default
+                          is /usr/local/news. All of INN's programs and support
+                          files will be installed under this directory. You
+                          should set this to the home directory of your "news"
+                          user (it will make installation and maintenance
+                          easier). Defaults to "/usr/local/news".
+
+  --enable-tagged-hash    Use tagged hash table for the history database.
+                          The tagged hash format uses much less memory but is
+                          somewhat slower. This option is recommended if you
+                          have less than 256 MB of RAM on your news server.
+
+  --enable-pgp-verify     This enable support for PGP (Pretty Good Privacy)
+                          signature checking on control messages. This makes
+                          it nearly impossible for malicious individuals to
+                          post forged newsgroup creation or deletion messages
+                          for the major hierarchies (comp.*, rec.*, etc.)
+                          You will need to have PGP installed on your system
+                          for this to work, and there are issues with using
+                          PGP on commercial systems, so this option is off by
+                          default.
+
+  --with-perl             Enables support for Perl, allowing you to install
+                          filter scripts written in Perl. Highly recommended,
+                          because many of the really good spam filters are
+                          written in Perl. You will need Perl 5.004 or later
+                          installed on your system to enable this option.
+
+  --with-tcl              Enables support for TCL (Tool Command Language). This
+                          allows you to install filter scripts written in TCL.
+                          Most available filters seem to be written in Perl
+                          these days, so you can safely leave out TCL support.
+                          If you choose to enable this then you will need to
+                          have a suitable TCL distribution installed.
+
+  A suggested set of options, provided you have the necessary software
+  installed, is "./configure --with-perl --enable-pgp-verify".
+
+  If the configure program runs successfully, then you are ready to build the
+  distribution. From the root of the INN source tree, type:
+
+        make
+
+  At this point you can step away from the computer for a little while and have
+  a quick snack while INN compiles.  On a decently fast system it should only
+  take five or ten minutes at the most to build.
+
+  Once the build has completed successfully, you are ready to install INN into
+  its final home. Type:
+
+        make install
+
+  This will install INN under the install directory (/usr/local/news, unless
+  you specified something else to the configure script.) You are now ready for
+  the really fun part: configuring your copy of INN!
+
+Configuring INN
+
+  From this point on we will assume that you have set up the news user on your
+  system as suggested in the Installation section above so that the root of the
+  INN installation on your system is accessible as "~news/".
+
+  All of INN's configuration files are located in the ~news/etc directory. 
+  Unless noted otherwise, any files referred to below are in this directory.
+
+  Before we begin, it is worth mentioning the wildmat pattern matching syntax
+  used in many configuration files. These are simple wildcard matches using
+  the asterisk ("*") as the wildcard character, much like the simple wildcard
+  expansion used by Unix shells (but unlike Unix shells, you cannot do full
+  regular expressions; only the asterisk is supported).
+
+  In many cases, wildmat patterns can be specified in a comma-separated list
+  to indicate a list of newsgroups.  When used in this fashion, each pattern
+  is checked in turn to see if it matches, and the last pattern in the line
+  that matches the group name is used. Patterns beginning with "!" mean to
+  exclude groups matching that pattern. For example:
+
+        *, !comp.*, comp.os.*
+
+  In this case, we're saying we match everything ("*"), except that we don't
+  match anything under comp ("!comp.*"), unless it is actually under the
+  comp.os hierarchy ("comp.os.*"). This is because non-comp groups will
+  match only the first pattern (so we want them), comp.os groups will match
+  all three patterns (so we want them too, because the third pattern counts
+  in this case), and all other comp groups will match the first and second
+  patterns and will be excluded by the second pattern.
+
+  In most INN configuration files, lines beginning with a pound sign are
+  considered comments and are ignored. Any deviations from this practice
+  will be noted in the description for that particular file.
+  
+  1. inn.conf (REQUIRED)
+
+  The first, and most important file is inn.conf. This file is organized as
+  a series of parameter-value pairs, one per line.  The parameter is first,
+  followed by a colon and one or more whitespace characters and the value
+  itself. For some parameters the value is a string or a number; for others
+  it is "yes" or "no."
+
+  The inn.conf file contains dozens of changeable parameters, but only a few
+  really need to be edited during normal operation:
+
+  organization         Set to the name of your organization as you want it to
+                       appear in the Organization: header of all local posts.
+                       This will be overridden by the value of the ORGANIZATION
+                       environment variable (if it exists). If neither this
+                       parameter nor the environment variable or set then no
+                       Organization: header will be added.
+
+  pathhost             This is the name of your news server as you wish it to
+                       appear in the Path header of all postings which travel
+                       through your server (this includes local posts and
+                       incoming posts that you forward out to other sites).
+                       If no pathhost is specified then the FQDN of the
+                       machine will be used instead.
+
+  domainname           Sets the domain name for your server. Normally this
+                       is determined automatically by INN, but in some cases
+                       it is necessary to set it manually. For example, if you
+                       are running NIS on a SunOS system -and- your hostnames
+                       are not fully-qualified (ie, your systems are named
+                       xxxx instead of xxxx.domain.com) then you will need to
+                       use this option to set your domain name manually. If in
+                       doubt, leave this option commented out or remove it
+                       completely.
+
+  complaints           If present this address is used to add an
+                       X-Complaints-To: header to all local posts. The usual
+                       value would be something like "abuse@your.domain" or
+                       "postmaster@your.domain". If not specified then the
+                       newsmaster email address will be used.
+
+  allownewnews         If set to "yes" then INN will support the NEWNEWS
+                       command for news readers. This will really kill your
+                       server performance and it is strongly suggested that
+                       you set this to "no".
+
+  status
+  timer                Determines how often status and timer updates are
+                       written to the log files. The value is specified in
+                       seconds with a value of 0 disabling logging. The
+                       suggested value is 300 seconds (5 minutes.)
+
+  storageapi           Set to "yes" if articles should be stored using the
+                       Storage Manager API. You must set this to "no" if you
+                       are using the traditional article storage method or
+                       "yes" if you are using timehash or cnfs.  See the 
+                       section "Choosing an Article Storage Format" for more
+                       information.
+
+  extendeddbz          This is only used if you did not configure INN for
+                       tagged hash and you are using the storage API. If set
+                       to "yes", then overview offset information for articles
+                       is stored in the DBZ history hash file as well as in the
+                       history text file. This will make the hash file three
+                       times larger, but should increase performance for news
+                       readers when they retrieve article overview information.
+                       If you don't mind using 200-300 MB of extra space for
+                       your history database then you should set this to "yes".
+
+  nntpdoverstats       If set to "yes" then nnrpd will log statistics about
+                       how much time was spent during the various stages of
+                       reading article overview information. Not terribly
+                       useful unless you are trying to track down news reader
+                       performance problems.
+
+  hiscachesize         The size in kilobytes to use for caching recently used
+                       history file entries. Setting this to 0 disables history
+                       caching. History caching can greatly increase the
+                       number of articles per second that your server is
+                       capable of processing.  A value of 16384 (16 MB) is a
+                       good choice if you can spare the RAM.
+
+  2. newsfeeds (REQUIRED)
+
+  The newsfeeds file determines how incoming articles are redistributed to
+  your peers and to other INN processes. The newsfeeds file is very
+  versatile and contains dozens of options; we will touch on just the
+  basics here. The newsfeeds(5) man page contains more detailed
+  information.
+
+  The newsfeeds file is organized as a series of feed entries. Each feed
+  entry is composed of four fields separated by colons. Entries may span
+  multiple lines by using the backslash (\) to indicate that the next line
+  is a continuation of the current line.
+
+  The first field in an entry is the name of the feed. It must be unique,
+  and for feeds to other news servers it is usually set to the actual
+  hostname of the remote server (this makes things easier). The name can
+  optionally be followed by a slash and an exclude list. If the feed name
+  or any of the names in the exclude list appear in the Path line of an
+  article, then that article will not be forwarded to the feed as it is
+  assumed that it has passed through that site once already. The exclude list
+  is useful when a news server's hostname is not the same as what it puts in
+  the Path header of its articles, or when you don't want a feed to receive
+  articles from a certain source.
+
+  The second field specifies a set of desired newsgroups and distribution
+  lists, given as newsgroup-pattern/distribution-list. The distribution list
+  is not described here; see the newsfeeds(5) man page for information. The
+  newsgroup pattern is a wildmat-style pattern list as described above, with
+  one minor addition: patterns beginning with "@" will cause any articles
+  posted to groups matching that pattern to be dropped, even if they match
+  patterns for groups that ARE wanted. Otherwise, articles that match both
+  "want" and "don't want" patterns are sent.
+
+  The third field is a comma-separated list of flags that determine both the
+  type of feed entry and sets certain parameters for the entry. See the
+  newsfeeds(5) man page for information on the flag settings.
+
+  The fourth field is a multi-purpose parameter. Its usage depends on the
+  settings of the flags in the third field. Again, see the man pages for
+  more information.
+
+  Now that you have a rough idea of the file layout, we'll begin to add the
+  actual feed entries.  First we'll set up the special ME entry. This entry is
+  required and serves two purposes. First, the newsgroup pattern specified
+  for this entry is prepended to the newsgroup list of all other feeds; second,
+  the ME entry's distribution pattern determines what distributions are
+  accepted from remote sites by your server. The default ME entry in the
+  newsfeeds file probably won't suit your tastes; a good starting point would
+  be a subscription pattern of "*,!junk,!local*" and a distribution list of
+  "!local". This will mean that by default all sites will receive all groups
+  except the junk group and groups in the local.* hierarchy, and that you will
+  receive any distributions except those marked as "local" (any such articles
+  are probably being leaked out by a misconfigured server).
+
+  Next we'll set up special entries for the overchan, innfeed and (if you're
+  not using cnfs or timehash) crosspost programs. There are already entries
+  for these programs in the default newsfeeds file; you need only uncomment
+  them and edit the pathnames to the programs to match your setup (there are
+  two entries for overchan, one for use with the Storage Manager API and one
+  for use without it; uncomment only the one matching your setup) . Assuming
+  you installed INN under the default path of /usr/local/news then the
+  appropriate feed entries would look like this:
+
+  For traditional storage method:
+
+        overview!:*:Tc,WO:/usr/local/news/bin/overchan
+
+        crosspost:*:Tc,Ap,WR:/usr/local/news/bin/crosspost
+
+        innfeed!:\
+                !*\
+                :Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed -y
+
+  For cnfs or timehash storage method:
+
+        overview!:*:Tc,WhR:/usr/local/news/bin/overchan
+
+        innfeed!:\
+                !*\
+                :Tc,Wnm*,S16384:/usr/local/news/bin/startinnfeed -y
+
+  Finally, you need to add entries for any actual sites to which you will
+  be feeding articles. They will all have the same general format:
+
+        my-feed-site.domain.com/exclude-list\
+                :newsgroup-list\
+                :Tm:innfeed!
+
+  Set the feed name to the name of the remote site, and if the site uses a
+  name other than its host name for Path headers then put that in the
+  exclude-list (if your exclude list is empty, leave out the "/" after the
+  site name as well). The newsgroup list can be left empty if the default
+  newsgroup pattern from your ME entry is sufficient; otherwise, set the
+  newsgroup pattern appropriately. The last line should not be modified.
+
+  3. incoming.conf (REQUIRED)
+
+  4. cycbuff.conf (Required only if using the CNFS article storage method)
+
+  CNFS stores articles in logical objects called "metacycbuffs." Each of the
+  metacycbuffs is in turn composed of one or more physical buffers called
+  "cycbuffs." As articles are written to the metacycbuff each article is
+  written to the next cycbuff in the list in a round-robin fashion. This is
+  so that you can distribute the individual cycbuffs across multiple physical
+  disks and balance the load between them.
+
+  There are two ways to create your cycbuffs:
+
+      1. Use a raw disk partition (best). This will give you the most speed,
+         but it required that your OS support mmap()'ing a block device.
+         Solaris supports this, FreeBSD and Linux do not. Also on many PC-
+         based Unixes it is difficult to create more than eight partitions,
+         which severely limits your options.
+
+      2. Use a real file on a filesystem. This will be a bit slower than using
+         a raw disk partition, but it should work on any Unix system.
+
+  If you're having doubts, use option #2.
+
+  Now you need to decide on the sizes of your cycbuffs and metacycbuffs. You'll
+  probably want to separate the heavy-traffic groups (alt.binaries.* and maybe
+  even the rest of alt.*) into their own metacycbuff so that they don't
+  overrun the server and push out articles on the more useful groups. If you
+  have any local groups that you want to stay around for a while then you
+  should put them in their own metacycbuff as well.
+   
+  For each metacycbuff, you now need to determine how many cycbuffs will
+  make up the metacycbuff, the size of those cycbuffs and where they will
+  be stored. Some OSs do not support files larger than 2 GB which will force
+  all of your cycbuffs to be < 2GB (even if they are stored on raw disk
+  partitions). Linux is known to have this limitation, FreeBSD does not. If in
+  doubt, keep your cycbuffs smaller than 2 GB. Also when laying out your
+  cycbuffs you will want to try to arrange them across as many physical disks
+  as possible (or use a striped disk array and put them all on that).
+
+  For each cycbuff you will be creating, add a line to the cycbuff.conf file
+  like the following:
+
+        cycbuff:BUFFNAME:/path/to/buffer:SIZE
+
+  BUFFNAME must be unique and must be <= 8 characters in length. Something
+  simple like "BUFF00", "BUFF01", etc. is a decent choice. SIZE is the buffer
+  size in kilobytes (1000000 KB is approximately one GB, so if you are
+  trying to stay under 2 GB then cap your sizes at 2000000).
+
+  Now, you need to tell INN how to group your cycbuffs into metacycbuffs.
+  This is similar to creating cycbuff entries:
+
+        metacycbuff:BUFFNAME:CYCBUFF,CYCBUFF,CYCBUFF
+
+  BUFFNAME is the name of the metacycbuff, and like cycbuff names must be
+  unique and <= 8 characters long. These should be a bit more meaningful than
+  the cycbuff names since they will be used in other config files as well.
+  Try to name them after what will be stored in them; for example if this
+  metacycbuff will hold alt.binaries postings, then "BINARIES" would be a good
+  choice. Finally, the last part of the name is a comma-separated list of all
+  of the cycbuffs that should be used to build this metacycbuff. Each cycbuff
+  should only appear in -one- metacycbuff line.
+
+  6. storage.ctl (Required only if using the CNFS or timehash storage methods)
+
+  The storage.ctl file maps newsgroups into storage classes, which determine
+  where and how the article is stored. This file has a very simple format;
+  each line defines a storage class for articles. The first matching storage
+  class is used to store the article; if no storage class matches then INN will
+  reject that article.
+
+  A storage class is defined as a single line consisting of size fields:
+
+        methodname:newsgroup pattern:storage class #:minsize:maxsize:options
+  
+  The first field, "methodname", is the name of the storage method used to
+  store articles in this storage class. It should be set to "cnfs", "timehash",
+  or the special storage method "trash" (which accepts the article but does
+  not actually store it anywhere). Note that "traditional" is not a valid
+  method name; the Storage Manager does not support traditional article
+  storage, and if you are using traditional method then you should skip to the
+  next section.
+
+  The second field is a wildmat pattern in the same format used by the
+  newsfeeds file, and determines what newsgroups are accepted by this storage
+  class.
+
+  The third field is a unique number identifying this storage class and should
+  be between 0 and 255. It is used primarily to control article expiration.
+
+  The fourth and fifth fields can be used to accept only articles in a certain
+  size range into this storage class. A maxsize of zero means no upper limit
+  (and of course a minsize of 0 would mean no lower limit, because an article
+  is always great than zero bytes long.)
+  
+  The last field is the options field. Currently only CNFS uses this field; it
+  should contain the name of the metacycbuff used to store articles in this
+  storage class.
+
+  For CNFS users, create one storage class for each metacycbuff that you have
+  defined, listing what newsgroups are to be stored in that buffer.
+
+  For timehash, the storage class IDs are used to store articles in separate
+  directory trees so that different expiration policies can be applied to
+  each storage class. You will need to divide up your newsgroups based on how
+  long you want to retain articles in those groups, and create a storage class
+  for each such collection of newsgroups. Make note of the storage class IDs
+  you assign as they will be needed when you edit the expire.ctl file a bit
+  later.
+
+  5. overview.ctl (Required only if using the CNFS or timehash storage methods)
+
+  The overview.ctl file determines where article overview information will be
+  stored for each newsgroup. Overview is stored in one more more storage files
+  identified by unique numbers between 0 and 254. Each line consists of the
+  storage file number followed by a single colon and a wildmat pattern list
+  of which newsgroups are to be stored in that file. As with storage.ctl, the
+  first matching line is used.
+
+  The exact way in which you distribute articles across multiple overview
+  storage areas is not an exact science. As a start we suggest creating 27
+  storage areas; the first 26 will be for newsgroups "a*" through "z*", and the
+  27th will be for "*" (thus catching any groups that start with a non-letter,
+  of which there are several). You can change the layout in the future by
+  modifying this file and then waiting for the daily news expiration to run,
+  at which time the overview data will be re-arranged for you during the
+  expiration process.
+
+  6. expire.ctl (REQUIRED)
+
+Creating the db files
+
+  At this point you need to set up the news database directory (~news/db).
+  To make things easier you should su to your news user; otherwise the files
+  you create will be owned by root and you'll have to change the owner and
+  group IDs on the files manually. You should also have your working directory
+  set to the ~news/db directory, and ~news/bin should be in your PATH so that
+  you can execute INN support commands without typing full pathnames.
+
+  To begin you'll need current active and newsgroups files. These may be
+  downloaded from the following location:
+
+        ftp.isc.org:/pub/usenet/CONFIG
+
+  Download the files "active" and "newsgroups" and place them in your ~news/db
+  directory.
+
+  Next you need to create an empty history database. This can be accomplished
+  by running the following command:
+
+        makehistory -i
+
+  Finally, set the file permissions on all of the files you just created:
+
+        chmod 0664 *
+
+  Your news database files are now ready to go.
+
+Creating the article spool (CNFS only)
+
+  If you are using actual files as your CNFS buffers then you will need to
+  pre-create these files with the Unix "dd" program.  For each cycbuff in your
+  cycbuff.conf file, create the buffer with the following commands as the news
+  user:
+
+        dd if=/dev/zero of=/path/to/buffer bs=1k count=BUFFERSIZE
+        chmod 0664 /path/to/buffer
+
+   Substitute the buffer pathname and the buffer size (as listed in the
+   cycbuff.conf file) in the appropriate spots in the commands. This will
+   create a zero- filled file of the correct length; it may take a while to
+   run, so be prepared to wait.
+
+   Once you have created all of your cycbuffs, you are ready to continue with
+   the next step of the installation.
+
+Setting up the news.daily cron job
+
+  INN requires a special cron job to be set up on your system to run the
+  news.daily script, which performs daily server maintenance tasks such as
+  article expiration and the processing and rotation of the server logs.
+  Since it will slow the server down while it is running, it should be run
+  during periods of low server usage, such as in the middle of the night. To
+  run it at 3 am, for example, add the following entry to the news user's
+  crontab file:
+
+        0 3 * * * /usr/local/news/bin/news.daily expireover lowmark
+
+  or, if your system does not have per-user crontabs, put the following line
+  into your system crontab instead:
+
+        0 3 * * * su -c "/usr/local/news/bin/news.daily expireover lowmark" news
+
+  The pathnames and user ID used above are the installation defaults; change
+  them to match your installation if you used something other than the
+  defaults.
+
+  The parameters passed to news.daily in the above example are the most
+  common (and usually the most efficient) ones to use. More information on what
+  these parameters do can be found in the news.daily man page.
