@@ -116,22 +116,22 @@ bool ovdb_open(int mode UNUSED)
     return false;
 }
 
-bool ovdb_groupstats(char *group UNUSED, int *lo UNUSED, int *hi UNUSED, int *count UNUSED, int *flag UNUSED)
+bool ovdb_groupstats(const char *group UNUSED, int *lo UNUSED, int *hi UNUSED, int *count UNUSED, int *flag UNUSED)
 { return false; }
 
-bool ovdb_groupadd(char *group UNUSED, ARTNUM lo UNUSED, ARTNUM hi UNUSED, char *flag UNUSED)
+bool ovdb_groupadd(const char *group UNUSED, ARTNUM lo UNUSED, ARTNUM hi UNUSED, char *flag UNUSED)
 { return false; }
 
-bool ovdb_groupdel(char *group UNUSED)
+bool ovdb_groupdel(const char *group UNUSED)
 { return false; }
 
-bool ovdb_add(char *group UNUSED, ARTNUM artnum UNUSED, TOKEN token UNUSED, char *data UNUSED, int len UNUSED, time_t arrived UNUSED, time_t expires UNUSED)
+bool ovdb_add(const char *group UNUSED, ARTNUM artnum UNUSED, TOKEN token UNUSED, char *data UNUSED, int len UNUSED, time_t arrived UNUSED, time_t expires UNUSED)
 { return false; }
 
 bool ovdb_cancel(TOKEN token UNUSED)
 { return false; }
 
-void *ovdb_opensearch(char *group UNUSED, int low UNUSED, int high UNUSED)
+void *ovdb_opensearch(const char *group UNUSED, int low UNUSED, int high UNUSED)
 { return NULL; }
 
 bool ovdb_search(void *handle UNUSED, ARTNUM *artnum UNUSED, char **data UNUSED, int *len UNUSED, TOKEN *token UNUSED, time_t *arrived UNUSED)
@@ -139,10 +139,10 @@ bool ovdb_search(void *handle UNUSED, ARTNUM *artnum UNUSED, char **data UNUSED,
 
 void ovdb_closesearch(void *handle UNUSED) { }
 
-bool ovdb_getartinfo(char *group UNUSED, ARTNUM artnum UNUSED, TOKEN *token UNUSED)
+bool ovdb_getartinfo(const char *group UNUSED, ARTNUM artnum UNUSED, TOKEN *token UNUSED)
 { return false; }
 
-bool ovdb_expiregroup(char *group UNUSED, int *lo UNUSED, struct history *h UNUSED)
+bool ovdb_expiregroup(const char *group UNUSED, int *lo UNUSED, struct history *h UNUSED)
 { return false; }
 
 bool ovdb_ctl(OVCTLTYPE type UNUSED, void *val UNUSED)
