@@ -14,7 +14,6 @@
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
-#include <syslog.h>
 
 #include "inn/messages.h"
 #include "libinn.h"

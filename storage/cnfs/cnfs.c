@@ -14,7 +14,6 @@
 # include <limits.h>
 #endif
 #include <netinet/in.h>
-#include <syslog.h> 
 #include <sys/stat.h>
 #include <sys/uio.h>
 

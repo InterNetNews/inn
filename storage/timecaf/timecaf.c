@@ -11,7 +11,6 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <syslog.h>
 #include <sys/stat.h>
 #include <time.h>
 

@@ -10,7 +10,6 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <syslog.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <time.h>

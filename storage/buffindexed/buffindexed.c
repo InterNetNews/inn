@@ -26,7 +26,6 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
-#include <syslog.h>
 #include <sys/stat.h>
 #include <time.h>
 
