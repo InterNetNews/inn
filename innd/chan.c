@@ -47,6 +47,7 @@ void BUFFappend(BUFFER *bp, char *p, int len) {
 	bp-> Size += (len + 0x3FF) & ~0x3FF;
 	RENEW(bp->Data, char, bp->Size);
     }
+    bp->Left += len;
     memcpy((POINTER)&bp->Data[i], (POINTER)p, len);
 }
 
@@ -68,7 +69,7 @@ BUFFset(bp, p, length)
 	    bp->Size = GROW_AMOUNT(length);
 	    RENEW(bp->Data, char, bp->Size);
 	}
-
+	
 	/* Try to test for non-overlapping copies. */
 	memmove((POINTER)bp->Data, (POINTER)p, (SIZE_T)length);
     }
