@@ -107,6 +107,19 @@ extern const char *     INNVersion(void);
 
 
 /*
+**  WILDMAT MATCHING
+*/
+enum wildmat {
+    WILDMAT_FAIL   = 0,
+    WILDMAT_MATCH  = 1,
+    WILDMAT_POISON
+};
+
+extern bool             wildmat(const char *text, const char *pat);
+extern enum wildmat     wildmat_poison(const char *text, const char *pat);
+
+
+/*
 **  MISCELLANEOUS UTILITY FUNCTIONS
 */
 extern void *   concat(const char *first, ...);
@@ -311,7 +324,6 @@ int HashCompare(const HASH *h1, const HASH *h2);
 /* Miscellaneous. */
 extern int	dbzneedfilecount(void);
 extern BOOL     MakeDirectory(char *Name, BOOL Recurse);
-extern int	wildmat(const char *text, const char *p);
 extern pid_t	waitnb(int *statusp);
 extern int	xread(int fd, char *p, OFFSET_T i);
 extern int	GetResourceUsage(double *usertime, double *systime);
