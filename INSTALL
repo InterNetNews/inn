@@ -825,7 +825,7 @@ Configuring INN
             :Tc,Wnsm:/usr/local/news/bin/controlchan
 
     (modified for the actual path to controlchan if you put it somewhere
-    else).
+    else).  See "Processing Control Messages" for more details.
 
     For those of you upgrading from earlier versions of INN, note that the
     functionality of overchan and crosspost is now incorporated into INN and
@@ -1380,4 +1380,55 @@ Starting and Stopping the System
 
     In the contrib directory of this source tree is a sample init script for
     people using System V-style init.d directories.
+
+Processing Newsgroup Control Messages
+
+    Control messages are specially-formatted messages that tell news servers
+    to take various actions.  Cancels (commands to delete messages) are
+    handled internally by INN, and all other control messages are processed
+    by controlchan.  controlchan should be run out of newsfeeds if you want
+    your news server to process any control messages; see "Configuring INN"
+    for specific instructions.
+
+    The actions of controlchan are determined by control.ctl, which lists
+    who can perform what actions.  The primary control messages to be
+    concerned with are "newgroup" (to create a newsgroup), "rmgroup" (to
+    remove a newsgroup), and "checkgroups" (to compare the list of groups
+    carried in a hierarchy to a canonical list).  INN comes with a
+    control.ctl file that processes control messages in most major public
+    hierarchies; if you don't want to act on all those control messages, you
+    should remove from that file all entries for hierarchies you don't want
+    to carry.
+
+    You can tell INN to just authenticate control messages based on the From
+    header of the message, but this is obviously perilous and control
+    messages are widely forged.  Many hierarchies sign all of their control
+    messages with PGP, allowing news servers to verify their authenticity,
+    and checking those signatures for hierarchies that use them is highly
+    recommended.  controlchan knows how to do this (using pgpverify) without
+    additional configuration, but you do have to provide it with a public
+    key ring containing the public keys of all of the hierarchy
+    administrators whose control messages you want to check.
+
+    INN expects the public key ring to either be in the default location for
+    a PGP public key ring for the news user (generally ~news/.gnupg for
+    GnuPG and ~news/.pgp for old PGP implementations), or in pathetc/pgp
+    (/usr/local/news/etc/pgp by default).  The latter is the recommended
+    path.  To add a key to that key ring, use:
+
+        gpg --import --homedir=/usr/local/news/etc/pgp <file>
+
+    where <file> is a file containing the hierarchy key.  Change the homedir
+    setting to point to pathetc/pgp if you have INN installed in a
+    non-default location.  If you're using the old-style PGP program, an
+    equivalent command is:
+
+        env PGPPATH=/usr/local/news/etc/pgp pgp <file>
+
+    You can safely answer "no" to questions about whether you want to sign,
+    trust, or certify keys.
+
+    The URLs from which you can get hierarchy keys are noted in comments in
+    control.ctl.  <ftp://ftp.isc.org/pub/pgpcontrol/PGPKEYS> tries to
+    collect the major hierarchy keys.
 
