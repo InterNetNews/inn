@@ -174,7 +174,7 @@ index_lock_group(int fd, ptrdiff_t offset, enum inn_locktype type)
     size_t size;
 
     size = sizeof(struct group_entry);
-    offset += sizeof(struct group_header);
+    offset = offset * size + sizeof(struct group_header);
     status = inn_lock_range(fd, type, true, offset, size);
     if (!status)
         syswarn("tradindexed: cannot %s group entry at %lu",
@@ -763,13 +763,15 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
         return false;
     index_lock_group(index->fd, offset, INN_LOCK_WRITE);
 
-    /* Make sure we have the most current data files. */
+    /* Make sure we have the most current data files and that we have the
+       right base article number. */
     if (entry->indexinode != data->indexinode) {
         if (!tdx_data_open_files(data))
             goto fail;
         if (entry->indexinode != data->indexinode)
             warn("tradindexed: index inode mismatch for %s",
                  HashToText(entry->hash));
+        data->base = entry->base;
     }
 
     /* If the article number is too low to store in the group index, repack
@@ -834,9 +836,13 @@ tdx_index_rebuild_finish(struct group_index *index, struct group_entry *entry,
                          struct group_entry *new)
 {
     ptrdiff_t offset;
+    ino_t new_inode;
 
-    entry->indexinode = new->indexinode;
+    new_inode = new->indexinode;
+    new->indexinode = entry->indexinode;
     *entry = *new;
+    entry->indexinode = new_inode;
+    new->indexinode = new_inode;
     mapcntl(entry, sizeof(*entry), MS_ASYNC);
     offset = entry - index->entries;
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
