@@ -1422,7 +1422,7 @@ static of_t			/* NOTFOUND if we hit VACANT or error */
 search(searcher *sp)
 {
     of_t value;
-    unsigned long taboffset = 0;
+    unsigned long taboffset = sp->tabno * conf.tsize;
 
     if (sp->aborted)
 	return(NOTFOUND);
@@ -1455,10 +1455,9 @@ search(searcher *sp)
 		    return(NOTFOUND);
 		} else
 		    value = VACANT;
-	    }
-
-	    /* and finish up */
-	    pagtab.pos += sizeof(value);
+                pagtab.pos = -1;
+	    } else
+                pagtab.pos += sizeof(value);
 	}
 
 	/* vacant slot is always cause to return */
