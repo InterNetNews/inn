@@ -49,7 +49,7 @@ DistMatches(distribs, files)
 	for (p = &buff[STRLEN(_PATH_SPOOL)]; *p; p++)
 	    if (*p == '.')
 		*p = '/';
-	if ((qp = QIOopen(buff, QIO_BUFFER)) != NULL)
+	if ((qp = QIOopen(buff)) != NULL)
 	    break;
     }
     if (*files == NULL) {

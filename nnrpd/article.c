@@ -277,7 +277,7 @@ ARTopen(name)
     }
     close(fd);
 #else
-    if ((ARTqp = QIOopen(name, QIO_BUFFER)) == NULL)
+    if ((ARTqp = QIOopen(name)) == NULL)
 	return FALSE;
     if (fstat(QIOfileno(ARTqp), &Sb) < 0 || !S_ISREG(Sb.st_mode)) {
 	ARTclose();
@@ -324,7 +324,7 @@ ARTopenbyid(msg_id, ap)
     }
     close(fd);
 #else
-    if ((ARTqp = QIOopen(p, QIO_BUFFER)) == NULL)
+    if ((ARTqp = QIOopen(p)) == NULL)
 	return FALSE;
     if (fstat(QIOfileno(ARTqp), &Sb) < 0 || !S_ISREG(Sb.st_mode)) {
 	ARTclose();
