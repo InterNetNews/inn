@@ -247,7 +247,11 @@ date	: tUNUMBER '/' tUNUMBER {
 	| tUNUMBER '/' tUNUMBER '/' tUNUMBER {
 	    if ($1 > 100) {
 		/* assume YYYY/MM/DD format, so need not to add 1900 */
-		yyYear = $1;
+		if ($1 > 999) {
+		    yyYear = $1;
+		} else {
+		    yyYear = 1900 + $1;
+		}
 		yyMonth = $3;
 		yyDay = $5;
 	    }
@@ -255,12 +259,14 @@ date	: tUNUMBER '/' tUNUMBER {
 		/* assume MM/DD/YY* format */
 		yyMonth = $1;
 		yyDay = $3;
-		if ($5 > 100) {
+		if ($5 > 999) {
 		    /* assume year is YYYY format, so need not to add 1900 */
 		    yyYear = $5;
-		} else {
+		} else if ($5 < 100) {
 		    /* assume year is YY format, so need to add 1900 */
 		    yyYear = $5 + (yyYear / 100 + (yyYear % 100 - $5) / 50) * 100;
+		} else {
+		    yyYear = 1900 + $5;
 		}
 	    }
 	}
@@ -271,12 +277,14 @@ date	: tUNUMBER '/' tUNUMBER {
 	| tMONTH tUNUMBER ',' tUNUMBER {
 	    yyMonth = $1;
 	    yyDay = $2;
-	    if ($4 > 100) {
+	    if ($4 > 999) {
 		/* assume year is YYYY format, so need not to add 1900 */
 		yyYear = $4;
-	    } else {
+	    } else if ($4 < 100) {
 		/* assume year is YY format, so need to add 1900 */
 		yyYear = $4 + (yyYear / 100 + (yyYear % 100 - $4) / 50) * 100;
+	    } else {
+		yyYear = 1900 + $4;
 	    }
 	}
 	| tUNUMBER tMONTH {
@@ -286,23 +294,27 @@ date	: tUNUMBER '/' tUNUMBER {
 	| tUNUMBER tMONTH tUNUMBER {
 	    yyDay = $1;
 	    yyMonth = $2;
-	    if ($3 > 100) {
+	    if ($3 > 999) {
 		/* assume year is YYYY format, so need not to add 1900 */
 		yyYear = $3;
-	    } else {
+	    } else if ($3 < 100) {
 		/* assume year is YY format, so need to add 1900 */
 		yyYear = $3 + (yyYear / 100 + (yyYear % 100 - $3) / 50) * 100;
+	    } else {
+		yyYear = 1900 + $3;
 	    }
 	}
 	| tDAY ',' tUNUMBER tMONTH tUNUMBER {
 	    yyDay = $3;
 	    yyMonth = $4;
-	    if ($5 > 100) {
+	    if ($5 > 999) {
 		/* assume year is YYYY format, so need not to add 1900 */
 		yyYear = $5;
-	    } else {
+	    } else if ($5 < 100) {
 		/* assume year is YY format, so need to add 1900 */
 		yyYear = $5 + (yyYear / 100 + (yyYear % 100 - $5) / 50) * 100;
+	    } else {
+		yyYear = 1900 + $5;
 	    }
 	}
 	;
