@@ -614,6 +614,7 @@ main(argc, argv, env)
     UID_T               NewsUID;
     int                 one = 1;
     FILE                *pidfile;
+    struct passwd	*pwd;
 #if HAVE_GETSPNAM
     struct group	*grp;
     GID_T		shadowgid;
@@ -719,6 +720,21 @@ main(argc, argv, env)
 	if (getuid() == 0) {
 	    if (stat(innconf->pathrun, &Sb) < 0 || !S_ISDIR(Sb.st_mode)) {
 		syslog(L_FATAL, "nnrpd cant stat %s %m", innconf->pathrun);
+		exit(1);
+	    }
+	    if (Sb.st_uid == 0) {
+		syslog(L_FATAL, "nnrpd %s must not be owned by root", innconf->pathrun);
+		exit(1);
+	    }
+	    pwd = getpwnam(NEWSUSER);
+	    if (pwd == (struct passwd *)NULL) {
+		syslog(L_FATAL, "nnrpd getpwnam(%s): %s", NEWSUSER, strerror(errno));
+		exit(1);
+	    } else if (pwd->pw_gid != Sb.st_gid) {
+		syslog(L_FATAL, "nnrpd %s must have group %s", innconf->pathrun, NEWSUSER);
+		exit(1);
+	    } else if (pwd->pw_uid != Sb.st_uid) {
+		syslog(L_FATAL, "nnrpd % must be owned by %s", innconf->pathrun, NEWSUSER);
 		exit(1);
 	    }
 
