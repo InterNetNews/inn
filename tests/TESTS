@@ -1,0 +1,5 @@
+lib/concat
+lib/error
+lib/strerror
+lib/xmalloc
+lib/xwrite
