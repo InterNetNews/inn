@@ -105,7 +105,6 @@ SPOOLTEMP=@TMPDIR@
 NEWSLBIN=${NEWSHOME}/local
 export NEWSLBIN
 
-##  =()<umask @<NEWSUMASK>@>()=
 umask 02
 
 PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin:/usr/ucb
