@@ -2,8 +2,9 @@
 **
 **  Periodic status reporting.
 */
+#include "config.h"
 #include "clibrary.h"
-#include <arpa/inet.h>
+#include "portable/socket.h"
 
 #include "inn/innconf.h"
 #include "innd.h"
