@@ -129,8 +129,10 @@ int main(int argc, char *argv[])
 	exit(2);
     uname[0] = '\0';
     pass[0] = '\0';
+    /* make sure that strlen(buff) is always less than sizeof(buff) */
+    buff[sizeof(buff)-1] = '\0';
     /* get the username and password from stdin */
-    while (fgets(buff, sizeof(buff), stdin) != (char*) 0) {
+    while (fgets(buff, sizeof(buff)-1, stdin) != (char*) 0) {
 	/* strip '\r\n' */
 	buff[strlen(buff)-1] = '\0';
 	if (strlen(buff) && (buff[strlen(buff)-1] == '\r'))
