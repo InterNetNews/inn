@@ -195,13 +195,13 @@ FlushOverTmpFile(void)
     mktemp(temp);
     SortedTmpPath = COPY(temp);
 
-    sprintf(temp, "exec sort -T %s -t'%c' -o %s %s",
+    sprintf(temp, "exec %s -T %s -t'%c' -o %s %s", SORT_PGM,
 	    TmpDir, '\t', SortedTmpPath, OverTmpPath);
     
     i = system(temp) >> 8;
     if (i != 0) {
-	fprintf(stderr, "makehistory: Can't sort OverTmp file (exit %d), %s\n",
-		i, strerror(errno));
+	fprintf(stderr, "makehistory: Can't sort OverTmp file (%s exit %d), %s\n",
+		SORT_PGM, i, strerror(errno));
 	exit(1);
     }
 
