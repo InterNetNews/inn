@@ -732,6 +732,7 @@ void hostAlterMaxConnections(Host host,
 	     */
 	  if (host->connections[i - 1] != NULL)
 	    {
+	      cxnLogStats (host->connections [i-1], true) ;
 	      cxnNuke (host->connections[i-1]) ;
 	      host->connections[i-1] = NULL;
 	    }
@@ -2000,7 +2001,6 @@ bool hostCxnGone (Host host, Connection cxn)
         if (!amClosing (host))
           {
             syslog (LOG_ERR,CONNECTION_DISAPPEARING,host->params->peerName,i) ;
-            cxnLogStats (host->connections [i], true) ;
           }
         host->connections [i] = NULL ;
         if (host->cxnActive [i])
