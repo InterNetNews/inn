@@ -831,7 +831,7 @@ int main(int ac, char *av[])
     /* Parse JCL. */
     fd = STDIN;
     mode = '\0';
-    while ((i = getopt(ac, av, "h:P:NUvr:")) != EOF)
+    while ((i = getopt(ac, av, "h:P:NUvr:S:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -850,6 +850,7 @@ int main(int ac, char *av[])
 	    Verbose = TRUE;
 	    break;
 	case 'r':
+	case 'S':
 	    remoteServer = optarg;
 	    break;
 	}
