@@ -948,6 +948,8 @@ tradspool_cancel(TOKEN token) {
     }
 
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
+        if (xrefs != NULL)
+            free(xrefs);
 	free(path);
 	tradspool_freearticle(article);
         SMseterror(SMERR_UNDEFINED, NULL);
