@@ -127,20 +127,20 @@ Help(char *p)
     COMMAND	*cp;
 
     if (p == NULL) {
-	(void)printf("Command summary:\n");
+	printf("Command summary:\n");
 	for (cp = Commands; cp < ENDOF(Commands); cp++)
-	    (void)printf("  %s %s\n", cp->Command, cp->Text);
-	(void)printf("*   Empty string means all sites/groups/etc.\n");
-	(void)printf("... All trailing words are glued together.\n");
+	    printf("  %s %s\n", cp->Command, cp->Text);
+	printf("*   Empty string means all sites/groups/etc.\n");
+	printf("... All trailing words are glued together.\n");
 	exit(0);
     }
     for (cp = Commands; cp < ENDOF(Commands); cp++)
 	if (EQ(p, cp->Command)) {
-	    (void)printf("Command usage:\n");
-	    (void)printf("  %s %s\n", cp->Command, cp->Text);
+	    printf("Command usage:\n");
+	    printf("  %s %s\n", cp->Command, cp->Text);
 	    exit(0);
 	}
-    (void)printf("No such command.\n");
+    printf("No such command.\n");
     exit(0);
 }
 
@@ -167,7 +167,7 @@ Failed(const char *p)
         syswarn("cannot %s (%s failure)", p, ICCfailure);
     else
         syswarn("cannot %s", p);
-    (void)ICCclose();
+    ICCclose();
     exit(1);
 }
 
@@ -330,7 +330,7 @@ int main(int ac, char *av[])
 	if (i != 0)
             warn("%s", p);
 	else if (!Silent)
-	    (void)printf("%s\n", p);
+	    printf("%s\n", p);
     }
 
     if (ICCclose() < 0)

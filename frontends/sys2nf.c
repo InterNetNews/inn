@@ -51,7 +51,7 @@ ReadActive(act)
 	Groups[i] = COPY(buff);
     }
     Groups[i] = NULL;
-    (void)fclose(F);
+    fclose(F);
 }
 
 
@@ -163,7 +163,7 @@ DoSub(F, p)
     if ((s = strtok(p, ",")) == NULL)
 	return;
 
-    (void)fprintf(F, "!*");
+    fprintf(F, "!*");
     len = 8 + 1 + 2;
     do {
 	/* These are distributions, not newsgroups. */
@@ -177,17 +177,17 @@ DoSub(F, p)
 	    if (EQ(s, "!to") || EQn(s, "to.", 3))
 		continue;
 
-	(void)putc(',', F);
+	putc(',', F);
 	len++;
 
 	if (len + strlen(s) + 3 > 72) {
-	    (void)fprintf(F,"\\\n\t    ");
+	    fprintf(F,"\\\n\t    ");
 	    len = 12;
 	}
 
 	SawBang = *s == '!';
 	if (SawBang) {
-	    (void)putc('!', F);
+	    putc('!', F);
 	    len++;
 	    s++;
 	}
@@ -196,7 +196,7 @@ DoSub(F, p)
 	if (SawAll)
 	    s = SawBang ? "*" : "*,!control";
 	len += strlen(s);
-	(void)fprintf(F, "%s", s);
+	fprintf(F, "%s", s);
 
 	if (SawAll)
 	    ;
@@ -216,11 +216,11 @@ DoSub(F, p)
 	 || EQ(s, "uunet")
 
 	 || Toplevel(s)) {
-	    (void)fprintf(F, ".*");
+	    fprintf(F, ".*");
 	    len += 2;
 	}
 	else if (GroupPrefix(s)) {
-	    (void)putc('*', F);
+	    putc('*', F);
 	    len++;
 	}
     } while ((s = strtok((char *)NULL, ",")) != NULL);
@@ -274,9 +274,9 @@ main(ac, av)
 	if ((p = *sites++) == NULL)
 	    break;
 	for (F = fopen(TEMPFILE, "w"); p && *p == '#'; p = *sites++)
-	    (void)fprintf(F, "%s\n", p);
+	    fprintf(F, "%s\n", p);
 	if (p == NULL) {
-	    (void)fclose(F);
+	    fclose(F);
 	    break;
 	}
 	site = COPY(p);
@@ -294,15 +294,15 @@ main(ac, av)
 	    *f4++ = '\0';
 
 	/* Write the fields. */
-	(void)fprintf(F, "%s\\\n", site);
-	(void)fprintf(F, "\t:");
+	fprintf(F, "%s\\\n", site);
+	fprintf(F, "\t:");
 	DoSub(F, f2);
-	(void)fprintf(F, "\\\n");
+	fprintf(F, "\\\n");
 	if (EQ(f3, "n"))
-	    (void)fprintf(F, "\t:Tf,Wnm\\\n", f3);
+	    fprintf(F, "\t:Tf,Wnm\\\n", f3);
 	else
-	    (void)fprintf(F, "\t:HELP%s\\\n", f3);
-	(void)fprintf(F, "\t:%s\n", f4);
+	    fprintf(F, "\t:HELP%s\\\n", f3);
+	fprintf(F, "\t:%s\n", f4);
 	if (ferror(F) || fclose(F) == EOF)
 	    perror(TEMPFILE), exit(1);
 
@@ -321,7 +321,7 @@ main(ac, av)
 	while ((i = fread(buff, 1, sizeof buff, F)) > 0)
 	    if (fwrite(buff, 1, i, out) != i)
 		perror(p), exit(1);
-	(void)fclose(F);
+	fclose(F);
 	if (fclose(out) == EOF)
 	    perror(p), exit(1);
 

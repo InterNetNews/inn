@@ -150,12 +150,12 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
     /* Process a zero size request. */
     if (size == 0 && len > maxsize) {
 	if (len > 0) {
-	    (void)fclose(F);
+	    fclose(F);
 	    if ((F = fopen(name, "w")) == NULL) {
                 syswarn("cannot overwrite");
 		return FALSE;
 	    }
-	    (void)fclose(F);
+	    fclose(F);
 	    *Changedp = TRUE;
 	}
 	return TRUE;
@@ -165,20 +165,20 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
     if (len <= maxsize) {
 	/* Newline already present? */
 	if (EndsWithNewline(F)) {
-	    (void)fclose(F);
+	    fclose(F);
 	    return TRUE;
 	}
 
 	/* No newline, add it if it fits. */
 	if (len < size - 1) {
-	    (void)fclose(F);
+	    fclose(F);
 	    *Changedp = TRUE;
 	    return AppendNewline(name);
 	}
     }
     else if (!EndsWithNewline(F)) {
 	if (!AppendNewline(name)) {
-	    (void)fclose(F);
+	    fclose(F);
 	    return FALSE;
 	}
     }
@@ -188,14 +188,14 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
      * until we get a newline. */
     if (fseeko(F, -size, SEEK_END) < 0) {
         syswarn("cannot fseeko");
-	(void)fclose(F);
+	fclose(F);
 	return FALSE;
     }
 
     while ((c = getc(F)) != '\n')
 	if (c == EOF) {
             syswarn("cannot read");
-	    (void)fclose(F);
+	    fclose(F);
 	    return FALSE;
 	}
 
@@ -209,16 +209,16 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 	}
     if (err) {
         syswarn("cannot copy to temporary file");
-	(void)fclose(F);
-	(void)fclose(tmp);
+	fclose(F);
+	fclose(tmp);
 	return FALSE;
     }
 
     /* Now copy temp back to original file. */
-    (void)fclose(F);
+    fclose(F);
     if ((F = fopen(name, "w")) == NULL) {
         syswarn("cannot overwrite file");
-	(void)fclose(tmp);
+	fclose(tmp);
 	return FALSE;
     }
     fseeko(tmp, 0, SEEK_SET);
@@ -230,13 +230,13 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 	}
     if (err) {
         syswarn("cannot overwrite file");
-	(void)fclose(F);
-	(void)fclose(tmp);
+	fclose(F);
+	fclose(tmp);
 	return FALSE;
     }
 
-    (void)fclose(F);
-    (void)fclose(tmp);
+    fclose(F);
+    fclose(tmp);
     *Changedp = TRUE;
     return TRUE;
 }
@@ -321,7 +321,7 @@ main(int ac, char *av[])
     /* Set defaults. */
     Verbose = FALSE;
     no_op = FALSE;
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     if (!innconf_read(NULL))
         exit(1);

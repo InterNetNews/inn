@@ -187,7 +187,7 @@ ICDwritevactive(struct iovec *vp, int vpcount)
 	oerrno = errno;
 	syslog(L_ERROR, "%s cant write %s %m", LogName, BACKUP);
 	IOError(WHEN, oerrno);
-	(void)close(fd);
+	close(fd);
     }
     else if (close(fd) < 0) {
 	oerrno = errno;
@@ -260,7 +260,7 @@ bailout:
 	oerrno = errno;
 	syslog(L_ERROR, "%s cant write %s %m", LogName, NEWACT);
 	IOError(WHEN, oerrno);
-	(void)close(fd);
+	close(fd);
 	return FALSE;
     }
 

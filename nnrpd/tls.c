@@ -713,7 +713,7 @@ SSL_writev (ssl, vector, count)
     {
 #define min(a, b)       ((a) > (b) ? (b) : (a))
       size_t copy = min (vector[i].iov_len, to_copy);
-      (void) memcpy ((void *) bp, (void *) vector[i].iov_base, copy);
+      memcpy (bp, vector[i].iov_base, copy);
       bp += copy;
       to_copy -= copy;
       if (to_copy == 0)

@@ -712,7 +712,7 @@ CCgo(char *av[])
     if (NNRPReason && !innconf->readerswhenstopped) {
 	av[0] = YES;
 	av[1] = p;
-	(void)CCreaders(av);
+	CCreaders(av);
     }
     if (ErrorCount < 0)
 	ErrorCount = IO_ERROR_COUNT;
@@ -793,7 +793,7 @@ CCmode(char *unused[] UNUSED)
     /* Server's mode. */
     switch (Mode) {
     default:
-	(void)sprintf(p, "Unknown %d", Mode);
+	sprintf(p, "Unknown %d", Mode);
 	p += strlen(p);
 	break;
     case OMrunning:
@@ -820,7 +820,7 @@ CCmode(char *unused[] UNUSED)
     for (i = 0, h = 0; CHANiter(&h, CTnntp) != NULL; )
 	i++;
     *p++ = '\n';
-    (void)sprintf(p, "Parameters c %ld i %ld (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
+    sprintf(p, "Parameters c %ld i %ld (%d) l %ld o %d t %ld H %d T %d X %d %s %s",
                   innconf->artcutoff, innconf->maxconnections, i,
                   innconf->maxartsize, MaxOutgoing, (long)TimeOut.tv_sec,
                   RemoteLimit, RemoteTotal, (int) RemoteTimer,
@@ -831,7 +831,7 @@ CCmode(char *unused[] UNUSED)
     /* Reservation. */
     *p++ = '\n';
     if (Reservation) {
-	(void)sprintf(p, "Reserved %s", Reservation);
+	sprintf(p, "Reserved %s", Reservation);
 	p += strlen(p);
     }
     else
@@ -847,7 +847,7 @@ CCmode(char *unused[] UNUSED)
     if (NNRPReason == NULL)
 	p += strlen(strcpy(p, "enabled"));
     else {
-	(void)sprintf(p, "disabled %s", NNRPReason);
+	sprintf(p, "disabled %s", NNRPReason);
 	p += strlen(p);
     }
 
@@ -1187,7 +1187,7 @@ CCblock(OPERATINGMODE NewMode, char *reason)
     if (NNRPReason == NULL && !innconf->readerswhenstopped) {
 	av[0] = NO;
 	av[1] = ModeReason;
-	(void)CCreaders(av);
+	CCreaders(av);
     }
     syslog(L_NOTICE, "%s %s %s",
 	LogName, NewMode == OMpaused ? "paused" : "throttled", reason);
@@ -1274,9 +1274,9 @@ CCxexec(char *av[])
 
     /* Close all fds to protect possible fd leaking accross successive innds. */
     for (i=3; i<30; i++)
-        (void)close(i);
+        close(i);
 
-    (void)execv(CCargv[0], CCargv);
+    execv(CCargv[0], CCargv);
     syslog(L_FATAL, "%s cant execv %s %m", LogName, CCargv[0]);
     _exit(1);
     /* NOTREACHED */
@@ -1334,7 +1334,7 @@ CCreload(char *av[])
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
 	syslog(L_NOTICE, "reloading pyfilter");
-	(void) PYreadfilter();
+	 PYreadfilter();
 	syslog(L_NOTICE, "reloaded pyfilter OK");
 #endif /* DO_PYTHON */
 	p = "all";
@@ -1374,7 +1374,7 @@ CCreload(char *av[])
 	DISPOSE(Path.Data);
 	Path.Used = strlen(innconf->pathhost) + 1;
 	Path.Data = NEW(char, Path.Used + 1);
-	(void)sprintf(Path.Data, "%s!", innconf->pathhost);
+	sprintf(Path.Data, "%s!", innconf->pathhost);
 	if (Pathalias.Used > 0)
 	    DISPOSE(Pathalias.Data);
 	if (innconf->pathalias == NULL) {
@@ -1383,7 +1383,7 @@ CCreload(char *av[])
 	} else {
 	    Pathalias.Used = strlen(innconf->pathalias) + 1;
 	    Pathalias.Data = NEW(char, Pathalias.Used + 1);
-	    (void)sprintf(Pathalias.Data, "%s!", innconf->pathalias);
+	    sprintf(Pathalias.Data, "%s!", innconf->pathalias);
 	}
     }
 #endif
@@ -1821,7 +1821,7 @@ CCreader(CHANNEL *cp)
 #endif /* defined (HAVE_UNIX_DOMAIN_SOCKETS) */
     
     /* Copy to a printable buffer, and log. */
-    (void)strcpy(copy, buff);
+    strcpy(copy, buff);
     for (p = NULL, q = copy; *q; q++)
 	if (*q == SC_SEP) {
 	    *q = ':';
@@ -1972,7 +1972,7 @@ CCsetup(void)
      *  needed (i.e. something has deleted our named socket.
      */
 #if     defined(SIGUSR1)
-    (void)xsignal(SIGUSR1, CCresetup);
+    xsignal(SIGUSR1, CCresetup);
 #endif  /* defined(SIGUSR1) */
 }
 

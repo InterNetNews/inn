@@ -38,7 +38,7 @@ FileGlue(char *p, const char *n1, char c,
 {
     p += strlen(strcpy(p, n1));
     *p++ = c;
-    (void)strcpy(p, n2);
+    strcpy(p, n2);
 }
 
 

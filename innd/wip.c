@@ -127,7 +127,7 @@ WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
 		}
 	    }
 	    WIPfree(wp);
-	    (void)WIPinprogress(msgid, cp, Precommit);
+	    WIPinprogress(msgid, cp, Precommit);
 	    return FALSE;
 	}
 	if (wp->Chan == cp)

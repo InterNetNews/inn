@@ -474,11 +474,8 @@ void cancelRead (EndPoint endp)
   copied to buffer. The number of bytes copied (if it is less than *len) is
   copied to len. If no write was outstanding then len will have 0 stored in
   it. */
-void cancelWrite (EndPoint endp, char *buffer, size_t *len)
+void cancelWrite (EndPoint endp, char *buffer UNUSED, size_t *len UNUSED)
 {
-  (void) buffer ;
-  (void) len ;
-  
   FD_CLR (endp->myFd, &wrSet) ;
   if (!FD_ISSET (endp->myFd, &rdSet))
     FD_CLR (endp->myFd, &exSet) ;
@@ -1714,7 +1711,7 @@ static void handleSignals (void)
           if (sigprocmask (SIG_SETMASK, &oset, (sigset_t *)NULL) != 0)
             die ("sigprocmask failed: %s", strerror(errno)) ;
 #elif defined(USE_SIGVEC)
-          (void) sigsetmask (mask) ;
+          sigsetmask (mask) ;
 #elif defined(USE_SIGSET)
           if (sigrelse (i) != 0)
             die ("sigrelse failed: %s", strerror(errno)) ;

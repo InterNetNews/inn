@@ -960,7 +960,7 @@ CHANreadloop(void)
 
 	STATUSmainloophook();
 	if (GotTerminate) {
-	    (void)write(2, EXITING, STRLEN(EXITING));
+	    write(2, EXITING, STRLEN(EXITING));
 	    CleanupAndExit(0, (char *)NULL);
 	}
 	if (count < 0) {
@@ -1056,7 +1056,7 @@ CHANreadloop(void)
 			CHANname(cp), fd);
 		    /* Don't call RCHANremove since cp->fd will be -1. */
 		    FD_CLR(fd, &RCHANmask);
-		    (void)close(fd);
+		    close(fd);
 		}
 		else {
 		    cp->LastActive = Now.time;
@@ -1128,7 +1128,7 @@ CHANreadloop(void)
 			CHANname(cp), fd);
 		    /* Don't call WCHANremove since cp->fd will be -1. */
 		    FD_CLR(fd, &WCHANmask);
-		    (void)close(fd);
+		    close(fd);
 		}
 		else {
 		    bp = &cp->Out;
@@ -1189,7 +1189,7 @@ CHANreadloop(void)
 		if (cp->Type == CTfree) {
 		    syslog(L_ERROR,"%s ERROR s-select free %d",CHANname(cp),fd);
 		    FD_CLR(fd, &SCHANmask);
-		    (void) close(fd);
+		     close(fd);
 		} else {
 		    cp->LastActive = Now.time;
 		    SCHANremove(cp);

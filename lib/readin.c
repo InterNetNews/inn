@@ -42,7 +42,7 @@ char *ReadInDescriptor(int fd, struct stat *Sbp)
     /* Get the size, and enough memory. */
     if (fstat(fd, Sbp) < 0) {
 	oerrno = errno;
-	(void)close(fd);
+	close(fd);
 	errno = oerrno;
 	return NULL;
     }
@@ -52,7 +52,7 @@ char *ReadInDescriptor(int fd, struct stat *Sbp)
     if (xread(fd, p, Sbp->st_size) < 0) {
 	oerrno = errno;
 	DISPOSE(p);
-	(void)close(fd);
+	close(fd);
 	errno = oerrno;
 	return NULL;
     }
@@ -76,6 +76,6 @@ char *ReadInFile(const char *name, struct stat *Sbp)
 	return NULL;
 
     p = ReadInDescriptor(fd, Sbp);
-    (void)close(fd);
+    close(fd);
     return p;
 }

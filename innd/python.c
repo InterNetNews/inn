@@ -661,7 +661,7 @@ PYsetup(void)
     }
     syslog(L_NOTICE, "python interpreter initialized OK");
 
-    (void) Py_InitModule("INN", INNPyMethods);
+    Py_InitModule("INN", INNPyMethods);
 
     PYFilterModule = PyImport_ImportModule(_PATH_PYTHON_STARTUP_M);
     if (PYFilterModule == NULL)

@@ -45,9 +45,9 @@ char *GetFQDN(char *domain)
      * turn it on, but don't complain to me. */
     if (strchr(hp->h_name, '.') == NULL) {
 	/* Try to force DNS lookup if NIS/whatever gets in the way. */
-	(void)strncpy(temp, buff, sizeof(temp) - 1);
+	strncpy(temp, buff, sizeof(temp) - 1);
 	temp[sizeof(temp) - 1] = '\0';
-	(void)strncat(temp, ".", sizeof(temp) - strlen(temp) - 1);
+	strncat(temp, ".", sizeof(temp) - strlen(temp) - 1);
 	hp = gethostbyname(temp);
     }
 #endif	/* 0 */
@@ -78,7 +78,7 @@ char *GetFQDN(char *domain)
     if (strlen(buff) + 1 + strlen(p) > sizeof buff - 1)
 	/* Doesn't fit. */
 	return NULL;
-    (void)strcat(buff, ".");
-    (void)strcat(buff, p);
+    strcat(buff, ".");
+    strcat(buff, p);
     return buff;
 }

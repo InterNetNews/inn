@@ -200,7 +200,7 @@ ARTreadschema(void)
   }
   fp->Header = NULL;
 
-  (void)Fclose(F);
+  Fclose(F);
   if (!foundxref || !foundxreffull) {
     syslog(L_FATAL, "%s 'Xref:full' must be included in %s", LogName, SCHEMA);
     exit(1);
@@ -292,7 +292,7 @@ ARTsetup(void)
   ARTpathme[Path.used - 1] = '\0';
 
   /* Set up database; ignore errors. */
-  (void)ARTreadschema();
+  ARTreadschema();
 }
 
 
@@ -1012,7 +1012,7 @@ ARTclean(ARTDATA *data, char *buff)
   for (i = 0; i < MAX_ARTHEADER ; i++) {
     if (hp[i].Type == HTreq) {
       if (!HDR_FOUND(i)) {
-	(void)sprintf(buff, "%d Missing \"%s\" header", NNTP_REJECTIT_VAL,
+	sprintf(buff, "%d Missing \"%s\" header", NNTP_REJECTIT_VAL,
 	  hp[i].Name);
 	TMRstop(TMR_ARTCLEAN);
 	return FALSE;
@@ -1022,7 +1022,7 @@ ARTclean(ARTDATA *data, char *buff)
 
   /* assumes Message-ID header is required header */
   if (!ARTidok(HDR(HDR__MESSAGE_ID))) {
-    (void)sprintf(buff, "%d Bad \"Message-ID\" header", NNTP_REJECTIT_VAL);
+    sprintf(buff, "%d Bad \"Message-ID\" header", NNTP_REJECTIT_VAL);
     TMRstop(TMR_ARTCLEAN);
     return FALSE;
   }
@@ -1031,7 +1031,7 @@ ARTclean(ARTDATA *data, char *buff)
     p = HDR(HDR__LINES);
     i = data->Lines;
     if ((delta = i - atoi(p)) != 0 && abs(delta) > innconf->linecountfuzz) {
-      (void)sprintf(buff, "%d Linecount %s != %d +- %ld", NNTP_REJECTIT_VAL,
+      sprintf(buff, "%d Linecount %s != %d +- %ld", NNTP_REJECTIT_VAL,
 	MaxLength(p, p), i, innconf->linecountfuzz);
       TMRstop(TMR_ARTCLEAN);
       return FALSE;
@@ -1042,7 +1042,7 @@ ARTclean(ARTDATA *data, char *buff)
   /* assumes Date header is required header */
   p = HDR(HDR__DATE);
   if ((data->Posted = parsedate(p, &Now)) == -1) {
-    (void)sprintf(buff, "%d Bad \"Date\" header -- \"%s\"", NNTP_REJECTIT_VAL,
+    sprintf(buff, "%d Bad \"Date\" header -- \"%s\"", NNTP_REJECTIT_VAL,
       MaxLength(p, p));
     TMRstop(TMR_ARTCLEAN);
     return FALSE;
@@ -1058,7 +1058,7 @@ ARTclean(ARTDATA *data, char *buff)
       }
   }
   if (data->Posted > Now.time + DATE_FUZZ) {
-    (void)sprintf(buff, "%d Article posted in the future -- \"%s\"",
+    sprintf(buff, "%d Article posted in the future -- \"%s\"",
       NNTP_REJECTIT_VAL, MaxLength(p, p));
     TMRstop(TMR_ARTCLEAN);
     return FALSE;
@@ -1074,7 +1074,7 @@ ARTclean(ARTDATA *data, char *buff)
     NGsplit(HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS),
     &data->Newsgroups)) == 0) {
     TMRstop(TMR_ARTCLEAN);
-    (void)sprintf(buff, "%d Unwanted character in \"Newsgroups\" header",
+    sprintf(buff, "%d Unwanted character in \"Newsgroups\" header",
       NNTP_REJECTIT_VAL);
     return FALSE;
   }
@@ -1180,7 +1180,7 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
   HeaderCleanFrom(q1);
   if (!EQ(q, q1)) {
     r = false;
-    (void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
+    sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
       q1, MaxLength(MessageID, MessageID), q);
     ARTlog(data, ART_REJECT, buff);
   }
@@ -1426,11 +1426,11 @@ ARTassignnumbers(ARTDATA *data)
     }
     if (linelen + 1 + ngp->NameLength + 1 + 10 > MAXHEADERSIZE) {
       /* line exceeded */
-      (void)sprintf(p, "\r\n %s:%lu", ngp->Name, ngp->Filenum);
+      sprintf(p, "\r\n %s:%lu", ngp->Name, ngp->Filenum);
       buflen = strlen(p);
       linelen = buflen - 2;
     } else {
-      (void)sprintf(p, " %s:%lu", ngp->Name, ngp->Filenum);
+      sprintf(p, " %s:%lu", ngp->Name, ngp->Filenum);
       buflen = strlen(p);
       linelen += buflen;
     }
@@ -1925,8 +1925,8 @@ ARTpost(CHANNEL *cp)
 
     TCLCurrArticle = article;
     TCLCurrData = data;
-    (void)Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
-    (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
+    Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
+    Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
     for (i = 0 ; i < MAX_ARTHEADER ; i++, hc++) {
       if (HDR_FOUND(i)) {
 	hp = &ARTheaders[i];
@@ -1939,8 +1939,8 @@ ARTpost(CHANNEL *cp)
     /* call filter */
 
     code = Tcl_Eval(TCLInterpreter, "filter_news");
-    (void)Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
-    (void)Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
+    Tcl_UnsetVar(TCLInterpreter, "Body", TCL_GLOBAL_ONLY);
+    Tcl_UnsetVar(TCLInterpreter, "Headers", TCL_GLOBAL_ONLY);
     if (code == TCL_OK) {
       if (strcmp(TCLInterpreter->result, "accept") != 0) {
         if (innconf->dontrejectfiltered) {

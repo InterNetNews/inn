@@ -40,19 +40,19 @@ ValidLock(char *name, bool JustChecking)
     /* Read the PID that is written there. */
     if (BinaryLock) {
 	if (read(fd, (char *)&pid, sizeof pid) != sizeof pid) {
-	    (void)close(fd);
+	    close(fd);
 	    return FALSE;
 	}
     }
     else {
 	if ((i = read(fd, buff, sizeof buff - 1)) <= 0) {
-	    (void)close(fd);
+	    close(fd);
 	    return FALSE;
 	}
 	buff[i] = '\0';
 	pid = (pid_t) atol(buff);
     }
-    (void)close(fd);
+    close(fd);
     if (pid <= 0)
 	return FALSE;
 
@@ -108,7 +108,7 @@ main(int ac, char *av[])
     pid = 0;
     name = NULL;
     JustChecking = FALSE;
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "bcup:f:")) != EOF)
@@ -167,11 +167,11 @@ main(int ac, char *av[])
     }
     if (!ok) {
         syswarn("cannot write PID to %s", tmp);
-	(void)close(fd);
+	close(fd);
 	UnlinkAndExit(tmp, 1);
     }
 
-    (void)close(fd);
+    close(fd);
 
     /* Handle the "-c" flag. */
     if (JustChecking) {

@@ -42,7 +42,7 @@ IhaveSendme(struct history *h, char What)
 
 	if (!HIScheck(h, p)) {
 	    if (What == 'i')
-		(void)printf("%s\n", p);
+		printf("%s\n", p);
 	    continue;
 	}
 
@@ -174,7 +174,7 @@ main(int ac, char *av[])
 	    }
 	}
 	else if (What == 'n')
-	    (void)printf("/dev/null\n");
+	    printf("/dev/null\n");
     }
     HISclose(history);
     return 0;

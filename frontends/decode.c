@@ -50,7 +50,7 @@ pack6(int n, int last)
     b3[1] = (Buffer[1] << 4) | ((Buffer[2] >> 2) & 0x0F);
     b3[2] = (Buffer[2] << 6) | ( Buffer[3]       & 0x3F);
     for (q = b3; --i >= 0; )
-	(void)putchar(*q++);
+	putchar(*q++);
 }
 
 
@@ -84,9 +84,9 @@ pack12(char *p, int n, int last)
 	    b3[0] = (Buffer[0] << 2) | ((Buffer[1] >> 4) & 0x03);
 	    b3[1] = (Buffer[1] << 4) | ((Buffer[2] >> 2) & 0x0F);
 	    b3[2] = (Buffer[2] << 6) | ( Buffer[3]       & 0x3F);
-	    (void)putchar(b3[0]);
-	    (void)putchar(b3[1]);
-	    (void)putchar(b3[2]);
+	    putchar(b3[0]);
+	    putchar(b3[1]);
+	    putchar(b3[2]);
 	    i = 0;
 	    q = Buffer;
 	}

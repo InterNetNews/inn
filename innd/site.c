@@ -67,14 +67,14 @@ SITEspool(SITE *sp, CHANNEL *cp)
 	WCHANremove(cp);
 	RCHANremove(cp);
 	SCHANremove(cp);
-	(void)close(cp->fd);
+	close(cp->fd);
 	cp->fd = i;
 	return TRUE;
     }
     sp->Channel = CHANcreate(i, CTfile, CSwriting, SITEreader, SITEwritedone);
     if (sp->Channel == NULL) {
 	syslog(L_ERROR, "%s cant channel %m", sp->Name);
-	(void)close(i);
+	close(i);
 	return FALSE;
     }
     WCHANset(sp->Channel, "", 0);
@@ -141,7 +141,7 @@ SITEbufferoldest(void)
     }
 
     /* Write out what we can. */
-    (void)WCHANflush(sp->Channel);
+    WCHANflush(sp->Channel);
 
     /* Get a buffer for the site. */
     sp->Buffered = TRUE;
@@ -509,15 +509,15 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	    temp = NEW(char, i + 1);
 	    p = strchr(sp->Param, '*');
 	    *p = '\0';
-	    (void)strcpy(temp, sp->Param);
-	    (void)strcat(temp, sp->FNLnames.data);
-	    (void)strcat(temp, &p[1]);
+	    strcpy(temp, sp->Param);
+	    strcat(temp, sp->FNLnames.data);
+	    strcat(temp, &p[1]);
 	    *p = '*';
-	    (void)sprintf(buff, temp, Data->TokenText);
+	    sprintf(buff, temp, Data->TokenText);
 	    DISPOSE(temp);
 	}
 	else
-	    (void)sprintf(buff, sp->Param, Data->TokenText);
+	    sprintf(buff, sp->Param, Data->TokenText);
 
 	if (NeedShell(buff, (const char **)argv, (const char **)ENDOF(argv))) {
 	    argv[0] = SITEshell;
@@ -529,7 +529,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	/* Start the process. */
 	i = Spawn(sp->Nice, 0, (int)fileno(Errlog), (int)fileno(Errlog), argv);
 	if (i >= 0)
-	    (void)PROCwatch(i, -1);
+	    PROCwatch(i, -1);
 	break;
     }
 }
@@ -603,7 +603,7 @@ SITEstartprocess(SITE *sp)
 	sp->pid = i;
 	sp->Spooling = FALSE;
 	sp->Process = PROCwatch(i, sp - Sites);
-	(void)close(pan[PIPE_READ]);
+	close(pan[PIPE_READ]);
 	sp->Channel = CHANcreate(pan[PIPE_WRITE],
 			sp->Type == FTchannel ? CTprocess : CTexploder,
 			CSwriting, SITEreader, SITEwritedone);
@@ -613,8 +613,8 @@ SITEstartprocess(SITE *sp)
 
     /* Error.  Switch to spooling. */
     syslog(L_ERROR, "%s cant spawn spooling %m", sp->Name);
-    (void)close(pan[PIPE_WRITE]);
-    (void)close(pan[PIPE_READ]);
+    close(pan[PIPE_WRITE]);
+    close(pan[PIPE_READ]);
     DISPOSE(process);
     if (!SITEspool(sp, (CHANNEL *)NULL))
 	return FALSE;
@@ -808,7 +808,7 @@ SITEflush(SITE *sp, const bool Restart)
     case FTexploder:
 	/* If spooling, close the file right now -- documented behavior. */
 	if (sp->Spooling && (cp = sp->Channel) != NULL) {
-	    (void)WCHANflush(cp);
+	    WCHANflush(cp);
 	    CHANclose(cp, CHANname(cp));
 	    sp->Channel = NULL;
 	}
@@ -832,7 +832,7 @@ SITEflush(SITE *sp, const bool Restart)
 
     /* We're only dealing with files and channels now. */
     if ((cp = sp->Channel) != NULL)
-	(void)WCHANflush(cp);
+	WCHANflush(cp);
 
     /* Restart the site, copy any pending data. */
     if (Restart) {
@@ -1082,11 +1082,11 @@ SITEforward(SITE *sp, const char *text)
     if (sp->Name == NULL || fsp->Name == NULL)
 	return;
     if (fsp->Type == FTexploder) {
-	(void)strcpy(buff, text);
+	strcpy(buff, text);
 	if (fsp != sp && fsp->FNLwantsnames) {
 	    p = buff + strlen(buff);
 	    *p++ = ' ';
-	    (void)strcpy(p, sp->Name);
+	    strcpy(p, sp->Name);
 	}
 	SITEwrite(fsp, buff);
     }
@@ -1129,26 +1129,26 @@ SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
 
     if (sp->Type == FTfunnel) {
 	sp = &Sites[sp->Funnel];
-	(void)sprintf(p, "funnel -> %s: ", sp->Name);
+	sprintf(p, "funnel -> %s: ", sp->Name);
 	p += strlen(p);
     }
 
     switch (sp->Type) {
     default:
-	(void)sprintf(p, "unknown feed type %d", sp->Type);
+	sprintf(p, "unknown feed type %d", sp->Type);
 	p += strlen(p);
 	break;
     case FTerror:
     case FTfile:
 	p += strlen(strcpy(p, "file"));
 	if (sp->Buffered) {
-	    (void)sprintf(p, " buffered(%d)", sp->Buffer.left);
+	    sprintf(p, " buffered(%d)", sp->Buffer.left);
 	    p += strlen(p);
 	}
 	else if ((cp = sp->Channel) == NULL)
 	    p += strlen(strcpy(p, " no channel?"));
 	else {
-	    (void)sprintf(p, " open fd=%d, in mem %d", cp->fd, cp->Out.left);
+	    sprintf(p, " open fd=%d, in mem %d", cp->fd, cp->Out.left);
 	    p += strlen(p);
 	}
 	break;
@@ -1159,7 +1159,7 @@ SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
 	p += strlen(strcpy(p, "exploder"));
 Common:
 	if (sp->Process >= 0) {
-	    (void)sprintf(p, " pid=%ld", (long) sp->pid);
+	    sprintf(p, " pid=%ld", (long) sp->pid);
 	    p += strlen(p);
 	}
 	if (sp->Spooling)
@@ -1167,7 +1167,7 @@ Common:
 	if ((cp = sp->Channel) == NULL)
 	    p += strlen(strcpy(p, " no channel?"));
 	else {
-	    (void)sprintf(p, " fd=%d, in mem %d", cp->fd, cp->Out.left);
+	    sprintf(p, " fd=%d, in mem %d", cp->fd, cp->Out.left);
 	    p += strlen(p);
 	}
 	break;
@@ -1187,36 +1187,36 @@ Common:
     if (Verbose) {
 	sep = "\t";
 	if (sp->Buffered && sp->Flushpoint) {
-	    (void)sprintf(p, "%sFlush @ %ld", sep, sp->Flushpoint);
+	    sprintf(p, "%sFlush @ %ld", sep, sp->Flushpoint);
 	    p += strlen(p);
 	    sep = "; ";
 	}
 	if (sp->StartWriting || sp->StopWriting) {
-	    (void)sprintf(p, "%sWrite [%ld..%ld]", sep,
+	    sprintf(p, "%sWrite [%ld..%ld]", sep,
 		sp->StopWriting, sp->StartWriting);
 	    p += strlen(p);
 	    sep = "; ";
 	}
 	if (sp->StartSpooling) {
-	    (void)sprintf(p, "%sSpool @ %ld", sep, sp->StartSpooling);
+	    sprintf(p, "%sSpool @ %ld", sep, sp->StartSpooling);
 	    p += strlen(p);
 	    sep = "; ";
 	}
 	if (sep[0] != '\t')
 	    *p++ = '\n';
 	if (sp->Spooling && sp->SpoolName) {
-	    (void)sprintf(p, "\tSpooling to \"%s\"\n", sp->SpoolName);
+	    sprintf(p, "\tSpooling to \"%s\"\n", sp->SpoolName);
 	    p += strlen(p);
 	}
 	if ((cp = sp->Channel) != NULL) {
-	    (void)sprintf(p, "\tChannel created %.12s",
+	    sprintf(p, "\tChannel created %.12s",
 		ctime(&cp->Started) + 4);
 	    p += strlen(p);
-	    (void)sprintf(p, ", last active %.12s\n",
+	    sprintf(p, ", last active %.12s\n",
 		ctime(&cp->LastActive) + 4);
 	    p += strlen(p);
 	    if (cp->Waketime > Now.time) {
-		(void)sprintf(p, "\tSleeping until %.12s\n",
+		sprintf(p, "\tSleeping until %.12s\n",
 		    ctime(&cp->Waketime) + 4);
 		p += strlen(p);
 	    }

@@ -112,7 +112,7 @@ int main(int ac, char *av[])
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
     if (innconf->enableoverview && !innconf->useoverchan)
         warn("overchan is running while innd is creating overview data (you"
              " can ignore this message if you are running makehistory -F)");

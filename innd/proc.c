@@ -175,7 +175,7 @@ PROCsetup(int i)
 	*pp = PROCnull;
 
 #if	defined(SIGCHLD)
-    (void)xsignal(SIGCHLD, PROCcatchsignal);
+    xsignal(SIGCHLD, PROCcatchsignal);
 #endif	/* defined(SIGCHLD) */
-    (void)xsignal(SIGPIPE, PROCcatchsignal);
+    xsignal(SIGPIPE, PROCcatchsignal);
 }

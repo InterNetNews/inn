@@ -327,7 +327,7 @@ void openInputFile (void)
     {
       if (dup2(fd, mainFd) < 0)
 	die ("dup2 %d %d: %s\n", fd, mainFd, strerror(errno)) ;
-      (void) close (fd);
+      close (fd);
     }
 
   i = read(mainFd, buf, sizeof (buf)) ;
@@ -347,11 +347,9 @@ void openInputFile (void)
 }
 
 
-int listenerConfigLoadCbk (void *data)
+int listenerConfigLoadCbk (void *data UNUSED)
 {
   int bval ;
-
-  (void) data ;
 
   if (getBool (topScope,"fast-exit",&bval,NO_INHERIT))
     fastExit = (bval ? true : false) ;

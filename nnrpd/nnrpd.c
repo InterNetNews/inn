@@ -183,7 +183,7 @@ ExitWithStats(int x, bool readconf)
 
     line_free(&NNTPline);
     fflush(stdout);
-    (void)GetTimeInfo(&Now);
+    GetTimeInfo(&Now);
     STATfinish = TIMEINFOasDOUBLE(Now);
     if (GetResourceUsage(&usertime, &systime) < 0) {
 	usertime = 0;
@@ -344,7 +344,7 @@ Address2Name(INADDR *ap, char *hostname, int i)
 	HostErrorStr = hstrerror(h_errno);
 	return FALSE;
     }
-    (void)strncpy(hostname, hp->h_name, i);
+    strncpy(hostname, hp->h_name, i);
     hostname[i - 1] = '\0';
 
     /* Get addresses for this host. */
@@ -366,8 +366,8 @@ Address2Name(INADDR *ap, char *hostname, int i)
     /* Only needed for misconfigured YP/NIS systems. */
     if (ap->s_addr != INADDR_LOOPBACK && strchr(hostname, '.') == NULL
      && (p = innconf->domain) != NULL) {
-	(void)strcat(hostname, ".");
-	(void)strcat(hostname, p);
+	strcat(hostname, ".");
+	strcat(hostname, p);
     }
 
     /* Make all lowercase, for wildmat. */
@@ -823,7 +823,7 @@ static void SetupDaemon(void) {
 static void
 Usage(void)
 {
-    (void)fprintf(stderr, "Usage error.\n");
+    fprintf(stderr, "Usage error.\n");
     exit(1);
 }
 
@@ -1085,10 +1085,10 @@ main(int argc, char *argv[])
 
 	    NewsUID = Sb.st_uid;
 	    NewsGID = Sb.st_gid;
-	    (void)setgid(NewsGID);
+	    setgid(NewsGID);
 	    if (getgid() != NewsGID)
 		syslog(L_ERROR, "nnrpd cant setgid to %d %m", NewsGID);
-	    (void)setuid(NewsUID);
+	    setuid(NewsUID);
 	    if (getuid() != NewsUID)
 		syslog(L_ERROR, "nnrpd cant setuid to %d %m", NewsUID);
 	}
@@ -1117,7 +1117,7 @@ main(int argc, char *argv[])
 	    xsignal(SIGCHLD, WaitChild);
 
 	/* Arrange to toggle tracing. */
-	(void)xsignal(SIGHUP, ToggleTrace);
+	xsignal(SIGHUP, ToggleTrace);
  
 	setproctitle("accepting connections");
  	
@@ -1189,12 +1189,12 @@ main(int argc, char *argv[])
 	}
 
 	/* Only automatically reap children in the listening process */
-	(void)xsignal(SIGCHLD, SIG_DFL);
+	xsignal(SIGCHLD, SIG_DFL);
  
     } else {
 	SetupDaemon();
 	/* Arrange to toggle tracing. */
-	(void)xsignal(SIGHUP, ToggleTrace);
+	xsignal(SIGHUP, ToggleTrace);
     }/* DaemonMode */
 
     /* Setup. */
@@ -1238,7 +1238,7 @@ main(int argc, char *argv[])
     strcpy (LogName, "?");
 
     /* Catch SIGPIPE so that we can exit out of long write loops */
-    (void)xsignal(SIGPIPE, CatchPipe);
+    xsignal(SIGPIPE, CatchPipe);
 
     /* Get permissions and see if we can talk to this client */
     StartConnection();

@@ -312,14 +312,14 @@ static enum KR EXPkeepit(const TOKEN *token, time_t when, time_t Expires)
 	    printf("%s age = %0.2f\n", TokenToText(*token), (Now - when) / 86400.);
 	if (Expires == 0) {
 	    if (when <= class.Default)
-		(void)printf("%s too old (no exp)\n", TokenToText(*token));
+		printf("%s too old (no exp)\n", TokenToText(*token));
 	} else {
 	    if (when <= class.Purge)
-		(void)printf("%s later than purge\n", TokenToText(*token));
+		printf("%s later than purge\n", TokenToText(*token));
 	    if (when >= class.Keep)
-		(void)printf("%s earlier than min\n", TokenToText(*token));
+		printf("%s earlier than min\n", TokenToText(*token));
 	    if (Now >= Expires)
-		(void)printf("%s later than header\n", TokenToText(*token));
+		printf("%s later than header\n", TokenToText(*token));
 	}
     }
     
@@ -348,21 +348,21 @@ EXPremove(const TOKEN *token)
 {
     /* Turn into a filename and get the size if we need it. */
     if (EXPverbose > 1)
-	(void)printf("\tunlink %s\n", TokenToText(*token));
+	printf("\tunlink %s\n", TokenToText(*token));
 
     if (EXPtracing) {
 	EXPunlinked++;
-	(void)printf("%s\n", TokenToText(*token));
+	printf("%s\n", TokenToText(*token));
 	return;
     }
     
     EXPunlinked++;
     if (EXPunlinkfile) {
-	(void)fprintf(EXPunlinkfile, "%s\n", TokenToText(*token));
+	fprintf(EXPunlinkfile, "%s\n", TokenToText(*token));
 	if (!ferror(EXPunlinkfile))
 	    return;
         syswarn("cannot write to -z file (will ignore it for rest of run)");
-	(void)fclose(EXPunlinkfile);
+	fclose(EXPunlinkfile);
 	EXPunlinkfile = NULL;
     }
     if (!SMcancel(*token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
@@ -434,7 +434,7 @@ CleanupAndExit(bool Server, bool Paused, int x)
     FILE	*F;
 
     if (Server) {
-	(void)ICCreserve("");
+	ICCreserve("");
 	if (Paused && ICCgo(EXPreason) != 0) {
             syswarn("cannot unpause server");
 	    x = 1;
@@ -451,20 +451,20 @@ CleanupAndExit(bool Server, bool Paused, int x)
 
     /* Report stats. */
     if (EXPverbose) {
-	(void)printf("Article lines processed %8ld\n", EXPprocessed);
-	(void)printf("Articles retained       %8ld\n", EXPstillhere);
-	(void)printf("Entries expired         %8ld\n", EXPallgone);
+	printf("Article lines processed %8ld\n", EXPprocessed);
+	printf("Articles retained       %8ld\n", EXPstillhere);
+	printf("Entries expired         %8ld\n", EXPallgone);
 	if (!innconf->groupbaseexpiry)
-	    (void)printf("Articles dropped        %8ld\n", EXPunlinked);
+	    printf("Articles dropped        %8ld\n", EXPunlinked);
     }
 
     /* Append statistics to a summary file */
     if (EXPgraph) {
 	F = EXPfopen(FALSE, EXPgraph, "a", FALSE, FALSE, FALSE);
-	(void)fprintf(F, "%ld %ld %ld %ld %ld\n",
+	fprintf(F, "%ld %ld %ld %ld %ld\n",
 		      (long)Now, EXPprocessed, EXPstillhere, EXPallgone,
 		      EXPunlinked);
-	(void)fclose(F);
+	fclose(F);
     }
 
     SMshutdown();
@@ -544,7 +544,7 @@ main(int ac, char *av[])
 
     HistoryText = concatpath(innconf->pathdb, _PATH_HISTORY);
 
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     /* find the default history file directory */
     EXPhistdir = COPY(HistoryText);
@@ -624,7 +624,7 @@ main(int ac, char *av[])
 	NHistory = NULL;
     }
 
-    (void)time(&Now);
+    time(&Now);
     RealNow = Now;
     Now += TimeWarp;
 
@@ -642,10 +642,10 @@ main(int ac, char *av[])
         free(path);
     }
     if (!EXPreadfile(F)) {
-	(void)fclose(F);
+	fclose(F);
         die("format error in expire.ctl");
     }
-    (void)fclose(F);
+    fclose(F);
 
     /* Set up the link, reserve the lock. */
     if (Server) {
@@ -708,14 +708,14 @@ main(int ac, char *av[])
     /* If we're done okay, and we're not tracing, slip in the new files. */
     if (EXPverbose) {
 	if (Bad)
-	    (void)printf("Expire errors: history files not updated.\n");
+	    printf("Expire errors: history files not updated.\n");
 	if (EXPtracing)
-	    (void)printf("Expire tracing: history files not updated.\n");
+	    printf("Expire tracing: history files not updated.\n");
     }
 
     if (!Bad && NHistory != NULL) {
 	snprintf(buff, sizeof(buff), "%s.n.done", NHistory);
-	(void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
+	fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
 	CleanupAndExit(Server, FALSE, Bad ? 1 : 0);
     }
 

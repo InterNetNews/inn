@@ -162,8 +162,8 @@ SITEquit(SITE *sp)
 {
     char	buff[NNTP_STRLEN];
 
-    (void)SITEwrite(sp, "quit", 4);
-    (void)SITEread(sp, buff);
+    SITEwrite(sp, "quit", 4);
+    SITEread(sp, buff);
 }
 
 
@@ -220,7 +220,7 @@ main(int ac, char *av[])
     if (!innconf_read(NULL))
         exit(1);
 
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "d:f:n:t:ovu:")) != EOF)
@@ -318,7 +318,7 @@ main(int ac, char *av[])
 	for ( ; ; ) {
 	    if (!SITEread(Remote, buff)) {
                 syswarn("cannot read from %s", Remote->Name);
-		(void)fclose(F);
+		fclose(F);
 		SITEquit(Remote);
 		exit(1);
 	    }
@@ -328,14 +328,14 @@ main(int ac, char *av[])
 		continue;
 	    if (fprintf(F, "%s\n", buff) == EOF || ferror(F)) {
                 syswarn("cannot write %s", msgidfile);
-		(void)fclose(F);
+		fclose(F);
 		SITEquit(Remote);
 		exit(1);
 	    }
 	}
 	if (fflush(F) == EOF) {
             syswarn("cannot flush %s", msgidfile);
-	    (void)fclose(F);
+	    fclose(F);
 	    SITEquit(Remote);
 	    exit(1);
 	}
@@ -346,7 +346,7 @@ main(int ac, char *av[])
 	/* Connect to the local server. */
 	if ((Local = SITEconnect((char *)NULL)) == NULL) {
             syswarn("cannot connect to local server");
-	    (void)fclose(F);
+	    fclose(F);
 	    exit(1);
 	}
     }
@@ -375,12 +375,12 @@ main(int ac, char *av[])
 	if (!SITEwrite(Remote, buff, (int)strlen(buff))
 	 || !SITEread(Remote, buff)) {
             syswarn("cannot get %s", mesgid);
-	    (void)printf("%s\n", mesgid);
+	    printf("%s\n", mesgid);
 	    break;
 	}
 	if (atoi(buff) != NNTP_ARTICLE_FOLLOWS_VAL) {
           if (Offer) {
-              (void)SITEwrite(Local, ".", 1);
+              SITEwrite(Local, ".", 1);
               if (!SITEread(Local, buff)) {
                   syswarn("no reply after %s", mesgid);
                   break;
@@ -407,12 +407,12 @@ main(int ac, char *av[])
 		}
 	    }
 	    else
-		(void)printf("%s\n", buff);
+		printf("%s\n", buff);
 	    if (EQ(buff, "."))
 		break;
 	}
 	if (Error) {
-	    (void)printf("%s\n", mesgid);
+	    printf("%s\n", mesgid);
 	    break;
 	}
 	STATsent++;
@@ -421,14 +421,14 @@ main(int ac, char *av[])
 	if (Offer) {
 	    if (!SITEread(Local, buff)) {
                 syswarn("no reply after %s", mesgid);
-		(void)printf("%s\n", mesgid);
+		printf("%s\n", mesgid);
 		break;
 	    }
 	    i = atoi(buff);
 	    if (i == NNTP_TOOKIT_VAL)
 		continue;
 	    if (i == NNTP_RESENDIT_VAL) {
-		(void)printf("%s\n", mesgid);
+		printf("%s\n", mesgid);
 		break;
 	    }
             syswarn("%s to %s", buff, mesgid);
@@ -441,10 +441,10 @@ main(int ac, char *av[])
 	while (fgets(mesgid, sizeof mesgid, F) != NULL) {
 	    if ((p = strchr(mesgid, '\n')) != NULL)
 		*p = '\0';
-	    (void)printf("%s\n", mesgid);
+	    printf("%s\n", mesgid);
 	    STATgot++;
 	}
-    (void)fclose(F);
+    fclose(F);
 
     /* Remove our temp file. */
     if (msgidfile && unlink(msgidfile) < 0)
@@ -459,7 +459,7 @@ main(int ac, char *av[])
     if (Update) {
 	if ((F = fopen(Update, "w")) == NULL)
             sysdie("cannot update %s", Update);
-	(void)fprintf(F, "got %ld offered %ld sent %ld rejected %ld\n",
+	fprintf(F, "got %ld offered %ld sent %ld rejected %ld\n",
 		STATgot, STAToffered, STATsent, STATrejected); 
 	if (ferror(F) || fclose(F) == EOF)
             sysdie("cannot update %s", Update);

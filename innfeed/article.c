@@ -482,11 +482,9 @@ static void artUnmap (Article article, size_t size) {
 
 
 
-static void logArticleStats (TimeoutId id, void *data)
+static void logArticleStats (TimeoutId id, void *data UNUSED)
 {
   ASSERT (id == articleStatsId) ;
-
-  (void) data ;                 /* keep lint happy */
 
   notice ("ME articles active %d bytes %d", articlesInUse, bytesInUse) ;
   notice ("ME articles total %d bytes %d", articleTotal, byteTotal) ;

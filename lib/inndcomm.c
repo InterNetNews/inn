@@ -97,12 +97,12 @@ ICCopen(void)
     if (bind(ICCfd, (struct sockaddr *) &ICCclient,
              SUN_LEN(&ICCclient)) < 0) {
 	oerrno = errno;
-	(void)umask(mask);
+	umask(mask);
 	errno = oerrno;
 	ICCfailure = "bind";
 	return -1;
     }
-    (void)umask(mask);
+    umask(mask);
 
     /* Name the server's socket. */
     memset(&ICCserv, 0, sizeof ICCserv);
@@ -115,12 +115,12 @@ ICCopen(void)
     mask = umask(0);
     if (mkfifo(ICCsockname, 0666) < 0) {
 	oerrno = errno;
-	(void)umask(mask);
+	umask(mask);
 	errno = oerrno;
 	ICCfailure = "mkfifo";
 	return -1;
     }
-    (void)umask(mask);
+    umask(mask);
     if ((ICCfd = open(ICCsockname, O_RDWR)) < 0) {
 	ICCfailure = "open";
 	return -1;
@@ -172,7 +172,7 @@ ICCserverpid(void)
     if (F != NULL) {
 	if (fgets(buff, sizeof buff, F) != NULL)
 	    pid = atol(buff);
-	(void)fclose(F);
+	fclose(F);
     }
     return pid;
 }
@@ -247,7 +247,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
                                    protocol version info. */
 
     /* Format the message. */
-    (void)sprintf(buff, "%s%c%c", ICCsockname, SC_SEP, cmd);
+    sprintf(buff, "%s%c%c", ICCsockname, SC_SEP, cmd);
     for (p = buff + strlen(buff), i = 0; (q = argv[i]) != NULL; i++) {
 	*p++ = SC_SEP;
 	p += strlen(strcpy(p, q));
@@ -289,12 +289,12 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     if (write(fd, buff, len) != len) {
 	i = errno;
 	DISPOSE(buff);
-	(void)close(fd);
+	close(fd);
 	errno = i;
 	ICCfailure = "write";
 	return -1;
     }
-    (void)close(fd);
+    close(fd);
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     /* Possibly get a reply. */

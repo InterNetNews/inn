@@ -503,7 +503,7 @@ bool lockFile (const char *fileName)
 
 void unlockFile (const char *lockfile)
 {
-  (void) unlink (lockfile) ;
+  unlink (lockfile) ;
 }
 
 
@@ -750,12 +750,10 @@ bool shrinkfile (FILE *fp, long size, char *name, const char *mode)
 
 
 
-long pathMax (const char *pathname)
+long pathMax (const char *pathname UNUSED)
 {
   static long rval = 0 ;
 
-  (void) pathname ;
-  
   if (rval > 0)
     return rval ;
   

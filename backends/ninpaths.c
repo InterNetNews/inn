@@ -196,7 +196,7 @@ writedumpfile(const char *n)
     FILE *d;
 
     if (n[0]=='-' && n[1]=='\0') {
-	(void) writedump(stdout);
+	writedump(stdout);
 	return;
     }
     snprintf(buf, sizeof(buf), n, time(0));

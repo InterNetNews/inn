@@ -68,7 +68,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 
 	if (*user) {
 	    /* Send the first part of the command, get a reply. */
-	    (void)fprintf(ToServer, "authinfo user %s\r\n", user);
+	    fprintf(ToServer, "authinfo user %s\r\n", user);
 	    if (fflush(ToServer) == EOF || ferror(ToServer))
 		break;
 	    if (fgets(input, sizeof input, FromServer) == NULL
@@ -78,7 +78,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 
 	if (*pass) {
 	    /* Send the second part of the command, get a reply. */
-	    (void)fprintf(ToServer, "authinfo pass %s\r\n", pass);
+	    fprintf(ToServer, "authinfo pass %s\r\n", pass);
 	    if (fflush(ToServer) == EOF || ferror(ToServer))
 		break;
 	    if (fgets(input, sizeof input, FromServer) == NULL
@@ -87,19 +87,19 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 	}
 
 	/* Authenticated. */
-	(void)fclose(F);
+	fclose(F);
 	return 0;
     }
 
     /* End of file without finding a password, that's okay. */
     if (feof(F)) {
-	(void)fclose(F);
+	fclose(F);
 	return 0;
     }
 
     /* Save errno, close the file, fail. */
     oerrno = errno;
-    (void)fclose(F);
+    fclose(F);
     errno = oerrno;
     return -1;
 }

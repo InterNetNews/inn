@@ -736,7 +736,7 @@ openbasefile(const char *name)
 	DEBUG(("dbzinit: basefile open failed\n"));
 	basefname = enstring(name, "");
 	if (basefname == NULL) {
-	    (void) Fclose(dirf);
+	     Fclose(dirf);
 	    return FALSE;
 	}
     } else
@@ -744,7 +744,7 @@ openbasefile(const char *name)
     if (basef != NULL)
 	close_on_exec(fileno(basef), true);
     if (basef != NULL)
-	(void) setvbuf(basef, NULL, _IOFBF, 64);
+	 setvbuf(basef, NULL, _IOFBF, 64);
     return TRUE;
 }
 #endif	/* DO_TAGGED_HASH */

@@ -224,8 +224,8 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
     */
     if (!stbuf[i].st_fname) stbuf[i].st_fname = NEW(char, SPOOLNAMEBUFF);
     if (!stbuf[i].st_id) stbuf[i].st_id = NEW(char, NNTP_STRLEN);
-    (void)strcpy(stbuf[i].st_fname, Article);
-    (void)strcpy(stbuf[i].st_id, MessageID);
+    strcpy(stbuf[i].st_fname, Article);
+    strcpy(stbuf[i].st_id, MessageID);
     stbuf[i].art = art;
     stbuf[i].st_hash = hash;
     stbuf[i].st_retry = 0;
@@ -289,10 +289,10 @@ ExitWithStats(int x)
     double		systime;
 
     if (!Purging) {
-	(void)REMwrite(QUIT, STRLEN(QUIT), FALSE);
-	(void)REMflush();
+	REMwrite(QUIT, STRLEN(QUIT), FALSE);
+	REMflush();
     }
-    (void)GetTimeInfo(&Now);
+    GetTimeInfo(&Now);
     STATend = TIMEINFOasDOUBLE(Now);
     if (GetResourceUsage(&usertime, &systime) < 0) {
 	usertime = 0;
@@ -300,11 +300,11 @@ ExitWithStats(int x)
     }
 
     if (STATprint) {
-	(void)printf(STAT1, REMhost, STAToffered, STATaccepted, STATrefused,
+	printf(STAT1, REMhost, STAToffered, STATaccepted, STATrefused,
 		STATrejected, STATmissing, STATacceptedsize, STATrejectedsize);
-	(void)printf("\n");
-	(void)printf(STAT2, REMhost, usertime, systime, STATend - STATbegin);
-	(void)printf("\n");
+	printf("\n");
+	printf(STAT2, REMhost, usertime, systime, STATend - STATbegin);
+	printf("\n");
     }
 
     syslog(L_NOTICE, STAT1, REMhost, STAToffered, STATaccepted, STATrefused,
@@ -315,7 +315,7 @@ ExitWithStats(int x)
 
     if (BATCHfp != NULL && unlink(BATCHtemp) < 0 && errno != ENOENT)
         syswarn("cannot remove %s", BATCHtemp);
-    (void)sleep(1);
+    sleep(1);
     SMshutdown();
     HISclose(History);
     exit(x);
@@ -338,7 +338,7 @@ CloseAndRename(void)
     if (ferror(BATCHfp)
      || fflush(BATCHfp) == EOF
      || fclose(BATCHfp) == EOF) {
-	(void)unlink(BATCHtemp);
+	unlink(BATCHtemp);
         syswarn("cannot close %s", BATCHtemp);
 	ExitWithStats(1);
     }
@@ -377,9 +377,9 @@ Requeue(const char *Article, const char *MessageID)
 	return;
 
     if (MessageID != NULL)
-	(void)fprintf(BATCHfp, "%s %s\n", Article, MessageID);
+	fprintf(BATCHfp, "%s %s\n", Article, MessageID);
     else
-	(void)fprintf(BATCHfp, "%s\n", Article);
+	fprintf(BATCHfp, "%s\n", Article);
     if (fflush(BATCHfp) == EOF || ferror(BATCHfp)) {
         syswarn("cannot requeue %s", Article);
 	ExitWithStats(1);
@@ -408,7 +408,7 @@ RequeueRestAndExit(char *Article, char *MessageID) {
 	for (i = 0; i < STNBUF; i++) {    /* requeue unacknowledged articles */
 	    if ((stbuf[i].st_fname) && (stbuf[i].st_fname[0] != '\0')) {
 		if (Debug)
-		    (void)fprintf(stderr, "stbuf[%d]= %s, %s\n",
+		    fprintf(stderr, "stbuf[%d]= %s, %s\n",
 			    i, stbuf[i].st_fname, stbuf[i].st_id);
 		Requeue(stbuf[i].st_fname, stbuf[i].st_id);
 		if (Article == stbuf[i].st_fname) Article = NULL;
@@ -422,7 +422,7 @@ RequeueRestAndExit(char *Article, char *MessageID) {
 	if ((p = QIOread(BATCHqp)) == NULL) {
 	    if (QIOtoolong(BATCHqp)) {
                 warn("skipping long line in %s", BATCHname);
-		(void)QIOread(BATCHqp);
+		QIOread(BATCHqp);
 		continue;
 	    }
 	    if (QIOerror(BATCHqp)) {
@@ -608,8 +608,8 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
     if (Debug) {
-	(void)fprintf(stderr, "> [ article %d ]\n", art->len);
-	(void)fprintf(stderr, "> .\n");
+	fprintf(stderr, "> [ article %d ]\n", art->len);
+	fprintf(stderr, "> .\n");
     }
 
     if (CanStream) return TRUE;	/* streaming mode does not wait for ACK */
@@ -622,7 +622,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
     if (GotInterrupt)
 	Interrupted(Article, MessageID);
     if (Debug)
-	(void)fprintf(stderr, "< %s", buff);
+	fprintf(stderr, "< %s", buff);
 
     /* Parse the reply. */
     switch (atoi(buff)) {
@@ -730,9 +730,9 @@ check(int i) {
     STAToffered++;
     if (Debug) {
 	if (stbuf[i].st_retry)
-	    (void)fprintf(stderr, "> %s (retry %d)\n", buff, stbuf[i].st_retry);
+	    fprintf(stderr, "> %s (retry %d)\n", buff, stbuf[i].st_retry);
 	else
-	    (void)fprintf(stderr, "> %s\n", buff);
+	    fprintf(stderr, "> %s\n", buff);
     }
     if (GotInterrupt)
 	Interrupted(stbuf[i].st_fname, stbuf[i].st_id);
@@ -760,7 +760,7 @@ takethis(int i) {
         return TRUE;
     }
     if (Debug)
-        (void)fprintf(stderr, "> %s\n", buff);
+        fprintf(stderr, "> %s\n", buff);
     if (GotInterrupt)
         Interrupted((char *)0, (char *)0);
     if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id, stbuf[i].art))
@@ -795,7 +795,7 @@ strlisten(void)
 	if (GotInterrupt)
 	    Interrupted((char *)0, (char *)0);
 	if (Debug)
-	    (void)fprintf(stderr, "< %s", buff);
+	    fprintf(stderr, "< %s", buff);
 
 	/* Parse the reply. */
 	resp =  atoi(buff);
@@ -829,7 +829,7 @@ strlisten(void)
 	default:
 	    syslog(L_NOTICE, UNEXPECTED, REMhost, REMclean(buff));
 	    if (Debug)
-		(void)fprintf(stderr, "Unknown reply \"%s\"",
+		fprintf(stderr, "Unknown reply \"%s\"",
 						    buff);
 	    return (TRUE);
 	}
@@ -993,7 +993,7 @@ int main(int ac, char *av[]) {
     bool		val;
     char                *path;
 
-    (void)openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "innxmit";
 
     /* Set defaults. */
@@ -1003,7 +1003,7 @@ int main(int ac, char *av[]) {
     ConnectTimeout = 0;
     TotalTimeout = 0;
     
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "lacdHprst:T:vP:")) != EOF)
@@ -1118,7 +1118,7 @@ int main(int ac, char *av[]) {
                 exit(1);
             }
 	    JMPyes = TRUE;
-	    (void)alarm(ConnectTimeout);
+	    alarm(ConnectTimeout);
 	}
 	if (NNTPconnect(REMhost, port, &From, &To, buff) < 0 || GotAlarm) {
 	    i = errno;
@@ -1133,7 +1133,7 @@ int main(int ac, char *av[]) {
 	    exit(1);
 	}
 	if (Debug)
-	    (void)fprintf(stderr, "< %s\n", REMclean(buff));
+	    fprintf(stderr, "< %s\n", REMclean(buff));
 	if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
 	    i = errno;
             syswarn("cannot authenticate with %s", REMhost);
@@ -1144,8 +1144,8 @@ int main(int ac, char *av[]) {
 	    exit(1);
 	}
 	if (ConnectTimeout) {
-	    (void)alarm(0);
-	    (void)xsignal(SIGALRM, old);
+	    alarm(0);
+	    xsignal(SIGALRM, old);
 	    JMPyes = FALSE;
 	}
 
@@ -1158,13 +1158,13 @@ int main(int ac, char *av[]) {
                 syswarn("cannot negotiate %s", modestream);
 	    }
 	    if (Debug)
-		(void)fprintf(stderr, ">%s\n", modestream);
+		fprintf(stderr, ">%s\n", modestream);
 	    /* Does he understand mode stream? */
 	    if (!REMread(buff, (int)sizeof buff)) {
                 syswarn("no reply to %s", modestream);
 	    } else {
 		if (Debug)
-		    (void)fprintf(stderr, "< %s", buff);
+		    fprintf(stderr, "< %s", buff);
 
 		/* Parse the reply. */
 		switch (atoi(buff)) {
@@ -1215,13 +1215,13 @@ int main(int ac, char *av[]) {
     }
 
     /* Set up signal handlers. */
-    (void)xsignal(SIGHUP, CATCHinterrupt);
-    (void)xsignal(SIGINT, CATCHinterrupt);
-    (void)xsignal(SIGTERM, CATCHinterrupt);
-    (void)xsignal(SIGPIPE, SIG_IGN);
+    xsignal(SIGHUP, CATCHinterrupt);
+    xsignal(SIGINT, CATCHinterrupt);
+    xsignal(SIGTERM, CATCHinterrupt);
+    xsignal(SIGPIPE, SIG_IGN);
     if (TotalTimeout) {
-	(void)xsignal(SIGALRM, CATCHalarm);
-	(void)alarm(TotalTimeout);
+	xsignal(SIGALRM, CATCHalarm);
+	alarm(TotalTimeout);
     }
 
     path = concatpath(innconf->pathdb, _PATH_HISTORY);
@@ -1243,7 +1243,7 @@ int main(int ac, char *av[]) {
 	if ((Article = QIOread(BATCHqp)) == NULL) {
 	    if (QIOtoolong(BATCHqp)) {
                 warn("skipping long line in %s", BATCHname);
-		(void)QIOread(BATCHqp);
+		QIOread(BATCHqp);
 		continue;
 	    }
 	    if (QIOerror(BATCHqp)) {
@@ -1328,7 +1328,7 @@ int main(int ac, char *av[]) {
 	    hash = stidhash(MessageID);
 	    if (stindex(MessageID, hash) >= 0) { /* skip duplicates in queue */
 		if (Debug)
-		    (void)fprintf(stderr, "Skipping duplicate ID %s\n",
+		    fprintf(stderr, "Skipping duplicate ID %s\n",
 							    MessageID);
                 article_free(art);
 		continue;
@@ -1391,7 +1391,7 @@ int main(int ac, char *av[]) {
 	}
 	STAToffered++;
 	if (Debug)
-	    (void)fprintf(stderr, "> %s\n", buff);
+	    fprintf(stderr, "> %s\n", buff);
 	if (GotInterrupt)
 	    Interrupted(Article, MessageID);
 
@@ -1404,7 +1404,7 @@ int main(int ac, char *av[]) {
 	if (GotInterrupt)
 	    Interrupted(Article, MessageID);
 	if (Debug)
-	    (void)fprintf(stderr, "< %s", buff);
+	    fprintf(stderr, "< %s", buff);
 
 	/* Parse the reply. */
 	switch (atoi(buff)) {

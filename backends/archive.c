@@ -132,8 +132,8 @@ Copy(char *src, char *dest)
     /* Opening the input file is easier. */
     if ((in = fopen(src, "r")) == NULL) {
         syswarn("cannot open %s for reading", src);
-	(void)fclose(out);
-	(void)unlink(dest);
+	fclose(out);
+	unlink(dest);
 	return FALSE;
     }
 
@@ -141,23 +141,23 @@ Copy(char *src, char *dest)
     while ((i = fread(buff, 1, sizeof buff, in)) != 0)
 	if (fwrite(buff, 1, i, out) != i) {
             syswarn("cannot write to %s", dest);
-	    (void)fclose(in);
-	    (void)fclose(out);
-	    (void)unlink(dest);
+	    fclose(in);
+	    fclose(out);
+	    unlink(dest);
 	    return FALSE;
 	}
-    (void)fclose(in);
+    fclose(in);
 
     /* Flush and close the output. */
     if (ferror(out) || fflush(out) == EOF) {
         syswarn("cannot flush %s", dest);
-	(void)unlink(dest);
-	(void)fclose(out);
+	unlink(dest);
+	fclose(out);
 	return FALSE;
     }
     if (fclose(out) == EOF) {
         syswarn("cannot close %s", dest);
-	(void)unlink(dest);
+	unlink(dest);
 	return FALSE;
     }
 
@@ -224,8 +224,8 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
     }
     if (fwrite(article, i, 1, out) != 1) {
         syswarn("cannot write to %s", dest);
-	(void)fclose(out);
-	if (!Concat) (void)unlink(dest);
+	fclose(out);
+	if (!Concat) unlink(dest);
 	DISPOSE(article);
 	return FALSE;
     }
@@ -234,13 +234,13 @@ CopyArt(ARTHANDLE *art, char *dest, bool Concat)
     /* Flush and close the output. */
     if (ferror(out) || fflush(out) == EOF) {
         syswarn("cannot flush %s", dest);
-	if (!Concat) (void)unlink(dest);
-	(void)fclose(out);
+	if (!Concat) unlink(dest);
+	fclose(out);
 	return FALSE;
     }
     if (fclose(out) == EOF) {
         syswarn("cannot close %s", dest);
-	if (!Concat) (void)unlink(dest);
+	if (!Concat) unlink(dest);
 	return FALSE;
     }
 
@@ -277,7 +277,7 @@ WriteArtIndex(ARTHANDLE *art, char *ShortName)
 	MessageID[i] = '\0';
     }
 
-    (void)printf("%s %s %s\n",
+    printf("%s %s %s\n",
 	    ShortName,
 	    MessageID[0] ? MessageID : "<none>",
 	    Subject[0] ? Subject : "<none>");
@@ -419,7 +419,7 @@ main(int ac, char *av[])
     Flat = FALSE;
     Index = NULL;
     Redirect = TRUE;
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
     ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
     Archive = innconf->patharchive;
     groups = NULL;
@@ -460,7 +460,7 @@ main(int ac, char *av[])
 
     /* Do file redirections. */
     if (Redirect)
-	(void)freopen(ERRLOG, "a", stderr);
+	freopen(ERRLOG, "a", stderr);
     if (ac == 1 && freopen(av[0], "r", stdin) == NULL)
         sysdie("cannot open %s for input", av[0]);
     if (Index && freopen(Index, "a", stdout) == NULL)
@@ -471,7 +471,7 @@ main(int ac, char *av[])
         sysdie("cannot chdir to %s", innconf->patharticles);
 
     /* Set up the destination. */
-    (void)strcpy(dest, Archive);
+    strcpy(dest, Archive);
     Name = dest + strlen(dest);
     *Name++ = '/';
 
@@ -617,9 +617,9 @@ main(int ac, char *av[])
 
     /* If we read all our input, try to remove the file, and we're done. */
     if (feof(stdin)) {
-	(void)fclose(stdin);
+	fclose(stdin);
 	if (av[0])
-	    (void)unlink(av[0]);
+	    unlink(av[0]);
 	exit(0);
     }
 

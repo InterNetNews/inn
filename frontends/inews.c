@@ -126,7 +126,7 @@ QuitServer(int x)
 	exit(x);
     if (x)
         warn("article not posted");
-    (void)fprintf(ToServer, "quit\r\n");
+    fprintf(ToServer, "quit\r\n");
     if (FLUSH_ERROR(ToServer))
         sysdie("cannot send quit to server");
     if (fgets(buff, sizeof buff, FromServer) == NULL)
@@ -137,8 +137,8 @@ QuitServer(int x)
 	*p = '\0';
     if (atoi(buff) != NNTP_GOODBYE_ACK_VAL)
         die("server did not reply to quit properly: %s", buff);
-    (void)fclose(FromServer);
-    (void)fclose(ToServer);
+    fclose(FromServer);
+    fclose(ToServer);
     exit(x);
 }
 
@@ -293,7 +293,7 @@ CheckCancel(char *msgid, bool JustReturn)
     char		remotefrom[SMBUF];
 
     /* Ask the server for the article. */
-    (void)fprintf(ToServer, "head %s\r\n", msgid);
+    fprintf(ToServer, "head %s\r\n", msgid);
     SafeFlush(ToServer);
     if (fgets(buff, sizeof buff, FromServer) == NULL
      || atoi(buff) != NNTP_HEAD_FOLLOWS_VAL) {
@@ -328,7 +328,7 @@ CheckCancel(char *msgid, bool JustReturn)
     HeaderCleanFrom(remotefrom);
 
     /* Get the local user. */
-    (void)strncpy(localfrom, HDR(_sender) ? HDR(_sender) : HDR(_from), SMBUF);
+    strncpy(localfrom, HDR(_sender) ? HDR(_sender) : HDR(_from), SMBUF);
     localfrom[SMBUF - 1] = '\0';
     HeaderCleanFrom(localfrom);
 
@@ -442,9 +442,9 @@ FormatUserName(struct passwd *pwp, char *node)
     int         left;
 
 #if	!defined(DONT_MUNGE_GETENV)
-    (void)memset(outbuff, 0, SMBUF);
+    memset(outbuff, 0, SMBUF);
     if ((p = getenv("NAME")) != NULL) {
-	(void)strncpy(outbuff, p, SMBUF);
+	strncpy(outbuff, p, SMBUF);
 	outbuff[SMBUF - 1] = '\0';	/* paranoia */
     }
     if (strlen(outbuff) == 0) {
@@ -551,8 +551,8 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     else {
       if (strlen(pwp->pw_name) + strlen(p) + 2 > sizeof(buff))
           die("username and host are too long");
-      (void)sprintf(buff, "%s@%s", pwp->pw_name, p);
-      (void)strncpy(from, HDR(_from), SMBUF);
+      sprintf(buff, "%s@%s", pwp->pw_name, p);
+      strncpy(from, HDR(_from), SMBUF);
       from[SMBUF - 1] = '\0';
       HeaderCleanFrom(from);
       if (!EQ(from, buff))
@@ -649,7 +649,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     /* Approved; left alone. */
 
     /* Set Lines */
-    (void)sprintf(buff, "%d", linecount);
+    sprintf(buff, "%d", linecount);
     HDR(_lines) = COPY(buff);
 
     /* Check Supersedes. */
@@ -682,18 +682,18 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     *linesp = 0;
     if (strlen(homedir) > sizeof(buff) - 14)
         die("home directory path too long");
-    (void)sprintf(buff, "%s/.signature", homedir);
+    sprintf(buff, "%s/.signature", homedir);
     if ((F = fopen(buff, "r")) == NULL) {
 	if (errno == ENOENT)
 	    return article;
-	(void)fprintf(stderr, NOSIG, strerror(errno));
+	fprintf(stderr, NOSIG, strerror(errno));
 	QuitServer(1);
     }
 
     /* Read it in. */
     length = fread(buff, 1, sizeof buff - 2, F);
     i = feof(F);
-    (void)fclose(F);
+    fclose(F);
     if (length == 0)
         die("signature file is empty");
     if (length < 0)
@@ -716,13 +716,13 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     i = strlen(article);
     if (UseMalloc) {
 	p = NEW(char, i + (sizeof SIGSEP - 1) + length + 1);
-	(void)strcpy(p, article);
+	strcpy(p, article);
 	article = p;
     }
     else
 	RENEW(article, char, i + (sizeof SIGSEP - 1) + length + 1);
-    (void)strcpy(&article[i], SIGSEP);
-    (void)strcpy(&article[i + sizeof SIGSEP - 1], buff);
+    strcpy(&article[i], SIGSEP);
+    strcpy(&article[i + sizeof SIGSEP - 1], buff);
     return article;
 }
 
@@ -801,7 +801,7 @@ ReadStdin(void)
 static int
 OfferArticle(char *buff, bool Authorized)
 {
-    (void)fprintf(ToServer, "post\r\n");
+    fprintf(ToServer, "post\r\n");
     SafeFlush(ToServer);
     if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
         sysdie(Authorized ? "Can't offer article to server (authorized)"
@@ -900,7 +900,7 @@ main(int ac, char *av[])
     if (!innconf_read(NULL))
         exit(1);
 
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:r:t:F:o:w:")) != EOF)
@@ -977,7 +977,7 @@ main(int ac, char *av[])
 	    *p = '\0';
 	if ((p = strchr(buff, '\r')) != NULL)
 	    *p = '\0';
-	(void)strcpy(SpoolMessage, buff[0] ? buff : NOCONNECT);
+	strcpy(SpoolMessage, buff[0] ? buff : NOCONNECT);
         deadfile = concatpath(pwp->pw_dir, "dead.article");
     }
     else {
@@ -990,7 +990,7 @@ main(int ac, char *av[])
 	/* Tell the server we're posting. */
 	setbuf(FromServer, NEW(char, BUFSIZ));
 	setbuf(ToServer, NEW(char, BUFSIZ));
-	(void)fprintf(ToServer, "mode reader\r\n");
+	fprintf(ToServer, "mode reader\r\n");
 	SafeFlush(ToServer);
 	if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
             sysdie("cannot tell server we're reading");
@@ -1037,10 +1037,10 @@ main(int ac, char *av[])
 	/* Write the headers and a blank line. */
 	for (hp = Table; hp < ENDOF(Table); hp++)
 	    if (hp->Value)
-		(void)printf("%s: %s\n", hp->Name, hp->Value);
+		printf("%s: %s\n", hp->Name, hp->Value);
 	for (i = 0; i < OtherCount; i++)
-	    (void)printf("%s\n", OtherHeaders[i]);
-	(void)printf("\n");
+	    printf("%s\n", OtherHeaders[i]);
+	printf("\n");
 	if (FLUSH_ERROR(stdout))
             sysdie("cannot write headers");
 
@@ -1072,10 +1072,10 @@ main(int ac, char *av[])
     /* Write the headers, a blank line, then the article. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Value)
-	    (void)fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
+	    fprintf(ToServer, "%s: %s\r\n", hp->Name, hp->Value);
     for (i = 0; i < OtherCount; i++)
-	(void)fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
-    (void)fprintf(ToServer, "\r\n");
+	fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
+    fprintf(ToServer, "\r\n");
     if (NNTPsendarticle(article, ToServer, TRUE) < 0)
         sysdie("cannot send article to server");
     SafeFlush(ToServer);

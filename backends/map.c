@@ -57,7 +57,7 @@ MAPread(const char *name)
 
     /* Open file, count lines. */
     if ((F = fopen(name, "r")) == NULL) {
-	(void)fprintf(stderr, "Can't open %s, %s\n", name, strerror(errno));
+	fprintf(stderr, "Can't open %s, %s\n", name, strerror(errno));
 	exit(1);
     }
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
@@ -79,7 +79,7 @@ MAPread(const char *name)
 	mp->Value = COPY(p);
 	mp++;
     }
-    (void)fclose(F);
+    fclose(F);
     MAPend = mp;
 }
 

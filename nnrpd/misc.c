@@ -46,7 +46,7 @@ Argify(line, argvp)
 	line++;
     i = strlen(line);
     p = NEW(char, i + 1);
-    (void)strcpy(p, line);
+    strcpy(p, line);
 
     /* Allocate worst-case amount of space. */
     for (*argvp = argv = NEW(char*, i + 2); *p; ) {
@@ -250,7 +250,7 @@ InitBackoffConstants()
     return;
 
   /* Need this database for backing off */
-  (void)strncpy(postrec_dir,PERMaccessconf->backoff_db,SMBUF);
+  strncpy(postrec_dir,PERMaccessconf->backoff_db,SMBUF);
   if (stat(postrec_dir, &st) < 0) {
     if (ENOENT == errno) {
       if (!MakeDirectory(postrec_dir, true)) {
@@ -420,7 +420,7 @@ GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
      }
      s++; *lastn = atol(s);
 
-     (void)fclose(fp);
+     fclose(fp);
      return 1;
 }
 
@@ -440,7 +440,7 @@ StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
      }
 
      fprintf(fp,"%ld,%ld,%ld\n",lastpost,lastsleep,lastn);
-     (void)fclose(fp);
+     fclose(fp);
      return 1;
 }
 
@@ -537,7 +537,7 @@ CMDstarttls(ac, av)
   }
 
   Reply("%d Begin TLS negotiation now\r\n", NNTP_STARTTLS_NEXT_VAL);
-  (void)fflush(stdout);
+  fflush(stdout);
 
   /* must flush our buffers before starting tls */
   

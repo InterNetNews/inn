@@ -45,7 +45,7 @@ main(int ac, char *av[])
     Directory = innconf->pathoutgoing;
     Map = FALSE;
     myuid = geteuid();
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "d:f:m:p:")) != EOF)
@@ -66,7 +66,7 @@ main(int ac, char *av[])
 	case 'p':
 	    if ((F = fopen(optarg, "w")) == NULL)
                 sysdie("cannot fopen %s", optarg);
-	    (void)fprintf(F, "%ld\n", (long)getpid());
+	    fprintf(F, "%ld\n", (long)getpid());
 	    if (ferror(F) || fclose(F) == EOF)
                 sysdie("cannot fclose %s", optarg);
 	    break;

@@ -312,7 +312,7 @@ StatArticle(int timestamp, ARTNUM artnum, int tokenclass)
 static void
 CloseOpenFile(CAFOPENFILE *foo) {
     if (foo->fd >= 0) {
-	(void) close(foo->fd);
+	close(foo->fd);
 	foo->fd = -1;
 	DISPOSE(foo->path);
 	foo->path = NULL;
@@ -617,7 +617,7 @@ DoCancels(void) {
 	        CloseOpenFile(&WritingFile);
 	    }
 	    /* XXX should really check err. code here, but not much we can really do. */
-	    (void)CAFRemoveMultArts(DeletePath, NumDeleteArtnums, DeleteArtnums);
+	    CAFRemoveMultArts(DeletePath, NumDeleteArtnums, DeleteArtnums);
 	    DISPOSE(DeleteArtnums);
 	    DeleteArtnums = NULL;
 	    NumDeleteArtnums = MaxDeleteArtnums = 0;

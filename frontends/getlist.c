@@ -131,7 +131,7 @@ main(int ac, char *av[])
 
 	/* No pattern means print all. */
 	if (pattern == NULL) {
-	    (void)printf("%s\n", line);
+	    printf("%s\n", line);
 	    continue;
 	}
 
@@ -147,7 +147,7 @@ main(int ac, char *av[])
 
 	/* If no group types, we want them all. */
 	if (types == NULL) {
-	    (void)printf("%s\n", line);
+	    printf("%s\n", line);
 	    continue;
 	}
 
@@ -168,7 +168,7 @@ main(int ac, char *av[])
 
 	/* Is this the type of line we want? */
 	if (strchr(types, field4[0]) != NULL)
-	    (void)printf("%s\n", line);
+	    printf("%s\n", line);
     }
 
     /* Determine why we stopped */
@@ -185,10 +185,10 @@ main(int ac, char *av[])
 
     /* All done. */
     CAclose();
-    (void)fprintf(ToServer, "quit\r\n");
-    (void)fclose(ToServer);
-    (void)fgets(buff, sizeof buff, FromServer);
-    (void)fclose(FromServer);
+    fprintf(ToServer, "quit\r\n");
+    fclose(ToServer);
+    fgets(buff, sizeof buff, FromServer);
+    fclose(FromServer);
     exit(i);
     /* NOTREACHED */
 }

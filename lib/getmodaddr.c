@@ -103,7 +103,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
     char		name[SMBUF];
     int                 fd;
 
-    (void)strcpy(name, group);
+    strcpy(name, group);
     address[0] = '\0';
 
     if (FromServer==NULL || ToServer==NULL){
@@ -161,7 +161,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 	    }
 	}
 
-	(void) GMAclose();
+	 GMAclose();
 	if (address[0])
 	    return address;
     }

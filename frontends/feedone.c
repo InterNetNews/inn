@@ -53,9 +53,9 @@ SendQuit(x)
     char	buff[BUFSIZ];
 
     /* Close up. */
-    (void)fprintf(ToServer, "quit\r\n");
+    fprintf(ToServer, "quit\r\n");
     SafeFlush(ToServer);
-    (void)fclose(ToServer);
+    fclose(ToServer);
     GetFromServer(buff, sizeof buff, "cannot get reply to quit");
     exit(x);
 }
@@ -150,11 +150,11 @@ main(ac, av)
 
     /* Does the server want this article? */
     if (PostMode) {
-	(void)fprintf(ToServer, "post\r\n");
+	fprintf(ToServer, "post\r\n");
 	i = NNTP_START_POST_VAL;
     }
     else {
-	(void)fprintf(ToServer, "ihave %s\r\n", mesgid);
+	fprintf(ToServer, "ihave %s\r\n", mesgid);
 	i = NNTP_SENDIT_VAL;
     }
     SafeFlush(ToServer);
@@ -168,18 +168,18 @@ main(ac, av)
     fseeko(F, 0, SEEK_SET);
     while (fgets(buff, sizeof buff, F) != NULL) {
 	if (caseEQn(buff, MESGIDHDR, STRLEN(MESGIDHDR))) {
-	    (void)fprintf(ToServer, "%s %s\r\n", MESGIDHDR, mesgid);
+	    fprintf(ToServer, "%s %s\r\n", MESGIDHDR, mesgid);
 	    continue;
 	}
 	if ((p = strchr(buff, '\n')) != NULL)
 	    *p = '\0';
-	(void)fprintf(ToServer, buff[0] == '.' ? ".%s\r\n" : "%s\r\n",
+	fprintf(ToServer, buff[0] == '.' ? ".%s\r\n" : "%s\r\n",
 		buff);
 	SafeFlush(ToServer);
     }
-    (void)fprintf(ToServer, ".\r\n");
+    fprintf(ToServer, ".\r\n");
     SafeFlush(ToServer);
-    (void)fclose(F);
+    fclose(F);
 
     /* How did the server respond? */
     GetFromServer(buff, sizeof buff,

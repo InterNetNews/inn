@@ -287,7 +287,7 @@ Process(char *p)
 	else if ((sp = SITEfind(p, FALSE)) != NULL)
 	    SITEflush(sp);
 	/*else
-	    (void)fprintf(stderr, "buffchan flush %s unknown site\n", p);*/
+	    fprintf(stderr, "buffchan flush %s unknown site\n", p);*/
 	return;
     }
 
@@ -352,14 +352,14 @@ main(int ac, char *av[])
     Format = NULL;
     Redirect = TRUE;
     GotInterrupt = FALSE;
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
-    (void)xsignal(SIGHUP, CATCHinterrupt);
-    (void)xsignal(SIGINT, CATCHinterrupt);
-    (void)xsignal(SIGQUIT, CATCHinterrupt);
-    (void)xsignal(SIGPIPE, CATCHinterrupt);
-    (void)xsignal(SIGTERM, CATCHinterrupt);
-    (void)xsignal(SIGALRM, CATCHinterrupt);
+    xsignal(SIGHUP, CATCHinterrupt);
+    xsignal(SIGINT, CATCHinterrupt);
+    xsignal(SIGQUIT, CATCHinterrupt);
+    xsignal(SIGPIPE, CATCHinterrupt);
+    xsignal(SIGTERM, CATCHinterrupt);
+    xsignal(SIGALRM, CATCHinterrupt);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "bc:C:d:f:l:L:m:p:rs:u")) != EOF)
@@ -398,7 +398,7 @@ main(int ac, char *av[])
 	case 'p':
 	    if ((F = fopen(optarg, "w")) == NULL)
                 sysdie("cannot fopen %s", optarg);
-	    (void)fprintf(F, "%ld\n", (long)getpid());
+	    fprintf(F, "%ld\n", (long)getpid());
 	    if (ferror(F) || fclose(F) == EOF)
                 sysdie("cannot fclose %s", optarg);
 	    break;
@@ -416,7 +416,7 @@ main(int ac, char *av[])
 
     /* Do some basic set-ups. */
     if (Redirect)
-	(void)freopen(ERRLOG, "a", stderr);
+	freopen(ERRLOG, "a", stderr);
     if (Format == NULL) {
         Format = concatpath(innconf->pathoutgoing, "%s");
     }
@@ -433,7 +433,7 @@ main(int ac, char *av[])
 	    }
 	    if (QIOtoolong(qp)) {
                 warn("long line");
-		(void)QIOread(qp);
+		QIOread(qp);
 		continue;
 	    }
 

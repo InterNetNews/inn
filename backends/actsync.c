@@ -1081,10 +1081,10 @@ get_active(host, hostid, len, grp, errs)
 	QIOclose(qp);
     } else {
 	CAclose();
-	(void)fprintf(ToServer, "quit\r\n");
-	(void)fclose(ToServer);
-	(void)fgets(buff, sizeof buff, FromServer);
-	(void)fclose(FromServer);
+	fprintf(ToServer, "quit\r\n");
+	fclose(ToServer);
+	fgets(buff, sizeof buff, FromServer);
+	fclose(FromServer);
     }
     return ret;
 }

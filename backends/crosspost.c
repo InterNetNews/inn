@@ -140,7 +140,7 @@ ProcessIncoming(qp)
 	/* Read the first line of data. */
 	if ((p = QIOread(qp)) == NULL) {
 	    if (QIOtoolong(qp)) {
-		(void)fprintf(stderr, "crosspost line too long\n");
+		fprintf(stderr, "crosspost line too long\n");
 		STATTooLong++;
 		continue;
 	    }
@@ -163,7 +163,7 @@ ProcessIncoming(qp)
 	nxp = i;
 	if (debug) {
 	    for (i = 0; i < nxp; i++)
-		(void)fprintf(stderr, "crosspost: debug %d %s\n",
+		fprintf(stderr, "crosspost: debug %d %s\n",
 		    i, names[i]);
 	}
 
@@ -182,7 +182,7 @@ ProcessIncoming(qp)
 		    path[j] = '\0';
 		    /* try making parent dir */
 		    if (MakeSpoolDir(path) == FALSE) {
-			(void)fprintf(stderr, "crosspost cant mkdir %s\n",
+			fprintf(stderr, "crosspost cant mkdir %s\n",
 				path);
 		    }
 		    else {
@@ -191,7 +191,7 @@ ProcessIncoming(qp)
 			if (lnval == 0) STATLink++;
 			if (lnval < 0 && errno == EXDEV) {
 #if !defined(HAVE_SYMLINK)
-			    (void)fprintf(stderr, "crosspost cant link %s %s",
+			    fprintf(stderr, "crosspost cant link %s %s",
 				names[0], names[i]);
 			    perror(" ");
 #else
@@ -205,7 +205,7 @@ ProcessIncoming(qp)
 				path[j++] = *p++;	/* append path */
 			    path[j++] = '\0';
 			    if (symlink(path, names[i]) < 0) {
-				(void)fprintf(stderr,
+				fprintf(stderr,
 				    "crosspost cant symlink %s %s",
 				    path, names[i]);
 				perror(" ");
@@ -218,7 +218,7 @@ ProcessIncoming(qp)
 			    if (lnval == ENOENT)
 			      STATMissing++;
 			    else {
-			      (void)fprintf(stderr, "crosspost cant link %s %s",
+			      fprintf(stderr, "crosspost cant link %s %s",
 					    names[0], names[i]);
 			      perror(" ");
 			      STATLError++;
@@ -226,7 +226,7 @@ ProcessIncoming(qp)
                         }
 		    }
 		} else {
-		    (void)fprintf(stderr, "crosspost bad path %s\n",
+		    fprintf(stderr, "crosspost bad path %s\n",
 			    names[i]);
 		    STATOError++;
 		}
@@ -235,7 +235,7 @@ ProcessIncoming(qp)
 		char path[SPOOLNAMEBUFF+2];
 
 #if !defined(HAVE_SYMLINK)
-                (void)fprintf(stderr, "crosspost cant link %s %s",
+                fprintf(stderr, "crosspost cant link %s %s",
                               names[0], names[i]);
                 perror(" ");
 #else
@@ -249,7 +249,7 @@ ProcessIncoming(qp)
                     path[j++] = *p++;	/* append path */
                 path[j++] = '\0';
                 if (symlink(path, names[i]) < 0) {
-                    (void)fprintf(stderr,
+                    fprintf(stderr,
                                   "crosspost cant symlink %s %s",
                                   path, names[i]);
                     perror(" ");
@@ -262,13 +262,13 @@ ProcessIncoming(qp)
 	}
 
 	if (syncfiles && (fd >= 0)) {
-	    (void)fsync(fd);
-	    (void)close(fd);
+	    fsync(fd);
+	    close(fd);
 	}
     }
 
     if (QIOerror(qp))
-	(void)fprintf(stderr, "crosspost cant read %s\n", strerror(errno));
+	fprintf(stderr, "crosspost cant read %s\n", strerror(errno));
     QIOclose(qp);
 }
 
@@ -292,7 +292,7 @@ main(ac, av)
     /* Set defaults. */
     if (ReadInnConf() < 0) exit(1);
     Dir = innconf->patharticles;
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "D:ds")) != EOF)
@@ -314,7 +314,7 @@ main(ac, av)
     av += optind;
 
     if (chdir(Dir) < 0) {
-	(void)fprintf(stderr, "crosspost cant chdir %s %s\n",
+	fprintf(stderr, "crosspost cant chdir %s %s\n",
 		Dir, strerror(errno));
 	exit(1);
     }
@@ -327,7 +327,7 @@ main(ac, av)
 	    if (EQ(*av, "-"))
 		ProcessIncoming(QIOfdopen(STDIN_FILENO));
 	    else if ((qp = QIOopen(*av)) == NULL)
-		(void)fprintf(stderr, "crosspost cant open %s %s\n",
+		fprintf(stderr, "crosspost cant open %s %s\n",
 			*av, strerror(errno));
 	    else
 		ProcessIncoming(qp);

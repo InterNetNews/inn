@@ -59,10 +59,10 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
 
     /* Send a LIST command to and capture the output. */
     if (request == NULL)
-	(void)fprintf(ToServer, "list\r\n");
+	fprintf(ToServer, "list\r\n");
     else
-	(void)fprintf(ToServer, "list %s\r\n", request);
-    (void)fflush(ToServer);
+	fprintf(ToServer, "list %s\r\n", request);
+    fflush(ToServer);
 
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
@@ -86,12 +86,12 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
 		break;
 	    return fopen(pathname, "r");
 	}
-	(void)fprintf(F, "%s\n", buff);
+	fprintf(F, "%s\n", buff);
     }
 
     /* Ran out of input before finding the terminator; quit. */
     oerrno = errno;
-    (void)fclose(F);
+    fclose(F);
     CAclose();
     errno = oerrno;
     return NULL;
@@ -135,7 +135,7 @@ void
 CAclose(void)
 {
     if (CAfp) {
-	(void)fclose(CAfp);
+	fclose(CAfp);
 	CAfp = NULL;
     }
     if (CApathname != NULL) {

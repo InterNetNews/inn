@@ -210,7 +210,7 @@ static void CNFSshutdowncycbuff(CYCBUFF *cycbuff) {
 	return;
     if (cycbuff->needflush) {
 	syslog(L_NOTICE, "%s: CNFSshutdowncycbuff: flushing %s", LocalLogName, cycbuff->name);
-	(void)CNFSflushhead(cycbuff);
+	CNFSflushhead(cycbuff);
     }
     if (cycbuff->bitfield != NULL) {
 	munmap(cycbuff->bitfield, cycbuff->minartoffset);
@@ -285,7 +285,7 @@ static void CNFSflushallheads(void) {
   for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
     if (cycbuff->needflush)
 	syslog(L_NOTICE, "%s: CNFSflushallheads: flushing %s", LocalLogName, cycbuff->name);
-    (void)CNFSflushhead(cycbuff);
+    CNFSflushhead(cycbuff);
   }
 }
 
@@ -1092,13 +1092,13 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	  cycbuff->cyclenum += 2;		/* cnfs_next() needs this */
 	cycbuff->needflush = TRUE;
 	if (metacycbuff->metamode == INTERLEAVE) {
-	  (void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
+	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	  syslog(L_NOTICE, "%s: cycbuff %s rollover to cycle 0x%x... remain calm",
 	       LocalLogName, cycbuff->name, cycbuff->cyclenum);
 	} else {
 	  /* SEQUENTIAL */
 	  cycbuff->currentbuff = FALSE;
-	  (void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
+	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	  if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	  syslog(L_NOTICE, "%s: metacycbuff %s cycbuff is moved to %s remain calm",
 	       LocalLogName, metacycbuff->name, cycbuff->name);
@@ -1112,7 +1112,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	  }
 	  cycbuff->currentbuff = TRUE;
 	  cycbuff->needflush = TRUE;
-	  (void)CNFSflushhead(cycbuff);		/* Flush, just for giggles */
+	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	}
     }
     /* Ah, at least we know all three important data */
@@ -1172,7 +1172,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
       metacycbuff->memb_next = (metacycbuff->memb_next + 1) % metacycbuff->count;
     if (++metacycbuff->write_count % metabuff_update == 0) {
 	for (i = 0; i < metacycbuff->count; i++) {
-	    (void)CNFSflushhead(metacycbuff->members[i]);
+	    CNFSflushhead(metacycbuff->members[i]);
 	}
     }
     CNFSUsedBlock(cycbuff, artoffset, TRUE, TRUE);

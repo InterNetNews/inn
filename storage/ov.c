@@ -46,12 +46,12 @@ OVopen(int mode)
             return FALSE;
     if (!innconf->enableoverview) {
 	syslog(L_FATAL, "enableoverview is not true");
-	(void)fprintf(stderr, "enableoverview is not true\n");
+	fprintf(stderr, "enableoverview is not true\n");
 	return FALSE;
     }
     if (innconf->ovmethod == NULL) {
 	syslog(L_FATAL, "ovmethod is not defined");
-	(void)fprintf(stderr, "ovmethod is not defined\n");
+	fprintf(stderr, "ovmethod is not defined\n");
 	return FALSE;
     }
     for (i=0;i<NUM_OV_METHODS;i++) {
@@ -60,7 +60,7 @@ OVopen(int mode)
     }
     if (i == NUM_OV_METHODS) {
 	syslog(L_FATAL, "%s is not found for ovmethod", innconf->ovmethod);
-	(void)fprintf(stderr, "%s is not found for ovmethod\n", innconf->ovmethod);
+	fprintf(stderr, "%s is not found for ovmethod\n", innconf->ovmethod);
 	return FALSE;
     }
     ov = ov_methods[i];
@@ -77,7 +77,7 @@ OVopen(int mode)
 	    OVpatterns[i] = COPY(p);
 	if (i != OVnumpatterns) {
 	    syslog(L_FATAL, "extra ',' in pattern");
-	    (void)fprintf(stderr, "extra ',' in pattern");
+	    fprintf(stderr, "extra ',' in pattern");
 	    return FALSE;
 	}
     }
@@ -90,7 +90,7 @@ OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     return ((*ov.groupstats)(group, lo, hi, count, flag));
@@ -103,7 +103,7 @@ OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     return ((*ov.groupadd)(group, lo, hi, flag));
@@ -115,7 +115,7 @@ OVgroupdel(char *group)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     return ((*ov.groupdel)(group));
@@ -138,7 +138,7 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return OVADDFAILED;
     }
 
@@ -248,7 +248,7 @@ OVcancel(TOKEN token)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     return ((*ov.cancel)(token));
@@ -260,7 +260,7 @@ OVopensearch(char *group, int low, int high)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     return ((*ov.opensearch)(group, low, high));
@@ -273,7 +273,7 @@ OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     return ((*ov.search)(handle, artnum, data, len, token, arrived));
@@ -285,7 +285,7 @@ OVclosesearch(void *handle)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return;
     }
     (*ov.closesearch)(handle);
@@ -298,7 +298,7 @@ OVgetartinfo(char *group, ARTNUM artnum, TOKEN *token)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     return ((*ov.getartinfo)(group, artnum, token));
@@ -310,7 +310,7 @@ OVexpiregroup(char *group, int *lo, struct history *h)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     return ((*ov.expiregroup)(group, lo, h));
@@ -322,25 +322,25 @@ OVctl(OVCTLTYPE type, void *val)
     if (!ov.open) {
 	/* must be opened */
 	syslog(L_ERROR, "ovopen must be called first");
-	(void)fprintf(stderr, "ovopen must be called first");
+	fprintf(stderr, "ovopen must be called first");
 	return FALSE;
     }
     switch (type) {
     case OVGROUPBASEDEXPIRE:
 	if (!innconf->groupbaseexpiry) {
 	    syslog(L_ERROR, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
-	    (void)fprintf(stderr, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
+	    fprintf(stderr, "OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if false");
 	    return FALSE;
 	}
 	if (((OVGE *)val)->delayrm) {
 	    if ((((OVGE *)val)->filename == NULL) || (strlen(((OVGE *)val)->filename) == 0)) {
 		syslog(L_ERROR, "file name must be specified");
-		(void)fprintf(stderr, "file name must be specified");
+		fprintf(stderr, "file name must be specified");
 	  	return FALSE;
 	    }
 	    if ((EXPunlinkfile = fopen(((OVGE *)val)->filename, "w")) == NULL) {
 		syslog(L_ERROR, "fopen: %s failed: %m", ((OVGE *)val)->filename);
-		(void)fprintf(stderr, "fopen: %s failed: %s", ((OVGE *)val)->filename, 
+		fprintf(stderr, "fopen: %s failed: %s", ((OVGE *)val)->filename, 
 			      strerror(errno));
 		return FALSE;
 	    }

@@ -449,7 +449,7 @@ PY_setup(void)
     syslog(L_NOTICE, "python interpreter initialized OK");
 
     /* Build a module interface to certain nnrpd functions */
-    (void) Py_InitModule("nnrpd", nnrpdPyMethods);
+    Py_InitModule("nnrpd", nnrpdPyMethods);
 
     /* Load up external nntpd auth module */
     PYAuthModule = PyImport_ImportModule(_PATH_PYTHON_AUTH_M);

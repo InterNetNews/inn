@@ -55,17 +55,17 @@ dumpcode(char *p, int n)
 	    c |= (1 << 12);
 	last <<= 1;
 
-	(void)putchar((c / 91) + ' ');
-	(void)putchar((c % 91) + ' ');
+	putchar((c / 91) + ' ');
+	putchar((c % 91) + ' ');
     }
 }
 
 static void
 flushout(void)
 {
-    (void)putchar(ENDMARK1);
-    (void)putchar(ENDMARK2);
-    (void)putchar(Count + ' ');
+    putchar(ENDMARK1);
+    putchar(ENDMARK2);
+    putchar(Count + ' ');
     dumpcode(Buffer, Count);
 }
 

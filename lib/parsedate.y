@@ -776,7 +776,7 @@ parsedate(char *p, TIMEINFO *now)
     yyInput = p;
     if (now == NULL) {
 	now = &ti;
-	(void)GetTimeInfo(&ti);
+	GetTimeInfo(&ti);
     }
 
     tm = localtime(&now->time);
@@ -837,10 +837,10 @@ main(int ac, char *av[])
     yydebug = 1;
 #endif	/* YYDEBUG */
 
-    (void)printf("Enter date, or blank line to exit.\n\t> ");
+    printf("Enter date, or blank line to exit.\n\t> ");
     for ( ; ; ) {
-	(void)printf("\t> ");
-	(void)fflush(stdout);
+	printf("\t> ");
+	fflush(stdout);
 	if (gets(buff) == NULL || buff[0] == '\n')
 	    break;
 #if	YYDEBUG
@@ -852,9 +852,9 @@ main(int ac, char *av[])
 #endif	/* YYDEBUG */
 	d = parsedate(buff, (TIMEINFO *)NULL);
 	if (d == -1)
-	    (void)printf("Bad format - couldn't convert.\n");
+	    printf("Bad format - couldn't convert.\n");
 	else
-	    (void)printf("%s", ctime(&d));
+	    printf("%s", ctime(&d));
     }
 
     exit(0);

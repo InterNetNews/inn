@@ -4641,14 +4641,12 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
 }
 
 /* config file load callback */
-int cxnConfigLoadCbk (void *data)
+int cxnConfigLoadCbk (void *data UNUSED)
 {
   long iv ;
   int rval = 1 ;
   FILE *fp = (FILE *) data ;
 
-  (void) data ;                 /* keep lint happy */
-      
   if (getInteger (topScope,"max-reconnect-time",&iv,NO_INHERIT))
     {
       if (iv < 1)

@@ -82,12 +82,12 @@ StartChild(int fd, const char *path, const char *argv[])
 	    return -1;
 	}
         notice("cannot fork %s, waiting", path);
-	(void)sleep(60);
+	sleep(60);
     }
 
     /* Run the child, with redirection. */
     if (pid == 0) {
-	(void)close(pan[PIPE_READ]);
+	close(pan[PIPE_READ]);
 
 	/* Stdin comes from our old input. */
 	if (fd != STDIN_FILENO) {
@@ -95,7 +95,7 @@ StartChild(int fd, const char *path, const char *argv[])
                 syswarn("cannot dup2 %d to 0, got %d", fd, i);
 		_exit(1);
 	    }
-	    (void)close(fd);
+	    close(fd);
 	}
 
 	/* Stdout goes down the pipe. */
@@ -104,16 +104,16 @@ StartChild(int fd, const char *path, const char *argv[])
                 syswarn("cannot dup2 %d to 1, got %d", pan[PIPE_WRITE], i);
 		_exit(1);
 	    }
-	    (void)close(pan[PIPE_WRITE]);
+	    close(pan[PIPE_WRITE]);
 	}
 
-	(void)execv(path, (char * const *)argv);
+	execv(path, (char * const *)argv);
         syswarn("cannot execv %s", path);
 	_exit(1);
     }
 
-    (void)close(pan[PIPE_WRITE]);
-    (void)close(fd);
+    close(pan[PIPE_WRITE]);
+    close(fd);
     return pan[PIPE_READ];
 }
 
@@ -170,9 +170,9 @@ static void Reject(const char *article, const char *reason, const char *arg)
 
     notice(reason, arg);
     if (Verbose) {
-	(void)fprintf(stderr, "%s: ", InputFile);
-	(void)fprintf(stderr, reason, arg);
-	(void)fprintf(stderr, " [%.40s...]\n", article);
+	fprintf(stderr, "%s: ", InputFile);
+	fprintf(stderr, reason, arg);
+	fprintf(stderr, " [%.40s...]\n", article);
     }
 
 #if	defined(DO_RNEWS_SAVE_BAD)
@@ -239,7 +239,7 @@ static bool Process(char *article)
 	}
 #if	!defined(DONT_RNEWS_LOG_DUPS)
 	if (IS_PATH(hp)) {
-	    (void)strncpy(path, p, sizeof path);
+	    strncpy(path, p, sizeof path);
 	    path[sizeof path - 1] = '\0';
 	    if ((q = strchr(path, '\r')) != NULL)
 		*q = '\0';
@@ -266,7 +266,7 @@ static bool Process(char *article)
         syswarn("cannot fgets after ihave");
 	return FALSE;
     }
-    (void)REMclean(buff);
+    REMclean(buff);
     if (!CTYPE(isdigit, buff[0])) {
         free(wirefmt);
         notice("bad_reply after ihave %s", buff);
@@ -290,8 +290,8 @@ static bool Process(char *article)
 #if	defined(FILE_RNEWS_LOG_DUPS)
 	if ((F = fopen(_PATH_RNEWS_DUP_LOG, "a")) != NULL) {
 	    *p = '\0';
-	    (void)fprintf(F, "duplicate %s %s\n", id, path);
-	    (void)fclose(F);
+	    fprintf(F, "duplicate %s %s\n", id, path);
+	    fclose(F);
 	}
 #endif	/* defined(FILE_RNEWS_LOG_DUPS) */
         free(wirefmt);
@@ -311,7 +311,7 @@ static bool Process(char *article)
         syswarn("cannot fgets after article");
 	return FALSE;
     }
-    (void)REMclean(buff);
+    REMclean(buff);
     if (!CTYPE(isdigit, buff[0])) {
         notice("bad_reply after article %s", buff);
 	return FALSE;
@@ -384,7 +384,7 @@ ReadRemainder(int fd, char first, char second)
     if (article[used - 1] != '\n')
 	article[used++] = '\n';
     article[used] = '\0';
-    (void)fclose(F);
+    fclose(F);
 
     ok = Process(article);
     DISPOSE(article);
@@ -667,7 +667,7 @@ Unspool(void)
 	    if (i > sizeof hostname - 1)
 		/* Just in case someone wrote their own spooled file. */
 		i = sizeof hostname - 1;
-	    (void)strncpy(hostname, InputFile, i);
+	    strncpy(hostname, InputFile, i);
 	    hostname[i] = '\0';
 	    UUCPHost = hostname;
 	}
@@ -684,17 +684,17 @@ Unspool(void)
             warn("cant unspool saving to %s", badname);
 	    if (rename(InputFile, badname) < 0)
                 sysdie("cannot rename %s to %s", InputFile, badname);
-	    (void)close(fd);
-	    (void)close(lockfd);
+	    close(fd);
+	    close(lockfd);
 	    continue;
 	}
 
 	if (unlink(InputFile) < 0)
             syswarn("cannot remove %s", InputFile);
-	(void)close(fd);
-	(void)close(lockfd);
+	close(fd);
+	close(lockfd);
     }
-    (void)closedir(dp);
+    closedir(dp);
 
     message_handlers_die(1, message_log_syslog_err);
     message_handlers_warn(1, message_log_syslog_err);
@@ -791,8 +791,8 @@ static bool OpenRemote(char *server, int port, char *buff)
     *buff = '\0';
     if (NNTPsendpassword(server, FromServer, ToServer) < 0) {
 	int oerrno = errno;
-	(void)fclose(FromServer);
-	(void)fclose(ToServer);
+	fclose(FromServer);
+	fclose(ToServer);
 	errno = oerrno;
 	return FALSE;
     }
@@ -843,7 +843,7 @@ int main(int ac, char *av[])
      PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
      port = innconf->nnrpdpostport;
 
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
     /* Parse JCL. */
     fd = STDIN_FILENO;
@@ -932,9 +932,9 @@ int main(int ac, char *av[])
     }
 
     /* Tell the server we're quitting, get his okay message. */
-    (void)fprintf(ToServer, "quit\r\n");
-    (void)fflush(ToServer);
-    (void)fgets(buff, sizeof buff, FromServer);
+    fprintf(ToServer, "quit\r\n");
+    fflush(ToServer);
+    fgets(buff, sizeof buff, FromServer);
 
     /* Return the appropriate status. */
     exit(0);

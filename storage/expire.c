@@ -217,14 +217,14 @@ BuildGroups(char *active)
     for (p = active, ngp = Groups, i = nGroups; --i >= 0; ngp++, p = q + 1) {
         lines++;
         if ((q = strchr(p, '\n')) == NULL) {
-            (void)fprintf(stderr, "%s: line %d missing newline\n", ACTIVE, lines);
+            fprintf(stderr, "%s: line %d missing newline\n", ACTIVE, lines);
             exit(1);
         }
 	if (*p == '.')
 	     continue;
         *q = '\0';
         if (EXPsplit(p, ' ', fields, SIZEOF(fields)) != 4) {
-            (void)fprintf(stderr, "%s: line %d wrong number of fields\n", ACTIVE, lines);
+            fprintf(stderr, "%s: line %d wrong number of fields\n", ACTIVE, lines);
             exit(1);
         }
         ngp->Name = fields[0];
@@ -291,7 +291,7 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
         else if (!CTYPE(isdigit, (int)*p))
             break;
     if (*p) {
-        (void)fprintf(stderr, "Line %d, bad `%c' character in %s field\n",
+        fprintf(stderr, "Line %d, bad `%c' character in %s field\n",
                 line, *p, name);
         return FALSE;
     }
@@ -351,7 +351,7 @@ EXPreadfile(FILE *F)
     
     for (i = 1; fgets(buff, sizeof buff, F) != NULL; i++) {
         if ((p = strchr(buff, '\n')) == NULL) {
-            (void)fprintf(stderr, "Line %d too long\n", i);
+            fprintf(stderr, "Line %d too long\n", i);
             DISPOSE(patterns);
             return FALSE;
         }
@@ -370,7 +370,7 @@ EXPreadfile(FILE *F)
         if (buff[0] == '\0')
             continue;
         if ((j = EXPsplit(buff, ':', fields, SIZEOF(fields))) == -1) {
-            (void)fprintf(stderr, "Line %d too many fields\n", i);
+            fprintf(stderr, "Line %d too many fields\n", i);
             DISPOSE(patterns);
             return FALSE;
         }
@@ -382,7 +382,7 @@ EXPreadfile(FILE *F)
 
         /* Regular expiration line -- right number of fields? */
         if (j != 5) {
-            (void)fprintf(stderr, "Line %d bad format\n", i);
+            fprintf(stderr, "Line %d bad format\n", i);
             DISPOSE(patterns);
             return FALSE;
         }
@@ -395,7 +395,7 @@ EXPreadfile(FILE *F)
         else if (strchr(fields[1], 'A') != NULL)
             mod = 'a';
         else {
-            (void)fprintf(stderr, "Line %d bad modflag\n", i);
+            fprintf(stderr, "Line %d bad modflag\n", i);
             DISPOSE(patterns);
             return FALSE;
         }
@@ -412,12 +412,12 @@ EXPreadfile(FILE *F)
         if (v.Purge) {
             /* Some value not forever; make sure other values are in range. */
             if (v.Keep && v.Keep < v.Purge) {
-                (void)fprintf(stderr, "Line %d keep>purge\n", i);
+                fprintf(stderr, "Line %d keep>purge\n", i);
                 DISPOSE(patterns);
                 return FALSE;
             }
             if (v.Default && v.Default < v.Purge) {
-                (void)fprintf(stderr, "Line %d default>purge\n", i);
+                fprintf(stderr, "Line %d default>purge\n", i);
                 DISPOSE(patterns);
                 return FALSE;
             }
@@ -426,7 +426,7 @@ EXPreadfile(FILE *F)
         /* Is this the default line? */
         if (fields[0][0] == '*' && fields[0][1] == '\0' && mod == 'a') {
             if (SawDefault) {
-                (void)fprintf(stderr, "Line %d duplicate default\n", i);
+                fprintf(stderr, "Line %d duplicate default\n", i);
                 DISPOSE(patterns);
                 return FALSE;
             }
@@ -439,7 +439,7 @@ EXPreadfile(FILE *F)
 
         /* Assign to all groups that match the pattern and flags. */
         if ((j = EXPsplit(fields[0], ',', patterns, nGroups)) == -1) {
-            (void)fprintf(stderr, "Line %d too many patterns\n", i);
+            fprintf(stderr, "Line %d too many patterns\n", i);
             DISPOSE(patterns);
             return FALSE;
         }
@@ -648,7 +648,7 @@ OVERGetHeader(const char *p, int field)
         RENEW(buff, char, buffsize + 1);
     }
 
-    (void)strncpy(buff, p, i);
+    strncpy(buff, p, i);
     buff[i] = '\0';
     return buff;
 }
@@ -669,7 +669,7 @@ OVfindheaderindex(void)
     if (innconf->groupbaseexpiry) {
         ACTIVE = concatpath(innconf->pathdb, _PATH_ACTIVE);
         if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
-            (void)fprintf(stderr, "Can't read %s, %s\n",
+            fprintf(stderr, "Can't read %s, %s\n",
             ACTIVE, strerror(errno));
             exit(1);
         }
@@ -680,11 +680,11 @@ OVfindheaderindex(void)
         F = fopen(path, "r");
         free(path);
         if (!EXPreadfile(F)) {
-            (void)fclose(F);
-            (void)fprintf(stderr, "Format error in expire.ctl\n");
+            fclose(F);
+            fprintf(stderr, "Format error in expire.ctl\n");
             exit(1);
         }
-        (void)fclose(F);
+        fclose(F);
     }
     ARTreadschema();
     if (Dateindex == OVFMT_UNINIT) {

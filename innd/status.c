@@ -335,7 +335,7 @@ STATUSsummary(void)
   fprintf (F,"</PRE>\n</BODY>\n</HTML>\n");
 #endif /* defined(HTML_STATUS) */
 
-  (void)Fclose(F);
+  Fclose(F);
 }
 
 void

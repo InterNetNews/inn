@@ -97,7 +97,7 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
     double	systime;
 
     /* Do statistics. */
-    (void)GetTimeInfo(&Now);
+    GetTimeInfo(&Now);
     STATend = TIMEINFOasDOUBLE(Now);
     if (GetResourceUsage(&usertime, &systime) < 0) {
 	usertime = 0;
@@ -105,10 +105,10 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
     }
 
     if (STATprint) {
-	(void)printf(LINE1, Host, usertime, systime, STATend - STATbegin);
-	(void)printf("\n");
-	(void)printf(LINE2, Host, BATCHcount, ArtsWritten, BytesWritten);
-	(void)printf("\n");
+	printf(LINE1, Host, usertime, systime, STATend - STATbegin);
+	printf("\n");
+	printf(LINE2, Host, BATCHcount, ArtsWritten, BytesWritten);
+	printf("\n");
     }
 
     syslog(L_NOTICE, LINE1, Host, usertime, systime, STATend - STATbegin);
@@ -118,9 +118,9 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
     if (BATCHstatus == 0) {
 	if (feof(stdin) && Cookie != -1) {
 	    /* Yes, and we're all done -- remove input and exit. */
-	    (void)fclose(stdin);
+	    fclose(stdin);
 	    if (Input)
-		(void)unlink(Input);
+		unlink(Input);
 	    exit(0);
 	}
     }
@@ -212,7 +212,7 @@ main(int ac, char *av[])
         exit(1);
     AltSpool = NULL;
     Redirect = TRUE;
-    (void)umask(NEWSUMASK);
+    umask(NEWSUMASK);
     ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
 
     /* Parse JCL. */
@@ -274,7 +274,7 @@ main(int ac, char *av[])
     }
 
     if (Redirect)
-	(void)freopen(ERRLOG, "a", stderr);
+	freopen(ERRLOG, "a", stderr);
 
     /* Go to where the articles are. */
     if (chdir(innconf->patharticles) < 0)
@@ -287,14 +287,14 @@ main(int ac, char *av[])
     ArtsInCB = 0;
     Cookie = -1;
     GotInterrupt = FALSE;
-    (void)xsignal(SIGHUP, CATCHinterrupt);
-    (void)xsignal(SIGINT, CATCHinterrupt);
-    (void)xsignal(SIGTERM, CATCHinterrupt);
-    /* (void)xsignal(SIGPIPE, CATCHinterrupt); */
-    (void)GetTimeInfo(&Now);
+    xsignal(SIGHUP, CATCHinterrupt);
+    xsignal(SIGINT, CATCHinterrupt);
+    xsignal(SIGTERM, CATCHinterrupt);
+    /* xsignal(SIGPIPE, CATCHinterrupt); */
+    GetTimeInfo(&Now);
     STATbegin = TIMEINFOasDOUBLE(Now);
 
-    (void)SMinit();
+    SMinit();
     F = NULL;
     while (fgets(line, sizeof line, stdin) != NULL) {
 	/* Record line length in case we do an ftello. Not portable to
@@ -355,7 +355,7 @@ main(int ac, char *av[])
 		break;
 	    }
 	    if (InitialString && *InitialString) {
-		(void)fprintf(F, "%s\n", InitialString);
+		fprintf(F, "%s\n", InitialString);
 		BytesInCB += strlen(InitialString) + 1;
 		BytesWritten += strlen(InitialString) + 1;
 	    }

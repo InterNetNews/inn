@@ -152,7 +152,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	/* Bind to the source address we want. */
 	if (bind(i, (struct sockaddr *)&client, sizeof client) < 0) {
 	    oerrno = errno;
-	    (void)close(i);
+	    close(i);
 	    errno = oerrno;
 	    continue;
 	}
@@ -163,7 +163,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	    *dest++ = *p++;
 	if (connect(i, (struct sockaddr *)&server, sizeof server) < 0) {
 	    oerrno = errno;
-	    (void)close(i);
+	    close(i);
 	    errno = oerrno;
 	    continue;
 	}
@@ -172,19 +172,19 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	/* Connected -- now make sure we can post. */
 	if ((F = fdopen(i, "r")) == NULL) {
 	    oerrno = errno;
-	    (void)close(i);
+	    close(i);
 	    errno = oerrno;
 	    return -1;
 	}
 	if (fgets(buff, sizeof mybuff, F) == NULL) {
 	    oerrno = errno;
-	    (void)fclose(F);
+	    fclose(F);
 	    errno = oerrno;
 	    return -1;
 	}
 	j = atoi(buff);
 	if (j != NNTP_POSTOK_VAL && j != NNTP_NOPOSTOK_VAL) {
-	    (void)fclose(F);
+	    fclose(F);
 	    /* This seems like a reasonable error code to use... */
 	    errno = EPERM;
 	    return -1;
@@ -193,7 +193,7 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 	*FromServerp = F;
 	if ((*ToServerp = fdopen(dup(i), "w")) == NULL) {
 	    oerrno = errno;
-	    (void)fclose(F);
+	    fclose(F);
 	    errno = oerrno;
 	    return -1;
 	}
@@ -209,7 +209,7 @@ int NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff
 
     if ((p = innconf->server) == NULL) {
 	if (errbuff)
-	    (void)strcpy(errbuff, "What server?");
+	    strcpy(errbuff, "What server?");
 	return -1;
     }
     return NNTPconnect(p, port, FromServerp, ToServerp, errbuff);

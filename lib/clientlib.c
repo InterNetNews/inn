@@ -60,7 +60,7 @@ server_init(char *host, int port)
     if (get_server(line2, (int)sizeof line2) < 0)
 	return -1;
     if (atoi(line2) != NNTP_BAD_COMMAND_VAL)
-	(void)strcpy(ser_line, line2);
+	strcpy(ser_line, line2);
 
     /* Connected; return server's reply code. */
     return atoi(ser_line);
@@ -82,7 +82,7 @@ handle_server_response(int response, char *host)
 
     switch (response) {
     default:
-	(void)printf("Unknown response code %d from %s.\n", response, host);
+	printf("Unknown response code %d from %s.\n", response, host);
 	return -1;
      case NNTP_GOODBYE_VAL:
 	if (atoi(ser_line) == response) {
@@ -90,18 +90,18 @@ handle_server_response(int response, char *host)
 	    if (*p == '\n' && *--p == '\r')
 		*p = '\0';
 	    if (p > &ser_line[3]) {
-		(void)printf("News server %s unavailable: %s\n", host,
+		printf("News server %s unavailable: %s\n", host,
 			&ser_line[4]);
 		return -1;
 	    }
 	}
-	(void)printf("News server %s unavailable, try later.\n", host);
+	printf("News server %s unavailable, try later.\n", host);
 	return -1;
     case NNTP_ACCESS_VAL:
-	(void)printf(CANTUSE, host);
+	printf(CANTUSE, host);
 	return -1;
     case NNTP_NOPOSTOK_VAL:
-	(void)printf("%s.\n", CANTPOST);
+	printf("%s.\n", CANTPOST);
 	/* FALLTHROUGH */
     case NNTP_POSTOK_VAL:
 	break;
@@ -116,8 +116,8 @@ handle_server_response(int response, char *host)
 void
 put_server(const char *buff)
 {
-    (void)fprintf(ser_wr_fp, "%s\r\n", buff);
-    (void)fflush(ser_wr_fp);
+    fprintf(ser_wr_fp, "%s\r\n", buff);
+    fflush(ser_wr_fp);
 }
 
 
@@ -149,11 +149,11 @@ close_server(void)
 
     if (ser_wr_fp != NULL && ser_rd_fp != NULL) {
 	put_server("QUIT");
-	(void)fclose(ser_wr_fp);
+	fclose(ser_wr_fp);
 	ser_wr_fp = NULL;
 
-	(void)get_server(buff, (int)sizeof buff);
-	(void)fclose(ser_rd_fp);
+	get_server(buff, (int)sizeof buff);
+	fclose(ser_rd_fp);
 	ser_rd_fp = NULL;
     }
 }

@@ -308,7 +308,7 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
 
     if (sorttype == OVNOSORT) {
 	if (Fork) {
-	    (void)fprintf(Overchan, "%s %ld %ld ", TokenToText(*token), (long)arrived, (long)expires);
+	    fprintf(Overchan, "%s %ld %ld ", TokenToText(*token), (long)arrived, (long)expires);
 	    if (fwrite(overdata, 1, overlen, Overchan) != (size_t) overlen)
                 sysdie("writing overview failed");
 	    fputc('\n', Overchan);
@@ -435,7 +435,7 @@ ARTreadschema(bool Overview)
 	    fp++;
 	}
 	ARTfieldsize = fp - ARTfields;
-	(void)fclose(F);
+	fclose(F);
     }
     if (Msgidp == (ARTOVERFIELD *)NULL)
 	Missfieldsize++;
@@ -587,7 +587,7 @@ DoArt(ARTHANDLE *art)
     if (!Msgidp->HasHeader) {
         warn("no Message-ID header in %s", TokenToText(*art->token));
 	if (NukeBadArts)
-	    (void)SMcancel(*art->token);
+	    SMcancel(*art->token);
 	return;
     }
 
@@ -600,7 +600,7 @@ DoArt(ARTHANDLE *art)
     if (*MessageID == '\0') {
         warn("no Message-ID header in %s", TokenToText(*art->token));
 	if (NukeBadArts)
-	    (void)SMcancel(*art->token);
+	    SMcancel(*art->token);
 	return;
     }
 
@@ -878,7 +878,7 @@ main(int argc, char **argv)
     while ((art = SMnext(art, RetrMode)) != NULL) {
 	if (art->len == 0) {
 	    if (NukeBadArts && art->data == NULL && art->token != NULL)
-		(void)SMcancel(*art->token);
+		SMcancel(*art->token);
 	    continue;
 	}
 	DoArt(art);

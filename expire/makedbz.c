@@ -146,7 +146,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	if (!dbzfresh(p, dbzsize(size))) {
             syswarn("cannot do dbzfresh");
 	    if (temp[0])
-		(void)unlink(temp);
+		unlink(temp);
 	    exit(1);
 	}
     }
@@ -154,7 +154,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	if (!dbzagain(p, HISTORY)) {
             syswarn("cannot do dbzagain");
 	    if (temp[0])
-		(void)unlink(temp);
+		unlink(temp);
 	    exit(1);
 	}
     }
@@ -166,7 +166,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	if ((save = strchr(p, HIS_FIELDSEP)) == NULL) {
             warn("bad line #%lu: %.40s", (unsigned long) count, p);
 	    if (temp[0])
-		(void)unlink(temp);
+		unlink(temp);
 	    exit(1);
 	}
 	*save = '\0';
@@ -189,7 +189,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
 	case DBZSTORE_ERROR:
             syswarn("cannot store %s", p);
 	    if (temp[0])
-		(void)unlink(temp);
+		unlink(temp);
 	    exit(1);
 	default:
 	    break;
@@ -199,13 +199,13 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
         syswarn("cannot read %s near line %lu", TextFile,
                 (unsigned long) count);
 	if (temp[0])
-	    (void)unlink(temp);
+	    unlink(temp);
 	exit(1);
     }
     if (QIOtoolong(qp)) {
         warn("line %lu is too long", (unsigned long) count);
 	if (temp[0])
-	    (void)unlink(temp);
+	    unlink(temp);
 	exit(1);
     }
 
@@ -214,12 +214,12 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
     if (!dbzclose()) {
         syswarn("cannot close history");
 	if (temp[0])
-	    (void)unlink(temp);
+	    unlink(temp);
 	exit(1);
     }
 
     if (temp[0])
-	(void)unlink(temp);
+	unlink(temp);
 }
 
 static void

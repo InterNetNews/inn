@@ -106,7 +106,7 @@ REMwrite(int fd, char *p)
     }
   }
   if (Debug)
-    (void)fprintf(stderr, "> %s\n", p);
+    fprintf(stderr, "> %s\n", p);
 
   return TRUE;
 }
@@ -122,9 +122,9 @@ ExitWithStats(int x)
   double		usertime;
   double		systime;
 
-  (void)REMwrite(ToServer, QUIT);
+  REMwrite(ToServer, QUIT);
 
-  (void)GetTimeInfo(&Now);
+  GetTimeInfo(&Now);
   STATend = TIMEINFOasDOUBLE(Now);
   if (GetResourceUsage(&usertime, &systime) < 0) {
     usertime = 0;
@@ -132,11 +132,11 @@ ExitWithStats(int x)
   }
 
   if (STATprint) {
-    (void)printf(STAT1,
+    printf(STAT1,
 	REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
-    (void)printf("\n");
-    (void)printf(STAT2, REMhost, usertime, systime, STATend - STATbegin);
-    (void)printf("\n");
+    printf("\n");
+    printf(STAT2, REMhost, usertime, systime, STATend - STATbegin);
+    printf("\n");
   }
 
   syslog(L_NOTICE, STAT1,
@@ -206,7 +206,7 @@ REMread(char *start, int size)
   }
 
   if (Debug)
-    (void)fprintf(stderr, "< %s\n", start);
+    fprintf(stderr, "< %s\n", start);
 
   return TRUE;
 }
@@ -243,7 +243,7 @@ REMsendxbatch(int fd, char *buf, int size)
   }
   if (GotInterrupt) Interrupted();
   if (Debug)
-    (void)fprintf(stderr, "> [%d bytes of xbatch]\n", size);
+    fprintf(stderr, "> [%d bytes of xbatch]\n", size);
 
   /* What did the remote site say? */
   if (!REMread(buf, size)) {
@@ -269,7 +269,7 @@ REMsendxbatch(int fd, char *buf, int size)
     break;
   case NNTP_OK_XBATCHED_VAL:
     STATaccepted++;
-    if (Debug) (void)fprintf(stderr, "will unlink(%s)\n", XBATCHname);
+    if (Debug) fprintf(stderr, "will unlink(%s)\n", XBATCHname);
     if (unlink(XBATCHname)) {
       /* probably another incarantion was faster, so avoid further duplicate
        * work
@@ -352,7 +352,7 @@ main(int ac, char *av[])
       exit(1);
   ConnectTimeout = 0;
   TotalTimeout = 0;
-  (void)umask(NEWSUMASK);
+  umask(NEWSUMASK);
 
   /* Parse JCL. */
   while ((i = getopt(ac, av, "Dit:T:v")) != EOF)
@@ -396,7 +396,7 @@ main(int ac, char *av[])
     JMPyes = TRUE;
     if (setjmp(JMPwhere))
       die("cannot connect to %s: timed out", REMhost);
-    (void)alarm(ConnectTimeout);
+    alarm(ConnectTimeout);
   }
   if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff) < 0 || GotAlarm) {
     i = errno;
@@ -411,7 +411,7 @@ main(int ac, char *av[])
   }
 
   if (Debug)
-    (void)fprintf(stderr, "< %s\n", REMclean(buff));
+    fprintf(stderr, "< %s\n", REMclean(buff));
   if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
     i = errno;
     syswarn("cannot authenticate with %s", REMhost);
@@ -421,8 +421,8 @@ main(int ac, char *av[])
     exit(1);
   }
   if (ConnectTimeout) {
-    (void)alarm(0);
-    (void)xsignal(SIGALRM, old);
+    alarm(0);
+    xsignal(SIGALRM, old);
     JMPyes = FALSE;
   }
   
@@ -433,22 +433,22 @@ main(int ac, char *av[])
 #if	defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF)
   i = 24 * 1024;
   if (setsockopt(ToServer, SOL_SOCKET, SO_SNDBUF, (char *)&i, sizeof i) < 0)
-    (void)perror("cant setsockopt(SNDBUF)");
+    perror("cant setsockopt(SNDBUF)");
   if (setsockopt(FromServer, SOL_SOCKET, SO_RCVBUF, (char *)&i, sizeof i) < 0)
-    (void)perror("cant setsockopt(RCVBUF)");
+    perror("cant setsockopt(RCVBUF)");
 #endif	/* defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) */
 
   GotInterrupt = FALSE;
   GotAlarm = FALSE;
 
   /* Set up signal handlers. */
-  (void)xsignal(SIGHUP, CATCHinterrupt);
-  (void)xsignal(SIGINT, CATCHinterrupt);
-  (void)xsignal(SIGTERM, CATCHinterrupt);
-  (void)xsignal(SIGPIPE, SIG_IGN);
+  xsignal(SIGHUP, CATCHinterrupt);
+  xsignal(SIGINT, CATCHinterrupt);
+  xsignal(SIGTERM, CATCHinterrupt);
+  xsignal(SIGPIPE, SIG_IGN);
   if (TotalTimeout) {
-    (void)xsignal(SIGALRM, CATCHalarm);
-    (void)alarm(TotalTimeout);
+    xsignal(SIGALRM, CATCHalarm);
+    alarm(TotalTimeout);
   }
 
   /* Start timing. */
@@ -460,7 +460,7 @@ main(int ac, char *av[])
   /* main loop over all specified files */
   for (XBATCHname = *av; ac && (XBATCHname = *av); av++, ac--) {
 
-    if (Debug) (void)fprintf(stderr, "will work on %s\n", XBATCHname);
+    if (Debug) fprintf(stderr, "will work on %s\n", XBATCHname);
 
     if (GotAlarm) {
       warn("timed out");
@@ -475,15 +475,15 @@ main(int ac, char *av[])
 
     if (fstat(fd, &statbuf)) {
       syswarn("cannot stat %s, skipping", XBATCHname);
-      (void)close(i);
+      close(i);
       continue;
     }
 
     XBATCHsize = statbuf.st_size;
     if (XBATCHsize == 0) {
       warn("batch file %s is zero length, skipping", XBATCHname);
-      (void)close(i);
-      (void)unlink(XBATCHname);
+      close(i);
+      unlink(XBATCHname);
       continue;
     } else if (XBATCHsize > XBATCHbuffersize) {
       XBATCHbuffersize = XBATCHsize;
@@ -503,7 +503,7 @@ main(int ac, char *av[])
 	break;
       }
     }
-    (void)close(fd);
+    close(fd);
     if (err < 0)
       continue;
 

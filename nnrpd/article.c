@@ -687,7 +687,7 @@ void CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnoartingroup);
 	    return;
 	}
-	(void)strcpy(buff, av[1]);
+	strcpy(buff, av[1]);
 	tart=(ARTNUM)atol(buff);
     }
 
@@ -891,7 +891,7 @@ void CMDxover(int ac, char *av[])
 	Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
     else
 	Reply("%d %d fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, ARTnumber);
-    (void)fflush(stdout);
+    fflush(stdout);
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
 

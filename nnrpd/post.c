@@ -107,19 +107,19 @@ MaxLength(char *p, char *q)
 
     /* Simple case of just want the begining? */
     if ((size_t)(q - p) < sizeof buff - 4) {
-	(void)strncpy(buff, p, sizeof buff - 4);
-	(void)strcpy(&buff[sizeof buff - 4], "...");
+	strncpy(buff, p, sizeof buff - 4);
+	strcpy(&buff[sizeof buff - 4], "...");
     } else if ((p + i) - q < 10) {
 	/* Is getting last 10 characters good enough? */
-	(void)strncpy(buff, p, sizeof buff - 14);
-	(void)strcpy(&buff[sizeof buff - 14], "...");
-	(void)strcpy(&buff[sizeof buff - 11], &p[i - 10]);
+	strncpy(buff, p, sizeof buff - 14);
+	strcpy(&buff[sizeof buff - 14], "...");
+	strcpy(&buff[sizeof buff - 11], &p[i - 10]);
     } else {
 	/* Not in last 10 bytes, so use double elipses. */
-	(void)strncpy(buff, p, sizeof buff - 17);
-	(void)strcpy(&buff[sizeof buff - 17], "...");
-	(void)strncpy(&buff[sizeof buff - 14], &q[-5], 10);
-	(void)strcpy(&buff[sizeof buff - 4], "...");
+	strncpy(buff, p, sizeof buff - 17);
+	strcpy(&buff[sizeof buff - 17], "...");
+	strncpy(&buff[sizeof buff - 14], &q[-5], 10);
+	strcpy(&buff[sizeof buff - 4], "...");
     }
     return Join(buff);
 }
@@ -208,7 +208,7 @@ StripOffHeaders(char *article)
 
 	/* Get start of next header; if it's a blank line, we hit the end. */
 	if ((p = NextHeader(p)) == NULL) {
-	    (void)strcpy(Error, "Article has no body -- just headers");
+	    strcpy(Error, "Article has no body -- just headers");
 	    return NULL;
 	}
 	if (*p == '\n')
@@ -463,7 +463,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     /* Set Organization */
     if (!ihave && HDR(HDR__ORGANIZATION) == NULL
      && (p = PERMaccessconf->organization) != NULL) {
-	(void)strcpy(orgbuff, p);
+	strcpy(orgbuff, p);
 	HDR_SET(HDR__ORGANIZATION, orgbuff);
     }
 
@@ -616,34 +616,34 @@ MailArticle(char *group, char *article)
     snprintf(buff, sizeof(buff), innconf->mta, address);
     if ((F = popen(buff, "w")) == NULL)
 	return "Can't start mailer";
-    (void)fprintf(F, "To: %s\n", address);
+    fprintf(F, "To: %s\n", address);
     if (FLUSH_ERROR(F)) {
-	(void)pclose(F);
+	pclose(F);
 	return CANTSEND;
     }
 
     /* Write the headers, a blank line, then the article. */
     for (hp = Table; hp < ENDOF(Table); hp++)
 	if (hp->Value) {
-	    (void)fprintf(F, "%s: %s\n", hp->Name, hp->Value);
+	    fprintf(F, "%s: %s\n", hp->Name, hp->Value);
 	    if (FLUSH_ERROR(F)) {
-		(void)pclose(F);
+		pclose(F);
 		return CANTSEND;
 	    }
 	}
     for (i = 0; i < OtherCount; i++) {
-	(void)fprintf(F, "%s\n", OtherHeaders[i]);
+	fprintf(F, "%s\n", OtherHeaders[i]);
 	if (FLUSH_ERROR(F)) {
-	    (void)pclose(F);
+	    pclose(F);
 	    return CANTSEND;
 	}
     }
-    (void)fprintf(F, "\n");
+    fprintf(F, "\n");
     i = strlen(article);
     if (fwrite(article, 1, i, F) != (size_t)i)
 	return "Can't send article";
     if (FLUSH_ERROR(F)) {
-	(void)pclose(F);
+	pclose(F);
 	return CANTSEND;
     }
     i = pclose(F);
@@ -756,7 +756,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 
     p = DDend(h);
     if (HDR(HDR__DISTRIBUTION) == NULL && *p) {
-	(void)strcpy(distbuff, p);
+	strcpy(distbuff, p);
 	HDR_SET(HDR__DISTRIBUTION, distbuff);
     }
     DISPOSE(p);
@@ -772,11 +772,11 @@ SendQuit(FILE *FromServer, FILE *ToServer)
 {
     char	buff[NNTP_STRLEN];
 
-    (void)fprintf(ToServer, "quit\r\n");
-    (void)fflush(ToServer);
-    (void)fclose(ToServer);
-    (void)fgets(buff, sizeof buff, FromServer);
-    (void)fclose(FromServer);
+    fprintf(ToServer, "quit\r\n");
+    fflush(ToServer);
+    fclose(ToServer);
+    fgets(buff, sizeof buff, FromServer);
+    fclose(FromServer);
 }
 
 
@@ -788,7 +788,7 @@ OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
 {
     static char		CANTSEND[] = "Can't send %s to server, %s";
 
-    (void)fprintf(ToServer, "ihave %s\r\n", HDR(HDR__MESSAGEID));
+    fprintf(ToServer, "ihave %s\r\n", HDR(HDR__MESSAGEID));
     if (FLUSH_ERROR(ToServer)
      || fgets(buff, buffsize, FromServer) == NULL) {
 	snprintf(buff, sizeof(buff), CANTSEND, "IHAVE", strerror(errno));
@@ -1038,7 +1038,7 @@ ARTpost(char *article,
 		snprintf(idbuff, sizeof(idbuff),
                          "(mailed to moderator for %s)", modgroup);
 	    else
-		(void)strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
+		strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
 	    idbuff[SMBUF - 1] = '\0';
 	}
 	if (strncmp(p, "DROP", 4) == 0) {
@@ -1102,7 +1102,7 @@ ARTpost(char *article,
      * attempt to recover from this by spooling it locally */
     if (i < 0) {
 	if (buff[0])
-	    (void)strcpy(Error, buff);
+	    strcpy(Error, buff);
 	else
 	    snprintf(Error, sizeof(Error), CANTSEND, "connect request",
                      strerror(errno));
@@ -1112,9 +1112,9 @@ ARTpost(char *article,
 	syslog(L_TRACE, "%s post_connect %s",
 	    ClientHost, PERMaccessconf->nnrpdposthost ? PERMaccessconf->nnrpdposthost : "localhost");
 
-    /* The code below has too many (void) casts for my tastes.  At least
-     * they are all inside cases that are most likely never going to
-     * happen -- for example, if the server crashes. */
+    /* The code below ignores too many return values for my tastes.  At least
+     * they are all inside cases that are most likely never going to happen --
+     * for example, if the server crashes. */
 
     /* Offer article to server. */
     i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
@@ -1128,7 +1128,7 @@ ARTpost(char *article,
         i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
     }
     if (i != NNTP_SENDIT_VAL) {
-        (void)strcpy(Error, buff);
+        strcpy(Error, buff);
         SendQuit(FromServer, ToServer);
 	if (i != NNTP_HAVEIT_VAL)
 	    return Spoolit(article, Error);
@@ -1150,35 +1150,35 @@ ARTpost(char *article,
 		if ((p = Towire(q)) != NULL) {
 		    /* there is no white space, if hp->Value and hp->Body is the same */
 		    if (*hp->Value == ' ' || *hp->Value == '\t')
-			(void)fprintf(ToServer, "%s:%s\r\n", hp->Name, p);
+			fprintf(ToServer, "%s:%s\r\n", hp->Name, p);
 		    else
-			(void)fprintf(ToServer, "%s: %s\r\n", hp->Name, p);
+			fprintf(ToServer, "%s: %s\r\n", hp->Name, p);
 		    DISPOSE(p);
 		}
 	    } else {
 		/* there is no white space, if hp->Value and hp->Body is the same */
 		if (*hp->Value == ' ' || *hp->Value == '\t')
-		    (void)fprintf(ToServer, "%s:%s\r\n", hp->Name, q);
+		    fprintf(ToServer, "%s:%s\r\n", hp->Name, q);
 		else
-		    (void)fprintf(ToServer, "%s: %s\r\n", hp->Name, q);
+		    fprintf(ToServer, "%s: %s\r\n", hp->Name, q);
 	    }
 	    DISPOSE(q);
 	}
     for (i = 0; i < OtherCount; i++) {
 	if (strchr(OtherHeaders[i], '\n') != NULL) {
 	    if ((p = Towire(OtherHeaders[i])) != NULL) {
-		(void)fprintf(ToServer, "%s\r\n", p);
+		fprintf(ToServer, "%s\r\n", p);
 		DISPOSE(p);
 	    }
 	} else {
-	    (void)fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
+	    fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
 	}
     }
-    (void)fprintf(ToServer, "\r\n");
+    fprintf(ToServer, "\r\n");
     if (FLUSH_ERROR(ToServer)) {
 	snprintf(Error, sizeof(Error), CANTSEND, "headers", strerror(errno));
-	(void)fclose(FromServer);
-	(void)fclose(ToServer);
+	fclose(FromServer);
+	fclose(ToServer);
 	return Spoolit(article, Error);
     }
 
@@ -1186,14 +1186,14 @@ ARTpost(char *article,
     if (NNTPsendarticle(article, ToServer, TRUE) < 0
      || fgets(buff, sizeof buff, FromServer) == NULL) {
 	snprintf(Error, sizeof(Error), CANTSEND, "article", strerror(errno));
-	(void)fclose(FromServer);
-	(void)fclose(ToServer);
+	fclose(FromServer);
+	fclose(ToServer);
 	return Spoolit(article, Error);
     }
 
     /* Did the server want the article? */
     if ((i = atoi(buff)) != NNTP_TOOKIT_VAL) {
-	(void)strcpy(Error, buff);
+	strcpy(Error, buff);
 	SendQuit(FromServer, ToServer);
 	syslog(L_TRACE, "%s server rejects %s from %s", ClientHost, HDR(HDR__MESSAGEID), HDR(HDR__PATH));
 	if (i != NNTP_REJECTIT_VAL && i != NNTP_HAVEIT_VAL)
@@ -1207,7 +1207,7 @@ ARTpost(char *article,
     /* Send a quit and close down */
     SendQuit(FromServer, ToServer);
     if (idbuff) {
-	(void)strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
+	strncpy(idbuff, HDR(HDR__MESSAGEID), SMBUF - 1);
 	idbuff[SMBUF - 1] = '\0';
     }
 
@@ -1235,32 +1235,32 @@ ARTpost(char *article,
 		    if ((p = Towire(q)) != NULL) {
 			/* there is no white space, if hp->Value and hp->Body is the same */
 			if (*hp->Value == ' ' || *hp->Value == '\t')
-			    (void)fprintf(ftd, "%s:%s\r\n", hp->Name, p);
+			    fprintf(ftd, "%s:%s\r\n", hp->Name, p);
 			else
-			    (void)fprintf(ftd, "%s: %s\r\n", hp->Name, p);
+			    fprintf(ftd, "%s: %s\r\n", hp->Name, p);
 			DISPOSE(p);
 		    }
 		} else {
 		    /* there is no white space, if hp->Value and hp->Body is the same */
 		    if (*hp->Value == ' ' || *hp->Value == '\t')
-			(void)fprintf(ftd, "%s:%s\r\n", hp->Name, q);
+			fprintf(ftd, "%s:%s\r\n", hp->Name, q);
 		    else
-			(void)fprintf(ftd, "%s: %s\r\n", hp->Name, q);
+			fprintf(ftd, "%s: %s\r\n", hp->Name, q);
 		}
 		DISPOSE(q);
 	    }
 	for (i = 0 ; i < OtherCount ; i++) {
 	    if (strchr(OtherHeaders[i], '\n') != NULL) {
 	        if ((p = Towire(OtherHeaders[i])) != NULL) {
-		    (void)fprintf(ftd, "%s\r\n", p);
+		    fprintf(ftd, "%s\r\n", p);
 		    DISPOSE(p);
 	        }
 	    } else {
-	        (void)fprintf(ftd, "%s\r\n", OtherHeaders[i]);
+	        fprintf(ftd, "%s\r\n", OtherHeaders[i]);
 	    }
 	}
-	(void)fprintf(ftd,"\r\n");
-	(void)NNTPsendarticle(article, ftd, TRUE);
+	fprintf(ftd,"\r\n");
+	NNTPsendarticle(article, ftd, TRUE);
 	if (fclose(ftd) != EOF) {
 	    syslog(L_NOTICE, "%s (%s) posttrack ok %s",
 		ClientHost, Username, TrackID);

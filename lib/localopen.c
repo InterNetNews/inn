@@ -49,7 +49,7 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     strcat(server.sun_path, _PATH_NNTPCONNECT);
     if (connect(i, (struct sockaddr *)&server, SUN_LEN(&server)) < 0) {
 	oerrno = errno;
-	(void)close(i);
+	close(i);
 	errno = oerrno;
 	return -1;
     }
@@ -57,19 +57,19 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     /* Connected -- now make sure we can post. */
     if ((F = fdopen(i, "r")) == NULL) {
 	oerrno = errno;
-	(void)close(i);
+	close(i);
 	errno = oerrno;
 	return -1;
     }
     if (fgets(buff, sizeof mybuff, F) == NULL) {
 	oerrno = errno;
-	(void)fclose(F);
+	fclose(F);
 	errno = oerrno;
 	return -1;
     }
     j = atoi(buff);
     if (j != NNTP_POSTOK_VAL && j != NNTP_NOPOSTOK_VAL) {
-	(void)fclose(F);
+	fclose(F);
 	/* This seems like a reasonable error code to use... */
 	errno = EPERM;
 	return -1;
@@ -78,7 +78,7 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff)
     *FromServerp = F;
     if ((*ToServerp = fdopen(dup(i), "w")) == NULL) {
 	oerrno = errno;
-	(void)fclose(F);
+	fclose(F);
 	errno = oerrno;
 	return -1;
     }

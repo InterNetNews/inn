@@ -145,7 +145,7 @@ PERMgeneric(char *av[], char *accesslist)
 	    return -1;
 	}
 	syslog(L_NOTICE, "cant fork %s -- waiting", av[0]);
-	(void)sleep(5);
+	sleep(5);
     }
 
     /* Run the child, with redirection. */
@@ -160,21 +160,21 @@ PERMgeneric(char *av[], char *accesslist)
 		    pan[PIPE_WRITE], STDERR_FILENO, i);
 		_exit(1);
 	    }
-	    (void)close(pan[PIPE_WRITE]);
+	    close(pan[PIPE_WRITE]);
 	}
 
 	close_on_exec(STDIN_FILENO, false);
 	close_on_exec(STDOUT_FILENO, false);
 	close_on_exec(STDERR_FILENO, false);
 
-	(void)execv(path, av);
+	execv(path, av);
 	Reply("%s\r\n", NNTP_BAD_COMMAND);
 
 	syslog(L_FATAL, "cant execv %s %m", path);
 	_exit(1);
     }
 
-    (void)close(pan[PIPE_WRITE]);
+    close(pan[PIPE_WRITE]);
     i = read(pan[PIPE_READ], path, sizeof(path));
 
     waitpid(pid, &status, 0);
@@ -206,8 +206,8 @@ PERMgeneric(char *av[], char *accesslist)
     snprintf(PERMuser, sizeof(PERMuser), "%s@%s", fields[2], fields[0]);
     strncpy(PERMpass, fields[3], sizeof(PERMpass) - 1);
     PERMpass[sizeof(PERMpass) - 1] = '\0';
-    (void)strcpy(accesslist, fields[4]);
-    /*(void)strcpy(writeaccess, fields[5]); future work? */
+    strcpy(accesslist, fields[4]);
+    /*strcpy(writeaccess, fields[5]); future work? */
 
     /*for (i = 0; fields[i] && i < 6; i++)
 	printf("fields[%d] = %s\n", i, fields[i]);*/
@@ -264,14 +264,14 @@ CMDauthinfo(ac, av)
 		Reply("%d AUTHINFO SIMPLE <USER> <PASS>\r\n", NNTP_BAD_COMMAND_VAL);
 		return;
 	    }
-	    (void)strncpy(User, av[2], sizeof User - 1);
+	    strncpy(User, av[2], sizeof User - 1);
 	    User[sizeof User - 1] = 0;
 
-	    (void)strncpy(Password, av[3], sizeof Password - 1);
+	    strncpy(Password, av[3], sizeof Password - 1);
 	    Password[sizeof Password - 1] = 0;
 	} else {
 	    if (caseEQ(av[1], "user")) {
-		(void)strncpy(User, av[2], sizeof User - 1);
+		strncpy(User, av[2], sizeof User - 1);
 		User[sizeof User - 1] = 0;
 		Reply("%d PASS required\r\n", NNTP_AUTH_NEXT_VAL);
 		return;
@@ -286,7 +286,7 @@ CMDauthinfo(ac, av)
 		return;
 	    }
 
-	    (void)strncpy(Password, av[2], sizeof Password - 1);
+	    strncpy(Password, av[2], sizeof Password - 1);
 	    Password[sizeof Password - 1] = 0;
 	}
 
@@ -434,7 +434,7 @@ CMDlist(int ac, char *av[])
     p = av[1];
     if (p == NULL || caseEQ(p, "active")) {
 	time_t		now;
-	(void)time(&now);
+	time(&now);
 	lp = &INFOactive;
 	if (ac == 3) {
 	    wildarg = av[2];
@@ -498,7 +498,7 @@ CMDlist(int ac, char *av[])
     Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
     if (!PERMspecified) {
 	/* Optmize for unlikely case of no permissions and FALSE default. */
-	(void)QIOclose(qp);
+	QIOclose(qp);
 	Printf(".\r\n");
 	return;
     }
@@ -738,7 +738,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 
     if (!backoff_inited) {
 	/* Exponential posting backoff */
-	(void)InitBackoffConstants();
+	InitBackoffConstants();
 	backoff_inited = TRUE;
     }
 
@@ -804,7 +804,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	}
 	Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);
     }
-    (void)fflush(stdout);
+    fflush(stdout);
 
     p = article;
     end = &article[size];

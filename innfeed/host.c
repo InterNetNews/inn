@@ -2108,10 +2108,8 @@ bool hostCxnGone (Host host, Connection cxn)
 /*
  * The connections has offered an article to the remote.
  */
-void hostArticleOffered (Host host, Connection cxn) 
+void hostArticleOffered (Host host, Connection cxn UNUSED)
 {
-  (void) cxn ;                  /* keep lint happy. */
-  
   host->artsOffered++ ;
   host->gArtsOffered++ ;
   procArtsOffered++ ;
@@ -2265,10 +2263,8 @@ void hostArticleDeferred (Host host, Connection cxn, Article article)
  * The Connection is giving the article back to the Host, but it doesn't
  * want a new one in return.
  */
-void hostTakeBackArticle (Host host, Connection cxn, Article article) 
+void hostTakeBackArticle (Host host, Connection cxn UNUSED, Article article) 
 {
-  (void) cxn ;                  /* keep lint happy */
-  
   if (!amClosing (host)) 
     {
       Article extraRef ;
@@ -2634,8 +2630,8 @@ static HostParams hostDetails (scope *s,
       val = 0;                                          \
   } while(0);                                           \
   iv = 0 ;                                              \
-  (void) getInteger (sc,n,&iv,inh) ;                    \
-  val = (unsigned int) iv ;                                    \
+  getInteger (sc,n,&iv,inh) ;                           \
+  val = (unsigned int) iv ;
 
 #define GETREAL(sc,f,n,min,max,req,val,inh)             \
   vival = validateReal(f,n,min,max,req,val,sc,inh);     \
@@ -2649,8 +2645,8 @@ static HostParams hostDetails (scope *s,
       rv = 0;                                           \
   } while(0);                                           \
   rv = 0 ;                                              \
-  (void) getReal (sc,n,&rv,inh) ;                       \
-  val = rv ;                                            \
+  getReal (sc,n,&rv,inh) ;                              \
+  val = rv ;
 
 #define GETBOOL(sc,f,n,req,val,inh)                     \
   vival = validateBool(f,n,req,val,sc,inh);             \
@@ -2664,8 +2660,8 @@ static HostParams hostDetails (scope *s,
       bv = 0;                                           \
   } while(0);                                           \
   bv = 0 ;                                              \
-  (void) getBool (sc,n,&bv,inh)  ;                      \
-  val = (bv ? true : false);                            \
+  getBool (sc,n,&bv,inh)  ;                             \
+  val = (bv ? true : false);
 
   inherit = isDefault?NO_INHERIT:INHERIT;
   GETINT(s,fp,"article-timeout",0,LONG_MAX,REQ,p->articleTimeout, inherit);
@@ -3425,12 +3421,10 @@ static void hostPrintStatus (Host host, FILE *fp)
 /*
  * The callback function for the statistics timer to call.
  */
-static void hostStatsTimeoutCbk (TimeoutId tid, void *data)
+static void hostStatsTimeoutCbk (TimeoutId tid UNUSED, void *data)
 {
   Host host = (Host) data ;
   time_t now = theTime () ;
-
-  (void) tid ;                  /* keep lint happy */
 
   ASSERT (tid == host->statsId) ;
   
@@ -3447,13 +3441,11 @@ static void hostStatsTimeoutCbk (TimeoutId tid, void *data)
 /*
  * The callback function for the deferred article timer to call.
  */
-static void hostDeferredArtCbk (TimeoutId tid, void *data)
+static void hostDeferredArtCbk (TimeoutId tid UNUSED, void *data)
 {
   Host host = (Host) data ;
   time_t now = theTime () ;
   Article article ;
-
-  (void) tid ;                  /* keep lint happy */
 
   ASSERT (tid == host->deferredId) ;
 

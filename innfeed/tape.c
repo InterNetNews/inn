@@ -602,7 +602,7 @@ void delTape (Tape tape)
   if (stat(tape->outputFilename, &st) == 0 && st.st_size == 0)
     {
       d_printf (1,"removing empty output tape: %s\n",tape->outputFilename) ;
-      (void) unlink (tape->outputFilename) ;
+      unlink (tape->outputFilename) ;
     }
   
   tape->outFp = NULL ;
@@ -617,7 +617,7 @@ void delTape (Tape tape)
   if (tape->inFp != NULL)
     {
       checkpointTape (tape) ;
-      (void) fclose (tape->inFp) ;
+      fclose (tape->inFp) ;
     }
 
   unlockFile (tape->lockFilename) ;
@@ -691,8 +691,7 @@ void tapeTakeArticle (Tape tape, Article article)
   if (tape->outputHighLimit > 0 && tape->outputSize >= tape->outputHighLimit)
     {
       long oldSize = tape->outputSize ;
-      (void) shrinkfile (tape->outFp,
-                         tape->outputLowLimit,tape->outputFilename,"a+") ;
+      shrinkfile (tape->outFp,tape->outputLowLimit,tape->outputFilename,"a+");
       tape->outputSize = ftello (tape->outFp) ;
       tape->lossage += oldSize - tape->outputSize ;
     }
@@ -733,7 +732,7 @@ Article getArticle (Tape tape)
           tape->inFp = NULL ;
           tape->scribbled = false ;
 
-          (void) unlink (tape->inputFilename) ;
+          unlink (tape->inputFilename) ;
 
           if ((now - tape->lastRotated) > rotatePeriod)
             prepareFiles (tape) ; /* rotate files to try next. */
@@ -810,7 +809,7 @@ Article getArticle (Tape tape)
           tape->scribbled = false ;
           
           /* toss out the old input file and prepare the new one */
-          (void) unlink (tape->inputFilename) ;
+          unlink (tape->inputFilename) ;
           
           if (now - tape->lastRotated > rotatePeriod)
             prepareFiles (tape) ;
@@ -1212,10 +1211,8 @@ static void prepareFiles (Tape tape)
 }
 
 
-static void tapeCkNewFileCbk (TimeoutId id, void *d)
+static void tapeCkNewFileCbk (TimeoutId id, void *d UNUSED)
 {
-  (void) d ;
-  
   ASSERT (id == ckNewFileId) ;
   ASSERT (tapeCkNewFilePeriod > 0) ;
 
@@ -1226,10 +1223,8 @@ static void tapeCkNewFileCbk (TimeoutId id, void *d)
 
 
 /* The timer callback function that will checkpoint all the active tapes. */
-static void tapeCheckpointCallback (TimeoutId id, void *d)
+static void tapeCheckpointCallback (TimeoutId id, void *d UNUSED)
 {
-  (void) d ;                    /* keep lint happy */
-
   ASSERT (id == checkPtId) ;
   ASSERT (tapeCkPtPeriod > 0) ;
   
@@ -1288,8 +1283,7 @@ static void flushTape (Tape tape)
   
   if (tape->outputHighLimit > 0 && tape->outputSize > tape->outputHighLimit)
     {
-      (void) shrinkfile (tape->outFp,
-                         tape->outputLowLimit,tape->outputFilename,"a+") ;
+      shrinkfile (tape->outFp,tape->outputLowLimit,tape->outputFilename,"a+");
       tape->outputSize = ftello (tape->outFp) ;
     }
 }

@@ -295,7 +295,7 @@ void CMDnewnews(int ac, char *av[]) {
 	  }
 	  process_newnews(p, AllGroups, date);
       }
-      (void)QIOclose(qp);
+      QIOclose(qp);
   }
   Printf(".\r\n");
   TMRstop(TMR_NEWNEWS);

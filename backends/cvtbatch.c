@@ -102,26 +102,26 @@ main(int ac, char *av[]) {
 		continue;
 	    case FEED_BYTESIZE:
 		if (Dirty)
-		    (void)putchar(' ');
-		(void)printf("%d", len);
+		    putchar(' ');
+		printf("%d", len);
 		break;
 	    case FEED_FULLNAME:
 	    case FEED_NAME:
 		if (Dirty)
-		    (void)putchar(' ');
-		(void)printf("%s", line);
+		    putchar(' ');
+		printf("%s", line);
 		break;
 	    case FEED_MESSAGEID:
 		if (Dirty)
-		    (void)putchar(' ');
-		(void)printf("%s", q);
+		    putchar(' ');
+		printf("%s", q);
 		break;
 	    }
 	    Dirty = TRUE;
 	}
 	DISPOSE(q);
 	if (Dirty)
-	    (void)putchar('\n');
+	    putchar('\n');
     }
 
     exit(0);

@@ -22,7 +22,7 @@ fdreserve(int fdnum)
     if (fdnum <= 0) {
 	if (Reserved_fd != NULL) {
 	    for (i = 0 ; i < Maxfd ; i++) {
-		(void)fclose(Reserved_fd[i]);
+		fclose(Reserved_fd[i]);
 	    }
 	    DISPOSE(Reserved_fd);
 	    Reserved_fd = NULL;
@@ -40,14 +40,14 @@ fdreserve(int fdnum)
 	    allocated = fdnum;
 	} else if (Maxfd > fdnum) {
 	    for (i = fdnum ; i < Maxfd ; i++) {
-		(void)fclose(Reserved_fd[i]);
+		fclose(Reserved_fd[i]);
 	    }
 	}
     }
     for (i = start ; i < fdnum ; i++) {
 	if (((Reserved_fd[i] = fopen("/dev/null", "r")) == NULL)){
 	    for (--i ; i >= 0 ; i--)
-		(void)fclose(Reserved_fd[i]);
+		fclose(Reserved_fd[i]);
 	    DISPOSE(Reserved_fd);
 	    Reserved_fd = NULL;
 	    allocated = 0;

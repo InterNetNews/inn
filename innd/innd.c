@@ -561,11 +561,11 @@ main(int ac, char *av[])
 	if (fgets(buff, sizeof buff, F) != NULL
 	 && ((pid = (pid_t) atol(buff)) > 0)
 	 && (kill(pid, 0) > 0 || errno != ESRCH)) {
-	    (void)syslog(L_FATAL, "%s already_running pid %ld", LogName,
+	    syslog(L_FATAL, "%s already_running pid %ld", LogName,
 	    (long) pid);
 	    exit(1);
 	}
-	(void)fclose(F);
+	fclose(F);
     }
 
     if (GetTimeInfo(&Now) < 0)

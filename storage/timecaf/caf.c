@@ -567,32 +567,32 @@ CAFOpenArtRead(const char *path, ARTNUM art, size_t *len)
 
     /* Fetch the header */
     if (CAFReadHeader(fd, &head) < 0) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     /* Is the requested article even in the file? */
     if (art < head.Low || art > head.High) {
 	CAFError(CAF_ERR_ARTNOTHERE);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     if (CAFGetTOCEnt(fd, &head, art, &tocent) < 0) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     if (tocent.Size == 0) {
 	/* empty/otherwise not present article */
 	CAFError(CAF_ERR_ARTNOTHERE);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     if (lseek(fd, tocent.Offset, SEEK_SET) < 0) {
 	CAFError(CAF_ERR_IO);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
@@ -702,14 +702,14 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
     */
     nulls[0] = 0;
     if (OurWrite(fd, nulls, 1) < 0) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
     /* shouldn't be anyone else locking our file, since temp file has unique
        PID-based name ... */
     if (!inn_lock_file(fd, INN_LOCK_WRITE, FALSE)) {
 	CAFError(CAF_ERR_IO);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }	
 
@@ -727,15 +727,15 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
     if (link(path, finalpath) < 0) {
 	CAFError(CAF_ERR_IO);
 	/* bounced on the link attempt, go ahead and unlink the temp file and return. */
-	(void) unlink(path);
-	(void) close(fd);
+	unlink(path);
+	close(fd);
 	return -1;
     }
     /*
     ** Unlink the temp. link. Do we really care if this fails? XXX
     ** Not sure what we can do anyway.
     */
-    (void) unlink(path);
+    unlink(path);
     return fd;
 }
 
@@ -800,16 +800,16 @@ CAFOpenArtWrite(char *path, ARTNUM *artp, int waitlock, size_t size)
 
 	if (!waitlock) {
 	    CAFError(CAF_ERR_FILEBUSY);
-	    (void) close(fd); /* keep from leaking fds. */
+	    close(fd); /* keep from leaking fds. */
 	    return -1;
 	}
 	/* wait around to try and get a lock. */
-	(void) inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
+	inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.
 	*/ 
-	(void) close(fd);
+	close(fd);
     }
     return CAFStartWriteFd(fd, artp, size);
 }
@@ -831,7 +831,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
     /* fd is open to the CAF file, open for write and locked. */
     /* Fetch the header */
     if (CAFReadHeader(fd, &head) < 0) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
@@ -847,7 +847,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
     /* Is the requested article even in the file? */
     if (art < head.Low || art >= head.Low + head.NumSlots) {
 	CAFError(CAF_ERR_ARTWONTFIT);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
@@ -868,7 +868,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
 	memset(&tocent, 0, sizeof(tocent));
     } else {
 	if (CAFGetTOCEnt(fd, &head, art, &tocent) < 0) {
-	    (void) close(fd);
+	    close(fd);
 	    return -1;
 	}
     }
@@ -876,7 +876,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
     if (tocent.Size != 0) {
 	/* article is already here */
 	CAFError(CAF_ERR_ARTALREADYHERE);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
@@ -900,7 +900,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
 
 	if ((offset = lseek(fd, 0, SEEK_END)) < 0) {
 	    CAFError(CAF_ERR_IO);
-	    (void) close(fd);
+	    close(fd);
 	    return -1;
 	}
 	/* and round up offset to a block boundary. */
@@ -910,7 +910,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
     /* Seek to starting offset for the new artiicle. */
     if (lseek(fd, startoffset, SEEK_SET) < 0) {
 	CAFError(CAF_ERR_IO);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
     
@@ -1080,7 +1080,7 @@ CAFReadTOC(char *path, CAFHEADER *ch)
 	return NULL; /* some sort of error happened */
     }
 
-    (void) close(fd);
+    close(fd);
     return tocp;
 }
 
@@ -1107,7 +1107,7 @@ CAFOpenReadTOC(char *path, CAFHEADER *ch, CAFTOCENT **tocpp)
 
     /* Fetch the header */
     if (CAFReadHeader(fd, ch) < 0) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
@@ -1168,22 +1168,22 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 	if (inn_lock_file(fd, INN_LOCK_WRITE, FALSE)) break;
 
 	/* wait around to try and get a lock. */
-	(void) inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
+	inn_lock_file(fd, INN_LOCK_WRITE, TRUE);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.
 	*/ 
-	(void) close(fd);
+	close(fd);
     }
     /* got the file, open for write and locked. */
     /* Fetch the header */
     if (CAFReadHeader(fd, &head) < 0) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     if ((freebitmap = CAFReadFreeBM(fd, &head)) == NULL) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
@@ -1198,7 +1198,7 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 	}
 
 	if (CAFGetTOCEnt(fd, &head, art, &tocent) < 0) {
-	    (void) close(fd);
+	    close(fd);
 	    CAFDisposeBitmap(freebitmap);
 	    return -1;
 	}
@@ -1221,20 +1221,20 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 	tocent.Size = 0;
 
 	if (CAFSeekTOCEnt(fd, &head, art) < 0) {
-	    (void) close(fd);
+	    close(fd);
 	    CAFDisposeBitmap(freebitmap);
 	    return -1;
 	}
 
 	if (OurWrite(fd, &tocent, sizeof(CAFTOCENT)) < 0) {
-	    (void) close(fd);
+	    close(fd);
 	    CAFDisposeBitmap(freebitmap);
 	    return -1;
 	}
     }
 
     if (CAFWriteFreeBM(fd, freebitmap) < 0) {
-	(void) close(fd);
+	close(fd);
 	CAFDisposeBitmap(freebitmap);
 	return -1;
     }
@@ -1290,31 +1290,31 @@ CAFStatArticle(char *path, ARTNUM art, struct stat *stbuf)
 
     /* Fetch the header */
     if (CAFReadHeader(fd, &head) < 0) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     /* Is the requested article even in the file? */
     if (art < head.Low || art > head.High) {
 	CAFError(CAF_ERR_ARTNOTHERE);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     if (CAFGetTOCEnt(fd, &head, art, &tocent) < 0) {
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     if (tocent.Size == 0) {
 	/* empty/otherwise not present article */
 	CAFError(CAF_ERR_ARTNOTHERE);
-	(void) close(fd);
+	close(fd);
 	return -1;
     }
 
     /* done with file, can close it. */
-    (void) close(fd);
+    close(fd);
 
     memset(stbuf, 0, sizeof(struct stat));
     stbuf->st_mode = S_IFREG | 0444;
@@ -1390,24 +1390,24 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	if (inn_lock_file(fdin, INN_LOCK_WRITE, FALSE)) break;
 
 	/* wait around to try and get a lock. */
-	(void) inn_lock_file(fdin, INN_LOCK_WRITE, TRUE);
+	inn_lock_file(fdin, INN_LOCK_WRITE, TRUE);
 	/*
         ** and then close and reopen the file, in case someone changed the
 	** file out from under us.
 	*/ 
-	(void) close(fdin);
+	close(fdin);
     }
 
     /* got the file, open for write and locked. */
     /* Fetch the header */
     if (CAFReadHeader(fdin, &head) < 0) {
-	(void) close(fdin);
+	close(fdin);
 	return -1;
     }
 
     /* Stat the file to see how big it is */
     if (fstat(fdin, &statbuf) < 0) {
-	(void) close(fdin);
+	close(fdin);
 	CAFError(CAF_ERR_IO);
 	perror(path);
 	return -1;
@@ -1432,7 +1432,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     /* make input file stdio-buffered. */
     if ((infile = fdopen(fdin, "r+")) == NULL) {
 	CAFError(CAF_ERR_IO);
-	(void) close(fdin);
+	close(fdin);
 	return -1;
     }
 
@@ -1474,8 +1474,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     ** just remove the entire file. 
     */
     if (newlow == head.High + 1) {
-        (void) unlink(path);
-	(void) fclose(infile);
+        unlink(path);
+	fclose(infile);
 	DISPOSE(tocarray);
 	DISPOSE(newpath);
 	return 0;
@@ -1531,7 +1531,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 		CAFError(CAF_ERR_IO);
 		DISPOSE(tocarray);
 		DISPOSE(newpath);
-		(void) fclose(infile);
+		fclose(infile);
 		return -1;
 	    }
 	    /*
@@ -1543,8 +1543,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 		perror(path);
 		DISPOSE(tocarray);
 		DISPOSE(newpath);
-		(void) fclose(infile);
-		(void) unlink(newpath);
+		fclose(infile);
+		unlink(newpath);
 		return -1;
 	    }
 	    if (fwrite(tocarray, sizeof(CAFTOCENT), head.High - newlow + 1, infile) < head.High - newlow + 1
@@ -1552,11 +1552,11 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 		CAFError(CAF_ERR_IO);
 		DISPOSE(tocarray);
 		DISPOSE(newpath);
-		(void) fclose(infile);
+		fclose(infile);
 		return -1;
 	    }
 	    /* all done, return. */
-	    (void) fclose(infile);
+	    fclose(infile);
 	    DISPOSE(tocarray);
 	    DISPOSE(newpath);
 	    return 0;
@@ -1565,7 +1565,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	    if (verbose) {
 		printf("Not cleaning %s: Free=%d (%f%%)\n", path, head.Free, percentfree);
 	    }
-	    (void) fclose(infile);
+	    fclose(infile);
 	    DISPOSE(tocarray);
 	    DISPOSE(newpath);
 	    return 0;
@@ -1594,7 +1594,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 		       path, num_diskblocks_needed,
                        (unsigned long) fsinfo.f_bavail);
 	    }
-	    (void) fclose(infile);
+	    fclose(infile);
 	    DISPOSE(tocarray);
 	    DISPOSE(newpath);
 	    return 0;
@@ -1625,23 +1625,23 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 
     if ((outfile = fdopen(fdout, "w+")) == NULL) {
 	CAFError(CAF_ERR_IO);
-	(void) fclose(infile);
+	fclose(infile);
 	DISPOSE(tocarray);
-	(void) unlink(newpath);
+	unlink(newpath);
 	DISPOSE(newpath);
 	return -1;
     }
 
     newtocarray = NEW(CAFTOCENT, head.High - newlow + 1);
-    (void) memset(newtocarray, 0, sizeof(CAFTOCENT)*(head.High - newlow+1));
+    memset(newtocarray, 0, sizeof(CAFTOCENT)*(head.High - newlow+1));
 
     if (fseeko(outfile, 0, SEEK_SET) < 0) {
 	perror(newpath);
 	DISPOSE(tocarray);
 	DISPOSE(newtocarray);
-	(void) fclose(infile);
-	(void) fclose(outfile);
-	(void) unlink(newpath);
+	fclose(infile);
+	fclose(outfile);
+	unlink(newpath);
 	DISPOSE(newpath);
 	return -1;
     }
@@ -1651,9 +1651,9 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	perror(newpath);
 	DISPOSE(tocarray);
 	DISPOSE(newtocarray);
-	(void) fclose(infile);
-	(void) fclose(outfile);
-	(void) unlink(newpath);
+	fclose(infile);
+	fclose(outfile);
+	unlink(newpath);
 	DISPOSE(newpath);
 	return -1;
     }
@@ -1703,12 +1703,12 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 		    }
 
 		    errorexit:
-		    (void) fclose(infile);
-		    (void) fclose(outfile);
+		    fclose(infile);
+		    fclose(outfile);
 		    DISPOSE(tocarray);
 		    DISPOSE(newtocarray);
 		    DISPOSE(zerobuff);
-		    (void) unlink(newpath);
+		    unlink(newpath);
 		    DISPOSE(newpath);
 		    return -1;
 		}
@@ -1744,9 +1744,9 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     if (fseeko(outfile, 0, SEEK_SET) < 0) {
 	perror(newpath);
 	DISPOSE(newtocarray);
-	(void) fclose(infile);
-	(void) fclose(outfile);
-	(void) unlink(newpath);
+	fclose(infile);
+	fclose(outfile);
+	unlink(newpath);
 	DISPOSE(newpath);
 	return -1;
     }
@@ -1761,9 +1761,9 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     if (fwrite(&newhead, sizeof(CAFHEADER), 1, outfile) < 1) {
 	CAFError(CAF_ERR_IO);
 	DISPOSE(newtocarray);
-	(void) fclose(infile);
-	(void) fclose(outfile);
-	(void) unlink(newpath);
+	fclose(infile);
+	fclose(outfile);
+	unlink(newpath);
 	DISPOSE(newpath);
 	return -1;
     }
@@ -1776,9 +1776,9 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	       SEEK_SET) < 0) {
 	perror(newpath);
 	DISPOSE(newtocarray);
-	(void) fclose(infile);
-	(void) fclose(outfile);
-	(void) unlink(newpath);
+	fclose(infile);
+	fclose(outfile);
+	unlink(newpath);
 	DISPOSE(newpath);
 	return -1;
     }
@@ -1787,9 +1787,9 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	|| fflush(outfile) < 0) {
 	CAFError(CAF_ERR_IO);
 	DISPOSE(newtocarray);
-	(void) fclose(infile);
-	(void) fclose(outfile);
-	(void) unlink(newpath);
+	fclose(infile);
+	fclose(outfile);
+	unlink(newpath);
 	DISPOSE(newpath);
 	return -1;
     }
@@ -1798,8 +1798,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	CAFError(CAF_ERR_IO);
 	DISPOSE(newtocarray);
 	DISPOSE(newpath);
-	(void) fclose(infile);
-	(void) fclose(outfile);
+	fclose(infile);
+	fclose(outfile);
 	/* if can't rename, probably no point in trying to unlink newpath, is there? */
 	return -1;
     }
@@ -1807,7 +1807,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
        here! */
     DISPOSE(newtocarray);
     DISPOSE(newpath);
-    (void) fclose(outfile);
-    (void) fclose(infile);
+    fclose(outfile);
+    fclose(infile);
     return 0;
 }

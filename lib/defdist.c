@@ -67,7 +67,7 @@ DDstart(FILE *FromServer, FILE *ToServer)
     /* Allocate space for the handle. */
     if ((h = NEW(DDHANDLE, 1)) == NULL) {
 	i = errno;
-	(void)fclose(F);
+	fclose(F);
 	if (name != NULL)
 	    unlink(name);
 	errno = i;
@@ -80,7 +80,7 @@ DDstart(FILE *FromServer, FILE *ToServer)
     } else if ((h->Entries = NEW(DDENTRY, i)) == NULL) {
 	i = errno;
 	DISPOSE(h);
-	(void)fclose(F);
+	fclose(F);
 	if (name != NULL)
 	    unlink(name);
 	errno = i;
@@ -106,7 +106,7 @@ DDstart(FILE *FromServer, FILE *ToServer)
     }
     h->Count = ep - h->Entries;
 
-    (void)fclose(F);
+    fclose(F);
     if (name != NULL)
 	unlink(name);
     return h;
@@ -174,7 +174,7 @@ main(int ac, char *av[])
 	if ((p = strchr(buff, '\r')) != NULL)
 	    *p = '\0';
 	if (buff[0])
-	    (void)fprintf(stderr, "%s\n", buff);
+	    fprintf(stderr, "%s\n", buff);
 	else
 	    perror("Can't connect");
 	exit(1);

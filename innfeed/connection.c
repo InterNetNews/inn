@@ -2626,7 +2626,7 @@ void reopenTimeoutCbk (TimeoutId id, void *data)
       cxnSleepOrDie (cxn) ;
     }
   else
-    (void) cxnConnect (cxn) ;
+    cxnConnect (cxn) ;
 }
 
 
@@ -2720,11 +2720,9 @@ static void articleTimeoutCbk (TimeoutId id, void *data)
  * tape or queue, and if that's no good then it registers this callback so
  * that other Connections have a chance of being serviced.
  */
-static void cxnWorkProc (EndPoint ep, void *data)
+static void cxnWorkProc (EndPoint ep UNUSED, void *data)
 {
   Connection cxn = (Connection) data ;
-
-  (void) ep ;                   /* keep lint happy */
 
   d_printf (2,"%s:%d calling work proc\n",
            hostPeerName (cxn->myHost),cxn->ident) ;
@@ -2776,13 +2774,11 @@ static void cxnSleepOrDie (Connection cxn)
  * Handle the response 205 to our QUIT command, which means the
  * remote is going away and we can happily cleanup
  */
-static void processResponse205 (Connection cxn, char *response)
+static void processResponse205 (Connection cxn, char *response UNUSED)
 {
   bool immedRecon ;
 
   VALIDATE_CONNECTION (cxn) ;
-
-  (void) response ;             /* keep lint happy */
 
   if (!(cxn->state == cxnFeedingS ||
         cxn->state == cxnIdleS ||
@@ -3199,11 +3195,9 @@ static void processResponse439 (Connection cxn, char *response)
 /*
  * process the "article transferred ok" response to the IHAVE-body.
  */
-static void processResponse235 (Connection cxn, char *response)
+static void processResponse235 (Connection cxn, char *response UNUSED)
 {
   ArtHolder artHolder ;
-
-  (void) response ;             /* keep lint happy */
 
   if (cxn->doesStreaming)
     {
@@ -3261,10 +3255,8 @@ static void processResponse235 (Connection cxn, char *response)
 /*
  * process the "send article to be transfered" reponse to the IHAVE.
  */
-static void processResponse335 (Connection cxn, char *response)
+static void processResponse335 (Connection cxn, char *response UNUSED)
 {
-  (void) response ;             /* keep lint happy */
-
   if (cxn->doesStreaming)
     {
       warn ("%s:%d cxnsleep unexpected non-streaming response for"
@@ -3363,11 +3355,9 @@ static void processResponse400 (Connection cxn, char *response)
 /*
  * process the "not wanted" reponse to the IHAVE.
  */
-static void processResponse435 (Connection cxn, char *response)
+static void processResponse435 (Connection cxn, char *response UNUSED)
 {
   ArtHolder artHolder ;
-
-  (void) response ;             /* keep lint happy */
 
   if (cxn->doesStreaming)
     {
@@ -3434,11 +3424,9 @@ static void processResponse435 (Connection cxn, char *response)
  * process the "transfer failed" response to the IHAVE-body, (seems this
  * can come from the IHAVE too).
  */
-static void processResponse436 (Connection cxn, char *response)
+static void processResponse436 (Connection cxn, char *response UNUSED)
 {
   ArtHolder artHolder ;
-
-  (void) response ;             /* keep lint happy */
 
   if (cxn->doesStreaming)
     {
@@ -3492,11 +3480,9 @@ static void processResponse436 (Connection cxn, char *response)
  * Process the "article rejected do not try again" response to the
  * IHAVE-body.
  */
-static void processResponse437 (Connection cxn, char *response)
+static void processResponse437 (Connection cxn, char *response UNUSED)
 {
   ArtHolder artHolder ;
-
-  (void) response ;             /* keep lint happy */
 
   if (cxn->doesStreaming)
     {
@@ -3541,11 +3527,8 @@ static void processResponse437 (Connection cxn, char *response)
 /* Process the response 480 Transfer permission defined. We're probably
    talking to a remote nnrpd on a system that forgot to put us in
    the hosts.nntp */
-static void processResponse480 (Connection cxn, char *response)
+static void processResponse480 (Connection cxn, char *response UNUSED)
 {
-
-  (void) response ;             /* keep lint happy */
-
   if (cxn->doesStreaming)
     {
       warn ("%s:%d cxnsleep unexpected non-streaming response for"
@@ -3584,13 +3567,11 @@ static void processResponse480 (Connection cxn, char *response)
 /*
  * Handle the response 503, which means the timeout of nnrpd.
  */
-static void processResponse503 (Connection cxn, char *response)
+static void processResponse503 (Connection cxn, char *response UNUSED)
 {
   bool immedRecon ;
 
   VALIDATE_CONNECTION (cxn) ;
-
-  (void) response ;             /* keep lint happy */
 
   if (!(cxn->state == cxnFeedingS ||
 	cxn->state == cxnIdleS ||

@@ -544,32 +544,24 @@ static void usage (int val)
   exit (val) ;
 }
 
-static void sigterm (int sig)
+static void sigterm (int sig UNUSED)
 {
-  (void) sig ;
-
   notice ("ME received shutdown signal") ;
   shutDown (mainListener) ;
 }
 
-static void sigquit (int sig)
+static void sigquit (int sig UNUSED)
 {
-  (void) sig ;
-  
   sigterm (0) ;
 }
 
-static void sigint (int sig)
+static void sigint (int sig UNUSED)
 {
-  (void) sig ;
-
   gprintinfo () ;
 }
 
-static void sighup (int sig)
+static void sighup (int sig UNUSED)
 {
-  (void) sig ;
-  
   notice ("ME reloading config file %s", configFile) ;
 
   if (!readConfig (configFile,NULL,false,loggingLevel > 0))
@@ -580,17 +572,13 @@ static void sighup (int sig)
   configHosts (talkToSelf) ;
 }
 
-static void sigemt (int sig)
+static void sigemt (int sig UNUSED)
 {
-  (void) sig ;
-
   gFlushTapes () ;
 }
 
-static void sigalrm (int sig)
+static void sigalrm (int sig UNUSED)
 {
-  (void) sig ;
-  
   if (InputFile == NULL)
     warn ("ME signal SIGALRM in non-funnel-file mode ignored") ;
   else 
@@ -600,11 +588,8 @@ static void sigalrm (int sig)
     }
 }
 
-static void sigchld (int sig)
+static void sigchld (int sig UNUSED)
 {
-
-  (void) sig ;                  /* keep lint happy */
-
 #if 0
   wait (&status) ;              /* we don't care */
 #endif
@@ -831,12 +816,10 @@ static int mainConfigLoadCbk (void *data)
  * can adjust config file values from options. They will be validated in the
  * second callback.
  */
-static int mainOptionsProcess (void *data)
+static int mainOptionsProcess (void *data UNUSED)
 {
   value *v ;
 
-  (void) data ;
-  
   if (bopt != NULL)
     {
       if ((v = findValue (topScope,"backlog-directory",NO_INHERIT)) != NULL) 
