@@ -2747,12 +2747,17 @@ static void processResponse439 (Connection cxn, char *response)
         }
       else
         {
-          cxn->checksRefused++ ;
-          remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-          if (cxn->articleQTotal == 0)
-            cxnIdle (cxn) ;
-          hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
-          delArtHolder (artHolder) ;
+          if ((artHolder = artHolderByMsgId (msgid, cxn->checkRespHead)) == NULL)
+            noSuchMessageId (cxn,439,msgid,response) ;
+          else
+            {
+              cxn->checksRefused++ ;
+              remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
+              if (cxn->articleQTotal == 0)
+                cxnIdle (cxn) ;
+              hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
+              delArtHolder (artHolder) ;
+            }
         }
     }
   else if (msgid == NULL || strlen (msgid) == 0 ||
