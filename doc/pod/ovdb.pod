@@ -137,7 +137,11 @@ rewriting them.
 If this parameter is set to 0, expireover will compact all newsgroups; if
 set to 1, expireover will not compact any newsgroups; and if set to a
 value greater than one, expireover will only compact groups that have less
-than that number of articles.  Default is 1000.
+than that number of articles.
+
+Experience has shown that compacting has minimal effect (other than
+making expireover take longer) so the default is now 1.  This parameter
+will probably be removed in the future.
 
 =item readserver
 
