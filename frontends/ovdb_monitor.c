@@ -127,8 +127,10 @@ static void deadlock(void)
     while(!signalled) {
 #if DB_VERSION_MAJOR == 2
 	ret = lock_detect(OVDBenv->lk_info, 0, atype);
-#else
+#elif DB_VERSION_MAJOR == 3
 	ret = lock_detect(OVDBenv, 0, atype, NULL);
+#else
+	ret = OVDBenv->lock_detect(OVDBenv, 0, atype, NULL);
 #endif
 	if(ret != 0) {
 	    syslog(L_ERROR, "OVDB: lock_detect: %s", db_strerror(ret));
@@ -182,12 +184,12 @@ static void checkpoint(void)
     while(!signalled) {
 #if DB_VERSION_MAJOR == 2
 	ret = txn_checkpoint(OVDBenv->tx_info, 2048, 1);
-#else
-#if DB_VERSION_MINOR == 0
+#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
 	ret = txn_checkpoint(OVDBenv, 2048, 1);
-#else
+#elif DB_VERSION_MAJOR == 3
 	ret = txn_checkpoint(OVDBenv, 2048, 1, 0);
-#endif
+#else
+	ret = OVDBenv->txn_checkpoint(OVDBenv, 2048, 1, 0);
 #endif
 	if(ret != 0 && ret != DB_INCOMPLETE) {
 	    syslog(L_ERROR, "OVDB: txn_checkpoint: %s", db_strerror(ret));
@@ -219,8 +221,10 @@ static void logremover(void)
 	ret = log_archive(OVDBenv->lg_info, &listp, DB_ARCH_ABS, malloc);
 #elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
 	ret = log_archive(OVDBenv, &listp, DB_ARCH_ABS, malloc);
-#else
+#elif DB_VERSION_MAJOR == 3
 	ret = log_archive(OVDBenv, &listp, DB_ARCH_ABS);
+#else
+	ret = OVDBenv->log_archive(OVDBenv, &listp, DB_ARCH_ABS);
 #endif
 	if(ret != 0) {
 	    syslog(L_ERROR, "OVDB: log_archive: %s", db_strerror(ret));

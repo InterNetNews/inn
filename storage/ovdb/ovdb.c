@@ -1303,7 +1303,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
     if(flags & OVDB_RECOVER)
 	ai_flags |= DB_RECOVER;
 
-#if DB_VERSION_MAJOR == 2 || DB_VERSION_MINOR < 2
+#if DB_VERSION_MAJOR == 2 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR < 2)
     if(ovdb_conf.txn_nosync)
 	ai_flags |= DB_TXN_NOSYNC;
 #endif
@@ -1332,7 +1332,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
 
     if(ovdb_conf.useshm)
 	ai_flags |= DB_SYSTEM_MEM;
-#if DB_VERSION_MINOR > 0
+#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR > 0)
     OVDBenv->set_shm_key(OVDBenv, ovdb_conf.shmkey);
 #endif
 
@@ -1340,12 +1340,12 @@ int ovdb_open_berkeleydb(int mode, int flags)
     OVDBenv->set_cachesize(OVDBenv, 0, ovdb_conf.cachesize, 1);
     OVDBenv->set_lk_max(OVDBenv, ovdb_conf.maxlocks);
 
-#if DB_VERSION_MINOR >= 2
+#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
     if(ovdb_conf.txn_nosync)
 	OVDBenv->set_flags(OVDBenv, DB_TXN_NOSYNC, 1);
 #endif
 
-#if DB_VERSION_MINOR == 0
+#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
     if(ret = OVDBenv->open(OVDBenv, ovdb_conf.home, NULL, ai_flags, 0666)) {
 #else
     if(ret = OVDBenv->open(OVDBenv, ovdb_conf.home, ai_flags, 0666)) {

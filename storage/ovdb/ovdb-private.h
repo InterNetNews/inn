@@ -1,11 +1,11 @@
 
 #if DB_VERSION_MAJOR == 2
 #if DB_VERSION_MINOR < 6
-#error Need BerkeleyDB 2.6.x, 2.7.x, or 3.x
+#error "Need BerkeleyDB 2.6.x, 2.7.x, 3.x or 4.x"
 #endif
 #else
-#if DB_VERSION_MAJOR != 3
-#error Need BerkeleyDB 2.6.x, 2.7.x, or 3.x
+#if DB_VERSION_MAJOR < 3 || DB_VERSION_MAJOR > 4
+#error "Need BerkeleyDB 2.6.x, 2.7.x, 3.x or 4.x"
 #endif
 #endif
 
