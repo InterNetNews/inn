@@ -769,6 +769,7 @@ dnl Check for Kerberos libraries for auth_krb5, and if found define KRB5_AUTH
 dnl to the relevant object file, which will enable compilation of it.
 INN_SEARCH_AUX_LIBS(krb5_parse_name, krb5, KRB5_LIB,
     [KRB5_AUTH="auth_krb5"
+     KRB5_LIB="$KRB5_LIB -lk5crypto -lcom_err"
      AC_SUBST(KRB5_AUTH)
      AC_SUBST(KRB5_INC)], , [$LIBS -lk5crypto -lcom_err])
 
