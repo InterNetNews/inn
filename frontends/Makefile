@@ -7,7 +7,7 @@ CFLAGS        = $(GCFLAGS)
 ALL	      = c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
 		getlist gunbatch inews innconfval mailpost pullnews \
 		ovdb_init ovdb_monitor ovdb_server ovdb_stat rnews \
-		scanspool signcontrol sm
+		scanspool sm
 
 SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
 		ovdb_init.c ovdb_monitor.c ovdb_server.c ovdb_stat.c rnews.c sm.c
@@ -28,7 +28,6 @@ INSTALLED     = $(D)$(PATHBIN)/cnfsheadconf	\
 		$(D)$(PATHBIN)/pullnews		\
 		$(D)$(PATHBIN)/rnews		\
 		$(D)$(PATHBIN)/scanspool	\
-		$(D)$(PATHBIN)/signcontrol	\
 		$(D)$(PATHBIN)/sm		\
 		$(D)$(PATHRNEWS)/c7unbatch	\
 		$(D)$(PATHRNEWS)/decode		\
@@ -88,7 +87,6 @@ cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in
 mailpost:	mailpost.in      $(FIX)	; $(FIX) mailpost.in
 pullnews:	pullnews.in      $(FIX)	; $(FIX) -i pullnews.in
 scanspool:	scanspool.in     $(FIX)	; $(FIX) scanspool.in
-signcontrol:	signcontrol.in   $(FIX)	; $(FIX) -i signcontrol.in
 
 c7unbatch: Makefile ../Makefile.global
 	( echo '#! $(SHELL)' ; echo 'decode | $(UNCOMPRESS)' ) > $@
@@ -123,7 +121,6 @@ $(D)$(PATHBIN)/ovdb_server:         ovdb_server		; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/ovdb_stat:           ovdb_stat		; $(LI_XPRI) $? $@
 $(D)$(PATHBIN)/pullnews:            pullnews            ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/scanspool:           scanspool           ; $(CP_XPUB) $? $@
-$(D)$(PATHBIN)/signcontrol:         signcontrol         ; $(CP_XPUB) $? $@
 $(D)$(PATHBIN)/sm:                  sm                  ; $(LI_XPUB) $? $@
 $(D)$(PATHRNEWS)/c7unbatch:         c7unbatch           ; $(CP_XPUB) $? $@
 $(D)$(PATHRNEWS)/decode:            decode              ; $(LI_XPUB) $? $@
