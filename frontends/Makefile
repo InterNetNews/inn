@@ -24,7 +24,7 @@ all:		$(ALL)
 	date >$@
 
 install:	$D$(PATHBIN)/inews $D$(PATHBIN)/rnews \
-		$D$(PATHBIN)/ctlinnd $D$(PATHBIN)/getlist
+		$D$(PATHBIN)/ctlinnd $D$(PATHBIN)/getlist \
 		$D$(PATHBIN)/innconfval $D$(RNEWSPROGS)/c7unbatch \
 		$D$(RNEWSPROGS)/decode $D$(RNEWSPROGS)/encode \
 		$D$(PATHBIN)/sm
