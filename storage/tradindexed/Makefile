@@ -7,7 +7,7 @@ CFLAGS	= $(GCFLAGS) -I..
 
 ALL	= tdx-util
 SOURCES = tdx-data.c tdx-group.c tdx-util.c
-OBJECTS = tdx-data.o tdx-group.o
+OBJECTS = tdx-data.o tdx-group.o tradindexed.o
 
 STORELIBS = $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
