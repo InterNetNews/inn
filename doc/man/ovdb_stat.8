@@ -2,9 +2,8 @@
 ''' $RCSfile$$Revision$$Date$
 '''
 ''' $Log$
-''' Revision 1.1  2000/08/29 22:03:58  kondou
-''' - From: Heath Kehoe <heath.kehoe@intermec.com>
-''' - new ovdb version (forgot to commit last time)
+''' Revision 1.2  2000/09/28 07:17:04  hkehoe
+''' docs update
 '''
 '''
 .de Sh
@@ -97,7 +96,7 @@
 .nr % 0
 .rr F
 .\}
-.TH ovdb_stat 8 "INN 2.3" "29/Aug/2000" "InterNetNews Documentation"
+.TH ovdb_stat 8 "INN 2.3" "28/Sep/2000" "InterNetNews Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -203,13 +202,14 @@ statistics, newsgroup data, and overview records; and optionally
 outputs in HTML format.
 .SH "OPTIONS"
 .Ip "\fB\-g\fR" 4
-Newsgroup himark, lowmark, article count, and flag for the given newsgroups
+Newsgroup himark, lowmark, article count, and flag for the given \fInewsgroup\fR\|(s)
 (as stored in the ovdb \*(L"groupinfo\*(R" database) are displayed.
 .Ip "\fB\-c\fR" 4
 Similar to \fB\-g\fR, except the himark, lowmark, and count are calculated
-by actually iterating over the overview records and counting them.
+by actually scanning the overview records and counting them.
+This can be a lengthy operation on groups with lots of articles.
 .Ip "\fB\-i\fR" 4
-Internal data regarding the given newsgroups is displayed.
+Internal data regarding the given \fInewsgroup\fR\|(s) are displayed.
 .Ip "\fB\-r\fR \fIartnumrange\fR" 4
 Overview records are retrieved.  The \fIartnumrange\fR parameter may be
 a single article number, or a range of articles in the format \f(CWlow-hi\fR.
@@ -225,7 +225,7 @@ call.
 Displays global memory pool statistics, as returned by the
 BerkeleyDB \fImemp_stat()\fR call.
 .Ip "\fB\-M\fR" 4
-Same as \fB\-m\fR, except also displays memory pool statistics for each
+Same as \fB\-m\fR, and also displays memory pool statistics for each
 database file.
 .Ip "\fB\-t\fR" 4
 Displays log region statistics, as returned by the BerkeleyDB \fItxn_stat()\fR
@@ -234,9 +234,15 @@ call.
 Displays ovdb version, and BerkeleyDB version.
 .Ip "\fB\-d\fR \fIdatabase\fR" 4
 Displays information about the given database, as returned by the
-BerkeleyDB db->\fIstat()\fR call.
+BerkeleyDB db->\fIstat()\fR call.  This operation may take a long time
+on busy systems (several minutes or more).
 .SH "WARNINGS"
 Only run this command as the news user, and never as root.
+.PP
+ovdb_stat may be safely killed with the INT, TERM, or HUP signals.
+It catches those signals and exits cleanly.
+Do not kill ovdb_stat with other signals, unless absolutely necessary,
+because it may leave stale locks in the DB environment.
 .SH "HISTORY"
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 .SH "SEE ALSO"
