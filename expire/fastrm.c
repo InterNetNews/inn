@@ -62,7 +62,7 @@ static int
 err_alloc(const char *what, size_t size, const char *file, int line)
 {
     fprintf(stderr, "%s: Can't %s %lu bytes at line %d of %s: %s", MyName,
-            what, size, line, file, strerror(errno));
+            what, (unsigned long) size, line, file, strerror(errno));
     SMshutdown();
     exit(1);
 }
@@ -209,8 +209,8 @@ STATIC int comp(CPOINTER a, CPOINTER b)
 {
 	dnode           *l1, *l2;
 
-	l1 = *CAST(dnode**, a);
-	l2 = *CAST(dnode**, b);
+	l1 = *((dnode **) a);
+	l2 = *((dnode **) b);
 	return strcmp(NODENAME(l1), NODENAME(l2));
 }
 
