@@ -438,7 +438,9 @@ Dynamic Generation of Access Groups
     A Perl script may be used to dynamically generate an access group which
     is then used to determine the access rights of the client. This occurs
     whenever the perl_access: is specified in an auth group which has
-    successfully matched the client.
+    successfully matched the client. Only one perl_access: statement is
+    allowed in an auth group. This parameter should not be mixed with a
+    python_access: statement in the same auth group.
 
     When a perl_access: parameter is encountered, Perl is loaded (if it has
     yet to be) and the file given as argument is loaded as well. Provided
