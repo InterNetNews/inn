@@ -81,6 +81,19 @@ To see what would be changed by B<-F>, run B<tdx-util> with B<-A> first.
 
 =item B<-g>
 
+Dump the index of a particular group.  The fields are, in order, the
+article number, the offset of the data for that article in the overview
+data file for that group, the length of the overview data, the time (in
+seconds since epoch) when the article arrived on the server, the time (in
+seconds since epoch) when the article should expire based on its Expires
+header (or 0 if there is no Expires header), and the storage API token of
+the article.
+
+If this option is given, the B<-n> option must also be given to specify
+the newsgroup on which to act.
+
+=item B<-i>
+
 Dump the master index of the overview database.  This contains similar
 information to the server active file, such as high and low water marks
 and moderation status, and is the information that nnrpd hands out to
@@ -92,18 +105,8 @@ begins), the count of articles in the group, the group status flag, the
 time (in seconds since epoch) when that newsgroup was deleted or 0 if it
 hasn't been, and the inode of the index file for that group.
 
-=item B<-i>
-
-Dump the index of a particular group.  The fields are, in order, the
-article number, the offset of the data for that article in the overview
-data file for that group, the length of the overview data, the time (in
-seconds since epoch) when the article arrived on the server, the time (in
-seconds since epoch) when the article should expire based on its Expires
-header (or 0 if there is no Expires header), and the storage API token of
-the article.
-
-If this option is given, the B<-n> option must also be given to specify
-the newsgroup on which to act.
+A particular newsgroup can be specified with the B<-n> option.  If B<-n>
+is not given, the entire master index will be dumped.
 
 =item B<-n> I<newsgroup>
 
