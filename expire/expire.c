@@ -694,7 +694,7 @@ EXPdoline(out, line, length, arts, krps)
     switch (fields[0][0]) {
     case '[':
 	if (strlen(fields[0]) != (sizeof(HASH) + 2)) {
-	    fprintf(stderr, "Invalid length for hash %s, skipping\n", p);
+	    fprintf(stderr, "Invalid length for hash %s, skipping\n", fields[0]);
 	    return TRUE;
 	}
 	key = TextToHash(fields[0]);
@@ -703,7 +703,7 @@ EXPdoline(out, line, length, arts, krps)
 	key = HashMessageID(fields[0]);
 	break;
     default:
-	fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
+	fprintf(stderr, "Invalid message-id \"%s\" in history text\n", fields[0]);
 	return TRUE;
     }
     if (dbzexists(key)) {
