@@ -266,6 +266,12 @@ news readers these days handle posting through a network connection and
 don't need a local setgid inews to post.  Installing inews setgid was the
 default prior to INN 2.3.
 
+=item B<--with-ssl=PATH>
+
+Enables SSL for news reading, which means get SSL or TLS encrypted NNRP
+between your server and newsreaders. Sets the path of the installed
+directory of OpenSSL. You must make a certificate and private key.
+
 =back
 
 For the most common installation, a standalone news server, a suggested
@@ -296,6 +302,13 @@ directories it needs and install a couple of setuid wrapper scripts needed
 to raise resource limits and allow innd to bind to port 119.  This will
 install INN under the install directory (F</usr/local/news>, unless you
 specified something else to the configure script.)
+
+If you use SSL support for nnrp, you must make a certificate and private
+key at least once. Type:
+
+    make cert
+
+You will need to run this command as root.
 
 You are now ready for the really fun part: configuring your copy of INN!
 
