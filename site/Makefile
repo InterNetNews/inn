@@ -24,7 +24,6 @@ PATH_CONTROLCTL	= /var/news/etc/control.ctl
 PATH_EXPIRECTL	= /var/news/etc/expire.ctl
 ##  =()<PATH_INNDHOSTS	= @<_PATH_INNDHOSTS>@>()=
 PATH_INNDHOSTS	= /var/news/etc/incoming.conf
-PATH_NOLIMIT = $(PATH_INNDHOSTS).nolimit
 ##  =()<PATH_MODERATORS	= @<_PATH_MODERATORS>@>()=
 PATH_MODERATORS	= /var/news/etc/moderators
 ##  =()<PATH_DISTPATS	= @<_PATH_DISTPATS>@>()=
@@ -86,8 +85,8 @@ OWNER	= -O news -G news
 ##  Order:  innd, control, expire, inews, sending, misc
 MOST	= rc.news overview.fmt checkgroups default ihave newgroup \
 	rmgroup sendme sendsys senduuname version parsecontrol writelog \
-	docheckgroups news.daily scanlogs scanlogs-backend.pl expirerm \
-	tally.control tally.unwanted nntpsend send-ihave send-nntp send-uucp \
+	docheckgroups news.daily scanlogs expirerm \
+	tally.control nntpsend send-ihave send-nntp send-uucp \
 	sendbatch inncheck innstat pgpverify innwatch innreport.pl innshellvars \
 	innshellvars.pl innshellvars.csh innshellvars.tcl filter.tcl \
 	startup.tcl startup_innd.pl filter_innd.pl filter_nnrpd.pl \
@@ -99,8 +98,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 	$D$(CTLBIN)/senduuname $D$(CTLBIN)/version $D$(PATH_PARSECTL) \
 	$D$(NEWSBIN)/writelog $D$(CTLBIN)/docheckgroups \
 	$D$(NEWSBIN)/news.daily $D$(NEWSBIN)/scanlogs \
-	$D$(NEWSBIN)/scanlogs-backend.pl $D$(NEWSBIN)/expirerm \
-	$D$(NEWSBIN)/tally.control $D$(NEWSBIN)/tally.unwanted \
+	$D$(NEWSBIN)/expirerm $D$(NEWSBIN)/tally.control \
 	$D$(NEWSBIN)/nntpsend $D$(NEWSLIB)/send-ihave $D$(NEWSLIB)/send-nntp \
 	$D$(NEWSLIB)/send-uucp $D$(NEWSBIN)/sendbatch $D$(NEWSBIN)/inncheck \
 	$D$(NEWSBIN)/innstat $D$(NEWSBIN)/pgpverify $D$(NEWSBIN)/innwatch \
@@ -112,8 +110,7 @@ MOST_INSTALLED	= $D$(PATH_NEWSBOOT) $D$(PATH_SCHEMA) $D$(CTLBIN)/checkgroups \
 
 ##  Scripts from above, plus site-specific config files.
 REST		= \
-	newsfeeds \
-	hosts.nntp.nolimit nnrp.access passwd.nntp \
+	newsfeeds nnrp.access passwd.nntp \
 	inn.conf moderators innreport.conf innreport_inn.pm \
 	control.ctl expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
@@ -122,8 +119,7 @@ REST		= \
 ALL		= $(MOST) $(REST)
 
 REST_INSTALLED	= \
-	$D$(PATH_NEWSFEEDS) \
-	$D$(PATH_INNDHOSTS) $D$(PATH_NOLIMIT) \
+	$D$(PATH_NEWSFEEDS) $D$(PATH_INNDHOSTS) \
 	$D$(PATH_NNRPACCESS) $D$(PATH_NNTPPASS) \
 	$D$(PATH_CONFIG) $D$(PATH_MODERATORS) \
 	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(NEWSLIB)/nntpsend.ctl \
@@ -193,7 +189,6 @@ COPY_XPUB	= $(SHELL) ../installit.sh $(OWNER) -m 0555 -b .OLD
 
 ##  Order:  innd, control, expire, inews, sending, misc
 $D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
-$D$(PATH_NOLIMIT):	hosts.nntp.nolimit ; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPACCESS):	nnrp.access	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSBOOT):	rc.news		; $(COPY_XPRI) $? $@
@@ -214,10 +209,8 @@ $D$(NEWSBIN)/writelog:	writelog	; $(COPY_XPRI) $? $@
 $D$(CTLBIN)/docheckgroups: docheckgroups ; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/news.daily: news.daily	; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/scanlogs:	scanlogs	; $(COPY_XPRI) $? $@
-$D$(NEWSBIN)/scanlogs-backend.pl: scanlogs-backend.pl	; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/expirerm:	expirerm	; $(COPY_XPRI) $? $@
 $D$(NEWSBIN)/tally.control: tally.control ; $(COPY_XPRI) $? $@
-$D$(NEWSBIN)/tally.unwanted: tally.unwanted ; $(COPY_XPRI) $? $@
 $D$(PATH_EXPIRECTL):	expire.ctl	; $(COPY_RPRI) $? $@
 $D$(PATH_CONFIG):	inn.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_MODERATORS):	moderators	; $(COPY_RPUB) $? $@
@@ -278,7 +271,6 @@ filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@
 expirerm:	../samples/expirerm		; $(COPY) $? $@
 incoming.conf:	../samples/incoming.conf		; $(COPY) $? $@
-hosts.nntp.nolimit: ../samples/hosts.nntp.nolimit ; $(COPY) $? $@
 ihave:		../samples/ihave		; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 inncheck:	../samples/inncheck		; $(COPY) $? $@
@@ -312,7 +304,6 @@ rc.news:	../samples/rc.news		; $(COPY) $? $@
 rmgroup:	../samples/rmgroup		; $(COPY) $? $@
 sample.control: ../samples/sample.control	; $(COPY) $? $@
 scanlogs:	../samples/scanlogs		; $(COPY) $? $@
-scanlogs-backend.pl:	../samples/scanlogs-backend.pl	; $(COPY) $? $@
 scanspool:	../samples/scanspool		; $(COPY) $? $@
 send-ihave:	../samples/send-ihave		; $(COPY) $? $@
 send-nntp:	../samples/send-nntp		; $(COPY) $? $@
@@ -324,7 +315,6 @@ senduuname:	../samples/senduuname		; $(COPY) $? $@
 startup.tcl:	../samples/startup.tcl		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 tally.control:	../samples/tally.control	; $(COPY) $? $@
-tally.unwanted:	../samples/tally.unwanted	; $(COPY) $? $@
 version:	../samples/version		; $(COPY) $? $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
