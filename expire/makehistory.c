@@ -1159,19 +1159,35 @@ DoArticle(QIOSTATE *qp, struct stat *Sbp, char *name, FILE *out, BOOL RemoveBad,
     /* Output the line. */
     if (Posted == 0)
 	Posted = Arrived;
-    if (Expires > 0)
-	i = fprintf(out, "[%s]%c%lu%c%lu%c%lu%c%s\n",
+    if (innconf->storemsgid) {
+	if (Expires > 0)
+	    i = fprintf(out, "%s%c%lu%c%lu%c%lu%c%s\n",
+		    MessageID, HIS_FIELDSEP,
+                    (unsigned long)Arrived, HIS_SUBFIELDSEP,
+                    (unsigned long)Expires,
+		    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
+                    name);
+	else
+	    i = fprintf(out, "%s%c%lu%c%s%c%lu%c%s\n",
+		    MessageID, HIS_FIELDSEP,
+                    (unsigned long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
+		    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
+                    name);
+    } else {
+	if (Expires > 0)
+	    i = fprintf(out, "[%s]%c%lu%c%lu%c%lu%c%s\n",
 		    HashToText(key), HIS_FIELDSEP,
                     (unsigned long)Arrived, HIS_SUBFIELDSEP,
                     (unsigned long)Expires,
 		    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
                     name);
-    else
-	i = fprintf(out, "[%s]%c%lu%c%s%c%lu%c%s\n",
+	else
+	    i = fprintf(out, "[%s]%c%lu%c%s%c%lu%c%s\n",
 		    HashToText(key), HIS_FIELDSEP,
                     (unsigned long)Arrived, HIS_SUBFIELDSEP, HIS_NOEXP,
 		    HIS_SUBFIELDSEP, (unsigned long)Posted, HIS_FIELDSEP,
                     name);
+    }
     if (i == EOF || ferror(out)) {
 	(void)fprintf(stderr, "Can't write history line, %s\n",
 		strerror(errno));
