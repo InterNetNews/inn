@@ -603,6 +603,34 @@ fi
 AC_SUBST(PYTHON_LIB)
 AC_SUBST(PYTHON_INC)
 
+dnl Source used by INN_TYPE_FPOS_T_LARGE.
+define([_INN_TYPE_FPOS_T_LARGE_SOURCE],
+[#include <stdio.h>
+#include <sys/types.h>
+
+int
+main ()
+{
+  fpos_t fpos = 9223372036854775807ULL;
+  off_t off;
+  off = fpos;
+  exit(off == (off_t) 9223372036854775807ULL ? 0 : 1);
+}])
+
+dnl Check whether fpos_t is 64 bits and can be assigned to an off_t.  If so,
+dnl sets HAVE_LARGE_FPOS_T; this means that a missing fseeko or ftello can
+dnl be emulated usint fgetpos and fsetpos.
+AC_DEFUN([INN_TYPE_FPOS_T_LARGE],
+[AC_CACHE_CHECK(for off_t-compatible fpos_t, inn_cv_type_fpos_t_large,
+[AC_TRY_RUN(_INN_TYPE_FPOS_T_LARGE_SOURCE(),
+            [inn_cv_type_fpos_t_large=yes],
+            [inn_cv_type_fpos_t_large=no],
+            [inn_cv_type_fpos_t_large=no])
+if test "$inn_cv_type_fpos_t_large" = yes ; then
+    AC_DEFINE([HAVE_LARGE_FPOS_T], 1,
+        [Define if fpos_t is at least 64 bits and compatible with off_t.])
+fi])])
+
 dnl If configuring with large file support, use getconf to set our compile
 dnl and link flags and check for some necessary functions.
 if test x"$DO_LFS" = xDO ; then
@@ -648,7 +676,10 @@ if test x"$DO_LFS" = xDO ; then
     AC_SUBST(LFS_CFLAGS)
     AC_SUBST(LFS_LDFLAGS)
     AC_SUBST(LFS_LIBS)
-    AC_CHECK_FUNCS(ftello fseeko)
+    AC_REPLACE_FUNCS(fseeko ftello)
+    if test "$ac_cv_func_fseeko" = no ; then
+        INN_TYPE_FPOS_T_LARGE
+    fi
 fi
 
 dnl
@@ -781,7 +812,7 @@ dnl have IOV_MAX appear to also offer it via sysconf(3), but it should be
 dnl a constant for a given implementation.  Set IOV_MAX if it's not
 dnl defined in <sys/uio.h> or <limits.h>.
 AC_DEFUN(INN_MACRO_IOV_MAX, [
-    AC_MSG_CHECKING(IOV_MAX)
+    AC_MSG_CHECKING(value of IOV_MAX)
     AC_CACHE_VAL(inn_cv_macro_iov_max, [AC_TRY_RUN(dnl
 changequote(<<, >>)dnl
 <<
