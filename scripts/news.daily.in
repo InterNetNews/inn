@@ -3,6 +3,7 @@
 ##  Daily news maintenance.
 ##  Optional arguments:
 ##	expdir=xxx	Directory in which to build new history file
+##	tmpdir=xxx	Working directory for `sort' and such
 ##	expirectl=xxx	Use xxx as expire.ctl file
 ##	flags=xxx	Pass xxx flags to expire
 ##	lowmark		Create and use a lowmark file
@@ -103,6 +104,9 @@ do
 	;;
     Xexpdir=*)
 	EXPDIR=`expr "${I}" : 'expdir=\(.*\)'`
+	;;
+    Xtmpdir=*)
+	TMPDIR=`expr "${I}" : 'tmpdir=\(.*\)'`
 	;;
     Xexpireover)
 	DOEXPIREOVER=true

@@ -195,6 +195,11 @@ If the ``lowmark'' keyword is used,
 \&``norenumber'' keyword is not needed, since
 .I news.daily
 specifies it implicitly.
+.TP
+.IR tmpdir= path
+Sets the environment variable TMPDIR to the specified path.
+Various parts of the expire process, such as sort, will then use this
+path as the directory for temporary files.
 .SH HISTORY
 .I News.daily
 and this manual page written by Landon Curt Noll <chongo@toad.com> and
