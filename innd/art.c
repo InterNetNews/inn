@@ -1277,13 +1277,15 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 **  are passed out to an external program in a specific directory that
 **  has the same name as the first word of the control message.
 */
-STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
+STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 {
     char	        *p;
     char		buff[SMBUF];
     char		*av[6];
     struct stat		Sb;
     char	        c;
+    char		**hops;
+    int			hopcount;
 
     /* See if it's a cancel message. */
     c = *Control;
@@ -1346,6 +1348,7 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control)
     av[2] = COPY(Data->Replyto);
     av[3] = Data->Name;
     if (innconf->logipaddr) {
+	hops = ARTparsepath(HDR(_path), &hopcount);
 	av[4] = hops && hops[0] ? hops[0] : CHANname(cp);
     } else {
 	av[4] = (char *)Data->Feedsite;
@@ -2695,7 +2698,7 @@ STRING ARTpost(CHANNEL *cp)
     if (Accepted) {
 	if (ControlHeader >= 0) {
 	    TMRstart(TMR_ARTCTRL);
-	    ARTcontrol(&Data, hash, HDR(ControlHeader));
+	    ARTcontrol(&Data, hash, HDR(ControlHeader), cp);
 	    TMRstop(TMR_ARTCTRL);
 	}
 	p = HDR(_supersedes);
