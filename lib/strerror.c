@@ -13,9 +13,6 @@
 
 #include "config.h"
 
-#include <errno.h>
-#include <stdio.h>
-
 /* Our declarations of sys_nerr and sys_errlist may conflict with the ones
    provided by stdio.h from glibc.  Defining __STRICT_ANSI__ ensures that
    glibc won't attempt to provide any declarations.  (The conflicts are just
@@ -24,6 +21,9 @@
 #ifndef __STRICT_ANSI__
 # define __STRICT_ANSI__ 1
 #endif
+
+#include <errno.h>
+#include <stdio.h>
 
 /* If we're running the test suite, rename strerror to avoid conflicts with
    the system version. */
