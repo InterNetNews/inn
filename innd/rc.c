@@ -1909,6 +1909,9 @@ RCsetup(register int i)
 	memset(&server, 0, sizeof server);
 	server.sin_port = htons(innconf->port);
 	server.sin_family = AF_INET;
+#ifdef HAVE_SOCKADDR_LEN
+	server.sin_len = sizeof( struct sockaddr_in );
+#endif
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (innconf->bindaddress) {
             if (!inet_aton(innconf->bindaddress, &server.sin_addr)) {

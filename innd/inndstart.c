@@ -289,6 +289,9 @@ main(int argc, char *argv[])
 	    memset(&server, 0, sizeof server);
 	    server.sin_port = htons(port);
 	    server.sin_family = AF_INET;
+#ifdef HAVE_SOCKADDR_LEN
+	    server.sin_len = sizeof server;
+#endif
 	    server.sin_addr = address;
 	    if (bind(s[snum], (struct sockaddr *)&server, sizeof server) < 0)
 		sysdie("can't bind inet socket");

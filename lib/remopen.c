@@ -70,6 +70,9 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 		break;
 	    }
 	    ((struct sockaddr_in *)&client)->sin_family = AF_INET;
+#ifdef HAVE_SOCKADDR_LEN
+	    ((struct sockaddr_in *)&client)->sin_len = sizeof( struct sockaddr_in );
+#endif
 	}
 	if (addr->ai_family == AF_INET6 && innconf->sourceaddress6) {
 	    if (inet_pton(AF_INET6, innconf->sourceaddress6,
@@ -78,6 +81,9 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
 		break;
 	    }
 	    ((struct sockaddr_in6 *)&client)->sin6_family = AF_INET6;
+#ifdef HAVE_SOCKADDR_LEN
+	    ((struct sockaddr_in *)&client)->sin6_len = sizeof( struct sockaddr_in6 );
+#endif
 	}
 	if (client.ss_family != 0) {
 	    if (bind(i, (struct sockaddr *)&client, addr->ai_addrlen) < 0) {
@@ -131,11 +137,17 @@ int NNTPconnect(char *host, int port, FILE **FromServerp, FILE **ToServerp, char
     /* Set up the socket address. */
     memset(&server, 0, sizeof server);
     server.sin_family = hp->h_addrtype;
+#ifdef HAVE_SOCKADDR_LEN
+    server.sin_len = sizeof( struct sockaddr_in );
+#endif
     server.sin_port = htons(port);
 
     /* Source IP address to which we bind. */
     memset(&client, 0, sizeof client);
     client.sin_family = AF_INET;
+#ifdef HAVE_SOCKADDR_LEN
+    client.sin_len = sizeof( struct sockaddr_in );
+#endif
     if (innconf->sourceaddress) {
         if (!inet_aton(innconf->sourceaddress, &client.sin_addr))
 	    return -1;
