@@ -47,7 +47,6 @@ typedef struct _NEWSGROUP {
     time_t		Default;
     time_t		Purge;
     /* X flag => remove entire article when it expires in this group */
-    BOOL                Poison;
 } NEWSGROUP;
 
 typedef struct _EXPIRECLASS {
@@ -75,28 +74,17 @@ typedef struct _BADGROUP {
     BOOL		HasDirectory;
 } BADGROUP;
 
-STATIC BADGROUP		*EXPbadgroups;
-STATIC BOOL		EXPlinks;
 STATIC BOOL		EXPquiet;
-STATIC BOOL		EXPsizing;
 STATIC BOOL		EXPtracing;
 STATIC BOOL		EXPusepost;
-STATIC BOOL		EXPkeep;
-STATIC BOOL		EXPearliest;
-STATIC BOOL		ClassicExpire = FALSE;
 STATIC BOOL		Ignoreselfexpire = FALSE;
-STATIC BOOL		StorageAPI;
 STATIC char		*ACTIVE;
 STATIC char		*SPOOL = NULL;
 STATIC int		nGroups;
 STATIC FILE		*EXPunlinkfile;
-STATIC FILE		*EXPunlinkindex;
-STATIC FILE		*EXPlowmarkfile;
-STATIC long		EXPsaved;
 STATIC NEWSGROUP	*Groups;
 STATIC NEWSGROUP	EXPdefault;
 STATIC EXPIRECLASS      EXPclasses[NUM_STORAGE_CLASSES];
-STATIC NGHASH		NGHtable[NGH_SIZE];
 STATIC STRING		EXPreason;
 STATIC time_t		EXPremember;
 STATIC time_t		Now;
@@ -107,13 +95,10 @@ STATIC char		*EXPgraph;
 STATIC int		EXPverbose;
 STATIC long		EXPprocessed;
 STATIC long		EXPunlinked;
-STATIC long		EXPoverindexdrop;
 STATIC long		EXPhistdrop;
 STATIC long		EXPhistremember;
 STATIC long		EXPallgone;
 STATIC long		EXPstillhere;
-
-STATIC BOOL		OVERmmap;
 
 STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x);
 #if ! defined (atof)            /* NEXT defines aotf as a macro */
@@ -122,128 +107,7 @@ extern double		atof();
 
 STATIC int EXPsplit(char *p, char sep, char **argv, int count);
 
-enum KRP {Keep, Remove, Poison};
-
-
-
-/*
-**  Hash a newsgroup and see if we get it.
-*/
-STATIC NEWSGROUP *NGfind(char *Name)
-{
-    char	        *p;
-    int	                i;
-    unsigned int	j;
-    NEWSGROUP	        **ngp;
-    char		c;
-    NGHASH		*htp;
-
-    /* SUPPRESS 6 *//* Over/underflow from plus expression */
-    NGH_HASH(Name, p, j);
-    htp = NGH_BUCKET(j);
-    for (c = *Name, ngp = htp->Groups, i = htp->Used; --i >= 0; ngp++)
-	if (c == ngp[0]->Name[0] && EQ(Name, ngp[0]->Name))
-	    return ngp[0];
-    return NULL;
-}
-
-
-/*
-**  Sorting predicate to put newsgroups in rough order of their activity.
-*/
-STATIC int NGcompare(CPOINTER p1, CPOINTER p2)
-{
-    NEWSGROUP	**ng1;
-    NEWSGROUP	**ng2;
-
-    ng1 = CAST(NEWSGROUP**, p1);
-    ng2 = CAST(NEWSGROUP**, p2);
-    return ng1[0]->Last - ng2[0]->Last;
-}
-
-
-/*
-**  Build the newsgroup structures from the active file.
-*/
-STATIC void BuildGroups(char *active)
-{
-    NGHASH	        *htp;
-    NEWSGROUP	        *ngp;
-    char	        *p;
-    char	        *q;
-    int	                i;
-    unsigned	        j;
-    int	                lines;
-    int			NGHbuckets;
-    char		*fields[5];
-
-    /* Count the number of groups. */
-    for (p = active, i = 0; (p = strchr(p, '\n')) != NULL; p++, i++)
-	continue;
-    nGroups = i;
-    Groups = NEW(NEWSGROUP, i);
-
-    /* Set up the default hash buckets. */
-    NGHbuckets = i / NGH_SIZE;
-    if (NGHbuckets == 0)
-	NGHbuckets = 1;
-    for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
-	htp->Size = NGHbuckets;
-	htp->Groups = NEW(NEWSGROUP*, htp->Size);
-	htp->Used = 0;
-    }
-
-    /* Fill in the array. */
-    lines = 0;
-    for (p = active, ngp = Groups, i = nGroups; --i >= 0; ngp++, p = q + 1) {
-	lines++;
-	if ((q = strchr(p, '\n')) == NULL) {
-	    (void)fprintf(stderr, "%s: line %d missing newline\n",
-		    ACTIVE, lines);
-	    exit(1);
-	}
-	*q = '\0';
-	if (EXPsplit(p, ' ', fields, SIZEOF(fields)) != 4) {
-	    (void)fprintf(stderr, "%s: line %d wrong number of fields\n",
-		    ACTIVE, lines);
-	    exit(1);
-	}
-	ngp->Name = fields[0];
-	ngp->Last = atol(fields[1]);
-	ngp->Rest = fields[3];
-
-	/* Find the right bucket for the group, make sure there is room. */
-	/* SUPPRESS 6 *//* Over/underflow from plus expression */
-	NGH_HASH(ngp->Name, p, j);
-	htp = NGH_BUCKET(j);
-	if (htp->Used >= htp->Size) {
-	    htp->Size += NGHbuckets;
-	    RENEW(htp->Groups, NEWSGROUP*, htp->Size);
-	}
-	htp->Groups[htp->Used++] = ngp;
-    }
-
-    /* Sort each hash bucket. */
-    for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++)
-    if (htp->Used > 1)
-	qsort((POINTER)htp->Groups, (SIZE_T)htp->Used, sizeof htp->Groups[0],
-		NGcompare);
-
-    if (EXPverbose > 3)
-	printf("Setting lowmark Last field to maxint.\n");
-    /* Ok, now change our use of the Last field.  Set them all to maxint. */
-    for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
-	NEWSGROUP	**ngpa;
-	int		k;
-
-	for (ngpa = htp->Groups, k = htp->Used; --k >= 0; ngpa++) {
-	    ngpa[0]->Last = ~(unsigned long) 0;
-	    ngpa[0]->Lastpurged = 0;
-	}
-    }
-    if (EXPverbose > 3)
-	printf("Done setting lowmark Last field to maxint.\n");
-}
+enum KR {Keep, Remove};
 
 
 
@@ -374,7 +238,6 @@ STATIC void EXPmatch(char *p, NEWSGROUP *v, char mod)
 		ngp->Keep      = v->Keep;
 		ngp->Default   = v->Default;
 		ngp->Purge     = v->Purge;
-		ngp->Poison    = v->Poison;
 		if (EXPverbose > 4) {
 		    (void)printf("%s", ngp->Name);
 		    (void)printf(" %13.13s", ctime(&v->Keep) + 3);
@@ -494,7 +357,6 @@ STATIC BOOL EXPreadfile(FILE *F)
 	    (void)fprintf(stderr, "Line %d bad modflag\n", i);
 	    return FALSE;
 	}
-	v.Poison = (strchr(fields[1], 'X') != NULL);
 	if (!EXPgetnum(i, fields[2], &v.Keep,    "keep")
 	 || !EXPgetnum(i, fields[3], &v.Default, "default")
 	 || !EXPgetnum(i, fields[4], &v.Purge,   "purge"))
@@ -523,7 +385,6 @@ STATIC BOOL EXPreadfile(FILE *F)
 	    EXPdefault.Keep    = v.Keep;
 	    EXPdefault.Default = v.Default;
 	    EXPdefault.Purge   = v.Purge;
-	    EXPdefault.Poison  = v.Poison;
 	    SawDefault = TRUE;
 	}
 
@@ -540,165 +401,57 @@ STATIC BOOL EXPreadfile(FILE *F)
     return TRUE;
 }
 
-
-/*
-**  Handle a newsgroup that isn't in the active file.
-*/
-STATIC NEWSGROUP *EXPnotfound(char *Entry)
-{
-    static NEWSGROUP	Removeit;
-    BADGROUP	        *bg;
-    char	        *p;
-    struct stat		Sb;
-    char		buff[SPOOLNAMEBUFF];
-
-    /* See if we already know about this group. */
-    for (bg = EXPbadgroups; bg; bg = bg->Next)
-	if (EQ(Entry, bg->Name))
-	    break;
-    if (bg == NULL) {
-	bg = NEW(BADGROUP, 1);
-	bg->Name = COPY(Entry);
-	(void)strcpy(buff, bg->Name);
-	for (p = buff; *p; p++)
-	    if (*p == '.')
-		*p = '/';
-	bg->HasDirectory = stat(buff, &Sb) >= 0 && S_ISDIR(Sb.st_mode);
-	bg->Next = EXPbadgroups;
-	EXPbadgroups = bg;
-	if (!EXPquiet) {
-	    (void)fflush(stdout);
-	    (void)fprintf(stderr, "Group not matched (removed?) %s -- %s\n",
-		Entry,
-		bg->HasDirectory ? "Using default expiration"
-				 : "Purging all articles");
-	}
-    }
-
-    /* Directory still there; use default expiration. */
-    if (bg->HasDirectory)
-	return &EXPdefault;
-
-    /* No directory -- remove it all now. */
-    if (Removeit.Keep == 0) {
-	Removeit.Keep = Now;
-	Removeit.Default = Now;
-	Removeit.Purge = Now;
-    }
-    return &Removeit;
-}
-
-
 /*
 **  Should we keep the specified article?
 */
-STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
+STATIC enum KR EXPkeepit(TOKEN token, time_t when, time_t Expires)
 {
-    char	        *p;
-    char	        save;
-    NEWSGROUP	        *ngp;
     EXPIRECLASS         class;
-    TOKEN               token;
-    enum KRP		retval = Remove;
 
-    if (IsToken(Entry)) {
-	token = TextToToken(Entry);
-	class = EXPclasses[token.class];
-	if (class.Missing) {
-	    if (!class.ReportedMissing) {
-		fprintf(stderr, "Class definition %d is missing from control file, assuming zero expiration\n",
-			token.class);
-	    } else {
-		EXPclasses[token.class].ReportedMissing = TRUE;
-	    }
-	    return Remove;
-	}
-	/* Bad posting date? */
-	if (when > (RealNow + 86400)) {
-	    /* Yes -- force the article to go to right now */
-	    when = Expires ? class.Purge : class.Default;
-	}
-	if (EXPverbose > 2) {
-	    if (EXPverbose > 3)
-		printf("%s age = %0.2f\n", Entry, (Now - when) / 86400.);
-	    if (Expires == 0) {
-		if (when <= class.Default)
-		    (void)printf("%s too old (no exp)\n", Entry);
-	    } else {
-		if (when <= class.Purge)
-		    (void)printf("%s later than purge\n", Entry);
-		if (when >= class.Keep)
-		    (void)printf("%s earlier than min\n", Entry);
-		if (Now >= Expires)
-		    (void)printf("%s later than header\n", Entry);
-	    }
-	}
-	
-	/* If no expiration, make sure it wasn't posted before the default. */
-	if (Expires == 0) {
-	    if (when >= class.Default)
-		return Keep;
-	    
-	    /* Make sure it's not posted before the purge cut-off and
-	     * that it's not due to expire. */
+    class = EXPclasses[token.class];
+    if (class.Missing) {
+	if (!class.ReportedMissing) {
+	    fprintf(stderr, "Class definition %d is missing from control file, assuming zero expiration\n",
+		    token.class);
 	} else {
-	    if (when >= class.Purge && (Expires >= Now || when >= class.Keep))
-		return Keep;
+	    EXPclasses[token.class].ReportedMissing = TRUE;
 	}
 	return Remove;
     }
-
-    if ((p = strpbrk(Entry, "/:")) == NULL) {
-	(void)fflush(stdout);
-	(void)fprintf(stderr, "Bad entry, \"%s\"\n", Entry);
-	return Remove;
-    }
-    save = *p;
-    *p = '\0';
-    if ((ngp = NGfind(Entry)) == NULL)
-	ngp = EXPnotfound(Entry);
-    *p = save;
-
     /* Bad posting date? */
-    if (when > RealNow + 86400) {
-	/* Yes -- force the article to go right now. */
-	when = Expires ? ngp->Purge : ngp->Default;
+    if (when > (RealNow + 86400)) {
+	/* Yes -- force the article to go to right now */
+	when = Expires ? class.Purge : class.Default;
     }
-
     if (EXPverbose > 2) {
 	if (EXPverbose > 3)
-	    (void)printf("%s age = %0.2f\n", Entry, (Now - when) / 86400.);
+	    printf("%s age = %0.2f\n", TokenToText(token), (Now - when) / 86400.);
 	if (Expires == 0) {
-	    if (when <= ngp->Default)
-		(void)printf("%s too old (no exp)\n", Entry);
-	}
-	else {
-	    if (when <= ngp->Purge)
-		(void)printf("%s later than purge\n", Entry);
-	    if (when >= ngp->Keep)
-		(void)printf("%s earlier than min\n", Entry);
+	    if (when <= class.Default)
+		(void)printf("%s too old (no exp)\n", TokenToText(token));
+	} else {
+	    if (when <= class.Purge)
+		(void)printf("%s later than purge\n", TokenToText(token));
+	    if (when >= class.Keep)
+		(void)printf("%s earlier than min\n", TokenToText(token));
 	    if (Now >= Expires)
-		(void)printf("%s later than header\n", Entry);
+		(void)printf("%s later than header\n", TokenToText(token));
 	}
-
     }
-
+    
     /* If no expiration, make sure it wasn't posted before the default. */
     if (Expires == 0) {
-	if (when >= ngp->Default)
-	    retval = Keep;
+	if (when >= class.Default)
+	    return Keep;
+	
+	/* Make sure it's not posted before the purge cut-off and
+	 * that it's not due to expire. */
+    } else {
+	if (when >= class.Purge && (Expires >= Now || when >= class.Keep))
+	    return Keep;
+    }
+    return Remove;
 
-    /* Make sure it's not posted before the purge cut-off and
-     * that it's not due to expire. */
-    } else {
-        if (when >= ngp->Purge && (Expires >= Now || when >= ngp->Keep))
-	    retval = Keep;
-    }
-    if (retval == Keep) {
-	return Keep;
-    } else {
-	return ngp->Poison ? Poison : Remove;
-    }
 }
 
 
@@ -706,118 +459,43 @@ STATIC enum KRP EXPkeepit(char *Entry, time_t when, time_t Expires)
 **  An article can be removed.  Either print a note, or actually remove it.
 **  Also fill in the article size.
 */
-STATIC void EXPremove(char *p, OFFSET_T *size, BOOL index)
+STATIC void EXPremove(TOKEN token, OFFSET_T *size, BOOL index)
 {
-    char	        save, *q;
-    struct stat		Sb;
-    unsigned long	ArtNum;
-    NEWSGROUP	        *ngp;
-
     /* Turn into a filename and get the size if we need it. */
-    if (!IsToken(p)) {
-	for (q = p; *q; q++) {
-	    if (*q == '.')
-		*q = '/';
-	    if (*q == '\t' || *q == ' ') {
-		*q = '\0';
-		break;
-	    }
-	}
-	if (EXPsizing && *size < 0 && stat(p, &Sb) >= 0)
-	    *size = (int)(((long)Sb.st_size >> 10) + (((long)Sb.st_size >> 9) & 1));
-    }
     if (EXPverbose > 1)
-	(void)printf("\tunlink %s\n", p);
+	(void)printf("\tunlink %s\n", TokenToText(token));
 
     if (EXPtracing) {
 	EXPunlinked++;
-	(void)printf("%s\n", p);
+	(void)printf("%s\n", TokenToText(token));
 	return;
     }
-
-    if (EXPlowmarkfile && ((q = strpbrk(p, "/:")) != NULL)) {
-	save = *q;
-	*q = '\0';
-	if ((ngp = NGfind(p)) != NULL) {
-	    ArtNum = atol(q + 1);
-	    if (ngp->Lastpurged < ArtNum) {
-		ngp->Lastpurged = ArtNum;
-		if (EXPverbose > 3)
-		    printf("New lowmark %u\n", ArtNum);
-	    }
-	}
-	*q = save;
-    }
-
-    if (index) {
-	if (EXPunlinkindex) {
-	    (void)fprintf(EXPunlinkindex, "%s\n", p);
-	}
-	EXPoverindexdrop++;
-	return;
-    }
+    
     EXPunlinked++;
     if (EXPunlinkfile) {
-	(void)fprintf(EXPunlinkfile, "%s\n", p);
+	(void)fprintf(EXPunlinkfile, "%s\n", TokenToText(token));
 	if (!ferror(EXPunlinkfile))
 	    return;
 	(void)fprintf(stderr, "Can't write to -z file, %s\n",
-	    strerror(errno));
+		      strerror(errno));
 	(void)fprintf(stderr, "(Will ignore it for rest of run.)\n");
 	(void)fclose(EXPunlinkfile);
 	EXPunlinkfile = NULL;
     }
-    if (IsToken(p)) {
-	if (!SMcancel(TextToToken(p)) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-	    fprintf(stderr, "Can't unlink %s\n", p);
-    } else {
-	if (unlink(p) < 0 && errno != ENOENT)
-	    (void)fprintf(stderr, "Can't unlink %s, %s\n", p, strerror(errno));
-    }
-}
-
-/*
-**  Get lowest article number which is still retained.
-*/
-STATIC void EXPlowmark(char *p)
-{
-    char		save, *q;
-    NEWSGROUP		*ngp;
-    unsigned long	ArtNum;
-
-    if (!IsToken(p)) {
-	if ((q = strpbrk(p, "/:")) == NULL)
-	    return;
-	save = *q;
-	*q = '\0';
-	if ((ngp = NGfind(p)) == NULL) {
-	    *q = save;
-	    return;
-	}
-	*q = save;
-	ArtNum = atol(q + 1);
-	if (ngp->Last > ArtNum) {
-	    ngp->Last = ArtNum;
-	    if (EXPverbose > 3)
-		printf("New lowmark %u\n", ArtNum);
-        }
-    }
-    return;
+    if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
+	fprintf(stderr, "Can't unlink %s\n", TokenToText(token));
 }
 
 /*
 **  Do the work of expiring one line.
 */
-STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *krps)
+STATIC BOOL EXPdoline(FILE *out, char *line, int length)
 {
     static char		IGNORING[] = "Ignoring bad line, \"%.20s...\"\n";
     static OFFSET_T	Offset;
-    static BUFFER	New;
     char	        *p;
     char	        *q;
-    char	        *first;
     int	                i;
-    int			count;
     char		*fields[4];
     time_t		Arrived;
     time_t		Expires;
@@ -825,27 +503,17 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
     time_t		when;
     OFFSET_T		where;
     OFFSET_T		size;
-    BOOL                poisoned;
-    BOOL		keeper;
-    BOOL		remove;
     HASH		key;
     char		date[20];
-    BOOL		Hastoken;
-    BOOL		Hasover;
     BOOL		HasSelfexpire = FALSE;
     BOOL		Selfexpired = FALSE;
     ARTHANDLE		*article;
     TOKEN		token;
-    int			linelen;
-    static char		*OVERline = NULL;
-    static char		*Xrefbuf = NULL;
-    char		*Xref;
     char		*tokentext;
-    BOOL		tokenretained = FALSE;
+    enum KR             kr;
 #ifndef	DO_TAGGED_HASH
     void	*ivalue;
     idxrec	ionevalue;
-    idxrecext	iextvalue;
 #endif
 
     /* Split up the major fields. */
@@ -857,27 +525,15 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 
     /* Check to see if this messageid has already been written to the
        text file.  Unfortunately, this is the only clean way to do this */
-    switch (fields[0][0]) {
-    case '[':
-	if (strlen(fields[0]) != ((sizeof(HASH) * 2) + 2)) {
-	    fprintf(stderr, "Invalid length for hash %s, skipping\n", fields[0]);
-	    return TRUE;
-	}
-	key = TextToHash(&fields[0][1]);
-	if (innconf->storageapi)
-	    Hastoken = TRUE;
-	else
-	    Hastoken = FALSE;
-	break;
-    case '<':
-	key = HashMessageID(fields[0]);
-	Hastoken = FALSE;
-	break;
-    default:
-	fprintf(stderr, "Invalid message-id \"%s\" in history text\n", fields[0]);
-	Hastoken = FALSE;
+    if (fields[0][0] != '[') {
+	fprintf(stderr, "Invalid hash %s, skipping\n", fields[0]);
 	return TRUE;
     }
+    if (strlen(fields[0]) != ((sizeof(HASH) * 2) + 2)) {
+	fprintf(stderr, "Invalid length for hash %s, skipping\n", fields[0]);
+	return TRUE;
+    }
+    key = TextToHash(&fields[0][1]);
     if (dbzexists(key)) {
 	fprintf(stderr, "Duplicate message-id \"%s\" in history\n", fields[0]);
 	return TRUE;
@@ -926,116 +582,46 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 		(void)printf("remember: %s\n", line);
 	    EXPhistremember++;
 	}
-    }
-    else {
+    } else {
 	/* Active article -- split up the file entries. */
-	if (Hastoken) {
-	    if (!IsToken(fields[2])) {
-		fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);
-		return TRUE;
-	    }
-	    token = TextToToken(fields[2]);
-	    if (SMprobe(SELFEXPIRE, &token)) {
-		if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL) {
-		    HasSelfexpire = TRUE;
-		    Selfexpired = TRUE;
-		} else {
-		    /* the article is still alive */
-		    SMfreearticle(article);
-		    if (!Ignoreselfexpire)
-			HasSelfexpire = TRUE;
-		}
-	    }
-	    if (token.index < OVER_NONE) {
-		Hasover = TRUE;
-		if ((p = OVERretrieve(&token, &linelen)) == (char *)NULL)
-		    return TRUE;
-		if (OVERmmap) {
-		    if (!OVERline)
-			OVERline = NEW(char, MAXOVERLINE);
-		    if (linelen > MAXOVERLINE - 1)
-			linelen = MAXOVERLINE - 1;
-		    memcpy(OVERline, p, linelen);
-		    OVERline[linelen] = '\0';
-		} else {
-		    OVERline = p;
-		}
-		if ((Xref = strstr(OVERline, "\tXref:")) == NULL) {
-		    return TRUE;
-		}
-		if ((Xref = strchr(Xref, ' ')) == NULL)
-		    return TRUE;
-		for (Xref++; *Xref == ' '; Xref++);
-		if ((Xref = strchr(Xref, ' ')) == NULL)
-		    return TRUE;
-		for (Xref++; *Xref == ' '; Xref++);
-		if (!Xrefbuf)
-		    Xrefbuf = NEW(char, MAXOVERLINE);
-		memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
-		Xrefbuf[linelen - (OVERline - Xref)] = '\0';
-		if ((p = strchr(Xrefbuf, '\t')) != NULL)
-		    *p = '\0';
-		count = EXPsplit(Xrefbuf, ' ', arts, nGroups);
+	if (!IsToken(fields[2])) {
+	    fprintf(stderr, "Invalid token %s, skipping\n", fields[2]);
+	    return TRUE;
+	}
+	token = TextToToken(fields[2]);
+	if (SMprobe(SELFEXPIRE, &token)) {
+	    if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL) {
+		HasSelfexpire = TRUE;
+		Selfexpired = TRUE;
 	    } else {
-		Hasover = FALSE;
+		/* the article is still alive */
+		SMfreearticle(article);
+		if (!Ignoreselfexpire)
+		    HasSelfexpire = TRUE;
 	    }
-	} else {
-	    Hasover = FALSE;
 	}
 	when = EXPusepost ? Posted : Arrived;
-	if (!HasSelfexpire) {
-	    if (!ClassicExpire || !Hastoken || !Hasover) {
-		count = EXPsplit(fields[2], ' ', arts, nGroups);
-	    }
-	    if (count == -1) {
-		(void)fprintf(stderr, IGNORING, line);
-		return TRUE;
-	    }
-	    /* First check all postings */
-	    poisoned = FALSE;
-	    keeper = FALSE;
-	    remove = FALSE;
-	    for (i = 0; i < count; ++i) {
-	      if ((krps[i] = EXPkeepit(arts[i], when, Expires)) == Poison)
-		  poisoned = TRUE;
-	      if (EXPkeep && (krps[i] == Keep))
-		  keeper = TRUE;
-	      if ((krps[i] == Remove))
-		  remove = TRUE;
-	    }
-	}
 	EXPprocessed++;
-
+	
 	if (HasSelfexpire) {
-	    if (Selfexpired || token.type == TOKEN_EMPTY || token.cancelled) {
-		if (Hasover) {
-		    for (i = 0; i < count; i++) {
-			p = arts[i];
-			if (*p == '\0')
-			    /* Shouldn't happen. */
-			    continue;
-			EXPremove(p, &size, TRUE);
-		    }
-		}
+	    if (Selfexpired || token.type == TOKEN_EMPTY) {
 		if (EXPremember > 0 && out != NULL) {
 		    where = Offset;
 		    if (Arrived > RealNow)
 			Arrived = RealNow;
 		    (void)sprintf(date, "%lu", (unsigned long)Arrived);
 		    (void)fprintf(out, "%s%c%s%c%s\n",
-			    fields[0], HIS_FIELDSEP,
-			    date, HIS_SUBFIELDSEP, HIS_NOEXP);
+				  fields[0], HIS_FIELDSEP,
+				  date, HIS_SUBFIELDSEP, HIS_NOEXP);
 		    Offset += strlen(fields[0]) + 1
-			    + strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
+			+ strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
 		    if (EXPverbose > 3)
 			(void)printf("remember history: %s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP,
-				date, HIS_SUBFIELDSEP, HIS_NOEXP);
+				     fields[0], HIS_FIELDSEP,
+				     date, HIS_SUBFIELDSEP, HIS_NOEXP);
 		    EXPallgone++;
 		}
 	    } else if (out != NULL) {
-		if (Hasover && !OVERstore(&token, OVERline, linelen))
-		    return TRUE;
 		tokentext = TokenToText(token);
 		where = Offset;
 		(void)fprintf(out, "%s%c%s%c%s\n",
@@ -1046,303 +632,31 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 		if (EXPverbose > 3)
 		    (void)printf("remember article: %s%c%s%c%s\n",
 			    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-			    tokentext);
+				 tokentext);
 		EXPstillhere++;
-		tokenretained = TRUE;
-		if (Hasover && EXPlowmarkfile) {
-		    for (i = 0; i < count; i++) {
-			p = arts[i];
-			if (*p == '\0')
-			    /* Shouldn't happen. */
-			    continue;
-			EXPlowmark(p);
-		    }
-		}
 	    }
-	} else if (ClassicExpire && Hastoken && Hasover) {
-	    if (EXPearliest) {
-		if (remove || poisoned ||
-		    token.type == TOKEN_EMPTY || token.cancelled) {
-		    for (i = 0; i < count; i++) {
-			p = arts[i];
-			if (*p == '\0')
-			    /* Shouldn't happen. */
-			    continue;
-			EXPremove(p, &size, TRUE);
-		    }
-		    EXPremove(fields[2], &size, FALSE);
-		    if (EXPsizing && size > 0)
-			EXPsaved += size;
-		    if (EXPremember > 0 && out != NULL) {
-			where = Offset;
-			if (Arrived > RealNow)
-			    Arrived = RealNow;
-			(void)sprintf(date, "%lu", (unsigned long)Arrived);
-			(void)fprintf(out, "%s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP,
-				date, HIS_SUBFIELDSEP, HIS_NOEXP);
-			Offset += strlen(fields[0]) + 1
-				+ strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
-			if (EXPverbose > 3)
-			    (void)printf("remember history: %s%c%s%c%s\n",
-				    fields[0], HIS_FIELDSEP,
-				    date, HIS_SUBFIELDSEP, HIS_NOEXP);
-			EXPallgone++;
-		    }
-		} else if (out != NULL) {
-		    if (!OVERstore(&token, OVERline, linelen))
-			return TRUE;
-		    tokentext = TokenToText(token);
-		    where = Offset;
-		    (void)fprintf(out, "%s%c%s%c%s\n",
-			    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-			    tokentext);
-		    Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-			    + strlen(tokentext) + 1;
-		    if (EXPverbose > 3)
-			(void)printf("remember article: %s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-				tokentext);
-		    EXPstillhere++;
-		    tokenretained = TRUE;
-		    if (EXPlowmarkfile) {
-			for (i = 0; i < count; i++) {
-			    p = arts[i];
-			    if (*p == '\0')
-				/* Shouldn't happen. */
-				continue;
-			    EXPlowmark(p);
-			}
-		    }
-		}
-	    } else { /* not earliest mode */
-		if (!keeper || token.type == TOKEN_EMPTY || token.cancelled) {
-		    for (i = 0; i < count; i++) {
-			p = arts[i];
-			if (*p == '\0')
-			    /* Shouldn't happen. */
-			    continue;
-			EXPremove(p, &size, TRUE);
-		    }
-		    EXPremove(fields[2], &size, FALSE);
-		    if (EXPsizing && size > 0)
-			EXPsaved += size;
-		    if (EXPremember > 0 && out != NULL) {
-			where = Offset;
-			if (Arrived > RealNow)
-			    Arrived = RealNow;
-			(void)sprintf(date, "%lu", (unsigned long)Arrived);
-			(void)fprintf(out, "%s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP,
-				date, HIS_SUBFIELDSEP, HIS_NOEXP);
-			Offset += strlen(fields[0]) + 1
-				+ strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
-			if (EXPverbose > 3)
-			    (void)printf("remember history: %s%c%s%c%s\n",
-				    fields[0], HIS_FIELDSEP,
-				    date, HIS_SUBFIELDSEP, HIS_NOEXP);
-			EXPallgone++;
-		    }
-		} else if (out != NULL) {
-		    if (!OVERstore(&token, OVERline, linelen))
-			return TRUE;
-		    tokentext = TokenToText(token);
-		    where = Offset;
-		    (void)fprintf(out, "%s%c%s%c%s\n",
-			    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-			    tokentext);
-		    Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-			    + strlen(tokentext) + 1;
-		    if (EXPverbose > 3)
-			(void)printf("remember article: %s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-				tokentext);
-		    EXPstillhere++;
-		    tokenretained = TRUE;
-		    if (EXPlowmarkfile) {
-		        for (i = 0; i < count; i++) {
-			    p = arts[i];
-			    if (*p == '\0')
-			        /* Shouldn't happen. */
-			        continue;
-			    EXPlowmark(p);
-		        }
-		    }
-		}
+	} else  {
+	    kr = EXPkeepit(token, when, Expires);
+	    if (kr == Remove) {
+		EXPremove(token, &size, FALSE);
 	    }
-	} else {
-	    /* Get space to hold the remaining file name entries. */
-	    if (New.Data == NULL) {
-		New.Size = length;
-		New.Data = NEW(char, New.Size);
-	    }
-	    else if (New.Size < length) {
-		New.Size = length;
-		RENEW(New.Data, char, New.Size);
-	    }
-
-	    /* The "first" variable tells us if we haven't saved the first
-	     * article yet.  This only matters if we're doing link-saving. */
-	    first = EXPlinks && count > 1 ? arts[0] : (char *)NULL;
-
-	    if (EXPearliest) {
-		for (size = -1, q = New.Data, i = 0; i < count; i++) {
-		    p = arts[i];
-		    if (*p == '\0')
-			/* Shouldn't happen. */
-			continue;
-		    if (krps[i] == Keep) {
-			if (EXPverbose > 1)
-			    (void)printf("keep %s\n", p);
-			if (q > New.Data)
-			    *q++ = ' ';
-			q += strlen(strcpy(q, p));
-			continue;
-		    }
-		    break; /* expired, stop looking */
-		}
-
-		if(i < count) { /* clobber them all */
-		    q = New.Data; /* no files for history line */
-		    for (i = 0; i < count; i++) {
-			p = arts[i];
-			if (*p == '\0')
-			    /* Shouldn't happen. */
-			    continue;
-			EXPremove(p, &size, FALSE);
-		    }
-		}        
-	    } else { /* not earliest mode */
-		/* Loop over all file entries, see if we should keep each one. */
-		for (size = -1, q = New.Data, i = 0; i < count; i++) {
-		    p = arts[i];
-		    if (*p == '\0')
-			/* Shouldn't happen. */
-			continue;
-		    if (!poisoned && ((krps[i] == Keep) || keeper)) {
-			if (EXPverbose > 1)
-			    (void)printf("keep %s\n", p);
-			if (first != NULL) {
-			    /* Keeping one and haven't kept the first; so save it. */
-			    if (i > 0)
-				q += strlen(strcpy(q, first));
-			    first = NULL;
-			}
-			if (q > New.Data)
-			    *q++ = ' ';
-			q += strlen(strcpy(q, p));
-			continue;
-		    }
-
-		    /* Don't delete the file if preserving symbolic links to it. */
-		    if (EXPlinks && i == 0 && count > 1)
-			continue;
-		    EXPremove(arts[i], &size, FALSE);
-		}
-
-		/* If saving links and didn't have to save the leader, delete it. */
-		if (EXPlinks && first != NULL)
-		    EXPremove(first, &size, FALSE);
-	    } /* not earliest mode */
-
-	    if (q == New.Data) {
-		if (EXPsizing && size > 0)
-		    EXPsaved += size;
-		if (EXPremember > 0 && out != NULL) {
-		    where = Offset;
-		    if (Arrived > RealNow)
-			Arrived = RealNow;
-		    (void)sprintf(date, "%lu", (unsigned long)Arrived);
-		    (void)fprintf(out, "%s%c%s%c%s\n",
-			    fields[0], HIS_FIELDSEP,
-			    date, HIS_SUBFIELDSEP, HIS_NOEXP);
-		    Offset += strlen(fields[0]) + 1
-			    + strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
-		    if (EXPverbose > 3)
-			(void)printf("remember history: %s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP,
-				date, HIS_SUBFIELDSEP, HIS_NOEXP);
-		    EXPallgone++;
-		}
-	    }
-	    else if (out) {
-		if (Hastoken && Hasover) {
-		    if (token.type == TOKEN_EMPTY || token.cancelled) {
-			count = EXPsplit(Xrefbuf, ' ', arts, nGroups);
-			for (i = 0; i < count; i++) {
-			    p = arts[i];
-			    if (*p == '\0')
-				/* Shouldn't happen. */
-				continue;
-			    EXPremove(p, &size, TRUE);
-			}
-			EXPremove(fields[2], &size, FALSE);
-			if (EXPsizing && size > 0)
-			    EXPsaved += size;
-			where = Offset;
-			(void)sprintf(date, "%lu", (unsigned long)Arrived);
-			(void)fprintf(out, "%s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP,
-				date, HIS_SUBFIELDSEP, HIS_NOEXP);
-			Offset += strlen(fields[0]) + 1
-				+ strlen(date) + 1 + STRLEN(HIS_NOEXP) + 1;
-			if (EXPverbose > 3)
-			    (void)printf("remember history: %s%c%s%c%s\n",
-				    fields[0], HIS_FIELDSEP,
-				    date, HIS_SUBFIELDSEP, HIS_NOEXP);
-			EXPallgone++;
-		    } else {
-			if (!OVERstore(&token, OVERline, linelen))
-			    return TRUE;
-			tokentext = TokenToText(token);
-			where = Offset;
-			(void)fprintf(out, "%s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-				tokentext);
-			Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-				+ strlen(tokentext) + 1;
-			if (EXPverbose > 3)
-			    (void)printf("remember article: %s%c%s%c%s\n",
-				    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-				    tokentext);
-			tokenretained = TRUE;
-			EXPstillhere++;
-			if (EXPlowmarkfile) {
-			    for (i = 0; i < count; i++) {
-				p = arts[i];
-				if (*p == '\0')
-				    /* Shouldn't happen. */
-				    continue;
-				EXPlowmark(p);
-			    }
-			}
-		    }
-		} else {
-		    where = Offset;
-		    (void)fprintf(out, "%s%c%s%c%s\n",
-			    fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-			    New.Data);
-		    Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
-			    + strlen(New.Data) + 1;
-		    if (EXPverbose > 3)
-			(void)printf("remember article: %s%c%s%c%s\n",
-				fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
-				New.Data);
-		    EXPstillhere++;
-		    if (EXPlowmarkfile) {
-			for (i = 0; i < count; i++) {
-			    p = arts[i];
-			    if (*p == '\0')
-				/* Shouldn't happen. */
-				continue;
-			    EXPlowmark(p);
-			}
-		    }
-		}
+	    
+	    if (out) {
+		where = Offset;
+		(void)fprintf(out, "%s%c%s%c%s\n",
+			      fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
+			      TokenToText(token));
+		Offset += strlen(fields[0]) + 1 + strlen(fields[1]) + 1
+		    + strlen(TokenToText(token)) + 1;
+		if (EXPverbose > 3)
+		    (void)printf("remember article: %s%c%s%c%s\n",
+				 fields[0], HIS_FIELDSEP, fields[1], HIS_FIELDSEP,
+				 TokenToText(token));
+		EXPstillhere++;
 	    }
 	}
     }
-
+    
     if (out == NULL)
 	return TRUE;
 
@@ -1362,20 +676,8 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 	return FALSE;
     }
 #else
-    if (innconf->extendeddbz) {
-	iextvalue.offset[HISTOFFSET] = where;
-	if (tokenretained)
-	    OVERsetoffset(&token, &iextvalue.offset[OVEROFFSET], &iextvalue.overindex, &iextvalue.overlen);
-	else {
-	    iextvalue.offset[OVEROFFSET] = 0;
-	    iextvalue.overindex = OVER_NONE;
-	    iextvalue.overlen = 0;
-	}
-	ivalue = (void *)&iextvalue;
-    } else {
-	ionevalue.offset = where;
-	ivalue = (void *)&ionevalue;
-    }
+    ionevalue.offset = where;
+    ivalue = (void *)&ionevalue;
     if (dbzstore(key, ivalue) == DBZSTORE_ERROR) {
 	fprintf(stderr, "Can't store key, \"%s\"\n", strerror(errno));
 	return FALSE;
@@ -1405,54 +707,17 @@ STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x)
 		strerror(errno));
 	x = 1;
     }
-    if (EXPunlinkindex && fclose(EXPunlinkindex) == EOF) {
-	(void)fprintf(stderr, "Can't close -u file, %s\n", strerror(errno));
-	x = 1;
-    }
     if (EXPunlinkfile && fclose(EXPunlinkfile) == EOF) {
 	(void)fprintf(stderr, "Can't close -z file, %s\n", strerror(errno));
 	x = 1;
     }
 
-    if (EXPlowmarkfile) {
-	NGHASH		*htp;
-	NEWSGROUP	**ngpa;
-	int		i;
-	int		k;
-
-	/* Dump this list of lowmarks. */
-	for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
-	    for (ngpa = htp->Groups, k = htp->Used; --k >= 0; ngpa++) {
-		if (ngpa[0]->Last < ~(unsigned long) 0) {
-		    (void)fprintf(EXPlowmarkfile, "%s %u\n",
-			ngpa[0]->Name, ngpa[0]->Last);
-		} else if (ngpa[0]->Lastpurged > 0) {
-		    (void)fprintf(EXPlowmarkfile, "%s %u\n",
-			ngpa[0]->Name, ngpa[0]->Lastpurged + 1);
-		}
-	    }
-	}
-
-	if (fclose(EXPlowmarkfile) == EOF) {
-	   (void)fprintf(stderr, "Can't close -Z file, %s\n", strerror(errno));
-	   x = 1;
-	}
-    }
-
     /* Report stats. */
-    if (EXPsizing)
-	(void)printf("%s approximately %ldk\n",
-	    EXPtracing ? "Would remove" : "Removed", EXPsaved);
     if (EXPverbose) {
 	(void)printf("Article lines processed %8ld\n", EXPprocessed);
 	(void)printf("Articles retained       %8ld\n", EXPstillhere);
 	(void)printf("Entries expired         %8ld\n", EXPallgone);
-	if (StorageAPI) {
-	    (void)printf("Articles dropped        %8ld\n", EXPunlinked);
-	    (void)printf("Overview index dropped  %8ld\n", EXPoverindexdrop);
-	} else {
-	    (void)printf("Files unlinked          %8ld\n", EXPunlinked);
-	}
+	(void)printf("Articles dropped        %8ld\n", EXPunlinked);
 	(void)printf("Old entries dropped     %8ld\n", EXPhistdrop);
 	(void)printf("Old entries retained    %8ld\n", EXPhistremember);
     }
@@ -1460,15 +725,9 @@ STATIC NORETURN CleanupAndExit(BOOL Server, BOOL Paused, int x)
     /* Append statistics to a summary file */
     if (EXPgraph) {
 	F = EXPfopen(FALSE, EXPgraph, "a", FALSE, FALSE, FALSE);
-	if (StorageAPI) {
-	    (void)fprintf(F, "%ld %ld %ld %ld %ld %ld %ld %ld\n",
-		(long)Now, EXPprocessed, EXPstillhere, EXPallgone,
-		EXPunlinked, EXPoverindexdrop, EXPhistdrop, EXPhistremember);
-	} else {
-	    (void)fprintf(F, "%ld %ld %ld %ld %ld %ld %ld\n",
-		(long)Now, EXPprocessed, EXPstillhere, EXPallgone,
-		EXPunlinked, EXPhistdrop, EXPhistremember);
-	}
+	(void)fprintf(F, "%ld %ld %ld %ld %ld %ld %ld\n",
+		      (long)Now, EXPprocessed, EXPstillhere, EXPallgone,
+		      EXPunlinked, EXPhistdrop, EXPhistremember);
 	(void)fclose(F);
     }
 
@@ -1496,13 +755,10 @@ int main(int ac, char *av[])
     QIOSTATE 	        *qp;
     FILE		*F;
     char		*active;
-    char		**arts;
-    enum KRP            *krps;
     STRING		History;
     STRING		HistoryText;
     STRING		HistoryPath;
     STRING		HistoryDB;
-    STRING		OverPath;
     char		*Historydir;
     char		*NHistory;
     char		*NHistorydir;
@@ -1537,7 +793,6 @@ int main(int ac, char *av[])
     IgnoreOld = FALSE;
     History = "history";
     HistoryPath = NULL;
-    OverPath = NULL;
     Writing = TRUE;
     TimeWarp = 0;
     UnlinkFile = FALSE;
@@ -1559,22 +814,13 @@ int main(int ac, char *av[])
     }
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "cf:h:D:d:eg:iklNnpqr:stu:v:w:xz:Z:")) != EOF)
+    while ((i = getopt(ac, av, "f:h:d:eg:iNnpqr:tv:w:xz:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
-	case 'c':
-	    ClassicExpire = TRUE;
-	    break;
-	case 'D':
-	    OverPath = optarg;
-	    break;
 	case 'd':
 	    HistoryPath = optarg;
-	    break;
-        case 'e':
-	    EXPearliest = TRUE;
 	    break;
 	case 'f':
 	    History = optarg;
@@ -1587,12 +833,6 @@ int main(int ac, char *av[])
 	    break;
 	case 'i':
 	    IgnoreOld = TRUE;
-	    break;
-	case 'k':
-	    EXPkeep = TRUE;
-	    break;
-	case 'l':
-	    EXPlinks = TRUE;
 	    break;
 	case 'N':
 	    Ignoreselfexpire = TRUE;
@@ -1609,14 +849,8 @@ int main(int ac, char *av[])
 	case 'r':
 	    EXPreason = optarg;
 	    break;
-	case 's':
-	    EXPsizing = TRUE;
-	    break;
 	case 't':
 	    EXPtracing = TRUE;
-	    break;
-	case 'u':
-	    EXPunlinkindex = EXPfopen(TRUE, optarg, "a", FALSE, FALSE, FALSE);
 	    break;
 	case 'v':
 	    EXPverbose = atoi(optarg);
@@ -1631,19 +865,11 @@ int main(int ac, char *av[])
 	    EXPunlinkfile = EXPfopen(TRUE, optarg, "a", FALSE, FALSE, FALSE);
 	    UnlinkFile = TRUE;
 	    break;
-	case 'Z':
-	    if (EXPverbose > 3)
-		printf("Opening lowmark file %s\n", optarg);
-	    EXPlowmarkfile = EXPfopen(TRUE, optarg, "a", FALSE, FALSE, FALSE);
-	    LowmarkFile = TRUE;
-	    break;
 	}
     ac -= optind;
     av += optind;
-    if ((ac != 0 && ac != 1) || (EXPearliest && EXPkeep))
+    if ((ac != 0 && ac != 1))
 	Usage();
-    if (!EXPearliest && !EXPkeep && innconf->storageapi)
-	EXPearliest = TRUE;
 
     /* Get active file, parse it. */
     if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
@@ -1651,7 +877,6 @@ int main(int ac, char *av[])
 		ACTIVE, strerror(errno));
 	exit(1);
     }
-    BuildGroups(active);
     (void)time(&Now);
     RealNow = Now;
     Now += TimeWarp;
@@ -1761,74 +986,17 @@ int main(int ac, char *av[])
 	}
     }
 
-    if (innconf->storageapi) {
-	if (chdir(innconf->pathoverview) < 0) {
-	    (void)fprintf(stderr, CANTCD, SPOOL, strerror(errno));
-	    CleanupAndExit(Server, FALSE, 1);
-	}
-    } else {
-	if (chdir(SPOOL) < 0) {
-	    (void)fprintf(stderr, CANTCD, SPOOL, strerror(errno));
-	    CleanupAndExit(Server, FALSE, 1);
-	}
-    }
-
     val = TRUE;
     if (!SMsetup(SM_RDWR, (void *)&val) || !SMsetup(SM_PREOPEN, (void *)&val)) {
 	fprintf(stderr, "Can't setup storage manager\n");
 	CleanupAndExit(Server, FALSE, 1);
     }
-    if (innconf->storageapi && !SMinit()) {
+    if (!SMinit()) {
 	fprintf(stderr, "Can't initialize storage manager: %s\n", SMerrorstr);
 	CleanupAndExit(Server, FALSE, 1);
     }
 
     /* Main processing loop. */
-    StorageAPI = innconf->storageapi;
-    OVERmmap = innconf->overviewmmap;
-    if (OVERmmap)
-	val = TRUE;
-    else
-	val = FALSE;
-    if (!OVERsetup(OVER_MMAP, (void *)&val)) {
-	fprintf(stderr, "Can't setup unified overview mmap\n");
-	CleanupAndExit(Server, FALSE, 1);
-    }
-    val = TRUE;
-    if (!OVERsetup(OVER_BUFFERED, (void *)&val)) {
-	fprintf(stderr, "Can't setup unified overview buffered\n");
-	CleanupAndExit(Server, FALSE, 1);
-    }
-    if (!OVERsetup(OVER_PREOPEN, (void *)&val)) {
-	fprintf(stderr, "Can't setup unified overview preopen\n");
-	CleanupAndExit(Server, FALSE, 1);
-    }
-    if (!OVERsetup(OVER_MODE, "r")) {
-	fprintf(stderr, "Can't setup unified overview mode\n");
-	CleanupAndExit(Server, FALSE, 1);
-    }
-    if (!OVERsetup(OVER_NEWMODE, "w")) {
-	fprintf(stderr, "Can't setup unified overview mode to be created\n");
-	CleanupAndExit(Server, FALSE, 1);
-    }
-
-    if (OverPath)
-	if (!OVERsetup(OVER_NEWDIR, (void *)OverPath)) {
-	    fprintf(stderr, "Can't setup unified overview path\n");
-	    CleanupAndExit(Server, FALSE, 1);
-	}
-    if (StorageAPI) {
-	if (!OVERinit()) {
-	    fprintf(stderr, "Can't initialize unified overview\n");
-	    CleanupAndExit(Server, FALSE, 1);
-	}
-	if (Writing && !OVERnewinit()) {
-	    fprintf(stderr, "Can't initialize new unified overview\n");
-	    CleanupAndExit(Server, FALSE, 1);
-	}
-    }
-    arts = NEW(char*, nGroups);
-    krps = NEW(enum KRP, nGroups);
     if ((qp = QIOopen(HistoryText)) == NULL) {
 	(void)fprintf(stderr, "Can't open history file, %s\n",
 		strerror(errno));
@@ -1836,7 +1004,7 @@ int main(int ac, char *av[])
     }
     for (Bad = FALSE, line = 1, Paused = FALSE; ; line++) {
 	if ((p = QIOread(qp)) != NULL) {
-	    if (!EXPdoline(out, p, QIOlength(qp), arts, krps)) {
+	    if (!EXPdoline(out, p, QIOlength(qp))) {
 		Bad = TRUE;
 		if (errno == ENOSPC) {
 		    (void)unlink(NHistory);
@@ -1877,12 +1045,8 @@ int main(int ac, char *av[])
 	    CleanupAndExit(Server, Paused, 1);
 	}
 	Paused = TRUE;
-        if (StorageAPI && !OVERreinit())
-	    CleanupAndExit(Server, Paused, 1);
     }
     QIOclose(qp);
-    DISPOSE(krps);
-    DISPOSE(arts);
 
     if (Writing) {
 	/* Close the output files. */
@@ -1901,10 +1065,6 @@ int main(int ac, char *av[])
 	    /* Got -z but file was closed; oops. */
 	    Bad = TRUE;
 
-	if (LowmarkFile && EXPlowmarkfile == NULL)
-            /* Got -Z but file was closed; oops. */
-            Bad = TRUE;
-
 	/* If we're done okay, and we're not tracing, slip in the new files. */
 	if (EXPverbose) {
 	    if (Bad)
@@ -1921,18 +1081,6 @@ int main(int ac, char *av[])
 	    if (HistoryPath != NULL) {
 		(void)sprintf(buff, "%s.done", NHistory);
 		(void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
-		if (StorageAPI && Writing) {
-		    if (OverPath) {
-			(void)sprintf(buff, "%s/overview.done", OverPath);
-			(void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, FALSE));
-		    } else {
-			if (!OVERreplace()) {
-			    (void)fprintf(stderr, "Can't replace overview data, %s\n",
-				strerror(errno));
-			    CleanupAndExit(Server, FALSE, 1);
-			}
-		    }
-		}
 		CleanupAndExit(Server, FALSE, 0);
 	    }
 
@@ -1948,19 +1096,6 @@ int main(int ac, char *av[])
 			strerror(errno));
 		/* Yes -- leave the server paused. */
 		CleanupAndExit(Server, FALSE, 1);
-	    }
-	    if (StorageAPI && Writing) {
-		if (OverPath) {
-		    (void)sprintf(buff, "%s/overview.done", OverPath);
-		    (void)fclose(EXPfopen(FALSE, buff, "w", TRUE, Server, Paused));
-		    CleanupAndExit(Server, Paused, 0);
-		} else {
-		    if (!OVERreplace()) {
-			(void)fprintf(stderr, "Can't replace overview data, %s\n",
-			    strerror(errno));
-			CleanupAndExit(Server, FALSE, 1);
-		    }
-		}
 	    }
 	}
     }

@@ -100,7 +100,6 @@ main(ac, av)
     BOOL		Passing;
 #ifndef DO_TAGGED_HASH
     idxrec		ionevalue;
-    idxrecext		iextvalue;
 #endif
 
     /* First thing, set up logging and our identity. */
@@ -190,21 +189,12 @@ main(ac, av)
 	    continue;
 	}
 #else
-	if (innconf->extendeddbz) {
-	    if (!dbzfetch(key, &iextvalue)) {
-		(void)fprintf(stderr, "No entry for \"%s\", %s\n",
-		    buff, strerror(errno));
-		continue;
-	    }
-	    where = iextvalue.offset[HISTOFFSET];
-	} else {
 	    if (!dbzfetch(key, &ionevalue)) {
 		(void)fprintf(stderr, "No entry for \"%s\", %s\n",
 		    buff, strerror(errno));
 		continue;
 	    }
 	    where = ionevalue.offset;
-	}
 #endif
 
 	if (fseek(rfp,  where, SEEK_SET) == -1) {

@@ -112,7 +112,6 @@ IhaveSendme(STRING History, char What)
     char		Name[SPOOLNAMEBUFF];
 #ifndef DO_TAGGED_HASH
     idxrec		ionevalue;
-    idxrecext		iextvalue;
 #endif
 
     /* Open history. */
@@ -142,21 +141,12 @@ IhaveSendme(STRING History, char What)
 #ifdef	DO_TAGGED_HASH
 	offset = dbzfetch(key);
 #else
-	if (innconf->extendeddbz) {
-	    if (!dbzfetch(key, &iextvalue)) {
-		if (What == 'i')
-		    (void)printf("%s\n", p);
-		continue;
-	    }
-	    offset = iextvalue.offset[HISTOFFSET];
-	} else {
-	    if (!dbzfetch(key, &ionevalue)) {
-		if (What == 'i')
-		    (void)printf("%s\n", p);
-		continue;
-	    }
-	    offset = ionevalue.offset;
+	if (!dbzfetch(key, &ionevalue)) {
+	    if (What == 'i')
+		(void)printf("%s\n", p);
+	    continue;
 	}
+	offset = ionevalue.offset;
 #endif
 
 	/* Ihave -- say if we want it, and continue. */
@@ -210,7 +200,6 @@ main(int ac, char *av[])
 #ifndef DO_TAGGED_HASH
     BOOL		val;
     idxrec		ionevalue;
-    idxrecext		iextvalue;
     TOKEN		token;
     int			len;
     char		*p, *q;
@@ -313,21 +302,12 @@ main(int ac, char *av[])
 	exit(1);
     }
 #else
-    if (innconf->extendeddbz) {
-	if (!dbzfetch(key, &iextvalue)) {
-	    if (What == 'n')
-		(void)fprintf(stderr, "Not found.\n");
-	    exit(1);
-	}
-	offset = iextvalue.offset[HISTOFFSET];
-    } else {
-	if (!dbzfetch(key, &ionevalue)) {
-	    if (What == 'n')
-		(void)fprintf(stderr, "Not found.\n");
-	    exit(1);
-	}
-	offset = ionevalue.offset;
+    if (!dbzfetch(key, &ionevalue)) {
+	if (What == 'n')
+	    (void)fprintf(stderr, "Not found.\n");
+	exit(1);
     }
+    offset = ionevalue.offset;
 #endif
 
     /* Simple case? */
@@ -343,44 +323,13 @@ main(int ac, char *av[])
 #ifndef	DO_TAGGED_HASH
     /* Just give offset into overview */
     if (What == 'T') {
-      if (innconf->extendeddbz)
-        (void)printf("%lu (%lu)\n", iextvalue.offset[OVEROFFSET], iextvalue.overindex);
-      else
-        (void)printf("Overview offset is not available.\n");
+      (void)printf("Overview offset is not available.\n");
       exit(0);
     }
 
     /* Get overview */
     if (What == 'o') {
-      if (innconf->extendeddbz) {
-	if (innconf->overviewmmap)
-	  val = TRUE;
-	else
-	  val = FALSE;
-	if (!OVERsetup(OVER_MMAP, (void *)&val)) {
-	  fprintf(stderr, "Can't setup unified overview mmap\n");
-	  exit(1);    
-	}
-	if (!OVERsetup(OVER_MODE, "r")) {
-	  fprintf(stderr, "Can't setup unified overview mode\n");
-	  exit(1);
-	}
-	if (!OVERinit()) {
-	  fprintf(stderr, "Can't initialize unified overview mode\n");
-	  exit(1);
-	}
-	OVERmaketoken(&token, iextvalue.offset[OVEROFFSET], iextvalue.overindex, iextvalue.overlen);
-	if ((p = OVERretrieve(&token, &len)) == NULL) {
-	  fprintf(stderr, "Can't retrieve overview\n");
-	  exit(1);
-	}
-	q = NEW(char, len + 1);
-	strncpy(q, p, len);
-	(void)printf("%s\n", q);
-      } else {
-	(void)printf("Overview offset is not available.\n");
-      }
-      exit(0);
+      (void)printf("Overview offset is not available.\n");
     }
 #endif
 

@@ -80,132 +80,6 @@ STATIC NGHASH		NGHtable[NGH_SIZE];
 
 
 /*
-**  Get the next filename from the history file.
-*/
-STATIC BOOL
-GetName(F, buff)
-    register FILE	*F;
-    register char	*buff;
-{
-    static char		*SPOOL = NULL;
-    register int	c;
-    register char	*p;
-
-    /* Skip whitespace before filename. */
-    while ((c = getc(F)) == ' ' || c == '<')
-	continue;
-    if (c == EOF || c == '\n')
-	return FALSE;
-
-    if (SPOOL == NULL)
-	SPOOL = innconf->patharticles;
-    (void)strcpy(buff, SPOOL);
-    p = &buff[strlen(SPOOL)];
-    *p++ = '/';
-    *p++ = (char)c;
-    while ((c = getc(F)) != EOF && c != ' ' && c != '\n')
-	*p++ = (char)(c == '.' ? '/' : c);
-    *p = '\0';
-    return TRUE;
-}
-
-
-/*
-**  Find an existing file for the specified Message-ID, and return the
-**  open file pointer or NULL.
-*/
-STATIC FILE *
-FindFile(F, id, name)
-    FILE		*F;
-    char		*id;
-    char		*name;
-{
-    static char		BADLINE[] = "Bad text line for \"%s\", %s\n";
-    register char	*p;
-    register int	i;
-    register int	c;
-    register FILE	*art;
-    HASH		key;
-    OFFSET_T		offset;
-    char		date[SMBUF];
-#ifndef	DO_TAGGED_HASH
-    idxrec		ionevalue;
-    idxrecext		iextvalue;
-#endif
-
-    /* Do the lookup. */
-    key = HashMessageID(id);
-#ifdef	DO_TAGGED_HASH
-    if ((offset = dbzfetch(key)) < 0) {
-	(void)fprintf(stderr, "Can't find \"%s\"\n", id);
-	return NULL;
-    }
-#else
-    if (innconf->extendeddbz) {
-	if (!dbzfetch(key, &iextvalue)) {
-	    (void)fprintf(stderr, "Can't find \"%s\"\n", id);
-	    return NULL;
-	}
-	offset = iextvalue.offset[HISTOFFSET];
-    } else {
-	if (!dbzfetch(key, &ionevalue)) {
-	    (void)fprintf(stderr, "Can't find \"%s\"\n", id);
-	    return NULL;
-	}
-	offset = ionevalue.offset;
-    }
-#endif
-
-    /* Get the seek offset, and seek. */
-    if (fseek(F, offset, SEEK_SET) == -1) {
-	(void)fprintf(stderr, "Can't seek to %ld, %s\n",
-		offset, strerror(errno));
-	return NULL;
-    }
-
-    if ((c = getc(F)) == EOF || c != '<')
-	   abort();
-
-    if (Epoch) {
-	/* Skip forward to the date. */
-	while ((c = getc(F)) != EOF && c != '\n')
-	    if (c == HIS_FIELDSEP)
-		break;
-	if (c != HIS_FIELDSEP) {
-	    (void)fprintf(stderr, BADLINE, id, strerror(errno));
-	    return NULL;
-	}
-	for (p = date; (c = getc(F)) != EOF && CTYPE(isdigit, c); )
-	    *p++ = (char)c;
-	if (c == EOF) {
-	    (void)fprintf(stderr, BADLINE, id, strerror(errno));
-	    return NULL;
-	}
-	*p = '\0';
-	if (atol(date) < Epoch)
-	    return NULL;
-    }
-    else {
-	/* Move to the filename fields. */
-	for (i = 2; (c = getc(F)) != EOF && c != '\n'; )
-	    if (c == HIS_FIELDSEP && --i == 0)
-		break;
-	if (c != HIS_FIELDSEP) {
-	    (void)fprintf(stderr, BADLINE, id, strerror(errno));
-	    return NULL;
-	}
-    }
-
-    /* Loop over all possible files. */
-    while (GetName(F, name))
-	if ((art = fopen(name, "r")) != NULL)
-	    return art;
-    return NULL;
-}
-
-
-
-/*
 **  Read the active file and fill in the Groups array.  Note that
 **  NEWSGROUP.Sites is filled in later.
 */
@@ -490,284 +364,6 @@ BuildSubList(sp, subbed)
 
 
 
-STATIC NEWSGROUP *
-NGfind(Name)
-    char			*Name;
-{
-    register char		*p;
-    register int		i;
-    register unsigned int	j;
-    register NEWSGROUP		**ngp;
-    char			c;
-    NGHASH			*htp;
-
-    /* SUPPRESS 6 *//* Over/underflow from plus expression */
-    NGH_HASH(Name, p, j);
-    htp = NGH_BUCKET(j);
-    for (c = *Name, ngp = htp->Groups, i = htp->Used; --i >= 0; ngp++)
-	if (c == ngp[0]->Name[0] && EQ(Name, ngp[0]->Name))
-	    return ngp[0];
-    return NULL;
-}
-
-
-/*
-**  Split up the Path line.
-*/
-STATIC char **
-ParsePath(p)
-    register char	*p;
-{
-    static char		*save;
-    static int		oldlength;
-    static char		**hosts;
-    register int	i;
-    register char	**hp;
-    char		*nl;
-
-    if (save)
-	DISPOSE(save);
-    if ((nl = strchr(p, '\n')) != NULL)
-	*nl = '\0';
-    save = p = COPY(p);
-    if (nl)
-	*nl = '\n';
-
-    /* Get an array of character pointers. */
-    i = strlen(p);
-    if (hosts == NULL) {
-	hosts = NEW(char*, i + 1);
-	oldlength = i;
-    }
-    else if (oldlength < i) {
-	RENEW(hosts, char*, i + 1);
-	oldlength = i;
-    }
-
-    /* Loop over text. */
-    for (hp = hosts; *p; *p++ = '\0') {
-	/* Skip leading separators. */
-	for (; *p && !ARThostchar(*p); p++)
-	    continue;
-	if (*p == '\0')
-	    break;
-
-	/* Mark the start of the host, move to the end of it. */
-	for (*hp++ = p; *p && ARThostchar(*p); p++)
-	    continue;
-	if (*p == '\0')
-	    break;
-    }
-    *hp = NULL;
-    return hosts;
-}
-
-
-/*
-**  Has this site or its excludes already been seen?
-*/
-STATIC BOOL
-Seen(sp, Path)
-    SITE		*sp;
-    char		**Path;
-{
-    register char	*p;
-    register char	**pp;
-
-    while ((p = *Path++) != NULL) {
-	if (EQ(p, sp->Name))
-	    return TRUE;
-	if ((pp = sp->Exclusions) != NULL)
-	    for ( ; *pp; pp++)
-		if (EQ(p, *pp))
-		    return TRUE;
-    }
-    return FALSE;
-}
-
-
-/*
-**  Check a single word against a distribution list.
-*/
-STATIC BOOL
-WantThisOne(list, p)
-    register char	**list;
-    register char	*p;
-{
-    register char	*q;
-    register char	c;
-    register BOOL	sawbang;
-
-    for (sawbang = FALSE, c = *p; (q = *list) != NULL; list++)
-	if (*q == '!') {
-	    sawbang = TRUE;
-	    if (c == *++q && EQ(p, q))
-		return FALSE;
-	}
-	else if (c == *q && EQ(p, q))
-	    return TRUE;
-
-    /* If we saw any !foo's and didn't match, then assume they are all
-     * negated distributions and return TRUE, else return false. */
-    return sawbang;
-}
-
-
-/*
-**  Does the site want this article with this distribution?
-*/
-STATIC BOOL
-Wanted(site, article)
-    register char	**site;
-    register char	**article;
-{
-    for ( ; *article; article++)
-	if (WantThisOne(site, *article))
-	    return TRUE;
-    return FALSE;
-}
-
-
-/*
-**  Split up the Distribution line.
-*/
-STATIC char **
-ParseDistribs(p)
-    register char	*p;
-{
-    static char		SEPS[] = ", \t";
-    static char		*save;
-    static int		Size;
-    static int		Used;
-    static char		**List;
-    char		*nl;
-
-    /* Throw out old storage, make sure we have a list. */
-    if (save)
-	DISPOSE(save);
-    if ((nl = strchr(p, '\n')) != NULL)
-	*nl = '\0';
-    save = p = COPY(p);
-    if (nl)
-	*nl = '\n';
-    if (List == NULL) {
-	Size = 10;
-	List = NEW(char*, Size);
-    }
-    Used = 0;
-
-    if ((p = strtok(p, SEPS)) == NULL)
-	return NULL;
-    do {
-	if (Used == Size - 2) {
-	    Size += 10;
-	    RENEW(List, char*, Size);
-	}
-	List[Used++] = p;
-    } while ((p = strtok((char *)NULL, SEPS)) != NULL);
-
-    List[Used] = NULL;
-    return List;
-}
-
-
-/*
-**  Process a single file.
-*/
-STATIC void QueueArticle(char *name, char *id, FILE *art)
-{
-    static char		SEPS[] = ",";
-    static char		DISTRIBUTION[] = "Distribution";
-    static char		PATH[] = "Path";
-    static char		NG[] = "Newsgroups";
-    static char		*Buffer;
-    static int		Size;
-    SITE	        *sp;
-    int	                i;
-    char	        *p;
-    BOOL	        Dirty;
-    char	        *nl;
-    NEWSGROUP	        *ngp;
-    struct stat		Sb;
-    char		**Path;
-    char		**Distribs;
-
-    /* Read in the file. */
-    if (fstat((int)fileno(art), &Sb) < 0) {
-	(void)fprintf(stderr, "Can't fstat \"%s\", %s\n",
-		name, strerror(errno));
-	return;
-    }
-    if (Buffer == NULL) {
-	Size = Sb.st_size;
-	Buffer = NEW(char, Size + 1);
-    }
-    else if (Size < Sb.st_size) {
-	Size = Sb.st_size;
-	RENEW(Buffer, char, Size + 1);
-    }
-    if (fread((POINTER)Buffer, (SIZE_T)1, (SIZE_T)Sb.st_size,
-	    art) != Sb.st_size) {
-	(void)fprintf(stderr, "Can't read \"%s\", %s\n",
-		name, strerror(errno));
-	return;
-    }
-    Buffer[Sb.st_size] = '\0';
-
-    /* Clear all sites. */
-    for (Dirty = FALSE, i = nSites, sp = Sites; --i >= 0; sp++)
-	sp->Sent = FALSE;
-
-    /* Parse the Path and Distribution headers. */
-    if ((p = (char *)HeaderFindMem(Buffer, strlen(Buffer), PATH, STRLEN(PATH))) == NULL) {
-	(void)fprintf(stderr, "No \"Path\" header in \"%s\"\n", name);
-	return;
-    }
-    Path = ParsePath(p);
-    if ((p = (char *)HeaderFindMem(Buffer, strlen(Buffer), DISTRIBUTION, STRLEN(DISTRIBUTION))) == NULL)
-	Distribs = NULL;
-    else
-	Distribs = ParseDistribs(p);
-
-    /* Look at the newsgroups, see who gets the article. */
-    if ((p = (char *)HeaderFindMem(Buffer, strlen(Buffer), NG, STRLEN(NG))) == NULL) {
-	(void)fprintf(stderr, "No \"Newsgroups\" header in \"%s\"\n", name);
-	return;
-    }
-    if ((nl = strchr(p, '\n')) != NULL)
-	*nl = '\0';
-    if ((p = strtok(p, SEPS)) != NULL)
-	do {
-	    if ((ngp = NGfind(p)) != NULL) {
-		for (i = 0; i < ngp->nSites; i++) {
-		    sp = ngp->Sites[i];
-		    if (Path && Seen(sp, Path))
-			continue;
-		    if (Distribs
-		     && sp->Distributions
-		     && !Wanted(sp->Distributions, Distribs))
-			continue;
-		    sp->Sent = TRUE;
-		    Dirty = TRUE;
-		}
-	    }
-	} while ((p = strtok((char *)NULL, SEPS)) != NULL);
-
-    /* Write the output. */
-    if (Dirty) {
-	(void)printf("%s %s", name, id);
-	for (i = nSites, sp = Sites; --i >= 0; sp++)
-	    if (sp->Sent)
-		(void)printf(" %s", sp->Name);
-	(void)printf("\n");
-	if (fflush(stdout) == EOF || ferror(stdout))
-	    (void)fprintf(stderr, "Error writing \"%s\", %s\n",
-		    id, strerror(errno));
-    }
-}
-
-
-
 /*
 **  Print a usage message and exit.
 */
@@ -791,7 +387,6 @@ main(ac, av)
     char		*r;
     char		*s;
     char		*line;
-    FILE		*art;
     FILE		*F;
     STRING		Active;
     STRING		History;
@@ -799,7 +394,6 @@ main(ac, av)
     char		*subbed;
     time_t		t;
     BOOL		Logfile;
-    char		name[SPOOLNAMEBUFF];
     char		save;
     int			nntplinklog;
 
@@ -812,7 +406,7 @@ main(ac, av)
     Active = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
     Newsfeeds = COPY(cpcatpath(innconf->pathetc, _PATH_NEWSFEEDS));
-    Logfile = innconf->storageapi;
+    Logfile = TRUE;
     nntplinklog = innconf->nntplinklog;
 
     /* Parse JCL. */
@@ -931,62 +525,21 @@ main(ac, av)
 	save = *++q;
 	*q = '\0';
 
-	if (innconf->storageapi) {
-	    /* Skip the (filename) if it's there. */
-	    if (save != '\0' && ((r = strchr(q + 1, '(')) != NULL) &&
-		((s = strchr(r + 1, ')')) != NULL)) {
-		*s = '\0';
-		if (innconf->logartsize) {
-		    if ((s = strchr(s + 1, ' ')) != NULL)
-			(void)printf("%s %s %s\n", r + 1, p, s + 1);
-		    else
-			continue;
-		} else
+	/* Skip the (filename) if it's there. */
+	if (save != '\0' && ((r = strchr(q + 1, '(')) != NULL) &&
+	    ((s = strchr(r + 1, ')')) != NULL)) {
+	    *s = '\0';
+	    if (innconf->logartsize) {
+		if ((s = strchr(s + 1, ' ')) != NULL)
 		    (void)printf("%s %s %s\n", r + 1, p, s + 1);
-	    } else {
-		continue;
-	    }
+		else
+		    continue;
+	    } else
+		(void)printf("%s %s %s\n", r + 1, p, s + 1);
 	} else {
-	    /* Open the article. */
-	    if ((art = FindFile(F, p, name)) == NULL)
-		continue;
-
-	    if (Logfile) {
-		if (nntplinklog) {
-		    /* Skip the (filename) if it's there. */
-		    if (save != '\0' && (r = strchr(q + 1, ')')) != NULL)
-			if (innconf->logartsize) {
-			    if ((s = strchr(r + 1, ' ')) != NULL)
-				(void)printf("%s %s%s\n", name, p, s + 1);
-			    else
-				continue;
-			} else
-			    (void)printf("%s %s%s\n", name, p, r + 1);
-		    else {
-			*q = save;
-			if (innconf->logartsize) {
-			    if ((r = strchr(q + 1, ' ')) != NULL)
-				(void)printf("%s %s\n", name, r + 1);
-			    else
-				continue;
-			} else
-			    (void)printf("%s %s\n", name, p);
-		    }
-		} else {
-		    *q = save;
-		    (void)printf("%s %s\n", name, p);
-		}
-
-		if (fflush(stdout) == EOF || ferror(stdout))
-		    (void)fprintf(stderr, "Can't write %s, %s\n",
-			    p, strerror(errno));
-	    }
-	    else
-		QueueArticle(name, p, art);
-	    (void)fclose(art);
+	    continue;
 	}
     }
-
     /* That's all she wrote. */
     QIOclose(qp);
     (void)fclose(F);
