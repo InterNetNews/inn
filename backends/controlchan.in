@@ -423,12 +423,14 @@ sub logger {
 
 
 # Open an article appropriately to our storage method (or lack thereof).
+# If the token starts with a /, it is assumed to be a regular file,
+# even if we're using sm.
 sub open_article {
   my $token = shift;
   local(*ART);
   
   my $fail = 0;
-  if ($SM eq "cat") {
+  if ($SM eq "cat" or $token =~ /^\//) {
     $fail = 1 if (!open(ART,"<$token"));
   } else {
     $fail = 1 if (!open(ART, "$SM $token|"));
