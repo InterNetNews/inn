@@ -117,7 +117,7 @@ doc/man/filechan.8          1 Manpage for filechan backend
 doc/man/getlist.1           1 Manpage page for getlist frontend
 doc/man/grephistory.1       1 Manpage for grephistory
 doc/man/history.5           1 Manpage for history file
-doc/man/incoming.conf.5     1 Mnpage for incoming.conf config file
+doc/man/incoming.conf.5     1 Manpage for incoming.conf config file
 doc/man/inews.1             1 Manpage for inews frontend
 doc/man/inn.conf.5          1 Manpage for inn.conf config file
 doc/man/inncheck.8          1 Manpage for inncheck
@@ -125,6 +125,7 @@ doc/man/innconfval.1        1 Manpage for innconfval
 doc/man/innd.8              1 Manpage for innd server
 doc/man/inndcomm.3          1 Manpage for part of InterNetNews library
 doc/man/inndf.8             1 Manpage for inndf
+doc/man/inndstart.8         1 Manpage for inndstart
 doc/man/innfeed.1           1 Manpage for innfeed
 doc/man/innfeed.conf.5      1 Manpage for innfeed.conf config file
 doc/man/innlog.pl.8         1 Manpage for innlog.pl
@@ -185,17 +186,19 @@ doc/man/tally.unwanted.8    1 Manpage for tally.unwanted
 doc/man/wildmat.3           1 Manpage for wildmat library routine
 doc/man/writelog.8          1 Manpage for writelog
 doc/pod                     1 POD version (Directory)
-doc/pod/hook-perl.pod       1 master file of hook-perl
-doc/pod/inn.conf.pod        1 master file of inn.conf
-doc/pod/install.pod         1 master file of install
-doc/pod/readme.pod          1 master file of readme
+doc/pod/hook-perl.pod       1 Master file for README.perl_hook
+doc/pod/inn.conf.pod        1 Master file for inn.conf.5
+doc/pod/inndstart.pod       1 Master file for inndstart.8
+doc/pod/install.pod         1 Master file for INSTALL
+doc/pod/readme.pod          1 Master file for README
 doc/sgml                    1 SGML version (Directory)
-doc/sgml/.placemarker       1 marker file
+doc/sgml/.placemarker       1 Marker file
 doc/sgml/Makefile           1 Makefile for sgml documentation
-doc/sgml/hook-perl.sgml     1 sgml version of hook-perl
-doc/sgml/inn.conf.sgml      1 sgml version of inn.conf
-doc/sgml/install.sgml       1 sgml version of install
-doc/sgml/readme.sgml        1 sgml version of readme
+doc/sgml/hook-perl.sgml     1 SGML version of hook-perl.pod
+doc/sgml/inn.conf.sgml      1 SGML version of inn.conf.pod
+doc/sgml/inndstart.sgml     1 SGML version of inndstart.pod
+doc/sgml/install.sgml       1 SGML version of install.pod
+doc/sgml/readme.sgml        1 SGML version of readme.pod
 doc/typical.subst           1 Script to replace typical values
 expire                      1 Expiration and recovery (Directory)
 expire/Makefile             1 Makefile for expiration

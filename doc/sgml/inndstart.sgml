@@ -1,0 +1,850 @@
+<!DOCTYPE book PUBLIC "-//Davenport//DTD DocBook V2.4.1//EN" "/opt/texmf/gmat/sgml/Davenport/dtds/2.4.1/docbook.dtd">
+<!-- -->
+<!-- $Id$ -->
+<!-- -->
+<!-- $Log$
+<!-- Revision 1.1  1999/09/27 18:50:39  rra
+<!-- Add a man page for inndstart.
+<!-- -->
+<!-- -->
+<!-- General reminders: -->
+
+<book>
+
+<chapter id="pod2docbook-ch-1"><title>inndstart - Start innd
+
+</title>
+<chapter id="pod2docbook-ch-1"><title>NAME
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+inndstart - Start innd
+
+
+</para>
+
+<sect1 id="pod2docbook-ch-1-sect-1"><title>SYNOPSIS
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+<emphasis>inndstart</emphasis> [<emphasis>-P</emphasis>  <emphasis>port</emphasis>] [<emphasis>-I</emphasis>  <emphasis>address</emphasis>] [<emphasis>innd-options</emphasis>]
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-2"><title>DESCRIPTION
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+The purpose of <emphasis>inndstart</emphasis> is to raise system file descriptor limits, open the privileged news
+transfer port, and then start <literal>innd(8),</literal> passing it the
+open file descriptor for the news port.  <emphasis>inndstart</emphasis> is used since only privileged programs can perform those two operations and
+since
+<emphasis>innd</emphasis> should not run privileged. It is installed setuid root and drops privileges
+to the news user (set at configure time) before running
+<emphasis>innd</emphasis>.
+
+
+</para>
+
+<para>
+Normally there is no need to run <emphasis>inndstart</emphasis> directly. Instead, run rc.news(8) as the news user, and it will handle
+running <emphasis>inndstart</emphasis>
+appropriately for you.
+
+
+</para>
+
+<para>
+Since <emphasis>inndstart</emphasis> is setuid root, it is extremely restrictive about who can run it and what
+it is willing to do. See <emphasis>SECURITY</emphasis> for the full details.
+
+
+</para>
+
+<para>
+<emphasis>inndstart</emphasis> can only be run by the news user; if run by any other user, it will abort.
+It will also only bind to ports 119, 433, or a port number given at
+configure time with <emphasis>--with-innd-port</emphasis> among those ports below 1024, although it can bind to any port above 1024.
+This is to prevent various security exploits possible by binding to
+arbitrary privileged ports.
+
+
+</para>
+
+<para>
+Before running <emphasis>innd</emphasis>, <emphasis>inndstart</emphasis> cleans out the environment and sets only those environment variables listed
+in <emphasis>ENVIRONMENT</emphasis>.
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-3"><title>OPTIONS
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<variableList>
+<varlistentry><term><emphasis>-P port
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Bind to <emphasis>port</emphasis> instead of whatever is specified by <emphasis>port</emphasis> in inn.conf(5). Note that this is subject to the constraints mentioned
+above.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>-I address
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Bind as <emphasis>address</emphasis> instead of whatever is specified by <emphasis>bindaddress</emphasis> in inn.conf(5). The default behavior is to bind to INADDR_ANY, and that's
+what's desired almost all the time. This option, and the inn.conf(5)
+parameter, may be useful if the machine has multiple interface cards and
+<emphasis>innd</emphasis> should only be listening on a particular one.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+<para>
+All other options given on the command line are passed verbatim to
+<emphasis>innd</emphasis>. In addition, <emphasis>inndstart</emphasis> will give the <emphasis>-p</emphasis> option to <emphasis>innd</emphasis>, specifying the file descriptor of the open network socket.
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-4"><title>SECURITY
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+<emphasis>inndstart</emphasis> is setuid root, and therefore an expected point of attack. It has therefore
+been carefully written with security in mind. In a normal INN installation,
+it is installed setuid root and executable only by users in the news group.
+
+
+</para>
+
+<para>
+Ideally, everything about <emphasis>inndstart</emphasis>'s operations would be hard-coded so that it could not be modified.
+Fighting against this desire, however, is the ideal that as much of INN's
+operation as possible should be configurable at run-time using inn.conf(5),
+and the news system should be able to an alternate inn.conf by setting
+INNCONF to the path to that file before starting any programs. The
+configuration data therefore can't be trusted.
+
+
+</para>
+
+<para>
+The security model used is:
+
+
+</para>
+
+<itemizedList>
+<listitem><para>
+</para>
+
+<para>
+<emphasis>inndstart</emphasis> can only be executed by the news user and news group, as determined at
+configure time and compiled into <emphasis>inndstart</emphasis> as constants. Similarly, <emphasis>inndstart</emphasis> will always <literal>setuid()</literal> and <literal>setgid()</literal> to
+those users before running <emphasis>innd</emphasis>. This is to prevent a user other than news but in the news group from
+using <emphasis>inndstart</emphasis> to leverage that access into access to the news account.
+
+
+</para>
+
+</listitem>
+<listitem><para>
+</para>
+
+<para>
+As mentioned above, <emphasis>inndstart</emphasis> will only bind to a very limited set of ports below 1024. There are various
+attacks that can be performed using random low-numbered ports, including
+exploits of the rsh family of commands on some systems.
+
+
+</para>
+
+</listitem>
+<listitem><para>
+</para>
+
+<para>
+<emphasis>inndstart</emphasis> does as little as possible as root, dropping privileges before performing
+any operations that do not require elevated privileges.
+
+
+</para>
+
+</listitem></itemizedList>
+
+<para>
+This program therefore gives the news user the ability to revoke system
+file descriptor limits and bind to the news port, and nothing else.
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-5"><title>DIAGNOSTICS
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+<emphasis>inndstart</emphasis> may log the following messages to syslog (like the rest of INN, syslog is
+the best place to find detailed debugging information):
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>can't bind: %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Unable to bind to the designated port. This usually means that
+something else is already running on the news port. Check with
+<literal>netstat(8)</literal> and make sure that
+<literal>inetd(8)</literal> doesn't think it's running a service on the
+same port you're trying to run <emphasis>innd</emphasis> on.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't exec %s: %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>inndstart</emphasis> was unable to execute <emphasis>innd</emphasis>. Make sure that
+<emphasis>pathbin</emphasis> is set correctly in inn.conf and that <emphasis>innd</emphasis> is located in that directory and is executable by the news user.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't getrlimit(NOFILE)
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Warning) Unable to obtain the current system resource limit on file
+descriptors. Chances are something is wrong with the *rlimit() functions.
+The file descriptor limit was left unchanged from the system default.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't open socket: %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Something went wrong in creating the network socket. Chances are
+your system is out of resources of some kind.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't setgid(%d): %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Dropping privileges to the news group failed for some reason.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't setgroups: %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Warning) Dropping all supplemental groups except the news group failed for
+some reason, and the process group membership was left unchanged. This
+message may indicate a minor security hole if the news user is in extra
+groups.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't setrlimit(NOFILE, %d)
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Warning) Unable to set the system file descriptor limit to the specified
+value. Either that value is too high for your system or something else went
+wrong. The file descriptor limit was left unchanged. Try changing
+<emphasis>rlimitnofile</emphasis> in inn.conf to a smaller value.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't setsockopt: %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Warning) <emphasis>inndstart</emphasis> attempts to set SO_REUSEADDR so that if <emphasis>innd</emphasis>
+exits, it can be restarted again immediately without waiting for the port
+to time out. For some reason, this failed, and that option was not set on
+the port.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't setuid(%d): %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Dropping privileges to the news user failed for some reason.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>can't stat pathrun (%s): %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>pathrun</emphasis> as specified in inn.conf doesn't exist.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>getgrnam(%s) failed
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Unable to determine the GID for the compiled-in news group. Is the
+news group listed in /etc/group?
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>getpwnam(%s) failed
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Unable to determine the UID for the compiled-in news user. Is the
+news user listed in /etc/passwd?
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>invalid address %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>-I</emphasis> was specified on the command line, but the argument wasn't a valid address.
+Addresses must be given as numeric IP addresses.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>invalid bindaddress in inn.conf (%s)
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) The <emphasis>bindaddress</emphasis> specified in inn.conf could not be converted to an IP address. See
+inn.conf(5) for more information about valid values.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>invalid port %s
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>-P</emphasis> was specified on the command line, but the argument wasn't a valid port.
+Ports must be port numbers; service names are not allowed.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>missing address after -I
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>-I</emphasis> was given on the command line, but no address was given after the option.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>missing port after -P
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>-P</emphasis> was given on the command line, but no port was given after the option.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathrun (%s) not a directory
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>pathrun</emphasis> as specified in inn.conf isn't a directory. This is where <emphasis>innd</emphasis> will create its local control socket; it should always be a directory.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathrun (%s) owned by group %d, not %s (%d)
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>pathrun</emphasis> specified in inn.conf must be owned by the news group. This is checked for
+security reasons.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathrun (%s) owned by user %d, not %s (%d)
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>pathrun</emphasis> specified in inn.conf must be owned by the news user. This is checked for
+security reasons.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>ran by GID %d, who isn't %s (%d)
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Someone not in the news group attempted to run <emphasis>inndstart</emphasis>. If you were running <emphasis>inndstart</emphasis> as the news user, make sure that the news user's default group is the news
+group you picked at compile time (<literal>news</literal>
+by default).
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>ran by UID %d, who isn't %s (%d)
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Someone other than the news user attempted to run <emphasis>inndstart</emphasis>.
+<emphasis>inndstart</emphasis> may only be run by the news user for security reasons.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>setregid(%d, %d) failed
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Unable to change the real and effective GIDs. This message usually
+means that <emphasis>inndstart</emphasis> was installed with the wrong permissions.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>setreuid(%d, %d) failed
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) Unable to change the real and effective UIDs. This message usually
+means that <emphasis>inndstart</emphasis> was installed with the wrong permissions.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>tried to bind to port %d
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+(Fatal) <emphasis>inndstart</emphasis> was told to bind to a low numbered port (under 1024) other than 119, 433,
+or a port number given at configure time. This is not allowed for security
+reasons.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-6"><title>EXAMPLES
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+Normally, <emphasis>inndstart</emphasis> is never run directly. However, a simple way to just restart <emphasis>innd</emphasis> without running any other auxilliary programs or performing any of the
+other checks done by rc.news(8) is to just run:
+
+
+</para>
+
+<para>
+<screen>
+    inndstart
+</screen>
+
+
+</para>
+
+<para>
+as the news user.
+
+
+</para>
+
+<para>
+To start <emphasis>innd</emphasis> on port 433, passing it the <literal>-c21</literal> option, use:
+
+
+</para>
+
+<para>
+<screen>
+    inndstart -P433 -c21
+</screen>
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-7"><title>ENVIRONMENT
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+One environment variable affects the operation of <emphasis>inndstart</emphasis> itself:
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>INNCONF
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The full path to the inn.conf(5) file to read, rather than the default.
+This can be used to run multiple copies of INN on the same machine with
+different settings.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+<para>
+When executing <emphasis>innd</emphasis>, <emphasis>inndstart</emphasis> cleans out the entire environmnent and sets only the following variables:
+
+
+</para>
+
+<variableList>
+<varlistentry><term><emphasis>BIND_INADDR
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Passed verbatim from <emphasis>inndstart</emphasis>'s environment. This is apparently used on Linux.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>HOME
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set to <emphasis>pathnews</emphasis> from inn.conf.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>LOGNAME
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set to the news master, as determined at configure time.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>PATH
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set to <emphasis>pathbin</emphasis> from inn.conf, <emphasis>pathetc</emphasis> from inn.conf, and then /bin, /usr/bin, and /usr/ucb in that order.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>SHELL
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set to the path to the system Bourne shell as determined by configure
+(probably /bin/sh).
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>TMPDIR
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set to <emphasis>pathtmp</emphasis> from inn.conf.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>TZ
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Passed verbatim from <emphasis>inndstart</emphasis>'s environment.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>USER
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Set to the news master, as determined at configure time.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-8"><title>FILES
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<variableList>
+<varlistentry><term><emphasis>inn.conf
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Read for <emphasis>pathnews</emphasis>, <emphasis>pathbin</emphasis>, <emphasis>pathrun</emphasis>, <emphasis>pathtmp</emphasis>, <emphasis>rlimitnofile</emphasis>,
+<emphasis>bindaddress</emphasis>, and <emphasis>port</emphasis>.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathbin/innd
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+The binary that is executed as <emphasis>innd</emphasis> and passed the open network socket.
+
+
+</para>
+
+</listitem></varlistentry>
+<varlistentry><term><emphasis>pathrun
+
+</emphasis></term>
+<listitem><para></para>
+
+<para>
+Checked for existence and the right ownership.
+
+
+</para>
+
+</listitem></varlistentry></variablelist>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-9"><title>HISTORY
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+Written by Russ Allbery &lt;rra@stanford.edu&gt; for InterNetNews.
+
+
+</para>
+
+<para>
+$Id$
+
+
+</para>
+
+</sect1>
+
+<sect1 id="pod2docbook-ch-1-sect-10"><title>SEE ALSO
+
+</title>
+<!-- Bogus hack to ensure that each sect has a paragraph in it -->
+<para>
+</para>
+
+
+<para>
+inn.conf(5), <literal>innd(8)</literal>
+
+
+</para>
+
+</sect1>
+
+</chapter>
+
+
+</book>    <!-- End of the book -->
