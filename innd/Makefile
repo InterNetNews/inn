@@ -38,7 +38,7 @@ tags ctags: $(SOURCES)
 ##  Compilation rules.
 
 INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) \
-		  $(TCLLIB) $(PERLLIB) $(PYTHONLIB) $(LIBS)
+		  $(TCLLIB) $(PYTHONLIB) $(LIBS) $(PERLLIB)
 
 art.o:		art.c		; $(CC) $(CFLAGS) $(TCLINC) -c art.c
 perl.o:		perl.c		; $(CC) $(CFLAGS) $(PERLINC) -c perl.c
