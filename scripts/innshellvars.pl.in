@@ -42,8 +42,6 @@ $newsfeeds = "${newsetc}/newsfeeds" ;
 $newsgroups = "${pathdb}/newsgroups" ;
 $oldactive = "${pathdb}/active.old" ;
 $path_motd = "${newsetc}/motd.news" ;
-$path_storagectl = "${newsetc}/storage.ctl" ;
-$path_overviewctl = "${newsetc}/overview.ctl" ;
 $localgroups = "$newsetc/localgroups" ;
 $expirectl = "${newsetc}/expire.ctl" ;
 
