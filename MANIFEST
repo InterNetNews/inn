@@ -198,6 +198,7 @@ doc/pod/ovdb_upgrade.pod              Master file for ovdb_upgrade.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
+doc/pod/wildmat.pod                   Master file for wildmat.3
 doc/sample-control                    Sample PGP-signed control message
 expire                                Expiration and recovery (Directory)
 expire/Makefile                       Makefile for expiration
@@ -556,6 +557,7 @@ tests/lib/qio-t.c                     Tests for lib/qio.c
 tests/lib/setenv-t.c                  Tests for lib/setenv.c
 tests/lib/setenv.t                    Wrapper for setenv tests
 tests/lib/strerror-t.c                Tests for lib/strerror.c
+tests/lib/wildmat-t.c                 Tests for lib/wildmat.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
 tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
