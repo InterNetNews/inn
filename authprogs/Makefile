@@ -44,8 +44,9 @@ AUTH_INN	= $(LIBINN) $(LIBAUTH)
 
 CK_LIBS		= $(PAMLIB) $(DBMLIB) $(AUTHLIBS)
 RAD_LIBS	= $(AUTH_INN) $(LIBS)
+SMB_LIBS	= $(LIBSMB) $(AUTHLIBS)
 
-auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(LIBSMB) $(LIBS)
+auth_smb:	auth_smb.o  $(LIBSMB)	; $(LINK) auth_smb.o $(SMB_LIBS)
 ckpasswd:	ckpasswd.o  $(LIBAUTH)	; $(LINK) ckpasswd.o $(CK_LIBS)
 domain:		domain.o    $(LIBINN)	; $(LINK) domain.o   $(NEWSLIBS)
 ident:		ident.o     $(LIBAUTH)	; $(LINK) ident.o    $(AUTHLIBS)
