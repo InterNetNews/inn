@@ -25,7 +25,7 @@ methods: methods.c buildconfig
 	done
 
 clobber clean distclean:
-	rm -f *.o *.lo libstorage.la libstorage.a
+	rm -f *.o *.lo libstorage.la libstorage.a libstorage_pure_*.a .pure
 	rm -f buildconfig methods.c methods.h ovmethods.c ovmethods.h
 	rm -f profiled libstorage_p.a
 	rm -rf .libs

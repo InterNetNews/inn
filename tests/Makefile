@@ -27,7 +27,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 clean clobber distclean:
-	rm -f *.o *.lo */*.o */*.lo $(TESTS) $(EXTRA)
+	rm -f *.o *.lo */*.o */*.lo .pure */.pure $(TESTS) $(EXTRA)
 	rm -rf .libs */.libs
 
 .c.o: $*.c
