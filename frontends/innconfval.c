@@ -45,13 +45,17 @@ main(int argc, char *argv[])
     enum innconf_quoting quoting = INNCONF_QUOTE_NONE;
     bool okay = true;
     bool version = false;
+    bool checking = false;
 
     message_program_name = "innconfval";
 
-    while ((option = getopt(argc, argv, "i:pstv")) != EOF)
+    while ((option = getopt(argc, argv, "ci:pstv")) != EOF)
         switch (option) {
         default:
             die("usage error");
+            break;
+        case 'c':
+            checking = true;
             break;
         case 'i':
             file = optarg;
@@ -76,6 +80,8 @@ main(int argc, char *argv[])
         print_version(stdout, quoting);
         exit(0);
     }
+    if (checking)
+        exit(innconf_check(file) ? 0 : 1);
 
     /* Read in the inn.conf file specified. */
     if (!innconf_read(file))

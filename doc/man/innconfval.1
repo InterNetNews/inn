@@ -129,26 +129,35 @@
 .\" ========================================================================
 .\"
 .IX Title "INNCONFVAL 1"
-.TH INNCONFVAL 1 "2002-09-02" "INN 2.4.0" "InterNetNews Documentation"
+.TH INNCONFVAL 1 "2002-12-08" "INN 2.4.0" "InterNetNews Documentation"
 .SH "NAME"
 innconfval \- Get configuration parameters from inn.conf
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
 \&\fBinnconfval\fR [\fB\-pstv\fR] [\fB\-i\fR \fIfile\fR] [\fIparameter\fR ...]
+.PP
+\&\fBinnconfval\fR \fB\-c\fR [\fB\-i\fR \fIfile\fR]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBinnconfval\fR prints the values of the parameters specified on the command
-line.  By default, it just prints the parameter values, but if \fB\-p\fR,
-\&\fB\-s\fR, or \fB\-t\fR are given, it instead prints the parameter and value in
-the form of a variable assignment in Perl, Bourne shell, or Tcl
+\&\fBinnconfval\fR normally prints the values of the parameters specified on
+the command line.  By default, it just prints the parameter values, but if
+\&\fB\-p\fR, \fB\-s\fR, or \fB\-t\fR are given, it instead prints the parameter and
+value in the form of a variable assignment in Perl, Bourne shell, or Tcl
 respectively.  If no parameters are specifically requested, \fBinnconfval\fR
 prints out all parameter values (this isn't particularly useful unless one
 of \fB\-p\fR, \fB\-s\fR, or \fB\-t\fR were specified).
 .PP
 All parameters are taken from \fIinn.conf\fR except for \fIversion\fR, which is
 always the version string of \s-1INN\s0.
+.PP
+If given the \fB\-c\fR option, \fBinnconfval\fR instead checks \fIinn.conf\fR,
+reporting any problems found to standard error.  \fBinnconfval\fR will exit
+with status 0 if no problems are found and with status 1 otherwise.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
+.IP "\fB\-c\fR" 4
+.IX Item "-c"
+Check \fIinn.conf\fR rather than printing out the values of parameters.
 .IP "\fB\-i\fR \fIfile\fR" 4
 .IX Item "-i file"
 Use \fIfile\fR as the source configuration file rather than \fIinn.conf\fR.
