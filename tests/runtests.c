@@ -62,14 +62,13 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
+#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>
 #include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <time.h>
 
 /* sys/time.h must be included before sys/resource.h on some platforms. */
 #include <sys/resource.h>
