@@ -28,6 +28,8 @@
 #if HAVE_DBM
 # if HAVE_NDBM_H
 #  include <ndbm.h>
+# elif HAVE_GDBM_NDBM_H
+#  include <gdbm-ndbm.h>
 # elif HAVE_DB1_NDBM_H
 #  include <db1/ndbm.h>
 # endif

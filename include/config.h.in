@@ -313,6 +313,9 @@
 /* Define if you have the <dlfcn.h> header file.  */
 #undef HAVE_DLFCN_H
 
+/* Define if you have the <gdbm-ndbm.h> header file.  */
+#undef HAVE_GDBM_NDBM_H
+
 /* Define if you have the <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H
 
