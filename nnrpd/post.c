@@ -1036,6 +1036,11 @@ ARTpost(char *article, char *idbuff)
       return MailArticle(modgroup, article);
     }
 
+    if (idbuff) {
+	(void)strncpy(idbuff, HDR(_messageid), SMBUF - 1);
+	idbuff[SMBUF - 1] = '\0';
+    }
+
     if (PERMaccessconf->spoolfirst)
 	return Spoolit(article, Error);
 
@@ -1151,10 +1156,6 @@ ARTpost(char *article, char *idbuff)
 
     /* Send a quit and close down */
     SendQuit(FromServer, ToServer);
-    if (idbuff) {
-	(void)strncpy(idbuff, HDR(_messageid), SMBUF - 1);
-	idbuff[SMBUF - 1] = '\0';
-    }
 
     /* Tracking */
     if (PERMaccessconf->readertrack) {
