@@ -1194,7 +1194,7 @@ static void GetProgInput(EXECSTUFF *prog)
     } else if (WIFEXITED(status)) {
 	if (WEXITSTATUS(status) != 0) {
 	    ubuf[0] = '\0';
-	    syslog(L_NOTICE, "%s bad_hook program died with status %d",
+	    syslog(L_TRACE, "%s bad_hook program exited with status %d",
 	      ClientHost, WEXITSTATUS(status));
 	}
     } else {
