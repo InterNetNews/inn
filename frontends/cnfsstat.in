@@ -317,6 +317,7 @@ sub make_time {
 
 sub human_readable {
     my ($val, $digits) = @_;
+    $val =~ s/\+//;
 
     my @name = ("kBytes", "MBytes", "GBytes", "TBytes");
     my $base = 1024;
