@@ -1,15 +1,17 @@
-##  $Revision$
+##  $Id$
+
 include ../Makefile.global
 
-IFTRUE	= @$(SHELL) ../iftrue.sh
-CFLAGS	= $(GCFLAGS)
+CFLAGS  = $(GCFLAGS)
 
 ##  For OSx systems, get these from the ATT Universe libc.
 ##  See the rule for version.o, below.
 OSXATTOBJ= version.o memchr.o memcmp.o memcpy.o memset.o strchr.o strrchr.o
 
-##  MISSING_SRC and MISSING_OBJ fill in standard library functions the system
-##  doesn't have, as detected by configure and recorded in Makefile.global.
+##  MISSING_SRC and MISSING_OBJ fill in standard library functions the
+##  system doesn't have, as detected by configure and recorded in
+##  Makefile.global.
+
 SOURCES = $(MISSING_SRC) \
 	argparse.c checkart.c cleanfrom.c clientactive.c clientlib.c \
 	closeonexec.c concat.c conffile.c dbz.c defdist.c findheader.c \
@@ -19,6 +21,7 @@ SOURCES = $(MISSING_SRC) \
 	readin.c remopen.c reservedfd.c resource.c rwlock.c sendarticle.c \
 	sendpass.c tempname.c waitnb.c wildmat.c xfopena.c xmalloc.c \
 	xsignal.c xwrite.c xwritev.c
+
 OBJECTS = $(MISSING_OBJ) \
 	argparse.o checkart.o cleanfrom.o clientactive.o clientlib.o \
 	closeonexec.o concat.o conffile.o dbz.o defdist.o findheader.o \
@@ -28,44 +31,31 @@ OBJECTS = $(MISSING_OBJ) \
 	remopen.o reservedfd.o resource.o rwlock.o sendarticle.o \
 	sendpass.o tempname.o waitnb.o wildmat.o xfopena.o xmalloc.o \
 	xsignal.o xwrite.o xwritev.o
-LOBJECTS	= $(OBJECTS:.o=.lo)
 
-all:			libinn.$(EXTLIB) perl.o ../include/autoconfig.h
+LOBJECTS= $(OBJECTS:.o=.lo)
 
-install:		all $(D)$(PATHLIB)/libinn.$(EXTLIB)
+all:		libinn.$(EXTLIB) perl.o ../include/autoconfig.h
+
+install:	all $(D)$(PATHLIB)/libinn.$(EXTLIB)
 
 clobber clean:
-	rm -f *.o *.lo libinn.la libinn.a
-	rm -rf .libs
-	rm -f parsedate parsedate.c
-	rm -f qiotest
+	rm -f *.o *.lo libinn.la libinn.a parsedate.c parsedate qiotest
 	rm -f profiled libinn_p.a endian
-	rm -f all install 
+	rm -rf .libs
 
 tags ctags:	$(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
 
-libinn.la:		$(P) $(OBJECTS) $(LOBJECTS)
-	$(CC) $(LDFLAGS) -o $@ $(LOBJECTS) \
-		-rpath $(PATHLIB) -version-info 2:0:0
+libinn.la:	$(OBJECTS) $(LOBJECTS)
+	$(LIBCC) $(LDFLAGS) -o $@ $(LOBJECTS) \
+	    -rpath $(PATHLIB) -version-info 2:0:0
 
-libinn.a:             $(P) $(OBJECTS)
+libinn.a:       $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	$(RANLIB) libinn.a
 
 .c.o: $*.c
-	$(LIBCC) $(CFLAGS) -c $*.c -o $@
-
-##  Profiling.  The rules are a bit brute-force, but good enough.
-profiled:		../libinn_p.a
-	date >$@
-
-../libinn_p.a:		$(SOURCES)
-	rm -f $(OBJECTS)
-	$(MAKE) libinn.a CFLAGS="$(CFLAGS) $(PROF)"
-	mv libinn.a ../libinn_p.a
-	$(RANLIB) ../libinn_p.a
-	rm -f $(OBJECTS)
+	$(LIBCC) $(CFLAGS) -c $*.c
 
 endian: endian.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ endian.c
@@ -76,12 +66,12 @@ perl.o: perl.c
 ../include/autoconfig.h: endian
 	./endian >../include/autoconfig.h
 
-parsedate.c:		parsedate.y
+parsedate.c:	parsedate.y
 	@echo Expect 6 shift/reduce conflicts
 	$(YACC) parsedate.y
 	@mv y.tab.c parsedate.c
 
-parsedate:		$(P) parsedate.c gettime.o
+parsedate:	parsedate.c gettime.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -DTEST -DYYDEBUG parsedate.c gettime.o
 
 ##  This rule will only be triggered if $(OSXATTOBJ) is in MISSING_OBJ.
@@ -89,14 +79,20 @@ version.o:
 	@rm -f $(OSXATTOBJ)
 	/.attbin/ar vx /usr/.attlib/libc.a $(OSXATTOBJ)
 
-##
-ccenter:	$(SOURCES)
-	#load $(CFLAGS) $(SOURCES)
+##  Profiling.  The rules are a bit brute-force, but good enough.
+profiled:	../libinn_p.a
+	date >$@
+
+../libinn_p.a:	$(SOURCES)
+	rm -f $(OBJECTS)
+	$(MAKE) libinn.a CFLAGS="$(CFLAGS) $(PROF)"
+	mv libinn.a ../libinn_p.a
+	$(RANLIB) ../libinn_p.a
+	rm -f $(OBJECTS)
 
 ##  Low-level install actions.
-$(D)$(PATHLIB)/libinn.$(EXTLIB):		libinn.$(EXTLIB)
-	@rm -f $@
-	$(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD libinn.$(EXTLIB) $@
+$(D)$(PATHLIB)/libinn.$(EXTLIB): libinn.$(EXTLIB)
+	$(LI_XPUB) libinn.$(EXTLIB) $@
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES) ../include/dbz.h
