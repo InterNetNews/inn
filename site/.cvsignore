@@ -37,3 +37,4 @@ startup.tcl
 startup_innd.pl
 storage.conf
 subscriptions
+update
