@@ -9,7 +9,7 @@ ALL	= #tdx-util
 SOURCES = tdx-cache.c tdx-data.c tdx-group.c tdx-util.c tradindexed.c
 OBJECTS = tdx-cache.o tdx-data.o tdx-group.o tradindexed.o
 
-STORELIBS = $(LIBSTORAGE) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
+STORELIBS = $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(EXTSTORAGELIBS) $(LIBS)
 
 .SUFFIXES: .lo
 
