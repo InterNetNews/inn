@@ -132,6 +132,9 @@ FIXSCRIPT       = ../support/fixscript
 PERLWHOAMI      = $(PERL) -e 'print scalar getpwuid($$>), "\n"'
 WHOAMI          = (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
 
+MAKEDEPEND      = ../support/makedepend
+UPMAKEDEPEND    = ../../support/makedepend
+
 ##  Installation directories.  If any of the below are incorrect, don't just
 ##  edit this file; these directories are substituted in all over the source
 ##  tree by configure.  Instead, re-run configure with the correct
