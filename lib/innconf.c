@@ -505,6 +505,19 @@ innconf_check(const char *path)
             okay = false;
         }
     }
+
+    /* Check and warn about a few other parameters. */
+    if (innconf->peertimeout < 3 * 60)
+        config_error_param(group, "peertimeout",
+                           "warning: NNTP draft (15) states inactivity"
+                           " timeouts MUST be at least three minutes");
+    if (innconf->clienttimeout < 3 * 60)
+        config_error_param(group, "clienttimeout",
+                           "warning: NNTP draft (15) states inactivity"
+                           " timeouts MUST be at least three minutes");
+
+    /* All done.  Free the parse tree and return. */
+    config_free(group);
     return okay;
 }
 

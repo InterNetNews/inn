@@ -70,33 +70,6 @@ hurt to check this along with everything else.
 
 ------------------------------
 
-  Summary: Inactivity timer configuration isn't checked
- Standard: draft-ietf-nntpext-base-13.txt, section 4
-  Version: 1.0 to CURRENT 2001-07-04
-Reference: innd/chan.c and nnrpd/nnrpd.c
- Severity: Accepts invalid configuration
-
-The standard says:
-
-    An NNTP server MAY have an inactivity autologout timer.  Such a timer
-    MUST be of at least three minutes duration.
-
-The autologout timer for innd (peertimeout) and nnrpd (clienttimeout) are
-both configurable in inn.conf.  They can be configured to anything the
-user desires, and no warning is given for values that violate the NNTP
-standard.
-
-Impact:  An unsuspecting user may configure their server in violation of
-the NNTP standard without realizing it.
-
-Suggested fix:  Add this check to inncheck.  This configuration should
-still be allowed; sometimes there's a reason to configure a server to
-violate this sort of provision of the protocol.  But there should be a
-warning for this type of configuration, and INN already has the inncheck
-script to warn about possibly incorrect configurations.
-
-------------------------------
-
   Summary: Reply codes other than x9x used for private extensions
  Standard: draft-ietf-nntpext-base-13.txt, section 4.1
   Version: 1.0 to CURRENT 2001-07-04
