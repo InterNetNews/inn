@@ -107,7 +107,7 @@ int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Us
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned wrong result", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 
     /* Get the NNTP response code */
@@ -118,7 +118,7 @@ int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Us
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned bad NNTP response code", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 
     /* Store the code */
@@ -132,7 +132,7 @@ int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Us
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned bad CanPost setting", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 
     /* Store the setting */
@@ -146,7 +146,7 @@ int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Us
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned bad CanRead setting", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 
     /* Store the setting */
@@ -160,7 +160,7 @@ int PY_authenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *Us
     {
         syslog(L_ERROR, "python authenticate_method (type %s) returned bad access list value", type);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 
     /* Store access list*/
@@ -255,7 +255,7 @@ int PY_authorize(char *ClientHost, char *ClientIP, char *ServerHost, char *Usern
     {
         syslog(L_ERROR, "python authorize_method (%s access) returned wrong result", PostFlag ? "post" : "read");
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, FALSE);
     }
 
     /* Get the response string */

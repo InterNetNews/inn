@@ -152,7 +152,7 @@ STATIC CMDENT	CMDtable[] = {
 **  Log a summary status message and exit.
 */
 NORETURN
-ExitWithStats(int x)
+ExitWithStats(int x, BOOL readconf)
 {
     TIMEINFO		Now;
     double		usertime;
@@ -177,7 +177,7 @@ ExitWithStats(int x)
 	ClientHost, usertime, systime, STATfinish - STATstart);
     /* Tracking code - Make entries in the logfile(s) to show that we have
 	finished with this session */
-    if (innconf->readertrack) {
+    if (!readconf && PERMaccessconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Disabled (%s)", ClientHost, Username);
 	if (LLOGenable) {
 		fprintf(locallog, "%s Tracking Disabled (%s)\n", ClientHost, Username);
@@ -188,7 +188,7 @@ ExitWithStats(int x)
     if (ARTget)
         syslog(L_NOTICE, "%s artstats get %d time %d size %d", ClientHost,
             ARTget, ARTgettime, ARTgetsize);
-    if (innconf->nnrpdoverstats && OVERcount)
+    if (!readconf && PERMaccessconf->nnrpdoverstats && OVERcount)
         syslog(L_NOTICE, "%s overstats count %d hit %d miss %d time %d size %d dbz %d seek %d get %d artcheck %d", ClientHost,
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
@@ -381,7 +381,7 @@ STATIC void StartConnection()
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
             (void)strcpy(ClientHost, "?"); /* so stats generation looks correct. */
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
-	    ExitWithStats(1);
+	    ExitWithStats(1, TRUE);
 	}
 	(void)strcpy(ClientHost, "stdin");
         ClientIP = 0L;
@@ -393,7 +393,7 @@ STATIC void StartConnection()
 	    syslog(L_ERROR, "%s bad_address_family %ld",
 		"?", (long)sin.sin_family);
 	    Printf("%d Bad address family.  Goodbye.\r\n", NNTP_ACCESS_VAL);
-	    ExitWithStats(1);
+	    ExitWithStats(1, TRUE);
 	}
 
 	/* Get client's name. */
@@ -420,7 +420,7 @@ STATIC void StartConnection()
 	if (getsockname(STDIN, (struct sockaddr *)&sin, &length) < 0) {
 	    syslog(L_NOTICE, "%s can't getsockname %m", ClientHost);
 	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
-	    ExitWithStats(1);
+	    ExitWithStats(1, TRUE);
 	}
 	if (!Address2Name(&sin.sin_addr, ServerHost, sizeof(ServerHost))) {
 	    strcpy(ServerHost, inet_ntoa(sin.sin_addr));
@@ -440,7 +440,7 @@ STATIC void StartConnection()
 	    syslog(L_NOTICE, "%s no_access", ClientHost);
 	    Printf("%d You are not in my access file. Goodbye.\r\n",
 		   NNTP_ACCESS_VAL);
-	    ExitWithStats(1);
+	    ExitWithStats(1, TRUE);
 	}
 	NGgetlist(&PERMreadlist, accesslist);
 	PERMpostlist = PERMreadlist;
@@ -456,7 +456,7 @@ STATIC void StartConnection()
 	        syslog(L_NOTICE, "%s no_access", ClientHost);
 		Printf("%d You are not in my access file. Goodbye.\r\n",
 		       NNTP_ACCESS_VAL);
-		ExitWithStats(1);
+		ExitWithStats(1, TRUE);
 	    }
 	    PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 	    PERMpostlist = PERMreadlist;
@@ -543,7 +543,7 @@ STATIC SIGHANDLER
 CatchPipe(s)
     int		s;
 {
-    ExitWithStats(0);
+    ExitWithStats(0, FALSE);
 }
 
 /*
@@ -592,14 +592,14 @@ STATIC void SetupDaemon(void) {
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
 	syslog(L_NOTICE, "%s cant initialize storage method, %s", ClientHost, SMerrorstr);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
     ARTreadschema();
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
 	syslog(L_NOTICE, "%s cant open overview %m", ClientHost);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 }
 
@@ -662,6 +662,7 @@ main(int argc, char *argv[])
     LLOGenable=FALSE;
     GRPcur = NULL;
     MaxBytesPerSecond = 0;
+    strcpy(Username, "unknown");
 
     openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
@@ -880,13 +881,11 @@ main(int argc, char *argv[])
     }
     STATstart = TIMEINFOasDOUBLE(Now);
 
-    PERMnewnews = innconf->allownewnews;
-
 #if	NNRP_LOADLIMIT > 0
     if ((load = GetLoadAverage()) > NNRP_LOADLIMIT) {
 	syslog(L_NOTICE, "load %d > %d", load, NNRP_LOADLIMIT);
 	Reply("%d load at %d, try later\r\n", NNTP_GOODBYE_VAL, load);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 #endif	/* NNRP_LOADLIMIT > 0 */
 
@@ -904,7 +903,7 @@ main(int argc, char *argv[])
 	syslog(L_NOTICE, "%s no_permission", ClientHost);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
 	       NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, FALSE);
     }
 
     /* Proceed with initialization. */
@@ -914,13 +913,13 @@ main(int argc, char *argv[])
     if (Reject) {
 	syslog(L_NOTICE, "%s rejected %s", ClientHost, Reject);
 	Reply("%s %s\r\n", NNTP_GOODBYE, Reject);
-	ExitWithStats(0);
+	ExitWithStats(0, FALSE);
     }
 
-    if (innconf->readertrack)
-	innconf->readertrack=TrackClient(ClientHost,Username);
+    if (PERMaccessconf->readertrack)
+	PERMaccessconf->readertrack=TrackClient(ClientHost,Username);
 
-    if (innconf->readertrack) {
+    if (PERMaccessconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Enabled (%s)", ClientHost, Username);
 	pid=getpid();
 	gettimeofday(&tv,NULL);
@@ -939,7 +938,7 @@ main(int argc, char *argv[])
 
     Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-	   innconf->pathhost, INNVersion(),
+	   PERMaccessconf->pathhost, INNVersion(),
 	   PERMcanpost ? "posting ok" : "no posting");
 
     /* Exponential posting backoff */
@@ -947,7 +946,7 @@ main(int argc, char *argv[])
 
     /* Main dispatch loop. */
     for (timeout = INITIAL_TIMEOUT, av = NULL; ;
-			timeout = innconf->clienttimeout) {
+			timeout = PERMaccessconf->clienttimeout) {
 	(void)fflush(stdout);
 	if (ChangeTrace) {
 	    Tracing = Tracing ? FALSE : TRUE;
@@ -967,13 +966,13 @@ main(int argc, char *argv[])
 		syslog(L_ERROR, "%s internal %d in main", ClientHost, r);
 		/* FALLTHROUGH */
 	    case RTtimeout:
-		if (timeout < innconf->clienttimeout)
+		if (timeout < PERMaccessconf->clienttimeout)
 		    syslog(L_NOTICE, "%s timeout short", ClientHost);
 		else
 		    syslog(L_NOTICE, "%s timeout", ClientHost);
 		Printf("%d Timeout after %d seconds, closing connection.\r\n",
 		       NNTP_TEMPERR_VAL, timeout);
-		ExitWithStats(1);
+		ExitWithStats(1, FALSE);
 		break;
 	    case RTlong:
 		Reply("%d Line too long\r\n", NNTP_BAD_COMMAND_VAL);
@@ -1030,7 +1029,7 @@ main(int argc, char *argv[])
 
     Reply("%s\r\n", NNTP_GOODBYE_ACK);
 
-    ExitWithStats(0);
+    ExitWithStats(0, FALSE);
     /* NOTREACHED */
     return 1;
 }

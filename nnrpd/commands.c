@@ -89,7 +89,7 @@ PERMgeneric(av, accesslist)
 
     PERMcanread = FALSE;
     PERMcanpost = FALSE;
-    PERMlocpost = FALSE;
+    PERMaccessconf->locpost = FALSE;
 
     if (!*av) {
 	Reply("%d no authenticator\r\n", NNTP_SYNTAX_VAL);
@@ -194,8 +194,8 @@ PERMgeneric(av, accesslist)
 
     PERMcanread = strchr(fields[1], 'R') != NULL;
     PERMcanpost = strchr(fields[1], 'P') != NULL;
-    PERMlocpost = strchr(fields[1], 'L') != NULL;
-    if (strchr(fields[1], 'N') != NULL) PERMnewnews = TRUE;
+    PERMaccessconf->locpost = strchr(fields[1], 'L') != NULL;
+    if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = TRUE;
     sprintf(PERMuser, "%s@%s", fields[2], fields[0]);
     (void)strcpy(PERMpass, fields[3]);
     (void)strcpy(accesslist, fields[4]);
@@ -239,7 +239,7 @@ CMDauthinfo(ac, av)
 			logrec);
 		Reply("%d Authentication failed\r\n", NNTP_ACCESS_VAL);
 		free(logrec);
-		ExitWithStats(1);
+		ExitWithStats(1, FALSE);
 	    default:
 		/* lower level has issued Reply */
 		return;
@@ -299,7 +299,7 @@ CMDauthinfo(ac, av)
 	    } else {
 		syslog(L_NOTICE, "%s bad_auth", ClientHost);
 		Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
-		ExitWithStats(1);
+		ExitWithStats(1, FALSE);
 	    }
 	} else {
 #endif /* DO_PERL */
@@ -327,7 +327,7 @@ CMDauthinfo(ac, av)
 		    } else {
 		        syslog(L_NOTICE, "%s bad_auth", ClientHost);
 			Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
-			ExitWithStats(1);
+			ExitWithStats(1, FALSE);
 		    }
 		}
 	    } else {
@@ -366,7 +366,7 @@ CMDauthinfo(ac, av)
 
 	syslog(L_NOTICE, "%s bad_auth", ClientHost);
 	Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, FALSE);
     }
 
 }
@@ -555,7 +555,7 @@ CMDmode(ac, av)
     if (caseEQ(av[1], "reader"))
 	Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	       PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-	       innconf->pathhost, INNVersion(),
+	       PERMaccessconf->pathhost, INNVersion(),
 	       PERMcanpost ? "posting ok" : "no posting");
     else
 	Reply("%d What?\r\n", NNTP_BAD_COMMAND_VAL);
@@ -773,7 +773,7 @@ CMDpost(ac, av)
 	article = NEW(char, size);
     }
     idbuff[0] = 0;
-    if ((p = GenerateMessageID()) != NULL)
+    if ((p = GenerateMessageID(PERMaccessconf->domain)) != NULL)
         strcpy(idbuff, p);
     Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);
     (void)fflush(stdout);
@@ -800,11 +800,11 @@ CMDpost(ac, av)
 	    syslog(L_ERROR, "%s timeout in post", ClientHost);
 	    Printf("%d timeout after %d seconds, closing connection\r\n",
 		   NNTP_TEMPERR_VAL, DEFAULT_TIMEOUT);
-	    ExitWithStats(1);
+	    ExitWithStats(1, FALSE);
 	    /* NOTREACHED */
 	case RTeof:
 	    syslog(L_ERROR, "%s eof in post", ClientHost);
-	    ExitWithStats(1);
+	    ExitWithStats(1, FALSE);
 	    /* NOTREACHED */
 	case RTlong:
 	    if (longline == 0)

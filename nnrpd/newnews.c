@@ -211,7 +211,7 @@ FUNCTYPE CMDnewnews(int ac, char *av[]) {
   static int	Msgid = OVFMT_UNINIT;
   static int	Xref = OVFMT_UNINIT;
 
-  if (!PERMnewnews) {
+  if (!PERMaccessconf->allownewnews) {
     Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ACCESS_VAL);
     return;
   }

@@ -322,7 +322,9 @@ ProcessHeaders(linecount, idbuff)
     char                *idbuff;
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+    static char		WEEKS[] = "SunMonTueWedThuFriSat";
     static char		datebuff[40];
+    static char		localdatebuff[40];
     static char		orgbuff[SMBUF];
     static char		linebuff[40];
     static char		tracebuff[SMBUF];
@@ -331,10 +333,11 @@ ProcessHeaders(linecount, idbuff)
     register HEADER	*hp;
     register char	*p;
     time_t		t;
-    struct tm		*gmt;
+    struct tm		*gmt, *local;
     TIMEINFO		Now;
     STRING		error;
     pid_t               pid;
+    char		*newpath;
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ENDOF(Table); hp++) {
@@ -349,7 +352,7 @@ ProcessHeaders(linecount, idbuff)
 	}
     }
 
-    if (innconf->nnrpdauthsender) {
+    if (PERMaccessconf->nnrpdauthsender) {
 	/* If authorized and we didn't get a sender, add the header based on
 	 * our info.  If not authorized, zap the Sender so we don't put out
 	 * unauthenticated data. */
@@ -369,14 +372,25 @@ ProcessHeaders(linecount, idbuff)
     }
 
     if ((gmt = gmtime(&Now.time)) == NULL)
-	    return "Can't get the time";
+	return "Can't get the time";
     (void)sprintf(datebuff, "%d %3.3s %d %02d:%02d:%02d GMT",
-	    gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
-	    gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
-
-    if (HDR(_date) == NULL)
-	HDR(_date) = datebuff;
-    else {
+	gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
+	gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+    if (HDR(_date) == NULL) {
+        if (PERMaccessconf->localtime) {
+	    if ((local = localtime(&Now.time)) == NULL)
+	        return "Can't get the time";
+	    (void)sprintf(localdatebuff,
+	        "%3.3s, %d %3.3s %d %02d:%02d:%02d %+04.4d (%3.3s)",
+	        &WEEKS[3 * local->tm_wday],
+	        local->tm_mday, &MONTHS[3 * local->tm_mon], 1900 + local->tm_year,
+	        local->tm_hour, local->tm_min, local->tm_sec,
+	        -timezone/36, tzname[0]);
+	    HDR(_date) = localdatebuff;
+	} else {
+	    HDR(_date) = datebuff;
+	}
+    } else {
 	if ((t = parsedate(HDR(_date), &Now)) == -1)
 	    return "Can't parse \"Date\" header";
 	if (t > Now.time + DATE_FUZZ)
@@ -409,6 +423,16 @@ ProcessHeaders(linecount, idbuff)
     if (HDR(_path) == NULL) {
 	/* Note that innd will put host name here for us. */
 	HDR(_path) = PATHMASTER;
+    } else if (PERMaccessconf->strippath) {
+	/* Here's where to do Path changes for new Posts. */
+	if ((newpath = strrchr(HDR(_path), '!')) != NULL) {
+	    newpath++;
+	    if (*newpath == '\0') {
+		HDR(_path) = NEWSMASTER;
+	    } else {
+		HDR(_path) = newpath;
+	    }
+	}
     }
     
 
@@ -433,7 +457,7 @@ ProcessHeaders(linecount, idbuff)
 
     /* Set Organization */
     if (HDR(_organization) == NULL
-     && (p = innconf->organization) != NULL) {
+     && (p = PERMaccessconf->organization) != NULL) {
 	(void)strcpy(orgbuff, p);
 	HDR(_organization) = orgbuff;
     }
@@ -449,10 +473,10 @@ ProcessHeaders(linecount, idbuff)
     /* Supersedes; left alone. */
 
     /* NNTP-Posting host; set. */
-    if (innconf->addnntppostinghost) 
+    if (PERMaccessconf->addnntppostinghost) 
     HDR(_nntpposthost) = ClientHost;
     /* NNTP-Posting-Date - not in RFC (yet) */
-    if (innconf->addnntppostingdate)
+    if (PERMaccessconf->addnntppostingdate)
     HDR(_nntppostdate) = datebuff;
 
     /* X-Trace; set */
@@ -460,19 +484,19 @@ ProcessHeaders(linecount, idbuff)
     pid = (long) getpid() ;
     if ((gmt = gmtime(&Now.time)) == NULL)
 	return "Can't get the time";
-    if ((p = GetFQDN()) == NULL)
+    if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
 	p = "unknown";
     sprintf(tracebuff, "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
-             GetFQDN(), (long) t, (long) pid, ClientIp,
+             GetFQDN(PERMaccessconf->domain), (long) t, (long) pid, ClientIp,
 	    gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
 	    gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR (_xtrace) = tracebuff ;
 
     /* X-Complaints-To; set */
-    if ((p = innconf->complaints) != NULL)
+    if ((p = PERMaccessconf->complaints) != NULL)
       sprintf (complaintsbuff, "%s",p) ;
     else {
-      if ((p = innconf->fromhost) != NULL && strchr(NEWSMASTER, '@') == NULL)
+      if ((p = PERMaccessconf->fromhost) != NULL && strchr(NEWSMASTER, '@') == NULL)
 	sprintf (complaintsbuff, "%s@%s", NEWSMASTER, p);
       else
 	sprintf (complaintsbuff, "%s", NEWSMASTER);
@@ -480,7 +504,7 @@ ProcessHeaders(linecount, idbuff)
     HDR(_xcomplaintsto) = complaintsbuff ;
 
     /* Clear out some headers that should not be here */
-    if (innconf->strippostcc) {
+    if (PERMaccessconf->strippostcc) {
 	HDR(_cc) = NULL;
 	HDR(_bcc) = NULL;
 	HDR(_to) = NULL;
@@ -551,7 +575,7 @@ MailArticle(group, article)
     char		*mta;
 
     /* Try to get the address first. */
-    if ((address = GetModeratorAddress(NULL, NULL, group)) == NULL) {
+    if ((address = GetModeratorAddress(NULL, NULL, group, PERMaccessconf->moderatormailer)) == NULL) {
 	(void)sprintf(Error, "No mailing address for \"%s\" -- %s",
 		group, "ask your news administrator to fix this");
 	DISPOSE(group);  
@@ -675,7 +699,7 @@ STATIC STRING ValidNewsgroups(char *hdr, char **modgroup)
 	    break;
 	case NF_FLAG_IGNORE:
 	case NF_FLAG_NOLOCAL:
-	    if (!PERMlocpost)
+	    if (!PERMaccessconf->locpost)
 		(void)sprintf(Error, "Postings to \"%s\" are not allowed here.",
 			      p);
 	    break;
@@ -900,7 +924,7 @@ ARTpost(article, idbuff)
     for (i = 0, p = article; p; i++, p = next + 1)
 	if ((next = strchr(p, '\n')) == NULL)
 	    break;
-    if (innconf->checkincludedtext) {
+    if (PERMaccessconf->checkincludedtext) {
 	if ((error = CheckIncludedText(article, i)) != NULL)
 		return error;
     }
@@ -942,11 +966,11 @@ ARTpost(article, idbuff)
 	    DISPOSE(modgroup);
 	return error;
     }
-    if ((innconf->localmaxartsize > 0) &&
-		(strlen(article) > innconf->localmaxartsize)) {
+    if ((PERMaccessconf->localmaxartsize > 0) &&
+		(strlen(article) > PERMaccessconf->localmaxartsize)) {
 	    (void)sprintf(Error,
 		"Article is bigger then local limit of %ld bytes\n",
-		innconf->localmaxartsize);
+		PERMaccessconf->localmaxartsize);
 	    if (modgroup)
 		DISPOSE(modgroup);
 	    return Error;
@@ -1001,15 +1025,15 @@ ARTpost(article, idbuff)
       return MailArticle(modgroup, article);
     }
 
-    if (innconf->spoolfirst)
+    if (PERMaccessconf->spoolfirst)
 	return Spoolit(article, Error);
 
     if (Offlinepost)
          return Spoolit(article,Error);
 
     /* Open a local connection to the server. */
-    if (innconf->nnrpdposthost != NULL)
-	i = NNTPconnect(innconf->nnrpdposthost, innconf->nnrpdpostport,
+    if (PERMaccessconf->nnrpdposthost != NULL)
+	i = NNTPconnect(PERMaccessconf->nnrpdposthost, PERMaccessconf->nnrpdpostport,
 					&FromServer, &ToServer, buff);
     else {
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
@@ -1031,7 +1055,7 @@ ARTpost(article, idbuff)
     }
     if (Tracing)
 	syslog(L_TRACE, "%s post_connect %s",
-	    ClientHost, innconf->nnrpdposthost ? innconf->nnrpdposthost : "localhost");
+	    ClientHost, PERMaccessconf->nnrpdposthost ? PERMaccessconf->nnrpdposthost : "localhost");
 
     /* The code below has too many (void) casts for my tastes.  At least
      * they are all inside cases that are most likely never going to
@@ -1041,9 +1065,9 @@ ARTpost(article, idbuff)
     i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
     if (i == NNTP_AUTH_NEEDED_VAL) {
         /* Send authorization. */
-        if (NNTPsendpassword(innconf->nnrpdposthost, FromServer, ToServer) < 0) {
+        if (NNTPsendpassword(PERMaccessconf->nnrpdposthost, FromServer, ToServer) < 0) {
             (void)sprintf(Error, "Can't authorize with %s",
-                          innconf->nnrpdposthost ? innconf->nnrpdposthost : "innd");
+                          PERMaccessconf->nnrpdposthost ? PERMaccessconf->nnrpdposthost : "innd");
             return Spoolit(article,Error);
         }
         i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
@@ -1102,7 +1126,7 @@ ARTpost(article, idbuff)
     }
 
     /* Tracking */
-    if (innconf->readertrack) {
+    if (PERMaccessconf->readertrack) {
 	strcat(TrackID,HDR(_messageid));
 	if ((ftd=fopen(TrackID,"w")) != NULL) {
 		for (hp = Table; hp < ENDOF(Table); hp++)

@@ -221,13 +221,13 @@ int perlConnect(char *ClientHost, char *ClientIP, char *ServerHost, char *access
 	syslog(L_ERROR, "Perl function authenticate died: %s",
 	       SvPV(ERRSV, PL_na));
 	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 
     if (rc != 5) {
 	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
 	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 
     MaxBytesPerSecond = POPi;
@@ -273,7 +273,7 @@ int perlAuthInit(void) {
 	syslog(L_ERROR, "Perl function authenticate died: %s",
 	       SvPV(ERRSV, PL_na));
 	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, TRUE);
     }
 
     while (rc--) {
@@ -316,13 +316,13 @@ int perlAuthenticate(char *ClientHost, char *ClientIP, char *ServerHost, char *u
 	syslog(L_ERROR, "Perl function authenticate died: %s",
 	       SvPV(ERRSV, PL_na));
 	Reply("%d Internal Error (1).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, FALSE);
     }
 
     if (rc != 5) {
 	syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
 	Reply("%d Internal Error (2).  Goodbye\r\n", NNTP_ACCESS_VAL);
-	ExitWithStats(1);
+	ExitWithStats(1, FALSE);
     }
 
     MaxBytesPerSecond = POPi;

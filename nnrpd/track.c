@@ -33,7 +33,7 @@ int TrackClient(char *client, char *user)
 	strcat(dbfile, "/nnrpd.track");
 
 	RARTon=FALSE;
-	strcpy(user,"");
+	strcpy(user, "unknown");
 
 	if ((fd=fopen(dbfile,"r"))!=NULL) {
 		while((fgets(line,(MAX_LEN - 1),fd))!=NULL) {

@@ -242,11 +242,11 @@ BOOL ARTinstorebytoken(TOKEN token)
     ARTHANDLE *art;
     struct timeval	stv, etv;
 
-    if (innconf->nnrpdoverstats) {
+    if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&stv, NULL);
     }
     art = SMretrieve(token, RETR_STAT); /* XXX This isn't really overstats, is it? */
-    if (innconf->nnrpdoverstats) {
+    if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
 	OVERartcheck+=(etv.tv_sec - stv.tv_sec) * 1000;
 	OVERartcheck+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -264,13 +264,13 @@ STATIC BOOL ARTinstorebyartnum(int artnum)
     struct timeval	stv, etv;
     TOKEN               token;
     
-    if (innconf->nnrpdoverstats)
+    if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     if (!OVgetartinfo(GRPcur, artnum, NULL, NULL, &token))
 	return FALSE;
   
     art = SMretrieve(token, RETR_STAT);
-    if (innconf->nnrpdoverstats) {
+    if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
 	OVERartcheck+=(etv.tv_sec - stv.tv_sec) * 1000;
 	OVERartcheck+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -832,7 +832,7 @@ FUNCTYPE CMDxhdr(int ac, char *av[])
 
     Reply("%d %s fields follow\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
-	if (len == 0 || innconf->nnrpdcheckart && !ARTinstorebytoken(token))
+	if (len == 0 || PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	p = OVERGetHeader(data, Overview);
 	sprintf(buff, "%lu ", artnum);
@@ -889,7 +889,7 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	    Reply("%d %d fields follow\r\n.\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, ARTnumber);
 	return;
     }
-    if (innconf->nnrpdoverstats) {
+    if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
 	OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
 	OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -899,40 +899,40 @@ FUNCTYPE CMDxover(int ac, char *av[])
 	Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
     else
 	Reply("%d %d fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, ARTnumber);
-    if (innconf->nnrpdoverstats)
+    if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
-	if (innconf->nnrpdoverstats) {
+	if (PERMaccessconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
 	    OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
 	    OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
 	}
-	if (len == 0 || innconf->nnrpdcheckart && !ARTinstorebytoken(token)) {
-	    if (innconf->nnrpdoverstats) {
+	if (len == 0 || PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token)) {
+	    if (PERMaccessconf->nnrpdoverstats) {
 		OVERmiss++;
 		gettimeofday(&stv, NULL);
 	    }
 	    continue;
 	}
-	if (innconf->nnrpdoverstats) {
+	if (PERMaccessconf->nnrpdoverstats) {
 	    OVERhit++;
 	    OVERsize += len;
 	}
 	SendIOv(data, len);
-	if (innconf->nnrpdoverstats)
+	if (PERMaccessconf->nnrpdoverstats)
 	    gettimeofday(&stv, NULL);
     }
-    if (innconf->nnrpdoverstats) {
+    if (PERMaccessconf->nnrpdoverstats) {
         gettimeofday(&etv, NULL);
         OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
         OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
     SendIOv(".\r\n", 3);
     PushIOv();
-    if (innconf->nnrpdoverstats)
+    if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     OVclosesearch(handle);
-    if (innconf->nnrpdoverstats) {
+    if (PERMaccessconf->nnrpdoverstats) {
         gettimeofday(&etv, NULL);
         OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
         OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -1019,7 +1019,7 @@ FUNCTYPE CMDxpat(int ac, char *av[])
     Printf("%d %s matches follow.\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
     pattern = Glom(&av[3]);
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
-	if (len == 0 || innconf->nnrpdcheckart && !ARTinstorebytoken(token))
+	if (len == 0 || PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
 	    continue;
 	if ((p = OVERGetHeader(data, Overview)) != NULL) {
 	    if (wildmat(p, pattern)) {

@@ -55,6 +55,48 @@ typedef struct _ARTRANGE {
     int		High;
 } ARTRANGE;
 
+/*
+** access configuration for each readers
+ */
+typedef struct _ACCESSGROUP {
+    char *name;
+    char *key;
+    char *read;
+    char *post;
+    char *users; 
+    int allownewnews;
+    int locpost;
+    int used;
+    int localtime;
+    int strippath;               
+    int nnrpdperlfilter;
+    int nnrpdpythonfilter;
+    char *fromhost;
+    char *pathhost;
+    char *organization;
+    char *moderatormailer;
+    char *domain;
+    char *complaints;
+    int spoolfirst;
+    int checkincludedtext;
+    int clienttimeout;
+    long localmaxartsize;
+    int readertrack;
+    int strippostcc;
+    int addnntppostinghost;
+    int addnntppostingdate;
+    char *nnrpdposthost;
+    int nnrpdpostport;
+    int nnrpdoverstats;
+    int backoff_auth;
+    char *backoff_db;
+    long backoff_k;
+    long backoff_postfast;
+    long backoff_postslow;
+    long backoff_trigger;
+    int nnrpdcheckart;
+    int nnrpdauthsender;
+} ACCESSGROUP;
 
 /*
 **  What READline returns.
@@ -87,8 +129,7 @@ EXTERN BOOL	PERMcanpost;
 EXTERN BOOL	PERMcanread;
 EXTERN BOOL	PERMneedauth;
 EXTERN BOOL	PERMspecified;
-EXTERN BOOL	PERMnewnews;
-EXTERN BOOL	PERMlocpost;
+EXTERN ACCESSGROUP	*PERMaccessconf;
 EXTERN BOOL	Tracing;
 EXTERN BOOL 	Offlinepost;
 EXTERN char	**PERMreadlist;
@@ -145,7 +186,7 @@ extern void		ARTclose();
 extern void		ARTreadschema();
 extern char		*Glom();
 extern int		Argify();
-extern NORETURN		ExitWithStats();
+extern NORETURN		ExitWithStats(int x, BOOL readconf);
 extern BOOL		GetGroupList();
 extern char		*GetHeader();
 extern void		GRPreport();

@@ -365,14 +365,14 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
     } else {
 	gettimeofday(&stv, NULL);
 	if (!dbzfetch(*key, &offset)) {
-	    if (innconf->nnrpdoverstats) {
+	    if (PERMaccessconf->nnrpdoverstats) {
 		gettimeofday(&etv, NULL);
 		OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
 		OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
 	    }
 	    return NULL;
 	}
-	if (innconf->nnrpdoverstats) {
+	if (PERMaccessconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
 	    OVERdbz+=(etv.tv_sec - stv.tv_sec) * 1000;
 	    OVERdbz+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -400,7 +400,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
     }
 
     /* Seek and read. */
-    if (innconf->nnrpdoverstats) {
+    if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
 	OVERseek+=(etv.tv_sec - stv.tv_sec) * 1000;
 	OVERseek+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -415,7 +415,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	syslog(L_ERROR, "%s cant find end of line %ld %m", ClientHost, offset);
 	return NULL;
     }
-    if (innconf->nnrpdoverstats) {
+    if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
 	OVERget+=(etv.tv_sec - stv.tv_sec) * 1000;
 	OVERget+=(etv.tv_usec - stv.tv_usec) / 1000;
@@ -620,12 +620,12 @@ InitBackoffConstants()
   
   /* Read the runtime config file to get parameters */
 
-  if ((innconf->backoff_db == NULL) ||
-    !(innconf->backoff_k >= 0L && innconf->backoff_postfast >= 0L && innconf->backoff_postslow >= 1L))
+  if ((PERMaccessconf->backoff_db == NULL) ||
+    !(PERMaccessconf->backoff_k >= 0L && PERMaccessconf->backoff_postfast >= 0L && PERMaccessconf->backoff_postslow >= 1L))
     return;
 
   /* Need this database for backing off */
-  (void)strncpy(postrec_dir,innconf->backoff_db,SMBUF);
+  (void)strncpy(postrec_dir,PERMaccessconf->backoff_db,SMBUF);
   if (stat(postrec_dir, &st) < 0) {
     syslog(L_ERROR, "%s cannot stat backoff_db '%s': %s",ClientHost,postrec_dir,strerror(errno));
     return;
@@ -651,7 +651,7 @@ char
      unsigned char addr[4];
      unsigned int i;
 
-     if (innconf->backoff_auth) {
+     if (PERMaccessconf->backoff_auth) {
        sprintf(buff,"%s/%s",postrec_dir,user);
        return(buff);
      }
@@ -704,11 +704,11 @@ LockPostRec(path)
       continue;
     }
 
-    /* If lockfile is older than the value of innconf->backoff_postslow, remove it
+    /* If lockfile is older than the value of PERMaccessconf->backoff_postslow, remove it
      */
     statfailed = 0;
     time(&now);
-    if (now < st.st_ctime + innconf->backoff_postslow) continue;
+    if (now < st.st_ctime + PERMaccessconf->backoff_postslow) continue;
     syslog(L_ERROR, "%s removing stale lock file %s", ClientHost, lockname);
     unlink(lockname);
   }
@@ -826,7 +826,7 @@ RateLimit(sleeptime,path)
       */
      if (prevn < 0L) prevn = 0L;
      if (prevsleep < 0L)  prevsleep = 0L;
-     if (prevsleep > innconf->backoff_postfast)  prevsleep = innconf->backoff_postfast;
+     if (prevsleep > PERMaccessconf->backoff_postfast)  prevsleep = PERMaccessconf->backoff_postfast;
      
       /*
        * Compute the new sleep time
@@ -842,12 +842,12 @@ RateLimit(sleeptime,path)
                 ClientHost,n);
          n = 0L;
        }
-       if (n < innconf->backoff_postfast) {
-         if (prevn >= innconf->backoff_trigger) {
-           *sleeptime = 1 + (prevsleep * innconf->backoff_k);
+       if (n < PERMaccessconf->backoff_postfast) {
+         if (prevn >= PERMaccessconf->backoff_trigger) {
+           *sleeptime = 1 + (prevsleep * PERMaccessconf->backoff_k);
          } 
-       } else if (n < innconf->backoff_postslow) {
-         if (prevn >= innconf->backoff_trigger) {
+       } else if (n < PERMaccessconf->backoff_postslow) {
+         if (prevn >= PERMaccessconf->backoff_trigger) {
            *sleeptime = prevsleep;
          }
        } else {
@@ -856,7 +856,7 @@ RateLimit(sleeptime,path)
        prevn++;
      }
 
-     *sleeptime = ((*sleeptime) > innconf->backoff_postfast) ? innconf->backoff_postfast : (*sleeptime);
+     *sleeptime = ((*sleeptime) > PERMaccessconf->backoff_postfast) ? PERMaccessconf->backoff_postfast : (*sleeptime);
      /* This ought to trap this bogon */
      if ((*sleeptime) < 0L) {
 	syslog(L_ERROR,"%s Negative sleeptime detected: %ld, prevsleep: %ld, N: %ld",ClientHost,*sleeptime,prevsleep,n);
