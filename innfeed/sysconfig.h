@@ -255,6 +255,9 @@
 #define GETSOCKOPT_ARG void *
 #endif
 
+#if ! defined (USE_SIGSET) && ! defined(USE_SIGVEC)
+#define USE_SIGACTION
+#endif
 
 
 /***************************************************************************

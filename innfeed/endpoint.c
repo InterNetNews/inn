@@ -1663,10 +1663,10 @@ void setSigHandler (int signum, void (*ptr)(int))
       die ("sigvec failed: %s", strerror(errno)) ;
   }
 #elif defined(USE_SIGSET)
-  if (sigset (signum, signalHandler) != 0)
+  if (sigset (signum, signalHandler) == SIG_ERR)
     die ("sigset failed: %s", strerror(errno)) ;
 #else
-  if (signal (signum, signalHandler) != 0)
+  if (signal (signum, signalHandler) == -1)
     die ("signal failed: %s", strerror(errno)) ;
 #endif
   sigHandlers[signum] = ptr ;
