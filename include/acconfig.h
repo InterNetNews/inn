@@ -165,9 +165,6 @@
 /* Define if your msync() takes three arguments.  */
 #undef HAVE_MSYNC_3_ARG
 
-/* Define if you have both setrlimit() and getrlimit().  */
-#undef HAVE_RLIMIT
-
 /* Define if you have the setproctitle function.  */
 #undef HAVE_SETPROCTITLE
 
