@@ -16,7 +16,7 @@ typedef struct {
     BOOL	(*groupstats)(char *group, int *lo, int *hi, int *count, int *flag);
     BOOL	(*groupadd)(char *group, ARTNUM lo, ARTNUM hi, char *flag);
     BOOL	(*groupdel)(char *group);
-    BOOL	(*add)(TOKEN token, char *data, int len, time_t arrived);
+    BOOL	(*add)(TOKEN token, char *data, int len, time_t arrived, time_t expires);
     BOOL	(*cancel)(TOKEN token);
     void	*(*opensearch)(char *group, int low, int high);
     BOOL	(*search)(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
@@ -26,5 +26,22 @@ typedef struct {
     BOOL	(*ctl)(OVCTLTYPE type, void *val);
     void	(*close)(void);
 } OV_METHOD;
+
+extern time_t	OVrealnow;
+BOOL OVgroupbasedexpire(TOKEN token, char *group, char *data, int len, time_t arrived, time_t expires);
+BOOL OVgroupmatch(char *group);
+void OVEXPremove(TOKEN token);
+
+#define DEFAULT_MAX_XREF_LEN 8192
+
+/*
+**  Information about the schema of the news overview files.
+*/
+typedef struct _ARTOVERFIELD {  
+    char	*Header;
+    int		Length;
+    BOOL	HasHeader;
+    BOOL	NeedsHeader;
+} ARTOVERFIELD;
 
 #endif /* __OVINTERFACE_H__ */
