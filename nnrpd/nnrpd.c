@@ -498,7 +498,7 @@ Reply(char *fmt, ...)
 	p = buff + strlen(buff) - 1;
 	while (p >= buff && (*p == '\n' || *p == '\r'))
 	    *p-- = '\0';
-	syslog(LOG_DEBUG, "%s > %s", ClientHost, buff);
+	syslog(L_TRACE, "%s > %s", ClientHost, buff);
 
 	va_end(vp);
 	errno = oerrno;
