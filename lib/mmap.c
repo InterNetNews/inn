@@ -11,6 +11,7 @@
 #include "clibrary.h"
 #include "portable/mmap.h"
 
+#include "inn/messages.h"
 #include "inn/mmap.h"
 
 /*
