@@ -236,15 +236,13 @@ expire_ctl
 	}
 
 	##  Could check for conflicting lines, but that's hard.
-	unless ( ($pat, $flag, $keep, $default, $purge) =
-         /^([^:])+:([^:]+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
+	unless ( ($class, $keep, $default, $purge) =
+         /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
 	    print "$file:$line: malformed line.\n";
 	    next input;
 	}
-	print "$file:$line: duplicate default line\n"
-	    if $pat eq "*" && $flag eq "a" && $def++;
-	print "$file:$line: unknown modflag `$flag'\n"
-	    if $flag !~ /[mMuUaA]/;
+	print "$file:$line: invalid class\n"
+	    if $class < 0;
 	print "$file:$line: purge `$purge' younger than default `$default'.\n"
 	    if $purge ne "never" && $default > $purge;
 	print "$file:$line: default `$default' younger than keep `$keep'.\n"
