@@ -194,7 +194,7 @@ void SetDefaults()
     innconf->chaninacttime = 600;
     innconf->maxconnections = 50;
     innconf->chanretrytime = 300;
-    innconf->artcutoff = 14 * 24 * 60 * 60;
+    innconf->artcutoff = 10 * 24 * 60 * 60;
     innconf->pauseretrytime = 300;
     innconf->nntplinklog = FALSE;
     innconf->nntpactsync = 200;
