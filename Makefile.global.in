@@ -43,6 +43,10 @@ MANPAGESTYLE    = SOURCE
 CC              = @CC@
 COPT            = @CFLAGS@
 GCFLAGS         = $(COPT) -I../include @CPPFLAGS@ $(LFS_CFLAGS)
+WARNINGS        = -pedantic -Wall -W -Wunused -Wshadow -Wpointer-arith \
+                  -Wbad-function-cast -Wcast-qual -Wcast-align \
+                  -Wwrite-strings -Wstrict-prototypes -Werror
+
 BERKELEY_DB_CFLAGS = @BERKELEY_DB_CFLAGS@
 
 LDFLAGS         = @LDFLAGS@ $(LFS_LDFLAGS) @BERKELEY_DB_LDFLAGS@
