@@ -90,6 +90,12 @@ extern void *memset();
    other than an int (or that are very commonly replaced).  Don't bother
    with prototypes for the uncommonly replaced functions that return ints;
    they aren't necessary and just add clutter. */
+#ifndef HAVE_FSEEKO
+extern int fseeko(FILE *stream, off_t pos, int whence);
+#endif
+#ifndef HAVE_FTELLO
+extern OFFSET_T ftello(FILE *stream);
+#endif
 #ifndef HAVE_PREAD
 extern ssize_t pread(int fd, void *buf, size_t nbyte, OFFSET_T offset);
 #endif
