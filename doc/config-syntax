@@ -118,10 +118,10 @@ three and one of them wouldn't have a tag, probably provoking an error
 message.
 
 Boolean values may be given as yes, true, or on, or as no, false, or off.
-Integers must be between -2,147,483,647 and +2,147,483,647 inclusive (the
-same as a C99 signed long).  Floating point numbers must be between 0 and
-1e37 in absolute magnitude (the same as a C99 double) and can safely
-expect eight digits of precision.
+Integers must be between -2,147,483,648 and +2,147,483,647 inclusive (the
+same as the minimums for a C99 signed long).  Floating point numbers must
+be between 0 and 1e37 in absolute magnitude (the same as the minimums for
+a C99 double) and can safely expect eight digits of precision.
 
 Strings are optionally enclosed in double quotes, and must be quoted if
 they contain any whitespace, double-quote, or any characters in the set
