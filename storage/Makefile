@@ -6,7 +6,7 @@ include Make.methods
 top	      = ..
 CFLAGS	      = $(GCFLAGS) -I.
 
-SOURCES	      = expire.c interface.c methods.c ov.c ovmethods.c
+SOURCES	      = expire.c interface.c methods.c ov.c overdata.c ovmethods.c
 OBJECTS	      = $(SOURCES:.c=.o) $(METHOD_OBJECTS)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 
