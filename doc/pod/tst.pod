@@ -1,0 +1,76 @@
+=head1 NAME
+
+tst - ternary search trie functions
+
+=head1 SYNOPSIS
+
+B<#include E<lt>inn/tst.hE<gt>>
+
+B<struct tst;>
+
+B<struct tst *tst_init(int >I<node_line_width>B<);>
+
+B<void tst_cleanup(struct tst *>I<tst>B<);>
+
+B<int tst_insert(struct tst *>I<tst>B<, const unsigned char *>I<key>B<, void *>I<data>B<, int >I<option>B<, void **>I<exist_ptr>B<);>
+
+B<void *tst_search(struct tst *>I<tst>B<, const unsigned char *>I<key>B<);>
+
+B<void *tst_delete(struct tst *>I<tst>B<, const unsigned char *>I<key>B<);>
+
+=head1 DESCRIPTION
+
+B<tst_init> allocates memory for members of I<struct tst>, and
+allocates the first I<node_line_width> nodes. A NULL pointer is
+returned by B<tst_init> if any part of the memory allocation fails. On
+success, a pointer to a I<struct tst> is returned.
+
+The value for I<node_line_width> must be chosen very carefully. One
+node is required for every character in the tree. If you choose a
+value that is too small, your application will spend too much time
+calling malloc(3) and your node space will be too spread out. Too large
+a value is just a waste of space.
+
+B<tst_cleanup> frees all memory allocated to nodes, internal structures,
+as well as I<tst> itself.
+
+B<tst_insert> inserts the string I<key> into the tree. Behavior when a
+duplicate key is inserted is controlled by I<option>. If I<key> is
+already in the tree then B<TST_DUPLICATE_KEY> is returned, and the
+data pointer for the existing key is placed in I<exist_ptr>.  If
+I<option> is set to B<TST_REPLACE> then the existing data pointer for
+the existing key is replaced by I<data>.  Note that the old data
+pointer will still be placed in I<exist_ptr>.
+
+If a duplicate key is encountered and I<option> is not set to
+B<TST_REPLACE> then B<TST_DUPLICATE_KEY> is returned. If I<key> is
+zero length then B<TST_NULL_KEY> is returned. A successful insert or
+replace returns B<TST_OK>. A return value of B<TST_ERROR> indicates
+that a memory allocation error occurred while trying to grow the node
+free.
+
+Note that the I<data> argument must never be B<NULL>. If it is, then
+calls to B<tst_search> will fail for a key that exists because the
+data value was set to B<NULL>, which is what B<tst_search> returns. If
+you just want a simple existence tree, use the B<tst> pointer as the
+data pointer.
+
+B<tst_search> finds the string I<key> in the tree if it exists and
+returns the data pointer associated with that key.
+
+If I<key> is not found then B<NULL> is returned, otherwise the data pointer
+associated with I<key> is returned.
+
+B<tst_delete> deletes the string I<key> from the tree if it exists and
+returns the data pointer assocaited with that key.
+
+If I<key> is not found then B<NULL> is returned, otherwise the data
+pointer associated with I<key> is returned.
+
+=head1 HISTORY
+
+Converted to POD from Peter A. Friend's ternary search trie
+documentation by Alex Kiernan <alex.kiernan@thus.net> for InterNetNews
+2.4.0.
+
+$Id$

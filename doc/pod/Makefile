@@ -13,7 +13,8 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/innconfval.1 \
 	../man/innmail.1 ../man/sm.1
 
-MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/qio.3 ../man/uwildmat.3
+MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/qio.3 ../man/tst.3 \
+	../man/uwildmat.3
 
 MAN5	= ../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/inn.conf.5 \
 	../man/newsfeeds.5 ../man/ovdb.5 ../man/passwd.nntp.5 \
@@ -48,6 +49,7 @@ all: $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 ../man/libauth.3:	libauth.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
+../man/tst.3:		tst.pod			; $(POD2MAN) -s 3 $? > $@
 ../man/uwildmat.3:	uwildmat.pod		; $(POD2MAN) -s 3 $? > $@
 
 ../man/control.ctl.5:	control.ctl.pod		; $(POD2MAN) -s 5 $? > $@
