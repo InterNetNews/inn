@@ -538,7 +538,7 @@ ReadInnConf(void)
 	    } else
 	    if (EQ(ConfigBuff,_CONF_TIMER)) {
 		TEST_CONFIG(CONF_VAR_TIMER, bit);
-		if (!bit) innconf->timer = atoi(p);
+		if (!bit) innconf->timer = (unsigned int) strtoul(p, NULL, 10);
 		SET_CONFIG(CONF_VAR_TIMER);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_STATUS)) {
