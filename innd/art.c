@@ -677,17 +677,9 @@ ARTcheckheader(CHANNEL *cp, int size)
     /* duplicated */
     hc->Length = -1;
   } else {
-    for (p = colon + 1 ; (p < header + size - 2) &&
-      (ISWHITE(*p) || *p == '\r' || *p == '\n'); p++);
-    if (p < header + size - 2) {
-      hc->Value = p;
-      /* HDR_LEN() does not include trailing "\r\n" */
-      hc->Length = header + size - 2 - p;
-    } else {
-      snprintf(cp->Error, sizeof(cp->Error),
-               "%d Body of header is all blanks in \"%s\" header",
-               NNTP_REJECTIT_VAL, MaxLength(hp->Name, hp->Name));
-    }
+    hc->Value = colon + 2;
+    /* HDR_LEN() does not include trailing "\r\n" */
+    hc->Length = size - (hc->Value - header) - 2;
   }
   return;
 }
@@ -711,6 +703,8 @@ ARTidok(const char *MessageID)
 
   /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
   p = MessageID;
+  while (*p != '\0' && ISSPACE(*p))
+    p++;
   if (*p++ != '<')
     return false;
   for (; ; p++) {
@@ -770,6 +764,8 @@ ARTidok(const char *MessageID)
       break;
   }
 
+  while (*p != '\0' && ISSPACE(*p))
+    p++;
   return *p == '>' && *++p == '\0';
 }
 
