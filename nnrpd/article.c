@@ -1084,91 +1084,96 @@ FUNCTYPE CMDpat(int ac, char *av[])
     else
 	pattern = NULL;
 
-    /* Message-ID specified? */
-    if (ac > 2 && av[2][0] == '<') {
-	p = av[2];
-	if (!ARTopenbyid(p, &artnum)) {
-	    Printf("%d No such article.\r\n", NNTP_DONTHAVEIT_VAL);
-	    return;
-	}
-	Printf("%d %s matches follow (ID)\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
-	if ((text = GetHeader(header, FALSE)) != NULL
-	    && (!pattern || wildmat(text, pattern)))
-	    Printf("%s %s\r\n", p, text);
+    do {
+	/* Message-ID specified? */
+	if (ac > 2 && av[2][0] == '<') {
+	    p = av[2];
+	    if (!ARTopenbyid(p, &artnum)) {
+		Printf("%d No such article.\r\n", NNTP_DONTHAVEIT_VAL);
+		return;
+	    }
+	    Printf("%d %s matches follow (ID)\r\n", NNTP_HEAD_FOLLOWS_VAL,
+		   header);
+	    if ((text = GetHeader(header, FALSE)) != NULL
+		&& (!pattern || wildmat(text, pattern)))
+		Printf("%s %s\r\n", p, text);
 
-	ARTclose();
-	Printf(".\r\n");
-	if (pattern)
-	    DISPOSE(pattern);
-	return;
-    }
-
-    if (GRPcount == 0) {
-	Reply("%s\r\n", ARTnotingroup);
-	return;
-    }
-
-    /* Range specified. */
-    if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
-	if (!DidReply) {
-	    Reply("%d %s no matches follow (range)\r\n", NNTP_HEAD_FOLLOWS_VAL,
-		av[1] ? av[1] : "\"\"");
+	    ARTclose();
 	    Printf(".\r\n");
 	    return;
 	}
-    }
 
-    /* In overview? */
-    for (Overview = -1, i = 0; i < ARTfieldsize; i++)
-	if (caseEQ(ARTfields[i].Header, av[1])) {
-	    Overview = i;
-	    break;
+	if (GRPcount == 0) {
+	    Reply("%s\r\n", ARTnotingroup);
+	    return;
 	}
 
-    /* Not in overview, we have to fish headers out from the articles */
-    if (Overview < 0 ) {
-        Reply("%d %s matches follow (art)\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-        for (i = range.Low; i <= range.High && range.High > 0; i++) {
-            if (!ARTopen(i))
-                continue;
-            p = GetHeader(header, FALSE);
-	    if (p && (!pattern || wildmat(p, pattern))) {
-		sprintf(buff, "%lu ", i);
-		SendIOb(buff, strlen(buff));
-		SendIOb(p, strlen(p));
-		SendIOb("\r\n", 2);
-		ARTclose();
+	/* Range specified. */
+	if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
+	    if (!DidReply) {
+		Reply("%d %s no matches follow (range)\r\n",
+		      NNTP_HEAD_FOLLOWS_VAL, header ? header : "\"\"");
+		Printf(".\r\n");
+		return;
 	    }
-        }
-        SendIOb(".\r\n", 3);
-        PushIOb();
-	if (pattern)
-	    DISPOSE(pattern);
-	return;
-    }
-
-    /* Okay then, we can grab values from overview. */
-    if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
-	Reply("%d %s no matches follow (NOV)\r\n.\r\n", NNTP_HEAD_FOLLOWS_VAL, av[1]);
-	return;
-    }	
-	
-    Printf("%d %s matches follow (NOV)\r\n", NNTP_HEAD_FOLLOWS_VAL, header);
-    while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
-	if (len == 0 || PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
-	    continue;
-	if ((p = OVERGetHeader(data, Overview)) != NULL) {
-	    if (!pattern || wildmat(p, pattern)) {
-		sprintf(buff, "%lu ", artnum);
-		SendIOb(buff, strlen(buff));
-		SendIOb(p, strlen(p));
-		SendIOb("\r\n", 2);
-            }
 	}
-    }
-    SendIOb(".\r\n", 3);
-    PushIOb();
-    OVclosesearch(handle);
+
+	/* In overview? */
+	for (Overview = -1, i = 0; i < ARTfieldsize; i++)
+	    if (caseEQ(ARTfields[i].Header, header)) {
+		Overview = i;
+		break;
+	    }
+
+	/* Not in overview, we have to fish headers out from the articles */
+	if (Overview < 0 ) {
+	    Reply("%d %s matches follow (art)\r\n", NNTP_HEAD_FOLLOWS_VAL,
+		  header);
+	    for (i = range.Low; i <= range.High && range.High > 0; i++) {
+		if (!ARTopen(i))
+		    continue;
+		p = GetHeader(header, FALSE);
+		if (p && (!pattern || wildmat(p, pattern))) {
+		    sprintf(buff, "%lu ", i);
+		    SendIOb(buff, strlen(buff));
+		    SendIOb(p, strlen(p));
+		    SendIOb("\r\n", 2);
+		    ARTclose();
+		}
+	    }
+	    SendIOb(".\r\n", 3);
+	    PushIOb();
+	    return;
+	}
+
+	/* Okay then, we can grab values from overview. */
+	handle = (void *)OVopensearch(GRPcur, range.Low, range.High);
+	if (handle == NULL) {
+	    Reply("%d %s no matches follow (NOV)\r\n.\r\n",
+		  NNTP_HEAD_FOLLOWS_VAL, header);
+	    return;
+	}	
+	
+	Printf("%d %s matches follow (NOV)\r\n", NNTP_HEAD_FOLLOWS_VAL,
+	       header);
+	while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
+	    if (len == 0 || PERMaccessconf->nnrpdcheckart
+		&& !ARTinstorebytoken(token))
+		continue;
+	    if ((p = OVERGetHeader(data, Overview)) != NULL) {
+		if (!pattern || wildmat(p, pattern)) {
+		    sprintf(buff, "%lu ", artnum);
+		    SendIOb(buff, strlen(buff));
+		    SendIOb(p, strlen(p));
+		    SendIOb("\r\n", 2);
+		}
+	    }
+	}
+	SendIOb(".\r\n", 3);
+	PushIOb();
+	OVclosesearch(handle);
+    } while (0);
+
     if (pattern)
 	DISPOSE(pattern);
 }
