@@ -623,7 +623,10 @@ DoArt(ARTHANDLE *art)
 	if (!SMprobe(SMARTNGNUM, art->token, (void *)&ann)) {
 	    Xrefp->Header = NULL;
 	    Xrefp->HeaderLength = 0;
-	}
+	} else
+	    return;
+	if (ann.artnum == 0)
+	    return;
 	len = strlen(XREF) + 1 + strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1 + 16 + 1;
 	if (len > BIG_BUFFER) {
 	    Xrefp->Header = NULL;
