@@ -36,7 +36,8 @@ my %ctlinnd =
 # init innd timer
 foreach ('article cancel', 'article control', 'article link',
 	 'article write', 'history grep', 'history lookup',
-	 'history sync', 'history write', 'idle', 'site send')
+	 'history sync', 'history write', 'idle', 'site send',
+	 'perl filter')
 {
   $innd_time_min{$_} = $MIN;
   $innd_time_max{$_} = $MAX;
@@ -340,9 +341,7 @@ sub collect
     # time (from the Greco's patch)
     # ME time X idle X(X) artwrite X(X) artlink X(X) hiswrite X(X) hissync
     # X(X) sitesend X(X) artctrl X(X) artcncl X(X) hishave X(X) hisgrep X(X) 
-    # or
-    # ME time X idle X(X) artwrite X(X) artlink X(X) hiswrite X(X) hissync
-    # X(X) sitesend X(X) artctrl X(X) artcncl X(X) hishave X(X)
+    # perl X(X)
     if ($left =~ m/^\S+\s+                         # ME
 	           time\ (\d+)\s+                  # time
 	           idle\ (\d+)\((\d+)\)\s+         # idle
@@ -350,11 +349,12 @@ sub collect
                    artlink\ (\d+)\((\d+)\)\s+      # artlink
                    hiswrite\ (\d+)\((\d+)\)\s+     # hiswrite
                    hissync\ (\d+)\((\d+)\)\s+      # hissync
-                   (?:sitesend\ (\d+)\((\d+)\)\s+  # sitesend
+                   sitesend\ (\d+)\((\d+)\)\s+  # sitesend
                    artctrl\ (\d+)\((\d+)\)\s+      # artctrl
                    artcncl\ (\d+)\((\d+)\)\s+      # artcncl
-                   hishave\ (\d+)\((\d+)\)         # hishave
-                   (?:\s+hisgrep\ (\d+)\((\d+)\))?)?  # hisgrep (optionnal)
+                   hishave\ (\d+)\((\d+)\)\s+      # hishave
+                   hisgrep\ (\d+)\((\d+)\)\s+      # hisgrep
+		   perl\ (\d+)\((\d+)\)\s+	   # perl (optional)
 	           \s*$/ox)
     {
       $innd_time_times += $1;
@@ -421,15 +421,19 @@ sub collect
       $innd_time_max{'history lookup'} = $18 / ($19 || 1)
 	if ($19) && ($innd_time_max{'history lookup'} < $18 / ($19 || 1));
 
-      if ($20 || $21)
-      {
-	$innd_time_time{'history grep'} += $20;
-	$innd_time_num{'history grep'} += $21;
-	$innd_time_min{'history grep'} = $20 / ($21 || 1)
-	  if ($21) && ($innd_time_min{'history grep'} > $20 / ($21 || 1));
-	$innd_time_max{'history grep'} = $20 / ($21 || 1)
-	  if ($21) && ($innd_time_max{'history grep'} < $20 / ($21 || 1));
-      }
+      $innd_time_time{'history grep'} += $20;
+      $innd_time_num{'history grep'} += $21;
+      $innd_time_min{'history grep'} = $20 / ($21 || 1)
+	if ($21) && ($innd_time_min{'history grep'} > $20 / ($21 || 1));
+      $innd_time_max{'history grep'} = $20 / ($21 || 1)
+	if ($21) && ($innd_time_max{'history grep'} < $20 / ($21 || 1));
+
+      $innd_time_time{'perl filter'} += $22;
+      $innd_time_num{'perl filter'} += $23;
+      $innd_time_min{'perl filter'} = $22 / ($23 || 1)
+	if ($23) && ($innd_time_min{'perl filter'} > $22 / ($23 || 1));
+      $innd_time_max{'perl filter'} = $22 / ($23 || 1)
+	if ($23) && ($innd_time_max{'perl filter'} < $22 / ($23 || 1));
       return 1;
     }
     # ME time xx idle xx(xx)     [ bug ? a part of timer ?]
