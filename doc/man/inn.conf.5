@@ -152,6 +152,12 @@ are spool.
 If this is set, then it contains the value of the X-Complaints-To:
 header that will be added to all posts.  If not, then this defaults to
 the newsmaster's e-mail address.
+.TP
+.I artmmap
+If this is false then nnrpd will use regular file access to access 
+articles, otherwise it will mmap() the articles.  Setting this to true
+will give better performance on most systems, but some systems do have 
+problems with mmap.
 .PP
 Note that this file can be identical on all machines in an organization.
 .SH EXAMPLE

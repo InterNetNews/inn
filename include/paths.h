@@ -194,6 +194,8 @@
 #define _CONF_TIMER             "timer"
    /* Whether or not to use the storage api */
 #define _CONF_STORAGEAPI        "storageapi"
+   /* Whether or not to mmap articles */
+#define _CONF_ARTMMAP           "artmmap"
      
 /*
 **  13.  TCL Support

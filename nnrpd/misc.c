@@ -132,7 +132,6 @@ PERMartok(qp)
 {
     static char		**grplist;
     char		*p;
-    BOOL		found;
 
     if (!PERMspecified)
 	return PERMdefault;
@@ -233,17 +232,13 @@ LOCALtoGMT(t)
 **  Return the path name of an article if it is in the history file.
 **  Return a pointer to static data.
 */
-char *
-HISgetent(msg_id, fulldata)
-    char		*msg_id;
-    BOOL		fulldata;
+char *HISgetent(char *msg_id, BOOL fulldata)
 {
     static BOOL		setup;
     static FILE		*hfp;
     static char		path[BIG_BUFFER];
-    register char	*p;
-    register char	*q;
-    register int	i;
+    char	        *p;
+    char	        *q;
     char		*save;
     char		buff[BIG_BUFFER];
     HASH		key;
@@ -293,6 +288,11 @@ HISgetent(msg_id, fulldata)
 	/* Article has expired. */
 	return NULL;
     save = p + 1;
+
+    if (IsToken(save)) {
+	strcpy(path, save);
+	return path;
+    }
 
     /* Want the full data? */
     if (fulldata) {

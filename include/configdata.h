@@ -156,9 +156,6 @@ typedef char		*CSTRING;
     /* Use mmap() to read the active file, or read it in? */
     /* =()<#define ACT_@<ACT_STYLE>@>()= */
 #define ACT_READ
-    /* Use mmap() to read the article , or read it in? */
-    /* =()<#define ART_@<ART_STYLE>@>()= */
-#define ART_MMAP
     /* Use mmap() to read the overview, or read it in? */
     /* =()<#define OVER_@<OVER_STYLE>@>()= */
 #define OVER_MMAP

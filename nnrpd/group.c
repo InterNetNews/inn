@@ -39,16 +39,13 @@ STATIC int		GRPsize;
 /*
 **  See if a given newsgroup exists.
 */
-GROUPENTRY *
-GRPfind(group)
-    register char		*group;
+GROUPENTRY *GRPfind(char *group)
 {
-    register char		*p;
-    register unsigned int	j;
-    register int		i;
-    register GROUPENTRY		*gp;
-    GRPHASH			*htp;
-    char			c;
+    char		*p;
+    unsigned int	j;
+    GROUPENTRY		*gp;
+    GRPHASH		*htp;
+    char		c;
 
     /* SUPPRESS 6 *//* Over/underflow from plus expression */
     GRP_HASH(group, p, j);
@@ -319,17 +316,9 @@ GetGroupList()
 /*
 **  Sorting predicate to put newsgroup names into numeric order.
 */
-STATIC int
-ARTcompare(p1, p2)
-    CPOINTER p1;
-    CPOINTER p2;
+STATIC int ARTcompare(CPOINTER p1, CPOINTER p2)
 {
-    ARTNUM	*i1;
-    ARTNUM	*i2;
-
-    i1 = CAST(ARTNUM*, p1);
-    i2 = CAST(ARTNUM*, p2);
-    return *i1 - *i2;
+    return ((ARTLIST *)p1)->ArtNum - ((ARTLIST *)p2)->ArtNum;
 }
 
 
@@ -344,52 +333,111 @@ STATIC void GRPscandir(char *dir)
     DIRENTRY	        *ep;
     DIR	                *dp;
     char	        *p;
-    ARTNUM	        i;
+    int	                i;
+    char                *path;
+    int                 fd;
+    struct stat         sb;
+    OVERINDEX           *tmp;
+    int                 icount;
 
-    /* Go to the directory. */
-    if (chdir(SPOOL) < 0) {
-	syslog(L_FATAL, "%s cant cd %s %m", ClientHost, SPOOL);
-	ExitWithStats(1);
-    }
-
-    if (ARTarraysize == 0) {
-	ARTarraysize = 1024;
-	ARTnumbers = NEW(ARTNUM, ARTarraysize);
-    }
-
-    /* The newsgroup directory might not exist; treat it as empty. */
     ARTsize = 0;
     GRPcount++;
-    if (chdir(dir) < 0)
-	return;
-    dp = opendir(".");
-    if (dp == NULL) {
-	syslog(L_ERROR, "%s cant opendir %s %m", ClientHost, dir);
-	return;
-    }
-
-    while ((ep = readdir(dp)) != NULL) {
-	/* Get the numeric value of the filename, if it's all digits. */
-	for (p = ep->d_name, i = 0; *p; p++) {
-	    if (!CTYPE(isdigit, *p))
-		break;
-	    i = i * 10 + *p - '0';
+    
+    path = NEW(char, strlen(_PATH_OVERVIEWDIR) + strlen(dir) + strlen(_PATH_OVERVIEW) + 32);
+    sprintf(path, "%s/%s/%s.index", _PATH_OVERVIEWDIR, dir, _PATH_OVERVIEW);
+    if ((fd = open(path, O_RDONLY)) >= 0) {
+	DISPOSE(path);
+	if (fstat(fd, &sb) < 0) {
+	    syslog(L_ERROR, "%s cant fstat index %s %m", ClientHost, dir);
+	    close(fd);
+	    return;
 	}
-	if (*p || i == 0)
-	    continue;
-
-	if (ARTsize + 1 >= ARTarraysize) {
-	    ARTarraysize += 1024;
-	    RENEW(ARTnumbers, ARTNUM, ARTarraysize);
+	icount = sb.st_size / sizeof(OVERINDEX);
+#ifdef OVER_MMAP
+	if ((tmp = mmap((MMAP_PTR)0, icount * sizeof(OVERINDEX),
+			PROT_READ, MAP__ARG, fd, 0)) == (OVERINDEX *)-1) {
+	    syslog(L_ERROR, "%s cant mmap index %s %m", ClientHost, dir);
+	    close(fd);
+	    return;
 	}
-
-	ARTnumbers[ARTsize++] = i;
+#else
+	tmp = NEW(OVERINDEX, icount);
+	if (read(fd, tmp, icount * sizeof(OVERINDEX)) != (icount * sizeof(OVERINDEX))) {
+	    syslog(L_ERROR, "%s cant read index %s %m", ClientHost, dir);
+	    close(fd);
+	    return;
+	}
+#endif /* OVER_MMAP */
+	close(fd);
+	if (OVERindex) {
+#ifdef OVER_MMAP
+	    if ((munmap((MMAP_PTR)OVERindex, OVERicount * sizeof(OVERINDEX))) < 0)
+		syslog(L_ERROR, "%s cant munmap index %m", ClientHost, dir);
+#else
+	    DISPOSE(OVERindex);
+#endif /* OVER_MMAP */
+	}
+	OVERindex = tmp;
+	OVERicount = icount;
+	
+	if (ARTarraysize == 0) {
+	    ARTnumbers = NEW(ARTLIST, OVERicount);
+	} else {
+	    ARTnumbers = RENEW(ARTnumbers, ARTLIST, OVERicount);
+	}
+	ARTarraysize = OVERicount;
+	for (i = 0; i < OVERicount; i++) {
+	    if (OVERindex[i].cancelled)
+		continue;
+	    ARTnumbers[ARTsize].ArtNum = OVERindex[i].artnum;
+	    ARTnumbers[ARTsize++].Index = &OVERindex[i];
+	}
+	
+    } else {
+	DISPOSE(path);
+	/* Go to the directory. */
+	if (chdir(SPOOL) < 0) {
+	    syslog(L_FATAL, "%s cant cd %s %m", ClientHost, SPOOL);
+	    ExitWithStats(1);
+	}
+	
+	if (ARTarraysize == 0) {
+	    ARTarraysize = 1024;
+	    ARTnumbers = NEW(ARTLIST, ARTarraysize);
+	}
+	
+	/* The newsgroup directory might not exist; treat it as empty. */
+	if (chdir(dir) < 0)
+	    return;
+	dp = opendir(".");
+	if (dp == NULL) {
+	    syslog(L_ERROR, "%s cant opendir %s %m", ClientHost, dir);
+	    return;
+	}
+	
+	while ((ep = readdir(dp)) != NULL) {
+	    /* Get the numeric value of the filename, if it's all digits. */
+	    for (p = ep->d_name, i = 0; *p; p++) {
+		if (!CTYPE(isdigit, *p))
+		    break;
+		i = i * 10 + *p - '0';
+	    }
+	    if (*p || i == 0)
+		continue;
+	    
+	    if (ARTsize + 1 >= ARTarraysize) {
+		ARTarraysize += 1024;
+		RENEW(ARTnumbers, ARTLIST, ARTarraysize);
+	    }
+	    
+	    ARTnumbers[ARTsize].ArtNum = i;
+	    ARTnumbers[ARTsize++].Index = NULL;
+	}
+	(void)closedir(dp);
     }
-    (void)closedir(dp);
 
     ARTcache = NULL;
-    qsort((POINTER)ARTnumbers, (SIZE_T)ARTsize, sizeof ARTnumbers[0],
-	ARTcompare);
+    qsort((POINTER)ARTnumbers, (SIZE_T)ARTsize, sizeof(ARTLIST), ARTcompare);
 }
 
 
@@ -397,15 +445,12 @@ STATIC void GRPscandir(char *dir)
 **  Change to or list the specified newsgroup.  If invalid, stay in the old
 **  group.
 */
-FUNCTYPE
-CMDgroup(ac, av)
-    int			ac;
-    char		*av[];
+FUNCTYPE CMDgroup(int ac, char *av[])
 {
     static time_t	last_time;
     static char		NOSUCHGROUP[] = NNTP_NOSUCHGROUP;
-    register char	*p;
-    register int	i;
+    char	        *p;
+    int	                i;
     time_t		now;
     char		*grplist[2];
     char		*group;
@@ -455,7 +500,8 @@ CMDgroup(ac, av)
     GRPreport();
 
     /* Make the group name a directory name. */
-    (void)strcpy(buff, group);
+    if (buff != group)
+	(void)strcpy(buff, group);
     for (p = buff; *p; p++)
 	if (*p == '.')
 	    *p = '/';
@@ -478,13 +524,13 @@ CMDgroup(ac, av)
 	else
 	    Reply("%d %d %ld %ld %s\r\n",
 		NNTP_GROUPOK_VAL,
-		ARTsize, ARTnumbers[0], ARTnumbers[ARTsize - 1], group);
+		ARTsize, ARTnumbers[0].ArtNum, ARTnumbers[ARTsize - 1].ArtNum, group);
     }
     else {
 	/* Must be doing a "listgroup" command. */
 	Reply("%d Article list follows\r\n", NNTP_GROUPOK_VAL);
 	for (i = 0; i < ARTsize; i++)
-	    Printf("%ld\r\n", ARTnumbers[i]);
+	    Printf("%ld\r\n", ARTnumbers[i].ArtNum);
 	Printf(".\r\n");
     }
 }

@@ -118,6 +118,11 @@ extern POINTER		realloc();
 
 /* =()<typedef @<MMAP_PTR>@ MMAP_PTR;>()= */
 typedef caddr_t MMAP_PTR;
+#ifdef MAP_FILE
+#define MAP__ARG        (MAP_FILE | MAP_SHARED)
+#else
+#define MAP__ARG         (MAP_SHARED)
+#endif
 
 /* Some backward systems need this. */
 extern FILE	*popen();
@@ -146,3 +151,31 @@ extern void	_exit();
 #if defined(DO_HAVE_SETPROCTITLE)
 extern void	setproctitle();
 #endif	/* defined(DO_HAVE_SETPROCTITLE) */
+
+#ifdef __FreeBSD__
+#include <osreldate.h>
+#endif
+
+#if defined(UIO_MAXIOV) && !defined(IOV_MAX)
+#define IOV_MAX		UIO_MAXIOV
+#endif
+
+#ifndef IOV_MAX
+/* Solaris */
+#if defined(sun) && defined(__svr4__)
+#define IOV_MAX 16
+#endif
+/* FreeBSD 3.0 or above */
+#if defined(__FreeBSD__) && (__FreeBSD_version >= 222000)
+#define	IOV_MAX	1024
+#endif
+
+#if defined(_nec_ews)
+#define IOV_MAX 16
+#endif
+
+#if (defined(HPUX) || defined(__hpux__)) && !defined(IOV_MAX)
+#define IOV_MAX 16
+#endif
+
+#endif

@@ -42,9 +42,9 @@
 **  Some convenient shorthands.
 */
 typedef struct in_addr	INADDR;
-#define Printf		(void)printf
+#define Printf		printf
 #if	defined(VAR_NONE)
-#define Reply		(void)printf
+#define Reply		printf
 #endif	/* defined(VAR_NONE) */
 
 
@@ -83,6 +83,11 @@ typedef enum _READTYPE {
     RTtimeout
 } READTYPE;
 
+typedef struct _ARTLIST {
+    ARTNUM              ArtNum;
+    OVERINDEX           *Index;
+} ARTLIST;
+
 
 #if	defined(MAINLINE)
 #define EXTERN	/* NULL */
@@ -109,8 +114,8 @@ extern char	NOACCESS[];
 EXTERN char	PERMpass[20];
 EXTERN char	PERMuser[20];
 EXTERN char	*RemoteMaster;
-EXTERN ARTNUM	*ARTcache;
-EXTERN ARTNUM	*ARTnumbers;
+EXTERN ARTLIST	*ARTcache;
+EXTERN ARTLIST	*ARTnumbers;
 EXTERN int	ARTindex;
 EXTERN int	ARTsize;
 extern int	PERMdefault;
@@ -118,12 +123,16 @@ EXTERN long	ARTcount;
 EXTERN long	ARTget;
 EXTERN long	ARTgettime;
 EXTERN long	ARTgetsize;
+EXTERN BOOL     ARTmmap;        /* Whether or not to mmap() articles */
 EXTERN long	OVERcount;	/* number of XOVER commands			*/
 EXTERN long	OVERhit;	/* number of XOVER records found in .overview	*/
 EXTERN long	OVERmiss;	/* number of XOVER records found in articles	*/
 EXTERN long	OVERtime;	/* number of ms spent sending XOVER data	*/
 EXTERN long	OVERread;	/* number of bytes of XOVER data read		*/
 EXTERN long	OVERsize;	/* number of bytes of XOVER data sent		*/
+EXTERN OVERINDEX  *OVERindex;   /* Pointer to memory containing overview index,
+				      *  may be read only */
+EXTERN int      OVERicount;      /* Number of OVERINDEX entries at OVERindex */
 EXTERN long	GRParticles;
 EXTERN long	GRPcount;
 EXTERN char	GRPlast[SPOOLNAMEBUFF];

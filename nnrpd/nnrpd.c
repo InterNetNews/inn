@@ -617,6 +617,8 @@ main(argc, argv, env)
     }
     MyHostName = COPY(MyHostName);
 
+    ARTmmap = GetBooleanConfigValue(_CONF_ARTMMAP, TRUE);
+
 #if	NNRP_LOADLIMIT > 0
     if ((load = GetLoadAverage()) > NNRP_LOADLIMIT) {
 	syslog(L_NOTICE, "load %d > %d", load, NNRP_LOADLIMIT);
@@ -625,8 +627,11 @@ main(argc, argv, env)
     }
 #endif	/* NNRP_LOADLIMIT > 0 */
 
-    strcpy (LogName,"?") ;
-    
+    strcpy (LogName, "?");
+
+    OVERindex = NULL;
+    OVERicount = 0;
+
     /* Catch SIGPIPE so that we can exit out of long write loops */
     (void)signal(SIGPIPE, CatchPipe);
 
@@ -661,6 +666,8 @@ main(argc, argv, env)
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1);
     }
+
+    SMinit();
 
 #if defined(DO_PERL)
     /* Load the Perl code */

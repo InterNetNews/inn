@@ -16,12 +16,6 @@
 #include "timehash.h"
 #include "paths.h"
 
-#ifdef MAP_FILE
-#define MAP__ARG        (MAP_FILE | MAP_SHARED)
-#else
-#define MAP__ARG         (MAP_SHARED)
-#endif
-
 typedef struct {
     char                *base;    /* Base of the mmaped file */
     int                 len;      /* Length of the file */
