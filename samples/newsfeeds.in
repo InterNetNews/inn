@@ -34,7 +34,7 @@
 ##  This file is complicated -- see newsfeeds.5!
 
 ##  This is the local site.
-##  The "pattern" field gives the intial subscription list for
+##  The "pattern" field gives the initial subscription list for
 ##  all other sites.  You might want to put "!control,!junk,!<local>.*"
 ##  there.  The "distrib" subfield limits incoming articles.
 ##
@@ -49,9 +49,9 @@
 ##  Note that refusing articles means you won't offer them to sites you feed
 
 ## Default of  everything to everybody except for junk, control, anything
-## with "local" as the newgroup prefix (i.e. matches "localhost.stuff") or
+## with "local" as the newsgroup prefix (i.e. matches "localhost.stuff") or
 ## groups under foo. Articles posted to any group under alt.binaries.warez
-## will not get propogated, even if they're cross posted to something that
+## will not get propagated, even if they're cross posted to something that
 ## is.
 ME\
 	:*,@alt.binaries.warez.*,!junk,!control*,!local*,!foo.*\
@@ -65,7 +65,7 @@ ME\
 
 # Feed all moderated source postings to an archiver
 #source-archive!:!*,*sources*,!*wanted*,!*.d\
-#	:Tc,Wn:@prefix@/bin/archive -f -i /usr/spool/news.archive/INDEX
+#	:Tc,Wn:@prefix@/bin/archive -f -i @prefix@/spool/archive/INDEX
 
 ##  News overview
 # use this flag if storage api is used
@@ -89,7 +89,7 @@ ME\
 # Capture all Foo, Incorporated, postings
 #capture\
 #	:*/foo\
-#	:Tp,H2:/usr/news/local/capture %s
+#	:Tp,H2:@prefix@/bin/capture %s
 
 # A UUCP feed, where we try to keep the "batching" between 4 and 1K.
 #ihnp4\
