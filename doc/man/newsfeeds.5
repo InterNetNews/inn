@@ -180,9 +180,13 @@ which should be chosen from the following set:
 	c	Exclude all kinds of control messages
 	C	Only include all kinds of control messages
 	d	Distribution header required
+	e	Only include message whoes newsgroups in
+		Newsgroups header all exist in active
 	p	Do not check Path header for the sitename before 
 		propagating (the exclusions are still checked).
 .fi
+If both ``c'' and ``C'' are specified simultaneously,
+the last specified one is adopted.
 .TP
 .BI B high/low
 If a site is being fed by a file, channel, or exploder (see below), the server

@@ -26,6 +26,8 @@ or
 Some parameters specified in the file may be overridden by environment
 variables, and some file parameters may be used to mask real data, such
 as when hiding a cluster of hosts behind a single electronic mail hostname.
+If the same parameter is specified more than twice, the first one is
+used for that parameter.
 The current set of parameters is as follows:
 .\" BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||DOC
 .TP
@@ -154,6 +156,12 @@ useful for statistics.
 .I logipaddr
 Should the IP address of a host be logged rather than the entry in
 the Path: line. This is useful for tracking forged postings.
+.TP
+.I logsitename
+Should the site names be put into the article log file.  Those names
+are used by
+.IR newsrequeue (8).
+The default value is ``true''.
 .TP
 .I overviewname
 What file name to use for storing overview data. Defaults to
@@ -331,9 +339,11 @@ kilobytes.  It is generally useful to have memory allocated to history
 cache if dbz mmaping is turned on.
 .TP
 .I xrefslave
-If this is true and innd is in slave mode then innd will accept feeds from 
-peers that are not it's master and will use the information in the Xref:
+If this is specified, innd will use the information in the Xref:
 header for replication.  
+The specified name is used by
+.IR nnrpd (8)
+to determine master server for posting articles.
 .TP
 .I wireformat
 If this is true then innd will write articles in wire format.  Wire format
@@ -506,4 +516,4 @@ This is revision \\$3, dated \\$4.
 ..
 .R$ $Id$
 .SH "SEE ALSO"
-libinn(3), moderators(5).
+libinn(3), moderators(5), newsrequeue(8).

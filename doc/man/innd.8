@@ -56,9 +56,6 @@ innd, inndstart \- InterNetNews daemon
 .B \-s
 ]
 [
-.BI \-S " host"
-]
-[
 .BI \-t " timeout"
 ]
 [
@@ -281,17 +278,6 @@ It will exit with an error status if there are any errors; the actual
 errors will be reported in
 .IR syslog (3).
 .TP
-.B \-S
-If the ``\-S'' flag is used, then
-.I innd
-will run in ``slave'' mode.
-When running as a slave, the server will only accept articles from the
-specified
-.IR host .
-Note that the host must either appear in the
-.I hosts.nntp
-file, or the server must be started with the ``\fB\-a\fP'' flag.
-.TP
 .B \-t
 Change the timeout period before flushing to 
 .IR timeout 
@@ -414,21 +400,14 @@ The command
 \&``\fImode query\fP''
 is intended for future use, and is currently treated the same way.
 .IP 4.
-A new command,
-\&``\fIxpath messageid\fP'',
-is provided.
-The server responds with a
-223 response and a space-separated list of filenames where the article
-was filed.
-.IP 5.
 The commands to support streaming transfer
 \&``\fIcheck messageid\fP'' and ``\fItakethis messageid\fP'' are provided.
-.IP 6.
+.IP 5.
 A batch transfer command ``\fIxbatch byte-count\fP'' is also provided. This
 command will read \fIbyte-count\fP bytes and store them for later
 processing by rnews(1) (which must be started seperately). See the programs
 innxbatch and sendxbatches.sh.
-.IP 7.
+.IP 6.
 The only other commands implemented are
 \&``\fIhead\fP'' ,
 \&``\fIhelp\fP'' ,

@@ -29,9 +29,6 @@ nnrpd \- NNTP server for on-campus hosts
 .BI \-s " title padding"
 ]
 [
-.BI \-S " host"
-]
-[
 .B \-t
 ]
 .SH DESCRIPTION
@@ -121,15 +118,6 @@ under the control of the
 .IR ctlinnd (8)
 \&``trace'' command, and is toggled upon receipt of a SIGHUP; see
 .IR signal (2).
-.TP
-.B \-S
-If the ``\-S'' flag is used, then all postings are forwarded to the
-specified
-.IR host ,
-which should be the master NNTP server.
-This flag is set by
-.I innd
-if it is started with the ``\-S'' flag.
 .TP
 .B \-o
 The ``\-o'' flag causes all articles to be spooled instead of sending

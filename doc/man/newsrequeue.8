@@ -71,6 +71,11 @@ log entry.
 It parses entries for accepted articles, looks up the Message-ID in the
 history database to get the filename, and then scans the list of
 sites.
+If ``storageapi'' in
+.IR inn.conf (5)
+is turnd on,
+.I newsrequeue
+always runs this mode regardless of ``\fB\-l\fP'' flag.
 .SH OPTIONS
 .TP
 .B \-a
@@ -108,6 +113,7 @@ ctlinnd(8),
 dbz(3),
 filechan(8),
 history(5),
+inn.conf(5),
 innd(8),
 newsfeeds(5),
 makeactive(8),
