@@ -234,9 +234,11 @@ STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
   if (!cycbuff->needflush)
     return TRUE;
   memset(&rpx, 0, sizeof(CYCBUFFEXTERN));
-  if (CNFSseek(cycbuff->fd, (CYCBUFF_OFF_T) 0, SEEK_SET) < 0) {
-    syslog(L_ERROR, "CNFSflushhead: magic CNFSseek failed: %m");
-    return FALSE;
+  if (cycbuff->bitfield == NULL) {
+    if (CNFSseek(cycbuff->fd, (CYCBUFF_OFF_T) 0, SEEK_SET) < 0) {
+      syslog(L_ERROR, "CNFSflushhead: magic CNFSseek failed: %m");
+      return FALSE;
+    }
   }
   if (cycbuff->magicver == 3) {
     cycbuff->updated = time(NULL);
@@ -255,9 +257,20 @@ STATIC BOOL CNFSflushhead(CYCBUFF *cycbuff) {
     } else {
 	strncpy(rpx.currentbuff, "FALSE", CNFSMASIZ);
     }
-    if ((b = write(cycbuff->fd, &rpx, sizeof(CYCBUFFEXTERN))) != sizeof(CYCBUFFEXTERN)) {
-      syslog(L_ERROR, "%s: CNFSflushhead: write failed (%d bytes): %m", LocalLogName, b);
-      return FALSE;
+    if (cycbuff->bitfield == NULL) {
+      if ((b = write(cycbuff->fd, &rpx, sizeof(CYCBUFFEXTERN))) != sizeof(CYCBUFFEXTERN)) {
+	syslog(L_ERROR, "%s: CNFSflushhead: write failed (%d bytes): %m", LocalLogName, b);
+	return FALSE;
+      }
+    } else {
+      memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
+#if defined (DO_MMAP_SYNC)
+#if defined (HAVE_MSYNC_3_ARG)
+      msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
+#else
+      msync(cycbuff->bitfield, cycbuff->minartoffset);
+#endif
+#endif
     }
     cycbuff->needflush = FALSE;
   } else {
@@ -287,15 +300,19 @@ STATIC void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
     CYCBUFFEXTERN	rpx;
     char		buf[64];
 
-    if (CNFSseek(cycbuff->fd, (CYCBUFF_OFF_T) 0, SEEK_SET) < 0) {
-	syslog(L_ERROR, "CNFSReadFreeAndCycle: magic lseek failed: %m");
-	SMseterror(SMERR_UNDEFINED, NULL);
-	return;
-    }
-    if (read(cycbuff->fd, &rpx, sizeof(CYCBUFFEXTERN)) != sizeof(rpx)) {
-	syslog(L_ERROR, "CNFSReadFreeAndCycle: magic read failed: %m");
-	SMseterror(SMERR_UNDEFINED, NULL);
-	return;
+    if (cycbuff->bitfield == NULL) {
+	if (CNFSseek(cycbuff->fd, (CYCBUFF_OFF_T) 0, SEEK_SET) < 0) {
+	    syslog(L_ERROR, "CNFSReadFreeAndCycle: magic lseek failed: %m");
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    return;
+	}
+	if (read(cycbuff->fd, &rpx, sizeof(CYCBUFFEXTERN)) != sizeof(rpx)) {
+	    syslog(L_ERROR, "CNFSReadFreeAndCycle: magic read failed: %m");
+	    SMseterror(SMERR_UNDEFINED, NULL);
+	    return;
+	}
+    } else {
+	memcpy(&rpx, cycbuff->bitfield, sizeof(CYCBUFFEXTERN));
     }
     /* Sanity checks are not needed since CNFSinit_disks() has already done. */
     buf[CNFSLASIZ] = '\0';
