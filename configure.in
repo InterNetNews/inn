@@ -737,11 +737,18 @@ AC_MSG_RESULT($OPENSSL_DIR)
 if test "$OPENSSL_DIR" != "no"; then
 	SSL_INC="-I${OPENSSL_DIR}/include"
 	SSL_BIN="${OPENSSL_DIR}/bin"
-	AC_DEFINE(HAVE_SSL)
-	LIB_RSAREF=""
-	AC_CHECK_LIB(rsaref, RSA_PKCS1_RSAref,
-	LIB_RSAREF="-lRSAglue -lrsaref",)
-	SSL_LIB="-L${OPENSSL_DIR}/lib -lssl -lcrypto ${LIB_RSAREF}"
+	SSL_LIB="-L${OPENSSL_DIR}/lib"
+	AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
+		SSL_LIB="${SSL_LIB} -lRSAglue -lrsaref",,$SSL_LIB)
+	AC_CHECK_LIB(crypto,BIO_accept,
+		SSL_LIB="-lcrypto ${SSL_LIB}",
+		[AC_MSG_ERROR(Can not find OpenSSL)],
+		$SSL_LIB)
+	AC_CHECK_LIB(ssl, SSL_CTX_new,
+		SSL_LIB="-lssl ${SSL_LIB}";
+		[AC_DEFINE(HAVE_SSL, 1, [Define if OpenSSL is available.])],
+		[AC_MSG_ERROR(Can not find OpenSSL)],
+		$SSL_LIB)
 else
 	SSL_LIB=""
 	SSL_INC=""
