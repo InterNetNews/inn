@@ -1454,6 +1454,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	private->offset += CNFS_BLOCKSIZE;
 	art->data = NULL;
 	art->len = 0;
+	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }
     /* check the bitmap to ensure cah.size is not broken */
@@ -1470,6 +1471,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    private->offset = middle;
 	    art->data = NULL;
 	    art->len = 0;
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
     } else {
@@ -1483,6 +1485,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    private->offset = middle;
 	    art->data = NULL;
 	    art->len = 0;
+	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return art;
 	}
     }
