@@ -812,7 +812,7 @@ STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cy
     static int	count = 0;
     CYCBUFF	*tmp;
 
-    if (++count % 1000 == 0) {	/* XXX 1K articles is just a guess */
+    if (SMpreopen && (++count % 1000 == 0)) {	/* XXX 1K articles is just a guess */
 	for (tmp = cycbufftab; tmp != (CYCBUFF *)NULL; tmp = tmp->next) {
 	    CNFSReadFreeAndCycle(tmp);
 	}
