@@ -49,7 +49,7 @@ die "usage: $usage\n" if $opt_h ;
 
 my $Sendmail = $inn::mta ;
 my $Submit = $inn::inews . " -S -h";
-my $Database = $opt_b || $inn::pathdb . "/mailpost-msgid" ; 
+my $Database = ($opt_b || $inn::pathtmp) . "/mailpost-msgid" ;
 my $Maintainer = $inn::newsmaster || "usenet" ; 
 my $WhereTo = $opt_o || $Submit ;
 my $Mailname = $inn::fromhost ;
@@ -123,6 +123,7 @@ my $date = undef;
 my $hdr = undef;
 my $txt = undef;
 my $message_id ;
+my $subject = "(NONE)";
 
 $_ = <STDIN>;
 if (!$_) {
@@ -177,8 +178,13 @@ for (;;) {
     next if /^Approved:\s/sio && defined($approved);
     next if /^Distribution:\s/sio && defined($distribution);
 
-    if (/^(Subject|Organization|Distribution):\s*/sio) {
+    if (/^(Organization|Distribution):\s*/sio) {
 	$real_news_hdrs .= "$_\n";
+	next;
+    }
+
+    if (/^Subject:\s*/sio) {
+	$subject = $';
 	next;
     }
 
@@ -243,6 +249,7 @@ if ($path !~ /\!/) {
     $path = "$'!$`" if ($path =~ /\@/);
 }
 
+$real_news_hdrs .= "Subject: ${subject}\n";
 $real_news_hdrs .= "Message-ID: ${msgIdHdr}\n"     if defined($message_id);
 $real_news_hdrs .= "Mailing-List: ${mailing_list}\n" if defined($mailing_list);
 $real_news_hdrs .= "Distribution: ${distribution}\n" if defined($distribution);
