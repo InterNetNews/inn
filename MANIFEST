@@ -238,7 +238,6 @@ include/paths.h.in          1 Paths to common programs and files
 include/qio.h               1 Header file for quick I/O package
 include/rwlock.h            1 Header file for rwlock
 include/storage.h           1 Header file for storageAPI
-include/threads.h           1 Header file for threads
 include/uio.h               1 Minimal <sys/uio.h> for sites without writev
 innd                        1 Server (Directory)
 innd/Makefile               1 Makefile for server
@@ -366,7 +365,6 @@ lib/strrchr.c               1 Find last char in a string (BSD)
 lib/strspn.c                1 Skip bytes in a string (BSD)
 lib/strtok.c                1 Split a string into tokens (BSD)
 lib/tempname.c              1 Temp filename generator.
-lib/threads.c               1 thread routine
 lib/waitnb.c                1 Non-blocking wait wrapper
 lib/wildmat.c               1 Pattern match routine
 lib/writev.c                1 Fake writev for sites without it
