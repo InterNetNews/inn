@@ -361,8 +361,8 @@ is ``yes''.  Otherwise, the ``time'' field will be filled in by a call to
 and the ``usec'' field will be set to zero.
 The ``tzone'' field will be filled in with the current offset from GMT.
 If
-.I <HAVE_TM_GMTOFF in config.data>
-is ``DO'', this is done by calling
+.I <HAVE_TM_GMTOFF in include/config.h>
+is defined, this is done by calling
 .IR localtime (3)
 and taking the value of the ``tm_gmtoff'' field, negating it, and dividing
 it by 60.
@@ -379,8 +379,8 @@ This routine returns \-1 on failure, or zero on success.
 .PP
 .I NNTPlocalopen
 when
-.I <HAVE_UNIX_DOMAIN in config.data>
-is ``DO'', 
+.I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>
+is defined, 
 opens a connection to the private port of an InterNetNews server running on
 the local host.
 It returns \-1 on failure, or zero on success.
@@ -395,8 +395,8 @@ If not NULL, and the server refuses the connection, then it will be
 filled in with the text of the server's reply.
 This routine is not for general use.
 When
-.I <HAVE_UNIX_DOMAIN in config.data>
-is ``DONT'', this
+.I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>
+is not defined, this
 is a stub routine, for compatibility with systems that have Unix-domain
 stream sockets.
 It always returns \-1.
