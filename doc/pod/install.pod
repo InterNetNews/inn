@@ -11,6 +11,16 @@ removed.  You'll find it much easier to start with a fresh install than to
 try to update your old installation.  This is particularly true if you're
 upgrading from a version of INN prior to 2.0.
 
+If you are upgrading from an earlier minor release of INN, you may be able
+to just update the binaries, scripts, and man pages by running:
+
+    make update
+
+after building INN and then comparing the new sample configuration files
+with your current ones to see if anything has changed.  If you take this
+route, the old binaries, scripts, and man pages will be saved with an
+extension of .OLD so that you can easily back out.
+
 =head1 Supported Systems
 
 INN has been confirmed to work on the following operating systems:
@@ -20,8 +30,9 @@ INN has been confirmed to work on the following operating systems:
   FreeBSD 3.x
   HP-UX 10.20
   Linux 2.x (tested with libc 5.4 or libc 6.0)
-  SCO 5.0.4 (tested with gcc 2.8.1)
+  SCO 5.0.4 (tested with gcc 2.8.1 and cc)
   Solaris 2.5.x and up
+  UnixWare 7.1
   UX/4800 R11 and up
 
 So far as possible, INN is written in portable C and should work on any
@@ -1101,37 +1112,16 @@ what newsgroups you want to carry and create new active and newsgroups
 files for them.  If you plan to carry a full feed, or something close to
 that, go to <ftp://ftp.isc.org/pub/usenet/CONFIG/> and download F<active>
 and F<newsgroups> from there; that will start you off with reasonably
-complete files.  If you plan to only carry a small set of groups, create
-F<active> containing only the following lines:
+complete files.  If you plan to only carry a small set of groups, the
+default minimal F<active> file installed by INN is a good place to start
+and you can create additional groups after the server is running by using
+C<ctlinnd newgroup>.
 
-    control 0000000000 0000000000 y
-    control.cancel 0000000000 0000000000 y
-    control.checkgroups 0000000000 0000000000 y
-    control.newgroup 0000000000 0000000000 y
-    control.rmgroup 0000000000 0000000000 y
-    junk 0000000000 0000000000 y
-    to 0000000000 0000000000 y
-
-and then type:
-
-    touch ~news/db/newsgroups
-
-to create an empty newsgroups file (or you can add descriptions for those
-groups if you want).
-
-FIXME: We need to do better than this... surely we can add some sort of
-automatic process for initializing the minimum active file and adding a
-newsgroups file with descriptions for them before we release 2.3?
-
-Either way, type:
-
-    touch ~news/db/active.times
-
-to initialize F<active.times>.
-
-FIXME: Currently, INN returns errors to clients if F<active.times> doesn't
-exist.  It should create it automatically if it doesn't exist, and then
-this part can be taken out of the documentation.
+C<control> and C<junk> must exist as newsgroups in your active file for
+INN to start, and creating pseudogroups for the major types of control
+messages is strongly encouraged for all servers that aren't standalone.
+C<to> must also exist as a newsgroup if you have mergetogroups set in
+F<inn.conf>.
 
 Next, you need to create an empty history database.  To do this, type:
 
