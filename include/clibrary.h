@@ -160,8 +160,9 @@ extern void	setproctitle();
 #include <osreldate.h>
 #endif
 
-#if defined (sun) && ! defined (__svr4__)
+#if defined (sun) && ! defined (__SVR4)
 #define atexit(arg) on_exit (arg,0)
+#define strtoul(a,b,c) strtol (a,b,c)
 #endif
 
 #if defined(UIO_MAXIOV) && !defined(IOV_MAX)
@@ -170,7 +171,7 @@ extern void	setproctitle();
 
 #ifndef IOV_MAX
 /* Solaris */
-#if defined(sun) && defined(__svr4__)
+#if defined(sun) && defined(__SVR4)
 #define IOV_MAX 16
 #endif
 /* FreeBSD 3.0 or above */

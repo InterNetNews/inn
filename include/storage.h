@@ -10,6 +10,7 @@
 #define OVER_NONE       255
 
 typedef enum {RETR_ALL, RETR_HEAD, RETR_BODY, RETR_STAT} RETRTYPE;
+typedef enum {SM_RDWR, SM_PREOPEN} SMSETUP;
 
 #define NUM_STORAGE_CLASSES 256
 typedef unsigned char STORAGECLASS;
@@ -59,6 +60,7 @@ char *TokenToText(const TOKEN token);
 TOKEN TextToToken(const char *text);
 BOOL IsToken(const char *text);
 
+BOOL      SMsetup(SMSETUP type, void *value);
 BOOL      SMinit(void);
 TOKEN     SMstore(const ARTHANDLE article);
 ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount);
