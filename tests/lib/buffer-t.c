@@ -18,7 +18,7 @@ main(void)
     struct buffer two = { 0, 0, 0, NULL };
     struct buffer *three;
 
-    puts("25");
+    puts("26");
 
     buffer_set(&one, test_string1, sizeof(test_string1));
     ok_int(1, 1024, one.size);
@@ -57,11 +57,11 @@ main(void)
     ok(22, three != NULL);
     ok_int(23, 0, three->size);
     buffer_set(three, test_string1, sizeof(test_string1));
-    ok_int(23, 1024, three->size);
-    buffer_resize(three, 512);
     ok_int(24, 1024, three->size);
+    buffer_resize(three, 512);
+    ok_int(25, 1024, three->size);
     buffer_resize(three, 1025);
-    ok_int(25, 2048, three->size);
+    ok_int(26, 2048, three->size);
     free(three->data);
     free(three);
 
