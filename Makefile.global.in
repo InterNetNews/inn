@@ -37,6 +37,7 @@ EXTRA_SRC = @EXTRA_SRC@
 
 OWNER		= -O @NEWSUSER@ -G @NEWSGRP@
 ROWNER		= -O @NEWSUSER@ -G uucp
+NEWSGROUP	= @NEWSGRP@
 
 PATHNEWS = @prefix@
 PATHBIN = @prefix@/bin
