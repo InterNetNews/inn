@@ -14,15 +14,24 @@ High Priority Projects:
 
 * Rewrite the configuration file parsing code, starting with the parser
   for inn.conf and eventually extending to all of the configuration file
-  parsers in INN.  [Russ is actively working on this.]
+  parsers in INN.  [Russ is working on this.]
+
+* Complete rewrite of history.  History should have a single API and the
+  same interface for both innd and nnrpd, the current WIP cache and
+  history cache should be integrated into that interface, things like
+  message ID hashing should become a selectable property of the history
+  file, and the history API should support multiple backend storage
+  formats and automatically select the right one for an existing history
+  file based on stored metainformation.  [Russ is working on this.]
 
 * Add man pages for the default authenticators, as well as documentation
   on the readers.conf external program interface.  A good place to start
   is authprogs/README.readers.conf.
 
 * Break the interface code common to all the authenticators out into a
-  library that can be used by people writing new authenticators.  [Russ
-  will work on this if no one beats him to it, as he needs it.]
+  library that can be used by people writing new authenticators.  Ideally,
+  also wrap the interface nnrpd uses to talk to authenticators into a
+  library with a standard API as well.
 
 * Completely rewrite the header parsing and turn it into a library so that
   all the various parts of INN that have to parse headers (innd, nnrpd,
@@ -33,18 +42,12 @@ High Priority Projects:
 
 * Add documentation of adding and removing CNFS cycbuffs.
 
-* Complete rewrite of history.  History should have a single API and the
-  same interface for both innd and nnrpd, the current WIP cache and
-  history cache should be integrated into that interface, things like
-  message ID hashing should become a selectable property of the history
-  file, and the history API should support multiple backend storage
-  formats and automatically select the right one for an existing history
-  file based on stored metainformation.  [Russ is working on this.]
-
 * Better documentation of and support for UUCP feeds.  Ideally, this would
   include taking the sendbatches program from /isc/inn/unoff-contrib on
   ftp.isc.org, cleaning it up for inclusion into INN, and replacing both
-  send-uucp and sendbatch with it.  This program is a C News style
+  send-uucp and sendbatch with it.  (Note that the current license is
+  unsuitable and someone would need to check with the author to see if
+  they would be willing to relicense.)  This program is a C News style
   configurable batch generator with size, compression, and sending methods
   all as parameters in a configuration file.  [Russ has some saved
   articles on this that could form the basis of documentation.]
@@ -62,12 +65,16 @@ High Priority Projects:
 
 * Add authenticated Path support, based on the current USEFOR draft or the
   behavior of some other servers (such as Diablo).  [Andrew Gierth wrote a
-  patch for part of this a while back, which Russ has.]
+  patch for part of this a while back, which Russ has.  Marco d'Itri
+  expressed some interest in working on this.]
 
 * Various parts of INN are using write or writev; they should all use
   xwrite or xwritev instead.  Even for writes that are unlikely to ever be
   partial, on some systems system calls aren't restartable and xwrite and
   xwritev properly handle EINTR returns.
+
+* Apparently on Solaris open can also be interrupted by a signal; we may
+  need to have an xopen wrapper that checks for EINTR and retries.
 
 * Some installed binaries and configuration files don't have man pages.
   In particular, man pages are needed for actsync.conf, actsync.ign,
@@ -99,8 +106,7 @@ Future Projects:
   names as each other for various parameters.  Also, all of the AC_DEFINE
   calls in configure.in should use the three-argument form, hopefully
   eventually allowing us to dispense with an acconfig.h file.  [Russ plans
-  to work on this after autoconf 2.50 is released; current target from the
-  autoconf folks is September 2000.]
+  to work on this after autoconf 2.50 is released.]
 
 * Checkgroups processing should also update the newsgroups file, and it
   should be possible to synchronize the newsgroups file against external
@@ -110,12 +116,8 @@ Future Projects:
   <ftp://ftp.tin.org/pub/news/servers/utils/docheckgroups> for a partial
   implementation.
 
-* contrib needs to be reviewed, the best ideas integrated into INN, and
-  some sort of general overview documentation written for everything else,
-  at least sufficient to explain what things are for.
-
-* All the old packages in unoff-contrib similarly should be reviewed for
-  integration into INN.
+* All the old packages in unoff-contrib should be reviewed for integration
+  into INN.
 
 * Look through <http://www.visi.com/~barr/INN.html> for stuff that should
   be included in INN (in particular, flowstats may be interesting).
@@ -194,7 +196,13 @@ Future Projects:
 
   Should there also be an option not to generate X-Trace?  And this whole
   area may change if USEFOR ever standardizes poster trace information;
-  it's been proposed to put it in the path tail instead.
+  it's been proposed to put it in the path tail instead.  The current
+  USEFOR trend as of January, 2001 appears to be towards an Injector-Info
+  header with this information, allowing a token or an injecting hostname.
+  For a token, one really wants it to be hierarchically structured for
+  spam filtering even if it's encrypted (in other words, to get a "group"
+  of clients, one could just match the first n bytes of the token instead
+  of the whole thing).
 
 * Validity checks on the poster's address.  (Although this could also be
   handled by the nnrpd posting filter.)
@@ -347,6 +355,22 @@ Future Projects:
   are dated years into the future for some reason that they still want to
   store on the server.
 
+* There was a request to make --program-suffix and the other name
+  transformation options to autoconf work.  The standard GNU package does
+  this with really ugly sed commands in the Makefile rules; we could
+  probably do better, perhaps by substituting the autoconf results into
+  support/install-sh.
+
+* putman.sh should be merged into support/install-sh (which would mean
+  giving up any pretext of using the standard install-sh script, but that
+  should be fine).
+
+* contrib/mkbuf and contrib/reset-cnfs.c should be combined into a utility
+  for creating and clearing cycbuffs, perhaps combined with cnfsheadconf,
+  and the whole thing moved into storage/cnfs rather than frontends (along
+  with cnfsstat).  pullart.c may also stand to be merged into the same
+  utility (cnfsadmin might not be a bad name).
+
 
 Long-Term Projects:
 
@@ -399,10 +423,6 @@ Long-Term Projects:
   be able to label traffic as binary (e.g.) without rejecting it, and
   newsfeeds should be extended to allow feeding only non-binary articles
   (e.g.) to a peer.
-
-* The interface between nnrpd and the external authenticators really
-  should be wrapped into a library with a standard API for simplicity of
-  writing authenticators.
 
 * External authenticators should also be able to do things like return a
   list of groups that a person is allowed to read or post to.  Currently,
@@ -507,14 +527,24 @@ following at the same time:
   files getting out of sync, and drastically reduce the repository size in
   the case of configure.
 
+* Don't include any of the generated man pages in the CVS tree, as an
+  additional case of the above.  All of the documentation should be in POD
+  and we can generate the man pages as part of the snapshot process.
+
 * storage should be reserved just for article storage; the overview
   methods should be in a separate overview tree.
 
 * The split between frontends and backends is highly non-intuitive.  Some
   better organization scheme should be arrived at.  Perhaps something
   related to incoming and outgoing, with programs like cnfsstat moved into
-  the storage directory with the other storage-related code?  Where should
-  convdate really go?
+  the storage directory with the other storage-related code?
+
+* Add a separate utils directory for things like convdate, shlock,
+  shrinkfile, and the like.  Some of the scripts may possibly want to go
+  into that directory too.
+
+* Consider making control message handling a separate directory with
+  controlchan, its handlers, pgpverify, signcontrol, and whatnot.
 
 * The lib directory possibly should be split so that it contains only code
   always compiled and part of INN, and the various replacements for
