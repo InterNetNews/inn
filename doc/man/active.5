@@ -4,7 +4,7 @@
 active, active.times \- list of active Usenet newsgroups
 .SH DESCRIPTION
 The file
-.I <pathdb in inn.conf>/_PATH_ACTIVE
+.I <pathdb in inn.conf>/active
 lists the newsgroups that the local site receives.
 Each newsgroup should be listed only once.
 Each line specifies one group; their order in the file does not matter.
@@ -15,9 +15,9 @@ If an article is posted to newsgroups not mentioned in this file, those
 newsgroups are ignored.
 If no valid newsgroups are specified, the article is either
 filed into the newsgroup ``junk'' and only propagated to sites that receive
-the ``junk'' newsgroup or it is ignored completely, depending on the
-``wanttrash'' option in
+the ``junk'' newsgroup if ``wanttrash'' option in
 .IR inn.conf (5)
+is true.  Or it is ignored completely.
 .PP
 Each line consists of four fields specified by a space:
 .PP
@@ -80,7 +80,7 @@ created with
 An alias newsgroup should not point to another alias.
 .PP
 The file
-.I <pathdb in inn.conf>/_PATH_ACTIVETIMES
+.I <pathdb in inn.conf>/active.times
 provides a chronological record of when newsgroups are created.
 This file is normally updated by
 .IR innd (8)

@@ -160,10 +160,10 @@ Applications can tell that the ``flush'' has completed by renaming the
 file before issuing the command;
 .I buffchan
 has completed the command when the original filename re-appears.
-.I if <$ac_cv_func_fchmod in config.cache>
+If
+.I <$ac_cv_func_fchmod in config.cache>
 is ``yes'', then 
-.IP 
-.I Buffchan
+.I buffchan
 also changes the access permissions of the file from read-only for
 everyone to read-write for owner and group as it flushes or closes each
 output file.  It will change the modes back to read-only if it re-opens

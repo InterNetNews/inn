@@ -8,7 +8,7 @@ The file
 consists of three types of entries: key/value, peer and group.
 Comments are taken from the hash character ``#'' to the end of the line.
 Blank lines are ignored.  All key/value entries within each type
-+must not be duplicated.
+must not be duplicated.
 .PP
 Key/value entries are a keyword immediately followed by a colon, at least
 one blank and a value. For example:
@@ -20,7 +20,7 @@ one blank and a value. For example:
 .RE
 .PP
 A legal key contains nor blanks, nor colon, nor ``#''.
-There are 5 different types of  values:  integers,  booleans, and strings.
+There are 3 different types of  values:  integers,  booleans, and strings.
 Integers are as to be expected. A boolean value is either ``true'' or
 ``false'' (case is significant). A string value is any other sequence of
 characters. If the string needs to contain whitespace, then it must be
@@ -36,9 +36,9 @@ Peer entries look like:
 .fi
 .RE
 .PP
-The word ``peer'' is required. <name> is a label for this peer. It is
-any string valid as a key. The body of a peer entry contains some number
-of key/value entries.
+The word ``peer'' is required. ``<name>''is a label for this peer.
+The ``<name>'' is any string valid as a key. The body of a peer entry
+contains some number of key/value entries.
 .PP
 Group entries look like:
 .PP
@@ -57,7 +57,9 @@ be nested inside a group, and other groups can be nested inside a group.
 .PP
 Key/value entries that are defined outside of all peer and group entries
 are said to be at ``global scope''. Global key/value entries act as
-defaults for peers. When innd looks for a specific value in a peer entry
+defaults for peers. When
+.IR innd (8)
+looks for a specific value in a peer entry
 (for example, the maximum number of connections to allow), if the value
 is not defined in the peer entry, then the enclosing groups are examined
 for the entry (starting at the closest enclosing group). If there are no
@@ -113,7 +115,7 @@ following values for the ``max-connections'' key.
 .fi
 .RE
 .PP
-Height keys are allowed:
+Ten keys are allowed:
 .TP
 .BI hostname:
 This key requires a string value. It is a list of hostnames separated by a
@@ -145,8 +147,9 @@ This key requires a string value. It is used if you wish to require a peer's
 user name through identd. (default=no identd)
 .TP
 .BI patterns:
-This key requires a string value. It is a list of newsfeeds(5)-style list
-of newsgroups which are to be accepted from this host. (default="*")
+This key requires a string value. It is a list of
+.IR newsfeeds (5)
+style list of newsgroups which are to be accepted from this host. (default="*")
 .TP
 .BI email:
 This key requires a string value. Reserved for future use. (default=empty)
@@ -156,11 +159,13 @@ This key requires a string value. Reserved for future use. (default=empty)
 .TP
 .BI skip:
 This key requires a boolean value. Setting this entry causes this peer
-to be skipped. Reserved for future use. (default=false)
+to be skipped. (default=false)
 .TP
 .BI noresendid:
-This key requires a boolean value. It defines whether innd should send
-``431 RESENDID'' responses if a message is offered that is already received
+This key requires a boolean value. It defines whether
+.IR innd (8)
+should send
+``431 RESENDID'' responses if a message is offered that is being received
 from another peer. This can be useful for peers that resend messages
 right away, as innfeed does. (default=false)
 .SH HISTORY

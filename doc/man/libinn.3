@@ -66,10 +66,11 @@ libinn \- InterNetNews library routines
 .B "    int	fd;"
 .B "    int	flag;"
 
-.B "int"
-.B "LockFile(fd, flag)"
+.B "BOOL"
+.B "lock_file(fd, type, flag)"
 .B "    int	fd;"
-.B "    int	flag;"
+.B "    LOCKTYPE	type;"
+.B "    BOOL	block;"
 
 .B "int"
 .B "ReadInnConf()"
@@ -142,6 +143,9 @@ libinn \- InterNetNews library routines
 .B "    int	fd;"
 .B "    struct stat	*Sbp;"
 
+.B "HASH"
+.B "HashMessageID(MessageID)"
+.B "    const char *MessageID;"
 .fi
 .SH DESCRIPTION
 .I Libinn
@@ -155,8 +159,10 @@ datatype, as given above.
 .PP
 .I GenerateMessageID
 uses the current time, process-ID, and fully-qualified domain name, which is
-passed as an argument and used if local host can not be resolved, to create a
-Message-ID header that is highly likely to be unique.
+passed as an argument and used if local host can not be resolved or it is
+different from ``domain'' set in
+.IR inn.conf (5)
+, to create a Message-ID header that is highly likely to be unique.
 The returned value points to static space that is reused on subsequent calls.
 .PP
 .I HeaderCleanFrom
@@ -294,20 +300,23 @@ is non-zero) or disables (if
 is zero) non-blocking I/O on the indicated descriptor.
 It returns \-1 on failure or zero on success.
 .PP
-.I LockFile
+.I lock_file
 tries to lock the file descriptor
 .IR fd .
 If
-.I flag
-is non-zero it will block until the lock can be made, otherwise
-it will return \-1 if the file cannot be locked.
-It returns \-1 on failure or zero on success.
+.I block
+is TRUE it will block until the lock can be made, otherwise
+it will return FALSE if the file cannot be locked.
+.I type
+is one of: LOCK_READ, LOCK_WRITE, or LOCK_UNLOCK.
+It returns FALSE on failure or TRUE on success.
 .PP
 .I ReadInnConf
 Reads the values of the
 .IR inn.conf (5)
-parameters into the innconf stucture for use as innconf->varname.
-The return value is less than zero if an error was encountered.
+parameters into the innconf stucture for use as ``innconf\->varname''.
+The return value is less than zero if an error was encountere or zero on
+success.
 .PP
 .I GetFQDN
 returns the fully-qualified domain name of the local host.
@@ -345,8 +354,8 @@ and
 parameters with the total user and system time used by the current
 process and any children it may have spawned.
 If
-.I <RES_STYLE in config.data>
-== RUSAGE, it gets the values by doing a
+.I <HAVE_GETRUSAGE in include/config.h>
+is defined, it gets the values by doing a
 .IR getrusage (2)
 system call; otherwise it calls
 .IR times (2).
@@ -358,7 +367,7 @@ fills in the
 parameter with information about the current time and tzone.
 The ``time'' and ``usec'' fields will be filled in by a call to
 .IR gettimeofday (2)
-when
+if
 .I <$ac_cv_func_gettimeofday in config.cache>
 is ``yes''.  Otherwise, the ``time'' field will be filled in by a call to
 .IR time (2),
@@ -382,11 +391,10 @@ has been called.
 This routine returns \-1 on failure, or zero on success.
 .PP
 .I NNTPlocalopen
-when
-.I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>
-is defined, 
 opens a connection to the private port of an InterNetNews server running on
-the local host.
+the local host, if
+.I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>
+is defined. 
 It returns \-1 on failure, or zero on success.
 .I FromServerp
 and
@@ -398,7 +406,7 @@ can either be NULL or a pointer to a buffer at least 512 bytes long.
 If not NULL, and the server refuses the connection, then it will be
 filled in with the text of the server's reply.
 This routine is not for general use.
-When
+If
 .I <HAVE_UNIX_DOMAIN_SOCKETS in include/config.h>
 is not defined, this
 is a stub routine, for compatibility with systems that have Unix-domain
@@ -406,9 +414,8 @@ stream sockets.
 It always returns \-1.
 .PP
 .I NNTPremoteopen
-does the same except that it uses
-.I innconf->server
-to find the name of the local server, and opens a connection to the
+does the same except that it uses ``innconf->server''
+as the local server, and opens a connection to the
 .IR port .
 Any client program can use this routine.
 It returns \-1 on failure, or zero on success.
@@ -439,9 +446,7 @@ entry in the
 .IR passwd.nntp (5)
 file.
 .I Server
-contains the name of the host;
-.I innconf->server
-will be used if
+contains the name of the host; ``innconf->server'' will be used if
 .I server
 is NULL.
 .I FromServer
@@ -484,6 +489,9 @@ performs the same function as
 except that
 .I fd
 refers to an already-open file.
+.PP
+.I HashMessageID
+returns hashed message-id using MD5.
 .SH EXAMPLES
 .RS
 .nf

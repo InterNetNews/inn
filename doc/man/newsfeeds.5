@@ -182,8 +182,7 @@ which should be chosen from the following set:
 	d	Distribution header required
 	e	Only include message whose newsgroups in
 		Newsgroups header all exist in active
-	o	Overview data is created if storage
-		api is turned on
+	o	Overview data is created
 	O	Propagate articles without X-Trace header
 		even if ``O'' flag is specified
 	p	Do not check Path header for the sitename
@@ -254,9 +253,10 @@ be buffered internally in least-recently-used order.
 If the internal buffer grows bigger then
 .I size
 bytes, however, the data will be written out to the appropriate file.
-The default value is <SITE_BUFFER_SIZE in config.data> bytes
-.\" =()<(typically @<typSITE_BUFFER_SIZE>@ .)>()=
-(typically (16 * 1024 ) .)
+The default value is
+.I <SITE_BUFFER_SIZE in include/config.h>
+(typically (16 * 1024 ))
+bytes.
 .TP
 .BI N modifiers
 The newsgroups that a site receives are modified according to the
@@ -268,22 +268,23 @@ which should be chosen from the following set:
 .fi
 .TP
 .BI O Originator
-If this is used then articles sent to this feed must contain a X-Trace
-header and the first field in the header must match the parameter used with
-this flag.
+If this flag is used then articles sent to this feed must contain a X-Trace
+header and the first field in the header must match
+.IR originator .
 .I Originator
 can be a list of
 .IR wildmat (3)-style
 pattern.  The list is separated by ``/''.
 Article is never sent, if the first character of the pattern
 begins with ``@'' and rest of the pattern matches.
-One use of this is to restrict the feed to locally generated posts.
+One use of this flag is to restrict the feed to locally generated posts.
 .TP
 .BI P priority
 The nice priority that this channel or program feed should receive.
 This should be a positive number between 0 and 20, and is the priority
-that the new process will run with.  This can be used to raise the
-priority to normal if you are using the nicekids inn.conf variable.
+that the new process will run with.  This flag can be used to raise the
+priority to normal if you are using the ``nicekids'' in
+.IR inn.conf (5).
 .TP
 .BI S size
 If the amount of data queued for the site gets to be larger than
@@ -327,8 +328,8 @@ should be chosen from the following set:
 .nf
 	b	Size of wire formatted article in bytes
 	e	The time article will be expired as
-		seconds since epoch ``0'' means there is
-		no ``Expires'' header
+		seconds since epoch
+		``0'' means there is no ``Expires'' header
 	f	Token of the article (equivalent to ``n'')
 	g	The newsgroup the article is in;
 		if cross-posted, then the first of the
@@ -381,10 +382,9 @@ below for clarifying size meaning), will also be part of
 the headers.
 If used, this should be the only item in the list; if preceded by
 other items, however, a newline will be written before the headers.
-The ``ntO'' generates input to the
+The ``nteO'' generates input to the
 .IR overchan (8)
 program.
-It, too, should be the only item in the list.
 .sp
 The asterisk has special meaning.
 It expands to a space-separated list of all sites that received the
@@ -450,7 +450,7 @@ the site.
 .PP
 The simplest feed is one that is fed by a log entry.
 Other than a mention in the news logfile,
-.IR <pathlog in inn.conf>/news ,
+.IR <pathlog\ in\ inn.conf>/news ,
 no data is ever written out.
 This is equivalent to a ``Tf'' entry writing to
 .I /dev/null
@@ -490,7 +490,7 @@ parameter, which will be a token.
 Standard input will not be set to the article.
 Standard output and error
 will be set to the error log (
-.IR <pathlog in inn.conf>/errlog .
+.IR <pathlog in inn.conf>/errlog .)
 The process will run with the user and group ID of the
 .I <pathrun in inn.conf>
 directory.

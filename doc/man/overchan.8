@@ -19,24 +19,25 @@ was originally designed to be used by InterNetNews or the C News ``mkov'' packag
 to update the database as the articles come in.
 For current inn, the database is stored by overview method.
 This can be done within
-.IR innd(8)
+.IR innd (8)
 but, still
 .IR overchan (8)
 can do this, if
 .I <useoverchan in inn.conf>
-is true and appropriate setup is done in
+is ``true'' and appropriate setup is done in
 .IR newsfeeds (5).
 file, for example:
 .PP
 .RS
-overview!:*:Tc,WnteO:<PREFIX specified with --prefix at configure>/bin/overchan
+overview!:*:Tc,WnteO:<pathbin in inn.conf>/overchan
 .RE
 .PP
-This data consists of a line of text, separated into four parts by a tab.
+This data consists of a line of text, separated into four parts by a space.
 The first part is a token for the article.
 The second part is time when the article was received.
-The third part is time when the article will be expired.
-The fourth part is the data to be written into the overview file.
+The third part is time when the article will be expired(which represents
+Expires header.)
+The fourth part is the data to be stored.
 The data in the overview files should be expired by running
 .IR expireover (8).
 This is normally done by adding the ``expireover'' flag to the

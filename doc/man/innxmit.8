@@ -17,22 +17,22 @@ innxmit \- send Usenet articles to a remote NNTP server
 .B \-l
 ]
 [
+.BI \-P " portnum"
+]
+[
+.B \-p
+]
+[
 .B \-r
 ]
 [
 .B \-s
 ]
 [
-.BI \-t " timeout"
-]
-[
 .BI \-T " timeout"
 ]
 [
-.B \-p
-]
-[
-.BI \-P " portnum"
+.BI \-t " timeout"
 ]
 .I host
 .I file
@@ -65,7 +65,7 @@ Each line in the batchfile should be in one of the following formats:
 .PP
 .RS
 .nf
-token Message-ID * (see note)
+token Message-ID
 token
 .fi
 .RE
@@ -82,16 +82,6 @@ and
 .I Message-Id
 fields are separated by a space.
 .PP
-Note: If you use this format, you can put additional fields on the line
-after the
-.I Message-ID
-so that you can process the batch by a filter in your batch script (such as
-adding the article size and splitting batches by that size).
-.I Innxmit
-will ignore any fields after the
-.I Message-ID,
-but will rewrite the additional fields if it has to requeue any articles.
-.PP
 If a communication error such as a
 .IR write (2)
 failure occurs,
@@ -99,39 +89,6 @@ failure occurs,
 will stop sending and rewrite the batchfile to contain the current
 article and any other unsent articles.
 .SH OPTIONS
-.TP
-.B \-t
-.I Innxmit
-normally blocks until the connection is made.
-To specify a timeout on how long to try to make the connection, use 
-the ``\fB\-t\fP''
-flag.
-.TP
-.B \-T
-To specify the total amount of time that should be allowed for article
-transfers, use the ``\fB\-T\fP'' flag.
-The default is to wait until an I/O error occurs, or all the articles have
-been transferred.
-If the ``\fB\-T\fP'' flag is used, the time is checked just before an article
-is started; it will not abort a transfer that is in progress.
-Both values are measured in seconds.
-.TP
-.B \-P
-To specify a port number other than the default, use the \-P flag.
-.TP
-.B \-r
-If the remote server sends an unexpected reply code,
-.I innxmit
-will requeue the article and proceed.
-Use the ``\fB\-r\fP'' flag if the article should not be requeued.
-.TP
-.B \-v
-Upon exit,
-.I innxmit
-reports transfer and CPU usage statistics via
-.IR syslog (3).
-If the ``\fB\-v\fP'' flag is used, they will also be printed on the standard
-output.
 .TP
 .B \-a
 If all articles were sent successfully,
@@ -143,10 +100,14 @@ This can cause the batchfile to grow excessively large if many articles
 have been expired and there are communication problems.
 To always rewrite the batchfile, use the ``\fB\-a\fP'' flag.
 .TP
-.B \-p
-If the ``\fB\-p\fP'' flag is given, then no connection is made and the batchfile
-is purged of entries that refer to files that no longer exist.
-This implies the ``\fB\-a\fP'' flag.
+.B \-c
+In streaming mode a check of each message ID is still made to avoid sending
+articles already on the server.
+The ``\fB\-c\fP'' flag will, if streaming mode is supported,
+result in sending articles without checking.
+This results in slightly greater throughput and may be appropriate when
+it is known that the site could not already have the articles such as in
+the case of a "leaf" site.
 .TP
 .B \-d
 Use the ``\fB\-d\fP'' flag to print debugging information on standard error.
@@ -157,6 +118,20 @@ and the NNTP server on the remote host.
 .B \-l
 The ``\fB\-l\fP'' flag is used to turn off logging of reasons the remote gives
 for rejecting an article.
+.TP
+.B \-P
+To specify a port number other than the default, use the \-P flag.
+.TP
+.B \-p
+If the ``\fB\-p\fP'' flag is given, then no connection is made and the batchfile
+is purged of entries that refer to files that no longer exist.
+This implies the ``\fB\-a\fP'' flag.
+.TP
+.B \-r
+If the remote server sends an unexpected reply code,
+.I innxmit
+will requeue the article and proceed.
+Use the ``\fB\-r\fP'' flag if the article should not be requeued.
 .TP
 .B \-s
 .I Innxmit
@@ -170,14 +145,29 @@ will revert to normal NNTP transfer mode.
 Use the ``\fB\-s\fP'' flag to disable the attempt to negotiate the streaming
 mode extension.
 .TP
-.B \-c
-In streaming mode a check of each message ID is still made to avoid sending
-articles already on the server.
-The ``\fB\-c\fP'' flag will, if streaming mode is supported,
-result in sending articles without checking.
-This results in slightly greater throughput and may be appropriate when
-it is known that the site could not already have the articles such as in
-the case of a "leaf" site.
+.B \-T
+To specify the total amount of time that should be allowed for article
+transfers, use the ``\fB\-T\fP'' flag.
+The default is to wait until an I/O error occurs, or all the articles have
+been transferred.
+If the ``\fB\-T\fP'' flag is used, the time is checked just before an article
+is started; it will not abort a transfer that is in progress.
+Both values are measured in seconds.
+.TP
+.B \-t
+.I Innxmit
+normally blocks until the connection is made.
+To specify a timeout on how long to try to make the connection, use 
+the ``\fB\-t\fP''
+flag.
+.TP
+.B \-v
+Upon exit,
+.I innxmit
+reports transfer and CPU usage statistics via
+.IR syslog (3).
+If the ``\fB\-v\fP'' flag is used, they will also be printed on the standard
+output.
 .SH HISTORY
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 .de R$
