@@ -285,7 +285,7 @@ sub print_cycbuff_head {
 
     $name =~ s/\0//g;
     print " Buffer $name, size: ", &human_readable($len, 4);
-    print ", current: ", &human_readable($free, 4);
+    print ", position: ", &human_readable($free, 4);
     printf("  %.2f cycles\n", $cyclenum + $free/$len);
     my ($when, $ago) = &make_time($update);
     print "  Newest: $when, $ago ago\n";
