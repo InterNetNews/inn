@@ -8,6 +8,7 @@
 */
 
 #include "config.h"
+#include "clibrary.h"
 #include "libinn.h"
 
 #include <time.h>
@@ -36,7 +37,7 @@ static const char MONTH[12][4] = {
 **  past.)
 */
 static long
-local_tz_offset(time_t time, bool current)
+local_tz_offset(time_t time, BOOL current)
 {
     struct tm *tm;
 #if !HAVE_TM_GMTOFF
@@ -86,8 +87,8 @@ local_tz_offset(time_t time, bool current)
 **  than strftime to be absolutely certain that locales don't result in the
 **  wrong output.  If the time is zero, obtain and use the current time.
 */
-bool
-makedate(time_t clock, bool local, char *buff, size_t buflen)
+BOOL
+makedate(time_t clock, BOOL local, char *buff, size_t buflen)
 {
     time_t realclock;
     struct tm *tmp_tm;
