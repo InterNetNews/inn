@@ -14,6 +14,8 @@
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
 int		format = 0;
+STATIC char	*ver = FALSE;
+STATIC BOOL	version = FALSE;
 
 int isnum(char *v)
 {
@@ -95,25 +97,24 @@ wholeconfig()
 	}
 	(void)fclose(F);
     }
+    printit(strdup("version"), ver);
     exit(0);
 }
 
 int
-main(ac, av)
-    int			ac;
-    char		*av[];
+main(int ac, char **av)
 {
-    register char	*p;
-    register char	*val;
-    register BOOL	File;
-    register int	i;
+    char	*p;
+    char	*val;
+    BOOL	File;
+    int	i;
 
     /* First thing, set up logging and our identity. */
     openlog("innconfval", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);     
 
     /* Parse JCL. */
     File = FALSE;
-    while ((i = getopt(ac, av, "fcpsti:")) != EOF)
+    while ((i = getopt(ac, av, "fcpsti:v")) != EOF)
 	switch (i) {
 	default:
 	    (void)fprintf(stderr, "Usage error.\n");
@@ -137,10 +138,18 @@ main(ac, av)
 	case 'i':
 	    innconffile = optarg;
 	    break;
+	case 'v':
+	    version = TRUE;
+	    break;
 	}
     ac -= optind;
     av += optind;
 
+    ver = INNVersion();
+    if (version) {
+	printit(strdup("version"), ver);
+	exit(0);
+    }
     if (!*av) wholeconfig();   /* Doesn't return */
 
     /* Loop over parameters, each a config value. */
