@@ -243,6 +243,14 @@ inflow generates graphs of news flow statistics in real time from INN's
 logs (things like articles accepted per peer, volume accepted per peer,
 and the like).
 
+=item News-Portal
+
+URL: <http://floh.gartenhaus.net/newsportal/>
+
+A PHP-based web news reader that works as a front-end to a regular news
+server such as INN and lets people read and post without learning a news
+reader.
+
 =item PersonalINN
 
 URL: <http://www.ritual.org/summer/pinn/>
