@@ -45,7 +45,9 @@ static TOKEN MakeToken(time_t time, int seqnum, STORAGECLASS class) {
     token.type = TOKEN_TIMEHASH;
     token.class = class;
     i = htonl(time);
-    memcpy(token.token, &i + sizeof(i) - 4, 4);
+    memcpy(token.token, &i, sizeof(i));
+    if (sizeof(i) > 4)
+	memmove(token.token, &token.token[sizeof(i) - 4], 4);
     s = htons(seqnum);
     memcpy(&token.token[4], &s + (sizeof(s) - 2), 2);
     return token;

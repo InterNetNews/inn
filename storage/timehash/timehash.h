@@ -5,7 +5,7 @@
 #include <interface.h>
 
 BOOL timehash_init(void);
-TOKEN timehash_store(const ARTHANDLE article);
+TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class);
 ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount);
 ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount);
 void timehash_freearticle(ARTHANDLE *article);

@@ -9,11 +9,11 @@ P	=
 ##  =()<CC	= @<CC>@>()=
 CC	= gcc
 ##  =()<DEFS	= @<DEFS>@>()=
-DEFS	= -I../include -I.
+DEFS	= -I../include
 ##  =()<PERLINC = @<PERL_INC>@>()=
 PERLINC = 
-##  =()<CFLAGS	= @<CFLAGS>@ $(PERLINC)>()=
-CFLAGS	= $(DEFS) -g -Wall $(PERLINC)
+##  =()<CFLAGS	= -I. @<CFLAGS>@ $(PERLINC)>()=
+CFLAGS	= -I. $(DEFS) -g $(PERLINC)
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<LINTLIBSTYLE	= @<LINTLIBSTYLE>@>()=
@@ -44,7 +44,7 @@ OBJECTS = interface.o methods.o qio.o
 
 methods: 
 	if [ ! -d objs ] ; then \
-		mkdir objs \
+		mkdir objs; \
 	fi ;
 	@for D in $(SUBDIR); do \
 	cd $$D; $(MAKE) $(FLAGS) DESTDIR=$(DESTDIR) || exit 1; cd ..; \

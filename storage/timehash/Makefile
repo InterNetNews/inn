@@ -8,10 +8,10 @@ P	=
 
 ##  =()<CC	= @<CC>@>()=
 CC	= gcc
-##  =()<DEFS	= @<DEFS>@>()=
-DEFS	= -I../../include -I..
-##  =()<PERLINC = @<PERL_INC>@>()=
-CFLAGS	= $(DEFS) -g -Wall $(PERLINC)
+##  =()<DEFS	= -I.. -I../../include @<DEFS>@>()=
+DEFS	= -I.. -I../../include -I../include
+##  =()<CFLAGS	= -I. @<CFLAGS>@ $(PERLINC)>()=
+CFLAGS	= -I. $(DEFS) -g $(PERLINC)
 ##  =()<LDFLAGS	= @<LDFLAGS>@>()=
 LDFLAGS	= 
 ##  =()<CTAGS		= @<CTAGS>@>()=

@@ -9,8 +9,12 @@
 
 typedef enum {RETR_ALL, RETR_HEAD, RETR_BODY, RETR_STAT} RETRTYPE;
 
+typedef unsigned char STORAGECLASS;
+typedef unsigned char STORAGETYPE;
+
 typedef struct {
-    unsigned char       type;
+    STORAGETYPE         type;
+    STORAGECLASS        class;
     char                token[STORAGE_TOKEN_LENGTH];
 } TOKEN;
 

@@ -18,4 +18,4 @@ typedef struct {
 
 char *SMFindBody(char *article, int len);
 
-#endif __INTERFACE_H__
+#endif /* __INTERFACE_H__ */
