@@ -1,0 +1,18 @@
+#!/sbin/sh
+
+# This is a simple, bare-bones example of a SysV-style init.d script for INN.
+
+case $1 in
+
+start)
+	su news -c /usr/local/news/bin/rc.news
+	;;
+
+stop)
+	su news -c '/usr/local/news/bin/rc.news stop'
+	;;
+
+esac
+
+exit 0
+
