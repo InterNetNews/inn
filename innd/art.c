@@ -2387,11 +2387,11 @@ STRING ARTpost(CHANNEL *cp)
 	    if (NoHistoryUpdate) {
 		(void)sprintf(buff, "%d Can't post to \"%s\"",
 		    NNTP_REJECTIT_VAL,
-		    MaxLength(Data->Newsgroups, Data->Newsgroups));
+		    MaxLength(Data.Newsgroups, Data.Newsgroups));
 	    } else {
 	    (void)sprintf(buff, "%d Unwanted newsgroup \"%s\"",
 		NNTP_REJECTIT_VAL,
-		MaxLength(Data->Newsgroups, Data->Newsgroups));
+		MaxLength(Data.Newsgroups, Data.Newsgroups));
 	    }
 	    ARTlog(&Data, ART_REJECT, buff);
 	    if (!innconf->wanttrash) {
