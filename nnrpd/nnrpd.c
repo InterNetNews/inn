@@ -1053,15 +1053,23 @@ main(int argc, char *argv[])
 
 	/* Detach */
 	if (!ForeGroundMode) {
-	  if ((pid = fork()) < 0) {
-	    fprintf(stderr, "%s: can't fork: %s\n", argv[0], strerror(errno));
-	    syslog(L_FATAL, "cant fork: %m");
-	    exit(1);
-	  } else if (pid != 0) 
-	    exit(0);
+	    if ((pid = fork()) < 0) {
+		fprintf(stderr, "%s: can't fork: %s\n", argv[0],
+			strerror(errno));
+		syslog(L_FATAL, "cant fork: %m");
+		exit(1);
+	    } else if (pid != 0) 
+		exit(0);
+	    setsid();
+	    chdir("/");
+	    if ((fd = open("/dev/null", O_RDWR, 0)) != -1) {
+		dup2(fd, STDIN_FILENO);
+		dup2(fd, STDOUT_FILENO);
+		dup2(fd, STDERR_FILENO);
+		if (fd > 2)
+		    close(fd);
+	    }
 	}
-
-	setsid();
 
 	if (ListenPort == NNTP_PORT)
 	    strcpy(buff, "nnrpd.pid");
