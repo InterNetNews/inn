@@ -253,8 +253,9 @@ main(ac, av)
 		exit(1);
 	    }
 	    gt = gmtime(&Sb.st_mtime);
+	    /* Y2K: NNTP Spec currently allows only two digit years. */
 	    (void)sprintf(tbuff, "%02d%02d%02d %02d%02d%02d GMT",
-		    gt->tm_year, gt->tm_mon + 1, gt->tm_mday,
+		    gt->tm_year % 100, gt->tm_mon + 1, gt->tm_mday,
 		    gt->tm_hour, gt->tm_min, gt->tm_sec);
 	    Since = tbuff;
 	    break;
