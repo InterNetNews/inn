@@ -228,14 +228,14 @@ fi
 rm -f ${OLD_ERRLOG}
 
 ##  Display expire log messages
-BASE=`basename ${EXPLOG}`
-OLD_EXPLOG=${OLD}/${BASE}.0
-if [ -s ${OLD_EXPLOG} ] ; then
-    echo Expire messages:
-    cat ${OLD_EXPLOG}
-    echo ---------
-    echo ''
-fi
+#BASE=`basename ${EXPLOG}`
+#OLD_EXPLOG=${OLD}/${BASE}.0
+#if [ -s ${OLD_EXPLOG} ] ; then
+#    echo Expire messages:
+#    cat ${OLD_EXPLOG}
+#    echo ---------
+#    echo ''
+#fi
 rm -f ${OLD_EXPLOG}
 
 ##  Scan for various problems in articles we were offered or sent...

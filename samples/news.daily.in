@@ -456,6 +456,16 @@ if ${DORENUMBER} ; then
     fi
 fi
 
+##  Display expire log messages
+if ${DOMAIL} ; then
+    if [ -s ${EXPLOG} ] ; then
+	    echo Expire messages:
+	    cat ${EXPLOG}
+	    echo ---------
+	    echo ''
+    fi
+fi
+
 ##  Show the status of the news system after expiration.
 ${DOSTAT} && {
     echo 'Post expiration status:' ; echo ''
