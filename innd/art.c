@@ -951,6 +951,7 @@ ARTparsebody(CHANNEL *cp)
             data->Lines++;
             return;
         } else if (bp->data[i + 1] == '\n') {
+            i++;
             data->Lines++;
         } else {
             data->LFwithoutCR++;
