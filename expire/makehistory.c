@@ -855,7 +855,7 @@ main(int argc, char **argv)
 
     /* Initialise the history manager */
     if (!NoHistory) {
-	int flags = HIS_RDWR | HIS_CREAT | HIS_INCORE;
+	int flags = HIS_RDWR | HIS_INCORE;
 
 	if (!AppendMode)
 	    flags |= HIS_CREAT;
