@@ -28,6 +28,10 @@ clean clobber distclean:
 profiled: all
 depend:
 
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
+
 
 ##  Build rules.
 

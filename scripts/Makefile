@@ -33,7 +33,7 @@ INSTALLED     = $(D)$(PATHBIN)/inncheck		\
 		$(D)$(PATHLIB)/innshellvars.pl	\
 		$(D)$(PATHLIB)/innshellvars.tcl
 
-all: $(ALL)
+all: $(ALL) $(EXTRA)
 
 clean:
 	rm -f $(ALL)
@@ -44,6 +44,10 @@ clobber distclean: clean
 depend:
 
 profiled: all
+
+$(EXTRA) $(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
 
 
 ##  Build rules.

@@ -23,6 +23,10 @@ clean clobber distclean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
+
 
 ##  Compilation rules.
 

@@ -35,6 +35,10 @@ clobber clean distclean:
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h ../include/inn/*.h
 
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
+
 libstorage.la: $(OBJECTS) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(EXTSTORAGELIBS) $(LIBS) \

@@ -40,6 +40,10 @@ clobber distclean: clean
 tags: $(SOURCES) $(INCLUDES)
 	$(CTAGS) $(SOURCES) $(INCLUDES)
 
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
+
 
 ##  Compilation rules.
 

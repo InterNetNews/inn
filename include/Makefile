@@ -15,7 +15,7 @@ EXTRA	      = config.h paths.h
 PUBLIC	      = config.h conffile.h dbz.h inndcomm.h libinn.h nntp.h ov.h \
 		paths.h storage.h
 
-all: $(ALL)
+all: $(ALL) $(EXTRA)
 
 clean:
 	rm -f $(ALL)
@@ -26,6 +26,10 @@ clobber distclean: clean
 depend tags ctags:
 
 profiled: all
+
+$(EXTRA) $(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
 
 
 ##  Build rules.

@@ -16,7 +16,7 @@ ALL           = nnrpd_auth.pl nnrpd_access.pl \
 
 EXTRA         = inn.conf innreport.conf newsfeeds sasl.conf
 
-all: $(ALL)
+all: $(ALL) $(EXTRA)
 
 clean:
 	rm -f $(ALL)
@@ -28,6 +28,10 @@ install:
 depend:
 
 profiled: all
+
+$(EXTRA) $(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
 
 
 ##  Build rules.

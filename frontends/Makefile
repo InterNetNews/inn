@@ -54,6 +54,10 @@ tags ctags: $(SOURCES)
 profiled:
 	$(MAKEPROFILING) all
 
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
+
 
 ##  Compilation rules.
 

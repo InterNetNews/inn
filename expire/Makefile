@@ -48,6 +48,10 @@ STORELIBS	= $(BOTH) $(EXTSTORAGELIBS) $(LIBS)
 
 FIX             = $(FIXSCRIPT)
 
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
+
 convdate:	convdate.o     $(LIBINN) ; $(LINK) convdate.o     $(INNLIBS)
 expire:		expire.o       $(BOTH)   ; $(LINK) expire.o       $(STORELIBS)
 expireover:	expireover.o   $(BOTH)   ; $(LINK) expireover.o   $(STORELIBS)

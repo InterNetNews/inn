@@ -70,6 +70,10 @@ STORELIBS	= $(BOTH) $(EXTSTORAGELIBS) $(LIBS)
 
 FIX		= $(FIXSCRIPT)
 
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
+
 actsync:	actsync.o    $(LIBINN)	; $(LINK) actsync.o    $(INNLIBS)
 archive:	archive.o    $(BOTH)	; $(LINK) archive.o    $(STORELIBS)
 batcher:	batcher.o    $(BOTH)	; $(LINK) batcher.o    $(STORELIBS)
