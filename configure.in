@@ -1004,7 +1004,7 @@ int
 main ()
 {
   struct in_addr in;
-  in.s_addr = 0x7f000000;
+  in.s_addr = htonl (0x7f000000L);
   exit (!strcmp (inet_ntoa (in), "127.0.0.0") ? 0 : 1);
 }])
 

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.171 
+# From configure.in Revision: 1.172 
 
 
 ## libtool.m4 - Configure libtool for the target system. -*-Shell-script-*-
@@ -5888,7 +5888,7 @@ int
 main ()
 {
   struct in_addr in;
-  in.s_addr = 0x7f000000;
+  in.s_addr = htonl (0x7f000000L);
   exit (!strcmp (inet_ntoa (in), "127.0.0.0") ? 0 : 1);
 }
 EOF
