@@ -1826,7 +1826,7 @@ CCreader(CHANNEL *cp)
     free(copy);
 
     /* Split up the fields, get the command letter. */
-    if ((argc = CCargsplit(buff, &buff[i], argv, ARRAY_SIZE(argv))) < 2
+    if ((argc = CCargsplit(buff, &buff[bufflen], argv, ARRAY_SIZE(argv))) < 2
      || argc == ARRAY_SIZE(argv)) {
 	syslog(L_ERROR, "%s bad_fields CCreader", LogName);
 	return;
