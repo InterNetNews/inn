@@ -58,7 +58,7 @@ typedef struct {
 extern int              SMerrno;
 extern char             *SMerrorstr;
 
-typedef enum {SELFEXPIRE, SMARTNGNUM} PROBETYPE;
+typedef enum {SELFEXPIRE, SMARTNGNUM, EXPENSIVESTAT} PROBETYPE;
 typedef enum {SM_ALL, SM_HEAD, SM_CANCELEDART} FLUSHTYPE;
 
 struct artngnum {
