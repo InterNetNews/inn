@@ -135,6 +135,43 @@ Reporting Bugs
   news.software.nntp as there are a lot of experienced INN users there,
   and there isn't the time necessary to answer general questions.
 
+Mailing Lists
+
+  There are various mailing lists you can join or send messages to if you
+  like. Some of them you must be a member of before you can send mail to
+  them (thank the Spam gods for that policy), and one of them is
+  read-only (no postings allowed).
+
+	inn-workers@isc.org	discussion of INN development (postings by
+				members only)
+
+	inn-patches@isc.org	where to send patches for consideration for
+				inclusion into the pool. (open)
+
+	inn-committers@isc.org	CVS commit messages get sent to this list
+				(postings not allowed)
+
+	inn-bugs@isc.org	Where to send bugs reports (open). If 
+				you're an INN expert we encourage you 
+				to join this to answer questions.
+
+	inn-announce@isc.org	Where announcements for INN get sent
+				(postings not allowed).
+
+  To join these lists, send a subscription request to the '-request'
+  address. I.e.:
+
+	inn-workers-request@isc.org
+	inn-patches-request@isc.org
+	inn-committers-request@isc.org
+	inn-bugs-request@isc.org
+	inn-announce-request@isc.org
+	
+Contributing Code
+
+  If you have a patch that you'd like to be considered for inclusion into
+  the pool, then please mail it to inn-patches@isc.org
+
   Have fun!
 
 Who's Responsible / Who to Thank
