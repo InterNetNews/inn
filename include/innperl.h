@@ -11,20 +11,11 @@
 
 #include "config.h"
 
-#include <EXTERN.h>
-#include <perl.h>
-#include <XSUB.h>
-#include "ppport.h"
-
-/* Perl tries to export a bunch of its own functions.  Mutter. */
-#undef die
-#undef list
-
 BEGIN_DECLS
 
 extern bool PerlFilterActive;
 
-extern void PerlFilter(bool value);
+extern bool PerlFilter(bool value);
 extern void PerlClose(void);
 extern void PERLsetup(char *startupfile, char *filterfile,
                       const char *function);
