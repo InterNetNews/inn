@@ -70,7 +70,10 @@ Here's the relevant portion of my innwatch.ctl:
 #include "config.h"
 #include "configdata.h"
 #include "clibrary.h"
+#include "libinn.h"
 #include "storage.h"
+#include "paths.h"
+#include "qio.h"
 #include "ov.h"
 
 #ifdef HAVE_UNISTD_H
@@ -146,7 +149,7 @@ Printspace(char *path, BOOL inode, BOOL needpadding)
 void
 Usage(void)
 {
-	(void)fprintf(stderr, "Usage: inndf [-i] director{y|ies}|-o\n");
+	(void)fprintf(stderr, "Usage: inndf [-i] director{y|ies} | [-n] -o\n");
 	exit(1);
 }
 
@@ -155,15 +158,22 @@ main(int argc, char **argv)
 {
 	BOOL inode = FALSE;
 	BOOL overview = FALSE;
-	int i;
+	BOOL numberofoverview = FALSE;
+	int i, count, total = 0;
+	QIOSTATE *qp;
+	char *p, *q;
 
-	while ((i = getopt(argc, argv, "oi")) != EOF) {
+	while ((i = getopt(argc, argv, "ino")) != EOF) {
 		switch (i) {
 		default:
 			Usage();
 			/* not reached */
 		case 'i':
 			inode = TRUE;
+			break;
+		case 'n':
+			overview = TRUE;
+			numberofoverview = TRUE;
 			break;
 		case 'o':
 			overview = TRUE;
@@ -196,8 +206,25 @@ main(int argc, char **argv)
 			printf("OVopen failed\n");
 			exit(1);
 		}
-		if (OVctl(OVSPACE, (void *)&i))
-			printf("%d %% overview space used\n", i);
+		if (numberofoverview) {
+			/* Set defaults. */
+			if (ReadInnConf() < 0) exit(1);
+			if ((qp = QIOopen(cpcatpath(innconf->pathdb, _PATH_ACTIVE))) == NULL) {
+				(void)fprintf(stderr, "inndf: cannot open %s\n",cpcatpath(innconf->pathdb, _PATH_ACTIVE));
+				exit(1);
+			}
+			while ((p = QIOread(qp)) != NULL) {
+				if ((q = strchr(p, ' ')) != NULL)
+					*q = '\0';
+				if (!OVgroupstats(p, NULL, NULL, &count, NULL))
+					continue;
+				total += count;
+			}
+			printf("%d overview data stored\n", total);
+		} else {
+			if (OVctl(OVSPACE, (void *)&i))
+				printf("%d %% overview space used\n", i);
+		}
 	}
 	exit(0);
 }
