@@ -2960,7 +2960,7 @@ if test x${DO_PERL} = xDO ; then
 	echo $ac_n "checking for Perl configuration""... $ac_c" 1>&6
 echo "configure:2962: checking for Perl configuration" >&5
 	perl_core_path=`$_PATH_PERL -e 'use Config; print $Config{archlib}'`
-	perl_core_libs=`$_PATH_PERL -MExtUtils::Embed -e ldopts`
+	perl_core_libs=`$_PATH_PERL -MExtUtils::Embed -e ldopts | tail -1`
 	for i in ${LIBS} ; do
 	    perl_core_libs=`echo ${perl_core_libs} | sed -e "s/${i}//"`
 	done
