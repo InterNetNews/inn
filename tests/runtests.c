@@ -44,23 +44,34 @@
 
    where <number> is the number of the test.  ok indicates success, not ok
    indicates failure, and "# skip" indicates the test was skipped for some
-   reason (maybe because it doesn't apply to this platform). */
+   reason (maybe because it doesn't apply to this platform).
+
+   This file is completely stand-alone by intention.  As stated more
+   formally in the license above, you are welcome to include it in your
+   packages as a test suite driver.  It requires ANSI C (__FILE__, __LINE__,
+   void, const, stdarg.h, string.h) and POSIX (fcntl.h, unistd.h, pid_t) and
+   won't compile out of the box on SunOS without adjustments to include
+   strings.h instead.  This is intentionally not fixed using autoconf so
+   that this file will not have a dependency on autoconf (although you're
+   welcome to fix it for your project if you want).  Since it doesn't matter
+   as much that the test suite for the software package be utterly portable
+   to older systems, this file should be portable enough for most purposes.
+
+   Any bug reports, bug fixes, and improvements are very much welcome and
+   should be sent to the e-mail address above. */
 
 #include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <fcntl.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 
 /* sys/time.h must be included before sys/resource.h on some platforms. */
 #include <sys/resource.h>
-
-#include "libinn.h"
 
 /* Test status codes. */
 enum test_status {
@@ -107,17 +118,74 @@ static const char header[] = "\n\
 Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
 -------------------------- -------------- ---- ----  ------------------------";
 
+/* Include the file name and line number in malloc failures. */
+#define xmalloc(size)   x_malloc((size), __FILE__, __LINE__)
+#define xstrdup(p)      x_strdup((p), __FILE__, __LINE__)
+
 /* Internal prototypes. */
+static void sysdie(const char *format, ...);
+static void *x_malloc(size_t, const char *file, int line);
+static char *x_strdup(const char *, const char *file, int line);
 static int test_analyze(const struct testset *);
 static int test_batch(const char *testlist);
 static void test_checkline(const char *line, struct testset *);
 static void test_fail_summary(const struct testlist *);
 static int test_init(const char *line, struct testset *);
+static int test_print_range(int first, int last, int chars, int limit);
 static void test_summarize(const struct testset *, int status);
 static pid_t test_start(const char *path, int *fd);
 static double tv_diff(const struct timeval *, const struct timeval *);
 static double tv_seconds(const struct timeval *);
 static double tv_sum(const struct timeval *, const struct timeval *);
+
+
+/* Report a fatal error, including the results of strerror, and exit. */
+static void
+sysdie(const char *format, ...)
+{
+    int oerrno;
+    va_list args;
+
+    oerrno = errno;
+    fflush(stdout);
+    fprintf(stderr, "runtests: ");
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fprintf(stderr, ": %s\n", strerror(oerrno));
+    exit(1);
+}
+
+
+/* Allocate memory, reporting a fatal error and exiting on failure. */
+static void *
+x_malloc(size_t size, const char *file, int line)
+{
+    void *p;
+
+    p = malloc(size);
+    if (!p)
+        sysdie("failed to malloc %lu bytes at %s line %d",
+               (unsigned long) size, file, line);
+    return p;
+}
+
+
+/* Copy a string, reporting a fatal error and exiting on failure. */
+static char *
+x_strdup(const char *s, const char *file, int line)
+{
+    char *p;
+    size_t len;
+
+    len = strlen(s) + 1;
+    p = malloc(len);
+    if (!p)
+        sysdie("failed to strdup %lu bytes at %s line %d",
+               (unsigned long) len, file, line);
+    memcpy(p, s, len);
+    return p;
+}
 
 
 /* Given a struct timeval, return the number of seconds it represents as a
@@ -234,6 +302,7 @@ test_checkline(const char *line, struct testset *ts)
         ts->reported = 1;
         return;
     }
+    while (isspace((unsigned char)(*line))) line++;
     while (isdigit((unsigned char)(*line))) line++;
     while (isspace((unsigned char)(*line))) line++;
     if (*line == '#') {
@@ -262,6 +331,39 @@ test_checkline(const char *line, struct testset *ts)
 }
 
 
+/* Print out a range of test numbers, returning the number of characters it
+   took up.  Add a comma and a space before the range if chars indicates
+   that something has already been printed on the line, and print
+   ... instead if chars plus the space needed would go over the limit (use a
+   limit of 0 to disable this. */
+static int
+test_print_range(int first, int last, int chars, int limit)
+{
+    int needed = 0;
+    int out = 0;
+    int n;
+
+    if (chars > 0) {
+        needed += 2;
+        if (!limit || chars <= limit) out += printf(", ");
+    }
+    for (n = first; n > 0; n /= 10)
+        needed++;
+    if (last > first) {
+        for (n = last; n > 0; n /= 10)
+            needed++;
+        needed++;
+    }
+    if (limit && chars + needed > limit) {
+        if (chars <= limit) out += printf("...");
+    } else {
+        if (last > first) out += printf("%d-", first);
+        out += printf("%d", last);
+    }
+    return out;
+}
+
+
 /* Summarize a single test set.  The second argument is 0 if the set exited
    cleanly, a positive integer representing the exit status if it exited
    with a non-zero status, and a negative integer representing the signal
@@ -272,22 +374,53 @@ test_summarize(const struct testset *ts, int status)
     int i;
     int missing = 0;
     int failed = 0;
+    int first = 0;
+    int last = 0;
 
     if (ts->aborted) {
         fputs("aborted", stdout);
         if (ts->count > 0)
             printf(", passed %d/%d", ts->passed, ts->count - ts->skipped);
     } else {
-        for (i = 0; i < ts->count; i++)
-            if (ts->results[i] == TEST_INVALID)
-                printf("%s%d", missing++ ? ", " : "MISSED ", i + 1);
+        for (i = 0; i < ts->count; i++) {
+            if (ts->results[i] == TEST_INVALID) {
+                if (missing == 0) fputs("MISSED ", stdout);
+                if (first && i == last) {
+                    last = i + 1;
+                } else {
+                    if (first) {
+                        test_print_range(first, last, missing - 1, 0);
+                    }
+                    missing++;
+                    first = i + 1;
+                    last = i + 1;
+                }
+            }
+        }
+        if (first) test_print_range(first, last, missing - 1, 0);
+        first = 0;
+        last = 0;
         for (i = 0; i < ts->count; i++) {
             if (ts->results[i] == TEST_FAIL) {
                 if (missing && !failed) fputs("; ", stdout);
-                printf("%s%d", failed++ ? ", " : "FAILED ", i + 1);
+                if (failed == 0) fputs("FAILED ", stdout);
+                if (first && i == last) {
+                    last = i + 1;
+                } else {
+                    if (first) {
+                        test_print_range(first, last, failed - 1, 0);
+                    }
+                    failed++;
+                    first = i + 1;
+                    last = i + 1;
+                }
             }
         }
-        if (!missing && !failed) fputs(!status ? "ok" : "dubious", stdout);
+        if (first) test_print_range(first, last, failed - 1, 0);
+        if (!missing && !failed) {
+            fputs(!status ? "ok" : "dubious", stdout);
+            if (ts->skipped > 0) printf(" (skipped %d tests)", ts->skipped);
+        }
     }
     if (status > 0) {
         printf(" (exit status %d)", status);
@@ -346,7 +479,9 @@ test_run(struct testset *ts)
 
     /* Initialize the test and our data structures, flagging this set in
        error if the initialization fails. */
-    file = concat(ts->file, ".t", (char *) 0);
+    file = xmalloc(strlen(ts->file) + 3);
+    strcpy(file, ts->file);
+    strcat(file, ".t");
     testpid = test_start(file, &outfd);
     free(file);
     output = fdopen(outfd, "r");
@@ -388,7 +523,7 @@ static void
 test_fail_summary(const struct testlist *fails)
 {
     const struct testset *ts;
-    int i, chars, total;
+    int i, chars, total, first, last;
 
     puts(header);
 
@@ -397,26 +532,33 @@ test_fail_summary(const struct testlist *fails)
     for (; fails; fails = fails->next) {
         ts = fails->ts;
         total = ts->count - ts->skipped;
-        printf("%-26.26s %4d/%-4d %3.0f%% %4d %4d  ", ts->file, ts->failed,
+        printf("%-26.26s %4d/%-4d %3.0f%% %4d ", ts->file, ts->failed,
                total, total ? (ts->failed * 100.0) / total : 0,
-               ts->skipped, ts->status);
+               ts->skipped);
+        if (WIFEXITED(ts->status)) {
+            printf("%4d  ", WEXITSTATUS(ts->status));
+        } else {
+            printf("  --  ");
+        }
         if (ts->aborted) {
             puts("aborted");
             continue;
         }
         chars = 0;
+        first = 0;
         for (i = 0; i < ts->count; i++) {
             if (ts->results[i] == TEST_FAIL) {
-                if (chars > 21) {
-                    fputs(", ...", stdout);
-                    break;
-                } else if (chars > 0) {
-                    fputs(", ", stdout);
-                    chars += 2;
+                if (first && i == last) {
+                    last = i + 1;
+                } else {
+                    if (first)
+                        chars += test_print_range(first, last, chars, 20);
+                    first = i + 1;
+                    last = i + 1;
                 }
-                chars += printf("%d", i + 1);
             }
         }
+        if (first) test_print_range(first, last, chars, 20);
         putchar('\n');
     }
 }
