@@ -717,7 +717,7 @@ remote.example.com, but it puts news.example.com in the Path: header.  If
 the remote site puts its actual hostname in the Path: header, you won't
 need the C</news.example.com> part.
 
-This entry will cause innd to write out a file in ~news/db/outgoing named
+This entry will cause innd to write out a file in ~news/spool/outgoing named
 remote.example.com and containing the message ID and storage token of each
 message to send to that site.  innxmit knows how to read this format of
 file and send those articles to the remote site.  For information on
@@ -1138,6 +1138,7 @@ F<inn.conf>.
 Next, you need to create an empty history database.  To do this, type:
 
     cd ~news/db
+    touch history
     makedbz -i
 
 When it finishes, rename the files it created to remove the C<.n> in the
