@@ -183,6 +183,9 @@ int main (int argc, char **argv)
   useMMap = false ;
 #endif
 
+  die_set_handlers (2, log_stderr, syslog_err) ;
+  warn_set_handlers (2, log_stderr, syslog_warn) ;
+
 #define OPT_STRING "a:b:c:Cd:e:hl:mMo:p:S:s:vxyz"
 
   while ((optVal = getopt (argc,argv,OPT_STRING)) != EOF)

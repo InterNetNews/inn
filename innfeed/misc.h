@@ -33,6 +33,7 @@
 
 #include "config.h"
 
+#include <stdarg.h>
 #include <sys/types.h>
 
 #define false 0
@@ -102,12 +103,15 @@ char *findNonBlankString (char *ptr, char **tail) ;
 void logOrPrint (int level, FILE *fp, const char *fmt, ...)
   __attribute__ ((__format__ (printf, 3, 4)));
 
-/* print the arguments like printf to stderr then abort() */
-void die (const char *fmt, ...) __attribute__ ((__format__ (printf, 1, 2)));
+/* Error handling functions for use with warn and die. */
+int log_stderr(int len, const char *format, va_list args, int error);
+int syslog_err(int len, const char *format, va_list args, int error);
+int syslog_warn(int len, const char *format, va_list args, int error);
 
-/* print the arguments like printf to stderr. */
-void warn (const char *fmt, ...)  __attribute__ ((__format__ (printf, 1, 2)));
+/* Do cleanup and then abort, for use with die. */
+int dump_core(void);
 
+/* Alternate die that doesn't invoke an error handler. */
 void logAndExit (int exitVal, const char *fmt, ...)
   __attribute__ ((__format__ (printf, 2, 3)));
 

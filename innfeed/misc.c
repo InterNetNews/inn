@@ -43,6 +43,9 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 #include <netdb.h>
 #include <netinet/in.h>
 #include <resolv.h>
@@ -52,14 +55,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <time.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
-#if defined (HAVE_UNISTD_H)
-# include <unistd.h>
-#endif
 
 /* FIXME: Default to a max length of 256 characters for path names if the
    host headers doesn't give better information.  Should be replaced by the
@@ -80,9 +75,114 @@ char *program ;                 /* this should be set to argv[0] */
 int debuggingOutput ;
 u_int loggingLevel ;
 char **PointersFreedOnExit ;
-static void log (int level, const char *fmt, va_list args) ;
+
+bool debuggingDump = true ;
+extern void (*gPrintInfo) (void) ;
+void (*gCleanUp) (void) = 0 ;
 
 
+/* Log a message to stderr, called from warn or die. */
+int
+log_stderr(int len, const char *format, va_list args, int error)
+{
+    char timebuff[30];
+    time_t now;
+    struct tm *tm;
+
+    now = time(NULL);
+    tm = localtime(&now);
+    strftime(timebuff, sizeof(timebuff), "%Y-%m-%d %H:%M:%S", tm);
+    fprintf(stderr, "%s %s: ", timebuff, (program ? program : "UNKNOWN"));
+    len = vfprintf(stderr, format, args);
+    if (error) fprintf(stderr, ": %s", strerror(error));
+    fprintf(stderr, "\n");
+    return len;
+}
+
+/* syslog a message.  Relies on len being accurate to avoid buffer
+   overflows, so always put another handler in front of this one that
+   produces a valid length. */
+static void
+log_syslog(int level, int len, const char *format, va_list args, int error)
+{
+    char *p;
+    int size;
+
+    size = len + 1;
+    if (error) size += 2 + strlen(strerror(error));
+    p = malloc(size);
+    if (p == NULL) {
+        fprintf(stderr, "failed to malloc %lu bytes at %s line %d: %s",
+                size, __FILE__, __LINE__, strerror(errno));
+        exit(1);
+    }
+    vsprintf(p, format, args);
+    if (error) {
+        strcat(p, ": ");
+        strcat(p, strerror(error));
+    }
+    syslog(level, p);
+    free(p);
+}
+
+/* syslog a message with priority LOG_ERR. */
+int
+syslog_err(int len, const char *format, va_list args, int error)
+{
+    log_syslog(LOG_ERR, len, format, args, error);
+    return len;
+}
+
+/* syslog a message with priority LOG_WARNING. */
+int
+syslog_warn(int len, const char *format, va_list args, int error)
+{
+    log_syslog(LOG_WARNING, len, format, args, error);
+    return len;
+}
+
+/* If desired, print out the state of innfeed, call a cleanup function, and
+   then dump core.  Used as an exit handler for die. */
+int
+dump_core(void)
+{
+#if SNAPSHOT_ON_DIE
+    if (debuggingDump && gPrintInfo != NULL)
+        (*gPrintInfo)();
+#endif
+
+    if (gCleanUp != NULL)
+        (*gCleanUp)();
+  
+    if (CORE_DIRECTORY != NULL)
+        chdir(CORE_DIRECTORY);
+    else
+        chdir(getTapeDirectory());
+  
+    sleep(5);
+    abort();
+
+    /* Not reached. */
+    return 1;
+}
+
+/* An alternate version of die, used when we don't want to dump core.  This
+   should somehow eventually be phased out to simplify things. */
+void
+logAndExit(int status, const char *format, ...)
+{
+    va_list args;
+    int length;
+
+    va_start(args, format);
+    length = log_stderr(0, format, args, 0);
+    va_end(args);
+    va_start(args, format);
+    syslog_err(length, format, args, 0);
+    va_end(args);
+
+    exit(status);
+}
 
 
 
@@ -118,30 +218,6 @@ void d_printf (u_int level, const char *fmt, ...)
   va_end (ap) ;
 }
 
-bool debuggingDump = true ;
-extern void (*gPrintInfo) (void) ;
-void (*gCleanUp) (void) = 0 ;
-
-static void log (int level, const char *fmt, va_list args)
-{
-  time_t now = time (NULL) ;
-  char timeString [30] ;
-  char *p = NULL ;
-  int out ;
-  
-  strcpy (timeString,ctime (&now)) ;
-  timeString [24] = '\0' ;
-  
-  fprintf (stderr, "%s %s: ",
-           timeString, (program ? program : "UNKNOWN PROGRAM NAME")) ;
-  out = vfprintf (stderr, fmt, args) ;
-  fprintf (stderr,"\n") ;
-
-  p = malloc (out + 10) ;
-  vsprintf (p,fmt,args) ;
-  syslog (level,p) ;
-}
-
 void logOrPrint (int level, FILE *fp, const char *fmt, ...)
 {
   va_list ap ;
@@ -162,51 +238,6 @@ void logOrPrint (int level, FILE *fp, const char *fmt, ...)
   va_end (ap) ;
 }
 
-void die (const char *fmt, ...)
-{
-  va_list ap ;
-
-  va_start (ap, fmt) ;
-  log (LOG_ERR,fmt,ap) ;
-  va_end (ap) ;
-
-#if SNAPSHOT_ON_DIE
-  if (debuggingDump && gPrintInfo != NULL)
-    gPrintInfo () ;
-#endif
-
-  if (gCleanUp != NULL)
-    gCleanUp () ;
-  
-  if (CORE_DIRECTORY != NULL)
-    (void) chdir (CORE_DIRECTORY) ;
-  else
-    (void) chdir (getTapeDirectory()) ;
-  
-  sleep (5) ;
-  abort () ;
-}
-
-void warn (const char *fmt, ...)
-{
-  va_list ap ;
-
-  va_start (ap, fmt) ;
-  log (LOG_WARNING,fmt,ap) ;
-  va_end (ap) ;
-}
-
-
-void logAndExit (int exitVal, const char *fmt, ...)
-{
-  va_list ap ;
-
-  va_start (ap,fmt) ;
-  log (LOG_CRIT,fmt,ap) ;
-  va_end (ap) ;
-
-  exit (exitVal) ;
-}
 
 
 /* return true if the file exists and is a regular file. */
@@ -272,25 +303,6 @@ bool getNntpResponse (char *p, int *code, char **rest)
   
   return rval ;
 }
-
-
-#if 0
-/* pinched from INN main source */
-int
-writev(fd, vp, vpcount)
-    int                 fd;
-    struct iovec        *vp;
-    int                 vpcount;
-{
-    int                 count;
-
-    for (count = 0; --vpcount >= 0; count += vp->iov_len, vp++)
-        if (xwrite(fd, vp->iov_base, vp->iov_len) < 0)
-            return -1;
-    return count;
-}
-
-#endif
 
 
 
