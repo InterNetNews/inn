@@ -1576,8 +1576,8 @@ CCreader(cp)
     int			written;
 #endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
     int			i;
-    char		buff[BUFSIZ + 2];
-    char		copy[BUFSIZ + 2];
+    char		buff[BIG_BUFFER + 2];
+    char		copy[BIG_BUFFER + 2];
     char		*argv[SC_MAXFIELDS + 2];
     int			argc;
     int			len;
@@ -1591,7 +1591,7 @@ CCreader(cp)
 
 #if defined (DO_HAVE_UNIX_DOMAIN)
     
-    i = RECVorREAD(CCchan->fd, buff, BUFSIZ) ;
+    i = RECVorREAD(CCchan->fd, buff, BIG_BUFFER) ;
     if (i < 0) {
 	syslog(L_ERROR, "%s cant recv CCreader %m", LogName);
 	return;
