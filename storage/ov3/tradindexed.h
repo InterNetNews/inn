@@ -7,7 +7,7 @@ extern "C" {
 
 BOOL tradindexed_open(int mode);
 BOOL tradindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag);
-BOOL tradindexed_groupadd(char *group, char *flag);
+BOOL tradindexed_groupadd(char *group, ARTNUM lo, char *flag);
 BOOL tradindexed_groupdel(char *group);
 BOOL tradindexed_add(TOKEN token, char *data, int len);
 BOOL tradindexed_cancel(TOKEN token);

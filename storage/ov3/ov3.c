@@ -269,7 +269,7 @@ BOOL tradindexed_groupstats(char *group, int *lo, int *hi, int *count, int *flag
     return TRUE;
 }
 
-BOOL tradindexed_groupadd(char *group, char *flag) {
+BOOL tradindexed_groupadd(char *group, ARTNUM lo, char *flag) {
     unsigned int        i;
     HASH                grouphash;
     GROUPLOC            loc;
@@ -287,6 +287,8 @@ BOOL tradindexed_groupadd(char *group, char *flag) {
     loc = GROUPnewnode();
     ge = &GROUPentries[loc.recno];
     ge->hash = grouphash;
+    if (lo != 0)
+	ge->low = lo;
     ge->deleted = ge->high = ge->low = ge->base = ge->count = 0;
     ge->flag = *flag;
     ge->next = GROUPheader->hash[i];
