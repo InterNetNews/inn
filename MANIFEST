@@ -179,6 +179,7 @@ doc/man/sm.8                          Manpage for sm
 doc/man/startinnfeed.1                Manpage for startinnfeed
 doc/man/storage.conf.5                Manpage for storage.conf config file
 doc/man/strcasecmp.3                  Manpage for strcasecmp (from BSD)
+doc/man/subscriptions.5               Manpage for subscriptions list
 doc/man/tally.control.8               Manpage for tally.control
 doc/man/wildmat.3                     Manpage for wildmat library routine
 doc/man/writelog.8                    Manpage for writelog
@@ -199,6 +200,7 @@ doc/pod/ovdb_upgrade.pod              Master file for ovdb_upgrade.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/sasl.conf.pod                 Master file for sasl.conf.5
+doc/pod/subscriptions.pod             Master file for subscriptions.5
 doc/sample-control                    Sample PGP-signed control message
 expire                                Expiration and recovery (Directory)
 expire/Makefile                       Makefile for expiration
@@ -457,6 +459,7 @@ samples/senduuname.pl                 senduuname controlchan handler
 samples/startup.tcl.in                Tcl startup code for innd
 samples/startup_innd.pl               Perl startup code for innd
 samples/storage.conf                  Sample storage configuration
+samples/subscriptions                 Sample default subscriptions list
 samples/version.in                    version handler
 samples/version.pl                    version controlchan handler
 scripts                               Various utilities (Directory)
