@@ -2204,7 +2204,7 @@ STRING ARTpost(CHANNEL *cp)
     }
 
     /* Update history if we didn't get too many I/O errors above. */
-    if (Data.MessageID && (Mode != OMrunning) && !HISwrite(&Data, hash, Files.Data)) {
+    if ((Mode != OMrunning) || !HISwrite(&Data, hash, Files.Data)) {
 	i = errno;
 	syslog(L_ERROR, "%s cant write history %s %m", LogName, Data.MessageID);
 	(void)sprintf(buff, "%d cant write history, %s",
