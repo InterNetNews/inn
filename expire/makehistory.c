@@ -243,8 +243,7 @@ FlushOverTmpFile(void)
 	    || (r = strchr(q+1, '\t')) == NULL) {
             warn("sorted overview file %s has a bad line at %d",
                  SortedTmpPath, count);
-	    OVclose();
-	    Fork ? _exit(1) : exit(1);
+	    continue;
 	}
 	/* p+1 now points to start of token, q+1 points to start of overline. */
 	if (sorttype == OVNEWSGROUP) {
@@ -257,8 +256,7 @@ FlushOverTmpFile(void)
 	    if ((r = strchr(r, '\t')) == NULL) {
                 warn("sorted overview file %s has a bad line at %d",
                      SortedTmpPath, count);
-		OVclose();
-		Fork ? _exit(1) : exit(1);
+		continue;
 	    }
 	    *r++ = '\0';
 	} else {
