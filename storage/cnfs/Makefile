@@ -1,13 +1,15 @@
 ##  $Revision$
 .include "../../Makefile.global"
 
+CFLAGS+=	-I../../include -I..
+
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
 ##  =()<P	= @<P>@>()=
 P	= 
 
 ##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= ctags -t -w
+CTAGS		= /usr/bin/ctags -t -w
 ##  =()<PROF	= @<PROF>@>()=
 PROF	= -pg
 

@@ -4,7 +4,7 @@ $innshellvarspath = "@prefix@/etc/innshellvars";
 $pathperl = "@_PATH_PERL@";
 $pathsh = "@_PATH_SH@";
 
-while(<STDIN> {
+while(<STDIN>) {
   $_ =~ s/_INNSHELLVARS_/$innshellvarspath/g;
   $_ =~ s/_PATH_PERL/$pathperl/g;
   $_ =~ s/_PATH_SH/$pathsh/g;

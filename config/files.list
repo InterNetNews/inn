@@ -1,64 +1,13 @@
-;;  $Revision$
+;;  $Id$
 ;;  List of InterNetNews files that are fed to subst.
 ;;  Lines beginning with a semi-colon are comment lines.
 ;; Files which are no longer config.data subst victims
-;; are marked ;subst clean.  mibsoft@mibsoftware.com
 ../backends/Makefile
 ../backends/actsync.c
 ../backends/actmerge.sh
 ../backends/actsyncd.sh
 ../backends/sendxbatches.sh
 ../doc/Makefile
-;subst clean ../doc/active.5
-;subst clean ../doc/actsync.8
-;subst clean ../doc/archive.8
-;subst clean ../doc/batcher.8
-;subst clean ../doc/buffchan.8
-;subst clean ../doc/control.ctl.5
-;subst clean ../doc/crosspost.8
-;subst clean ../doc/ctlinnd.8
-;subst clean ../doc/cvtbatch.8
-;subst clean ../doc/distrib.pats.5
-;subst clean ../doc/expire.8
-;subst clean ../doc/expire.ctl.5
-;subst clean ../doc/expireindex.8
-;subst clean ../doc/expireover.8
-;subst clean ../doc/expirerm.8
-;subst clean ../doc/filechan.8
-;subst clean ../doc/getlist.1
-;subst clean ../doc/history.5
-;subst clean ../doc/inews.1
-;subst clean ../doc/inn.conf.5
-;subst clean ../doc/innd.8
-;subst clean ../doc/inndcomm.3
-;subst clean ../doc/innwatch.8
-;subst clean ../doc/innwatch.ctl.5
-;subst clean ../doc/innxbatch.8
-;subst clean ../doc/innxmit.8
-;subst clean ../doc/libinn.3
-;subst clean ../doc/makeactive.8
-;subst clean ../doc/makehistory.8
-;subst clean ../doc/moderators.5
-;subst clean ../doc/motd.news.5
-;subst clean ../doc/news.daily.8
-;subst clean ../doc/newsfeeds.5
-;subst clean ../doc/newslog.5
-;subst clean ../doc/nnrp.access.5
-;subst clean ../doc/nnrpd.8
-;subst clean ../doc/nntpsend.8
-;subst clean ../doc/nntpsend.ctl.5
-;subst clean ../doc/overchan.8
-;subst clean ../doc/overview.ctl.5
-;subst clean ../doc/overview.fmt.5
-;subst clean ../doc/passwd.nntp.5
-;subst clean ../doc/prunehistory.8
-;subst clean ../doc/qio.3
-;subst clean ../doc/rnews.1
-;subst clean ../doc/shlock.1
-;subst clean ../doc/shrinkfile.1
-;subst clean ../doc/sm.8
-;subst clean ../doc/storage.ctl.5
-;subst clean ../doc/writelog.8
 ../expire/Makefile
 ../frontends/Makefile
 ../include/clibrary.h
@@ -73,41 +22,13 @@
 ../makedirs.sh
 ../nnrpd/Makefile
 ../samples/actsync.cfg
-;; ../samples/actsync.ign
-../samples/checkgroups
-../samples/default
-../samples/docheckgroups
-../samples/expirerm
-../samples/ihave
-../samples/inncheck
-../samples/innmail
 ../samples/innreport.conf
-../samples/innstat
-../samples/innwatch
 ../samples/innwatch.ctl
 ../samples/innshellvars
 ../samples/innshellvars.csh
 ../samples/innshellvars.pl
 ../samples/innshellvars.tcl
-;; ../samples/makegroup
-../samples/newgroup
-../samples/news.daily
-../samples/nntpsend
-../samples/parsecontrol
-;subst clean ../samples/pgpverify
-../samples/rc.news
-../samples/rmgroup
-../samples/scanlogs
-../samples/scanspool
-../samples/send-ihave
-../samples/send-nntp
-../samples/send-uucp
-../samples/sendbatch
-../samples/sendme
-../samples/sendsys
-../samples/senduuname
 ../samples/startup.tcl
-;; ../samples/filter.tcl
 ../samples/tally.control
 ../samples/version
 ../samples/writelog
@@ -121,4 +42,3 @@
 ../storage/cnfs/cnfs.h
 ../storage/cnfs/cnfs-private.h
 ../storage/cnfs/cnfs.c
-;; Do not run subst on its own manpage!  ../doc/subst.1
