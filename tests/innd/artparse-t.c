@@ -7,6 +7,7 @@
 #include "inn/buffer.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "libtest.h"
 
@@ -108,7 +109,7 @@ static void
 ok_article(int n, const char *path, const char *error, bool slow, bool shift)
 {
     CHANNEL *cp;
-    char *article, *wire;
+    char *article, *wire, *body;
     size_t i, len, wirelen, offset;
     struct stat st;
     bool okay = true;
@@ -146,6 +147,7 @@ ok_article(int n, const char *path, const char *error, bool slow, bool shift)
         ARTparse(cp);
         message_handlers_warn(1, message_log_stderr);
     }
+    ok(n++, okay);
     if (wirelen > (size_t) innconf->maxartsize)
         expected = CSgotlargearticle;
     else if (wirelen == 5)
@@ -154,6 +156,11 @@ ok_article(int n, const char *path, const char *error, bool slow, bool shift)
         expected = CSgotarticle;
     ok_int(n++, expected, cp->State);
     ok_int(n++, wirelen, cp->Next - cp->Start);
+    body = wire_findbody(wire, wirelen);
+    if (body != NULL)
+        ok_int(n++, body - wire, cp->Data.Body - offset);
+    else
+        ok_int(n++, cp->Start, cp->Data.Body);
     ok_string(n++, error, cp->Error);
     free(article);
     free(wire);
@@ -166,19 +173,19 @@ main(void)
     size_t i;
     int n = 1;
 
-    test_init(ARRAY_SIZE(articles) * 3 * 4);
+    test_init(ARRAY_SIZE(articles) * 5 * 4);
     initialize();
     message_handlers_notice(0);
 
     for (i = 0; i < ARRAY_SIZE(articles); i++) {
         ok_article(n, articles[i].path, articles[i].error, false, false);
-        n += 3;
+        n += 5;
         ok_article(n, articles[i].path, articles[i].error, true, false);
-        n += 3;
+        n += 5;
         ok_article(n, articles[i].path, articles[i].error, false, true);
-        n += 3;
+        n += 5;
         ok_article(n, articles[i].path, articles[i].error, true, true);
-        n += 3;
+        n += 5;
     }
     return 0;
 }
