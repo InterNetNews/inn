@@ -15,7 +15,6 @@
 #include <ctype.h>
 #include <syslog.h>
 
-#include "configdata.h"
 #include "clibrary.h"
 #include "nnrpd.h"
 #include "paths.h"
