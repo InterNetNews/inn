@@ -815,7 +815,7 @@ if test $ac_cv_header_fcntl_h = yes; then
 #ifdef FD_CLOEXEC
 yes
 #else
-# ifdef FD_SETFD
+# ifdef F_SETFD
 yes
 # endif
 #endif], [AC_DEFINE(CLX_FCNTL) AC_MSG_RESULT(FCNTL)], CLX_STYLE=unknown)
