@@ -52,7 +52,7 @@ Alan Barrett:
         killing performance.
 
 Greg Patten:
-        Wrote the perl innlog
+        Wrote the perl innlog.
 
 Clayton O'Neill:
         Wrote the articles storage API and implemented the timehash
@@ -69,14 +69,15 @@ Vincent Archer:
 
 Forrest J. Cavalier III:
         Provided a lot of bug fixes to 1.5.2.  He extended the autoconf
-        setup a lot to work with version 2.0
+        setup a lot to work with version 2.0, and has provided a lot of
+        valuable design input and testing.
 
 Scott Fritchie:
         Wrote the CNFS storage back end.
 
 Fabien Tassin:
         Wrote the innreport package.  Implemented the new incoming.conf
-        configuration file.
+        configuration file.  Added support for nested profile timers.
 
 Jeremy Nixon:
         Wrote the initial patch for Perl filtering of message IDs on IHAVE
@@ -175,7 +176,7 @@ Ilya Etingof:
         Added Python authentication support for nnrpd.
 
 Kenichi OKADA:
-        Added SSL and SASL support for nnrpd.
+        Added preliminary SSL and SASL support for nnrpd.
 
 Olaf Titz:
         Implemented MODE CANCEL support, as well as other patches and bug
@@ -192,7 +193,7 @@ Alex Kiernan:
 Also:
 
 Dave Barr:
-        Kept INN alive after Rich Salz didn't have the time anymore but 
+        Kept INN alive after Rich Salz didn't have the time any more but 
         before the ISC took over.  He released 4 unofficial versions that 
         provided a good boost to what the ISC started with.  Minor work
         on 2.0, mostly with example files and minor code tweaks.
