@@ -35,10 +35,8 @@ ident:		ident.o			; $(LINK) ident.o    $(LIBS)
 pwcheck:	pwcheck.o		; $(LINK) pwcheck.o  $(LIBS)
 radius:		radius.o      $(LIBINN)	; $(LINK) radius.o   $(NEWSLIBS)
 
-$(LIBINN):
-	(cd ../lib ; $(MAKE))
-$(LIBSTORAGE):
-	(cd ../storage ; $(MAKE))
+$(LIBINN):	; (cd ../lib ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 
 
 ##  Installation rules.  Installation commands set in Makefile.global.
@@ -53,7 +51,17 @@ $(D)$(PATHAUTHRESOLV)/ident:		ident		; $(LI_XPUB) $? $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.
-depend:		Makefile $(SOURCES)
-	makedepend $(DEFS) $(SOURCES)
+
+depend: Makefile $(SOURCES)
+	$(MAKEDEPEND) $(CFLAGS) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+ckpasswd.o: ckpasswd.c ../include/config.h ../include/clibrary.h
+domain.o: domain.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h
+ident.o: ident.c ../include/config.h ../include/clibrary.h \
+ ../include/libinn.h ../include/macros.h
+pwcheck.o: pwcheck.c ../include/config.h ../include/clibrary.h
+radius.o: radius.c ../include/config.h ../include/clibrary.h \
+ ../include/macros.h ../include/md5.h ../include/libinn.h \
+ ../include/nntp.h ../include/paths.h
