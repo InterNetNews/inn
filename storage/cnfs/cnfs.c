@@ -6,9 +6,7 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <fcntl.h>
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
@@ -57,9 +55,9 @@ STATIC int		metabuff_update = METACYCBUFF_UPDATE;
 STATIC int		refresh_interval = REFRESH_INTERVAL;
 
 STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
-		       U_INT32_T cycnum, STORAGECLASS class, TOKEN *oldtoken) {
+		       uint32_t cycnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
-    INT32_T		int32;
+    int32_t		int32;
 
     if (oldtoken == (TOKEN *)NULL)
 	memset(&token, '\0', sizeof(token));
@@ -85,8 +83,8 @@ STATIC TOKEN CNFSMakeToken(char *cycbuffname, CYCBUFF_OFF_T offset,
 */
 
 STATIC BOOL CNFSBreakToken(TOKEN token, char *cycbuffname,
-			   CYCBUFF_OFF_T *offset, U_INT32_T *cycnum) {
-    INT32_T	int32;
+			   CYCBUFF_OFF_T *offset, uint32_t *cycnum) {
+    int32_t	int32;
 
     if (cycbuffname == NULL || offset == NULL || cycnum == NULL) {
 	syslog(L_ERROR, "%s: BreakToken: invalid argument",
@@ -942,7 +940,7 @@ STATIC void CNFSmunmapbitfields(void) {
     }
 }
 
-STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, U_INT32_T cycnum) {
+STATIC int CNFSArtMayBeHere(CYCBUFF *cycbuff, CYCBUFF_OFF_T offset, uint32_t cycnum) {
     STATIC time_t       lastupdate = 0;
     CYCBUFF	        *tmp;
 
@@ -1066,7 +1064,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     static char		buf[1024];
     char		*artcycbuffname;
     CYCBUFF_OFF_T	artoffset, middle;
-    U_INT32_T		artcyclenum;
+    uint32_t		artcyclenum;
     CNFSARTHEADER	cah;
     struct iovec	iov[2];
     int			tonextblock;
@@ -1195,7 +1193,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     char		cycbuffname[9];
     CYCBUFF_OFF_T	offset;
-    U_INT32_T		cycnum;
+    uint32_t		cycnum;
     CYCBUFF		*cycbuff;
     ARTHANDLE   	*art;
     CNFSARTHEADER	cah;
@@ -1442,7 +1440,7 @@ void cnfs_freearticle(ARTHANDLE *article) {
 BOOL cnfs_cancel(TOKEN token) {
     char		cycbuffname[9];
     CYCBUFF_OFF_T	offset;
-    U_INT32_T		cycnum;
+    uint32_t		cycnum;
     CYCBUFF		*cycbuff;
 
     if (token.type != TOKEN_CNFS) {
