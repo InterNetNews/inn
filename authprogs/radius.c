@@ -23,8 +23,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-#include <clibrary.h>
 #include <configdata.h>
+#include <clibrary.h>
 #include <macros.h>
 #include <md5.h>
 #include <libinn.h>
@@ -162,7 +162,6 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     int i, j, jlen, passstart;
     char secbuf[128];
     HASH digest;
-    char *sndbuf;
     struct timeval seed;
     MD5_CTX ctx;
     struct sockaddr_in sinl, sinr;
@@ -384,7 +383,6 @@ int main(int argc, char *argv[])
     int havefile, haveother;
     char uname[SMBUF], pass[SMBUF];
     char buff[SMBUF];
-    char *rpass;
     FILE *f;
     rad_config_t radconfig;
     int retval;

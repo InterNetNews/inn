@@ -6,8 +6,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <clibrary.h>
 #include <configdata.h>
+#include <clibrary.h>
 #include <pwd.h>
 #ifdef HAVE_NDBM_H
 #include <ndbm.h>

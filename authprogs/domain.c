@@ -6,8 +6,6 @@
 int main(int argc, char *argv[])
 {
     char buf[2048];
-    extern char *optarg;
-    int got;
     char *domain;
 
     if (argc != 2) {

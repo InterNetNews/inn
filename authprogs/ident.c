@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
     struct servent *s;
     char buf[2048];
     struct sockaddr_in sin, loc, cli;
-    struct in_addr ia;
     int sock;
     int opt;
     extern char *optarg;
