@@ -361,10 +361,6 @@ extern int      Fclose(FILE *fp);
 extern char *	sprint_sockaddr(const struct sockaddr *sa);
 extern void	make_sin(struct sockaddr_in *s, const struct in_addr *src);
 
-extern int      argify(char *line, char ***argvp);
-extern void     freeargify(char ***argvp);
-extern char *   glom(char **argv);
-
 END_DECLS
 
 #endif /* LIBINN_H */

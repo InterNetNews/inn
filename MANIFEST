@@ -401,7 +401,6 @@ innfeed/tape.h                        Public interface to the Tape class
 innfeed/testListener.pl               Script to hand articles to innfeed
 lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
-lib/argparse.c                        Parsing used for OV3
 lib/buffer.c                          Reusable counted buffer
 lib/cleanfrom.c                       Clean out a From line
 lib/clientactive.c                    Client access to the active file

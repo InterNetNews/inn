@@ -102,6 +102,51 @@ static void OV3getdirpath(char *group, char *path);
 static void OV3getIDXfilename(char *group, char *path);
 static void OV3getDATfilename(char *group, char *path);
 
+void freeargify(char ***argvp) {
+    if (**argvp != NULL) {
+	DISPOSE(*argvp[0]);
+	DISPOSE(*argvp);
+	*argvp = NULL;
+    }
+}
+
+/*
+**  Parse a string into a NULL-terminated array of words; return number
+**  of words.  If argvp isn't NULL, it and what it points to will be
+**  DISPOSE'd.
+*/
+int argify(char *line, char ***argvp)
+{
+    char	        **argv;
+    char	        *p;
+    int	                i;
+
+    if (*argvp != NULL)
+	freeargify(argvp);
+
+    /*  Copy the line, which we will split up. */
+    while (ISWHITE(*line))
+	line++;
+    i = strlen(line);
+    p = NEW(char, i + 1);
+    (void)strcpy(p, line);
+
+    /* Allocate worst-case amount of space. */
+    for (*argvp = argv = NEW(char*, i + 2); *p; ) {
+	/* Mark start of this word, find its end. */
+	for (*argv++ = p; *p && !ISWHITE(*p); )
+	    p++;
+	if (*p == '\0')
+	    break;
+
+	/* Nip off word, skip whitespace. */
+	for (*p++ = '\0'; ISWHITE(*p); )
+	    p++;
+    }
+    *argv = NULL;
+    return argv - *argvp;
+}
+
 bool tradindexed_open(int mode) {
     char                dirname[1024];
     char                *groupfn;

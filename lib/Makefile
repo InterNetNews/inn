@@ -5,8 +5,8 @@ include ../Makefile.global
 top	= ..
 CFLAGS  = $(GCFLAGS)
 
-SOURCES = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
-	concat.c conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
+SOURCES = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
+	conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
 	fdflags.c fdlimit.c findheader.c fseeko.c ftello.c genid.c \
 	getconfig.c getfqdn.c getmodaddr.c gettime.c hash.c hashtab.c \
 	hstrerror.c inet_aton.c inet_ntoa.c inndcomm.c localopen.c \
@@ -18,14 +18,14 @@ SOURCES = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
 	xmalloc.c xsignal.c xwrite.c
 
 OBJECTS = $(LIBOBJS) \
-	argparse.o buffer.o cleanfrom.o clientactive.o clientlib.o concat.o \
-	conffile.o confparse.o daemonize.o date.o dbz.o defdist.o fdflags.o \
-	fdlimit.o findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o \
-	gettime.o hash.o hashtab.o inndcomm.o localopen.o lockfile.o \
-	makedir.o md5.o messages.o mmap.o parsedate.o qio.o radix32.o \
-	readin.o remopen.o reservedfd.o resource.o sendarticle.o \
-	sendpass.o sequence.o sockaddr.o timer.o uwildmat.o \
-	vector.o version.o xfopena.o xmalloc.o xsignal.o xwrite.o
+	buffer.o cleanfrom.o clientactive.o clientlib.o concat.o conffile.o \
+	confparse.o daemonize.o date.o dbz.o defdist.o fdflags.o fdlimit.o \
+	findheader.o genid.o getconfig.o getfqdn.o getmodaddr.o gettime.o \
+	hash.o hashtab.o inndcomm.o localopen.o lockfile.o makedir.o md5.o \
+	messages.o mmap.o parsedate.o qio.o radix32.o readin.o remopen.o \
+	reservedfd.o resource.o sendarticle.o sendpass.o sequence.o \
+	sockaddr.o timer.o uwildmat.o vector.o version.o xfopena.o \
+	xmalloc.o xsignal.o xwrite.o
 
 LOBJECTS= $(OBJECTS:.o=.lo)
 
@@ -92,8 +92,6 @@ depend: Makefile $(SOURCES) ../include/inn/version.h
 	$(MAKEDEPEND) $(CFLAGS) $(PERLINC) $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-argparse.o: argparse.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/macros.h
 buffer.o: buffer.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/buffer.h ../include/libinn.h
 cleanfrom.o: cleanfrom.c ../include/config.h ../include/inn/defines.h \
@@ -118,7 +116,7 @@ date.o: date.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
- ../include/macros.h
+ ../include/macros.h ../include/inn/mmap.h
 defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h \
  ../include/paths.h
@@ -175,6 +173,9 @@ messages.o: messages.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/portable/time.h
+mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
+ ../include/clibrary.h ../include/inn/mmap.h \
+ ../include/portable/mmap.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
  ../include/clibrary.h ../include/libinn.h ../include/macros.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
