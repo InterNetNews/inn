@@ -1,0 +1,489 @@
+#! /usr/bin/perl -ws
+do '@LIBDIR@/innshellvars.pl';
+#
+# written April 1996, tale@isc.org (David C Lawrence)
+# Version 1.13.1, 16 Feb 2001
+#
+# NOTICE TO INN MAINTAINERS:  The version that is shipped with INN
+# is the same as the version that I make available to the rest of the
+# world (including non-INN sites), so please make all changes through me.
+#
+# This program is intended to be compatible with Perl 4 and Perl 5.
+#
+# Changes from 1.13 -> 1.13.1
+# -- Nothing functional, just moved the innshellvars.pl line to the head of
+#    the script, to accomodate the build process of INN.
+#
+# Changes from 1.12 -> 1.13
+# -- Use INN's syslog_facility if available.
+#
+# Changes from 1.11 -> 1.12
+# -- support for GnuPG
+# -- Use /usr/ucb/logger, if present, instead of /usr/bin/logger (the latter
+#    of which, on Solaris at least, is some sort of brain damaged POSIX.2
+#    command which doesn't use syslog).
+# -- made syslog work for dec_osf (version 4, at least)
+# -- fixed up priority of '.' operator vs bitwise operators
+#
+# Changes from 1.10 -> 1.11
+# -- code to log error messages to syslog.
+#    See $syslog and $syslog_method configurable variables.
+# -- configurably allow date stamp on stderr error messages.
+# -- added locking for multiple concurrent pgp instances.
+# -- more clear error message if pgp exits abnormally.
+# -- identify PGP 5 "BAD signature" string.
+# -- minor diddling for INN (path to innshellvars.pl changed)
+#
+# Changes from 1.9 -> 1.10
+# -- minor diddling for INN 2.0: use $inn'pathtmp if it exists, and
+#    work with the new subst method to find innshellvars.pl
+# -- do not truncate the tmp file when opening, in case it is really linked
+#    to another file
+#
+# Changes from 1.8 -> 1.9
+# -- match 'Bad signature' pgp output to return exit status 3 by removing
+#    '^' in regexp matched on multiline string.
+#
+# Changes from 1.7 -> 1.8
+# -- ignore final dot-CRLF if article is in NNTP format
+#
+# Changes from 1.6 -> 1.7
+# -- parse PGP 5.0 'good signature' lines.
+# -- allow -test swtich; prints pgp input and output
+# -- look for pgp in INN's innshellvars.pl
+# -- changed regexp delimiters for stripping $0 to be compatible with old perl
+#
+# Changes from 1.5 -> 1.6
+# -- handle articles encoded in NNTP format ('.' starting line is doubled,
+#    \r\n at line end) by stripping NNTP encoding.
+# -- exit 255 with pointer to $HOME or $PGPPATH if pgp can't find key ring.
+#    (probably doesn't match the necessary error message with ViaCrypt PGP)
+# -- failures also report message-id so the article can be looked up to retry.
+#
+# Changes from 1.4 -> 1.5
+# -- force English lanugage for 'Good signature from user' by passing
+#    +language=en on pgp command line, rather than setting the
+#    environment variable LANGUAGE to 'en'.
+#
+# Changes from 1.3 -> 1.4
+# -- now handles wrapped headers that have been unfolded.
+#    (though I do believe news software oughtn't be unfolding them.)
+# -- checks to ensure that the temporary file is really a file, and
+#    not a link or some other weirdness
+
+# Path to pgp binary; for PGP 5.0, set the path to the pgpv binary.
+# GnuPG users should point this to the pgpgpg wrapper.
+# If you have INN and the script is able to successfully include you
+# innshellvars.pl file, the value of $inn::pgp will override this.
+$pgp = '/usr/local/bin/pgp';
+
+# if you keep your keyring somewhere that is not the default used by pgp,
+# uncomment the next line and set appropriately.
+# $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
+
+# If you have INN and the script is able to successfully include you
+# innshellvars.pl file, the value of $inn::pathtmp and $inn::locks will
+# override these.
+$tmpdir = "/tmp";
+$lockdir = $tmpdir;
+
+# How should syslog be accessed?
+# As it turns out, syslogging is very hard to do portably in all
+# versions of perl up to and including 5.005_02. 'inet' is all that
+# was available in perl up to version 5.004_03. If your syslog does
+# not accept UDP log packets, such as when syslogd runs with the -l flag,
+# 'inet' will not work.  A value of 'unix' will try to contact syslogd
+# directly over a Unix domain socket built entirely in perl code
+# (no subprocesses).  If that is not working for you, and you have
+# the 'logger' program on your system, set this variable to its full
+# path name to have a subprocess contact syslogd.  If the method is just
+# "logger", the script will search some known directories for that program.
+# If it can't be found & used, everything falls back on stderr logging.
+#
+# You can test the script's syslogging by running "pgpverify < /some/text/file"
+# on a file that is not a valid news article.  The "non-header at line #"
+# error should be syslogged.
+#
+# $syslog_method = 'unix';    # Unix doman socket, perl5.004_03 or higher
+# $syslog_method = 'inet';    # UDP to port 514 of localhost
+# $syslog_method = '';        # Don't ever try to do syslogging.
+$syslog_method = 'logger';    # search for the logger program
+
+# The next two variables are the values to be used for syslog's facility and
+# level to use, as would be found in syslog.conf.  For various reasons, it is
+# impossible to economically have the script figure out how to do syslogging
+# correctly on the machine.  If you have INN and the script is able to
+# successfully include you innshellvars.pl file, then the value of
+# $inn::syslog_facility will override this value of $syslog_facility;
+# $syslog_level is unaffected.
+$syslog_facility = 'news';
+$syslog_level = 'err';
+
+# Prepend the error message with a timestamp?
+# This is only relevant if not syslogging, when errors go to stderr.
+#
+# $log_date = 0;  # zero means don't do it.
+# $log_date = 1;  # non-zero means do it.
+$log_date = -t STDOUT; # do it if STDOUT is to a terminal
+
+### Exit value:
+### 0  good signature
+### 1  no signature
+### 2  unknown signature
+### 3  bad signature
+### 255 problem not directly related to pgp analysis of signature
+
+# not syslogged, such an error is almost certainly from someone running
+# the script manually.
+die "Usage: $0 < message\n" if @ARGV != 0;
+
+$0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
+
+$pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
+$tmp = ($inn'pathtmp ? $inn'pathtmp : $tmpdir) . "/pgp$$";
+$lockdir = $inn'locks if $inn'locks;
+$syslog_facility = $inn'syslog_facility if $inn'syslog_facility;
+#
+# ... and it is expected some day that an INN variable will let perl
+# scripts know how syslogging should be done.
+
+# the call to pgp needs to be locked because it tries to both read and write
+# a file named randseed.bin but doesn't do its own locking as it should,
+# and the consequences of a multiprocess conflict is failure to verify.
+#
+$lock = "$lockdir/LOCK.$0";
+
+if (! -x $pgp) {
+  &fail("$0: $pgp: " . (-e _ ? "cannot execute" : "no such file") . "\n");
+}
+
+# this is, by design, case-sensitive with regards to the headers it checks.
+# it's also insistent about the colon-space rule.
+while (<>) {
+  # if a header line ends with \r\n, this article is in the encoding
+  # it would be in during an NNTP session.  some article storage
+  # managers keep them this way for efficiency.
+  $nntp_format = /\r\n$/ if $. == 1;
+  s/\r?\n$//;
+
+  last if /^$/;
+  if (/^(\S+):[ \t](.+)/) {
+    ($label, $value) = ($1, $2);
+    $dup{$label} = 1 if $header{$label};
+    $header{$label} = $value;
+  } elsif (/^\s/) {
+    &fail("$0: non-header at line $.: $_\n") unless $label;
+    $header{$label} .= "\n$_";
+  } else {
+    &fail("$0: non-header at line $.: $_\n");
+  }
+}
+
+$pgpheader = "X-PGP-Sig";
+exit 1 unless $_ = $header{$pgpheader}; # no signature
+
+# the regexp below might be too strict about the structure of pgp sig lines
+
+# the $sep value means the separator between the radix64 signature lines
+# can have any amount of spaces or tabs, but must have at least one space
+# or tab, if there is a newline then the space or tab has to follow the
+# newline.  any number of newlines can appear as long as each is followed
+# by at least one space or tab.   *phew*
+$sep = "[ \t]*(\n?[ \t]+)+";
+
+# match all of the characters in a radix64 string
+$r64 = '[a-zA-Z0-9+/]';
+
+&fail("$0: $pgpheader not in expected format\n")
+  unless /^(\S+)$sep(\S+)(($sep$r64{64})+$sep$r64+=?=?$sep=$r64{4})$/;
+
+($version, $signed_headers, $signature) = ($1, $3, $4);
+$signature =~ s/$sep/\n/g;
+
+$message  = "-----BEGIN PGP SIGNED MESSAGE-----\n\n";
+$message .= "X-Signed-Headers: $signed_headers\n";
+foreach $label (split(",", $signed_headers)) {
+  &fail("$0: duplicate signed $label header, can't verify\n")
+    if $dup{$label};
+  $message .= "$label: ";
+  $message .= "$header{$label}" if $header{$label};
+  $message .= "\n";
+}
+$message .= "\n";               # end of headers
+
+while (<>) {                    # read body lines
+  if ($nntp_format) {
+    # check for end of article; some news servers (eg, Highwind's "Breeze")
+    # include the dot-CRLF of the NNTP protocol in the article data passed
+    # to this script
+    last if $_ eq ".\r\n";
+
+    # remove NNTP encoding
+    s/^\.\./\./;
+    s/\r\n$/\n/;
+  }
+
+  s/^-/- -/;                    # pgp quote ("ASCII armor") dashes
+  $message .= $_;               # append to output string
+}
+
+$message .= "\n-----BEGIN PGP SIGNATURE-----\n";
+$message .= "Version: $version\n";
+$message .= $signature;
+$message .= "\n-----END PGP SIGNATURE-----\n";
+
+open(TMP,">> $tmp") || &fail("$0: open > $tmp: $!\n");
+
+-f TMP ||
+  &fail("$0: $tmp not a plain file, possible security violation attempt\n");
+(stat(_))[3] == 1 ||
+  &fail("$0: $tmp has hard links, possible security violation attempt\n");
+
+seek(TMP, 0, 0);                # make sure pointer is at beginning of file
+truncate(TMP, 0);               # make sure file is zero length
+
+print TMP $message;
+close(TMP) || &errmsg("$0: close > $tmp: $!\n");
+&fail("$0: write error for message to check\n")
+  if -s $tmp != length($message);
+
+print $message if $test;
+
+until (&shlock($lock) > 0) {
+  sleep(2);
+}
+
+open(PGP,"$pgp -f +language=en < $tmp 2>&1 >/dev/null |") ||
+  &fail("$0: failed to execute pgp: $!\n");
+
+undef $/;
+$_ = <PGP>;
+
+unlink($lock) || &errmsg("$0: unlink $lock: $!\n");
+unlink($tmp)  || &errmsg("$0: unlink $tmp: $!\n");
+
+unless (close(PGP)) {
+  if ($? >> 8) {
+    &errmsg("$0: pgp exited status " . ($? >> 8) . "\n");
+  } else {
+    &errmsg("$0: pgp died on signal " . ($? & 255) . "\n");
+  }
+}
+
+print if $test;
+
+# MIT PGP 2.6.2:
+#   Good signature from user "Robert Braver <rbraver@ohww.norman.ok.us>".
+# ViaCrypt PGP 4.0:
+#   Good signature from user:  Robert Braver <rbraver@ohww.norman.ok.us>
+# GnuPG (via pgpgpg)
+#   Good signature from "news.announce.newgroups"
+# PGP 5.0i:
+#   Good signature made 1997-07-09 21:57 GMT by key:
+#     1024 bits, Key ID B88DA9C1, Created 1996-04-10
+#      "news.announce.newgroups"
+
+$ok = 2;                        # unknown signature result is default
+if (/B[Aa][Dd] signature /) {
+  $ok = 3;
+} elsif (/Good signature from user(:  (.*)| "(.*)"\.)/ ||
+         /Good signature from "(.*)"/ ||
+         /Good signature made .* by key:\n.+\n +"(.*)"/) {
+  $ok = 0;
+  $signer = $+;
+} elsif (/Keyring file '(.*)' does not exist/) {
+  &fail("$0: couldn't access $1.  Bad \$HOME or \$PGPPATH?\n");
+}
+
+print "$signer\n" if $signer;
+exit $ok;
+
+sub
+errmsg
+
+{
+  $_[0] =~ s/\n$//;
+
+  $date = '';
+  if ($log_date) {
+    eval "require 'ctime.pl'";
+    ($date = &ctime(time)) =~ s/\d{4}\n//
+      unless $@;
+  }
+
+  if ($syslog_method eq "logger") {
+    @loggers = ('/usr/ucb/logger', '/usr/bin/logger', '/usr/local/bin/logger');
+    foreach $try (@loggers) {
+      if (-x $try) {
+        $syslog_method = $try;
+        last;
+      }
+    }
+    $syslog_method = '' if $syslog_method eq 'logger';
+  }
+
+  if ($syslog_method ne '' && $syslog_method !~ m%/logger$%) {
+    if ($] >= 5) {
+      eval "use Sys::Syslog";
+    } else { 
+      eval "require 'syslog.pl'";
+    }
+  }
+
+  if ($@ || $syslog_method eq '') {
+    warn $date, "$0: trying to use perl's syslog: $@\n" if $@;
+    warn $date, $_[0], "\n";
+    warn $date, "... while processing $header{'Message-ID'}\n"
+      if $header{'Message-ID'};
+
+  } else {
+    $_[0] .= " processing $header{'Message-ID'}"
+      if $header{'Message-ID'};
+
+    if ($syslog_method =~ m%/logger$%) {
+      unless (system($syslog_method, "-i", "-p",
+                     "$syslog_facility.$syslog_level", $_[0]) == 0) {
+        if ($? >> 8) {
+          warn $date, "$0: $syslog_method exited status ",  $? >>  8, "\n";
+        } else {
+          warn $date, "$0: $syslog_method died on signal ", $? & 255, "\n";
+        }
+        $syslog_method = '';
+        &errmsg($_[0]);
+      }
+
+    } else {
+      # setlogsock arrived in perl 5.004_03 to enable Sys::Syslog
+      # to use a Unix domain socket to talk to syslogd, which is
+      # the only way to do it when syslog runs with the -l switch.
+      if ($syslog_method eq "unix") {
+        if ($^O eq "dec_osf") {
+          sub Sys::Syslog::_PATH_LOG { "/dev/log" }
+        }
+        if ($] <= 5.00403 || ! eval "setlogsock('unix')") {
+          warn $date, "$0: cannot use syslog_method 'unix' on this system\n";
+          $syslog_method = '';
+          &errmsg($_[0]);
+        }
+      }
+      
+      # unfortunately, there is no way to definitively know in this program if
+      # the message was logged.  I wish there were a way to send a message
+      # to stderr if and only if the syslog attempt failed.
+      &openlog($0, 'pid', $syslog_facility);
+      &syslog($syslog_level, $_[0]);
+      &closelog();
+    }
+  }
+}
+
+sub
+fail
+
+{
+  unlink($tmp);
+
+  &errmsg($_[0]);
+
+  exit 255;
+}
+
+# get a lock in essentially the same fashion as INN's shlock.
+# return 1 on success, 0 for normal failure, -1 for abnormal failure.
+# "normal failure" is that a lock is apparently in use by someone else.
+sub shlock {
+  local($file) = @_;
+  local($ltmp, $pid);
+
+  unless (defined(&ENOENT)) {
+    eval "require POSIX qw(:errno_h)";
+    if ($@) {
+      # values taken from BSD/OS 3.1
+      sub ENOENT {  2 }
+      sub ESRCH  {  3 }
+      sub EEXIST { 17 }
+    }
+  }
+
+  $ltmp = ($file =~ m#(.*/)#)[0] . "shlock$$";
+
+  # this should really attempt to use another temp name
+  -e $ltmp && (unlink($ltmp) || return -1);
+
+  open(LTMP, ">$ltmp") || return -1;
+  print LTMP "$$\n" || (unlink($ltmp), return -1);
+  close(LTMP) || (unlink($ltmp), return -1);
+
+  if (!link($ltmp, $file)) {
+    if ($! == &EEXIST) {
+      if (open(LOCK, "<$file")) {
+        $pid = <LOCK>;
+        if ($pid =~ /^\d+$/ && (kill(0, $pid) == 1 || $! != &ESRCH)) { 
+          unlink($ltmp);
+          return 0;
+        }
+
+        # ok, the pid in the lockfile is not a number or no longer exists.
+        close(LOCK);            # silent failure is ok here
+
+        # unlink failed 
+        if (unlink($file) != 1 && $! != &ENOENT) {
+          unlink($ltmp);
+          return 0;
+        }
+
+      # check if open failed for reason other than file no longer present
+      } elsif ($! != &ENOENT) { 
+        unlink($ltmp);
+        return -1;
+      }
+
+      # either this process unlinked the lockfile because it was bogus,
+      # or between this process's link() and open() the other process
+      # holding the lock unlinked it.  This process can now try to aquire.
+      if (! link($ltmp, $file)) {
+        unlink($ltmp);
+        return $! == &EEXIST ? 0 : -1; # maybe another proc grabbed the lock
+      }
+
+    } else {                    # first attempt to link failed
+      unlink($ltmp);
+      return 0;
+    }
+  }
+  unlink($ltmp);
+  return 1;
+}
+
+# Our lawyer told me to include the following.  The upshot of it is
+# that you can use the software for free as much as you like.
+
+# Copyright (c) 1996 UUNET Technologies, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. All advertising materials mentioning features or use of this software
+#    must display the following acknowledgement:
+#      This product includes software developed by UUNET Technologies, Inc.
+# 4. The name of UUNET Technologies ("UUNET") may not be used to endorse or
+#    promote products derived from this software without specific prior
+#    written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY UUNET ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL UUNET BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
