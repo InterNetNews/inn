@@ -867,15 +867,7 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	}
     }
     if (pagesize == 0) {
-#ifdef  XXX
-	if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
-	    syslog(L_ERROR, "%s: sysconf(_SC_PAGESIZE) failed: %m", LocalLogName);
-	    SMseterror(SMERR_INTERNAL, "sysconf(_SC_PAGESIZE) failed");
-	    return NULL;
-	}
-#else   /* XXX */
-	pagesize = 16384;	/* XXX Need comprehensive, portable solution */
-#endif  /* XXX */
+	pagesize = 16384;	/* portable solution */
     }
     if (STORAGE_TOKEN_LENGTH < 16) {
 	syslog(L_ERROR, "%s: token length is less than 16 bytes", LocalLogName);
