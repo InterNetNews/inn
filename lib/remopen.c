@@ -19,17 +19,6 @@
 #include "nntp.h"
 #include "paths.h"
 
-/* We don't want to accidentally use IPv6 if we were built without it, even if
-   we end up using the system getaddrinfo with IPv6 support.  We can do that
-   by hinting getaddrinfo away from returning IPv6 addresses.  We set this
-   constant to AF_UNSPEC if we have IPv6 support or AF_INET if we don't and
-   then use it in hints. */
-#if HAVE_INET6
-# define NETWORK_AF_HINT AF_UNSPEC
-#else
-# define NETWORK_AF_HINT AF_INET
-#endif
-
 
 /*
 **  Open a connection to an NNTP server and create stdio FILE's for talking
