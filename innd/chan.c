@@ -9,6 +9,11 @@
 #include "clibrary.h"
 #include "innd.h"
 
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+
 /* Minutes - basically, keep the connection open but idle */
 #define PAUSE_BEFORE_DROP               5
 

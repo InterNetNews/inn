@@ -84,6 +84,11 @@ Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 #include <macros.h>
 #include <dbz.h>
 
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+
 /*
  * "LIA" = "leave it alone unless you know what you're doing".
  *

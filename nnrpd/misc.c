@@ -14,6 +14,11 @@
 #endif	/* defined(DO_NEED_TIME) */
 #include <sys/time.h>
 
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+
 STATIC BOOL		setup = FALSE;
 STATIC FILE		*hfp = NULL;
 STATIC ino_t		ino = 0;

@@ -30,6 +30,11 @@
 #include <libinn.h>
 #include <nntp.h>
 
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+
 #define AUTH_VECTOR_LEN 16
 
 typedef struct _auth_req {

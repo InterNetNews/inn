@@ -2,6 +2,7 @@
 **
 **  Library routines to let other programs control innd.
 */
+#include "config.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -26,6 +27,10 @@
 #include "inndcomm.h"
 #include "macros.h"
 
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
 
 #define MIN_BUFFER_SIZE		4096
 
