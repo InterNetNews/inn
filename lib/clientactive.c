@@ -59,6 +59,8 @@ FILE *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer, char *reques
     if (fgets(buff, sizeof buff, FromServer) == NULL
      || !EQn(buff, NNTP_LIST_FOLLOWS, STRLEN(NNTP_LIST_FOLLOWS))) {
 	oerrno = errno;
+	/* Only call CAclose() if opened through CAopen() */
+	if (strcmp(CApathname, pathname) == 0) CAclose();
 	CAclose();
 	errno = oerrno;
 	return NULL;

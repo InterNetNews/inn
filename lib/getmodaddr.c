@@ -110,6 +110,9 @@ char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group)
         (void)strcpy(GMApathname, _PATH_TEMPMODERATORS);
         (void)mktemp(GMApathname);
         GMAfp = GMA_listopen(GMApathname, FromServer, ToServer, "moderators");
+	/* Fallback to the local copy if the server doesn't have it */
+	if (GMAfp == NULL)
+	    GMAfp = fopen(cpcatpath(innconf->pathetc, _PATH_MODERATORS), "r");
     }
 
     if (GMAfp != NULL) {
