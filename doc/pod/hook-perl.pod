@@ -302,8 +302,10 @@ any of the headers are duplicated, though, %hdr will contain only the
 value of the second occurance of the header.  nnrpd will reject the
 article before the filter runs if any of the standard headers are
 duplicated.)  It also has access to the full body of the article in the
-variable $body, and if the poster authenticated via AUTHINFO, it has
-access to the authenticated username of the poster in the variable $user.
+variable $body, and if the poster authenticated via AUTHINFO (or if either
+Perl authentication or a readers.conf authentication method is used and
+produces user information), it has access to the authenticated username of
+the poster in the variable $user.
 
 Unlike the innd Perl filter, the nnrpd Perl filter can modify the %hdr
 hash.  In fact, if the Perl variable $modify_headers is set to true after
@@ -370,12 +372,13 @@ will contain its IP address (as a string).  If type was "authenticate",
 C<$attributes{username}> will contain the provided username and
 C<$attributes{password}> the password.
 
-authenticate() should return a four-element array.  The first element is
+authenticate() should return a five-element array.  The first element is
 the NNTP response code to return to the client, the second element is a
 boolean value indicating whether the client is allowed to read, the third
 element is a boolean value indicating whether the client is allowed to
-post, and the fourth element is a wildmat(3) expression that says what
-groups the client is allowed to read.
+post, the fourth element is a wildmat(3) expression that says what groups
+the client is allowed to read, and the fifth element is the maximum bytes
+per second a client is permitted to use for retrieving articles.
 
 If type is connect, the NNTP response code should probably be chosen from
 one of the following values:  200 (reading and posting allowd), 201 (no
