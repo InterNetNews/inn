@@ -2100,7 +2100,7 @@ fi
 
 test -n "$GETFTP" && break
 done
-test -n "$GETFTP" || GETFTP="\$NEWSBIN/simpleftp"
+test -n "$GETFTP" || GETFTP="$prefix/bin/simpleftp"
 
 
 if test "x$DO_LFS" = "xDO"
