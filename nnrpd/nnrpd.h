@@ -20,6 +20,7 @@
 #include "paths.h"
 #include "storage.h"
 #include "inn/vector.h"
+#include "inn/timer.h"
 
 /*
 **  Maximum input line length, sigh.
@@ -54,6 +55,7 @@ typedef struct _ACCESSGROUP {
     char *users;
     char *rejectwith;
     int allownewnews;
+    bool allowihave;
     int locpost;
     int allowapproved;
     int used;
@@ -109,6 +111,15 @@ typedef struct _ARTOVERFIELD {
     int		Length;
     bool	NeedsHeader;
 } ARTOVERFIELD;
+
+/*
+**  Supported timers.  If you add new timers to this list, also add them to
+**  the list of tags in chan.c.
+*/
+enum timer {
+    TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
+    TMR_MAX
+};
 
 #if	defined(MAINLINE)
 #define EXTERN	/* NULL */
@@ -189,7 +200,8 @@ EXTERN struct history *History;
 #if	NNRP_LOADLIMIT > 0
 extern int		GetLoadAverage(void);
 #endif	/* NNRP_LOADLIMIT > 0 */
-extern const char	*ARTpost(char *article, char *idbuff);
+extern const char	*ARTpost(char *article, char *idbuff, bool ihave,
+				 bool *permanent);
 extern void		ARTclose(void);
 extern bool		ARTreadschema(void);
 extern char		*Glom(char **av);

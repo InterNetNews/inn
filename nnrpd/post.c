@@ -306,7 +306,7 @@ CheckDistribution(register char *p)
 **  Return NULL if okay, or an error message.
 */
 static const char *
-ProcessHeaders(int linecount, char *idbuff)
+ProcessHeaders(int linecount, char *idbuff, bool ihave)
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     static char		datebuff[40];
@@ -332,16 +332,18 @@ ProcessHeaders(int linecount, char *idbuff)
         return Error;
     }
 
-    /* Do some preliminary fix-ups. */
-    for (hp = Table; hp < ENDOF(Table); hp++) {
-	if (!hp->CanSet && hp->Value) {
-	    (void)sprintf(Error, "Can't set system \"%s\" header", hp->Name);
-	    return Error;
-	}
-	if (hp->Value) {
-	    hp->Value = TrimSpaces(hp->Value);
-	    if (*hp->Value == '\0')
-		hp->Value = NULL;
+    if (!ihave) {
+	/* Do some preliminary fix-ups. */
+	for (hp = Table; hp < ENDOF(Table); hp++) {
+	    if (!hp->CanSet && hp->Value) {
+		sprintf(Error, "Can't set system \"%s\" header", hp->Name);
+		return Error;
+	    }
+	    if (hp->Value) {
+		hp->Value = TrimSpaces(hp->Value);
+		if (*hp->Value == '\0')
+		    hp->Value = NULL;
+	    }
 	}
     }
 
@@ -370,6 +372,8 @@ ProcessHeaders(int linecount, char *idbuff)
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
         return "Can't generate date header";
     if (HDR(HDR__DATE) == NULL) {
+	if (ihave)
+	    return "Missing \"Date\" header";
         if (PERMaccessconf->localtime) {
             if (!makedate(-1, true, localdatebuff, sizeof(localdatebuff)))
                 return "Can't generate local date header";
@@ -403,11 +407,15 @@ ProcessHeaders(int linecount, char *idbuff)
 
     /* Set Message-ID */
     if (HDR(HDR__MESSAGEID) == NULL) {
+	if (ihave)
+	    return "Missing \"Message-ID\" header";
 	HDR(HDR__MESSAGEID) = idbuff;
     }
 
     /* Set Path */
     if (HDR(HDR__PATH) == NULL) {
+ 	if (ihave)
+	    return "Missing \"Path\" header";
 	/* Note that innd will put host name here for us. */
 	HDR(HDR__PATH) = PATHMASTER;
 	if (VirtualPathlen > 0)
@@ -467,7 +475,7 @@ ProcessHeaders(int linecount, char *idbuff)
     }
 
     /* Set Organization */
-    if (HDR(HDR__ORGANIZATION) == NULL
+    if (!ihave && HDR(HDR__ORGANIZATION) == NULL
      && (p = PERMaccessconf->organization) != NULL) {
 	(void)strcpy(orgbuff, p);
 	HDR(HDR__ORGANIZATION) = orgbuff;
@@ -478,16 +486,18 @@ ProcessHeaders(int linecount, char *idbuff)
     /* Approved; left alone. */
 
     /* Set Lines */
-    (void)sprintf(linebuff, "%d", linecount);
-    HDR(HDR__LINES) = linebuff;
+    if (!ihave) {
+	(void)sprintf(linebuff, "%d", linecount);
+	HDR(HDR__LINES) = linebuff;
+    }
 
     /* Supersedes; left alone. */
 
     /* NNTP-Posting host; set. */
-    if (PERMaccessconf->addnntppostinghost) 
+    if (!ihave && PERMaccessconf->addnntppostinghost) 
     HDR(HDR__NNTPPOSTINGHOST) = ClientHost;
     /* NNTP-Posting-Date - not in RFC (yet) */
-    if (PERMaccessconf->addnntppostingdate)
+    if (!ihave && PERMaccessconf->addnntppostingdate)
     HDR(HDR__NNTPPOSTINGDATE) = datebuff;
 
     /* X-Trace; set */
@@ -508,17 +518,19 @@ ProcessHeaders(int linecount, char *idbuff)
 
     /* X-Complaints-To; set */
     if ((p = PERMaccessconf->complaints) != NULL)
-      sprintf (complaintsbuff, "%s",p) ;
+	sprintf (complaintsbuff, "%s", p) ;
     else {
-      if ((p = PERMaccessconf->fromhost) != NULL && strchr(NEWSMASTER, '@') == NULL)
-	sprintf (complaintsbuff, "%s@%s", NEWSMASTER, p);
-      else
-	sprintf (complaintsbuff, "%s", NEWSMASTER);
+	static const char newsmaster[] = NEWSMASTER;
+
+	if ((p = PERMaccessconf->fromhost) != NULL && strchr(newsmaster, '@') == NULL)
+	    sprintf (complaintsbuff, "%s@%s", newsmaster, p);
+	else
+	    sprintf (complaintsbuff, "%s", newsmaster);
     }
     HDR(HDR__XCOMPLAINTSTO) = complaintsbuff ;
 
     /* Clear out some headers that should not be here */
-    if (PERMaccessconf->strippostcc) {
+    if (!ihave && PERMaccessconf->strippostcc) {
 	HDR(HDR__CC) = NULL;
 	HDR(HDR__BCC) = NULL;
 	HDR(HDR__TO) = NULL;
@@ -921,9 +933,10 @@ static char *Towire(char *p) {
 }
 
 const char *
-ARTpost(article, idbuff)
-    char		*article;
-    char		*idbuff;
+ARTpost(char *article,
+	char *idbuff,
+	bool ihave,
+	bool *permanent)
 {
     static char		CANTSEND[] = "Can't send %s to server, %s";
     register int	i;
@@ -940,6 +953,9 @@ ARTpost(article, idbuff)
     FILE		*ftd;
     int			len;
     char		SDir[255];
+
+    /* Assume errors are permanent, until we discover otherwise */
+    *permanent = true;
 
     /* Set up the other headers list. */
     if (OtherHeaders == NULL) {
@@ -963,7 +979,7 @@ ARTpost(article, idbuff)
 	if ((error = CheckIncludedText(article, i)) != NULL)
 		return error;
     }
-    if ((error = ProcessHeaders(i, idbuff)) != NULL)
+    if ((error = ProcessHeaders(i, idbuff, ihave)) != NULL)
 	return error;
     if (i == 0 && HDR(HDR__CONTROL) == NULL)
 	return "Article is empty";
@@ -1049,15 +1065,14 @@ ARTpost(article, idbuff)
 
     /* handle mailing to moderated groups */
 
-    if (modgroup)
-    {
-      if (idbuff != NULL) {
-          const char *retstr;
-          retstr = MailArticle(modgroup, article);
-          strcpy (idbuff,"(mailed to moderator)") ;
-	  return retstr;
-      }
-      return MailArticle(modgroup, article);
+    if (modgroup) {
+	if (idbuff != NULL) {
+	    const char *retstr;
+	    retstr = MailArticle(modgroup, article);
+	    strcpy (idbuff,"(mailed to moderator)") ;
+	    return retstr;
+	}
+	return MailArticle(modgroup, article);
     }
 
     if (PERMaccessconf->spoolfirst)
@@ -1110,7 +1125,10 @@ ARTpost(article, idbuff)
     if (i != NNTP_SENDIT_VAL) {
         (void)strcpy(Error, buff);
         SendQuit(FromServer, ToServer);
-        return (i != NNTP_HAVEIT_VAL ? Spoolit(article, Error) : Error) ;
+	if (i != NNTP_HAVEIT_VAL)
+	    return Spoolit(article, Error);
+	*permanent = false;
+        return Error;
     }
     if (Tracing)
 	syslog(L_TRACE, "%s post starting", ClientHost);
@@ -1159,7 +1177,10 @@ ARTpost(article, idbuff)
 	(void)strcpy(Error, buff);
 	SendQuit(FromServer, ToServer);
 	syslog(L_TRACE, "%s server rejects %s from %s", ClientHost, HDR(HDR__MESSAGEID), HDR(HDR__PATH));
-	return (i != NNTP_REJECTIT_VAL ? Spoolit(article, Error) : Error) ;
+	if (i != NNTP_REJECTIT_VAL && i != NNTP_HAVEIT_VAL)
+	    return Spoolit(article, Error);
+	*permanent = false;
+	return Error;
     }
 
     /* Send a quit and close down */

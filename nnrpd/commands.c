@@ -199,6 +199,7 @@ PERMgeneric(char *av[], char *accesslist)
     PERMcanpost = strchr(fields[1], 'P') != NULL;
     PERMaccessconf->allowapproved = strchr(fields[1], 'A') != NULL;
     PERMaccessconf->locpost = strchr(fields[1], 'L') != NULL;
+    PERMaccessconf->allowihave = strchr(fields[1], 'I') != NULL;
     if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = TRUE;
     sprintf(PERMuser, "%s@%s", fields[2], fields[0]);
     (void)strcpy(PERMpass, fields[3]);
@@ -722,9 +723,15 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     const char *response;
     char	idbuff[SMBUF];
     static int	backoff_inited = FALSE;
+    bool	ihave, permanent;
 
-
-    if (!PERMcanpost) {
+    ihave = caseEQ(av[0], "ihave");
+    if (ihave && (!PERMaccessconf->allowihave || !PERMcanpost)) {
+	syslog(L_NOTICE, "%s noperm ihave without permission", ClientHost);
+	Reply("%s\r\n", NNTP_ACCESS);
+	return;
+    }
+    if (!ihave && !PERMcanpost) {
 	syslog(L_NOTICE, "%s noperm post without permission", ClientHost);
 	Reply("%s\r\n", NNTP_CANTPOST);
 	return;
@@ -780,19 +787,23 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	article = NEW(char, size);
     }
     idbuff[0] = 0;
-    if ((p = GenerateMessageID(PERMaccessconf->domain)) != NULL) {
-	if (VirtualPathlen > 0) {
-	    q = p;
-	    if ((p = strchr(p, '@')) != NULL) {
-		*p = '\0';
-		sprintf(idbuff, "%s%s@%s>", q, NNRPinstance,
-			PERMaccessconf->domain);
+    if (ihave) {
+	Reply(NNTP_SENDIT "\r\n");
+    } else {
+	if ((p = GenerateMessageID(PERMaccessconf->domain)) != NULL) {
+	    if (VirtualPathlen > 0) {
+		q = p;
+		if ((p = strchr(p, '@')) != NULL) {
+		    *p = '\0';
+		    sprintf(idbuff, "%s%s@%s>", q, NNRPinstance,
+			    PERMaccessconf->domain);
+		}
+	    } else {
+		strcpy(idbuff, p);
 	    }
-	} else {
-	    strcpy(idbuff, p);
 	}
+	Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);
     }
-    Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);
     (void)fflush(stdout);
 
     p = article;
@@ -854,16 +865,17 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 
     if (longline) {
 	syslog(L_NOTICE, "%s toolong in post", ClientHost);
+	/* ihave */
 	Printf("%d Line %d too long\r\n", NNTP_POSTFAIL_VAL, longline);
 	POSTrejected++;
 	return;
     }
 
     /* Send the article to the server. */
-    response = ARTpost(article, idbuff);
+    response = ARTpost(article, idbuff, ihave, &permanent);
     if (response == NULL) {
 	syslog(L_NOTICE, "%s post ok %s", ClientHost, idbuff);
-	Reply("%s %s\r\n", NNTP_POSTEDOK, idbuff);
+	Reply("%s %s\r\n", ihave ? NNTP_TOOKIT : NNTP_POSTEDOK, idbuff);
 	POSTreceived++;
     }
     else {
@@ -872,7 +884,16 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	if ((p = strchr(response, '\n')) != NULL)
 	    *p = '\0';
 	syslog(L_NOTICE, "%s post failed %s", ClientHost, response);
-	Reply("%d %s\r\n", NNTP_POSTFAIL_VAL, response);
+	if (!ihave || permanent) {
+	    /* for permanent errors reject the message */
+	    Reply("%d %s\r\n", ihave ? NNTP_REJECTIT_VAL : NNTP_POSTFAIL_VAL,
+		  response);
+	} else {
+	    /* non-permanent errors only have relevance to ihave, for
+	     * these we have the error status from the upstream
+	     * server to report */
+	    Reply("%s\r\n", response);
+	}
 	POSTrejected++;
     }
 }

@@ -9,6 +9,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/wait.h"
+#include "inn/messages.h"
 
 #include "libinn.h"
 #include "ov.h"
@@ -122,8 +123,8 @@ static CMDENT	CMDtable[] = {
 	CMDfetchhelp },
     {	"help",		CMDhelp,	FALSE,	1,	CMDany,
 	NULL },
-    {	"ihave",	CMD_unimp,	TRUE,	1,	2,
-	NULL },
+    {	"ihave",	CMDpost,	TRUE,	2,	2,
+	"MessageID" },
     {	"last",		CMDnextlast,	TRUE,	1,	1,
 	NULL },
     {	"list",		CMDlist,	TRUE,	1,	3,
@@ -227,6 +228,7 @@ ExitWithStats(int x, bool readconf)
 
     if (LocalLogFileName != NULL)
 	DISPOSE(LocalLogFileName);
+    closelog();
     exit(x);
 }
 
@@ -292,9 +294,7 @@ CMD_unimp(ac, av)
     int		ac UNUSED;
     char	*av[];
 {
-    if (caseEQ(av[0], "ihave"))
-	Reply("%d Transfer permission denied\r\n", NNTP_AUTH_NEEDED_VAL);
-    else if (caseEQ(av[0], "slave"))
+    if (caseEQ(av[0], "slave"))
 	/* Somebody sends us this?  I don't believe it! */
 	Reply("%d Unsupported\r\n", NNTP_SLAVEOK_VAL);
     else
@@ -807,6 +807,7 @@ Usage(void)
 int
 main(int argc, char *argv[])
 {
+    const char *name;
 #if	NNRP_LOADLIMIT > 0
     int			load;
 #endif	/* NNRP_LOADLIMIT > 0 */
@@ -851,6 +852,7 @@ main(int argc, char *argv[])
     struct group	*grp;
     gid_t		shadowgid;
 #endif /* HAVE_GETSPNAM */
+    bool		filter = true;
 
 #ifdef HAVE_SSL
     int ssl_result;
@@ -870,14 +872,30 @@ main(int argc, char *argv[])
     MaxBytesPerSecond = 0;
     strcpy(Username, "unknown");
 
-    openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    /* Set up the pathname, first thing, and teach our error handlers about
+       the name of the program. */
+    name = COPY(argv[0]);
+    if (name == NULL || *name == '\0')
+	name = "nnrpd";
+    else {
+	const char *p;
+
+	p = strrchr(name, '/');
+	if (p != NULL)
+	    name = p + 1;
+    }
+    message_program_name = name;
+    openlog(name, L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_handlers_die(1, message_log_syslog_crit);
+    message_handlers_warn(1, message_log_syslog_warning);
+    message_handlers_notice(1, message_log_syslog_notice);
 
     if (ReadInnConf() < 0) exit(1);
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nNop:Rr:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nop:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "c:b:Dfi:I:g:nNop:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
@@ -909,6 +927,9 @@ main(int argc, char *argv[])
 	    break;
 	case 'n':			/* No DNS lookups */
 	    GetHostByAddr = FALSE;
+	    break;
+	case 'N':			/* Disable filters */
+	    filter = false;
 	    break;
 	case 'o':
 	    Offlinepost = TRUE;		/* Offline posting only */
@@ -1092,6 +1113,10 @@ main(int argc, char *argv[])
 	/* Arrange to toggle tracing. */
 	(void)xsignal(SIGHUP, ToggleTrace);
  
+	if (!filter) {
+	    PerlFilter(false);
+	}
+
 	TITLEset("nnrpd: accepting connections");
  	
 	listen(lfd, 128);	

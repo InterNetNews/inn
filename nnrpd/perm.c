@@ -436,6 +436,7 @@ static void SetDefaultAuth(AUTHGROUP *curauth UNUSED)
 void SetDefaultAccess(ACCESSGROUP *curaccess)
 {
     curaccess->allownewnews = innconf->allownewnews;;
+    curaccess->allowihave = false;
     curaccess->locpost = FALSE;
     curaccess->allowapproved = FALSE;
     curaccess->localtime = FALSE;
@@ -829,6 +830,7 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
 	}
 	curaccess->allowapproved = (strchr(tok->name, 'A') != NULL);
 	curaccess->allownewnews = (strchr(tok->name, 'N') != NULL);
+	curaccess->allowihave = (strchr(tok->name, 'I') != NULL);
 	curaccess->locpost = (strchr(tok->name, 'L') != NULL);
 	SET_CONFIG(oldtype);
 	break;

@@ -29,6 +29,9 @@ nnrpd \- NNTP server for on-campus hosts
 .B \-n
 ]
 [
+.B \-N
+]
+[
 .B \-o
 ]
 [
@@ -171,6 +174,11 @@ with the same virtual hostname and must be disambiguated during posts.
 The ``\-n'' flag turns off resolution of IP addresses to names.  If you only
 use IP-based restrictions in readers.conf and can handle IP addresses in your
 logs, using this flag may result in some additional speed.
+.TP
+.B \-N
+If this option is given, any filters (Perl, Tcl, or Python) are disabled
+before B<nnrpd> starts (normally, filters default to being enabled).  Note
+there is no way to re-enable the filters.
 .TP
 .B \-o
 The ``\-o'' flag causes all articles to be spooled instead of sending

@@ -329,6 +329,12 @@ The client may read articles.
 
 The client may post articles.
 
+=item I
+
+The client may inject articles with IHAVE.  Note that in order to
+inject articles with the IHAVE the user must also have POST permission
+(the C<P> option).
+
 =item A
 
 The client may post articles with Approved: headers (in other words, may

@@ -564,24 +564,6 @@ instead.
 
 ------------------------------
 
-  Summary: nnrpd responds with 480 to IHAVE
- Standard: draft-ietf-nntpext-base-13.txt, section 9.3.2.1
-  Version: 1.4 to CURRENT 2001-07-04
-Reference: nnrpd/nnrpc.c CMD_unimp()
- Severity: Violates a MUST
-
-nnrpd responds to all IHAVE commands with a 480 response (saying that
-authentication is needed).  This is nonsensical; nnrpd will never accept
-an IHAVE command no matter how the user authenticates.
-
-Impact:  A client may think that IHAVE will be possible after
-authentication.
-
-Suggested fix:  Return 502 instead, which more clearly states that the
-user is not permitted to use that command in the current server state.
-
-------------------------------
-
   Summary: nnrpd doesn't handle zero-argument LISTGROUP
  Standard: draft-ietf-nntpext-base-13.txt, section 9.5.1.1
   Version: 2.3 to CURRENT 2001-07-04
