@@ -1,19 +1,18 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Send control messages to the InterNetNews daemon.
 */
-#include <stdio.h>
-#include <sys/types.h>
-#include "configdata.h"
+#include "config.h"
 #include "clibrary.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include "libinn.h"
-#include "inndcomm.h"
-#include "paths.h"
-#include "macros.h"
 #include <syslog.h>  
+
+#include "inndcomm.h"
+#include "libinn.h"
+#include "macros.h"
+#include "paths.h"
 
 
 /*
@@ -268,18 +267,6 @@ int main(int ac, char *av[])
 	case 3:
 	    break;
 	}
-	switch (av[1][0]) {
-	default:
-	    Usage("Bad group mode");
-	    /* NOTREACHED */
-	case NF_FLAG_ALIAS:
-	case NF_FLAG_EXCLUDED:
-	case NF_FLAG_MODERATED:
-	case NF_FLAG_OK:
-	case NF_FLAG_NOLOCAL:
-	case NF_FLAG_IGNORE:
-	    break;
-	}
 	ac = 3;
     }
     else if (ac > cp->argc && cp->Glue) {
@@ -297,6 +284,22 @@ int main(int ac, char *av[])
     else if (ac != cp->argc)
 	/* All other commands must have the right number of arguments. */
 	WrongArgs(cp);
+
+    /* For newgroup and changegroup, make sure the mode is valid. */
+    if (cp->Letter == SC_NEWGROUP || cp->Letter == SC_CHANGEGROUP) {
+	switch (av[1][0]) {
+	default:
+	    Usage("Bad group mode");
+	    /* NOTREACHED */
+	case NF_FLAG_ALIAS:
+	case NF_FLAG_EXCLUDED:
+	case NF_FLAG_MODERATED:
+	case NF_FLAG_OK:
+	case NF_FLAG_NOLOCAL:
+	case NF_FLAG_IGNORE:
+	    break;
+	}
+    }
 
     /* Make sure there are no separators in the parameters. */
     for (i = 0; (p = av[i++]) != NULL; )
