@@ -530,6 +530,14 @@ which must be a channel or exploder feed.
 can be a numeric signal number or the word ``hup,'' ``int,'' or ``term'';
 case is not significant.
 .TP
+.BI stathist " flag"
+Enable or disable getting statistics of history performance.  It disables if
+.I flag
+is ``off''.  Otherwise
+.I flag
+is treated as a filename to be written.  The file can be parsed by
+I contrib/stathist.pl .
+.TP
 .BI tcl " flag"
 Enable or disable Tcl news filtering, if
 .IR <\-\-with\-tcl\ is\ specified\ at\ configure> .

@@ -287,6 +287,7 @@ struct conf_vars {
     int nntplinklog;            /* Put storage token into the log? */
     int status;                 /* Status file update interval */
     int timer;                  /* Performance monitoring interval */
+    char *stathist;		/* Filename for history profiler outputs */
 
     /* System Tuning */
     int badiocount;             /* Failure count before dropping channel */

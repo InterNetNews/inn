@@ -17,6 +17,14 @@ typedef struct __HISCACHE {
 
 typedef enum {HIScachehit, HIScachemiss, HIScachedne} HISresult;
 
+enum { S_HIScacheadd, S_HIScachelookup, S_HISsetup, S_HISsync,
+       S_HISlogstats, S_HISclose, S_HISfilesfor, S_HIShavearticle,
+       S_HISwrite, S_HISremember, S_HIS_MAX };
+
+static struct timeval HISstat_start[S_HIS_MAX];
+static struct timeval HISstat_total[S_HIS_MAX];
+static unsigned long  HISstat_count[S_HIS_MAX];
+
 static char		*HIShistpath = NULL;
 static FILE		*HISwritefp;
 static int		HISreadfd;
@@ -28,6 +36,66 @@ static int              HIShitneg;      /* In cache, not in history */
 static int              HISmisses;      /* Not in cache, in history */
 static int              HISdne;         /* Not in cache or history */
 static time_t		HISlastlog;     /* Last time that we logged stats */   
+static FILE             *HISfdlog = NULL; /* filehandle for history logging purpose */
+
+void HISlogclose() {
+   if (HISfdlog != NULL)
+       Fclose(HISfdlog);
+   HISfdlog = NULL;
+}
+
+void HISlogto(char *s) {
+   int i;
+
+   HISlogclose();
+   if ((HISfdlog = Fopen(s, "a")) == NULL)
+       syslog(L_FATAL, "%s cant open %s %m", LogName, s);
+   /* initialize our counters */
+   for (i = 0; i < S_HIS_MAX; i++) {
+       HISstat_start[i].tv_sec = 0;
+       HISstat_start[i].tv_usec = 0;
+       HISstat_total[i].tv_sec = 0;
+       HISstat_total[i].tv_usec = 0;
+       HISstat_count[i] = 0;
+   }
+}
+
+static void HISlogger(char *s, int code) {
+  struct timeval tv;
+  struct tm *tm;
+
+  if (HISfdlog == NULL) /* do nothing unless HISlogto() has been called */
+      return;
+
+  gettimeofday(&tv, NULL);
+  tm = localtime(&(tv.tv_sec));
+  if (HISstat_start[code].tv_sec != 0) {
+      fprintf(HISfdlog, "%d/%d/%d %02d:%02d:%02d.%06d: [%d] %s (%.6f)\n",
+          tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
+          tm->tm_min, tm->tm_sec, tv.tv_usec, code, s, (float) tv.tv_sec +
+          (float) tv.tv_usec / 1000000 - (float) HISstat_start[code].tv_sec -
+          (float) HISstat_start[code].tv_usec / 1000000);
+      if (tv.tv_usec < HISstat_start[code].tv_usec) {
+          HISstat_total[code].tv_sec++;
+	  HISstat_total[code].tv_usec +=
+              tv.tv_usec - HISstat_start[code].tv_usec + 1000000;
+      }
+      else
+          HISstat_total[code].tv_usec +=
+              tv.tv_usec - HISstat_start[code].tv_usec;
+      HISstat_total[code].tv_sec += tv.tv_sec - HISstat_start[code].tv_sec;
+      HISstat_count[code]++;
+      HISstat_start[code].tv_sec = 0;
+      HISstat_start[code].tv_usec = 0;
+   }
+   else {
+      fprintf(HISfdlog, "%d/%d/%d %02d:%02d:%02d.%06d: [%d] %s\n",
+          tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
+          tm->tm_min, tm->tm_sec, tv.tv_usec, code, s);
+      HISstat_start[code].tv_sec = tv.tv_sec;
+      HISstat_start[code].tv_usec = tv.tv_usec;
+   }
+}
 
 /*
 ** Put an entry into the history cache 
@@ -36,12 +104,16 @@ void
 HIScacheadd(HASH MessageID, bool Found) {
     unsigned int  i, loc;
 
-    if (HIScache == NULL)
+    HISlogger("HIScacheadd begin", S_HIScacheadd);
+    if (HIScache == NULL) {
+        HISlogger("HIScacheadd end", S_HIScacheadd);
 	return;
+    }
     memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - sizeof(loc)), sizeof(loc));
     i = loc % HIScachesize;
     memcpy((char *)&HIScache[i].Hash, (char *)&MessageID, sizeof(HASH));
     HIScache[i].Found = Found;
+    HISlogger("HIScacheadd end", S_HIScacheadd);
 }
 
 /*
@@ -53,17 +125,21 @@ HIScachelookup(HASH MessageID) {
 
     if (HIScache == NULL)
 	return HIScachedne;
+    HISlogger("HIScachelookup begin", S_HIScachelookup);
     memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - sizeof(loc)), sizeof(loc));
     i = loc % HIScachesize;
     if (memcmp((char *)&HIScache[i].Hash, (char *)&MessageID, sizeof(HASH)) == 0) {
         if (HIScache[i].Found) {
             HIShitpos++;
+	    HISlogger("HIScachelookup end", S_HIScachelookup);
             return HIScachehit;
         } else {
             HIShitneg++;
+	    HISlogger("HIScachelookup end", S_HIScachelookup);
             return HIScachemiss;
         }
     } else {
+	HISlogger("HIScachelookup end", S_HIScachelookup);
         return HIScachedne;
     }
 }
@@ -76,6 +152,7 @@ HISsetup(void)
 {
     dbzoptions opt;
     
+    HISlogger("HISsetup begin", S_HISsetup);
     if (HISwritefp == NULL) {
 	if (HIShistpath == NULL)
 	    HIShistpath = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
@@ -130,6 +207,7 @@ HISsetup(void)
 	memset((void *)HIScache, '\0', HIScachesize * sizeof(_HIScache));
     }
     HIShitpos = HIShitneg = HISmisses = HISdne = 0;
+    HISlogger("HISsetup end", S_HISsetup);
 }
 
 /*
@@ -138,6 +216,7 @@ HISsetup(void)
 void
 HISsync(void)
 {
+    HISlogger("HISsync begin", S_HISsync);
     TMRstart(TMR_HISSYNC);
     if (HISdirty) {
 	if (!dbzsync()) {
@@ -147,14 +226,17 @@ HISsync(void)
 	HISdirty = 0;
     }
     TMRstop(TMR_HISSYNC);
+    HISlogger("HISsync end", S_HISsync);
 }
 
 
 static void
 HISlogstats(void) {
+    HISlogger("HISlogstats begin", S_HISlogstats);
     syslog(L_NOTICE, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
 	   HIShitpos, HIShitneg, HISmisses, HISdne);
     HIShitpos = HIShitneg = HISmisses = HISdne = 0;
+    HISlogger("HISlogstats end", S_HISlogstats);
 }
 
 
@@ -164,6 +246,7 @@ HISlogstats(void) {
 void
 HISclose(void)
 {
+    HISlogger("HISclose begin", S_HISclose);
     if (HISwritefp != NULL) {
 	HISsync();
 	if (!dbzclose())
@@ -183,6 +266,7 @@ HISclose(void)
 	HIScachesize = 0;
     }
     TMRstop(TMR_HISSYNC);
+    HISlogger("HISclose end", S_HISclose);
 }
 
 
@@ -198,17 +282,21 @@ HISfilesfor(const HASH MessageID)
     int	                i;
     static TOKEN	token;
 
+    HISlogger("HISfilesfor begin", S_HISfilesfor);
     TMRstart(TMR_HISGREP);
     
-    if (HISwritefp == NULL)
+    if (HISwritefp == NULL) {
+        TMRstop(TMR_HISGREP);
+        HISlogger("HISfilesfor end", S_HISfilesfor);
     	return NULL;
+    }
     
     /* Get the seek value into the history file. */
     if (!dbzfetch(MessageID, &offset)) {
 	TMRstop(TMR_HISGREP);
+        HISlogger("HISfilesfor end", S_HISfilesfor);
 	return NULL;
     }
-    TMRstop(TMR_HISGREP);
 
     /* Get space. */
     if (Files.Data == NULL) {
@@ -217,8 +305,11 @@ HISfilesfor(const HASH MessageID)
     }
 
     /* Seek to the specified location. */
-    if (lseek(HISreadfd, offset, SEEK_SET) == -1)
+    if (lseek(HISreadfd, offset, SEEK_SET) == -1) {
+        TMRstop(TMR_HISGREP);
+        HISlogger("HISfilesfor end", S_HISfilesfor);
 	return NULL;
+    }
 
     /* Read the text until \n or EOF. */
     for (Files.Used = 0; ; ) {
@@ -241,14 +332,24 @@ HISfilesfor(const HASH MessageID)
     }
 
     /* Move past the first two fields -- Message-ID and date info. */
-    if ((p = strchr(Files.Data, HIS_FIELDSEP)) == NULL)
+    if ((p = strchr(Files.Data, HIS_FIELDSEP)) == NULL) {
+        TMRstop(TMR_HISGREP);
+        HISlogger("HISfilesfor end", S_HISfilesfor);
 	return NULL;
-    if ((p = strchr(p + 1, HIS_FIELDSEP)) == NULL)
+    }
+    if ((p = strchr(p + 1, HIS_FIELDSEP)) == NULL) {
+        TMRstop(TMR_HISGREP);
+        HISlogger("HISfilesfor end", S_HISfilesfor);
 	return NULL;
+    }
     if (!IsToken(++p)) {
+        TMRstop(TMR_HISGREP);
+        HISlogger("HISfilesfor end", S_HISfilesfor);
 	return NULL;
     }
     token = TextToToken(p);
+    TMRstop(TMR_HISGREP);
+    HISlogger("HISfilesfor end", S_HISfilesfor);
     return &token;
 }
 
@@ -261,20 +362,26 @@ HIShavearticle(const HASH MessageID)
 {
     bool	   val;
     
-    if ((Now.time - HISlastlog) > 3600) {
+    HISlogger("HIShavearticle begin", S_HIShavearticle);
+    if ((Now.time - HISlastlog) > 120) { /* was 3600 */
 	HISlogstats();
 	HISlastlog = Now.time;
     }
 
     TMRstart(TMR_HISHAVE);
-    if (HISwritefp == NULL)
+    if (HISwritefp == NULL) {
+        TMRstop(TMR_HISHAVE);
+        HISlogger("HIShavearticle end", S_HIShavearticle);
     	return FALSE;
+    }
     switch (HIScachelookup(MessageID)) {
     case HIScachehit:
 	TMRstop(TMR_HISHAVE);
+        HISlogger("HIShavearticle end", S_HIShavearticle);
 	return TRUE;
     case HIScachemiss:
 	TMRstop(TMR_HISHAVE);
+        HISlogger("HIShavearticle end", S_HIShavearticle);
 	return FALSE;
     case HIScachedne:
 	val = dbzexists(MessageID);
@@ -284,9 +391,11 @@ HIShavearticle(const HASH MessageID)
 	else
 	    HISdne++;
 	TMRstop(TMR_HISHAVE);
+        HISlogger("HIShavearticle end", S_HIShavearticle);
 	return val;
     }
     TMRstop(TMR_HISHAVE);
+    HISlogger("HIShavearticle end", S_HIShavearticle);
     return FALSE;
 }
 
@@ -301,10 +410,13 @@ HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
     off_t		offset;
     int			i;
     
-    if (HISwritefp == NULL)
-        return FALSE;
-
     TMRstart(TMR_HISWRITE);
+    HISlogger("HISwrite begin", S_HISwrite);
+    if (HISwritefp == NULL) {
+        TMRstop(TMR_HISWRITE);
+	HISlogger("HISwrite end", S_HISwrite);
+        return FALSE;
+    }
     if (paths != NULL && paths[0] != '\0') {
 	/* if (!innconf->storageapi) HISslashify(paths); */
     } else
@@ -330,6 +442,7 @@ HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 	syslog(L_ERROR, "%s cant write history %m", LogName);
 	IOError("history", i);
 	TMRstop(TMR_HISWRITE);
+	HISlogger("HISwrite end", S_HISwrite);
 	return FALSE;
     }
 
@@ -340,13 +453,15 @@ HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
 	       HashToText(hash), (double)offset);
 	IOError("history database", i);
 	TMRstop(TMR_HISWRITE);
+	HISlogger("HISwrite end", S_HISwrite);
 	return FALSE;
     }
     HIScacheadd(hash, TRUE);
-    TMRstop(TMR_HISWRITE);
+    TMRstop(TMR_HISWRITE); /* not later as HISsync() has its own timer */
     
     if (++HISdirty >= innconf->icdsynccount)
 	HISsync();
+    HISlogger("HISwrite end", S_HISwrite);
     return TRUE;
 }
 
@@ -359,10 +474,14 @@ HISremember(const HASH hash)
     off_t		offset;
     int			i;
 
+    HISlogger("HISremember begin", S_HISremember);
     TMRstart(TMR_HISWRITE);
     
-    if (HISwritefp == NULL)
+    if (HISwritefp == NULL) {
+        TMRstop(TMR_HISWRITE);
+        HISlogger("HISremember end", S_HISremember);
         return FALSE;
+    }
     
     offset = ftello(HISwritefp);
     /* Convert the hash to hex */
@@ -377,6 +496,7 @@ HISremember(const HASH hash)
 	syslog(L_ERROR, "%s cant write history %m", LogName);
 	IOError("history", i);
 	TMRstop(TMR_HISWRITE);
+        HISlogger("HISremember end", S_HISremember);
 	return FALSE;
     } 
 
@@ -387,6 +507,7 @@ HISremember(const HASH hash)
 	       HashToText(hash), (double)offset);
 	IOError("history database", i);
 	TMRstop(TMR_HISWRITE);
+        HISlogger("HISremember end", S_HISremember);
 	return FALSE;
     }
     HIScacheadd(hash, TRUE);
@@ -394,5 +515,6 @@ HISremember(const HASH hash)
     
     if (++HISdirty >= innconf->icdsynccount)
 	HISsync();
+    HISlogger("HISremember end", S_HISremember);
     return TRUE;
 }

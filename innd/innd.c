@@ -465,9 +465,14 @@ main(int ac, char *av[])
 	Pathalias.Data = NEW(char, Pathalias.Used + 1);
 	sprintf(Pathalias.Data, "%s!", innconf->pathalias);
     }
+    /* Trace history ? */
+    if (innconf->stathist != NULL) {
+        syslog(L_NOTICE, "logging hist stats to %s", innconf->stathist);
+        HISlogto(innconf->stathist);
+    }
 
     i = dbzneedfilecount();
-    if (!fdreserve(2 + i)) { /* TEMPORARYOPEN, INND_HISTORY and i */
+    if (!fdreserve(3 + i)) { /* TEMPORARYOPEN, history stats, INND_HISTORY and i */
 	syslog(L_FATAL, "%s cant reserve file descriptors %m", LogName);
 	exit(1);
     }

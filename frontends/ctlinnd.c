@@ -93,6 +93,8 @@ static COMMAND	Commands[] = {
 	2,	SC_SEND,	TRUE	},
     {	"shutdown",	"reason...\t\tShut down server",
 	1,	SC_SHUTDOWN,	TRUE	},
+    {	"stathist",	"filename|off\t\tLog into filename some history stats",
+	1,	SC_STATHIST,	FALSE	},
     {	"status",	"interval|off\t\tTurn innd status generation on or off",
 	1,	SC_STATUS,	FALSE	},
     {	"kill",	"signal site\t\tSend signal to site's process",

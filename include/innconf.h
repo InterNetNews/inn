@@ -341,6 +341,9 @@ struct conf_rec conf_defaults[] = {
     { _CONF_MAXCMDREADSIZE,			"",     2, 1 },
 #define	_CONF_DATAMOVETHRESHOLD			"datamovethreshold"
 #define	CONF_VAR_DATAMOVETHRESHOLD		107
-    { _CONF_DATAMOVETHRESHOLD,			"",     2, 1 }
+    { _CONF_DATAMOVETHRESHOLD,			"",     2, 1 },
+#define _CONF_STATHIST				"stathist"
+#define CONF_VAR_STATHIST			108
+    { _CONF_STATHIST,				"",     1, 0 }
 };
-#define MAX_CONF_VAR 108
+#define MAX_CONF_VAR 109

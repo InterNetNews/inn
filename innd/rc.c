@@ -30,7 +30,7 @@ typedef struct _REMOTEHOST {
     char	*Name;          /* Hostname */
     struct in_addr Address;     /* List of ip adresses */
     char	*Password;      /* Optional password */
-    char 	*Identd;		/* Optional identd */
+    char 	*Identd;	/* Optional identd */
     bool	Streaming;      /* Streaming allowed ? */
     bool	Skip;	        /* Skip this peer ? */
     bool	NoResendId;	/* Don't send RESEND responses ? */

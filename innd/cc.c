@@ -59,6 +59,7 @@ static const char *	CCrmgroup(char *av[]);
 static const char *	CCsend(char *av[]);
 static const char *	CCshutdown(char *av[]);
 static const char *	CCsignal(char *av[]);
+static const char *	CCstathist(char *av[]);
 static const char *	CCstatus(char *av[]);
 static const char *	CCthrottle(char *av[]);
 static const char *	CCtimer(char *av[]);
@@ -126,6 +127,7 @@ static CCDISPATCH	CCcommands[] = {
     {	SC_SEND,	2, CCsend	},
     {	SC_SHUTDOWN,	1, CCshutdown	},
     {	SC_SIGNAL,	2, CCsignal	},
+    {	SC_STATHIST,	1, CCstathist	},
     {	SC_STATUS,	1, CCstatus	},
     {	SC_THROTTLE,	1, CCthrottle	},
     {   SC_TIMER,       1, CCtimer      },
@@ -1632,6 +1634,19 @@ CCtimer(char *av[])
 	value = atoi(av[0]);
     }
     innconf->timer = value;
+    return NULL;
+}
+
+/*
+**  Log into filename some history stats
+*/
+static const char *
+CCstathist(char *av[])
+{
+    if (EQ(av[0], "off"))
+        HISlogclose();
+    else
+        HISlogto(av[0]);
     return NULL;
 }
 

@@ -54,6 +54,7 @@ typedef char ICC_PROTOCOLTYPE ;
 #define SC_RMGROUP	'p'
 #define SC_SEND		'A'
 #define SC_SHUTDOWN	'q'
+#define SC_STATHIST	'H'
 #define SC_STATUS	'S'
 #define SC_SIGNAL	'B'
 #define SC_THROTTLE	'r'
