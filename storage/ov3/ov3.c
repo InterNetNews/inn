@@ -15,13 +15,6 @@
 # include <fcntl.h>
 #endif
 
-#ifdef HAVE_RLIMIT
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# endif
-# include <sys/resource.h>
-#endif
-
 #include "libinn.h"
 #include "macros.h"
 #include "ov.h"
@@ -152,26 +145,21 @@ BOOL tradindexed_open(int mode) {
     char                dirname[1024];
     char                *groupfn;
     struct stat         sb;
+    int                 fdlimit;
     int                 flag = 0;
-#ifdef HAVE_RLIMIT
-    struct rlimit	rl;
-#endif
 
     OV3mode = mode;
     if (OV3mode & OV_READ)
 	CACHEmaxentries = 1;
     else
 	CACHEmaxentries = innconf->overcachesize;
-#if defined(HAVE_RLIMIT) && defined(RLIMIT_NOFILE)
-    if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-        syslog(L_FATAL, "tradindexed: cant getrlimit(NOFILE) %m");
+    fdlimit = getfdlimit();
+    if (fdlimit > 0 && fdlimit < CACHEmaxentries * 2) {
+        syslog(L_FATAL, "tradindexed: not enough file descriptors for"
+               " overview cache, increase rlimitnofile or decrease"
+               " overcachesize");
         return FALSE;
     }
-    if (rl.rlim_cur < CACHEmaxentries * 2) {
-        syslog(L_FATAL, "tradindexed: overcachesize is too large or maximum fd number is too small");
-        return FALSE;
-    }
-#endif /* HAVE_RLIMIT && RLIMIT_NOFILE */
     memset(&CACHEdata, '\0', sizeof(CACHEdata));
     
     strcpy(dirname, innconf->pathoverview);
