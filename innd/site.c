@@ -63,8 +63,8 @@ BOOL SITEspool(SITE *sp, CHANNEL *cp)
 	xchown(name);
     if (cp) {
       if (cp->fd >= 0)
-        syslog(L_ERROR, "DEBUG ERROR SITEspool trashed:%d %s:%d", cp->fd, sp->Name, i);
-	/* CPU-eating bug, killed by kre. */
+        /* syslog(L_ERROR, "DEBUG ERROR SITEspool trashed:%d %s:%d", cp->fd, sp->Name, i);
+	   CPU-eating bug, killed by kre. */
 	WCHANremove(cp);
 	RCHANremove(cp);
 	SCHANremove(cp);
