@@ -20,11 +20,18 @@ High Priority Projects:
   on the readers.conf external program interface.  A good place to start
   is authprogs/README.readers.conf.
 
-* Add documentation of adding and removing CNFS cycbuffs.
+* Break the interface code common to all the authenticators out into a
+  library that can be used by people writing new authenticators.  [Russ
+  will work on this if no one beats him to it, as he needs it.]
 
-* Allow the standardized forms of the XOVER, XPAT, etc. NNTP commands
-  according to the current draft NNTP standard.  They're just synonyms for
-  the existing commands, so this should be easy to add.
+* Completely rewrite the header parsing and turn it into a library so that
+  all the various parts of INN that have to parse headers (innd, nnrpd,
+  inews, rnews, controlchan, etc.) can all use the same code.  This will
+  probably require a dynamic string library.  [Russ has the beginnings of
+  a suitable dynamic string library, but it needs more work and a test
+  suite.]
+
+* Add documentation of adding and removing CNFS cycbuffs.
 
 * Complete rewrite of history.  History should have a single API and the
   same interface for both innd and nnrpd, the current WIP cache and
@@ -84,8 +91,11 @@ Future Projects:
   basic primitives and incorporate a lot of the macros we're already using
   so that's a good point at which to do this.  At the same time,
   configure.in and Makefile.global.in should be fixed to use the same
-  names as each other for various parameters.  [Russ plans to work on this
-  after autoconf 2.50 is released.]
+  names as each other for various parameters.  Also, all of the AC_DEFINE
+  calls in configure.in should use the three-argument form, hopefully
+  eventually allowing us to dispense with an acconfig.h file.  [Russ plans
+  to work on this after autoconf 2.50 is released; current target from the
+  autoconf folks is September 2000.]
 
 * Checkgroups processing should also update the newsgroups file, and it
   should be possible to synchronize the newsgroups file against external
@@ -98,6 +108,12 @@ Future Projects:
 * contrib needs to be reviewed, the best ideas integrated into INN, and
   some sort of general overview documentation written for everything else,
   at least sufficient to explain what things are for.
+
+* All the old packages in unoff-contrib similarly should be reviewed for
+  integration into INN.
+
+* Look through <http://www.visi.com/~barr/INN.html> for stuff that should
+  be included in INN (in particular, flowstats may be interesting).
 
 * frontends/pullnews and contrib/backupfeed solve the same problem; the
   best ideas of both should be unified into one script.
@@ -121,9 +137,6 @@ Future Projects:
   timehash, and timecaf.  A lot of this documentation already exists in
   various forms, but it needs to be cleaned up and collected in one place,
   preferrably as a man page.
-
-* Look through <http://www.visi.com/~barr/INN.html> for stuff that should
-  be included in INN (in particular, flowstats may be interesting).
 
 * One person wanted to allow access to the news server only to people who
   are members of a specific Unix group.  ckpasswd could do this as an
@@ -322,15 +335,19 @@ Future Projects:
   with the backoff stuff?).  These should be per-IP or per-user, but
   possibly also per-access group.
 
+* innxmit currently can only handle storage API tokens; it should also be
+  able to handle files and get the message ID from them so that you can
+  use it to feed articles you got from some arbitrary source, not
+  necessarily INN.  Ideally, it should also take message ID hashes (and
+  use the history file to get the storage API token so that it can open
+  the article and get the real message ID).
+
 
 Long-Term Projects:
 
-* Completely rewrite the header parsing and turn it into a library so that
-  all the various parts of INN that have to parse headers (innd, nnrpd,
-  inews, rnews, controlchan, etc.) can all use the same code.  This will
-  probably require a dynamic string library.  [Russ has the beginnings of
-  a suitable dynamic string library, but it needs more work and a test
-  suite.]
+* INN's header handling needs to be checked against the current USEFOR
+  draft.  This probably has to wait until after we have a header parsing
+  library.
 
 * The interface to embedded filters needs to be reworked.  The information
   about which filters are enabled should be isolated in the filtering API,
@@ -456,3 +473,37 @@ Long-Term Projects:
   bzip2, or some other technique.  Particularly useful for long lists like
   the active file information or the overview information, but possibly
   useful in general for other things.
+
+
+Complete Code Reorganization
+
+At some point, we should probably abandon and archive the current CVS
+repository, reimport all of the current source files, and start with a
+fresh repository.  This would let us rename and move things around
+arbitrarily, something CVS doesn't handle at all well.  Should this ever
+be done, we should consider doing all of the following at the same time:
+
+* Don't include any generated files in the CVS tree.  Maintainers should
+  have autoconf and friends, as well as bison, around anyway.  This would
+  save a bunch of extra check-ins, remove the danger of the generated
+  files getting out of sync, and drastically reduce the repository size in
+  the case of configure.
+
+* storage should be reserved just for article storage; the overview
+  methods should be in a separate overview tree.
+
+* The split between frontends and backends is highly non-intuitive.  Some
+  better organization scheme should be arrived at.  Perhaps something
+  related to incoming and outgoing, with programs like cnfsstat moved into
+  the storage directory with the other storage-related code?  Where should
+  convdate really go?
+
+* The lib directory possibly should be split so that it contains only code
+  always compiled and part of INN, and the various replacements for
+  possibly missing system routines are in a separate directory (such as
+  replace).  These should possibly be separate libraries; there are things
+  that currently link against libinn that only need the portability
+  pieces.
+
+* The doc directory really should be broken down further by type of
+  documentation or section or something; it's getting a bit unwieldy.
