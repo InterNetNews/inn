@@ -39,6 +39,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/time.h"
 #include <syslog.h>
 #include "libinn.h"
 #include "macros.h"
