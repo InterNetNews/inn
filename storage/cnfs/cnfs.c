@@ -168,7 +168,6 @@ static CYCBUFF_OFF_T CNFShex2offt(char *hex) {
 }
 
 static bool CNFSflushhead(CYCBUFF *cycbuff) {
-  int			b;
   CYCBUFFEXTERN		rpx;
 
   if (!cycbuff->needflush)
@@ -525,7 +524,7 @@ static bool CNFSparse_groups_line() {
 static bool CNFSinit_disks(CYCBUFF *cycbuff) {
   char		buf[64];
   CYCBUFFEXTERN	*rpx;
-  int		fd, bytes;
+  int		fd;
   CYCBUFF_OFF_T	tmpo;
   bool		oneshot;
 
@@ -1156,11 +1155,10 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     CNFSARTHEADER	cah;
     PRIV_CNFS		*private;
     char		*p;
-    long		pagefudge, blockfudge;
+    long		pagefudge;
     CYCBUFF_OFF_T	mmapoffset;
     static TOKEN	ret_token;
     static bool		nomessage = FALSE;
-    CYCBUFF_OFF_T	middle, limit;
     int			plusoffset = 0;
 
     if (token.type != TOKEN_CNFS) {
@@ -1222,7 +1220,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     if(cah.size == htonl(0x1234) && ntohl(cah.arrived) < time(NULL)-10*365*24*3600) {
 	oldCNFSARTHEADER cahh;
 	*(CNFSARTHEADER *)&cahh = cah;
-	if(read(cycbuff->fd, ((char *)&cahh)+sizeof(CNFSARTHEADER), sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) != sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) {
+	if(pread(cycbuff->fd, ((char *)&cahh)+sizeof(CNFSARTHEADER), sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER), offset+sizeof(cah)) != sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) {
             SMseterror(SMERR_UNDEFINED, "read2 failed");
             syslog(L_ERROR, "%s: could not read2 token %s %s:0x%s:%ld: %m",
                     LocalLogName, TokenToText(token), cycbuffname,
@@ -1258,13 +1256,11 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     /* checking the bitmap to ensure cah.size is not broken was dropped */
     if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
 	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
-	char buf1[24], buf2[24], buf3[24];
+	char buf1[24];
 	strcpy(buf1, CNFSofft2hex(cycbuff->free, FALSE));
-	strcpy(buf2, CNFSofft2hex(middle, FALSE));
-	strcpy(buf3, CNFSofft2hex(limit, FALSE));
 	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");
-	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s:0x%s:0x%s: %ld",
-	LocalLogName, TokenToText(token), cycbuffname, buf1, buf2, buf3, ntohl(cah.size));
+	syslog(L_ERROR, "%s: fudge size overflows bitmaps %s %s:0x%s: %ld",
+	LocalLogName, TokenToText(token), cycbuffname, buf1, ntohl(cah.size));
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	DISPOSE(art);
 	return NULL;
@@ -1528,7 +1524,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
     if(cah.size == htonl(0x1234) && ntohl(cah.arrived) < time(NULL)-10*365*24*3600) {
 	oldCNFSARTHEADER cahh;
 	*(CNFSARTHEADER *)&cahh = cah;
-	if(read(cycbuff->fd, ((char *)&cahh)+sizeof(CNFSARTHEADER), sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) != sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) {
+	if(pread(cycbuff->fd, ((char *)&cahh)+sizeof(CNFSARTHEADER), sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER), offset+sizeof(cah)) != sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) {
 	    if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	    return (ARTHANDLE *)NULL;
 	}
@@ -1587,7 +1583,8 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	    return art;
 	}
     }
-    if ((innconf->cnfscheckfudgesize != 0) && (ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+    if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
+	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	art->data = NULL;
 	art->len = 0;
 	art->token = NULL;
