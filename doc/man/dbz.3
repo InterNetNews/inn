@@ -10,31 +10,31 @@ dbzsync, dbzsize, dbzgetoptions, dbzsetoptions, dbzdebug \- database routines
 .nf
 .B #include <dbz.h>
 .PP
-.B "BOOL dbzinit(const char *base)"
+.B "bool dbzinit(const char *base)"
 .PP
-.B "BOOL dbzclose(void)"
+.B "bool dbzclose(void)"
 .PP
-.B "BOOL dbzfresh(const char *base, const long size)"
+.B "bool dbzfresh(const char *base, long size)"
 .PP
-.B "BOOL dbzagain(const char *base, const char *oldbase)"
+.B "bool dbzagain(const char *base, const char *oldbase)"
 .PP
-.B "BOOL dbzexists(const HASH key)"
+.B "bool dbzexists(const HASH key)"
 .PP
-.B "OFFSET_T dbzfetch(const HASH key)"
-.B "BOOL dbzfetch(const HASH key, void *ivalue)"
+.B "off_t dbzfetch(const HASH key)"
+.B "bool dbzfetch(const HASH key, void *ivalue)"
 .PP
-.B "BOOL dbzstore(const HASH key, const OFFSET_T offset)"
-.B "BOOL dbzstore(const HASH key, void *ivalue)"
+.B "bool dbzstore(const HASH key, off_t offset)"
+.B "bool dbzstore(const HASH key, void *ivalue)"
 .PP
-.B "BOOL dbzsync(void)"
+.B "bool dbzsync(void)"
 .PP
-.B "long dbzsize(const long nentries)"
+.B "long dbzsize(long nentries)"
 .PP
 .B "void dbzgetoptions(dbzoptions *opt)"
 .PP
 .B "void dbzsetoptions(const dbzoptions opt)"
 .PP
-.B "BOOL dbzdebug(const BOOL newvalue)"
+.B "bool dbzdebug(bool newvalue)"
 .SH DESCRIPTION
 These functions provide an indexing system for rapid random access to a
 text file (the
@@ -259,10 +259,10 @@ buffers) except for in-memory databases.
 dbm(3), history(5), libinn(3)
 .SH DIAGNOSTICS
 Functions returning
-.I BOOL
+.I bool
 values return ``TRUE'' for success, ``FALSE'' for failure.
 Functions returning
-.I OFFSET_T
+.I off_t
 values return a value with
 .I \-1
 for failure.
