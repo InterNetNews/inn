@@ -152,6 +152,8 @@ if (/^From\s+([^\s]+)\s+/) {
 }
 
 for (;;) {
+    last if defined($line) && ($line =~ /^$/) ;
+
     $_ = <STDIN> ;
     chomp ;
 
@@ -284,7 +286,7 @@ ${real_news_hdrs}Date: ${dateHdr}
 ${weird_mail_hdrs}
 EOF
     
-print TMPFILE $line, "\n" ;	# left over from header parsing loop
+# print TMPFILE $line, "\n" ;	# left over from header parsing loop
 print TMPFILE <STDIN>;
 # do we really want to add this next line? (inews will append a signature)
 print TMPFILE "---\n" ; 
