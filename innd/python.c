@@ -248,7 +248,7 @@ PY_havehist(self, args)
     if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
 	return NULL;
 
-    if (HIShavearticle(HashMessageID(msgid)))
+    if (HIScheck(History, msgid))
 	return PyInt_FromLong(1);
     return PyInt_FromLong(0);
 }
@@ -360,7 +360,7 @@ PY_head(self, args)
     char	*msgid;
     int		msgidlen;
     char	*p;
-    TOKEN	*token;
+    TOKEN	token;
     ARTHANDLE	*art;
     PyObject	*header;
     int		headerlen;
@@ -368,10 +368,9 @@ PY_head(self, args)
     if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
 	return NULL;
 
-    /* Get the article filenames/token; open the first */
-    if ((token = HISfilesfor(HashMessageID(msgid))) == NULL)
+    if (! HISlookup(History, msgid, NULL, NULL, NULL, &token))
 	return Py_BuildValue("s", "");	
-    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
+    if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
 	return Py_BuildValue("s", "");	
     p = FromWireFmt(art->data, art->len, &headerlen);
     SMfreearticle(art);
@@ -393,7 +392,7 @@ PY_article(self, args)
     char	*msgid;
     int		msgidlen;
     char	*p;
-    TOKEN	*token;
+    TOKEN	token;
     ARTHANDLE	*arth;
     PyObject	*art;
     int		artlen;
@@ -401,10 +400,9 @@ PY_article(self, args)
     if (!PyArg_ParseTuple(args, "s#", &msgid, &msgidlen))
 	return NULL;
 
-    /* Get the article filenames; open the first file */
-    if ((token = HISfilesfor(HashMessageID(msgid))) == NULL)
+    if (! HISlookup(History, msgid, NULL, NULL, NULL, &token))
 	return Py_BuildValue("s", "");
-    if ((arth = SMretrieve(*token, RETR_ALL)) == NULL)
+    if ((arth = SMretrieve(token, RETR_ALL)) == NULL)
 	return Py_BuildValue("s", "");	
     p = FromWireFmt(arth->data, arth->len, &artlen);
     SMfreearticle(arth);
