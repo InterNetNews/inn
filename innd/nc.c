@@ -469,7 +469,12 @@ NCihave(CHANNEL *cp)
     }
 #endif
 
-    if (WIPinprogress(p, cp, FALSE)) {
+    if (HIShavearticle(HashMessageID(p))) {
+	cp->Refused++;
+	cp->Ihave_Duplicate++;
+	NCwritereply(cp, NNTP_HAVEIT);
+    }
+    else if (WIPinprogress(p, cp, FALSE)) {
 	cp->Ihave_Deferred++;
 	NCwritereply(cp, NNTP_RESENDIT_LATER);
     }
@@ -943,9 +948,10 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 		cp->Rejected++;
 
 		/* Write a local cancel entry so nobody else gives it to us. */
-		    if (!HISremember(cp->CurrentMessageIDHash)) 
-			syslog(L_ERROR, "%s cant write history %s", LogName, 
-			    HashToText(cp->CurrentMessageIDHash)); 
+		    if (!HIShavearticle(cp->CurrentMessageIDHash))
+			if (!HISremember(cp->CurrentMessageIDHash)) 
+			    syslog(L_ERROR, "%s cant write %s", LogName, 
+			        HashToText(cp->CurrentMessageIDHash)); 
 
 		/* Clear the work-in-progress entry. */
 		NCclearwip(cp);
@@ -1292,7 +1298,12 @@ NCcheck(CHANNEL *cp)
     }
 #endif
 
-    if (WIPinprogress(p, cp, TRUE)) {
+    if (HIShavearticle(HashMessageID(p))) {
+	cp->Refused++;
+	cp->Check_got++;
+	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_ERR_GOTID_VAL, p);
+	NCwritereply(cp, cp->Sendid.Data);
+    } else if (WIPinprogress(p, cp, TRUE)) {
 	cp->Check_deferred++;
 	(void)sprintf(cp->Sendid.Data, "%d %s", NNTP_RESENDID_VAL, p);
 	NCwritereply(cp, cp->Sendid.Data);

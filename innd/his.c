@@ -11,8 +11,8 @@
 #include "dbz.h"
 
 typedef struct __HISCACHE {
-    unsigned int        Hash;      /* Hash value of the message-id using Hash() */
-    BOOL		Found;     /* Whether this entry is in the dbz file yet */
+    HASH	Hash;	/* Hash value of the message-id using Hash() */
+    BOOL	Found;	/* Whether this entry is in the dbz file yet */
 } _HIScache;
 
 typedef enum {HIScachehit, HIScachemiss, HIScachedne} HISresult;
@@ -33,16 +33,13 @@ STATIC int              HISdne;    /* The entry was not in cache or history */
 ** Put an entry into the history cache 
 */
 void HIScacheadd(HASH MessageID, BOOL Found) {
-    unsigned int  i, hash, loc;
-    int tocopy;
+    unsigned int  i, loc;
 
     if (HIScache == NULL)
 	return;
-    tocopy = (sizeof(HASH) < sizeof(hash)) ? sizeof(HASH) : sizeof(hash);
-    memcpy(&hash, &MessageID, tocopy);
-    memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - tocopy), tocopy);
+    memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - sizeof(loc)), sizeof(loc));
     i = loc % HIScachesize;
-    HIScache[i].Hash = hash;
+    memcpy((char *)&HIScache[i].Hash, (char *)&MessageID, sizeof(HASH));
     HIScache[i].Found = Found;
 }
 
@@ -50,16 +47,13 @@ void HIScacheadd(HASH MessageID, BOOL Found) {
 ** Lookup an entry in the history cache
 */
 HISresult HIScachelookup(HASH MessageID) {
-    unsigned int i, hash, loc;
-    int tocopy;
+    unsigned int i, loc;
 
     if (HIScache == NULL)
 	return HIScachedne;
-    tocopy = (sizeof(HASH) < sizeof(hash)) ? sizeof(HASH) : sizeof(hash);
-    memcpy(&hash, &MessageID, tocopy);
-    memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - tocopy), tocopy);
+    memcpy(&loc, ((char *)&MessageID) + (sizeof(HASH) - sizeof(loc)), sizeof(loc));
     i = loc % HIScachesize;
-    if (HIScache[i].Hash == hash) {
+    if (memcmp((char *)&HIScache[i].Hash, (char *)&MessageID, sizeof(HASH)) == 0) {
         if (HIScache[i].Found) {
             HIShitpos++;
             return HIScachehit;
@@ -118,7 +112,7 @@ void HISsetup(void)
 	HIScachesize = innconf->hiscachesize;
 	HIScachesize *= 1024;
 	if (HIScache != NULL)
-		free(HIScache);
+	    DISPOSE(HIScache);
 	HIScachesize = (HIScachesize / sizeof(_HIScache));
 	HIScache = NEW(_HIScache, HIScachesize);
 	memset((void *)HIScache, '\0', HIScachesize * sizeof(_HIScache));
@@ -159,7 +153,7 @@ void HISclose(void)
 	HISreadfd = -1;
     }
     if (HIScache) {
-	free(HIScache);
+	DISPOSE(HIScache);
 	HIScache = NULL;
 	HIScachesize = 0;
     }
