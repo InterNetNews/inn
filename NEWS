@@ -88,9 +88,15 @@ Changes from 2.2 to 2.3
       on it.
 
     * INN now supports embedded Python filters as well as Perl and TCL
-      filters.
+      filters, and supports Python authentication hooks.
 
     * There is preliminary support for news reading over SSL, using OpenSSL.
+
+    * To simplify anti-abuse filtering, and to be more compliant with news
+      standards and proposed standards, INN now treats as control messages
+      only articles containing a Control header.  A Subject line beginning
+      with `cmesg ' is no longer sufficient for a message to be considered a
+      control message, and the Also-Control header is no longer supported.
 
     * The INN build system no longer uses subst.  This should be mostly
       transparent to users, apart from the old annoyance of modifications to

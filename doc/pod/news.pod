@@ -97,11 +97,20 @@ multiple articles in a single file.  See F<INSTALL> for details on it.
 
 =item *
 
-INN now supports embedded Python filters as well as Perl and TCL filters.
+INN now supports embedded Python filters as well as Perl and TCL filters,
+and supports Python authentication hooks.
 
 =item *
 
 There is preliminary support for news reading over SSL, using OpenSSL.
+
+=item *
+
+To simplify anti-abuse filtering, and to be more compliant with news
+standards and proposed standards, INN now treats as control messages only
+articles containing a Control header.  A Subject line beginning with
+C<cmesg > is no longer sufficient for a message to be considered a control
+message, and the Also-Control header is no longer supported.
 
 =item *
 
