@@ -5,18 +5,13 @@
 
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/uio.h>
 
 #include "libinn.h"
 
-/* Prototype write and writev to avoid warnings. */
-ssize_t write(int, const void *, size_t);
-ssize_t writev(int, const struct iovec *, int);
-
-/* We need the definition of struct iovec, but if we allow the system to
-   prototype writev, it could conflict with our definition.  So mask it. */
-#define writev system_writev
-#include <sys/uio.h>
-#undef writev
+ssize_t fake_write(int, const void *, size_t);
+ssize_t fake_pwrite(int, const void *, size_t, off_t);
+ssize_t fake_writev(int, const struct iovec *, int);
 
 /* All the data is actually written into this buffer.  We use write_offset
    to track how far we've written. */
@@ -34,7 +29,7 @@ int write_fail = 0;
 /* Accept a write request and write only the first 32 bytes of it into
    write_buffer (or as much as will fit), returning the amount written. */
 ssize_t
-write(int fd UNUSED, const void *data, size_t n)
+fake_write(int fd UNUSED, const void *data, size_t n)
 {
     size_t total;
 
@@ -52,10 +47,35 @@ write(int fd UNUSED, const void *data, size_t n)
     return total;
 }
 
+/* Accept a pwrite request and write only the first 32 bytes of it into
+   write_buffer at the specified offset (or as much as will fit), returning
+   the amount written. */
+ssize_t
+fake_pwrite(int fd UNUSED, const void *data, size_t n, off_t offset)
+{
+    size_t total;
+
+    if (write_fail)
+        return 0;
+    if (write_interrupt && (write_interrupt++ % 2) == 0) {
+        errno = EINTR;
+        return -1;
+    }
+    total = (n < 32) ? n : 32;
+    if (offset > 256) {
+        errno = ENOSPC;
+        return -1;
+    }
+    if (256 - offset < total)
+        total = 256 - offset;
+    memcpy(write_buffer + offset, data, total);
+    return total;
+}
+
 /* Accept an xwrite request and write only the first 32 bytes of it into
    write_buffer (or as much as will fit), returning the amount written. */
 ssize_t
-writev(int fd UNUSED, const struct iovec *iov, int iovcnt)
+fake_writev(int fd UNUSED, const struct iovec *iov, int iovcnt)
 {
     int total, i;
     size_t left, n;

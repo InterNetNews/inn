@@ -124,8 +124,11 @@ lib/wildmat.t: lib/wildmat-t.o $(LIBINN)
 lib/xmalloc: lib/xmalloc.o $(LIBINN)
 	$(LINK) lib/xmalloc.o $(LIBINN)
 
-lib/xwrite.t: lib/xwrite-t.o lib/fakewrite.o $(LIBINN)
-	$(LINK) lib/xwrite-t.o lib/fakewrite.o $(LIBINN)
+lib/xwrite.o: ../lib/xwrite.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/xwrite.c
+
+lib/xwrite.t: lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o $(LIBINN)
+	$(LINK) lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o $(LIBINN)
 
 overview/tradindexed.t: overview/tradindexed-t.o libtest.o $(STORAGEDEPS)
 	$(LINK) overview/tradindexed-t.o libtest.o $(STORAGELIBS) $(LIBS)
