@@ -925,7 +925,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     expected = entries * sizeof(struct index_entry);
     if (data->indexlen != expected) {
         warn("tradindexed: %lu bytes of trailing trash in %s.IDX",
-             data->indexlen - expected, data->path);
+             (unsigned long)(data->indexlen - expected), data->path);
         if (fix) {
             unmap_file(data->index, data->indexlen, data->path, "IDX");
             if (ftruncate(data->indexfd, expected) < 0)
