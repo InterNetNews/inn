@@ -25,19 +25,11 @@ Last modified $Id$.
 
 Scheduled for INN 2.4:
 
-* Write new generic configuration file parsing code based on a tree of
-  hash tables and the basic file syntax seen in readers.conf,
-  innfeed.conf, storage.conf, and incoming.conf.  The goal of the parser
-  is to support a single common, simple syntax, to allow configuration
-  files to be both read and written back to disk by programs, to
-  generalize the parsing sufficiently so that it can eventually be used by
-  all parts of INN, and to try to minimize the number of places that have
-  to be changed to add a new configuration parameter.  [Russ is working on
-  this.]
-
-* Implement the inn.conf parser using the new configuration parsing
-  library and supply a script to make any necessary changes from the old
-  file format to the new file format.
+* Reimplement the inn.conf parser using the new generic configuration
+  parsing code and supply a script that can reformat existing inn.conf
+  files to still be valid when upgrading from older versions of INN
+  (mostly adding quotes around parameter values containing whitespace).
+  [Russ is working on this.]
 
 * Complete rewrite of history.  History should have a single API and the
   same interface for both innd and nnrpd, the current WIP cache and
@@ -49,13 +41,13 @@ Scheduled for INN 2.4:
   this.]
 
 * Integrate IPv6 support.  [Marco d'Itri has a patch which needs some
-  work.]
+  work on non-Linux.]
 
 * Replace the current innshellvars.pl file with a real INN Perl module for
   Perl programs, and include the necessary glue so that other Perl modules
   can be added to INN's build tree and installed with INN, allowing their
   capabilities to be available to the portions of INN written in Perl.
-  [Russ will be working on this.]
+  [Russ plans on doing this.]
 
 * A complete audit of INN against the latest NNTP protocol draft, with at
   least a report on the differences and preferrably all issues fixed.
@@ -84,6 +76,9 @@ Scheduled for INN 2.5:
   this by just taking any existing documentation in man format and convert
   it to POD while checking that it's still accurate and adding any
   additional useful information that was missed.
+
+* Add support for groups, nesting, and vectors to the new configuration
+  parsing code.  [Russ plans on doing this.]
 
 * Convert readers.conf, storage.conf (and related configuration files),
   incoming.conf, and innfeed.conf to use the new parsing system.
@@ -138,6 +133,10 @@ High Priority Projects:
 * Add man pages for the default authenticators, as well as documentation
   on the readers.conf external program interface.  A good place to start
   is authprogs/README.readers.conf.
+
+* Figure out some Samba library that we can link against for the Samba
+  authenticator so that we can get all the Samba code back out of INN's
+  source tree; we don't want to maintain it.
 
 * Add man pages for all libinn interfaces.  There should be a subdirectory
   of doc/pod for this since there will be a lot of them; installing them
@@ -428,7 +427,8 @@ Future Projects:
 
 * It would be nice to be able to reload inn.conf (although difficult, due
   to the amount of data that's generated from it and stashed in various
-  places).
+  places).  This will need to wait for the new configuration parsing
+  library and an inn.conf parser that uses it.
 
 * Editing the active file by hand can currently munge it fairly badly even
   if the server is throttled unless you reload active before restarting
@@ -502,16 +502,21 @@ Future Projects:
   significantly better for misses, sizing and resizing becomes a non-issue,
   and the space penalty isn't too bad.  For more information, see
   <http://www.ddj.com/articles/1998/9804/9804a/9804a.htm>.  A generic
-  implementation in libinn may be usable in many places.
+  implementation in libinn may be usable in many places.  (An even better
+  place to use ternary search trees may be the configuration parser.)
 
 * Provide an innshellvars equivalent for Python.
+
+* inndstart and startinnfeed ideally shouldn't parse any configuration
+  files at all, but instead should get all the information they need from
+  elsewhere.  Some of what inndstart does could probably be done by
+  rc.news instead, although be careful of interactions with ctlinnd xexec.
 
 
 Long-Term Projects:
 
 * INN's header handling needs to be checked against the current USEFOR
-  draft.  This probably has to wait until after we have a header parsing
-  library.
+  draft.  This may want wait until after we have a header parsing library.
 
 * The innd filter should be able to specify additional or replacement
   groups into which an article should be filed, or even spool the article
