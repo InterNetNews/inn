@@ -820,6 +820,7 @@ CCmode(char *unused[])
     char	buff[BUFSIZ];
 #if defined(DO_PERL)
     extern int	PerlFilterActive;
+    dSP;
 #endif /* defined(DO_PERL) */
 
     unused = unused;		/* ARGSUSED */
@@ -912,6 +913,27 @@ CCmode(char *unused[])
         p += strlen(strcpy(p, "enabled"));
     else
         p += strlen(strcpy(p, "disabled"));
+
+    /* perl filter status */
+
+    if (perl_get_cv("filter_stats", FALSE) != NULL) {
+        *p++ = '\n';
+        p += strlen(strcpy(p, "Perl filter stats: "));
+ 
+	ENTER ;
+	SAVETMPS;
+    
+	perl_call_argv("filter_stats", G_EVAL|G_NOARGS, NULL);
+
+	SPAGAIN;
+
+	p += strlen(strcpy(p, POPp)); 
+   
+	PUTBACK;
+	FREETMPS;
+	LEAVE; 
+    }    
+
 #endif /* defined(DO_PERL) */
 #if defined(DO_PYTHON)
     *p++ = '\n';
