@@ -563,8 +563,7 @@ static bool ovbuffinit_disks(void) {
 	if (strncmp(rpx->path, ovbuff->path, OVBUFFPASIZ) != 0) {
 	  syslog(L_ERROR, "%s: Path mismatch: read %s for buffindexed %s",
 		   LocalLogName, rpx->path, ovbuff->path);
-	  ovlock(ovbuff, LOCK_UNLOCK);
-	  return FALSE;
+	  ovbuff->needflush = TRUE;
 	}
 	strncpy(buf, rpx->indexa, OVBUFFLASIZ);
 	buf[OVBUFFLASIZ] = '\0';
@@ -593,6 +592,7 @@ static bool ovbuffinit_disks(void) {
 	strncpy(buf, rpx->freea, OVBUFFLASIZ);
 	buf[OVBUFFLASIZ] = '\0';
 	ovbuff->freeblk = hex2offt(buf);
+	ovflushhead(ovbuff);
 	Needunlink = FALSE;
     } else {
 	ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
