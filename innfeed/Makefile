@@ -26,8 +26,6 @@ YACC		= yacc -d
 NEWSGROUP	= news
 ## =()<OWNER	= -O @<NEWSUSER>@ -G @<NEWSGROUP>@>()=
 OWNER	= -O news -G news
-## =()<EXTRA_SRC =  @<MISSING_INET_ATON>@>()=
-EXTRA_SRC =  inet_addr.c
 
 ##  =()<LINTFLAGS	= @<LINTFLAGS>@>()=
 LINTFLAGS	= -b -h -z $(DEFS)
@@ -78,7 +76,7 @@ EXTRAS		= testListener.pl inet_addr.c uio_maxiov.c configfile.y \
 		  procbatch.pl convertconfig.pl malloc.c ChangeLog \
 		  startinnfeed.c
 
-OBJS		= $(SRC:.c=.o) $(EXTRA_SRC:.c=.o) \
+OBJS		= $(SRC:.c=.o) \
 		  config_l.o config_y.o
 
 INNFEED_BIN	= $(NEWSBIN)/innfeed
