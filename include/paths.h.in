@@ -220,6 +220,15 @@
    /* Name of the file used to store overview data */
 #define _CONF_OVERVIEWNAME	"overviewname"
 
+   /* Enable keyword overview data to be generated (if compiled in) */
+#define _CONF_KEYWORDS		"keywords"
+   /* Max space allocated (in bytes) for keywords. */
+#define _CONF_KEYLIMIT		"key-limit" /* 512 */
+   /* Max size of an article for keyword generation */
+#define _CONF_KEYARTLIMIT	"key-artlimit" /* 100000 */
+/* Max count of interesting workd */
+#define _CONF_KEY_MAXWORDS	"key-maxwords"
+
    /* All the inn.conf path variables */
 #define _CONF_PATHNEWS		"pathnews"
 #define _CONF_PATHBIN		"pathbin"

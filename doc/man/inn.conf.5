@@ -157,6 +157,20 @@ the Path: line. This is useful for tracking forged postings.
 What file name to use for storing overview data. Defaults to
 ``.overview''.
 .TP
+.I keywords
+Should keywords be generated in the overview databases. Must be a boolean
+value. Default is false. Changing this requires also changing overview.fmt and
+removing the exising overview database.
+.TP
+.I key-limit
+Maximum number of bytes allocated internally for building keyword data.
+.TP
+.I key-artlimit
+Maximum size of a an article that will have keywords generated for it.
+.TP
+.I key-maxwords
+Maximum nuymber of keywords that will be generated for an article.
+.TP
 .I pathnews
 The news user home directory and sometimes the root of the news
 hierarchy.

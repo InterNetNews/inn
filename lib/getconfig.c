@@ -185,6 +185,10 @@ if ((p = getenv(_ENV_FROMHOST)) != NULL) { innconf->fromhost = COPY(p); }
     innconf->readertrack = FALSE;
     innconf->strippostcc = FALSE;
     innconf->overviewname = NULL;
+    innconf->keywords = FALSE;		
+    innconf->keylimit = 512 ;		
+    innconf->keyartlimit = 100000;
+    innconf->keymaxwords = 250;
 
     innconf->pathnews = NULL;
     innconf->pathbin = NULL;
@@ -507,9 +511,20 @@ if (innconf->fromhost == NULL) { innconf->fromhost = COPY(p); }
 	    } else
 	    if (EQ(ConfigBuff,_CONF_OVERVIEWNAME)) {
 		    innconf->overviewname =  COPY(p);
-
 	    } else
-	    if (EQ(ConfigBuff,_CONF_PATHNEWS)) {
+	    if (EQ(ConfigBuff,_CONF_KEYWORDS)) {
+		if (boolval != -1) innconf->keywords = boolval;
+	    } else
+            if (EQ(ConfigBuff,_CONF_KEYLIMIT)) {
+		innconf->keylimit = atoi(p);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_KEYARTLIMIT)) {
+		innconf->keyartlimit = atoi(p);
+	    } else  
+	    if (EQ(ConfigBuff,_CONF_KEY_MAXWORDS)) {
+		innconf->keymaxwords = atoi(p);
+	    } else
+ 	    if (EQ(ConfigBuff,_CONF_PATHNEWS)) {
 		    innconf->pathnews =  COPY(p);
 	    } else
 	    if (EQ(ConfigBuff,_CONF_PATHBIN)) {

@@ -1701,6 +1701,263 @@ STATIC void ARTpropagate(ARTDATA *Data, char **hops, int hopcount, char **list)
 }
 
 
+
+
+
+#if	defined(DO_KEYWORDS)
+
+/*
+** Additional code for sake of manufacturing Keywords: headers out of air
+** in order to provide better (scorable) XOVER data, containing bits of
+** article body content which have a reasonable expectation of utility.
+**
+** Basic idea: Simple word-counting.  We find words in the article body,
+** separated by whitespace.  Remove punctuation.  Sort words, count
+** unique words, sort those counts.  Write the resulting Keywords: header
+** containing the poster's original Keywords: (if any) followed by a magic
+** cookie separator and then the sorted list of words.
+*/
+
+#include <regex.h>	/* for regular expression-based word elimination. */
+			/* see code between lines of "-----------------". */
+
+#define	MIN_WORD_LENGTH	3	/* 1- and 2-char words don't count. */
+#define	MAX_WORD_LENGTH	28	/* fits "antidisestablishmentarianism". */
+
+/*
+** A trivial structure for keeping track of words via both
+** index to the overall word list and their counts.
+*/
+struct word_entry {
+    int	index;
+    int	length;
+    int	count;
+};
+
+/*
+** Wrapper for qsort(3) comparison of word_entry (frequency).
+*/
+
+int
+wvec_freq_cmp(w1, w2)
+    struct word_entry *w1, *w2;
+{
+    return w2->count - w1->count;	/* decreasing sort */
+}
+
+/*
+** Wrapper for qsort(3) comparison of word_entry (word length).
+*/
+
+int
+wvec_length_cmp(w1, w2)
+    struct word_entry *w1, *w2;
+{
+    return w2->length - w1->length;	/* decreasing sort */
+}
+
+/*
+** Wrapper for qsort(3), for pointer-to-pointer strings.
+*/
+
+int
+ptr_strcmp(s1, s2)
+    char **s1, **s2;
+{
+    register int cdiff;
+
+    if (cdiff = (**s1)-(**s2))
+	return cdiff;
+    return strcmp((*s1)+1, (*s2)+1);
+}
+
+/*
+**  Build new Keywords.
+*/
+
+STATIC void
+ARTmakekeys(hp, body, v, l)
+    register ARTHEADER	*hp;		/* header data */
+    register char	*body, *v;	/* article body, old kw value */
+    register int	l;		/* old kw length */
+{
+
+    int		word_count, word_length, bodylen, word_index, distinct_words;
+    int		last;
+    char	*text, *orig_text, *text_end, *this_word, *chase, *punc;
+    static struct word_entry	*word_vec;
+    static char	**word;
+    static char	*whitespace  = " \t\r\n";
+
+    /* ---------------------------------------------------------------- */
+    /* Prototype setup: Regex match preparation. */
+    static	int	regex_lib_init = 0;
+    static	regex_t	preg;
+    static	char	*elim_regexp = "^\\([-+/0-9][-+/0-9]*\\|.*1st\\|.*2nd\\|.*3rd\\|.*[04-9]th\\|about\\|after\\|ago\\|all\\|already\\|also\\|among\\|and\\|any\\|anybody\\|anyhow\\|anyone\\|anywhere\\|are\\|bad\\|because\\|been\\|before\\|being\\|between\\|but\\|can\\|could\\|did\\|does\\|doing\\|done\\|dont\\|during\\|eight\\|eighth\\|eleven\\|else\\|elsewhere\\|every\\|everywhere\\|few\\|five\\|fifth\\|first\\|for\\|four\\|fourth\\|from\\|get\\|going\\|gone\\|good\\|got\\|had\\|has\\|have\\|having\\|he\\|her\\|here\\|hers\\|herself\\|him\\|himself\\|his\\|how\\|ill\\|into\\|its\\|ive\\|just\\|kn[eo]w\\|least\\|less\\|let\\|like\\|look\\|many\\|may\\|more\\|m[ou]st\\|myself\\|next\\|nine\\|ninth\\|not\\|now\\|off\\|one\\|only\\|onto\\|our\\|out\\|over\\|really\\|said\\|saw\\|says\\|second\\|see\\|set\\|seven\\|seventh\\|several\\|shall\\|she\\|should\\|since\\|six\\|sixth\\|some\\|somehow\\|someone\\|something\\|somewhere\\|such\\|take\\|ten\\|tenth\\|than\\|that\\|the\\|their\\!|them\\|then\\|there\\|therell\\|theres\\|these\\|they\\|thing\\|things\\|third\\|this\\|those\\|three\\|thus\\|together\\|told\\|too\\|twelve\\|two\\|under\\|upon\\|very\\|via\\|want\\|wants\\|was\\|wasnt\\|way\\|were\\|weve\\|what\\|whatever\\|when\\|where\\|wherell\\|wheres\\|whether\\|which\\|while\\|who\\|why\\|will\\|will\\|with\\|would\\|write\\|writes\\|wrote\\|yes\\|yet\\|you\\|your\\|youre\\|yourself\\)$";
+
+    if (word_vec == 0) {
+	word_vec = NEW(struct word_entry, innconf->keymaxwords);
+	if (word_vec == 0)
+	    return;
+	word = NEW(char *,innconf->keymaxwords);
+	if (word == NULL) {
+	    DISPOSE(word_vec);
+	    return;
+	}
+    }
+    
+    if (regex_lib_init == 0) {
+	regex_lib_init++;
+
+	if (regcomp(&preg, elim_regexp, REG_ICASE|REG_NOSUB) != 0) {
+	    syslog(L_FATAL, "%s regcomp failure", LogName);
+	    abort();
+	}
+    }
+    /* ---------------------------------------------------------------- */
+
+    /* first re-init kw from original value. */
+    if (l > innconf->keylimit - (MAX_WORD_LENGTH+5))	/* mostly arbitrary cutoff: */
+        l = innconf->keylimit - (MAX_WORD_LENGTH+5);	/* room for minimal word vec */
+    hp->Value = malloc(innconf->keylimit+1);
+    if ((v != NULL) && (*v != '\0')) {
+        strncpy(hp->Value, v, l);
+        hp->Value[l] = '\0';
+    } else
+        *hp->Value = '\0';
+    l = hp->Length = strlen(hp->Value);
+
+    /*
+     * now figure acceptable extents, and copy body to working string.
+     * (Memory-intensive for hefty articles: limit to non-ABSURD articles.)
+     */
+    bodylen = strlen(body);
+    if ((bodylen < 100) || (bodylen > innconf->keyartlimit)) /* too small/big to bother */
+	return;
+    
+    orig_text = text = strdup(body);	/* orig_text is for free() later on */
+    if (text == (char *) NULL)  /* malloc failure? */
+	return;
+
+    
+    text_end = text + bodylen;
+
+    /* abusive punctuation stripping: turn it all into SPCs. */
+    for (punc = text; *punc; punc++)
+	if (!CTYPE(isalpha, *punc))
+	    *punc = ' ';
+
+    /* move to first word. */
+    text += strspn(text, whitespace);
+    word_count = 0;
+
+    /* hunt down words */
+    while ((text < text_end) &&		/* while there might be words... */
+	   (*text != '\0') &&
+	   (word_count < innconf->keymaxwords)) {
+
+	/* find a word. */
+	word_length = strcspn(text, whitespace);
+	if (word_length == 0)
+	    break;			/* no words left */
+
+	/* bookkeep to save word location, then move through text. */
+	word[word_count++] = this_word = text;
+	text += word_length;
+	*(text++) = '\0';
+	text += strspn(text, whitespace);	/* move to next word. */
+
+	/* 1- and 2-char words don't count, nor do excessively long ones. */
+	if ((word_length < MIN_WORD_LENGTH) ||
+	    (word_length > MAX_WORD_LENGTH)) {
+	    word_count--;
+	    continue;
+	}
+
+	/* squash to lowercase. */
+	for (chase = this_word; *chase; chase++)
+	    if (CTYPE(isupper, *chase))
+		*chase = tolower(*chase);
+    }
+
+    /* If there were no words, we're done. */
+    if (word_count < 1)
+	goto out;
+
+    /* Sort the words. */
+    qsort(&word, word_count, sizeof(word[0]), ptr_strcmp);
+
+    /* Count unique words. */
+    distinct_words = 0;			/* the 1st word is "pre-figured". */
+    word_vec[0].index = 0;
+    word_vec[0].length = strlen(word[0]);
+    word_vec[0].count = 1;
+
+    for (word_index = 1;		/* we compare (N-1)th and Nth words. */
+	 word_index < word_count;
+	 word_index++) {
+	if (strcmp(word[word_index-1], word[word_index]) == 0)
+	    word_vec[distinct_words].count++;
+	else {
+	    distinct_words++;
+	    word_vec[distinct_words].index = word_index;
+	    word_vec[distinct_words].length = strlen(word[word_index]);
+	    word_vec[distinct_words].count = 1;
+	}
+    }
+
+    /* Sort the counts. */
+    distinct_words++;			/* we were off-by-1 until this. */
+    qsort(word_vec, distinct_words, sizeof(struct word_entry), wvec_freq_cmp);
+
+    /* Sub-sort same-frequency words on word length. */
+    for (last = 0, word_index = 1;	/* again, (N-1)th and Nth entries. */
+	 word_index < distinct_words;
+	 word_index++) {
+	if (word_vec[last].count != word_vec[word_index].count) {
+	    if ((word_index - last) != 1)	/* 2+ entries to sub-sort. */
+		qsort(&word_vec[last], word_index - last,
+		      sizeof(struct word_entry), wvec_length_cmp);
+	    last = word_index;
+	}
+    }
+    /* do it one last time for the only-one-appearance words. */
+    if ((word_index - last) != 1)
+	qsort(&word_vec[last], word_index - last,
+	      sizeof(struct word_entry), wvec_length_cmp);
+
+    /* Scribble onto end of Keywords:. */
+    strcpy(hp->Value + l, ",\377");		/* magic separator, 'ÿ' */
+    for (chase = hp->Value + l + 2, word_index = 0;
+	 word_index < distinct_words;
+	 word_index++) {
+	/* ---------------------------------------------------------------- */
+	/* "noise" words don't count */
+	if (regexec(&preg, word[word_vec[word_index].index], 0, NULL, 0) == 0)
+	    continue;
+	/* ---------------------------------------------------------------- */
+
+	/* add to list. */
+	*chase++ = ',';
+	strcpy(chase, word[word_vec[word_index].index]);
+	chase += word_vec[word_index].length;
+
+	if (chase - hp->Value > (innconf->keylimit - (MAX_WORD_LENGTH + 4)))
+	    break;
+    }
+    /* note #words we didn't get to add. */
+    if (word_index < distinct_words - 1)
+	sprintf(chase, ",%d", (distinct_words - word_index) - 1);
+    hp->Length = strlen(hp->Value);
+
+out:
+    /* We must dispose of the original strdup'd text area. */
+    free(orig_text);
+}
+#endif	/* defined(DO_KEYWORDS) */
+
+
+
 /*
 **  Build up the overview data.
 */
@@ -1713,6 +1970,10 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
     ARTHEADER		        *hp;
     char		        *p;
     int		                i;
+#if	defined(DO_KEYWORDS)
+    char			*key_old_value = NULL;
+    int				key_old_length = 0;
+#endif	/* defined(DO_KEYWORDS) */
 
 
     if (ARTfields == NULL) {
@@ -1732,6 +1993,19 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	if (fp != ARTfields)
 	    BUFFappend(&Overview, SEP, STRLEN(SEP));
 	hp = fp->Header;
+
+#if	defined(DO_KEYWORDS)
+	if (innconf->keywords) {
+	    /* Ensure that there are Keywords: to shovel. */
+	    if (hp == &ARTheaders[_keywords]) {
+		key_old_value  = hp->Value;
+		key_old_length = hp->Length;
+		ARTmakekeys(hp, Data->Body, key_old_value, key_old_length);
+		hp->Found++;	/* now faked, whether present before or not. */
+	    }
+	}
+#endif	/* defined(DO_KEYWORDS) */
+
 	if (!hp->Found)
 	    continue;
 	if (fp->NeedHeader) {
@@ -1739,6 +2013,20 @@ STATIC void ARTmakeoverview(ARTDATA *Data, BOOL Filename)
 	    BUFFappend(&Overview, COLONSPACE, STRLEN(COLONSPACE));
 	}
 	i = Overview.Left;
+
+#if	defined(DO_KEYWORDS)
+	if (innconf->keywords) {
+	    if (key_old_value) {
+		if (hp->Value)
+		    free(hp->Value);		/* malloc'd within */
+		hp->Value  = key_old_value;
+		hp->Length = key_old_length;
+		hp->Found--;
+		key_old_value = NULL;
+	    }
+	}
+#endif	/* defined(DO_KEYWORDS) */
+
 	BUFFappend(&Overview, hp->Value, hp->Length);
 	for (p = &Overview.Data[i]; i < Overview.Left; p++, i++)
 	    if (*p == '\t' || *p == '\n' || *p == '\r')

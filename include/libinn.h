@@ -125,6 +125,11 @@ struct conf_vars {
 	int strippostcc;	/* Strip To:, Cc: and Bcc: lines from posts */
 	char *overviewname;	/* Name of the file to store overview data */
 
+        char keywords;		/* enable keyword generationg in overview */
+        int keylimit;		/* max allocated space for keywords. */
+        int keyartlimit;        /* Max size of an article for keyword generation */
+        int keymaxwords;	/* Max count of interesting workd */
+
 	char *pathnews;	
 	char *pathbin;
 	char *pathfilter;
