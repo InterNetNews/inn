@@ -419,7 +419,7 @@ STATIC TOKEN ARTstore(BUFFER *Article, ARTDATA *Data) {
     size = Article->Used + 6 + ARTheaders[_xref].Length + 4 + 3 + Path.Used + 64 + 1;
     p =  artbuff = NEW(char, size);
     
-    if (strncmp(Path.Data, path, Path.Used != 0)) {
+    if (strncmp(Path.Data, path, Path.Used) != 0) {
 	memcpy(p, Article->Data, path - Article->Data);
 	p += path - Article->Data;
 	memcpy(p, Path.Data, Path.Used);
@@ -1386,8 +1386,8 @@ STATIC void ARTassignnumbers(void)
     NEWSGROUP	        *ngp;
 
     p = HDR(_xref);
-    strcpy(p,path);
-    p+=strlen(path);
+    strncpy(p, Path.Data, Path.Used - 1);
+    p += Path.Used - 1;
     for (i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
 	/* If already went to this group (i.e., multiple groups are aliased
 	 * into it), then skip it. */
@@ -1430,8 +1430,8 @@ ARTxrefslave()
     	return FALSE;
     
     p = xrefbuf;
-    strcpy(p, path);
-    p += strlen(path);
+    strncpy(p, Path.Data, Path.Used - 1);
+    p += Path.Used - 1;
     
     name++;
     for (i = 0; *name; name = next) {
@@ -1477,69 +1477,6 @@ ARTxrefslave()
     strcpy(HDR(_xref), xrefbuf);
     return TRUE;
 }
-
-
-/*
-**  Parse the data from the xreplic command and assign the numbers.
-**  This involves replacing the GroupPointers entries.
-*/
-STATIC void ARTreplic(BUFFER *Replic)
-{
-    char	        *p;
-    char	        *q;
-    char	        *name;
-    char	        *next;
-    NEWSGROUP	        *ngp;
-    int	                i;
-
-    p = HDR(_xref);
-    strcpy(p,path);
-    p+=strlen(path);
-    
-    for (i = 0, name = Replic->Data; *name; name = next) {
-	/* Mark end of this entry and where next one starts. */
-	if ((next = strchr(name, ',')) != NULL)
-	    *next++ = '\0';
-	else
-	    next = "";
-
-	/* Split into news.group/# */
-	if ((q = strchr(name, '/')) == NULL) {
-	    syslog(L_ERROR, "%s bad_format %s", LogName, name);
-	    continue;
-	}
-	*q = '\0';
-	if ((ngp = NGfind(name)) == NULL) {
-	    syslog(L_ERROR, "%s bad_newsgroup %s", LogName, name);
-	    continue;
-	}
-	ngp->Filenum = atol(q + 1);
-
-	/* Update active file if we got a new high-water mark. */
-	if (ngp->Last < ngp->Filenum) {
-	    ngp->Last = ngp->Filenum;
-	    if (!FormatLong(ngp->LastString, (long)ngp->Last,
-		    ngp->Lastwidth)) {
-		syslog(L_ERROR, "%s cant update_active %s",
-		    LogName, ngp->Name);
-		continue;
-	    }
-	}
-
-	/* Mark that this group gets the article. */
-	ngp->PostCount++;
-	GroupPointers[i++] = ngp;
-
-	/* Turn news.group/# into news.group:#, append to Xref. */
-	*q = ':';
-	*p++ = ' ';
-	p += strlen(strcpy(p, name));
-    }
-
-    ARTheaders[_xref].Length=strlen(HDR(_xref));
-    
-}
-
 
 /*
 **  Return TRUE if a list of strings has a specific one.  This is a

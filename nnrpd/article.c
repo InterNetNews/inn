@@ -269,7 +269,7 @@ STATIC BOOL ARTopen(char *name)
 	return FALSE;
 
     if ((ARTnumbers[i].ArtNum == artnum) && ARTnumbers[i].Index) {
-	UnpackOverIndex(ARTnumbers[i].Index, &index);
+	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
 	if (index.token.type != TOKEN_EMPTY) {
 	    if ((ARThandle = SMretrieve(index.token, RETR_ALL)) == NULL) {
 		return FALSE;
@@ -936,7 +936,7 @@ STATIC char *OVERfind(ARTNUM artnum, int *linelen)
 	    i = ARTfind(artnum);
 	if ((ARTnumbers[i].ArtNum != artnum) || !ARTnumbers[i].Index)
 	    return NULL;
-	UnpackOverIndex(ARTnumbers[i].Index, &index);
+	UnpackOverIndex(*(ARTnumbers[i].Index), &index);
 	if (index.artnum != artnum)
 	    return NULL;
 	if (OVERmem) {

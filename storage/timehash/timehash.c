@@ -203,9 +203,10 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, RETRTYPE amount) {
     char                *path;
     ARTHANDLE           *art;
     
-    if (token.type != TOKEN_TIMEHASH)
+    if (token.type != TOKEN_TIMEHASH) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return NULL;
+    }
 
     BreakToken(token, &time, &seqnum);
     path = MakePath(time, seqnum, token.class);

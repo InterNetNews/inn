@@ -72,6 +72,9 @@ MAN8			/usr/news/man/man8
 ##  Ranlib command.  Use echo if you don't need ranlib.
 #### =()<RANLIB			@<RANLIB>@>()=
 RANLIB			ranlib
+##  LEX should probably be lex or flex
+#### =()<LEX			@<LEX>@>()=
+LEX			flex
 ##  YACC (yet another config control?)
 #### =()<YACC			@<YACC>@>()=
 YACC			yacc
