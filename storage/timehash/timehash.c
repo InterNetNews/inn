@@ -27,12 +27,14 @@ typedef struct {
     int                 len;      /* Length of the file */
     DIR                 *top;     /* Open handle on the top level directory */
     DIR                 *sec;     /* Open handle on the 2nd level directory */
+    DIR			*ter;     /* Open handle on the third level directory */
     DIR                 *artdir;  /* Open handle on the article directory */
     struct dirent       *topde;   /* dirent entry for the last entry retrieved in top */
     struct dirent       *secde;   /* dirent entry for the last entry retrieved in sec */
+    struct dirent       *terde;   /* dirent entry for the last entry retrieved in ter */
 } PRIV_TIMEHASH;
 
-typedef enum {FIND_DIR, FIND_ART} FINDTYPE;
+typedef enum {FIND_DIR, FIND_ART, FIND_TOPDIR} FINDTYPE;
 
 static int SeqNum = 0;
 
@@ -69,11 +71,11 @@ static void BreakToken(TOKEN token, int *time, int *seqnum) {
 static char *MakePath(int time, int seqnum, const STORAGECLASS class) {
     char *path;
     
-    /* _PATH_SPOOL + '/time/xx/xx/yyyy-xxxx-zz' */
+    /* _PATH_SPOOL + '/time-zz/xx/xx/yyyy-xxxx' */
     path = NEW(char, strlen(_PATH_SPOOL) + 32);
-    sprintf(path, "%s/time/%02x/%02x/%04x-%04x-%02x", _PATH_SPOOL,
-	    (time >> 16) & 0xff, (time >> 8) & 0xff, seqnum,
-	    (time & 0xff) | ((time >> 16 & 0xff00)), class);
+    sprintf(path, "%s/time-%02x/%02x/%02x/%04x-%04x", _PATH_SPOOL,
+	    class, (time >> 16) & 0xff, (time >> 8) & 0xff, seqnum,
+	    (time & 0xff) | ((time >> 16 & 0xff00)));
     return path;
 }
 
@@ -83,7 +85,7 @@ static TOKEN *PathToToken(char *path) {
     time_t		time;
     static TOKEN	token;
 
-    n = sscanf(path, "%02x/%02x/%04x-%04x-%02x", &t1, &t2, &seqnum, &t3, &class);
+    n = sscanf(path, "time-%02x/%02x/%02x/%04x-%04x", &class, &t1, &t2, &seqnum, &t3);
     if (n != 5)
 	return (TOKEN *)NULL;
     time = ((t1 << 16) & 0xff0000) | ((t2 << 8) & 0xff00) | ((t3 << 16) & 0xff000000) | (t3 & 0xff);
@@ -210,9 +212,11 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 
     private->top = NULL;
     private->sec = NULL;
+    private->ter = NULL;
     private->artdir = NULL;
     private->topde = NULL;
     private->secde = NULL;
+    private->terde = NULL;
     
     if (amount == RETR_ALL) {
 	art->data = private->base;
@@ -283,6 +287,8 @@ void timehash_freearticle(ARTHANDLE *article) {
 	    closedir(private->top);
 	if (private->sec)
 	    closedir(private->sec);
+	if (private->ter)
+	    closedir(private->ter);
 	if (private->artdir)
 	    closedir(private->artdir);
 	DISPOSE(private);
@@ -311,11 +317,19 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
     struct dirent       *de;
     
     while ((de = readdir(dir)) != NULL) {
+        if (type == FIND_TOPDIR)
+	    if ((strlen(de->d_name) == 7) &&
+		(strncmp(de->d_name, "time-", 5) == 0) &&
+		isxdigit(de->d_name[5]) &&
+		isxdigit(de->d_name[6]))
+	        return de;
+
 	if (type == FIND_DIR)
 	    if ((strlen(de->d_name) == 2) && isxdigit(de->d_name[0]) && isxdigit(de->d_name[1]))
 		return de;
+
 	if (type == FIND_ART)
-	    if ((strlen(de->d_name) == 12) &&
+	    if ((strlen(de->d_name) == 9) &&
 		isxdigit(de->d_name[0]) &&
 		isxdigit(de->d_name[1]) &&
 		isxdigit(de->d_name[2]) &&
@@ -324,10 +338,7 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
 		isxdigit(de->d_name[6]) &&
 		isxdigit(de->d_name[7]) &&
 		isxdigit(de->d_name[8]) &&
-		isxdigit(de->d_name[10]) &&
-		isxdigit(de->d_name[11]) &&
-		(de->d_name[4] == '-') &&
-		(de->d_name[9] == '-'))
+		(de->d_name[4] == '-'))
 		return de;
 	}
 
@@ -346,9 +357,11 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
     if (article == NULL) {
 	priv.top = NULL;
 	priv.sec = NULL;
+	priv.ter = NULL;
 	priv.artdir = NULL;
 	priv.topde = NULL;
 	priv.secde = NULL;
+	priv.terde = NULL;
     } else {
 	priv = *(PRIV_TIMEHASH *)article->private;
 	DISPOSE(article->private);
@@ -364,43 +377,52 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
 	    closedir(priv.artdir);
 	    priv.artdir = NULL;
 	}
-	while (!priv.sec || ((priv.secde = FindDir(priv.sec, FIND_DIR)) == NULL)) {
-	    if (priv.sec) {
-		closedir(priv.sec);
-		priv.sec = NULL;
+	while (!priv.ter || ((priv.terde = FindDir(priv.ter, FIND_DIR)) == NULL)) {
+	    if (priv.ter) {
+		closedir(priv.ter);
+		priv.ter = NULL;
 	    }
-	    if (!priv.top || ((priv.topde = FindDir(priv.top, FIND_DIR)) == NULL)) {
-		if (priv.top) {
-		    /* end of search */
-		    closedir(priv.top);
-		    priv.top = NULL;
-		    DISPOSE(path);
-		    return NULL;
+	    while (!priv.sec || ((priv.secde = FindDir(priv.sec, FIND_DIR)) == NULL)) {
+	        if (priv.sec) {
+		    closedir(priv.sec);
+		    priv.sec = NULL;
 		}
-		sprintf(path, "%s/time", _PATH_SPOOL);
-		if ((priv.top = opendir(path)) == NULL) {
-		    SMseterror(SMERR_UNDEFINED, NULL);
-		    DISPOSE(path);
-		    return NULL;
+		if (!priv.top || ((priv.topde = FindDir(priv.top, FIND_TOPDIR)) == NULL)) {
+		    if (priv.top) {
+			/* end of search */
+			closedir(priv.top);
+			priv.top = NULL;
+			DISPOSE(path);
+			return NULL;
+		    }
+		    sprintf(path, "%s", _PATH_SPOOL);
+		    if ((priv.top = opendir(path)) == NULL) {
+			SMseterror(SMERR_UNDEFINED, NULL);
+			DISPOSE(path);
+			return NULL;
+		    }
+		    if ((priv.topde = FindDir(priv.top, FIND_TOPDIR)) == NULL) {
+			SMseterror(SMERR_UNDEFINED, NULL);
+			closedir(priv.top);
+			DISPOSE(path);
+			return NULL;
+		    }
 		}
-		if ((priv.topde = FindDir(priv.top, FIND_DIR)) == NULL) {
-		    SMseterror(SMERR_UNDEFINED, NULL);
-		    closedir(priv.top);
-		    DISPOSE(path);
-		    return NULL;
-		}
+		sprintf(path, "%s/%s", _PATH_SPOOL, priv.topde->d_name);
+		if ((priv.sec = opendir(path)) == NULL)
+		    continue;
 	    }
-	    sprintf(path, "%s/time/%s", _PATH_SPOOL, priv.topde->d_name);
-	    if ((priv.sec = opendir(path)) == NULL)
+	    sprintf(path, "%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name);
+	    if ((priv.ter = opendir(path)) == NULL)
 		continue;
 	}
-	sprintf(path, "%s/time/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name);
+	sprintf(path, "%s/%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
 	if ((priv.artdir = opendir(path)) == NULL)
 	    continue;
     }
     if (de == NULL)
 	return NULL;
-    sprintf(path, "%s/time/%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name, de->d_name);
+    sprintf(path, "%s/%s/%s/%s/%s", _PATH_SPOOL, priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
 
     art = OpenArticle(path, amount);
     if (art == (ARTHANDLE *)NULL) {
@@ -413,10 +435,12 @@ ARTHANDLE *timehash_next(const ARTHANDLE *article, RETRTYPE amount) {
     newpriv = (PRIV_TIMEHASH *)art->private;
     newpriv->top = priv.top;
     newpriv->sec = priv.sec;
+    newpriv->ter = priv.ter;
     newpriv->artdir = priv.artdir;
     newpriv->topde = priv.topde;
     newpriv->secde = priv.secde;
-    sprintf(path, "%s/%s/%s", priv.topde->d_name, priv.secde->d_name, de->d_name);
+    newpriv->terde = priv.terde;
+    sprintf(path, "%s/%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
     art->token = PathToToken(path);
     BreakToken(*art->token, (int *)&(art->arrived), &seqnum);
     DISPOSE(path);
