@@ -19,6 +19,8 @@
 
 #if defined(DO_PYTHON)
 
+/* Python redefines _POSIX_C_SOURCE, so undef it to suppress warnings. */
+#undef _POSIX_C_SOURCE
 #include "Python.h"
 
 /* values relate name of hook to array index */
