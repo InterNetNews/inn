@@ -710,7 +710,7 @@ dnl Figure out the unsigned version.
 if test x"$ac_cv_type_int32_t" = xyes ; then
     INN_INT32=int32_t
 fi
-INN_CHECK_TYPE(uint32_t, $INN_INT32,
+INN_CHECK_TYPE(uint32_t, unsigned $INN_INT32,
 [#ifdef HAVE_STDINT_H
 # include <stdint.h>
 #endif
