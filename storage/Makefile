@@ -3,6 +3,7 @@
 include ../Makefile.global
 include Make.methods
 
+top	      = ..
 CFLAGS	      = $(GCFLAGS) -I.
 
 SOURCES	      = interface.c methods.c ov.c ovmethods.c
