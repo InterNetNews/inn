@@ -894,7 +894,7 @@ main(int argc, char *argv[])
 	    name = p + 1;
     }
     message_program_name = COPY(name);
-    openlog(name, L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    openlog(message_program_name, L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_handlers_die(1, message_log_syslog_crit);
     message_handlers_warn(1, message_log_syslog_warning);
     message_handlers_notice(1, message_log_syslog_notice);
