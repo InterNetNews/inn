@@ -189,7 +189,7 @@ BOOL OVgroupdel(char *group) {
 BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
     char		*next;
     static char		*xrefdata, *patcheck, *overdata;
-    char		*xrefstart;
+    char		*xrefstart, *xrefend;
     static int		xrefdatalen = 0, overdatalen = 0;
     BOOL		found = FALSE;
     int			xreflen;
@@ -229,6 +229,14 @@ BOOL OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires) {
         next++;
     }
     xreflen = len - (next - data);
+
+    /*
+     * If there are other fields beyond Xref in overview, then
+     * we must find Xref's end, or data following is misinterpreted.
+     */
+    if (xrefend = memchr(next, '\t', xreflen))
+	xreflen = xrefend - next;
+
     if (xrefdatalen == 0) {
         xrefdatalen = BIG_BUFFER;
         xrefdata = NEW(char, xrefdatalen);
