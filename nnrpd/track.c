@@ -23,7 +23,8 @@
 /* Format of the input line is <host>:<username>
 */
 
-int TrackClient(char *client, char *user, size_t len)
+int
+TrackClient(char *client, char *user, size_t len)
 {
 	int RARTon;
 	FILE *fd;

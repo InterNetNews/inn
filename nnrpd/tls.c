@@ -68,7 +68,8 @@ int tls_loglevel = 0;
  * tim - this seems to just be giving logging messages
  */
 
-static void apps_ssl_info_callback(const SSL *s, int where, int ret)
+static void
+apps_ssl_info_callback(const SSL *s, int where, int ret)
 {
     const char  *str;
     int         w;
@@ -184,7 +185,8 @@ load_dh_buffer (const char *buffer, size_t len)
  *	FIXME: support user-specified files, to eliminate risk of
  *	"small group" attacks.
  */
-static DH *tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
+static DH *
+tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
 {
 	DH *r = NULL;
 	static DH *dh = NULL;
@@ -227,7 +229,8 @@ static DH *tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
 
 /* taken from OpenSSL apps/s_cb.c */
 
-static int verify_callback(int ok, X509_STORE_CTX * ctx)
+static int
+verify_callback(int ok, X509_STORE_CTX * ctx)
 {
     char    buf[256];
     X509   *err_cert;
@@ -285,7 +288,8 @@ static int verify_callback(int ok, X509_STORE_CTX * ctx)
 #define TRUNCATE
 #define DUMP_WIDTH	16
 
-static int tls_dump(const char *s, int len)
+static int
+tls_dump(const char *s, int len)
 {
     int     ret = 0;
     char    buf[160 + 1];
@@ -363,7 +367,8 @@ static int tls_dump(const char *s, int len)
   * This function is taken from OpenSSL apps/s_cb.c
   */
 
-static int set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
+static int
+set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 {
     struct stat buf;
 
@@ -415,14 +420,10 @@ static int set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
   * returns -1 on error
   */
 
-int tls_init_serverengine(int verifydepth,
-			  int askcert,
-			  int requirecert,
-			  char *tls_CAfile,
-			  char *tls_CApath,
-			  char *tls_cert_file,
-			  char *tls_key_file
-			  )
+int
+tls_init_serverengine(int verifydepth, int askcert, int requirecert,
+                      char *tls_CAfile, char *tls_CApath, char *tls_cert_file,
+                      char *tls_key_file)
 {
     int     off = 0;
     int     verify_flags = SSL_VERIFY_NONE;
@@ -539,8 +540,9 @@ tls_init(void)
 
 /* taken from OpenSSL apps/s_cb.c */
 
-static long bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi,
-			long argl UNUSED, long ret)
+static long
+bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi, long argl UNUSED,
+            long ret)
 {
     if (!do_dump)
 	return (ret);
@@ -568,7 +570,8 @@ static long bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi,
   * filled in if the client authenticated
   * 
   */
-int tls_start_servertls(int readfd, int writefd)
+int
+tls_start_servertls(int readfd, int writefd)
 {
     int     sts;
     SSL_SESSION *session;
@@ -653,10 +656,7 @@ int tls_start_servertls(int readfd, int writefd)
 }
 
 ssize_t
-SSL_writev (ssl, vector, count)
-     SSL *ssl;
-     const struct iovec *vector;
-     int count;
+SSL_writev (SSL *ssl, const struct iovec *vector, int count)
 {
   char *buffer;
   char *bp;

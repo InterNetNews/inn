@@ -75,7 +75,7 @@ HEADER *EndOfTable = ARRAY_END(Table);
 **  headers into a single line.
 */
 static char *
-Join(char	*text)
+Join(char *text)
 {
     char	*p;
 
@@ -948,10 +948,7 @@ static char *Towire(char *p) {
 }
 
 const char *
-ARTpost(char *article,
-	char *idbuff,
-	bool ihave,
-	bool *permanent)
+ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 {
     static char	CANTSEND[] = "Can't send %s to server, %s";
     int		i;

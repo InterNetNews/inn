@@ -60,7 +60,9 @@ static SENDDATA		SENDhead = {
 static struct iovec	iov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
 static int		queued_iov = 0;
 
-static void PushIOvHelper(struct iovec* vec, int* countp) {
+static void
+PushIOvHelper(struct iovec* vec, int* countp)
+{
     int result = 0;
 
 #ifdef HAVE_SASL
@@ -113,7 +115,8 @@ Again:
 }
 
 static void
-PushIOvRateLimited(void) {
+PushIOvRateLimited(void)
+{
     double              start, end, elapsed, target;
     struct iovec        newiov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
     int                 newiov_len;
@@ -161,7 +164,8 @@ PushIOvRateLimited(void) {
 }
 
 static void
-PushIOv(void) {
+PushIOv(void)
+{
     TMRstart(TMR_NNTPWRITE);
     fflush(stdout);
     TMRstop(TMR_NNTPWRITE);
@@ -172,7 +176,8 @@ PushIOv(void) {
 }
 
 static void
-SendIOv(const char *p, int len) {
+SendIOv(const char *p, int len)
+{
     char                *q;
 
     if (queued_iov) {
@@ -192,13 +197,15 @@ static char		*_IO_buffer_ = NULL;
 static int		highwater = 0;
 
 static void
-PushIOb(void) {
+PushIOb(void)
+{
     write_buffer(_IO_buffer_, highwater);
     highwater = 0;
 }
 
 static void
-SendIOb(const char *p, int len) {
+SendIOb(const char *p, int len)
+{
     int tocopy;
     
     if (_IO_buffer_ == NULL)
@@ -219,7 +226,8 @@ SendIOb(const char *p, int len) {
 /*
 **  If we have an article open, close it.
 */
-void ARTclose(void)
+void
+ARTclose(void)
 {
     if (ARThandle) {
 	SMfreearticle(ARThandle);
@@ -227,7 +235,8 @@ void ARTclose(void)
     }
 }
 
-bool ARTinstorebytoken(TOKEN token)
+bool
+ARTinstorebytoken(TOKEN token)
 {
     ARTHANDLE *art;
     struct timeval	stv, etv;
@@ -251,7 +260,8 @@ bool ARTinstorebytoken(TOKEN token)
 /*
 **  If the article name is valid, open it and stuff in the ID.
 */
-static bool ARTopen(ARTNUM artnum)
+static bool
+ARTopen(ARTNUM artnum)
 {
     static ARTNUM	save_artnum;
     TOKEN		token;
@@ -323,7 +333,8 @@ ARTopenbyid(char *msg_id, ARTNUM *ap, bool final)
 /*
 **  Send a (part of) a file to stdout, doing newline and dot conversion.
 */
-static void ARTsendmmap(SENDTYPE what)
+static void
+ARTsendmmap(SENDTYPE what)
 {
     const char		*p, *q, *r;
     const char		*s, *path, *xref, *endofpath;
@@ -456,7 +467,8 @@ static void ARTsendmmap(SENDTYPE what)
 /*
 **  Return the header from the specified file, or NULL if not found.
 */
-char *GetHeader(const char *header)
+char *
+GetHeader(const char *header)
 {
     const char		*p, *q, *r, *s, *t;
     char		*w, prevchar;
@@ -571,7 +583,8 @@ char *GetHeader(const char *header)
 /*
 **  Fetch part or all of an article and send it to the client.
 */
-void CMDfetch(int ac, char *av[])
+void
+CMDfetch(int ac, char *av[])
 {
     char		buff[SMBUF];
     SENDDATA		*what;
@@ -672,7 +685,8 @@ void CMDfetch(int ac, char *av[])
 /*
 **  Go to the next or last (really previous) article in the group.
 */
-void CMDnextlast(int ac UNUSED, char *av[])
+void
+CMDnextlast(int ac UNUSED, char *av[])
 {
     char *msgid;
     int	save, delta, errcode;
@@ -724,7 +738,8 @@ void CMDnextlast(int ac UNUSED, char *av[])
 }
 
 
-static bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
+static bool
+CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 {
     char		*p;
 
@@ -799,7 +814,8 @@ vhost_xref(char *p)
 /*
 **  XOVER another extension.  Dump parts of the overview database.
 */
-void CMDxover(int ac, char *av[])
+void
+CMDxover(int ac, char *av[])
 {
     bool	        DidReply;
     ARTRANGE		range;
@@ -968,7 +984,8 @@ build_groups(char *buff)
 **  function to implement it without reviewing the differences.
 */
 /* ARGSUSED */
-void CMDpat(int ac, char *av[])
+void
+CMDpat(int ac, char *av[])
 {
     char	        *p;
     int	        	i;

@@ -14,8 +14,9 @@
 
 #define GROUP_LIST_DELTA	10
 
-static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
-    const char* hdr, size_t hdrlen UNUSED)
+static bool
+FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
+           const char* hdr, size_t hdrlen UNUSED)
 {
   const char *p, *p1, *q;
   bool Nocr = true;
@@ -48,7 +49,9 @@ static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
 /*
 **  get Xref header
 */
-static char *GetXref(ARTHANDLE *art) {
+static char *
+GetXref(ARTHANDLE *art)
+{
   const char	*p, *q;
 
   if (!FindHeader(art, &p, &q, "xref", sizeof("xref")))
@@ -60,7 +63,9 @@ static char *GetXref(ARTHANDLE *art) {
 **  Split newsgroup list into array of newsgroups.  Return static pointer,
 **  or NULL if there are no newsgroup.
 */
-static char **GetGroups(char *p) {
+static char **
+GetGroups(char *p)
+{
   static int	size;
   static char	**list;
   int		i;
@@ -104,7 +109,9 @@ static char **GetGroups(char *p) {
   return i ? list : NULL;
 }
 
-static bool HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs) {
+static bool
+HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs)
+{
   char *list[2];
 
   list[1] = NULL;
@@ -204,7 +211,9 @@ process_newnews(char *group, bool AllGroups, time_t date)
 **  NEWNEWS newsgroups date time ["GMT"]
 **  Return the Message-ID of any articles after the specified date
 */
-void CMDnewnews(int ac, char *av[]) {
+void
+CMDnewnews(int ac, char *av[])
+{
   char		*p, *q;
   char          *path;
   bool		AllGroups;

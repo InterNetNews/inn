@@ -253,7 +253,8 @@ static CONFTOKEN PERMtoks[] = {
 };
 
 /* function definitions */
-static void GrowArray(void ***array, void *el)
+static void
+GrowArray(void ***array, void *el)
 {
     int i;
 
@@ -269,7 +270,8 @@ static void GrowArray(void ***array, void *el)
     (*array)[i] = 0;
 }
 
-static METHOD *copy_method(METHOD *orig)
+static METHOD *
+copy_method(METHOD *orig)
 {
     METHOD *ret;
     int i;
@@ -303,7 +305,8 @@ static METHOD *copy_method(METHOD *orig)
     return(ret);
 }
 
-static void free_method(METHOD *del)
+static void
+free_method(METHOD *del)
 {
     int j;
 
@@ -325,7 +328,8 @@ static void free_method(METHOD *del)
     free(del);
 }
 
-static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
+static AUTHGROUP *
+copy_authgroup(AUTHGROUP *orig)
 {
     AUTHGROUP *ret;
     int i;
@@ -406,7 +410,8 @@ static AUTHGROUP *copy_authgroup(AUTHGROUP *orig)
     return(ret);
 }
 
-static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
+static ACCESSGROUP *
+copy_accessgroup(ACCESSGROUP *orig)
 {
     ACCESSGROUP *ret;
 
@@ -450,14 +455,16 @@ static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *orig)
     return(ret);
 }
 
-static void SetDefaultAuth(AUTHGROUP *curauth UNUSED)
+static void
+SetDefaultAuth(AUTHGROUP *curauth UNUSED)
 {
 #ifdef HAVE_SSL
         curauth->require_ssl = false;
 #endif
 }
 
-void SetDefaultAccess(ACCESSGROUP *curaccess)
+void
+SetDefaultAccess(ACCESSGROUP *curaccess)
 {
     curaccess->allownewnews = innconf->allownewnews;;
     curaccess->allowihave = false;
@@ -511,7 +518,8 @@ void SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->maxbytespersecond = 0;
 }
 
-static void free_authgroup(AUTHGROUP *del)
+static void
+free_authgroup(AUTHGROUP *del)
 {
     int i;
 
@@ -544,7 +552,8 @@ static void free_authgroup(AUTHGROUP *del)
     free(del);
 }
 
-static void free_accessgroup(ACCESSGROUP *del)
+static void
+free_accessgroup(ACCESSGROUP *del)
 {
     if (del->name)
 	free(del->name);
@@ -579,7 +588,8 @@ static void free_accessgroup(ACCESSGROUP *del)
     free(del);
 }
 
-static void ReportError(CONFFILE *f, const char *err)
+static void
+ReportError(CONFFILE *f, const char *err)
 {
     syslog(L_ERROR, "%s syntax error in %s(%d), %s", ClientHost,
       f->filename, f->lineno, err);
@@ -587,7 +597,8 @@ static void ReportError(CONFFILE *f, const char *err)
     ExitWithStats(1, true);
 }
 
-static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
+static void
+method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 {
     int oldtype;
 
@@ -625,7 +636,8 @@ static void method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
     }
 }
 
-static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
+static void
+authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 {
     int oldtype,boolval;
     METHOD *m;
@@ -797,7 +809,8 @@ static void authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
     }
 }
 
-static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
+static void
+accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
 {
     int oldtype, boolval;
     bool bit;
@@ -1046,7 +1059,10 @@ static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok
     }
 }
 
-static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *access_vec) {
+static void
+PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
+                   struct vector *access_vec)
+{
     CONFTOKEN	*tok	    = NULL;
     CONFFILE    *file;
     char        *str;
@@ -1073,7 +1089,8 @@ static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector
     return;       
 }
 
-static void PERMreadfile(char *filename)
+static void
+PERMreadfile(char *filename)
 {
     CONFCHAIN	*cf	    = NULL,
 		*hold	    = NULL;
@@ -1372,7 +1389,8 @@ again:
     return;
 }
 
-void PERMgetaccess(char *nnrpaccess)
+void
+PERMgetaccess(char *nnrpaccess)
 {
     int i;
     char *uname;
@@ -1453,7 +1471,8 @@ void PERMgetaccess(char *nnrpaccess)
     }
 }
 
-void PERMlogin(char *uname, char *pass, char *errorstr)
+void
+PERMlogin(char *uname, char *pass, char *errorstr)
 {
     int i   = 0;
     char *runame;
@@ -1495,7 +1514,8 @@ void PERMlogin(char *uname, char *pass, char *errorstr)
     }
 }
 
-static int MatchUser(char *pat, char *user)
+static int
+MatchUser(char *pat, char *user)
 {
     char *cp, **list;
     char *userlist[2];
@@ -1517,7 +1537,8 @@ static int MatchUser(char *pat, char *user)
     return(ret);
 }
 
-void PERMgetpermissions()
+void
+PERMgetpermissions(void)
 {
     int i;
     char *cp, **list;
@@ -1715,7 +1736,8 @@ void PERMgetpermissions()
 }
 
 /* strip blanks out of a string */
-static void CompressList(char *list)
+static void
+CompressList(char *list)
 {
     char *cpto;
     bool inword = false;
@@ -1735,7 +1757,8 @@ static void CompressList(char *list)
     *cpto = '\0';
 }
 
-static bool MatchHost(char *hostlist, char *host, char *ip)
+static bool
+MatchHost(char *hostlist, char *host, char *ip)
 {
     char    **list;
     bool    ret	= false;
@@ -1831,7 +1854,8 @@ static bool MatchHost(char *hostlist, char *host, char *ip)
     return(ret);
 }
 
-static void add_authgroup(AUTHGROUP *group)
+static void
+add_authgroup(AUTHGROUP *group)
 {
     int i;
 
@@ -1847,7 +1871,8 @@ static void add_authgroup(AUTHGROUP *group)
     auth_realms[i+1] = 0;
 }
 
-static void add_accessgroup(ACCESSGROUP *group)
+static void
+add_accessgroup(ACCESSGROUP *group)
 {
     int i;
 
@@ -1865,7 +1890,8 @@ static void add_accessgroup(ACCESSGROUP *group)
 
 /* clean out access groups that don't apply to any of our auth groups. */
 
-static void strip_accessgroups(void)
+static void
+strip_accessgroups(void)
 {
     int i, j;
 
@@ -1939,7 +1965,8 @@ typedef struct _EXECSTUFF {
     int rdfd, errfd, wrfd;
 } EXECSTUFF;
 
-static EXECSTUFF *ExecProg(char *arg0, char **args)
+static EXECSTUFF *
+ExecProg(char *arg0, char **args)
 {
     EXECSTUFF *ret;
     int rdfd[2], errfd[2], wrfd[2];
@@ -1992,7 +2019,8 @@ static EXECSTUFF *ExecProg(char *arg0, char **args)
     return(ret);
 }
 
-static void GetConnInfo(METHOD *method, char *buf)
+static void
+GetConnInfo(METHOD *method, char *buf)
 {
     int i;
 
@@ -2020,19 +2048,22 @@ static char ubuf[SMBUF];
 typedef void (*LineFunc)(char*);
 
 /* messages from a program's stdout */
-static void HandleProgLine(char *ln)
+static void
+HandleProgLine(char *ln)
 {
     if (strncasecmp(ln, "User:", strlen("User:")) == 0)
 	strlcpy(ubuf, ln + strlen("User:"), sizeof(ubuf));
 }
 
 /* messages from a programs stderr */
-static void HandleErrorLine(char *ln)
+static void
+HandleErrorLine(char *ln)
 {
     syslog(L_NOTICE, "%s auth_err %s", ClientHost, ln);
 }
 
-static int HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
+static int
+HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
 {
     char *nl;
     char *start;
@@ -2076,7 +2107,8 @@ static int HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
     return(got);
 }
 
-static void GetProgInput(EXECSTUFF *prog)
+static void
+GetProgInput(EXECSTUFF *prog)
 {
     fd_set rfds, tfds;
     int maxfd;
@@ -2146,7 +2178,8 @@ static void GetProgInput(EXECSTUFF *prog)
 }
 
 /* execute a series of resolvers to get the remote username */
-static char *ResolveUser(AUTHGROUP *auth)
+static char *
+ResolveUser(AUTHGROUP *auth)
 {
     int i, j;
     char *cp;
@@ -2214,7 +2247,9 @@ static char *ResolveUser(AUTHGROUP *auth)
 }
 
 /* execute a series of authenticators to get the remote username */
-static char *AuthenticateUser(AUTHGROUP *auth, char *username, char *password, char *errorstr UNUSED)
+static char *
+AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
+                 char *errorstr UNUSED)
 {
     int i, j;
     char *cp;

@@ -24,7 +24,8 @@ sasl_callback_t sasl_callbacks[] = {
 
 #define BASE64_BUF_SIZE 21848	/* per RFC 2222bis: ((16K / 3) + 1) * 4  */
 
-void SASLauth(int ac, char *av[])
+void
+SASLauth(int ac, char *av[])
 {
     const char *mech;
     const char *clientin = NULL;

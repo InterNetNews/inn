@@ -49,7 +49,8 @@ static FILE *flog;
 void dumpTable(char *msg);
 #endif /* DEBUG_MODIFY */
 
-char *HandleHeaders(char *article)
+char *
+HandleHeaders(char *article)
 {
    dSP;
    HEADER	*hp;
@@ -192,7 +193,9 @@ char *HandleHeaders(char *article)
    return NULL;
 }
 
-void loadPerl(void) {
+void
+loadPerl(void)
+{
     char *path;
 
     path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD);
@@ -202,7 +205,9 @@ void loadPerl(void) {
     PerlLoaded = true;
 }
 
-void perlAccess(char *user, struct vector *access_vec) {
+void
+perlAccess(char *user, struct vector *access_vec)
+{
   dSP;
   HV              *attribs;
   SV              *sv;
@@ -275,7 +280,9 @@ void perlAccess(char *user, struct vector *access_vec) {
 
 }
 
-void perlAuthInit(void) {
+void
+perlAuthInit(void)
+{
     dSP;
     int             rc;
     
@@ -311,10 +318,11 @@ void perlAuthInit(void) {
     PUTBACK;
     FREETMPS;
     LEAVE;
-    
 }
 
-int perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser) {
+int
+perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
+{
     dSP;
     HV              *attribs;
     int             rc;
@@ -390,8 +398,7 @@ int perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
 
 #ifdef DEBUG_MODIFY
 void
-dumpTable (msg)
-char *msg;
+dumpTable (char *msg)
 {
       HEADER        *hp;
       int   i;

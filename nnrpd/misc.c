@@ -28,9 +28,7 @@ extern int nnrpd_starttls_done;
 **  of words.  If argvp isn't NULL, it and what it points to will be freed.
 */
 int
-Argify(line, argvp)
-    char		*line;
-    char		***argvp;
+Argify(char *line, char ***argvp)
 {
     char	**argv;
     char	*p;
@@ -67,8 +65,7 @@ Argify(line, argvp)
 **  spaces between each element.  Returns a pointer to dynamic space.
 */
 char *
-Glom(av)
-    char		**av;
+Glom(char **av)
 {
     char	**v;
     int	i;
@@ -95,7 +92,8 @@ Glom(av)
 **  Match a list of newsgroup specifiers against a list of newsgroups.
 **  func is called to see if there is a match.
 */
-bool PERMmatch(char **Pats, char **list)
+bool
+PERMmatch(char **Pats, char **list)
 {
     int	                i;
     char	        *p;
@@ -188,9 +186,7 @@ PERMartok(void)
 **  Parse a newsgroups line, return true if there were any.
 */
 bool
-NGgetlist(argvp, list)
-    char		***argvp;
-    char		*list;
+NGgetlist(char ***argvp, char *list)
 {
     char	*p;
 
@@ -237,7 +233,7 @@ NGgetlist(argvp, list)
 static char postrec_dir[SMBUF];   /* Where is the post record directory? */
 
 void
-InitBackoffConstants()
+InitBackoffConstants(void)
 {
   struct stat st;
 
@@ -279,10 +275,8 @@ InitBackoffConstants()
  * small compared to the number of readers. This is the filename corresponding
  * to an IP number.
  */
-char
-*PostRecFilename(ip,user) 
-     char                         *ip;
-     char                         *user;
+char *
+PostRecFilename(char *ip, char *user) 
 {
      static char                   buff[SPOOLNAMEBUFF];
      char                          dirbuff[SPOOLNAMEBUFF];
@@ -327,8 +321,7 @@ char
  * Lock the post rec file. Return 1 on lock, 0 on error
  */
 int
-LockPostRec(path)
-     char              *path;
+LockPostRec(char *path)
 {
   char lockname[SPOOLNAMEBUFF];  
   char temp[SPOOLNAMEBUFF];
@@ -368,8 +361,7 @@ LockPostRec(path)
 }
 
 void
-UnlockPostRec(path)
-     char              *path;
+UnlockPostRec(char *path)
 {
   char lockname[SPOOLNAMEBUFF];  
 
@@ -449,9 +441,7 @@ StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
  * Return the proper sleeptime. Return false on error.
  */
 int
-RateLimit(sleeptime,path) 
-     long                         *sleeptime;
-     char                         *path;
+RateLimit(long *sleeptime, char *path) 
 {
      TIMEINFO                      Now;
      long                          prevpost,prevsleep,prevn,n;
@@ -524,9 +514,7 @@ RateLimit(sleeptime,path)
 /* ARGSUSED0 */
 
 void
-CMDstarttls(ac, av)
-    int		ac UNUSED;
-    char	*av[] UNUSED;
+CMDstarttls(int ac UNUSED, char *av[] UNUSED)
 {
   int result;
 

@@ -14,7 +14,8 @@
 **  Change to or list the specified newsgroup.  If invalid, stay in the old
 **  group.
 */
-void CMDgroup(int ac, char *av[])
+void
+CMDgroup(int ac, char *av[])
 {
     static char		NOSUCHGROUP[] = NNTP_NOSUCHGROUP;
     ARTNUM              i;
@@ -184,7 +185,7 @@ void CMDgroup(int ac, char *av[])
 **  Report on the number of articles read in the group, and clear the count.
 */
 void
-GRPreport()
+GRPreport(void)
 {
     char		buff[SPOOLNAMEBUFF];
     char		repbuff[1024];
@@ -202,9 +203,7 @@ GRPreport()
 **  Used by ANU-News clients.
 */
 void
-CMDxgtitle(ac, av)
-    int			ac;
-    char		*av[];
+CMDxgtitle(int ac, char *av[])
 {
     QIOSTATE	*qp;
     char	*line;

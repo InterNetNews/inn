@@ -267,7 +267,6 @@ ExitWithStats(int x, bool readconf)
 /*
 **  The "help" command.
 */
-/* ARGSUSED0 */
 void
 CMDhelp(int ac UNUSED, char *av[] UNUSED)
 {
@@ -317,7 +316,6 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 /*
 **  Unimplemented catch-all.
 */
-/* ARGSUSED0 */
 void
 CMD_unimp(ac, av)
     int		ac UNUSED;
@@ -484,7 +482,8 @@ Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
 /*
 **  Determine access rights of the client.
 */
-static void StartConnection(void)
+static void
+StartConnection(void)
 {
     struct sockaddr_storage	ssc, sss;
     socklen_t		length;
@@ -754,7 +753,9 @@ WaitChild(int s NO_SIGACTION_UNUSED)
 #endif
 }
 
-static void SetupDaemon(void) {
+static void
+SetupDaemon(void)
+{
     bool                val;
 
     val = true;

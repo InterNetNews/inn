@@ -228,7 +228,9 @@ PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
 ** Create an access group based on the values returned by the script in file
 **
 */
-void PY_access(char* file, struct vector *access_vec, char *Username) {
+void
+PY_access(char* file, struct vector *access_vec, char *Username)
+{
     PyObject	*result, *key, *value, *proc;
     char	*skey, *svalue, *temp;
     int		authnum;
@@ -340,7 +342,9 @@ void PY_access(char* file, struct vector *access_vec, char *Username) {
 ** Initialize dynamic access control code
 */
 
-void PY_dynamic_init (char* file) {
+void
+PY_dynamic_init (char* file)
+{
   dynamic_file = xstrdup(file);
   PY_use_dynamic = true;
 }
@@ -353,7 +357,9 @@ void PY_dynamic_init (char* file) {
 ** and a reply_message pointer initialized with reply message.
 ** Return negative value if dynamic method is not defined.
 */
-int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message) {
+int
+PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
+{
     PyObject	*result, *proc;
     char	*string, *temp;
     int		authnum;
@@ -569,7 +575,9 @@ PY_set_auth_hook(PyObject *dummy UNUSED, PyObject *args)
 /*
 ** Load the Python interpreter
 */
-void PY_load_python() {
+void
+PY_load_python(void)
+{
     if (!PythonLoaded) {
         /* add path for nnrpd module */    
         setenv("PYTHONPATH", innconf->pathfilter, 1);
@@ -614,7 +622,8 @@ void PY_load_python() {
 **  the corresponding PyObject, or NULL if not found.
 */
 static void
-PYdefonemethod(PyFile *fp, int type, int method, const char *methname) {
+PYdefonemethod(PyFile *fp, int type, int method, const char *methname)
+{
     PyObject **methptr;
 
     methptr = &fp->procs[type][method];
