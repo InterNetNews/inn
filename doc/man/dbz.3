@@ -1,0 +1,357 @@
+.TH DBZ 3 "5 Aug 1997"
+.BY "INN"
+.SH NAME
+dbminit, fetch, store, dbmclose \- somewhat dbm-compatible database routines
+.br
+dbzfresh, dbzagain, dbzfetch, dbzstore \- database routines
+.br
+dbzsync, dbzsize, dbzincore, dbzcancel, dbzdebug \- database routines
+.SH SYNOPSIS
+.nf
+.B #include <dbz.h>
+.PP
+.B void dbminit(char *base);
+.PP
+.B datum fetch(datum key);
+.PP
+.B int store(datum key, datum value);
+.PP
+.B int dbmclose(void);
+.PP
+.B int dbzfresh(char *base, long size);
+.PP
+.B int dbzagain(char *base, char *oldbase);
+.PP
+.B datum dbzfetch(datum key);
+.PP
+.B int dbzstore(datum key, datum value);
+.PP
+.B int dbzsync(void);
+.PP
+.B long dbzsize(long nentries);
+.PP
+.B int dbzincore(int newvalue);
+.PP
+.B int dbzdebug(int newvalue);
+.SH DESCRIPTION
+These functions provide an indexing system for rapid random access to a
+text file (the
+.I base 
+.IR file ).
+Subject to certain constraints, they are call-compatible with
+.IR dbm (3),
+although they also provide some extensions.
+(Note that they are
+.I not
+file-compatible with
+.I dbm
+or any variant thereof.)
+.PP
+In principle,
+.I dbz
+stores key-value pairs, where both key and value are arbitrary sequences
+of bytes, specified to the functions by
+values of type
+.IR datum ,
+typedefed in the header file to be a structure with members
+.I dptr
+(a value of type
+.I char *
+pointing to the bytes)
+and
+.I dsize
+(a value of type
+.I int
+indicating how long the byte sequence is).
+.PP
+In practice,
+.I dbz
+is more restricted than
+.IR dbm .
+A
+.I dbz
+database
+usually is an index into a base file,
+with the database
+.IR value s
+being
+.IR fseek (3)
+offsets into the base file.
+Each such
+.I value
+should ``point to'' a place in the base file where the corresponding
+.I key
+sequence is found.
+A key can be no longer than
+.SM DBZMAXKEY
+(a constant defined in the header file) bytes.
+.PP
+.I Dbminit
+opens a database,
+an index into the base file
+.IR base ,
+consisting of files
+.IB base .dir
+and
+.IB base .pag
+which must already exist.
+(If the database is new, they should be zero-length files.)
+Subsequent accesses go to that database until
+.I dbmclose
+is called to close the database.
+.PP
+.I Fetch
+searches the database for the specified
+.IR key ,
+returning the corresponding
+.IR value
+if any.
+.I Store
+stores the
+.IR key - value
+pair in the database.
+.I Store
+will fail unless the database files are writeable.
+.PP
+.I Dbzfresh
+is a variant of
+.I dbminit
+for creating a new database with more control over details.
+.PP
+.IR Dbzfresh 's
+.I size
+parameter specifies the size of the first hash table within the database,
+in key-value pairs.
+Performance will be best if
+.I size
+is a prime number and
+the number of key-value pairs stored in the database does not exceed
+about 2/3 of
+.IR size .
+(The
+.I dbzsize
+function, given the expected number of key-value pairs,
+will suggest a database size that meets these criteria.)
+Assuming that an
+.I fseek
+offset is 4 bytes,
+the
+.B .pag
+file will be
+.RI 10* size
+bytes
+(the
+.B .dir
+file is tiny and roughly constant in size)
+until
+the number of key-value pairs exceeds about 80% of
+.IR size .
+(Nothing awful will happen if the database grows beyond 100% of
+.IR size ,
+but accesses will slow down quite a bit and the 
+.B .pag
+file will grow somewhat.)
+.PP
+For historical reasons,
+.I fetch
+and
+.I store
+expect their
+.I key
+arguments to be case-mapped according to RFC-822 requirements.
+.I Dbzfetch
+and
+.I dbzstore
+do the same jobs but handle all case mapping internally,
+so the application need not worry about it.
+.PP
+.I Dbz
+stores up to 
+.SM DBZ_HASH_SIZE
+bytes of the message-id's md-5 in the 
+.B .pag 
+file to confirm a hit.  This eliminates the need to read the base file to
+handle collisions.  This replaces the tagmask feature in previous dbz 
+releases.
+.PP
+A
+.I size
+of 0
+given to
+.I dbzfresh
+is synonymous with the local default;
+the normal default is suitable for tables of 90-100,000
+key-value pairs.
+Calling
+.I dbminit(name)
+with the database files empty is equivalent to calling
+.IR dbzfresh(name, 0) .
+.PP
+When databases are regenerated periodically, as in news,
+it is simplest to pick the parameters for a new database based on the old one.
+This also permits some memory of past sizes of the old database, so that
+a new database size can be chosen to cover expected fluctuations.
+.I Dbzagain
+is a variant of
+.I dbminit
+for creating a new database as a new generation of an old database.
+The database files for
+.I oldbase
+must exist.
+.I Dbzagain
+is equivalent to calling
+.I dbzfresh
+with a
+.I size
+equal to the result of applying
+.I dbzsize
+to the largest number of entries in the
+.I oldbase
+database and its previous 10 generations.
+.PP
+When many accesses are being done by the same program,
+.I dbz
+is massively faster if its first hash table is in memory.
+If an internal flag is 1,
+an attempt is made to read the table in when
+the database is opened, and
+.I dbmclose
+writes it out to disk again (if it was read successfully and
+has been modified).
+.I Dbzincore
+sets the flag to
+.I newvalue
+(which should be 0 or 1)
+and returns the previous value;
+this does not affect the status of a database that has already been opened.
+The default is 0.
+The attempt to read the table in may fail due to memory shortage;
+in this case
+.I dbz
+quietly falls back on its default behavior.
+.IR Store s
+to an in-memory database are not (in general) written out to the file
+until
+.IR dbmclose
+or
+.IR dbzsync ,
+so if robustness in the presence of crashes
+or concurrent accesses is crucial, in-memory databases
+should probably be avoided.  If 
+.SM MMAP 
+is defined at compile-time then 
+.I dbmopen 
+will 
+.I mmap()
+the first table instead of reading into memory.  This can be considerably 
+more efficent and is recommended if
+.I mmap()
+is supported on your platform.
+.PP
+.I Dbzwritethrough
+controls whether dbzstore writes just to the in-core data or also to the
+disk when 
+.I dbzincore
+is active. 
+.PP
+If 
+.SM NONBLOCK
+is defined at compile time, then writes to the 
+.B .pag
+file will be done using non-blocking I/O.  This can be significantly faster if
+your platform supports non-blocking I/O with files.
+.PP
+.I Dbzsync
+causes all buffers etc. to be flushed out to the files.
+It is typically used as a precaution against crashes or concurrent accesses
+when a
+.IR dbz -using
+process will be running for a long time.
+It is a somewhat expensive operation,
+especially
+for an in-memory database.
+.PP
+If
+.I dbz
+has been compiled with debugging facilities available (which makes it
+bigger and a bit slower),
+.I dbzdebug
+alters the value (and returns the previous value) of an internal flag
+which (when 1; default is 0) causes
+verbose and cryptic debugging output on standard output.
+.PP
+Concurrent reading of databases is fairly safe,
+but there is no (inter)locking,
+so concurrent updating is not.
+.PP
+An open database occupies three
+.I stdio
+streams and their corresponding file descriptors;
+two more are needed is needed for an in-memory database.
+Memory consumption is negligible (except for
+.I stdio
+buffers) except for in-memory databases.
+.SH SEE ALSO
+dbm(3), history(5)
+.SH DIAGNOSTICS
+Functions returning
+.I int
+values return 0 for success, \-1 for failure.
+Functions returning
+.I datum
+values return a value with
+.I dptr
+set to NULL for failure.
+.I Dbminit
+attempts to have
+.I errno
+set plausibly on return, but otherwise this is not guaranteed.
+An
+.I errno
+of
+.B EDOM
+from
+.I dbminit
+indicates that the database did not appear to be in
+.I dbz
+format.
+.PP
+If 
+.SM DBZTEST
+is defined at compile-time then a 
+.I main()
+function will be included.  This will do performance tests and integrity test.
+.SH HISTORY
+The original
+.I dbz
+was written by
+Jon Zeeff (zeeff@b-tech.ann-arbor.mi.us).
+Later contributions by David Butler and Mark Moraes.
+Extensive reworking,
+including this documentation,
+by Henry Spencer (henry@zoo.toronto.edu) as
+part of the C News project.
+MD5 code borrowed from RSA.  Extensive reworking to remove backwards
+compatiblity and to add hashes into dbz files by Clayton O'Neill (coneill@oneill.net)
+.SH BUGS
+The
+.I dptr
+members of returned
+.I datum
+values point to static storage which is overwritten by later calls.
+.PP
+Unlike
+.IR dbm ,
+.I dbz
+will misbehave if an existing key-value pair is `overwritten' by
+a new
+.I (dbz)store
+with the same key.
+The user is responsible for avoiding this by using
+.I (dbz)fetch
+first to check for duplicates;
+an internal optimization remembers the result of the
+first search so there is minimal overhead in this.
+.PP
+The RFC822 case mapper implements only a first approximation to the
+hideously-complex RFC822 case rules.
