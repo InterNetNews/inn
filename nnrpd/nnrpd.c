@@ -590,6 +590,7 @@ STATIC void StartConnection(char *accesslist)
     LogName[sizeof(LogName) - 1] = '\0';
 
     syslog(L_NOTICE, "%s connect", ClientHost);
+#ifdef DO_PERL
     if (innconf->nnrpperlauth) {
 	if ((code = perlConnect(ClientHost, ClientIp, accesslist)) == 502) {
 	    syslog(L_NOTICE, "%s no_access", ClientHost);
@@ -598,6 +599,7 @@ STATIC void StartConnection(char *accesslist)
 	    ExitWithStats(1);
 	}
     } else {
+#endif	/* DO_PERL */
 	if (!PERMinfile(ClientHost, ClientAddr, (char *)NULL, (char *)NULL,
 			accesslist, NNRPACCESS)) {
 	    syslog(L_NOTICE, "%s no_access", ClientHost);
@@ -606,7 +608,9 @@ STATIC void StartConnection(char *accesslist)
 	    ExitWithStats(1);
 	}
 	PERMneedauth = PERMuser[0] != '\0' && PERMpass[0] != '\0';
+#ifdef DO_PERL
     }
+#endif /* DO_PERL */
 }
 
 

@@ -255,6 +255,7 @@ CMDauthinfo(ac, av)
 	(void)strncpy(Password, av[2], sizeof Password - 1);
 	Password[sizeof Password - 1] = 0;
 
+#ifdef DO_PERL
 	if (innconf->nnrpperlauth) {
 	    code = perlAuthenticate(ClientHost, ClientIp, User, Password, accesslist);
 	    if (code == NNTP_AUTH_OK_VAL) {
@@ -270,6 +271,7 @@ CMDauthinfo(ac, av)
 		ExitWithStats(1);
 	    }
 	} else {
+#endif /* DO_PERL */
 	    if (EQ(User, PERMuser) && EQ(Password, PERMpass)) {
 		syslog(L_NOTICE, "%s user %s", ClientHost, User);
 		Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
@@ -286,7 +288,9 @@ CMDauthinfo(ac, av)
 		PERMauthorized = TRUE;
 		return;
 	    }
+#ifdef DO_PERL
 	}
+#endif /* DO_PERL */
 
 	syslog(L_NOTICE, "%s bad_auth", ClientHost);
 	Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
