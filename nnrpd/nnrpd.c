@@ -715,6 +715,11 @@ static void SetupDaemon(void) {
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, TRUE);
     }
+    if (!OVctl(OVCACHEKEEP, &val)) {
+	syslog(L_NOTICE, "cant enable overview cache %m");
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	ExitWithStats(1, TRUE);
+    }
 }
 
 /*

@@ -167,7 +167,7 @@ typedef struct {
    benefit from this being fixed length, we should try to keep it that way.
 */
 typedef struct {
-  HASH		hash;		/* MD5 hash of the group name, if */
+  HASH		hash;		/* MD5 hash of the group name */
   HASH		alias;		/* If not empty then this is the hash of the
 				   group that this group is an alias for */
   ARTNUM	high;		/* High water mark in group */
@@ -206,6 +206,7 @@ typedef struct {
   int			cur;
   bool			needov;
   GROUPLOC		gloc;
+  int			count;
 } OVSEARCH;
 
 #define GROUPDATAHASHSIZE	25
@@ -214,9 +215,6 @@ static GROUPDATABLOCK	*groupdatablock[GROUPDATAHASHSIZE];
 
 typedef enum {PREPEND_BLK, APPEND_BLK} ADDINDEX;
 typedef enum {SRCH_FRWD, SRCH_BKWD} SRCH;
-
-#define	CACHETABLESIZE	128
-#define	MAXCACHETIME	(60*5)
 
 #define	_PATH_OVBUFFCONFIG	"buffindexed.conf"
 
@@ -236,6 +234,8 @@ static int		longsize = sizeof(long);
 static bool		Nospace;
 static bool		Needunlink;
 static bool		Cutofflow;
+static bool		Cache;
+static OVSEARCH		*Cachesearch;
 
 static int ovbuffmode;
 static int ovpadamount = 128;
@@ -1456,9 +1456,12 @@ static void ovgroupunmap(void) {
     DISPOSE(giblist);
   }
   Giblist = NULL;
-  if (Gib != NULL) {
+  if (!Cache && (Gib != NULL)) {
     DISPOSE(Gib);
     Gib = NULL;
+    DISPOSE(Cachesearch->group);
+    DISPOSE(Cachesearch);
+    Cachesearch = NULL;
   }
   if (Gdb != NULL) {
     DISPOSE(Gdb);
@@ -1531,7 +1534,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
       return FALSE;
     }
     ovblock = (OVBLOCK *)(addr + pagefudge);
-    if (low > ovblock->ovindexhead.high || high < ovblock->ovindexhead.low) {
+    if (low > ovblock->ovindexhead.high) {
       ov = ovblock->ovindexhead.next;
       munmap(addr, len);
       continue;
@@ -1542,7 +1545,7 @@ static bool ovgroupmmap(GROUPENTRY *ge, int low, int high, bool needov) {
       limit = OVINDEXMAX;
     }
     for (i = 0 ; i < limit ; i++) {
-      if (ovblock->ovindex[i].artnum >= low && ovblock->ovindex[i].artnum <= high) {
+      if (ovblock->ovindex[i].artnum >= low) {
 	if (Gibcount == count) {
 	  Gibcount += OV_FUDGE;
 	  RENEW(Gib, OVINDEX, Gibcount);
@@ -1640,6 +1643,7 @@ static void *ovopensearch(char *group, int low, int high, bool needov) {
   search->group = COPY(group);
   search->needov = needov;
   search->gloc = gloc;
+  search->count = ge->count;
   return (void *)search;
 }
 
@@ -1647,6 +1651,13 @@ void *buffindexed_opensearch(char *group, int low, int high) {
   GROUPLOC		gloc;
   void			*handle;
 
+  if (Gib != NULL) {
+    DISPOSE(Gib);
+    Gib = NULL;
+    DISPOSE(Cachesearch->group);
+    DISPOSE(Cachesearch);
+    Cachesearch = NULL;
+  }
   gloc = GROUPfind(group, FALSE);
   if (GROUPLOCempty(gloc)) {
     return NULL;
@@ -1671,6 +1682,8 @@ bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
     if (search->cur == Gibcount)
       return FALSE;
   }
+  if (Gib[search->cur].artnum > search->hi)
+      return FALSE;
 
   if (search->needov) {
     if (Gib[search->cur].index == NULLINDEX) {
@@ -1735,8 +1748,12 @@ static void ovclosesearch(void *handle, bool freeblock) {
 #endif /* OV_DEBUG */
   }
   ovgroupunmap();
-  DISPOSE(search->group);
-  DISPOSE(search);
+  if (Cache) {
+    Cachesearch = search;
+  } else {
+    DISPOSE(search->group);
+    DISPOSE(search);
+  }
   return;
 }
 
@@ -1749,16 +1766,96 @@ void buffindexed_closesearch(void *handle) {
   GROUPlock(gloc, LOCK_UNLOCK);
 }
 
+/* get token from sorted index */
+static bool gettoken(ARTNUM artnum, TOKEN *token) {
+  int	i, j, offset, limit;
+  offset = 0;
+  limit = Gibcount;
+  for (i = (limit - offset) / 2 ; i > 0 ; i = (limit - offset) / 2) {
+    if (Gib[offset + i].artnum == artnum) {
+      *token = Gib[offset + i].token;
+      return TRUE;
+    } else if (Gib[offset + i].artnum == 0) {
+      /* case for duplicated index */
+      for (j = offset + i - 1; j >= offset ; j --) {
+	if (Gib[j].artnum != 0)
+	  break;
+      }
+      if (j < offset) {
+	/* article not found */
+	return FALSE;
+      }
+      if (Gib[j].artnum == artnum) {
+	*token = Gib[j].token;
+	return TRUE;
+      } else if (Gib[j].artnum < artnum) {
+	/* limit is not changed */
+	offset += i + 1;
+      } else {
+	/* offset is not changed */
+	limit = j;
+      }
+    } else if (Gib[offset + i].artnum < artnum) {
+      /* limit is unchanged */
+      offset += i + 1;
+    } else {
+      /* offset is unchanged */
+      limit = offset + i;
+    }
+  }
+  /* i == 0 */
+  if (Gib[offset].artnum != artnum) {
+    /* article not found */
+    return FALSE;
+  }
+  *token = Gib[offset].token;
+  return TRUE;
+}
+
 bool buffindexed_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token) {
   GROUPLOC	gloc;
   void		*handle;
-  bool		retval;
+  bool		retval, grouplocked = FALSE;
 
-  gloc = GROUPfind(group, FALSE);
-  if (GROUPLOCempty(gloc)) {
-    return FALSE;
+  if (Gib != NULL) {
+    if (data != NULL || len != NULL || !EQ(Cachesearch->group, group)) {
+      DISPOSE(Gib);
+      Gib = NULL;
+      DISPOSE(Cachesearch->group);
+      DISPOSE(Cachesearch);
+      Cachesearch = NULL;
+    } else {
+      if (gettoken(artnum, token))
+	return TRUE;
+      else {
+	/* examine to see if overview index are increased */
+	gloc = GROUPfind(group, FALSE);
+	if (GROUPLOCempty(gloc)) {
+	  return FALSE;
+	}
+	GROUPlock(gloc, LOCK_WRITE);
+	if (GROUPentries[gloc.recno].count == Cachesearch->count) {
+	  /* no new overview data is stored */
+	  GROUPlock(gloc, LOCK_UNLOCK);
+	  return FALSE;
+	} else {
+	  grouplocked = TRUE;
+	  DISPOSE(Gib);
+	  Gib = NULL;
+	  DISPOSE(Cachesearch->group);
+	  DISPOSE(Cachesearch);
+	  Cachesearch = NULL;
+	}
+      }
+    }
   }
-  GROUPlock(gloc, LOCK_WRITE);
+  if (!grouplocked) {
+    gloc = GROUPfind(group, FALSE);
+    if (GROUPLOCempty(gloc)) {
+      return FALSE;
+    }
+    GROUPlock(gloc, LOCK_WRITE);
+  }
   if (!(handle = ovopensearch(group, artnum, artnum, FALSE))) {
     GROUPlock(gloc, LOCK_UNLOCK);
     return FALSE;
@@ -1884,6 +1981,7 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
   int		total, used, *i;
   OVBUFF	*ovbuff = ovbufftab;
   OVSORTTYPE	*sorttype;
+  bool		*boolval;
 
   switch (type) {
   case OVSPACE:
@@ -1907,6 +2005,20 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
   case OVSTATICSEARCH:
     i = (int *)val;
     *i = FALSE;
+    return TRUE;
+  case OVCACHEKEEP:
+    Cache = *(bool *)val;
+    return TRUE;
+  case OVCACHEFREE:
+    boolval = (bool *)val;
+    *boolval = TRUE;
+    if (Gib != NULL) {
+      DISPOSE(Gib);
+      Gib = NULL;
+      DISPOSE(Cachesearch->group);
+      DISPOSE(Cachesearch);
+      Cachesearch = NULL;
+    }
     return TRUE;
   default:
     return FALSE;
@@ -1972,6 +2084,13 @@ void buffindexed_close(void) {
   if (path != NULL)
     DISPOSE(path);
 #endif /* OV_DEBUG */
+  if (Gib != NULL) {
+    DISPOSE(Gib);
+    Gib = NULL;
+    DISPOSE(Cachesearch->group);
+    DISPOSE(Cachesearch);
+    Cachesearch = NULL;
+  }
   if (fstat(GROUPfd, &sb) < 0)
     return;
   close(GROUPfd);

@@ -933,7 +933,7 @@ static void PERMreadfile(char *filename)
 		if (*tok->name == '/')
 		    hold->f = CONFfopen(tok->name);
 		else
-		    hold->f = CONFfopen(cpcatpath(innconf->pathetc, tok->name));
+		    hold->f = CONFfopen((char *)cpcatpath(innconf->pathetc, tok->name));
 
 		if (hold->f == NULL) {
 		    ReportError(cf->f, "Couldn't open 'include' filename.");

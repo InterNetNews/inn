@@ -24,6 +24,7 @@ void CMDgroup(int ac, char *av[])
     void                *handle;
     TOKEN               token;
     int                 count;
+    bool		boolval;
 
     if (!PERMcanread) {
 	Reply("%s\r\n", NOACCESS);
@@ -88,25 +89,35 @@ void CMDgroup(int ac, char *av[])
 		count, ARTlow, ARThigh, group);
 	GRPcount++;
 	ARTnumber = ARTlow;
-	if (GRPcur)
-	    DISPOSE(GRPcur);
-	GRPcur = COPY(group);
+	if (GRPcur) {
+	    if (!caseEQ(GRPcur, group)) {
+		OVctl(OVCACHEFREE, &boolval);
+		DISPOSE(GRPcur);
+		GRPcur = COPY(group);
+	    }
+	} else
+	    GRPcur = COPY(group);
     } else {
 	/* Must be doing a "listgroup" command. */
 	if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
-	Reply("%d Article list follows\r\n", NNTP_GROUPOK_VAL);
+	    Reply("%d Article list follows\r\n", NNTP_GROUPOK_VAL);
 	    while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
 		if (!ARTinstorebytoken(token))
 		    continue;
 		Printf("%ld\r\n", i);
 	    }
 	    OVclosesearch(handle);
-	Printf(".\r\n");
+	    Printf(".\r\n");
 	    GRPcount++;
 	    ARTnumber = ARTlow;
-	    if (GRPcur)
-		DISPOSE(GRPcur);
-	    GRPcur = COPY(group);
+	    if (GRPcur) {
+		if (!caseEQ(GRPcur, group)) {
+		    OVctl(OVCACHEFREE, &boolval);
+		    DISPOSE(GRPcur);
+		    GRPcur = COPY(group);
+		}
+	    } else
+		GRPcur = COPY(group);
 	} else {
 	    Reply("%s %s\r\n", NOSUCHGROUP, group);
 	}
