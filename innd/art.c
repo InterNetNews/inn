@@ -1042,7 +1042,7 @@ STATIC TOKEN *ARTcancelverify(const ARTDATA *Data, const char *MessageID, const 
     HeaderCleanFrom(p);
     if (!EQ(q, p)) {
 	token = NULL;
-	(void)sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
+	(void)sprintf(buff, "\"%.50s\" wants to cancel %.70s by \"%.50s\"",
 		      p, MessageID, q);
 	ARTlog(Data, ART_REJECT, buff);
     }
