@@ -113,11 +113,6 @@ static void use_rcsid (const char *rid) {   /* Never called */
 # include <sys/ioctl.h>
 #endif
 
-/* Error returns from inet_addr. */
-#ifndef INADDR_NONE
-# define INADDR_NONE 0xffffffff
-#endif
-
 #include "article.h"
 #include "buffer.h"
 #include "configfile.h"
@@ -365,15 +360,14 @@ static int fudgeFactor (int initVal) ;
  ***************************************************/
 
 
-int cxnConfigLoadCbk (void *data)
+int cxnConfigLoadCbk (void *data UNUSED)
 {
   long iv ;
   char *sv ;
   int rval = 1 ;
   FILE *fp = (FILE *) data ;
+  struct in_addr addr ;
 
-  (void) data ;                 /* keep lint happy */
-      
   if (getInteger (topScope,"max-reconnect-time",&iv,NO_INHERIT))
     {
       if (iv < 1)
@@ -404,12 +398,13 @@ int cxnConfigLoadCbk (void *data)
 
   if (getString (topScope,"bindaddress",&sv,NO_INHERIT))
     {
-      bind_addr = inet_addr(sv);
-      if (bind_addr == INADDR_NONE)
-	{
+      if (!inet_aton(sv,&addr))
+        {
 	  logOrPrint (LOG_ERR,fp,"innfeed unable to determine bind ip") ;
 	  bind_addr = INADDR_ANY;
 	}
+      else
+        bind_addr = addr.s_addr;
     }
   else
     bind_addr = INADDR_ANY;
