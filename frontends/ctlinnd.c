@@ -30,7 +30,7 @@ typedef struct _COMMAND {
 
 
 static COMMAND	Commands[] = {
-    {	"addhist",	"id arr exp post path...\tAdd history line",
+    {	"addhist",	"id arr exp post token...\tAdd history line",
 	5,	SC_ADDHIST,	TRUE	},
     {	"allow",	"reason...\t\t\tAllow remote connections",
 	1,	SC_ALLOW,	TRUE	},
