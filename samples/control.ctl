@@ -162,13 +162,13 @@ newgroup:red@redpoll.mrfs.oh.us:akr.*:doit
 rmgroup:red@redpoll.mrfs.oh.us:akr.*:doit
 
 ## ALABAMA & HSV (Huntsville, Alabama, USA)
-# Contact: news@news.msfc.nasa.gov
+# Contact: jpc@suespammers.org
 # *PGP*   See comment at top of file.
 newgroup:*:alabama.*|hsv.*:drop
 rmgroup:*:alabama.*|hsv.*:drop
-checkgroups:news@news.msfc.nasa.gov:alabama.*|hsv.*:verify-alabama-group-admin
-newgroup:news@news.msfc.nasa.gov:alabama.*|hsv.*:verify-alabama-group-admin
-rmgroup:news@news.msfc.nasa.gov:alabama.*|hsv.*:verify-alabama-group-admin
+checkgroups:jpc@suespammers.org:alabama.*|hsv.*:verify-alabama-group-admin
+newgroup:jpc@suespammers.org:alabama.*|hsv.*:verify-alabama-group-admin
+rmgroup:jpc@suespammers.org:alabama.*|hsv.*:verify-alabama-group-admin
 
 ## ALIVE (*DEFUNCT*)
 # Contact: thijs@kink.xs4all.nl
