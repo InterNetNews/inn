@@ -38,7 +38,7 @@ inn_lock_files(struct mlock *ml)
     for (; ml->path != NULL; ++ml) {
 	int fd;
 
-	fd = open(ml->path, O_RDWR);
+	fd = open(ml->path, O_RDONLY);
 	if (fd == -1) {
 	    fprintf(stderr, "%s: can't open `%s' - %s\n",
 		    progname, ml->path, strerror(errno));
@@ -66,7 +66,7 @@ inn_lock_files(struct mlock *ml)
 
 		ml->base = mmap(NULL,
 				ml->length ? ml->length : st.st_size,
-				PROT_READ|PROT_WRITE,
+				PROT_READ,
 				MAP_SHARED, fd, ml->offset);
 
 		if (ml->base == MAP_FAILED) {
