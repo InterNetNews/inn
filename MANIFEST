@@ -626,7 +626,13 @@ tests/TESTS                           List of tests to run
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/config                      Testing config files (Directory)
+tests/lib/config/errors               Various config files with errors
+tests/lib/config/no-newline           A config file without an ending newline
+tests/lib/config/null                 A config file containing a nul character
 tests/lib/config/valid                Various valid config parameters
+tests/lib/config/warn-bool            Invalid boolean parameters
+tests/lib/config/warn-int             Invalid integer parameters
+tests/lib/config/warnings             Various config files with warnings
 tests/lib/confparse-t.c               Tests for lib/confparse.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/error-t.c                   Tests for lib/error.c
@@ -649,3 +655,6 @@ tests/lib/wildmat-t.c                 Tests for lib/wildmat.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
 tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
+tests/libtest.c                       Helper library for writing tests
+tests/libtest.h                       Interface to libtest
+tests/runtests.c                      The test suite driver program
