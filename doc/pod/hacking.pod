@@ -431,6 +431,21 @@ into a register.  Don't bother with restrict (at least yet).
 
 =item *
 
+Use string handling functions that take counts for the size of the buffer
+whenever possible.  This means using snprintf in preference to sprintf and
+using strlcpy and strlcat in preference to strcpy and strcat.  Also, use
+strlcpy and strlcat instead of strncpy and strncat unless the behavior of
+the latter is specifically required, as it is much easier to audit uses of
+the former than the latter.  (strlcpy is like strncpy except that it
+always nul-terminates and doesn't fill the rest of the buffer with nuls,
+making it more efficient.  strlcat is like strncat except that it always
+nul-terminates and it takes the total size of the buffer as its third
+argument rather than just the amount of space left.)  All of these
+functions are guaranteed to be available; there are replacements in lib
+for systems that don't have them.
+
+=item *
+
 Avoid #ifdef and friends whenever possible.  Particularly avoid using them
 in the middle of code blocks.  Try to hide all portability preprocessor
 magic in header files or in portability code in lib.  When something just
@@ -447,6 +462,22 @@ since that way the compiler will still syntax-check the other branch for
 you and it makes it far easier to convert the code to use a run-time check
 if necessary.  (Unfortunately, this trick can't be used if one branch may
 call functions unavailable on a particular platform.)
+
+=item *
+
+Avoid uses of fixed-width buffers except in performance-critical code, as
+it's harder to be sure that such code is correct and it tends to be less
+flexible later on.  If you need a reusable, resizable memory buffer, one
+is provided in lib/buffer.c.
+
+=item *
+
+Avoid uses of static variables whenever possible, particularly in
+libraries, because it interferes with making the code re-entrant down the
+road and makes it harder to follow what's going on.  Similarly, avoid
+using global variables whenever possible, and if they are required, try to
+wrap them into structures that could later be changed into arguments to
+the affected functions.
 
 =item *
 
