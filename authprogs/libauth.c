@@ -79,7 +79,7 @@ get_res(struct sockaddr* loc,
     hints.ai_flags = AI_NUMERICHOST;
     hints.ai_socktype = SOCK_STREAM;
 
-    hints.ai_family = index( cip, ':' ) != NULL ? PF_INET6 : PF_INET;
+    hints.ai_family = strchr( cip, ':' ) != NULL ? PF_INET6 : PF_INET;
     if( *cip && ! ( ret = getaddrinfo( cip, cport, &hints, &res ) ) )
     {
 	memcpy( cli, res->ai_addr, SA_LEN( res->ai_addr ) );
@@ -88,7 +88,7 @@ get_res(struct sockaddr* loc,
 	freeaddrinfo( res );
     }
 
-    hints.ai_family = index( sip, ':' ) != NULL ? PF_INET6 : PF_INET;
+    hints.ai_family = strchr( sip, ':' ) != NULL ? PF_INET6 : PF_INET;
     if( *sip && ! ( ret = getaddrinfo( sip, sport, &hints, &res ) ) )
     {
 	memcpy( loc, res->ai_addr, SA_LEN( res->ai_addr ) );
