@@ -14,19 +14,16 @@
 #define OVFMT_NOMSGID	-1
 #define OVFMT_NOXREF	-1
 
-/*
-**  see if its distribution is in the list.
-*/
-static bool DistMatches(ARTHANDLE *art, char **distribs) {
-  char  **dp;
-  char	*p, *p1;
-  char	*q;
-  bool	Nocr;
+static bool FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
+    const char* hdr, size_t hdrlen)
+{
+  const char *p, *p1, *q;
+  bool Nocr;
 
-  if ((p = q = (char *)HeaderFindMem(art->data, art->len, "distribution", sizeof("distribution")-1)) == NULL)
-    return FALSE;
+  if ((p = q = HeaderFindMem(art->data, art->len, hdr, hdrlen - 1)) == NULL)
+    return false;
   for (p1 = NULL; p < art->data + art->len; p++) {
-    if (p1 != (char *)NULL && *p1 == '\r' && *p == '\n') {
+    if (p1 != NULL && *p1 == '\r' && *p == '\n') {
       Nocr = FALSE;
       break;
     }
@@ -37,9 +34,24 @@ static bool DistMatches(ARTHANDLE *art, char **distribs) {
     p1 = p;
   }
   if (p >= art->data + art->len)
-    return FALSE;
+    return false;
   if (!Nocr)
     p = p1;
+
+  *pp = p;
+  *qp = q;
+  return true;
+}
+
+/*
+**  see if its distribution is in the list.
+*/
+static bool DistMatches(ARTHANDLE *art, char **distribs) {
+  char  	**dp;
+  const char	*p, *q;
+
+  if (!FindHeader(art, &p, &q, "distribution", sizeof("distribution")))
+    return FALSE;
   for (dp = distribs; *dp; dp++)
     if (caseEQn(q, *dp, p - q))
       return TRUE;
@@ -50,28 +62,11 @@ static bool DistMatches(ARTHANDLE *art, char **distribs) {
 **  get Xref header
 */
 static char *GetXref(ARTHANDLE *art) {
-  char		*p, *p1;
-  char		*q;
+  const char	*p, *q;
   static char	buff[BIG_BUFFER];
-  bool		Nocr;
 
-  if ((p = q = (char *)HeaderFindMem(art->data, art->len, "xref", sizeof("xref")-1)) == NULL)
+  if (!FindHeader(art, &p, &q, "xref", sizeof("xref")))
     return NULL;
-  for (p1 = NULL; p < art->data + art->len; p++) {
-    if (p1 != (char *)NULL && *p1 == '\r' && *p == '\n') {
-      Nocr = FALSE;
-      break;
-    }
-    if (*p == '\n') {
-      Nocr = TRUE;
-      break;
-    }
-    p1 = p;
-  }
-  if (p >= art->data + art->len)
-    return NULL;
-  if (!Nocr)
-    p = p1;
   if (p - q > BIG_BUFFER - 1)
     return NULL;
   memcpy(buff, q, p - q);
@@ -83,28 +78,11 @@ static char *GetXref(ARTHANDLE *art) {
 **  get Message-ID header
 */
 static char *GetMsgid(ARTHANDLE *art) {
-  char		*p, *p1;
-  char		*q;
+  const char		*p, *q;
   static char	buff[BIG_BUFFER];
-  bool		Nocr;
 
-  if ((p = q = (char *)HeaderFindMem(art->data, art->len, "message-id", sizeof("message-id")-1)) == NULL)
+  if (!FindHeader(art, &p, &q, "message-id", sizeof("message-id")))
     return NULL;
-  for (p1 = NULL; p < art->data + art->len; p++) {
-    if (p1 != (char *)NULL && *p1 == '\r' && *p == '\n') {
-      Nocr = FALSE;
-      break;
-    }
-    if (*p == '\n') {
-      Nocr = TRUE;
-      break;
-    }
-    p1 = p;
-  }
-  if (p >= art->data + art->len)
-    return NULL;
-  if (!Nocr)
-    p = p1;
   if (p - q > BIG_BUFFER - 1)
     return NULL;
   memcpy(buff, q, p - q);
