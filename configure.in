@@ -44,6 +44,7 @@ else
 	fi
 fi) dnl HACK
 AC_SUBST(TMPPATH)
+AC_ARG_WITH(sendmail,[  --with-sendmail=PATH    Specify sendmail], ac_cv_subst_path_sendmail=$with_sendmail)
 
 dnl Fix the paths
 test "x$prefix" = xNONE && prefix=$ac_default_prefix
@@ -123,7 +124,7 @@ else
 fi
 
 dnl Look for PGP 5.0's pgpv, or pgp if pgpv is not found
-AC_PATH_PROG(_PAGH_PGP,pgpv)
+AC_PATH_PROG(_PATH_PGP,pgpv)
 if test "x$_PATH_PGP" = x
 then
 AC_PATH_PROG(_PATH_PGP,pgp,no-pgp-found-during-configure)
@@ -134,10 +135,34 @@ AC_PATH_PROG(ac_cv_subst_path_gzip,gzip,no-gzip-found-during-configure)
 dnl Automatic check for Mail is frequently wrong.  Use innmail to have
 dnl a single interface.
 dnl AC_ENSURE_PATH_PROG(ac_cv_subst_path_mail,Mail)
-dnl Even though it is common to have sendmail in /usr/lib, we
-dnl have to trust the admin.
-dnl PATH=$PATH:/usr/lib
-AC_ENSURE_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
+dnl
+dnl The sendmail code takes this philosophy:  We assume that there are some
+dnl sites which don't have sendmail in the path for a reason, whatever that
+dnl may be.  And we also assume that there are some of those sites which
+dnl don't want us to automatically pick one from a likely place.  So
+dnl we detect it, then search for it, but then notify the human.
+dnl
+if test "${with_sendmail+set}" = set
+then
+dnl don't change it!
+echo using $ac_cv_subst_path_sendmail for sendmail
+else
+  AC_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
+  if test "x$ac_subst_path_sendmail" = x
+  then
+    echo No sendmail in path.  Looking in likely places.
+    PATH=$PATH:/usr/lib:/usr/sbin:/usr/ucblib
+    AC_PATH_PROG(ac_cv_subst_path_sendmail,sendmail)
+    if test "x$ac_cv_subst_path_sendmail" = x
+    then
+       AC_MSG_ERROR(sendmail is a required program not found.  Run with --with-sendmail option.)
+    else
+       echo sendmail was found at $ac_cv_subst_path_sendmail.  If this is correct, re-run
+	echo using --with-sendmail=$ac_cv_subst_path_sendmail
+       AC_MSG_ERROR(sendmail is a required program not found in path.  Run with --with-sendmail option.)
+    fi
+  fi
+fi
 PATH="$ac_save_path"
 dnl If the path mucking above must be done, redo the echo test.
 if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
