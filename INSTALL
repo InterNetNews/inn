@@ -337,6 +337,12 @@ Configuring INN
                        processed by external program fork'ed by innd.  To
                        reduce excessive load when many control messages arrive
                        in a short time, this is useful and recommended.
+                       Controlchan will log its error to syslog, if Sys::Syslog
+                       is available.  Otherwise it logs to errlog.  To enale
+                       Sys::Syslog, you need to do following:
+
+                          # cd /usr/include
+                          # h2ph *
 
   2. newsfeeds (REQUIRED)
 
