@@ -59,6 +59,8 @@ responder(int fd)
 {
     int client;
 
+    if (getenv("IN_INNBIND") == NULL)
+        _exit(1);
     if (listen(fd, 1) < 0)
         _exit(1);
     client = accept(fd, NULL, NULL);

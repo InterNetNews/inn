@@ -229,6 +229,9 @@ create_socket(struct binding *binding, const char *spec)
 **  execute the program.  Add in a new -p option with the value given in the
 **  third argument (which says what file descriptors have been bound and are
 **  ready to be listened on).
+**
+**  Use the environment variable IN_INNBIND as a canary; if it is set, refuse
+**  to exec a program again (to avoid exec loops).
 */
 static void
 exec_program(int argc, char *argv[], const char *ports)
@@ -236,6 +239,8 @@ exec_program(int argc, char *argv[], const char *ports)
     const char **command;
     int i;
 
+    if (getenv("IN_INNBIND") != NULL)
+        die("IN_INNBIND already set, apparent exec loop");
     command = xmalloc((argc + 2 + 1) * sizeof(char *));
     command[0] = argv[0];
     command[1] = "-p";
@@ -243,6 +248,8 @@ exec_program(int argc, char *argv[], const char *ports)
     for (i = 3; i - 2 < argc; i++)
         command[i] = argv[i - 2];
     command[i] = NULL;
+    if (putenv((char *) "IN_INNBIND=1") < 0)
+        sysdie("cannot putenv IN_INNBIND");
     if (execv(command[0], (char **) command) < 0)
         sysdie("exec of %s failed", command[0]);
 }
