@@ -8,13 +8,10 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <signal.h>
 #include <sys/socket.h>
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
@@ -28,8 +25,8 @@
 # endif
 #endif
 
+#include "inn/md5.h"
 #include "macros.h"
-#include "md5.h"
 #include "libinn.h"
 #include "nntp.h"
 #include "paths.h"
@@ -167,7 +164,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
     char secbuf[128];
     HASH digest;
     struct timeval seed;
-    MD5_CTX ctx;
+    struct md5_context context;
     struct sockaddr_in sinl, sinr;
     int sock;
     struct hostent *hent;
@@ -226,11 +223,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	req.vector[i] = random() % 256;
     strcpy(secbuf, config->secret);
     memcpy(secbuf+strlen(config->secret), req.vector, AUTH_VECTOR_LEN);
-    MD5Init(&ctx);
-    MD5Update(&ctx, secbuf, strlen(config->secret)+AUTH_VECTOR_LEN);
-    MD5COUNT(&ctx, strlen(config->secret)+AUTH_VECTOR_LEN);
-    MD5Final(&ctx);
-    memcpy(digest.hash, ctx.digest, MD5_DIGESTSIZE);
+    md5_hash(secbuf, strlen(config->secret)+AUTH_VECTOR_LEN, digest.hash);
     /* fill in the auth_req data */
     req.code = PW_AUTHENTICATION_REQUEST;
     req.id = 0;
@@ -302,11 +295,7 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	    strcpy(secbuf, config->secret);
 	    memcpy(secbuf+strlen(config->secret), &req.data[passstart+2+i],
                    sizeof(HASH));
-	    MD5Init(&ctx);
-	    MD5Update(&ctx, secbuf, strlen(config->secret)+sizeof(HASH));
-	    MD5COUNT(&ctx, strlen(config->secret)+sizeof(HASH));
-	    MD5Final(&ctx);
-	    memcpy(digest.hash, ctx.digest, MD5_DIGESTSIZE);
+            md5_hash(secbuf, strlen(config->secret)+sizeof(HASH), digest.hash);
 	}
     }
     reqlen = req.length;
@@ -380,11 +369,8 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	memcpy(((char*)&req)+reqlen, config->secret, strlen(config->secret));
 	memcpy(secbuf, req.vector, sizeof(req.vector));
 	memcpy(req.vector, secbuf+sizeof(req.vector), sizeof(req.vector));
-	MD5Init(&ctx);
-	MD5Update(&ctx, (char*)&req, strlen(config->secret)+reqlen);
-	MD5COUNT(&ctx, strlen(config->secret)+reqlen);
-	MD5Final(&ctx);
-	if (memcmp(ctx.digest, secbuf, sizeof(HASH)) != 0) {
+        md5_hash((char *)&req, strlen(config->secret)+reqlen, digest.hash);
+	if (memcmp(digest.hash, secbuf, sizeof(HASH)) != 0) {
 	    fprintf(stderr, "radius: checksum didn't match.\n");
 	    continue;
 	}
