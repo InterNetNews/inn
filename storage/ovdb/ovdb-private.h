@@ -188,8 +188,7 @@ label: { \
 
 #define TRYAGAIN EAGAIN
 
-#else
-/* version 3 */
+#elif DB_VERSION_MAJOR == 3
 
 #define TXN_START(label, tid) \
 label: { \
@@ -209,6 +208,26 @@ label: { \
 
 #define TRYAGAIN DB_LOCK_DEADLOCK
 
-#endif /* DB_VERSION_MAJOR == 2 */
+#else /* DB_VERSION_MAJOR == 4 */
+
+#define TXN_START(label, tid) \
+label: { \
+  int txn_ret; \
+  txn_ret = OVDBenv->txn_begin(OVDBenv, NULL, &tid, 0); \
+  if (txn_ret != 0) { \
+    syslog(L_ERROR, "OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
+    tid = NULL; \
+  } \
+}
+
+#define TXN_RETRY(label, tid) \
+{ (tid)->abort(tid); goto label; }
+
+#define TXN_ABORT(label, tid) (tid)->abort(tid)
+#define TXN_COMMIT(label, tid) (tid)->commit(tid, 0)
+
+#define TRYAGAIN DB_LOCK_DEADLOCK
+
+#endif /* DB_VERSION_MAJOR == 4 */
 
 #endif /* USE_BERKELEY_DB */
