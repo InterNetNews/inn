@@ -261,7 +261,7 @@ main(ac, av)
     struct stat		Sb;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
     Flat = FALSE;
     Index = NULL;
     Move = FALSE;

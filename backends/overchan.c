@@ -301,7 +301,7 @@ int main(int ac, char *av[])
     char		*Dir;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
     Dir = innconf->pathoverview;
     (void)umask(NEWSUMASK);
 

@@ -234,7 +234,7 @@ main(ac, av)
     struct stat	Sb;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
     AltSpool = NULL;
     Redirect = TRUE;
     (void)umask(NEWSUMASK);

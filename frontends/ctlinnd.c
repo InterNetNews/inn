@@ -197,7 +197,7 @@ int main(int ac, char *av[])
     char		buff[SMBUF];
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
     Silent = FALSE;
     NeedHelp = FALSE;
     ICCsettimeout(CTLINND_TIMEOUT);

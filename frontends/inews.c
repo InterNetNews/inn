@@ -671,7 +671,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
     if (HDR(_path) == NULL) {
 	i = strlen(Exclusions) + STRLEN(PATHFLUFF);
 #if	defined(DO_INEWS_PATH)
-	if ((p = GetFileConfigValue(_CONF_PATHHOST)) != NULL) {
+	if ((p = innconf->pathhost) != NULL) {
 	    i += strlen(p) + 1;
 	    HDR(_path) = NEW(char, i + 1);
 	    if (*p)
@@ -679,7 +679,7 @@ ProcessHeaders(AddOrg, linecount, pwp)
 	    else
 		(void)sprintf(HDR(_path), "%s%s", Exclusions, PATHFLUFF);
 	}
-	else if (GetFileConfigValue(_CONF_SERVER) != NULL) {
+	else if (innconf->server != NULL) {
 	    if ((p = GetFQDN()) == NULL) {
 		(void)fprintf(stderr, "Can't get host name, %s\n",
 			strerror(errno));
@@ -1193,7 +1193,7 @@ main(ac, av)
     DoSignature = TRUE;
     AddOrg = TRUE;
 
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
 
     (void)umask(NEWSUMASK);
 

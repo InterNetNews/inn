@@ -314,7 +314,7 @@ main(int ac, char *av[])
     OldFile = FALSE;
     ComputeMarks = FALSE;
 
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
 
     (void)umask(NEWSUMASK);
 

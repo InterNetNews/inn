@@ -701,7 +701,7 @@ main(argc, argv, env)
 
     openlog("nnrpd", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
 
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
 
     while ((i = getopt(argc, argv, "b:Di:lop:Rr:S:s:t")) != EOF)
 	switch (i) {

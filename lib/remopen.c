@@ -139,7 +139,7 @@ int NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff
 {
     char		*p;
 
-    if ((p = GetConfigValue(_CONF_SERVER)) == NULL) {
+    if ((p = innconf->server) == NULL) {
 	if (errbuff)
 	    (void)strcpy(errbuff, "What server?");
 	return -1;

@@ -133,7 +133,7 @@ SITEconnect(host)
     if (host)
 	i = NNTPconnect(host, NNTP_PORT, &From, &To, (char *)NULL);
     else {
-	host = GetConfigValue(_CONF_SERVER);
+	host = innconf->server;
 	i = NNTPlocalopen(&From, &To, (char *)NULL);
     }
     if (i < 0) {

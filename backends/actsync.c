@@ -879,11 +879,11 @@ process_args(argc, argv, host1, host2)
 
     /* determine default host name if needed */
     if (*host1 == NULL || strcmp(*host1, "-") == 0) {
-	def_serv = GetConfigValue(_CONF_SERVER);
+	def_serv = innconf->server;
 	*host1 = def_serv;
     }
     if (*host2 == NULL || strcmp(*host2, "-") == 0) {
-	def_serv = GetConfigValue(_CONF_SERVER);
+	def_serv = innconf->server;
 	*host2 = def_serv;
     }
     if (*host1 == NULL || *host2 == NULL) {

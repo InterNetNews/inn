@@ -206,7 +206,7 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 BOOL OVERsetup(OVERSETUP type, void *value) {
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
-	if (ReadInnConf(_PATH_CONFIG) < 0) {
+	if (ReadInnConf() < 0) {
 	    return FALSE;
 	}
     }
@@ -255,7 +255,7 @@ BOOL OVERinit(void) {
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
-	if (ReadInnConf(_PATH_CONFIG) < 0) {
+	if (ReadInnConf() < 0) {
 	    return FALSE;
 	}
     }

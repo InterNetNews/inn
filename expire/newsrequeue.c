@@ -782,7 +782,7 @@ main(ac, av)
     int			nntplinklog;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
 
     Active = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));

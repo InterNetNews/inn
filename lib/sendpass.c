@@ -29,7 +29,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 
     /* What server are we interested in?  Default to the campus one. */
     if (server == NULL
-     && (server = GetConfigValue(_CONF_SERVER)) == NULL)
+     && (server = innconf->server) == NULL)
 	return -1;
 
     /* Open the password file; coarse check on errno, but good enough. */

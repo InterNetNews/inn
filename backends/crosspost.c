@@ -292,7 +292,7 @@ main(ac, av)
     QIOSTATE		*qp;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
     Dir = innconf->patharticles;
     (void)umask(NEWSUMASK);
 

@@ -45,7 +45,7 @@ main(ac, av)
     register BOOL	Dirty;
     struct stat		Sb;
 
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
     /* Parse JCL. */
     format = "nm";
     while ((i = getopt(ac, av, "w:")) != EOF)

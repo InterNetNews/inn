@@ -145,7 +145,7 @@ char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group)
     }
 
     /* If we don't have an address, see if the config file has a default. */
-    if ((save = GetConfigValue(_CONF_MODMAILER)) == NULL)
+    if ((save = innconf->moderatormailer) == NULL)
 	return NULL;
 
     for (p = name; *p; p++)

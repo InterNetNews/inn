@@ -386,7 +386,7 @@ main(ac, av)
     char		*ERRLOG;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
     ERRLOG = COPY(cpcatpath(innconf->pathlog, _PATH_ERRLOG));
     Directory = NULL;
     Fields = 1;

@@ -99,7 +99,7 @@ main(ac, av)
     BOOL		Passing;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
 
     History = cpcatpath(innconf->pathdb, _PATH_HISTORY);
     Line.Size = BUFSIZ;

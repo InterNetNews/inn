@@ -38,7 +38,7 @@ main(ac, av)
     UID_T		myuid;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
     Fields = 1;
     Directory = innconf->pathoutgoing;
     Map = FALSE;

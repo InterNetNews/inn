@@ -1391,7 +1391,7 @@ int main(int ac, char *av[])
     UnlinkFile = FALSE;
     LowmarkFile = FALSE;
 
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
 
     HistoryText = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
     ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));

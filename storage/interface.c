@@ -156,7 +156,7 @@ static BOOL SMreadconfig(void) {
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
-	if (ReadInnConf(_PATH_CONFIG) < 0) {
+	if (ReadInnConf() < 0) {
 	    SMseterror(SMERR_INTERNAL, "ReadInnConf() failed");
 	    return FALSE;
 	}

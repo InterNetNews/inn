@@ -25,7 +25,6 @@ int main(int argc, char **argv) {
     BOOL                Quiet = FALSE;
     BOOL                Delete = FALSE;
     BOOL                Overview = FALSE;
-    BOOL		OVERmmap;
     BOOL		val;
     int                 i;
     char                *p;
@@ -33,6 +32,8 @@ int main(int argc, char **argv) {
     TOKEN		token;
     int			linelen;
     
+    if (ReadInnConf() < 0) { exit(1); }
+
     while ((c = getopt(argc, argv, "qrdo")) != EOF) {
 	switch (c) {
 	case 'q':
@@ -56,8 +57,7 @@ int main(int argc, char **argv) {
     }
 
     if (Overview) {
-	OVERmmap = GetBooleanConfigValue(_CONF_OVERMMAP, TRUE);
-	if (OVERmmap)
+	if (innconf->overviewmmap)
 	    val = TRUE;
 	else
 	    val = FALSE;

@@ -186,7 +186,7 @@ main(int ac, char *av[])
     char		Name[SPOOLNAMEBUFF];
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
 
     History = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
 

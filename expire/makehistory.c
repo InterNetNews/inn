@@ -424,7 +424,7 @@ ReadInMem(char *art, ARTHANDLE *arth, char *Tradspooldir)
     struct stat		sb;
 
     if (pathhost == (char *)NULL) {
-	if ((pathhost = GetConfigValue(_CONF_PATHHOST)) == (char *)NULL) {
+	if ((pathhost = innconf->pathhost) == (char *)NULL) {
 	    (void)fprintf(stderr, "Can't get pathhost\n");
 	    return FALSE;
 	}
@@ -1358,7 +1358,7 @@ main(int ac, char *av[])
     FILE		*index = (FILE *)NULL;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit (-1);
+    if (ReadInnConf() < 0) exit(1);
     HISTORY = COPY(cpcatpath(innconf->pathdb, _PATH_HISTORY));
     ACTIVE = COPY(cpcatpath(innconf->pathdb, _PATH_ACTIVE));
     SCHEMA = COPY(cpcatpath(innconf->pathdb, _PATH_SCHEMA));

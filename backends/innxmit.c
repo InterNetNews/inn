@@ -1149,7 +1149,7 @@ int main(int ac, char *av[])
     int                 port = NNTP_PORT;
 
     /* Set defaults. */
-    if (ReadInnConf() < 0) exit(-1);
+    if (ReadInnConf() < 0) exit(1);
 
     ConnectTimeout = 0;
     TotalTimeout = 0;

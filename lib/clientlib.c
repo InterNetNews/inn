@@ -25,11 +25,8 @@ char	ser_line[NNTP_STRLEN + 2];
 char *getserverbyfile(char *file)
 {
     static char	buff[256];
-    char	*p;
 
-    if ((p = GetConfigValue(_CONF_SERVER)) == NULL)
-	return NULL;
-    (void)strcpy(buff, p);
+    (void)strcpy(buff, innconf->server);
     return buff;
 }
 

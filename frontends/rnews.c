@@ -87,7 +87,6 @@ StartChild(fd, path, argv)
     int		i;
     PID_T	pid;
     char	*p;
-    int		max_forks;
 
     /* Create a pipe. */
     if (pipe(pan) < 0) {
@@ -95,14 +94,9 @@ StartChild(fd, path, argv)
 	exit(1);
     }
 
-    if ((p = GetConfigValue(_CONF_MAX_FORKS)) != NULL)
-    {
-	max_forks = atoi(p);
-    }
-    else max_forks = MAX_FORKS;
     /* Get a child. */
     for (i = 0; (pid = FORK()) < 0; i++) {
-	if (i == max_forks) {
+	if (i == innconf->maxforks) {
 	    syslog(L_ERROR, "cant fork %s %m -- spooling", path);
 	    return -1;
 	}
@@ -829,7 +823,7 @@ int main(int ac, char *av[])
 	exit(1);
     }
 #endif
-     if (ReadInnConf() < 0) exit(-1);
+     if (ReadInnConf() < 0) exit(1);
      UUCPHost = getenv(_ENV_UUCPHOST);
      PATHBADNEWS = cpcatpath(innconf->pathincoming, _PATH_BADNEWS);
      
