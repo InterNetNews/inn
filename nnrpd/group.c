@@ -569,7 +569,7 @@ STATIC int ARTcompare(CPOINTER p1, CPOINTER p2)
 **  Fill in ARTnumbers with the numbers of the articles in the current
 **  group.
 */
-STATIC void GRPscandir(char *dir)
+STATIC void GRPscandir(char *dir, GROUPENTRY *ge)
 {
     static int		ARTarraysize;
     DIRENTRY	        *ep;
@@ -582,6 +582,10 @@ STATIC void GRPscandir(char *dir)
     char                (*tmp)[][OVERINDEXPACKSIZE];
     int                 icount;
     OVERINDEX           index;
+    ARTNUM		low, high;
+
+    low  = GPLOW(ge);
+    high = GPHIGH(ge);
 
     ARTsize = 0;
     GRPcount++;
@@ -660,7 +664,8 @@ STATIC void GRPscandir(char *dir)
 	    }
 	    if (*p || i == 0)
 		continue;
-	    
+	    if (i < low || i > high)
+		continue;
 	    if (ARTsize + 1 >= ARTarraysize) {
 		ARTarraysize += 1024;
 		RENEW(ARTnumbers, ARTLIST, ARTarraysize);
@@ -693,6 +698,7 @@ FUNCTYPE CMDgroup(int ac, char *av[])
     char		*grplist[2];
     char		*group;
     char		buff[SPOOLNAMEBUFF];
+    GROUPENTRY		*ge;
 
     if (!PERMcanread) {
 	Reply("%s\r\n", NOACCESS);
@@ -713,7 +719,7 @@ FUNCTYPE CMDgroup(int ac, char *av[])
     }
     else
 	group = av[1];
-    if (GRPfind(group) == NULL) {
+    if ((ge = GRPfind(group)) == NULL) {
 	Reply("%s %s\r\n", NOSUCHGROUP, group);
 	return;
     }
@@ -748,7 +754,7 @@ FUNCTYPE CMDgroup(int ac, char *av[])
     /* If we haven't been in the group recently, rescan. */
     (void)time(&now);
     if (!EQ(buff, GRPlast) || now > last_time + NNRP_RESCAN_DELAY) {
-	GRPscandir(buff);
+	GRPscandir(buff, ge);
 	(void)strcpy(GRPlast, buff);
 	last_time = now;
     }
