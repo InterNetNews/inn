@@ -56,7 +56,7 @@ profiled:	nnrpdp
 
 nnrpdp:		$(SOURCES)
 	rm -f $(OBJECTS)
-	$(MAKE) nnrpd CFLAGS="$(CFLAGS) $(PROF)" LIBNEWS=../libinn_p.a
+	$(MAKE) nnrpd CFLAGS="$(CFLAGS) $(PROF)" LIBNEWS="../libinn_p.a ../storage/libstorage.a ../libinn_p.a ../storage/libstorage.a"
 	mv nnrpd nnrpdp
 	rm -f $(OBJECTS)
 
