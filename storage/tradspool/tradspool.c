@@ -1176,7 +1176,6 @@ BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     unsigned long ngnum;
     unsigned long artnum;
     char *ng;
-    int namelen;
 
     switch (type) { 
     case SMARTNGNUM:
@@ -1189,9 +1188,8 @@ BOOL tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
 	ngnum = ntohl(ngnum);
 	ng = FindNGByNum(ngnum);
 	if (ng == NULL) return FALSE;
-	namelen = strlen(ng) + 1;
-	ann->groupname = NEW(char, namelen);
-	ann->artnum = (ARTNUM)ntohl(artnum);
+	ann->groupname = COPY(ng);
+	ann->artnum = (ARTNUM)artnum;
 	return TRUE;
     default:
 	return FALSE;
