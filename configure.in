@@ -1463,3 +1463,30 @@ NOTE: The owner and the group of "${RUNDIR}" which is specified by
 EOF
     fi
 fi
+
+dnl Finally, double-check the configured temporary directory.  Some people
+dnl point this at the system temporary directories or at other
+dnl world-writeable directories, which can be a local security hole.
+if $_PATH_PERL -e "exit((stat('$TMPPATH'))[[2]] & 2)" > /dev/null ; then
+    :
+else
+    cat <<EOM
+
+WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+
+  The temporary directory you have configured is world-writeable.  It is
+  currently set to $TMPPATH.
+
+  This directory is used by INN for temporary files and should only be
+  writeable by the news user.  INN does not go to great lengths to prevent
+  symlink attacks and the like because it assumes this directory is not
+  world-writeable.  By configuring INN in this fashion, you may be
+  introducing a locally exploitable security hole.
+
+  It is STRONGLY recommended that you use a temporary directory reserved for
+  INN's exclusive use, one which is not world-writeable.  You can do this
+  either with --with-tmp-dir or by setting --prefix to something other than
+  /usr or /.
+
+EOM
+fi
