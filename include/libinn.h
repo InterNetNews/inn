@@ -136,6 +136,8 @@ extern ssize_t  xwritev(int fd, const struct iovec *iov, int iovcnt);
 extern char *           GenerateMessageID(char *domain);
 extern const char *     HeaderFindMem(const char *Article, int ArtLen,
                                       const char *Header, int HeaderLen); 
+extern const char *     FindEndOfHeader(const char *Body,
+                                      const char *EndOfData);
 extern const char *     HeaderFindDisk(const char *file, const char *Header,
                                        int HeaderLen);
 extern void             HeaderCleanFrom(char *from);
