@@ -12,7 +12,7 @@ extern "C" {
 
 typedef enum {OVSPACE, OVSORT, OVCUTOFFLOW, OVGROUPBASEDEXPIRE, OVSTATICSEARCH} OVCTLTYPE;
 #define OV_NOSPACE 100
-typedef enum {OVNEWSGROUP, OVARRIVED} OVSORTTYPE;
+typedef enum {OVNEWSGROUP, OVARRIVED, OVNOSORT} OVSORTTYPE;
 
 typedef struct _OVGE {
     BOOL	delayrm;	  /* append tokens to filename if true */
