@@ -113,12 +113,12 @@ main(void)
     ok(9, status);
     ok_string(10, "Wed, 4 Jul 1979 22:20:00 -0700 (PDT)", buff);
 
-    status = makedate(300000000UL, false, buff, 32);
+    status = makedate(300000000UL, false, buff, 31);
     ok(11, !status);
-    status = makedate(300000000UL, false, buff, 33);
+    status = makedate(300000000UL, false, buff, 32);
     ok(12, status);
     ok_string(13, "Thu, 5 Jul 1979 05:20:00 +0000", buff);
-    status = makedate(300000000UL, true, buff, 33);
+    status = makedate(300000000UL, true, buff, 32);
     ok(14, status);
     ok_string(15, "Wed, 4 Jul 1979 22:20:00 -0700", buff);
 
