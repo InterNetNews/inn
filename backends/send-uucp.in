@@ -87,14 +87,17 @@ sub read_cf {
         s/\s*\#.*$//;
         next if /^$/;
 
-        my ($site, $compress, $size, $time) = split(/\s+/);
-        next if not $site;
+        my ($sitespec, $compress, $size, $time) = split(/\s+/);
+        next if not $sitespec;
+
+        my ($site, $host) = split(/:/, $sitespec);
+        $host = $site if not $host;
 
         $compress =~ s/_/ /g if $compress;
 
         if ($site_wanted) {
             if ($site eq $site_wanted) {
-                push @sites, [$site, $compress, $size];
+                push @sites, [$site, $host, $compress, $size];
                 last;
             }
             next;
@@ -103,10 +106,10 @@ sub read_cf {
         if ($time) {
             foreach my $time (split(/,/, $time)) {
                 next if $time != $hour;
-                push @sites, [$site, $compress, $size];
+                push @sites, [$site, $host, $compress, $size];
             }
         } else {
-            push @sites, [$site, $compress, $size];
+            push @sites, [$site, $host, $compress, $size];
         }
     }
     close CF;
@@ -137,7 +140,7 @@ sub unbatcher {
 # batch articles for one site
 sub run_site {
     my ($cfg) = @_;
-    my ($site, $compress, $size) = @$cfg;
+    my ($site, $host, $compress, $size) = @$cfg;
 
     logmsg("checking site $site", 'debug');
     my $maxjobs = '';
@@ -177,12 +180,12 @@ sub run_site {
     } else {
         if ($compress eq 'none') {
             system "batcher -b $size $maxjobs $BATCHER_FLAGS "
-                . "-p\"uux $UUX_FLAGS %s!rnews\" $site $site.work";
+                . "-p\"uux $UUX_FLAGS %s!rnews\" $host $site.work";
         } else {
             system "batcher -b $size $maxjobs $BATCHER_FLAGS "
                 . "-p\"{ echo '#! " . unbatcher($compress)
                 . "' ; exec $compress; } | "
-                . "uux $UUX_FLAGS %s!rnews\" $site $site.work";
+                . "uux $UUX_FLAGS %s!rnews\" $host $site.work";
         }
         logmsg("batched articles for $site", 'debug');
     }
@@ -237,14 +240,19 @@ The sites to which articles are to be sent must be configured in the
 configuration file F<send-uucp.cf>.  Each site is specified with a line of
 the form:
 
-    site [compressor [maxsize [batchtime]]]
+    site[:host] [compressor [maxsize [batchtime]]]
 
 =over 4
 
 =item I<site>
 
-The UUCP site name being configured.  The same site name must be the
-same in both the UUCP configuration and the INN newsfeeds(5).
+The news site name being configured.  This must match a site name 
+from newsfeeds(5).
+
+=item I<host>
+
+The UUCP host name to which batches should be sent for this site.
+If omitted, the news site name will be used as the UUCP host name.
 
 =item I<compressor>
 
