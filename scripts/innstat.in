@@ -36,7 +36,7 @@ ${INNDF} ${SPOOL} ${OVERVIEWDIR} ${PATHETC} ${INCOMING} ${BATCH} \
 ##  Show size of batch files.
 echo ''
 echo 'Batch file sizes:'
-( cd ${BATCH}; ls -Cs | tail +2 )
+( cd ${BATCH}; ls -Cs | sed 1d )
 
 ##  Show size of log files.
 echo ''
