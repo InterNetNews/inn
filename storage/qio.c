@@ -29,10 +29,16 @@ QIOSTATE *QIOfdopen(const int fd)
     qp = NEW(QIOSTATE, 1);
     qp->flag = QIO_ok;
     qp->fd = fd;
-#if	defined(HAVE_ST_BLKSIZE)
-    qp->Size = fstat(fd, &Sb) >= 0 ? (int)Sb.st_blksize : QIO_BUFFER;
-#else
     qp->Size = QIO_BUFFER;
+#if	defined(HAVE_ST_BLKSIZE)
+    /* For regular files, use st_blksize hint from the filesystem. */
+    if (fstat(fd, &Sb) >= 0 &&
+       (S_ISREG(Sb.st_mode) || S_ISCHR(Sb.st_mode) || S_ISBLK(Sb.st_mode))) {
+    	qp->Size = (int)Sb.st_blksize;
+	/* The size must be reasonable */
+	if (qp->Size > (4 * QIO_BUFFER) || qp->Size < (QIO_BUFFER / 2))
+	    qp->Size = QIO_BUFFER;
+    }
 #endif	/* defined(HAVE_ST_BLKSIZE) */
     qp->Buffer = NEW(char, qp->Size);
     qp->Count = 0;
