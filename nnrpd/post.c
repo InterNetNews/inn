@@ -357,24 +357,22 @@ ProcessHeaders(int linecount, char *idbuff)
     }
 
     if (PERMaccessconf->nnrpdauthsender) {
-	/* If authorized and we didn't get a sender, add the header based on
-	 * our info.  If not authorized, zap the Sender so we don't put out
-	 * unauthenticated data. */
-	if (PERMauthorized && HDR(_sender) == NULL) {
+	/* If authorized, add the header based on our info.  If not
+         * authorized, zap the Sender so we don't put out unauthenticated
+         * data. */
+	if (PERMauthorized) {
 	    if (PERMuser[0] == '\0') {
 		(void)sprintf(sendbuff, "%s@%s", "UNKNOWN", ClientHost);
 	    } else {
 		if ((p = strchr(PERMuser, '@')) == NULL) {
 		    (void)sprintf(sendbuff, "%s@%s", PERMuser, ClientHost);
 		} else {
-		    *p = '\0';
-		    (void)sprintf(sendbuff, "%s@%s", PERMuser, ClientHost);
-		    *p = '@';
+		    (void)sprintf(sendbuff, "%s", PERMuser);
 		}
 	    }
 	    HDR(_sender) = sendbuff;
 	}
-	else if (!PERMauthorized)
+	else
 	    HDR(_sender) = NULL;
     }
 
