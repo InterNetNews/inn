@@ -4,9 +4,7 @@
 #    ./whsubst.sh _PATH_ACTIVE
 # Forrest J. Cavalier III, Mib Software, 1998/02/19
 #
-if test $1
-then
-else
+if test -z "$1" ; then
 cat <<EOF
 Use this program to locate subst victim files in files.list which 
 reference a particular parameter.
@@ -56,16 +54,12 @@ while test $1
 do
 #	echo trying $1
     file=$1
-    if test -f $file ; then
-    else
+    if test ! -f $file ; then
 #    try a .in version.
 	file=$file.in
     fi
     if test $search = none ; then
-	if fgrep '=()<' $file >/dev/null; then
-	else
-	    echo $file
-	fi
+        fgrep '=()<' $file >/dev/null || echo $file
     else
         if (fgrep '=()<' $file | fgrep $search ) >/dev/null; then 
 	    echo $file
