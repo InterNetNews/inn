@@ -330,6 +330,7 @@ sub human_readable {
 	$scaled /= $factor;
 	$unit++;
     }
+    $scaled = $oldscaled;
     my $predigits = length (int($scaled));
     my $postdigits = $digits - $predigits - 1;
     $postdigits = 0 if $postdigits < 0;
