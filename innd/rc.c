@@ -491,13 +491,15 @@ RCreader(CHANNEL *cp)
     /* If not a server, and not allowing anyone, hand him off unless
        not spawning nnrpd in which case we return an error. */
     if ((i >= 0) && !rp->Skip) {
-	new = NCcreate(fd, rp->Password[0] != '\0', FALSE);
+	if ((new = NCcreate(fd, rp->Password[0] != '\0', FALSE)) == NULL)
+	    return;
         new->Streaming = rp->Streaming;
         new->Skip = rp->Skip;
         new->NoResendId = rp->NoResendId;
         new->MaxCnx = rp->MaxCnx;
     } else if (AnyIncoming && !rp->Skip) {
-	new = NCcreate(fd, FALSE, FALSE);
+	if ((new = NCcreate(fd, FALSE, FALSE)) == NULL)
+	    return;
     } else if (!innconf->noreader) {
 	RChandoff(fd, HOnntpd);
 	if (close(fd) < 0)

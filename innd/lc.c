@@ -38,9 +38,10 @@ LCreader(cp)
 	syslog(L_ERROR, "%s cant accept CCreader %m", LogName);
 	return;
     }
-    new = NCcreate(fd, FALSE, TRUE);
-    new->Address.s_addr = MyAddress.s_addr;
-    syslog(L_NOTICE, "%s connected %d", "localhost", new->fd);
+    if ((new = NCcreate(fd, FALSE, TRUE)) != NULL) {
+	new->Address.s_addr = MyAddress.s_addr;
+	syslog(L_NOTICE, "%s connected %d", "localhost", new->fd);
+    }
 }
 
 
