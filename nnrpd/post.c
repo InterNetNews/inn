@@ -925,7 +925,7 @@ ARTpost(article, idbuff)
 #if	defined(DO_HAVE_UNIX_DOMAIN)
 	i = NNTPlocalopen(&FromServer, &ToServer, buff);
 #else
-	i = NNTPremoteopen(&FromServer, &ToServer, buff);
+	i = NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff);
 #endif	/* defined(DO_HAVE_UNIX_DOMAIN) */
     }
 
