@@ -10,10 +10,8 @@
 
 # Default parameters
 section default {
-## =()<	libpath		"@<_PATH_NEWSLIB>@";>()=
-	libpath         "/var/news/etc";
-## =()<	logpath		"@<_PATH_MOST_LOGS>@";>()=
-	logpath		"/var/log/news";
+	libpath         "@prefix@/etc";
+	logpath		"@LOGDIR@/news";
 	unknown		true;        # want unknown entries.
 	max_unknown     50;          # max unknown entries to display.
 	casesensitive   true;
