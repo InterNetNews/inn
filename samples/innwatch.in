@@ -188,6 +188,13 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
 						"CMD='"'"'" $7 "'"'"'", \
 						"CMT='"'"'" $8 "'"'"'" }'`
 
+	case ${LIM} in
+	[0-9]*)
+	    ;;
+	*)
+	    LIM=`eval echo ${LIM}`
+	    ;;
+	esac
 	##  If there's no label, the label is the line number.
 	test -z "${LAB}" && LAB=${LINE}
 
