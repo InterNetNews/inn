@@ -117,4 +117,8 @@
 ../syslog/syslog.c
 ../syslog/syslog.conf
 ../syslog/syslogd.c
+../storage/cnfs/Makefile
+../storage/cnfs/cnfs.h
+../storage/cnfs/cnfs-private.h
+../storage/cnfs/cnfs.c
 ;; Do not run subst on its own manpage!  ../doc/subst.1
