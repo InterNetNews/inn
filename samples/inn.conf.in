@@ -13,10 +13,6 @@
 organization:		A poorly-installed InterNetNews site
 server:			localhost
 pathhost:		@HOSTNAME@
-#
-# ---------------------------------
-#
-#moderatormailer:	%s@moderators.uu.net
 moderatormailer:
 domain:
 fromhost:
@@ -24,35 +20,36 @@ pathalias:
 complaints:
 mta:			@SENDMAIL@ -oi %s
 mailcmd:		@prefix@/bin/innmail
-checkincludedtext:	no
+checkincludedtext:	false
 maxforks:		10
 maxartsize:		1000000
 nicekids:		4
-verifycancels:		no
-logcancelcomm:		no
-wanttrash:		no
-remembertrash:		yes
-linecountfuzz:		yes
+verifycancels:		false
+logcancelcomm:		false
+wanttrash:		false
+remembertrash:		true
+linecountfuzz:		true
 peertimeout:		3600
 clienttimeout:		600
-allownewnews:		yes
+allownewnews:		true
 localmaxartsize:	1000000
-logartsize:		yes
-logipaddr:		yes
-logsitename:		yes
+logartsize:		true
+logipaddr:		true
+logsitename:		true
 maxconnections:		50
 artcutoff:		14
 icdsynccount:		10
 hiscachesize:		0
-readertrack:		no
-strippostcc:		no
+readertrack:		false
+strippostcc:		false
 status:			0
 timer:			0
-allowreaders:		yes
-extendeddbz:		no
-nnrpdoverstats:		no
-storeonxref:		yes
-backoff_auth:		no
+allowreaders:		true
+extendeddbz:		false
+nnrpdoverstats:		false
+storeonxref:		true
+nnrpdcheckart:		true
+backoff_auth:		false
 backoff_db:		@DBDIR@/backoff
 backoff_postfast:	0L
 backoff_postslow:	1L
@@ -60,7 +57,7 @@ backoff_trigger:	10000L
 mimeversion:
 mimecontenttype:
 mimeencoding:
-refusecybercancels:	no
+refusecybercancels:	false
 #
 # 
 # These options are unlikely to need changing in most situations
@@ -68,7 +65,7 @@ refusecybercancels:	no
 chaninacttime:		600
 chanretrytime:		300
 pauseretrytime:		300
-nntplinklog:		no
+nntplinklog:		false
 nntpactsync:		200
 badiocount:		5
 blockbackoff:		120
@@ -77,14 +74,14 @@ blockbackoff:		120
 # Changing these options can have an effect on the way articles are
 # stored and may require recreating the spool and/or database files
 #
-wireformat:		no
-xrefslave:		no
+wireformat:		false
+xrefslave:		false
 nnrpdposthost:
-spoolfirst:		no
-writelinks:		yes
-storageapi:		no
-articlemmap:		no
-overviewmmap:		yes
+spoolfirst:		false
+writelinks:		true
+storageapi:		false
+articlemmap:		false
+overviewmmap:		true
 bindaddress:		all
 port:			119
 #
@@ -93,14 +90,14 @@ port:			119
 ## database and adding  will probably confuse a lot of things. You must 
 ## have compiled this support in too.
 #
-keywords:		false.
+keywords:		false
 keylimit:		512
 keyartlimit:		100000
 keymaxwords:		250
 #
 # Other options
 innflags:		
-doinnwatch:		yes
+doinnwatch:		true
 #
 # ---------------------------------
 # Paths to various aspects of the news system

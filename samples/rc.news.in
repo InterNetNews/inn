@@ -9,7 +9,7 @@
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INNDSTART}
 ##  Set to true or false
-if [ -z "${DOINNWATCH}" -o "${DOINNWATCH}" = "on" -o \
+if [ -z "${DOINNWATCH}" -o "${DOINNWATCH}" = "on" -o "${DOINNWATCH}" = "true" \
 			"${DOINNWATCH}" = "yes" ]; then
     DOINNWATCH=true
 else
