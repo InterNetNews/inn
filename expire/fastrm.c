@@ -149,7 +149,7 @@ STATIC dnode *build_dir(int *queued, int *deleted)
 		return NULL;
 	
 	if (IsToken(line)) {
-	    if (!SMcancel(TextToToken(line)) && (SMerrno != SMERR_NOENT)) {
+	    if (!SMcancel(TextToToken(line)) && (SMerrno != SMERR_NOENT) && (SMerrno != SMERR_UNINIT)) {
 		fprintf(stderr, "%s: can't cancel %s\n", MyName, line);
 		fatals++;
 	    }
@@ -178,7 +178,7 @@ STATIC dnode *build_dir(int *queued, int *deleted)
 
     while (get_line(line, (int)sizeof line)) {
 	if (IsToken(line)) {
-	    if (!SMcancel(TextToToken(p)) && (SMerrno != SMERR_NOENT)) {
+	    if (!SMcancel(TextToToken(p)) && (SMerrno != SMERR_NOENT) && (SMerrno != SMERR_UNINIT)) {
 		fprintf(stderr, "%s: can't cancel %s\n", MyName, p);
 		fatals++;
 	    }

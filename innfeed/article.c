@@ -556,7 +556,7 @@ static bool fillContents (Article article)
 	if (opened)
 	    articlesize = article->arthandle->len;
 	else {
-	    if (SMerrno != SMERR_NOENT) {
+	    if (SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT) {
 		syslog(LOG_ERR, "Could not retrieve %s: %s",
 		       article->fname, SMerrorstr);
 		article->articleOk = false;

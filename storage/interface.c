@@ -426,12 +426,12 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount) {
 
     if (method_data[typetoindex[token.type]].initialized == INIT_FAIL) {
 	syslog(L_ERROR, "SM method initialization was failed");
-	SMseterror(SMERR_BADTOKEN, NULL);
+	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
     if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
 	syslog(L_ERROR, "SM could not find token type or method was not initialized");
-	SMseterror(SMERR_BADTOKEN, NULL);
+	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
     art = storage_methods[typetoindex[token.type]].retrieve(token, amount);
@@ -452,7 +452,7 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
 	start= article->nextmethod;
 
     if (method_data[start].initialized == INIT_FAIL) {
-	SMseterror(SMERR_BADTOKEN, NULL);
+	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
     if (method_data[start].initialized == INIT_NO && method_data[i].configured

@@ -1256,7 +1256,7 @@ void ARTcancel(const ARTDATA *Data, const char *MessageID, const BOOL Trusted)
 	    *p = '\0';
 
 	if (IsToken(files)) {
-	    if (!SMcancel(TextToToken(files + 1)) && SMerrno != SMERR_NOENT)
+	    if (!SMcancel(TextToToken(files + 1)) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
 		syslog(L_ERROR, "%s cant cancel %s", LogName, files);
 	} else {
 	    /* Remove this file, go back for the next one if there's more. */

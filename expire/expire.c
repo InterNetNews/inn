@@ -763,7 +763,7 @@ STATIC void EXPremove(char *p, long *size, BOOL index)
 	EXPunlinkfile = NULL;
     }
     if (IsToken(p)) {
-	if (!SMcancel(TextToToken(p)) && SMerrno != SMERR_NOENT)
+	if (!SMcancel(TextToToken(p)) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
 	    fprintf(stderr, "Can't unlink %s\n", p);
     } else {
 	if (unlink(p) < 0 && errno != ENOENT)
