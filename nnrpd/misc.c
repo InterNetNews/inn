@@ -1,7 +1,8 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Miscellaneous support routines.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -15,17 +16,17 @@
 #include "dbz.h"
 
 #ifdef HAVE_SSL
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include "tls.h"
-#include "sasl_config.h"
+# include <openssl/ssl.h>
+# include <openssl/err.h>
+# include <openssl/bio.h>
+# include <openssl/pem.h>
+# include "tls.h"
+# include "sasl_config.h"
 #endif 
 
-STATIC BOOL		setup = FALSE;
-STATIC FILE		*hfp = NULL;
-STATIC ino_t		ino = 0;
+static bool		setup = FALSE;
+static FILE		*hfp = NULL;
+static ino_t		ino = 0;
 
 #ifdef HAVE_SSL
 extern SSL *tls_conn;
@@ -107,7 +108,7 @@ Glom(av)
 **  Match a list of newsgroup specifiers against a list of newsgroups.
 **  func is called to see if there is a match.
 */
-BOOL PERMmatch(char **Pats, char **list)
+bool PERMmatch(char **Pats, char **list)
 {
     int	                i;
     char	        *p;
@@ -138,7 +139,7 @@ BOOL PERMmatch(char **Pats, char **list)
 **  Check to see if user is allowed to see this article by matching
 **  Newsgroups line.
 */
-BOOL
+bool
 PERMartok()
 {
     static char		**grplist;
@@ -193,14 +194,14 @@ void HIScheck(void)
 **  Return the path name of an article if it is in the history file.
 **  Return a pointer to static data.
 */
-char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
+char *HISgetent(HASH *key, bool useoffset, off_t *off)
 {
     static char		path[BIG_BUFFER];
     char	        *p;
     char	        *q;
     char		*save;
     char		buff[BIG_BUFFER];
-    OFFSET_T		offset;
+    off_t		offset;
     struct stat		Sb;
     struct timeval	stv, etv;
     static int		entrysize = 0;
@@ -260,7 +261,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 	    syslog(L_ERROR, "%s cant stat %s %m", ClientHost, HISTORY);
 	    return NULL;
 	}
-	CloseOnExec((int)fileno(hfp), TRUE);
+	close_on_exec(fileno(hfp), true);
 	ino = Sb.st_ino;
     }
 
@@ -330,7 +331,7 @@ char *HISgetent(HASH *key, BOOL useoffset, OFFSET_T *off)
 /*
 **  Parse a newsgroups line, return TRUE if there were any.
 */
-BOOL
+bool
 NGgetlist(argvp, list)
     char		***argvp;
     char		*list;
@@ -348,7 +349,7 @@ NGgetlist(argvp, list)
 /*
 **  Take an NNTP distribution list <d1,d2,...> and turn it into an array.
 */
-BOOL
+bool
 ParseDistlist(argvp, list)
     char		***argvp;
     char		*list;
@@ -386,10 +387,10 @@ READTYPE READline(char *start, int  size, int timeout)
     register char	*p;
     register char	*end;
     struct timeval	t;
-    FDSET		rmask;
+    fd_set		rmask;
     int			i;
     char		c;
-    BOOL		toolong;
+    bool		toolong;
 
     toolong = FALSE;
 
@@ -398,25 +399,25 @@ READTYPE READline(char *start, int  size, int timeout)
 	    /* Fill the buffer. */
     Again:
 	    FD_ZERO(&rmask);
-	    FD_SET(STDIN, &rmask);
+	    FD_SET(STDIN_FILENO, &rmask);
 	    t.tv_sec = timeout;
 	    t.tv_usec = 0;
-	    i = select(STDIN + 1, &rmask, (FDSET *)NULL, (FDSET *)NULL, &t);
+	    i = select(STDIN_FILENO + 1, &rmask, NULL, NULL, &t);
 	    if (i < 0) {
 		if (errno == EINTR)
 		    goto Again;
 		syslog(L_ERROR, "%s cant select %m", ClientHost);
 		return RTtimeout;
 	    }
-	    if (i == 0 || !FD_ISSET(STDIN, &rmask))
+	    if (i == 0 || !FD_ISSET(STDIN_FILENO, &rmask))
 		return RTtimeout;
 #ifdef HAVE_SSL
 	    if (tls_conn)
 	      count = SSL_read(tls_conn, buffer, sizeof buffer);
 	    else
-	      count = read(STDIN, buffer, sizeof buffer);
+	      count = read(STDIN_FILENO, buffer, sizeof buffer);
 #else
-	    count = read(STDIN, buffer, sizeof buffer);
+	    count = read(STDIN_FILENO, buffer, sizeof buffer);
 #endif
 	    if (count < 0) {
 		syslog(L_TRACE, "%s cant read %m", ClientHost);
@@ -602,7 +603,7 @@ UnlockPostRec(path)
 /* 
  * Get the stored postrecord for that IP 
  */
-STATIC int
+static int
 GetPostRecord(path, lastpost, lastsleep, lastn)
      char                         *path;
      long                *lastpost;
@@ -651,7 +652,7 @@ GetPostRecord(path, lastpost, lastsleep, lastn)
 /* 
  * Store the postrecord for that IP 
  */
-STATIC int
+static int
 StorePostRecord(path, lastpost, lastsleep, lastn)
      char                         *path;
      time_t                       lastpost;
@@ -750,7 +751,7 @@ RateLimit(sleeptime,path)
 */
 /* ARGSUSED0 */
 
-FUNCTYPE
+void
 CMDstarttls(ac, av)
     int		ac;
     char	*av[];
