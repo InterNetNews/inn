@@ -95,8 +95,8 @@ int code;
 static int
 OurRead(fd, buf, n)
 int fd;
-POINTER buf;
-SIZE_T n;
+void *buf;
+size_t n;
 {
     int rval;
     rval = read(fd, buf, n);
@@ -116,8 +116,8 @@ SIZE_T n;
 static int
 OurWrite(fd, buf, n)
 int fd;
-CPOINTER buf;
-SIZE_T n;
+const void *buf;
+size_t n;
 {
     int rval;
     rval = write(fd, buf, n);
@@ -167,7 +167,7 @@ int fd;
 CAFHEADER *head;
 ARTNUM art;
 {
-    OFFSET_T offset;
+    off_t offset;
 
     offset = sizeof(CAFHEADER) + head->FreeZoneTabSize;
     offset += (art - head->Low) * sizeof(CAFTOCENT);
@@ -201,12 +201,12 @@ CAFTOCENT *tocp;
 ** Round an offset up to the next highest block boundary. Needs the CAFHEADER
 ** to find out what the blocksize is.
 */
-OFFSET_T
+off_t
 CAFRoundOffsetUp(off, blocksize)
-OFFSET_T off;
+off_t off;
 unsigned int blocksize;
 {
-    OFFSET_T off2;
+    off_t off2;
 
     /* Zero means default blocksize, though we shouldn't need this for long,
        as all new CAF files will have BlockSize set. */
@@ -255,7 +255,7 @@ CAFHEADER *h;
     int i;
     struct stat statbuf;
     CAFBITMAP *bm;
-    if (lseek(fd, (OFFSET_T)(sizeof(CAFHEADER)), SEEK_SET) < 0) {
+    if (lseek(fd, sizeof(CAFHEADER), SEEK_SET) < 0) {
 	CAFError(CAF_ERR_IO);
 	return NULL;
     }
@@ -322,7 +322,7 @@ CAFBITMAP *bm;
 
     newbmb->BMBBits = NEW(char, bm->BlockSize);
 
-    if (lseek(fd, (OFFSET_T)((blkno + 1) * bm->BlockSize), SEEK_SET) < 0) {
+    if (lseek(fd, (blkno + 1) * bm->BlockSize, SEEK_SET) < 0) {
 	DISPOSE(newbmb->BMBBits);
 	DISPOSE(newbmb);
 	CAFError(CAF_ERR_IO);
@@ -359,7 +359,7 @@ CAFBITMAP *bm;
     bmb = bm->Blocks[blkno];
     if (!bmb->Dirty) return 0;
 
-    if (lseek(fd, (OFFSET_T)((blkno + 1) * bm->BlockSize), SEEK_SET) < 0) {
+    if (lseek(fd, (blkno + 1) * bm->BlockSize, SEEK_SET) < 0) {
 	CAFError(CAF_ERR_IO);
 	return -1;
     }
@@ -387,7 +387,7 @@ CAFBITMAP *bm;
 	}
     }
 
-    if (lseek(fd, (OFFSET_T)(sizeof(CAFHEADER)), SEEK_SET) < 0) {
+    if (lseek(fd, sizeof(CAFHEADER), SEEK_SET) < 0) {
 	CAFError(CAF_ERR_IO);
 	return -1;
     }
@@ -405,7 +405,7 @@ CAFBITMAP *bm;
 int
 CAFIsBlockFree(bm, fd, block)
 CAFBITMAP *bm;
-OFFSET_T block;
+off_t block;
 int fd;
 {
     unsigned int ind;
@@ -461,7 +461,7 @@ void
 CAFSetBlockFree(bm, fd, block, free)
 CAFBITMAP *bm;
 int fd;
-OFFSET_T block;
+off_t block;
 int free;
 {
     unsigned int ind;
@@ -526,13 +526,13 @@ int free;
 ** a block bigger than BytesPerBMB.  Testing reveals that it does seem to work, 
 ** though not optimally (some BMBs will get scanned several times).  
 */
-static OFFSET_T
+static off_t
 CAFFindFreeBlocks(bm, fd, n)
 CAFBITMAP *bm;
 int fd;
 unsigned int n;
 {
-    OFFSET_T startblk, curblk;
+    off_t startblk, curblk;
     unsigned int i, ind, blkno, j;
     unsigned int bmblkno, k, l;
     CAFBMB *bmb;
@@ -594,7 +594,7 @@ int
 CAFOpenArtRead(path, art, len)
 char *path;
 ARTNUM art;
-SIZE_T *len;
+size_t *len;
 {
     CAFHEADER head;
     int fd;
@@ -655,7 +655,7 @@ SIZE_T *len;
 
 static int CAF_fd_write;
 static ARTNUM CAF_artnum_write;
-static OFFSET_T CAF_startoffset_write;
+static off_t CAF_startoffset_write;
 static CAFHEADER CAF_header_write;
 static CAFBITMAP *CAF_free_bitmap_write;
 static unsigned int CAF_numblks_write;
@@ -673,7 +673,7 @@ static unsigned int CAF_numblks_write;
 static unsigned int
 CAFFindOptimalBlocksize(tocsize, cfsize)
 ARTNUM tocsize;
-SIZE_T cfsize;
+size_t cfsize;
 {
 
     if (cfsize == 0) return CAF_DEFAULT_BLOCKSIZE; /* no size given, use default. */
@@ -697,7 +697,7 @@ CAFCreateCAFFile(cfpath, artnum, tocsize, estcfsize, nolink, temppath)
 char *cfpath;
 ARTNUM artnum;
 ARTNUM tocsize;
-SIZE_T estcfsize;
+size_t estcfsize;
 int nolink;
 char *temppath;
 {
@@ -705,7 +705,7 @@ char *temppath;
     int fd;
     char path[SPOOLNAMEBUFF];
     char realpath[SPOOLNAMEBUFF];
-    OFFSET_T offset;
+    off_t offset;
     char nulls[1];
 
     strncpy(realpath, cfpath, SPOOLNAMEBUFF);
@@ -811,7 +811,7 @@ CAFOpenArtWrite(path, artp, waitlock, size)
 char *path;
 ARTNUM *artp;
 int waitlock;
-SIZE_T size;
+size_t size;
 {
     int fd;
 
@@ -827,7 +827,8 @@ SIZE_T size;
 		** the *artp? business is so that if *artp==0, we set initial
 		** article # to 1.
 		*/
-		fd = CAFCreateCAFFile(path, (*artp ? *artp : 1), CAF_DEFAULT_TOC_SIZE, (SIZE_T)0, 0, NULL);
+		fd = CAFCreateCAFFile(path, (*artp ? *artp : 1),
+                                      CAF_DEFAULT_TOC_SIZE, 0, 0, NULL);
 		/*
 		** XXX possible race condition here, so we check to see if
 		** create failed because of EEXIST.  If so, we go back to top
@@ -880,11 +881,11 @@ int
 CAFStartWriteFd(fd, artp, size)
 int fd;
 ARTNUM *artp;
-SIZE_T size;
+size_t size;
 {
     CAFHEADER head;
     CAFTOCENT tocent;
-    OFFSET_T offset, startoffset;
+    off_t offset, startoffset;
     unsigned int numblks;
     CAFBITMAP *freebm;
     ARTNUM art;
@@ -959,7 +960,7 @@ SIZE_T size;
 	** seek to EOF to prepare to start writing article.
 	*/
 
-	if ((offset = lseek(fd, (OFFSET_T) 0, SEEK_END)) < 0) {
+	if ((offset = lseek(fd, 0, SEEK_END)) < 0) {
 	    CAFError(CAF_ERR_IO);
 	    (void) close(fd);
 	    return -1;
@@ -969,7 +970,7 @@ SIZE_T size;
     }
 
     /* Seek to starting offset for the new artiicle. */
-    if (lseek(fd, (OFFSET_T) startoffset, SEEK_SET) < 0) {
+    if (lseek(fd, startoffset, SEEK_SET) < 0) {
 	CAFError(CAF_ERR_IO);
 	(void) close(fd);
 	return -1;
@@ -996,9 +997,9 @@ int
 CAFFinishArtWrite(fd)
 int fd;
 {
-    OFFSET_T curpos;
+    off_t curpos;
     CAFTOCENT tocentry;
-    OFFSET_T curblk;
+    off_t curblk;
     CAFHEADER *headp;
     unsigned int i;
 
@@ -1011,7 +1012,7 @@ int fd;
     headp = &CAF_header_write;
 
     /* Find out where we left off writing in the file. */
-    if ((curpos = lseek(fd, (OFFSET_T) 0, SEEK_CUR)) < 0) {
+    if ((curpos = lseek(fd, 0, SEEK_CUR)) < 0) {
 	CAFError(CAF_ERR_IO);
 	CAF_fd_write = 0;
 	return -1;
@@ -1062,7 +1063,7 @@ int fd;
 	if (CAF_artnum_write > headp->High) {
 	    headp->High = CAF_artnum_write;
 	}
-	if (lseek(fd, (OFFSET_T) 0, SEEK_SET) < 0) {
+	if (lseek(fd, 0, SEEK_SET) < 0) {
 	    CAFError(CAF_ERR_IO);
 	    CAF_fd_write = 0;
 	    return -1;
@@ -1157,7 +1158,7 @@ CAFTOCENT **tocpp;
     int fd;
     int nb;
     CAFTOCENT *tocp;
-    OFFSET_T offset;
+    off_t offset;
 
     if ( (fd = open(path, O_RDONLY)) < 0) {
 	/* 
@@ -1219,7 +1220,7 @@ ARTNUM *artnums;
     CAFBITMAP *freebitmap;
     ARTNUM art;
     unsigned int numblksfreed, i, j;
-    OFFSET_T curblk;
+    off_t curblk;
     int errorfound = FALSE;
 
     while (TRUE) {
@@ -1312,7 +1313,7 @@ ARTNUM *artnums;
     CAFDisposeBitmap(freebitmap);
 
     /* need to update header. */
-    if (lseek(fd, (OFFSET_T) 0, SEEK_SET) < 0) {
+    if (lseek(fd, 0, SEEK_SET) < 0) {
 	CAFError(CAF_ERR_IO);
 	return -1;
     }
@@ -1428,14 +1429,14 @@ CAFClean(path, verbose, PercentFreeThreshold)
     CAFTOCENT *newtocarray, *newtocp;
     int newtocsize;
     FILE *infile, *outfile;
-    OFFSET_T startoffset, newstartoffset;
+    off_t startoffset, newstartoffset;
     char  buf[BUFSIZ];
     int   nbytes, ncur;
     int   n;
     unsigned int blocksize;
     char *zerobuff;
     struct stat statbuf;
-    SIZE_T datasize;
+    size_t datasize;
     double percentfree;
     int toc_needs_expansion;
     int toc_needs_compacting;
@@ -1660,7 +1661,7 @@ CAFClean(path, verbose, PercentFreeThreshold)
 	** + Head.BlockSize/blocksize, but we need to take rounding 
 	** into account. 
 	*/
-#define RoundIt(n) (CAFRoundOffsetUp((OFFSET_T) (n), fsinfo.STATMULTI) / fsinfo.STATMULTI)
+#define RoundIt(n) (CAFRoundOffsetUp((n), fsinfo.STATMULTI) / fsinfo.STATMULTI)
 
 	num_diskblocks_needed = RoundIt((head.High - head.Low + 1)*sizeof(CAFTOCENT)) 
 	    + RoundIt(datasize - head.Free) + RoundIt(head.BlockSize);
@@ -1690,7 +1691,8 @@ CAFClean(path, verbose, PercentFreeThreshold)
 
     /* try to create new CAF file with some temp. pathname */
     /* note: new CAF file is created in flocked state. */
-    if ((fdout = CAFCreateCAFFile(path, newlow, newtocsize, (SIZE_T) statbuf.st_size, 1, newpath)) < 0) {
+    if ((fdout = CAFCreateCAFFile(path, newlow, newtocsize,
+                                  statbuf.st_size, 1, newpath)) < 0) {
 	(void)fclose(infile);
 	DISPOSE(tocarray);
 	DISPOSE(newpath);
