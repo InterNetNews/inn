@@ -156,7 +156,7 @@ chanretrytime:          300
 datamovethreshold:      8192
 icdsynccount:           10
 keepmmappedthreshold:   1024
-maxcmdreadsize:         1024
+#maxcmdreadsize:
 maxforks:               10
 nicekids:               4
 nicenewnews:            0
