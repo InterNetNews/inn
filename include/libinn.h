@@ -8,7 +8,7 @@
 
 #include "inn/defines.h"
 
-/* Eventually we don't want to install this, since this will be an installed
+/* Eventually we don't want to include this, since this will be an installed
    header and we don't want to install config.h. */
 #include "config.h"
 
