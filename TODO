@@ -269,18 +269,6 @@ Code Cleanup Projects
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
 
-* Eliminate use of EQ, EQn, caseEQ, and caseEQn everywhere in favor of
-  calling strcmp, strncmp, strcasecmp, and strncasecmp and comparing the
-  result to 0.
-
-* Change SIZEOF and ENDOF to ARRAY_SIZE and ARRAY_END so that it's clearer
-  what they're for and move them from macros.h to another header.
-
-* Eliminate use of the STRLEN macro; it's too confusingly named.  In
-  general, this macro should not be needed.  Most compilers will optimize
-  strlen on constant strings, and strlen on a short string isn't a
-  significantly expensive operation regardless.
-
 * Phase out the rest of macros.h, moving the remaining functions to a
   better include file and possibly renaming them.
 
