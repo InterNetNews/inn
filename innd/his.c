@@ -2,6 +2,7 @@
 **
 **  History file routines.
 */
+
 #include "config.h"
 #include "clibrary.h"
 #include <netinet/in.h>
@@ -11,28 +12,28 @@
 
 typedef struct __HISCACHE {
     HASH	Hash;	/* Hash value of the message-id using Hash() */
-    BOOL	Found;	/* Whether this entry is in the dbz file yet */
+    bool	Found;	/* Whether this entry is in the dbz file yet */
 } _HIScache;
 
 typedef enum {HIScachehit, HIScachemiss, HIScachedne} HISresult;
 
-STATIC char		*HIShistpath = NULL;
-STATIC FILE		*HISwritefp;
-STATIC int		HISreadfd;
-STATIC int		HISdirty;
-STATIC int		HISincore = INND_DBZINCORE;
-STATIC _HIScache	*HIScache;
-STATIC int              HIScachesize; /* Number of entries in HIScache */
-STATIC int              HIShitpos; /* The entry existed in the cache and in history */
-STATIC int              HIShitneg; /* The entry existed in the cache but not in history */
-STATIC int              HISmisses; /* The entry was not in the cache, but was in the history file */
-STATIC int              HISdne;    /* The entry was not in cache or history */
-STATIC time_t		HISlastlog;   /* Last time that we logged stats */   
+static char		*HIShistpath = NULL;
+static FILE		*HISwritefp;
+static int		HISreadfd;
+static int		HISdirty;
+static int		HISincore = INND_DBZINCORE;
+static _HIScache	*HIScache;
+static int              HIScachesize;   /* Number of entries in HIScache */
+static int              HIShitpos;      /* In cache, in history */
+static int              HIShitneg;      /* In cache, not in history */
+static int              HISmisses;      /* Not in cache, in history */
+static int              HISdne;         /* Not in cache or history */
+static time_t		HISlastlog;     /* Last time that we logged stats */   
 
 /*
 ** Put an entry into the history cache 
 */
-void HIScacheadd(HASH MessageID, BOOL Found) {
+void HIScacheadd(HASH MessageID, bool Found) {
     unsigned int  i, loc;
 
     if (HIScache == NULL)
@@ -90,14 +91,14 @@ void HISsetup(void)
 	    syslog(L_FATAL, "cant fseek to end of %s %m", HIShistpath);
 	    exit(1);
 	}
-	CloseOnExec((int)fileno(HISwritefp), TRUE);
+	close_on_exec(fileno(HISwritefp), true);
 
 	/* Open the history file for reading. */
 	if ((HISreadfd = open(HIShistpath, O_RDONLY)) < 0) {
 	    syslog(L_FATAL, "%s cant open %s %m", LogName, HIShistpath);
 	    exit(1);
 	}
-	CloseOnExec(HISreadfd, TRUE);
+	close_on_exec(HISreadfd, true);
 
 	/* Open the DBZ file. */
 	dbzgetoptions(&opt);
@@ -146,7 +147,7 @@ void HISsync(void)
 }
 
 
-STATIC void HISlogstats() {
+static void HISlogstats() {
     syslog(L_NOTICE, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
 	   HIShitpos, HIShitneg, HISmisses, HISdne);
     HIShitpos = HIShitneg = HISmisses = HISdne = 0;
@@ -186,7 +187,7 @@ void HISclose(void)
 TOKEN *HISfilesfor(const HASH MessageID)
 {
     static BUFFER	Files;
-    OFFSET_T		offset;
+    off_t		offset;
     char	        *p;
     int	                i;
     static TOKEN	token;
@@ -249,9 +250,9 @@ TOKEN *HISfilesfor(const HASH MessageID)
 /*
 **  Have we already seen an article?
 */
-BOOL HIShavearticle(const HASH MessageID)
+bool HIShavearticle(const HASH MessageID)
 {
-    BOOL	   val;
+    bool	   val;
     
     if ((Now.time - HISlastlog) > 3600) {
 	HISlogstats();
@@ -286,10 +287,10 @@ BOOL HIShavearticle(const HASH MessageID)
 /*
 **  Write a history entry.
 */
-BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
+bool HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 {
     static char		NOPATHS[] = "";
-    OFFSET_T		offset;
+    off_t		offset;
     int			i;
     
     if (HISwritefp == NULL)
@@ -344,9 +345,10 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths, TOKEN *token)
 /*
 **  Write a bogus history entry to keep us from seeing this article again
 */
-BOOL HISremember(const HASH hash)
+bool
+HISremember(const HASH hash)
 {
-    OFFSET_T		offset;
+    off_t		offset;
     int			i;
 
     TMRstart(TMR_HISWRITE);
