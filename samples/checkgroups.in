@@ -19,7 +19,7 @@ mail)
 	echo 'message into docheckgroups while running as the'
 	echo "\"${NEWSUSER}\" userid:"
 	echo ''
-	echo "${PATHETC}/docheckgroups <<\-EOF-"
+	echo "${PATHLIB}/docheckgroups <<\-EOF-"
 	${SM} ${ARTICLE} | ${SED} -e '1,/^$/d' 
 	echo '-EOF-'
     ) | sed -e 's/^~/~~/' | ${MAILCMD} -s "checkgroups by ${FROM}" ${NEWSMASTER}
