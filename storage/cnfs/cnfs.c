@@ -1017,7 +1017,7 @@ BOOL cnfs_init(BOOL *selfexpire) {
 	}
     }
     if (!SMpreopen) {
-      for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL;) {
+      for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next) {
 	CNFSshutdowncycbuff(cycbuff);
       }
     }
