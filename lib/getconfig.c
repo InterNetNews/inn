@@ -260,6 +260,7 @@ void SetDefaults()
     innconf->activedenable = FALSE;
     innconf->activedupdate = 30L;
     innconf->activedport = 1119;
+    innconf->storemsgid = TRUE;
 }
 
 void ClearInnConf()
@@ -916,6 +917,11 @@ int ReadInnConf()
 		TEST_CONFIG(CONF_VAR_ACTIVEDPORT, bit);
 		if (!bit) innconf->activedport = atoi(p);
 		SET_CONFIG(CONF_VAR_ACTIVEDPORT);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_STOREMSGID)) {
+		TEST_CONFIG(CONF_VAR_STOREMSGID, bit);
+		if (!bit && boolval != -1) innconf->storemsgid = boolval;
+		SET_CONFIG(CONF_VAR_STOREMSGID);
 	    }
 	}
 	(void)Fclose(F);
