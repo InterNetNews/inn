@@ -89,38 +89,6 @@ struct node_lines {
 
 
 /*
-**  tst_init allocates memory for members of struct tst, and allocates the
-**  first node_line_width nodes.  The value for width must be chosen very
-**  carefully.  One node is required for every character in the tree.  If you
-**  choose a value that is too small, your application will spend too much
-**  time calling malloc and your node space will be too spread out.  Too large
-**  a value is just a waste of space.
-*/
-struct tst *
-tst_init(int width)
-{
-    struct tst *tst;
-    struct node *current_node;
-    int i;
-
-    tst = xcalloc(1, sizeof(struct tst));
-    tst->node_lines = xcalloc(1, sizeof(struct node_lines));
-    tst->node_line_width = width;
-    tst->node_lines->next = NULL;
-    tst->node_lines->node_line = xcalloc(width, sizeof(struct node));
-
-    current_node = tst->node_lines->node_line;
-    tst->free_list = current_node;
-    for (i = 1; i < width; i++) {
-        current_node->middle = &(tst->node_lines->node_line[i]);
-        current_node = current_node->middle;
-    }
-    current_node->middle = NULL;
-    return tst;
-}
-
-
-/*
 **  Allocate new nodes for the free list, called when the free list is empty.
 */
 static void
@@ -142,6 +110,27 @@ tst_grow_node_free_list(struct tst *tst)
         current_node = current_node->middle;
     }
     current_node->middle = NULL;
+}
+
+
+/*
+**  tst_init allocates memory for members of struct tst, and allocates the
+**  first node_line_width nodes.  The value for width must be chosen very
+**  carefully.  One node is required for every character in the tree.  If you
+**  choose a value that is too small, your application will spend too much
+**  time calling malloc and your node space will be too spread out.  Too large
+**  a value is just a waste of space.
+*/
+struct tst *
+tst_init(int width)
+{
+    struct tst *tst;
+
+    tst = xcalloc(1, sizeof(struct tst));
+    tst->node_lines = NULL;
+    tst->node_line_width = width;
+    tst_grow_node_free_list(tst);
+    return tst;
 }
 
 
