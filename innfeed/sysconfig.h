@@ -51,7 +51,6 @@
 
 #if defined (__bsdi__)
 #define MAX_WRITEV_VEC 1024
-#define HAVE_MMAP
 #endif
 
 /*
@@ -69,7 +68,6 @@ extern int h_errno ;
 
 #if defined (__FreeBSD__)
 #define MAX_WRITEV_VEC 1024
-#define HAVE_MMAP
 #endif
 
 /*
@@ -79,7 +77,6 @@ extern int h_errno ;
 
 #if defined (__NetBSD__)
 #define MAX_WRITEV_VEC 1024
-#define HAVE_MMAP
 #endif
 
 
@@ -93,7 +90,6 @@ extern int h_errno ;
    number to use. Lower than that, and you should use 1. */
 #define MAX_WRITEV_VEC 1
 #undef DO_NEED_SYS_SELECT 
-#define HAVE_MMAP 1
 #define USE_SIGACTION
 #endif
 
@@ -131,7 +127,6 @@ extern int h_errno ;
 #define GETSOCKOPT_ARG  char *
 #define MAX_WRITEV_VEC  16
 #define DO_NEED_STREAM 1
-#define HAVE_MMAP
 #define MAX_STDIO_FD 256
 
  /* this may be needed for solaris version < 2.6 */
@@ -147,7 +142,6 @@ extern int h_errno ;
 #if defined (sun) && ! defined (__SVR4)
 #define MAX_WRITEV_VEC 16
 #define DO_NEED_STRERROR 1
-#define HAVE_MMAP
 #define MAX_STDIO_FD 128
 #define atexit(arg) on_exit (arg,0)
 #endif
@@ -160,7 +154,6 @@ extern int h_errno ;
 
 #if defined (__sgi)
 #define MAX_WRITEV_VEC 16    /* actually bigger on 5.2, but this on 5.3 and 6.x */
-#define HAVE_MMAP
 #endif
 
 
