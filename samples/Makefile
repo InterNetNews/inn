@@ -14,7 +14,7 @@ ALL           = default docheckgroups ihave newgroup parsecontrol rmgroup \
 
 EXTRA         = actsync.cfg checkgroups inn.conf innreport.conf \
 		innwatch.ctl newsfeeds nnrpd_auth.pl startup.tcl \
-		nnrpd_auth.py
+		nnrpd_auth.py sasl.conf
 
 all: $(ALL)
 
