@@ -117,7 +117,7 @@ main(ac, av)
 	    p = b3;
 	}
     }
-    encode(b3, p - b3);
+    encode(b3, (int)(p - b3));
     flushout();
     exit(0);
     /* NOTREACHED */

@@ -264,7 +264,6 @@ main(ac, av)
 		    strerror(errno));
 		exit(1);
 	    }
-	    if (strchr(_PATH_HISTORY, '/') == NULL) DISPOSE(p);
 	    Offer = TRUE;
 	    break;
 	case 't':

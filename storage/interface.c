@@ -454,7 +454,7 @@ ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount) {
 	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
     }
-    if (method_data[start].initialized == INIT_NO && method_data[i].configured
+    if (method_data[start].initialized == INIT_NO && method_data[start].configured
       && !InitMethod(start)) {
 	SMseterror(SMERR_UNINIT, NULL);
 	return NULL;
@@ -485,7 +485,7 @@ void SMfreearticle(ARTHANDLE *article) {
 BOOL SMcancel(TOKEN token) {
     if (method_data[typetoindex[token.type]].initialized == INIT_FAIL) {
 	SMseterror(SMERR_UNINIT, NULL);
-	return;
+	return FALSE;
     }
     if (method_data[typetoindex[token.type]].initialized == INIT_NO && !InitMethod(typetoindex[token.type])) {
 	SMseterror(SMERR_UNINIT, NULL);

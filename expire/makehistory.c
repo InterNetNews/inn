@@ -467,8 +467,8 @@ ReadInMem(char *art, ARTHANDLE *arth, char *Tradspooldir)
 	if ((p = strrchr(path, '/')) != (char *)NULL)
 	    *p = ':';
 	else {
-	    return FALSE;
 	    QIOclose(qp);
+	    return FALSE;
 	}
 	len = strlen(path);
 	if (artbuff.Left - artbuff.Used < len) {

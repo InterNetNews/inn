@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include "configdata.h"
-#include "clibrary.h"
 #include <netdb.h>
+#include "clibrary.h"
 #include "paths.h"
 #include "libinn.h"
 

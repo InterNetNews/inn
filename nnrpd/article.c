@@ -310,7 +310,7 @@ STATIC BOOL ARTopen(char *name)
 	    return FALSE;
 	}
 	ARTlen = Sb.st_size;
-	if ((int)(ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+	if ((ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == (MMAP_PTR)-1) {
 	    close(fd);
 	    return FALSE;
 	}
@@ -366,7 +366,7 @@ STATIC BOOL ARTopenbyid(char *msg_id, ARTNUM *ap)
 		return FALSE;
 	    }
 	    ARTlen = Sb.st_size;
-	    if ((int)(ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+	    if ((ARTmem = mmap(0, ARTlen, PROT_READ, MAP_SHARED, fd, 0)) == (MMAP_PTR)-1) {
 		close(fd);
 		return FALSE;
 	    }
@@ -927,7 +927,7 @@ STATIC BOOL OVERopen(void)
 	    }
 	    OVERlen = sb.st_size;
 	    if (OVERlen > 0) {
-		if ((int)(OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == -1) {
+		if ((OVERmem = (char *)mmap(0, OVERlen, PROT_READ, MAP_SHARED, fd, 0)) == (MMAP_PTR)-1) {
 		    OVERmem = NULL;
 		    close(fd);
 		    return FALSE;

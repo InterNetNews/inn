@@ -982,7 +982,7 @@ ARTpost(article, idbuff)
      * happen -- for example, if the server crashes. */
 
     /* Offer article to server. */
-    i = OfferArticle(buff, sizeof buff, FromServer, ToServer);
+    i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
     if (i == NNTP_AUTH_NEEDED_VAL) {
         /* Send authorization. */
         if (NNTPsendpassword(innconf->nnrpdposthost, FromServer, ToServer) < 0) {
@@ -990,7 +990,7 @@ ARTpost(article, idbuff)
                           innconf->nnrpdposthost ? innconf->nnrpdposthost : "innd");
             return Spoolit(article,Error);
         }
-        i = OfferArticle(buff, sizeof buff, FromServer, ToServer);
+        i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
     }
     if (i != NNTP_SENDIT_VAL) {
         (void)strcpy(Error, buff);

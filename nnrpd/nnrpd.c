@@ -520,7 +520,7 @@ StartConnection(accesslist)
 
 	/* Get client's name. */
 #if	defined(DO_NNRP_GETHOSTBYADDR)
-	if (!Address2Name(&sin.sin_addr, ClientHost, sizeof ClientHost)) {
+	if (!Address2Name(&sin.sin_addr, ClientHost, (int)sizeof ClientHost)) {
 	    (void)strcpy(ClientHost, inet_ntoa(sin.sin_addr));
 	    syslog(L_NOTICE,
 		"? cant gethostbyaddr %s %m -- using IP address for access",

@@ -612,7 +612,7 @@ LockPostRec(path)
   }
 }
 
-int
+void
 UnlockPostRec(path)
      char              *path;
 {
@@ -680,7 +680,7 @@ GetPostRecord(path, lastpost, lastsleep, lastn)
 STATIC int
 StorePostRecord(path, lastpost, lastsleep, lastn)
      char                         *path;
-     long                         lastpost;
+     time_t                       lastpost;
      long                         lastsleep;
      long                         lastn;
 {

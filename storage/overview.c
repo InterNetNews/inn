@@ -150,7 +150,7 @@ STATIC OVERCONFIG OVERreadconfig(BOOL New)
 		    DISPOSE(newpath);
 		    return OVER_ERROR;
 		}
-		if (sb.st_size > 0 && (int)(addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fileno(fp), 0)) == -1) {
+		if (sb.st_size > 0 && (addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fileno(fp), 0)) == (MMAP_PTR)-1) {
 		    syslog(L_ERROR, "OVER cant mmap overview file, line %d: %m", line);
 		    DISPOSE(dirpath);
 		    DISPOSE(newdirpath);
@@ -339,7 +339,7 @@ BOOL OVERreinit(void) {
 		    DISPOSE(path);
 	            return FALSE;
 		}
-		if (sb.st_size > 0 && (int)(config->addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fileno(config->fp), 0)) == -1) {
+		if (sb.st_size > 0 && (config->addr = (char *)mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fileno(config->fp), 0)) == (MMAP_PTR)-1) {
 		    syslog(L_ERROR, "OVER cant mmap reopend overview file, index %d: %m", config->index);
 		    DISPOSE(path);
 	            return FALSE;
@@ -528,7 +528,7 @@ char *OVERretrieve(TOKEN *token, int *Overlen) {
     if (OVERmmap) {
 	if (config->size <= token->offset && !OVERreinit())
 	    return (char *)NULL;
-	if (config->size <= token->offset || token->offset < 0)
+	if (config->size <= token->offset)
 	    return (char *)NULL;
 	addr = config->addr + token->offset;
 	for (p = addr; p < config->addr+config->size; p++)
