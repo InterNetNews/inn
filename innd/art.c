@@ -899,8 +899,10 @@ bodyprocessing:
 		  HDR_PARSE_START(HDR__MESSAGE_ID);
 		  if (HDR_FOUND(HDR__PATH)) {
 		    /* to record path into news log */
+		    HDR_PARSE_START(HDR__PATH);
 		    hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH),
 		      &data->Path);
+		    HDR_PARSE_STOP(HDR__PATH);
 		    if (hopcount > 0) {
 		      hops = data->Path.List;
 		      if (innconf->logipaddr) {
