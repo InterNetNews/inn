@@ -83,12 +83,10 @@ ICDsetup(StartSites)
 	syslog(L_FATAL, "%s internal no control and/or junk group", LogName);
 	exit(1);
     }
-#if	defined(DO_MERGE_TO_GROUPS)
-    if (NGfind("to") == NULL) {
+    if (innconf->mergetogroups && NGfind("to") == NULL) {
 	syslog(L_FATAL, "%s internal no to group", LogName);
 	exit(1);
     }
-#endif	/* defined(DO_MERGE_TO_GROUPS) */
     SITEparsefile(StartSites);
 }
 

@@ -1355,29 +1355,29 @@ STATIC void ARTcontrol(ARTDATA *Data, HASH hash, char *Control, CHANNEL *cp)
 	}
     }
 
-#ifndef USE_CONTROLCHAN
-    /* Build the command vector and execute it. */
-    av[0] = buff;
-    av[1] = COPY(Data->Poster);
-    av[2] = COPY(Data->Replyto);
-    av[3] = Data->Name;
-    if (innconf->logipaddr) {
-	hops = ARTparsepath(HDR(_path), &hopcount);
-	av[4] = hops && hops[0] ? hops[0] : CHANname(cp);
-    } else {
-	av[4] = (char *)Data->Feedsite;
-    }
-    av[5] = NULL;
-    HeaderCleanFrom(av[1]);
-    HeaderCleanFrom(av[2]);
-    if (Spawn(innconf->nicekids, STDIN, (int)fileno(Errlog),
+    if (!(innconf->usecontrolchan)) {
+	/* Build the command vector and execute it. */
+	av[0] = buff;
+	av[1] = COPY(Data->Poster);
+	av[2] = COPY(Data->Replyto);
+	av[3] = Data->Name;
+	if (innconf->logipaddr) {
+	    hops = ARTparsepath(HDR(_path), &hopcount);
+	    av[4] = hops && hops[0] ? hops[0] : CHANname(cp);
+	} else {
+	    av[4] = (char *)Data->Feedsite;
+	}
+	av[5] = NULL;
+	HeaderCleanFrom(av[1]);
+	HeaderCleanFrom(av[2]);
+	if (Spawn(innconf->nicekids, STDIN, (int)fileno(Errlog),
 					(int)fileno(Errlog), av) < 0)
-	/* We know the strrchr below can't fail. */
-	syslog(L_ERROR, "%s cant spawn %s for %s %m",
-	    LogName, MaxLength(av[0], strrchr(av[0], '/')), Data->Name);
-    DISPOSE(av[1]);
-    DISPOSE(av[2]);
-#endif
+	    /* We know the strrchr below can't fail. */
+	    syslog(L_ERROR, "%s cant spawn %s for %s %m",
+		LogName, MaxLength(av[0], strrchr(av[0], '/')), Data->Name);
+	DISPOSE(av[1]);
+	DISPOSE(av[2]);
+    }
 }
 
 
@@ -2363,18 +2363,18 @@ STRING ARTpost(CHANNEL *cp)
 		NonExist = TRUE;
 	    ARTpoisongroup(*groups);
 
-#if	defined(DO_MERGE_TO_GROUPS)
-	    /* Try to collapse all "to" newsgroups. */
-	    if (*p != 't' || *++p != 'o' || *++p != '.' || *++p == '\0')
+	    if (innconf->mergetogroups) {
+		/* Try to collapse all "to" newsgroups. */
+		if (*p != 't' || *++p != 'o' || *++p != '.' || *++p == '\0')
+		    continue;
+		ngp = NGfind("to");
+		ToGroup = TRUE;
+		if ((sp = SITEfind(p)) != NULL) {
+		    SITEmark(sp, ngp);
+		}
+	    } else {
 		continue;
-	    ngp = NGfind("to");
-	    ToGroup = TRUE;
-	    if ((sp = SITEfind(p)) != NULL) {
-		SITEmark(sp, ngp);
 	    }
-#else
-	    continue;
-#endif	/* defined(DO_MERGE_TO_GROUPS) */
 	}
 	
 	ngp->PostCount = 0;
