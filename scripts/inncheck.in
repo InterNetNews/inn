@@ -461,7 +461,9 @@ inn_conf
 	    print "$file:$line: fromhost isn't a valid FQDN\n"
 		if $v !~ /[\w\-]+\.[\w\-]+/;
 	} elsif ( $k eq "moderatormailer" ) {
-	    print "$file:$line: modmailer has bad address\n"
+	    # FIXME: shouldn't warn about blank lines if the
+	    # moderators file exists
+	    print "$file:$line: moderatormailer has bad address\n"
 		if $v !~ /[\w\-]+\.[\w\-]+/ && $v ne "%s";
 	} elsif ( $k eq "organization" ) {
 	    print "$file:$line: org is blank\n"
