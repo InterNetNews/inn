@@ -825,16 +825,65 @@ AC_DEFUN(INN_MACRO_SUN_LEN, [
 ])
 INN_MACRO_SUN_LEN
 
-dnl FIXME: The external variable timezone is available on some platforms and
-dnl accomplishes the same purpose.
-AC_CACHE_CHECK(for tm_gmtoff in struct tm, inn_cv_struct_tm_gmtoff,
+dnl BSD hosts have a tm_gmtoff element in struct tm containing the offset
+dnl from GMT/UTC for that time.  This is the strongly preferred way of
+dnl getting time zone information.
+AC_DEFUN([INN_STRUCT_TM_GMTOFF],
+[AC_CACHE_CHECK(for tm_gmtoff in struct tm, inn_cv_struct_tm_gmtoff,
     AC_TRY_LINK([#include <time.h>],
-        [struct tm t; t.tm_gmtoff = 0],
+        [struct tm t; t.tm_gmtoff = 3600],
         inn_cv_struct_tm_gmtoff=yes,
         inn_cv_struct_tm_gmtoff=no))
-if test "$inn_cv_struct_tm_gmtoff" = yes ; then
-    AC_DEFINE(HAVE_TM_GMTOFF)
-fi
+if test x"$inn_cv_struct_tm_gmtoff" = xyes ; then
+    AC_DEFINE([HAVE_TM_GMTOFF], 1,
+        [Define if your struct tm has a tm_gmtoff member.])
+fi])
+INN_STRUCT_TM_GMTOFF
+
+dnl BSD hosts have the name of the local time zone in struct tm, which is
+dnl much nicer to use than the tzname variable (and also potentially handles
+dnl renamings of the time zone in the  past).
+AC_DEFUN([INN_STRUCT_TM_ZONE],
+[AC_CACHE_CHECK(for tm_zone in struct tm, inn_cv_struct_tm_zone,
+    AC_TRY_LINK([#include <time.h>],
+        [struct tm t; t.tm_zone = "UTC"],
+        inn_cv_struct_tm_zone=yes,
+        inn_cv_struct_tm_zone=no))
+if test x"$inn_cv_struct_tm_zone" = xyes ; then
+    AC_DEFINE([HAVE_TM_ZONE], 1,
+        [Define if your struct tm has a tm_zone member.])
+fi])
+INN_STRUCT_TM_ZONE
+
+dnl Many System V hosts have an external variable timezone containing the
+dnl offset of local time from GMT/UTC.  We can use this for the timezone
+dnl offset for current time, although it's not usable for anything else.
+dnl Unfortunately, some BSD varients have a function named timezone instead.
+AC_DEFUN([INN_VAR_TIMEZONE],
+[AC_CACHE_CHECK(for timezone variable, inn_cv_var_timezone,
+    AC_TRY_LINK([#include <time.h>], [timezone = 100],
+        inn_cv_var_timezone=yes,
+        inn_cv_var_timezone=no))
+if test x"$inn_cv_var_timezone" = xyes ; then
+    AC_DEFINE([HAVE_VAR_TIMEZONE], 1,
+        [Define if timezone is an external variable in <time.h>.])
+fi])
+INN_VAR_TIMEZONE
+
+dnl Many System V hosts and some BSD systems have an external variable
+dnl tzname containing the abbreviations of the main and alternate time
+dnl zone.  We can use these as a reasonable approximation of the correct
+dnl time zone names, although they could be incorrect if the time zone
+dnl name has changed in the past.
+AC_DEFUN([INN_VAR_TZNAME],
+[AC_CACHE_CHECK(for tzname variable, inn_cv_var_tzname,
+    AC_TRY_LINK([#include <time.h>], [*tzname = "UTC"],
+        inn_cv_var_tzname=yes, inn_cv_var_tzname=no))
+if test x"$inn_cv_var_tzname" = xyes ; then
+    AC_DEFINE([HAVE_VAR_TZNAME], 1,
+        [Define if tzname is an external variable in <time.h>.])
+fi])
+INN_VAR_TZNAME
 
 dnl A modified version of AC_CHECK_SIZEOF that doesn't always AC_DEFINE, but
 dnl instead lets you execute shell code based on success or failure.  This
