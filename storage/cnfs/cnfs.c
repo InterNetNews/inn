@@ -351,6 +351,11 @@ STATIC BOOL CNFSparse_part_line(char *l) {
     return FALSE;
   }
   *p = '\0';
+  if (CNFSgetcycbuffbyname(l) != NULL) {
+    *p = ':';
+    syslog(L_ERROR, "%s: duplicate cycbuff name in line '%s'", LocalLogName, l);
+    return FALSE;
+  }
   cycbuff = NEW(CYCBUFF, 1);
   memset(cycbuff->name, '\0', CNFSNASIZ);
   strcpy(cycbuff->name, l);
@@ -419,6 +424,11 @@ STATIC BOOL CNFSparse_metapart_line(char *l) {
     return FALSE;
   }
   *p = '\0';
+  if (CNFSgetmetacycbuffbyname(l) != NULL) {
+    *p = ':';
+    syslog(L_ERROR, "%s: duplicate metabuff name in line '%s'", LocalLogName, l);
+    return FALSE;
+  }
   metacycbuff = NEW(METACYCBUFF, 1);
   metacycbuff->members = (CYCBUFF **)NULL;
   metacycbuff->count = 0;
