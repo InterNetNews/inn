@@ -8,19 +8,22 @@ rnews \- receive news from a UUCP connection
 .BI \-h " host"
 ]
 [
-.BI \-r " remote"
+.B \-N
 ]
 [
 .BI \-P " port"
 ]
 [
-.B \-v
+.BI \-r " remote"
+]
+[
+.BI \-S " remote"
 ]
 [
 .B \-U
 ]
 [
-.B \-N
+.B \-v
 ]
 [
 .I input
@@ -105,6 +108,9 @@ this.
 If the ``\fB\-r\fP'' flag is used, then the articles will be sent to the
 named remote host instead of the default host.
 .TP
+.B \-S
+\&``\fB\-S\fP'' flag is equivalent to ``\fB\-r\fP'' flag.
+.TP
 .B \-P
 If the ``\fB\-P\fP'' flag is used, then the articles will be sent to the
 specified port on the remote host.
@@ -125,9 +131,9 @@ environment variable
 .IR UU_MACHINE )
 is set, then
 .I rnews
-will log the Message-ID, and host, for each article offered
-to the server via
-.IR syslog (3).
+will log the Message-ID and host via
+.IR syslog (3)
+for each article offered to the server.
 Logging will only be done if the value is not an empty string.
 .SH BUGS
 .I Rnews
