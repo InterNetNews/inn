@@ -1122,118 +1122,98 @@ void
 SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
 {
     static char		FREESITE[] = "<<No name>>\n\n";
-    char	        *p;
     CHANNEL	        *cp;
     const char		*sep;
-    char		buff[BUFSIZ];
 
     if (sp->Name == NULL) {
 	buffer_append(bp, FREESITE, strlen(FREESITE));
 	return;
     }
 
-    p = buff;
-    snprintf(buff, sizeof(buff), "%s%s:\t", sp->Name,
-             sp->IsMaster ? "(*)" : "");
-    p += strlen(p);
+    buffer_sprintf(bp, true, "%s%s:\t", sp->Name, sp->IsMaster ? "(*)" : "");
 
     if (sp->Type == FTfunnel) {
 	sp = &Sites[sp->Funnel];
-	sprintf(p, "funnel -> %s: ", sp->Name);
-	p += strlen(p);
+        buffer_sprintf(bp, true, "funnel -> %s: ", sp->Name);
     }
 
     switch (sp->Type) {
     default:
-	sprintf(p, "unknown feed type %d", sp->Type);
-	p += strlen(p);
+        buffer_sprintf(bp, true, "unknown feed type %d", sp->Type);
 	break;
     case FTerror:
     case FTfile:
-	p += strlen(strcpy(p, "file"));
-	if (sp->Buffered) {
-	    sprintf(p, " buffered(%lu)", (unsigned long) sp->Buffer.left);
-	    p += strlen(p);
-	}
+        buffer_sprintf(bp, true, "file");
+	if (sp->Buffered)
+            buffer_sprintf(bp, true, " buffered(%lu)",
+                           (unsigned long) sp->Buffer.left);
 	else if ((cp = sp->Channel) == NULL)
-	    p += strlen(strcpy(p, " no channel?"));
-	else {
-	    sprintf(p, " open fd=%d, in mem %lu", cp->fd,
-                    (unsigned long) cp->Out.left);
-	    p += strlen(p);
-	}
+            buffer_sprintf(bp, true, " no channel?");
+	else
+            buffer_sprintf(bp, true, " open fd=%d, in mem %lu", cp->fd,
+                           (unsigned long) cp->Out.left);
 	break;
     case FTchannel:
-	p += strlen(strcpy(p, "channel"));
-	goto Common;
+        buffer_sprintf(bp, true, "channel");
+	goto common;
     case FTexploder:
-	p += strlen(strcpy(p, "exploder"));
-Common:
-	if (sp->Process >= 0) {
-	    sprintf(p, " pid=%ld", (long) sp->pid);
-	    p += strlen(p);
-	}
+        buffer_sprintf(bp, true, "exploder");
+common:
+	if (sp->Process >= 0)
+            buffer_sprintf(bp, true, " pid=%ld", (long) sp->pid);
 	if (sp->Spooling)
-	    p += strlen(strcpy(p, " spooling"));
-	if ((cp = sp->Channel) == NULL)
-	    p += strlen(strcpy(p, " no channel?"));
-	else {
-	    sprintf(p, " fd=%d, in mem %lu", cp->fd,
-                    (unsigned long) cp->Out.left);
-	    p += strlen(p);
-	}
+            buffer_sprintf(bp, true, " spooling");
+        cp = sp->Channel;
+	if (cp == NULL)
+            buffer_sprintf(bp, true, " no channel?");
+	else
+            buffer_sprintf(bp, true, " fd=%d, in mem %lu", cp->fd,
+                           (unsigned long) cp->Out.left);
 	break;
     case FTfunnel:
-	p += strlen(strcpy(p, "recursive funnel"));
+        buffer_sprintf(bp, true, "recursive funnel");
 	break;
     case FTlogonly:
-	p += strlen(strcpy(p, "log only"));
+        buffer_sprintf(bp, true, "log only");
 	break;
     case FTprogram:
-	p += strlen(strcpy(p, "program"));
+        buffer_sprintf(bp, true, "program");
 	if (sp->FNLwantsnames)
-	    p += strlen(strcpy(p, " with names"));
+            buffer_sprintf(bp, true, " with names");
 	break;
     }
-    *p++ = '\n';
+    buffer_append(bp, "\n", 1);
     if (Verbose) {
 	sep = "\t";
 	if (sp->Buffered && sp->Flushpoint) {
-	    sprintf(p, "%sFlush @ %lu", sep, (unsigned long) sp->Flushpoint);
-	    p += strlen(p);
+            buffer_sprintf(bp, true, "%sFlush @ %lu", sep,
+                           (unsigned long) sp->Flushpoint);
 	    sep = "; ";
 	}
 	if (sp->StartWriting || sp->StopWriting) {
-	    sprintf(p, "%sWrite [%ld..%ld]", sep,
-		sp->StopWriting, sp->StartWriting);
-	    p += strlen(p);
+            buffer_sprintf(bp, true, "%sWrite [%ld..%ld]", sep,
+                           sp->StopWriting, sp->StartWriting);
 	    sep = "; ";
 	}
 	if (sp->StartSpooling) {
-	    sprintf(p, "%sSpool @ %ld", sep, sp->StartSpooling);
-	    p += strlen(p);
+            buffer_sprintf(bp, true, "%sSpool @ %ld", sep, sp->StartSpooling);
 	    sep = "; ";
 	}
 	if (sep[0] != '\t')
-	    *p++ = '\n';
-	if (sp->Spooling && sp->SpoolName) {
-	    sprintf(p, "\tSpooling to \"%s\"\n", sp->SpoolName);
-	    p += strlen(p);
-	}
-	if ((cp = sp->Channel) != NULL) {
-	    sprintf(p, "\tChannel created %.12s",
-		ctime(&cp->Started) + 4);
-	    p += strlen(p);
-	    sprintf(p, ", last active %.12s\n",
-		ctime(&cp->LastActive) + 4);
-	    p += strlen(p);
-	    if (cp->Waketime > Now.time) {
-		sprintf(p, "\tSleeping until %.12s\n",
-		    ctime(&cp->Waketime) + 4);
-		p += strlen(p);
-	    }
+            buffer_append(bp, "\n", 1);
+	if (sp->Spooling && sp->SpoolName)
+            buffer_sprintf(bp, true, "\tSpooling to \"%s\"\n", sp->SpoolName);
+        cp = sp->Channel;
+	if (cp != NULL) {
+            buffer_sprintf(bp, true, "\tChannel created %.12s",
+                           ctime(&cp->Started) + 4);
+            buffer_sprintf(bp, true, ", last active %.12s\n",
+                           ctime(&cp->LastActive) + 4);
+	    if (cp->Waketime > Now.time)
+                buffer_sprintf(bp, true, "\tSleeping until %.12s\n",
+                               ctime(&cp->Waketime) + 4);
 	}
 
     }
-    buffer_append(bp, buff, p - buff);
+    buffer_append(bp, "", 1);
 }
