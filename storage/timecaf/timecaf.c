@@ -458,7 +458,7 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	delta = curoff % pagesize;
 	tmpoff = curoff - delta;
 	private->mmaplen = len + delta;
-	if ((private->mmapbase = mmap(NULL, private->mmaplen, PROT_READ, MAP__ARG, fd, tmpoff)) == MAP_FAILED) {
+	if ((private->mmapbase = mmap(NULL, private->mmaplen, PROT_READ, MAP_SHARED, fd, tmpoff)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, NULL);
 	    syslog(L_ERROR, "timecaf: could not mmap article: %m");
 	    DISPOSE(art->private);

@@ -1301,8 +1301,8 @@ getcore(hash_table *tab)
 	    }
 	}
 	it = mmap(NULL, (size_t)conf.tsize * tab->reclen,
-		   readonly ? PROT_READ : PROT_WRITE | PROT_READ, MAP__ARG,
-		   tab->fd, 0);
+                  readonly ? PROT_READ : PROT_WRITE | PROT_READ, MAP_SHARED,
+                  tab->fd, 0);
 	if (it == (char *)-1) {
 	    DEBUG(("getcore: mmap failed\n"));
 	    return FALSE;

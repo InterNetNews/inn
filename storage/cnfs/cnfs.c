@@ -1276,7 +1276,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
 	if ((private->base = mmap(NULL, private->len, PROT_READ,
-		MAP__ARG, cycbuff->fd, mmapoffset)) == MAP_FAILED) {
+		MAP_SHARED, cycbuff->fd, mmapoffset)) == MAP_FAILED) {
 	    SMseterror(SMERR_UNDEFINED, "mmap failed");
 	    syslog(L_ERROR, "%s: could not mmap token %s %s:0x%s:%ld: %m",
 		LocalLogName, TokenToText(token), cycbuffname, CNFSofft2hex(offset, FALSE), cycnum);
@@ -1587,7 +1587,7 @@ ARTHANDLE *cnfs_next(const ARTHANDLE *article, const RETRTYPE amount) {
 	mmapoffset = offset - pagefudge;
 	private->len = pagefudge + ntohl(cah.size);
 	if ((private->base = mmap(0, private->len, PROT_READ,
-	    MAP__ARG, cycbuff->fd, mmapoffset)) == MAP_FAILED) {
+	    MAP_SHARED, cycbuff->fd, mmapoffset)) == MAP_FAILED) {
 	    art->data = NULL;
 	    art->len = 0;
 	    art->token = NULL;
