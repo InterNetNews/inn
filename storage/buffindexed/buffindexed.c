@@ -217,7 +217,8 @@ typedef enum {SRCH_FRWD, SRCH_BKWD} SRCH;
 
 static char LocalLogName[] = "buffindexed";
 static long		pagesize = 0;
-static OVBUFF		*ovbufftab;
+static OVBUFF		*ovbufftab = NULL;
+static OVBUFF           *ovbuffnext = NULL;
 static int              GROUPfd;
 static GROUPHEADER      *GROUPheader = NULL;
 static GROUPENTRY       *GROUPentries = NULL;
@@ -709,7 +710,6 @@ static OV ovblocknew(GROUPENTRY *ge) {
 #else
 static OV ovblocknew(void) {
 #endif /* OV_DEBUG */
-  static OVBUFF	*ovbuffnext = NULL;
   OVBUFF	*ovbuff;
   OV		ov;
 #ifdef OV_DEBUG
@@ -2070,7 +2070,7 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
 
 void buffindexed_close(void) {
   struct stat	sb;
-  OVBUFF	*ovbuffnext, *ovbuff = ovbufftab;
+  OVBUFF	*ovbuff = ovbufftab;
 #ifdef OV_DEBUG
   FILE		*F = NULL;
   pid_t		pid;
@@ -2148,12 +2148,14 @@ void buffindexed_close(void) {
       syslog(L_FATAL, "%s: could not munmap group.index in buffindexed_close: %m", LocalLogName);
       return;
     }
+    GROUPheader = NULL;
   }
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuffnext) {
     ovbuffnext = ovbuff->next;
     free(ovbuff);
   }
   ovbufftab = NULL;
+  ovbuffnext = NULL;
 }
 
 #ifdef DEBUG
