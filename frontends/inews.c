@@ -556,7 +556,7 @@ FormatUserName(pwp, node)
 static void CheckDistribution(char *p)
 {
     static char	SEPS[] = " \t,";
-    const char  *dp;
+    const char  **dp;
 
     if ((p = strtok(p, SEPS)) == NULL) {
 	(void)fprintf(stderr, "Can't parse Distribution line.\n");
