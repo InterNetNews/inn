@@ -73,7 +73,7 @@ innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(INNLIBS)
 innxmit:	innxmit.o    $(BOTH)	; $(LINK) innxmit.o    $(STORELIBS)
 nntpget:	nntpget.o    $(BOTH)	; $(LINK) nntpget.o    $(STORELIBS)
 overchan:	overchan.o   $(BOTH)	; $(LINK) overchan.o   $(STORELIBS)
-shlock:		shlock.o		; $(LINK) shlock.o
+shlock:		shlock.o     $(LIBINN)	; $(LINK) shlock.o     $(INNLIBS)
 shrinkfile:	shrinkfile.o $(LIBINN)	; $(LINK) shrinkfile.o $(INNLIBS)
 
 buffchan:	buffchan.o map.o $(LIBINN)
