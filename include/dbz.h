@@ -12,7 +12,9 @@
  */
 #define DBZ_INTERNAL_HASH_SIZE   6
 
-typedef enum {INCORE_NO, INCORE_MEM, INCORE_MMAP} dbz_incore_val;
+typedef enum {INCORE_NO, INCORE_MEM, INCORE_MMAP} DBZ_INCORE;
+
+typedef enum {DBZSTORE_OK, DBZSTORE_EXISTS, DBZSTORE_ERROR} DBZSTORE_RESULT;
 
 typedef struct {
     /* Whether to write to the filesystem in addition to updating the incore
@@ -20,8 +22,8 @@ typedef struct {
        called.  */
     BOOL             writethrough;
     /* Whether to do hash lookups from disk, memory or a mmap'ed file */
-    dbz_incore_val   idx_incore;      
-    dbz_incore_val   exists_incore;
+    DBZ_INCORE       idx_incore;      
+    DBZ_INCORE       exists_incore;
     /* Whether dbzstore should update the database async or sync.  This
        is only applicable if you're not mmaping the database */
     BOOL             nonblock;
@@ -36,7 +38,7 @@ extern BOOL dbzfresh(const char *name, const long size, const int fillpercent);
 extern BOOL dbzagain(const char *name, const char *oldname);
 extern BOOL dbzexists(const HASH key);
 extern OFFSET_T dbzfetch(const HASH key);
-extern BOOL dbzstore(const HASH key, const OFFSET_T data);
+extern DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data);
 extern BOOL dbzsync(void);
 extern long dbzsize(const long contents);
 extern BOOL dbzdebug(const int value);

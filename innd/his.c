@@ -337,7 +337,7 @@ BOOL HISwrite(const ARTDATA *Data, const HASH hash, char *paths)
     }
 #endif
     /* Set up the database values and write them. */
-    if (!dbzstore(hash, offset)) {
+    if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
 	IOError("history database", i);
@@ -383,7 +383,7 @@ BOOL HISremember(const HASH hash)
 #endif    
 
     /* Set up the database values and write them. */
-    if (!dbzstore(hash, offset)) {
+    if (dbzstore(hash, offset) == DBZSTORE_ERROR) {
 	i = errno;
 	syslog(L_ERROR, "%s cant dbzstore %m", LogName);
 	IOError("history database", i);

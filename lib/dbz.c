@@ -200,7 +200,7 @@ typedef struct {
     int fd;                     /* Non-blocking descriptor for writes */
     int pos;                    /* Current offset into the table */
     int reclen;                 /* Length of records in the table */
-    dbz_incore_val incore;      /* What we're using core for */
+    DBZ_INCORE incore;          /* What we're using core for */
     void *core;                 /* Pointer to in-core table */
 } hash_table;
 
@@ -429,7 +429,7 @@ BOOL dbzagain(const char *name, const char *oldname)
 }
 
 static BOOL openhashtable(const char *name, hash_table *tab,
-			  const size_t reclen, const dbz_incore_val incore) {
+			  const size_t reclen, const DBZ_INCORE incore) {
     if ((tab->f = fopen(name, "rb+")) == NULL) {
 	tab->f = fopen(name, "rb");
 	if (tab->f == NULL) {
@@ -697,7 +697,7 @@ OFFSET_T dbzfetch(HASH key) {
  * dbzstore - add an entry to the database
  * returns TRUE for success and FALSE for failure 
  */
-BOOL dbzstore(const HASH key, const OFFSET_T data)
+DBZSTORE_RESULT dbzstore(const HASH key, const OFFSET_T data)
 {
     idxrec ivalue;
     erec   evalue;
@@ -705,17 +705,17 @@ BOOL dbzstore(const HASH key, const OFFSET_T data)
 
     if (!opendb) {
 	DEBUG(("store: database not open!\n"));
-	return FALSE;
+	return DBZSTORE_ERROR;
     }
     if (readonly) {
 	DEBUG(("store: database open read-only\n"));
-	return FALSE;
+	return DBZSTORE_ERROR;
     }
 
     /* find the place, exploiting previous search if possible */
     start(&srch, key, prevp);
     if (search(&srch) == TRUE)
-	return FALSE;
+	return DBZSTORE_EXISTS;
 
     prevp = FRESH;
     conf.used[0]++;
@@ -731,8 +731,10 @@ BOOL dbzstore(const HASH key, const OFFSET_T data)
 
     /* Set the value in the index first since we don't care if it's out of date */
     if (!set(&srch, &idxtab, &ivalue))
-	return FALSE;
-    return (set(&srch, &etab, &evalue));
+	return DBZSTORE_ERROR;
+    if (!set(&srch, &etab, &evalue))
+    	return DBZSTORE_ERROR;
+    return DBZSTORE_OK;
 }
 
 /*
@@ -905,7 +907,7 @@ static void start(searcher *sp, const HASH hash, searcher *osp) {
  *
  * return FALSE if we hit vacant rec's or error
  */
-static BOOL search(searcher *sp) {
+static search(searcher *sp) {
     erec value;
     unsigned long taboffset = 0;
     

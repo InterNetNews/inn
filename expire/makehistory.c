@@ -173,16 +173,16 @@ STATIC void Rebuild(long size, BOOL IgnoreOld, BOOL Overwrite)
 	    fprintf(stderr, "Invalid message-id \"%s\" in history text\n", p);
 	    continue;
 	}
-	if (!dbzstore(key, offset)) {
-	    if (dbzexists(key)) {
-	        fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
-	    } else {
-	        fprintf(stderr, "Can't store \"%s\", %s\n",
-		        p, strerror(errno));
-	        if (temp[0])
-		    (void)unlink(temp);
-	        exit(1);
-	    }
+	switch (dbzstore(key, offset)) {
+	case DBZSTORE_EXISTS:
+            fprintf(stderr, "Duplicate message-id \"%s\" in history text\n", p);
+	    break;
+	case DBZSTORE_ERROR:
+	    fprintf(stderr, "Can't store \"%s\", %s\n",
+		    p, strerror(errno));
+	    if (temp[0])
+		(void)unlink(temp);
+	    exit(1);
 	}
     }
     if (QIOerror(qp)) {
