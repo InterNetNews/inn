@@ -1071,6 +1071,7 @@ STATIC FUNCTYPE NCproc(CHANNEL *cp)
 	    bp->Used = 0;
 	    bp->Data = NEW(char, bp->Size);
 #endif
+	    cp->State = CSgetcmd;
 	    break;
 	}
 	if (Tracing || cp->Tracing)
