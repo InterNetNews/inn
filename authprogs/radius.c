@@ -334,12 +334,13 @@ int rad_auth(rad_config_t *config, char *uname, char *pass)
 	    fprintf(stderr, "radius: couldnt recvfrom: %s\n", strerror(errno));
 	    break;
 	}
-	if (sinl.sin_addr.s_addr != sinr.sin_addr.s_addr ||
+	/* skip for proxy */
+	/* if (sinl.sin_addr.s_addr != sinr.sin_addr.s_addr ||
 	  (sinl.sin_port != sinr.sin_port)) {
 	    fprintf(stderr, "radius: received unexpected UDP packet from %s:%d.\n",
 	      inet_ntoa(sinl.sin_addr), ntohs(sinl.sin_port));
 	    continue;
-	}
+	} */
 	reqlen = ntohs(req.length);
 	if (jlen < 4+AUTH_VECTOR_LEN || jlen != reqlen) {
 	    fprintf(stderr, "radius: received badly-sized packet.\n");
