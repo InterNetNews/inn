@@ -1054,7 +1054,7 @@ void SITEfree(SITE *sp)
     /* If this site was a master, find a new one. */
     if (sp->IsMaster) {
 	for (new = NOSITE, s = Sites, i = nSites; --i >= 0; s++)
-	    if (&Sites[s->Master] == sp)
+	    if (&Sites[s->Master] == sp) {
 		if (new == NOSITE) {
 		    s->Master = NOSITE;
 		    s->IsMaster = TRUE;
@@ -1062,6 +1062,7 @@ void SITEfree(SITE *sp)
 		}
 		else
 		    s->Master = new;
+            }
 	sp->IsMaster = FALSE;
     }
 }
