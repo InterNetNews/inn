@@ -463,7 +463,8 @@ setup_dir(char *dir, int filecount)
         p++;
         if (!chdir_checked(p, filecount))
             return false;
-        strcpy(current_dir, absolute);
+        if (prefix_len == 0)
+            strcpy(current_dir, absolute);
         return true;
     }
 
@@ -487,9 +488,11 @@ setup_dir(char *dir, int filecount)
                 return false;
 
             /* Now patch up current_dir to reflect where we are. */
-            while (q > current_dir && *--q != '/')
-                ;
-            strcpy(q + 1, p);
+            if (prefix_len == 0) {
+                while (q > current_dir && *--q != '/')
+                    ;
+                strcpy(q + 1, p);
+            }
             return true;
         }
     }
@@ -502,7 +505,8 @@ setup_dir(char *dir, int filecount)
        we don't bother. */
     if (!chdir_checked(absolute, filecount))
         return false;
-    strcpy(current_dir, absolute);
+    if (prefix_len == 0)
+        strcpy(current_dir, absolute);
     return true;
 }
 
@@ -645,7 +649,7 @@ main(int argc, char *argv[])
     /* Unfortunately, we can't use getopt, because several of our options
        take optional arguments.  Bleh. */
     arg = argv + 1;
-    while (**arg == '-') {
+    while (argc >= 2 && **arg == '-') {
         p = *arg;
         while (*++p) {
             switch (*p) {
