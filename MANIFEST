@@ -1,13 +1,10 @@
 File Name                             Description
 ------------------------------------------------------------------------------
-.now_do                               Notification file used by configure
 CONTRIBUTORS                          List of contributors
 HACKING                               Docs for INN coders and maintainers
 INSTALL                               INN installation instructions
 LICENSE                               Legal mumbo-jumbo
 MANIFEST                              This shipping list
-MakeInews                             Make an inews distribution kit
-MakeRnews                             Make an rnews distribution kit
 Makefile                              Top-level makefile
 Makefile.global.in                    Make variables for all Makefiles
 NEWS                                  Changes since last version
