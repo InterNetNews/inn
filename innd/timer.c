@@ -8,10 +8,11 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 
 #include "configdata.h"
-#include "innd.h"
 #include "clibrary.h"
+#include "innd.h"
 #include "logging.h"
 
 unsigned	start[TMR_MAX];

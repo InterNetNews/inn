@@ -7,9 +7,10 @@
 */
 #include <stdio.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 #include "configdata.h"
-#include "innd.h"
 #include "clibrary.h"
+#include "innd.h"
 #if	defined(DO_HAVE_UNIX_DOMAIN)
 #include <sys/un.h>
 
