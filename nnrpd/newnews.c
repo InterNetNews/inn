@@ -18,55 +18,72 @@
 **  Open an article and see if its distribution is in the list.
 */
 STATIC BOOL
-DistMatches(distribs, files)
-    char		**distribs;
-    char		**files;
+DistMatches(ARTHANDLE *art, char **distribs, char **files)
 {
-    register char	**dp;
-    register QIOSTATE	*qp;
-    register char	*p;
-    register char	*q;
+    char		**dp;
+    QIOSTATE		*qp;
+    char		*p, *p1, *p2;
+    char		*q;
     char		buff[BIG_BUFFER];
     char		*save;
 
     /* Loop through the file list, trying to open one of them.. */
-    for (save = files[0]; *files; files++) {
-      /* this next line makes me nervous--from unoff4... */
-	(void)sprintf(buff, "%s/%s/%s", innconf->patharticles, files[0],
+    if (art != NULL) {
+	if ((p = q = (char *)HeaderFindMem(art->data, art->len, "distribution", sizeof("distribution")-1)) == NULL)
+	    return FALSE;
+	for (p1 = p2 = NULL; p < art->data + art->len; p++) {
+	    if (p2 != (char *)NULL && *p2 == '\r' &&
+		p1 != (char *)NULL && *p1 == '\n' &&
+		!ISWHITE(*p))
+		break;
+	    p2 = p1;
+	    p1 = p;
+	}
+	if (p >= art->data + art->len)
+	    return FALSE;
+	for (dp = distribs; *dp; dp++)
+	    if (caseEQn(p, *dp, p2 - q))
+		return TRUE;
+	return FALSE;
+    } else {
+	for (save = files[0]; *files; files++) {
+	    /* this next line makes me nervous--from unoff4... */
+	    (void)sprintf(buff, "%s/%s/%s", innconf->patharticles, files[0],
 		files[0] + strlen(files[0]) + 1);
-	for (p = &buff[SPOOLlen]; *p; p++)
-	    if (*p == '.')
-		*p = '/';
-	if ((qp = QIOopen(buff)) != NULL)
-	    break;
-    }
-    if (*files == NULL) {
+	    for (p = &buff[SPOOLlen]; *p; p++)
+		if (*p == '.')
+		    *p = '/';
+	    if ((qp = QIOopen(buff)) != NULL)
+		break;
+	}
+	if (*files == NULL) {
+	    return FALSE;
+	}
+
+	/* Scan the article for the Distribution header. */
+	while ((p = QIOread(qp)) != NULL) {
+	    if (*p == '\n')
+		/* End of headers. */
+		break;
+	    if (*p != 'd' && *p != 'D')
+		continue;
+	    if ((q = strchr(p, '\n')) != NULL)
+		*q = '\0';
+	    if ((q = strchr(p, ':')) == NULL)
+		continue;
+	    *q = '\0';
+	    if (caseEQ(p, "distribution")) {
+		for (q += 2, dp = distribs; *dp; dp++)
+		    if (caseEQ(q, *dp)) {
+			QIOclose(qp);
+			return TRUE;
+		    }
+		break;
+	    }
+	}
+	QIOclose(qp);
 	return FALSE;
     }
-
-    /* Scan the article for the Distribution header. */
-    while ((p = QIOread(qp)) != NULL) {
-	if (*p == '\n')
-	    /* End of headers. */
-	    break;
-	if (*p != 'd' && *p != 'D')
-	    continue;
-	if ((q = strchr(p, '\n')) != NULL)
-	    *q = '\0';
-	if ((q = strchr(p, ':')) == NULL)
-	    continue;
-	*q = '\0';
-	if (caseEQ(p, "distribution")) {
-	    for (q += 2, dp = distribs; *dp; dp++)
-		if (caseEQ(q, *dp)) {
-		    QIOclose(qp);
-		    return TRUE;
-		}
-	    break;
-	}
-    }
-    QIOclose(qp);
-    return FALSE;
 }
 
 
@@ -75,17 +92,51 @@ DistMatches(distribs, files)
 **  or NULL if there are no filenames.
 */
 STATIC char **
-GetFiles(p)
-    register char	*p;
+GetFiles(TOKEN *token, char *p)
 {
     static int		size;
     static char		**list;
-    register int	i;
-    register char	*slash = p;
+    int			i;
+    char		*q, *slash = p;
+    int			linelen;
+    static char		*OVERline = NULL;
+    static char		*Xrefbuf = NULL;
+    char		*Xref;
 
     if (size == 0) {
 	size = FILE_LIST_DELTA;
 	list = NEW(char*, size + 1);
+    }
+    if (token->type != TOKEN_EMPTY) {
+	if (!(token->index < OVER_NONE))
+	    return NULL;
+	if ((q = OVERretrieve(token, &linelen)) == (char *)NULL)
+	    return NULL;
+	if (innconf->overviewmmap) {
+	    if (!OVERline)
+		OVERline = NEW(char, MAXOVERLINE);
+	    if (linelen > MAXOVERLINE - 1)
+		linelen = MAXOVERLINE - 1;
+	    memcpy(OVERline, q, linelen);
+	    OVERline[linelen] = '\0';
+	} else {
+	    OVERline = q;
+	}
+	if ((Xref = strstr(OVERline, "\tXref:")) == NULL)
+	    return NULL;
+	if ((Xref = strchr(Xref, ' ')) == NULL)
+	    return NULL;
+	for (Xref++; *Xref == ' '; Xref++);
+	if ((Xref = strchr(Xref, ' ')) == NULL)
+	    return NULL;
+	for (Xref++; *Xref == ' '; Xref++);
+	if (!Xrefbuf)
+	    Xrefbuf = NEW(char, MAXOVERLINE);
+	memcpy(Xrefbuf, Xref, linelen - (OVERline - Xref));
+	Xrefbuf[linelen - (OVERline - Xref)] = '\0';
+	if ((q = strchr(Xrefbuf, '\t')) != NULL)
+	    *q = '\0';
+	p = Xrefbuf;
     }
 
     for (i = 0 ; ; ) {
@@ -99,7 +150,7 @@ GetFiles(p)
 	    RENEW(list, char *, size + 1);
 	}
 	for (list[i] = p; *p && *p != '\n' && !ISWHITE(*p); p++) {
-	    if (*p == '/')
+	    if (*p == '/' || *p == ':')
 		*(slash = p) = '\0';
 	}
 	if (*p) *p++ = '\0';
@@ -115,11 +166,7 @@ GetFiles(p)
 **  desired one.   Returns FALSE on failure.
 */
 STATIC BOOL
-FindLinesAfter(date, line, linesize, F)
-    long	date;
-    char	*line;
-    int		linesize;
-    FILE	*F;
+FindLinesAfter(long date, char *line, int linesize, FILE *F)
 {
     char	*p;
     long	upper;
@@ -171,20 +218,24 @@ FindLinesAfter(date, line, linesize, F)
 **  and within the specified distributions.
 */
 FUNCTYPE
-CMDnewnews(ac, av)
-    register int	ac;
-    char		*av[];
+CMDnewnews(int ac, char *av[])
 {
     static char		**groups;
-    register char	*start;
-    register char	*p;
-    register FILE	*F;
-    register BOOL	AllDists;
-    register BOOL	AllGroups;
+    char		*start;
+    char		*p, *p1, *p2, *q;
+    FILE		*F;
+    BOOL		AllDists;
+    BOOL		AllGroups;
     char		**distribs;
     char		**files;
     char		line[BIG_BUFFER];
     long		date;
+    TOKEN		token;
+    ARTHANDLE		*art;
+    static int		allocatedsize = 0;
+    static char		*msgid = NULL;
+    BOOL		overviewinitialized = FALSE;
+    BOOL		overviewfailed = FALSE;
 
     if (!PERMnewnews) {
 	Reply("%d NEWNEWS command disabled by administrator\r\n",
@@ -253,25 +304,82 @@ CMDnewnews(ac, av)
     Reply("%s\r\n", NNTP_NEWNEWSOK);
 
     files = NULL;
+    art = NULL;
     if (FindLinesAfter(date, line, sizeof line, F))
 	do {
 	    /* Skip two tab-separated fields. */
 	    if ((p = strchr(line, HIS_FIELDSEP)) == NULL
 	     || (start = strchr(p + 1, HIS_FIELDSEP)) == NULL)
 		continue;
+	    if ((q = strchr(++start, '\n')) != NULL)
+		*q = '\0';
 
 	    /* Get the file list. */
-	    if (*++start == '\n' || (files = GetFiles(start)) == NULL)
+	    if (IsToken(start)) {
+		if (overviewfailed)
+		    continue;
+		token = TextToToken(start);
+		if (token.type == TOKEN_EMPTY)
+		    /* this should not happen */
+		    continue;
+		if (!overviewinitialized) {
+		    if (OVERinit())
+			overviewinitialized = TRUE;
+		    else {
+			overviewfailed = TRUE;
+			continue;
+		    }
+		}
+	    } else
+		token.type = TOKEN_EMPTY;
+	    if (*start == '\0' || (files = GetFiles(&token, start)) == NULL)
 		continue;
 
 	    /* Check permissions. */
+	    if (art != NULL) {
+		SMfreearticle(art);
+		art = NULL;
+	    }
+	    if (token.type != TOKEN_EMPTY) {
+		if (token.cancelled)
+		    continue;
+		if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
+		    continue;
+	    } else
+		    art = NULL;
 	    if (!AllGroups && !PERMmatch(FALSE, groups, files))
 		continue;
-	    if (!AllDists && !DistMatches(distribs, files))
+	    if (!AllDists && !DistMatches(art, distribs, files))
 		continue;
-	    *p = '\0';
-	    Printf("%s\r\n", line);
+	    if (token.type != TOKEN_EMPTY) {
+		if ((p = q = (char *)HeaderFindMem(art->data, art->len, "message-id", sizeof("message-id")-1)) == NULL)
+		    continue;
+		for (p1 = p2 = NULL; p < art->data + art->len; p++) {
+		    if (p2 != (char *)NULL && *p2 == '\r' &&
+			p1 != (char *)NULL && *p1 == '\n' &&
+			!ISWHITE(*p))
+			break;
+		    p2 = p1;
+		    p1 = p;
+		}
+		if (p >= art->data + art->len)
+		    continue;
+		if (allocatedsize == 0)
+		    msgid = NEW(char, p2 - q + 1);
+		else if (allocatedsize < p2 - q + 1)
+		    RENEW(msgid, char, p2 - q + 1);
+		memcpy(msgid, q, p2 - q);
+		msgid[p2-q] = '\0';
+		Printf("%s\r\n", msgid);
+	    } else {
+		*p = '\0';
+		Printf("%s\r\n", line);
+	    }
 	} while (fgets(line, sizeof line, F) != NULL);
+	if (art != NULL)
+	    SMfreearticle(art);
+	if (overviewinitialized)
+	    OVERshutdown();
 
     (void)fclose(F);
     Printf(".\r\n");
