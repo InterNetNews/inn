@@ -105,11 +105,9 @@ set inn_perl_support [ expr { "DONT" == "DO" ? 1 : 0 } ]
 ##  =()<set inn_tcl_support [ expr { "@<TCL_SUPPORT>@" == "DO" ? 1 : 0 } ]>()=
 set inn_tcl_support [ expr { "DONT" == "DO" ? 1 : 0 } ]
 
-if {[info exists env(TMPDIR)] != 1} {
-    set env(TMPDIR) "@TMPPATH@"
-}
-set inn_tmpdir $env(TMPDIR)
-set inn_spooltemp "@TMPPATH@"
+set env(TMPDIR) "$inn_pathtmp"
+set inn_tmpdir "$inn_pathtmp"
+set inn_spooltemp "$inn_pathtmp"
 
 scan "02" "%o" inn_umask
 

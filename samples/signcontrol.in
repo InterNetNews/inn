@@ -82,6 +82,11 @@ $hierarchies = 'HIERARCHIES';
 
 $start_component_with_letter = 'MUST';
 
+# It is considered unsafe to open files with predictable names in publically
+# writable directories, so we're putting the tempfiles in the users
+# homedirectory by default. You can change that here if you wish.
+$tmpdir = $ENV{'HOME'};
+
 ## END CONFIGURATION
 
 $0 =~ s#^.*/##;
@@ -268,7 +273,7 @@ signit
   my($tmp, $head, $header, $signheaders, $pgpflags, $pgpbegin, $pgpend);
   local(*FH);
 
-  $tmp = "/tmp/sign-$$";
+  $tmp = $tmpdir . "/sign-$$";
   $signheaders = join(",", @signheaders);
 
   $head = "X-Signed-Headers: $signheaders\n";

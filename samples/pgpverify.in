@@ -40,8 +40,6 @@ $pgp = '@_PATH_PGP@';
 # uncomment the next line and set appropriately.
 # $ENV{'PGPPATH'} = '/path/to/your/pgp/config';
 
-$tmp = "/tmp/pgp$$";
-
 ### Exit value:
 ### 0  good signature
 ### 1  no signature
@@ -55,6 +53,7 @@ $0 =~ s%^.*/%%;                 # trim /path/to/prog to prog
 
 do "@ETCDIR@/innshellvars.pl";
 $pgp = $inn'pgp if $inn'pgp && $inn'pgp ne "no-pgp-found-during-configure";
+$tmp = $inn'pathtmp . "/pgp$$";
 
 if (! -x $pgp) {
   die "$0: $pgp: ", (-e _ ? "cannot execute" : "no such file"), "\n";

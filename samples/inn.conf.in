@@ -112,6 +112,7 @@ pathetc:		@ETCDIR@
 pathrun:		@RUNDIR@
 pathlog:		@LOGDIR@
 pathhttp:		@LOGDIR@
+pathtmp:		@TMPPATH@
 pathspool:		@SPOOLDIR@
 patharticles:		@SPOOLDIR@/articles
 pathoverview:		@SPOOLDIR@/overview

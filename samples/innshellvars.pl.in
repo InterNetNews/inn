@@ -106,12 +106,9 @@ $perl_support = ("DONT" eq "DO" ? 1 : 0) ;
 ##  =()<$tcl_support = ("@<TCL_SUPPORT>@" eq "DO" ? 1 : 0) ;>()=
 $tcl_support = ("DONT" eq "DO" ? 1 : 0) ;
 
-if ( ! defined ($ENV{'TMPDIR'}) ) {
-	$ENV{'TMPDIR'} = "@TMPPATH@" ;
-} 
-$tmpdir = $ENV{'TMPDIR'} ;
-
-$spooltemp = "@TMPPATH@" ;
+$ENV{'TMPDIR'} = $pathtmp;
+$tmpdir = $pathtmp;
+$spooltemp = $pathtmp;
 
 $umask = 02 ;
 
