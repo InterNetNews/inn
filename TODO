@@ -221,7 +221,8 @@ Future Projects:
   programs (and easier to maintain).  It would be nice to have a C News
   style configurable batch generator where you could configure the size,
   compression, and sending method for each peer in a file and generate all
-  batches with a single command.
+  batches with a single command.  There's something in the unoff-contrib
+  area that may be a good start on this.
 
 * More details as to *why* a message ID is bad would be useful to return
   to the user, particularly for rnews, inews, etc.  rnews also reportedly
@@ -306,6 +307,20 @@ Future Projects:
   the server.  This could be avoidable for at least that particular case
   by checking the mtime of active before and after the server was
   throttled.
+
+* remembertrash currently rejects and remembers articles with syntax
+  errors as well as things like unwanted newsgroups and unwanted
+  distributions, which means that if a peer sends you a bunch of mangled
+  articles, you'll then also reject the correct versions of the articles
+  from other peers.  This should probably be rethought.
+
+* There's no sample and no documentation for LIST SUBSCRIPTIONS.
+
+* Additional limits for readers.conf:  Limit on concurrent parallel reader
+  streams, limit on KB/second download (preliminary support for this is
+  already in), and a limit on maximum posted articles per day (tied in
+  with the backoff stuff?).  These should be per-IP or per-user, but
+  possibly also per-access group.
 
 
 Long-Term Projects:
@@ -436,3 +451,8 @@ Long-Term Projects:
   configured list of hierarchies (or sub-hierarchies within hierarchies)
   that control messages should be honored for.  This should be reasonably
   simple although correct handling of checkgroups could get a mite tricky.
+
+* Possible NNTP extension:  Compression of the protocol, using gzip,
+  bzip2, or some other technique.  Particularly useful for long lists like
+  the active file information or the overview information, but possibly
+  useful in general for other things.
