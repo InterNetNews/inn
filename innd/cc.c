@@ -1761,7 +1761,7 @@ CCreader(CHANNEL *cp)
 
     bufflen -= HEADER_SIZE;
     memmove(buff, buff + HEADER_SIZE, bufflen);
-    buff[i] = '\0';
+    buff[bufflen] = '\0';
 
     if (protocol != ICC_PROTOCOL_1) {
         syslog(L_ERROR, "%s CCreader protocol mismatch", LogName) ;
