@@ -368,7 +368,6 @@ AC_CACHE_CHECK(for atomical variable, ac_cv_type_atomic, AC_TRY_COMPILE([#includ
 #include <sys/signal.h>
 #endif],[sig_atomic_t i],ac_cv_type_atomic=sig_atomic_t,ac_cv_type_atomic=int))
 AC_SUBST(ac_cv_type_atomic)
-AC_HEADER_TIME
 
 AC_MSG_CHECKING(for tm_gmtoff in struct tm)
 AC_TRY_LINK([#include <time.h>],
