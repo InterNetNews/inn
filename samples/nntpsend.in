@@ -350,13 +350,15 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
     # carry old unfinished work over to this task
     BATCHFILE="${SITE}=n"
     if [ -f "${SITE}.work" ] ; then
-	mv "${SITE}.work" "${BATCHFILE}"
+	cat ${SITE}.work >>"${BATCHFILE}"
+	rm -f "${SITE}.work"
     fi
     # form BATCHFILE to hold the work for this site
     if [ -f "${SITE}" ]; then
 	mv "${SITE}" "${SITE}.work"
 	if ctlinnd -s -t30 flush ${SITE} ; then
-	    mv ${SITE}.work "${BATCHFILE}"
+	    cat ${SITE}.work >>"${BATCHFILE}"
+	    rm -f ${SITE}.work
 	else
 	    # flush failed, continue if we have any batchfile to work on
 	    echo "${PROGNAME}: bad flush for ${HOST} via ${SITE}"
