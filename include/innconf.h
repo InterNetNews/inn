@@ -323,7 +323,10 @@ struct conf_rec conf_defaults[] = {
     { _CONF_NNRPDPOSTPORT,			"",	2, 1 },
 #define _CONF_NNRPDAUTHSENDER			"nnrpdauthsender"
 #define CONF_VAR_NNRPDAUTHSENDER		100
-    { _CONF_NNRPDAUTHSENDER,			"",	2, 1 }
+    { _CONF_NNRPDAUTHSENDER,			"",	2, 1 },
+#define _CONF_CNFSCHECKFUDGESIZE		"cnfscheckfudgesize"
+#define CONF_VAR_CNFSCHECKFUDGESIZE		101
+    { _CONF_CNFSCHECKFUDGESIZE,			"",	3, 1 }
 };
-#define MAX_CONF_VAR 101
+#define MAX_CONF_VAR 102
 

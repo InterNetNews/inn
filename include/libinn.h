@@ -172,6 +172,7 @@ struct conf_vars {
 	int mergetogroups;
 	int noreader;
 	int nnrpdauthsender;
+	long cnfscheckfudgesize;
 };
 extern struct	conf_vars *innconf;
 extern char	*innconffile;
