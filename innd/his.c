@@ -32,14 +32,17 @@ STATIC int              HISdne;    /* The entry was not in cache or history */
 ** Put an entry into the history cache 
 */
 void HIScacheadd(char *MessageID, int len, BOOL Found) {
-    unsigned int  i, hash;
+    unsigned int  i, hash, loc;
     hash_t h;
+    int tocopy;
 
     if (HIScache == NULL)
 	return;
     h = dbzhash(MessageID, len);
-    memcpy(&hash, &h, (sizeof(h) < sizeof(hash) ? sizeof(h) : sizeof(hash)));
-    i = hash % HIScachesize;
+    tocopy = (sizeof(h) < sizeof(hash)) ? sizeof(h) : sizeof(hash);
+    memcpy(&hash, &h, tocopy);
+    memcpy(&loc, ((char *)&h) + (sizeof(h) - tocopy), tocopy);
+    i = loc % HIScachesize;
     HIScache[i].Hash = hash;
     HIScache[i].Found = Found;
 }
@@ -48,14 +51,17 @@ void HIScacheadd(char *MessageID, int len, BOOL Found) {
 ** Lookup an entry in the history cache
 */
 HISresult HIScachelookup(char *MessageID, int len) {
-    unsigned int i, hash;
+    unsigned int i, hash, loc;
     hash_t h;
+    int tocopy;
 
     if (HIScache == NULL)
 	return HIScachedne;
     h = dbzhash(MessageID, len);
-    memcpy(&hash, &h, (sizeof(h) < sizeof(hash) ? sizeof(h) : sizeof(hash)));
-    i = hash % HIScachesize;
+    tocopy = (sizeof(h) < sizeof(hash)) ? sizeof(h) : sizeof(hash);
+    memcpy(&hash, &h, tocopy);
+    memcpy(&loc, ((char *)&h) + (sizeof(h) - tocopy), tocopy);
+    i = loc % HIScachesize;
     if (HIScache[i].Hash == hash) {
         if (HIScache[i].Found) {
             HIShitpos++;
@@ -97,7 +103,7 @@ HISsetup()
 	dbzgetoptions(&opt);
 	opt.writethrough = TRUE;
 	opt.idx_incore = INCORE_NO;
-	opt.exists_incore = INCORE_MMAP;
+	opt.exists_incore = HISincore ? INCORE_MMAP : INCORE_NO;
 	dbzsetoptions(opt);
 	if (!dbminit(HIShistpath)) {
 	    syslog(L_FATAL, "%s cant dbminit %s %m", HIShistpath, LogName);
