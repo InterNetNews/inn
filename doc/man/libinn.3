@@ -57,20 +57,20 @@ libinn \- InterNetNews library routines
 .B "    DDHANDLE	*h;"
 
 .B "void"
-.B "CloseOnExec(fd, flag)"
+.B "close_on_exec(fd, flag)"
 .B "    int	fd;"
-.B "    int	flag;"
+.B "    bool	flag;"
 
 .B "int"
-.B "SetNonBlocking(fd, flag)"
+.B "nonblocking(fd, flag)"
 .B "    int	fd;"
-.B "    int	flag;"
+.B "    bool	flag;"
 
-.B "BOOL"
+.B "bool"
 .B "lock_file(fd, type, flag)"
 .B "    int	fd;"
 .B "    LOCKTYPE	type;"
-.B "    BOOL	block;"
+.B "    bool	block;"
 
 .B "int"
 .B "ReadInnConf()"
