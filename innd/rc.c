@@ -7,20 +7,12 @@
 */
 #include "config.h"
 #include "clibrary.h"
-#include <netinet/in.h>
+#include "innd.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
 
-#include "innd.h"
-
-/* Error returns from inet_addr. */
-#ifndef INADDR_NONE
-# define INADDR_NONE 0xffffffff
-#endif
-
-#define COPYADDR(dest, src) \
-	    (void)memcpy((POINTER)dest, (POINTER)src, (SIZE_T)sizeof (INADDR))
+#define COPYADDR(dest, src) memcpy((dest), (src), sizeof(struct in_addr))
 
 #define TEST_CONFIG(a, b) \
     { \
@@ -38,7 +30,7 @@
 typedef struct _REMOTEHOST {
     char	*Label;         /* Peer label */
     char	*Name;          /* Hostname */
-    INADDR	Address;        /* List of ip adresses */
+    struct in_addr Address;     /* List of ip adresses */
     char	*Password;      /* Optional password */
     char 	*Identd;		/* Optional identd */
     BOOL	Streaming;      /* Streaming allowed ? */
@@ -60,8 +52,8 @@ typedef struct _REMOTEHOST_DATA {
 } REMOTEHOST_DATA;
 
 typedef struct _REMOTETABLE {
-    INADDR	Address;
-    time_t	Expires;
+    struct in_addr Address;
+    time_t         Expires;
 } REMOTETABLE;
 
 STATIC char		*RCslaveflag;
@@ -745,30 +737,30 @@ STATIC void
 RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count, 
 	    char *filename)
 {
-    static char			NOPASS[] = "";
-    static char			NOIDENTD[] = "";
-    static char			NOEMAIL[] = "";
-    static char			NOCOMMENT[] = "";
-    register FILE		*F;
-    register char 		*p;
-    register char 		**q;
-    register char 		**r;
-    struct hostent		*hp;
-    register int		i;
-    register int		j;
-    int				linecount;
-    int				infocount;
-    register int		groupcount;
-    register int		maxgroup;
-    register REMOTEHOST_DATA 	*dt;
-    register REMOTEHOST		*rp;
-    register char		*word;
-    register REMOTEHOST		*groups;
-    register REMOTEHOST		*group_params = NULL;
-    register REMOTEHOST		peer_params;
-    register REMOTEHOST		default_params;
-    BOOL			flag, bit, toolong;
-
+    static char		NOPASS[] = "";
+    static char		NOIDENTD[] = "";
+    static char		NOEMAIL[] = "";
+    static char		NOCOMMENT[] = "";
+    FILE		*F;
+    char 		*p;
+    char 		**q;
+    char 		**r;
+    struct hostent	*hp;
+    struct in_addr      addr;
+    int                 i;
+    int                 j;
+    int			linecount;
+    int			infocount;
+    int                 groupcount;
+    int                 maxgroup;
+    REMOTEHOST_DATA 	*dt;
+    REMOTEHOST		*rp;
+    char		*word;
+    REMOTEHOST		*groups;
+    REMOTEHOST		*group_params = NULL;
+    REMOTEHOST		peer_params;
+    REMOTEHOST		default_params;
+    bool		flag, bit, toolong;
  
     *RCbuff = '\0';
     if (*list) {
@@ -807,7 +799,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp = *list = NEW(REMOTEHOST, 1);
 
 #if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
-    rp->Address.s_addr = inet_addr(LOOPBACK_HOST);
+    inet_aton(LOOPBACK_HOST, &rp->Address);
     rp->Name = COPY("localhost");
     rp->Label = COPY("localhost");
     rp->Email = COPY(NOEMAIL);
@@ -975,7 +967,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    rp = *list + j;
 
 	    /* Was host specified as a dotted quad ? */
-	    if ((rp->Address.s_addr = inet_addr(*q)) != INADDR_NONE) {
+	    if (inet_aton(*q, &rp->Address)) {
 	      /* syslog(LOG_NOTICE, "think it's a dotquad: %s", *q); */
 	      rp->Name = COPY (*q);
 	      rp->Label = COPY (peer_params.Label);
@@ -1015,7 +1007,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      int    t = 0;
 	      /* Strange DNS ? try this.. */
 	      for (r = hp->h_aliases; *r != 0; r++) {
-		if (inet_addr(*r) == INADDR_NONE) /* IP address ? */
+                if (!inet_aton(*r, &addr))
 		  continue;
 		(*count)++;
 		/* Grow the array */
@@ -1023,7 +1015,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		RENEW (*list, REMOTEHOST, *count);
 		rp = *list + j;
 
-		rp->Address.s_addr = inet_addr(*r);
+		rp->Address = addr;
 		rp->Name = COPY (*q);
 		rp->Label = COPY (peer_params.Label);
 		rp->Email = COPY(peer_params.Email);
@@ -1042,7 +1034,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	      }
 	      if (t == 0) {
 		/* Just one, no need to grow. */
-		COPYADDR(&rp->Address, hp->h_addr_list[0]);
+		memcpy(&rp->Address, hp->h_addr_list[0],
+                       sizeof(struct in_addr));
 		rp->Name = COPY (*q);
 		rp->Label = COPY (peer_params.Label);
 		rp->Email = COPY(peer_params.Email);
@@ -1068,7 +1061,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 
 	    /* Add all the hosts. */
 	    for (i = 0; hp->h_addr_list[i]; i++) {
-	      COPYADDR(&rp->Address, hp->h_addr_list[i]);
+	      memcpy(&rp->Address, hp->h_addr_list[i],
+                     sizeof(struct in_addr));
 	      rp->Name = COPY (*q);
 	      rp->Label = COPY (peer_params.Label);
 	      rp->Email = COPY(peer_params.Email);
@@ -1086,7 +1080,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    }
 #else
 	    /* Old-style, single address, just add it. */
-	    COPYADDR(&rp->Address, hp->h_addr);
+	    memcpy(&rp->Address, hp->h_addr, sizeof(struct in_addr));
 	    rp->Name = COPY(*q);
 	    rp->Label = COPY (peer_params.Label);
 	    rp->Email = COPY(peer_params.Email);
@@ -1709,10 +1703,9 @@ RCsetup(i)
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (innconf->bindaddress) {
-	    server.sin_addr.s_addr = inet_addr(innconf->bindaddress);
-	    if (server.sin_addr.s_addr == INADDR_NONE) {
-		syslog(L_FATAL, "unable to determine bind ip (%s) %m",
-					innconf->bindaddress);
+            if (!inet_aton(innconf->bindaddress, &server.sin_addr)) {
+                syslog(L_FATAL, "unable to determine bind ip (%s) %m",
+                       innconf->bindaddress);
 		exit(1);
 	    }
 	}
