@@ -40,6 +40,9 @@ struct ovdb_conf {
     int minkey;
     int maxlocks;
     int nocompact;
+    int readserver;
+    int numrsprocs;
+    int maxrsconn;
 };
 
 typedef u_int32_t group_id_t;
@@ -64,7 +67,7 @@ struct groupinfo {
 
 struct datakey {
     group_id_t groupnum;	/* must be the first member of this struct */
-    u_int32_t artnum;
+    ARTNUM artnum;
 };
 
 struct ovdata {
@@ -84,6 +87,7 @@ extern DB_ENV *OVDBenv;
 #define OVDB_ERR_STDERR 2
 extern int ovdb_errmode;
 
+void read_ovdb_conf(void);
 int ovdb_open_berkeleydb(int mode, int flags);
 void ovdb_close_berkeleydb(void);
 int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_TXN *tid, int getflags);
@@ -96,12 +100,67 @@ int ovdb_getgroupinfo(char *group, struct groupinfo *gi, int ignoredeleted, DB_T
 
 BOOL ovdb_getlock(int mode);
 BOOL ovdb_releaselock(void);
-BOOL ovdb_check_monitor(void);
+BOOL ovdb_check_pidfile(char *file);
 BOOL ovdb_check_user(void);
 
 #define OVDB_LOCKFN "ovdb.sem"
 #define OVDB_MONITOR_PIDFILE "ovdb_monitor.pid"
+#define OVDB_SERVER_PIDFILE "ovdb_server.pid"
 #define SPACES "                "
+
+/* read server stuff */
+#define CMD_QUIT	0x01
+#define CMD_GROUPSTATS	0x02
+#define CMD_OPENSRCH	0x03
+#define CMD_SRCH	0x04
+#define CMD_CLOSESRCH	0x05
+#define CMD_ARTINFO	0x06
+#define CMD_MASK	0x0F
+#define RPLY_OK		0x00
+#define RPLY_ERROR	0x10
+#define OVDB_SERVER	(1<<4)
+#define OVDB_SERVER_BANNER "ovdb read protocol 1"
+#define OVDB_SERVER_PORT 32323	/* FIXME: make this configurable */
+
+struct rs_cmd {
+    uint32_t	what;
+    uint32_t	grouplen;
+    uint32_t	artlo;
+    uint32_t	arthi;
+    void *	handle;
+};
+
+struct rs_groupstats {
+    uint32_t	status;
+    int		lo;
+    int		hi;
+    int		count;
+    int		flag;
+    uint32_t	aliaslen;
+    /* char alias */
+};
+
+struct rs_opensrch {
+    uint32_t	status;
+    void *	handle;
+};
+
+struct rs_srch {
+    uint32_t	status;
+    ARTNUM	artnum;
+    TOKEN	token;
+    time_t	arrived;
+    int		len;
+    /* char data */
+};
+
+struct rs_artinfo {
+    uint32_t	status;
+    TOKEN	token;
+    int		len;
+    /* char data */
+};
+
 
 #if DB_VERSION_MAJOR == 2
 char *db_strerror(int err);

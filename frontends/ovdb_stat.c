@@ -45,7 +45,7 @@ typedef enum {
 	END,
 	INT32,	/* 'a' points to u_int32_t */
 	HEX32,  /* 'a' printed in hex */
-        DIFF32,	/* 'a' - 'b' */
+        DIFF32,	/* 'a' - 'b' - 'c' */
 	PCT32,  /* 100 * 'a' / ('a' + 'b') */
 	FF,	/* 'a' = freebytes, 'b' = npages, 'c' = pagesize */
 	BYTES,	/* 'a' = bytes, 'b' = mbytes, 'c' = gbytes */
@@ -94,10 +94,15 @@ static void getval(int i, void *p, struct datatab *tab, char *val, char *sufx)
 	a = *((u_int32_t *)(cp + tab[i].a));
 	sprintf(val, "%x", a);
 	break;
-    case DIFF32:	/* 'a' - 'b' */
+    case DIFF32:	/* 'a' - 'b' - 'c' */
 	a = *((u_int32_t *)(cp + tab[i].a));
 	b = *((u_int32_t *)(cp + tab[i].b));
-	sprintf(val, "%d", a - b);
+	if(tab[i].c != -1) {
+	    c = *((u_int32_t *)(cp + tab[i].c));
+	    sprintf(val, "%d", a - b - c);
+	} else {
+	    sprintf(val, "%d", a - b);
+	}
 	break;
     case PCT32:	/* 100 * 'a' / ('a' + 'b') */
 	a = *((u_int32_t *)(cp + tab[i].a));
@@ -245,7 +250,7 @@ static struct datatab LOCK_tab[] = {
  { INT32, F(st_nconflicts),    -1, -1,           "Lock conflicts" },
  { INT32, F(st_nrequests),     -1, -1,           "Lock requests" },
  { INT32, F(st_nreleases),     -1, -1,           "Lock releases" },
- { DIFF32, F(st_nrequests), F(st_nreleases), -1, "Outstanding locks" },
+ { DIFF32, F(st_nrequests), F(st_nreleases), F(st_ndeadlocks), "Outstanding locks" },
 #if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR > 0
  { INT32, F(st_nnowaits),      -1, -1,           "Lock requests that would have waited" },
 #endif
@@ -368,7 +373,7 @@ static struct datatab MEMF_tab[] = {
  { PCT32,  F(st_cache_hit), F(st_cache_miss), -1, "Cache hit percentage"},
  { INT32,  F(st_map),           -1, -1, "Memory mapped pages"},
  { INT32,  F(st_page_create),   -1, -1, "Pages created in the cache"},
- { INT32,  F(st_page_in),       -1, -1, "Pages read in the cache"},
+ { INT32,  F(st_page_in),       -1, -1, "Pages read into the cache"},
  { INT32,  F(st_page_out),      -1, -1, "Pages written from the cache to the backing file"},
  { END, -1, -1, -1, NULL }
 };
@@ -686,7 +691,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr, "Can't lock database: %s\n", strerror(errno));
 	exit(1);
     }
-    if(!ovdb_open(OV_READ)) {
+    if(!ovdb_open(OV_READ|OVDB_SERVER)) {
 	fprintf(stderr, "Can't open overview; check syslog for OVDB messages\n");
 	exit(1);
     }

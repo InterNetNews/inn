@@ -46,10 +46,18 @@ Xstop)
     fi
 
     # Turn off ovdb support procs, and close the DB environment
+    if [ "$OVMETHOD" = "ovdb" -a -f ${PATHRUN}/ovdb_server.pid ]; then
+	pid=`cat ${PATHRUN}/ovdb_server.pid 2>/dev/null`
+	if [ "$pid" != "" ]; then
+	    printf "Stopping ovdb_server: "
+	    kill $pid
+	    waitforpid $pid
+	fi
+    fi
     if [ "$OVMETHOD" = "ovdb" -a -f ${PATHRUN}/ovdb_monitor.pid ]; then
 	pid=`cat ${PATHRUN}/ovdb_monitor.pid 2>/dev/null`
 	if [ "$pid" != "" ]; then
-	    printf "Stopping ovdb: "
+	    printf "Stopping ovdb_monitor: "
 	    kill $pid
 	    waitforpid $pid
 	fi

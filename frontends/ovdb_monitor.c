@@ -8,9 +8,9 @@
 #include "config.h"
 #include "clibrary.h"
 #include "libinn.h"
-#include <fcntl.h>
-#include <signal.h>
 #include <syslog.h>
+#include <string.h>
+#include <signal.h>
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
@@ -44,8 +44,10 @@ int main(int argc, char **argv)
 #ifdef _HPUX_SOURCE
 #include <sys/pstat.h>
 #else
+#if !defined(HAVE_SETPROCTITLE)
 static char     *TITLEstart;
 static char     *TITLEend;
+#endif
 #endif
 
 static void TITLEset(char *what)
@@ -53,13 +55,19 @@ static void TITLEset(char *what)
 #if defined(HAVE_SETPROCTITLE)
     setproctitle("%s", what);
 #else
-#if     !defined(_HPUX_SOURCE)
+#if defined(_HPUX_SOURCE)
+    char                buff[BUFSIZ];
+    union pstun un;
+
+    un.pst_command = what;
+    (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
+
+#else   /* defined(_HPUX_SOURCE) */
     register char       *p;
     register int        i;
     char                buff[BUFSIZ];
 
     p = TITLEstart;
-/*    *p++ = '-';*/
 
     strcpy(buff, what);
     i = strlen(buff);
@@ -70,15 +78,11 @@ static void TITLEset(char *what)
     (void)strcpy(p, buff);
     for (p += i; p < TITLEend; )
         *p++ = ' ';
-#else
-    char                buff[BUFSIZ];
-    union pstun un;
 
-    un.pst_command = what;
-    (void)pstat(PSTAT_SETCMD, un, strlen(buff), 0, 0);
-#endif  /* !defined(_HPUX_SOURCE) */
+#endif  /* defined(_HPUX_SOURCE) */
 #endif  /* defined(HAVE_SETPROCTITLE) */
 }
+
 
 static int signalled = 0;
 static void sigfunc(int sig)
@@ -99,7 +103,7 @@ static int putpid(char *path)
 	syslog(L_FATAL, "can't open %s: %m", path);
 	return -1;
     }
-    sprintf(buf, "%d", getpid());
+    sprintf(buf, "%d\n", getpid());
     if(write(fd, buf, strlen(buf)) < 0) {
 	syslog(L_FATAL, "can't write to %s: %m", path);
 	close(fd);

@@ -319,6 +319,7 @@ int main(int argc, char **argv)
 	exit(1);
     }
 
+    chdir(innconf->pathtmp);
     ovdb_errmode = OVDB_ERR_STDERR;
 
     while((c = getopt(argc, argv, "ru")) != -1) {
@@ -388,7 +389,7 @@ int main(int argc, char **argv)
     ovdb_close_berkeleydb();
     ovdb_releaselock();
 
-    if(ovdb_check_monitor() == FALSE) {
+    if(ovdb_check_pidfile(OVDB_MONITOR_PIDFILE) == FALSE) {
 	fprintf(stderr, "ovdb_init: Starting ovdb monitor\n");
 	switch(fork()) {
 	case -1:
@@ -400,8 +401,27 @@ int main(int argc, char **argv)
 	    fprintf(stderr, "Can't exec ovdb_monitor: %s\n", strerror(errno));
 	    _exit(1);
 	}
+	sleep(2);	/* give the monitor a chance to start */
     } else
 	fprintf(stderr, "ovdb_init: ovdb monitor is running\n");
+
+    if(ovdb_conf.readserver) {
+	if(ovdb_check_pidfile(OVDB_SERVER_PIDFILE) == FALSE) {
+	    fprintf(stderr, "ovdb_init: Starting ovdb server\n");
+	    switch(fork()) {
+	    case -1:
+		fprintf(stderr, "can't fork: %s\n", strerror(errno));
+		exit(1);
+	    case 0:
+		execl(cpcatpath(innconf->pathbin, "ovdb_server"),
+		    "ovdb_server", SPACES, NULL);
+		fprintf(stderr, "Can't exec ovdb_server: %s\n", strerror(errno));
+		_exit(1);
+	    }
+	} else
+	    fprintf(stderr, "ovdb_init: ovdb server is running\n");
+    }
+
     exit(0);
 }
 #endif /* USE_BERKELEY_DB */

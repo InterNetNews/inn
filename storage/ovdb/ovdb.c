@@ -1,8 +1,9 @@
 /*
  * ovdb.c
- * ovdb 2.00 beta2
+ * ovdb 2.00 beta3
  * Overview storage using BerkeleyDB 2.x/3.x
  *
+ * 2000-11-13 : New 'readserver' feature
  * 2000-10-10 : ovdb_search now closes the cursor right after the last
  *              record is read.
  * 2000-10-05 : artnum member of struct datakey changed from ARTNUM to u_int32_t.
@@ -74,6 +75,10 @@
 #include <signal.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
 #include <pwd.h>
 #include "macros.h"
 #include "conffile.h"
@@ -84,6 +89,7 @@
 #include "ovinterface.h"
 #include "ovdb.h"
 
+
 #ifdef HAVE_INN_VERSION_H
 #include "inn/version.h"
 #else
@@ -91,6 +97,21 @@
 #define INN_VERSION_MAJOR 2
 #define INN_VERSION_MINOR 3
 #define INN_VERSION_PATCH 0
+#endif
+
+#if INN_VERSION_MINOR >= 4
+#include "portable/time.h"
+#else
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
 #endif
 
 #if INN_VERSION_MINOR == 3
@@ -159,6 +180,7 @@ static DB **dbs = NULL;
 static int oneatatime = 0;
 static int current_db = -1;
 static time_t eo_start = 0;
+static int clientmode = 0;
 
 static DB *groupinfo = NULL;
 static DB *groupaliases = NULL;
@@ -170,6 +192,9 @@ static DB *groupaliases = NULL;
 #define OVDBminkey	5
 #define OVDBmaxlocks	6
 #define OVDBnocompact	7
+#define OVDBreadserver	8
+#define OVDBnumrsprocs	9
+#define OVDBmaxrsconn	10
 
 static CONFTOKEN toks[] = {
   { OVDBtxn_nosync, "txn_nosync" },
@@ -179,10 +204,144 @@ static CONFTOKEN toks[] = {
   { OVDBminkey, "minkey" },
   { OVDBmaxlocks, "maxlocks" },
   { OVDBnocompact, "nocompact" },
+  { OVDBreadserver, "readserver" },
+  { OVDBnumrsprocs, "numrsprocs" },
+  { OVDBmaxrsconn, "maxrsconn" },
   { 0, NULL },
 };
 
 #define _PATH_OVDBCONF "ovdb.conf"
+
+/*********** readserver functions ***********/
+
+static int clientfd = -1;
+
+/* read client send and recieve functions.  If there is
+   connection trouble, we just bail out. */
+
+static int csend(void *data, int n)
+{
+    int r, p = 0;
+
+    if(n == 0)
+	return 0;
+
+    while(p < n) {
+	r = write(clientfd, (char *)data + p, n - p);
+	if(r <= 0) {
+	    if(r < 0 && errno == EINTR)
+		continue;
+	    syslog(LOG_ERR, "OVDB: rc: cant write: %m");
+	    exit(1);
+	}
+	p+= r;
+    }
+    return p;
+}
+
+static int crecv(void *data, int n)
+{
+    int r, p = 0;
+
+    if(n == 0)
+	return 0;
+
+    while(p < n) {
+	r = read(clientfd, (char *)data + p, n - p);
+	if(r <= 0) {
+	    if(r < 0 && errno == EINTR)
+		continue;
+	    syslog(LOG_ERR, "OVDB: rc: cant read: %m");
+	    exit(1);
+	}
+	p+= r;
+    }
+    return p;
+}
+
+/* Attempt to connect to the readserver.  If anything fails, we
+   return -1 so that ovdb_open can open the database directly. */
+
+static int client_connect()
+{
+    int r, p = 0;
+    struct sockaddr_in sa;
+    char banner[sizeof(OVDB_SERVER_BANNER)];
+    fd_set fds;
+    struct timeval timeout;
+
+    clientfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(clientfd < 0) {
+	syslog(LOG_ERR, "OVDB: rc: socket: %m");
+	return -1;
+    }
+    sa.sin_family = AF_INET;
+    sa.sin_port = 0;
+    sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    bind(clientfd, (struct sockaddr *) &sa, sizeof sa);
+
+    sa.sin_port = htons(OVDB_SERVER_PORT);
+    if((r = connect(clientfd, (struct sockaddr *) &sa, sizeof sa)) != 0) {
+	syslog(LOG_ERR, "OVDB: rc: cant connect to server: %m");
+	close(clientfd);
+	clientfd = -1;
+	return -1;
+    }
+
+    while(p < sizeof(OVDB_SERVER_BANNER)) {
+	FD_ZERO(&fds);
+	FD_SET(clientfd, &fds);
+	timeout.tv_sec = 30;
+	timeout.tv_usec = 0;
+
+	r = select(clientfd+1, &fds, NULL, NULL, &timeout);
+
+	if(r < 0) {
+	    if(errno == EINTR)
+	    	continue;
+	    syslog(LOG_ERR, "OVDB: rc: select: %m");
+	    close(clientfd);
+	    clientfd = -1;
+	    return -1;
+	}
+	if(r == 0) {
+	    syslog(LOG_ERR, "OVDB: rc: timeout waiting for server");
+	    close(clientfd);
+	    clientfd = -1;
+	    return -1;
+    	}
+
+	r = read(clientfd, banner + p, sizeof(OVDB_SERVER_BANNER) - p);
+	if(r <= 0) {
+	    if(r < 0 && errno == EINTR)
+		continue;
+	    syslog(LOG_ERR, "OVDB: rc: cant read: %m");
+	    close(clientfd);
+	    clientfd = -1;
+	    return -1;
+	}
+	p+= r;
+    }
+
+    if(memcmp(banner, OVDB_SERVER_BANNER, sizeof(OVDB_SERVER_BANNER))) {
+	syslog(LOG_ERR, "OVDB: rc: unknown reply from server");
+	close(clientfd);
+	clientfd = -1;
+	return -1;
+    }
+    return 0;
+}
+
+static void client_disconnect(void)
+{
+    struct rs_cmd rs;
+    if(clientfd != -1) {
+	rs.what = CMD_QUIT;
+
+	csend(&rs, sizeof rs);
+    }
+}
+
 
 /*********** internal functions ***********/
 
@@ -225,13 +384,17 @@ static BOOL conf_long_val(char *str, long *value)
     return TRUE;
 }
 
-static void read_ovdb_conf(void)
+void read_ovdb_conf(void)
 {
+    static int confread = 0;
     int done = 0;
     CONFFILE *f;
     CONFTOKEN *tok;
     BOOL b;
     long l;
+
+    if(confread)
+	return;
 
     /* defaults */
     ovdb_conf.home = innconf->pathoverview;
@@ -242,6 +405,9 @@ static void read_ovdb_conf(void)
     ovdb_conf.minkey = 0;
     ovdb_conf.maxlocks = 4000;
     ovdb_conf.nocompact = 10000;
+    ovdb_conf.readserver = 0;
+    ovdb_conf.numrsprocs = 5;
+    ovdb_conf.maxrsconn = 0;
 
     f = CONFfopen(cpcatpath(innconf->pathetc, _PATH_OVDBCONF));
 
@@ -318,6 +484,36 @@ static void read_ovdb_conf(void)
 		    ovdb_conf.nocompact = l;
 		}
 		break;
+	    case OVDBreadserver:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_bool_val(tok->name, &b)) {
+		    ovdb_conf.readserver = b;
+		}
+		break;
+	    case OVDBnumrsprocs:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_long_val(tok->name, &l) && l > 0) {
+		    ovdb_conf.numrsprocs = l;
+		}
+		break;
+	    case OVDBmaxrsconn:
+		tok = CONFgettoken(0, f);
+		if(!tok) {
+		    done = 1;
+		    continue;
+		}
+		if(conf_long_val(tok->name, &l) && l >= 0) {
+		    ovdb_conf.maxrsconn = l;
+		}
+		break;
 	    }
 	}
 	CONFfclose(f);
@@ -329,6 +525,8 @@ static void read_ovdb_conf(void)
 	if(ovdb_conf.minkey < 2)
 	    ovdb_conf.minkey = 2;
     }
+
+    confread = 1;
 }
 
 
@@ -852,7 +1050,7 @@ BOOL ovdb_getlock(int mode)
 	return TRUE;
 
     if(mode == OVDB_LOCK_NORMAL) {
-	if(!ovdb_check_monitor()) {
+	if(!ovdb_check_pidfile(OVDB_MONITOR_PIDFILE)) {
 	    syslog(L_FATAL, "OVDB: can not open database unless ovdb_monitor is running.");
 	    return FALSE;
 	}
@@ -885,11 +1083,11 @@ BOOL ovdb_releaselock(void)
     return r;
 }
 
-BOOL ovdb_check_monitor(void)
+BOOL ovdb_check_pidfile(char *file)
 {
     int f, pid;
     char buf[SMBUF];
-    char *pidfn = COPY(cpcatpath(innconf->pathrun, OVDB_MONITOR_PIDFILE));
+    char *pidfn = COPY(cpcatpath(innconf->pathrun, file));
 
     f = open(pidfn, O_RDONLY);
     if(f == -1) {
@@ -1108,9 +1306,22 @@ BOOL ovdb_open(int mode)
     DB_INFO dbinfo;
 #endif
 
-    if(OVDBenv != NULL) {
+    if(OVDBenv != NULL || clientmode) {
 	syslog(L_ERROR, "OVDB: ovdb_open called more than once");
 	return FALSE;
+    }
+
+    read_ovdb_conf();
+    if(ovdb_conf.readserver && mode == OV_READ)
+	clientmode = 1;
+
+    if(mode & OVDB_SERVER)
+	clientmode = 0;
+
+    if(clientmode) {
+	if(client_connect() == 0)
+	    return TRUE;
+	clientmode = 0;
     }
     if(!ovdb_check_user()) {
 	syslog(L_FATAL, "OVDB: must be running as " NEWSUSER " to access overview.");
@@ -1127,7 +1338,7 @@ BOOL ovdb_open(int mode)
     if(check_version() != 0)
 	return FALSE;
 
-    if(OVDBmode & OV_WRITE) {
+    if(mode & OV_WRITE || mode & OVDB_SERVER) {
 	oneatatime = 0;
     } else {
 	oneatatime = 1;
@@ -1197,6 +1408,39 @@ BOOL ovdb_groupstats(char *group, int *lo, int *hi, int *count, int *flag)
 {
     int ret;
     struct groupinfo gi;
+
+    if(clientmode) {
+	struct rs_cmd rs;
+	struct rs_groupstats repl;
+
+	rs.what = CMD_GROUPSTATS;
+	rs.grouplen = strlen(group)+1;
+
+	csend(&rs, sizeof(rs));
+	csend(group, rs.grouplen);
+	crecv(&repl, sizeof(repl));
+
+	if(repl.status != CMD_GROUPSTATS)
+	    return FALSE;
+
+	/* we don't use the alias yet, but the OV API will be extended
+	   at some point so that the alias is returned also */
+	if(repl.aliaslen != 0) {
+	    char *buf = NEW(char, repl.aliaslen);
+	    crecv(buf, repl.aliaslen);
+	    DISPOSE(buf);
+	}
+
+	if(lo)
+	    *lo = repl.lo;
+	if(hi)
+	    *hi = repl.hi;
+	if(count)
+	    *count = repl.count;
+	if(flag)
+	    *flag = repl.flag;
+	return TRUE;
+    }
 
     switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0)) {
     case 0:
@@ -1580,21 +1824,40 @@ void *ovdb_opensearch(char *group, int low, int high)
     struct groupinfo gi;
     int ret;
 
+    if(clientmode) {
+	struct rs_cmd rs;
+	struct rs_opensrch repl;
+
+	rs.what = CMD_OPENSRCH;
+	rs.grouplen = strlen(group)+1;
+	rs.artlo = low;
+	rs.arthi = high;
+
+	csend(&rs, sizeof(rs));
+	csend(group, rs.grouplen);
+	crecv(&repl, sizeof(repl));
+
+	if(repl.status != CMD_OPENSRCH)
+	    return NULL;
+
+	return repl.handle;
+    }
+
     switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0)) {
     case 0:
 	break;
     case DB_NOTFOUND:
-	return FALSE;
+	return NULL;
     default:
 	syslog(L_ERROR, "OVDB: ovdb_getgroupinfo failed: %s", db_strerror(ret));
-	return FALSE;
+	return NULL;
     }
 
     s = NEW(struct ovdbsearch, 1);
     db = get_db_bynum(gi.current_db);
     if(db == NULL) {
 	DISPOSE(s);
-	return FALSE;
+	return NULL;
     }
 
     if(ret = db->cursor(db, NULL, &(s->cursor), 0)) {
@@ -1619,6 +1882,44 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
     struct ovdata ovd;
     struct datakey dk;
     int ret;
+
+    if(clientmode) {
+	struct rs_cmd rs;
+	struct rs_srch repl;
+	static char *databuf;
+	static int buflen = 0;
+
+	rs.what = CMD_SRCH;
+	rs.handle = handle;
+
+	csend(&rs, sizeof(rs));
+	crecv(&repl, sizeof(repl));
+
+	if(repl.status != CMD_SRCH)
+	    return FALSE;
+	if(repl.len > buflen) {
+	    if(buflen == 0) {
+		buflen = repl.len + 512;
+		databuf = NEW(char, buflen);
+	    } else {
+		buflen = repl.len + 512;
+		RENEW(databuf, char, buflen);
+	    }
+	}
+	crecv(databuf, repl.len);
+
+	if(artnum)
+	    *artnum = repl.artnum;
+	if(token)
+	    *token = repl.token;
+	if(arrived)
+	    *arrived = repl.arrived;
+	if(len)
+	    *len = repl.len;
+	if(data)
+	    *data = databuf;
+	return TRUE;
+    }
 
     switch(s->state) {
     case 0:
@@ -1718,12 +2019,21 @@ BOOL ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *tok
 
 void ovdb_closesearch(void *handle)
 {
-    struct ovdbsearch *s = (struct ovdbsearch *)handle;
+    if(clientmode) {
+	struct rs_cmd rs;
 
-    if(s->cursor)
-	s->cursor->c_close(s->cursor);
-   
-    DISPOSE(s);
+	rs.what = CMD_CLOSESRCH;
+	rs.handle = handle;
+	csend(&rs, sizeof(rs));
+	/* no reply is sent for a CMD_CLOSESRCH */
+    } else {
+	struct ovdbsearch *s = (struct ovdbsearch *)handle;
+
+	if(s->cursor)
+	    s->cursor->c_close(s->cursor);
+
+	DISPOSE(handle);
+    }
 }
 
 BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *token)
@@ -1736,6 +2046,42 @@ BOOL ovdb_getartinfo(char *group, ARTNUM artnum, char **data, int *len, TOKEN *t
     struct datakey dk;
     struct groupinfo gi;
     int pass = 0;
+
+    if(clientmode) {
+	struct rs_cmd rs;
+	struct rs_artinfo repl;
+	static char *databuf;
+	static int buflen = 0;
+
+	rs.what = CMD_ARTINFO;
+	rs.grouplen = strlen(group)+1;
+	rs.artlo = artnum;
+
+	csend(&rs, sizeof(rs));
+	csend(group, rs.grouplen);
+	crecv(&repl, sizeof(repl));
+
+	if(repl.status != CMD_ARTINFO)
+	    return FALSE;
+	if(repl.len > buflen) {
+	    if(buflen == 0) {
+		buflen = repl.len + 512;
+		databuf = NEW(char, buflen);
+	    } else {
+		buflen = repl.len + 512;
+		RENEW(databuf, char, buflen);
+	    }
+	}
+	crecv(databuf, repl.len);
+
+	if(token)
+	    *token = repl.token;
+	if(len)
+	    *len = repl.len;
+	if(data)
+	    *data = databuf;
+	return TRUE;
+    }
 
     while(1) {
 	switch(ret = ovdb_getgroupinfo(group, &gi, TRUE, NULL, 0)) {
@@ -2251,11 +2597,13 @@ BOOL ovdb_ctl(OVCTLTYPE type, void *val)
 	i = (int *)val;
 	*i = TRUE;
 	return TRUE;
+#ifdef OVCACHEKEEP
     case OVCACHEKEEP:
     case OVCACHEFREE:
         boolval = (bool *)val;
         *boolval = FALSE;
         return TRUE;
+#endif
     default:
         return FALSE;
     }
@@ -2278,6 +2626,11 @@ void ovdb_close_berkeleydb(void)
 void ovdb_close(void)
 {
     int i;
+
+    if(clientmode) {
+	client_disconnect();
+	return;
+    }
 
     if(dbs) {
 	/* close databases */
