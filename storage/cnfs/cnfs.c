@@ -13,16 +13,15 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <netinet/in.h>
-#include <clibrary.h>
 #include <errno.h>
 #include <limits.h>
 #include <syslog.h> 
 #include <macros.h>
 #include <configdata.h>
+#include <clibrary.h>
 #include <libinn.h>
 #include <methods.h>
 
-#include <configdata.h>
 #include <interface.h>
 #include "cnfs.h"
 #include "cnfs-private.h"

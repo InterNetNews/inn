@@ -6,23 +6,22 @@
 ##  See the inn.conf(5) man page for a full description of each
 ##  of these options
 ##
+##  Blank values are allowed for certain parameters
 ## ---------------------------------
-# These options are compulsory and must be set correctly
+# All parameters must exist
 #
 organization:		A poorly-installed InterNetNews site
 server:			localhost
 pathhost:		@HOSTNAME@
 #
 # ---------------------------------
-# These options can be changed and reloaded with 'ctlinnd reload inn.conf'
 #
 #moderatormailer:	%s@moderators.uu.net
-#domain:		our.domain
-# BEGIN_AUTO_INSERTED_SECTION from ../include/libinn.h ||SAMPLE
-#fromhost:      	host.our.domain
-# END_AUTO_INSERTED_SECTION from ../include/libinn.h ||SAMPLE
-#pathalias:		our.path.hub.host
-#complaints:		abuse@our.domain
+moderatormailer:
+domain:
+fromhost:
+pathalias:
+complaints:
 mta:			@SENDMAIL@ -oi %s
 mailcmd:		@prefix@/bin/innmail
 checkincludedtext:	no
@@ -44,21 +43,25 @@ logsitename:		yes
 maxconnections:		50
 artcutoff:		14
 icdsynccount:		10
+hiscachesize:		0
 readertrack:		no
 strippostcc:		no
 status:			0
 timer:			0
 allowreaders:		yes
-#extendeddbz:		yes
-#nnrpdoverstats:	yes
+extendeddbz:		no
+nnrpdoverstats:		no
 backoff_auth:		no
 backoff_db:		@DBDIR@/backoff
 backoff_postfast:	0L
 backoff_postslow:	1L
 backoff_trigger:	10000L
+mimeversion:
+mimecontenttype:
+mimeencoding:
 #
-# The following options can be changed live, but are rather obscure and
-# unlikely to need changing in most situations
+# 
+# These options are unlikely to need changing in most situations
 #
 chaninacttime:		600
 chanretrytime:		300
@@ -69,13 +72,12 @@ badiocount:		5
 blockbackoff:		120
 #
 # ---------------------------------
-# These options cannot be changed with a 'ctlinnd reload inn.conf' and
-# innd must be restarted. Unexpected results will occur if you try.
+# Changing these options can have an effect on the way articles are
+# stored and may require recreating the spool and/or database files
 #
-hiscachesize:		0
 wireformat:		no
 xrefslave:		no
-#nnrpdposthost:		masterhost.domain
+nnrpdposthost:
 spoolfirst:		no
 writelinks:		yes
 storageapi:		no
@@ -120,6 +122,3 @@ overviewname:		.overview
 #
 # ---------------------------------
 #
-#mimeversion:
-#mimecontenttype:
-#mimeencoding:

@@ -65,6 +65,9 @@
 /* Define if you have <vfork.h> */
 #undef HAVE_VFORK_H
 
+/* Define if you have <limits.h> */
+#undef HAVE_LIMITS_H
+
 /* Define if you have setbuffer() */
 #undef HAVE_SETBUFFER
 

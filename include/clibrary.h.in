@@ -8,6 +8,10 @@
 # include <unistd.h>
 #endif	/* defined(HAVE_UNISTD_H) */
 
+#if defined(HAVE_LIMITS_H)
+# include <limits.h>
+#endif	/* defined(HAVE_LIMITS_H) */
+
 #if defined(HAVE_VFORK_H)
 # include <vfork.h>
 #endif	/* defined(HAVE_VFORK_H) */

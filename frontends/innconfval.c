@@ -17,6 +17,7 @@ int		format = 0;
 
 int isnum(char *v)
 {
+    if (!*v) return(0);
     for (; *v; v++)
 	if (!isdigit(*v)) return(0);
     return(1);
@@ -37,13 +38,13 @@ printit(char *v, char *val)
 	case 0: printf("%s\n", val); break;
 	case 1:   /* sh */
 	    v = upit(v);
-	    if (strchr(val, ' ') == NULL)
+	    if ((strchr(val, ' ') == NULL) && *val)
 	    	printf("%s=%s; export %s;\n", v, val, v);
 	    else
 	    	printf("%s=\"%s\"; export %s;\n", v, val, v);
 	    break;
 	case 2:   /* csh */
-	    if (strchr(val, ' ') == NULL)
+	    if ((strchr(val, ' ') == NULL) && *val)
 	    	printf("set inn_%s = %s\n", v, val);
 	    else
 	    	printf("set inn_%s = \"%s\"\n", v, val);

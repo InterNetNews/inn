@@ -9,6 +9,7 @@
 #include "libinn.h"
 #include "macros.h"
 #include <syslog.h> 
+#include "innconf.h"
 
 /* Global and initialized; to work around SunOS -Bstatic bug, sigh. */
 STATIC char		ConfigBuff[SMBUF] = "";
@@ -105,7 +106,7 @@ char *GetConfigValue(char *value)
     if (EQ(value, _CONF_ORGANIZATION)
      && (p = getenv(_ENV_ORGANIZATION)) != NULL)
 	return p;
-    if (EQ(value, _CONF_INNBINDADDR)
+    if (EQ(value, _CONF_BINDADDRESS)
      && (p = getenv(_ENV_INNBINDADDR)) != NULL)
 	return p;
 
@@ -115,9 +116,9 @@ char *GetConfigValue(char *value)
     /* Some values have defaults if not in the file. */
     if (EQ(value, _CONF_FROMHOST) || EQ(value, _CONF_PATHHOST))
 	return GetFQDN();
-    if (EQ(value, _CONF_CONTENTTYPE))
+    if (EQ(value, _CONF_MIMECONTENTTYPE))
 	return "text/plain; charset=US-ASCII";
-    if (EQ(value, _CONF_ENCODING))
+    if (EQ(value, _CONF_MIMEENCODING))
 	return "7bit";
     return NULL;
 }
@@ -321,7 +322,7 @@ int CheckInnConf()
 	innconf->pathfilter = COPY(cpcatpath(innconf->pathbin, "filter"));
     }
     if (innconf->pathcontrol == NULL) {
-	innconf->pathcontrol = COPY(cpcatpath(innconf->pathnews, "control"));
+	innconf->pathcontrol = COPY(cpcatpath(innconf->pathbin, "control"));
     }
     if (innconf->pathdb == NULL) {
 	innconf->pathdb = COPY(cpcatpath(innconf->pathnews, "db"));
@@ -393,6 +394,7 @@ int ReadInnConf()
 		continue;
 	    for ( ; ISWHITE(*p); p++)
 		continue;
+	    if (!*p) continue;
 	    boolval = -1;
 	    if (caseEQ(p, "on") || caseEQ(p, "true") || caseEQ(p, "yes"))
 		boolval = TRUE;
@@ -426,7 +428,7 @@ int ReadInnConf()
 		if (!bit) innconf->organization = COPY(p);
 		SET_CONFIG(CONF_VAR_ORGANIZATION);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_MODMAILER)) {
+	    if (EQ(ConfigBuff,_CONF_MODERATORMAILER)) {
 		TEST_CONFIG(CONF_VAR_MODERATORMAILER, bit);
 		if (!bit) innconf->moderatormailer = COPY(p);
 		SET_CONFIG(CONF_VAR_MODERATORMAILER);
@@ -441,12 +443,12 @@ int ReadInnConf()
 		if (!bit) innconf->mimeversion = COPY(p);
 		SET_CONFIG(CONF_VAR_MIMEVERSION);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_CONTENTTYPE)) {
+	    if (EQ(ConfigBuff,_CONF_MIMECONTENTTYPE)) {
 		TEST_CONFIG(CONF_VAR_MIMECONTENTTYPE, bit);
 		if (!bit) innconf->mimecontenttype = COPY(p);
 		SET_CONFIG(CONF_VAR_MIMECONTENTTYPE);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_ENCODING)) {
+	    if (EQ(ConfigBuff,_CONF_MIMEENCODING)) {
 		TEST_CONFIG(CONF_VAR_MIMEENCODING, bit);
 		if (!bit) innconf->mimeencoding = COPY(p);
 		SET_CONFIG(CONF_VAR_MIMEENCODING);
@@ -473,7 +475,7 @@ int ReadInnConf()
 		if (!bit) innconf->complaints = COPY(p);
 		SET_CONFIG(CONF_VAR_COMPLAINTS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_NNRP_SPOOLFIRST)) {
+	    if (EQ(ConfigBuff,_CONF_SPOOLFIRST)) {
 		TEST_CONFIG(CONF_VAR_SPOOLFIRST, bit);
 		if (!bit && boolval != -1) innconf->spoolfirst = boolval;
 		SET_CONFIG(CONF_VAR_SPOOLFIRST);
@@ -501,12 +503,12 @@ int ReadInnConf()
 		}
 		SET_CONFIG(CONF_VAR_STORAGEAPI);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_ARTMMAP)) {
+	    if (EQ(ConfigBuff,_CONF_ARTICLEMMAP)) {
 		TEST_CONFIG(CONF_VAR_ARTICLEMMAP, bit);
 		if (!bit && boolval != -1) innconf->articlemmap = boolval;
 		SET_CONFIG(CONF_VAR_ARTICLEMMAP);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_OVERMMAP)) {
+	    if (EQ(ConfigBuff,_CONF_OVERVIEWMMAP)) {
 		TEST_CONFIG(CONF_VAR_OVERVIEWMMAP, bit);
 		if (!bit && boolval != -1) innconf->overviewmmap = boolval;
 		SET_CONFIG(CONF_VAR_OVERVIEWMMAP);
@@ -521,62 +523,62 @@ int ReadInnConf()
 		if (!bit) innconf->mailcmd = COPY(p);
 		SET_CONFIG(CONF_VAR_MAILCMD);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_CHECK_INC_TEXT)) {
+	    if (EQ(ConfigBuff,_CONF_CHECKINCLUDEDTEXT)) {
 		TEST_CONFIG(CONF_VAR_CHECKINCLUDEDTEXT, bit);
 		if (!bit && boolval != -1) innconf->checkincludedtext = boolval;
 		SET_CONFIG(CONF_VAR_CHECKINCLUDEDTEXT);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_MAX_FORKS)) {
+	    if (EQ(ConfigBuff,_CONF_MAXFORKS)) {
 		TEST_CONFIG(CONF_VAR_MAXFORKS, bit);
 		if (!bit) innconf->maxforks = atoi(p);
 		SET_CONFIG(CONF_VAR_MAXFORKS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_MAX_ART_SIZE)) {
+	    if (EQ(ConfigBuff,_CONF_MAXARTSIZE)) {
 		TEST_CONFIG(CONF_VAR_MAXARTSIZE, bit);
 		if (!bit) innconf->maxartsize = atol(p);
 		SET_CONFIG(CONF_VAR_MAXARTSIZE);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_NICE_KIDS)) {
+	    if (EQ(ConfigBuff,_CONF_NICEKIDS)) {
 		TEST_CONFIG(CONF_VAR_NICEKIDS, bit);
 		if (!bit) innconf->nicekids = atoi(p);
 		SET_CONFIG(CONF_VAR_NICEKIDS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_VERIFY_CANCELS)) {
+	    if (EQ(ConfigBuff,_CONF_VERIFYCANCELS)) {
 		TEST_CONFIG(CONF_VAR_VERIFYCANCELS, bit);
 		if (!bit && boolval != -1) innconf->verifycancels = boolval;
 		SET_CONFIG(CONF_VAR_VERIFYCANCELS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_LOG_CANCEL_COMM)) {
+	    if (EQ(ConfigBuff,_CONF_LOGCANCELCOMM)) {
 		TEST_CONFIG(CONF_VAR_LOGCANCELCOMM, bit);
 		if (!bit && boolval != -1) innconf->logcancelcomm = boolval;
 		SET_CONFIG(CONF_VAR_LOGCANCELCOMM);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_WANT_TRASH)) {
+	    if (EQ(ConfigBuff,_CONF_WANTTRASH)) {
 		TEST_CONFIG(CONF_VAR_WANTTRASH, bit);
 		if (!bit && boolval != -1) innconf->wanttrash = boolval;
 		SET_CONFIG(CONF_VAR_WANTTRASH);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_REMEMBER_TRASH)) {
+	    if (EQ(ConfigBuff,_CONF_REMEMBERTRASH)) {
 		TEST_CONFIG(CONF_VAR_REMEMBERTRASH, bit);
 		if (!bit && boolval != -1) innconf->remembertrash = boolval;
 		SET_CONFIG(CONF_VAR_REMEMBERTRASH);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_LINECOUNT_FUZZ)) {
+	    if (EQ(ConfigBuff,_CONF_LINECOUNTFUZZ)) {
 		TEST_CONFIG(CONF_VAR_LINECOUNTFUZZ, bit);
 		if (!bit) innconf->linecountfuzz = atoi(p);
 		SET_CONFIG(CONF_VAR_LINECOUNTFUZZ);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_PEER_TIMEOUT)) {
+	    if (EQ(ConfigBuff,_CONF_PEERTIMEOUT)) {
 		TEST_CONFIG(CONF_VAR_PEERTIMEOUT, bit);
 		if (!bit) innconf->peertimeout = atoi(p);
 		SET_CONFIG(CONF_VAR_PEERTIMEOUT);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_CLIENT_TIMEOUT)) {
+	    if (EQ(ConfigBuff,_CONF_CLIENTTIMEOUT)) {
 		TEST_CONFIG(CONF_VAR_CLIENTTIMEOUT, bit);
 		if (!bit) innconf->clienttimeout = atoi(p);
 		SET_CONFIG(CONF_VAR_CLIENTTIMEOUT);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_ALLOW_READERS)) {
+	    if (EQ(ConfigBuff,_CONF_ALLOWREADERS)) {
 		TEST_CONFIG(CONF_VAR_ALLOWREADERS, bit);
 		if (!bit && boolval != -1) {
 		    if (boolval == TRUE)
@@ -586,77 +588,77 @@ int ReadInnConf()
 		}
 		SET_CONFIG(CONF_VAR_ALLOWREADERS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_ALLOW_NEWNEWS)) {
+	    if (EQ(ConfigBuff,_CONF_ALLOWNEWNEWS)) {
 		TEST_CONFIG(CONF_VAR_ALLOWNEWNEWS, bit);
 		if (!bit && boolval != -1) innconf->allownewnews = boolval;
 		SET_CONFIG(CONF_VAR_ALLOWNEWNEWS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_LOCAL_MAX_ARTSIZE)) {
+	    if (EQ(ConfigBuff,_CONF_LOCALMAXARTSIZE)) {
 		TEST_CONFIG(CONF_VAR_LOCALMAXARTSIZE, bit);
 		if (!bit) innconf->localmaxartsize = atoi(p);
 		SET_CONFIG(CONF_VAR_LOCALMAXARTSIZE);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_LOG_ARTSIZE)) {
+	    if (EQ(ConfigBuff,_CONF_LOGARTSIZE)) {
 		TEST_CONFIG(CONF_VAR_LOGARTSIZE, bit);
 		if (!bit && boolval != -1) innconf->logartsize = boolval;
 		SET_CONFIG(CONF_VAR_LOGARTSIZE);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_LOG_IPADDR)) {
+	    if (EQ(ConfigBuff,_CONF_LOGIPADDR)) {
 		TEST_CONFIG(CONF_VAR_LOGIPADDR, bit);
 		if (!bit && boolval != -1) innconf->logipaddr = boolval;
 		SET_CONFIG(CONF_VAR_LOGIPADDR);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_CHAN_INACT_TIME)) {
+	    if (EQ(ConfigBuff,_CONF_CHANINACTTIME)) {
 		TEST_CONFIG(CONF_VAR_CHANINACTTIME, bit);
 		if (!bit) innconf->chaninacttime = atoi(p);
 		SET_CONFIG(CONF_VAR_CHANINACTTIME);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_MAX_CONNECTIONS)) {
+	    if (EQ(ConfigBuff,_CONF_MAXCONNECTIONS)) {
 		TEST_CONFIG(CONF_VAR_MAXCONNECTIONS, bit);
 		if (!bit) innconf->maxconnections = atoi(p);
 		SET_CONFIG(CONF_VAR_MAXCONNECTIONS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_CHAN_RETRY_TIME)) {
+	    if (EQ(ConfigBuff,_CONF_CHANRETRYTIME)) {
 		TEST_CONFIG(CONF_VAR_CHANRETRYTIME, bit);
 		if (!bit) innconf->chanretrytime = atoi(p);
 		SET_CONFIG(CONF_VAR_CHANRETRYTIME);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_ART_CUTOFF)) {
+	    if (EQ(ConfigBuff,_CONF_ARTCUTOFF)) {
 		TEST_CONFIG(CONF_VAR_ARTCUTOFF, bit);
 		if (!bit) innconf->artcutoff = atoi(p) * 24 * 60 * 60;
 		SET_CONFIG(CONF_VAR_ARTCUTOFF);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_PAUSE_RETRY_TIME)) {
+	    if (EQ(ConfigBuff,_CONF_PAUSERETRYTIME)) {
 		TEST_CONFIG(CONF_VAR_PAUSERETRYTIME, bit);
 		if (!bit) innconf->pauseretrytime = atoi(p);
 		SET_CONFIG(CONF_VAR_PAUSERETRYTIME);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_NNTPLINK_LOG)) {
+	    if (EQ(ConfigBuff,_CONF_NNTPLINKLOG)) {
 		TEST_CONFIG(CONF_VAR_NNTPLINKLOG, bit);
 		if (!bit && boolval != -1) innconf->nntplinklog = boolval;
 		SET_CONFIG(CONF_VAR_NNTPLINKLOG);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_NNTP_ACT_SYNC)) {
+	    if (EQ(ConfigBuff,_CONF_NNTPACTSYNC)) {
 		TEST_CONFIG(CONF_VAR_NNTPACTSYNC, bit);
 		if (!bit) innconf->nntpactsync = atoi(p);
 		SET_CONFIG(CONF_VAR_NNTPACTSYNC);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_BAD_IO_COUNT)) {
+	    if (EQ(ConfigBuff,_CONF_BADIOCOUNT)) {
 		TEST_CONFIG(CONF_VAR_BADIOCOUNT, bit);
 		if (!bit) innconf->badiocount = atoi(p);
 		SET_CONFIG(CONF_VAR_BADIOCOUNT);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_BLOCK_BACKOFF)) {
+	    if (EQ(ConfigBuff,_CONF_BLOCKBACKOFF)) {
 		TEST_CONFIG(CONF_VAR_BLOCKBACKOFF, bit);
 		if (!bit) innconf->blockbackoff = atoi(p);
 		SET_CONFIG(CONF_VAR_BLOCKBACKOFF);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_ICD_SYNC_COUNT)) {
+	    if (EQ(ConfigBuff,_CONF_ICDSYNCCOUNT)) {
 		TEST_CONFIG(CONF_VAR_ICDSYNCCOUNT, bit);
 		if (!bit) innconf->icdsynccount = atoi(p);
 		SET_CONFIG(CONF_VAR_ICDSYNCCOUNT);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_INNBINDADDR)) {
+	    if (EQ(ConfigBuff,_CONF_BINDADDRESS)) {
 		TEST_CONFIG(CONF_VAR_BINDADDRESS, bit);
 		if (!bit) {
 		if (EQ(p,"all") || EQ(p,"any"))
@@ -666,7 +668,7 @@ int ReadInnConf()
 		}
 		SET_CONFIG(CONF_VAR_BINDADDRESS);
 	    } else
-	    if (EQ(ConfigBuff,_CONF_INNPORT)) {
+	    if (EQ(ConfigBuff,_CONF_PORT)) {
 		TEST_CONFIG(CONF_VAR_PORT, bit);
 		if (!bit) innconf->port = atoi(p);
 		SET_CONFIG(CONF_VAR_PORT);
@@ -701,7 +703,7 @@ int ReadInnConf()
 		if (!bit) innconf->keyartlimit = atoi(p);
 		SET_CONFIG(CONF_VAR_KEYARTLIMIT);
 	    } else  
-	    if (EQ(ConfigBuff,_CONF_KEY_MAXWORDS)) {
+	    if (EQ(ConfigBuff,_CONF_KEYMAXWORDS)) {
 		TEST_CONFIG(CONF_VAR_KEYMAXWORDS, bit);
 		if (!bit) innconf->keymaxwords = atoi(p);
 		SET_CONFIG(CONF_VAR_KEYMAXWORDS);
