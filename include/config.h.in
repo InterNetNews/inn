@@ -128,6 +128,9 @@
 /* Define if you have sys/sysinfo.h */
 #undef HAVE_SYS_SYSINFO_H
 
+/* Define if you have sys/select.h */
+#undef HAVE_SYS_SELECT_H
+
 /* if I understand how configure does this, if 'const' isn't valid, 
  * it will remove the 'const' declarations from the typedef's below 
  * <scrappy@hub.org 
