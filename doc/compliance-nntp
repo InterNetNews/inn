@@ -441,23 +441,6 @@ NChead() and NChead() should be modified to send it to the client.
 
 ------------------------------
 
-  Summary: innd's response to STAT isn't correct
- Standard: draft-ietf-nntpext-base-13.txt, section 9.2.4.1
-  Version: 2.3.0 to CURRENT 2001-07-04
-Reference: innd/nc.c NCstat()
- Severity: Violates a MUST
-
-The STAT command returns the storage API token as its second word in its
-reply rather than the message ID like it's supposed to.
-
-Impact:  The returned reply doesn't follow the correct format for a reply
-with that reply code.
-
-Suggested fix:  Return the message ID instead, which we already have on
-hand.
-
-------------------------------
-
   Summary: nnrpd doesn't handle zero-argument LISTGROUP
  Standard: draft-ietf-nntpext-base-13.txt, section 9.5.1.1
   Version: 2.3 to CURRENT 2001-07-04
