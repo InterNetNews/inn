@@ -58,6 +58,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <fcntl.h>
@@ -72,28 +73,6 @@
 #include "libinn.h"
 #include "macros.h"
 #include "paths.h"
-
-/* wait portability mess.  Per autoconf, #define macros ourself. */
-#ifdef HAVE_SYS_WAIT_H
-# include <sys/wait.h>
-#endif
-#ifndef WEXITSTATUS
-# define WEXITSTATUS(status)    ((((unsigned)(status)) >> 8) & 0xFF)
-#endif
-#ifndef WIFEXITED
-# define WIFEXITED(status)      ((((unsigned)(status)) & 0xFF) == 0)
-#endif
-#ifndef WIFSIGNALED
-# define WIFSIGNALED(status)    ((((unsigned)(status)) & 0xFF) > 0 \
-                                 && (((unsigned)(status)) & 0xFF00) == 0)
-#endif
-#ifndef WIFSTOPPED
-# define WIFSTOPPED(status)     ((((unsigned)(status)) & 0xFF) == 0177 \
-                                 && (((unsigned)(status)) & 0xFF00) != 0)
-#endif
-#ifndef WTERMSIG
-# define WTERMSIG(status)       (((unsigned)(status)) & 0x7F)
-#endif
 
 /*
  * pat - internal ignore/check pattern
