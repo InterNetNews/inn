@@ -337,24 +337,20 @@ static bool Process(char *article)
 
 
 /*
-**  Read the rest of the input as an article.  Just punt to stdio in
-**  this case and let it do the buffering.
+**  Read the rest of the input as an article.
 */
 static bool
 ReadRemainder(int fd, char first, char second)
 {
-    FILE	*F;
     char	*article;
-    char       *p;
-    int	size;
-    int	used;
-    int	left;
-    int	i;
-    bool		ok;
-
-    /* Turn the descriptor into a stream. */
-    if ((i = dup(fd)) < 0 || (F = fdopen(i, "r")) == NULL)
-        sysdie("cannot fdopen %d", fd);
+    char	*p;
+    char	buf[BUFSIZ];
+    int		size;
+    int		used;
+    int		left;
+    int		skipnl;
+    int		i, n;
+    bool	ok;
 
     /* Get an initial allocation, leaving space for the \0. */
     size = BUFSIZ + 1;
@@ -363,32 +359,37 @@ ReadRemainder(int fd, char first, char second)
     article[1] = second;
     used = second ? 2 : 1;
     left = size - used;
+    skipnl = 0;
 
-    /* Read the input.  Read a line at a time so that we can convert line
-       endings if necessary. */
-    p = fgets(article + used, left, F);
-    while (p != NULL) {
-	i = strlen(p);
-        if (p[i-2] == '\r') {
-            p[i-2] = '\n';
-            p[i-1] = '\0';
-        }
-	used += i;
-        left -= i;
-        if (left < SMBUF) {
-            size += BUFSIZ;
-            left += BUFSIZ;
-            article = xrealloc(article, size);
-        }
-        p = fgets(article + used, left, F);
+    /* Read the input, coverting line ends as we go if necessary. */
+    while ((n = read(fd, buf, sizeof(buf))) > 0) {
+	p = article + used;
+	for (i = 0; i < n; i++) {
+	    if (skipnl) {
+		skipnl = 0;
+		if (buf[i] == '\n') continue;
+	    }
+	    if (buf[i] == '\r') {
+		buf[i] = '\n';
+		skipnl = 1;
+	    }
+	    *p++ = buf[i];
+	    used++;
+	    left--;
+	    if (left < SMBUF) {
+		size += BUFSIZ;
+		left += BUFSIZ;
+		article = xrealloc(article, size);
+		p = article + used;
+	    }
+	}
     }
-    if (!feof(F))
-        sysdie("cannot fgets after %d bytes", used);
+    if (n < 0)
+        sysdie("cannot read after %d bytes", used);
 
     if (article[used - 1] != '\n')
 	article[used++] = '\n';
     article[used] = '\0';
-    fclose(F);
 
     ok = Process(article);
     free(article);
@@ -613,7 +614,7 @@ Unspool(void)
     bool	ok;
     struct stat		Sb;
     char		hostname[10];
-    int			fd, lockfd;
+    int			fd, fd2;
     size_t		i;
     char                *badname, *uuhost;
 
@@ -639,26 +640,14 @@ Unspool(void)
 	if (!S_ISREG(Sb.st_mode))
 	    continue;
 
-	if ((fd = open(InputFile, O_RDONLY)) < 0) {
+	if ((fd = open(InputFile, O_RDWR)) < 0) {
 	    if (errno != ENOENT)
                 syswarn("cannot open %s", InputFile);
 	    continue;
 	}
 
-	/*
-	** Make sure multiple Unspools don't stomp on eachother.
-	** Because of stupid POSIX locking semantics, we need to lock
-	** on a seperate fd. Otherwise, dup()ing and then close()ing
-	** the dup()ed fd removes the lock we're holding (sigh).
-	*/
-	if ((lockfd = open(InputFile, O_RDONLY)) < 0) {
-	    if (errno != ENOENT)
-                syswarn("cannot open %s", InputFile);
-	    close(fd);
-	    continue;
-	}
-	if (!inn_lock_file(lockfd, INN_LOCK_READ, 0)) {
-	    close(lockfd);
+	/* Make sure multiple Unspools don't stomp on eachother. */
+	if (!inn_lock_file(fd, INN_LOCK_WRITE, 0)) {
 	    close(fd);
 	    continue;
 	}
@@ -680,22 +669,20 @@ Unspool(void)
 
 	if (!ok) {
             badname = concat(PathBadNews, "/", hostname, "XXXXXX", (char *) 0);
-            fd = mkstemp(badname);
-            if (fd < 0)
+            fd2 = mkstemp(badname);
+            if (fd2 < 0)
                 sysdie("cannot create temporary file");
-            close(fd);
+            close(fd2);
             warn("cant unspool saving to %s", badname);
 	    if (rename(InputFile, badname) < 0)
                 sysdie("cannot rename %s to %s", InputFile, badname);
 	    close(fd);
-	    close(lockfd);
 	    continue;
 	}
 
 	if (unlink(InputFile) < 0)
             syswarn("cannot remove %s", InputFile);
 	close(fd);
-	close(lockfd);
     }
     closedir(dp);
 
