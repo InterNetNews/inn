@@ -263,7 +263,10 @@ void SetDefaults()
     innconf->wireformat = FALSE;
     innconf->ovmethod = NULL;
     innconf->useoverchan = FALSE;
-    innconf->ovmmapthreshold = 10000;
+    innconf->ovgrouppat = NULL;
+    innconf->groupbaseexpiry = TRUE;
+    innconf->wipcheck = 5;
+    innconf->wipexpire = 10;
 }
 
 void ClearInnConf()
@@ -300,6 +303,7 @@ void ClearInnConf()
     if (innconf->pathtmp != NULL) DISPOSE(innconf->pathtmp);
     if (innconf->backoff_db != NULL) DISPOSE(innconf->backoff_db);
     if (innconf->ovmethod != NULL) DISPOSE(innconf->ovmethod);
+    if (innconf->ovgrouppat != NULL) DISPOSE(innconf->ovgrouppat);
     memset(ConfigBit, '\0', ConfigBitsize);
 }
 
@@ -946,10 +950,25 @@ int ReadInnConf()
 		if (!bit && boolval != -1 ) innconf->useoverchan = boolval;
 		SET_CONFIG(CONF_VAR_USEOVERCHAN);
 	    } else 
-	    if (EQ(ConfigBuff,_CONF_OVMMAPTHRESHOLD)) {
-		TEST_CONFIG(CONF_VAR_OVMMAPTHRESHOLD, bit);
-		if (!bit) innconf->ovmmapthreshold = atoi(p);
-		SET_CONFIG(CONF_VAR_OVMMAPTHRESHOLD);
+	    if (EQ(ConfigBuff,_CONF_OVGROUPPAT)) {
+		TEST_CONFIG(CONF_VAR_OVGROUPPAT, bit);
+		if (!bit) innconf->ovgrouppat = COPY(p);
+		SET_CONFIG(CONF_VAR_OVGROUPPAT);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_GROUPBASEEXPIRY)) {
+		TEST_CONFIG(CONF_VAR_GROUPBASEEXPIRY, bit);
+		if (!bit) innconf->groupbaseexpiry = boolval;
+		SET_CONFIG(CONF_VAR_GROUPBASEEXPIRY);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_WIPCHECK)) {
+		TEST_CONFIG(CONF_VAR_WIPCHECK, bit);
+		if (!bit) innconf->wipcheck = atoi(p);
+		SET_CONFIG(CONF_VAR_WIPCHECK);
+	    } else 
+	    if (EQ(ConfigBuff,_CONF_WIPEXPIRE)) {
+		TEST_CONFIG(CONF_VAR_WIPEXPIRE, bit);
+		if (!bit) innconf->wipexpire = atoi(p);
+		SET_CONFIG(CONF_VAR_WIPEXPIRE);
 	    }
 	}
 	(void)Fclose(F);
