@@ -151,7 +151,7 @@ static bool SendIOv(const char *p, int len) {
     }
     iov[queued_iov].iov_base = (char*)p;
     iov[queued_iov++].iov_len = len;
-    if (queued_iov == sizeof(iov))
+    if (queued_iov == sizeof(iov)/sizeof(iov[0]))
         return PushIOv();
     return TRUE;
 }
