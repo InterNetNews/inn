@@ -20,6 +20,12 @@ sm \- command line interface to the storage manager
 .B \-r
 ]
 [
+.B \-H
+]
+[
+.B \-S
+]
+[
 .I token
 ] ...
 .SH DESCRIPTION
@@ -53,10 +59,16 @@ all error messages except usage are suppressed.
 If the ``\fB\-R\fP'' flag is used,
 then the program shows the raw article spooled into storage method
 associated with the token.
+.TP
+.B \-S
+A spool file in rnews format will be emitted on stdout.
+.TP
+.B \-H
+Only the headers will be printed.
 .SH HISTORY
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 .de R$
 This is revision \\$3, dated \\$4.
 ..
 .SH "SEE ALSO"
-history(5), storage.conf(5).
+rnews(1), history(5), storage.conf(5).

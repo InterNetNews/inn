@@ -12,7 +12,7 @@
 #include "storage.h"
 
 static const char usage[] = "\
-Usage: sm [-diqrR] [token ...]\n\
+Usage: sm [-dHiqrRS] [token ...]\n\
 \n\
 Command-line interface to the INN storage manager.  The default action is\n\
 to display the complete article associated with each token given.  If no\n\
@@ -20,16 +20,20 @@ tokens are specified on the command line, they're read from stdin, one per\n\
 line.\n\
 \n\
     -d, -r      Delete the articles associated with the given tokens\n\
+    -H          Display the headers of articles only\n\
     -i          Translate tokens into newsgroup names and article numbers\n\
     -q          Suppress all error messages except usage\n\
-    -R          Display the raw article rather than undoing wire format\n";
+    -R          Display the raw article rather than undoing wire format\n\
+    -S          Output articles in rnews batch file format\n";
 
 /* The options that can be set on the command line, used to determine what to
    do with each token. */
 struct options {
     bool artinfo;               /* Show newsgroup and article number. */
     bool delete;                /* Delete articles instead of showing them. */
+    bool header;                /* Display article headers only. */
     bool raw;                   /* Show the raw wire-format articles. */
+    bool rnews;                 /* Output articles as rnews batch files. */
 };
 
 
@@ -39,7 +43,7 @@ struct options {
 **  implemented by removing all the warn and die error handlers.
 */
 static void
-process_token(const char *id, struct options *options)
+process_token(const char *id, const struct options *options)
 {
     TOKEN token;
     struct artngnum artinfo;
@@ -64,7 +68,7 @@ process_token(const char *id, struct options *options)
         if (!SMcancel(token))
             warn("could not remove %s: %s", id, SMerrorstr);
     } else {
-        article = SMretrieve(token, RETR_ALL);
+        article = SMretrieve(token, options->header ? RETR_HEAD : RETR_ALL);
         if (article == NULL) {
             warn("could not retrieve %s", id);
             return;
@@ -74,6 +78,8 @@ process_token(const char *id, struct options *options)
                 die("output failed");
         } else {
             text = FromWireFmt(article->data, article->len, &length);
+            if (options->rnews)
+                printf("#! rnews %lu\n", (unsigned long) length);
             if (fwrite(text, length, 1, stdout) != 1)
                 die("output failed");
             free(text);
@@ -87,7 +93,7 @@ int
 main(int argc, char *argv[])
 {
     int option;
-    struct options options = { false, false, false };
+    struct options options = { false, false, false, false, false };
 
     message_program_name = "sm";
 
@@ -100,6 +106,9 @@ main(int argc, char *argv[])
         case 'r':
             options.delete = true;
             break;
+        case 'H':
+            options.header = true;
+            break;
         case 'i':
             options.artinfo = true;
             break;
@@ -110,11 +119,22 @@ main(int argc, char *argv[])
         case 'R':
             options.raw = true;
             break;
+        case 'S':
+            options.rnews = true;
+            break;
         default:
             fprintf(stderr, usage);
             exit(1);
         }
     }
+
+    /* Check options for consistency. */
+    if (options.delete && (options.header || options.rnews))
+        die("-r or -d cannot be used with -H or -S");
+    if (options.raw && options.rnews)
+        die("-R cannot be used with -S");
+    if (options.header && options.rnews)
+        die("-H cannot be used with -S");
 
     /* Initialize the storage manager.  If we're doing article deletions, we
        need to open it read/write. */
