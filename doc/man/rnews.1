@@ -17,9 +17,6 @@ rnews \- receive news from a UUCP connection
 .B \-N
 ]
 [
-.BI \-S " master"
-]
-[
 .I input
 ]
 .SH DESCRIPTION
@@ -75,21 +72,6 @@ in the
 .I <pathincoming in inn.conf>/bad
 directory.
 .SH OPTIONS
-.TP
-.B \-S
-If the ``\fB\-S\fP'' flag is used, then
-.I rnews
-will connect to the specified host.
-If the flag is not used,
-and
-.I <RNEWSLOCALCONNECT in config.data>
-is ``DO'', 
-it will try to connect to the server by opening a Unix-domain stream
-connection.
-If the UDP connection fails, or 
-.I <RNEWSLOCALCONNECT in config.data> 
-is ``DONT''
-it will try to open a TCP connection to the default remote server.
 .TP
 .B \-U
 If the server is not available, the message is spooled into a new file

@@ -895,15 +895,16 @@ STATIC BOOL EXPdoline(FILE *out, char *line, int length, char **arts, enum KRP *
 		return TRUE;
 	    }
 	    token = TextToToken(fields[2]);
-	    if (!Ignoreselfexpire && SMprobe(SELFEXPIRE, &token)) {
-		HasSelfexpire = TRUE;
-		if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL)
-		    /* the article is cancelled or has been expired by the
-		       method's functionality */
+	    if (SMprobe(SELFEXPIRE, &token)) {
+		if ((article = SMretrieve(token, RETR_STAT)) == (ARTHANDLE *)NULL) {
+		    HasSelfexpire = TRUE;
 		    Selfexpired = TRUE;
-		else
+		} else {
 		    /* the article is still alive */
 		    SMfreearticle(article);
+		    if (!Ignoreselfexpire)
+			HasSelfexpire = TRUE;
+		}
 	    }
 	    if (token.index < OVER_NONE) {
 		Hasover = TRUE;

@@ -808,7 +808,6 @@ int main(int ac, char *av[])
     int		i;
     int		mode;
     char	buff[SMBUF];
-    char	*Slave;
     int         port = NNTP_PORT;
 
     /* First thing, set up logging and our identity. */
@@ -832,17 +831,13 @@ int main(int ac, char *av[])
     /* Parse JCL. */
     fd = STDIN;
     mode = '\0';
-    Slave = NULL;
-    while ((i = getopt(ac, av, "h:S:P:NUv")) != EOF)
+    while ((i = getopt(ac, av, "h:P:NUv")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTRTEACHED */
 	case 'h':
 	    UUCPHost = *optarg ? optarg : NULL;
-	    break;
-	case 'S':
-	    Slave = optarg;
 	    break;
 	case 'N':
 	case 'U':
@@ -878,8 +873,8 @@ int main(int ac, char *av[])
     }
 
     /* Open the link to the server. */
-    if (Slave) {
-	if (!OpenRemote(Slave, port, buff))
+    if (innconf->xrefslave != NULL) {
+	if (!OpenRemote(innconf->xrefslave, port, buff))
 	    CantConnect(buff, mode, fd);
     }
     else {
