@@ -122,6 +122,9 @@ struct host_s
     ProcQElem processedTail ;
     
     TimeoutId statsId ;         /* timeout id for stats logging. */
+#ifdef DYNAMIC_CONNECTIONS
+    TimeoutId ChkCxnsId ;     /* timeout id for dynamic connections */
+#endif
 
     Tape myTape ;
     
@@ -148,6 +151,16 @@ struct host_s
     u_int artsHostSleep ;       /* # of articles spooled by sleeping host */
     u_int artsHostClose ;       /* # of articles caught by closing host */
     u_int artsFromTape ;        /* # of articles we pulled off tape */
+
+#ifdef DYNAMIC_CONNECTIONS
+    /* Dynamic Peerage - MGF */
+    u_int absMaxConnections ; /* perHost limit on number of connections */
+    u_int artsProcessed ;     /* # of articles processed */
+    bool maxCxnChk ;          /* check for maxConnections */
+    time_t lastMaxCxnTime ;   /* last time a maxConnections increased */
+    time_t lastChkTime;         /* last time a check was made for maxConnect */
+    u_int nextCxnTimeChk ;    /* next check for maxConnect */
+#endif
 
     /* These numbers are as above, but for the life of the process. */
     u_int gArtsOffered ;        
@@ -638,7 +651,15 @@ void configHosts (bool talkSelf)
 		{
 		  i = h->maxConnections ;
 		  /* need to set h->maxConnections before cxnWait() */
+#ifndef DYNAMIC_CONNECTIONS
 		  h->maxConnections = maxCxns ;
+#else
+                  if(maxCxns != 1)
+                    h->absMaxConnections = maxCxns ;
+                  else
+                    h->absMaxConnections = 0 ;
+                  h->maxConnections = maxCxns = 1 ;
+#endif
 		  while ( i < maxCxns )
 		    {
 		      /* XXX this does essentially the same thing that happens
@@ -777,7 +798,16 @@ Host newHost (InnListener listener,
   nh->cxnSleeping = CALLOC (bool, maxCxns) ;
   ASSERT (nh->cxnSleeping != NULL) ;
 
+#ifndef DYNAMIC_CONNECTIONS
   nh->maxConnections = maxCxns ;
+#else
+  /* if maxCxns == 1, then no limit on maxConnections */
+  if(maxCxns != 1)
+    nh->absMaxConnections = maxCxns ;
+  else
+    nh->absMaxConnections = 0 ;
+  nh->maxConnections = maxCxns = 1;
+#endif
   nh->activeCxns = 0 ;
   nh->sleepingCxns = 0 ;
   nh->initialCxns = initialCxns ;
@@ -799,6 +829,9 @@ Host newHost (InnListener listener,
   nh->processedTail = NULL ;
   
   nh->statsId = 0 ;
+#ifdef DYNAMIC_CONNECTIONS
+  nh->ChkCxnsId = 0 ;
+#endif
 
   nh->myTape = newTape (name,listenerIsDummy (listener)) ;
   if (nh->myTape == NULL)
@@ -834,6 +867,14 @@ Host newHost (InnListener listener,
   nh->artsHostSleep = 0 ;
   nh->artsHostClose = 0 ;
   nh->artsFromTape = 0 ;
+
+#ifdef DYNAMIC_CONNECTIONS
+  nh->artsProcessed = 0;
+  nh->maxCxnChk = true;
+  nh->lastMaxCxnTime = time(0);
+  nh->lastChkTime = time(0);
+  nh->nextCxnTimeChk = 30;
+#endif
 
   nh->gArtsOffered = 0 ;
   nh->gArtsAccepted = 0 ;
@@ -1032,6 +1073,9 @@ void printHostInfo (Host host, FILE *fp, u_int indentAmt)
   fprintf (fp,"%s    response-timeout : %d\n",indent,host->responseTimeout) ;
   fprintf (fp,"%s    port : %d\n",indent,host->port) ;
   fprintf (fp,"%s    statistics-id : %d\n",indent,host->statsId) ;
+#ifdef DYNAMIC_CONNECTIONS
+  fprintf (fp,"%s    ChkCxns-id : %d\n",indent,host->ChkCxnsId) ;
+#endif
   fprintf (fp,"%s    backed-up : %s\n",indent,boolToString (host->backedUp));
   fprintf (fp,"%s    backlog : %d\n",indent,host->backlog) ;
   fprintf (fp,"%s    loggedModeOn : %s\n",indent,
@@ -1196,6 +1240,9 @@ void hostClose (Host host)
   hostLogStats (host,true) ;
 
   clearTimer (host->statsId) ;
+#ifdef DYNAMIC_CONNECTIONS
+  clearTimer (host->ChkCxnsId) ;
+#endif
   
   host->connectTime = 0 ;
 
@@ -1211,7 +1258,137 @@ void hostClose (Host host)
       cxnTerminate (host->connections [i]) ;
 }
 
+
+#ifdef DYNAMIC_CONNECTIONS
+/*
+ * check if host should get more connections opened, or some closed...
+ */
+void hostChkCxns(TimeoutId tid, void *data) {
+  Host host = (Host) data;
+  u_int artCnt = host->gArtsAccepted + host->gArtsRejected +
+                (host->gArtsNotWanted / 4);
+  time_t now = time(0);
+  u_int lastTime = host->lastMaxCxnTime - host->firstConnectTime;
+  u_int thisTime = now - host->firstConnectTime;
+  u_int absMaxCxns ;
+  float Chngs;
 
+  if(!host->absMaxConnections) absMaxCxns = host->maxConnections + 1 ;
+  else absMaxCxns = host->absMaxConnections ;
+
+  /* First attempt at dynamic maxConnections - MGF */
+  if(!host->maxCxnChk)
+    return;
+
+  if(lastTime <= 0) lastTime = 1;
+
+  host->lastChkTime = now;
+
+  Chngs = (artCnt / (thisTime * 1.0)) -
+          (host->artsProcessed / (lastTime * 1.0));
+
+  syslog(LOG_NOTICE, HOST_MAX_CONNECTIONS,
+         host->peerName,
+         artCnt / ((now - host->firstConnectTime) * 1.0),
+         host->artsProcessed / (lastTime * 1.0),
+         absMaxCxns, host->maxConnections);
+ 
+  /* - if new art/sec > old art/sec by .1 art/sec, increase by one
+     *   connection
+     */
+  dprintf(1, "hostChkCxns: Chngs %f\n", Chngs);
+ 
+  if((Chngs >= 0.1) && (host->maxConnections < absMaxCxns)) {
+    u_int ii = host->maxConnections, maxCxns ;
+    double lowFilter = host->lowPassLow ;   /* the off threshold */
+    double highFilter = host->lowPassHigh ; /* the on threshold */
+ 
+    dprintf(1, "hostChkCxns increasing, Chngs %f\n", Chngs);
+ 
+    /* once every two minutes is short enough if we are rising */
+    host->nextCxnTimeChk = 120;
+ 
+    /* need to set host->maxConnections before cxnWait() */
+    maxCxns = (int)Chngs + 1;
+ 
+    host->maxConnections += maxCxns;
+ 
+    host->connections =
+      REALLOC (host->connections, Connection, host->maxConnections + 1);
+    ASSERT (host->connections != NULL) ;
+    host->cxnActive = REALLOC (host->cxnActive, bool,
+                               host->maxConnections) ;
+    ASSERT (host->cxnActive != NULL) ;
+    host->cxnSleeping = REALLOC (host->cxnSleeping, bool,
+                                 host->maxConnections) ;
+    ASSERT (host->cxnSleeping != NULL) ;
+ 
+    dprintf(1, "hostChkCxns %s maxC %d ii %d\n", host->ipName,
+            host->maxConnections, ii);
+    while(ii < host->maxConnections) {
+ 
+      /* XXX this does essentially the same thing that happens
+         in newHost, so they should probably be combined
+         to one new function */
+      dprintf(1, "hostChkCxns newConnection %d\n", ii);
+      host->connections [ii] = newConnection (host,
+                                              ii,
+                                              host->ipName,
+                                              host->articleTimeout,
+                                              host->port,
+                                              host->responseTimeout,
+                                              defClosePeriod,
+                                              lowFilter,
+                                              highFilter) ;
+      host->cxnActive [ii] = false ;
+      host->cxnSleeping [ii] = false ;
+      cxnConnect (host->connections [ii]) ;
+      ii++;
+    }
+    host->artsProcessed = artCnt;
+    host->lastMaxCxnTime = now;
+  } else {
+    if (Chngs < -.2) {
+      dprintf(1, "hostChkCxns decreasing, Chngs %f\n", Chngs);
+      if(host->maxConnections != 1) {
+ 
+        u_int ii = host->maxConnections;
+
+        syslog(LOG_NOTICE, "%s: cxnNuke(%d)",
+               host->peerName,
+               host->maxConnections - 1);
+        if (host->connections[ii - 1] != NULL)
+          cxnNuke (host->connections[ii - 1]) ;
+        host->maxConnections--;
+        ii = host->maxConnections;
+
+        host->connections =
+          REALLOC (host->connections, Connection, ii + 1);
+        ASSERT (host->connections != NULL) ;
+        host->cxnActive = REALLOC (host->cxnActive, bool, ii) ;
+        ASSERT (host->cxnActive != NULL) ;
+        host->cxnSleeping = REALLOC (host->cxnSleeping, bool, ii) ;
+        ASSERT (host->cxnSleeping != NULL) ;
+        /* give enough time to settle down again */
+        host->nextCxnTimeChk = 240;
+      } else {
+        /* if we are at 1 channel, don't wait *too* long to check for
+         * ability/chance to open one more
+         */
+        host->nextCxnTimeChk = 120;
+      }
+      host->artsProcessed = artCnt;
+      host->lastMaxCxnTime = now;
+    } else {
+      dprintf(1, "hostChkCxns doing nothing, Chngs %f\n", Chngs);
+      if(host->nextCxnTimeChk <= 480)
+        host->nextCxnTimeChk *= 2;
+    }
+  }
+  dprintf(1, "prepareSleep hostChkCxns, %d\n", host->nextCxnTimeChk);
+  host->ChkCxnsId = prepareSleep(hostChkCxns, host->nextCxnTimeChk, host);
+}
+#endif
 
 
 
@@ -1367,6 +1544,12 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
         clearTimer (host->statsId) ;
       host->statsId = prepareSleep (hostStatsTimeoutCbk, statsPeriod, host) ;
 
+#ifdef DYNAMIC_CONNECTIONS
+      if (host->ChkCxnsId != 0)
+      clearTimer (host->ChkCxnsId);
+      host->ChkCxnsId = prepareSleep (hostChkCxns, 30, host) ;
+#endif
+
       host->remoteStreams = (host->wantStreaming ? doesStreaming : false) ;
 
       host->connectTime = theTime() ;
@@ -1419,6 +1602,9 @@ void hostCxnDead (Host host, Connection cxn)
             if (!amClosing (host) && host->activeCxns == 0)
               {
                 clearTimer (host->statsId) ;
+#ifdef DYNAMIC_CONNECTIONS
+                clearTimer (host->ChkCxnsId) ;
+#endif
                 hostLogStats (host,true) ;
                 host->connectTime = 0 ;
               }

@@ -99,6 +99,11 @@
 #define HOST_STATS_MSG          "%s %s seconds %ld offered %d accepted %d refused %d rejected %d missing %d spooled %d on_close %d unspooled %d deferred %d requeued %d queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f"
 #define HOST_SPOOL_STATS        "%s %s seconds %ld spooled %d on_close %d sleeping %d"
 
+#ifdef DYNAMIC_CONNECTIONS
+#define HOST_MAX_CONNECTIONS    "%s hostChkCxn - now: %.2f, prev: %.2f, abs: %d, curr: %d"
+#endif
+
+
 #define REMOTE_BLOCKED          "%s remote cannot accept articles initial : %s"
 #define REMOTE_STILL_BLOCKED    "%s remote cannot accept articles still : %s"
 #define CHANGED_REMOTE_BLOCKED  "%s remote cannot accept articles change : %s"
