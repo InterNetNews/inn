@@ -5,7 +5,7 @@
 ##	norotate	Do not rotate logfiles
 
 ##  =()<. @<_PATH_SHELLVARS>@>()=
-. /var/news/etc/innshellvars
+. /news/etc/innshellvars
 
 ##  If you get an error from this line:
 ##	sh -c 'egrep "`ls /etc`" /dev/null'
@@ -99,7 +99,7 @@ if ${ROTATE} ; then
     PAUSED=false
     ctlinnd -s pause "Flushing log and syslog files" 2>&1 && PAUSED=true
     OUTPUT=`ctlinnd -s flushlogs 2>&1`
-    if [ ! "$OUTPUT" = "Ok" -a ! "$OUTPUT" = "In debug mode" ]; then
+    if [ "$OUTPUT" != "Ok" -a "$OUTPUT" != "In debug mode" ]; then
 	echo "$OUTPUT"
 	echo 'Cannot flush logs.'
 	rm -f ${LOCK}
