@@ -1429,7 +1429,7 @@ rmgroup:*@*:pubnet.*:doit
 
 ## RELCOM (Commonwealth of Independent States)
 # The official list of relcom groups is supposed to be available from
-# URL: ftp://ftp.kiae.su/relcom/netinfo/telconfs.txt
+# URL: ftp://kiarchive.relcom.ru/pub/relcom/netinfo/
 # *PGP*   See comment at top of file.
 newgroup:*:relcom.*:drop
 rmgroup:*:relcom.*:drop
