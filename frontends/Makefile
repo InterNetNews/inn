@@ -1,9 +1,8 @@
-##  $Revision$
+##  $Id$
+
 include ../Makefile.global
 
 CFLAGS	= $(GCFLAGS)
-
-RNEWSPROGS	= ${PATHBIN}/rnews.libexec
 
 SOURCES	= ctlinnd.c inews.c rnews.c sm.c
 
@@ -12,12 +11,24 @@ ALL	= inews rnews ctlinnd getlist innconfval decode encode sm
 all:		$(ALL)
 	date >$@
 
-install:	$D$(PATHBIN)/inews $D$(PATHBIN)/rnews \
-		$D$(PATHBIN)/ctlinnd $D$(PATHBIN)/getlist \
-		$D$(PATHBIN)/innconfval $D$(RNEWSPROGS)/c7unbatch \
-		$D$(RNEWSPROGS)/gunbatch \
-		$D$(RNEWSPROGS)/decode $D$(RNEWSPROGS)/encode \
-		$D$(PATHBIN)/sm
+PATHRNP       = $(PATHBIN)/rnews.libexec
+
+INSTALLED     = $(D)$(PATHBIN)/cnfsheadconf	\
+		$(D)$(PATHBIN)/cnfsstat		\
+		$(D)$(PATHBIN)/ctlinnd		\
+		$(D)$(PATHBIN)/getlist		\
+		$(D)$(PATHBIN)/inews		\
+		$(D)$(PATHBIN)/innconfval	\
+		$(D)$(PATHBIN)/mailpost		\
+		$(D)$(PATHBIN)/pullnews		\
+		$(D)$(PATHBIN)/rnews		\
+		$(D)$(PATHBIN)/scanspool	\
+		$(D)$(PATHBIN)/signcontrol	\
+		$(D)$(PATHBIN)/sm		\
+		$(D)$(PATHRNP)/c7unbatch	\
+		$(D)$(PATHRNP)/decode		\
+		$(D)$(PATHRNP)/encode		\
+		$(D)$(PATHRNP)/gunbatch
 
 clobber clean:
 	rm -f *.o $(ALL)
@@ -62,27 +73,35 @@ profiled:
 .c.src:
 	#load $(CFLAGS) $<
 
-##  Low-level install actions.
-$D$(PATHBIN)/inews:		inews
-	$(LIBTOOL) ../installit.sh $(OWNER) -m $(INEWSMODE) -b .OLD $? $@
-$D$(PATHBIN)/rnews:		rnews
-	$(LIBTOOL) ../installit.sh $(ROWNER) -m $(RNEWSMODE) -b .OLD $? $@
-$D$(PATHBIN)/ctlinnd:	ctlinnd
-	$(LIBTOOL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
-$D$(PATHBIN)/sm:	sm
-	$(LIBTOOL) ../installit.sh $(OWNER) -m  0550 -b .OLD $? $@
-$D$(PATHBIN)/getlist:	getlist
-	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$D$(PATHBIN)/innconfval:	innconfval
-	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$D$(RNEWSPROGS)/c7unbatch:	c7unbatch.sh
-	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$D$(RNEWSPROGS)/gunbatch:	gunbatch.sh
-	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$D$(RNEWSPROGS)/decode:		decode
-	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
-$D$(RNEWSPROGS)/encode:		encode
-	$(LIBTOOL) ../installit.sh $(OWNER) -m  0555 -b .OLD $? $@
+
+##  Installation rules.
+
+install: $(INSTALLED)
+
+LT_INEW = $(LIBTOOL) ../installit.sh $(OWNER) -m $(INEWSMODE) -b .OLD
+LT_RNEW = $(LIBTOOL) ../installit.sh $(ROWNER) -m $(RNEWSMODE) -b .OLD
+LT_XPRI = $(LIBTOOL) ../installit.sh $(OWNER) -m 0550 -b .OLD
+LT_XPUB = $(LIBTOOL) ../installit.sh $(OWNER) -m 0555 -b .OLD
+CP_XPRI = ../installit.sh $(OWNER) -m 0550 -b .OLD
+CP_XPUB = ../installit.sh $(OWNER) -m 0555 -b .OLD
+
+$(D)$(PATHBIN)/cnfsheadconf:        cnfsheadconf        ; $(CP_XPRI) $? $@
+$(D)$(PATHBIN)/cnfsstat:            cnfsstat            ; $(CP_XPRI) $? $@
+$(D)$(PATHBIN)/ctlinnd:             ctlinnd             ; $(LT_XPRI) $? $@
+$(D)$(PATHBIN)/getlist:             getlist             ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/inews:               inews               ; $(LT_INEW) $? $@
+$(D)$(PATHBIN)/innconfval:          innconfval          ; $(LT_XPUB) $? $@
+$(D)$(PATHBIN)/mailpost:            mailpost            ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/pullnews:            pullnews            ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/rnews:               rnews               ; $(LT_RNEW) $? $@
+$(D)$(PATHBIN)/scanspool:           scanspool           ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/signcontrol:         signcontrol         ; $(CP_XPUB) $? $@
+$(D)$(PATHBIN)/sm:                  sm                  ; $(LT_XPUB) $? $@
+$(D)$(PATHRNP)/c7unbatch:           c7unbatch           ; $(CP_XPUB) $? $@
+$(D)$(PATHRNP)/decode:              decode              ; $(LT_XPUB) $? $@
+$(D)$(PATHRNP)/encode:              encode              ; $(LT_XPUB) $? $@
+$(D)$(PATHRNP)/gunbatch:            gunbatch            ; $(CP_XPUB) $? $@
+
 
 ##  Dependencies.  Default list, below, is probably good enough.
 depend:		Makefile $(SOURCES)
