@@ -602,7 +602,7 @@ static int open_db_file(int which)
 
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     TXN_START(t_open_db_file, tid);
-    ret = (dbs[which])->open(dbs[which], NULL, name, NULL, DB_BTREE, _db_flags,
+    ret = (dbs[which])->open(dbs[which], tid, name, NULL, DB_BTREE, _db_flags,
                              0666);
     if (ret == 0)
 	TXN_COMMIT(t_open_db_file, tid);
@@ -1210,7 +1210,7 @@ static int check_version(void)
     }
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     TXN_START(t_open_version, tid);
-    ret = vdb->open(vdb, NULL, "version", NULL, DB_BTREE, _db_flags, 0666);
+    ret = vdb->open(vdb, tid, "version", NULL, DB_BTREE, _db_flags, 0666);
     if (ret == 0)
 	TXN_COMMIT(t_open_version, tid);
 #else
@@ -1464,7 +1464,7 @@ bool ovdb_open(int mode)
     }
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     TXN_START(t_open_groupinfo, tid);
-    ret = groupinfo->open(groupinfo, NULL, "groupinfo", NULL, DB_BTREE,
+    ret = groupinfo->open(groupinfo, tid, "groupinfo", NULL, DB_BTREE,
                           _db_flags, 0666);
     if (ret == 0)
 	TXN_COMMIT(t_open_groupinfo, tid);
