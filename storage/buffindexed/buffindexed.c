@@ -16,14 +16,6 @@
 ** The locking problem is handled by semaphore.
 */
 
-/*
- * Yes. I know that it violates INN coding style. However, this allows
- * me to compile this new version without reconfiguring INN.
- * If all goes well, shmem.c should go to $INN/lib, and shmem.h should
- * go to $INN/include.
- */
-#include "shmem.h"
-
 #include "config.h"
 #include "clibrary.h"
 #include "portable/mmap.h"
@@ -44,6 +36,13 @@
 #include "paths.h"
 #include "ovinterface.h"
 #include "storage.h"
+
+/* Yes. I know that it violates INN coding style. However, this allows
+ * me to compile this new version without reconfiguring INN.
+ * If all goes well, shmem.c should go to $INN/lib, and shmem.h should
+ * go to $INN/include.
+ */
+#include "shmem.h"
 
 #include "buffindexed.h"
 
