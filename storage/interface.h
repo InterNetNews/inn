@@ -53,6 +53,6 @@ extern bool SMpreopen;
 char *SMFindBody(char *article, int len);
 STORAGE_SUB *SMGetConfig(STORAGETYPE type, STORAGE_SUB *sub);
 STORAGE_SUB *SMgetsub(const ARTHANDLE article);
-void SMseterror(int errorno, char *error);
+void SMseterror(int errorno, const char *error);
 
 #endif /* __INTERFACE_H__ */

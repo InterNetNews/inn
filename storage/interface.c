@@ -11,6 +11,7 @@
 
 #include "conffile.h"
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "inn/wire.h"
 #include "interface.h"
 #include "libinn.h"
@@ -31,7 +32,6 @@ static STORAGE_SUB      *subscriptions = NULL;
 static unsigned int     typetoindex[256];
 int                     SMerrno;
 char                    *SMerrorstr = NULL;
-static bool             ErrorAlloc = false;
 static bool             Initialized = false;
 bool			SMopenmode = false;
 bool			SMpreopen = false;
@@ -388,7 +388,7 @@ SMreadconfig(void)
     f = CONFfopen(path);
     if (f == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);
-	syslog(L_ERROR, "SM Could not open %s: %m", path);
+        syswarn("SM cant open %s", path);
         free(path);
 	return false;
     }
@@ -901,56 +901,51 @@ void SMshutdown(void) {
     Initialized = false;
 }
 
-void SMseterror(int errornum, char *error) {
-    if (ErrorAlloc)
-	free(SMerrorstr);
-
-    ErrorAlloc = false;
+void
+SMseterror(int errornum, const char *error)
+{
+    if (SMerrorstr != NULL)
+        free(SMerrorstr);
     
-    if ((errornum == SMERR_UNDEFINED) && (errno == ENOENT))
+    if (errornum == SMERR_UNDEFINED && errno == ENOENT)
 	errornum = SMERR_NOENT;
-	    
     SMerrno = errornum;
 
     if (error == NULL) {
 	switch (SMerrno) {
 	case SMERR_UNDEFINED:
-	    SMerrorstr = xstrdup(strerror(errno));
-	    ErrorAlloc = true;
+            error = strerror(errno);
 	    break;
 	case SMERR_INTERNAL:
-	    SMerrorstr = "Internal error";
+	    error = "Internal error";
 	    break;
 	case SMERR_NOENT:
-	    SMerrorstr = "Token not found";
+	    error = "Token not found";
 	    break;
 	case SMERR_TOKENSHORT:
-	    SMerrorstr = "Configured token size too small";
+	    error = "Configured token size too small";
 	    break;
 	case SMERR_NOBODY:
-	    SMerrorstr = "No article body found";
+	    error = "No article body found";
 	    break;
 	case SMERR_UNINIT:
-	    SMerrorstr = "Storage manager is not initialized";
+	    error = "Storage manager is not initialized";
 	    break;
 	case SMERR_CONFIG:
-	    SMerrorstr = "Error reading config file";
+	    error = "Error reading config file";
 	    break;
 	case SMERR_BADHANDLE:
-	    SMerrorstr = "Bad article handle";
+	    error = "Bad article handle";
 	    break;
 	case SMERR_BADTOKEN:
-	    SMerrorstr = "Bad token";
+	    error = "Bad token";
 	    break;
 	case SMERR_NOMATCH:
-	    SMerrorstr = "No matching entry in storage.conf";
+	    error = "No matching entry in storage.conf";
 	    break;
 	default:
-	    SMerrorstr = "Undefined error";
+	    error = "Undefined error";
 	}
-    } else {
-	SMerrorstr = xstrdup(error);
-	ErrorAlloc = true;
     }
+    SMerrorstr = xstrdup(error);
 }
-
