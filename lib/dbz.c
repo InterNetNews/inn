@@ -59,6 +59,12 @@ to produce files with holes in them, which is a nuisance.)
 
 Tagged hash + offset fuzzy technique merged by Sang-yong Suh (Nov, 1997)
 
+Fixed a bug handling larger than 1Gb history offset by Sang-yong Suh(1998)
+Similar fix was suggested by Mike Hucka <hucka@umich.edu> (Jan, 1998) for
+dbz-3.3.2.
+
+Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
+
 */
 
 #include <stdio.h>
@@ -150,6 +156,7 @@ static char basebuf[SHISTBUF];          /* only needed if _IOFBF exists */
 static OFFSET_T tagbits;		/* pre-shifted tag mask */
 static OFFSET_T taghere;		/* pre-shifted tag-enable bit */
 static OFFSET_T tagboth;		/* tagbits|taghere */
+static int canttag_warned;		/* flag to control can't tag warning */
 
 #endif	/* DO_TAGGED_HASH */
 
@@ -320,7 +327,7 @@ int dbzneedfilecount(void) {
  */
 static void config_by_text_size(dbzconfig *c, of_t basesize) {
     int i;
-    of_t m;
+    unsigned long m;
 
     /* if no tag requested, just return. */
     if ((c->tagmask | c->tagenb) == 0)
@@ -772,6 +779,7 @@ int dbzinit(const char *name) {
     tagbits = conf.tagmask << conf.tagshift;
     taghere = conf.tagenb << conf.tagshift;
     tagboth = tagbits | taghere;
+    canttag_warned = 0;
 #else
     if ((innconf == NULL) && (ReadInnConf() < 0)) {
 	Fclose(dirf);
@@ -1633,9 +1641,10 @@ static BOOL set_pag(searcher *sp, OFFSET_T value) {
 	    if (v != LONG_MAX)		/* and it won't overflow */
 #endif
 		value = v;
-    } else {
+    } else if (canttag_warned == 0) {
 	fprintf(stderr, "dbz.c(set): can't tag value 0x%lx", v);
 	fprintf(stderr, " tagboth = 0x%lx\n", tagboth);
+	canttag_warned = 1;
     }
     DEBUG(("tagged value is 0x%lx\n", value));
     value = BIAS(value);
