@@ -153,6 +153,9 @@ int main(int argc, char *argv[])
 	while (*endstr != ':')
 	    endstr++;
     }
+
+    *endstr = '\0';
+
     if (!strcmp(iter, "ERROR"))
 	return(1);
     else if (strcmp(iter, "USERID") != 0)
