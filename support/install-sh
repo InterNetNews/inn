@@ -124,6 +124,11 @@ else
 	true
 fi
 
+# For Cygwin compatibility.
+if [ -x "$src".exe ]; then
+	src=${src}.exe
+fi
+
 if [ x"$dir_arg" != x ]; then
 	dst=$src
 	src=""
