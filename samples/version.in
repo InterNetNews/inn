@@ -7,7 +7,7 @@ PROG=version
 ##  =()<. @<_PATH_PARSECTL>@ "$@">()=
 . /var/news/etc/parsecontrol "$@"
 
-VERSION="INN 1.5.1"
+VERSION="INN 1.8-current"
 
 WHERE=`innconfval pathhost`
 
