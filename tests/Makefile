@@ -65,7 +65,7 @@ lib/hstrerror.o: ../lib/hstrerror.o
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/hstrerror.c
 
 lib/hstrerror.t: lib/hstrerror.o lib/hstrerror-t.o libtest.o
-	$(LINK) lib/hstrerror.o lib/hstrerror-t.o libtest.o
+	$(LINK) lib/hstrerror.o lib/hstrerror-t.o libtest.o $(LIBINN)
 
 lib/inet_aton.o: ../lib/inet_aton.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_aton.c
@@ -77,7 +77,7 @@ lib/inet_ntoa.o: ../lib/inet_ntoa.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_ntoa.c
 
 lib/inet_ntoa.t: lib/inet_ntoa.o lib/inet_ntoa-t.o libtest.o
-	$(LINK) lib/inet_ntoa.o lib/inet_ntoa-t.o libtest.o
+	$(LINK) lib/inet_ntoa.o lib/inet_ntoa-t.o libtest.o $(LIBINN)
 
 lib/innconf.t: lib/innconf-t.o libtest.o $(LIBINN)
 	$(LINK) lib/innconf-t.o libtest.o $(LIBINN) $(LIBS)
@@ -89,7 +89,7 @@ lib/memcmp.o: ../lib/memcmp.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/memcmp.c
 
 lib/memcmp.t: lib/memcmp.o lib/memcmp-t.o libtest.o
-	$(LINK) lib/memcmp.o lib/memcmp-t.o libtest.o
+	$(LINK) lib/memcmp.o lib/memcmp-t.o libtest.o $(LIBINN)
 
 lib/messages.o: ../lib/messages.c
 	$(CC) $(CFLAGS) -DDEBUG -c -o $@ ../lib/messages.c
@@ -104,7 +104,7 @@ lib/mkstemp.o: ../lib/mkstemp.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c
 
 lib/mkstemp.t: lib/mkstemp.o lib/mkstemp-t.o libtest.o
-	$(LINK) lib/mkstemp.o lib/mkstemp-t.o libtest.o
+	$(LINK) lib/mkstemp.o lib/mkstemp-t.o libtest.o $(LIBINN)
 
 lib/pread.o: ../lib/pread.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/pread.c
@@ -131,25 +131,25 @@ lib/snprintf.o: ../lib/snprintf.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/snprintf.c
 
 lib/snprintf.t: lib/snprintf.o lib/snprintf-t.o libtest.o
-	$(LINK) lib/snprintf.o lib/snprintf-t.o libtest.o
+	$(LINK) lib/snprintf.o lib/snprintf-t.o libtest.o $(LIBINN)
 
 lib/strerror.o: ../lib/strerror.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strerror.c
 
 lib/strerror.t: lib/strerror.o lib/strerror-t.o libtest.o
-	$(LINK) lib/strerror.o lib/strerror-t.o libtest.o
+	$(LINK) lib/strerror.o lib/strerror-t.o libtest.o $(LIBINN)
 
 lib/strlcat.o: ../lib/strlcat.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strlcat.c
 
 lib/strlcat.t: lib/strlcat.o lib/strlcat-t.o libtest.o
-	$(LINK) lib/strlcat.o lib/strlcat-t.o libtest.o
+	$(LINK) lib/strlcat.o lib/strlcat-t.o libtest.o $(LIBINN)
 
 lib/strlcpy.o: ../lib/strlcpy.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strlcpy.c
 
 lib/strlcpy.t: lib/strlcpy.o lib/strlcpy-t.o libtest.o
-	$(LINK) lib/strlcpy.o lib/strlcpy-t.o libtest.o
+	$(LINK) lib/strlcpy.o lib/strlcpy-t.o libtest.o $(LIBINN)
 
 lib/uwildmat.t: lib/uwildmat-t.o $(LIBINN)
 	$(LINK) lib/uwildmat-t.o $(LIBINN)

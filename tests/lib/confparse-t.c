@@ -11,47 +11,6 @@
 #include "libinn.h"
 #include "libtest.h"
 
-/* Used to accumulate error messages from the parser. */
-static char *errors = NULL;
-
-/* Error handler that appends errors to the errors global. */
-static void
-string_error(int len, const char *format, va_list args, int error UNUSED)
-{
-    char *message;
-
-    message = xmalloc(len + 1);
-    vsnprintf(message, len + 1, format, args);
-    if (errors == NULL) {
-        errors = concat(message, "\n", (char *) 0);
-    } else {
-        char *new_errors;
-
-        new_errors = concat(errors, message, "\n", (char *) 0);
-        free(errors);
-        errors = new_errors;
-    }
-    free(message);
-}
-
-/* Turn on the capturing of warnings and errors. */
-static void
-capture_errors(void)
-{
-    if (errors != NULL) {
-        free(errors);
-        errors = NULL;
-    }
-    message_handlers_warn(1, string_error);
-}
-
-/* Turn off the capturing of warnings and errors. */
-static void
-uncapture_errors(void)
-{
-    message_handlers_warn(1, message_log_stderr);
-}
-
 /* Given a FILE *, read from that file, putting the results into a newly
    allocated buffer, until encountering a line consisting solely of "===".
    Returns the buffer, NULL on end of file, dies on error. */
@@ -114,9 +73,9 @@ parse_error_config(const char *filename)
 {
     struct config_group *group;
 
-    capture_errors();
+    errors_capture();
     group = config_parse_file(filename);
-    uncapture_errors();
+    errors_uncapture();
     return group;
 }
 
@@ -204,10 +163,10 @@ test_warnings_bool(int n)
             die("Unexpected end of file while reading error tests");
         ok(n++, group != NULL);
         ok(n++, errors == NULL);
-        capture_errors();
+        errors_capture();
         ok(n++, !config_param_boolean(group, "parameter", &b_value));
         ok_string(n++, expected, errors);
-        uncapture_errors();
+        errors_uncapture();
         free(expected);
     }
     fclose(warnfile);
@@ -234,10 +193,10 @@ test_warnings_int(int n)
             die("Unexpected end of file while reading error tests");
         ok(n++, group != NULL);
         ok(n++, errors == NULL);
-        capture_errors();
+        errors_capture();
         ok(n++, !config_param_integer(group, "parameter", &l_value));
         ok_string(n++, expected, errors);
-        uncapture_errors();
+        errors_uncapture();
         free(expected);
     }
     fclose(warnfile);

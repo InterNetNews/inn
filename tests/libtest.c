@@ -10,9 +10,16 @@
 **  tests.
 */
 
-#include <stdio.h>
-#include <string.h>
+#include "config.h"
+#include "clibrary.h"
+
+#include "inn/messages.h"
+#include "libinn.h"
 #include "libtest.h"
+
+/* A global buffer into which message_log_buffer stores error messages. */
+char *errors = NULL;
+
 
 /*
 **  Takes a boolean success value and assumes the test passes if that value
@@ -54,4 +61,54 @@ ok_string(int n, const char *wanted, const char *seen)
         printf("not ok %d\n  wanted: %s\n    seen: %s\n", n, wanted, seen);
     else
         printf("ok %d\n", n);
+}
+
+
+/*
+**  An error handler that appends all errors to the errors global.  Used by
+**  error_capture.
+*/
+static void
+message_log_buffer(int len, const char *fmt, va_list args, int error UNUSED)
+{
+    char *message;
+
+    message = xmalloc(len + 1);
+    vsnprintf(message, len + 1, fmt, args);
+    if (errors == NULL) {
+        errors = concat(message, "\n", (char *) 0);
+    } else {
+        char *new_errors;
+
+        new_errors = concat(errors, message, "\n", (char *) 0);
+        free(errors);
+        errors = new_errors;
+    }
+    free(message);
+}
+
+
+/*
+**  Turn on the capturing of errors.  Errors will be stored in the global
+**  errors variable where they can be checked by the test suite.  Capturing is
+**  turned off with errors_uncapture.
+*/
+void
+errors_capture(void)
+{
+    if (errors != NULL) {
+        free(errors);
+        errors = NULL;
+    }
+    message_handlers_warn(1, message_log_buffer);
+}
+
+
+/*
+**  Turn off the capturing of errors again.
+*/
+void
+errors_uncapture(void)
+{
+    message_handlers_warn(1, message_log_stderr);
 }
