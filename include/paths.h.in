@@ -31,6 +31,7 @@
 #define _PATH_PERL_AUTH		"nnrpd_auth.pl"
 #define _PATH_PYTHON_STARTUP	"filter_innd.py"
 #define _PATH_PYTHON_STARTUP_M  "filter_innd"
+#define _PATH_PYTHON_AUTH_M	"nnrpd_auth"
 
 /* Default prefix path is pathrun. */
 #define _PATH_NNTPCONNECT	"nntpin"

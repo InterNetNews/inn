@@ -156,6 +156,7 @@ struct conf_vars {
         int keyartlimit;        /* Max size of an article for keyword generation */
         int keymaxwords;	/* Max count of interesting workd */
         int nnrpperlauth;       /* Use perl for nnrpd authentication */
+        int nnrppythonauth;     /* Use Python for nnrpd authentication */
         int addnntppostinghost; /* Add NNTP-Posting-Host: header to posts */
         int addnntppostingdate; /* Add NNTP-Posting-DATE: header to posts */
 
