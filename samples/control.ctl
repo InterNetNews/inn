@@ -337,12 +337,12 @@ rmgroup:*@*:birk.*:doit
 # *PGP*   See comment at top of file.
 newgroup:*:bit.*:drop
 rmgroup:*:bit.*:drop
-checkgroups:jim@american.edu:bit.*:verify-bit.admin
-newgroup:jim@american.edu:bit.*:verify-bit.admin
-rmgroup:jim@american.edu:bit.*:verify-bit.admin
+checkgroups:bit@newsadmin.com:bit.*:verify-bit@newsadmin.com
+newgroup:bit@newsadmin.com:bit.*:verify-bit@newsadmin.com
+rmgroup:bit@newsadmin.com:bit.*:verify-bit@newsadmin.com
 
-# newgroup:jim@*american.edu:bit.*:doit
-# rmgroup:jim@*american.edu:bit.*:doit
+# newgroup:bit@newsadmin.com:bit.*:doit
+# rmgroup:bit@newsadmin.com:bit.*:doit
 
 ## BIZ (Business Groups)
 newgroup:edhew@xenitec.on.ca:biz.*:doit
@@ -516,6 +516,11 @@ newgroup:coadmin@boyznoyz.com:co.*:doit
 rmgroup:coadmin@boyznoyz.com:co.*:doit
 checkgroups:coadmin@boyznoyz.com:co.*:doit
 
+## CODEWARRIOR (CodeWarrior discussion)
+checkgroups:news@supernews.net:codewarrior.*:doit
+newgroup:news@supernews.net:codewarrior.*:doit
+rmgroup:news@supernews.net:codewarrior.*:doit
+
 ## COMPUTER42 (Computer 42, Germany)
 # Contact: Dirk Schmitt <news@computer42.org>
 newgroup:news@computer42.org:computer42.*:doit
@@ -624,6 +629,15 @@ newgroup:news@doc.dpc.ehime-u.ac.jp:ehime-u.*:doit
 rmgroup:news@cc.nias.ac.jp:ehime-u.*:doit
 rmgroup:news@doc.dpc.ehime-u.ac.jp:ehime-u.*:doit
 
+## ENGLAND
+# Contact: admin@england.news-admin.org
+# See: http://www.england.news-admin.org/newsadminsfaq.html
+# *PGP*   See comment at top of file.
+# Key fingerprint =  DA 3E C2 01 46 E5 61 CB  A2 43 09 CA 13 6D 31 1F 
+newgroup:admin@england.news-admin.org:england.*:verify-england-usenet
+rmgroup:admin@england.news-admin.org:england.*:verify-england-usenet
+checkgroups:admin@england.news-admin.org:england.*:verify-england-usenet
+
 ## ES (Spain)
 # Contact: Daniel.Diaz@rediris.es
 # See: http://www.rediris.es/netnews/infonews/config.es.html
@@ -653,6 +667,14 @@ rmgroup:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
 ## EUNET ( Europe )
 newgroup:news@noc.eu.net:eunet.*:doit
 rmgroup:news@noc.eu.net:eunet.*:doit
+
+## EUROPA (Europe)
+# URL: http://www.europa.usenet.eu.org/
+# Key fingerprint = 3A 05 A8 49 FB 16 29 25  75 E3 DE BB 69 E0 1D B4
+# *PGP*   See comment at top of file.
+newgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
+rmgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
+checkgroups:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 
 ## EXAMPLE ( Bogus hierarchy reserved for standards documents )
 newgroup:*@*:example.*:mail
@@ -688,8 +710,9 @@ rmgroup:newgroups-request@fido7.ru:fido7.*:verify-fido7.announce.newgroups
 # rmgroup:news@wing.matsim.udmurtia.su:fido7.*:doit
 
 ## FINET (Finland and Finnish language alternative newsgroups)
-newgroup:*@*.hut.fi:finet.*:doit
-rmgroup:*@*.hut.fi:finet.*:doit
+# The alt.* of Finland
+newgroup:*@*.fi:finet.*:doit
+rmgroup:*@*.fi:finet.*:doit
 
 ## FJ (Japan and Japanese language)
 # Contact: committee@fj-news.org
@@ -776,6 +799,16 @@ rmgroup:news@nit.gwu.edu:gwu.*:doit
 ## HAMILTON (Canadian)
 newgroup:news@*dcss.mcmaster.ca:hamilton.*:doit
 rmgroup:news@*dcss.mcmaster.ca:hamilton.*:doit
+
+## HAMSTER (Hamster, a Win32 news and mail proxy server)
+# Contact: hamster-contact@snafu.de
+# URL: http://www.nethamster.org
+# Key fingerprint = 12 75 A9 42 8A D6 1F 77 6A CF B4 0C 79 15 5F 93
+# Key URL: http://www.nethamster.org/control/hamster.asc
+# *PGP*   See comment at top of file.
+checkgroups:hamster-control@snafu.de:hamster.*:verify-hamster-control@snafu.de
+newgroup:hamster-control@snafu.de:hamster.*:verify-hamster-control@snafu.de
+rmgroup:hamster-control@snafu.de:hamster.*:verify-hamster-control@snafu.de
 
 ## HAN (Korean Hangul)
 # Contact: newgroups-request@usenet.or.kr
@@ -943,7 +976,6 @@ checkgroups:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 newgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 rmgroup:usenet@karlsruhe.org:ka.*:verify-usenet@karlsruhe.org
 
-
 ## KANTO
 # *PGP*   See comment at top of file.
 rmgroup:*:kanto.*:drop
@@ -1006,7 +1038,8 @@ rmgroup:*@*:local.*:drop
 
 ## MALTA ( Nation of Malta )
 # Contact: cmeli@cis.um.edu.mt
-# URL: http://www.cis.um.edu.mt/news-malta/malta-news-new-site-faq.html
+# URL: http://www.malta.news-admin.org/
+# Key fingerprint = 20 17 01 5C F0 D0 1A 42  E4 13 30 58 0B 14 48 A6
 # *PGP*   See comment at top of file. 
 newgroup:*:malta.*:drop
 rmgroup:*:malta.*:drop
@@ -1429,8 +1462,9 @@ newgroup:*@*:rpi.*:mail
 rmgroup:*@*:rpi.*:doit
 
 ## SAAR (Saarbruecke, Germany)
-newgroup:news@alien.saar.de:saar.*:doit
-rmgroup:news@alien.saar.de:saar.*:doit
+checkgroups:thomas.rachel@gmx.de:saar.*:verify-saar-control
+newgroup:thomas.rachel@gmx.de:saar.*:verify-saar-control
+rmgroup:thomas.rachel@gmx.de:saar.*:verify-saar-control
 
 ## SACHSNET (German)
 newgroup:root@lusatia.de:sachsnet.*:doit
@@ -1817,13 +1851,15 @@ newgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 rmgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 
 ## WALES (Wales)
-# Contact: control@A470.demon.co.uk
+# Contact: committee@wales-usenet.org
+# URL: http://www.wales-usenet.org/
+# Key fingerprint = 2D 9E DE DF 12 DA 34 5C  49 E1 EE 28 E3 AB 0D AD
 # *PGP*   See comment at top of file.
 newgroup:*:wales.*:drop
 rmgroup:*:wales.*:drop
-checkgroups:control@*470.demon.co.uk:wales.*:verify-wales-usenet
-newgroup:control@*470.demon.co.uk:wales.*:verify-wales-usenet
-rmgroup:control@*470.demon.co.uk:wales.*:verify-wales-usenet
+newgroup:control@wales-usenet.org:wales.*:verify-wales-usenet
+rmgroup:control@wales-usenet.org:wales.*:verify-wales-usenet
+checkgroups:control@wales-usenet.org:wales.*:verify-wales-usenet
 
 ## WASH (Washington State, USA)
 newgroup:graham@ee.washington.edu:wash.*:doit
