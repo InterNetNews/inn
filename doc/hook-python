@@ -22,7 +22,7 @@ NOTE TO RED HAT LINUX USERS
     libraries required for embedding into INN.  You will need to add the
     development package.  Better yet, get the source kit from the above URL
     and build it yourself.  Be sure when installing Python on Red Hat, to
-    run configure with `--prefix=/usr' so that there are no version
+    run configure with "--prefix=/usr" so that there are no version
     conflicts with the "factory" installation.  You can also find a
     selection of well made RPMs at
     <ftp://starship.python.net/pub/crew/andrich/>.
@@ -30,11 +30,11 @@ NOTE TO RED HAT LINUX USERS
 INSTALLATION
 
     Once you have built and installed Python, you can cause INN to use it by
-    adding the `--with-python' switch to your configure command.
+    adding the "--with-python" switch to your configure command.
 
     See the ctlinnd(8) manual page to learn how to enable, disable and
-    reload Python filters on a running server (`ctlinnd mode', `ctlinnd
-    python y|n', `ctlinnd reload filter.python').
+    reload Python filters on a running server ("ctlinnd mode", "ctlinnd
+    python y|n", "ctlinnd reload filter.python").
 
     Also, see the example filter_innd.py script in your filters directory
     for a demonstration of how to get all this working.
@@ -56,12 +56,12 @@ WRITING AN INND FILTER
         or pick up where filter_before_reload or filter_close left off.
 
     filter_before_reload(self)
-        This will execute any time a `ctlinnd reload all' or `ctlinnd reload
-        filter.python' command is issued.  You can use it to save statistics
+        This will execute any time a "ctlinnd reload all" or "ctlinnd reload
+        filter.python" command is issued.  You can use it to save statistics
         or reports for use after reloading.
 
     filter_close(self)
-        This will run when a `ctlinnd shutdown' command is received.
+        This will run when a "ctlinnd shutdown" command is received.
 
     filter_art(self, art)
         art is a dictionary containing an article's headers and body.  This
@@ -258,7 +258,7 @@ FUNCTIONS SUPPLIED BY THE BUILT-IN INND MODULE
 PYTHON AUTHENTICATION AND AUTHORIZATION SUPPORT FOR NNRPD
 
     Python authentication and authorization support in nnrpd along with
-    filtering support in innd may be compiled in by giving `--with-python'
+    filtering support in innd may be compiled in by giving "--with-python"
     command line flag to configure script. Python authentication and
     authorization may be turned on by nnrppythonauth setting in inn.conf.
 

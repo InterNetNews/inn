@@ -45,7 +45,7 @@ The innd Perl Filter
     cause it to be reloaded.
 
     filter_innd.pl, on the other hand, can be reloaded on command (with
-    `ctlinnd reload filter.perl').  Whenever filter_innd.pl is loaded,
+    "ctlinnd reload filter.perl").  Whenever filter_innd.pl is loaded,
     including the first time at innd startup, the Perl function
     filter_before_reload() is called before it's reloaded and the function
     filter_after_reload() is called after it's reloaded (if the functions
@@ -63,8 +63,8 @@ The innd Perl Filter
     load data that was preserved on disk across a stop and restart of innd
     (perhaps using filter_mode() -- see below).
 
-    As mentioned above, `ctlinnd reload filter.perl' (or `ctlinnd reload
-    all') will cause filter_innd.pl to be reloaded.  If the function
+    As mentioned above, "ctlinnd reload filter.perl" (or "ctlinnd reload
+    all") will cause filter_innd.pl to be reloaded.  If the function
     filter_art() is defined after the file has been reloaded, filtering is
     turned on.  Otherwise, filtering is turned off.  (Note that due to the
     way Perl stores functions, once you've defined filter_art(), you can't
@@ -90,9 +90,9 @@ The innd Perl Filter
             X-Cancelled-By, X-Canceled-By, Cancel-Key
 
     (so, for example, the Newsgroups header of the article is accessible
-    inside the Perl filter as `$hdr{Newsgroups}').  In addition,
-    `$hdr{__BODY__}' will contain the full body of the article and
-    `$hdr{__LINES__}' will contain the number of lines in the body of the
+    inside the Perl filter as $hdr{Newsgroups}).  In addition,
+    $hdr{__BODY__} will contain the full body of the article and
+    $hdr{__LINES__} will contain the number of lines in the body of the
     article.
 
     The contents of the %hdr hash for a typical article may therefore look
@@ -111,21 +111,21 @@ The innd Perl Filter
                     __LINES__    => 5
             );
 
-    Note that the value of `$hdr{Lines}' is the contents of the Lines:
-    header of the article and may bear no resemblence to the actual length
-    of the article.  `$hdr{__LINES__}' is the line count calculated by INN,
-    and is guaranteed to be accurate.
+    Note that the value of $hdr{Lines} is the contents of the Lines: header
+    of the article and may bear no resemblence to the actual length of the
+    article.  $hdr{__LINES__} is the line count calculated by INN, and is
+    guaranteed to be accurate.
 
     The %hdr hash should not be modified inside filter_art().  Instead, if
     any of the contents need to be modified temporarily during filtering
     (smashing case, for example), copy them into a seperate variable first
-    and perform the modifications on the copy.  Currently, `$hdr{__BODY__}'
-    is the only data that will cause your filter to die if you modify it,
-    but in the future other keys may also contain live data.  Modifying live
-    INN data in Perl will hopefully only cause a fatal exception in your
-    Perl code that disables Perl filtering until you fix it, but it's
-    possible for it to cause article munging or even core dumps in INN.  So
-    always, always make a copy first.
+    and perform the modifications on the copy.  Currently, $hdr{__BODY__} is
+    the only data that will cause your filter to die if you modify it, but
+    in the future other keys may also contain live data.  Modifying live INN
+    data in Perl will hopefully only cause a fatal exception in your Perl
+    code that disables Perl filtering until you fix it, but it's possible
+    for it to cause article munging or even core dumps in INN.  So always,
+    always make a copy first.
 
     As mentioned above, if filter_art() returns the empty string (''), the
     article is accepted.  Note that this must be the empty string, not 0 or
@@ -184,8 +184,8 @@ The innd Perl Filter
     only variable INN fiddles with (or pays any attention to at all) is
     %hdr, which is cleared after each call to filter_art().
 
-    Perl filtering can be turned off with `ctlinnd perl n' and back on again
-    with `ctlinnd perl y'.  Perl filtering is turned off automatically if
+    Perl filtering can be turned off with "ctlinnd perl n" and back on again
+    with "ctlinnd perl y".  Perl filtering is turned off automatically if
     loading of the filter fails or if the filter code returns any sort of a
     fatal error (either due to Perl itself or due to a die in the Perl
     code).
@@ -213,7 +213,7 @@ Supported innd Callbacks
         is stored in wire format.
 
     INN::cancel(*messageid*)
-        Cancels *messageid*.  (This is equivalent to `ctlinnd cancel'; it
+        Cancels *messageid*.  (This is equivalent to "ctlinnd cancel"; it
         cancels the message on the local server, but doesn't post a cancel
         message or do anything else that affects anything other than the
         local server.) Returns true on success, false otherwise.
@@ -324,7 +324,7 @@ The nnrpd Posting Filter
     to a moderated group).  This is intended to allow manual inspection of
     the suspect messages; if they should be posted, they can be manually
     moved out of the subdirectory to the directory specified by pathincoming
-    in inn.conf, where they can be posted by running `rnews -U'.  If you use
+    in inn.conf, where they can be posted by running "rnews -U".  If you use
     this functionality, make sure those directories exist.
 
 Perl Authentication Support for nnrpd
@@ -354,13 +354,13 @@ Perl Authentication Support for nnrpd
     processing of a connection, authentication request, or a disconnect. 
     authenticate() takes no arguments, but it has access to a global hash
     %attributes which contains information about the connection as follows:
-    `$attributes{type}' will contain either "connect", indicating a new
+    $attributes{type} will contain either "connect", indicating a new
     connection is in progress, or "authenticate", indicating that a client
-    has sent an AUTHINFO command.  `$attributes{hostname}' will contain the
+    has sent an AUTHINFO command.  $attributes{hostname} will contain the
     hostname (or the IP address if it doesn't resolve) of the client machine
-    and `$attributes{ipaddress}' will contain its IP address (as a string). 
-    If type was "authenticate", `$attributes{username}' will contain the
-    provided username and `$attributes{password}' the password.
+    and $attributes{ipaddress} will contain its IP address (as a string). 
+    If type was "authenticate", $attributes{username} will contain the
+    provided username and $attributes{password} the password.
 
     authenticate() should return a five-element array.  The first element is
     the NNTP response code to return to the client, the second element is a

@@ -14,8 +14,7 @@ Hacking INN
     considerably easier to integrate your work.  You can get nightly
     snapshots of the current development source from ftp.isc.org in
     /isc/inn/snapshots (the snapshots named inn-CURRENT-*.tar.gz), or you
-    can get the current CVS tree by using CVSup (see the section on "Using
-    CVSup").
+    can get the current CVS tree by using CVSup (see "Using CVSup").
 
 Configuring and Portability
 
@@ -558,8 +557,8 @@ Making a Release
 
     3.  Make sure that support/config.sub and support/config.guess are the
         latest versions (from <ftp://ftp.gnu.org/gnu/config/>).  See the
-        instructions in the section on "Configuring and Portability" for
-        details on how to update these files.
+        instructions in "Configuring and Portability" for details on how to
+        update these files.
 
     4.  Make sure that samples/control.ctl is in sync with the master
         version at <ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl>.

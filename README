@@ -65,8 +65,7 @@ What is INN?
     abuses of Usenet).
 
     INN is free software, supported by the Internet Software Consortium and
-    volunteers around the world.  See the section on "Supporting the INN
-    Effort" below.
+    volunteers around the world.  See "Supporting the INN Effort" below.
 
 Prerequisites
 
@@ -86,7 +85,7 @@ Prerequisites
     operating systems.  See INSTALL for a list of systems it is known to
     work on.  If you encounter problems compiling or running INN, or if you
     successfully run INN on a platform that isn't listed in INSTALL, please
-    let us know (see the section on "Reporting Bugs" below).
+    let us know (see "Reporting Bugs" below).
 
     Perl 5.003 or later is required to build INN.  Perl 5.004 is required if
     you want the embedded Perl filter support (which is highly recommended;
@@ -110,7 +109,7 @@ Getting Started
     to take some time to understand what's going on and how all the pieces
     fit together.  If you have any specific suggestions for documentation,
     or comments about things that are unclear, please send them to the INN
-    maintainers (see the section on "Reporting Bugs" below).
+    maintainers (see "Reporting Bugs" below).
 
     See INSTALL for step-by-step instructions for setting up and configuring
     a news server.
