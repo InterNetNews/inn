@@ -34,6 +34,7 @@ void SASLauth(int ac, char *av[])
     char base64[BASE64_BUF_SIZE+1];
     const char *canon_user;
     const int *ssfp, *maxoutp;
+    const void *property;
     int r = SASL_OK;
 
     if (ac < 3 || ac > 4) {
@@ -124,16 +125,19 @@ void SASLauth(int ac, char *av[])
 
     /* fetch the username (authorization id) */
     if (r == SASL_OK) {
-	r = sasl_getprop(sasl_conn, SASL_USERNAME, (const void **) &canon_user);
+	r = sasl_getprop(sasl_conn, SASL_USERNAME, &property);
+        canon_user = property;
     }
 
     /* grab info about the negotiated layer */
     if (r == SASL_OK) {
-	r = sasl_getprop(sasl_conn, SASL_SSF, (const void **) &ssfp);
+	r = sasl_getprop(sasl_conn, SASL_SSF, &property);
+        ssfp = property;
     }
 
     if (r == SASL_OK) {
-	r = sasl_getprop(sasl_conn, SASL_MAXOUTBUF, (const void **) &maxoutp);
+	r = sasl_getprop(sasl_conn, SASL_MAXOUTBUF, &property);
+        maxoutp = property;
     }
 
     if (r == SASL_OK) {
