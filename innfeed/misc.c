@@ -39,14 +39,12 @@ static void use_rcsid (const char *rid) {   /* Never called */
 #include "config.h"
 #include "clibrary.h"
 
-#include <arpa/nameser.h>
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <resolv.h>
 #include <signal.h>
 #include <syslog.h>
 #include <sys/param.h>
