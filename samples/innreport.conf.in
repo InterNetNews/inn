@@ -27,7 +27,7 @@ section default {
 	cycle		none;        # use a number or 'none'.
         separator       ".";         # use a valid filename character.
 	title		"Daily Usenet report";
-      # title	     "Daily Usenet report for <A HREF=\"/stat/\">news.y.z</A>";
+      # title	     "Daily Usenet report for <A HREF=\"/News/stats/\">news.y.z</A>";
       # footer		"Local contact: <A HREF=\"mailto:x@y.z\">x@y.z</A>";
       # html_body	"BGCOLOR=\"#FFFFFF\" TEXT=\"#000000\"";
       # html_header_file "header.html";  # ${html_dir}/${html_header_file}
