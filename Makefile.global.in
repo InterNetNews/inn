@@ -9,9 +9,6 @@ P	= # &
 ##  What flags to use if profiling; -p or -pg, e.g.
 PROF	= #-pg
 
-##  Ctags command.  Use echo if you don't have ctags.
-CTAGS		= @PATH_CTAGS@ -t -w
-
 ##  If you use the standard NNTP way of connecting, where is the library?
 NNTPLIB 	=
 
@@ -35,6 +32,8 @@ LIBS		= @LIBS@ $(LFS_LIBS)
 LFS_LIBS 	= @LFS_LDFLAGS@
 THREAD_LIBS 	= @THREADLIB@
 
+LIBNEWS         = ../storage/libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
+
 PERLLIB		= ../lib/perl.o @PERL_LIB@
 PERLINC		= @PERL_INC@
 
@@ -46,6 +45,14 @@ PYTHONINC 	= @PYTHON_INC@
 
 DBMLIB 		= @DBM_LIB@
 
+LEX             = @LEX@ 
+YACC            = @YACC@
+RANLIB          = @RANLIB@
+AWK             = @_PATH_AWK@
+
+# Ctags command.  Use echo if you don't have ctags.
+CTAGS           = @CTAGS@
+
 OWNER		= -O @NEWSUSER@ -G @NEWSGRP@
 ROWNER		= -O @NEWSUSER@ -G @RNEWSGRP@
 NEWSGROUP	= @NEWSGRP@
@@ -54,7 +61,7 @@ INEWSMODE	= @INEWSMODE@
 RNEWSMODE	= @RNEWSMODE@
 
 PATHNEWS        = @prefix@
-PATHBIN         = @prefix@/bin
+PATHBIN         = @bindir@
 PATHETC         = @ETCDIR@
 PATHLIB         = @LIBDIR@
 PATHCONTROL     = @CONTROLDIR@
@@ -69,24 +76,20 @@ PATHOUTGOING    = $(PATHSPOOL)/outgoing
 PATHINCOMING    = $(PATHSPOOL)/incoming
 PATHARCHIVE     = $(PATHSPOOL)/archive
 
+MAN1            = @mandir@/man1
+MAN3            = @mandir@/man3
+MAN5            = @mandir@/man5
+MAN8            = @mandir@/man8
+
 # Pick on of SOURCE, NROFF-PACK or NROFF-PACK-SCO
 MANPAGESTYLE	= SOURCE
-MAN1    = @MANDIR@/man1
-MAN3    = @MANDIR@/man3
-MAN5    = @MANDIR@/man5
-MAN8    = @MANDIR@/man8
 
-LEX	= @LEX@ 
-YACC	= @YACC@
-RANLIB	= @RANLIB@
-AWK	= @_PATH_AWK@
+SHELL           = /bin/sh
 
-SHELL	= /bin/sh
 @SET_MAKE@
-LIBNEWS = ../storage/libstorage.$(EXTLIB) ../lib/libinn.$(EXTLIB)
 
-DESTDIR =
-D	= $(DESTDIR)
+DESTDIR         =
+D               = $(DESTDIR)
 
 # Standard library functions that your system doesn't have.
 MISSING_MAN     = @MISSING_MAN@
