@@ -556,6 +556,8 @@ FUNCTYPE CMDfetch(int ac, char *av[])
 	(void)sprintf(buff, "%ld", ARTnumber);
 	tart=ARTnumber;
     }
+    if (ac > 1)
+	ARTnumber = tart;
     if ((msgid = GetHeader("Message-ID", FALSE)) == NULL) {
         Reply("%s\r\n", ARTnoartingroup);
 	return;
