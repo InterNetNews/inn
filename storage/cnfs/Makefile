@@ -1,12 +1,9 @@
 ##  $Revision$
 include ../../Makefile.global
 
-CC	= $(UPLIBCC)
 CP	= $(UPLIBTOOL) cp
 
-CFLAGS	 = $(GCFLAGS) $(LFS_CFLAGS) -I../../include -I.. 
-LD_FLAGS = $(LDFLAGS) $(LFS_LDFLAGS)
-LIBS     = $(LIBS) $(LFS_LIBS)
+CFLAGS	 = $(GCFLAGS) -I../../include -I.. 
 
 IFTRUE	= @$(SHELL) ../iftrue.sh
 
@@ -16,6 +13,9 @@ LOBJECTS = cnfs.lo
 ROBJECTS = cnfs.$(EXTOBJ)
 
 all:			$(OBJECTS) moveobjs
+
+.c.o: $*.c
+	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 moveobjs: $(OBJECTS)
 	$(CP) -p $(ROBJECTS) ../objs

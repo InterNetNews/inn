@@ -1,20 +1,8 @@
 ##  $Revision$
 include ../../Makefile.global
 
-CC	= $(UPLIBCC)
 CP	= $(UPLIBTOOL) cp
-
-CFLAGS  = $(GCFLAGS)	-I../../include -I..
-
-IFTRUE	= @$(SHELL) ../iftrue.sh
-
-##  =()<P	= @<P>@>()=
-P	= 
-
-##  =()<CTAGS		= @<CTAGS>@>()=
-CTAGS		= /usr/local/bin/ctags -t -w
-##  =()<PROF	= @<PROF>@>()=
-PROF	= -pg
+CFLAGS  = $(GCFLAGS) -I../../include -I..
 
 SOURCES = tradspool.c
 OBJECTS = tradspool.o
@@ -22,6 +10,9 @@ LOBJECTS = tradspool.lo
 ROBJECTS = tradspool.$(EXTOBJ)
 
 all:			$(OBJECTS) moveobjs
+
+.c.o: $*.c
+	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 moveobjs: $(OBJECTS)
 	$(CP) -p $(ROBJECTS) ../objs

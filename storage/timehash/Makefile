@@ -1,12 +1,9 @@
 ##  $Revision$
 include ../../Makefile.global
 
-CC	= $(UPLIBCC)
 CP	= $(UPLIBTOOL) cp
 
 CFLAGS	= $(GCFLAGS) -I../../include -I..
-
-IFTRUE	= @$(SHELL) ../iftrue.sh
 
 SOURCES = timehash.c
 OBJECTS = timehash.o
@@ -14,6 +11,9 @@ LOBJECTS = timehash.lo
 ROBJECTS = timehash.$(EXTOBJ)
 
 all:			$(OBJECTS) moveobjs
+
+.c.o: $*.c
+	$(UPLIBCC) $(CFLAGS) -c $*.c -o $@
 
 moveobjs: $(OBJECTS)
 	$(CP) -p $(ROBJECTS) ../objs
