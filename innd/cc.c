@@ -495,9 +495,7 @@ CCcheckfile(char *unused[])
   if (errors == 0)
     return NULL;
 
-  buffer_resize(&CCreply, SMBUF);
-  snprintf(CCreply.data, CCreply.size, "1 Found %d errors -- see syslog",
-           errors);
+  buffer_sprintf(&CCreply, false, "1 Found %d errors -- see syslog", errors);
   return CCreply.data;
 }
 
@@ -566,7 +564,7 @@ CCfeedinfo(char *av[])
 static const char *
 CCfilter(char *av[] UNUSED)
 {
-#if defined(DO_TCL)
+#ifdef DO_TCL
     char	*p;
 
     switch (av[0][0]) {
@@ -584,16 +582,16 @@ CCfilter(char *av[] UNUSED)
 	break;
     }
     return NULL;
-#else /* defined(DO_TCL) */
+#else
     return "1 TCL filtering support not compiled in";
-#endif /* defined(DO_TCL) */
+#endif
 }
 
 
 static const char *
 CCperl(char *av[] UNUSED)
 {
-#if defined(DO_PERL)
+#ifdef DO_PERL
     switch (av[0][0]) {
     default:
 	return "1 Bad flag";
@@ -610,20 +608,20 @@ CCperl(char *av[] UNUSED)
 	break;
     }
     return NULL;
-#else /* defined(DO_PERL) */
+#else
     return "1 Perl filtering support not compiled in";
-#endif /* defined(DO_PERL) */
+#endif
 }
 
 
 static const char *
 CCpython(char *av[] UNUSED)
 {
-#if defined(DO_PYTHON)
+#ifdef DO_PYTHON
     return PYcontrol(av);
-#else /* defined(DO_PYTHON) */
+#else
     return "1 Python filtering support not compiled in";
-#endif /* defined(DO_PYTHON) */
+#endif
 }
 
 
@@ -766,6 +764,72 @@ CChangup(char *av[])
 
 
 /*
+**  Read a file containing lines of the form "newsgroup lowmark" and reset
+**  the low article number for the specified groups.
+*/
+static const char *
+CClowmark(char *av[])
+{
+    long lo;
+    char *line, *cp;
+    const char  *ret = NULL;
+    QIOSTATE *qp;
+    NEWSGROUP *ngp;
+
+    if (Mode != OMrunning)
+	return CCnotrunning;
+    if (ICDneedsetup)
+	return "1 Must first reload newsfeeds";
+    if ((qp = QIOopen(av[0])) == NULL) {
+	syslog(L_ERROR, "%s cant open %s %m", LogName, av[0]);
+	return "1 Cannot read input file";
+    }
+    while ((line = QIOread(qp)) != NULL) {
+	if (QIOerror(qp))
+		break;
+	if (QIOtoolong(qp)) {
+	    ret = "1 Malformed input line (too long)";
+	    break;
+	}
+	while (ISWHITE(*line))
+	    line++;
+	for (cp = line; *cp && !ISWHITE(*cp); cp++)
+	    ;
+	if (*cp == '\0') {
+	    ret = "1 Malformed input line (only one field)";
+	    break;
+	}
+	*cp++ = '\0';
+	while (ISWHITE(*cp))
+	    cp++;
+	if (strspn(cp, "0123456789") != strlen(cp)) {
+	    ret = "1 Malformed input line (non-digit in low mark)";
+	    break;
+	}
+	if ((lo = atol(cp)) == 0 && (cp[0] != '0' || cp[1] != '\0')) {
+	    ret = "1 Malformed input line (bad low mark)";
+	    break;
+	}
+        if ((ngp = NGfind(line)) == NULL) {
+	    /* ret = CCnogroup; break; */
+	    continue;
+	}
+        if (!NGlowmark(ngp, lo)) {
+	    ret = "1 Cannot set low mark - see syslog";
+	    break;
+	}
+    }
+    if (ret == NULL && QIOerror(qp)) {
+	syslog(L_ERROR, "%s cant read %s %m", LogName, av[0]);
+	ret = "1 Error reading input file";
+    }
+    QIOclose(qp);
+    ICDwrite();
+    return ret;
+}
+
+
+/*
 **  Return our operating mode.
 */
 static const char *
@@ -879,19 +943,15 @@ CClogmode(char *unused[])
 static const char *
 CCname(char *av[])
 {
-    static char		NL[] = "\n";
-    static char		NIL[] = "\0";
-    char		buff[SMBUF];
-    CHANNEL		*cp;
-    char		*p;
-    int			count;
-    int			i;
+    CHANNEL *cp;
+    int i, count;
+    const char *mode;
 
-    p = av[0];
-    if (*p != '\0') {
-	if ((cp = CHANfromdescriptor(atoi(p))) == NULL)
+    if (av[0][0] != '\0') {
+        cp = CHANfromdescriptor(atoi(av[0]));
+        if (cp == NULL)
 	    return xstrdup(CCnochannel);
-	snprintf(CCreply.data, CCreply.size, "0 %s", CHANname(cp));
+        buffer_sprintf(&CCreply, false, "0 %s", CHANname(cp));
 	return CCreply.data;
     }
     buffer_set(&CCreply, "0 ", 2);
@@ -899,45 +959,42 @@ CCname(char *av[])
 	if (cp->Type == CTfree)
 	    continue;
 	if (++count > 1)
-	    buffer_append(&CCreply, NL, 1);
-	p = CHANname(cp);
-	buffer_append(&CCreply, p, strlen(p));
+	    buffer_append(&CCreply, "\n", 1);
+        buffer_sprintf(&CCreply, true, "%s", CHANname(cp));
 	switch (cp->Type) {
 	case CTremconn:
-	    sprintf(buff, ":remconn::");
+            buffer_sprintf(&CCreply, true, ":remconn::");
 	    break;
 	case CTreject:
-	    sprintf(buff, ":reject::");
+            buffer_sprintf(&CCreply, true, ":reject::");
 	    break;
 	case CTnntp:
-           sprintf(buff, ":%s:%ld:%s",
-                    cp->State == CScancel ? "cancel" : "nntp",
-                    (long) Now.time - cp->LastActive,
-                    (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "");
+            mode = (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "";
+            buffer_sprintf(&CCreply, true, ":%s:%ld:%s",
+                           cp->State == CScancel ? "cancel" : "nntp",
+                           (long) Now.time - cp->LastActive, mode);
 	    break;
 	case CTlocalconn:
-	    sprintf(buff, ":localconn::");
+            buffer_sprintf(&CCreply, true, ":localconn::");
 	    break;
 	case CTcontrol:
-	    sprintf(buff, ":control::");
+            buffer_sprintf(&CCreply, true, ":control::");
 	    break;
 	case CTfile:
-	    sprintf(buff, "::");
+            buffer_sprintf(&CCreply, true, "::");
 	    break;
 	case CTexploder:
-	    sprintf(buff, ":exploder::");
+            buffer_sprintf(&CCreply, true, ":exploder::");
 	    break;
 	case CTprocess:
-	    sprintf(buff, ":");
+            buffer_sprintf(&CCreply, true, ":");
 	    break;
 	default:
-	    sprintf(buff, ":unknown::");
+            buffer_sprintf(&CCreply, true, ":unknown::");
 	    break;
 	}
-	p = buff;
-	buffer_append(&CCreply, p, strlen(p));
     }
-    buffer_append(&CCreply, NIL, 1);
+    buffer_append(&CCreply, "", 1);
     return CCreply.data;
 }
 
@@ -1140,12 +1197,12 @@ CCblock(OPERATINGMODE NewMode, char *reason)
 	Reservation = NULL;
     }
 
-#if defined(DO_PERL)
+#ifdef DO_PERL
     PLmode(Mode, NewMode, reason);
-#endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
+#endif
+#ifdef DO_PYTHON
     PYmode(Mode, NewMode, reason);
-#endif /* defined(DO_PYTHON) */
+#endif
 
     ICDwrite();
     InndHisClose();
@@ -1274,14 +1331,16 @@ static const char *
 CCreload(char *av[])
 {
     static char	BADSCHEMA[] = "1 Can't read schema";
-#if defined(DO_PERL)
+    const char *p;
+
+#ifdef DO_PERL
     static char BADPERLRELOAD[] = "1 Failed to define filter_art" ;
     char *path;
-#endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
+#endif
+
+#ifdef DO_PYTHON
     static char BADPYRELOAD[] = "1 Failed to reload filter_innd.py" ;
-#endif /* defined(DO_PYTHON) */
-    const char *p;
+#endif
 
     p = av[0];
     if (*p == '\0' || strcmp(p, "all") == 0) {
@@ -1295,19 +1354,19 @@ CCreload(char *av[])
 	ICDsetup(true);
 	if (!ARTreadschema())
 	    return BADSCHEMA;
-#if defined(DO_TCL)
+#ifdef DO_TCL
 	TCLreadfilter();
-#endif /* defined(DO_TCL) */
-#if defined(DO_PERL)
+#endif
+#ifdef DO_PERL
         path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
         PERLreadfilter(path, "filter_art") ;
         free(path);
-#endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
+#endif
+#ifdef DO_PYTHON
 	syslog(L_NOTICE, "reloading pyfilter");
-	 PYreadfilter();
+        PYreadfilter();
 	syslog(L_NOTICE, "reloaded pyfilter OK");
-#endif /* DO_PYTHON */
+#endif
 	p = "all";
     }
     else if (strcmp(p, "active") == 0 || strcmp(p, "newsfeeds") == 0) {
@@ -1360,24 +1419,24 @@ CCreload(char *av[])
 	}
     }
 #endif
-#if defined(DO_TCL)
+#ifdef DO_TCL
     else if (strcmp(p, "filter.tcl") == 0) {
 	TCLreadfilter();
     }
-#endif /* defined(DO_TCL) */
-#if defined(DO_PERL)
+#endif
+#ifdef DO_PERL
     else if (strcmp(p, "filter.perl") == 0) {
         path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
         if (!PERLreadfilter(path, "filter_art"))
             return BADPERLRELOAD;
     }
-#endif /* defined(DO_PERL) */
-#if defined(DO_PYTHON)
+#endif
+#ifdef DO_PYTHON
     else if (strcmp(p, "filter.python") == 0) {
 	if (!PYreadfilter())
 	    return BADPYRELOAD;
     }
-#endif /* defined(DO_PYTHON) */
+#endif
     else
 	return "1 Unknown reload type";
 
@@ -1533,8 +1592,8 @@ CCsignal(char *av[])
 	oerrno = errno;
 	syslog(L_ERROR, "%s cant kill %ld %d site %s, %m", LogName, 
 		(long) sp->pid, s, p);
-	snprintf(CCreply.data, CCreply.size, "1 Can't signal process %ld, %s",
-		(long) sp->pid, strerror(oerrno));
+        buffer_sprintf(&CCreply, false, "1 Can't signal process %ld: %s",
+                       (long) sp->pid, strerror(oerrno));
 	return CCreply.data;
     }
 
@@ -1987,70 +2046,4 @@ CCresetup(int unused)
 #endif
     CCclose();
     CCsetup();
-}
-
-
-/*
- * Read a file containing lines of the form "newsgroup lowmark",
- * and reset the low article number for the specified groups.
- */
-static const char *
-CClowmark(char *av[])
-{
-    long lo;
-    char *line, *cp;
-    const char  *ret = NULL;
-    QIOSTATE *qp;
-    NEWSGROUP *ngp;
-
-    if (Mode != OMrunning)
-	return CCnotrunning;
-    if (ICDneedsetup)
-	return "1 Must first reload newsfeeds";
-    if ((qp = QIOopen(av[0])) == NULL) {
-	syslog(L_ERROR, "%s cant open %s %m", LogName, av[0]);
-	return "1 Cannot read input file";
-    }
-    while ((line = QIOread(qp)) != NULL) {
-	if (QIOerror(qp))
-		break;
-	if (QIOtoolong(qp)) {
-	    ret = "1 Malformed input line (too long)";
-	    break;
-	}
-	while (ISWHITE(*line))
-	    line++;
-	for (cp = line; *cp && !ISWHITE(*cp); cp++)
-	    ;
-	if (*cp == '\0') {
-	    ret = "1 Malformed input line (only one field)";
-	    break;
-	}
-	*cp++ = '\0';
-	while (ISWHITE(*cp))
-	    cp++;
-	if (strspn(cp, "0123456789") != strlen(cp)) {
-	    ret = "1 Malformed input line (non-digit in low mark)";
-	    break;
-	}
-	if ((lo = atol(cp)) == 0 && (cp[0] != '0' || cp[1] != '\0')) {
-	    ret = "1 Malformed input line (bad low mark)";
-	    break;
-	}
-        if ((ngp = NGfind(line)) == NULL) {
-	    /* ret = CCnogroup; break; */
-	    continue;
-	}
-        if (!NGlowmark(ngp, lo)) {
-	    ret = "1 Cannot set low mark - see syslog";
-	    break;
-	}
-    }
-    if (ret == NULL && QIOerror(qp)) {
-	syslog(L_ERROR, "%s cant read %s %m", LogName, av[0]);
-	ret = "1 Error reading input file";
-    }
-    QIOclose(qp);
-    ICDwrite();
-    return ret;
 }
