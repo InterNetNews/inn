@@ -16,9 +16,6 @@
 #define SIZEOF(array)           (sizeof array / sizeof array[0])
 #define ENDOF(array)            (&array[SIZEOF(array)])
 
-/* Get the length of a string constant. */
-#define STRLEN(string)          (sizeof string - 1)
-
 /* Turn a TIMEINFO into a floating point number. */
 #define TIMEINFOasDOUBLE(t)	\
     ((double)(t).time + ((double)(t).usec) / 1000000.0)

@@ -960,7 +960,7 @@ CHANreadloop(void)
 
 	STATUSmainloophook();
 	if (GotTerminate) {
-	    write(2, EXITING, STRLEN(EXITING));
+	    write(2, EXITING, strlen(EXITING));
 	    CleanupAndExit(0, (char *)NULL);
 	}
 	if (count < 0) {

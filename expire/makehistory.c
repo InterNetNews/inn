@@ -422,13 +422,13 @@ ARTreadschema(bool Overview)
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
-	    if (strncasecmp(buff, DATE, STRLEN(DATE)-1) == 0)
+	    if (strncasecmp(buff, DATE, strlen(DATE)-1) == 0)
 		Datep = fp;
-	    if (strncasecmp(buff, MESSAGEID, STRLEN(MESSAGEID)-1) == 0)
+	    if (strncasecmp(buff, MESSAGEID, strlen(MESSAGEID)-1) == 0)
 		Msgidp = fp;
-	    if (strncasecmp(buff, EXPIRES, STRLEN(EXPIRES)-1) == 0)
+	    if (strncasecmp(buff, EXPIRES, strlen(EXPIRES)-1) == 0)
 		Expp = fp;
-	    if (strncasecmp(buff, XREF, STRLEN(XREF)-1) == 0) {
+	    if (strncasecmp(buff, XREF, strlen(XREF)-1) == 0) {
 		Xrefp = fp;
 		foundxreffull = fp->NeedHeadername;
             }
@@ -592,7 +592,7 @@ DoArt(ARTHANDLE *art)
     }
 
     buffer_set(&buffer, Msgidp->Header, Msgidp->HeaderLength);
-    buffer_append(&buffer, NUL, STRLEN(NUL));
+    buffer_append(&buffer, NUL, strlen(NUL));
     for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	if (*q == '\t' || *q == '\n' || *q == '\r')
 	    *q = ' ';
@@ -613,7 +613,7 @@ DoArt(ARTHANDLE *art)
 	Posted = Arrived;
     } else {
         buffer_set(&buffer, Datep->Header, Datep->HeaderLength);
-        buffer_append(&buffer, NUL, STRLEN(NUL));
+        buffer_append(&buffer, NUL, strlen(NUL));
 	for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	    if (*q == '\t' || *q == '\n' || *q == '\r')
 		*q = ' ';
@@ -623,7 +623,7 @@ DoArt(ARTHANDLE *art)
 
     if (Expp->HasHeader) {
         buffer_set(&buffer, Expp->Header, Expp->HeaderLength);
-        buffer_append(&buffer, NUL, STRLEN(NUL));
+        buffer_append(&buffer, NUL, strlen(NUL));
 	for (i = 0, q = buffer.data; i < buffer.left; q++, i++)
 	    if (*q == '\t' || *q == '\n' || *q == '\r')
 		*q = ' ';
@@ -635,10 +635,10 @@ DoArt(ARTHANDLE *art)
 	    if (fp == ARTfields)
                 buffer_set(&buffer, "", 0);
 	    else
-                buffer_append(&buffer, SEP, STRLEN(SEP));
+                buffer_append(&buffer, SEP, strlen(SEP));
 	    if (fp->NeedHeadername) {
                 buffer_append(&buffer, fp->Headername, fp->HeadernameLength);
-                buffer_append(&buffer, COLONSPACE, STRLEN(COLONSPACE));
+                buffer_append(&buffer, COLONSPACE, strlen(COLONSPACE));
 	    }
 	    i = buffer.left;
             buffer_append(&buffer, fp->Header, fp->HeaderLength);

@@ -289,7 +289,7 @@ ExitWithStats(int x)
     double		systime;
 
     if (!Purging) {
-	REMwrite(QUIT, STRLEN(QUIT), false);
+	REMwrite(QUIT, strlen(QUIT), false);
 	REMflush();
     }
     GetTimeInfo(&Now);

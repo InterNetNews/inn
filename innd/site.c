@@ -308,7 +308,7 @@ SITEwrite(SITE *sp, const char *text)
 	sp->Channel->LastActive = Now.time;
 	bp = &sp->Channel->Out;
     }
-    buffer_append(bp, PREFIX, STRLEN(PREFIX));
+    buffer_append(bp, PREFIX, strlen(PREFIX));
     buffer_append(bp, text, strlen(text));
     buffer_append(bp, "\n", 1);
     if (sp->Channel != NULL)
@@ -349,47 +349,47 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    continue;
 	case FEED_BYTESIZE:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, Data->Bytes + sizeof("Bytes: ") - 1,
                           Data->BytesLength);
 	    break;
 	case FEED_FULLNAME:
 	case FEED_NAME:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, Data->TokenText, sizeof(TOKEN) * 2 + 2);
 	    break;
 	case FEED_HASH:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, "[", 1);
 	    buffer_append(bp, HashToText(*(Data->Hash)), sizeof(HASH)*2);
 	    buffer_append(bp, "]", 1);
 	    break;
 	case FEED_HDR_DISTRIB:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, HDR(HDR__DISTRIBUTION),
                           HDR_LEN(HDR__DISTRIBUTION));
 	    break;
 	case FEED_HDR_NEWSGROUP:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS));
 	    break;
 	case FEED_HEADERS:
 	    if (Dirty)
-		buffer_append(bp, NL, STRLEN(NL));
+		buffer_append(bp, NL, strlen(NL));
 	    buffer_append(bp, Data->Headers.data, Data->Headers.left);
 	    break;
 	case FEED_OVERVIEW:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, Data->Overview.data, Data->Overview.left);
 	    break;
 	case FEED_PATH:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    if (!Hassamepath)
 		buffer_append(bp, Path.data, Path.used);
 	    if (AddAlias)
@@ -398,43 +398,43 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    break;
 	case FEED_REPLIC:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, Data->Replic, Data->ReplicLength);
 	    break;
 	case FEED_STOREDGROUP:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, Data->Newsgroups.List[0],
                           Data->StoredGroupLength);
 	    break;
 	case FEED_TIMERECEIVED:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Arrived);
 	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEPOSTED:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Posted);
 	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_TIMEEXPIRED:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    snprintf(pbuff, sizeof(pbuff), "%ld", Data->Expires);
 	    buffer_append(bp, pbuff, strlen(pbuff));
 	    break;
 	case FEED_MESSAGEID:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, HDR(HDR__MESSAGE_ID), HDR_LEN(HDR__MESSAGE_ID));
 	    break;
 	case FEED_FNLNAMES:
 	    if (sp->FNLnames.data) {
 		/* Funnel; write names of our sites that got it. */
 		if (Dirty)
-		    buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		    buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 		buffer_append(bp, sp->FNLnames.data, sp->FNLnames.used);
 	    }
 	    else {
@@ -442,7 +442,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 		for (spx = Sites, i = nSites; --i >= 0; spx++)
 		    if (spx->Sendit) {
 			if (Dirty)
-			    buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+			    buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 			buffer_append(bp, spx->Name, spx->NameLength);
 			Dirty = true;
 		    }
@@ -450,7 +450,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    break;
 	case FEED_NEWSGROUP:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    if (sp->ng)
 		buffer_append(bp, sp->ng->Name, sp->ng->NameLength);
 	    else
@@ -458,7 +458,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    break;
 	case FEED_SITE:
 	    if (Dirty)
-		buffer_append(bp, ITEMSEP, STRLEN(ITEMSEP));
+		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
 	    buffer_append(bp, Data->Feedsite, Data->FeedsiteLength);
 	    break;
 	}
@@ -1118,7 +1118,7 @@ SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
     char		buff[BUFSIZ];
 
     if (sp->Name == NULL) {
-	buffer_append(bp, FREESITE, STRLEN(FREESITE));
+	buffer_append(bp, FREESITE, strlen(FREESITE));
 	return;
     }
 

@@ -1697,7 +1697,7 @@ ARTmakeoverview(CHANNEL *cp)
   /* Write the data, a field at a time. */
   for (fp = ARTfields; fp->Header; fp++) {
     if (fp != ARTfields)
-      buffer_append(overview, SEP, STRLEN(SEP));
+      buffer_append(overview, SEP, strlen(SEP));
     hp = fp->Header;
     j = hp - ARTheaders;
 
@@ -1737,7 +1737,7 @@ ARTmakeoverview(CHANNEL *cp)
       continue;
     if (fp->NeedHeader) {
       buffer_append(overview, hp->Name, hp->Size);
-      buffer_append(overview, COLONSPACE, STRLEN(COLONSPACE));
+      buffer_append(overview, COLONSPACE, strlen(COLONSPACE));
     }
     if (overview->used + overview->left + len > overview->size)
         buffer_resize(overview, overview->size + len);

@@ -274,12 +274,12 @@ main(int ac, char *av[])
 
     /* Set up the scatter/gather vectors used by SITEwrite. */
     SITEvec[1].iov_base = SITEv1;
-    SITEvec[1].iov_len = STRLEN(SITEv1);
+    SITEvec[1].iov_len = strlen(SITEv1);
 
     /* Connect to the remote server. */
     if ((Remote = SITEconnect(av[0])) == NULL)
         sysdie("cannot connect to %s", av[0]);
-    if (!SITEwrite(Remote, READER, (int)STRLEN(READER))
+    if (!SITEwrite(Remote, READER, (int)strlen(READER))
      || !SITEread(Remote, buff))
         sysdie("cannot start reading");
 

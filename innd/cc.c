@@ -1880,7 +1880,7 @@ CCreader(CHANNEL *cp)
 	syslog(i == ENOENT ? L_NOTICE : L_ERROR,
 	    "%s cant sendto CCreader bytes %d %m", LogName, len);
 	if (i == EMSGSIZE)
-	    sendto(CCwriter, TOOLONG, STRLEN(TOOLONG), 0,
+	    sendto(CCwriter, TOOLONG, strlen(TOOLONG), 0,
 		(struct sockaddr *) &client, SUN_LEN(&client));
     }
 #else

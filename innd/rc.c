@@ -625,7 +625,7 @@ RCreader(CHANNEL *cp)
 	new->Rejected = reject_val;
 	RCHANremove(new);
 	WCHANset(new, reject_message, (int)strlen(reject_message));
-	WCHANappend(new, RCterm, STRLEN(RCterm));
+	WCHANappend(new, RCterm, strlen(RCterm));
 	WCHANadd(new);
 	return;
     }
@@ -693,7 +693,7 @@ RCreader(CHANNEL *cp)
         new->Rejected = reject_val;
         RCHANremove(new);
         WCHANset(new, reject_message, (int)strlen(reject_message));
-        WCHANappend(new, RCterm, STRLEN(RCterm));
+        WCHANappend(new, RCterm, strlen(RCterm));
         WCHANadd(new);
         return;
     }

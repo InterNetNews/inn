@@ -125,7 +125,7 @@ NCwritereply(CHANNEL *cp, const char *text)
     bp = &cp->Out;
     i = bp->left;
     WCHANappend(cp, text, strlen(text));	/* text in buffer */
-    WCHANappend(cp, NCterm, STRLEN(NCterm));	/* add CR NL to text */
+    WCHANappend(cp, NCterm, strlen(NCterm));	/* add CR NL to text */
 
     /* FIXME: Something is wrong with this code.  At the least, it's
        confusing.  bp->used can be incremented without decrementing bp->left,
@@ -158,10 +158,10 @@ NCwriteshutdown(CHANNEL *cp, const char *text)
 {
     cp->State = CSwritegoodbye;
     RCHANremove(cp); /* we're not going to read anything more */
-    WCHANappend(cp, NNTP_GOODBYE, STRLEN(NNTP_GOODBYE));
+    WCHANappend(cp, NNTP_GOODBYE, strlen(NNTP_GOODBYE));
     WCHANappend(cp, " ", 1);
     WCHANappend(cp, text, (int)strlen(text));
-    WCHANappend(cp, NCterm, STRLEN(NCterm));
+    WCHANappend(cp, NCterm, strlen(NCterm));
     WCHANadd(cp);
 }
 
@@ -274,7 +274,7 @@ NChead(CHANNEL *cp)
     ARTHANDLE		*art;
 
     /* Snip off the Message-ID. */
-    for (p = cp->In.data + cp->Start + STRLEN("head"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("head"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
@@ -291,10 +291,10 @@ NChead(CHANNEL *cp)
     }
 
     /* Write it. */
-    WCHANappend(cp, NNTP_HEAD_FOLLOWS, STRLEN(NNTP_HEAD_FOLLOWS));
+    WCHANappend(cp, NNTP_HEAD_FOLLOWS, strlen(NNTP_HEAD_FOLLOWS));
     WCHANappend(cp, " 0 ", 3);
     WCHANappend(cp, p, strlen(p));
-    WCHANappend(cp, NCterm, STRLEN(NCterm));
+    WCHANappend(cp, NCterm, strlen(NCterm));
     WCHANappend(cp, art->data, art->len);
 
     /* Write the terminator. */
@@ -316,7 +316,7 @@ NCstat(CHANNEL *cp)
     size_t              length;
 
     /* Snip off the Message-ID. */
-    for (p = cp->In.data + cp->Start + STRLEN("stat"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("stat"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
@@ -365,26 +365,26 @@ NCauthinfo(CHANNEL *cp)
     }
 
     /* Otherwise, make sure we're only getting "authinfo" commands. */
-    if (strncasecmp(p, AUTHINFO, STRLEN(AUTHINFO)) != 0) {
+    if (strncasecmp(p, AUTHINFO, strlen(AUTHINFO)) != 0) {
 	NCwritereply(cp, NNTP_AUTH_NEEDED);
 	return;
     }
-    for (p += STRLEN(AUTHINFO); ISWHITE(*p); p++)
+    for (p += strlen(AUTHINFO); ISWHITE(*p); p++)
 	continue;
 
     /* Ignore "authinfo user" commands, since we only care about the
      * password. */
-    if (strncasecmp(p, USER, STRLEN(USER)) == 0) {
+    if (strncasecmp(p, USER, strlen(USER)) == 0) {
 	NCwritereply(cp, NNTP_AUTH_NEXT);
 	return;
     }
 
     /* Now make sure we're getting only "authinfo pass" commands. */
-    if (strncasecmp(p, PASS, STRLEN(PASS)) != 0) {
+    if (strncasecmp(p, PASS, strlen(PASS)) != 0) {
 	NCwritereply(cp, NNTP_AUTH_NEEDED);
 	return;
     }
-    for (p += STRLEN(PASS); ISWHITE(*p); p++)
+    for (p += strlen(PASS); ISWHITE(*p); p++)
 	continue;
 
     /* Got the password -- is it okay? */
@@ -407,21 +407,21 @@ NChelp(CHANNEL *cp)
     static char		LINE2[] = "\" at this machine.";
     NCDISPATCH		*dp;
 
-    WCHANappend(cp, NNTP_HELP_FOLLOWS,STRLEN(NNTP_HELP_FOLLOWS));
-    WCHANappend(cp, NCterm,STRLEN(NCterm));
+    WCHANappend(cp, NNTP_HELP_FOLLOWS,strlen(NNTP_HELP_FOLLOWS));
+    WCHANappend(cp, NCterm,strlen(NCterm));
     for (dp = NCcommands; dp < ENDOF(NCcommands); dp++)
 	if (dp->Function != NC_unimp) {
             if ((!StreamingOff && cp->Streaming) ||
                 (dp->Function != NCcheck && dp->Function != NCtakethis)) {
                 WCHANappend(cp, "\t", 1);
                 WCHANappend(cp, dp->Name, dp->Size);
-                WCHANappend(cp, NCterm, STRLEN(NCterm));
+                WCHANappend(cp, NCterm, strlen(NCterm));
             }
 	}
-    WCHANappend(cp, LINE1, STRLEN(LINE1));
-    WCHANappend(cp, NEWSMASTER, STRLEN(NEWSMASTER));
-    WCHANappend(cp, LINE2, STRLEN(LINE2));
-    WCHANappend(cp, NCterm, STRLEN(NCterm));
+    WCHANappend(cp, LINE1, strlen(LINE1));
+    WCHANappend(cp, NEWSMASTER, strlen(NEWSMASTER));
+    WCHANappend(cp, LINE2, strlen(LINE2));
+    WCHANappend(cp, NCterm, strlen(NCterm));
     NCwritereply(cp, NCdot) ;
     cp->Start = cp->Next;
 }
@@ -441,7 +441,7 @@ NCihave(CHANNEL *cp)
 
     cp->Ihave++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.data + cp->Start + STRLEN("ihave"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("ihave"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
@@ -541,7 +541,7 @@ NCxbatch(CHANNEL *cp)
     char	*p;
 
     /* Snip off the batch size */
-    for (p = cp->In.data + cp->Start + STRLEN("xbatch"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("xbatch"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
 
@@ -577,7 +577,7 @@ NClist(CHANNEL *cp)
 {
     char *p, *q, *trash, *end, *path;
 
-    for (p = cp->In.data + cp->Start + STRLEN("list"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("list"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     if (cp->Nolist) {
@@ -614,11 +614,11 @@ NClist(CHANNEL *cp)
     }
 
     /* Loop over all lines, sending the text and \r\n. */
-    WCHANappend(cp, NNTP_LIST_FOLLOWS,STRLEN(NNTP_LIST_FOLLOWS));
-    WCHANappend(cp, NCterm, STRLEN(NCterm)) ;
+    WCHANappend(cp, NNTP_LIST_FOLLOWS,strlen(NNTP_LIST_FOLLOWS));
+    WCHANappend(cp, NCterm, strlen(NCterm)) ;
     for (; p < end && (q = strchr(p, '\n')) != NULL; p = q + 1) {
 	WCHANappend(cp, p, q - p);
-	WCHANappend(cp, NCterm, STRLEN(NCterm));
+	WCHANappend(cp, NCterm, strlen(NCterm));
     }
     NCwritereply(cp, NCdot);
     if (trash)
@@ -636,7 +636,7 @@ NCmode(CHANNEL *cp)
     HANDOFF		h;
 
     /* Skip the first word, get the argument. */
-    for (p = cp->In.data + cp->Start + STRLEN("mode"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("mode"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
 
@@ -1403,7 +1403,7 @@ NCtakethis(CHANNEL *cp)
 
     cp->Takethis++;
     /* Snip off the Message-ID. */
-    for (p = cp->In.data + cp->Start + STRLEN("takethis"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("takethis"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
     for ( ; ISWHITE(*p); p++)

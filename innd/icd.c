@@ -318,7 +318,7 @@ ICDchangegroup(NEWSGROUP *ngp, char *Rest)
     }
     else {
 	/* Last group -- append a newline. */
-	ICDiovset(&iov[2], NEWLINE, STRLEN(NEWLINE));
+	ICDiovset(&iov[2], NEWLINE, strlen(NEWLINE));
     }
     ret = ICDwritevactive(iov, 3);
     ICDiovrelease(&iov[0]);
