@@ -13,11 +13,13 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 		$(PATHLOG) $(PATHLOG)/OLD
 
 ##  LIBDIRS are built before PROGDIRS, make update runs in all UPDATEDIRS,
-##  and make install runs in all ALLDIRS.
+##  and make install runs in all ALLDIRS.  Nothing runs in test except the
+##  test target itself and the clean targets.
 LIBDIRS     = lib storage
 PROGDIRS    = innd nnrpd innfeed expire frontends backends authprogs scripts
 UPDATEDIRS  = $(LIBDIRS) $(PROGDIRS) doc
 ALLDIRS     = $(UPDATEDIRS) samples site
+CLEANDIRS   = $(ALLDIRS) test
 
 ##  The directory name and tar file to use when building a release.
 TARDIR      = inn-$(VERSION)
@@ -106,14 +108,14 @@ cert:
 ##  configure results.  distclean or clobber removes everything not part of
 ##  the distribution tarball.
 clean:
-	@for D in $(ALLDIRS) ; do \
+	@for D in $(CLEANDIRS) ; do \
 	    echo '' ; \
 	    cd $$D && $(MAKE) clean || exit 1 ; cd .. ; \
 	done
 	@echo ''
 
 clobber realclean distclean:
-	@for D in $(ALLDIRS) ; do \
+	@for D in $(CLEANDIRS) ; do \
 	    echo '' ; \
 	    cd $$D && $(MAKE) $(FLAGS) clobber && cd .. ; \
 	done
