@@ -1,11 +1,11 @@
 This is $Revision$ dated $Date$.
 
 innd and nnrpd now support some amount of Perl filtering of articles
-received from another peer or from a newsreader. This code is based very
-heavily on work Christophe Wolfhugel <wolf@pasteur.fr> did. He in turn was
-inspired by the existing TCL support. Send me (<inn@isc.org>) and not
-Christophe any bug reports, as I fiddled with the code, and am probably the
-cause of any problems.
+received from another peer or from a newsreader and some authentication.
+This code is based very heavily on work Christophe Wolfhugel <wolf@pasteur.fr>
+did. He in turn was inspired by the existing TCL support. Send me
+(<inn@isc.org>) and not Christophe any bug reports, as I fiddled with the
+code, and am probably the cause of any problems.
 
 What you get with the Perl support is described in more detail below, but
 basically you can supply a perl subroutine that will be invoked on every
@@ -131,6 +131,23 @@ nnrpd.
     returned to the client and the post will be saved to in.coming/spam
     for manual inspection.
 
+	If ``nnrpperlauth'' in inn.conf is set to ``true'', nnrpd authenticates
+reader with perl instead of normal authentication  with  nnrp.access.  For
+perl authentication, nnrpd_auth.pl is used.  This file is loaded when nnrpd
+starts up. If it defines a sub named `authenticate', then that function will
+be called during processing of a connect, auth request or disconnect.
+Attributes about the connection are passed to the program in the %attributes
+global variable.  It should return an array with 4 elements:
+
+1) NNTP response code.  Should be one of the codes from %connectcodes or %auth
+   codes
+2) Reading Allowed. Should be a boolean value.
+3) Posting Allowed. Should be a boolean value.
+4) Wildmat expression that says what groups to provide access to.
+
+All four of these are required.  If there is a problem with them then nnrpd
+will die and syslog the exact reason.  See samples/nnrpd_auth.pl.in for sample
+authentication.
 --------------------------------------------------
 
 Some notes:
