@@ -2,17 +2,17 @@
 ##  expire.ctl - expire control file
 ##  Format:
 ##	/remember/:<keep>
-##	<class>:<keep>:<default>:<purge>
-##	<wildmat>:<flag>:<keep>:<default>:<purge>
+##	<class>:<min>:<default>:<max>
+##	<wildmat>:<flag>:<min>:<default>:<max>
 ##  First line gives history retention; second line specifies expiration
 ##  for classes; third line specifies expiration for group if groupbaseexpiry
 ##  is true
 ##	<class>		class specified in storage.conf
 ##	<wildmat>	wildmat-style patterns for the newsgroups
-##	<keep>		Mininum number of days to keep article
+##	<min>		Mininum number of days to keep article
 ##	<default>	Default number of days to keep the article
-##	<purge>		Flush article after this many days
-##  <keep>, <default>, and <purge> can be floating-point numbers or the
+##	<max>		Flush article after this many days
+##  <min>, <default>, and <max> can be floating-point numbers or the
 ##  word "never."  Times are based on when received unless -p is used;
 ##  see expire.8
 

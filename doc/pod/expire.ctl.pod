@@ -44,11 +44,11 @@ by default) to ensure that the server never accepts duplicates.
 Most of the lines in this file will be in the second format, which
 consists of either four or five colon-separated fields:
 
-    <pattern>:<flag>:<keep>:<default>:<purge>
+    <pattern>:<flag>:<min>:<default>:<max>
 
 if I<groupbaseexpiry> is true in F<inn.conf> (the default), and otherwise:
 
-    <classnum>:<keep>:<default>:<purge>
+    <classnum>:<min>:<default>:<max>
 
 All lines must be in the correct format given the current setting of
 I<groupbaseexpiry>, and therefore the two formats cannot co-exist in the
@@ -90,15 +90,15 @@ that articles are only removed when B<expire> or B<expireover> is run,
 normally once a day by B<news.daily>) or the word C<never>.
 
 The middle field, <default>, will be used as the expiration period for
-most articles.  The other two fields, <keep> and <purge>, only come into
+most articles.  The other two fields, <min> and <max>, only come into
 play if the article requests a particular expiration date with an Expires
 header.  Articles with an Expires header will be expired at the date given
 in that header, subject to the constraints that they will be retained at
-least <keep> days and no longer than <purge> days.
+least <min> days and no longer than <max> days.
 
-If <keep> is set to C<never>, no article matching that line will ever be
+If <min> is set to C<never>, no article matching that line will ever be
 expired.  If <default> is set to C<never>, no article matching that line
-without an explicit Expires header will ever be expired.  If <purge> is
+without an explicit Expires header will ever be expired.  If <max> is
 set to C<never>, Expires headers will be honored no matter how far into
 the future they are.
 
@@ -116,8 +116,8 @@ file (except for C</remember/>) so that other expiration rules can
 override it.
 
 It is often useful to honor the Expires header in articles, especially
-those in moderated groups.  To do this, set <keep> to zero, <default> to
-whatever normal expiration you wish, and <purge> to C<never> or some large
+those in moderated groups.  To do this, set <min> to zero, <default> to
+whatever normal expiration you wish, and <max> to C<never> or some large
 number, like 365 days for a maximum article life of a year.
 
 To ignore any Expires header, set all three fields to the same value.
