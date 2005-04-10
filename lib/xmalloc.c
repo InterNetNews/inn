@@ -62,7 +62,7 @@ xmalloc_fail(const char *function, size_t size, const char *file, int line)
 }
 
 /* Assign to this variable to choose a handler other than the default. */
-xmalloc_handler_t xmalloc_error_handler = xmalloc_fail;
+xmalloc_handler_type xmalloc_error_handler = xmalloc_fail;
 
 void *
 x_malloc(size_t size, const char *file, int line)
