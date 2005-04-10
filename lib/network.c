@@ -166,8 +166,8 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
 
 
 /*
-**  Create an IPv4 socket and start listening on it, returning the resulting
-**  file descriptor (or -1 on a failure).
+**  Create an IPv4 socket and bind it, returning the resulting file
+**  descriptor (or -1 on a failure).
 */
 int
 network_bind_ipv4(const char *address, unsigned short port)
@@ -214,8 +214,8 @@ network_bind_ipv4(const char *address, unsigned short port)
 
 
 /*
-**  Create an IPv6 socket and start listening on it, returning the resulting
-**  file descriptor (or -1 on a failure).  Note that we don't warn (but still
+**  Create an IPv6 socket and bind it, returning the resulting file
+**  descriptor (or -1 on a failure).  Note that we don't warn (but still
 **  return failure) if the reason for the socket creation failure is that IPv6
 **  isn't supported; this is to handle systems like many Linux hosts where
 **  IPv6 is available in userland but the kernel doesn't support it.
