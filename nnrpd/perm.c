@@ -1544,7 +1544,7 @@ void PERMgetpermissions()
 	SetDefaultAccess(PERMaccessconf);
 	return;
 #ifdef DO_PERL
-    } else if (success_auth->access_script != NULL) {
+    } else if ((success_auth->access_script != NULL) && (success_auth->access_type == PERMpython_access)) {
       i = 0;
       cpp = xstrdup(success_auth->access_script);
       args = 0;
