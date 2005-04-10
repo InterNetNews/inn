@@ -162,3 +162,15 @@ get_auth_info(FILE *stream)
     free_auth_info(auth);
     return NULL;
 }
+
+
+/*
+**  Print the User: result on standard output in the format expected by
+**  nnrpd.  The string passed in should be exactly the user, with no
+**  extraneous leading or trailing whitespace.
+*/
+void
+print_user(const char *user)
+{
+    printf("User:%s\r\n", user);
+}

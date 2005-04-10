@@ -42,6 +42,9 @@ extern struct res_info  *get_res_info (FILE *);
 extern void free_auth_info(struct auth_info *);
 extern void free_res_info (struct res_info  *);
 
+/* Return the user string to nnrpd. */
+extern void print_user(const char *);
+
 END_DECLS
 
 #endif /* !LIBAUTH_H */

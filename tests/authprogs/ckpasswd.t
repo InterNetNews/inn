@@ -14,15 +14,15 @@ printcount () {
 # Run ckpasswd, expecting it to succeed.  Takes a username, a password, any
 # additional options, and the expected output string.
 runsuccess () {
-    output=`$ckpasswd -u "$1" -p "$2" $3 2>&1`
+    output=`$ckpasswd -u "$1" -p "$2" $3 > output 2>&1`
     status=$?
-    if test $status = 0 && test x"$output" = x"$4" ; then
+    printf '%s\r\n' "$4" > wanted
+    if test $status = 0 && diff wanted output ; then
         printcount "ok"
     else
         printcount "not ok"
-        echo "  saw: $output"
-        echo "  not: $4"
     fi
+    rm output wanted
 }
 
 # Run ckpasswd, feeding it the username and password on stdin in the same way
@@ -30,15 +30,15 @@ runsuccess () {
 # the expected output string.
 runpipe () {
     output=`( echo ClientAuthname: $1 ; echo ClientPassword: $2 ) \
-                | $ckpasswd $3 2>&1`
+                | $ckpasswd $3 > output 2>&1`
     status=$?
-    if test $status = 0 && test x"$output" = x"$4" ; then
+    printf '%s\r\n' "$4" > wanted
+    if test $status = 0 && diff wanted output ; then
         printcount "ok"
     else
         printcount "not ok"
-        echo "  saw: $output"
-        echo "  not: $4"
     fi
+    rm output wanted
 }
 
 # Run ckpasswd, expecting it to fail, and make sure it fails with status 1 and

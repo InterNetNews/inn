@@ -559,6 +559,6 @@ int main(int argc, char *argv[])
             retval);
 
     /* radius password matches! */
-    printf("User:%s\n", authinfo->username);
+    print_user(authinfo->username);
     exit(0);
 }

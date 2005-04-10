@@ -158,7 +158,7 @@ main(int argc, char *argv[])
         if (p != NULL)
             *p = '\0';
     }
-    printf("User:%s\n", iter);
+    print_user(iter);
 
     exit(0);
 }

@@ -44,7 +44,7 @@ main(int argc, char *argv[])
     /* Analyze the result. */
     switch (result) {
     case NTV_NO_ERROR:
-        printf("User:%s\n", authinfo->username);
+        print_user(authinfo->username);
         exit(0);
         break;
     case NTV_SERVER_ERROR:

@@ -17,15 +17,15 @@ printcount () {
 runsuccess () {
     output=`( echo ClientHost: $1 ; echo ClientIP: 127.0.0.1 ; \
               echo ClientPort: 0 ; echo LocalIP: 127.0.0.1 ; \
-              echo LocalPort: 119) | $domain $2 2>&1`
+              echo LocalPort: 119) | $domain $2 > output 2>&1`
     status=$?
-    if test $status = 0 && test x"$output" = x"$3" ; then
+    printf '%s\r\n' "$3" > wanted
+    if test $status = 0 && diff wanted output ; then
         printcount "ok"
     else
         printcount "not ok"
-        echo "  saw: $output"
-        echo "  not: $3"
     fi
+    rm output wanted
 }
 
 # Run domain, expecting it to fail, and make sure it fails with status 1 and
@@ -40,8 +40,6 @@ runfailure () {
         printcount "ok"
     else
         printcount "not ok"
-        echo "  saw: $output"
-        echo "  not: $3"
     fi
 }
 

@@ -56,7 +56,7 @@ server_ipv4(int n)
         skip_block(n, 4, "unknown username");
         return n + 4;
     }
-    snprintf(wanted, sizeof(wanted), "User:%s\n", pwd->pw_name);
+    snprintf(wanted, sizeof(wanted), "User:%s\r\n", pwd->pw_name);
 
     /* Create the network connection so ident has something to look at. */
     fd = network_bind_ipv4("127.0.0.1", 11119);

@@ -286,10 +286,10 @@ output_user(const char *username, bool wantgroup)
         char *group = group_system(username);
         if (group == NULL)
             die("group info for user %s not available", username);
-        printf("User:%s@%s\n", username, group);
+        printf("User:%s@%s\r\n", username, group);
     }
     else
-        printf("User:%s\n", username);
+        print_user(username);
 }
 
 
