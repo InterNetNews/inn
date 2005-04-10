@@ -95,9 +95,12 @@ ok_double(int n, double wanted, double seen)
 **  Skip a test.
 */
 void
-skip(int n)
+skip(int n, const char *reason)
 {
-    printf("ok %d # skip\n", n);
+    printf("ok %d # skip", n);
+    if (reason != NULL)
+        printf(" - %s", reason);
+    putchar('\n');
 }
 
 
@@ -118,12 +121,12 @@ ok_block(int n, int count, int status)
 **  Skip the next count tests.
 */
 void
-skip_block(int n, int count)
+skip_block(int n, int count, const char *reason)
 {
     int i;
 
     for (i = 0; i < count; i++)
-        skip(n++);
+        skip(n++, reason);
 }
 
 
