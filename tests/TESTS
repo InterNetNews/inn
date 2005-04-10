@@ -19,6 +19,7 @@ lib/md5
 lib/memcmp
 lib/messages
 lib/mkstemp
+lib/network
 lib/pread
 lib/pwrite
 lib/qio
