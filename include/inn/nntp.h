@@ -12,6 +12,7 @@
 #ifndef INN_NNTP_H
 #define INN_NNTP_H 1
 
+#include <inn/defines.h>
 #include <sys/types.h>          /* size_t, time_t */
 
 /*
@@ -161,6 +162,8 @@ enum nntp_status {
     NNTP_READ_LONG
 };
 
+BEGIN_DECLS
+
 /* Allocate a new nntp struct for a pair of file descriptors.  Takes the
    maximum size for the read buffer; messages longer than this will not be
    read.  Takes the timeout in seconds for subsequent reads (0 means wait
@@ -214,5 +217,7 @@ void nntp_respond_noflush(struct nntp *, enum nntp_code, const char *, ...);
 
 /* Flush NNTP output, returning true on success and false on any error. */
 bool nntp_flush(struct nntp *);
+
+END_DECLS
 
 #endif /* INN_NNTP_H */
