@@ -242,6 +242,7 @@ doc/man/storage.conf.5                Manpage for storage.conf config file
 doc/man/subscriptions.5               Manpage for subscriptions list
 doc/man/tally.control.8               Manpage for tally.control
 doc/man/tdx-util.8                    Manpage for tdx-util
+doc/man/tinyleaf.8                    Manpage for tinyleaf
 doc/man/tst.3                         Manpage for ternary search tree routines
 doc/man/uwildmat.3                    Manpage for uwildmat library routine
 doc/man/writelog.8                    Manpage for writelog
@@ -312,6 +313,7 @@ doc/pod/simpleftp.pod                 Master file for simpleftp.1
 doc/pod/sm.pod                        Master file for sm.1
 doc/pod/subscriptions.pod             Master file for subscriptions.5
 doc/pod/tdx-util.pod                  Master file for tdx-util.8
+doc/pod/tinyleaf.pod                  Master file for tinyleaf.8
 doc/pod/tst.pod                       Master file for tst.3
 doc/pod/uwildmat.pod                  Master file for uwildmat.3
 doc/sample-control                    Sample PGP-signed control message
@@ -422,6 +424,7 @@ innd/python.c                         Python routines for innd
 innd/rc.c                             Remote channel accepting routines
 innd/site.c                           Site feeding routines
 innd/status.c                         Status routines for innd
+innd/tinyleaf.c                       Miniature IHAVE-only leaf server
 innd/util.c                           Utility functions for innd
 innd/wip.c                            Work-in-progress routines for innd
 innfeed                               innfeed (Directory)
