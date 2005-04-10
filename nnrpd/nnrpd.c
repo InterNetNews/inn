@@ -23,6 +23,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/network.h"
+#include "inn/version.h"
 #include "libinn.h"
 #include "ov.h"
 #define MAINLINE
@@ -1252,13 +1253,13 @@ main(int argc, char *argv[])
     if (PERMaccessconf) {
         Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-           PERMaccessconf->pathhost, inn_version_string,
+           PERMaccessconf->pathhost, INN_VERSION_STRING,
 	   PERMcanpost ? "posting ok" : "no posting");
 	clienttimeout = PERMaccessconf->clienttimeout;
     } else {
         Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-           innconf->pathhost, inn_version_string,
+           innconf->pathhost, INN_VERSION_STRING,
 	   PERMcanpost ? "posting ok" : "no posting");
 	clienttimeout = innconf->clienttimeout;
     }

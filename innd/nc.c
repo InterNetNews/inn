@@ -8,6 +8,7 @@
 #include "clibrary.h"
 
 #include "inn/innconf.h"
+#include "inn/version.h"
 #include "innd.h"
 
 #define BAD_COMMAND_COUNT	10
@@ -1161,7 +1162,7 @@ NCsetup(void)
 	/* Worked in main, now it fails?  Curious. */
 	p = Path.data;
     snprintf(buff, sizeof(buff), "%d %s InterNetNews server %s ready",
-	    NNTP_POSTOK_VAL, p, inn_version_string);
+	    NNTP_POSTOK_VAL, p, INN_VERSION_STRING);
     NCgreeting = xstrdup(buff);
 }
 

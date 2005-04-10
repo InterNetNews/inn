@@ -10,6 +10,7 @@
 #include "ov.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/version.h"
 #include "tls.h"
 
 typedef struct {
@@ -305,7 +306,7 @@ CMDmode(int ac UNUSED, char *av[])
     if (strcasecmp(av[1], "reader") == 0)
 	Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
 	       PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
-               PERMaccessconf->pathhost, inn_version_string,
+               PERMaccessconf->pathhost, INN_VERSION_STRING,
 	       PERMcanpost ? "posting ok" : "no posting");
     else
 	Reply("%d What?\r\n", NNTP_SYNTAX_VAL);

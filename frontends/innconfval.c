@@ -8,6 +8,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/version.h"
 #include "libinn.h"
 
 /*
@@ -18,16 +19,16 @@ print_version(FILE *file, enum innconf_quoting quoting)
 {
     switch (quoting) {
     case INNCONF_QUOTE_NONE:
-        fprintf(file, "%s\n", inn_version_string);
+        fprintf(file, "%s\n", INN_VERSION_STRING);
         break;
     case INNCONF_QUOTE_SHELL:
-        fprintf(file, "VERSION='%s'; export VERSION\n", inn_version_string);
+        fprintf(file, "VERSION='%s'; export VERSION\n", INN_VERSION_STRING);
         break;
     case INNCONF_QUOTE_PERL:
-        fprintf(file, "$version = '%s';\n", inn_version_string);
+        fprintf(file, "$version = '%s';\n", INN_VERSION_STRING);
         break;
     case INNCONF_QUOTE_TCL:
-        fprintf(file, "set inn_version \"%s\"\n", inn_version_string);
+        fprintf(file, "set inn_version \"%s\"\n", INN_VERSION_STRING);
         break;
     }
 }

@@ -524,7 +524,6 @@ lib/timer.c                           Generic profile timer
 lib/tst.c                             Ternary search trie implementation
 lib/uwildmat.c                        Pattern match routine
 lib/vector.c                          Manipulate vectors of strings
-lib/version.c                         INN version constants
 lib/wire.c                            Manipulate wire-format articles
 lib/xfopena.c                         Open a FILE in append mode
 lib/xmalloc.c                         Failsafe memory allocation wrapper

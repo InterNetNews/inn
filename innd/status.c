@@ -7,6 +7,7 @@
 #include "portable/socket.h"
 
 #include "inn/innconf.h"
+#include "inn/version.h"
 #include "innd.h"
 #include "innperl.h"
 
@@ -136,7 +137,7 @@ STATUSsummary(void)
   fprintf (F, "</HEAD>\n<BODY>\n<PRE>\n") ;
 #endif /* defined(HTML_STATUS) */
 
-  fprintf (F, "%s\n", inn_version_string);
+  fprintf (F, "%s\n", INN_VERSION_STRING);
   fprintf (F, "pid %d started %s\n", (int) getpid(), start_time);
 
   tmp = head = NULL;

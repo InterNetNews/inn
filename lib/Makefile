@@ -13,8 +13,8 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		list.c localopen.c lockfile.c makedir.c md5.c messages.c \
 		mmap.c network.c nntp.c qio.c radix32.c readin.c remopen.c \
 		reservedfd.c resource.c sendarticle.c sendpass.c sequence.c \
-		sockaddr.c timer.c tst.c uwildmat.c vector.c version.c \
-		wire.c xfopena.c xmalloc.c xsignal.c xwrite.c
+		sockaddr.c timer.c tst.c uwildmat.c vector.c wire.c \
+		xfopena.c xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
 EXTRA_SOURCES = alloca.c fseeko.c ftello.c getaddrinfo.c getpagesize.c \
@@ -217,8 +217,6 @@ uwildmat.o: uwildmat.c ../include/config.h ../include/inn/defines.h \
 vector.o: vector.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/inn/vector.h \
   ../include/libinn.h
-version.o: version.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/version.h
 wire.o: wire.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/inn/wire.h \
   ../include/libinn.h

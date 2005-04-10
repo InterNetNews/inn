@@ -15,6 +15,13 @@
 #include <stdio.h>              /* FILE */
 #include <sys/types.h>          /* size_t and ssize_t */
 
+/* Earlier versions of INN didn't have <inn/version.h> and some source is
+   intended to be portable to different INN versions; it can use this macro to
+   determine whether <inn/version.h> is available.  WARNING: This macro will
+   be removed in a later version of INN when the library API is finalized.
+   Use a configure test for inn/version.h instead. */
+#define HAVE_INN_VERSION_H 1
+
 /* Forward declarations to avoid unnecessary includes. */
 struct stat;
 struct iovec;
@@ -67,19 +74,6 @@ extern bool     makedate(time_t, bool local, char *buff, size_t buflen);
 extern time_t   parsedate_nntp(const char *, const char *, bool local);
 extern time_t   parsedate_rfc2822(const char *);
 extern time_t   parsedate_rfc2822_lax(const char *);
-
-
-/*
-**  VERSION INFORMATION
-*/
-extern const int        inn_version[3];
-extern const char       inn_version_extra[];
-extern const char       inn_version_string[];
-
-/* Earlier versions of INN didn't have <inn/version.h> and some source is
-   intended to be portable to different INN versions; it can use this macro
-   to determine whether <inn/version.h> is available. */
-#define HAVE_INN_VERSION_H 1
 
 
 /*
