@@ -5,7 +5,7 @@ include ../Makefile.global
 top	        = ..
 CFLAGS		= $(GCFLAGS) $(TCLINC)
 
-ALL		= innd
+ALL		= innd tinyleaf
 
 SOURCES		= art.c cc.c chan.c icd.c innd.c keywords.c lc.c nc.c \
 		  newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
@@ -20,6 +20,7 @@ warnings:
 
 install: all
 	$(LI_XPRI) innd $D$(PATHBIN)/innd
+	$(LI_XPUB) tinyleaf $D$(PATHBIN)/tinyleaf
 
 clean:
 	rm -f *.o $(ALL) inndp
@@ -42,6 +43,9 @@ python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
 
 innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)
+
+tinyleaf: tinyleaf.o $(LIBINN)
+	$(LIBLD) $(LDFLAGS) -o $@ tinyleaf.o $(LIBINN)
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
