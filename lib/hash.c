@@ -7,6 +7,7 @@
 #include <ctype.h>
 
 #include "inn/md5.h"
+#include "inn/utility.h"
 #include "libinn.h"
 
 static HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
@@ -107,46 +108,27 @@ HashClear(HASH *hash)
 
 /*
 **  Convert the binary form of the hash to a form that we can use in error
-**  messages and logs.
+**  messages and logs.  Just a wrapper around inn_encode_hex.
 */
 char *
 HashToText(const HASH hash)
 {
-    static const char	hex[] = "0123456789ABCDEF";
-    const char		*p;
-    unsigned int	i;
-    static char		hashstr[(sizeof(HASH)*2) + 1];
+    static char	hashstr[(sizeof(HASH) * 2) + 1];
 
-    for (p = hash.hash, i = 0; i < sizeof(HASH); i++, p++) {
-	hashstr[i * 2] = hex[(*p & 0xF0) >> 4];
-	hashstr[(i * 2) + 1] = hex[*p & 0x0F];
-    }
-    hashstr[(sizeof(HASH) * 2)] = '\0';
+    inn_encode_hex(hash.hash, sizeof(HASH), hashstr, sizeof(hashstr));
     return hashstr;
 }
 
 /*
-** Converts a hex digit and converts it to a int
-*/
-static
-int hextodec(const int c)
-{
-    return isdigit(c) ? (c - '0') : ((c - 'A') + 10);
-}
-
-/*
-**  Convert the ASCII representation of the hash back to the canonical form
+**  Convert the ASCII representation of the hash back to the canonical form.
+**  Just a wrapper around inn_decode_hex.
 */
 HASH
 TextToHash(const char *text)
 {
-    char                *q;
-    int                 i;
-    HASH                hash;
+    HASH hash;
 
-    for (q = (char *)&hash, i = 0; i != sizeof(HASH); i++) {
-	q[i] = (hextodec(text[i * 2]) << 4) + hextodec(text[(i * 2) + 1]);
-    }
+    inn_decode_hex(text, (unsigned char *) hash.hash, sizeof(HASH));
     return hash;
 }
 
