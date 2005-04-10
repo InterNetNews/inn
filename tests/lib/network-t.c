@@ -27,9 +27,8 @@ listener(int fd, int n)
     close(fd);
     if (client < 0) {
         syswarn("cannot accept connection from socket");
-        ok(n++, false);
-        ok(n++, false);
-        return n;
+        ok_block(n, 2, false);
+        return n + 2;
     }
     ok(n++, true);
     out = fdopen(client, "r");
@@ -141,18 +140,15 @@ test_ipv6(int n)
     fd = network_bind_ipv6("::1", 11119);
     if (fd < 0) {
         if (errno == EAFNOSUPPORT || errno == EPROTONOSUPPORT) {
-            printf("ok %d # skip\n", n++);
-            printf("ok %d # skip\n", n++);
-            printf("ok %d # skip\n", n++);
-            return n;
+            skip_block(n, 3, "IPv6 not supported");
+            return n + 3;
         } else
             sysdie("cannot create socket");
     }
     if (listen(fd, 1) < 0) {
         syswarn("cannot listen to socket");
-        ok(n++, false);
-        ok(n++, false);
-        ok(n++, false);
+        ok_block(n, 3, false);
+        n += 3;
     } else {
         ok(n++, true);
         child = fork();
@@ -171,8 +167,7 @@ test_ipv6(int n)
 {
     int i;
 
-    for (i = n; i < n + 3; i++)
-        printf("ok %d # skip\n", i);
+    skip_block(n, 3, "IPv6 not supported");
     return n + 3;
 }
 #endif /* !HAVE_INET6 */
@@ -198,9 +193,8 @@ test_all(int n)
         fd = fds[i];
         if (listen(fd, 1) < 0) {
             syswarn("cannot listen to socket %d", fd);
-            ok(n++, false);
-            ok(n++, false);
-            ok(n++, false);
+            ok_block(n, 3, false);
+            n += 3;
         } else {
             ok(n++, true);
             child = fork();
@@ -215,8 +209,8 @@ test_all(int n)
                     client_ipv6();
                 else {
                     warn("unknown socket family %d", saddr.ss_family);
-                    printf("ok %d # skip\n", n++);
-                    printf("ok %d # skip\n", n++);
+                    skip_block(n, 2, "unknown socket family");
+                    n += 2;
                 }
                 size = sizeof(saddr);
             } else
@@ -224,9 +218,8 @@ test_all(int n)
         }
     }
     if (count == 1) {
-        printf("ok %d # skip\n", n++);
-        printf("ok %d # skip\n", n++);
-        printf("ok %d # skip\n", n++);
+        skip_block(n, 3, "only one listening socket");
+        n += 3;
     }
     return n;
 }

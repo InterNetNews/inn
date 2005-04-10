@@ -352,10 +352,9 @@ main(void)
     /* Missing newline. */
     group = config_parse_file("config/no-newline");
     ok(40, group != NULL);
-    if (group == NULL) {
-        ok(41, false);
-        ok(42, false);
-    } else {
+    if (group == NULL)
+        ok_block(41, 2, false);
+    else {
         ok(41, config_param_string(group, "parameter", &s_value));
         ok_string(42, "value", s_value);
         config_free(group);
@@ -374,12 +373,9 @@ main(void)
     fclose(tmpconfig);
     group = config_parse_file("config/tmp");
     ok(43, group != NULL);
-    if (group == NULL) {
-        ok(44, false);
-        ok(45, false);
-        ok(46, false);
-        ok(47, false);
-    } else {
+    if (group == NULL)
+        ok_block(44, 4, false);
+    else {
         ok(44, config_param_string(group, long_param, &s_value));
         ok_string(45, long_value, s_value);
         ok(46, config_param_string(group, "two", &s_value));
@@ -404,12 +400,9 @@ main(void)
     fclose(tmpconfig);
     group = config_parse_file("config/tmp");
     ok(48, group != NULL);
-    if (group == NULL) {
-        ok(49, false);
-        ok(50, false);
-        ok(51, false);
-        ok(52, false);
-    } else {
+    if (group == NULL)
+        ok_block(49, 4, false);
+    else {
         ok(49, config_param_string(group, long_param, &s_value));
         ok_string(50, "baz", s_value);
         ok(51, config_param_string(group, "foo", &s_value));

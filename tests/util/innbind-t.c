@@ -31,9 +31,8 @@ listener(int fd, int n)
     close(fd);
     if (client < 0) {
         syswarn("cannot accept connection from socket");
-        ok(n++, false);
-        ok(n++, false);
-        return n;
+        ok_block(n, 2, false);
+        return n + 2;
     }
     ok(n++, true);
     out = fdopen(client, "r");
@@ -164,9 +163,8 @@ test_ipv4(int n)
         sysdie("cannot create socket");
     n = run_innbind(n, fd, AF_INET, "127.0.0.1");
     if (listen(fd, 1) < 0) {
-        ok(n++, false);
-        ok(n++, false);
-        ok(n++, false);
+        ok_block(n, 3, false);
+        n += 3;
     } else {
         ok(n++, true);
         child = fork();
@@ -187,23 +185,21 @@ test_ipv4(int n)
 static int
 test_ipv6(int n)
 {
-    int fd, i;
+    int fd;
     pid_t child;
 
     fd = socket(AF_INET6, SOCK_STREAM, IPPROTO_IP);
     if (fd < 0) {
         if (errno == EAFNOSUPPORT || errno == EPROTONOSUPPORT) {
-            for (i = n; i < n + 5; i++)
-                printf("ok %d # skip\n", i);
+            skip_block(n, 5, "IPv6 not supported");
             return n + 5;
         } else
             sysdie("cannot create socket");
     }
     n = run_innbind(n, fd, AF_INET6, "::");
     if (listen(fd, 1) < 0) {
-        ok(n++, false);
-        ok(n++, false);
-        ok(n++, false);
+        ok_block(n, 3, false);
+        n += 3;
     } else {
         ok(n++, true);
         child = fork();
@@ -222,8 +218,7 @@ test_ipv6(int n)
 {
     int i;
 
-    for (i = n; i < n + 5; i++)
-        printf("ok %d # skip\n", i);
+    skip_block(n, 5, "IPv6 not supported");
     return n + 5;
 }
 #endif /* !HAVE_INET6 */
@@ -293,10 +288,7 @@ test_sendfd(int n)
 static int
 test_sendfd(int n)
 {
-    int i;
-
-    for (i = n; i < n + 5; i++)
-        printf("ok %d # skip\n", i);
+    skip_block(n, 5, "SENDFD not supported");
     return n;
 }
 #endif /* !HAVE_INET6 */

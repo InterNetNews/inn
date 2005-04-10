@@ -170,12 +170,14 @@ main(void)
 
     hints.ai_flags = AI_CANONNAME;
     ok(72, test_getaddrinfo("foo.invalid", NULL, NULL, &ai) == EAI_NONAME);
+    host = gethostbyname("cnn.com");
+    if (host == NULL) {
+        skip_block(73, 3, "cannot look up cnn.com");
+        exit(0);
+    }
     ok(73, test_getaddrinfo("cnn.com", NULL, &hints, &ai) == 0);
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(74, saddr->sin_port == 0);
-    host = gethostbyname("cnn.com");
-    if (host == NULL)
-        die("cannot look up cnn.com");
     first = ai;
     for (found = false; ai != NULL; ai = ai->ai_next) {
         if (!strcmp(ai->ai_canonname, first->ai_canonname) == 0) {

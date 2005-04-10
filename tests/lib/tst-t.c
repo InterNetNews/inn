@@ -77,7 +77,7 @@ main(void)
     if (words == NULL)
         words = fopen("/usr/share/dict/words", "r");
     if (words == NULL) {
-        puts("ok 37 # skip\nok 38 # skip");
+        skip_block(37, 2, "/usr/share/dict/words not available");
         exit(0);
     }
 

@@ -46,8 +46,7 @@ main(void)
     ok_string(10, "", getenv(test_var));
     status = test_setenv(test_var, value, 1);
     if (status == 0) {
-        puts("ok 11 # skip - no data limit support");
-        puts("ok 12 # skip - no data limit support");
+        skip_block(11, 2, "no data limit support");
     } else {
         ok(11, (status == -1) && (errno == ENOMEM));
         ok_string(12, "", getenv(test_var));
