@@ -66,7 +66,7 @@ network_child_fatal(void)
 
 /*
 **  Receive a file descriptor from a STREAMS pipe if supported and return the
-**  file descriptor.  If not supported, always warn and return -1 for failure.
+**  file descriptor.  If not supported, return -1 for failure.
 */
 #ifdef HAVE_STREAMS_SENDFD
 static int
@@ -104,6 +104,10 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
     int pipefds[2];
     pid_t child, result;
     int status;
+
+    /* We need innconf in order to find innbind. */
+    if (innconf == NULL || innconf->pathbin == NULL)
+        return -1;
 
     /* Open a pipe to innbind and run it to bind the socket. */
     if (pipe(pipefds) < 0) {
@@ -350,6 +354,8 @@ network_bind_all(unsigned short port, int **fds, int *count)
 static bool
 network_source(int fd, int family)
 {
+    if (innconf == NULL)
+        return true;
     if (family == AF_INET && innconf->sourceaddress != NULL) {
         struct sockaddr_in saddr;
 
