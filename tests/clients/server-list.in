@@ -63,14 +63,13 @@ sub serve {
 }
 
 # Background ourselves and then record the PID.  Don't exit the parent process
-# until the pid file shows up, indicating the child has started.  Busy-wait;
-# it will only be a few milliseconds.
+# until the pid file shows up, indicating the child has started.
 unlink './pid';
 my $pid = fork;
 if ($pid < 0) {
     die "Cannot fork: $!\n";
 } elsif ($pid > 0) {
-    1 while (!-f './pid');
+    select (undef, undef, undef, 0.1) while (!-f './pid');
     exit;
 } else {
     close STDIN;
@@ -84,6 +83,7 @@ my $server = IO::Socket::INET->new (LocalAddr => "127.0.0.1",
                                     Listen    => 1,
                                     ReuseAddr => 1)
     or die "Cannot create socket: $!\n";
+$SIG{TERM} = sub { close $server; exit };
 open (PID, '> pid') or die "Cannot create pid: $!\n";
 print PID "$$\n";
 close PID;
