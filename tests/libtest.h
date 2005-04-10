@@ -3,8 +3,8 @@
 **  Some utility routines for writing tests.
 */
 
-#ifndef TESTLIB_H
-#define TESTLIB_H 1
+#ifndef LIBTEST_H
+#define LIBTEST_H 1
 
 #include "config.h"
 #include <inn/defines.h>
@@ -35,4 +35,4 @@ void errors_uncapture(void);
 
 END_DECLS
 
-#endif /* TESTLIB_H */
+#endif /* LIBTEST_H */
