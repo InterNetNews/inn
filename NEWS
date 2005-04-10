@@ -1,3 +1,10 @@
+Changes from 2.4.2 to 2.4.3
+
+    * Previous versions of INN had an optimization for handling XHDR
+      Newsgroups that used the Xref header from overview.  While this does
+      make the command much faster, it doesn't produce accurate results and
+      breaks the NNTP protocol, so this optimization has been removed.
+
 Changes from 2.4.1 to 2.4.2
 
     * INN is now licensed under a less restrictive license (about as
