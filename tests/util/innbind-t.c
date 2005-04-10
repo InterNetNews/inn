@@ -13,8 +13,25 @@
 #include "inn/messages.h"
 #include "libtest.h"
 
+/* If SO_REUSEADDR isn't available, make calls to set_reuseaddr go away. */
+#ifndef SO_REUSEADDR
+# define set_reuseaddr(fd)      /* empty */
+#endif
+
 /* The path to the uninstalled innbind helper program. */
 static const char innbind[] = "../../backends/innbind";
+
+/* Set SO_REUSEADDR on a socket if possible. */
+#ifdef SO_REUSEADDR
+static void
+set_reuseaddr(int fd)
+{
+    int flag = 1;
+
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0)
+        syswarn("cannot mark bind address reusable");
+}
+#endif
 
 /* The server portion of the test.  Listens to a socket and accepts a
    connection, making sure what is printed on that connection matches what the
@@ -161,6 +178,7 @@ test_ipv4(int n)
     fd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if (fd < 0)
         sysdie("cannot create socket");
+    set_reuseaddr(fd);
     n = run_innbind(n, fd, AF_INET, "127.0.0.1");
     if (listen(fd, 1) < 0) {
         ok_block(n, 3, false);
@@ -196,6 +214,7 @@ test_ipv6(int n)
         } else
             sysdie("cannot create socket");
     }
+    set_reuseaddr(fd);
     n = run_innbind(n, fd, AF_INET6, "::");
     if (listen(fd, 1) < 0) {
         ok_block(n, 3, false);
