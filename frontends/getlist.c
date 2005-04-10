@@ -294,5 +294,6 @@ main(int argc, char *argv[])
        connection down cleanly. */
     if (nntp_send_line(nntp, "QUIT"))
         status = nntp_read_response(nntp, &response, &line);
+    nntp_free(nntp);
     exit(0);
 }
