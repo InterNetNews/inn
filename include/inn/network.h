@@ -45,9 +45,15 @@ void network_bind_all(unsigned short port, int **fds, int *count);
 
 /* Create a socket and connect it to the remote service given by the linked
    list of addrinfo structs.  Returns the new file descriptor on success and
-   -1 on failure, with the error left in errno.  The source address is set
-   based on innconf->sourceaddress and innconf->sourceaddress6. */
-int network_connect(struct addrinfo *);
+   -1 on failure, with the error left in errno.  Takes an optional source
+   address; if not provided and inn.conf has been read, the source address is
+   set based on innconf->sourceaddress and innconf->sourceaddress6. */
+int network_connect(struct addrinfo *, const char *source);
+
+/* Like network_connect but takes a host and port instead.  If host lookup
+   fails, errno may not be set to anything useful. */
+int network_connect_host(const char *host, unsigned short port,
+                         const char *source);
 
 /* Kill IP options (like source routing) if possible.  Returns false only when
    IP options have been found but clearing them failed. */

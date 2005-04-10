@@ -42,13 +42,18 @@ listener(int fd, int n)
     return n;
 }
 
-/* Send a constant string to a socket, used to finish the client side of the
-   testing. */
+/* Connect to the given host on port 11119 and send a constant string to a
+   socket, used to do the client side of the testing.  Takes the source
+   address as well to pass into network_connect_host. */
 static void
-client_send(int fd)
+client(const char *host, const char *source)
 {
+    int fd;
     FILE *out;
 
+    fd = network_connect_host(host, 11119, source);
+    if (fd < 0)
+        _exit(1);
     out = fdopen(fd, "w");
     if (out == NULL)
         _exit(1);
@@ -57,52 +62,11 @@ client_send(int fd)
     _exit(0);
 }
 
-/* Create a client IPv4 connection to the local server and then send a static
-   string to that connection. */
-static void
-client_ipv4(void)
-{
-    struct addrinfo hints, *ai;
-    int fd;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo("127.0.0.1", "11119", &hints, &ai) != 0)
-        _exit(1);
-    fd = network_connect(ai);
-    freeaddrinfo(ai);
-    if (fd < 0)
-        _exit(1);
-    client_send(fd);
-}
-
-/* Create a client IPv6 connection to the local server and then send a static
-   string to that connection. */
-#ifdef HAVE_INET6
-static void
-client_ipv6(void)
-{
-    struct addrinfo hints, *ai;
-    int fd;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET6;
-    hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo("::1", "11119", &hints, &ai) != 0)
-        _exit(1);
-    fd = network_connect(ai);
-    freeaddrinfo(ai);
-    if (fd < 0)
-        _exit(1);
-    client_send(fd);
-}
-#endif
-
 /* Bring up a server on port 11119 on the loopback address and test connecting
-   to it via IPv4. */
+   to it via IPv4.  Takes an optional source address to use for client
+   connections. */
 static int
-test_ipv4(int n)
+test_ipv4(int n, const char *source)
 {
     int fd;
     pid_t child;
@@ -121,7 +85,7 @@ test_ipv4(int n)
         if (child < 0)
             sysdie("cannot fork");
         else if (child == 0)
-            client_ipv4();
+            client("127.0.0.1", source);
         else
             n = listener(fd, n);
     }
@@ -129,10 +93,11 @@ test_ipv4(int n)
 }
 
 /* Bring up a server on port 11119 on the loopback address and test connecting
-   to it via IPv6. */
+   to it via IPv6.  Takes an optional source address to use for client
+   connections. */
 #ifdef HAVE_INET6
 static int
-test_ipv6(int n)
+test_ipv6(int n, const char *source)
 {
     int fd;
     pid_t child;
@@ -155,7 +120,7 @@ test_ipv6(int n)
         if (child < 0)
             sysdie("cannot fork");
         else if (child == 0)
-            client_ipv6();
+            client("::1", source);
         else
             n = listener(fd, n);
     }
@@ -173,9 +138,10 @@ test_ipv6(int n)
 #endif /* !HAVE_INET6 */
 
 /* Bring up a server on port 11119 on all addresses and try connecting to it
-   via all of the available protocols. */
+   via all of the available protocols.  Takes an optional source address to
+   use for client connections. */
 static int
-test_all(int n)
+test_all(int n, const char *source_ipv4, const char *source_ipv6)
 {
     int *fds, count, fd, i;
     pid_t child;
@@ -204,9 +170,9 @@ test_all(int n)
                 if (getsockname(fd, (struct sockaddr *) &saddr, &size) < 0)
                     sysdie("cannot getsockname");
                 if (saddr.ss_family == AF_INET)
-                    client_ipv4();
+                    client("127.0.0.1", source_ipv4);
                 else if (saddr.ss_family == AF_INET6)
-                    client_ipv6();
+                    client("::1", source_ipv6);
                 else {
                     warn("unknown socket family %d", saddr.ss_family);
                     skip_block(n, 2, "unknown socket family");
@@ -229,32 +195,36 @@ main(void)
 {
     int n;
 
+    test_init(48);
+
+    n = test_ipv4(1, NULL);        /* Tests  1-3.  */
+    n = test_ipv6(n, NULL);        /* Tests  4-6.  */
+    n = test_all(n, NULL, NULL);   /* Tests  7-12. */
+
+    /* This won't make a difference for loopback connections. */
+    n = test_ipv4(n, "127.0.0.1"); /* Tests 13-15. */
+    n = test_ipv6(n, "::1");       /* Tests 16-18. */
+    n = test_all(n, "127.0.0.1", "::1");  /* Tests 19-24. */
+
     /* We need an initialized innconf struct, but it doesn't need to contain
        anything interesting. */
     innconf = xcalloc(1, sizeof(struct innconf));
 
-    test_init(36);
-
-    n = test_ipv4(1);           /* Tests  1-3.  */
-    n = test_ipv6(n);           /* Tests  4-6.  */
-    n = test_all(n);            /* Tests  7-12. */
-
     /* This should be equivalent to the previous tests. */
     innconf->sourceaddress = xstrdup("all");
     innconf->sourceaddress6 = xstrdup("all");
-    n = test_ipv4(n);           /* Tests 13-15. */
-    n = test_ipv6(n);           /* Tests 16-18. */
-    n = test_all(n);            /* Tests 19-24. */
+    n = test_ipv4(n, NULL);        /* Tests 25-27. */
+    n = test_ipv6(n, NULL);        /* Tests 28-30. */
+    n = test_all(n, NULL, NULL);   /* Tests 31-36. */
 
-    /* This won't make a difference for loopback connections, but it will
-       exercise the code in lib/network.c. */
+    /* This won't make a difference for loopback connections. */
     free(innconf->sourceaddress);
     free(innconf->sourceaddress6);
     innconf->sourceaddress = xstrdup("127.0.0.1");
     innconf->sourceaddress6 = xstrdup("::1");
-    n = test_ipv4(n);           /* Tests 25-27. */
-    n = test_ipv6(n);           /* Tests 28-30. */
-    n = test_all(n);            /* Tests 31-36. */
+    n = test_ipv4(n, NULL);        /* Tests 37-39. */
+    n = test_ipv6(n, NULL);        /* Tests 40-42. */
+    n = test_all(n, NULL, NULL);   /* Tests 43-48. */
 
     return 0;
 }

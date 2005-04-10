@@ -26,8 +26,6 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
     char *buff;
     int fd, code, oerrno;
     FILE *F = NULL;
-    struct addrinfo hints, *ai;
-    char portbuf[16];
 
     if (errbuff)
         buff = errbuff;
@@ -37,16 +35,7 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
     }
     *buff = '\0';
 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = NETWORK_AF_HINT;
-    hints.ai_socktype = SOCK_STREAM;
-    snprintf(portbuf, sizeof(portbuf), "%d", port);
-    if (getaddrinfo(host, portbuf, &hints, &ai) != 0)
-        return -1;
-    fd = network_connect(ai);
-    oerrno = errno;
-    freeaddrinfo(ai);
-    errno = oerrno;
+    fd = network_connect_host(host, port, NULL);
     if (fd < 0)
         return -1;
 

@@ -349,33 +349,38 @@ network_bind_all(unsigned short port, int **fds, int *count)
 
 /*
 **  Binds the given socket to an appropriate source address for its family,
-**  using innconf information.  Returns true on success and false on failure.
+**  using innconf information or the provided source address.  Returns true on
+**  success and false on failure.
 */
 static bool
-network_source(int fd, int family)
+network_source(int fd, int family, const char *source)
 {
-    if (innconf == NULL)
+    if (source == NULL && innconf == NULL)
         return true;
-    if (family == AF_INET && innconf->sourceaddress != NULL) {
+    if (family == AF_INET) {
         struct sockaddr_in saddr;
 
-        if (strcmp(innconf->sourceaddress, "all") == 0)
+        if (source == NULL)
+            source = innconf->sourceaddress;
+        if (source == NULL || strcmp(source, "all") == 0)
             return true;
         memset(&saddr, 0, sizeof(saddr));
         saddr.sin_family = AF_INET;
-        if (!inet_aton(innconf->sourceaddress, &saddr.sin_addr))
+        if (!inet_aton(source, &saddr.sin_addr))
             return false;
         return bind(fd, (struct sockaddr *) &saddr, sizeof(saddr)) == 0;
     }
 #ifdef HAVE_INET6
-    else if (family == AF_INET6 && innconf->sourceaddress6 != NULL) {
+    else if (family == AF_INET6) {
         struct sockaddr_in6 saddr;
 
-        if (strcmp(innconf->sourceaddress6, "all") == 0)
+        if (source == NULL)
+            source = innconf->sourceaddress6;
+        if (source == NULL || strcmp(source, "all") == 0)
             return true;
         memset(&saddr, 0, sizeof(saddr));
         saddr.sin6_family = AF_INET6;
-        if (inet_pton(AF_INET6, innconf->sourceaddress6, &saddr) < 1)
+        if (inet_pton(AF_INET6, source, &saddr) < 1)
             return false;
         return bind(fd, (struct sockaddr *) &saddr, sizeof(saddr)) == 0;
     }
@@ -387,13 +392,13 @@ network_source(int fd, int family)
 
 /*
 **  Given a linked list of addrinfo structs representing the remote service,
-**  try to create a local socket and connect to that service.  Try each
-**  address in turn until one of them connects.  Returns the file descriptor
-**  of the open socket on success, or -1 on failure.  Tries to leave the
-**  reason for the failure in errno.
+**  try to create a local socket and connect to that service.  Takes an
+**  optional source address.  Try each address in turn until one of them
+**  connects.  Returns the file descriptor of the open socket on success, or
+**  -1 on failure.  Tries to leave the reason for the failure in errno.
 */
 int
-network_connect(struct addrinfo *ai)
+network_connect(struct addrinfo *ai, const char *source)
 {
     int fd = -1;
     int oerrno;
@@ -405,7 +410,7 @@ network_connect(struct addrinfo *ai)
         fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
         if (fd < 0)
             continue;
-        if (!network_source(fd, ai->ai_family))
+        if (!network_source(fd, ai->ai_family, source))
             continue;
         if (connect(fd, ai->ai_addr, ai->ai_addrlen) == 0) {
             success = true;
@@ -422,6 +427,34 @@ network_connect(struct addrinfo *ai)
         }
         return -1;
     }
+}
+
+
+/*
+**  Like network_connect, but takes a host and a port instead of an addrinfo
+**  struct list.  Returns the file descriptor of the open socket on success,
+**  or -1 on failure.  If getaddrinfo fails, errno may not be set to anything
+**  useful.
+*/
+int
+network_connect_host(const char *host, unsigned short port,
+                     const char *source)
+{
+    struct addrinfo hints, *ai;
+    char portbuf[16];
+    int fd, oerrno;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = NETWORK_AF_HINT;
+    hints.ai_socktype = SOCK_STREAM;
+    snprintf(portbuf, sizeof(portbuf), "%d", port);
+    if (getaddrinfo(host, portbuf, &hints, &ai) != 0)
+        return -1;
+    fd = network_connect(ai, source);
+    oerrno = errno;
+    freeaddrinfo(ai);
+    errno = oerrno;
+    return fd;
 }
 
 
