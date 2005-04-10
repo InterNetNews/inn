@@ -28,10 +28,14 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
     char		*style;
     int			oerrno;
 
-    /* What server are we interested in?  Default to the campus one. */
-    if (server == NULL
-     && (server = innconf->server) == NULL)
-	return -1;
+    /* Default to innconf->server.  If that's not set either, error out.  Fake
+       errno since some of our callers rely on it. */
+    if (server == NULL)
+        server = innconf->server;
+    if (server == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
 
     /* Open the password file; coarse check on errno, but good enough. */
     path = concatpath(innconf->pathetc, _PATH_NNTPPASS);
