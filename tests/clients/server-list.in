@@ -1,0 +1,93 @@
+#!/usr/bin/perl -w
+
+##  $Id$
+##
+##  Miniature server that just answers LIST queries.
+##
+##  This is a miniature NNTP server that listens to port 11119 on the IPv4
+##  loopback address and answers LIST queries from INN's testing data.  It is
+##  used for testing getlist.
+##
+##  When started, it prints out its PID to standard output to make it easier
+##  to kill later.
+
+use IO::Socket::INET ();
+
+# Process a list command.  Only a very minimal wildmat syntax is supported.
+sub list {
+    my ($fh, $list, $wildmat) = @_;
+    $wildmat = quotemeta $wildmat;
+    $wildmat =~ s/\\\?/./;
+    $wildmat =~ s/\\\*/.*/;
+    if (open (LIST, "../data/db/$list")) {
+        print $fh "215 List follows\r\n";
+        local $_;
+        while (<LIST>) {
+            chomp;
+            my ($group) = split ' ';
+            if ($group =~ /^$wildmat$/) {
+                print $fh $_, "\r\n";
+            }
+        }
+        close LIST;
+        print $fh ".\r\n";
+    } else {
+        print $fh "501 Unknown list type $list\r\n";
+    }
+}
+
+# Read commands from a socket and process them.
+sub serve {
+    my ($fh) = @_;
+    local $_;
+    while (<$fh>) {
+        my @command = split (' ', lc $_);
+        if ($command[0] eq 'quit') {
+            print $fh "205 Done\r\n";
+            close $fh;
+            return;
+        } elsif ($command[0] ne 'list') {
+            print $fh "500 Unknown command\r\n";
+        } elsif (@command > 3) {
+            print $fh "501 Too many arguments\r\n";
+        } elsif (@command > 1 && $command[1] !~ /^[a-z.]+$/) {
+            print $fh "501 Unknown list type $command[1]\r\n";
+        } elsif (@command == 1) {
+            list ($fh, 'active', '*');
+        } else {
+            push (@command, '*') unless @command > 2;
+            list ($fh, @command[1,2]);
+        }
+    }
+    close $fh;
+}
+
+# Background ourselves and then record the PID.  Don't exit the parent process
+# until the pid file shows up, indicating the child has started.  Busy-wait;
+# it will only be a few milliseconds.
+unlink './pid';
+my $pid = fork;
+if ($pid < 0) {
+    die "Cannot fork: $!\n";
+} elsif ($pid > 0) {
+    1 while (!-f './pid');
+    exit;
+} else {
+    close STDIN;
+    close STDOUT;
+}
+
+# Listen for connections and handle them.
+my $server = IO::Socket::INET->new (LocalAddr => "127.0.0.1",
+                                    LocalPort => 11119,
+                                    Proto     => "tcp",
+                                    Listen    => 1,
+                                    ReuseAddr => 1)
+    or die "Cannot create socket: $!\n";
+open (PID, '> pid') or die "Cannot create pid: $!\n";
+print PID "$$\n";
+close PID;
+while ($fh = $server->accept) {
+    print $fh "200 Welcome\r\n";
+    serve ($fh);
+}

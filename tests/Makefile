@@ -22,7 +22,7 @@ TESTS	= innd/artparse.t lib/buffer.t lib/concat.t lib/conffile.t \
 
 ##  Extra stuff that needs to be built before tests can be run.
 
-EXTRA	= runtests lib/setenv.tr lib/xmalloc
+EXTRA	= runtests clients/server-list lib/setenv.tr lib/xmalloc
 
 all check test: $(TESTS) $(EXTRA)
 	./runtests TESTS
@@ -35,6 +35,10 @@ warnings:
 clean clobber distclean:
 	rm -f *.o *.lo */*.o */*.lo .pure */.pure $(TESTS) $(EXTRA)
 	rm -rf .libs */.libs
+
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
 
 .c.o: $*.c
 	$(CC) $(CFLAGS) -c -o $@ $*.c
@@ -56,6 +60,9 @@ INNDLIBS        = $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
 
 runtests: runtests.o
 	$(LINK) runtests.o
+
+clients/server-list: clients/server-list.in $(FIXSCRIPT)
+	$(FIXSCRIPT) -i clients/server-list.in
 
 innd/artparse.t: innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS)
 	$(LINK) innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS) \

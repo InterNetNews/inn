@@ -1,5 +1,6 @@
 authprogs/ckpasswd
 authprogs/domain
+clients/getlist
 innd/artparse
 lib/buffer
 lib/concat
