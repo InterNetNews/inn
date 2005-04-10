@@ -12,6 +12,7 @@
 #define INN_WIRE_H 1
 
 #include <inn/defines.h>
+#include <sys/types.h>          /* size_t */
 
 BEGIN_DECLS
 
