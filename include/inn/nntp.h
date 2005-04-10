@@ -12,7 +12,7 @@
 #ifndef INN_NNTP_H
 #define INN_NNTP_H 1
 
-#include <stdio.h>
+#include <sys/types.h>          /* size_t, time_t */
 
 /*
 **  NNTP response codes as defined in RFC 977 and elsewhere.
@@ -161,41 +161,45 @@ enum nntp_status {
     NNTP_READ_LONG
 };
 
-/* Allocate a new nntp for a pair of file descriptors.  Also takes the maximum
-   size for the read buffer; messages longer than this will not be read. */
-struct nntp *nntp_new(int in, int out, size_t maxsize);
+/* Allocate a new nntp struct for a pair of file descriptors.  Takes the
+   maximum size for the read buffer; messages longer than this will not be
+   read.  Takes the timeout in seconds for subsequent reads (0 means wait
+   forever). */
+struct nntp *nntp_new(int in, int out, size_t maxsize, time_t timeout);
 
 /* Free an nntp struct and close the connection. */
 void nntp_free(struct nntp *);
 
 /* Connect to a remote host and return an nntp struct for that connection. */
 struct nntp *nntp_connect(const char *host, unsigned short port,
-                          size_t maxsize);
+                          size_t maxsize, time_t timeout);
+
+/* Sets the read timeout in seconds for subsequent reads (0 means wait
+   forever). */
+void nntp_timeout(struct nntp *, time_t);
 
 /* Read a single line from an NNTP connection with the given timeout, placing
    the nul-terminated line (without the \r\n line ending) in the provided
    pointer.  The string will be invalidated by the next read from that
    connection. */
-enum nntp_status nntp_read_line(struct nntp *, time_t timeout, char **);
+enum nntp_status nntp_read_line(struct nntp *, char **);
 
 /* Read a response to an NNTP command with the given timeout, placing the
    response code in the third argument and the rest of the line in the fourth
    argument.  If no response code could be found, the code will be set to 0.
    The string will be invalidated by the next read from that connection. */
-enum nntp_status nntp_read_response(struct nntp *nntp, time_t timeout,
-                                    enum nntp_code *code, char **rest);
+enum nntp_status nntp_read_response(struct nntp *nntp, enum nntp_code *code,
+                                    char **rest);
 
 /* Read a command from an NNTP connection with the given timeout, placing the
    command and its arguments into the provided cvector.  The cvector will be
    invalidated by the next read from that connection. */
-enum nntp_status nntp_read_command(struct nntp *, time_t timeout,
-                                   struct cvector *);
+enum nntp_status nntp_read_command(struct nntp *, struct cvector *);
 
 /* Read multiline data from an NNTP connection with the given timeout.  Set
    the third argument to a pointer to the data (still in wire format) and the
    fourth argument to its length. */
-enum nntp_status nntp_read_multiline(struct nntp *, time_t timeout, char **,
-                                     size_t *);
+enum nntp_status nntp_read_multiline(struct nntp *, char **, size_t *);
 
 /* Send a line to the remote connection.  The output is flushed after sending
    the line. */

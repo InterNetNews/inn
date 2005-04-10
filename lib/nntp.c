@@ -27,16 +27,17 @@ struct nntp {
     struct buffer in;
     struct buffer out;
     size_t maxsize;
+    time_t timeout;
 };
 
 
 /*
 **  Allocate a new nntp struct and return it.  Takes the file descriptor to
-**  read from, the file descriptor to write to, and the maximum multiline size
-**  allowed.
+**  read from, the file descriptor to write to, the maximum multiline size
+**  allowed, and the timeout in seconds for reads.
 */
 struct nntp *
-nntp_new(int in, int out, size_t maxsize)
+nntp_new(int in, int out, size_t maxsize, time_t timeout)
 {
     struct nntp *nntp;
 
@@ -44,6 +45,7 @@ nntp_new(int in, int out, size_t maxsize)
     nntp->in_fd = in;
     nntp->out_fd = out;
     nntp->maxsize = maxsize;
+    nntp->timeout = timeout;
     nntp->in.data = NULL;
     nntp->in.size = 0;
     nntp->in.used = 0;
@@ -82,7 +84,8 @@ nntp_free(struct nntp *nntp)
 **  to use.  On any failure to connect to the remote host, returns NULL.
 */
 struct nntp *
-nntp_connect(const char *host, unsigned short port, size_t maxsize)
+nntp_connect(const char *host, unsigned short port, size_t maxsize,
+             time_t timeout)
 {
     struct addrinfo hints, *ai;
     char portbuf[16];
@@ -100,7 +103,17 @@ nntp_connect(const char *host, unsigned short port, size_t maxsize)
     errno = oerrno;
     if (fd < 0)
         return NULL;
-    return nntp_new(fd, fd, maxsize);
+    return nntp_new(fd, fd, maxsize, timeout);
+}
+
+
+/*
+**  Sets the read timeout in seconds (0 to wait forever).
+*/
+void
+nntp_timeout(struct nntp *nntp, time_t timeout)
+{
+    nntp->timeout = timeout;
 }
 
 
@@ -109,7 +122,7 @@ nntp_connect(const char *host, unsigned short port, size_t maxsize)
 **  into the reader buffer.  Return an nntp_status code.
 */
 static enum nntp_status
-nntp_read_data(struct nntp *nntp, time_t timeout)
+nntp_read_data(struct nntp *nntp)
 {
     ssize_t count;
     int status;
@@ -136,7 +149,7 @@ nntp_read_data(struct nntp *nntp, time_t timeout)
 
         FD_ZERO(&mask);
         FD_SET(nntp->in_fd, &mask);
-        tv.tv_sec = timeout;
+        tv.tv_sec = nntp->timeout;
         tv.tv_usec = 0;
         status = select(nntp->in_fd + 1, &mask, NULL, NULL, &tv);
         if (status == -1 && errno != EINTR)
@@ -158,13 +171,13 @@ nntp_read_data(struct nntp *nntp, time_t timeout)
 }
 
 /*
-**  Read a single line of data from an NNTP connection with the given
-**  timeout.  Puts the nul-terminated line in the third argument; it points
-**  into the nntp input buffer and will therefore be invalidated on the next
-**  read or on nntp_free, but not until then.  Returns an nntp_status.
+**  Read a single line of data from an NNTP connection.  Puts the
+**  nul-terminated line in the second argument; it points into the nntp input
+**  buffer and will therefore be invalidated on the next read or on nntp_free,
+**  but not until then.  Returns an nntp_status.
 */
 enum nntp_status
-nntp_read_line(struct nntp *nntp, time_t timeout, char **line)
+nntp_read_line(struct nntp *nntp, char **line)
 {
     struct buffer *in = &nntp->in;
     enum nntp_status status = NNTP_READ_OK;
@@ -188,7 +201,7 @@ nntp_read_line(struct nntp *nntp, time_t timeout, char **line)
         /* Back up one character in case \r\n was split across read
            boundaries. */
         start = (in->left > 0) ? in->left - 1 : 0;
-        status = nntp_read_data(nntp, timeout);
+        status = nntp_read_data(nntp);
         if (in->used + in->left + 128 >= in->size)
             buffer_compact(in);
     }
@@ -197,20 +210,19 @@ nntp_read_line(struct nntp *nntp, time_t timeout, char **line)
 
 
 /*
-**  Read a response to an NNTP command.  Puts the status code in the third
-**  argument and the rest of the line in the fourth argument, using a status
-**  code of 000 if no status code could be found at the beginning of the
-**  line.  The line will be invalidated on the next read or on nntp_free.
-**  Returns an nntp_status.
+**  Read a response to an NNTP command.  Puts the status code in the second
+**  argument and the rest of the line in the third argument, using a status
+**  code of 0 if no status code could be found at the beginning of the line.
+**  The line will be invalidated on the next read or on nntp_free.  Returns an
+**  nntp_status.
 */
 enum nntp_status
-nntp_read_response(struct nntp *nntp, time_t timeout, enum nntp_code *code,
-                   char **rest)
+nntp_read_response(struct nntp *nntp, enum nntp_code *code, char **rest)
 {
     char *line;
     enum nntp_status status;
 
-    status = nntp_read_line(nntp, timeout, &line);
+    status = nntp_read_line(nntp, &line);
     if (status != NNTP_READ_OK)
         return status;
     *code = strtol(line, rest, 10);
@@ -223,19 +235,19 @@ nntp_read_response(struct nntp *nntp, time_t timeout, enum nntp_code *code,
 
 
 /*
-**  Read a command from an NNTP connection with the given timeout.  Takes a
-**  cvector as the third argument and stores in it the command and arguments,
-**  split on whitespace.  The vectors will point into the nntp input buffer
-**  and will therefore be invalidated on the next read or on nntp_free, but
-**  not until then.  Returns an nntp_status.
+**  Read a command from an NNTP connection.  Takes a cvector as the second
+**  argument and stores in it the command and arguments, split on whitespace.
+**  The vectors will point into the nntp input buffer and will therefore be
+**  invalidated on the next read or on nntp_free, but not until then.  Returns
+**  an nntp_status.
 */
 enum nntp_status
-nntp_read_command(struct nntp *nntp, time_t timeout, struct cvector *command)
+nntp_read_command(struct nntp *nntp, struct cvector *command)
 {
     enum nntp_status status;
     char *line;
 
-    status = nntp_read_line(nntp, timeout, &line);
+    status = nntp_read_line(nntp, &line);
     if (status == NNTP_READ_OK)
         cvector_split_space(nntp->in.data + nntp->in.used, command);
     return status;
@@ -243,14 +255,12 @@ nntp_read_command(struct nntp *nntp, time_t timeout, struct cvector *command)
 
 
 /*
-**  Read multiline data from an NNTP connection.  Takes the nntp struct and a
-**  timeout (in seconds) and sets the third argument to a pointer to the data
-**  (still in wire format) and the fourth argument to its length.  Returns an
-**  nntp_status code.
+**  Read multiline data from an NNTP connection.  Sets the second argument to
+**  a pointer to the data (still in wire format) and the third argument to its
+**  length.  Returns an nntp_status code.
 */
 enum nntp_status
-nntp_read_multiline(struct nntp *nntp, time_t timeout, char **data,
-                    size_t *length)
+nntp_read_multiline(struct nntp *nntp, char **data, size_t *length)
 {
     struct buffer *in = &nntp->in;
     enum nntp_status status = NNTP_READ_OK;
@@ -271,7 +281,7 @@ nntp_read_multiline(struct nntp *nntp, time_t timeout, char **data,
         /* Back up by up to four characters in case our reads split on the
            boundary of the delimiter. */
         start = (in->left < 4) ? 0 : in->left - 4;
-        status = nntp_read_data(nntp, timeout);
+        status = nntp_read_data(nntp);
     }
     return status;
 }

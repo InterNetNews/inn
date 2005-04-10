@@ -77,7 +77,7 @@ send_list(struct nntp *nntp, const char *command, const char *pattern)
         okay = nntp_send_line(nntp, "LIST %s", command);
     if (!okay)
         sysdie("cannot send LIST command to server");
-    status = nntp_read_response(nntp, 10 * 60, &code, &line);
+    status = nntp_read_response(nntp, &code, &line);
     if (status != NNTP_READ_OK)
         die_nntp_status(status);
     if (code != NNTP_OK_LIST)
@@ -95,12 +95,12 @@ print_list(struct nntp *nntp)
     enum nntp_status status;
     char *line;
 
-    status = nntp_read_line(nntp, 10 * 60, &line);
+    status = nntp_read_line(nntp, &line);
     while (status == NNTP_READ_OK) {
         if (strcmp(line, ".") == 0)
             break;
         printf("%s\n", line);
-        status = nntp_read_line(nntp, 10 * 60, &line);
+        status = nntp_read_line(nntp, &line);
     }
     if (status != NNTP_READ_OK)
         die_nntp_status(status);
@@ -118,7 +118,7 @@ print_active(struct nntp *nntp, const char *types)
     char *line;
     struct cvector *group = NULL;
 
-    status = nntp_read_line(nntp, 10 * 60, &line);
+    status = nntp_read_line(nntp, &line);
     while (status == NNTP_READ_OK) {
         if (strcmp(line, ".") == 0)
             break;
@@ -130,7 +130,7 @@ print_active(struct nntp *nntp, const char *types)
         if (strchr(types, group->strings[3][0]) != NULL)
             printf("%s %s %s %s\n", group->strings[0], group->strings[1],
                    group->strings[2], group->strings[3]);
-        status = nntp_read_line(nntp, 10 * 60, &line);
+        status = nntp_read_line(nntp, &line);
     }
     if (status != NNTP_READ_OK)
         die_nntp_status(status);
@@ -189,7 +189,7 @@ send_authinfo(struct nntp *nntp, const char *username, const char *password)
 
     if (!nntp_send_line(nntp, "AUTHINFO USER %s", username))
         sysdie("cannot send AUTHINFO USER to remote server");
-    status = nntp_read_response(nntp, 10 * 60, &code, &line);
+    status = nntp_read_response(nntp, &code, &line);
     if (status != NNTP_READ_OK)
         die_nntp_status(status);
     if (code == NNTP_OK_AUTHINFO)
@@ -198,7 +198,7 @@ send_authinfo(struct nntp *nntp, const char *username, const char *password)
         return false;
     if (!nntp_send_line(nntp, "AUTHINFO PASS %s", password))
         sysdie("cannot send AUTHINFO PASS to remote server");
-    status = nntp_read_response(nntp, 10 * 60, &code, &line);
+    status = nntp_read_response(nntp, &code, &line);
     if (status != NNTP_READ_OK)
         die_nntp_status(status);
     return (code == NNTP_OK_AUTHINFO);
@@ -261,10 +261,10 @@ main(int argc, char *argv[])
     /* Connect to the server. */
     if (host == NULL)
         sysdie("cannot get server name");
-    nntp = nntp_connect(host, port, 128 * 1024);
+    nntp = nntp_connect(host, port, 128 * 1024, 10 * 60);
     if (nntp == NULL)
         sysdie("cannot connect to server %s:%hu", host, port);
-    status = nntp_read_response(nntp, 10 * 60, &response, &line);
+    status = nntp_read_response(nntp, &response, &line);
     if (status != NNTP_READ_OK)
         die_nntp_status(status);
     if (response < 200 || response > 201)
@@ -293,6 +293,6 @@ main(int argc, char *argv[])
     /* Be polite and say goodbye; it gives the server a chance to shut the
        connection down cleanly. */
     if (nntp_send_line(nntp, "QUIT"))
-        status = nntp_read_response(nntp, 10 * 60, &response, &line);
+        status = nntp_read_response(nntp, &response, &line);
     exit(0);
 }
