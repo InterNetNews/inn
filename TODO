@@ -25,6 +25,19 @@ Last modified $Id$.
 
 Scheduled for INN 2.5
 
+* Rework and clean up the overview API.  The major change is that the
+  initialization function should return a pointer to an opaque struct
+  which stores all of the state of the overview subsystem, rather than all
+  of that being stored in static variables, and then all other functions
+  should take that pointer.  OVctl possibly should instead take and return
+  a struct rather than using an ioctl-style interface.  Currently, the
+  overview functions do a lot of breaking apart of Xref headers and
+  parsing them, which is very ugly; consider having the overview interface
+  always key off a newsgroup name and article number, even for storing.
+  OVadd should probably take a structure and OVsearch should probably
+  return a structure.  A start on this has already been committed to
+  CURRENT.
+
 * Convert readers.conf and storage.conf (and related configuration files)
   to use the new parsing system and break out program-specific sections
   of inn.conf into their own groups.
@@ -73,18 +86,6 @@ Scheduled for INN 2.5
   flags, SMerrno and SMerrorstr should be replaced with functions that
   return that information, and the wire format utilities should be moved
   into libinn.
-
-* Rework and clean up the overview API.  The major change is that the
-  initialization function should return a pointer to an opaque struct
-  which stores all of the state of the overview subsystem, rather than all
-  of that being stored in static variables, and then all other functions
-  should take that pointer.  OVctl possibly should instead take and return
-  a struct rather than using an ioctl-style interface.  Currently, the
-  overview functions do a lot of breaking apart of Xref headers and
-  parsing them, which is very ugly; consider having the overview interface
-  always key off a newsgroup name and article number, even for storing.
-  OVadd should probably take a structure and OVsearch should probably
-  return a structure.
 
 
 Scheduled for INN 2.6
@@ -170,6 +171,15 @@ High Priority Projects
   with cnfsstat).  pullart.c may also stand to be merged into the same
   utility (cnfs-util might not be a bad name).
 
+* The BerkeleyDB integration of INN needs some improvements in robustness.
+  Currently, BerkeleyDB functions can be called by nnrpd out of signal
+  handlers and in other unfortunate situations, and coordination between
+  nnrpd and innd isn't entirely robust.  BerkeleyDB 4.4 offers a new
+  DB_REGISTER flag to open to allow for multi-process use of BerkeleyDB
+  databases and use of that flag should be investigated.  It may also be a
+  worthwhile simplification to pick a suitably powerful version of
+  BerkeleyDB and drop support for anything older than that.
+
 
 Documentation Projects
 
@@ -203,6 +213,11 @@ Documentation Projects
   least is missing from the documentation).
 
 * The distributions file is undocumented.
+
+* More comprehensive documentation in texinfo would be interesting; it
+  would allow for better organization, separation of specialized topics
+  into cleaner chapters, and a significantly better printed manual.  This
+  would be a tremendous amount of work, though.
 
 
 Code Cleanup Projects
@@ -520,6 +535,9 @@ Requested New Features
   headers.  This allows a news administrator to determine if a complaint
   about the content of a message is fradulent since the message was
   changed after transmission.
+
+* Allow permission for posting cancels to be configured in readers.conf
+  in an access block.
 
 
 General Projects
