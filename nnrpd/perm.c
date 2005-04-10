@@ -1561,7 +1561,7 @@ PERMgetpermissions(void)
 	SetDefaultAccess(PERMaccessconf);
 	return;
 #ifdef DO_PERL
-    } else if (success_auth->access_script != NULL) {
+    } else if ((success_auth->access_script != NULL) && (success_auth->access_type == PERMperl_access)) {
       char *uname;
       char *cpp, *script_path;
       char **args;
