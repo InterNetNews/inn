@@ -469,9 +469,13 @@ __END__
 
 =head1 NAME
 
-perl-nocem - a NoCeM-on-spool implementation for INN 2.x
+perl-nocem - A NoCeM-on-spool implementation for INN 2.x
 
 =head1 SYNOPSIS
+
+perl-nocem < I<message>
+
+=head1 DESCRIPTION
 
 Add to the newsfeeds file an entry like this one:
 
@@ -496,8 +500,10 @@ The nocem.ctl config file contains lines like:
 
 The Subject header is not checked for the @@NCM string and there is no
 check for the presence of the References header.
+
 The Newsgroups pseudo header is not checked, but this can be done in
 local_want_cancel_id().
+
 The Hierarchies header is ignored.
 
 =head1 HISTORY
