@@ -21,10 +21,13 @@ Changes from 2.4 to 2.5
       modification during make update.  When starting innd by hand, innd can
       just be run directly rather than using inndstart.
 
-    * INN now uses Autoconf 2.57 or later for configuration.  As a result,
+    * INN now uses Autoconf 2.59 or later for configuration.  As a result,
       some configure options have changed slightly and more of the standard
       --*dir options should be supported in lieu of the old INN-specific
       options.  See "configure --help" for the available options.
+
+    * tinyleaf, a miniature IHAVE-only leaf server, is now included.  See
+      the tinyleaf(8) man page for more information.
 
     * nnrpd now uniformly responds with a 480 or 502 status code to attempts
       to read a newsgroup to which the user does not have access, depending
