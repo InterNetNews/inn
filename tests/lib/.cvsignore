@@ -19,6 +19,7 @@ md5.t
 memcmp.t
 messages.t
 mkstemp.t
+network.t
 pread.t
 pwrite.t
 qio.t

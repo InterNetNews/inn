@@ -14,9 +14,9 @@ TESTS	= innd/artparse.t lib/buffer.t lib/concat.t lib/conffile.t \
 	lib/confparse.t lib/date.t lib/dispatch.t lib/getaddrinfo.t \
 	lib/hash.t lib/hashtab.t lib/hex.t lib/hstrerror.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/innconf.t lib/list.t lib/md5.t lib/memcmp.t \
-	lib/messages.t lib/mkstemp.t lib/pread.t lib/pwrite.t lib/qio.t \
-	lib/snprintf.t lib/strerror.t lib/strlcat.t lib/strlcpy.t lib/tst.t \
-	lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
+	lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t lib/pwrite.t \
+	lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t lib/strlcpy.t \
+	lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
 	overview/api.t overview/buffindexed.t overview/tradindexed.t \
 	util/innbind.t
 
@@ -142,6 +142,9 @@ lib/mkstemp.o: ../lib/mkstemp.c
 
 lib/mkstemp.t: lib/mkstemp.o lib/mkstemp-t.o libtest.o
 	$(LINK) lib/mkstemp.o lib/mkstemp-t.o libtest.o $(LIBINN)
+
+lib/network.t: lib/network-t.o libtest.o $(LIBINN)
+	$(LINK) lib/network-t.o libtest.o $(LIBINN) $(LIBS)
 
 lib/pread.o: ../lib/pread.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/pread.c
