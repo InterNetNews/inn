@@ -951,33 +951,6 @@ CMDxover(int ac, char *av[])
 
 }
 
-static bool
-build_groups(char *buff)
-{
-    char *next, *p, *q, *newsgroupbuff;
-
-    newsgroupbuff = p = xstrdup(buff);
-    if ((p = strchr(p, ' ')) == NULL) {
-	free(newsgroupbuff);
-	return false;
-    }
-
-    for (buff[0] = '\0', q = buff, p++; *p != '\0'; ) {
-	if ((next = strchr(p, ':')) == NULL) {
-	    free(newsgroupbuff);
-	    return false;
-	}
-	*next++ = '\0';
-	strcat(q, p);
-	q += (next - p - 1);
-	if ((p = strchr(next, ' ')) == NULL)
-	    break;
-	*p = ',';
-    }
-    free(newsgroupbuff);
-    return true;
-}
-
 /*
 **  XHDR and XPAT extensions.  Note that HDR as specified in the new NNTP
 **  draft works differently than XHDR has historically, so don't just use this
@@ -1002,7 +975,6 @@ CMDpat(int ac, char *av[])
     char                *data;
     int                 len;
     TOKEN               token;
-    bool                BuildingNewsgroups = false;
     struct cvector *vector = NULL;
 
     if (!PERMcanread) {
@@ -1053,11 +1025,7 @@ CMDpat(int ac, char *av[])
 	}
 
 	/* In overview? */
-	if (strcasecmp(header, "Newsgroups") == 0) {
-	    BuildingNewsgroups = true;
-	    Overview = overview_index("Xref", OVextra);
-	} else
-	    Overview = overview_index(header, OVextra);
+        Overview = overview_index(header, OVextra);
 
 	/* Not in overview, we have to fish headers out from the articles */
 	if (Overview < 0 ) {
@@ -1097,12 +1065,7 @@ CMDpat(int ac, char *av[])
 	    vector = overview_split(data, len, NULL, vector);
 	    p = overview_getheader(vector, Overview, OVextra);
 	    if (p != NULL) {
-		if (BuildingNewsgroups) {
-		    if (!build_groups(p)) {
-			free(p);
-			continue;
-		    }
-		} else if (PERMaccessconf->virtualhost &&
+		if (PERMaccessconf->virtualhost &&
 			   Overview == overhdr_xref) {
 		    p = vhost_xref(p);
 		    if (p == NULL)
