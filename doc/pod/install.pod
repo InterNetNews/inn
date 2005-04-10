@@ -51,6 +51,7 @@ INN has been confirmed to work on the following operating systems:
     HP-UX 10.20 and up
     Linux 2.x (tested with libc 5.4, glibc 2.0 and up)
     Mac OS X 10.2 and up
+    NetBSD 1.6 and up
     OpenBSD 2.8 and up
     SCO 5.0.4 (tested with gcc 2.8.1, cc)
     Solaris 2.5.x and up
