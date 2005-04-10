@@ -92,6 +92,42 @@ ok_double(int n, double wanted, double seen)
 
 
 /*
+**  Skip a test.
+*/
+void
+skip(int n)
+{
+    printf("ok %d # skip\n", n);
+}
+
+
+/*
+**  Report the same status on the next count tests.
+*/
+void
+ok_block(int n, int count, int status)
+{
+    int i;
+
+    for (i = 0; i < count; i++)
+        ok(n++, status);
+}
+
+
+/*
+**  Skip the next count tests.
+*/
+void
+skip_block(int n, int count)
+{
+    int i;
+
+    for (i = 0; i < count; i++)
+        skip(n++);
+}
+
+
+/*
 **  An error handler that appends all errors to the errors global.  Used by
 **  error_capture.
 */

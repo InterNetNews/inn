@@ -18,6 +18,11 @@ void ok(int n, int success);
 void ok_int(int n, int wanted, int seen);
 void ok_double(int n, double wanted, double seen);
 void ok_string(int n, const char *wanted, const char *seen);
+void skip(int n);
+
+/* Report the same status on, or skip, the next count tests. */
+void ok_block(int n, int count, int success);
+void skip_block(int n, int count);
 
 /* Print out the number of tests and set standard output to line buffered. */
 void test_init(int count);
