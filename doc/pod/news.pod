@@ -40,11 +40,51 @@ tinyleaf(8) man page for more information.
 
 =item *
 
+Support for embedded Tcl filters in innd has been removed.  It hasn't
+worked for some time and causes innd crashes if compiled in (even if not
+used).  If someone wants to step forward and maintain it, I recommend
+starting from scratch and emulating the Perl and Python filters.
+
+=item *
+
 B<nnrpd> now uniformly responds with a 480 or 502 status code to attempts
 to read a newsgroup to which the user does not have access, depending on
 whether the user has authenticated.  Previously, it returned a 411 status
 code, claiming the group didn't exist, which confuses the reactive
 authentication capability of news readers.
+
+=item *
+
+Previous versions of INN had an optimization for handling XHDR Newsgroups
+that used the Xref header from overview.  While this does make the command
+much faster, it doesn't produce accurate results and breaks the NNTP
+protocol, so this optimization has been removed.
+
+=item *
+
+INN is now licensed under a less restrictive license (about as minimally
+restrictive as possible shy of public domain), and the clause similar to
+the old BSD advertising clause has been dropped.
+
+=item *
+
+Overview generation has been fixed in both makehistory and innd to follow
+the rules in the latest NNTP draft rather than just replacing special
+characters with spaces.  This means that the unfolding of folded header
+lines will not introduce additional, incorrect whitespace in the overview
+data.
+
+=item *
+
+If a user is not authorized to approve articles (using the A access
+control in readers.conf), articles that include Approved headers will be
+rejected even if posted to unmoderated groups.  Some other site may
+consider that group to be moderated.
+
+=item *
+
+All of the applicable bug fixes from the INN 2.4 STABLE series are also
+included in INN 2.5.
 
 =back
 
