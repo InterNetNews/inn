@@ -9,6 +9,7 @@ dispatch.t
 getaddrinfo.t
 hash.t
 hashtab.t
+hex.t
 hstrerror.t
 inet_aton.t
 inet_ntoa.t

@@ -9,9 +9,9 @@ CFLAGS  = $(GCFLAGS)
 SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
 		dispatch.c fdflags.c fdlimit.c genid.c getfqdn.c \
-		getmodaddr.c hash.c hashtab.c innconf.c inndcomm.c list.c \
-		localopen.c lockfile.c makedir.c md5.c messages.c mmap.c \
-		network.c nntp.c qio.c radix32.c readin.c remopen.c \
+		getmodaddr.c hash.c hashtab.c hex.c innconf.c inndcomm.c \
+		list.c localopen.c lockfile.c makedir.c md5.c messages.c \
+		mmap.c network.c nntp.c qio.c radix32.c readin.c remopen.c \
 		reservedfd.c resource.c sendarticle.c sendpass.c sequence.c \
 		sockaddr.c timer.c tst.c uwildmat.c vector.c version.c \
 		wire.c xfopena.c xmalloc.c xsignal.c xwrite.c

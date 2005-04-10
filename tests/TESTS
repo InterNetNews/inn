@@ -10,6 +10,7 @@ lib/dispatch
 lib/getaddrinfo
 lib/hash
 lib/hashtab
+lib/hex
 lib/inet_aton
 lib/inet_ntoa
 lib/innconf
