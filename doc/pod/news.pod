@@ -1,3 +1,16 @@
+=head1 Changes from 2.4.2 to 2.4.3
+
+=over 2
+
+=item *
+
+Previous versions of INN had an optimization for handling XHDR Newsgroups
+that used the Xref header from overview.  While this does make the command
+much faster, it doesn't produce accurate results and breaks the NNTP
+protocol, so this optimization has been removed.
+
+=back
+
 =head1 Changes from 2.4.1 to 2.4.2
 
 =over 2
