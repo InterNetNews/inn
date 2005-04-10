@@ -13,9 +13,11 @@
 
 /* Holds the resolver information from nnrpd. */
 struct res_info {
-    struct sockaddr *client;
-    struct sockaddr *local;
     char *clienthostname;
+    char *clientip;
+    char *clientport;
+    char *localip;
+    char *localport;
 };
 
 /* Holds the authentication information from nnrpd. */

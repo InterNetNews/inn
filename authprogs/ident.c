@@ -11,42 +11,45 @@
 #include <syslog.h>
 
 #include "inn/messages.h"
+#include "inn/network.h"
 #include "libinn.h"
 
 #include "libauth.h"
 
 #define IDENT_PORT 113
 
-static void out(int sig UNUSED) {
+/*
+**  The signal handler for a timeout.  Just exit with a non-zero status.
+*/
+static void
+timeout(int sig UNUSED)
+{
     exit(1);
 }
 
-int main(int argc, char *argv[])
+
+int
+main(int argc, char *argv[])
 {
     struct servent *s;
     char buf[2048];
     struct res_info *res;
-    struct sockaddr_in *lsin, *csin;
-#ifdef HAVE_INET6
-    struct sockaddr_storage *lss;
-    struct sockaddr_in6 *lsin6, *csin6;
-#endif
     int sock;
     int opt;
     int truncate_domain = 0;
     char *iter;
     char *p;
     unsigned int got;
-    int lport, cport, identport;
+    int identport;
     char *endstr;
 
     message_program_name = "ident";
 
-    xsignal_norestart(SIGALRM,out);
+    xsignal_norestart(SIGALRM, timeout);
     alarm(15);
 
     s = getservbyname("ident", "tcp");
-    if (!s)
+    if (s == NULL)
 	identport = IDENT_PORT;
     else
 	identport = ntohs(s->s_port);
@@ -72,50 +75,26 @@ int main(int argc, char *argv[])
 	}
     }
 
-    /* read the connection info from stdin */
+    /* Read the connection info from stdin. */
     res = get_res_info(stdin);
     if (res == NULL)
         die("did not get client information from nnrpd");
 
-#ifdef HAVE_INET6
-    lss = (struct sockaddr_storage *)(res->local);
-    lsin6 = (struct sockaddr_in6 *)(res->local);
-    csin6 = (struct sockaddr_in6 *)(res->client);
-    if( lss->ss_family == AF_INET6 )
-    {
-	lport = ntohs( lsin6->sin6_port );
-	lsin6->sin6_port = 0;
-	cport = ntohs( csin6->sin6_port );
-	csin6->sin6_port = htons( identport );
-	sock = socket(PF_INET6, SOCK_STREAM, 0);
-    } else
-#endif
-    {
-	lsin = (struct sockaddr_in *)(res->local);
-	lport = htons( lsin->sin_port );
-	lsin->sin_port = 0;
-	csin = (struct sockaddr_in *)(res->client);
-	cport = htons( csin->sin_port );
-	csin->sin_port = htons( identport );
-	sock = socket(PF_INET, SOCK_STREAM, 0);
-    }
-    if (sock < 0)
-        sysdie("cannot create socket");
-    if (bind(sock, res->local, SA_LEN(res->local)) < 0)
-        sysdie("cannot bind socket");
-    if (connect(sock, res->client, SA_LEN(res->local)) < 0) {
+    /* Connect back to the client system. */
+    sock = network_connect_host(res->clientip, identport, res->localip);
+    if (sock < 0) {
         if (errno != ECONNREFUSED)
             sysdie("cannot connect to ident server");
         else
             sysdie("client host does not accept ident connections");
     }
-    free_res_info(res);
 
     /* send the request out */
-    snprintf(buf, sizeof(buf), "%d , %d\r\n", cport, lport);
+    snprintf(buf, sizeof(buf), "%s , %s\r\n", res->clientport, res->localport);
     opt = xwrite(sock, buf, strlen(buf));
     if (opt < 0)
         sysdie("cannot write to ident server");
+    free_res_info(res);
 
     /* get the answer back */
     got = 0;
@@ -168,11 +147,17 @@ int main(int argc, char *argv[])
     iter++;
     while (*iter && ISWHITE(*iter))
 	iter++;
-    if (!*iter || *iter == '[')
+    if (*iter == '\0' || *iter == '[')
 	/* null, or encrypted response */
         die("ident response is null or encrypted");
-    if ((truncate_domain == 1) && ((p = strchr(iter, '@')) != NULL))
-	*p = '\0';
+    for (p = iter; *p != '\0' && !ISWHITE(*p); p++)
+        ;
+    *p = '\0';
+    if (truncate_domain) {
+        p = strchr(iter, '@');
+        if (p != NULL)
+            *p = '\0';
+    }
     printf("User:%s\n", iter);
 
     exit(0);

@@ -10,15 +10,15 @@ CFLAGS	= $(GCFLAGS) -I.
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= innd/artparse.t lib/buffer.t lib/concat.t lib/conffile.t \
-	lib/confparse.t lib/date.t lib/dispatch.t lib/getaddrinfo.t \
-	lib/hash.t lib/hashtab.t lib/hex.t lib/hstrerror.t lib/inet_aton.t \
-	lib/inet_ntoa.t lib/innconf.t lib/list.t lib/md5.t lib/memcmp.t \
-	lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t lib/pwrite.t \
-	lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t lib/strlcpy.t \
-	lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
-	overview/api.t overview/buffindexed.t overview/tradindexed.t \
-	util/innbind.t
+TESTS	= authprogs/ident.t innd/artparse.t lib/buffer.t lib/concat.t \
+	lib/conffile.t lib/confparse.t lib/date.t lib/dispatch.t \
+	lib/getaddrinfo.t lib/hash.t lib/hashtab.t lib/hex.t lib/hstrerror.t \
+	lib/inet_aton.t lib/inet_ntoa.t lib/innconf.t lib/list.t lib/md5.t \
+	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t \
+	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t \
+	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
+	lib/xwrite.t overview/api.t overview/buffindexed.t \
+	overview/tradindexed.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -63,6 +63,9 @@ runtests: runtests.o
 
 clients/server-list: clients/server-list.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i clients/server-list.in
+
+authprogs/ident.t: authprogs/ident-t.o libtest.o $(LIBINN)
+	$(LINK) authprogs/ident-t.o libtest.o $(LIBINN) $(LIBS)
 
 innd/artparse.t: innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS)
 	$(LINK) innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS) \

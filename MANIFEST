@@ -724,6 +724,7 @@ tests/TESTS                           List of tests to run
 tests/authprogs                       Test suite for auth programs (Directory)
 tests/authprogs/ckpasswd.t            Tests for authprogs/ckpasswd
 tests/authprogs/domain.t              Tests for authprogs/domain
+tests/authprogs/ident-t.c             Tests for authprogs/ident
 tests/clients                         Test suite for NNTP clients (Directory)
 tests/clients/getlist.t               Tests for frontends/getlist
 tests/clients/server-list.in          Dummy server for getlist testing
