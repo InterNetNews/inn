@@ -1119,7 +1119,6 @@ struct sockaddr *hostIpAddr (Host host)
   /* check to see if need to look up the host name */
   if (host->nextIpLookup <= theTime())
     {
-#ifdef HAVE_INET6
       int gai_ret;
       struct addrinfo *res, *p;
 
@@ -1154,50 +1153,6 @@ struct sockaddr *hostIpAddr (Host host)
 	  newIpAddrPtrs[i] = NULL ;
 	  freeaddrinfo( res );
 	}
-#else
-      struct hostent *hostEnt ;
-      struct in_addr ipAddr;
-
-      /* see if the ipName we're given is a dotted quad */
-      if ( !inet_aton (host->params->ipName,&ipAddr) )
-	{
-	  if ((hostEnt = gethostbyname (host->params->ipName)) == NULL)
-	    {
-              warn ("%s can't resolve hostname %s: %s", host->params->peerName,
-		    host->params->ipName, hstrerror(h_errno)) ;
-	    }
-	  else
-	    {
-	      /* figure number of pointers that need space */
-	      for (i = 0 ; hostEnt->h_addr_list[i] ; i++)
-		;
-
-	      newIpAddrPtrs = xmalloc ((i + 1) * sizeof(struct sockaddr *));
-	      newIpAddrs = xmalloc (i * sizeof(struct sockaddr_storage));
-
-	      /* copy the addresses from gethostbyname() static space */
-	      i = 0;
-	      for (i = 0 ; hostEnt->h_addr_list[i] ; i++)
-		{
-		  make_sin( (struct sockaddr_in *)(&newIpAddrs[i]),
-			(struct in_addr *)(hostEnt->h_addr_list[i]) );
-		  newIpAddrPtrs[i] = (struct sockaddr *)(&newIpAddrs[i]);
-		}
-	      newIpAddrPtrs[i] = NULL ;
-	    }
-	}
-      else
-	{
-	  newIpAddrPtrs = (struct sockaddr **)
-		  xmalloc ( 2 * sizeof( struct sockaddr * ) );
-	  newIpAddrs = (struct sockaddr_storage *)
-		  xmalloc ( sizeof( struct sockaddr_storage ) );
-
-	  make_sin( (struct sockaddr_in *)newIpAddrs, &ipAddr );
-	  newIpAddrPtrs[0] = (struct sockaddr *)newIpAddrs;
-	  newIpAddrPtrs[1] = NULL;
-	}
-#endif
 
       if (newIpAddrs)
 	{
