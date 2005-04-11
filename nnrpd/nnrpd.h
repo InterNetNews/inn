@@ -27,12 +27,6 @@
 #endif
 
 /*
-**  Some convenient shorthands.
-*/
-typedef struct in_addr	INADDR;
-
-
-/*
 **  A range of article numbers.
 */
 typedef struct _ARTRANGE {

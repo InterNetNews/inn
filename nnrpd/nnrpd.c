@@ -325,15 +325,12 @@ CMD_unimp(ac, av)
 }
 
 
-#ifndef	INADDR_LOOPBACK
-#define	INADDR_LOOPBACK	0x7f000001
-#endif	/* INADDR_LOOPBACK */
 /*
 **  Convert an IP address to a hostname.  Don't trust the reverse lookup,
 **  since anyone can fake .in-addr.arpa entries.
 */
 static bool
-Address2Name(INADDR *ap, char *hostname, int i)
+Address2Name(struct in_addr *ap, char *hostname, int i)
 {
     char		*p;
     struct hostent	*hp;
