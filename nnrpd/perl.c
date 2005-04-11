@@ -221,12 +221,12 @@ perlAccess(char *user, struct vector *access_vec)
   SAVETMPS;
 
   attribs = perl_get_hv("attributes", true);
-  hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
-  hv_store(attribs, "ipaddress", 9, newSVpv(ClientIpString, 0), 0);
-  hv_store(attribs, "port", 4, newSViv(ClientPort), 0);
-  hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
-  hv_store(attribs, "intipaddr", 9, newSVpv(ServerIpString, 0), 0);
-  hv_store(attribs, "intport", 7, newSViv(ServerPort), 0);
+  hv_store(attribs, "hostname", 8, newSVpv(Client.host, 0), 0);
+  hv_store(attribs, "ipaddress", 9, newSVpv(Client.ip, 0), 0);
+  hv_store(attribs, "port", 4, newSViv(Client.port), 0);
+  hv_store(attribs, "interface", 9, newSVpv(Client.serverhost, 0), 0);
+  hv_store(attribs, "intipaddr", 9, newSVpv(Client.serverip, 0), 0);
+  hv_store(attribs, "intport", 7, newSViv(Client.serverport), 0);
   hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
 
   PUSHMARK(SP);
@@ -341,12 +341,12 @@ perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
     ENTER;
     SAVETMPS;
     attribs = perl_get_hv("attributes", true);
-    hv_store(attribs, "hostname", 8, newSVpv(ClientHost, 0), 0);
-    hv_store(attribs, "ipaddress", 9, newSVpv(ClientIpString, 0), 0);
-    hv_store(attribs, "port", 4, newSViv(ClientPort), 0);
-    hv_store(attribs, "interface", 9, newSVpv(ServerHost, 0), 0);
-    hv_store(attribs, "intipaddr", 9, newSVpv(ServerIpString, 0), 0);
-    hv_store(attribs, "intport", 7, newSViv(ServerPort), 0);
+    hv_store(attribs, "hostname", 8, newSVpv(Client.host, 0), 0);
+    hv_store(attribs, "ipaddress", 9, newSVpv(Client.ip, 0), 0);
+    hv_store(attribs, "port", 4, newSViv(Client.port), 0);
+    hv_store(attribs, "interface", 9, newSVpv(Client.serverhost, 0), 0);
+    hv_store(attribs, "intipaddr", 9, newSVpv(Client.serverip, 0), 0);
+    hv_store(attribs, "intport", 7, newSViv(Client.serverport), 0);
     hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
     hv_store(attribs, "password", 8, newSVpv(passwd, 0), 0);
     

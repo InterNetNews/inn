@@ -577,7 +577,7 @@ free_accessgroup(ACCESSGROUP *del)
 static void
 ReportError(CONFFILE *f, const char *err)
 {
-    syslog(L_ERROR, "%s syntax error in %s(%d), %s", ClientHost,
+    syslog(L_ERROR, "%s syntax error in %s(%d), %s", Client.host,
       f->filename, f->lineno, err);
     Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
     ExitWithStats(1, true);
@@ -1095,7 +1095,7 @@ PERMreadfile(char *filename)
 
     cf		= xmalloc(sizeof(CONFCHAIN));
     if ((cf->f = CONFfopen(filename)) == NULL) {
-	syslog(L_ERROR, "%s cannot open %s: %m", ClientHost, filename);
+	syslog(L_ERROR, "%s cannot open %s: %m", Client.host, filename);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 	ExitWithStats(1, true);
     }
@@ -1319,8 +1319,8 @@ PERMreadfile(char *filename)
 #ifdef HAVE_SSL
 		    && ((curauth->require_ssl == false) || (ClientSSL == true))
 #endif
-		    && MatchHost(curauth->hosts, ClientHost, ClientIpString)) {
-		    if (!MatchHost(curauth->localaddress, ServerHost, ServerIpString)) {
+		    && MatchHost(curauth->hosts, Client.host, Client.ip)) {
+		    if (!MatchHost(curauth->localaddress, Client.serverhost, Client.serverip)) {
 			syslog(L_TRACE, "Auth strategy '%s' does not match localhost.  Removing.",
 			   curauth->name == NULL ? "(NULL)" : curauth->name);
 			free_authgroup(curauth);
@@ -1400,7 +1400,7 @@ PERMgetaccess(char *nnrpaccess)
 
     if (auth_realms == NULL) {
 	/* no one can talk, empty file */
-	syslog(L_NOTICE, "%s no_permission", ClientHost);
+	syslog(L_NOTICE, "%s no_permission", Client.host);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
 	  NNTP_ACCESS_VAL);
 	ExitWithStats(1, true);
@@ -1429,10 +1429,10 @@ PERMgetaccess(char *nnrpaccess)
 	}
 	PERMneedauth = false;
 	success_auth = auth_realms[i];
-	syslog(L_TRACE, "%s res %s", ClientHost, PERMuser);
+	syslog(L_TRACE, "%s res %s", Client.host, PERMuser);
     } else if (!canauthenticate) {
 	/* couldn't resolve the user. */
-	syslog(L_NOTICE, "%s no_user", ClientHost);
+	syslog(L_NOTICE, "%s no_user", Client.host);
 	Printf("%d Could not get your access name.  Goodbye.\r\n",
 	  NNTP_ACCESS_VAL);
 	ExitWithStats(1, true);
@@ -1537,7 +1537,7 @@ PERMgetpermissions(void)
     }
     if (!success_auth) {
 	/* if we haven't successfully authenticated, we can't do anything. */
-	syslog(L_TRACE, "%s no_success_auth", ClientHost);
+	syslog(L_TRACE, "%s no_success_auth", Client.host);
 	if (!noaccessconf)
 	    noaccessconf = xmalloc(sizeof(ACCESSGROUP));
 	PERMaccessconf = noaccessconf;
@@ -1633,14 +1633,14 @@ PERMgetpermissions(void)
           list = 0;
           NGgetlist(&list, cp);
           if (PERMmatch(list, user)) {
-            syslog(L_TRACE, "%s match_user %s %s", ClientHost,
+            syslog(L_TRACE, "%s match_user %s %s", Client.host,
                    PERMuser, access_realms[i]->users);
             free(cp);
             free(list[0]);
             free(list);
             break;
           } else
-            syslog(L_TRACE, "%s no_match_user %s %s", ClientHost,
+            syslog(L_TRACE, "%s no_match_user %s %s", Client.host,
                    PERMuser, access_realms[i]->users);
           free(cp);
 	  free(list[0]);
@@ -1652,7 +1652,7 @@ PERMgetpermissions(void)
 	/* found the right access group */
 	if (access_realms[i]->rejectwith) {
 	    syslog(L_ERROR, "%s rejected by rule (%s)",
-		ClientHost, access_realms[i]->rejectwith);
+		Client.host, access_realms[i]->rejectwith);
 	    Reply("%d Permission denied:  %s\r\n",
 		NNTP_ACCESS_VAL, access_realms[i]->rejectwith);
 	    ExitWithStats(1, true);
@@ -1663,7 +1663,7 @@ PERMgetpermissions(void)
 	    free(cp);
 	    PERMcanread = true;
 	} else {
-	    syslog(L_TRACE, "%s no_read %s", ClientHost, access_realms[i]->name);
+	    syslog(L_TRACE, "%s no_read %s", Client.host, access_realms[i]->name);
 	    PERMcanread = false;
 	}
 	if (access_realms[i]->post) {
@@ -1672,7 +1672,7 @@ PERMgetpermissions(void)
 	    free(cp);
 	    PERMcanpost = true;
 	} else {
-	    syslog(L_TRACE, "%s no_post %s", ClientHost, access_realms[i]->name);
+	    syslog(L_TRACE, "%s no_post %s", Client.host, access_realms[i]->name);
 	    PERMcanpost = false;
 	}
 	PERMaccessconf = access_realms[i];
@@ -1680,7 +1680,7 @@ PERMgetpermissions(void)
 	if (PERMaccessconf->virtualhost) {
 	    if (PERMaccessconf->domain == NULL) {
 		syslog(L_ERROR, "%s virtualhost needs domain parameter(%s)",
-		    ClientHost, PERMaccessconf->name);
+		    Client.host, PERMaccessconf->name);
 		Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 		ExitWithStats(1, true);
 	    }
@@ -1691,7 +1691,7 @@ PERMgetpermissions(void)
 		   inn.conf to differentiate virtual host */
 		if (innconf->domain != NULL && strcmp(innconf->domain, PERMaccessconf->domain) == 0) {
 		    syslog(L_ERROR, "%s domain parameter(%s) in readers.conf must be different from the one in inn.conf",
-			ClientHost, PERMaccessconf->name);
+			Client.host, PERMaccessconf->name);
 		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
 		    ExitWithStats(1, true);
 		}
@@ -1708,7 +1708,7 @@ PERMgetpermissions(void)
 	    noaccessconf = xmalloc(sizeof(ACCESSGROUP));
 	PERMaccessconf = noaccessconf;
 	SetDefaultAccess(PERMaccessconf);
-	syslog(L_TRACE, "%s no_access_realm", ClientHost);
+	syslog(L_TRACE, "%s no_access_realm", Client.host);
     }
     /* check if dynamic access control is enabled, if so init it */
 #ifdef DO_PYTHON
@@ -1937,7 +1937,7 @@ strip_accessgroups(void)
 	    access_realms[j++] = access_realms[i];
 	else
 	    syslog(L_TRACE, "%s removing irrelevant access group %s", 
-		   ClientHost, access_realms[i]->name);
+		   Client.host, access_realms[i]->name);
 	i++;
     }
     access_realms[j] = 0;
@@ -1988,7 +1988,7 @@ ExecProg(char *arg0, char **args)
 	dup2(wrfd[0], 0);
 	execv(arg0, args);
 	/* if we got here, there was an error */
-	syslog(L_ERROR, "%s perm could not exec %s: %m", ClientHost, arg0);
+	syslog(L_ERROR, "%s perm could not exec %s: %m", Client.host, arg0);
 	exit(1);
     }
     close(rdfd[1]);
@@ -2003,21 +2003,19 @@ ExecProg(char *arg0, char **args)
 }
 
 static void
-GetConnInfo(METHOD *method, char *buf)
+GetConnInfo(char *buf)
 {
-    int i;
-
     buf[0] = '\0';
-    if (*ClientHost)
-	sprintf(buf, "ClientHost: %s\r\n", ClientHost);
-    if (*ClientIpString)
-	sprintf(buf+strlen(buf), "ClientIP: %s\r\n", ClientIpString);
-    if (ClientPort)
-	sprintf(buf+strlen(buf), "ClientPort: %d\r\n", ClientPort);
-    if (*ServerIpString)
-	sprintf(buf+strlen(buf), "LocalIP: %s\r\n", ServerIpString);
-    if (ServerPort)
-	sprintf(buf+strlen(buf), "LocalPort: %d\r\n", ServerPort);
+    if (*Client.host)
+	sprintf(buf, "ClientHost: %s\r\n", Client.host);
+    if (*Client.ip)
+	sprintf(buf+strlen(buf), "ClientIP: %s\r\n", Client.ip);
+    if (Client.port)
+	sprintf(buf+strlen(buf), "ClientPort: %d\r\n", Client.port);
+    if (*Client.serverip)
+	sprintf(buf+strlen(buf), "LocalIP: %s\r\n", Client.serverip);
+    if (Client.serverport)
+	sprintf(buf+strlen(buf), "LocalPort: %d\r\n", Client.serverport);
 }
 
 static char ubuf[SMBUF];
@@ -2036,7 +2034,7 @@ HandleProgLine(char *ln)
 static void
 HandleErrorLine(char *ln)
 {
-    syslog(L_NOTICE, "%s auth_err %s", ClientHost, ln);
+    syslog(L_NOTICE, "%s auth_err %s", Client.host, ln);
 }
 
 static int
@@ -2140,16 +2138,16 @@ GetProgInput(EXECSTUFF *prog)
       !WIFEXITED(status) && !WIFSIGNALED(status));
     if (WIFSIGNALED(status)) {
 	ubuf[0] = '\0';
-	syslog(L_NOTICE, "%s bad_hook program caught signal %d", ClientHost,
+	syslog(L_NOTICE, "%s bad_hook program caught signal %d", Client.host,
 	  WTERMSIG(status));
     } else if (WIFEXITED(status)) {
 	if (WEXITSTATUS(status) != 0) {
 	    ubuf[0] = '\0';
 	    syslog(L_TRACE, "%s bad_hook program exited with status %d",
-	      ClientHost, WEXITSTATUS(status));
+	      Client.host, WEXITSTATUS(status));
 	}
     } else {
-	syslog(L_ERROR, "%s bad_hook waitpid failed: %m", ClientHost);
+	syslog(L_ERROR, "%s bad_hook waitpid failed: %m", Client.host);
 	ubuf[0] = '\0';
     }
 }
@@ -2178,10 +2176,10 @@ ResolveUser(AUTHGROUP *auth)
     ubuf[0] = '\0';
     for (i = 0; auth->res_methods[i]; i++) {
 	/* build the command line */
-	syslog(L_TRACE, "%s res starting resolver %s", ClientHost, auth->res_methods[i]->program);
+	syslog(L_TRACE, "%s res starting resolver %s", Client.host, auth->res_methods[i]->program);
 	if (auth->res_methods[i]->extra_logs) {
 	    for (j = 0; auth->res_methods[i]->extra_logs[j]; j++)
-		syslog(L_NOTICE, "%s res also-log: %s", ClientHost,
+		syslog(L_NOTICE, "%s res also-log: %s", Client.host,
 		  auth->res_methods[i]->extra_logs[j]);
 	}
 	cp = xstrdup(auth->res_methods[i]->program);
@@ -2193,7 +2191,7 @@ ResolveUser(AUTHGROUP *auth)
 	/* exec the resolver */
 	foo = ExecProg(arg0, args);
 	if (foo) {
-	    GetConnInfo(auth->res_methods[i], buf);
+	    GetConnInfo(buf);
 	    strlcat(buf, ".\r\n", sizeof(buf));
 	    xwrite(foo->wrfd, buf, strlen(buf));
 	    close(foo->wrfd);
@@ -2201,12 +2199,12 @@ ResolveUser(AUTHGROUP *auth)
 	    GetProgInput(foo);
 	    done = (ubuf[0] != '\0');
 	    if (done)
-		syslog(L_TRACE, "%s res resolver successful, user %s", ClientHost, ubuf);
+		syslog(L_TRACE, "%s res resolver successful, user %s", Client.host, ubuf);
 	    else
-		syslog(L_TRACE, "%s res resolver failed", ClientHost);
+		syslog(L_TRACE, "%s res resolver failed", Client.host);
 	    free(foo);
 	} else
-	    syslog(L_ERROR, "%s res couldnt start resolver: %m", ClientHost);
+	    syslog(L_ERROR, "%s res couldnt start resolver: %m", Client.host);
 	/* clean up */
 	if (args[0][0] != '/') {
 	    free(arg0);
@@ -2275,14 +2273,14 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                       strlcpy(ubuf, username, sizeof(ubuf));
                     }
 
-                    syslog(L_NOTICE, "%s user %s", ClientHost, ubuf);
+                    syslog(L_NOTICE, "%s user %s", Client.host, ubuf);
                     if (LLOGenable) {
-                        fprintf(locallog, "%s user %s\n", ClientHost, ubuf);
+                        fprintf(locallog, "%s user %s\n", Client.host, ubuf);
                         fflush(locallog);
                     }
                     break;
                 } else {
-                    syslog(L_NOTICE, "%s bad_auth", ClientHost);
+                    syslog(L_NOTICE, "%s bad_auth", Client.host);
                 }            
             } else {
               syslog(L_ERROR, "No script specified in auth method.\n");
@@ -2311,14 +2309,14 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                   strlcpy(ubuf, username, sizeof(ubuf));
               }
               
-	      syslog(L_NOTICE, "%s user %s", ClientHost, ubuf);
+	      syslog(L_NOTICE, "%s user %s", Client.host, ubuf);
 	      if (LLOGenable) {
-		fprintf(locallog, "%s user %s\n", ClientHost, ubuf);
+		fprintf(locallog, "%s user %s\n", Client.host, ubuf);
 		fflush(locallog);
 	      }
 	      break;
 	    } else {
-	      syslog(L_NOTICE, "%s bad_auth", ClientHost);
+	      syslog(L_NOTICE, "%s bad_auth", Client.host);
 	    }
 	  }
 	} else {
@@ -2331,10 +2329,10 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
 	    continue;
 
 	/* build the command line */
-	syslog(L_TRACE, "%s auth starting authenticator %s", ClientHost, auth->auth_methods[i]->program);
+	syslog(L_TRACE, "%s auth starting authenticator %s", Client.host, auth->auth_methods[i]->program);
 	if (auth->auth_methods[i]->extra_logs) {
 	    for (j = 0; auth->auth_methods[i]->extra_logs[j]; j++)
-		syslog(L_NOTICE, "%s auth also-log: %s", ClientHost,
+		syslog(L_NOTICE, "%s auth also-log: %s", Client.host,
 		  auth->auth_methods[i]->extra_logs[j]);
 	}
 	cp = xstrdup(auth->auth_methods[i]->program);
@@ -2346,7 +2344,7 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
 	/* exec the authenticator */
 	foo = ExecProg(arg0, args);
 	if (foo) {
-	    GetConnInfo(auth->auth_methods[i], buf);
+	    GetConnInfo(buf);
 	    snprintf(buf+strlen(buf), sizeof(buf) - strlen(buf) - 3,
                      "ClientAuthname: %s\r\n", username);
 	    snprintf(buf+strlen(buf), sizeof(buf) - strlen(buf) - 3,
@@ -2358,12 +2356,12 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
 	    GetProgInput(foo);
 	    done = (ubuf[0] != '\0');
 	    if (done)
-		syslog(L_TRACE, "%s auth authenticator successful, user %s", ClientHost, ubuf);
+		syslog(L_TRACE, "%s auth authenticator successful, user %s", Client.host, ubuf);
 	    else
-		syslog(L_TRACE, "%s auth authenticator failed", ClientHost);
+		syslog(L_TRACE, "%s auth authenticator failed", Client.host);
 	    free(foo);
 	} else
-	    syslog(L_ERROR, "%s auth couldnt start authenticator: %m", ClientHost);
+	    syslog(L_ERROR, "%s auth couldnt start authenticator: %m", Client.host);
 	/* clean up */
 	if (args[0][0] != '/') {
 	    free(arg0);

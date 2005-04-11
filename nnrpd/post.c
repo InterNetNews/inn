@@ -338,11 +338,11 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	if (PERMauthorized) {
 	    if (PERMuser[0] == '\0') {
 		snprintf(sendbuff, sizeof(sendbuff), "%s@%s", "UNKNOWN",
-                         ClientHost);
+                         Client.host);
 	    } else {
 		if ((p = strchr(PERMuser, '@')) == NULL) {
 		    snprintf(sendbuff, sizeof(sendbuff), "%s@%s", PERMuser,
-                             ClientHost);
+                             Client.host);
 		} else {
 		    snprintf(sendbuff, sizeof(sendbuff), "%s", PERMuser);
 		}
@@ -480,7 +480,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 
     /* NNTP-Posting host; set. */
     if (!ihave && PERMaccessconf->addnntppostinghost) 
-    HDR_SET(HDR__NNTPPOSTINGHOST, ClientHost);
+    HDR_SET(HDR__NNTPPOSTINGHOST, Client.host);
     /* NNTP-Posting-Date - not in RFC (yet) */
     if (!ihave && PERMaccessconf->addnntppostingdate)
     HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
@@ -496,7 +496,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	    p = (char *) "unknown";
     snprintf(tracebuff, sizeof(tracebuff),
              "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
-             p, (long) now, (long) pid, ClientIpString,
+             p, (long) now, (long) pid, Client.ip,
              gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
              gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR_SET(HDR__XTRACE, tracebuff);
@@ -725,7 +725,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	        syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	    } else {
 	        if (reply != NULL) {
-		    syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
+		    syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, Client.host, p, reply);
 		    snprintf(Error, sizeof(Error), "%s\r\n", reply);
                     free(reply);
 		    break;
@@ -1050,13 +1050,13 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 		strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
 	}
 	if (strncmp(p, "DROP", 4) == 0) {
-	    syslog(L_NOTICE, "%s post %s", ClientHost, p);
+	    syslog(L_NOTICE, "%s post %s", Client.host, p);
 	    if (modgroup)
 		free(modgroup);
 	    return NULL;
 	}
 	else if (strncmp(p, "SPOOL", 5) == 0) {
-	    syslog(L_NOTICE, "%s post %s", ClientHost, p);
+	    syslog(L_NOTICE, "%s post %s", Client.host, p);
 	    strlcpy(SDir, innconf->pathincoming, sizeof(SDir));
 	    if (modgroup) {
 		free(modgroup);
@@ -1124,7 +1124,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     }
     if (Tracing)
 	syslog(L_TRACE, "%s post_connect %s",
-	    ClientHost, PERMaccessconf->nnrpdposthost ? PERMaccessconf->nnrpdposthost : "localhost");
+	    Client.host, PERMaccessconf->nnrpdposthost ? PERMaccessconf->nnrpdposthost : "localhost");
 
     /* The code below ignores too many return values for my tastes.  At least
      * they are all inside cases that are most likely never going to happen --
@@ -1152,7 +1152,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
         return Error;
     }
     if (Tracing)
-	syslog(L_TRACE, "%s post starting", ClientHost);
+	syslog(L_TRACE, "%s post starting", Client.host);
 
     /* Write the headers and a blank line. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)
@@ -1207,7 +1207,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     if ((i = atoi(buff)) != NNTP_TOOKIT_VAL) {
 	strlcpy(Error, buff, sizeof(Error));
 	SendQuit(FromServer, ToServer);
-	syslog(L_TRACE, "%s server rejects %s from %s", ClientHost, HDR(HDR__MESSAGEID), HDR(HDR__PATH));
+	syslog(L_TRACE, "%s server rejects %s from %s", Client.host, HDR(HDR__MESSAGEID), HDR(HDR__PATH));
 	if (i != NNTP_REJECTIT_VAL && i != NNTP_HAVEIT_VAL)
 	    return Spoolit(article, Error);
 	if (i == NNTP_REJECTIT_VAL || i == NNTP_RESENDIT_VAL) {
@@ -1230,7 +1230,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 	}
 	if (ftd == NULL && (ftd = fopen(TrackID,"w")) == NULL) {
 	    syslog(L_ERROR, "%s (%s) open %s: %m",
-		ClientHost, Username, TrackID);
+		Client.host, Username, TrackID);
 	    free(TrackID);
 	    return NULL;
 	}
@@ -1269,13 +1269,13 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 	NNTPsendarticle(article, ftd, true);
 	if (fclose(ftd) != EOF) {
 	    syslog(L_NOTICE, "%s (%s) posttrack ok %s",
-		ClientHost, Username, TrackID);
+		Client.host, Username, TrackID);
 	    if (LLOGenable)
 		fprintf(locallog, "%s (%s) posttrack ok %s\n",
-		    ClientHost, Username, TrackID);
+		    Client.host, Username, TrackID);
 	} else {
 	    syslog(L_ERROR, "%s (%s) posttrack error 2 %s",
-		ClientHost, Username, TrackID);
+		Client.host, Username, TrackID);
 	}
 	free(TrackID);
     }

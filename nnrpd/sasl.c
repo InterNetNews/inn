@@ -89,19 +89,19 @@ SASLauth(int ac, char *av[])
 	    if (clientinlen <= BASE64_BUF_SIZE) break;
 	    /* FALLTHROUGH */
 	case RTlong:
-	    warn("%s response too long in authinfo sasl", ClientHost);
+	    warn("%s response too long in authinfo sasl", Client.host);
 	    ExitWithStats(1, false);
 	    break;
 	case RTtimeout:
-	    warn("%s timeout in authinfo sasl", ClientHost);
+	    warn("%s timeout in authinfo sasl", Client.host);
 	    ExitWithStats(1, false);
 	    break;
 	case RTeof:
-	    warn("%s eof in authinfo sasl", ClientHost);
+	    warn("%s eof in authinfo sasl", Client.host);
 	    ExitWithStats(1, false);
 	    break;
 	default:
-	    warn("%s internal %d in authinfo sasl", ClientHost, r);
+	    warn("%s internal %d in authinfo sasl", Client.host, r);
 	    ExitWithStats(1, false);
 	    break;
 	}
@@ -148,7 +148,7 @@ SASLauth(int ac, char *av[])
 	PERMneedauth = false;
 	PERMauthorized = true;
 
-	syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
+	syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
 
 	if (serveroutlen)
 	    Reply("%d %s\r\n", NNTP_AUTH_SASL_OK_VAL, base64);
@@ -165,7 +165,7 @@ SASLauth(int ac, char *av[])
 	int resp_code;
 	const char *errstring = sasl_errstring(r, NULL, NULL);
 
-	syslog(L_NOTICE, "%s bad_auth", ClientHost);
+	syslog(L_NOTICE, "%s bad_auth", Client.host);
 
 	switch (r) {
 	case SASL_BADPROT:

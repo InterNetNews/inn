@@ -118,6 +118,20 @@ struct line {
     size_t allocated;
 };
 
+
+/*
+**  Information about the currently connected client.
+*/
+struct client {
+    char host[SMBUF];
+    char ip[INET6_ADDRSTRLEN];
+    unsigned short port;
+    char serverhost[SMBUF];
+    char serverip[INET6_ADDRSTRLEN];
+    unsigned short serverport;
+};
+
+
 /*
 **  Information about the schema of the news overview files.
 */
@@ -158,18 +172,8 @@ EXTERN bool 	Offlinepost;
 EXTERN bool 	initialSSL;
 EXTERN char	**PERMreadlist;
 EXTERN char	**PERMpostlist;
-EXTERN char	ClientHost[SMBUF];
-EXTERN char     ServerHost[SMBUF];
+EXTERN struct client Client;
 EXTERN char	Username[SMBUF];
-#ifdef HAVE_INET6
-EXTERN char     ClientIpString[INET6_ADDRSTRLEN];
-EXTERN char     ServerIpString[INET6_ADDRSTRLEN];
-#else
-EXTERN char     ClientIpString[20];
-EXTERN char     ServerIpString[20];
-#endif
-EXTERN int	ClientPort;
-EXTERN int	ServerPort;
 EXTERN char	LogName[256] ;
 #ifdef HAVE_SSL
 EXTERN bool	ClientSSL;
@@ -209,7 +213,6 @@ EXTERN long	POSTreceived;
 EXTERN long	POSTrejected;
 
 EXTERN bool     BACKOFFenabled;
-EXTERN long     ClientIpAddr;
 EXTERN char	*VirtualPath;
 EXTERN int	VirtualPathlen;
 EXTERN struct history *History;

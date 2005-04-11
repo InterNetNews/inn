@@ -154,7 +154,7 @@ PushIOvRateLimited(void)
             waittime.tv_usec = (target - elapsed) * 1e6;
             start = TMRnow_double();
 	    if (select(0, NULL, NULL, NULL, &waittime) != 0)
-                syswarn("%s: select in PushIOvRateLimit failed", ClientHost);
+                syswarn("%s: select in PushIOvRateLimit failed", Client.host);
             end = TMRnow_double();
             IDLEtime += end - start;
 	}

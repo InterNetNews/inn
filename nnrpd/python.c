@@ -110,27 +110,27 @@ PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
     authnum = 0;
 
     /* Client hostname */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientHost, strlen(ClientHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.host, strlen(Client.host));
     PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
 
     /* Client IP number */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientIpString, strlen(ClientIpString));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.ip, strlen(Client.ip));
     PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
 
     /* Client port number */
-    PYauthitem[authnum] = PyInt_FromLong(ClientPort);
+    PYauthitem[authnum] = PyInt_FromLong(Client.port);
     PyDict_SetItemString(PYauthinfo, PYTHONport, PYauthitem[authnum++]);
 
     /* Server interface the connection comes to */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ServerHost, strlen(ServerHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverhost, strlen(Client.serverhost));
     PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
 
     /* Server IP number */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ServerIpString, strlen(ServerIpString));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverip, strlen(Client.serverip));
     PyDict_SetItemString(PYauthinfo, PYTHONintipaddr, PYauthitem[authnum++]);
 
     /* Server port number */
-    PYauthitem[authnum] = PyInt_FromLong(ServerPort);
+    PYauthitem[authnum] = PyInt_FromLong(Client.serverport);
     PyDict_SetItemString(PYauthinfo, PYTHONintport, PYauthitem[authnum++]);
 
     /* Username if known */
@@ -250,27 +250,27 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     authnum = 0;
 
     /* Client hostname */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientHost, strlen(ClientHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.host, strlen(Client.host));
     PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
 
     /* Client IP number */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientIpString, strlen(ClientIpString));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.ip, strlen(Client.ip));
     PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
 
     /* Client port number */
-    PYauthitem[authnum] = PyInt_FromLong(ClientPort);
+    PYauthitem[authnum] = PyInt_FromLong(Client.port);
     PyDict_SetItemString(PYauthinfo, PYTHONport, PYauthitem[authnum++]);
 
     /* Server interface the connection comes to */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ServerHost, strlen(ServerHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverhost, strlen(Client.serverhost));
     PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
 
     /* Server IP number */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ServerIpString, strlen(ServerIpString));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverip, strlen(Client.serverip));
     PyDict_SetItemString(PYauthinfo, PYTHONintipaddr, PYauthitem[authnum++]);
 
     /* Server port number */
-    PYauthitem[authnum] = PyInt_FromLong(ServerPort);
+    PYauthitem[authnum] = PyInt_FromLong(Client.serverport);
     PyDict_SetItemString(PYauthinfo, PYTHONintport, PYauthitem[authnum++]);
 
     /* Username */
@@ -376,27 +376,27 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
     authnum = 0;
 
     /* Client hostname */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientHost, strlen(ClientHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.host, strlen(Client.host));
     PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
 
     /* Client IP number */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ClientIpString, strlen(ClientIpString));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.ip, strlen(Client.ip));
     PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
 
     /* Client port number */
-    PYauthitem[authnum] = PyInt_FromLong(ClientPort);
+    PYauthitem[authnum] = PyInt_FromLong(Client.port);
     PyDict_SetItemString(PYauthinfo, PYTHONport, PYauthitem[authnum++]);
 
     /* Server interface the connection comes to */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ServerHost, strlen(ServerHost));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverhost, strlen(Client.serverhost));
     PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
 
     /* Server IP number */
-    PYauthitem[authnum] = PyBuffer_FromMemory(ServerIpString, strlen(ServerIpString));
+    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverip, strlen(Client.serverip));
     PyDict_SetItemString(PYauthinfo, PYTHONintipaddr, PYauthitem[authnum++]);
 
     /* Server port number */
-    PYauthitem[authnum] = PyInt_FromLong(ServerPort);
+    PYauthitem[authnum] = PyInt_FromLong(Client.serverport);
     PyDict_SetItemString(PYauthinfo, PYTHONintport, PYauthitem[authnum++]);
     
     /* Username */

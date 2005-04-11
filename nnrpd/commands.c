@@ -182,7 +182,7 @@ CMDauthinfo(int ac, char *av[])
 	    case 1:
 		PERMspecified = NGgetlist(&PERMreadlist, accesslist);
 		PERMpostlist = PERMreadlist;
-		syslog(L_NOTICE, "%s auth %s (%s -> %s)", ClientHost, PERMuser,
+		syslog(L_NOTICE, "%s auth %s (%s -> %s)", Client.host, PERMuser,
 			logrec, PERMauthstring? PERMauthstring: "" );
 		Reply("%d Authentication succeeded\r\n", NNTP_AUTH_OK_VAL);
 		PERMneedauth = false;
@@ -190,7 +190,7 @@ CMDauthinfo(int ac, char *av[])
 		free(logrec);
 		return;
 	    case 0:
-		syslog(L_NOTICE, "%s bad_auth %s (%s)", ClientHost, PERMuser,
+		syslog(L_NOTICE, "%s bad_auth %s (%s)", Client.host, PERMuser,
 			logrec);
 		Reply("%d Authentication failed\r\n", NNTP_ACCESS_VAL);
 		free(logrec);
@@ -234,9 +234,9 @@ CMDauthinfo(int ac, char *av[])
 	}
 
         if (strcmp(User, PERMuser) == 0 && strcmp(Password, PERMpass) == 0) {
-            syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
+            syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
             if (LLOGenable) {
-                fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
+                fprintf(locallog, "%s user (%s):%s\n", Client.host, Username, PERMuser);
                 fflush(locallog);
             }
             Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
@@ -250,9 +250,9 @@ CMDauthinfo(int ac, char *av[])
         PERMlogin(User, Password, errorstr);
         PERMgetpermissions();
         if (!PERMneedauth) {
-            syslog(L_NOTICE, "%s user %s", ClientHost, PERMuser);
+            syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
             if (LLOGenable) {
-                fprintf(locallog, "%s user (%s):%s\n", ClientHost, Username, PERMuser);
+                fprintf(locallog, "%s user (%s):%s\n", Client.host, Username, PERMuser);
                 fflush(locallog);
             }
             Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
@@ -261,9 +261,9 @@ CMDauthinfo(int ac, char *av[])
             return;
         }
 
-	syslog(L_NOTICE, "%s bad_auth", ClientHost);
+	syslog(L_NOTICE, "%s bad_auth", Client.host);
         if (errorstr[0] != '\0') {
-            syslog(L_NOTICE, "%s script error str: %s", ClientHost, errorstr);
+            syslog(L_NOTICE, "%s script error str: %s", Client.host, errorstr);
             Reply("%d %s\r\n", NNTP_ACCESS_VAL, errorstr);
         } else {
             Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
@@ -355,7 +355,7 @@ CMDnewgroups(int ac, char *av[])
        an error was causing needless confusion.  Just return the empty list
        of groups. */
     if ((qp = QIOopen(ACTIVETIMES)) == NULL) {
-	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, ACTIVETIMES);
+	syslog(L_ERROR, "%s cant fopen %s %m", Client.host, ACTIVETIMES);
 	Reply("%d New newsgroups follow.\r\n", NNTP_NEWGROUPS_FOLLOWS_VAL);
         Printf(".\r\n");
 	return;
@@ -398,7 +398,7 @@ CMDnewgroups(int ac, char *av[])
     QIOclose(qp);
 
     if ((qp = QIOopen(ACTIVE)) == NULL) {
-	syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, ACTIVE);
+	syslog(L_ERROR, "%s cant fopen %s %m", Client.host, ACTIVE);
 	Reply("%d Cannot open active file.\r\n", NNTP_TEMPERR_VAL);
 	return;
     }
@@ -453,12 +453,12 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 
     ihave = (strcasecmp(av[0], "ihave") == 0);
     if (ihave && (!PERMaccessconf->allowihave || !PERMcanpost)) {
-	syslog(L_NOTICE, "%s noperm ihave without permission", ClientHost);
+	syslog(L_NOTICE, "%s noperm ihave without permission", Client.host);
 	Reply("%s\r\n", NNTP_ACCESS);
 	return;
     }
     if (!ihave && !PERMcanpost) {
-	syslog(L_NOTICE, "%s noperm post without permission", ClientHost);
+	syslog(L_NOTICE, "%s noperm post without permission", Client.host);
 	Reply("%s\r\n", NNTP_CANTPOST);
 	return;
     }
@@ -478,25 +478,25 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
       /* Acquire lock (this could be in RateLimit but that would
        * invoke the spaghetti factor). 
        */
-      if ((path = (char *) PostRecFilename(ClientIpString,PERMuser)) == NULL) {
+      if ((path = (char *) PostRecFilename(Client.ip,PERMuser)) == NULL) {
         Reply("%s\r\n", NNTP_CANTPOST);
         return;
       }
       
       if (LockPostRec(path) == 0) {
         syslog(L_ERROR, "%s Error write locking '%s'",
-               ClientHost, path);
+               Client.host, path);
         Reply("%s\r\n", NNTP_CANTPOST);
         return;
       }
       
       if (!RateLimit(&sleeptime,path)) {
-	syslog(L_ERROR, "%s can't check rate limit info", ClientHost);
+	syslog(L_ERROR, "%s can't check rate limit info", Client.host);
 	Reply("%s\r\n", NNTP_CANTPOST);
         UnlockPostRec(path);
 	return;
       } else if (sleeptime != 0L) {
-        syslog(L_NOTICE,"%s post sleep time is now %ld", ClientHost, sleeptime);
+        syslog(L_NOTICE,"%s post sleep time is now %ld", Client.host, sleeptime);
         sleep(sleeptime);
       }
       
@@ -543,14 +543,14 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	r = line_read(&NNTPline, PERMaccessconf->clienttimeout, &line, &len);
 	switch (r) {
 	default:
-	    warn("%s internal %d in post", ClientHost, r);
+	    warn("%s internal %d in post", Client.host, r);
 	    /* FALLTHROUGH */
 	case RTtimeout:
-	    warn("%s timeout in post", ClientHost);
+	    warn("%s timeout in post", Client.host);
 	    ExitWithStats(1, false);
 	    /* NOTREACHED */
 	case RTeof:
-	    warn("%s eof in post", ClientHost);
+	    warn("%s eof in post", Client.host);
 	    ExitWithStats(1, false);
 	    /* NOTREACHED */
 	case RTlong:
@@ -595,7 +595,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     }
 
     if (longline) {
-	warn("%s toolong in post", ClientHost);
+	warn("%s toolong in post", Client.host);
 	Printf("%d Line %d too long\r\n", 
 	       ihave ? NNTP_REJECTIT_VAL : NNTP_POSTFAIL_VAL, longline);
 	POSTrejected++;
@@ -605,7 +605,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     /* Send the article to the server. */
     response = ARTpost(article, idbuff, ihave, &permanent);
     if (response == NULL) {
-	notice("%s post ok %s", ClientHost, idbuff);
+	notice("%s post ok %s", Client.host, idbuff);
 	Reply("%s %s\r\n", ihave ? NNTP_TOOKIT : NNTP_POSTEDOK, idbuff);
 	POSTreceived++;
     }
@@ -614,7 +614,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	    *p = '\0';
 	if ((p = strchr(response, '\n')) != NULL)
 	    *p = '\0';
-	notice("%s post failed %s", ClientHost, response);
+	notice("%s post failed %s", Client.host, response);
 	if (!ihave || permanent) {
 	    /* for permanent errors reject the message */
 	    Reply("%d %s\r\n", ihave ? NNTP_REJECTIT_VAL : NNTP_POSTFAIL_VAL,

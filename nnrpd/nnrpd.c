@@ -196,27 +196,27 @@ ExitWithStats(int x, bool readconf)
     GRPreport();
     if (ARTcount)
         syslog(L_NOTICE, "%s exit articles %ld groups %ld", 
-    	    ClientHost, ARTcount, GRPcount);
+    	    Client.host, ARTcount, GRPcount);
     if (POSTreceived ||  POSTrejected)
 	syslog(L_NOTICE, "%s posts received %ld rejected %ld",
-	   ClientHost, POSTreceived, POSTrejected);
+	   Client.host, POSTreceived, POSTrejected);
     syslog(L_NOTICE, "%s times user %.3f system %.3f idle %.3f elapsed %.3f",
-	ClientHost, usertime, systime, IDLEtime, STATfinish - STATstart);
+	Client.host, usertime, systime, IDLEtime, STATfinish - STATstart);
     /* Tracking code - Make entries in the logfile(s) to show that we have
 	finished with this session */
     if (!readconf && PERMaccessconf &&  PERMaccessconf->readertrack) {
-	syslog(L_NOTICE, "%s Tracking Disabled (%s)", ClientHost, Username);
+	syslog(L_NOTICE, "%s Tracking Disabled (%s)", Client.host, Username);
 	if (LLOGenable) {
-		fprintf(locallog, "%s Tracking Disabled (%s)\n", ClientHost, Username);
+		fprintf(locallog, "%s Tracking Disabled (%s)\n", Client.host, Username);
 		fclose(locallog);
-		syslog(L_NOTICE,"%s Local Logging ends (%s) %s",ClientHost, Username, LocalLogFileName);
+		syslog(L_NOTICE,"%s Local Logging ends (%s) %s",Client.host, Username, LocalLogFileName);
 	}
     }
     if (ARTget)
-        syslog(L_NOTICE, "%s artstats get %ld time %ld size %ld", ClientHost,
+        syslog(L_NOTICE, "%s artstats get %ld time %ld size %ld", Client.host,
             ARTget, ARTgettime, ARTgetsize);
     if (!readconf && PERMaccessconf && PERMaccessconf->nnrpdoverstats && OVERcount)
-        syslog(L_NOTICE, "%s overstats count %ld hit %ld miss %ld time %ld size %ld dbz %ld seek %ld get %ld artcheck %ld", ClientHost,
+        syslog(L_NOTICE, "%s overstats count %ld hit %ld miss %ld time %ld size %ld dbz %ld seek %ld get %ld artcheck %ld", Client.host,
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
 #ifdef HAVE_SSL
@@ -255,7 +255,7 @@ ExitWithStats(int x, bool readconf)
     if (History)
 	HISclose(History);
 
-    TMRsummary(ClientHost, timer_name);
+    TMRsummary(Client.host, timer_name);
     TMRfree();
 
     if (LocalLogFileName != NULL)
@@ -490,25 +490,18 @@ StartConnection(void)
     socklen_t		length;
     const char		*default_host_error = "unknown error";
 
-    ClientIpAddr = 0L;
-    ClientHost[0] = '\0';
-    ClientIpString[0] = '\0';
-    ClientPort = 0;
-    ServerHost[0] = '\0';
-    ServerIpString[0] = '\0';
-    ServerPort = 0;
+    memset(&Client, 0, sizeof(Client));
+    strlcpy(Client.host, "?", sizeof(Client.host));
 
     /* Get the peer's name. */
     length = sizeof ssc;
     if (getpeername(STDIN_FILENO, (struct sockaddr *)&ssc, &length) < 0) {
-      if (!isatty(STDIN_FILENO)) {
+        if (!isatty(STDIN_FILENO)) {
 	    syslog(L_TRACE, "%s cant getpeername %m", "?");
-             /* so stats generation looks correct. */
-            strlcpy(ClientHost, "?", sizeof(ClientHost));
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, true);
 	}
-        strlcpy(ClientHost, "stdin", sizeof(ClientHost));
+        strlcpy(Client.host, "stdin", sizeof(Client.host));
     }
 
     else {
@@ -523,71 +516,75 @@ StartConnection(void)
 	    ExitWithStats(1, true);
 	}
 
-	length = sizeof sss;
-	if (getsockname(STDIN_FILENO, (struct sockaddr *)&sss, &length) < 0) {
-	    syslog(L_NOTICE, "%s can't getsockname %m", ClientHost);
-	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
-	    ExitWithStats(1, true);
-	}
-
 	/* figure out client's IP address/hostname */
 	HostErrorStr = default_host_error;
-	if( ! Sock2String( (struct sockaddr *)&ssc, ClientIpString,
-				sizeof( ClientIpString ), false ) ) {
+	if (!Sock2String((struct sockaddr *) &ssc, Client.ip,
+                         sizeof(Client.ip), false)) {
             syslog(L_NOTICE, "? cant get client numeric address: %s", HostErrorStr);
 	    ExitWithStats(1, true);
 	}
-	if(GetHostByAddr) {
+	if (GetHostByAddr) {
 	    HostErrorStr = default_host_error;
-	    if( ! Sock2String( (struct sockaddr *)&ssc, ClientHost,
-				    sizeof( ClientHost ), true ) ) {
+	    if (!Sock2String((struct sockaddr *) &ssc, Client.host,
+                             sizeof(Client.host), true)) {
                 syslog(L_NOTICE,
                        "? reverse lookup for %s failed: %s -- using IP address for access",
-                       ClientIpString, HostErrorStr);
-	        strlcpy(ClientHost, ClientIpString, sizeof(ClientHost));
+                       Client.ip, HostErrorStr);
+	        strlcpy(Client.host, Client.ip, sizeof(Client.host));
 	    }
 	} else {
-            strlcpy(ClientHost, ClientIpString, sizeof(ClientHost));
+            strlcpy(Client.host, Client.ip, sizeof(Client.host));
         }
 
-	/* figure out server's IP address/hostname */
+	/* Figure out server's IP address/hostname. */
+	length = sizeof sss;
+	if (getsockname(STDIN_FILENO, (struct sockaddr *)&sss, &length) < 0) {
+	    syslog(L_NOTICE, "%s can't getsockname %m", Client.host);
+	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
+	    ExitWithStats(1, true);
+	}
 	HostErrorStr = default_host_error;
-	if( ! Sock2String( (struct sockaddr *)&sss, ServerIpString,
-				sizeof( ServerIpString ), false ) ) {
+	if (!Sock2String((struct sockaddr *) &sss, Client.serverip,
+                         sizeof(Client.serverip), false)) {
             syslog(L_NOTICE, "? cant get server numeric address: %s", HostErrorStr);
 	    ExitWithStats(1, true);
 	}
-	if(GetHostByAddr) {
+	if (GetHostByAddr) {
 	    HostErrorStr = default_host_error;
-	    if( ! Sock2String( (struct sockaddr *)&sss, ServerHost,
-				    sizeof( ServerHost ), true ) ) {
+	    if (!Sock2String((struct sockaddr *) &sss, Client.serverhost,
+                             sizeof(Client.serverhost), true)) {
                 syslog(L_NOTICE,
                        "? reverse lookup for %s failed: %s -- using IP address for access",
-                       ServerIpString, HostErrorStr);
-	        strlcpy(ServerHost, ServerIpString, sizeof(ServerHost));
+                       Client.serverip, HostErrorStr);
+	        strlcpy(Client.serverhost, Client.serverip,
+                        sizeof(Client.serverhost));
 	    }
 	} else {
-            strlcpy(ServerHost, ServerIpString, sizeof(ServerHost));
+            strlcpy(Client.serverhost, Client.serverip,
+                    sizeof(Client.serverhost));
         }
 
 	/* get port numbers */
 	switch( ssc.ss_family ) {
 	    case AF_INET:
-		ClientPort = ntohs( ((struct sockaddr_in *)&ssc)->sin_port );
-		ServerPort = ntohs( ((struct sockaddr_in *)&sss)->sin_port );
+		Client.port = ntohs(((struct sockaddr_in *) &ssc)->sin_port);
+		Client.serverport
+                    = ntohs(((struct sockaddr_in *) &sss)->sin_port);
 		break;
 #ifdef HAVE_INET6
 	    case AF_INET6:
-		ClientPort = ntohs( ((struct sockaddr_in6 *)&ssc)->sin6_port );
-		ServerPort = ntohs( ((struct sockaddr_in6 *)&sss)->sin6_port );
+		Client.port
+                    = ntohs(((struct sockaddr_in6 *) &ssc)->sin6_port);
+		Client.serverport
+                    = ntohs(((struct sockaddr_in6 *)&sss)->sin6_port);
 		break;
 #endif
 	}
     }
 
-    strlcpy(LogName, ClientHost, sizeof(LogName));
+    strlcpy(LogName, Client.host, sizeof(LogName));
 
-    syslog(L_NOTICE, "%s (%s) connect", ClientHost, ClientIpString);
+    syslog(L_NOTICE, "%s (%s) connect", Client.host, Client.ip);
 
     PERMgetaccess(NNRPACCESS);
     PERMgetpermissions();
@@ -683,7 +680,7 @@ VPrintf(const char *fmt, va_list args, int dotrace)
         p = buff + strlen(buff) - 1;
         while (p >= buff && (*p == '\n' || *p == '\r'))
             *p-- = '\0';
-        syslog(L_TRACE, "%s > %s", ClientHost, buff);
+        syslog(L_TRACE, "%s > %s", Client.host, buff);
 
         errno = oerrno;
     }
@@ -1181,18 +1178,18 @@ main(int argc, char *argv[])
     /* Get permissions and see if we can talk to this client */
     StartConnection();
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
-	syslog(L_NOTICE, "%s no_permission", ClientHost);
+	syslog(L_NOTICE, "%s no_permission", Client.host);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
 	       NNTP_ACCESS_VAL);
 	ExitWithStats(1, false);
     }
 
     /* Proceed with initialization. */
-    setproctitle("%s connect", ClientHost);
+    setproctitle("%s connect", Client.host);
 
     /* Were we told to reject connections? */
     if (Reject) {
-	syslog(L_NOTICE, "%s rejected %s", ClientHost, Reject);
+	syslog(L_NOTICE, "%s rejected %s", Client.host, Reject);
 	Reply("%s %s\r\n", NNTP_GOODBYE, Reject);
 	ExitWithStats(0, false);
     }
@@ -1200,17 +1197,17 @@ main(int argc, char *argv[])
     if (PERMaccessconf) {
 	if (PERMaccessconf->readertrack)
 	    PERMaccessconf->readertrack =
-                TrackClient(ClientHost, Username, sizeof(Username));
+                TrackClient(Client.host, Username, sizeof(Username));
     } else {
 	if (innconf->readertrack)
 	    innconf->readertrack =
-                TrackClient(ClientHost, Username, sizeof(Username));
+                TrackClient(Client.host, Username, sizeof(Username));
     }
 
     if ((PERMaccessconf && PERMaccessconf->readertrack)
         || (!PERMaccessconf && innconf->readertrack)) {
 	int len;
-	syslog(L_NOTICE, "%s Tracking Enabled (%s)", ClientHost, Username);
+	syslog(L_NOTICE, "%s Tracking Enabled (%s)", Client.host, Username);
 	pid=getpid();
 	gettimeofday(&tv,NULL);
 	count += pid;
@@ -1224,10 +1221,10 @@ main(int argc, char *argv[])
 	    free(LocalLogDirName);
 	}
 	if (locallog == NULL && (locallog = fopen(LocalLogFileName, "w")) == NULL) {
-	    syslog(L_ERROR, "%s Local Logging failed (%s) %s: %m", ClientHost, Username, LocalLogFileName);
+	    syslog(L_ERROR, "%s Local Logging failed (%s) %s: %m", Client.host, Username, LocalLogFileName);
 	} else {
-	    syslog(L_NOTICE, "%s Local Logging begins (%s) %s",ClientHost, Username, LocalLogFileName);
-	    fprintf(locallog, "%s Tracking Enabled (%s)\n", ClientHost, Username);
+	    syslog(L_NOTICE, "%s Local Logging begins (%s) %s",Client.host, Username, LocalLogFileName);
+	    fprintf(locallog, "%s Tracking Enabled (%s)\n", Client.host, Username);
 	    fflush(locallog);
 	    LLOGenable = true;
 	}
@@ -1282,7 +1279,7 @@ main(int argc, char *argv[])
 	    if (PushedBack[0] == '\0')
 		continue;
 	    if (Tracing)
-		syslog(L_TRACE, "%s < %s", ClientHost, PushedBack);
+		syslog(L_TRACE, "%s < %s", Client.host, PushedBack);
 	    ac = Argify(PushedBack, &av);
 	    r = RTok;
 	}
@@ -1293,13 +1290,13 @@ main(int argc, char *argv[])
 	    r = line_read(&NNTPline, timeout, &p, &len);
 	    switch (r) {
 	    default:
-		syslog(L_ERROR, "%s internal %d in main", ClientHost, r);
+		syslog(L_ERROR, "%s internal %d in main", Client.host, r);
 		/* FALLTHROUGH */
 	    case RTtimeout:
 		if (timeout < clienttimeout)
-		    syslog(L_NOTICE, "%s timeout short", ClientHost);
+		    syslog(L_NOTICE, "%s timeout short", Client.host);
 		else
-		    syslog(L_NOTICE, "%s timeout", ClientHost);
+		    syslog(L_NOTICE, "%s timeout", Client.host);
 		ExitWithStats(1, false);
 		break;
 	    case RTok:
@@ -1308,7 +1305,7 @@ main(int argc, char *argv[])
 		    memcpy(buff, p, len + 1);
 		    /* Do some input processing, check for blank line. */
 		    if (Tracing)
-			syslog(L_TRACE, "%s < %s", ClientHost, buff);
+			syslog(L_TRACE, "%s < %s", Client.host, buff);
 		    if (buff[0] == '\0')
 			continue;
 		    ac = Argify(buff, &av);
@@ -1335,9 +1332,9 @@ main(int argc, char *argv[])
 		break;
 	if (cp->Name == NULL) {
 	    if ((int)strlen(buff) > 40)
-		syslog(L_NOTICE, "%s unrecognized %.40s...", ClientHost, buff);
+		syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host, buff);
 	    else
-		syslog(L_NOTICE, "%s unrecognized %s", ClientHost, buff);
+		syslog(L_NOTICE, "%s unrecognized %s", Client.host, buff);
 	    Reply("%d What?\r\n", NNTP_BAD_COMMAND_VAL);
 	    continue;
 	}
@@ -1356,7 +1353,7 @@ main(int argc, char *argv[])
 		NNTP_AUTH_NEEDED_VAL);
 	    continue;
 	}
-	setproctitle("%s %s", ClientHost, av[0]);
+	setproctitle("%s %s", Client.host, av[0]);
 	(*cp->Function)(ac, av);
 	if (PushedBack)
 	    break;

@@ -169,7 +169,7 @@ PERMartok(void)
 	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	} else {
 	    if (reply != NULL) {
-	        syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, ClientHost, p, reply);
+	        syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, Client.host, p, reply);
                 free(reply);
 		return false;
 	    }
@@ -251,16 +251,16 @@ InitBackoffConstants(void)
   if (stat(postrec_dir, &st) < 0) {
     if (ENOENT == errno) {
       if (!MakeDirectory(postrec_dir, true)) {
-	syslog(L_ERROR, "%s cannot create backoff_db '%s': %s",ClientHost,postrec_dir,strerror(errno));
+	syslog(L_ERROR, "%s cannot create backoff_db '%s': %s",Client.host,postrec_dir,strerror(errno));
 	return;
       }
     } else {
-      syslog(L_ERROR, "%s cannot stat backoff_db '%s': %s",ClientHost,postrec_dir,strerror(errno));
+      syslog(L_ERROR, "%s cannot stat backoff_db '%s': %s",Client.host,postrec_dir,strerror(errno));
       return;
     }
   }
   if (!S_ISDIR(st.st_mode)) {
-    syslog(L_ERROR, "%s backoff_db '%s' is not a directory",ClientHost,postrec_dir);
+    syslog(L_ERROR, "%s backoff_db '%s' is not a directory",Client.host,postrec_dir);
     return;
   }
 
@@ -310,7 +310,7 @@ PostRecFilename(char *ip, char *user)
          postrec_dir, quads[3], quads[2], quads[1]);
      if (!MakeDirectory(dirbuff,true)) {
        syslog(L_ERROR, "%s Unable to create postrec directories '%s': %s",
-               ClientHost, dirbuff, strerror(errno));
+               Client.host, dirbuff, strerror(errno));
        return NULL;
      }
      snprintf(buff, sizeof(buff), "%s/%03d", dirbuff, quads[0]);
@@ -345,7 +345,7 @@ LockPostRec(char *path)
 
     /* No lock. See if the file is there. */
     if (stat(lockname, &st) < 0) {
-      syslog(L_ERROR, "%s cannot stat lock file %s", ClientHost, strerror(errno));
+      syslog(L_ERROR, "%s cannot stat lock file %s", Client.host, strerror(errno));
       if (statfailed++ > 5) return(0);
       continue;
     }
@@ -355,7 +355,7 @@ LockPostRec(char *path)
     statfailed = 0;
     time(&now);
     if (now < st.st_ctime + PERMaccessconf->backoff_postslow) continue;
-    syslog(L_ERROR, "%s removing stale lock file %s", ClientHost, lockname);
+    syslog(L_ERROR, "%s removing stale lock file %s", Client.host, lockname);
     unlink(lockname);
   }
 }
@@ -367,7 +367,7 @@ UnlockPostRec(char *path)
 
   snprintf(lockname, sizeof(lockname), "%s.lock", path);
   if (unlink(lockname) < 0) {
-    syslog(L_ERROR, "%s can't unlink lock file: %s", ClientHost,strerror(errno)) ;
+    syslog(L_ERROR, "%s can't unlink lock file: %s", Client.host,strerror(errno)) ;
   }
   return;
 }
@@ -388,27 +388,27 @@ GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
          return 1;
        }
        syslog(L_ERROR, "%s Error opening '%s': %s",
-              ClientHost, path, strerror(errno));
+              Client.host, path, strerror(errno));
        return 0;
      }
 
      if (fgets(buff,SMBUF,fp) == NULL) {
        syslog(L_ERROR, "%s Error reading '%s': %s",
-              ClientHost, path, strerror(errno));
+              Client.host, path, strerror(errno));
        return 0;
      }
      *lastpost = atol(buff);
 
      if ((s = strchr(buff,',')) == NULL) {
        syslog(L_ERROR, "%s bad data in postrec file: '%s'",
-              ClientHost, buff);
+              Client.host, buff);
        return 0;
      }
      s++; *lastsleep = atol(s);
 
      if ((s = strchr(s,',')) == NULL) {
        syslog(L_ERROR, "%s bad data in postrec file: '%s'",
-              ClientHost, buff);
+              Client.host, buff);
        return 0;
      }
      s++; *lastn = atol(s);
@@ -428,7 +428,7 @@ StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
      fp = fopen(path,"w");
      if (fp == NULL)                   {
        syslog(L_ERROR, "%s Error opening '%s': %s",
-              ClientHost, path, strerror(errno));
+              Client.host, path, strerror(errno));
        return 0;
      }
 
@@ -450,7 +450,7 @@ RateLimit(long *sleeptime, char *path)
      prevpost = 0L; prevsleep = 0L; prevn = 0L; n = 0L;
      if (!GetPostRecord(path,&prevpost,&prevsleep,&prevn)) {
        syslog(L_ERROR, "%s can't get post record: %s",
-              ClientHost, strerror(errno));
+              Client.host, strerror(errno));
        return 0;
      }
      /*
@@ -472,7 +472,7 @@ RateLimit(long *sleeptime, char *path)
        n = now - prevpost;
        if (n < 0L) {
          syslog(L_NOTICE,"%s previous post was in the future (%ld sec)",
-                ClientHost,n);
+                Client.host,n);
          n = 0L;
        }
        if (n < PERMaccessconf->backoff_postfast) {
@@ -492,13 +492,13 @@ RateLimit(long *sleeptime, char *path)
      *sleeptime = ((*sleeptime) > PERMaccessconf->backoff_postfast) ? PERMaccessconf->backoff_postfast : (*sleeptime);
      /* This ought to trap this bogon */
      if ((*sleeptime) < 0L) {
-	syslog(L_ERROR,"%s Negative sleeptime detected: %ld, prevsleep: %ld, N: %ld",ClientHost,*sleeptime,prevsleep,n);
+	syslog(L_ERROR,"%s Negative sleeptime detected: %ld, prevsleep: %ld, N: %ld",Client.host,*sleeptime,prevsleep,n);
 	*sleeptime = 0L;
      }
   
      /* Store the postrecord */
      if (!StorePostRecord(path,now,*sleeptime,prevn)) {
-       syslog(L_ERROR, "%s can't store post record: %s", ClientHost, strerror(errno));
+       syslog(L_ERROR, "%s can't store post record: %s", Client.host, strerror(errno));
        return 0;
      }
 

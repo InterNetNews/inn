@@ -60,7 +60,7 @@ TrackClient(char *client, char *user, size_t len)
 		fclose(fd);
 	} else {
 		RARTon=false;
-		syslog(L_NOTICE, "%s No logging - can't read %s", ClientHost, dbfile);
+		syslog(L_NOTICE, "%s No logging - can't read %s", Client.host, dbfile);
 	}
 
         free(dbfile);

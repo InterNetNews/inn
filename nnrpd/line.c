@@ -151,7 +151,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 		 * stop, then discard the whole thing */
 		if (newsize == line->allocated) {
 		    warn("%s overflowed our line buffer (%ld), "
-			 "discarding further input", ClientHost,
+			 "discarding further input", Client.host,
 			 PERMaccessconf->localmaxartsize);
 		    where = line->start;
 		    r = RTlong;
@@ -174,7 +174,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 		i = select(STDIN_FILENO + 1, &rmask, NULL, NULL, &t);
 		TMRstop(TMR_IDLE);
 		if (i == -1 && errno != EINTR) {
-		    syswarn("%s can't select", ClientHost);
+		    syswarn("%s can't select", Client.host);
 		    return RTtimeout;
 		}
 	    } while (i == -1);
@@ -187,7 +187,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 
 	    /* give timeout for read errors */
 	    if (count < 0) {
-		sysnotice("%s can't read", ClientHost);
+		sysnotice("%s can't read", Client.host);
 		return RTtimeout;
 	    }
 	    /* if we hit EOF, terminate the string and send it back */

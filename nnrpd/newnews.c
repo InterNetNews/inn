@@ -201,7 +201,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
 	    free(p);
 	}
 	OVclosesearch(handle);
-	notice("%s newnews %s %lu", ClientHost, group, artcount);
+	notice("%s newnews %s %lu", Client.host, group, artcount);
 	if (vector)
 	    cvector_free(vector);
     }
@@ -241,7 +241,7 @@ CMDnewnews(int ac, char *av[])
 
   snprintf(line, sizeof(line), "%s %s %s %s", av[1], av[2], av[3],
 	   (ac >= 5 && (*av[4] == 'G' || *av[4] == 'U')) ? "GMT" : "local");
-  notice("%s newnews %s", ClientHost, line);
+  notice("%s newnews %s", Client.host, line);
 
   TMRstart(TMR_NEWNEWS);
   /* Optimization in case client asks for !* (no groups) */
@@ -283,7 +283,7 @@ CMDnewnews(int ac, char *av[])
 	  if (errno == ENOENT) {
 	      Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
 	  } else {
-	      syswarn("%s cant fopen %s", ClientHost, path);
+	      syswarn("%s cant fopen %s", Client.host, path);
 	      Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
 	  }
 	  free(path);

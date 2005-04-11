@@ -228,7 +228,7 @@ CMDlist(int ac, char *av[])
 	    Printf(".\r\n");
 	}
 	else {
-	    syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, lp->File);
+	    syslog(L_ERROR, "%s cant fopen %s %m", Client.host, lp->File);
 	    Reply("%d No list of %s available.\r\n",
 		NNTP_TEMPERR_VAL, lp->Items);
 	}
@@ -253,7 +253,7 @@ CMDlist(int ac, char *av[])
 	    continue;
 	}
 	if (p[0] == '.' && p[1] == '\0') {
-	    syslog(L_ERROR, "%s single dot in %s", ClientHost, lp->File);
+	    syslog(L_ERROR, "%s single dot in %s", Client.host, lp->File);
 	    continue;
 	}
 	/* matching patterns against patterns is not that
