@@ -176,7 +176,6 @@ EXTERN char	**PERMreadlist;
 EXTERN char	**PERMpostlist;
 EXTERN struct client Client;
 EXTERN char	Username[SMBUF];
-EXTERN char	LogName[256] ;
 #ifdef HAVE_SSL
 EXTERN bool	ClientSSL;
 #endif

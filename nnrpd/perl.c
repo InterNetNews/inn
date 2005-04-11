@@ -34,7 +34,6 @@
 #include "innperl.h"
 
 extern HEADER	Table[], *EndOfTable;
-extern char LogName[];
 extern char PERMuser[];
 
 extern char **OtherHeaders;

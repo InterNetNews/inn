@@ -10,6 +10,7 @@
 #include "portable/alloca.h"
 #include "clibrary.h"
 #include "portable/setproctitle.h"
+#include "portable/socket.h"
 #include "portable/wait.h"
 #include <grp.h>
 #include <netdb.h>
@@ -35,10 +36,6 @@
 extern SSL *tls_conn;
 int nnrpd_starttls_done = 0;
 #endif 
-
-#if NEED_HERRNO_DECLARATION
-extern int h_errno;
-#endif
 
 /* If we have getloadavg, include the appropriate header file.  Otherwise,
    just assume that we always have a load of 0. */
@@ -98,11 +95,11 @@ const char *NNRPinstance = "";
 
 #ifdef DO_PERL
 bool   PerlLoaded = false;
-#endif /* DO_PERL */
+#endif
 
 #ifdef DO_PYTHON
 bool PY_use_dynamic = false;
-#endif /* DO_PYTHON */
+#endif
 
 static char	CMDfetchhelp[] = "[MessageID|Number]";
 
@@ -578,8 +575,6 @@ StartConnection(void)
 #endif
 	}
     }
-
-    strlcpy(LogName, Client.host, sizeof(LogName));
 
     syslog(L_NOTICE, "%s (%s) connect", Client.host, Client.ip);
 
@@ -1107,8 +1102,6 @@ main(int argc, char *argv[])
             }
         }
     }
-
-    strlcpy(LogName, "?", sizeof(LogName));
 
     /* Catch SIGPIPE so that we can exit out of long write loops */
     xsignal(SIGPIPE, CatchPipe);
