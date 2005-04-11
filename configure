@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.244.2.7 
+# From configure.in Revision: 1.244.2.9 
 # libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.
@@ -6265,7 +6265,7 @@ fi
 if test "${with_kerberos+set}" = set; then
   withval="$with_kerberos"
   if test x"$with_kerberos" != xno ; then
-         KRB5_LIB="-L$with_kerberos/lib"
+         KRB5_LDFLAGS="-L$with_kerberos/lib"
          KRB5_INC="-I$with_kerberos/include"
      fi
 fi
@@ -8062,7 +8062,7 @@ if test "$ac_cv_search_krb5_parse_name" != "no"; then
   test "$ac_cv_search_krb5_parse_name" = "none required" || LIBS="$ac_cv_search_krb5_parse_name $LIBS"
   KRB5_LIB=$LIBS
                 KRB5_AUTH="auth_krb5"
-     KRB5_LIB="$KRB5_LIB -lk5crypto -lcom_err"
+     KRB5_LIB="$KRB5_LDFLAGS $KRB5_LIB -lk5crypto -lcom_err"
      
      
 else :

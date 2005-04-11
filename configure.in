@@ -536,7 +536,7 @@ dnl the user doesn't specify the path.
 AC_ARG_WITH(kerberos,
     [  --with-kerberos=PATH    Path to Kerberos v5 (for auth_krb5)],
     [if test x"$with_kerberos" != xno ; then
-         KRB5_LIB="-L$with_kerberos/lib"
+         KRB5_LDFLAGS="-L$with_kerberos/lib"
          KRB5_INC="-I$with_kerberos/include"
      fi])
 
@@ -805,7 +805,7 @@ dnl Check for Kerberos libraries for auth_krb5, and if found define KRB5_AUTH
 dnl to the relevant object file, which will enable compilation of it.
 INN_SEARCH_AUX_LIBS(krb5_parse_name, krb5, KRB5_LIB,
     [KRB5_AUTH="auth_krb5"
-     KRB5_LIB="$KRB5_LIB -lk5crypto -lcom_err"
+     KRB5_LIB="$KRB5_LDFLAGS $KRB5_LIB -lk5crypto -lcom_err"
      AC_SUBST(KRB5_AUTH)
      AC_SUBST(KRB5_INC)], , [$LIBS -lk5crypto -lcom_err])
 
