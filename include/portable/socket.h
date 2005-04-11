@@ -128,6 +128,15 @@ extern const char *hstrerror(int);
 # define AI_NUMERICSERV 0
 #endif
 
+/* Constants required by the IPv6 API.  The buffer size required to hold any
+   nul-terminated text representation of the given address type. */
+#ifndef INET_ADDRSTRLEN
+# define INET_ADDRSTRLEN 16
+#endif
+#ifndef INET6_ADDRSTRLEN
+# define INET6_ADDRSTRLEN 46
+#endif
+
 END_DECLS
 
 #endif /* PORTABLE_SOCKET_H */
