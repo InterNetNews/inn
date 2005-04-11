@@ -4,7 +4,7 @@ nnrpd - NNTP server for reader clients
 
 =head1 SYNOPSIS
 
-B<nnrpd> [B<-DfnoRSt>] [B<-6> I<address>] [B<-b> I<address>]
+B<nnrpd> [B<-DfnoSt>] [B<-6> I<address>] [B<-b> I<address>]
 [B<-c> I<configfile>] S<[B<-i> I<initial>]> [B<-I> I<instance>]
 [B<-p> I<port>] [B<-P> I<prefork>] [B<-r> I<reason>] [B<-s> I<padding>]
 
@@ -134,11 +134,6 @@ B<-D> flag.
 If the B<-r> flag is used, then B<nnrpd> will reject the incoming
 connection giving I<reason> as the text. This flag is used by innd(8)
 when it is paused or throttled.
-
-=item B<-R>
-
-This option forces B<nnrpd> to be read-only. The startup banner will
-indicate "no posting".
 
 =item B<-s> I<padding>
 

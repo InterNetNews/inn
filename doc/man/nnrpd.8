@@ -134,7 +134,7 @@
 nnrpd \- NNTP server for reader clients
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBnnrpd\fR [\fB\-DfnoRSt\fR] [\fB\-6\fR \fIaddress\fR] [\fB\-b\fR \fIaddress\fR]
+\&\fBnnrpd\fR [\fB\-DfnoSt\fR] [\fB\-6\fR \fIaddress\fR] [\fB\-b\fR \fIaddress\fR]
 [\fB\-c\fR \fIconfigfile\fR] [\fB\-i\fR\ \fIinitial\fR] [\fB\-I\fR \fIinstance\fR]
 [\fB\-p\fR \fIport\fR] [\fB\-P\fR \fIprefork\fR] [\fB\-r\fR \fIreason\fR] [\fB\-s\fR \fIpadding\fR]
 .SH "DESCRIPTION"
@@ -249,10 +249,6 @@ awaiting connections when started as a standalone daemon using the
 If the \fB\-r\fR flag is used, then \fBnnrpd\fR will reject the incoming
 connection giving \fIreason\fR as the text. This flag is used by \fIinnd\fR\|(8)
 when it is paused or throttled.
-.IP "\fB\-R\fR" 4
-.IX Item "-R"
-This option forces \fBnnrpd\fR to be read\-only. The startup banner will
-indicate \*(L"no posting\*(R".
 .IP "\fB\-s\fR \fIpadding\fR" 4
 .IX Item "-s padding"
 As each command is received, \fBnnrpd\fR tries to change its \f(CW\*(C`argv\*(C'\fR

@@ -77,7 +77,6 @@ char	*HISTORY = NULL;
 char	*NEWSGROUPS = NULL;
 char	*NNRPACCESS = NULL;
 
-bool	ForceReadOnly = false;
 static char 	*LocalLogFileName = NULL;
 static char 	*LocalLogDirName;
 
@@ -853,9 +852,9 @@ main(int argc, char *argv[])
 #endif /* HAVE_SASL */
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:nop:P:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:nop:P:r:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:nop:P:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:nop:P:r:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
@@ -894,9 +893,6 @@ main(int argc, char *argv[])
  	case 'p':			/* tcp port for daemon mode */
  	    ListenPort = atoi(optarg);
  	    break;
-	case 'R':			/* Ignore 'P' option in access file */
-	    ForceReadOnly = true;
-	    break;
 	case 'r':			/* Reject connection message */
 	    Reject = xstrdup(optarg);
 	    break;
