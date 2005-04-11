@@ -36,6 +36,7 @@ lib/vector
 lib/wire
 lib/xmalloc
 lib/xwrite
+nnrpd/auth-ext
 overview/api
 overview/buffindexed
 overview/tradindexed

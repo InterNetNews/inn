@@ -17,7 +17,7 @@ TESTS	= authprogs/ident.t innd/artparse.t lib/buffer.t lib/concat.t \
 	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t \
 	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
-	lib/xwrite.t overview/api.t overview/buffindexed.t \
+	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
 	overview/tradindexed.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
@@ -221,6 +221,9 @@ lib/xwrite.o: ../lib/xwrite.c
 
 lib/xwrite.t: lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o libtest.o $(LIBINN)
 	$(LINK) lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o libtest.o $(LIBINN)
+
+nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o $(LIBINN)
+	$(LINK) nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o libtest.o $(LIBINN)
 
 overview/api.t: overview/api-t.o libtest.o $(STORAGEDEPS)
 	$(LINK) overview/api-t.o libtest.o $(STORAGELIBS) $(LIBS)

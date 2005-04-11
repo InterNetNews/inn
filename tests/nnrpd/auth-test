@@ -1,0 +1,62 @@
+#! /bin/sh
+# $Id$
+#
+# Test resolver and authenticator, used for testing nnrpd external auth.
+# Saves all of its input into a file named input in the current directory, as
+# seen, and then produces output based on its command-line parameter.
+
+# Save input.
+cat > input
+
+# Choose output.
+case "$1" in
+okay)
+    printf 'User:tester\r\n'
+    ;;
+garbage)
+    echo blah
+    echo Use:blah
+    printf 'Use:r:blahblahblah\r\n'
+    echo ''
+    printf 'User:tester\r\n'
+    printf '   User:wrong\r\n'
+    ;;
+error)
+    echo 'This is an error' >&2
+    exit 1
+    ;;
+interspersed)
+    printf 'This is ' >&2
+    printf 'Use'
+    printf 'an er' >&2
+    printf 'r:test'
+    printf 'ror' >&2
+    printf 'er\r'
+    printf '\n' >&2
+    printf '\n'
+    ;;
+empty)
+    ;;
+empty-error)
+    exit 1
+    ;;
+okay-error)
+    printf 'User:tester\r\n'
+    exit 1
+    ;;
+signal)
+    kill -HUP $$
+    ;;
+newline)
+    printf 'User:tester\n'
+    ;;
+partial)
+    printf 'User:tester'
+    ;;
+partial-error)
+    printf 'User:tester'
+    printf 'This is an error' >&2
+    exit 1
+    ;;
+esac
+exit 0

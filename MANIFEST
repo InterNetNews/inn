@@ -562,6 +562,7 @@ m4/zlib.m4                            Autoconf macro for zlib
 nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
+nnrpd/auth-ext.c                      External authentication handling
 nnrpd/cache.c                         MessageID cache routines
 nnrpd/cache.h                         MessageID cache interfaces
 nnrpd/commands.c                      Assorted server commands
@@ -839,6 +840,9 @@ tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
 tests/libtest.c                       Helper library for writing tests
 tests/libtest.h                       Interface to libtest
+tests/nnrpd                           test suite for nnrpd (Directory)
+tests/nnrpd/auth-ext-t.c              Tests for auth_external in nnrpd
+tests/nnrpd/auth-test                 Helper program for external auth tests
 tests/overview                        Test suite for overview (Directory)
 tests/overview/api-t.c                Basic tests for overview API
 tests/overview/overview-t.c           Basic tests for overview methods

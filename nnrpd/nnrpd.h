@@ -120,7 +120,9 @@ struct line {
 
 
 /*
-**  Information about the currently connected client.
+**  Information about the currently connected client.  Eventually, this struct
+**  may become the repository for all nnrpd global state, or at least the
+**  state that relates to a particular client connection.
 */
 struct client {
     char host[SMBUF];
@@ -266,6 +268,14 @@ extern void		CMD_unimp    (int ac, char** av);
 #ifdef HAVE_SSL
 extern void		CMDstarttls  (int ac, char** av);
 #endif
+
+
+/* Run a resolver or authenticator.  The directory is where to look for the
+   command if not fully qualified.  username and password may be NULL to run
+   resolvers. */
+char *auth_external(struct client *, const char *command,
+                    const char *directory, const char *username,
+                    const char *password);
 
 void write_buffer(const char *buff, ssize_t len);
 

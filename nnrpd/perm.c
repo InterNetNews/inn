@@ -1416,10 +1416,11 @@ PERMgetaccess(char *nnrpaccess)
 	if ((uname = ResolveUser(auth_realms[i])) != NULL)
 	    PERMauthorized = true;
 	if (!uname && auth_realms[i]->default_user)
-	    uname = auth_realms[i]->default_user;
+	    uname = xstrdup(auth_realms[i]->default_user);
     }
     if (uname) {
 	strlcpy(PERMuser, uname, sizeof(PERMuser));
+        free(uname);
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
 	    /* append the default domain to the username */
@@ -1484,6 +1485,7 @@ PERMlogin(char *uname, char *pass, char *errorstr)
 	runame = AuthenticateUser(auth_realms[i], uname, pass, errorstr);
     if (runame) {
 	strlcpy(PERMuser, runame, sizeof(PERMuser));
+        free(runame);
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
 	    /* append the default domain to the username */
@@ -1943,311 +1945,76 @@ strip_accessgroups(void)
     access_realms[j] = 0;
 }
 
-typedef struct _EXECSTUFF {
-    pid_t pid;
-    int rdfd, errfd, wrfd;
-} EXECSTUFF;
 
-static EXECSTUFF *
-ExecProg(char *arg0, char **args)
-{
-    EXECSTUFF *ret;
-    int rdfd[2], errfd[2], wrfd[2];
-    pid_t pid;
-    struct stat stb;
-
-#if !defined(S_IXUSR) && defined(_S_IXUSR)
-#define S_IXUSR _S_IXUSR
-#endif /* !defined(S_IXUSR) && defined(_S_IXUSR) */
-
-#if !defined(S_IXUSR) && defined(S_IEXEC)
-#define S_IXUSR S_IEXEC
-#endif  /* !defined(S_IXUSR) && defined(S_IEXEC) */
-
-    if (stat(arg0, &stb) || !(stb.st_mode&S_IXUSR))
-	return(0);
-
-    pipe(rdfd);
-    pipe(errfd);
-    pipe(wrfd);
-    switch (pid = fork()) {
-      case -1:
-	close(rdfd[0]);
-	close(rdfd[1]);
-	close(errfd[0]);
-	close(errfd[1]);
-	close(wrfd[0]);
-	close(wrfd[1]);
-	return(0);
-      case 0:
-	close(rdfd[0]);
-	dup2(rdfd[1], 1);
-	close(errfd[0]);
-	dup2(errfd[1], 2);
-	close(wrfd[1]);
-	dup2(wrfd[0], 0);
-	execv(arg0, args);
-	/* if we got here, there was an error */
-	syslog(L_ERROR, "%s perm could not exec %s: %m", Client.host, arg0);
-	exit(1);
-    }
-    close(rdfd[1]);
-    close(errfd[1]);
-    close(wrfd[0]);
-    ret = xmalloc(sizeof(EXECSTUFF));
-    ret->pid = pid;
-    ret->rdfd = rdfd[0];
-    ret->errfd = errfd[0];
-    ret->wrfd = wrfd[1];
-    return(ret);
-}
-
-static void
-GetConnInfo(char *buf)
-{
-    buf[0] = '\0';
-    if (*Client.host)
-	sprintf(buf, "ClientHost: %s\r\n", Client.host);
-    if (*Client.ip)
-	sprintf(buf+strlen(buf), "ClientIP: %s\r\n", Client.ip);
-    if (Client.port)
-	sprintf(buf+strlen(buf), "ClientPort: %d\r\n", Client.port);
-    if (*Client.serverip)
-	sprintf(buf+strlen(buf), "LocalIP: %s\r\n", Client.serverip);
-    if (Client.serverport)
-	sprintf(buf+strlen(buf), "LocalPort: %d\r\n", Client.serverport);
-}
-
-static char ubuf[SMBUF];
-
-typedef void (*LineFunc)(char*);
-
-/* messages from a program's stdout */
-static void
-HandleProgLine(char *ln)
-{
-    if (strncasecmp(ln, "User:", strlen("User:")) == 0)
-	strlcpy(ubuf, ln + strlen("User:"), sizeof(ubuf));
-}
-
-/* messages from a programs stderr */
-static void
-HandleErrorLine(char *ln)
-{
-    syslog(L_NOTICE, "%s auth_err %s", Client.host, ln);
-}
-
-static int
-HandleProgInput(int fd, char *buf, int buflen, LineFunc f)
-{
-    char *nl;
-    char *start;
-    int curpos, got;
-
-    /* read the data */
-    curpos = strlen(buf);
-    if (curpos >= buflen-1) {
-	/* data overflow (on one line!) */
-	return(-1);
-    }
-    got = read(fd, buf+curpos, buflen-curpos-1);
-    if (got <= 0)
-	return(got);
-    buf[curpos+got] = '\0';
-
-    /* break what we got up into lines */
-    start = nl = buf;
-    while ((nl = strchr(nl, '\n')) != NULL) {
-	if (nl != buf && *(nl-1) == '\r')
-	    *(nl-1) = '\0';
-	*nl++ = '\0';
-	f(start);
-	start = nl;
-    }
-
-    /* delete all the lines we've read from the buffer. */
-    /* 'start' points to the end of the last unterminated string */
-    nl = start;
-    start = buf;
-    if (nl == start) {
-	return(0);
-    }
-
-    while (*nl) {
-	*start++ = *nl++;
-    }
-
-    *start = '\0';
-
-    return(got);
-}
-
-static void
-GetProgInput(EXECSTUFF *prog)
-{
-    fd_set rfds, tfds;
-    int maxfd;
-    int got;
-    struct timeval tmout;
-    pid_t tmp;
-    int status;
-    char rdbuf[BIG_BUFFER], errbuf[BIG_BUFFER];
-    double start, end;
-
-    FD_ZERO(&rfds);
-    FD_SET(prog->rdfd, &rfds);
-    FD_SET(prog->errfd, &rfds);
-    tfds = rfds;
-    maxfd = prog->rdfd > prog->errfd ? prog->rdfd : prog->errfd;
-    tmout.tv_sec = 5;
-    tmout.tv_usec = 0;
-    rdbuf[0] = errbuf[0] = '\0';
-    start = TMRnow_double();
-    while ((got = select(maxfd+1, &tfds, 0, 0, &tmout)) >= 0) {
-        end = TMRnow_double();
-	IDLEtime += end - start;
-        start = end;
-	tmout.tv_sec = 5;
-	tmout.tv_usec = 0;
-	if (got > 0) {
-	    if (FD_ISSET(prog->rdfd, &tfds)) {
-		got = HandleProgInput(prog->rdfd, rdbuf, sizeof(rdbuf), HandleProgLine);
-		if (got <= 0) {
-		    close(prog->rdfd);
-		    FD_CLR(prog->rdfd, &tfds);
-		    kill(prog->pid, SIGTERM);
-		}
-	    }
-	    if (FD_ISSET(prog->errfd, &tfds)) {
-		got = HandleProgInput(prog->errfd, errbuf, sizeof(errbuf), HandleErrorLine);
-		if (got <= 0) {
-		    close(prog->errfd);
-		    FD_CLR(prog->errfd, &tfds);
-		    kill(prog->pid, SIGTERM);
-		}
-	    }
-	}
-	tfds = rfds;
-    }
-    end = TMRnow_double();
-    IDLEtime += end - start;
-    /* wait for it if he's toast. */
-    do {
-	tmp = waitpid(prog->pid, &status, 0);
-    } while ((tmp >= 0 || (tmp < 0 && errno == EINTR)) &&
-      !WIFEXITED(status) && !WIFSIGNALED(status));
-    if (WIFSIGNALED(status)) {
-	ubuf[0] = '\0';
-	syslog(L_NOTICE, "%s bad_hook program caught signal %d", Client.host,
-	  WTERMSIG(status));
-    } else if (WIFEXITED(status)) {
-	if (WEXITSTATUS(status) != 0) {
-	    ubuf[0] = '\0';
-	    syslog(L_TRACE, "%s bad_hook program exited with status %d",
-	      Client.host, WEXITSTATUS(status));
-	}
-    } else {
-	syslog(L_ERROR, "%s bad_hook waitpid failed: %m", Client.host);
-	ubuf[0] = '\0';
-    }
-}
-
-/* execute a series of resolvers to get the remote username */
+/*
+**  Execute a series of resolvers to get the remote username.  If one is
+**  found, return it in newly allocated space; otherwise, return NULL.
+*/
 static char *
 ResolveUser(AUTHGROUP *auth)
 {
     int i, j;
-    char *cp;
-    char **args;
-    char *arg0;
+    char *command;
+    char *user = NULL;
     char *resdir;
     char *tmp;
-    EXECSTUFF *foo;
-    int done	    = 0;
-    char buf[BIG_BUFFER];
 
-    if (!auth->res_methods)
-	return(0);
+    if (auth->res_methods == NULL)
+        return NULL;
 
     tmp = concatpath(innconf->pathbin, _PATH_AUTHDIR);
     resdir = concatpath(tmp, _PATH_AUTHDIR_NOPASS);
     free(tmp);
 
-    ubuf[0] = '\0';
     for (i = 0; auth->res_methods[i]; i++) {
-	/* build the command line */
-	syslog(L_TRACE, "%s res starting resolver %s", Client.host, auth->res_methods[i]->program);
+        command = auth->res_methods[i]->program;
+	syslog(L_TRACE, "%s res starting resolver %s", Client.host, command);
 	if (auth->res_methods[i]->extra_logs) {
 	    for (j = 0; auth->res_methods[i]->extra_logs[j]; j++)
 		syslog(L_NOTICE, "%s res also-log: %s", Client.host,
-		  auth->res_methods[i]->extra_logs[j]);
+                       auth->res_methods[i]->extra_logs[j]);
 	}
-	cp = xstrdup(auth->res_methods[i]->program);
-	args = 0;
-	Argify(cp, &args);
-	arg0 = args[0];
-	if (args[0][0] != '/')
-	    arg0 = concat(resdir, "/", arg0, (char *) 0);
-	/* exec the resolver */
-	foo = ExecProg(arg0, args);
-	if (foo) {
-	    GetConnInfo(buf);
-	    strlcat(buf, ".\r\n", sizeof(buf));
-	    xwrite(foo->wrfd, buf, strlen(buf));
-	    close(foo->wrfd);
-
-	    GetProgInput(foo);
-	    done = (ubuf[0] != '\0');
-	    if (done)
-		syslog(L_TRACE, "%s res resolver successful, user %s", Client.host, ubuf);
-	    else
-		syslog(L_TRACE, "%s res resolver failed", Client.host);
-	    free(foo);
-	} else
-	    syslog(L_ERROR, "%s res couldnt start resolver: %m", Client.host);
-	/* clean up */
-	if (args[0][0] != '/') {
-	    free(arg0);
-	}
-	free(args);
-	free(cp);
-	if (done)
-	    /* this resolver succeeded */
-	    break;
+        user = auth_external(&Client, command, resdir, NULL, NULL);
+        if (user == NULL)
+            syslog(L_TRACE, "%s res resolver failed", Client.host);
+        else {
+            syslog(L_TRACE, "%s res resolver successful, user %s",
+                   Client.host, user);
+            break;
+        }
     }
     free(resdir);
-    if (ubuf[0])
-	return(ubuf);
-    return(0);
+    return user;
 }
 
-/* execute a series of authenticators to get the remote username */
+
+/*
+**  Execute a series of authenticators to get the remote username.  If one is
+**  found, return it in newly allocated space; otherwise, return NULL.  Also
+**  handles running the Perl and Python authentication functions.
+*/
 static char *
 AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                  char *errorstr UNUSED)
 {
     int i, j;
+    char *command;
+    char *user = NULL;
     char *cp;
     char **args;
-    char *arg0;
     char *resdir;
     char *tmp;
     char newUser[BIG_BUFFER];
-    EXECSTUFF *foo;
-    int done	    = 0;
-    char buf[BIG_BUFFER];
 
-    if (!auth->auth_methods)
-	return(0);
+    if (auth->auth_methods == NULL)
+        return NULL;
 
     tmp = concatpath(innconf->pathbin, _PATH_AUTHDIR);
     resdir = concatpath(tmp, _PATH_AUTHDIR_PASSWD);
     free(tmp);
 
-    ubuf[0] = '\0';
-    newUser[0] = '\0';
     for (i = 0; auth->auth_methods[i]; i++) {
-      if (auth->auth_methods[i]->type == PERMperl_auth) {
+        if (auth->auth_methods[i]->type == PERMperl_auth) {
 #ifdef DO_PERL
             int code;
             char *script_path;
@@ -2257,25 +2024,22 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
             Argify(cp, &args);
             script_path = concat(args[0], (char *) 0);
             if ((script_path != NULL) && (strlen(script_path) > 0)) {
-                if(!PerlLoaded) {
+                if (!PerlLoaded)
                     loadPerl();
-                }
                 PERLsetup(NULL, script_path, "authenticate");
                 free(script_path);
                 perlAuthInit();
           
+                newUser[0] = '\0';
                 code = perlAuthenticate(username, password, errorstr, newUser);
                 if (code == NNTP_AUTH_OK_VAL) {
-                    /* Set the value of ubuf to the right username */
-                    if (newUser[0] != '\0') {
-                      strlcpy(ubuf, newUser, sizeof(ubuf));
-                    } else {
-                      strlcpy(ubuf, username, sizeof(ubuf));
-                    }
-
-                    syslog(L_NOTICE, "%s user %s", Client.host, ubuf);
+                    if (newUser[0] != '\0')
+                        user = xstrdup(newUser);
+                    else
+                        user = xstrdup(username);
+                    syslog(L_NOTICE, "%s user %s", Client.host, user);
                     if (LLOGenable) {
-                        fprintf(locallog, "%s user %s\n", Client.host, ubuf);
+                        fprintf(locallog, "%s user %s\n", Client.host, user);
                         fflush(locallog);
                     }
                     break;
@@ -2283,98 +2047,66 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                     syslog(L_NOTICE, "%s bad_auth", Client.host);
                 }            
             } else {
-              syslog(L_ERROR, "No script specified in auth method.\n");
+                syslog(L_ERROR, "no script specified in auth method");
             }
 #endif	/* DO_PERL */    
-      } else if (auth->auth_methods[i]->type == PERMpython_auth) {
+        } else if (auth->auth_methods[i]->type == PERMpython_auth) {
 #ifdef DO_PYTHON
-        int code;
-        char *script_path;
+            int code;
+            char *script_path;
 
-	cp = xstrdup(auth->auth_methods[i]->program);
-	args = 0;
-	Argify(cp, &args);
-	script_path = concat(args[0], (char *) 0);
-	if ((script_path != NULL) && (strlen(script_path) > 0)) {
-	  code = PY_authenticate(script_path, username, password, errorstr, newUser);
-	  free(script_path);
-	  if (code < 0) {
-	    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
-	  } else {
-	    if (code == NNTP_AUTH_OK_VAL) {
-              /* Set the value of ubuf to the right username */
-              if (newUser[0] != '\0') {
-                  strlcpy(ubuf, newUser, sizeof(ubuf));
-              } else {
-                  strlcpy(ubuf, username, sizeof(ubuf));
-              }
-              
-	      syslog(L_NOTICE, "%s user %s", Client.host, ubuf);
-	      if (LLOGenable) {
-		fprintf(locallog, "%s user %s\n", Client.host, ubuf);
-		fflush(locallog);
-	      }
-	      break;
-	    } else {
-	      syslog(L_NOTICE, "%s bad_auth", Client.host);
-	    }
-	  }
-	} else {
-	  syslog(L_ERROR, "No script specified in auth method.\n");
-	}
+            cp = xstrdup(auth->auth_methods[i]->program);
+            args = 0;
+            Argify(cp, &args);
+            script_path = concat(args[0], (char *) 0);
+            if ((script_path != NULL) && (strlen(script_path) > 0)) {
+                newUser[0] = '\0';
+                code = PY_authenticate(script_path, username, password,
+                                       errorstr, newUser);
+                free(script_path);
+                if (code == NNTP_AUTH_OK_VAL) {
+                    if (newUser[0] != '\0')
+                        user = xstrdup(newUser);
+                    else
+                        user = xstrdup(username);
+                    syslog(L_NOTICE, "%s user %s", Client.host, user);
+                    if (LLOGenable) {
+                        fprintf(locallog, "%s user %s\n", Client.host, user);
+                        fflush(locallog);
+                    }
+                    break;
+                } else if (code < 0) {
+                    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
+                } else {
+                    syslog(L_NOTICE, "%s bad_auth", Client.host);
+                }
+            } else {
+                syslog(L_ERROR, "no script specified in auth method");
+            }
 #endif /* DO_PYTHON */
       } else {
-	if (auth->auth_methods[i]->users &&
-	  !MatchUser(auth->auth_methods[i]->users, username))
-	    continue;
+            if (auth->auth_methods[i]->users &&
+                !MatchUser(auth->auth_methods[i]->users, username))
+                continue;
 
-	/* build the command line */
-	syslog(L_TRACE, "%s auth starting authenticator %s", Client.host, auth->auth_methods[i]->program);
-	if (auth->auth_methods[i]->extra_logs) {
-	    for (j = 0; auth->auth_methods[i]->extra_logs[j]; j++)
-		syslog(L_NOTICE, "%s auth also-log: %s", Client.host,
-		  auth->auth_methods[i]->extra_logs[j]);
-	}
-	cp = xstrdup(auth->auth_methods[i]->program);
-	args = 0;
-	Argify(cp, &args);
-	arg0 = args[0];
-	if (args[0][0] != '/')
-	    arg0 = concat(resdir, "/", arg0, (char *) 0);
-	/* exec the authenticator */
-	foo = ExecProg(arg0, args);
-	if (foo) {
-	    GetConnInfo(buf);
-	    snprintf(buf+strlen(buf), sizeof(buf) - strlen(buf) - 3,
-                     "ClientAuthname: %s\r\n", username);
-	    snprintf(buf+strlen(buf), sizeof(buf) - strlen(buf) - 3,
-                     "ClientPassword: %s\r\n", password);
-	    strlcat(buf, ".\r\n", sizeof(buf));
-	    xwrite(foo->wrfd, buf, strlen(buf));
-	    close(foo->wrfd);
-
-	    GetProgInput(foo);
-	    done = (ubuf[0] != '\0');
-	    if (done)
-		syslog(L_TRACE, "%s auth authenticator successful, user %s", Client.host, ubuf);
-	    else
-		syslog(L_TRACE, "%s auth authenticator failed", Client.host);
-	    free(foo);
-	} else
-	    syslog(L_ERROR, "%s auth couldnt start authenticator: %m", Client.host);
-	/* clean up */
-	if (args[0][0] != '/') {
-	    free(arg0);
-	}
-	free(args);
-	free(cp);
-	if (done)
-	    /* this authenticator succeeded */
-	    break;
-      }
+            command = auth->auth_methods[i]->program;
+            syslog(L_TRACE, "%s res starting authenticator %s", Client.host,
+                   command);
+            if (auth->auth_methods[i]->extra_logs) {
+                for (j = 0; auth->auth_methods[i]->extra_logs[j]; j++)
+                    syslog(L_NOTICE, "%s auth also-log: %s", Client.host,
+                           auth->auth_methods[i]->extra_logs[j]);
+            }
+            user = auth_external(&Client, command, resdir, username, password);
+            if (user == NULL)
+                syslog(L_TRACE, "%s auth authenticator failed", Client.host);
+            else {
+                syslog(L_TRACE, "%s auth authenticator successful, user %s",
+                       Client.host, user);
+                break;
+            }
+        }
     }
     free(resdir);
-    if (ubuf[0])
-	return(ubuf);
-    return(0);
+    return user;
 }

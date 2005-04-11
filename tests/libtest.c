@@ -167,6 +167,7 @@ errors_capture(void)
         errors = NULL;
     }
     message_handlers_warn(1, message_log_buffer);
+    message_handlers_notice(1, message_log_buffer);
 }
 
 
@@ -177,4 +178,5 @@ void
 errors_uncapture(void)
 {
     message_handlers_warn(1, message_log_stderr);
+    message_handlers_notice(1, message_log_stdout);
 }
