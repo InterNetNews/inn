@@ -16,6 +16,7 @@ PUBLIC	      = config.h conffile.h dbz.h inndcomm.h libinn.h nntp.h ov.h \
 		paths.h storage.h
 
 all: $(ALL) $(EXTRA)
+warnings: all
 
 clean:
 	rm -f $(ALL)
