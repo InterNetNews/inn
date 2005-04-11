@@ -102,13 +102,15 @@ the values of the default: and default-domain: parameters are used.  If
 <res-program> only returns a username, <defdomain> is used as the
 domain.
 
-If the user later authenticates via the AUTHINFO USER/PASS commands,
-the provided username and password are passed to each <auth-program>
-(multiple auth, perl_auth, or python_auth lines may be present in a
-block; they are run in sequence until one succeeds), if any.  If one
-succeeds and returns a different identity than the one assigned at the
-time of the connection, it is matched against the available access
-groups again and the actions the user is authorized to do may change.
+If the user later authenticates via the AUTHINFO USER/PASS commands, the
+provided username and password are passed to each <auth-program> (multiple
+auth, perl_auth, or python_auth lines may be present in a block; they are
+run in sequence until one succeeds), if any.  If one succeeds and returns
+a different identity than the one assigned at the time of the connection,
+it is matched against the available access groups again and the actions
+the user is authorized to do may change.  The most common <auth-program>
+to use is B<ckpasswd>, which supports several ways of checking passwords
+including using PAM.  See the ckpasswd(8) man page for more details.
 
 When matching auth groups, the last auth group in the file that matches a
 given connection and username/password combination is used.
@@ -238,10 +240,13 @@ A simple command line for a user authenticator (shell metacharacters are
 not supported).  If a full path is not given, the program executed must be
 located in the I<pathbin>/auth/passwd directory.  An authenticator is a
 program used to handle a user-supplied username and password, via a
-mechanism such as AUTHINFO USER/PASS.  Like with res:, one auth group
-can have multiple auth: parameters; they will be tried in order and the
+mechanism such as AUTHINFO USER/PASS.  Like with res:, one auth group can
+have multiple auth: parameters; they will be tried in order and the
 results of the first successful one will be used.  See also perl_auth:
 below.
+
+The most common authenticator to use is ckpasswd(8); see its man page for
+more information.
 
 =item B<perl_auth:>
 
@@ -808,6 +813,6 @@ $Id$
 
 =head1 SEE ALSO
 
-inn.conf(5), innd(8), newsfeeds(5), nnrpd(8), uwildmat(3).
+ckpasswd(8), inn.conf(5), innd(8), newsfeeds(5), nnrpd(8), uwildmat(3)
 
 =cut

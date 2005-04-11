@@ -20,7 +20,6 @@ authprogs/domain.c                    Get username from remote user's hostname
 authprogs/ident.c                     Get username from ident
 authprogs/libauth.c                   Library for talking to nnrpd
 authprogs/libauth.h                   Interface for libauth
-authprogs/pam.conf.example            Example pam.conf file for ckpasswd
 authprogs/radius.c                    Authenticator against RADIUS servers
 authprogs/smbval                      The smb auth libraries (Directory)
 authprogs/smbval/Makefile             Libraries for smb auth

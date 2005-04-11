@@ -22,10 +22,18 @@ these days most systems no longer make real passwords available via
 getpwnam(3) (some still do if and only if the program calling getpwnam(3)
 is running as root).
 
-Note that B<ckpasswd> expects all passwords to be stored encrypted by the
-system crypt(3) function and calls crypt(3) on the supplied password
-before comparing it to the expected password (when using any method other
-than PAM).
+When using PAM, B<ckpasswd> identifies itself as C<nnrpd>, not as
+C<ckpasswd>, and the PAM configuration must be set up accordingly.  The
+details of PAM configuration are different on different operating systems
+(and even different Linux distributions); see L<EXAMPLES> below for help
+getting started, and look for a pam(7) or pam.conf(4) manual page on your
+system.
+
+When using any method other than PAM, B<ckpasswd> expects all passwords to
+be stored encrypted by the system crypt(3) function and calls crypt(3) on
+the supplied password before comparing it to the expected password.  IF
+you're using a different password hash scheme (like MD5), you must use
+PAM.
 
 =head1 OPTIONS
 
@@ -130,6 +138,25 @@ also be given.
 See readers.conf(5) for examples of nnrpd(8) authentication configuration
 that uses B<ckpasswd> to check passwords.
 
+An example PAM configuration for F</etc/pam.conf> that tells B<ckpasswd>
+to check usernames and passwords against system accounts is:
+
+    nnrpd auth    required pam_unix.so
+    nnrpd account required pam_unix.so
+
+Your system may want you to instead create a file named F<nnrpd> in
+F</etc/pam.d> with lines like:
+
+    auth    required pam_unix.so
+    account required pam_unix.so
+
+This is only the simplest configuration.  You may be able to include
+common shared files, and you may want to stack other modules, either to
+allow different authentication methods or to apply restrictions like lists
+of users who can't authenticate using B<ckpasswd>.  The best guide is the
+documentation for your system and the other PAM configurations you're
+already using.
+
 To test to make sure that B<ckpasswd> is working correctly, you can run it
 manually and then give it the username (prefixed with C<ClientAuthname:>)
 and password (prefixed with C<ClientPassword:>) on standard input.  For
@@ -152,5 +179,9 @@ $Id$
 =head1 SEE ALSO
 
 readers.conf(5), nnrpd(8)
+
+Linux users who want to use PAM should read the Linux-PAM System
+Administrator's Guide at
+L<http://www.kernel.org/pub/linux/libs/pam/Linux-PAM-html/pam.html>.
 
 =cut
