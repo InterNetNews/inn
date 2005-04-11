@@ -31,7 +31,6 @@ typedef struct _METHOD {
     char *program;
     int  type;          /* type of auth (perl, python or external) */
     char *users;	/* only used for auth_methods, not for res_methods. */
-    char **extra_headers;
     char **extra_logs;
 } METHOD;
 
@@ -112,7 +111,7 @@ extern bool PerlLoaded;
 #define PERMread		14
 #define PERMpost		15
 #define PERMaccessrp		16
-#define PERMheader		17
+
 #define PERMalsolog		18
 #define PERMprogram		19
 #define PERMinclude		20
@@ -202,7 +201,6 @@ static CONFTOKEN PERMtoks[] = {
     { PERMread,                 (char *) "read:"                },
     { PERMpost,                 (char *) "post:"                },
     { PERMaccessrp,             (char *) "access:"              },
-    { PERMheader,               (char *) "header:"              },
     { PERMalsolog,              (char *) "log:"                 },
     { PERMprogram,              (char *) "program:"             },
     { PERMinclude,              (char *) "include"              },
@@ -286,13 +284,6 @@ copy_method(METHOD *orig)
     else
 	ret->users = 0;
 
-    ret->extra_headers = 0;
-    if (orig->extra_headers) {
-	for (i = 0; orig->extra_headers[i]; i++)
-	    GrowArray((void***) &ret->extra_headers,
-	      (void*) xstrdup(orig->extra_headers[i]));
-    }
-
     ret->extra_logs = 0;
     if (orig->extra_logs) {
 	for (i = 0; orig->extra_logs[i]; i++)
@@ -310,11 +301,6 @@ free_method(METHOD *del)
 {
     int j;
 
-    if (del->extra_headers) {
-	for (j = 0; del->extra_headers[j]; j++)
-	    free(del->extra_headers[j]);
-	free(del->extra_headers);
-    }
     if (del->extra_logs) {
 	for (j = 0; del->extra_logs[j]; j++)
 	    free(del->extra_logs[j]);
@@ -610,9 +596,6 @@ method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
     }
 
     switch (oldtype) {
-      case PERMheader:
-	GrowArray((void***) &method->extra_headers, (void*) xstrdup(tok->name));
-	break;
       case PERMalsolog:
 	GrowArray((void***) &method->extra_logs, (void*) xstrdup(tok->name));
 	break;
@@ -2035,12 +2018,6 @@ GetConnInfo(METHOD *method, char *buf)
 	sprintf(buf+strlen(buf), "LocalIP: %s\r\n", ServerIpString);
     if (ServerPort)
 	sprintf(buf+strlen(buf), "LocalPort: %d\r\n", ServerPort);
-    /* handle this here, since we only get here when we're about to exec
-     * something. */
-    if (method->extra_headers) {
-	for (i = 0; method->extra_headers[i]; i++)
-	    sprintf(buf+strlen(buf), "%s\r\n", method->extra_headers[i]);
-    }
 }
 
 static char ubuf[SMBUF];
