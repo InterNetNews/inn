@@ -1388,6 +1388,11 @@ Setting Up the Cron Jobs
     If you're using any non-CNFS storage methods, add "delayrm" to the above
     option list for news.daily.
 
+    The news user obviously must be able to run cron jobs.  On Solaris, this
+    means that it must have a valid /etc/shadow entry and must not be locked
+    (although it may be a non-login account).  There may be similar
+    restrictions with other operating systems.
+
     If you use the batching method to send news, also set up a cron job to
     run nntpsend(8) every ten minutes.  nntpsend will run innxmit for all
     non-empty pending batch files to send pending news to your peers.  That
