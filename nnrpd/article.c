@@ -616,7 +616,7 @@ CMDfetch(int ac, char *av[])
     }
 
     if (!ok) {
-	Reply("%s\r\n", NOACCESS);
+	Reply("%s\r\n", NNTP_ACCESS);
 	return;
     }
 
@@ -628,7 +628,7 @@ CMDfetch(int ac, char *av[])
 	}
 	if (!PERMartok()) {
 	    ARTclose();
-	    Reply("%s\r\n", NOACCESS);
+	    Reply("%s\r\n", NNTP_ACCESS);
 	    return;
 	}
 	tart=art;
@@ -694,7 +694,7 @@ CMDnextlast(int ac UNUSED, char *av[])
     const char *message;
 
     if (!PERMcanread) {
-	Reply("%s\r\n", NOACCESS);
+	Reply("%s\r\n", NNTP_ACCESS);
 	return;
     }
     if (GRPcount == 0) {
@@ -829,7 +829,7 @@ CMDxover(int ac, char *av[])
     struct cvector *vector = NULL;
 
     if (!PERMcanread) {
-	Printf("%s\r\n", NOACCESS);
+	Printf("%s\r\n", NNTP_ACCESS);
 	return;
     }
 
@@ -978,7 +978,7 @@ CMDpat(int ac, char *av[])
     struct cvector *vector = NULL;
 
     if (!PERMcanread) {
-	Printf("%s\r\n", NOACCESS);
+	Printf("%s\r\n", NNTP_ACCESS);
 	return;
     }
 

@@ -170,7 +170,6 @@ extern char	*HISTORY;
 extern char	*ACTIVE;
 extern char	*NEWSGROUPS;
 extern char	*NNRPACCESS;
-extern char	NOACCESS[];
 EXTERN int	SPOOLlen;
 EXTERN char	PERMpass[SMBUF];
 EXTERN char	PERMuser[SMBUF];

@@ -71,7 +71,6 @@ typedef struct _CMDENT {
 } CMDENT;
 
 
-char	NOACCESS[] = NNTP_ACCESS;
 char	*ACTIVE = NULL;
 char	*ACTIVETIMES = NULL;
 char	*HISTORY = NULL;
