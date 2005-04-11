@@ -267,6 +267,13 @@ Code Cleanup Projects
 
 Needed Bug Fixes
 
+* Don't require an Xref slave carry all of the groups of its upstream.
+  Fixing this will depend on the new overview API (so that overview
+  records are stored separately in each group under innd's control) and
+  will require ignoring failures to store overview records because the
+  group doesn't exist, or checking first to ensure the group exists
+  before trying to store the record.
+
 * tradspool currently uses stdio to write out tradspool.map, which can
   cause problems if more than 256 file descriptors are in use for other
   things (such as incoming connections or tradindexed overview cache).
