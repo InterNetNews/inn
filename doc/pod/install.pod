@@ -133,11 +133,41 @@ the news server is not part of the business of that company, you would
 need to purchase a commercial license for PGP.  For an educational or
 non-profit organization, this shouldn't be a problem.
 
-=back
+=item *
 
-Also, if you want to use either the Python embedded hooks, you'll need to
-have a suitable versions of Python installed.  See F<doc/hook-python> for
-more information.
+If you want to use either the Python embedded hooks, you'll need to have a
+suitable versions of Python installed.  See F<doc/hook-python> for more
+information.
+
+=item *
+
+Many of INN's optional features require other packages (primarily
+libraries) be installed.  If you wish to use any of these optional
+features, you will need to install those packages first.  Here is a table
+of configure options enabling optional features and the software and
+versions you'll need:
+
+    --with-perl         Perl 5.004_03 or higher, 5.6.1+ recommended
+    --with-python       Python 1.5.2 or higher
+    --with-berkeleydb   BerkeleyDB 2.0 or higher, 4.2+ recommended
+    --with-zlib         zlib 1.x or higher
+    --with-openssl      OpenSSL 0.9.6 or higher
+    --with-sasl         SASL 2.x or higher
+    --with-kerberos     MIT Kerberos v5 1.2.x or higher
+
+If any of these libraries (other than Perl or Python) are built shared and
+installed in locations where your system doesn't search for shared
+libraries by default, you may need to encode the paths to those shared
+libraries in the INN binaries.  For more information on shared library
+paths, see:
+
+    <http://www.eyrie.org/~eagle/notes/rpath.html>
+
+For most systems, setting the environment variable LD_RUN_PATH to a
+colon-separated list of additional directories in which to look for shared
+libraries before building INN will be sufficient.
+
+=back
 
 =head1 Unpacking the Distribution
 
