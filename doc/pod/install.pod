@@ -199,11 +199,17 @@ resides.
 
 Before beginning installation, you should make sure that there is a user
 on your system named C<news>, and that this user's primary group is set to
-a group called C<news>.  The home directory of this user should be set to
-the directory under which you wish to install INN (F</usr/local/news> is
-the default and is a good choice).  INN will install itself as this user
-and group.  You can change these if you want, but these are the defaults
-and it's easier to stick with them on a new installation.
+a group called C<news>.  You can change these with the B<--with-news-user>
+and B<--with-news-group> options to configure (see below).  The home
+directory of this user should be set to the directory under which you wish
+to install INN (F</usr/local/news> is the default and is a good choice).
+INN will install itself as this user and group.  You can change these if
+you want, but these are the defaults and it's easier to stick with them on
+a new installation.
+
+By default, INN sends reports to the user C<usenet>.  This account isn't
+used for any other purposes.  You can change it with the
+B<--with-news-master> option to configure (see below).
 
 WARNING: By default, INN installs various configuration files as
 group-writeable, and in general INN is not hardened from a security
