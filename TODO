@@ -539,6 +539,10 @@ Requested New Features
 * Allow permission for posting cancels to be configured in readers.conf
   in an access block.
 
+* Allow the applicability of auth blocks to be restricted to particular
+  username patterns, probably by adding a users: key to the auth block
+  that matches similar to hosts:.
+
 
 General Projects
 
