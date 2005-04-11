@@ -65,6 +65,9 @@ ident: ident.o $(LIBAUTH) $(LIBINN)
 radius: radius.o $(LIBAUTH) $(LIBINN)
 	$(LINK) radius.o $(LIBAUTH) $(LIBINN) $(LIBS)
 
+auth_krb5.o: auth_krb5.c
+	$(CC) $(CFLAGS) $(KRB5INC) -c $<
+
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSMB):	; (cd smbval ; $(MAKE))
 $(LIBAUTH): 	libauth.h libauth.c
