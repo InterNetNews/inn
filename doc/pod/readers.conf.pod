@@ -48,17 +48,21 @@ not significant.
 There are two basic types of configuration groups, auth and access.  The
 auth group provides mechanisms to establish the identity of the user, who
 they are.  The access group determines, given the user's identity, what
-that user ispermitted to do.  Writing a F<readers.conf> file for your
-setup is a two-step process:  first assigning an identity to each
-incoming connection using auth groups, and then giving each identity
-appropriate privileges with access group.  We recommend I<not>
-intermingling auth groups and access groups in the config file; it is
-often more sensible (in the absence of the I<key> parameter) to put all
-of the auth groups first, and all of the access groups below.
+that user is permitted to do.  Writing a F<readers.conf> file for your
+setup is a two-step process: first assigning an identity to each incoming
+connection using auth groups, and then giving each identity appropriate
+privileges with access group.  We recommend I<not> intermingling auth
+groups and access groups in the config file; it is often more sensible (in
+the absence of the I<key> parameter) to put all of the auth groups first,
+and all of the access groups below.
 
 A user identity, as established by an auth group, looks like an e-mail
 address; in other words, it's in the form "<username>@<domain>" (or
 sometimes just "<username>" if no domain is specified.
+
+If I<nnrpdauthsender> is set in F<inn.conf>, the user identity is also put
+into the Sender: header of posts made by that user.  See the documentation
+of that option in inn.conf(5) for more details.
 
 An auth group definition looks like:
 
@@ -84,9 +88,9 @@ wildmat expressions, you may also use CIDR notation to match any IP
 address in a netblock; for example, "10.10.10.0/24" will match any IP
 address between 10.10.10.0 and 10.10.10.255 inclusive.
 
-If compiled against the SSL libraries, an auth group with the
-require_ssl: parameter set to true only applies if the incoming
-connection is using SSL.
+If compiled against the SSL libraries, an auth group with the require_ssl:
+parameter set to true only applies if the incoming connection is using
+SSL.
 
 For any connection from a host that matches that wildmat expression or
 netblock, each <res-program> (multiple res: lines may be present in a
