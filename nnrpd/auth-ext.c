@@ -136,6 +136,8 @@ output(struct client *client, int fd, struct buffer *buffer,
     count = buffer_read(buffer, fd);
     if (buffer->left >= buffer->size - 1)
         return -1;
+    if (count < 0)
+        return count;
 
     /* If reached end of file, process anything left as a line. */
     if (count == 0) {
