@@ -27,14 +27,6 @@
 #endif
 
 /*
-**  Maximum input line length, sigh.
-*/
-#define ART_LINE_LENGTH		1000
-#define ART_LINE_MALLOC		1024
-#define ART_MAX			1024
-
-
-/*
 **  Some convenient shorthands.
 */
 typedef struct in_addr	INADDR;

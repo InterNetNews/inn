@@ -577,7 +577,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	 * will always be larger than 2 bytes */
 	if ((len + 2) > (size_t)(end - p)) {
 	    i = p - article;
-	    size += len + ART_LINE_MALLOC;
+	    size += len + 4096;
             article = xrealloc(article, size);
 	    end = &article[size];
 	    p = i + article;
