@@ -16,20 +16,21 @@
 
 #include "config.h"
 
-/* AIX requires this to come before anything except comments and preprocessor
-   directives. */
-#ifndef __GNUC__
-# if HAVE_ALLOCA_H
-#  include <alloca.h>
-# else
-#  ifdef _AIX
- #pragma alloca
-#  else
-#   ifndef alloca /* predefined by HP cc +Olibcalls */
-void *alloca (unsigned int);
-#   endif
-#  endif
+#if HAVE_ALLOCA_H
+# include <alloca.h>
+#elif defined __GNUC__
+# define alloca __builtin_alloca
+#elif defined _AIX
+# define alloca __alloca
+#elif defined _MSC_VER
+# include <malloc.h>
+# define alloca _alloca
+#else
+# include <stddef.h>
+# ifdef  __cplusplus
+extern "C"
 # endif
+void *alloca (size_t);
 #endif
 
 /* Call this in the main loop to do garbage collection. */
