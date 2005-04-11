@@ -82,6 +82,12 @@ struct cvector *cvector_split_space(char *string, struct cvector *);
 char *vector_join(const struct vector *, const char *seperator);
 char *cvector_join(const struct cvector *, const char *separator);
 
+/* Exec the given program with the vector as its arguments.  Return behavior
+   is the same as execv.  Note the argument order is different than the other
+   vector functions (but the same as execv). */
+int vector_exec(const char *path, struct vector *);
+int cvector_exec(const char *path, struct cvector *);
+
 END_DECLS
 
 #endif /* INN_VECTOR_H */

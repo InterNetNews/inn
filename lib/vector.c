@@ -407,3 +407,27 @@ cvector_join(const struct cvector *vector, const char *seperator)
 
     return string;
 }
+
+
+/*
+**  Given a vector and a path to a program, exec that program with the vector
+**  as its arguments.  This requires adding a NULL terminator to the vector
+**  and casting it appropriately.
+*/
+int
+vector_exec(const char *path, struct vector *vector)
+{
+    if (vector->allocated == vector->count)
+        vector_resize(vector, vector->count + 1);
+    vector->strings[vector->count] = NULL;
+    return execv(path, (char * const *) vector->strings);
+}
+
+int
+cvector_exec(const char *path, struct cvector *vector)
+{
+    if (vector->allocated == vector->count)
+        cvector_resize(vector, vector->count + 1);
+    vector->strings[vector->count] = NULL;
+    return execv(path, (char * const *) vector->strings);
+}

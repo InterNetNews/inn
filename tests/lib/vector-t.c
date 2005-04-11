@@ -3,7 +3,9 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/wait.h"
 
+#include "inn/messages.h"
 #include "inn/vector.h"
 #include "libinn.h"
 #include "libtest.h"
@@ -20,8 +22,9 @@ main(void)
     char empty[] = "";
     char *string;
     char *p;
+    pid_t child;
 
-    test_init(87);
+    test_init(89);
 
     vector = vector_new();
     ok(1, vector != NULL);
@@ -183,6 +186,32 @@ main(void)
     cvector = cvector_split_space(string, NULL);
     ok_int(86, 1, cvector->count);
     ok_string(87, "foo\nbar", cvector->strings[0]);
+    cvector_free(cvector);
+
+    vector = vector_new();
+    vector_add(vector, "/bin/sh");
+    vector_add(vector, "-c");
+    vector_add(vector, "echo ok 88");
+    child = fork();
+    if (child < 0)
+        sysdie("unable to fork");
+    else if (child == 0)
+        if (vector_exec("/bin/sh", vector) < 0)
+            syswarn("unable to exec /bin/sh");
+    waitpid(child, NULL, 0);
+    vector_free(vector);
+
+    cvector = cvector_new();
+    cvector_add(cvector, "/bin/sh");
+    cvector_add(cvector, "-c");
+    cvector_add(cvector, "echo ok 89");
+    child = fork();
+    if (child < 0)
+        sysdie("unable to fork");
+    else if (child == 0)
+        if (cvector_exec("/bin/sh", cvector) < 0)
+            syswarn("unable to exec /bin/sh");
+    waitpid(child, NULL, 0);
     cvector_free(cvector);
 
     return 0;
