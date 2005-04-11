@@ -92,9 +92,6 @@ static char	*PushedBack;
 static sig_atomic_t	ChangeTrace;
 bool	DaemonMode = false;
 bool	ForeGroundMode = false;
-#if HAVE_GETSPNAM
-static const char	*ShadowGroup;
-#endif
 static const char 	*HostErrorStr;
 bool GetHostByAddr = true;      /* formerly DO_NNRP_GETHOSTBYADDR */
 const char *NNRPinstance = "";
@@ -823,26 +820,19 @@ main(int argc, char *argv[])
 #else
     struct sockaddr_in	csa;
 #endif
-    struct stat		Sb;
     pid_t		pid = -1;
-    gid_t               NewsGID;
-    uid_t               NewsUID;
     FILE                *pidfile;
     struct passwd	*pwd;
     int			clienttimeout;
     char		*ConfFile = NULL;
     char                *path;
-#if HAVE_GETSPNAM
-    struct group	*grp;
-    gid_t		shadowgid;
-#endif /* HAVE_GETSPNAM */
 
     int respawn = 0;
 
     setproctitle_init(argc, argv);
 
-    /* Parse arguments.   Must xstrdup() optarg if used because setproctitle may
-       clobber it! */
+    /* Parse arguments.  Must xstrdup() optarg if used because setproctitle
+       may clobber it! */
     Reject = NULL;
     LLOGenable = false;
     GRPcur = NULL;
@@ -878,9 +868,9 @@ main(int argc, char *argv[])
 #endif /* HAVE_SASL */
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:g:nop:P:Rr:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:nop:P:Rr:s:tS")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:g:nop:P:Rr:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:nop:P:Rr:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
@@ -904,11 +894,6 @@ main(int argc, char *argv[])
  	case 'f':			/* Don't fork on daemon mode */
  	    ForeGroundMode = true;
  	    break;
-#if HAVE_GETSPNAM
-	case 'g':
-	    ShadowGroup = optarg;
-	    break;
-#endif /* HAVE_GETSPNAM */
 	case 'i':			/* Initial command */
 	    PushedBack = xstrdup(optarg);
 	    break;
@@ -936,7 +921,7 @@ main(int argc, char *argv[])
 	    Tracing = true;
 	    break;
 #ifdef HAVE_SSL
-	case 'S':			/* SSL negotiation as soon as connected */
+	case 'S':			/* Force SSL negotiation */
 	    initialSSL = true;
 	    break;
 #endif /* HAVE_SSL */
@@ -947,12 +932,9 @@ main(int argc, char *argv[])
     if (ListenAddr != NULL && ListenAddr6 != NULL)
         die("-6 and -b may not both be given");
 
-    /*
-     * Make other processes happier if someone is reading
-     * This allows other processes like 'overchan' to keep up when
-     * there are lots of readers. Note that this is cumulative with
-     * 'nicekids'
-    */
+    /* Make other processes happier if someone is reading This allows other
+       processes like overchan to keep up when there are lots of readers.
+       Note that this is cumulative with nicekids. */
     if (innconf->nicennrpd > 0)
 	nice(innconf->nicennrpd);
 
@@ -966,6 +948,19 @@ main(int argc, char *argv[])
         NNRPACCESS = concatpath(innconf->pathetc,_PATH_NNRPACCESS);
     SPOOLlen = strlen(innconf->patharticles);
 
+    /* If started as root, switch to news uid.  Unlike other parts of INN, we
+       don't die if we can't become the news user.  As long as we're not
+       running as root, everything's fine; the things we write it's okay to
+       write as a member of the news group. */
+    if (getuid() == 0) {
+        pwd = getpwnam(NEWSUSER);
+        if (pwd == NULL)
+            die("cant resolve %s to a UID (account doesn't exist?)", NEWSUSER);
+        setuid(pwd->pw_uid);
+        if (getuid() != pwd->pw_uid)
+            die("cant setuid to %s (%d)", NEWSUSER, pwd->pw_uid);
+    }
+
     if (DaemonMode) {
         if (ListenAddr6 != NULL)
             lfd = network_bind_ipv6(ListenAddr6, ListenPort);
@@ -975,63 +970,6 @@ main(int argc, char *argv[])
             lfd = network_bind_ipv4("0.0.0.0", ListenPort);
         if (lfd < 0)
             die("cant bind to any addresses");
-
-	/* If started as root, switch to news uid */
-	if (getuid() == 0) {
-	    if (stat(innconf->pathrun, &Sb) < 0 || !S_ISDIR(Sb.st_mode)) {
-		syslog(L_FATAL, "nnrpd cant stat %s %m", innconf->pathrun);
-		exit(1);
-	    }
-	    if (Sb.st_uid == 0) {
-		syslog(L_FATAL, "nnrpd %s must not be owned by root", innconf->pathrun);
-		exit(1);
-	    }
-	    pwd = getpwnam(NEWSUSER);
-	    if (pwd == (struct passwd *)NULL) {
-		syslog(L_FATAL, "nnrpd getpwnam(%s): %s", NEWSUSER, strerror(errno));
-		exit(1);
-	    } else if (pwd->pw_gid != Sb.st_gid) {
-		syslog(L_FATAL, "nnrpd %s must have group %s", innconf->pathrun, NEWSGRP);
-		exit(1);
-	    } else if (pwd->pw_uid != Sb.st_uid) {
-		syslog(L_FATAL, "nnrpd %s must be owned by %s", innconf->pathrun, NEWSUSER);
-		exit(1);
-	    }
-
-#if HAVE_GETSPNAM
-	    shadowgid = (gid_t) -1;
-	    /* Find shadowgroup gid if needed */
-	    if (ShadowGroup != NULL) {
-		if ((grp = getgrnam(ShadowGroup)) == NULL)
-		    syslog(L_ERROR, "nnrpd cannot find group %s",
-				ShadowGroup);
-		else
-		    shadowgid = grp->gr_gid;
-	    } else if ((grp = getgrnam("shadow")) != NULL) {
-		/* found default group "shadow" */
-		shadowgid = grp->gr_gid;
-		ShadowGroup = "shadow";
-	    }
-	    /* If we have a shadowgid, try to set it as an extra group. */
-	    if (shadowgid != (gid_t) -1) {
-		if (setgroups(1, &shadowgid) < 0)
-		   syslog(L_ERROR, "nnrpd cannot set supplementary group %s %m",
-			ShadowGroup);
-		else
-		   syslog(L_NOTICE, "nnrpd added supplementary group %s",
-			ShadowGroup);
-	    }
-#endif /* HAVE_GETSPNAM */
-
-	    NewsUID = Sb.st_uid;
-	    NewsGID = Sb.st_gid;
-	    setgid(NewsGID);
-	    if (getgid() != NewsGID)
-		syslog(L_ERROR, "nnrpd cant setgid to %d %m", NewsGID);
-	    setuid(NewsUID);
-	    if (getuid() != NewsUID)
-		syslog(L_ERROR, "nnrpd cant setuid to %d %m", NewsUID);
-	}
 
 	/* Detach */
 	if (!ForeGroundMode) {

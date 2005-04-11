@@ -83,6 +83,13 @@ consider that group to be moderated.
 
 =item *
 
+The -g option to nnrpd is no longer supported.  If you are verifying
+passwords against the system password database, see the ckpasswd(8) man
+page, and in particular the -s option.  (A much better idea would be to
+just use PAM, which ckpasswd supports.)
+
+=item *
+
 All of the applicable bug fixes from the INN 2.4 STABLE series are also
 included in INN 2.5.
 

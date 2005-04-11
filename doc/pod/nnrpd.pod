@@ -5,9 +5,8 @@ nnrpd - NNTP server for reader clients
 =head1 SYNOPSIS
 
 B<nnrpd> [B<-DfnoRSt>] [B<-6> I<address>] [B<-b> I<address>]
-[B<-c> I<configfile>] S<[B<-g> I<shadowgroup>]> [B<-i> I<initial>]
-[B<-I> I<instance>] [B<-p> I<port>] [B<-P> I<prefork>] [B<-r> I<reason>]
-[B<-s> I<padding>]
+[B<-c> I<configfile>] S<[B<-i> I<initial>]> [B<-I> I<instance>]
+[B<-p> I<port>] [B<-P> I<prefork>] [B<-r> I<reason>] [B<-s> I<padding>]
 
 =head1 DESCRIPTION
 
@@ -91,18 +90,6 @@ C<%d> is replaced with the port that B<nnrpd> is configured to listen on
 
 If specified, B<nnrpd> does not detach itself and runs in the
 foreground when started as a standalone daemon using the B<-D> flag.
-
-=item B<-g> I<shadowgroup>
-
-On systems that have a shadow password file, B<nnrpd> tries to add the
-group I<shadow> as a supplementary group if it is running in
-standalone mode. On many systems, members of that group have read
-permission for the shadow password file. The B<-g> parameter instructs
-B<nnrpd> to try to add the named group as a supplementary group on
-shadow systems instead of I<shadow>. This only works if
-C<HAVE_GETSPNAM> in F<include/config.h> is defined and B<nnrpd> is
-running in standalone mode since this call only works when B<nnrpd> is
-started as root.
 
 =item B<-i> I<initial>
 
