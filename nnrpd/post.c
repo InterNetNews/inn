@@ -336,22 +336,17 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	}
     }
 
+    /* If authorized, add the header based on our info.  If not authorized,
+       zap the Sender so we don't put out unauthenticated data. */
     if (PERMaccessconf->nnrpdauthsender) {
-	/* If authorized, add the header based on our info.  If not
-         * authorized, zap the Sender so we don't put out unauthenticated
-         * data. */
-	if (PERMauthorized) {
-	    if (PERMuser[0] == '\0') {
-		snprintf(sendbuff, sizeof(sendbuff), "%s@%s", "UNKNOWN",
+	if (PERMauthorized && PERMuser[0] != '\0') {
+            p = strchr(PERMuser, '@');
+            if (p == NULL) {
+                snprintf(sendbuff, sizeof(sendbuff), "%s@%s", PERMuser,
                          ClientHost);
-	    } else {
-		if ((p = strchr(PERMuser, '@')) == NULL) {
-		    snprintf(sendbuff, sizeof(sendbuff), "%s@%s", PERMuser,
-                             ClientHost);
-		} else {
-		    snprintf(sendbuff, sizeof(sendbuff), "%s", PERMuser);
-		}
-	    }
+            } else {
+                snprintf(sendbuff, sizeof(sendbuff), "%s", PERMuser);
+            }
 	    HDR_SET(HDR__SENDER, sendbuff);
 	} else {
 	    HDR_SET(HDR__SENDER, NULL);
