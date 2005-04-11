@@ -805,12 +805,6 @@ main(int argc, char *argv[])
     char                *ListenAddr = NULL;
     char                *ListenAddr6 = NULL;
     int			lfd, fd;
-    socklen_t		clen;
-#ifdef HAVE_INET6
-    struct sockaddr_storage csa;
-#else
-    struct sockaddr_in	csa;
-#endif
     pid_t		pid = -1;
     FILE                *pidfile;
     struct passwd	*pwd;
@@ -937,7 +931,6 @@ main(int argc, char *argv[])
         NNRPACCESS = ConfFile;
     else
         NNRPACCESS = concatpath(innconf->pathetc,_PATH_NNRPACCESS);
-    SPOOLlen = strlen(innconf->patharticles);
 
     /* If started as root, switch to news uid.  Unlike other parts of INN, we
        don't die if we can't become the news user.  As long as we're not
@@ -1000,8 +993,7 @@ main(int argc, char *argv[])
 		    pid = fork();
 		    if (pid == 0) {
 			do {
-			    clen = sizeof(csa);
-			    fd = accept(lfd, (struct sockaddr *) &csa, &clen);
+			    fd = accept(lfd, NULL, NULL);
 			} while (fd < 0);
 			break;
 		    }
@@ -1019,8 +1011,7 @@ main(int argc, char *argv[])
 	} else {
 	    /* fork on demand */
 	    do {
-		clen = sizeof(csa);
-		fd = accept(lfd, (struct sockaddr *) &csa, &clen);
+		fd = accept(lfd, NULL, NULL);
 		if (fd < 0)
 		    continue;
 	    
