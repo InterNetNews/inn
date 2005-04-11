@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2004-06-09" "INN 2.5.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2005-04-11" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -798,11 +798,11 @@ with an error.
 .IX Item "nnrpdauthsender"
 Whether to generate a Sender: header based on reader authentication.  If
 this parameter is set, a Sender: header will be added to local posts
-containing the identity assigned by \fIreaders.conf\fR.; if the assigned
-identity does not include an \f(CW\*(C`@\*(C'\fR, the reader's hostname is used.  If
-this parameter is set but no identity can be assigned, the Sender:
-header will be removed from all posts even if the poster includes one.
-This is a boolean value and the default is false.
+containing the identity assigned by \fIreaders.conf\fR.  If the assigned
+identity does not include an \f(CW\*(C`@\*(C'\fR, the reader's hostname is used.  If this
+parameter is set but no identity is be assigned, the Sender: header will
+be removed from all posts even if the poster includes one.  This is a
+boolean value and the default is false.
 .IP "\fInnrpdposthost\fR" 4
 .IX Item "nnrpdposthost"
 If set, \fInnrpd\fR\|(8) and \fIrnews\fR\|(1) will pass all locally posted articles to the
@@ -1209,7 +1209,7 @@ Here is a very minimalist example that only sets those parameters that are
 required.
 .PP
 .Vb 5
-\&    mta:                /usr/lib/sendmail -oi -oem %s
+\&    mta:                /usr/lib/sendmail \-oi \-oem %s
 \&    ovmethod:           tradindexed
 \&    pathhost:           news.example.com
 \&    pathnews:           /usr/local/news
