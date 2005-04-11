@@ -726,11 +726,11 @@ with an error.
 
 Whether to generate a Sender: header based on reader authentication.  If
 this parameter is set, a Sender: header will be added to local posts
-containing the identity assigned by F<readers.conf>.; if the assigned
-identity does not include an C<@>, the reader's hostname is used.  If
-this parameter is set but no identity can be assigned, the Sender:
-header will be removed from all posts even if the poster includes one.
-This is a boolean value and the default is false.
+containing the identity assigned by F<readers.conf>.  If the assigned
+identity does not include an C<@>, the reader's hostname is used.  If this
+parameter is set but no identity is be assigned, the Sender: header will
+be removed from all posts even if the poster includes one.  This is a
+boolean value and the default is false.
 
 =item I<nnrpdposthost>
 
