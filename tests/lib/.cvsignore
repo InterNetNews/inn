@@ -7,6 +7,7 @@ confparse.t
 date.t
 dispatch.t
 getaddrinfo.t
+getnameinfo.t
 hash.t
 hashtab.t
 hex.t

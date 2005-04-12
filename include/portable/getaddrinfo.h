@@ -17,10 +17,11 @@
 #ifndef PORTABLE_GETADDRINFO_H
 #define PORTABLE_GETADDRINFO_H 1
 
+#include "config.h"
+
 /* Skip this entire file if a system getaddrinfo was detected. */
 #if !HAVE_GETADDRINFO
 
-#include "config.h"
 #include <sys/socket.h>
 #include <sys/types.h>
 
@@ -55,6 +56,7 @@ struct addrinfo {
 #define EAI_SERVICE     7       /* Service not recognized for socket type */
 #define EAI_SOCKTYPE    8       /* Socket type not recognized */
 #define EAI_SYSTEM      9       /* System error occurred, see errno */
+#define EAI_OVERFLOW    10      /* An argument buffer overflowed */
 
 BEGIN_DECLS
 

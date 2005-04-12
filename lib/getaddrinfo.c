@@ -53,15 +53,16 @@ int test_getaddrinfo(const char *, const char *, const struct addrinfo *,
 
 /* Table of strings corresponding to the EAI_* error codes. */
 static const char * const gai_errors[] = {
-    "Host name lookup failure",         /* 1 EAI_AGAIN */
-    "Invalid flag value",               /* 2 EAI_BADFLAGS */
-    "Unknown server error",             /* 3 EAI_FAIL */
-    "Unsupported address family",       /* 4 EAI_FAMILY */
-    "Memory allocation failure",        /* 5 EAI_MEMORY */
-    "Host unknown or not given",        /* 6 EAI_NONAME */
-    "Service not supported for socket", /* 7 EAI_SERVICE */
-    "Unsupported socket type",          /* 8 EAI_SOCKTYPE */
-    "System error"                      /* 9 EAI_SYSTEM */
+    "Host name lookup failure",         /*  1 EAI_AGAIN */
+    "Invalid flag value",               /*  2 EAI_BADFLAGS */
+    "Unknown server error",             /*  3 EAI_FAIL */
+    "Unsupported address family",       /*  4 EAI_FAMILY */
+    "Memory allocation failure",        /*  5 EAI_MEMORY */
+    "Host unknown or not given",        /*  6 EAI_NONAME */
+    "Service not supported for socket", /*  7 EAI_SERVICE */
+    "Unsupported socket type",          /*  8 EAI_SOCKTYPE */
+    "System error"                      /*  9 EAI_SYSTEM */
+    "Supplied buffer too small",        /* 10 EAI_OVERFLOW */
 };
 
 /* Value representing all of the hint flags set. */

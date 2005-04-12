@@ -10,6 +10,7 @@ lib/confparse
 lib/date
 lib/dispatch
 lib/getaddrinfo
+lib/getnameinfo
 lib/hash
 lib/hashtab
 lib/hex

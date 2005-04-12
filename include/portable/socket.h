@@ -26,8 +26,10 @@
 #include <netdb.h>
 #include <sys/socket.h>
 
-/* Pick up a definition of getaddrinfo if not otherwise available. */
+/* Pick up definitions of getaddrinfo and getnameinfo if not otherwise
+   available. */
 #include "portable/getaddrinfo.h"
+#include "portable/getnameinfo.h"
 
 BEGIN_DECLS
 
