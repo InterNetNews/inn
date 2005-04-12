@@ -26,8 +26,8 @@
 #include "portable/socket.h"
 #include <errno.h>
 
-/* If we're running the test suite, rename inet_ntoa to avoid conflicts with
-   the system version.  Note that we don't rename the structures and
+/* If we're running the test suite, rename the functions to avoid conflicts
+   with the system version.  Note that we don't rename the structures and
    constants, but that should be okay (except possibly for gai_strerror. */
 #if TESTING
 # define gai_strerror test_gai_strerror
