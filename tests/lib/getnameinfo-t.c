@@ -27,7 +27,7 @@ main(void)
     struct hostent *hp;
     char *name;
 
-    test_init(25);
+    test_init(26);
 
     /* Test the easy stuff that requires no assumptions.  Hopefully everyone
        has nntp, exec, and biff as services. */
@@ -110,6 +110,10 @@ main(void)
     status = test_getnameinfo(sa, sizeof(sin), node, sizeof(node), NULL, 0,
                               NI_NAMEREQD);
     ok_int(25, EAI_NONAME, status);
+
+    sin.sin_family = AF_UNIX;
+    status = test_getnameinfo(sa, sizeof(sin), node, sizeof(node), NULL, 0, 0);
+    ok_int(26, EAI_FAMILY, status);
 
     return 0;
 }
