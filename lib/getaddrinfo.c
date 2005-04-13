@@ -61,7 +61,7 @@ static const char * const gai_errors[] = {
     "Host unknown or not given",        /*  6 EAI_NONAME */
     "Service not supported for socket", /*  7 EAI_SERVICE */
     "Unsupported socket type",          /*  8 EAI_SOCKTYPE */
-    "System error"                      /*  9 EAI_SYSTEM */
+    "System error",                     /*  9 EAI_SYSTEM */
     "Supplied buffer too small",        /* 10 EAI_OVERFLOW */
 };
 
