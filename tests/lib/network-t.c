@@ -128,10 +128,8 @@ test_ipv6(int n, const char *source)
 }
 #else /* !HAVE_INET6 */
 static int
-test_ipv6(int n)
+test_ipv6(int n, const char *source UNUSED)
 {
-    int i;
-
     skip_block(n, 3, "IPv6 not supported");
     return n + 3;
 }

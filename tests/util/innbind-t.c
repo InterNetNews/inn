@@ -235,8 +235,6 @@ test_ipv6(int n)
 static int
 test_ipv6(int n)
 {
-    int i;
-
     skip_block(n, 5, "IPv6 not supported");
     return n + 5;
 }
