@@ -764,10 +764,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     char 		*p;
     char 		**q;
     char 		**r;
-#if     !defined( HAVE_INET6)
-    struct hostent	*hp;
-#endif
-#if	!defined(HAVE_UNIX_DOMAIN_SOCKETS) || !defined(HAVE_INET6)
+#ifndef HAVE_UNIX_DOMAIN_SOCKETS
     struct in_addr      addr;
 #endif
     int                 i;
@@ -991,10 +988,9 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             peer_params.Name = xstrdup(peer_params.Label);
 
 	  for(r = q = RCCommaSplit(xstrdup(peer_params.Name)); *q != NULL; q++) {
-#ifdef HAVE_INET6
 	      struct addrinfo *res, *res0, hints;
 	      int gai_ret;
-#endif
+
 	    (*count)++;
 
 	    /* Grow the array */
@@ -1002,7 +998,6 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             *list = xrealloc(*list, *count * sizeof(REMOTEHOST));
 	    rp = *list + j;
 
-#ifdef HAVE_INET6
 	    memset( &hints, 0, sizeof( hints ) );
 	    hints.ai_socktype = SOCK_STREAM;
 	    hints.ai_family = PF_UNSPEC;
@@ -1043,123 +1038,6 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		rp++;
 	    }
 	    freeaddrinfo(res0);
-#else /* HAVE_INET6 */
-	    /* Was host specified as a dotted quad ? */
-	    if (inet_aton(*q, &addr)) {
-	      make_sin( (struct sockaddr_in *)&rp->Address, &addr );
-	      rp->Name = xstrdup (*q);
-	      rp->Label = xstrdup (peer_params.Label);
-	      rp->Password = xstrdup(peer_params.Password);
-	      rp->Identd = xstrdup(peer_params.Identd);
-	      rp->Skip = peer_params.Skip;
-	      rp->Streaming = peer_params.Streaming;
-	      rp->NoResendId = peer_params.NoResendId;
-	      rp->Nolist = peer_params.Nolist;
-	      rp->Email = xstrdup(peer_params.Email);
-	      rp->Comment = xstrdup(peer_params.Comment);
-	      rp->Patterns = peer_params.Pattern != NULL ?
-		    RCCommaSplit(xstrdup(peer_params.Pattern)) : NULL;
-	      rp->MaxCnx = peer_params.MaxCnx;
-	      rp->HoldTime = peer_params.HoldTime;
-	      rp++;
-	      continue;
-	    }
-	    
-	    /* Host specified as a text name ? */
-	    if ((hp = gethostbyname(*q)) == NULL) {
-	      syslog(L_ERROR, "%s cant gethostbyname %s %m", LogName, *q);
-	      /* decrement *count, since we never got to add this record. */
-	      (*count)--;
-	      continue;
-	    }
-
-	    /* Count the adresses and see if we have to grow the list */
-	    for (i = 0; hp->h_addr_list[i]; i++)
-	      continue;
-	    if (i == 0) {
-	      syslog(L_ERROR, "%s no_address %s %m", LogName, *q);
-	      continue;
-	    }
-	    if (i == 1) {
-	      char **rr;
-	      int    t = 0;
-	      /* Strange DNS ? try this.. */
-	      for (rr = hp->h_aliases; *rr != 0; rr++) {
-                if (!inet_aton(*rr, &addr))
-		  continue;
-		(*count)++;
-		/* Grow the array */
-		j = rp - *list;
-                *list = xrealloc(*list, *count * sizeof(REMOTEHOST));
-		rp = *list + j;
-
-		make_sin( (struct sockaddr_in *)&rp->Address, &addr );
-		rp->Name = xstrdup (*q);
-		rp->Label = xstrdup (peer_params.Label);
-		rp->Email = xstrdup(peer_params.Email);
-		rp->Comment = xstrdup(peer_params.Comment);
-		rp->Streaming = peer_params.Streaming;
-		rp->Skip = peer_params.Skip;
-		rp->NoResendId = peer_params.NoResendId;
-		rp->Nolist = peer_params.Nolist;
-		rp->Password = xstrdup(peer_params.Password);
-		rp->Identd = xstrdup(peer_params.Identd);
-		rp->Patterns = peer_params.Pattern != NULL ?
-		  RCCommaSplit(xstrdup(peer_params.Pattern)) : NULL;
-		rp->MaxCnx = peer_params.MaxCnx;
-		rp->HoldTime = peer_params.HoldTime;
-		rp++;
-		t++;
-	      }
-	      if (t == 0) {
-		/* Just one, no need to grow. */
-		make_sin( (struct sockaddr_in *)&rp->Address,
-				(struct in_addr *)hp->h_addr_list[0] );
-		rp->Name = xstrdup (*q);
-		rp->Label = xstrdup (peer_params.Label);
-		rp->Email = xstrdup(peer_params.Email);
-		rp->Comment = xstrdup(peer_params.Comment);
-		rp->Streaming = peer_params.Streaming;
-		rp->Skip = peer_params.Skip;
-		rp->NoResendId = peer_params.NoResendId;
-		rp->Nolist = peer_params.Nolist;
-		rp->Password = xstrdup(peer_params.Password);
-		rp->Identd = xstrdup(peer_params.Identd);
-		rp->Patterns = peer_params.Pattern != NULL ?
-		  RCCommaSplit(xstrdup(peer_params.Pattern)) : NULL;
-		rp->MaxCnx = peer_params.MaxCnx;
-		rp->HoldTime = peer_params.HoldTime;
-		rp++;
-		continue;
-	      }
-	    }
-	    /* Grow the array */
-	    j = rp - *list;
-	    *count += i - 1;
-            *list = xrealloc(*list, *count * sizeof(REMOTEHOST));
-	    rp = *list + j;
-
-	    /* Add all the hosts. */
-	    for (i = 0; hp->h_addr_list[i]; i++) {
-	      make_sin( (struct sockaddr_in *)&rp->Address,
-			      (struct in_addr *)hp->h_addr_list[i] );
-	      rp->Name = xstrdup (*q);
-	      rp->Label = xstrdup (peer_params.Label);
-	      rp->Email = xstrdup(peer_params.Email);
-	      rp->Comment = xstrdup(peer_params.Comment);
-	      rp->Streaming = peer_params.Streaming;
-	      rp->Skip = peer_params.Skip;
-	      rp->NoResendId = peer_params.NoResendId;
-	      rp->Nolist = peer_params.Nolist;
-	      rp->Password = xstrdup(peer_params.Password);
-	      rp->Identd = xstrdup(peer_params.Identd);
-	      rp->Patterns = peer_params.Pattern != NULL ?
-		RCCommaSplit(xstrdup(peer_params.Pattern)) : NULL;
-	      rp->MaxCnx = peer_params.MaxCnx;
-	      rp->HoldTime = peer_params.HoldTime;
-	      rp++;
-	    }
-#endif /* HAVE_INET6 */
 	  }
 	  free(r[0]);
 	  free(r);
