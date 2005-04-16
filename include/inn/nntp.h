@@ -205,8 +205,9 @@ enum nntp_status nntp_read_command(struct nntp *, struct cvector *);
 enum nntp_status nntp_read_multiline(struct nntp *, char **, size_t *);
 
 /* Send a line to the remote connection.  The output is flushed after sending
-   the line. */
+   the line unless the noflush variant is used. */
 bool nntp_send_line(struct nntp *, const char *format, ...);
+bool nntp_send_line_noflush(struct nntp *, const char *format, ...);
 
 /* Send a response to an NNTP command or an opening banner.  The string may be
    NULL to indicate nothing should follow the response code; otherwise, it is

@@ -238,7 +238,7 @@ nntp_read_command(struct nntp *nntp, struct cvector *command)
 
     status = nntp_read_line(nntp, &line);
     if (status == NNTP_READ_OK)
-        cvector_split_space(nntp->in.data + nntp->in.used, command);
+        cvector_split_space(line, command);
     return status;
 }
 
@@ -303,6 +303,23 @@ nntp_flush(struct nntp *nntp)
 */
 bool
 nntp_send_line(struct nntp *nntp, const char *format, ...)
+{
+    va_list args;
+
+    va_start(args, format);
+    buffer_vsprintf(&nntp->out, true, format, args);
+    va_end(args);
+    buffer_append(&nntp->out, "\r\n", 2);
+    return nntp_flush(nntp);
+}
+
+
+/*
+**  The same as nntp_send_line, but don't flush after sending the repsonse.
+**  Used for accumulating multiline responses, mostly.
+*/
+bool
+nntp_send_line_noflush(struct nntp *nntp, const char *format, ...)
 {
     va_list args;
 
