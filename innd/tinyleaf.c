@@ -98,7 +98,7 @@ command_ihave(struct cvector *command, void *cookie)
     char filename[33], *article, *msgid;
     unsigned char hash[16];
     size_t length;
-    int fd;
+    int fd, oerrno;
 
     msgid = xstrdup(command->strings[1]);
     if (!nntp_respond(state->nntp, NNTP_CONT_IHAVE, "Send article"))
@@ -139,9 +139,15 @@ command_ihave(struct cvector *command, void *cookie)
         }
         sysdie("unable to create article file %s", filename);
     }
-    if (xwrite(fd, article, length) < 0)
+    if (xwrite(fd, article, length) < 0) {
+        oerrno = errno;
+        if (unlink(filename) < 0)
+            syswarn("cannot clean up failed write to %s, remove by hand",
+                filename);
+        errno = oerrno;
         sysdie("unable to write article %s to file %s", msgid,
                filename);
+    }
     close(fd);
     if (state->processor != NULL) {
         fprintf(state->processor, "%s %s\n", filename, msgid);
@@ -163,10 +169,14 @@ command_help(struct cvector *command UNUSED, void *cookie)
 {
     struct state *state = cookie;
 
-    nntp_respond_noflush(state->nntp, NNTP_INFO_HELP, "tinyfeed (%s)",
+    nntp_respond_noflush(state->nntp, NNTP_INFO_HELP, "tinyfeed from %s",
                          INN_VERSION_STRING);
-    printf("Supported commands:\r\n\r\n  IHAVE <message-id>\r\n  HELP\r\n");
-    printf("  QUIT\r\n.\r\n");
+    nntp_send_line_noflush(state->nntp, "Supported commands:");
+    nntp_send_line_noflush(state->nntp, "");
+    nntp_send_line_noflush(state->nntp, "  IHAVE <message-id>");
+    nntp_send_line_noflush(state->nntp, "  HELP");
+    nntp_send_line_noflush(state->nntp, "  QUIT");
+    nntp_send_line_noflush(state->nntp, ".");
     if (!nntp_flush(state->nntp))
         sysdie("cannot flush output");
 }
