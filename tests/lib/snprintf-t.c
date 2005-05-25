@@ -14,7 +14,18 @@ static const char string[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 static const char *const fp_formats[] = {
     "%-1.5f",   "%1.5f",    "%31.9f",   "%10.5f",   "% 10.5f",  "%+22.9f",
     "%+4.9f",   "%01.3f",   "%3.1f",    "%3.2f",    "%.0f",     "%.1f",
-    "%f",       NULL
+    "%f",
+
+    /* %e and %g formats aren't really implemented yet. */
+#if 0
+    "%-1.5e",   "%1.5e",    "%31.9e",   "%10.5e",   "% 10.5e",  "%+22.9e",
+    "%+4.9e",   "%01.3e",   "%3.1e",    "%3.2e",    "%.0e",     "%.1e",
+    "%e",
+    "%-1.5g",   "%1.5g",    "%31.9g",   "%10.5g",   "% 10.5g",  "%+22.9g",
+    "%+4.9g",   "%01.3g",   "%3.1g",    "%3.2g",    "%.0g",     "%.1g",
+    "%g",
+#endif
+    NULL
 };
 static const char *const int_formats[] = {
     "%-1.5d",   "%1.5d",    "%31.9d",   "%5.5d",    "%10.5d",   "% 10.5d",
@@ -38,7 +49,7 @@ static const char *const ullong_formats[] = {
 
 static const double fp_nums[] = {
     -1.5, 134.21, 91340.2, 341.1234, 0203.9, 0.96, 0.996, 0.9996, 1.996,
-    4.136, 0
+    4.136, 0.1, 0.01, 0.001, 10.1, 0
 };
 static long int_nums[] = {
     -1, 134, 91340, 341, 0203, 0
@@ -77,7 +88,8 @@ test_format(int n, bool truncate, const char *expected, int count,
         printf("  format: %s\n", format);
         if (strcmp(buf, expected))
             printf("   saw: %s\n  want: %s\n", buf, expected);
-        if (result != count) printf("  %d != %d\n", result, count);
+        if (result != count)
+            printf("  %d != %d\n", result, count);
     }
 }
 
@@ -89,7 +101,7 @@ main(void)
     long lcount;
     char lgbuf[128];
 
-    test_init((25 + (ARRAY_SIZE(fp_formats) - 1) * ARRAY_SIZE(fp_nums)
+    test_init((26 + (ARRAY_SIZE(fp_formats) - 1) * ARRAY_SIZE(fp_nums)
               + (ARRAY_SIZE(int_formats) - 1) * ARRAY_SIZE(int_nums)
               + (ARRAY_SIZE(uint_formats) - 1) * ARRAY_SIZE(uint_nums)
               + (ARRAY_SIZE(llong_formats) - 1) * ARRAY_SIZE(llong_nums)
@@ -128,8 +140,9 @@ main(void)
                 &count, string, &lcount);
     ok(24, count == 0);
     ok(25, lcount == 31);
+    test_format(26, true, "(null)", 6, "%s", NULL);
 
-    n = 25;
+    n = 26;
     for (i = 0; fp_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(fp_nums); j++) {
             count = sprintf(lgbuf, fp_formats[i], fp_nums[j]);
