@@ -78,6 +78,15 @@
  *    added support for long long.
  *    don't declare argument types to (v)snprintf if stdarg is not used.
  *
+ *  Hrvoje Niksic <hniksic@xemacs.org> 2005-04-15
+ *    use the PARAMS macro to handle prototypes.
+ *    write function definitions in the ansi2knr-friendly way.
+ *    if string precision is specified, don't read VALUE past it.
+ *    fix bug in fmtfp that caused 0.01 to be printed as 0.1.
+ *    don't include <ctype.h> because none of it is used.
+ *    interpret precision as number of significant digits with %g
+ *    omit trailing decimal zeros with %g
+ *
  **************************************************************/
 
 #include "config.h"
@@ -146,6 +155,7 @@ static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c );
 #define DP_F_ZERO  	(1 << 4)
 #define DP_F_UP    	(1 << 5)
 #define DP_F_UNSIGNED 	(1 << 6)
+#define DP_F_FP_G 	(1 << 7)
 
 /* Conversion Flags */
 #define DP_C_SHORT   1
@@ -353,7 +363,6 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
 	  fvalue = va_arg (args, double);
-	/* um, floating point? */
 	total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'E':
@@ -363,14 +372,20 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
 	  fvalue = va_arg (args, double);
+        total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'G':
 	flags |= DP_F_UP;
       case 'g':
+        flags |= DP_F_FP_G;
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
 	  fvalue = va_arg (args, double);
+	if (max == 0)
+	  /* C99 says: if precision [for %g] is zero, it is taken as one */
+	  max = 1;
+	total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'c':
 	total += dopr_outch (buffer, &currlen, maxlen, va_arg (args, int));
@@ -452,12 +467,15 @@ static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
   
   if (value == 0)
   {
-    value = "<NULL>";
+    value = "(null)";
   }
 
-  for (strln = 0; value[strln]; ++strln); /* strlen */
-  if (max >= 0 && max < strln)
-    strln = max;
+  if (max < 0)
+    strln = strlen (value);
+  else
+    /* When precision is specified, don't read VALUE past precision. */
+    /*strln = strnlen (value, max);*/
+    for (strln = 0; strln < max && value[strln]; ++strln);
   padlen = min - strln;
   if (padlen < 0) 
     padlen = 0;
@@ -619,16 +637,19 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 {
   int signvalue = 0;
   LDOUBLE ufvalue;
-  char iconvert[20];
-  char fconvert[20];
-  int iplace = 0;
-  int fplace = 0;
+  char iconvert[24];
+  char fconvert[24];
+  size_t iplace = 0;
+  size_t fplace = 0;
   int padlen = 0; /* amount to pad */
   int zpadlen = 0; 
-  int caps = 0;
   int total = 0;
   LLONG intpart;
   LLONG fracpart;
+  LLONG mask10;
+  int leadingfrac0s = 0; /* zeroes at the start of fractional part */
+  int omitzeros = 0;
+  size_t omitcount = 0;
   
   /* 
    * AIX manpage says the default is 0, but Solaris says the default
@@ -654,23 +675,70 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 
   intpart = ufvalue;
 
+  /* With %g precision is the number of significant digits, which
+     includes the digits in intpart. */
+  if (flags & DP_F_FP_G)
+    {
+      if (intpart != 0)
+	{
+	  /* For each digit of INTPART, print one less fractional digit. */
+	  LLONG temp = intpart;
+	  for (temp = intpart; temp != 0; temp /= 10)
+	    --max;
+	  if (max < 0)
+	    max = 0;
+	}
+      else
+	{
+	  /* For each leading 0 in fractional part, print one more
+	     fractional digit. */
+	  LDOUBLE temp;
+	  if (ufvalue != 0)
+	    for (temp = ufvalue; temp < 0.1; temp *= 10)
+	      ++max;
+	}
+    }
+
+  /* C99: trailing zeros are removed from the fractional portion of the
+     result unless the # flag is specified */
+  if ((flags & DP_F_FP_G) && !(flags & DP_F_NUM))
+    omitzeros = 1;
+
+#if SIZEOF_LONG_LONG > 0
+# define MAX_DIGITS 18		/* grok more digits with long long */
+#else
+# define MAX_DIGITS 9		/* just long */
+#endif
+
   /* 
-   * Sorry, we only support 9 digits past the decimal because of our 
-   * conversion method
+   * Sorry, we only support several digits past the decimal because of
+   * our conversion method
    */
-  if (max > 9)
-    max = 9;
+  if (max > MAX_DIGITS)
+    max = MAX_DIGITS;
+
+  /* Factor of 10 with the needed number of digits, e.g. 1000 for max==3 */
+  mask10 = pow10 (max);
 
   /* We "cheat" by converting the fractional part to integer by
    * multiplying by a factor of 10
    */
-  fracpart = round ((pow10 (max)) * (ufvalue - intpart));
+  fracpart = round (mask10 * (ufvalue - intpart));
 
-  if (fracpart >= pow10 (max))
+  if (fracpart >= mask10)
   {
     intpart++;
-    fracpart -= pow10 (max);
+    fracpart -= mask10;
   }
+  else if (fracpart != 0)
+    /* If fracpart has less digits than the 10* mask, we need to
+       manually insert leading 0s.  For example 2.01's fractional part
+       requires one leading zero to distinguish it from 2.1. */
+    while (fracpart < mask10 / 10)
+      {
+	++leadingfrac0s;
+	mask10 /= 10;
+      }
 
 #ifdef DEBUG_SNPRINTF
   dprint (1, (debugfile, "fmtfp: %f =? %d.%d\n", fvalue, intpart, fracpart));
@@ -678,25 +746,29 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 
   /* Convert integer part */
   do {
-    iconvert[iplace++] =
-      (caps? "0123456789ABCDEF":"0123456789abcdef")[intpart % 10];
+    iconvert[iplace++] = '0' + intpart % 10;
     intpart = (intpart / 10);
-  } while(intpart && (iplace < 20));
-  if (iplace == 20) iplace--;
+  } while(intpart && (iplace < sizeof(iconvert)));
+  if (iplace == sizeof(iconvert)) iplace--;
   iconvert[iplace] = 0;
 
   /* Convert fractional part */
   do {
-    fconvert[fplace++] =
-      (caps? "0123456789ABCDEF":"0123456789abcdef")[fracpart % 10];
+    fconvert[fplace++] = '0' + fracpart % 10;
     fracpart = (fracpart / 10);
-  } while(fracpart && (fplace < 20));
-  if (fplace == 20) fplace--;
+  } while(fracpart && (fplace < sizeof(fconvert)));
+  while (leadingfrac0s-- > 0 && fplace < sizeof(fconvert))
+    fconvert[fplace++] = '0';
+  if (fplace == sizeof(fconvert)) fplace--;
   fconvert[fplace] = 0;
+  if (omitzeros)
+    while (omitcount < fplace && fconvert[omitcount] == '0')
+      ++omitcount;
 
   /* -1 for decimal point, another -1 if we are printing a sign */
-  padlen = min - iplace - max - 1 - ((signvalue) ? 1 : 0); 
-  zpadlen = max - fplace;
+  padlen = min - iplace - (max - omitcount) - 1 - ((signvalue) ? 1 : 0);
+  if (!omitzeros)
+    zpadlen = max - fplace;
   if (zpadlen < 0)
     zpadlen = 0;
   if (padlen < 0) 
@@ -733,11 +805,11 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
    * Decimal point.  This should probably use locale to find the correct
    * char to print out.
    */
-  if (max > 0)
+  if (max > 0 && (fplace > omitcount || zpadlen > 0))
   {
     total += dopr_outch (buffer, currlen, maxlen, '.');
 
-    while (fplace > 0) 
+    while (fplace > omitcount) 
       total += dopr_outch (buffer, currlen, maxlen, fconvert[--fplace]);
   }
 
