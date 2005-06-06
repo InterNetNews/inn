@@ -1,10 +1,7 @@
 # This is a leading comment.
-param1: on
-param2:  true
-param3: yes
-# this is a comment \
+param1: onparam2:  true
+param3: yes# this is a comment \
 param4: off
   # this is another
-int1: 0
-
-int2: -3
+int1: 0
+int2: -3

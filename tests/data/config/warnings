@@ -4,9 +4,7 @@ parameter: value
 ===
 config/tmp:3: duplicate parameter parameter
 ===
-# Line numbering and Macs.
-parameter: value
-parameter: value
+# Line numbering and Macs.parameter: valueparameter: value
 ===
 config/tmp:3: duplicate parameter parameter
 ===

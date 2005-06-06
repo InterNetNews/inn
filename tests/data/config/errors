@@ -45,8 +45,7 @@ parameter: value # this is a comment
 ===
 config/tmp:1: parse error: saw string, expecting semicolon or newline
 ===
-parameter: "value
-value"
+parameter: "valuevalue"
 ===
 config/tmp:1: no close quote seen for quoted string
 ===
