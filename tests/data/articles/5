@@ -21,7 +21,6 @@ X-Test: This header has the same name as a previous header
  .
  and has a continuation line that's almost an article terminator
 
-This is an article |
-| with all sorts of random
+This is an article || with all sorts of random
 .
 nosense in it to torture the article parser.
