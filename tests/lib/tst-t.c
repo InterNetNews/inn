@@ -88,6 +88,8 @@ main(void)
     else {
         while (fgets((char *) buffer, sizeof(buffer), words)) {
             buffer[ustrlen(buffer) - 1] = '\0';
+            if (buffer[0] == '\0')
+                continue;
             word = (unsigned char *) xstrdup((char *) buffer);
             if (tst_insert(tst, buffer, word, 0, NULL) != TST_OK) {
                 if (!reported)
@@ -106,6 +108,8 @@ main(void)
     else {
         while (fgets((char *) buffer, sizeof(buffer), words)) {
             buffer[ustrlen(buffer) - 1] = '\0';
+            if (buffer[0] == '\0')
+                continue;
             word = tst_search(tst, buffer);
             if (word == NULL || strcmp((char *) word, buffer) != 0) {
                 if (!reported)
