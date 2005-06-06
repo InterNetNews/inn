@@ -230,7 +230,9 @@ main(int argc, char *argv[])
     enum nntp_status status;
 
     message_program_name = "tinyfeed";
-    message_handlers_notice(1, message_log_stderr);
+    message_handlers_notice(1, message_log_syslog_info);
+    message_handlers_warn(1, message_log_syslog_warning);
+    message_handlers_die(1, message_log_syslog_warning);
 
     /* Change to the spool directory where all articles will be written. */
     if (argc < 2)
