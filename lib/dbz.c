@@ -1238,9 +1238,9 @@ putconf(FILE *f, dbzconfig *cp)
     return ret;
 }
 
-/* getcore - try to set up an in-core copy of .pag file
+/* getcore - try to set up an in-core copy of file
  *
- * Returns: pointer to copy of .pag or NULL on errror
+ * Returns: pointer to copy of file or NULL on errror
  */
 static bool
 getcore(hash_table *tab)
@@ -1249,6 +1249,7 @@ getcore(hash_table *tab)
     int nread;
     int i;
     struct stat st;
+    size_t length = conf.tsize * tab->reclen;
 
     if (tab->incore == INCORE_MMAP) {
 #if defined(HAVE_MMAP)
@@ -1256,39 +1257,38 @@ getcore(hash_table *tab)
 	    syswarn("dbz: getcore: fstat failed");
 	    return false;
 	}
-	if ((conf.tsize * tab->reclen) > st.st_size) {
+	if (length > st.st_size) {
 	    /* file too small; extend it */
-	    if (ftruncate(tab->fd, conf.tsize * tab->reclen) == -1) {
+	    if (ftruncate(tab->fd, length) == -1) {
 		syswarn("dbz: getcore: ftruncate failed");
 		return false;
 	    }
 	}
-	it = mmap(NULL, (size_t)conf.tsize * tab->reclen,
-                  readonly ? PROT_READ : PROT_WRITE | PROT_READ, MAP_SHARED,
-                  tab->fd, 0);
+	it = mmap(NULL, length, readonly ? PROT_READ : PROT_WRITE | PROT_READ,
+                  MAP_SHARED, tab->fd, 0);
 	if (it == (char *)-1) {
 	    syswarn("dbz: getcore: mmap failed");
 	    return false;
 	}
 #ifdef MADV_RANDOM
 	/* not present in all versions of mmap() */
-	madvise(it, conf.tsize * sizeof(tab->reclen), MADV_RANDOM);
+	madvise(it, length, MADV_RANDOM);
 #endif
 #else
 	warn("dbz: getcore: can't mmap files");
 	return false;
 #endif
     } else {
-	it = xmalloc(conf.tsize * tab->reclen);
+	it = xmalloc(length);
 	
-	nread = read(tab->fd, it, tab->reclen * conf.tsize);
+	nread = read(tab->fd, it, length);
 	if (nread < 0) {
 	    syswarn("dbz: getcore: read failed");
 	    free(it);
 	    return false;
 	}
 	
-	i = (size_t)(conf.tsize * tab->reclen) - nread;
+	i = length - nread;
 	memset(it + nread, '\0', i);
     }
 
