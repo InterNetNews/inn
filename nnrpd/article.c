@@ -489,14 +489,16 @@ char *GetHeader(const char *header)
     /* Bogus value here to make sure that it isn't initialized to \n */
     char		lastchar = ' ';
     const char		*limit;
+    const char		*cmplimit;
     static char		*retval = NULL;
     static int		retlen = 0;
     int			headerlen;
     bool		pathheader = false;
     bool		xrefheader = false;
 
-    limit = ARThandle->data + ARThandle->len - strlen(header) - 1;
-    for (p = ARThandle->data; p < limit; p++) {
+    limit = ARThandle->data + ARThandle->len;
+    cmplimit = ARThandle->data + ARThandle->len - strlen(header) - 1;
+    for (p = ARThandle->data; p < cmplimit; p++) {
 	if (*p == '\r')
 	    continue;
 	if ((lastchar == '\n') && (*p == '\n')) {
