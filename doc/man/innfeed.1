@@ -165,11 +165,12 @@ opportunity and will start reading from it. This lets you create a batch
 file and put it in a place where innfeed will find it. You should never
 alter the .input or .output files of a running innfeed.
 .PP
-The format of these last three files is:
+The format of these last three files is one of the following:
 .PP
 .RS
 .nf
 /path/to/article <message-id>
+@token@ <message-id>
 .fi
 .RE
 .PP
