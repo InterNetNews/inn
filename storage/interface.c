@@ -449,6 +449,12 @@ SMreadconfig(void)
 		    break;
 		  case SMclass:
 		    class = atoi(p);
+                    if (class > NUM_STORAGE_CLASSES) {
+                        SMseterror(SMERR_CONFIG, "Storage class too large");
+                        warn("SM: storage class larger than %d, line %d",
+                             NUM_STORAGE_CLASSES, f->lineno);
+                        return false;
+                    }
 		    break;
 		  case SMexpire:
 		    q = strchr(p, ',');
