@@ -1025,9 +1025,11 @@ C<false>, status reporting is disabled.  The default value is C<0>.
 =item I<timer>
 
 How frequently (in seconds) innd(8) should report performance timings to
-syslog.  If this is set to C<0> or C<false>, performance timing is
-disabled.  Enabling this is highly recommended, and innreport(8) can
-produce a nice summary of the timings.  The default value is C<0>.
+syslog.  If this is set to C<0>, performance timing is disabled.  Enabling
+this is highly recommended, and innreport(8) can produce a nice summary of
+the timings.  If set to C<0>, performance timings in nnrpd(8) are also
+disabled, although nnrpd always reports statistics on exit and therefore
+any non-zero value is equivalent for it.  The default value is C<0>.
 
 =back
 

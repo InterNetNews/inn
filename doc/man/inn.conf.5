@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "INN.CONF 5"
-.TH INN.CONF 5 "2005-04-11" "INN 2.5.0" "InterNetNews Documentation"
+.TH INN.CONF 5 "2005-06-06" "INN 2.5.0" "InterNetNews Documentation"
 .SH "NAME"
 inn.conf \- Configuration data for InterNetNews programs
 .SH "DESCRIPTION"
@@ -1013,9 +1013,11 @@ report is written to \fIpathhttp\fR/inn_status.html.  If this is set to \f(CW0\f
 .IP "\fItimer\fR" 4
 .IX Item "timer"
 How frequently (in seconds) \fIinnd\fR\|(8) should report performance timings to
-syslog.  If this is set to \f(CW0\fR or \f(CW\*(C`false\*(C'\fR, performance timing is
-disabled.  Enabling this is highly recommended, and \fIinnreport\fR\|(8) can
-produce a nice summary of the timings.  The default value is \f(CW0\fR.
+syslog.  If this is set to \f(CW0\fR, performance timing is disabled.  Enabling
+this is highly recommended, and \fIinnreport\fR\|(8) can produce a nice summary of
+the timings.  If set to \f(CW0\fR, performance timings in \fInnrpd\fR\|(8) are also
+disabled, although nnrpd always reports statistics on exit and therefore
+any non-zero value is equivalent for it.  The default value is \f(CW0\fR.
 .Sh "System Tuning"
 .IX Subsection "System Tuning"
 The following parameters can be modified to tune the low-level operation

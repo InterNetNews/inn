@@ -247,8 +247,10 @@ ExitWithStats(int x, bool readconf)
     if (History)
 	HISclose(History);
 
-    TMRsummary(Client.host, timer_name);
-    TMRfree();
+    if (innconf->timer != 0) {
+        TMRsummary(Client.host, timer_name);
+        TMRfree();
+    }
 
     if (LocalLogFileName != NULL)
 	free(LocalLogFileName);
@@ -1036,7 +1038,8 @@ main(int argc, char *argv[])
 	close(fd);
 	dup2(0, 1);
 	dup2(0, 2);
-        TMRinit(TMR_MAX);
+        if (innconf->timer != 0)
+            TMRinit(TMR_MAX);
         STATstart = TMRnow_double();
 	SetupDaemon();
 
@@ -1050,7 +1053,8 @@ main(int argc, char *argv[])
 	xsignal(SIGCHLD, SIG_DFL);
  
     } else {
-        TMRinit(TMR_MAX);
+        if (innconf->timer)
+            TMRinit(TMR_MAX);
         STATstart = TMRnow_double();
 	SetupDaemon();
 	/* Arrange to toggle tracing. */
