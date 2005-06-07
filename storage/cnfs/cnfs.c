@@ -1053,6 +1053,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     METACYCBUFF		*metacycbuff = NULL;
     int			i;
     static char		buf[1024];
+    static char		alignbuf[CNFS_BLOCKSIZE];
     char		*artcycbuffname;
     off_t               artoffset, middle;
     uint32_t		artcyclenum;
@@ -1062,6 +1063,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     int			tonextblock;
     CNFSEXPIRERULES	*metaexprule;
     off_t		left;
+    size_t		totlen;
 
     for (metaexprule = metaexprulestab; metaexprule != (CNFSEXPIRERULES *)NULL; metaexprule = metaexprule->next) {
 	if (metaexprule->class == class)
@@ -1087,6 +1089,13 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	token.type = TOKEN_EMPTY;
 	return token;
     }
+
+    /* cycbuff->free should have already been aligned by the last write, but
+       realign it just to be sure. */
+    tonextblock = CNFS_BLOCKSIZE - (cycbuff->free & (CNFS_BLOCKSIZE - 1));
+    if (tonextblock != CNFS_BLOCKSIZE)
+	cycbuff->free += tonextblock;
+
     /* Article too big? */
     if (cycbuff->len - cycbuff->free < CNFS_BLOCKSIZE + 1)
         left = 0;
@@ -1129,6 +1138,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
 	}
     }
+
     /* Ah, at least we know all three important data */
     artcycbuffname = cycbuff->name;
     artoffset = cycbuff->free;
@@ -1151,19 +1161,28 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	return token;
     }
     if (iovcnt == 0) {
-	iov = xmalloc((article.iovcnt + 1) * sizeof(struct iovec));
-	iovcnt = article.iovcnt + 1;
-    } else if (iovcnt < article.iovcnt + 1) {
-        iov = xrealloc(iov, (article.iovcnt + 1) * sizeof(struct iovec));
-	iovcnt = article.iovcnt + 1;
+	iov = xmalloc((article.iovcnt + 2) * sizeof(struct iovec));
+	iovcnt = article.iovcnt + 2;
+    } else if (iovcnt < article.iovcnt + 2) {
+        iov = xrealloc(iov, (article.iovcnt + 2) * sizeof(struct iovec));
+	iovcnt = article.iovcnt + 2;
     }
     iov[0].iov_base = (char *) &cah;
     iov[0].iov_len = sizeof(cah);
-    for (i = 1 ; i <= article.iovcnt ; i++) {
+    totlen = iov[0].iov_len;
+    for (i = 1; i <= article.iovcnt; i++) {
         iov[i].iov_base = article.iov[i-1].iov_base;
         iov[i].iov_len = article.iov[i-1].iov_len;
+	totlen += iov[i].iov_len;
     }
-    if (xwritev(cycbuff->fd, iov, article.iovcnt + 1) < 0) {
+    if ((totlen & (CNFS_BLOCKSIZE - 1)) != 0) {
+	/* Want to xwritev an exact multiple of CNFS_BLOCKSIZE */
+	iov[i].iov_base = alignbuf;
+	iov[i].iov_len = CNFS_BLOCKSIZE - (totlen & (CNFS_BLOCKSIZE - 1));
+	totlen += iov[i].iov_len;
+	i++;
+    }
+    if (xwritev(cycbuff->fd, iov, i) < 0) {
 	SMseterror(SMERR_INTERNAL, "cnfs_store() xwritev() failed");
         syswarn("CNFS: cnfs_store xwritev failed for '%s' offset 0x%s",
                 artcycbuffname, CNFSofft2hex(artoffset, false));
@@ -1174,9 +1193,8 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     cycbuff->needflush = true;
 
     /* Now that the article is written, advance the free pointer & flush */
-    cycbuff->free += (off_t) article.len + sizeof(cah);
-    tonextblock = CNFS_BLOCKSIZE - (cycbuff->free & (CNFS_BLOCKSIZE - 1));
-    cycbuff->free += (off_t) tonextblock;
+    cycbuff->free += totlen;
+
     /*
     ** If cycbuff->free > cycbuff->len, don't worry.  The next cnfs_store()
     ** will detect the situation & wrap around correctly.
