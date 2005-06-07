@@ -264,6 +264,7 @@ hisv6_closefiles(struct hisv6 *h)
 	    r = false;
 	}
 	h->writefp = NULL;
+        h->offset = 0;
     }
 
     h->nextcheck = 0;
@@ -308,6 +309,13 @@ hisv6_reopen(struct hisv6 *h)
 	if (fseeko(h->writefp, 0, SEEK_END) == -1) {
 	    hisv6_seterror(h, concat("can't fseek to end of ",
 				      h->histpath, " ",
+				      strerror(errno), NULL));
+	    hisv6_closefiles(h);
+	    goto fail;
+	}
+        h->offset = ftello(h->writefp);
+	if (h->offset == -1) {
+	    hisv6_seterror(h, concat("can't ftello ", h->histpath, " ",
 				      strerror(errno), NULL));
 	    hisv6_closefiles(h);
 	    goto fail;
@@ -466,6 +474,7 @@ hisv6_new(const char *path, int flags, struct history *history)
     h->histpath = path ? xstrdup(path) : NULL;
     h->flags = flags;
     h->writefp = NULL;
+    h->offset = 0;
     h->history = history;
     h->readfd = -1;
     h->nextcheck = 0;
@@ -719,10 +728,11 @@ hisv6_check(void *history, const char *key)
 
 
 /*
-**  format a history line; `s' should be of at least HISV6_MAXLINE+1
-**  characters (to allow for the \0).
+**  Format a history line.  s should hold at least HISV6_MAXLINE + 1
+**  characters (to allow for the nul).  Returns the length of the data
+**  written, 0 if there was some error or if the data was too long to write.
 */
-static bool
+static int
 hisv6_formatline(char *s, const HASH *hash, time_t arrived,
 		  time_t posted, time_t expires, const TOKEN *token)
 {
@@ -754,8 +764,8 @@ hisv6_formatline(char *s, const HASH *hash, time_t arrived,
 	}
     }
     if (i < 0 || i >= HISV6_MAXLINE)
-	return false;
-    return true;
+	return 0;
+    return i;
 }
 
 
@@ -809,9 +819,8 @@ static bool
 hisv6_writeline(struct hisv6 *h, const HASH *hash, time_t arrived,
 		time_t posted, time_t expires, const TOKEN *token)
 {
-    int i;
     bool r;
-    off_t offset;
+    size_t i, length;
     char hisline[HISV6_MAXLINE + 1];
     char location[HISV6_MAX_LOCATION];
 
@@ -827,26 +836,31 @@ hisv6_writeline(struct hisv6 *h, const HASH *hash, time_t arrived,
 	return false;
     }
 
-    if (hisv6_formatline(hisline, hash, arrived, posted, expires,
-			  token) != true) {
+    length = hisv6_formatline(hisline, hash, arrived, posted, expires, token);
+    if (length == 0) {
 	hisv6_seterror(h, concat("error formatting history line ",
 				  h->histpath, NULL));
 	return false;
     }	
 
-    offset = ftello(h->writefp);
-    i = fputs(hisline, h->writefp);
-    if (i == EOF ||
-	(!(h->flags & HIS_INCORE) && fflush(h->writefp) == EOF)) {
-	hisv6_errloc(location, (size_t)-1, offset);
-	/* The history line is now an orphan... */
+    i = fwrite(hisline, 1, length, h->writefp);
+
+    /* If the write failed, the history line is now an orphan.  Attempt to
+       rewind the write pointer to our offset to avoid leaving behind a
+       partial write and desyncing the offset from our file position. */
+    if (i < length ||
+        (!(h->flags & HIS_INCORE) && fflush(h->writefp) == EOF)) {
+	hisv6_errloc(location, (size_t)-1, h->offset);
 	hisv6_seterror(h, concat("can't write history ", h->histpath,
 				  location, " ", strerror(errno), NULL));
+        if (fseeko(h->writefp, h->offset, SEEK_SET) == -1)
+            h->offset += i;
 	r = false;
 	goto fail;
     }
 
-    r = hisv6_writedbz(h, hash, offset);
+    r = hisv6_writedbz(h, hash, h->offset);
+    h->offset += length;     /* increment regardless of error from writedbz */
  fail:
     return r;
 }
@@ -919,7 +933,7 @@ hisv6_replace(void *history, const char *key, time_t arrived,
 	char new[HISV6_MAXLINE + 1];
 
 	if (hisv6_formatline(new, &hash, arrived, posted, expires,
-			      token) != true) {
+                             token) == 0) {
  	    hisv6_seterror(h, concat("error formatting history line ",
 				      h->histpath, NULL));
 	    r = false;
