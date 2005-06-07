@@ -288,7 +288,7 @@ hisv6_reopen(struct hisv6 *h)
 	if (h->flags & HIS_CREAT)
 	    mode = "w";
 	else
-	    mode = "a";
+	    mode = "r+";
 	if ((h->writefp = Fopen(h->histpath, mode, INND_HISTORY)) == NULL) {
 	    hisv6_seterror(h, concat("can't fopen history ",
 				      h->histpath, " ",
@@ -296,12 +296,6 @@ hisv6_reopen(struct hisv6 *h)
 	    hisv6_closefiles(h);
 	    goto fail;
 	}
-
-	/* fseeko to the end of file because the result of ftello() is
-	   undefined for files freopen()-ed in append mode according
-	   to POSIX 1003.1.  ftello() is used later on to determine a
-	   new article's offset in the history file. Fopen() uses
-	   freopen() internally. */
 	if (fseeko(h->writefp, 0, SEEK_END) == -1) {
 	    hisv6_seterror(h, concat("can't fseek to end of ",
 				      h->histpath, " ",
@@ -938,7 +932,9 @@ hisv6_replace(void *history, const char *key, time_t arrived,
 
 	    oldlen = strlen(old);
 	    newlen = strlen(new);
-	    if (new > old) {
+	    if (new[newlen - 1] == '\n')
+                newlen--;
+	    if (newlen > oldlen) {
 		hisv6_seterror(h, concat("new history line too long ",
 					  h->histpath, NULL));
 		r = false;
@@ -946,7 +942,7 @@ hisv6_replace(void *history, const char *key, time_t arrived,
 		ssize_t n;
 
 		/* space fill any excess in the tail of new */
-		memset(new + oldlen, ' ', oldlen - newlen);
+		memset(new + newlen, ' ', oldlen - newlen);
 
 		do {
 		    n = pwrite(fileno(h->writefp), new, oldlen, offset);
