@@ -32,6 +32,8 @@ struct buffer_s
     size_t memSize ;            /* the length of mem */
     size_t dataSize ;           /* amount that has actual data in it. */
     bool deletable ;
+    void (*bufferDeletedCbk)(void *);
+    void *bufferDeletedCbkData;
     struct buffer_s *next ;
     struct buffer_s *prev ;
 };
@@ -69,6 +71,8 @@ Buffer newBuffer (size_t size)
   nb->memSize = size ;
   nb->dataSize = 0 ;
   nb->deletable = true ;
+  nb->bufferDeletedCbk = NULL;
+  nb->bufferDeletedCbkData = NULL;
 
   bufferByteCount += size + 1 ;
   bufferCount++ ;
@@ -103,6 +107,8 @@ Buffer newBufferByCharP (const char *ptr, size_t size, size_t dataSize)
   nb->memSize = size ;
   nb->dataSize = dataSize ;
   nb->deletable = false ;
+  nb->bufferDeletedCbk = NULL;
+  nb->bufferDeletedCbkData = NULL;
 
   nb->next = gBufferList ;
   nb->prev = NULL;
@@ -135,6 +141,12 @@ void delBuffer (Buffer buff)
           free (buff->mem) ;
           buff->mem = NULL ;
         }
+
+      if (buff->bufferDeletedCbk) {
+        (buff->bufferDeletedCbk)(buff->bufferDeletedCbkData);
+	buff->bufferDeletedCbk = NULL;
+	buff->bufferDeletedCbkData = NULL;
+      }
 
       if (buff->next != NULL)
         buff->next->prev = buff->prev ;
@@ -250,6 +262,15 @@ void bufferSetDataSize (Buffer buff, size_t size)
   ASSERT (buff->dataSize <= buff->memSize) ;
 }
 
+void bufferSetDeletedCbk (Buffer buff, void (*cbk)(void *), void *data)
+{
+  ASSERT(buff->bufferDeletedCbk == NULL &&
+	 buff->bufferDeletedCbk != cbk);
+  ASSERT(buff->bufferDeletedCbkData == NULL &&
+	 buff->bufferDeletedCbkData != data);
+  buff->bufferDeletedCbk = cbk;
+  buff->bufferDeletedCbkData = data;
+}
 
 void freeBufferArray (Buffer *buffs)
 {

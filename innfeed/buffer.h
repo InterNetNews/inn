@@ -73,6 +73,9 @@ void bufferDecrDataSize (Buffer buff, size_t size) ;
 /* set the size of the data actually in the buffer */
 void bufferSetDataSize (Buffer buff, size_t size) ;
 
+/* callback to be called when buffer gets deleted */
+void bufferSetDeletedCbk (Buffer buff, void (*cbk)(void *), void *data);
+
 /* walk down the BUFFS releasing each buffer and then freeing BUFFS itself */
 void freeBufferArray (Buffer *buffs) ;
 

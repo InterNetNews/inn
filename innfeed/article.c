@@ -44,6 +44,16 @@
 
 extern bool useMMap ;
 
+struct map_info_s {
+    ARTHANDLE *arthandle;
+    const void *mMapping;
+    size_t size;
+    int refCount;
+    struct map_info_s *next;
+};
+
+typedef struct map_info_s *MapInfo;
+
 struct article_s 
 {
     int refCount ;              /* the reference count on this article */
@@ -51,11 +61,10 @@ struct article_s
     char *msgid ;               /* the msgid of the article (INN tells us) */
     Buffer contents ;           /* the buffer of the actual on disk stuff */
     Buffer *nntpBuffers ;       /* list of buffers for transmisson */
-    const void *mMapping ;      /* base of memory mapping, or NULL if none */
+    MapInfo mapInfo;		/* arthandle and mMapping */
     bool loggedMissing ;        /* true if article is missing and we logged */
     bool articleOk ;            /* true until we know otherwise. */
     bool inWireFormat ;         /* true if ->contents is \r\n/dot-escaped */
-    ARTHANDLE *arthandle ;      /* Storage manager article handle */
 } ;
 
 struct hash_entry_s {
@@ -93,7 +102,7 @@ static bool artFreeContents (Article art) ;  /* Tell the Article to release
                                                 its contents buffer if
                                                 possible. */
 
-static void artUnmap (Article art, size_t size) ; /* munmap an mmap()ed
+static void artUnmap (Article art) ; /* munmap an mmap()ed
                                                      article */
 
 
@@ -156,7 +165,7 @@ static unsigned int articleTotal ; /* number of articles alloced since last log.
 
 static TimeoutId articleStatsId ; /* The timer callback id. */
 
-
+static MapInfo mapInfo;
 
   /*
    * Hash Table data
@@ -209,12 +218,11 @@ Article newArticle (const char *filename, const char *msgid)
       newArt->msgid = xstrdup (msgid) ;
       
       newArt->contents = NULL ;
-      newArt->mMapping = NULL ;
+      newArt->mapInfo = NULL ;
       newArt->refCount = 1 ;
       newArt->loggedMissing = false ;
       newArt->articleOk = true ;
       newArt->inWireFormat = false ;
-      newArt->arthandle = NULL;
       
       d_printf (3,"Adding a new article(%p): %s\n", (void *)newArt, msgid) ;
       
@@ -257,8 +265,8 @@ void delArticle (Article article)
 
       if (article->contents != NULL)
         {
-          if (article->mMapping)
-            artUnmap(article, bufferSize(article->contents)) ;
+          if (article->mapInfo)
+            artUnmap(article);
           else
             bytesInUse -= bufferDataSize (article->contents) ;
       
@@ -464,17 +472,67 @@ static Buffer artGetContents (Article article)
   return rval ;
 }
 
+  /* arthandle/mMapping needs to be refcounted since a buffer
+     may exist referencing it after delArticle if the remote
+     host sends the return status too soon (diablo, 439). */
 
-static void artUnmap (Article article, size_t size) {
-    
-    if (article->arthandle)
-	SMfreearticle(article->arthandle);
+static MapInfo getMapInfo(ARTHANDLE *arthandle,
+		const void *mMapping, size_t size)
+{
+  MapInfo m;
+
+  for (m = mapInfo; m; m = m->next) {
+    if (m->arthandle == arthandle &&
+        m->mMapping == mMapping) {
+      m->refCount++;
+      return m;
+    }
+  }
+
+  m = xmalloc(sizeof(struct map_info_s));
+  m->refCount = 1;
+  m->arthandle = arthandle;
+  m->mMapping = mMapping;
+  m->size = size;
+  m->next = mapInfo;
+  mapInfo = m;
+
+  return m;
+}
+
+static void delMapInfo(void *vm)
+{
+    MapInfo i, prev;
+    MapInfo m = (MapInfo)vm;
+
+    if (m == NULL)
+      return;
+
+    if (--(m->refCount) > 0)
+      return;
+
+    if (m->arthandle)
+      SMfreearticle(m->arthandle);
     else
-	if (munmap(article->mMapping, size) < 0)
-	    syslog (LOG_NOTICE, "munmap %s: %m", article->fname) ;
+      if (munmap(m->mMapping, m->size) < 0)
+	syslog (LOG_NOTICE, "munmap article: %m");
 
-    article->arthandle = NULL;
-    article->mMapping = NULL ;
+    prev = NULL;
+    for (i = mapInfo; i != m; i = i->next)
+      prev = i;
+
+    if (prev)
+      prev->next = m->next;
+    else
+      mapInfo = m->next;
+
+    free(m);
+}
+
+static void artUnmap (Article article) {
+
+    delMapInfo(article->mapInfo);
+    article->mapInfo = NULL;
 }
 
 
@@ -513,7 +571,9 @@ static bool fillContents (Article article)
     size_t idx = 0, amtToRead ;
     size_t newBufferSize ;
     HashEntry h ;
-  
+    ARTHANDLE *arthandle = NULL;
+    const void *mMapping = NULL;
+
     ASSERT (article->contents == NULL) ;
     
     TMRstart(TMR_READART);
@@ -524,9 +584,9 @@ static bool fillContents (Article article)
 	avgCharsPerLine = 75 ;      /* roughly number of characters per line */
     
     if (IsToken(article->fname)) {
-	opened = ((article->arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL) ? true : false;
+	opened = ((arthandle = SMretrieve(TextToToken(article->fname), RETR_ALL)) != NULL) ? true : false;
 	if (opened)
-	    articlesize = article->arthandle->len;
+	    articlesize = arthandle->len;
 	else {
 	    if (SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT) {
 		syslog(LOG_ERR, "Could not retrieve %s: %s",
@@ -540,7 +600,7 @@ static bool fillContents (Article article)
 	struct stat sb ;
 	
 	opened = ((fd = open (article->fname,O_RDONLY,0)) >= 0) ? true : false;
-	article->arthandle = NULL;
+	arthandle = NULL;
 	if (opened) {
 	    if (fstat (fd, &sb) < 0) {
 		article->articleOk = false ;
@@ -580,23 +640,27 @@ static bool fillContents (Article article)
     amtToRead = articlesize ;
     newBufferSize = articlesize ;
     
-    if (article->arthandle || useMMap) {
-	if (article->arthandle)
-	    article->mMapping = article->arthandle->data;
+    if (arthandle || useMMap) {
+	if (arthandle)
+	    mMapping = arthandle->data;
 	else 
-	    article->mMapping = mmap(NULL, articlesize, PROT_READ,
+	    mMapping = mmap(NULL, articlesize, PROT_READ,
                                      MAP_SHARED, fd, 0);
 	
-	if (article->mMapping == MAP_FAILED) {
+	if (mMapping == MAP_FAILED) {
 	    /* dunno, but revert to plain reading */
-	    article->mMapping = NULL ;
+	    mMapping = NULL ;
             syswarn ("ME mmap failure %s (%s)",
                      article->fname,
                      strerror(errno)) ;
 	} else {
-	    article->contents = newBufferByCharP(article->mMapping,
+	    article->contents = newBufferByCharP(mMapping,
 						 articlesize,
 						 articlesize);
+	    article->mapInfo = getMapInfo(arthandle, mMapping, articlesize);
+	    article->mapInfo->refCount++; /* one more for the buffer */
+	    bufferSetDeletedCbk(article->contents, delMapInfo, article->mapInfo);
+
 	    buffer = bufferBase (article->contents) ;
 	    if ((p = strchr(buffer, '\n')) == NULL) {
 		article->articleOk = false;
@@ -648,9 +712,9 @@ static bool fillContents (Article article)
 	    byteTotal += articlesize ;
 	}
 	
-	if (article->mMapping && buffer != NULL) {               
-	    memcpy(buffer, article->mMapping, articlesize);
-	    artUnmap(article, articlesize) ;
+	if (mMapping && buffer != NULL) {               
+	    memcpy(buffer, mMapping, articlesize);
+	    artUnmap(article) ;
 	    amtToRead = 0;
 	}
 	
@@ -721,7 +785,7 @@ static bool fillContents (Article article)
 
     
     /* If we're not useing storage api, we should close a valid file descriptor */
-    if (!article->arthandle && (fd >= 0))
+    if (!arthandle && (fd >= 0))
 	close (fd) ;
 
     TMRstop(TMR_READART);
@@ -814,6 +878,10 @@ static bool prepareArticleForNNTP (Article article)
       nntpBuffs [0] = newBufferByCharP (bufferBase (contents),
                                         bufferDataSize (contents),
                                         bufferDataSize (contents)) ;
+      if (article->mapInfo) {
+	article->mapInfo->refCount++;
+	bufferSetDeletedCbk(nntpBuffs[0], delMapInfo, article->mapInfo);
+      }
       nntpBuffs [1] = NULL ;
     }
   
@@ -845,8 +913,8 @@ static bool artFreeContents (Article art)
 
   ASSERT (bufferRefCount (art->contents) == 1) ;
 
-  if (art->mMapping)
-    artUnmap(art, bufferSize(art->contents)) ;
+  if (art->mapInfo)
+    artUnmap(art);
   else
     bytesInUse -= bufferDataSize (art->contents) ;
   
