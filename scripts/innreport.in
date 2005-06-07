@@ -72,16 +72,20 @@
 #            or, if you want to change some options:
 #    ${PATHETC}/innreport -f ${PATHETC}/innreport.conf options ${OLD_SYSLOG}
 #
-# Report: please report bugs (preferably) to the innreport mailing list
-#         (see below) or directly to the author (do not forget to
+# Report: please report bugs (preferably) to the INN mailing list
+#         (see README) or directly to the author (do not forget to
 #         include the result of the "-config" switch, the parameters
 #         passed on the command line and the INN version).
 #         Please also report unknown entries.
 #         Be sure your are using the latest version of this script before
 #         any report.
-#         (check <URL:ftp://ftp.sofaraway.org/pub/innreport/>)
 #
 ##########################################################################
+
+# Note: References to <ftp://ftp.sofaraway.org/pub/innreport/> have been
+# removed from the output because this site appears to no longer exist.  It
+# used to be the upstream source for innreport.  If there is a new site for
+# innreport releases, please notify the INN maintainers.
 
 # remember to add '-w' on the first line and to uncomment the 'use strict'
 # below before doing any changes to this file.
@@ -870,8 +874,7 @@ EOF
     $i++;
   }
   $result .= "</TABLE>\n</CENTER>\n<P><HR>";
-  $result .= "<A HREF=\"ftp://ftp.sofaraway.org/pub/innreport/\">innreport";
-  $result .= "</A> $version (c) 1996-1999 ";
+  $result .= "innreport $version (c) 1996-1999 ";
   $result .= "by Fabien Tassin &lt;<A HREF=\"mailto:fta\@sofaraway.org\">";
   $result .= "fta\@sofaraway.org</A>&gt;.\n";
   if (defined ($output{'default'}{'footer'})) {
@@ -1813,8 +1816,7 @@ sub Write_all_results {
   if ($HTML) {
     open (HTML, ">> $HTML_output") || die "Error: cant open $HTML_output\n";
     print HTML <<EOT;
-<A HREF="ftp://ftp.sofaraway.org/pub/innreport/">innreport</A>
-$version (c) 1996-1999 by Fabien Tassin
+innreport $version (c) 1996-1999 by Fabien Tassin
 &lt;<A HREF="mailto:fta\@sofaraway.org">fta\@sofaraway.org</A>&gt;.
 EOT
     if (defined $$h{'default'}{'footer'}) {
