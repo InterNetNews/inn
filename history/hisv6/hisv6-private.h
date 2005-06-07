@@ -40,6 +40,7 @@
 struct hisv6 {
     char *histpath;
     FILE *writefp;
+    off_t offset;               /* Offset into writefp. */
     unsigned long nextcheck;
     struct history *history;
     time_t statinterval;
