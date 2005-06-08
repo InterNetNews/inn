@@ -21,7 +21,7 @@ PROGDIRS    = innd nnrpd innfeed control expire frontends backends authprogs \
               scripts
 UPDATEDIRS  = $(LIBDIRS) $(PROGDIRS) doc
 ALLDIRS     = $(UPDATEDIRS) samples site
-CLEANDIRS   = $(ALLDIRS) include tests
+CLEANDIRS   = $(ALLDIRS) tests
 
 ##  The directory name and tar file to use when building a release.
 TARDIR      = inn-$(VERSION)
