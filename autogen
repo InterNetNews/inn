@@ -1,0 +1,8 @@
+#!/bin/sh
+# autogen -- Run the appropriate commands to bootstrap a Subversion checkout.
+# $Id$
+
+set -e
+autoconf
+autoheader
+rm -rf autom4te.cache
