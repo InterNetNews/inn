@@ -137,7 +137,7 @@ clobber realclean distclean:
 
 maintclean: distclean
 	rm -rf $(TARDIR)
-	rm -f CHANGES ChangeLog inn*.tar.gz
+	rm -f CHANGES ChangeLog inn*.tar.gz configure include/config.h.in
 
 
 ##  Other generic targets.
