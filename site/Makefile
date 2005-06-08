@@ -136,6 +136,8 @@ $D$(PATH_HISTORY):
 	touch $@
 	$(PATHBIN)/makedbz -i -o
 
+bootstrap:
+
 ##  Remove files that are unchanged from the release version.
 clean:
 	@-for I in $(ALL) ; do \

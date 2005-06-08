@@ -141,7 +141,7 @@ maintclean: distclean
 
 
 ##  Other generic targets.
-depend tags ctags profiled:
+bootstrap depend tags ctags profiled:
 	@for D in $(ALLDIRS) ; do \
 	    echo '' ; \
 	    cd $$D && $(MAKE) $@ || exit 1 ; cd .. ; \

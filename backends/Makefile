@@ -48,6 +48,8 @@ install: all
 	    echo '' ; echo ; \
 	fi
 
+bootstrap: $(MAN)
+
 clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs

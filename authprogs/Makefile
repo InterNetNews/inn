@@ -30,6 +30,8 @@ install: all
 	    $(LI_XPUB) $$F $D$(PATHAUTHRESOLV)/$$F ; \
 	done
 
+bootstrap:
+
 clobber clean distclean:
 	rm -f *.o $(ALL)
 	rm -rf .libs

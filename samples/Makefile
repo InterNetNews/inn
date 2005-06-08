@@ -17,12 +17,14 @@ ALL           = inn.conf innreport.conf newsfeeds nnrpd_auth.pl \
 
 all: $(ALL)
 
+install:
+bootstrap:
+
 clean:
 	rm -f $(ALL)
 
 clobber distclean: clean
 
-install:
 depend:
 
 profiled: all

@@ -25,6 +25,8 @@ install: all
 	done
 	$(CP_XPRI) expirerm $D$(PATHBIN)/expirerm
 
+bootstrap:
+
 clean:
 	rm -f *.o $(ALL)
 	rm -f profiled expirep

@@ -31,6 +31,8 @@ install: all
 	    $(CP_RPUB) $$F $D$(PATHLIB)/$$F ; \
 	done
 
+bootstrap:
+
 clean:
 	rm -f $(ALL)
 

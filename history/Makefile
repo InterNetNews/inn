@@ -23,6 +23,8 @@ warnings:
 install: all
 	$(LI_XPUB) libinnhist.$(EXTLIB) $D$(PATHLIB)/libinnhist.$(EXTLIB)
 
+bootstrap: Make.methods
+
 library: libinnhist.$(EXTLIB)
 
 programs: $(PROGRAMS)

@@ -36,6 +36,8 @@ warnings:
 install: all
 	$(LI_XPUB) libinn.$(EXTLIB) $D$(PATHLIB)/libinn.$(EXTLIB)
 
+bootstrap:
+
 clobber clean distclean:
 	rm -f *.o *.lo libinn.la libinn.a
 	rm -f profiled perl$(PROFSUFFIX).o libinn$(PROFSUFFIX).a

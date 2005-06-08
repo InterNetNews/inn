@@ -29,6 +29,8 @@ install: all
 	$(LI_XPRI) imapfeed $D$(PATHBIN)/imapfeed
 	$(CP_XPRI) procbatch $D$(PATHBIN)/procbatch
 
+bootstrap: config_y.c config_y.h config_l.c
+
 clean:
 	rm -f *.o $(ALL) version.c innfeed-convcfg
 	rm -f innfeedp

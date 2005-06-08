@@ -23,6 +23,8 @@ warnings:
 install: all
 	$(LI_XPUB) nnrpd $D$(PATHBIN)/nnrpd
 
+bootstrap:
+
 clean:
 	rm -f *.o $(ALL) nnrpdp profiled
 	rm -rf .libs

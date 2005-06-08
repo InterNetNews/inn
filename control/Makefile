@@ -19,7 +19,7 @@ install: all
 	    $(CP_RPUB) $$M $D$(PATHCONTROL)/`basename $$M` ; \
 	done
 
-man: $(MAN)
+bootstrap: $(MAN)
 
 clean clobber distclean:
 	rm -f $(ALL)

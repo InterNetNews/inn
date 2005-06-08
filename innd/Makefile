@@ -22,6 +22,8 @@ install: all
 	$(LI_XPRI) innd $D$(PATHBIN)/innd
 	$(LI_XPUB) tinyleaf $D$(PATHBIN)/tinyleaf
 
+bootstrap:
+
 clean:
 	rm -f *.o $(ALL) inndp
 	rm -rf .libs

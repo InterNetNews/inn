@@ -36,7 +36,7 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 
 ALL	= $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
-all: $(ALL)
+all bootstrap: $(ALL)
 
 clean:
 	rm -f $(ALL)

@@ -27,6 +27,8 @@ install: all
 	    $(LI_XPRI) $$F $D$(PATHBIN)/`basename $$F` ; \
 	done
 
+bootstrap: Make.methods
+
 library: libstorage.$(EXTLIB)
 
 programs: $(PROGRAMS)

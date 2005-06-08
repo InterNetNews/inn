@@ -39,6 +39,8 @@ install: all
 	$(LI_XPUB) encode $D$(PATHBIN)/rnews.libexec/encode
 	$(CP_XPUB) gunbatch $D$(PATHBIN)/rnews.libexec/gunbatch
 
+bootstrap:
+
 clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs

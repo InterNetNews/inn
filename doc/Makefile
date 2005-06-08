@@ -36,3 +36,6 @@ install-doc:
 	if [ -r $(top)/README.snapshot ] ; then \
 	    $(CP_RPUB) $(top)/README.snapshot $D$(PATHDOC)/README.snapshot ; \
 	fi
+
+bootstrap:
+	cd pod && $(MAKE) bootstrap
