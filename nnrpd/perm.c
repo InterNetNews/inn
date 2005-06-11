@@ -2000,11 +2000,8 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
     int i, j;
     char *command;
     char *user = NULL;
-    char *cp;
-    char **args;
     char *resdir;
     char *tmp;
-    char newUser[BIG_BUFFER];
 
     if (auth->auth_methods == NULL)
         return NULL;
