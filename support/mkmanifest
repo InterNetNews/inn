@@ -22,7 +22,7 @@ use File::Find qw(find);
 # in releases.
 @IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr/\.[ao]\Z/, qr%(\A|/)CVS(/|\Z)%,
            qr%(\A|/)\.?\#%, qr/\.(old|bak|orig|rej)$/, qr%(\A|/)core\Z%,
-           qr/~$/, qr%(\A|/)\.pure%);
+           qr/~$/, qr%(\A|/)\.pure%, qr%(\A|/)\.svn(/|\Z)%);
 
 # Build a list of all the files ignored by rules in .cvsignore files.  Meant
 # to be run as the wanted sub of a call to File::Find.  Stuff in .cvsignore
