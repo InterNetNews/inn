@@ -37,7 +37,7 @@ clean:
 	rm -rf .libs
 
 clobber distclean: clean 
-	rm -f tags y.tab.c y.tab.h lex.yy.c config_y.c config_y.h
+	rm -f tags y.tab.c y.tab.h lex.yy.c
 
 tags: $(SOURCES) $(INCLUDES)
 	$(CTAGS) $(SOURCES) $(INCLUDES)
