@@ -5,51 +5,39 @@
 ##  Generate a filename-only manifest from an INN tree.
 ##
 ##  This script generates a filename-only manifest from an INN tree, excluding
-##  certain files according to .cvsignore files and several built-in rules.
-##  It is intended to be used to support make check-manifest from the top
-##  level of the INN tree.
+##  certain files according to built-in rules and a list at the end of this
+##  file.  It is intended to be used to support make check-manifest from the
+##  top level of the INN tree.
 
 require 5.005;
 
 use strict;
-use vars qw(%CVSIGNORE @FILES @IGNORE);
+use vars qw(@FILES %IGNORE @IGNORE);
 
 use File::Find qw(find);
 
-# The following regex patterns match files to be ignored wherever they are
-# in the tree.  This is intended to handle files that CVS ignores by default
-# or files that are present in the tree and in CVS but which are not included
-# in releases.
-@IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr/\.[ao]\Z/, qr%(\A|/)CVS(/|\Z)%,
-           qr%(\A|/)\.svn(/|\Z)%, qr%(\A|/)\.?\#%,
-           qr/\.(old|bak|orig|rej)$/, qr%(\A|/)core\Z%, qr/~$/,
-           qr%(\A|/)\.pure%, qr/^BOOTSTRAP$/);
+# The following regex patterns match files to be ignored wherever they are in
+# the tree.  This is intended to handle files that CVS or Subversion ignores
+# by default.
+@IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr/\.l?[ao]\Z/, qr%(\A|/)CVS(/|\Z)%,
+           qr%(\A|/)\.svn(/|\Z)%, qr%(\A|/)\.?\#%, qr%(\A|/)core\Z%,
+           qr/\.(old|bak|orig|rej)$/, qr/~$/, qr%(\A|/)\.pure$%,
+           qr%(\A|/)\.libs(/|\Z)%);
 
-# Build a list of all the files ignored by rules in .cvsignore files.  Meant
-# to be run as the wanted sub of a call to File::Find.  Stuff in .cvsignore
-# that contains wildcards needs to be lifted into the list of @IGNORE regexes.
-sub find_cvsignore {
-    return unless $_ eq '.cvsignore';
-    return unless -f;
-    my $file = $_;
-    $file =~ s%^\./%%;
-    my @ignored;
-    my $dir = $File::Find::dir;
-    $dir =~ s%^\./?%%;
-    if ($dir) {
-        $dir .= '/';
-    }
-    open (CVSIGNORE, $_) or die "Cannot open $File::Find::name: $!\n";
-    @ignored = map { $dir . $_ } map { split (' ', $_) } <CVSIGNORE>;
-    close CVSIGNORE;
-    for (@ignored) {
+# Load file names and patterns from the DATA section.
+sub load_exclusions {
+    local $_;
+    while (<DATA>) {
+        next if /^\s*\#/;
+        next if /^\s*$/;
+        chomp;
         if (/\*/) {
             my $pattern = $_;
+            $pattern =~ s%\*%[^/]*%g;
             $pattern =~ s/\./\\./g;
-            $pattern =~ s/\*/.*/g;
-            push (@IGNORE, qr/\A$pattern\Z/);
+            push (@IGNORE, qr/$pattern/);
         } else {
-            $CVSIGNORE{$_}++;
+            $IGNORE{$_} = 1;
         }
     }
 }
@@ -60,7 +48,7 @@ sub find_files {
     return if $_ eq '.';
     my $name = $File::Find::name;
     $name =~ s%^./%%;
-    if ($CVSIGNORE{$name}) {
+    if ($IGNORE{$name}) {
         $File::Find::prune = 1;
         return;
     }
@@ -70,6 +58,233 @@ sub find_files {
     push (@FILES, $name);
 }
 
-find (\&find_cvsignore, '.');
+load_exclusions;
 find (\&find_files, '.');
 print join ("\n", (sort @FILES), '');
+
+__DATA__
+
+# The following additional files should be ignored.  The file names are
+# relative to the root of the tree.  Shell wildcards are supported.
+BOOTSTRAP
+CHANGES
+ChangeLog
+LIST.*
+Makefile.global
+autom4te.cache
+config.cache
+config.log
+config.status
+config.status.lineno
+configure.lineno
+inn-*
+libtool
+authprogs/auth_krb5
+authprogs/auth_smb
+authprogs/ckpasswd
+authprogs/domain
+authprogs/ident
+authprogs/radius
+backends/actmerge
+backends/actsync
+backends/actsyncd
+backends/archive
+backends/batcher
+backends/buffchan
+backends/cvtbatch
+backends/filechan
+backends/innbind
+backends/inndf
+backends/innxbatch
+backends/innxmit
+backends/mod-active
+backends/news2mail
+backends/ninpaths
+backends/nntpget
+backends/nntpsend
+backends/overchan
+backends/send-ihave
+backends/send-nntp
+backends/send-uucp
+backends/sendbatch
+backends/sendinpaths
+backends/sendxbatches
+backends/shlock
+backends/shrinkfile
+contrib/archivegz
+contrib/backlogstat
+contrib/backupfeed
+contrib/cleannewsgroups
+contrib/delayer
+contrib/findreadgroups
+contrib/makeexpctl
+contrib/makestorconf
+contrib/mlockfile
+contrib/newsresp
+contrib/pullart
+contrib/reset-cnfs
+contrib/respool
+contrib/showtoken
+contrib/stathist
+contrib/thdexpire
+contrib/tunefeed
+control/controlbatch
+control/controlchan
+control/docheckgroups
+control/gpgverify
+control/perl-nocem
+control/pgpverify
+control/signcontrol
+doc/man/index.db
+expire/convdate
+expire/expire
+expire/expireover
+expire/expirerm
+expire/fastrm
+expire/grephistory
+expire/makedbz
+expire/makehistory
+expire/prunehistory
+frontends/c7unbatch
+frontends/cnfsheadconf
+frontends/cnfsstat
+frontends/ctlinnd
+frontends/decode
+frontends/encode
+frontends/getlist
+frontends/gunbatch
+frontends/inews
+frontends/innconfval
+frontends/mailpost
+frontends/ovdb_init
+frontends/ovdb_monitor
+frontends/ovdb_server
+frontends/ovdb_stat
+frontends/pullnews
+frontends/rnews
+frontends/scanspool
+frontends/sm
+history/buildconfig
+include/config.h
+include/paths.h
+include/inn/system.h
+include/inn/version.h
+innd/innd
+innd/tinyleaf
+innfeed/imapfeed
+innfeed/innfeed
+innfeed/procbatch
+innfeed/version.c
+nnrpd/nnrpd
+samples/inn.conf
+samples/innreport.conf
+samples/newsfeeds
+samples/nnrpd_access.pl
+samples/nnrpd_access_wrapper.pl
+samples/nnrpd_auth.pl
+samples/nnrpd_auth_wrapper.pl
+samples/sasl.conf
+scripts/inncheck
+scripts/innmail
+scripts/innreport
+scripts/innshellvars
+scripts/innshellvars.pl
+scripts/innshellvars.tcl
+scripts/innstat
+scripts/innupgrade
+scripts/innwatch
+scripts/news.daily
+scripts/rc.news
+scripts/scanlogs
+scripts/simpleftp
+scripts/tally.control
+scripts/writelog
+site/INN.py
+site/active.minimal
+site/actsync.cfg
+site/actsync.ign
+site/buffindexed.conf
+site/config
+site/control.ctl
+site/cycbuff.conf
+site/distrib.pats
+site/expire.ctl
+site/filter.tcl
+site/filter_innd.pl
+site/filter_innd.py
+site/filter_nnrpd.pl
+site/incoming.conf
+site/inn.conf
+site/innfeed.conf
+site/innreport.conf
+site/innwatch.ctl
+site/moderators
+site/motd.news
+site/news2mail.cf
+site/newsfeeds
+site/newsgroups.minimal
+site/nnrpd.track
+site/nnrpd_access.pl
+site/nnrpd_auth.pl
+site/nnrpd_auth.py
+site/nntpsend.ctl
+site/ovdb.conf
+site/overview.fmt
+site/passwd.nntp
+site/radius.conf
+site/readers.conf
+site/sasl.conf
+site/startup.tcl
+site/startup_innd.pl
+site/storage.conf
+site/subscriptions
+site/update
+storage/buildconfig
+storage/buffindexed/buffindexed_d
+storage/tradindexed/tdx-util
+support/fixconfig
+support/fixscript
+tests/runtests
+tests/authprogs/ident.t
+tests/clients/server-list
+tests/innd/artparse.t
+tests/lib/buffer.t
+tests/lib/concat.t
+tests/lib/conffile.t
+tests/lib/confparse.t
+tests/lib/date.t
+tests/lib/dispatch.t
+tests/lib/getaddrinfo.t
+tests/lib/getnameinfo.t
+tests/lib/hash.t
+tests/lib/hashtab.t
+tests/lib/hex.t
+tests/lib/hstrerror.t
+tests/lib/inet_aton.t
+tests/lib/inet_ntoa.t
+tests/lib/innconf.t
+tests/lib/list.t
+tests/lib/md5.t
+tests/lib/memcmp.t
+tests/lib/messages.t
+tests/lib/mkstemp.t
+tests/lib/network.t
+tests/lib/pread.t
+tests/lib/pwrite.t
+tests/lib/qio.t
+tests/lib/setenv.tr
+tests/lib/snprintf.t
+tests/lib/strerror.t
+tests/lib/strlcat.t
+tests/lib/strlcpy.t
+tests/lib/tst.t
+tests/lib/uwildmat.t
+tests/lib/vector.t
+tests/lib/wire.t
+tests/lib/xmalloc
+tests/lib/xwrite.t
+tests/nnrpd/auth-ext.t
+tests/overview/api.t
+tests/overview/buffindexed.t
+tests/overview/tradindexed.t
+tests/util/innbind.t
