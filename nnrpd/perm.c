@@ -2014,7 +2014,9 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
         if (auth->auth_methods[i]->type == PERMperl_auth) {
 #ifdef DO_PERL
             int code;
-            char *script_path;
+            char *script_path, *cp;
+            char **args;
+            char newUser[BIG_BUFFER];
 
             cp = xstrdup(auth->auth_methods[i]->program);
             args = 0;
@@ -2050,7 +2052,9 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
         } else if (auth->auth_methods[i]->type == PERMpython_auth) {
 #ifdef DO_PYTHON
             int code;
-            char *script_path;
+            char *script_path, *cp;
+            char **args;
+            char newUser[BIG_BUFFER];
 
             cp = xstrdup(auth->auth_methods[i]->program);
             args = 0;
