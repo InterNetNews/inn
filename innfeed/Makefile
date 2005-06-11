@@ -32,7 +32,7 @@ install: all
 bootstrap: config_y.c config_y.h config_l.c
 
 clean:
-	rm -f *.o $(ALL) version.c innfeed-convcfg
+	rm -f *.o $(ALL) version.c
 	rm -f innfeedp
 	rm -rf .libs
 
@@ -72,10 +72,6 @@ imapfeed: $(OBJECTS) imap_connection.o $(LIBSTORAGE) $(LIBINN)
 
 procbatch: procbatch.in $(FIXSCRIPT)
 	$(FIXSCRIPT) procbatch.in
-
-# Not normally built.
-innfeed-convcfg: innfeed-convcfg.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i innfeed-convcfg.in
 
 tst: config_y.c config_l.c
 	gcc -DWANT_MAIN -o tst -g -Wall config_y.c config_l.c -ly -ll

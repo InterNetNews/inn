@@ -450,7 +450,6 @@ innfeed/endpoint.h                    Public interface to the EndPoint class
 innfeed/host.c                        Implementation of the Host class
 innfeed/host.h                        Public interface to the Host class
 innfeed/imap_connection.c             Implementation of IMAP Connection class
-innfeed/innfeed-convcfg.in            Script to convert old innfeed.conf
 innfeed/innfeed.h                     Application configuration values
 innfeed/innlistener.c                 Implementation of the InnListener class
 innfeed/innlistener.h                 Public interface of InnListener class
