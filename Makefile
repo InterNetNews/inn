@@ -213,7 +213,7 @@ snapshot:
 	    cp $$f $(SNAPDIR)/$$f ; \
 	done
 	cp README.snapshot $(SNAPDIR)/
-	sed 's/= CVS prerelease/= $(SNAPDATE) snapshot/' \
+	sed 's/= prerelease/= $(SNAPDATE) snapshot/' \
 	    Makefile.global.in > $(SNAPDIR)/Makefile.global.in
 	find $(SNAPDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(SNAPDIR).tar $(SNAPDIR)

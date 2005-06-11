@@ -6,16 +6,16 @@
 ##
 ##  For installation paths, see the bottom of this file.
 
-##  This version information is used to generate lib/version.c and is used
-##  by INN for banner and local version identification.	 The version
+##  This version information is used to generate include/inn/version.h and is
+##  used by INN for banner and local version identification.  The version
 ##  identification string will be "$VERSION ($VERSION_EXTRA)", with the
 ##  parentheses omitted if $VERSION_EXTRA is empty (as it is for major
 ##  releases).	If you make extensive local modifications to INN, you can
-##  put your own version information in $VERSION_EXTRA.	 If it's set to
-##  "CVS prerelease", the build time will be automatically included.
+##  put your own version information in $VERSION_EXTRA.  If it's set to
+##  "prerelease", the build time will be automatically included.
 
 VERSION		= 2.5.0
-VERSION_EXTRA	= CVS prerelease
+VERSION_EXTRA	= prerelease
 
 ##  If you want to install INN relative to a root directory other than /,
 ##  set DESTDIR to the path to the root directory of the file system.  This
