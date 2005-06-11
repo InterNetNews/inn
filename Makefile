@@ -212,6 +212,7 @@ snapshot:
 	set -e ; for f in `sed $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(SNAPDIR)/$$f ; \
 	done
+	cp README.snapshot $(SNAPDIR)/
 	sed 's/= CVS prerelease/= $(SNAPDATE) snapshot/' \
 	    Makefile.global.in > $(SNAPDIR)/Makefile.global.in
 	find $(SNAPDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`

@@ -79,6 +79,7 @@ config.status.lineno
 configure.lineno
 inn-*
 libtool
+snapshot.log
 authprogs/auth_krb5
 authprogs/auth_smb
 authprogs/ckpasswd
