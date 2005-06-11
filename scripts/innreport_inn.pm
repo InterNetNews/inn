@@ -750,7 +750,7 @@ sub collect {
     # ME source lost . Exiting
     return 1 if $left =~ m/(?:SERVER|ME) source lost . Exiting/o;
     # ME starting innfeed (+version & date)
-    return 1 if $left =~ m/(?:SERVER|ME) starting innfeed/o;
+    return 1 if $left =~ m/(?:SERVER|ME) starting (?:innfeed|at)/o;
     # ME finishing at (date)
     return 1 if $left =~ m/(?:SERVER|ME) finishing at /o;
     # mode no-CHECK entered

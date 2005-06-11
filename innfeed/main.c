@@ -27,6 +27,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/version.h"
 #include "libinn.h"
 #include "storage.h"
 
@@ -63,7 +64,6 @@ const char *deliver_rcpt_to   = "+%s";
 char *deliver_to_header = NULL;
 
 /* imports */
-extern char *versionInfo ;
 #if defined (sun)
 extern char *optarg ;           /* needed for Solaris */
 extern int optind;
@@ -249,7 +249,7 @@ int main (int argc, char **argv)
 
   if (seenV)
     {
-      warn ("%s version: %s\n",message_program_name, versionInfo) ;
+      printf ("%s version: %s\n", message_program_name, INN_VERSION_STRING);
       exit (0) ;
     }
 
@@ -289,7 +289,7 @@ int main (int argc, char **argv)
 
   if ( !checkConfig ) 
     {
-      notice ("ME starting %s at %s", versionInfo, dateString) ;
+      notice ("ME starting at %s (%s)", dateString, INN_VERSION_STRING);
     }
 
   val = true;
@@ -484,7 +484,7 @@ static void usage (int val)
 {
   fprintf (stderr,"usage: %s [ options ] [ file ]\n\n",
            message_program_name) ;
-  fprintf (stderr,"Version: %s\n\n",versionInfo) ;
+  fprintf (stderr,"Version: %s\n\n",INN_VERSION_STRING) ;
   fprintf (stderr,"Config file: %s\n",CONFIG_FILE) ;
   fprintf (stderr,"Backlog directory: %s/%s\n", innconf->pathspool, TAPE_DIRECTORY) ;
   fprintf (stderr,"\nLegal options are:\n") ;

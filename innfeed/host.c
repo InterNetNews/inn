@@ -25,6 +25,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/version.h"
 #include "libinn.h"
 
 #include "article.h"
@@ -2994,7 +2995,6 @@ convsize(double size, char **tsize)
 /*
  * Log the status of the Hosts.
  */
-extern char *versionInfo ;
 static void hostLogStatus (void)
 {
   FILE *fp = NULL ;
@@ -3061,8 +3061,8 @@ static void hostLogStatus (void)
 	  fprintf (fp, "<PRE>\n");
 	}
 
-      fprintf (fp,"%s\npid %d started %s\nUpdated: %s",
-               versionInfo,(int) myPid,startTime,timeString) ;
+      fprintf (fp,"innfeed from %s\npid %d started %s\nUpdated: %s",
+               INN_VERSION_STRING,(int) myPid,startTime,timeString) ;
       fprintf (fp,"(peers: %d active-cxns: %d sleeping-cxns: %d idle-cxns: %d)\n\n",
                peerNum, actConn, slpConn,(maxcon - (actConn + slpConn))) ;
 

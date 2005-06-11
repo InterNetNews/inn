@@ -17,7 +17,7 @@ INCLUDES      = article.h buffer.h configfile.h config_y.h connection.h \
 # The objects linked into innfeed.  All SOURCES except connection.o or
 # imap_connection.o
 OBJECTS	      = article.o buffer.o config_l.o config_y.o endpoint.o host.o \
-		innlistener.o main.o misc.o tape.o version.o
+		innlistener.o main.o misc.o tape.o
 
 all: $(ALL)
 
@@ -59,10 +59,6 @@ config_y.c config_y.h: configfile.y
 config_l.c: configfile.l
 	$(LEX) $?
 	mv lex.yy.c config_l.c
-
-version.c: Makefile ../Makefile.global
-	version=`echo '$(VERSION) ($(VERSION_EXTRA))' | sed 's/ ()//'` ; \
-	echo 'const char *versionInfo = "innfeed' "$$version\" ;" > $@
 
 imap_connection.o: imap_connection.c
 	$(CC) $(CFLAGS) $(SASL_CPPFLAGS) -c $<
