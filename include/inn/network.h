@@ -56,9 +56,15 @@ int network_connect(struct addrinfo *, const char *source);
 int network_connect_host(const char *host, unsigned short port,
                          const char *source);
 
-/* Like network_connect but takes a sockaddr and length instead. */
-int network_connect_sockaddr(const struct sockaddr *addr, socklen_t addrlen,
-                             const char *source);
+/* Creates a socket of the specified domain and type and binds it to the
+   appropriate source address, either the one supplied or the appropriate
+   innconf setting if the provided source address is NULL.  To bind to all
+   interfaces, use "all" for address.  Returns the newly created file
+   descriptor or -1 on error.
+
+   This is a lower-level function intended primarily for the use of clients
+   that will then go on to do a non-blocking connect. */
+int network_client_create(int domain, int type, const char *source);
 
 /* Kill IP options (like source routing) if possible.  Returns false only when
    IP options have been found but clearing them failed. */

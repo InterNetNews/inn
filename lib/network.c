@@ -459,31 +459,27 @@ network_connect_host(const char *host, unsigned short port,
 
 
 /*
-**  Like network_connect, but takes a sockaddr and length instead of an
-**  addrinfo struct list.  Returns the file descriptor of the open socket on
-**  success, or -1 on failure.  Tries to leave the reason for the failure in
-**  errno.
+**  Create a new socket of the specified domain and type and do the binding as
+**  if we were a regular client socket, but then return before connecting.
+**  Returns the file descriptor of the open socket on success, or -1 on
+**  failure.  Intended primarily for the use of clients that will then go on
+**  to do a non-blocking connect.
 */
 int
-network_connect_sockaddr(const struct sockaddr *addr, socklen_t addrlen,
-                         const char *source)
+network_client_create(int domain, int type, const char *source)
 {
     int fd, oerrno;
 
-    fd = socket(addr->sa_family, SOCK_STREAM, 0);
+    fd = socket(domain, type, 0);
     if (fd < 0)
         return -1;
-    if (!network_source(fd, addr->sa_family, source))
-        goto fail;
-    if (connect(fd, addr, addrlen) < 0)
-        goto fail;
+    if (!network_source(fd, domain, source)) {
+        oerrno = errno;
+        close(fd);
+        errno = oerrno;
+        return -1;
+    }
     return fd;
-
-fail:
-    oerrno = errno;
-    close(fd);
-    errno = oerrno;
-    return -1;
 }
 
 
