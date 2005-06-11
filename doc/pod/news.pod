@@ -83,6 +83,12 @@ consider that group to be moderated.
 
 =item *
 
+If strippath is set in readers.conf, the whole user-supplied Path header
+will now be stripped.  Previously, the final component of the
+user-supplied Path would still be retained.
+
+=item *
+
 The -g option to nnrpd is no longer supported.  If you are verifying
 passwords against the system password database, see the ckpasswd(8) man
 page, and in particular the -s option.  (A much better idea would be to

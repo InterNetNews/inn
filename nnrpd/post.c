@@ -394,28 +394,12 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     }
 
     /* Set Path */
-    if (HDR(HDR__PATH) == NULL) {
- 	if (ihave)
-	    return "Missing \"Path\" header";
+    if (HDR(HDR__PATH) == NULL && ihave)
+        return "Missing \"Path\" header";
+    if (HDR(HDR__PATH) == NULL || PERMaccessconf->strippath) {
 	/* Note that innd will put host name here for us. */
 	HDR_SET(HDR__PATH, (char *) PATHMASTER);
 	if (VirtualPathlen > 0)
-	    addvirtual = true;
-    } else if (PERMaccessconf->strippath) {
-	/* Here's where to do Path changes for new Posts. */
-	if ((p = strrchr(HDR(HDR__PATH), '!')) != NULL) {
-	    p++;
-	    if (*p == '\0') {
-		HDR_SET(HDR__PATH, (char *) PATHMASTER);
-		if (VirtualPathlen > 0)
-		    addvirtual = true;
-	    } else {
-		HDR_SET(HDR__PATH, p);
-		if ((VirtualPathlen > 0) &&
-		    strcmp(p, PERMaccessconf->pathhost) != 0)
-		    addvirtual = true;
-	    }
-	} else if (VirtualPathlen > 0)
 	    addvirtual = true;
     } else {
 	if ((VirtualPathlen > 0) &&
@@ -433,7 +417,6 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
         newpath = concat(VirtualPath, HDR(HDR__PATH), (char *) 0);
 	HDR_SET(HDR__PATH, newpath);
     }
-    
 
     /* Reply-To; left alone. */
     /* Sender; set above. */
