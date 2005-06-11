@@ -350,11 +350,13 @@ frontends/scanspool.in                Scan spool directory for trash
 frontends/sm.c                        Get article or overview data from token
 frontends/sys2nf.c                    Sys file to newsfeeds conversion aid
 history                               History library routines (Directory)
-history/Make.methods                  Makefile for history methods
+history/Make.methods                  Generated makefile for history methods
 history/Makefile                      Makefile for history library
 history/buildconfig.in                Construct history interface
 history/his.c                         History API glue implementation
 history/hisinterface.h                History API interface
+history/hismethods.c                  Generated table of history methods
+history/hismethods.h                  Generated interface to history methods
 history/hisv6                         History v6 method (Directory)
 history/hisv6/hismethod.config        hisbuildconfig definition
 history/hisv6/hisv6-private.h         Private header file for hisv6
@@ -651,7 +653,7 @@ site                                  Site-local files (Directory)
 site/Makefile                         Makefile for site-local files
 site/getsafe.sh                       Safely get config file from samples
 storage                               Storage library (Directory)
-storage/Make.methods                  Makefile for storage methods
+storage/Make.methods                  Generated makefile for storage methods
 storage/Makefile                      Makefile for storage library
 storage/buffindexed                   buffindexed overview method (Directory)
 storage/buffindexed/buffindexed.c     buffindexed overview routines
@@ -669,6 +671,8 @@ storage/cnfs/method.config            buildconfig definition
 storage/expire.c                      Overview-drive expire implementation
 storage/interface.c                   Storage API glue implementation
 storage/interface.h                   Storage API interface
+storage/methods.c                     Generated table of storage methods
+storage/methods.h                     Generated interface to storage methods
 storage/ov.c                          Overview API glue implementation
 storage/ovdb                          ovdb overview method (Directory)
 storage/ovdb/ovdb-private.h           Private header file for ovdb
@@ -678,6 +682,8 @@ storage/ovdb/ovmethod.config          buildconfig definition
 storage/overdata.c                    Overview data manipulation
 storage/overview.c                    Overview API glue implementation
 storage/ovinterface.h                 Overview API interface
+storage/ovmethods.c                   Generated table of overview methods
+storage/ovmethods.h                   Generated interface to overview methods
 storage/timecaf                       timecaf storage method (Directory)
 storage/timecaf/README.CAF            README the CAF file format
 storage/timecaf/caf.c                 CAF file implementation
