@@ -64,7 +64,9 @@
 # include <sys/ioctl.h>
 #endif
 
+#include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/network.h"
 #include "libinn.h"
 
 #include "article.h"
@@ -207,10 +209,6 @@ static Connection gCxnList = NULL ;
 static unsigned int gCxnCount = 0 ;
 static unsigned int max_reconnect_period = MAX_RECON_PER ;
 static unsigned int init_reconnect_period = INIT_RECON_PER ;
-static struct sockaddr_in *bind_addr = NULL;
-#ifdef HAVE_INET6
-static struct sockaddr_in6 *bind_addr6 = NULL;
-#endif
 #if 0
 static bool inited = false ;
 #endif
@@ -364,42 +362,11 @@ int cxnConfigLoadCbk (void *data UNUSED)
     iv = INIT_RECON_PER ;
   init_reconnect_period = (unsigned int) iv ;
 
-#ifdef HAVE_INET6
-  if (getString (topScope,"bindaddress6",&sv,NO_INHERIT))
-    {
-      struct addrinfo *res, hints;
-
-      memset( &hints, 0, sizeof( hints ) );
-      hints.ai_flags = AI_NUMERICHOST;
-      if( getaddrinfo( sv, NULL, &hints, &res ) )
-        {
-	  logOrPrint (LOG_ERR, fp, 
-                      "innfeed unable to determine IPv6 bind address") ;
-	}
-      else
-        {
-	  bind_addr6 = (struct sockaddr_in6 *) xmalloc (res->ai_addrlen);
-	  memcpy( bind_addr6, res->ai_addr, res->ai_addrlen );
-        }
-    }
-#endif
-
   if (getString (topScope,"bindaddress",&sv,NO_INHERIT))
-    {
-      struct in_addr addr ;
+    innconf->sourceaddress = sv;
 
-      if (!inet_aton(sv,&addr))
-        {
-	  logOrPrint (LOG_ERR, fp,
-                      "innfeed unable to determine IPv4 bind address") ;
-	}
-      else
-        {
-	  bind_addr = (struct sockaddr_in *) 
-		      xmalloc (sizeof(struct sockaddr_in));
-	  make_sin( (struct sockaddr_in *)bind_addr, &addr );
-        }
-    }
+  if (getString (topScope,"bindaddress6",&sv,NO_INHERIT))
+    innconf->sourceaddress6 = sv;
 
   return rval ;
 }
@@ -515,14 +482,9 @@ Connection newConnection (Host host,
  */
 bool cxnConnect (Connection cxn)
 {
-  struct sockaddr_storage cxnAddr, cxnSelf ;
-  struct sockaddr *retAddr;
-  int fd, rval ;
+  struct sockaddr *cxnAddr;
+  int fd, rval;
   const char *peerName = hostPeerName (cxn->myHost) ;
-  char msgbuf[100];
-#ifdef HAVE_INET6
-  char paddr[INET6_ADDRSTRLEN];
-#endif
 
   ASSERT (cxn->myEp == NULL) ;
 
@@ -545,28 +507,15 @@ bool cxnConnect (Connection cxn)
 
   cxn->state = cxnConnectingS ;
 
-  retAddr = hostIpAddr (cxn->myHost) ;
+  cxnAddr = hostIpAddr (cxn->myHost) ;
 
-  if (retAddr == NULL)
+  if (cxnAddr == NULL)
     {
       cxnSleepOrDie (cxn) ;
       return false ;
     }
 
-  memcpy( &cxnAddr, retAddr, SA_LEN(retAddr) );
-
-#ifdef HAVE_INET6
-  if( cxnAddr.ss_family == AF_INET6 )
-  {
-    ((struct sockaddr_in6 *)&cxnAddr)->sin6_port = htons(cxn->port) ;
-    fd = socket (PF_INET6, SOCK_STREAM, 0);
-  }
-  else
-#endif
-  {
-    ((struct sockaddr_in *)&cxnAddr)->sin_port = htons(cxn->port) ;
-    fd = socket (PF_INET, SOCK_STREAM, 0);
-  }
+  fd = network_client_create (cxnAddr->sa_family, SOCK_STREAM, NULL);
   if (fd < 0)
     {
       syswarn ("%s:%d cxnsleep can't create socket", peerName, cxn->ident) ;
@@ -577,61 +526,7 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
 
-#ifdef HAVE_INET6
-  /* bind to a specified IPv6 address */
-  if( (cxnAddr.ss_family == AF_INET6) && bind_addr6 )
-    {
-      memcpy( &cxnSelf, bind_addr6, sizeof(struct sockaddr_in6) );
-      if (bind (fd, (struct sockaddr *) &cxnSelf,
-		  sizeof(struct sockaddr_in6)) < 0)
-	{
-          snprintf(msgbuf, sizeof(msgbuf), "bind (%s): %%m",
-                   inet_ntop(AF_INET6, bind_addr6->sin6_addr.s6_addr,
-                             paddr, sizeof(paddr)) );
-
-	  syslog (LOG_ERR, msgbuf) ;
-
-	  cxnSleepOrDie (cxn) ;
-
-	  return false ;
-	}
-    }
-  else
-#endif
-  /* bind to a specified IPv4 address */
-#ifdef HAVE_INET6
-  if ( (cxnAddr.ss_family == AF_INET) && bind_addr )
-#else
-  if (bind_addr)
-#endif
-    {
-      memcpy( &cxnSelf, bind_addr, sizeof(struct sockaddr_in) );
-      if (bind (fd, (struct sockaddr *) &cxnSelf,
-		  sizeof(struct sockaddr_in) ) < 0)
-	{
-          snprintf(msgbuf, sizeof(msgbuf), "bind (%s): %%m",
-                   inet_ntoa(bind_addr->sin_addr));
-	  syslog (LOG_ERR, msgbuf) ;
-
-	  cxnSleepOrDie (cxn) ;
-
-	  return false ;
-	}
-    }
-
-  /* set our file descriptor to non-blocking */
-#if defined (O_NONBLOCK)
-  rval = fcntl (fd, F_GETFL, 0) ;
-  if (rval >= 0)
-    rval = fcntl (fd, F_SETFL, rval | O_NONBLOCK) ;
-#else
-  {
-    int state = 1 ;
-    rval = ioctl (fd, FIONBIO, (char *) &state) ;
-  }
-#endif
-
-  if (rval < 0)
+  if (nonblocking (fd, true) < 0)
     {
       syswarn ("%s:%d cxnsleep can't set socket non-blocking", peerName,
                cxn->ident) ;
@@ -642,8 +537,7 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
 
-  rval = connect (fd, (struct sockaddr *) &cxnAddr,
-		  SA_LEN((struct sockaddr *)&cxnAddr)) ;
+  rval = connect (fd, cxnAddr, SA_LEN(cxnAddr)) ;
   if (rval < 0 && errno != EINPROGRESS)
     {
       syswarn ("%s:%d connect", peerName, cxn->ident) ;
@@ -664,7 +558,6 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
   
-
   if (rval < 0)
     /* when the write callback gets done the connection went through */
     prepareWrite (cxn->myEp, NULL, NULL, connectionDone, cxn) ;

@@ -25,6 +25,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/network.h"
 #include "inn/version.h"
 #include "libinn.h"
 
@@ -1122,10 +1123,16 @@ struct sockaddr *hostIpAddr (Host host)
     {
       int gai_ret;
       struct addrinfo *res, *p;
+      struct addrinfo hints;
+      char port[20];
 
-      if(( gai_ret = getaddrinfo(host->params->ipName, NULL, NULL, &res)) != 0
-		      || res == NULL )
-
+      memset(&hints, 0, sizeof(hints));
+      hints.ai_family = NETWORK_AF_HINT;
+      hints.ai_socktype = SOCK_STREAM;
+      hints.ai_flags = AI_NUMERICSERV;
+      snprintf(port, sizeof(port), "%hu", host->params->portNum);
+      gai_ret = getaddrinfo(host->params->ipName, port, &hints, &res);
+      if (gai_ret != 0 || res == NULL)
 	{
           warn ("%s can't resolve hostname %s: %s", host->params->peerName,
 		host->params->ipName, gai_ret == 0 ? "no addresses returned"
