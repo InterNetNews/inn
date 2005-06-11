@@ -436,6 +436,8 @@ innfeed/article.h                     Public interface to Articles
 innfeed/buffer.c                      Implementation of the Buffer class
 innfeed/buffer.h                      Public interface to the Buffer class
 innfeed/config_l.c                    Lexer for the innfeed config file
+innfeed/config_y.c                    Parser for the innfeed config file
+innfeed/config_y.h                    Interface for the innfeed config file
 innfeed/configfile.h                  Header file for configfile.y
 innfeed/configfile.l                  Master file for config_l.c
 innfeed/configfile.y                  Parser for innfeed config file
