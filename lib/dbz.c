@@ -1257,7 +1257,7 @@ getcore(hash_table *tab)
 	    syswarn("dbz: getcore: fstat failed");
 	    return false;
 	}
-	if (length > st.st_size) {
+	if ((off_t) length > st.st_size) {
 	    /* file too small; extend it */
 	    if (ftruncate(tab->fd, length) == -1) {
 		syswarn("dbz: getcore: ftruncate failed");
