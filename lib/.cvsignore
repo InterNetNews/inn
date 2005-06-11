@@ -1,5 +1,0 @@
-.libs
-.pure
-parsedate.c
-*.la
-*.lo

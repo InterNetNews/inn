@@ -1,7 +1,0 @@
-.libs
-config_y.c
-config_y.h
-imapfeed
-innfeed
-procbatch
-version.c

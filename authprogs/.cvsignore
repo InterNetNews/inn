@@ -1,7 +1,0 @@
-.libs
-auth_krb5
-auth_smb
-ckpasswd
-domain
-ident
-radius

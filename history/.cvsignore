@@ -1,7 +1,0 @@
-.libs
-.pure
-buildconfig
-hismethods.c
-hismethods.h
-*.la
-*.lo
