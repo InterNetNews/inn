@@ -11,6 +11,7 @@
 #define INN_NETWORK_H 1
 
 #include <inn/defines.h>
+#include <sys/types.h>          /* socklen_t */
 
 /* Forward declarations to avoid unnecessary includes. */
 struct addrinfo;
@@ -54,6 +55,10 @@ int network_connect(struct addrinfo *, const char *source);
    fails, errno may not be set to anything useful. */
 int network_connect_host(const char *host, unsigned short port,
                          const char *source);
+
+/* Like network_connect but takes a sockaddr and length instead. */
+int network_connect_sockaddr(const struct sockaddr *addr, socklen_t addrlen,
+                             const char *source);
 
 /* Kill IP options (like source routing) if possible.  Returns false only when
    IP options have been found but clearing them failed. */

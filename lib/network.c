@@ -459,6 +459,35 @@ network_connect_host(const char *host, unsigned short port,
 
 
 /*
+**  Like network_connect, but takes a sockaddr and length instead of an
+**  addrinfo struct list.  Returns the file descriptor of the open socket on
+**  success, or -1 on failure.  Tries to leave the reason for the failure in
+**  errno.
+*/
+int
+network_connect_sockaddr(const struct sockaddr *addr, socklen_t addrlen,
+                         const char *source)
+{
+    int fd, oerrno;
+
+    fd = socket(addr->sa_family, SOCK_STREAM, 0);
+    if (fd < 0)
+        return -1;
+    if (!network_source(fd, addr->sa_family, source))
+        goto fail;
+    if (connect(fd, addr, addrlen) < 0)
+        goto fail;
+    return fd;
+
+fail:
+    oerrno = errno;
+    close(fd);
+    errno = oerrno;
+    return -1;
+}
+
+
+/*
 **  Strip IP options if possible (source routing and similar sorts of things)
 **  just out of paranoia.  This function currently only supports IPv4.  If
 **  anyone knows for sure whether this is necessary for IPv6 as well and knows

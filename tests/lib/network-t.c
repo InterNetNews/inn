@@ -188,21 +188,68 @@ test_all(int n, const char *source_ipv4, const char *source_ipv6)
     return n;
 }
 
+/* Bring up a server on port 11119 on the loopback address and test connecting
+   to it via IPv4 using network_connect_sockaddr.  Takes an optional source
+   address to use for client connections. */
+static int
+test_sockaddr_ipv4(int n, const char *source)
+{
+    int fd;
+    pid_t child;
+
+    fd = network_bind_ipv4("127.0.0.1", 11119);
+    if (fd < 0)
+        sysdie("cannot create or bind socket");
+    if (listen(fd, 1) < 0) {
+        syswarn("cannot listen to socket");
+        ok(n++, false);
+        ok(n++, false);
+        ok(n++, false);
+    } else {
+        ok(n++, true);
+        child = fork();
+        if (child < 0)
+            sysdie("cannot fork");
+        else if (child == 0) {
+            struct sockaddr_in sin;
+            FILE *out;
+
+            sin.sin_family = AF_INET;
+            sin.sin_port = htons(11119);
+            sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+            fd = network_connect_sockaddr((struct sockaddr *) &sin,
+                                          sizeof(sin), source);
+            if (fd < 0)
+                _exit(1);
+            out = fdopen(fd, "w");
+            if (out == NULL)
+                _exit(1);
+            fputs("socket test\r\n", out);
+            fclose(out);
+            _exit(0);
+        } else
+            n = listener(fd, n);
+    }
+    return n;
+}
+
 int
 main(void)
 {
     int n;
 
-    test_init(48);
+    test_init(60);
 
-    n = test_ipv4(1, NULL);        /* Tests  1-3.  */
-    n = test_ipv6(n, NULL);        /* Tests  4-6.  */
-    n = test_all(n, NULL, NULL);   /* Tests  7-12. */
+    n = test_ipv4(1, NULL);                     /* Tests  1-3.  */
+    n = test_ipv6(n, NULL);                     /* Tests  4-6.  */
+    n = test_all(n, NULL, NULL);                /* Tests  7-12. */
+    n = test_sockaddr_ipv4(n, NULL);            /* Tests 13-15. */
 
     /* This won't make a difference for loopback connections. */
-    n = test_ipv4(n, "127.0.0.1"); /* Tests 13-15. */
-    n = test_ipv6(n, "::1");       /* Tests 16-18. */
-    n = test_all(n, "127.0.0.1", "::1");  /* Tests 19-24. */
+    n = test_ipv4(n, "127.0.0.1");              /* Tests 16-18. */
+    n = test_ipv6(n, "::1");                    /* Tests 19-21. */
+    n = test_all(n, "127.0.0.1", "::1");        /* Tests 22-27. */
+    n = test_sockaddr_ipv4(n, "127.0.0.1");     /* Tests 28-30. */
 
     /* We need an initialized innconf struct, but it doesn't need to contain
        anything interesting. */
@@ -211,18 +258,20 @@ main(void)
     /* This should be equivalent to the previous tests. */
     innconf->sourceaddress = xstrdup("all");
     innconf->sourceaddress6 = xstrdup("all");
-    n = test_ipv4(n, NULL);        /* Tests 25-27. */
-    n = test_ipv6(n, NULL);        /* Tests 28-30. */
-    n = test_all(n, NULL, NULL);   /* Tests 31-36. */
+    n = test_ipv4(n, NULL);                     /* Tests 31-33. */
+    n = test_ipv6(n, NULL);                     /* Tests 34-36. */
+    n = test_all(n, NULL, NULL);                /* Tests 37-42. */
+    n = test_sockaddr_ipv4(n, NULL);            /* Tests 43-45. */
 
     /* This won't make a difference for loopback connections. */
     free(innconf->sourceaddress);
     free(innconf->sourceaddress6);
     innconf->sourceaddress = xstrdup("127.0.0.1");
     innconf->sourceaddress6 = xstrdup("::1");
-    n = test_ipv4(n, NULL);        /* Tests 37-39. */
-    n = test_ipv6(n, NULL);        /* Tests 40-42. */
-    n = test_all(n, NULL, NULL);   /* Tests 43-48. */
+    n = test_ipv4(n, NULL);                     /* Tests 46-48. */
+    n = test_ipv6(n, NULL);                     /* Tests 49-51. */
+    n = test_all(n, NULL, NULL);                /* Tests 52-57. */
+    n = test_sockaddr_ipv4(n, NULL);            /* Tests 58-60. */
 
     return 0;
 }
