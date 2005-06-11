@@ -1,3 +1,0 @@
-tls_ca_path:		@libdir@
-tls_cert_file:		@libdir@/cert.pem
-tls_key_file:		@libdir@/cert.pem
