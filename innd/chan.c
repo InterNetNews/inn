@@ -249,7 +249,7 @@ CHANtracing(CHANNEL *cp, bool flag)
     if (flag) {
         notice("%s trace badwrites %d blockwrites %d badreads %d", name,
                cp->BadWrites, cp->BlockedWrites, cp->BadReads);
-        network_sprint_sockaddr(addr, sizeof(addr),
+        network_sockaddr_sprint(addr, sizeof(addr),
                                 (struct sockaddr *) &cp->Address);
         notice("%s trace address %s lastactive %ld nextlog %ld", name,
                addr, (long) cp->LastActive, (long) cp->NextLog);

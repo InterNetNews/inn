@@ -399,7 +399,7 @@ StartConnection(void)
     } else {
 	/* figure out client's IP address/hostname */
 	HostErrorStr = default_host_error;
-        if (!network_sprint_sockaddr(Client.ip, sizeof(Client.ip), sac)) {
+        if (!network_sockaddr_sprint(Client.ip, sizeof(Client.ip), sac)) {
             notice("? cant get client numeric address: %s", HostErrorStr);
 	    ExitWithStats(1, true);
 	}
@@ -424,7 +424,7 @@ StartConnection(void)
 	}
 	HostErrorStr = default_host_error;
         size = sizeof(Client.serverip);
-        if (!network_sprint_sockaddr(Client.serverip, size, sas)) {
+        if (!network_sockaddr_sprint(Client.serverip, size, sas)) {
             notice("? cant get server numeric address: %s", HostErrorStr);
 	    ExitWithStats(1, true);
 	}

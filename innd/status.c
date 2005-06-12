@@ -155,7 +155,7 @@ STATUSsummary(void)
       status = xmalloc(sizeof(STATUS));
       peers++;                                              /* a new peer */
       strlcpy(status->name, TempString, sizeof(status->name));
-      network_sprint_sockaddr(status->ip_addr, sizeof(status->ip_addr),
+      network_sockaddr_sprint(status->ip_addr, sizeof(status->ip_addr),
                               (struct sockaddr *) &cp->Address);
       status->can_stream = cp->Streaming;
       status->seconds = status->Size = status->DuplicateSize = 0;

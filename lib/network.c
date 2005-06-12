@@ -314,7 +314,7 @@ network_bind_all(unsigned short port, int **fds, int *count)
     size = 2;
     *fds = xmalloc(size * sizeof(int));
     for (addr = addrs; addr != NULL; addr = addr->ai_next) {
-        network_sprint_sockaddr(name, sizeof(name), addr->ai_addr);
+        network_sockaddr_sprint(name, sizeof(name), addr->ai_addr);
         if (addr->ai_family == AF_INET)
             fd = network_bind_ipv4(name, port);
         else if (addr->ai_family == AF_INET6)
@@ -516,7 +516,7 @@ network_kill_options(int fd, struct sockaddr *remote)
         output = hex;
         for (opt = options; optsize > 0; opt++, optsize--, output += 3)
             snprintf(output, sizeof(hex) - (output - hex), " %2.2x", *opt);
-        network_sprint_sockaddr(addr, sizeof(addr), remote);
+        network_sockaddr_sprint(addr, sizeof(addr), remote);
         notice("connect from %s with IP options (ignored):%s", addr, hex);
         if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, NULL, 0) != 0) {
             syswarn("setsockopt IP_OPTIONS NULL failed");
@@ -542,7 +542,7 @@ network_kill_options(int fd UNUSED, struct sockaddr *remote UNUSED)
 **  failure.
 */
 bool
-network_sprint_sockaddr(char *dst, size_t size, const struct sockaddr *addr)
+network_sockaddr_sprint(char *dst, size_t size, const struct sockaddr *addr)
 {
     const char *result;
 

@@ -72,7 +72,7 @@ bool network_kill_options(int fd, struct sockaddr *remote);
 
 /* Put an ASCII representation of the address in a sockaddr into the provided
    buffer, which should hold at least INET6_ADDRSTRLEN characters. */
-bool network_sprint_sockaddr(char *, size_t, const struct sockaddr *);
+bool network_sockaddr_sprint(char *, size_t, const struct sockaddr *);
 
 /* Returns if the addresses from the two sockaddrs are equal.  The ports are
    ignored, and only AF_INET or AF_INET6 sockaddrs are supported (all others

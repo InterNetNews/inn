@@ -301,7 +301,7 @@ RCauthorized(CHANNEL *cp, char *pass)
     int	i;
     char addr[INET6_ADDRSTRLEN];
 
-    network_sprint_sockaddr(addr, sizeof(addr),
+    network_sockaddr_sprint(addr, sizeof(addr),
                             (struct sockaddr *) &cp->Address);
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address)) {
@@ -361,7 +361,7 @@ RCrejectreader(CHANNEL *cp)
 {
     char addr[INET6_ADDRSTRLEN];
 
-    network_sprint_sockaddr(addr, sizeof(addr),
+    network_sockaddr_sprint(addr, sizeof(addr),
                             (struct sockaddr *) &cp->Address);
     warn("%s internal RCrejectreader (%s)", LogName, addr);
 }
@@ -633,7 +633,7 @@ RCreader(CHANNEL *cp)
 
     if (new != NULL) {
 	memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
-        network_sprint_sockaddr(addr, sizeof(addr),
+        network_sockaddr_sprint(addr, sizeof(addr),
                                 (struct sockaddr *) &remote);
         notice("%s connected %d streaming %s", name ? name : addr, new->fd,
                (!StreamingOff && new->Streaming) ? "allowed" : "not allowed");
@@ -1613,7 +1613,7 @@ RChostname(const CHANNEL *cp)
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address))
 	    return rp->Name;
-    network_sprint_sockaddr(buff, sizeof(buff),
+    network_sockaddr_sprint(buff, sizeof(buff),
                             (struct sockaddr *) &cp->Address);
     return buff;
 }

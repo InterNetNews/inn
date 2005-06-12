@@ -281,7 +281,7 @@ main(void)
     n = test_all(n, NULL, NULL);                /* Tests 52-57. */
     n = test_create_ipv4(n, NULL);              /* Tests 58-60. */
 
-    /* Now, test network_sprint_sockaddr, network_sockaddr_equal, and
+    /* Now, test network_sockaddr_sprint, network_sockaddr_equal, and
        network_sockaddr_port.  Tests 61-66. */
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_NUMERICHOST;
@@ -289,7 +289,7 @@ main(void)
     status = getaddrinfo("127.0.0.1", port, &hints, &ai4);
     if (status != 0)
         die("getaddrinfo on 127.0.0.1 failed: %s", gai_strerror(status));
-    ok(n++, network_sprint_sockaddr(addr, sizeof(addr), ai4->ai_addr));
+    ok(n++, network_sockaddr_sprint(addr, sizeof(addr), ai4->ai_addr));
     ok_string(n++, "127.0.0.1", addr);
     ok_int(n++, 119, network_sockaddr_port(ai4->ai_addr));
     ok(n++, network_sockaddr_equal(ai4->ai_addr, ai4->ai_addr));
@@ -304,7 +304,7 @@ main(void)
     status = getaddrinfo(ipv6_addr, port, &hints, &ai6);
     if (status != 0)
         sysdie("getaddr on %s failed", ipv6_addr);
-    ok(n++, network_sprint_sockaddr(addr, sizeof(addr), ai6->ai_addr));
+    ok(n++, network_sockaddr_sprint(addr, sizeof(addr), ai6->ai_addr));
     for (p = addr; *p != '\0'; p++)
         if (islower((unsigned char) *p))
             *p = toupper((unsigned char) *p);
@@ -318,7 +318,7 @@ main(void)
     status = getaddrinfo("::ffff:7f00:1", NULL, &hints, &ai6);
     if (status != 0)
         sysdie("getaddr on ::ffff:7f00:1 failed");
-    ok(n++, network_sprint_sockaddr(addr, sizeof(addr), ai6->ai_addr));
+    ok(n++, network_sockaddr_sprint(addr, sizeof(addr), ai6->ai_addr));
     ok_string(n++, "127.0.0.1", addr);
     ok(n++, network_sockaddr_equal(ai4->ai_addr, ai6->ai_addr));
     ok(n++, network_sockaddr_equal(ai6->ai_addr, ai4->ai_addr));
