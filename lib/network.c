@@ -289,7 +289,7 @@ network_bind_all(unsigned short port, int **fds, int *count)
 {
     struct addrinfo hints, *addrs, *addr;
     int error, fd, size;
-    char service[16], name[128];
+    char service[16], name[INET6_ADDRSTRLEN];
 
     *count = 0;
 
@@ -310,7 +310,7 @@ network_bind_all(unsigned short port, int **fds, int *count)
     size = 2;
     *fds = xmalloc(size * sizeof(int));
     for (addr = addrs; addr != NULL; addr = addr->ai_next) {
-        strlcpy(name, sprint_sockaddr(addr->ai_addr), sizeof(name));
+        network_sprint_sockaddr(name, sizeof(name), addr->ai_addr);
         if (addr->ai_family == AF_INET)
             fd = network_bind_ipv4(name, port);
         else if (addr->ai_family == AF_INET6)
@@ -499,6 +499,7 @@ network_kill_options(int fd, struct sockaddr *remote)
 {
     int status;
     char options[BUFSIZ / 3];
+    char addr[INET6_ADDRSTRLEN];
     socklen_t optsize = sizeof(options);
 
     if (remote->sa_family != AF_INET)
@@ -511,8 +512,8 @@ network_kill_options(int fd, struct sockaddr *remote)
         output = hex;
         for (opt = options; optsize > 0; opt++, optsize--, output += 3)
             snprintf(output, sizeof(hex) - (output - hex), " %2.2x", *opt);
-        notice("connect from %s with IP options (ignored):%s",
-               sprint_sockaddr(remote), hex);
+        network_sprint_sockaddr(addr, sizeof(addr), remote);
+        notice("connect from %s with IP options (ignored):%s", addr, hex);
         if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, NULL, 0) != 0) {
             syswarn("setsockopt IP_OPTIONS NULL failed");
             return false;
@@ -566,4 +567,49 @@ network_sprint_sockaddr(char *dst, size_t size, const struct sockaddr *addr)
         errno = EAFNOSUPPORT;
         return false;
     }
+}
+
+
+/*
+**  Compare the addresses from two sockaddrs and see whether they're equal.
+**  IPv4 addresses that have been mapped to IPv6 addresses compare equal to
+**  the corresponding IPv4 address.
+*/
+bool
+network_sockaddr_equal(const struct sockaddr *a, const struct sockaddr *b)
+{
+    const struct sockaddr *tmp;
+    const struct sockaddr_in *a4 = (const struct sockaddr_in *) a;
+    const struct sockaddr_in *b4 = (const struct sockaddr_in *) b;
+
+#ifdef HAVE_INET6
+    const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *) a;
+    const struct sockaddr_in6 *b6 = (const struct sockaddr_in6 *) b;
+
+    if (a->sa_family == AF_INET && b->sa_family == AF_INET6) {
+        tmp = a;
+        a = b;
+        b = tmp;
+        a6 = (const struct sockaddr_in6 *) a;
+        b4 = (const struct sockaddr_in *) b;
+    }
+    if (a->sa_family == AF_INET6) {
+        if (b->sa_family == AF_INET6)
+            return IN6_ARE_ADDR_EQUAL(&a6->sin6_addr, &b6->sin6_addr);
+        else if (b->sa_family != AF_INET)
+            return false;
+        else if (!IN6_IS_ADDR_V4MAPPED(&a6->sin6_addr))
+            return false;
+        else {
+            struct in_addr in;
+
+            memcpy(&in, a6->sin6_addr.s6_addr + 12, sizeof(in));
+            return (in.s_addr == b4->sin_addr.s_addr);
+        }
+    }
+#endif
+
+    if (a->sa_family != AF_INET || b->sa_family != AF_INET)
+        return false;
+    return (a4->sin_addr.s_addr == b4->sin_addr.s_addr);
 }

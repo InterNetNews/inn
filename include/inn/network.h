@@ -74,6 +74,11 @@ bool network_kill_options(int fd, struct sockaddr *remote);
    buffer, which should hold at least INET6_ADDRSTRLEN characters. */
 bool network_sprint_sockaddr(char *, size_t, const struct sockaddr *);
 
+/* Returns if the addresses from the two sockaddrs are equal.  The ports are
+   ignored, and only AF_INET or AF_INET6 sockaddrs are supported (all others
+   will return false). */
+bool network_sockaddr_equal(const struct sockaddr *, const struct sockaddr *);
+
 END_DECLS
 
 #endif /* INN_NETWORK_H */
