@@ -10,14 +10,15 @@
 **      #include <sys/socket.h>
 **
 **  but also cleans up various messes, mostly related to IPv6 support.  It
-**  ensures that inet_aton and inet_ntoa are available and properly
-**  prototyped.
+**  ensures that inet_aton, inet_ntoa, and inet_ntop are available and
+**  properly prototyped.
 */
 
 #ifndef PORTABLE_SOCKET_H
 #define PORTABLE_SOCKET_H 1
 
 #include "config.h"
+#include <errno.h>
 #include <sys/types.h>
 
 /* BSDI needs <netinet/in.h> before <arpa/inet.h>. */
@@ -41,6 +42,9 @@ extern int              inet_aton(const char *, struct in_addr *);
 #endif
 #if !HAVE_DECL_INET_NTOA
 extern const char *     inet_ntoa(const struct in_addr);
+#endif
+#if !HAVE_INET_NTOP
+extern const char *     inet_ntop(int, const void *, char *, socklen_t);
 #endif
 
 /* Some systems don't define INADDR_LOOPBACK. */
@@ -137,6 +141,12 @@ extern const char *hstrerror(int);
 #endif
 #ifndef INET6_ADDRSTRLEN
 # define INET6_ADDRSTRLEN 46
+#endif
+
+/* This is one of the defined error codes from inet_ntop, but it may not be
+   available on systems too old to have that function. */
+#ifndef EAFNOSUPPORT
+# define EAFNOSUPPORT EDOM
 #endif
 
 END_DECLS

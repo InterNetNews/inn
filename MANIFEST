@@ -489,8 +489,9 @@ lib/hash.c                            Create hash from message ID
 lib/hashtab.c                         Generic hash table
 lib/hex.c                             Convert to and from hex strings
 lib/hstrerror.c                       Error reporting for resolver
-lib/inet_aton.c                       Extra source for inet_aton routine
-lib/inet_ntoa.c                       Convert inaddr to string (BSD)
+lib/inet_aton.c                       inet_aton replacement
+lib/inet_ntoa.c                       inet_ntoa replacement
+lib/inet_ntop.c                       inet_ntop replacement
 lib/innconf.c                         Parsing and manipulation of inn.conf
 lib/inndcomm.c                        Library routines to talk to innd
 lib/list.c                            List routines

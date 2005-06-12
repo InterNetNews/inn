@@ -16,6 +16,7 @@ lib/hashtab
 lib/hex
 lib/inet_aton
 lib/inet_ntoa
+lib/inet_ntop
 lib/innconf
 lib/list
 lib/md5
