@@ -13,8 +13,8 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		list.c localopen.c lockfile.c makedir.c md5.c messages.c \
 		mmap.c network.c nntp.c qio.c radix32.c readin.c remopen.c \
 		reservedfd.c resource.c sendarticle.c sendpass.c sequence.c \
-		sockaddr.c timer.c tst.c uwildmat.c vector.c wire.c \
-		xfopena.c xmalloc.c xsignal.c xwrite.c
+		timer.c tst.c uwildmat.c vector.c wire.c xfopena.c \
+		xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
 EXTRA_SOURCES = alloca.c fseeko.c ftello.c getaddrinfo.c getnameinfo.c \
@@ -228,10 +228,6 @@ sendpass.o: sendpass.c ../include/config.h ../include/inn/defines.h \
 sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/inn/sequence.h
-sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/libinn.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/portable/time.h ../include/inn/messages.h \

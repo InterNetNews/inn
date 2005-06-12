@@ -190,8 +190,6 @@ extern FILE *   xfopena(const char *p);
 extern bool     fdreserve(int fdnum);
 extern FILE *   Fopen(const char *p, const char *type, int fd);
 extern int      Fclose(FILE *fp);
-extern char *	sprint_sockaddr(const struct sockaddr *sa);
-extern void	make_sin(struct sockaddr_in *s, const struct in_addr *src);
 
 END_DECLS
 
