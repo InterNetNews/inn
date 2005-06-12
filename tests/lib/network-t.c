@@ -4,6 +4,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
+#include <ctype.h>
 #include <errno.h>
 
 #include "inn/innconf.h"
@@ -237,9 +238,14 @@ test_create_ipv4(int n, const char *source)
 int
 main(void)
 {
-    int n;
+    int n, status;
+    struct addrinfo *ai;
+    struct addrinfo hints;
+    char addr[INET6_ADDRSTRLEN];
+    char *p;
+    static const char *ipv6_addr = "FEDC:BA98:7654:3210:FEDC:BA98:7654:3210";
 
-    test_init(60);
+    test_init(64);
 
     n = test_ipv4(1, NULL);                     /* Tests  1-3.  */
     n = test_ipv6(n, NULL);                     /* Tests  4-6.  */
@@ -273,6 +279,29 @@ main(void)
     n = test_ipv6(n, NULL);                     /* Tests 49-51. */
     n = test_all(n, NULL, NULL);                /* Tests 52-57. */
     n = test_create_ipv4(n, NULL);              /* Tests 58-60. */
+
+    /* Now, test network_sprint_sockaddr. */
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_flags = AI_NUMERICHOST;
+    status = getaddrinfo("127.0.0.1", NULL, &hints, &ai);
+    if (status != 0)
+        sysdie("getaddrinfo on 127.0.0.1 failed");
+    ok(n++, network_sprint_sockaddr(addr, sizeof(addr), ai->ai_addr));
+    ok_string(n++, "127.0.0.1", addr);
+
+    /* The same for IPv6. */
+#ifdef HAVE_INET6
+    status = getaddrinfo(ipv6_addr, NULL, &hints, &ai);
+    if (status != 0)
+        sysdie("getaddr on %s failed", ipv6_addr);
+    ok(n++, network_sprint_sockaddr(addr, sizeof(addr), ai->ai_addr));
+    for (p = addr; *p != '\0'; p++)
+        if (islower((unsigned char) *p))
+            *p = toupper((unsigned char) *p);
+    ok_string(n++, ipv6_addr, addr);
+#else
+    skip_block(n, 2, "IPv6 not supported");
+#endif
 
     return 0;
 }

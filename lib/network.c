@@ -527,3 +527,37 @@ network_kill_options(int fd UNUSED, struct sockaddr *remote UNUSED)
     return true;
 }
 #endif
+
+
+/*
+**  Print an ASCII representation of the address of the given sockaddr into
+**  the provided buffer.  This buffer must hold at least INET_ADDRSTRLEN
+**  characters for IPv4 addresses and INET6_ADDRSTRLEN characters for IPv6, so
+**  generally it should always be as large as the latter.  Returns success or
+**  failure.
+*/
+bool
+network_sprint_sockaddr(char *dst, size_t size, const struct sockaddr *addr)
+{
+    const char *result;
+
+#ifdef HAVE_INET6
+    if (addr->sa_family == AF_INET6) {
+        const struct sockaddr_in6 *sin6;
+
+        sin6 = (const struct sockaddr_in6 *) addr;
+        result = inet_ntop(AF_INET6, &sin6->sin6_addr, dst, size);
+        return (result != NULL);
+    }
+#endif
+    if (addr->sa_family == AF_INET) {
+        const struct sockaddr_in *sin;
+
+        sin = (const struct sockaddr_in *) addr;
+        result = inet_ntop(AF_INET, &sin->sin_addr, dst, size);
+        return (result != NULL);
+    } else {
+        errno = EAFNOSUPPORT;
+        return false;
+    }
+}

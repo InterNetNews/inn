@@ -70,6 +70,10 @@ int network_client_create(int domain, int type, const char *source);
    IP options have been found but clearing them failed. */
 bool network_kill_options(int fd, struct sockaddr *remote);
 
+/* Put an ASCII representation of the address in a sockaddr into the provided
+   buffer, which should hold at least INET6_ADDRSTRLEN characters. */
+bool network_sprint_sockaddr(char *, size_t, const struct sockaddr *);
+
 END_DECLS
 
 #endif /* INN_NETWORK_H */
