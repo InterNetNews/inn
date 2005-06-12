@@ -5,6 +5,10 @@
 **  This is a collection of utility functions for network connections and
 **  socket creation, encapsulating some of the complexities of IPv4 and IPv6
 **  support and abstracting operations common to most network code.
+**
+**  All of the portability difficulties with supporting IPv4 and IPv6 are
+**  encapsulated in the combination of this code and innbind.  No other INN
+**  code should have to care whether IPv6 is supported or not.
 */
 
 #include "config.h"
@@ -612,4 +616,29 @@ network_sockaddr_equal(const struct sockaddr *a, const struct sockaddr *b)
     if (a->sa_family != AF_INET || b->sa_family != AF_INET)
         return false;
     return (a4->sin_addr.s_addr == b4->sin_addr.s_addr);
+}
+
+
+/*
+**  Returns the port of a sockaddr or 0 on error.
+*/
+unsigned short
+network_sockaddr_port(const struct sockaddr *sa)
+{
+    const struct sockaddr_in *sin;
+
+#ifdef HAVE_INET6
+    const struct sockaddr_in6 *sin6;
+
+    if (sa->sa_family == AF_INET6) {
+        sin6 = (const struct sockaddr_in6 *) sa;
+        return htons(sin6->sin6_port);
+    }
+#endif
+    if (sa->sa_family != AF_INET)
+        return 0;
+    else {
+        sin = (const struct sockaddr_in *) sa;
+        return htons(sin->sin_port);
+    }
 }

@@ -79,6 +79,9 @@ bool network_sprint_sockaddr(char *, size_t, const struct sockaddr *);
    will return false). */
 bool network_sockaddr_equal(const struct sockaddr *, const struct sockaddr *);
 
+/* Returns the port number from a sockaddr. */
+unsigned short network_sockaddr_port(const struct sockaddr *);
+
 END_DECLS
 
 #endif /* INN_NETWORK_H */
