@@ -546,7 +546,13 @@ network_sprint_sockaddr(char *dst, size_t size, const struct sockaddr *addr)
         const struct sockaddr_in6 *sin6;
 
         sin6 = (const struct sockaddr_in6 *) addr;
-        result = inet_ntop(AF_INET6, &sin6->sin6_addr, dst, size);
+        if (IN6_IS_ADDR_V4MAPPED(&sin6->sin6_addr)) {
+            struct in_addr in;
+
+            memcpy(&in, sin6->sin6_addr.s6_addr + 12, sizeof(in));
+            result = inet_ntop(AF_INET, &in, dst, size);
+        } else
+            result = inet_ntop(AF_INET6, &sin6->sin6_addr, dst, size);
         return (result != NULL);
     }
 #endif

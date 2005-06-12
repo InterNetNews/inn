@@ -245,7 +245,7 @@ main(void)
     char *p;
     static const char *ipv6_addr = "FEDC:BA98:7654:3210:FEDC:BA98:7654:3210";
 
-    test_init(64);
+    test_init(66);
 
     n = test_ipv4(1, NULL);                     /* Tests  1-3.  */
     n = test_ipv6(n, NULL);                     /* Tests  4-6.  */
@@ -288,6 +288,7 @@ main(void)
         sysdie("getaddrinfo on 127.0.0.1 failed");
     ok(n++, network_sprint_sockaddr(addr, sizeof(addr), ai->ai_addr));
     ok_string(n++, "127.0.0.1", addr);
+    freeaddrinfo(ai);
 
     /* The same for IPv6. */
 #ifdef HAVE_INET6
@@ -299,8 +300,17 @@ main(void)
         if (islower((unsigned char) *p))
             *p = toupper((unsigned char) *p);
     ok_string(n++, ipv6_addr, addr);
+    freeaddrinfo(ai);
+
+    /* Test IPv4 mapped addresses. */
+    status = getaddrinfo("::ffff:7f00:1", NULL, &hints, &ai);
+    if (status != 0)
+        sysdie("getaddr on ::ffff:7f00:1 failed");
+    ok(n++, network_sprint_sockaddr(addr, sizeof(addr), ai->ai_addr));
+    ok_string(n++, "127.0.0.1", addr);
+    freeaddrinfo(ai);
 #else
-    skip_block(n, 2, "IPv6 not supported");
+    skip_block(n, 4, "IPv6 not supported");
 #endif
 
     return 0;
