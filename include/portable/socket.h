@@ -77,6 +77,13 @@ struct sockaddr_storage {
 # define ss_len    __ss_len
 #endif
 
+/* Fix IN6_ARE_ADDR_EQUAL if required. */
+#ifdef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
+# undef IN6_ARE_ADDR_EQUAL
+# define IN6_ARE_ADDR_EQUAL(a, b) \
+    (memcmp((a), (b), sizeof(struct in6_addr)) == 0)
+#endif
+
 /* Define an SA_LEN macro that gives us the length of a sockaddr. */
 #if !HAVE_SA_LEN
 # if HAVE_STRUCT_SOCKADDR_SA_LEN
