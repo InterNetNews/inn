@@ -808,6 +808,7 @@ tests/data/upgrade/newsfeeds.ok       Fixed newsfeeds file
 tests/data/upgrade/sasl.conf          Obsolete sasl.conf config file
 tests/innd                            Test suite for innd (Directory)
 tests/innd/artparse-t.c               Tests for ARTparse in innd
+tests/innd/chan-t.c                   Tests for CHAN functions in innd
 tests/innd/fakeinnd.c                 Provide symbols defined by innd/innd.c
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/buffer-t.c                  Tests for lib/buffer.c

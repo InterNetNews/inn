@@ -588,7 +588,7 @@ RCreader(CHANNEL *cp)
             new->HoldTime = rp->HoldTime;
 	    memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
 	    if (new->MaxCnx > 0 && new->HoldTime == 0) {
-		CHANsetActiveCnx(new);
+		CHANcount_active(new);
 		if((new->ActiveCnx > new->MaxCnx) && (new->fd > 0)) {
 		    snprintf(buff, sizeof(buff),
                              "You are limited to %d connection%s",

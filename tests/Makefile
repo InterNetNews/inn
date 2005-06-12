@@ -10,15 +10,15 @@ CFLAGS	= $(GCFLAGS) -I.
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= authprogs/ident.t innd/artparse.t lib/buffer.t lib/concat.t \
-	lib/conffile.t lib/confparse.t lib/date.t lib/dispatch.t \
-	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t lib/hashtab.t \
-	lib/hex.t lib/hstrerror.t lib/inet_aton.t lib/inet_ntoa.t \
-	lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t lib/memcmp.t \
-	lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t lib/pwrite.t \
-	lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t lib/strlcpy.t \
-	lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t lib/xwrite.t \
-	nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
+TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/buffer.t \
+	lib/concat.t lib/conffile.t lib/confparse.t lib/date.t \
+	lib/dispatch.t lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
+	lib/hashtab.t lib/hex.t lib/hstrerror.t lib/inet_aton.t \
+	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
+	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t \
+	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t \
+	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
+	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
 	overview/tradindexed.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
@@ -71,6 +71,9 @@ authprogs/ident.t: authprogs/ident-t.o libtest.o $(LIBINN)
 innd/artparse.t: innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS)
 	$(LINK) innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS) \
 	    $(INNDLIBS)
+
+innd/chan.t: innd/chan-t.o innd/fakeinnd.o libtest.o $(INNOBJS)
+	$(LINK) innd/chan-t.o innd/fakeinnd.o libtest.o $(INNOBJS) $(INNDLIBS)
 
 lib/buffer.t: lib/buffer-t.o libtest.o $(LIBINN)
 	$(LINK) lib/buffer-t.o libtest.o $(LIBINN)

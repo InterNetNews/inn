@@ -20,7 +20,7 @@
 */
 typedef struct _NCDISPATCH {
     const char *        Name;
-    innd_callback_t     Function;
+    innd_callback_func  Function;
     int                 Size;
 } NCDISPATCH;
 

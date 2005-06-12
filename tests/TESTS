@@ -3,6 +3,7 @@ authprogs/domain
 authprogs/ident
 clients/getlist
 innd/artparse
+innd/chan
 lib/buffer
 lib/concat
 lib/conffile

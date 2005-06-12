@@ -1,7 +1,7 @@
 /*  $Id$
 **
-**  Many of the data types used here have abbreviations, such as CT
-**  for CHANNELTYPE.  Here are a list of the conventions and meanings:
+**  Many of the data types used here have abbreviations, such as CT for a
+**  channel type.  Here are a list of the conventions and meanings:
 **
 **    ART   A news article
 **    CHAN  An I/O channel
@@ -228,47 +228,45 @@ typedef struct _ARTDATA {
   bool            Hassamepath;          /* Whether this article matches Path */
 } ARTDATA;
 
-/*
-**  Set of channel types.
-*/
-typedef enum _CHANNELTYPE {
-  CTany,
-  CTfree,
-  CTremconn,
-  CTreject,
-  CTnntp,
-  CTlocalconn,
-  CTcontrol,
-  CTfile,
-  CTexploder,
-  CTprocess
-} CHANNELTYPE;
 
+/* Set of channel types. */
+enum channel_type {
+    CTany,
+    CTfree,
+    CTremconn,
+    CTreject,
+    CTnntp,
+    CTlocalconn,
+    CTcontrol,
+    CTfile,
+    CTexploder,
+    CTprocess
+};
 
-/*
-**  The state a channel is in.  Interpretation of this depends on the
-**  channel's type.  Used mostly by CTnntp channels.
-*/
-typedef enum _CHANNELSTATE {
-  CSerror,
-  CSwaiting,
-  CSgetcmd,
-  CSgetauth,
-  CSwritegoodbye,
-  CSwriting,
-  CSpaused,
-  CSgetheader,
-  CSgetbody,
-  CSgotarticle,
-  CSgotlargearticle,
-  CSnoarticle,
-  CSeatarticle,
-  CSeatcommand,
-  CSgetxbatch,
-  CScancel
-} CHANNELSTATE;
+/* The state a channel is in.  Interpretation of this depends on the channel's
+   type.  Used mostly by CTnntp channels. */
+enum channel_state {
+    CSerror,
+    CSwaiting,
+    CSgetcmd,
+    CSgetauth,
+    CSwritegoodbye,
+    CSwriting,
+    CSpaused,
+    CSgetheader,
+    CSgetbody,
+    CSgotarticle,
+    CSgotlargearticle,
+    CSnoarticle,
+    CSeatarticle,
+    CSeatcommand,
+    CSgetxbatch,
+    CScancel
+};
+
 
 #define SAVE_AMT	10	/* used for eating article/command */
+#define PRECOMMITCACHESIZE 128
 
 /*
 **  I/O channel, the heart of the program.  A channel has input and output
@@ -276,13 +274,12 @@ typedef enum _CHANNELSTATE {
 **  all the output was been written.  Many callback functions take a
 **  pointer to a channel, so set up a typedef for that.
 */
-#define PRECOMMITCACHESIZE 128
 struct _CHANNEL;
-typedef void (*innd_callback_t)(struct _CHANNEL *);
+typedef void (*innd_callback_func)(struct _CHANNEL *);
 
 typedef struct _CHANNEL {
-  CHANNELTYPE	       Type;
-  CHANNELSTATE	       State;
+  enum channel_type    Type;
+  enum channel_state   State;
   int		       fd;
   bool		       Skip;
   bool		       Streaming;
@@ -323,11 +320,11 @@ typedef struct _CHANNEL {
   time_t	       LastActive;
   time_t	       NextLog;
   struct sockaddr_storage Address;
-  innd_callback_t      Reader;
-  innd_callback_t      WriteDone;
+  innd_callback_func   Reader;
+  innd_callback_func   WriteDone;
   time_t	       Waketime;
   time_t	       Started;
-  innd_callback_t      Waker;
+  innd_callback_func   Waker;
   void		    *  Argument;
   void		    *  Event;
   struct buffer	       In;
@@ -351,7 +348,7 @@ typedef struct _CHANNEL {
 					   it indicates offset from bp->Data */
   char		       Error[SMBUF];	/* error buffer */
   ARTDATA	       Data;		/* used for processing article */
-  struct _CHANNEL      *nextcp;		/* linked list for each incoming site */
+  char                 Name[SMBUF];     /* storage for CHANname */
 } CHANNEL;
 
 #define	DEFAULTNGBOXSIZE	64
@@ -635,26 +632,26 @@ extern void		ARTprepare(CHANNEL *cp);
 extern void		ARTparse(CHANNEL *cp);
 
 extern bool		CHANsleeping(CHANNEL *cp);
-extern CHANNEL      *	CHANcreate(int fd, CHANNELTYPE Type,
-				   CHANNELSTATE State,
-				   innd_callback_t Reader,
-				   innd_callback_t WriteDone);
-extern CHANNEL      *	CHANiter(int *cp, CHANNELTYPE Type);
+extern CHANNEL      *	CHANcreate(int fd, enum channel_type Type,
+				   enum channel_state State,
+				   innd_callback_func Reader,
+				   innd_callback_func WriteDone);
+extern CHANNEL      *	CHANiter(int *cp, enum channel_type Type);
 extern CHANNEL      *	CHANfromdescriptor(int fd);
-extern char	    *   CHANname(const CHANNEL *cp);
+extern char	    *   CHANname(CHANNEL *cp);
 extern int		CHANreadtext(CHANNEL *cp);
 extern void		CHANclose(CHANNEL *cp, const char *name);
 extern void		CHANreadloop(void);
 extern void		CHANsetup(int i);
 extern void		CHANshutdown(void);
 extern void		CHANtracing(CHANNEL *cp, bool Flag);
-extern void		CHANsetActiveCnx(CHANNEL *cp);
+extern void		CHANcount_active(CHANNEL *cp);
 
 extern void		RCHANadd(CHANNEL *cp);
 extern void		RCHANremove(CHANNEL *cp);
 
 extern void		SCHANadd(CHANNEL *cp, time_t Waketime, void *Event,
-				 innd_callback_t Waker, void *Argument);
+				 innd_callback_func Waker, void *Argument);
 extern void		SCHANremove(CHANNEL *cp);
 extern void		SCHANwakeup(void *Event);
 

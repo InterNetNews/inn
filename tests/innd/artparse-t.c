@@ -111,7 +111,7 @@ ok_article(int n, const char *path, const char *error, bool slow, bool shift)
     size_t i, len, wirelen, offset;
     struct stat st;
     bool okay = true;
-    CHANNELSTATE expected;
+    enum channel_state expected;
 
     article = ReadInFile(path, &st);
     len = st.st_size;
