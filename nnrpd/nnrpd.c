@@ -326,150 +326,50 @@ CMD_unimp(ac, av)
 
 
 /*
-**  Convert an IP address to a hostname.  Don't trust the reverse lookup,
-**  since anyone can fake .in-addr.arpa entries.
+**  Convert an address to a hostname.  Don't trust the reverse lookup since
+**  since anyone can fake reverse DNS entries.
 */
 static bool
-Address2Name(struct in_addr *ap, char *hostname, int i)
+Address2Name(struct sockaddr *sa, char *hostname, size_t size)
 {
-    char		*p;
-    struct hostent	*hp;
-    static char		mismatch_error[] = "reverse lookup validation failed";
-    char		**pp;
-
-    /* Get the official hostname, store it away. */
-    if ((hp = gethostbyaddr((char *)ap, sizeof *ap, AF_INET)) == NULL) {
-	HostErrorStr = hstrerror(h_errno);
-	return false;
-    }
-    strlcpy(hostname, hp->h_name, i);
-
-    /* Get addresses for this host. */
-    if ((hp = gethostbyname(hostname)) == NULL) {
-	HostErrorStr = hstrerror(h_errno);
-	return false;
-    }
-
-    /* Make sure one of those addresses is the address we got. */
-    for (pp = hp->h_addr_list; *pp; pp++)
-	if (strncmp((const char *)&ap->s_addr, *pp, hp->h_length) == 0)
-	    break;
-    if (*pp == NULL)
-    {
-	HostErrorStr = mismatch_error;
-	return false;
-    }
-
-    /* Only needed for misconfigured YP/NIS systems. */
-    if (ap->s_addr != INADDR_LOOPBACK && strchr(hostname, '.') == NULL
-     && (p = innconf->domain) != NULL) {
-	strlcat(hostname, ".", i);
-	strlcat(hostname, p, i);
-    }
-
-    /* Make all lowercase, for wildmat. */
-    for (p = hostname; *p; p++)
-	if (CTYPE(isupper, (int)*p))
-	    *p = tolower(*p);
-    return true;
-}
-
-/*
-**  Convert an IPv6 address to a hostname.  Don't trust the reverse lookup,
-**  since anyone can fake .ip6.arpa entries.
-*/
-#ifdef HAVE_INET6
-static bool
-Address2Name6(struct sockaddr *sa, char *hostname, int i)
-{
-    static char		mismatch_error[] = "reverse lookup validation failed";
+    static const char MISMATCH[] = "reverse lookup validation failed";
+    struct addrinfo hints, *ai, *host;
     int ret;
-    bool valid = 0;
-    struct addrinfo hints, *res, *res0;
+    bool valid = false;
 
     /* Get the official hostname, store it away. */
-    ret = getnameinfo( sa, SA_LEN( sa ), hostname, i, NULL, 0, NI_NAMEREQD );
-    if( ret != 0 )
-    {
-	HostErrorStr = gai_strerror( ret );
+    ret = getnameinfo(sa, SA_LEN(sa), hostname, size, NULL, 0, NI_NAMEREQD);
+    if (ret != 0) {
+	HostErrorStr = gai_strerror(ret);
 	return false;
     }
 
     /* Get addresses for this host. */
-    memset( &hints, 0, sizeof( hints ) );
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = NETWORK_AF_HINT;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_family = AF_INET6;
-    if( ( ret = getaddrinfo( hostname, NULL, &hints, &res0 ) ) != 0 )
-    {
-	HostErrorStr = gai_strerror( ret );
+    ret = getaddrinfo(hostname, NULL, &hints, &ai);
+    if (ret != 0) {
+	HostErrorStr = gai_strerror(ret);
 	return false;
     }
 
     /* Make sure one of those addresses is the address we got. */
-    for( res = res0; res; res = res->ai_next )
-    {
-#ifdef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
-	if( ! memcmp( &(((struct sockaddr_in6 *)sa)->sin6_addr),
-		    &(((struct sockaddr_in6 *)(res->ai_addr))->sin6_addr),
-		    sizeof( struct in6_addr ) ) )
-#else
-	if( IN6_ARE_ADDR_EQUAL( &(((struct sockaddr_in6 *)sa)->sin6_addr),
-		    &(((struct sockaddr_in6 *)(res->ai_addr))->sin6_addr) ) )
-#endif
-	{
-	    valid = 1;
-	    break;
-	}
-    }
+    for (host = ai; host != NULL; host = host->ai_next)
+        if (network_sockaddr_equal(sa, host->ai_addr)) {
+            valid = true;
+            break;
+        }
+    freeaddrinfo(ai);
 
-    freeaddrinfo( res0 );
-
-    if( valid ) return true;
-    else
-    {
-	HostErrorStr = mismatch_error;
+    if (valid)
+        return true;
+    else {
+	HostErrorStr = MISMATCH;
 	return false;
     }
 }
-#endif
 
-
-static bool
-Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
-{
-    struct sockaddr_in *sin4 = (struct sockaddr_in *)sa;
-
-#ifdef HAVE_INET6
-    struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)sa;
-    struct sockaddr_in temp;
-
-    if( sa->sa_family == AF_INET6 )
-    {
-	if( ! IN6_IS_ADDR_V4MAPPED(&sin6->sin6_addr) )
-	{
-	    if( lookup )
-	    {
-		return Address2Name6(sa, string, len);
-	    } else {
-		strlcpy( string, sprint_sockaddr( sa ), len );
-		return true;
-	    }
-	} else {
-	    temp.sin_family = AF_INET;
-	    memcpy( &temp.sin_addr, sin6->sin6_addr.s6_addr + 12, 4 );
-	    temp.sin_port = sin6->sin6_port;
-	    sin4 = &temp;
-	    /* fall through to AF_INET case */
-	}
-    }
-#endif
-    if( lookup ) {
-	return Address2Name(&sin4->sin_addr, string, len);
-    } else {
-	strlcpy( string, inet_ntoa(sin4->sin_addr), len );
-	return true;
-    }
-}
 
 /*
 **  Determine access rights of the client.
@@ -477,50 +377,37 @@ Sock2String( struct sockaddr *sa, char *string, int len, bool lookup )
 static void
 StartConnection(void)
 {
-    struct sockaddr_storage	ssc, sss;
-    socklen_t		length;
-    const char		*default_host_error = "unknown error";
+    static const char *default_host_error = "unknown error";
+    struct sockaddr_storage ssc, sss;
+    struct sockaddr *sac = (struct sockaddr *) &ssc;
+    struct sockaddr *sas = (struct sockaddr *) &sss;
+    socklen_t length;
+    size_t size;
 
     memset(&Client, 0, sizeof(Client));
     strlcpy(Client.host, "?", sizeof(Client.host));
 
     /* Get the peer's name. */
-    length = sizeof ssc;
-    if (getpeername(STDIN_FILENO, (struct sockaddr *)&ssc, &length) < 0) {
+    length = sizeof(ssc);
+    if (getpeername(STDIN_FILENO, sac, &length) < 0) {
         if (!isatty(STDIN_FILENO)) {
-	    syslog(L_TRACE, "%s cant getpeername %m", "?");
+	    sysnotice("? cant getpeername");
 	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
 	    ExitWithStats(1, true);
 	}
         strlcpy(Client.host, "stdin", sizeof(Client.host));
-    }
-
-    else {
-#ifdef HAVE_INET6
-	if ( ssc.ss_family != AF_INET && ssc.ss_family != AF_INET6) {
-#else
-	if ( ssc.ss_family != AF_INET ) {
-#endif
-	    syslog(L_ERROR, "%s bad_address_family %ld",
-		"?", (long)ssc.ss_family);
-	    Printf("%d Bad address family.  Goodbye.\r\n", NNTP_ACCESS_VAL);
-	    ExitWithStats(1, true);
-	}
-
+    } else {
 	/* figure out client's IP address/hostname */
 	HostErrorStr = default_host_error;
-	if (!Sock2String((struct sockaddr *) &ssc, Client.ip,
-                         sizeof(Client.ip), false)) {
-            syslog(L_NOTICE, "? cant get client numeric address: %s", HostErrorStr);
+        if (!network_sprint_sockaddr(Client.ip, sizeof(Client.ip), sac)) {
+            notice("? cant get client numeric address: %s", HostErrorStr);
 	    ExitWithStats(1, true);
 	}
 	if (GetHostByAddr) {
-	    HostErrorStr = default_host_error;
-	    if (!Sock2String((struct sockaddr *) &ssc, Client.host,
-                             sizeof(Client.host), true)) {
-                syslog(L_NOTICE,
-                       "? reverse lookup for %s failed: %s -- using IP address for access",
-                       Client.ip, HostErrorStr);
+            HostErrorStr = default_host_error;
+            if (!Address2Name(sac, Client.host, sizeof(Client.host))) {
+                notice("? reverse lookup for %s failed: %s -- using IP"
+                       " address for access", Client.ip, HostErrorStr);
 	        strlcpy(Client.host, Client.ip, sizeof(Client.host));
 	    }
 	} else {
@@ -528,25 +415,25 @@ StartConnection(void)
         }
 
 	/* Figure out server's IP address/hostname. */
-	length = sizeof sss;
-	if (getsockname(STDIN_FILENO, (struct sockaddr *)&sss, &length) < 0) {
-	    syslog(L_NOTICE, "%s can't getsockname %m", Client.host);
-	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n", NNTP_ACCESS_VAL);
+        length = sizeof(sss);
+	if (getsockname(STDIN_FILENO, sas, &length) < 0) {
+	    sysnotice("%s can't getsockname", Client.host);
+	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n",
+                   NNTP_ACCESS_VAL);
 	    ExitWithStats(1, true);
 	}
 	HostErrorStr = default_host_error;
-	if (!Sock2String((struct sockaddr *) &sss, Client.serverip,
-                         sizeof(Client.serverip), false)) {
-            syslog(L_NOTICE, "? cant get server numeric address: %s", HostErrorStr);
+        size = sizeof(Client.serverip);
+        if (!network_sprint_sockaddr(Client.serverip, size, sas)) {
+            notice("? cant get server numeric address: %s", HostErrorStr);
 	    ExitWithStats(1, true);
 	}
 	if (GetHostByAddr) {
 	    HostErrorStr = default_host_error;
-	    if (!Sock2String((struct sockaddr *) &sss, Client.serverhost,
-                             sizeof(Client.serverhost), true)) {
-                syslog(L_NOTICE,
-                       "? reverse lookup for %s failed: %s -- using IP address for access",
-                       Client.serverip, HostErrorStr);
+            size = sizeof(Client.serverhost);
+            if (!Address2Name(sas, Client.serverhost, size)) {
+                notice("? reverse lookup for %s failed: %s -- using IP"
+                       " address for access", Client.serverip, HostErrorStr);
 	        strlcpy(Client.serverhost, Client.serverip,
                         sizeof(Client.serverhost));
 	    }
@@ -555,25 +442,12 @@ StartConnection(void)
                     sizeof(Client.serverhost));
         }
 
-	/* get port numbers */
-	switch( ssc.ss_family ) {
-	    case AF_INET:
-		Client.port = ntohs(((struct sockaddr_in *) &ssc)->sin_port);
-		Client.serverport
-                    = ntohs(((struct sockaddr_in *) &sss)->sin_port);
-		break;
-#ifdef HAVE_INET6
-	    case AF_INET6:
-		Client.port
-                    = ntohs(((struct sockaddr_in6 *) &ssc)->sin6_port);
-		Client.serverport
-                    = ntohs(((struct sockaddr_in6 *)&sss)->sin6_port);
-		break;
-#endif
-	}
+	/* Get port numbers. */
+        Client.port = network_sockaddr_port(sac);
+        Client.serverport = network_sockaddr_port(sas);
     }
 
-    syslog(L_NOTICE, "%s (%s) connect", Client.host, Client.ip);
+    notice("%s (%s) connect", Client.host, Client.ip);
 
     PERMgetaccess(NNRPACCESS);
     PERMgetpermissions();
