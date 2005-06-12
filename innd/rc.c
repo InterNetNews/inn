@@ -297,21 +297,23 @@ RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage 
 bool
 RCauthorized(CHANNEL *cp, char *pass)
 {
-    REMOTEHOST	*rp;
-    int		i;
+    REMOTEHOST *rp;
+    int	i;
+    char addr[INET6_ADDRSTRLEN];
 
+    network_sprint_sockaddr(addr, sizeof(addr),
+                            (struct sockaddr *) &cp->Address);
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address)) {
 	    if (rp->Password[0] == '\0' || strcmp(pass, rp->Password) == 0)
 		return true;
-	    syslog(L_ERROR, "%s (%s) bad_auth", rp->Label,
-		   sprint_sockaddr((struct sockaddr *)&cp->Address));
+            warn("%s (%s) bad_auth", rp->Label, addr);
 	    return false;
 	}
 
+    /* Not found in our table; this can't happen. */
     if (!AnyIncoming)
-	/* Not found in our table; this can't happen. */
-	syslog(L_ERROR, "%s not_found", sprint_sockaddr((struct sockaddr *)&cp->Address));
+        warn("%s not_found", addr);
 
     /* Anonymous hosts should not authenticate. */
     return false;
@@ -357,8 +359,11 @@ RClimit(CHANNEL *cp)
 static void
 RCrejectreader(CHANNEL *cp)
 {
-    syslog(L_ERROR, "%s internal RCrejectreader (%s)", LogName,
-	   sprint_sockaddr((struct sockaddr *)&cp->Address));
+    char addr[INET6_ADDRSTRLEN];
+
+    network_sprint_sockaddr(addr, sizeof(addr),
+                            (struct sockaddr *) &cp->Address);
+    warn("%s internal RCrejectreader (%s)", LogName, addr);
 }
 
 
@@ -449,6 +454,7 @@ RCreader(CHANNEL *cp)
     time_t		now;
     CHANNEL		tempchan;
     char		buff[SMBUF];
+    char                addr[INET6_ADDRSTRLEN];
 
     for (i = 0 ; i < chanlimit ; i++) {
 	if (RCchan[i] == cp) {
@@ -627,9 +633,10 @@ RCreader(CHANNEL *cp)
 
     if (new != NULL) {
 	memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
-	syslog(L_NOTICE, "%s connected %d streaming %s",
-           name ? name : sprint_sockaddr((struct sockaddr *)&new->Address),
-	   new->fd, (!StreamingOff && new->Streaming) ? "allowed" : "not allowed");
+        network_sprint_sockaddr(addr, sizeof(addr),
+                                (struct sockaddr *) &remote);
+        notice("%s connected %d streaming %s", name ? name : addr, new->fd,
+               (!StreamingOff && new->Streaming) ? "allowed" : "not allowed");
     }
 }
 
@@ -638,9 +645,8 @@ RCreader(CHANNEL *cp)
 **  Write-done function.  Shouldn't happen.
 */
 static void
-RCwritedone(CHANNEL *unused)
+RCwritedone(CHANNEL *unused UNUSED)
 {
-    unused = unused;		/* ARGSUSED */
     syslog(L_ERROR, "%s internal RCwritedone", LogName);
 }
 
@@ -764,9 +770,6 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     char 		*p;
     char 		**q;
     char 		**r;
-#ifndef HAVE_UNIX_DOMAIN_SOCKETS
-    struct in_addr      addr;
-#endif
     int                 i;
     int                 j;
     int			linecount;
@@ -781,6 +784,10 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     REMOTEHOST		peer_params;
     REMOTEHOST		default_params;
     bool		flag, bit, toolong;
+#ifndef HAVE_UNIX_DOMAIN_SOCKETS
+    struct addrinfo     hints, *ai;
+    int                 ret;
+#endif
  
     *RCbuff = '\0';
     if (*list) {
@@ -819,8 +826,14 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp = *list = xmalloc(sizeof(REMOTEHOST));
 
 #if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
-    addr.s_addr = INADDR_LOOPBACK;
-    make_sin( (struct sockaddr_in *)&rp->Address, &addr );
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_flags = AI_NUMERIC_HOST;
+    ret = getaddrinfo("127.0.0.1", NULL, &hints, &ai);
+    if (ret != 0)
+        die("%s cant getaddrinfo 127.0.0.1: %s", gai_strerror(ret));
+    memcpy(&rp->Address, ai->ai_addr, ai->ai_addrlen);
+    freeaddrinfo(ai);
     rp->Name = xstrdup("localhost");
     rp->Label = xstrdup("localhost");
     rp->Email = xstrdup(NOEMAIL);
@@ -1593,15 +1606,15 @@ RCreadlist(void)
 char *
 RChostname(const CHANNEL *cp)
 {
-    static char	buff[SMBUF];
+    static char	buff[INET6_ADDRSTRLEN];
     REMOTEHOST	*rp;
     int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
 	if (RCaddressmatch(&cp->Address, &rp->Address))
 	    return rp->Name;
-    strlcpy(buff, sprint_sockaddr((const struct sockaddr *)&cp->Address),
-            sizeof(buff));
+    network_sprint_sockaddr(buff, sizeof(buff),
+                            (struct sockaddr *) &cp->Address);
     return buff;
 }
 

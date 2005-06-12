@@ -6,6 +6,7 @@
 #include "clibrary.h"
 #include "portable/socket.h"
 
+#include "inn/network.h"
 #include "inn/innconf.h"
 #include "inn/version.h"
 #include "innd.h"
@@ -21,7 +22,7 @@
 
 typedef struct _STATUS {
     char		name[SMBUF];
-    char		ip_addr[64];
+    char		ip_addr[INET6_ADDRSTRLEN];
     bool		can_stream;
     unsigned short	activeCxn;
     unsigned short	sleepingCxns;
@@ -154,9 +155,8 @@ STATUSsummary(void)
       status = xmalloc(sizeof(STATUS));
       peers++;                                              /* a new peer */
       strlcpy(status->name, TempString, sizeof(status->name));
-      strlcpy(status->ip_addr,
-              sprint_sockaddr((struct sockaddr *)&cp->Address),
-              sizeof(status->ip_addr));
+      network_sprint_sockaddr(status->ip_addr, sizeof(status->ip_addr),
+                              (struct sockaddr *) &cp->Address);
       status->can_stream = cp->Streaming;
       status->seconds = status->Size = status->DuplicateSize = 0;
       status->RejectSize = 0;
