@@ -1,0 +1,4 @@
+example.test1:1	Test article #2	user@example.com	Sat, 06 Mar 2004 21:39:54 -0800	<example-2@example.com>				Xref: news.example.com example.test1:1
+example.test1:5,example.test2:1,example.test3:3	Test article	user@example.com	Sat, 06 Mar 2004 21:39:44 -0800	<example-1@example.com>				Xref: news.example.com example.test1:5   example.test2:1 example.test3:3
+example.test1:4,example.test3:2	Test article #3 with a | | tab	user@example.com	Sat, 06 Mar 2004 21:40:54 -0800	<example-3@example.com>				Xref: news.example.com blah example:test1:2 example.test1:4  example.test2:-1 example.test3:2 example.test3  example.test2:1roger  example.test2:
+example.test1:3	This is an aggressively obnoxious article for   testing    overview	I Am User <user@example.com>	Tue, 18 May 2004 01:43:21 -0700	<example-4@example.com>	<example-1@example.com> <example-2@example.com>			Xref: news.example.com : example.test1:3 :3

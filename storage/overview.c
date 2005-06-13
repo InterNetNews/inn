@@ -15,11 +15,13 @@
 #include "config.h"
 #include "clibrary.h"
 #include <assert.h>
+#include <errno.h>
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/overview.h"
+#include "inn/vector.h"
 #include "libinn.h"
 #include "ov.h"
 #include "ovinterface.h"
@@ -31,6 +33,7 @@ struct overview {
     int mode;
     bool cutoff;
     struct buffer *overdata;
+    struct cvector *groups;
     struct overview_method *method;
     void *private;
 };
@@ -79,6 +82,7 @@ overview_open(int mode)
     overview->mode = mode;
     overview->cutoff = false;
     overview->overdata = NULL;
+    overview->groups = NULL;
     overview->method = &ov_methods[i];
     overview->private = NULL;
     return overview;
@@ -170,6 +174,44 @@ overview_add(struct overview *overview, const char *group,
                                  overview->overdata->data,
                                  overview->overdata->left,
                                  data->arrived, data->expires);
+}
+
+
+/*
+**  Add overview data for an article using the provided Xref information (sans
+**  the leading hostname) to determine which groups and article numbers.  The
+**  data will be added to each.  Return true only if the overview was
+**  successfully stored in every group.  Don't make a big fuss over invalid
+**  Xref entries; just silently skip over them.
+**
+**  I hate having to support this API, but both makehistory and overchan need
+**  it, so there's no point in making both of them implement it separately.
+*/
+bool
+overview_add_xref(struct overview *overview, const char *xref,
+                  struct overview_data *data)
+{
+    char *xref_copy;
+    const char *group;
+    char *p, *end;
+    size_t i;
+    bool success = true;
+
+    xref_copy = xstrdup(xref);
+    overview->groups = cvector_split_space(xref_copy, overview->groups);
+    for (i = 0; i < overview->groups->count; i++) {
+        group = overview->groups->strings[i];
+        p = (char *) strchr(group, ':');
+        if (p == NULL || p == group || p[1] == '-')
+            continue;
+        *p = '\0';
+        errno = 0;
+        data->number = strtoul(p + 1, &end, 10);
+        if (data->number == 0 || *end != '\0' || errno == ERANGE)
+            continue;
+        success = success && overview_add(overview, group, data);
+    }
+    return success;
 }
 
 

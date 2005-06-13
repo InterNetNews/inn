@@ -124,6 +124,14 @@ bool overview_group_delete(struct overview *, const char *);
    number combination at which the article is stored. */
 bool overview_add(struct overview *, const char *, struct overview_data *);
 
+/* Add data for an article, using the provided Xref information (without the
+   leading hostname) to determine which groups and article numbers.  The data
+   will be added to each group and article number combination listed.  Returns
+   true only if the overview was successfully stored in every group.  There is
+   no way to tell which group failed. */
+bool overview_add_xref(struct overview *, const char *xref,
+                       struct overview_data *);
+
 /* Used to retrieve overview data.  Even when just retrieving a single record,
    a caller must call overview_search_open and then overview_search.  The data
    returned by overview_search may be invalidated by the next call to that

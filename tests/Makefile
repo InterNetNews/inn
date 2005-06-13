@@ -19,7 +19,7 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/buffer.t \
 	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
-	overview/tradindexed.t util/innbind.t
+	overview/tradindexed.t overview/xref.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -256,6 +256,9 @@ overview/tradindexed-t.o: overview/overview-t.c
 
 overview/tradindexed.t: overview/tradindexed-t.o libtest.o $(STORAGEDEPS)
 	$(LINK) overview/tradindexed-t.o libtest.o $(STORAGELIBS) $(LIBS)
+
+overview/xref.t: overview/xref-t.o libtest.o $(STORAGEDEPS)
+	$(LINK) overview/xref-t.o libtest.o $(STORAGELIBS) $(LIBS)
 
 util/innbind.t: util/innbind-t.o libtest.o $(LIBINN)
 	$(LINK) util/innbind-t.o libtest.o $(LIBINN) $(LIBS)

@@ -800,6 +800,7 @@ tests/data/overview/bogus             Bad newsgroup name test data
 tests/data/overview/high-numbered     High-numbered article test data
 tests/data/overview/munge-data        Support script to generate test data
 tests/data/overview/reversed          Same as basic, but in reverse order
+tests/data/overview/xref              Storing on Xref test data
 tests/data/upgrade                    innupgrade test files (Directory)
 tests/data/upgrade/inn.conf           inn.conf file that needs fixing
 tests/data/upgrade/inn.conf.ok        Fixed inn.conf file
@@ -858,6 +859,7 @@ tests/nnrpd/auth-test                 Helper program for external auth tests
 tests/overview                        Test suite for overview (Directory)
 tests/overview/api-t.c                Basic tests for overview API
 tests/overview/overview-t.c           Basic tests for overview methods
+tests/overview/xref-t.c               Test storing overview data by Xref
 tests/runtests.c                      The test suite driver program
 tests/storage                         Test suite for storage (Directory)
 tests/storage/archive.t               Tests for backends/archive

@@ -43,6 +43,7 @@ nnrpd/auth-ext
 overview/api
 overview/buffindexed
 overview/tradindexed
+overview/xref
 storage/archive
 storage/makehistory
 storage/sm
