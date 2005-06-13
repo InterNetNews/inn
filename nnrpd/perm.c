@@ -11,6 +11,7 @@
 #include <signal.h>
 
 #include "conffile.h"
+#include "inn/network.h"
 #include "inn/innconf.h"
 #include "innperl.h"
 #include "nnrpd.h"
@@ -1745,98 +1746,40 @@ CompressList(char *list)
 static bool
 MatchHost(char *hostlist, char *host, char *ip)
 {
-    char    **list;
-    bool    ret	= false;
-    char    *cp;
-    int	    iter;
-    char    *pat, 
-	    *p;
+    int i;
+    char *cp, *pat, *mask;
+    char **list = NULL;
+    bool match = false;
 
-    /*	If no hostlist are specified, by default they match.   */
+    /* If no hostlist are specified, by default they match. */
+    if (hostlist == NULL)
+        return true;
 
-    if (hostlist == NULL) {
-	return(true);
-    }
-
-    list    = 0;
-    cp	    = xstrdup(hostlist);
-
+    cp = xstrdup(hostlist);
     NGgetlist(&list, cp);
 
-    /* default is no access */
-    for (iter = 0; list[iter]; iter++) {
-	;
-    }
-
-    while (iter-- > 0) {
-	pat = list[iter];
-	if (*pat == '!')
-	    pat++;
-	ret = uwildmat(host, pat);
-	if (!ret && *ip) {
-	    ret = uwildmat(ip, pat);
-	    if (!ret && (p = strchr(pat, '/')) != (char *)NULL) {
-		unsigned int bits, c;
-		struct in_addr ia, net, tmp;
-#ifdef HAVE_INET6
-		struct in6_addr ia6, net6;
-		unsigned char bits8;
-#endif
-		unsigned int mask;
-
-		*p = '\0';
-                if (inet_aton(ip, &ia) && inet_aton(pat, &net)) {
-		    if (strchr(p+1, '.') == (char *)NULL) {
-			/* string following / is a masklength */
-			mask = atoi(p+1);
-			for (bits = c = 0; c < mask && c < 32; c++)
-			    bits |= (1 << (31 - c));
-			mask = htonl(bits);
-		    } else {	/* or it may be a dotted quad bitmask */
-                        if (inet_aton(p+1, &tmp))
-                            mask = tmp.s_addr;
-                        else	/* otherwise skip it */
-                            continue;
-		    }
-		    if ((ia.s_addr & mask) == (net.s_addr & mask))
-			ret = true;
-		}
-#ifdef HAVE_INET6
-                else if (inet_pton(AF_INET6, ip, &ia6) && 
-			 inet_pton(AF_INET6, pat, &net6)) {
-		    mask = atoi(p+1);
-		    ret = true;
-		    /* do a prefix match byte by byte */
-		    for (c = 0; c*8 < mask && c < sizeof(ia6); c++) {
-			if ( (c+1)*8 <= mask &&
-			    ia6.s6_addr[c] != net6.s6_addr[c] ) {
-			    ret = false;
-			    break;
-			} else if ( (c+1)*8 > mask ) {
-                            unsigned int b;
-
-			    for (bits8 = b = 0; b < (mask % 8); b++)
-				bits8 |= (1 << (7 - b));
-			    if ((ia6.s6_addr[c] & bits8) !=
-			    	(net6.s6_addr[c] & bits8) ) {
-				ret = false;
-				break;
-			    }
-			}
-		    }
-		}
-#endif
-	    }
+    /* Start searching from the end of the list.  The default is no access. */
+    for (i = 0; list[i] != NULL; i++)
+        ;
+    while (!match && i-- > 0) {
+        pat = list[i];
+        match = uwildmat(host, pat);
+        if (!match && ip != NULL && *ip != '\0') {
+            match = uwildmat(ip, pat);
+            if (match)
+                break;
+            mask = strchr(pat, '/');
+            if (mask == NULL)
+                continue;
+            *mask = '\0';
+            mask++;
+            match = network_addr_match(ip, pat, mask);
         }
-	if (ret)
-	    break;
     }
-    if (ret && list[iter][0] == '!')
-	ret = false;
     free(list[0]);
     free(list);
     free(cp);
-    return(ret);
+    return match;
 }
 
 static void
