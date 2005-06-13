@@ -82,6 +82,10 @@ bool network_sockaddr_equal(const struct sockaddr *, const struct sockaddr *);
 /* Returns the port number from a sockaddr. */
 unsigned short network_sockaddr_port(const struct sockaddr *);
 
+/* Compare two addresses relative to an optional mask.  Returns true if
+   they're equal, false otherwise or on a parse error. */
+bool network_addr_match(const char *, const char *, const char *mask);
+
 END_DECLS
 
 #endif /* INN_NETWORK_H */

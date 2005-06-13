@@ -642,3 +642,72 @@ network_sockaddr_port(const struct sockaddr *sa)
         return htons(sin->sin_port);
     }
 }
+
+
+/*
+**  Compare two addresses given as strings, applying an optional mask.
+**  Returns true if the addresses are equal modulo the mask and false
+**  otherwise, including on syntax errors in the addresses or mask
+**  specification.
+*/
+bool
+network_addr_match(const char *a, const char *b, const char *mask)
+{
+    struct in_addr a4, b4, tmp;
+    unsigned long cidr;
+    char *end;
+    unsigned int i;
+    unsigned long bits, addr_mask;
+#ifdef HAVE_INET6
+    struct in6_addr a6, b6;
+#endif
+
+    /* If the addresses are IPv4, the mask may be in one of two forms.  It can
+       either be a traditional mask, like 255.255.0.0, or it can be a CIDR
+       subnet designation, like 16.  (The caller should have already removed
+       the slash separating it from the address.) */
+    if (inet_aton(a, &a4) && inet_aton(b, &b4)) {
+        if (mask == NULL)
+            addr_mask = htonl(0xffffffffUL);
+        else if (strchr(mask, '.') == NULL) {
+            cidr = strtoul(mask, &end, 10);
+            if (cidr > 32 || *end != '\0')
+                return false;
+            for (bits = 0, i = 0; i < cidr; i++)
+                bits |= (1 << (31 - i));
+            addr_mask = htonl(bits);
+        } else if (inet_aton(mask, &tmp))
+            addr_mask = tmp.s_addr;
+        else
+            return false;
+        return (a4.s_addr & addr_mask) == (b4.s_addr & addr_mask);
+    }
+            
+#ifdef HAVE_INET6
+    /* Otherwise, if the address is IPv6, the mask is required to be a CIDR
+       subnet designation. */
+    if (!inet_pton(AF_INET6, a, &a6) || !inet_pton(AF_INET6, b, &b6))
+        return false;
+    if (mask == NULL)
+        cidr = 128;
+    else {
+        cidr = strtoul(mask, &end, 10);
+        if (cidr > 128 || *end != '\0')
+            return false;
+    }
+    for (i = 0; i * 8 < cidr; i++) {
+        if ((i + 1) * 8 <= cidr) {
+            if (a6.s6_addr[i] != b6.s6_addr[i])
+                return false;
+        } else {
+            for (addr_mask = 0, bits = 0; bits < cidr % 8; bits++)
+                addr_mask |= (1 << (7 - bits));
+            if ((a6.s6_addr[i] & addr_mask) != (b6.s6_addr[i] & addr_mask))
+                return false;
+        }
+    }
+    return true;
+#else
+    return false;
+#endif
+}
