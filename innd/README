@@ -1,0 +1,188 @@
+                        Overview of innd Internals
+
+Introduction
+
+    innd is in many respects the heart of INN.  It is the transit
+    component of the news server, the component that accepts new articles
+    from peers or from nnrpd on behalf of local readers, stores them, and
+    puts information about them in the right places so that other programs
+    such as innxmit or innfeed can send them back to other peers.
+
+    innd is structured around channels.  With the exception of the active
+    file, the history database, the article and overview storage system,
+    and a few other things such as logs, everything coming into or going
+    out of innd is handled by a channel.  Each channel can be waiting to
+    read, waiting to write, or sleeping.  innd's main loop (in
+    CHANreadloop) calls select, passes control to each channel whose file
+    descriptor selected ready for reading or writing, and takes care of
+    other housekeeping (such as finding idle peers or waking up sleeping
+    channels at the right time).  The core channel routines are in chan.c,
+    with major classes of channels handled by cc.c, lc.c, nc.c, rc.c, and
+    site.c.  See below for more details on the types of channels.  The
+    routines in proc.c are used to manage processes spawned for outgoing
+    channels.
+
+    The storage and overview subsystem are mostly self-contained at this
+    point and INN is simply a client of the storage and overview APIs.
+    The history database is approaching that state, but some aspects (such
+    as the pre-commit cache handled by the WIP* family of routines in
+    wip.c) are still handled internally by innd.
+
+    Updates and queries of the active file are handled internally by innd
+    in the ICD* and NG* family of routines in icd.c and ng.c.
+
+    innd is configured primarily by incoming.conf (which controls who can
+    send articles) and newsfeeds (which controls where the articles should
+    go after they're received and stored).  The former is read in rc.c,
+    the file that also contains the RC* family of routines for dealing
+    with the remote connection channel (see below).  The latter is read by
+    newsfeeds.c and is used to set up all of the outgoing channels when
+    innd is started or told to re-read the file.  Incoming articles are
+    parsed and fed to the appropriate places by the routines in art.c.
+
+    Both Perl and Python embedded filters are supported.  The glue
+    routines to load and run the Perl or Python scripts are in perl.c and
+    python.c respectively.
+
+    Finally, keywords.c contains the support for synthesizing keywords
+    based on article contents, status.c writes out innd status
+    periodically if configured, util.c contains various utility functions
+    used by other parts of innd, and innd.c contains the startup,
+    initialization, and shutdown code as well as the main routine.
+
+Core Channel Handling
+
+    CHANreadloop is the main processing loop of innd.  As long as innd is
+    running, it will be inside that function.  The core channel code
+    maintains a table of channels, which have a one-to-one correspondance
+    with open file descriptors, and three file descriptor sets.  Each
+    channel is generally in one of the three sets (reading, writing, or
+    sleeping) at any given time.  The states should generally be
+    considered mutually exclusive, since NNTP is not asychronous and a
+    channel that's reading and writing at the same time is liable to
+    deadlock, but the core code doesn't assume that.
+
+    A channel fundamentally consists of two functions, a reader function
+    called whenever data is available for it to read and a write-done
+    function called when data it wrote has been completely written out.
+    If it is put to sleep, it also needs a function that is called when it
+    is woken up again.  Some channels may only read (such as the channels
+    that accept connections) and some channels may only write (such as
+    outgoing feeds), or channels may do both (like NNTP channels).
+
+    Reading is handled by the channel itself, since some channels don't
+    just read data from their file descriptor, but CHANreadtext is
+    provided for channels to call from their reader fuctions if they want
+    to read normally.  CHANreadtext puts the data into the channel's input
+    buffer and handles resizing and compacting the buffer as needed.  To
+    register as a reading channel, the channel calls RCHANadd, and then
+    its file descriptor will be added to the read set and its reader
+    function will be called whenever select indicates data is available.
+
+    Writing is handled by the channel core code; the channel just puts
+    data into its output buffer, usually using WCHANset or WCHANappend,
+    and then calls WCHANadd to tell the channel code that data is
+    available.  The data is written out as select indicates the file
+    descriptor can take it, and when the write is complete, the channel's
+    write-done function is called.
+
+    Channels are put to sleep if there's some reason why they must not be
+    allowed to do anything for some time.  Sleeping is generally used for
+    write channels that have encountered some (hopefully temporary) error
+    when writing, or which need to pause and spool output for a while
+    before writing it out.  They're also used for NNTP channels when the
+    server is paused.  A sleeping channel has an associated time to wake
+    up, an optional event that will wake it up earlier, and a function
+    that's called when it's woken up.  Sleeping is not used for writing
+    channels that just don't have any data at the moment to write; those
+    channels are just in none of the three states (which is also allowed).
+
+    The core channel code also supports prioritized channels.  Normally,
+    after each call to select returns, CHANreadloop walks through each
+    channel in turn, doing the appropriate work if the channel selected
+    for reading or writing or if it is time to wake it up.  However, on
+    each pass, the prioritized channels are checked first to see if they
+    selected for read, and if so, those reader functions are called
+    immediately and the number of other events that will be handled that
+    time through is capped (in case more data is available from the
+    prioritized channels immediately).  Only the control channel and the
+    remote connection channels are prioritized.
+
+Channel Types
+
+    The following channel types are implemented in innd:
+
+    Remote connections (CTremconn)
+
+        This is the channel that accepts new connections from remote
+        peers.  If innd is running in the mode where it accepts and hands
+        off reader connections to nnrpd, the remconn channel also does
+        this.  Its reader function doesn't actually read data, but rather
+        accepts the connection and creates a new NNTP channel.  These
+        channels are always prioritized.  The implementation is in rc.c.
+
+    NNTP (CTnntp)
+
+        Channels that speak NNTP to a peer (or to nnrpd or rnews feeding
+        articles to innd).  These channels are responsible for most of the
+        data stored in the channel struct.  They are probably the most
+        complex channels in innd and use all of the facilities of the
+        channel code.  The implementation is in nc.c, including all the
+        code to handle NNTP commands.
+
+    Reject (CTreject)
+
+        A special type of channel that exists solely to reject an unwanted
+        connection.  Peers who connect while the server is overloaded, who
+        try to open too many connections at once, or who have no access
+        (when innd is not handing connections to nnrpd) are handed off to
+        this type of channel.  All they do is write the rejection message
+        and then close themselves.
+
+    Local connections (CTlocalconn)
+
+        innd maintains a separate local Unix domain socket for the use of
+        nnrpd and rnews when injecting articles.  This channel type
+        handles incoming connections on that socket and spawns an NNTP
+        channel for them, similar to the remote connections channel.
+        These channels are not prioritized (but possibly should be).  The
+        implementation is in lc.c.
+
+    Control (CTcontrol)
+
+        innd can be given a wide variety of commands by external
+        processes, either automated ones like control message handling or
+        nightly expiration and log rotation or manual actions by the news
+        administrator.  The control channel handles incoming requests on
+        the Unix domain socket created for this purpose, runs the command,
+        and returns the results.  This Unix domain socket is a datagram
+        socket rather than a stream socket, so each command and response
+        are single datagrams, making the reader function a bit different
+        than other channels.  While the control channel writes its
+        response back, it doesn't use the write support in the core
+        channel code since it has to send a datagram; instead, it sends
+        the response immediately from the reader function.  There is only
+        one control channel and it is always prioritized.  The
+        implementation is in cc.c.
+
+    File (CTfile)
+    Exploder (CTexploder)
+    Process (CTprocess)
+
+        These channels are used to implement different types of outgoing
+        sites (outgoing channels configured in newsfeeds).  They are
+        created as needed by the site code in site.c and get data mostly
+        due to the processing of articles by art.c.  These channels are
+        mostly alike from the perspective of the channel code, but have
+        different types so that the site code can easily distinguish
+        between them.
+
+    In addition, the channel type CTany is used as a wildcard in some
+    channel operations and the type CTfree is used in the channel table
+    for free channels (corresponding to closed file descriptors).
+
+Article Handling
+Newsfeeds and Sites
+The Active File
+
+    To be written.

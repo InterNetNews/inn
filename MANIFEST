@@ -410,6 +410,7 @@ include/ppport.h                      Header file for Perl support
 include/storage.h                     Header file for storage API
 innd                                  Server (Directory)
 innd/Makefile                         Makefile for server
+innd/README                           Overview of the innd internals
 innd/art.c                            Process a received article
 innd/cc.c                             Control channel routines
 innd/chan.c                           I/O channel routines
