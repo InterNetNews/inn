@@ -342,7 +342,7 @@ main(void)
 
     /* Check the domains of functions and their error handling. */
     ai4->ai_addr->sa_family = AF_UNIX;
-    ok(78, !network_sockaddr_equal(ai4->ai_addr, ai4->ai_addr));
+    ok(79, !network_sockaddr_equal(ai4->ai_addr, ai4->ai_addr));
     ok_int(80, 0, network_sockaddr_port(ai4->ai_addr));
 
     /* Tests for network_addr_compare. */
@@ -366,6 +366,7 @@ main(void)
     ok_addr( 95, true,  ipv6_addr,   ipv6_addr,     "128");
     ok_addr( 96, true,  ipv6_addr,   ipv6_addr,     "60");
     ok_addr( 97, true,  "::127",     "0:0::127",    "128");
+    ok_addr( 98, true,  "::127",     "0:0::128",    "120");
     ok_addr( 99, false, "::127",     "0:0::128",    "128");
     ok_addr(100, false, "::7fff",    "0:0::8000",   "113");
     ok_addr(101, true,  "::7fff",    "0:0::8000",   "112");
