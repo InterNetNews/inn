@@ -249,6 +249,7 @@ tests/runtests
 tests/authprogs/ident.t
 tests/clients/server-list
 tests/innd/artparse.t
+tests/innd/chan.t
 tests/lib/buffer.t
 tests/lib/concat.t
 tests/lib/conffile.t
@@ -263,6 +264,7 @@ tests/lib/hex.t
 tests/lib/hstrerror.t
 tests/lib/inet_aton.t
 tests/lib/inet_ntoa.t
+tests/lib/inet_ntop.t
 tests/lib/innconf.t
 tests/lib/list.t
 tests/lib/md5.t

@@ -135,6 +135,7 @@ doc/config-semantics                  Configuration file semantics
 doc/config-syntax                     Configuration file syntax
 doc/external-auth                     readers.conf external interface notes
 doc/history                           Messages of historical significance
+doc/history-innfeed                   Historical notes about innfeed
 doc/hook-perl                         Christophe Wolfhugel's Perl hook notes
 doc/hook-python                       Python hook notes
 doc/man                               nroff documentation (Directory)
@@ -433,7 +434,6 @@ innd/util.c                           Utility functions for innd
 innd/wip.c                            Work-in-progress routines for innd
 innfeed                               innfeed (Directory)
 innfeed/Makefile                      Makefile for innfeed
-innfeed/README                        Assorted notes
 innfeed/article.c                     Implementation of the Article class
 innfeed/article.h                     Public interface to Articles
 innfeed/buffer.c                      Implementation of the Buffer class
@@ -522,7 +522,6 @@ lib/setenv.c                          setenv replacement
 lib/seteuid.c                         seteuid replacement
 lib/setproctitle.c                    setproctitle replacement
 lib/snprintf.c                        snprintf and vsnprintf replacement
-lib/sockaddr.c                        Manipulation of sockaddr structs
 lib/strcasecmp.c                      Case-insenstive string comparison (BSD)
 lib/strerror.c                        String representation of errno
 lib/strlcat.c                         strlcat replacement
@@ -827,6 +826,7 @@ tests/lib/hex-t.c                     Tests for lib/hex.c
 tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
+tests/lib/inet_ntop-t.c               Tests for lib/inet_ntop.c
 tests/lib/innconf-t.c                 Tests for lib/innconf.c
 tests/lib/list-t.c                    Tests for lib/list.c
 tests/lib/md5-t.c                     Tests for lib/md5.c
