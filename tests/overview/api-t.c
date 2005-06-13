@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Overview test suite, usable for any of the overview methods. */
+/* Test suite for overview API. */
 
 #include "config.h"
 #include "clibrary.h"
@@ -59,7 +59,8 @@ group_del(void *entry)
 }
 
 /* Build a stripped-down innconf struct that contains only those settings that
-   the tradindexed overview method cares about. */
+   the overview backend cares about.  (May still be missing additional bits
+   for ovdb.) */
 static void
 fake_innconf(void)
 {
