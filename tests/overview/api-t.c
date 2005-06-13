@@ -105,10 +105,6 @@ overview_init_buffindexed(void)
 static struct overview *
 overview_init(void)
 {
-    if (access("data/basic", F_OK) < 0)
-        if (access("overview/data/basic", F_OK) == 0)
-            if (chdir("overview") != 0)
-                sysdie("Cannot cd to overview");
     system("/bin/rm -rf ov-tmp");
     if (mkdir("ov-tmp", 0755))
         sysdie("Cannot mkdir ov-tmp");
