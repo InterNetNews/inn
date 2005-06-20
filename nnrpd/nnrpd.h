@@ -216,7 +216,6 @@ EXTERN bool	LLOGenable;
 extern const char	*ARTpost(char *article, char *idbuff, bool ihave,
 				 bool *permanent);
 extern void		ARTclose(void);
-extern bool		ARTreadschema(void);
 extern int		TrimSpaces(char *line);
 extern char		*Glom(char **av);
 extern int		Argify(char *line, char ***argvp);
