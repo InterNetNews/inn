@@ -1269,7 +1269,8 @@ hisv6_expire(void *history, const char *path, const char *reason,
 	    nhistory = concat(h->histpath, ".n", NULL);
 	}
 
-	hnew = hisv6_new(nhistory, HIS_RDWR | HIS_INCORE, h->history);
+	hnew = hisv6_new(nhistory, HIS_CREAT | HIS_RDWR | HIS_INCORE,
+                         h->history);
 	if (!hisv6_reopen(hnew)) {
 	    hisv6_dispose(hnew);
 	    hnew = NULL;
