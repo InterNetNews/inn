@@ -57,7 +57,8 @@ overview_fields(void)
 struct vector *
 overview_extra_fields(void)
 {
-    struct vector *list;
+    struct vector *list = NULL;
+    struct vector *result = NULL;
     char *schema = NULL;
     char *line, *p;
     QIOSTATE *qp = NULL;
@@ -68,7 +69,7 @@ overview_extra_fields(void)
     qp = QIOopen(schema);
     if (qp == NULL) {
         syswarn("cannot open %s", schema);
-        goto fail;
+        goto done;
     }
     list = vector_new();
     for (field = 0, line = QIOread(qp); line != NULL; line = QIOread(qp)) {
@@ -105,14 +106,16 @@ overview_extra_fields(void)
             syswarn("error while reading %s", schema);
         }
     }
-    return list;
+    result = list;
 
- fail:
+done:
     if (schema != NULL)
         free(schema);
     if (qp != NULL)
         QIOclose(qp);
-    return NULL;
+    if (result == NULL && list != NULL)
+        vector_free(list);
+    return result;
 }
 
 
