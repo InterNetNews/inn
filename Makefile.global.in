@@ -15,7 +15,7 @@
 ##  "CVS prerelease", the build time will be automatically included.
 
 VERSION         = 2.4.3
-VERSION_EXTRA   = CVS prerelease
+VERSION_EXTRA   = prerelease
 
 ##  If you want to install INN relative to a root directory other than /,
 ##  set DESTDIR to the path to the root directory of the file system.  This

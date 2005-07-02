@@ -27,10 +27,14 @@ CLEANDIRS   = $(ALLDIRS) include tests
 TARDIR      = inn-$(VERSION)
 TARFILE     = $(TARDIR).tar
 
+##  The directory to use when building a snapshot.
+SNAPDIR     = inn-$(SNAPSHOT)-$(SNAPDATE)
+
 ##  DISTDIRS gets all directories from the MANIFEST, and DISTFILES gets all
 ##  regular files.  Anything not listed in the MANIFEST will not be included
 ##  in a distribution.  These are arguments to sed.
 DISTDIRS    = -e 1,2d -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(TARDIR)/;'
+SNAPDIRS    = -e 1,2d -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(SNAPDIR)/;'
 DISTFILES   = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 
 
@@ -193,3 +197,22 @@ check-manifest:
 	sed -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
 	$(PERL) support/mkmanifest > LIST.real
 	diff -u LIST.manifest LIST.real
+
+
+##  Make a snapshot.  This is like making a release, except that we don't do
+##  the ChangeLog thing and we don't change the version number.  We also
+##  assume that SNAPSHOT has been set to the appropriate current branch.
+snapshot:
+	rm -rf $(SNAPDIR)
+	rm -f inn*.tar.gz
+	mkdir $(SNAPDIR)
+	set -e ; for d in `sed $(SNAPDIRS) MANIFEST` ; do mkdir -p $$d ; done
+	set -e ; for f in `sed $(DISTFILES) MANIFEST` ; do \
+	    cp $$f $(SNAPDIR)/$$f ; \
+	done
+	cp README.snapshot $(SNAPDIR)/
+	sed 's/= prerelease/= $(SNAPDATE) snapshot/' \
+	    Makefile.global.in > $(SNAPDIR)/Makefile.global.in
+	find $(SNAPDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
+	tar cf $(SNAPDIR).tar $(SNAPDIR)
+	$(GZIP) -9 $(SNAPDIR).tar

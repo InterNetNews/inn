@@ -12,7 +12,7 @@
 version="$1"
 extra="$2"
 string="INN $version"
-if [ x"$extra" = x"CVS prerelease" ] ; then
+if [ x"$extra" = x"prerelease" ] ; then
     date=`date +%Y%m%d`
     extra="$date $extra"
 fi

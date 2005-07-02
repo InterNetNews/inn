@@ -1,0 +1,50 @@
+#! /bin/sh
+
+##  $Id: mksnapshot 7308 2005-06-11 08:39:54Z eagle $
+##
+##  Build a snapshot of the current tree.
+##
+##  Meant to be run on a fresh Subversion checkout, this script does the
+##  necessary work to generate a snapshot.  It expects to be invoked from the
+##  top level of the source tree and leaves the generated snapshot in that
+##  same directory as a .tar.gz file.
+##
+##  Snapshot generation will fail if the tree will not compile or if make test
+##  fails.  In either case, the output is left in snapshot.log.
+##
+##  This script takes one argument, a string representing what tree the
+##  snapshot is being taken from.  Generally this string is either CURRENT or
+##  STABLE.
+
+set -e
+
+date=`date -u +%Y%m%d`
+tree="$1"
+if [ -z "$tree" ] ; then
+    echo "$0: no tree name specified" >&2
+    exit 1
+fi
+
+exec > snapshot.log 2>&1
+
+./configure
+make warnings
+make test
+make check-manifest
+
+cat > README.snapshot <<EOF
+This is a snapshot of the current development version of INN, pulled
+automatically from the Subversion repository.  It was made on:
+
+    `date -u +"%B %e, %Y @ %I:%M %p %Z"`
+
+This code should be considered experimental.  Only a default compile and
+automated testing is done before it is made available.  If it breaks, we'd
+like to know at inn-bugs@isc.org, but if it causes your system to explode,
+don't blame us.
+
+If you are using this code, it's highly recommended that you be on the
+inn-workers@isc.org mailing list.  See README for more information.
+EOF
+
+make snapshot SNAPSHOT="$tree" SNAPDATE="$date"
