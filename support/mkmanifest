@@ -240,6 +240,7 @@ site/startup_innd.pl
 site/storage.conf
 site/subscriptions
 site/update
+snapshot.log
 storage/buildconfig
 storage/buffindexed/buffindexed_d
 storage/tradindexed/tdx-util
