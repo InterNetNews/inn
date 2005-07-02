@@ -1525,6 +1525,7 @@ ARTxrefslave(ARTDATA *data)
     GroupPointers[i++] = ngp;
     nogroup = false;
   }
+  GroupPointers[i] = NULL;
   if (nogroup)
     return false;
   return true;
