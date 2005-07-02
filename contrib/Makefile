@@ -19,7 +19,7 @@ all: $(ALL)
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
-clean clobber distclean:
+clean clobber distclean maintclean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 

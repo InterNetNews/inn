@@ -9,7 +9,7 @@ ALL	      = controlbatch controlchan docheckgroups gpgverify perl-nocem \
 
 MAN	      = ../doc/man/perl-nocem.8 ../doc/man/pgpverify.1
 
-all: $(ALL)
+all: $(ALL) $(MAN)
 
 install: all
 	for F in $(ALL) ; do \
@@ -23,6 +23,9 @@ bootstrap: $(MAN)
 
 clean clobber distclean:
 	rm -f $(ALL)
+
+maintclean: distclean
+	rm -f $(MAN)
 
 profiled: all
 

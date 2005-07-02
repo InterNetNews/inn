@@ -36,7 +36,7 @@ bootstrap:
 clean:
 	rm -f $(ALL)
 
-clobber distclean: clean
+clobber distclean maintclean: clean
 	rm -f $(EXTRA)
 
 depend:

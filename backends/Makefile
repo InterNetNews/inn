@@ -17,7 +17,7 @@ SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
 		filechan.c innbind.c inndf.c innxbatch.c innxmit.c map.c \
 		ninpaths.c nntpget.c overchan.c shlock.c shrinkfile.c
 
-all: $(ALL)
+all: $(ALL) $(MAN)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -56,6 +56,9 @@ clean:
 
 clobber distclean: clean
 	rm -f tags
+
+maintclean: distclean
+	rm -f $(MAN)
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES)

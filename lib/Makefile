@@ -38,7 +38,7 @@ install: all
 
 bootstrap:
 
-clobber clean distclean:
+clean clobber distclean maintclean:
 	rm -f *.o *.lo libinn.la libinn.a
 	rm -f profiled perl$(PROFSUFFIX).o libinn$(PROFSUFFIX).a
 	rm -f libinn_pure_*.a .pure

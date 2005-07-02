@@ -20,10 +20,8 @@ all: $(ALL)
 install:
 bootstrap:
 
-clean:
+clean clobber distclean maintclean:
 	rm -f $(ALL)
-
-clobber distclean: clean
 
 depend:
 

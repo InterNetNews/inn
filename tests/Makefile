@@ -33,7 +33,7 @@ build: $(TESTS) $(EXTRA)
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' build
 
-clean clobber distclean:
+clean clobber distclean maintclean:
 	rm -f *.o *.lo */*.o */*.lo .pure */.pure $(TESTS) $(EXTRA)
 	rm -rf .libs */.libs
 

@@ -29,12 +29,14 @@ library: libinnhist.$(EXTLIB)
 
 programs: $(PROGRAMS)
 
-clobber clean distclean:
+clean clobber distclean:
 	rm -f *.o *.lo */*.o */*.lo libinnhist.la libinnhist.a
 	rm -f libinnhist_pure_*.a .pure $(PROGRAMS)
-	rm -f buildconfig hismethods.c hismethods.h
-	rm -f profiled libinnhist$(PROFSUFFIX).a
+	rm -f buildconfig profiled libinnhist$(PROFSUFFIX).a
 	rm -rf .libs */.libs
+
+maintclean: distclean
+	rm -f Make.methods hismethods.c hismethods.h
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h
@@ -59,8 +61,7 @@ libinnhist.a: $(OBJECTS)
 # buildconfig each time a new subdirectory is added to the directory.  But
 # adding a dependency on . is a bit too non-portable for my taste and causes
 # too many rebuilds.
-Make.methods hismethods.h: hismethods.c buildconfig
-hismethods.c: buildconfig
+Make.methods hismethods.h hismethods.c: buildconfig
 	./buildconfig
 
 buildconfig: buildconfig.in $(FIXSCRIPT)

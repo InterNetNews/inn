@@ -14,20 +14,19 @@ DOCS	= GPL compliance-nntp config-design config-semantics config-syntax \
 	external-auth history history-innfeed hook-perl hook-python \
 	sample-control
 
-DIRS = man
+DIRS = pod man
 
 all:
-clobber clean distclean:
+	cd pod && $(MAKE)
+
 tags ctags:
 profiled:
 depend:
 
-install: install-doc
-	@for D in $(DIRS) ; do \
-	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
-	done
+clean clobber distclean maintclean:
+	cd pod && $(MAKE) $@
 
-install-doc:
+install:
 	for F in $(TOPDOCS) ; do \
 	    $(CP_RPUB) $(top)/$$F $D$(PATHDOC)/$$F ; \
 	done
@@ -37,6 +36,7 @@ install-doc:
 	if [ -r $(top)/README.snapshot ] ; then \
 	    $(CP_RPUB) $(top)/README.snapshot $D$(PATHDOC)/README.snapshot ; \
 	fi
+	cd man && $(MAKE) install
 
 bootstrap:
 	cd pod && $(MAKE) bootstrap

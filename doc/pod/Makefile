@@ -38,7 +38,9 @@ ALL	= $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
 all bootstrap: $(ALL)
 
-clean:
+clean clobber distclean:
+
+maintclean: distclean
 	rm -f $(ALL)
 
 ../../HACKING:		hacking.pod		; $(POD2TEXT) $? > $@

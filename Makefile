@@ -133,17 +133,27 @@ clean:
 clobber realclean distclean:
 	@for D in $(CLEANDIRS) ; do \
 	    echo '' ; \
-	    cd $$D && $(MAKE) $(FLAGS) clobber && cd .. ; \
+	    cd $$D && $(MAKE) $(FLAGS) distclean && cd .. || exit 1 ; \
 	done
 	@echo ''
 	rm -f LIST.* Makefile.global TAGS tags config.cache config.log
 	rm -f config.status libtool support/fixconfig support/fixscript
 	rm -f config.status.lineno configure.lineno
 
-maintclean: distclean
-	rm -rf $(TARDIR)
+# The removal list is unfortunately duplicated here, both to avoid doing work
+# twice and because we can't just depend on distclean since it removes
+# Makefile.global and then nothing works right.
+maintclean:
+	@for D in $(CLEANDIRS) ; do \
+	    echo '' ; \
+	    cd $$D && $(MAKE) $(FLAGS) maintclean && cd .. || exit 1 ; \
+	done
+	@echo ''
+	rm -f LIST.* Makefile.global TAGS tags config.cache config.log
+	rm -f config.status libtool support/fixconfig support/fixscript
+	rm -f config.status.lineno configure.lineno
 	rm -f CHANGES ChangeLog inn*.tar.gz configure include/config.h.in
-
+	rm -rf $(TARDIR)
 
 ##  Other generic targets.
 bootstrap depend tags ctags profiled:

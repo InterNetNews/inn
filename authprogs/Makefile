@@ -32,7 +32,7 @@ install: all
 
 bootstrap:
 
-clobber clean distclean:
+clean clobber distclean maintclean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 	cd smbval && $(MAKE) clean

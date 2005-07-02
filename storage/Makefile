@@ -33,12 +33,14 @@ library: libstorage.$(EXTLIB)
 
 programs: $(PROGRAMS)
 
-clobber clean distclean:
+clean clobber distclean:
 	rm -f *.o *.lo */*.o */*.lo libstorage.la libstorage.a
 	rm -f $(PROGRAMS) libstorage_pure_*.a .pure
-	rm -f buildconfig methods.c methods.h ovmethods.c ovmethods.h
-	rm -f libstorage$(PROFSUFFIX).a
+	rm -f buildconfig libstorage$(PROFSUFFIX).a
 	rm -rf .libs */.libs
+
+maintclean: distclean
+	rm -f Make.methods methods.c methods.h ovmethods.c ovmethods.h
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../include/*.h ../include/inn/*.h

@@ -45,7 +45,7 @@ clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 
-clobber distclean: clean
+clobber distclean maintclean: clean
 	rm -f tags
 
 tags ctags: $(SOURCES)
