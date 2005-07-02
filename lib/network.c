@@ -582,13 +582,13 @@ network_sockaddr_sprint(char *dst, size_t size, const struct sockaddr *addr)
 bool
 network_sockaddr_equal(const struct sockaddr *a, const struct sockaddr *b)
 {
-    const struct sockaddr *tmp;
     const struct sockaddr_in *a4 = (const struct sockaddr_in *) a;
     const struct sockaddr_in *b4 = (const struct sockaddr_in *) b;
 
 #ifdef HAVE_INET6
     const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *) a;
     const struct sockaddr_in6 *b6 = (const struct sockaddr_in6 *) b;
+    const struct sockaddr *tmp;
 
     if (a->sa_family == AF_INET && b->sa_family == AF_INET6) {
         tmp = a;
