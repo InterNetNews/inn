@@ -427,18 +427,15 @@ ReadBytecount(int fd, int artsize)
         article = xrealloc(article, oldsize + 1 + 1);
     }
 
-    /* Read in the article. */
+    /* Read in the article.  If we don't get as many bytes as we should,
+       return true without doing anything, throwing away the article.  This
+       seems like the best of a set of bad options; Reject would save the
+       article into bad and then someone might reprocess it, leaving us with
+       accepting the truncated version. */
     for (p = article, left = artsize; left; p += i, left -= i)
 	if ((i = read(fd, p, left)) <= 0) {
 	    i = errno;
             warn("cannot read, wanted %d got %d", artsize, artsize - left);
-#if	0
-	    /* Don't do this -- if the article gets re-processed we
-	     * will end up accepting the truncated version. */
-	    artsize = p - article;
-	    article[artsize] = '\0';
-	    Reject(article, "short read (%s?)", strerror(i));
-#endif	/* 0 */
 	    return true;
 	}
     if (p[-1] != '\n')
@@ -621,9 +618,9 @@ Unspool(void)
     bool	ok;
     struct stat		Sb;
     char		hostname[10];
-    int			fd, fd2;
+    int			fd;
     size_t		i;
-    char                *badname, *uuhost;
+    char                *uuhost;
 
     message_handlers_die(2, message_log_stderr, message_log_syslog_err);
     message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
@@ -903,7 +900,6 @@ int main(int ac, char *av[])
 		CantConnect(buff, mode, fd);
     }
     else {
-#if	defined(DO_RNEWSLOCALCONNECT)
 	if (NNTPlocalopen(&FromServer, &ToServer, buff, sizeof(buff)) < 0) {
 	    /* If server rejected us, no point in continuing. */
 	    if (buff[0])
@@ -912,11 +908,6 @@ int main(int ac, char *av[])
                             buff, sizeof(buff)))
 			CantConnect(buff, mode, fd);
 	}
-#else
-	if (!OpenRemote(NULL,  (port != NNTP_PORT) ? port : innconf->port,
-                        buff, sizeof(buff)))
-		CantConnect(buff, mode, fd);
-#endif	/* defined(DO_RNEWSLOCALCONNECT) */
     }
     close_on_exec(fileno(FromServer), true);
     close_on_exec(fileno(ToServer), true);

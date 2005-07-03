@@ -50,9 +50,6 @@
    for the full algorithm. */
 #define DO_MUNGE_GECOS
 
-/* Define if rnews should try to connect to the local host. */
-#define DO_RNEWSLOCALCONNECT
-
 /* Define if rnews should syslog articles rejected as duplicates. */
 /* #undef DO_RNEWS_LOG_DUPS */
 
