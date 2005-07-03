@@ -822,6 +822,8 @@ library support) should be better than previous releases.
 
 =head1 Changes in 2.2.3
 
+=over 2
+
 =item *
 
 inews is not installed setgid news and rnews is not installed setuid root
