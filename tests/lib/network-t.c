@@ -250,12 +250,16 @@ int
 main(void)
 {
     int n, status;
-    struct addrinfo *ai, *ai4, *ai6;
+    struct addrinfo *ai, *ai4;
     struct addrinfo hints;
     char addr[INET6_ADDRSTRLEN];
-    char *p;
     static const char *port = "119";
+
+#ifdef HAVE_INET6
+    struct addrinfo *ai6;
+    char *p;
     static const char *ipv6_addr = "FEDC:BA98:7654:3210:FEDC:BA98:7654:3210";
+#endif
 
     test_init(117);
 

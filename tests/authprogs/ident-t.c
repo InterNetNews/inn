@@ -72,7 +72,7 @@ server_ipv4(int n)
         _exit(0);
     }
     size = sizeof(sin);
-    conn = accept(fd, &sin, &size);
+    conn = accept(fd, (struct sockaddr *) &sin, &size);
     close(fd);
     port = ntohs(sin.sin_port);
 
