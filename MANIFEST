@@ -748,6 +748,7 @@ tests/data/articles/3                 News article for testing
 tests/data/articles/4                 News article for testing
 tests/data/articles/5                 News article for testing
 tests/data/articles/6                 News article for testing
+tests/data/articles/7                 News article for testing
 tests/data/articles/bad-empty         Empty news article
 tests/data/articles/bad-hdr-empty     News article with empty required header
 tests/data/articles/bad-hdr-nospc     News article with header without ": "
@@ -761,6 +762,7 @@ tests/data/articles/bad-no-header     News article without a header
 tests/data/articles/bad-nul-body      News article with a nul in the body
 tests/data/articles/bad-nul-header    News article with a nul in the header
 tests/data/articles/bad-subj          News article without a Subject
+tests/data/articles/wire-7            Wire format version of article 7
 tests/data/articles/wire-no-body      Wire article without a body
 tests/data/articles/wire-strange      Wire article with CR and LF in headers
 tests/data/articles/wire-truncated    Wire article truncated in the headers

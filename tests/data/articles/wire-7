@@ -1,0 +1,17 @@
+..Actually^Valid: Strangely enough
+Subject: Wire format testing
+Path: news.example.com!not-for-mail
+Newsgroups: example.test
+Date: Tue, 18 May 2004 01:43:21 -0700
+Message-ID: <example-5@example.com>
+X-Test: This header has
+ .
+ a continuation line that's almost an article terminator
+
+This is an article || with all sorts of random
+..
+nosense in it to torture the article parser.
+...
+....
+..
+.

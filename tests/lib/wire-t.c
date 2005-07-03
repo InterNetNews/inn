@@ -41,10 +41,11 @@ int
 main(void)
 {
     const char *p, *end;
-    char *article;
+    char *article, *wire, *native;
     struct stat st;
+    size_t wire_size, native_size, size;
 
-    test_init(36);
+    test_init(58);
 
     end = ta + sizeof(ta) - 1;
     p = end - 4;
@@ -127,6 +128,70 @@ main(void)
     article = xstrdup("\r\nNo header.\r\n.\r\n");
     ok(36, wire_findbody(article, strlen(article)) == article + 2);
 
+    free(article);
+
+    /* Tests for wire to native conversion and vice versa. */
+    wire = read_file("articles/wire-7", &st);
+    wire_size = st.st_size;
+    native = read_file("articles/7", &st);
+    native_size = st.st_size;
+
+    article = wire_from_native(native, native_size, &size);
+    ok_int(37, wire_size, size);
+    ok(38, memcmp(wire, article, wire_size) == 0);
+    free(article);
+
+    article = wire_to_native(wire, wire_size, &size);
+    ok_int(39, native_size, size);
+    ok(40, memcmp(native, article, native_size) == 0);
+    free(article);
+    free(wire);
+    free(native);
+
+    /* Test a few edge cases.  An article that isn't in wire format. */
+    wire = xstrdup("From: f@example.com\n\nSome body.\n");
+    wire_size = strlen(wire);
+    article = wire_to_native(wire, wire_size, &size);
+    ok_int(41, wire_size, size);
+    ok_string(42, wire, article);
+    free(wire);
+    free(article);
+
+    /* An empty article. */
+    article = wire_to_native("", 0, &size);
+    ok_int(43, 0, size);
+    ok_string(44, "", article);
+    free(article);
+    article = wire_to_native(".\r\n", 3, &size);
+    ok_int(45, 0, size);
+    ok_string(46, "", article);
+    article = wire_from_native("", 0, &size);
+    ok_int(47, 3, size);
+    ok_string(48, ".\r\n", article);
+    free(article);
+
+    /* Nasty partial articles. */
+    article = wire_to_native("T: f\r\n\r\n.\r", 10, &size);
+    ok_int(49, 8, size);
+    ok_string(50, "T: f\n\n.\r", article);
+    free(article);
+    article = wire_to_native("T: f\r\n\r\n.", 9, &size);
+    ok_int(51, 7, size);
+    ok_string(52, "T: f\n\n.", article);
+    free(article);
+    article = wire_to_native("..\r\n.\r\n", 7, &size);
+    ok_int(53, 2, size);
+    ok_string(54, ".\n", article);
+    free(article);
+
+    /* Articles containing nul. */
+    article = wire_to_native("T: f\0\r\n\r\n..\r\n.\r\n", 16, &size);
+    ok_int(55, 9, size);
+    ok(56, memcmp("T: f\0\n\n.\n", article, 9) == 0);
+    free(article);
+    article = wire_from_native("T: f\0\n\n.\n", 9, &size);
+    ok_int(57, 16, size);
+    ok(58, memcmp("T: f\0\r\n\r\n..\r\n.\r\n", article, 16) == 0);
     free(article);
 
     return 0;

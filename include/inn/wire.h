@@ -42,6 +42,16 @@ char *wire_findheader(const char *article, size_t, const char *header);
    such terminator was found before the end of the article. */
 char *wire_endheader(const char *header, const char *end);
 
+/* Given an article and length in non-wire format, return a malloced region
+   containing the article in wire format and set newlen to the length of the
+   new article. */ 
+char *wire_from_native(const char *article, size_t len, size_t *newlen);
+
+/* Given an article and length in wire format, return a malloced region
+   containing the article in native format and set *newlen to the length of
+   the new article. */
+char *wire_to_native(const char *article, size_t len, size_t *newlen);
+
 END_DECLS
 
 #endif /* INN_WIRE_H */

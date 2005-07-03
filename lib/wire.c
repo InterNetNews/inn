@@ -7,7 +7,8 @@
 **  These routines manipulate wire format articles; in particular, they should
 **  be safe in the presence of embedded NULs.  They assume wire format
 **  conventions (\r\n as a line ending, in particular) and will not work with
-**  articles in native format.
+**  articles in native format (with the exception of wire_from_native, of
+**  course).
 **
 **  The functions in this file take const char * pointers and return char *
 **  pointers so that they can work on both const char * and char * article
@@ -171,4 +172,123 @@ wire_endheader(const char *header, const char *end)
     if (end - header >= 1 && *end == '\n' && *(end - 1) == '\r')
         return (char *) end;
     return NULL;
+}
+
+
+/*
+**  Given an article and length in non-wire format, return a malloced region
+**  containing the article in wire format.  Set *newlen to the length of the
+**  new article.  The caller is responsible for freeing the allocated memory.
+*/ 
+char *
+wire_from_native(const char *article, size_t len, size_t *newlen)
+{
+    size_t bytes;
+    char *newart;
+    const char *p;
+    char *dest;
+    bool at_start = true;
+
+    /* First go thru article and count number of bytes we need.  Add a CR for
+       every LF and an extra character for any period at the beginning of a
+       line for dot-stuffing.  Add 3 characters at the end for .\r\n. */
+    for (bytes = 0, p = article; p < article + len; p++) {
+        if (at_start && *p == '.')
+            bytes++;
+        bytes++;
+        at_start = (*p == '\n');
+        if (at_start)
+            bytes++;
+    }
+    bytes += 3;
+
+    /* Now copy the article, making the required changes. */
+    newart = xmalloc(bytes + 1);
+    *newlen = bytes;
+    at_start = true;
+    for (p = article, dest = newart; p < article + len; p++) {
+        if (*p == '\n') {
+            *dest++ = '\r';
+            *dest++ = '\n';
+            at_start = true;
+        } else {
+            if (at_start && *p == '.')
+                *dest++ = '.';
+            *dest++ = *p;
+            at_start = false;
+        }
+    }
+    *dest++ = '.';
+    *dest++ = '\r';
+    *dest++ = '\n';
+    *dest = '\0';
+    return newart;
+}
+
+
+/*
+**  Given an article and length in wire format, return a malloced region
+**  containing the article in native format.  Set *newlen to the length of the
+**  new article.  The caller is responsible for freeing the allocated memory.
+*/
+char *
+wire_to_native(const char *article, size_t len, size_t *newlen)
+{
+    size_t bytes;
+    char *newart;
+    const char *p, *end;
+    char *dest;
+    bool at_start = true;
+
+    /* If the article is shorter than three bytes, it's definitely not in wire
+       format.  Just return a copy of it. */
+    if (len < 3) {
+        *newlen = len;
+        return xstrndup(article, len);
+    }
+    end = article + len - 3;
+
+    /* First go thru article and count number of bytes we need.  Once we reach
+       .\r\n, we're done.  We'll remove one . from .. at the start of a line
+       and change CRLF to just LF. */
+    for (bytes = 0, p = article; p < article + len; ) {
+        if (p == end && p[0] == '.' && p[1] == '\r' && p[2] == '\n')
+            break;
+        if (at_start && p < article + len - 1 && p[0] == '.' && p[1] == '.') {
+            bytes++;
+            p += 2;
+            at_start = false;
+        } else if (p < article + len - 1 && p[0] == '\r' && p[1] == '\n') {
+            bytes++;
+            p += 2;
+            at_start = true;
+        } else {
+            bytes++;
+            p++;
+            at_start = false;
+        }
+    }
+
+    /* Now, create the new space and copy the article over. */
+    newart = xmalloc(bytes + 1);
+    *newlen = bytes;
+    at_start = true;
+    for (p = article, dest = newart; p < article + len; ) {
+        if (p == end && p[0] == '.' && p[1] == '\r' && p[2] == '\n')
+            break;
+        if (at_start && p < article + len - 1 && p[0] == '.' && p[1] == '.') {
+            *dest++ = '.';
+            p += 2;
+            at_start = false;
+        } else if (p < article + len - 1 && p[0] == '\r' && p[1] == '\n') {
+            *dest++ = '\n';
+            p += 2;
+            at_start = true;
+        } else {
+            *dest++ = *p++;
+            at_start = false;
+        }
+    }
+    *dest = '\0';
+    return newart;
 }
