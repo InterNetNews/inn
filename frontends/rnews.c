@@ -277,8 +277,8 @@ static bool Process(char *article)
     switch (atoi(buff)) {
     default:
         free(wirefmt);
-	Reject(article, "unknown_reply after ihave %s", buff);
-	return true;
+	notice("unknown_reply after ihave %s", buff);
+	return false;
     case NNTP_RESENDIT_VAL:
         free(wirefmt);
 	return false;
