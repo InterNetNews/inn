@@ -779,25 +779,7 @@ Long-Term Projects
   possible.
 
 
-Complete Code Reorganization
-
-At some point, we should probably abandon and archive the current CVS
-repository, reimport all of the current source files, and start with a
-fresh repository with a better revision control system such as Subversion.
-A better revision control system would let us rename and move things
-around arbitrarily, something CVS doesn't handle at all well.  Should this
-ever be done, we should consider doing all of the following at the same
-time:
-
-* Don't include any generated files in the CVS tree.  Maintainers should
-  have autoconf and friends, pod2text and pod2man, and bison around anyway.
-  This would save a bunch of extra check-ins, remove the danger of the
-  generated files getting out of sync, and drastically reduce the
-  repository size in the case of configure.
-
-* Don't include any of the generated man pages in the CVS tree, as an
-  additional case of the above.  All of the documentation should be in POD
-  and we can generate the man pages as part of the snapshot process.
+Code Reorganization
 
 * storage should be reserved just for article storage; the overview
   methods should be in a separate overview tree.
