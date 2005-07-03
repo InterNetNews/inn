@@ -858,6 +858,8 @@ Various minor bug fixes and a Y2K bug fix.  The Y2K bug is in version
 version 2.2.1 only and will show up after Jan 1st, 2000 when a news reader
 issues a NEWNEWS command for a date prior to the year 2000.
 
+=back
+
 =head1 Changes in 2.2.1
 
 =over 2
