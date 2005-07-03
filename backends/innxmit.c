@@ -901,7 +901,8 @@ article_open(const char *path, const char *id)
 {
     TOKEN token;
     ARTHANDLE *article;
-    int fd, length;
+    int fd;
+    size_t length;
     struct stat st;
     char *p;
 
@@ -949,7 +950,7 @@ article_open(const char *path, const char *id)
             return NULL;
         }
         if (p[-1] != '\r') {
-            p = ToWireFmt(data, article->len, (size_t *)&length);
+            p = wire_from_native(data, article->len, &length);
             free(data);
             data = p;
             article->len = length;

@@ -224,7 +224,7 @@ Process(char *article, size_t artlen)
 	return true;
 
     /* Convert the article to wire format. */
-    wirefmt = ToWireFmt(article, artlen, &length);
+    wirefmt = wire_from_native(article, artlen, &length);
 
     /* Make sure that all the headers are there, note the ID. */
     for (hp = RequiredHeaders; hp < ARRAY_END(RequiredHeaders); hp++) {

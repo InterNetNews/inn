@@ -115,7 +115,7 @@ ok_article(int n, const char *path, const char *error, bool slow, bool shift)
 
     article = ReadInFile(path, &st);
     len = st.st_size;
-    wire = ToWireFmt(article, len, &wirelen);
+    wire = wire_from_native(article, len, &wirelen);
     cp = fake_channel();
     offset = shift ? random() % 50 : 0;
     cp->Start = offset;

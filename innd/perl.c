@@ -43,6 +43,7 @@
 #if DO_PERL
 
 #include "clibrary.h"
+#include "inn/wire.h"
 #include "innd.h"
 
 #include <EXTERN.h>
@@ -353,7 +354,7 @@ XS(XS_INN_article)
     /* Retrieve the article and convert it from wire format. */
     art = SMretrieve(token, RETR_ALL);
     if (art == NULL) XSRETURN_UNDEF;
-    p = FromWireFmt(art->data, art->len, &len);
+    p = wire_to_native(art->data, art->len, &len);
     SMfreearticle(art);
 
     /* Push a copy of the article onto the Perl stack, free our temporary
@@ -467,7 +468,7 @@ XS(XS_INN_head)
     /* Retrieve the article header and convert it from wire format. */
     art = SMretrieve(token, RETR_HEAD);
     if (art == NULL) XSRETURN_UNDEF;
-    p = FromWireFmt(art->data, art->len, &len);
+    p = wire_to_native(art->data, art->len, &len);
     SMfreearticle(art);
 
     /* Push a copy of the article header onto the Perl stack, free our

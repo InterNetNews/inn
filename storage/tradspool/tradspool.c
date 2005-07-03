@@ -650,7 +650,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
 	    memcpy(&onebuffer[used], article.iov[i].iov_base, article.iov[i].iov_len);
 	    used += article.iov[i].iov_len;
 	}
-	nonwfarticle = FromWireFmt(onebuffer, used, &nonwflen);
+	nonwfarticle = wire_to_native(onebuffer, used, &nonwflen);
 	free(onebuffer);
 	if (write(fd, nonwfarticle, nonwflen) != (ssize_t) nonwflen) {
 	    free(nonwfarticle);
@@ -782,7 +782,8 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	if (p[-1] == '\r') {
 	    private->mmapped = true;
 	} else {
-	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
+	    wfarticle = wire_from_native(private->artbase, private->artlen,
+                                         &wflen);
 	    munmap(private->artbase, private->artlen);
 	    private->artbase = wfarticle;
 	    private->artlen = wflen;
@@ -811,7 +812,8 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	}
 	if (p[-1] != '\r') {
 	    /* need to make a wireformat copy of the article */
-	    wfarticle = ToWireFmt(private->artbase, private->artlen, &wflen);
+	    wfarticle = wire_from_native(private->artbase, private->artlen,
+                                         &wflen);
 	    free(private->artbase);
 	    private->artbase = wfarticle;
 	    private->artlen = wflen;

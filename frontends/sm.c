@@ -63,7 +63,7 @@ store_article(int fd)
     article = buffer_new();
     if (!buffer_read_file(article, fd))
         sysdie("cannot read article");
-    text = ToWireFmt(article->data, article->left, &size);
+    text = wire_from_native(article->data, article->left, &size);
     handle.type = TOKEN_EMPTY;
     handle.data = text;
     handle.iov = xmalloc(sizeof(struct iovec));
@@ -171,7 +171,7 @@ process_token(const char *id, const struct options *options)
             if (fwrite(article->data, article->len, 1, stdout) != 1)
                 die("output failed");
         } else {
-            text = FromWireFmt(article->data, article->len, &length);
+            text = wire_to_native(article->data, article->len, &length);
             if (options->rnews)
                 printf("#! rnews %lu\n", (unsigned long) length);
             if (fwrite(text, length, 1, stdout) != 1)

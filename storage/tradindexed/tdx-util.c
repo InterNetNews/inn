@@ -20,6 +20,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "ov.h"
 #include "ovinterface.h"
@@ -243,8 +244,8 @@ static void
 group_rebuild(const char *group, const char *path)
 {
     char *filename, *histpath, *article, *wireformat, *p;
-    size_t size, file;
-    int flags, length;
+    size_t size, length, file;
+    int flags;
     struct buffer *overview = NULL;
     struct vector *extra, *files;
     struct history *history;
@@ -299,7 +300,7 @@ group_rebuild(const char *group, const char *path)
            convert it.  We only check the first line ending. */
         p = strchr(article, '\n');
         if (p != NULL && (p == article || p[-1] != '\r')) {
-            wireformat = ToWireFmt(article, size, (size_t *)&length);
+            wireformat = wire_from_native(article, size, &length);
             free(article);
             article = wireformat;
             size = length;

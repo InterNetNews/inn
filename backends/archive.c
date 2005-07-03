@@ -113,7 +113,7 @@ write_article(ARTHANDLE *article, const char *file, bool concat)
     }
 
     /* Get the data in wire format and write it out to the file. */
-    text = FromWireFmt(article->data, article->len, &length);
+    text = wire_to_native(article->data, article->len, &length);
     if (concat)
         fprintf(out, "-----------\n");
     if (fwrite(text, length, 1, out) != 1) {

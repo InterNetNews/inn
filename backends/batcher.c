@@ -15,6 +15,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/timer.h"
+#include "inn/wire.h"
 #include "libinn.h"
 #include "paths.h"
 #include "storage.h"
@@ -324,7 +325,7 @@ main(int ac, char *av[])
                     warn("%s skipping %.40s: %s", Host, p, SMerrorstr);
 		continue;
 	    }
-	    artdata = FromWireFmt(art->data, art->len, &BytesInArt);
+	    artdata = wire_to_native(art->data, art->len, &BytesInArt);
 	    SMfreearticle(art);
 	} else {
             warn("%s skipping %.40s: not token", Host, p);

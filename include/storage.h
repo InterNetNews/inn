@@ -77,8 +77,6 @@ BEGIN_DECLS
 char *      TokenToText(const TOKEN token);
 TOKEN       TextToToken(const char *text);
 bool        IsToken(const char *text);
-char *      ToWireFmt(const char *article, size_t len, size_t *newlen);
-char *      FromWireFmt(const char *article, size_t len, size_t *newlen);
             
 bool        SMsetup(SMSETUP type, void *value);
 bool        SMinit(void);

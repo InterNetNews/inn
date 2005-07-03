@@ -14,6 +14,7 @@
 #include "clibrary.h"
 
 #include "inn/innconf.h"
+#include "inn/wire.h"
 #include "innd.h"
 
 
@@ -354,7 +355,7 @@ PY_head(PyObject *self UNUSED, PyObject *args)
 	return Py_BuildValue((char *) "s", "");	
     if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
 	return Py_BuildValue((char *) "s", "");	
-    p = FromWireFmt(art->data, art->len, &headerlen);
+    p = wire_to_native(art->data, art->len, &headerlen);
     SMfreearticle(art);
     header = PyString_FromStringAndSize(p, headerlen);
     free(p);
@@ -384,7 +385,7 @@ PY_article(PyObject *self UNUSED, PyObject *args)
 	return Py_BuildValue((char *) "s", "");
     if ((arth = SMretrieve(token, RETR_ALL)) == NULL)
 	return Py_BuildValue((char *) "s", "");	
-    p = FromWireFmt(arth->data, arth->len, &artlen);
+    p = wire_to_native(arth->data, arth->len, &artlen);
     SMfreearticle(arth);
     art = PyString_FromStringAndSize(p, artlen);
     free(p);
