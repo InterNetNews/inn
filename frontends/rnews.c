@@ -159,13 +159,14 @@ static char *REMclean(char *buff)
 /*
 **  Write an article to the rejected directory.
 */
-static void Reject(const char *article, const char *reason, const char *arg)
+static void
+Reject(const char *article, size_t length UNUSED, const char *reason,
+       const char *arg)
 {
 #if	defined(DO_RNEWS_SAVE_BAD)
     char *filename;
     FILE *F;
     int fd;
-    size_t length;
 #endif	/* defined(DO_RNEWS_SAVE_BAD) */
 
     notice(reason, arg);
@@ -187,7 +188,6 @@ static void Reject(const char *article, const char *reason, const char *arg)
         warn("cannot fdopen %s", filename);
 	return;
     }
-    length = strlen(article);
     if (fwrite(article, 1, length, F) != length)
         warn("cannot fwrite to %s", filename);
     if (fclose(F) == EOF)
@@ -202,7 +202,8 @@ static void Reject(const char *article, const char *reason, const char *arg)
 **  whole batch needs to be saved (such as when the server goes down or if
 **  the file is corrupted).
 */
-static bool Process(char *article)
+static bool
+Process(char *article, size_t artlen)
 {
     HEADER	        *hp;
     const char	        *p;
@@ -223,14 +224,14 @@ static bool Process(char *article)
 	return true;
 
     /* Convert the article to wire format. */
-    wirefmt = ToWireFmt(article, strlen(article), &length);
+    wirefmt = ToWireFmt(article, artlen, &length);
 
     /* Make sure that all the headers are there, note the ID. */
     for (hp = RequiredHeaders; hp < ARRAY_END(RequiredHeaders); hp++) {
         p = wire_findheader(wirefmt, length, hp->Name);
         if (p == NULL) {
             free(wirefmt);
-	    Reject(article, "bad_article missing %s", hp->Name);
+	    Reject(article, artlen, "bad_article missing %s", hp->Name);
 	    return true;
 	}
 	if (IS_MESGID(hp)) {
@@ -249,7 +250,8 @@ static bool Process(char *article)
     /* Send the NNTP "ihave" message. */
     if ((p = strchr(id, '\r')) == NULL) {
         free(wirefmt);
-	Reject(article, "bad_article unterminated %s header", "Message-ID");
+	Reject(article, artlen, "bad_article unterminated %s header",
+               "Message-ID");
 	return true;
     }
     msgid = xstrndup(id, p - id);
@@ -336,7 +338,7 @@ static bool Process(char *article)
     case NNTP_TOOKIT_VAL:
 	break;
     case NNTP_REJECTIT_VAL:
-	Reject(article, "rejected %s", buff);
+	Reject(article, artlen, "rejected %s", buff);
 	break;
     }
     return true;
@@ -398,7 +400,7 @@ ReadRemainder(int fd, char first, char second)
 	article[used++] = '\n';
     article[used] = '\0';
 
-    ok = Process(article);
+    ok = Process(article, used);
     free(article);
     return ok;
 }
@@ -441,11 +443,13 @@ ReadBytecount(int fd, int artsize)
 #endif	/* 0 */
 	    return true;
 	}
-    if (p[-1] != '\n')
+    if (p[-1] != '\n') {
 	*p++ = '\n';
+        artsize++;
+    }
     *p = '\0';
 
-    return Process(article);
+    return Process(article, artsize);
 }
 
 
