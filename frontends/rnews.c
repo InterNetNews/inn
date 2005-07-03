@@ -621,9 +621,9 @@ Unspool(void)
     bool	ok;
     struct stat		Sb;
     char		hostname[10];
-    int			fd, fd2;
+    int			fd;
     size_t		i;
-    char                *badname, *uuhost;
+    char                *uuhost;
 
     message_handlers_die(2, message_log_stderr, message_log_syslog_err);
     message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
