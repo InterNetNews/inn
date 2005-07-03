@@ -674,22 +674,15 @@ Unspool(void)
 	WaitForChildren(i);
 	UUCPHost = uuhost;
 
-	if (!ok) {
-            badname = concat(PathBadNews, "/", hostname, "XXXXXX", (char *) 0);
-            fd2 = mkstemp(badname);
-            if (fd2 < 0)
-                sysdie("cannot create temporary file");
-            close(fd2);
-            warn("cant unspool saving to %s", badname);
-	    if (rename(InputFile, badname) < 0)
-                sysdie("cannot rename %s to %s", InputFile, badname);
-	    close(fd);
-            free(badname);
-	    continue;
-	}
+        /* If UnpackOne returned true, the article has been dealt with one way
+           or the other, so remove it.  Otherwise, leave it in place; either
+           we got an unknown error from the server or we got a deferral, and
+           for both we want to try later. */
+	if (ok) {
+            if (unlink(InputFile) < 0)
+                syswarn("cannot remove %s", InputFile);
+        }
 
-	if (unlink(InputFile) < 0)
-            syswarn("cannot remove %s", InputFile);
 	close(fd);
     }
     closedir(dp);
