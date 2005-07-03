@@ -231,7 +231,7 @@ static bool Process(char *article)
         if (p == NULL) {
             free(wirefmt);
 	    Reject(article, "bad_article missing %s", hp->Name);
-	    return false;
+	    return true;
 	}
 	if (IS_MESGID(hp)) {
 	    id = p;
@@ -250,7 +250,7 @@ static bool Process(char *article)
     if ((p = strchr(id, '\r')) == NULL) {
         free(wirefmt);
 	Reject(article, "bad_article unterminated %s header", "Message-ID");
-	return false;
+	return true;
     }
     msgid = xstrndup(id, p - id);
     fprintf(ToServer, "ihave %s\r\n", msgid);
