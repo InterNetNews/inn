@@ -2,9 +2,9 @@
 # do '@LIBDIR@/innshellvars.pl';
 # If running inside INN, uncomment the above and point to innshellvars.pl.
 #
-# written April 1996, tale@isc.org (David C Lawrence)
+# Written April 1996, tale@isc.org (David C Lawrence)
 # Currently maintained by Russ Allbery <rra@stanford.edu>
-# Version 1.26, 2005-01-17
+# Version 1.27, 2005-07-02
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN is the
 # same as the version that I make available to the rest of the world
@@ -15,6 +15,10 @@
 # and your Perl is too old, please contact me (rra@stanford.edu) and tell
 # me about it; I want to know what old versions of Perl are still used in
 # practice.
+#
+# Changes from 1.26 -> 1.27
+# -- Default to pubring.gpg when trustedkeys.gpg is not found in the
+#    default key location, for backward compatibility.
 #
 # Changes from 1.25 -> 1.26
 # -- Return the correct status code when the message isn't verified
@@ -430,9 +434,23 @@ sub pgp_verify {
   # everything out to a file, this is actually fairly simple; all we need
   # to do is grab stdout.  PGP prints its banner information to stderr, so
   # just ignore stderr.  Set PGPPATH if desired.
+  #
+  # For GnuPG, use pubring.gpg if an explicit keyring was configured or
+  # found.  Otherwise, use trustedkeys.gpg in the default keyring location
+  # if found and non-zero, or fall back on pubring.gpg.  This is
+  # definitely not the logic that I would use if writing this from
+  # scratch, but it has the most backward compatibility.
   local $ENV{PGPPATH} = $keyring if ($keyring && $pgpstyle ne 'GPG');
-  if ($keyring && $pgpstyle eq 'GPG') {
-    push (@command, "--keyring=$keyring/pubring.gpg");
+  if ($pgpstyle eq 'GPG') {
+    if ($keyring) {
+      push (@command, "--keyring=$keyring/pubring.gpg");
+    } else {
+      my $home = $ENV{GNUPGHOME} || $ENV{HOME};
+      $home .= '/.gnupg' if $home;
+      if ($home && ! -s "$home/trustedkeys.gpg" && -f "$home/pubring.gpg") {
+        push (@command, "--keyring=pubring.gpg");
+      }
+    }
   }
   push (@command, "$filename.asc");
   push (@command, $filename);
@@ -690,6 +708,15 @@ signatures).  If that directory doesn't exist, it will fall back on using
 the default key ring, which is in a F<.pgp> or F<.gnupg> subdirectory of
 the running user's home directory.
 
+INN, when using GnuPG, configures B<pgpverify> to use B<gpgv>, which by
+default expects keys to be in a keyring named F<trustedkeys.gpg>, since it
+doesn't implement trust checking directly.  B<pgpverify> uses that file if
+present but falls back to F<pubring.gpg> if it's not found.  This bypasses
+the trust model for checking keys, but is compatible with the way that
+B<pgpverify> used to behave.  Of course, if a keyring is found in
+I<pathetc>/pgp or configured at the top of the script, that overrides all of
+this behavior.
+
 =head1 OPTIONS
 
 The B<-test> flag causes B<pgpverify> to print out the input that it is
@@ -775,14 +802,6 @@ could forge a validly-signed control message would be by breaking the
 public key encryption algorithm, which (at least at this time) is believed
 to be prohibitively difficult for PGP keys of a sufficient bit length.
 
-=head1 SEE ALSO
-
-gpgv(1), pgp(1)
-
-L<ftp://ftp.isc.org/pub/pgpcontrol/> is where the most recent versions of
-B<signcontrol> and B<pgpverify> live, along with PGP public keys used for
-hierarchy administration.
-
 =head1 HISTORY
 
 B<pgpverify> was written by David C Lawrence <tale@isc.org>.  Manual page
@@ -840,6 +859,14 @@ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+=head1 SEE ALSO
+
+gpgv(1), pgp(1)
+
+L<ftp://ftp.isc.org/pub/pgpcontrol/> is where the most recent versions of
+B<signcontrol> and B<pgpverify> live, along with PGP public keys used for
+hierarchy administration.
 
 =cut
 
