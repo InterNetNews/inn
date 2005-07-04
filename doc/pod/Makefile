@@ -31,8 +31,9 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/nnrpd.8 ../man/innbind.8 ../man/innupgrade.8 \
 	../man/mailpost.8 ../man/makehistory.8 ../man/ninpaths.8 \
 	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
-	../man/ovdb_stat.8 ../man/radius.8 ../man/rc.news.8 \
-	../man/sendinpaths.8 ../man/tdx-util.8 ../man/tinyleaf.8
+	../man/ovdb_stat.8 ../man/overchan.8 ../man/radius.8 \
+	../man/rc.news.8 ../man/sendinpaths.8 ../man/tdx-util.8 \
+	../man/tinyleaf.8
 
 ALL	= $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
 
@@ -110,6 +111,7 @@ maintclean: distclean
 ../man/ovdb_monitor.8:	ovdb_monitor.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_server.8:	ovdb_server.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_stat.8:	ovdb_stat.pod		; $(POD2MAN) -s 8 $? > $@
+../man/overchan.8:	overchan.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/radius.8:	radius.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/rc.news.8:	rc.news.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/sendinpaths.8:	sendinpaths.pod		; $(POD2MAN) -s 8 $? > $@

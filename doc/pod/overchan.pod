@@ -1,0 +1,52 @@
+=head1 NAME
+
+overchan - Batch update the INN overview database
+
+=head1 SYNOPSIS
+
+B<overchan> [I<file> ...]
+
+=head1 DESCRIPTION
+
+B<overchan> reads overview data from the specified files or from standard
+input if no files are specified, and writes that data into the INN
+overview database.  (The file C<-> means to read data from standard input
+as well.)
+
+Normally, overview data is stored by B<innd> for articles as they're
+accepted.  For performance, however, it's sometimes useful to have
+overview data written by a separate process.  To do this, set
+I<useoverchan> to true in F<inn.conf> to tell B<innd> to not write
+overview data directly and then add an B<overchan> channel in
+F<newsfeeds>:
+
+    overview!:*:Tc,WnteO:<pathbin>/overchan
+
+where <pathbin> is I<pathbin> in F<inn.conf>.  Additionally, B<overchan>
+can be used to bulk-load overview data from appropriately formatted batch
+files (such as overflow files from an B<overchan> channel).
+
+Each line of input should have the following format:
+
+    <token> <arrived> <expires> <data>
+
+where <token> is the storage API token of the article in textual form
+(surrounded by C<@> characters), <arrived> is the arrival timestamp of the
+article in seconds since epoch, <expires> is the expiration time of the
+article in seconds since epoch or 0 if there is none, and <data> is the
+tab-separated overview data.  Each of these fields must be separated by a
+single space.
+
+=head1 HISTORY
+
+Written by Rob Robertson <rob@violet.berkeley.edu> and Rich $alz
+<rsalz@uunet.uu.net> for InterNetNews.  Man page rewritten in POD by Russ
+Allbery <rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5), innd(8), newsfeeds(5)
+
+=cut
