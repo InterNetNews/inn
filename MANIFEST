@@ -197,7 +197,6 @@ doc/man/libinnhist.3                  Manpage for history API library routines
 doc/man/libstorage.3                  Manpage for storage API library routines
 doc/man/list.3                        Manpage for list routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
-doc/man/makeactive.8                  Manpage for makeactive
 doc/man/makedbz.8                     Manpage for makedbz
 doc/man/makehistory.8                 Manpage for makehistory
 doc/man/mod-active.8                  Manpage for mod-active
