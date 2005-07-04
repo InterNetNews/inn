@@ -575,8 +575,9 @@ data.ramona.vix.com in the example below.
 .PP
 If innfeed gets a SIGHUP signal, then it will reread the config file. All
 values at global scope except for ``\fBbacklog-directory\fP'' can be
-changed. Any new peers are added and any missing peers have their
-connections closed.
+changed (although note that ``\fBbindaddress\fP'' and
+``\fBbindaddress6\fP'' changes will only affect new connections). Any new
+peers are added and any missing peers have their connections closed.
 .\"..................................................
 .SH EXAMPLE
 .PP
