@@ -251,13 +251,6 @@ Code Cleanup Projects
   easier to understand the logical divisions of the code and consider
   doing the same with the other overview and storage methods.
 
-* Examine the (mostly socket) code that currently should probably be
-  compiled with -fno-strict-aliasing on gcc and move the relevant casts
-  to within function calls.  [Russ knows about this.]
-
-* Clean up the use of #ifdef for sockets and IPv6, perhaps involving
-  addition of more to include/portable/socket.h.
-
 * The source and bind addresses currently also take "any" or "all"
   wildcards, which can more easily be specified by just not setting them
   at all.  Remove those special strings, modify innupgrade to fix inn.conf
@@ -313,13 +306,6 @@ Needed Bug Fixes
   validity before remailing it to the moderator, since normally it relies
   on innd to check the message ID.  The message ID checking code from
   innd/art.c should be moved into lib so that nnrpd can use it as well.
-
-* Currently, if the list of newsgroups on an Xref slave is out of sync
-  with the newsgroups on the master, receiving an article crossposted to
-  one of the groups that doesn't exist on the slave will cause the slave
-  to throttle.  This isn't the best behavior; the server should either
-  optionally create the missing newsgroup or just ignore that crossposted
-  group (and modify Xref accordingly?).
 
 * Handling of compressed batches needs to be thoroughly reviewed by
   someone who understands how they're supposed to work.  It's not clear
@@ -714,12 +700,6 @@ Long-Term Projects
   programs still need to call alloca_free in their main loops before we
   can use it in the various libraries.
 
-* A serious investigation into whether INN could use a garbage collector
-  is probably a good idea.  The network buffers probably need to be
-  handled with dedicated code, but there are a lot of other incidental
-  allocations and deallocations that may be much more efficient and safer
-  using a garbage collector.
-
 * Support building in a separate directory than the source tree.  It may
   be best to just support this via lndir rather than try to do it in
   configure, but it would be ideal to add support for this to the autoconf
@@ -755,10 +735,6 @@ Long-Term Projects
   the file into memory and setting the flags that require things to call
   mmap_flush and mmap_invalidate on a regular basis, but it's not clear
   where to stash the file descriptor that corresponds to the mapped file.
-
-* Figure out some Samba library that we can link against for the Samba
-  authenticator so that we can get all the Samba code back out of INN's
-  source tree; we don't want to maintain it.
 
 * Consider replacing the awkward access: parameter in readers.conf with
   separate commands (e.g. "allow_newnews: true") or otherwise cleaning up
