@@ -536,6 +536,9 @@ Requested New Features
   username patterns, probably by adding a users: key to the auth block
   that matches similar to hosts:.
 
+* It would be nice to have bindaddress (and bindaddress6) as a peer block
+  parameter and not just a global parameter in innfeed.
+
 
 General Projects
 
