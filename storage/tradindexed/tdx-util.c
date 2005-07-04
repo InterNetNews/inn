@@ -89,16 +89,19 @@ dump_group_index(const char *group)
 **  Dump the overview data for a particular group.  If number is 0, dump the
 **  overview data for all current articles; otherwise, only dump the data for
 **  that particular article.  Include the article number, token, arrived time,
-**  and expires time (if any) in the overview data as additional fields.
+**  and expires time (if any) in the overview data as additional fields
+**  normally.  If overchan is true, instead write out the data in the format
+**  that overchan would expect as input.
 */
 static void
-dump_overview(const char *group, ARTNUM low, ARTNUM high)
+dump_overview(const char *group, ARTNUM low, ARTNUM high, bool overchan)
 {
     struct group_index *index;
     struct group_data *data;
     struct group_entry *entry;
     struct article article;
     struct search *search;
+    char *p;
     char datestring[256];
 
     index = tdx_index_open(OV_READ);
@@ -130,14 +133,26 @@ dump_overview(const char *group, ARTNUM low, ARTNUM high)
         return;
     }
     while (tdx_search(search, &article)) {
-        fwrite(article.overview, article.overlen - 2, 1, stdout);
-        printf("\tArticle: %lu\tToken: %s", article.number,
-               TokenToText(article.token));
-        makedate(article.arrived, true, datestring, sizeof(datestring));
-        printf("\tArrived: %s", datestring);
-        if (article.expires != 0) {
-            makedate(article.expires, true, datestring, sizeof(datestring));
-            printf("\tExpires: %s", datestring);
+        if (overchan) {
+            p = memchr(article.overview, '\t', article.overlen - 3);
+            if (p == NULL)
+                continue;
+            p++;
+            printf("%s %lu %lu ", TokenToText(article.token),
+                   (unsigned long) article.arrived,
+                   (unsigned long) article.expires);
+            fwrite(p, article.overlen - 2 - (p - article.overview), 1, stdout);
+        } else {
+            fwrite(article.overview, article.overlen - 2, 1, stdout);
+            printf("\tArticle: %lu\tToken: %s", article.number,
+                   TokenToText(article.token));
+            makedate(article.arrived, true, datestring, sizeof(datestring));
+            printf("\tArrived: %s", datestring);
+            if (article.expires != 0) {
+                makedate(article.expires, true, datestring,
+                         sizeof(datestring));
+                printf("\tExpires: %s", datestring);
+            }
         }
         printf("\n");
     }
@@ -231,6 +246,26 @@ article_list(const char *directory)
 
     qsort(list->strings, list->count, sizeof(list->strings[0]), file_compare);
     return list;
+}
+
+
+/*
+**  Create a new newsgroup in the overview database.  Takes the group flag and
+**  the high and low water marks.
+*/
+static void
+group_create(const char *group, ARTNUM low, ARTNUM high, char flag)
+{
+    struct group_index *index;
+
+    index = tdx_index_open(true);
+    if (index == NULL)
+        die("cannot open group index");
+    if (low == 0)
+        low = 1;
+    if (!tdx_index_add(index, group, low, high, &flag))
+        die("cannot create group %s", group);
+    tdx_index_close(index);
 }
 
 
@@ -357,6 +392,8 @@ setuid_news(void)
 {
     struct passwd *pwd;
 
+    if (getenv("INN_TESTSUITE") != NULL)
+        return;
     pwd = getpwnam(NEWSUSER);
     if (pwd == NULL)
         die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
@@ -416,6 +453,7 @@ int
 main(int argc, char *argv[])
 {
     int option;
+    char flag = 'y';
     char mode = '\0';
     const char *newsgroup = NULL;
     const char *path = NULL;
@@ -429,11 +467,14 @@ main(int argc, char *argv[])
 
     /* Parse options. */
     opterr = 0;
-    while ((option = getopt(argc, argv, "a:n:p:AFR:gio")) != EOF) {
+    while ((option = getopt(argc, argv, "a:f:n:p:AFR:cgiOo")) != EOF) {
         switch (option) {
         case 'a':
             if (!parse_range(optarg, &artlow, &arthigh))
                 die("invalid article number or range %s", optarg);
+            break;
+        case 'f':
+            flag = optarg[0];
             break;
         case 'n':
             newsgroup = optarg;
@@ -457,6 +498,11 @@ main(int argc, char *argv[])
             mode = 'R';
             path = optarg;
             break;
+        case 'c':
+            if (mode != '\0')
+                die("only one mode option allowed");
+            mode = 'c';
+            break;
         case 'g':
             if (mode != '\0')
                 die("only one mode option allowed");
@@ -466,6 +512,11 @@ main(int argc, char *argv[])
             if (mode != '\0')
                 die("only one mode option allowed");
             mode = 'i';
+            break;
+        case 'O':
+            if (mode != '\0')
+                die("only one mode option allowed");
+            mode = 'O';
             break;
         case 'o':
             if (mode != '\0')
@@ -478,8 +529,8 @@ main(int argc, char *argv[])
         }
     }
 
-    /* Modes g and o require a group be specified. */
-    if ((mode == 'g' || mode == 'o' || mode == 'R') && newsgroup == NULL)
+    /* Some modes require a group be specified. */
+    if (strchr("cgoOR", mode) != NULL && newsgroup == NULL)
         die("group must be specified for -%c", mode);
 
     /* Run the specified function. */
@@ -495,14 +546,21 @@ main(int argc, char *argv[])
         setuid_news();
         group_rebuild(newsgroup, path);
         break;
+    case 'c':
+        setuid_news();
+        group_create(newsgroup, artlow, arthigh, flag);
+        break;
     case 'i':
         dump_index(newsgroup);
         break;
     case 'g':
         dump_group_index(newsgroup);
         break;
+    case 'O':
+        dump_overview(newsgroup, artlow, arthigh, true);
+        break;
     case 'o':
-        dump_overview(newsgroup, artlow, arthigh);
+        dump_overview(newsgroup, artlow, arthigh, false);
         break;
     default:
         die("a mode option must be specified");

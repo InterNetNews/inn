@@ -4,8 +4,8 @@ tdx-util - Tradindexed overview manipulation utility
 
 =head1 SYNOPSIS
 
-B<tdx-util> [B<-AFgio>] [B<-a> I<article>] [B<-n> I<newsgroup>]
-[B<-p> I<path>] [B<-R> I<path>]
+B<tdx-util> [B<-AFcgiOo>] [B<-a> I<article>] [B<-f> I<flag>]
+[B<-n> I<newsgroup>] [B<-p> I<path>] [B<-R> I<path>]
 
 =head1 DESCRIPTION
 
@@ -26,10 +26,17 @@ operation.
 
 The dump operations are B<-i>, which dumps the master index for the
 overview database, B<-g>, which dumps the index for an individual group,
-and B<-o>, which dumps the overview information for a particular group
-(including the additional metadata stored in the index).  For B<-g> and
-B<-o>, the B<-n> option must also be given to specify a newsgroup to
-operate on.
+and B<-o> and B<-O>, which dump the overview information for a particular
+group (including the additional metadata stored in the index) in two
+different formats.  For B<-g>, B<-o>, and B<-O>, the B<-n> option must
+also be given to specify a newsgroup to operate on.
+
+To add a new newsgroup to the overview database, use B<-c>.  A group must
+be specified with B<-n>.  If the group flag is something other than C<y>,
+it should be specified with B<-f>, and the low and high article numbers
+may be specified with B<-a>.  If only one number is given rather than a
+range, it will be taken to be the high water mark and the low mark will be
+set to 1.
 
 To audit the entire overview database for problems, use B<-A>.  Any
 problems found will be reported to standard error.  There is not (yet) a
@@ -67,8 +74,19 @@ range, meaning that it can be either a single article number or a range of
 article numbers (like C<1-5>).  Either the start or the end (or both) of
 the range may be omitted, in which case they will be set to the first or
 last article number in the group.  Passing C<-> for I<article> is
-therefore equivalent to not using the B<-a> option at all.  Only useful in
-combination with the B<-o> option to dump overview information.
+therefore equivalent to not using the B<-a> option at all.
+
+Only useful in combination with the B<-o> option to dump overview
+information or with B<-c> to specify the low and high article numbers when
+creating a group.
+
+=item B<-c>
+
+Create a new group in the overview database.  The group must be specified
+with B<-n>.  The newsgroup flag defaults to C<y> but may be set with
+B<-f>.  The low and high article numbers default to 1 and 0 respectively,
+but may be set with B<-a>.  If only one number is given to B<-a>, it is
+taken as the high article number.
 
 =item B<-F>
 
@@ -83,6 +101,11 @@ using this option may result in inaccessible articles if their overview
 data has been corrupted.
 
 To see what would be changed by B<-F>, run B<tdx-util> with B<-A> first.
+
+=item B<-f> I<flag>
+
+When creating a newsgroup with B<-c>, set the flag of the newly created
+group to I<flag> instead of C<y>.  Only useful with B<-c>.
 
 =item B<-g>
 
@@ -118,15 +141,30 @@ is not given, the entire master index will be dumped.
 Specify the newsgroup on which to act, required for the B<-i>, B<-o>, and
 B<-R> options.
 
+=item B<-O>
+
+Dump the overview information for a newsgroup in the format used by
+B<overchan> as input.  Each line will start with the storage API token,
+the arrival timestamp in seconds since epoch, the expires timestamp in the
+same format (or 0 if there is no Expires header), and then the overview
+data.
+
+If this option is given, the B<-n> option must also be given to specify
+the newsgroup on which to act.  By default, all of the overview
+information for that newsgroup is dumped, but the B<-a> option may be
+given to restrict the dump to the information for a single article.
+
 =item B<-o>
 
 Dump the overview information for a newsgroup, in the same format as it
 would be returned to clients but with one modification.  Appended to the
 end of each entry will be four additional pieces of data:  the article
-number according to the index file for that group, the storage API token
-for that article, the arrival date for that article on the server in RFC
-822 date format, and the expiration date for that article (from the
-Expires header) in RFC 822 date format if there is any.
+number according to the index file for that group labelled with
+C<Article:>, the storage API token for that article labelled with
+C<Token:>, the arrival date for that article on the server in RFC 822 date
+format labelled with C<Arrived:>, and the expiration date for that article
+(from the Expires header) in RFC 822 date format if there is any, labelled
+with C<Expires:>.
 
 If this option is given, the B<-n> option must also be given to specify
 the newsgroup on which to act.  By default, all of the overview
@@ -168,6 +206,11 @@ Dump the complete overview information for example.test:
 Dump the overview information for articles 45 and higher in example.test:
 
     tdx-util -o -n example.test -a 45-
+
+Create an entry for example.test with mode m and low and high article
+numbers of 4 and 23, respectively.
+
+    tdx-util -c -n example.test -f m -a 4-23
 
 Audit the entire overview database for any problems:
 
