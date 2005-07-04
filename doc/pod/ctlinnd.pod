@@ -130,9 +130,14 @@ brief status about all feeds if I<site> is the empty string.
 Flush the buffer for the specified site.  The action taken depends on the
 type of feed the site receives; see newsfeeds(5) for more information.
 This is useful when the site is being fed by a file and batching is about
-to start.  If I<site> is an empty string, all sites are flushed and the
-F<active> file and history database are also flushed to disk.  This
-command is forwarded; see L<NOTES> below.
+to start, or to cleanly shut down and respawn a channel feed.  If I<site>
+is an empty string, all sites are flushed and the F<active> file and
+history database are also flushed to disk.  This command is forwarded; see
+L<NOTES> below.
+
+Flushing the B<innfeed> channel feed is the recommended method of
+restarting B<innfeed> to pick up new configuration.  B<innd> will spawn a
+new B<innfeed> process while the old process shuts down cleanly.
 
 =item flushlogs
 

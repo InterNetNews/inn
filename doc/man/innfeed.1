@@ -109,6 +109,11 @@ issuing a QUIT command. This means innfeed may take a while to exit
 depending on how slow your peers are. It never (well, almost never) just
 drops the connection.
 .PP
+The recommended way to restart innfeed when run in channel mode is
+therefore to tell innd to close the pipe and spawn a new innfeed process.
+This can be done with ``ctlinnd flush <feed>'' where <feed> is the name of
+the innfeed channel feed in ``\fInewsfeeds\fP''.
+.PP
 Funnel-file mode is used when a filename is given as an argument
 or the ``input-file'' keyword is given in the config file.
 In funnel file mode it reads the specified file for the same formatted
