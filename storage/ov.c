@@ -18,6 +18,8 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/wire.h"
+#include "inn/vector.h"
 #include "libinn.h"
 #include "ov.h"
 #include "ovinterface.h"
@@ -237,12 +239,58 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
 bool
 OVcancel(TOKEN token)
 {
+    ARTHANDLE *art;
+    const char *xref, *xrefend, *group;
+    size_t xreflen, i;
+    char *xref_copy, *p, *end;
+    ARTNUM artnum;
+    struct cvector *groups;
+
     if (!ov.open) {
-	/* must be opened */
+        /* must be opened */
         warn("ovopen must be called first");
-	return false;
+        return false;
     }
-    return ((*ov.cancel)(token));
+
+    /* There's no easy way to go from a token to the group and article number
+       pairs that we need to do this.  Retrieve the article and find the Xref
+       header and then parse it to figure out what to cancel.  Articles
+       without Xref headers lose. */
+    art = SMretrieve(token, RETR_HEAD);
+    if (art == NULL)
+        return false;
+    xref = wire_findheader(art->data, art->len, "Xref");
+    if (xref == NULL)
+        goto fail;
+    xrefend = wire_endheader(xref, art->data + art->len - 1);
+    if (end == NULL)
+        goto fail;
+    xreflen = xrefend - xref + 1;
+    xref_copy = xstrndup(xref, xreflen);
+    SMfreearticle(art);
+    groups = cvector_split_space(xref_copy, NULL);
+    for (i = 0; i < groups->count; i++) {
+        group = groups->strings[i];
+        p = (char *) strchr(group, ':');
+        if (p == NULL || p == group || p[1] == '-')
+            continue;
+        *p = '\0';
+        errno = 0;
+        artnum = strtoul(p + 1, &end, 10);
+        if (artnum == 0 || *end != '\0' || errno == ERANGE)
+            continue;
+
+        /* Don't worry about the return status; the article may have already
+           expired out of some or all of the groups. */
+        (*ov.cancel)(group, artnum);
+    }
+    free(xref_copy);
+    cvector_free(groups);
+    return true;
+
+fail:
+    SMfreearticle(art);
+    return false;
 }
 
 void *

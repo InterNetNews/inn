@@ -5,10 +5,12 @@
 #include "clibrary.h"
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/overview.h"
+#include "inn/wire.h"
 #include "inn/vector.h"
 #include "libinn.h"
 #include "libtest.h"
@@ -29,10 +31,13 @@ fake_innconf(void)
     innconf->overcachesize = 20;
     innconf->ovgrouppat = NULL;
     innconf->ovmethod = xstrdup("tradindexed");
-    innconf->pathdb = xstrdup("ov-tmp");
+    innconf->patharticles = xstrdup("spool");
+    innconf->pathdb = xstrdup("db");
     innconf->pathetc = xstrdup("etc");
     innconf->pathoverview = xstrdup("ov-tmp");
+    innconf->pathspool = xstrdup("spool");
     innconf->pathrun = xstrdup("ov-tmp");
+    innconf->storeonxref = true;
     innconf->tradindexedmmap = true;
 }
 
@@ -43,6 +48,8 @@ overview_init(void)
     system("/bin/rm -rf ov-tmp");
     if (mkdir("ov-tmp", 0755))
         sysdie("Cannot mkdir ov-tmp");
+    if (mkdir("spool", 0755))
+        sysdie("Cannot mkdir spool");
     return overview_open(OV_READ | OV_WRITE);
 }
 
@@ -170,6 +177,11 @@ main(void)
     int n, count;
     struct overview *overview;
     struct overview_group group = { 0, 0, 0, 'y' };
+    bool value;
+    char *article, *wire;
+    size_t size;
+    ARTHANDLE handle;
+    TOKEN token;
 
     if (access("../data/overview/xref", F_OK) == 0)
         chdir("../data");
@@ -180,7 +192,7 @@ main(void)
 
     /* 7 group/article pairs plus one check for each insert plus the final
        check for the count. */
-    test_init(7 * 4 + 4 + 1);
+    test_init(7 * 4 + 4 + 5);
 
     fake_innconf();
     overview = overview_init();
@@ -193,8 +205,40 @@ main(void)
 
     count = overview_load(1, "overview/xref", overview);
     n = count * 4 + 4 + 1;
-    overview_verify_count(n, overview, count);
+    overview_verify_count(n++, overview, count);
 
-    system("/bin/rm -rf ov-tmp");
+    /* In order to test cancelling based on Xref, we have to store one of the
+       articles into a real storage method to get a token.  Cheat on where the
+       article is stored, since overview doesn't care. */
+    value = true;
+    if (!SMsetup(SM_RDWR, &value))
+        die("Cannot set up storage manager");
+    if (!SMinit())
+        die("Cannot initialize storage manager: %s", SMerrorstr);
+    article = ReadInFile("articles/xref", NULL);
+    if (article == NULL)
+        sysdie("Cannot read articles/xref");
+    wire = wire_from_native(article, strlen(article), &size);
+    free(article);
+    handle.type = TOKEN_EMPTY;
+    handle.data = wire;
+    handle.iov = xmalloc(sizeof(struct iovec));
+    handle.iov->iov_base = wire;
+    handle.iov->iov_len = size;
+    handle.iovcnt = 1;
+    handle.len = size;
+    handle.groups = (char *) "example.test:1";
+    handle.groupslen = strlen("example.test:1");
+    token = SMstore(handle);
+    free(wire);
+    free(handle.iov);
+    if (token.type == TOKEN_EMPTY)
+        die("Cannot store article: %s", SMerrorstr);
+    ok(n++, overview_cancel_xref(overview, token));
+    ok(n++, !overview_token(overview, "example.test1", 4, &token));
+    ok(n++, !overview_token(overview, "example.test3", 2, &token));
+    ok(n++, overview_token(overview, "example.test3", 3, &token));
+
+    system("/bin/rm -rf ov-tmp spool");
     return 0;
 }

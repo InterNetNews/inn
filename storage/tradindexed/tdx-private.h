@@ -141,6 +141,9 @@ void tdx_search_close(struct search *);
 /* Store article data. */
 bool tdx_data_store(struct group_data *, const struct article *);
 
+/* Cancel an entry. */
+bool tdx_data_cancel(struct group_data *, ARTNUM);
+
 /* Start a repack of the files for a newsgroup. */
 bool tdx_data_pack_start(struct group_data *, ARTNUM);
 

@@ -498,6 +498,9 @@ overview_tests(int n)
     struct hash *groups;
     struct overview *overview;
     struct verify verify;
+    void *search;
+    struct overview_data data;
+    TOKEN token;
 
     overview = overview_init();
     if (overview == NULL)
@@ -542,6 +545,19 @@ overview_tests(int n)
     ok(n++, true);
     ok(n++, overview_verify_data("overview/high-numbered", overview));
     ok(n++, overview_verify_full_search("overview/high-numbered", overview));
+    if (strcmp(innconf->ovmethod, "buffindexed") == 0) {
+        skip_block(n, 6, "buffindexed doesn't support cancel");
+        n += 6;
+    } else {
+        ok(n++, overview_cancel(overview, "example.test", 7498));
+        ok(n++, !overview_token(overview, "example.test", 7498, &token));
+        search = overview_search_open(overview, "example.test", 7498, 7499);
+        ok(n++, search != NULL);
+        ok(n++, overview_search(overview, search, &data));
+        ok_int(n++, 7499, data.number);
+        ok(n++, !overview_search(overview, search, &data));
+        overview_search_close(overview, search);
+    }
     hash_free(groups);
     overview_close(overview);
     ok(n++, true);
@@ -669,7 +685,8 @@ main(void)
     else if (access("tests/data/overview/basic", F_OK) == 0)
         chdir("tests/data");
 
-    test_init(21 * 3);
+    /* Cancels can't be tested with mmap, so there are only 21 tests there. */
+    test_init(27 * 2 + 21);
 
     fake_innconf();
     innconf->ovmethod = xstrdup("tradindexed");

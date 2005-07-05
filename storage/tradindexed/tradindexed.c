@@ -209,15 +209,27 @@ tradindexed_add(const char *group, ARTNUM artnum, TOKEN token, char *data,
 
 
 /*
-**  Cancel an article.  At present, tradindexed can't do anything with this
-**  information because we lack a mapping from the token to newsgroup names
-**  and article numbers, so we just silently return true and let expiration
-**  take care of this.
+**  Cancel an article.  We do this by blanking out its entry in the group
+**  index, making the data inaccessible.  The next expiration run will remove
+**  the actual data.
 */
 bool
-tradindexed_cancel(TOKEN token UNUSED)
+tradindexed_cancel(const char *group, ARTNUM artnum)
 {
-    return true;
+    struct group_entry *entry;
+    struct group_data *data;
+
+    if (tradindexed == NULL || tradindexed->index == NULL) {
+        warn("tradindexed: overview method not initialized");
+        return NULL;
+    }
+    entry = tdx_index_entry(tradindexed->index, group);
+    if (entry == NULL)
+        return NULL;
+    data = data_cache_open(tradindexed, group, entry);
+    if (data == NULL)
+        return NULL;
+    return tdx_data_cancel(data, artnum);
 }
 
 

@@ -128,7 +128,7 @@ bool ovdb_groupdel(const char *group UNUSED)
 bool ovdb_add(const char *group UNUSED, ARTNUM artnum UNUSED, TOKEN token UNUSED, char *data UNUSED, int len UNUSED, time_t arrived UNUSED, time_t expires UNUSED)
 { return false; }
 
-bool ovdb_cancel(TOKEN token UNUSED)
+bool ovdb_cancel(const char *group UNUSED, ARTNUM artnum UNUSED)
 { return false; }
 
 void *ovdb_opensearch(const char *group UNUSED, int low UNUSED, int high UNUSED)
@@ -2201,7 +2201,7 @@ ovdb_add(const char *group, ARTNUM artnum, TOKEN token, char *data, int len,
     return true;
 }
 
-bool ovdb_cancel(TOKEN token UNUSED)
+bool ovdb_cancel(const char *group UNUSED, ARTNUM artnum UNUSED)
 {
     return true;
 }

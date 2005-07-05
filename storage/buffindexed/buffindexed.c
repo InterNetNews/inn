@@ -1552,7 +1552,7 @@ buffindexed_add(const char *group, ARTNUM artnum, TOKEN token, char *data,
   return true;
 }
 
-bool buffindexed_cancel(TOKEN token UNUSED) {
+bool buffindexed_cancel(const char *group UNUSED, ARTNUM artnum UNUSED) {
     return true;
 }
 

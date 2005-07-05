@@ -1238,6 +1238,8 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
   }
 
   /* Get stored message and zap them. */
+  if (innconf->enableoverview)
+    OVcancel(token);
   if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
     syslog(L_ERROR, "%s cant cancel %s (SMerrno %d)", LogName,
 	TokenToText(token), SMerrno);

@@ -1,0 +1,9 @@
+Path: news.example.com!not-for-mail
+Newsgroups: example.test,example.config
+Subject: Test article #3 with a |	| tab
+From: user@example.com
+Date: Sat, 06 Mar 2004 21:40:54 -0800
+Message-ID: <example-3@example.com>
+Xref: news.example.com blah example:test1:2 example.test1:4  example.test2:-1 example.test3:2 example.test3  example.test2:1roger  example.test2:
+
+This is a test of Xref parsing for message cancellation.

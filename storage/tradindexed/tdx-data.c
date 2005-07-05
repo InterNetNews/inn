@@ -622,6 +622,31 @@ tdx_data_store(struct group_data *data, const struct article *article)
 
 
 /*
+**  Cancels a particular article by removing its index entry.  The data will
+**  still be present in the data file until the next expire run, but it won't
+**  be returned by searches.
+*/
+bool
+tdx_data_cancel(struct group_data *data, ARTNUM artnum)
+{
+    static const struct index_entry empty;
+    off_t offset;
+
+    if (!data->writable)
+        return false;
+    if (data->base == 0 || artnum < data->base || artnum > data->high)
+        return false;
+    offset = (artnum - data->base) * sizeof(struct index_entry);
+    if (xpwrite(data->indexfd, &empty, sizeof(empty), offset) < 0) {
+        syswarn("tradindexed: cannot cancel index record for %lu in %s.IDX",
+                artnum, data->path);
+        return false;
+    }
+    return true;
+}
+
+
+/*
 **  Start the process of packing a group (rewriting its index file so that it
 **  uses a different article base).  Takes the article number of an article
 **  that needs to be written to the index file and is below the current base.

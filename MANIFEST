@@ -766,6 +766,7 @@ tests/data/articles/wire-7            Wire format version of article 7
 tests/data/articles/wire-no-body      Wire article without a body
 tests/data/articles/wire-strange      Wire article with CR and LF in headers
 tests/data/articles/wire-truncated    Wire article truncated in the headers
+tests/data/articles/xref              News article for Xref testing
 tests/data/config                     Testing config files (Directory)
 tests/data/config/errors              Various config files with errors
 tests/data/config/groups              A config file with groups

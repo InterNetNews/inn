@@ -24,7 +24,7 @@ typedef struct overview_method {
     bool	(*groupdel)(const char *group);
     bool	(*add)(const char *group, ARTNUM artnum, TOKEN token,
                        char *data, int len, time_t arrived, time_t expires);
-    bool	(*cancel)(TOKEN token);
+    bool	(*cancel)(const char *group, ARTNUM artnum);
     void	*(*opensearch)(const char *group, int low, int high);
     bool	(*search)(void *handle, ARTNUM *artnum, char **data, int *len,
                           TOKEN *token, time_t *arrived);

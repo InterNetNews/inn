@@ -13,7 +13,7 @@ bool buffindexed_groupadd(const char *group, ARTNUM lo, ARTNUM hi,
 bool buffindexed_groupdel(const char *group);
 bool buffindexed_add(const char *group, ARTNUM artnum, TOKEN token,
                      char *data, int len, time_t arrived, time_t expires);
-bool buffindexed_cancel(TOKEN token);
+bool buffindexed_cancel(const char *group, ARTNUM artnum);
 void *buffindexed_opensearch(const char *group, int low, int high);
 bool buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len,
                         TOKEN *token, time_t *arrived);

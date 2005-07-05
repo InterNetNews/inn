@@ -21,6 +21,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/overview.h"
+#include "inn/wire.h"
 #include "inn/vector.h"
 #include "libinn.h"
 #include "ov.h"
@@ -212,6 +213,69 @@ overview_add_xref(struct overview *overview, const char *xref,
         success = success && overview_add(overview, group, data);
     }
     return success;
+}
+
+
+/*
+**  Cancel a message from a particular group.
+*/
+bool
+overview_cancel(struct overview *overview, const char *group, ARTNUM artnum)
+{
+    return overview->method->cancel(group, artnum);
+}
+
+
+/*
+**  Cancel a message from all groups based on Xref information.  This is
+**  hideously ugly, since there's no easy way to go from a token to a
+**  newsgroup name and article number.  We retrieve the head of the article,
+**  find the Xref header, and then parse it.  Articles without an Xref header
+**  lose.
+*/
+bool
+overview_cancel_xref(struct overview *overview, TOKEN token)
+{
+    ARTHANDLE *art;
+    const char *xref, *xrefend, *group;
+    size_t xreflen, i;
+    char *xref_copy, *p, *end;
+    ARTNUM artnum;
+
+    art = SMretrieve(token, RETR_HEAD);
+    if (art == NULL)
+        return false;
+    xref = wire_findheader(art->data, art->len, "Xref");
+    if (xref == NULL)
+        goto fail;
+    xrefend = wire_endheader(xref, art->data + art->len - 1);
+    if (xrefend == NULL)
+        goto fail;
+    xreflen = xrefend - xref + 1;
+    xref_copy = xstrndup(xref, xreflen);
+    SMfreearticle(art);
+    overview->groups = cvector_split_space(xref_copy, overview->groups);
+    for (i = 0; i < overview->groups->count; i++) {
+        group = overview->groups->strings[i];
+        p = (char *) strchr(group, ':');
+        if (p == NULL || p == group || p[1] == '-')
+            continue;
+        *p = '\0';
+        errno = 0;
+        artnum = strtoul(p + 1, &end, 10);
+        if (artnum == 0 || *end != '\0' || errno == ERANGE)
+            continue;
+
+        /* Don't worry about the return status; the article may have already
+           expired out of some or all of the groups. */
+        overview_cancel(overview, group, artnum);
+    }
+    free(xref_copy);
+    return true;
+
+fail:
+    SMfreearticle(art);
+    return false;
 }
 
 

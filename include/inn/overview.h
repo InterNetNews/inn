@@ -132,6 +132,16 @@ bool overview_add(struct overview *, const char *, struct overview_data *);
 bool overview_add_xref(struct overview *, const char *xref,
                        struct overview_data *);
 
+/* Cancel the overview data for an article (make it inaccessible to searches).
+   Unfortunately, most callers will have to use the _xref interface. */
+bool overview_cancel(struct overview *, const char *group, ARTNUM);
+
+/* Cancel the overview data for an article from all groups, based on Xref
+   information.  This retrieves the article to find the groups and article
+   numbers (ew!), so call this before deleting the article out of the storage
+   API. */
+bool overview_cancel_xref(struct overview *, TOKEN token);
+
 /* Used to retrieve overview data.  Even when just retrieving a single record,
    a caller must call overview_search_open and then overview_search.  The data
    returned by overview_search may be invalidated by the next call to that
