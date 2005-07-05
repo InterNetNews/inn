@@ -589,7 +589,8 @@ General Projects
 
 * actsyncd could stand a rewrite and cleaner handling of both
   configuration and syncing against multiple sources which are canonical
-  for different sets of groups.
+  for different sets of groups.  In the process, FTP handling should
+  support debugging.
 
 * send-nntp and nntpsend basically do the same thing; send-nntp could
   probably be removed (possibly with some extra support in nntpsend for
