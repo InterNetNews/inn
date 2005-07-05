@@ -417,6 +417,8 @@ ARTlogreject(CHANNEL *cp)
     if (innconf->logipaddr && cp->Address.ss_family != 0)
         data->Feedsite = RChostname(cp);
     else {
+        if (!HDR_FOUND(HDR__PATH))
+            return;
         HDR_PARSE_START(HDR__PATH);
         hopcount =
             ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
