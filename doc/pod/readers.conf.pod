@@ -190,6 +190,10 @@ clearer.
 
 =head1 AUTH GROUP PARAMETERS
 
+An access group without at least one of the res:, auth:, perl_auth:,
+python_auth:, or default: parameters makes no sense (and in practice will
+just be ignored).
+
 =over 4
 
 =item B<hosts:>
