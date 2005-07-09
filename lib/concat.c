@@ -75,5 +75,5 @@ concatpath(const char *base, const char *name)
     if (name[0] == '/' || (name[0] == '.' && name[1] == '/'))
         return xstrdup(name);
     else
-        return concat(base, "/", name, (char *) 0);
+        return concat(base != NULL ? base : ".", "/", name, (char *) 0);
 }

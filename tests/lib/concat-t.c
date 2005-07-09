@@ -9,10 +9,11 @@
 
 #define END     (char *) 0
 
+/* Memory leaks everywhere!  Whoo-hoo! */
 int
 main(void)
 {
-    test_init(11);
+    test_init(13);
 
     ok_string( 1, "a",     concat("a",                   END));
     ok_string( 2, "ab",    concat("a", "b",              END));
@@ -26,6 +27,8 @@ main(void)
     ok_string( 9, "/foo/bar",         concatpath("/foo", "bar"));
     ok_string(10, "./bar",            concatpath("/foo", "./bar"));
     ok_string(11, "/bar/baz/foo/bar", concatpath("/bar/baz", "foo/bar"));
+    ok_string(12, "./foo",            concatpath(NULL, "foo"));
+    ok_string(13, "/foo/bar",         concatpath(NULL, "/foo/bar"));
 
     return 0;
 }
