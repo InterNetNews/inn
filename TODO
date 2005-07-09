@@ -29,14 +29,14 @@ Scheduled for INN 2.5
   initialization function should return a pointer to an opaque struct
   which stores all of the state of the overview subsystem, rather than all
   of that being stored in static variables, and then all other functions
-  should take that pointer.  OVctl possibly should instead take and return
-  a struct rather than using an ioctl-style interface.  Currently, the
-  overview functions do a lot of breaking apart of Xref headers and
-  parsing them, which is very ugly; consider having the overview interface
-  always key off a newsgroup name and article number, even for storing.
-  OVadd should probably take a structure and OVsearch should probably
-  return a structure.  A start on this has already been committed to
-  CURRENT.
+  should take that pointer.  [The new API is available in CURRENT and
+  conversion of portions of INN to use it is in progress.  Once that
+  conversion is done, the old API can be dropped and the overview backends
+  converted to speak the new API at all levels.]
+
+* The TLS layer in nnrpd badly needs to be rewritten.  Currently, it
+  doesn't handle timeouts and the code could be cleaned up considerably.
+  Support for GnuTLS would also be nice, as would client support.
 
 * Convert readers.conf and storage.conf (and related configuration files)
   to use the new parsing system and break out program-specific sections
