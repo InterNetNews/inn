@@ -331,8 +331,8 @@ int main (int argc, char **argv)
                   "Empty pathname for ``-c'' option") ;
       exit (1) ;
     }
-  configFile = buildFilename(innconf->pathetc, copt ? copt : CONFIG_FILE);
-  dflTapeDir = buildFilename(innconf->pathspool, TAPE_DIRECTORY);
+  configFile = concatpath(innconf->pathetc, copt ? copt : CONFIG_FILE);
+  dflTapeDir = concatpath(innconf->pathspool, TAPE_DIRECTORY);
 
   rval = readConfig (configFile,(checkConfig ? stderr : NULL),
                      checkConfig,loggingLevel > 0);
@@ -360,12 +360,12 @@ int main (int argc, char **argv)
   else if (!rval)
     exit (1) ;
 
-  debugFile = buildFilename (innconf->pathlog, DEBUG_FILE);
+  debugFile = concatpath(innconf->pathlog, DEBUG_FILE);
   if (loggingLevel == 0 && fileExistsP (debugFile))
     loggingLevel = 1 ;
 
   if (logFile == NULL && ! isatty (fileno (stderr)))
-    logFile = buildFilename (innconf->pathlog, LOG_FILE) ;
+    logFile = concatpath(innconf->pathlog, LOG_FILE);
 
   if (logFile)
     openLogFile () ;
@@ -673,7 +673,7 @@ static void gprintinfo (void)
   FILE *fp;
   time_t now = theTime() ;
 
-  snapshotFile = buildFilename(innconf->pathlog, SNAPSHOT_FILE);
+  snapshotFile = concatpath(innconf->pathlog, SNAPSHOT_FILE);
   fp = fopen (snapshotFile,"a") ;
   if (fp == NULL)
     {
@@ -738,7 +738,7 @@ static int mainConfigLoadCbk (void *data)
   if (getString (topScope,"input-file",&p,NO_INHERIT))
     {
       if (*p != '\0')
-	InputFile = buildFilename (getTapeDirectory(),p) ;
+	InputFile = concatpath(getTapeDirectory(), p);
       else
 	InputFile = "" ;
       free (p) ;
@@ -746,11 +746,11 @@ static int mainConfigLoadCbk (void *data)
   
   if (getString (topScope,"pid-file",&p,NO_INHERIT))
     {
-      pidFile = buildFilename (innconf->pathrun,p) ;
+      pidFile = concatpath(innconf->pathrun, p);
       free (p) ;
     }
   else
-    pidFile = buildFilename (innconf->pathrun,PID_FILE) ;
+    pidFile = concatpath(innconf->pathrun, PID_FILE);
   
   if (getInteger (topScope,"debug-level",&ival,NO_INHERIT))
     loggingLevel = (unsigned int) ival ;
@@ -766,7 +766,7 @@ static int mainConfigLoadCbk (void *data)
   
   if (getString (topScope,"log-file",&p,NO_INHERIT))
     {
-      logFile = buildFilename (innconf->pathlog,p) ;
+      logFile = concatpath(innconf->pathlog, p);
       free (p) ;
     }
 

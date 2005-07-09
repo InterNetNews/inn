@@ -117,9 +117,6 @@ const char *boolToString (bool val) ;
 /* memory leak checker helper. */
 void addPointerFreedOnExit (char *pointerToFree) ;
 
-/* splice direcotory and fname together and return free'able string */
-char *buildFilename (const char *directory, const char *fname) ;
-
 /* string the file opened by FP to the give SIZE. The NEWNAME is the name
    of the file to have after truncation. FP will be reopened for writing on
    the new file and will be positioned at the end */

@@ -616,37 +616,6 @@ void addPointerFreedOnExit (char *pointerToFree)
   PointersFreedOnExit [nextPointer++] = pointerToFree ;
 }
 
-/* malloc a buffer and build the filename in it. */
-char *buildFilename (const char *directory, const char *fname)
-{
-  int len = 0 ;
-  char *p = NULL ;
-
-  if (fname == NULL)
-    return NULL ;
-
-  if (directory == NULL)
-    directory = "." ;
-  
-  len = strlen (directory) + strlen (fname) + 2 + 1 ;
-
-  if (len < pathMax(directory) - 2)
-    {
-      p = xmalloc (len) ;
-      p [0] = '\0' ;
-      if (fname [0] != '/')
-        {
-          strlcat (p,directory,len) ;
-          if (p [strlen(p) - 1] != '/')
-            strlcat (p,"/",len) ;
-        }
-      strlcat (p,fname,len) ;
-    }
-
-  return p ;
-}
-
-
 
 /* borrows heavily from the shrinkfile program by chongo. */
 bool shrinkfile (FILE *fp, long size, char *name, const char *mode)

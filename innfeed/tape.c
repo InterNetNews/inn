@@ -185,7 +185,7 @@ int tapeConfigLoadCbk (void *data)
 
   if (getString (topScope,"backlog-directory",&p,NO_INHERIT))
     {
-      dir = buildFilename(innconf->pathspool, p);
+      dir = concatpath(innconf->pathspool, p);
       free(p);
       if (tapeDirectory != NULL && strcmp (tapeDirectory,dir) != 0)
         {
