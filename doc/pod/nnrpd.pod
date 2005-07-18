@@ -70,7 +70,7 @@ should therefore be restarted if inn.conf is changed.
 When started in daemon mode, B<nnrpd> will write its PID into a file in
 the I<pathrun> directory.  The file will be named F<nnrpd-%d.pid>, where
 C<%d> is replaced with the port that B<nnrpd> is configured to listen on
-(119 unless the B<-P> option is given).
+(119 unless the B<-p> option is given).
 
 =item B<-f>
 
