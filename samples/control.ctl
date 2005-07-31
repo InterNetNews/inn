@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2004-11-28
+##  Last modified: 2005-07-31
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -547,6 +547,8 @@ newgroup:*:cmu.*:mail
 rmgroup:*:cmu.*:doit
 
 ## CN (China)
+# Admin group: cn.announce
+# Key fingerprint = 62 97 EE 33 F7 16 25 C1  A4 9E 47 BA C5 3E 5E 9E
 # *PGP*   See comment at top of file.
 newgroup:*:cn.*:drop
 rmgroup:*:cn.*:drop
@@ -789,6 +791,13 @@ rmgroup:*:example.*:doit
 #
 newgroup:*:fa.*:mail
 rmgroup:*:fa.*:doit
+
+## FAM (Family Usenet)
+# URL: http://checkgroups.family-usenet.com/
+# Admin group: fam.admin.talk
+checkgroups:admin@family-usenet.com:fam.*:doit
+newgroup:admin@family-usenet.com:fam.*:doit
+rmgroup:admin@family-usenet.com:fam.*:doit
 
 ## FFM (Frankfurt/M., Germany)
 # URL: http://ffm.arcornews.de/
@@ -1085,6 +1094,18 @@ rmgroup:news@sally.isc.chubu.ac.jp:isc.*:doit
 newgroup:news@news.biu.ac.il:israel.*:doit
 rmgroup:news@news.biu.ac.il:israel.*|il.*:doit
 
+## ISU (I-Shou University, Taiwan)
+# Contact: news@news.isu.edu.tw
+# URL: http://news.isu.edu.tw/
+# Admin group: isu.newgroups
+# Key URL: http://news.isu.edu.tw/isu.asc
+# *PGP*   See comment at top of file.
+newgroup:*:isu.*:drop
+rmgroup:*:isu.*:drop
+checkgroups:news@news.isu.edu.tw:isu.*:verify-news@news.isu.edu.tw
+newgroup:news@news.isu.edu.tw:isu.*:verify-news@news.isu.edu.tw
+rmgroup:news@news.isu.edu.tw:isu.*:verify-news@news.isu.edu.tw
+
 ## IT (Italian)
 # Contact: gcn@news.nic.it
 # URL: http://www.news.nic.it/
@@ -1187,9 +1208,10 @@ newgroup:dan@sky.net:kc.*:doit
 rmgroup:dan@sky.net:kc.*:doit
 
 ## KIEL (Kiel, Germany)
-checkgroups:kris@white.schulung.netuse.de:kiel.*:doit
-newgroup:kris@white.schulung.netuse.de:kiel.*:doit
-rmgroup:kris@white.schulung.netuse.de:kiel.*:doit
+# URL: http://news.koehntopp.de/kiel/
+checkgroups:kris@koehntopp.de:kiel.*:doit
+newgroup:kris@koehntopp.de:kiel.*:doit
+rmgroup:kris@koehntopp.de:kiel.*:doit
 
 ## KRST (*LOCAL* -- University of Oslo, Norway)
 # Contact: jani@ifi.uio.no
@@ -1642,6 +1664,15 @@ checkgroups:fxp@epix.net:pa.*:doit
 newgroup:fxp@epix.net:pa.*:doit
 rmgroup:fxp@epix.net:pa.*:doit
 
+## PBINFO (Paderborn, Germany)
+# Contact: news@uni-paderborn.de
+# *PGP*   See comment at top of file.
+newgroup:*:pbinfo.*:drop
+rmgroup:*:pbinfo.*:drop
+checkgroups:postmaster@upb.de:pbinfo.*:verify-news@uni-paderborn.de
+newgroup:postmaster@upb.de:pbinfo.*:verify-news@uni-paderborn.de
+rmgroup:postmaster@upb.de:pbinfo.*:verify-news@uni-paderborn.de
+
 ## PGH (Pittsburgh, Pennsylvania, USA)
 # Admin group: pgh.config
 # *PGP*   See comment at top of file.
@@ -1835,9 +1866,16 @@ rmgroup:billmcc@akita.com:seattle.*:doit
 rmgroup:graham@ee.washington.edu:seattle.*:doit
 
 ## SFNET (Finland)
-checkgroups:sfnet@*.cs.tut.fi:sfnet.*:doit
-newgroup:sfnet@*.cs.tut.fi:sfnet.*:doit
-rmgroup:sfnet@*.cs.tut.fi:sfnet.*:doit
+# Contact: sfnet@cs.tut.fi
+# URL: http://www.cs.tut.fi/sfnet/
+# Admin group: sfnet.ryhmat+listat
+# Key fingerprint = C1 EC A9 CB D8 04 55 CF  8C E9 C8 B7 F2 F3 4E 61
+# *PGP*   See comment at top of file.
+newgroup:*:sfnet.*:drop
+rmgroup:*:sfnet.*:drop
+checkgroups:sfnet@*cs.tut.fi:sfnet.*:verify-sfnet@cs.tut.fi
+newgroup:sfnet@*cs.tut.fi:sfnet.*:verify-sfnet@cs.tut.fi
+rmgroup:sfnet@*cs.tut.fi:sfnet.*:verify-sfnet@cs.tut.fi
 
 ## SHAMASH (Jewish)
 checkgroups:archives@israel.nysernet.org:shamash.*:doit
