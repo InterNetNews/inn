@@ -115,7 +115,8 @@ HashToText(const HASH hash)
 {
     static char	hashstr[(sizeof(HASH) * 2) + 1];
 
-    inn_encode_hex(hash.hash, sizeof(HASH), hashstr, sizeof(hashstr));
+    inn_encode_hex((unsigned char *) hash.hash, sizeof(HASH), hashstr,
+                   sizeof(hashstr));
     return hashstr;
 }
 
