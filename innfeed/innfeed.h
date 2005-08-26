@@ -94,12 +94,6 @@
    a SIGINT is delivered (or SNAPSHOT_ON_DIE is non-zero--see below). */
 #define SNAPSHOT_FILE "innfeed.snapshot" /* Relative to pathlog */
 
-/* Define this be an existing directory (or NULL). If innfeed deliberatly
-   dumps core it will chdir() to this directory first (if non-NULL). If
-   NULL then it will chdir to TAPE_DIRECTORY (as possibly modified by
-   the '-b' option). */
-#define CORE_DIRECTORY NULL
-
 /* strings that get added to the end of a peer name for generating
    backlog file names.  A peername cannot end in any of these string
    (e.g. having a peer called 'mypeer.input' will not work) */

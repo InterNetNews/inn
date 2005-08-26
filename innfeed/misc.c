@@ -77,10 +77,7 @@ dump_core(void)
     if (gCleanUp != NULL)
         (*gCleanUp)();
   
-    if (CORE_DIRECTORY != NULL)
-        chdir(CORE_DIRECTORY);
-    else
-        chdir(getTapeDirectory());
+    chdir(getTapeDirectory());
   
     sleep(5);
     abort();
