@@ -33,8 +33,9 @@ SASLauth(int ac, char *av[])
     const char *serverout = NULL;
     unsigned int serveroutlen;
     char base64[BASE64_BUF_SIZE+1];
-    const char *canon_user;
-    const int *ssfp, *maxoutp;
+    const char *canon_user = NULL;
+    const int *ssfp = NULL;
+    const int *maxoutp;
     const void *property;
     int r = SASL_OK;
 

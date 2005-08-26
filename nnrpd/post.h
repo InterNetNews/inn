@@ -20,14 +20,22 @@ typedef struct _HEADER {
 } HEADER;
 
 #define HDR(_x) (Table[(_x)].Body)
-#define HDR_SET(_x, _y) do { \
-    Table[(_x)].Body = Table[(_x)].Value = _y; \
-    if (_y == NULL) { \
-	Table[(_x)].Len = 0; \
-    } else { \
-	Table[(_x)].Len = strlen(_y); \
-    } \
-} while (0)
+#define HDR_SET(_x, _y)                         \
+    do {                                        \
+        Table[(_x)].Body = _y;                  \
+        Table[(_x)].Value = _y;                 \
+        if (_y == NULL) {                       \
+            Table[(_x)].Len = 0;                \
+        } else {                                \
+            Table[(_x)].Len = strlen(_y);       \
+        }                                       \
+    } while (0)
+#define HDR_CLEAR(_x)                           \
+    do {                                        \
+        Table[(_x)].Body = NULL;                \
+        Table[(_x)].Value = NULL;               \
+        Table[(_x)].Len = 0;                    \
+    } while (0)
 
 #define HDR__PATH	      0
 #define HDR__FROM	      1

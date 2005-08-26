@@ -42,11 +42,11 @@ typedef unsigned short uint16;
 /* Protocol defines we need */
 
 #define RFCNB_SESSION_MESSAGE    0
-#define RFCNB_SESSION_REQUEST    ((char)(0x81))
-#define RFCNB_SESSION_ACK        ((char)(0x82))
-#define RFCNB_SESSION_REJ        ((char)(0x83))
-#define RFCNB_SESSION_RETARGET   ((char)(0x84))
-#define RFCNB_SESSION_KEEP_ALIVE ((char)(0x85))
+#define RFCNB_SESSION_REQUEST    ((unsigned char)(0x81))
+#define RFCNB_SESSION_ACK        ((unsigned char)(0x82))
+#define RFCNB_SESSION_REJ        ((unsigned char)(0x83))
+#define RFCNB_SESSION_RETARGET   ((unsigned char)(0x84))
+#define RFCNB_SESSION_KEEP_ALIVE ((unsigned char)(0x85))
 
 /* Structures      */
 

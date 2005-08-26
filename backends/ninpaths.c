@@ -279,8 +279,11 @@ readdump(FILE *f)
 	|| (i!=m))
 	formerr(3);
 #ifdef DEBUG
-    fprintf(stderr, " dumped start %s   total=%ld atimes=%ld (%ld)\n",
-            ctime(&st), tot, at, at-st);
+    {
+        time_t st_time = st;
+        fprintf(stderr, " dumped start %s   total=%ld atimes=%ld (%ld)\n",
+                ctime(&st_time), tot, at, at-st);
+    }
 #endif
     /* Adjust the time average and total count */
     if ((unsigned long) starttime > st) {

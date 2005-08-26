@@ -1510,6 +1510,9 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
 	    return NULL;
 	priv.offset = 0;
 	priv.rollover = false;
+        priv.len = 0;
+        priv.base = NULL;
+        priv.cycbuff = NULL;
     } else {        
 	priv = *(PRIV_CNFS *)article->private;
 	free(article->private);

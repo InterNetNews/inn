@@ -58,7 +58,8 @@ HandleHeaders(char *article)
    int		rc;
    char		*p, *q;
    static char	buf[256];
-   int   i, len;
+   int   i;
+   size_t len;
    char *s,*t;
    HE            *scan;
    SV            *modswitch;

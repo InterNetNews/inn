@@ -344,7 +344,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
             }
 	    HDR_SET(HDR__SENDER, sendbuff);
 	} else {
-	    HDR_SET(HDR__SENDER, NULL);
+	    HDR_CLEAR(HDR__SENDER);
 	}
     }
 
@@ -496,9 +496,9 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 
     /* Clear out some headers that should not be here */
     if (!ihave && PERMaccessconf->strippostcc) {
-	HDR_SET(HDR__CC, NULL);
-	HDR_SET(HDR__BCC, NULL);
-	HDR_SET(HDR__TO, NULL);
+	HDR_CLEAR(HDR__CC);
+	HDR_CLEAR(HDR__BCC);
+	HDR_CLEAR(HDR__TO);
     }
     /* Now make sure everything is there. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)

@@ -788,7 +788,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     struct addrinfo     hints, *ai;
     int                 ret;
 #endif
- 
+
+    memset(&peer_params, 0, sizeof(peer_params));
     *RCbuff = '\0';
     if (*list) {
 	for (rp = *list, i = *count; --i >= 0; rp++) {
