@@ -65,9 +65,14 @@ static const char * const gai_errors[] = {
     "Supplied buffer too small",        /* 10 EAI_OVERFLOW */
 };
 
-/* Value representing all of the hint flags set. */
+/* Value representing all of the hint flags set.  Linux uses flags up to
+   0x0400, so be sure not to break when testing on that platform. */
 #if TESTING
-# define AI_INTERNAL_ALL 0x01ff
+# ifdef HAVE_GETADDRINFO
+#  define AI_INTERNAL_ALL 0x04ff
+# else
+#  define AI_INTERNAL_ALL 0x01ff
+# endif
 #else
 # define AI_INTERNAL_ALL 0x007f
 #endif
