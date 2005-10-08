@@ -110,33 +110,33 @@ static void test11(void) {
     sysdie("fatal");
 }
 
-static void log(int len, const char *format, va_list args, int error) {
+static void log_msg(int len, const char *format, va_list args, int error) {
     fprintf(stderr, "%d %d ", len, error);
     vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
 }
 
 static void test12(void) {
-    message_handlers_warn(1, log);
+    message_handlers_warn(1, log_msg);
     warn("warning");
 }
 static void test13(void) {
-    message_handlers_die(1, log);
+    message_handlers_die(1, log_msg);
     die("fatal");
 }
 static void test14(void) {
-    message_handlers_warn(2, log, log);
+    message_handlers_warn(2, log_msg, log_msg);
     errno = EPERM;
     syswarn("warning");
 }
 static void test15(void) {
-    message_handlers_die(2, log, log);
+    message_handlers_die(2, log_msg, log_msg);
     message_fatal_cleanup = return10;
     errno = EPERM;
     sysdie("fatal");
 }
 static void test16(void) {
-    message_handlers_warn(2, message_log_stderr, log);
+    message_handlers_warn(2, message_log_stderr, log_msg);
     message_program_name = "test16";
     errno = EPERM;
     syswarn("warning");
@@ -148,7 +148,7 @@ static void test18(void) {
 }
 static void test19(void) { debug("debug"); }
 static void test20(void) {
-    message_handlers_notice(1, log);
+    message_handlers_notice(1, log_msg);
     notice("foo");
 }
 static void test21(void) {

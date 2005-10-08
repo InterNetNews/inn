@@ -113,7 +113,7 @@ main(void)
             if (buffer[0] == '\0')
                 continue;
             word = tst_search(tst, buffer);
-            if (word == NULL || strcmp((char *) word, buffer) != 0) {
+            if (word == NULL || strcmp((char *) word, (char *) buffer) != 0) {
                 if (!reported) {
                     printf("# Failed search of word %s\n", word);
                     printf("not ");
@@ -121,7 +121,7 @@ main(void)
                 reported = true;
             }
             word = tst_delete(tst, buffer);
-            if (word == NULL || strcmp((char *) word, buffer) != 0) {
+            if (word == NULL || strcmp((char *) word, (char *) buffer) != 0) {
                 if (!reported) {
                     printf("# Failed delete of word %s\n", word);
                     printf("not ");
