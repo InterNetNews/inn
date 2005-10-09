@@ -11,7 +11,11 @@ I<base-directory>
 
 B<fastrm> reads a list of either file names or storage API tokens, one per
 line, from its standard input and removes them.  Storage API tokens are
-removed via the SMcancel() interface.
+removed via the SMcancel() interface.  B<fastrm> does not delete files
+safely or with an eye to security, but rather cuts every corner it can to
+delete files as fast as it can.  It should therefore never be run on
+publically writable directories, or in any other environment where a
+hostile party may control the directory structure in which it is working.
 
 If a file name is not an absolute path name, it is considered to be
 relative to I<base-directory> as given on the command line.  The
@@ -156,6 +160,15 @@ calls to unlink(2).
 
 You may want to edit expirerm(8) to change the flags passed to B<fastrm>.
 
+=head1 WARNINGS
+
+B<fastrm> cuts corners and does not worry about security, so it does not
+use chdir(2) safely and could be tricked into removing files other than
+those that were intended if run on a specially constructed file tree or a
+file tree that is being modified while it is running.  It should therefore
+never be used with world-writable directories or any other directory that
+might be controlled or modified by an attacker.
+
 =head1 NOTES
 
 B<fastrm> defers opening the storage subsystem or attempting to parse any
@@ -166,8 +179,7 @@ general fast file removal program.
 =head1 HISTORY
 
 B<fastrm> was originally written by kre@munnari.oz.au.  This manual page
-rewritten in POD by Russ Allbery E<lt>rra@stanford.eduE<gt> for
-InterNetNews.
+rewritten in POD by Russ Allbery <rra@stanford.edu> for InterNetNews.
 
 $Id$
 
