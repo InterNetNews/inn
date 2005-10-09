@@ -631,7 +631,7 @@ ARTparseheader(CHANNEL *cp, int size)
   if (i == HDR__BYTES)
     cp->Data.BytesHeader = header;
   hc = &hc[i];
-  if (hc->Length > 0) {
+  if (hc->Length != 0) {
     /* duplicated */
     hc->Length = -1;
   } else {
@@ -1019,12 +1019,17 @@ ARTclean(ARTDATA *data, char *buff)
   /* Make sure all the headers we need are there */
   for (i = 0; i < MAX_ARTHEADER ; i++) {
     if (hp[i].Type == HTreq) {
-      if (!HDR_FOUND(i)) {
+      if (HDR_FOUND(i))
+        continue;
+      if (hc[i].Length < 0) {
+        sprintf(buff, "%d Duplicate \"%s\" header", NNTP_REJECTIT_VAL,
+                hp[1].Name);
+      } else {
 	sprintf(buff, "%d Missing \"%s\" header", NNTP_REJECTIT_VAL,
-	  hp[i].Name);
-	TMRstop(TMR_ARTCLEAN);
-	return false;
+                hp[i].Name);
       }
+      TMRstop(TMR_ARTCLEAN);
+      return false;
     }
   }
 
