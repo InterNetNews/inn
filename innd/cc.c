@@ -1924,6 +1924,7 @@ CCsetup(void)
     int			i;
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
     struct sockaddr_un	server;
+    int size = 65535;
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     if (CCpath == NULL)
@@ -1953,6 +1954,10 @@ CCsetup(void)
 	syslog(L_FATAL, "%s cant socket unbound %m", LogName);
 	exit(1);
     }
+
+    /* Increase the buffer size for the Unix domain socket */
+    if (setsockopt(CCwriter, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)) < 0)
+	syslog(L_ERROR, "%s cant setsockopt %m", LogName);
 #else
     /* Create a named pipe and open it. */
     if (mkfifo(CCpath, 0666) < 0) {
