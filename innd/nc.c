@@ -128,22 +128,22 @@ NCwritereply(CHANNEL *cp, const char *text)
     WCHANappend(cp, text, strlen(text));	/* text in buffer */
     WCHANappend(cp, NCterm, strlen(NCterm));	/* add CR NL to text */
 
-    /* FIXME: Something is wrong with this code.  At the least, it's
-       confusing.  bp->used can be incremented without decrementing bp->left,
-       which shouldn't be allowed. */
     if (i == 0) {	/* if only data then try to write directly */
 	i = write(cp->fd, &bp->data[bp->used], bp->left);
 	if (Tracing || cp->Tracing)
 	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %lu)",
 		CHANname(cp), i, cp->fd, &bp->data[bp->used],
 		(unsigned long) bp->left);
-	if (i > 0) bp->used += i;
+	if (i > 0) 
+            bp->used += i;
 	if (bp->used == bp->left) {
 	    /* all the data was written */
 	    bp->used = bp->left = 0;
 	    NCwritedone(cp);
-	}
-	else i = 0;
+	} else {
+            bp->left -= i;
+            i = 0;
+        }
     } else i = 0;
     if (i <= 0) {	/* write failed, queue it for later */
 	WCHANadd(cp);
