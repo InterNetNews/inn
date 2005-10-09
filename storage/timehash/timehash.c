@@ -225,6 +225,10 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	    free(art);
 	    return NULL;
 	}
+        if (amount == RETR_ALL)
+            madvise(private->base, sb.st_size, MADV_WILLNEED);
+        else
+            madvise(private->base, sb.st_size, MADV_SEQUENTIAL);
     } else {
 	private->base = xmalloc(private->len);
 	if (read(fd, private->base, private->len) < 0) {

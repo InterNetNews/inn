@@ -1367,7 +1367,10 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    return NULL;
 	}
 	mmap_invalidate(private->base, private->len);
-	madvise(private->base, private->len, MADV_SEQUENTIAL);
+        if (amount == RETR_ALL)
+	    madvise(private->base, private->len, MADV_WILLNEED);
+        else
+	    madvise(private->base, private->len, MADV_SEQUENTIAL);
     } else {
 	private->base = xmalloc(ntohl(cah.size));
 	pagefudge = 0;

@@ -468,6 +468,10 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 	    return NULL;
 	}
 	mmap_invalidate(private->mmapbase, private->mmaplen);
+        if (amount == RETR_ALL)
+            madvise(private->mmapbase, private->mmaplen, MADV_WILLNEED);
+        else
+            madvise(private->mmapbase, private->mmaplen, MADV_SEQUENTIAL);
 	private->artdata = private->mmapbase + delta;
     } else {
         private->artdata = xmalloc(private->artlen);
