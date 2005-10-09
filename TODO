@@ -361,6 +361,9 @@ Needed Bug Fixes
   otherwise not do what's expected.  This area needs some thought and a
   careful design.
 
+* tdx-util can't fix hash chain loops of length greater than one, and they
+  cause both tdx-util -F and innd to hang.
+
 
 Requested New Features
 
