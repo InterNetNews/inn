@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2005-07-31
+##  Last modified: 2005-10-08
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -559,7 +559,6 @@ rmgroup:control@bentium.com:cn.*:verify-cn.admin.news.announce
 ## CN.BBS (China)
 # URL: http://bbs.cn.news-admin.org/
 # Admin group: cn.bbs.admin.announce
-# Key URL: http://www.cn-bbs.org/pubkey-cn.bbs.admin.announce
 # *PGP*   See comment at top of file.
 newgroup:*:cn.bbs.*:drop
 rmgroup:*:cn.bbs.*:drop
@@ -728,9 +727,7 @@ rmgroup:news@doc.dpc.ehime-u.ac.jp:ehime-u.*:doit
 
 ## ENGLAND (England)
 # Contact: admin@england.news-admin.org
-# URL: http://www.england.news-admin.org/newsadminsfaq.html
 # Admin group: england.news.policy
-# Key URL: http://www.england.news-admin.org/pgpkey.html
 # Key fingerprint = DA 3E C2 01 46 E5 61 CB  A2 43 09 CA 13 6D 31 1F
 # *PGP*   See comment at top of file.
 newgroup:*:england.*:drop
@@ -792,13 +789,6 @@ rmgroup:*:example.*:doit
 newgroup:*:fa.*:mail
 rmgroup:*:fa.*:doit
 
-## FAM (Family Usenet)
-# URL: http://checkgroups.family-usenet.com/
-# Admin group: fam.admin.talk
-checkgroups:admin@family-usenet.com:fam.*:doit
-newgroup:admin@family-usenet.com:fam.*:doit
-rmgroup:admin@family-usenet.com:fam.*:doit
-
 ## FFM (Frankfurt/M., Germany)
 # URL: http://ffm.arcornews.de/
 # Key URL: ftp://ftp.arcor-online.net/pub/news/PGPKEY.FFM
@@ -815,7 +805,6 @@ newgroup:root@mbh.org:fido.*:doit
 rmgroup:root@mbh.org:fido.*:doit
 
 ## FIDO.BELG (FidoNet)
-# URL: http://www.z2.fidonet.org/news/fido.belg.news/
 # Admin group: fido.belg.news
 # *PGP*   See comment at top of file.
 newgroup:*:fido.belg.*:drop
@@ -860,7 +849,6 @@ rmgroup:scheidell@fdma.fdma.com:fl.*:doit
 
 ## FLORA (FLORA Community WEB, Canada)
 # Contact: russell@flora.org
-# URL: http://news.flora.org/
 # Admin group: flora.general
 # *PGP*   See comment at top of file.
 newgroup:*:flora.*:drop
@@ -947,9 +935,7 @@ rmgroup:news@*dcss.mcmaster.ca:hamilton.*:doit
 
 ## HAMSTER (Hamster, a Win32 news and mail proxy server)
 # Contact: hamster-contact@snafu.de
-# URL: http://www.nethamster.org
 # Admin group: hamster.de.config
-# Key URL: http://www.nethamster.org/control/hamster.asc
 # Key fingerprint = 12 75 A9 42 8A D6 1F 77  6A CF B4 0C 79 15 5F 93
 # *PGP*   See comment at top of file.
 newgroup:*:hamster.*:drop
@@ -978,6 +964,11 @@ rmgroup:*@*.harvard.edu:harvard.*:doit
 checkgroups:news@lava.net:hawaii.*:doit
 newgroup:news@lava.net:hawaii.*:doit
 rmgroup:news@lava.net:hawaii.*:doit
+
+## HFX (Halifax, Nova Scotia)
+checkgroups:stevemackie@gmail.com:hfx.*:doit
+newgroup:stevemackie@gmail.com:hfx.*:doit
+rmgroup:stevemackie@gmail.com:hfx.*:doit
 
 ## HIV (HIVNET Foundation, for HIV+/AIDS information)
 # Contact: news@hivnet.org
@@ -1052,7 +1043,6 @@ rmgroup:support@idoctra.com:idoctra.*:doit
 
 ## IE (Ireland)
 # Contact: control@usenet.ie
-# URL: http://www.usenet.ie/
 # Admin group: ie.news.group
 # *PGP*   See comment at top of file.
 newgroup:*:ie.*:drop
@@ -1346,7 +1336,6 @@ rmgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 
 ## MICROSOFT (Microsoft Corporation, USA)
 # Contact: usenet@microsoft.com
-# URL: http://www.microsoft.com/usenetadmin
 # Key URL: http://www.microsoft.com/usenetadmin/pgpkey.txt
 # Key fingerprint = 1C 3B EB AF 7C 5C 8A B0  CD 5F 5C B0 AB 74 4F B1
 # *PGP*   See comment at top of file.
@@ -1358,7 +1347,6 @@ rmgroup:usenet@microsoft.com:microsoft.*:verify-usenet@microsoft.com
 
 ## MICROSOFT.PRIVATE (*PRIVATE* -- Microsoft Corporation, USA)
 # Contact: usenet@microsoft.com
-# URL: http://www.microsoft.com/usenetadmin
 # For private use only, contact the above address for information.
 newgroup:usenet@microsoft.com:microsoft.private.*:mail
 rmgroup:usenet@microsoft.com:microsoft.private.*:doit
@@ -1492,9 +1480,8 @@ rmgroup:ktomita@jade.dti.ne.jp:nihon.*:doit
 
 ## NL (Netherlands)
 # Contact: nl-admin@nic.surfnet.nl
-# URL: http://www.kinkhorst.com/usenet/nladmin.en.html (English)
+# URL: http://nl.news-admin.org/info/nladmin.html
 # Admin group: nl.newsgroups
-# Key URL: http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x23E9B3A9
 # Key fingerprint = 45 20 0B D5 A1 21 EA 7C  EF B2 95 6C 25 75 4D 27
 # *PGP*   See comment at top of file.
 newgroup:*:nl.*:drop
@@ -1801,9 +1788,7 @@ rmgroup:root@lusatia.de:sachsnet.*:doit
 
 ## SAT (San Antonio, Texas, USA)
 # Contact: satgroup@endicor.com
-# URL: http://www.endicor.com/~satgroup/
 # Admin group: sat.usenet.config
-# Key URL: http://www.endicor.com/~satgroup/pubkey.asc
 # *PGP*   See comment at top of file.
 newgroup:*:sat.*:drop
 rmgroup:*:sat.*:drop
