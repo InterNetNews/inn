@@ -105,6 +105,7 @@ $umask = @NEWSUMASK@ ;
 $syslog_facility = lc("@SYSLOG_FACILITY@");
 $syslog_facility =~ s/log_//;
 
+$ENV{'PATH'} ||= '';
 $ENV{'PATH'} = "${newslbin}:${newsbin}:$ENV{'PATH'}:/bin:/usr/bin" ;
 
 1 ;
