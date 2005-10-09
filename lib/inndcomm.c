@@ -27,8 +27,6 @@
 #include "libinn.h"
 #include "paths.h"
 
-#define MIN_BUFFER_SIZE		4096
-
 static char			*ICCsockname = NULL;
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 static struct sockaddr_un	ICCserv;
@@ -56,6 +54,7 @@ int
 ICCopen(void)
 {
     int mask, oerrno, fd;
+    int size = 65535;
 
     if (innconf == NULL) {
 	if (!innconf_read(NULL)) {
@@ -90,6 +89,11 @@ ICCopen(void)
 	ICCfailure = "socket";
 	return -1;
     }
+
+    /* Adjust the socket buffer size to accomodate large responses.  Ignore
+       failure; the message may fit anyway, and if not, we'll fail below. */
+    setsockopt(ICCfd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
+
     memset(&ICCclient, 0, sizeof ICCclient);
     ICCclient.sun_family = AF_UNIX;
     strlcpy(ICCclient.sun_path, ICCsockname, sizeof(ICCclient.sun_path));
