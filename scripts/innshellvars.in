@@ -106,3 +106,6 @@ umask @NEWSUMASK@
 
 PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin
 export PATH
+
+HOME=$PATHNEWS
+export HOME
