@@ -1800,7 +1800,12 @@ CCreader(CHANNEL *cp)
 
     memcpy (&protocol,buff,sizeof (protocol)) ;
     memcpy (&bufflen,buff + sizeof (protocol),sizeof (bufflen)) ;
-    bufflen = ntohs (bufflen) - HEADER_SIZE ;
+    bufflen = ntohs (bufflen);
+    if (bufflen < HEADER_SIZE) {
+	syslog(L_ERROR, "%s cant read CCreader bad length", LogName);
+	return;
+    }
+    bufflen -= HEADER_SIZE ;
     
     i = RECVorREAD(CCchan->fd, buff, bufflen) ;
 
