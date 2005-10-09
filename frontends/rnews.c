@@ -824,6 +824,31 @@ int main(int ac, char *av[])
     message_handlers_warn(1, message_log_syslog_err);
     message_handlers_die(1, message_log_syslog_err);
 
+    /* The reason for the following is somewhat obscure and is done only
+       because rnews is sometimes installed setuid.
+
+       The stderr stream used by message_log_syslog_err is associated with
+       file descriptor 2, generally even if that file descriptor is closed.
+       Someone running rnews may close all of the standard file descriptors
+       before running it, in which case, later in its operations, one of the
+       article files or network connections it has open could be file
+       descriptor 2.  If an error occurs at that point, the error message may
+       be written to that file or network connection instead of to stderr,
+       with unpredictable results.
+
+       We avoid this by burning three file descriptors if the real and
+       effective user IDs don't match, or if we're running as root.  (If they
+       do match, there is no escalation of privileges and at worst the user is
+       just managing to produce a strange bug.) */
+    if (getuid() != geteuid() || geteuid() == 0) {
+        if (open("/dev/null", O_RDONLY) < 0)
+            sysdie("cannot open /dev/null");
+        if (open("/dev/null", O_RDONLY) < 0)
+            sysdie("cannot open /dev/null");
+        if (open("/dev/null", O_RDONLY) < 0)
+            sysdie("cannot open /dev/null");
+    }
+
     /* Make sure that we switch to the news user if we're running as root,
        since we may spool files and don't want those files owned by root.
        Don't require that we be running as the news user, though; there are
