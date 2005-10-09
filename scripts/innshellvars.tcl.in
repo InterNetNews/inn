@@ -99,3 +99,5 @@ set inn_spooltemp "$inn_pathtmp"
 scan "@NEWSUMASK@" "%o" inn_umask
 
 set env(PATH) "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin:/usr/ucb"
+
+set env(HOME) "$inn_pathnews"
