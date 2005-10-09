@@ -768,6 +768,11 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	    close(fd);
 	    return NULL;
 	}
+        if (amount == RETR_ALL)
+            madvise(private->artbase, sb.st_size, MADV_WILLNEED);
+        else
+            madvise(private->artbase, sb.st_size, MADV_SEQUENTIAL);
+
 	/* consider coexisting both wireformatted and nonwireformatted */
 	p = memchr(private->artbase, '\n', private->artlen);
 	if (p == NULL || p == private->artbase) {
