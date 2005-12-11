@@ -364,6 +364,10 @@ Needed Bug Fixes
 * tdx-util can't fix hash chain loops of length greater than one, and they
   cause both tdx-util -F and innd to hang.
 
+* CNFS is insufficiently robust when corrupt buffers are encountered.
+  Setting cnfscheckfudgesize clears up issues that otherwises causes INN
+  to crash.
+
 
 Requested New Features
 
