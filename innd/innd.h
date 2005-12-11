@@ -66,12 +66,15 @@ typedef short	SITEIDX;
 
 
 /*
-**  Server's operating mode.
+**  Server's operating mode.  Note that OMshutdown is only used internally
+**  while shutting down in CCshutdown or CCxexec and does not need to be
+**  handled outside of the Perl and Python filtering code.
 */
 typedef enum _OPERATINGMODE {
   OMrunning,
   OMpaused,
-  OMthrottled
+  OMthrottled,
+  OMshutdown
 } OPERATINGMODE;
 
 

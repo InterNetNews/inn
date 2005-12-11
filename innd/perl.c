@@ -218,6 +218,8 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
         hv_store(mode, "Mode", 4, newSVpv("paused", 0), 0);
     if (Mode == OMthrottled)
         hv_store(mode, "Mode", 4, newSVpv("throttled", 0), 0);
+    if (Mode == OMshutdown)
+        hv_store(mode, "Mode", 4, newSVpv("shutdown", 0), 0);
 
     if (NewMode == OMrunning)
         hv_store(mode, "NewMode", 7, newSVpv("running", 0), 0);
@@ -225,6 +227,8 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
         hv_store(mode, "NewMode", 7, newSVpv("paused", 0), 0);
     if (NewMode == OMthrottled)
         hv_store(mode, "NewMode", 7, newSVpv("throttled", 0), 0);
+    if (NewMode == OMshutdown)
+        hv_store(mode, "NewMode", 4, newSVpv("shutdown", 0), 0);
 
     hv_store(mode, "reason", 6, newSVpv(reason, 0), 0);
 

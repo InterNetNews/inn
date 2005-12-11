@@ -40,6 +40,15 @@ tinyleaf(8) man page for more information.
 
 =item *
 
+The Perl and Python filter_mode hooks are now called when innd is shutting
+down via either C<ctlinnd shutdown> or C<ctlinnd xexec> with a new mode
+value of "shutdown".  This will allow the Perl hooks to save filter data
+across innd restarts without requiring that the news administrator
+throttle the server first.  (Python already had a separate close hook that
+is also called.)
+
+=item *
+
 Support for embedded Tcl filters in innd has been removed.  It hasn't
 worked for some time and causes innd crashes if compiled in (even if not
 used).  If someone wants to step forward and maintain it, I recommend

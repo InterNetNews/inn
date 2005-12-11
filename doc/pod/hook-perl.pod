@@ -167,13 +167,12 @@ that contains three values:
         NewMode    The new mode the server is going to
         reason     The reason that was given to ctlinnd
 
-One possible use for this function is to save filter state across a
-restart of innd.  There isn't any Perl function which is called when INN
-shuts down, but using filter_mode() the Perl filter can dump it's state to
-disk whenever INN is throttled.  Then, if the news administrator follows
-the strongly recommended shutdown procedure of throttling the server
-before shutting it down, the filter state will be safely saved to disk and
-can be reloaded when innd restarts (possibly by F<startup_innd.pl>).
+Mode and NewMode will be set to one of running, paused, throttled, or
+shutdown, except that Mode can never be shutdown.  If NewMode is shutdown,
+innd is being shut down immediately after the filter hooks return.  One
+possible use for this function is to save filter state across a restart of
+innd by dumping state to disk when NewMode is shutdown and then reloading
+it when innd restarts (possibly by F<startup_innd.pl>).
 
 The state of the Perl interpretor in which all of these Perl functions run
 is preserved over the lifetime of innd.  In other words, it's permissible for

@@ -1197,6 +1197,8 @@ CCpause(char *av[])
 	return "1 Already paused";
     case OMthrottled:
 	return "1 Already throttled";
+    case OMshutdown:
+        return "1 Shutting down";
     }
     return "1 Unknown mode";
 }
@@ -1258,6 +1260,12 @@ CCxexec(char *av[])
     else
 	return "1 Bad value";
 
+#ifdef DO_PERL
+    PLmode(Mode, OMshutdown, av[0]);
+#endif
+#ifdef DO_PYTHON
+    PYmode(Mode, OMshutdown, av[0]);
+#endif
     JustCleanup();
     syslog(L_NOTICE, "%s execv %s", LogName, CCargv[0]);
 
@@ -1502,6 +1510,12 @@ CCsend(char *av[])
 static const char *
 CCshutdown(char *av[])
 {
+#ifdef DO_PERL
+    PLmode(Mode, OMshutdown, av[0]);
+#endif
+#ifdef DO_PYTHON
+    PYmode(Mode, OMshutdown, av[0]);
+#endif
     syslog(L_NOTICE, "%s shutdown %s", LogName, av[0]);
     CleanupAndExit(0, av[0]);
     /* NOTREACHED */
@@ -1574,6 +1588,8 @@ CCthrottle(char *av[])
 	return CCblock(OMthrottled, p);
     case OMthrottled:
 	return "1 Already throttled";
+    case OMshutdown:
+        return "1 Shutting down";
     }
     return "1 unknown mode";
 }

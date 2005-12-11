@@ -105,14 +105,14 @@ tests in filter_art() to catch articles sent with TAKETHIS but no CHECK.
 
 =item filter_mode(self, oldmode, newmode, reason)
 
-When the operator issues a ctlinnd pause, throttle or go command, this
-function can be used to do something sensible in accordance with the state
-change.  Stamp a log file, save your state on throttle, etc.  oldmode and
-newmode will be strings containing one of the values in ('running',
-'throttled', 'paused', 'unknown') -- oldmode is the state innd was in
-before ctlinnd was run, newmode is the state innd will be in after the
-command finishes.  reason is the comment string provided on the ctlinnd
-command line.
+When the operator issues a ctlinnd pause, throttle, go, shutdown, or xexec
+command, this function can be used to do something sensible in accordance
+with the state change.  Stamp a log file, save your state on throttle,
+etc.  oldmode and newmode will be strings containing one of the values in
+('running', 'throttled', 'paused', 'shutdown', 'unknown') -- oldmode is
+the state innd was in before ctlinnd was run, newmode is the state innd
+will be in after the command finishes.  reason is the comment string
+provided on the ctlinnd command line.
 
 =back
 

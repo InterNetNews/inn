@@ -188,6 +188,7 @@ PYmode(Mode, NewMode, reason)
     case OMrunning:	strlcpy(oldmode, "running", 10);	break;
     case OMpaused:	strlcpy(oldmode, "paused", 10);		break;
     case OMthrottled:	strlcpy(oldmode, "throttled", 10);	break;
+    case OMshutdown:    strlcpy(oldmode, "shutdown", 10);       break;
     }
 
     switch (NewMode) {
@@ -195,6 +196,7 @@ PYmode(Mode, NewMode, reason)
     case OMrunning:	strlcpy(newmode, "running", 10);	break;
     case OMpaused:	strlcpy(newmode, "paused", 10);		break;
     case OMthrottled:	strlcpy(newmode, "throttled", 10);	break;
+    case OMshutdown:    strlcpy(newmode, "shutdown", 10);       break;
     }
 
     result = PyObject_CallFunction(mode_method, (char *) "sss",
