@@ -20,7 +20,6 @@ char	**OtherHeaders;
 int	OtherCount;
 bool   HeadersModified;
 static int	OtherSize;
-static bool	WasMailed;
 static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
@@ -631,7 +630,6 @@ MailArticle(char *group, char *article)
                  i, "Article might not have been mailed");
 	return Error;
     }
-    WasMailed = true;
     return NULL;
 }
 
@@ -953,7 +951,6 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 
     /* Basic processing. */
     OtherCount = 0;
-    WasMailed = false;
     for (hp = Table; hp < ARRAY_END(Table); hp++) {
 	hp->Size = strlen(hp->Name);
 	hp->Value = hp->Body = NULL;
