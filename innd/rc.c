@@ -178,10 +178,12 @@ GoodIdent(int fd, char *identd)
     }
     if (bind(ident_fd,s_local,SA_LEN(s_local)) < 0) {
 	syslog(L_ERROR, "can't bind socket for identd (%m)");
+        close(ident_fd);
 	return false;
     }
     if (connect(ident_fd,s_distant,SA_LEN(s_distant)) < 0) {
 	syslog(L_ERROR, "can't connect to identd (%m)");
+        close(ident_fd);
 	return false;
     }
 
