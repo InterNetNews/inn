@@ -90,14 +90,15 @@ sub read_cf {
         my ($sitespec, $compress, $size, $time) = split(/\s+/);
         next if not $sitespec;
 
-        my ($site, $host) = split(/:/, $sitespec);
+        my ($site, $host, $funnel) = split(/:/, $sitespec);
         $host = $site if not $host;
+        $funnel = $site if not $funnel;
 
         $compress =~ s/_/ /g if $compress;
 
         if ($site_wanted) {
             if ($site eq $site_wanted) {
-                push @sites, [$site, $host, $compress, $size];
+                push @sites, [$site, $host, $funnel, $compress, $size];
                 last;
             }
             next;
@@ -106,10 +107,10 @@ sub read_cf {
         if ($time) {
             foreach my $time (split(/,/, $time)) {
                 next if $time != $hour;
-                push @sites, [$site, $host, $compress, $size];
+                push @sites, [$site, $host, $funnel, $compress, $size];
             }
         } else {
-            push @sites, [$site, $host, $compress, $size];
+            push @sites, [$site, $host, $funnel, $compress, $size];
         }
     }
     close CF;
@@ -140,7 +141,7 @@ sub unbatcher {
 # batch articles for one site
 sub run_site {
     my ($cfg) = @_;
-    my ($site, $host, $compress, $size) = @$cfg;
+    my ($site, $host, $funnel, $compress, $size) = @$cfg;
 
     logmsg("checking site $site", 'debug');
     my $maxjobs = '';
@@ -173,7 +174,9 @@ sub run_site {
     }
 
     rename($site, "$site.work") or logdie("cannot rename $site: $!", 'crit');
-    ctlinnd('-t120', 'flush', $site);
+    logmsg("Flushing $funnel for site $site", 'debug');
+    ctlinnd('-t120', 'flush', $funnel);
+
     if (not -s "$site.work") {
         logmsg("no articles for $site", 'debug');
         unlink "$site.work" or logmsg("cannot delete $site.work: $!", 'err');
@@ -267,7 +270,7 @@ The sites to which articles are to be sent must be configured in the
 configuration file F<send-uucp.cf>.  Each site is specified with a line of
 the form:
 
-    site[:host] [compressor [maxsize [batchtime]]]
+    site[:host[:funnel]] [compressor [maxsize [batchtime]]]
 
 =over 4
 
@@ -280,6 +283,14 @@ from newsfeeds(5).
 
 The UUCP host name to which batches should be sent for this site.
 If omitted, the news site name will be used as the UUCP host name.
+
+=item I<funnel>
+
+In the case of a site configured as a funnel, B<send-uucp> needs to flush
+the channel (or exploder) being used as the target of the funnel instead of
+flushing the site.  This is the way to tell B<send-uucp> the name of the
+channel or exploder to flush for this site.  If not specified, default to
+flushing the site.
 
 =item I<compressor>
 
@@ -317,14 +328,18 @@ Here is an example send-uucp.cf configuration file:
     manhole         compress        1048576         5,18,22
     owl             compress        1048576
     able
+    pern::MYFUNNEL!
 
-This defines seven UUCP sites.  The first four use gzip compression and the
+This defines eight UUCP sites.  The first four use gzip compression and the
 last three use compress.  The first six use a batch size of 1MB, and the
 last site (able) uses the default of 500,000 bytes.  The zoetermeer,
 hoofddorp, pa3ebv, and manhole sites will only have batches generated for
 them during the hours of 05:00, 18:00, and 22:00, and the drinkel site will
 only have batches generated during those hours and 20:00, 00:00, and 02:00.
 There are no restrictions on when batches will be generated for owl or able.
+
+The pern site is configured as a funnel into C<MYFUNNEL!>.  B<send-uucp> will
+issue C<ctlinnd flush MYFUNNEL!> instead of C<ctlinnd flush pern>.
 
 =head1 FILES
 
