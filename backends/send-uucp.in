@@ -157,18 +157,15 @@ sub run_site {
     $compress ||= $inn::compress;
     $size ||= $MAXSIZE;
 
-    # if exists a .work temp file left by a previous invocation, append
-    # it to the current batch file
+    # if exists a .work temp file left by a previous invocation, rename
+    # it to .work.tmp, we'll append it to the current batch file once it
+    # has been renamed and flushed.
     if (-f "$site.work") {
-        my $err = '';
-        open(OUT, ">>$site") or logdie("cannot open $site: $!");
-        open(IN, "$site.work") or logdie("cannot open $site.work: $!");
-        print OUT while <IN>;
-        close IN;
-        close OUT or logdie("cannot close $site: $!");;
+        rename("$site.work", "$site.work.tmp")
+            or logdie("cannot rename $site.work: $!", 'crit');
     }
 
-    if (not -f $site) {
+    if (not -f $site and not -f "$site.work.tmp") {
         logmsg("no batch file for site $site", 'err');
         return;
     }
@@ -176,6 +173,20 @@ sub run_site {
     rename($site, "$site.work") or logdie("cannot rename $site: $!", 'crit');
     logmsg("Flushing $funnel for site $site", 'debug');
     ctlinnd('-t120', 'flush', $funnel);
+
+    # append the old .work temp file to the current batch file if needed
+    if (-f "$site.work.tmp") {
+        my $err = '';
+        open(OUT, ">>$site.work")
+            or logdie("cannot open $site.work: $!", 'crit');
+        open(IN, "$site.work.tmp")
+            or logdie("cannot open $site.work.tmp: $!", 'crit');
+        print OUT while <IN>;
+        close IN;
+        close OUT or logdie("cannot close $site.work: $!");;
+        unlink "$site.work.tmp"
+            or logmsg("cannot delete $site.work.tmp: $!", 'err');
+    }
 
     if (not -s "$site.work") {
         logmsg("no articles for $site", 'debug');
