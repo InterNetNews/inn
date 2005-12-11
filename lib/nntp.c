@@ -123,10 +123,13 @@ nntp_read_data(struct nntp *nntp)
     if (nntp->in.used + nntp->in.left == nntp->in.size) {
         size_t size;
 
-        if (nntp->in.size >= nntp->maxsize)
+        if (nntp->maxsize > 0 && nntp->in.size >= nntp->maxsize)
             return NNTP_READ_LONG;
-        size = nntp->in.size * 2;
-        if (size > nntp->maxsize)
+        if (nntp->in.size >= 1024 * 1024)
+            size = nntp->in.size + 1024 * 1024;
+        else
+            size = nntp->in.size * 2;
+        if (nntp->maxsize > 0 && size > nntp->maxsize)
             size = nntp->maxsize;
         buffer_resize(&nntp->in, size);
     }

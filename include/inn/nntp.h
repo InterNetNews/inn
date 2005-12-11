@@ -166,14 +166,16 @@ BEGIN_DECLS
 
 /* Allocate a new nntp struct for a pair of file descriptors.  Takes the
    maximum size for the read buffer; messages longer than this will not be
-   read.  Takes the timeout in seconds for subsequent reads (0 means wait
+   read (0 means unlimited; if system memory is exhausted, the program will
+   crash).  Takes the timeout in seconds for subsequent reads (0 means wait
    forever). */
 struct nntp *nntp_new(int in, int out, size_t maxsize, time_t timeout);
 
 /* Free an nntp struct and close the connection. */
 void nntp_free(struct nntp *);
 
-/* Connect to a remote host and return an nntp struct for that connection. */
+/* Connect to a remote host and return an nntp struct for that connection.
+   The maxsize and timeout parameters are the same as for nntp_new. */
 struct nntp *nntp_connect(const char *host, unsigned short port,
                           size_t maxsize, time_t timeout);
 
