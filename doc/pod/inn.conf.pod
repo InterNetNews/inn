@@ -198,9 +198,10 @@ check the Lines: header of incoming articles.
 =item I<maxartsize>
 
 The maximum size of article (headers and body) that will be accepted by
-the server, in bytes.  A value of C<0> allows any size of article.  The
-default value is C<1000000> (approximately 1 MB).  This is checked against
-the article in wire format (CRLF at the end of each line, leading periods
+the server, in bytes.  A value of C<0> allows any size of article, but
+note that B<innd> will crash if system memory is exceeded.  The default
+value is C<1000000> (approximately 1 MB).  This is checked against the
+article in wire format (CRLF at the end of each line, leading periods
 protected, and with the trailing "\r\n.\r\n" at the end).  See also
 I<localmaxartsize>.
 
@@ -743,9 +744,11 @@ host.
 =item I<localmaxartsize>
 
 The maximum article size (in bytes) for locally posted articles.  Articles
-larger than this will be rejected.  See also I<maxartsize>, which applies
-to all articles including those posted locally.  The default value is
-C<1000000> (approximately 1 MB).
+larger than this will be rejected.  A value of C<0> allows any size of
+article, but note that B<nnrpd> and B<innd> will crash if system memory is
+exceeded.  See also I<maxartsize>, which applies to all articles including
+those posted locally.  The default value is C<1000000> (approximately 1
+MB).
 
 =item I<moderatormailer>
 
