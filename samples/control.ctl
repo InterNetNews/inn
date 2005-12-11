@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2005-10-08
+##  Last modified: 2005-11-11
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -1497,11 +1497,6 @@ checkgroups:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 newgroup:*:nl-alt.*:doit
 rmgroup:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 rmgroup:news@kink.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
-
-## NLNET (Netherlands ISP)
-checkgroups:beheer@nl.net:nlnet.*:doit
-newgroup:beheer@nl.net:nlnet.*:doit
-rmgroup:beheer@nl.net:nlnet.*:doit
 
 ## NLO (Open Source / Free Software, hosted by nl.linux.org)
 # URL: http://news.nl.linux.org/doc/nlo.html
