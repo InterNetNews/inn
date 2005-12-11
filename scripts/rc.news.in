@@ -37,6 +37,7 @@ Xstop)
     fi
 
     printf "Stopping innd: "
+    ${PATHBIN}/ctlinnd throttle 'rc.news stop'
     ${PATHBIN}/ctlinnd shutdown 'rc.news stop'
 
     # wait for innd to exit (up to 60 sec)
