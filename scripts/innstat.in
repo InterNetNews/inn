@@ -33,6 +33,13 @@ echo 'Disk usage:'
 ${INNDF} ${SPOOL} ${OVERVIEWDIR} ${PATHETC} ${INCOMING} ${BATCH} \
 	${PATHDB} ${MOST_LOGS} | sort -u
 
+##  Show overview usage for buffindexed.
+[ ${OVMETHOD} = 'buffindexed' ] && {
+    echo ''
+    echo 'Overview buffer usage:'
+    ${INNDF} -no
+}
+
 ##  Show size of batch files.
 echo ''
 echo 'Batch file sizes:'

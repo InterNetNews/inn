@@ -546,6 +546,9 @@ Requested New Features
 * It would be nice to have bindaddress (and bindaddress6) as a peer block
   parameter and not just a global parameter in innfeed.
 
+* Add cnfsstat to innstat.  cnfsstat really needs a more succinct mode
+  before doing this, since right now the output can be quite verbose.
+
 
 General Projects
 
