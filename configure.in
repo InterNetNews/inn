@@ -347,189 +347,6 @@ AC_ARG_WITH(sendmail,
     [  --with-sendmail=PATH    Path to sendmail],
     SENDMAIL=$with_sendmail)
 
-dnl Check for whether the user wants to compile with BerkeleyDB, and if so
-dnl what the path to the various components of it is.
-AC_DEFUN([INN_LIB_BERKELEYDB],
-[AC_ARG_WITH(berkeleydb,
-    [  --with-berkeleydb[=PATH]  Enable BerkeleyDB (for ovdb overview method)],
-    BERKELEY_DB_DIR=$with_berkeleydb,
-    BERKELEY_DB_DIR=no)
-AC_MSG_CHECKING(if BerkeleyDB is desired)
-if test x"$BERKELEY_DB_DIR" = xno ; then
-    AC_MSG_RESULT(no)
-    BERKELEY_DB_LDFLAGS=
-    BERKELEY_DB_CFLAGS=
-    BERKELEY_DB_LIB=
-else
-    AC_MSG_RESULT(yes)
-    AC_MSG_CHECKING(for BerkeleyDB location)
-    if test x"$BERKELEY_DB_DIR" = xyes ; then
-        for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
-                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 BerkeleyDB.4.2 BerkeleyDB.4.3 ; do
-            for d in $prefix /usr/local /opt /usr ; do
-                if test -d "$d/$v" ; then
-                    BERKELEY_DB_DIR="$d/$v"
-                    break
-                fi
-	    done
-        done
-    fi
-    if test x"$BERKELEY_DB_DIR" = xyes ; then
-        for v in db43 db42 db41 db4 db3 db2 ; do
-            if test -d "/usr/local/include/$v" ; then
-                BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
-                BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
-                BERKELEY_DB_LIB="-l$v"
-                AC_MSG_RESULT(FreeBSD locations)
-                break
-            fi
-        done
-        if test x"$BERKELEY_DB_LIB" = x ; then
-            for v in db43 db42 db41 db4 db3 db2 ; do
-                if test -d "/usr/include/$v" ; then
-                    BERKELEY_DB_CFLAGS="-I/usr/include/$v"
-                    BERKELEY_DB_LIB="-l$v"
-                    AC_MSG_RESULT(Linux locations)
-                    break
-                fi
-            done
-            if test x"$BERKELEY_DB_LIB" = x ; then        
-                BERKELEY_DB_LIB=-ldb
-                AC_MSG_RESULT(trying -ldb)
-            fi
-        fi
-    else
-        BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
-        BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
-        BERKELEY_DB_LIB="-ldb"
-        AC_MSG_RESULT($BERKELEY_DB_DIR)
-    fi
-    AC_DEFINE(USE_BERKELEY_DB, 1, [Define if BerkeleyDB is available.])
-fi
-AC_SUBST(BERKELEY_DB_LDFLAGS)
-AC_SUBST(BERKELEY_DB_CFLAGS)
-AC_SUBST(BERKELEY_DB_LIB)])
-INN_LIB_BERKELEYDB
-
-dnl Check for whether the user wants to compile with OpenSSL, and if so what
-dnl the path to the various components of it is.
-AC_DEFUN([INN_LIB_OPENSSL],
-[AC_ARG_WITH(openssl,
-    [  --with-openssl=PATH     Enable OpenSSL (for NNTP over SSL support)],
-    OPENSSL_DIR=$with_openssl,
-    OPENSSL_DIR=no)
-AC_MSG_CHECKING(if OpenSSL is desired)
-if test x"$OPENSSL_DIR" = xno ; then
-    AC_MSG_RESULT(no)
-    SSL_BIN=
-    SSL_INC=
-    SSL_LIB=
-else
-    AC_MSG_RESULT(yes)
-    AC_MSG_CHECKING(for OpenSSL location)
-    if test x"$OPENSSL_DIR" = xyes ; then
-        for dir in $prefix /usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg \
-                   /usr/local /usr ; do
-            if test -f "$dir/include/openssl/ssl.h" ; then
-                OPENSSL_DIR=$dir
-                break
-            fi
-        done
-    fi
-    if test x"$OPENSSL_DIR" = xyes ; then
-        AC_MSG_ERROR(Can not find OpenSSL)
-    else
-        AC_MSG_RESULT($OPENSSL_DIR)
-	SSL_BIN="${OPENSSL_DIR}/bin"
-	SSL_INC="-I${OPENSSL_DIR}/include"
-
-        # This is mildly tricky.  In order to satisfy most linkers, libraries
-        # have to be listed in the right order, which means that libraries
-        # with dependencies on other libraries need to be listed first.  But
-        # the -L flag for the OpenSSL library directory needs to go first of
-        # all.  So put the -L flag into LIBS and accumulate actual libraries
-        # into SSL_LIB, and then at the end, restore LIBS and move -L to the
-        # beginning of SSL_LIB.
-        inn_save_LIBS=$LIBS
-        LIBS="$LIBS -L${OPENSSL_DIR}/lib"
-	SSL_LIB=''
-	AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
-	    [AC_CHECK_LIB(RSAglue, RSAPublicEncrypt,
-                          [SSL_LIB="-lRSAglue -lrsaref"], , -lrsaref)])
-	AC_CHECK_LIB(crypto, BIO_new,
-                     [AC_CHECK_LIB(dl, DSO_load,
-		                   SSL_LIB="-lcrypto -ldl $SSL_LIB",
-		                   SSL_LIB="-lcrypto $SSL_LIB",
-                                   -lcrypto -ldl $SSL_LIB)],
-                     [AC_MSG_ERROR(Can not find OpenSSL)],
-                     $SSL_LIB)
-	AC_CHECK_LIB(ssl, SSL_library_init,
-                     [SSL_LIB="-lssl $SSL_LIB"],
-                     [AC_MSG_ERROR(Can not find OpenSSL)],
-                     $SSL_LIB)
-        SSL_LIB="-L${OPENSSL_DIR}/lib $SSL_LIB"
-        LIBS=$inn_save_LIBS
-        AC_DEFINE(HAVE_SSL, 1, [Define if OpenSSL is available.])
-    fi
-fi
-AC_SUBST(SSL_BIN)
-AC_SUBST(SSL_INC)
-AC_SUBST(SSL_LIB)])
-INN_LIB_OPENSSL
-
-dnl Check for whether the user wants to compile with SASL, and if so what
-dnl the path to the various components of it is.
-AC_DEFUN([INN_LIB_SASL],
-[AC_ARG_WITH(sasl,
-    [  --with-sasl=PATH        Enable SASL (for imapfeed authentication)],
-    SASL_DIR=$with_sasl,
-    SASL_DIR=no)
-AC_MSG_CHECKING(if SASL is desired)
-if test x"$SASL_DIR" = xno ; then
-    AC_MSG_RESULT(no)
-    SASL_INC=
-    SASL_LIB=
-else
-    AC_MSG_RESULT(yes)
-    AC_MSG_CHECKING(for SASL location)
-    if test x"$SASL_DIR" = xyes ; then
-        for dir in $prefix /usr/local/sasl /usr/sasl /usr/pkg /usr/local ; do
-            if test -f "$dir/include/sasl/sasl.h" ; then
-                SASL_DIR=$dir
-                break
-            fi
-        done
-    fi
-    if test x"$SASL_DIR" = xyes ; then
-        if test -f "/usr/include/sasl/sasl.h" ; then
-            SASL_INC=-I/usr/include/sasl
-            SASL_DIR=/usr
-            AC_MSG_RESULT($SASL_DIR)
-            inn_save_LIBS=$LIBS
-            AC_CHECK_LIB(sasl2, sasl_getprop,
-                 [SASL_LIB=-lsasl2], [AC_MSG_ERROR(Can not find SASL)])
-            LIBS=$inn_save_LIBS
-            AC_DEFINE(HAVE_SASL, 1, [Define if SASL is available.])
-        else
-            AC_MSG_ERROR(Can not find SASL)
-        fi
-    else
-        AC_MSG_RESULT($SASL_DIR)
-	SASL_INC="-I${SASL_DIR}/include"
-
-        inn_save_LIBS=$LIBS
-        LIBS="$LIBS -L${SASL_DIR}/lib"
-	AC_CHECK_LIB(sasl2, sasl_getprop,
-                     [SASL_LIB="-L${SASL_DIR}/lib -lsasl2"],
-                     [AC_MSG_ERROR(Can not find SASL)],)
-        LIBS=$inn_save_LIBS
-        AC_DEFINE(HAVE_SASL, 1, [Define if SASL is available.])
-    fi
-fi
-AC_SUBST(SASL_INC)
-AC_SUBST(SASL_LIB)])
-INN_LIB_SASL
-
 dnl Specify the path to the Kerberos libraries if the user wants to build
 dnl auth_krb5.  Note that we don't search far and wide for the libraries if
 dnl the user doesn't specify the path.
@@ -800,6 +617,189 @@ if test x"$inn_enable_keywords" = x1 ; then
     INN_SEARCH_AUX_LIBS(regexec, regex, REGEX_LIB, ,
         [AC_MSG_ERROR(no usable regular expression library found)])
 fi
+
+dnl Check for whether the user wants to compile with BerkeleyDB, and if so
+dnl what the path to the various components of it is.
+AC_DEFUN([INN_LIB_BERKELEYDB],
+[AC_ARG_WITH(berkeleydb,
+    [  --with-berkeleydb[=PATH]  Enable BerkeleyDB (for ovdb overview method)],
+    BERKELEY_DB_DIR=$with_berkeleydb,
+    BERKELEY_DB_DIR=no)
+AC_MSG_CHECKING(if BerkeleyDB is desired)
+if test x"$BERKELEY_DB_DIR" = xno ; then
+    AC_MSG_RESULT(no)
+    BERKELEY_DB_LDFLAGS=
+    BERKELEY_DB_CFLAGS=
+    BERKELEY_DB_LIB=
+else
+    AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING(for BerkeleyDB location)
+    if test x"$BERKELEY_DB_DIR" = xyes ; then
+        for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
+                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 BerkeleyDB.4.2 BerkeleyDB.4.3 ; do
+            for d in $prefix /usr/local /opt /usr ; do
+                if test -d "$d/$v" ; then
+                    BERKELEY_DB_DIR="$d/$v"
+                    break
+                fi
+	    done
+        done
+    fi
+    if test x"$BERKELEY_DB_DIR" = xyes ; then
+        for v in db43 db42 db41 db4 db3 db2 ; do
+            if test -d "/usr/local/include/$v" ; then
+                BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
+                BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
+                BERKELEY_DB_LIB="-l$v"
+                AC_MSG_RESULT(FreeBSD locations)
+                break
+            fi
+        done
+        if test x"$BERKELEY_DB_LIB" = x ; then
+            for v in db43 db42 db41 db4 db3 db2 ; do
+                if test -d "/usr/include/$v" ; then
+                    BERKELEY_DB_CFLAGS="-I/usr/include/$v"
+                    BERKELEY_DB_LIB="-l$v"
+                    AC_MSG_RESULT(Linux locations)
+                    break
+                fi
+            done
+            if test x"$BERKELEY_DB_LIB" = x ; then        
+                BERKELEY_DB_LIB=-ldb
+                AC_MSG_RESULT(trying -ldb)
+            fi
+        fi
+    else
+        BERKELEY_DB_LDFLAGS="-L$BERKELEY_DB_DIR/lib"
+        BERKELEY_DB_CFLAGS="-I$BERKELEY_DB_DIR/include"
+        BERKELEY_DB_LIB="-ldb"
+        AC_MSG_RESULT($BERKELEY_DB_DIR)
+    fi
+    AC_DEFINE(USE_BERKELEY_DB, 1, [Define if BerkeleyDB is available.])
+fi
+AC_SUBST(BERKELEY_DB_LDFLAGS)
+AC_SUBST(BERKELEY_DB_CFLAGS)
+AC_SUBST(BERKELEY_DB_LIB)])
+INN_LIB_BERKELEYDB
+
+dnl Check for whether the user wants to compile with OpenSSL, and if so what
+dnl the path to the various components of it is.
+AC_DEFUN([INN_LIB_OPENSSL],
+[AC_ARG_WITH(openssl,
+    [  --with-openssl=PATH     Enable OpenSSL (for NNTP over SSL support)],
+    OPENSSL_DIR=$with_openssl,
+    OPENSSL_DIR=no)
+AC_MSG_CHECKING(if OpenSSL is desired)
+if test x"$OPENSSL_DIR" = xno ; then
+    AC_MSG_RESULT(no)
+    SSL_BIN=
+    SSL_INC=
+    SSL_LIB=
+else
+    AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING(for OpenSSL location)
+    if test x"$OPENSSL_DIR" = xyes ; then
+        for dir in $prefix /usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg \
+                   /usr/local /usr ; do
+            if test -f "$dir/include/openssl/ssl.h" ; then
+                OPENSSL_DIR=$dir
+                break
+            fi
+        done
+    fi
+    if test x"$OPENSSL_DIR" = xyes ; then
+        AC_MSG_ERROR(Can not find OpenSSL)
+    else
+        AC_MSG_RESULT($OPENSSL_DIR)
+	SSL_BIN="${OPENSSL_DIR}/bin"
+	SSL_INC="-I${OPENSSL_DIR}/include"
+
+        # This is mildly tricky.  In order to satisfy most linkers, libraries
+        # have to be listed in the right order, which means that libraries
+        # with dependencies on other libraries need to be listed first.  But
+        # the -L flag for the OpenSSL library directory needs to go first of
+        # all.  So put the -L flag into LIBS and accumulate actual libraries
+        # into SSL_LIB, and then at the end, restore LIBS and move -L to the
+        # beginning of SSL_LIB.
+        inn_save_LIBS=$LIBS
+        LIBS="$LIBS -L${OPENSSL_DIR}/lib"
+	SSL_LIB=''
+	AC_CHECK_LIB(rsaref, RSAPublicEncrypt,
+	    [AC_CHECK_LIB(RSAglue, RSAPublicEncrypt,
+                          [SSL_LIB="-lRSAglue -lrsaref"], , -lrsaref)])
+	AC_CHECK_LIB(crypto, BIO_new,
+                     [AC_CHECK_LIB(dl, DSO_load,
+		                   SSL_LIB="-lcrypto -ldl $SSL_LIB",
+		                   SSL_LIB="-lcrypto $SSL_LIB",
+                                   -lcrypto -ldl $SSL_LIB)],
+                     [AC_MSG_ERROR(Can not find OpenSSL)],
+                     $SSL_LIB)
+	AC_CHECK_LIB(ssl, SSL_library_init,
+                     [SSL_LIB="-lssl $SSL_LIB"],
+                     [AC_MSG_ERROR(Can not find OpenSSL)],
+                     $SSL_LIB)
+        SSL_LIB="-L${OPENSSL_DIR}/lib $SSL_LIB"
+        LIBS=$inn_save_LIBS
+        AC_DEFINE(HAVE_SSL, 1, [Define if OpenSSL is available.])
+    fi
+fi
+AC_SUBST(SSL_BIN)
+AC_SUBST(SSL_INC)
+AC_SUBST(SSL_LIB)])
+INN_LIB_OPENSSL
+
+dnl Check for whether the user wants to compile with SASL, and if so what
+dnl the path to the various components of it is.
+AC_DEFUN([INN_LIB_SASL],
+[AC_ARG_WITH(sasl,
+    [  --with-sasl=PATH        Enable SASL (for imapfeed authentication)],
+    SASL_DIR=$with_sasl,
+    SASL_DIR=no)
+AC_MSG_CHECKING(if SASL is desired)
+if test x"$SASL_DIR" = xno ; then
+    AC_MSG_RESULT(no)
+    SASL_INC=
+    SASL_LIB=
+else
+    AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING(for SASL location)
+    if test x"$SASL_DIR" = xyes ; then
+        for dir in $prefix /usr/local/sasl /usr/sasl /usr/pkg /usr/local ; do
+            if test -f "$dir/include/sasl/sasl.h" ; then
+                SASL_DIR=$dir
+                break
+            fi
+        done
+    fi
+    if test x"$SASL_DIR" = xyes ; then
+        if test -f "/usr/include/sasl/sasl.h" ; then
+            SASL_INC=-I/usr/include/sasl
+            SASL_DIR=/usr
+            AC_MSG_RESULT($SASL_DIR)
+            inn_save_LIBS=$LIBS
+            AC_CHECK_LIB(sasl2, sasl_getprop,
+                 [SASL_LIB=-lsasl2], [AC_MSG_ERROR(Can not find SASL)])
+            LIBS=$inn_save_LIBS
+            AC_DEFINE(HAVE_SASL, 1, [Define if SASL is available.])
+        else
+            AC_MSG_ERROR(Can not find SASL)
+        fi
+    else
+        AC_MSG_RESULT($SASL_DIR)
+	SASL_INC="-I${SASL_DIR}/include"
+
+        inn_save_LIBS=$LIBS
+        LIBS="$LIBS -L${SASL_DIR}/lib"
+	AC_CHECK_LIB(sasl2, sasl_getprop,
+                     [SASL_LIB="-L${SASL_DIR}/lib -lsasl2"],
+                     [AC_MSG_ERROR(Can not find SASL)],)
+        LIBS=$inn_save_LIBS
+        AC_DEFINE(HAVE_SASL, 1, [Define if SASL is available.])
+    fi
+fi
+AC_SUBST(SASL_INC)
+AC_SUBST(SASL_LIB)])
+INN_LIB_SASL
 
 dnl Check for Kerberos libraries for auth_krb5, and if found define KRB5_AUTH
 dnl to the relevant object file, which will enable compilation of it.
