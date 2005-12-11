@@ -995,7 +995,7 @@ section inn_unwanted_path {
 };
 
 section innd_perl {
-        title   "INND perl filter:";
+        title   "INND Perl filter:";
 	top     20;
 	data    "%innd_filter_perl";
 	sort    "$innd_filter_perl{$b} <=> $innd_filter_perl{$a}";
@@ -1012,6 +1012,27 @@ section innd_perl {
                 format        "%7d";
 		value         "$innd_filter_perl{$key}";
 		total         "total(%innd_filter_perl)";
+        };
+};
+
+section innd_python {
+        title   "INND Python filter:";
+	top     20;
+	data    "%innd_filter_python";
+	sort    "$innd_filter_python{$b} <=> $innd_filter_python{$a}";
+        column {
+                name          "Reason";
+                format        "%-71.71s";
+		value         "$key";
+		format_total  "TOTAL: %-64.64s";
+		total         "$num";
+        };
+        column {
+                name          "Count";
+                format_name   "%7s";
+                format        "%7d";
+		value         "$innd_filter_python{$key}";
+		total         "total(%innd_filter_python)";
         };
 };
 
