@@ -119,8 +119,9 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 	    
 		/* don't grow the buffer bigger than the maximum
 		 * article size we'll accept */
-		if (newsize > (unsigned)PERMaccessconf->localmaxartsize)
-		    newsize = PERMaccessconf->localmaxartsize;
+                if (PERMaccessconf->localmaxartsize > 0)
+                    if (newsize > (unsigned)PERMaccessconf->localmaxartsize)
+                        newsize = PERMaccessconf->localmaxartsize;
 
 		/* if we're trying to grow from the same size, to the
 		 * same size, we must have hit the localmaxartsize
