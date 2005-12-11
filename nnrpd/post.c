@@ -683,6 +683,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     groups = xstrdup(hdr);
     if ((p = strtok(groups, NGSEPS)) == NULL)
 	return "Can't parse newsgroups line";
+    Error[0] = '\0';
 
     /* Reject all articles with Approved headers unless the user is allowed to
        add them, even to unmoderated or local groups.  We want to reject them
@@ -694,7 +695,6 @@ ValidNewsgroups(char *hdr, char **modgroup)
                  "You are not allowed to approve postings");
     }
 
-    Error[0] = '\0';
     FoundOne = false;
     h = DDstart((FILE *)NULL, (FILE *)NULL);
     do {
