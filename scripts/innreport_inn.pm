@@ -249,6 +249,11 @@ sub collect {
       $innd_filter_perl{$1}++;
       return 1;
     }
+    # rejecting[python]
+    if ($left =~ /^rejecting\[python\] <[^>]+> \d+ (.*)/o) {
+      $innd_filter_python{$1}++;
+      return 1;
+    }
     # closed lost
     return 1 if $left =~ /^\S+ closed lost \d+/o;
     # control command (by letter)
