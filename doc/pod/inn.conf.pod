@@ -199,8 +199,10 @@ check the Lines: header of incoming articles.
 
 The maximum size of article (headers and body) that will be accepted by
 the server, in bytes.  A value of C<0> allows any size of article, but
-note that B<innd> will crash if system memory is exceeded.  The default
-value is C<1000000> (approximately 1 MB).  See also I<localmaxartsize>.
+note that B<innd> will crash if system memory is exceeded.  If not C<0>,
+this setting must be at least C<512> (although it makes no sense to set it
+to something that small).  The default value is C<1000000> (approximately
+1 MB).  See also I<localmaxartsize>.
 
 =item I<maxconnections>
 
@@ -707,9 +709,10 @@ host.
 The maximum article size (in bytes) for locally posted articles.  Articles
 larger than this will be rejected.  A value of C<0> allows any size of
 article, but note that B<nnrpd> and B<innd> will crash if system memory is
-exceeded.  See also I<maxartsize>, which applies to all articles including
-those posted locally.  The default value is C<1000000> (approximately 1
-MB).
+exceeded.  If not C<0>, this setting must be at least C<512> (although it
+makes no sense to set it to something that small).  See also I<maxartsize>,
+which applies to all articles including those posted locally.  The default
+value is C<1000000> (approximately 1 MB).
 
 =item I<moderatormailer>
 
