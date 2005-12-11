@@ -206,6 +206,12 @@ enum nntp_status nntp_read_command(struct nntp *, struct cvector *);
    fourth argument to its length. */
 enum nntp_status nntp_read_multiline(struct nntp *, char **, size_t *);
 
+/* Send a block of data to the remote connection.  Any buffered data will be
+   flushed before this data is sent, and the data will be sent immediately.
+   No formatting or escaping will be done, so the caller is responsible for
+   making sure line endings, dot-escaping, and the like are done. */
+bool nntp_write(struct nntp *, const char *buffer, size_t size);
+
 /* Send a line to the remote connection.  The output is flushed after sending
    the line unless the noflush variant is used. */
 bool nntp_send_line(struct nntp *, const char *format, ...);

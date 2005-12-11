@@ -300,6 +300,25 @@ nntp_flush(struct nntp *nntp)
 
 
 /*
+**  Send verbatim data to the NNTP stream.  Flush any buffered data before
+**  sending and then send the data immediately without buffering (to avoid
+**  making an in-memory copy of it).  The caller is responsible for making
+**  sure it's properly formatted.  Returns true on success and false on
+**  failure.
+*/
+bool
+nntp_write(struct nntp *nntp, const char *buffer, size_t length)
+{
+    ssize_t status;
+
+    if (!nntp_flush(nntp))
+        return false;
+    status = xwrite(nntp->out_fd, buffer, length);
+    return (status > 0);
+}
+
+
+/*
 **  Send a line of data to an NNTP stream, flushing after sending it.  Takes
 **  the nntp struct and printf-style arguments for the rest of the line.
 **  Returns true on success and false on an error.
