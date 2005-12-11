@@ -87,6 +87,12 @@ that used the Xref header from overview.  While this does make the command
 much faster, it doesn't produce accurate results and breaks the NNTP
 protocol, so this optimization has been removed.
 
+=item *
+
+Thomas Parmelan added support to send-uucp for specifying the funnel or
+exploder site to flush for feeds managed through one and fixed a problem
+with picking up old stranded work files.
+
 =back
 
 =head1 Changes in 2.4.2
