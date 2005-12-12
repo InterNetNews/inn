@@ -21,9 +21,10 @@
 use strict;
 use Sys::Syslog;
 
-# for compatibility with INN 1.x
+# for compatibility with earlier versions of INN
 $inn::pathetc ||= '/etc/news';
 $inn::syslog_facility ||= 'news';
+$inn::uux ||= 'uux';
 
 # some default values
 my $MAXSIZE = 500000;
@@ -194,12 +195,12 @@ sub run_site {
     } else {
         if ($compress eq 'none') {
             system "batcher -b $size $maxjobs $BATCHER_FLAGS "
-                . "-p\"uux $UUX_FLAGS %s!rnews\" $host $site.work";
+                . "-p\"$inn::uux $UUX_FLAGS %s!rnews\" $host $site.work";
         } else {
             system "batcher -b $size $maxjobs $BATCHER_FLAGS "
                 . "-p\"{ echo '#! " . unbatcher($compress)
                 . "' ; exec $compress; } | "
-                . "uux $UUX_FLAGS %s!rnews\" $host $site.work";
+                . "$inn::uux $UUX_FLAGS %s!rnews\" $host $site.work";
         }
         logmsg("batched articles for $site", 'debug');
     }

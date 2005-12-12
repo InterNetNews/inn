@@ -79,6 +79,8 @@ $perl = '@PERL@' ;
 $pgp = '@PGP@' ;
 $sort = '@SORT@' ;
 $getftp = '@PATH_GETFTP@' ;
+$uux = '@UUX@' ;
+
 $compress = '@COMPRESS@' ;
 $gzip = '@GZIP@' ;
 $uncompress = '@UNCOMPRESS@' ;

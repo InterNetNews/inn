@@ -249,10 +249,12 @@ AC_ARG_VAR([AWK], [Location of awk])
 AC_ARG_VAR([EGREP], [Location of egrep])
 AC_ARG_VAR([SED], [Location of sed])
 AC_ARG_VAR([SORT], [Location of sort])
+AC_ARG_VAR([UUX], [Location of uux])
 INN_PATH_PROG_ENSURE([AWK], [awk])
 INN_PATH_PROG_ENSURE([EGREP], [egrep])
 INN_PATH_PROG_ENSURE([SED], [sed])
 INN_PATH_PROG_ENSURE([SORT], [sort])
+AC_PATH_PROGS([UUX], [uux], [uux])
 INN_PATH_COMPRESS
 INN_PATH_SENDMAIL
 
