@@ -77,6 +77,8 @@ set inn_inndf "${inn_newsbin}/inndf"
 set inn_egrep "@_PATH_EGREP@"
 set inn_sort "@_PATH_SORT@"
 set inn_getftp "@GETFTP@"
+set inn_uux "@_PATH_UUX@"
+
 set inn_compress "@COMPRESS@"
 set inn_gzip "@GZIP@"
 set inn_uncompress "@UNCOMPRESS@"

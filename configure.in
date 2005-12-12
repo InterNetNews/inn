@@ -456,6 +456,7 @@ INN_ENSURE_PATH_PROG(_PATH_PERL,perl)
 INN_ENSURE_PATH_PROG(_PATH_SH,sh)
 INN_ENSURE_PATH_PROG(_PATH_SED,sed)
 INN_ENSURE_PATH_PROG(_PATH_SORT,sort)
+AC_PATH_PROGS(_PATH_UUX,uux,uux)
 
 dnl Check for a required version of Perl.  The separate shell variable and
 dnl the changequotes are necessary for autoconf 2.13; autoconf 2.50 will
