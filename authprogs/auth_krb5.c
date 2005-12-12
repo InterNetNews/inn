@@ -26,6 +26,9 @@
 #else
 # include <com_err.h>
 #endif
+
+/* krb5_get_in_tkt_with_password is deprecated. */
+#define KRB5_DEPRECATED 1
 #include <krb5.h>
 
 #include "inn/messages.h"
