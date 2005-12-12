@@ -549,6 +549,9 @@ Requested New Features
 * Add cnfsstat to innstat.  cnfsstat really needs a more succinct mode
   before doing this, since right now the output can be quite verbose.
 
+* nnrpd's Perl filter code doesn't currently permit deleting headers.  It
+  would be nice to allow this.
+
 
 General Projects
 
