@@ -30,6 +30,7 @@
 #include "inn/confparse.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/nntp.h"
 #include "inn/vector.h"
 #include "libinn.h"
 #include "paths.h"
