@@ -807,7 +807,8 @@ INN_SEARCH_AUX_LIBS(krb5_parse_name, krb5, KRB5_LIB,
     [KRB5_AUTH="auth_krb5"
      KRB5_LIB="$KRB5_LDFLAGS $KRB5_LIB -lk5crypto -lcom_err"
      AC_SUBST(KRB5_AUTH)
-     AC_SUBST(KRB5_INC)], , [$LIBS -lk5crypto -lcom_err])
+     AC_SUBST(KRB5_INC)
+     AC_CHECK_HEADERS([et/com_err.h])], , [$LIBS -lk5crypto -lcom_err])
 
 dnl Check for necessity of krb5_init_ets
 dnl OSX does not require this function
