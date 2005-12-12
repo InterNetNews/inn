@@ -1,0 +1,134 @@
+=head1 NAME
+
+pullnews - Pull news from one news server and feed it to another
+
+=head1 SYNOPSIS
+
+B<pullnews> [B<-hq>] [B<-c> I<config>] [B<-g> I<groups>] [B<-p> I<port>]
+[B<-r> I<file>] [B<-s> I<to-server>] [<from-server> ...]
+
+=head1 REQUIREMENTS
+
+The Net::NNTP module must be installed.  This module is available as part
+of the libnet distribution and comes with recent versions of Perl.  For
+older versions of Perl, you can download it from L<http://www.cpan.org/>.
+
+=head1 DESCRIPTION
+
+B<pullnews> reads a config file in the running user's home directory
+(normally called F<~/.pullnews>) and connects to the upstream servers
+given there as a reader client.  By default, it connects to all servers
+listed in the configuration file, but you can limit B<pullnews> to
+specific servers by listing them on the command line.  For each server it
+connects to, it pulls over articles and feeds them to the destination
+server via the IHAVE command.  This means that the system B<pullnews> is
+run on must have feeding access to the destination news server.
+
+B<pullnews> is designed for very small sites that don't want to bother
+setting up traditional peering and is not meant for handling large feeds.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-c> I<config>
+
+Normally, the config file is stored in F<~/.pullnews> for the user running
+B<pullnews>.  If B<-c> is given, I<config> will be used as the config file
+instead.  This is useful if you're running B<pullnews> as a system user on
+an automated basis out of cron rather than as an individual user.
+
+=item B<-g> I<groups>
+
+Specifies a collection of groups to get.  I<groups> is a list of
+newsgroups separated by commas (only commas, no spaces).  Each group must
+be defined in the config file, and only the remote hosts that carry those
+groups will be contacted.  Note that this is a simple list of groups, not
+a wildmat expression, and wildcards are not supported.
+
+=item B<-h>
+
+Print a usage message and exit.
+
+=item B<-p> I<port>
+
+Connect to the destination news server on a port other than the default of
+119.  This option does not change the port used to connect to the remote
+news servers.
+
+=item B<-q>
+
+Print out less status information while running.
+
+=item B<-r> I<file>
+
+Rather than feeding the downloaded articles to a local server, instead
+create a batch file that can later be fed to a server using B<rnews>.  See
+rnews(1) for more information about the batch file format.
+
+=item B<-s> I<to-server>
+
+Normally, B<pullnews> will feed the articles it retrieves to the news
+server running on localhost.  To connect to a different host, specify a
+server with the B<-s> flag.
+
+=back
+
+=head1 CONFIG FILE
+
+The config file for B<pullnews> is divided into blocks, one block for each
+remote server to connect to.  A block begins with the host line, which
+must have no leading whitespace and contains just the hostname of the
+remote server.  Following this line should be one or more newsgroup lines
+which start with whitespace followed by the name of a newsgroup to
+retrieve.  Only one newsgroup should be listed on each line.
+
+B<pullnews> will update the config file to include the time the group was
+last checked and the highest numbered article successfully retrieved and
+transferred to the destination server.  It uses this data to avoid doing
+duplicate work the next time it runs.
+
+The full syntax is:
+
+    <host> [<username> <password>]
+            <group> [<time> <high>]
+            <group> [<time> <high>]
+
+where the <host> line must not have leading whitespace and the <group>
+lines must.  Note that you may optionally specify a username and password
+for basic authentication to the remote server if necessary.
+
+A typical configuration file would be:
+
+    # Format group date high
+    data.pa.vix.com
+            rec.bicycles.racing 908086612 783
+            rec.humor.funny 908086613 18
+            comp.programming.threads
+    nnrp.vix.com pull sekret
+            comp.std.lisp
+
+Note that an earlier run of B<pullnews> has filled in details about the
+last article downloads from the two rec.* groups.  The two comp.* groups
+were just added by the user and have not yet been checked.
+
+The nnrp.vix.com server requires authentication, and B<pullnews> will use
+the username C<pull> and the password C<sekret>.
+
+=head1 BUGS
+
+B<pullnews> is very simple and is lacking in more sophisticated features
+(like killing articles based on user-defined conditions) that better pull
+feeders most certainly have. It also doesn't keep or log much detail on
+articles transferred.
+
+=head1 HISTORY
+
+pullnews was written by James Brister for INN.  The documentation was
+rewritten in POD by Russ Allbery <rra@stanford.edu>.
+
+=head1 SEE ALSO
+
+incoming.conf(5)
+
+=cut
