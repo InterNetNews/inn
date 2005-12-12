@@ -372,6 +372,12 @@ Needed Bug Fixes
   doesn't verify the user's authentication by getting a service ticket.
   It needs to be overhauled to use the right API.
 
+* There should be a way, with the Perl authentication hooks, to either
+  immediately return a list of newsgroups one has access to based on the
+  hostname or to indicate that authentication is required and make the
+  user be prompted with a 480 code when they try to access anything.
+  Right now, that doesn't appear to be possible.
+
 
 Requested New Features
 
