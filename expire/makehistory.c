@@ -532,6 +532,28 @@ DoArt(ARTHANDLE *art)
     }
     for (fp = ARTfields, i = 0; i < ARTfieldsize; i++, fp++) {
         fp->Header = wire_findheader(art->data, art->len, fp->Headername);
+
+        /* Someone managed to break their server so that they were appending
+           multiple Xref headers, and INN had a bug where it wouldn't notice
+           this and reject the article.  Just in case, see if there are
+           multiple Xref headers and use the last one. */
+        if (fp == Xrefp) {
+            const char *next = fp->Header;
+            size_t left;
+
+            while (next != NULL) {
+                next = wire_endheader(fp->Header, art->data + art->len - 1);
+                if (next == NULL)
+                    break;
+                next++;
+                left = art->len - (next - art->data);
+                next = wire_findheader(next, left, fp->Headername);
+                if (next != NULL)
+                    fp->Header = next;
+            }
+        }
+
+        /* Now, if we have a header, find and record its length. */
         if (fp->Header != NULL) {
 	    fp->HasHeader = true;
             p = wire_endheader(fp->Header, art->data + art->len - 1);
