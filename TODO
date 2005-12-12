@@ -368,6 +368,10 @@ Needed Bug Fixes
   Setting cnfscheckfudgesize clears up issues that otherwises causes INN
   to crash.
 
+* The way Kerberos authentication is done uses an obsolete interface and
+  doesn't verify the user's authentication by getting a service ticket.
+  It needs to be overhauled to use the right API.
+
 
 Requested New Features
 
