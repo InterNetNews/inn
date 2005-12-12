@@ -21,7 +21,11 @@
 #include "config.h"
 #include "clibrary.h"
 #include "libauth.h"
-#include <com_err.h>
+#ifdef HAVE_ET_COM_ERR_H
+# include <et/com_err.h>
+#else
+# include <com_err.h>
+#endif
 
 /* krb5_get_in_tkt_with_password is deprecated. */
 #define KRB5_DEPRECATED 1

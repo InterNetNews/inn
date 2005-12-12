@@ -49,6 +49,7 @@ else
             [KRB5_LIBS="-lkrb5 $KRB5_LIBS"], , $KRB5_LIBS)
         LDFLAGS=$inn_save_LDFLAGS
         KRB5_AUTH=auth_krb5
+        AC_CHECK_HEADERS([et/com_err.h])
     fi
 fi
 AC_SUBST([KRB5_CPPFLAGS])
