@@ -391,7 +391,7 @@ static bool
 innconf_validate(struct config_group *group)
 {
     bool okay = true;
-    long threshold, size;
+    long threshold;
 
     if (GetFQDN(innconf->domain) == NULL) {
         warn("hostname does not resolve or domain not set in inn.conf");
@@ -418,18 +418,6 @@ innconf_validate(struct config_group *group)
         config_error_param(group, "datamovethreshold",
                            "maximum value for datamovethreshold is 1MB");
         innconf->datamovethreshold = 1024 * 1024;
-    }
-    if (innconf->maxartsize > 0 && innconf->maxartsize <= NNTP_STRLEN) {
-        config_error_param(group, "maxartsize",
-                           "maxartsize must be greater than %d", NNTP_STRLEN);
-        okay = false;
-    }
-    size = innconf->localmaxartsize;
-    if (size > 0 && size <= NNTP_STRLEN) {
-        config_error_param(group, "localmaxartsize",
-                           "localmaxartsize must be greater than %d",
-                           NNTP_STRLEN);
-        okay = false;
     }
     return okay;
 }
