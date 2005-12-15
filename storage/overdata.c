@@ -140,6 +140,24 @@ build_header(const char *article, size_t length, const char *header,
     if (end == NULL)
         return;
 
+    /* Someone managed to break their server so that they were appending
+       multiple Xref headers, and INN had a bug where it wouldn't notice this
+       and reject the article.  Just in case, see if there are multiple Xref
+       headers and use the last one. */
+    if (strcasecmp(header, "xref") == 0) {
+        const char *next = end + 1;
+
+        while (next != NULL) {
+            next = wire_findheader(next, length - (next - article), header);
+            if (next != NULL) {
+                data = next;
+                end = wire_endheader(data, article + length - 1);
+                if (end == NULL)
+                    return;
+            }
+        }
+    }
+
     size = end - data + 1;
     offset = overview->used + overview->left;
     buffer_resize(overview, offset + size);

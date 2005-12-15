@@ -140,7 +140,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 	    
 		/* don't grow the buffer bigger than the maximum
 		 * article size we'll accept */
-                if (PERMaccessconf->localmaxartsize > 0)
+                if (PERMaccessconf->localmaxartsize > NNTP_STRLEN)
                     if (newsize > (unsigned)PERMaccessconf->localmaxartsize)
                         newsize = PERMaccessconf->localmaxartsize;
 
