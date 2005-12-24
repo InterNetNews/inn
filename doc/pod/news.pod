@@ -11,9 +11,38 @@ protocol, so this optimization has been removed.
 
 =item *
 
+Fixed a bug in innd that allowed it to accept articles with duplicated
+headers if the header occurred an odd number of times.  Modified the
+programs for rebuilding overview to use the last Xref header if there
+are multiple ones to avoid problems with spools that contain such invalid
+articles.
+
+=item *
+
+Fixed yet another problem with verifying that a user has permissions to
+approve posts to a moderated group.  Thanks, Jens Schlegel.
+
+=item *
+
+Increase the send and receive buffer on the Unix domain socket used by
+ctlinnd.  This should allow longer replies (particularly for innstat) on
+platforms with very low default Unix domain socket buffer sizes.
+
+=item *
+
+rnews's handling of articles with nul characters, NNTP errors, header
+problems, and deferrals has been significantly improved.
+
+=item *
+
 Thomas Parmelan added support to send-uucp for specifying the funnel or
 exploder site to flush for feeds managed through one and fixed a problem
 with picking up old stranded work files.
+
+=item *
+
+Many other more minor bug fixes, optimization improvements, and
+documentation fixes.
 
 =back
 

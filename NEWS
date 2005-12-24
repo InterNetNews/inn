@@ -5,9 +5,28 @@ Changes from 2.4.2 to 2.4.3
       make the command much faster, it doesn't produce accurate results and
       breaks the NNTP protocol, so this optimization has been removed.
 
+    * Fixed a bug in innd that allowed it to accept articles with duplicated
+      headers if the header occurred an odd number of times.  Modified the
+      programs for rebuilding overview to use the last Xref header if there
+      are multiple ones to avoid problems with spools that contain such
+      invalid articles.
+
+    * Fixed yet another problem with verifying that a user has permissions
+      to approve posts to a moderated group.  Thanks, Jens Schlegel.
+
+    * Increase the send and receive buffer on the Unix domain socket used by
+      ctlinnd.  This should allow longer replies (particularly for innstat)
+      on platforms with very low default Unix domain socket buffer sizes.
+
+    * rnews's handling of articles with nul characters, NNTP errors, header
+      problems, and deferrals has been significantly improved.
+
     * Thomas Parmelan added support to send-uucp for specifying the funnel
       or exploder site to flush for feeds managed through one and fixed a
       problem with picking up old stranded work files.
+
+    * Many other more minor bug fixes, optimization improvements, and
+      documentation fixes.
 
 Changes from 2.4.1 to 2.4.2
 
