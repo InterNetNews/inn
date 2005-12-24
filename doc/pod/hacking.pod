@@ -661,11 +661,10 @@ there are any other differences, fix the MANIFEST.
 
 =item 6.
 
-Run C<make release>.  Note that you need to have a copy of cvs2cl from
-<http://www.red-bean.com/cvs2cl/> to do this.  You will be prompted for
-the release branch tag, the date from which to generate the ChangeLog, and
-the path to cvs2cl.  Start the ChangeLog slightly before the last release
-(we only ship inter-release change logs).
+Run C<make release>.  Note that you need to have a copy of svn2cl from
+<http://ch.tudelft.nl/~arthur/svn2cl/> to do this.  Start the ChangeLog at
+the time of the previous release.  (Eventually, the script will be smart
+enough to do this for you.)
 
 =item 7.
 
