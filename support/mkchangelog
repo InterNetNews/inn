@@ -2,26 +2,22 @@
 
 ##  $Id$
 ##
-##  Generate a ChangeLog from cvs log using cvs2cl and fixlog.
+##  Generate a ChangeLog from svn log using svn2cl.
 ##
-##  This script prompts the user for a date from which to pull log entries and
-##  a tag to select what files one wants log information for, and generates a
-##  ChangeLog file from that information and by running cvs log.
+##  This script prompts the user for a date from which to pull log entries
+##  and the prefix to strip from file names and generates a ChangeLog file
+##  by running svn2cl.
 
 $| = 1;
 
-print "Enter tag of release branch: ";
-my $tag = <STDIN>;
-chomp $tag;
+print "Enter prefix to strip from file names: ";
+my $prefix = <STDIN>;
+chomp $prefix;
 
 print "Enter date to start log at (YYYY-MM-DD): ";
 my $date = <STDIN>;
 chomp $date;
 
-print "\nRunning cvs log recursively....\n";
-system ("cvs log '-d>$date' | perl support/fixlog > CHANGES") == 0
-    or die "cvs log exited with status " . ($? >> 8) . "\n";
-
-print "\nRunning cvs2cl....\n";
-system ("cvs2cl --stdin -F $tag --utc < CHANGES") == 0
-    or die "cvs2cl exited with status " . ($? >> 8) . "\n";
+print "\nRunning svn2cl....\n";
+system ("svn2cl --strip-prefix=$prefix --group-by-day -r 'HEAD:{$date}'") == 0
+    or die "svn2cl exited with status " . ($? >> 8) . "\n";
