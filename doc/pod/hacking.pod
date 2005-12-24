@@ -679,13 +679,14 @@ people working on INN:
 
 =over 4
 
-=item <ftp://ftp.academ.com/pub/nntp/ietf/>
+=item <http://www.eyrie.org/~eagle/nntp/>
 
-The archives for the NNTP IETF working group, containing the latest drafts
-of the new NNTP standard and the archived mailing list traffic (which
-contains a lot of interesting discussion of why NNTP is the way it is).
+The home page for the IETF NNTP standardization effort, including links
+to the IETF NNTP working group archives and copies of the latest drafts
+of the new NNTP standard.  The old archived mailing list traffic contains
+a lot of interesting discussion of why NNTP is the way it is.
 
-=item <http://www.landfield.com/usefor/>
+=item <http://www.imc.org/ietf-usefor/>
 
 The archives for the USEFOR IETF working group, the working group for the
 RFC 1036 replacement (the format of Usenet articles).  Also contains a lot
