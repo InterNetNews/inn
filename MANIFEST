@@ -664,7 +664,6 @@ storage/trash/trash.h                 Header file for trash storage
 support                               Tools for building INN (Directory)
 support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
-support/fixlog                        Clean up CVS log messages for cvs2cl
 support/fixscript.in                  Interpreter path fixup script
 support/indent                        A mostly working wrapper around indent
 support/install-sh                    Installation utility
