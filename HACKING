@@ -6,8 +6,8 @@ Hacking INN
     contributors, and secondarily as documentation of some of INN's
     internals.
 
-    This is $Revision$ dated $Date: 2004-09-30 23:41:17 -0700 (Thu,
-    30 Sep 2004) $.
+    This is $Revision$ dated $Date: 2005-12-24 13:33:38 -0800 (Sat,
+    24 Dec 2005) $.
 
     First of all, if you plan on working on INN source, please start from
     the current development tree.  There may be significant changes from the
@@ -675,13 +675,14 @@ References
     Some additional references that may be hard to find and may be of use to
     people working on INN:
 
-    <ftp://ftp.academ.com/pub/nntp/ietf/>
-        The archives for the NNTP IETF working group, containing the latest
-        drafts of the new NNTP standard and the archived mailing list
-        traffic (which contains a lot of interesting discussion of why NNTP
-        is the way it is).
+    <http://www.eyrie.org/~eagle/nntp/>
+        The home page for the IETF NNTP standardization effort, including
+        links to the IETF NNTP working group archives and copies of the
+        latest drafts of the new NNTP standard.  The old archived mailing
+        list traffic contains a lot of interesting discussion of why NNTP is
+        the way it is.
 
-    <http://www.landfield.com/usefor/>
+    <http://www.imc.org/ietf-usefor/>
         The archives for the USEFOR IETF working group, the working group
         for the RFC 1036 replacement (the format of Usenet articles).  Also
         contains a lot of references to other relevant work, such as the RFC
