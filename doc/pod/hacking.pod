@@ -631,9 +631,7 @@ there are any other differences, fix the MANIFEST.
 =item 6.
 
 Run C<make release>.  Note that you need to have a copy of svn2cl from
-<http://tiefighter.et.tudelft.nl/~arthur/svn2cl/> to do this.  This still
-has to be ported from the old CVS system, and therefore will not work
-properly yet.
+<http://ch.tudelft.nl/~arthur/svn2cl/> to do this.
 
 =item 7.
 
