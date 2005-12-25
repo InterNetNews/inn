@@ -189,7 +189,7 @@ release: ChangeLog
 	for f in `sed $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
-	sed 's/= CVS prerelease/=/' < Makefile.global.in \
+	sed 's/= prerelease/=/' < Makefile.global.in \
 	    > $(TARDIR)/Makefile.global.in
 	cp ChangeLog $(TARDIR)
 	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
