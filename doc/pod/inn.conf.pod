@@ -23,7 +23,7 @@ other lines specify parameters, and should be of the following form:
     <name>: <value>
 
 (Any amount of whitespace can be put after the colon and is optional.)  If
-the value contains embedded whitespace or any of the characers C<[]<>"\:>,
+the value contains embedded whitespace or any of the characters C<[]<>"\:>,
 it must be enclosed in double quotes ("").  A backslash (C<\>) can be used
 to escape quotes and backslashes inside double quotes.  <name> is
 case-sensitive; C<server> is not the same as C<Server> or C<SERVER>.
@@ -189,7 +189,7 @@ This setting is ignored unless the timecaf storage method is used.
 
 If set to something other than C<0>, the line count of the article is
 checked against the Lines: header of the article (if present) and the
-artice is rejected if the values differ by more than this amount.  A
+article is rejected if the values differ by more than this amount.  A
 reasonable setting is C<5>, which is the standard maximum signature length
 plus one (some injection software calculates the Lines: header before
 adding the signature).  The default value is C<0>, which tells INN not to
@@ -687,7 +687,7 @@ rest are discarded.  The default value is C<512>.
 
 Maximum number of keywords that will be generated for an article.  (The
 keyword generation code will attempt to discard "noise" words, so the
-number of keywords actually writen into the overview will usually be
+number of keywords actually written into the overview will usually be
 smaller than this even if the maximum number of keywords is found.)  The
 default value is C<250>.
 
