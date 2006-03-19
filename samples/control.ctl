@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2005-11-11
+##  Last modified: 2006-03-19
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -128,19 +128,6 @@ rmgroup:*:*:mail
 # This hierarchy is defunct.  Please remove it.
 newgroup:*:a.bsu.*:mail
 rmgroup:*:a.bsu.*:doit
-
-## ABG (Augsburg, Germany)
-# Contact: abgadmin@abg.news-kiste.de
-# URL: http://abg.news-kiste.de/
-# Admin group: abg.admin
-# Key URL: http://abg.news-kiste.de/abgadmin.asc
-# Key fingerprint = 17 04 9C 48 D7 D7 9C B9  56 9E 5F 64 3D F0 A2 4B
-# *PGP*   See comment at top of file.
-newgroup:*:abg.*:drop
-rmgroup:*:abg.*:drop
-checkgroups:abgadmin@abg.news-kiste.de:abg.*:verify-abgadmin@abg.news-kiste.de
-newgroup:abgadmin@abg.news-kiste.de:abg.*:verify-abgadmin@abg.news-kiste.de
-rmgroup:abgadmin@abg.news-kiste.de:abg.*:verify-abgadmin@abg.news-kiste.de
 
 ## ACS & OSU (*LOCAL* -- Ohio State University, USA)
 # Contact: Albert J. School <school.1@osu.edu>
@@ -1849,7 +1836,7 @@ rmgroup:graham@ee.washington.edu:seattle.*:doit
 # Contact: sfnet@cs.tut.fi
 # URL: http://www.cs.tut.fi/sfnet/
 # Admin group: sfnet.ryhmat+listat
-# Key fingerprint = C1 EC A9 CB D8 04 55 CF  8C E9 C8 B7 F2 F3 4E 61
+# Key fingerprint = DE79 33C2 D359 D128 44E5  6A0C B6E3 0E53 6933 A636
 # *PGP*   See comment at top of file.
 newgroup:*:sfnet.*:drop
 rmgroup:*:sfnet.*:drop
