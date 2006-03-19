@@ -838,7 +838,7 @@ dbzclose(void)
 	ret = false;
     }
 
-    debug("dbzclose: %s", (ret == 0) ? "succeeded" : "failed");
+    debug("dbzclose: %s", (ret == true) ? "succeeded" : "failed");
     if (ret)
 	opendb = false;
     return ret;
@@ -1639,27 +1639,36 @@ timediffms(struct timeval start, struct timeval end)
 void
 RemoveDBZ(char *filename)
 {
-    char fn[1024];
+    char *fn;
 
-#ifdef	DO_TAGGED_HASH
-    snprintf(fn, sizeof(fn), "%s.pag", filename);
+#ifdef DO_TAGGED_HASH
+    fn = concat(filename, pag, (char *) 0);
     unlink(fn);
+    free(fn);
 #else
-    snprintf(fn, sizeof(fn), "%s.exists", filename);
+    fn = concat(filename, exists, (char *) 0);
     unlink(fn);
-    snprintf(fn, sizeof(fn), "%s.index", filename);
+    free(fn);
+    fn = concat(filename, idx, (char *) 0);
     unlink(fn);
+    free(fn);
 #endif
-    snprintf(fn, sizeof(fn), "%s.dir", filename);
+    fn = concat(filename, dir, (char *) 0);
     unlink(fn);
+    free(fn);
 }
 
 static void
 usage(void)
 {
-    fprintf(stderr, "usage: dbztest [-i] [-n|m] [-s size] <history>\n");
+    fprintf(stderr, "usage: dbztest [-i] [-n|m] [-N] [-s size] <history>\n");
+#ifdef DO_TAGGED_HASH
     fprintf(stderr, "  -i       initialize history. deletes .pag files\n");
-    fprintf(stderr, "  -n or m  use INCORE_NO, INCORE_/MMAP. default = INCORE_MEM\n");
+#else
+    fprintf(stderr, "  -i       initialize history. deletes .hash and .index files\n");
+#endif
+    fprintf(stderr, "  -n or m  use INCORE_NO, INCORE_MMAP. default = INCORE_MEM\n");
+    fprintf(stderr, "  -N       using nfswriter mode\n");
     fprintf(stderr, "  -s size  number of history lines[2500000]\n");
     fprintf(stderr, "  history  history text file\n");
     exit(1);
@@ -1680,11 +1689,15 @@ main(int argc, char *argv[])
     struct timeval start, end;
     off_t ivalue;
 
+    innconf = xcalloc(1, sizeof(struct innconf));
+
     for (i=1; i<argc; i++)
 	if (strcmp(argv[i], "-i") == 0)
 	    initialize = 1;
 	else if (strcmp(argv[i], "-n") == 0)
 	    incore = INCORE_NO;
+        else if (strcmp(argv[i], "-N") == 0)
+            innconf->nfswriter = true;
 	else if (strcmp(argv[i], "-m") == 0)
 #if defined(HAVE_MMAP)
 	    incore = INCORE_MMAP;
@@ -1743,7 +1756,7 @@ main(int argc, char *argv[])
 	else
 	    continue;
 	if (initialize) {
-	    if (dbzstore(key, where) < 0) {
+	    if (dbzstore(key, where) == DBZSTORE_ERROR) {
 		fprintf(stderr, "cant store %s\n", ibuf);
 		exit(1);
 	    }
@@ -1754,6 +1767,7 @@ main(int argc, char *argv[])
 		}
 	}
     }
+    line--;
     gettimeofday(&end, NULL);
     i = timediffms(start, end);
     printf("%s: %d lines %.3f msec/id\n",
