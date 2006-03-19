@@ -23,8 +23,6 @@ static const time_t test_times[] = {
     954669599UL,                /* Sun,  2 Apr 2000 01:59:59 -0800 (PST) */
     954669600UL,                /* Sun,  2 Apr 2000 03:00:00 -0700 (PDT) */
     967707668UL,                /* Thu, 31 Aug 2000 07:41:08 +0000 (UTC) */
-    972808200UL,                /* Sun, 29 Oct 2000 01:30:00 -0700 (PDT) */
-    972809999UL,                /* Sun, 29 Oct 2000 01:59:59 -0700 (PDT) */
     972813600UL                 /* Sun, 29 Oct 2000 02:00:00 -0800 (PST) */
 };
 
@@ -78,7 +76,7 @@ main(void)
     char PST8PDT[] = "TZ=PST8PDT";
     char Newfoundland[] = "TZ=Canada/Newfoundland";
 
-    printf("%d\n", 40 + ARRAY_SIZE(test_times) * 3 + 3);
+    printf("%d\n", 44 + ARRAY_SIZE(test_times) * 3 + 3);
 
     now = time(NULL);
     status = makedate(-1, false, buff, sizeof(buff));
@@ -159,8 +157,16 @@ main(void)
     ok(39, result == 972806400UL || result == 972810000UL);
     result = parsedate_nntp("001029", "013000", true);
     ok(40, result == 972808200UL || result == 972811800UL);
+    result = parsedate_nntp("20001029", "013000", true);
+    ok(41, result == 972808200UL || result == 972811800UL);
+    result = parsedate_nntp("001029", "013000", true);
+    ok(42, result == 972808200UL || result == 972811800UL);
+    result = parsedate_nntp("20001029", "015959", true);
+    ok(43, result == 972809999UL || result == 972813599UL);
+    result = parsedate_nntp("001029", "015959", true);
+    ok(44, result == 972809999UL || result == 972813599UL);
 
-    n = 41;
+    n = 45;
     for (i = 0; i < ARRAY_SIZE(test_times); i++)
         check_nntp(&n, test_times[i]);
     check_nntp(&n, time(NULL));
