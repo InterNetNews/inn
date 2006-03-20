@@ -140,6 +140,11 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
         if (!inet_aton(sip, &loc_sin->sin_addr))
             goto error;
         loc_sin->sin_port = htons( atoi(sport) );
+
+# ifdef HAVE_SOCKADDR_LEN
+        cli_sin->sin_len = sizeof(struct sockaddr_in);
+        loc_sin->sin_len = sizeof(struct sockaddr_in);
+# endif
 #endif
 
         free(sip);
