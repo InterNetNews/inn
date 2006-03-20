@@ -149,12 +149,11 @@ void CMDgroup(int ac, char *av[])
            something bland here ("Article list follows"), but reference NNTP
            returns the same data as GROUP does and since we have it all
            available it shouldn't hurt to return the same thing. */
-	if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
-            if (count == 0)
-                Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
-            else
-                Reply("%d %d %ld %ld %s\r\n", NNTP_GROUPOK_VAL, count,
-                      ARTlow, ARThigh, group);
+        if (count == 0) {
+            Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
+        } else if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
+            Reply("%d %d %ld %ld %s\r\n", NNTP_GROUPOK_VAL, count, ARTlow,
+                  ARThigh, group);
 	    while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
 		if (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
 		    continue;
