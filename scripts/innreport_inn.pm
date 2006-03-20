@@ -256,6 +256,14 @@ sub collect {
     }
     # closed lost
     return 1 if $left =~ /^\S+ closed lost \d+/o;
+    # new control command
+    if ($left =~ /^ctlinnd command (\w)(:.*)?/o) {
+      my $command = $1;
+      my $cmd = $ctlinnd{$command};
+      $cmd = $command unless $cmd;
+      return 1 if $cmd eq 'flush'; # to avoid a double count
+      $innd_control{"$cmd"}++;
+    }
     # control command (by letter)
     if ($left =~ /^(\w)$/o) {
       my $command = $1;
@@ -331,7 +339,7 @@ sub collect {
       return 1;
     }
     # closed (with times)
-    if ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+)$/o) {
+    if ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+)(?: rejected size (\d+))?$/o) {
       my ($server, $seconds, $accepted, $refused, $rejected, $duplicate, $accptsize, $dupsize) =
 	($1, $2, $3, $4, $5, $6, $7, $8);
       $server = lc $server unless $CASE_SENSITIVE;
