@@ -35,6 +35,7 @@ dnl Lots of our macros are stored in separate files for ease of maintenance.
 m4_include([m4/aux-libs.m4])
 m4_include([m4/berkeleydb.m4])
 m4_include([m4/cc-c-o.m4])
+m4_include([m4/cc-flags.m4])
 m4_include([m4/compress.m4])
 m4_include([m4/inet-ntoa.m4])
 m4_include([m4/int32.m4])

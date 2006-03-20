@@ -50,6 +50,10 @@ dnl flags from inn_perl_core_flags; otherwise, innd/cc.c and lib/qio.c
 dnl disagree over the size of an off_t.  Since none of our calls into Perl
 dnl use variables of type off_t, this should be harmless; in any event, it's
 dnl going to be better than the innd/cc.c breakage.
+dnl
+dnl Also check to see if the complier supports -Wno-extra and, if so, add it
+dnl to PERL_WARNING.  This has to be conditional since -Wno-extra is only
+dnl supported in gcc 4.0 and later.
 if test x"$DO_PERL" = xDO ; then
     AC_MSG_CHECKING([for Perl linkage])
     inn_perl_core_path=`$PERL -MConfig -e 'print $Config{archlibexp}'`
@@ -83,9 +87,13 @@ if test x"$DO_PERL" = xDO ; then
     PERL_CPPFLAGS="$inn_perl_core_flags"
     PERL_LIBS="$inn_perl_core_libs"
     AC_MSG_RESULT([$inn_perl_core_path])
+    INN_PROG_CC_FLAG([-Wno-extra], [PERL_WARNINGS=-Wno-extra],
+        [PERL_WARNINGS=''])
 else
     PERL_CPPFLAGS=''
     PERL_LIBS=''
+    PERL_WARNINGS=''
 fi
 AC_SUBST([PERL_CPPFLAGS])
-AC_SUBST([PERL_LIBS])])
+AC_SUBST([PERL_LIBS])
+AC_SUBST([PERL_WARNINGS])])
