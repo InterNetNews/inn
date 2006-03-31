@@ -35,8 +35,8 @@
 ##  distributions listed are negated (starting with !), then the server
 ##  will only accept articles without those distributions.
 ##
-##  Patterns affect *outgoing* feeds.  Distributions affect *incoming*
-##  feeds.
+##  For the ME line (and the ME line *only*), patterns affect *outgoing*
+##  feeds and distributions affect *incoming* feeds.
 
 # Empty default subscription list, reject all incoming articles with a
 # distribution of "local" or "collabra-internal," accept all others.
