@@ -125,7 +125,7 @@ main(void)
     test_format(21, true, "abcdefghij4444", 14, "%.10s%n%d", string, &count,
                 4444);
     ok(22, count == 10);
-    test_format(23, true, "abcdefghijklmnopqrstuvwxyz01234", 36, "%ln%s%n",
+    test_format(23, true, "abcdefghijklmnopqrstuvwxyz01234", 36, "%n%s%ln",
                 &count, string, &lcount);
     ok(24, count == 0);
     ok(25, lcount == 31);
