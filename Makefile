@@ -79,7 +79,9 @@ Makefile.global:
 
 ##  Installation rules.  make install installs everything; make update only
 ##  updates the binaries, scripts, and documentation and leaves config
-##  files alone.
+##  files alone.  make install-root does only the installation that needs
+##  to be done as root and can be run after doing the regular install as the
+##  news user if the installation directory is news-writable.
 install: directories
 	@for D in $(ALLDIRS) ; do \
 	    echo '' ; \
@@ -106,6 +108,11 @@ update:
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
 	$(PATHBIN)/innupgrade $(PATHETC)
+
+install-root:
+	@chmod +x support/install-sh
+	support/install-sh $(OWNER) -m 0755 -d $(D)$(PATHBIN)
+	cd backends && $(MAKE) install-root
 
 ##  Install a certificate for TLS/SSL support.
 cert:

@@ -468,12 +468,18 @@ into its final home.  Type:
 
     make install
 
-You will need to run this command as root so that INN can create the
-directories it needs, change ownerships (if you did not compile as the
-news user) and install a couple of setuid wrapper programs needed to raise
-resource limits and allow innd to bind to ports under 1024.  This step
-will install INN under the install directory (F</usr/local/news>, unless
-you specified something else to the configure script).
+Normally, you will need to run this command as root so that INN can create
+the directories it needs, change ownerships (if you did not compile as the
+news user) and install a setuid program needed to raise resource limits
+and allow innd to bind to ports under 1024.  This step will install INN
+under the install directory (F</usr/local/news>, unless you specified
+something else to the configure script).
+
+Exceptionally, if you are installing INN into a directory writable by the
+news user, you can run C<make install> as the configured news user.  The
+resulting INN installation won't be able to use ports below 1024
+(including the default NNTP port of 119) unless you then run C<make
+install-root> as root, which will install only the setuid helper program.
 
 If you are configuring SSL support for newsreaders, you must make a
 certificate and private key at least once.  Type:

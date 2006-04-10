@@ -48,6 +48,9 @@ install: all
 	    echo '' ; echo ; \
 	fi
 
+install-root:
+	$(LI_SPRI) innbind $D$(PATHBIN)/innbind
+
 bootstrap: $(MAN)
 
 clean:
