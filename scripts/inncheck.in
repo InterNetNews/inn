@@ -67,16 +67,16 @@ $newsgroup = '@NEWSGRP@';
 ##  The modes of the config files we can check.
 %modes = (
     'active',		@FILEMODE@,
-    'control.ctl',	0640,
-    'expire.ctl',	0640,
+    'control.ctl',	0644,
+    'expire.ctl',	0644,
     'incoming.conf',	0640,
     'inn.conf',		0644,
     'moderators',	0644,
     'newsfeeds',	0644,
     'overview.fmt',	0644,
-    'nntpsend.ctl',	0640,
+    'nntpsend.ctl',	0644,
     'passwd.nntp',	0640,
-    'readers.conf',	0640
+    'readers.conf',	0644
 );
 
 
