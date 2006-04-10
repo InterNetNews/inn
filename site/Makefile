@@ -134,6 +134,9 @@ $D$(PATH_ACTIVE_TIMES):
 	chmod $(FILEMODE) $@
 $D$(PATH_HISTORY):
 	touch $@
+	chown $(NEWSUSER) $@
+	chgrp $(NEWSGROUP) $@
+	chmod $(FILEMODE) $@
 	$(PATHBIN)/makedbz -i -o
 
 bootstrap:
