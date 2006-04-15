@@ -19,5 +19,7 @@ my $date = <STDIN>;
 chomp $date;
 
 print "\nRunning svn2cl....\n";
-system ("svn2cl --strip-prefix=$prefix --reparagraph --group-by-day -r 'HEAD:{$date}'") == 0
+my @options = qw(--strip-prefix=$prefix --reparagraph --group-by-day
+                 --separate-daylogs);
+system ('svn2cl', @options, '-r', "HEAD:{$date}") == 0
     or die "svn2cl exited with status " . ($? >> 8) . "\n";
