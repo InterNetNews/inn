@@ -662,9 +662,9 @@ there are any other differences, fix the MANIFEST.
 =item 6.
 
 Run C<make release>.  Note that you need to have a copy of svn2cl from
-<http://ch.tudelft.nl/~arthur/svn2cl/> to do this.  Start the ChangeLog at
-the time of the previous release.  (Eventually, the script will be smart
-enough to do this for you.)
+<http://ch.tudelft.nl/~arthur/svn2cl/> to do this; at least version 0.7
+is required.  Start the ChangeLog at the time of the previous release.
+(Eventually, the script will be smart enough to do this for you.)
 
 =item 7.
 
