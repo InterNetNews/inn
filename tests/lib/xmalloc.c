@@ -144,6 +144,65 @@ test_calloc(size_t size)
     return 1;
 }
 
+/* Test asprintf with a large string (essentially using it as strdup).
+   Returns true if successful, false otherwise. */
+static int
+test_asprintf(size_t size)
+{
+    char *copy, *string;
+    int status;
+    size_t i;
+
+    string = xmalloc(size);
+    memset(string, 42, size - 1);
+    string[size - 1] = '\0';
+    status = xasprintf(&copy, "%s", string);
+    free(string);
+    for (i = 0; i < size - 1; i++)
+        if (copy[i] != 42)
+            return 0;
+    if (copy[size - 1] != '\0')
+        return 0;
+    free(copy);
+    return 1;
+}
+
+/* Wrapper around vasprintf to do the va_list stuff. */
+static int
+xvasprintf_wrapper(char **strp, const char *format, ...)
+{
+    va_list args;
+    int status;
+
+    va_start(args, format);
+    status = xvasprintf(strp, format, args);
+    va_end(args);
+    return status;
+}
+
+/* Test vasprintf with a large string (essentially using it as strdup).
+   Returns true if successful, false otherwise. */
+static int
+test_vasprintf(size_t size)
+{
+    char *copy, *string;
+    int status;
+    size_t i;
+
+    string = xmalloc(size);
+    memset(string, 42, size - 1);
+    string[size - 1] = '\0';
+    status = xvasprintf_wrapper(&copy, "%s", string);
+    free(string);
+    for (i = 0; i < size - 1; i++)
+        if (copy[i] != 42)
+            return 0;
+    if (copy[size - 1] != '\0')
+        return 0;
+    free(copy);
+    return 1;
+}
+
 /* Take the amount of memory to allocate in bytes as a command-line argument
    and call test_malloc with that amount of memory. */
 int
@@ -196,7 +255,7 @@ main(int argc, char *argv[])
        2, so that if it unexpectedly succeeds, we exit with a status
        indicating that the test should be skipped. */
     max = size;
-    if (code == 's' || code == 'n')
+    if (code == 's' || code == 'n' || code == 'a' || code == 'v')
         max *= 2;
     if (limit > 0 && max > limit)
         willfail = 2;
@@ -207,6 +266,8 @@ main(int argc, char *argv[])
     case 'r': exit(test_realloc(size) ? willfail : 1);
     case 's': exit(test_strdup(size) ? willfail : 1);
     case 'n': exit(test_strndup(size) ? willfail : 1);
+    case 'a': exit(test_asprintf(size) ? willfail : 1);
+    case 'v': exit(test_vasprintf(size) ? willfail : 1);
     default:
         die("Unknown mode %c", argv[1][0]);
         break;

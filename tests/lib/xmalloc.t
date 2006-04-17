@@ -54,7 +54,7 @@ for file in ./xmalloc lib/xmalloc ../xmalloc ; do
 done
 
 # Total tests.
-echo 26
+echo 36
 
 # First run the tests expected to succeed.
 runsuccess "m" "21"     "0"
@@ -68,6 +68,10 @@ runsuccess "n" "21"     "0"
 runsuccess "n" "128000" "0"
 runsuccess "c" "24"     "0"
 runsuccess "c" "128000" "0"
+runsuccess "a" "24"     "0"
+runsuccess "a" "128000" "0"
+runsuccess "v" "24"     "0"
+runsuccess "v" "128000" "0"
 
 # Now limit our memory to 96KB and then try the large ones again, all of
 # which should fail.
@@ -81,6 +85,10 @@ runfailure "n" "64000"  "96000" \
     "failed to strndup 64000 bytes at lib/xmalloc.c line 115"
 runfailure "c" "128000" "96000" \
     "failed to calloc 128000 bytes at lib/xmalloc.c line 137"
+runfailure "a" "64000" "96000" \
+    "failed to asprintf 64000 bytes at lib/xmalloc.c line 181"
+runfailure "v" "64000" "96000" \
+    "failed to vasprintf 64000 bytes at lib/xmalloc.c line 200"
 
 # Check our custom error handler.
 runfailure "M" "128000" "96000" "malloc 128000 lib/xmalloc.c 36"
@@ -88,6 +96,8 @@ runfailure "R" "128000" "96000" "realloc 128000 lib/xmalloc.c 62"
 runfailure "S" "64000"  "96000" "strdup 64000 lib/xmalloc.c 91"
 runfailure "N" "64000"  "96000" "strndup 64000 lib/xmalloc.c 115"
 runfailure "C" "128000" "96000" "calloc 128000 lib/xmalloc.c 137"
+runfailure "A" "64000"  "96000" "asprintf 64000 lib/xmalloc.c 181"
+runfailure "V" "64000"  "96000" "vasprintf 64000 lib/xmalloc.c 200"
 
 # Check the smaller ones again just for grins.
 runsuccess "m" "21" "96000"
@@ -95,3 +105,5 @@ runsuccess "r" "32" "96000"
 runsuccess "s" "64" "96000"
 runsuccess "n" "20" "96000"
 runsuccess "c" "24" "96000"
+runsuccess "a" "30" "96000"
+runsuccess "v" "35" "96000"

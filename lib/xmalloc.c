@@ -7,6 +7,7 @@
 **       extern xmalloc_handler_t memory_error;
 **       extern const char *string;
 **       char *buffer;
+**       va_list args;
 **
 **       xmalloc_error_handler = memory_error;
 **       buffer = xmalloc(1024);
@@ -17,6 +18,10 @@
 **       buffer = xstrdup(string);
 **       free(buffer);
 **       buffer = xstrndup(string, 25);
+**       free(buffer);
+**       xasprintf(&buffer, "%s", "some string");
+**       free(buffer);
+**       xvasprintf(&buffer, "%s", args);
 **
 **  xmalloc, xcalloc, xrealloc, and xstrdup behave exactly like their C
 **  library counterparts without the leading x except that they will never
@@ -32,6 +37,11 @@
 **  xstrndup behaves like xstrdup but only copies the given number of
 **  characters.  It allocates an additional byte over its second argument and
 **  always nul-terminates the string.
+**
+**  xasprintf and xvasprintf behave just like their GNU glibc library
+**  implementations except that they do the same checking as described above.
+**  xasprintf will only be able to provide accurate file and line information
+**  on systems that support variadic macros.
 **
 **  The default error handler, if none is set by the caller, prints an error
 **  message to stderr and exits with exit status 1.  An error handler must
@@ -49,6 +59,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <errno.h>
 
 #include "inn/messages.h"
 #include "libinn.h"
@@ -137,3 +148,71 @@ x_strndup(const char *s, size_t size, const char *file, int line)
     p[size] = '\0';
     return p;
 }
+
+int
+x_vasprintf(char **strp, const char *fmt, va_list args, const char *file,
+            int line)
+{
+    va_list args_copy;
+    int status;
+
+    va_copy(args_copy, args);
+    status = vasprintf(strp, fmt, args_copy);
+    va_end(args_copy);
+    while (status < 0 && errno == ENOMEM) {
+        va_copy(args_copy, args);
+        status = vsnprintf(NULL, 0, fmt, args_copy);
+        va_end(args_copy);
+        (*xmalloc_error_handler)("vasprintf", status + 1, file, line);
+        va_copy(args_copy, args);
+        status = vasprintf(strp, fmt, args_copy);
+        va_end(args_copy);
+    }
+    return status;
+}
+
+#if INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS
+int
+x_asprintf(char **strp, const char *file, int line, const char *fmt, ...)
+{
+    va_list args, args_copy;
+    int status;
+
+    va_start(args, fmt);
+    va_copy(args_copy, args);
+    status = vasprintf(strp, fmt, args_copy);
+    va_end(args_copy);
+    while (status < 0 && errno == ENOMEM) {
+        va_copy(args_copy, args);
+        status = vsnprintf(NULL, 0, fmt, args_copy);
+        va_end(args_copy);
+        (*xmalloc_error_handler)("asprintf", status + 1, file, line);
+        va_copy(args_copy, args);
+        status = vasprintf(strp, fmt, args_copy);
+        va_end(args_copy);
+    }
+    return status;
+}
+#else /* !(INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS) */
+int
+x_asprintf(char **strp, const char *fmt, ...)
+{
+    va_arg args, args_copy;
+    int status;
+
+    va_start(args, fmt);
+    va_copy(args_copy, args);
+    status = vasprintf(strp, fmt, args_copy);
+    va_end(args_copy);
+    while (status < 0 && errno == ENOMEM) {
+        va_copy(args_copy, args);
+        status = vsnprintf(NULL, 0, fmt, args_copy);
+        va_end(args_copy);
+        (*xmalloc_error_handler)("asprintf", status + 1, __FILE__, __LINE__);
+        va_copy(args_copy, args);
+        status = vasprintf(strp, fmt, args_copy);
+        va_end(args_copy);
+    }
+    return status;
+}
+#endif /* !(INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS) */

@@ -465,6 +465,7 @@ innfeed/testListener.pl               Script to hand articles to innfeed
 lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
 lib/alloca.c                          alloca replacement
+lib/asprintf.c                        asprintf replacement
 lib/buffer.c                          Reusable counted buffer
 lib/cleanfrom.c                       Clean out a From line
 lib/clientactive.c                    Client access to the active file
@@ -816,6 +817,7 @@ tests/innd/artparse-t.c               Tests for ARTparse in innd
 tests/innd/chan-t.c                   Tests for CHAN functions in innd
 tests/innd/fakeinnd.c                 Provide symbols defined by innd/innd.c
 tests/lib                             Test suite for libinn (Directory)
+tests/lib/asprintf-t.c                Tests for lib/asprintf.c
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/conffile-t.c                Tests for lib/conffile.c

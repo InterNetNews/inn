@@ -10,8 +10,8 @@ CFLAGS	= $(GCFLAGS) -I.
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/buffer.t \
-	lib/concat.t lib/conffile.t lib/confparse.t lib/date.t \
+TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
+	lib/buffer.t lib/concat.t lib/conffile.t lib/confparse.t lib/date.t \
 	lib/dispatch.t lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
 	lib/hashtab.t lib/hex.t lib/hstrerror.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
@@ -74,6 +74,12 @@ innd/artparse.t: innd/artparse-t.o innd/fakeinnd.o libtest.o $(INNOBJS)
 
 innd/chan.t: innd/chan-t.o innd/fakeinnd.o libtest.o $(INNOBJS)
 	$(LINK) innd/chan-t.o innd/fakeinnd.o libtest.o $(INNOBJS) $(INNDLIBS)
+
+lib/asprintf.o: ../lib/asprintf.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/asprintf.c
+
+lib/asprintf.t: lib/asprintf.o lib/asprintf-t.o libtest.o $(LIBINN)
+	$(LINK) lib/asprintf.o lib/asprintf-t.o libtest.o $(LIBINN) $(LIBS)
 
 lib/buffer.t: lib/buffer-t.o libtest.o $(LIBINN)
 	$(LINK) lib/buffer-t.o libtest.o $(LIBINN)

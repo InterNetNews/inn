@@ -465,9 +465,9 @@ AC_CHECK_FUNCS([statvfs], ,
      AC_CHECK_HEADERS([sys/vfs.h sys/param.h sys/mount.h])])
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(getaddrinfo getnameinfo getpagesize hstrerror inet_aton \
-                 inet_ntop mkstemp pread pwrite seteuid strcasecmp strerror \
-                 strlcat strlcpy strspn setenv symlink)
+AC_REPLACE_FUNCS(asprintf getaddrinfo getnameinfo getpagesize hstrerror \
+                 inet_aton inet_ntop mkstemp pread pwrite seteuid strcasecmp \
+                 strerror strlcat strlcpy strspn setenv symlink)
 
 dnl Probe for fseeko and ftello, which take off_t instead of int.
 if test x"$inn_enable_largefiles" = xyes ; then

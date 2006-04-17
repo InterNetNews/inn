@@ -4,6 +4,7 @@ authprogs/ident
 clients/getlist
 innd/artparse
 innd/chan
+lib/asprintf
 lib/buffer
 lib/concat
 lib/conffile
