@@ -251,6 +251,7 @@ tests/authprogs/ident.t
 tests/clients/server-list
 tests/innd/artparse.t
 tests/innd/chan.t
+tests/lib/asprintf.t
 tests/lib/buffer.t
 tests/lib/concat.t
 tests/lib/conffile.t
