@@ -111,6 +111,7 @@ extern off_t            ftello(FILE *);
    implemented incorrectly or implemented without a prototype. */
 #if !HAVE_ASPRINTF
 extern int              asprintf(char **, const char *, ...);
+extern int              vasprintf(char **, const char *, va_list);
 #endif
 #if !HAVE_MKSTEMP
 extern int              mkstemp(char *);
@@ -142,9 +143,6 @@ extern size_t           strlcpy(char *, const char *, size_t);
 #endif
 #if !HAVE_SYMLINK
 extern int              symlink(const char *, const char *);
-#endif
-#if !HAVE_VASPRINTF
-extern int              vasprintf(char **, const char *, va_list);
 #endif
 #if !HAVE_DECL_VSNPRINTF
 extern int              vsnprintf(char *, size_t, const char *, va_list);
