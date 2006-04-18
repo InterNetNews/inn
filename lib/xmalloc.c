@@ -197,7 +197,7 @@ x_asprintf(char **strp, const char *file, int line, const char *fmt, ...)
 int
 x_asprintf(char **strp, const char *fmt, ...)
 {
-    va_arg args, args_copy;
+    va_list args, args_copy;
     int status;
 
     va_start(args, fmt);
