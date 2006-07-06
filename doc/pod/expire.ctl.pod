@@ -15,7 +15,7 @@ self-expiring (such as CNFS), all lines except the C</remember/> setting
 (described below) are ignored.  This can be changed with the B<-N> option
 to B<expire> or B<expireover>.
 
-Black lines and lines beginning with a number sign (C<#>) are ignored.
+Blank lines and lines beginning with a number sign (C<#>) are ignored.
 All other lines should be in one of two formats.  The order of the file is
 significant, and the last matching entry will be used.
 
