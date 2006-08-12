@@ -182,6 +182,6 @@ readers.conf(5), nnrpd(8)
 
 Linux users who want to use PAM should read the Linux-PAM System
 Administrator's Guide at
-L<http://www.kernel.org/pub/linux/libs/pam/Linux-PAM-html/pam.html>.
+L<http://www.kernel.org/pub/linux/libs/pam/Linux-PAM-html/Linux-PAM_SAG.html>.
 
 =cut
