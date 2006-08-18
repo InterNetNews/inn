@@ -58,7 +58,7 @@ static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtok
     return token;
 }
 
-static void BreakToken(TOKEN token, int *now, int *seqnum) {
+static void BreakToken(TOKEN token, time_t *now, int *seqnum) {
     unsigned int        i;
     unsigned short      s = 0;
 
@@ -290,7 +290,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 }
 
 ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount) {
-    int                 now;
+    time_t              now;
     int                 seqnum;
     char                *path;
     ARTHANDLE           *art;
@@ -338,7 +338,7 @@ void timehash_freearticle(ARTHANDLE *article) {
 }
 
 bool timehash_cancel(TOKEN token) {
-    int                 now;
+    time_t              now;
     int                 seqnum;
     char                *path;
     int                 result;
@@ -491,7 +491,7 @@ timehash_next(ARTHANDLE *article, const RETRTYPE amount)
     newpriv->terde = priv.terde;
     snprintf(path, length, "%s/%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
     art->token = PathToToken(path);
-    BreakToken(*art->token, (int *)&(art->arrived), &seqnum);
+    BreakToken(*art->token, &(art->arrived), &seqnum);
     free(path);
     return art;
 }
@@ -521,7 +521,8 @@ void
 timehash_printfiles(FILE *file, TOKEN token, char **xref UNUSED,
                     int ngroups UNUSED)
 {
-    int now, seqnum;
+    time_t now;
+    int seqnum;
     char *path;
     
     BreakToken(token, &now, &seqnum);
