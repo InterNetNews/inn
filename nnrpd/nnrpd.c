@@ -385,6 +385,7 @@ Address2Name6(struct sockaddr *sa, char *hostname, int i)
     int ret;
     bool valid = 0;
     struct addrinfo hints, *res, *res0;
+    char *p;
 
     /* Get the official hostname, store it away. */
     ret = getnameinfo( sa, SA_LEN( sa ), hostname, i, NULL, 0, NI_NAMEREQD );
@@ -423,9 +424,13 @@ Address2Name6(struct sockaddr *sa, char *hostname, int i)
 
     freeaddrinfo( res0 );
 
-    if( valid ) return true;
-    else
-    {
+    if (valid) {
+        /* Make all lowercase for matching. */
+        for (p = hostname; *p != '\0'; p++)
+            if (CTYPE(isupper, *p))
+                *p = tolower(*p);
+        return true;
+    } else {
 	HostErrorStr = mismatch_error;
 	return false;
     }
