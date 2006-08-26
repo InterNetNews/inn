@@ -14,10 +14,10 @@
 #include "tls.h"
 
 typedef struct {
-    char                *name;
-    int                 high;
-    int                 low;
-    int                 count;
+    char *name;
+    ARTNUM high;
+    ARTNUM low;
+    unsigned long count;
 } GROUPDATA;
 
 
@@ -417,7 +417,7 @@ CMDnewgroups(int ac, char *av[])
 	key.name = p;
 	if ((gd = bsearch(&key, grouplist, numgroups, sizeof(GROUPDATA), GroupCompare)) == NULL)
 	    continue;
-	Printf("%s %d %d %s\r\n", p, gd->high, gd->low, q);
+	Printf("%s %lu %lu %s\r\n", p, gd->high, gd->low, q);
 	numfound--;
     }
     for (i = 0; i < numgroups; i++) {
