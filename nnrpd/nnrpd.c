@@ -369,7 +369,7 @@ Address2Name(struct sockaddr *sa, char *hostname, size_t size)
             if (CTYPE(isupper, *p))
                 *p = tolower((int) *p);
         return true;
-    else {
+    } else {
 	HostErrorStr = MISMATCH;
 	return false;
     }
