@@ -130,9 +130,8 @@ void CMDgroup(int ac, char *av[])
 		}
 		OVclosesearch(handle);
 	    }
-	    Reply("%d %d %ld %ld %s\r\n",
-		NNTP_GROUPOK_VAL,
-		count, ARTlow, ARThigh, group);
+	    Reply("%d %d %lu %lu %s\r\n", NNTP_GROUPOK_VAL, count,
+                  (unsigned long) ARTlow, (unsigned long) ARThigh, group);
 	}
 	GRPcount++;
 	ARTnumber = ARTlow;
@@ -153,12 +152,12 @@ void CMDgroup(int ac, char *av[])
             Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
             Printf(".\r\n");
         } else if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
-            Reply("%d %d %ld %ld %s\r\n", NNTP_GROUPOK_VAL, count, ARTlow,
-                  ARThigh, group);
+            Reply("%d %d %lu %lu %s\r\n", NNTP_GROUPOK_VAL, count,
+                  (unsigned long) ARTlow, (unsigned long) ARThigh, group);
 	    while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
 		if (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
 		    continue;
-		Printf("%ld\r\n", i);
+		Printf("%lu\r\n", (unsigned long) i);
 	    }
 	    OVclosesearch(handle);
 	    Printf(".\r\n");
@@ -191,7 +190,8 @@ GRPreport()
 
     if (GRPcur) {
 	strlcpy(buff, GRPcur, sizeof(buff));
-	syslog(L_NOTICE, "%s group %s %ld", ClientHost, buff, GRParticles);
+	syslog(L_NOTICE, "%s group %s %lu", ClientHost, buff,
+               (unsigned long) GRParticles);
 	GRParticles = 0;
 	repbuff[0]='\0';
     }
