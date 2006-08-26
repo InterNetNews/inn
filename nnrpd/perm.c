@@ -83,7 +83,7 @@ static int MatchUser(char*, char*);
 static char *ResolveUser(AUTHGROUP*);
 static char *AuthenticateUser(AUTHGROUP*, char*, char*, char*);
 
-static void GrowArray(void***, void*);
+static void GrowArray(void*, void*);
 static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *acccess_vec) UNUSED;
 
 /* global variables */
@@ -253,11 +253,12 @@ static CONFTOKEN PERMtoks[] = {
 
 /* function definitions */
 static void
-GrowArray(void ***array, void *el)
+GrowArray(void *data, void *el)
 {
     int i;
+    void ***array = data;
 
-    if (!*array) {
+    if (*array == NULL) {
 	*array = xmalloc(2 * sizeof(void *));
 	i = 0;
     } else {
@@ -288,8 +289,7 @@ copy_method(METHOD *orig)
     ret->extra_logs = 0;
     if (orig->extra_logs) {
 	for (i = 0; orig->extra_logs[i]; i++)
-	    GrowArray((void***) &ret->extra_logs,
-	      (void*) xstrdup(orig->extra_logs[i]));
+	    GrowArray(&ret->extra_logs, xstrdup(orig->extra_logs[i]));
     }
 
     ret->type = orig->type;
@@ -348,15 +348,13 @@ copy_authgroup(AUTHGROUP *orig)
     ret->res_methods = 0;
     if (orig->res_methods) {
 	for (i = 0; orig->res_methods[i]; i++)
-	    GrowArray((void***) &ret->res_methods,
-	      (void*) copy_method(orig->res_methods[i]));;
+	    GrowArray(&ret->res_methods, copy_method(orig->res_methods[i]));;
     }
 
     ret->auth_methods = 0;
     if (orig->auth_methods) {
 	for (i = 0; orig->auth_methods[i]; i++)
-	    GrowArray((void***) &ret->auth_methods,
-	      (void*) copy_method(orig->auth_methods[i]));
+	    GrowArray(&ret->auth_methods, copy_method(orig->auth_methods[i]));
     }
 
     if (orig->default_user)
@@ -598,7 +596,7 @@ method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 
     switch (oldtype) {
       case PERMalsolog:
-	GrowArray((void***) &method->extra_logs, (void*) xstrdup(tok->name));
+	GrowArray(&method->extra_logs, xstrdup(tok->name));
 	break;
       case PERMusers:
 
@@ -690,7 +688,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
       case PERMresprog:
         m = xcalloc(1, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
-	GrowArray((void***) &curauth->res_methods, (void*) m);
+	GrowArray(&curauth->res_methods, m);
 
 	if (oldtype == PERMresprog)
 	    m->program = xstrdup(tok->name);
@@ -719,7 +717,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
       case PERMauthprog:
         m = xcalloc(1, sizeof(METHOD));
 	memset(ConfigBit, '\0', ConfigBitsize);
-	GrowArray((void***) &curauth->auth_methods, (void*) m);
+	GrowArray(&curauth->auth_methods, m);
 	if (oldtype == PERMauthprog) {
             m->type = PERMauthprog;
 	    m->program = xstrdup(tok->name);
