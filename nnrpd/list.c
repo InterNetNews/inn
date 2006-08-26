@@ -133,7 +133,7 @@ CMD_list_single(char *group)
     }
     if (OVgroupstats(group, &lo, &hi, NULL, &flag) && flag != '=') {
         Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, INFOactive.Format);
-        Printf("%s %010d %010d %c\r\n.\r\n", group, hi, lo, flag);
+        Printf("%s %010u %010u %c\r\n.\r\n", group, hi, lo, flag);
         return true;
     }
     return false;
