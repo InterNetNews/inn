@@ -714,7 +714,7 @@ CHANresize(CHANNEL *cp, size_t size)
     bp = &cp->In;
     change = size - bp->size;
     bp->size = size;
-    bp->left = bp->left + size;
+    bp->left += change;
     p = bp->data;
 
     /* Reallocate the buffer and adjust offets if realloc moved the location
