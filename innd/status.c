@@ -122,8 +122,10 @@ STATUSsummary(void)
 #else
   path = concatpath(innconf->pathlog, STATUS_FILE);
 #endif
-  if ((F = Fopen(path, "w", TEMPORARYOPEN)) == NULL)
+  if ((F = Fopen(path, "w", TEMPORARYOPEN)) == NULL) {
+    syslog(L_ERROR, "%s cannot open %s: %m", LogName, path);
     return;
+  }
 
 #if defined(HTML_STATUS)
   /* HTML Header */
