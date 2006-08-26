@@ -334,6 +334,7 @@ Address2Name(struct sockaddr *sa, char *hostname, size_t size)
 {
     static const char MISMATCH[] = "reverse lookup validation failed";
     struct addrinfo hints, *ai, *host;
+    char *p;
     int ret;
     bool valid = false;
 
@@ -362,7 +363,11 @@ Address2Name(struct sockaddr *sa, char *hostname, size_t size)
         }
     freeaddrinfo(ai);
 
-    if (valid)
+    /* Lowercase the returned name since wildmats are case-sensitive. */
+    if (valid) {
+        for (p = hostname; *p != '\0'; p++)
+            if (CTYPE(isupper, *p))
+                *p = tolower((int) *p);
         return true;
     else {
 	HostErrorStr = MISMATCH;
