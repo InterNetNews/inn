@@ -30,8 +30,8 @@
 **  A range of article numbers.
 */
 typedef struct _ARTRANGE {
-    int		Low;
-    int		High;
+    ARTNUM	Low;
+    ARTNUM	High;
 } ARTRANGE;
 
 /*
@@ -173,10 +173,10 @@ extern char	*NNRPACCESS;
 EXTERN char	PERMpass[SMBUF];
 EXTERN char	PERMuser[SMBUF];
 EXTERN FILE	*locallog;
-EXTERN int	ARTnumber;	/* Current article number */
-EXTERN int	ARThigh;	/* Current high number for group */
-EXTERN int	ARTlow;		/* Current low number for group */
-EXTERN long	ARTcount;	/* Current number of articles in group */
+EXTERN ARTNUM	ARTnumber;	/* Current article number */
+EXTERN ARTNUM	ARThigh;	/* Current high number for group */
+EXTERN ARTNUM	ARTlow;		/* Current low number for group */
+EXTERN unsigned long	ARTcount;	/* Number of articles in group */
 EXTERN long	MaxBytesPerSecond; /* maximum bytes per sec a client can use, defaults to 0 */
 EXTERN long	ARTget;
 EXTERN long	ARTgettime;
@@ -191,7 +191,7 @@ EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
 EXTERN long	OVERget;	/* number of ms spent reading history	*/
 EXTERN long	OVERartcheck;	/* number of ms spent article check	*/
 EXTERN double	IDLEtime;
-EXTERN long	GRParticles;
+EXTERN unsigned long	GRParticles;
 EXTERN long	GRPcount;
 EXTERN char	*GRPcur;
 EXTERN long	POSTreceived;

@@ -19,6 +19,7 @@ CMDgroup(int ac, char *av[])
 {
     static char		NOSUCHGROUP[] = NNTP_NOSUCHGROUP;
     ARTNUM              i;
+    int                 low, high;
     char		*grplist[2];
     char		*group;
     void                *handle;
@@ -50,12 +51,15 @@ CMDgroup(int ac, char *av[])
     } else {
 	group = xstrdup(av[1]);
     }
-    
-    if (!OVgroupstats(group, &ARTlow, &ARThigh, &count, NULL)) {
+
+    /* FIXME: Temporarily work around broken API. */
+    if (!OVgroupstats(group, &low, &high, &count, NULL)) {
 	Reply("%s %s\r\n", NOSUCHGROUP, group);
 	free(group);
 	return;
     }
+    ARTlow = low;
+    ARThigh = high;
 
 #ifdef DO_PYTHON
     if (PY_use_dynamic) {
@@ -131,9 +135,8 @@ CMDgroup(int ac, char *av[])
 		}
 		OVclosesearch(handle);
 	    }
-	    Reply("%d %d %ld %ld %s\r\n",
-		NNTP_GROUPOK_VAL,
-		count, ARTlow, ARThigh, group);
+	    Reply("%d %d %lu %lu %s\r\n", NNTP_GROUPOK_VAL, count, ARTlow,
+                  ARThigh, group);
 	}
 	GRPcount++;
 	ARTnumber = ARTlow;
@@ -154,12 +157,12 @@ CMDgroup(int ac, char *av[])
             Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
             Printf(".\r\n");
         } else if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
-            Reply("%d %d %ld %ld %s\r\n", NNTP_GROUPOK_VAL, count, ARTlow,
+            Reply("%d %d %lu %lu %s\r\n", NNTP_GROUPOK_VAL, count, ARTlow,
                   ARThigh, group);
 	    while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
 		if (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
 		    continue;
-		Printf("%ld\r\n", i);
+		Printf("%lu\r\n", i);
 	    }
 	    OVclosesearch(handle);
 	    Printf(".\r\n");
@@ -192,7 +195,7 @@ GRPreport(void)
 
     if (GRPcur) {
 	strlcpy(buff, GRPcur, sizeof(buff));
-	syslog(L_NOTICE, "%s group %s %ld", Client.host, buff, GRParticles);
+	syslog(L_NOTICE, "%s group %s %lu", Client.host, buff, GRParticles);
 	GRParticles = 0;
 	repbuff[0]='\0';
     }

@@ -132,6 +132,7 @@ static char **groups;
 static void
 process_newnews(char *group, bool AllGroups, time_t date)
 {
+    int low, high;
     char **xrefs;
     int count;
     void *handle;
@@ -150,8 +151,10 @@ process_newnews(char *group, bool AllGroups, time_t date)
 	return;
     if (!AllGroups && !PERMmatch(groups, grplist))
 	return;
-    if (!OVgroupstats(group, &ARTlow, &ARThigh, &count, NULL))
+    if (!OVgroupstats(group, &low, &high, &count, NULL))
 	return;
+    ARTlow = low;
+    ARThigh = high;
     if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
 	ARTNUM artnum;
 	unsigned long artcount = 0;

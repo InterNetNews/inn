@@ -634,7 +634,7 @@ CMDfetch(int ac, char *av[])
 	    return;
 	}
 	tart=art;
-	Reply("%d %ld %s %s\r\n", what->ReplyCode, art, av[1], what->Item);
+	Reply("%d %lu %s %s\r\n", what->ReplyCode, art, av[1], what->Item);
 	if (what->Type != STstat) {
 	    ARTsendmmap(what->Type);
 	}
@@ -654,7 +654,7 @@ CMDfetch(int ac, char *av[])
 	    Reply("%s\r\n", ARTnocurrart);
 	    return;
 	}
-	snprintf(buff, sizeof(buff), "%d", ARTnumber);
+	snprintf(buff, sizeof(buff), "%lu", ARTnumber);
 	tart=ARTnumber;
     }
     else {
@@ -963,7 +963,7 @@ void
 CMDpat(int ac, char *av[])
 {
     char	        *p;
-    int	        	i;
+    unsigned long      	i;
     ARTRANGE		range;
     bool		IsLines;
     bool		DidReply;
@@ -1038,7 +1038,7 @@ CMDpat(int ac, char *av[])
 		    continue;
 		p = GetHeader(header);
 		if (p && (!pattern || uwildmat_simple(p, pattern))) {
-		    snprintf(buff, sizeof(buff), "%u ", i);
+		    snprintf(buff, sizeof(buff), "%lu ", i);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
 		    SendIOb("\r\n", 2);
