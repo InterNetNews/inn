@@ -77,11 +77,11 @@ CCOUTPUT	= @CCOUTPUT@
 ##  they're listed in the gcc manual.
 ##
 ##  Add -g because when building with warnings one generally also wants the
-##  debugging information, and add -O because gcc won't find some warnings
+##  debugging information, and add -O2 because gcc won't find some warnings
 ##  without optimization turned on.  Add -DDEBUG=1 so that we'll also
 ##  compile all debugging code and check it as well.
 
-WARNINGS	= -g -O -DDEBUG=1 -Wall -W -Wendif-labels -Wpointer-arith \
+WARNINGS	= -g -O2 -DDEBUG=1 -Wall -W -Wendif-labels -Wpointer-arith \
 		  -Wbad-function-cast -Wcast-align -Wwrite-strings \
 		  -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs \
 		  -Werror
