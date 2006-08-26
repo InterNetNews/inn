@@ -484,8 +484,13 @@ Add to the newsfeeds file an entry like this one:
 
 Import new keys with:
 
-    gpg --keyring=/usr/local/news/etc/pgp/ncmring.gpg --import \
-        --allow-non-selfsigned-uid
+    gpg --primary-keyring /usr/local/news/etc/pgp/ncmring.gpg --import
+        <key-file>
+
+where <key-file> is the file containing the key.  For old PGP-generated
+keys, you may have to use B<--allow-non-selfsigned-uid> if they're not
+properly self-signed, but anyone creating a key really should self-sign
+the key.  Current PGP implementations do this automatically.
 
 The nocem.ctl config file contains lines like:
 
