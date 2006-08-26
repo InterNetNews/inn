@@ -378,6 +378,12 @@ Needed Bug Fixes
   user be prompted with a 480 code when they try to access anything.
   Right now, that doesn't appear to be possible.
 
+* Handling of article rejections needs a lot of cleanup in innd/art.c so
+  that one can cleanly indicate whether a given rejection should be
+  remembered or not, and the code that does the remembering needs to be
+  refactored and shared.  Once this is done, we need to not remember
+  rejections for duplicated Xref headers.
+
 
 Requested New Features
 
