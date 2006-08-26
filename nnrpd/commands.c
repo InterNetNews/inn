@@ -414,7 +414,7 @@ void CMDnewgroups(int ac, char *av[])
 	key.name = p;
 	if ((gd = bsearch(&key, grouplist, numgroups, sizeof(GROUPDATA), GroupCompare)) == NULL)
 	    continue;
-	Printf("%s %d %d %s\r\n", p, gd->high, gd->low, q);
+	Printf("%s %u %u %s\r\n", p, gd->high, gd->low, q);
 	numfound--;
     }
     for (i = 0; i < numgroups; i++) {
