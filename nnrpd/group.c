@@ -151,6 +151,7 @@ void CMDgroup(int ac, char *av[])
            available it shouldn't hurt to return the same thing. */
         if (count == 0) {
             Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
+            Printf(".\r\n");
         } else if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
             Reply("%d %d %ld %ld %s\r\n", NNTP_GROUPOK_VAL, count, ARTlow,
                   ARThigh, group);
