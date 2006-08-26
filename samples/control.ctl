@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2006-03-19
+##  Last modified: 2006-08-25
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -173,18 +173,16 @@ rmgroup:*:alive.*:doit
 # Accept all newgroups (except ones forged from Big 8 newgroup issuers,
 # who never issue alt.* control messages) and silently ignore all
 # rmgroups.  This file used to attempt to track and recommend trusted
-# rmgroup issuers; it no longer does because they change too frequently.
-# What policy to use for alt.* groups varies widely from site to site.
-# For a small site, it is strongly recommended that this policy be changed
-# to drop all newgroups for alt.* as well as rmgroups and that the news
-# admin only add new alt.* groups on request, as tons of alt.* newgroups
-# are sent out regularly with the intent more to create nonsense entries
-# in active files than to actually create a useable newsgroup.
+# rmgroup issuers, but this idea is now obsolete.  What policy to use for
+# alt.* groups varies widely from site to site.  For a small site, it is
+# strongly recommended that this policy be changed to drop all newgroups
+# for alt.* as well as rmgroups and that the news admin only add new alt.*
+# groups on request, as tons of alt.* newgroups are sent out regularly
+# with the intent more to create nonsense entries in active files than to
+# actually create a useable newsgroup.
 #
-# Other options and comments on alt.* groups can be found at
-# <http://www.alt-config.org/>, one of the many alt.* FAQ sites.  Be aware
-# that there is no official, generally accepted alt.* policy and all
-# information about alt.* groups available is essentially someone's
+# Be aware that there is no official, generally accepted alt.* policy and
+# all information about alt.* groups available is essentially someone's
 # opinion, including these comments.  There are nearly as many different
 # policies with regard to alt.* groups as there are Usenet sites.
 #
@@ -461,12 +459,10 @@ newgroup:*:chaven.*:mail
 rmgroup:*:chaven.*:doit
 
 ## CHI (Chicago, USA)
+# URL: http://lull.org/pub/chi-newsgroup-faq
 checkgroups:lisbon@*chi.il.us:chi.*:doit
-checkgroups:lisbon@*interaccess.com:chi.*:doit
 newgroup:lisbon@*chi.il.us:chi.*:doit
-newgroup:lisbon@*interaccess.com:chi.*:doit
 rmgroup:lisbon@*chi.il.us:chi.*:doit
-rmgroup:lisbon@*interaccess.com:chi.*:doit
 
 ## CHILE (Chile and Chilean affairs)
 # Contact: mod-cga@usenet.cl
