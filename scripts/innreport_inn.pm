@@ -263,6 +263,7 @@ sub collect {
       $cmd = $command unless $cmd;
       return 1 if $cmd eq 'flush'; # to avoid a double count
       $innd_control{"$cmd"}++;
+      return 1;
     }
     # old control command (by letter)
     if ($left =~ /^(\w)$/o) {
@@ -624,12 +625,12 @@ sub collect {
     }
     # bad_newsfeeds no feeding sites
     return 1 if $left =~ /\S+ bad_newsfeeds no feeding sites/o;
-    # CNFS-sm: cycbuff rollover - possibly interesting
-    return 1 if $left =~ /CNFS-sm: cycbuff \S+ rollover to cycle/o;
-    # CNFS-sm: CNFSflushallheads: flushing - possibly interesting
-    return 1 if $left =~ /CNFS-sm: CNFSflushallheads: flushing /o;
-    # CNFS-sm: metacycbuff rollover with SEQUENTIAL
-    return 1 if $left =~ /CNFS-sm: metacycbuff \S+ cycbuff is moved to /o;
+    # CNFS: cycbuff rollover - possibly interesting
+    return 1 if $left =~ /CNFS(?:-sm)?: cycbuff \S+ rollover to cycle/o;
+    # CNFS: CNFSflushallheads: flushing - possibly interesting
+    return 1 if $left =~ /CNFS(?:-sm)?: CNFSflushallheads: flushing /o;
+    # CNFS: metacycbuff rollover with SEQUENTIAL
+    return 1 if $left =~ /CNFS(?:-sm)?: metacycbuff \S+ cycbuff is moved to /o;
     # Cleanfeed status reports
     return 1 if $left =~ /^filter: status/o;
   }
