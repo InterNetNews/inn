@@ -52,7 +52,7 @@ if ($use_syslog) {
 }
 
 if (not $inn::gpgv) {
-    logmsg('cannot find the gpgv binary', 'error');
+    logmsg('cannot find the gpgv binary', 'err');
     sleep 5;
     exit 1;
 }
@@ -185,7 +185,7 @@ sub read_nocem {
     # a temp file so that we can check the PGP signature when done.
     my $tmpfile = "$inn::pathtmp/nocem.$$";
     if (not open(OFD, ">$tmpfile")) {
-        logmsg("cannot open temp file $tmpfile: $!", 'error');
+        logmsg("cannot open temp file $tmpfile: $!", 'err');
         return;
     }
     print OFD $body;
@@ -268,7 +268,7 @@ sub pgp_check {
     # fork and spawn a child
     my $pid = open(PFD, '-|');
     if (not defined $pid) {
-        logmsg("pgp_check: cannot fork: $!", 'error');
+        logmsg("pgp_check: cannot fork: $!", 'err');
         return 0;
     }
     if ($pid == 0) {
@@ -309,7 +309,7 @@ sub pgp_check {
         # 126 is returned by the child if exec fails.
         s/ at \S+ line \d+\.\n$//; s/\n/_/;
         logmsg("Article $msgid: $inn::gpgv exited "
-            . (($status == 126) ? "($_)" : "with status $status"), 'error');
+            . (($status == 126) ? "($_)" : "with status $status"), 'err');
     }
     return 0;
 }
@@ -321,18 +321,18 @@ sub open_article {
     if ($token =~ /^\@.+\@$/) {
         my $pid = open(ART, '-|');
         if ($pid < 0) {
-            logmsg('Cannot fork: ' . $!, 'error');
+            logmsg('Cannot fork: ' . $!, 'err');
             return undef;
         }
         if ($pid == 0) {
             exec("$inn::newsbin/sm", '-q', $token) or
-                logmsg("Cannot exec sm: $!", 'error');
+                logmsg("Cannot exec sm: $!", 'err');
             return undef;
         }
         return *ART;
     } else {
         return *ART if open(ART, $token);
-        logmsg("Cannot open article $token: $!", 'error');
+        logmsg("Cannot open article $token: $!", 'err');
     }
     return undef;
 }
@@ -359,9 +359,9 @@ sub cancel_ctlinnd {
         while ((my $pid = wait) > 0) {
             next unless $?;
             if ($? >> 8) {
-                logmsg("Child $pid died with status " . ($? >> 8), 'error');
+                logmsg("Child $pid died with status " . ($? >> 8), 'err');
             } else {
-                logmsg("Child $pid killed by signal " . ($? & 255), 'error');
+                logmsg("Child $pid killed by signal " . ($? & 255), 'err');
             }
         }
     }
@@ -374,23 +374,23 @@ sub cancel_nntp {
     if (not $nntp_open) {
         use Socket;
         if (not socket(NNTP, PF_UNIX, SOCK_STREAM, 0)) {
-            logmsg("socket: $!", 'error');
+            logmsg("socket: $!", 'err');
             goto ERR;
         }
         if (not connect(NNTP, sockaddr_un($inn::pathrun . '/nntpin'))) {
-            logmsg("connect: $!", 'error');
+            logmsg("connect: $!", 'err');
             goto ERR;
         }
         if (($r = <NNTP>) !~ /^200 /) {
             $r =~ s/\r\n$//;
-            logmsg("bad reply from server: $r", 'error');
+            logmsg("bad reply from server: $r", 'err');
             goto ERR;
         }
         select NNTP; $| = 1; select STDOUT;
         print NNTP "MODE CANCEL\r\n";
         if (($r = <NNTP>) !~ /^284 /) {
             $r =~ s/\r\n$//;
-            logmsg("MODE CANCEL not supported: $r", 'error');
+            logmsg("MODE CANCEL not supported: $r", 'err');
             goto ERR;
         }
         $nntp_open = 1;
@@ -399,13 +399,13 @@ sub cancel_nntp {
         print NNTP "$_\r\n";
         if (($r = <NNTP>) !~ /^289/) {
             $r =~ s/\r\n$//;
-            logmsg("cannot cancel $_: $r", 'error');
+            logmsg("cannot cancel $_: $r", 'err');
         }
     }
     return;
 
 ERR:
-    logmsg('Switching to ctlinnd...', 'error');
+    logmsg('Switching to ctlinnd...', 'err');
     cancel_ctlinnd($ids);
     $cancel = \&cancel_ctlinnd;
 }
@@ -414,7 +414,7 @@ sub read_ctlfile {
     my $permfile = $inn::pathetc . '/nocem.ctl';
 
     unless (open(CTLFILE, $permfile)) {
-        logmsg("Cannot open $permfile: $!", 'error');
+        logmsg("Cannot open $permfile: $!", 'err');
         return 0;
     }
     while (<CTLFILE>) {
@@ -422,7 +422,7 @@ sub read_ctlfile {
         s/^\s+//; s/\s+$//;
         next if /^#/ or /^$/;
         my ($issuer, $type) = split(/:/, lc $_);
-        logmsg("Cannot parse nocem.ctl line <<$_>>", 'error')
+        logmsg("Cannot parse nocem.ctl line <<$_>>", 'err')
             if not $issuer and $type;
         $type =~ s/\s//g;
         push @ncmperm, "$issuer\001$_" foreach split(/,/, $type);
