@@ -312,6 +312,9 @@
 /* Define if you have the <dlfcn.h> header file.  */
 #undef HAVE_DLFCN_H
 
+/* Define if you have the <et/com_err.h> header file.  */
+#undef HAVE_ET_COM_ERR_H
+
 /* Define if you have the <gdbm-ndbm.h> header file.  */
 #undef HAVE_GDBM_NDBM_H
 
@@ -423,18 +426,6 @@
 /* Define to 1 to compile in support for keyword generation code. */
 #undef DO_KEYWORDS
 
-/* Define if BerkeleyDB is available. */
-#undef USE_BERKELEY_DB
-
-/* Define if OpenSSL is available. */
-#undef HAVE_SSL
-
-/* Define if SASL is available. */
-#undef HAVE_SASL
-
-/* Define if SASL is available. */
-#undef HAVE_SASL
-
 /* Define to compile in Perl script support. */
 #undef DO_PERL
 
@@ -449,6 +440,18 @@
 
 /* Define if you have PAM. */
 #undef HAVE_PAM
+
+/* Define if BerkeleyDB is available. */
+#undef USE_BERKELEY_DB
+
+/* Define if OpenSSL is available. */
+#undef HAVE_SSL
+
+/* Define if SASL is available. */
+#undef HAVE_SASL
+
+/* Define if SASL is available. */
+#undef HAVE_SASL
 
 /* Some versions of glibc need this defined for pread/pwrite. */
 #undef _GNU_SOURCE
