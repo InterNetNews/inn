@@ -219,6 +219,13 @@ will re-offer more already-processed articles than necessary.
 This key requires a positive integer value. It specifies how many seconds
 before each checks for externally generated backlog files that are to be
 picked up and processed.
+.TP
+.B backlog-rotate-period
+This key requires a positive integer value. It specifies how many seconds
+elapse before
+.B innfeed
+checks for a manually created backlog file and moves the output backlog
+file to the input backlog file.
 .\"..................................................
 .TP
 .B dns-retry
@@ -485,7 +492,7 @@ backlog files are allowed to grown without bound when the peer is unable to
 keep up with the article flow. If this number is greater than 0 then it
 specifies the size (in bytes) the backlog file should get truncated to when
 the backlog file reaches a certain limit. The limit depends on whether
-\fBbacklog-factor\fP or \fBbacklog-limit-high\fP is used.
+\fBbacklog-factor\fP or \fBbacklog-limit-highwater\fP is used.
 .TP
 .B backlog-factor
 This key requires a floating point value, which must be larger than 1.0. It
