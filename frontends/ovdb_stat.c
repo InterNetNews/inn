@@ -266,12 +266,18 @@ static struct datatab LOCK_tab[] = {
  { INT32, F(st_nobjects),      -1, -1,           "Current objects" },
  { INT32, F(st_maxnobjects),   -1, -1,           "Maximum objects" },
 #endif
+#if DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 4
+ { INT32, F(st_lock_wait),     -1, -1,           "Lock conflicts" },
+#else
  { INT32, F(st_nconflicts),    -1, -1,           "Lock conflicts" },
+#endif
  { INT32, F(st_nrequests),     -1, -1,           "Lock requests" },
  { INT32, F(st_nreleases),     -1, -1,           "Lock releases" },
  { DIFF32, F(st_nrequests), F(st_nreleases), F(st_ndeadlocks), "Outstanding locks" },
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR > 0)
- { INT32, F(st_nnowaits),      -1, -1,           "Lock requests that would have waited" },
+#if DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 4
+ { INT32, F(st_lock_nowait),   -1, -1,           "Lock conflicts w/o subsequent wait" },
+#elif DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR > 0)
+ { INT32, F(st_nnowaits),      -1, -1,           "Lock conflicts w/o subsequent wait" },
 #endif
  { INT32, F(st_ndeadlocks),    -1, -1,           "Deadlocks" },
 #if DB_VERSION_MAJOR >= 4
