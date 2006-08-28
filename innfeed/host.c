@@ -1122,10 +1122,13 @@ struct sockaddr *hostIpAddr (Host host)
 #ifdef HAVE_INET6
       int gai_ret;
       struct addrinfo *res, *p;
+      struct addrinfo hints;
 
-      if(( gai_ret = getaddrinfo(host->params->ipName, NULL, NULL, &res)) != 0
-		      || res == NULL )
-
+      memset(&hints, 0, sizeof(hints));
+      hints.ai_family = PF_UNSPEC;
+      hints.ai_socktype = SOCK_STREAM
+      gai_ret = getaddrinfo(host->params->ipName, NULL, &hints, &res);
+      if (gai_ret != 0 || res == NULL) {
 	{
           warn ("%s can't resolve hostname %s: %s", host->params->peerName,
 		host->params->ipName, gai_ret == 0 ? "no addresses returned"
