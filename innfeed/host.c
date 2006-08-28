@@ -89,6 +89,7 @@ typedef struct host_param_s
   unsigned int absMaxConnections;
   unsigned int maxChecks;
   unsigned short portNum;
+  bool forceIPv4;
   unsigned int closePeriod;
   unsigned int dynamicMethod;
   bool wantStreaming;
@@ -500,6 +501,7 @@ static HostParams newHostParams(HostParams p)
       params->absMaxConnections=MAX_CXNS;
       params->maxChecks=MAX_Q_SIZE;
       params->portNum=PORTNUM;
+      params->forceIPv4=FORCE_IPv4;
       params->closePeriod=CLOSE_PERIOD;
       params->dynamicMethod=METHOD_STATIC;
       params->wantStreaming=STREAM;
@@ -1127,7 +1129,7 @@ struct sockaddr *hostIpAddr (Host host)
       char port[20];
 
       memset(&hints, 0, sizeof(hints));
-      hints.ai_family = NETWORK_AF_HINT;
+      hints.ai_family = host->params->forceIPv4 ? PF_INET : NETWORK_AF_HINT;
       hints.ai_socktype = SOCK_STREAM;
       hints.ai_flags = AI_NUMERICSERV;
       snprintf(port, sizeof(port), "%hu", host->params->portNum);
@@ -2637,6 +2639,7 @@ static HostParams hostDetails (scope *s,
   GETREAL(s,fp,"no-check-low",0.0,100.0,REQ,p->lowPassLow, inherit);
   GETREAL(s,fp,"no-check-filter",0.1,DBL_MAX,REQ,p->lowPassFilter, inherit);
   GETINT(s,fp,"port-number",0,LONG_MAX,REQ,p->portNum, inherit);
+  GETBOOL(s,fp,"force-ipv4",NOTREQ,p->forceIPv4,inherit);
   GETINT(s,fp,"backlog-limit",0,LONG_MAX,REQ,p->backlogLimit, inherit);
 
   if (findValue (s,"backlog-factor",inherit) == NULL &&
