@@ -308,8 +308,6 @@ AC_SEARCH_LIBS([inet_aton], [resolv])
 dnl Search for various additional libraries used by portions of INN.
 INN_SEARCH_AUX_LIBS([crypt], [crypt], [CRYPT_LIBS])
 INN_SEARCH_AUX_LIBS([getspnam], [shadow], [SHADOW_LIBS])
-INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm], [DBM_LIBS],
-    [AC_DEFINE([HAVE_DBM], 1, [Define if you have a dbm library.])])
 
 dnl IRIX has a PAM library with the right symbols but no header files suitable
 dnl for use with it, so we have to check the header files first and then only
@@ -336,6 +334,21 @@ INN_LIB_ZLIB
 INN_LIB_OPENSSL
 INN_LIB_SASL
 INN_LIB_KERBEROS
+
+dnl The dbm libraries are a special case.  If we're building with BerkeleyDB,
+dnl just use the ndbm support provided by it.
+if test x"$DB_LIBS" != x ; then
+    DBM_CPPFLAGS="$DB_CPPFLAGS"
+    DBM_LIBS="$DB_LDFLAGS $DB_LIBS"
+    AC_SUBST([DBM_LIBS])
+    AC_DEFINE([HAVE_BDB_DBM], 1,
+        [Define if the BerkeleyDB dbm compatibility layer is available.])
+else
+    INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm], [DBM_LIBS],
+        [AC_DEFINE([HAVE_DBM], 1, [Define if you have a dbm library.])])
+    DBM_CPPFLAGS=
+fi
+AC_SUBST([DBM_CPPFLAGS])
 
 dnl If configuring with large file support, determine the right flags to
 dnl use based on the platform.

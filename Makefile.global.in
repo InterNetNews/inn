@@ -113,7 +113,7 @@ DB_LIBS		= @DB_LIBS@ @ZLIB_LIBS@
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is
-##  linked against libstorage.	EXTSTORAGELIBS is for external libraries
+##  linked against libstorage.	STORAGE_LIBS is for external libraries
 ##  needed by libstorage.
 
 LIBINN		= $(abs_builddir)/lib/libinn$(LIBSUFFIX).$(EXTLIB)
@@ -121,8 +121,10 @@ LIBHIST		= $(abs_builddir)/history/libinnhist$(LIBSUFFIX).$(EXTLIB)
 LIBSTORAGE	= $(abs_builddir)/storage/libstorage$(LIBSUFFIX).$(EXTLIB)
 STORAGE_LIBS	= $(DB_LDFLAGS) $(DB_LIBS)
 
-CRYPT_LIBS	= @CRYPT_LIBS@
+DBM_CPPFLAGS	= @DBM_CPPFLAGS@
 DBM_LIBS	= @DBM_LIBS@
+
+CRYPT_LIBS	= @CRYPT_LIBS@
 PAM_LIBS	= @PAM_LIBS@
 REGEX_LIBS	= @REGEX_LIBS@
 SHADOW_LIBS	= @SHADOW_LIBS@

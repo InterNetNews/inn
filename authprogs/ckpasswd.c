@@ -25,9 +25,12 @@
 #include <pwd.h>
 #include <grp.h>
 
-#if HAVE_DBM
+#if defined(HAVE_DBM) || defined(HAVE_BDB_DBM)
 # if HAVE_NDBM_H
 #  include <ndbm.h>
+# elif HAVE_BDB_DBM
+#  define DB_DBM_HSEARCH 1
+#  include <db.h>
 # elif HAVE_GDBM_NDBM_H
 #  include <gdbm-ndbm.h>
 # elif HAVE_DB1_NDBM_H
@@ -145,7 +148,7 @@ auth_pam(const char *username, char *password)
 **  password, if found, is returned as a newly allocated string; otherwise,
 **  NULL is returned.
 */
-#if !HAVE_DBM
+#if !(defined(HAVE_DBM) || defined(HAVE_BDB_DBM))
 static char *
 password_dbm(char *user UNUSED, const char *file UNUSED)
 {
@@ -174,7 +177,7 @@ password_dbm(char *name, const char *file)
     dbm_close(database);
     return password;
 }
-#endif /* HAVE_DBM */
+#endif /* HAVE_DBM || HAVE_BDB_DBM */
 
 
 /*
