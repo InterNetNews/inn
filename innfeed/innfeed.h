@@ -62,6 +62,7 @@
 #define NOCHECKHIGH 		95.0 		/* no-check-high */
 #define NOCHECKLOW 		90.0 		/* no-check-low */
 #define PORTNUM 		119 		/* port-number */
+#define FORCE_IPv4		false		/* force using IPv4 */
 #define BLOGLIMIT		0 		/* backlog-limit */
 #define LIMIT_FUDGE 		1.10 		/* backlog-factor */
 #define BLOGLIMIT_HIGH		0 		/* backlog-limit-high */

@@ -466,6 +466,10 @@ response.
 This key requires a positive integer value. It defines the tcp/ip port
 number to use when connecting to the remote.
 .TP
+.B force-ipv4
+This key requires a boolean value. By default it is set to false.
+If it is set to true, innfeed will not try to use IPv6 with that peer.
+.TP
 .B drop-deferred
 This key requires a boolean value. By default it is set to false. When
 set to true, and a peer replies with code 431 or 436 (try again later) just
