@@ -1128,7 +1128,7 @@ struct sockaddr *hostIpAddr (Host host)
 
       memset(&hints, 0, sizeof(hints));
       hints.ai_family = host->params->forceIPv4 ? PF_INET : PF_UNSPEC;
-      hints.ai_socktype = SOCK_STREAM
+      hints.ai_socktype = SOCK_STREAM;
       gai_ret = getaddrinfo(host->params->ipName, NULL, &hints, &res);
       if (gai_ret != 0 || res == NULL) {
 	{
