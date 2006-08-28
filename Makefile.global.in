@@ -86,7 +86,7 @@ CCOUTPUT	= @CCOUTPUT@
 ##  debugging information, and add -O because gcc won't find some warnings
 ##  without optimization turned on.  Add -DDEBUG=1 so that we'll also
 ##  compile all debugging code and check it as well.
-  
+
 WARNINGS        = -g -O -DDEBUG=1 -Wall -W -Wendif-labels -Wpointer-arith \
                   -Wbad-function-cast -Wcast-align -Wwrite-strings \
                   -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs
@@ -114,8 +114,10 @@ LIBHIST         = $(builddir)/history/libinnhist$(LIBSUFFIX).$(EXTLIB)
 LIBSTORAGE      = $(builddir)/storage/libstorage$(LIBSUFFIX).$(EXTLIB)
 EXTSTORAGELIBS  = @BERKELEY_DB_LIB@
 
-CRYPTLIB        = @CRYPT_LIB@
+DBMINC          = @DBM_INC@
 DBMLIB          = @DBM_LIB@
+
+CRYPTLIB        = @CRYPT_LIB@
 PAMLIB          = @PAM_LIB@
 REGEXLIB        = @REGEX_LIB@
 SHADOWLIB       = @SHADOW_LIB@

@@ -435,14 +435,17 @@
 /* Define if you have the setproctitle function. */
 #undef HAVE_SETPROCTITLE
 
-/* Define if you have a dbm library. */
-#undef HAVE_DBM
-
 /* Define if you have PAM. */
 #undef HAVE_PAM
 
 /* Define if BerkeleyDB is available. */
 #undef USE_BERKELEY_DB
+
+/* Define if the BerkeleyDB dbm compatibility layer is available. */
+#undef HAVE_BDB_DBM
+
+/* Define if you have a dbm library. */
+#undef HAVE_DBM
 
 /* Define if OpenSSL is available. */
 #undef HAVE_SSL

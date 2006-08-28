@@ -598,8 +598,6 @@ AC_SEARCH_LIBS(inet_aton, resolv)
 dnl Search for various additional libraries used by portions of INN.
 INN_SEARCH_AUX_LIBS(crypt, crypt, CRYPT_LIB)
 INN_SEARCH_AUX_LIBS(getspnam, shadow, SHADOW_LIB)
-INN_SEARCH_AUX_LIBS(dbm_open, ndbm dbm, DBM_LIB,
-    [AC_DEFINE(HAVE_DBM, 1, [Define if you have a dbm library.])])
 
 dnl IRIX has a PAM library with the right symbols but no header files suitable
 dnl for use with it, so we have to check the header files first and then only
@@ -637,7 +635,8 @@ else
     AC_MSG_CHECKING(for BerkeleyDB location)
     if test x"$BERKELEY_DB_DIR" = xyes ; then
         for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
-                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 BerkeleyDB.4.2 BerkeleyDB.4.3 ; do
+                 BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 BerkeleyDB.4.2 \
+                 BerkeleyDB.4.3 BerkeleyDB.4.4; do
             for d in $prefix /usr/local /opt /usr ; do
                 if test -d "$d/$v" ; then
                     BERKELEY_DB_DIR="$d/$v"
@@ -647,7 +646,7 @@ else
         done
     fi
     if test x"$BERKELEY_DB_DIR" = xyes ; then
-        for v in db43 db42 db41 db4 db3 db2 ; do
+        for v in db44 db43 db42 db41 db4 db3 db2 ; do
             if test -d "/usr/local/include/$v" ; then
                 BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
                 BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
@@ -657,7 +656,7 @@ else
             fi
         done
         if test x"$BERKELEY_DB_LIB" = x ; then
-            for v in db43 db42 db41 db4 db3 db2 ; do
+            for v in db44 db43 db42 db41 db4 db3 db2 ; do
                 if test -d "/usr/include/$v" ; then
                     BERKELEY_DB_CFLAGS="-I/usr/include/$v"
                     BERKELEY_DB_LIB="-l$v"
@@ -682,6 +681,21 @@ AC_SUBST(BERKELEY_DB_LDFLAGS)
 AC_SUBST(BERKELEY_DB_CFLAGS)
 AC_SUBST(BERKELEY_DB_LIB)])
 INN_LIB_BERKELEYDB
+
+dnl The dbm libraries are a special case.  If we're building with BerkeleyDB,
+dnl just use the ndbm support provided by it.
+if test x"$BERKELEY_DB_LIB" != x ; then
+    DBM_INC="$BERKELEY_DB_CFLAGS"
+    DBM_LIB="$BERKELEY_DB_LDFLAGS $BERKELEY_DB_LIB"
+    AC_SUBST([DBM_LIB])
+    AC_DEFINE([HAVE_BDB_DBM], 1,
+        [Define if the BerkeleyDB dbm compatibility layer is available.])
+else
+    INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm], [DBM_LIB],
+        [AC_DEFINE([HAVE_DBM], 1, [Define if you have a dbm library.])])
+    DBM_INC=
+fi
+AC_SUBST([DBM_INC])
 
 dnl Check for whether the user wants to compile with OpenSSL, and if so what
 dnl the path to the various components of it is.
