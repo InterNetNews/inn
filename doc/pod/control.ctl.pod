@@ -37,11 +37,13 @@ messages that match this line.  The following actions are understood:
 
 =item B<doit>
 
-The action requested by the control message should be performed.  In some
-cases, the control script will also send mail to the news administrator
-(the argument to --with-news-master given at configure time, C<usenet> by
-default), but if notification of the action should always be sent, use
-C<doit=mail> instead (see below).
+The action requested by the control message should be performed.  For
+checkgroups messages, this means that the shell commands that should
+be run will be mailed to the news administrator (the argument to
+B<--with-news-master> given at configure time, C<usenet> by default); for
+other commands, this means that the change will be silently performed.  If
+you always want notification of actions taken, use C<doit=mail> instead (see
+below).
 
 =item B<doifarg>
 
@@ -86,9 +88,16 @@ expected identity defined by the rest of the string
 (C<news.announce.newgroups> in the above example.  This verification is
 done via B<pgpverify>; see pgpverify(8) for more details.
 
-If no logging is specified (with =I<file> as mentioned below),
+If no logging is specified (with =I<file> as mentioned below), logging will
+be done the same as with B<doit> as described above.
+
+=item B<verify-*>=B<mail>
+
+PGP verification is done as for the B<verify-*> action described above, and
 notification of successful newgroup and rmgroup control messages and the
 output of checkgroups messages will be mailed to the news administrator.
+(In the case of checkgroups messages, this means that the shell script that
+should be run will be mailed to the administrator.)
 
 =item B<verify-*>=I<file>
 
@@ -110,7 +119,8 @@ in B<doit>=I<file> described above.
 
 =item B<mail>
 
-A mail message is sent to the news administrator.
+A mail message is sent to the news administrator without taking any other
+action.
 
 =back
 
