@@ -178,7 +178,7 @@ sub parse_article {
         newsgroups path reply-to subject sender);
 
     while (<$artfh>) {
-        chop;
+        s/\r?\n$//;
         last if /^$/;
         push @$headers, $_;
         if (/^(\S+):\s+(.+)/) {
