@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2006-09-03
+##  Last modified: 2006-09-06
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -176,22 +176,26 @@ rmgroup:*:alive.*:doit
 #
 # What policy to use for alt.* groups varies widely from site to site.
 # For a small site, it is strongly recommended that this policy be changed
-# to drop all newgroups for alt.* as well as rmgroups and that the news
-# admin only add new alt.* groups on request, as tons of alt.* newgroups
+# to drop all newgroups and rmgroups for alt.*.  The local news admin can
+# then add new alt.* groups only on user request.  Tons of alt.* newgroups
 # are sent out regularly with the intent more to create nonsense entries
-# in active files than to actually create a useable newsgroup.
+# in active files than to actually create a useable newsgroup.  The admin
+# may still want to check the control message archive, as described below.
 #
 # Quality, user-desirable new groups can often be discovered by a quick
 # perusal of recent alt.* newgroup messages after discarding obvious junk
 # groups.  One good initial filter is to check the archive of control
 # messages for a requested group to see if a syntactically valid newgroup
-# message was issued.  Many of the junk newsgroups only have invalid
-# newgroup messages, and many sites will only add alt.* groups with valid
+# message was issued.  Many of the junk control messages are invalid and
+# won't be archived, and many sites will only add alt.* groups with valid
 # control messages.  To check the archive, see if:
 #
 #     ftp://ftp.isc.org/pub/usenet/control/alt/<group-name>.gz
 #
-# exists (replacing <group-name> with the name of the group).
+# exists (replacing <group-name> with the name of the group) and read the
+# first and last few control messages to see if the newsgroup should be
+# moderated.  (Some alt.* groups that should be moderated are created
+# unmoderated by hijackers to try to damage the newsgroup.)
 #
 # Be aware that there is no official, generally accepted alt.* policy and
 # all information about alt.* groups available is essentially someone's
