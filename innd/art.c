@@ -818,7 +818,7 @@ ARTchecksize(CHANNEL *cp)
 
     size = cp->Next - cp->Start;
     if (innconf->maxartsize > 0 && size > (size_t) innconf->maxartsize) {
-        if (cp->State == CSgotarticle)
+        if (cp->State == CSgotarticle || cp->State == CSgotlargearticle)
             cp->State = CSgotlargearticle;
         else
             cp->State = CSeatarticle;
