@@ -116,13 +116,13 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
 static void sysdie(const char *format, ...);
 static void *x_malloc(size_t, const char *file, int line);
 static char *x_strdup(const char *, const char *file, int line);
-static int test_analyze(const struct testset *);
+static int test_analyze(struct testset *);
 static int test_batch(const char *testlist);
 static void test_checkline(const char *line, struct testset *);
 static void test_fail_summary(const struct testlist *);
 static int test_init(const char *line, struct testset *);
 static int test_print_range(int first, int last, int chars, int limit);
-static void test_summarize(const struct testset *, int status);
+static void test_summarize(struct testset *, int status);
 static pid_t test_start(const char *path, int *fd);
 static double tv_diff(const struct timeval *, const struct timeval *);
 static double tv_seconds(const struct timeval *);
@@ -407,7 +407,7 @@ test_print_range(int first, int last, int chars, int limit)
    with a non-zero status, and a negative integer representing the signal
    that terminated it if it was killed by a signal. */
 static void
-test_summarize(const struct testset *ts, int status)
+test_summarize(struct testset *ts, int status)
 {
     int i;
     int missing = 0;
@@ -481,7 +481,7 @@ test_summarize(const struct testset *ts, int status)
    few special error messages, and then pass it along to test_summarize()
    for the regular output. */
 static int
-test_analyze(const struct testset *ts)
+test_analyze(struct testset *ts)
 {
     if (ts->reported)
         return 0;
@@ -581,7 +581,7 @@ test_run(struct testset *ts)
 static void
 test_fail_summary(const struct testlist *fails)
 {
-    const struct testset *ts;
+    struct testset *ts;
     int i, chars, total, first, last;
 
     puts(header);
