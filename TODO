@@ -570,9 +570,6 @@ General Projects
 * All the old packages in unoff-contrib should be reviewed for integration
   into INN.
 
-* Look through <http://www.visi.com/~barr/INN.html> for stuff that should
-  be included in INN (in particular, flowstats may be interesting).
-
 * It may be better for INN on SysV-derived systems to use poll rather than
   select.  The semantics are better, and on some systems (such as Solaris)
   select is limited to 1024 file descriptors whereas poll can handle any
