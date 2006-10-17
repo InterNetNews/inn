@@ -70,6 +70,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/hashtab.h"
 #include "inn/qio.h"
 #include "libinn.h"
 #include "paths.h"
@@ -322,7 +323,9 @@ static int mark_eq_probs(struct grp *, int grplen, int hostid, char *host1,
                          char *host2);
 static int exec_cmd(int mode, const char *cmd, char *grp, char *type,
                     const char *who);
-static int new_top_hier(char *name);
+static int new_top_hier(char *name, struct hash *existing_hier);
+static const void *string_key(const void *entry);
+static bool string_equal(const void *key, const void *entry);
 
 int
 main(int argc, char *argv[])
@@ -1803,6 +1806,8 @@ output_grps(struct grp *grp, int grplen)
     int top_ignore;	/* number of groups ignored because of no top level */
     int restore;	/* host1 groups restored due to -o a1 */
     double host1_same;	/* % of host1 that is the same */
+    struct hash *existing_hier;	/* hash of existing hierarchies for -T */
+    char *p, *q;
     int i;
 
     /* firewall */
@@ -1838,12 +1843,24 @@ output_grps(struct grp *grp, int grplen)
      * If -T, ignore new top level groups from host2
      */
     if (no_new_hier) {
+	existing_hier = hash_create(32, hash_string, string_key,
+		string_equal, free);
+	for (i=0; i < grplen; ++i) {
+	    if (grp[i].hostid == HOSTID2)
+		continue;
+	    p = xstrdup(grp[i].name);
+	    q = strchr(p, '.');
+	    if (q != NULL)
+		*q = '\0';
+	    if (!hash_insert(existing_hier, p, p))
+		free(p);
+	}
 	top_ignore = 0;
 	for (i=0; i < grplen; ++i) {
 	    /* look at new newsgroups */
 	    if (grp[i].hostid == HOSTID2 &&
 		grp[i].output != 0 &&
-		new_top_hier(grp[i].name)) {
+		new_top_hier(grp[i].name, existing_hier)) {
 		 /* no top level ignore this new group */
 		 grp[i].ignore |= CHECK_HIER;
 		 grp[i].output = 0;
@@ -1853,6 +1870,7 @@ output_grps(struct grp *grp, int grplen)
 		 ++top_ignore;
 	    }
 	}
+	hash_free(existing_hier);
 	if (D_SUMMARY)
             warn("STATUS: ignored %d new newsgroups due to new hierarchy",
                  top_ignore);
@@ -2688,17 +2706,15 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
  *
  * given:
  *	name	name of newsgroup to check
+ *	existing_hier	hash table of existing hierarchies
  *
  * returns:
  *	false	hierarchy already exists
  *	true	hierarchy does not exist, name represents a new hierarchy
- *
- * NOTE: This function assumes that we are at the top of the news spool.
  */
 static int
-new_top_hier(char *name)
+new_top_hier(char *name, struct hash *existing_hier)
 {
-    struct stat	statbuf;	/* stat of the hierarchy */
     int result;			/* return result */
     char *dot;
 
@@ -2713,7 +2729,8 @@ new_top_hier(char *name)
     /*
      * determine if we can find this top level hierarchy directory
      */
-    result = !(stat(name, &statbuf) >= 0 && S_ISDIR(statbuf.st_mode));
+    result = (hash_lookup(existing_hier, name) == NULL);
+
     /* restore name */
     if (dot != NULL) {
 	*dot = '.';
@@ -2723,4 +2740,44 @@ new_top_hier(char *name)
      * return the result
      */
     return result;
+}
+
+/*
+ * string_key - identity function, for use with hashtab library
+ *
+ * Returns its only argument.
+ *
+ * given:
+ *	entry	void* pointer representing a string
+ *
+ * returns:
+ *	the same void* pointer
+ */
+static const void *
+string_key(const void *entry)
+{
+    return entry;
+}
+
+/*
+ * string_equal - string comparison function, for use with hashtab library
+ *
+ * Compares two strings.
+ *
+ * given:
+ *	key	void* pointer representing a hash table key
+ *	entry	void* pointer representing a hash table entry
+ *
+ * returns:
+ *	0	arguments are not equal
+ *	1	arguments are equal
+ */
+static bool
+string_equal(const void *key, const void *entry)
+{
+    const char *p, *q;
+
+    p = key;
+    q = entry;
+    return !strcmp(p, q);
 }
