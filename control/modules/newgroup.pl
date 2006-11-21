@@ -111,8 +111,10 @@ END
         }
         update_desc($ngname, $ngdesc) if $ngdesc and $ngname eq $groupname;
 
-        logger($log, "newgroup $groupname $modcmd $status $sender",
-            $headers, $body) if $log;
+        if ($log ne 'mail' or $status ne 'no change') {
+            logger($log, "newgroup $groupname $modcmd $status $sender",
+                   $headers, $body) if $log;
+        }
     }
     return;
 }
