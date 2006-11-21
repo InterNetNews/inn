@@ -384,7 +384,7 @@ network_source(int fd, int family, const char *source)
             return true;
         memset(&saddr, 0, sizeof(saddr));
         saddr.sin6_family = AF_INET6;
-        if (inet_pton(AF_INET6, source, &saddr) < 1)
+        if (inet_pton(AF_INET6, source, &saddr.sin6_addr) < 1)
             return false;
         return bind(fd, (struct sockaddr *) &saddr, sizeof(saddr)) == 0;
     }
