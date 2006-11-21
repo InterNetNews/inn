@@ -14,8 +14,8 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 #include "map.h"
 
 /*
@@ -345,7 +345,7 @@ main(int ac, char *av[])
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
+    ERRLOG = concatpath(innconf->pathlog, INN_PATH_ERRLOG);
     Directory = NULL;
     Fields = 1;
     Format = NULL;

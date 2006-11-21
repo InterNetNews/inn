@@ -16,10 +16,10 @@
 #include "inn/qio.h"
 #include "inn/wire.h"
 #include "inn/vector.h"
-#include "libinn.h"
-#include "ov.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
 #include "ovinterface.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 
 /* The standard overview fields. */
@@ -65,7 +65,7 @@ overview_extra_fields(void)
     unsigned int field;
     bool full = false;
 
-    schema = concatpath(innconf->pathetc, _PATH_SCHEMA);
+    schema = concatpath(innconf->pathetc, INN_PATH_SCHEMA);
     qp = QIOopen(schema);
     if (qp == NULL) {
         syswarn("cannot open %s", schema);

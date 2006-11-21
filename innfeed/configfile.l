@@ -13,7 +13,7 @@
 #include <string.h>
 #include <syslog.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "configfile.h"
 #include "config_y.h"

@@ -16,8 +16,8 @@
 #include "inn/innconf.h"
 #include "inn/tst.h"
 #include "inn/list.h"
-#include "libinn.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/storage.h"
 
 #include "cache.h"
 

@@ -11,7 +11,7 @@
 */
 
 #include "config.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include <signal.h>
 
 typedef void (*sig_handler_type)(int);

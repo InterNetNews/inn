@@ -2,7 +2,7 @@
 #define __DBZ_H__
 
 /* Need the definition of HASH. */
-#include "libinn.h"
+#include "inn/libinn.h"
 
 BEGIN_DECLS
 

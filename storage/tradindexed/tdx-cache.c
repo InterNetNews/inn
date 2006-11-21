@@ -14,8 +14,8 @@
 
 #include "inn/hashtab.h"
 #include "inn/messages.h"
-#include "libinn.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/storage.h"
 #include "tdx-private.h"
 
 /* Returned to callers as an opaque data type, this struct holds all of the

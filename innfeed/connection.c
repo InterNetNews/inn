@@ -67,7 +67,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/network.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "article.h"
 #include "buffer.h"

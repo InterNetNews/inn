@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 
 #include "inn/buffer.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /*
 **  Allocate a new struct buffer and initialize it.

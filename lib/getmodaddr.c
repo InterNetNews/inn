@@ -7,9 +7,9 @@
 #include <errno.h>
 
 #include "inn/innconf.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 
 static char	*GMApathname = NULL;
@@ -111,14 +111,14 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
          *  This should be part of nnrpd or the like running on the server.
          *  Open the server copy of the moderators file.
          */
-        path = concatpath(innconf->pathetc, _PATH_MODERATORS);
+        path = concatpath(innconf->pathetc, INN_PATH_MODERATORS);
 	GMAfp = fopen(path, "r");
         free(path);
     }else{
         /*
          *  Get a local copy of the moderators file from the server.
          */
-        GMApathname = concatpath(innconf->pathtmp, _PATH_TEMPMODERATORS);
+        GMApathname = concatpath(innconf->pathtmp, INN_PATH_TEMPMODERATORS);
         fd = mkstemp(GMApathname);
         if (fd >= 0)
             GMAfp = GMA_listopen(fd, FromServer, ToServer, "moderators");
@@ -127,7 +127,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 
 	/* Fallback to the local copy if the server doesn't have it */
 	if (GMAfp == NULL) {
-            path = concatpath(innconf->pathetc, _PATH_MODERATORS);
+            path = concatpath(innconf->pathetc, INN_PATH_MODERATORS);
 	    GMAfp = fopen(path, "r");
             free(path);
         }

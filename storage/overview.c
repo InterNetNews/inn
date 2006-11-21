@@ -23,8 +23,8 @@
 #include "inn/overview.h"
 #include "inn/wire.h"
 #include "inn/vector.h"
-#include "libinn.h"
-#include "ov.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
 #include "ovinterface.h"
 #include "ovmethods.h"
 

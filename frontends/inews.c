@@ -16,9 +16,9 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 /* Signature handling.  The separator will be appended before the signature,
    and at most SIG_MAXLINES will be appended. */

@@ -96,8 +96,8 @@
 #include "inn/mmap.h"
 #include "inn/qio.h"
 #include "inn/vector.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
@@ -1043,7 +1043,7 @@ hashmap_load(void)
     struct hashmap *group;
     HASH grouphash;
 
-    activepath = concatpath(innconf->pathdb, _PATH_ACTIVE);
+    activepath = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     active = QIOopen(activepath);
     free(activepath);
     if (active == NULL)

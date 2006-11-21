@@ -4,13 +4,14 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
+#include "portable/wait.h"
 #include <ctype.h>
 #include <errno.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/network.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 /* The server portion of the test.  Listens to a socket and accepts a
@@ -23,7 +24,6 @@ listener(int fd, int n)
     FILE *out;
     char buffer[512];
 
-    alarm(1);
     client = accept(fd, NULL, NULL);
     close(fd);
     if (client < 0) {
@@ -54,10 +54,10 @@ client(const char *host, const char *source)
 
     fd = network_connect_host(host, 11119, source);
     if (fd < 0)
-        _exit(1);
+        sysdie("connect failed");
     out = fdopen(fd, "w");
     if (out == NULL)
-        _exit(1);
+        sysdie("fdopen failed");
     fputs("socket test\r\n", out);
     fclose(out);
     _exit(0);
@@ -87,8 +87,10 @@ test_ipv4(int n, const char *source)
             sysdie("cannot fork");
         else if (child == 0)
             client("127.0.0.1", source);
-        else
+        else {
             n = listener(fd, n);
+            waitpid(child, NULL, 0);
+        }
     }
     return n;
 }
@@ -122,8 +124,10 @@ test_ipv6(int n, const char *source)
             sysdie("cannot fork");
         else if (child == 0)
             client("::1", source);
-        else
+        else {
             n = listener(fd, n);
+            waitpid(child, NULL, 0);
+        }
     }
     return n;
 }
@@ -178,8 +182,10 @@ test_all(int n, const char *source_ipv4, const char *source_ipv6)
                     n += 2;
                 }
                 size = sizeof(saddr);
-            } else
+            } else {
                 n = listener(fd, n);
+                waitpid(child, NULL, 0);
+            }
         }
     }
     if (count == 1) {
@@ -229,8 +235,10 @@ test_create_ipv4(int n, const char *source)
             fputs("socket test\r\n", out);
             fclose(out);
             _exit(0);
-        } else
+        } else {
             n = listener(fd, n);
+            waitpid(child, NULL, 0);
+        }
     }
     return n;
 }

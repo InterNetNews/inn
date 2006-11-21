@@ -7,9 +7,9 @@
 #include <errno.h>
 
 #include "inn/innconf.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 
 static char	*CApathname;
@@ -27,7 +27,7 @@ CAopen(FILE *FromServer, FILE *ToServer)
 
     /* Use a local (or NFS-mounted) copy if available.  Make sure we don't
      * try to delete it when we close it. */
-    path = concatpath(innconf->pathdb, _PATH_CLIENTACTIVE);
+    path = concatpath(innconf->pathdb, INN_PATH_CLIENTACTIVE);
     CAfp = fopen(path, "r");
     free(path);
     if (CAfp != NULL) {
@@ -112,7 +112,7 @@ CAlistopen(FILE *FromServer, FILE *ToServer, const char *request)
 	return NULL;
     }
 
-    CApathname = concatpath(innconf->pathtmp, _PATH_TEMPACTIVE);
+    CApathname = concatpath(innconf->pathtmp, INN_PATH_TEMPACTIVE);
     fd = mkstemp(CApathname);
     if (fd < 0) {
         oerrno = errno;

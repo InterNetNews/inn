@@ -36,7 +36,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "buffer.h"
 #include "configfile.h"

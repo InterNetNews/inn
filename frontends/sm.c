@@ -12,8 +12,8 @@
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/wire.h"
-#include "libinn.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/storage.h"
 
 static const char usage[] = "\
 Usage: sm [-dHiqrRSs] [token ...]\n\

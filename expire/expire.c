@@ -15,10 +15,10 @@
 #include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "inndcomm.h"
-#include "libinn.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/inndcomm.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 
 typedef struct _EXPIRECLASS {
@@ -541,7 +541,7 @@ main(int ac, char *av[])
     if (!innconf_read(NULL))
         exit(1);
 
-    HistoryText = concatpath(innconf->pathdb, _PATH_HISTORY);
+    HistoryText = concatpath(innconf->pathdb, INN_PATH_HISTORY);
 
     umask(NEWSUMASK);
 
@@ -616,7 +616,7 @@ main(int ac, char *av[])
 	if (NHistoryPath == NULL)
 	    NHistoryPath = innconf->pathdb;
 	if (NHistoryText == NULL)
-	    NHistoryText = _PATH_HISTORY;
+	    NHistoryText = INN_PATH_HISTORY;
 	NHistory = concatpath(NHistoryPath, NHistoryText);
     }
     else {
@@ -639,7 +639,7 @@ main(int ac, char *av[])
     } else {
         char *path;
 
-        path = concatpath(innconf->pathetc, _PATH_EXPIRECTL);
+        path = concatpath(innconf->pathetc, INN_PATH_EXPIRECTL);
 	F = EXPfopen(false, path, "r", false, false, false);
         free(path);
     }

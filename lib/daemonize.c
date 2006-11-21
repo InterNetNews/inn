@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 void
 daemonize(const char *path)

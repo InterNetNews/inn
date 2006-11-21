@@ -62,7 +62,7 @@
 #include <errno.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* The default error handler. */
 void

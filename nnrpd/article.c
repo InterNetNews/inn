@@ -15,7 +15,7 @@
 #include "inn/messages.h"
 #include "inn/wire.h"
 #include "nnrpd.h"
-#include "ov.h"
+#include "inn/ov.h"
 #include "tls.h"
 #include "cache.h"
 

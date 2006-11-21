@@ -509,7 +509,7 @@ LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 
 dnl Configure our output files.  Try to keep this as limited as possible,
 dnl since it directly affects how long it takes configure to complete.
-AC_CONFIG_FILES([Makefile.global include/paths.h])
+AC_CONFIG_FILES([Makefile.global include/inn/paths.h])
 AC_CONFIG_FILES([scripts/inncheck scripts/innshellvars])
 AC_CONFIG_FILES([scripts/innshellvars.pl scripts/innshellvars.tcl])
 AC_CONFIG_FILES([scripts/news.daily])
@@ -536,7 +536,7 @@ everything was set correctly.
         Makefile.global
         include/config.h
         include/inn/options.h
-        include/paths.h
+        include/inn/paths.h
         innfeed/innfeed.h
 
 EOM

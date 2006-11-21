@@ -18,10 +18,10 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/wire.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "methods.h"
 #include "timecaf.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 /* Needed for htonl() and friends on AIX 4.1. */
 #include <netinet/in.h>

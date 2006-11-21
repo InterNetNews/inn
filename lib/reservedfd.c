@@ -6,7 +6,7 @@
 #include "clibrary.h"
 #include <fcntl.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 
 static FILE **Reserved_fd = NULL;

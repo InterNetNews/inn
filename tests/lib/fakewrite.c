@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <sys/uio.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 ssize_t fake_write(int, const void *, size_t);
 ssize_t fake_pwrite(int, const void *, size_t, off_t);

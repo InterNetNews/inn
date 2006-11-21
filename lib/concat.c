@@ -26,7 +26,7 @@
 */
 
 #include "config.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include <stdarg.h>
 #if STDC_HEADERS

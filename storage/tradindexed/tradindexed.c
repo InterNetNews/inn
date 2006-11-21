@@ -16,9 +16,9 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
-#include "ov.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
+#include "inn/storage.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 #include "tradindexed.h"

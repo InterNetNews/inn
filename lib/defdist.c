@@ -8,8 +8,8 @@
 #include <errno.h>
 
 #include "inn/innconf.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 
 typedef struct _DDENTRY {
@@ -40,7 +40,7 @@ DDstart(FILE *FromServer, FILE *ToServer)
     char	*name = NULL;
 
     /* Open the file. */
-    path = concatpath(innconf->pathetc, _PATH_DISTPATS);
+    path = concatpath(innconf->pathetc, INN_PATH_DISTPATS);
     F = fopen(path, "r");
     free(path);
     if (F == NULL) {
@@ -49,7 +49,7 @@ DDstart(FILE *FromServer, FILE *ToServer)
 	    /* We're probably nnrpd running on the server and the
 	     * file isn't installed.  Oh well. */
 	    return NULL;
-        name = concatpath(innconf->pathtmp, _PATH_TEMPACTIVE);
+        name = concatpath(innconf->pathtmp, INN_PATH_TEMPACTIVE);
         fd = mkstemp(name);
         if (fd < 0)
             return NULL;

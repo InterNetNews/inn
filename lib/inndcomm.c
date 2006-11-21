@@ -23,9 +23,9 @@
 #endif
 
 #include "inn/innconf.h"
-#include "inndcomm.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/inndcomm.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 static char			*ICCsockname = NULL;
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
@@ -70,7 +70,7 @@ ICCopen(void)
        at the same time, but the worst that will happen is that one process
        will delete the other's temporary socket). */
     if (ICCsockname == NULL)
-	ICCsockname = concatpath(innconf->pathrun, _PATH_TEMPSOCK);
+	ICCsockname = concatpath(innconf->pathrun, INN_PATH_TEMPSOCK);
     fd = mkstemp(ICCsockname);
     if (fd < 0) {
         ICCfailure = "mkstemp";
@@ -112,7 +112,7 @@ ICCopen(void)
     ICCserv.sun_family = AF_UNIX;
     strlcpy(ICCserv.sun_path, innconf->pathrun, sizeof(ICCserv.sun_path));
     strlcat(ICCserv.sun_path, "/", sizeof(ICCserv.sun_path));
-    strlcat(ICCserv.sun_path, _PATH_NEWSCONTROL, sizeof(ICCserv.sun_path));
+    strlcat(ICCserv.sun_path, INN_PATH_NEWSCONTROL, sizeof(ICCserv.sun_path));
 
 #else /* !HAVE_UNIX_DOMAIN_SOCKETS */
 
@@ -171,7 +171,7 @@ ICCserverpid(void)
     char		buff[SMBUF];
 
     pid = 1;
-    path = concatpath(innconf->pathrun, _PATH_SERVERPID);
+    path = concatpath(innconf->pathrun, INN_PATH_SERVERPID);
     F = fopen(path, "r");
     free(path);
     if (F != NULL) {
@@ -268,7 +268,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 	return -1;
     }
 #else /* !HAVE_UNIX_DOMAIN_SOCKETS */
-    path = concatpath(innconf->pathrun, _PATH_NEWSCONTROL);
+    path = concatpath(innconf->pathrun, INN_PATH_NEWSCONTROL);
     fd = open(path, O_WRONLY);
     free(path);
     if (fd < 0) {

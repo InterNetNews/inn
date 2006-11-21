@@ -17,7 +17,7 @@
 #include <time.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "article.h"
 #include "buffer.h"

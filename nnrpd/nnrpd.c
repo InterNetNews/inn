@@ -25,8 +25,8 @@
 #include "inn/messages.h"
 #include "inn/network.h"
 #include "inn/version.h"
-#include "libinn.h"
-#include "ov.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
 #define MAINLINE
 #include "nnrpd.h"
 
@@ -800,14 +800,14 @@ main(int argc, char *argv[])
     if (innconf->nicennrpd > 0)
 	nice(innconf->nicennrpd);
 
-    HISTORY = concatpath(innconf->pathdb, _PATH_HISTORY);
-    ACTIVE = concatpath(innconf->pathdb, _PATH_ACTIVE);
-    ACTIVETIMES = concatpath(innconf->pathdb, _PATH_ACTIVETIMES);
-    NEWSGROUPS = concatpath(innconf->pathdb, _PATH_NEWSGROUPS);
+    HISTORY = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    ACTIVE = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
+    ACTIVETIMES = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
+    NEWSGROUPS = concatpath(innconf->pathdb, INN_PATH_NEWSGROUPS);
     if(ConfFile)
         NNRPACCESS = ConfFile;
     else
-        NNRPACCESS = concatpath(innconf->pathetc,_PATH_NNRPACCESS);
+        NNRPACCESS = concatpath(innconf->pathetc,INN_PATH_NNRPACCESS);
 
     /* If started as root, switch to news uid.  Unlike other parts of INN, we
        don't die if we can't become the news user.  As long as we're not

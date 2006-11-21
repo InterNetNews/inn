@@ -13,9 +13,9 @@
 #include "inn/messages.h"
 #include "inn/wire.h"
 #include "interface.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "methods.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 typedef enum {INIT_NO, INIT_DONE, INIT_FAIL} INITTYPE;
 typedef struct {
@@ -282,7 +282,7 @@ SMreadconfig(void)
 	method_data[i].initialized = INIT_NO;
 	method_data[i].configured = false;
     }
-    path = concatpath(innconf->pathetc, _PATH_STORAGECTL);
+    path = concatpath(innconf->pathetc, INN_PATH_STORAGECTL);
     f = CONFfopen(path);
     if (f == NULL) {
 	SMseterror(SMERR_UNDEFINED, NULL);

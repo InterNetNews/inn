@@ -11,7 +11,7 @@
 #include "inn/innconf.h"
 #include "inn/mmap.h"
 #include "innd.h"
-#include "ov.h"
+#include "inn/ov.h"
 
 /* If we fork and exec under Cygwin, children hold onto the mmap */
 /* of active, and Windows won't let us resize or replace it.     */
@@ -169,9 +169,9 @@ ICDwritevactive(struct iovec *vp, int vpcount)
 #endif
 
     if (BACKUP == NULL)
-	BACKUP = concatpath(innconf->pathdb, _PATH_OLDACTIVE);
+	BACKUP = concatpath(innconf->pathdb, INN_PATH_OLDACTIVE);
     if (NEWACT == NULL)
-	NEWACT = concatpath(innconf->pathdb, _PATH_NEWACTIVE);
+	NEWACT = concatpath(innconf->pathdb, INN_PATH_NEWACTIVE);
     /* Write the current file to a backup. */
     if (unlink(BACKUP) < 0 && errno != ENOENT) {
 	oerrno = errno;
@@ -448,7 +448,7 @@ ICDreadactive(endp)
 	return ICDactpointer;
     }
     if (ICDactpath == NULL) 
-	ICDactpath = concatpath(innconf->pathdb, _PATH_ACTIVE);
+	ICDactpath = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     if ((ICDactfd = open(ICDactpath, O_RDWR)) < 0) {
 	syslog(L_FATAL, "%s cant open %s %m", LogName, ICDactpath);
 	exit(1);

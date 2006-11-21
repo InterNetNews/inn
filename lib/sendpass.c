@@ -8,9 +8,9 @@
 #include <errno.h>
 
 #include "inn/innconf.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 
 /*
@@ -38,7 +38,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
     }
 
     /* Open the password file; coarse check on errno, but good enough. */
-    path = concatpath(innconf->pathetc, _PATH_NNTPPASS);
+    path = concatpath(innconf->pathetc, INN_PATH_NNTPPASS);
     F = fopen(path, "r");
     free(path);
     if (F == NULL)

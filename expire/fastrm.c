@@ -24,8 +24,8 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
-#include "libinn.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/storage.h"
 
 /* We reject any path names longer than this. */
 #define MAX_DIR_LEN 2048

@@ -50,8 +50,8 @@
 #include "inn/messages.h"
 #include "inn/overview.h"
 #include "inn/qio.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 /* The portability mess.  Hide everything in macros so that the actual code
    is relatively clean.  SysV uses statvfs, BSD uses statfs, and ULTRIX is
@@ -305,7 +305,7 @@ main(int argc, char *argv[])
     /* For the count, we have to troll through the active file and query the
        overview backend for each group. */
     if (ovcount) {
-        active = concatpath(innconf->pathdb, _PATH_ACTIVE);
+        active = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
         qp = QIOopen(active);
         if (qp == NULL)
             sysdie("can't open %s", active);

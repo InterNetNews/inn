@@ -24,10 +24,10 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
-#include "paths.h"
-#include "storage.h"
-#include "ov.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
+#include "inn/ov.h"
 
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"

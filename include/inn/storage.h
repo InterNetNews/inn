@@ -6,11 +6,6 @@
 #ifndef __STORAGE_H__
 #define __STORAGE_H__
 
-/* We've probably already included this; only include it if we need it. */
-#ifndef __CONFIG_H__
-# include "config.h"
-#endif
-
 #include <stdio.h>
 #include <sys/types.h>
 

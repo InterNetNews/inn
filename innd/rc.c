@@ -1477,7 +1477,7 @@ RCwritelist(char *filename)
     /* Write a standard header.. */
 
     /* Find the filename */
-    p = concatpath(innconf->pathetc, _PATH_INNDHOSTS);
+    p = concatpath(innconf->pathetc, INN_PATH_INNDHOSTS);
     for (r = q = p; *p; p++)
         if (*p == '/')
 	   q = p + 1;
@@ -1597,7 +1597,7 @@ RCreadlist(void)
     static char	*INNDHOSTS = NULL;
 
     if (INNDHOSTS == NULL)
-	INNDHOSTS = concatpath(innconf->pathetc, _PATH_INNDHOSTS);
+	INNDHOSTS = concatpath(innconf->pathetc, INN_PATH_INNDHOSTS);
     StreamingOff = false;
     RCreadfile(&RCpeerlistfile, &RCpeerlist, &RCnpeerlist, INNDHOSTS);
     /* RCwritelist("/tmp/incoming.conf.new"); */

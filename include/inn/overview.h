@@ -13,7 +13,7 @@
 
 #include <stdio.h>              /* FILE */
 
-#include "storage.h"
+#include "inn/storage.h"
 
 /* Forward declarations to avoid unnecessary includes. */
 struct history;

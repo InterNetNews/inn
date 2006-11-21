@@ -10,9 +10,9 @@
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/wire.h"
-#include "libinn.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 
 int

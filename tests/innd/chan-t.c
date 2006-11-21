@@ -8,7 +8,7 @@
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 #include "../../innd/innd.h"

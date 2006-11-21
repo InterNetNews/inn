@@ -6,7 +6,7 @@
 #include <errno.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 int test_setenv(const char *name, const char *value, int overwrite);

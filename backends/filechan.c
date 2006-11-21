@@ -12,8 +12,8 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 #include "map.h"
 

@@ -22,7 +22,7 @@
 #include "inn/innconf.h"
 #include "inn/qio.h"
 #include "innd.h"
-#include "inndcomm.h"
+#include "inn/inndcomm.h"
 #include "innperl.h"
 
 /*
@@ -981,7 +981,7 @@ CCnewgroup(char *av[])
     size_t              length;
 
     if (TIMES == NULL)
-	TIMES = concatpath(innconf->pathdb, _PATH_ACTIVETIMES);
+	TIMES = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
 
     Name = av[0];
     if (Name[0] == '.' || strspn(Name, "0123456789") == strlen(Name))
@@ -1326,7 +1326,7 @@ CCreload(char *av[])
 	if (!ARTreadschema())
 	    return BADSCHEMA;
 #ifdef DO_PERL
-        path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
+        path = concatpath(innconf->pathfilter, INN_PATH_PERL_FILTER_INND);
         PERLreadfilter(path, "filter_art") ;
         free(path);
 #endif
@@ -1389,7 +1389,7 @@ CCreload(char *av[])
 #endif
 #ifdef DO_PERL
     else if (strcmp(p, "filter.perl") == 0) {
-        path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
+        path = concatpath(innconf->pathfilter, INN_PATH_PERL_FILTER_INND);
         if (!PERLreadfilter(path, "filter_art"))
             return BADPERLRELOAD;
     }
@@ -1940,7 +1940,7 @@ CCsetup(void)
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
     if (CCpath == NULL)
-	CCpath = concatpath(innconf->pathrun, _PATH_NEWSCONTROL);
+	CCpath = concatpath(innconf->pathrun, INN_PATH_NEWSCONTROL);
     /* Remove old detritus. */
     if (unlink(CCpath) < 0 && errno != ENOENT) {
 	syslog(L_FATAL, "%s cant unlink %s %m", LogName, CCpath);

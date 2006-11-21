@@ -8,9 +8,9 @@
 #include <sys/socket.h>
 
 #include "inn/innconf.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 #if HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>
@@ -50,7 +50,7 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff, size_t len)
     server.sun_family = AF_UNIX;
     strlcpy(server.sun_path, innconf->pathrun, sizeof(server.sun_path));
     strlcat(server.sun_path, "/", sizeof(server.sun_path));
-    strlcat(server.sun_path, _PATH_NNTPCONNECT, sizeof(server.sun_path));
+    strlcat(server.sun_path, INN_PATH_NNTPCONNECT, sizeof(server.sun_path));
     if (connect(i, (struct sockaddr *)&server, SUN_LEN(&server)) < 0) {
 	oerrno = errno;
 	close(i);

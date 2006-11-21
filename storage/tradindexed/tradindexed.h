@@ -13,8 +13,8 @@
 #include "config.h"
 #include <sys/types.h>
 
-#include "ov.h"
-#include "storage.h"
+#include "inn/ov.h"
+#include "inn/storage.h"
 
 BEGIN_DECLS
 

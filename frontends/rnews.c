@@ -21,10 +21,10 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/wire.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 
 typedef struct _HEADER {
@@ -292,7 +292,7 @@ Process(char *article, size_t artlen)
         notice("duplicate %s %s", id, path);
 #endif	/* defined(SYSLOG_RNEWS_LOG_DUPS) */
 #if	defined(FILE_RNEWS_LOG_DUPS)
-	if ((F = fopen(_PATH_RNEWS_DUP_LOG, "a")) != NULL) {
+	if ((F = fopen(INN_PATH_RNEWS_DUP_LOG, "a")) != NULL) {
 	    *p = '\0';
 	    fprintf(F, "duplicate %s %s\n", id, path);
 	    fclose(F);
@@ -528,7 +528,7 @@ UnpackOne(int *fdp, size_t *countp)
 	    cargv[1] = "-d";
 	    cargv[2] = NULL;
 	    lseek(*fdp, 0, 0); /* Back to the beginning */
-	    *fdp = StartChild(*fdp, _PATH_GZIP, cargv);
+	    *fdp = StartChild(*fdp, INN_PATH_GZIP, cargv);
 	    if (*fdp < 0)
 	        return false;
 	    (*countp)++;
@@ -566,7 +566,7 @@ UnpackOne(int *fdp, size_t *countp)
 	    cargv[0] = UNPACK;
 	    cargv[1] = "-d";
 	    cargv[2] = NULL;
-	    *fdp = StartChild(*fdp, _PATH_GZIP, cargv);
+	    *fdp = StartChild(*fdp, INN_PATH_GZIP, cargv);
 	    if (*fdp < 0)
 		return false;
 	    (*countp)++;
@@ -582,13 +582,13 @@ UnpackOne(int *fdp, size_t *countp)
 	    p++;
 	else
 	    p = &buff[3];
-	if (strchr(_PATH_RNEWSPROGS, '/') == NULL) {
+	if (strchr(INN_PATH_RNEWSPROGS, '/') == NULL) {
 	    snprintf(path, sizeof(path), "%s/%s/%s", innconf->pathbin,
-                     _PATH_RNEWSPROGS, p);
-	    len = strlen(innconf->pathbin) + 1 + sizeof _PATH_RNEWSPROGS;
+                     INN_PATH_RNEWSPROGS, p);
+	    len = strlen(innconf->pathbin) + 1 + sizeof INN_PATH_RNEWSPROGS;
 	} else {
-	    snprintf(path, sizeof(path), "%s/%s", _PATH_RNEWSPROGS, p);
-	    len = sizeof _PATH_RNEWSPROGS;
+	    snprintf(path, sizeof(path), "%s/%s", INN_PATH_RNEWSPROGS, p);
+	    len = sizeof INN_PATH_RNEWSPROGS;
 	}
 	for (p = &path[len]; *p; p++)
 	    if (ISWHITE(*p)) {
@@ -866,8 +866,8 @@ int main(int ac, char *av[])
 
     if (!innconf_read(NULL))
         exit(1);
-    UUCPHost = getenv(_ENV_UUCPHOST);
-    PathBadNews = concatpath(innconf->pathincoming, _PATH_BADNEWS);
+    UUCPHost = getenv(INN_ENV_UUCPHOST);
+    PathBadNews = concatpath(innconf->pathincoming, INN_PATH_BADNEWS);
     port = innconf->nnrpdpostport;
 
     umask(NEWSUMASK);

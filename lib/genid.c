@@ -8,7 +8,7 @@
 #include <time.h>
 
 #include "inn/innconf.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* Scale time back a bit, for shorter Message-ID's. */
 #define OFFSET	673416000L

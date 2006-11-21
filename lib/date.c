@@ -11,7 +11,7 @@
 #include <ctype.h>
 #include <time.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /*
 **  Time constants.

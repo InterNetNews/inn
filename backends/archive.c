@@ -15,9 +15,9 @@
 #include "inn/qio.h"
 #include "inn/vector.h"
 #include "inn/wire.h"
-#include "libinn.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 
 /* Holds various configuration options and command-line parameters. */
@@ -403,7 +403,7 @@ main(int argc, char *argv[])
     if (argc > 1)
         die("usage error");
     if (redirect) {
-        file = concatpath(innconf->pathlog, _PATH_ERRLOG);
+        file = concatpath(innconf->pathlog, INN_PATH_ERRLOG);
         freopen(file, "a", stderr);
     }
     if (argc == 1)

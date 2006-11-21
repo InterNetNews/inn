@@ -8,7 +8,7 @@
 
 #include "inn/innconf.h"
 #include "nnrpd.h"
-#include "ov.h"
+#include "inn/ov.h"
 
 /*
 **  Change to or list the specified newsgroup.  If invalid, stay in the old

@@ -7,7 +7,7 @@
 #define __INTERFACE_H__
 
 #include "config.h"
-#include "storage.h"
+#include "inn/storage.h"
 #include <stdio.h>
 
 typedef struct {

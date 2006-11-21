@@ -21,9 +21,9 @@
 #include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 /*
 **  All information about a site we are connected to.
@@ -250,7 +250,7 @@ main(int ac, char *av[])
 	    break;
 	case 'o':
 	    /* Open the history file. */
-            path = concatpath(innconf->pathdb, _PATH_HISTORY);
+            path = concatpath(innconf->pathdb, INN_PATH_HISTORY);
 	    History = HISopen(path, innconf->hismethod, HIS_RDONLY);
 	    if (!History)
                 sysdie("cannot open history");

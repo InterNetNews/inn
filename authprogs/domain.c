@@ -11,7 +11,7 @@
 #include "clibrary.h"
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libauth.h"
 
 int

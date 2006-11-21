@@ -4,7 +4,7 @@ uwildmat, uwildmat_simple, uwildmat_poison - Perform wildmat matching
 
 =head1 SYNOPSIS
 
-B<#include E<lt>libinn.hE<gt>>
+B<#include E<lt>inn/libinn.hE<gt>>
 
 B<bool uwildmat(const char *>I<text>B<, const char *>I<pattern>B<);>
 
@@ -37,7 +37,7 @@ first character of one of the patterns in the expression (see below)
 B<UWILDMAT_MATCH> if the expression matches the text, B<UWILDMAT_FAIL> if
 it doesn't, and B<UWILDMAT_POISON> if the expression doesn't match because
 a poisoned pattern matched the text.  These enumeration constants are
-defined in the B<libinn.h> header.
+defined in the B<inn/libinn.h> header.
 
 =head1 WILDMAT EXPRESSIONS
 

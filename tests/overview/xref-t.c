@@ -12,9 +12,9 @@
 #include "inn/overview.h"
 #include "inn/wire.h"
 #include "inn/vector.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
-#include "storage.h"
+#include "inn/storage.h"
 
 /* Used as the artificial token for all articles inserted into overview. */
 static const TOKEN faketoken = { 1, 1, "" };

@@ -378,6 +378,8 @@ include/inn/dispatch.h                Header file for command dispatching
 include/inn/hashtab.h                 Header file for generic hash table
 include/inn/history.h                 Header file for the history API
 include/inn/innconf.h                 Header file for the innconf struct
+include/inn/inndcomm.h                Header file for control channel commands
+include/inn/libinn.h                  Header file for utility functions
 include/inn/list.h                    Header file for list routines
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
@@ -385,20 +387,19 @@ include/inn/mmap.h                    Header file for mmap() functions
 include/inn/network.h                 Header file for network functions
 include/inn/nntp.h                    Header file for NNTP functions and codes
 include/inn/options.h                 Header file for compile-time options
+include/inn/ov.h                      Header file for old overview API
 include/inn/overview.h                Header file for the overview API
+include/inn/paths.h.in                Header file for paths
 include/inn/qio.h                     Header file for quick I/O package
 include/inn/sequence.h                Header file for sequence space arithmetic
+include/inn/storage.h                 Header file for storage API
 include/inn/timer.h                   Header file for generic timers
 include/inn/tst.h                     Header file for ternary search tries
 include/inn/utility.h                 Header file for utility functions
 include/inn/vector.h                  Header file for vectors of strings
 include/inn/wire.h                    Header file for wire-format functions
-include/inndcomm.h                    innd control channel commands
 include/innperl.h                     Header file for embedded Perl
-include/libinn.h                      INN library declarations
 include/nntp.h                        NNTP command and reply codes
-include/ov.h                          Header file for overview
-include/paths.h.in                    Paths to common programs and files
 include/portable                      Portability wrappers (Directory)
 include/portable/alloca.h             alloca replacement header
 include/portable/getaddrinfo.h        getaddrinfo replacement header
@@ -409,7 +410,6 @@ include/portable/socket.h             Wrapper for <sys/socket.h> and friends
 include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
 include/portable/wait.h               Wrapper for <sys/wait.h>
 include/ppport.h                      Header file for Perl support
-include/storage.h                     Header file for storage API
 innd                                  Server (Directory)
 innd/Makefile                         Makefile for server
 innd/README                           Overview of the innd internals

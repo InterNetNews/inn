@@ -18,7 +18,7 @@
 #include "inn/network.h"
 #include "inn/nntp.h"
 #include "inn/vector.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* State for an NNTP connection. */
 struct nntp {

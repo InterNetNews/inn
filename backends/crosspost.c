@@ -22,8 +22,8 @@
 #include <sys/stat.h>
 
 #include "inn/qio.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 
 static char	*Dir;

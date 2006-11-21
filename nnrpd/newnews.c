@@ -9,7 +9,7 @@
 #include "inn/messages.h"
 #include "inn/wire.h"
 #include "nnrpd.h"
-#include "ov.h"
+#include "inn/ov.h"
 #include "cache.h"
 
 #define GROUP_LIST_DELTA	10
@@ -280,7 +280,7 @@ CMDnewnews(int ac, char *av[])
 	  process_newnews(groups[i], AllGroups, date);
       }
   } else {
-      path = concatpath(innconf->pathdb, _PATH_ACTIVE);
+      path = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
       qp = QIOopen(path);
       if (qp == NULL) {
 	  if (errno == ENOENT) {

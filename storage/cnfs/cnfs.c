@@ -22,9 +22,9 @@
 #include "inn/mmap.h"
 #include "inn/wire.h"
 #include "interface.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "methods.h"
-#include "paths.h"
+#include "inn/paths.h"
 
 #include "cnfs.h"
 #include "cnfs-private.h"

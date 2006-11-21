@@ -10,9 +10,9 @@
 #include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 /*
 **  Read stdin for list of Message-ID's, output list of ones we
@@ -87,7 +87,7 @@ main(int ac, char *av[])
     if (!innconf_read(NULL))
         exit(1);
 
-    History = concatpath(innconf->pathdb, _PATH_HISTORY);
+    History = concatpath(innconf->pathdb, INN_PATH_HISTORY);
 
     What = '?';
 

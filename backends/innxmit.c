@@ -28,10 +28,10 @@
 #include "inn/qio.h"
 #include "inn/timer.h"
 #include "inn/wire.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 #define OUTPUT_BUFFER_SIZE	(16 * 1024)
 
@@ -1220,7 +1220,7 @@ int main(int ac, char *av[]) {
 	alarm(TotalTimeout);
     }
 
-    path = concatpath(innconf->pathdb, _PATH_HISTORY);
+    path = concatpath(innconf->pathdb, INN_PATH_HISTORY);
     History = HISopen(path, innconf->hismethod, HIS_RDONLY);
     free(path);
 

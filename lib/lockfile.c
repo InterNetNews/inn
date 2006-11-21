@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 bool
 inn_lock_file(int fd, enum inn_locktype type, bool block)

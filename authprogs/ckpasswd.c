@@ -14,7 +14,7 @@
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/vector.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "libauth.h"
 

@@ -29,7 +29,7 @@
 #endif
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "endpoint.h"
 #include "misc.h"

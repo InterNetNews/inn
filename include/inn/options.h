@@ -53,7 +53,7 @@
 /* Define if rnews should syslog articles rejected as duplicates. */
 /* #undef DO_RNEWS_LOG_DUPS */
 
-/* Define if rnews should look in _PATH_RNEWSPROGS for batch unpackers. */
+/* Define if rnews should look in INN_PATH_RNEWSPROGS for batch unpackers. */
 #define DO_RNEWSPROGS
 
 /* Define if rnews should save articles rejected by the server. */

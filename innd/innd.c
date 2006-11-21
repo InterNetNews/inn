@@ -14,7 +14,7 @@
 
 #define DEFINE_DATA
 #include "innd.h"
-#include "ov.h"
+#include "inn/ov.h"
 
 
 bool		Debug = false;
@@ -246,7 +246,7 @@ ReopenLog(FILE *F)
 	return;
 
     path = concatpath(innconf->pathlog,
-                      (F == stdout) ? _PATH_LOGFILE : _PATH_ERRLOG);
+                      (F == stdout) ? INN_PATH_LOGFILE : INN_PATH_ERRLOG);
     oldpath = concat(path, ".old", (char *) 0);
     if (rename(path, oldpath) < 0)
         syswarn("SERVER cant rename %s to %s", path, oldpath);
@@ -509,12 +509,12 @@ main(int ac, char *av[])
            articles and stderr is used to log serious error conditions (as
            well as to capture stderr from embedded filters).  Both are
            normally fully buffered. */
-        path = concatpath(innconf->pathlog, _PATH_LOGFILE);
+        path = concatpath(innconf->pathlog, INN_PATH_LOGFILE);
         if (freopen(path, "a", stdout) == NULL)
             sysdie("SERVER cant freopen stdout to %s", path);
         setvbuf(stdout, NULL, _IOFBF, LOG_BUFSIZ);
         free(path);
-        path = concatpath(innconf->pathlog, _PATH_ERRLOG);
+        path = concatpath(innconf->pathlog, INN_PATH_ERRLOG);
         if (freopen(path, "a", stderr) == NULL)
             sysdie("SERVER cant freopen stderr to %s", path);
         setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
@@ -558,7 +558,7 @@ main(int ac, char *av[])
 
     /* See if another instance is alive. */
     if (PID == NULL)
-	PID = concatpath(innconf->pathrun, _PATH_SERVERPID);
+	PID = concatpath(innconf->pathrun, INN_PATH_SERVERPID);
     if ((F = fopen(PID, "r")) != NULL) {
 	if (fgets(buff, sizeof buff, F) != NULL
 	 && ((pid = (pid_t) atol(buff)) > 0)
@@ -637,8 +637,8 @@ main(int ac, char *av[])
 
 #if DO_PERL
     /* Load the Perl code */
-    path1 = concatpath(innconf->pathfilter, _PATH_PERL_STARTUP_INND);
-    path2 = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_INND);
+    path1 = concatpath(innconf->pathfilter, INN_PATH_PERL_STARTUP_INND);
+    path2 = concatpath(innconf->pathfilter, INN_PATH_PERL_FILTER_INND);
     PERLsetup(path1, path2, "filter_art");
     free(path1);
     free(path2);

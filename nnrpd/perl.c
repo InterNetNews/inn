@@ -18,7 +18,7 @@
 
 #include "inn/innconf.h"
 #include "nnrpd.h"
-#include "paths.h"
+#include "inn/paths.h"
 #include "post.h"
 
 #include "nntp.h"
@@ -198,7 +198,7 @@ loadPerl(void)
 {
     char *path;
 
-    path = concatpath(innconf->pathfilter, _PATH_PERL_FILTER_NNRPD);
+    path = concatpath(innconf->pathfilter, INN_PATH_PERL_FILTER_NNRPD);
     PERLsetup(NULL, path, "filter_post");
     free(path);
     PerlFilter(true);

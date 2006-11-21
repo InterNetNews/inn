@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 #define END     (char *) 0

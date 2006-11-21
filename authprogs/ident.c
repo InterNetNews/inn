@@ -12,7 +12,7 @@
 
 #include "inn/messages.h"
 #include "inn/network.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "libauth.h"
 

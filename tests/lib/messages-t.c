@@ -9,7 +9,7 @@
 #include <sys/wait.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 #define END     (char *) 0

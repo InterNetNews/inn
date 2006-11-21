@@ -15,10 +15,10 @@
 #include "inn/hashtab.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
-#include "ov.h"
-#include "storage.h"
+#include "inn/ov.h"
+#include "inn/storage.h"
 
 #include "../storage/buffindexed/buffindexed.h"
 #include "../storage/ovdb/ovdb.h"

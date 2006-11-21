@@ -13,7 +13,7 @@
 
 #include "inn/messages.h"
 #include "libauth.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #define NAMESTR "ClientAuthname: "
 #define PASSSTR "ClientPassword: "

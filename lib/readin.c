@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 
 /*

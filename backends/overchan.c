@@ -21,8 +21,8 @@
 #include "inn/messages.h"
 #include "inn/overview.h"
 #include "inn/qio.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 /* Statistics kept while overchan is running. */
 struct statistics {

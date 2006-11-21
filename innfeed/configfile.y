@@ -21,7 +21,7 @@
 #endif
   
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "configfile.h"
 #include "misc.h"

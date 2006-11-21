@@ -46,8 +46,8 @@
 #include "inn/history.h"
 #include "inn/messages.h"
 #include "inn/timer.h"
-#include "libinn.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/storage.h"
 
 #include "hisinterface.h"
 #include "hismethods.h"

@@ -9,7 +9,7 @@
 #include <time.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 static const char usage[] = "\
 Usage: convdate -n [date ...]\n\

@@ -8,7 +8,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/wire.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 #include "../../innd/innd.h"

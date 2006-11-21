@@ -1,0 +1,118 @@
+/*  $Id$ -*- c -*-
+**  @configure_input@
+**
+**  Here be #define's for filenames, socket names, environment variables,
+**  and so on.
+*/
+
+#ifndef INN_PATHS_H
+#define INN_PATHS_H 1
+
+/*
+**  PATHS TO FILES AND SOCKETS
+**
+**  Default prefixes can be overridden by defining the constant to a full
+**  path.  That magic is handled by concatpath.  At some point all of these
+**  defines will change to start with INN_PATH_ instead of _PATH_ because
+**  identifiers beginning with an underscore and an uppercase letter are
+**  reserved by the C standard.  New ones should use INN_PATH_ for this
+**  reason, to save eventual work.
+*/
+
+/* Must be an absolute path since it defines the other prefixes. */
+#define INN_PATH_CONFIG                 "@PATH_CONFIG@/inn.conf"
+
+/* Default prefix path is pathbin. */
+#define INN_PATH_NNRPD                  "nnrpd"
+#define INN_PATH_NNTPD                  "nnrpd"
+#define INN_PATH_AUTHDIR                "auth"
+#define INN_PATH_AUTHDIR_GENERIC        "generic"
+#define INN_PATH_AUTHDIR_NOPASS         "resolv"
+#define INN_PATH_AUTHDIR_PASSWD         "passwd"
+#define INN_PATH_CTLINND                "ctlinnd"
+#define INN_PATH_RNEWSPROGS             "rnews.libexec"
+
+/* Default prefix path is pathfilter. */
+#define INN_PATH_PERL_STARTUP_INND      "startup_innd.pl"
+#define INN_PATH_PERL_FILTER_INND       "filter_innd.pl"
+#define INN_PATH_PERL_FILTER_NNRPD      "filter_nnrpd.pl"
+#define INN_PATH_PERL_AUTH              "nnrpd_auth.pl"
+#define INN_PATH_PYTHON_STARTUP         "filter_innd.py"
+#define INN_PATH_PYTHON_STARTUP_M       "filter_innd"
+#define INN_PATH_PYTHON_AUTH_M          "nnrpd_auth"
+
+/* Default prefix path is pathrun. */
+#define INN_PATH_NNTPCONNECT            "nntpin"
+#define INN_PATH_NEWSCONTROL            "control"
+#define INN_PATH_TEMPSOCK               "ctlinndXXXXXX"
+#define INN_PATH_SERVERPID              "innd.pid"
+#define INN_PATH_REBUILDOVERVIEW        ".rebuildoverview"
+
+/* Default prefix path is pathdb. */
+#define INN_PATH_HISTORY                "history"
+#define INN_PATH_ACTIVE                 "active"
+#define INN_PATH_NEWACTIVE              "active.tmp"
+#define INN_PATH_OLDACTIVE              "active.old"
+#define INN_PATH_ACTIVETIMES            "active.times"
+#define INN_PATH_NEWSGROUPS             "newsgroups"
+
+/* Default prefix path is pathetc. */
+#define INN_PATH_NEWSFEEDS              "newsfeeds"
+#define INN_PATH_INNDHOSTS              "incoming.conf"
+#define INN_PATH_DISTPATS               "distrib.pats"
+#define INN_PATH_NNRPDIST               "distributions"
+#define INN_PATH_NNRPSUBS               "subscriptions"
+#define INN_PATH_CLIENTACTIVE           "active"
+#define INN_PATH_MODERATORS             "moderators"
+#define INN_PATH_SERVER                 "server"
+#define INN_PATH_NNTPPASS               "passwd.nntp"
+#define INN_PATH_NNRPACCESS             "readers.conf"
+#define INN_PATH_EXPIRECTL              "expire.ctl"
+#define INN_PATH_SCHEMA                 "overview.fmt"
+#define INN_PATH_MOTD                   "motd.news"
+#define INN_PATH_STORAGECTL             "storage.conf"
+#define INN_PATH_RADIUS_CONFIG          "radius.conf"
+#define INN_PATH_SASL_CONFIG            "sasl.conf"
+#define INN_PATH_FILESYSTEMS            "filesystems"
+
+/* Default prefix path is pathspool. */
+#define INN_PATH_SPOOL                  "articles"
+#define INN_PATH_BADNEWS                "bad"
+
+/* Default prefix path is pathlog. */
+#define INN_PATH_LOGFILE                "news"
+#define INN_PATH_ERRLOG                 "errlog"
+
+/* Paths to various programs. */
+#define INN_PATH_COMPRESS               "@COMPRESS@"
+#define INN_PATH_GZIP                   "@GZIP@"
+#define INN_PATH_SORT                   "@SORT@"
+
+/* Absolute paths. */
+#define INN_PATH_TMP                    "@PATH_TMP@"
+#define INN_PATH_RNEWS_DUP_LOG          "/dev/null"
+
+/* Always relative to pathtmp. */
+#define INN_PATH_TEMPACTIVE             "activeXXXXXX"
+#define INN_PATH_TEMPMODERATORS         "moderatorsXXXXXX"
+
+/*
+**  ENVIRONMENT VARIABLES
+*/
+
+/* The host name of the NNTP server, for client posting. */
+#define INN_ENV_NNTPSERVER              "NNTPSERVER"
+
+/* The Organization header line, for client posting. */
+#define INN_ENV_ORGANIZATION            "ORGANIZATION"
+
+/* What to put in the From line, for client posting. */
+#define INN_ENV_FROMHOST                "FROMHOST"
+
+/* UUCP host, for rnews. */
+#define INN_ENV_UUCPHOST                "UU_MACHINE"
+
+/* Interface to bind as, for sockets. */
+#define INN_ENV_INNBINDADDR             "INND_BIND_ADDRESS"
+
+#endif /* INN_PATHS_H */

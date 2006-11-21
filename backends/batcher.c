@@ -16,9 +16,9 @@
 #include "inn/messages.h"
 #include "inn/timer.h"
 #include "inn/wire.h"
-#include "libinn.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 
 /*
@@ -204,7 +204,7 @@ main(int ac, char *av[])
     AltSpool = NULL;
     Redirect = true;
     umask(NEWSUMASK);
-    ERRLOG = concatpath(innconf->pathlog, _PATH_ERRLOG);
+    ERRLOG = concatpath(innconf->pathlog, INN_PATH_ERRLOG);
 
     /* By default, statistics only go to syslog. */
     message_handlers_notice(1, message_log_syslog_notice);

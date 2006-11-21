@@ -26,10 +26,10 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/mmap.h"
-#include "libinn.h"
-#include "ov.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
 #include "ovinterface.h"
-#include "storage.h"
+#include "inn/storage.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 

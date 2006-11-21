@@ -14,9 +14,9 @@
 
 #include "inn/innconf.h"
 #include "inn/qio.h"
-#include "libinn.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 char *ME;
 

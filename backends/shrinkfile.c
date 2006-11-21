@@ -32,7 +32,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #define MAX_SIZE	0x7fffffffUL
 

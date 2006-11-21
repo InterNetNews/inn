@@ -21,8 +21,8 @@
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/wire.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 #include "methods.h"
 #include "tradspool.h"
@@ -366,7 +366,7 @@ ReadActiveFile(void)
     char *line;
     char *p;
 
-    fname = concatpath(innconf->pathdb, _PATH_ACTIVE);
+    fname = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     if ((qp = QIOopen(fname)) == NULL) {
         syswarn("tradspool: can't open %s", fname);
 	free(fname);

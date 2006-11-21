@@ -13,9 +13,9 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
-#include "libinn.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 /* FIXME: once we figure out how to integrate this stuff with the
  * history API this external visibility of internal voodoo should
@@ -265,8 +265,8 @@ main(int argc, char **argv)
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    TextFile = concatpath(innconf->pathdb, _PATH_HISTORY);
-    HISTORY = concatpath(innconf->pathdb, _PATH_HISTORY);
+    TextFile = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    HISTORY = concatpath(innconf->pathdb, INN_PATH_HISTORY);
     HistoryDir = innconf->pathdb;
     IgnoreOld = false;
     Overwrite = false;

@@ -23,7 +23,7 @@
 #include <assert.h>
 
 #include "inn/wire.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /*
 **  Given a pointer to the start of an article, locate the first octet of the

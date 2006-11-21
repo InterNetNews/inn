@@ -4,7 +4,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "inn/md5.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 /* Used to initialize strings of unsigned characters. */

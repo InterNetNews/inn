@@ -33,7 +33,7 @@
 # include <sys/resource.h>
 #endif
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #if HAVE_SETRLIMIT && defined(RLIMIT_NOFILE)
 

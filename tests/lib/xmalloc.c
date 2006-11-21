@@ -14,7 +14,7 @@
 #include <sys/resource.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* A customized error handler for checking xmalloc's support of them.
    Prints out the error message and exits with status 1. */

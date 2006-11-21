@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 ssize_t test_pread(int fd, void *buf, size_t nbyte, off_t offset);

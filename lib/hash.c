@@ -8,7 +8,7 @@
 
 #include "inn/md5.h"
 #include "inn/utility.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 static HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
 		       0, 0, 0, 0, 0, 0, 0, 0 }};

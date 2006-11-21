@@ -10,8 +10,8 @@
 #include "inn/innconf.h"
 #include "inn/wire.h"
 #include "innd.h"
-#include "ov.h"
-#include "storage.h"
+#include "inn/ov.h"
+#include "inn/storage.h"
 
 typedef struct iovec	IOVEC;
 
@@ -157,7 +157,7 @@ ARTreadschema(void)
 
   /* Open file, count lines. */
   if (SCHEMA == NULL)
-    SCHEMA = concatpath(innconf->pathetc, _PATH_SCHEMA);
+    SCHEMA = concatpath(innconf->pathetc, INN_PATH_SCHEMA);
   if ((F = Fopen(SCHEMA, "r", TEMPORARYOPEN)) == NULL)
     return false;
   for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)

@@ -16,8 +16,8 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
-#include "ov.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
 
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"

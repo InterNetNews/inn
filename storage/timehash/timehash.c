@@ -17,9 +17,9 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/wire.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "methods.h"
-#include "paths.h"
+#include "inn/paths.h"
 #include "timehash.h"
 
 typedef struct {

@@ -7,7 +7,7 @@
 
 #include "inn/innconf.h"
 #include "nnrpd.h"
-#include "ov.h"
+#include "inn/ov.h"
 #include "post.h"
 
 #define FLUSH_ERROR(F)		(fflush((F)) == EOF || ferror((F)))

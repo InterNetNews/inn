@@ -20,9 +20,9 @@
 #include "inn/innconf.h"
 #include "inn/md5.h"
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
+#include "inn/paths.h"
 #include "conffile.h"
 
 #include "libauth.h"
@@ -534,7 +534,7 @@ int main(int argc, char *argv[])
     if (argc != optind)
       exit(2);
     if (!havefile) {
-      radius_config = concatpath(innconf->pathetc, _PATH_RADIUS_CONFIG);
+      radius_config = concatpath(innconf->pathetc, INN_PATH_RADIUS_CONFIG);
       read_config(radius_config, &radconfig);
   
       free(radius_config);

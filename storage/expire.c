@@ -14,11 +14,11 @@
 #include <errno.h>
 
 #include "inn/innconf.h"
-#include "libinn.h"
-#include "ov.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
 #include "ovinterface.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 enum KRP {Keep, Remove, Poison};
 
@@ -555,7 +555,7 @@ ARTreadschema(void)
     bool                        foundxreffull = false;
 
     /* Open file, count lines. */
-    path = concatpath(innconf->pathetc, _PATH_SCHEMA);
+    path = concatpath(innconf->pathetc, INN_PATH_SCHEMA);
     F = fopen(path, "r");
     if (F == NULL)
         return;
@@ -665,7 +665,7 @@ OVfindheaderindex(void)
     if (ReadOverviewfmt)
         return;
     if (innconf->groupbaseexpiry) {
-        ACTIVE = concatpath(innconf->pathdb, _PATH_ACTIVE);
+        ACTIVE = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
         if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
             fprintf(stderr, "Can't read %s, %s\n",
             ACTIVE, strerror(errno));
@@ -674,7 +674,7 @@ OVfindheaderindex(void)
         BuildGroups(active);
         arts = xmalloc(nGroups * sizeof(char *));
         krps = xmalloc(nGroups * sizeof(enum KRP));
-        path = concatpath(innconf->pathetc, _PATH_EXPIRECTL);
+        path = concatpath(innconf->pathetc, INN_PATH_EXPIRECTL);
         F = fopen(path, "r");
         free(path);
         if (!EXPreadfile(F)) {

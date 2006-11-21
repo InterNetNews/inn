@@ -8,8 +8,8 @@
 
 #include "config.h"
 #include "inn/history.h"
-#include "ov.h"
-#include "storage.h"
+#include "inn/ov.h"
+#include "inn/storage.h"
 
 struct buffer;
 struct vector;

@@ -7,8 +7,8 @@
 #include <syslog.h>
 #include <sys/stat.h>
 #include "inn/history.h"
-#include "storage.h"
-#include "libinn.h"
+#include "inn/storage.h"
+#include "inn/libinn.h"
 
 /* Used by lots of stuff that parses history file entries.  Should be moved
    into a header specifically for history parsing. */

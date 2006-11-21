@@ -5,7 +5,7 @@
 #include "clibrary.h"
 #include <time.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 static const time_t test_times[] = {

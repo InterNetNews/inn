@@ -7,7 +7,7 @@
 #include "inn/confparse.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 /* Given a FILE *, read from that file, putting the results into a newly

@@ -64,7 +64,7 @@
 #include "inn/hashtab.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 
 /* The types of tokens seen in configuration files. */

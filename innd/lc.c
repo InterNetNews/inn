@@ -71,7 +71,7 @@ LCsetup(void)
     struct sockaddr_un	server;
 
     if (LCpath == NULL)
-	LCpath = concatpath(innconf->pathrun, _PATH_NNTPCONNECT);
+	LCpath = concatpath(innconf->pathrun, INN_PATH_NNTPCONNECT);
     /* Remove old detritus. */
     if (unlink(LCpath) < 0 && errno != ENOENT) {
 	syslog(L_FATAL, "%s cant unlink %s %m", LogName, LCpath);

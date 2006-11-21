@@ -48,7 +48,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/timer.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
 
 /*

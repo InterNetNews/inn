@@ -1,8 +1,8 @@
 #ifndef CACHE_H
 #define CACHE_H
 
-#include "libinn.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/storage.h"
 
 BEGIN_DECLS
 

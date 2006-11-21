@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 
 #include "inn/qio.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* A reasonable default buffer size to use. */
 #define QIO_BUFFERSIZE  8192

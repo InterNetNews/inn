@@ -7,13 +7,13 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include <errno.h>
 #include <syslog.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "ov.h"
+#include "inn/ov.h"
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
 

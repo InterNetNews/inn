@@ -6,7 +6,7 @@ inndcomm \- INND communication part of InterNetNews library
 .nf
 .ta \w'    unsigned long    'u
 .B
-#include "inndcomm.h"
+#include "inn/inndcomm.h"
 
 .B "int"
 .B "ICCopen()"
@@ -95,7 +95,7 @@ zero indicates success.
 Replies longer then 4000 bytes will be truncated.
 The possible values of
 .I cmd
-are defined in the ``inndcomm.h'' header file.
+are defined in the ``inn/inndcomm.h'' header file.
 The parameters for each command are described in
 .IR ctlinnd (8).
 This routine returns \-1 on communication failure, or the exit status

@@ -167,7 +167,7 @@ frontends/scanspool
 frontends/sm
 history/buildconfig
 include/config.h
-include/paths.h
+include/inn/paths.h
 include/inn/system.h
 include/inn/version.h
 innd/innd

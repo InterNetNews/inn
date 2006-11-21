@@ -6,7 +6,7 @@
 
 #include "inn/messages.h"
 #include "inn/tst.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 /* Used for strings of unsigned characters. */

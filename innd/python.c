@@ -645,7 +645,7 @@ PYsetup(void)
 
     Py_InitModule((char *) "INN", INNPyMethods);
 
-    PYFilterModule = PyImport_ImportModule((char *) _PATH_PYTHON_STARTUP_M);
+    PYFilterModule = PyImport_ImportModule((char *) INN_PATH_PYTHON_STARTUP_M);
     if (PYFilterModule == NULL)
 	syslog(L_ERROR, "failed to import external python module");
 

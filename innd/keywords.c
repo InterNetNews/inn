@@ -16,7 +16,7 @@
 #include "config.h"
 #include "clibrary.h"
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "inn/innconf.h"
 #include "innd.h"

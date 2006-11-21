@@ -11,8 +11,8 @@
 #include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 
 /*
@@ -45,7 +45,7 @@ main(int ac, char *av[])
     if (!innconf_read(NULL))
         exit(1);
 
-    History = concatpath(innconf->pathdb, _PATH_HISTORY);
+    History = concatpath(innconf->pathdb, INN_PATH_HISTORY);
     Passing = false;
 
     /* Parse JCL. */

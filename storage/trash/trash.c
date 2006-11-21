@@ -4,7 +4,7 @@
 */
 #include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "methods.h"
 
 #include "trash.h"

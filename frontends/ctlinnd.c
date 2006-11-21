@@ -11,9 +11,9 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "inndcomm.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/inndcomm.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 
 /*
@@ -309,7 +309,7 @@ int main(int ac, char *av[])
     i = ICCcommand(cp->Letter, (const char **) av, &reply);
     if (i < 0) {
 	i = errno;
-	p = concatpath(innconf->pathrun, _PATH_SERVERPID);
+	p = concatpath(innconf->pathrun, INN_PATH_SERVERPID);
 	if (stat(p, &Sb) < 0)
             warn("no innd.pid file; did server die?");
         free(p);

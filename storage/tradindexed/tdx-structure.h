@@ -50,8 +50,8 @@
 #include "config.h"
 #include <sys/types.h>
 
-#include "libinn.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/storage.h"
 
 /* A location in group.index (this many records past the end of the header of
    the file).  There's no reason for this to be a struct, but that can't be

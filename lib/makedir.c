@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /*
 **  Try to make one directory.  Return false on error.

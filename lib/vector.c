@@ -27,7 +27,7 @@
 #include <ctype.h>
 
 #include "inn/vector.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /*
 **  Allocate a new, empty vector.

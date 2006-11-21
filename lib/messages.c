@@ -58,7 +58,7 @@
 #include <syslog.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* The default handler lists. */
 static message_handler_func stdout_handlers[2] = {

@@ -23,7 +23,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/network.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* Macros to set the len attribute of sockaddrs. */
 #if HAVE_STRUCT_SOCKADDR_SA_LEN

@@ -72,8 +72,8 @@
 #include "inn/messages.h"
 #include "inn/hashtab.h"
 #include "inn/qio.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 static const char usage[] = "\
 Usage: actsync [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n\
@@ -2603,7 +2603,7 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
             sysdie("child: dup of write I/O pipe to stderr failed");
 
 	/* exec the ctlinnd command */
-	p = concatpath(innconf->pathbin, _PATH_CTLINND);
+	p = concatpath(innconf->pathbin, INN_PATH_CTLINND);
 	if (type == NULL) {
 	    execl(p,
 		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, (char *) 0);

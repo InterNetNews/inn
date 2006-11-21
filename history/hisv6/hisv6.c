@@ -50,7 +50,7 @@
 #include "inn/timer.h"
 #include "inn/qio.h"
 #include "inn/sequence.h"
-#include "inndcomm.h"
+#include "inn/inndcomm.h"
 
 /*
 **  because we can only have one open dbz per process, we keep a

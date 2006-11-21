@@ -6,7 +6,7 @@
 #include "portable/socket.h"
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,

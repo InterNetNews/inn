@@ -1903,8 +1903,8 @@ ResolveUser(AUTHGROUP *auth)
     if (auth->res_methods == NULL)
         return NULL;
 
-    tmp = concatpath(innconf->pathbin, _PATH_AUTHDIR);
-    resdir = concatpath(tmp, _PATH_AUTHDIR_NOPASS);
+    tmp = concatpath(innconf->pathbin, INN_PATH_AUTHDIR);
+    resdir = concatpath(tmp, INN_PATH_AUTHDIR_NOPASS);
     free(tmp);
 
     for (i = 0; auth->res_methods[i]; i++) {
@@ -1947,8 +1947,8 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
     if (auth->auth_methods == NULL)
         return NULL;
 
-    tmp = concatpath(innconf->pathbin, _PATH_AUTHDIR);
-    resdir = concatpath(tmp, _PATH_AUTHDIR_PASSWD);
+    tmp = concatpath(innconf->pathbin, INN_PATH_AUTHDIR);
+    resdir = concatpath(tmp, INN_PATH_AUTHDIR_PASSWD);
     free(tmp);
 
     for (i = 0; auth->auth_methods[i]; i++) {

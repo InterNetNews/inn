@@ -6,7 +6,7 @@
 
 #include "inn/messages.h"
 #include "inn/list.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 int

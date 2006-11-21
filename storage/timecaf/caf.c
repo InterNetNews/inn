@@ -14,7 +14,7 @@
 #include <time.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #define CAF_INNARDS
 #include "caf.h"

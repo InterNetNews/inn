@@ -357,14 +357,14 @@ portability traps or that need some fixing up on some platforms.  Look in
 include/portable and familiarize yourself with them and use them where
 appropriate.
 
-Another frequently included header file is F<libinn.h>, which among other
+Another frequently included header file is F<inn/libinn.h>, which among other
 things defines xmalloc(), xrealloc(), xstrdup(), and xcalloc(), which are
 checked versions of the standard memory allocation routines that terminate
 the program if the memory allocation fails.  These should generally always
-be used instead of the regular C versions.  F<libinn.h> also provides
+be used instead of the regular C versions.  F<inn/libinn.h> also provides
 various other utility functions that are frequently used.
 
-F<paths.h> includes a wide variety of paths determined at configure time,
+F<inn/paths.h> includes a wide variety of paths determined at configure time,
 both default paths to various parts of INN and paths to programs.  Don't
 just use the default paths, though, if they're also configurable in
 F<inn.conf>; instead, call innconf_read() and use the global innconf

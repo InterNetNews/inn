@@ -19,10 +19,10 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
-#include "libinn.h"
-#include "ov.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 static const char usage[] = "\
 Usage: expireover [-ekNpqs] [-w offset] [-z rmfile] [-Z lowmarkfile]\n";
@@ -157,7 +157,7 @@ main(int argc, char *argv[])
     /* Set up the path to the list of newsgroups we're going to use and open
        that file.  This could be stdin. */
     if (active_path == NULL) {
-        active_path = concatpath(innconf->pathdb, _PATH_ACTIVE);
+        active_path = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
         purge_deleted = true;
     }
     if (strcmp(active_path, "-") == 0) {
@@ -172,7 +172,7 @@ main(int argc, char *argv[])
     free(active_path);
 
     /* open up the history manager */
-    path = concatpath(innconf->pathdb, _PATH_HISTORY);
+    path = concatpath(innconf->pathdb, INN_PATH_HISTORY);
     history = HISopen(path, innconf->hismethod, HIS_RDONLY);
     free(path);
 

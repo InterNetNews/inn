@@ -589,7 +589,7 @@ NClist(CHANNEL *cp)
 	return;
     }
     if (strcasecmp(p, "newsgroups") == 0) {
-        path = concatpath(innconf->pathdb, _PATH_NEWSGROUPS);
+        path = concatpath(innconf->pathdb, INN_PATH_NEWSGROUPS);
 	trash = p = ReadInFile(path, NULL);
         free(path);
 	if (p == NULL) {
@@ -599,7 +599,7 @@ NClist(CHANNEL *cp)
 	end = p + strlen(p);
     }
     else if (strcasecmp(p, "active.times") == 0) {
-        path = concatpath(innconf->pathdb, _PATH_ACTIVETIMES);
+        path = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
 	trash = p = ReadInFile(path, NULL);
         free(path);
 	if (p == NULL) {

@@ -9,7 +9,7 @@
 
 #include "inn/messages.h"
 #include "inn/qio.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 static void

@@ -18,7 +18,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "inn/hashtab.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* Magic values for empty and deleted hash table slots. */
 #define HASH_EMPTY      ((void *) 0)

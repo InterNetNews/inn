@@ -21,10 +21,10 @@
 #include "inn/messages.h"
 #include "inn/vector.h"
 #include "inn/wire.h"
-#include "libinn.h"
-#include "ov.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
 #include "ovinterface.h"
-#include "paths.h"
+#include "inn/paths.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
@@ -308,7 +308,7 @@ group_rebuild(const char *group, const char *path)
     if (!tdx_index_rebuild_start(index, entry))
         die("cannot start index rebuild for %s", group);
 
-    histpath = concatpath(innconf->pathdb, _PATH_HISTORY);
+    histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
     flags = HIS_RDONLY | HIS_ONDISK;
     history = HISopen(histpath, innconf->hismethod, flags);
     if (history == NULL)

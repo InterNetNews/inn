@@ -14,7 +14,7 @@
 #include <sys/stat.h>
 
 #include "inn/innconf.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
 
 #define TEMPFILE	":tmp"

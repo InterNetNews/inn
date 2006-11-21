@@ -8,7 +8,7 @@
 #include "clibrary.h"
 #include <time.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 
 static char	ALPHABET[] =

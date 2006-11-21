@@ -9,7 +9,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/version.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /*
 **  Print the INN version string with appropriate quoting.

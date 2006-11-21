@@ -37,7 +37,7 @@
 #include "inn/utility.h"
 #include "inn/vector.h"
 #include "inn/version.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* Prototypes for command callbacks. */
 static void command_help(struct cvector *, void *);

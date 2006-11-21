@@ -6,7 +6,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "conffile.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 static int getconfline(CONFFILE *F, char *buffer, int length) {
   if (F->f) {

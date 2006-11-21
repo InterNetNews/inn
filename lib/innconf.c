@@ -31,8 +31,8 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 /* Instantiation of the global innconf variable. */
 struct innconf *innconf = NULL;
@@ -308,7 +308,7 @@ innconf_set_defaults(void)
     if (innconf->pathhost == NULL)
         innconf->pathhost = xstrdup(GetFQDN(innconf->domain));
     if (innconf->pathtmp == NULL)
-        innconf->pathtmp = xstrdup(_PATH_TMP);
+        innconf->pathtmp = xstrdup(INN_PATH_TMP);
 
     /* All of the paths are relative to other paths if not set except for
        pathnews, which is required to be set by innconf_validate. */
@@ -453,7 +453,7 @@ innconf_read(const char *path)
         innconf_free(innconf);
     if (path == NULL)
         path = getenv("INNCONF");
-    group = config_parse_file(path == NULL ? _PATH_CONFIG : path);
+    group = config_parse_file(path == NULL ? INN_PATH_CONFIG : path);
     if (group == NULL)
         return false;
 
@@ -498,7 +498,7 @@ innconf_check(const char *path)
         innconf_free(innconf);
     if (path == NULL)
         path = getenv("INNCONF");
-    group = config_parse_file(path == NULL ? _PATH_CONFIG : path);
+    group = config_parse_file(path == NULL ? INN_PATH_CONFIG : path);
     if (group == NULL)
         return false;
 

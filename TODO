@@ -222,18 +222,16 @@ Documentation Projects
 
 Code Cleanup Projects
 
-* Eliminate everything in the LEGACY section of config.h.
+* Eliminate everything in the LEGACY section of include/inn/options.h.
 
 * Go over include/inn/options.h and try to eliminate as many of the
   compile-time options there as possible.  They should all be run-time
   options instead if at all possible, maybe in specific sub-sections of
   inn.conf.
 
-* Move include/paths.h to include/inn/paths.h and change _PATH as a prefix
-  to INN_PATH to move the identifiers out of the C reserved namespace.
-  Check to be sure we still need all of the #defines and look at adding
-  anything needed by innfeed (and eliminating the separate innfeed header
-  serving the same purpose).
+* Check to be sure we still need all of the #defines in
+  include/inn/paths.h and look at adding anything needed by innfeed (and
+  eliminating the separate innfeed header serving the same purpose).
 
 * Update all INN code to use include/inn/nntp.h for NNTP codes and
   eliminate include/nntp.h.
@@ -241,8 +239,8 @@ Code Cleanup Projects
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
 
-* Break up the remainder of libinn.h into multiple inn/* include files for
-  specific functions (such as memory management, wildmat, date handling,
+* Break up the remainder of inn/libinn.h into multiple inn/* include files
+  for specific functions (such as memory management, wildmat, date handling,
   NNTP commands, etc.), with an inn/util.h header to collect the remaining
   random utilities.  Consider adding some sort of prefix, like inn_, to all
   functions that aren't part of some other logical set with its own prefix.
@@ -309,7 +307,7 @@ Needed Bug Fixes
 
 * Handling of compressed batches needs to be thoroughly reviewed by
   someone who understands how they're supposed to work.  It's not clear
-  that _PATH_GZIP is being used correctly at the moment and that
+  that INN_PATH_GZIP is being used correctly at the moment and that
   compressed batch handling will work right now on systems that don't have
   gzip installed (but that do have uncompress).
 

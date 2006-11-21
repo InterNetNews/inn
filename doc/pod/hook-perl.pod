@@ -29,9 +29,9 @@ configure.  See F<INSTALL> for more information.
 
 =head1 The innd Perl Filter
 
-When innd starts, it first loads the file _PATH_PERL_STARTUP_INND (defined
-in F<include/paths.h>, by default F<startup_innd.pl>) and then loads the
-file _PATH_PERL_FILTER_INND (also defined in F<include/paths.h>, by
+When innd starts, it first loads the file INN_PATH_PERL_STARTUP_INND (defined
+in F<include/inn/paths.h>, by default F<startup_innd.pl>) and then loads the
+file INN_PATH_PERL_FILTER_INND (also defined in F<include/inn/paths.h>, by
 default F<filter_innd.pl>).  Both of these files must be located in the
 directory specified by pathfilter in F<inn.conf>
 (F</usr/local/news/bin/filter> by default).  The default directory for
@@ -276,7 +276,7 @@ facility LOG_NEWS.
 =head1 The nnrpd Posting Filter
 
 Whenever Perl support is needed in nnrpd, it first loads the file
-_PATH_PERL_FILTER_NNRPD (defined in F<include/paths.h>, by default
+INN_PATH_PERL_FILTER_NNRPD (defined in F<include/inn/paths.h>, by default
 F<filter_nnrpd.pl>).  This file must be located in the directory
 specified by pathfilter in F<inn.conf> (F</usr/local/news/bin/filter>
 by default).  The default directory for filter code can be specified

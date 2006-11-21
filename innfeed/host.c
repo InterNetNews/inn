@@ -27,7 +27,7 @@
 #include "inn/messages.h"
 #include "inn/network.h"
 #include "inn/version.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include "article.h"
 #include "buffer.h"

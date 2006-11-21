@@ -49,7 +49,7 @@
 #include "clibrary.h"
 
 #include "inn/tst.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 
 /* A single node in the ternary search trie.  Stores a character, which is

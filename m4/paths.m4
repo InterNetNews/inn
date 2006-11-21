@@ -42,7 +42,7 @@ _INN_ARG_DIR([tmp], ['${prefix}/tmp'], [tmpdir],
     [AC_HELP_STRING([--with-tmp-dir=PATH],
         [Path for temporary files [PREFIX/tmp]])])
 
-dnl Some additional paths used by paths.h.
+dnl Some additional paths used by inn/paths.h.
 eval PATH_CONFIG="$sysconfdir"
 eval PATH_TMP="$tmpdir"
 AC_SUBST([PATH_CONFIG])

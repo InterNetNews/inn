@@ -14,10 +14,10 @@
 #include <sys/stat.h>
 
 #include "inn/qio.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 #include "inn/vector.h"
 #include "inn/timer.h"
 

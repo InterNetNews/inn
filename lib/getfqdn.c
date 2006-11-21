@@ -6,8 +6,8 @@
 #include "clibrary.h"
 #include <netdb.h>
 
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 
 /*

@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <sys/uio.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /* If we're running the test suite, call testing versions of the write
    functions.  #undef pwrite first because large file support may define a

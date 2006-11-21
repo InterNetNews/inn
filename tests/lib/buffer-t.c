@@ -7,7 +7,7 @@
 
 #include "inn/buffer.h"
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 static const char test_string1[] = "This is a test";

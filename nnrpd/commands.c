@@ -7,7 +7,7 @@
 #include "portable/wait.h"
 
 #include "nnrpd.h"
-#include "ov.h"
+#include "inn/ov.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/version.h"
@@ -60,12 +60,12 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 	    return(-1);
 	}
 
-    if (strchr(_PATH_AUTHDIR,'/') == NULL)
+    if (strchr(INN_PATH_AUTHDIR,'/') == NULL)
 	snprintf(path, sizeof(path), "%s/%s/%s/%s", innconf->pathbin,
-                 _PATH_AUTHDIR, _PATH_AUTHDIR_GENERIC, av[0]);
+                 INN_PATH_AUTHDIR, INN_PATH_AUTHDIR_GENERIC, av[0]);
     else
-	snprintf(path, sizeof(path), "%s/%s/%s", _PATH_AUTHDIR,
-                 _PATH_AUTHDIR_GENERIC, av[0]);
+	snprintf(path, sizeof(path), "%s/%s/%s", INN_PATH_AUTHDIR,
+                 INN_PATH_AUTHDIR_GENERIC, av[0]);
 
 #if !defined(S_IXUSR) && defined(_S_IXUSR)
 #define S_IXUSR _S_IXUSR

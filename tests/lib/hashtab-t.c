@@ -7,7 +7,7 @@
 
 #include "inn/hashtab.h"
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 struct wordref {

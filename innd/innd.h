@@ -41,10 +41,10 @@
 #include "inn/history.h"
 #include "inn/messages.h"
 #include "inn/timer.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "nntp.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 BEGIN_DECLS
 

@@ -20,7 +20,7 @@
 #include <fcntl.h>
 #include <syslog.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #include <EXTERN.h>
 #include <perl.h>

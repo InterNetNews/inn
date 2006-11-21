@@ -7,7 +7,7 @@
 #include "clibrary.h"
 
 #include "nnrpd.h"
-#include "ov.h"
+#include "inn/ov.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 
@@ -28,23 +28,23 @@ static void cmd_list_schema(LISTINFO *lp);
 static void cmd_list_extensions(LISTINFO *lp);
 
 static LISTINFO		INFOactive = {
-    "active", _PATH_ACTIVE, NULL, true, "active newsgroups",
+    "active", INN_PATH_ACTIVE, NULL, true, "active newsgroups",
     "Newsgroups in form \"group high low flags\""
 };
 static LISTINFO		INFOactivetimes = {
-    "active.times", _PATH_ACTIVETIMES, NULL, false, "creation times",
+    "active.times", INN_PATH_ACTIVETIMES, NULL, false, "creation times",
     "Group creations in form \"name time who\""
 };
 static LISTINFO		INFOdistribs = {
-    "distributions", _PATH_NNRPDIST, NULL, false, "newsgroup distributions",
+    "distributions", INN_PATH_NNRPDIST, NULL, false, "newsgroup distributions",
     "Distributions in form \"area description\""
 };
 static LISTINFO               INFOsubs = {
-    "subscriptions", _PATH_NNRPSUBS, NULL, false, "automatic group subscriptions",
-    "Subscriptions in form \"group\""
+    "subscriptions", INN_PATH_NNRPSUBS, NULL, false,
+    "automatic group subscriptions", "Subscriptions in form \"group\""
 };
 static LISTINFO		INFOdistribpats = {
-    "distrib.pats", _PATH_DISTPATS, NULL, false, "distribution patterns",
+    "distrib.pats", INN_PATH_DISTPATS, NULL, false, "distribution patterns",
     "Default distributions in form \"weight:pattern:value\""
 };
 static LISTINFO		INFOextensions = {
@@ -52,11 +52,11 @@ static LISTINFO		INFOextensions = {
     "Supported NNTP extensions"
 };
 static LISTINFO		INFOgroups = {
-    "newsgroups", _PATH_NEWSGROUPS, NULL, false, "newsgroup descriptions",
+    "newsgroups", INN_PATH_NEWSGROUPS, NULL, false, "newsgroup descriptions",
     "Descriptions in form \"group description\""
 };
 static LISTINFO		INFOmoderators = {
-    "moderators", _PATH_MODERATORS, NULL, false, "moderator patterns",
+    "moderators", INN_PATH_MODERATORS, NULL, false, "moderator patterns",
     "Newsgroup moderators in form \"group-pattern:mail-address-pattern\""
 };
 static LISTINFO		INFOschema = {
@@ -64,7 +64,7 @@ static LISTINFO		INFOschema = {
     "Order of fields in overview database"
 };
 static LISTINFO		INFOmotd = {
-    "motd", _PATH_MOTD, NULL, false, "motd",
+    "motd", INN_PATH_MOTD, NULL, false, "motd",
     "Message of the day text."
 };
 

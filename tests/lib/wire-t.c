@@ -8,7 +8,7 @@
 
 #include "inn/messages.h"
 #include "inn/wire.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 /* Read in a file and return the contents in newly allocated memory.  Fills in

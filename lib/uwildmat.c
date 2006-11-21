@@ -63,7 +63,7 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 #define ABORT -1
 

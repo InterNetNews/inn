@@ -31,11 +31,11 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libinn.h"
-#include "ov.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
+#include "inn/paths.h"
 #include "ovinterface.h"
-#include "storage.h"
+#include "inn/storage.h"
 
 /* Yes. I know that it violates INN coding style. However, this allows
  * me to compile this new version without reconfiguring INN.

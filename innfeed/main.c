@@ -28,8 +28,8 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/version.h"
-#include "libinn.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/storage.h"
 
 #include "article.h"
 #include "buffer.h"

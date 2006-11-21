@@ -18,10 +18,10 @@
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/wire.h"
-#include "libinn.h"
-#include "ov.h"
-#include "paths.h"
-#include "storage.h"
+#include "inn/libinn.h"
+#include "inn/ov.h"
+#include "inn/paths.h"
+#include "inn/storage.h"
 
 static const char usage[] = "\
 Usage: makehistory [-bOIax] [-f file] [-l count] [-s size] [-T tmpdir]\n\
@@ -190,13 +190,13 @@ FlushOverTmpFile(void)
         Fork ? _exit(1) : exit(1);
     }
     close(fd);
-    snprintf(temp, sizeof(temp), "exec %s -T %s -t'%c' -o %s %s", _PATH_SORT,
-             TmpDir, '\t', SortedTmpPath, OverTmpPath);
+    snprintf(temp, sizeof(temp), "exec %s -T %s -t'%c' -o %s %s",
+             INN_PATH_SORT, TmpDir, '\t', SortedTmpPath, OverTmpPath);
     
     i = system(temp) >> 8;
     if (i != 0) {
         syswarn("cannot sort temporary overview file (%s exited %d)",
-                _PATH_SORT, i);
+                INN_PATH_SORT, i);
 	OVclose();
 	Fork ? _exit(1) : exit(1);
     }
@@ -784,11 +784,11 @@ main(int argc, char **argv)
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    HistoryPath = concatpath(innconf->pathdb, _PATH_HISTORY);
-    ActivePath = concatpath(innconf->pathdb, _PATH_ACTIVE);
+    HistoryPath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    ActivePath = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     TmpDir = innconf->pathtmp;
-    SchemaPath = concatpath(innconf->pathetc, _PATH_SCHEMA);
-    RebuiltflagPath = concatpath(innconf->pathrun, _PATH_REBUILDOVERVIEW);
+    SchemaPath = concatpath(innconf->pathetc, INN_PATH_SCHEMA);
+    RebuiltflagPath = concatpath(innconf->pathrun, INN_PATH_REBUILDOVERVIEW);
 
     OverTmpSegSize = DEFAULT_SEGSIZE;
     OverTmpSegCount = 0;

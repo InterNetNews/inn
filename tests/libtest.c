@@ -14,7 +14,7 @@
 #include "clibrary.h"
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 /* A global buffer into which message_log_buffer stores error messages. */

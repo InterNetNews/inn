@@ -32,7 +32,7 @@
 #include <krb5.h>
 
 #include "inn/messages.h"
-#include "libinn.h"
+#include "inn/libinn.h"
 
 /*
  * Default life of the ticket we are getting. Since we are just checking

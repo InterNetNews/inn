@@ -241,7 +241,7 @@ STATUSsummary(void)
     fprintf (F, " (%s)", ModeReason);
   
   /* Global configuration */
-  fprintf (F, "\n\nConfiguration file: %s\n\n", _PATH_CONFIG);
+  fprintf (F, "\n\nConfiguration file: %s\n\n", INN_PATH_CONFIG);
 
   fprintf (F, "Global configuration parameters:\n");
   fprintf (F, "              Largest Article: %ld bytes\n", innconf->maxartsize);

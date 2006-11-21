@@ -5,7 +5,7 @@
 #include "clibrary.h"
 #include <sys/uio.h>
 
-#include "libinn.h"
+#include "inn/libinn.h"
 #include "libtest.h"
 
 /* The data array we'll use to do testing. */

@@ -12,8 +12,8 @@
 #include "inn/nntp.h"
 #include "inn/qio.h"
 #include "inn/vector.h"
-#include "libinn.h"
-#include "paths.h"
+#include "inn/libinn.h"
+#include "inn/paths.h"
 
 static const char usage[] = "\
 Usage: getlist [-A] [-h host] [-p port] [list [pattern [types]]]\n\
@@ -149,7 +149,7 @@ get_authinfo(const char *server, char **username, char **password)
     QIOSTATE *passwords;
     struct cvector *info = NULL;
 
-    path = concatpath(innconf->pathetc, _PATH_NNTPPASS);
+    path = concatpath(innconf->pathetc, INN_PATH_NNTPPASS);
     passwords = QIOopen(path);
     if (passwords == NULL) {
         if (errno != ENOENT)
