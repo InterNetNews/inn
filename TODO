@@ -384,6 +384,11 @@ Needed Bug Fixes
   refactored and shared.  Once this is done, we need to not remember
   rejections for duplicated Xref headers.
 
+* rnews's error handling for non-zero exits by child batch decompressers
+  could use some improvement (namely, there should be some).  Otherwise,
+  when gzip fails for some reason, we read zero bytes and then throw
+  away the batch without realizing we have an error.
+
 
 Requested New Features
 
