@@ -210,6 +210,7 @@ POD2TEXT	= pod2text -s -l
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
+datarootdir	= @datarootdir@
 bindir		= @bindir@
 docdir		= @docdir@
 includedir	= @includedir@
