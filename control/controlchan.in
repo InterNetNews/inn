@@ -311,7 +311,7 @@ sub logger {
     if ($logfile eq 'mail') {
         my $mail = sendmail($message);
         print $mail map { s/^~/~~/; "$_\n" } @$headers;
-        print $mail "$_\n" . join ('', map { s/^~/~~/; "$_\n" } @$body)
+        print $mail "$_" . join ('', map { s/^~/~~/; "$_\n" } @$body)
             if $body;
         close $mail or logdie("Cannot send mail: $!");
         return;
