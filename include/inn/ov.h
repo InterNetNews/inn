@@ -1,5 +1,5 @@
-#ifndef _OV_H_
-#define _OV_H_
+#ifndef INN_OV_H
+#define INN_OV_H 1
 
 #include "storage.h"
 #include "inn/history.h"
@@ -79,4 +79,4 @@ enum {
 }
 #endif /* __cplusplus */
 
-#endif /* _OV_H_ */
+#endif /* !INN_OV_H */

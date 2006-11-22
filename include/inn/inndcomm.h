@@ -4,6 +4,9 @@
 **  running.
 */
 
+#ifndef INN_INNDCOMM_H
+#define INN_INNDCOMM_H 1
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -89,3 +92,4 @@ extern const char	*ICCfailure;
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#endif /* !INN_INNDCOMM_H */

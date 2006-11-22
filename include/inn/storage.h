@@ -3,8 +3,8 @@
 **  Here be declarations related to the storage subsystem.
 */
 
-#ifndef __STORAGE_H__
-#define __STORAGE_H__
+#ifndef INN_STORAGE_H
+#define INN_STORAGE_H 1
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -87,4 +87,4 @@ void        SMshutdown(void);
 
 END_DECLS
     
-#endif
+#endif /* !INN_STORAGE_H */
