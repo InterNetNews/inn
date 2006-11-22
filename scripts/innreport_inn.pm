@@ -1,11 +1,12 @@
-##########################################################
+##########################################################################
 # INN module for innreport (3.*).
 #
 # Sample file tested with INN 2.3, 2.2, 1.7.2 and 1.5.1
 #
 # (c) 1997-1999 by Fabien Tassin <fta@sofaraway.org>
-# version 3.0.2
-##########################################################
+# version 3.0.5
+#
+##########################################################################
 
 # TODO: add the map file.
 
@@ -93,6 +94,16 @@ foreach (values %nnrpd_timer_names) {
   $nnrpd_time_num{$_} = 0;    # ...
 }
 $nnrpd_time_times = 0;        # ...
+
+my %notice_state;
+my %notice_state_ever_closed;
+my %innd_cp_accepted;
+my %innd_cp_refused;
+my %innd_cp_rejected;
+my %innd_cp_seconds;
+my %innd_cp_stored_size;
+my %innd_cp_duplicated_size;
+my %innd_cp_rejected_size;
 
 # collect: Used to collect the data.
 sub collect {
@@ -333,30 +344,73 @@ sub collect {
       return 1;
     }
     # connected
-    if ($left =~ /^(\S+) connected \d+/o) {
-      my $server = $1;
+    #
+    # Record <server>:<channel> instead of just <server> as otherwise we may
+    # miss some persistent connection newsfeeds that in any given innreport
+    # reporting period may not record any connect entries.  We'll accumulate
+    # these into totals at the end of processing.
+    if ($left =~ /^(\S+) connected (\d+)/o) {
+      my $server = "$1:$2";
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_connect{$server}++;
       return 1;
     }
-    # closed (with times)
-    if ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+) rejected size (\d+)$/o) {
-      my ($server, $seconds, $accepted, $refused, $rejected, $duplicate, $accptsize, $dupsize, $rjctsize) =
-	($1, $2, $3, $4, $5, $6, $7, $8, $9);
+
+    # closed/checkpoint (with times)
+    #
+    # For checkpoints, store the current checkpoint numbers; if we still have
+    # checkpoint numbers left over at the end of the run, we'll add them to
+    # our totals.  On a closed, clear any checkpoint numbers and add the close
+    # numbers to the totals.  Basically, we want to ignore checkpoints unless
+    # we don't get a close before the end of the log.
+    if ($left =~ /(\S+:\d+) (checkpoint|closed) seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+) rejected size (\d+)$/o) {
+      my ($server, $status, $seconds, $accepted, $refused, $rejected, $duplicate, $accptsize, $dupsize, $rjctsize) =
+	($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       $server = lc $server unless $CASE_SENSITIVE;
-      $innd_seconds{$server} += $seconds;
-      $innd_accepted{$server} += $accepted;
-      $innd_refused{$server} += $refused;
-      $innd_rejected{$server} += $rejected;
-      $innd_stored_size{$server} += $accptsize;
-      $innd_duplicated_size{$server} += $dupsize;
-      $innd_rejected_size{$server} += $rjctsize;
+      $notice_state{$server} = $status;
+
+      if ($status eq 'checkpoint') {
+        $innd_cp_accepted{$server}        = $accepted;
+        $innd_cp_refused{$server}         = $refused;
+        $innd_cp_rejected{$server}        = $rejected;
+        $innd_cp_seconds{$server}         = $seconds;
+        $innd_cp_stored_size{$server}     = $accptsize;
+        $innd_cp_duplicated_size{$server} = $dupsize;
+        $innd_cp_rejected_size{$server}   = $rjctsize;
+      elsif ($status eq "closed") {
+        $innd_cp_accepted{$server}        = 0;
+        $innd_cp_refused{$server}         = 0;
+        $innd_cp_rejected{$server}        = 0;
+        $innd_cp_seconds{$server}         = 0;
+        $innd_cp_stored_size{$server}     = 0;
+        $innd_cp_duplicated_size{$server} = 0;
+        $innd_cp_rejected_size{$server}   = 0;
+
+        $notice_state_ever_closed{$server} = "YES";
+
+        $innd_seconds{$server} += $seconds;
+        $innd_accepted{$server} += $accepted;
+        $innd_refused{$server} += $refused;
+        $innd_rejected{$server} += $rejected;
+        $innd_stored_size{$server} += $accptsize;
+        $innd_duplicated_size{$server} += $dupsize;
+        $innd_rejected_size{$server} += $rjctsize;
+      }
       return 1;
-    } elsif ($left =~ /(\S+):\d+ closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/o) {
-      # closed (with times)
+    # closed (with times)
+    } elsif ($left =~ /(\S+:\d+) closed seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/o) {
       my ($server, $seconds, $accepted, $refused, $rejected) =
 	($1, $2, $3, $4, $5);
       $server = lc $server unless $CASE_SENSITIVE;
+
+      $innd_cp_accepted{$server}        = 0;
+      $innd_cp_refused{$server}         = 0;
+      $innd_cp_rejected{$server}        = 0;
+      $innd_cp_seconds{$server}         = 0;
+      $innd_cp_stored_size{$server}     = 0;
+      $innd_cp_duplicated_size{$server} = 0;
+      $innd_cp_rejected_size{$server}   = 0;
+
       $innd_seconds{$server} += $seconds;
       $innd_accepted{$server} += $accepted;
       $innd_refused{$server} += $refused;
@@ -365,20 +419,6 @@ sub collect {
     }
     # closed (without times (?))
     return 1 if $left =~ m/\S+ closed$/o;
-    # checkpoint
-    return 1 if $left =~ m/^\S+:\d+ checkpoint /o;
-    # if ($left =~ /(\S+):\d+ checkpoint seconds (\d+) accepted (\d+)
-    #     refused (\d+) rejected (\d+)$/) {
-    #   # Skipped...
-    #   my ($server, $seconds, $accepted, $refused, $rejected) =
-    #      ($1, $2, $3, $4, $5);
-    #   $innd_seconds{$server} += $seconds;
-    #   $innd_accepted{$server} += $accepted;
-    #   $innd_refused{$server} += $refused;
-    #   $innd_rejected{$server} += $rejected;
-    #   return 1;
-    # }
-
     # flush
     if ($left =~ /(\S+) flush$/o) {
       $innd_control{"flush"}++;
@@ -1792,7 +1832,31 @@ sub adjust {
 
   # Fill some hashes
   {
-    my $key;
+    my ($key, $hostname, $channel);
+
+    # If there are any checkpoint counts left over at the end of the file,
+    # transfer them to the totals for that server.
+    #
+    # Also, since the checkpoint counts include entries for all server
+    # connections, check to see if any checkpoint server entries are not also
+    # in %innd_connect.  Add any missing servers (persistant servers with no
+    # connected log lines) to %innd_connect so that incoming totals will be
+    # properly computed.
+    foreach $server (keys (%innd_cp_accepted)) {
+      if (! defined($innd_connect{$server})) {
+        $innd_connect{$server} = 0;
+      }
+      if ($notice_state{$server} eq "checkpoint") {
+        $innd_accepted{$server}        += $innd_cp_accepted{$server};
+        $innd_refused{$server}         += $innd_cp_refused{$server};
+        $innd_rejected{$server}        += $innd_cp_rejected{$server};
+        $innd_seconds{$server}         += $innd_cp_seconds{$server};
+        $innd_stored_size{$server}     += $innd_cp_stored_size{$server};
+        $innd_duplicated_size{$server} += $innd_cp_duplicated_size{$server};
+        $innd_rejected_size{$server}   += $innd_cp_rejected_size{$server};
+      }
+    }
+
     foreach $key (keys (%innd_connect)) {
       $innd_offered{$key} = ($innd_accepted{$key} || 0)
 	+ ($innd_refused{$key} || 0)
@@ -1801,6 +1865,22 @@ sub adjust {
 	+ ($innd_duplicated_size{$key} || 0) + ($innd_rejected_size{$key} || 0);
     }
 
+    # Sum all incoming traffic for each full server.
+    foreach $key (keys (%innd_connect)) {
+      ($hostname, $channel) = split(':', $key);
+      if (defined($innd_seconds_sum{$hostname})) {
+        $innd_seconds_sum{$hostname} += $innd_seconds{$key};
+        $innd_connect_sum{$hostname} += $innd_connect{$key};
+        $innd_offered_sum{$hostname} += $innd_offered{$key};
+        $innd_accepted_sum{$hostname} += $innd_accepted{$key};
+        $innd_refused_sum{$hostname} += $innd_refused{$key};
+        $innd_rejected_sum{$hostname} += $innd_rejected{$key};
+        $innd_stored_size_sum{$hostname} += $innd_stored_size{$key};
+        $innd_duplicated_size_sum{$hostname} += $innd_duplicated_size{$key};
+        $innd_offered_size_sum{$hostname} += $innd_offered_size{$key};
+        $innd_rejected_size_sum{$hostname} += $innd_rejected_size_sum{$key};
+      }
+    }
 
     # adjust min/max of innd timer stats.
     if (%innd_time_min) {

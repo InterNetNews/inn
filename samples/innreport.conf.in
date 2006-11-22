@@ -1,12 +1,12 @@
-##########################################################
+######################################################################
 # Configuration file for innreport (3.*).
 #
 # Sample file for INN.
 # Tested with INN 2.3, 2.1, 1.7.2 and 1.5.1.
 #
 # (c) 1997, 1998, 1999 by Fabien Tassin <fta@sofaraway.org>
-# version 3.0.2
-##########################################################
+# version 3.0.5
+######################################################################
 
 # Default parameters
 section default {
@@ -508,8 +508,8 @@ section controlchan {
 
 section innd_connect {
         title   "Incoming Feeds (INN):";
-	data    "%innd_seconds";
-	sort    "$innd_accepted{$b} <=> $innd_accepted{$a}";
+	data    "%innd_seconds_sum";
+	sort    "$innd_accepted_sum{$b} <=> $innd_accepted_sum{$a}";
 	numbering true;
         column {
                 name          "Server";
@@ -523,79 +523,81 @@ section innd_connect {
                 name          "Connects";
 		format_name   "%5s";
 		format        "%5d";
-		value         "$innd_connect{$key}";
-		total         "total(%innd_connect)";
+		value         "$innd_connect_sum{$key}";
+		total         "total(%innd_connect_sum)";
         };
         column {
                 name          "Offered";
 		format_name   "%8s";
 		format        "%8d";
-		value         "$innd_offered{$key}";
-		total         "total(%innd_offered)";
+		value         "$innd_offered_sum{$key}";
+		total         "total(%innd_offered_sum)";
         };
         column {
                 name          "Taken";
 		format_name   "%7s";
 		format        "%7d";
-		value         "$innd_accepted{$key}";
-		total         "total(%innd_accepted)";
+		value         "$innd_accepted_sum{$key}";
+		total         "total(%innd_accepted_sum)";
         };
         column {
                 name          "Refused";
 		format_name   "%7s";
 		format        "%7d";
-		value         "$innd_refused{$key}";
-		total         "total(%innd_refused)";
+		value         "$innd_refused_sum{$key}";
+		total         "total(%innd_refused_sum)";
         };
         column {
                 name          "Reject";
 		format_name   "%7s";
 		format        "%7d";
-		value         "$innd_rejected{$key}";
-		total         "total(%innd_rejected)";
+		value         "$innd_rejected_sum{$key}";
+		total         "total(%innd_rejected_sum)";
         };
         column {
                 name          "%Accpt";
 		format_name   "%6s";
 		format        "%4d%%";
-		value         "$innd_offered{$key} == 0 ? 0 :
-                             $innd_accepted{$key} / $innd_offered{$key} * 100";
-		total         "total(%innd_offered) == 0 ? 0 :
-                           total(%innd_accepted) / total(%innd_offered) * 100";
+		value         "$innd_offered_sum{$key} == 0 ? 0 :
+                               ($innd_accepted_sum{$key} /
+                                $innd_offered_sum{$key} * 100)";
+		total         "total(%innd_offered_sum) == 0 ? 0 :
+                               (total(%innd_accepted_sum) /
+                                total(%innd_offered_sum)) * 100";
         };
         column {
                 name          "Elapsed";
 		format_name   "%8s";
 		format        "%9s";
-		value         "time($innd_seconds{$key})";
-		total         "time(total(%innd_seconds))";
+		value         "time($innd_seconds_sum{$key})";
+		total         "time(total(%innd_seconds_sum))";
         };
 	graph {
 	        title         "Articles received by server";
 		type          histo3d;
-		sort	      "%innd_accepted";
+		sort	      "%innd_accepted_sum";
 		data {
 		          name    "Articles accepted";
 			  color   "#0000FF";
-			  value   "%innd_accepted";
+			  value   "%innd_accepted_sum";
                 };
 		data {
 		          name    "Articles refused";
 			  color   "#FFAF00";
-			  value   "%innd_refused";
+			  value   "%innd_refused_sum";
                 };
 		data {
 		          name    "Articles rejected";
 			  color   "#FF0000";
-			  value   "%innd_rejected";
+			  value   "%innd_rejected_sum";
                 };
 	};
 };
 
 section innd_incoming_vol {
         title   "Incoming Volume (INN):";
-	data    "%innd_seconds";
-	sort    "$innd_stored_size{$b} <=> $innd_stored_size{$a}";
+	data    "%innd_seconds_sum";
+	sort    "$innd_stored_size_sum{$b} <=> $innd_stored_size_sum{$a}";
 	numbering true;
         column {
                 name          "Server";
@@ -607,78 +609,80 @@ section innd_incoming_vol {
         column {
                 name          "AcceptVol";
 		format        "%9s";
-		value         "bytes($innd_stored_size{$key})";
-		total         "bytes(total(%innd_stored_size))";
+		value         "bytes($innd_stored_size_sum{$key})";
+		total         "bytes(total(%innd_stored_size_sum))";
         };
         column {
                 name          "DupVol";
 		format        "%9s";
-		value         "bytes($innd_duplicated_size{$key})";
-		total         "bytes(total(%innd_duplicated_size))";
+		value         "bytes($innd_duplicated_size_sum{$key})";
+		total         "bytes(total(%innd_duplicated_size_sum))";
         };
         column {
                 name          "RejVol";
 		format        "%9s";
-		value         "bytes($innd_rejected_size{$key})";
-		total         "bytes(total(%innd_rejected_size))";
+		value         "bytes($innd_rejected_size_sum{$key})";
+		total         "bytes(total(%innd_rejected_size_sum))";
         };
 	column {
 		name	      "TotalVol";
 		format	      "%9s";
-		value	      "bytes($innd_stored_size{$key} +
-	                               $innd_duplicated_size{$key} +
-	                               $innd_rejected_size{$key})";
-		total	      "bytes(total(%innd_stored_size) +
-                                       total(%innd_duplicated_size) +
-                                       total(%innd_rejected_size))";
+		value	      "bytes($innd_stored_size_sum{$key} +
+	                               $innd_duplicated_size_sum{$key} +
+	                               $innd_rejected_size_sum{$key})";
+		total	      "bytes(total(%innd_stored_size_sum) +
+                                       total(%innd_duplicated_size_sum) +
+                                       total(%innd_rejected_size_sum))";
 	};
         column {
                 name          "%Acc";
 		format_name   "%4s";
 		format        "%3d%%";
-		value         "$innd_offered_size{$key} == 0 ? 0 :
-		     $innd_stored_size{$key} / $innd_offered_size{$key} * 100";
-		total         "total(%innd_offered_size) == 0 ? 0 :
-		   total(%innd_stored_size) / total(%innd_offered_size) * 100";
+		value         "$innd_offered_size_sum{$key} == 0 ? 0 :
+		                 $innd_stored_size_sum{$key}
+                                   / $innd_offered_size_sum{$key} * 100";
+		total         "total(%innd_offered_size_sum) == 0 ? 0 :
+                               (total(%innd_stored_size_sum) /
+                                total(%innd_offered_size_sum)) * 100";
         };
 	column {
 		name		"Vol/Art";
 		format		"%9s";
-		value		"bytes(($innd_stored_size{$key} +
-                                        $innd_duplicated_size{$key} +
-                                        $innd_rejected_size{$key}) /
-                                       ($innd_accepted{$key} +
-                                        $innd_rejected{$key}))";
-		total		"bytes((total(%innd_stored_size) +
-                                        total(%innd_duplicated_size) +
-                                        total(%innd_rejected_size)) /
-                                     (total(%innd_accepted) +
-	                              total(%innd_rejected)))";
+		value		"bytes(($innd_stored_size_sum{$key} +
+                                        $innd_duplicated_size_sum{$key} +
+                                        $innd_rejected_size_sum{$key}) /
+                                       ($innd_accepted_sum{$key} +
+                                        $innd_rejected_sum{$key}))";
+		total		"bytes((total(%innd_stored_size_sum) +
+                                        total(%innd_duplicated_size_sum) +
+                                        total(%innd_rejected_size_sum)) /
+                                     (total(%innd_accepted_sum) +
+	                              total(%innd_rejected_sum)))";
 	};
         column {
                 name          "Elapsed";
 		format        "%9s";
-		value         "time($innd_seconds{$key})";
-		total         "time(total(%innd_seconds))";
+		value         "time($innd_seconds_sum{$key})";
+		total         "time(total(%innd_seconds_sum))";
         };
 	graph {
 	        title         "Incoming Volume received by server";
 		type          histo3d;
-		sort	      "%innd_stored_size";
+		sort	      "%innd_stored_size_sum";
 		data {
 		          name    "Accepted Volume";
 			  color   "#0000FF";
-			  value   "%innd_stored_size";
+			  value   "%innd_stored_size_sum";
                 };
 		data {
 		          name    "Duplicated Volume";
 			  color   "#FFAF00";
-			  value   "%innd_duplicated_size";
+			  value   "%innd_duplicated_size_sum";
                 };
 		data {
 		          name    "Rejected Volume";
 			  color   "#FF0000";
-			  value   "%innd_rejected_size";
+			  value   "%innd_rejected_size_sum";
                 };
 	};
 };

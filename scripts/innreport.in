@@ -6,7 +6,7 @@
 #   innreport: Perl script to summarize news log files
 #              (with optional HTML output and graphs).
 #
-# version: 3.0.2
+# version: 3.0.5
 #
 # Copyright (c) 1996-1999, Fabien Tassin (fta@sofaraway.org).
 #
@@ -143,7 +143,7 @@ my $NOT_DAILY = "DONT";
 ## THERE'S NOTHING TO CHANGE AFTER THIS LINE ##
 ###############################################
 
-my $version = "3.0.2";
+my $version = "3.0.5";
 my %output; # content of the configuration file.
 my $DEBUG = 0; # set to 1 to verify the structure/content of the conf file.
 my $start_time = time;
