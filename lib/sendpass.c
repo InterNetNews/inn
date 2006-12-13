@@ -75,7 +75,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 	    if (fflush(ToServer) == EOF || ferror(ToServer))
 		break;
 	    if (fgets(input, sizeof input, FromServer) == NULL
-	     || atoi(input) != NNTP_AUTH_NEXT_VAL)
+	     || atoi(input) != NNTP_CONT_AUTHINFO)
 		break;
 	}
 
@@ -85,7 +85,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 	    if (fflush(ToServer) == EOF || ferror(ToServer))
 		break;
 	    if (fgets(input, sizeof input, FromServer) == NULL
-	     || atoi(input) != NNTP_AUTH_OK_VAL)
+	     || atoi(input) != NNTP_OK_AUTHINFO)
 		break;
 	}
 

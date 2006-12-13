@@ -134,7 +134,7 @@ QuitServer(int x)
 	*p = '\0';
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
-    if (atoi(buff) != NNTP_GOODBYE_ACK_VAL)
+    if (atoi(buff) != NNTP_OK_QUIT)
         die("server did not reply to quit properly: %s", buff);
     fclose(FromServer);
     fclose(ToServer);
@@ -295,7 +295,7 @@ CheckCancel(char *msgid, bool JustReturn)
     fprintf(ToServer, "head %s\r\n", msgid);
     SafeFlush(ToServer);
     if (fgets(buff, sizeof buff, FromServer) == NULL
-     || atoi(buff) != NNTP_HEAD_FOLLOWS_VAL) {
+     || atoi(buff) != NNTP_OK_HEAD) {
 	if (JustReturn)
 	    return;
         die("server has no such article");
@@ -984,10 +984,10 @@ main(int ac, char *av[])
 	SafeFlush(ToServer);
 	if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
             sysdie("cannot tell server we're reading");
-	if ((j = atoi(buff)) != NNTP_BAD_COMMAND_VAL)
+	if ((j = atoi(buff)) != NNTP_ERR_COMMAND)
 	    i = j;
 
-	if (i != NNTP_POSTOK_VAL)
+	if (i != NNTP_OK_BANNER_POST)
             die("you do not have permission to post");
 	deadfile = NULL;
     }
@@ -1050,13 +1050,13 @@ main(int ac, char *av[])
 
     /* Article is prepared, offer it to the server. */
     i = OfferArticle(buff, false);
-    if (i == NNTP_AUTH_NEEDED_VAL) {
+    if (i == NNTP_FAIL_AUTH_NEEDED) {
 	/* Posting not allowed, try to authorize. */
 	if (NNTPsendpassword((char *)NULL, FromServer, ToServer) < 0)
             sysdie("authorization error");
 	i = OfferArticle(buff, true);
     }
-    if (i != NNTP_START_POST_VAL)
+    if (i != NNTP_CONT_POST)
         die("server doesn't want the article: %s", buff);
 
     /* Write the headers, a blank line, then the article. */
@@ -1076,7 +1076,7 @@ main(int ac, char *av[])
 	*p = '\0';
     if ((p = strchr(buff, '\n')) != NULL)
 	*p = '\0';
-    if (atoi(buff) != NNTP_POSTEDOK_VAL)
+    if (atoi(buff) != NNTP_OK_POST)
         die("cannot send article to server: %s", buff);
 
     /* Close up. */

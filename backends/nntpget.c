@@ -365,7 +365,7 @@ main(int ac, char *av[])
                 syswarn("cannot offer %s", mesgid);
 		break;
 	    }
-	    if (atoi(buff) != NNTP_SENDIT_VAL)
+	    if (atoi(buff) != NNTP_CONT_IHAVE)
 		continue;
 	}
 
@@ -377,7 +377,7 @@ main(int ac, char *av[])
 	    printf("%s\n", mesgid);
 	    break;
 	}
-	if (atoi(buff) != NNTP_ARTICLE_FOLLOWS_VAL) {
+	if (atoi(buff) != NNTP_OK_ARTICLE) {
           if (Offer) {
               SITEwrite(Local, ".", 1);
               if (!SITEread(Local, buff)) {
@@ -424,9 +424,9 @@ main(int ac, char *av[])
 		break;
 	    }
 	    i = atoi(buff);
-	    if (i == NNTP_TOOKIT_VAL)
+	    if (i == NNTP_OK_IHAVE)
 		continue;
-	    if (i == NNTP_RESENDIT_VAL) {
+	    if (i == NNTP_FAIL_IHAVE_DEFER) {
 		printf("%s\n", mesgid);
 		break;
 	    }

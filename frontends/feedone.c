@@ -151,11 +151,11 @@ main(ac, av)
     /* Does the server want this article? */
     if (PostMode) {
 	fprintf(ToServer, "post\r\n");
-	i = NNTP_START_POST_VAL;
+	i = NNTP_CONT_POST;
     }
     else {
 	fprintf(ToServer, "ihave %s\r\n", mesgid);
-	i = NNTP_SENDIT_VAL;
+	i = NNTP_CONT_IHAVE;
     }
     SafeFlush(ToServer);
     GetFromServer(buff, sizeof buff, "cannot offer article to server");
@@ -184,7 +184,7 @@ main(ac, av)
     /* How did the server respond? */
     GetFromServer(buff, sizeof buff,
 	"no reply from server after sending the article");
-    i = PostMode ? NNTP_POSTEDOK_VAL : NNTP_TOOKIT_VAL;
+    i = PostMode ? NNTP_OK_POST : NNTP_OK_IHAVE;
     if (atoi(buff) != i)
         sysdie("cannot send article to the server: %s", buff);
 

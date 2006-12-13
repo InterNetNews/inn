@@ -533,11 +533,11 @@ RCreader(CHANNEL *cp)
 	    i = (i + 1) & (REMOTETABLESIZE - 1);
 	}
 	if (remotecount == RemoteTotal) {
-	    reject_val = NNTP_GOODBYE_VAL;
+	    reject_val = NNTP_FAIL_TERMINATING;
 	    reject_message = "400 Server overloaded, try later";
 	}
 	else if (found >= RemoteLimit && !RCnolimit(&tempchan)) {
-	    reject_val = NNTP_GOODBYE_VAL;
+	    reject_val = NNTP_FAIL_TERMINATING;
 	    reject_message = "400 Connection rejected, you're making too"
                 " many connects per minute";
 	}
@@ -620,7 +620,7 @@ RCreader(CHANNEL *cp)
 	    syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
 	return;
     } else {
-	reject_val = NNTP_ACCESS_VAL;
+	reject_val = NNTP_ERR_ACCESS;
 	reject_message = NNTP_ACCESS;
         new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
             RCrejectwritedone);

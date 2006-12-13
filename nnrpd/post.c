@@ -1107,7 +1107,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 
     /* Offer article to server. */
     i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
-    if (i == NNTP_AUTH_NEEDED_VAL) {
+    if (i == NNTP_FAIL_AUTH_NEEDED) {
         /* Send authorization. */
         if (NNTPsendpassword(PERMaccessconf->nnrpdposthost, FromServer, ToServer) < 0) {
             snprintf(Error, sizeof(Error), "Can't authorize with %s",
@@ -1116,12 +1116,12 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
         }
         i = OfferArticle(buff, (int)sizeof buff, FromServer, ToServer);
     }
-    if (i != NNTP_SENDIT_VAL) {
+    if (i != NNTP_CONT_IHAVE) {
         strlcpy(Error, buff, sizeof(Error));
         SendQuit(FromServer, ToServer);
-	if (i != NNTP_HAVEIT_VAL)
+	if (i != NNTP_FAIL_IHAVE_REFUSE)
 	    return Spoolit(article, Error);
-	if (i == NNTP_REJECTIT_VAL || i == NNTP_RESENDIT_VAL) {
+	if (i == NNTP_FAIL_IHAVE_REJECT || i == NNTP_FAIL_IHAVE_DEFER) {
 	    *permanent = false;
 	}
         return Error;
@@ -1179,13 +1179,13 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     }
 
     /* Did the server want the article? */
-    if ((i = atoi(buff)) != NNTP_TOOKIT_VAL) {
+    if ((i = atoi(buff)) != NNTP_OK_IHAVE) {
 	strlcpy(Error, buff, sizeof(Error));
 	SendQuit(FromServer, ToServer);
 	syslog(L_TRACE, "%s server rejects %s from %s", Client.host, HDR(HDR__MESSAGEID), HDR(HDR__PATH));
-	if (i != NNTP_REJECTIT_VAL && i != NNTP_HAVEIT_VAL)
+	if (i != NNTP_FAIL_IHAVE_REJECT && i != NNTP_FAIL_IHAVE_REFUSE)
 	    return Spoolit(article, Error);
-	if (i == NNTP_REJECTIT_VAL || i == NNTP_RESENDIT_VAL) {
+	if (i == NNTP_FAIL_IHAVE_REJECT || i == NNTP_FAIL_IHAVE_DEFER) {
 	    *permanent = false;
 	}
 	return Error;

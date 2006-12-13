@@ -58,7 +58,7 @@ server_init(char *host, int port)
     put_server("mode reader");
     if (get_server(line2, (int)sizeof line2) < 0)
 	return -1;
-    if (atoi(line2) != NNTP_BAD_COMMAND_VAL)
+    if (atoi(line2) != NNTP_ERR_COMMAND)
 	strlcpy(ser_line, line2, sizeof(ser_line));
 
     /* Connected; return server's reply code. */
@@ -83,7 +83,7 @@ handle_server_response(int response, char *host)
     default:
 	printf("Unknown response code %d from %s.\n", response, host);
 	return -1;
-     case NNTP_GOODBYE_VAL:
+     case NNTP_FAIL_TERMINATING:
 	if (atoi(ser_line) == response) {
 	    p = &ser_line[strlen(ser_line) - 1];
 	    if (*p == '\n' && *--p == '\r')
@@ -96,13 +96,13 @@ handle_server_response(int response, char *host)
 	}
 	printf("News server %s unavailable, try later.\n", host);
 	return -1;
-    case NNTP_ACCESS_VAL:
+    case NNTP_ERR_ACCESS:
 	printf(CANTUSE, host);
 	return -1;
-    case NNTP_NOPOSTOK_VAL:
+    case NNTP_OK_BANNER_NOPOST:
 	printf("%s.\n", CANTPOST);
 	/* FALLTHROUGH */
-    case NNTP_POSTOK_VAL:
+    case NNTP_OK_BANNER_POST:
 	break;
     }
     return 0;

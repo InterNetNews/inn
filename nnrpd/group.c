@@ -34,16 +34,16 @@ CMDgroup(int ac, char *av[])
 
     if (!hookpresent && !PERMcanread) {
         if (PERMspecified)
-	    Reply("%d Permission denied\r\n", NNTP_ACCESS_VAL);
+	    Reply("%d Permission denied\r\n", NNTP_ERR_ACCESS);
         else
-            Reply("%d Authentication required\r\n", NNTP_AUTH_NEEDED_VAL);
+            Reply("%d Authentication required\r\n", NNTP_FAIL_AUTH_NEEDED);
 	return;
     }
 
     /* Parse arguments. */
     if (ac == 1) {
 	if (GRPcur == NULL) {
-	    Printf("%d No group specified\r\n", NNTP_XGTITLE_BAD);
+	    Printf("%d No group specified\r\n", NNTP_FAIL_XGTITLE);
 	    return;
 	} else {
 	    group = xstrdup(GRPcur);
@@ -71,7 +71,7 @@ CMDgroup(int ac, char *av[])
 	} else {
 	    if (reply != NULL) {
 	        syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, Client.host, group, reply);
-		Reply("%d %s\r\n", NNTP_ACCESS_VAL, reply);
+		Reply("%d %s\r\n", NNTP_ERR_ACCESS, reply);
 		free(group);
                 free(reply);
 		return;
@@ -85,12 +85,12 @@ CMDgroup(int ac, char *av[])
             grplist[0] = group;
             grplist[1] = NULL;
             if (!PERMmatch(PERMreadlist, grplist)) {
-                Reply("%d Permission denied\r\n", NNTP_ACCESS_VAL);
+                Reply("%d Permission denied\r\n", NNTP_ERR_ACCESS);
                 free(group);
                 return;
             }
         } else {
-            Reply("%d Authentication required\r\n", NNTP_AUTH_NEEDED_VAL);
+            Reply("%d Authentication required\r\n", NNTP_FAIL_AUTH_NEEDED);
             free(group);
             return;
         }
@@ -103,7 +103,7 @@ CMDgroup(int ac, char *av[])
     /* Doing a "group" command? */
     if (strcasecmp(av[0], "group") == 0) {
 	if (count == 0)
-	    Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
+	    Reply("%d 0 0 0 %s\r\n", NNTP_OK_GROUP, group);
 	else {
 	    /* if we're an NFS reader, check the last nfsreaderdelay
 	     * articles in the group to see if they arrived in the
@@ -121,7 +121,7 @@ CMDgroup(int ac, char *av[])
 		    low = ARThigh - innconf->nfsreaderdelay;
 		handle = OVopensearch(group, low, ARThigh);
 		if (!handle) {
-		    Reply("%d group disappeared\r\n", NNTP_TEMPERR_VAL);
+		    Reply("%d group disappeared\r\n", NNTP_ERR_UNAVAILABLE);
 		    free(group);
 		    return;
 		}
@@ -135,7 +135,7 @@ CMDgroup(int ac, char *av[])
 		}
 		OVclosesearch(handle);
 	    }
-	    Reply("%d %d %lu %lu %s\r\n", NNTP_GROUPOK_VAL, count, ARTlow,
+	    Reply("%d %d %lu %lu %s\r\n", NNTP_OK_GROUP, count, ARTlow,
                   ARThigh, group);
 	}
 	GRPcount++;
@@ -154,10 +154,10 @@ CMDgroup(int ac, char *av[])
            returns the same data as GROUP does and since we have it all
            available it shouldn't hurt to return the same thing. */
         if (count == 0) {
-            Reply("%d 0 0 0 %s\r\n", NNTP_GROUPOK_VAL, group);
+            Reply("%d 0 0 0 %s\r\n", NNTP_OK_GROUP, group);
             Printf(".\r\n");
         } else if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
-            Reply("%d %d %lu %lu %s\r\n", NNTP_GROUPOK_VAL, count, ARTlow,
+            Reply("%d %d %lu %lu %s\r\n", NNTP_OK_GROUP, count, ARTlow,
                   ARThigh, group);
 	    while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
 		if (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
@@ -218,7 +218,7 @@ CMDxgtitle(int ac, char *av[])
     /* Parse the arguments. */
     if (ac == 1) {
 	if (GRPcount == 0) {
-	    Printf("%d No group specified\r\n", NNTP_XGTITLE_BAD);
+	    Printf("%d No group specified\r\n", NNTP_FAIL_XGTITLE);
 	    return;
 	}
 	p = GRPcur;
@@ -227,7 +227,7 @@ CMDxgtitle(int ac, char *av[])
 	p = av[1];
 
     if (!PERMspecified) {
-	Printf("%d list follows\r\n", NNTP_XGTITLE_OK);
+	Printf("%d list follows\r\n", NNTP_OK_XGTITLE);
 	Printf(".\r\n");
 	return;
     }
@@ -235,10 +235,10 @@ CMDxgtitle(int ac, char *av[])
     /* Open the file, get ready to scan. */
     if ((qp = QIOopen(NEWSGROUPS)) == NULL) {
 	syslog(L_ERROR, "%s cant open %s %m", Client.host, NEWSGROUPS);
-	Printf("%d Can't open %s\r\n", NNTP_XGTITLE_BAD, NEWSGROUPS);
+	Printf("%d Can't open %s\r\n", NNTP_FAIL_XGTITLE, NEWSGROUPS);
 	return;
     }
-    Printf("%d list follows\r\n", NNTP_XGTITLE_OK);
+    Printf("%d list follows\r\n", NNTP_OK_XGTITLE);
 
     /* Print all lines with matching newsgroup name. */
     while ((line = QIOread(qp)) != NULL) {

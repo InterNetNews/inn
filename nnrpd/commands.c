@@ -47,7 +47,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     PERMaccessconf->allowapproved = false;
 
     if (!*av) {
-	Reply("%d no authenticator\r\n", NNTP_SYNTAX_VAL);
+	Reply("%d no authenticator\r\n", NNTP_ERR_SYNTAX);
 	return(-1);
     }
 
@@ -56,7 +56,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
        portability */
     for (p = av[0]; *p; p++)
 	if (strncmp(p, "../", 3) == 0) {
-	    Reply("%d ../ in authenticator %s\r\n", NNTP_SYNTAX_VAL, av[0]);
+	    Reply("%d ../ in authenticator %s\r\n", NNTP_ERR_SYNTAX, av[0]);
 	    return(-1);
 	}
 
@@ -76,7 +76,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 #endif  /* !defined(S_IXUSR) && defined(S_IEXEC) */
 
     if (stat(path, &stb) || !(stb.st_mode&S_IXUSR)) {
-	Reply("%d No such authenticator %s\r\n", NNTP_TEMPERR_VAL, av[0]);
+	Reply("%d No such authenticator %s\r\n", NNTP_ERR_UNAVAILABLE, av[0]);
 	return -1;
     }
 	
@@ -89,7 +89,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 
     for (i = 0; (pid = fork()) < 0; i++) {
 	if (i == innconf->maxforks) {
-	    Reply("%d Can't fork %s\r\n", NNTP_TEMPERR_VAL,
+	    Reply("%d Can't fork %s\r\n", NNTP_ERR_UNAVAILABLE,
 		strerror(errno));
 	    syslog(L_FATAL, "cant fork %s %m", av[0]);
 	    return -1;
@@ -184,7 +184,7 @@ CMDauthinfo(int ac, char *av[])
 		PERMpostlist = PERMreadlist;
 		syslog(L_NOTICE, "%s auth %s (%s -> %s)", Client.host, PERMuser,
 			logrec, PERMauthstring? PERMauthstring: "" );
-		Reply("%d Authentication succeeded\r\n", NNTP_AUTH_OK_VAL);
+		Reply("%d Authentication succeeded\r\n", NNTP_OK_AUTHINFO);
 		PERMneedauth = false;
 		PERMauthorized = true;
 		free(logrec);
@@ -192,7 +192,7 @@ CMDauthinfo(int ac, char *av[])
 	    case 0:
 		syslog(L_NOTICE, "%s bad_auth %s (%s)", Client.host, PERMuser,
 			logrec);
-		Reply("%d Authentication failed\r\n", NNTP_ACCESS_VAL);
+		Reply("%d Authentication failed\r\n", NNTP_ERR_ACCESS);
 		free(logrec);
 		ExitWithStats(1, false);
 	    default:
@@ -209,7 +209,7 @@ CMDauthinfo(int ac, char *av[])
 
 	if (strcasecmp(av[1], "simple") == 0) {
 	    if (ac != 4) {
-		Reply("%d AUTHINFO SIMPLE <USER> <PASS>\r\n", NNTP_BAD_COMMAND_VAL);
+		Reply("%d AUTHINFO SIMPLE <USER> <PASS>\r\n", NNTP_ERR_COMMAND);
 		return;
 	    }
 	    strlcpy(User, av[2], sizeof(User));
@@ -217,16 +217,16 @@ CMDauthinfo(int ac, char *av[])
 	} else {
 	    if (strcasecmp(av[1], "user") == 0) {
 		strlcpy(User, av[2], sizeof(User));
-		Reply("%d PASS required\r\n", NNTP_AUTH_NEXT_VAL);
+		Reply("%d PASS required\r\n", NNTP_CONT_AUTHINFO);
 		return;
 	    }
 
 	    if (strcasecmp(av[1], "pass") != 0) {
-		Reply("%d bad authinfo param\r\n", NNTP_BAD_COMMAND_VAL);
+		Reply("%d bad authinfo param\r\n", NNTP_ERR_COMMAND);
 		return;
 	    }
 	    if (User[0] == '\0') {
-		Reply("%d USER required\r\n", NNTP_AUTH_REJECT_VAL);
+		Reply("%d USER required\r\n", NNTP_FAIL_AUTHINFO_REJECT);
 		return;
 	    }
 
@@ -239,7 +239,7 @@ CMDauthinfo(int ac, char *av[])
                 fprintf(locallog, "%s user (%s):%s\n", Client.host, Username, PERMuser);
                 fflush(locallog);
             }
-            Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+            Reply("%d Ok\r\n", NNTP_OK_AUTHINFO);
             PERMneedauth = false;
             PERMauthorized = true;
             return;
@@ -255,7 +255,7 @@ CMDauthinfo(int ac, char *av[])
                 fprintf(locallog, "%s user (%s):%s\n", Client.host, Username, PERMuser);
                 fflush(locallog);
             }
-            Reply("%d Ok\r\n", NNTP_AUTH_OK_VAL);
+            Reply("%d Ok\r\n", NNTP_OK_AUTHINFO);
             PERMneedauth = false;
             PERMauthorized = true;
             return;
@@ -264,9 +264,9 @@ CMDauthinfo(int ac, char *av[])
 	syslog(L_NOTICE, "%s bad_auth", Client.host);
         if (errorstr[0] != '\0') {
             syslog(L_NOTICE, "%s script error str: %s", Client.host, errorstr);
-            Reply("%d %s\r\n", NNTP_ACCESS_VAL, errorstr);
+            Reply("%d %s\r\n", NNTP_ERR_ACCESS, errorstr);
         } else {
-            Reply("%d Authentication error\r\n", NNTP_ACCESS_VAL);
+            Reply("%d Authentication error\r\n", NNTP_ERR_ACCESS);
         }
 	ExitWithStats(1, false);
     }
@@ -286,11 +286,11 @@ CMDdate(int ac UNUSED, char *av[] UNUSED)
     now = time(NULL);
     gmt = gmtime(&now);
     if (now == (time_t) -1 || gmt == NULL) {
-        Reply("%d Can't get time, %s\r\n", NNTP_TEMPERR_VAL, strerror(errno));
+        Reply("%d Can't get time, %s\r\n", NNTP_ERR_UNAVAILABLE, strerror(errno));
         return;
     }
     Reply("%d %04.4d%02.2d%02.2d%02.2d%02.2d%02.2d\r\n",
-          NNTP_DATE_FOLLOWS_VAL,
+          NNTP_INFO_DATE,
           gmt->tm_year + 1900, gmt->tm_mon + 1, gmt->tm_mday,
           gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
 }
@@ -305,11 +305,11 @@ CMDmode(int ac UNUSED, char *av[])
 {
     if (strcasecmp(av[1], "reader") == 0)
 	Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
-	       PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
+	       PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
                PERMaccessconf->pathhost, INN_VERSION_STRING,
 	       PERMcanpost ? "posting ok" : "no posting");
     else
-	Reply("%d What?\r\n", NNTP_SYNTAX_VAL);
+	Reply("%d What?\r\n", NNTP_ERR_SYNTAX);
 }
 
 static int GroupCompare(const void *a1, const void* b1) {
@@ -345,7 +345,7 @@ CMDnewgroups(int ac, char *av[])
     local = !(ac > 3 && strcasecmp(av[3], "GMT") == 0);
     date = parsedate_nntp(av[1], av[2], local);
     if (date == (time_t) -1) {
-        Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
+        Reply("%d Bad date\r\n", NNTP_ERR_SYNTAX);
         return;
     }
 
@@ -356,7 +356,7 @@ CMDnewgroups(int ac, char *av[])
        of groups. */
     if ((qp = QIOopen(ACTIVETIMES)) == NULL) {
 	syslog(L_ERROR, "%s cant fopen %s %m", Client.host, ACTIVETIMES);
-	Reply("%d New newsgroups follow.\r\n", NNTP_NEWGROUPS_FOLLOWS_VAL);
+	Reply("%d New newsgroups follow.\r\n", NNTP_OK_NEWGROUPS);
         Printf(".\r\n");
 	return;
     }
@@ -399,11 +399,11 @@ CMDnewgroups(int ac, char *av[])
 
     if ((qp = QIOopen(ACTIVE)) == NULL) {
 	syslog(L_ERROR, "%s cant fopen %s %m", Client.host, ACTIVE);
-	Reply("%d Cannot open active file.\r\n", NNTP_TEMPERR_VAL);
+	Reply("%d Cannot open active file.\r\n", NNTP_ERR_UNAVAILABLE);
 	return;
     }
     qsort(grouplist, numgroups, sizeof(GROUPDATA), GroupCompare);
-    Reply("%d New newsgroups follow.\r\n", NNTP_NEWGROUPS_FOLLOWS_VAL);
+    Reply("%d New newsgroups follow.\r\n", NNTP_OK_NEWGROUPS);
     for (numfound = numgroups; (p = QIOread(qp)) && numfound;) {
 	if ((q = strchr(p, ' ')) == NULL)
 	    continue;
@@ -528,7 +528,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 		strlcpy(idbuff, p, sizeof(idbuff));
 	    }
 	}
-	Reply("%d Ok, recommended ID %s\r\n", NNTP_START_POST_VAL, idbuff);
+	Reply("%d Ok, recommended ID %s\r\n", NNTP_CONT_POST, idbuff);
     }
     fflush(stdout);
 
@@ -597,7 +597,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     if (longline) {
 	warn("%s toolong in post", Client.host);
 	Printf("%d Line %d too long\r\n", 
-	       ihave ? NNTP_REJECTIT_VAL : NNTP_POSTFAIL_VAL, longline);
+	       ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT, longline);
 	POSTrejected++;
 	return;
     }
@@ -617,7 +617,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	notice("%s post failed %s", Client.host, response);
 	if (!ihave || permanent) {
 	    /* for permanent errors reject the message */
-	    Reply("%d %s\r\n", ihave ? NNTP_REJECTIT_VAL : NNTP_POSTFAIL_VAL,
+	    Reply("%d %s\r\n", ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT,
 		  response);
 	} else {
 	    /* non-permanent errors only have relevance to ihave, for

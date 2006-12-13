@@ -47,7 +47,7 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
     if (fgets(buff, len, F) == NULL)
         goto fail;
     code = atoi(buff);
-    if (code != NNTP_POSTOK_VAL && code != NNTP_NOPOSTOK_VAL) {
+    if (code != NNTP_OK_BANNER_POST && code != NNTP_OK_BANNER_NOPOST) {
         errno = EPERM;
         goto fail;
     }

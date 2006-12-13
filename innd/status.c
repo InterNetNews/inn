@@ -319,20 +319,20 @@ STATUSsummary(void)
     fprintf (F, "reject size: %-8s\n",       PrettySize(status->RejectSize, str));
     fprintf (F, "  Protocol:\n");
     fprintf (F, "      Ihave: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
-	     status->Ihave, NNTP_SENDIT_VAL, status->Ihave_SendIt,
-	     NNTP_HAVEIT_VAL, status->Ihave_Duplicate, NNTP_RESENDIT_VAL,
+	     status->Ihave, NNTP_CONT_IHAVE, status->Ihave_SendIt,
+	     NNTP_FAIL_IHAVE_REFUSE, status->Ihave_Duplicate, NNTP_FAIL_IHAVE_DEFER,
 	     status->Ihave_Deferred);
     fprintf (F, "      Check: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
-	     status->Check, NNTP_OK_SENDID_VAL, status->Check_send,
-	     NNTP_ERR_GOTID_VAL, status->Check_got, NNTP_RESENDID_VAL,
+	     status->Check, NNTP_OK_CHECK, status->Check_send,
+	     NNTP_FAIL_CHECK_REFUSE, status->Check_got, NNTP_FAIL_CHECK_DEFER,
 	     status->Check_deferred);
     fprintf (F, "   Takethis: %-6ld     Ok[%d]: %-6ld  Error[%d]: %-6ld\n",
-	     status->Takethis, NNTP_OK_RECID_VAL, status->Takethis_Ok,
-	     NNTP_ERR_FAILID_VAL, status->Takethis_Err);
+	     status->Takethis, NNTP_OK_TAKETHIS, status->Takethis_Ok,
+	     NNTP_FAIL_TAKETHIS_REJECT, status->Takethis_Err);
     if (innconf->refusecybercancels) {
         fprintf (F, "   Cancelrejects:    Ihave[%d]: %-6ld  Check[%d]: %-6ld\n",
-	     NNTP_HAVEIT_VAL, status->Ihave_Cybercan,
-	     NNTP_ERR_GOTID_VAL, status->Check_cybercan);
+	     NNTP_FAIL_IHAVE_REFUSE, status->Ihave_Cybercan,
+	     NNTP_FAIL_CHECK_REFUSE, status->Check_cybercan);
     }
     fputc ('\n', F) ;
     tmp = status->next;

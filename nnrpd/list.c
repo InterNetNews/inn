@@ -91,7 +91,7 @@ cmd_list_schema(LISTINFO *lp)
     const struct cvector *standard;
     unsigned int i;
 
-    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
+    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
     standard = overview_fields();
     for (i = 0; i < standard->count; ++i) {
 	Printf("%s:\r\n", standard->strings[i]);
@@ -111,7 +111,7 @@ cmd_list_extensions(LISTINFO *lp)
 {
     const char *mechlist = NULL;
 
-    Reply("%d %s.\r\n", NNTP_SLAVEOK_VAL, lp->Format);
+    Reply("%d %s.\r\n", NNTP_OK_EXTENSIONS, lp->Format);
 
 #ifdef HAVE_SSL
     if (!nnrpd_starttls_done && PERMauthorized != true)
@@ -153,7 +153,7 @@ CMD_list_single(char *group)
             return false;
     }
     if (OVgroupstats(group, &lo, &hi, NULL, &flag) && flag != '=') {
-        Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, INFOactive.Format);
+        Reply("%d %s.\r\n", NNTP_OK_LIST, INFOactive.Format);
         Printf("%s %010u %010u %c\r\n.\r\n", group, hi, lo, flag);
         return true;
     }
@@ -224,18 +224,18 @@ CMDlist(int ac, char *av[])
     free(path);
     if (qp == NULL) {
 	if (!lp->Required && errno == ENOENT) {
-	    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
+	    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
 	    Printf(".\r\n");
 	}
 	else {
 	    syslog(L_ERROR, "%s cant fopen %s %m", Client.host, lp->File);
 	    Reply("%d No list of %s available.\r\n",
-		NNTP_TEMPERR_VAL, lp->Items);
+		NNTP_ERR_UNAVAILABLE, lp->Items);
 	}
 	return;
     }
 
-    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
+    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
     if (!PERMspecified) {
 	/* Optmize for unlikely case of no permissions and false default. */
 	QIOclose(qp);

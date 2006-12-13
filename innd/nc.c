@@ -199,7 +199,7 @@ NCpostit(CHANNEL *cp)
     cp->Received++;
     if (cp->Sendid.size > 3) { /* We be streaming */
       cp->Takethis_Ok++;
-      snprintf(buff, sizeof(buff), "%d", NNTP_OK_RECID_VAL);
+      snprintf(buff, sizeof(buff), "%d", NNTP_OK_TAKETHIS);
       cp->Sendid.data[0] = buff[0];
       cp->Sendid.data[1] = buff[1];
       cp->Sendid.data[2] = buff[2];
@@ -339,9 +339,9 @@ NCstat(CHANNEL *cp)
     SMfreearticle(art);
 
     /* Write the message. */
-    length = snprintf(NULL, 0, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p) + 1;
+    length = snprintf(NULL, 0, "%d 0 %s", NNTP_OK_STAT, p) + 1;
     buff = xmalloc(length);
-    snprintf(buff, length, "%d 0 %s", NNTP_NOTHING_FOLLOWS_VAL, p);
+    snprintf(buff, length, "%d 0 %s", NNTP_OK_STAT, p);
     NCwritereply(cp, buff);
     free(buff);
 }
@@ -473,7 +473,7 @@ NCihave(CHANNEL *cp)
             cp->Sendid.data = xmalloc(cp->Sendid.size);
         }
         snprintf(cp->Sendid.data, cp->Sendid.size, "%d %.200s",
-                 NNTP_HAVEIT_VAL, filterrc);
+                 NNTP_FAIL_IHAVE_REFUSE, filterrc);
         NCwritereply(cp, cp->Sendid.data);
         free(cp->Sendid.data);
         cp->Sendid.size = 0;
@@ -500,7 +500,7 @@ NCihave(CHANNEL *cp)
 	    cp->Sendid.data = xmalloc(cp->Sendid.size);
 	}
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %.200s",
-                 NNTP_HAVEIT_VAL, filterrc);
+                 NNTP_FAIL_IHAVE_REFUSE, filterrc);
 	NCwritereply(cp, cp->Sendid.data);
 	free(cp->Sendid.data);
 	cp->Sendid.size = 0;
@@ -570,7 +570,7 @@ NCxbatch(CHANNEL *cp)
      * with it
      */
     cp->State = CSgetxbatch;
-    NCwritereply(cp, NNTP_CONT_XBATCH);
+    NCwritereply(cp, NNTP_CONT_XBATCH_STR);
 }
 
 /*
@@ -650,7 +650,7 @@ NCmode(CHANNEL *cp)
              (!StreamingOff && cp->Streaming)) {
 	char buff[16];
 
-	snprintf(buff, sizeof(buff), "%d StreamOK.", NNTP_OK_STREAM_VAL);
+	snprintf(buff, sizeof(buff), "%d StreamOK.", NNTP_OK_STREAM);
 	NCwritereply(cp, buff);
 	syslog(L_NOTICE, "%s NCmode \"mode stream\" received",
 		CHANname(cp));
@@ -659,7 +659,7 @@ NCmode(CHANNEL *cp)
        char buff[16];
 
        cp->State = CScancel;
-       snprintf(buff, sizeof(buff), "%d CancelOK.", NNTP_OK_CANCEL_VAL);
+       snprintf(buff, sizeof(buff), "%d CancelOK.", NNTP_OK_MODE_CANCEL);
        NCwritereply(cp, buff);
        syslog(L_NOTICE, "%s NCmode \"mode cancel\" received",
                CHANname(cp));
@@ -714,7 +714,7 @@ NC_unimp(CHANNEL *cp)
     cp->Start = cp->Next;
     *p = '\0';
     snprintf(buff, sizeof(buff), "%d \"%s\" not implemented; try \"help\".",
-             NNTP_BAD_COMMAND_VAL, MaxLength(q, q));
+             NNTP_ERR_COMMAND, MaxLength(q, q));
     NCwritereply(cp, buff);
 }
 
@@ -971,7 +971,7 @@ NCproc(CHANNEL *cp)
 	  CHANname(cp), i, NNTP_STRLEN);
 	cp->LargeCmdSize = 0;
 	snprintf(buff, sizeof(buff), "%d command exceeds limit of %d bytes",
-                 NNTP_BAD_COMMAND_VAL, NNTP_STRLEN);
+                 NNTP_ERR_COMMAND, NNTP_STRLEN);
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
 	NCwritereply(cp, buff);
@@ -1162,7 +1162,7 @@ NCsetup(void)
 	/* Worked in main, now it fails?  Curious. */
 	p = Path.data;
     snprintf(buff, sizeof(buff), "%d %s InterNetNews server %s ready",
-	    NNTP_POSTOK_VAL, p, INN_VERSION_STRING);
+	    NNTP_OK_BANNER_POST, p, INN_VERSION_STRING);
     NCgreeting = xstrdup(buff);
 }
 
@@ -1282,7 +1282,7 @@ NCcheck(CHANNEL *cp)
     }
     if (!ARTidok(p)) {
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_ERR_GOTID_VAL, p);
+                 NNTP_FAIL_CHECK_REFUSE, p);
 	NCwritereply(cp, cp->Sendid.data);
 	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
 	return;
@@ -1292,7 +1292,7 @@ NCcheck(CHANNEL *cp)
 	cp->Refused++;
 	cp->Check_cybercan++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_ERR_GOTID_VAL, p);
+                 NNTP_FAIL_CHECK_REFUSE, p);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
@@ -1303,7 +1303,7 @@ NCcheck(CHANNEL *cp)
     if (filterrc) {
 	cp->Refused++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_ERR_GOTID_VAL, p);
+                 NNTP_FAIL_CHECK_REFUSE, p);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
@@ -1315,7 +1315,7 @@ NCcheck(CHANNEL *cp)
     if (filterrc) {
 	cp->Refused++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_ERR_GOTID_VAL, p);
+                 NNTP_FAIL_CHECK_REFUSE, p);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
@@ -1325,23 +1325,23 @@ NCcheck(CHANNEL *cp)
 	cp->Refused++;
 	cp->Check_got++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_ERR_GOTID_VAL, p);
+                 NNTP_FAIL_CHECK_REFUSE, p);
 	NCwritereply(cp, cp->Sendid.data);
     } else if (WIPinprogress(p, cp, true)) {
 	cp->Check_deferred++;
 	if (cp->NoResendId) {
 	    cp->Refused++;
 	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                     NNTP_ERR_GOTID_VAL, p);
+                     NNTP_FAIL_CHECK_REFUSE, p);
 	} else {
 	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                     NNTP_RESENDID_VAL, p);
+                     NNTP_FAIL_CHECK_DEFER, p);
 	}
 	NCwritereply(cp, cp->Sendid.data);
     } else {
 	cp->Check_send++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_OK_SENDID_VAL, p);
+                 NNTP_OK_CHECK, p);
 	NCwritereply(cp, cp->Sendid.data);
     }
     /* stay in command mode */
@@ -1376,7 +1376,7 @@ NCtakethis(CHANNEL *cp)
 	cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
     /* save ID for later NACK or ACK */
-    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s", NNTP_ERR_FAILID_VAL,
+    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s", NNTP_FAIL_TAKETHIS_REJECT,
              p);
 
     cp->ArtBeg = Now.tv_sec;
@@ -1404,7 +1404,7 @@ NCcancel(CHANNEL *cp)
     if (res) {
         char buff[SMBUF];
 
-        snprintf(buff, sizeof(buff), "%d %s", NNTP_ERR_CANCEL_VAL,
+        snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_CANCEL,
                  MaxLength(res, res));
         syslog(L_NOTICE, "%s cant_cancel %s", CHANname(cp),
                MaxLength(res, res));

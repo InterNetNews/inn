@@ -40,7 +40,7 @@ SASLauth(int ac, char *av[])
     int r = SASL_OK;
 
     if (ac < 3 || ac > 4) {
-	Reply("%d AUTHINFO SASL <MECH> [<INIT-RESP]>\r\n", NNTP_BAD_COMMAND_VAL);
+	Reply("%d AUTHINFO SASL <MECH> [<INIT-RESP]>\r\n", NNTP_ERR_COMMAND);
 	return;
     }
 
@@ -78,7 +78,7 @@ SASLauth(int ac, char *av[])
 	if (r != SASL_CONTINUE) break;
 	    
 	/* send the challenge to the client */
-	Reply("%d %s\r\n", NNTP_AUTH_SASL_CHAL_VAL,
+	Reply("%d %s\r\n", NNTP_CONT_SASL,
 	      serveroutlen ? base64 : "=");
 	fflush(stdout);
 
@@ -109,7 +109,7 @@ SASLauth(int ac, char *av[])
 
 	/* check if client cancelled */
 	if (strcmp(clientin, "*") == 0) {
-	    Reply("%d Client cancelled authentication\r\n", NNTP_AUTH_BAD_VAL);
+	    Reply("%d Client cancelled authentication\r\n", NNTP_FAIL_AUTHINFO_BAD);
 	    return;
 	}
 
@@ -152,9 +152,9 @@ SASLauth(int ac, char *av[])
 	syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
 
 	if (serveroutlen)
-	    Reply("%d %s\r\n", NNTP_AUTH_SASL_OK_VAL, base64);
+	    Reply("%d %s\r\n", NNTP_OK_SASL, base64);
 	else
-	    Reply("%d Authentication succeeded\r\n", NNTP_AUTH_OK_VAL);
+	    Reply("%d Authentication succeeded\r\n", NNTP_OK_AUTHINFO);
 
 	/* save info about the negotiated security layer for I/O functions */
 	sasl_ssf = *ssfp;
@@ -170,17 +170,17 @@ SASLauth(int ac, char *av[])
 
 	switch (r) {
 	case SASL_BADPROT:
-	    resp_code = NNTP_AUTH_REJECT_VAL;
+	    resp_code = NNTP_FAIL_AUTHINFO_REJECT;
 	    break;
 	case SASL_NOMECH:
 	case SASL_TOOWEAK:
-	    resp_code = NNTP_SYNTAX_VAL;
+	    resp_code = NNTP_ERR_SYNTAX;
 	    break;
 	case SASL_ENCRYPT:
-	    resp_code = NNTP_STARTTLS_DONE_VAL;
+	    resp_code = NNTP_FAIL_STARTTLS;
 	    break;
 	default:
-	    resp_code = NNTP_AUTH_BAD_VAL;
+	    resp_code = NNTP_FAIL_AUTHINFO_BAD;
 	    break;
 	}
 

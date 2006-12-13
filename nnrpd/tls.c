@@ -527,7 +527,7 @@ tls_init(void)
 				       innconf->tlscertfile,
 				       innconf->tlskeyfile);
     if (ssl_result == -1) {
-        Reply("%d Error initializing TLS\r\n", NNTP_STARTTLS_BAD_VAL);
+        Reply("%d Error initializing TLS\r\n", NNTP_ERR_STARTTLS);
         syslog(L_ERROR, "error initializing TLS: "
                "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
                innconf->tlscafile, innconf->tlscapath,

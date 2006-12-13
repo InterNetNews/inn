@@ -519,11 +519,11 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
   tls_init();
   if (nnrpd_starttls_done == 1) {
       Reply("%d Already successfully executed STARTTLS\r\n",
-            NNTP_STARTTLS_DONE_VAL);
+            NNTP_FAIL_STARTTLS);
       return;
   }
 
-  Reply("%d Begin TLS negotiation now\r\n", NNTP_STARTTLS_NEXT_VAL);
+  Reply("%d Begin TLS negotiation now\r\n", NNTP_CONT_STARTTLS);
   fflush(stdout);
 
   /* must flush our buffers before starting tls */
@@ -531,7 +531,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
   result=tls_start_servertls(0, /* read */
 			     1); /* write */
   if (result==-1) {
-    Reply("%d Starttls failed\r\n", NNTP_STARTTLS_BAD_VAL);
+    Reply("%d Starttls failed\r\n", NNTP_ERR_STARTTLS);
     return;
   }
 

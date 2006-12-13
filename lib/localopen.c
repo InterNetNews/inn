@@ -72,7 +72,7 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff, size_t len)
 	return -1;
     }
     j = atoi(buff);
-    if (j != NNTP_POSTOK_VAL && j != NNTP_NOPOSTOK_VAL) {
+    if (j != NNTP_OK_BANNER_POST && j != NNTP_OK_BANNER_NOPOST) {
 	fclose(F);
 	/* This seems like a reasonable error code to use... */
 	errno = EPERM;

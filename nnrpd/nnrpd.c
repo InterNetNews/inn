@@ -318,10 +318,10 @@ CMD_unimp(ac, av)
 {
     if (strcasecmp(av[0], "slave") == 0)
 	/* Somebody sends us this?  I don't believe it! */
-	Reply("%d Unsupported\r\n", NNTP_SLAVEOK_VAL);
+	Reply("%d Unsupported\r\n", NNTP_OK_EXTENSIONS);
     else
 	Reply("%d %s not implemented; try help\r\n",
-	    NNTP_BAD_COMMAND_VAL, av[0]);
+	    NNTP_ERR_COMMAND, av[0]);
 }
 
 
@@ -397,7 +397,7 @@ StartConnection(void)
     if (getpeername(STDIN_FILENO, sac, &length) < 0) {
         if (!isatty(STDIN_FILENO)) {
 	    sysnotice("? cant getpeername");
-	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ACCESS_VAL);
+	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
         strlcpy(Client.host, "stdin", sizeof(Client.host));
@@ -424,7 +424,7 @@ StartConnection(void)
 	if (getsockname(STDIN_FILENO, sas, &length) < 0) {
 	    sysnotice("%s can't getsockname", Client.host);
 	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n",
-                   NNTP_ACCESS_VAL);
+                   NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
 	HostErrorStr = default_host_error;
@@ -630,26 +630,26 @@ SetupDaemon(void)
     val = true;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
 	syslog(L_NOTICE, "cant initialize storage method, %s", SMerrorstr);
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 	ExitWithStats(1, true);
     }
     OVextra = overview_extra_fields();
     if (OVextra == NULL) {
 	/* overview_extra_fields should already have logged something
 	 * useful */
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 	ExitWithStats(1, true);
     }
     overhdr_xref = overview_index("Xref", OVextra);
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
 	syslog(L_NOTICE, "cant open overview %m");
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 	ExitWithStats(1, true);
     }
     if (!OVctl(OVCACHEKEEP, &val)) {
 	syslog(L_NOTICE, "cant enable overview cache %m");
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 	ExitWithStats(1, true);
     }
 }
@@ -945,7 +945,7 @@ main(int argc, char *argv[])
     if (initialSSL) {
         tls_init();
         if (tls_start_servertls(0, 1) == -1) {
-            Reply("%d SSL connection failed\r\n", NNTP_STARTTLS_BAD_VAL);
+            Reply("%d SSL connection failed\r\n", NNTP_ERR_STARTTLS);
             ExitWithStats(1, false);
         }
         nnrpd_starttls_done = 1;
@@ -962,7 +962,7 @@ main(int argc, char *argv[])
         else {
             if ((int)(load[0] + 0.5) > innconf->nnrpdloadlimit) {
                 syslog(L_NOTICE, "load %.2f > %ld", load[0], innconf->nnrpdloadlimit);
-                Reply("%d load at %.2f, try later\r\n", NNTP_GOODBYE_VAL,
+                Reply("%d load at %.2f, try later\r\n", NNTP_FAIL_TERMINATING,
                       load[0]);
                 ExitWithStats(1, true);
             }
@@ -977,7 +977,7 @@ main(int argc, char *argv[])
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
 	syslog(L_NOTICE, "%s no_permission", Client.host);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
-	       NNTP_ACCESS_VAL);
+	       NNTP_ERR_ACCESS);
 	ExitWithStats(1, false);
     }
 
@@ -1046,13 +1046,13 @@ main(int argc, char *argv[])
 
     if (PERMaccessconf) {
         Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
-	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
+	   PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
            PERMaccessconf->pathhost, INN_VERSION_STRING,
 	   PERMcanpost ? "posting ok" : "no posting");
 	clienttimeout = PERMaccessconf->clienttimeout;
     } else {
         Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
-	   PERMcanpost ? NNTP_POSTOK_VAL : NNTP_NOPOSTOK_VAL,
+	   PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
            innconf->pathhost, INN_VERSION_STRING,
 	   PERMcanpost ? "posting ok" : "no posting");
 	clienttimeout = innconf->clienttimeout;
@@ -1110,7 +1110,7 @@ main(int argc, char *argv[])
 		}
 		/* FALLTHROUGH */		
 	    case RTlong:
-		Reply("%d Line too long\r\n", NNTP_BAD_COMMAND_VAL);
+		Reply("%d Line too long\r\n", NNTP_ERR_COMMAND);
 		continue;
 	    case RTeof:
 		/* Handled below. */
@@ -1132,7 +1132,7 @@ main(int argc, char *argv[])
 		syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host, buff);
 	    else
 		syslog(L_NOTICE, "%s unrecognized %s", Client.host, buff);
-	    Reply("%d What?\r\n", NNTP_BAD_COMMAND_VAL);
+	    Reply("%d What?\r\n", NNTP_ERR_COMMAND);
 	    continue;
 	}
 
@@ -1140,14 +1140,14 @@ main(int argc, char *argv[])
 	if ((cp->Minac != CMDany && ac < cp->Minac)
 	 || (cp->Maxac != CMDany && ac > cp->Maxac)) {
 	    Reply("%d %s\r\n",
-		NNTP_SYNTAX_VAL,  cp->Help ? cp->Help : "Usage error");
+		NNTP_ERR_SYNTAX,  cp->Help ? cp->Help : "Usage error");
 	    continue;
 	}
 
 	/* Check permissions and dispatch. */
 	if (cp->Needauth && PERMneedauth) {
 	    Reply("%d Authentication required for command\r\n",
-		NNTP_AUTH_NEEDED_VAL);
+		NNTP_FAIL_AUTH_NEEDED);
 	    continue;
 	}
 	setproctitle("%s %s", Client.host, av[0]);

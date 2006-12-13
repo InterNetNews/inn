@@ -157,7 +157,7 @@ PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
         || ((PyTuple_Size(result) != 2) && (PyTuple_Size(result) != 3)))
     {
         syslog(L_ERROR, "python authenticate method returned wrong result");
-	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     }
 
@@ -168,7 +168,7 @@ PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
     if (!PyInt_Check(item))
     {
         syslog(L_ERROR, "python authenticate method returned bad NNTP response code");
-	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     }
 
@@ -182,7 +182,7 @@ PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
     if (!PyString_Check(item))
     {
         syslog(L_ERROR, "python authenticate method returned bad error string");
-	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     }
 
@@ -198,7 +198,7 @@ PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
         /* Check the item */
         if (!PyString_Check(item)) {
             syslog(L_ERROR, "python authenticate method returned bad username string");
-            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
             ExitWithStats(1, true);
         }
 
@@ -242,7 +242,7 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     /* Exit if access method is not defined */
     if (proc == NULL) {
         syslog(L_ERROR, "python access method not defined");
- 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+ 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
  	ExitWithStats(1, true);
      }
  
@@ -289,7 +289,7 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     /* Check the response */
     if (result == NULL || result == Py_None || !PyDict_Check(result)) {
         syslog(L_ERROR, "python access method returned wrong result - expected a dictionary");
-	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
      }
  
@@ -301,12 +301,12 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     while(PyDict_Next(result, &i, &key, &value)) {
         if (!PyString_Check(key)) {
             syslog(L_ERROR, "python access method return dictionary key %i not a string", i);
-            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
             ExitWithStats(1, false);
         }
         if (!PyString_Check(value)) {
             syslog(L_ERROR, "python access method return dictionary value %i not a string", i);
-            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
             ExitWithStats(1, false);
         }
         
@@ -426,7 +426,7 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
     if (result == NULL || (result != Py_None && !PyString_Check(result)))
     {
         syslog(L_ERROR, "python dyanmic method (%s access) returned wrong result", PostFlag ? "post" : "read");
-	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
 	ExitWithStats(1, false);
     }
 
@@ -706,7 +706,7 @@ PY_setup(int type, int method, char *file)
         /* See if nnrpd auth object is defined in auth module */
         if (PYAuthObject == NULL) {
             syslog(L_ERROR, "python auth object is not defined");
-            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
+            Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ERR_ACCESS);
             PY_close_python();
             ExitWithStats(1, false);
         } else {

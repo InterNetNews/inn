@@ -281,12 +281,12 @@ Process(char *article, size_t artlen)
         free(wirefmt);
         notice("unknown_reply after ihave %s", buff);
 	return false;
-    case NNTP_RESENDIT_VAL:
+    case NNTP_FAIL_IHAVE_DEFER:
         free(wirefmt);
 	return false;
-    case NNTP_SENDIT_VAL:
+    case NNTP_CONT_IHAVE:
 	break;
-    case NNTP_HAVEIT_VAL:
+    case NNTP_FAIL_IHAVE_REFUSE:
 #if	defined(SYSLOG_RNEWS_LOG_DUPS)
 	*p = '\0';
         notice("duplicate %s %s", id, path);
@@ -333,11 +333,11 @@ Process(char *article, size_t artlen)
     default:
         notice("unknown_reply after article %s", buff);
 	/* FALLTHROUGH */
-    case NNTP_RESENDIT_VAL:
+    case NNTP_FAIL_IHAVE_DEFER:
 	return false;
-    case NNTP_TOOKIT_VAL:
+    case NNTP_OK_IHAVE:
 	break;
-    case NNTP_REJECTIT_VAL:
+    case NNTP_FAIL_IHAVE_REJECT:
 	Reject(article, artlen, "rejected %s", buff);
 	break;
     }

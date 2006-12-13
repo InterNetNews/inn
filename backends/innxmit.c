@@ -631,22 +631,22 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	if (DoRequeue)
 	    Requeue(Article, MessageID);
 	break;
-    case NNTP_BAD_COMMAND_VAL:
-    case NNTP_SYNTAX_VAL:
-    case NNTP_ACCESS_VAL:
+    case NNTP_ERR_COMMAND:
+    case NNTP_ERR_SYNTAX:
+    case NNTP_ERR_ACCESS:
 	/* The receiving server is likely confused...no point in continuing */
         syslog(L_FATAL, GOT_BADCOMMAND, REMhost, MessageID, REMclean(buff));
         RequeueRestAndExit(Article, MessageID);
         /* NOTREACHED */
-    case NNTP_RESENDIT_VAL:
-    case NNTP_GOODBYE_VAL:
+    case NNTP_FAIL_IHAVE_DEFER:
+    case NNTP_FAIL_TERMINATING:
 	Requeue(Article, MessageID);
 	break;
-    case NNTP_TOOKIT_VAL:
+    case NNTP_OK_IHAVE:
 	STATaccepted++;
 	STATacceptedsize += (double)art->len;
 	break;
-    case NNTP_REJECTIT_VAL:
+    case NNTP_FAIL_IHAVE_REJECT:
         if (logRejects)
             syslog(L_NOTICE, REJECTED, REMhost,
                    MessageID, Article, REMclean(buff));
@@ -802,11 +802,11 @@ strlisten(void)
 	/* Skip the 1XX informational messages */
 	if ((resp >= 100) && (resp < 200)) continue;
 	switch (resp) { /* first time is to verify it */
-	case NNTP_ERR_GOTID_VAL:
-	case NNTP_OK_SENDID_VAL:
-	case NNTP_OK_RECID_VAL:
-	case NNTP_ERR_FAILID_VAL:
-	case NNTP_RESENDID_VAL:
+	case NNTP_FAIL_CHECK_REFUSE:
+	case NNTP_OK_CHECK:
+	case NNTP_OK_TAKETHIS:
+	case NNTP_FAIL_TAKETHIS_REJECT:
+	case NNTP_FAIL_CHECK_DEFER:
 	    if ((id = strchr(buff, '<')) != NULL) {
 		p = strchr(id, '>');
 		if (p) *(p+1) = '\0';
@@ -821,7 +821,7 @@ strlisten(void)
 		return (true);
 	    }
 	    break;
-	case NNTP_GOODBYE_VAL:
+	case NNTP_FAIL_TERMINATING:
 	    /* Most likely out of space -- no point in continuing. */
 	    syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
 	    return true;
@@ -834,7 +834,7 @@ strlisten(void)
 	    return (true);
 	}
 	switch (resp) { /* now we take some action */
-	case NNTP_RESENDID_VAL:	/* remote wants it later */
+	case NNTP_FAIL_CHECK_DEFER:	/* remote wants it later */
 	    /* try again now because time has passed */
 	    if (stbuf[i].st_retry < STNRETRY) {
 		if (check(i)) return true;
@@ -845,24 +845,24 @@ strlisten(void)
 		strel(i); /* release entry */
 	    }
 	    break;
-	case NNTP_ERR_GOTID_VAL:	/* remote doesn't want it */
+	case NNTP_FAIL_CHECK_REFUSE:	/* remote doesn't want it */
 	    strel(i); /* release entry */
 	    STATrefused++;
 	    stnofail = 0;
 	    break;
 		
-	case NNTP_OK_SENDID_VAL:	/* remote wants article */
+	case NNTP_OK_CHECK:	/* remote wants article */
 	    if (takethis(i)) return true;
 	    stnofail++;
 	    break;
 
-	case NNTP_OK_RECID_VAL:	/* remote received it OK */
+	case NNTP_OK_TAKETHIS:	/* remote received it OK */
 	    STATacceptedsize += (double) stbuf[i].st_size;
 	    strel(i); /* release entry */
 	    STATaccepted++;
 	    break;
 		
-	case NNTP_ERR_FAILID_VAL:
+	case NNTP_FAIL_TAKETHIS_REJECT:
 	    STATrejectedsize += (double) stbuf[i].st_size;
 	    if (logRejects)
 		syslog(L_NOTICE, REJ_STREAM, REMhost,
@@ -1168,11 +1168,11 @@ int main(int ac, char *av[]) {
                     warn("unknown reply to %s -- %s", modestream, buff);
 		    CanStream = false;
 		    break;
-		case NNTP_OK_STREAM_VAL:	/* YES! */
+		case NNTP_OK_STREAM:	/* YES! */
 		    CanStream = true;
 		    break;
-                case NNTP_AUTH_NEEDED_VAL: /* authentication refusal */
-		case NNTP_BAD_COMMAND_VAL: /* normal refusal */
+                case NNTP_FAIL_AUTH_NEEDED: /* authentication refusal */
+		case NNTP_ERR_COMMAND: /* normal refusal */
 		    CanStream = false;
 		    break;
 		}
@@ -1201,7 +1201,7 @@ int main(int ac, char *av[]) {
 		switch (atoi(buff)) {
 		case 250:		/* YES! */
 		    break;
-		case NNTP_BAD_COMMAND_VAL: /* normal refusal */
+		case NNTP_ERR_COMMAND: /* normal refusal */
                     die("%s not allowed -- %s", modeheadfeed, buff);
 		default:
                     die("unknown reply to %s -- %s", modeheadfeed, buff);
@@ -1408,25 +1408,25 @@ int main(int ac, char *av[]) {
 	    if (DoRequeue)
 		Requeue(Article, MessageID);
 	    break;
-        case NNTP_BAD_COMMAND_VAL:
-        case NNTP_SYNTAX_VAL:
-        case NNTP_ACCESS_VAL:
+        case NNTP_ERR_COMMAND:
+        case NNTP_ERR_SYNTAX:
+        case NNTP_ERR_ACCESS:
             /* The receiving server is likely confused...no point in continuing */
             syslog(L_FATAL, GOT_BADCOMMAND, REMhost, MessageID, REMclean(buff));
 	    RequeueRestAndExit(Article, MessageID);
 	    /* NOTREACHED */
-        case NNTP_AUTH_NEEDED_VAL:
-	case NNTP_RESENDIT_VAL:
-	case NNTP_GOODBYE_VAL:
+        case NNTP_FAIL_AUTH_NEEDED:
+	case NNTP_FAIL_IHAVE_DEFER:
+	case NNTP_FAIL_TERMINATING:
 	    /* Most likely out of space -- no point in continuing. */
 	    syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
 	    RequeueRestAndExit(Article, MessageID);
 	    /* NOTREACHED */
-	case NNTP_SENDIT_VAL:
+	case NNTP_CONT_IHAVE:
 	    if (!REMsendarticle(Article, MessageID, art))
 		RequeueRestAndExit(Article, MessageID);
 	    break;
-	case NNTP_HAVEIT_VAL:
+	case NNTP_FAIL_IHAVE_REFUSE:
 	    STATrefused++;
 	    break;
 #if	defined(NNTP_SENDIT_LATER)

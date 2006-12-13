@@ -246,14 +246,14 @@ REMsendxbatch(int fd, char *buf, int size)
     return false;
     /* NOTREACHED */
     break;
-  case NNTP_RESENDIT_VAL:
-  case NNTP_GOODBYE_VAL:
+  case NNTP_FAIL_XBATCH:
+  case NNTP_FAIL_TERMINATING:
     notice("%s xbatch failed %s", REMhost, buf);
     STATrejected++;
     return false;
     /* NOTREACHED */
     break;
-  case NNTP_OK_XBATCHED_VAL:
+  case NNTP_OK_XBATCH:
     STATaccepted++;
     if (Debug) fprintf(stderr, "will unlink(%s)\n", XBATCHname);
     if (unlink(XBATCHname)) {
@@ -517,19 +517,19 @@ main(int ac, char *av[])
       ExitWithStats(1);
       /* NOTREACHED */
       break;
-    case NNTP_RESENDIT_VAL:
-    case NNTP_GOODBYE_VAL:
+    case NNTP_FAIL_XBATCH:
+    case NNTP_FAIL_TERMINATING:
       /* Most likely out of space -- no point in continuing. */
       notice("%s xbatch failed %s", REMhost, buff);
       ExitWithStats(1);
       /* NOTREACHED */
-    case NNTP_CONT_XBATCH_VAL:
+    case NNTP_CONT_XBATCH:
       if (!REMsendxbatch(ToServer, XBATCHbuffer, XBATCHsize))
 	ExitWithStats(1);
       /* NOTREACHED */
       break;
-    case NNTP_SYNTAX_VAL:
-    case NNTP_BAD_COMMAND_VAL:
+    case NNTP_ERR_SYNTAX:
+    case NNTP_ERR_COMMAND:
       warn("%s xbatch failed %s", REMhost, buff);
       break;
     }

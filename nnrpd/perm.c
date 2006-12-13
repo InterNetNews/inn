@@ -578,7 +578,7 @@ ReportError(CONFFILE *f, const char *err)
 {
     syslog(L_ERROR, "%s syntax error in %s(%d), %s", Client.host,
       f->filename, f->lineno, err);
-    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
     ExitWithStats(1, true);
 }
 
@@ -1095,7 +1095,7 @@ PERMreadfile(char *filename)
     cf		= xmalloc(sizeof(CONFCHAIN));
     if ((cf->f = CONFfopen(filename)) == NULL) {
 	syslog(L_ERROR, "%s cannot open %s: %m", Client.host, filename);
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 	ExitWithStats(1, true);
     }
     cf->parent	= 0;
@@ -1401,7 +1401,7 @@ PERMgetaccess(char *nnrpaccess)
 	/* no one can talk, empty file */
 	syslog(L_NOTICE, "%s no_permission", Client.host);
 	Printf("%d You have no permission to talk.  Goodbye.\r\n",
-	  NNTP_ACCESS_VAL);
+	  NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     }
 
@@ -1434,7 +1434,7 @@ PERMgetaccess(char *nnrpaccess)
 	/* couldn't resolve the user. */
 	syslog(L_NOTICE, "%s no_user", Client.host);
 	Printf("%d Could not get your access name.  Goodbye.\r\n",
-	  NNTP_ACCESS_VAL);
+	  NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     } else {
 	PERMneedauth = true;
@@ -1577,7 +1577,7 @@ PERMgetpermissions(void)
         vector_free(access_vec);
       } else {
         syslog(L_ERROR, "No script specified in perl_access method.\n");
-        Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+        Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
         ExitWithStats(1, true);
       }
       free(cpp);
@@ -1612,7 +1612,7 @@ PERMgetpermissions(void)
             vector_free(access_vec);
         } else {
             syslog(L_ERROR, "No script specified in python_access method.\n");
-            Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+            Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
             ExitWithStats(1, true);
         }
         free(cpp);
@@ -1655,7 +1655,7 @@ PERMgetpermissions(void)
 	    syslog(L_ERROR, "%s rejected by rule (%s)",
 		Client.host, access_realms[i]->rejectwith);
 	    Reply("%d Permission denied:  %s\r\n",
-		NNTP_ACCESS_VAL, access_realms[i]->rejectwith);
+		NNTP_ERR_ACCESS, access_realms[i]->rejectwith);
 	    ExitWithStats(1, true);
 	}
 	if (access_realms[i]->read) {
@@ -1682,7 +1682,7 @@ PERMgetpermissions(void)
 	    if (PERMaccessconf->domain == NULL) {
 		syslog(L_ERROR, "%s virtualhost needs domain parameter(%s)",
 		    Client.host, PERMaccessconf->name);
-		Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+		Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 		ExitWithStats(1, true);
 	    }
 	    if (VirtualPath)
@@ -1693,7 +1693,7 @@ PERMgetpermissions(void)
 		if (innconf->domain != NULL && strcmp(innconf->domain, PERMaccessconf->domain) == 0) {
 		    syslog(L_ERROR, "%s domain parameter(%s) in readers.conf must be different from the one in inn.conf",
 			Client.host, PERMaccessconf->name);
-		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_TEMPERR_VAL);
+		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 		    ExitWithStats(1, true);
 		}
                 VirtualPath = concat(PERMaccessconf->domain, "!", (char *) 0);
@@ -1972,7 +1972,7 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
           
                 newUser[0] = '\0';
                 code = perlAuthenticate(username, password, errorstr, newUser);
-                if (code == NNTP_AUTH_OK_VAL) {
+                if (code == NNTP_OK_AUTHINFO) {
                     if (newUser[0] != '\0')
                         user = xstrdup(newUser);
                     else
@@ -2006,7 +2006,7 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                 code = PY_authenticate(script_path, username, password,
                                        errorstr, newUser);
                 free(script_path);
-                if (code == NNTP_AUTH_OK_VAL) {
+                if (code == NNTP_OK_AUTHINFO) {
                     if (newUser[0] != '\0')
                         user = xstrdup(newUser);
                     else

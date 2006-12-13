@@ -636,7 +636,7 @@ ARTcheckheader(CHANNEL *cp, int size)
       *p = '\0';
     snprintf(cp->Error, sizeof(cp->Error),
              "%d No colon-space in \"%s\" header",
-             NNTP_REJECTIT_VAL, MaxLength(header, header));
+             NNTP_FAIL_IHAVE_REJECT, MaxLength(header, header));
     if (p != NULL)
       *p = '\r';
     return;
@@ -662,7 +662,7 @@ ARTcheckheader(CHANNEL *cp, int size)
 	*p = '\0';
 	snprintf(cp->Error, sizeof(cp->Error),
                  "%d Space before colon in \"%s\" header",
-                 NNTP_REJECTIT_VAL, MaxLength(header, header));
+                 NNTP_FAIL_IHAVE_REJECT, MaxLength(header, header));
 	*p = c;
 	return;
       }
@@ -798,7 +798,7 @@ ARTerror(CHANNEL *cp, const char *format, ...)
 {
     va_list args;
 
-    snprintf(cp->Error, sizeof(cp->Error), "%d ", NNTP_REJECTIT_VAL);
+    snprintf(cp->Error, sizeof(cp->Error), "%d ", NNTP_FAIL_IHAVE_REJECT);
     va_start(args, format);
     vsnprintf(cp->Error + 4, sizeof(cp->Error) - 4, format, args);
     va_end(args);
@@ -1010,10 +1010,10 @@ ARTclean(ARTDATA *data, char *buff)
       if (HDR_FOUND(i))
         continue;
       if (hc[i].Length < 0) {
-        sprintf(buff, "%d Duplicate \"%s\" header", NNTP_REJECTIT_VAL,
+        sprintf(buff, "%d Duplicate \"%s\" header", NNTP_FAIL_IHAVE_REJECT,
                 hp[1].Name);
       } else {
-	sprintf(buff, "%d Missing \"%s\" header", NNTP_REJECTIT_VAL,
+	sprintf(buff, "%d Missing \"%s\" header", NNTP_FAIL_IHAVE_REJECT,
                 hp[i].Name);
       }
       TMRstop(TMR_ARTCLEAN);
@@ -1024,7 +1024,7 @@ ARTclean(ARTDATA *data, char *buff)
   /* assumes Message-ID header is required header */
   if (!ARTidok(HDR(HDR__MESSAGE_ID))) {
     HDR_LEN(HDR__MESSAGE_ID) = 0;
-    sprintf(buff, "%d Bad \"Message-ID\" header", NNTP_REJECTIT_VAL);
+    sprintf(buff, "%d Bad \"Message-ID\" header", NNTP_FAIL_IHAVE_REJECT);
     TMRstop(TMR_ARTCLEAN);
     return false;
   }
@@ -1033,7 +1033,7 @@ ARTclean(ARTDATA *data, char *buff)
     p = HDR(HDR__LINES);
     i = data->Lines;
     if ((delta = i - atoi(p)) != 0 && abs(delta) > innconf->linecountfuzz) {
-      sprintf(buff, "%d Linecount %s != %d +- %ld", NNTP_REJECTIT_VAL,
+      sprintf(buff, "%d Linecount %s != %d +- %ld", NNTP_FAIL_IHAVE_REJECT,
 	MaxLength(p, p), i, innconf->linecountfuzz);
       TMRstop(TMR_ARTCLEAN);
       return false;
@@ -1045,7 +1045,7 @@ ARTclean(ARTDATA *data, char *buff)
   p = HDR(HDR__DATE);
   data->Posted = parsedate_rfc2822_lax(p);
   if (data->Posted == (time_t) -1) {
-    sprintf(buff, "%d Bad \"Date\" header -- \"%s\"", NNTP_REJECTIT_VAL,
+    sprintf(buff, "%d Bad \"Date\" header -- \"%s\"", NNTP_FAIL_IHAVE_REJECT,
       MaxLength(p, p));
     TMRstop(TMR_ARTCLEAN);
     return false;
@@ -1054,7 +1054,7 @@ ARTclean(ARTDATA *data, char *buff)
       long cutoff = innconf->artcutoff * 24 * 60 * 60;
 
       if (data->Posted < Now.tv_sec - cutoff) {
-          sprintf(buff, "%d Too old -- \"%s\"", NNTP_REJECTIT_VAL,
+          sprintf(buff, "%d Too old -- \"%s\"", NNTP_FAIL_IHAVE_REJECT,
                   MaxLength(p, p));
           TMRstop(TMR_ARTCLEAN);
           return false;
@@ -1062,7 +1062,7 @@ ARTclean(ARTDATA *data, char *buff)
   }
   if (data->Posted > Now.tv_sec + DATE_FUZZ) {
     sprintf(buff, "%d Article posted in the future -- \"%s\"",
-      NNTP_REJECTIT_VAL, MaxLength(p, p));
+      NNTP_FAIL_IHAVE_REJECT, MaxLength(p, p));
     TMRstop(TMR_ARTCLEAN);
     return false;
   }
@@ -1080,7 +1080,7 @@ ARTclean(ARTDATA *data, char *buff)
     &data->Newsgroups)) == 0) {
     TMRstop(TMR_ARTCLEAN);
     sprintf(buff, "%d Unwanted character in \"Newsgroups\" header",
-      NNTP_REJECTIT_VAL);
+      NNTP_FAIL_IHAVE_REJECT);
     return false;
   }
 
@@ -1820,7 +1820,7 @@ ARTpost(CHANNEL *cp)
   hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
-            NNTP_REJECTIT_VAL);
+            NNTP_FAIL_IHAVE_REJECT);
     ARTreject(REJECT_OTHER, cp, article);
     return false;
   }
@@ -1840,7 +1840,7 @@ ARTpost(CHANNEL *cp)
   hash = HashMessageID(HDR(HDR__MESSAGE_ID));
   data->Hash = &hash;
   if (HIScheck(History, HDR(HDR__MESSAGE_ID))) {
-    snprintf(cp->Error, sizeof(cp->Error), "%d Duplicate", NNTP_REJECTIT_VAL);
+    snprintf(cp->Error, sizeof(cp->Error), "%d Duplicate", NNTP_FAIL_IHAVE_REJECT);
     ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_DUPLICATE, cp, article);
     return false;
@@ -1869,7 +1869,7 @@ ARTpost(CHANNEL *cp)
   for(j = 0 ; ME.Exclusions && ME.Exclusions[j] ; j++) {
     if (ListHas((const char **)hops, (const char *)ME.Exclusions[j])) {
       snprintf(cp->Error, sizeof(cp->Error), "%d Unwanted site %s in path",
-	NNTP_REJECTIT_VAL, MaxLength(ME.Exclusions[j], ME.Exclusions[j]));
+	NNTP_FAIL_IHAVE_REJECT, MaxLength(ME.Exclusions[j], ME.Exclusions[j]));
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && (Mode == OMrunning) &&
 	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
@@ -1893,7 +1893,7 @@ ARTpost(CHANNEL *cp)
     if (innconf->dontrejectfiltered) {
       Filtered = true;
     } else {
-      snprintf(cp->Error, sizeof(cp->Error), "%d %.200s", NNTP_REJECTIT_VAL,
+      snprintf(cp->Error, sizeof(cp->Error), "%d %.200s", NNTP_FAIL_IHAVE_REJECT,
                filterrc);
       syslog(L_NOTICE, "rejecting[python] %s %s", HDR(HDR__MESSAGE_ID),
              cp->Error);
@@ -1919,7 +1919,7 @@ ARTpost(CHANNEL *cp)
     if (innconf->dontrejectfiltered) {
       Filtered = true;
     } else {
-      snprintf(cp->Error, sizeof(cp->Error), "%d %.200s", NNTP_REJECTIT_VAL,
+      snprintf(cp->Error, sizeof(cp->Error), "%d %.200s", NNTP_FAIL_IHAVE_REJECT,
                filterrc);
       syslog(L_NOTICE, "rejecting[perl] %s %s", HDR(HDR__MESSAGE_ID),
              cp->Error);
@@ -1938,7 +1938,7 @@ ARTpost(CHANNEL *cp)
   if (HDR_FOUND(HDR__DISTRIBUTION)) {
     if (HDR(HDR__DISTRIBUTION)[0] == ',') {
       snprintf(cp->Error, sizeof(cp->Error), "%d bogus distribution \"%s\"",
-               NNTP_REJECTIT_VAL,
+               NNTP_FAIL_IHAVE_REJECT,
                MaxLength(HDR(HDR__DISTRIBUTION), HDR(HDR__DISTRIBUTION)));
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && Mode == OMrunning &&
@@ -1953,7 +1953,7 @@ ARTpost(CHANNEL *cp)
       if (ME.Distributions &&
 	!DISTwantany(ME.Distributions, data->Distribution.List)) {
 	snprintf(cp->Error, sizeof(cp->Error),
-                 "%d Unwanted distribution \"%s\"", NNTP_REJECTIT_VAL,
+                 "%d Unwanted distribution \"%s\"", NNTP_FAIL_IHAVE_REJECT,
                  MaxLength(data->Distribution.List[0],
                            data->Distribution.List[0]));
 	ARTlog(data, ART_REJECT, cp->Error);
@@ -2081,7 +2081,7 @@ ARTpost(CHANNEL *cp)
     /* Basic validity check. */
     if (ngp->Rest[0] == NF_FLAG_MODERATED && !Approved) {
       snprintf(cp->Error, sizeof(cp->Error), "%d Unapproved for \"%s\"",
-               NNTP_REJECTIT_VAL, MaxLength(ngp->Name, ngp->Name));
+               NNTP_FAIL_IHAVE_REJECT, MaxLength(ngp->Name, ngp->Name));
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && (Mode == OMrunning) &&
 	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
@@ -2107,7 +2107,7 @@ ARTpost(CHANNEL *cp)
       continue;
     } else if (canpost < 0) {
       snprintf(cp->Error, sizeof(cp->Error),
-               "%d Won't accept posts in \"%s\"", NNTP_REJECTIT_VAL,
+               "%d Won't accept posts in \"%s\"", NNTP_FAIL_IHAVE_REJECT,
                MaxLength(p, p));
       ARTlog(data, ART_REJECT, cp->Error);
       ARTreject(REJECT_GROUP, cp, article);
@@ -2170,11 +2170,11 @@ ARTpost(CHANNEL *cp)
     if (!Accepted) {
       if (NoHistoryUpdate) {
 	snprintf(cp->Error, sizeof(cp->Error), "%d Can't post to \"%s\"",
-                NNTP_REJECTIT_VAL, MaxLength(data->Newsgroups.List[0],
+                NNTP_FAIL_IHAVE_REJECT, MaxLength(data->Newsgroups.List[0],
                                              data->Newsgroups.List[0]));
       } else {
         snprintf(cp->Error, sizeof(cp->Error),
-                 "%d Unwanted newsgroup \"%s\"", NNTP_REJECTIT_VAL,
+                 "%d Unwanted newsgroup \"%s\"", NNTP_FAIL_IHAVE_REJECT,
                  MaxLength(data->Newsgroups.List[0],
                            data->Newsgroups.List[0]));
       }
@@ -2222,12 +2222,12 @@ ARTpost(CHANNEL *cp)
       if (HDR_FOUND(HDR__XREF)) {
 	snprintf(cp->Error, sizeof(cp->Error),
                  "%d Xref header \"%s\" invalid in xrefslave mode",
-                 NNTP_REJECTIT_VAL,
+                 NNTP_FAIL_IHAVE_REJECT,
                  MaxLength(HDR(HDR__XREF), HDR(HDR__XREF)));
       } else {
 	snprintf(cp->Error, sizeof(cp->Error),
                  "%d Xref header required in xrefslave mode",
-                 NNTP_REJECTIT_VAL);
+                 NNTP_FAIL_IHAVE_REJECT);
       }
       ARTlog(data, ART_REJECT, cp->Error);
       ARTreject(REJECT_OTHER, cp, article);
@@ -2255,7 +2255,7 @@ ARTpost(CHANNEL *cp)
   if (token.type == TOKEN_EMPTY) {
     syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
     snprintf(cp->Error, sizeof(cp->Error), "%d cant store article",
-             NNTP_RESENDIT_VAL);
+             NNTP_FAIL_IHAVE_DEFER);
     ARTlog(data, ART_REJECT, cp->Error);
     if ((Mode == OMrunning) && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
       syslog(L_ERROR, "%s cant write history %s %m", LogName,
@@ -2297,7 +2297,7 @@ ARTpost(CHANNEL *cp)
     syslog(L_ERROR, "%s cant write history %s %m", LogName,
       HDR(HDR__MESSAGE_ID));
     snprintf(cp->Error, sizeof(cp->Error), "%d cant write history, %s",
-             NNTP_RESENDIT_VAL, strerror(errno));
+             NNTP_FAIL_IHAVE_DEFER, strerror(errno));
     ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_OTHER, cp, article);
     return false;
@@ -2311,15 +2311,15 @@ ARTpost(CHANNEL *cp)
     if (data->CRwithoutLF > 0 && data->LFwithoutCR == 0)
       snprintf(cp->Error, sizeof(cp->Error),
                "%d article includes CR without LF(%d)",
-               NNTP_REJECTIT_VAL, data->CRwithoutLF);
+               NNTP_FAIL_IHAVE_REJECT, data->CRwithoutLF);
     else if (data->CRwithoutLF == 0 && data->LFwithoutCR > 0)
       snprintf(cp->Error, sizeof(cp->Error),
                "%d article includes LF without CR(%d)",
-               NNTP_REJECTIT_VAL, data->LFwithoutCR);
+               NNTP_FAIL_IHAVE_REJECT, data->LFwithoutCR);
     else
       snprintf(cp->Error, sizeof(cp->Error),
                "%d article includes CR without LF(%d) and LF withtout CR(%d)",
-               NNTP_REJECTIT_VAL, data->CRwithoutLF, data->LFwithoutCR);
+               NNTP_FAIL_IHAVE_REJECT, data->CRwithoutLF, data->LFwithoutCR);
     ARTlog(data, ART_STRSTR, cp->Error);
   }
   ARTlog(data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);

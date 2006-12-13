@@ -44,16 +44,16 @@ static char		ARTnoartingroup[] = NNTP_NOARTINGRP;
 static char		ARTnocurrart[] = NNTP_NOCURRART;
 static ARTHANDLE        *ARThandle = NULL;
 static SENDDATA		SENDbody = {
-    STbody,	NNTP_BODY_FOLLOWS_VAL,		"body"
+    STbody,	NNTP_OK_BODY,		"body"
 };
 static SENDDATA		SENDarticle = {
-    STarticle,	NNTP_ARTICLE_FOLLOWS_VAL,	"article"
+    STarticle,	NNTP_OK_ARTICLE,	"article"
 };
 static SENDDATA		SENDstat = {
-    STstat,	NNTP_NOTHING_FOLLOWS_VAL,	"status"
+    STstat,	NNTP_OK_STAT,	"status"
 };
 static SENDDATA		SENDhead = {
-    SThead,	NNTP_HEAD_FOLLOWS_VAL,		"head"
+    SThead,	NNTP_OK_HEAD,		"head"
 };
 
 
@@ -309,7 +309,7 @@ ARTopenbyid(char *msg_id, ARTNUM *ap, bool final)
 	    if (!History) {
 		syslog(L_NOTICE, "cant initialize history");
 		Reply("%d NNTP server unavailable. Try later.\r\n",
-		      NNTP_TEMPERR_VAL);
+		      NNTP_ERR_UNAVAILABLE);
 		ExitWithStats(1, true);
 	    }
 	    statinterval = 30;
@@ -625,7 +625,7 @@ CMDfetch(int ac, char *av[])
     /* Requesting by Message-ID? */
     if (ac == 2 && av[1][0] == '<') {
 	if (!ARTopenbyid(av[1], &art, final)) {
-	    Reply("%d No such article\r\n", NNTP_DONTHAVEIT_VAL);
+	    Reply("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
 	    return;
 	}
 	if (!PERMartok()) {
@@ -711,12 +711,12 @@ CMDnextlast(int ac UNUSED, char *av[])
     next = (av[0][0] == 'n' || av[0][0] == 'N');
     if (next) {
 	delta = 1;
-	errcode = NNTP_NONEXT_VAL;
+	errcode = NNTP_FAIL_NEXT;
 	message = "next";
     }
     else {
 	delta = -1;
-	errcode = NNTP_NOPREV_VAL;
+	errcode = NNTP_FAIL_PREV;
 	message = "previous";
     }
 
@@ -736,7 +736,7 @@ CMDnextlast(int ac UNUSED, char *av[])
 
     ARTclose();
     Reply("%d %d %s Article retrieved; request text separately.\r\n",
-	   NNTP_NOTHING_FOLLOWS_VAL, ARTnumber, msgid);
+	   NNTP_OK_STAT, ARTnumber, msgid);
 }
 
 
@@ -844,7 +844,7 @@ CMDxover(int ac, char *av[])
     /* Parse range. */
     if (!CMDgetrange(ac, av, &range, &DidReply)) {
 	if (!DidReply) {
-	    Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
+	    Reply("%d data follows\r\n", NNTP_OK_OVER);
 	    Printf(".\r\n");
 	    return;
 	}
@@ -854,9 +854,9 @@ CMDxover(int ac, char *av[])
     gettimeofday(&stv, NULL);
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
 	if (av[1] != NULL)
-	    Reply("%d %s fields follow\r\n.\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
+	    Reply("%d %s fields follow\r\n.\r\n", NNTP_OK_OVER, av[1]);
 	else
-	    Reply("%d %d fields follow\r\n.\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, ARTnumber);
+	    Reply("%d %d fields follow\r\n.\r\n", NNTP_OK_OVER, ARTnumber);
 	return;
     }
     if (PERMaccessconf->nnrpdoverstats) {
@@ -866,9 +866,9 @@ CMDxover(int ac, char *av[])
     }
 
     if (av[1] != NULL)
-	Reply("%d %s fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, av[1]);
+	Reply("%d %s fields follow\r\n", NNTP_OK_OVER, av[1]);
     else
-	Reply("%d %d fields follow\r\n", NNTP_OVERVIEW_FOLLOWS_VAL, ARTnumber);
+	Reply("%d %d fields follow\r\n", NNTP_OK_OVER, ARTnumber);
     fflush(stdout);
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
@@ -997,10 +997,10 @@ CMDpat(int ac, char *av[])
 	if (ac > 2 && av[2][0] == '<') {
 	    p = av[2];
 	    if (!ARTopenbyid(p, &artnum, false)) {
-		Printf("%d No such article.\r\n", NNTP_DONTHAVEIT_VAL);
+		Printf("%d No such article.\r\n", NNTP_FAIL_NOTFOUND);
 		break;
 	    }
-	    Printf("%d %s matches follow (ID)\r\n", NNTP_HEAD_FOLLOWS_VAL,
+	    Printf("%d %s matches follow (ID)\r\n", NNTP_OK_HEAD,
 		   header);
 	    if ((text = GetHeader(header)) != NULL
 		&& (!pattern || uwildmat_simple(text, pattern)))
@@ -1020,7 +1020,7 @@ CMDpat(int ac, char *av[])
 	if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
 	    if (!DidReply) {
 		Reply("%d %s no matches follow (range)\r\n",
-		      NNTP_HEAD_FOLLOWS_VAL, header ? header : "\"\"");
+		      NNTP_OK_HEAD, header ? header : "\"\"");
 		Printf(".\r\n");
 		break;
 	    }
@@ -1031,7 +1031,7 @@ CMDpat(int ac, char *av[])
 
 	/* Not in overview, we have to fish headers out from the articles */
 	if (Overview < 0 ) {
-	    Reply("%d %s matches follow (art)\r\n", NNTP_HEAD_FOLLOWS_VAL,
+	    Reply("%d %s matches follow (art)\r\n", NNTP_OK_HEAD,
 		  header);
 	    for (i = range.Low; i <= range.High && range.High > 0; i++) {
 		if (!ARTopen(i))
@@ -1054,11 +1054,11 @@ CMDpat(int ac, char *av[])
 	handle = (void *)OVopensearch(GRPcur, range.Low, range.High);
 	if (handle == NULL) {
 	    Reply("%d %s no matches follow (NOV)\r\n.\r\n",
-		  NNTP_HEAD_FOLLOWS_VAL, header);
+		  NNTP_OK_HEAD, header);
 	    break;
 	}	
 	
-	Printf("%d %s matches follow (NOV)\r\n", NNTP_HEAD_FOLLOWS_VAL,
+	Printf("%d %s matches follow (NOV)\r\n", NNTP_OK_HEAD,
 	       header);
 	while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	    if (len == 0 || (PERMaccessconf->nnrpdcheckart

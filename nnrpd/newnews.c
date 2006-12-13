@@ -227,7 +227,7 @@ CMDnewnews(int ac, char *av[])
   bool          local;
 
   if (!PERMaccessconf->allownewnews) {
-      Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ACCESS_VAL);
+      Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ERR_ACCESS);
       return;
   }
 
@@ -258,7 +258,7 @@ CMDnewnews(int ac, char *av[])
   /* Parse the newsgroups. */
   AllGroups = (strcmp(av[1], "*") == 0);
   if (!AllGroups && !NGgetlist(&groups, av[1])) {
-      Reply("%d Bad newsgroup specifier %s\r\n", NNTP_SYNTAX_VAL, av[1]);
+      Reply("%d Bad newsgroup specifier %s\r\n", NNTP_ERR_SYNTAX, av[1]);
       TMRstop(TMR_NEWNEWS);
       return;
   }
@@ -267,7 +267,7 @@ CMDnewnews(int ac, char *av[])
   local = !(ac > 4 && strcasecmp(av[4], "GMT") == 0);
   date = parsedate_nntp(av[2], av[3], local);
   if (date == (time_t) -1) {
-      Reply("%d Bad date\r\n", NNTP_SYNTAX_VAL);
+      Reply("%d Bad date\r\n", NNTP_ERR_SYNTAX);
       TMRstop(TMR_NEWNEWS);
       return;
   }
@@ -284,10 +284,10 @@ CMDnewnews(int ac, char *av[])
       qp = QIOopen(path);
       if (qp == NULL) {
 	  if (errno == ENOENT) {
-	      Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
+	      Reply("%d Can't open active\r\n", NNTP_ERR_UNAVAILABLE);
 	  } else {
 	      syswarn("%s cant fopen %s", Client.host, path);
-	      Reply("%d Can't open active\r\n", NNTP_TEMPERR_VAL);
+	      Reply("%d Can't open active\r\n", NNTP_ERR_UNAVAILABLE);
 	  }
 	  free(path);
 	  TMRstop(TMR_NEWNEWS);
