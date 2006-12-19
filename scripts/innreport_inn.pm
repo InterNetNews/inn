@@ -363,7 +363,7 @@ sub collect {
     # our totals.  On a closed, clear any checkpoint numbers and add the close
     # numbers to the totals.  Basically, we want to ignore checkpoints unless
     # we don't get a close before the end of the log.
-    if ($left =~ /(\S+:\d+) (checkpoint|closed) seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+) rejected size (\d+)$/o) {
+    if ($left =~ /(\S+:\d+) (checkpoint|closed) seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+)(?: rejected size (\d+))?$/o) {
       my ($server, $status, $seconds, $accepted, $refused, $rejected, $duplicate, $accptsize, $dupsize, $rjctsize) =
 	($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       $server = lc $server unless $CASE_SENSITIVE;
@@ -377,7 +377,7 @@ sub collect {
         $innd_cp_stored_size{$server}     = $accptsize;
         $innd_cp_duplicated_size{$server} = $dupsize;
         $innd_cp_rejected_size{$server}   = $rjctsize;
-      elsif ($status eq "closed") {
+      } elsif ($status eq "closed") {
         $innd_cp_accepted{$server}        = 0;
         $innd_cp_refused{$server}         = 0;
         $innd_cp_rejected{$server}        = 0;
@@ -1868,18 +1868,16 @@ sub adjust {
     # Sum all incoming traffic for each full server.
     foreach $key (keys (%innd_connect)) {
       ($hostname, $channel) = split(':', $key);
-      if (defined($innd_seconds_sum{$hostname})) {
-        $innd_seconds_sum{$hostname} += $innd_seconds{$key};
-        $innd_connect_sum{$hostname} += $innd_connect{$key};
-        $innd_offered_sum{$hostname} += $innd_offered{$key};
-        $innd_accepted_sum{$hostname} += $innd_accepted{$key};
-        $innd_refused_sum{$hostname} += $innd_refused{$key};
-        $innd_rejected_sum{$hostname} += $innd_rejected{$key};
-        $innd_stored_size_sum{$hostname} += $innd_stored_size{$key};
-        $innd_duplicated_size_sum{$hostname} += $innd_duplicated_size{$key};
-        $innd_offered_size_sum{$hostname} += $innd_offered_size{$key};
-        $innd_rejected_size_sum{$hostname} += $innd_rejected_size_sum{$key};
-      }
+      $innd_seconds_sum{$hostname} += $innd_seconds{$key};
+      $innd_connect_sum{$hostname} += $innd_connect{$key};
+      $innd_offered_sum{$hostname} += $innd_offered{$key};
+      $innd_accepted_sum{$hostname} += $innd_accepted{$key};
+      $innd_refused_sum{$hostname} += $innd_refused{$key};
+      $innd_rejected_sum{$hostname} += $innd_rejected{$key};
+      $innd_stored_size_sum{$hostname} += $innd_stored_size{$key};
+      $innd_duplicated_size_sum{$hostname} += $innd_duplicated_size{$key};
+      $innd_offered_size_sum{$hostname} += $innd_offered_size{$key};
+      $innd_rejected_size_sum{$hostname} += $innd_rejected_size_sum{$key};
     }
 
     # adjust min/max of innd timer stats.
