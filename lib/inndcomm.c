@@ -256,6 +256,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 
     /* now stick in the protocol version and the length. */
     buff -= HEADER_SIZE;
+    bufsiz += HEADER_SIZE;
     protocol = ICC_PROTOCOL_1;
     memcpy(buff, &protocol, sizeof(protocol));
     memcpy(buff + sizeof(protocol), &rlen, sizeof(rlen));
@@ -370,6 +371,10 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     memcpy(&protocol, buff, sizeof(protocol));
     memcpy(&rlen, buff + sizeof(protocol), sizeof(rlen));
     rlen = ntohs(rlen) - HEADER_SIZE;
+    if (rlen > bufsiz) {
+        ICCfailure = "bad length";
+        return -1;
+    }
     
     i = RECVorREAD(ICCfd, buff, rlen);
     if (i != rlen) {

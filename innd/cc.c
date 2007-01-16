@@ -1801,7 +1801,7 @@ CCreader(CHANNEL *cp)
     memcpy (&protocol,buff,sizeof (protocol)) ;
     memcpy (&bufflen,buff + sizeof (protocol),sizeof (bufflen)) ;
     bufflen = ntohs (bufflen);
-    if (bufflen < HEADER_SIZE) {
+    if (bufflen < HEADER_SIZE || bufflen > BIG_BUFFER) {
 	syslog(L_ERROR, "%s cant read CCreader bad length", LogName);
 	return;
     }
