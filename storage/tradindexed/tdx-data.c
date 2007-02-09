@@ -1083,7 +1083,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     /* All done.  Close things down and flush the data we changed, if
        necessary. */
     if (changed)
-        mapcntl(index, sizeof(*index), MS_ASYNC);
+        inn_mapcntl(index, sizeof(*index), MS_ASYNC);
 
  end:
     tdx_data_close(data);

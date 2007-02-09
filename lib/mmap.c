@@ -18,7 +18,7 @@
 **  Figure out what page an address is in and flush those pages
 */
 void
-mapcntl(void *p, size_t length, int flags)
+inn__mapcntl(void *p, size_t length, int flags)
 {
     int pagesize;
 

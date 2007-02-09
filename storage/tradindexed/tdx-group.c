@@ -380,7 +380,7 @@ index_expand(struct group_index *index)
         index->header->freelist.recno = i;
     }
 
-    mapcntl(index->header, index_file_size(index->count), MS_ASYNC);
+    inn_mapcntl(index->header, index_file_size(index->count), MS_ASYNC);
     return true;
 }
 
@@ -459,7 +459,7 @@ entry_splice(struct group_entry *entry, int *parent)
 {
     *parent = entry->next.recno;
     entry->next.recno = -1;
-    mapcntl(parent, sizeof(*parent), MS_ASYNC);
+    inn_mapcntl(parent, sizeof(*parent), MS_ASYNC);
 }
 
 
@@ -480,8 +480,8 @@ index_add(struct group_index *index, struct group_entry *entry)
     }
     entry->next.recno = index->header->hash[bucket].recno;
     index->header->hash[bucket].recno = entry_loc(index, entry);
-    mapcntl(&index->header->hash[bucket], sizeof(struct loc), MS_ASYNC);
-    mapcntl(entry, sizeof(*entry), MS_ASYNC);
+    inn_mapcntl(&index->header->hash[bucket], sizeof(struct loc), MS_ASYNC);
+    inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
 }
 
 
@@ -529,8 +529,8 @@ freelist_add(struct group_index *index, struct group_entry *entry)
 {
     entry->next.recno = index->header->freelist.recno;
     index->header->freelist.recno = entry_loc(index, entry);
-    mapcntl(&index->header->freelist, sizeof(struct loc), MS_ASYNC);
-    mapcntl(entry, sizeof(*entry), MS_ASYNC);
+    inn_mapcntl(&index->header->freelist, sizeof(struct loc), MS_ASYNC);
+    inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
 }
 
 
@@ -600,7 +600,7 @@ tdx_index_entry(struct group_index *index, const char *group)
         return NULL;
     entry = index->entries + loc;
     if (innconf->tradindexedmmap && innconf->nfsreader)
-	mapcntl(entry, sizeof *entry, MS_INVALIDATE);
+	inn_mapcntl(entry, sizeof *entry, MS_INVALIDATE);
     return entry;
 }
 
@@ -630,7 +630,7 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
         entry = &index->entries[loc];
         if (entry->flag != *flag) {
             entry->flag = *flag;
-            mapcntl(entry, sizeof(*entry), MS_ASYNC);
+            inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
         }
         return true;
     }
@@ -645,7 +645,7 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
         }
     loc = index->header->freelist.recno;
     index->header->freelist.recno = index->entries[loc].next.recno;
-    mapcntl(&index->header->freelist, sizeof(struct loc), MS_ASYNC);
+    inn_mapcntl(&index->header->freelist, sizeof(struct loc), MS_ASYNC);
 
     /* Initialize the entry. */
     entry = &index->entries[loc];
@@ -820,11 +820,11 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
         old_base = entry->base;
         entry->indexinode = data->indexinode;
         entry->base = data->base;
-        mapcntl(entry, sizeof(*entry), MS_ASYNC);
+        inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
         if (!tdx_data_pack_finish(data)) {
             entry->base = old_base;
             entry->indexinode = old_inode;
-            mapcntl(entry, sizeof(*entry), MS_ASYNC);
+            inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
             goto fail;
         }
     }
@@ -839,7 +839,7 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
     if (entry->high < article->number)
         entry->high = article->number;
     entry->count++;
-    mapcntl(entry, sizeof(*entry), MS_ASYNC);
+    inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     return true;
 
@@ -880,7 +880,7 @@ tdx_index_rebuild_finish(struct group_index *index, struct group_entry *entry,
     *entry = *new;
     entry->indexinode = new_inode;
     new->indexinode = new_inode;
-    mapcntl(entry, sizeof(*entry), MS_ASYNC);
+    inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
     offset = entry - index->entries;
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     return true;
@@ -930,12 +930,12 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     old_base = entry->base;
     entry->indexinode = new_entry.indexinode;
     entry->base = new_entry.base;
-    mapcntl(entry, sizeof(*entry), MS_ASYNC);
+    inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
     tdx_data_close(data);
     if (!tdx_data_rebuild_finish(group)) {
         entry->base = old_base;
         entry->indexinode = old_inode;
-        mapcntl(entry, sizeof(*entry), MS_ASYNC);
+        inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
         goto fail;
     }
 
@@ -1169,7 +1169,7 @@ index_audit_loc(struct group_index *index, int *loc, long number,
 
     if (fix && error) {
         *loc = -1;
-        mapcntl(loc, sizeof(*loc), MS_ASYNC);
+        inn_mapcntl(loc, sizeof(*loc), MS_ASYNC);
     }
 }
 
@@ -1187,7 +1187,7 @@ index_audit_deleted(struct group_entry *entry, long number, bool fix)
              number);
         if (fix) {
             HashClear(&entry->hash);
-            mapcntl(entry, sizeof(*entry), MS_ASYNC);
+            inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
         }
     }
 }
@@ -1327,7 +1327,7 @@ index_audit_group(struct group_index *index, struct group_entry *entry,
     } else {
         if (entry->flag != group->flag) {
             entry->flag = group->flag;
-            mapcntl(entry, sizeof(*entry), MS_ASYNC);
+            inn_mapcntl(entry, sizeof(*entry), MS_ASYNC);
         }
         tdx_data_audit(group->name, entry, fix);
     }
