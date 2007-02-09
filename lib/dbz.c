@@ -1540,7 +1540,7 @@ set(searcher *sp, hash_table *tab, void *value)
 	debug("set: incore");
 	if (tab->incore == INCORE_MMAP) {
 	    if (innconf->nfswriter) {
-		msync_page(where, tab->reclen, MS_ASYNC);
+		inn_msync_page(where, tab->reclen, MS_ASYNC);
 	    }
 	    return true;
 	}

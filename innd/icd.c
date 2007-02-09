@@ -493,7 +493,7 @@ void
 ICDwriteactive(void)
 {
 #ifdef HAVE_MMAP
-    if (msync_page(ICDactpointer, ICDactsize, MS_ASYNC) < 0) {
+    if (inn_msync_page(ICDactpointer, ICDactsize, MS_ASYNC) < 0) {
         syslog(L_FATAL, "%s msync failed %s 0x%lx %d %m", LogName, ICDactpath, (unsigned long) ICDactpointer, ICDactsize);
         exit(1);
     }

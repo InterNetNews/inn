@@ -1108,7 +1108,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     /* All done.  Close things down and flush the data we changed, if
        necessary. */
     if (changed)
-        msync_page(index, sizeof(*index), MS_ASYNC);
+        inn_msync_page(index, sizeof(*index), MS_ASYNC);
 
  end:
     tdx_data_close(data);

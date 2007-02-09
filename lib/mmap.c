@@ -17,7 +17,7 @@
 **  page.  This routine assumes that all pointers fit into a size_t.
 */
 int
-msync_page(void *p, size_t length, int flags)
+inn__msync_page(void *p, size_t length, int flags)
 {
     int pagesize;
 
