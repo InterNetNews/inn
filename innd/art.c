@@ -69,12 +69,6 @@ static char	ARTjnk[] = "junk";
 static char	*ARTpathme;
 
 /*
-**  Different types of rejected articles.
-*/
-typedef enum {REJECT_DUPLICATE, REJECT_SITE, REJECT_FILTER, REJECT_DISTRIB,
-	      REJECT_GROUP, REJECT_UNAPP, REJECT_OTHER} Reject_type;
-
-/*
 **  Flag array, indexed by character.  Character classes for Message-ID's.
 */
 static char		ARTcclass[256];
@@ -1092,11 +1086,13 @@ ARTclean(ARTDATA *data, char *buff)
 **  We are going to reject an article, record the reason and
 **  and the article.
 */
-static void
-ARTreject(Reject_type code, CHANNEL *cp, struct buffer *article UNUSED)
+void
+ARTreject(Reject_type code, CHANNEL *cp)
 {
   /* Remember why the article was rejected (for the status file) */
 
+  cp->Rejected++;
+  cp->RejectSize += cp->Next - cp->Start;
   switch (code) {
     case REJECT_DUPLICATE:
       cp->Duplicate++;
@@ -1104,27 +1100,21 @@ ARTreject(Reject_type code, CHANNEL *cp, struct buffer *article UNUSED)
       break;
     case REJECT_SITE:
       cp->Unwanted_s++;
-      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_FILTER:
       cp->Unwanted_f++;
-      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_DISTRIB:
       cp->Unwanted_d++;
-      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_GROUP:
       cp->Unwanted_g++;
-      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_UNAPP:
       cp->Unwanted_u++;
-      cp->RejectSize += cp->Next - cp->Start;
       break;
     case REJECT_OTHER:
       cp->Unwanted_o++;
-      cp->RejectSize += cp->Next - cp->Start;
       break;
     default:
       /* should never be here */
@@ -1814,14 +1804,14 @@ ARTpost(CHANNEL *cp)
   if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID))) {
     /* cp->Error is set since Path and Message-ID are required header and one
        of two is not found at ARTclean(). */
-    ARTreject(REJECT_OTHER, cp, article);
+    ARTreject(REJECT_OTHER, cp);
     return false;
   }
   hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
             NNTP_FAIL_IHAVE_REJECT);
-    ARTreject(REJECT_OTHER, cp, article);
+    ARTreject(REJECT_OTHER, cp);
     return false;
   }
   hops = data->Path.List;
@@ -1842,7 +1832,7 @@ ARTpost(CHANNEL *cp)
   if (HIScheck(History, HDR(HDR__MESSAGE_ID))) {
     snprintf(cp->Error, sizeof(cp->Error), "%d Duplicate", NNTP_FAIL_IHAVE_REJECT);
     ARTlog(data, ART_REJECT, cp->Error);
-    ARTreject(REJECT_DUPLICATE, cp, article);
+    ARTreject(REJECT_DUPLICATE, cp);
     return false;
   }
   if (!artclean) {
@@ -1851,7 +1841,7 @@ ARTpost(CHANNEL *cp)
 	!InndHisRemember(HDR(HDR__MESSAGE_ID)))
       syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	HDR(HDR__MESSAGE_ID));
-    ARTreject(REJECT_OTHER, cp, article);
+    ARTreject(REJECT_OTHER, cp);
     return false;
   }
 
@@ -1875,7 +1865,7 @@ ARTpost(CHANNEL *cp)
 	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
-      ARTreject(REJECT_SITE, cp, article);
+      ARTreject(REJECT_SITE, cp);
       return false;
     }
   }
@@ -1902,7 +1892,7 @@ ARTpost(CHANNEL *cp)
 	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
-      ARTreject(REJECT_FILTER, cp, article);
+      ARTreject(REJECT_FILTER, cp);
       return false;
     }
   }
@@ -1928,7 +1918,7 @@ ARTpost(CHANNEL *cp)
 	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
-      ARTreject(REJECT_FILTER, cp, article);
+      ARTreject(REJECT_FILTER, cp);
       return false;
     }
   }
@@ -1945,7 +1935,7 @@ ARTpost(CHANNEL *cp)
 	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
         syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
-      ARTreject(REJECT_DISTRIB, cp, article);
+      ARTreject(REJECT_DISTRIB, cp);
       return false;
     } else {
       ARTparsedist(HDR(HDR__DISTRIBUTION), HDR_LEN(HDR__DISTRIBUTION),
@@ -1961,7 +1951,7 @@ ARTpost(CHANNEL *cp)
 	    !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	  syslog(L_ERROR, "%s cant write history %s %m",
 	    LogName, HDR(HDR__MESSAGE_ID));
-	ARTreject(REJECT_DISTRIB, cp, article);
+	ARTreject(REJECT_DISTRIB, cp);
 	return false;
       }
     }
@@ -2087,7 +2077,7 @@ ARTpost(CHANNEL *cp)
 	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
-      ARTreject(REJECT_UNAPP, cp, article);
+      ARTreject(REJECT_UNAPP, cp);
       return false;
     }
 
@@ -2110,7 +2100,7 @@ ARTpost(CHANNEL *cp)
                "%d Won't accept posts in \"%s\"", NNTP_FAIL_IHAVE_REJECT,
                MaxLength(p, p));
       ARTlog(data, ART_REJECT, cp->Error);
-      ARTreject(REJECT_GROUP, cp, article);
+      ARTreject(REJECT_GROUP, cp);
       return false;
     }
 
@@ -2184,7 +2174,7 @@ ARTpost(CHANNEL *cp)
 	  !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	  syslog(L_ERROR, "%s cant write history %s %m",
 	    LogName, HDR(HDR__MESSAGE_ID));
-	ARTreject(REJECT_GROUP, cp, article);
+	ARTreject(REJECT_GROUP, cp);
 	return false;
       } else {
         /* if !GroupMissing, then all the groups the article was posted
@@ -2197,7 +2187,7 @@ ARTpost(CHANNEL *cp)
 	      !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
 	    syslog(L_ERROR, "%s cant write history %s %m",
 	      LogName, HDR(HDR__MESSAGE_ID));
-	  ARTreject(REJECT_GROUP, cp, article);
+	  ARTreject(REJECT_GROUP, cp);
 	  return false;
 	}
       }
@@ -2230,7 +2220,7 @@ ARTpost(CHANNEL *cp)
                  NNTP_FAIL_IHAVE_REJECT);
       }
       ARTlog(data, ART_REJECT, cp->Error);
-      ARTreject(REJECT_OTHER, cp, article);
+      ARTreject(REJECT_OTHER, cp);
       return false;
     }
   } else {
@@ -2260,7 +2250,7 @@ ARTpost(CHANNEL *cp)
     if ((Mode == OMrunning) && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
       syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	HDR(HDR__MESSAGE_ID));
-    ARTreject(REJECT_OTHER, cp, article);
+    ARTreject(REJECT_OTHER, cp);
     TMRstop(TMR_ARTWRITE);
     return false;
   }
@@ -2299,7 +2289,7 @@ ARTpost(CHANNEL *cp)
     snprintf(cp->Error, sizeof(cp->Error), "%d cant write history, %s",
              NNTP_FAIL_IHAVE_DEFER, strerror(errno));
     ARTlog(data, ART_REJECT, cp->Error);
-    ARTreject(REJECT_OTHER, cp, article);
+    ARTreject(REJECT_OTHER, cp);
     return false;
   }
 

@@ -207,7 +207,6 @@ NCpostit(CHANNEL *cp)
     } else
       response = NNTP_TOOKIT;
   } else {
-    cp->Rejected++;
     if (cp->Sendid.size)
       response = cp->Sendid.data;
     else
@@ -904,8 +903,7 @@ NCproc(CHANNEL *cp)
 
       /* If error is set, we're rejecting this article. */
       if (*cp->Error != '\0') {
-	cp->Rejected++;
-	cp->RejectSize += cp->Next - cp->Start;
+	ARTreject(REJECT_OTHER, cp);
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
 	NCclearwip(cp);
@@ -931,7 +929,7 @@ NCproc(CHANNEL *cp)
 	/* Clear the work-in-progress entry. */
 	NCclearwip(cp);
 	NCwriteshutdown(cp, ModeReason);
-	cp->Rejected++;
+	ARTreject(REJECT_OTHER, cp);
 	return;
       }
 
@@ -1065,7 +1063,7 @@ NCproc(CHANNEL *cp)
 	  NCwritereply(cp, NNTP_OK_XBATCHED);
 	  cp->Received++;
 	} else
-	  cp->Rejected++;
+          ARTreject(REJECT_OTHER, cp);
       }
       syslog(L_NOTICE, "%s accepted batch size %d", CHANname(cp),
 	cp->XBatchSize);
@@ -1073,6 +1071,7 @@ NCproc(CHANNEL *cp)
       cp->Start = cp->Next = cp->XBatchSize;
       break;
     }
+
     if (cp->State == CSwritegoodbye || cp->Type == CTfree)
       break;
     if (Tracing || cp->Tracing)

@@ -357,6 +357,12 @@ typedef struct _CHANNEL {
 #define	DEFAULTNGBOXSIZE	64
 
 /*
+**  Different types of rejected articles.
+*/
+typedef enum {REJECT_DUPLICATE, REJECT_SITE, REJECT_FILTER, REJECT_DISTRIB,
+	      REJECT_GROUP, REJECT_UNAPP, REJECT_OTHER} Reject_type;
+
+/*
 **  A newsgroup has a name in different formats, and a high-water count,
 **  also kept in different formats.  It also has a list of sites that
 **  get this group.
@@ -633,6 +639,7 @@ extern void		ARTclose(void);
 extern void		ARTsetup(void);
 extern void		ARTprepare(CHANNEL *cp);
 extern void		ARTparse(CHANNEL *cp);
+extern void		ARTreject(Reject_type, CHANNEL *);
 
 extern bool		CHANsleeping(CHANNEL *cp);
 extern CHANNEL      *	CHANcreate(int fd, enum channel_type Type,
