@@ -701,7 +701,7 @@ static void closehashtable(hash_table *tab) {
 	free(tab->core);
     if (tab->incore == INCORE_MMAP) {
 #if defined(HAVE_MMAP)
-	if (munmap(tab->core, (int)conf.tsize * tab->reclen) == -1) {
+	if (munmap(tab->core, conf.tsize * tab->reclen) == -1) {
 	    syswarn("closehashtable: munmap failed");
 	}
 #else
@@ -1246,8 +1246,8 @@ static bool
 getcore(hash_table *tab)
 {
     char *it;
-    int nread;
-    int i;
+    ssize_t nread;
+    size_t i;
     struct stat st;
     size_t length = conf.tsize * tab->reclen;
 
@@ -1303,14 +1303,14 @@ getcore(hash_table *tab)
 static bool
 putcore(hash_table *tab)
 {
-    int size;
+    size_t size;
     
     if (tab->incore == INCORE_MEM) {
 	if(options.writethrough)
 	    return true;
 	nonblocking(tab->fd, false);
 	size = tab->reclen * conf.tsize;
-	if (pwrite(tab->fd, tab->core, size, 0) != size) {
+	if (xpwrite(tab->fd, tab->core, size, 0) != size) {
 	    nonblocking(tab->fd, options.nonblock);
 	    return false;
 	}
@@ -1318,7 +1318,7 @@ putcore(hash_table *tab)
     }
 #ifdef HAVE_MMAP
     if(tab->incore == INCORE_MMAP) {
-	msync(tab->core, (int)conf.tsize * tab->reclen, MS_ASYNC);
+	msync(tab->core, conf.tsize * tab->reclen, MS_ASYNC);
     }
 #endif
     return true;
