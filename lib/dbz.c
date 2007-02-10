@@ -1304,13 +1304,15 @@ static bool
 putcore(hash_table *tab)
 {
     size_t size;
+    ssize_t result;
     
     if (tab->incore == INCORE_MEM) {
 	if(options.writethrough)
 	    return true;
 	nonblocking(tab->fd, false);
 	size = tab->reclen * conf.tsize;
-	if (xpwrite(tab->fd, tab->core, size, 0) != size) {
+        result = xpwrite(tab->fd, tab->core, size, 0);
+	if (result < 0 || (size_t) result != size) {
 	    nonblocking(tab->fd, options.nonblock);
 	    return false;
 	}
