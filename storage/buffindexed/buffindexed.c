@@ -312,8 +312,8 @@ static bool ovparse_part_line(char *l) {
   }
   l = ++p;
 
-  /* Length/size of symbolic partition */
-  len = strtoul(l, NULL, 10) * 1024;     /* This value in KB in decimal */
+  /* Length/size of symbolic partition in KB */
+  len = strtoul(l, NULL, 10) * (off_t) 1024;
   /*
   ** The minimum article offset will be the size of the bitfield itself,
   ** len / (blocksize * 8), plus however many additional blocks the OVBUFFHEAD
