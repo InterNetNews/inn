@@ -92,7 +92,7 @@ static rad_config_t *get_radconf(void)
 {
   rad_config_t *new;
 
-  new = xmalloc(sizeof(rad_config_t));
+  new = xcalloc(1, sizeof(rad_config_t));
   new->next = NULL;
 
   return new;
