@@ -199,6 +199,9 @@ overview_add_xref(struct overview *overview, const char *xref,
     bool success = true;
 
     xref_copy = xstrdup(xref);
+    p = strchr(xref_copy, '\n');
+    if (p != NULL)
+        *p = '\0';
     overview->groups = cvector_split_space(xref_copy, overview->groups);
     for (i = 0; i < overview->groups->count; i++) {
         group = overview->groups->strings[i];

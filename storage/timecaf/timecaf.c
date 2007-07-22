@@ -336,6 +336,8 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     timestamp = now>>8;
     art = 0;  /* magic: 0=="next available article number. */
 
+    memset(&token, 0, sizeof(token));
+
     path = MakePath(timestamp, class);
     /* check to see if we have this CAF file already open. */
     if (WritingFile.fd < 0 || strcmp(WritingFile.path, path) != 0) {
@@ -352,6 +354,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 		    token.type = TOKEN_EMPTY;
 		    free(path);
 		    SMseterror(SMERR_UNDEFINED, NULL);
+		    token.type = TOKEN_EMPTY;
 		    return token;
 		} else {
 		    *p = '/';

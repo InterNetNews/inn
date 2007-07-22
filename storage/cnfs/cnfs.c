@@ -1072,6 +1072,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     if (metaexprule == (CNFSEXPIRERULES *)NULL) {
 	SMseterror(SMERR_INTERNAL, "no rules match");
         warn("CNFS: no matches for group '%s'", buf);
+	memset(&token, 0, sizeof(token));
 	token.type = TOKEN_EMPTY;
 	return token;
     }

@@ -516,6 +516,7 @@ ARTstore(CHANNEL *cp)
 	p = HDR(HDR__BYTES) + HDR_LEN(HDR__BYTES) + 2;
 	break;
       default:
+        memset(&result, 0, sizeof(result));
 	result.type = TOKEN_EMPTY;
 	return result;
     }

@@ -16,10 +16,10 @@
 #include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/overview.h"
 #include "inn/qio.h"
 #include "inn/wire.h"
 #include "inn/libinn.h"
-#include "inn/ov.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
 
@@ -67,7 +67,7 @@ int OverTmpSegSize, OverTmpSegCount;
 FILE *OverTmpFile;
 char *OverTmpPath = NULL;
 bool NoHistory;
-OVSORTTYPE sorttype;
+bool SortOverview = false;
 int RetrMode;
 bool WriteStdout = false;
 
@@ -87,7 +87,7 @@ static ARTOVERFIELD	*Missfields; /* header fields not listed in
 					(e.g. message-id */
 static size_t		Missfieldsize = 0;
 
-static void OverAddAllNewsgroups(void);
+static void OverAddAllNewsgroups(struct overview *overview);
 
 /*
 **  Check and parse a Message-ID header line.  Return private space.
@@ -116,24 +116,45 @@ GetMessageID(char *p)
  * The sorting/batching helps improve efficiency.
  */
 
-/*
- * Flush the unwritten OverTempFile data to disk, sort the file, read it 
- * back in, and add it to overview. 
- */
 
+/*
+**  Given a pointer to an overview data struct, find the start of the Xref
+**  information in its overview entry and return a pointer to it or NULL if it
+**  couldn't be found.
+*/
+static const char *
+find_xref(struct overview_data *data)
+{
+    const char *p;
+    const char *xref = NULL;
+
+    for (p = data->overview + data->overlen - 1; p > data->overview + 5; p--)
+        if (*p == ':' && strncasecmp(p - 5, "\tXref", 5) == 0) {
+            xref = p + 2;
+            break;
+        }
+    return xref;
+}
+
+
+/*
+**  Flush the unwritten OverTempFile data to disk, sort the file, read it back
+**  in, and add it to overview.
+*/
 static void
-FlushOverTmpFile(void)
+FlushOverTmpFile(struct overview *overview)
 {
     char temp[SMBUF];
     char *SortedTmpPath;
     int i, pid, fd;
-    TOKEN token;
     QIOSTATE *qp;
     int count;
     char *line, *p;
     char *q = NULL;
     char *r = NULL;
-    time_t arrived, expires;
+    const char *xref;
+    struct overview_data data;
+    struct overview_config config;
     static int first = 1;
 
     if (OverTmpFile == NULL)
@@ -162,20 +183,19 @@ FlushOverTmpFile(void)
 
 	/* child */
 	/* init the overview setup. */
-	if (!OVopen(OV_WRITE)) {
+        overview = overview_open(OV_WRITE);
+        if (overview == NULL) {
             warn("cannot open overview");
 	    _exit(1);
 	}
-	if (!OVctl(OVSORT, (void *)&sorttype)) {
-            warn("cannot obtain overview sorting information");
-	    OVclose();
-	    _exit(1);
-	}
-	if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow)) {
-            warn("cannot obtain overview cutoff information");
-	    OVclose();
-	    _exit(1);
-	}
+        overview_config_get(overview, &config);
+        SortOverview = config.sorted;
+        config.cutoff = Cutofflow;
+        if (!overview_config_set(overview, &config)) {
+            warn("cannot set overview cutoff configuration");
+            overview_close(overview);
+            _exit(1);
+        }
     }
 
     /* This is a bit odd, but as long as other user's files can't be deleted
@@ -186,7 +206,7 @@ FlushOverTmpFile(void)
     fd = mkstemp(SortedTmpPath);
     if (fd < 0) {
         syswarn("cannot create temporary file");
-        OVclose();
+        overview_close(overview);
         Fork ? _exit(1) : exit(1);
     }
     close(fd);
@@ -197,7 +217,7 @@ FlushOverTmpFile(void)
     if (i != 0) {
         syswarn("cannot sort temporary overview file (%s exited %d)",
                 INN_PATH_SORT, i);
-	OVclose();
+        overview_close(overview);
 	Fork ? _exit(1) : exit(1);
     }
 
@@ -209,7 +229,7 @@ FlushOverTmpFile(void)
     /* read sorted lines. */
     if ((qp = QIOopen(SortedTmpPath)) == NULL) {
         syswarn("cannot open sorted overview file %s", SortedTmpPath);
-	OVclose();
+        overview_close(overview);
 	Fork ? _exit(1) : exit(1);
     }
 
@@ -229,13 +249,17 @@ FlushOverTmpFile(void)
                  SortedTmpPath, count);
 	    continue;
 	}
-	/* p+1 now points to start of token, q+1 points to start of overline. */
-	if (sorttype == OVNEWSGROUP) {
-	    *p++ = '\0';
-	    *q++ = '\0';
-	    *r++ = '\0';
-	    arrived = (time_t)atol(p);
-	    expires = (time_t)atol(q);
+
+	/* If SortOverview is false, line points to the arrival date, p+1 to
+           the expiration date, q+1 to the token, and r+1 to the overview
+           data.  If it's true, there's a group name prepended, which is used
+           for sorting and which we have to strip off first. */
+        *p++ = '\0';
+        *q++ = '\0';
+        *r++ = '\0';
+	if (SortOverview) {
+            data.arrived = (time_t) atol(p);
+            data.expires = (time_t) atol(q);
 	    q = r;
 	    if ((r = strchr(r, '\t')) == NULL) {
                 warn("sorted overview file %s has a bad line at %d",
@@ -244,34 +268,45 @@ FlushOverTmpFile(void)
 	    }
 	    *r++ = '\0';
 	} else {
-	    *p++ = '\0';
-	    *q++ = '\0';
-	    *r++ = '\0';
-	    arrived = (time_t)atol(line);
-	    expires = (time_t)atol(p);
+            data.arrived = (time_t) atol(line);
+            data.expires = (time_t) atol(p);
 	}
-	token = TextToToken(q);
-	if (OVadd(token, r, strlen(r), arrived, expires) == OVADDFAILED) {
-	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
+        data.token = TextToToken(q);
+        data.overview = r;
+        data.overlen = strlen(r);
+        xref = find_xref(&data);
+        if (xref == NULL) {
+            warn("no Xref found in overview data for %s", q);
+            continue;
+        }
+
+        /* Okay, we can finally add the data. */
+        if (!overview_add_xref(overview, xref, &data)) {
+            float space;
+
+            space = overview_free_space(overview);
+            if (space >= 0 && space <= 0.1) {
                 warn("no space left for overview");
-		OVclose();
-		Fork ? _exit(1) : exit(1);
-	    }
-            warn("cannot write overview data \"%.40s\"", q);
-	}
+                overview_close(overview);
+                Fork ? _exit(1) : exit(1);
+            }
+            warn("cannot write overview data for %s", q);
+        }
     }
+
     /* Check for errors and close. */
     if (QIOerror(qp)) {
         syswarn("cannot read sorted overview file %s", SortedTmpPath);
-	OVclose();
+	overview_close(overview);
 	Fork ? _exit(1) : exit(1);
     }
     QIOclose(qp);
+
     /* unlink sorted tmp file */
     unlink(SortedTmpPath);
     free(SortedTmpPath);
-    if(Fork) {
-	OVclose();
+    if (Fork) {
+	overview_close(overview);
 	_exit(0);
     }
 }
@@ -283,12 +318,14 @@ FlushOverTmpFile(void)
 **  appropriate.
 */
 static void
-WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen, 
-	      char *overdata, int overlen, time_t arrived, time_t expires)
+WriteOverLine(struct overview *overview, TOKEN *token, const char *xrefs,
+              int xrefslen, char *overdata, int overlen, time_t arrived,
+              time_t expires)
 {
     char temp[SMBUF];
-    const char *p, *q, *r;
-    int i, fd;
+    const char *p, *q, *r, *xref;
+    int fd;
+    struct overview_data data;
 
     /* If WriteStdout is set, just print the overview information to standard
        output and return. */
@@ -303,21 +340,35 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
     /* If the overview method doesn't care about sorted data, don't bother
        with the temporary file and just write the data out to our child
        process or to the overview database directly. */
-    if (sorttype == OVNOSORT) {
+    if (!SortOverview) {
 	if (Fork) {
 	    fprintf(Overchan, "%s %ld %ld ", TokenToText(*token), (long)arrived, (long)expires);
 	    if (fwrite(overdata, 1, overlen, Overchan) != (size_t) overlen)
                 sysdie("writing overview failed");
 	    fputc('\n', Overchan);
-	} else if (OVadd(*token, overdata, overlen, arrived, expires) == OVADDFAILED) {
-	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
-                warn("no space left for overview");
-		OVclose();
-		exit(1);
-	    }
-            warn("cannot write overview data for article %s",
-                 TokenToText(*token));
-	}
+	} else {
+            data.token = *token;
+            data.overview = overdata;
+            data.overlen = overlen;
+            data.arrived = arrived;
+            data.expires = expires;
+            xref = find_xref(&data);
+            if (xref == NULL) {
+                warn("no Xref in overview data for %s", TokenToText(*token));
+                return;
+            }
+            if (!overview_add_xref(overview, xref, &data)) {
+                float space;
+
+                space = overview_free_space(overview);
+                if (space >= 0 && space <= 0.1) {
+                    warn("no space left for overview");
+                    overview_close(overview);
+                    exit(1);
+                }
+            }
+            warn("cannot write overview data for %s", TokenToText(*token));
+        }
 	return;
     }
 
@@ -337,7 +388,7 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
 
     /* Print out the data to the teporary file with the appropriate keys for
        sorting. */
-    if (sorttype == OVNEWSGROUP) {
+    if (SortOverview) {
 	/* find first ng name in xref. */
 	for (p = xrefs, q=NULL ; p < xrefs+xrefslen ; ++p) {
 	    if (*p == ' ') {
@@ -379,7 +430,7 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
     OverTmpSegCount++;
 
     if (OverTmpSegSize != 0 && OverTmpSegCount >= OverTmpSegSize) {
-	FlushOverTmpFile();
+	FlushOverTmpFile(overview);
     }
 }
 
@@ -495,7 +546,7 @@ ARTreadschema(bool Overview)
  * Handle a single article.  This routine's fairly complicated. 
  */
 static void
-DoArt(ARTHANDLE *art)
+DoArt(ARTHANDLE *art, struct overview *overview)
 {
     ARTOVERFIELD		*fp;
     const char                  *p, *end;
@@ -683,7 +734,7 @@ DoArt(ARTHANDLE *art)
                 buffer.left++;
             }
 	}
-	WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
+	WriteOverLine(overview, art->token, Xrefp->Header, Xrefp->HeaderLength,
 		      buffer.data, buffer.left, Arrived, Expires);
     }
 
@@ -702,13 +753,13 @@ DoArt(ARTHANDLE *art)
 ** Add all groups to overview group.index. --rmt
 */
 static void
-OverAddAllNewsgroups(void)
+OverAddAllNewsgroups(struct overview *overview)
 {
     QIOSTATE *qp;
     int count;
-    char *q,*p;
+    char *q, *p;
     char *line;
-    ARTNUM hi, lo;
+    struct overview_group data;
 
     if ((qp = QIOopen(ActivePath)) == NULL)
         sysdie("cannot open %s", ActivePath);
@@ -718,19 +769,19 @@ OverAddAllNewsgroups(void)
 	    continue;
 	}
 	*p++ = '\0';
-	hi = (ARTNUM)atol(p);
+        data.high = (ARTNUM) atol(p);
 	if ((p = strchr(p, ' ')) == NULL) {
             warn("bad active line %d: %.40s", count, line);
 	    continue;
 	}
 	*p++ = '\0';
-	lo = (ARTNUM)atol(p);
+        data.low = (ARTNUM) atol(p);
 	if ((q = strrchr(p, ' ')) == NULL) {
             warn("bad active line %d: %.40s", count, line);
 	    continue;
 	}
-	/* q+1 points to NG flag */
-	if (!OVgroupadd(line, lo, hi, q+1))
+        data.flag = q[1];
+        if (!overview_group_add(overview, line, &data))
             die("cannot add %s to overview group index", line);
     }
     /* Test error conditions; QIOtoolong shouldn't happen. */
@@ -776,6 +827,7 @@ main(int argc, char **argv)
     char *buff;
     size_t npairs = 0;
     FILE *F;
+    struct overview *overview = NULL;
 
     /* First thing, set up logging and our identity. */
     openlog("makehistory", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
@@ -872,25 +924,30 @@ main(int argc, char **argv)
     /* Read in the overview schema */
     ARTreadschema(DoOverview);
     
+    /* If we're writing to the overview database directly, open it and prepare
+       to write to it later. */
     if (DoOverview && !WriteStdout) {
-	/* init the overview setup. */
-	if (!OVopen(OV_WRITE))
+        struct overview_config config;
+
+        overview = overview_open(OV_WRITE);
+        if (overview == NULL)
             sysdie("cannot open overview");
-	if (!OVctl(OVSORT, (void *)&sorttype))
-            die("cannot obtain overview sort information");
+        overview_config_get(overview, &config);
+        SortOverview = config.sorted;
 	if (!Fork) {
-	    if (!OVctl(OVCUTOFFLOW, (void *)&Cutofflow))
-                die("cannot obtain overview cutoff information");
-	    OverAddAllNewsgroups();
+            config.cutoff = Cutofflow;
+            if (!overview_config_set(overview, &config))
+                die("cannot set overview cutoff configuration");
+	    OverAddAllNewsgroups(overview);
 	} else {
-	    OverAddAllNewsgroups();
-	    if (sorttype == OVNOSORT) {
+	    OverAddAllNewsgroups(overview);
+	    if (!SortOverview) {
 		buff = concat(innconf->pathbin, "/", "overchan", NULL);
 		if ((Overchan = popen(buff, "w")) == NULL)
                     sysdie("cannot fork overchan process");
 		free(buff);
 	    }
-	    OVclose();
+            overview_close(overview);
 	}
     }
 
@@ -926,7 +983,7 @@ main(int argc, char **argv)
 		SMcancel(*art->token);
 	    continue;
 	}
-	DoArt(art);
+	DoArt(art, overview);
     }
 
     if (!NoHistory) {
@@ -936,12 +993,12 @@ main(int argc, char **argv)
     }
 
     if (DoOverview) {
-	if (sorttype == OVNOSORT && Fork)
+	if (!SortOverview && Fork)
 	    if (fflush(Overchan) == EOF || ferror(Overchan) || pclose(Overchan) == EOF)
                 sysdie("cannot flush overview data");
-	if (sorttype != OVNOSORT && !WriteStdout) {
+	if (SortOverview && !WriteStdout) {
 	    int status;
-	    FlushOverTmpFile();
+	    FlushOverTmpFile(overview);
 	    if(Fork)
 		wait(&status);
 	}
@@ -954,6 +1011,6 @@ main(int argc, char **argv)
         }
     }
     if (!Fork && !WriteStdout)
-	OVclose();
+        overview_close(overview);
     exit(0);
 }

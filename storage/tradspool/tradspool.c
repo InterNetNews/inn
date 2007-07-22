@@ -579,7 +579,8 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     char *nonwfarticle; /* copy of article converted to non-wire format */
     unsigned int i;
     size_t length, nonwflen;
-    
+
+    memset(&token, 0, sizeof(token)); 
     xrefhdr = article.groups;
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
 	token.type = TOKEN_EMPTY;

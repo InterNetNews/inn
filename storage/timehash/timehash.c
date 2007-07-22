@@ -127,6 +127,8 @@ TOKEN timehash_store(const ARTHANDLE article, const STORAGECLASS class) {
     else
 	now = article.arrived;
 
+    memset(&token, 0, sizeof(token));
+
     for (i = 0; i < 0x10000; i++) {
 	seq = SeqNum;
 	SeqNum = (SeqNum + 1) & 0xffff;

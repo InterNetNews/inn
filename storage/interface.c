@@ -619,6 +619,7 @@ TOKEN SMstore(const ARTHANDLE article) {
     TOKEN               result;
 
     if (!SMopenmode) {
+	memset(&result, 0, sizeof(result));
 	result.type = TOKEN_EMPTY;
 	SMseterror(SMERR_INTERNAL, "read only storage api");
 	return result;
