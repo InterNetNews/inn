@@ -42,11 +42,19 @@ else
         fi
         inn_save_LDFLAGS=$LDFLAGS
         LDFLAGS="$KRB5_LDFLAGS $LDFLAGS"
-        AC_CHECK_LIB([com_err], [error_message], [KRB5_LIBS=-lcom_err])
-        AC_CHECK_LIB([k5crypto], [krb5_string_to_key],
-            [KRB5_LIBS="-lk5crypto $KRB5_LIBS"], , $KRB5_LIBS)
         AC_CHECK_LIB([krb5], [krb5_init_context],
-            [KRB5_LIBS="-lkrb5 $KRB5_LIBS"], , $KRB5_LIBS)
+            [KRB5_LIBS="-lkrb5 -lasn1 -lroken -lcrypto -lcom_err"],
+            [KRB5_EXTRA="-lk5crypto -lcom_err"
+             AC_CHECK_LIB([krb5support], [krb5int_getspecific],
+                 [KRB5_EXTRA="$KRB5_EXTRA -lkrb5support"],
+                 [AC_SEARCH_LIBS([pthread_setspecific], [pthreads pthread])
+                  AC_CHECK_LIB([krb5support], [krb5int_setspecific],
+                      [KRB5_EXTRA="$KRB5_EXTRA -lkrb5support"])])
+             AC_CHECK_LIB([krb5], [krb5_cc_default],
+                 [KRB5_LIBS="-lkrb5 $KRB5_EXTRA"],
+                 [AC_MSG_ERROR([cannot find usable Kerberos v5 library])],
+                 [$KRB5_EXTRA])],
+            [-lasn1 -lroken -lcrypto -lcom_err])
         LDFLAGS=$inn_save_LDFLAGS
         KRB5_AUTH=auth_krb5
         AC_CHECK_HEADERS([et/com_err.h])
