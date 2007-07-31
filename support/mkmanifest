@@ -35,7 +35,7 @@ sub load_exclusions {
             my $pattern = $_;
             $pattern =~ s%\*%[^/]*%g;
             $pattern =~ s/\./\\./g;
-            push (@IGNORE, qr/$pattern/);
+            push (@IGNORE, qr/^$pattern$/);
         } else {
             $IGNORE{$_} = 1;
         }

@@ -50,7 +50,7 @@ backends/actsyncd.in                  Daemon to run actsync periodically
 backends/archive.c                    Simple article archiver
 backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
-backends/crosspost.c                  Create links for crossposts (obselete)
+backends/crosspost.c                  Create links for crossposts (obsolete)
 backends/cvtbatch.c                   Add fields to simple batchfile
 backends/filechan.c                   Split a funnel into separate files
 backends/innbind.c                    Bind to low-numbered network ports
@@ -794,6 +794,8 @@ tests/data/db/distributions           Skeleton distributions file for testing
 tests/data/db/newsgroups              Skeleton newsgroups file for testing
 tests/data/etc                        Configuration for testing (Directory)
 tests/data/etc/buffindexed.conf       buffindexed configuration for testing
+tests/data/etc/inn-bfx.conf           Basic inn.conf for testing buffindexed
+tests/data/etc/inn-tdx.conf           Basic inn.conf for testing tradindexed
 tests/data/etc/inn.conf               Basic inn.conf file for testing
 tests/data/etc/overview.fmt           Overview configuration for testing
 tests/data/etc/passwd                 Password data for ckpasswd tests
