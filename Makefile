@@ -116,7 +116,7 @@ install-root:
 
 ##  Install a certificate for TLS/SSL support.
 cert:
-	$(SSLBIN)/openssl req -new -x509 -nodes \
+	$(SSLBIN) req -new -x509 -nodes \
 	    -out $(PATHLIB)/cert.pem -days 366 \
 	    -keyout $(PATHLIB)/key.pem
 	chown $(NEWSUSER) $(PATHLIB)/cert.pem

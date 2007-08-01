@@ -147,6 +147,8 @@ SSL_CPPFLAGS	= @SSL_CPPFLAGS@
 SSL_LDFLAGS	= @SSL_LDFLAGS@
 SSL_LIBS	= @SSL_LIBS@
 
+SSLBIN		= @SSLBIN@
+
 ##  SASL support.  Additional flags and libraries used when compiling or
 ##  linking code that contains SASL support.
 
@@ -185,8 +187,8 @@ LEX		= @LEX@
 LN_S		= @LN_S@
 PERL		= @PERL@
 RANLIB		= @RANLIB@
-YACC		= @YACC@
 UNCOMPRESS	= @UNCOMPRESS@
+YACC		= @YACC@
 
 FIXCONFIG	= $(top)/support/fixconfig
 FIXSCRIPT	= $(top)/support/fixscript
