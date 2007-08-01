@@ -28,7 +28,7 @@ The line:
    news.admin.moderation 1175716803 group-admin@isc.org
 
 shows that the newsgroup news.admin.moderation was created on April 4th 2007
-at 20:00:03 UTC.  This date can be obtained for instance with
+at 20:00:03 UTC.  This date can be obtained for instance with C<convdate -c 1175716803> or
 C<date -u -d "Jan 1, 1970 00:00:00 +0000 + 1175716803 seconds">.  It is
 when the newsgroup was locally created; in this example, it is when the
 control message sent by C<group-admin@isc.org> was received and processed
@@ -44,6 +44,6 @@ $Id$
 
 =head1 SEE ALSO
 
-active(5), ctlinnd(8), inn.conf(5), innd(8), nnrpd(8).
+active(5), convdate(1), ctlinnd(8), inn.conf(5), innd(8), nnrpd(8).
 
 =cut
