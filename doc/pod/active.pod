@@ -6,8 +6,9 @@ active - List of newsgroups carried by the server
 
 The file I<pathdb>/active lists the newsgroups carried by INN.  This file
 is generally maintained using ctlinnd(8) to create and remove groups, or
-by letting controlchan(8) do so on the basis of received control messages.
-This file should not be edited directly without throttling B<innd>, and
+by letting controlchan(8) do so on the basis of received control messages;
+this file is then updated and a backup stored in I<pathdb>/active.old.  The
+F<active> file should not be edited directly without throttling B<innd>, and
 must be reloaded using B<ctlinnd> before B<innd> is unthrottled.  Editing
 it directly even with those precautions may make it inconsistent with the
 overview database and won't update F<active.times>, so B<ctlinnd> should
@@ -19,7 +20,7 @@ articles for that group are assigned monotonically increasing numbers as
 unique names.  If an article is posted to newsgroups not mentioned in this
 file, those newsgroups are ignored.
 
-If none of the newsgroups listed in the Newsgroups header of an article
+If none of the newsgroups listed in the Newsgroups: header of an article
 are present in this file, the article is either rejected (if I<wanttrash>
 is false in F<inn.conf>), or is filed into the newsgroup C<junk> and only
 propagated to sites that receive the C<junk> newsgroup (if I<wanttrash> is
@@ -34,7 +35,7 @@ special, as mentioned above.  The newsgroup C<control> and any newsgroups
 beginning with C<control.> are also special; control messages are filed
 into a control.* newsgroup named after the type of control message if that
 group exists, and otherwise are filed into the newsgroup C<control>
-(without regard to what newsgroups are listed in the Newsgroups header).
+(without regard to what newsgroups are listed in the Newsgroups: header).
 If I<mergetogroups> is set to true in F<inn.conf>, newsgroups that begin
 with C<to.> are also treated specially; see innd(8).
 
@@ -44,7 +45,7 @@ this number is not guaranteed to be accurate, and should only be taken to
 be a hint.  It is normally updated nightly as part of the expire process;
 see news.daily(8) and look for C<lowmark> or C<renumber> for more details.
 Note that because of article cancellations, there may be gaps in the
-numbering sequence.  If the lowest article number is greater then the
+numbering sequence.  If the lowest article number is greater than the
 highest article number, then there are no articles in the newsgroup.  In
 order to make it possible to update an entry in-place without rewriting
 the entire file, the second and third fields are padded out with leading
@@ -56,12 +57,12 @@ The fourth field contains one of the following flags:
     m         The group is moderated and all postings must be approved.
     n         No local postings are allowed, only articles from peers.
     j         Articles are filed in the junk group instead.
-    x         No local postings and ignored for articles from peers.
+    x         No local postings, and articles from peers are ignored.
     =foo.bar  Articles are filed in the group foo.bar instead.
 
 If a newsgroup has the C<j> flag, no articles will be filed in that
 newsgroup, and local postings to that group will be rejected.  If an
-article for that newsgroup is received from a remote site, and it is not
+article for that newsgroup is received from a remote site, and if it is not
 crossposted to some other valid group, it will be filed into the C<junk>
 newsgroup instead.  This is different than simply not listing the group,
 since the article will still be accepted and can be propagated to other
@@ -71,10 +72,40 @@ If the <flag> field begins with an equal sign, the newsgroup is an alias.
 Articles cannot be posted to that newsgroup, but they can be received from
 other sites.  Any articles received from peers for that newsgroup are
 treated as if they were actually posted to the group named after the equal
-sign.  Note that the Newsgroups header of the articles are not modified.
+sign.  Note that the Newsgroups: header of the articles are not modified.
 (Alias groups are typically used during a transition and are typically
 created manually with ctlinnd(8).)  An alias should not point to another
 alias.
+
+=head1 MINIMAL ACTIVE FILE
+
+For B<innd> to be able to start, the three groups C<control>,
+C<control.cancel> and C<junk> need to be in the F<active> file.  Besides,
+if I<mergetogroups> is set to true in F<inn.conf>, the newsgroup C<to>
+also needs to exist.
+
+The minimal F<active> file shipped with INN is:
+
+    control 0000000000 0000000001 n
+    control.cancel 0000000000 0000000001 n
+    control.checkgroups 0000000000 0000000001 n
+    control.newgroup 0000000000 0000000001 n
+    control.rmgroup 0000000000 0000000001 n
+    junk 0000000000 0000000001 n
+
+(Note that the second and the third field may differ if the news server
+has already been in use.)
+
+There are more control.* pseudogroups here than needed by B<innd> to start;
+the corresponding control messages will be filed into them.  The C<n> flag
+is so that users cannot post directly to these groups (control messages
+should only be posted to the groups that they affect).  If you do not want
+these groups to be visible to clients, do not delete them but simply hide
+them in readers.conf(5).
+
+To create additional groups after the server is running, you can use
+C<ctlinnd newgroup>.  You can also synchronize your newsgroup list to
+that of another server by using actsync(8).
 
 =head1 HISTORY
 
@@ -85,7 +116,7 @@ $Id$
 
 =head1 SEE ALSO
 
-active.times(5), controlchan(8), ctlinnd(8), inn.conf(5), innd(8),
-news.daily(8)
+active.times(5), actsync(8), controlchan(8), ctlinnd(8), inn.conf(5),
+innd(8), news.daily(8), readers.conf(5).
 
 =cut

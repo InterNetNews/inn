@@ -1334,12 +1334,12 @@ you can create additional groups after the server is running by using
 C<ctlinnd newgroup>.  (Another option is to use actsync(8) to synchronize
 your newsgroup list to that of another server.)
 
-C<control> and C<junk> must exist as newsgroups in your active file for
-INN to start, and creating pseudogroups for the major types of control
-messages is strongly encouraged for all servers that aren't standalone.
-If you don't want these groups to be visible to clients, do I<not> delete
-them; simply hide them in F<readers.conf>.  C<to> must also exist as a
-newsgroup if you have mergetogroups set in F<inn.conf>.
+C<control>, C<control.cancel> and C<junk> must exist as newsgroups in your
+F<active> file for INN to start, and creating pseudogroups for the major
+types of control messages is strongly encouraged for all servers that aren't
+standalone.  If you don't want these groups to be visible to clients,
+do I<not> delete them; simply hide them in F<readers.conf>.  C<to> must also
+exist as a newsgroup if you have I<mergetogroups> set in F<inn.conf>.
 
 Next, you need to create an empty history database.  To do this, type:
 
