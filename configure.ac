@@ -264,7 +264,7 @@ AC_ARG_VAR([GPGV], [Location of GnuPG gpgv program])
 AC_ARG_VAR([PGP], [Location of PGP verification program])
 AC_PATH_PROGS([GPGV], [gpgv])
 AC_PATH_PROGS([PGP], [pgpv pgp pgpgpg])
-if test -z "$PATH_PGP" && test -z "$PATH_GPGV" ; then
+if test -z "$PGP" && test -z "$GPGV" ; then
     DO_PGPVERIFY=false
 fi
 AC_SUBST([DO_PGPVERIFY])
