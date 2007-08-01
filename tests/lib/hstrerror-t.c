@@ -25,8 +25,8 @@ main(void)
     test_error(3, "No address associated with name", NO_ADDRESS);
     test_error(4, "Resolver error 777777", 777777);
     test_error(5, "Resolver error -99999", -99999);
-    test_error(6, "", 1000000);
-    test_error(7, "", -100000);
+    test_error(6, "Resolver error 1000000", 1000000);
+    test_error(7, "Resolver error -100000", -100000);
 
     return 0;
 }

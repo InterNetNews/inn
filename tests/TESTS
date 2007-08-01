@@ -16,6 +16,7 @@ lib/getnameinfo
 lib/hash
 lib/hashtab
 lib/hex
+lib/hstrerror
 lib/inet_aton
 lib/inet_ntoa
 lib/inet_ntop
@@ -43,6 +44,7 @@ lib/xwrite
 nnrpd/auth-ext
 overview/api
 overview/buffindexed
+overview/overchan
 overview/tradindexed
 overview/xref
 storage/archive

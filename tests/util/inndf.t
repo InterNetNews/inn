@@ -72,13 +72,14 @@ cp articles/1 spool/example/test/1
 cp articles/2 spool/example/config/1
 cp articles/3 spool/example/test/2
 cp articles/4 spool/example/test/3
+rm -f spool/example/config/2
 ln -s ../test/2 spool/example/config/2
 
 # First, generate a tradindexed overview to test inndf -n and make sure that
 # inndf -o returns the appropriate thing.
 INN_TESTSUITE=1; export INN_TESTSUITE
 INNCONF="etc/inn-tdx.conf"; export INNCONF
-mkdir ov-tmp tmp run
+mkdir -p ov-tmp tmp run
 if ! $makehistory -x -O > /dev/null 2>&1 ; then
     echo "makehistory failed, unable to continue" >&2
     exit 1

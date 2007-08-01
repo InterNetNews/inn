@@ -120,7 +120,7 @@ overview_init_buffindexed(void)
 static bool
 overview_init(void)
 {
-    system("/bin/rm -r ov-tmp");
+    system("/bin/rm -rf ov-tmp");
     if (mkdir("ov-tmp", 0755))
         sysdie("Cannot mkdir ov-tmp");
     if (strcmp(innconf->ovmethod, "buffindexed") == 0)
@@ -552,7 +552,7 @@ main(void)
     ok(20, overview_verify_data("overview/bogus"));
     hash_free(groups);
     OVclose();
-    system("/bin/rm -r ov-tmp");
+    system("/bin/rm -rf ov-tmp");
     ok(21, true);
 
     return 0;

@@ -45,7 +45,7 @@ fake_innconf(void)
 static struct overview *
 overview_init(void)
 {
-    system("/bin/rm -rf ov-tmp");
+    system("/bin/rm -rf ov-tmp spool");
     if (mkdir("ov-tmp", 0755))
         sysdie("Cannot mkdir ov-tmp");
     if (mkdir("spool", 0755))

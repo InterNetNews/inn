@@ -572,7 +572,7 @@ overview_tests(int n)
     ok(n++, overview_verify_data("overview/bogus", overview));
     hash_free(groups);
     overview_close(overview);
-    system("/bin/rm -r ov-tmp");
+    system("/bin/rm -rf ov-tmp");
     ok(n++, true);
     return n;
 }
@@ -668,7 +668,7 @@ overview_mmap_tests(int n)
     ok(n++, overview_verify_data("overview/bogus", overview));
     hash_free(groups);
     overview_close(overview);
-    system("/bin/rm -r ov-tmp");
+    system("/bin/rm -rf ov-tmp");
     ok(n++, true);
     return n;
 }
