@@ -4,12 +4,12 @@
  * actsync - sync or merge two active files
  *
  * usage:
- *    actsync [-b hostid][-d hostid][-g max][-i ignore_file][-I][-k][-l hostid]
- *	      [-m][-n name][-o fmt][-p %][-q hostid][-s size]
+ *    actsync [-A][-b hostid][-d hostid][-g max][-i ignore_file][-I hostid][-k]
+ *	      [-l hostid][-m][-n name][-o fmt][-p %][-q hostid][-s size]
  *	      [-t hostid][-T][-v verbose_lvl][-z sec]
  *	      [host1] host2
  *
- *      -A              use authentication to server
+ *	-A		use authentication to server
  *	-b hostid	ignore *.bork.bork.bork groups from:	  (def: -b 0)
  *			    0   from neither host
  *			    1	from host1
@@ -29,6 +29,10 @@
  *			    a1	like 'a', but output ignored non-err host1 grps
  *			    ak	like 'a', keep host2 hi/low values on new groups
  *			    aK	like 'a', use host2 hi/low values always
+ *			    a1k	like both 'a1' and 'ak'
+ *			    a1K	like both 'a1' and 'aK'
+ *			    ak1	like both 'a1' and 'ak'
+ *			    aK1	like both 'a1' and 'aK'
  *			    c	output in ctlinnd change commands
  *			    x	no output, safely exec ctlinnd commands
  *			    xi	no output, safely exec commands interactively
@@ -101,6 +105,10 @@ Usage: actsync [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n\
                 a1      like 'a', but output ignored non-err host1 grps\n\
                 ak      like 'a', keep host2 hi/low values on new groups\n\
                 aK      like 'a', use host2 hi/low values always\n\
+                a1k     like both 'a1' and 'ak'\n\
+                a1K     like both 'a1' and 'aK'\n\
+                ak1     like both 'a1' and 'ak'\n\
+                aK1     like both 'a1' and 'aK'\n\
                 c       output in ctlinnd change commands\n\
                 x       no output, safely exec ctlinnd commands\n\
                 xi      no output, safely exec commands interactively\n\
@@ -125,7 +133,7 @@ Usage: actsync [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n\
  * pat - internal ignore/check pattern
  *
  * A pattern, derived from an ignore file, will determine if a group
- * is will be checked if it is on both hosts or ignored altogether.
+ * will be checked if it is on both hosts or ignored altogether.
  *
  * The type related to the 4th field of an active file.  Types may
  * currently be one of [ymjnx=].  If '=' is one of the types, an
@@ -304,7 +312,7 @@ int host2_hilow_all = 0;	/* 1 => use host2 hi/low on all groups */
 int host1_ign_print = 0;	/* 1 => print host1 ignored groups too */
 int v_flag = 0;			/* default verbosity level */
 int z_flag = 4;			/* sleep z_flag sec per exec if -o x */
-int A_flag = 0;
+int A_flag = 0;         /* 1 => authentication before LIST command */
 
 /* forward declarations */
 static void process_args(int argc, char *argv[], char **host1, char **host2);
@@ -552,7 +560,7 @@ process_args(int argc, char *argv[], char **host1, char **host2)
 		case '\0':	/* -o a */
 		    break;
 		default:
-                    warn("-o type must be a, a1, ak, aK, ak1, or aK1");
+                    warn("-o type must be a, a1, ak, aK, ak1, aK1, a1k or a1K");
 		    die("%s", usage);
 		}
 		break;
@@ -567,7 +575,7 @@ process_args(int argc, char *argv[], char **host1, char **host2)
 		}
 		break;
 	    default:
-                warn("-o type must be a, a1, ak, aK, ak1, aK1, c, x, or xi");
+                warn("-o type must be a, a1, ak, aK, ak1, aK1, a1k, a1K, c, x, or xi");
 		die("%s", usage);
 	    }
 	    break;
@@ -1096,11 +1104,11 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
  * alphanumeric.  The character following a '.' must be alphanumeric.
  * The name cannot end in a '.' character.
  *
- * If we are checking for all numeric compnents, (see num_chk) then
+ * If we are checking for all numeric components, (see num_chk) then
  * a component cannot be all numeric.  I.e,. there must be a non-numeric
  * character in the name, there must be a non-numeric character between
  * the start and the first '.', there must be a non-numeric character
- * between two '.'s anmd there must be a non-numeric character between
+ * between two '.'s and there must be a non-numeric character between
  * the last '.' and the end.
  *
  * given:
@@ -1124,7 +1132,7 @@ bad_grpname(char *name, int num_chk)
 	return 1;
     }
 
-    /* must start with a alpha numeric ascii character */
+    /* must start with an alphanumeric ascii character */
     if (!isascii(name[0])) {
 	return 1;
     }
@@ -1175,10 +1183,10 @@ bad_grpname(char *name, int num_chk)
 
 	    /*
 	     * A '.' is ok as long as the next character is alphanumeric.
-	     * This imples that '.' cannot before a previous '.' and
+	     * This implies that '.' cannot be before a previous '.' and
 	     * that it cannot be at the end.
 	     *
-	     * If we are checking for all numeric compnents, then
+	     * If we are checking for all numeric components, then
 	     * '.' is ok if we saw a non-numeric char before the
 	     * last '.', or before the beginning if no previous '.'
 	     * has been seen.
@@ -1583,7 +1591,7 @@ merge_cmp(const void *arg_a, const void *arg_b)
  *	host1	name of host with HOSTID1
  *	host2	name of host with HOSTID2
  *
- * This routine will select which groups to output form a merged active file.
+ * This routine will select which groups to output from a merged active file.
  */
 static void
 merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
@@ -1739,8 +1747,8 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
  *	0	a == b elements match (fatal error if a and b are different)
  *	<0	a < b
  *
- * This sort will sort groups so that the lines that will we output
- * host1 lines followed by host2 lines.  Thus, we will sort by
+ * This sort will sort groups so that the lines that will be output
+ * are host1 lines followed by host2 lines.  Thus, we will sort by
  * the following keys:
  *
  *	hostid			(host1 ahead of host2)
@@ -2042,7 +2050,7 @@ output_grps(struct grp *grp, int grplen)
 
 		    /* output rmgroup */
 		    if (rm_cycle) {
-			printf("ctlinnd rmgroup %s\n", grp[i].name);
+			printf("%s rmgroup %s\n", CTLINND_NAME, grp[i].name);
 			++remove;
 			++work;
 		    }
@@ -2052,8 +2060,8 @@ output_grps(struct grp *grp, int grplen)
 
 		    /* output newgroup */
 		    if (! rm_cycle) {
-			printf("ctlinnd newgroup %s %s %s\n",
-			    grp[i].name, grp[i].outtype, new_name);
+			printf("%s newgroup %s %s %s\n",
+			    CTLINND_NAME, grp[i].name, grp[i].outtype, new_name);
 			++add;
 			++work;
 		    }
@@ -2064,8 +2072,8 @@ output_grps(struct grp *grp, int grplen)
 
 		    /* output changegroup */
 		    if (! rm_cycle) {
-			printf("ctlinnd changegroup %s %s\n",
-			    grp[i].name, grp[i].outtype);
+			printf("%s changegroup %s %s\n",
+			    CTLINND_NAME, grp[i].name, grp[i].outtype);
 			++change;
 			++work;
 		    }

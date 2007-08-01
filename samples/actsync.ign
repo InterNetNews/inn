@@ -17,6 +17,10 @@ c sci.*
 c soc.*
 c talk.*
 
+# sync only moderated gnu.* groups
+#
+#c gnu.* m
+
 # don't compare to.* groups as they will differ
 #
 i to.*
