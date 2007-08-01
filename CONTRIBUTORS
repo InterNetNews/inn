@@ -103,7 +103,7 @@ Katsuhiro Kondou:
         Provided unified overview, the buffindexed overview method, trash
         storage method, spool translation method, traditional expire
         policy for articles stored through storage API and expireindex, as
-        well has hundreds of fixes to clean up defects as changes were
+        well as hundreds of fixes to clean up defects as changes were
         made.  Did a large amount of man page documentation and clean up.
         Has also been a major force in the CVS pool maintenace.
 

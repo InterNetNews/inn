@@ -14,6 +14,6 @@ file inclusion, and a compiler installed.  This should generate, among
 other things, the README and HACKING files, which you can then read for
 more information about INN.
 
-If you have difficulty bootstrapping the souce, you should not work from a
+If you have difficulty bootstrapping the source, you should not work from a
 Subversion checkout.  Instead, download a snapshot or release and start
 working from that.

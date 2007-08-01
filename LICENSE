@@ -59,7 +59,7 @@ files.  Specifically (but possibly not comprehensively):
    similar to the new BSD license (no advertising clause) but with Thus
    plc as the copyright holder.  See those files for details.
 
-   lib/tst.c, include/inn/tst.h and doc/pod/tst.pod are derived from from
+   lib/tst.c, include/inn/tst.h and doc/pod/tst.pod are derived from
    <http://www.octavian.org/cs/tst1.3.tar.gz> and are under the new BSD
    license (no advertising clause), but with Peter A. Friend as the
    copyright holder.
@@ -68,7 +68,7 @@ files.  Specifically (but possibly not comprehensively):
    Consortium license.  See the beginning of the file for details.
 
 Note that all portions of INN that link with core INN code have to be
-convered by licenses compatible with the license at the top of this file,
+covered by licenses compatible with the license at the top of this file,
 and since INN links with several external libraries if so configured (such
 as OpenSSL), should also be compatible with the licenses of those external
 libraries to be safe.  Some portions of this distribution are covered by
