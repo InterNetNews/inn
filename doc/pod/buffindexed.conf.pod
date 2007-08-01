@@ -131,6 +131,8 @@ group, as specified at configure time (the default being C<news> for
 both).  Also make sure that the permissions on the devices allow the news
 user to read and write.
 
+=back
+
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.

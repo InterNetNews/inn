@@ -923,7 +923,7 @@ like:
         :Tc,Wnsm:/usr/local/news/bin/controlchan
 
 (modified for the actual path to F<controlchan> if you put it somewhere
-else).  See L<Processing Control Messages> for more details.
+else).  See L<Processing Newsgroup Control Messages> for more details.
 
 For those of you upgrading from earlier versions of INN, note that the
 functionality of overchan(8) and F<crosspost> is now incorporated into INN
@@ -1030,7 +1030,7 @@ you have any local groups that you want to stay around for a while then
 you should put them in their own metacycbuff as well, so that they don't
 get pushed out by other traffic.  (Or you might store them in one of the
 other storage methods, such as tradspool.)
-   
+
 For each metacycbuff, you now need to determine how many cycbuffs will
 make up the metacycbuff, the size of those cycbuffs, and where they will
 be stored.  Some OSes do not support files larger than 2 GB, which will
@@ -1089,7 +1089,7 @@ cycbuffupdate line to your F<cycbuff.conf> file; see cycbuff.conf(5) for
 more details.
 
 Finally, you have to create the cycbuffs.  See L<Creating the Article
-Spool> for more information on how to do that.
+Spool (CNFS only)> for more information on how to do that.
 
 =head2 storage.conf
 

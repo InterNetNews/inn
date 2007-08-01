@@ -10,7 +10,7 @@ B<ckpasswd> [B<-gs>] [B<-d> I<database>] [B<-f> I<filename>]
 =head1 DESCRIPTION
 
 B<ckpasswd> is the basic password authenticator for nnrpd, suitable for
-being run from an auth stanza in I<readers.conf>.  See readers.conf(5) for
+being run from an auth stanza in F<readers.conf>.  See readers.conf(5) for
 more information on how to configure an nnrpd authenticator.
 
 B<ckpasswd> accepts a username and password from nnrpd and tells nnrpd(8)
@@ -121,7 +121,7 @@ specifically audited for such uses!  It is, however, a very small program
 that you should be able to check by hand for security.
 
 This configuration is not recommended if it can be avoided, for serious
-security reasons.  See L<readers.confZ<>(5)/SECURITY CONSIDERATIONS> for
+security reasons.  See "SECURITY CONSIDERATIONS" in readers.conf(5) for
 discussion.
 
 =item B<-u> I<username>

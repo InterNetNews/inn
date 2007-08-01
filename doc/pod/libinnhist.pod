@@ -293,6 +293,8 @@ files (as happens during expire); this option is typically used by
 nnrpd(8) like applications. I<val> should be a pointer to a value of
 type B<time_t> and will not be modified by the call.
 
+=back
+
 =head1 HISTORY
 
 Written by Alex Kiernan <alexk@demon.net> for InterNetNews 2.4.0.

@@ -263,7 +263,7 @@ unauthenticated users get any access:
         read: "local.*"
         post: "!*"
     }
-    
+
 You don't need to reload anything after modifying F<readers.conf>; every
 time an nnrpd launches it reads its configuration from disk.
 

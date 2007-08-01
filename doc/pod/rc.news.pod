@@ -68,7 +68,7 @@ To start INN and leave certain error messages going to the terminal:
 To run INN at startup time from appropriate system boot scripts:
 
        su - news -c ~news/bin/rc.news >/dev/console
-  
+
 To stop INN (throttling first):
 
        ~news/bin/ctlinnd throttle reason

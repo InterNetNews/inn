@@ -71,7 +71,7 @@ This will run when a C<ctlinnd shutdown> command is received.
 art is a dictionary containing an article's headers and body.  This method
 is called every time innd receives an article.  The following can be
 defined:
-            
+
     Approved, Control, Date, Distribution, Expires, From, Lines,
     Message-ID, Newsgroups, Path, Reply-To, Sender, Subject,
     Supersedes, Bytes, Also-Control, References, Xref, Keywords,

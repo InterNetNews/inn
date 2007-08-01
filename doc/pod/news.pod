@@ -312,13 +312,13 @@ F<ovdb.conf>.  This will funnel all ovdb reads through a single process
 with a cleaner interface to the underlying BerkeleyDB database.
 
 If you use Perl authentication for nnrpd (if I<nnrpdperlauth> in
-F<inn.conf> is true), there have been major changes.  See L<"Changes to
-Perl Authentication Support for nnrpd"> in F<doc/hook-perl> for details.
+F<inn.conf> is true), there have been major changes.  See "Changes to
+Perl Authentication Support for nnrpd" in F<doc/hook-perl> for details.
 
 Similarly, if you use Python authentication for nnrpd (if
 I<nnrpdpythonauth> in F<inn.conf> is true), there have been major changes.
-See L<"Changes to Python Authentication and Access Control Support for
-nnrpd"> in F<doc/hook-python> for details.
+See "Changes to Python Authentication and Access Control Support for
+nnrpd" in F<doc/hook-python> for details.
 
 If you use B<send-uucp>, it has been completely rewritten and now takes a
 configuration file to specify its behavior.  See its man page for more
@@ -458,7 +458,7 @@ page for details.
 Local connections to INN support a new special mode, MODE CANCEL, that
 allows efficient batch cancellation of messages.  This is intended to be
 the preferred interface for external spam and abuse filters like NoCeM.
-See L<CANCEL FEEDS> in innd(8) for details.
+See "CANCEL FEEDS" in innd(8) for details.
 
 =item *
 
