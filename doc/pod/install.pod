@@ -345,7 +345,7 @@ cycle garbage collection; this problem was reported fixed in Python 2.1a1.
 =item B<--with-innd-port>=PORT
 
 By default, innbind(8) refuses to bind to any port under 1024 other than
-119 and 433 for security reasons (to prevent attacks on rsh(1)-based
+119, 433 and 563 for security reasons (to prevent attacks on rsh(1)-based
 commands and replacing standard system daemons).  If you want to run innd
 on a different port under 1024, you'll need to tell configure what port
 you intend to use.  (You'll also still need to set the port number in

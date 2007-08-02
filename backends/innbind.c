@@ -167,7 +167,7 @@ bind_ipv6(int fd, const char *address, unsigned short port, const char *spec)
 
 
 /*
-**  Given a given a struct binding, bind that file descriptor.  Also takes the
+**  Given a struct binding, bind that file descriptor.  Also takes the
 **  command-line argument for error reporting.  Returns true on success, false
 **  if binding failed due to permission denied.  Die on any other failure.
 */
@@ -180,7 +180,8 @@ bind_address(struct binding *binding, const char *spec)
     socklen_t length;
 
     /* Make sure that we're allowed to bind to that port. */
-    if (port < 1024 && port != 119 && port != 433 && port != INND_PORT)
+    if (port < 1024 && port != 119 && port != 433 && port != 563
+            && port != INND_PORT)
         die("cannot bind to restricted port %hu in %s", port, spec);
 
     /* Sanity check on the socket. */

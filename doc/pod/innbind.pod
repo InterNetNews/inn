@@ -17,7 +17,7 @@ B<nnrpd> to bind to ports under 1024.  The only functions that it's
 willing to perform are to bind an open file descriptor to a given address
 and port or to create a new socket, bind it, and return the bound socket
 to its caller.  It can only be run as the news user (as specified at
-configure time), and will only bind to ports 119, 433, an additional port
+configure time), and will only bind to ports 119, 433, 563, an additional port
 specified with the B<--with-innd-port> argument to configure, or ports
 numbered 1024 or higher.
 
@@ -110,7 +110,7 @@ trying to use IPv6 on a system whose kernel does not support it.
 =item cannot bind to restricted port %hu in %s
 
 (Fatal) The port number portion of the given command-line argument is for
-a port below 1024 which is not 119, 433, or a port given to
+a port below 1024 which is not 119, 433, 563, or a port given to
 B<--with-innd-port> at configure time.  Other ports are not allowed for
 security reasons.
 
@@ -125,7 +125,7 @@ that corresponds to a regular file rather than a network socket).
 
 (Fatal) B<innbind> was unable to get the UID for the news user specified
 during configure (and defaulting to C<news>).  This normally means that
-user isn't in the system passwd file.
+user isn't in the system F<passwd> file.
 
 =item cannot mark socket reusable for %s: %s
 
@@ -221,6 +221,6 @@ $Id$
 
 =head1 SEE ALSO
 
-inet_aton(3), inet_pton(3), innd(8), nnrpd(8)
+inet_aton(3), inet_pton(3), innd(8), nnrpd(8).
 
 =cut

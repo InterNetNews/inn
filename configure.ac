@@ -121,7 +121,7 @@ INN_ARG_MODES
 INN_ARG_COMPRESS
 INN_ARG_SENDMAIL
 
-dnl innbind by default only allows ports 119 and 433 below 1024; if the user
+dnl innbind by default only allows ports 119, 433 and 563 below 1024; if the user
 dnl wants to use some other port as well, they must use this option.
 AC_ARG_WITH([innd-port],
     [AC_HELP_STRING([--with-innd-port=PORT],

@@ -55,7 +55,7 @@ B<innd> must be run as the news user and news group.  It will check for
 this at startup and fail to start if not run properly.  Normally it should
 be started via rc.news(8) as part of the system bootup process.  It relies
 on the setuid root helper program innbind(8) to listen on a privileged
-port (119 or 433).
+port (119, 433 or 563).
 
 =head1 OPTIONS
 
