@@ -50,7 +50,7 @@ static unsigned long	STATsent;
 static unsigned long	STATrejected;
 static struct history	*History;
 
-
+
 
 /*
 **  Read a line of input, with timeout.

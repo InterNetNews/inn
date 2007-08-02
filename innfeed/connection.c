@@ -374,7 +374,7 @@ int cxnConfigLoadCbk (void *data UNUSED)
 
 
 
-
+
 /*
  * Create a new Connection object and return it. All fields are
  * initialized to reasonable values.
@@ -462,7 +462,7 @@ Connection newConnection (Host host,
 
 
 
-
+
 /* Create a new endpoint hooked to a non-blocking socket that is trying to
  * connect to the host info stored in the Connection. On fast machines
  * connecting locally the connect() may have already succeeded when this
@@ -571,7 +571,7 @@ bool cxnConnect (Connection cxn)
 
 
 
-
+
 /* Put the Connection into the wait state.
  *
  * Pre-state		Reason cxnWait called
@@ -605,7 +605,7 @@ void cxnWait (Connection cxn)
 
 
 
-
+
 /* Tells the Connection to flush itself (i.e. push out all articles,
  * issue a QUIT and drop the network connection. If necessary a
  * reconnect will be done immediately after. Called by the Host, or
@@ -676,7 +676,7 @@ void cxnFlush (Connection cxn)
 }
 
 
-
+
 /*
  * Tells the Connection to dump all articles that are queued and to issue a
  * QUIT as quickly as possible. Much like cxnClose, except queued articles
@@ -749,7 +749,7 @@ void cxnTerminate (Connection cxn)
 }
 
 
-
+
 /* Tells the Connection to do a disconnect and then when it is
  * disconnected to delete itself.
  *
@@ -826,7 +826,7 @@ void cxnClose (Connection cxn)
 
 
 
-
+
 /* This is what the Host calls to get us to tranfer an article. If
  * we're running the IHAVE sequence, then we can't take it if we've
  * got an article already. If we're running the CHECK/TAKETHIS
@@ -882,7 +882,7 @@ bool cxnTakeArticle (Connection cxn, Article art)
 
 
 
-
+
 /* if there's room in the Connection then stick the article on the
  * queue, otherwise return false.
  */
@@ -967,7 +967,7 @@ bool cxnQueueArticle (Connection cxn, Article art)
 
 
 
-
+
 /*
  * generate a log message for activity. Usually called by the Connection's
  * owner
@@ -1017,7 +1017,7 @@ void cxnLogStats (Connection cxn, bool final)
 
 
 
-
+
 /*
  * return the number of articles the connection will accept.
  */
@@ -1039,7 +1039,7 @@ size_t cxnQueueSpace (Connection cxn)
 
 
 
-
+
 /*
  * Print info on all the connections that currently exist.
  */
@@ -1063,7 +1063,7 @@ void gPrintCxnInfo (FILE *fp, unsigned int indentAmt)
 
 
 
-
+
 /*
  * Print the info about the given connection.
  */
@@ -1158,7 +1158,7 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
 
 
 
-
+
 /*
  * return the number of articles the connection will accept.
  */
@@ -1179,7 +1179,7 @@ bool cxnCheckstate (Connection cxn)
 
 
 
-
+
 /**********************************************************************/
 /**                       STATIC PRIVATE FUNCTIONS                   **/
 /**********************************************************************/
@@ -1192,7 +1192,7 @@ bool cxnCheckstate (Connection cxn)
  * EndPoint objects/class (either timers or i/o completion callbacks)..
  */
 
-
+
 /*
  * this is the first stage of the NNTP FSM. This function is called
  * when the tcp/ip network connection is setup and we should get
@@ -1271,7 +1271,7 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * Called when the banner message has been read off the wire and is
  * in the buffer(s). When this function returns the state of the
@@ -1378,7 +1378,7 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 static void issueAuthUser (EndPoint e, Connection cxn)
 {
   Buffer authUserBuffer;
@@ -1421,7 +1421,7 @@ static void issueAuthUser (EndPoint e, Connection cxn)
 
 
 
-
+
 static void issueAuthPass (EndPoint e, Connection cxn)
 {
   Buffer authPassBuffer;
@@ -1464,7 +1464,7 @@ static void issueAuthPass (EndPoint e, Connection cxn)
 
 
 
-
+
 static void issueModeStream (EndPoint e, Connection cxn)
 {
   Buffer *modeCmdBuffers,*readBuffers ;
@@ -1509,7 +1509,7 @@ static void issueModeStream (EndPoint e, Connection cxn)
 
 
 
-
+
 /*
  *
  */
@@ -1600,7 +1600,7 @@ static void getAuthUserResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  *
  */
@@ -1690,7 +1690,7 @@ static void getAuthPassResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * Process the remote's response to our MODE STREAM command. This is where
  * the Connection moves into the cxnFeedingS state. If the remote has given
@@ -1825,7 +1825,7 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * called when a response has been read from the socket. This is
  * where the bulk of the processing starts.
@@ -2155,7 +2155,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * called when the write of the QUIT command has completed.
  */
@@ -2193,7 +2193,7 @@ static void quitWritten (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * called when the write of the IHAVE-body data is finished
  */
@@ -2240,7 +2240,7 @@ static void ihaveBodyDone (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * Called when a command set (IHAVE, CHECK, TAKETHIS) has been
  * written to the remote.
@@ -2299,7 +2299,7 @@ static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * Called when the MODE STREAM command has been written down the pipe.
  */
@@ -2331,7 +2331,7 @@ static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * Called when the AUTHINFO USER command has been written down the pipe.
  */
@@ -2364,7 +2364,7 @@ static void authUserIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * Called when the AUTHINFO USER command has been written down the pipe.
  */
@@ -2397,7 +2397,7 @@ static void authPassIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 
-
+
 /*
  * Called whenever some amount of data has been written to the pipe but
  * more data remains to be written
@@ -2418,7 +2418,7 @@ static void writeProgress (EndPoint e UNUSED, IoStatus i, Buffer *b UNUSED,
 
 
 
-
+
 /*
  * Timers.
  */
@@ -2462,7 +2462,7 @@ static void responseTimeoutCbk (TimeoutId id, void *data)
 
 
 
-
+
 /*
  * This is called when the data write timeout for the remote
  * goes off. We tear down the connection and notify our host.
@@ -2502,7 +2502,7 @@ static void writeTimeoutCbk (TimeoutId id, void *data)
 
 
 
-
+
 /*
  * Called by the EndPoint class when the timer goes off
  */
@@ -2528,7 +2528,7 @@ static void reopenTimeoutCbk (TimeoutId id, void *data)
 
 
 
-
+
 /*
  * timeout callback to close down long running connection.
  */
@@ -2563,7 +2563,7 @@ static void flushCxnCbk (TimeoutId id, void *data)
 
 
 
-
+
 /*
  * Timer callback for when the connection has not received an
  * article from INN. When that happens we tear down the network
@@ -2606,7 +2606,7 @@ static void articleTimeoutCbk (TimeoutId id, void *data)
 
 
 
-
+
 /*
  * function to be called when the fd is not ready for reading, but there is
  * an article on tape or in the queue to be done. Things are done this way
@@ -2651,7 +2651,7 @@ static void cxnWorkProc (EndPoint ep UNUSED, void *data)
 
 
 
-
+
 /****************************************************************************
  *
  * REPONSE CODE PROCESSING.
@@ -2734,7 +2734,7 @@ static void processResponse205 (Connection cxn, char *response UNUSED)
 
 
 
-
+
 /*
  * Handle a response code of 238 which is the "no such article"
  * reply to the CHECK command (i.e. remote wants it).
@@ -2798,7 +2798,7 @@ static void processResponse238 (Connection cxn, char *response)
 
 
 
-
+
 /*
  * process the response "try again later" to the CHECK command If this
  * returns true then the connection is still usable.
@@ -2857,7 +2857,7 @@ static void processResponse431 (Connection cxn, char *response)
 
 
 
-
+
 /*
  * process the "already have it" response to the CHECK command.  If this
  * returns true then the connection is still usable.
@@ -2918,7 +2918,7 @@ static void processResponse438 (Connection cxn, char *response)
 
 
 
-
+
 /*
  * process the "article transferred ok" response to the TAKETHIS.
  */
@@ -2977,7 +2977,7 @@ static void processResponse239 (Connection cxn, char *response)
 }
 
 
-
+
 /*
  *  Set the thresholds for no-CHECK mode; negative means leave existing value
  */
@@ -2998,7 +2998,7 @@ void cxnSetCheckThresholds (Connection cxn,
   cxn->lowPassFilter = lowPassFilter;
 }
 
-
+
 /*
  *  Blow away the connection gracelessly and immedately clean up
  */
@@ -3009,7 +3009,7 @@ void cxnNuke (Connection cxn)
   delConnection(cxn) ;
 }
 
-
+
 /*
  * process a "article rejected do not try again" response to the
  * TAKETHIS.
@@ -3091,7 +3091,7 @@ static void processResponse439 (Connection cxn, char *response)
 
 
 
-
+
 /*
  * process the "article transferred ok" response to the IHAVE-body.
  */
@@ -3151,7 +3151,7 @@ static void processResponse235 (Connection cxn, char *response UNUSED)
 
 
 
-
+
 /*
  * process the "send article to be transfered" reponse to the IHAVE.
  */
@@ -3197,7 +3197,7 @@ static void processResponse335 (Connection cxn, char *response UNUSED)
 
 
 
-
+
 /*
  * process the "not accepting articles" response. This could be to any of
  * the IHAVE/CHECK/TAKETHIS command, but not the banner--that's handled
@@ -3251,7 +3251,7 @@ static void processResponse400 (Connection cxn, char *response)
 
 
 
-
+
 /*
  * process the "not wanted" reponse to the IHAVE.
  */
@@ -3319,7 +3319,7 @@ static void processResponse435 (Connection cxn, char *response UNUSED)
 
 
 
-
+
 /*
  * process the "transfer failed" response to the IHAVE-body, (seems this
  * can come from the IHAVE too).
@@ -3375,7 +3375,7 @@ static void processResponse436 (Connection cxn, char *response UNUSED)
 
 
 
-
+
 /*
  * Process the "article rejected do not try again" response to the
  * IHAVE-body.
@@ -3463,7 +3463,7 @@ static void processResponse480 (Connection cxn, char *response UNUSED)
 
 
 
-
+
 /*
  * Handle the response 503, which means the timeout of nnrpd.
  */
@@ -3512,7 +3512,7 @@ static void processResponse503 (Connection cxn, char *response UNUSED)
 
 
 
-
+
 /****************************************************************************
  *
  * END REPONSE CODE PROCESSING.
@@ -3522,7 +3522,7 @@ static void processResponse503 (Connection cxn, char *response UNUSED)
 
 
 
-
+
 /*
  * puts the Connection into the sleep state.
  */
@@ -3592,7 +3592,7 @@ ASSERT (cxn->readBlockedTimerId == 0) ;
 
 
 
-
+
 /*
  * Called when a response from the remote refers to a non-existant
  * message-id. The network connection is aborted and the Connection
@@ -3621,7 +3621,7 @@ static void noSuchMessageId (Connection cxn, unsigned int responseCode,
 
 
 
-
+
 /*
  * a processing error has occured (for example in parsing a response), or
  * we're at the end of the FSM and we're cleaning up.
@@ -3698,7 +3698,7 @@ static void prepareReopenCbk (Connection cxn)
 
 
 
-
+
 /*
  * (re)set all state variables to inital condition.
  */
@@ -3729,7 +3729,7 @@ static void resetConnection (Connection cxn)
 }
 
 
-
+
 /*
  * Give back all articles that are queued, but not actually in progress.
  * XXX merge come of this with deferAllArticles
@@ -3758,7 +3758,7 @@ static void deferQueuedArticles (Connection cxn)
 }
 
 
-
+
 /*
  * Give back any articles we have to the Host for later retrys.
  */
@@ -3808,7 +3808,7 @@ static void deferAllArticles (Connection cxn)
 
 
 
-
+
 /*
  * Called when there's an article to be pushed out to the remote. Even if
  * the Connection has an article it's possible that nothing will be written
@@ -3857,7 +3857,7 @@ static void doSomeWrites (Connection cxn)
 
 
 
-
+
 /* Queue up a buffer with the IHAVE command in it for the article at
  * the head of the transmisson queue.
  *
@@ -3930,7 +3930,7 @@ static bool issueIHAVE (Connection cxn)
 
 
 
-
+
 /*
  * Do a prepare write with the article body as the body portion of the
  * IHAVE command
@@ -3994,7 +3994,7 @@ static void issueIHAVEBody (Connection cxn)
 
 
 
-
+
 /* Process the two command queues. Slaps all the CHECKs together and
  * then does the TAKETHIS commands.
  *
@@ -4079,7 +4079,7 @@ static bool issueStreamingCommands (Connection cxn)
 
 
 
-
+
 /*
  * build up the buffer of all the CHECK commands.
  */
@@ -4144,7 +4144,7 @@ static Buffer buildCheckBuffer (Connection cxn)
 
 
 
-
+
 /*
  * Construct and array of TAKETHIS commands and the command bodies. Any
  * articles on the queue that are missing will be removed and the Host will
@@ -4271,7 +4271,7 @@ static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer)
 
 
 
-
+
 /*
  * for one reason or another we need to disconnect gracefully. We send a
  * QUIT command.
@@ -4323,7 +4323,7 @@ static void issueQUIT (Connection cxn)
 
 
 
-
+
 /*
  * Set up the timer for the blocked reads
  */
@@ -4342,7 +4342,7 @@ ASSERT (cxn->state != cxnIdleS ) ;
 
 
 
-
+
 /*
  * Set up the timer for the blocked reads
  */
@@ -4371,7 +4371,7 @@ static int prepareWriteWithTimeout (EndPoint endp,
 
 
 
-
+
 /*
  * Does the actual deletion of a connection and all its private data.
  */
@@ -4450,7 +4450,7 @@ static void delConnection (Connection cxn)
 
 
 
-
+
 /*
  * Bump up the value of the low pass filter on the connection.
  */
@@ -4463,7 +4463,7 @@ static void incrFilter (Connection cxn)
 
 
 
-
+
 /*
  * decrement the value of the low pass filter on the connection.
  */
@@ -4475,7 +4475,7 @@ static void decrFilter (Connection cxn)
 
 
 
-
+
 /*
  * return true if we have articles we need to issue commands for.
  */
@@ -4487,7 +4487,7 @@ static bool writesNeeded (Connection cxn)
 
 
 
-
+
 /*
  * do some simple tests to make sure it's OK.
  */
@@ -4619,7 +4619,7 @@ static void validateConnection (Connection cxn)
 
 
 
-
+
 /*
  * Generate a printable string of the parameter.
  */
@@ -4680,7 +4680,7 @@ static const char *stateToString (CxnState state)
 
 
 
-
+
 /****************************************************************************
  *
  * Functions for managing the internal queue of Articles on each Connection.
@@ -4700,7 +4700,7 @@ static ArtHolder newArtHolder (Article article)
 
 
 
-
+
 /*
  * Deletes the article holder
  */
@@ -4713,7 +4713,7 @@ static void delArtHolder (ArtHolder artH)
 
 
 
-
+
 /*
  * remove the article holder from the queue. Adjust the count and if nxtPtr
  * points at the element then adjust that too.
@@ -4749,7 +4749,7 @@ static bool remArtHolder (ArtHolder artH, ArtHolder *head, unsigned int *count)
 
 
 
-
+
 /*
  * append the ArticleHolder to the queue
  */
@@ -4775,7 +4775,7 @@ static void appendArtHolder (ArtHolder artH, ArtHolder *head, unsigned int *coun
 
 
 
-
+
 /*
  * find the article holder on the queue by comparing the message-id.
  */

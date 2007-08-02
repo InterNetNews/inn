@@ -60,7 +60,7 @@ static int EXPsplit(char *p, char sep, char **argv, int count);
 
 enum KR {Keep, Remove};
 
-
+
 
 /*
 **  Open a file or give up.
@@ -422,7 +422,7 @@ EXPdoline(void *cookie UNUSED, time_t arrived, time_t posted, time_t expires,
     return r;
 }
 
-
+
 
 /*
 **  Clean up link with the server and exit.

@@ -44,7 +44,7 @@ static NGHASH		NGHtable[NGH_SIZE];
 static int		NGHbuckets;
 static int		NGHcount;
 
-
+
 
 /*
 **  Sorting predicate for qsort call in NGparsefile.  Put newsgroups in

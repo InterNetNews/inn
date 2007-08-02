@@ -658,7 +658,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
     /* Article sent, or we requeued it. */
     return true;
 }
-
+
 
 /*
 **  Get the Message-ID header from an open article.
@@ -689,7 +689,7 @@ GetMessageID(ARTHANDLE *art) {
     buff[q - p] = '\0';
     return buff;
 }
-
+
 
 /*
 **  Mark that we got interrupted.

@@ -66,7 +66,7 @@ HEADER Table[] = {
 
 HEADER *EndOfTable = ARRAY_END(Table);
 
-
+
 
 /* Join() and MaxLength() are taken from innd.c */
 /*
@@ -217,7 +217,7 @@ StripOffHeaders(char *article)
     return p + 1;
 }
 
-
+
 
 /*
 **  Check the control message, and see if it's legit.  Return pointer to
@@ -559,7 +559,7 @@ CheckIncludedText(const char *p, int lines)
     return NULL;
 }
 
-
+
 
 /*
 **  Try to mail an article to the moderator of the group.

@@ -144,7 +144,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__X_ORIGINAL_MESSAGE_ID		38 */
 };
 /* #define MAX_ARTHEADER			39 */
-
+
 
 /*
 **  Signal handler to catch SIGTERM and similar signals and queue a clean

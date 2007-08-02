@@ -513,7 +513,7 @@ enum timer {
     TMR_MAX
 };
 
-
+
 
 /*
 **  In-line macros for efficiency.
@@ -531,7 +531,7 @@ enum timer {
     if (--ErrorCount <= 0 || (e) == ENOSPC) \
       ThrottleIOError(WHEN);                \
   } while (0)
-
+
 
 /*
 **  Global data.

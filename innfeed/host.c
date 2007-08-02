@@ -1458,7 +1458,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 
 
 
-
+
 /* close down all the connections of the Host. All articles that are in
  * processes are still pushed out and then a QUIT is issued. The Host will
  * also spool all inprocess articles to tape incase the process is about to
@@ -1496,7 +1496,7 @@ void hostClose (Host host)
       cxnTerminate (host->connections [i]) ;
 }
 
-
+
 /*
  * check if host should get more connections opened, or some closed...
  */
@@ -1637,7 +1637,7 @@ void hostChkCxns(TimeoutId tid UNUSED, void *data) {
   host->ChkCxnsId = prepareSleep(hostChkCxns, host->nextCxnTimeChk, host);
 }
 
-
+
 /*
  * have the Host transmit the Article if possible.
  */
@@ -1761,7 +1761,7 @@ void hostSendArticle (Host host, Article article)
 
 
 
-
+
 /*
  * called by the Host's connection when the remote is refusing postings
  * from us becasue we're not allowed (banner code 400).
@@ -1807,7 +1807,7 @@ void hostCxnBlocked (Host host, Connection cxn, char *reason)
 
 
 
-
+
 /*
  * Called by the Connection when it gets a response back to the MODE
  * STREAM command. It's now that we consider the connection usable.
@@ -1878,7 +1878,7 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
 
 
 
-
+
 /*
  * Called by the connection when it is no longer connected to the
  * remote. Perhaps due to getting a code 400 to an IHAVE, or due to a
@@ -1922,7 +1922,7 @@ void hostCxnDead (Host host, Connection cxn)
 
 
 
-
+
 /*
  * Called by the Connection when it is going to sleep so the Host won't
  * bother trying to give it Articles
@@ -1956,7 +1956,7 @@ void hostCxnSleeping (Host host, Connection cxn)
 
 
 
-
+
 /*
  * Called by the Connection when it goes into the waiting state.
  */
@@ -1986,7 +1986,7 @@ void hostCxnWaiting (Host host, Connection cxn)
 
 
 
-
+
 /*
  * Called by the Connection when it is about to delete itself.
  */
@@ -2066,7 +2066,7 @@ bool hostCxnGone (Host host, Connection cxn)
 
 
 
-
+
 /*
  * The connections has offered an article to the remote.
  */
@@ -2082,7 +2082,7 @@ void hostArticleOffered (Host host, Connection cxn UNUSED)
 
 
 
-
+
 /*
  * Article was succesfully transferred.
  */
@@ -2115,7 +2115,7 @@ void hostArticleAccepted (Host host, Connection cxn, Article article)
 
 
 
-
+
 /*
  * remote said no thanks to an article.
  */
@@ -2145,7 +2145,7 @@ void hostArticleNotWanted (Host host, Connection cxn, Article article)
 
 
 
-
+
 /*
  * remote rejected the article after it was was transferred
  */
@@ -2177,7 +2177,7 @@ void hostArticleRejected (Host host, Connection cxn, Article article)
 
 
 
-
+
 /*
  * The remote wants us to retry the article later.
  */
@@ -2220,7 +2220,7 @@ void hostArticleDeferred (Host host, Connection cxn, Article article)
 
 
 
-
+
 /*
  * The Connection is giving the article back to the Host, but it doesn't
  * want a new one in return.
@@ -2250,7 +2250,7 @@ void hostTakeBackArticle (Host host, Connection cxn UNUSED, Article article)
 
 
 
-
+
 /*
  * The disk file for the article is no longer valid
  */
@@ -2279,7 +2279,7 @@ void hostArticleIsMissing (Host host, Connection cxn, Article article)
 
 
 
-
+
 /* The Connection wants something to do. This is called by the Connection
  * after it has transferred an article. This is what keeps the pipes full
  * of data off the tapes if the input from inn is idle.
@@ -2378,7 +2378,7 @@ bool hostGimmeArticle (Host host, Connection cxn)
 
 
 
-
+
 /*
  * get the name that INN uses for this host
  */
@@ -2428,7 +2428,7 @@ bool hostDropDeferred (Host host)
 
 
 
-
+
 /**********************************************************************/
 /**                       CLASS FUNCTIONS                            **/
 /**********************************************************************/
@@ -2530,7 +2530,7 @@ void gHostStats (void)
 #define INHERIT	1
 #define NO_INHERIT 0
 
-
+
 static HostParams hostDetails (scope *s,
 			       char *name,
 			       bool isDefault,
@@ -2776,7 +2776,7 @@ void delHost (Host host)
 }
 
 
-
+
 static Host findHostByName (char *name) 
 {
   Host h;
@@ -2789,7 +2789,7 @@ static Host findHostByName (char *name)
 }
 
 
-
+
 /* 
  * the article can be dropped from the process queue and the connection can
  * take a new article if there are any to be had.
@@ -2810,7 +2810,7 @@ static void articleGone (Host host, Connection cxn, Article article)
 
 
 
-
+
 /*
  * One of the Connections for this Host has reestablished itself, so stop
  * spooling article info to disk.
@@ -2830,7 +2830,7 @@ static void hostStopSpooling (Host host)
 
 
 
-
+
 /*
  * No connections are active and we're getting response 201 or 400 (or some
  * such) so that we need to start spooling article info to disk.
@@ -2868,7 +2868,7 @@ static void hostStartSpooling (Host host)
 
 
 
-
+
 /*
  * Time to log the statistics for the Host. If FINAL is true then the
  * counters will be reset.
@@ -2970,7 +2970,7 @@ static void hostLogStats (Host host, bool final)
 
 
 
-
+
 
 static double
 convsize(double size, char **tsize)
@@ -3379,7 +3379,7 @@ static void hostPrintStatus (Host host, FILE *fp)
 
 
 
-
+
 /*
  * The callback function for the statistics timer to call.
  */
@@ -3466,7 +3466,7 @@ static void backlogToTape (Host host)
 
 
 
-
+
 /*
  * Returns true of the Host is in the middle of closing down.
  */
@@ -3480,7 +3480,7 @@ static bool amClosing (Host host)
 
 
 
-
+
 /*
  * flush all queued articles all the way out to disk.
  */
@@ -3537,7 +3537,7 @@ static void queuesToTape (Host host)
 
 
 
-
+
 #define QUEUE_ELEM_POOL_SIZE ((4096 - 2 * (sizeof (void *))) / (sizeof (struct proc_q_elem)))
 
 static ProcQElem queueElemPool ;
@@ -3582,7 +3582,7 @@ static void queueArticle (Article article, ProcQElem *head, ProcQElem *tail,
 
 
 
-
+
 /*
  * remove the article from the queue
  */
@@ -3623,7 +3623,7 @@ static bool remArticle (Article article, ProcQElem *head, ProcQElem *tail)
 
 
 
-
+
 /*
  * remove the article that's at the head of the queue and return
  * it. Returns NULL if the queue is empty.

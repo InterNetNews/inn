@@ -13,7 +13,7 @@ The third message is the application that I required all beta sites to
 fill out.
 
 The fourth is a copy of the release notice.
-
+
 From: Rich Salz <rsalz@bbn.com>
 Date: Sat, 8 Dec 90 15:23:20 EST
 Message-Id: <9012082023.AA13441@litchi.bbn.com>
@@ -55,7 +55,7 @@ on a control port, or perhaps a sighup/sigusr1 to force it to resynch.
 
 Any feedback?
 	/r$
-
+
 Path: papaya.bbn.com!rsalz
 From: rsalz@bbn.com (Rich Salz)
 Newsgroups: news.software.nntp,news.admin,comp.org.usenix
@@ -139,7 +139,7 @@ semester starts.
 -- 
 Please send comp.sources.unix-related mail to rsalz@uunet.uu.net.
 Use a domain-based address or give alternate paths, or you may lose out.
-
+
 Thanks for your interest in InterNetNews.  I want to run a fairly
 tightly-controlled beta test of the software before I make it generally
 available.  This means that I'm going to screen the sites which will be
@@ -176,7 +176,7 @@ archiving, etc.)?
 Do you understand that by participating in the beta-test you agree not to
 redistribute the software outside of your administrative domain, and that
 you promise to upgrade to the official release in a timely manner?
-
+
 From: Rich Salz <rsalz@uunet.uu.net>
 Message-Id: <inn-announce@uunet.uu.net>
 Newsgroups: news.software.b,news.protocols.nntp

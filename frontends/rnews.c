@@ -58,7 +58,7 @@ static HEADER	RequiredHeaders[] = {
 #define IS_MESGID(hp)	((hp) == &RequiredHeaders[_messageid])
 #define IS_PATH(hp)	((hp) == &RequiredHeaders[_path])
 
-
+
 
 /*
 **  Open up a pipe to a process with fd tied to its stdin.  Return a
@@ -137,7 +137,7 @@ WaitForChildren(int n)
 }
 
 
-
+
 
 /*
 **  Clean up the NNTP escapes from a line.
@@ -449,7 +449,7 @@ ReadBytecount(int fd, int artsize)
     return Process(article, artsize);
 }
 
-
+
 
 /*
 **  Read a single text line; not unlike fgets().  Just more inefficient.
@@ -692,7 +692,7 @@ Unspool(void)
     message_handlers_warn(1, message_log_syslog_err);
 }
 
-
+
 
 /*
 **  Can't connect to the server, so spool our input.  There isn't much

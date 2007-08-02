@@ -58,7 +58,7 @@ module for the past few months, so I'm pretty sure of it's stability.
 			Richard Todd
 	(rmtodd@mailhost.ecn.ou.edu/rmtodd@servalan.servalan.com)
 
-
+
 Implementation details (format of a CAF file) and some design rationale:
 
  Look at include/caf.h for the details, but basically, the layout is

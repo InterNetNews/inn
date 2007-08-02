@@ -110,7 +110,7 @@ static HEADER	Table[] = {
 
 #define HDR(_x)	(Table[(_x)].Value)
 
-
+
 
 /*
 **  Send the server a quit message, wait for a reply.
@@ -277,7 +277,7 @@ StripOffHeaders(char *article)
     return p + 1;
 }
 
-
+
 
 /*
 **  See if the user is allowed to cancel the indicated message.  Assumes
@@ -414,7 +414,7 @@ CheckControl(char *ctrl, struct passwd *pwp)
     *p = save;
 }
 
-
+
 
 /*
 **  Parse the GECOS field to get the user's full name.  This comes Sendmail's
@@ -748,7 +748,7 @@ CheckIncludedText(char *p, int lines)
         die("more included text than new text");
 }
 
-
+
 
 /*
 **  Read stdin into a string and return it.  Can't use ReadInDescriptor
@@ -781,7 +781,7 @@ ReadStdin(void)
     return article;
 }
 
-
+
 
 /*
 **  Offer the article to the server, return its reply.

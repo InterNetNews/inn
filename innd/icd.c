@@ -432,7 +432,7 @@ ICDrmgroup(NEWSGROUP *ngp)
     return ret;
 }
 
-
+
 
 /*
 **  Open the active file and "map" it into memory.

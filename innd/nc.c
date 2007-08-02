@@ -264,7 +264,7 @@ NCwritedone(CHANNEL *cp)
     }
 }
 
-
+
 
 /*
 **  The "head" command.
@@ -717,7 +717,7 @@ NC_unimp(CHANNEL *cp)
     NCwritereply(cp, buff);
 }
 
-
+
 
 /*
 **  Check whatever data is available on the channel.  If we got the

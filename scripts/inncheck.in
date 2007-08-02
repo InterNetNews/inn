@@ -96,7 +96,7 @@ spacious
     }
     $i;
 }
-
+
 ##
 ##  These are the functions that verify each individual file, called
 ##  from the main code.  Each function gets <IN> as the open file, $line
@@ -642,7 +642,7 @@ readers_conf
 {
     1;
 }
-
+
 
 ##
 ##  Routines to check permissions
@@ -798,7 +798,7 @@ check_all_perms
     1;
 }
 
-
+
 ##
 ##  Parsing, main routine.
 ##

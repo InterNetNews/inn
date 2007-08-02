@@ -125,7 +125,7 @@ static CCDISPATCH	CCcommands[] = {
 };
 
 static RETSIGTYPE CCresetup(int unused);
-
+
 
 void
 CCcopyargv(char *av[])
@@ -1697,7 +1697,7 @@ CCtrace(char *av[])
     return NULL;
 }
 
-
+
 
 /*
 **  Split up the text into fields and stuff them in argv.  Return the
