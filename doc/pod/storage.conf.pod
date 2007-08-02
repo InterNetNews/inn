@@ -1,0 +1,353 @@
+=head1 NAME
+
+storage.conf - Configuration file for storage manager
+
+=head1 DESCRIPTION
+
+The file I<pathetc>/storage.conf contains the rules to be used in
+assigning articles to different storage methods.  These rules determine
+where incoming articles will be stored.
+
+The storage manager is a unified interface between INN and a variety of
+different storage methods, allowing the news administrator to choose
+between different storage methods with different trade-offs (or even
+use several at the same time for different newsgroups, or articles of
+different sizes).  The rest of INN need not care what type of storage
+method was used for a given article; the storage manager will figure
+this out automatically when that article is retrieved via the storage
+API.  Note that you may also want to see the options provided in
+inn.conf(5) regarding article storage.
+
+The F<storage.conf> file consists of a series of storage method entries.
+Blank lines and lines beginning with a number sign (C<#>) are ignored.
+The maximum number of characters in each line is 255.  The order of
+entries in this file is important, see below.
+
+Each entry specifies a storage method and a set of rules.  Articles which
+match all of the rules of a storage method entry will be stored using
+that storage method; if an article matches multiple storage method
+entries, the first one will be used.  Each entry is formatted as follows:
+
+    method <methodname> {
+        class: <storage_class>
+        newsgroups: <wildmat>
+        size: <minsize>[,<maxsize>]
+        expires: <mintime>[,<maxtime>]
+        options: <options>
+        exactmatch: <bool>
+    }
+
+If spaces or tabs are included in a value, that value must be enclosed in
+double quotes ("").  If either a number sign (C<#>) or a double quote
+are meant to be included verbatim in a value, they should be escaped
+with C<\>.
+
+<methodname> is the name of a storage method to use for articles which
+match the rules of this entry.  The currently available storage methods
+are:
+
+    cnfs
+    timecaf
+    timehash
+    tradspool
+    trash
+
+See the L<STORAGE METHODS> section below for more details.
+
+The meanings of the keys in each storage method entry are as follows:
+
+=over 4
+
+=item B<class>
+
+An identifier for this storage method entry.  <storage_class> should be
+a number between 0 and 255.  It should be unique across all of the entries in
+this file.  It is mainly used for specifying expiration times by storage class
+as described in expire.ctl(5); C<timehash> and C<timecaf> will also set the
+top-level directory in which articles accepted by this storage class are stored.
+The assignment of a particular number to a storage class is arbitrary but
+permanent (since it is used in storage tokens).  Storage classes can be
+for instance numbered sequentially in F<storage.conf>.
+
+=item B<newsgroups>
+
+What newsgroups are stored using this storage method.  <wildmat> is a uwildmat(3)
+pattern which is matched against the newsgroups an article is posted to.
+If I<storeonxref> in F<inn.conf> is true, this pattern will be matched against
+the newsgroup names in the Xref: header; otherwise, it will be matched against
+the newsgroup names in the Newsgroups: header (see inn.conf(5) for discussion
+of the differences between these possibilities).  Poison wildmat expressions
+(expressions starting with C<@>) are allowed and can be used to exclude certain
+group patterns: articles crossposted to poisoned newsgroups will not be stored
+using this storage method.  The <wildmat> pattern is matched in order.
+
+There is no default newsgroups pattern; if an entry should match all
+newsgroups, use an explicit C<newsgroups: *>.
+
+=item B<size>
+
+A range of article sizes (in bytes) which should be stored using this storage
+method.  If <maxsize> is C<0> or not given, the upper size of articles is
+limited only by I<maxartsize> in F<inn.conf>.  The size: field is optional
+and may be omitted entirely if you want articles of any size to be stored
+in this storage method (if, of course, these articles fulfill all the other
+requirements of this storage method entry).  By default, <minsize> is set
+to C<0>.
+
+=item B<expires>
+
+A range of article expiration times which should be stored using this storage
+method.  Be careful; this is less useful than it may appear at first.  This
+is based B<only> on the Expires: header of the article, not on any local
+expiration policies or anything in F<expire.ctl>!  If <mintime> is non-zero,
+then this entry B<will not match> any article without an Expires: header.
+This key is therefore only really useful for assigning articles with requested
+longer expire times to a separate storage method.  Articles only match if the
+time until expiration (that is to say, the amount of time into the future
+that the Expires: header of the article requests that it remain around) falls
+in the interval specified by <mintime> and <maxtime>.
+
+The format of these parameters is C<0d0h0m0s> (days, hours, minutes, and seconds
+into the future).  If <maxtime> is C<0s> or is not specified, there is no upper
+bound on expire times falling into this entry (note that this key has no effect
+on when the article will actually be expired, but only on whether or not the
+article will be stored using this storage method).  This field is also optional
+and may be omitted entirely if you do not want to store articles according
+to their Expires: header, if any.
+
+A <mintime> value greater than C<0s> implies that this storage method won't
+match any article without an Expires: header.
+
+=item B<options>
+
+This key is for passing special options to storage methods that require them
+(currently only C<cnfs>).  See the L<STORAGE METHODS> section below for
+a description of its use.
+
+=item B<exactmatch>
+
+If this key is set to true, all newsgroups will be examined to see if they
+match newsgroups patterns.  (Normally, any non-zero number of matching
+newsgroups is sufficient, provided no newsgroup matches a poison wildmat
+as described above.)  This is a boolean value; C<true>, C<yes> and C<on>
+are usable to enable this key.  The case of these values is not significant.
+The default is false.
+
+=back
+
+If an article matches all of the constraints of an entry, it is stored
+via that storage method and is associated with that <storage_class>.
+This file is scanned in order and the first matching entry is used to store
+the article.
+
+If an article does not match any entry, either by being posted to a newsgroup
+which does not match any of the <wildmat> patterns or by being outside
+the size and expires ranges of all entries whose newsgroups pattern
+it does match, the article is not stored and is rejected by B<innd>.
+When this happens, the error message:
+
+    cant store article: no matching entry in storage.conf
+
+is logged to syslog.  If you want to silently drop articles matching certain
+newsgroup patterns or size or expires ranges, assign them to the C<trash>
+storage method rather than having them not match any storage method entry.
+
+=head1 STORAGE METHODS
+
+Currently, there are five storage methods available.  Each method has its
+pros and cons; you can choose any mixture of them as is suitable for
+your environment.  Note that each method has an attribute EXPENSIVESTAT
+which indicates whether checking the existence of an article is expensive
+or not.  This is used to run expireover(8).
+
+=over 4
+
+=item B<cnfs>
+
+The C<cnfs> storage method stores articles in large cyclic buffers (CNFS
+stands for Cyclic News File System).  Articles are stored in CNFS buffers
+in arrival order, and when the buffer fills, it wraps around to the beginning
+and stores new articles over the top of the oldest articles in the buffer. The
+expire time of articles stored in CNFS buffers is therefore entirely
+determined by how long it takes the buffer to wrap around, which depends
+on how quickly data is being stored in it.  (This method is therefore said
+to have self-expire functionality.)  EXPENSIVESTAT is false for this method.
+
+CNFS has its own configuration file, F<cycbuff.conf>, which describes some
+subtleties to the basic description given above.  Storage method entries
+for the C<cnfs> storage method must have an options: field specifying
+the metacycbuff into which articles matching that entry should be stored;
+see cycbuff.conf(5) for details on metacycbuffs.
+
+Advantages: By far the fastest of all storage methods (except for C<trash>),
+since it eliminates the overhead of dealing with a file system and creating
+new files.  Unlike all other storage methods, it does not require manual
+article expiration.  With CNFS, the server will never throttle itself
+due to a full spool disk, and groups are restricted to just the buffer
+files given so that they can never use more than the amount of disk space
+allocated to them.
+
+Disadvantages: Article retention times are more difficult to control
+because old articles are overwritten automatically.  Attacks on Usenet,
+such as flooding or massive amounts of spam, can result in wanted articles
+expiring much faster than intended (with no warning).
+
+=item B<timecaf>
+
+This method stores multiple articles in one file, whose name is based on
+the article's arrival time and the storage class.  The file name will be:
+
+    <patharticles>/timecaf-nn/bb/aacc.CF
+
+where C<nn> is the hexadecimal value of <storage_class>, C<bb> and C<aacc>
+are the hexadecimal components of the arrival time, and C<CF> is a
+hardcoded extension.  (The arrival time, in seconds since the epoch,
+is converted to hexadecimal and interpreted as C<0xaabbccdd>, with
+C<aa>, C<bb>, and C<cc> used to build the path.)  This method does not
+have self-expire functionality (meaning B<expire> has to run periodically
+to delete old articles).  EXPENSIVESTAT is false for this method.
+
+Advantages: It is roughly four times faster than C<timehash> for article
+writes, since much of the file system overhead is bypassed, while still
+retaining the same fine control over article retention time.
+
+Disadvantages: Using this method means giving up all but the most careful
+manually fiddling with the article spool; in this aspect, it looks like
+C<cnfs>.  As one of the newer and least widely used storage types,
+C<timecaf> has not been as thoroughly tested as the other methods.
+
+=item B<timehash>
+
+This method is very similar to C<timecaf> except that each article is
+stored in a separate file.  The name of the file for a given article
+will be:
+
+    <patharticles>/time-nn/bb/cc/yyyy-aadd
+
+where C<nn> is the hexadecimal value of <storage_class>, C<yyyy> is a
+hexadecimal sequence number, and C<bb>, C<cc>, and C<aadd> are components
+of the arrival time in hexadecimal (the arrival time is interpreted as
+documented above under C<timecaf>).  This method does not have self-expire
+functionality.  EXPENSIVESTAT is true for this method.
+
+Advantages: Heavy traffic groups do not cause bottlenecks, and a fine control
+of article retention time is still possible.
+
+Disadvantages: The ability to easily find all articles in a given newsgroup
+and manually fiddle with the article spool is lost, and INN still suffers
+from speed degradation due to file system overhead (creating and deleting
+individual files is a slow operation).
+
+=item B<tradspool>
+
+Traditional spool, or C<tradspool>, is the traditional news article storage
+format.  Each article is stored in an individual text file named:
+
+    <patharticles>/news/group/name/nnnnn
+
+where C<news/group/name> is the name of the newsgroup to which the article
+was posted with each period changed to a slash, and C<nnnnn> is the
+sequence number of the article in that newsgroup.  For crossposted articles,
+the article is linked into each newsgroup to which it is crossposted
+(using either hard or symbolic links).  This is the way versions of INN
+prior to 2.0 stored all articles, as well as being the article storage format
+used by C News and earlier news systems.  This method does not have
+self-expire functionality.  EXPENSIVESTAT is true for this method.
+
+Advantages: It is widely used and well-understood; it can read article
+spools written by older versions of INN and it is compatible with all
+third-party INN add-ons.  This storage mechanism provides easy and direct
+access to the articles stored on the server and makes writing programs
+that fiddle with the news spool very easy, and gives fine control over
+article retention times.
+
+Disadvantages: It takes a very fast file system and I/O system to keep up with
+current Usenet traffic volumes due to file system overhead.  Groups with heavy
+traffic tend to create a bottleneck because of inefficiencies in storing large
+numbers of article files in a single directory.  It requires a nightly expire
+program to delete old articles out of the news spool, a process that can slow
+down the server for several hours or more.
+
+=item B<trash>
+
+This method silently discards all articles stored in it.  Its only real
+uses are for testing and for silently discarding articles matching a
+particular storage method entry (for whatever reason).  Articles stored
+in this method take up no disk space and can never be retrieved, so this
+method has self-expire functionality of a sort.  EXPENSIVESTAT is false
+for this method.
+
+=back
+
+=head1 EXAMPLES
+
+The following sample F<storage.conf> file would store all articles
+posted to alt.binaries.* in the C<BINARIES> CNFS metacycbuff,
+all articles over roughly 50 KB in any other hierarchy in the C<LARGE> CNFS
+metacycbuff, all other articles in alt.* in one timehash class, and all
+other articles in any newsgroups in a second timehash class, except for
+the internal.* hierarchy which is stored in traditional spool format.
+
+    method tradspool {
+        class: 1
+        newsgroups: internal.*
+    }
+    method cnfs {
+        class: 2
+        newsgroups: alt.binaries.*
+        options: BINARIES
+    }
+    method cnfs {
+        class: 3
+        newsgroups: *
+        size: 50000
+        options: LARGE
+    }
+    method timehash {
+        class: 4
+        newsgroups: alt.*
+    }
+    method timehash {
+        class: 5
+        newsgroups: *
+    }
+
+Notice that the last storage method entry will catch everything.  This is
+a good habit to get into; make sure that you have at least one catch-all
+entry just in case something you did not expect falls through the cracks.
+Notice also that the special rule for the internal.* hierarchy is first,
+so it will catch even articles crossposted to alt.binaries.* or over 50 KB
+in size.
+
+As for poison wildmat expressions, if you have for instance an article
+crossposted between misc.foo and misc.bar, the pattern:
+
+    misc.*,!misc.bar
+
+will match that article whereas the pattern:
+
+    misc.*,@misc.bar
+
+will not match that article.  An article posted only to misc.bar will fail
+to match either pattern.
+
+Usually, high-volume groups and groups whose articles do not need to be kept
+around very long (binaries groups, *.jobs*, news.lists.filters, etc.) are
+stored in CNFS buffers.  Use the other methods (or CNFS buffers again) for
+everything else.  However, it is as often as not most convenient to keep in
+C<tradspool> special hierarchies like local hierarchies and hierarchies that
+should never expire or through the spool of which you need to go manually.
+
+=head1 HISTORY
+
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Rewritten
+into POD by Julien Elie <julien@trigofacile.com>.
+
+$Id$
+
+=head1 SEE ALSO
+
+cycbuff.conf(5), expire.ctl(5), expireover(8), inn.conf(5), innd(8),
+uwildmat(3).
+
+=cut

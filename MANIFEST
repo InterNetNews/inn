@@ -313,6 +313,7 @@ doc/pod/rnews.pod                     Master file for rnews.1
 doc/pod/sendinpaths.pod               Master file for sendinpaths.8
 doc/pod/simpleftp.pod                 Master file for simpleftp.1
 doc/pod/sm.pod                        Master file for sm.1
+doc/pod/storage.conf.pod              Master file for storage.conf.5
 doc/pod/subscriptions.pod             Master file for subscriptions.5
 doc/pod/tdx-util.pod                  Master file for tdx-util.8
 doc/pod/tinyleaf.pod                  Master file for tinyleaf.8
