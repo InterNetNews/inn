@@ -1108,6 +1108,7 @@ A storage class definition looks like this:
         size: <minsize>[,<maxsize>]
         expires: <mintime>[,<maxtime>]
         options: <options>
+        exactmatch: <bool>
     }
 
 <methodname> is the name of the storage method to use to store articles in
@@ -1143,6 +1144,12 @@ page and know what you're doing.
 The fifth parameter is the options parameter.  Currently only CNFS uses
 this field; it should contain the name of the metacycbuff used to store
 articles in this storage class.
+
+The sixth parameter is a boolean which is false by default: any non-zero
+number of matching newsgroups is sufficient, provided no newsgroup matches
+a poison wildmat.  If it is set to true, all the newsgroups in the
+Newsgroups: header of incoming articles will be examined to see if they
+match the newsgroups wildmat pattern.
 
 If you're using CNFS exclusively, just create one storage class for each
 metacycbuff that you have defined in F<cycbuff.conf> and set the

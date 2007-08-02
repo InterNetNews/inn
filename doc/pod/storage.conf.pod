@@ -126,12 +126,12 @@ a description of its use.
 
 =item B<exactmatch>
 
-If this key is set to true, all newsgroups will be examined to see if they
-match newsgroups patterns.  (Normally, any non-zero number of matching
-newsgroups is sufficient, provided no newsgroup matches a poison wildmat
-as described above.)  This is a boolean value; C<true>, C<yes> and C<on>
-are usable to enable this key.  The case of these values is not significant.
-The default is false.
+If this key is set to true, all the newsgroups in the Newsgroups: header of
+incoming articles will be examined to see if they match newsgroups patterns.
+(Normally, any non-zero number of matching newsgroups is sufficient, provided
+no newsgroup matches a poison wildmat as described above.)  This is a boolean
+value; C<true>, C<yes> and C<on> are usable to enable this key.  The case of
+these values is not significant.  The default is false.
 
 =back
 
