@@ -10,7 +10,7 @@ B<archive> [B<-cfr>] [B<-a> I<archive>] [B<-i> I<index>] [B<-p> I<pattern>]
 =head1 DESCRIPTION
 
 B<archive> makes copies of files specified on its standard input.  It is
-normally run either as a channel feed under B<innd> or or by a script
+normally run either as a channel feed under B<innd> or by a script
 before B<news.daily> is run.
 
 B<archive> reads the named I<input> file, or standard input if no file is
@@ -48,7 +48,7 @@ area, instead of I<patharchive> in F<inn.conf>.
 If the B<-c> flag is given, directory names will be flattened as described
 under the B<-f> option.  Then, additionally, all posts will be
 concatenated into a single file, appending to that file if it already
-exists.  The file name will be YYYYMM, formed from the current time when
+exists.  The file name will be C<YYYYMM>, formed from the current time when
 B<archive> is run.  In other words, if given an article in
 comp.sources.unix on December 14, 1998, the article would be appended to
 the file:
@@ -73,7 +73,7 @@ in the archive area.
 
 If the B<-i> flag is used, B<archive> will append one line to the file
 I<index> for each article that it archives.  This line will contain the
-destination file name, the message ID header, and the Subject header of
+destination file name, the Message-ID: header, and the Subject: header of
 the message, separated by spaces.  If either header is missing (normally
 not possible if the article was accepted by B<innd>), it will be replaced
 by C<< <none> >>.  The headers will be transformed using the same rules as
@@ -96,7 +96,7 @@ suppress this redirection, use the B<-r> flag.
 =head1 RETURN VALUE
 
 If the input is exhausted, B<archive> will exit with a zero status.  If an
-I/O error occures, it will try to spool its input, copying it to a file.
+I/O error occurs, it will try to spool its input, copying it to a file.
 If there was no input filename, the standard input will be copied to
 I<pathoutgoing>/archive and the program will exit.  If an input filename
 was given, a temporary file named I<input>.bch (if I<input> is an absolute
@@ -110,7 +110,7 @@ exit.
 A typical newsfeeds(5) entry to archive most source newsgroups is as
 follows:
 
-    source-archive\
+    source-archive!\
         :!*,*sources*,!*wanted*,!*.d\
         :Tc,Wn\
         :<pathbin>/archive -f -i <patharchive>/INDEX

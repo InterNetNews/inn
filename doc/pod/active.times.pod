@@ -19,7 +19,7 @@ time it was created, expressed as the number of seconds since the epoch.
 The third field is the e-mail address of the person who created the group,
 as specified in the control message or on the B<ctlinnd> command line, or
 the newsmaster specified at configure time if no creator argument was
-given to B<ctlinnd>.
+given to B<ctlinnd> (by default, it is C<usenet>).
 
 =head1 EXAMPLE
 
@@ -28,12 +28,13 @@ The line:
    news.admin.moderation 1175716803 group-admin@isc.org
 
 shows that the newsgroup news.admin.moderation was created on April 4th 2007
-at 20:00:03 UTC.  This date can be obtained for instance with C<convdate -c 1175716803> or
+at 20:00:03 UTC.  This date can be obtained for instance with
+C<convdate -c 1175716803> (convdate(1) is shipped with INN) or
 C<date -u -d "Jan 1, 1970 00:00:00 +0000 + 1175716803 seconds">.  It is
-when the newsgroup was locally created; in this example, it is when the
+when the newsgroup was locally created; in this example, it is when a
 control message sent by C<group-admin@isc.org> was received and processed
-by the news server.  Therefore, the time is not necessarily the same on
-every news server.
+by the news server (see control.ctl(5) for more details).  Therefore,
+the time is not necessarily the same on every news server.
 
 =head1 HISTORY
 

@@ -61,7 +61,7 @@ corresponding to a principal in another realm that they have access to and
 gaining access to the news server via it.  However, this is also something
 that people may wish to do under some circumstances, so there should be a
 better way of handling it (such as, perhaps, a list of acceptable realms
-or a -r flag specifying the realm in which to attempt authentication).
+or a B<-r> flag specifying the realm in which to attempt authentication).
 
 It's not clear the right thing to do when the username passed in contains
 a C</> and B<-i> was also given.  Right now, B<auth_krb5> will create a
@@ -73,13 +73,13 @@ error message.
 
 Originally written by Christopher P. Lindsey.  This documentation was
 written by Russ Allbery <rra@stanford.edu> based on Christopher's original
-README file.
+F<README> file.
 
 $Id$
 
 =head1 SEE ALSO
 
-nnrpd(8), readers.conf(5)
+nnrpd(8), readers.conf(5).
 
 The latest version of Christopher's original B<nnrpkrb5auth> may be found
 on his web site at L<http://www.mallorn.com/tools/>.
