@@ -1,0 +1,127 @@
+=head1 NAME
+
+newsgroups - List of newsgroups and their short descriptions
+
+=head1 DESCRIPTION
+
+The file I<pathdb>/newsgroups contains a list of newsgroups for which
+a short description is available.  This file is generally updated by
+controlchan(8) whenever a control message is received; it is used by
+B<nnrpd> in response to C<LIST NEWSGROUPS> and is only meant to provide
+information to users.  News readers often show the list of carried
+newsgroups along with these descriptions.
+
+It is not necessary that all the groups carried by the news server
+(that is to say all the groups listed in the F<active> file) be listed
+in the F<newsgroups> file.  And it is also not necessary that all the
+groups listed in the F<newsgroups> file be carried by the news server.
+Nonetheless, it is of course better if the F<active> and F<newsgroups>
+files have exactly the same newsgroups.
+
+If you use C<ctlinnd newgroup> to manually create a group, only the
+F<active> file is updated.  You should then edit the F<newsgroups>
+file in order to add a short description for the created group.  The
+same goes for manually removing or changing the status of a newsgroup.
+
+Each line of the F<newsgroups> file consists of two fields separated
+by at least one tabulation:
+
+    <name>\t<description>
+
+The first field is the name of the newsgroup.  The second field is its
+description.
+
+You can get the F<newsgroups> file of another NNTP server with getlist(1).
+
+=head1 PREFERRED FORMAT FOR A ONE-LINE NEWSGROUP DESCRIPTION
+
+As far as the format of the F<newsgroups> file is concerned, there is a
+preferred format for each line.  Since news administrators do not generally
+have the time to fix up the lines that are being automatically included
+from newgroup or checkgroups messages, this information is provided so
+that control message senders can craft better control messages.  It will
+also be useful for news administrators to know how to format the
+description of their local newsgroups.
+
+There should be at least one hard tab (8 column tab stops) between the
+group name and the description.  If the group name is at least 16 characters,
+it should be followed with one tab.  If the group name is at least 8
+characters, it should be followed with two tabs.  And in the unlikely event
+the group name is less than 8 characters, it should be followed with three
+tabs.  For instance:
+
+    misc.transport.rail.europe	Railroads & railways in all of Europe.
+    news.admin.nocem	NoCeM protocol policy issues and information.
+    news.groups		Discussions and lists of newsgroups.
+
+The total line length should be at most 79 columns.  The description
+should start with a capital and not be more than 55 characters (79 - 24)
+long.  If the group name is longer than 24 characters, the description
+should be correspondingly shorter.  If the group is moderated, it should
+have C< (Moderated)> (note the space before the opening parenthesis)
+at the very end of the description, not counted as part of the length of
+the description.  This text must be exactly that, with no variations,
+as it is used by news software to find moderated groups.
+
+Here is an example of moderated newsgroup:
+
+    news.lists.misc	News-related statistics and lists. (Moderated)
+    news.admin.announce	Announcements for news adminstrators. (Moderated)
+
+Traditionally, all newsgroup descriptions ended with a period, but this
+is not necessary and steals away one character that is occasionally
+useful for forming a better description.
+
+Some over-long descriptions could be made to easily fit the length by
+dropping useless wordings like C<Discussion of> which do not meaningfully
+contribute to the description.  Others are usually pretty easy to get to
+no more than column eighty, except when the group names start getting
+really long.  Hopefully then the group name itself contains quite a bit
+of description.
+
+In some cases, a longer description really will be necessary; they can
+of course be used within the F<newsgroups> file.  However, they will
+probably be less readable and less useful for some Usenet users.
+
+Descriptions must not contain any control characters (octets between
+0x00 and 0x1F).
+
+=head1 ENCODING OF THE DESCRIPTIONS
+
+There is, at present, no good mechanism for managing the character set
+of the newsgroup descriptions.  Many non-English hierarchies include
+newsgroup descriptions in their native languages, since this is more
+useful for their users, and those are included verbatim in the
+F<newsgroups> file.  This unfortunately means that different lines of the
+file will require different character set settings to read properly, and
+those character sets are not documented in the file.  Hopefully some
+future standard will provide a way to address this; in the meantime,
+using UTF-8 for non-ASCII characters is recommended.
+
+=head1 MINIMAL NEWSGROUPS FILE
+
+The minimal F<newsgroups> file shipped with INN is:
+
+    control		Various control messages (no posting).
+    control.cancel	Cancel messages (no posting).
+    control.checkgroups	Hierarchy check control messages (no posting).
+    control.newgroup	Newsgroup creation control messages (no posting).
+    control.rmgroup	Newsgroup removal control messages (no posting).
+    junk		Unfiled articles (no posting).
+
+=head1 HISTORY
+
+Written by Julien Elie <julien@trigofacile.com> for InterNetNews.
+The preferred format for a one-line newsgroup description is based on
+the policies by which the F<newsgroups> file in
+L<ftp://ftp.isc.org/pub/usenet/CONFIG/> is maintained; they were originally
+written by David Lawrence <tale@isc.org> and updated by Russ Allbery
+<rra@stanford.edu>.
+
+$Id$
+
+=head1 SEE ALSO
+
+active(5), controlchan(8), ctlinnd(8), getlist(1), nnrpd(8).
+
+=cut

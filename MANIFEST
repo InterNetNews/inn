@@ -205,6 +205,7 @@ doc/man/motd.news.5                   Manpage for motd.news config file
 doc/man/news.daily.8                  Manpage for news.daily
 doc/man/news2mail.8                   Manpage for news2mail
 doc/man/newsfeeds.5                   Manpage for newsfeeds config file
+doc/man/newsgroups.5                  Manpage for newsgroups file
 doc/man/newslog.5                     Manpage for log files
 doc/man/ninpaths.8                    Manpage for ninpaths
 doc/man/nnrpd.8                       Manpage for nnrpd daemon
@@ -293,6 +294,7 @@ doc/pod/moderators.pod                Master file for moderators.5
 doc/pod/motd.news.pod                 Master file for motd.news.5
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/newsfeeds.pod                 Master file for newsfeeds.5
+doc/pod/newsgroups.pod                Master file for newsgroups.5
 doc/pod/ninpaths.pod                  Master file for ninpaths.8
 doc/pod/nnrpd.pod                     Master file for nnrpd.8
 doc/pod/ovdb.pod                      Master file for ovdb.5

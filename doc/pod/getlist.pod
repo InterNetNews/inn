@@ -77,8 +77,10 @@ the shell.
 Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Rewritten
 in POD by Russ Allbery <rra@stanford.edu>.
 
+$Id$
+
 =head1 SEE ALSO
 
-active(5), active.times(5), inn.conf(5), nnrpd(8), uwildmat(3)
+active(5), active.times(5), newsgroups(5), inn.conf(5), nnrpd(8), uwildmat(3).
 
 =cut

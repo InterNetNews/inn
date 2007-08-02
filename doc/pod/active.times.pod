@@ -21,6 +21,8 @@ as specified in the control message or on the B<ctlinnd> command line, or
 the newsmaster specified at configure time if no creator argument was
 given to B<ctlinnd> (by default, it is C<usenet>).
 
+You can get the F<active.times> file of another NNTP server with getlist(1).
+
 =head1 EXAMPLE
 
 The line:
@@ -45,6 +47,6 @@ $Id$
 
 =head1 SEE ALSO
 
-active(5), convdate(1), ctlinnd(8), inn.conf(5), innd(8), nnrpd(8).
+active(5), convdate(1), ctlinnd(8), getlist(1), inn.conf(5), innd(8), nnrpd(8).
 
 =cut

@@ -7,9 +7,12 @@ active - List of newsgroups carried by the server
 The file I<pathdb>/active lists the newsgroups carried by INN.  This file
 is generally maintained using ctlinnd(8) to create and remove groups, or
 by letting controlchan(8) do so on the basis of received control messages;
-this file is then updated and a backup stored in I<pathdb>/active.old.  The
-F<active> file should not be edited directly without throttling B<innd>, and
-must be reloaded using B<ctlinnd> before B<innd> is unthrottled.  Editing
+this file is then updated and a backup stored in I<pathdb>/active.old.  Note
+that the newsgroups(5) file normally contains the descriptions of the
+newsgroups carried by the news server.
+
+The F<active> file should not be edited directly without throttling B<innd>,
+and must be reloaded using B<ctlinnd> before B<innd> is unthrottled.  Editing
 it directly even with those precautions may make it inconsistent with the
 overview database and won't update F<active.times>, so B<ctlinnd> should
 be used to make modifications whenever possible.
@@ -105,7 +108,9 @@ them in readers.conf(5).
 
 To create additional groups after the server is running, you can use
 C<ctlinnd newgroup>.  You can also synchronize your newsgroup list to
-that of another server by using actsync(8).
+that of another server by using actsync(8) or get the F<active> file
+of another NNTP server with getlist(1).  And do not forget to update
+your F<newsgroups> file.
 
 =head1 HISTORY
 
@@ -116,7 +121,7 @@ $Id$
 
 =head1 SEE ALSO
 
-active.times(5), actsync(8), controlchan(8), ctlinnd(8), inn.conf(5),
-innd(8), news.daily(8), readers.conf(5).
+active.times(5), actsync(8), controlchan(8), ctlinnd(8), getlist(1),
+inn.conf(5), innd(8), news.daily(8), newsgroups(5), readers.conf(5).
 
 =cut
