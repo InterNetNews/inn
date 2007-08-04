@@ -38,7 +38,7 @@ $newsgroup = '@NEWSGRP@';
     'newsfeeds',	"$inn::pathetc/newsfeeds",
     'overview.fmt',	"$inn::pathetc/overview.fmt",
     'newsetc',		"$inn::pathetc",
-    'newslib',		"@LIBDIR@",
+    'newslib',		"@libdir@",
     'nnrpd',		"$inn::pathbin/nnrpd",
     'nntpsend.ctl',	"$inn::pathetc/nntpsend.ctl",
     'oldlogs',		"$inn::pathlog/OLD",
@@ -355,7 +355,7 @@ moderators
 %newsfeeds'flags = (
     '<',	'^\d+$',
     '>',	'^\d+$',
-    'A',	'^[cCdeoOp]+$',
+    'A',	'^[cCdefoOp]+$',
     'B',	'^\d+(/\d+)?$',
     'C',	'^\d+$',
     'F',	'^.+$',
@@ -367,6 +367,7 @@ moderators
     'P',	'^\d+$',
     'S',	'^\d+$',
     'T',	'^[cflmpx]$',
+    'U',        '^\d+$',
     'W',	'^[befghmnpst*DGHNPOR]*$',
 );
 
@@ -605,7 +606,8 @@ nntpsend_ctl
 		next flag;
 	    }
 	    print "$file:$line: unknown argument to option `$f': $flags\n"
-		if ( $f eq "t" || $f eq "T" || $f eq "P") && $v !~ /\d+/;
+		if ( $f eq "P" || $f eq "s" || $f eq "t" || $f eq "T" || $f eq "w")
+                     && $v !~ /\d+/;
 	}
     }
     1;
@@ -729,16 +731,15 @@ intersect
     'c7unbatch', 'decode', 'encode', 'gunbatch'
 );
 @newsbin_public = (
-    'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'expire',
+    'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch',
     'filechan', 'getlist', 'grephistory', 'innconfval', 'innxmit',
-    'makehistory', 'nntpget', 'overchan', 'prunehistory', 'shlock',
-    'shrinkfile'
+    'nntpget', 'nntpsend', 'sendxbatches', 'send-ihave', 'send-nntp', 'send-uucp',
+    'shlock', 'shrinkfile'
 );
 @newsbin_private = (
-    'ctlinnd', 'expirerm', 'inncheck', 'innstat', 'innwatch',
-    'news.daily', 'nntpsend', 'scanlogs', 'sendbatch',
-    'tally.control', 'writelog',
-    'send-ihave', 'send-nntp', 'send-uucp'
+    'ctlinnd', 'expire', 'expirerm', 'inncheck', 'innstat', 'innwatch',
+    'makehistory', 'news.daily', 'overchan', 'prunehistory', 'scanlogs', 
+    'tally.control', 'writelog'
 );
 #@newslib_private_read = (
 #    'innlog.pl'
@@ -773,7 +774,7 @@ check_all_perms
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};
     }
-    &checkperm($paths{'history'}, 0644);
+    &checkperm($paths{'history'}, @FILEMODE@);
     # Commented out for now since it depends on the history type.
     #&checkperm($paths{'history'} . ".dir", 0644);
     #&checkperm($paths{'history'} . ".index", 0644);
