@@ -68,6 +68,7 @@ sub docheckgroups {
     my $st = system("$inn::pathbin/docheckgroups", $newsgrouppats);
     logdie('Cannot run docheckgroups: ' . $!) if $st == -1;
     logdie('docheckgroups returned status ' . ($st & 255)) if $st > 0;
+    close(STDIN);
     close(STDOUT);
     open(STDIN, '<&OLDIN') or die $!;
     open(STDOUT, '>&OLDOUT') or die $!;
@@ -75,7 +76,12 @@ sub docheckgroups {
     open(TEMPFILE, $tempfile) or logdie("Cannot open $tempfile: $!");
     my @output = <TEMPFILE>;
     chop @output;
-    logger($log || 'mail', "checkgroups by $sender", \@output);
+    # There is no need to send an empty mail.
+    if ($#output > 0) {
+        logger($log || 'mail', "checkgroups by $sender", \@output);
+    } else {
+        logmsg("checkgroups by $sender processed (no change)");
+    }
     close TEMPFILE;
     unlink($tempfile, "$tempfile.art");
 }

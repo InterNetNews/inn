@@ -29,9 +29,7 @@ sub control_newgroup {
     $errmsg= local_checkgroupname($groupname) if defined &local_checkgroupname;
     if ($errmsg) {
         $errmsg = checkgroupname($groupname) if $errmsg eq 'DONE';
-    }
 
-    if ($errmsg) {
         if ($log) {
             logger($log, "skipping newgroup ($errmsg)", $headers, $body);
         } else {
@@ -49,29 +47,72 @@ sub control_newgroup {
         last;
     }
     close ACTIVE;
+    
     my $status;
+    my $ngdesc = 'No description.';
+    my $olddesc = '';    
+    my $ngname = $groupname;
+
+    # If there is a tag line, search whether the description has changed.
+    my $found = 0;
+    my $ngline = '';
+    foreach (@$body) {
+        if ($found) {
+            # It is the line which contains the description.
+            $ngline = $_;
+            last;
+        }
+        $found = 1 if $_ =~ /^For your newsgroups file:\s*$/;
+    }
+    
+    if ($found) {
+      ($ngname, $ngdesc) = split(/\s+/, $ngline, 2);
+      if ($ngdesc) {
+          $ngdesc =~ s/\s+$//;
+          $ngdesc =~ s/\s+\(moderated\)\s*$//i;
+          $ngdesc .= ' (Moderated)' if $modflag eq 'moderated';
+      }
+      # Scan newsgroups to see the previous description, if any.
+      open(NEWSGROUPS, $inn::newsgroups)
+          or logdie("Cannot open $inn::newsgroups: $!");
+      while (<NEWSGROUPS>) {
+          if (/^\Q$groupname\E\s+(.*)/) {
+              $olddesc = $1;
+              last;
+          }
+      }
+      close NEWSGROUPS;
+    }
+
     if (@oldgroup) {
         if ($oldgroup[3] eq 'm' and $modflag ne 'moderated') {
-            $status = 'made unmoderated';
+            $status = 'be made unmoderated';
         } elsif ($oldgroup[3] ne 'm' and $modflag eq 'moderated') {
-            $status = 'made moderated';
+            $status = 'be made moderated';
         } else {
-            $status = 'no change';
+            if ($ngdesc eq $olddesc) {
+                $status = 'no change';
+            } else {
+                $status = 'have a new description';
+            }
         }
     } elsif (not $approved) {
         $status = 'unapproved';
     } else {
-        $status = 'created';
+        $status = 'be created';
     }
 
-    if ($action eq 'mail' and $status !~ /no change|unapproved/) {
+    if ($action eq 'mail' and $status !~ /(no change|unapproved)/) {
         my $mail = sendmail("newgroup $groupname $modcmd $sender");
         print $mail <<END;
 $sender asks for $groupname
-to be $status.
+to $status.
 
 If this is acceptable, type:
   $inn::newsbin/ctlinnd newgroup $groupname $modcmd $sender
+
+And do not forget to update the corresponding description in your
+newsgroups file.
 
 The control message follows:
 
@@ -83,34 +124,21 @@ END
     } elsif ($action eq 'log') {
         if ($log) {
             logger($log, "skipping newgroup $groupname $modcmd"
-                . " $sender (would be $status)", $headers, $body);
+                . " $sender (would $status)", $headers, $body);
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
-                . " (would be $status)");
+                . " (would $status)");
         }
     } elsif ($action eq 'doit' and $status ne 'unapproved') {
-        ctlinnd('newgroup', $groupname, $modcmd, $sender)
-            if $status ne 'no change';
-
-        # If there is a tag line, update newsgroups too, even if the group
-        # did already exist.
-        my $found = 0;
-        my $ngline = '';
-        foreach (@$body) {
-            if ($found) {
-                $ngline = $_;
-                last;
-            }
-            $found = 1 if $_ eq 'For your newsgroups file:';
+        if ($status ne 'no change') {
+            # The status 'be made (un)moderated' prevails over
+            # 'have a new description' so it is executed.
+            ctlinnd('newgroup', $groupname, $modcmd, $sender)
+                if $status ne 'have a new description';
+            # We know the description has changed.
+            update_desc($ngname, $ngdesc) if $ngdesc and $ngname eq $groupname;
         }
-        my ($ngname, $ngdesc) = split(/\s+/, $ngline, 2);
-        if ($ngdesc) {
-            $ngdesc =~ s/\s+$//;
-            $ngdesc =~ s/\s+\(moderated\)\s*$//i;
-            $ngdesc .= ' (Moderated)' if $modflag eq 'moderated';
-        }
-        update_desc($ngname, $ngdesc) if $ngdesc and $ngname eq $groupname;
-
+        
         if ($log ne 'mail' or $status ne 'no change') {
             logger($log, "newgroup $groupname $modcmd $status $sender",
                    $headers, $body) if $log;
@@ -126,24 +154,22 @@ sub update_desc {
     open(NEWSGROUPS, $inn::newsgroups)
         or logdie("Cannot open $inn::newsgroups: $!");
     open(TEMPFILE, ">$tempfile") or logdie("Cannot open $tempfile: $!");
-    my $olddesc = '';
     while (<NEWSGROUPS>) {
-        if (/^\Q$name\E\s+(.*)/) {
-            $olddesc = $1;
-            next;
-        }
+        next if (/^\Q$name\E\s+(.*)/);
         print TEMPFILE $_;
     }
-    print TEMPFILE "$name\t$desc\n";
+    # We now write a pretty line for the description.
+    if (length $name < 8) {
+        print TEMPFILE "$name\t\t\t$desc\n";
+    } elsif (length $name < 16) {
+        print TEMPFILE "$name\t\t$desc\n";
+    } else {
+        print TEMPFILE "$name\t$desc\n";
+    }
     close TEMPFILE;
     close NEWSGROUPS;
-    # install the modified file only if the description has changed
-    if ($desc ne $olddesc) {
-        rename($tempfile, $inn::newsgroups)
-            or logdie("Cannot rename $tempfile: $!");
-    } else {
-        unlink($tempfile);
-    }
+    rename($tempfile, $inn::newsgroups)
+        or logdie("Cannot rename $tempfile: $!");
     unlink("$inn::locks/LOCK.newsgroups", $tempfile);
 }
 
@@ -156,11 +182,11 @@ sub checkgroupname {
     # whole-name checking
     return 'Empty group name' if /^$/;
     return 'Whitespace in group name' if /\s/;
-    return 'unsafe group name' if /[\`\/:;]/;
+    return 'Unsafe group name' if /[\`\/:;]/;
     return 'Bad dots in group name' if /^\./ or /\.$/ or /\.\./;
 #    return 'Group name does not begin/end with alphanumeric'
 #        if (/^[a-zA-Z0-9].+[a-zA-Z0-9]$/;
-    return 'Group name begins in control. or junk.' if /^(?:junk|control)\./;
+    return 'Group name begins in control., junk. or to.' if /^(?:control|junk|to)\./;
 #    return 'Group name too long' if length $_ > 128;
 
     my @components = split(/\./);
