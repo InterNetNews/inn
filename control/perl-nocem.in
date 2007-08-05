@@ -6,6 +6,14 @@
 # Copyright 2000 by Miquel van Smoorenburg <miquels@cistron.nl>
 # Copyright 2001 by Marco d'Itri <md@linux.it>
 # This program is licensed under the terms of the GNU General Public License.
+#
+# List of changes:
+#
+# 2002: Patch by Steven M. Christey for untrusted printf input.
+# 2007: Patch by Christoph Biedl for checking a timeout.
+# Documentation improved by Jeffrey M. Vinocur (2002), Russ Allbery (2006)
+# and Julien Elie (2007).
+#
 ##############################################################################
 
 require 5.00403;
@@ -486,25 +494,88 @@ perl-nocem < I<message>
 
 =head1 DESCRIPTION
 
-Add to the newsfeeds file an entry like this one:
+NoCeM, which is pronounced I<No See 'Em>, is a protocol enabling
+authenticated third-parties to issue notices which can be used
+to cancel unwanted articles (like spam and articles in moderated
+newsgroups which were not approved by their moderators).  It can
+also be used by readers as a I<third-party killfile>.  It is
+intended to eventually replace the protocol for third-party cancel
+messages.
 
-    nocem:!*,alt.nocem.misc,news.lists.filter\
-        :Tc,Wf,Ap:/usr/local/news/bin/perl-nocem
+B<perl-nocem> processes third-party, PGP-signed article cancellation
+notices. It is possible not to honour all NoCeM notices but only those
+which are sent by people whom you trust (that is to say if you trust
+the PGP key they use to sign their NoCeM notices).  Indeed, it is up
+to you to decide whether you wish to honour their notices, depending
+on the criteria they use.
 
-Import new keys with:
+Processing NoCeM notices is easy to set up:
+
+=over 4
+
+=item 1.
+
+Import the keys of the NoCeM issuers you trust in order to check
+the authenticity of their notices.  You can do:
 
     gpg --primary-keyring /usr/local/news/etc/pgp/ncmring.gpg --import
         <key-file>
 
-where <key-file> is the file containing the key.  For old PGP-generated
-keys, you may have to use B<--allow-non-selfsigned-uid> if they're not
-properly self-signed, but anyone creating a key really should self-sign
-the key.  Current PGP implementations do this automatically.
+where <key-file> is the file containing the key(s) to import.  The keyring
+must be located in I<pathetc>/pgp/ncmring.gpg (create the directory
+before using B<gpg>).  For old PGP-generated keys, you may have to use
+B<--allow-non-selfsigned-uid> if they are not properly self-signed,
+but anyone creating a key really should self-sign the key.  Current
+PGP implementations do this automatically.
 
-The nocem.ctl config file contains lines like:
+The keys of NoCeM issuers can be found in the web site of I<The NoCem Registry>:
+L<http://www.xs4all.nl/~rosalind/nocemreg/nocemreg.html>.  You can even
+download there a unique file which contains all the keys.
 
-    annihilator-1@erlenstar.demon.co.uk:*
-    clewis@ferret:mmf,spam
+=item 2.
+
+Create a F<nocem.ctl> config file in I<pathetc> indicating the NoCeM issuers
+and notices you want to follow.  This permission file contains lines like:
+
+    annihilator-1:*
+    clewis@ferret.ocunix:mmf
+    stephane@asynchrone:mmf,openproxy,spam
+
+This will remove all articles for which the issuer (first part of the line,
+before the colon C<:>) has issued NoCeM notices corresponding to the
+criteria specified after the colon.
+
+You will also find information about that on the web site of
+I<The NoCem Registry>.
+
+=item 3.
+
+Add to the F<newsfeeds> file an entry like this one in order to feed
+B<perl-nocem> the NoCeM notices posted to alt.nocem.misc and
+news.lists.filter:
+
+    nocem!:!*,alt.nocem.misc,news.lists.filter\
+        :Tc,Wf,Ap:/usr/local/news/bin/perl-nocem
+
+with the correct path to B<perl-nocem>, located in I<pathbin>.  Then, reload
+the F<newsfeeds> file (C<ctlinnd reload newsfeeds 'NoCeM channel feed'>).
+
+Note that you should at least carry news.lists.filters on your news
+server or other newsgroups where NoCeM notices are sent if you wish
+to process them.
+
+=item 4.
+
+Everything should now work.  However, do not hesitate to manually test
+B<perl-nocem> with a NoCeM notice, using:
+
+    perl-nocem < /path/to/a/notice
+
+When you have verified that everything works, you can eventually turn
+off regular spam cancels, if you want, not processing any longer
+cancels containing C<cyberspam> in the Path: header.
+
+=back
 
 =head1 FILES
 
@@ -512,16 +583,24 @@ The nocem.ctl config file contains lines like:
 
 =head1 BUGS
 
-The Subject header is not checked for the @@NCM string and there is no
-check for the presence of the References header.
+The Subject: header is not checked for the @@NCM string and there is no
+check for the presence of the References: header.
 
-The Newsgroups pseudo header is not checked, but this can be done in
+The Newsgroups: pseudo header is not checked, but this can be done in
 local_want_cancel_id().
 
-The Hierarchies header is ignored.
+The Hierarchies: header is ignored.
 
 =head1 HISTORY
 
 Copyright 2000 by Miquel van Smoorenburg <miquels@cistron.nl>.
 
 Copyright 2001 by Marco d'Itri <md@linux.it>.
+
+$Id$
+
+=head1 SEE ALSO
+
+gpgv(1), newsfeeds(5), pgp(1).
+
+=cut

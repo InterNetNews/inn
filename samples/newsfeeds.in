@@ -51,7 +51,7 @@ ME:!*/!local,!collabra-internal::
 # no longer handles any control messages except cancel internally.
 controlchan!\
 	:!*,control,control.*,!control.cancel\
-	:Tc,Wnsm:@prefix@/bin/controlchan
+	:Tc,Wnsm:@bindir@/controlchan
 
 ##  Uncomment if you're using innfeed.  This feed tells INN how to run
 ##  innfeed, and then every site you're feeding with innfeed has a
@@ -102,13 +102,19 @@ controlchan!\
 
 ##  OUTGOING SPECIAL FEED EXAMPLES
 
-# Accumulate Path header statistics.  See ninpaths(8) for more details on
+# Accumulate Path: header statistics.  See ninpaths(8) for more details on
 # how to set this up.
 #inpaths!:*:Tc,WP:@bindir@/ninpaths -p -d @LOGDIR@/path/inpaths.%d
 
 # Feed all moderated source postings to an archiver.
 #source-archive!:!*,*sources*,!*wanted*,!*.d\
 #	:Tc,Wn:@bindir@/archive -f -i @SPOOLDIR@/archive/INDEX
+
+# Feed NoCeM notices to perl-nocem in order to process third-party,
+# PGP-signed article cancellation notices.  See perl-nocem(8) for more
+# details on how to set this up.
+#nocem!:!*,alt.nocem.misc,news.lists.filter\
+#	:Tc,Wf,Ap:@bindir@/perl-nocem
 
 # News to mail gateway.  Similar to innfeed, this uses a master feed and
 # then individual feeds for every separate address that news is being
@@ -118,8 +124,8 @@ controlchan!\
 #news-software@example.com:rec.pets.redants.*:Tm:news2mail!
 
 # Capture all local postings (with a distribution of "foo" and no more
-# than two sites in the Path) using a local program (that doesn't come with
-# INN).
-#capture\
+# than two sites in the Path: header) using a local program (that doesn't
+# come with INN).
+#capture!\
 #	:*/foo\
 #	:Tp,H2:/usr/local/bin/capture %s
