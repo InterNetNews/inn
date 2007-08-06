@@ -291,7 +291,16 @@ STATUSsummary(void)
   fprintf (F, "   rejected size: %-7s    %%rejected size: %.1f%%\n",
 	   PrettySize(RejectSize, str), (float) RejectSize / size * 100);
   fputc ('\n', F) ;
-  
+
+  if(innconf->logstatus) {
+    notice ("%s status seconds %ld accepted %ld "
+            "refused %ld rejected %ld duplicate %ld "
+            "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
+                "ME", (long) seconds, accepted,
+                refused, rejected, duplicate,
+                size, DuplicateSize, RejectSize);
+  }
+
   /* Incoming Feeds */
   for (status = head ; status != NULL ;) {
     fprintf (F, "%s\n",                      status->name);
@@ -335,6 +344,16 @@ STATUSsummary(void)
 	     NNTP_FAIL_CHECK_REFUSE, status->Check_cybercan);
     }
     fputc ('\n', F) ;
+
+    if(innconf->logstatus) {
+      notice ("%s status seconds %ld accepted %ld "
+              "refused %ld rejected %ld duplicate %ld "
+              "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
+                  status->name, (long) status->seconds, status->accepted,
+                  status->refused, status->rejected, status->Duplicate,
+                  status->Size, status->DuplicateSize, status->RejectSize);
+    }
+
     tmp = status->next;
     free(status);
     status = tmp;
@@ -346,6 +365,7 @@ STATUSsummary(void)
 #endif /* defined(HTML_STATUS) */
 
   Fclose(F);
+  free(path);
 }
 
 void

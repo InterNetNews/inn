@@ -140,6 +140,7 @@ logcancelcomm:          false
 logcycles:              3
 logipaddr:              true
 logsitename:            true
+logstatus:              false
 nnrpdoverstats:         false
 nntpactsync:            200
 nntplinklog:            false

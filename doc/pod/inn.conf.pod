@@ -993,6 +993,13 @@ should be put into the article log file.  This is useful for debugging and
 statistics and can be used by newsrequeue(8).  This is a boolean value and
 the default is true.
 
+=item I<logstatus>
+
+Whether B<innd> should write a shortened version of its status report
+to syslog every I<status> seconds.  This is a boolean value and the default
+is false.  If set to true, see the I<status> parameter for more details
+on how to enable status reporting.
+
 =item I<nnrpdoverstats>
 
 Whether nnrpd overview statistics should be logged via syslog.  This can

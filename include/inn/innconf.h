@@ -135,6 +135,7 @@ struct innconf {
     long logcycles;             /* How many old logs scanlogs should keep */
     bool logipaddr;             /* Log by host IP address? */
     bool logsitename;           /* Log outgoing site names? */
+    bool logstatus;             /* Send a status report to syslog? */
     bool nnrpdoverstats;        /* Log overview statistics? */
     long nntpactsync;           /* Checkpoint log after this many articles */
     bool nntplinklog;           /* Put storage token into the log? */
