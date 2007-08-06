@@ -356,6 +356,9 @@ sub collect {
       return 1;
     }
 
+    # logstatus (information written in inn_status.html)
+    return 1 if ($left =~ /\S+ status seconds \d+ accepted \d+ refused \d+ rejected \d+ duplicate \d+ accepted size \d+ duplicate size \d+(?: rejected size \d+)?$/o);
+
     # closed/checkpoint (with times)
     #
     # For checkpoints, store the current checkpoint numbers; if we still have
