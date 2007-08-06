@@ -148,7 +148,7 @@ CHANsetup(int count)
        AF_INET6 remconn).  If we end up with more somehow, we'll resize in
        CHANcreate. */
     channels.prioritized_size = 3;
-    channels.prioritized = xmalloc(2 * sizeof(CHANNEL *));
+    channels.prioritized = xmalloc(3 * sizeof(CHANNEL *));
     for (i = 0; i < 3; i++)
         channels.prioritized[i] = NULL;
 }
