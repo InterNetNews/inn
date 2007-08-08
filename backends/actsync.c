@@ -6,7 +6,7 @@
  * usage:
  *    actsync [-A][-b hostid][-d hostid][-g max][-i ignore_file][-I hostid][-k]
  *	      [-l hostid][-m][-n name][-o fmt][-p %][-q hostid][-s size]
- *	      [-t hostid][-T][-v verbose_lvl][-z sec]
+ *	      [-t hostid][-T][-v verbose_lvl][-w sec][-z sec]
  *	      [host1] host2
  *
  *	-A		use authentication to server
@@ -47,6 +47,7 @@
  *			    2   summary & actions (if exec output) only if done
  *			    3   summary & actions (if exec output)
  *			    4   debug output plus all -v 3 messages
+ *	-w sec		wait sec seconds before ctlinnd timing out (def: -w 30)
  *	-z sec		sleep sec seconds per exec if -o x	  (def: -z 4)
  *	host1		host to be changed 	            (def: local server)
  *	host2		reference host used in merge
@@ -82,7 +83,7 @@
 static const char usage[] = "\
 Usage: actsync [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n\
         [-l hostid][-m][-n name][-o fmt][-p min_%_unchg][-q hostid]\n\
-        [-s size][-t hostid][-T][-v verbose_lvl][-z sec]\n\
+        [-s size][-t hostid][-T][-v verbose_lvl][-w sec][-z sec]\n\
         [host1] host2\n\
 \n\
     -A          use authentication to server\n\
@@ -123,6 +124,7 @@ Usage: actsync [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n\
                 2       summary & actions (if exec output) only if done\n\
                 3       summary & actions (if exec output)\n\
                 4       debug output plus all -v 3 messages\n\
+    -w sec      wait sec seconds before ctlinnd timing out (def: -w 30)\n\
     -z sec      sleep sec seconds per exec if -o x      (def: -z 4)\n\
 \n\
     host1       host to be changed                      (def: local server)\n\
@@ -233,7 +235,6 @@ struct eqgrp {
 
 #define DEV_NULL "/dev/null"	/* path to the bit bucket */
 #define CTLINND_NAME "ctlinnd"	/* basename of ctlinnd command */
-#define CTLINND_TIME_OUT "-t30"	/* seconds to wait before timeout */
 
 #define READ_SIDE 0		/* read side of a pipe */
 #define WRITE_SIDE 1		/* write side of a pipe */
@@ -311,6 +312,7 @@ int host2_hilow_newgrp = 0;	/* 1 => use host2 hi/low on new groups */
 int host2_hilow_all = 0;	/* 1 => use host2 hi/low on all groups */
 int host1_ign_print = 0;	/* 1 => print host1 ignored groups too */
 int v_flag = 0;			/* default verbosity level */
+int w_flag = 30;        /* sleep w_flag sec before ctlinnd timing out */
 int z_flag = 4;			/* sleep z_flag sec per exec if -o x */
 int A_flag = 0;         /* 1 => authentication before LIST command */
 
@@ -400,7 +402,7 @@ process_args(int argc, char *argv[], char **host1, char **host2)
     int i;
 
     /* parse args */
-    while ((i = getopt(argc,argv,"Ab:d:g:i:I:kl:mn:o:p:q:s:t:Tv:z:")) != EOF) {
+    while ((i = getopt(argc,argv,"Ab:d:g:i:I:kl:mn:o:p:q:s:t:Tv:w:z:")) != EOF) {
 	switch (i) {
 	case 'A':
 	    A_flag = 1;
@@ -646,6 +648,13 @@ process_args(int argc, char *argv[], char **host1, char **host2)
                 warn("-v level must be >= %d and <= %d", VER_MIN, VER_MAX);
 		die("%s", usage);
 	    }
+	    break;
+	case 'w':		/* -w sec */
+	    w_flag = atoi(optarg);
+        if (w_flag < 0) {
+            warn("-w option must be a positive integer");
+            die("%s", usage);
+        }
 	    break;
 	case 'z':		/* -z sec */
 	    z_flag = atoi(optarg);
@@ -2530,6 +2539,8 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
     int io[2];			/* pair of pipe descriptors */
     int status;			/* wait status */
     int exitval;		/* exit status of the child */
+    char *w_string = NULL;     /* will contain "-t "+w_flag */
+    int w_size;                /* size of w_string */
     char *p;
 
     /* firewall */
@@ -2612,17 +2623,23 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 
 	/* exec the ctlinnd command */
 	p = concatpath(innconf->pathbin, INN_PATH_CTLINND);
+
+    /* prepare the w_string parameter for ctlinnd time out
+       (+3 for '-t ' and +1 for '\0') */
+    w_size = snprintf(w_string, 0, "%d", w_flag) + 4;
+    w_string = xmalloc(w_size);
+    snprintf(w_string, w_size, "-t %d", w_flag);
+
 	if (type == NULL) {
 	    execl(p,
-		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, (char *) 0);
+		  CTLINND_NAME, w_string, cmd, grp, (char *) 0);
 	} else if (who == NULL) {
 	    execl(p,
-		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, (char *) 0);
+		  CTLINND_NAME, w_string, cmd, grp, type, (char *) 0);
 	} else {
 	    execl(p,
-		  CTLINND_NAME, CTLINND_TIME_OUT, cmd, grp, type, who, (char *) 0);
+		  CTLINND_NAME, w_string, cmd, grp, type, who, (char *) 0);
 	}
-
 	/* child exec failed */
         sysdie("child process exec failed");
 

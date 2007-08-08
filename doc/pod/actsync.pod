@@ -7,8 +7,8 @@ actsync, actsyncd - Synchronize newsgroups
 B<actsync> [B<-AkmT>] [B<-b> I<hostid>] [B<-d> I<hostid>] [B<-g> I<max>]
 [B<-i> I<ignore-file>] S<[B<-I> I<hostid>]> [B<-l> I<hostid>] [B<-n> I<name>]
 [B<-o> I<format>] [B<-p> I<min-unchanged>] S<[B<-q> I<hostid>]>
-[B<-s> I<size>] [B<-t> I<hostid>] [B<-v> I<verbosity>] [B<-z> I<seconds>]
-[I<host>] I<host>
+[B<-s> I<size>] [B<-t> I<hostid>] [B<-v> I<verbosity>] [B<-w> I<seconds>]
+[B<-z> I<seconds>] [I<host>] I<host>
 
 B<actsyncd> [B<-x>] I<config> [I<debug-level> [I<debug-format>]]
 
@@ -550,6 +550,11 @@ Full debug output.
 
 =back
 
+=item B<-w> I<seconds>
+
+If C<-o x> or C<-o xi> is selected, B<ctlinnd> will wait I<seconds> seconds
+before timing out.  The default value is C<-w 30>.
+
 =item B<-z> I<seconds>
 
 If C<-o x> is selected, B<actsync> will pause for I<seconds> seconds
@@ -736,10 +741,6 @@ until you are sure it will do what you want.
 If a newsgroup appears multiple times, B<actsync> will treat all copies as
 errors.  However, if the group is marked for removal, only one rmgroup
 will be issued.
-
-The timeout for B<ctlinnd> commands is fixed at 30 seconds when running in
-C<x> or C<xi> output format.  Perhaps the timeout value should be
-controlled via a command line option?
 
 =head1 HISTORY
 
