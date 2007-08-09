@@ -1812,7 +1812,7 @@ output_grps(struct grp *grp, int grplen)
     int change;		/* number of groups changed */
     int remove;		/* number of groups removed */
     int no_new_dir;	/* number of new groups with missing/empty dirs */
-    int new_dir;	/* number of new groupsm, non-empty dir no water chg */
+    int new_dir;	/* number of new groups, non-empty dir no water chg */
     int water_change;	/* number of new groups where hi&low water changed */
     int work;		/* adds + changes + removals */
     int same;		/* the number of groups the same */
@@ -2008,7 +2008,8 @@ output_grps(struct grp *grp, int grplen)
 	     * non-error, non-removed groups from host1
 	     */
 	    if (grp[i].output == 0) {
-		if (grp[i].hostid == HOSTID1) {
+                /* Ignored groups should only be counted once. */
+		if (!rm_cycle && grp[i].hostid == HOSTID1) {
 		    ++ignore;
 		}
 		continue;
@@ -2540,7 +2541,6 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
     int status;			/* wait status */
     int exitval;		/* exit status of the child */
     char *w_string = NULL;     /* will contain "-t "+w_flag */
-    int w_size;                /* size of w_string */
     char *p;
 
     /* firewall */
@@ -2623,12 +2623,7 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 
 	/* exec the ctlinnd command */
 	p = concatpath(innconf->pathbin, INN_PATH_CTLINND);
-
-    /* prepare the w_string parameter for ctlinnd time out
-       (+3 for '-t ' and +1 for '\0') */
-    w_size = snprintf(w_string, 0, "%d", w_flag) + 4;
-    w_string = xmalloc(w_size);
-    snprintf(w_string, w_size, "-t %d", w_flag);
+	asprintf(&w_string, "-t %d", w_flag);
 
 	if (type == NULL) {
 	    execl(p,
