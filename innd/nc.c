@@ -315,8 +315,7 @@ NCstat(CHANNEL *cp)
     char	        *p;
     TOKEN		token;
     ARTHANDLE		*art;
-    char		*buff;
-    size_t              length;
+    char		*buff = NULL;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.data + cp->Start + strlen("stat"); ISWHITE(*p); p++)
@@ -338,9 +337,7 @@ NCstat(CHANNEL *cp)
     SMfreearticle(art);
 
     /* Write the message. */
-    length = snprintf(NULL, 0, "%d 0 %s", NNTP_OK_STAT, p) + 1;
-    buff = xmalloc(length);
-    snprintf(buff, length, "%d 0 %s", NNTP_OK_STAT, p);
+    asprintf(&buff, "%d 0 %s", NNTP_OK_STAT, p);
     NCwritereply(cp, buff);
     free(buff);
 }

@@ -78,7 +78,6 @@ main(ac, av)
     FILE	*F;
     char	buff[BUFSIZ];
     char	*mesgid = NULL;
-    size_t      length;
     char	*p;
     char	*q;
     bool	PostMode;
@@ -104,10 +103,7 @@ main(ac, av)
 	    PostMode = true;
 	    break;
 	case 'r':			/* Random Message-ID	*/
-            length = snprintf(NULL, 0, "<%ld@%ld>", (long) getpid(),
-                              (long) time(NULL));
-            mesgid = xmalloc(length + 1);
-            snprintf(mesgid, length, "<%ld@%ld>", (long) getpid(),
+            asprintf(&mesgid, "<%ld@%ld>", (long) getpid(),
                      (long) time(NULL));
 	    break;
 	case 't':

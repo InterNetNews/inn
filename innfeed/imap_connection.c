@@ -2623,14 +2623,11 @@ static conn_ret imap_sendSearch(connection_t *cxn, char *msgid)
 static conn_ret imap_sendKill(connection_t *cxn, unsigned uid)
 {
     conn_ret result;
-    char *tosend;
-    size_t length;
+    char *tosend = NULL;
 
     imap_GetTag(cxn);
 
-    length = 7 + 50 + 20;
-    tosend = xmalloc(length);
-    snprintf(tosend,length,"%s UID STORE %d +FLAGS.SILENT (\\Deleted)\r\n",
+    asprintf(&tosend, "%s UID STORE %d +FLAGS.SILENT (\\Deleted)\r\n",
              cxn->imap_currentTag, uid);
 
     result = WriteToWire_imapstr(cxn, tosend, -1);

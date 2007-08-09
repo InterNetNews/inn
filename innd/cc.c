@@ -976,9 +976,8 @@ CCnewgroup(char *av[])
     char		*Name;
     char		*Rest;
     const char *		who;
-    char		*buff;
+    char		*buff = NULL;
     int			oerrno;
-    size_t              length;
 
     if (TIMES == NULL)
 	TIMES = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
@@ -1020,10 +1019,7 @@ CCnewgroup(char *av[])
 	who = av[2];
 	if (*who == '\0')
 	    who = NEWSMASTER;
-
-        length = snprintf(NULL, 0, "%s %ld %s\n", Name, (long) Now.tv_sec, who) + 1;
-        buff = xmalloc(length);
-        snprintf(buff, length, "%s %ld %s\n", Name, (long) Now.tv_sec, who);
+        asprintf(&buff, "%s %ld %s\n", Name, (long) Now.tv_sec, who);
 	if (xwrite(fd, buff, strlen(buff)) < 0) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write %s %m", LogName, TIMES);

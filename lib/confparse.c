@@ -1648,18 +1648,12 @@ config_error_param(struct config_group *group, const char *key,
                    const char *fmt, ...)
 {
     va_list args;
-    ssize_t length;
     char *message, *file;
     struct config_parameter *param;
 
     va_start(args, fmt);
-    length = vsnprintf(NULL, 0, fmt, args);
-    va_end(args);
-    if (length < 0)
+    if (vasprintf(&message, fmt, args) < 0)
         return;
-    message = xmalloc(length + 1);
-    va_start(args, fmt);
-    vsnprintf(message, length + 1, fmt, args);
     va_end(args);
 
     param = hash_lookup(group->params, key);
@@ -1683,17 +1677,11 @@ void
 config_error_group(struct config_group *group, const char *fmt, ...)
 {
     va_list args;
-    ssize_t length;
     char *message;
 
     va_start(args, fmt);
-    length = vsnprintf(NULL, 0, fmt, args);
-    va_end(args);
-    if (length < 0)
+    if (vasprintf(&message, fmt, args) < 0)
         return;
-    message = xmalloc(length + 1);
-    va_start(args, fmt);
-    vsnprintf(message, length + 1, fmt, args);
     va_end(args);
     warn("%s:%u: %s", group->file, group->line, message);
     free(message);

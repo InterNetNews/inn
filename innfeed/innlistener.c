@@ -711,14 +711,11 @@ void openDroppedArticleFile (void)
 {
   pid_t myPid = getpid () ;
   const char *tapeDir = getTapeDirectory() ;
-  size_t len;
 
   if (dropArtFile != NULL)
     free (dropArtFile) ;
 
-  len = pathMax(tapeDir) + 1;
-  dropArtFile = xmalloc(len);
-  snprintf (dropArtFile,len,"%s/innfeed-dropped.%c%06d",
+  asprintf (&dropArtFile, "%s/innfeed-dropped.%c%06d",
             tapeDir, droppedFileCount + 'A', (int) myPid) ;
 
   if ((droppedFp = fopen (dropArtFile,"w")) == NULL)
