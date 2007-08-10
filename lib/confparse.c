@@ -1652,7 +1652,7 @@ config_error_param(struct config_group *group, const char *key,
     struct config_parameter *param;
 
     va_start(args, fmt);
-    if (vasprintf(&message, fmt, args) < 0) {
+    if (xvasprintf(&message, fmt, args) < 0) {
         va_end(args);
         return;
     }
@@ -1682,7 +1682,7 @@ config_error_group(struct config_group *group, const char *fmt, ...)
     char *message;
 
     va_start(args, fmt);
-    if (vasprintf(&message, fmt, args) < 0) {
+    if (xvasprintf(&message, fmt, args) < 0) {
         va_end(args);
         return;
     }

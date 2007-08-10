@@ -2627,7 +2627,7 @@ static conn_ret imap_sendKill(connection_t *cxn, unsigned uid)
 
     imap_GetTag(cxn);
 
-    asprintf(&tosend, "%s UID STORE %d +FLAGS.SILENT (\\Deleted)\r\n",
+    xasprintf(&tosend, "%s UID STORE %d +FLAGS.SILENT (\\Deleted)\r\n",
              cxn->imap_currentTag, uid);
 
     result = WriteToWire_imapstr(cxn, tosend, -1);

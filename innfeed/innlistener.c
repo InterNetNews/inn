@@ -715,7 +715,7 @@ void openDroppedArticleFile (void)
   if (dropArtFile != NULL)
     free (dropArtFile) ;
 
-  asprintf (&dropArtFile, "%s/innfeed-dropped.%c%06d",
+  xasprintf (&dropArtFile, "%s/innfeed-dropped.%c%06d",
             tapeDir, droppedFileCount + 'A', (int) myPid) ;
 
   if ((droppedFp = fopen (dropArtFile,"w")) == NULL)

@@ -337,7 +337,7 @@ NCstat(CHANNEL *cp)
     SMfreearticle(art);
 
     /* Write the message. */
-    asprintf(&buff, "%d 0 %s", NNTP_OK_STAT, p);
+    xasprintf(&buff, "%d 0 %s", NNTP_OK_STAT, p);
     NCwritereply(cp, buff);
     free(buff);
 }

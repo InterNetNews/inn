@@ -1019,7 +1019,7 @@ CCnewgroup(char *av[])
 	who = av[2];
 	if (*who == '\0')
 	    who = NEWSMASTER;
-        asprintf(&buff, "%s %ld %s\n", Name, (long) Now.tv_sec, who);
+        xasprintf(&buff, "%s %ld %s\n", Name, (long) Now.tv_sec, who);
 	if (xwrite(fd, buff, strlen(buff)) < 0) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write %s %m", LogName, TIMES);

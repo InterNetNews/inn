@@ -103,7 +103,7 @@ main(ac, av)
 	    PostMode = true;
 	    break;
 	case 'r':			/* Random Message-ID	*/
-            asprintf(&mesgid, "<%ld@%ld>", (long) getpid(),
+            xasprintf(&mesgid, "<%ld@%ld>", (long) getpid(),
                      (long) time(NULL));
 	    break;
 	case 't':
