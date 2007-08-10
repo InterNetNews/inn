@@ -74,7 +74,7 @@ appropriate line).
 =item B<-N> I<batches>
 
 Limits the total number of batches written.  As soon as the number of
-batches written reaches or exceeds I<baches>, all additional articles in
+batches written reaches or exceeds I<batches>, all additional articles in
 the input will be deferred.  The default is no limit.
 
 =item B<-p> I<process>
@@ -114,7 +114,7 @@ and this should rarely be changed.
 
 Specifies an additional spool directory to search in for articles.  If
 this option is given, the first field of an input line is a relative path
-name, and the article isn't found in I<patharticles>, it is also looked
+name, and if the article isn't found in I<patharticles>, it is also looked
 for under I<spool>.
 
 =item B<-v>
@@ -164,6 +164,6 @@ $Id$
 
 =head1 SEE ALSO
 
-ctlinnd(8), inn.conf(5), newsfeeds(5), rnews(8), send-uucp(8), shlock(1)
+ctlinnd(8), inn.conf(5), newsfeeds(5), rnews(8), send-uucp(8), shlock(1).
 
 =cut

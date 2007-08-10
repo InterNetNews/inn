@@ -728,7 +728,7 @@ intersect
     'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
 );
 @rnews_programs = (
-    'c7unbatch', 'decode', 'encode', 'gunbatch'
+    'bunbatch', 'c7unbatch', 'decode', 'encode', 'gunbatch'
 );
 @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch',

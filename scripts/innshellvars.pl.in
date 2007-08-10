@@ -81,6 +81,7 @@ $sort = '@SORT@' ;
 $getftp = '@PATH_GETFTP@' ;
 $uux = '@UUX@' ;
 
+$bzip2 = '@BZIP2@' ;
 $compress = '@COMPRESS@' ;
 $gzip = '@GZIP@' ;
 $uncompress = '@UNCOMPRESS@' ;

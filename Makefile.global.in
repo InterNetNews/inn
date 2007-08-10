@@ -180,6 +180,7 @@ LIBOBJS		= @LIBOBJS@
 ##  include/inn/paths.h.  You may also need to modify scripts/innshellvars*.
 
 AWK		= @AWK@
+BZIP2		= @BZIP2@
 COMPRESS	= @COMPRESS@
 CTAGS		= ctags -t -w
 GZIP		= @GZIP@

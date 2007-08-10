@@ -51,11 +51,25 @@ Otherwise, if the command is any other word, then B<rnews> will try to
 execute a program with that name, looking for it in the directory
 I<pathbin>/bin/rnews.libexec.  The rest of the batch will be fed to that
 program's standard input, and the standard output from the program will be
-treated as if it were the original input to B<rnews>.  INN comes with two
-such standard batch processors:  B<c7unbatch>, which undoes an ASCII
-encoding to recover the original binary compressed stream and then
-decompresses it as above, and B<gunbatch>, which also invokes B<gzip> and
-should be used for batches compressed with B<gzip>.
+treated as if it were the original input to B<rnews>.  INN comes with three
+such standard batch processors:
+
+=over 2
+
+=item B<bunbatch>
+
+It invokes B<bzip2> and should be used for batches compressed with B<bzip2>.
+
+=item B<c7unbatch>
+
+It undoes an ASCII encoding to recover the original binary compressed stream
+and then decompresses it as explained above.
+
+=item B<gunbatch>
+
+It invokes B<gzip> and should be used for batches compressed with B<gzip>.
+
+=back
 
 By default, B<rnews> will log and discard any articles that are rejected
 by the server or cannot be parsed by B<rnews> for some reason (such as a
@@ -121,6 +135,6 @@ POD by Russ Allbery <rra@stanford.edu>.
 
 =head1 SEE ALSO
 
-compress(1), gzip(1), inn.conf(5), innd(8), nnrpd(8)
+bzip2(1), compress(1), gzip(1), inn.conf(5), innd(8), nnrpd(8).
 
 =cut

@@ -80,6 +80,7 @@ set inn_sort "@SORT@"
 set inn_getftp "@PATH_GETFTP@"
 set inn_uux "@UUX@"
 
+set inn_bzip2 "@BZIP2@"
 set inn_compress "@COMPRESS@"
 set inn_gzip "@GZIP@"
 set inn_uncompress "@UNCOMPRESS@"

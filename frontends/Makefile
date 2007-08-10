@@ -5,7 +5,7 @@ include ../Makefile.global
 top           = ..
 CFLAGS        = $(GCFLAGS)
 
-ALL	      = c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
+ALL	      = bunbatch c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
 		getlist gunbatch inews innconfval mailpost pullnews \
 		ovdb_init ovdb_monitor ovdb_server ovdb_stat rnews \
 		scanspool sm
@@ -34,6 +34,7 @@ install: all
 	for F in getlist innconfval sm ; do \
 	    $(LI_XPUB) $$F $D$(PATHBIN)/$$F ; \
 	done
+	$(CP_XPUB) bunbatch $D$(PATHBIN)/rnews.libexec/bunbatch
 	$(CP_XPUB) c7unbatch $D$(PATHBIN)/rnews.libexec/c7unbatch
 	$(LI_XPUB) decode $D$(PATHBIN)/rnews.libexec/decode
 	$(LI_XPUB) encode $D$(PATHBIN)/rnews.libexec/encode
@@ -99,6 +100,10 @@ cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in
 mailpost:	mailpost.in      $(FIX)	; $(FIX) mailpost.in
 pullnews:	pullnews.in      $(FIX)	; $(FIX) -i pullnews.in
 scanspool:	scanspool.in     $(FIX)	; $(FIX) scanspool.in
+
+bunbatch: Makefile ../Makefile.global
+	( echo '#! $(SHELL)' ; echo 'exec $(BZIP2) -d -c' ) > $@
+	chmod 755 bunbatch
 
 c7unbatch: Makefile ../Makefile.global
 	( echo '#! $(SHELL)' ; echo 'decode | $(UNCOMPRESS)' ) > $@

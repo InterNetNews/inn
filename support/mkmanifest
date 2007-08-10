@@ -146,6 +146,7 @@ expire/grephistory
 expire/makedbz
 expire/makehistory
 expire/prunehistory
+frontends/bunbatch
 frontends/c7unbatch
 frontends/cnfsheadconf
 frontends/cnfsstat
