@@ -26,8 +26,9 @@ closed based on the schedule given by the B<-c>, B<-C>, B<-l>, and B<-L>
 options.
 
 As an exploder feed (see newsfeeds(5) for an explanation), B<buffchan>
-interprets lines beginning with an exclamation point as commands.  There
-are three supported commands:
+interprets lines beginning with an exclamation point as commands.  Besides
+C<!begin> (which only marks the start of the feed), there are three
+supported commands:
 
 =over 4
 
@@ -91,7 +92,7 @@ has been open for more than I<seconds> seconds.
 
 This flag may be used to specify a directory the program should change to
 before starting.  If this flag is used, the default for the B<-s> flag
-(see below) is changed to be a simple "%s" (in other words, output files
+(see below) is changed to be a simple C<%s> (in other words, output files
 are considered to be relative to I<directory>).
 
 =item B<-f> I<num-fields>
@@ -144,9 +145,9 @@ the B<-r> flag.
 The B<-s> flag may be used to specify a format that maps a filename from
 the filename fields at the end of each line to an actual filename.  This
 is a sprintf(3) format string that should contain a single instance of
-"%s", which will be replaced with the value of the filename field
+C<%s>, which will be replaced with the value of the filename field
 (possibly after mapping with the map file from B<-m>).  The default value
-is I<pathoutgoing>/%s.
+is I<pathoutgoing>/C<%s>.
 
 =item B<-u>
 

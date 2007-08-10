@@ -78,7 +78,7 @@ the newsgroup names in the Xref: header; otherwise, it will be matched against
 the newsgroup names in the Newsgroups: header (see inn.conf(5) for discussion
 of the differences between these possibilities).  Poison wildmat expressions
 (expressions starting with C<@>) are allowed and can be used to exclude certain
-group patterns: articles crossposted to poisoned newsgroups will not be stored
+group patterns:  articles crossposted to poisoned newsgroups will not be stored
 using this storage method.  The <wildmat> pattern is matched in order.
 
 There is no default newsgroups pattern; if an entry should match all
@@ -179,7 +179,7 @@ for the C<cnfs> storage method must have an options: field specifying
 the metacycbuff into which articles matching that entry should be stored;
 see cycbuff.conf(5) for details on metacycbuffs.
 
-Advantages: By far the fastest of all storage methods (except for C<trash>),
+Advantages:  By far the fastest of all storage methods (except for C<trash>),
 since it eliminates the overhead of dealing with a file system and creating
 new files.  Unlike all other storage methods, it does not require manual
 article expiration.  With CNFS, the server will never throttle itself
@@ -187,7 +187,7 @@ due to a full spool disk, and groups are restricted to just the buffer
 files given so that they can never use more than the amount of disk space
 allocated to them.
 
-Disadvantages: Article retention times are more difficult to control
+Disadvantages:  Article retention times are more difficult to control
 because old articles are overwritten automatically.  Attacks on Usenet,
 such as flooding or massive amounts of spam, can result in wanted articles
 expiring much faster than intended (with no warning).
@@ -207,11 +207,11 @@ C<aa>, C<bb>, and C<cc> used to build the path.)  This method does not
 have self-expire functionality (meaning B<expire> has to run periodically
 to delete old articles).  EXPENSIVESTAT is false for this method.
 
-Advantages: It is roughly four times faster than C<timehash> for article
+Advantages:  It is roughly four times faster than C<timehash> for article
 writes, since much of the file system overhead is bypassed, while still
 retaining the same fine control over article retention time.
 
-Disadvantages: Using this method means giving up all but the most careful
+Disadvantages:  Using this method means giving up all but the most careful
 manually fiddling with the article spool; in this aspect, it looks like
 C<cnfs>.  As one of the newer and least widely used storage types,
 C<timecaf> has not been as thoroughly tested as the other methods.
@@ -230,10 +230,10 @@ of the arrival time in hexadecimal (the arrival time is interpreted as
 documented above under C<timecaf>).  This method does not have self-expire
 functionality.  EXPENSIVESTAT is true for this method.
 
-Advantages: Heavy traffic groups do not cause bottlenecks, and a fine control
+Advantages:  Heavy traffic groups do not cause bottlenecks, and a fine control
 of article retention time is still possible.
 
-Disadvantages: The ability to easily find all articles in a given newsgroup
+Disadvantages:  The ability to easily find all articles in a given newsgroup
 and manually fiddle with the article spool is lost, and INN still suffers
 from speed degradation due to file system overhead (creating and deleting
 individual files is a slow operation).
@@ -254,14 +254,14 @@ prior to 2.0 stored all articles, as well as being the article storage format
 used by C News and earlier news systems.  This method does not have
 self-expire functionality.  EXPENSIVESTAT is true for this method.
 
-Advantages: It is widely used and well-understood; it can read article
+Advantages:  It is widely used and well-understood; it can read article
 spools written by older versions of INN and it is compatible with all
 third-party INN add-ons.  This storage mechanism provides easy and direct
 access to the articles stored on the server and makes writing programs
 that fiddle with the news spool very easy, and gives fine control over
 article retention times.
 
-Disadvantages: It takes a very fast file system and I/O system to keep up with
+Disadvantages:  It takes a very fast file system and I/O system to keep up with
 current Usenet traffic volumes due to file system overhead.  Groups with heavy
 traffic tend to create a bottleneck because of inefficiencies in storing large
 numbers of article files in a single directory.  It requires a nightly expire

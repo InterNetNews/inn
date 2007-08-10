@@ -44,7 +44,7 @@ than that constraint, it can be any number between 0 and 65535.
 <filename> is the path to the buffer.  The length of the path should not
 be longer than 63 characters.
 
-<size> is the length of the buffer in kilobytes (1KB = 1024 byte).  If
+<size> is the length of the buffer in kilobytes (1KB = 1024 bytes).  If
 <filename> does not specify a special device, the file size of the buffer
 must be <size> * 1024 bytes.  If it does specify a special device, that
 device must have at least <size> space available.  Buffers over 2GB are
@@ -122,7 +122,7 @@ file as an argument:
     major=`ls -Ll "$1" | awk '{print $5}' | tr -d ,`
     minor=`ls -Ll "$1" | awk '{print $6}`
     mkdir -p /usr/local/news/spool/overview
-    mknod /usr/local/news/spool/overvew/"$base" b "$major" "$minor"
+    mknod /usr/local/news/spool/overview/"$base" b "$major" "$minor"
     chown news:news /usr/local/news/spool/overview/"$base"
     chmod 644 /usr/local/news/spool/overview/"$base"
 
@@ -144,6 +144,7 @@ $Id$
 
 expireover(8),
 inn.conf(5),
+inndf(8),
 makehistory(8).
 
 =cut
