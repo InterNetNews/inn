@@ -27,8 +27,8 @@ and vice versa).  If you don't remember what options you used but you have
 your old build tree, look at the comments at the beginning of
 F<config.status>.
 
-If you made ckpasswd setuid root so that you could use system passwords,
-you'll have to do that again after make update.  (It's much better to use
+If you made B<ckpasswd> setuid root so that you could use system passwords,
+you'll have to do that again after C<make update>.  (It's much better to use
 PAM instead if you can.)
 
 If you use C<make update> to upgrade from a previous major release of INN,
@@ -72,31 +72,31 @@ functional (or in some cases, to work at all):
 
 In order to build INN, you will need a C compiler that understands ANSI C.
 If you are trying to install INN on an operating system that doesn't have
-an ANSI C compiler (such as SunOS), installing gcc is recommended.  You
-can get it from <ftp://ftp.gnu.org/gnu/gcc/> or its mirrors.  INN is
-tested with gcc more thoroughly than with any other compiler, so even if
-you have another compiler available, you may wish to use gcc instead.
+an ANSI C compiler (such as SunOS), installing B<gcc> is recommended.  You
+can get it from L<ftp://ftp.gnu.org/gnu/gcc/> or its mirrors.  INN is
+tested with B<gcc> more thoroughly than with any other compiler, so even if
+you have another compiler available, you may wish to use B<gcc> instead.
 
 =item *
 
-Currently, in order to build INN, you will need an implementation of yacc.
-GNU bison (from <ftp://ftp.gnu.org/gnu/bison/> or its mirrors) will work
+Currently, in order to build INN, you will need an implementation of B<yacc>.
+GNU B<bison> (from L<ftp://ftp.gnu.org/gnu/bison/> or its mirrors) will work
 fine.  We hope to remove this requirement in the future.
 
 =item *
 
-INN requires at least Perl 5.004_03 to build and to run several
+INN requires at least B<Perl 5.004_03> to build and to run several
 subsystems.  INN is tested primarily with newer versions of Perl, so it's
 generally recommended that you install the latest stable distribution of
 Perl before compiling INN.  For instructions on obtaining and installing
-Perl, see <http://www.perl.com/pub/language/info/software.html>.  Note
+Perl, see L<http://www.perl.com/pub/language/info/software.html>.  Note
 that you may need to use the same compiler and options (particularly
-largefile support) for Perl and INN.
+large file support) for Perl and INN.
 
 If you're using a version of Perl prior to 5.6.0, you may need to make
 sure that the Perl versions of your system header files have been
 generated in order for Sys::Syslog to work properly (used by various
-utility programs, including controlchan).  To do this, run the following
+utility programs, including B<controlchan>).  To do this, run the following
 two commands:
 
     # cd /usr/include
@@ -111,21 +111,21 @@ other improvements over earlier versions of Perl).
 The INN Makefiles use the syntax C<include FILE>, rather than the syntax
 expected by some BSDish systems of C<.include E<lt>FILEE<gt>>.  If your
 system expects the latter syntax, the recommended solution is to install
-GNU make from <ftp://ftp.gnu.org/make/>.  You may have GNU make already
-installed as gmake, in which case using gmake rather than make to build
-INN should be sufficient.
+GNU B<make> from L<ftp://ftp.gnu.org/gnu/make/>.  You may have GNU B<make>
+already installed as B<gmake>, in which case using B<gmake> rather than
+B<make> to build INN should be sufficient.
 
 =item *
 
 If you want to enable support for authenticated control messages (this is
 not required, but is highly recommended for systems carrying public Usenet
 hierarchies) then you will need to install some version of PGP.  The
-recommended version is GnuPG, since it's actively developed, supports
-OpenPGP, is freely available and free to use for any purpose (in the US
-and elsewhere), and (as of version 1.0.4 at least) supports the RSA
-signatures used by most current control message senders.
+recommended version is B<GnuPG>, since it's actively developed, supports
+OpenPGP, is freely available from L<http://www.gnupg.org/> and free to use
+for any purpose (in the US and elsewhere), and (as of version 1.0.4 at least)
+supports the RSA signatures used by most current control message senders.
 
-Alternately, you can install PGP from <http://www.pgp.com/> or one of the
+Alternately, you can install PGP from L<http://www.pgp.com/> or one of the
 international versions of it.  Be warned, however, that the licensing
 restrictions on PGP inside the United States are extremely unclear; it's
 possible that if you are installing INN for a company in the U.S., even if
@@ -136,7 +136,7 @@ non-profit organization, this shouldn't be a problem.
 =item *
 
 If you want to use either the Python embedded hooks, you'll need to have a
-suitable versions of Python installed.  See F<doc/hook-python> for more
+suitable version of B<Python> installed.  See F<doc/hook-python> for more
 information.
 
 =item *
@@ -149,7 +149,7 @@ versions you'll need:
 
     --with-perl         Perl 5.004_03 or higher, 5.6.1+ recommended
     --with-python       Python 1.5.2 or higher
-    --with-berkeleydb   BerkeleyDB 2.0 or higher, 4.2+ recommended
+    --with-berkeleydb   Berkeley DB 2.0 or higher, 4.2+ recommended
     --with-zlib         zlib 1.x or higher
     --with-openssl      OpenSSL 0.9.6 or higher
     --with-sasl         SASL 2.x or higher
@@ -159,9 +159,7 @@ If any of these libraries (other than Perl or Python) are built shared and
 installed in locations where your system doesn't search for shared
 libraries by default, you may need to encode the paths to those shared
 libraries in the INN binaries.  For more information on shared library
-paths, see:
-
-    <http://www.eyrie.org/~eagle/notes/rpath.html>
+paths, see L<http://www.eyrie.org/~eagle/notes/rpath.html>.
 
 For most systems, setting the environment variable LD_RUN_PATH to a
 colon-separated list of additional directories in which to look for shared
@@ -171,12 +169,12 @@ libraries before building INN will be sufficient.
 
 =head1 Unpacking the Distribution
 
-Released versions of INN are available from ftp.isc.org in F</isc/inn>.
-New major releases will be announed on <inn-announce@isc.org> (see
+Released versions of INN are available from L<ftp://ftp.isc.org/isc/inn/>.
+New major releases will be announced on <inn-announce@isc.org> (see
 F<README>) when they're made.
 
-If you want more a more cutting-edge version, you can obtain current
-snapshots from from ftp.isc.org in directory F</isc/inn/snapshots>.  These
+If you want a more cutting-edge version, you can obtain current
+snapshots from L<ftp://ftp.isc.org/isc/inn/snapshots>.  These
 are snapshots of the INN CVS tree taken daily; there are two snapshots
 made each night (one of the current development branch, and one of the
 stable branch consisting of bug fixes to the previous major release).
@@ -200,7 +198,7 @@ resides.
 Before beginning installation, you should make sure that there is a user
 on your system named C<news>, and that this user's primary group is set to
 a group called C<news>.  You can change these with the B<--with-news-user>
-and B<--with-news-group> options to configure (see below).  The home
+and B<--with-news-group> options to B<configure> (see below).  The home
 directory of this user should be set to the directory under which you wish
 to install INN (F</usr/local/news> is the default and is a good choice).
 INN will install itself as this user and group.  You can change these if
@@ -211,9 +209,9 @@ By default, INN sends reports to the user C<usenet>.  This account isn't
 used for any other purposes.  You can change it with the
 B<--with-news-master> option to configure (see below).
 
-WARNING: By default, INN installs various configuration files as
+WARNING:  By default, INN installs various configuration files as
 group-writeable, and in general INN is not hardened from a security
-standpoint against an attack by someone who is already in the news group.
+standpoint against an attack by someone who is already in the C<news> group.
 In general, you should consider membership in the news group as equivalent
 to access to the news account.  You should not rely on being able to keep
 anyone with access to the news GID from converting that into access to the
@@ -237,9 +235,9 @@ root, indiscriminate use of C<chown news> is not the solution.  (If you
 don't like to log in to system accounts, careful use of C<chmod g+s> on
 directories and a umask of C<002> or C<007> may suffice.)
 
-INN uses GNU autoconf and a generated configure script to make
+INN uses GNU B<autoconf> and a generated configure script to make
 configuration rather painless.  Unless you have a rather abnormal setup,
-configure should be able to completely configure INN for your system.  If
+B<configure> should be able to completely configure INN for your system.  If
 you want to change the defaults, you can invoke the configure script with
 one or more command line options.  Type:
 
@@ -264,10 +262,10 @@ B<--with-tmp-dir> below).
 
 Sets the prefix for INN database files.  The default is F<PREFIX/db>,
 where PREFIX is F</usr/local/news> unless overridden with the option
-above.  The history and active files will be stored in this directory, and
+above.  The F<history> and F<active> files will be stored in this directory, and
 writes to those files are an appreciable percentage of INN's disk
-activity.  The history file can also be quite large (requiring up to 2 GB
-or more during nightly expire), so this is a common portion of INN to move
+activity.  The F<history> file can also be quite large (requiring up to 2 GB
+or more during nightly B<expire>), so this is a common portion of INN to move
 to a different file system.
 
 =item B<--with-spool-dir>=PATH
@@ -297,7 +295,7 @@ Enables large file support.  This is not enabled by default, even on
 platforms that support it, because it changes the format of INN's on-disk
 databases (making it difficult to upgrade an earlier INN installation) and
 can significantly increase the size of some of the history database files.
-Large file support is not necessary unless your history database is so
+Large file support is not necessary unless your F<history> database is so
 large that it exceeds 2 GB or you want to use CNFS buffers larger than 2
 GB.
 
@@ -307,10 +305,10 @@ those written by an INN without this option.
 
 =item B<--enable-tagged-hash>
 
-Use tagged hash table for the history database.  The tagged hash format
+Use tagged hash table for the F<history> database.  The tagged hash format
 uses much less memory but is somewhat slower.  This option is recommended
 if you have less than 256 MB of RAM on your news server.  If you install
-INN without tagged hash (the default) and expire takes an excessive amount
+INN without tagged hash (the default) and B<expire> takes an excessive amount
 of time, you should make sure the RAM in your system satisfies the
 following formula:
 
@@ -322,7 +320,7 @@ following formula:
 If you don't have at least that much RAM, try rebuilding INN with tagged
 hash enabled.
 
-NOTE: B<--enable-largefiles> cannot be used with B<--enable-tagged-hash>.
+NOTE:  B<--enable-largefiles> cannot be used with B<--enable-tagged-hash>.
 
 =item B<--with-perl>
 
@@ -346,10 +344,10 @@ cycle garbage collection; this problem was reported fixed in Python 2.1a1.
 
 By default, innbind(8) refuses to bind to any port under 1024 other than
 119, 433 and 563 for security reasons (to prevent attacks on rsh(1)-based
-commands and replacing standard system daemons).  If you want to run innd
+commands and replacing standard system daemons).  If you want to run B<innd>
 on a different port under 1024, you'll need to tell configure what port
 you intend to use.  (You'll also still need to set the port number in
-F<inn.conf> or give it to innd on the command line.)
+F<inn.conf> or give it to B<innd> on the command line.)
 
 =item B<--with-syslog-facility>=FACILITY
 
@@ -380,31 +378,31 @@ libraries corresponding to the version of INN that you're installing.
 Also, when updating an existing version of INN, INN tries to save backup
 copies of all files so that you can revert to the previous installed
 version.  Unfortunately, when using shared libraries, this confuses
-ldconfig on some systems (such as Linux) and the symbolic links for the
-libraries may point to the .OLD versions.  If this happens, you can either
-fix the links by hand or remove the .OLD versions and re-run ldconfig.
+B<ldconfig> on some systems (such as Linux) and the symbolic links for the
+libraries may point to the C<.OLD> versions.  If this happens, you can either
+fix the links by hand or remove the C<.OLD> versions and re-run B<ldconfig>.
 
 =item B<--enable-uucp-rnews>
 
-If this option is given to configure, rnews will be installed setuid news,
-owned by group uucp, and mode 4550.  This will allow the UUCP subsystem
-to run rnews to process UUCP batches of news articles.  Prior to INN 2.3,
-installing rnews setuid news was standard; since most sites no longer use
+If this option is given to configure, B<rnews> will be installed setuid C<news>,
+owned by group C<uucp>, and mode C<4550>.  This will allow the UUCP subsystem
+to run B<rnews> to process UUCP batches of news articles.  Prior to INN 2.3,
+installing B<rnews> setuid C<news> was standard; since most sites no longer use
 UUCP, it is no longer the default as of INN 2.3 and must be requested at
 configure time.  You probably don't want to use this option unless your
 server accepts UUCP news batches.
 
 =item B<--enable-setgid-inews>
 
-If this option is given to configure, inews will be installed setgid news
+If this option is given to configure, B<inews> will be installed setgid C<news>
 and world-executable so that non-privileged users on the news server
-machine can use inews to post articles locally (somewhat faster than
+machine can use B<inews> to post articles locally (somewhat faster than
 opening a new network connection).  For standalone news servers, by far
 the most common configuration now, there's no need to use this option;
-even if you have regular login accounts on your news server, INN's inews
+even if you have regular login accounts on your news server, INN's B<inews>
 can post fine via a network connection to your running news server and
 doesn't need to use the local socket (which is what setgid enables it to
-do).  Installing inews setgid was the default prior to INN 2.3.
+do).  Installing B<inews> setgid was the default prior to INN 2.3.
 
 =item B<--with-berkeleydb=PATH>
 
@@ -419,10 +417,10 @@ may need this option).
 
 =item B<--with-zlib=PATH>
 
-The ovdb storage method can optionally use compression. If --with-berkeleydb
-is set, and configure finds a suitable BerkeleyDB version, this option
-defaults to yes, otherwise the default is no. If you have zlib but it is
-not installed under /usr/ or /usr/local/, you must specify the directory
+The ovdb storage method can optionally use compression.  If B<--with-berkeleydb>
+is set, and configure finds a suitable Berkeley DB version, this option
+defaults to C<yes>, otherwise the default is C<no>.  If you have B<zlib> but it is
+not installed under F</usr> or F</usr/local>, you must specify the directory
 where it is installed.
 
 =item B<--with-openssl=PATH>
@@ -437,7 +435,7 @@ and private key to use SSL.  See below for details on how to do that.
 
 =item B<--enable-ipv6>
 
-Enables support for IPv6 in innd, innfeed, nnrpd, and several of the
+Enables support for IPv6 in B<innd>, B<innfeed>, B<nnrpd>, and several of the
 supporting programs.  This option should be considered developmental at
 present.  For more information see F<doc/IPv6-info> (and if you have any
 particularly good or bad news to report, please let us know at
@@ -471,7 +469,7 @@ into its final home.  Type:
 Normally, you will need to run this command as root so that INN can create
 the directories it needs, change ownerships (if you did not compile as the
 news user) and install a setuid program needed to raise resource limits
-and allow innd to bind to ports under 1024.  This step will install INN
+and allow B<innd> to bind to ports under 1024.  This step will install INN
 under the install directory (F</usr/local/news>, unless you specified
 something else to the configure script).
 
@@ -521,7 +519,7 @@ Disadvantages:  Takes a very fast file system and I/O system to keep up
 with current Usenet traffic volumes due to file system overhead.  Groups
 with heavy traffic tend to create a bottleneck because of inefficiencies
 in storing large numbers of article files in a single directory.  Requires
-a nightly expire program to delete old articles out of the news spool, a
+a nightly B<expire> program to delete old articles out of the news spool, a
 process that can slow down the server for several hours or more.
 
 =item timehash
@@ -535,7 +533,7 @@ control of article retention time is still possible.
 
 Disadvantages:  The ability to easily find all articles in a given
 newsgroup and manually fiddle with the article spool is lost, and INN
-still suffers from speed degredation due to file system overhead (creating
+still suffers from speed degradation due to file system overhead (creating
 and deleting individual files is a slow operation).
 
 =item timecaf
@@ -586,21 +584,35 @@ to be able to go through the spool manually) for everything else.  You'll
 probably find it most convenient to keep special hierarchies like local
 hierarchies and hierarchies that should never expire in tradspool.
 
+=head1 Choosing an Overview Storage Mechanism
+
 If your news server will be supporting readers, you'll also need to choose
 an overview storage mechanism (by setting I<ovmethod> in F<inn.conf>).
-There are three overview mechanisms to choose from:  tradindexed,
-buffindexed, and ovdb.  tradindexed is very fast for readers, but it has
-to update two files for each incoming article and can be quite slow to
-write.  buffindexed can keep up with a large feed more easily, since it
-uses large buffers to store all overview information, but it's somewhat
-slower for readers (although not as slow as the unified overview in INN
-2.2).  ovdb stores overview data in a Berkeley DB database; it's fast and
-very robust, but may require more disk space.  See the ovdb(5) man page for
-more information on it.
+There are three overview mechanisms to choose from:
 
-If buffindexed is chosen, you will need to create the buffers for it to
-use (very similar to creating CNFS buffers) and list the available buffers
-in F<buffindexed.conf>.  See buffindexed.conf(5) for more information.
+=over 4
+
+=item tradindexed
+
+It is very fast for readers, but it has to update two files for each
+incoming article and can be quite slow to write.
+
+=item buffindexed
+
+It can keep up with a large feed more easily, since it uses large buffers
+to store all overview information, but it's somewhat slower for readers
+(although not as slow as the unified overview in INN 2.2).  You will need
+to create the buffers for it to use (very similar to creating CNFS buffers)
+and list the available buffers in F<buffindexed.conf>.  See
+buffindexed.conf(5) for more information.
+
+=item ovdb
+
+It stores overview data in a Berkeley DB database; it's fast and very robust,
+but may require more disk space.  See the ovdb(5) man page for more
+information on it.
+
+=back
 
 =head1 Configuring INN
 
@@ -618,16 +630,16 @@ everything discussed in this section.
 
 All of INN's configuration files, all of the programs that come with it,
 and some of its library routines have documentation in the form of man
-pages.  These man pages were installed in F<~news/man> as part of the INN
+pages.  These man pages were installed in F<~news/share/man> as part of the INN
 installation process and are the most complete reference to how INN works.
 You're strongly encouraged to refer to the man pages frequently while
 configuring INN, and for quick reference afterwards.  Any detailed
 questions about individual configuration files or the behavior of specific
-programs should be answered in them.  You may want to add F<~news/man> to
+programs should be answered in them.  You may want to add F<~news/share/man> to
 your MANPATH environment variable; otherwise, you may have to use a
 command like:
 
-    man -M ~news/man inn.conf
+    man -M ~news/share/man inn.conf
 
 to see the inn.conf(5) man page (for example).
 
@@ -660,7 +672,17 @@ will be considered to match a pattern if any of the newsgroups it is
 posted to matches the pattern.  If any newsgroup the article is posted to
 matches an expression beginning with C<@>, however, that article will not
 match the pattern even if other newsgroups to which it was posted match
-other expressions.
+other expressions.  For instance, if an article is crossposted between
+misc.foo and misc.bar, the pattern:
+
+    misc.*,!misc.bar
+
+will match that article whereas the pattern:
+
+    misc.*,@misc.bar
+
+will not match that article.  An article posted only to misc.bar will fail
+to match either pattern.
 
 See uwildmat(3) for full details on wildmat patterns.
 
@@ -690,7 +712,7 @@ If set to true then INN will support the NEWNEWS command for news readers.
 While this can be an expensive operation, its speed has been improved
 considerably as of INN 2.3 and it's probably safe to turn on without
 risking excessive server load.  The default is true.  (Note that the
-I<access:> setting in F<readers.conf> overrides this value; see
+I<access> setting in F<readers.conf> overrides this value; see
 readers.conf(5) for more details.)
 
 =item complaints
@@ -703,7 +725,7 @@ newsmaster email address will be used.
 =item hiscachesize
 
 The amount of memory (in kilobytes) to allocate for a cache of recently
-used history file entries.  Setting this to 0 disables history caching.
+used F<history> file entries.  Setting this to C<0> disables history caching.
 History caching can greatly increase the number of articles per second
 that your server is capable of processing.  A value of C<256> is a good
 default choice.
@@ -713,10 +735,10 @@ default choice.
 If set to true (the default), INN will log the IP address (or hostname, if
 the host is listed in F<incoming.conf> with a hostname) of the remote host
 from which it received an article.  If set to false, the trailing Path:
-header entry is logged instead.  If you are using controlchan (see below)
+header entry is logged instead.  If you are using B<controlchan> (see below)
 and need to process ihave/sendme control messages (this is very, very
 unlikely, so if you don't know what this means, don't worry about it),
-make sure you set this to false, since controlchan needs a site name, not
+make sure you set this to false, since B<controlchan> needs a site name, not
 an IP address.
 
 =item organization
@@ -725,7 +747,7 @@ Set this to the name of your organization as you want it to appear in the
 Organization: header of all articles posted locally and not already
 containing that header.  This will be overridden by the value of the
 ORGANIZATION environment variable (if it exists).  If neither this
-parameter nor the environment variable or set, no Organization: header
+parameter nor the environment variable is set, no Organization: header
 will be added to posts which lack one.
 
 =item pathhost
@@ -740,8 +762,8 @@ future version of the news RFCs may require this.
 
 =item rlimitnofile
 
-If set to a non-negative value (the default is C<-1>), INN (both innd and
-innfeed) will try to raise the maximum number of open file descriptors to
+If set to a non-negative value (the default is C<-1>), INN (both B<innd> and
+B<innfeed>) will try to raise the maximum number of open file descriptors to
 this value when it starts.  This may be needed if you have lots of
 incoming and outgoing feeds.  Note that the maximum value for this setting
 is very operating-system-dependent, and you may have to reconfigure your
@@ -776,12 +798,12 @@ of continuation lines.)
 The first field in an entry is the name of the feed.  It must be unique,
 and for feeds to other news servers it is usually set to the actual
 hostname of the remote server (this makes things easier).  The name can
-optionally be followed by a slash and a comma-separated exclude list.  If
-the feed name or any of the names in the exclude list appear in the Path
-line of an article, then that article will not be forwarded to the feed as
+optionally be followed by a slash (C</>) and a comma-separated exclude list.
+If the feed name or any of the names in the exclude list appear in the Path:
+header of an article, then that article will not be forwarded to the feed as
 it is assumed that it has passed through that site once already.  The
 exclude list is useful when a news server's hostname is not the same as
-what it puts in the Path header of its articles, or when you don't want a
+what it puts in the Path: header of its articles, or when you don't want a
 feed to receive articles from a certain source.
 
 The second field specifies a set of desired newsgroups and distribution
@@ -795,10 +817,10 @@ type of feed entry and sets certain parameters for the entry.  See
 newsfeeds(5) for information on the flag settings; you can do a surprising
 amount with them.  The three most common patterns, and the ones mainly
 used for outgoing news feeds to other sites, are C<Tf,Wnm> (to write out a
-batch file of articles to be sent, suitable for processing by nntpsend and
-innxmit), C<Tm> (to send the article to a funnel feed, used with innfeed),
+batch file of articles to be sent, suitable for processing by B<nntpsend> and
+B<innxmit>), C<Tm> (to send the article to a funnel feed, used with B<innfeed>),
 and C<Tc,Wnm*> (to collect a funnel feed and send it via a channel feed to
-an external program, used to send articles to innfeed).
+an external program, used to send articles to B<innfeed>).
 
 The fourth field is a multi-purpose parameter whose meaning depends on the
 settings of the flags in the third field.  To get a feel for it using the
@@ -808,19 +830,19 @@ and for channel feeds (C<Tc>) it's the name of the program to run and feed
 references to articles.
 
 Now that you have a rough idea of the file layout, we'll begin to add the
-actual feed entries.  First, we'll set up the special ME entry.  This entry
+actual feed entries.  First, we'll set up the special C<ME> entry.  This entry
 is required and serves two purposes:  the newsgroup pattern specified here
 is prepended to the newsgroup list of all other feeds, and the
 distribution pattern for this entry determines what distributions (from
 the Distribution: header of incoming articles) are accepted from remote
-sites by your server.  The example in the sample newsfeeds file is a good
+sites by your server.  The example in the sample F<newsfeeds> file is a good
 starting point.  If you are going to create a local hierarchy that should
 not be distributed off of your system, it may be useful to exclude it from
 the default subscription pattern, but default subscription patterns are
 somewhat difficult to use right so you may want to just exclude it
 specifically from every feed instead.
 
-The ME entry tends to confuse a lot of people, so this point is worth
+The C<ME> entry tends to confuse a lot of people, so this point is worth
 repeating:  the newsgroup patterns set the default subscription for
 I<outgoing> feeds, and the distribution patterns set the acceptable
 Distribution: header entries for I<incoming> articles.  This is confusing
@@ -846,29 +868,29 @@ newsfeeds that looks like:
 
 where <newsgroups> is the wildmat pattern for the newsgroups that site
 wants.  In this example, the actual name of the remote site is
-"remote.example.com", but it puts "news.example.com" in the Path: header.
+C<remote.example.com>, but it puts C<news.example.com> in the Path: header.
 If the remote site puts its actual hostname in the Path: header, you won't
 need the C</news.example.com> part.
 
-This entry will cause innd to write out a file in F<~news/spool/outgoing>
+This entry will cause B<innd> to write out a file in F<~news/spool/outgoing>
 named F<remote.example.com> and containing the Message-ID and storage
 token of each message to send to that site.  (The storage token is INN's
 internal pointer to where an article is stored; to retrieve an article
-given its storage token, use sm(8)).  F<innxmit> knows how to read files
+given its storage token, use sm(8)).  B<innxmit> knows how to read files
 of this format and send those articles to the remote site.  For
 information on setting it up to run periodically, see L<Setting Up the
 Cron Jobs> below.  You will also need to set up a config file for
-F<nntpsend>; see the man page for nntpsend.ctl(5) for more information.
+B<nntpsend>; see the man page for nntpsend.ctl(5) for more information.
 
-If instead you want to use F<innfeed> to send outgoing messages
+If instead you want to use B<innfeed> to send outgoing messages
 (recommended for sites with more than a couple of peers), you need some
 slightly more complex magic.  You still set up a separate entry for each
 of your peers, but rather than writing out batch files, they all "funnel"
-into a special innfeed entry.  That special entry collects all of the
+into a special B<innfeed> entry.  That special entry collects all of the
 separate funnel feeds and sends the data through a special sort of feed to
-an external program (F<innfeed> in this case); this is a "channel" feed.
+an external program (B<innfeed> in this case); this is a "channel" feed.
 
-First, the special channel feed entry for F<innfeed> that will collect all
+First, the special channel feed entry for B<innfeed> that will collect all
 the funnel feeds:
 
     innfeed!\
@@ -890,13 +912,13 @@ articles.  All of these entries should be of the form:
         :Tm:innfeed!
 
 specifying that they funnel into the C<innfeed!> feed.  As in the previous
-example for batching, "remote.example.com" is the actual name of the
-remote peer, "news.example.com" is what it puts in the Path: header (if
+example for batching, C<remote.example.com> is the actual name of the
+remote peer, C<news.example.com> is what it puts in the Path: header (if
 different than the actual name of the server), and <newsgroups> is the
 wildmat pattern of newsgroups to be sent.
 
 As an alternative to NNTP, INN may also feed news out to an IMAP server,
-by using imapfeed(8), which is almost identical to F<innfeed>.  The feed
+by using imapfeed(8), which is almost identical to B<innfeed>.  The feed
 entry for this is as follows:
 
     imapfeed!\
@@ -909,7 +931,7 @@ And set up entries for each remote site like:
         :<newsgroups>\
         :Tm:imapfeed!
 
-For more information on F<imapfeed>, look at the
+For more information on B<imapfeed>, look at the
 F<innfeed/imap_connection.c>.  For more information on IMAP in general,
 see RFC 2060.
 
@@ -922,16 +944,16 @@ like:
         :!*,control,control.*,!control.cancel\
         :Tc,Wnsm:/usr/local/news/bin/controlchan
 
-(modified for the actual path to F<controlchan> if you put it somewhere
+(modified for the actual path to B<controlchan> if you put it somewhere
 else).  See L<Processing Newsgroup Control Messages> for more details.
 
 For those of you upgrading from earlier versions of INN, note that the
-functionality of overchan(8) and F<crosspost> is now incorporated into INN
-and neither of those programs is necessary.  Unfortunately, F<crosspost>
+functionality of overchan(8) and B<crosspost> is now incorporated into INN
+and neither of those programs is necessary.  Unfortunately, B<crosspost>
 currently will not work even with the tradspool storage method.  You can
-still use F<overchan> if you make sure to set I<useoverchan> to true in
-F<inn.conf> so that innd doesn't write overview data itself, but be
-careful:  innd may accept articles faster than overchan can process the
+still use B<overchan> if you make sure to set I<useoverchan> to true in
+F<inn.conf> so that B<innd> doesn't write overview data itself, but be
+careful:  B<innd> may accept articles faster than B<overchan> can process the
 data.
 
 =head2 incoming.conf
@@ -940,7 +962,7 @@ F<incoming.conf> file specifies which machines are permitted to connect to
 your host and feed it articles.  Remote servers you peer with should be
 listed here.  Connections from hosts not listed in this file will (if you
 don't allow readers) be rejected or (if you allow readers) be handed off
-to nnrpd and checked against the access restrictions in F<readers.conf>.
+to B<nnrpd> and checked against the access restrictions in F<readers.conf>.
 
 Start with the sample F<incoming.conf> and, for each remote peer, add an
 entry like:
@@ -948,21 +970,21 @@ entry like:
     peer remote.example.com { }
 
 This uses the default parameters for that feed and allows incoming
-connections from a machine named "remote.example.com".  If that peer could
+connections from a machine named C<remote.example.com>.  If that peer could
 be connecting from several different machines, instead use an entry like:
 
      peer remote.example.com {
         hostname: "remote.example.com, news.example.com"
      }
 
-This will allow either "remote.example.com" or "news.example.com" to feed
+This will allow either C<remote.example.com> or C<news.example.com> to feed
 articles to you.  (In general, you should add new peer lines for each
 separate remote site you peer with, and list multiple host names using the
 I<hostname> key if one particular remote site uses multiple servers.)
 
 You can restrict the newsgroups a remote site is allowed to send you,
 using the same sort of pattern that newsfeeds(5) uses.  For example, if
-you want to prevent "example.com" hosts from sending you any articles in
+you want to prevent C<example.com> hosts from sending you any articles in
 the C<local.*> hierarchy (even if they're crossposted to other groups),
 change the above to:
 
@@ -1019,7 +1041,8 @@ using a block device directly, but it should work on any Unix system.
 =back
 
 If you're having doubts, use option #2; it's easier to set up and should
-work regardless of your operating system.
+work regardless of your operating system.  More information about the
+creation of these cycbuffs can be found in cycbuff.conf(5) manpage.
 
 Now you need to decide on the sizes of your cycbuffs and metacycbuffs.
 You'll probably want to separate the heavy-traffic groups
@@ -1055,7 +1078,7 @@ the following:
     cycbuff:NAME:/path/to/buffer:SIZE
 
 NAME must be unique and must be at most seven characters long.  Something
-simple like "BUFF00", "BUFF01", etc. is a decent choice, or you may want
+simple like C<BUFF00>, C<BUFF01>, etc. is a decent choice, or you may want
 to use something that includes the SCSI target and slice number of the
 partition.  SIZE is the buffer size in kilobytes (if you're trying to stay
 under 2 GB, keep your sizes below C<2097152>).
@@ -1063,13 +1086,13 @@ under 2 GB, keep your sizes below C<2097152>).
 Now, you need to tell INN how to group your cycbuffs into metacycbuffs.
 This is similar to creating cycbuff entries:
 
-    metacycbuff:BUFFNAME:CYCBUFF,CYCBUFF,CYCBUFF
+    metacycbuff:BUFFNAME:CYCBUF1,CYCBUF2,CYCBUF3
 
 BUFFNAME is the name of the metacycbuff and must be unique and at most
 eight characters long.  These should be a bit more meaningful than the
 cycbuff names since they will be used in other config files as well.  Try
 to name them after what will be stored in them; for example, if this
-metacycbuff will hold alt.binaries postings, "BINARIES" would be a good
+metacycbuff will hold alt.binaries postings, C<BINARIES> would be a good
 choice.  The last part of the entry is a comma-separated list of all of
 the cycbuffs that should be used to build this metacycbuff.  Each cycbuff
 should only appear in one metacycbuff line, and all metacycbuff lines must
@@ -1085,7 +1108,7 @@ cycbuffs are spread out across a lot of spindles.
 By default, CNFS data is flushed to disk every 25 articles.  If you're
 running a small server with a light article load, this could mean losing
 quite a few articles in a crash.  You can change this interval by adding a
-cycbuffupdate line to your F<cycbuff.conf> file; see cycbuff.conf(5) for
+cycbuffupdate: line to your F<cycbuff.conf> file; see cycbuff.conf(5) for
 more details.
 
 Finally, you have to create the cycbuffs.  See L<Creating the Article
@@ -1112,8 +1135,8 @@ A storage class definition looks like this:
     }
 
 <methodname> is the name of the storage method to use to store articles in
-this class ("cnfs", "timehash", "timecaf", "tradspool", or the special
-method "trash" that accepts the article and throws it away).
+this class (C<cnfs>, C<timehash>, C<timecaf>, C<tradspool>, or the special
+method C<trash> that accepts the article and throws it away).
 
 The first parameter is a wildmat pattern in the same format used by the
 newsfeeds(5) file, and determines what newsgroups are accepted by this
@@ -1135,7 +1158,7 @@ mean no lower limit, because all articles are more than zero bytes long).
 If you don't want to limit the size of articles accepted by this storage
 class, leave this parameter out entirely.
 
-The fourth parameter you probably don't want to use; it lets you assign
+The fourth parameter you probably don't want to use lets you assign
 storage classes based on the Expires: header of incoming articles.  The
 exact details are in storage.conf(5).  It's very easy to use this
 parameter incorrectly; leave it out entirely unless you've read the man
@@ -1145,7 +1168,7 @@ The fifth parameter is the options parameter.  Currently only CNFS uses
 this field; it should contain the name of the metacycbuff used to store
 articles in this storage class.
 
-The sixth parameter is a boolean which is false by default: any non-zero
+The sixth parameter is a boolean which is false by default:  any non-zero
 number of matching newsgroups is sufficient, provided no newsgroup matches
 a poison wildmat.  If it is set to true, all the newsgroups in the
 Newsgroups: header of incoming articles will be examined to see if they
@@ -1217,7 +1240,7 @@ to honor Expires: headers even if they specify dates far into the future.
 (Note that if <keep> is set to C<never>, all articles with Expires:
 headers are kept forever and the value of <purge> is not used.)
 
-If the value of C<groupbaseexpiry> is true, F<expire.ctl> takes entries of
+If the value of I<groupbaseexpiry> is true, F<expire.ctl> takes entries of
 the form:
 
     <wildmat>:<flag>:<keep>:<default>:<purge>
@@ -1236,7 +1259,7 @@ Provided that I<noreader> is set to false in F<inn.conf>, any connection
 from a host that doesn't match an entry in F<incoming.conf> (as well as
 any connection from a host that does match such an entry, but has issued a
 MODE READER command) will be handed off to nnrpd(8), the part of INN that
-supports newsreading clients.  nnrpd uses F<readers.conf> to determine
+supports newsreading clients.  B<nnrpd> uses F<readers.conf> to determine
 whether a given connection is allowed to read news, and if so what
 newsgroups the client can read and post to.
 
@@ -1244,7 +1267,7 @@ There are a variety of fairly complicated things that one can do with
 F<readers.conf>, things like run external authentication programs that can
 query RADIUS servers.  See readers.conf(5) and the example file for all
 the gory details.  Here's an example of probably the simplest reasonable
-configuration, one that only allows clients in the example.com domain to
+configuration, one that only allows clients in the C<example.com> domain to
 read from the server and allows any host in that domain to read and post
 to all groups:
 
@@ -1269,7 +1292,7 @@ Lots of examples of more complicated things are in the sample file.
 
 If you are using actual files as your CNFS buffers, you will need to
 pre-create those files, ensuring they're the right size.  The easiest way
-to do this is with dd.  For each cycbuff in F<cycbuff.conf>, create the
+to do this is with B<dd>.  For each cycbuff in F<cycbuff.conf>, create the
 buffer with the following commands (as the news user):
 
     dd if=/dev/zero of=/path/to/buffer bs=1k count=BUFFERSIZE
@@ -1289,7 +1312,7 @@ run:
 If you are using block devices, you don't technically have to do anything
 at all (since INN is capable of using the devices in F</dev>), but you
 probably want to create special device files for those devices somewhere
-for INN's private use.  It s more convenient to keep all of INN's stuff
+for INN's private use.  It is more convenient to keep all of INN's stuff
 together, but more importantly, the device files used by INN really should
 be owned by the news user and group, and you may not want to do that with
 the files in F</dev>.
@@ -1324,7 +1347,7 @@ user, since all of these files need to be owned by that user.  This is a
 good policy to always follow; if you are doing any maintenance work on
 your news server, log on as the news user.  Don't do maintenance work as
 root.  Also make sure that F<~news/bin> is in the default path of the news
-user (and while you're at it, make sure F<~news/man> is in the default
+user (and while you're at it, make sure F<~news/share/man> is in the default
 MANPATH) so that you can run INN maintenance commands without having to
 type the full path.
 
@@ -1333,7 +1356,7 @@ new server based on an existing server), copy F<active> and F<newsgroups>
 from that server into F<~news/db>.  Otherwise, you'll need to figure out
 what newsgroups you want to carry and create new active and newsgroups
 files for them.  If you plan to carry a full feed, or something close to
-that, go to <ftp://ftp.isc.org/pub/usenet/CONFIG/> and download F<active>
+that, go to L<ftp://ftp.isc.org/pub/usenet/CONFIG/> and download F<active>
 and F<newsgroups> from there; that will start you off with reasonably
 complete files.  If you plan to only carry a small set of groups, the
 default minimal F<active> file installed by INN is a good place to start;
@@ -1348,11 +1371,15 @@ standalone.  If you don't want these groups to be visible to clients,
 do I<not> delete them; simply hide them in F<readers.conf>.  C<to> must also
 exist as a newsgroup if you have I<mergetogroups> set in F<inn.conf>.
 
-Next, you need to create an empty history database.  To do this, type:
+Next, you need to create an empty F<history> database.  To do this, type:
 
     cd ~news/db
     touch history
     makedbz -i
+
+(Note that if you install INN with C<make install>, you do not need to
+run these commands:  the installation takes care of creating the
+F<history> database.)
 
 When it finishes, rename the files it created to remove the C<.n> in the
 file names and then make sure the file permissions are correct on all the
@@ -1405,7 +1432,7 @@ change it to:
 (You can choose not to do this for the higher priority log messages, if
 you want to make sure they go to your normal high-priority log files as
 well as INN's.  Don't bother with anything lower priority than C<crit>,
-though.  C<news.err> isn't interesting enough to want to see all the
+though.  F<news.err> isn't interesting enough to want to see all the
 time.)  Now, make sure that the news log files exist; syslog generally
 won't create files automatically.  Enter the following commands:
 
@@ -1436,7 +1463,7 @@ into your system crontab instead:
     0 3 * * * su -c "/usr/local/news/bin/news.daily expireover lowmark" news
 
 If you're using any non-CNFS storage methods, add C<delayrm> to the above
-option list for news.daily.
+option list for B<news.daily>.
 
 The news user obviously must be able to run cron jobs.  On Solaris, this
 means that it must have a valid F</etc/shadow> entry and must not be
@@ -1444,7 +1471,7 @@ locked (although it may be a non-login account).  There may be similar
 restrictions with other operating systems.
 
 If you use the batching method to send news, also set up a cron job to run
-nntpsend(8) every ten minutes.  nntpsend will run innxmit for all
+nntpsend(8) every ten minutes.  B<nntpsend> will run B<innxmit> for all
 non-empty pending batch files to send pending news to your peers.  That
 cron entry should look something like:
 
@@ -1454,16 +1481,26 @@ The pathnames and user ID used above are the installation defaults; change
 them to match your installation if you used something other than the
 defaults.
 
-The parameters passed to news.daily in the above example are the most
+The parameters passed to B<news.daily> in the above example are the most
 common (and usually the most efficient) ones to use.  More information on
 what these parameters do can be found in the news.daily(8) man page.
+
+You may also want to run B<rnews> each hour to process spooled messages
+created while B<innd> is not available:
+
+    12 * * * * /usr/local/news/bin/rnews -U
+
+And it is also a good practice to refresh each day INN's cached IP addresses:
+
+    30 2 * * * /usr/local/news/bin/ctlinnd -t 120 -s reload incoming.conf "flush cache"
+
 
 =head1 File Descriptor Limits
 
 INN likes to use a lot of file descriptors, particularly if you have a lot
 of peers.  Depending on what your system defaults are, you may need to
-make sure the default limit is increased for INN (particularly for innd
-and innfeed).  This is vital on Solaris, which defaults (at least as of
+make sure the default limit is increased for INN (particularly for B<innd>
+and B<innfeed>).  This is vital on Solaris, which defaults (at least as of
 2.6) to an absurdly low limit of 64 file descriptors per process.
 
 One way to increase the number of file descriptors is to set
@@ -1499,33 +1536,47 @@ isn't a good idea on a machine that isn't dedicated to INN.
 
 =head1 Starting and Stopping the System
 
-INN is started via the shell script F<rc.news>.  This must be run as the
+INN is started via the shell script B<rc.news>.  This must be run as the
 news user and not as root.  To start INN on system boot, you therefore
 want to put something like:
 
-    su - news -c /usr/local/news/bin/rc.news
+    su news -c /usr/local/news/bin/rc.news
 
-in the system boot scripts.  If innd is stopped or killed, you can restart
-it by running rc.news by hand as the news user.
+in the system boot scripts.  If B<innd> is stopped or killed, you can restart
+it by running B<rc.news> by hand as the news user.
 
-The rc.news script may also be used to shut down INN, with the C<stop>
+The B<rc.news> script may also be used to shut down INN, with the C<stop>
 option:
 
-    su - news -c '/usr/local/news/bin/rc.news stop'
+    su news -c '/usr/local/news/bin/rc.news stop'
 
 In the F<contrib> directory of this source tree is a sample init script
 for people using System V-style init.d directories.
+
+If you wish to use TLS/SSL for your readers, you need to start a second
+B<nnrpd> to listen to these connections and put something like that in
+your init scripts:
+
+    su news -c '/usr/local/news/bin/nnrpd -D -c /usr/local/news/etc/readers-ssl.conf -p 563 -S'
+
+where F<readers-ssl.conf> is the file which indicates whether a given
+connection is allowed to read and post news (you can also use the
+previously created F<readers.conf> file to handle TLS/SSL connections).
+In the shut down section of the init script, you can put:
+
+    su news -c 'killall nnrpd'
 
 =head1 Processing Newsgroup Control Messages
 
 Control messages are specially-formatted messages that tell news servers
 to take various actions.  Cancels (commands to delete messages) are
 handled internally by INN, and all other control messages are processed by
-controlchan.  controlchan should be run out of F<newsfeeds> if you want
-your news server to process any control messages; see L<Configuring INN>
-for specific instructions.
+B<controlchan>, a channel feed program which should be run out of
+F<newsfeeds> if you want your news server to process any control messages;
+see L<Configuring INN> for specific instructions.  Note that I<pgpverify>
+must also be set to true in F<inn.conf>.
 
-The actions of controlchan are determined by F<control.ctl>, which lists
+The actions of B<controlchan> are determined by F<control.ctl>, which lists
 who can perform what actions.  The primary control messages to be
 concerned with are C<newgroup> (to create a newsgroup), C<rmgroup> (to
 remove a newsgroup), and C<checkgroups> (to compare the list of groups
@@ -1533,42 +1584,51 @@ carried in a hierarchy to a canonical list).  INN comes with a
 F<control.ctl> file that processes control messages in most major public
 hierarchies; if you don't want to act on all those control messages, you
 should remove from that file all entries for hierarchies you don't want to
-carry.
+carry.  The last version of that file is available from
+L<ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl>. 
 
-You can tell INN to just authenticate control messages based on the From
+You can tell INN to just authenticate control messages based on the From:
 header of the message, but this is obviously perilous and control messages
 are widely forged.  Many hierarchies sign all of their control messages
 with PGP, allowing news servers to verify their authenticity, and checking
 those signatures for hierarchies that use them is highly recommended.
-controlchan knows how to do this (using pgpverify) without additional
+B<controlchan> knows how to do this (using B<pgpverify>) without additional
 configuration, but you do have to provide it with a public key ring
 containing the public keys of all of the hierarchy administrators whose
 control messages you want to check.
 
 INN expects the public key ring to either be in the default location for a
-PGP public key ring for the news user (generally ~news/.gnupg for GnuPG
-and ~news/.pgp for old PGP implementations), or in pathetc/pgp
-(/usr/local/news/etc/pgp by default).  The latter is the recommended path.
+PGP public key ring for the news user (generally F<~news/.gnupg> for GnuPG
+and F<~news/.pgp> for old PGP implementations), or in I<pathetc>/pgp
+(F</usr/local/news/etc/pgp> by default).  The latter is the recommended path.
 To add a key to that key ring, use:
 
     gpg --import --homedir=/usr/local/news/etc/pgp <file>
 
 where <file> is a file containing the hierarchy key.  Change the homedir
-setting to point to pathetc/pgp if you have INN installed in a non-default
+setting to point to I<pathetc>/pgp if you have INN installed in a non-default
 location.  If you're using the old-style PGP program, an equivalent
 command is:
 
     env PGPPATH=/usr/local/news/etc/pgp pgp <file>
 
-You can safely answer "no" to questions about whether you want to sign,
-trust, or certify keys.
+You can safely answer C<no> to questions about whether you want to sign,
+trust, or certify keys.  And you may afterwards do:
+
+    cp /usr/local/news/etc/pgp/pubring.gpg /usr/local/news/etc/pgp/trustedkeys.gpg
 
 The URLs from which you can get hierarchy keys are noted in comments in
 F<control.ctl>.  L<ftp://ftp.isc.org/pub/pgpcontrol/PGPKEYS> tries to
-collect the major hierarchy keys.
+collect the major hierarchy keys and you can just import the whole file.
+
+If you want to make sure that the keys have been correcly imported, use:
+
+    gpg --list-keys
 
 If you are using GnuPG, please note that the first user ID on the key will
 be the one that's used by INN for verification and must match the key
 listed in F<control.ctl>.  If a hierarchy key has multiple user IDs, you
 may have to remove all the user IDs except the one that matches the
 F<control.ctl> entry using C<gpg --edit-key> and the C<delkey> command.
+
+=cut

@@ -3,7 +3,7 @@
 $Id$
 
 This is an installation checklist written by Rebecca Ore, intended to be
-the beginning of a different presentation of the information in INSTALL,
+the beginning of a different presentation of the information in F<INSTALL>,
 since getting started with installing INN can be complex.  Further
 clarifications, updates, and expansion are welcome.
 
@@ -13,24 +13,35 @@ clarifications, updates, and expansion are welcome.
 
 =item *
 
-Make sure there is a "news" user (and a "news" group)
+Make sure there is a C<news> user (and a C<news> group to which the
+C<news> user belongs).  If necessary, you can use:
+
+    adduser --group --home /usr/local/news news
+
+where F</usr/local/news/> is the home directory for the C<news> user.
 
 =item *
 
-Create a home directory for news (perhaps F</usr/local/news/>) and make
-sure it (and subdirectories) are owned by "news", group "news".
+Create a local mail alias for C<usenet> (editing your F<aliases> file
+for instance).
+
+=item *
+
+Make sure the directory F</usr/local/news> and its subdirectories
+are owned by C<news>, group C<news>.
 
 You want to be careful that things in that directory stay owned by
-"news" -- but you can't just C<chown -R news.news> after the install,
+C<news> -- but you can't just C<chown -R news.news> after the install,
 because you may have binaries that are SUID root.  You can do the build
-as any user, because C<make install> will set the permissions
-correctly.  After that point, though, you may want to C<su news> to
-avoid creating any files as root.  (For routine maintenance once INN is
-working, you can generally be root.)
+as any user, but you need to be root when doing C<make install> so as
+to set the permissions correctly.  After that point, though, you may
+want to C<su news> to avoid creating any files as root.  (For routine
+maintenance once INN is working, you can generally be root.  However,
+it is always better to be accustomed to doing that as the news user.)
 
 =item *
 
-If necessary, add F<~news/bin> to the news user's path and F<~news/man>
+If necessary, add F<~news/bin> to the news user's path and F<~news/share/man>
 to the news user's manpath in your shell config files.  (You may want to
 do this, especially the second part, on your regular account; the
 manpages are very useful.)
@@ -42,13 +53,13 @@ For bash, try:
 
     PATH=~news/bin:$PATH
     export PATH
-    MANPATH=~news/man:$MANPATH
+    MANPATH=~news/share/man:$MANPATH
     export MANPATH
 
 or csh:
 
     setenv PATH ~news/bin:$PATH
-    setenv MANPATH ~news/man:$MANPATH
+    setenv MANPATH ~news/share/man:$MANPATH
 
 although if you don't already have MANPATH set, the above may give an
 error or override your defaults (making it so you can only read the news
@@ -64,18 +75,24 @@ F</usr/man> or F</usr/share/man>).
 
 =item *
 
-Download the INN tarball and unpack.
+Download the INN tarball and unpack.  Make sure that you download
+the last release from L<ftp://ftp.isc.org/isc/inn/> or a snapshot
+from L<ftp://ftp.isc.org/isc/inn/snapshots/>.
 
 =item *
 
 Work out configure options (C<./configure --help> for a list).  If you
 aren't working out of F</usr/local/news>, or want to put some files on a
 different partition, you can set the directories now (or later in
-F<inn.conf> if you change your mind).
+F<inn.conf> if you change your mind).  By default,
+C<--prefix=/usr/local/news> is used.
 
 You probably want C<--with-perl>.  If you're not using NetBSD with
 cycbuffs or OpenBSD, perhaps C<--with-tagged-hash>.  You might want to
-compile in SSL and Berkeley DB, if your system supports them.
+compile in SSL and Berkeley DB, if your system supports them.  You
+will need to have the relevant external libraries to compile (depending
+on whether you use OpenSSL for TLS/SSL access to your news server, GnuPG
+to verify the authenticity of Usenet control messages, Perl, Python, etc.).
 
     ./configure --with-perl ...
     make
@@ -85,6 +102,12 @@ compile in SSL and Berkeley DB, if your system supports them.
 
 (If you do the last step as root, all of the ownerships and permissions
 will be correct.)
+
+Note that if you update a previous installation of INN, you should use
+C<make update> instead of C<make install> to keep your configuration files.
+
+If you wish to use TLS/SSL, you can use C<make cert> to generate
+a certificate and a private key.
 
 =back
 
@@ -97,20 +120,20 @@ will be correct.)
 Find F<INSTALL> and open a separate window for it.  A printout is
 probably a good idea -- it's long but very helpful.  Any time the
 instructions below ask you to make a decision, you can probably find
-help in INSTALL.
+help in F<INSTALL>.
 
 =item *
 
 Now it's time to work on the files in F<~news/etc/>.  Start with
 F<inn.conf>; you must fill in the default moderators address, your fully
 qualified domain names and path.  Fill in all the blanks.  Change the
-file descriptor limits to something like 500.
+file descriptor limits to something like C<500>.
 
 =item *
 
 If using cycbuffs (the CNFS storage method), open F<cycbuff.conf> in one
 window and a shell in another to create the cycbuff as described in
-INSTALL.  As you create them, record in cycbuff.conf the paths and
+F<INSTALL>.  As you create them, record in F<cycbuff.conf> the paths and
 sizes.  Save paths and sizes in a separate text file on another machine
 in case you ever blow away the wrong file.
 
@@ -120,38 +143,47 @@ Name the metacycbuff, then configure F<storage.conf>.
 
 In F<storage.conf>, be sure that all sizes of articles can be
 accomodated.  If you want to throw away large articles, do it explicitly
-by using the "trash" storage method.
+by using the C<trash> storage method (you can also set a lower I<maxartsize>
+in F<inn.conf>).
 
 =item *
 
-The default options in F<expire.ctl> work fine if you have cycbuffs, if
-not, configure to suit.
+The default options in F<expire.ctl> work fine if you have cycbuffs; if
+not, configure to suit (depending on your disk space and your interest
+in some hierarchies, you can define how long you keep articles in your
+news spool).
 
 =item *
 
-Check over F<moderators> and F<control.ctl>.
+Check over F<moderators> and F<control.ctl>.  You may want to also
+configure the process of newsgroup control messages (see the corresponding
+section in F<INSTALL>).
 
 =item *
 
-Run F<~news/bin/inncheck> and fix anything noted.
-
-Inncheck gives a rough check on the appropriateness of the configuration
+Run C<~news/bin/inncheck -a -v -f -pedantic -perm> and fix anything noted:
+B<inncheck> gives a rough check on the appropriateness of the configuration
 files as you go.  (It's the equivalent of C<perl -cw yourfile.pl> for
-perl scripts.)
+Perl scripts.)
 
-Note that inncheck is very conservative about permissions; there's no
+Note that B<inncheck> is very conservative about permissions; there's no
 reason most of the config files can't be world-readable if you prefer
 that.
 
 =item *
 
-Import an active file (F<~news/db/active>) and run inncheck again.
-Change where noted (there's a gotcha in the ISC's active list 000000
-000000 (whatever number of zeros) should be 0000000 00000001).
+You can now import an F<active> file (F<~news/db/active>) and run B<inncheck>
+again.  You may want to look at L<ftp://ftp.isc.org/pub/usenet/CONFIG/active>
+and only keep the lines corresponding to the newsgroups you are interested in.
+Also import a F<newsgroups> file which contains the descriptions of these
+newsgroups (see for instance L<ftp://ftp.isc.org/pub/usenet/CONFIG/newsgroups>).
 
-=item *
+Note that it is not necessary to do that now.  INN is shipped with minimal
+F<active> and F<newsgroups> files and you can add newsgroups later with
+C<ctlinnd newgroup> or B<actsync>.
 
-Create empty initial db files.  Be sure these end up owned by news.
+In case you need to create empty initial database files, import an F<active>
+file (owned by C<news>) and execute as the news user:
 
     cd ~news/db
 
@@ -166,13 +198,14 @@ Create empty initial db files.  Be sure these end up owned by news.
 
     chmod 644 *
 
+(However, it is not necessary to do that since INN takes care of these files
+during the setup.)
+
 =item *
 
-Create the cron jobs and make the changes to your system's
-F<syslog.conf> as noted in INSTALL.  Also create the cron job for
-nntpsend if you've chosen that over innfeed.
-
-Create the log files.
+Create the cron jobs (especially B<news.daily>), the log files, and make
+the changes to your system's F<syslog.conf> as noted in F<INSTALL>.  Also
+create the cron job for B<nntpsend> if you've chosen that over B<innfeed>.
 
 =item *
 
@@ -187,18 +220,22 @@ worrying about feeds or reader access.
 
 =item *
 
-Start inn by running ~news/bin/rc.news I<as the news user>.
+Start B<innd> by running F<~news/bin/rc.news> B<as the news user>.  It
+is also what you should launch in your init scripts:
 
-Check F<~news/log/news.notice> to see if everything went well, also use
-C<ps> to see if innd is running.
+    su news -c /usr/local/news/bin/rc.news
+
+Check F<~news/log/news.notice> to see if everything went well; also use
+C<ps> to see if B<innd> is running.
 
 C<telnet localhost 119> and you should see either a welcome banner or a
-"no permission to talk" message.  If not, investigate.
+C<no permission to talk> message.  If not, investigate.
 
 =item *
 
 C<man ctlinnd> now; you'll use C<ctlinnd reload> as you complete your
-configuration.
+configuration.  You can also see whether C<ctlinnd checkfile> reports
+any problems.
 
 =back
 
@@ -211,23 +248,29 @@ All of this can be done while INN is running.
 =item *
 
 To get your incoming feeds working, edit F<incoming.conf>.  When done,
-C<ctlinnd reload incoming.conf reason> (where "reason" is some text that
-will show up in the logs, anything will do).
+C<ctlinnd reload incoming.conf 'reason'> (where C<reason> is some text
+that will show up in the logs -- anything will do).
 
 =item *
 
-To get your outgoing feeds working, decide whether to use innfeed or
-nntpsend.  Edit F<newsfeeds> and either F<innfeed.conf> or
+To get your outgoing feeds working, decide whether to use B<innfeed> or
+B<nntpsend>.  Edit F<newsfeeds> and either F<innfeed.conf> or
 F<nntpsend.ctl>.  
 
-In newsfeeds, if using innfeed, use the option which doens't require you
-to do a separate innfeed configuration unless you know more than I do.
+In F<newsfeeds>, if using B<innfeed>, use the option which doesn't require
+you to do a separate B<innfeed> configuration unless you know more than I do.
 
-Then C<ctlinnd reload newsfeeds reason>.
+Then C<ctlinnd reload newsfeeds 'reason'>.
+
+=back
+
+=head1 Readers
+
+=over 4
 
 =item *
 
-In readers.conf, remember that auth and access can be separated.
+In F<readers.conf>, remember that auth and access blocks can be separated.
 
 Begin with auth.  Your auth for password users could look like this:
 
@@ -236,11 +279,11 @@ Begin with auth.  Your auth for password users could look like this:
         default: "<unauthenticated>"
     }
 
-There is a perl script in the ckpasswd man page if you want to do
+There is a Perl script in the ckpasswd(8) man page if you want to do
 authentications by password and have the appropriate libraries.  Copy it
-to ~news/bin, name the file something like makepasswd.pl and change the
+to F<~news/bin>, name the file something like F<makepasswd.pl> and change the
 internal paths to whatever you're using and wherever you're putting the
-newsusers database.  The standard Apache C<htpasswd> tool also works
+newsusers database.  The standard Apache B<htpasswd> tool also works
 just fine to create INN password files.
 
 Follow with the access stanzas.  Something for people with passwords:
@@ -265,7 +308,18 @@ unauthenticated users get any access:
     }
 
 You don't need to reload anything after modifying F<readers.conf>; every
-time an nnrpd launches it reads its configuration from disk.
+time an B<nnrpd> launches, it reads its configuration from disk.
+
+=item *
+
+If you wish to use TLS/SSL for your readers, you can either use the same
+F<readers.conf> file or use two different files (for instance F<readers.conf>
+and F<readers-ssl.conf>).  The syntax is similar for both these files.
+You then need to start a second B<nnrpd> to listen to these connections
+and put something like that in your init scripts:
+
+    su news -c '/usr/local/news/bin/nnrpd -D -c /usr/local/news/etc/readers-ssl.conf -p 563 -S'
 
 =back
 
+=cut
