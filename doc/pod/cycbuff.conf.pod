@@ -10,6 +10,16 @@ the CNFS storage system can also be set here.  F<cycbuff.conf> is required
 if the CNFS (Cyclic News File System) storage method is used.  INN will
 look for it in I<pathetc> (as set in F<inn.conf>).
 
+CNFS stores articles in logical objects called I<metacycbuffs>.  Each
+metacycbuff is in turn composed of one or more physical buffers called
+I<cycbuffs>.  As articles are written to the metacycbuff, each article is
+written to the next cycbuff in the list in a round-robin fashion (unless
+C<sequential> mode is specified, in which case each cycbuff is filled
+before moving on to the next).  This is so that you can distribute the
+individual cycbuffs across multiple physical disks and balance the load
+between them.  Note that in order to use any cycbuff larger than 2 GB,
+you need to build INN with the B<--enable-largefiles> option.
+
 For information about how to configure INN to use CNFS, see
 storage.conf(5).
 
@@ -30,14 +40,14 @@ with a backslash (C<\>).
 
 =item cycbuffupdate:<interval>
 
-Sets the number of articles are written before the cycbuff header is
+Sets the number of articles written before the cycbuff header is
 written back to disk to <interval>.  Under most operating systems, the
 header doesn't have to be written to disk for the updated data to be
 available to other processes on the same system that are reading articles
 out of CNFS, but any accesses to the CNFS cycbuffs over NFS will only see
 the data present at the last write of the header.  After a system crash,
 all updates since the last write of the CNFS header may be lost.  The
-default value, if this line is omitted, is 25, meaning that the header is
+default value, if this line is omitted, is C<25>, meaning that the header is
 written to disk after every 25 articles stored in that cycbuff.
 
 =item refreshinterval:<interval>
@@ -45,7 +55,7 @@ written to disk after every 25 articles stored in that cycbuff.
 Sets the interval (in seconds) between re-reads of the cycbuff header to
 <interval>.  This primarily affects B<nnrpd> and controls the frequency
 with which it updates its knowledge of the current contents of the CNFS
-cycbuffs.  The default value, if this line is omitted, is 30.
+cycbuffs.  The default value, if this line is omitted, is C<30>.
 
 =item cycbuff:<name>:<file>:<size>
 
@@ -56,6 +66,8 @@ device, and must be no longer than 63 characters.  <size> is the length of
 the buffer in kilobytes (1KB is 1024 bytes).  If <file> is not a block
 device, it should be <size> * 1024 bytes long.
 
+If you're trying to stay under 2 GB, keep your sizes below C<2097152>.
+
 =item metacycbuff:<name>:<buffer>[,<buffer>,...][:<mode>]
 
 Specifies a collection of CNFS buffers that make up a single logical
@@ -64,29 +76,30 @@ to in F<storage.conf> as storage locations for articles, so in order to
 actually put articles in a cycbuff, it has to be listed as part of some
 metacycbuff which is then referenced in F<storage.conf>.
 
-<name> is the symbolic name of the metacycbuff, referred to in the options
-field of cnfs entries in F<storage.conf>.  <buffer> is the name of a
-cycbuff (the <name> part of a cycbuff line), and any number of cycbuffs
-may be specified, separated by commas.
+<name> is the symbolic name of the metacycbuff, referred to in the options:
+field of C<cnfs> entries in F<storage.conf>.  It must be no longer than
+eight characters.  <buffer> is the name of a cycbuff (the <name> part of
+a cycbuff line), and any number of cycbuffs may be specified, separated
+by commas.
 
 If there is more than one cycbuff in a metacycbuff, there are two ways
 that INN can distribute articles between the cycbuffs.  The default mode,
-INTERLEAVE, stores the articles in each cycbuff in a round-robin fashion,
+C<INTERLEAVE>, stores the articles in each cycbuff in a round-robin fashion,
 one article per cycbuff in the order listed.  If the cycbuffs are of
 wildly different sizes, this can cause some of them to roll over much
 faster than others, and it may not give the best performance depending on
-your disk layout.  The other storage mode, SEQUENTIAL, instead writes to
+your disk layout.  The other storage mode, C<SEQUENTIAL>, instead writes to
 each cycbuff in turn until that cycbuff is full and then moves on to the
 next one, returning to the first and starting a new cycle when the last
 one is full.  To specify a mode rather than leaving it at the default, add
-a colon and the mode (INTERLEAVE or SEQUENTIAL) at the end of the
+a colon and the mode (C<INTERLEAVE> or C<SEQUENTIAL>) at the end of the
 metacycbuff line.
 
 =back
 
 B<innd> only reads F<cycbuff.conf> on startup, so if you change anything
-in this file and want B<innd> to pick up the changes, you have to stop and
-restart it.  C<ctlinnd reload ''> is not sufficient.
+in this file and want B<innd> to pick up the changes, you have to use
+C<ctlinnd xexec innd>; C<ctlinnd reload ''> is not sufficient.
 
 When articles are stored, the cycbuff into which they're stored is saved
 as part of the article token.  In order for INN to retrieve articles from
@@ -185,7 +198,7 @@ should see messages in F<news.notice> that look like:
 
     innd: CNFS-sm No magic cookie found for cycbuff ONE, initializing
 
-where ONE will be whatever you called your cycbuff.
+where C<ONE> will be whatever you called your cycbuff.
 
 =head1 HISTORY
 
@@ -196,6 +209,6 @@ $Id$
 
 =head1 SEE ALSO
 
-ctlinnd(8), innd(8), nnrpd(8), sm(1), storage.conf(5)
+ctlinnd(8), innd(8), nnrpd(8), sm(1), storage.conf(5).
 
 =cut

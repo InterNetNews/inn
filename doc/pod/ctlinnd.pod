@@ -68,9 +68,9 @@ protected from the shell with single quotes.
 
 I<arrival>, I<expires>, and I<posted> should be the number of seconds
 since epoch and indicate when the article arrived, when it expires (via
-the Expires header), and when it was posted (given in the Date header),
-respectively.  I<expires> should be 0 if the article doesn't have an
-Expires header.  I<token> is the storage API token for the article, and
+the Expires: header), and when it was posted (given in the Date: header),
+respectively.  I<expires> should be C<0> if the article doesn't have an
+Expires: header.  I<token> is the storage API token for the article, and
 may be empty.
 
 This command can only be used while the server is running, and will be
@@ -166,7 +166,7 @@ command should be given to force the server to re-read those files.
 If the server throttled itself because it accumulated too many I/O errors,
 this command will reset the error count.
 
-If the server was not started with the B<-ny> flag, this command also does
+If B<innd> was not started with the B<-n y> flag, this command also does
 the equivalent of a C<readers> command with C<yes> as the flag and
 I<reason> as the text.
 
@@ -188,6 +188,10 @@ which must be a channel or exploder feed.  I<signal> may be a numeric
 signal number or one of C<hup>, C<int>, or C<term>; case is not
 significant.
 
+=item logmode
+
+Cause the server to log its current operating mode to syslog.
+
 =item lowmark I<file>
 
 Reset the low-water marks in the F<active> file based on the contents of
@@ -202,10 +206,6 @@ For example:
 This command is mostly used by B<news.daily> to update the I<active> file
 after nightly expiration.
 
-=item logmode
-
-Cause the server to log its current operating mode to syslog.
-
 =item mode
 
 Print the server's operating mode as a multi-line summary of the
@@ -217,7 +217,7 @@ of those parameters that can be overridden by command-line flags.
 
 Print the name and relevant information for the given incoming or outgoing
 channel, or for all channels if I<channel> is an empty string.  The
-respose is formatted as:
+response is formatted as:
 
     <name>:<number>:<type>:<idle>:<status>
 
@@ -253,7 +253,7 @@ I<creator> may be omitted; if so, it will default to the newsmaster (as
 specified at configure time, normally C<usenet>).  I<mode> may also be
 omitted; if so, it will default to C<y> (a normal, unmoderated group).
 The combination of defaults make it possible to use the text of the
-Control header directly (although don't do this without checking the
+Control: header directly (although don't do this without checking the
 syntactic validity of the header first).
 
 This command can only be done while the server is running or throttled
@@ -272,14 +272,15 @@ would direct the server to allow only five incoming connections.  To
 enable or disable the action of the B<-n> flag, use C<n> for the letter
 and C<y> or C<n>, respectively, for the value.
 
-The supported values for I<letter> are a, c, H, i, l, n, o, T, t, and X.
+The supported values for I<letter> are C<a>, C<c>, C<H>, C<i>, C<l>, C<n>,
+C<o>, C<T>, C<t>, and C<X>.
 
 =item pause I<reason>
 
 Pause the server so that no incoming articles are accepted.  No existing
 connections are closed, but the history database is closed.  This should
 be used for short-term locks, such as when replacing the history
-database.  If the server was not started with the B<-ny> flag, this
+database.  If the server was not started with the B<-n y> flag, this
 command also does the equivalent of a C<readers> command with C<no> as the
 flag and I<reason> as the text.
 
@@ -340,7 +341,7 @@ available for reloading unless INN was compiled with Perl filtering
 support.
 
 If I<what> is the word C<filter.python>, the F<filter_innd.py> file is
-reloaded.  If a Python method named filter_before_reload() exists, it will
+reloaded.  If a Python method named C<filter_before_reload> exists, it will
 be called prior to re-reading F<filter_innd.py>.  If a Python method named
 C<__init__> exists, it will be called after F<filter_innd.py> has been
 reloaded.  Reloading the Python filter does not enable filtering if it has
@@ -414,7 +415,10 @@ Close all existing incoming connections and outgoing feeds and reject new
 connections.  Close the history database.  This should be used for
 long-term locks or for running a large number of C<newgroup> and
 C<rmgroup> commands without restarting all outgoing feeds between each
-one.  If the server was not started with the B<-ny> flag, then this
+one.  (Note that changing the status of existing newsgroups when the
+server is throttled cannot be done.)
+
+If the server was not started with the B<-n y> flag, then this
 command also does the equivalent of a C<readers> command with C<no> as the
 flag and I<reason> as the text.
 
@@ -483,6 +487,6 @@ POD by Russ Allbery <rra@stanford.edu>.
 =head1 SEE ALSO
 
 active(5), active.times(5), buffchan(8), incoming.conf(5), innd(8),
-inndcomm(3), inn.conf(5), newsfeeds(5), nnrpd(8), overview.fmt(5)
+inndcomm(3), inn.conf(5), newsfeeds(5), nnrpd(8), overview.fmt(5).
 
 =cut

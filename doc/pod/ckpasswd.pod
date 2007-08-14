@@ -9,11 +9,11 @@ B<ckpasswd> [B<-gs>] [B<-d> I<database>] [B<-f> I<filename>]
 
 =head1 DESCRIPTION
 
-B<ckpasswd> is the basic password authenticator for nnrpd, suitable for
+B<ckpasswd> is the basic password authenticator for B<nnrpd>, suitable for
 being run from an auth stanza in F<readers.conf>.  See readers.conf(5) for
-more information on how to configure an nnrpd authenticator.
+more information on how to configure an B<nnrpd> authenticator.
 
-B<ckpasswd> accepts a username and password from nnrpd and tells nnrpd(8)
+B<ckpasswd> accepts a username and password from B<nnrpd> and tells nnrpd(8)
 whether that's the correct password for that username.  By default, when
 given no arguments, it tries to check the password using PAM if support
 for PAM was found when INN was built.  Failing that, it tries to check the
@@ -31,7 +31,7 @@ system.
 
 When using any method other than PAM, B<ckpasswd> expects all passwords to
 be stored encrypted by the system crypt(3) function and calls crypt(3) on
-the supplied password before comparing it to the expected password.  IF
+the supplied password before comparing it to the expected password.  If
 you're using a different password hash scheme (like MD5), you must use
 PAM.
 
@@ -85,7 +85,7 @@ vaguely.  That means each line should look something like:
 
 (and each line may have an additional colon after the encrypted password
 and additional data; that data will be ignored by B<ckpasswd>).  Lines
-starting with a number sign (`#') are ignored.  INN does not come with a
+starting with a number sign (C<#>) are ignored.  INN does not come with a
 utility to create the encrypted passwords, but B<htpasswd> (which comes
 with Apache) can do so and it's a quick job with Perl (see the example
 script under B<-d>).  If using Apache's B<htpasswd> program, be sure to
@@ -94,13 +94,13 @@ give it the B<-d> option so that it will use crypt(3).
 =item B<-g>
 
 Attempt to look up system group corresponding to username and return a
-string like "user@group" to be matched against in F<readers.conf>.  This
+string like C<user@group> to be matched against in F<readers.conf>.  This
 option is incompatible with the B<-d> and B<-f> options.
 
 =item B<-p> I<password>
 
 Use I<password> as the password for authentication rather than reading a
-password using the nnrpd authenticator protocol.  This option is useful
+password using the B<nnrpd> authenticator protocol.  This option is useful
 only for testing your authentication system (particularly since it
 involves putting a password on the command line), and does not work when
 B<ckpasswd> is run by B<nnrpd>.  If this option is given, B<-u> must also
@@ -109,14 +109,14 @@ be given.
 =item B<-s>
 
 Check passwords against the result of getspnam(3) instead of getpwnam(3).
-This function, on those systems that supports it, reads from /etc/shadow
+This function, on those systems that supports it, reads from F</etc/shadow>
 or similar more restricted files.  If you want to check passwords supplied
 to nnrpd(8) against system account passwords, you will probably have to
 use this option on most systems.
 
 Most systems require special privileges to call getspnam(3), so in order
 to use this option you may need to make B<ckpasswd> setgid to some group
-(like group "shadow") or even setuid root.  B<ckpasswd> has not been
+(like group C<shadow>) or even setuid root.  B<ckpasswd> has not been
 specifically audited for such uses!  It is, however, a very small program
 that you should be able to check by hand for security.
 
@@ -167,7 +167,7 @@ example:
 
 will check a username of C<test> and a password of C<testing> against the
 username and passwords stored in F</path/to/passwd/file>.  On success,
-B<ckpasswd> will print C<User:test> and exit with status 0.  On failure,
+B<ckpasswd> will print C<User:test> and exit with status C<0>.  On failure,
 it will print some sort of error message and exit a non-zero status.
 
 =head1 HISTORY
@@ -178,7 +178,7 @@ $Id$
 
 =head1 SEE ALSO
 
-readers.conf(5), nnrpd(8)
+crypt(3), pam(7), readers.conf(5), nnrpd(8).
 
 Linux users who want to use PAM should read the Linux-PAM System
 Administrator's Guide at

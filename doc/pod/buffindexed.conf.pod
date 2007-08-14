@@ -52,6 +52,11 @@ not supported (regardless of whether INN was compiled with large file
 support); this limitation may be fixed in the future.  For more
 information on setting up the buffers, see L<CREATING BUFFERS>.
 
+An example of F<buffindexed.conf> file can be:
+
+    0:/usr/local/news/spool/overview/OV1:1536000
+    1:/usr/local/news/spool/overview/OV2:1536000
+
 When you first start B<innd> with everything configured properly, you
 should see messages like this in I<pathlog>/news.notice:
 
