@@ -10,7 +10,7 @@
 # it down sendmail's throat.
 # 
 # This program expect to find a file that maps listname to listaddrs,
-#	@prefix@/etc/news2mail.cf
+#	@sysconfdir@/news2mail.cf
 # which must contain address mapping pairs such as
 #
 #	big-red-ants@ucsd.edu	big-red-ants-digest@ucsd.edu		
@@ -22,7 +22,7 @@
 # the article to.
 #
 # In the INN newsfeeds file, you need to have a channel feed:
-#	n2m!:!*:Tc,Ac,Wn*:@prefix@/bin/news2mail
+#	n2m!:!*:Tc,Ac,Wn*:@bindir@/news2mail
 # and a site for each of the various mailing lists you're feeding,
 # such as
 #	big-red-ants@ucsd.edu:rec.pets.redants.*:Tm:n2m!

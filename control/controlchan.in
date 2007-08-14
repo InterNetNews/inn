@@ -27,7 +27,7 @@ require "/usr/local/news/lib/innshellvars.pl";
 ##  controlchan!\
 ##     :!*,control,control.*,!control.cancel\
 ##     :Tc,Wnsm\
-##     :@prefix@/bin/controlchan
+##     :@bindir@/controlchan
 
 require 5.004_03;
 use strict;
@@ -280,6 +280,8 @@ sub ctlperm {
             $action =~ s/\^(.+)\$/$1/;
             $action =~ s/\\//g;
             $hier = $ctlline[2] if $type eq 'checkgroups';
+            # @ctllist is a reversed list so the first match is the last
+            # one in control.ctl.
             last;
         }
     }

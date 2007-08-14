@@ -18,7 +18,7 @@
 # If you're doing the channel thing, you might want to put something
 # like this in your crontab to do a cleanup in the wee hours:
 #
-#	00 04 * * *	@prefix@/bin/controlbatch
+#	00 04 * * *	@bindir@/controlbatch
 #
 ########################################################################
 #
@@ -32,7 +32,7 @@
 #
 # And, a crontab entry something like this:
 #
-#	30 * * * *     @prefix@/bin/controlbatch
+#	30 * * * *     @bindir@/controlbatch
 #
 ########################################################################
 
