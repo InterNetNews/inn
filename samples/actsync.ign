@@ -1,13 +1,14 @@
-# $Id$
-#
-# Sample actsync ignore_file.
+##  $Id$
+##
+##  Sample actsync ignore_file.
+##
+##  It defines synchronization rules.
+##  See the actsync manpage for more information.
 
-# For now by default do not sync
-#
+##  For now by default do not sync.
 i *
 
-# sync on the 8 majors
-#
+##  Sync on the 8 majors.
 c comp.*
 c humanities.*
 c misc.*
@@ -17,16 +18,13 @@ c sci.*
 c soc.*
 c talk.*
 
-# sync only moderated gnu.* groups
-#
+##  Sync only moderated gnu.* groups.
 #c gnu.* m
 
-# don't compare to.* groups as they will differ
-#
+##  Don't compare to.* groups as they will differ.
 i to.*
 
-# we always want our special top level groups
-#
+##  We always want our special top level groups.
 i control
 i general
 i junk

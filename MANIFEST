@@ -600,7 +600,7 @@ samples/Makefile                      Makefile for samples
 samples/active.minimal                Minimal starting active file
 samples/actsync.cfg                   Config file for actsync
 samples/actsync.ign                   Ignore file for actsync
-samples/buffindexed.conf              Buffindexed overview config file
+samples/buffindexed.conf.in           Buffindexed overview config file
 samples/control.ctl                   Access control for control messages
 samples/cycbuff.conf                  Sample cycbuff.conf file
 samples/distrib.pats                  Default values for Distribution header

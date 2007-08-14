@@ -178,6 +178,7 @@ innfeed/innfeed
 innfeed/procbatch
 innfeed/version.c
 nnrpd/nnrpd
+samples/buffindexed.conf
 samples/inn.conf
 samples/innreport.conf
 samples/newsfeeds

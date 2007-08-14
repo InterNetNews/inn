@@ -1,0 +1,17 @@
+##  $Id$
+##
+##  Configuration for the buffindexed overview method.
+##
+##  It specifies the buffers that the buffindexed overview method
+##  should use.  It is required if the server uses buffindexed (as
+##  configured by the ovmethod: parameter in inn.conf).
+##  See the buffindexed.conf manpage for more information.
+##
+##  The order of lines in this file is not important.
+
+##  Format:
+##    index(0-65535) : path to buffer file : 
+##      length of buffer in kilobytes in decimal (1KB = 1024 bytes)
+
+0:@SPOOLDIR@/overview/OV1:1536000
+1:@SPOOLDIR@/overview/OV2:1536000
