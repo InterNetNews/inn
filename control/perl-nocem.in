@@ -422,6 +422,8 @@ sub cancel_nntp {
     return;
 
 ERR:
+    # discard unusable socket
+    close (NNTP);
     logmsg('Switching to ctlinnd...', 'err');
     cancel_ctlinnd($ids);
     $cancel = \&cancel_ctlinnd;
@@ -579,7 +581,9 @@ cancels containing C<cyberspam> in the Path: header.
 
 =head1 FILES
 
+/usr/local/news/bin/perl-nocem
 /usr/local/news/etc/nocem.ctl
+/usr/local/news/etc/pgp/ncmring.gpg
 
 =head1 BUGS
 
