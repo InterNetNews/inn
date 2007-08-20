@@ -118,7 +118,7 @@ $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 $(LIBHIST):	; (cd ../history ; $(MAKE))
 
-../doc/man/send-uucp.8: send-uucp
+../doc/man/send-uucp.8: send-uucp.in
 	$(POD2MAN) -s 8 $? > $@
 
 

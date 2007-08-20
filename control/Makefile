@@ -48,8 +48,8 @@ perl-nocem:	perl-nocem.in    $(FIX) ; $(FIX) perl-nocem.in
 pgpverify:	pgpverify.in     $(FIX) ; $(FIX) pgpverify.in
 signcontrol:	signcontrol.in   $(FIX) ; $(FIX) -i signcontrol.in
 
-../doc/man/perl-nocem.8: perl-nocem
+../doc/man/perl-nocem.8: perl-nocem.in
 	$(POD2MAN) -s 8 $? > $@
 
-../doc/man/pgpverify.1: pgpverify
+../doc/man/pgpverify.1: pgpverify.in
 	$(POD2MAN) -s 1 $? > $@
