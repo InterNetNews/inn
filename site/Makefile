@@ -43,6 +43,7 @@ PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 PATH_BUFFINDEXED	= ${PATHETC}/buffindexed.conf
 PATH_RADIUS_CONF	= ${PATHETC}/radius.conf
 PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
+PATH_SENDUUCP_CF	= ${PATHETC}/send-uucp.cf
 PATH_SUBSCRIPTIONS	= ${PATHETC}/subscriptions
 
 PATH_ACTIVE		= ${PATHDB}/active
@@ -62,7 +63,7 @@ REST		= \
 	nnrpd_auth.pl nnrpd_access.pl \
         news2mail.cf readers.conf \
 	radius.conf nnrpd_auth.py ovdb.conf active.minimal \
-	newsgroups.minimal subscriptions
+	newsgroups.minimal send-uucp.cf subscriptions
 
 ALL		= $(MOST) $(REST)
 
@@ -82,7 +83,7 @@ REST_INSTALLED	= \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF) \
-	$D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS)
+	$D$(PATH_SENDUUCP_CF) $D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
 
@@ -197,6 +198,7 @@ $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPUB) $? $@
 $D$(PATH_MOTD): motd.news		; $(COPY_RPUB) $? $@
 $D$(PATH_INNFEEDCTL): innfeed.conf	; $(COPY_RPRI) $? $@
+$D$(PATH_SENDUUCP_CF): send-uucp.cf	; $(COPY_RPUB) $? $@
 $D$(PATH_SUBSCRIPTIONS): subscriptions	; $(COPY_RPUB) $? $@
 
 REASON	= 'Installing site config files from site/Makefile'
@@ -245,6 +247,7 @@ passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 readers.conf:	../samples/readers.conf		; $(COPY) $? $@
 radius.conf:	../samples/radius.conf		; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
+send-uucp.cf:	../samples/send-uucp.cf		; $(COPY) $? $@
 subscriptions:	../samples/subscriptions	; $(COPY) $? $@
 active.minimal:	../samples/active.minimal	; $(COPY) $? $@
 newsgroups.minimal: ../samples/newsgroups.minimal ; $(COPY) $? $@

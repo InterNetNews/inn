@@ -2,7 +2,7 @@
 # fixscript will replace this line with code to load innshellvars
 
 ##############################################################################
-# send-uucp.pl	create news batches from the outgoing files
+# send-uucp.pl	create and send UUCP news batches from the outgoing files
 #
 # Author:	Edvard Tuinder <ed@elm.net>
 #
@@ -260,7 +260,7 @@ send-uucp - Send Usenet articles via UUCP
 
 =head1 SYNOPSIS
 
-B<send-uucp> [I<SITE> ...]
+B<send-uucp> [I<site> ...]
 
 =head1 DESCRIPTION
 
@@ -269,10 +269,14 @@ Usenet articles to UUCP sites.  It reads a configuration file to control how
 it behaves with various sites.  Normally, it's run periodically out of cron
 to put together batches and send them to remote UUCP sites.
 
+It makes it possible to reduce bandwidth usage and to send news to remote
+UUCP sites which cannot receive a real-time feed (for instance if they
+are over dial-up connections).
+
 =head1 OPTIONS
 
 Any arguments provided to the program are interpreted as a list of sites
-specfied in F<send-uucp.cf> for which batches should be generated.  If no
+specified in F<send-uucp.cf> for which batches should be generated.  If no
 arguments are supplied then batches will be generated for all sites listed
 in that configuration file.
 
@@ -306,15 +310,15 @@ flushing the site.
 
 =item I<compressor>
 
-The compression method to use for batches.  This should be one of compress,
-gzip or none.  Arguments for the compression command may be specified by
-using C<_> instead of spaces. For example, C<gzip_-9>.  The default value is
-C<compress>.
+The compression method to use for batches.  This should be one of C<bzip2>,
+C<compress>, C<gzip> or C<none>.  Arguments for the compression command may be
+specified by using C<_> instead of spaces.  For example, C<gzip_-9>.
+The default value is C<compress>.
 
 =item I<maxsize>
 
-The maximum size of a single batch before compression.  The default value is
-500,000 bytes.
+The maximum size in bytes of a single batch I<before> compression.  The default
+value is C<500000> bytes.
 
 =item I<batchtime>
 
@@ -325,51 +329,56 @@ limitation on when to generate batches.
 
 =back
 
-Fields are seperated by spaces and only the site name needs to be specified,
+Fields are separated by spaces and only the site name needs to be specified,
 with defaults being used for unspecified values.  If the first character on
-a line is a C<#> then the rest of the line is ignored.
+a line is a hash sign (C<#>) then the rest of the line is ignored.
 
 =head1 EXAMPLE
 
-Here is an example send-uucp.cf configuration file:
+Here is an example F<send-uucp.cf> configuration file:
 
     zoetermeer      gzip            1048576         5,18,22
     hoofddorp       gzip            1048576         5,18,22
     pa3ebv          gzip            1048576         5,18,22
-    drinkel         gzip            1048576         5,6,18,20,22,0,2
+    drinkel         bzip2           1048576         5,6,18,20,22,0,2
     manhole         compress        1048576         5,18,22
     owl             compress        1048576
     able
     pern::MYFUNNEL!
 
-This defines eight UUCP sites.  The first four use gzip compression and the
-last three use compress.  The first six use a batch size of 1MB, and the
-last site (able) uses the default of 500,000 bytes.  The zoetermeer,
-hoofddorp, pa3ebv, and manhole sites will only have batches generated for
-them during the hours of 05:00, 18:00, and 22:00, and the drinkel site will
-only have batches generated during those hours and 20:00, 00:00, and 02:00.
-There are no restrictions on when batches will be generated for owl or able.
+This defines eight UUCP sites.  The first three use C<gzip> compression, the
+following site uses C<bzip2> and the last three use C<compress>.  The first
+six use a batch size of 1MB, and the last site ("able") uses the default of
+500,000 bytes.  The "zoetermeer", "hoofddorp", "pa3ebv", and "manhole" sites
+will only have batches generated for them during the hours of 05:00, 18:00,
+and 22:00, and the "drinkel" site will only have batches generated during those
+hours and 06:00, 20:00, 00:00, and 02:00.  There are no restrictions on when
+batches will be generated for "owl" or "able".
 
-The pern site is configured as a funnel into C<MYFUNNEL!>.  B<send-uucp> will
+The "pern" site is configured as a funnel into C<MYFUNNEL!>.  B<send-uucp> will
 issue C<ctlinnd flush MYFUNNEL!> instead of C<ctlinnd flush pern>.
 
 =head1 FILES
 
 =over 4
 
+=item I<pathbin>/send-uucp
+
+The Perl script itself used to create news batches from the outgoing files.
+
 =item I<pathetc>/send-uucp.cf
 
-Configuration file specifying a list of sites to be processed.  
+Configuration file specifying a list of sites to be processed.
 
 =back
 
 =head1 NOTES
 
-The usual flags used for a UUCP feed in the I<newsfeeds> file are C<Tf,Wfb>.
+The usual flags used for a UUCP feed in the F<newsfeeds> file are C<Tf,Wnb>.
 
 =head1 SEE ALSO
 
-innd(8), newsfeeds(5), uucp(8)
+innd(8), newsfeeds(5), uucp(8).
 
 =head1 AUTHOR
 

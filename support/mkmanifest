@@ -237,6 +237,7 @@ site/passwd.nntp
 site/radius.conf
 site/readers.conf
 site/sasl.conf
+site/send-uucp.cf
 site/startup.tcl
 site/startup_innd.pl
 site/storage.conf

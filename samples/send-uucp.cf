@@ -1,0 +1,32 @@
+##  $Id$
+##
+##  Configuration file for send-uucp(8).
+##
+##  It specifies to which remote UUCP sites news batches from the outgoing
+##  files should be sent.
+##
+##  Format:
+##          site[:host[:funnel]] [compressor [maxsize [batchtime]]]
+##
+##  compressor, maxsize and batchtime can be left out and will then use the
+##  default values.  You can't leave out the second field (compressor) and
+##  still use the third (maxsize) or the fourth (batchtime).  So if you want
+##  to set a maxsize, you HAVE to add a	compression method.
+##
+##  compressor values can be one of:  "bzip2", "compress", "gzip", "none".
+##
+##  You can use flags with your compressor, just add them with a '_' character
+##  instead of a space.  For example, "compress_-b13" for 13 bits compression.
+##
+##  Remember that the size you set is the size *before* compression!
+##
+##  See the send-uucp man page for more information.
+
+#zoetermeer	gzip		1048576		5,18,22
+#hoofddorp	gzip		1048576		5,18,22
+#pa3ebv		gzip		1048576		5,18,22
+#drinkel	bzip2		1048576		5,6,18,20,22,0,2
+#manhole	compress	1048576		5,18,22
+#owl		compress	1048576
+#able
+#pern::MYFUNNEL!

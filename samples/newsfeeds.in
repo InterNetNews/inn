@@ -95,6 +95,7 @@ controlchan!\
 #	:Tf,Wnm:
 
 # A UUCP feed, where we try to keep the "batching" between 4K and 1K.
+# You can use send-uucp(8) to process these batch files.
 #ihnp4\
 #	:*,!junk,!control/!foo\
 #	:Tf,Wnb,B4096/1024:

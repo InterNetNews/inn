@@ -37,7 +37,7 @@ $(FIXCONFIG) $(FIXSCRIPT):
 FIXC		= $(FIXCONFIG)
 FIXS            = $(FIXSCRIPT)
 
-buffindexed.conf:        buffindexed.conf.in	    $(FIXC) ; $(FIXC) $@.in
+buffindexed.conf:        buffindexed.conf.in        $(FIXC) ; $(FIXC) $@.in
 inn.conf:                inn.conf.in                $(FIXC) ; $(FIXC) $@.in
 innreport.conf:          innreport.conf.in          $(FIXC) ; $(FIXC) $@.in
 newsfeeds:               newsfeeds.in               $(FIXC) ; $(FIXC) $@.in

@@ -634,6 +634,7 @@ samples/overview.fmt                  Format of news overview database
 samples/passwd.nntp                   Passwords for remote connections
 samples/radius.conf                   Sample config for RADIUS authentication
 samples/readers.conf                  Reader connection configuration
+samples/send-uucp.cf                  send-uucp configuration file
 samples/startup_innd.pl               Perl startup code for innd
 samples/storage.conf                  Sample storage configuration
 samples/subscriptions                 Sample default subscriptions list
