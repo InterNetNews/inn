@@ -351,7 +351,7 @@ Needed Bug Fixes
 * SIGPIPE handling in nnrpd calls all sorts of functions that shouldn't be
   called from inside a signal handler.
 
-* Someone should go through the BUGS sections of all of the manpages and
+* Someone should go through the BUGS sections of all of the man pages and
   fix those for which the current behavior is unacceptable.
 
 * The ovdb server utilities don't handle unclean shutdowns very well.

@@ -652,7 +652,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   size_t omitcount = 0;
   
   /* 
-   * AIX manpage says the default is 0, but Solaris says the default
+   * AIX man page says the default is 0, but Solaris says the default
    * is 6, and sprintf on AIX defaults to 6
    */
   if (max < 0)

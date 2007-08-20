@@ -783,7 +783,7 @@ your news server the rest will make more sense.
 F<newsfeeds> determines how incoming articles are redistributed to your
 peers and to other INN processes.  F<newsfeeds> is very versatile and
 contains dozens of options; we will touch on just the basics here.
-The manpage contains more detailed information.
+The man page contains more detailed information.
 
 F<newsfeeds> is organized as a series of feed entries.  Each feed entry is
 composed of four fields separated by colons.  Entries may span multiple
@@ -1042,7 +1042,7 @@ using a block device directly, but it should work on any Unix system.
 
 If you're having doubts, use option #2; it's easier to set up and should
 work regardless of your operating system.  More information about the
-creation of these cycbuffs can be found in cycbuff.conf(5) manpage.
+creation of these cycbuffs can be found in cycbuff.conf(5) man page.
 
 Now you need to decide on the sizes of your cycbuffs and metacycbuffs.
 You'll probably want to separate the heavy-traffic groups

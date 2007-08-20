@@ -5,7 +5,7 @@
 ##  It specifies the buffers that the buffindexed overview method
 ##  should use.  It is required if the server uses buffindexed (as
 ##  configured by the ovmethod: parameter in inn.conf).
-##  See the buffindexed.conf manpage for more information.
+##  See the buffindexed.conf man page for more information.
 ##
 ##  The order of lines in this file is not important.
 

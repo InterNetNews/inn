@@ -262,7 +262,7 @@ CCaddhist(char *av[])
 	ok = InndHisWrite(msgid, Data.Arrived, Data.Posted,
 			  Data.Expires, &token);
     else {
-	/* Possible race condition, but documented in ctlinnd manpage. */
+	/* Possible race condition, but documented in ctlinnd man page. */
 	InndHisOpen();
 	ok = InndHisWrite(msgid, Data.Arrived, Data.Posted,
 			  Data.Expires, &token);
@@ -438,7 +438,7 @@ CCcancel(char *av[])
 	    return "1 Server paused";
 	if (ThrottledbyIOError)
 	    return "1 Server throttled";
-	/* Possible race condition, but documented in ctlinnd manpage. */
+	/* Possible race condition, but documented in ctlinnd man page. */
 	InndHisOpen();
 	ARTcancel(&Data, msgid, true);
 	InndHisClose();

@@ -3,7 +3,7 @@
 ##  Sample actsync ignore_file.
 ##
 ##  It defines synchronization rules.
-##  See the actsync manpage for more information.
+##  See the actsync man page for more information.
 
 ##  For now by default do not sync.
 i *

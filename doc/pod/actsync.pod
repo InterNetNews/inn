@@ -638,6 +638,7 @@ the F<actsync.ign> file:
 
     # Don't sync test groups, except for ones that are
     # moderated or that are under the gnu hierarchy.
+    #
     i       *.test
     c       *.test  m       # check moderated test groups
     c       gnu.*.test
@@ -646,13 +647,13 @@ the F<actsync.ign> file:
 Automatic processing may be set up by using the following F<actsync.cfg>
 file:
 
-    # host to sync off of (host2)
+    # Host to sync off of (host2).
     host=news.uu.net
 
-    # location of the ignore file
+    # Location of the ignore file.
     ignore_file=<pathetc in inn.conf>/actsync.ign
 
-    # where news articles are kept
+    # Where news articles are kept.
     spool=<patharticles in inn.conf>
 
     # actsync(8) flags
@@ -678,10 +679,12 @@ F<dbg.log>.
 To check only the major hierarchies against news.uu,net, use the following
 F<actsync.ign> file:
 
-    # by default, ignore everything
+    # By default, ignore everything.
+    #
     i       *
 
-    # check the major groups
+    # Check the major groups.
+    #
     c       alt.*
     c       comp.*
     c       gnu.*
