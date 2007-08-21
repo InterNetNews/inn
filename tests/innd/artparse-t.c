@@ -94,7 +94,9 @@ initialize(void)
     if (Log == NULL)
         sysdie("Cannot open /dev/null");
     fdreserve(4);
-    buffer_set(&Path, "", 1);
+    /* ARTsetup needs to have a proper Path. */
+    buffer_set(&Path, "example.com!others", strlen("example.com!others") + 1);
+    Path.used += strlen("example.com!");
     ARTsetup();
 }
 

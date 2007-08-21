@@ -98,7 +98,10 @@ reader(CHANNEL *cp)
     ok(9, true);
     ok_int(10, strlen("some output"), CHANreadtext(cp));
     ok_int(11, strlen("some output"), cp->In.used);
-    buffer_append(&cp->In, "", 1);
+    /* FIXME: As long as the In buffer does not use the normal meanings of
+       .used and .left, we cannot use buffer_append.
+       buffer_append(&cp->In, "", 1); */
+    memcpy(cp->In.data + cp->In.used, "", 1);
     ok_string(12, "some output", cp->In.data);
     SCHANwakeup(&Now);
 }
