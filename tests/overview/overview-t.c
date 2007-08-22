@@ -88,7 +88,9 @@ fake_innconf(void)
     innconf = xmalloc(sizeof(*innconf));
     innconf->enableoverview = true;
     innconf->groupbaseexpiry = true;
+    innconf->icdsynccount = 10;
     innconf->keepmmappedthreshold = 1024;
+    innconf->nfsreader = false;
     innconf->overcachesize = 20;
     innconf->ovgrouppat = NULL;
     innconf->ovmethod = xstrdup(STRING(OVTYPE));

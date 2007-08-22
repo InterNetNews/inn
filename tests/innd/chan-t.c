@@ -102,6 +102,8 @@ reader(CHANNEL *cp)
        .used and .left, we cannot use buffer_append.
        buffer_append(&cp->In, "", 1); */
     memcpy(cp->In.data + cp->In.used, "", 1);
+    cp->In.used++;
+    cp->In.left--;
     ok_string(12, "some output", cp->In.data);
     SCHANwakeup(&Now);
 }

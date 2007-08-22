@@ -143,7 +143,7 @@ main(void)
     vector_free(vector);
     cvector = cvector_split(empty, ' ', NULL);
     ok_int(68, 1, cvector->count);
-    ok_string(69, "", vector->strings[0]);
+    ok_string(69, "", cvector->strings[0]);
     cvector_free(cvector);
 
     vector = vector_split_space("", NULL);

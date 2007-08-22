@@ -25,9 +25,11 @@ static void
 fake_innconf(void)
 {
     innconf = xmalloc(sizeof(*innconf));
+    innconf->articlemmap = false;
     innconf->enableoverview = true;
     innconf->groupbaseexpiry = true;
     innconf->keepmmappedthreshold = 1024;
+    innconf->nfsreader = false;
     innconf->overcachesize = 20;
     innconf->ovgrouppat = NULL;
     innconf->ovmethod = xstrdup("tradindexed");
@@ -39,6 +41,7 @@ fake_innconf(void)
     innconf->pathrun = xstrdup("ov-tmp");
     innconf->storeonxref = true;
     innconf->tradindexedmmap = true;
+    innconf->wireformat = false;
 }
 
 /* Initialize the overview database. */
