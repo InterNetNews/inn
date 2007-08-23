@@ -231,7 +231,7 @@ EndPoint newEndPoint (int fd)
       static bool sizelogged = false ;
           
 #if defined (FD_SETSIZE)
-      if (fd >= FD_SETSIZE)
+      if ((unsigned int) fd >= FD_SETSIZE)
         {
           sizelogged = true ;
           warn ("ME fd (%d) looks too big (%d -- FD_SETSIZE)", fd,

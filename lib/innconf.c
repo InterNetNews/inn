@@ -699,7 +699,8 @@ print_parameter(FILE *file, size_t i, enum innconf_quoting quoting)
         print_string(file, config_table[i].name, string_val, quoting);
         break;
     default:
-        die("internal error: invalid type in row %d of config table", i);
+        die("internal error: invalid type in row %lu of config table",
+            (unsigned long) i);
         break;
     }
 }

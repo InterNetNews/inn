@@ -102,8 +102,9 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 
     notice("batcher %s times user %.3f system %.3f elapsed %.3f",
            Host, usertime, systime, STATend - STATbegin);
-    notice("batcher %s stats batches %d articles %d bytes %lu",
-           Host, BATCHcount, ArtsWritten, (unsigned long) BytesWritten);
+    notice("batcher %s stats batches %d articles %lu bytes %lu",
+           Host, BATCHcount, (unsigned long) ArtsWritten,
+           (unsigned long) BytesWritten);
 
     /* Last batch exit okay? */
     if (BATCHstatus == 0) {

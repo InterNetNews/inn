@@ -962,8 +962,8 @@ NCproc(CHANNEL *cp)
 	  cp->Argument = NULL;
 	}
 	i += cp->LargeCmdSize;
-	syslog(L_NOTICE, "%s internal rejecting too long command line (%d > %d)",
-	  CHANname(cp), i, NNTP_STRLEN);
+	syslog(L_NOTICE, "%s internal rejecting too long command line (%lu > %d)",
+	  CHANname(cp), (unsigned long) i, NNTP_STRLEN);
 	cp->LargeCmdSize = 0;
 	snprintf(buff, sizeof(buff), "%d command exceeds limit of %d bytes",
                  NNTP_ERR_COMMAND, NNTP_STRLEN);

@@ -187,8 +187,8 @@ CleanupAndExit(int status, const char *why)
     if (why)
         syslog(LOG_WARNING, "SERVER shutdown %s", why);
     else
-        syslog(LOG_WARNING, "SERVER shutdown received signal %d",
-               killer_signal);
+        syslog(LOG_WARNING, "SERVER shutdown received signal %lu",
+               (unsigned long) killer_signal);
     exit(status);
 }
 

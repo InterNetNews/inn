@@ -1620,8 +1620,9 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 #endif    
 
     if (verbose) {
-	printf("Am  cleaning %s: Free=%d (%f%%) %s\n", path, head.Free,
-	       percentfree, toc_needs_expansion ? "(Expanding TOC)" : "");
+	printf("Am  cleaning %s: Free=%lu (%f%%) %s\n", path,
+	       (unsigned long) head.Free, percentfree,
+	       toc_needs_expansion ? "(Expanding TOC)" : "");
     }
 
     /* decide on proper size for new TOC */
