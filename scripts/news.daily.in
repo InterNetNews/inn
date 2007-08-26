@@ -251,7 +251,8 @@ if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
 	echo "${EXPIREOVER} start `date`: (${EXPIREOVERFLAGS})" >>${EXPLOG}
     fi
     ( cd ${HISTDIR} ; exec 2>&1 ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" ) \
-        >>${EXPLOG}
+        | ${SED} -e '/No such file or directory/d' \
+                 -e 's/^/    /' >>${EXPLOG}
     if ${DOEXPLOG}; then
 	echo "${EXPIREOVER} end `date`" >>${EXPLOG}
     fi
@@ -268,11 +269,11 @@ if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
 	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"	
 	${SORT} -u -o ${RMFILE} ${RMFILE}
 	if ${DOEXPLOG}; then
-	    echo "	expirerm start `date`" >>${EXPLOG}
+	    echo "expirerm start `date`" >>${EXPLOG}
 	fi
 	expirerm ${RMFILE}
 	if ${DOEXPLOG}; then
-	    echo "	expirerm end `date`" >>${EXPLOG}
+	    echo "expirerm end `date`" >>${EXPLOG}
 	fi
     }
     DOEXPIREOVER=false
@@ -379,7 +380,7 @@ if ${DOEXPIRE} ; then
 	}
     fi
     if ${DOEXPLOG}; then
-	echo "	all done `date`" >>${EXPLOG}
+	echo "all done `date`" >>${EXPLOG}
     fi
 fi
 
@@ -411,21 +412,21 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
 	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"	
 	${SORT} -u -o ${RMFILE} ${RMFILE}
 	if ${DOEXPLOG}; then
-	    echo "	expirerm start `date`" >>${EXPLOG}
+	    echo "expirerm start `date`" >>${EXPLOG}
 	fi
 	expirerm ${RMFILE}
 	if ${DOEXPLOG}; then
-	    echo "	expirerm end `date`" >>${EXPLOG}
+	    echo "expirerm end `date`" >>${EXPLOG}
 	fi
 	${DOEXPIREOVER} && {
 	    if ${DOEXPLOG}; then
-		echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
+		echo "${EXPIREOVER} start `date`" >>${EXPLOG}
 	    fi
 	    ( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
 	      grep -v 'No such file or directory'
 	    DOEXPIREOVER=false
 	    if ${DOEXPLOG}; then
-		echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
+		echo "${EXPIREOVER} end `date`" >>${EXPLOG}
 	    fi
 	}
 	test -n "${LOWMARKFILE}" && {
@@ -439,13 +440,13 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
     # expire overview lines for files we just removed
     if ${DOEXPIREOVER}; then
 	if ${DOEXPLOG}; then
-	    echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
+	    echo "${EXPIREOVER} start `date`" >>${EXPLOG}
 	fi
 	( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
 	    grep -v 'No such file or directory'
 	DOEXPIREOVER=false
 	if ${DOEXPLOG}; then
-	    echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
+	    echo "${EXPIREOVER} end `date`" >>${EXPLOG}
 	fi
 	test -n "${LOWMARKFILE}" && {
 	    echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
@@ -459,12 +460,12 @@ fi
 # in case noexpire expireover
 if ${DOEXPIREOVER}; then
     if ${DOEXPLOG}; then
-	echo "	${EXPIREOVER} start `date`" >>${EXPLOG}
+	echo "${EXPIREOVER} start `date`" >>${EXPLOG}
     fi
     ( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
 	grep -v 'No such file or directory'
     if ${DOEXPLOG}; then
-	echo "	${EXPIREOVER} end `date`" >>${EXPLOG}
+	echo "${EXPIREOVER} end `date`" >>${EXPLOG}
     fi
     test -n "${LOWMARKFILE}" && {
 	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}

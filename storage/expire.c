@@ -870,9 +870,9 @@ OVEXPcleanup(void)
 
     if (EXPprocessed != 0) {
         if (!OVquiet) {
-            printf("    Article lines processed %8ld\n", EXPprocessed);
-            printf("    Articles dropped        %8ld\n", EXPunlinked);
-            printf("    Overview index dropped  %8ld\n", EXPoverindexdrop);
+            printf("Article lines processed %8ld\n", EXPprocessed);
+            printf("Articles dropped        %8ld\n", EXPunlinked);
+            printf("Overview index dropped  %8ld\n", EXPoverindexdrop);
         }
         EXPprocessed = EXPunlinked = EXPoverindexdrop = 0;
     }
