@@ -2479,12 +2479,16 @@ void hostSetStatusFile (const char *filename)
   if (filename == NULL)
     die ("Can't set status file name with a NULL filename\n") ;
   else if (*filename == '\0')
-    die ("Can't set status file name with a empty string\n") ;
+    die ("Can't set status file name with an empty string\n") ;
 
   if (*filename == '/')
     statusFile = xstrdup (filename) ;
-  else
-    statusFile = concatpath (innconf->pathlog,filename) ;
+  else {
+    if (genHtml)
+      statusFile = concatpath (innconf->pathhttp,filename) ;
+    else
+      statusFile = concatpath (innconf->pathlog,filename) ;
+  }
 
   if ((fp = fopen (statusFile,"w")) == NULL)
     {
