@@ -280,6 +280,9 @@ INSTALL		= $(top)/support/install-sh -c
 ##  world-readable/world-executable file or PRI for a group-readable/
 ##  group-executable file (only the news group).
 ##
+##  Man pages should not be backed up with an .OLD extension since it causes man
+##  to complain about bogus filenames in MANPATH.
+##
 ##  inews and rnews have their own special installation rules, as do database
 ##  files like active and newsgroups that should have the same permissions as
 ##  article files.
@@ -297,7 +300,7 @@ CP_XPRI		= $(INSTALL) $(OWNER) -m 0550 -B .OLD
 CP_XPUB		= $(INSTALL) $(OWNER) -m 0555 -B .OLD
 
 CP_DATA		= $(INSTALL) $(OWNER) -m $(FILEMODE) -B .OLD
-CP_MAN		= $(INSTALL) $(OWNER) -m 0444 -B .OLD
+CP_MAN		= $(INSTALL) $(OWNER) -m 0444
 
 ##  Some additional definitions needed by some versions of make, to ensure a
 ##  consistant set of variables are available.
