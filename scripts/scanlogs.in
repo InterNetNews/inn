@@ -1,25 +1,37 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
-##  Summarize INN log files.
+##  $Id$
+##
+##  Summarize INN log files and rotate them.
+##  Used by news.daily.
+##
 ##  Optional arguments:
-##	norotate	Do not rotate logfiles
-
-##  If you get an error from this line:
-##	sh -c 'egrep "`ls /etc`" /dev/null'
-##  then get a better egrep, like the FSF one.
+##	norotate	Do not rotate logfiles.
 
 ##  Directory where old log files are kept.
 OLD=${MOST_LOGS}/OLD
+
+##  Files defined in innshellvars.  We repeat them for clarity.
+ERRLOG=${MOST_LOGS}/errlog
+LOG=${MOST_LOGS}/news
+
 ##  If you want to archive the active file, enable this line.
 ACTIVEFILE=${ACTIVE}
-##  Number of lines of error in each category to report.
-TOP=${TOP-20}
-##  NN log file.
-NN=${PATHETC}/nn/Log
-##  Where nntpsend, if used, writes its log information.
+
+##  Where these programs, if used, write their logs.
+##  We also have to find innfeed's log file.
+INNFEEDLOG=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${PATHETC}/innfeed.conf`
+INNFEED=
+for F in "${INNFEEDLOG}" ; do
+    test -f "${MOST_LOGS}/${F}" && INNFEED="${INNFEED} ${MOST_LOGS}/${F}"
+done
+test -z "${INNFEED}" && test -f ${MOST_LOGS}/innfeed.log && INNFEED="${MOST_LOGS}/innfeed.log"
 NNTPSEND=${MOST_LOGS}/nntpsend.log
+SENDNNTP=${MOST_LOGS}/send-nntp.log
+SENDUUCP=${MOST_LOGS}/send-uucp.log
+LIVEFILES="${INNFEED} ${NNTPSEND} ${SENDNNTP} ${SENDUUCP}"
+
 ##  Where news.daily places expire output, unless noexplog was used.
 EXPLOG=${MOST_LOGS}/expire.log
 
@@ -29,9 +41,8 @@ SYSLOG_ERR=${MOST_LOGS}/news.err
 SYSLOG_NOTICE=${MOST_LOGS}/news.notice
 SYSLOGS="${SYSLOG_CRIT} ${SYSLOG_ERR} ${SYSLOG_NOTICE}"
 
-##  Where tally control and unwanted processors are found.
+##  Where tally control processor is found.
 TALLY_CONTROL=${PATHBIN}/tally.control
-TALLY_UNWANTED=${PATHBIN}/tally.unwanted
 UNWANTED_LOG=${MOST_LOGS}/unwanted.log
 CONTROL_LOG=${MOST_LOGS}/control.log
 CONTROL_DATA=
@@ -40,10 +51,14 @@ test -f ${MOST_LOGS}/rmgroup.log \
 	&& CONTROL_DATA="${CONTROL_DATA} ${MOST_LOGS}/rmgroup.log"
 
 ##  Build up the list of log files to process.
-LOGS="${ERRLOG} ${EXPLOG} ${LOG} ${ACTIVEFILE} ${SYSLOGS} ${UNWANTED_LOG}"
+LOGS="${ERRLOG} ${LOG} ${ACTIVEFILE} ${EXPLOG} ${SYSLOGS} ${UNWANTED_LOG}"
 
-test -n "${NNTPSEND}" -a -f "${NNTPSEND}" && LOGS="${LOGS} ${NNTPSEND}"
+for F in ${LIVEFILES} ; do
+    test -n "${F}" -a -f "${F}" && LOGS="${LOGS} ${F}"
+done
+
 test -n "${CONTROL_DATA}" && LOGS="${LOGS} ${CONTROL_LOG}"
+
 for F in checkgroups default ihave newgroup rmgroup sendme sendsys \
 	senduuname version miscctl badcontrol failedpgp badpgp; do
     test -f ${MOST_LOGS}/${F}.log && LOGS="${LOGS} ${MOST_LOGS}/${F}.log"
@@ -59,9 +74,6 @@ ROTATE=true
 for I
 do
     case "X${I}" in
-    Xnonn)
-	# Ignore this.
-	;;
     Xnorotate)
 	ROTATE=false
 	;;
@@ -131,7 +143,7 @@ if ${ROTATE} ; then
     fi
 
     ##  These are live files, so use link rather than copy.
-    for F in ${NNTPSEND} ; do
+    for F in ${LIVEFILES} ; do
 	if [ -f ${F} ]; then
 	    rm -f ${F}.old ${F}.new
 	    ln ${F} ${F}.old
@@ -148,7 +160,7 @@ if ${ROTATE} ; then
 
     cd ${OLD}
     for F in ${LOGS}; do
-	##  Process the current (just-flushed) log
+	##  Process the current (just-flushed) log.
 	BASE=`basename ${F}`
 	rm -f ${OLD}/${BASE}
 	case ${F} in
@@ -209,17 +221,8 @@ if ${ROTATE} ; then
     done
     cd ${HERE}
 
-    ##  Truncate logs from send-nntp and/or send-uucp.
-    if [ -s ${MOST_LOGS}/send-nntp.log ] ; then
-	${LOG_COMPRESS} <${MOST_LOGS}/send-nntp.log >${OLD}/send-nntp.1${Z}
-	cat /dev/null >${MOST_LOGS}/send-nntp.log
-    fi
-    if [ -s ${MOST_LOGS}/send-uucp.log ] ; then
-	${LOG_COMPRESS} <${MOST_LOGS}/send-uucp.log >${OLD}/send-uucp.1${Z}
-	cat /dev/null >${MOST_LOGS}/send-uucp.log
-    fi
 else
-    ##  Don't use the real OLD directory, instead use TMPDIR
+    ##  Don't use the real OLD directory, instead use TMPDIR.
     OLD=${TMPDIR}
 
     ##  Make a snapshot of what we need for below.
@@ -271,6 +274,9 @@ if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ] ; then
     echo ''
 fi
 rm -f ${OLD_LOG} ${OLD_SYSLOG}
+
+##  Now that innreport has finished, we can move unwanted.log.  This
+##  file is not reset because it keeps the count of unwanted newsgroups.
 if ${ROTATE} ; then
     BASE=`basename ${UNWANTED_LOG}`
     if [ -f ${UNWANTED_LOG}.old ]; then
@@ -292,7 +298,7 @@ if ${ROTATE} ; then
         LOGCYCLES=3
     fi
     for F in ${LOGS} ; do
-	##  Skip if it's unwanted.log, since it's already rotated
+	##  Skip if it's unwanted.log, since it's already rotated.
 	if [ ${F} = ${UNWANTED_LOG} ]; then
 	    continue
 	fi

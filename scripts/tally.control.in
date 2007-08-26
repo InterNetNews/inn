@@ -1,8 +1,10 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
-##  Tally/update the newgroup/rmgroup control log.
+##  $Id$
+##
+##  Tally and update the newgroup/rmgroup control logs.
+##
 ##  Merge in a log that contains newgroup/rmgroup control messages so that
 ##  the "control.log" file is updated to contain the new counts of how
 ##  often each group has been newgroup'd or rmgroup'd.  This is run by
