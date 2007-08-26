@@ -1,0 +1,67 @@
+=head1 NAME
+
+scanlogs - Summarize and rotate INN log files
+
+=head1 SYNOPSIS
+
+B<scanlogs> [B<norotate>]
+
+=head1 DESCRIPTION
+
+B<scanlogs> summarizes the information recorded in the INN log files which
+reside in the I<pathlog> directory set in F<inn.conf> (see newslog(5) for
+further details about these log files).  It is normally invoked by the
+news.daily(8) script which performs daily server maintenance tasks.
+
+It invokes C<ctlinnd flushlogs> to close the news and error log files,
+rename them to add C<.old> to the file names and open fresh news and
+error logs; the F<active> file is also flushed to disk, along with the
+history database.
+
+By default, B<scanlogs> rotates and cleans out the logs.  It keeps up to
+I<logcycles> old compressed log files in I<pathlog>/OLD (the I<logcycles>
+parameter can be set in F<inn.conf>).   B<scanlogs> also keeps archives
+of the F<active> file in this directory.
+
+It invokes B<tally.control> if F<newgroup.log> or F<rmgroup.log> exists
+in I<pathlog> (see the F<control.log> entry of newslog(5) for more
+information about that).
+
+B<scanlogs> displays the contents of F<errlog> and F<news.crit>, if non-empty,
+and runs B<innreport> to summarize the contents of F<news> and F<news.notice>,
+and to update the F<unwanted.log> file amongst other things (see more
+information about that in innreport(8)).
+
+=head1 OPTIONS
+
+Only one option is currently accepted:
+
+=over 4
+
+=item B<norotate>
+
+Using this option disables the rotating and cleaning aspect of the log
+processing:  the logs files are only scanned for information and no contents
+are altered.  If B<scanlogs> is invoked more than once a day, the B<norotate>
+option should be used to prevent premature log cleaning.
+
+=back
+
+=head1 FILES
+
+See newslog(5) for the list of log files processed by B<scanlogs>.
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
+<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Elie
+<julien@trigofacile.com>.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5), innreport(8), news.daily(8), newslog(5), shlock(1),
+tally.control(8).
+
+=cut

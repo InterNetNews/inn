@@ -21,7 +21,8 @@ MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/list.3 ../man/qio.3 \
 MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/distrib.pats.5 \
 	../man/expire.ctl.5 ../man/inn.conf.5 ../man/moderators.5 \
-	../man/motd.news.5 ../man/newsfeeds.5 ../man/newsgroups.5 ../man/ovdb.5 \
+	../man/motd.news.5 ../man/newsfeeds.5 ../man/newsgroups.5 \
+	../man/newslog.5 ../man/ovdb.5 \
 	../man/passwd.nntp.5 ../man/radius.conf.5 ../man/readers.conf.5 \
 	../man/storage.conf.5 ../man/subscriptions.5
 
@@ -33,7 +34,8 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/mailpost.8 ../man/makehistory.8 ../man/ninpaths.8 \
 	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
 	../man/ovdb_stat.8 ../man/overchan.8 ../man/radius.8 \
-	../man/rc.news.8 ../man/sendinpaths.8 ../man/tdx-util.8 \
+	../man/rc.news.8 ../man/scanlogs.8 ../man/sendinpaths.8 \
+	../man/tally.control.8 ../man/tdx-util.8 \
 	../man/tinyleaf.8
 
 ALL	= $(TEXT) $(MAN1) $(MAN3) $(MAN5) $(MAN8)
@@ -82,9 +84,10 @@ maintclean: distclean
 ../man/expire.ctl.5:	expire.ctl.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/moderators.5:	moderators.pod		; $(POD2MAN) -s 5 $? > $@
-../man/motd.news.5:     motd.news.pod           ; $(POD2MAN) -s 5 $? > $@
+../man/motd.news.5:	motd.news.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/newsfeeds.5:	newsfeeds.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/newsgroups.5:	newsgroups.pod		; $(POD2MAN) -s 5 $? > $@
+../man/newslog.5:	newslog.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/passwd.nntp.5:	passwd.nntp.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/radius.conf.5:	radius.conf.pod		; $(POD2MAN) -s 5 $? > $@
@@ -118,6 +121,8 @@ maintclean: distclean
 ../man/overchan.8:	overchan.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/radius.8:	radius.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/rc.news.8:	rc.news.pod		; $(POD2MAN) -s 8 $? > $@
+../man/scanlogs.8:	scanlogs.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/sendinpaths.8:	sendinpaths.pod		; $(POD2MAN) -s 8 $? > $@
+../man/tally.control.8:	tally.control.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/tdx-util.8:	tdx-util.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/tinyleaf.8:	tinyleaf.pod		; $(POD2MAN) -s 8 $? > $@

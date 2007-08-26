@@ -295,6 +295,7 @@ doc/pod/motd.news.pod                 Master file for motd.news.5
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/newsfeeds.pod                 Master file for newsfeeds.5
 doc/pod/newsgroups.pod                Master file for newsgroups.5
+doc/pod/newslog.pod                   Master file for newslog.5
 doc/pod/ninpaths.pod                  Master file for ninpaths.8
 doc/pod/nnrpd.pod                     Master file for nnrpd.8
 doc/pod/ovdb.pod                      Master file for ovdb.5
@@ -312,11 +313,13 @@ doc/pod/rc.news.pod                   Master file for rc.news.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/rnews.pod                     Master file for rnews.1
+doc/pod/scanlogs.pod                  Master file for scanlogs.8
 doc/pod/sendinpaths.pod               Master file for sendinpaths.8
 doc/pod/simpleftp.pod                 Master file for simpleftp.1
 doc/pod/sm.pod                        Master file for sm.1
 doc/pod/storage.conf.pod              Master file for storage.conf.5
 doc/pod/subscriptions.pod             Master file for subscriptions.5
+doc/pod/tally.control.pod             Master file for tally.control.8
 doc/pod/tdx-util.pod                  Master file for tdx-util.8
 doc/pod/tinyleaf.pod                  Master file for tinyleaf.8
 doc/pod/tst.pod                       Master file for tst.3

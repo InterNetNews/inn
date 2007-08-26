@@ -1,0 +1,57 @@
+=head1 NAME
+
+tally.control - Keep track of newsgroup creations and deletions
+
+=head1 SYNOPSIS
+
+B<tally.control> < I<logfile>
+
+=head1 DESCRIPTION
+
+B<tally.control> is normally daily invoked by B<scanlogs>.  It reads its
+standard input, which should be the F<newgroup.log> and F<rmgroup.log>
+control log files.  They contain a summary line describing the control
+message and the action taken by B<controlchan>, followed by the article
+indented by four spaces, and a blank line.  Then, B<tally.control> updates
+the cumulative list of newsgroup creations and deletions which is kept
+in F<control.log>.
+
+All these log files reside in the I<pathlog> directory set in F<inn.conf>.
+In order to generate them, you need to enable control articles logging
+in control.ctl(5), as explained in the F<control.log> entry of newslog(5).
+
+=head1 FILES
+
+=over 4
+
+=item I<pathbin>/tally.control
+
+The Shell script itself used to tally newsgroup creations and deletions up.
+
+=item I<pathlog>/control.log
+
+This file maintains a count of the number of newgroup and rmgroup control
+messages seen for each newsgroup.  The count is of the number of control
+messages with the indicated arguments, regardless if they were actually
+processed.  All control arguments, including invalid ones, are counted.
+An example of lines which can be found in that log file is:
+
+    3 Control: newgroup foo.bar moderated
+    3 Control: rmgroup misc.removed
+    1 Control: newgroup misc.created
+
+=back
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
+<rsalz@uunet.uu.net> for InterNetNews.  Rewritten and converted
+to POD by Julien Elie <julien@trigofacile.com>.
+
+$Id$
+
+=head1 SEE ALSO
+
+control.ctl(8), news.daily(8), newslog(5), scanlogs(8).
+
+=cut
