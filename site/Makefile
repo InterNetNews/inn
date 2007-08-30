@@ -60,7 +60,7 @@ REST		= \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
-	nnrpd_auth.pl nnrpd_access.pl \
+	nnrpd_auth.pl nnrpd_access.pl nocem.ctl \
         news2mail.cf readers.conf \
 	radius.conf nnrpd_auth.py ovdb.conf active.minimal \
 	newsgroups.minimal send-uucp.cf subscriptions
@@ -81,6 +81,7 @@ REST_INSTALLED	= \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_PYTHON_FILTER_INND) $D$(PATH_PYTHON_INN_MODULE) \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
+	$D$(PATHETC)/nocem.ctl \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF) \
 	$D$(PATH_SENDUUCP_CF) $D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS)
@@ -194,6 +195,7 @@ $D$(PATH_PYTHON_INN_MODULE): INN.py ;	$(COPY_RPUB) $? $@
 $D$(PATH_NNRPAUTH): nnrpd_auth.pl       ; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPACCESS): nnrpd_access.pl     ; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPYAUTH): nnrpd_auth.py      ; $(COPY_RPUB) $? $@
+$D$(PATHETC)/nocem.ctl: nocem.ctl       ; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPUB) $? $@
 $D$(PATH_MOTD): motd.news		; $(COPY_RPUB) $? $@
@@ -241,6 +243,7 @@ news2mail.cf:	../samples/news2mail.cf		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
 nnrpd.track:	../samples/nnrpd.track		; $(COPY) $? $@
 nntpsend.ctl:	../samples/nntpsend.ctl		; $(COPY) $? $@
+nocem.ctl:	../samples/nocem.ctl		; $(COPY) $? $@
 overview.fmt:	../samples/overview.fmt		; $(COPY) $? $@
 parsecontrol:	../samples/parsecontrol		; $(COPY) $? $@
 passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@

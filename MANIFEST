@@ -632,6 +632,7 @@ samples/nnrpd_auth_wrapper.pl.in      Wrapper around old Perl auth hooks
 samples/nnrpd_auth_wrapper.py         Wrapper around old Python auth hooks
 samples/nnrpd_dynamic_wrapper.py      Wrapper around old Python dynamic hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
+samples/nocem.ctl                     Config file for perl-nocem
 samples/ovdb.conf                     Berkeley DB overview configuration
 samples/overview.fmt                  Format of news overview database
 samples/passwd.nntp                   Passwords for remote connections
