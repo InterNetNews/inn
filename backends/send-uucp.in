@@ -266,7 +266,7 @@ B<send-uucp> [I<site> ...]
 
 The B<send-uucp> program processes batch files written by innd(8) to send
 Usenet articles to UUCP sites.  It reads a configuration file to control how
-it behaves with various sites.  Normally, it's run periodically out of cron
+it behaves with various sites.  Normally, it is run periodically out of cron
 to put together batches and send them to remote UUCP sites.
 
 It makes it possible to reduce bandwidth usage and to send news to remote
@@ -283,8 +283,8 @@ in that configuration file.
 =head1 CONFIGURATION
 
 The sites to which articles are to be sent must be configured in the
-configuration file F<send-uucp.cf>.  Each site is specified with a line of
-the form:
+configuration file F<send-uucp.cf> in I<pathetc> as set in F<inn.conf>.  Each
+site is specified with a line of the form:
 
     site[:host[:funnel]] [compressor [maxsize [batchtime]]]
 
@@ -335,7 +335,7 @@ a line is a hash sign (C<#>) then the rest of the line is ignored.
 
 =head1 EXAMPLE
 
-Here is an example F<send-uucp.cf> configuration file:
+Here is an example for the F<send-uucp.cf> configuration file:
 
     zoetermeer      gzip            1048576         5,18,22
     hoofddorp       gzip            1048576         5,18,22
@@ -348,15 +348,23 @@ Here is an example F<send-uucp.cf> configuration file:
 
 This defines eight UUCP sites.  The first three use C<gzip> compression, the
 following site uses C<bzip2> and the last three use C<compress>.  The first
-six use a batch size of 1MB, and the last site ("able") uses the default of
-500,000 bytes.  The "zoetermeer", "hoofddorp", "pa3ebv", and "manhole" sites
+six use a batch size of 1 MB, and the last site (C<able>) uses the default of
+500,000 bytes.  The C<zoetermeer>, C<hoofddorp>, C<pa3ebv>, and C<manhole> sites
 will only have batches generated for them during the hours of 05:00, 18:00,
-and 22:00, and the "drinkel" site will only have batches generated during those
+and 22:00, and the C<drinkel> site will only have batches generated during those
 hours and 06:00, 20:00, 00:00, and 02:00.  There are no restrictions on when
-batches will be generated for "owl" or "able".
+batches will be generated for C<owl> or C<able>.
 
-The "pern" site is configured as a funnel into C<MYFUNNEL!>.  B<send-uucp> will
+The C<pern> site is configured as a funnel into C<MYFUNNEL!>.  B<send-uucp> will
 issue C<ctlinnd flush MYFUNNEL!> instead of C<ctlinnd flush pern>.
+
+As for the F<newsfeeds> file, the usual flags used for a UUCP feed are
+C<Tf,Wnb>.  Here is a typical entry for C<zoetermeer>, where the batching
+is kept between 4 KB and 1 KB:
+
+    zoetermeer\
+        :*,!junk,!control/!foo\
+        :Tf,Wnb,B4096/1024:
 
 =head1 FILES
 
@@ -368,23 +376,19 @@ The Perl script itself used to create news batches from the outgoing files.
 
 =item I<pathetc>/send-uucp.cf
 
-Configuration file specifying a list of sites to be processed.
+The configuration file which specifies a list of sites to be processed.
 
 =back
 
-=head1 NOTES
-
-The usual flags used for a UUCP feed in the F<newsfeeds> file are C<Tf,Wnb>.
-
-=head1 SEE ALSO
-
-innd(8), newsfeeds(5), uucp(8).
-
-=head1 AUTHOR
+=head1 HISTORY
 
 This program was originally written by Edvard Tuinder <ed@elm.net> and then
 maintained and extended by Miquel van Smoorenburg <miquels@cistron.nl>.
 Marco d'Itri <md@linux.it> cleaned up the code for inclusion in INN.  This
 manual page was written by Mark Brown <broonie@sirena.org.uk>.
+
+=head1 SEE ALSO
+
+innd(8), newsfeeds(5), uucp(8).
 
 =cut

@@ -520,17 +520,17 @@ Processing NoCeM notices is easy to set up:
 Import the keys of the NoCeM issuers you trust in order to check
 the authenticity of their notices.  You can do:
 
-    gpg --primary-keyring /usr/local/news/etc/pgp/ncmring.gpg --import
-        <key-file>
+    gpg --primary-keyring <pathetc>/pgp/ncmring.gpg --import <key-file>
 
-where <key-file> is the file containing the key(s) to import.  The keyring
+where <pathetc> is the value of the I<pathetc> parameter set in F<inn.conf>
+and <key-file> the file containing the key(s) to import.  The keyring
 must be located in I<pathetc>/pgp/ncmring.gpg (create the directory
 before using B<gpg>).  For old PGP-generated keys, you may have to use
 B<--allow-non-selfsigned-uid> if they are not properly self-signed,
 but anyone creating a key really should self-sign the key.  Current
 PGP implementations do this automatically.
 
-The keys of NoCeM issuers can be found in the web site of I<The NoCem Registry>:
+The keys of NoCeM issuers can be found in the web site of I<The NoCeM Registry>:
 L<http://www.xs4all.nl/~rosalind/nocemreg/nocemreg.html>.  You can even
 download there a unique file which contains all the keys.
 
@@ -548,7 +548,7 @@ before the colon C<:>) has issued NoCeM notices corresponding to the
 criteria specified after the colon.
 
 You will also find information about that on the web site of
-I<The NoCem Registry>.
+I<The NoCeM Registry>.
 
 =item 3.
 
@@ -557,9 +557,9 @@ B<perl-nocem> the NoCeM notices posted to alt.nocem.misc and
 news.lists.filter:
 
     nocem!:!*,alt.nocem.misc,news.lists.filter\
-        :Tc,Wf,Ap:/usr/local/news/bin/perl-nocem
+        :Tc,Wf,Ap:<pathbin>/perl-nocem
 
-with the correct path to B<perl-nocem>, located in I<pathbin>.  Then, reload
+with the correct path to B<perl-nocem>, located in <pathbin>.  Then, reload
 the F<newsfeeds> file (C<ctlinnd reload newsfeeds 'NoCeM channel feed'>).
 
 Note that you should at least carry news.lists.filters on your news
@@ -581,9 +581,21 @@ cancels containing C<cyberspam> in the Path: header.
 
 =head1 FILES
 
-/usr/local/news/bin/perl-nocem
-/usr/local/news/etc/nocem.ctl
-/usr/local/news/etc/pgp/ncmring.gpg
+=over 4
+
+=item I<pathbin>/perl-nocem
+
+The Perl script itself used to process NoCeM notices.
+
+=item I<pathetc>/nocem.ctl
+
+The configuration file which specifies the NoCeM notices to be processed.
+
+=item I<pathetc>/pgp/ncmring.gpg
+
+The keyring which contains the public keys of trusted NoCeM issuers.
+
+=back
 
 =head1 BUGS
 
