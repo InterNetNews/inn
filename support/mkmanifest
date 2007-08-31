@@ -231,6 +231,7 @@ site/nnrpd_access.pl
 site/nnrpd_auth.pl
 site/nnrpd_auth.py
 site/nntpsend.ctl
+site/nocem.ctl
 site/ovdb.conf
 site/overview.fmt
 site/passwd.nntp
