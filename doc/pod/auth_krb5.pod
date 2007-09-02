@@ -1,6 +1,6 @@
 =head1 NAME
 
-auth_krb5 - nnrpd Kerberos v5 authenticator
+auth_krb5 - nnrpd S<Kerberos v5> authenticator
 
 =head1 SYNOPSIS
 
@@ -8,9 +8,9 @@ B<auth_krb5> [B<-i> I<instance>]
 
 =head1 DESCRIPTION
 
-This program does authentication for B<nnrpd> against a Kerberos v5 KDC.
+This program does authentication for B<nnrpd> against a S<Kerberos v5 KDC>.
 This is NOT real Kerberos authentication using service tickets; instead, a
-username and password is used to attempt to obtain a Kerberos v5 TGT to
+username and password is used to attempt to obtain a S<Kerberos v5 TGT> to
 confirm that they are valid.  As such, this authenticator assumes that
 B<nnrpd> has been given the user's username and password, and therefore is
 not as secure as real Kerberos authentication.  It generally should only
@@ -38,7 +38,7 @@ own password, so their regular account password isn't exposed via NNTP.
 =head1 EXAMPLE
 
 The following readers.conf(5) fragment tells nnrpd to authenticate users
-by attempting to obtain Kerberos v5 TGTs for them, appending an instance
+by attempting to obtain S<Kerberos v5 TGTs> for them, appending an instance
 of C<nntp> to usernames before doing so:
 
     auth kerberos {

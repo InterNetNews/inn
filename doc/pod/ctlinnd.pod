@@ -477,7 +477,7 @@ no argument is appended.
 B<ctlinnd> uses Unix domain sockets on most systems to communicate with
 B<innd> and is therefore limited by whatever maximum packet size the
 operating system imposes on Unix domain datagrams.  This may mean that
-server replies are limited to 4KB on some systems.
+server replies are limited to S<4 KB> on some systems.
 
 =head1 HISTORY
 

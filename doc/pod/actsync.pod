@@ -136,7 +136,7 @@ make any changes to the F<active> file, write a new F<active> file to
 standard output, and write debug messages to standard error.
 
 If the I<debug-format> argument is also given to B<actsyncd>, the data
-written to standard output will be in B<-o> I<debug-format> instead of in
+written to standard output will be in B<-o I<debug-format>> instead of in
 C<-o a1> format.
 
 INN comes with default values of C<ftp.isc.org> for <host> and
@@ -337,7 +337,8 @@ Aliased to a newsgroup that has an error of some kind.
 However, a newsgroup that is equivalent to an ignored newsgroup is not a
 problem.
 
-The default is C<-l 12>: problem newsgroups from both hosts are marked as errors.
+The default is C<-l 12>:  problem newsgroups from both hosts are marked
+as errors.
 
 =item B<-m>
 
@@ -640,7 +641,7 @@ the F<actsync.ign> file:
     # moderated or that are under the gnu hierarchy.
     #
     i       *.test
-    c       *.test  m       # check moderated test groups
+    c       *.test m        # check moderated test groups
     c       gnu.*.test
     c       gnu.test        # just in case it ever exists
 
@@ -710,7 +711,7 @@ To report but not fix any newsgroup problems with the current F<active> file:
     actsync - -
 
 To detect any newsgroup errors on your local server, and to remove any
-*.bork.bork.bork style silly newsgroup names:
+*.bork.bork.bork-style silly newsgroup names:
 
     actsync -b 2 - -
 
@@ -720,6 +721,7 @@ The F<active> file produced by:
 
 is effectively the same as the F<active> file produced by:
 
+    cd <pathdb>
     ctlinnd pause 'running actsync'
     rm -f active.new
     actsync <flags> -o a1 erehwon.honey.edu > active.new
@@ -732,6 +734,31 @@ is effectively the same as the F<active> file produced by:
 It should be noted that the final method above, pausing the server and
 simply replacing the F<active> file, may be faster if you are making lots
 of changes.
+
+=head1 FILES
+
+=over 4
+
+=item I<pathbin>/actsync
+
+The C program itself used to synchronize, compare, or merge two F<active>
+files.
+
+=item I<pathbin>/actsyncd
+
+The Shell daemon which provides a convenient interface to configure and
+run B<actsync>.
+
+=item I<pathetc>/actsync.cfg
+
+The configuration file which specifies the settings to use.
+
+=item I<pathetc>/actsync.ign
+
+The ignore file which contains a set of synchronization rules that
+specifies which newsgroups will be checked and which will be ignored.
+
+=back
 
 =head1 CAUTION
 

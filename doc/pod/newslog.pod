@@ -6,7 +6,7 @@ newslog - Description of INN log files
 
 Most log files created by Usenet programs reside in the I<pathlog> directory
 set in F<inn.conf> and have a C<.log> extension.  Several versions are usually
-kept with an additional extension such as C<.1>, C<.2>, etc. -- the higher
+kept with an additional extension such as C<.1>, C<.2>, etc. S<-- the> higher
 the number, the older the log.  These old versions are stored in I<pathlog>/OLD;
 they may be compressed and thus may have a C<.1.gz>, C<.2.gz>, etc. extension,
 up to C<.nn.gz> where C<nn> is the number of old logs kept by B<scanlogs>
@@ -144,7 +144,8 @@ a tab character for the delimiter:
 
     news.crit		<pathlog>/news.crit
 
-(A typical entry is shown; it should agree with I<pathlog> in F<inn.conf>.)
+(A typical entry is shown; it should agree with I<pathlog> in F<inn.conf>
+and be tab-delimited.)
 
 =item F<news.err>
 
@@ -160,7 +161,8 @@ a tab character for the delimiter:
 
     news.err		<pathlog>/news.err
 
-(A typical entry is shown; it should agree with I<pathlog> in F<inn.conf>.)
+(A typical entry is shown; it should agree with I<pathlog> in F<inn.conf>
+and be tab-delimited.)
 
 =item F<news.notice>
 
@@ -174,7 +176,8 @@ a tab character for the delimiter:
 
     news.notice		<pathlog>/news.notice
 
-(A typical entry is shown; it should agree with I<pathlog> in F<inn.conf>.)
+(A typical entry is shown; it should agree with I<pathlog> in F<inn.conf>
+and be tab-delimited.)
 
 =item F<nntpsend.log>
 

@@ -4,47 +4,47 @@ ovdb - Overview storage method for INN
 
 =head1 DESCRIPTION
 
-Ovdb is a storage method that uses the BerkeleyDB library to store
-overview data.  It requires version 2.6.x or later of the BerkeleyDB
+Ovdb is a storage method that uses the S<Berkeley DB> library to store
+overview data.  It requires version 2.6.x or later of the S<Berkeley DB>
 library, but has mostly been tested with version 3 and 4.
 
 Ovdb makes use of the full transaction/logging/locking functionality of
-the BerkeleyDB environment.  BerkeleyDB may be downloaded from
+the S<Berkeley DB> environment.  S<Berkeley DB> may be downloaded from
 L<http://www.sleepycat.com> and is needed to build the ovdb backend.
 
 =head1 UPGRADING
 
 This is version 2 of ovdb.  If you have a database created with a previous
-version of ovdb (such as the one shipped with INN 2.3.0) your database
+version of ovdb (such as the one shipped with S<INN 2.3.0>) your database
 will need to be upgraded using ovdb_init(8).  See the man page
 ovdb_init(8) for upgrade instructions.
 
 =head1 INSTALLATION
 
-To build ovdb support into INN, specify the option C<--with-berkeleydb>
+To build ovdb support into INN, specify the option B<--with-berkeleydb>
 when running the configure script.  By default, configure will search for
-a BerkeleyDB tree in several likely locations, and choose the highest
+a S<Berkeley DB> tree in several likely locations, and choose the highest
 version (based on the name of the directory, e.g., F<BerkeleyDB.3.0>) that
 it finds.  There will be a message in the configure output indicating the
 chosen pathname.
 
 You can override this pathname by adding a path to the option, e.g.,
-C<--with-berkeleydb=/usr/BerkeleyDB.3.1>.  This directory is expected to
+B<--with-berkeleydb=/usr/BerkeleyDB.3.1>.  This directory is expected to
 have subdirectories F<include> and F<lib>, containing F<db.h>, and the
 library itself, respectively.
 
 The ovdb database may take up more disk space for a given spool than the
-other overview methods.  Plan on needing at least 1.1 KB for every article
+other overview methods.  Plan on needing at least S<1.1 KB> for every article
 in your spool (not counting crossposts).  So, if you have 5 million
-articles, you'll need at least 5.5 GB of disk space for ovdb. With compression
-enabled, this estimate changes to 0.7 KB per article.  See the L<COMPRESSION>
+articles, you'll need at least S<5.5 GB> of disk space for ovdb. With compression
+enabled, this estimate changes to S<0.7 KB> per article.  See the L<COMPRESSION>
 section below.
-With BerkeleyDB 2.x, the db files are 'grow only'; the library will not shrink
+With S<Berkeley DB 2.x>, the db files are 'grow only'; the library will not shrink
 them, even if data is removed.  So, reserving extra space above the
 estimate is a good idea.  Plus, you'll need additional space for
-transaction logs: at least 100 MB.  By default the transaction logs go in
+transaction logs: at least S<100 MB>.  By default the transaction logs go in
 the same directory as the database.  To improve performance, they can be
-placed on a different disk -- see the L<DB_CONFIG> section.
+placed on a different disk S<-- see> the L<DB_CONFIG> section.
 
 =head1 CONFIGURATION
 
@@ -88,25 +88,25 @@ already-established database.  Default is 32.
 
 =item txn_nosync
 
-If txn_nosync is set to false, BerkeleyDB flushes the log after every
+If txn_nosync is set to false, S<Berkeley DB> flushes the log after every
 transaction.  This minimizes the number of transactions that may be lost
 in the event of a crash, but results in significantly degraded
 performance.  Default is true.
 
 =item useshm
 
-If useshm is set to true, BerkeleyDB will use shared memory instead of
+If useshm is set to true, S<Berkeley DB> will use shared memory instead of
 mmap for its environment regions (cache, lock, etc).  With some platforms,
 this may improve performance.  Default is false.  This parameter is
-ignored if you have BerkeleyDB 2.x
+ignored if you have S<Berkeley DB 2.x>.
 
 =item shmkey
 
-Sets the shared memory key used by BerkeleyDB when 'useshm' is true.
-BerkeleyDB will create several (usually 5) shared memory segments, using
+Sets the shared memory key used by S<Berkeley DB> when 'useshm' is true.
+S<Berkeley DB> will create several (usually 5) shared memory segments, using
 sequentially numbered keys starting with 'shmkey'.  Choose a key that does
 not conflict with any existing shared memory segments on your system.
-Default is 6400.  This parameter is only used with BerkeleyDB 3.1 or
+Default is 6400.  This parameter is only used with S<Berkeley DB 3.1> or
 newer.
 
 =item pagesize
@@ -117,7 +117,7 @@ parameter has no effect on an already-established database.
 
 =item minkey
 
-Sets the minimum number of keys per page.  See the BerkeleyDB
+Sets the minimum number of keys per page.  See the S<Berkeley DB>
 documentation for more info.  Default is based on page size
 and whether compression is enabled:
 
@@ -131,7 +131,7 @@ database.
 
 =item maxlocks
 
-Sets the BerkeleyDB "lk_max" parameter, which is the maxmium number of
+Sets the S<Berkeley DB> "lk_max" parameter, which is the maxmium number of
 locks that can exist in the database at the same time.  Default is 4000.
 
 =item nocompact
@@ -155,13 +155,13 @@ will probably be removed in the future.
 
 =item readserver
 
-Normally, each nnrpd process directly accesses the BerkeleyDB environment.
+Normally, each nnrpd process directly accesses the S<Berkeley DB> environment.
 The process of attaching to the database (and detaching when finished) is
 fairly expensive, and can result in high loads in situations when there
 are lots of reader connections of relatively short duration.
 
 When the readserver parameter is "true", the nnrpds will access overview
-via a helper server (B<ovdb_server> -- which is started by B<ovdb_init>).
+via a helper server (B<ovdb_server> S<-- which> is started by B<ovdb_init>).
 This can also result in cleaner shutdowns for the database, improving
 stability and avoiding deadlocks and corrupted databases.  If you are
 experiencing any instability in ovdb, try setting this parameter to true.
@@ -234,7 +234,7 @@ uses ovdb is running.
 
 Another thing that you can do with this file is to split the overview
 database across multiple disks.  In the F<DB_CONFIG> file, you can list
-directories that BerkeleyDB will search when it goes to open a database.
+directories that S<Berkeley DB> will search when it goes to open a database.
 
 For example, let's say that you have I<pathoverview> set to
 F</mnt/overview> and you have four additional file systems created on
@@ -247,7 +247,7 @@ the following lines:
     set_data_dir /mnt/ov3
     set_data_dir /mnt/ov4
 
-(For BerkeleyDB 2.x, replace C<set_data_dir> with C<DB_DATA_DIR>.)
+(For S<Berkeley DB 2.x>, replace C<set_data_dir> with C<DB_DATA_DIR>.)
 
 Distribute your ovNNNNN files into the four filesystems.  (say, 8 each).
 When called upon to open a database file, the db library will look for it
@@ -258,9 +258,9 @@ Whenever you change DB_CONFIG or move database files around, make sure all
 news processes that use the database are shut down first (including
 nnrpds).
 
-The DB_CONFIG functionality is part of BerkeleyDB itself, rather than
-something provided by ovdb.  See the BerkeleyDB documentation for complete
-details for the version of BerkeleyDB that you're running.
+The DB_CONFIG functionality is part of S<Berkeley DB> itself, rather than
+something provided by ovdb.  See the S<Berkeley DB> documentation for complete
+details for the version of S<Berkeley DB> that you're running.
 
 =head1 RUNNING
 
@@ -323,7 +323,7 @@ Optional configuration file for tuning.  See L<CONFIGURATION> above.
 
 =item I<pathoverview>
 
-Directory where the database goes.  BerkeleyDB calls it the 'DB_HOME'
+Directory where the database goes.  S<Berkeley DB> calls it the 'DB_HOME'
 directory.
 
 =item I<pathoverview>/DB_CONFIG
@@ -357,7 +357,7 @@ Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews
 inn.conf(5), innd(8), nnrpd(8), ovdb_init(8), ovdb_monitor(8),
 ovdb_stat(8)
 
-BerkeleyDB documentation: in the F<docs> directory of the BerkeleyDB
+S<Berkeley DB> documentation: in the F<docs> directory of the S<Berkeley DB>
 source distribution, or on the Sleepycat web page:
 L<http://www.sleepycat.com/>.
 

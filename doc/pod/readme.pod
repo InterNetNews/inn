@@ -1,6 +1,6 @@
-=head1 Welcome to INN 2.5!
+=head1 Welcome to S<INN 2.5>!
 
-This is the current development version of INN 2.5.  This code is under
+This is the current development version of S<INN 2.5>.  This code is under
 active development and may or may not be stable at any given time.
 Contributions and bug reports are welcome and encouraged.
 
@@ -14,8 +14,8 @@ license, and distribution terms.
 
 INN (InterNetNews), originally written by Rich Salz, is an extremely
 flexible and configurable Usenet / netnews news server.  For a complete
-description of the protocols behind Usenet and netnews, see RFC 1036 and
-RFC 977 (or their replacements).  In brief, netnews is a set of protocols
+description of the protocols behind Usenet and netnews, see S<RFC 1036> and
+S<RFC 977> (or their replacements).  In brief, netnews is a set of protocols
 for exchanging messages between a decentralized network of news servers.
 News articles are organized into newsgroups, which are themselves
 organized into hierarchies.  Each individual news server stores locally
@@ -69,8 +69,8 @@ volunteers around the world.  See L<"Supporting the INN Effort"> below.
 
 =head1 Prerequisites
 
-Compiling INN requires an ANSI C compiler (gcc is recommended).  INN was
-originally written in K&R C, but supporting pre-ANSI compilers has become
+Compiling INN requires an S<ANSI C> compiler (gcc is recommended).  INN was
+originally written in S<K&R C>, but supporting pre-ANSI compilers has become
 enough of a headache that a lot of the newer parts of INN will no longer
 compile with a non-ANSI compiler.  gcc itself will compile with most
 vendor non-ANSI compilers, however, so if you're stuck with one,
@@ -88,11 +88,11 @@ work on.  If you encounter problems compiling or running INN, or if you
 successfully run INN on a platform that isn't listed in F<INSTALL>, please
 let us know (see L<"Reporting Bugs"> below).
 
-Perl 5.003 or later is required to build INN.  Perl 5.004 is required if
+S<Perl 5.003> or later is required to build INN.  S<Perl 5.004> is required if
 you want the embedded Perl filter support (which is highly recommended;
 some excellent spam filters have been written for INN).  Since all
 versions of Perl previous to 5.004 are buggy (including security problems)
-and have fewer features, installing Perl 5.004 or later is recommended.
+and have fewer features, installing S<Perl 5.004> or later is recommended.
 
 If you want to enable PGP verification of control messages (highly
 recommended), you will need to have a PGP implementation installed.  See
@@ -104,7 +104,7 @@ A news server can be a fairly complicated piece of software to set up just
 because of the wide variety of pieces that have to be configured (who is
 authorized to read from the server, what newsgroups it carries, and how
 the articles are stored on disk at a bare minimum, and if the server isn't
-completely stand-alone -- and very few servers are -- both incoming and
+completely stand-alone S<-- and> very few servers S<are --> both incoming and
 outgoing feeds have to be set up and tested).  Be prepared to take some
 time to understand what's going on and how all the pieces fit together.
 If you have any specific suggestions for documentation, or comments about

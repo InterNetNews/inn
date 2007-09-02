@@ -40,7 +40,7 @@ mechanism is to invoke B<tinyleaf> via tcpd(8) from TCP wrappers and use
 F</etc/hosts.allow> and F</etc/hosts.deny> to restrict who can talk to the
 server.)
 
-B<tinyleaf> has a (currently hard-coded) maximum message size of 1MB and a
+B<tinyleaf> has a (currently hard-coded) maximum message size of S<1 MB> and a
 (similarly hard-coded) timeout of ten minutes for each command or chunk of
 article data.
 
@@ -59,7 +59,7 @@ Then, add a line like:
     nntp stream tcp nowait archive /usr/sbin/tcpd \
       /usr/local/bin/tinyleaf /var/spool/tinyleaf /usr/local/bin/archive
 
-(all on one line -- the backslash and split in this line is just for
+(all on one line S<-- the> backslash and split in this line is just for
 readability) where C<archive> is the user that owns the archive,
 C</usr/sbin/tcpd> is the path to tcpd(8), C</usr/local/bin/tinyleaf> is
 the path to this program, F</var/spool/tinyleaf> is some scratch directory

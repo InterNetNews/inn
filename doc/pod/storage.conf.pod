@@ -58,7 +58,7 @@ The meanings of the keys in each storage method entry are as follows:
 
 =over 4
 
-=item B<class>
+=item I<class>: <storage_class>
 
 An identifier for this storage method entry.  <storage_class> should be
 a number between 0 and 255.  It should be unique across all of the entries in
@@ -69,7 +69,7 @@ The assignment of a particular number to a storage class is arbitrary but
 permanent (since it is used in storage tokens).  Storage classes can be
 for instance numbered sequentially in F<storage.conf>.
 
-=item B<newsgroups>
+=item I<newsgroups>: <wildmat>
 
 What newsgroups are stored using this storage method.  <wildmat> is a uwildmat(3)
 pattern which is matched against the newsgroups an article is posted to.
@@ -84,7 +84,7 @@ using this storage method.  The <wildmat> pattern is matched in order.
 There is no default newsgroups pattern; if an entry should match all
 newsgroups, use an explicit C<newsgroups: *>.
 
-=item B<size>
+=item I<size>: <minsize>[,<maxsize>]
 
 A range of article sizes (in bytes) which should be stored using this storage
 method.  If <maxsize> is C<0> or not given, the upper size of articles is
@@ -94,7 +94,7 @@ in this storage method (if, of course, these articles fulfill all the other
 requirements of this storage method entry).  By default, <minsize> is set
 to C<0>.
 
-=item B<expires>
+=item I<expires>: <mintime>[,<maxtime>]
 
 A range of article expiration times which should be stored using this storage
 method.  Be careful; this is less useful than it may appear at first.  This
@@ -118,13 +118,13 @@ to their Expires: header, if any.
 A <mintime> value greater than C<0s> implies that this storage method won't
 match any article without an Expires: header.
 
-=item B<options>
+=item I<options>: <options>
 
 This key is for passing special options to storage methods that require them
 (currently only C<cnfs>).  See the L<STORAGE METHODS> section below for
 a description of its use.
 
-=item B<exactmatch>
+=item I<exactmatch>: <bool>
 
 If this key is set to true, all the newsgroups in the Newsgroups: header of
 incoming articles will be examined to see if they match newsgroups patterns.
@@ -283,7 +283,7 @@ for this method.
 
 The following sample F<storage.conf> file would store all articles
 posted to alt.binaries.* in the C<BINARIES> CNFS metacycbuff,
-all articles over roughly 50 KB in any other hierarchy in the C<LARGE> CNFS
+all articles over roughly S<50 KB> in any other hierarchy in the C<LARGE> CNFS
 metacycbuff, all other articles in alt.* in one timehash class, and all
 other articles in any newsgroups in a second timehash class, except for
 the internal.* hierarchy which is stored in traditional spool format.
@@ -316,7 +316,7 @@ Notice that the last storage method entry will catch everything.  This is
 a good habit to get into; make sure that you have at least one catch-all
 entry just in case something you did not expect falls through the cracks.
 Notice also that the special rule for the internal.* hierarchy is first,
-so it will catch even articles crossposted to alt.binaries.* or over 50 KB
+so it will catch even articles crossposted to alt.binaries.* or over S<50 KB>
 in size.
 
 As for poison wildmat expressions, if you have for instance an article

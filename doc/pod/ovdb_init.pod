@@ -76,8 +76,8 @@ upgraded:
 
 =item *
 
-You upgrade the BerkeleyDB library to a newer version, for example
-from 2.7.7 to 3.1.17.  In this case, the BerkeleyDB db->upgrade()
+You upgrade the S<Berkeley DB> library to a newer version, for example
+from 2.7.7 to 3.1.17.  In this case, the S<Berkeley DB> db->upgrade()
 method is used.
 
 =item *
@@ -92,19 +92,19 @@ it has started, because there is a risk of irrepairable corruption.
 The upgrade may take several minutes to complete.
 If an upgrade does get interrupted, try running the upgrade again.
 
-Here's an example procedure to upgrade a database created with BerkeleyDB
-2.7.7 to use BerkeleyDB 3.1.17:
+Here's an example procedure to upgrade a database created with
+S<Berkeley DB 2.7.7> to use S<Berkeley DB 3.1.17>:
 
 =over 4
 
 =item 1
 
-Build and install the BerkeleyDB 3.1.17
+Build and install the S<Berkeley DB 3.1.17>
 
 =item 2
 
 Run configure in the INN source tree and make sure it picks up the
-right BerkeleyDB directory (e.g., /usr/local/BerkeleyDB.3.1)
+right S<Berkeley DB> directory (e.g., /usr/local/BerkeleyDB.3.1)
 
 =item 3
 

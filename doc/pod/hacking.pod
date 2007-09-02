@@ -17,8 +17,8 @@ or view it with ViewCVS at:
 
     <http://inn.eyrie.org/viewcvs>
 
-You will need Autoconf 2.59 or later to use the development tree.  After
-checking out the tree, run C<./autogen> to generate the necessary Autoconf
+You will need S<autoconf 2.59> or later to use the development tree.  After
+checking out the tree, run C<./autogen> to generate the necessary autoconf
 files.
 
 Nightly snapshots and repository dumps suitable for use with svk will be
@@ -26,7 +26,7 @@ available soon.
 
 =head1 Configuring and Portability
 
-All INN code should be written expecting ANSI C and POSIX.  There is no
+All INN code should be written expecting S<ANSI C> and POSIX.  There is no
 need to attempt to support pre-ANSI compilers, and ANSI-only features such
 as <stdarg.h>, string concatenation, #elif, and token pasting may be used
 freely.  So far as possible, INN is written to attempt to be portable to
@@ -35,7 +35,7 @@ on it, but whenever possible this portability should be provided by
 checking for standard behavior in configure and supplying replacements for
 standard functions that are missing.
 
-When there is a conflict between ANSI C and C99, INN code should be
+When there is a conflict between S<ANSI C> and C99, INN code should be
 written expecting C99 and autoconf used to patch up the differences.
 
 Try to avoid using #ifdef and the like in the middle of code as much as
@@ -63,7 +63,7 @@ F<configure> or F<include/config.h.in> when sending patches to INN;
 instead, note in your patch that those files must be regenerated.  These
 (and all other) generated files should not be checked into Subversion.
 
-At the time of this writing, autoconf 2.59 or later is required.
+At the time of this writing, S<autoconf 2.59> or later is required.
 
 The supporting files for autoconf are in the F<support> subdirectory,
 including the files F<config.guess> and F<config.sub> to determine the
@@ -111,7 +111,7 @@ before 5.6.1; 5.6.1 and later come with a recent enough version) and the
 latest version of podlators.  For versions of Perl earlier than 5.005,
 you'll also need File::Spec in F<modules/by-module/File>.
 
-podlators 1.25 or later will build INN's documentation without significant
+S<podlators 1.25> or later will build INN's documentation without significant
 changes from the versions that are checked into the repository.
 
 There are Makefile rules in F<doc/pod/Makefile> to build all of the
@@ -341,7 +341,7 @@ replaces functions not found on the system with the INN equivalents,
 provides macros that INN assumes are available but which weren't found,
 and defines some additional portability things.  Even if this is more
 headers than the source file actually needs, it's generally better to just
-include F<clibrary.h> rather than trying to duplicate the Autoconf-driven
+include F<clibrary.h> rather than trying to duplicate the autoconf-driven
 hackery that it does to do things portably.  The primary exception is for
 source files in lib that only define a single function and are used for
 portability; those may want to include only F<config.h> so that they can
@@ -412,12 +412,12 @@ If you're writing a substantial new piece of code, the prevailing
 
 =item *
 
-Write in regular ANSI C whenever possible.  Use the normal ANSI and POSIX
+Write in regular S<ANSI C> whenever possible.  Use the normal ANSI and POSIX
 constructs and use autoconf or portability wrappers to fix things up
 beforehand so that the code itself can read like regular ANSI or POSIX
 code.  Code should be written so that it works as expected on a modern
 platform and is fixed up with portability tricks for older platforms, not
-the other way around.  You may assume an ANSI C compiler.
+the other way around.  You may assume an S<ANSI C> compiler.
 
 Try to use const wherever appropriate.  Don't use register; modern
 compilers will do as good of a job as you will in choosing what to put
@@ -689,8 +689,8 @@ a lot of interesting discussion of why NNTP is the way it is.
 =item <http://www.imc.org/ietf-usefor/>
 
 The archives for the USEFOR IETF working group, the working group for the
-RFC 1036 replacement (the format of Usenet articles).  Also contains a lot
-of references to other relevant work, such as the RFC 822 replacement
+S<RFC 1036> replacement (the format of Usenet articles).  Also contains a lot
+of references to other relevant work, such as the S<RFC 822> replacement
 work.
 
 =item <http://www.mibsoftware.com/userkt/inn/dev/>

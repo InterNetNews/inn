@@ -53,7 +53,7 @@ The default is no limit.
 
 This flag sets the size limit for each batch; as soon as at least this
 much data has been written out, a new batch will be started.  The default
-size is 60KB.  Using C<-b 0> will allow unlimited batch sizes.
+size is S<60 KB>.  Using C<-b 0> will allow unlimited batch sizes.
 
 =item B<-B> I<total-size>
 

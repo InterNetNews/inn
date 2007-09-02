@@ -37,8 +37,8 @@ doesn't specify a directory before removing it.  (In some operating
 systems, root is allowed to unlink directories, even directories which
 aren't empty, which can cause file system corruption.)
 
-The input to B<fastrm> should always be sorted -- or even better be in the
-order file names are output by find(1) -- if speed is an issue and the
+The input to B<fastrm> should always be sorted S<-- or> even better be in the
+order file names are output by S<find(1) --> if speed is an issue and the
 input isn't solely storage API tokens.  (It deals fine with unsorted
 input, but is unlikely to be any faster in that case than a simple C<xargs
 rm> command.)  Sorting may even slightly speed up the removal of storage

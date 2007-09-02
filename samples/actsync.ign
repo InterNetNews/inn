@@ -1,8 +1,9 @@
 ##  $Id$
 ##
-##  Sample actsync ignore_file.
+##  Sample actsync ignore file.
 ##
-##  It defines synchronization rules.
+##  It defines synchronization rules (which newsgroups will be
+##  checked and which will be ignored).
 ##  See the actsync man page for more information.
 
 ##  For now by default do not sync.

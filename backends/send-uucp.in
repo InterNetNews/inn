@@ -348,7 +348,7 @@ Here is an example for the F<send-uucp.cf> configuration file:
 
 This defines eight UUCP sites.  The first three use C<gzip> compression, the
 following site uses C<bzip2> and the last three use C<compress>.  The first
-six use a batch size of 1 MB, and the last site (C<able>) uses the default of
+six use a batch size of S<1 MB>, and the last site (C<able>) uses the default of
 500,000 bytes.  The C<zoetermeer>, C<hoofddorp>, C<pa3ebv>, and C<manhole> sites
 will only have batches generated for them during the hours of 05:00, 18:00,
 and 22:00, and the C<drinkel> site will only have batches generated during those
@@ -360,7 +360,7 @@ issue C<ctlinnd flush MYFUNNEL!> instead of C<ctlinnd flush pern>.
 
 As for the F<newsfeeds> file, the usual flags used for a UUCP feed are
 C<Tf,Wnb>.  Here is a typical entry for C<zoetermeer>, where the batching
-is kept between 4 KB and 1 KB:
+is kept between S<4 KB> and S<1 KB>:
 
     zoetermeer\
         :*,!junk,!control/!foo\

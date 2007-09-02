@@ -10,7 +10,7 @@ B<ovdb_stat> B<-Hklmtv> [B<-d> I<database>]
 
 =head1 DESCRIPTION
 
-B<ovdb_stat> displays information from the ovdb database: BerkeleyDB
+B<ovdb_stat> displays information from the ovdb database:  S<Berkeley DB>
 statistics, newsgroup data, and overview records; and optionally
 outputs in HTML format.
 
@@ -44,18 +44,18 @@ Output is presented in HTML format.
 
 =item B<-k>
 
-Displays lock region statistics, as returned by the BerkeleyDB lock_stat()
+Displays lock region statistics, as returned by the S<Berkeley DB> lock_stat()
 call.
 
 =item B<-l>
 
-Displays log region statistics, as returned by the BerkeleyDB log_stat()
+Displays log region statistics, as returned by the S<Berkeley DB> log_stat()
 call.
 
 =item B<-m>
 
 Displays global memory pool statistics, as returned by the
-BerkeleyDB memp_stat() call.
+S<Berkeley DB> memp_stat() call.
 
 =item B<-M>
 
@@ -64,17 +64,17 @@ database file.
 
 =item B<-t>
 
-Displays log region statistics, as returned by the BerkeleyDB txn_stat()
+Displays log region statistics, as returned by the S<Berkeley DB> txn_stat()
 call.
 
 =item B<-v>
 
-Displays ovdb version, and BerkeleyDB version.
+Displays ovdb version, and S<Berkeley DB> version.
 
 =item B<-d> I<database>
 
 Displays information about the given database, as returned by the
-BerkeleyDB db->stat() call.  This operation may take a long time
+S<Berkeley DB> db->stat() call.  This operation may take a long time
 on busy systems (several minutes or more).
 
 =back

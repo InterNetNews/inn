@@ -50,7 +50,7 @@ under the B<-f> option.  Then, additionally, all posts will be
 concatenated into a single file, appending to that file if it already
 exists.  The file name will be C<YYYYMM>, formed from the current time when
 B<archive> is run.  In other words, if given an article in
-comp.sources.unix on December 14, 1998, the article would be appended to
+comp.sources.unix on December 14th, 1998, the article would be appended to
 the file:
 
     comp.sources.unix/199812

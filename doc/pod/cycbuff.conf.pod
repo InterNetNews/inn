@@ -17,7 +17,7 @@ written to the next cycbuff in the list in a round-robin fashion (unless
 C<sequential> mode is specified, in which case each cycbuff is filled
 before moving on to the next).  This is so that you can distribute the
 individual cycbuffs across multiple physical disks and balance the load
-between them.  Note that in order to use any cycbuff larger than 2 GB,
+between them.  Note that in order to use any cycbuff larger than S<2 GB>,
 you need to build INN with the B<--enable-largefiles> option.
 
 For information about how to configure INN to use CNFS, see
@@ -38,7 +38,7 @@ with a backslash (C<\>).
 
 =over 4
 
-=item cycbuffupdate:<interval>
+=item I<cycbuffupdate>:<interval>
 
 Sets the number of articles written before the cycbuff header is
 written back to disk to <interval>.  Under most operating systems, the
@@ -50,25 +50,25 @@ all updates since the last write of the CNFS header may be lost.  The
 default value, if this line is omitted, is C<25>, meaning that the header is
 written to disk after every 25 articles stored in that cycbuff.
 
-=item refreshinterval:<interval>
+=item I<refreshinterval>:<interval>
 
 Sets the interval (in seconds) between re-reads of the cycbuff header to
 <interval>.  This primarily affects B<nnrpd> and controls the frequency
 with which it updates its knowledge of the current contents of the CNFS
 cycbuffs.  The default value, if this line is omitted, is C<30>.
 
-=item cycbuff:<name>:<file>:<size>
+=item I<cycbuff>:<name>:<file>:<size>
 
 Configures a particular CNFS cycbuff.  <name> is a symbolic name for the
 buffer, to be used later in a metacycbuff line.  It must be no longer than
 seven characters.  <file> is the full path to the buffer file or block
 device, and must be no longer than 63 characters.  <size> is the length of
-the buffer in kilobytes (1KB is 1024 bytes).  If <file> is not a block
-device, it should be <size> * 1024 bytes long.
+the buffer in kilobytes (S<1 KB> is 1024 bytes).  If <file> is not a block
+device, it should be S<< <size> * 1024 bytes >> long.
 
-If you're trying to stay under 2 GB, keep your sizes below C<2097152>.
+If you're trying to stay under S<2 GB>, keep your sizes below C<2097152>.
 
-=item metacycbuff:<name>:<buffer>[,<buffer>,...][:<mode>]
+=item I<metacycbuff>:<name>:<buffer>[,<buffer>,...][:<mode>]
 
 Specifies a collection of CNFS buffers that make up a single logical
 storage location from the perspective of INN.  Metacycbuffs are referred
@@ -148,10 +148,10 @@ Use block devices directly.  If your operating system allows you to call
 mmap() on block devices (Solaris and recent versions of Linux do, FreeBSD
 at last report does not), this is the recommended method since you can
 avoid all of the native file system overhead.  Note, however, that each
-cycbuff cannot be larger than 2GB with this method, so if you need a lot
+cycbuff cannot be larger than S<2 GB> with this method, so if you need a lot
 of spool space, you may have to go back to disk files.
 
-Partition the disk to make each partition equal to or smaller than 2GB.
+Partition the disk to make each partition equal to or smaller than S<2 GB>.
 If you're using Solaris, set up your partitions to avoid the first
 cylinder of the disk (or otherwise the cycbuff header will overwrite the
 disk partition table and render the cycbuffs inaccessible).  Then, create

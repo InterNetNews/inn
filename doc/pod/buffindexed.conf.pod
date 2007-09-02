@@ -9,7 +9,7 @@ buffindexed overview method should use.  It is required if the server uses
 buffindexed (as configured by the I<ovmethod> parameter in F<inn.conf>).
 
 Buffindexed uses pre-built buffer files to store overview data and indexes
-to that data.  The buffers are divided into 8KB internally, and a given
+to that data.  The buffers are divided into S<8 KB> internally, and a given
 block is used either for overview data or for index data.  A block is
 always allocated to a single newsgroup and is never shared among
 newsgroups.
@@ -44,10 +44,10 @@ than that constraint, it can be any number between 0 and 65535.
 <filename> is the path to the buffer.  The length of the path should not
 be longer than 63 characters.
 
-<size> is the length of the buffer in kilobytes (1KB = 1024 bytes).  If
+<size> is the length of the buffer in kilobytes (S<1 KB = 1024 bytes>).  If
 <filename> does not specify a special device, the file size of the buffer
-must be <size> * 1024 bytes.  If it does specify a special device, that
-device must have at least <size> space available.  Buffers over 2GB are
+must be S<< <size> * 1024 bytes >>.  If it does specify a special device, that
+device must have at least <size> space available.  Buffers over S<2 GB> are
 not supported (regardless of whether INN was compiled with large file
 support); this limitation may be fixed in the future.  For more
 information on setting up the buffers, see L<CREATING BUFFERS>.
@@ -97,7 +97,7 @@ system overhead.  Note, however, that Solaris has problems with byte range
 locking on block devices, and therefore this method should not be used on
 Solaris.
 
-Partition the disk to make each partition equal to or smaller than 2GB.
+Partition the disk to make each partition equal to or smaller than S<2 GB>.
 If you're using Solaris, set up your partitions to avoid the first
 cylinder of the disk (or otherwise the buffindexed header will overwrite
 the disk partition table and render the buffers inaccessible).  Then,

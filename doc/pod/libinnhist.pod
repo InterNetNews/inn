@@ -297,6 +297,6 @@ type B<time_t> and will not be modified by the call.
 
 =head1 HISTORY
 
-Written by Alex Kiernan <alexk@demon.net> for InterNetNews 2.4.0.
+Written by Alex Kiernan <alexk@demon.net> for S<InterNetNews 2.4.0>.
 
 $Id$

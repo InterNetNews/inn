@@ -355,7 +355,7 @@ The flag specifies the size of the internal buffer for a file feed.  If
 there are more file feeds than allowed by the system, they will be
 buffered internally in least-recently-used order.  If the internal buffer
 grows bigger then I<size> bytes, however, the data will be written out to
-the appropriate file.  The default value is 16 KB.
+the appropriate file.  The default value is S<C<16> KB>.
 
 =item B<N> I<status>
 

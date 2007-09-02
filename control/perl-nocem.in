@@ -488,7 +488,7 @@ __END__
 
 =head1 NAME
 
-perl-nocem - A NoCeM-on-spool implementation for INN 2.x
+perl-nocem - A NoCeM-on-spool implementation for S<INN 2.x>
 
 =head1 SYNOPSIS
 

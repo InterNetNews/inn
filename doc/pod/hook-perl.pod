@@ -19,7 +19,7 @@ holding area, or even modify the headers of locally submitted posts).
 The Perl authentication hooks allow you to replace or supplement the
 readers.conf mechanism used by nnrpd.
 
-For Perl filtering support, you need to have Perl version 5.004 or newer.
+For Perl filtering support, you need to have Perl S<version 5.004> or newer.
 Earlier versions of Perl will fail with a link error at compilation time.
 http://language.perl.com/info/software.html should have the latest Perl
 version.
@@ -62,7 +62,7 @@ F<startup_innd.pl> is executed when that file is loaded, and it's loaded
 only once when innd first starts.  That makes it the ideal place to put
 initialization code that should only run once, or code to load data that
 was preserved on disk across a stop and restart of innd (perhaps using
-filter_mode() -- see below).
+filter_mode() S<-- see> below).
 
 As mentioned above, C<ctlinnd reload filter.perl> (or C<ctlinnd reload
 all>) will cause F<filter_innd.pl> to be reloaded.  If the function

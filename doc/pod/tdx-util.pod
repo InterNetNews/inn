@@ -161,9 +161,9 @@ would be returned to clients but with one modification.  Appended to the
 end of each entry will be four additional pieces of data:  the article
 number according to the index file for that group labelled with
 C<Article:>, the storage API token for that article labelled with
-C<Token:>, the arrival date for that article on the server in RFC 822 date
+C<Token:>, the arrival date for that article on the server in S<RFC 822> date
 format labelled with C<Arrived:>, and the expiration date for that article
-(from the Expires header) in RFC 822 date format if there is any, labelled
+(from the Expires header) in S<RFC 822> date format if there is any, labelled
 with C<Expires:>.
 
 If this option is given, the B<-n> option must also be given to specify

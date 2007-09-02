@@ -66,7 +66,6 @@ as it is used by news software to find moderated groups.
 Here is an example of moderated newsgroup:
 
     news.lists.misc	News-related statistics and lists. (Moderated)
-    news.admin.announce	Announcements for news adminstrators. (Moderated)
 
 Traditionally, all newsgroup descriptions ended with a period, but this
 is not necessary and steals away one character that is occasionally
@@ -108,6 +107,9 @@ The minimal F<newsgroups> file shipped with INN is:
     control.newgroup	Newsgroup creation control messages (no posting).
     control.rmgroup	Newsgroup removal control messages (no posting).
     junk		Unfiled articles (no posting).
+
+These lines I<must> be tab-delimited, so please be careful in case you copy
+and paste them from above.
 
 =head1 HISTORY
 

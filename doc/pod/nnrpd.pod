@@ -146,7 +146,7 @@ title.
 =item B<-S>
 
 If specified, B<nnrpd> will start a negotiation for SSL session as
-soon as connected. To use this flag, C<--with-openssl> must have been
+soon as connected. To use this flag, B<--with-openssl> must have been
 specified at C<configure> time.  For more information on running B<nnrpd>
 with SSL support, see L<SSL SUPPORT>.
 
@@ -161,7 +161,7 @@ is toggled upon receipt of a C<SIGHUP>; see signal(2).
 
 =head1 SSL SUPPORT
 
-If INN is built with C<--with-openssl>, B<nnrpd> will support news reading
+If INN is built with B<--with-openssl>, B<nnrpd> will support news reading
 over TLS (also known as SSL).  For clients that use the STARTTLS command,
 no special configuration is needed beyond creating a TLS/SSL certificate
 for the server.  You should do this in exactly the same way that you would
@@ -203,7 +203,7 @@ defined in F</etc/services> on your system.
 
 =head1 PROTOCOL DIFFERENCES
 
-B<nnrpd> implements the NNTP commands defined in RFC 977, with the
+B<nnrpd> implements the NNTP commands defined in S<RFC 977>, with the
 following differences:
 
 =over 4
@@ -230,14 +230,14 @@ is a common extension.
 
 The C<xhdr>, C<authinfo user> and C<authinfo pass> commands are
 implemented.  These are based on the reference Unix implementation.  See
-RFC 2980.
+S<RFC 2980>.
 
 =item 4.
 
 A new command, C<xpat header range|MessageID pat [morepat...]>, is
 provided.  The first argument is the case-insensitive name of the header
 to be searched.  The second argument is either an article range or a
-single Message-ID, as specified in RFC 977.  The third argument is a
+single Message-ID, as specified in S<RFC 977>.  The third argument is a
 C<uwildmat>(3)-style pattern; if there are additional arguments they are
 joined together separated by a single space to form the complete pattern.
 This command is similar to the C<xhdr> command.  It returns a C<221>

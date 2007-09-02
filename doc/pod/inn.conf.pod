@@ -200,7 +200,7 @@ check the Lines: header of incoming articles.
 The maximum size of article (headers and body) that will be accepted by
 the server, in bytes.  A value of C<0> allows any size of article, but
 note that B<innd> will crash if system memory is exceeded.  The default
-value is C<1000000> (approximately 1 MB).  This is checked against the
+value is C<1000000> (approximately S<1 MB>).  This is checked against the
 article in wire format (CRLF at the end of each line, leading periods
 protected, and with the trailing "\r\n.\r\n" at the end).  See also
 I<localmaxartsize>.
@@ -262,7 +262,7 @@ is a boolean value and the default is true.
 =item I<sourceaddress>
 
 Which local IP address to bind to for outgoing NNTP sockets (used by
-innxmit(8) among other programs, but I<not> innfeed(8) -- see
+innxmit(8) among other programs, but I<not> innfeed(8) S<-- see>
 I<bindaddress> in innfeed.conf(5) for that).  This must be in dotted-quad
 format (nnn.nnn.nnn.nnn).  If set to C<all> or not set, the operating
 system will choose the source IP address for outgoing connections.  The
@@ -402,7 +402,7 @@ containing the index.  Fast for readers, but slow to write to.
 
 =item C<ovdb>
 
-Stores data into a Berkeley DB database.  See the ovdb(5) man page.
+Stores data into a S<Berkeley DB> database.  See the ovdb(5) man page.
 
 =back
 
@@ -675,7 +675,7 @@ should be an option to configure and that option should be mentioned here.
 
 Articles larger than this value in bytes will not have keywords generated
 for them (since it would take too long to do so).  The default value is
-C<100000> (approximately 100 KB).
+C<100000> (approximately S<100 KB>).
 
 =item I<keylimit>
 
@@ -747,8 +747,7 @@ The maximum article size (in bytes) for locally posted articles.  Articles
 larger than this will be rejected.  A value of C<0> allows any size of
 article, but note that B<nnrpd> and B<innd> will crash if system memory is
 exceeded.  See also I<maxartsize>, which applies to all articles including
-those posted locally.  The default value is C<1000000> (approximately 1
-MB).
+those posted locally.  The default value is C<1000000> (approximately S<1 MB>).
 
 =item I<moderatormailer>
 
@@ -1097,8 +1096,8 @@ which include requested overview data for newsgroup.  But for high volume
 newsgroups like control.cancel, this may cause too much mmapping at once
 leading to system resource problems.  To avoid this, if the amount to be
 mmapped exceeds I<keepmmappedthreshold> (in KB), buffindexed mmap's just
-one overview block (8 KB).  This parameter is specific to buffindexed
-overview storage method.  The default value is C<1024> (1 MB).
+one overview block (S<8 KB>).  This parameter is specific to buffindexed
+overview storage method.  The default value is C<1024> (S<1 MB>).
 
 =item I<maxcmdreadsize>
 

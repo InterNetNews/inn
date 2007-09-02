@@ -6,7 +6,7 @@ This file documents INN's built-in optional support for Python article
 filtering.  It is patterned after the TCL and Perl hooks previously added
 by Bob Heiney and Christophe Wolfhugel.
 
-For this filter to work successfully, you will need to have Python 1.5.2
+For this filter to work successfully, you will need to have S<Python 1.5.2>
 (the latest at this writing) installed.  You can obtain it from
 <http://www.python.org>.
 
@@ -21,14 +21,14 @@ Python will be preinstalled, but it may not include all the headers and
 libraries required for embedding into INN.  You will need to add the
 development package.  Better yet, get the source kit from the above URL
 and build it yourself.  Be sure when installing Python on Red Hat, to run
-configure with C<--prefix=/usr> so that there are no version conflicts
+configure with B<--prefix=/usr> so that there are no version conflicts
 with the "factory" installation.  You can also find a selection of well
 made RPMs at <ftp://starship.python.net/pub/crew/andrich/>.
 
 =head1 INSTALLATION
 
 Once you have built and installed Python, you can cause INN to use it by
-adding the C<--with-python> switch to your configure command.
+adding the B<--with-python> switch to your configure command.
 
 See the ctlinnd(8) manual page to learn how to enable, disable and reload
 Python filters on a running server (C<ctlinnd mode>, C<ctlinnd python
@@ -109,7 +109,7 @@ When the operator issues a ctlinnd pause, throttle, go, shutdown, or xexec
 command, this function can be used to do something sensible in accordance
 with the state change.  Stamp a log file, save your state on throttle,
 etc.  oldmode and newmode will be strings containing one of the values in
-('running', 'throttled', 'paused', 'shutdown', 'unknown') -- oldmode is
+('running', 'throttled', 'paused', 'shutdown', 'unknown') S<-- oldmode> is
 the state innd was in before ctlinnd was run, newmode is the state innd
 will be in after the command finishes.  reason is the comment string
 provided on the ctlinnd command line.
@@ -159,7 +159,7 @@ int, innd will B<not> be happy.
 
 =head1 WHAT'S THE DEAL WITH THESE BUFFER OBJECTS?
 
-Buffer objects are cousins of strings, new in Python 1.5.2.  They are
+Buffer objects are cousins of strings, new in S<Python 1.5.2>.  They are
 supported, but at this writing you won't yet find much about them in the
 Python documentation.  Using buffer objects may take some getting used to,
 but we can create buffers much faster and with less memory than strings.
@@ -345,7 +345,7 @@ prefer).
 
 Python authentication, dynamic access group generation and dynamic
 access control support in nnrpd along with filtering support in innd
-may be compiled in by passing C<--with-python> C<configure>.
+may be compiled in by passing B<--with-python> C<configure>.
 
 Support for authentication via Python is provided in nnrpd by the
 inclusion of a python_auth: parameter in a F<readers.conf> auth

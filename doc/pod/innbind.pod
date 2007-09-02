@@ -30,7 +30,7 @@ number.  To bind to all addresses with IPv4, use C<0.0.0.0> as the
 address.  To bind to all addresses with IPv6, use C<::> as the address.
 
 Multiple arguments can be specified to tell B<innbind> to bind multiple
-sockets at the same time.  Any errors (other than permission denied -- see
+sockets at the same time.  Any errors (other than permission denied S<-- see>
 below) encountered will cause B<innbind> to abort, and error messages will
 be sent both to syslog and to standard error.
 
@@ -152,8 +152,8 @@ standard dotted quad format (10.2.3.4).
 =item invalid IPv6 address %s in %s
 
 (Fatal) The IPv6 address specified in the given command-line option could
-not be parsed by inet_pton(3).  IPv6 addresses should be specified in RFC
-2373 format (1080:0:0:0:8:800:200C:417A or 1080::8:800:200C:417A).
+not be parsed by inet_pton(3).  IPv6 addresses should be specified in S<RFC
+2373> format (1080:0:0:0:8:800:200C:417A or 1080::8:800:200C:417A).
 
 =item invalid command-line argument %s
 

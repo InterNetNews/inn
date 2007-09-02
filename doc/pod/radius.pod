@@ -72,6 +72,6 @@ $Id$
 
 nnrpd(8), radius.conf(5), readers.conf(5)
 
-RFC 2865, Remote Authentication Dial In User Service.
+S<RFC 2865>, Remote Authentication Dial In User Service.
 
 =cut

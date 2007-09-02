@@ -1,4 +1,4 @@
-=head1 Welcome to INN 2.5!
+=head1 Welcome to S<INN 2.5>!
 
 Please read this document thoroughly before trying to install INN.  You'll
 be glad you did.
@@ -11,7 +11,7 @@ removed.  You'll find it much easier to start with a fresh install than to
 try to update your old installation.  This is particularly true if you're
 upgrading from a version of INN prior to 2.0.
 
-If you are upgrading from INN 2.3 or later, you may be able to just update
+If you are upgrading from S<INN 2.3> or later, you may be able to just update
 the binaries, scripts, and man pages by running:
 
     make update
@@ -70,9 +70,9 @@ functional (or in some cases, to work at all):
 
 =item *
 
-In order to build INN, you will need a C compiler that understands ANSI C.
+In order to build INN, you will need a C compiler that understands S<ANSI C>.
 If you are trying to install INN on an operating system that doesn't have
-an ANSI C compiler (such as SunOS), installing B<gcc> is recommended.  You
+an S<ANSI C> compiler (such as SunOS), installing B<gcc> is recommended.  You
 can get it from L<ftp://ftp.gnu.org/gnu/gcc/> or its mirrors.  INN is
 tested with B<gcc> more thoroughly than with any other compiler, so even if
 you have another compiler available, you may wish to use B<gcc> instead.
@@ -85,7 +85,7 @@ fine.  We hope to remove this requirement in the future.
 
 =item *
 
-INN requires at least B<Perl 5.004_03> to build and to run several
+INN requires at least S<B<Perl 5.004_03>> to build and to run several
 subsystems.  INN is tested primarily with newer versions of Perl, so it's
 generally recommended that you install the latest stable distribution of
 Perl before compiling INN.  For instructions on obtaining and installing
@@ -102,7 +102,7 @@ two commands:
     # cd /usr/include
     # h2ph * sys/*
 
-An even better approach is to install Perl 5.6.1 or later, which have a
+An even better approach is to install S<Perl 5.6.1> or later, which have a
 fixed version of Sys::Syslog that doesn't require this (as well as many
 other improvements over earlier versions of Perl).
 
@@ -264,7 +264,7 @@ Sets the prefix for INN database files.  The default is F<PREFIX/db>,
 where PREFIX is F</usr/local/news> unless overridden with the option
 above.  The F<history> and F<active> files will be stored in this directory, and
 writes to those files are an appreciable percentage of INN's disk
-activity.  The F<history> file can also be quite large (requiring up to 2 GB
+activity.  The F<history> file can also be quite large (requiring up to S<2 GB>
 or more during nightly B<expire>), so this is a common portion of INN to move
 to a different file system.
 
@@ -296,8 +296,8 @@ platforms that support it, because it changes the format of INN's on-disk
 databases (making it difficult to upgrade an earlier INN installation) and
 can significantly increase the size of some of the history database files.
 Large file support is not necessary unless your F<history> database is so
-large that it exceeds 2 GB or you want to use CNFS buffers larger than 2
-GB.
+large that it exceeds S<2 GB> or you want to use CNFS buffers larger than
+S<2 GB>.
 
 The history, tradindexed and buffindexed overview, CNFS, and timecaf
 databases written by an INN built with this option are incompatible with
@@ -307,7 +307,7 @@ those written by an INN without this option.
 
 Use tagged hash table for the F<history> database.  The tagged hash format
 uses much less memory but is somewhat slower.  This option is recommended
-if you have less than 256 MB of RAM on your news server.  If you install
+if you have less than S<256 MB> of RAM on your news server.  If you install
 INN without tagged hash (the default) and B<expire> takes an excessive amount
 of time, you should make sure the RAM in your system satisfies the
 following formula:
@@ -334,11 +334,11 @@ above.
 =item B<--with-python>
 
 Enables support for Python, allowing you to install filter and
-authentication scripts written in Python.  You will need Python 1.5.2 or
+authentication scripts written in Python.  You will need S<Python 1.5.2> or
 later installed on your system to enable this option.  See
 F<doc/hook-python> for all the details.  Note that there is an
-incompatibility between INN and Python 2.0 when Python is compiled with
-cycle garbage collection; this problem was reported fixed in Python 2.1a1.
+incompatibility between INN and S<Python 2.0> when Python is compiled with
+cycle garbage collection; this problem was reported fixed in S<Python 2.1a1>.
 
 =item B<--with-innd-port>=PORT
 
@@ -386,9 +386,9 @@ fix the links by hand or remove the C<.OLD> versions and re-run B<ldconfig>.
 
 If this option is given to configure, B<rnews> will be installed setuid C<news>,
 owned by group C<uucp>, and mode C<4550>.  This will allow the UUCP subsystem
-to run B<rnews> to process UUCP batches of news articles.  Prior to INN 2.3,
+to run B<rnews> to process UUCP batches of news articles.  Prior to S<INN 2.3>,
 installing B<rnews> setuid C<news> was standard; since most sites no longer use
-UUCP, it is no longer the default as of INN 2.3 and must be requested at
+UUCP, it is no longer the default as of S<INN 2.3> and must be requested at
 configure time.  You probably don't want to use this option unless your
 server accepts UUCP news batches.
 
@@ -402,28 +402,28 @@ the most common configuration now, there's no need to use this option;
 even if you have regular login accounts on your news server, INN's B<inews>
 can post fine via a network connection to your running news server and
 doesn't need to use the local socket (which is what setgid enables it to
-do).  Installing B<inews> setgid was the default prior to INN 2.3.
+do).  Installing B<inews> setgid was the default prior to S<INN 2.3>.
 
-=item B<--with-berkeleydb=PATH>
+=item B<--with-berkeleydb>=PATH
 
-Enables support for Berkeley DB (2.x through 4.2.x), which means that it will
+Enables support for S<Berkeley DB> (2.x through 4.2.x), which means that it will
 then be possible to use the ovdb overview method if you wish.  Enabling
 this configure option doesn't mean you'll be required to use ovdb, but it
-does require that Berkeley DB be installed on your system (including the
+does require that S<Berkeley DB> be installed on your system (including the
 header files, not just the runtime libraries).  If a path is given, it
-sets the installed directory of Berkeley DB (configure will search for it
+sets the installed directory of S<Berkeley DB> (configure will search for it
 in some standard locations, but if you have it installed elsewhere, you
 may need this option).
 
-=item B<--with-zlib=PATH>
+=item B<--with-zlib>=PATH
 
 The ovdb storage method can optionally use compression.  If B<--with-berkeleydb>
-is set, and configure finds a suitable Berkeley DB version, this option
+is set, and configure finds a suitable S<Berkeley DB> version, this option
 defaults to C<yes>, otherwise the default is C<no>.  If you have B<zlib> but it is
 not installed under F</usr> or F</usr/local>, you must specify the directory
 where it is installed.
 
-=item B<--with-openssl=PATH>
+=item B<--with-openssl>=PATH
 
 Enables support for SSL for news reading, which means it will be possible
 to have SSL or TLS encrypted NNTP connections between your server and
@@ -601,14 +601,14 @@ incoming article and can be quite slow to write.
 
 It can keep up with a large feed more easily, since it uses large buffers
 to store all overview information, but it's somewhat slower for readers
-(although not as slow as the unified overview in INN 2.2).  You will need
+(although not as slow as the unified overview in S<INN 2.2>).  You will need
 to create the buffers for it to use (very similar to creating CNFS buffers)
 and list the available buffers in F<buffindexed.conf>.  See
 buffindexed.conf(5) for more information.
 
 =item ovdb
 
-It stores overview data in a Berkeley DB database; it's fast and very robust,
+It stores overview data in a S<Berkeley DB> database; it's fast and very robust,
 but may require more disk space.  See the ovdb(5) man page for more
 information on it.
 
@@ -618,7 +618,7 @@ information on it.
 
 All documentation from this point on assumes that you have set up the news
 user on your system as suggested in L<Installing INN> so that the root of
-your INN installation is F<~news/>.  If you've moved things around by
+your INN installation is F<~news>.  If you've moved things around by
 using options with C<configure>, you'll need to adjust the instructions to
 account for that.
 
@@ -654,7 +654,7 @@ is checked in turn to see if it matches, and the last pattern in the line
 that matches the group name is used.  Patterns beginning with C<!> mean to
 exclude groups matching that pattern.  For example:
 
-    *, !comp.*, comp.os.*
+    *,!comp.*,comp.os.*
 
 In this case, we're saying we match everything (C<*>), except that we
 don't match anything under comp (C<!comp.*>), unless it is actually under
@@ -710,7 +710,7 @@ operation:
 
 If set to true then INN will support the NEWNEWS command for news readers.
 While this can be an expensive operation, its speed has been improved
-considerably as of INN 2.3 and it's probably safe to turn on without
+considerably as of S<INN 2.3> and it's probably safe to turn on without
 risking excessive server load.  The default is true.  (Note that the
 I<access> setting in F<readers.conf> overrides this value; see
 readers.conf(5) for more details.)
@@ -932,8 +932,8 @@ And set up entries for each remote site like:
         :Tm:imapfeed!
 
 For more information on B<imapfeed>, look at the
-F<innfeed/imap_connection.c>.  For more information on IMAP in general,
-see RFC 2060.
+F<innfeed/imap_connection.c> file.  For more information on IMAP in general,
+see S<RFC 2060>.
 
 Finally, there is a special entry for controlchan(8), which processes
 newsgroup control messages, that should always be in F<newsfeeds> unless
@@ -1029,7 +1029,7 @@ There are two ways to create your cycbuffs:
 Use a block device directly.  This will probably give you the most speed
 since it avoids the file system overhead of large files, but it requires
 your OS support mmap(2) on a block device.  Solaris supports this, as do
-late Linux 2.4 kernels.  FreeBSD does not at last report.  Also on many
+late S<Linux 2.4> kernels.  FreeBSD does not at last report.  Also on many
 PC-based Unixes it is difficult to create more than eight partitions,
 which may limit your options.
 
@@ -1040,7 +1040,7 @@ using a block device directly, but it should work on any Unix system.
 
 =back
 
-If you're having doubts, use option #2; it's easier to set up and should
+If you're having doubts, use S<option #2>; it's easier to set up and should
 work regardless of your operating system.  More information about the
 creation of these cycbuffs can be found in cycbuff.conf(5) man page.
 
@@ -1056,19 +1056,19 @@ other storage methods, such as tradspool.)
 
 For each metacycbuff, you now need to determine how many cycbuffs will
 make up the metacycbuff, the size of those cycbuffs, and where they will
-be stored.  Some OSes do not support files larger than 2 GB, which will
+be stored.  Some OSes do not support files larger than S<2 GB>, which will
 limit the size you can make a single cycbuff, but you can still combine
 many cycbuffs into each metacycbuff.  Older versions of Linux are known to
 have this limitation; FreeBSD does not.  Some OSes that support large
 files don't support direct access to block devices for large partitions
-(Solaris prior to Solaris 7, or not running in 64-bit mode, is in this
-category); on those OSes, if you want cycbuffs over 2 GB, you'll have to
-use regular files.  If in doubt, keep your cycbuffs smaller than 2 GB.
+(Solaris prior to S<Solaris 7>, or not running in 64-bit mode, is in this
+category); on those OSes, if you want cycbuffs over S<2 GB>, you'll have to
+use regular files.  If in doubt, keep your cycbuffs smaller than S<2 GB>.
 Also, when laying out your cycbuffs, you will want to try to arrange them
 across as many physical disks as possible (or use a striped disk array and
 put them all on that).
 
-In order to use any cycbuff larger than 2 GB, you need to build INN with
+In order to use any cycbuff larger than S<2 GB>, you need to build INN with
 the B<--enable-largefiles> option.  See L<Installing INN> for more
 information and some caveats.
 
@@ -1081,7 +1081,7 @@ NAME must be unique and must be at most seven characters long.  Something
 simple like C<BUFF00>, C<BUFF01>, etc. is a decent choice, or you may want
 to use something that includes the SCSI target and slice number of the
 partition.  SIZE is the buffer size in kilobytes (if you're trying to stay
-under 2 GB, keep your sizes below C<2097152>).
+under S<2 GB>, keep your sizes below C<2097152>).
 
 Now, you need to tell INN how to group your cycbuffs into metacycbuffs.
 This is similar to creating cycbuff entries:
@@ -1307,7 +1307,7 @@ run:
 
     awk -F: \
     '/^cy/ { printf "dd if=/dev/zero of=%s bs=1k count=%s\n", $3, $4 }' \
-    ~news/etc/cycbuff.conf
+    /usr/local/news/etc/cycbuff.conf
 
 If you are using block devices, you don't technically have to do anything
 at all (since INN is capable of using the devices in F</dev>), but you
@@ -1460,7 +1460,7 @@ crontab file:
 or, if your system does not have per-user crontabs, put the following line
 into your system crontab instead:
 
-    0 3 * * * su -c "/usr/local/news/bin/news.daily expireover lowmark" news
+    0 3 * * * su -c '/usr/local/news/bin/news.daily expireover lowmark' news
 
 If you're using any non-CNFS storage methods, add C<delayrm> to the above
 option list for B<news.daily>.
@@ -1492,7 +1492,7 @@ created while B<innd> is not available:
 
 And it is also a good practice to refresh each day INN's cached IP addresses:
 
-    30 2 * * * /usr/local/news/bin/ctlinnd -t 120 -s reload incoming.conf "flush cache"
+    30 2 * * * /usr/local/news/bin/ctlinnd -t 120 -s reload incoming.conf 'flush cache'
 
 
 =head1 File Descriptor Limits

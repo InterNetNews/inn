@@ -29,8 +29,8 @@ Currently, B<innupgrade> knows how to apply the following updates:
 =item *
 
 F<inn.conf>:  Quote values with whitespace and comment out keys with no
-values, required for the change in configuration parsers introduced in INN
-2.4.  The new format is not backward compatible with the previous parser,
+values, required for the change in configuration parsers introduced in S<INN
+2.4>.  The new format is not backward compatible with the previous parser,
 since the previous parser will include the double-quotes in the value of
 the parameter.
 

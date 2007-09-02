@@ -42,7 +42,7 @@ all users of these routines.  Only the above API should be used.
 B<QIOopen> opens the given file for reading.  For regular files, if your
 system provides that information and the size is reasonable, QIO will use
 the block size of the underlying file system as its buffer size;
-otherwise, it will default to a buffer of 8 KB.  Returns a pointer to use
+otherwise, it will default to a buffer of S<8 KB>.  Returns a pointer to use
 for subsequent calls, or NULL on error.  B<QIOfdopen> performs the same
 operation except on an already-open file descriptor (I<fd> must designate
 a file open for reading).

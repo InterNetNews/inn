@@ -1,6 +1,6 @@
 =head1 NAME
 
-convdate - Convert to/from RFC 2822 dates and seconds since epoch
+convdate - Convert to/from S<RFC 2822> dates and seconds since epoch
 
 =head1 SYNOPSIS
 
@@ -10,7 +10,7 @@ B<convdate> [B<-dhl>] [B<-c> | B<-n> | B<-s>] [I<date> ...]
 
 B<convdate> translates the date/time strings given on the command line,
 outputting the results one to a line.  The input can either be a date in
-RFC 2822 format (accepting the variations on that format that innd(8) is
+S<RFC 2822> format (accepting the variations on that format that innd(8) is
 willing to accept), or the number of seconds since epoch (if B<-c> is
 given).  The output is either ctime(3) results, the number of seconds
 since epoch, or a Usenet Date: header, depending on the options given.
@@ -48,7 +48,7 @@ option doesn't make sense in combination with B<-d>.
 
 =item B<-s>
 
-Pass each given date to the RFC 2822 date parser and print the results of
+Pass each given date to the S<RFC 2822> date parser and print the results of
 ctime(3) (or a Date: header if B<-d> is given).  This is the default
 behavior.
 

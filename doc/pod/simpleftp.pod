@@ -24,7 +24,7 @@ the files in L<ftp://ftp.isc.org/pub/usenet/CONFIG/> without requiring
 administrators to install yet another package.  Its shortcomings as a
 general purpose program are too numerous to mention, but one that stands
 out is that B<simpleftp> does not understand the complete syntax of URLs,
-only the hostname and pathname parts -- it will not understand username,
+only the hostname and pathname parts S<-- it> will not understand username,
 password, port or parameter strings.
 
 The Perl libraries that it uses have the advantage of coming with Perl,

@@ -18,7 +18,7 @@ C<news> user belongs).  If necessary, you can use:
 
     adduser --group --home /usr/local/news news
 
-where F</usr/local/news/> is the home directory for the C<news> user.
+where F</usr/local/news> is the home directory for the C<news> user.
 
 =item *
 
@@ -31,7 +31,7 @@ Make sure the directory F</usr/local/news> and its subdirectories
 are owned by C<news>, group C<news>.
 
 You want to be careful that things in that directory stay owned by
-C<news> -- but you can't just C<chown -R news.news> after the install,
+C<news> S<-- but> you can't just C<chown -R news.news> after the install,
 because you may have binaries that are SUID root.  You can do the build
 as any user, but you need to be root when doing C<make install> so as
 to set the permissions correctly.  After that point, though, you may
@@ -85,11 +85,11 @@ Work out configure options (C<./configure --help> for a list).  If you
 aren't working out of F</usr/local/news>, or want to put some files on a
 different partition, you can set the directories now (or later in
 F<inn.conf> if you change your mind).  By default,
-C<--prefix=/usr/local/news> is used.
+B<--prefix=/usr/local/news> is used.
 
-You probably want C<--with-perl>.  If you're not using NetBSD with
-cycbuffs or OpenBSD, perhaps C<--with-tagged-hash>.  You might want to
-compile in SSL and Berkeley DB, if your system supports them.  You
+You probably want B<--with-perl>.  If you're not using NetBSD with
+cycbuffs or OpenBSD, perhaps B<--with-tagged-hash>.  You might want to
+compile in SSL and S<Berkeley DB>, if your system supports them.  You
 will need to have the relevant external libraries to compile (depending
 on whether you use OpenSSL for TLS/SSL access to your news server, GnuPG
 to verify the authenticity of Usenet control messages, Perl, Python, etc.).
@@ -118,13 +118,13 @@ a certificate and a private key.
 =item *
 
 Find F<INSTALL> and open a separate window for it.  A printout is
-probably a good idea -- it's long but very helpful.  Any time the
+probably a good idea S<-- it's> long but very helpful.  Any time the
 instructions below ask you to make a decision, you can probably find
 help in F<INSTALL>.
 
 =item *
 
-Now it's time to work on the files in F<~news/etc/>.  Start with
+Now it's time to work on the files in F<~news/etc>.  Start with
 F<inn.conf>; you must fill in the default moderators address, your fully
 qualified domain names and path.  Fill in all the blanks.  Change the
 file descriptor limits to something like C<500>.
@@ -223,7 +223,7 @@ worrying about feeds or reader access.
 Start B<innd> by running F<~news/bin/rc.news> B<as the news user>.  It
 is also what you should launch in your init scripts:
 
-    su news -c /usr/local/news/bin/rc.news
+    su news -c ~news/bin/rc.news
 
 Check F<~news/log/news.notice> to see if everything went well; also use
 C<ps> to see if B<innd> is running.
@@ -249,7 +249,7 @@ All of this can be done while INN is running.
 
 To get your incoming feeds working, edit F<incoming.conf>.  When done,
 C<ctlinnd reload incoming.conf 'reason'> (where C<reason> is some text
-that will show up in the logs -- anything will do).
+that will show up in the logs S<-- anything> will do).
 
 =item *
 
@@ -318,7 +318,7 @@ and F<readers-ssl.conf>).  The syntax is similar for both these files.
 You then need to start a second B<nnrpd> to listen to these connections
 and put something like that in your init scripts:
 
-    su news -c '/usr/local/news/bin/nnrpd -D -c /usr/local/news/etc/readers-ssl.conf -p 563 -S'
+    su news -c '~news/bin/nnrpd -D -c ~news/etc/readers-ssl.conf -p 563 -S'
 
 =back
 

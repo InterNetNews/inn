@@ -70,7 +70,7 @@ command-line option is given.
 Only applies when INN has been built with IPv6 support.  Normally B<innd>
 binds to all local IP addresses (unless I<bindaddress6> is set in
 F<inn.conf>).  If this option is given, it specifies the IPv6 address that
-INN should bind to.  The IPv6 address must be in colon-separated RFC 2373
+INN should bind to.  The IPv6 address must be in colon-separated S<RFC 2373>
 format (C<n:n:n:n:n:n:n:n>).
 
 If this option is specified, it's the same as setting I<bindaddress6> in
@@ -285,7 +285,7 @@ be filed in C<to> and sent to the site C<uunet>.
 
 =head1 PROTOCOL DIFFERENCES
 
-B<innd> implements the NNTP commands defined in RFC 977, with the
+B<innd> implements the NNTP commands defined in S<RFC 977>, with the
 following differences:
 
 =over 4

@@ -28,8 +28,8 @@ can just be run directly rather than using B<inndstart>.
 
 =item *
 
-INN now uses Autoconf 2.59 or later for configuration.  As a result, some
-configure options have changed slightly and more of the standard --*dir
+INN now uses S<autoconf 2.59> or later for configuration.  As a result, some
+configure options have changed slightly and more of the standard B<--*dir>
 options should be supported in lieu of the old INN-specific options.  See
 C<configure --help> for the available options.
 
@@ -246,7 +246,7 @@ Fixed a serious bug in XPAT handling, thanks to Tommy van Leeuwen.
 =item *
 
 configure now looks for sendmail only in /usr/sbin and /usr/lib, not on
-the user's path.  This should reduce the need for --with-sendmail if your
+the user's path.  This should reduce the need for B<--with-sendmail> if your
 preferred sendmail is in a standard location.
 
 =item *
@@ -285,10 +285,10 @@ Documentation and man pages have been clarified and updated.
 
 =head1 Upgrading from 2.3 to 2.4
 
-The inn.conf parser has changed between INN 2.3 and 2.4.  Due to that
+The inn.conf parser has changed between S<INN 2.3> and 2.4.  Due to that
 change, options in F<inn.conf> that contain whitespace or a few other
 special characters must be quoted with double quotes, and empty parameters
-(parameters with no value) are not allowed.  INN 2.4 comes with a script,
+(parameters with no value) are not allowed.  S<INN 2.4> comes with a script,
 B<innupgrade>, run automatically during C<make update>, that will attempt
 to fix any problems that it finds with your F<inn.conf> file, saving the
 original as F<inn.conf.OLD>.
@@ -309,7 +309,7 @@ ovdb is known to have some locking and timing issues related to how nnrpd
 shuts down (or fails to shut down) the overview databases.  If you have
 stability problems with ovdb, try setting readserver to true in
 F<ovdb.conf>.  This will funnel all ovdb reads through a single process
-with a cleaner interface to the underlying BerkeleyDB database.
+with a cleaner interface to the underlying S<Berkeley DB> database.
 
 If you use Perl authentication for nnrpd (if I<nnrpdperlauth> in
 F<inn.conf> is true), there have been major changes.  See "Changes to
@@ -330,7 +330,7 @@ for the interfaces) to distinguish it from Rich $alz's original version,
 since it now supports UTF-8.  This may require changes in other software
 packages that link against INN's libraries.
 
-If you are upgrading from a version prior to INN 2.3, see L<"Upgrading
+If you are upgrading from a version prior to S<INN 2.3>, see L<"Upgrading
 from 2.2 to 2.3">.
 
 =head1 Changes in 2.4.0
@@ -340,7 +340,7 @@ from 2.2 to 2.3">.
 =item *
 
 IPv6 support has been added, disabled by default.  If you have IPv6
-connectivity, build with --enable-ipv6 to try it.  There are no known
+connectivity, build with B<--enable-ipv6> to try it.  There are no known
 bugs, but please report any problems you find (or even successes, if you
 use an unusual platform).  There are a few changes of interest; further
 information is available in F<doc/IPv6-info>.
@@ -377,7 +377,7 @@ to add this to their local filters instead.
 
 =item *
 
-nnrpd no longer handles the poorly-specified RFC 977 optional fourth
+nnrpd no longer handles the poorly-specified S<RFC 977> optional fourth
 argument to the NEWGROUPS command specifying the "distributions" that the
 command was supposed to apply to.
 
@@ -443,8 +443,8 @@ that it did.
 
 =item *
 
-Two configure options have changed names:  --with-tmp-path is now
---with-tmp-dir, and --with-largefiles is now --enable-largefiles, to
+Two configure options have changed names:  B<--with-tmp-path> is now
+B<--with-tmp-dir>, and B<--with-largefiles> is now B<--enable-largefiles>, to
 improve consistency and better match the autoconf option guidelines.
 
 =item *
@@ -467,7 +467,7 @@ F<inn.conf> to aid in building NFS based shared reader/writer platforms.
 On the writer server configure nfswriter to true and on all of the readers
 configure nfsreader to true; these options add calls to force data out to
 the NFS server and force it to be read directly from the NFS server at the
-appropriate moments.  Note that it has only been tested on Solaris 8,
+appropriate moments.  Note that it has only been tested on S<Solaris 8>,
 using CNFS as the storage mechanism and tradindexed as the overview
 method.
 
@@ -568,7 +568,7 @@ Substantial updates to the sample provided control.ctl file.
 
 =item *
 
-Compilation fixes with Perl 5.8.0, BerkeleyDB 4.x, current versions of
+Compilation fixes with S<Perl 5.8.0>, S<Berkeley DB 4.x>, current versions of
 Linux (including with large file support), and Tru64.  inndf fixes for
 ReiserFS.
 
@@ -660,7 +660,7 @@ the debugging efforts of Andrew Gierth and Sang-yong Suh.
 
 =item *
 
-A very long-standing (since INN 1.0!) NNTP protocol bug in nnrpd was
+A very long-standing (since S<INN 1.0>!) NNTP protocol bug in nnrpd was
 fixed.  The response to an ARTICLE command retrieving a message by message
 ID should have the message ID as the third word of the response, not the
 fourth.  Fixing this is reported to *possibly* cause problems with some
@@ -729,7 +729,7 @@ overview information will also have to be regenerated, since the formats
 of both files have changed between 2.2 and 2.3.  Regardless of whether you
 were using the storage API or traditional spool under 2.2, you'll need to
 rebuild your overview and history files.  You will also need to add a
-storage.conf file, if you weren't using the storage API under INN 2.2.  A
+storage.conf file, if you weren't using the storage API under S<INN 2.2>.  A
 good default storage.conf file for 2.2 users would be:
 
     method tradspool {
@@ -825,8 +825,8 @@ you will need to change this line to:
 
     $lines = $hdr{'__LINES__'};
 
-to work with INN 2.3 or later.  This is due to an internal optimization of
-the interface to embedded filters that's new in INN 2.3.
+to work with S<INN 2.3> or later.  This is due to an internal optimization of
+the interface to embedded filters that's new in S<INN 2.3>.
 
 =head1 Changes in 2.3.0
 
@@ -845,8 +845,8 @@ three separate overview implementations to choose from.  One (tradindexed)
 is very like traditional overview but uses an additional index file.  The
 second (buffindexed) uses large buffers rather than separate files for
 each group and can handle a higher incoming article rate while still being
-fast for readers.  The third (ovdb) uses Berkeley DB to store overview
-information (so you need to have Berkeley DB installed to use it).  The
+fast for readers.  The third (ovdb) uses S<Berkeley DB> to store overview
+information (so you need to have S<Berkeley DB> installed to use it).  The
 I<ovmethod> key in F<inn.conf> chooses the overview method to use.
 
 Note that ovdb has not been as widely tested as the other overview
@@ -922,7 +922,7 @@ problems with other servers.
 
 =item *
 
-Embedded Perl filters now work with Perl 5.6.0.
+Embedded Perl filters now work with S<Perl 5.6.0>.
 
 =item *
 

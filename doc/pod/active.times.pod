@@ -29,7 +29,7 @@ The line:
 
    news.admin.moderation 1175716803 group-admin@isc.org
 
-shows that the newsgroup news.admin.moderation was created on April 4th 2007
+shows that the newsgroup news.admin.moderation was created on April 4th, 2007,
 at 20:00:03 UTC.  This date can be obtained for instance with
 C<convdate -c 1175716803> (convdate(1) is shipped with INN) or
 C<date -u -d "Jan 1, 1970 00:00:00 +0000 + 1175716803 seconds">.  It is

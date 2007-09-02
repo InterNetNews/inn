@@ -27,7 +27,7 @@ The optional fourth field specifies the type of authentication to use.
 At present, the only recognized "authentication style" is C<authinfo>;
 this is also the default.  It means that NNTP "authinfo" commands are
 used to authenticate to the remote host.  (The C<authinfo> command is a
-common extension to RFC 977.)
+common extension to S<RFC 977>.)
 
 For example:
 
