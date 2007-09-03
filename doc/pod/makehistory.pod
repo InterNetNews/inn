@@ -147,7 +147,7 @@ history file as C<history.n> in I<pathdb>.  To preserve all of the history
 entries from the old history file that correspond to rejected articles or
 expired articles, follow the above command with:
 
-    cd /usr/local/news/db
+    cd <pathdb>
     awk 'NF == 2 { print }' < history >> history.n
 
 (replacing the path with your I<pathdb>, if it isn't the default).  Then

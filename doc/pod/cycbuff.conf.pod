@@ -180,10 +180,10 @@ file as an argument:
     base=`echo "$1" | sed 's%.*/%%'`
     major=`ls -Ll "$1" | awk '{print $5}' | tr -d ,`
     minor=`ls -Ll "$1" | awk '{print $6}`
-    mkdir -p /usr/local/news/spool/cycbuffs
-    mknod /usr/local/news/spool/cycbuffs/"$base" b "$major" "$minor"
-    chown news:news /usr/local/news/spool/cycbuffs/"$base"
-    chmod 644 /usr/local/news/spool/cycbuffs/"$base"
+    mkdir -p <pathspool in inn.conf>/cycbuffs
+    mknod <pathspool>/cycbuffs/"$base" b "$major" "$minor"
+    chown news:news <pathspool>/cycbuffs/"$base"
+    chmod 644 <pathspool>/cycbuffs/"$base"
 
 Make sure that the created files are owned by the news user and news
 group, as specified at configure time (the default being C<news> for

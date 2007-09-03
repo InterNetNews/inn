@@ -63,16 +63,16 @@ is recommended to throttle the server first as described in ctlinnd(8).
 
 To start INN and leave certain error messages going to the terminal:
 
-       su - news -c ~news/bin/rc.news
+       su - news -c <pathbin in inn.conf>/rc.news
 
 To run INN at startup time from appropriate system boot scripts:
 
-       su - news -c ~news/bin/rc.news >/dev/console
+       su - news -c <pathbin>/rc.news >/dev/console
 
 To stop INN (throttling first):
 
-       ~news/bin/ctlinnd throttle reason
-       su - news -c '~news/bin/rc.news stop'
+       <pathbin>/ctlinnd throttle reason
+       su - news -c '<pathbin>/rc.news stop'
 
 =head1 BUGS
 

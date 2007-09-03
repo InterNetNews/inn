@@ -382,9 +382,9 @@ sub cancel_nntp {
     my $r;
     
     if ($nntp_open and time - $socket_timeout > $last_cancel) {
-	logmsg('Close socket for timeout');
-	close (NNTP);
-	$nntp_open = 0;
+        logmsg('Close socket for timeout');
+        close (NNTP);
+        $nntp_open = 0;
     }
     if (not $nntp_open) {
         use Socket;

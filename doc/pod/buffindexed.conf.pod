@@ -15,7 +15,9 @@ always allocated to a single newsgroup and is never shared among
 newsgroups.
 
 In addition to the buffers, buffindexed also stores information in a file
-named F<group.index> in I<pathdb>.  It contains information about each
+named F<group.index> in I<pathdb>.  (This file should not be mistaken for
+the one named F<group.index> in I<pathoverview> which is used by the
+tradindexed overview method.)  It contains information about each
 newsgroup:  the pointer to the index block for the newsgroup, the high
 mark, the low mark, the flag of the group, the number of articles, and so
 forth.  This file is created automatically when all buffers are
@@ -54,8 +56,8 @@ information on setting up the buffers, see L<CREATING BUFFERS>.
 
 An example of F<buffindexed.conf> file can be:
 
-    0:/usr/local/news/spool/overview/OV1:1536000
-    1:/usr/local/news/spool/overview/OV2:1536000
+    0:<pathoverview in inn.conf>/OV1:1536000
+    1:<pathoverview in inn.conf>/OV2:1536000
 
 When you first start B<innd> with everything configured properly, you
 should see messages like this in I<pathlog>/news.notice:
@@ -126,10 +128,10 @@ file as an argument:
     base=`echo "$1" | sed 's%.*/%%'`
     major=`ls -Ll "$1" | awk '{print $5}' | tr -d ,`
     minor=`ls -Ll "$1" | awk '{print $6}`
-    mkdir -p /usr/local/news/spool/overview
-    mknod /usr/local/news/spool/overview/"$base" b "$major" "$minor"
-    chown news:news /usr/local/news/spool/overview/"$base"
-    chmod 644 /usr/local/news/spool/overview/"$base"
+    mkdir -p <pathoverview in inn.conf>
+    mknod <pathoverview>/"$base" b "$major" "$minor"
+    chown news:news <pathoverview>/"$base"
+    chmod 644 <pathoverview>/"$base"
 
 Make sure that the created files are owned by the news user and news
 group, as specified at configure time (the default being C<news> for

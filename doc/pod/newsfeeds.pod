@@ -638,10 +638,6 @@ inputs.
 
 =head1 EXAMPLES
 
-All of the following examples assume that INN was installed with a prefix
-of F</usr/local/news>; if you installed it somewhere else, modify the
-paths as appropriate.
-
 The syntax of the F<newsfeeds> file is so complex because you can specify
 a staggering variety of feeds.  INN is capable of interacting with a wide
 variety of programs that do various things with news articles.  Far and
@@ -671,9 +667,10 @@ this will be logged in I<pathlog>/news as going to the site C<example>
 rather than C<feed.example.com>.
 
 The typical feed entry for innfeed(8) is a good example of a channel feed
-that's the target of various funnel feeds:
+that's the target of various funnel feeds (make sure the path to B<innfeed>
+is properly set):
 
-    innfeed!:!*:Tc,Wnm*:/usr/local/news/bin/innfeed -y
+    innfeed!:!*:Tc,Wnm*:<pathbin in inn.conf>/innfeed -y
 
 Note that the I<pattern> for this feed is just C<!*> so that it won't
 receive any articles directly.  The feed should only receive those
@@ -723,11 +720,11 @@ at the C<mailer!> site and end up executing the command line:
 which will mail the article to both Peter and Sue.
 
 Finally, another very useful example of a channel feed:  the standard
-entry for controlchan(8).
+entry for controlchan(8).  Make sure its path is properly set.
 
     controlchan!\
         :!*,control,control.*,!control.cancel/!collabra-internal\
-        :Tc,Wnsm:/usr/local/news/bin/controlchan
+        :Tc,Wnsm:<pathbin in inn.conf>/controlchan
 
 This program only wants information about articles posted to a control
 newsgroup other than control.cancel, which due to the sorting of control

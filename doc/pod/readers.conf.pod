@@ -615,7 +615,7 @@ username and password are first checked against an external database of
 usernames and passwords, and then against the system shadow password file:
 
     auth all {
-        auth: "ckpasswd -d /usr/local/news/db/newsusers"
+        auth: "ckpasswd -d <pathdb in inn.conf>/newsusers"
         auth: "ckpasswd -s"
     }
 
@@ -665,7 +665,7 @@ staff can also post messages with Approved: headers, but other users
 cannot.
 
     auth default {
-        auth: "ckpasswd -f /usr/local/news/db/newsusers"
+        auth: "ckpasswd -f <pathdb in inn.conf>/newsusers"
         default: <FAIL>
         default-domain: example.com
     }

@@ -172,12 +172,12 @@ warnings with some news reader clients), you can create and install one in
 the default path by running C<make cert> after C<make install> when
 installing INN, or by running the following commands:
 
-    openssl req -new -x509 -nodes -out /usr/local/news/lib/cert.pem \
-        -days 366 -keyout /usr/local/news/lib/key.pem
-    chown news:news /usr/local/news/lib/cert.pem
-    chmod 640 /usr/local/news/lib/cert.pem
-    chown news:news /usr/local/news/lib/key.pem
-    chmod 600 /usr/local/news/lib/key.pem
+    openssl req -new -x509 -nodes -out <pathnews>/lib/cert.pem \
+        -days 366 -keyout <pathnews>/lib/key.pem
+    chown news:news <pathnews>/lib/cert.pem
+    chmod 640 <pathnews>/lib/cert.pem
+    chown news:news <pathnews>/lib/key.pem
+    chmod 600 <pathnews>/lib/key.pem
 
 Replace the paths with something appropriate to your INN installation.
 This will create a self-signed certificate that will expire in a year.

@@ -749,9 +749,9 @@ program, F<makedbz>.  F<makehistory> still generates the base history file
 and the overview information, but some of its options have been changed.
 To rebuild the history and overview files, use something like:
 
-    makehistory -b -f history.n -O -T/usr/local/news/tmp -l 600000
+    makehistory -b -f history.n -O -T /usr/local/news/tmp -l 600000
 
-(change the /usr/local/news/tmp path to some directory that has plenty of
+(change the F</usr/local/news/tmp> path to some directory that has plenty of
 temporary space, and leave off -O if you're running a transit-only server
 and don't intend to expire based on group name, and therefore don't need
 overview.)  Or if your overview is buffindexed, use:

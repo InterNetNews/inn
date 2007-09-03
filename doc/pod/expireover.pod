@@ -131,8 +131,8 @@ things as processing the I<rmfile> and I<lowmarkfile> if necessary.
 Sometimes it's convenient to manually expire a particular newsgroup,
 however.  This can be done with a command like:
 
-    echo example.test | expireover -f - -Z /usr/local/news/tmp/lowmark
-    ctlinnd lowmark /usr/local/news/tmp/lowmark
+    echo example.test | expireover -f - -Z <pathtmp in inn.conf>/lowmark
+    ctlinnd lowmark <pathtmp>/lowmark
 
 This can be particularly useful if a lot of articles in a particular group
 have expired but the overview information is still present, causing some

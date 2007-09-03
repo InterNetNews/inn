@@ -219,7 +219,7 @@ Audit the entire overview database for any problems:
 Rebuild the overview information for example.test from a traditional spool
 directory:
 
-    tdx-util -R /news/spool/articles/example/test -n example.test
+    tdx-util -R <patharticles in inn.conf>/example/test -n example.test
 
 The last command may be useful for recovering from a bad crash or
 corrupted overview information for a particular group, if you are also

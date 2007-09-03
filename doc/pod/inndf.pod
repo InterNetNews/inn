@@ -42,7 +42,7 @@ after C<#> on any line are ignored.
 
 =item B<-F>
 
-Like B<-f> execpt that the filename is I<pathetc>/filesystems and it is
+Like B<-f> except that the filename is I<pathetc>/filesystems and it is
 not an error if this file doesn't exist.  (This option is used primarily
 by such things as innstat(8), so that the news administrator can add
 additional file systems to check to I<pathetc>/filesystems without having
@@ -74,11 +74,11 @@ is only useful for the buffindexed overview method.
 
 =head1 EXAMPLES
 
-Print the free kilobytes in /news/spool as a simple number:
+Print the free kilobytes in F</news/spool> as a simple number:
 
     inndf /news/spool
 
-Report the free inodes in /usr/local/news and /news/spool in a format
+Report the free inodes in F</usr/local/news> and F</news/spool> in a format
 designed for human readability:
 
     inndf -i /usr/local/news /news/spool

@@ -99,33 +99,33 @@ S<Berkeley DB 2.7.7> to use S<Berkeley DB 3.1.17>:
 
 =item 1
 
-Build and install the S<Berkeley DB 3.1.17>
+Build and install the S<Berkeley DB 3.1.17>;
 
 =item 2
 
 Run configure in the INN source tree and make sure it picks up the
-right S<Berkeley DB> directory (e.g., /usr/local/BerkeleyDB.3.1)
+right S<Berkeley DB> directory (e.g., F</usr/local/BerkeleyDB.3.1>);
 
 =item 3
 
-Do a C<make>
+Do a C<make>;
 
 =item 4
 
-Shut down INN (e.g., with C<rc.news stop>).  Be sure to kill all nnrpds as
-well.
+Shut down INN (e.g., with C<rc.news stop>) and be sure to kill all
+instances of B<nnrpd> as well;
 
 =item 5
 
-Do a C<make update> to install the new binaries.
+Do a C<make update> to install the new binaries;
 
 =item 6
 
-Run C<ovdb_init -u> as the news user.
+Run C<ovdb_init -u> as the news user;
 
 =item 7
 
-Start INN with C<rc.news>
+Start INN with C<rc.news>.
 
 =back
 

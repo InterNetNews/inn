@@ -143,17 +143,17 @@ that does not exist is not considered a problem.
 B<fastrm> is typically invoked by INN via expirerm(8) using a command
 like:
 
-    fastrm -e /usr/local/news/spool/articles < expire.list
+    fastrm -e <patharticles in inn.conf> < expire.list
 
 To enable all optimizations and see the affect on the order of removal
 caused by B<-s>, use:
 
-    fastrm -d -s -e -u ~news/spool/articles < expire.list
+    fastrm -d -s -e -u <patharticles> < expire.list
 
 If your file system has indexed directory lookups, but you have a deeply
 nested directory structure, you may want to use a set of flags like:
 
-    fastrm -e -u3 ~news/spool/articles < expire.list
+    fastrm -e -u3 <patharticles> < expire.list
 
 to strongly prefer relative paths but not to use readdir(2) to order the
 calls to unlink(2).
