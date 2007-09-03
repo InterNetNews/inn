@@ -73,6 +73,11 @@ relevant F<control.ctl> entries should be correctly set.  For instance:
     rmgroup         verify-*=rmgroup    PGP verify, remove group and log message.
     checkgroups     doit=checkgroups    Process and log message.
 
+=item F<controlbatch.log>
+
+The B<controlbatch> program appends all status messages to this file.  It is
+rotated by B<scanlogs>.
+
 =item F<errlog>
 
 This file contains the standard output and standard error of any program
@@ -182,6 +187,17 @@ and be tab-delimited.)
 =item F<nntpsend.log>
 
 The B<nntpsend> program appends all status messages to this file.  It is
+rotated by B<scanlogs>.
+
+=item F<perl-nocem.log>
+
+The B<perl-nocem> program appends all status messages to this file if
+Sys::Syslog is not used (otherwise, such messages are appended to
+F<news.notice>).  It is rotated by B<scanlogs>.
+
+=item F<send-ihave.log>
+
+The B<send-ihave> program appends all status messages to this file.  It is
 rotated by B<scanlogs>.
 
 =item F<send-nntp.log>

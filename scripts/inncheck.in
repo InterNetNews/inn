@@ -17,25 +17,25 @@ $newsgroup = '@NEWSGRP@';
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
 %paths = (
-    'active',		"$inn::pathdb/active",
+    'active',		"$inn::active",
     'archive',		"$inn::patharchive",
-    'badnews',		"$inn::pathincoming/bad",
+    'badnews',		"$inn::badnews",
     'batchdir',		"$inn::pathoutgoing",
-    'control.ctl',	"$inn::pathetc/control.ctl",
+    'control.ctl',	"$inn::ctlfile",
     'ctlprogs',		"$inn::pathcontrol",
-    'expire.ctl',	"$inn::pathetc/expire.ctl",
-    'history',		"$inn::pathdb/history",
+    'expire.ctl',	"$inn::expirectl",
+    'history',		"$inn::history",
     'incoming.conf',	"$inn::pathetc/incoming.conf",
-    'inews',		"$inn::pathbin/inews",
+    'inews',		"$inn::inews",
     'inn.conf',		"$inn::pathetc/inn.conf",
     'innbind',          "$inn::pathbin/innbind",
-    'innd',		"$inn::pathbin/innd",
+    'innd',		"$inn::innd",
     'innddir',		"$inn::pathrun",
     'moderators',	"$inn::pathetc/moderators",
     'most_logs',	"$inn::pathlog",
     'newsbin',		"$inn::pathbin",
     'newsboot',		"$inn::pathbin/rc.news",
-    'newsfeeds',	"$inn::pathetc/newsfeeds",
+    'newsfeeds',	"$inn::newsfeeds",
     'overview.fmt',	"$inn::pathetc/overview.fmt",
     'newsetc',		"$inn::pathetc",
     'newslib',		"@libdir@",
@@ -44,7 +44,7 @@ $newsgroup = '@NEWSGRP@';
     'oldlogs',		"$inn::pathlog/OLD",
     'passwd.nntp',	"$inn::pathetc/passwd.nntp",
     'readers.conf',	"$inn::pathetc/readers.conf",
-    'rnews',		"$inn::pathbin/rnews",
+    'rnews',		"$inn::rnews",
     'rnewsprogs',	"$inn::pathbin/rnews.libexec",
     'spooltemp',	"$inn::pathtmp",
     'spool',		"$inn::patharticles",
@@ -280,7 +280,7 @@ incoming_conf
 sub
 inn_conf
 {
-    system ("$inn::pathbin/innconfval", '-C');
+    system ("$inn::innconfval", '-C');
 
 #    if ( $k eq "domain" ) {
 #        print "$file:$line: domain (`$v') isn't local domain\n"

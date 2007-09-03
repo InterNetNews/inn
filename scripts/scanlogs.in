@@ -21,6 +21,7 @@ ACTIVEFILE=${ACTIVE}
 
 ##  Where these programs, if used, write their logs.
 ##  We also have to find innfeed's log file.
+CONTROLBATCH=${MOST_LOGS}/controlbatch.log
 INNFEEDLOG=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${PATHETC}/innfeed.conf`
 INNFEED=
 for F in "${INNFEEDLOG}" ; do
@@ -28,9 +29,11 @@ for F in "${INNFEEDLOG}" ; do
 done
 test -z "${INNFEED}" && test -f ${MOST_LOGS}/innfeed.log && INNFEED="${MOST_LOGS}/innfeed.log"
 NNTPSEND=${MOST_LOGS}/nntpsend.log
+PERLNOCEM=${MOST_LOGS}/perl-nocem.log
+SENDIHAVE=${MOST_LOGS}/send-ihave.log
 SENDNNTP=${MOST_LOGS}/send-nntp.log
 SENDUUCP=${MOST_LOGS}/send-uucp.log
-LIVEFILES="${INNFEED} ${NNTPSEND} ${SENDNNTP} ${SENDUUCP}"
+LIVEFILES="${CONTROLBATCH} ${INNFEED} ${NNTPSEND} ${PERLNOCEM} ${SENDIHAVE} ${SENDNNTP} ${SENDUUCP}"
 
 ##  Where news.daily places expire output, unless noexplog was used.
 EXPLOG=${MOST_LOGS}/expire.log

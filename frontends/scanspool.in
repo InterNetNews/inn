@@ -109,7 +109,7 @@ $|=1;
 #
 $prog = $0;			 	# our name
 $spool = "$inn::patharticles";
-$active = "$inn::pathdb/active";
+$active = "$inn::active";
 $ctlinnd = "$inn::pathbin/ctlinnd";
 $reason = "running scanspool";		# throttle reason
 

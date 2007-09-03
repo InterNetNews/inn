@@ -260,7 +260,7 @@ embedded in innd, and is also available from filters embedded in nnrpd
 
 =item INN::syslog(level, message)
 
-Logs a message via syslog(2).  This is quite a bit more reliable and
+Logs a message via syslog(3).  This is quite a bit more reliable and
 portable than trying to use Sys::Syslog from inside the Perl filter.  Only
 the first character of the level argument matters; the valid letters are
 the first letters of ALERT, CRIT, ERR, WARNING, NOTICE, INFO, and DEBUG

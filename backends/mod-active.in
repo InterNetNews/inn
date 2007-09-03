@@ -11,7 +11,7 @@
 $oldact = $inn::active;         # active file location
 $oldact = $inn::active;         # active file location (same; shut up, perl -w)
 $newact = "$oldact.new$$";      # temporary name for new active file
-$actime = "$oldact.times";      # active.times file
+$actime = $inn::activetimes;    # active.times file
 $pausemsg = 'batch active update, ok'; # message to be used for pausing?
 $diff_flags = '';		# Flags for diff(1); default chosen if null.
 
