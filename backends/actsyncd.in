@@ -7,9 +7,8 @@
 # actsyncd - actsync daemon
 #
 # usage:
-#	actsyncd [-x] config_file [debug_level [debug_outfmt]]
+#	actsyncd config_file [debug_level [debug_outfmt]]
 #
-#	-x		xexec instead of reload
 #	config_file	name of file used to determine how to run actsync
 #	debug_level	force no action and use -v debug_level
 #	debug_outfmt	change -o a1 output to -o debug_outfmt for debug
@@ -43,7 +42,7 @@ case $# in
     1) cfg="$1"; DEBUG=; DEBUG_FMT=; ;;
     2) cfg="$1"; DEBUG="$2"; DEBUG_FMT=; ;;
     3) cfg="$1"; DEBUG="$2"; DEBUG_FMT="$3"; ;;
-    *) echo "usage: $0 [-x] config_file [debug_level [debug_outfmt]]" 1>&2;
+    *) echo "usage: $0 config_file [debug_level [debug_outfmt]]" 1>&2;
        exit 1 ;;
 esac
 if [ ! -s "$cfg" ]; then

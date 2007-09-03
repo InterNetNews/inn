@@ -10,7 +10,7 @@ B<actsync> [B<-AkmT>] [B<-b> I<hostid>] [B<-d> I<hostid>] [B<-g> I<max>]
 [B<-s> I<size>] [B<-t> I<hostid>] [B<-v> I<verbosity>] [B<-w> I<seconds>]
 [B<-z> I<seconds>] [I<host>] I<host>
 
-B<actsyncd> [B<-x>] I<config> [I<debug-level> [I<debug-format>]]
+B<actsyncd> I<config> [I<debug-level> [I<debug-format>]]
 
 =head1 DESCRIPTION
 
@@ -97,10 +97,6 @@ retry up to 9 additional times, waiting 6 minutes before each retry.  This
 daemon runs in the foreground, sending output to standard output and
 standard error.  It then uses mod-active(8) to update the F<active> file
 if there are commands for B<ctlinnd> in its output.
-
-If the B<-x> flag is given to B<actsyncd>, then C<ctlinnd xexec> will be
-used instead of a C<ctlinnd reload> to load the newly modified F<active>
-file.
 
 The configuration filename for the daemon is given as a command line
 argument, usually F<actsync.cfg> in I<pathetc>.  The config file can
