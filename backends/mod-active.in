@@ -1,12 +1,13 @@
 #! /usr/bin/perl
 # fixscript will replace this line with require innshellvars.pl
 
+# $Id$
 # batch-active-update
 # Author: David Lawrence <tale@isc.org>
 
 # Reads a series of ctlinnd newgroup/rmgroup/changegroup commands, such as
-# is output by checkgroups and actsync, and efficiently handles them all at
-# once.  Input can come from command line files or stdin, a la awk/sed.
+# is output by docheckgroups and actsync, and efficiently handles them all at
+# once.  Input can come from command-line files or stdin, a la awk/sed.
 
 $oldact = $inn::active;         # active file location
 $oldact = $inn::active;         # active file location (same; shut up, perl -w)
@@ -98,6 +99,11 @@ if (open(TIMES, ">> $actime")) {
   close(TIMES) || warn "$0: close $actime: $!\n";
 } else {
   warn "$0: $actime not updated: $!\n";
+}
+
+print "chmoding active files\n" if $debug;
+if (! chmod 0664, $oldact, "$oldact.old", $actime) {
+  warn "$0: chmod $oldact $oldact.old $actime: $!\n";
 }
 
 exit 0;
