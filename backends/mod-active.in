@@ -14,7 +14,8 @@ $oldact = $inn::active;         # active file location (same; shut up, perl -w)
 $newact = "$oldact.new$$";      # temporary name for new active file
 $actime = $inn::activetimes;    # active.times file
 $pausemsg = 'batch active update, ok'; # message to be used for pausing?
-$diff_flags = '';		# Flags for diff(1); default chosen if null.
+$diff_flags = '';               # flags for diff(1); default chosen if null
+$changes = 0;                   # number of changes to do
 
 $0 =~ s#^.*/##;
 
@@ -47,10 +48,13 @@ $eval .= "  \$group = (split)[0];\n";
 while (<>) {
   if (/^\s*\S*ctlinnd newgroup (\S+) (\S)/) {
     $toadd{$1} = $2;
+    $changes += 1;
   } elsif (/^\s*\S*ctlinnd rmgroup (\S+)/) {
     $eval .= "  next if \$group eq '$1';\n";
+    $changes += 1;
   } elsif (/^\s*\S*ctlinnd changegroup (\S+) (\S)/) {
     $eval .= "  s/ \\S+\$/ $2/ if \$group eq '$1';\n";
+    $changes += 1;
   }
 }
 
@@ -59,6 +63,13 @@ $eval .= "  if (!print(NEWACT \$_)) {\n";
 $eval .= "    die \"\$0: writing \$newact failed (\$!), aborting\\n\";\n";
 $eval .= "  }\n";
 $eval .= "}\n";
+
+if ($changes == 0) {
+    print "active file not changed\n" if $debug;
+    exit 0;
+}
+
+print "$changes change(s) to do\n" if $debug;
 
 &ctlinnd("pause $pausemsg");
 
