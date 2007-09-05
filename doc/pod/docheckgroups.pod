@@ -1,0 +1,195 @@
+=head1 NAME
+
+docheckgroups - Process checkgroups and output a list of changes
+
+=head1 SYNOPSIS
+
+B<docheckgroups> [B<-u>] [I<include-pattern> [I<exclude-pattern>]]
+
+=head1 DESCRIPTION
+
+B<docheckgroups> is usually run by B<controlchan> in order to process
+checkgroups control messages.  It reads a list of newsgroups along
+with their descriptions on its standard input.  That list should
+be formatted like the newsgroups(5) file:  each line contains the
+name of a newsgroup followed by one or more tabulations and its
+description.
+
+B<docheckgroups> will only check the presence of newsgroups
+which match I<include-pattern> (an B<egrep> expression like
+C<^comp\..*$> for newsgroups starting with C<comp.>) and which
+do not match I<exclude-pattern> (also an B<egrep> expression)
+except for newsgroups mentioned in the I<pathetc>/localgroups file.
+This file is also formatted like the newsgroups(5) file and
+should contain local newsgroups which would otherwise be mentioned
+for removal.  There is no need to put local newsgroups of hierarchies
+for which no checkgroups control messages are sent, unless if
+you manually process checkgroups texts for them.  Lines beginning
+with a hash sign (C<#>) are not taken into account in this file.
+All the newsgroups and descriptions mentioned in I<pathetc>/localgroups
+are appended to the processed checkgroups.
+
+If I<exclude-pattern> is given, I<include-pattern> should also
+be given before (you can use an empty string ("") if you want
+to include all the newsgroups).  Be that as it may, B<docheckgroups>
+will only check newsgroups in the top-level hierarchies which are
+present in the checkgroups.
+
+Then, B<docheckgroups> checks the F<active> and F<newsgroups> files
+and displays on its standard output a list of changes, if any.  It
+does not change anything by default; it only points out what should
+be changed:
+
+=over 2
+
+=item *
+
+Newsgroups which should be removed (they are in the F<active> file
+but not in the checkgroups) and the relevant B<ctlinnd> commands
+to achieve that;
+
+=item *
+
+Newsgroups which should be added (they are not in the F<active> file
+but in the checkgroups) and the relevant B<ctlinnd> commands
+to achieve that;
+
+=item *
+
+Newsgroups which are incorrectly marked as moderated or unmoderated
+(they are both in the F<active> file and the checkgroups but their
+status differs) and the relevant B<ctlinnd> commands to fix that;
+
+=item *
+
+Descriptions which should be removed (they are in the F<newsgroups> file
+but not in the checkgroups);
+
+=item *
+
+Descriptions which should be added (they are not in the F<newsgroups> file
+but in the checkgroups).
+
+=back
+
+The output of B<docheckgroups> can be fed into B<mod-active> (it will
+pause the news server, update the F<active> file accordingly, reload it
+and resume the work of the news server) or into the shell (commands for
+B<ctlinnd> will be processed one by one).  In order to update the
+F<newsgroups> file, the B<-u> flag must be given to B<docheckgroups>.
+
+When processing a checkgroups manually, it is always advisable to first
+check the raw output of B<docheckgroups>.  Then, if everything looks
+fine, use B<mod-active> and the B<-u> flag.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-u>
+
+If this flag is given, B<docheckgroups> will update the F<newsgroups> file:
+it removes obsolete descriptions and adds new ones.  It also sorts
+this file alphabetically and improves its general format (see newsgroups(5)
+for an explanation of the preferred number of tabulations).
+
+=back
+
+=head1 EXAMPLES
+
+So as to better understand how B<docheckgroups> works, here are examples
+with the following F<active>:
+
+    a.first 0000000000 0000000001 y
+    a.second.announce 0000000000 0000000001 y
+    a.second.group 0000000000 0000000001 y
+    b.additional 0000000000 0000000001 y
+    b.third 0000000000 0000000001 y
+    c.fourth 0000000000 0000000001 y
+
+the following F<newsgroups> file (using tabulations):
+
+    a.first		First group.
+    a.second.announce	Announce group.
+    a.second.group	Second group.
+    b.third		Third group.
+    c.fourth		Fourth group.
+
+and the following F<localgroups> file (using tabulations):
+
+    b.additional	A local newsgroup I want to keep.
+
+The checkgroups we process is in the file F<test> which contains:
+
+    a.first		First group.
+    a.second.announce	Announce group. (Moderated)
+    a.second.group	Second group.
+    b.third		Third group.
+    c.fourth		Fourth group.
+
+If we run:
+
+    cat test | docheckgroups
+
+B<docheckgroups> will output that a.second.announce is incorrectly marked
+as unmoderated and that its description is obsolete.  Besides, two
+new descriptions will be mentioned for addition (the new one for
+a.second.announce and the missing description for b.additional S<-- it>
+should indeed be in the F<newsgroups> file and not only in F<localgroups>).
+Now that we have checked the output of B<docheckgroups> and that we agree
+with the changes, we run it with the B<-u> flag to update the F<newsgroups>
+file and we redirect the standard output to B<mod-active> to update the
+F<active> file:
+
+    cat test | docheckgroups -u | mod-active
+
+That's all!
+
+Now, suppose we run:
+
+    cat test | docheckgroups "^c\..*$"
+
+Nothing is output (indeed, everything is fine for the c.* hierarchy).
+It would have been similar if the F<test> file had only contained
+the checkgroups for the c.* hierarchy (B<docheckgroups> would not
+have checked a.* and b.*, even if they had been in I<include-pattern>).
+
+In order to check both a.* and c.*, you can run:
+
+    cat test | docheckgroups "^a\..*$|^c\..*$"
+
+And if you want to check a.* but not a.second.*, you can run:
+
+    cat test | docheckgroups "^a\..*$" "^a\.second\..*$"
+
+In our example, B<docheckgroups> will then mention a.second.announce and
+a.second.group for removal since they are in the F<active> file (the
+same goes for their descriptions).  Notwithstanding, if you do want to keep
+a.second.announce, just add this group to F<localgroups> and
+B<docheckgroups> will no longer mention it for removal.
+
+=head1 FILES
+
+=over 4
+
+=item I<pathbin>/docheckgroups
+
+The Shell script itself used to process checkgroups.
+
+=item I<pathetc>/localgroups
+
+The list of local newsgroups along with their descriptions.
+
+=back
+
+=head1 HISTORY
+
+Documentation written by Julien Elie <julien@trigofacile.com> for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+active(5), controlchan(8), ctlinnd(8), mod-active(8), newsgroups(5).
+
+=cut

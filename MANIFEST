@@ -161,6 +161,7 @@ doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
 doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
+doc/man/docheckgroups.8               Manpage for docheckgroups
 doc/man/domain.8                      Manpage for domain resolver
 doc/man/expire.8                      Manpage for expire
 doc/man/expire.ctl.5                  Manpage for expire.ctl config file
@@ -265,6 +266,7 @@ doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/ctlinnd.pod                   Master file for ctlinnd.8
 doc/pod/cycbuff.conf.pod              Master file for cycbuff.conf.5
 doc/pod/distrib.pats.pod              Master file for distrib.pats.5
+doc/pod/docheckgroups.pod             Master file for docheckgroups.8
 doc/pod/domain.pod                    Master file for domain.8
 doc/pod/expire.ctl.pod                Master file for expire.ctl.5
 doc/pod/expireover.pod                Master file for expireover.8
@@ -616,6 +618,7 @@ samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
 samples/innreport.conf.in             Log summary configuration
 samples/innwatch.ctl                  INN monitoring configuration
+samples/localgroups                   Local newsgroups with descriptions
 samples/moderators                    Moderation submission addresses
 samples/motd.news                     Sample MOTD file
 samples/news2mail.cf                  news2mail config file

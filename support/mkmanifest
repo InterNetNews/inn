@@ -221,6 +221,7 @@ site/inn.conf
 site/innfeed.conf
 site/innreport.conf
 site/innwatch.ctl
+site/localgroups
 site/moderators
 site/motd.news
 site/news2mail.cf

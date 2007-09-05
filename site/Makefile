@@ -54,7 +54,7 @@ PATH_NEWSGROUPS		= ${PATHDB}/newsgroups
 ##  Scripts from above, plus site-specific config files.
 REST		= \
 	newsfeeds incoming.conf nnrpd.track passwd.nntp \
-	inn.conf moderators innreport.conf \
+	inn.conf moderators innreport.conf localgroups \
 	control.ctl expire.ctl nntpsend.ctl overview.fmt \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
@@ -72,7 +72,7 @@ REST_INSTALLED	= \
 	$D$(PATH_NNRPDTRACK) $D$(PATH_NNTPPASS) \
 	$D$(PATH_CONFIG) $D$(PATH_MODERATORS) \
 	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(PATHETC)/nntpsend.ctl \
-	$D$(PATHETC)/innreport.conf \
+	$D$(PATHETC)/innreport.conf $D$(PATHETC)/localgroups \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_SCHEMA) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(PATH_MOTD) $D$(PATH_STORAGECONF) \
@@ -183,6 +183,7 @@ $D$(PATH_NNTPPASS):	passwd.nntp	; $(COPY_RPRI) $? $@
 $D$(PATHETC)/nntpsend.ctl: nntpsend.ctl	; $(COPY_RPUB) $? $@
 $D$(PATHETC)/news2mail.cf: news2mail.cf	; $(COPY_RPUB) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPUB) $? $@
+$D$(PATHETC)/localgroups: localgroups	; $(COPY_RPUB) $? $@
 $D$(PATH_STORAGECONF): storage.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_BUFFINDEXED): buffindexed.conf	; $(COPY_RPUB) $? $@
@@ -230,6 +231,7 @@ INN.py:		../samples/INN.py		; $(COPY) $? $@
 incoming.conf:	../samples/incoming.conf	; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
+localgroups:	../samples/localgroups		; $(COPY) $? $@
 storage.conf:	../samples/storage.conf		; $(COPY) $? $@
 cycbuff.conf:	../samples/cycbuff.conf		; $(COPY) $? $@
 buffindexed.conf: ../samples/buffindexed.conf	; $(COPY) $? $@

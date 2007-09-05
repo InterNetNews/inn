@@ -20,7 +20,8 @@ SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
 
 SEC8	= actsync.8 archive.8 auth_smb.8 batcher.8 buffchan.8 ckpasswd.8 \
 	cnfsheadconf.8 cnfsstat.8 controlchan.8 ctlinnd.8 cvtbatch.8 \
-	domain.8 expire.8 expireover.8 expirerm.8 filechan.8 ident.8 \
+	docheckgroups.8 domain.8 expire.8 expireover.8 expirerm.8 \
+	filechan.8 ident.8 \
 	innbind.8 inncheck.8 innd.8 inndf.8 innreport.8 innstat.8 \
 	innupgrade.8 innwatch.8 innxbatch.8 innxmit.8 mailpost.8 makedbz.8 \
 	makehistory.8 mod-active.8 news.daily.8 news2mail.8 ninpaths.8 \

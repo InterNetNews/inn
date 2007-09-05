@@ -1,0 +1,16 @@
+##  $Id$
+##
+##  Put your local newsgroups, along with their descriptions,
+##  in this file if you want them to be recognized by
+##  docheckgroups.  They would otherwise be mentioned for removal.
+##
+##  There is no need to put here local newsgroups of hierarchies
+##  for which no checkgroups control messages are sent (unless
+##  you manually process checkgroups texts for them).
+##
+##  Lines beginning with a hash sign (#) are not taken into account.
+##
+##  See the docheckgroups man page for more information.
+
+#comp.group.to.add	An additional local newsgroup in comp.*.
+#comp.other.group	Another local newsgroup in comp.*.
