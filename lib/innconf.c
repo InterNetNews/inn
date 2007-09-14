@@ -73,7 +73,7 @@ struct config {
 
 /* Special notes:
 
-   checkincludedtext and localmaxartisize are used by both nnrpd and inews,
+   checkincludedtext and localmaxartsize are used by both nnrpd and inews,
    but inews should probably just let nnrpd do that checking.
 
    organization is used by both nnrpd and inews.  Perhaps inews should just
@@ -92,9 +92,6 @@ struct config {
 
    doinnwatch and docnfsstat are used by rc.news currently, but really
    should be grouped with the appropriate subsystem.
-
-   newsrequeue also uses nntplinklog, but the parameter should go away
-   completely anyway.
 
    timer is currently used in various places, but it may be best to replace
    it with individual settings for innd and innfeed, and any other code that
@@ -214,8 +211,8 @@ const struct config config_table[] = {
 #ifdef HAVE_SSL
     { K(tlscafile),             STRING  ("") },
     { K(tlscapath),             STRING  ("") },
-    { K(tlscertfile),           STRING  ("") },
-    { K(tlskeyfile),            STRING  ("") },
+    { K(tlscertfile),           STRING  (NULL) },
+    { K(tlskeyfile),            STRING  (NULL) },
 #endif /* HAVE_SSL */
 
     /* The following settings are used by nnrpd and rnews. */
@@ -315,6 +312,8 @@ innconf_set_defaults(void)
        pathnews, which is required to be set by innconf_validate. */
     if (innconf->pathbin == NULL)
         innconf->pathbin = concatpath(innconf->pathnews, "bin");
+    if (innconf->pathcontrol == NULL)
+        innconf->pathcontrol = concatpath(innconf->pathbin, "control");
     if (innconf->pathfilter == NULL)
         innconf->pathfilter = concatpath(innconf->pathbin, "filter");
     if (innconf->pathdb == NULL)
@@ -349,7 +348,7 @@ innconf_set_defaults(void)
     if (innconf->tlscertfile == NULL)
         innconf->tlscertfile = concatpath(innconf->pathnews, "lib/cert.pem");
     if (innconf->tlskeyfile == NULL)
-        innconf->tlskeyfile = concatpath(innconf->pathnews, "lib/cert.pem");
+        innconf->tlskeyfile = concatpath(innconf->pathnews, "lib/key.pem");
 #endif
 }
 
@@ -526,11 +525,11 @@ innconf_check(const char *path)
     /* Check and warn about a few other parameters. */
     if (innconf->peertimeout < 3 * 60)
         config_error_param(group, "peertimeout",
-                           "warning: NNTP draft (15) states inactivity"
+                           "warning: NNTP RFC 3977 states inactivity"
                            " timeouts MUST be at least three minutes");
     if (innconf->clienttimeout < 3 * 60)
         config_error_param(group, "clienttimeout",
-                           "warning: NNTP draft (15) states inactivity"
+                           "warning: NNTP RFC 3977 states inactivity"
                            " timeouts MUST be at least three minutes");
 
     /* All done.  Free the parse tree and return. */
@@ -675,7 +674,7 @@ print_string(FILE *file, const char *key, const char *value,
 
 
 /*
-**  Print a single paramter to the given file.  Takes an index into the table
+**  Print a single parameter to the given file.  Take an index into the table
 **  specifying the attribute to print and the quoting.
 */
 static void

@@ -643,7 +643,7 @@ I<tlscertfile> if, when you created the certificate, you put the key in
 the same file (if, for example, you gave the same file name to both the
 B<-out> and B<-keyout> options to C<openssl req>).  This parameter is only
 used if nnrpd is built with TLS support.  The default value is
-I<pathnews>/lib/cert.pem.
+I<pathnews>/lib/key.pem.
 
 This file must only be readable by the news user or nnrpd will refuse to
 use it.
@@ -989,8 +989,7 @@ information.  This is a boolean value and the default is true.
 
 Whether the names of the sites to which accepted articles will be sent
 should be put into the article log file.  This is useful for debugging and
-statistics and can be used by newsrequeue(8).  This is a boolean value and
-the default is true.
+statistics.  This is a boolean value and the default is true.
 
 =item I<logstatus>
 

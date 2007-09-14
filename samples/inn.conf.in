@@ -61,13 +61,13 @@ cnfscheckfudgesize:     0
 enableoverview:         true
 groupbaseexpiry:        true
 mergetogroups:          false
+nfswriter:              false
 overcachesize:          15
 #ovgrouppat:
 storeonxref:            true
 useoverchan:            false
 wireformat:             false
 xrefslave:              false
-nfswriter:              false
 
 # Reading
 
@@ -76,14 +76,18 @@ articlemmap:            false
 clienttimeout:          600
 initialtimeout:         10
 msgidcachesize:         10000
+nfsreader:              false
+nfsreaderdelay:         60
 nnrpdcheckart:          true
+nnrpdloadlimit:         16
 noreader:               false
 readerswhenstopped:     false
 readertrack:            false
-nfsreader:              false
-nfsreaderdelay:         60
+#tlscafile:
+#tlscapath:
+#tlscertfile:           @libdir@/cert.pem
+#tlskeyfile:            @libdir@/key.pem 
 tradindexedmmap:        true
-nnrpdloadlimit:         16
 
 # Reading -- Keyword Support
 #
@@ -144,6 +148,7 @@ logstatus:              false
 nnrpdoverstats:         false
 nntpactsync:            200
 nntplinklog:            false
+#stathist:
 status:                 0
 timer:                  0
 
