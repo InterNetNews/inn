@@ -817,6 +817,7 @@ $Id$
 
 =head1 SEE ALSO
 
-ckpasswd(8), inn.conf(5), innd(8), newsfeeds(5), nnrpd(8), uwildmat(3)
+auth_krb5(8), auth_smb(8), ckpasswd(8), inn.conf(5), innd(8), newsfeeds(5),
+nnrpd(8), uwildmat(3).
 
 =cut

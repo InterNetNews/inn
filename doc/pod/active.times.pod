@@ -6,9 +6,9 @@ active.times - List of local creation times of newsgroups
 
 The file I<pathdb>/active.times provides a chronological record of when
 newsgroups were created on the local server.  This file is normally
-updated by B<innd> whenever a newgroup control message is processed or a
-C<ctlinnd newgroup> command is issued, and is used by B<nnrpd> to answer
-NEWGROUPS requests.
+updated by B<mod-active> and B<innd> whenever a newgroup control message
+is processed or a C<ctlinnd newgroup> command is issued, and is used
+by B<nnrpd> to answer NEWGROUPS requests.
 
 Each line consists of three fields:
 
@@ -47,6 +47,7 @@ $Id$
 
 =head1 SEE ALSO
 
-active(5), convdate(1), ctlinnd(8), getlist(1), inn.conf(5), innd(8), nnrpd(8).
+active(5), convdate(1), ctlinnd(8), getlist(1), inn.conf(5), innd(8),
+mod-active(8), nnrpd(8).
 
 =cut

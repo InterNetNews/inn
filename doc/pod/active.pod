@@ -110,7 +110,8 @@ To create additional groups after the server is running, you can use
 C<ctlinnd newgroup>.  You can also synchronize your newsgroup list to
 that of another server by using actsync(8) or get the F<active> file
 of another NNTP server with getlist(1).  And do not forget to update
-your F<newsgroups> file.
+your F<newsgroups> file, which can be automatically done thanks to
+B<docheckgroups> called with the B<-u> flag.
 
 =head1 HISTORY
 
@@ -121,7 +122,8 @@ $Id$
 
 =head1 SEE ALSO
 
-active.times(5), actsync(8), controlchan(8), ctlinnd(8), getlist(1),
-inn.conf(5), innd(8), news.daily(8), newsgroups(5), readers.conf(5).
+active.times(5), actsync(8), controlchan(8), ctlinnd(8), docheckgroups(8),
+getlist(1), inn.conf(5), innd(8), mod-active(8), news.daily(8), newsgroups(5),
+readers.conf(5).
 
 =cut

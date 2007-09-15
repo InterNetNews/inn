@@ -178,7 +178,7 @@ $Id$
 
 =head1 SEE ALSO
 
-crypt(3), pam(7), readers.conf(5), nnrpd(8).
+crypt(3), nnrpd(8), pam(7), readers.conf(5).
 
 Linux users who want to use PAM should read the Linux-PAM System
 Administrator's Guide at

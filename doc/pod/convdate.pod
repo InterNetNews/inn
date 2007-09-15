@@ -94,4 +94,8 @@ Allbery <rra@stanford.edu> for the B<-d> and B<-l> flags.
 
 $Id$
 
+=head1 SEE ALSO
+
+active.times(5).
+
 =cut
