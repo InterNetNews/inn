@@ -153,6 +153,15 @@ overrides this setting.  The default value is unset.
 Note that you will generally need to put double quotes ("") around this
 value if you set it, since IPv6 addresses contain colons.
 
+=item I<dontrejectfiltered>
+
+Normally innd(8) rejects incoming articles when directed to do so by any
+enabled article filters (Perl or Python).  However, this parameter causes
+such articles I<not> to be rejected; instead filtering can be applied on
+outbound articles.  If this parameter is set, all articles will be
+accepted on the local machine, but articles rejected by the filter will
+I<not> be fed to any peers specified in F<newsfeeds> with the C<Af> flag.
+
 =item I<hiscachesize>
 
 If set to a value other than C<0>, a hash of recently received message IDs
@@ -306,14 +315,31 @@ How long, in seconds, to keep track of message IDs offered on a channel
 before expiring articles that still haven't been sent.  The default value
 is C<10> and probably doesn't need to be changed.
 
-=item I<dontrejectfiltered>
+=back
 
-Normally innd(8) rejects incoming articles when directed to do so by any
-enabled article filters (Perl or Python).  However, this parameter causes
-such articles I<not> to be rejected; instead filtering can be applied on
-outbound articles.  If this parameter is set, all articles will be
-accepted on the local machine, but articles rejected by the filter will
-I<not> be fed to any peers specified in F<newsfeeds> with the C<Af> flag.
+=head2 History Settings
+
+The following parameter affect the history database.
+
+=over 4
+
+=item I<hismethod>
+
+Which history storage method to use.  The only currently supported
+value is C<hisv6>.  There is no default value; this parameter must
+be set.
+
+=over 4
+
+=item C<hisv6>
+
+Stores history data in the INN history v6 format:  history(5) text
+file and a number of dbz(3) database files; this may be in true history
+v6 format, or tagged hash format, depending on the build
+options.  Separation of these two is a project which has not yet been
+undertaken.
+
+=back
 
 =back
 
@@ -354,6 +380,16 @@ C<to>.  If this is set to true, the newsgroup C<to> must exist in the
 F<active> file or INN will not start.  (See the discussion of C<to.>
 groups in innd(8) under CONTROL MESSAGES.)  This is a boolean value and
 the default is false.
+
+=item I<nfswriter>
+
+For servers writing articles, determine whether the article spool is
+on NFS storage.  If set, INN attempts to flush articles to the spool
+in a more timely manner, rather than relying on the operating system
+to flush things such as the CNFS article bitmaps.  You should only set
+this parameter if you are attempting to use a shared NFS spool on a
+machine acting as a single writer within a cluster.  This is a boolean
+value and the default is false.
 
 =item I<overcachesize>
 
@@ -406,24 +442,6 @@ Stores data into a S<Berkeley DB> database.  See the ovdb(5) man page.
 
 =back
 
-=item I<hismethod>
-
-Which history storage method to use.  The only currently supported
-value is C<hisv6>.  There is no default value; this parameter must
-be set.
-
-=over 4
-
-=item C<hisv6>
-
-Stores history data in the INN history v6 format:  history(5) text
-file and a number of dbz(3) database files; this may be in true history
-v6 format, or tagged hash format, depending on the build
-options.  Separation of these two is a project which has not yet been
-undertaken.
-
-=back
-
 =item I<storeonxref>
 
 If set to true, articles will be stored based on the newsgroup names in
@@ -473,50 +491,6 @@ the master server.  The upstream should be careful to always feed articles
 in order (innfeed(8) can have problems with this in the event of a
 backlog).  This is a boolean value and the default is false.
 
-=item I<nfswriter>
-
-For servers writing articles, determine whether the article spool is
-on NFS storage.  If set, INN attempts to flush articles to the spool
-in a more timely manner, rather than relying on the operating system
-to flush things such as the CNFS article bitmaps.  You should only set
-this parameter if you are attempting to use a shared NFS spool on a
-machine acting as a single writer within a cluster.  This is a boolean
-value and the default is false.
-
-=item I<nfsreader>
-
-For servers reading articles, determine whether the article spool is
-on NFS storage.  If set, INN will attempt to force articles and
-overviews to be read directly from the NFS spool rather than from
-cached copies.  You should only set this parameter if you are
-attempting to use a shared NFS spool on a machine acting a reader a
-cluster.  This is a boolean value and the default is false.
-
-=item I<nfsreaderdelay>
-
-For servers reading articles, determine whether the article spool is
-on NFS storage.  If I<nfsreader> is set, INN will use the value of
-I<nfsreaderdelay> to delay the apparent arrival time of articles to
-clients by this amount; this value should be tuned based on the NFS
-cache timeouts locally.  This default is 60 (1 minute).
-
-=item I<msgidcachesize>
-
-How many cache slots to reserve for Message ID to storage token
-translations.  When serving overview data to clients (NEWNEWS, XOVER
-etc.), nnrpd(8) can cache the storage token associated with a Message
-ID and save the cost of looking it up in the history file; for some
-configurations setting this parameter can save more than 90% of the
-wall clock time for a session.  The default value is 10000.
-
-=item I<tradindexedmmap>
-
-Whether to attempt to mmap() tradindexed overviews articles.  Setting
-this to true will give better performance on most systems, but some
-systems have problems with mmap().  If this is set to false, overviews
-will be read into memory before being sent to readers.  This is a
-boolean value and the default is true.
-
 =back
 
 =head2 Reading
@@ -524,6 +498,11 @@ boolean value and the default is true.
 These parameters affect the behavior of INN for readers.  Most of them are
 used by nnrpd(8).  There are some special sets of settings that are broken
 out separately after the initial alphabetized list.
+
+Note that the two parameters I<nnrpperlauth> and I<nnrppythonauth> are now
+obsolete; see "Changes to Perl Authentication Support for nnrpd" in
+F<doc/hook-perl> and "Changes to Python Authentication and Access Control
+Support for nnrpd" in F<doc/hook-python> for more information.
 
 =over 4
 
@@ -562,6 +541,32 @@ clients that open and abandon a multitude of connections without every
 closing them.  The default value is C<10> (ten seconds), which may need to
 be increased if many clients connect via slow network links.
 
+=item I<msgidcachesize>
+
+How many cache slots to reserve for Message ID to storage token
+translations.  When serving overview data to clients (NEWNEWS, XOVER
+etc.), nnrpd(8) can cache the storage token associated with a Message
+ID and save the cost of looking it up in the history file; for some
+configurations setting this parameter can save more than 90% of the
+wall clock time for a session.  The default value is 10000.
+
+=item I<nfsreader>
+
+For servers reading articles, determine whether the article spool is
+on NFS storage.  If set, INN will attempt to force articles and
+overviews to be read directly from the NFS spool rather than from
+cached copies.  You should only set this parameter if you are
+attempting to use a shared NFS spool on a machine acting a reader a
+cluster.  This is a boolean value and the default is false.
+
+=item I<nfsreaderdelay>
+
+For servers reading articles, determine whether the article spool is
+on NFS storage.  If I<nfsreader> is set, INN will use the value of
+I<nfsreaderdelay> to delay the apparent arrival time of articles to
+clients by this amount; this value should be tuned based on the NFS
+cache timeouts locally.  This default is 60 (1 minute).
+
 =item I<nnrpdcheckart>
 
 Whether B<nnrpd> should check the existence of an article before listing
@@ -573,15 +578,11 @@ overview information slows down the overview commands, but reduces the
 number of "article is missing" errors seen by the client.  This is a
 boolean value and the default is true.
 
-=item I<nnrpperlauth>
+=item I<nnrpdloadlimit>
 
-This parameter is now obsolete; see "Changes to Perl Authentication
-Support for nnrpd" in F<doc/hook-perl>.
-
-=item I<nnrppythonauth>
-
-This parameter is now obsolete; see "Changes to Python Authentication and
-Access Control Support for nnrpd" in F<doc/hook-python>.
+If set to a value other than C<0>, connections to nnrpd will be refused
+if the system load average is higher than this value.  The default value
+is C<16>.
 
 =item I<noreader>
 
@@ -608,45 +609,13 @@ recorded includes initial connection and posting; only information about
 clients listed in F<nnrpd.track> is recorded.  This is a boolean value and
 the default is false.
 
-=item I<nnrpdloadlimit>
+=item I<tradindexedmmap>
 
-If set to a value other than C<0>, connections to nnrpd will be refused
-if the system load average is higher than this value.  The default value
-is C<16>.
-
-=item I<tlscafile>
-
-The path to a file containing certificate authority root certificates,
-used to present a trust chain to an SSL or TLS client.  This parameter is
-only used if nnrpd is built with TLS support.  There is no default value.
-
-=item I<tlscapath>
-
-The path to a directory containing certificate authority root
-certificates.  Each file in the directory should contain one CA
-certificate, and the name of the file should be the CA subject name hash
-value.  See the OpenSSL documentation for more information.  This
-parameter is only used if nnrpd is built with TLS support.  There is no
-default value.
-
-=item I<tlscertfile>
-
-The path to a file containing the server certificate to present to SSL or
-TLS clients.  This parameter is only used if nnrpd is built with TLS
-support.  The default value is I<pathnews>/lib/cert.pem.
-
-=item I<tlskeyfile>
-
-The path to a file containing the encryption key for the server
-certificate named in I<tlscertfile>.  This may be the same as
-I<tlscertfile> if, when you created the certificate, you put the key in
-the same file (if, for example, you gave the same file name to both the
-B<-out> and B<-keyout> options to C<openssl req>).  This parameter is only
-used if nnrpd is built with TLS support.  The default value is
-I<pathnews>/lib/key.pem.
-
-This file must only be readable by the news user or nnrpd will refuse to
-use it.
+Whether to attempt to mmap() tradindexed overviews articles.  Setting
+this to true will give better performance on most systems, but some
+systems have problems with mmap().  If this is set to false, overviews
+will be read into memory before being sent to readers.  This is a
+boolean value and the default is true.
 
 =back
 
@@ -880,6 +849,47 @@ most 86400/I<backoffpostslow> posts per day.  The default value is C<1>.
 
 This many postings are allowed before the backoff algorithm is triggered.
 The default value is C<10000>.
+
+=back
+
+Finally, here are the parameters used by nnrpd(8) to provide SSL and TLS
+support:
+
+=over 4
+
+=item I<tlscafile>
+
+The path to a file containing certificate authority root certificates,
+used to present a trust chain to an SSL or TLS client.  This parameter is
+only used if nnrpd is built with TLS support.  There is no default value.
+
+=item I<tlscapath>
+
+The path to a directory containing certificate authority root
+certificates.  Each file in the directory should contain one CA
+certificate, and the name of the file should be the CA subject name hash
+value.  See the OpenSSL documentation for more information.  This
+parameter is only used if nnrpd is built with TLS support.  There is no
+default value.
+
+=item I<tlscertfile>
+
+The path to a file containing the server certificate to present to SSL or
+TLS clients.  This parameter is only used if nnrpd is built with TLS
+support.  The default value is I<pathnews>/lib/cert.pem.
+
+=item I<tlskeyfile>
+
+The path to a file containing the encryption key for the server
+certificate named in I<tlscertfile>.  This may be the same as
+I<tlscertfile> if, when you created the certificate, you put the key in
+the same file (if, for example, you gave the same file name to both the
+B<-out> and B<-keyout> options to C<openssl req>).  This parameter is only
+used if nnrpd is built with TLS support.  The default value is
+I<pathnews>/lib/key.pem.
+
+This file must only be readable by the news user or nnrpd will refuse to
+use it.
 
 =back
 

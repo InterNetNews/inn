@@ -24,7 +24,7 @@ struct innconf {
     char *innflags;             /* Flags to pass to innd on startup */
     char *mailcmd;              /* Command to send report/control type mail */
     char *mta;                  /* MTA for mailing to moderators, innmail */
-    char *pathhost;             /* Entry for the Path line */
+    char *pathhost;             /* Entry for the Path: line */
     char *server;               /* Default server to connect to */
 
     /* Feed Configuration */
@@ -38,7 +38,7 @@ struct innconf {
     long linecountfuzz;         /* Check linecount and reject if off by more */
     long maxartsize;            /* Reject articles bigger than this */
     long maxconnections;        /* Max number of incoming NNTP connections */
-    char *pathalias;            /* Prepended Host for the Path line */
+    char *pathalias;            /* Prepended Host for the Path: line */
     bool pgpverify;             /* Verify control messages with pgpverify? */
     long port;                  /* Which port innd should listen on */
     bool refusecybercancels;    /* Reject message IDs with "<cancel."? */
@@ -58,13 +58,13 @@ struct innconf {
     bool enableoverview;        /* Store overview info for articles? */
     bool groupbaseexpiry;       /* Do expiry by newsgroup? */
     bool mergetogroups;         /* Refile articles from to.* into to */
-    bool nfswriter;		/* Use NFS writer functionality */
+    bool nfswriter;             /* Use NFS writer functionality */
     long overcachesize;         /* fd size cache for tradindexed */
     char *ovgrouppat;           /* Newsgroups to store overview for */
     char *ovmethod;             /* Which overview method to use */
     bool storeonxref;           /* SMstore use Xref to detemine class? */
     bool useoverchan;           /* overchan write the overview, not innd? */
-    bool wireformat;            /* Store tradspool artilces in wire format? */
+    bool wireformat;            /* Store tradspool articles in wire format? */
     bool xrefslave;             /* Act as a slave of another server? */
 
     /* Reading */
@@ -76,7 +76,7 @@ struct innconf {
     bool nfsreader;             /* Use NFS reader functionality */
     long nfsreaderdelay;        /* Delay applied to article arrival */
     bool nnrpdcheckart;         /* Check article existence before returning? */
-    long nnrpdloadlimit;	/* Maximum getloadvg() we allow */
+    long nnrpdloadlimit;        /* Maximum getloadvg() we allow */
     bool noreader;              /* Refuse to fork nnrpd for readers? */
     bool readerswhenstopped;    /* Allow nnrpd when server is paused */
     bool readertrack;           /* Use the reader tracking system? */
@@ -86,7 +86,7 @@ struct innconf {
     bool keywords;              /* Generate keywords in overview? */
     long keyartlimit;           /* Max article size for keyword generation */
     long keylimit;              /* Max allocated space for keywords */
-    long keymaxwords;           /* Max count of interesting works */
+    long keymaxwords;           /* Max count of interesting words */
 
     /* Posting */
     bool addnntppostingdate;    /* Add NNTP-Posting-Date: to posts */
@@ -102,12 +102,6 @@ struct innconf {
     char *organization;         /* Data for the Organization: header */
     bool spoolfirst;            /* Spool all posted articles? */
     bool strippostcc;           /* Strip To:, Cc: and Bcc: from posts */
-#ifdef HAVE_SSL
-    char *tlscafile;            /* Path to a certificate authority file */
-    char *tlscapath;            /* Path to a directory of CA certificates */
-    char *tlscertfile;          /* Path to the SSL certificate to use */
-    char *tlskeyfile;           /* Path to the key for the certificate */
-#endif /* HAVE_SSL */
 
     /* Posting -- Exponential Backoff */
     bool backoffauth;           /* Backoff by user, not IP address */
@@ -116,6 +110,14 @@ struct innconf {
     long backoffpostfast;       /* Upper time limit for fast posting */
     long backoffpostslow;       /* Lower time limit for slow posting */
     long backofftrigger;        /* Number of postings before triggered */
+
+    /* Reading and posting -- SSL and TLS support */
+#ifdef HAVE_SSL
+    char *tlscafile;            /* Path to a certificate authority file */
+    char *tlscapath;            /* Path to a directory of CA certificates */
+    char *tlscertfile;          /* Path to the SSL certificate to use */
+    char *tlskeyfile;           /* Path to the key for the certificate */
+#endif /* HAVE_SSL */
 
     /* Monitoring */
     bool doinnwatch;            /* Start innwatch from rc.news? */
@@ -140,16 +142,18 @@ struct innconf {
     long nntpactsync;           /* Checkpoint log after this many articles */
     bool nntplinklog;           /* Put storage token into the log? */
     long status;                /* Status file update interval */
+    char *stathist;             /* Filename for history profiler outputs */
     long timer;                 /* Performance monitoring interval */
-    char *stathist;		/* Filename for history profiler outputs */
 
     /* System Tuning */
     long badiocount;            /* Failure count before dropping channel */
     long blockbackoff;          /* Multiplier for sleep in EAGAIN writes */
     long chaninacttime;         /* Wait before noticing inactive channels */
     long chanretrytime;         /* How long before channel restarts */
+    long datamovethreshold;     /* Threshold to extend buffer or move data */
     long icdsynccount;          /* Articles between active & history updates */
     long keepmmappedthreshold;  /* Threshold for keeping mmap in buffindexed */
+    long maxcmdreadsize;        /* Max NNTP command read size used by innd */
     long maxforks;              /* Give up after this many fork failure */
     long nicekids;              /* Child processes get niced to this */
     long nicenewnews;           /* If NEWNEWS command is used, nice to this */
@@ -157,13 +161,11 @@ struct innconf {
     long pauseretrytime;        /* Seconds before seeing if pause is ended */
     long peertimeout;           /* How long peers can be inactive */
     long rlimitnofile;          /* File descriptor limit to set */
-    long maxcmdreadsize;        /* max NNTP command read size used by innd */
-    long datamovethreshold;     /* threshold no to extend buffer for ever */
 
     /* Paths */
-    char *patharchive;          /* Archived news. */
-    char *patharticles;         /* Articles. */
-    char *pathbin;              /* News binaries. */
+    char *patharchive;          /* Archived news */
+    char *patharticles;         /* Articles */
+    char *pathbin;              /* News binaries */
     char *pathcontrol;          /* Path to control message handlers */
     char *pathdb;               /* News database files */
     char *pathetc;              /* News configuration files */

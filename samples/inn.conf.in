@@ -83,10 +83,6 @@ nnrpdloadlimit:         16
 noreader:               false
 readerswhenstopped:     false
 readertrack:            false
-#tlscafile:
-#tlscapath:
-#tlscertfile:           @libdir@/cert.pem
-#tlskeyfile:            @libdir@/key.pem 
 tradindexedmmap:        true
 
 # Reading -- Keyword Support
@@ -123,6 +119,13 @@ backoffk:               1
 backoffpostfast:        0
 backoffpostslow:        1
 backofftrigger:         10000
+
+# Reading and posting -- SSL and TLS support
+
+#tlscafile:
+#tlscapath:
+#tlscertfile:           @libdir@/cert.pem
+#tlskeyfile:            @libdir@/key.pem
 
 # Monitoring
 
