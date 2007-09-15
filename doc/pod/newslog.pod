@@ -133,6 +133,9 @@ the article whose Message-ID is C<< <23k82@bar.net> >> has been rejected (C<->)
 because it is posted to a poison newsgroup (a Perl or a Python filter
 located in I<pathfilter> must have brought that reject along).
 
+See the "LOGGING" section of the innd(8) man page for more information about
+the format of this log file.
+
 B<innreport> summarizes the rejected articles reported in this file
 and B<scanlogs> rotates it.
 

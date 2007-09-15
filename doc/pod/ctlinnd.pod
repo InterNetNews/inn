@@ -94,7 +94,14 @@ forwarded; see L<NOTES> below.
 Remove the article with the specified message ID from the local system.
 This does not generate a cancel control message; it only affects the local
 system.  The angle brackets around the message ID are optional.  It should
-normally be protected from the shell with single quotes.
+normally be protected from the shell with single quotes (and not double
+quotes).  For instance:
+
+    ctlinnd cancel 'test@foo.bar'
+
+Note that the history database is updated with the specified message ID
+so if an article with the same message ID is afterwards received, it will
+be rejected; it is useful for rejecting spam before it arrives.
 
 If the server is throttled manually, this command causes it to briefly
 open the history database.  If the server is paused or throttled for any
