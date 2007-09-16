@@ -47,10 +47,14 @@ install-man3:
 	    $(CP_MAN) $$M $D$(MAN3)/$$M ; \
 	done
 
+# We also create symbolic links between config files and programs.
 install-man5:
 	for M in $(SEC5) ; do \
 	    $(CP_MAN) $$M $D$(MAN5)/$$M ; \
 	done
+	rm -f $(MAN5)/localgroups.5 $(MAN5)/nocem.ctl.5
+	$(LN_S) $(MAN8)/docheckgroups.8 $(MAN5)/localgroups.5
+	$(LN_S) $(MAN8)/perl-nocem.8 $(MAN5)/nocem.ctl.5
 
 # auth_krb5 is conditionally compiled, so handle it specially.  actsync(8)
 # also covers actsyncd.
