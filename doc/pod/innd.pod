@@ -224,13 +224,16 @@ is normally buffered.  This option changes the log to be unbuffered.
 
 =head1 CONTROL MESSAGES
 
-Arriving articles that have a Control header are called "control
+Arriving articles that have a Control: header are called "control
 messages".  Except for cancel messages, these messages are handled by
 controlchan(8) via a feed set up in F<newsfeeds>.
 
 (Cancel messages update the history database, so they must be handled
 internally; the cost of syncing, locking, then unlocking would be too high
-given the number of cancel messages that are received.)
+given the number of cancel messages that are received.  Note that if an
+article is cancelled before it is received by the news server, it will
+be rejected when it arrives since the history database has been updated;
+it is useful for rejecting spam before it arrives.)
 
 The distribution of control messages is different than that of standard
 articles.  Control messages are normally filed into the pseudo-newsgroup
@@ -248,11 +251,14 @@ the subscription list.  For example, to feed all cancel messages to a
 given remote site (normally a bad idea), add C<control.cancel> to its
 subscription list.  Normally it's best to exclude the control newsgroups
 from feeds to keep from sending your peers more control messages than they
-care about.
+care about.  That's why the F<newsfeeds> pattern C<!control,!control.*>
+is as often as not specified (adding this pattern do not prevent control
+messages which affect the newsgroups fed to a site from being sent to it).
 
-newgroup and rmgroup control messages receive additional special
+checkgroups, newgroup and rmgroup control messages receive additional special
 treatment.  If one of these control messages is approved and posted to the
-newsgroup being created or removed, the message will be sent to all sites
+newsgroup being created or removed (or to the admin group to which the
+checkgroups is posted), the message will be sent to all sites
 whose subscription patterns would cause them to receive articles posted to
 that group.  For example, if a newgroup control message for a nonexistent
 newsgroup C<news.admin.meow> is received, it will be sent to any site
@@ -263,7 +269,20 @@ control message would create.  It is I<not> generally correct to crosspost
 newgroup messages to some "well-propagated" newsgroup; not only will this
 not actually improve their propagation to sites that want such control
 messages, but it will also cause sites that do not want those control
-messages to receive them.
+messages to receive them.  Therefore, assuming that a newgroup control
+message is sent to the group C<news.admin.meow> (specified in the
+Newsgroups: header) in order to create the group C<news.admin.meow>,
+the sites with the following subscription patterns will receive it:
+
+    *,@news.*
+    news.*
+    news.*,!control,!control.*
+    control,control.*
+
+but the sites with the following subscription patterns will not receive it:
+
+    *,@news.*,!control,!control.*
+    comp.*,@news.*
 
 If a control message is posted to a group whose name ends with the four
 characters C<.ctl>, this suffix is stripped off and the control message is
@@ -275,11 +294,11 @@ compatibility reasons and should be considered obsolete; support for the
 C<.ctl> suffix may be removed in a future version of INN.
 
 Finally, articles posted to newsgroups beginning with C<to.> are treated
-specially.  Provided that either that newsgroup exists in the active file
+specially.  Provided that either that newsgroup exists in the F<active> file
 or I<mergetogroups> is set in F<inn.conf>, the remainder of the newsgroup
 is taken to be a site name, as configured in F<newsfeeds>, and the article
 is sent to that site.  If I<mergetogroups> is set, the article will be
-filed in the group named C<to> (which must exist in the active file).  For
+filed in the group named C<to> (which must exist in the F<active> file).  For
 example, with I<mergetogroups> set, an article posted to C<to.uunet> will
 be filed in C<to> and sent to the site C<uunet>.
 

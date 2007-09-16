@@ -2014,6 +2014,9 @@ ARTpost(CHANNEL *cp)
       if (data->Followcount == 0)
 	data->Followcount = data->Groupcount;
     }
+    
+    LikeNewgroup = (LikeNewgroup || strcmp(ControlWord, "checkgroups") == 0);
+    
     /* Control messages to "foo.ctl" are treated as if they were
      * posted to "foo".  I should probably apologize for all the
      * side-effects in the if. */
@@ -2035,14 +2038,15 @@ ARTpost(CHANNEL *cp)
     if ((ngp = NGfind(p)) == NULL) {
       GroupMissing = true;
       if (LikeNewgroup && Approved) {
-	/* Newgroup/rmgroup being sent to a group that doesn't exist.  Assume
-	 * it is being sent to the group being created or removed, nd send the
-	 * group to all sites that would or would have had the group if it were
-	 * created. */
-	ARTsendthegroup(*groups);
-	Accepted = true;
+        /* Checkgroups/newgroup/rmgroup being sent to a group that doesn't
+         * exist.  Assume it is being sent to the group being created or
+         * removed (or to the admin group to which the checkgroups is posted),
+         * and send it to all sites that would or would have had the group
+         * if it were created. */
+        ARTsendthegroup(*groups);
+        Accepted = true;
       } else
-	NonExist = true;
+        NonExist = true;
       ARTpoisongroup(*groups);
 
       if (innconf->mergetogroups) {
@@ -2146,8 +2150,12 @@ ARTpost(CHANNEL *cp)
     *ngptr++ = ngp;
     for (isp = ngp->Sites, i = ngp->nSites; --i >= 0; isp++) {
       if (*isp >= 0) {
-	sp = &Sites[*isp];
-	SITEmark(sp, ngp);
+        /* Checkgroups/newgroup/rmgroup posted to local.example
+         * will still be sent with the newsfeeds patterns
+         * "*,!local.*" and "*,@local.*".  So as not to propagate
+         * them, "!control,!control.*" should be added. */
+        sp = &Sites[*isp];
+        SITEmark(sp, ngp);
       }
     }
   }
