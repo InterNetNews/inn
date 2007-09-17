@@ -1925,7 +1925,7 @@ sub adjust {
       $innd_stored_size_sum{$hostname} += $innd_stored_size{$key};
       $innd_duplicated_size_sum{$hostname} += $innd_duplicated_size{$key};
       $innd_offered_size_sum{$hostname} += $innd_offered_size{$key};
-      $innd_rejected_size_sum{$hostname} += $innd_rejected_size_sum{$key};
+      $innd_rejected_size_sum{$hostname} += $innd_rejected_size{$key};
     }
 
     # adjust min/max of innd timer stats.
