@@ -7,13 +7,13 @@
 #
 # This code is placed in the public domain.
 #
-# scanspool - perform a big scan over all articles in /usr/spool/news
+# scanspool - perform a big scan over all articles in @SPOOLDIR@/articles
 #
 # usage:
 #    scanspool [-a active_file] [-s spool_dir] [-v] [-c] [-n]
 #
-#    -a active_file	active file to use (default /usr/lib/news/active)
-#    -s spool_dir	spool tree (default /usr/spool/news)
+#    -a active_file	active file to use (default @DBDIR@/active)
+#    -s spool_dir	spool tree (default @SPOOLDIR@/articles)
 #    -v 		verbose mode
 #			verbose messages begin with a tab
 #			show articles found in non-active directories
@@ -98,6 +98,8 @@
 #
 require "getopts.pl";
 
+use vars qw($opt_c);
+
 # setup non-buffered stdout and stderr
 #
 select(STDERR);
@@ -159,7 +161,6 @@ sub parse_active
     local ($low);		# low article number
     local ($high);		# high article number
     local ($type);		# type of newsgroup (4th active field)
-    local ($field5);		# 5th active field (should not exist)
     local ($dir);		# directory path of group from $spool
     local ($alias);		# realname of an aliased group
     local ($linenum);		# active file line number
@@ -301,12 +302,11 @@ sub fatal
 # lost+found will also be ignored.
 #
 # given:
-#	$spooldir  - top of /usr/spool/news article tree
+#	$spooldir  - top of @SPOOLDIR@/articles tree
 #
 sub check_spool
 {
     local ($spooldir) = $_[0];	# top of article tree
-    local (*FILEFILE);		# pipe from the find files process
     local ($filename);		# article pathname under $spool
     local ($artgrp);		# group of an article
     local ($artnum);		# article number in a group

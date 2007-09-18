@@ -363,7 +363,7 @@ C<Tf,Wnb>.  Here is a typical entry for C<zoetermeer>, where the batching
 is kept between S<4 KB> and S<1 KB>:
 
     zoetermeer\
-        :*,!junk,!control/!foo\
+        :*,!junk,!control,!control.*/!foo\
         :Tf,Wnb,B4096/1024:
 
 =head1 FILES
