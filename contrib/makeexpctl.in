@@ -5,8 +5,11 @@
 # scale factor to use to adjust expires.
 
 $readfile="$inn::pathdb/readgroups";
-
 $expirectl=$inn::expirectl;
+
+$curtime = time;
+$oldtime = $curtime - 30 * 86400; # 30 days in the past
+
 if (open(RDF, $readfile)) {
     while (<RDF>) {
 	chop;
