@@ -1,4 +1,4 @@
-#! /usr/bin/perl
+#! /usr/bin/perl -w
 
 ##  $Id$
 ##
@@ -8,7 +8,7 @@
 ##  convert existing INN configuration files to the syntax expected by the
 ##  current version, if that's changed.
 ##
-##  Note that this script cannot use innshellvars.pl, since loading that file
+##  Note that this script cannot use INN::Config, since loading that file
 ##  requires innconfval be able to parse inn.conf, and until this script runs,
 ##  inn.conf may not be valid.
 ##

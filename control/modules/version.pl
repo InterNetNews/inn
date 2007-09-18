@@ -22,7 +22,7 @@ sub control_version {
         $headers, $body) = @_;
     my ($where) = @$par;
 
-    my $version = $inn::version || '(unknown version)';
+    my $version = $INN::Config::version || '(unknown version)';
 
     if ($action eq 'mail') {
         my $mail = sendmail("version $sender");
@@ -31,7 +31,7 @@ $sender has requested information about your
 news software version.
 
 If this is acceptable, type:
-  echo "InterNetNews $version" | $inn::mailcmd -s "version reply from $inn::pathhost" $replyto
+  echo "InterNetNews $version" | $INN::Config::mailcmd -s "version reply from $INN::Config::pathhost" $replyto
 
 The control message follows:
 
@@ -47,11 +47,11 @@ END
             logmsg("version $sender");
         }
     } elsif ($action =~ /^(doit|doifarg)$/) {
-        if ($action eq 'doifarg' and $where ne $inn::pathhost) {
+        if ($action eq 'doifarg' and $where ne $INN::Config::pathhost) {
             logmsg("skipped version $sender");
             return;
         }
-        sendmail("version reply from $inn::pathhost", $replyto,
+        sendmail("version reply from $INN::Config::pathhost", $replyto,
             [ "InterNetNews $version\n" ]);
 
         logger($log, "version $sender to $replyto", $headers, $body) if $log;

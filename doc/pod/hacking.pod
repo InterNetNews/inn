@@ -303,6 +303,11 @@ the right variables whenever possible, rather than having configure
 substitute values in them.  Any values needed at run-time should instead
 be available from all of the different innshellvars.
 
+As for Perl, the INN::Config module has the same features as
+F<innshellvars.pl> (only kept for compatibility reasons with old scripts
+not shipped with INN); however, it can be safely used with warnings on
+in Perl scripts.
+
 See the existing scripts for examples of how this is done.
 
 =head1 Include Files

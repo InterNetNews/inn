@@ -7,6 +7,7 @@ include Makefile.global
 INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 		$(PATHAUTHPASSWD) $(PATHCONTROL) $(PATHFILTER) \
 		$(PATHRNEWS) $(PATHDB) $(PATHDOC) $(PATHETC) $(PATHLIB) \
+		$(PATHLIBPERL) $(PATHLIBPERL)/INN \
 		$(PATHMAN) $(MAN1) $(MAN3) $(MAN5) $(MAN8) $(PATHSPOOL) \
 		$(PATHTMP) $(PATHARCHIVE) $(PATHARTICLES) $(PATHINCOMING) \
 		$(PATHINBAD) $(PATHTAPE) $(PATHOVERVIEW) $(PATHOUTGOING) \
@@ -16,7 +17,7 @@ INSTDIRS      = $(PATHNEWS) $(PATHBIN) $(PATHAUTH) $(PATHAUTHRESOLV) \
 ##  and make install runs in all ALLDIRS.  Nothing runs in test except the
 ##  test target itself and the clean targets.  Currently, include is built
 ##  before anything else but nothing else runs in it except clean targets.
-LIBDIRS     = include lib storage history
+LIBDIRS     = include lib storage history perl
 PROGDIRS    = innd nnrpd innfeed control expire frontends backends authprogs \
               scripts
 UPDATEDIRS  = $(LIBDIRS) $(PROGDIRS) doc
@@ -47,12 +48,13 @@ all: all-include all-libraries all-programs
 	cd samples && $(MAKE) all
 	cd site    && $(MAKE) all
 
-all-libraries:	all-lib all-storage all-history
+all-libraries:	all-lib all-storage all-history all-perl
 
 all-include:			; cd include   && $(MAKE) all
 all-lib:	all-include	; cd lib       && $(MAKE) all
 all-storage:	all-lib		; cd storage   && $(MAKE) library
 all-history:	all-storage	; cd history   && $(MAKE) all
+all-perl:	all-history	; cd perl      && $(MAKE) all
 
 all-programs:	all-innd all-nnrpd all-innfeed all-control all-expire \
 		all-frontends all-backends all-authprogs all-scripts \

@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+# fixscript will replace this line with code to load INN::Config
 
 ##########################################################################
 #
@@ -99,7 +99,7 @@ my $HTML = "DO";
 my $GRAPH = "DO";
 
 ## Directory for the Web pages (used only if the previous line is active)
-my $HTML_dir = "$inn::pathhttp";
+my $HTML_dir = "$INN::Config::pathhttp";
 
 ## Directory for the pictures (need HTML support) in the file space
 my $IMG_dir = "$HTML_dir/pics";

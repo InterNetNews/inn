@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # This script cleans the newsgroups file:
 #   * Groups no longer in the active file are removed.
@@ -13,14 +13,14 @@
 $remove='';
 # $remove='^alt\.';
 
-open ACT, $inn::active  or die "Can't open $inn::active: $!\n";
+open ACT, $INN::Config::active  or die "Can't open $INN::Config::active: $!\n";
 while(<ACT>) {
     ($group) = split;
     $act{$group} = 1 unless($remove ne "" && $group =~ /$remove/o);
 }
 close ACT;
 
-open NG, $inn::newsgroups  or die "Can't open $inn::newsgroups: $!\n";
+open NG, $INN::Config::newsgroups  or die "Can't open $INN::Config::newsgroups: $!\n";
 while(<NG>) {
     chomp;
     ($group, $desc) = split /\s+/,$_,2;
@@ -34,7 +34,7 @@ while(<NG>) {
 }
 close NG;
 
-open NG, ">$inn::newsgroups.new"  or die "Can't open $inn::newsgroups.new for write: $!\n";
+open NG, ">$INN::Config::newsgroups.new"  or die "Can't open $INN::Config::newsgroups.new for write: $!\n";
 foreach $group (sort keys %act) {
     if(defined $hist{$group}) {
 	print NG "$group\t$hist{$group}\n" or die "Can't write: $!\n";
@@ -42,4 +42,4 @@ foreach $group (sort keys %act) {
 }
 close NG or die "Can't close: $!\n";
 
-rename "$inn::newsgroups.new", $inn::newsgroups  or die "Can't rename $inn::newsgroups.new to $inn::newsgroups: $!\n";
+rename "$INN::Config::newsgroups.new", $INN::Config::newsgroups  or die "Can't rename $INN::Config::newsgroups.new to $INN::Config::newsgroups: $!\n";

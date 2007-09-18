@@ -1,10 +1,10 @@
 #! /usr/bin/perl -w
-# do '@LIBDIR@/innshellvars.pl';
-# If running inside INN, uncomment the above and point to innshellvars.pl.
+# use lib '@LIBPERLDIR@'; use INN::Config;
+# If running inside INN, uncomment the above and point to INN::Config.
 #
 # Written April 1996, <tale@isc.org> (David C Lawrence)
 # Currently maintained by Russ Allbery <rra@stanford.edu>
-# Version 1.27, 2005-07-02
+# Version 1.28, 2007-09-18
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN is the
 # same as the version that I make available to the rest of the world
@@ -15,6 +15,10 @@
 # and your Perl is too old, please contact me (rra@stanford.edu) and tell
 # me about it; I want to know what old versions of Perl are still used in
 # practice.
+#
+# Changes from 1.27 -> 1.28
+# -- Use the INN::Config Perl module instead of innshellvars.pl to
+#    accomodate the new build process of INN 2.5.
 #
 # Changes from 1.26 -> 1.27
 # -- Default to pubring.gpg when trustedkeys.gpg is not found in the
@@ -120,26 +124,26 @@
 # Path to the GnuPG gpgv binary, if you have GnuPG.  If you do, this will
 # be used in preference to PGP.  For most current control messages, you
 # need a version of GnuPG that can handle RSA signatures.  If you have INN
-# and the script is able to successfully include your innshellvars.pl
-# file, the value of $inn::gpgv will override this.
+# and the script is able to successfully include your INN::Config module,
+# the value of $INN::Config::gpgv will override this.
 # $gpgv = '/usr/local/bin/gpgv';
 
 # Path to pgp binary; for PGP 5.0, set the path to the pgpv binary.  If
 # you have INN and the script is able to successfully include your
-# innshellvars.pl file, the value of $inn::pgp will override this.
+# INN::Config module, the value of $INN::Config::pgp will override this.
 $pgp = '/usr/local/bin/pgp';
 
 # If you keep your keyring somewhere that is not the default used by pgp,
 # uncomment the next line and set appropriately.  If you have INN and the
-# script is able to successfully include your innshellvars.pl file, this
-# will be set to $inn::newsetc/pgp if that directory exists unless you set
-# it explicitly.  GnuPG will use a file named pubring.gpg in this
+# script is able to successfully include your INN::Config module, this
+# will be set to $INN::Config::newsetc/pgp if that directory exists unless
+# you set it explicitly.  GnuPG will use a file named pubring.gpg in this
 # directory.
 # $keyring = '/path/to/your/pgp/config';
 
 # If you have INN and the script is able to successfully include your
-# innshellvars.pl file, the value of $inn::pathtmp and $inn::locks will
-# override these.
+# INN::Config module, the value of $INN::Config::pathtmp and
+# $INN::Config::locks will override these.
 $tmpdir = "/tmp";
 $lockdir = $tmpdir;
 
@@ -172,8 +176,8 @@ $syslog_method = 'logger';    # Search for the logger program.
 # and level to use, as would be found in syslog.conf.  For various
 # reasons, it is impossible to economically have the script figure out how
 # to do syslogging correctly on the machine.  If you have INN and the
-# script is able to successfully include you innshellvars.pl file, then
-# the value of $inn::syslog_facility will override this value of
+# script is able to successfully include you INN::Config module, then
+# the value of $INN::Config::syslog_facility will override this value of
 # $syslog_facility; $syslog_level is unaffected.
 $syslog_facility = 'news';
 $syslog_level = 'err';
@@ -209,15 +213,15 @@ if (@ARGV && $ARGV[0] eq '-test') {
 # the script manually.
 die "Usage: $0 < message\n" if @ARGV != 0;
 
-# Grab various defaults from innshellvars.pl if running inside INN.
-$pgp = $inn::pgp
-    if $inn::pgp && $inn::pgp ne "no-pgp-found-during-configure";
-$gpgv = $inn::gpgv if $inn::gpgv;
-$tmp = ($inn::pathtmp ? $inn::pathtmp : $tmpdir) . "/pgp$$";
-$lockdir = $inn::locks if $inn::locks;
-$syslog_facility = $inn::syslog_facility if $inn::syslog_facility;
-if (! $keyring && $inn::newsetc) {
-  $keyring = $inn::newsetc . '/pgp' if -d $inn::newsetc . '/pgp';
+# Grab various defaults from INN::Config if running inside INN.
+$pgp = $INN::Config::pgp
+    if $INN::Config::pgp && $INN::Config::pgp ne "no-pgp-found-during-configure";
+$gpgv = $INN::Config::gpgv if $INN::Config::gpgv;
+$tmp = ($INN::Config::pathtmp ? $INN::Config::pathtmp : $tmpdir) . "/pgp$$";
+$lockdir = $INN::Config::locks if $INN::Config::locks;
+$syslog_facility = $INN::Config::syslog_facility if $INN::Config::syslog_facility;
+if (! $keyring && $INN::Config::newsetc) {
+  $keyring = $INN::Config::newsetc . '/pgp' if -d $INN::Config::newsetc . '/pgp';
 }
 
 # Trim /path/to/prog to prog for error messages.

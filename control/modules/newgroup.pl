@@ -39,7 +39,7 @@ sub control_newgroup {
     }
 
     # Scan active to see what sort of change we are making.
-    open(ACTIVE, $inn::active) or logdie("Cannot open $inn::active: $!");
+    open(ACTIVE, $INN::Config::active) or logdie("Cannot open $INN::Config::active: $!");
     my @oldgroup;
     while (<ACTIVE>) {
         next unless /^(\Q$groupname\E)\s\d+\s\d+\s(\w)/;
@@ -73,8 +73,8 @@ sub control_newgroup {
           $ngdesc .= ' (Moderated)' if $modflag eq 'moderated';
       }
       # Scan newsgroups to see the previous description, if any.
-      open(NEWSGROUPS, $inn::newsgroups)
-          or logdie("Cannot open $inn::newsgroups: $!");
+      open(NEWSGROUPS, $INN::Config::newsgroups)
+          or logdie("Cannot open $INN::Config::newsgroups: $!");
       while (<NEWSGROUPS>) {
           if (/^\Q$groupname\E\s+(.*)/) {
               $olddesc = $1;
@@ -109,7 +109,7 @@ $sender asks for $groupname
 to $status.
 
 If this is acceptable, type:
-  $inn::newsbin/ctlinnd newgroup $groupname $modcmd $sender
+  $INN::Config::newsbin/ctlinnd newgroup $groupname $modcmd $sender
 
 And do not forget to update the corresponding description in your
 newsgroups file.
@@ -149,10 +149,10 @@ END
 
 sub update_desc {
     my ($name, $desc) = @_;
-    shlock("$inn::locks/LOCK.newsgroups");
-    my $tempfile = "$inn::newsgroups.$$";
-    open(NEWSGROUPS, $inn::newsgroups)
-        or logdie("Cannot open $inn::newsgroups: $!");
+    shlock("$INN::Config::locks/LOCK.newsgroups");
+    my $tempfile = "$INN::Config::newsgroups.$$";
+    open(NEWSGROUPS, $INN::Config::newsgroups)
+        or logdie("Cannot open $INN::Config::newsgroups: $!");
     open(TEMPFILE, ">$tempfile") or logdie("Cannot open $tempfile: $!");
     while (<NEWSGROUPS>) {
         next if (/^\Q$name\E\s+(.*)/);
@@ -168,9 +168,9 @@ sub update_desc {
     }
     close TEMPFILE;
     close NEWSGROUPS;
-    rename($tempfile, $inn::newsgroups)
+    rename($tempfile, $INN::Config::newsgroups)
         or logdie("Cannot rename $tempfile: $!");
-    unlink("$inn::locks/LOCK.newsgroups", $tempfile);
+    unlink("$INN::Config::locks/LOCK.newsgroups", $tempfile);
 }
 
 # Check the group name.  This is partially derived from C News.

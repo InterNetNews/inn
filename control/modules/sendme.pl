@@ -32,8 +32,8 @@ sub control_sendme {
             logmsg("sendme from $sender");
         }
     } elsif ($action eq 'doit') {
-        my $tempfile = "$inn::tmpdir/sendme.$$";
-        open(GREPHIST, "|grephistory -s > $tempfile")
+        my $tempfile = "$INN::Config::tmpdir/sendme.$$";
+        open(GREPHIST, "| $INN::Config::newsbin/grephistory -s > $tempfile")
             or logdie("Cannot run grephistory: $!");
 	foreach (@$body) {
             print GREPHIST "$_\n";
@@ -42,8 +42,8 @@ sub control_sendme {
 
         if (-s $tempfile and $site =~ /^[a-zA-Z0-9.-_]+$/) {
             open(TEMPFILE, $tempfile) or logdie("Cannot open $tempfile: $!");
-            open(BATCH, ">>$inn::batch/$site.work")
-                or logdie("Cannot open $inn::batch/$site.work: $!");
+            open(BATCH, ">>$INN::Config::batch/$site.work")
+                or logdie("Cannot open $INN::Config::batch/$site.work: $!");
             print BATCH $_ while <TEMPFILE>;
             close BATCH;
             close TEMPFILE;

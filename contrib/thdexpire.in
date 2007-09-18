@@ -1,5 +1,6 @@
-#!/usr/bin/perl -w
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
+
 $ID='$Id$$';
 
 use POSIX ":fcntl_h";
@@ -171,7 +172,7 @@ configure other parts of the news system in an appropriate way.
 
 =over 4
 
-=item F<E<lt>inn::pathdbE<gt>/thdexpstat.{dir,pag}>
+=item I<pathdb>/thdexpstat.{dir,pag}
 
 Holds state information like classes, expire times, oldest articles.
 When this file is missing, it will be rebuilt the next time the daemon
@@ -179,7 +180,7 @@ is started, which basically means scanning the spool directories to
 find the oldest articles. With the B<-r> option, the contents of this
 file are printed.
 
-=item F<E<lt>inn::innddirE<gt>/thdexpire.pid>
+=item I<pathrun>/thdexpire.pid
 
 Contains the PID of the running daemon.
 
@@ -244,7 +245,7 @@ July 1999: bugfixes.
 
 #-----------------------------------------------------------------------------
 
-chdir $inn::spool || die "chdir $inn::spool: $!";
+chdir $INN::Config::spool || die "chdir $INN::Config::spool: $!";
 $opt_r=0;      # make a report
 $opt_t=30;     # check interval in minutes
 $opt_f=50000;  # required space in kilobytes
@@ -256,8 +257,7 @@ $opt_v=0;      # verbosity level
 $opt_M=0;      # install man page
 getopts("rt:f:i:m:x:Nv:M");
 
-$_=$inn::pathdb; $_=$inn::pathnews; # shut up warning
-$sfile="$inn::pathdb/thdexpstat";
+$sfile="$INN::Config::pathdb/thdexpstat";
 $ID=~/ ([^,]+,v [^ ]+)/; $ID=$1;
 
 if ($opt_M) {
@@ -265,7 +265,7 @@ if ($opt_M) {
     $0=~m:^(.*)/([^/]+)$:;
     chdir $1 || die "chdir $1";
     exec "pod2man --section=8 --center='Contributed News Software'" .
-      " --release='$ID' $2 >$inn::pathnews/man/man8/thdexpire.8";
+      " --release='$ID' $2 >$INN::Config::pathnews/man/man8/thdexpire.8";
 }
 
 if ($opt_r) {
@@ -275,7 +275,7 @@ if ($opt_r) {
     exit 0;
 }
 
-(system "shlock", "-p", $$, "-f", "$inn::innddir/thdexpire.pid")>>8==0
+(system "$INN::Config::newsbin/shlock", "-p", $$, "-f", "$INN::Config::innddir/thdexpire.pid")>>8==0
   || die "Already running";
 tie(%S, SDBM_File, $sfile, O_RDWR|O_CREAT, 0664) || die "open $sfile: $!";
 $SIG{'TERM'}=$SIG{'INT'}='finish';
@@ -284,7 +284,7 @@ printf "%s starting at %s\n", $ID, &wtime(time) if ($opt_v>0);
 
 undef @c;
 $NOW=time; $ac=$cc=0;
-opendir(CD, ".") || &err("opendir $inn::spool: $!");
+opendir(CD, ".") || &err("opendir $INN::Config::spool: $!");
 while ($cd=readdir(CD), defined($cd)) {
     $cd=~/^time(caf)?-([0-9a-f][0-9a-f])$/i || next;
     $c{hex($2)}=1 unless hex($2)>200;
@@ -302,7 +302,7 @@ $S{"ID"}=$ID;
 printf "Checked %d articles, %d CAFs in %d seconds\n", $ac, $cc, time-$NOW
   if ($ac+$cc>0 && $opt_v>0);
 
-chdir $inn::spool || die "chdir $inn::spool: $!";
+chdir $INN::Config::spool || die "chdir $INN::Config::spool: $!";
 while (1) {
     $S{"lastrun"}=$NOW=time;
     printf "%s\n", &wtime($NOW) if ($opt_v>0);
@@ -353,14 +353,14 @@ while (1) {
 	    }
 	}
     }
-    if (open(D, "inndf $x |")) {
+    if (open(D, "$INN::Config::newsbin/inndf $x |")) {
 	while (<D>) {
 	    @S=split(/\s+/, $_);
 	    $needk{$dev{$S[0]}}=$opt_f-$S[1] unless ($S[0] eq "/");
 	}
 	close D;
     }
-    if (open(D, "inndf -i $x |")) {
+    if (open(D, "$INN::Config::newsbin/inndf -i $x |")) {
 	while (<D>) {
 	    @S=split(/\s+/, $_);
 	    $needi{$dev{$S[0]}}=$opt_i-$S[1] unless ($S[0] eq "/");
@@ -438,7 +438,7 @@ sub initclass
     if (!$S{"blocksize$;$C$;CAF"}) {
 	# Determine filesystem blocksize
 	# unfortunately no way in perl to statfs
-	my $x=sprintf("%s/timecaf-%02x/test%d", $inn::spool, $C, $$);
+	my $x=sprintf("%s/timecaf-%02x/test%d", $INN::Config::spool, $C, $$);
 	if (open(A, ">$x")) {
 	    print A "X" x 4096;
 	    close A;
@@ -456,7 +456,7 @@ sub initclass
     return if ($S{"oldest$;$C"});
     my $oldest=time;
     $S{"oldest$;$C"}=$oldest;
-    my $base=sprintf("%s/time-%02x", $inn::spool, $C);
+    my $base=sprintf("%s/time-%02x", $INN::Config::spool, $C);
     my $count=0;
     if (chdir $base) {
 	printf "Finding oldest in class %d (%s)\n", $C, $base if ($opt_v>0);
@@ -484,7 +484,7 @@ sub initclass
 	closedir D0;
 	$ac+=$count;
     }
-    $base=sprintf("%s/timecaf-%02x", $inn::spool, $C);
+    $base=sprintf("%s/timecaf-%02x", $INN::Config::spool, $C);
     if (chdir $base) {
 	printf "Finding oldest in class %d (%s)\n", $C, $base if ($opt_v>0);
 	opendir(D0, ".");
@@ -641,7 +641,7 @@ sub err
 sub finish
 {
     untie(%S);
-    unlink "$inn::innddir/thdexpire.pid";
+    unlink "$INN::Config::innddir/thdexpire.pid";
     exit 0;
 }
 #-----------------------------------------------------------------------------

@@ -29,6 +29,9 @@ _INN_ARG_DIR([doc], ['${prefix}/doc'], [docdir],
 _INN_ARG_DIR([filter], ['${bindir}/filter'], [FILTERDIR],
     [AC_HELP_STRING([--with-filter-dir=PATH],
         [Path for embedded filters [PREFIX/bin/filter]])])
+_INN_ARG_DIR([libperl], ['${libdir}/perl'], [LIBPERLDIR],
+    [AC_HELP_STRING([--with-libperl-dir=PATH],
+        [Path for Perl modules [PREFIX/lib/perl]])])
 _INN_ARG_DIR([log], ['${prefix}/log'], [LOGDIR],
     [AC_HELP_STRING([--with-log-dir=PATH],
         [Path for news logs [PREFIX/log]])])

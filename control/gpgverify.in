@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w
-require '/etc/news/innshellvars.pl';
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # written April 1996, tale@isc.org (David C Lawrence)
 # mostly rewritten 2001-03-21 by Marco d'Itri <md@linux.it>
@@ -18,12 +18,12 @@ use strict;
 # if you keep your keyring somewhere that is not the default used by gpg,
 # change the location below.
 my $keyring;
-if ($inn::newsetc && -d "$inn::newsetc/pgp") {
-  $keyring = $inn::newsetc . '/pgp/pubring.gpg';
+if ($INN::Config::newsetc && -d "$INN::Config::newsetc/pgp") {
+  $keyring = $INN::Config::newsetc . '/pgp/pubring.gpg';
 }
 
 # If you have INN and the script is able to successfully include your
-# innshellvars.pl file, the value of the next two variables will be
+# INN::Config module, the value of the next two variables will be
 # overridden.
 my $tmpdir = '/var/log/news/';
 my $syslog_facility = 'news';
@@ -42,8 +42,8 @@ my $debug = 0;
 ##############################################################################
 ################ NO USER SERVICEABLE PARTS BELOW THIS COMMENT ################
 ##############################################################################
-my $tmp = ($inn::pathtmp ? $inn::pathtmp : $tmpdir) . "/pgp$$";
-$syslog_facility = $inn::syslog_facility if $inn::syslog_facility;
+my $tmp = ($INN::Config::pathtmp ? $INN::Config::pathtmp : $tmpdir) . "/pgp$$";
+$syslog_facility = $INN::Config::syslog_facility if $INN::Config::syslog_facility;
 
 my $nntp_format = 0;
 $0 =~ s#^.*/##;                # trim /path/to/prog to prog
@@ -52,8 +52,8 @@ die "Usage: $0 < message\n" if $#ARGV != -1;
 
 # Path to gpg binary
 my $gpg;
-if ($inn::gpgv) { 
-    $gpg = $inn::gpgv;
+if ($INN::Config::gpgv) { 
+    $gpg = $INN::Config::gpgv;
 } else {
     foreach (split(/:/, $ENV{PATH}), qw(/usr/local/bin /opt/gnu/bin)) {
 	if (-x "$_/gpgv") {

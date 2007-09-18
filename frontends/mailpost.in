@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # mailpost - yet another mail-to-news filter
 # 21feb00 [added "lc" to duplicate header fixer stmt to make it case-insensitive]
@@ -36,13 +36,13 @@ my $usage = $0 ;
 $usage =~ s!.*/!! ;
 my $prog = $usage ;
 
-openlog $usage, "pid", $inn::syslog_facility ;
+openlog $usage, "pid", $INN::Config::syslog_facility ;
 
 $usage .= "[ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
     " [ -m mailing-list ][ -b database ][ -o output-path ] [ -c wait-time ]" .
     " [ -x header [:header...] ] [ -p port ] newsgroups" ;
 
-use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_p ) ;
+use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_p) ;
 getopts("hr:f:a:d:m:b:no:c:x:p:") || die "usage: $usage\n" ;
 die "usage: $usage\n" if $opt_h ;
 
@@ -51,14 +51,14 @@ die "usage: $usage\n" if $opt_h ;
 # to be a news article (without the #!rnews header but with the news hdr).
 #
 
-my $Sendmail = $inn::mta ;
-my $Submit = $inn::inews . " -S -h" . ($opt_p ? " -p $opt_p" : '');
-my $Database = ($opt_b || $inn::pathtmp) . "/mailpost-msgid" ;
-my $Maintainer = $inn::newsmaster || "usenet" ; 
+my $Sendmail = $INN::Config::mta ;
+my $Submit = $INN::Config::inews . " -S -h" . ($opt_p ? " -p $opt_p" : '');
+my $Database = ($opt_b || $INN::Config::pathtmp) . "/mailpost-msgid" ;
+my $Maintainer = $INN::Config::newsmaster || "usenet" ; 
 my $WhereTo = $opt_o || $Submit ;
-my $Mailname = $inn::fromhost ;
+my $Mailname = $INN::Config::fromhost ;
 
-# can't use $inn::tmpdir as we're usually not running as news
+# can't use $INN::Config::tmpdir as we're usually not running as news
 my $Tmpdir = "/var/tmp" ;	
 
 if ($debugging || $opt_n) {
@@ -362,7 +362,7 @@ if (defined $DATABASE{$message_id}) {
   exit 0 if (!$opt_c) ;
 
 ## crosspost -c
-  $newsgroups = append_newsgroups($DATABASE{$message_id}, $newsgroups) ;
+  $newsgroups = &append_newsgroups($DATABASE{$message_id}, $newsgroups) ;
   syslog "err", "crosspost $newsgroups\n" if $debugging ;
 }
 

@@ -599,6 +599,10 @@ nnrpd/sasl.c                          SASL authentication for nnrpd
 nnrpd/tls.c                           Transport layer security
 nnrpd/tls.h                           Transport layer security data types
 nnrpd/track.c                         Track client behavior
+perl                                  Perl libraries (Directory)
+perl/INN                              INN Perl modules (Directory)
+perl/INN/Config.pm.in                 INN::Config module
+perl/Makefile                         Makefile for perl libraries
 samples                               Prototype INN config files (Directory)
 samples/INN.py                        Stub Python functions
 samples/Makefile                      Makefile for samples

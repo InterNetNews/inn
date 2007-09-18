@@ -23,7 +23,7 @@ sub control_rmgroup {
     my ($groupname) = @$par;
 
     # Scan active to see what sort of change we are making.
-    open(ACTIVE, $inn::active) or logdie("Cannot open $inn::active: $!");
+    open(ACTIVE, $INN::Config::active) or logdie("Cannot open $INN::Config::active: $!");
     my @oldgroup;
     while (<ACTIVE>) {
         next unless /^(\Q$groupname\E)\s\d+\s\d+\s(\w)/;
@@ -47,7 +47,7 @@ $sender asks for $groupname
 to be $status.
 
 If this is acceptable, type:
-  $inn::newsbin/ctlinnd rmgroup $groupname
+  $INN::Config::newsbin/ctlinnd rmgroup $groupname
 
 And do not forget to remove the corresponding description, if any,
 from your newsgroups file.
@@ -69,19 +69,19 @@ END
     } elsif ($action eq 'doit' and $status !~ /(no change|unapproved)/) {
         ctlinnd('rmgroup', $groupname);
         # Update newsgroups too.
-        shlock("$inn::locks/LOCK.newsgroups");
-        open(NEWSGROUPS, $inn::newsgroups)
-            or logdie("Cannot open $inn::newsgroups: $!");
-        my $tempfile = "$inn::newsgroups.$$";
+        shlock("$INN::Config::locks/LOCK.newsgroups");
+        open(NEWSGROUPS, $INN::Config::newsgroups)
+            or logdie("Cannot open $INN::Config::newsgroups: $!");
+        my $tempfile = "$INN::Config::newsgroups.$$";
         open(TEMPFILE, ">$tempfile") or logdie("Cannot open $tempfile: $!");
         while (<NEWSGROUPS>) {
             print TEMPFILE $_ if not /^\Q$groupname\E\s/;
         }
         close TEMPFILE;
         close NEWSGROUPS;
-        rename($tempfile, $inn::newsgroups)
+        rename($tempfile, $INN::Config::newsgroups)
             or logdie("Cannot rename $tempfile: $!");
-        unlink "$inn::locks/LOCK.newsgroups";
+        unlink "$INN::Config::locks/LOCK.newsgroups";
         unlink $tempfile;
 
         logger($log, "rmgroup $groupname $status $sender", $headers, $body)

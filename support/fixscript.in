@@ -25,6 +25,7 @@ PERLPATH='@PERL@'
 prefix="@prefix@"
 exec_prefix="@exec_prefix@"
 libdir="@libdir@"
+libperldir="@LIBPERLDIR@"
 
 # We can probably just assume sed is on the path, but since we have it, we may
 # as well use it.
@@ -63,7 +64,7 @@ case "$interpretor" in
     ;;
 */perl*|*PERL*)
     path=`echo "$interpretor" | sed 's%^#! *[^ ][^ ]*%'"$PERLPATH%"`
-    lib="require '$libdir/innshellvars.pl';"
+    lib="use lib '@LIBPERLDIR@'; use INN::Config;"
     ;;
 *)
     echo "Unknown interpretor $interpretor" >&2

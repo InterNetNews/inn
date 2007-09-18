@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # news to mail channel backend
 #
@@ -37,9 +37,9 @@ use FileHandle;
 use Sys::Syslog;
 use strict;
 
-my $cfFile = $inn::pathetc . "/news2mail.cf" ;
-my $sendmail = $inn::mta ;
-my $sm = $inn::pathbin . "/sm" ;
+my $cfFile = $INN::Config::pathetc . "/news2mail.cf" ;
+my $sendmail = $INN::Config::mta ;
+my $sm = $INN::Config::pathbin . "/sm" ;
 my %maddr = ();
 
 #
@@ -97,7 +97,7 @@ exit 0;
 sub mailto {
 	my($t, $l, @a) = @_ ;
 
-	my $sendmail = $inn::mta ;
+	my $sendmail = $INN::Config::mta ;
 	$sendmail =~ s!\s*%s!! ;
 	my @command = (split (' ', $sendmail), '-ee', '-fnews', '-odq', @a);
 #	@command[0] = '/usr/local/bin/debug';

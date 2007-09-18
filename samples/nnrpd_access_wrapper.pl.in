@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # Example wrapper nnrpd_access.pl for support of old perl authentication
 # scripts, by Erik Klavon.
@@ -13,6 +13,7 @@
 # - rename the old "auth_init" sub to "old_auth_init"
 # - rename the old "authenticate" sub to "old_authenticate"
 
+use vars qw(%attributes);
 
 # access
 # This sub modifies the global hash attributes so that it has all the

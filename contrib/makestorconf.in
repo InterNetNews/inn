@@ -1,18 +1,18 @@
-#!/usr/local/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # Create storage.conf script based on recently read articles.
 
-$readfile="$inn::pathdb/readgroups";
+$readfile="$INN::Config::pathdb/readgroups";
 
-$outfile="$inn::pathdb/storage.conf";
+$outfile="$INN::Config::pathdb/storage.conf";
 outloop: 
 for ($level=9 ; $level >= 2; --$level) {
   # clear groups hash.
   foreach $i (keys %groups) {
     delete $groups{$i};
   }
-  if (open(RDF, "sort $readfile|")) {
+  if (open(RDF, "$INN::Config::sort $readfile|")) {
     while (<RDF>) {
       chop;
       next if (/^group/);	# bogus 

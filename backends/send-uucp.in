@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w
-# fixscript will replace this line with code to load innshellvars
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config::Config
 
 ##############################################################################
 # send-uucp.pl	create and send UUCP news batches from the outgoing files
@@ -22,9 +22,9 @@ use strict;
 use Sys::Syslog;
 
 # for compatibility with earlier versions of INN
-$inn::pathetc ||= '/etc/news';
-$inn::syslog_facility ||= 'news';
-$inn::uux ||= 'uux';
+$INN::Config::pathetc ||= '/etc/news';
+$INN::Config::syslog_facility ||= 'news';
+$INN::Config::uux ||= 'uux';
 
 # some default values
 my $MAXSIZE = 500000;
@@ -40,10 +40,10 @@ my $UUX_FLAGS = '- -z -r -gd';
 my $BATCHER_FLAGS = '';
 
 ##############################################################################
-my $config_file = $inn::pathetc . '/send-uucp.cf';
-my $lockfile = $inn::locks . '/LOCK.send-uucp';
+my $config_file = $INN::Config::pathetc . '/send-uucp.cf';
+my $lockfile = $INN::Config::locks . '/LOCK.send-uucp';
 
-openlog('send-uucp', 'pid', $inn::syslog_facility);
+openlog('send-uucp', 'pid', $INN::Config::syslog_facility);
 
 my @sitelist;
 if (@ARGV) {
@@ -64,16 +64,13 @@ if (not @sitelist) {
     exit 0;
 }
 
-chdir $inn::batch or logdie("Can't access $inn::batch: $!", 'crit');
+chdir $INN::Config::batch or logdie("Can't access $INN::Config::batch: $!", 'crit');
 
 shlock($lockfile);
 
 run_site($_) foreach @sitelist;
 unlink $lockfile;
 exit 0;
-
-# lint food
-$inn::compress.$inn::locks.$inn::syslog_facility.$inn::have_uustat = 0 if 0;
 
 ##############################################################################
 sub read_cf {
@@ -123,7 +120,7 @@ sub read_cf {
 sub count_jobs {
     my ($site) = @_;
 
-    return 0 if not $inn::have_uustat;
+    return 0 if not $INN::Config::have_uustat;
     open(JOBS, "uustat -s $site 2> /dev/null |") or logdie("cannot fork: $!");
     my $count = grep(/ Executing rnews /, <JOBS>);
     close JOBS;                    # ignore errors, uustat may fail
@@ -155,10 +152,10 @@ sub run_site {
         $maxjobs = '-N ' . ($MAXJOBS - $jobs);
     }
 
-    $compress ||= $inn::compress;
+    $compress ||= $INN::Config::compress;
     $size ||= $MAXSIZE;
 
-    # if exists a .work temp file left by a previous invocation, rename
+    # if a .work temp file left by a previous invocation exists, rename
     # it to .work.tmp, we'll append it to the current batch file once it
     # has been renamed and flushed.
     if (-f "$site.work") {
@@ -194,13 +191,13 @@ sub run_site {
         unlink "$site.work" or logmsg("cannot delete $site.work: $!", 'err');
     } else {
         if ($compress eq 'none') {
-            system "batcher -b $size $maxjobs $BATCHER_FLAGS "
-                . "-p\"$inn::uux $UUX_FLAGS %s!rnews\" $host $site.work";
+            system "$INN::Config::newsbin/batcher -b $size $maxjobs $BATCHER_FLAGS "
+                . "-p\"$INN::Config::uux $UUX_FLAGS %s!rnews\" $host $site.work";
         } else {
-            system "batcher -b $size $maxjobs $BATCHER_FLAGS "
+            system "$INN::Config::newsbin/batcher -b $size $maxjobs $BATCHER_FLAGS "
                 . "-p\"{ echo '#! " . unbatcher($compress)
                 . "' ; exec $compress; } | "
-                . "$inn::uux $UUX_FLAGS %s!rnews\" $host $site.work";
+                . "$INN::Config::uux $UUX_FLAGS %s!rnews\" $host $site.work";
         }
         logmsg("batched articles for $site", 'debug');
     }
@@ -224,7 +221,7 @@ sub logdie {
 sub ctlinnd {
     my ($cmd, @args) = @_;
 
-    my $st = system("$inn::newsbin/ctlinnd", '-s', $cmd, @args);
+    my $st = system("$INN::Config::newsbin/ctlinnd", '-s', $cmd, @args);
     logdie('Cannot run ctlinnd: ' . $!) if $st == -1;
     logdie('ctlinnd returned status ' . ($st & 255)) if $st > 0;
 }
@@ -234,7 +231,7 @@ sub shlock {
 
     my $locktry = 0;
     while ($locktry < 60) {
-        if (system("$inn::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
+        if (system("$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
             return 1;
         }
         $locktry++;

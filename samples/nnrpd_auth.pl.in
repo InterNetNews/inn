@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 ##
 ##  Sample code for the nnrpd Perl authentication hooks.
@@ -36,8 +36,8 @@ use vars qw(%attributes %authcodes %users);
 # authentication stuff needs.
 sub auth_init {
     require CDB_File;
-    tie (%users, 'CDB_File', $inn::pathdb . '/users.cdb')
-        or warn "Could not open $inn::pathdb/users.cdb for users: $!\n";
+    tie (%users, 'CDB_File', $INN::Config::pathdb . '/users.cdb')
+        or warn "Could not open $INN::Config::pathdb/users.cdb for users: $!\n";
 }
 
 # This function is called for authentication requests.  For details on

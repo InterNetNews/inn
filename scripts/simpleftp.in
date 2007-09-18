@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+# fixscript will replace this line with code to load INN::Config
 
 # simpleftp
 # Author: David Lawrence <tale@isc.org>

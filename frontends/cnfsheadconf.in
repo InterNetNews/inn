@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 #  $Id$
 # 
@@ -23,8 +23,8 @@ use Getopt::Long;
 # required for >32bit ints
 require 'bigint.pl';
 
-my($conffile) = "$inn::pathetc/cycbuff.conf";
-my($storageconf) = "$inn::pathetc/storage.conf";
+my($conffile) = "$INN::Config::pathetc/cycbuff.conf";
+my($storageconf) = "$INN::Config::pathetc/storage.conf";
 
 # Hex to bigint conversion routine
 # bhex(HEXSTRING) returns BIGINT  (with leading + chopped off)

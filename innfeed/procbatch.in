@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Thu May 16 10:32:02 1996 +0200
@@ -18,10 +18,10 @@
 #	Hmm, perhaps we should try to read "backlog-directory"
 #	from innfeed.conf. Oh well.
 #
-$tapeDir = $inn'pathspool . "/innfeed"; #'
-$destDir = $inn'spooltemp ; #'
-$spoolArts = $inn'patharticles ; #'
-$outGoing = $inn'pathoutgoing; #'
+$tapeDir = $INN::Config::pathspool . "/innfeed";
+$destDir = $INN::Config::spooltemp ;
+$spoolArts = $INN::Config::patharticles ;
+$outGoing = $INN::Config::pathoutgoing;
 
 ##
 ## Everything below here should probably be left alone.
@@ -135,7 +135,7 @@ foreach $host (keys %hosts) {
 			die "$0: $cmd: failed\n" unless ($? == 0) ;
 		}
 
-		$cmd = "cat $tmpTape |sort -u >> $tapeFile && rm -f $tmpTape" ;
+		$cmd = "cat $tmpTape | $INN::Config::sort -u >> $tapeFile && rm -f $tmpTape" ;
 		system ($cmd) ;
 		die "$0: $cmd: failed\n" unless ($? == 0) ;
 	}

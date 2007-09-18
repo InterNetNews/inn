@@ -28,7 +28,7 @@ sub control_senduuname {
 $sender has requested information about your UUCP name.
 
 If this is acceptable, type:
-  uuname | $inn::mailcmd -s "senduuname reply from $inn::pathhost" $replyto
+  uuname | $INN::Config::mailcmd -s "senduuname reply from $INN::Config::pathhost" $replyto
 
 The control message follows:
 
@@ -44,11 +44,11 @@ END
             logmsg("senduuname $sender");
         }
     } elsif ($action =~ /^(doit|doifarg)$/) {
-        if ($action eq 'doifarg' and $where ne $inn::pathhost) {
+        if ($action eq 'doifarg' and $where ne $INN::Config::pathhost) {
             logmsg("skipped senduuname $sender");
             return;
         }
-        my $mail = sendmail("senduuname reply from $inn::pathhost", $replyto);
+        my $mail = sendmail("senduuname reply from $INN::Config::pathhost", $replyto);
         open(UUNAME, 'uuname|') or logdie("Cannot run uuname: $!");
         print $mail $_ while <UUNAME>;
         close UUNAME or logdie("Cannot run uuname: $!");

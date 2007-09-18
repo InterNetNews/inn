@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 ##
 ##  Sample code for the nnrpd Perl access hooks.
@@ -27,7 +27,7 @@
 # For details on all the information passed to it, see
 # ~news/doc/hook-perl.
 sub access {
-   &loadnnrp($inn::newsetc . '/nnrp.access');
+   &loadnnrp($INN::Config::newsetc . '/nnrp.access');
    return &checkhost($attributes{hostname}, $attributes{ipaddress});
 }
 

@@ -1,11 +1,11 @@
-#!/usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # backlogstat - display backlog to sites
 # based on bklog by bill davidsen <davidsen@tmr.com>
 
 # breaks if backlog-directory in innfeed.conf is not "innfeed"
-my $dir = "$inn::pathspool/innfeed";
+my $dir = "$INN::Config::pathspool/innfeed";
 my $Revision = '1.8';
 
 use strict;

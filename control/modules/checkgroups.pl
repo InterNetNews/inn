@@ -30,9 +30,9 @@ sub control_checkgroups {
 
 If you want to process it, feed the body
 of the message to docheckgroups while logged
-in as user ID "$inn::newsuser":
+in as user ID "$INN::Config::newsuser":
 
-$inn::pathbin/docheckgroups '$newsgrouppats' <<zRbJ
+$INN::Config::pathbin/docheckgroups '$newsgrouppats' <<zRbJ
 END
         print $mail map { s/^~/~~/; "$_\n" } @$body;
         print $mail "zRbJ\n";
@@ -55,7 +55,7 @@ END
 sub docheckgroups {
     my ($body, $newsgrouppats, $log, $sender) = @_;
 
-    my $tempfile = "$inn::tmpdir/checkgroups.$$";
+    my $tempfile = "$INN::Config::tmpdir/checkgroups.$$";
     open(TEMPART, ">$tempfile.art")
         or logdie("Cannot open $tempfile.art: $!");
     print TEMPART map { s/^~/~~/; "$_\n" } @$body;
@@ -65,7 +65,7 @@ sub docheckgroups {
     open(OLDOUT, '>&STDOUT') or die $!;
     open(STDIN, "$tempfile.art") or die $!;
     open(STDOUT, ">$tempfile") or die $!;
-    my $st = system("$inn::pathbin/docheckgroups", $newsgrouppats);
+    my $st = system("$INN::Config::pathbin/docheckgroups", $newsgrouppats);
     logdie('Cannot run docheckgroups: ' . $!) if $st == -1;
     logdie('docheckgroups returned status ' . ($st & 255)) if $st > 0;
     close(STDIN);

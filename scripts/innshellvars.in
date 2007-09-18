@@ -3,8 +3,9 @@
 ##  Set up any and all shell variables that an INN shell script
 ##  might need.  Also sets umask.
 
-## NOTE: When adding stuff here, add the corresponding variables to 
-## innshellvars.pl and innshellvars.tcl and innshellvars.csh
+##  NOTE:  When adding stuff here, add the corresponding variables to 
+##  innshellvars.tcl and the INN::Config Perl module (as well as the
+##  old innshellvars.pl script).
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@

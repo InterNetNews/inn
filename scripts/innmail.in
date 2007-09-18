@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Fri, 25 Apr 1997 14:11:23 +0200
@@ -14,11 +14,12 @@ $0 =~ s!.*/!! ;
 
 require 5.001 ;
 require 'getopts.pl' ;
+use vars qw($opt_h);
 
-die "$0: No \$inn::mta  variable defined.\n" 
-    if ! defined ($inn::mta);
+die "$0: No \$INN::Config::mta  variable defined.\n" 
+    if ! defined ($INN::Config::mta);
 
-$sm = $inn::mta ;
+$sm = $INN::Config::mta ;
 
 die "$0: MTA path is not absolute\n" unless ($sm =~ m!^/!) ;
 
@@ -53,7 +54,7 @@ if ($sm =~ m!%s!) {
 
 @smarr = split(/\s+/,$sm);
 
-($t = $inn::mta) =~ s!\s.*!!;
+($t = $INN::Config::mta) =~ s!\s.*!!;
 die "$0: MTA variable definition is changed after subsitution\n" 
     if ($t ne $smarr[0]);
 

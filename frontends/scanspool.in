@@ -1,5 +1,5 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # @(#)scanspool.pl	1.20 4/6/92 00:47:35
 #
@@ -110,9 +110,9 @@ $|=1;
 # global constants
 #
 $prog = $0;			 	# our name
-$spool = "$inn::patharticles";
-$active = "$inn::active";
-$ctlinnd = "$inn::pathbin/ctlinnd";
+$spool = "$INN::Config::patharticles";
+$active = "$INN::Config::active";
+$ctlinnd = "$INN::Config::pathbin/ctlinnd";
 $reason = "running scanspool";		# throttle reason
 
 # parse args

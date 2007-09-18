@@ -1,11 +1,11 @@
-#!/usr/local/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # Create expire.ctl script based on recently read articles.  Argument gives
 # scale factor to use to adjust expires.
 
-$readfile="$inn::pathdb/readgroups";
-$expirectl=$inn::expirectl;
+$readfile="$INN::Config::pathdb/readgroups";
+$expirectl=$INN::Config::expirectl;
 
 $curtime = time;
 $oldtime = $curtime - 30 * 86400; # 30 days in the past

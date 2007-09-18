@@ -32,8 +32,8 @@ sub control_ihave {
             logmsg("ihave $sender");
         }
     } elsif ($action eq 'doit') {
-        my $tempfile = "$inn::tmpdir/ihave.$$";
-        open(GREPHIST, "|grephistory -i > $tempfile")
+        my $tempfile = "$INN::Config::tmpdir/ihave.$$";
+        open(GREPHIST, "| $INN::Config::newsbin/grephistory -i > $tempfile")
             or logdie('Cannot run grephistory: ' . $!);
 	foreach (@$body) {
             print GREPHIST "$_\n";
@@ -41,11 +41,11 @@ sub control_ihave {
         close GREPHIST;
 
         if (-s $tempfile) {
-            my $inews = open("$inn::inews -h")
+            my $inews = open("$INN::Config::inews -h")
                 or logdie('Cannot run inews: ' . $!);
             print $inews "Newsgroups: to.$site\n"
-               . "Subject: cmsg sendme $inn::pathhost\n"
-               . "Control: sendme $inn::pathhost\n\n";
+               . "Subject: cmsg sendme $INN::Config::pathhost\n"
+               . "Control: sendme $INN::Config::pathhost\n\n";
             open(TEMPFILE, $tempfile) or logdie("Cannot open $tempfile: $!");
             print $inews $_ while <TEMPFILE>;  
             close $inews or die $!;

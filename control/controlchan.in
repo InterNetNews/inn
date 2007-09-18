@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-require "/usr/local/news/lib/innshellvars.pl";
+# fixscript will replace this line with code to load INN::Config
 
 ##  $Id$
 ##
@@ -51,21 +51,21 @@ if (not -t 2) {
 if ($use_syslog) {
     eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
     Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
-    openlog('controlchan', 'pid', $inn::syslog_facility);
+    openlog('controlchan', 'pid', $INN::Config::syslog_facility);
 }
 logmsg('starting');
 
 # load modules from the control directory #################################
-opendir(CTL, $inn::controlprogs)
-    or logdie("Cannot open $inn::controlprogs: $!", 'crit');
+opendir(CTL, $INN::Config::controlprogs)
+    or logdie("Cannot open $INN::Config::controlprogs: $!", 'crit');
 foreach (readdir CTL) {
-    next if not /^([a-z\.]+\.pl)$/ or not -f "$inn::controlprogs/$_";
-    eval { require "$inn::controlprogs/$1" };
+    next if not /^([a-z\.]+\.pl)$/ or not -f "$INN::Config::controlprogs/$_";
+    eval { require "$INN::Config::controlprogs/$1" };
     if ($@) {
         $@ =~ s/\n/  /g;
         logdie($@, 'crit');
     }
-    logmsg("loaded $inn::controlprogs/$1", 'debug');
+    logmsg("loaded $INN::Config::controlprogs/$1", 'debug');
 }
 closedir CTL;
 
@@ -167,9 +167,6 @@ while (<STDIN>) {
 closelog() if $use_syslog;
 exit 0;
 
-print $inn::most_logs.$inn::syslog_facility.$inn::mta.
-    $inn::newsmaster.$inn::locks; # lint food
-
 # misc functions ##########################################################
 sub parse_article {
     my ($artfh, $headers, $body, $hdr) = @_;
@@ -222,13 +219,13 @@ sub cleanaddr {
 
 # Read and cache control.ctl.
 sub readctlfile {
-    my $mtime = (stat($inn::ctlfile))[9];
+    my $mtime = (stat($INN::Config::ctlfile))[9];
     return $cachedctl if $lastctl == $mtime;    # mtime has not changed.
     $lastctl = $mtime;
 
     my @ctllist;
-    open(CTLFILE, $inn::ctlfile)
-        or logdie("Cannot open $inn::ctlfile: $!", 'crit');
+    open(CTLFILE, $INN::Config::ctlfile)
+        or logdie("Cannot open $INN::Config::ctlfile: $!", 'crit');
     while (<CTLFILE>) {
         chop;
         # Not a comment or blank? Convert wildmat to regex
@@ -290,7 +287,7 @@ sub ctlperm {
 
     if ($action =~ /^verify-(.+)/) {
         my $keyowner = $1;
-        if ($inn::pgpverify and $inn::pgpverify =~ /^(?:true|on|yes)$/i) {
+        if ($INN::Config::pgpverify and $INN::Config::pgpverify =~ /^(?:true|on|yes)$/i) {
             my $pgpresult = defined &local_pgpverify ?
                 local_pgpverify($token, $headers, $body) : pgpverify($token);
             if ($keyowner eq $pgpresult) {
@@ -326,10 +323,10 @@ sub logger {
         $logfile = 'control';
     }
 
-    $logfile = "$inn::most_logs/$logfile.log" unless $logfile =~ /^\//;
+    $logfile = "$INN::Config::most_logs/$logfile.log" unless $logfile =~ /^\//;
     my $lockfile = $logfile;
     $lockfile =~ s#.*/##;
-    $lockfile = "$inn::locks/LOCK.$lockfile";
+    $lockfile = "$INN::Config::locks/LOCK.$lockfile";
     shlock($lockfile);
 
     open(LOGFILE, ">>$logfile") or logdie("Cannot open $logfile: $!");
@@ -372,7 +369,7 @@ sub open_article {
         my $pid = open(ART, '-|');
         logdie('Cannot fork: ' . $!) if $pid < 0;
         if ($pid == 0) {
-            exec("$inn::newsbin/sm", '-q', $token) or
+            exec("$INN::Config::newsbin/sm", '-q', $token) or
                 logdie("Cannot exec sm: $!");
         }
         return *ART;
@@ -387,10 +384,10 @@ sub pgpverify {
     my $token = shift;
 
     if ($token =~ /^\@.+\@$/) {
-        open(PGPCHECK, "$inn::newsbin/sm -q $token "
-            . "| $inn::newsbin/pgpverify |") or goto ERROR;
+        open(PGPCHECK, "$INN::Config::newsbin/sm -q $token "
+            . "| $INN::Config::newsbin/pgpverify |") or goto ERROR;
     } else {
-        open(PGPCHECK, "$inn::newsbin/pgpverify < $token |") or goto ERROR;
+        open(PGPCHECK, "$INN::Config::newsbin/pgpverify < $token |") or goto ERROR;
     }
     my $pgpresult = <PGPCHECK>;
     close PGPCHECK or goto ERROR;
@@ -405,7 +402,7 @@ ERROR:
 sub ctlinnd {
     my ($cmd, @args) = @_;
 
-    my $st = system("$inn::newsbin/ctlinnd", '-s', $cmd, @args);
+    my $st = system("$INN::Config::newsbin/ctlinnd", '-s', $cmd, @args);
     logdie('Cannot run ctlinnd: ' . $!) if $st == -1;
     logdie('ctlinnd returned status ' . ($st & 255)) if $st > 0;
 }
@@ -415,7 +412,7 @@ sub shlock {
 
     my $locktry = 0;
     while ($locktry < 60) {
-        if (system("$inn::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
+        if (system("$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
             return 1;
         }
         $locktry++;
@@ -436,17 +433,17 @@ sub shlock {
 # If $body is not defined, returns a file handle which must be closed.
 # Don't forget checking the return value of close().
 # $addresses may be a scalar or a reference to a list of addresses.
-# If not defined, $inn::newsmaster is the default.
+# If not defined, $INN::Config::newsmaster is the default.
 # parts of this code stolen from innmail.pl
 sub sendmail {
     my ($subject, $addresses, $body) = @_;
-    $addresses = [ $addresses || $inn::newsmaster ] if not ref $addresses;
+    $addresses = [ $addresses || $INN::Config::newsmaster ] if not ref $addresses;
     $subject ||= '(no subject)';
 
     # fix up all addresses
     my @addrs = map { s#[^-a-zA-Z0-9+_.@%]##g; $_ } @$addresses;
 
-    my $sm = $inn::mta;
+    my $sm = $INN::Config::mta;
     if ($sm =~ /%s/) {
         $sm = sprintf($sm, join(' ', @addrs));
     } else {

@@ -1,4 +1,7 @@
 # 
+# This package is only kept for compatibility reasons with old softwares.
+# Please use the real INN::Config Perl module instead.
+#
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 24 Aug 1996 22:08:19 +0200
 # Project:      INN 
@@ -6,6 +9,7 @@
 # RCSId:        $Id$
 # Description:  Set up any and all variables that an INN perl script
 #               might need.
+#
 
 package inn ;
 
@@ -58,7 +62,7 @@ $perl_startup_innd = "$pathfilter/startup_innd.pl" ;
 $perl_filter_innd = "$pathfilter/filter_innd.pl" ;
 $perl_filter_nnrpd = "$pathfilter/filter_nnrpd.pl" ;
 $python_filter_innd = "$pathfilter/filter_innd.py" ;
-$path_python_inn_module ="$pathfilter/INN.py" ;
+$path_python_inn_module = "$pathfilter/INN.py" ;
 $path_tcl_startup = "$pathfilter/startup.tcl" ;
 $path_tcl_filter = "$pathfilter/filter.tcl" ;
 

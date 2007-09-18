@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 ##############################################################################
 # perl-nocem - a NoCeM-on-spool implementation for INN 2.x.
@@ -23,7 +23,7 @@ use strict;
 # If nobody can't fix it just ship the program with this line commented.
 #use Time::HiRes qw(time);
 
-my $keyring = $inn::pathetc . '/pgp/ncmring.gpg';
+my $keyring = $INN::Config::pathetc . '/pgp/ncmring.gpg';
 
 # XXX To be moved to a config file.
 #sub local_want_cancel_id {
@@ -47,9 +47,9 @@ my $use_syslog = 0;
 my $log_open = 0;
 my $nntp_open = 0;
 my $last_cancel = 0;
-my $socket_timeout = $inn::peertimeout - 100;
+my $socket_timeout = $INN::Config::peertimeout - 100;
 
-my $logfile = $inn::pathlog . '/perl-nocem.log';
+my $logfile = $INN::Config::pathlog . '/perl-nocem.log';
 
 # initialization and main loop ###############################################
 
@@ -58,16 +58,16 @@ eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
 if ($use_syslog) {
     eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
     Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
-    openlog('nocem', '', $inn::syslog_facility);
+    openlog('nocem', '', $INN::Config::syslog_facility);
 }
 
-if (not $inn::gpgv) {
+if (not $INN::Config::gpgv) {
     logmsg('cannot find the gpgv binary', 'err');
     sleep 5;
     exit 1;
 }
 
-if ($inn::version and not $inn::version =~ /^INN 2\.[0123]\./) {
+if ($INN::Config::version and not $INN::Config::version =~ /^INN 2\.[0123]\./) {
     $cancel = \&cancel_nntp;
 } else {
     $cancel = \&cancel_ctlinnd;
@@ -193,7 +193,7 @@ sub read_nocem {
 
     # we do want it, so read the entire article. Also copy it to
     # a temp file so that we can check the PGP signature when done.
-    my $tmpfile = "$inn::pathtmp/nocem.$$";
+    my $tmpfile = "$INN::Config::pathtmp/nocem.$$";
     if (not open(OFD, ">$tmpfile")) {
         logmsg("cannot open temp file $tmpfile: $!", 'err');
         return;
@@ -283,7 +283,7 @@ sub pgp_check {
     }
     if ($pid == 0) {
         open(STDERR, '>&STDOUT');
-        exec($inn::gpgv, '--status-fd=1',
+        exec($INN::Config::gpgv, '--status-fd=1',
             $keyring ? '--keyring=' . $keyring : '', $art);
         exit 126;
     }
@@ -295,11 +295,11 @@ sub pgp_check {
         if ($? >> 8) {
             $status = $? >> 8;
         } else {
-            logmsg("Article $msgid: $inn::gpgv killed by signal " . ($? & 255));
+            logmsg("Article $msgid: $INN::Config::gpgv killed by signal " . ($? & 255));
             return 0;
         }
     }
-#    logmsg("Command line was: $inn::gpg $pgpargs $art", 'debug');
+#    logmsg("Command line was: $INN::Config::gpg $pgpargs $art", 'debug');
 #    logmsg("Full PGP output: >>>$_<<<", 'debug');
 
     if (/^\[GNUPG:\]\s+GOODSIG\s+\S+\s+(.*)/m) {
@@ -318,7 +318,7 @@ sub pgp_check {
         # some other error we don't know about happened.
         # 126 is returned by the child if exec fails.
         s/ at \S+ line \d+\.\n$//; s/\n/_/;
-        logmsg("Article $msgid: $inn::gpgv exited "
+        logmsg("Article $msgid: $INN::Config::gpgv exited "
             . (($status == 126) ? "($_)" : "with status $status"), 'err');
     }
     return 0;
@@ -335,7 +335,7 @@ sub open_article {
             return undef;
         }
         if ($pid == 0) {
-            exec("$inn::newsbin/sm", '-q', $token) or
+            exec("$INN::Config::newsbin/sm", '-q', $token) or
                 logmsg("Cannot exec sm: $!", 'err');
             return undef;
         }
@@ -359,7 +359,7 @@ sub cancel_ctlinnd {
             my $pid;
             sleep 5 until (defined ($pid = fork));
             if ($pid == 0) {
-                exec "$inn::pathbin/ctlinnd", '-s', '-t', '180',
+                exec "$INN::Config::pathbin/ctlinnd", '-s', '-t', '180',
                     'cancel', $msgid;
                 exit 126;
             }
@@ -392,7 +392,7 @@ sub cancel_nntp {
             logmsg("socket: $!", 'err');
             goto ERR;
         }
-        if (not connect(NNTP, sockaddr_un($inn::pathrun . '/nntpin'))) {
+        if (not connect(NNTP, sockaddr_un($INN::Config::pathrun . '/nntpin'))) {
             logmsg("connect: $!", 'err');
             goto ERR;
         }
@@ -430,7 +430,7 @@ ERR:
 }
 
 sub read_ctlfile {
-    my $permfile = $inn::pathetc . '/nocem.ctl';
+    my $permfile = $INN::Config::pathetc . '/nocem.ctl';
 
     unless (open(CTLFILE, $permfile)) {
         logmsg("Cannot open $permfile: $!", 'err');
@@ -479,10 +479,6 @@ sub term_handler {
     logmsg('exiting because of signal');
     exit 1;
 }
-
-# lint food
-print $inn::pathrun.$inn::pathlog.$inn::pathetc.$inn::newsbin.$inn::pathbin
-    . $inn::pathtmp.$inn::syslog_facility.$inn::peertimeout;
 
 __END__
 

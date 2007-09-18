@@ -29,7 +29,7 @@ $sender has requested that you send a copy
 of your newsgroups file.
 
 If this is acceptable, type:
-  $inn::mailcmd -s "sendsys reply from $inn::pathhost" $replyto < $inn::newsfeeds
+  $INN::Config::mailcmd -s "sendsys reply from $INN::Config::pathhost" $replyto < $INN::Config::newsfeeds
 
 The control message follows:
 
@@ -45,13 +45,13 @@ END
             logmsg("sendsys $sender");
         }
     } elsif ($action =~ /^(doit|doifarg)$/) {
-        if ($action eq 'doifarg' and $where ne $inn::pathhost) {
+        if ($action eq 'doifarg' and $where ne $INN::Config::pathhost) {
             logmsg("skipped sendsys $sender");
             return;
         }
-        my $mail = sendmail("sendsys reply from $inn::pathhost", $replyto);
-        open(NEWSFEEDS, $inn::newsfeeds)
-            or logdie("Cannot open $inn::newsfeeds: $!");
+        my $mail = sendmail("sendsys reply from $INN::Config::pathhost", $replyto);
+        open(NEWSFEEDS, $INN::Config::newsfeeds)
+            or logdie("Cannot open $INN::Config::newsfeeds: $!");
         print $mail $_ while <NEWSFEEDS>;
         print $mail "\n";
         close NEWSFEEDS;

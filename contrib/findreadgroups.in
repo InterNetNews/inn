@@ -1,9 +1,9 @@
-#!/usr/local/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
 # Keep track of which groups are currently being read.  Takes logfile input
 # on stdin.
-$readfile="$inn::newsetc/readgroups";
+$readfile="$INN::Config::newsetc/readgroups";
 
 $curtime = time;
 $oldtime = $curtime - 30 * 86400; # 30 days in the past

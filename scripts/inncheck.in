@@ -3,9 +3,13 @@
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
-$prefix = '@prefix@';
-$exec_prefix = "@exec_prefix@";
-require "@libdir@/innshellvars.pl" ;
+BEGIN {
+    $prefix = '@prefix@';
+    $exec_prefix = "@exec_prefix@";
+    $libdir="@libdir@";
+}
+
+use lib "@LIBPERLDIR@"; use INN::Config;
 
 $ST_MODE = 2;
 $ST_UID  = 4;
@@ -17,38 +21,38 @@ $newsgroup = '@NEWSGRP@';
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
 %paths = (
-    'active',		"$inn::active",
-    'archive',		"$inn::patharchive",
-    'badnews',		"$inn::badnews",
-    'batchdir',		"$inn::pathoutgoing",
-    'control.ctl',	"$inn::ctlfile",
-    'ctlprogs',		"$inn::pathcontrol",
-    'expire.ctl',	"$inn::expirectl",
-    'history',		"$inn::history",
-    'incoming.conf',	"$inn::pathetc/incoming.conf",
-    'inews',		"$inn::inews",
-    'inn.conf',		"$inn::pathetc/inn.conf",
-    'innbind',          "$inn::pathbin/innbind",
-    'innd',		"$inn::innd",
-    'innddir',		"$inn::pathrun",
-    'moderators',	"$inn::pathetc/moderators",
-    'most_logs',	"$inn::pathlog",
-    'newsbin',		"$inn::pathbin",
-    'newsboot',		"$inn::pathbin/rc.news",
-    'newsfeeds',	"$inn::newsfeeds",
-    'overview.fmt',	"$inn::pathetc/overview.fmt",
-    'newsetc',		"$inn::pathetc",
+    'active',		"$INN::Config::active",
+    'archive',		"$INN::Config::patharchive",
+    'badnews',		"$INN::Config::badnews",
+    'batchdir',		"$INN::Config::pathoutgoing",
+    'control.ctl',	"$INN::Config::ctlfile",
+    'ctlprogs',		"$INN::Config::pathcontrol",
+    'expire.ctl',	"$INN::Config::expirectl",
+    'history',		"$INN::Config::history",
+    'incoming.conf',	"$INN::Config::pathetc/incoming.conf",
+    'inews',		"$INN::Config::inews",
+    'inn.conf',		"$INN::Config::pathetc/inn.conf",
+    'innbind',          "$INN::Config::pathbin/innbind",
+    'innd',		"$INN::Config::innd",
+    'innddir',		"$INN::Config::pathrun",
+    'moderators',	"$INN::Config::pathetc/moderators",
+    'most_logs',	"$INN::Config::pathlog",
+    'newsbin',		"$INN::Config::pathbin",
+    'newsboot',		"$INN::Config::pathbin/rc.news",
+    'newsfeeds',	"$INN::Config::newsfeeds",
+    'overview.fmt',	"$INN::Config::pathetc/overview.fmt",
+    'newsetc',		"$INN::Config::pathetc",
     'newslib',		"@libdir@",
-    'nnrpd',		"$inn::pathbin/nnrpd",
-    'nntpsend.ctl',	"$inn::pathetc/nntpsend.ctl",
-    'oldlogs',		"$inn::pathlog/OLD",
-    'passwd.nntp',	"$inn::pathetc/passwd.nntp",
-    'readers.conf',	"$inn::pathetc/readers.conf",
-    'rnews',		"$inn::rnews",
-    'rnewsprogs',	"$inn::pathbin/rnews.libexec",
-    'spooltemp',	"$inn::pathtmp",
-    'spool',		"$inn::patharticles",
-    'spoolnews',	"$inn::pathincoming"
+    'nnrpd',		"$INN::Config::pathbin/nnrpd",
+    'nntpsend.ctl',	"$INN::Config::pathetc/nntpsend.ctl",
+    'oldlogs',		"$INN::Config::pathlog/OLD",
+    'passwd.nntp',	"$INN::Config::pathetc/passwd.nntp",
+    'readers.conf',	"$INN::Config::pathetc/readers.conf",
+    'rnews',		"$INN::Config::rnews",
+    'rnewsprogs',	"$INN::Config::pathbin/rnews.libexec",
+    'spooltemp',	"$INN::Config::pathtmp",
+    'spool',		"$INN::Config::patharticles",
+    'spoolnews',	"$INN::Config::pathincoming"
 );
 
 ##  The sub's that check the config files.
@@ -216,7 +220,7 @@ expire_ctl
 {
     local ($rem, $v, $def, $class, $pat, $flag, $keep, $default, $purge, $groupbaseexpiry);
 
-    $groupbaseexpiry = $inn::groupbaseexpiry;
+    $groupbaseexpiry = $INN::Config::groupbaseexpiry;
     $groupbaseexpiry =~ tr/A-Z/a-z/;
     input: while ( <IN> ) {
 	next input if &spacious($file, ++$line);
@@ -280,7 +284,7 @@ incoming_conf
 sub
 inn_conf
 {
-    system ("$inn::innconfval", '-C');
+    system ("$INN::Config::innconfval", '-C');
 
 #    if ( $k eq "domain" ) {
 #        print "$file:$line: domain (`$v') isn't local domain\n"
