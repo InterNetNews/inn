@@ -356,5 +356,5 @@ symlink.o: symlink.c ../include/config.h ../include/inn/defines.h \
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h \
-   ../include/ppport.h \
+  ../include/ppport.h \
   ../include/innperl.h

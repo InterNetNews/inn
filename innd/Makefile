@@ -183,7 +183,7 @@ perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/history.h ../include/inn/messages.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-   ../include/ppport.h \
+  ../include/ppport.h \
   ../include/innperl.h
 proc.o: proc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
