@@ -83,6 +83,7 @@ $perl = '@PERL@' ;
 $pgp = '@PGP@' ;
 $sort = '@SORT@' ;
 $getftp = '@PATH_GETFTP@' ;
+$uustat = '@UUSTAT@' ;
 $uux = '@UUX@' ;
 
 $bzip2 = '@BZIP2@' ;

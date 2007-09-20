@@ -120,8 +120,8 @@ sub read_cf {
 sub count_jobs {
     my ($site) = @_;
 
-    return 0 if not $INN::Config::have_uustat;
-    open(JOBS, "uustat -s $site 2> /dev/null |") or logdie("cannot fork: $!");
+    return 0 if not $INN::Config::uustat;
+    open(JOBS, "$INN::Config::uustat -s $site 2> /dev/null |") or logdie("cannot fork: $!");
     my $count = grep(/ Executing rnews /, <JOBS>);
     close JOBS;                    # ignore errors, uustat may fail
     return $count;

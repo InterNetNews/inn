@@ -111,7 +111,7 @@ our $watchpid = "${innddir}/innwatch.pid";
 
 ##  Paths of external used programs.
 my @EXTPROGVAR = qw($awk $egrep $gpgv $perl $pgp $sed
-$sort $getftp $uux);
+$sort $getftp $uustat $uux);
 our $awk = '@AWK@';
 our $egrep = '@EGREP@';
 our $gpgv = '@GPGV@';
@@ -120,6 +120,7 @@ our $pgp = '@PGP@';
 our $sed = '@SED@';
 our $sort = '@SORT@';
 our $getftp = '@PATH_GETFTP@';
+our $uustat = '@UUSTAT@';
 our $uux = '@UUX@';
 
 
