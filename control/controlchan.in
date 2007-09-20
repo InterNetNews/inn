@@ -27,7 +27,7 @@
 ##  controlchan!\
 ##     :!*,control,control.*,!control.cancel\
 ##     :Tc,Wnsm\
-##     :@bindir@/controlchan
+##     :<pathbin>/controlchan
 
 require 5.004_03;
 use strict;

@@ -7,13 +7,13 @@
 #
 # This code is placed in the public domain.
 #
-# scanspool - perform a big scan over all articles in @SPOOLDIR@/articles
+# scanspool - Perform a big scan over all articles in <patharticles>
 #
 # usage:
 #    scanspool [-a active_file] [-s spool_dir] [-v] [-c] [-n]
 #
-#    -a active_file	active file to use (default @DBDIR@/active)
-#    -s spool_dir	spool tree (default @SPOOLDIR@/articles)
+#    -a active_file	active file to use (default <pathdb>/active)
+#    -s spool_dir	spool tree (default <patharticles>)
 #    -v 		verbose mode
 #			verbose messages begin with a tab
 #			show articles found in non-active directories
@@ -302,7 +302,7 @@ sub fatal
 # lost+found will also be ignored.
 #
 # given:
-#	$spooldir  - top of @SPOOLDIR@/articles tree
+#	$spooldir  - top of <patharticles> tree
 #
 sub check_spool
 {
