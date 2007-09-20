@@ -10,11 +10,10 @@ include ../Makefile.global
 
 top	      = ..
 
-ALL           = innmail innreport innstat innupgrade innwatch rc.news \
-		scanlogs simpleftp tally.control writelog
+ALL           = inncheck innmail innreport innstat innupgrade innwatch \
+		news.daily rc.news scanlogs simpleftp tally.control writelog
 
-EXTRA         = inncheck innshellvars innshellvars.pl innshellvars.tcl \
-		news.daily
+EXTRA         = innshellvars innshellvars.pl innshellvars.tcl
 
 all: $(ALL) $(EXTRA)
 
@@ -52,11 +51,13 @@ $(EXTRA) $(FIXSCRIPT):
 
 FIX             = $(FIXSCRIPT)
 
+inncheck:	inncheck.in      $(FIX) ; $(FIX) inncheck.in
 innmail:	innmail.in       $(FIX)	; $(FIX) innmail.in
 innreport:	innreport.in     $(FIX)	; $(FIX) innreport.in
 innstat:	innstat.in       $(FIX)	; $(FIX) innstat.in
 innupgrade:	innupgrade.in    $(FIX) ; $(FIX) -i innupgrade.in
 innwatch:	innwatch.in      $(FIX)	; $(FIX) innwatch.in
+news.daily:	news.daily.in    $(FIX) ; $(FIX) news.daily.in
 rc.news:	rc.news.in       $(FIX)	; $(FIX) rc.news.in
 scanlogs:	scanlogs.in      $(FIX)	; $(FIX) scanlogs.in
 simpleftp:	simpleftp.in     $(FIX)	; $(FIX) -i simpleftp.in

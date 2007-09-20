@@ -137,14 +137,21 @@ our $z = '@LOG_COMPRESSEXT@';
 
 ##  Set up some useful system file information.
 my @SYSVAR = qw($newsmaster $newsuser $newsgroup
-$umask $syslog_facility);
+$filemode $inewsmode $rnewsmode $umask $syslog_facility);
 our $newsmaster = '@NEWSMASTER@';
 our $newsuser = '@NEWSUSER@';
 our $newsgroup = '@NEWSGRP@';
-our $umask = @NEWSUMASK@;        # It is a number.
+our $filemode = @FILEMODE@;      # It is a number.
+our $inewsmode = @INEWSMODE@;
+our $rnewsmode = @RNEWSMODE@;
+our $umask = @NEWSUMASK@;
 our $syslog_facility = lc('@SYSLOG_FACILITY@');
 $syslog_facility =~ s/log_//;
 
+
+##  Set up some useful parameters.
+my @PARAMVAR = qw($do_dbz_tagged_hash);
+our $do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@';
 
 ##  Set up some environment values.
 if ($ovmethod && $ovmethod eq "ovdb") {
@@ -158,7 +165,7 @@ $ENV{'TMPDIR'} = $pathtmp;
 
 ##  This array will contain what it is possible to export.
 our @EXPORT_OK = (@INNCONFVAR, @DIRVAR, @FILESVAR, @PROGVAR,
-@LOCKVAR, @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR);
+@LOCKVAR, @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR, @PARAMVAR);
 
 
 ##  That's all.
@@ -177,8 +184,8 @@ script might need.  More particularly, it allows to use F<inn.conf>
 variables:  they are all provided by B<innconfval>, as well as
 the version of INN (in the variable C<$INN::Config::version>).
 Other useful variables are also provided (directories, files,
-programs, masks) and you should have a look at the source code
-of the module to see what you can use in your Perl scripts.
+programs, masks, parameters) and you should have a look at the source
+code of the module to see what you can use in your Perl scripts.
 
 You only have to declare the module at the beginning of them:
 

@@ -95,10 +95,15 @@ set inn_newsmaster "@NEWSMASTER@"
 set inn_newsuser "@NEWSUSER@"
 set inn_newsgroup "@NEWSGRP@"
 
+set do_dbz_tagged_hash "@DO_DBZ_TAGGED_HASH@"
+
 set env(TMPDIR) "$inn_pathtmp"
 set inn_tmpdir "$inn_pathtmp"
 set inn_spooltemp "$inn_pathtmp"
 
+scan "@FILEMODE@" "%o" inn_filemode
+scan "@INEWSMODE@" "%o" inn_inewsmode
+scan "@RNEWSMODE@" "%o" inn_rnewsmode
 scan "@NEWSUMASK@" "%o" inn_umask
 
 set env(PATH) "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin"

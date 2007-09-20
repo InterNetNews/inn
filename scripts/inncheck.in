@@ -1,22 +1,16 @@
-#! @PERL@ --
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
+
 ##  $Revision$
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
-
-BEGIN {
-    $prefix = '@prefix@';
-    $exec_prefix = "@exec_prefix@";
-    $libdir="@libdir@";
-}
-
-use lib "@LIBPERLDIR@"; use INN::Config;
 
 $ST_MODE = 2;
 $ST_UID  = 4;
 $ST_GID  = 5;
 
-$newsuser = '@NEWSUSER@';
-$newsgroup = '@NEWSGRP@';
+$newsuser = "$INN::Config::newsuser";
+$newsgroup = "$INN::Config::newsgroup";
 
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
@@ -42,7 +36,7 @@ $newsgroup = '@NEWSGRP@';
     'newsfeeds',	"$INN::Config::newsfeeds",
     'overview.fmt',	"$INN::Config::pathetc/overview.fmt",
     'newsetc',		"$INN::Config::pathetc",
-    'newslib',		"@libdir@",
+    'newslib',		"$INN::Config::newslib",
     'nnrpd',		"$INN::Config::pathbin/nnrpd",
     'nntpsend.ctl',	"$INN::Config::pathetc/nntpsend.ctl",
     'oldlogs',		"$INN::Config::pathlog/OLD",
@@ -72,7 +66,7 @@ $newsgroup = '@NEWSGRP@';
 
 ##  The modes of the config files we can check.
 %modes = (
-    'active',		@FILEMODE@,
+    'active',		$INN::Config::filemode,
     'incoming.conf',	0640,
     'inn.conf',		0644,
     'moderators',	0644,
@@ -719,10 +713,12 @@ intersect
 	foreach ( @files ) {
 	    $dummy{$_}++;
 	}
-	foreach ( grep ($dummy{$_} == 0, @in) ) {
-	    print "$pfx$dir:0: ERROR: illegal file `$_' in directory\n";
-	    $i = 0;
-	}
+        foreach ( @in ) {
+            if (not exists $dummy{$_}) {
+                print "$pfx$dir:0: ERROR: illegal file `$_' in directory\n";
+                $i = 0;
+            }
+        }
     }
     $i;
 }
@@ -751,11 +747,11 @@ intersect
 
 ## The modes for the various programs.
 %prog_modes = (
-    'inews',		 @INEWSMODE@,
+    'inews',		 $INN::Config::inewsmode,
     'innd',		 0550,
     'newsboot',		 0550,
     'nnrpd',		 0555,
-    'rnews',		 @RNEWSMODE@,
+    'rnews',		 $INN::Config::rnewsmode,
 );
 
 ##  Check the permissions of nearly every file in an INN installation.
@@ -764,7 +760,7 @@ check_all_perms
 {
     local ($rnewsprogs) = $paths{'rnewsprogs'};
     local ($newsbin) = $paths{'newsbin'};
-    local ($newslib) = $paths{'newslib'};
+    #local ($newslib) = $paths{'newslib'};
 
     foreach ( @directories ) {
 	&checkperm($paths{$_}, 0755);
@@ -778,7 +774,7 @@ check_all_perms
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};
     }
-    &checkperm($paths{'history'}, @FILEMODE@);
+    &checkperm($paths{'history'}, $INN::Config::filemode);
     # Commented out for now since it depends on the history type.
     #&checkperm($paths{'history'} . ".dir", 0644);
     #&checkperm($paths{'history'} . ".index", 0644);

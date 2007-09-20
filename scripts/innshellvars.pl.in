@@ -104,10 +104,15 @@ $newsmaster = '@NEWSMASTER@' ;
 $newsuser = '@NEWSUSER@' ;
 $newsgroup = '@NEWSGRP@' ;
 
+$do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@' ;
+
 $ENV{'TMPDIR'} = $pathtmp;
 $tmpdir = $pathtmp;
 $spooltemp = $pathtmp;
 
+$filemode = @FILEMODE@ ;
+$inewsmode = @INEWSMODE@ ;
+$rnewsmode = @RNEWSMODE@ ;
 $umask = @NEWSUMASK@ ;
 
 $syslog_facility = lc("@SYSLOG_FACILITY@");

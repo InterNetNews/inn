@@ -514,10 +514,8 @@ LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 dnl Configure our output files.  Try to keep this as limited as possible,
 dnl since it directly affects how long it takes configure to complete.
 AC_CONFIG_FILES([Makefile.global include/inn/paths.h])
-AC_CONFIG_FILES([scripts/inncheck])
 AC_CONFIG_FILES([scripts/innshellvars scripts/innshellvars.tcl])
 AC_CONFIG_FILES([perl/INN/Config.pm scripts/innshellvars.pl])
-AC_CONFIG_FILES([scripts/news.daily])
 AC_CONFIG_FILES([support/fixconfig], [chmod +x support/fixconfig])
 AC_CONFIG_FILES([support/fixscript], [chmod +x support/fixscript])
 

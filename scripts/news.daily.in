@@ -1,4 +1,6 @@
 #! /bin/sh
+# fixscript will replace this line with code to load innshellvars
+
 ##  $Revision$
 ##  Daily news maintenance.
 ##  Optional arguments:
@@ -19,15 +21,11 @@
 ##	delayrm		Delay unlink files, then do it quicker (expire -z)
 ##	/full/path	Path to a program to run before expiring
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-. @libdir@/innshellvars
-
 EXPLOG=${MOST_LOGS}/expire.log
 INNSTAT=${PATHBIN}/innstat
 HOSTNAME=`hostname`
 DATE=`date`
-TAGGEDHASH=@DO_DBZ_TAGGED_HASH@
+TAGGEDHASH=${DO_DBZ_TAGGED_HASH}
 SORT=sort
 
 ##  If your expire does not pause or throttle innd, enable this next line:
