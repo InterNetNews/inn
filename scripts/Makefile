@@ -59,6 +59,6 @@ innupgrade:	innupgrade.in    $(FIX) ; $(FIX) -i innupgrade.in
 innwatch:	innwatch.in      $(FIX)	; $(FIX) innwatch.in
 rc.news:	rc.news.in       $(FIX)	; $(FIX) rc.news.in
 scanlogs:	scanlogs.in      $(FIX)	; $(FIX) scanlogs.in
-simpleftp:	simpleftp.in     $(FIX)	; $(FIX) simpleftp.in
+simpleftp:	simpleftp.in     $(FIX)	; $(FIX) -i simpleftp.in
 tally.control:	tally.control.in $(FIX)	; $(FIX) tally.control.in
 writelog:	writelog.in      $(FIX)	; $(FIX) writelog.in
