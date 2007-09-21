@@ -1644,7 +1644,7 @@ void setSigHandler (int signum, void (*ptr)(int))
   if (sigHandlers == NULL)
     {
       sigHandlers = xmalloc (sizeof(sigfn) * NSIG) ;
-      sigFlags = xmalloc (sizeof(int) * NSIG) ;
+      sigFlags = xmalloc (sizeof(sig_atomic_t) * NSIG) ;
       for (i = 0 ; i < NSIG ; i++)
         {
           sigHandlers [i] = NULL ;
