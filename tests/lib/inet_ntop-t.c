@@ -3,8 +3,8 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket.h"
 #include <errno.h>
-#include <netinet/in.h>
 
 #include "libtest.h"
 
