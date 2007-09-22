@@ -46,7 +46,7 @@ server_ipv4(int n)
     FILE *infile;
     char buffer[256], wanted[256];
     struct passwd *pwd;
-    ssize_t status;
+    int status;
     bool success = true;
 
     /* Make sure we can figure out our username.  If we can't, ident isn't

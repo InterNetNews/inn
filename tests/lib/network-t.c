@@ -149,7 +149,7 @@ test_all(int n, const char *source_ipv4, const char *source_ipv6)
     int *fds, count, fd, i;
     pid_t child;
     struct sockaddr_storage saddr;
-    size_t size = sizeof(saddr);
+    socklen_t size = sizeof(saddr);
 
     network_bind_all(11119, &fds, &count);
     if (count == 0)
