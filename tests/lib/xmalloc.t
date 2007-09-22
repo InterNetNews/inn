@@ -86,9 +86,9 @@ runfailure "n" "64000"  "96000" \
 runfailure "c" "128000" "96000" \
     "failed to calloc 128000 bytes at lib/xmalloc.c line 137"
 runfailure "a" "64000" "96000" \
-    "failed to asprintf 64000 bytes at lib/xmalloc.c line 181"
+    "failed to asprintf 64000 bytes at lib/xmalloc.c line 159"
 runfailure "v" "64000" "96000" \
-    "failed to vasprintf 64000 bytes at lib/xmalloc.c line 200"
+    "failed to vasprintf 64000 bytes at lib/xmalloc.c line 178"
 
 # Check our custom error handler.
 runfailure "M" "128000" "96000" "malloc 128000 lib/xmalloc.c 36"
@@ -96,8 +96,8 @@ runfailure "R" "128000" "96000" "realloc 128000 lib/xmalloc.c 62"
 runfailure "S" "64000"  "96000" "strdup 64000 lib/xmalloc.c 91"
 runfailure "N" "64000"  "96000" "strndup 64000 lib/xmalloc.c 115"
 runfailure "C" "128000" "96000" "calloc 128000 lib/xmalloc.c 137"
-runfailure "A" "64000"  "96000" "asprintf 64000 lib/xmalloc.c 181"
-runfailure "V" "64000"  "96000" "vasprintf 64000 lib/xmalloc.c 200"
+runfailure "A" "64000"  "96000" "asprintf 64000 lib/xmalloc.c 159"
+runfailure "V" "64000"  "96000" "vasprintf 64000 lib/xmalloc.c 178"
 
 # Check the smaller ones again just for grins.
 runsuccess "m" "21" "96000"
