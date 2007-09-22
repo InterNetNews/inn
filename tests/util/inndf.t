@@ -3,6 +3,8 @@
 #
 # Test suite for inndf.
 
+UNAME_SYSTEM=`(uname -s) 2>/dev/null`
+
 # The count starts at 1 and is updated each time ok is printed.  printcount
 # takes "ok" or "not ok".
 count=1
@@ -48,7 +50,11 @@ fi
 # is what Reiser and some other file systems return in some versions of
 # Linux.
 if df -i . > /dev/null 2>&1 ; then
-    real=`df -i . | sed 1d | awk '{ print $4 }'`
+    if [ "${UNAME_SYSTEM}" = "FreeBSD" ] ; then
+        real=`df -i . | sed 1d | awk '{ print $7 }'`
+    else
+        real=`df -i . | sed 1d | awk '{ print $4 }'`
+    fi
     try=`$inndf -i .`
     if [ "$try" = 4294967295 ] ; then
         printcount "ok"
