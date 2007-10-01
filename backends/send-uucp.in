@@ -131,7 +131,8 @@ sub count_jobs {
 sub unbatcher {
     my ($compressor) = @_;
 
-    $compressor =~ s%.*/%%;
+    $compressor =~ s%.*/%%;   # Do not keep the complete path.
+    $compressor =~ s% .*%%;   # Do not keep the optional parameters.
     return $UNBATCHER{$compressor} || 'cunbatch';
 }
 
