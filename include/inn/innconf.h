@@ -76,6 +76,7 @@ struct innconf {
     bool nfsreader;             /* Use NFS reader functionality */
     long nfsreaderdelay;        /* Delay applied to article arrival */
     bool nnrpdcheckart;         /* Check article existence before returning? */
+    char *nnrpdflags;           /* Arguments to pass when spawning nnrpd */
     long nnrpdloadlimit;        /* Maximum getloadvg() we allow */
     bool noreader;              /* Refuse to fork nnrpd for readers? */
     bool readerswhenstopped;    /* Allow nnrpd when server is paused */

@@ -13,6 +13,7 @@
 
 #include "inn/innconf.h"
 #include "inn/network.h"
+#include "inn/vector.h"
 #include "innd.h"
 
 #define TEST_CONFIG(a, b) \
@@ -393,9 +394,14 @@ RCrejectwritedone(CHANNEL *cp)
 void
 RChandoff(int fd, HANDOFF h)
 {
-    const char *argv[6];
+    const char **argv;
     char buff[SMBUF];
     int i;
+    unsigned int j;
+    struct vector *flags;
+    
+    flags = vector_split_space(innconf->nnrpdflags, NULL);
+    argv  = xmalloc( (flags->count + 6) * sizeof(char*) );
 
     if (RCnnrpd == NULL)
 	RCnnrpd = concatpath(innconf->pathbin, "nnrpd");
@@ -427,11 +433,17 @@ RChandoff(int fd, HANDOFF h)
 	argv[i++] = "-t";
     if (RCslaveflag)
 	argv[i++] = RCslaveflag;
+
+    for(j = 0; j < flags->count; j++) {
+        argv[i++] = flags->strings[j];
+    }
     argv[i] = NULL;
 
     /* Call NNRP; don't send back a QUIT message if Spawn fails since  
      * that's a major error we want to find out about quickly. */
     Spawn(innconf->nicekids, fd, fd, fd, (char * const *)argv);
+    vector_free(flags);
+    free(argv);
 }
 
 

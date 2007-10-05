@@ -201,6 +201,7 @@ const struct config config_table[] = {
     { K(nfsreaderdelay),        NUMBER  (60) },
     { K(nicenewnews),           NUMBER  (0) },
     { K(nicennrpd),             NUMBER  (0) },
+    { K(nnrpdflags),            STRING  ("") },
     { K(nnrpdauthsender),       BOOL    (false) },
     { K(nnrpdloadlimit),        NUMBER  (16) },
     { K(nnrpdoverstats),        BOOL    (false) },

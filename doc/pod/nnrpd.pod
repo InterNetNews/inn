@@ -30,6 +30,12 @@ configuration files will be immediately effective for all new
 connections.  If you are instead running B<nnrpd> with the B<-D> option,
 any configuration changes won't take effect until B<nnrpd> is restarted.
 
+The F<inn.conf> setting I<nnrpdflags> can be used to pass any of the
+options below to instances of B<nnrpd> that are spawned directly from
+B<innd>.  Many options only make sense when B<-D> is used, so these
+options should not be used with I<nnrpdflags>.  See also the discussion
+of I<nnrpdflags> in inn.conf(5).
+
 When I<nnrpdloadlimit> in F<inn.conf> is not 0, it will also reject
 connections if the load average is greater than that value (typically 16).
 B<nnrpd> can also prevent high-volume posters from abusing your
