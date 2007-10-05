@@ -209,11 +209,11 @@ rc.o: rc.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/network.h innd.h ../include/portable/time.h \
-  ../include/inn/buffer.h ../include/inn/history.h \
-  ../include/inn/messages.h ../include/inn/timer.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h
+  ../include/inn/network.h ../include/inn/vector.h innd.h \
+  ../include/portable/time.h ../include/inn/buffer.h \
+  ../include/inn/history.h ../include/inn/messages.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
+  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h
 site.o: site.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \

@@ -36,7 +36,7 @@ mailcmd:                @bindir@/innmail
 artcutoff:              10
 #bindaddress:
 #bindaddress6:
-dontrejectfiltered:	false
+dontrejectfiltered:     false
 hiscachesize:           0
 ignorenewsgroups:       false
 immediatecancel:        false
@@ -79,7 +79,7 @@ msgidcachesize:         10000
 nfsreader:              false
 nfsreaderdelay:         60
 nnrpdcheckart:          true
-nnrpdflags:		""
+nnrpdflags:             ""
 nnrpdloadlimit:         16
 noreader:               false
 readerswhenstopped:     false
