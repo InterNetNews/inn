@@ -79,6 +79,7 @@ msgidcachesize:         10000
 nfsreader:              false
 nfsreaderdelay:         60
 nnrpdcheckart:          true
+nnrpdflags:		""
 nnrpdloadlimit:         16
 noreader:               false
 readerswhenstopped:     false
