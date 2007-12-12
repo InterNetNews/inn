@@ -467,16 +467,11 @@ int main(int argc, char **argv)
     if(ovdb_conf.readserver) {
 	if(ovdb_check_pidfile(OVDB_SERVER_PIDFILE) == false) {
             notice("starting ovdb server");
-	    switch(fork()) {
-	    case -1:
-                sysdie("cannot fork");
-	    case 0:
-		setsid();
-		execl(concatpath(innconf->pathbin, "ovdb_server"),
-		    "ovdb_server", SPACES, NULL);
-                syswarn("cannot exec ovdb_server");
-		_exit(1);
-	    }
+            daemonize(innconf->pathtmp);
+            execl(concatpath(innconf->pathbin, "ovdb_server"), "ovdb_server",
+                SPACES, NULL);
+            syswarn("cannot exec ovdb_server");
+            _exit(1);
 	} else
             warn("ovdb_server already running");
     }
