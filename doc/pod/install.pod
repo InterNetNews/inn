@@ -174,7 +174,7 @@ New major releases will be announced on <inn-announce@isc.org> (see
 F<README>) when they're made.
 
 If you want a more cutting-edge version, you can obtain current
-snapshots from L<ftp://ftp.isc.org/isc/inn/snapshots>.  These
+snapshots from L<ftp://ftp.isc.org/isc/inn/snapshots/>.  These
 are snapshots of the INN CVS tree taken daily; there are two snapshots
 made each night (one of the current development branch, and one of the
 stable branch consisting of bug fixes to the previous major release).
