@@ -301,7 +301,8 @@ value of 256. The default if this is not specified, is 0.
 This key requires a string value.  It specifies which outgoing IPv4 address
 innfeed should bind the local end of its connections to.
 Must be in dotted-quad format (nnn.nnn.nnn.nnn).
-If not set, innfeed defaults to letting the kernel choose this address.
+If not set, innfeed defaults to the value of \fBsourceaddress\fP from
+inn.conf(5).
 The default value is unset.
 .TP
 .B bindaddress6

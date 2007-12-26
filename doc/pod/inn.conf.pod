@@ -271,9 +271,9 @@ is a boolean value and the default is true.
 =item I<sourceaddress>
 
 Which local IP address to bind to for outgoing NNTP sockets (used by
-innxmit(8) among other programs, but I<not> innfeed(8) S<-- see>
-I<bindaddress> in innfeed.conf(5) for that).  This must be in dotted-quad
-format (nnn.nnn.nnn.nnn).  If set to C<all> or not set, the operating
+innxmit(8) among other programs, as well as innfeed(8) as long as not
+overridden by I<bindaddress> in innfeed.conf(5)).  This must be in
+dotted-quad format (nnn.nnn.nnn.nnn).  If set to C<all>, the operating
 system will choose the source IP address for outgoing connections.  The
 default value is unset.
 
