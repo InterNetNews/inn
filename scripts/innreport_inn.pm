@@ -432,6 +432,8 @@ sub collect {
     }
     # closed (without times (?))
     return 1 if $left =~ m/\S+ closed$/o;
+    # closed (for a cancel feed - MODE CANCEL)
+    return 1 if $left =~ m/localhost:\d+ closed seconds \d+ cancels \d+$/o;
     # flush
     if ($left =~ /(\S+) flush$/o) {
       $innd_control{"flush"}++;
