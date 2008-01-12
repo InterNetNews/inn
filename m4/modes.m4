@@ -54,7 +54,7 @@ dnl rnews used to be installed setuid root so that it could be run by the uucp
 dnl user for incoming batches, but this isn't necessary unless you're using
 dnl UUCP (which most people aren't) and setuid news is all that's needed.
 dnl Only do even that if it's explicitly requested at configure time.
-RNEWSGRP=$NEWSGRP
+RNEWSGRP=$RUNASGROUP
 RNEWSMODE=0500
 AC_ARG_ENABLE([uucp-rnews],
     [AC_HELP_STRING([--enable-uucp-rnews],

@@ -259,16 +259,16 @@ MAN8		= $(mandir)/man8
 ##  configure; inews and rnews are special and have configure flags to
 ##  control how they're installed.  See INSTALL for more information.
 
-NEWSUSER	= @NEWSUSER@
-NEWSGROUP	= @NEWSGRP@
+RUNASUSER	= @RUNASUSER@
+RUNASGROUP	= @RUNASGROUP@
 RNEWSGROUP	= @RNEWSGRP@
 
 INEWSMODE	= @INEWSMODE@
 RNEWSMODE	= @RNEWSMODE@
 FILEMODE	= @FILEMODE@
 
-OWNER		= -o $(NEWSUSER) -g $(NEWSGROUP)
-ROWNER		= -o $(NEWSUSER) -g $(RNEWSGROUP)
+OWNER		= -o $(RUNASUSER) -g $(RUNASGROUP)
+ROWNER		= -o $(RUNASUSER) -g $(RNEWSGROUP)
 
 INSTALL		= $(top)/support/install-sh -c
 
@@ -288,7 +288,7 @@ INSTALL		= $(top)/support/install-sh -c
 ##  files like active and newsgroups that should have the same permissions as
 ##  article files.
 
-LI_SPRI		= $(LIBTOOL) $(INSTALL) -o root -g $(NEWSGROUP) -m 4550 -B .OLD
+LI_SPRI		= $(LIBTOOL) $(INSTALL) -o root -g $(RUNASGROUP) -m 4550 -B .OLD
 LI_XPRI		= $(LIBTOOL) $(INSTALL) $(OWNER) -m 0550 -B .OLD
 LI_XPUB		= $(LIBTOOL) $(INSTALL) $(OWNER) -m 0555 -B .OLD
 

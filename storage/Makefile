@@ -178,7 +178,8 @@ ovdb/ovdb.o: ovdb/ovdb.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/conffile.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/libinn.h \
+  ../include/inn/libinn.h ../include/inn/messages.h \
+  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/ov.h \
   ../include/inn/storage.h ../include/inn/history.h ovinterface.h \
   ../include/config.h ../include/inn/history.h ../include/inn/ov.h \
@@ -252,10 +253,11 @@ tradindexed/tdx-util.o: tradindexed/tdx-util.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/buffer.h ../include/inn/defines.h \
-  ../include/inn/history.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/vector.h ../include/inn/wire.h \
-  ../include/inn/libinn.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/history.h ovinterface.h ../include/config.h \
-  ../include/inn/history.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/paths.h tradindexed/tdx-private.h \
+  ../include/inn/libinn.h ../include/inn/history.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
+  ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
+  ../include/inn/paths.h ../include/inn/vector.h ../include/inn/wire.h \
+  ovinterface.h ../include/config.h ../include/inn/history.h \
+  ../include/inn/ov.h ../include/inn/storage.h tradindexed/tdx-private.h \
   ../include/inn/storage.h tradindexed/tdx-structure.h

@@ -10,15 +10,15 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <grp.h>
 #include <pwd.h>
 #include <sys/stat.h>
 
 #include "inn/innconf.h"
-#include "inn/messages.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/messages.h"
+#include "inn/newsuser.h"
 #include "inn/paths.h"
+#include "nntp.h"
 
 /* Signature handling.  The separator will be appended before the signature,
    and at most SIG_MAXLINES will be appended. */
@@ -339,8 +339,8 @@ CheckCancel(char *msgid, bool JustReturn)
 static bool
 AnAdministrator(char *name, gid_t group)
 {
-    struct passwd	*pwp;
-    struct group	*grp;
+    uid_t               news_uid;
+    gid_t               news_gid;
     char		**mem;
     char		*p;
 
@@ -348,21 +348,33 @@ AnAdministrator(char *name, gid_t group)
 	return false;
 
     /* Find out who we are. */
-    if ((pwp = getpwnam(NEWSUSER)) == NULL)
-	/* Silent falure; clients might not have the group. */
-	return false;
-    if (getuid() == pwp->pw_uid)
-	return true;
+    if (get_news_uid_gid(&news_uid, &news_gid, false) != 0) {
+        /* Silent failure; clients might not have the group. */
+        return false;
+    }
+    if (getuid() == news_uid)
+        return true;
 
-    /* See if the we're in the right group. */
-    if ((grp = getgrnam(NEWSGRP)) == NULL || (mem = grp->gr_mem) == NULL)
-	/* Silent falure; clients might not have the group. */
-	return false;
-    if (group == grp->gr_gid)
-	return true;
-    while ((p = *mem++) != NULL)
-	if (strcmp(name, p) == 0)
-	    return true;
+    /* See if we are in the right group and examine process
+     * supplementary groups, rather than the group(5) file entry.
+     */
+    {
+        int ngroups = getgroups(0, 0);
+        gid_t *groups, *gp;
+        int rv;
+        int rest;
+
+        groups = (gid_t *) xmalloc(ngroups * sizeof(*groups));
+        if ((rv = getgroups(ngroups, groups)) < 0) {
+            /* Silent failure; client doesn't have the group. */
+            return false;
+        }
+        for (rest = ngroups, gp = groups; rest > 0; rest--, gp++) {
+            if (*gp == news_gid)
+                return true;
+        }
+    }
+    
     return false;
 }
 

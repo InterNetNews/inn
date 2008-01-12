@@ -369,7 +369,7 @@ int main(int argc, char **argv)
         die("ovmethod not set to ovdb in inn.conf");
 
     if(!ovdb_check_user())
-        die("command must be run as user " NEWSUSER);
+        die("command must be run as runasuser user");
 
     chdir(innconf->pathtmp);
 

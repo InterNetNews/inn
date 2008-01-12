@@ -393,6 +393,7 @@ include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
 include/inn/mmap.h                    Header file for mmap() functions
 include/inn/network.h                 Header file for network functions
+include/inn/newsuser.h                Header file for ensuring running as news
 include/inn/nntp.h                    Header file for NNTP functions and codes
 include/inn/options.h                 Header file for compile-time options
 include/inn/ov.h                      Header file for old overview API
@@ -515,6 +516,7 @@ lib/messages.c                        Error reporting and debug output
 lib/mkstemp.c                         mkstemp replacement
 lib/mmap.c                            mmap manipulation routines
 lib/network.c                         Network utility functions
+lib/newsuser.c                        Ensure running as news user/group
 lib/nntp.c                            NNTP utility library
 lib/perl.c                            Perl hook support for nnrpd and innd
 lib/pread.c                           pread replacement

@@ -11,17 +11,17 @@
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
-#include <pwd.h>
 #include <signal.h>
 #include <syslog.h>
 #include <time.h>
 
 #include "inn/innconf.h"
-#include "inn/messages.h"
-#include "inn/qio.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
+#include "inn/newsuser.h"
 #include "inn/ov.h"
 #include "inn/paths.h"
+#include "inn/qio.h"
 #include "inn/storage.h"
 
 static const char usage[] = "\
@@ -43,25 +43,6 @@ fatal_signal(int sig)
 {
     signalled = 1;
     xsignal(sig, SIG_DFL);
-}
-
-
-/*
-**  Change to the news user if possible, and if not, die.  Used for operations
-**  that may create new database files so as not to mess up the ownership.
-*/
-static void
-setuid_news(void)
-{
-    struct passwd *pwd;
-
-    pwd = getpwnam(NEWSUSER);
-    if (pwd == NULL)
-        die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
-    if (getuid() == 0)
-        setuid(pwd->pw_uid);
-    if (getuid() != pwd->pw_uid)
-        die("must be run as %s", NEWSUSER);
 }
 
 
@@ -142,8 +123,8 @@ main(int argc, char *argv[])
     if (!innconf_read(NULL))
         exit(1);
 
-    /* Change to the news user if necessary. */
-    setuid_news();
+    /* Change to the runasuser user and runasgroup group if necessary. */
+    ensure_news_user_grp(true, true);
 
     /* Initialize the lowmark file, if one was requested. */
     if (lowmark_path != NULL) {

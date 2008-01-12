@@ -24,6 +24,9 @@ hismethod:              hisv6
 pathhost:               @HOSTNAME@
 pathnews:               @prefix@
 
+#runasuser:
+#runasgroup:
+
 # General Settings
 
 #domain:

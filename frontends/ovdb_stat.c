@@ -778,7 +778,7 @@ int main(int argc, char *argv[])
         exit(1);
 
     if(!ovdb_check_user())
-        die("command must be run as user " NEWSUSER);
+        die("command must be run as runasuser user");
     if(!ovdb_getlock(OVDB_LOCK_ADMIN))
         sysdie("cannot lock database");
     if(!ovdb_open(OV_READ|OVDB_SERVER))

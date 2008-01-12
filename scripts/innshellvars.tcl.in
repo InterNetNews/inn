@@ -92,8 +92,8 @@ set inn_tempsock [ eval exec basename ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e
 set inn_tempsockdir [ exec echo ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s@/[^/]*$@@} ]
 
 set inn_newsmaster "@NEWSMASTER@"
-set inn_newsuser "@NEWSUSER@"
-set inn_newsgroup "@NEWSGRP@"
+set inn_newsuser "${inn_runasuser}"
+set inn_newsgroup "${inn_runasgroup}"
 
 set do_dbz_tagged_hash "@DO_DBZ_TAGGED_HASH@"
 

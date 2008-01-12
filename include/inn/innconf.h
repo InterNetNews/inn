@@ -26,6 +26,8 @@ struct innconf {
     char *mta;                  /* MTA for mailing to moderators, innmail */
     char *pathhost;             /* Entry for the Path: line */
     char *server;               /* Default server to connect to */
+    char *runasuser;            /* User to run under */
+    char *runasgroup;           /* Group to run under */
 
     /* Feed Configuration */
     long artcutoff;             /* Max accepted article age */

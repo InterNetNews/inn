@@ -121,11 +121,11 @@ cert:
 	$(SSLBIN) req -new -x509 -nodes \
 	    -out $(PATHLIB)/cert.pem -days 366 \
 	    -keyout $(PATHLIB)/key.pem
-	chown $(NEWSUSER) $(PATHLIB)/cert.pem
-	chgrp $(NEWSGROUP) $(PATHLIB)/cert.pem
+	chown $(RUNASUSER) $(PATHLIB)/cert.pem
+	chgrp $(RUNASGROUP) $(PATHLIB)/cert.pem
 	chmod 640 $(PATHLIB)/cert.pem
-	chown $(NEWSUSER) $(PATHLIB)/key.pem
-	chgrp $(NEWSGROUP) $(PATHLIB)/key.pem
+	chown $(RUNASUSER) $(PATHLIB)/key.pem
+	chgrp $(RUNASGROUP) $(PATHLIB)/key.pem
 	chmod 600 $(PATHLIB)/key.pem
 
 

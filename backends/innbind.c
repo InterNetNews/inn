@@ -9,15 +9,15 @@
 #include "clibrary.h"
 #include "portable/socket.h"
 #include <errno.h>
-#include <pwd.h>
 #ifdef HAVE_STREAMS_SENDFD
 # include <stropts.h>
 #endif
 #include <syslog.h>
 
-#include "inn/messages.h"
-#include "inn/vector.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
+#include "inn/newsuser.h"
+#include "inn/vector.h"
 
 /* Macros to set the len attribute of sockaddrs. */
 #if HAVE_STRUCT_SOCKADDR_SA_LEN
@@ -267,7 +267,7 @@ int
 main(int argc, char *argv[])
 {
     struct passwd *pwd;
-    uid_t real_uid;
+    uid_t real_uid, uid;
     int i;
     bool done;
     struct binding binding = { 0, 0, NULL, 0 };
@@ -281,17 +281,16 @@ main(int argc, char *argv[])
     message_program_name = "innbind";
 
     /* If we're running privileged (effective and real UIDs are different),
-       convert NEWSUSER to a UID and exit if run by another user.  Don't do
+       convert runasuser to a UID and exit if run by another user.  Don't do
        this if we're not running privileged to make installations that don't
        need privileged ports easier and to make testing easier. */
     real_uid = getuid();
     if (real_uid != geteuid()) {
-        pwd = getpwnam(NEWSUSER);
-        if (pwd == NULL)
-            die("cannot get UID for %s", NEWSUSER);
-        if (real_uid != pwd->pw_uid)
-            die("must be run by user %s (%lu), not %lu", NEWSUSER,
-                (unsigned long) pwd->pw_uid, (unsigned long) real_uid);
+        get_news_uid_gid(&uid, false, true);
+        if (real_uid != uid) {
+            die("must be run by runasuser (%lu), not %lu",
+                (unsigned long) uid, (unsigned long) real_uid);
+        }
     }
 
     /* If the first argument is -p, force creation of the socket and file

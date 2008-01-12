@@ -12,19 +12,19 @@
 #include "clibrary.h"
 #include <ctype.h>
 #include <dirent.h>
-#include <pwd.h>
 #include <sys/stat.h>
 
 #include "inn/buffer.h"
+#include "inn/libinn.h"
 #include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/newsuser.h"
+#include "inn/ov.h"
+#include "inn/paths.h"
 #include "inn/vector.h"
 #include "inn/wire.h"
-#include "inn/libinn.h"
-#include "inn/ov.h"
 #include "ovinterface.h"
-#include "inn/paths.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
@@ -384,27 +384,6 @@ group_rebuild(const char *group, const char *path)
 
 
 /*
-**  Change to the news user if possible, and if not, die.  Used for operations
-**  that may change the overview files so as not to mess up the ownership.
-*/
-static void
-setuid_news(void)
-{
-    struct passwd *pwd;
-
-    if (getenv("INN_TESTSUITE") != NULL)
-        return;
-    pwd = getpwnam(NEWSUSER);
-    if (pwd == NULL)
-        die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
-    if (getuid() == 0)
-        setuid(pwd->pw_uid);
-    if (getuid() != pwd->pw_uid)
-        die("must be run as %s", NEWSUSER);
-}
-
-
-/*
 **  Parse an article number or range, returning the low and high values in the
 **  provided arguments.  Returns true if the number or range was parsed
 **  successfully, false otherwise.  Allows such constructs as "-", "20-", or
@@ -539,15 +518,18 @@ main(int argc, char *argv[])
         tdx_index_audit(false);
         break;
     case 'F':
-        setuid_news();
+        if (getenv("INN_TESTSUITE") == NULL)
+            ensure_news_user_grp(true, true);
         tdx_index_audit(true);
         break;
     case 'R':
-        setuid_news();
+        if (getenv("INN_TESTSUITE") == NULL)
+            ensure_news_user_grp(true, true);
         group_rebuild(newsgroup, path);
         break;
     case 'c':
-        setuid_news();
+        if (getenv("INN_TESTSUITE") == NULL)
+            ensure_news_user_grp(true, true);
         group_create(newsgroup, artlow, arthigh, flag);
         break;
     case 'i':

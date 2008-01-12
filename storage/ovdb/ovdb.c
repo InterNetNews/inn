@@ -79,7 +79,6 @@
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
-#include <pwd.h>
 #include <signal.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
@@ -92,8 +91,9 @@
 
 #include "conffile.h"
 #include "inn/innconf.h"
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
+#include "inn/newsuser.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
 
@@ -1370,19 +1370,23 @@ bool ovdb_check_pidfile(const char *file)
     return true;
 }
 
-/* make sure the effective uid is that of NEWSUSER */
+/* Make sure the effective uid is that of the runasuser user. */
 bool ovdb_check_user(void)
 {
     struct passwd *p;
     static int result = -1;
 
     if(result == -1) {
-	p = getpwnam(NEWSUSER);
-	if(!p) {
-            syswarn("OVDB: getpwnam(" NEWSUSER ") failed");
-	    return false;
-	}
-	result = (p->pw_uid == geteuid());
+        int rv;
+        uid_t uid;
+        
+        rv = get_news_uid_gid(&uid, false, false);
+
+        if (rv != 0) {
+            syswarn("OVDB: can't resolve runasuser user to a UID");
+            return false;
+        }
+        result = (uid == geteuid());
     }
     return result;
 }
@@ -1632,7 +1636,7 @@ bool ovdb_open(int mode)
 	clientmode = 0;
     }
     if(!ovdb_check_user()) {
-        warn("OVDB: must be running as " NEWSUSER " to access overview");
+        warn("OVDB: must be running as runasuser user to access overview");
 	return false;
     }
     if(!ovdb_getlock(OVDB_LOCK_NORMAL)) {

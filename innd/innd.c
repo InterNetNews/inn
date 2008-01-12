@@ -5,11 +5,10 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <grp.h>
-#include <pwd.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/newsuser.h"
 #include "innperl.h"
 
 #define DEFINE_DATA
@@ -278,8 +277,6 @@ main(int ac, char *av[])
     const char *name, *p;
     char *path;
     bool flag;
-    struct passwd *pwd;
-    struct group *grp;
     static char		WHEN[] = "PID file";
     int			i;
     char		buff[SMBUF];
@@ -314,22 +311,7 @@ main(int ac, char *av[])
 
     /* Make sure innd is running as the correct user.  If it is started as
        root, switch to running as the news user. */
-    grp = getgrnam(NEWSGRP);
-    if (grp == NULL)
-        die("SERVER cannot get GID for %s", NEWSGRP);
-    pwd = getpwnam(NEWSUSER);
-    if (pwd == NULL)
-        die("SERVER cannot get UID for %s", NEWSUSER);
-    if (getuid() == 0 || geteuid() == 0) {
-        setgid(grp->gr_gid);
-        setuid(pwd->pw_uid);
-    }
-    if (getuid() != pwd->pw_uid)
-        die("SERVER should run as user %s (%lu), not %lu", NEWSUSER,
-            (unsigned long) pwd->pw_uid, (unsigned long) getuid());
-    if (getgid() != grp->gr_gid)
-        die("SERVER should run as group %s (%lu), not %lu", NEWSGRP,
-            (unsigned long) grp->gr_gid, (unsigned long) getgid());
+    ensure_news_user_grp(true, true);
 
     /* Handle malloc debugging. */
 #if	defined(_DEBUG_MALLOC_INC)

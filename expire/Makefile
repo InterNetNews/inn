@@ -97,13 +97,15 @@ expire.o: expire.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/history.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/messages.h \
   ../include/inn/inndcomm.h ../include/inn/libinn.h \
+  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
   ../include/inn/paths.h ../include/inn/storage.h
 expireover.o: expireover.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/qio.h ../include/inn/libinn.h \
+  ../include/inn/libinn.h ../include/inn/messages.h \
+  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
   ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
-  ../include/inn/paths.h ../include/inn/storage.h
+  ../include/inn/paths.h ../include/inn/qio.h ../include/inn/storage.h
 fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -119,17 +121,19 @@ makedbz.o: makedbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/dbz.h ../include/inn/libinn.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/qio.h ../include/inn/libinn.h \
-  ../include/inn/paths.h ../include/inn/storage.h
+  ../include/inn/libinn.h ../include/inn/messages.h \
+  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
+  ../include/inn/paths.h ../include/inn/qio.h ../include/inn/storage.h
 makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/wait.h ../include/config.h \
   ../include/inn/buffer.h ../include/inn/defines.h \
   ../include/inn/history.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/qio.h ../include/inn/wire.h \
-  ../include/inn/libinn.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/history.h ../include/inn/paths.h \
-  ../include/inn/storage.h
+  ../include/inn/libinn.h ../include/inn/messages.h \
+  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
+  ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
+  ../include/inn/paths.h ../include/inn/qio.h ../include/inn/storage.h \
+  ../include/inn/wire.h
 prunehistory.o: prunehistory.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \

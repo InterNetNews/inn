@@ -119,7 +119,8 @@ icd.o: icd.c ../include/config.h ../include/inn/defines.h \
 innd.o: innd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/innperl.h innd.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h ../include/config.h \
+  ../include/clibrary.h ../include/innperl.h innd.h \
   ../include/portable/time.h ../include/config.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \

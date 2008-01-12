@@ -303,7 +303,7 @@ int main(int argc, char **argv)
     if(strcmp(innconf->ovmethod, "ovdb"))
         die("ovmethod not set to ovdb in inn.conf");
     if(!ovdb_check_user())
-        die("command must be run as user " NEWSUSER);
+        die("command must be run as runasuser user");
     if(!ovdb_getlock(OVDB_LOCK_ADMIN))
         die("cannot lock database");
 

@@ -131,13 +131,13 @@ $D$(PATH_ACTIVE): 	; $(CP_DATA) active.minimal $@
 $D$(PATH_NEWSGROUPS):	; $(CP_DATA) newsgroups.minimal $@
 $D$(PATH_ACTIVE_TIMES):
 	touch $@
-	chown $(NEWSUSER) $@
-	chgrp $(NEWSGROUP) $@
+	chown $(RUNASUSER) $@
+	chgrp $(RUNASGROUP) $@
 	chmod $(FILEMODE) $@
 $D$(PATH_HISTORY):
 	touch $@
-	chown $(NEWSUSER) $@
-	chgrp $(NEWSGROUP) $@
+	chown $(RUNASUSER) $@
+	chgrp $(RUNASGROUP) $@
 	chmod $(FILEMODE) $@
 	$(PATHBIN)/makedbz -i -o
 

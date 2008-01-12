@@ -390,7 +390,7 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 	    buf.st_uid != getuid()) {
 	    syslog(L_ERROR, "bad ownership or permissions on private key"
                    " '%s': private key must be mode 600 and owned by "
-                   NEWSUSER, cert_file);
+                   "uid %d", cert_file, getuid());
 	    return (0);
 	}
 

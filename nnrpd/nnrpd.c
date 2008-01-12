@@ -12,9 +12,7 @@
 #include "portable/setproctitle.h"
 #include "portable/socket.h"
 #include "portable/wait.h"
-#include <grp.h>
 #include <netdb.h>
-#include <pwd.h>
 #include <signal.h>
 
 #if HAVE_GETSPNAM
@@ -22,11 +20,12 @@
 #endif
 
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/network.h"
-#include "inn/version.h"
-#include "inn/libinn.h"
+#include "inn/newsuser.h"
 #include "inn/ov.h"
+#include "inn/version.h"
 #define MAINLINE
 #include "nnrpd.h"
 
@@ -687,7 +686,6 @@ main(int argc, char *argv[])
     int			lfd, fd;
     pid_t		pid = -1;
     FILE                *pidfile;
-    struct passwd	*pwd;
     int			clienttimeout;
     char		*ConfFile = NULL;
     char                *path;
@@ -814,12 +812,7 @@ main(int argc, char *argv[])
        running as root, everything's fine; the things we write it's okay to
        write as a member of the news group. */
     if (getuid() == 0) {
-        pwd = getpwnam(NEWSUSER);
-        if (pwd == NULL)
-            die("cant resolve %s to a UID (account doesn't exist?)", NEWSUSER);
-        setuid(pwd->pw_uid);
-        if (getuid() != pwd->pw_uid)
-            die("cant setuid to %s (%d)", NEWSUSER, pwd->pw_uid);
+        ensure_news_user_grp(true, true);
     }
 
     if (DaemonMode) {

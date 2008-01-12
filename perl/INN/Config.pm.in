@@ -139,8 +139,8 @@ our $z = '@LOG_COMPRESSEXT@';
 my @SYSVAR = qw($newsmaster $newsuser $newsgroup
 $filemode $inewsmode $rnewsmode $umask $syslog_facility);
 our $newsmaster = '@NEWSMASTER@';
-our $newsuser = '@NEWSUSER@';
-our $newsgroup = '@NEWSGRP@';
+our $newsuser = ${runasuser};
+our $newsgroup = ${runasgroup};
 our $filemode = @FILEMODE@;      # It is a number.
 our $inewsmode = @INEWSMODE@;
 our $rnewsmode = @RNEWSMODE@;

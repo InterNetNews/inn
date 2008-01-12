@@ -118,6 +118,9 @@ const struct config config_table[] = {
     { K(sourceaddress6),        STRING  (NULL) },
     { K(timer),                 NUMBER  (0) },
 
+    { K(runasuser),             STRING  (RUNASUSER) },
+    { K(runasgroup),            STRING  (RUNASGROUP) },
+
     { K(patharchive),           STRING  (NULL) },
     { K(patharticles),          STRING  (NULL) },
     { K(pathbin),               STRING  (NULL) },

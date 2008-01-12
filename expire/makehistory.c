@@ -8,20 +8,20 @@
 #include "portable/wait.h"
 #include <assert.h>
 #include <errno.h>
-#include <pwd.h>
 #include <syslog.h>
 #include <time.h>
 
 #include "inn/buffer.h"
 #include "inn/history.h"
 #include "inn/innconf.h"
-#include "inn/messages.h"
-#include "inn/qio.h"
-#include "inn/wire.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
+#include "inn/newsuser.h"
 #include "inn/ov.h"
 #include "inn/paths.h"
+#include "inn/qio.h"
 #include "inn/storage.h"
+#include "inn/wire.h"
 
 static const char usage[] = "\
 Usage: makehistory [-bOIax] [-f file] [-l count] [-s size] [-T tmpdir]\n\
@@ -742,27 +742,6 @@ OverAddAllNewsgroups(void)
 }
 
 
-/*
-**  Change to the news user if possible, and if not, die.  Used for operations
-**  that may create new database files, so as not to mess up the ownership.
-*/
-static void
-setuid_news(void)
-{
-    struct passwd *pwd;
-
-    if (getenv("INN_TESTSUITE") != NULL)
-        return;
-    pwd = getpwnam(NEWSUSER);
-    if (pwd == NULL)
-        die("can't resolve %s to a UID (account doesn't exist?)", NEWSUSER);
-    if (getuid() == 0)
-        setuid(pwd->pw_uid);
-    if (getuid() != pwd->pw_uid)
-        die("must be run as %s", NEWSUSER);
-}
-
-
 int
 main(int argc, char **argv)
 {
@@ -865,9 +844,9 @@ main(int argc, char **argv)
             sysdie("cannot chdir to %s", HistoryDir);
     }
 
-    /* Change users if necessary. */
+    /* Change to the runasuser user and runasgroup group if necessary. */
     if (!NoHistory || !WriteStdout)
-        setuid_news();
+        ensure_news_user_grp(true, true);
 
     /* Read in the overview schema */
     ARTreadschema(DoOverview);

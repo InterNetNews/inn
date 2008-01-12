@@ -167,9 +167,10 @@ nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/portable/wait.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/network.h \
-  ../include/inn/version.h ../include/inn/libinn.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/history.h nnrpd.h \
+  ../include/inn/libinn.h ../include/inn/messages.h \
+  ../include/inn/network.h ../include/inn/newsuser.h ../include/config.h \
+  ../include/clibrary.h ../include/inn/ov.h ../include/inn/storage.h \
+  ../include/inn/history.h ../include/inn/version.h nnrpd.h \
   ../include/portable/time.h ../include/inn/qio.h ../include/nntp.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/vector.h ../include/inn/timer.h tls.h

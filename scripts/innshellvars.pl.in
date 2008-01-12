@@ -101,8 +101,8 @@ if ($ovmethod && $ovmethod eq "ovdb") {
 ($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
 
 $newsmaster = '@NEWSMASTER@' ;
-$newsuser = '@NEWSUSER@' ;
-$newsgroup = '@NEWSGRP@' ;
+$newsuser = ${runasuser} ;
+$newsgroup = ${runasgroup} ;
 
 $do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@' ;
 

@@ -14,17 +14,17 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <pwd.h>
 #include <syslog.h>
 #include <sys/stat.h>
 
 #include "inn/innconf.h"
-#include "inn/messages.h"
-#include "inn/wire.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/messages.h"
+#include "inn/newsuser.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
+#include "inn/wire.h"
+#include "nntp.h"
 
 
 typedef struct _HEADER {
@@ -855,13 +855,10 @@ int main(int ac, char *av[])
        other setups where rnews might be setuid news or be run by other
        processes in the news group. */
     if (getuid() == 0 || geteuid() == 0) {
-        struct passwd *pwd;
+        uid_t uid;
 
-        pwd = getpwnam(NEWSUSER);
-        if (pwd == NULL)
-            die("can't resolve %s to a UID (account doesn't exist?)",
-                NEWSUSER);
-        setuid(pwd->pw_uid);
+        get_news_uid_gid(&uid, false, true);
+        setuid(uid);
     }
 
     if (!innconf_read(NULL))

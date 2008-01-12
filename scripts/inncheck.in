@@ -9,9 +9,6 @@ $ST_MODE = 2;
 $ST_UID  = 4;
 $ST_GID  = 5;
 
-$newsuser = "$INN::Config::newsuser";
-$newsgroup = "$INN::Config::newsgroup";
-
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
 %paths = (
@@ -653,7 +650,7 @@ readers_conf
 sub
 checkperm
 {
-    local ($f, $m, $u, $g) = ( @_, $newsuser, $newsgroup);
+    local ($f, $m, $u, $g) = ( @_, $INN::Config::runasuser, $INN::Config::runasgroup);
     local (@sb, $owner, $group, $mode);
 
     die "Internal error, undefined name in perm from ", (caller(0))[2], "\n"

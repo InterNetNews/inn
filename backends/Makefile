@@ -164,8 +164,9 @@ innbind.o: innbind.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/messages.h ../include/inn/defines.h \
-  ../include/inn/vector.h ../include/inn/libinn.h
+  ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h ../include/config.h \
+  ../include/clibrary.h ../include/inn/vector.h
 inndf.o: inndf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \

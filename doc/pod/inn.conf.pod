@@ -105,6 +105,16 @@ no default value; this parameter must be set in F<inn.conf> or INN will
 not start.  A good value to use is the fully-qualified hostname of the
 system.
 
+=item I<runasgroup>
+
+The group under which the news server will run.  The default is C<news>
+and should not normally need to be changed.
+
+=item I<runasuser>
+
+The user under which the news server will run.  The default is C<news>
+and should not normally need to be changed.
+
 =item I<server>
 
 The name of the default NNTP server.  If I<nnrpdposthost> is not set and
