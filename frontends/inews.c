@@ -337,12 +337,10 @@ CheckCancel(char *msgid, bool JustReturn)
 **  See if the user is the news administrator.
 */
 static bool
-AnAdministrator(char *name, gid_t group)
+AnAdministrator(void)
 {
     uid_t               news_uid;
     gid_t               news_gid;
-    char		**mem;
-    char		*p;
 
     if (Revoked)
 	return false;
@@ -383,12 +381,11 @@ AnAdministrator(char *name, gid_t group)
 **  Check the control message, and see if it's legit.
 */
 static void
-CheckControl(char *ctrl, struct passwd *pwp)
+CheckControl(char *ctrl)
 {
     char	*p;
     char	*q;
     char		save;
-    char		name[SMBUF];
 
     /* Snip off the first word. */
     for (p = ctrl; ISWHITE(*p); p++)
@@ -416,8 +413,7 @@ CheckControl(char *ctrl, struct passwd *pwp)
 	  || strcmp(ctrl, "sendsys")     == 0
 	  || strcmp(ctrl, "senduuname")  == 0
 	  || strcmp(ctrl, "version")     == 0) {
-	strlcpy(name, pwp->pw_name, SMBUF);
-	if (!AnAdministrator(name, pwp->pw_gid))
+	if (!AnAdministrator())
             die("ask your news administrator to do the %s for you", ctrl);
     }
     else {
@@ -570,14 +566,14 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 
     /* Set Subject; Control overrides the subject. */
     if (HDR(_control)) {
-	CheckControl(HDR(_control), pwp);
+	CheckControl(HDR(_control));
     }
     else {
 	p = HDR(_subject);
 	if (p == NULL)
             die("required Subject header is missing or empty");
 	else if (HDR(_alsocontrol))
-	    CheckControl(HDR(_alsocontrol), pwp);
+	    CheckControl(HDR(_alsocontrol));
 #if	0
 	if (strncmp(p, "Re: ", 4) == 0 && HDR(_references) == NULL)
             die("article subject begins with \"Re: \" but has no references");

@@ -266,7 +266,6 @@ send_fd(int fd UNUSED)
 int
 main(int argc, char *argv[])
 {
-    struct passwd *pwd;
     uid_t real_uid, uid;
     int i;
     bool done;

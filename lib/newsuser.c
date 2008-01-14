@@ -14,6 +14,7 @@
 #include <grp.h>
 
 #include "inn/innconf.h"
+#include "inn/messages.h"
 #include "inn/newsuser.h"
 
 /*
@@ -35,8 +36,8 @@ get_news_uid_gid(uid_t *uid, gid_t *gid, bool may_die)
     } else if ((pwd = getpwnam(runasuser)) != 0) {
         *uid = pwd->pw_uid;
     } else if (may_die) {
-        die (("can't resolve %s to a UID"
-              " (account doesn't exist?)"), runasuser);
+        die ("can't resolve %s to a UID"
+              " (account doesn't exist?)", runasuser);
     } else {
         fail = true;
     }
@@ -47,8 +48,8 @@ get_news_uid_gid(uid_t *uid, gid_t *gid, bool may_die)
     } else if ((grp = getgrnam(runasgroup)) != 0) {
         *gid = grp->gr_gid;
     } else if (may_die) {
-        die (("can't resolve %s to a GID"
-              " (group doesn't exist?)"), runasgroup);
+        die ("can't resolve %s to a GID"
+              " (group doesn't exist?)", runasgroup);
     } else {
         fail = true;
     }
