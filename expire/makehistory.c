@@ -845,8 +845,10 @@ main(int argc, char **argv)
     }
 
     /* Change to the runasuser user and runasgroup group if necessary. */
-    if (!NoHistory || !WriteStdout)
-        ensure_news_user_grp(true, true);
+    if (!NoHistory || !WriteStdout) {
+        if (getenv("INN_TESTSUITE") == NULL)
+            ensure_news_user_grp(true, true);
+    }
 
     /* Read in the overview schema */
     ARTreadschema(DoOverview);
