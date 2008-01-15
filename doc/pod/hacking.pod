@@ -13,7 +13,7 @@ development tree using Subversion from:
 
     <http://inn.eyrie.org/svn/>
 
-or view it with ViewCVS at:
+or view it with ViewVC at:
 
     <http://inn.eyrie.org/viewcvs>
 
@@ -503,7 +503,7 @@ Other multiline comments in the source are generally written as:
        multiline comment. */
 
 Comments before functions saying what they do are nice to have.  In
-general, the RCS/CVS Id tag is on the first line of each source file since
+general, the RCS/SVN Id tag is on the first line of each source file since
 it's useful to know when a file was last modified.
 
 =item *
@@ -703,7 +703,7 @@ work.
 Forrest Cavalier provides several tools for following INN development at
 this page and elsewhere in the Usenet RKT.  Under here is a web-accessible
 checked-out copy of the current INN source tree and pointers to how to use
-CVSup.
+CVSup.  However, please note that INN development now uses Subversion.
 
 =item <http://www.sas.com/standards/large.file/>
 

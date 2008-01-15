@@ -180,7 +180,7 @@ posting).
 
 =item inn-committers@isc.org
 
-CVS commit messages for INN are sent to this list (only the automated
+Subversion commit messages for INN are sent to this list (only the automated
 messages are sent here, no regular posting).
 
 =item inn-bugs@isc.org

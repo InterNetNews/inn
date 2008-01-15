@@ -206,8 +206,8 @@ release: ChangeLog
 	$(GZIP) -9 $(TARFILE)
 
 ##  Generate the ChangeLog using support/mkchangelog.  This should only be
-##  run by a maintainer since it depends on cvs log working and also
-##  requires cvs2cl be available somewhere.
+##  run by a maintainer since it depends on svn log working and also
+##  requires svn2cl be available somewhere.
 ChangeLog:
 	$(PERL) support/mkchangelog
 

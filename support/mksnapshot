@@ -35,7 +35,7 @@ make check-manifest
 
 cat > README.snapshot <<EOF
 This is a snapshot of the current development version of INN, pulled
-automatically from the CVS repository.  It was made on:
+automatically from the Subversion repository.  It was made on:
 
     `date -u +"%B %e, %Y @ %I:%M %p %Z"`
 

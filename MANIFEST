@@ -744,7 +744,7 @@ support/indent                        A mostly working wrapper around indent
 support/install-sh                    Installation utility
 support/ltmain.sh                     Source for libtool utility
 support/makedepend                    Generate dependencies for C files
-support/mkchangelog                   Generate ChangeLog from CVS
+support/mkchangelog                   Generate ChangeLog from Subversion
 support/mkmanifest                    Generate a list of files for the manifest
 support/mksnapshot                    Generate a snapshot of the tree
 support/mksystem                      Generate <inn/system.h> from config.h
