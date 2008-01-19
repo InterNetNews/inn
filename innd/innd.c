@@ -155,7 +155,7 @@ catch_terminate(int sig)
     killer_signal = sig;
 
 #ifndef HAVE_SIGACTION
-    xsignal(signal, catch_terminate);
+    xsignal(sig, catch_terminate);
 #endif
 }
 
