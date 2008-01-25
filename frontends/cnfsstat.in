@@ -35,9 +35,9 @@ Usage:
 	-c <CLASS>:  prints out status of CNFS buffers in class CLASS
 	-l seconds:  loops like vmstat, default seconds = 600
 	-s:          logs through syslog
-	-h:          This information
-	-m <BUFFER>: prints out information suitable for mrtg
-	-p:	     prints out an mrtg config file 
+	-h:          this information
+	-m <BUFFER>: prints out information suitable for MRTG
+	-p:	     prints out an MRTG config file
 	-P:          write PID into $INN::Config::pathrun/cnfsstat.pid
 _end_
     exit(1);
@@ -46,6 +46,7 @@ _end_
 my(@line, %class, %buff, %stor, $c, @buffers);
 
 my($gr, $cl, $min, $max, @storsort, $oclass, $header_printed);
+my $use_syslog = 0;
 
 Getopt::Long::config('no_ignore_case');
 GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer,
@@ -54,7 +55,6 @@ GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer,
 &usage if $opt_h;
 
 if ($opt_s) {
-    $use_syslog = 0;
     ## Comment out this eval line if you don't want to try to syslog
     eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
     if ($use_syslog) {
