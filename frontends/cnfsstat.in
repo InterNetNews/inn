@@ -174,7 +174,7 @@ if ($oclass) {
 	    }
 	    &print_cycbuff_head($buff{$b});
 	}
-	if ($use_syslog == 0) {
+	if (!$use_syslog) {
 	    print STDOUT "\n";
 	}
     }
@@ -182,7 +182,7 @@ if ($oclass) {
 
 if(defined($opt_l)) {
     sleep($sleeptime);
-    if ($use_syslog == 0) {
+    if (!$use_syslog) {
 	print STDOUT "$sleeptime seconds later:\n";
     }
     goto START;
