@@ -521,6 +521,7 @@ bool cxnConnect (Connection cxn)
       syswarn ("%s:%d cxnsleep can't create socket", peerName, cxn->ident) ;
       d_printf (1,"Can't get a socket: %s\n", strerror (errno)) ;
 
+      hostIpFailed (cxn->myHost) ;
       cxnSleepOrDie (cxn) ;
 
       return false ;
