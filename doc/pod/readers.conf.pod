@@ -795,7 +795,8 @@ above, with ones having global applicability below.
 =item *
 
 Consider running a C<nnrpd -S> (with C<-D>, or out of "super-server"
-like inetd) on the nntps port (563) for clients that support SSL.  You
+like B<inetd>) on the NNTPS port (563) for clients that support SSL.  See
+nnrpd(8) for more details about how to configure that.  You
 can use the require_ssl: parameter, or C<-c> to specify an alternate
 F<readers.conf> if you want a substantially different configuration for
 this case.

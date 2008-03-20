@@ -1554,15 +1554,19 @@ In the F<contrib> directory of this source tree is a sample init script
 for people using System V-style init.d directories.
 
 If you wish to use TLS/SSL for your readers, you need to start a second
-B<nnrpd> to listen to these connections and put something like that in
-your init scripts:
+B<nnrpd> to listen to these connections to NNTPS port 563 and put something
+like that in your init scripts:
 
     su news -c '/usr/local/news/bin/nnrpd -D -c /usr/local/news/etc/readers-ssl.conf -p 563 -S'
 
 where F<readers-ssl.conf> is the file which indicates whether a given
 connection is allowed to read and post news (you can also use the
 previously created F<readers.conf> file to handle TLS/SSL connections).
-In the shut down section of the init script, you can put:
+Note that a news client which supports the STARTTLS command can also
+use the conventional NNTP port 119 to initiate a TLS connection.  However,
+such clients are not widespread yet.
+
+In the shutdown section of the init script, you can put:
 
     su news -c 'killall nnrpd'
 

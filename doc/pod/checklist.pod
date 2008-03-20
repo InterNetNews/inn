@@ -316,9 +316,13 @@ If you wish to use TLS/SSL for your readers, you can either use the same
 F<readers.conf> file or use two different files (for instance F<readers.conf>
 and F<readers-ssl.conf>).  The syntax is similar for both these files.
 You then need to start a second B<nnrpd> to listen to these connections
-and put something like that in your init scripts:
+to NNTPS port 563 and put something like that in your init scripts:
 
     su news -c '~news/bin/nnrpd -D -c ~news/etc/readers-ssl.conf -p 563 -S'
+
+Note that a news client which supports the STARTTLS command can also
+use the conventional NNTP port 119 to initiate a TLS connection.  However,
+such clients are not widespread yet.
 
 =back
 

@@ -197,14 +197,17 @@ negotiation immediately.  B<innd> does not, however, know how to listen
 for connections to that port and then spawn B<nnrpd> the way that it does
 for regular reader connections.  You will therefore need to arrange for
 B<nnrpd> to listen on that port through some other means.  This can be
-done with the B<-D> flag (and C<-P 563>), but the easiest way is probably
-to add a line like:
+done with the B<-D> flag (and C<-p 563>) and put into your init scripts:
 
-    nntps stream tcp nowait news /usr/lib/news/bin/nnrpd nnrpd -S
+    su news -c '<pathbin>/nnrpd -D -p 563 -S'
+
+but the easiest way is probably to add a line like:
+
+    nntps stream tcp nowait news <pathbin>/nnrpd nnrpd -S
 
 to F</etc/inetd.conf> or the equivalent on your system and let B<inetd>
-run B<nnrpd>.  (Change the path to B<nnrpd> to match your installation if
-needed.)  You may need to replace C<nntps> with C<563> if C<nntps> isn't
+run B<nnrpd>.  (Change the path to B<nnrpd> to match your installation.)
+You may need to replace C<nntps> with C<563> if C<nntps> isn't
 defined in F</etc/services> on your system.
 
 =head1 PROTOCOL DIFFERENCES
