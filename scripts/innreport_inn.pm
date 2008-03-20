@@ -688,6 +688,7 @@ sub collect {
     return 1 if $left =~ /CNFS(?:-sm)?: metacycbuff \S+ cycbuff is moved to /o;
     # Cleanfeed status reports
     return 1 if $left =~ /^filter: status/o;
+    return 1 if $left =~ /^filter: Reloading bad files/o;
   }
   ########
   ## innfeed
