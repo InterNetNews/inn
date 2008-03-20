@@ -1538,6 +1538,29 @@ ListHas(const char **list, const char *p)
 }
 
 /*
+**  Return true if an element of the QHASHLIST matches the
+**  quickhash of the Message-ID.
+*/
+static bool
+QHashMatch(QHASHLIST *qh, char *MessageID)
+{
+  unsigned char *p = (unsigned char *)MessageID;
+  int h = 0;
+
+  while (*p)
+    h += *p++;
+
+  while (qh) {
+    if ((h % qh->mod + 1) >= qh->begin &&
+        (h % qh->mod + 1) <= qh->end)
+          return true;
+    qh = qh->next;
+  }
+
+  return false;
+}
+
+/*
 **  Propagate an article to the sites have "expressed an interest."
 */
 static void
@@ -1608,6 +1631,10 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
       || (sp->Crosscount && Crosscount > sp->Crosscount))
       /* Site already saw the article; path too long; or too much
        * cross-posting. */
+      continue;
+
+    if (sp->QHashList && !QHashMatch(sp->QHashList, HDR(HDR__MESSAGE_ID)))
+      /* Quickhash doesn't match. */
       continue;
 
     if (list && *list != NULL && sp->Distributions &&

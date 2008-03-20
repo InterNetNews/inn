@@ -384,6 +384,33 @@ should be a positive number between 0 and 20 and is the priority that the
 new process will run with.  This flag can be used to raise the priority to
 normal if you're using the I<nicekids> parameter in F<inn.conf>.
 
+=item B<Q> I<hashfeed>
+
+Specifies the I<hashfeed> value for this site.  The Message-ID of the
+article is hashed using a quick (but dirty) hash method (31-bits sum
+of the value of all characters).  The I<hashfeed> value must be given
+as C<value/mod> or as C<start-end/mod>.  If the Message-ID hash modulus
+C<mod> plus one equals C<value> or is between C<start> and C<end>,
+the article will be fed to this site.  All these numbers must be integers.
+
+For instance:
+
+    Q1/2      Feeds about 50% of the messages to this site.
+    Q2/2      Feeds the other 50% of the messages.
+
+Another example with three sites:
+
+    Q1-3/10   Feeds about 30% of the messages.
+    Q4-5/10   Feeds about 20% of the messages.
+    Q6-10/10  Feeds about 50% of the messages.
+
+If this flag is specified multiple times, the contents will be
+logically C<OR>ed together (just one matched flag is needed).
+
+The algorithm is compatible with the legacy Quickhash used by Diablo.
+Please note that the distribution of the messages is not perfect with
+this algorithm.
+
 =item B<S> I<size>
 
 If the amount of data queued for the site gets to be larger than I<size>

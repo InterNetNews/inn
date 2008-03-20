@@ -448,6 +448,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     int			isp;
     SITE		*nsp;
     struct buffer	b;
+    QHASHLIST           *qh;
 
     b = sp->Buffer;
     *sp = SITEnull;
@@ -467,6 +468,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->NeedOverviewCreation = false;
     sp->FeedwithoutOriginator = false;
     sp->DropFiltered = false;
+    sp->QHashList = NULL;
 
     /* Nip off the first field, the site name. */
     if ((f2 = strchr(Entry, NF_FIELD_SEP)) == NULL)
@@ -597,6 +599,18 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
         case 'P':
             if (*++p && CTYPE(isdigit, *p))
                 sp->Nice = atoi(p);
+            break;
+        case 'Q':
+            qh = xmalloc(sizeof(QHASHLIST));
+            p++;
+            if (sscanf(p, "%d/%d", &qh->begin, &qh->mod) == 2) {
+                qh->end = qh->begin;
+            } else if (sscanf(p, "%d-%d/%d", &qh->begin, &qh->end, &qh->mod) != 3) {
+                free(qh);
+                return "hash for Q not in x/z or x-y/z format";
+            }
+            qh->next = sp->QHashList;
+            sp->QHashList = qh;
             break;
 	case 'S':
 	    if (*++p && CTYPE(isdigit, *p))

@@ -398,6 +398,15 @@ typedef enum _FEEDTYPE {
   FTprogram
 } FEEDTYPE;
 
+/*
+**  Diablo-style hashed feeds or hashfeeds.
+*/
+typedef struct _QHASHLIST {
+  int             begin;
+  int             end;
+  int             mod;
+  struct _QHASHLIST   *next;
+} QHASHLIST;
 
 /*
 **  A site may reject something in its subscription list if it has
@@ -451,6 +460,7 @@ typedef struct _SITE {
   struct buffer	  Buffer;
   bool		  Buffered;
   char	      **  Originator;
+  QHASHLIST    *  QHashList;
   int		  Next;
   int		  Prev;
 } SITE;
