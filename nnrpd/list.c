@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  List commands.
+**  LIST commands.
 */
 
 #include "config.h"
@@ -65,7 +65,7 @@ static LISTINFO		INFOschema = {
 };
 static LISTINFO		INFOmotd = {
     "motd", INN_PATH_MOTD, NULL, false, "motd",
-    "Message of the day text."
+    "Message of the day text"
 };
 
 static LISTINFO *info[] = {
@@ -83,7 +83,7 @@ static LISTINFO *info[] = {
 
 
 /*
-**  List the overview schema
+**  List the overview schema (standard and extra fields).
 */
 static void
 cmd_list_schema(LISTINFO *lp)
@@ -104,7 +104,7 @@ cmd_list_schema(LISTINFO *lp)
 
 
 /*
-**  List supported extensions
+**  List supported extensions.
 */
 static void
 cmd_list_extensions(LISTINFO *lp)
@@ -119,7 +119,7 @@ cmd_list_extensions(LISTINFO *lp)
 #endif /* HAVE_SSL */
 
 #ifdef HAVE_SASL
-    /* check for SASL mechs */
+    /* Check for SASL mechs. */
     sasl_listmech(sasl_conn, NULL, " SASL:", ",", "", &mechlist, NULL, NULL);
 #endif /* HAVE_SASL */
 
@@ -179,6 +179,8 @@ CMDlist(int ac, char *av[])
     unsigned int i;
 
     p = av[1];
+    /* LIST ACTIVE is the default LIST command.  If a keyword is provided,
+     * we check whether it is defined. */
     if (p == NULL) {
 	lp = &INFOactive;
     } else {
@@ -190,32 +192,38 @@ CMDlist(int ac, char *av[])
 	    }
 	}
     }
+    /* If no defined LIST keyword is found, we return. */
     if (lp == NULL) {
 	Reply("%s\r\n", NNTP_SYNTAX_USE);
 	return;
     }
+
     if (lp == &INFOactive) {
 	if (ac == 3) {
 	    wildarg = av[2];
+            /* No need to parse the active file for a single group. */
             if (CMD_list_single(wildarg))
 		return;
 	}
-    } else if (lp == &INFOgroups) {
+    } else if (lp == &INFOgroups || lp == &INFOactivetimes) {
 	if (ac == 3)
 	    wildarg = av[2];
     }
-
+    /* Three arguments can be passed only when ACTIVE, ACTIVE.TIMES
+     * or NEWSGROUPS keywords are used. */
     if (ac > 2 && !wildarg) {
 	Reply("%s\r\n", NNTP_SYNTAX_USE);
 	return;
     }
 
+    /* If a function is provided for the given keyword, we call it. */
     if (lp->impl != NULL) {
 	lp->impl(lp);
 	return;
     }
 
     path = innconf->pathetc;
+    /* The active, active.times and newsgroups files are in pathdb. */
     if ((strstr(lp->File, "active") != NULL) ||
 	(strstr(lp->File, "newsgroups") != NULL))
 	path = innconf->pathdb;
@@ -223,11 +231,15 @@ CMDlist(int ac, char *av[])
     qp = QIOopen(path);
     free(path);
     if (qp == NULL) {
+        /* Only the active and overview.fmt files are required (but the last
+         * one has already called cmd_list_schema).  If the other files are not
+         * available, we act as though they were empty. */
 	if (!lp->Required && errno == ENOENT) {
 	    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
 	    Printf(".\r\n");
 	}
 	else {
+            /* %m outputs strerror(errno). */
 	    syslog(L_ERROR, "%s cant fopen %s %m", Client.host, lp->File);
 	    Reply("%d No list of %s available.\r\n",
 		NNTP_ERR_UNAVAILABLE, lp->Items);
@@ -237,7 +249,7 @@ CMDlist(int ac, char *av[])
 
     Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
     if (!PERMspecified) {
-	/* Optmize for unlikely case of no permissions and false default. */
+	/* Optimize for unlikely case of no permissions and false default. */
 	QIOclose(qp);
 	Printf(".\r\n");
 	return;
@@ -256,8 +268,8 @@ CMDlist(int ac, char *av[])
 	    syslog(L_ERROR, "%s single dot in %s", Client.host, lp->File);
 	    continue;
 	}
-	/* matching patterns against patterns is not that
-	   good but it's better than nothing ... */
+	/* Matching patterns against patterns is not that
+	 * good but it is better than nothing... */
 	if (lp == &INFOdistribpats) {
 	    if (*p == '\0' || *p == '#' || *p == ';' || *p == ' ')
 		continue;
@@ -289,12 +301,15 @@ CMDlist(int ac, char *av[])
 		break;
 	    }
 	}
-	      
+
+        /* Check whether the reader has access to the newsgroup. */
 	if (PERMspecified) {
 	    grplist[0] = p;
 	    if (!PERMmatch(PERMreadlist, grplist))
 		continue;
 	}
+        /* Check whether the newsgroup matches the wildmat pattern,
+         * if given. */
 	if (wildarg && !uwildmat(p, wildarg))
 	    continue;
 	if (savec != '\0')
