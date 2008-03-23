@@ -231,20 +231,15 @@ CMDlist(int ac, char *av[])
     qp = QIOopen(path);
     free(path);
     if (qp == NULL) {
+        Reply("%d No list of %s available.\r\n",
+              NNTP_ERR_UNAVAILABLE, lp->Items);
         /* Only the active and overview.fmt files are required (but the last
-         * one has already called cmd_list_schema).  If the other files are not
-         * available, we act as though they were empty. */
-	if (!lp->Required && errno == ENOENT) {
-	    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
-	    Printf(".\r\n");
-	}
-	else {
+         * one has already called cmd_list_schema). */
+        if (lp->Required || errno != ENOENT) {
             /* %m outputs strerror(errno). */
-	    syslog(L_ERROR, "%s cant fopen %s %m", Client.host, lp->File);
-	    Reply("%d No list of %s available.\r\n",
-		NNTP_ERR_UNAVAILABLE, lp->Items);
-	}
-	return;
+            syslog(L_ERROR, "%s cant fopen %s %m", Client.host, lp->File);
+        }
+        return;
     }
 
     Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
