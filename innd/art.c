@@ -8,10 +8,11 @@
 #include <sys/uio.h>
 
 #include "inn/innconf.h"
-#include "inn/wire.h"
-#include "innd.h"
+#include "inn/md5.h"
 #include "inn/ov.h"
 #include "inn/storage.h"
+#include "inn/wire.h"
+#include "innd.h"
 
 typedef struct iovec	IOVEC;
 
@@ -1538,23 +1539,81 @@ ListHas(const char **list, const char *p)
 }
 
 /*
-**  Return true if an element of the QHASHLIST matches the
-**  quickhash of the Message-ID.
+**  Even though we have already calculated the Message-ID MD5sum,
+**  we have to do it again since unfortunately HashMessageID()
+**  lowercases the Message-ID first.  We also need to remain
+**  compatible with Diablo's hashfeed.
+*/
+static unsigned int
+HashFeedMD5(char *MessageID, unsigned int offset)
+{
+  static char LastMessageID[128];
+  static char *LastMessageIDPtr;
+  static struct md5_context context;
+  unsigned int ret;
+
+  if (offset > 12)
+    return 0;
+
+  /* Some light caching. */
+  if (MessageID != LastMessageIDPtr ||
+      strcmp(MessageID, LastMessageID) != 0) {
+    md5_init(&context);
+    md5_update(&context, (unsigned char *)MessageID, strlen(MessageID));
+    md5_final(&context);
+    LastMessageIDPtr = MessageID;
+    strncpy(LastMessageID, MessageID, sizeof(LastMessageID) - 1);
+    LastMessageID[sizeof(LastMessageID) - 1] = 0;
+  }
+
+  memcpy(&ret, &context.digest[12 - offset], 4);
+
+  return ntohl(ret);
+}
+
+/*
+** Old-style Diablo (< 5.1) quickhash.
+*/
+static unsigned int
+HashFeedQH(char *MessageID, unsigned int *tmp)
+{
+  unsigned char *p;
+  int n;
+
+  if (*tmp != (unsigned int)-1)
+    return *tmp;
+
+  p = (unsigned char *)MessageID;
+  n = 0;
+  while (*p)
+    n += *p++;
+  *tmp = (unsigned int)n;
+
+  return *tmp;
+}
+
+/*
+**  Return true if an element of the HASHFEEDLIST matches
+**  the hash of the Message-ID.
 */
 static bool
-QHashMatch(QHASHLIST *qh, char *MessageID)
+HashFeedMatch(HASHFEEDLIST *hf, char *MessageID)
 {
-  unsigned char *p = (unsigned char *)MessageID;
-  int h = 0;
+  unsigned int qh = (unsigned int)-1;
+  unsigned int h;
 
-  while (*p)
-    h += *p++;
+  while (hf) {
+    if (hf->type == HASHFEED_MD5)
+      h = HashFeedMD5(MessageID, hf->offset);
+    else if (hf->type == HASHFEED_QH)
+      h = HashFeedQH(MessageID, &qh);
+    else
+      continue;
 
-  while (qh) {
-    if ((h % qh->mod + 1) >= qh->begin &&
-        (h % qh->mod + 1) <= qh->end)
-          return true;
-    qh = qh->next;
+    if ((h % hf->mod + 1) >= hf->begin &&
+        (h % hf->mod + 1) <= hf->end)
+      return true;
+    hf = hf->next;
   }
 
   return false;
@@ -1633,8 +1692,9 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
        * cross-posting. */
       continue;
 
-    if (sp->QHashList && !QHashMatch(sp->QHashList, HDR(HDR__MESSAGE_ID)))
-      /* Quickhash doesn't match. */
+    if (sp->HashFeedList
+      && !HashFeedMatch(sp->HashFeedList, HDR(HDR__MESSAGE_ID)))
+      /* Hashfeed doesn't match. */
       continue;
 
     if (list && *list != NULL && sp->Distributions &&

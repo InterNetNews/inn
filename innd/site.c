@@ -1005,7 +1005,7 @@ void
 SITEfree(SITE *sp)
 {
     SITE                *s;
-    QHASHLIST           *qh, *qn;
+    HASHFEEDLIST        *hf, *hn;
     int                 new;
     int                 i;
     
@@ -1060,9 +1060,12 @@ SITEfree(SITE *sp)
 	sp->FNLnames.data = NULL;
 	sp->FNLnames.size = 0;
     }
-    for (qh = sp->QHashList; qh; qh = qn) {
-        qn = qh->next;
-        free(qh);
+    if (sp->HashFeedList) {
+        for (hf = sp->HashFeedList; hf; hf = hn) {
+            hn = hf->next;
+            free(hf);
+        }
+        sp->HashFeedList = NULL;
     }
 
     /* If this site was a master, find a new one. */
