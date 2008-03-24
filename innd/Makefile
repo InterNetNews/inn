@@ -76,14 +76,14 @@ depend:	Makefile $(SOURCES)
 art.o: art.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/wire.h innd.h ../include/portable/time.h \
-  ../include/config.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/buffer.h ../include/inn/history.h \
-  ../include/inn/messages.h ../include/inn/timer.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/history.h
+  ../include/inn/md5.h ../include/inn/ov.h ../include/inn/storage.h \
+  ../include/inn/history.h ../include/inn/storage.h ../include/inn/wire.h \
+  innd.h ../include/portable/time.h ../include/config.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/buffer.h \
+  ../include/inn/history.h ../include/inn/messages.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
+  ../include/inn/nntp.h ../include/inn/paths.h
 cc.o: cc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
