@@ -546,7 +546,7 @@ Advantages:  Roughly four times faster than timehash for article writes,
 since much of the file system overhead is bypassed, while still retaining
 the same fine control over article retention time.
 
-Disadvantages:  Even worse than timehash, and similar to cnfs (below),
+Disadvantages:  Even worse than timehash, and similar to CNFS (below),
 using this method means giving up all but the most careful manually
 fiddling with your article spool.  As one of the newer and least widely
 used storage types, timecaf has not been as thoroughly tested as the other

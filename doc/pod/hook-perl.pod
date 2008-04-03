@@ -118,7 +118,7 @@ guaranteed to be accurate.
 
 The %hdr hash should not be modified inside filter_art().  Instead, if any
 of the contents need to be modified temporarily during filtering (smashing
-case, for example), copy them into a seperate variable first and perform
+case, for example), copy them into a separate variable first and perform
 the modifications on the copy.  Currently, C<$hdr{__BODY__}> is the only
 data that will cause your filter to die if you modify it, but in the
 future other keys may also contain live data.  Modifying live INN data in
