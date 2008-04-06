@@ -61,7 +61,7 @@ static LISTINFO		INFOschema = {
 };
 static LISTINFO		INFOmotd = {
     "motd", _PATH_MOTD, NULL, false, "motd",
-    "Message of the day text."
+    "Message of the day text"
 };
 
 static LISTINFO *info[] = {
@@ -179,7 +179,7 @@ CMDlist(int ac, char *av[])
             if (CMD_list_single(wildarg))
 		return;
 	}
-    } else if (lp == &INFOgroups) {
+    } else if (lp == &INFOgroups || lp == &INFOactivetimes) {
 	if (ac == 3)
 	    wildarg = av[2];
     }
@@ -204,16 +204,12 @@ CMDlist(int ac, char *av[])
     qp = QIOopen(path);
     free(path);
     if (qp == NULL) {
-	if (!lp->Required && errno == ENOENT) {
-	    Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);
-	    Printf(".\r\n");
-	}
-	else {
-	    syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, lp->File);
-	    Reply("%d No list of %s available.\r\n",
-		NNTP_TEMPERR_VAL, lp->Items);
-	}
-	return;
+        Reply("%d No list of %s available.\r\n",
+              NNTP_TEMPERR_VAL, lp->Items);
+	    if (lp->Required || errno != ENOENT) {
+            syslog(L_ERROR, "%s cant fopen %s %m", ClientHost, lp->File);
+        }
+        return;
     }
 
     Reply("%d %s.\r\n", NNTP_LIST_FOLLOWS_VAL, lp->Format);

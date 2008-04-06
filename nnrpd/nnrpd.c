@@ -130,7 +130,7 @@ static CMDENT	CMDtable[] = {
     {	"last",		CMDnextlast,	true,	1,	1,
 	NULL },
     {	"list",		CMDlist,	true,	1,	3,
-	"[active|active.times|extensions|newsgroups|distributions|distrib.pats|overview.fmt|subscriptions|motd]" },
+	"[active|active.times|distrib.pats|distributions|extensions|moderators|motd|newsgroups|overview.fmt|subscriptions]" },
     {	"listgroup",	CMDgroup,	true,	1,	2,
 	"newsgroup" },
     {	"mode",		CMDmode,	false,	2,	2,
