@@ -19,6 +19,8 @@ SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
 
 all: $(ALL)
 
+man: $(MAN)
+
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
