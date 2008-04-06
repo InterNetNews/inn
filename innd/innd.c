@@ -477,6 +477,15 @@ main(int ac, char *av[])
 	Pathalias.data = xmalloc(Pathalias.size);
 	snprintf(Pathalias.data, Pathalias.size, "%s!", innconf->pathalias);
     }
+    if (innconf->pathcluster == NULL) {
+        Pathcluster.used = 0;
+        Pathcluster.data = NULL;
+    } else {
+        Pathcluster.used = strlen(innconf->pathcluster) + 1;
+        Pathcluster.size = Pathcluster.used + 1;
+        Pathcluster.data = xmalloc(Pathcluster.size);
+        snprintf(Pathcluster.data, Pathcluster.size, "%s!", innconf->pathcluster);
+    }
     /* Trace history ? */
     if (innconf->stathist != NULL) {
         syslog(L_NOTICE, "logging hist stats to %s", innconf->stathist);

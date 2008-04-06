@@ -240,6 +240,8 @@ typedef struct _ARTDATA {
   bool            AddAlias;             /* Whether Pathalias should be added
                                            to this article */
   bool            Hassamepath;          /* Whether this article matches Path */
+  bool            Hassamecluster;       /* Whether this article matches 
+                                           Pathcluster */
 } ARTDATA;
 
 /*
@@ -584,6 +586,7 @@ extern bool		StreamingOff;
 extern bool		Tracing;
 EXTERN struct buffer	Path;
 EXTERN struct buffer	Pathalias;
+EXTERN struct buffer    Pathcluster;
 EXTERN char	     *  ModeReason;	/* NNTP reject message   */
 EXTERN char	     *  NNRPReason;	/* NNRP reject message   */
 EXTERN char	     *  Reservation;	/* Reserved lock message */

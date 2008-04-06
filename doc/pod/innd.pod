@@ -364,8 +364,9 @@ dropped.
 The local site's name (as set with the I<pathhost> parameter in
 F<inn.conf>) and an exclamation point are prepended to the Path: header,
 provided the first site name in the Path: header is different from the
-local one.  In addition, I<pathalias> may be similarly prepended to the
-Path: header; see inn.conf(5) for the details.
+local one.  In addition, I<pathalias> and I<pathcluster> may be similarly
+respectively prepended and appended to the Path: header; see inn.conf(5)
+for the details.
 
 The Xref: header is removed and a new one created.
 

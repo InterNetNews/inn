@@ -39,6 +39,7 @@ struct innconf {
     long maxartsize;            /* Reject articles bigger than this */
     long maxconnections;        /* Max number of incoming NNTP connections */
     char *pathalias;            /* Prepended Host for the Path line */
+    char *pathcluster;          /* Appended Host for the Path line */
     bool pgpverify;             /* Verify control messages with pgpverify? */
     long port;                  /* Which port innd should listen on */
     bool refusecybercancels;    /* Reject message IDs with "<cancel."? */

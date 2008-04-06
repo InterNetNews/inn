@@ -215,6 +215,16 @@ The main purpose of this parameter is to configure all news servers within
 a particular organization to add a common identity string to the
 Path: header.  The default value is unset.
 
+=item I<pathcluster>
+
+If set, this value is appended to the Path: header of accepted posts
+(after I<pathhost>) if it isn't already present as the last element
+of the Path: header.  The main purpose of this parameter is to make
+several news servers appear as one server.  The default value is unset.
+
+Note that the Path: header reads right to left, so appended means inserted
+at the leftmost side of the Path: header.
+
 =item I<pgpverify>
 
 Whether to enable PGP verification of control messages other than cancel.
