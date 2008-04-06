@@ -175,19 +175,19 @@ analysis of the message.
 .SH "EXIT STATUS"
 .IX Header "EXIT STATUS"
 \&\fBpgpverify\fR may exit with the following statuses:
-.IP "0\&" 5
+.IP "0\&" 4
 .IX Item "0"
 The control message had a good \s-1PGP\s0 signature.
-.IP "1" 5
+.IP "1" 4
 .IX Item "1"
 The control message had no \s-1PGP\s0 signature.
-.IP "2" 5
+.IP "2" 4
 .IX Item "2"
 The control message had an unknown \s-1PGP\s0 signature.
-.IP "3" 5
+.IP "3" 4
 .IX Item "3"
 The control message had a bad \s-1PGP\s0 signature.
-.IP "255" 5
+.IP "255" 4
 .IX Item "255"
 A problem occurred not directly related to \s-1PGP\s0 analysis of signature.
 .SH "ENVIRONMENT"
@@ -205,21 +205,21 @@ Historically, Usenet news server administrators have configured their news
 servers to automatically honor Usenet control messages based on the
 originator of the control messages and the hierarchies for which the
 control messages applied.  For example, in the past, David Lawrence always
-issued control messages for the \*(L"Big 8\*(R" hierarchies (comp, humanities,
+issued control messages for the \*(L"Big\ 8\*(R" hierarchies (comp, humanities,
 misc, news, rec, sci, soc, talk).  Usenet news administrators would
 configure their news server software to automatically honor newgroup and
 rmgroup control messages that originated from David Lawrence and applied
-to any of the Big 8 hierarchies.
+to any of the Big\ 8 hierarchies.
 .PP
 Unfortunately, Usenet news articles (including control messages) are
 notoriously easy to forge.  Soon, malicious users realized they could
-create or remove (at least temporarily) any Big 8 newsgroup they wanted by
+create or remove (at least temporarily) any Big\ 8 newsgroup they wanted by
 simply forging an appropriate control message in David Lawrence's name.
 As Usenet became more widely used, forgeries became more common.
 .PP
 The \fBpgpverify\fR program was designed to allow Usenet news administrators
 to configure their servers to cryptographically verify control messages
-before automatically acting on them.  Under the pgpverify system, a Usenet
+before automatically acting on them.  Under the \fBpgpverify\fR system, a Usenet
 hierarchy maintainer creates a \s-1PGP\s0 public/private key pair and
 disseminates the public key.  Whenever the hierarchy maintainer issues a
 control message, he uses the \fBsigncontrol\fR program to sign the control
@@ -227,7 +227,7 @@ message with the \s-1PGP\s0 private key.  Usenet news administrators configure
 their news servers to run the \fBpgpverify\fR program on the appropriate
 control messages, and take action based on the \s-1PGP\s0 key User \s-1ID\s0 that signed
 the control message, not the name and address that appear in the control
-message's From or Sender headers.
+message's From: or Sender: headers.
 .PP
 Thus, appropriate use of the \fBsigncontrol\fR and \fBpgpverify\fR programs
 essentially eliminates the possibility of malicious users forging Usenet
@@ -255,21 +255,21 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
-.IP "1." 3
+.IP "1." 4
 Redistributions of source code must retain the above copyright notice,
 this list of conditions and the following disclaimer.
-.IP "2." 3
+.IP "2." 4
 Redistributions in binary form must reproduce the above copyright notice,
 this list of conditions and the following disclaimer in the documentation
 and/or other materials provided with the distribution.
-.IP "3." 3
+.IP "3." 4
 All advertising materials mentioning features or use of this software must
 display the following acknowledgement:
 .Sp
 .Vb 1
 \&  This product includes software developed by UUNET Technologies, Inc.
 .Ve
-.IP "4." 3
+.IP "4." 4
 The name of \s-1UUNET\s0 Technologies (\*(L"\s-1UUNET\s0\*(R") may not be used to endorse or
 promote products derived from this software without specific prior written
 permission.
@@ -286,7 +286,7 @@ permission.
 \&\s-1SOFTWARE\s0, \s-1EVEN\s0 \s-1IF\s0 \s-1ADVISED\s0 \s-1OF\s0 \s-1THE\s0 \s-1POSSIBILITY\s0 \s-1OF\s0 \s-1SUCH\s0 \s-1DAMAGE\s0.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\fIgpgv\fR\|(1), \fIpgp\fR\|(1)
+\&\fIgpgv\fR\|(1), \fIpgp\fR\|(1).
 .PP
 <ftp://ftp.isc.org/pub/pgpcontrol/> is where the most recent versions of
 \&\fBsigncontrol\fR and \fBpgpverify\fR live, along with \s-1PGP\s0 public keys used for
