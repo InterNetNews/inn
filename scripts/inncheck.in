@@ -367,6 +367,7 @@ moderators
     'N',	'^[mu]$',
     'O',	'^\S+$',
     'P',	'^\d+$',
+    'Q',	'^@?\d+(-\d+)?/\d+(_\d+)?$',
     'S',	'^\d+$',
     'T',	'^[cflmpx]$',
     'W',	'^[befghmnpst*DGHNPOR]*$',

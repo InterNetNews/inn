@@ -382,6 +382,50 @@ should be a positive number between 0 and 20 and is the priority that the
 new process will run with.  This flag can be used to raise the priority to
 normal if you're using the I<nicekids> parameter in F<inn.conf>.
 
+=item B<Q> I<hashfeed>
+
+Specifies the I<hashfeed> match expression for this site.  It must be in
+the form C<value/mod> or C<start-end/mod>.  The Message-ID of the article
+is hashed using MD5, which results in a 128-bit hash.  The lowest
+S<32 bits> are then taken by default as the hashfeed value (which is an
+integer).  If the hashfeed value modulus C<mod> plus one equals C<value> or
+is between C<start> and C<end>, the article will be fed to this site.  All
+these numbers must be integers.
+
+It is a deterministic way to control the flow of articles and to split a feed.
+For instance:
+
+    Q1/2      Feeds about 50% of all articles to this site.
+    Q2/2      Feeds the other 50% of all articles.
+
+Another example with three sites:
+
+    Q1-3/10   Feeds about 30% of all articles.
+    Q4-5/10   Feeds about 20% of all articles.
+    Q6-10/10  Feeds about 50% of all articles.
+
+If this flag is specified multiple times, the contents will be
+logically C<OR>ed together (just one match is needed).
+
+You can use an extended syntax of the form C<value/mod_offset> or
+C<start-end/mod_offset>.  As MD5 generates a 128-bit return value,
+it is possible to specify from which byte-offset the 32-bit integer
+used by hashfeed starts.  The default value for C<offset> is C<_0>
+and thirteen overlapping values from C<_0> to C<_12> can be used.
+Only up to four totally independent values exist:  C<_0>, C<_4>,
+C<_8> and C<_12>.
+
+Therefore, it allows to a generate a second level of deterministic
+distribution.  Indeed, if a news server is fed C<Q1/2>, it can go on
+splitting thanks to C<Q1-3/9_4> for instance.
+
+The algorithm is compatible with the one used by S<Diablo 5.1> and up.
+If you want to use the legacy quickhashing method used by Diablo
+before 5.1, you can put an C<@> sign just after the B<Q> flag (for
+instance C<Q@1-3/10>, but the distribution of the messages is not
+perfect with this legacy method whose use is discouraged and for
+which offsets cannot be used).
+
 =item B<S> I<size>
 
 If the amount of data queued for the site gets to be larger than I<size>

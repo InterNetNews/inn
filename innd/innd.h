@@ -407,6 +407,22 @@ typedef enum _FEEDTYPE {
 
 
 /*
+**  Diablo-style hashed feeds or hashfeeds.
+*/
+#define HASHFEED_QH	1
+#define HASHFEED_MD5	2
+
+typedef struct _HASHFEEDLIST {
+  int			type;
+  unsigned int		begin;
+  unsigned int		end;
+  unsigned int		mod;
+  unsigned int		offset;
+  struct _HASHFEEDLIST	*next;
+} HASHFEEDLIST;
+
+
+/*
 **  A site may reject something in its subscription list if it has
 **  too many hops, or a bad distribution.
 */
@@ -458,6 +474,7 @@ typedef struct _SITE {
   struct buffer	  Buffer;
   bool		  Buffered;
   char	      **  Originator;
+  HASHFEEDLIST *  HashFeedList;
   int		  Next;
   int		  Prev;
 } SITE;
