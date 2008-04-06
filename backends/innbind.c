@@ -235,6 +235,14 @@ create_socket(struct binding *binding, const char *spec)
         sysdie("cannot mark socket reusable for %s", spec);
 #endif
 
+    /* Mark it IPv6 only if possible. */
+#ifdef IPV6_V6ONLY
+    flag = 1;
+    if (binding->family == AF_INET6 &&
+        setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &flag, sizeof(flag)) < 0)
+        sysdie("cannot mark socket IPv6 only for %s", spec);
+#endif
+
     /* Fill in the struct. */
     binding->fd = fd;
 }

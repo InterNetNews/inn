@@ -231,6 +231,9 @@ network_bind_ipv6(const char *address, unsigned short port)
     int fd, bindfd;
     struct sockaddr_in6 server;
     struct in6_addr addr;
+#ifdef IPV6_V6ONLY
+    int flag;
+#endif
 
     /* Create the socket. */
     fd = socket(PF_INET6, SOCK_STREAM, IPPROTO_IP);
@@ -240,6 +243,12 @@ network_bind_ipv6(const char *address, unsigned short port)
         return -1;
     }
     network_set_reuseaddr(fd);
+
+#ifdef IPV6_V6ONLY
+    flag = 1;
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &flag, sizeof(flag)) < 0)
+        syswarn("cannot set IPv6 socket to v6only");
+#endif
 
     /* Accept "any" or "all" in the bind address to mean 0.0.0.0. */
     if (!strcmp(address, "any") || !strcmp(address, "all"))
@@ -297,22 +306,39 @@ network_bind_all(unsigned short port, int **fds, int *count)
 
     *count = 0;
 
+    /* Start the fds array at two entries, assuming
+       an IPv6 and IPv4 socket, and grow it by two when necessary. */
+    size = 2;
+    *fds = xmalloc(size * sizeof(int));
+#ifdef IPV6_V6ONLY
+    /* Start with an IPv4 socket. */
+    fd = network_bind_ipv4("0.0.0.0", port);
+    if (fd >= 0) {
+        (*fds)[*count] = fd;
+        (*count)++;
+    }
+#endif
+
     /* Do the query to find all the available addresses. */
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
+#ifdef IPV6_V6ONLY
+    hints.ai_family = AF_INET6;
+#else
     hints.ai_family = AF_UNSPEC;
+#endif
     hints.ai_socktype = SOCK_STREAM;
     snprintf(service, sizeof(service), "%hu", port);
     error = getaddrinfo(NULL, service, &hints, &addrs);
     if (error < 0) {
-        warn("getaddrinfo failed: %s", gai_strerror(error));
+#ifdef IPV6_V6ONLY
+        if (error != EAI_ADDRFAMILY && error != EAI_FAMILY)
+#endif
+            warn("getaddrinfo failed: %s", gai_strerror(error));
         return;
     }
 
-    /* Now, try to bind each of them.  Start the fds array at two entries,
-       assuming an IPv6 and IPv4 socket, and grow it by two when necessary. */
-    size = 2;
-    *fds = xmalloc(size * sizeof(int));
+    /* Now, try to bind each of them. */
     for (addr = addrs; addr != NULL; addr = addr->ai_next) {
         network_sockaddr_sprint(name, sizeof(name), addr->ai_addr);
         if (addr->ai_family == AF_INET)
