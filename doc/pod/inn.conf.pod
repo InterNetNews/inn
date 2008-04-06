@@ -613,6 +613,15 @@ recorded includes initial connection and posting; only information about
 clients listed in F<nnrpd.track> is recorded.  This is a boolean value and
 the default is false.
 
+=item I<nnrpdflags>
+
+When nnrpd(8) is spawned from innd(8), these flags are passed as
+arguments to the nnrpd process.  This setting does not affect instances
+of nnrpd that are started in daemon mode, or instances that are started
+via another listener process such as inetd(8) or xinetd(8).  Shell
+quoting and metacharacters are not supported.  This is a string value
+and the default is unset.
+
 =item I<nnrpdloadlimit>
 
 If set to a value other than C<0>, connections to nnrpd will be refused

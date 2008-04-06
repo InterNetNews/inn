@@ -322,6 +322,15 @@ If set, this value is prepended to the Path: header of accepted posts
 The main purpose of this parameter is to configure all news servers within
 a particular organization to add a common identity string to the
 Path: header.  The default value is unset.
+.IP "\fIpathcluster\fR" 4
+.IX Item "pathcluster"
+If set, this value is appended to the Path: header of accepted posts
+(after \fIpathhost\fR) if it isn't already present as the last element
+of the Path: header.  The main purpose of this parameter is to make
+several news servers appear as one server.  The default value is unset.
+.Sp
+Note that the Path: header reads right to left, so appended means inserted
+at the leftmost side of the Path: header.
 .IP "\fIpgpverify\fR" 4
 .IX Item "pgpverify"
 Whether to enable \s-1PGP\s0 verification of control messages other than cancel.
@@ -662,6 +671,14 @@ determined by nnrpd's \s-1PID\s0 and launch time.)  Currently the information
 recorded includes initial connection and posting; only information about
 clients listed in \fInnrpd.track\fR is recorded.  This is a boolean value and
 the default is false.
+.IP "\fInnrpdflags\fR" 4
+.IX Item "nnrpdflags"
+When \fInnrpd\fR\|(8) is spawned from \fIinnd\fR\|(8), these flags are passed as
+arguments to the nnrpd process.  This setting does not affect instances
+of nnrpd that are started in daemon mode, or instances that are started
+via another listener process such as \fIinetd\fR\|(8) or \fIxinetd\fR\|(8).  Shell
+quoting and metacharacters are not supported.  This is a string value
+and the default is unset.
 .IP "\fInnrpdloadlimit\fR" 4
 .IX Item "nnrpdloadlimit"
 If set to a value other than \f(CW0\fR, connections to nnrpd will be refused

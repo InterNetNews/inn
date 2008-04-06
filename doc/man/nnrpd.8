@@ -159,6 +159,12 @@ configuration files will be immediately effective for all new
 connections.  If you are instead running \fBnnrpd\fR with the \fB\-D\fR option,
 any configuration changes won't take effect until \fBnnrpd\fR is restarted.
 .PP
+The \fIinn.conf\fR setting \fInnrpdflags\fR can be used to pass any of the
+options below to instances of \fBnnrpd\fR that are spawned directly from
+\&\fBinnd\fR.  Many options only make sense when \fB\-D\fR is used, so these
+options should not be used with \fInnrpdflags\fR.  See also the discussion
+of \fInnrpdflags\fR in \fIinn.conf\fR\|(5).
+.PP
 When \fInnrpdloadlimit\fR in \fIinn.conf\fR is not 0, it will also reject
 connections if the load average is greater than that value (typically 16).
 \&\fBnnrpd\fR can also prevent high-volume posters from abusing your
