@@ -49,6 +49,12 @@ is also called.)
 
 =item *
 
+The legacy F<innshellvars.pl> file has been replaced with a real INN Perl
+module C<INN::Config> for Perl programs.  All Perl scripts shipped with INN
+have been converted to use that module.
+
+=item *
+
 Support for embedded Tcl filters in B<innd> has been removed.  It hasn't
 worked for some time and causes B<innd> crashes if compiled in (even if not
 used).  If someone wants to step forward and maintain it, I recommend
@@ -66,6 +72,21 @@ The B<-g> option to B<nnrpd> is no longer supported.  If you are verifying
 passwords against the system password database, see the ckpasswd(8) man
 page, and in particular the B<-s> option.  (A much better idea would be to
 just use PAM, which B<ckpasswd> supports.)
+
+=item *
+
+Support for I<runasuser> and I<runasgroup> parameters in F<inn.conf>
+allows to set the news user and the news group under which the news server
+runs.  Thanks to Ivan Shmakov for this feature.
+
+=item *
+
+Support for bzip2-compressed batches (with B<bunbatch>) has been added.
+
+=item *
+
+A lot of work has been done on documentation:  improvements of existing one,
+writing new one and proof-reading.  Samples are also more detailed.
 
 =back
 
@@ -946,7 +967,7 @@ security vulnerabilities.
 
 =back
 
-=head1 Changes in 2.2
+=head1 Changes in 2.2.0
 
 =over 2
 
