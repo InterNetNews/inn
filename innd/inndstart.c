@@ -213,6 +213,23 @@ main(int argc, char *argv[])
         syswarn("can't set file descriptor limit to %ld",
                 innconf->rlimitnofile);
 
+#if defined(HAVE_INET6) && defined(IPV6_V6ONLY)
+    /* If we have the IPV6_V6ONLY socket option, and it works,
+       always open separate IPv4 and IPv6 sockets. */
+    if (addr_specified == 0 && addr6_specified == 0) {
+	j = socket(PF_INET6, SOCK_STREAM, 0);
+	if (j >= 0) {
+	    i = 1;
+            if (setsockopt (j, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&i,
+			     sizeof i) == 0) {
+	        addr_specified = 1;
+	        addr6_specified = 1;
+	    }
+	    close (j);
+	}
+    }
+#endif
+
     /* Create a socket and name it. */
 #ifdef HAVE_INET6
     if( ! (addr_specified || addr6_specified) ) {
@@ -265,6 +282,12 @@ main(int argc, char *argv[])
 	    if (setsockopt(s[snum], SOL_SOCKET, SO_REUSEADDR, (char *)&i,
 			sizeof i) < 0)
 		syswarn("can't set SO_REUSEADDR");
+#endif
+#ifdef IPV6_V6ONLY
+	    i = 1;
+            if (setsockopt(s[snum], IPPROTO_IPV6, IPV6_V6ONLY, (char *)&i,
+			sizeof i) < 0)
+		syswarn("can't set IPV6_V6ONLY");
 #endif
 	    memset(&server6, 0, sizeof server6);
 	    server6.sin6_port = htons(port);
