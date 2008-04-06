@@ -55,7 +55,7 @@ main(void)
     fclose(config);
     ok(7, !innconf_check("config/tmp"));
     unlink("config/tmp");
-    ok_string(8, "config/tmp:26: unknown parameter foo\n", errors);
+    ok_string(8, "config/tmp:27: unknown parameter foo\n", errors);
     errors_uncapture();
     free(errors);
     errors = NULL;

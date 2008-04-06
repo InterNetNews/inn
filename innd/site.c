@@ -398,11 +398,18 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	case FEED_PATH:
 	    if (Dirty)
 		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    if (!Data->Hassamepath)
-		buffer_append(bp, Path.data, Path.used);
-	    if (Data->AddAlias)
-		buffer_append(bp, Pathalias.data, Pathalias.used);
-	    buffer_append(bp, HDR(HDR__PATH), HDR_LEN(HDR__PATH));
+	    if (!Data->Hassamepath || Data->AddAlias || Pathcluster.used) {
+                if (Pathcluster.used)
+                    buffer_append(bp, Pathcluster.data, Pathcluster.used);
+                buffer_append(bp, Path.data, Path.used);
+                if (Data->AddAlias)
+                    buffer_append(bp, Pathalias.data, Pathalias.used);
+            }
+            if (Data->Hassamecluster)
+                buffer_append(bp, HDR(HDR__PATH) + Pathcluster.used,
+                    HDR_LEN(HDR__PATH) - Pathcluster.used);
+            else
+                buffer_append(bp, HDR(HDR__PATH), HDR_LEN(HDR__PATH));
 	    break;
 	case FEED_REPLIC:
 	    if (Dirty)

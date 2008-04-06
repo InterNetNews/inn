@@ -1381,6 +1381,16 @@ CCreload(char *av[])
 	    Pathalias.Data = xmalloc(Pathalias.Used + 1);
 	    sprintf(Pathalias.Data, "%s!", innconf->pathalias);
 	}
+        if (Pathcluster.Used > 0)
+            free(Pathcluster.Data);
+        if (innconf->pathcluster == NULL) {
+            Pathcluster.Used = 0;
+            Pathcluster.Data = NULL;
+        } else {
+            Pathcluster.Used = strlen(innconf->pathcluster) + 1;
+            Pathcluster.Data = xmalloc(Pathcluster.Used + 1);
+            sprintf(Pathcluster.Data, "%s!", innconf->pathcluster);
+        }
     }
 #endif
 #ifdef DO_PERL

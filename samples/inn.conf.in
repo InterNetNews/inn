@@ -47,6 +47,7 @@ linecountfuzz:          0
 maxartsize:             1000000
 maxconnections:         50
 #pathalias:
+#pathcluster:
 pgpverify:              @DO_PGPVERIFY@
 port:                   119
 refusecybercancels:     false

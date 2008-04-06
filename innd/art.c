@@ -473,11 +473,17 @@ ARTstore(CHANNEL *cp)
   for (p = Article->data + cp->Start, j = 0 ; j < i ; j++) {
     switch (hp[j].index) {
       case HDR__PATH:
-	if (!data->Hassamepath || data->AddAlias) {
+	if (!data->Hassamepath || data->AddAlias || Pathcluster.used) {
 	  /* write heading data */
 	  iov[iovcnt].iov_base = (char *) p;
 	  iov[iovcnt++].iov_len = HDR(HDR__PATH) - p;
 	  arth.len += HDR(HDR__PATH) - p;
+          /* append clusterpath */
+          if (Pathcluster.used) {
+            iov[iovcnt].iov_base = Pathcluster.data;
+            iov[iovcnt++].iov_len = Pathcluster.used;
+            arth.len += Pathcluster.used;
+          }
 	  /* now append new one */
 	  iov[iovcnt].iov_base = Path.data;
 	  iov[iovcnt++].iov_len = Path.used;
@@ -489,6 +495,8 @@ ARTstore(CHANNEL *cp)
 	  }
 	  /* next to write */
 	  p = HDR(HDR__PATH);
+          if (data->Hassamecluster)
+            p += Pathcluster.used;
 	}
 	break;
       case HDR__XREF:
@@ -1933,10 +1941,18 @@ ARTpost(CHANNEL *cp)
     return false;
   }
 
-  if (strncmp(Path.data, hops[0], Path.used - 1) == 0)
+  i = strlen(hops[0]);
+  if (i == (signed int) Path.used - 1 &&
+    strncmp(Path.data, hops[0], Path.used - 1) == 0)
     data->Hassamepath = true;
   else
     data->Hassamepath = false;
+  if (Pathcluster.data != NULL &&
+    i == (signed int) Pathcluster.used - 1 &&
+    strncmp(Pathcluster.data, hops[0], Pathcluster.used - 1) == 0)
+    data->Hassamecluster = true;
+  else
+    data->Hassamecluster = false;
   if (Pathalias.data != NULL &&
     !ListHas((const char **)hops, (const char *)innconf->pathalias))
     data->AddAlias = true;

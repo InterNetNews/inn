@@ -299,6 +299,9 @@ inn_conf
 #    } elsif ( $k eq "pathalias" ) {
 #        print "$file:$line: pathalias has a ! in it\n"
 #            if $v =~ /!/;
+#    } elsif ( $k eq "pathcluster" ) {
+#        print "$file:$line: pathcluster has a ! in it\n"
+#            if $v =~ /!/;
 #    } elsif ( $k eq "server" ) {
 #        print "$file:$line: server (`$v') isn't local hostname\n"
 #            if $pedantic && $fqdn !~ /^$v/;
