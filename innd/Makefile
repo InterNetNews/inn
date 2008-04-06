@@ -90,12 +90,12 @@ depend: Makefile $(SOURCES)
 art.o: art.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/config.h \
   ../include/inn/innconf.h ../include/inn/defines.h ../include/inn/wire.h \
-  innd.h ../include/portable/time.h ../include/config.h \
-  ../include/portable/socket.h ../include/inn/buffer.h \
-  ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/libinn.h ../include/nntp.h \
-  ../include/paths.h ../include/storage.h ../include/ov.h \
-  ../include/storage.h ../include/inn/history.h
+  ../include/inn/md5.h innd.h ../include/portable/time.h \
+  ../include/config.h ../include/portable/socket.h \
+  ../include/inn/buffer.h ../include/inn/history.h \
+  ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
+  ../include/nntp.h ../include/paths.h ../include/storage.h \
+  ../include/ov.h ../include/storage.h ../include/inn/history.h
 cc.o: cc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/config.h \
   ../include/inn/innconf.h ../include/inn/defines.h ../include/inn/qio.h \
