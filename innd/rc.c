@@ -945,14 +945,19 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	RCadddata(data, &infocount, K_BEGIN_GROUP, T_STRING, word);
 	groupcount++;
 	if (groupcount == 1) {
+          /* First group block. */
           group_params = groups = xmalloc(sizeof(REMOTEHOST));
 	}
 	else if (groupcount >= maxgroup) {
-          /* alloc 5 groups */
+          /* Alloc 5 groups for extra nested group blocks. */
           groups = xrealloc(groups, (groupcount + 4) * sizeof(REMOTEHOST));
-	  maxgroup += 5;
-	  group_params = groups + groupcount - 1;
-	}
+          maxgroup += 5;
+          group_params = groups + groupcount - 1;
+        }
+        else {
+          /* Nested group block (no need to extend groups). */
+          group_params++;
+        }
 	group_params->Label = word;
 	group_params->Skip = groupcount > 1 ?
 	  groups[groupcount - 2].Skip : default_params.Skip;
@@ -1241,10 +1246,13 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  RCadddata(data, &infocount, K_END_GROUP, T_STRING, NULL);
 	  group_params->Label = NULL;
 	  groupcount--;
-	  if (groupcount == 0)
-	    free(groups);
-	  else
-	    group_params--;
+         if (groupcount == 0) {
+           /* We are now outside a group block. */
+           free(groups);
+           maxgroup = 0;
+         } else {
+           group_params--;
+         }
 	}
 	else {
 	  syslog(L_ERROR, RIGHT_BRACE, LogName, linecount, filename);
