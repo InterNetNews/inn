@@ -2,7 +2,7 @@ INN as a whole and all code contained in it not otherwise marked with
 different licenses and/or copyrights is covered by the following copyright
 and license:
 
-   Copyright (c) 2004, 2005, 2006
+   Copyright (c) 2004, 2005, 2006, 2007, 2008
        by Internet Systems Consortium, Inc. ("ISC")
    Copyright (c) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
        2002, 2003 by The Internet Software Consortium and Rich Salz
@@ -33,7 +33,7 @@ files.  Specifically (but possibly not comprehensively):
    backends/shrinkfile.c, frontends/scanspool.in, lib/alloca.c,
    lib/concat.c, lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c,
    lib/memcmp.c, lib/pread.c, lib/pwrite.c, lib/setenv.c, lib/seteuid.c,
-   lib/strlcat.c, lib/strlcpy.c, and lib/strerror.c are in the public 
+   lib/strerror.c, lib/strlcat.c and lib/strlcpy.c are in the public 
    domain.
 
    lib/snprintf.c may be used for any purpose as long as the author's
