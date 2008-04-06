@@ -87,37 +87,45 @@ depend:	Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 convdate.o: convdate.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/messages.h ../include/inn/defines.h ../include/libinn.h
 expire.o: expire.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/history.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inndcomm.h ../include/libinn.h ../include/paths.h \
- ../include/storage.h
-expireover.o: expireover.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/qio.h ../include/libinn.h ../include/ov.h \
- ../include/storage.h ../include/inn/history.h ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/history.h ../include/inn/defines.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inndcomm.h ../include/libinn.h ../include/paths.h \
+  ../include/storage.h
+expireover.o: expireover.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
+  ../include/ov.h ../include/storage.h ../include/inn/history.h \
+  ../include/paths.h ../include/storage.h
 fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
- ../include/storage.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
+  ../include/storage.h
 grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
- ../include/inn/defines.h ../include/inn/history.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h ../include/paths.h ../include/storage.h
+  ../include/inn/defines.h ../include/inn/system.h \
+  ../include/inn/history.h ../include/inn/defines.h \
+  ../include/inn/innconf.h ../include/inn/messages.h ../include/libinn.h \
+  ../include/paths.h ../include/storage.h
 makedbz.o: makedbz.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/qio.h ../include/paths.h ../include/storage.h
-makehistory.o: makehistory.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/portable/wait.h ../include/inn/buffer.h \
- ../include/inn/history.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inn/qio.h ../include/inn/wire.h \
- ../include/libinn.h ../include/ov.h ../include/storage.h \
- ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/dbz.h ../include/libinn.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/messages.h ../include/inn/qio.h \
+  ../include/libinn.h ../include/paths.h ../include/storage.h
+makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/wait.h ../include/config.h ../include/inn/buffer.h \
+  ../include/inn/defines.h ../include/inn/history.h \
+  ../include/inn/innconf.h ../include/inn/messages.h ../include/inn/qio.h \
+  ../include/inn/wire.h ../include/libinn.h ../include/ov.h \
+  ../include/storage.h ../include/inn/history.h ../include/paths.h \
+  ../include/storage.h
 prunehistory.o: prunehistory.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/history.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/libinn.h ../include/paths.h
+  ../include/inn/defines.h ../include/inn/system.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/history.h ../include/inn/defines.h \
+  ../include/inn/innconf.h ../include/inn/messages.h ../include/libinn.h \
+  ../include/paths.h

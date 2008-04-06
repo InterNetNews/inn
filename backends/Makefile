@@ -106,62 +106,76 @@ depend:	Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 actsync.o: actsync.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/wait.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/qio.h ../include/libinn.h ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/wait.h ../include/config.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/messages.h ../include/inn/qio.h \
+  ../include/libinn.h ../include/paths.h
 archive.o: archive.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inn/wire.h ../include/libinn.h \
- ../include/paths.h ../include/storage.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/wire.h ../include/libinn.h \
+  ../include/paths.h ../include/storage.h
 batcher.o: batcher.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/libinn.h ../include/paths.h \
- ../include/storage.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
+  ../include/paths.h ../include/storage.h
 buffchan.o: buffchan.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
- ../include/paths.h map.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
+  ../include/paths.h map.h
 cvtbatch.o: cvtbatch.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inn/qio.h ../include/inn/wire.h \
- ../include/libinn.h ../include/paths.h ../include/storage.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/inn/wire.h \
+  ../include/libinn.h ../include/paths.h ../include/storage.h
 filechan.o: filechan.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/libinn.h ../include/paths.h \
- map.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/libinn.h ../include/paths.h map.h
 inndf.o: inndf.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
- ../include/ov.h ../include/storage.h ../include/inn/history.h \
- ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
+  ../include/ov.h ../include/storage.h ../include/inn/history.h \
+  ../include/paths.h
 innxbatch.o: innxbatch.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/libinn.h ../include/nntp.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/socket.h ../include/config.h \
+  ../include/portable/time.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/messages.h \
+  ../include/inn/timer.h ../include/libinn.h ../include/nntp.h
 innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/history.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/qio.h ../include/inn/timer.h ../include/inn/wire.h \
- ../include/libinn.h ../include/nntp.h ../include/paths.h \
- ../include/storage.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/socket.h ../include/config.h \
+  ../include/portable/time.h ../include/inn/history.h \
+  ../include/inn/defines.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/inn/timer.h \
+  ../include/inn/wire.h ../include/libinn.h ../include/nntp.h \
+  ../include/paths.h ../include/storage.h
 map.o: map.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/paths.h map.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h ../include/paths.h map.h
 ninpaths.o: ninpaths.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 nntpget.o: nntpget.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/socket.h \
- ../include/portable/time.h ../include/inn/history.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h ../include/nntp.h ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/socket.h ../include/config.h \
+  ../include/portable/time.h ../include/inn/history.h \
+  ../include/inn/defines.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/libinn.h ../include/nntp.h \
+  ../include/paths.h
 overchan.o: overchan.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/qio.h ../include/libinn.h ../include/ov.h \
- ../include/storage.h ../include/inn/history.h ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/time.h ../include/config.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/messages.h ../include/inn/qio.h \
+  ../include/libinn.h ../include/ov.h ../include/storage.h \
+  ../include/inn/history.h ../include/paths.h
 shlock.o: shlock.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h
-shrinkfile.o: shrinkfile.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/messages.h ../include/inn/defines.h
+shrinkfile.o: shrinkfile.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/libinn.h

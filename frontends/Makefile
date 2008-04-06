@@ -120,55 +120,66 @@ depend:	Makefile $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 ctlinnd.o: ctlinnd.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inndcomm.h ../include/libinn.h \
- ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inndcomm.h ../include/libinn.h \
+  ../include/paths.h
 decode.o: decode.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/messages.h ../include/inn/defines.h
 encode.o: encode.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 getlist.o: getlist.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
- ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/libinn.h \
+  ../include/paths.h
 inews.o: inews.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h ../include/nntp.h ../include/paths.h
-innconfval.o: innconfval.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/time.h ../include/config.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/messages.h ../include/libinn.h \
+  ../include/nntp.h ../include/paths.h
+innconfval.o: innconfval.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/libinn.h
 ovdb_init.o: ovdb_init.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/ov.h ../include/storage.h \
- ../include/inn/history.h ../storage/ovdb/ovdb.h \
- ../storage/ovdb/ovdb-private.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/ov.h ../include/storage.h \
+  ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../storage/ovdb/ovdb-private.h
 ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/portable/setproctitle.h ../include/portable/wait.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/libinn.h ../include/ov.h ../include/storage.h \
- ../include/inn/history.h ../storage/ovdb/ovdb.h \
- ../storage/ovdb/ovdb-private.h
-ovdb_server.o: ovdb_server.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/portable/mmap.h ../include/portable/time.h \
- ../include/portable/setproctitle.h ../include/portable/socket.h \
- ../include/portable/wait.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/libinn.h ../include/paths.h \
- ../include/storage.h ../include/ov.h ../include/inn/history.h \
- ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
+  ../include/inn/defines.h ../include/inn/system.h ../include/clibrary.h \
+  ../include/config.h ../include/portable/setproctitle.h \
+  ../include/config.h ../include/portable/wait.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/messages.h ../include/libinn.h \
+  ../include/ov.h ../include/storage.h ../include/inn/history.h \
+  ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
+ovdb_server.o: ovdb_server.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/mmap.h ../include/config.h \
+  ../include/portable/time.h ../include/portable/setproctitle.h \
+  ../include/portable/socket.h ../include/portable/wait.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/libinn.h ../include/paths.h \
+  ../include/storage.h ../include/ov.h ../include/storage.h \
+  ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../storage/ovdb/ovdb-private.h
 ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/libinn.h ../include/ov.h \
- ../include/storage.h ../include/inn/history.h ../include/paths.h \
- ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/libinn.h ../include/ov.h \
+  ../include/storage.h ../include/inn/history.h ../include/paths.h \
+  ../include/storage.h ../storage/ovdb/ovdb.h \
+  ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/wait.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/wire.h ../include/libinn.h ../include/nntp.h \
- ../include/paths.h ../include/storage.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/wait.h ../include/config.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/messages.h \
+  ../include/inn/wire.h ../include/libinn.h ../include/nntp.h \
+  ../include/paths.h ../include/storage.h
 sm.o: sm.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h \
- ../include/inn/messages.h ../include/inn/qio.h ../include/storage.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/storage.h

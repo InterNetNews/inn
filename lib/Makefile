@@ -92,159 +92,207 @@ depend: Makefile $(SOURCES) $(EXTRA_SOURCES) perl.c ../include/inn/system.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 buffer.o: buffer.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/buffer.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/buffer.h ../include/inn/defines.h ../include/libinn.h
 cleanfrom.o: cleanfrom.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 clientactive.o: clientactive.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/innconf.h ../include/libinn.h ../include/nntp.h \
- ../include/paths.h
+  ../include/inn/defines.h ../include/inn/system.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/libinn.h ../include/nntp.h ../include/paths.h
 clientlib.o: clientlib.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h \
- ../include/nntp.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h ../include/libinn.h \
+  ../include/nntp.h
 concat.o: concat.c ../include/config.h ../include/inn/defines.h \
- ../include/libinn.h
+  ../include/inn/system.h ../include/libinn.h ../include/config.h
 conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/conffile.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/conffile.h ../include/libinn.h
 confparse.o: confparse.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/confparse.h \
- ../include/inn/hashtab.h ../include/inn/messages.h \
- ../include/inn/vector.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/confparse.h ../include/inn/defines.h \
+  ../include/inn/hashtab.h ../include/inn/messages.h \
+  ../include/inn/vector.h ../include/libinn.h
 daemonize.o: daemonize.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/messages.h ../include/inn/defines.h ../include/libinn.h
 date.o: date.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/dbz.h ../include/libinn.h \
- ../include/inn/innconf.h ../include/inn/mmap.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/dbz.h ../include/libinn.h ../include/inn/messages.h \
+  ../include/inn/defines.h ../include/inn/innconf.h ../include/inn/mmap.h \
+  ../include/libinn.h
 defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h \
- ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h ../include/libinn.h \
+  ../include/paths.h
 fdflags.o: fdflags.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 genid.o: genid.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h ../include/libinn.h
 getfqdn.o: getfqdn.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/paths.h
-getmodaddr.o: getmodaddr.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/inn/innconf.h ../include/libinn.h ../include/nntp.h \
- ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h ../include/paths.h
+getmodaddr.o: getmodaddr.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h ../include/libinn.h \
+  ../include/nntp.h ../include/paths.h
 gettime.o: gettime.c ../include/config.h ../include/inn/defines.h \
- ../include/libinn.h
+  ../include/inn/system.h ../include/libinn.h ../include/config.h
 hash.o: hash.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/md5.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/md5.h ../include/inn/defines.h ../include/libinn.h
 hashtab.o: hashtab.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/hashtab.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/hashtab.h ../include/inn/defines.h ../include/libinn.h
 innconf.o: innconf.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/confparse.h \
- ../include/inn/innconf.h ../include/inn/messages.h \
- ../include/inn/vector.h ../include/libinn.h ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/confparse.h ../include/inn/defines.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/vector.h ../include/libinn.h ../include/paths.h
 inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h \
- ../include/portable/socket.h ../include/inn/innconf.h \
- ../include/inndcomm.h ../include/libinn.h ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/time.h ../include/config.h \
+  ../include/portable/socket.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inndcomm.h ../include/libinn.h \
+  ../include/paths.h
 list.o: list.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/list.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/list.h ../include/inn/defines.h
 localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h \
- ../include/nntp.h ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h ../include/libinn.h \
+  ../include/nntp.h ../include/paths.h
 lockfile.o: lockfile.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 makedir.o: makedir.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 md5.o: md5.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/md5.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/md5.h ../include/inn/defines.h
 messages.o: messages.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/messages.h ../include/inn/defines.h ../include/libinn.h
 mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/mmap.h \
- ../include/inn/messages.h ../include/inn/mmap.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/mmap.h ../include/config.h \
+  ../include/inn/messages.h ../include/inn/defines.h \
+  ../include/inn/mmap.h
 parsedate.o: parsedate.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 qio.o: qio.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/qio.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/qio.h ../include/inn/defines.h ../include/libinn.h
 radix32.o: radix32.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 readin.o: readin.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/socket.h \
- ../include/inn/innconf.h ../include/libinn.h ../include/nntp.h \
- ../include/paths.h
-reservedfd.o: reservedfd.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/socket.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h ../include/libinn.h \
+  ../include/nntp.h ../include/paths.h
+reservedfd.o: reservedfd.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 resource.o: resource.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
-sendarticle.o: sendarticle.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h ../include/libinn.h \
- ../include/nntp.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
+sendarticle.o: sendarticle.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h ../include/nntp.h
 sendpass.o: sendpass.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/innconf.h ../include/libinn.h \
- ../include/nntp.h ../include/paths.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/innconf.h ../include/inn/defines.h ../include/libinn.h \
+  ../include/nntp.h ../include/paths.h
 sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/sequence.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/sequence.h ../include/inn/defines.h
 sockaddr.o: sockaddr.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/socket.h \
- ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/socket.h ../include/config.h ../include/libinn.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h \
- ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/time.h ../include/config.h \
+  ../include/inn/messages.h ../include/inn/defines.h \
+  ../include/inn/timer.h ../include/libinn.h
 tst.o: tst.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/tst.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/tst.h ../include/inn/defines.h ../include/libinn.h
 uwildmat.o: uwildmat.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 vector.o: vector.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/vector.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/vector.h ../include/inn/defines.h ../include/libinn.h
 version.o: version.c ../include/config.h ../include/inn/defines.h \
- ../include/inn/version.h
+  ../include/inn/system.h ../include/inn/version.h
 wire.o: wire.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/wire.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/wire.h ../include/inn/defines.h ../include/libinn.h
 xfopena.o: xfopena.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/inn/messages.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/messages.h ../include/inn/defines.h ../include/libinn.h
 xsignal.o: xsignal.c ../include/config.h ../include/inn/defines.h \
- ../include/libinn.h
+  ../include/inn/system.h ../include/libinn.h ../include/config.h
 xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/libinn.h
 fseeko.o: fseeko.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 ftello.o: ftello.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-getpagesize.o: getpagesize.c ../include/config.h \
- ../include/inn/defines.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
+getpagesize.o: getpagesize.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h
 hstrerror.o: hstrerror.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
-memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
+memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/portable/time.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h \
+  ../include/portable/time.h ../include/config.h
 pread.o: pread.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 setproctitle.o: setproctitle.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h \
- ../include/portable/setproctitle.h ../include/inn/messages.h
-strcasecmp.o: strcasecmp.c ../include/config.h \
- ../include/inn/defines.h ../include/clibrary.h
-strerror.o: strerror.c ../include/config.h ../include/inn/defines.h
+  ../include/inn/defines.h ../include/inn/system.h ../include/clibrary.h \
+  ../include/config.h ../include/portable/setproctitle.h \
+  ../include/config.h ../include/inn/messages.h ../include/inn/defines.h
+strcasecmp.o: strcasecmp.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
+strerror.o: strerror.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h
 strlcat.o: strlcat.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 strlcpy.o: strlcpy.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 strspn.o: strspn.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h
+  ../include/inn/system.h ../include/clibrary.h ../include/config.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
- ../include/clibrary.h ../include/libinn.h ../include/ppport.h \
- ../include/innperl.h
+  ../include/inn/system.h
