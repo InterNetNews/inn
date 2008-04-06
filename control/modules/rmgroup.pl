@@ -49,6 +49,9 @@ to be $status.
 If this is acceptable, type:
   $inn::newsbin/ctlinnd rmgroup $groupname
 
+And do not forget to remove the corresponding description, if any,
+from your newsgroups file.
+
 The control message follows:
 
 END

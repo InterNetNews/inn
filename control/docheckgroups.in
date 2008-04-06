@@ -29,7 +29,7 @@ comm -13 ${T}/$$active ${T}/$$newsgrps >${T}/$$missing
 comm -23 ${T}/$$active ${T}/$$newsgrps >${T}/$$remove
 
 ${EGREP} "${PATS}" ${ACTIVE} | ${EGREP} "${1:-.}" | ${SED} -n '/ m$/s/ .*//p' | sort >${T}/$$amod.all
-${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" |
+${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" | ${SED} 's/\r\?$//' |
 ${SED} -n '/(Moderated)$/s/[ 	].*//p' | sort >${T}/$$ng.mod
 
 comm -12 ${T}/$$missing ${T}/$$ng.mod >${T}/$$add.mod
@@ -40,6 +40,15 @@ comm -23 ${T}/$$amod.all ${T}/$$remove >${T}/$$amod
 comm -13 ${T}/$$ng.mod ${T}/$$amod >${T}/$$ismod
 comm -23 ${T}/$$ng.mod ${T}/$$amod >${T}/$$nm.all
 comm -23 ${T}/$$nm.all ${T}/$$add >${T}/$$notmod
+
+${EGREP} "${PATS}" ${NEWSGROUPS} | ${EGREP} "${1:-.}" | ${SED} 's/[	]\+/	/' | sort >${T}/$$localdesc
+${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" | ${SED} 's/\r\?$//' |
+${SED} 's/[	]\+/	/' | sort >${T}/$$newdesc
+
+if ! (head -1 ${T}/$$newdesc | egrep " [[:digit:]]+ [[:digit:]]+ " > /dev/null) ; then
+  comm -13 ${T}/$$localdesc ${T}/$$newdesc >${T}/$$missingdesc
+  comm -23 ${T}/$$localdesc ${T}/$$newdesc >${T}/$$removedesc
+fi
 
 if [ -s ${T}/$$remove ] ; then
     (
@@ -97,6 +106,25 @@ if [ -s ${T}/$$notmod ] ; then
     ) >>${T}/$$out
 fi
 
+if [ -s ${T}/$$removedesc ] ; then
+    (
+        echo "# The following newsgroups descriptions are obsolete."
+        ${SED} "s/^/#	/" ${T}/$$removedesc
+        echo "# You can remove them by editing ${NEWSGROUPS}."
+        echo ''
+    ) >>${T}/$$out
+fi
+
+if [ -s ${T}/$$missingdesc ] ; then
+    (
+        echo "# The following newsgroups descriptions were missing and should be added."
+        ${SED} "s/^/#	/" ${T}/$$missingdesc
+        echo "# You can add them by editing ${NEWSGROUPS}."
+        echo ''
+    ) >>${T}/$$out
+fi
+
+
 test -s ${T}/$$out && {
     cat ${T}/$$out
     echo 'exit # so you can feed this message into the shell'
@@ -108,12 +136,12 @@ test -s ${T}/$$out && {
     }
     test -s ${T}/$$ngadd && {
 	echo "# Add these lines:"
-	${SED} "s/^/#   /" ${T}/$$ngadd
+	${SED} "s/^/#	/" ${T}/$$ngadd
 	echo ''
     }
     test -s ${T}/$$ngchng && {
 	echo "# Change these lines:"
-	${SED} "s/^/#   /" ${T}/$$ngchng
+	${SED} "s/^/#	/" ${T}/$$ngchng
 	echo ''
     }
 }
