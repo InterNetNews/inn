@@ -123,9 +123,11 @@ poison logic only applies if the poison entry is the last matching entry.
 
 Control messages follow slightly different propagation rules than normal
 articles; see innd(8) for the details.  Note that most subscriptions
-should have C<!junk,!control*> in their pattern list due to those
+should have C<!junk,!control,!control.*> in their pattern list due to those
 propagation rules (and since junk is a special internal newsgroup; see
-I<wanttrash> in inn.conf(5) for more details on what it's used for).
+I<wanttrash> in inn.conf(5) for more details on what it's used for) and
+that the best way to keep control messages local to a site is with a
+distribution.
 
 A subscription can be further modified by specifying distributions that
 the site should or should not receive.  The default is to send all
@@ -182,7 +184,7 @@ exclusion sub-field, incoming articles are rejected completely if any of
 the names specified in that exclusion sub-field appear in their Path:
 headers.  If the C<ME> entry has a subscription list, that list is
 prepended to the subscription list of all other entries.  For example,
-C<*,!control*,!junk,!foo.*> could be used to set the default subscription
+C<*,!control,!control.*,!junk,!foo.*> could be used to set the default subscription
 list for all other feeds so that local postings are not propagated unless
 C<foo.*> explicitly appears in the site's subscription list.  This feature
 tends to be somewhat confusing since the default subscription is prepended
@@ -484,7 +486,7 @@ be retrieved given the storage API token by using sm(8).
 The newsgroup the article is in; if cross-posted, then the first of the
 groups to which the article was posted that this site gets.  (The
 difference from C<G> is that this sends the newsgroup to which the article
-was posted even if it's a control message.)
+was posted even if it is a control message.)
 
 =item h
 
@@ -694,7 +696,7 @@ for nntpsend(8) and funnel feeds for innfeed(8).
 
 The former look like this:
 
-    feed.example.com:*,!control*,!junk:Tf,Wnm:
+    feed.example.com:*,!control,!control.*,!junk:Tf,Wnm:
 
 which generates a file named I<pathoutgoing>/feed.example.com containing
 one line per article consisting of the storage API token, a space, and the
@@ -702,12 +704,12 @@ message ID.
 
 The latter look like this:
 
-    feed.example.com:*,!control*,!junk:Tm:innfeed!
+    feed.example.com:*,!control,!control.*,!junk:Tm:innfeed!
 
 Very similar, except that this is the input to a funnel feed named
 C<innfeed!>.  One could also write this as:
 
-    example/feed.example.com:*,!control*,!junk:Ap,Tm:innfeed!
+    example/feed.example.com:*,!control,!control.*,!junk:Ap,Tm:innfeed!
 
 (note the B<Ap> so that articles that contain just C<example> in the Path:
 header will still be sent), which is completely equivalent except that
@@ -777,15 +779,14 @@ entry for controlchan(8).
 This program only wants information about articles posted to a control
 newsgroup other than control.cancel, which due to the sorting of control
 messages described in innd(8) will send it all control messages except for
-cancel messages provided that control.cancel exists.  In this case, we
-also exclude any article with a distribution of C<collabra-internal>.
-B<controlchan> gets the storage API token, the name of the sending site
-(for processing old-style ihave and sendme control messages, be sure to
-read about I<logipaddr> in controlchan(8)), and the message ID for each
-article.
+cancel messages.  In this case, we also exclude any article with a
+distribution of C<collabra-internal>.  B<controlchan> gets the storage
+API token, the name of the sending site (for processing old-style ihave
+and sendme control messages, be sure to read about I<logipaddr> in
+controlchan(8)), and the message ID for each article.
 
 For many other examples, including examples of the special C<ME> site
-entry, see the example newsfeeds file distributed with INN.  Also see the
+entry, see the example F<newsfeeds> file distributed with INN.  Also see the
 install documentation that comes with INN for information about setting up
 the standard newsfeeds entries used by most sites.
 

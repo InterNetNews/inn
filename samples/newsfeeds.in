@@ -82,8 +82,11 @@ controlchan!\
 
 # A real-time feed through innfeed.  Don't send articles with a distribution
 # of "foo", since those articles are internal.
+# Note that control messages will be sent even though "!control,!control.*"
+# is specified.  It is useful not to forget that pattern since control
+# messages for local.* would still be sent with "*,@local.*" only.
 #news.uu.net/uunet\
-#	:*,!junk,!control*/!foo\
+#	:*,!junk,!control,!control.*/!foo\
 #	:Tm:innfeed!
 
 # Create a batch file in @SPOOLDIR@/outgoing for all articles
@@ -91,12 +94,13 @@ controlchan!\
 # be named nic.near.net, the default file name, and either nntpsend or
 # send-nntp can send articles from that spool file.
 #nic.near.net\
-#	:*,!junk,!control*/!foo\
+#	:*,!junk,!control,!control.*/!foo\
 #	:Tf,Wnm:
 
-# A UUCP feed, where we try to keep the "batching" between 4K and 1K.
+# A UUCP feed, where we try to keep the "batching" between 4 KB and 1 KB.
+# You can use send-uucp(8) to process these batch files.
 #ihnp4\
-#	:*,!junk,!control/!foo\
+#	:*,!junk,!control,!control.*/!foo\
 #	:Tf,Wnb,B4096/1024:
 
 

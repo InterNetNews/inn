@@ -259,9 +259,11 @@ poison logic only applies if the poison entry is the last matching entry.
 .PP
 Control messages follow slightly different propagation rules than normal
 articles; see \fIinnd\fR\|(8) for the details.  Note that most subscriptions
-should have \f(CW\*(C`!junk,!control*\*(C'\fR in their pattern list due to those
+should have \f(CW\*(C`!junk,!control,!control.*\*(C'\fR in their pattern list due to those
 propagation rules (and since junk is a special internal newsgroup; see
-\&\fIwanttrash\fR in \fIinn.conf\fR\|(5) for more details on what it's used for).
+\&\fIwanttrash\fR in \fIinn.conf\fR\|(5) for more details on what it's used for) and
+that the best way to keep control messages local to a site is with a
+distribution.
 .PP
 A subscription can be further modified by specifying distributions that
 the site should or should not receive.  The default is to send all
@@ -306,7 +308,7 @@ exclusion sub\-field, incoming articles are rejected completely if any of
 the names specified in that exclusion sub-field appear in their Path:
 headers.  If the \f(CW\*(C`ME\*(C'\fR entry has a subscription list, that list is
 prepended to the subscription list of all other entries.  For example,
-\&\f(CW\*(C`*,!control*,!junk,!foo.*\*(C'\fR could be used to set the default subscription
+\&\f(CW\*(C`*,!control,!control.*,!junk,!foo.*\*(C'\fR could be used to set the default subscription
 list for all other feeds so that local postings are not propagated unless
 \&\f(CW\*(C`foo.*\*(C'\fR explicitly appears in the site's subscription list.  This feature
 tends to be somewhat confusing since the default subscription is prepended
@@ -590,7 +592,7 @@ be retrieved given the storage \s-1API\s0 token by using \fIsm\fR\|(8).
 The newsgroup the article is in; if cross\-posted, then the first of the
 groups to which the article was posted that this site gets.  (The
 difference from \f(CW\*(C`G\*(C'\fR is that this sends the newsgroup to which the article
-was posted even if it's a control message.)
+was posted even if it is a control message.)
 .IP "h" 3
 .IX Item "h"
 The history hash key of the article (derived from the message \s-1ID\s0).
@@ -785,7 +787,7 @@ for \fInntpsend\fR\|(8) and funnel feeds for \fIinnfeed\fR\|(8).
 The former look like this:
 .PP
 .Vb 1
-\&    feed.example.com:*,!control*,!junk:Tf,Wnm:
+\&    feed.example.com:*,!control,!control.*,!junk:Tf,Wnm:
 .Ve
 .PP
 which generates a file named \fIpathoutgoing\fR/feed.example.com containing
@@ -795,14 +797,14 @@ message \s-1ID\s0.
 The latter look like this:
 .PP
 .Vb 1
-\&    feed.example.com:*,!control*,!junk:Tm:innfeed!
+\&    feed.example.com:*,!control,!control.*,!junk:Tm:innfeed!
 .Ve
 .PP
 Very similar, except that this is the input to a funnel feed named
 \&\f(CW\*(C`innfeed!\*(C'\fR.  One could also write this as:
 .PP
 .Vb 1
-\&    example/feed.example.com:*,!control*,!junk:Ap,Tm:innfeed!
+\&    example/feed.example.com:*,!control,!control.*,!junk:Ap,Tm:innfeed!
 .Ve
 .PP
 (note the \fBAp\fR so that articles that contain just \f(CW\*(C`example\*(C'\fR in the Path:
@@ -887,15 +889,14 @@ entry for \fIcontrolchan\fR\|(8).
 This program only wants information about articles posted to a control
 newsgroup other than control.cancel, which due to the sorting of control
 messages described in \fIinnd\fR\|(8) will send it all control messages except for
-cancel messages provided that control.cancel exists.  In this case, we
-also exclude any article with a distribution of \f(CW\*(C`collabra\-internal\*(C'\fR.
-\&\fBcontrolchan\fR gets the storage \s-1API\s0 token, the name of the sending site
-(for processing old-style ihave and sendme control messages, be sure to
-read about \fIlogipaddr\fR in \fIcontrolchan\fR\|(8)), and the message \s-1ID\s0 for each
-article.
+cancel messages.  In this case, we also exclude any article with a
+distribution of \f(CW\*(C`collabra\-internal\*(C'\fR.  \fBcontrolchan\fR gets the storage
+\&\s-1API\s0 token, the name of the sending site (for processing old-style ihave
+and sendme control messages, be sure to read about \fIlogipaddr\fR in
+\&\fIcontrolchan\fR\|(8)), and the message \s-1ID\s0 for each article.
 .PP
 For many other examples, including examples of the special \f(CW\*(C`ME\*(C'\fR site
-entry, see the example newsfeeds file distributed with \s-1INN\s0.  Also see the
+entry, see the example \fInewsfeeds\fR file distributed with \s-1INN\s0.  Also see the
 install documentation that comes with \s-1INN\s0 for information about setting up
 the standard newsfeeds entries used by most sites.
 .SH "HISTORY"

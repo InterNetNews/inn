@@ -211,7 +211,7 @@ DoSub(F, p)
 
 	SawAll = (strcmp(s, "all") == 0);
 	if (SawAll)
-	    s = SawBang ? "*" : "*,!control";
+	    s = SawBang ? "*" : "*,!control,!control.*";
 	len += strlen(s);
 	fprintf(F, "%s", s);
 
