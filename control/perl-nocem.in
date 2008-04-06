@@ -6,6 +6,14 @@
 # Copyright 2000 by Miquel van Smoorenburg <miquels@cistron.nl>
 # Copyright 2001 by Marco d'Itri <md@linux.it>
 # This program is licensed under the terms of the GNU General Public License.
+#
+# List of changes:
+#
+# 2002: Patch by Steven M. Christey for untrusted printf input.
+# 2007: Patch by Christoph Biedl for checking a timeout.
+# Documentation improved by Jeffrey M. Vinocur (2002), Russ Allbery (2006)
+# and Julien Elie (2007).
+#
 ##############################################################################
 
 require 5.00403;
@@ -31,13 +39,15 @@ my $keyring = $inn::pathetc . '/pgp/ncmring.gpg';
 #    return 1;
 #}
 
-# no user servicable parts below this line ###################################
+# no user serviceable parts below this line ###################################
 
 # global variables
 my ($working, $got_sighup, $got_sigterm, @ncmperm, $cancel);
 my $use_syslog = 0;
 my $log_open = 0;
 my $nntp_open = 0;
+my $last_cancel = 0;
+my $socket_timeout = $inn::peertimeout - 100;
 
 my $logfile = $inn::pathlog . '/perl-nocem.log';
 
@@ -92,6 +102,7 @@ exit 0;
 # Process one NoCeM notice.
 sub do_nocem {
     my $token = shift;
+    my $start = time;
 
     # open the article and verify the notice
     my $artfh = open_article($token);
@@ -102,11 +113,10 @@ sub do_nocem {
 
     &$cancel($nocems);
     logmsg("Articles cancelled: " . join(' ', @$nocems), 'debug');
-    my $start = time;
     my $diff = (time - $start) || 0.01;
     my $nr = scalar @$nocems;
-    logmsg(sprintf("processed notice %s by %s ($nr ids, %.5f s, %.1f/s)",
-        $nid, $issuer, $diff, $nr / $diff));
+    logmsg(sprintf("processed notice %s by %s (%d ids, %.5f s, %.1f/s)",
+        $nid, $issuer, $nr, $diff, $nr / $diff));
 }
 
 # - Check if it is a PGP signed NoCeM notice
@@ -181,7 +191,7 @@ sub read_nocem {
 #        return;
 #    }
 
-    # we do want it, so read the entire article. Also copy it to
+    # We do want it, so read the entire article.  Also copy it to
     # a temp file so that we can check the PGP signature when done.
     my $tmpfile = "$inn::pathtmp/nocem.$$";
     if (not open(OFD, ">$tmpfile")) {
@@ -289,7 +299,8 @@ sub pgp_check {
             return 0;
         }
     }
-#    logmsg("Command line was: $inn::gpg $pgpargs $art", 'debug');
+#    logmsg("Command line was: $inn::gpgv --status-fd=1"
+#         . ($keyring ? ' --keyring=' . $keyring : '') . " $art", 'debug');
 #    logmsg("Full PGP output: >>>$_<<<", 'debug');
 
     if (/^\[GNUPG:\]\s+GOODSIG\s+\S+\s+(.*)/m) {
@@ -337,7 +348,7 @@ sub open_article {
     return undef;
 }
 
-# Cancel a number of message-ids. We use ctlinnd to do this,
+# Cancel a number of Message-IDs.  We use ctlinnd to do this,
 # and we run up to 15 of them at the same time (10 usually).
 sub cancel_ctlinnd {
     my @ids = @{$_[0]};
@@ -371,6 +382,11 @@ sub cancel_nntp {
     my $ids = shift;
     my $r;
     
+    if ($nntp_open and time - $socket_timeout > $last_cancel) {
+        logmsg('Close socket for timeout');
+        close (NNTP);
+        $nntp_open = 0;
+    }
     if (not $nntp_open) {
         use Socket;
         if (not socket(NNTP, PF_UNIX, SOCK_STREAM, 0)) {
@@ -400,11 +416,15 @@ sub cancel_nntp {
         if (($r = <NNTP>) !~ /^289/) {
             $r =~ s/\r\n$//;
             logmsg("cannot cancel $_: $r", 'err');
+            goto ERR;
         }
     }
+    $last_cancel = time;
     return;
 
 ERR:
+    # discard unusable socket
+    close (NNTP);
     logmsg('Switching to ctlinnd...', 'err');
     cancel_ctlinnd($ids);
     $cancel = \&cancel_ctlinnd;
@@ -463,56 +483,147 @@ sub term_handler {
 
 # lint food
 print $inn::pathrun.$inn::pathlog.$inn::pathetc.$inn::newsbin.$inn::pathbin
-    . $inn::pathtmp;
+    .$inn::pathtmp.$inn::peertimeout.$inn::syslog_facility;
 
 __END__
 
 =head1 NAME
 
-perl-nocem - A NoCeM-on-spool implementation for INN 2.x
+perl-nocem - A NoCeM-on-spool implementation for S<INN 2.x>
 
 =head1 SYNOPSIS
 
-perl-nocem < I<message>
+perl-nocem
 
 =head1 DESCRIPTION
 
-Add to the newsfeeds file an entry like this one:
+NoCeM, which is pronounced I<No See 'Em>, is a protocol enabling
+authenticated third-parties to issue notices which can be used
+to cancel unwanted articles (like spam and articles in moderated
+newsgroups which were not approved by their moderators).  It can
+also be used by readers as a I<third-party killfile>.  It is
+intended to eventually replace the protocol for third-party cancel
+messages.
 
-    nocem:!*,alt.nocem.misc,news.lists.filter\
-        :Tc,Wf,Ap:/usr/local/news/bin/perl-nocem
+B<perl-nocem> processes third-party, PGP-signed article cancellation
+notices.  It is possible not to honour all NoCeM notices but only those
+which are sent by people whom you trust (that is to say if you trust
+the PGP key they use to sign their NoCeM notices).  Indeed, it is up
+to you to decide whether you wish to honour their notices, depending
+on the criteria they use.
 
-Import new keys with:
+Processing NoCeM notices is easy to set up:
 
-    gpg --primary-keyring /usr/local/news/etc/pgp/ncmring.gpg --import
-        <key-file>
+=over 4
 
-where <key-file> is the file containing the key.  For old PGP-generated
-keys, you may have to use B<--allow-non-selfsigned-uid> if they're not
-properly self-signed, but anyone creating a key really should self-sign
-the key.  Current PGP implementations do this automatically.
+=item 1.
 
-The nocem.ctl config file contains lines like:
+Import the keys of the NoCeM issuers you trust in order to check
+the authenticity of their notices.  You can do:
 
-    annihilator-1@erlenstar.demon.co.uk:*
-    clewis@ferret:mmf,spam
+    gpg --no-default-keyring --primary-keyring <pathetc>/pgp/ncmring.gpg --import <key-file>
+
+where <pathetc> is the value of the I<pathetc> parameter set in F<inn.conf>
+and <key-file> the file containing the key(s) to import.  The keyring
+must be located in I<pathetc>/pgp/ncmring.gpg (create the directory
+before using B<gpg>).  For old PGP-generated keys, you may have to use
+B<--allow-non-selfsigned-uid> if they are not properly self-signed,
+but anyone creating a key really should self-sign the key.  Current
+PGP implementations do this automatically.
+
+The keys of NoCeM issuers can be found in the web site of I<The NoCeM Registry>:
+L<http://www.xs4all.nl/~rosalind/nocemreg/nocemreg.html>.  You can even
+download there a unique file which contains all the keys.
+
+=item 2.
+
+Create a F<nocem.ctl> config file in I<pathetc> indicating the NoCeM issuers
+and notices you want to follow.  This permission file contains lines like:
+
+    annihilator-1:*
+    clewis@ferret.ocunix:mmf
+    stephane@asynchrone:mmf,openproxy,spam
+
+This will remove all articles for which the issuer (first part of the line,
+before the colon C<:>) has issued NoCeM notices corresponding to the
+criteria specified after the colon.
+
+You will also find information about that on the web site of
+I<The NoCeM Registry>.
+
+=item 3.
+
+Add to the F<newsfeeds> file an entry like this one in order to feed
+B<perl-nocem> the NoCeM notices posted to alt.nocem.misc and
+news.lists.filters:
+
+    nocem!\
+        :!*,alt.nocem.misc,news.lists.filters\
+        :Tc,Wf,Ap:<pathbin>/perl-nocem
+
+with the correct path to B<perl-nocem>, located in <pathbin>.  Then, reload
+the F<newsfeeds> file (C<ctlinnd reload newsfeeds 'NoCeM channel feed'>).
+
+Note that you should at least carry news.lists.filters on your news
+server (or other newsgroups where NoCeM notices are sent) if you wish
+to process them.
+
+=item 4.
+
+Everything should now work.  However, do not hesitate to manually test
+B<perl-nocem> with a NoCeM notice, using:
+
+    grephistory '<Message-ID>' | perl-nocem
+
+Indeed, B<perl-nocem> expects tokens on its standard input, and
+B<grephistory> can easily give it the token of a known article,
+thanks to its Message-ID.
+
+=back
+
+When you have verified that everything works, you can eventually turn
+off regular spam cancels, if you want, not processing any longer
+cancels containing C<cyberspam> in the Path: header (see the
+I<refusecybercancels> parameter in F<inn.conf>).
 
 =head1 FILES
 
-/usr/local/news/etc/nocem.ctl
+=over 4
+
+=item I<pathbin>/perl-nocem
+
+The Perl script itself used to process NoCeM notices.
+
+=item I<pathetc>/nocem.ctl
+
+The configuration file which specifies the NoCeM notices to be processed.
+
+=item I<pathetc>/pgp/ncmring.gpg
+
+The keyring which contains the public keys of trusted NoCeM issuers.
+
+=back
 
 =head1 BUGS
 
-The Subject header is not checked for the @@NCM string and there is no
-check for the presence of the References header.
+The Subject: header is not checked for the @@NCM string and there is no
+check for the presence of the References: header.
 
-The Newsgroups pseudo header is not checked, but this can be done in
+The Newsgroups: pseudo header is not checked, but this can be done in
 local_want_cancel_id().
 
-The Hierarchies header is ignored.
+The Hierarchies: header is ignored.
 
 =head1 HISTORY
 
 Copyright 2000 by Miquel van Smoorenburg <miquels@cistron.nl>.
 
 Copyright 2001 by Marco d'Itri <md@linux.it>.
+
+$Id$
+
+=head1 SEE ALSO
+
+gpgv(1), grephistory(1), inn.conf(5), newsfeeds(5), pgp(1).
+
+=cut
