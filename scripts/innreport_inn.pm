@@ -373,6 +373,8 @@ sub collect {
     }
     # closed (without times (?))
     return 1 if $left =~ m/\S+ closed$/o;
+    # closed (for a cancel feed - MODE CANCEL)
+    return 1 if $left =~ m/localhost:\d+ closed seconds \d+ cancels \d+$/o;
     # checkpoint
     return 1 if $left =~ m/^\S+:\d+ checkpoint /o;
     # if ($left =~ /(\S+):\d+ checkpoint seconds (\d+) accepted (\d+)
