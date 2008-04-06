@@ -241,9 +241,19 @@ sub collect {
       return 1 if $left =~ /^SERVER perl filtering enabled$/o;
       # SERVER perl filtering disabled
       return 1 if $left =~ /^SERVER perl filtering disabled$/o;
+      # SERVER Python filtering enabled
+      return 1 if $left =~ /^SERVER Python filtering enabled$/o;
+      # SERVER Python filtering disabled
+      return 1 if $left =~ /^SERVER Python filtering disabled$/o;
       # SERVER cancelled +id
       return 1 if $left =~ /^SERVER cancelled /o;
     }
+    # Python filter
+    return 1 if $left =~ /^defined python methods$/o;
+    return 1 if $left =~ /^python interpreter initialized OK$/o;
+    return 1 if $left =~ /^python: First load, so I can do initialization stuff.$/o;
+    return 1 if $left =~ /^python: spamfilter successfully hooked into INN$/o;
+    return 1 if $left =~ /^python: filter_close running, bye!$/o;
     # rejecting[perl]
     if ($left =~ /^rejecting\[perl\] <[^>]+> \d+ (.*)/o) {
       $innd_filter_perl{$1}++;
@@ -1225,6 +1235,8 @@ sub collect {
     return 1 if $left =~ /\S+ cant opendir \S+ I\/O error$/o;
     # perl filtering enabled
     return 1 if $left =~ /perl filtering enabled$/o;
+    # Python filtering enabled
+    return 1 if $left =~ /Python filtering enabled$/o;
     # connect
     if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect$/o) {
       my $cust = $1;
@@ -1566,6 +1578,16 @@ sub collect {
     return 1 if $left =~ m/rejected 437 ECP rejected/o;
     # rejected 437 "Subject" header too long
     return 1 if $left =~ m/header too long/o;
+    # rejected 437 Too long line in header 1163 bytes
+    return 1 if $left =~ m/rejected 437 Too long line in header/o;
+    # rejected 437 Too many newsgroups (meow)
+    return 1 if $left =~ m/rejected 437 Too many newsgroups/o;
+    # rejected 437 Space before colon in "<a" header
+    return 1 if $left =~ m/rejected 437 Space before colon in/o;
+    # rejected 437 EMP (phl)
+    return 1 if $left =~ m/rejected 437 EMP/o;
+    # rejected 437 Scoring filter (8)
+    return 1 if $left =~ m/rejected 437 Scoring filter/o;
     # bad_article missing Message-ID
     return 1 if $left =~ m/bad_article missing Message-ID/o;
     # cant unspool saving to xxx
@@ -1596,6 +1618,29 @@ sub collect {
       $nocem_newids{$nocem_lastid} += $1;
       $nocem_totalids += $2;
       $nocem_totalids{$nocem_lastid} += $2;
+      return 1;
+    }
+    return 1;
+  }
+
+  ########
+  ## nocem
+  if ($prog eq "nocem") {
+    if ($left =~ /processed notice .* by (.*) \((\d+) ids,/o) {
+      $nocem_goodsigs{$1}++;
+      $nocem_totalgood++;
+      $nocem_lastid = $1;
+      $nocem_newids += $2;
+      $nocem_newids{$nocem_lastid} += $2;
+      $nocem_totalids += $2;
+      $nocem_totalids{$nocem_lastid} += $2;
+      return 1;
+    }
+    if ($left =~ /bad signature from (.*)/o) {
+      $nocem_badsigs{$1}++;
+      $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
+      $nocem_totalbad++;
+      $nocem_lastid = $1;
       return 1;
     }
     return 1;
