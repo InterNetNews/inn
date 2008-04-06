@@ -103,11 +103,11 @@ Katsuhiro Kondou:
         Provided unified overview, the buffindexed overview method, trash
         storage method, spool translation method, traditional expire
         policy for articles stored through storage API and expireindex, as
-        well has hundreds of fixes to clean up defects as changes were
+        well as hundreds of fixes to clean up defects as changes were
         made.  Did a large amount of man page documentation and clean up.
         Has also been a major force in the CVS pool maintenace.
 
-Russell Vincent
+Russell Vincent:
         Expanded inn.conf to make many of the old compile time options
         into run time variables.  Numerous bug fixes, small feature
         enhancements and man updates.
@@ -123,7 +123,7 @@ Steve Carrie:
 Ed Mooring:
         Wrote the first Perl filter callbacks into INN.
 
-Aidan Cully
+Aidan Cully:
         Provided the patches to support the new readers.conf file, and
         wrote the initial user authenticators and resolvers for the
         readers.conf.  Provided the patches to support the new
