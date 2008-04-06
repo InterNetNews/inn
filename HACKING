@@ -6,8 +6,8 @@ Hacking INN
     contributors, and secondarily as documentation of some of INN's
     internals.
 
-    This is $Revision$ dated $Date: 2005-12-24 13:33:38 -0800 (Sat,
-    24 Dec 2005) $.
+    This is $Revision$ dated $Date: 2006-04-15 04:52:06 +0200 (Sat,
+    15 Apr 2006) $.
 
     First of all, if you plan on working on INN source, please start from
     the current development tree.  There may be significant changes from the
@@ -641,9 +641,10 @@ Making a Release
         MANIFEST.
 
     6.  Run "make release".  Note that you need to have a copy of svn2cl
-        from <http://ch.tudelft.nl/~arthur/svn2cl/> to do this.  Start the
-        ChangeLog at the time of the previous release.  (Eventually, the
-        script will be smart enough to do this for you.)
+        from <http://ch.tudelft.nl/~arthur/svn2cl/> to do this; at least
+        version 0.7 is required.  Start the ChangeLog at the time of the
+        previous release.  (Eventually, the script will be smart enough to
+        do this for you.)
 
     7.  Make the resulting tar file available for testing in a non-listable
         directory on ftp.isc.org and announce its availability on
