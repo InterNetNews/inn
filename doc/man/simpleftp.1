@@ -137,32 +137,36 @@ simpleftp \- Rudimentary FTP client
 \&\fBsimpleftp\fR \fIurl\fR [...]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBsimpleftp\fR is a Perl script script that provides basic support for
+\&\fBsimpleftp\fR is a Perl script that provides basic support for
 fetching files with \s-1FTP\s0 in a batch oriented fashion.  It takes one or more
-\&\s-1FTP\s0 \s-1URLS\s0 on the command line.  The file(s) will be retrieved from the
+\&\s-1FTP\s0 URLs on the command line.  The file(s) will be retrieved from the
 remote server and placed in the current directory with the same basename
-as on the remote; e.g., \f(CW\*(C`ftp://ftp.isc.org/pub/usenet/CONFIG/active.gz\*(C'\fR
+as on the remote; e.g., <ftp://ftp.isc.org/pub/usenet/CONFIG/active.gz>
 is stored as \fIactive.gz\fR in the current directory.
+.PP
+The script properly understands usernames, passwords and ports specified
+as follows:
+.PP
+.Vb 1
+\&    ftp://user:password@host:port/path/file
+.Ve
 .SH "BUGS"
 .IX Header "BUGS"
 \&\fBsimpleftp\fR is an extremely poor substitute for more complete programs
 like the freely available \fBwget\fR or \fBncftp\fR utilities.  It was written
 only to provide elementary support in \s-1INN\s0 for non-interactive fetching of
-the files in <ftp://ftp.isc.org/pub/usenet/CONFIG/> without requiring
+the files in <ftp://ftp.isc.org/pub/pgpcontrol/> or
+<ftp://ftp.isc.org/pub/usenet/CONFIG/> without requiring
 administrators to install yet another package.  Its shortcomings as a
 general purpose program are too numerous to mention, but one that stands
-out is that \fBsimpleftp\fR does not understand the complete syntax of URLs,
-only the hostname and pathname parts \*(-- it will not understand username,
-password, port or parameter strings.
-.PP
-The Perl libraries that it uses have the advantage of coming with Perl,
-even older versions of Perl, but are not \f(CW\*(C`\-w\*(C'\fR safe and do not work nearly
-as well as Net::FTP.
+out is that downloaded files by \fBsimpleftp\fR override existing files
+with the same name in the local directory.
 .SH "HISTORY"
 .IX Header "HISTORY"
 Tossed off by David C Lawrence <tale@isc.org> for InterNetNews.
+Rewritten to use Net::FTP by Julien Elie <julien@trigofacile.com>.
 .PP
 $Id$
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\fIactsync\fR\|(8)
+\&\fIactsync\fR\|(8).

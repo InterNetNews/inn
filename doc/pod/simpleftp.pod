@@ -8,37 +8,39 @@ B<simpleftp> I<url> [...]
 
 =head1 DESCRIPTION
 
-B<simpleftp> is a Perl script script that provides basic support for
+B<simpleftp> is a Perl script that provides basic support for
 fetching files with FTP in a batch oriented fashion.  It takes one or more
-FTP URLS on the command line.  The file(s) will be retrieved from the
+FTP URLs on the command line.  The file(s) will be retrieved from the
 remote server and placed in the current directory with the same basename
-as on the remote; e.g., C<ftp://ftp.isc.org/pub/usenet/CONFIG/active.gz>
+as on the remote; e.g., L<ftp://ftp.isc.org/pub/usenet/CONFIG/active.gz>
 is stored as F<active.gz> in the current directory.
+
+The script properly understands usernames, passwords and ports specified
+as follows:
+
+    ftp://user:password@host:port/path/file
 
 =head1 BUGS
 
 B<simpleftp> is an extremely poor substitute for more complete programs
 like the freely available B<wget> or B<ncftp> utilities.  It was written
 only to provide elementary support in INN for non-interactive fetching of
-the files in L<ftp://ftp.isc.org/pub/usenet/CONFIG/> without requiring
+the files in L<ftp://ftp.isc.org/pub/pgpcontrol/> or
+L<ftp://ftp.isc.org/pub/usenet/CONFIG/> without requiring
 administrators to install yet another package.  Its shortcomings as a
 general purpose program are too numerous to mention, but one that stands
-out is that B<simpleftp> does not understand the complete syntax of URLs,
-only the hostname and pathname parts -- it will not understand username,
-password, port or parameter strings.
-
-The Perl libraries that it uses have the advantage of coming with Perl,
-even older versions of Perl, but are not C<-w> safe and do not work nearly
-as well as Net::FTP.
+out is that downloaded files by B<simpleftp> override existing files
+with the same name in the local directory.
 
 =head1 HISTORY
 
 Tossed off by David C Lawrence <tale@isc.org> for InterNetNews.
+Rewritten to use Net::FTP by Julien Elie <julien@trigofacile.com>.
 
 $Id$
 
 =head1 SEE ALSO
 
-actsync(8)
+actsync(8).
 
 =cut

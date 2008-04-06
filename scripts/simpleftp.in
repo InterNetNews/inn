@@ -1,33 +1,24 @@
-#! /usr/bin/perl
-# fixscript will replace this line with require innshellvars.pl
+#! /usr/bin/perl -w
 
-# simpleftp
-# Author: David Lawrence <tale@isc.org>
+# simpleftp - Rudimentary FTP client.
+#
+# Author: David Lawrence <tale@isc.org>.
+#         Rewritten by Julien Elie <julien@trigofacile.com> to use Net::FTP.
 #
 # Fetch files to the local machine based on URLs on the command line.
-# Uses perl's ftp.pl, which in turn uses chat2.pl.  Not very speedy.
-#   There is a better perl ftp module in the libnet package,
-# but it would require the INN admin to install yet another package.
-#   There is a perl www module which can do ftp in the libwww package,
-# but that has the same issue as the libnet module.
-#   INN's configure searches for ncftp, wget, linx, et cetera,
+# INN's configure searches for ncftp, wget, linx, et caetera,
 # but they're all system add-ons, so this is provided.
-#   Perl5 is already required by other parts of INN, it only took a half hour
+#
+# Perl 5 is already required by other parts of INN; it only took a half hour
 # to write this, so this was the easiest way to go for a backup plan.
-#   This script is nowhere near as flexible as libwww.  If you really need
+#
+# This script is nowhere near as flexible as libwww.  If you really need
 # that kind of power, get libwww and use it.  This is just sufficient for what
 # INN needed.
 
-# NOTE: ftp.pl and chat2.pl are not -w safe (uninitialized values errors)
-
 use strict;
+use Net::FTP;
 use Sys::Hostname;
-
-# $ENV{'PATH'} = '/bin:/usr/bin:/usr/ucb';
-
-# trick ftp.pl into not demanding this file.
-$INC{'sys/socket.ph'} = 1;
-require 'ftp.pl';
 
 $0 =~ s(.*/)();
 
@@ -41,47 +32,59 @@ for (@ARGV) {
     or die $usage;
 }
 
-my ($user, $pass, $lasthost);
+my ($lasthost, $ftp);
 
-$user = 'anonymous';
-$pass = (getpwuid($<))[0] . '@' . hostname;
-
-# this will keep track of how many _failed_
+# This will keep track of how many _failed_.
 my $exit = @ARGV;
 
 for (@ARGV) {
   my ($host, $path) = m%^ftp://([^/]+)(/.+)%;
+  my $user = 'anonymous';
+  my $pass = (getpwuid($<))[0] . '@' . hostname;
+  my $port = 21;
+
   unless (defined $host && defined $path) {
     warn "$0: bad URL: $_\n";
     next;
   }
 
-  # NOTE: URLs with usernames, passwords, ports or parameters are not supported
+  if ($host =~ /(.*):(.*)\@(.*)/) {
+    $user = $1;
+    $pass = $2;
+    $host = $3;
+  }
+
+  if ($host =~ /(.*):(.*)/) {
+    $port = $1;
+    $host = $2;
+  }
 
   if (defined $lasthost && $host ne $lasthost) {
-    ftp::close();
+    $ftp->quit;
     $lasthost = undef;
   }
 
   unless (defined $lasthost) {
-    ftp::open($host, getservbyname('ftp', 'tcp') || 21, 0, 1)
+    $ftp = Net::FTP->new($host, Port => $port)
       or next;
-    ftp::login($user, $pass)
-      or next;
-    ftp::type("i")
+    $ftp->login($user, $pass)
       or next;
   }
 
   my $localfile = $path;
+  $path =~ s([^/]+$)();
   $localfile =~ s(.*/)();
-  ftp::get($path, $localfile)
+
+  $ftp->cwd($path)
+    or next;
+  $ftp->get($localfile)
     or next;
 
   $exit--;
   $lasthost = $host;
 }
 
-ftp::close()
+$ftp->quit
   if defined $lasthost;
 
 exit $exit;
