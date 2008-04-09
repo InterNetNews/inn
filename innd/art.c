@@ -1872,6 +1872,7 @@ ARTpost(CHANNEL *cp)
 {
   char		*p, **groups, ControlWord[SMBUF], **hops, *controlgroup;
   int		i, j, *isp, hopcount, oerrno, canpost;
+  size_t        n;
   NEWSGROUP	*ngp, **ngptr;
   SITE		*sp;
   ARTDATA	*data = &cp->Data;
@@ -1941,14 +1942,14 @@ ARTpost(CHANNEL *cp)
     return false;
   }
 
-  i = strlen(hops[0]);
-  if (i == (signed int) Path.used - 1 &&
+  n = strlen(hops[0]);
+  if (n == Path.used - 1 &&
     strncmp(Path.data, hops[0], Path.used - 1) == 0)
     data->Hassamepath = true;
   else
     data->Hassamepath = false;
   if (Pathcluster.data != NULL &&
-    i == (signed int) Pathcluster.used - 1 &&
+    n == Pathcluster.used - 1 &&
     strncmp(Pathcluster.data, hops[0], Pathcluster.used - 1) == 0)
     data->Hassamecluster = true;
   else
