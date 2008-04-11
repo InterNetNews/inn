@@ -41,7 +41,7 @@ Matthias Urlichs:
         'Wp' flag.
 
 Stefan Petri:
-        Did the original XBATCH support
+        Did the original XBATCH support.
 
 Russel Street:
         Did more XBATCH support.
@@ -59,8 +59,8 @@ Clayton O'Neill:
         modifications to dbz.  Integrating innfeed, adding Xref slaving,
         the history cache, the WIP rewrite and various speedups were
         also his doing.  Provided the tradindexed overview mechanism.
-        Implemented the O flag in newsfeeds.  Did a bunch of early work on
-        the CVS repository, reorganization of the code, and committing
+        Implemented the 'O' flag in newsfeeds.  Did a bunch of early work
+        on the CVS repository, reorganization of the code, and committing
         patches from others.
 
 Vincent Archer:
@@ -72,7 +72,7 @@ Forrest J. Cavalier III:
         valuable design input and testing.
 
 Scott Fritchie:
-        Wrote the CNFS storage back end.
+        Wrote the CNFS storage back-end.
 
 Fabien Tassin:
         Wrote the innreport package.  Implemented the new incoming.conf
@@ -117,7 +117,7 @@ Darrell Fuhriman:
         development.
 
 Steve Carrie:
-        Modified nnrpd to allow detailed client tracking, added the -R
+        Modified nnrpd to allow detailed client tracking, added the '-R'
         flag to nnrpd.
 
 Ed Mooring:
@@ -146,7 +146,7 @@ Russ Allbery:
         fixes to various parts of INN.
 
 Kai Henningsen:
-        Implemented the C and U flags in newsfeeds.
+        Implemented the 'C' and 'U' flags in newsfeeds.
 
 Julio Sanchez:
         Wrote the initial libtool support for INN.
@@ -231,7 +231,7 @@ Marc Fournier:
         significantly with the conversion to autoconf.  Added the ability
         to set connection limits on a per-host basis.
 
-Joshua M. Thompson
+Joshua M. Thompson:
         Wrote the original INSTALL documentation.
 
 The following people helped above and beyond the call of duty with testing
@@ -252,13 +252,18 @@ Mohan Kokal, Robert R. Collier, Mark Hittinger, Miquel van Smoorenburg,
 Boyd Lynn Gerber, Yury B. Razbegin, Joe St. Sauver, Heiko Schlichting,
 John P. Speno, Scott Gifford, Steve Parr, Robert Kiessling,
 Francis Swasey, Paul Tomblin, Florian La Roche, Curt Welch,
-Thomas Mike Michlmayr, KIZU Takashi, Michael Hall, Jeff King,
+Thomas Mike Michlmayr, Kizu Takashi, Michael Hall, Jeff King,
 Edward S. Marshall, Michael Schroeder, George Lindholm, Don Lewis,
 Christopher Masto, Hiroaki Sengoku, Yury July, Yar Tikhiy, Kees Bakker,
 Peter da Silva, Matt McLeod, Ed Korthof, Jan Rychter, Winfried Magerl,
-Andreas Lamrecht, Duane Currie, Ian Dickinson, Bettina Fink,
-Jochen Erwied, Rebecca Ore, Felicia Neff, Antonio Querubin, Bear Giles,
-Christopher P. Lindsey, Winfried Szukalski, Edvard Tuinder,
-Frank McConnell, Ilya Kovalenko, Steve Youngs, Jacek Konieczny,
-Ilya Voronin, Sergey Babitch, WATANABE Katsuhiro, F. Senault,
-Chris Caputo, Thomas Parleman, Adam J. Richter, Jim Dutton, Julien ÉLIE
+Andreas Lamrecht, Duane Currie, Ian Dickinson, Bettina Fink, Todd Olson,
+Jochen Erwied, Rebecca Ore, Felicia Neff, Ben Rosengart, Antonio Querubin,
+Bear Giles, Ian Hastie, Greg Andruk, Frank Copeland, Andrew Stribblehill,
+Erik Mouritzen, Ernst Boetsch, Piotr Meyer, David Canzi, Brandon Hume,
+Christopher P. Lindsey, Winfried Szukalski, Edvard Tuinder, Viktor Pilpenok,
+Frank McConnell, Ilya A. Kovalenko, Steve Youngs, Jacek Konieczny,
+Ilya Voronin, Sergey Babitch, Watanabe Katsuhiro, Fred Senault,
+Chris Caputo, Thomas Parleman, Adam J. Richter, Jim Dutton, Julien Elie,
+Ray Miller, Andreas M. Kirchwit, Andrey Yakovlev, Christoph Biedl,
+Kai Gallasch, Ollivier Robert, Ivan Shmakov, Kachun Lee, Kirill Berezin,
+D. Stussy
