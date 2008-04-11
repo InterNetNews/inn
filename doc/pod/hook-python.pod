@@ -265,7 +265,7 @@ NNRPD
 
 The old authentication and access control functionality has been
 combined with the new readers.conf mechanism by Erik Klavon
-<erik@eriq.org>; bug reports should however go to inn-bugs@isc.org,
+<erik@eriq.org>; bug reports should however go to <inn-bugs@isc.org>,
 not Erik.
 
 The remainder of this section is an introduction to the new mechanism

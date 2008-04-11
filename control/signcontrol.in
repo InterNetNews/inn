@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-# written April 1996, tale@isc.org (David C Lawrence)
+# written April 1996, <tale@isc.org> (David C Lawrence)
 # Currently maintained by Russ Allbery <rra@stanford.edu>
 # Version 1.8, 2003-07-06
 #

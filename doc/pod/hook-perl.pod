@@ -5,7 +5,7 @@ This is $Revision$ dated $Date$.
 This file documents INN's built-in support for Perl filtering and reader
 authentication.  The code is based very heavily on work by Christophe
 Wolfhugel <wolf@pasteur.fr>, and his work was in turn inspired by the
-existing TCL support.  Please send any bug reports to inn-bugs@isc.org,
+existing TCL support.  Please send any bug reports to <inn-bugs@isc.org>,
 not to Christophe, as the code has been modified heavily since he
 originally wrote it.
 
@@ -342,7 +342,7 @@ this functionality, make sure those directories exist.
 
 The old authentication functionality has been combined with the new
 readers.conf mechanism by Erik Klavon <erik@eriq.org>; bug reports
-should however go to inn-bugs@isc.org, not Erik.
+should however go to <inn-bugs@isc.org>, not Erik.
 
 The remainder of this section is an introduction to the new mechanism
 (which uses the perl_auth: and perl_access: F<readers.conf> parameters)

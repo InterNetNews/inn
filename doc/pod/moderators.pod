@@ -39,7 +39,7 @@ hosts behind moderators.isc.org have graciously volunteered to handle
 forwarding tasks for all world-wide newsgroups so that individual sites
 don't have to keep track of the submission addresses for moderated groups.
 The forwarding database used by moderators.isc.org is coordinated by
-moderators-request@isc.org; if you know of a world-wide newsgroup
+<moderators-request@isc.org>; if you know of a world-wide newsgroup
 hierarchy that is not correctly handled by moderators.isc.org, please send
 the details to that address.
 

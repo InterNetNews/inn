@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
 
-# written April 1996, tale@isc.org (David C Lawrence)
+# written April 1996, <tale@isc.org> (David C Lawrence)
 # mostly rewritten 2001-03-21 by Marco d'Itri <md@linux.it>
 #
 # requirements:

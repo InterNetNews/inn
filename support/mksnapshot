@@ -41,11 +41,11 @@ automatically from the Subversion repository.  It was made on:
 
 This code should be considered experimental.  Only a default compile and
 automated testing is done before it is made available.  If it breaks, we'd
-like to know at inn-bugs@isc.org, but if it causes your system to explode,
+like to know at <inn-bugs@isc.org>, but if it causes your system to explode,
 don't blame us.
 
 If you are using this code, it's highly recommended that you be on the
-inn-workers@isc.org mailing list.  See README for more information.
+<inn-workers@isc.org> mailing list.  See README for more information.
 EOF
 
 make snapshot SNAPSHOT="$tree" SNAPDATE="$date"

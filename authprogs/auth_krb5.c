@@ -185,7 +185,7 @@ main (int argc, char *argv[])
 
     /* Must have a username/password, and no '@' in the address.  @ checking
       is there to prevent authentication against another Kerberos realm; there
-      should be a -r <realm> commandline option to make this check unnecessary
+      should be a -r <realm> command line option to make this check unnecessary
       in the future. */
     if (authinfo == NULL)
         die("no authentication information from nnrpd");
