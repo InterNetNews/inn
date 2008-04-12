@@ -1584,7 +1584,13 @@ int ovdb_open_berkeleydb(int mode, int flags)
 
     OVDBenv->set_errcall(OVDBenv, OVDBerror);
     OVDBenv->set_cachesize(OVDBenv, 0, ovdb_conf.cachesize, ovdb_conf.ncache);
+#if DB_VERSION_MAJOR >= 4
+    OVDBenv->set_lk_max_locks(OVDBenv, ovdb_conf.maxlocks);
+    OVDBenv->set_lk_max_lockers(OVDBenv, ovdb_conf.maxlocks);
+    OVDBenv->set_lk_max_objects(OVDBenv, ovdb_conf.maxlocks);
+#else
     OVDBenv->set_lk_max(OVDBenv, ovdb_conf.maxlocks);
+#endif
 
 #if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
     if(ovdb_conf.txn_nosync)

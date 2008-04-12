@@ -25,7 +25,8 @@ else
 
     dnl First check the default installation locations.
     if test x"$DB_DIR" = xyes ; then
-        for version in BerkeleyDB.4.4 BerkeleyDB.4.3 BerkeleyDB.4.2 \
+        for version in BerkeleyDB.4.6 BerkeleyDB.4.5 \
+                       BerkeleyDB.4.4 BerkeleyDB.4.3 BerkeleyDB.4.2 \
                        BerkeleyDB.4.1 BerkeleyDB.4.0 \
                        BerkeleyDB.3.3 BerkeleyDB.3.2 BerkeleyDB.3.1 \
                        BerkeleyDB.3.0 BerkeleyDB ; do
@@ -39,7 +40,7 @@ else
     dnl If not found there, check the default locations for some BSD ports and
     dnl Linux distributions.  They each do things in different ways.
     if test x"$DB_DIR" = xyes ; then
-        for version in db44 db43 db42 db41 db4 db3 db2 ; do
+        for version in db46 db45 db44 db43 db42 db41 db4 db3 db2 ; do
             if test -d "/usr/local/include/$version" ; then
                 DB_CPPFLAGS="-I/usr/local/include/$version"
                 DB_LDFLAGS="-L/usr/local/lib"
