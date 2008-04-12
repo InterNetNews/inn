@@ -43,6 +43,10 @@ m4_include([m4/iov-max.m4])
 m4_include([m4/krb5.m4])
 m4_include([m4/large-fpos.m4])
 m4_include([m4/libtool.m4])
+m4_include([m4/lt~obsolete.m4])
+m4_include([m4/ltoptions.m4])
+m4_include([m4/ltsugar.m4])
+m4_include([m4/ltversion.m4])
 m4_include([m4/mmap.m4])
 m4_include([m4/modes.m4])
 m4_include([m4/openssl.m4])
@@ -86,11 +90,12 @@ AC_ARG_ENABLE(libtool,
         inn_use_libtool=yes
     fi)
 if test x"$inn_use_libtool" = xyes ; then
-    AC_PROG_LIBTOOL
+    LT_INIT
     EXTLIB='la'
     EXTOBJ='lo'
     LIBTOOL='$(top)/libtool'
     LIBTOOLCC='$(top)/libtool --mode=compile'
+    LIBTOOLINST='$(top)/libtool --mode=install'
     LIBTOOLLD='$(top)/libtool --mode=link'
     CCOUTPUT='-c -o $@ $<'
 else
@@ -98,6 +103,7 @@ else
     EXTOBJ='o'
     LIBTOOL=''
     LIBTOOLCC=''
+    LIBTOOLINST=''
     LIBTOOLLD=''
     if test x"$compiler_c_o" = xyes ; then
         CCOUTPUT='-c -o $@ $<'
@@ -109,6 +115,7 @@ fi
 AC_SUBST(EXTLIB)
 AC_SUBST(EXTOBJ)
 AC_SUBST(LIBTOOLCC)
+AC_SUBST(LIBTOOLINST)
 AC_SUBST(LIBTOOLLD)
 AC_SUBST(CCOUTPUT)
 

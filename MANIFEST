@@ -562,6 +562,10 @@ m4/iov-max.m4                         Autoconf macro for IOV_MAX
 m4/krb5.m4                            Autoconf macro for Kerberos v5
 m4/large-fpos.m4                      Autoconf macro for large-file fpos_t
 m4/libtool.m4                         Autoconf macros for libtool
+m4/ltoptions.m4                       Autoconf macros for libtool option handling
+m4/ltsugar.m4                         Autoconf macros for libtool m4 base layer
+m4/ltversion.m4                       Autoconf macros for libtool version numbers
+m4/lt~obsolete.m4                     Autoconf macros for libtool obsolete definitions
 m4/mmap.m4                            Autoconf macros for mmap facilities
 m4/modes.m4                           Autoconf macro for file modes
 m4/openssl.m4                         Autoconf macro for OpenSSL
