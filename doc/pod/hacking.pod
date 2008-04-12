@@ -67,13 +67,16 @@ At the time of this writing, S<autoconf 2.59> or later is required.
 
 The supporting files for autoconf are in the F<support> subdirectory,
 including the files F<config.guess> and F<config.sub> to determine the
-system name and and F<ltmain.sh> for libtool support.  The latter file
+system name and F<ltmain.sh> for libtool support.  The latter file
 comes from the libtool distribution; the canonical version of the former
-two are available from ftp.gnu.org in /gnu/config.  In addition,
-F<m4/libtool.m4> is just a copy of F<libtool.m4> from the libtool
-distribution.  (Using libtool without using automake requires a few odd
-hacks.)  New versions should be checked in periodically when available.
-There are no INN-specific modifications to those files.
+two are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
+redirects to L<http://git.savannah.gnu.org/gitweb/?p=config.git;a=tree>).
+In addition, F<m4/libtool.m4> is just a copy of F<libtool.m4> from the
+libtool distribution.  (Using libtool without using automake requires
+a few odd hacks.)  New versions should be checked in periodically when
+available.  There are no INN-specific modifications to those files except
+for F<ltmain.sh> which recognizes the additional B<-B> flag that INN's
+B<install-sh> script uses.
 
 INN should not compile with libtool by default, only when requested, since
 otherwise normal compilations are quite slow.  (Using libtool is not
