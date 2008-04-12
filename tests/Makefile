@@ -44,7 +44,7 @@ $(FIXSCRIPT):
 .c.o: $*.c
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 
-LINK		= $(LIBTOOL) $(CC) $(LDFLAGS) -o $@
+LINK		= $(LIBTOOLLD) $(CC) $(LDFLAGS) -o $@
 STORAGEDEPS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 STORAGELIBS	= $(STORAGEDEPS) $(STORAGE_LIBS)
 
