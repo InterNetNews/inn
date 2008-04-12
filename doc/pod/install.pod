@@ -1568,6 +1568,10 @@ such clients are not widespread yet.
 
 In the shutdown section of the init script, you can put:
 
+    start-stop-daemon --stop --name nnrpd --quiet --oknodo
+
+or if you do not have a B<start-stop-daemon> utility:
+
     su news -c 'killall nnrpd'
 
 =head1 Processing Newsgroup Control Messages
