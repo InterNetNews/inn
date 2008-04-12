@@ -7526,7 +7526,7 @@ echo "configure:7526: checking for BerkeleyDB location" >&5
     if test x"$BERKELEY_DB_DIR" = xyes ; then
         for v in BerkeleyDB BerkeleyDB.3.0 BerkeleyDB.3.1 BerkeleyDB.3.2 \
                  BerkeleyDB.3.3 BerkeleyDB.4.0 BerkeleyDB.4.1 BerkeleyDB.4.2 \
-                 BerkeleyDB.4.3 BerkeleyDB.4.4; do
+                 BerkeleyDB.4.3 BerkeleyDB.4.4 BerkeleyDB.4.5 BerkeleyDB.4.6; do
             for d in $prefix /usr/local /opt /usr ; do
                 if test -d "$d/$v" ; then
                     BERKELEY_DB_DIR="$d/$v"
@@ -7536,7 +7536,7 @@ echo "configure:7526: checking for BerkeleyDB location" >&5
         done
     fi
     if test x"$BERKELEY_DB_DIR" = xyes ; then
-        for v in db44 db43 db42 db41 db4 db3 db2 ; do
+        for v in db46 db45 db44 db43 db42 db41 db4 db3 db2 ; do
             if test -d "/usr/local/include/$v" ; then
                 BERKELEY_DB_LDFLAGS="-L/usr/local/lib"
                 BERKELEY_DB_CFLAGS="-I/usr/local/include/$v"
