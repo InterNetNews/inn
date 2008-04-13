@@ -989,8 +989,12 @@ main(int ac, char *av[])
 	if ((j = atoi(buff)) != NNTP_BAD_COMMAND_VAL)
 	    i = j;
 
-	if (i != NNTP_POSTOK_VAL)
-            die("you do not have permission to post");
+        if (i != NNTP_POSTOK_VAL) {
+            /* We try to authenticate in case it is all the same possible
+             * to post. */
+            if (NNTPsendpassword((char *)NULL, FromServer, ToServer) < 0)
+                die("you do not have permission to post");
+        }
 	deadfile = NULL;
     }
 
