@@ -90,6 +90,181 @@ writing new one and proof-reading.  Samples are also more detailed.
 
 =back
 
+=head1 Changes in 2.4.4
+
+=over 2
+
+=item *
+
+Fixed incomplete checking of packet sizes in the B<ctlinnd> interface in
+the no-Unix-domain-sockets case.  This is a potential buffer overflow in
+dead code since basically all systems INN builds on support Unix domain
+sockets these days.  Also track the buffer size more correctly in the
+client side of this interface for the Unix domain socket case.
+
+=item *
+
+Group blocks in F<incoming.conf> are now correctly parsed and no longer
+cause segfaults when loading this file.
+
+=item *
+
+Fixed a problem with B<innfeed> continuously segfaulting on amd64 hardware
+(and possibly on lots of 64-bit platforms).  Many thanks to Ollivier Robert
+for his patch and also to Kai Gallasch for having reported the problem and
+provided the FreeBSD server to debug it.
+
+=item *
+
+B<scanlogs> now rotates B<innfeed>'s log file, which prevents B<innfeed>
+from silently dying when its log file reaches S<2 GB>.
+
+=item *
+
+Some annoying assertion failures occurring in B<innfeed> have been fixed
+by Russ Allbery.
+
+=item *
+
+Some news clients hang when posting an article through a SSL connection:
+it seems that B<nnrpd>'s SSL routines make it wrongly wait for data
+completion.  In order to fix the problem, the select() wait is now
+just bypassed.  However, the IDLE timer stat is currently not collected
+for such connections.  Thanks to Kachun Lee for this workaround.
+
+=item *
+
+Fixed a bug in the display of the used compressor (C<cunbatch> was used
+if arguments were passed to B<gzip> or B<bzip2>).
+
+=item *
+
+If compiling with S<Berkeley DB>, use its ndbm compatibility layer for
+B<ckpasswd> in preference to searching for a traditional dbm library.
+INN also supports S<Berkeley DB 4.4> and S<Berkeley DB 4.6> thanks
+to Marco d'Itri.
+
+=item *
+
+B<ovdb_init> now properly closes stdin/out/err when it becomes a daemon.
+The issue was reported by Viktor Pilpenok and fixed by Marco d'Itri.
+
+=item *
+
+Added support for Diablo quickhash and hashfeed algorithms.
+It allows to distribute the messages among several peers (new B<Q> flag
+for F<newsfeeds>).  Thanks to Miquel van Smoorenburg for this
+implementation in INN.
+
+=item *
+
+B<innd> now listen on separate sockets for IPv4 and IPv6 connections
+if the IPV6_V6ONLY socket option is available.  There might also be
+operating systems that still have separate IPv4 and IPv6 TCP implementations,
+and advanced features like TCP SACK might not be available on v6 sockets.
+Thanks to Miquel van Smoorenburg for this patch.
+
+=item *
+
+Marco d'Itri added a I<force-ipv4> peer configuration option for B<innfeed>
+that, if set, tells B<innfeed> to never attempt an IPv6 connection to that
+host.
+
+=item *
+
+Added a I<nnrpdflags> parameter to F<inn.conf> (modeled on the concept of
+I<innflags>) to permit passing of command line arguments to instances of
+B<nnrpd> spawned from B<innd>.
+
+=item *
+
+A new F<inn.conf> parameter called I<pathcluster> has been added:
+it allows to append a common name to the Path: header
+on all incoming articles.  I<pathhost> and I<pathalias> (if set)
+are still appended to the path as usual, but I<pathcluster>
+is always appended as the last element (e.g. on the leftmost
+side of the Path: header).  Thanks to Miquel van Smoorenburg for
+this feature.
+
+=item *
+
+B<simpleftp> has been rewritten to use C<Net::FTP>.  Indeed, F<ftp.pl>
+is no longer shipped with S<Perl 5> and the script did not work.
+
+=item *
+
+B<perl-nocem> will now check for a timeout and re-open the socket
+if required.  Additionally, B<perl-nocem> will switch to
+cancel_ctlinnd in case cancel_nntp fails after sending
+the Message-ID.  Thanks to Christoph Biedl for the patch.  A more
+detailed documentation has also been written for perl-nocem(8).
+
+=item *
+
+The RADIUS configuration is now wrapped in a C<server {}> block in
+F<radius.conf>.
+
+=item *
+
+Checkgroups when there is nothing to change no longer result in sending
+a blank mail to administrators.  Besides, no mail is sent by B<controlchan>
+for the creation of a newsgroup when the action is C<no change>.
+
+=item *
+
+Checkgroups are now properly propagated even though the news server
+does not carry the groups they are posted to.
+
+=item *
+
+B<controlchan> and B<docheckgroups> now handle wire format messages
+so that articles from the spool can be directly fed to them.
+
+=item *
+
+Newgroup control messages for existing groups now change their description.
+If a mail is sent to administrators, it reminds them to update their
+F<newsgroups> file.  It also warns when there are missing or obsolete
+descriptions.  Furthermore, the F<newsgroups> file is now written prettier
+(from one to three tabulations between the name of the group and its
+short description) and to.* groups cannot be created.
+
+=item *
+
+The sample F<control.ctl> file has been extensively updated.
+
+=item *
+
+Fixed empty LISTGROUP replies which were not terminated.  Thanks to
+David Canzi for the patch.
+
+=item *
+
+In response to a LIST [file] command, if the file does not exist,
+we assume it is not maintained and return C<503> instead of C<215> and
+an empty file.  Moreover, capability to LIST ACTIVE.TIMES for a wildmat
+pattern as its third argument has been added in order to select wanted
+newsgroups.
+
+=item *
+
+B<inews> now tries to authenticate if it does not receive a C<200> return
+code after MODE READER.  Indeed, it might be able to post even with
+a C<201> return code and also with another codes like C<440> or C<480>.
+
+=item *
+
+If creating a new F<history> file, set the ownership and mode appropriately.
+B<inncheck> also expects fewer things to be private to the news user.  Most
+of the configuration files will never contain private information like
+passwords.
+
+=item *
+
+Other minor bug fixes and documentation improvements.
+
+=back
+
 =head1 Changes in 2.4.3
 
 =over 2
