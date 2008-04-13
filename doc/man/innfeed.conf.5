@@ -702,18 +702,18 @@ peer bb.home.vix.com {
 # (\\t,\\n,\\r,\\f,\\v,\\",\\').
 #
 # Examples:
-#       eg-string:      "New\tConfig\tfile\n"
+#       eg-string:      "New\\tConfig\\tfile\\n"
 #       eg-long-string: "A long string that goes
 #                       over multiple lines. The
 #                       newline is kept in the
 #                       string except when quoted 
-#                       with a backslash \
+#                       with a backslash \\
 #                       as here."
 #       eg-simple-string: A-no-quote-string
 #       eg-integer:     10
 #       eg-boolean:     true
 #       eg-char:        'a'
-#       eg-ctrl-g:      '\007'
+#       eg-ctrl-g:      '\\007'
 
 .fi
 .RE
