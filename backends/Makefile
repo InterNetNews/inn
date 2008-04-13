@@ -119,7 +119,7 @@ $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 $(LIBHIST):	; (cd ../history ; $(MAKE))
 
 ../doc/man/send-uucp.8: send-uucp.in
-	$(POD2MAN) -s 8 $? > $@
+	$(POD2MAN) -s 8 -n "SEND-UUCP" $? > $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.

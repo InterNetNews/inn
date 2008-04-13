@@ -49,7 +49,7 @@ pgpverify:	pgpverify.in     $(FIX) ; $(FIX) pgpverify.in
 signcontrol:	signcontrol.in   $(FIX) ; $(FIX) -i signcontrol.in
 
 ../doc/man/perl-nocem.8: perl-nocem.in
-	$(POD2MAN) -s 8 $? > $@
+	$(POD2MAN) -s 8 -n "PERL-NOCEM" $? > $@
 
 ../doc/man/pgpverify.1: pgpverify.in
-	$(POD2MAN) -s 1 $? > $@
+	$(POD2MAN) -s 1 -n "PGPVERIFY" $? > $@
