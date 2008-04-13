@@ -18,8 +18,22 @@ ACTIVEFILE=${ACTIVE}
 TOP=${TOP-20}
 ##  NN log file.
 NN=${PATHETC}/nn/Log
+
+##  Where these programs, if used, write their logs.
+##  We also have to find innfeed's log file.
+INNFEEDLOG=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${PATHETC}/innfeed.conf`
+INNFEED=
+for F in "${INNFEEDLOG}" ; do
+    test -f "${MOST_LOGS}/${F}" && INNFEED="${INNFEED} ${MOST_LOGS}/${F}"
+done
+test -z "${INNFEED}" && test -f ${MOST_LOGS}/innfeed.log && INNFEED="${MOST_LOGS}/innfeed.log"
+
+
 ##  Where nntpsend, if used, writes its log information.
 NNTPSEND=${MOST_LOGS}/nntpsend.log
+SENDNNTP=${MOST_LOGS}/send-nntp.log
+SENDUUCP=${MOST_LOGS}/send-uucp.log
+LIVEFILES="${INNFEED} ${NNTPSEND} ${SENDNNTP} ${SENDUUCP}"
 ##  Where news.daily places expire output, unless noexplog was used.
 EXPLOG=${MOST_LOGS}/expire.log
 
@@ -42,7 +56,10 @@ test -f ${MOST_LOGS}/rmgroup.log \
 ##  Build up the list of log files to process.
 LOGS="${ERRLOG} ${EXPLOG} ${LOG} ${ACTIVEFILE} ${SYSLOGS} ${UNWANTED_LOG}"
 
-test -n "${NNTPSEND}" -a -f "${NNTPSEND}" && LOGS="${LOGS} ${NNTPSEND}"
+for F in ${LIVEFILES} ; do
+    test -n "${F}" -a -f "${F}" && LOGS="${LOGS} ${F}"
+done
+
 test -n "${CONTROL_DATA}" && LOGS="${LOGS} ${CONTROL_LOG}"
 for F in checkgroups default ihave newgroup rmgroup sendme sendsys \
 	senduuname version miscctl badcontrol failedpgp badpgp; do
@@ -131,7 +148,7 @@ if ${ROTATE} ; then
     fi
 
     ##  These are live files, so use link rather than copy.
-    for F in ${NNTPSEND} ; do
+    for F in ${LIVEFILES} ; do
 	if [ -f ${F} ]; then
 	    rm -f ${F}.old ${F}.new
 	    ln ${F} ${F}.old
@@ -208,16 +225,6 @@ if ${ROTATE} ; then
 	esac
     done
     cd ${HERE}
-
-    ##  Truncate logs from send-nntp and/or send-uucp.
-    if [ -s ${MOST_LOGS}/send-nntp.log ] ; then
-	${LOG_COMPRESS} <${MOST_LOGS}/send-nntp.log >${OLD}/send-nntp.1${Z}
-	cat /dev/null >${MOST_LOGS}/send-nntp.log
-    fi
-    if [ -s ${MOST_LOGS}/send-uucp.log ] ; then
-	${LOG_COMPRESS} <${MOST_LOGS}/send-uucp.log >${OLD}/send-uucp.1${Z}
-	cat /dev/null >${MOST_LOGS}/send-uucp.log
-    fi
 else
     ##  Don't use the real OLD directory, instead use TMPDIR
     OLD=${TMPDIR}
