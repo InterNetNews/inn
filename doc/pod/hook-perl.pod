@@ -107,7 +107,7 @@ something like this:
                 Lines        => '5',
                 Distribution => 'usa',
                 'Message-ID' => '<6.20232.842369548@example.com>',
-                __BODY__     => 'Send five dollars to the ISC, c/o ...',
+                __BODY__     => 'Send five dollars to ISC, c/o ...',
                 __LINES__    => 5
         );
 
@@ -576,7 +576,7 @@ own.
 =head1 Available Packages
 
 This is an unofficial list of known filtering packages at the time of
-publication.  This is not an endorsement of these filters by the ISC or
+publication.  This is not an endorsement of these filters by ISC or
 the INN developers, but is included as assistance in locating packages
 which make use of this filter mechanism.
 

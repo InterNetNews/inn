@@ -215,12 +215,12 @@ Also:
 
 Dave Barr:
         Kept INN alive after Rich Salz didn't have the time any more but 
-        before the ISC took over.  He released 4 unofficial versions that 
-        provided a good boost to what the ISC started with.  Minor work
+        before ISC took over.  He released 4 unofficial versions that 
+        provided a good boost to what ISC started with.  Minor work
         on 2.0, mostly with example files and minor code tweaks.
 
 James Brister:
-        The chief maintainer of INN from when the ISC took over
+        The chief maintainer of INN from when ISC took over
         maintenance through the 2.2 release, James is also the original
         author of innfeed and has made fixes, improvements, and feature
         additions all over the code.
