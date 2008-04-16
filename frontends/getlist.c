@@ -240,7 +240,7 @@ main(int argc, char *argv[])
                 die("%s is not a valid port number", optarg);
             break;
         default:
-            exit(1);
+            die("%s", usage);
         }
     }
     argc -= optind;
