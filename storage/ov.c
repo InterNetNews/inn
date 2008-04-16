@@ -263,7 +263,7 @@ OVcancel(TOKEN token)
     if (xref == NULL)
         goto fail;
     xrefend = wire_endheader(xref, art->data + art->len - 1);
-    if (end == NULL)
+    if (xrefend == NULL)
         goto fail;
     xreflen = xrefend - xref + 1;
     xref_copy = xstrndup(xref, xreflen);
