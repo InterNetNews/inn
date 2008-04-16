@@ -1248,8 +1248,10 @@ getcore(hash_table *tab)
     char *it;
     ssize_t nread;
     size_t i;
-    struct stat st;
     size_t length = conf.tsize * tab->reclen;
+#ifdef HAVE_MMAP
+    struct stat st;
+#endif
 
     if (tab->incore == INCORE_MMAP) {
 #if defined(HAVE_MMAP)
