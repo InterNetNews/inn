@@ -207,10 +207,6 @@ static Connection gCxnList = NULL ;
 static unsigned int gCxnCount = 0 ;
 static unsigned int max_reconnect_period = MAX_RECON_PER ;
 static unsigned int init_reconnect_period = INIT_RECON_PER ;
-static struct sockaddr_in *bind_addr = NULL;
-#ifdef HAVE_INET6
-static struct sockaddr_in6 *bind_addr6 = NULL;
-#endif
 #if 0
 static bool inited = false ;
 #endif
@@ -328,7 +324,6 @@ static int fudgeFactor (int initVal) ;
 int cxnConfigLoadCbk (void *data UNUSED)
 {
   long iv ;
-  char *sv ;
   int rval = 1 ;
   FILE *fp = (FILE *) data ;
 
@@ -363,43 +358,6 @@ int cxnConfigLoadCbk (void *data UNUSED)
   else
     iv = INIT_RECON_PER ;
   init_reconnect_period = (unsigned int) iv ;
-
-#ifdef HAVE_INET6
-  if (getString (topScope,"bindaddress6",&sv,NO_INHERIT))
-    {
-      struct addrinfo *res, hints;
-
-      memset( &hints, 0, sizeof( hints ) );
-      hints.ai_flags = AI_NUMERICHOST;
-      if( getaddrinfo( sv, NULL, &hints, &res ) )
-        {
-	  logOrPrint (LOG_ERR, fp, 
-                      "innfeed unable to determine IPv6 bind address") ;
-	}
-      else
-        {
-	  bind_addr6 = (struct sockaddr_in6 *) xmalloc (res->ai_addrlen);
-	  memcpy( bind_addr6, res->ai_addr, res->ai_addrlen );
-        }
-    }
-#endif
-
-  if (getString (topScope,"bindaddress",&sv,NO_INHERIT))
-    {
-      struct in_addr addr ;
-
-      if (!inet_aton(sv,&addr))
-        {
-	  logOrPrint (LOG_ERR, fp,
-                      "innfeed unable to determine IPv4 bind address") ;
-	}
-      else
-        {
-	  bind_addr = (struct sockaddr_in *) 
-		      xmalloc (sizeof(struct sockaddr_in));
-	  make_sin( (struct sockaddr_in *)bind_addr, &addr );
-        }
-    }
 
   return rval ;
 }
@@ -515,13 +473,16 @@ Connection newConnection (Host host,
  */
 bool cxnConnect (Connection cxn)
 {
-  struct sockaddr_storage cxnAddr, cxnSelf ;
-  struct sockaddr *retAddr;
+  const struct sockaddr_storage cxnAddr, cxnSelf ;
+  const struct sockaddr *retAddr;
   int fd, rval ;
   const char *peerName = hostPeerName (cxn->myHost) ;
   char msgbuf[100];
+  const struct sockaddr_in *bind_addr = hostBindAddr (cxn->myHost) ;
+  int family = 0;
 #ifdef HAVE_INET6
   char paddr[INET6_ADDRSTRLEN];
+  const struct sockaddr_in6 *bind_addr6 = hostBindAddr6 (cxn->myHost) ;
 #endif
 
   ASSERT (cxn->myEp == NULL) ;
@@ -545,7 +506,10 @@ bool cxnConnect (Connection cxn)
 
   cxn->state = cxnConnectingS ;
 
-  retAddr = hostIpAddr (cxn->myHost) ;
+#ifdef HAVE_INET6
+  family = hostAddrFamily (cxn->myHost);
+#endif
+  retAddr = hostIpAddr (cxn->myHost, family) ;
 
   if (retAddr == NULL)
     {
@@ -553,7 +517,7 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
 
-  memcpy( &cxnAddr, retAddr, SA_LEN(retAddr) );
+  memcpy( (void *)&cxnAddr, retAddr, SA_LEN(retAddr) );
 
 #ifdef HAVE_INET6
   if( cxnAddr.ss_family == AF_INET6 )
@@ -581,7 +545,7 @@ bool cxnConnect (Connection cxn)
   /* bind to a specified IPv6 address */
   if( (cxnAddr.ss_family == AF_INET6) && bind_addr6 )
     {
-      memcpy( &cxnSelf, bind_addr6, sizeof(struct sockaddr_in6) );
+      memcpy( (void *)&cxnSelf, bind_addr6, sizeof(struct sockaddr_in6) );
       if (bind (fd, (struct sockaddr *) &cxnSelf,
 		  sizeof(struct sockaddr_in6)) < 0)
 	{
@@ -605,7 +569,7 @@ bool cxnConnect (Connection cxn)
   if (bind_addr)
 #endif
     {
-      memcpy( &cxnSelf, bind_addr, sizeof(struct sockaddr_in) );
+      memcpy( (void *)&cxnSelf, bind_addr, sizeof(struct sockaddr_in) );
       if (bind (fd, (struct sockaddr *) &cxnSelf,
 		  sizeof(struct sockaddr_in) ) < 0)
 	{
@@ -1380,6 +1344,30 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
 /*
+ * This is called when we are so far in the connection setup that
+ * we're confident it'll work.  If the connection is IPv6, remove
+ * the IPv4 addresses from the address list.
+ */
+static void connectionIfIpv6DeleteIpv4Addr (Connection cxn)
+{
+#ifdef HAVE_INET6
+  struct sockaddr_storage ss;
+  socklen_t len = sizeof(ss);
+
+  if (getpeername (endPointFd (cxn->myEp), (struct sockaddr *)&ss, &len) < 0)
+    return;
+  if (ss.ss_family != AF_INET6)
+    return;
+
+  hostDeleteIpv4Addr (cxn->myHost);
+#endif
+}
+
+
+
+
+ 
+/*
  * Called when the banner message has been read off the wire and is
  * in the buffer(s). When this function returns the state of the
  * Connection will still be cxnConnectingS unless something broken,
@@ -1472,6 +1460,10 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
 
       if ( isOk )
 	{
+      /* If we got this far and the connection is IPv6, remove
+         the IPv4 addresses from the address list. */
+      connectionIfIpv6DeleteIpv4Addr (cxn);
+
 	  if (hostUsername (cxn->myHost) != NULL
 	      && hostPassword (cxn->myHost) != NULL)
 	    issueAuthUser (e,cxn);
