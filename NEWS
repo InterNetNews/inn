@@ -50,9 +50,10 @@ Changes in 2.4.4
       available on v6 sockets.  Thanks to Miquel van Smoorenburg for this
       patch.
 
-    * Marco d'Itri added a *force-ipv4* peer configuration option for
-      innfeed that, if set, tells innfeed to never attempt an IPv6
-      connection to that host.
+    * The two configuration options *bindaddress* and *bindaddress6* can now
+      be set on a per-peer basis for innfeed.  Setting *bindaddress6* to
+      "none" tells innfeed to never attempt an IPv6 connection to that host.
+      Thanks to Miquel van Smoorenburg for this patch.
 
     * Added a *nnrpdflags* parameter to inn.conf (modeled on the concept of
       *innflags*) to permit passing of command line arguments to instances
