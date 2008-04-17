@@ -166,9 +166,10 @@ Thanks to Miquel van Smoorenburg for this patch.
 
 =item *
 
-Marco d'Itri added a I<force-ipv4> peer configuration option for B<innfeed>
-that, if set, tells B<innfeed> to never attempt an IPv6 connection to that
-host.
+The two configuration options I<bindaddress> and I<bindaddress6> can now
+be set on a per-peer basis for B<innfeed>.  Setting I<bindaddress6>
+to C<none> tells B<innfeed> to never attempt an IPv6 connection to that
+host.  Thanks to Miquel van Smoorenburg for this patch.
 
 =item *
 
