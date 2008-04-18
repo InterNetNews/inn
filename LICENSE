@@ -53,7 +53,13 @@ files.  Specifically (but possibly not comprehensively):
    for more details.
 
    lib/md5.c is covered under the standard free MD5 license from RSA Data
-   Security.  See the file for more details.
+   Security.  See the file for more details.  A clarification is also
+   provided here:  <http://www.ietf.org/ietf/IPR/RSA-MD-all>.
+
+      "Implementations of these message-digest algorithms, including
+      implementations derived from the reference C code in RFC-1319,
+      RFC-1320, and RFC-1321, may be made, used, and sold without
+      license from RSA for any purpose."
 
    history/his.c and history/hisv6/hisv6.c are under a license very
    similar to the new BSD license (no advertising clause) but with Thus
