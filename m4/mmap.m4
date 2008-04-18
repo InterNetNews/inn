@@ -26,6 +26,7 @@ dnl Source used by INN_FUNC_MMAP.
 define([_INN_FUNC_MMAP_SOURCE],
 [[#include <fcntl.h>
 #include <sys/mman.h>
+#include <stdlib.h>
 
 int
 main()
@@ -86,6 +87,7 @@ define([_INN_FUNC_MMAP_NEEDS_MSYNC_SOURCE],
 [[#include <sys/types.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <stdlib.h>
 
 int
 main()
