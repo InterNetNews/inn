@@ -79,6 +79,7 @@ AC_AIX
 AC_ISC_POSIX
 INN_PROG_CC_C_O
 AC_CANONICAL_HOST
+_LT_DECL_SED
 
 dnl Check to see if the user wants to use libtool.  We only invoke the libtool
 dnl setup macros if they do.  Keep this call together with the libtool setup
