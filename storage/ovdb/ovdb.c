@@ -1373,7 +1373,6 @@ bool ovdb_check_pidfile(const char *file)
 /* Make sure the effective uid is that of the runasuser user. */
 bool ovdb_check_user(void)
 {
-    struct passwd *p;
     static int result = -1;
 
     if(result == -1) {
