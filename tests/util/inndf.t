@@ -33,7 +33,11 @@ echo 6
 
 # Make sure df -k works, or we have to just skip this test.
 if df -k . > /dev/null 2>&1 ; then
-    real=`df -k . | sed 1d | awk '{ print $4 }'`
+    if [ -z "${UNAME_SYSTEM##IRIX[[:alnum:]]*}" ] ; then
+        real=`df -k . | sed 1d | awk '{ print $5 }'`
+    else
+        real=`df -k . | sed 1d | awk '{ print $4 }'`
+    fi
     try=`$inndf .`
     diff=`expr "$real" - "$try"`
     if [ "$diff" -gt 200 ] || [ "$diff" -lt -200 ] ; then
@@ -50,7 +54,9 @@ fi
 # is what Reiser and some other file systems return in some versions of
 # Linux.
 if df -i . > /dev/null 2>&1 ; then
-    if [ "${UNAME_SYSTEM}" = "FreeBSD" ] ; then
+    if [ -z "${UNAME_SYSTEM##IRIX[[:alnum:]]*}" ] ; then
+        real=`df -i . | sed 1d | awk '{ print $8 }'`
+    elif [ "${UNAME_SYSTEM}" = "FreeBSD" ] ; then
         real=`df -i . | sed 1d | awk '{ print $7 }'`
     else
         real=`df -i . | sed 1d | awk '{ print $4 }'`
