@@ -562,3 +562,156 @@ sub append_newsgroups ($$) {
   return join ",", @orig ;
 
 }
+
+=head1 NAME
+
+mailpost - Feed an e-mail message into a newsgroup
+
+=head1 SYNOPSIS
+
+B<mailpost> [B<-hn>] [B<-a> I<addr>] [B<-b> I<database>] [B<-c> I<wait-time>]
+[B<-d> I<distribution>] [B<-f> I<addr>] [B<-m> I<mailing-list>]
+[B<-o> I<output-command>] [B<-p> I<port>] [B<-r> I<addr>]
+[B<-x> I<header>[B<:>I<header>...]] I<newsgroups>
+
+=head1 DESCRIPTION
+
+The B<mailpost> program reads a properly formatted e-mail message from stdin
+and feeds it to B<inews> for posting to a news server.  I<newsgroups> is a
+whitespace-separated list of group names to which to post the article
+(at least one newsgroup must be specified).
+
+Before feeding the article to B<inews>, it checks that the article has not
+been seen before, and it changes some headers (cleans up some address
+headers, removes X-Trace: and X-Complaints-To:, and puts C<X-> in front
+of unknown headers).
+
+If the article has been seen before (B<mailpost> records the Message-ID of
+each article it handles), then the article will be silently dropped.  Other
+errors will cause the article to be mailed to the newsmaster (selected
+at configure time and defaulting to C<usenet>).
+
+Normally, B<mailpost> is run by sendmail(8) via an alias entry:
+
+    local-mail-wreck-bikes: "|<pathbin in inn.conf>/mailpost
+        -b /var/tmp -d local local.mail.rec.bicycles.racing"
+
+Instead of F</var/tmp>, the mail spool directory can be specified,
+or any other directory where the B<mailpost> process has write access.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a> I<addr>
+
+If the B<-a> flag is used, the value given is added to the article 
+as an Approved: header.
+
+=item B<-b> I<database>
+
+If the B<-b> flag is used, then it defines the location of the database 
+used to store the Message-IDs of articles sent on.  This is to prevent articles
+looping around if a news-to-mail gateway sends them back here.  This option may
+be required if the B<mailpost> process does not have write access to the news
+temporary directory.  The default value is I<pathtmp> as set in F<inn.conf>.
+
+=item B<-c> I<wait-time>
+
+The B<-c> flag indicates a length of time to sleep before posting.  If
+duplicate messages are received in this interval (by any instance of
+B<mailpost> using the same database), the article is only posted once, but
+with Newsgroups: header modified to crosspost the article to all indicated
+groups.  The units for I<wait-time> are seconds; a reasonable value may be
+anywhere from tens to hundreds of seconds, or even higher, depending on how
+long mail can be delayed on its way to your system.
+
+=item B<-d> I<distribution>
+
+If the B<-d> flag is used, the value given is added to the article as a
+Distribution: header.
+
+=item B<-f> I<addr>
+
+The B<-f> flag is a synonym for the B<-r> flag.
+
+=item B<-h>
+
+Print usage information and exit.
+
+=item B<-m> I<mailing-list>
+
+If the B<-m> flag is used, the value given is added to the article in a 
+Mailing-List: header, if such a header doesn't already exist.
+
+=item B<-n>
+
+If the B<-n> flag is used, neither an article is posted nor a mail is sent
+in case an error occurs.  Everything is written to the standard output.
+
+=item B<-o> I<output-command>
+
+Specifies the program to which the resulting article processed by B<mailpost>
+should be sent.  For debugging purpose, C<-o cat> can be used.  The default
+value is C<inews -S -h>.
+
+=item B<-p> I<port>
+
+Specifies the port on which B<nnrpd> is listening, used for article posting.
+If given, B<-p> is passed along to B<inews>.
+
+=item B<-r> I<addr>
+
+A heuristic is used to determine a reasonable value for the Path: header.
+The B<-r> flag indicates what to use if no other value can be determined.
+
+=item B<-x> I<header>[B<:>I<header>...]
+
+A colon-separated list of additional headers which should be treated as
+known headers; these headers will be passed through to B<inews> without
+having C<X-> prepended.
+
+Known headers are:
+
+    Approved
+    Content-*
+    Date
+    Distribution
+    From
+    Mailing-List
+    Message-ID
+    MIME-*
+    References
+    Return-Path
+    Sender
+    Subject
+
+=back
+
+=head1 FILES
+
+=over 4
+
+=item I<pathbin>/mailpost
+
+The Perl script itself used to feed an e-mail message to a newsgroup.
+
+=item I<pathtmp>/mailpost-msgid.dir and I<pathtmp>/mailpost-msgid.pag
+
+The default database files which record previously seen Message-IDs.
+
+=back
+
+=head1 HISTORY
+
+Written by Paul Vixie long ago and then hacked up by James Brister for INN 
+integration.
+
+$Id$
+
+=head1 SEE ALSO
+
+active(5), inn.conf(5), nnrpd(8), uwildmat(3).
+
+=cut
+

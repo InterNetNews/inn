@@ -10,13 +10,15 @@ ALL	      = bunbatch c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
 		ovdb_init ovdb_monitor ovdb_server ovdb_stat rnews \
 		scanspool sm
 
+MAN	      = ../doc/man/mailpost.8
+
 SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
 		ovdb_init.c ovdb_monitor.c ovdb_server.c ovdb_stat.c rnews.c \
 		sm.c
 
 PATHRNEWS     = $(PATHBIN)/rnews.libexec
 
-all: $(ALL)
+all: $(ALL) $(MAN)
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -40,7 +42,7 @@ install: all
 	$(LI_XPUB) encode $D$(PATHBIN)/rnews.libexec/encode
 	$(CP_XPUB) gunbatch $D$(PATHBIN)/rnews.libexec/gunbatch
 
-bootstrap:
+bootstrap: $(MAN)
 
 clean:
 	rm -f *.o $(ALL)
@@ -48,6 +50,7 @@ clean:
 
 clobber distclean maintclean: clean
 	rm -f tags
+	rm -f $(MAN)
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES)
@@ -120,6 +123,10 @@ sys2nf:		sys2nf.o      $(LIBINN)	; $(LINK) sys2nf.o  $(INNLIBS)
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 $(LIBHIST):	; (cd ../history ; $(MAKE))
+
+
+../doc/man/mailpost.8: mailpost.in
+	$(POD2MAN) -s 8 -n "MAILPOST" $? > $@
 
 
 ##  Dependencies.  Default list, below, is probably good enough.
