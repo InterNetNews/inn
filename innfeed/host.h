@@ -87,6 +87,9 @@ void hostSendArticle (Host host, Article article) ;
 /* return an IP address for the host */
 struct sockaddr *hostIpAddr (Host host) ;
 
+/* Delete all IPv4 addresses from the address list. */
+void hostDeleteIpv4Addr (Host host);
+
 /* mark the current IP address as failed and rotate to the next one */
 void hostIpFailed (Host host) ;
 
@@ -149,6 +152,10 @@ bool hostGimmeArticle (Host host, Connection cxn) ;
 
 /* get the name that INN uses for this host */
 const char *hostPeerName (Host host) ;
+
+/* Get the bindaddress. */
+const char *hostBindAddr (Host host) ;
+const char *hostBindAddr6 (Host host) ;
 
 /* get the username and password for authentication */
 const char *hostUsername (Host host) ;

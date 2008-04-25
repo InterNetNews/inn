@@ -326,7 +326,6 @@ static int fudgeFactor (int initVal) ;
 int cxnConfigLoadCbk (void *data UNUSED)
 {
   long iv ;
-  char *sv ;
   int rval = 1 ;
   FILE *fp = (FILE *) data ;
 
@@ -361,12 +360,6 @@ int cxnConfigLoadCbk (void *data UNUSED)
   else
     iv = INIT_RECON_PER ;
   init_reconnect_period = (unsigned int) iv ;
-
-  if (getString (topScope,"bindaddress",&sv,NO_INHERIT))
-    innconf->sourceaddress = sv;
-
-  if (getString (topScope,"bindaddress6",&sv,NO_INHERIT))
-    innconf->sourceaddress6 = sv;
 
   return rval ;
 }
@@ -484,6 +477,7 @@ bool cxnConnect (Connection cxn)
 {
   struct sockaddr *cxnAddr;
   int fd, rval;
+  const char *src;
   const char *peerName = hostPeerName (cxn->myHost) ;
 
   ASSERT (cxn->myEp == NULL) ;
@@ -515,7 +509,14 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
 
-  fd = network_client_create (cxnAddr->sa_family, SOCK_STREAM, NULL);
+  if (cxnAddr->sa_family == AF_INET)
+    src = hostBindAddr(cxn->myHost);
+  else
+    src = hostBindAddr6(cxn->myHost);
+  if (src && strcmp(src, "none") == 0)
+    src = NULL;
+
+  fd = network_client_create (cxnAddr->sa_family, SOCK_STREAM, src);
   if (fd < 0)
     {
       syswarn ("%s:%d cxnsleep can't create socket", peerName, cxn->ident) ;
@@ -1270,7 +1271,23 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
 }
 
 
+/*
+ * This is called when we are so far in the connection setup that
+ * we're confident it'll work.  If the connection is IPv6, remove
+ * the IPv4 addresses from the address list.
+ */
+static void connectionIfIpv6DeleteIpv4Addr (Connection cxn)
+{
+  struct sockaddr_storage ss;
+  socklen_t len = sizeof(ss);
 
+  if (getpeername (endPointFd (cxn->myEp), (struct sockaddr *)&ss, &len) < 0)
+    return;
+  if (ss.ss_family == AF_INET)
+    return;
+
+  hostDeleteIpv4Addr (cxn->myHost);
+}
 
 
 /*
@@ -1366,6 +1383,10 @@ static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
 
       if ( isOk )
 	{
+          /* If we got this far and the connection is IPv6, remove
+             the IPv4 addresses from the address list. */
+          connectionIfIpv6DeleteIpv4Addr (cxn);
+
 	  if (hostUsername (cxn->myHost) != NULL
 	      && hostPassword (cxn->myHost) != NULL)
 	    issueAuthUser (e,cxn);

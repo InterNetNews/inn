@@ -83,6 +83,8 @@ typedef struct host_param_s
 {
   char *peerName;
   char *ipName;
+  char *bindAddr;
+  char *bindAddr6;
   unsigned int articleTimeout;
   unsigned int responseTimeout;
   unsigned int initialConnections;
@@ -489,12 +491,18 @@ static HostParams newHostParams(HostParams p)
 	params->peerName = xstrdup(params->peerName);
       if (params->ipName)
 	params->ipName = xstrdup(params->ipName);
+      if (params->bindAddr)
+        params->bindAddr = xstrdup(params->bindAddr);
+      if (params->bindAddr6)
+        params->bindAddr6 = xstrdup(params->bindAddr6);
     }
   else
     {
       /* Fill in defaults */
       params->peerName=NULL;
       params->ipName=NULL;
+      params->bindAddr=NULL;
+      params->bindAddr6=NULL;
       params->articleTimeout=ARTTOUT;
       params->responseTimeout=RESPTOUT;
       params->initialConnections=INIT_CXNS;
@@ -534,6 +542,10 @@ static void freeHostParams(HostParams params)
     free (params->peerName) ;
   if (params->ipName)
     free (params->ipName) ;
+  if (params->bindAddr)
+    free (params->bindAddr) ;
+  if (params->bindAddr6)
+    free (params->bindAddr6) ;
   free (params) ;
 }  
 
@@ -1129,9 +1141,15 @@ struct sockaddr *hostIpAddr (Host host)
       char port[20];
 
       memset(&hints, 0, sizeof(hints));
-      hints.ai_family = host->params->forceIPv4 ? PF_INET : NETWORK_AF_HINT;
+      hints.ai_family = NETWORK_AF_HINT;
+#ifdef HAVE_INET6
+      if (host->params->bindAddr && strcmp(host->params->bindAddr, "none") == 0)
+        hints.ai_family = AF_INET6;
+      if (host->params->bindAddr6 && strcmp(host->params->bindAddr6, "none") == 0)
+        hints.ai_family = AF_INET;
+#endif
       hints.ai_socktype = SOCK_STREAM;
-      hints.ai_flags = AI_NUMERICSERV;
+      hints.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG;
       snprintf(port, sizeof(port), "%hu", host->params->portNum);
       gai_ret = getaddrinfo(host->params->ipName, port, &hints, &res);
       if (gai_ret != 0 || res == NULL)
@@ -1192,6 +1210,25 @@ struct sockaddr *hostIpAddr (Host host)
 }
 
 
+/*
+ * Delete IPv4 addresses from the address list.
+ */
+void hostDeleteIpv4Addr (Host host)
+{
+  int i, j;
+
+  if (!host->ipAddrs)
+    return;
+  for (i = 0, j = 0; host->ipAddrs[i]; i++) {
+    if (host->ipAddrs[i]->sa_family != AF_INET)
+      host->ipAddrs[j++] = host->ipAddrs[i];
+    if (i == host->nextIpAddr)
+      host->nextIpAddr -= (i - j);
+  }
+  host->ipAddrs[j] = 0;
+}
+
+
 void hostIpFailed (Host host)
 {
   if (host->ipAddrs)
@@ -1240,6 +1277,10 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
   
   fprintf (fp,"%s    peer-name : %s\n",indent,host->params->peerName) ;
   fprintf (fp,"%s    ip-name : %s\n",indent,host->params->ipName) ;
+  fprintf (fp,"%s    bindaddress : %s\n",indent,
+           host->params->bindAddr ? host->params->bindAddr : "any") ;
+  fprintf (fp,"%s    bindaddress6 : %s\n",indent,
+           host->params->bindAddr6 ? host->params->bindAddr6 : "any") ;
   fprintf (fp,"%s    abs-max-connections : %d\n",indent,
 	   host->params->absMaxConnections) ;
   fprintf (fp,"%s    active-connections : %d\n",indent,host->activeCxns) ;
@@ -2390,6 +2431,26 @@ const char *hostPeerName (Host host)
 }
 
 /*
+ * Get the IPv4 bindAddr.
+ */
+const char *hostBindAddr (Host host)
+{
+  ASSERT (host != NULL) ;
+    
+  return host->params->bindAddr ;
+}
+
+/*
+ * Get the IPv6 bindAddr6.
+ */
+const char *hostBindAddr6 (Host host)
+{
+  ASSERT (host != NULL) ;
+    
+  return host->params->bindAddr6 ;
+}
+
+/*
  * get the username and password for authentication
  */
 const char *hostUsername (Host host)
@@ -2580,6 +2641,28 @@ static HostParams hostDetails (scope *s,
 
     }
 
+  if (getString(s,"bindaddress",&q,isDefault?NO_INHERIT:INHERIT))
+    {
+      if (p->bindAddr)
+        free(p->bindAddr);
+      p->bindAddr = q;
+    }
+  if (getString(s,"bindaddress6",&q,isDefault?NO_INHERIT:INHERIT))
+    {
+      if (p->bindAddr6)
+        free(p->bindAddr6);
+      p->bindAddr6 = q;
+    }
+  if (p->bindAddr  && strcmp(p->bindAddr, "none") == 0 &&
+      p->bindAddr6 && strcmp(p->bindAddr6, "none") == 0)
+    {
+      logOrPrint (LOG_ERR,fp,"cannot set both bindaddress and bindaddress6"
+                " to \"none\" -- ignoring them for %s",p->peerName);
+      free(p->bindAddr);
+      free(p->bindAddr6);
+      p->bindAddr = NULL;
+      p->bindAddr6 = NULL;
+    }
 
   /* check required global defaults are there and have good values */
   
@@ -2643,8 +2726,22 @@ static HostParams hostDetails (scope *s,
   GETREAL(s,fp,"no-check-low",0.0,100.0,REQ,p->lowPassLow, inherit);
   GETREAL(s,fp,"no-check-filter",0.1,DBL_MAX,REQ,p->lowPassFilter, inherit);
   GETINT(s,fp,"port-number",0,LONG_MAX,REQ,p->portNum, inherit);
-  GETBOOL(s,fp,"force-ipv4",NOTREQ,p->forceIPv4,inherit);
   GETINT(s,fp,"backlog-limit",0,LONG_MAX,REQ,p->backlogLimit, inherit);
+
+  GETBOOL(s,fp,"force-ipv4",NOTREQ,p->forceIPv4,inherit);
+  if (p->forceIPv4)
+    {
+      if (p->bindAddr && strcmp(p->bindAddr, "none") == 0)
+        {
+          free(p->bindAddr);
+          p->bindAddr = NULL;
+        }
+      if (p->bindAddr6)
+        {
+          free(p->bindAddr6);
+          p->bindAddr6 = xstrdup("none");
+        }
+    }
 
   if (findValue (s,"backlog-factor",inherit) == NULL &&
       findValue (s,"backlog-limit-high",inherit) == NULL)

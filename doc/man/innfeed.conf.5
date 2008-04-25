@@ -296,19 +296,6 @@ bring the value up greater than this. This is to leave lower numbered file
 descriptors free for stdio. Certain systems, Sun's in particular, require
 this. SunOS 4.1.x usually requires a value of 128 and Solaris requires a
 value of 256. The default if this is not specified, is 0.
-.TP
-.B bindaddress
-This key requires a string value.  It specifies which outgoing IPv4 address
-innfeed should bind the local end of its connections to.
-Must be in dotted-quad format (nnn.nnn.nnn.nnn).
-If not set, innfeed defaults to the value of \fBsourceaddress\fP from
-inn.conf(5).
-The default value is unset.
-.TP
-.B bindaddress6
-This key requires a string value.  It behaves like \fBbindaddress\fP except
-for outgoing IPv6 connections.  A value containing colons must be enclosed
-in double quotes.
 .\"..................................................
 .SH "GLOBAL PEER DEFAULTS"
 .PP
@@ -464,13 +451,34 @@ roughly equates to making a decision about the mode over the previous
 percentages of articles accepted; a lower number will result in a faster
 response.
 .TP
+.B bindaddress
+This key requires a string value.  It specifies which outgoing IPv4 address
+innfeed should bind the local end of its connection to.
+Must be an IPv4 address in dotted-quad format (nnn.nnn.nnn.nnn), "any",
+or "none".  If not set or set to "any", innfeed defaults
+to letting the kernel choose this address.
+If set to "none", innfeed will not use IPv4 for outgoing connections
+to peers in this scope (i.e. it forces IPv6).
+If not set in innfeed.conf, innfeed defaults to the value of
+\fBsourceaddress\fP from inn.conf(5) (which by default is unset).
+.TP
+.B bindaddress6
+This key requires a string value.  It behaves like \fBbindaddress\fP except
+for outgoing IPv6 connections.  Must be in numeric IPv6 format (note
+that a value containing colons must be enclosed in double quotes), "any",
+or "none".  If set to "none", innfeed will not use IPv6 for outgoing
+connections to peers in this scope.
+If not set in innfeed.conf, innfeed defaults to the value of
+\fBsourceaddress6\fP from inn.conf(5) (which by default is unset).
+.TP
 .B port-number
 This key requires a positive integer value. It defines the tcp/ip port
 number to use when connecting to the remote.
 .TP
 .B force-ipv4
 This key requires a boolean value. By default it is set to false.
-If it is set to true, innfeed will not try to use IPv6 with that peer.
+Setting it to true is the same as setting "bindaddress6: none"
+and removing "bindaddress: none" if it was set.
 .TP
 .B drop-deferred
 This key requires a boolean value. By default it is set to false. When

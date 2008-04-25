@@ -961,15 +961,6 @@ void mainLogStatus (FILE *fp)
   fprintf (fp,"    News spool: %s\n",newsspool) ;
   fprintf (fp,"      Pid file: %s\n",pidFile) ;
   fprintf (fp,"      Log file: %s\n",(logFile == NULL ? "(none)" : logFile));
-  if (innconf->sourceaddress != NULL || innconf->sourceaddress6 != NULL)
-    {
-      fprintf (fp,"  Bind address:") ;
-      if (innconf->sourceaddress != NULL)
-        fprintf (fp," %s (IPv4)",innconf->sourceaddress) ;
-      if (innconf->sourceaddress6 != NULL)
-        fprintf (fp," %s (IPv6)",innconf->sourceaddress6) ;
-      fprintf (fp,"\n") ;
-    }
   fprintf (fp,"   Debug level: %2ld                Mmap: %s\n",
            (long)loggingLevel,boolToString(useMMap)) ;
   fprintf (fp,"\n") ;
