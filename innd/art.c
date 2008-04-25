@@ -694,7 +694,7 @@ ARTcheckheader(CHANNEL *cp, int size)
 **  Check Message-ID format based on RFC 822 grammar, except that (as per
 **  RFC 1036) whitespace, non-printing, and '>' characters are excluded.
 **  Based on code by Paul Eggert posted to news.software.b on 22-Nov-90
-**  in <#*tyo2'~n@twinsun.com>, with additional email discussion.
+**  in <#*tyo2'~n@twinsun.com>, with additional e-mail discussion.
 **  Thanks, Paul.
 */
 bool

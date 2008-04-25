@@ -1721,10 +1721,10 @@ sub collect {
     # unmoderated, m, etc. depending on what the control message says.  It
     # can even have multiple words, which we still don't handle.
     if ($left =~ m/^control_(\S+),    # type of msg
-		  \s(?:\S+)?          # newsgroup name
-		  (\s\S+)?            # optional
-		  \s(\S+)             # email
-                  \s\S+               # email
+                  \s(?:\S+)?          # newsgroup name
+                  (\s\S+)?            # optional
+                  \s(\S+)             # e-mail
+                  \s\S+               # e-mail
                   \s\S+,              # filename
                   \s\S+,              # server
                   \s([^=,]+(?:=\S+)?),            # action

@@ -11,7 +11,7 @@ B<rc.news> [start | stop]
 B<rc.news> can be used to start or stop B<innd> and supporting programs.
 It checks to make sure INN is not already running, handles cases of
 unclean shutdown, finishes up tasks which might have been interrupted by
-the preceeding shutdown, emails certain boot-time warnings to
+the preceeding shutdown, e-mails certain boot-time warnings to
 I<newsmaster> (as set in F<inn.conf>), and is generally safer and easier
 than starting and stopping everything directly.  It needs to be run as the
 news user so that files in I<pathrun> are created with the right ownership

@@ -720,7 +720,7 @@ readers.conf(5) for more details.)
 Used to set the value of the X-Complaints-To: header, which is added to
 all articles posted locally.  The usual value would be something like
 C<abuse@example.com> or C<postmaster@example.com>.  If not specified, the
-newsmaster email address will be used.
+newsmaster e-mail address will be used.
 
 =item hiscachesize
 

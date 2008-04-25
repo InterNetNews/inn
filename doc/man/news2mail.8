@@ -2,7 +2,7 @@
 .\" $Revision$
 .TH NEWS2MAIL 8
 .SH NAME
-news2mail \- a channel script to gateway news into email.
+news2mail \- a channel script to gateway news into e\-mail.
 .SH SYNOPSIS
 .I news2mail
 .SH DESCRIPTION
@@ -18,7 +18,7 @@ uses a config file
 .I <pathetc\ in\ inn.conf>/news2mail.cf
 .RE
 .PP
-to map mailing list names to email addresses.
+to map mailing list names to e\-mail addresses.
 .PP
 .I news2mail
 causes sendmail to queue the messages for later delivery (to avoid DOS attacks
@@ -28,8 +28,8 @@ processed.
 The config file format is simple: comments (start with ``#'') and blank lines
 are ignored. All other lines have two fields on them. The first is the list
 name and is what innd uses (i.e. the site field of the entry in the newsfeeds
-file). The second field is the actual email address to send the article to. In
-the email message, the ``To'' header will have the mailing list name (i.e. the
+file). The second field is the actual e\-mail address to send the article to. In
+the e\-mail message, the ``To'' header will have the mailing list name (i.e. the
 first field).
 .PP
 .RS

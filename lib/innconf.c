@@ -164,7 +164,7 @@ const struct config config_table[] = {
     { K(nntplinklog),           BOOL    (false) },
     { K(noreader),              BOOL    (false) },
     { K(pathalias),             STRING  (NULL) },
-    { K(pathcluster),             STRING  (NULL) },
+    { K(pathcluster),           STRING  (NULL) },
     { K(pauseretrytime),        NUMBER  (300) },
     { K(peertimeout),           NUMBER  (3600) },
     { K(port),                  NUMBER  (119) },

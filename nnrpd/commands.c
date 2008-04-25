@@ -471,7 +471,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 
     /* Dave's posting limiter - Limit postings to a certain rate
      * And now we support multiprocess rate limits. Questions?
-     * Email dave@jetcafe.org.
+     * E-mail <dave@jetcafe.org>.
      */
     if (BACKOFFenabled) {
 

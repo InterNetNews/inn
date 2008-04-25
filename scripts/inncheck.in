@@ -183,7 +183,7 @@ control_ctl
 	    if $msg eq "default" && $act eq "doit";
 	print "$file:$line: empty from field.\n"
 	    if $from eq "";
-	print "$file:$line: bad email address.\n"
+	print "$file:$line: bad e-mail address.\n"
 	    if $from ne "*" && $from !~ /[@!]/;
 
 	##  Perhaps check for conflicting rules, or warn about the last-match
@@ -336,7 +336,7 @@ moderators
 	    print "$file:$line: missing field\n";
 	    next input;
 	}
-	print "$file:$line: not an email address\n"
+	print "$file:$line: not an e-mail address\n"
 	    if $pedantic && $v !~ /[@!]/;
 	print "$file:$line: `$v' goes to local address\n"
 	    if $pedantic && $v eq "%s";
