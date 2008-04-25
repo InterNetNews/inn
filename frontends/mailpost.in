@@ -345,8 +345,8 @@ push @errorText, "(TAS Message-ID database for $message_id)\n";
 
 my $lockfile = sprintf("%s.lock", $Database);
 
-open LOCKFILE, "<$lockfile" || 
-    open LOCKFILE, ">$lockfile" ||
+open (LOCKFILE, "<$lockfile") || 
+    open (LOCKFILE, ">$lockfile") ||
     mailArtAndDie ("can't open $lockfile: $!") ;
 
 my $i ;
@@ -388,8 +388,8 @@ if ($opt_c) {
   }
   sleep $opt_c ;
 
-  open LOCKFILE, "<$lockfile" || 
-    open LOCKFILE, ">$lockfile" ||
+  open (LOCKFILE, "<$lockfile") || 
+    open (LOCKFILE, ">$lockfile") ||
       mailArtAndDie ("can't open $lockfile: $!") ;
 
   my $i ;
