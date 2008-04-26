@@ -290,7 +290,6 @@ doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libauth.pod                   Master file for libauth.3
 doc/pod/libinnhist.pod                Master file for libinnhist.3
 doc/pod/list.pod                      Master file for list.3
-doc/pod/mailpost.pod                  Master file for mailpost.8
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/moderators.pod                Master file for moderators.5
 doc/pod/motd.news.pod                 Master file for motd.news.5

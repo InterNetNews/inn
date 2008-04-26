@@ -711,7 +711,7 @@ $Id$
 
 =head1 SEE ALSO
 
-active(5), inn.conf(5), nnrpd(8), uwildmat(3).
+active(5), inews(1), inn.conf(5), nnrpd(8), uwildmat(3).
 
 =cut
 
