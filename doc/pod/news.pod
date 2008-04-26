@@ -42,6 +42,12 @@ if arguments were passed to B<gzip> or B<bzip2>).
 
 =item *
 
+Fixed a bug in B<mailpost> and B<pullnews> which prevented useful error
+messages to be seen.  Also add the B<-x> flag to B<pullnews> in order
+to insert Xref: headers in articles which lack one.
+
+=item *
+
 If compiling with S<Berkeley DB>, use its ndbm compatibility layer for
 B<ckpasswd> in preference to searching for a traditional dbm library.
 INN also supports S<Berkeley DB 4.4> and S<Berkeley DB 4.6> thanks
