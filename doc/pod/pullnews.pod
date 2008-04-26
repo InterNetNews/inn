@@ -4,7 +4,7 @@ pullnews - Pull news from one news server and feed it to another
 
 =head1 SYNOPSIS
 
-B<pullnews> [B<-hq>] [B<-c> I<config>] [B<-g> I<groups>] [B<-p> I<port>]
+B<pullnews> [B<-hqx>] [B<-c> I<config>] [B<-g> I<groups>] [B<-p> I<port>]
 [B<-r> I<file>] [B<-s> I<to-server>] [<from-server> ...]
 
 =head1 REQUIREMENTS
@@ -71,6 +71,12 @@ rnews(1) for more information about the batch file format.
 Normally, B<pullnews> will feed the articles it retrieves to the news
 server running on localhost.  To connect to a different host, specify a
 server with the B<-s> flag.
+
+=item B<-x>
+
+If the B<-x> flag is used, an Xref: header is added to any article
+that lacks one.  It can be useful for instance if articles are fed
+to a news server which has I<xrefslave> set in F<inn.conf>.
 
 =back
 

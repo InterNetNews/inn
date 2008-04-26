@@ -81,6 +81,11 @@ runs.  Thanks to Ivan Shmakov for this feature.
 
 =item *
 
+Some annoying assertion failures occurring in B<innfeed> have been fixed
+by Russ Allbery.
+
+=item *
+
 Support for bzip2-compressed batches (with B<bunbatch>) has been added.
 
 =item *
@@ -121,11 +126,6 @@ from silently dying when its log file reaches S<2 GB>.
 
 =item *
 
-Some annoying assertion failures occurring in B<innfeed> have been fixed
-by Russ Allbery.
-
-=item *
-
 Some news clients hang when posting an article through a SSL connection:
 it seems that B<nnrpd>'s SSL routines make it wrongly wait for data
 completion.  In order to fix the problem, the select() wait is now
@@ -136,6 +136,12 @@ for such connections.  Thanks to Kachun Lee for this workaround.
 
 Fixed a bug in the display of the used compressor (C<cunbatch> was used
 if arguments were passed to B<gzip> or B<bzip2>).
+
+=item *
+
+Fixed a bug in B<mailpost> and B<pullnews> which prevented useful error
+messages to be seen.  Also add the B<-x> flag to B<pullnews> in order
+to insert Xref: headers in articles which lack one.
 
 =item *
 
