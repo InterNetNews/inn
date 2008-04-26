@@ -139,15 +139,15 @@ my $pulled = {} ;
 my %passwd = ();
 
 if ($rnews) {
-    open RNEWS, ">$rnews" || 
+    open(RNEWS, ">$rnews") || 
 	die "cant open rnews-format ouptut: $rnews: $!\n";
     if ($rnews eq "-") {
-	open LOG, ">/dev/null" || die "can\'t open /dev/null!: $!\n";
+	open(LOG, ">/dev/null") || die "can\'t open /dev/null!: $!\n";
     } else {
-	open LOG, ">&STDOUT" || die "can't dup stdout!: $!\n";
+	open(LOG, ">&STDOUT") || die "can't dup stdout!: $!\n";
     }
 }  else {
-    open LOG, ">&STDOUT" || die "can't dup stdout!: $!\n";
+    open(LOG, ">&STDOUT") || die "can't dup stdout!: $!\n";
 }
 
 my $oldfh = select ;
@@ -175,7 +175,7 @@ if (@groupsToGet && ! $quiet) {
     print LOG "\n";
 }
 
-open FILE, "<$groupFile" || die "cant open group file $groupFile\n" ;
+open(FILE, "<$groupFile") || die "can't open group file $groupFile\n" ;
 while (<FILE>) {
     next if m!^\s*\#! || m!^\s*$! ;
 
@@ -336,7 +336,7 @@ sub stats {
 sub saveConfig {
     $SIG{INT} = $SIG{QUIT} = 'IGNORE';
 
-    open FILE,">$groupFile" || die "cant open $groupFile: $!\n" ;
+    open(FILE,">$groupFile") || die "can't open $groupFile: $!\n" ;
     my $server ;
     my $group ;
 
