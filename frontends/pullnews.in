@@ -80,7 +80,7 @@ my $defaultPort = 119;
 my $defaultHost = "localhost";
 
 $usage =~ s!.*/!!;
-$usage .= " [ -h -q -r file -g groups -c config -s host -p port ]
+$usage .= " [ -h -q -x -r file -g groups -c config -s host -p port ]
 
   -g groups	specifies a collection of groups to get. The value must be 
 		a single argument with commas between group names:
@@ -102,6 +102,8 @@ $usage .= " [ -h -q -r file -g groups -c config -s host -p port ]
   -r file	instead of feeding to a server $0 will instead
 		create an rnews-compatible file.
 
+  -x 		insert an Xref header in any article that lacks one.
+
   -q 		$0 will normally be verbose about what it's doing. This 
 		option will make it quiet.
 
@@ -109,8 +111,8 @@ $usage .= " [ -h -q -r file -g groups -c config -s host -p port ]
 ";
 
 
-use vars qw($opt_q $opt_r $opt_s $opt_c $opt_g $opt_p $opt_h);
-getopts("r:c:s:qg:p:h") || die $usage;
+use vars qw($opt_q $opt_r $opt_x $opt_s $opt_c $opt_g $opt_p $opt_h);
+getopts("r:c:s:qxg:p:h") || die $usage;
 
 die $usage if $opt_h;
 
@@ -137,15 +139,15 @@ my $pulled = {} ;
 my %passwd = ();
 
 if ($rnews) {
-    open RNEWS, ">$rnews" || 
+    open(RNEWS, ">$rnews") || 
 	die "cant open rnews-format ouptut: $rnews: $!\n";
     if ($rnews eq "-") {
-	open LOG, ">/dev/null" || die "can\'t open /dev/null!: $!\n";
+	open(LOG, ">/dev/null") || die "can\'t open /dev/null!: $!\n";
     } else {
-	open LOG, ">&STDOUT" || die "can't dup stdout!: $!\n";
+	open(LOG, ">&STDOUT") || die "can't dup stdout!: $!\n";
     }
 }  else {
-    open LOG, ">&STDOUT" || die "can't dup stdout!: $!\n";
+    open(LOG, ">&STDOUT") || die "can't dup stdout!: $!\n";
 }
 
 my $oldfh = select ;
@@ -173,7 +175,7 @@ if (@groupsToGet && ! $quiet) {
     print LOG "\n";
 }
 
-open FILE, "<$groupFile" || die "cant open group file $groupFile\n" ;
+open(FILE, "<$groupFile") || die "can't open group file $groupFile\n" ;
 while (<FILE>) {
     next if m!^\s*\#! || m!^\s*$! ;
 
@@ -334,7 +336,7 @@ sub stats {
 sub saveConfig {
     $SIG{INT} = $SIG{QUIT} = 'IGNORE';
 
-    open FILE,">$groupFile" || die "cant open $groupFile: $!\n" ;
+    open(FILE,">$groupFile") || die "can't open $groupFile: $!\n" ;
     my $server ;
     my $group ;
 
@@ -413,12 +415,17 @@ sub crossFeedGroup {
 	my $article = $fromServer->article($i) ;
 	if ($article) {
 	    my $msgid ;
+	    my $xref = 0;
 	    my $headers = 1;
 	    my $idx;
 
 	    for ($idx = 0 ; $idx < @{$article} ; $idx++) {
 		if ($article->[$idx] =~ m!^message-id:\s*(\S+)!i) {
 		    $msgid = $1 ;
+		}
+
+		if ($opt_x && $article->[$idx] =~ m!^xref:!i) {
+		    $xref = 1;
 		}
 
 		# catch some of the more common problems with articles.
@@ -435,6 +442,13 @@ sub crossFeedGroup {
 		next ;
 	    }
 	    
+	    # some old servers lack Xref: which bothers a downstream INN if
+	    # it has xrefslave set, so add one just before the blank line.
+	    if ($opt_x && !$xref) {
+		warn "No xref found in article, adding\n";
+		splice(@{$article}, $idx, 0, "Xref: $server $group: $i\n");
+	    }
+
 	    $pulled->{$server}->{$group}++;
 	    
 	    if ($rnews) {
