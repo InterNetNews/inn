@@ -29,11 +29,6 @@ from silently dying when its log file reaches S<2 GB>.
 
 =item *
 
-Some annoying assertion failures occurring in B<innfeed> have been fixed
-by Russ Allbery.
-
-=item *
-
 Some news clients hang when posting an article through a SSL connection:
 it seems that B<nnrpd>'s SSL routines make it wrongly wait for data
 completion.  In order to fix the problem, the select() wait is now

@@ -17,9 +17,6 @@ Changes in 2.4.4
     * scanlogs now rotates innfeed's log file, which prevents innfeed from
       silently dying when its log file reaches 2 GB.
 
-    * Some annoying assertion failures occurring in innfeed have been fixed
-      by Russ Allbery.
-
     * Some news clients hang when posting an article through a SSL
       connection: it seems that nnrpd's SSL routines make it wrongly wait
       for data completion.  In order to fix the problem, the select() wait

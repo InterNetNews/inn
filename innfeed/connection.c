@@ -2321,15 +2321,9 @@ static void ihaveBodyDone (EndPoint e, IoStatus i, Buffer *b, void *d)
         cxnSleep (cxn) ;
     }
   else
-    {
-      /* Some hosts return a response even before we're done sending, so don't
-         go idle until here. */
-      if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
-        cxnIdle (cxn) ;
-      else
-        /* The command set has been sent, so start the response timer. */
-        initReadBlockedTimeout (cxn) ;
-    }
+    /* The article has been sent, so start the response timer. */
+    initReadBlockedTimeout (cxn) ;
+
 
   freeBufferArray (b) ;
 
@@ -2380,8 +2374,8 @@ static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
     }
   else
     {
-      /* Some hosts return a response even before we're done sending, so don't
-         go idle until here. */
+      /* Some(?) hosts return the 439 response even before we're done
+         sending, so don't go idle until here */
       if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
         cxnIdle (cxn) ;
       else
@@ -2714,11 +2708,6 @@ static void articleTimeoutCbk (TimeoutId id, void *data)
  * take a long time. Instead the Connection just tries its next article on
  * tape or queue, and if that's no good then it registers this callback so
  * that other Connections have a chance of being serviced.
- *
- * This function is also put on the callback queue if we called doSomeWrites
- * but there was already a write pending, mostly so that we don't deadlock the
- * connection when we got a response to the body of an IHAVE command before we
- * finished sending the body.
  */
 static void cxnWorkProc (EndPoint ep UNUSED, void *data)
 {
@@ -2943,7 +2932,7 @@ static void processResponse431 (Connection cxn, char *response)
   else
     {
       remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-      if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
+      if (cxn->articleQTotal == 0)
         cxnIdle (cxn) ;
       hostArticleDeferred (cxn->myHost, cxn, artHolder->article) ;
       delArtHolder (artHolder) ;
@@ -3004,7 +2993,7 @@ static void processResponse438 (Connection cxn, char *response)
       cxn->checksRefused++ ;
 
       remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-      if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
+      if (cxn->articleQTotal == 0)
         cxnIdle (cxn) ;
       hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
       delArtHolder (artHolder) ;
@@ -3065,7 +3054,7 @@ static void processResponse239 (Connection cxn, char *response)
       cxn->takesSizeOkayed += artSize(artHolder->article);
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
-      if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
+      if (cxn->articleQTotal == 0)
         cxnIdle (cxn) ;
       hostArticleAccepted (cxn->myHost, cxn, artHolder->article) ;
       delArtHolder (artHolder) ;
@@ -3159,7 +3148,7 @@ static void processResponse439 (Connection cxn, char *response)
             {
               cxn->checksRefused++ ;
               remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-              if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
+              if (cxn->articleQTotal == 0)
                 cxnIdle (cxn) ;
               hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
               delArtHolder (artHolder) ;
@@ -3175,7 +3164,8 @@ static void processResponse439 (Connection cxn, char *response)
       cxn->takesSizeRejected += artSize(artHolder->article);
 
       remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
-      /* Some hosts return the 439 response even before we're done sending */
+      /* Some(?) hosts return the 439 response even before we're done
+          sending */
       if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
         cxnIdle (cxn) ;
       hostArticleRejected (cxn->myHost, cxn, artHolder->article) ;
@@ -3239,7 +3229,7 @@ static void processResponse235 (Connection cxn, char *response UNUSED)
       cxn->takesOkayed++ ;
       cxn->takesSizeOkayed += artSize(artHolder->article);
       
-      if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
+      if (cxn->articleQTotal == 0)
         cxnIdle (cxn) ;
 
       hostArticleAccepted (cxn->myHost, cxn, artHolder->article) ;
@@ -3919,10 +3909,7 @@ static void doSomeWrites (Connection cxn)
 
   /* If there's a write pending we can't do anything now. */
   if ( writeIsPending (cxn->myEp) )
-    {
-      addWorkCallback (cxn->myEp,cxnWorkProc,cxn) ;
-      return ;
-    }
+    return ;
   else if ( writesNeeded (cxn) ) /* something on a queue. */
     {
       if (cxn->doesStreaming)
@@ -4162,7 +4149,7 @@ static bool issueStreamingCommands (Connection cxn)
      was a big backlog of missing articles *and* we're running in
      no-CHECK mode, then the Host would be putting bad articles on the
      queue we're taking them off of. */
-  if (cxn->missing && cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
+  if (cxn->missing && cxn->articleQTotal == 0)
     cxnIdle (cxn) ;
   for (p = cxn->missing ; p != NULL ; p = q)
     {
