@@ -129,89 +129,130 @@
 .\" ========================================================================
 .\"
 .IX Title "MAILPOST 8"
-.TH MAILPOST 8 "2008-04-06" "INN 2.4.4" "InterNetNews Documentation"
+.TH MAILPOST 8 "2008-04-26" "INN 2.4.4" "InterNetNews Documentation"
 .SH "NAME"
-mailpost \- feed an email message into a news group
+mailpost \- Feed an e\-mail message into a newsgroup
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBmailpost\fR [\fB\-a\fR \fIaddr\fR] [\fB\-b\fR \fIdatabase\fR] [\fB\-c\fR \fIwait-time\fR]
+\&\fBmailpost\fR [\fB\-hn\fR] [\fB\-a\fR \fIaddr\fR] [\fB\-b\fR \fIdatabase\fR] [\fB\-c\fR \fIwait-time\fR]
 [\fB\-d\fR \fIdistribution\fR] [\fB\-f\fR \fIaddr\fR] [\fB\-m\fR \fImailing-list\fR]
-[\fB\-p\fR \fIport\fR] [\fB\-r\fR \fIaddr\fR] [\fB\-x\fR \fIheader\fR[\fB:\fR\fIheader\fR...]]
-[\fInewsgroups\fR ...]
+[\fB\-o\fR \fIoutput-command\fR] [\fB\-p\fR \fIport\fR] [\fB\-r\fR \fIaddr\fR]
+[\fB\-x\fR \fIheader\fR[\fB:\fR\fIheader\fR...]] \fInewsgroups\fR
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-The \fBmailpost\fR program reads a properly formatted email message from stdin
-and feeds it to inews for posting to a news server. \fInewsgroups\fR is a
-whitespace-separated list of group names to which to post the article.
+The \fBmailpost\fR program reads a properly formatted e\-mail message from stdin
+and feeds it to \fBinews\fR for posting to a news server.  \fInewsgroups\fR is a
+whitespace-separated list of group names to which to post the article
+(at least one newsgroup must be specified).
 .PP
-Before feeding the article to inews, it checks that the article has not
+Before feeding the article to \fBinews\fR, it checks that the article has not
 been seen before, and it changes some headers (cleans up some address
-headers and puts ``X\-'' in front of unknown headers).
+headers, removes X\-Trace: and X\-Complaints\-To:, and puts \f(CW\*(C`X\-\*(C'\fR in front
+of unknown headers).
 .PP
-If the article has been seen before (\fBmailpost\fR records the message-id of
-each articles it handles), then the article will be silently dropped. Other
-errors will cause the article to be mailed to the newsmaster.
+If the article has been seen before (\fBmailpost\fR records the Message-ID of
+each article it handles), then the article will be silently dropped.  Other
+errors will cause the article to be mailed to the newsmaster (selected
+at configure time and defaulting to \f(CW\*(C`usenet\*(C'\fR).
 .PP
-Normally mailpost is run by \fIsendmail\fR\|(8) via an alias entry:
+Normally, \fBmailpost\fR is run by \fIsendmail\fR\|(8) via an alias entry:
 .PP
-local\-mail\-wreck\-bikes: \*(L"|<pathbin in inn.conf>/mailpost
-         \-d local local.mail.rec.bicycles.racing\*(R"
+.Vb 2
+\&    local\-mail\-wreck\-bikes: "|<pathbin in inn.conf>/mailpost
+\&        \-b /var/tmp \-d local local.mail.rec.bicycles.racing"
+.Ve
+.PP
+Instead of \fI/var/tmp\fR, the mail spool directory can be specified,
+or any other directory where the \fBmailpost\fR process has write access.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 .IP "\fB\-a\fR \fIaddr\fR" 4
 .IX Item "-a addr"
-If the \fB\-a\fR flag is used the value given is added to the article 
-as an Approved header.
+If the \fB\-a\fR flag is used, the value given is added to the article 
+as an Approved: header.
 .IP "\fB\-b\fR \fIdatabase\fR" 4
 .IX Item "-b database"
 If the \fB\-b\fR flag is used, then it defines the location of the database 
-used to store the message ids of articles sent on. This is to prevent articles
-looping around if a news to mail gateway sends them back here. This option may
-be required if the mailpost process doesn't have write access to the news tmp
-directory (the value of \fIpathtmp\fR in \fIinn.conf\fR\|(5)).
+used to store the Message-IDs of articles sent on.  This is to prevent articles
+looping around if a news-to-mail gateway sends them back here.  This option may
+be required if the \fBmailpost\fR process does not have write access to the news
+temporary directory.  The default value is \fIpathtmp\fR as set in \fIinn.conf\fR.
 .IP "\fB\-c\fR \fIwait-time\fR" 4
 .IX Item "-c wait-time"
 The \fB\-c\fR flag indicates a length of time to sleep before posting.  If
 duplicate messages are received in this interval (by any instance of
 \&\fBmailpost\fR using the same database), the article is only posted once, but
 with Newsgroups: header modified to crosspost the article to all indicated
-groups.
+groups.  The units for \fIwait-time\fR are seconds; a reasonable value may be
+anywhere from tens to hundreds of seconds, or even higher, depending on how
+long mail can be delayed on its way to your system.
 .IP "\fB\-d\fR \fIdistribution\fR" 4
 .IX Item "-d distribution"
-If the \fB\-d\fR flag is used the value given is added to the article as a
+If the \fB\-d\fR flag is used, the value given is added to the article as a
 Distribution: header.
 .IP "\fB\-f\fR \fIaddr\fR" 4
 .IX Item "-f addr"
 The \fB\-f\fR flag is a synonym for the \fB\-r\fR flag.
+.IP "\fB\-h\fR" 4
+.IX Item "-h"
+Print usage information and exit.
 .IP "\fB\-m\fR \fImailing-list\fR" 4
 .IX Item "-m mailing-list"
-If the \fB\-m\fR flag is used the value given is added to the articles in a 
+If the \fB\-m\fR flag is used, the value given is added to the article in a 
 Mailing\-List: header, if such a header doesn't already exist.
+.IP "\fB\-n\fR" 4
+.IX Item "-n"
+If the \fB\-n\fR flag is used, neither an article is posted nor a mail is sent
+in case an error occurs.  Everything is written to the standard output.
+.IP "\fB\-o\fR \fIoutput-command\fR" 4
+.IX Item "-o output-command"
+Specifies the program to which the resulting article processed by \fBmailpost\fR
+should be sent.  For debugging purpose, \f(CW\*(C`\-o cat\*(C'\fR can be used.  The default
+value is \f(CW\*(C`inews \-S \-h\*(C'\fR.
 .IP "\fB\-p\fR \fIport\fR" 4
 .IX Item "-p port"
 Specifies the port on which \fBnnrpd\fR is listening, used for article posting.
-If given, \fB\-p\fR is passed along to inews.
+If given, \fB\-p\fR is passed along to \fBinews\fR.
 .IP "\fB\-r\fR \fIaddr\fR" 4
 .IX Item "-r addr"
 A heuristic is used to determine a reasonable value for the Path: header.
 The \fB\-r\fR flag indicates what to use if no other value can be determined.
-.IP "\fB\-x\fR \fIheader\fR[:\fIheader\fR...]" 4
+.IP "\fB\-x\fR \fIheader\fR[\fB:\fR\fIheader\fR...]" 4
 .IX Item "-x header[:header...]"
 A colon-separated list of additional headers which should be treated as
-known headers; these headers will be passed through to \fIinews\fR\|(1) without
-having \*(L"X\-\*(R" prepended.
+known headers; these headers will be passed through to \fBinews\fR without
+having \f(CW\*(C`X\-\*(C'\fR prepended.
+.Sp
+Known headers are:
+.Sp
+.Vb 12
+\&    Approved
+\&    Content\-*
+\&    Date
+\&    Distribution
+\&    From
+\&    Mailing\-List
+\&    Message\-ID
+\&    MIME\-*
+\&    References
+\&    Return\-Path
+\&    Sender
+\&    Subject
+.Ve
+.SH "FILES"
+.IX Header "FILES"
+.IP "\fIpathbin\fR/mailpost" 4
+.IX Item "pathbin/mailpost"
+The Perl script itself used to feed an e\-mail message to a newsgroup.
+.IP "\fIpathtmp\fR/mailpost\-msgid.dir and \fIpathtmp\fR/mailpost\-msgid.pag" 4
+.IX Item "pathtmp/mailpost-msgid.dir and pathtmp/mailpost-msgid.pag"
+The default database files which record previously seen Message\-IDs.
 .SH "HISTORY"
 .IX Header "HISTORY"
 Written by Paul Vixie long ago and then hacked up by James Brister for \s-1INN\s0 
 integration.
 .PP
 $Id$
-.SH "FILES"
-.IX Header "FILES"
-<pathdb in inn.conf>/mailpost\-msgid.db	database file
-.SH "BUGS"
-.IX Header "BUGS"
-Is lacking in configurability.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\fIactive\fR\|(5), \fIinn.conf\fR\|(5), \fInnrpd\fR\|(8), \fIuwildmat\fR\|(3).
+\&\fIactive\fR\|(5), \fIinews\fR\|(1), \fIinn.conf\fR\|(5), \fInnrpd\fR\|(8), \fIuwildmat\fR\|(3).

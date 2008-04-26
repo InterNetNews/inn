@@ -27,6 +27,10 @@ Changes in 2.4.4
     * Fixed a bug in the display of the used compressor ("cunbatch" was used
       if arguments were passed to gzip or bzip2).
 
+    * Fixed a bug in mailpost and pullnews which prevented useful error
+      messages to be seen.  Also add the -x flag to pullnews in order to
+      insert Xref: headers in articles which lack one.
+
     * If compiling with Berkeley DB, use its ndbm compatibility layer for
       ckpasswd in preference to searching for a traditional dbm library. 
       INN also supports Berkeley DB 4.4 and Berkeley DB 4.6 thanks to Marco

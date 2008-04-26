@@ -129,12 +129,12 @@
 .\" ========================================================================
 .\"
 .IX Title "PULLNEWS 1"
-.TH PULLNEWS 1 "2008-04-06" "INN 2.4.4" "InterNetNews Documentation"
+.TH PULLNEWS 1 "2008-04-26" "INN 2.4.4" "InterNetNews Documentation"
 .SH "NAME"
 pullnews \- Pull news from one news server and feed it to another
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBpullnews\fR [\fB\-hq\fR] [\fB\-c\fR \fIconfig\fR] [\fB\-g\fR \fIgroups\fR] [\fB\-p\fR \fIport\fR]
+\&\fBpullnews\fR [\fB\-hqx\fR] [\fB\-c\fR \fIconfig\fR] [\fB\-g\fR \fIgroups\fR] [\fB\-p\fR \fIport\fR]
 [\fB\-r\fR \fIfile\fR] [\fB\-s\fR \fIto-server\fR] [<from\-server> ...]
 .SH "REQUIREMENTS"
 .IX Header "REQUIREMENTS"
@@ -190,6 +190,11 @@ create a batch file that can later be fed to a server using \fBrnews\fR.  See
 Normally, \fBpullnews\fR will feed the articles it retrieves to the news
 server running on localhost.  To connect to a different host, specify a
 server with the \fB\-s\fR flag.
+.IP "\fB\-x\fR" 4
+.IX Item "-x"
+If the \fB\-x\fR flag is used, an Xref: header is added to any article
+that lacks one.  It can be useful for instance if articles are fed
+to a news server which has \fIxrefslave\fR set in \fIinn.conf\fR.
 .SH "CONFIG FILE"
 .IX Header "CONFIG FILE"
 The config file for \fBpullnews\fR is divided into blocks, one block for each
