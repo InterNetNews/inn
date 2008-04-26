@@ -1,21 +1,24 @@
 #! /usr/bin/perl
 # fixscript will replace this line with require innshellvars.pl
 
-# mailpost - yet another mail-to-news filter
+# mailpost - Yet another mail-to-news filter
+# 
+# $Id$
+#
 # 21feb00 [added "lc" to duplicate header fixer stmt to make it case-insensitive]
 # doka 11may99 [fixed duplicate headers problem]
-# brister 19oct98 cleaned up somewhat for perl v. 5. and made a little more robust.
-# vixie 29jan95 RCS'd [$Id$]
+# brister 19oct98 [cleaned up somewhat for Perl v. 5. and made a little more robust]
+# vixie 29jan95 [RCS'd]
 # vixie 15jun93 [added -m]
 # vixie 30jun92 [added -a and -d]
 # vixie 17jun92 [attempt simple-minded fixup to $path]
 # vixie 14jun92 [original]
 
-use Getopt::Std ;
+use Getopt::Std;
 use IPC::Open3;
 use IO::Select;
 use Sys::Syslog;
-use strict ;
+use strict;
 
 my $debugging = 0 ;
 my $tmpfile ;
@@ -23,8 +26,8 @@ my $tmpfile2 ;
 my $msg ;
 
 END {
-    unlink ($tmpfile) if $tmpfile ;		# incase we die()
-    unlink ($tmpfile2) if $tmpfile2 ;		# incase we die()
+    unlink ($tmpfile) if $tmpfile ;		# in case we die()
+    unlink ($tmpfile2) if $tmpfile2 ;		# in case we die()
 }
 
 my $LOCK_SH = 1;
@@ -40,9 +43,9 @@ openlog $usage, "pid", $inn::syslog_facility ;
 
 $usage .= "[ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
     " [ -m mailing-list ][ -b database ][ -o output-path ] [ -c wait-time ]" .
-    " [ -x header [:header...] ] [ -p port ] newsgroups" ;
+    " [ -x header[:header...] ] [ -p port ] newsgroups" ;
 
-use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_p ) ;
+use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_p) ;
 getopts("hr:f:a:d:m:b:no:c:x:p:") || die "usage: $usage\n" ;
 die "usage: $usage\n" if $opt_h ;
 
@@ -58,7 +61,7 @@ my $Maintainer = $inn::newsmaster || "usenet" ;
 my $WhereTo = $opt_o || $Submit ;
 my $Mailname = $inn::fromhost ;
 
-# can't use $inn::tmpdir as we're usually not running as news
+# Can't use $inn::pathtmp as we're usually not running as news.
 my $Tmpdir = "/var/tmp" ;	
 
 if ($debugging || $opt_n) {
@@ -70,10 +73,10 @@ chop ($Mailname = `/bin/hostname`) if ! $Mailname ;
 
 
 #
-# our command-line argument(s) are the list of newsgroups to post to.
+# Our command-line argument(s) are the list of newsgroups to post to.
 #
-# there may be a "-r sender" or "-f sender" which becomes the $path
-# (which is in turn overridden below by various optional headers.)
+# There may be a "-r sender" or "-f sender" which becomes the $path
+# (which is in turn overridden below by various optional headers).
 #
 # -d (distribution) and -a (approved) are also supported to supply
 # or override the mail headers by those names.
@@ -114,11 +117,11 @@ if ($opt_x) {
 
 $newsgroups = join ",", @ARGV ;
 
-die "usage:  $0 newsgroup [newsgroup]\n" unless $newsgroups;
+die "usage:  $0 newsgroup [newsgroup ...]\n" unless $newsgroups;
 
 
 #
-# do the header.  our input is a mail message, with or without the From_
+# Do the header.  Our input is a mail message, with or without the From.
 #
 
 #$message_id = sprintf("<mailpost.%d.%d@%s>", time, $$, $Hostname);
@@ -166,7 +169,7 @@ for (;;) {
     last unless defined $_ ;
     chomp ;
 
-    # gather up a single header with possible continuation lines into $line
+    # Gather up a single header with possible continuation lines into $line.
     if (/^\s+/) {
 	if (! $line) {
 	    $msg = "First line with leading whitespace!" ;
@@ -178,11 +181,11 @@ for (;;) {
 	next ;
     }
 
-    # On the first header $line will be undefined.
-    ($_, $line) = ($line, $_) ; # swap $line and $_ ;
+    # On the first header, $line will be undefined.
+    ($_, $line) = ($line, $_) ; # Swap $line and $_.
 
     last if defined($_) && /^$/ ;
-    next if /^$/ ;		# only on first header will this happen
+    next if /^$/ ;		# Only on first header will this happen.
 
     push @errorText, "($_)\n";
 
@@ -246,14 +249,14 @@ for (;;) {
 	next ;
     }
 
-    # strip out news trace headers since otherwise posting may fail.  other
-    # trace headers will be renamed to add 'X-' so we don't have to worry
-    # about them.
+    # Strip out news X-Trace: and X-Complaints-To: headers since otherwise posting
+    # may fail.  Other trace headers will be renamed to add 'X-' so we don't have
+    # to worry about them.
     if (/^X-(Trace|Complaints-To):\s*/sio) {
         next ;
     }
 
-    # random unknown header.  prepend 'X-' if it's not already there.
+    # Random unknown header.  Prepend 'X-' if it is not already there.
     $_ = "X-$_" unless /^X-/sio ;
     $weird_mail_hdrs .= "$_\n";
 }
@@ -268,7 +271,7 @@ if ($path !~ /\!/) {
 }
 
 $real_news_hdrs .= "Subject: ${subject}\n";
-$real_news_hdrs .= "Message-ID: ${msgIdHdr}\n"     if defined($message_id);
+$real_news_hdrs .= "Message-ID: ${msgIdHdr}\n"       if defined($message_id);
 $real_news_hdrs .= "Mailing-List: ${mailing_list}\n" if defined($mailing_list);
 $real_news_hdrs .= "Distribution: ${distribution}\n" if defined($distribution);
 $real_news_hdrs .= "Approved: ${approved}\n"         if defined($approved);
@@ -278,20 +281,20 @@ $real_news_hdrs .= "References: ${references}\n"     if defined($references);
 my %headers = ();
 $real_news_hdrs =~ s/((.*?:) .*?($|\n)([ \t]+.*?($|\n))*)/$headers{lc$2}++?"":"$1"/ges;
 
-# Inews writes error messages to stdout. We want to capture those and mail
-# them back to the newsmaster. Trying to write and read from a subprocess is 
+# inews writes error messages to stdout.  We want to capture those and mail
+# them back to the newsmaster.  Trying to write and read from a subprocess is 
 # ugly and prone to deadlock, so we use a temp file.
 $tmpfile = sprintf "%s/mailpost.%d.%d", $Tmpdir, time, $$ ;
 
 if (!open TMPFILE,">$tmpfile") {
-    $msg = "cant open temp file ($tmpfile): $!" ;
+    $msg = "can't open temp file ($tmpfile): $!" ;
     $tmpfile = undef ;
-    syslog "err", "$msg\n" unless $debugging || -t STDERR ;
-    open TMPFILE, "|" . sprintf ($Sendmail, $Maintainer) ||
+    syslog("err", "$msg\n") unless $debugging || -t STDERR ;
+    open(TMPFILE, "|" . sprintf ($Sendmail, $Maintainer)) ||
 	die "die(no tmpfile): sendmail: $!\n" ;
     print TMPFILE <<"EOF";
 To: $Maintainer
-Subject: mailpost failure ($newsgroups): $msg
+Subject: mailpost failure ($newsgroups):  $msg
 
 -------- Article Contents
 
@@ -308,61 +311,61 @@ EOF
     
 my $rest;
 $rest .= $_ while (<STDIN>);
-$rest =~ s/\n*$/\n/g;		# Remove trailing \n except very last
+$rest =~ s/\n*$/\n/g;		# Remove trailing \n except very last.
 
 print TMPFILE $rest;
 close TMPFILE ;
 
 if ( ! $tmpfile ) {
-    # we had to bail and mail the article to the admin.
+    # We had to bail and mail the article to the admin.
     exit (0) ;
 }
 
 
 ##
 ## We've got the article in a temp file and now we validate some of the 
-## data we found and update our message-id database.
+## data we found and update our Message-ID database.
 ##
 
 mailArtAndDie ("no From: found") unless $from;
 mailArtAndDie ("no Message-ID: found") unless $message_id;
-mailArtAndDie ("Malformed message ID ($message_id)") 
+mailArtAndDie ("Malformed Message-ID ($message_id)") 
     if ($message_id !~ /\<(\S+)\@(\S+)\>/);
 
 
-# update (with locking) our message-id database.  this is used to make sure we
+# Update (with locking) our Message-ID database.  This is used to make sure we
 # don't loop our own gatewayed articles back through the mailing list.
 
-my ($lhs, $rhs) = ($1, $2);	# of message_id match above.
+my ($lhs, $rhs) = ($1, $2);	# Of message_id matched above.
 $rhs =~ tr/A-Z/a-z/;
 
 $message_id = "${lhs}\@${rhs}";
 
-push @errorText, "(TAS message-id database for $message_id)\n";
+push @errorText, "(TAS Message-ID database for $message_id)\n";
 
 my $lockfile = sprintf("%s.lock", $Database);
 
-open LOCKFILE, "<$lockfile" || 
-    open LOCKFILE, ">$lockfile" ||
+open(LOCKFILE, "<$lockfile") || 
+    open(LOCKFILE, ">$lockfile") ||
     mailArtAndDie ("can't open $lockfile: $!") ;
 
 my $i ;
 for ($i = 0 ; $i < 5 ; $i++) {
-    flock LOCKFILE, $LOCK_EX && last ;
+    flock(LOCKFILE, $LOCK_EX) && last ;
     sleep 1 ;
 }
 
 mailArtAndDie ("can't lock $lockfile: $!") if ($i == 5) ;
 
 my %DATABASE ;
-dbmopen %DATABASE, $Database, 0666 || mailArtAndDie ("can't dbmopen $lockfile: $!");
+dbmopen(%DATABASE, $Database, 0666) || mailArtAndDie ("can't dbmopen $Database: $!");
 
 if (defined $DATABASE{$message_id}) {
 
   exit 0 if (!$opt_c) ;
 
 ## crosspost -c
-  $newsgroups = append_newsgroups($DATABASE{$message_id}, $newsgroups) ;
+  $newsgroups = &append_newsgroups($DATABASE{$message_id}, $newsgroups) ;
   syslog "err", "crosspost $newsgroups\n" if $debugging ;
 }
 
@@ -371,43 +374,43 @@ $DATABASE{$message_id} = $newsgroups ;
 
 mailArtAndDie ("TAS didn't set $message_id") unless defined $DATABASE{$message_id};
 
-dbmclose %DATABASE || mailArtAndDie ("can't dbmclose $lockfile: $!") ;
+dbmclose(%DATABASE) || mailArtAndDie ("can't dbmclose $Database: $!") ;
 
-flock LOCKFILE, $LOCK_UN || mailArtAndDie ("can't unlock $lockfile: $!");
+flock(LOCKFILE, $LOCK_UN) || mailArtAndDie ("can't unlock $lockfile: $!");
 close LOCKFILE ;
 
-## for crosspost
+## For crosspost.
 
 if ($opt_c) {
   if (fork() != 0) {
-    undef $tmpfile;  # dont unlink $tmpfile
+    undef $tmpfile;  # Don't unlink $tmpfile.
     exit 0;
   }
   sleep $opt_c ;
 
-  open LOCKFILE, "<$lockfile" || 
-    open LOCKFILE, ">$lockfile" ||
+  open(LOCKFILE, "<$lockfile") || 
+    open(LOCKFILE, ">$lockfile") ||
       mailArtAndDie ("can't open $lockfile: $!") ;
 
   my $i ;
   for ($i = 0 ; $i < 5 ; $i++) {
-    flock LOCKFILE, $LOCK_EX && last ;
+    flock(LOCKFILE, $LOCK_EX) && last ;
     sleep 1 ;
   }
   mailArtAndDie ("can't lock $lockfile: $!") if ($i == 5) ;
 
   my $umask_bak = umask();
   umask(000);
-  dbmopen %DATABASE, $Database, 0666 || mailArtAndDie ("can't dbmopen $lockfile: $!");
+  dbmopen(%DATABASE, $Database, 0666) || mailArtAndDie ("can't dbmopen $Database: $!");
   umask($umask_bak);
 
   my $dup = undef ;
   syslog "err", "check   " . $DATABASE{$message_id} . " :  $newsgroups\n" if $debugging ;
   $dup = 1 if ($DATABASE{$message_id} ne $newsgroups) ;
 
-  dbmclose %DATABASE || mailArtAndDie ("can't dbmclose $lockfile: $!") ;
+  dbmclose(%DATABASE) || mailArtAndDie ("can't dbmclose $Database: $!") ;
 
-  flock LOCKFILE, $LOCK_UN || mailArtAndDie ("can't unlock $lockfile: $!");
+  flock(LOCKFILE, $LOCK_UN) || mailArtAndDie ("can't unlock $lockfile: $!");
   close LOCKFILE ;
 
   if (defined($dup)) {
@@ -415,11 +418,11 @@ if ($opt_c) {
     exit 0 ;
   }
 
-  # replace Newsgroups
-  open TMPFILE, "$tmpfile" || mailArtAndDie ("cannot open temp file ($tmpfile): $!") ;
+  # Replace Newsgroups:.
+  open(TMPFILE, "$tmpfile") || mailArtAndDie ("can't open temp file ($tmpfile): $!") ;
   $tmpfile2 = sprintf "%s/mailpost-crosspost.%d.%d", $Tmpdir, time, $$ ;
     if ( !open TMPFILE2, ">$tmpfile2") {
-    $msg = "cant open temp file ($tmpfile2): $!" ;
+    $msg = "can't open temp file ($tmpfile2): $!" ;
     $tmpfile2 = undef ;
     die $msg ;
   }
@@ -438,18 +441,18 @@ if ($opt_c) {
 
   my $rest;
   $rest .= $_ while (<TMPFILE>);
-  $rest =~ s/\n*$/\n/g;		# Remove trailing \n except very last
+  $rest =~ s/\n*$/\n/g;		# Remove trailing \n except very last.
 
   print TMPFILE2 $rest;
   close TMPFILE2 ;
   close TMPFILE ;
-  rename $tmpfile2, $tmpfile || mailArtAndDie ("cannot rename $tmpfile2 $tmpfile: $!") ;
+  rename($tmpfile2, $tmpfile) || mailArtAndDie ("can't rename $tmpfile2 $tmpfile: $!") ;
   $tmpfile2 = undef ;
 
 }
 
 if (!open INEWS, "$WhereTo < $tmpfile 2>&1 |") {
-    mailArtAndDie ("cant start: $WhereTo: $!") ;
+    mailArtAndDie ("can't start $WhereTo: $!") ;
 }
 
 my @inews = <INEWS> ;
@@ -470,18 +473,19 @@ sub mailArtAndDie {
     
     print STDERR $msg,"\n" if -t STDERR ;
     
-    open SENDMAIL, "|" . sprintf ($Sendmail,$Maintainer) ||
+    open(SENDMAIL, "|" . sprintf ($Sendmail,$Maintainer)) ||
 	die "die($msg): sendmail: $!\n" ;
     print SENDMAIL <<"EOF" ;
 To: $Maintainer
-Subject: mailpost failure ($newsgroups): $msg
-     
+Subject: mailpost failure ($newsgroups)
+
 $msg
+
 EOF
 	     
     if ($tmpfile && -f $tmpfile) {
 	print SENDMAIL "\n-------- Article Contents\n\n" ;
-	open FILE, "<$tmpfile" || die "open($tmpfile): $!\n" ;
+	open(FILE, "<$tmpfile") || die "open($tmpfile): $!\n" ;
 	print SENDMAIL while <FILE> ;
 	close FILE ;
     } else {
@@ -491,12 +495,12 @@ EOF
     
 #    unlink $tmpfile ;
     
-    exit (0) ;			# using a non-zero exit may cause problems.
+    exit (0) ;			# Using a non-zero exit may cause problems.
 }
 
 
 #
-# take 822-format name (either "comment <addr> comment" or "addr (comment)")
+# Take 822-format name (either "comment <addr> comment" or "addr (comment)")
 # and return in always-qualified 974-format ("addr (comment)").
 #
 sub fix_sender_addr {
@@ -531,7 +535,7 @@ sub fix_sender_addr {
 }
 
 #
-# delete leading and trailing blanks
+# Delete leading and trailing blanks.
 #
 
 sub dltb {
@@ -552,9 +556,10 @@ sub append_newsgroups ($$) {
     if ( !grep($_ eq $newsgroup,@orig)) {
       push @orig, $newsgroup ;
     } else {
-#      mailArtAndDie ("Duplicated Newsgroups: $newsgroup") ;
+#      mailArtAndDie ("Duplicate Newsgroups: $newsgroup") ;
     }
   }
   return join ",", @orig ;
 
 }
+
