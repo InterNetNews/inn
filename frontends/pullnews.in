@@ -6,13 +6,13 @@
 # File:         pullnews.pl
 # RCSId:        $Id$
 # Time-stamp:	<Friday, 7 April 2000 15:17:12 by brister@nominum.com>
-# Description:  A very simple pull feeder. Connects to multiple remote 
+# Description:  A very simple pull feeder.  Connects to multiple remote 
 #		machines (in the guise of a reader), and pulls over articles 
 #		and feeds them to the local server (in the guise of a feeder).
 # 		
-# 		Uses a simple configuration file: $HOME/.pullnews to define
+# 		Uses a simple configuration file:  $HOME/.pullnews to define
 # 		which machines to pull articles from and which groups at each
-# 		machine to pull over. There is no support yet for more specific
+# 		machine to pull over.  There is no support yet for more specific
 # 		configurations like cross-posted newsgroups to kill etc.
 # 		
 # 		A configuration file looks like:
@@ -25,10 +25,10 @@
 # 				uunet.help 0 0
 # 		
 #		hostname line has no leading space on it and an optional
-#		username and password after the hostname.and all the
+#		username and password after the hostname; all the
 #		subsequent group lines for that host must have leading
-#		spaces. The two integers on the group line will be updated by
-#		the program when it runs. They are the unix time the group was
+#		spaces.  The two integers on the group line will be updated by
+#		the program when it runs.  They are the Unix time the group was
 #		accessed, and the highest numbered article that was pulled
 #		over.
 
@@ -37,14 +37,14 @@
 # NOTE NOTE NOTE NOTE:
 #
 # The Packages Net::NNTP is required *AND* the function Net::NNTP::new is 
-# redefined in this file. If you're using a new release of Net::NTTP *AND* 
+# redefined in this file.  If you're using a new release of Net::NTTP *AND* 
 # if the Net::NNTP::new function supplied there does NOT call the 
 # $obj->reader() function, then you can remove the redefinition in here.
 #
 # Net::NNTP is part of the libnet bundle by Graham Barr and is available
-# from CPAN or his site:
+# from CPAN:
 #
-# 		http://www.connect.net/gbarr/
+#               http://www.cpan.org/
 # 		
 
 # TODO
@@ -68,7 +68,7 @@ $SIG{INT} = \&outtaHere ;
 $SIG{QUIT} = \&bail ;
 
 use Net::NNTP;
-use Getopt::Std ;
+use Getopt::Std;
 use IO::Handle;
 use Fcntl;
 use Fcntl qw(:flock);
@@ -82,29 +82,29 @@ my $defaultHost = "localhost";
 $usage =~ s!.*/!!;
 $usage .= " [ -h -q -x -r file -g groups -c config -s host -p port ]
 
-  -g groups	specifies a collection of groups to get. The value must be 
+  -g groups	specifies a collection of groups to get.  The value must be
 		a single argument with commas between group names:
 		
 			-g comp.lang.c,comp.lang.lisp,comp.lang.python
 		
-		the groups must be defined in the config file somewhere. 
+		The groups must be defined in the config file somewhere.
 		Only the hosts that carry those groups will be contacted.
 
-  -c config	specifies the configuration file instead of the 
-		default of $ENV{HOME}/.pullnews
+  -c config	specifies the configuration file instead of the
+		default of $ENV{HOME}/.pullnews (also called ~/.pullnews).
 
-  -s host	specifies the hostname to feed articles to (default 
-		is $defaultHost)
+  -s host	specifies the hostname to feed articles to (default
+		is $defaultHost).
 
-  -p port	specifies the port to connect to to feed articles (default 
-		is: $defaultPort).
+  -p port	specifies the port to connect to to feed articles (default
+		is $defaultPort).
 
   -r file	instead of feeding to a server $0 will instead
 		create an rnews-compatible file.
 
-  -x 		insert an Xref header in any article that lacks one.
+  -x 		insert an Xref: header in any article that lacks one.
 
-  -q 		$0 will normally be verbose about what it's doing. This 
+  -q 		$0 will normally be verbose about what it is doing.  This
 		option will make it quiet.
 
   -h		prints this message.
@@ -116,10 +116,10 @@ getopts("r:c:s:qxg:p:h") || die $usage;
 
 die $usage if $opt_h;
 
-my @groupsToGet = ();		# empty list means all groups in config file.
+my @groupsToGet = ();		# Empty list means all groups in config file.
 my $rnews = $opt_r;
 my $groupFile = $opt_c || $defaultConfig;
-my $localServer = $opt_s || $defaultHost ;
+my $localServer = $opt_s || $defaultHost;
 my $localPort = $opt_p || $defaultPort;
 my $quiet = $opt_q;
 
@@ -140,7 +140,7 @@ my %passwd = ();
 
 if ($rnews) {
     open(RNEWS, ">$rnews") || 
-	die "cant open rnews-format ouptut: $rnews: $!\n";
+	die "can't open rnews-format ouptut: $rnews: $!\n";
     if ($rnews eq "-") {
 	open(LOG, ">/dev/null") || die "can\'t open /dev/null!: $!\n";
     } else {
@@ -155,7 +155,7 @@ $| = 1; select LOG ; $| = 1; select $oldfh;
 
 my $lockfile = $ENV{HOME} . "/.pullnews.pid";
 sysopen (LOCK, "$lockfile", O_RDWR | O_CREAT, 0700) ||
-    die "cant create lock file ($lockfile): $!\n";
+    die "can't create lock file ($lockfile): $!\n";
 $oldfh = select ; select LOCK ; $| = 1; select $oldfh;
 
 if (!flock (LOCK, LOCK_EX | LOCK_NB)) {
@@ -187,7 +187,7 @@ while (<FILE>) {
 	my ($group,$date,$high) = ($1,$2,$3) ;
 	$servers->{$sname}->{$group} = [ $date, $high ];
     } elsif (m!^\s+(\S+)\s*$!) {
-	# assume this is a new group
+	# Assume this is a new group.
 	my ($group,$date,$high) = ($1,0,0) ;
 	print LOG "Looking for new group $group on $sname\n" unless $quiet ;
 	$servers->{$sname}->{$group} = [ $date, $high ]; 
@@ -210,7 +210,7 @@ if ( ! $rnews ) {
 
     my %localopts = ("Port" => "$localPort");
     $localcxn = Net::NNTP->new($localServer, %localopts) ||
-	die "Cant connect to server $localServer\n" ;
+	die "can't connect to server $localServer\n" ;
 }
 
 if ( !$quiet ) {
@@ -233,8 +233,8 @@ foreach my $server (@servers) {
 	}
 
 	if (! $ok) {
-	    # user gave -g and the server doesn't have those groups 
-	    warn "Skipping server $server. Doesn't have specified groups\n";
+	    # User gave -g and the server doesn't have those groups.
+	    warn "Skipping server $server.  Doesn't have specified groups\n";
 	    next;
 	}
     }
@@ -255,16 +255,16 @@ foreach my $server (@servers) {
 
     if (!$upstream) {
 	print LOG "failed." unless $quiet;
-	warn "cant connect to upstream server $server: $!\n" ;
+	warn "can't connect to upstream server $server: $!\n" ;
 	next ;
     } else {
 	print LOG "done.\n" unless $quiet ;
     }
 
     if (!$upstream->reader()) {
-	warn sprintf ("Cant issue MODE READER command: %s %s\n",
+	warn sprintf ("Can't issue MODE READER command: %s %s\n",
 		      $upstream->code(), $upstream->message());
-	warn "We\'ll try anyway\n" ;
+	warn "We\'ll try anyway.\n" ;
     }
 
     if ($username && !$upstream->authinfo($username, $passwd)) {
@@ -303,8 +303,8 @@ sub stats {
     
     $sum = $reftotal + $rejtotal + $ltotal;
 
-    printf LOG "\n%d article%s were offered to server on $localServer\n",
-        $sum, ($sum != 1 ? "s" : "") ;
+    printf LOG "\n%d article%s offered to server on $localServer\n",
+        $sum, ($sum != 1 ? "s were" : " was") ;
 
     return if ($sum == 0);
 
@@ -365,7 +365,7 @@ sub outtaHere {
 }
 
 sub bail {
-    warn "received QUIT signal. Not saving config.\n";
+    warn "received QUIT signal.  Not saving config.\n";
     exit (0);
 }
 
@@ -378,7 +378,7 @@ sub crossFeedGroup {
     my $code ;
     my $startTime = time;
 
-    if (!defined($narticles)) { # group command failed.
+    if (!defined($narticles)) { # Group command failed.
 	warn sprintf ("Group command failed: %s %s\n",
 		      $fromServer->code(), $fromServer->message());
 	return undef;
@@ -386,7 +386,7 @@ sub crossFeedGroup {
 
     printf LOG "\n%s:\n", $name;
     printf LOG "\tlast checked: %s\n", scalar(localtime($prevDate));
-    printf LOG "\t%d articles available. First %d Last %d\n",
+    printf LOG "\t%d articles available.  First %d Last %d\n",
            $narticles, $first, $last ;
     printf LOG "\tOur current highest: %d", $prevHigh, ;
     
@@ -397,7 +397,7 @@ sub crossFeedGroup {
     }
 
     if ($prevHigh == -1 || $last <= $prevHigh) {
-	# we connected OK but there's nothing there, or we just want 
+	# We connected OK but there's nothing there, or we just want 
 	# to reset our highwater mark.
 	$shash->{$group} = [ time, $high ];
 	print LOG " (nothing to get)\n";
@@ -428,7 +428,7 @@ sub crossFeedGroup {
 		    $xref = 1;
 		}
 
-		# catch some of the more common problems with articles.
+		# Catch some of the more common problems with articles.
 		if ($article->[$idx] =~ m!^\s+\n$!) {
 		    $article->[$idx] = "\n";
 		    warn "Fixing bad header line: $article->[$idx]\n";
@@ -438,14 +438,14 @@ sub crossFeedGroup {
 	    }
 
 	    if (!$msgid) {
-		warn "No message-id found in article\n" ;
+		warn "No Message-ID found in article\n" ;
 		next ;
 	    }
 	    
-	    # some old servers lack Xref: which bothers a downstream INN if
+	    # Some old servers lack Xref:, which bothers a downstream INN if
 	    # it has xrefslave set, so add one just before the blank line.
 	    if ($opt_x && !$xref) {
-		warn "No xref found in article, adding\n";
+		warn "No Xref: found in article, adding\n";
 		splice(@{$article}, $idx, 0, "Xref: $server $group: $i\n");
 	    }
 
@@ -511,7 +511,7 @@ sub new
 
  $host ||= $ENV{NNTPSERVER} || $ENV{NEWSHOST};
 
- my $hosts = defined $host ? [ $host ] : $NetConfig{nntp_hosts};
+ my $hosts = defined $host ? [$host] : $NetConfig{nntp_hosts};
 
  @{$hosts} = qw(news)
         unless @{$hosts};
@@ -558,7 +558,7 @@ sub new
 ##   # I want to ignore this failure, so restore the previous status.
 ##   $obj->set_status($c,\@m);
 ##  }
-## ${*$obj}{'net_nntp_post'} = $c >= 200 && $c <= 209 ? 1 : 0;
+## ${*$obj}{'net_nntp_post'} = $c == ? 1 : 0;
 ##--
 
  $obj;
