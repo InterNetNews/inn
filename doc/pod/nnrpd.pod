@@ -225,12 +225,13 @@ fully defined.
 =item 2.
 
 The C<list> command may be followed by the optional word C<active.times>,
-C<distributions>, C<distrib.pats>, C<moderators>, C<newsgroups>,
-C<subscriptions>, or C<Ioverview.fmt> to get a list of when newsgroups
-where created, a list of valid distributions, a file specifying default
-distribution patterns, moderators list, a one-per-line description of the
-current set of newsgroups, a list of the automatic group subscriptions, or
-a listing of the F<overview.fmt> file.
+C<distrib.pats>, C<distributions>, C<moderators>, C<motd>, C<newsgroups>,
+C<overview.fmt>, or C<subscriptions> to get a list of when newsgroups
+where created, a file specifying default distribution patterns, a list
+of valid distributions, the moderators list, the message of the day information
+for readers, a one-per-line description of the current set of newsgroups,
+a listing of the F<overview.fmt> file, or a list of the automatic group
+subscriptions.
 
 The command C<list active> is equivalent to the C<list> command. This
 is a common extension.
