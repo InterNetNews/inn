@@ -10,10 +10,10 @@ B<getlist> [B<-A>] [B<-h> I<host>] [B<-p> I<port>]
 =head1 DESCRIPTION
 
 B<getlist> obtains a list from an NNTP server and sends it to standard
-output.  I<list> may be one of C<active>, C<active.times>,
-C<distributions>, or C<newsgroups>.  C<active> contains a list of all
-newsgroups carried by the server with the high and low article numbers in
-the group and the group status flag.  C<active.times> is a list of
+output.  I<list> may be one of C<active> (which is the default value),
+C<active.times>, C<distributions>, or C<newsgroups>.  C<active> contains
+a list of all newsgroups carried by the server with the high and low article
+numbers in the group and the group status flag.  C<active.times> is a list of
 newsgroups, their creation times (in seconds since epoch), and the creator
 of the group.  C<distributions> is a list of relevant distributions and
 their descriptions.  C<newsgroups> is a list of newsgroups and their short
