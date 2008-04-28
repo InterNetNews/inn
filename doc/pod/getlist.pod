@@ -4,7 +4,8 @@ getlist - Get a list from an NNTP server
 
 =head1 SYNOPSIS
 
-B<getlist> [B<-A>] [B<-h> I<host>] [I<list> [I<pattern> [I<types>]]]
+B<getlist> [B<-A>] [B<-h> I<host>] [B<-p> I<port>]
+[I<list> [I<pattern> [I<types>]]]
 
 =head1 DESCRIPTION
 
@@ -18,8 +19,8 @@ of the group.  C<distributions> is a list of relevant distributions and
 their descriptions.  C<newsgroups> is a list of newsgroups and their short
 descriptions.
 
-For more information on the formats of these files, see active(5) and
-active.times(5).
+For more information on the formats of these files, see active(5),
+active.times(5), distributions(5) and newsgroups(5).
 
 The I<pattern> parameter may be used with a I<list> value of C<active> or
 C<newsgroups> to limit the output.  If given, only entries corresponding
@@ -33,8 +34,15 @@ For example, a I<types> value of C<y> would only show unmoderated groups,
 and a I<types> value of C<ym> would show all unmoderated and moderated
 groups but not aliased groups or groups that disallow postings.
 
-The listing files other than the active file are common extensions to the
-NNTP protocol and may not be available on all servers.
+The listing files other than the F<active> file are common extensions to the
+NNTP protocol and may not be available on all servers.  For instance,
+C<distrib.pats>, C<moderators>, C<motd>, C<overview.fmt> and C<subscriptions>,
+amongst other (like C<extensions>, which is not a file, strictly speaking),
+may be available.  Moreover, a uwildmat(3) pattern I<pattern> may also be
+usable for some of these listing files.
+
+For more information on the formats of these files, see distrib.pats(5),
+moderators(5), motd.news(5), overview.fmt(5) and subscriptions(5).
 
 =head1 OPTIONS
 
@@ -49,6 +57,10 @@ passwd.nntp(5) before issuing the LIST command.
 
 Connect to the server I<host> rather than to the value of I<server> in
 F<inn.conf> or the value of the NNTPSERVER environment variable.
+
+=item B<-p> I<port>
+
+Connect to the port I<port>, which is by default C<119>.
 
 =back
 
@@ -69,8 +81,8 @@ are moderated or aliased:
 
     getlist active '*' ym=
 
-Note that the wildcard character C<*> has to be quoted to protect it from
-the shell.
+Note that the wildcard character C<*> has to be quoted by simple quotes
+to protect it from the shell.
 
 =head1 HISTORY
 
@@ -81,6 +93,9 @@ $Id$
 
 =head1 SEE ALSO
 
-active(5), active.times(5), newsgroups(5), inn.conf(5), nnrpd(8), uwildmat(3).
+active(5), active.times(5), distrib.pats(5), distributions(5), inn.conf(5),
+moderators(5), motd.news(5), newsgroups(5), nnrpd(8), overview.fmt(5),
+passwd.nntp(5), subscriptions(5), uwildmat(3).
 
 =cut
+
