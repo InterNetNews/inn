@@ -112,7 +112,7 @@ find the latest version on CPAN (ftp.perl.org or another mirror) in
 F<modules/by-module/Pod>.  You'll need PodParser (for versions of Perl
 before 5.6.1; 5.6.1 and later come with a recent enough version) and the
 latest version of podlators.  For versions of Perl earlier than 5.005,
-you'll also need File::Spec in F<modules/by-module/File>.
+you'll also need C<File::Spec> in F<modules/by-module/File>.
 
 S<podlators 1.25> or later will build INN's documentation without significant
 changes from the versions that are checked into the repository.
@@ -306,7 +306,7 @@ the right variables whenever possible, rather than having configure
 substitute values in them.  Any values needed at run-time should instead
 be available from all of the different innshellvars.
 
-As for Perl, the INN::Config module has the same features as
+As for Perl, the C<INN::Config> module has the same features as
 F<innshellvars.pl> (only kept for compatibility reasons with old scripts
 not shipped with INN); however, it can be safely used with warnings on
 in Perl scripts.

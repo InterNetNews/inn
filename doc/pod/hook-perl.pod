@@ -261,7 +261,7 @@ embedded in innd, and is also available from filters embedded in nnrpd
 =item INN::syslog(level, message)
 
 Logs a message via syslog(3).  This is quite a bit more reliable and
-portable than trying to use Sys::Syslog from inside the Perl filter.  Only
+portable than trying to use C<Sys::Syslog> from inside the Perl filter.  Only
 the first character of the level argument matters; the valid letters are
 the first letters of ALERT, CRIT, ERR, WARNING, NOTICE, INFO, and DEBUG
 (case-insensitive) and specify the priority at which the message is
@@ -532,7 +532,7 @@ the client connection to be terminated).
 
 Calling exit directly, however, *will* kill the innd or nnrpd process, so
 don't do that.  Similarly, you probably don't want to call fork (or any
-other function that results in a fork such as system, IPC::Open3::open3(),
+other function that results in a fork such as system, C<IPC::Open3::open3()>,
 or any use of backticks) since there are possibly unflushed buffers that
 could get flushed twice, lots of open state that may not get closed
 properly, and innumerable other potential problems.  In general, be aware
@@ -541,7 +541,7 @@ and Perl code that impacts the process as a whole is best avoided.
 
 You can use print and warn inside Perl code to send output to STDOUT or
 STDERR, but you probably shouldn't.  Instead, open a log file and print to
-it instead (or, in the innd filter, use INN::syslog() to write messages
+it instead (or, in the innd filter, use C<INN::syslog()> to write messages
 via syslog like the rest of INN).  If you write to STDOUT or STDERR, where
 that data will go depends on where the filter is running; inside innd, it
 will go to the news log or the errlog, and inside nnrpd it will probably

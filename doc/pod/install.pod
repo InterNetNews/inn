@@ -95,7 +95,7 @@ large file support) for Perl and INN.
 
 If you're using a version of Perl prior to 5.6.0, you may need to make
 sure that the Perl versions of your system header files have been
-generated in order for Sys::Syslog to work properly (used by various
+generated in order for C<Sys::Syslog> to work properly (used by various
 utility programs, including B<controlchan>).  To do this, run the following
 two commands:
 
@@ -103,7 +103,7 @@ two commands:
     # h2ph * sys/*
 
 An even better approach is to install S<Perl 5.6.1> or later, which have a
-fixed version of Sys::Syslog that doesn't require this (as well as many
+fixed version of C<Sys::Syslog> that doesn't require this (as well as many
 other improvements over earlier versions of Perl).
 
 =item *

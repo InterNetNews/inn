@@ -195,7 +195,7 @@ rotated by B<scanlogs>.
 =item F<perl-nocem.log>
 
 The B<perl-nocem> program appends all status messages to this file if
-Sys::Syslog is not used (otherwise, such messages are appended to
+C<Sys::Syslog> is not used (otherwise, such messages are appended to
 F<news.notice>).  It is rotated by B<scanlogs>.
 
 =item F<send-ihave.log>

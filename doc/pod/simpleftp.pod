@@ -35,7 +35,7 @@ with the same name in the local directory.
 =head1 HISTORY
 
 Tossed off by David C Lawrence <tale@isc.org> for InterNetNews.
-Rewritten to use Net::FTP by Julien Elie <julien@trigofacile.com>.
+Rewritten to use C<Net::FTP> by Julien Elie <julien@trigofacile.com>.
 
 $Id$
 
