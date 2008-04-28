@@ -212,6 +212,7 @@ site/config
 site/control.ctl
 site/cycbuff.conf
 site/distrib.pats
+site/distributions
 site/expire.ctl
 site/filter.tcl
 site/filter_innd.pl

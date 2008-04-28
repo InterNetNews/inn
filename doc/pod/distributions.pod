@@ -1,0 +1,49 @@
+=head1 NAME
+
+distributions - Recommended values for the Distribution: header
+
+=head1 DESCRIPTION
+
+The file I<pathetc>/distributions contains a list of relevant
+distributions and their descriptions.  It provides local information
+for posters who wish to add a Distribution: header to their articles
+so as to restrict their propagation, although it does not guarantee
+that such articles will not leak elsewhere because of a misconfiguration
+of a news server to which they are fed.  See newsfeeds(5) for more
+information about how a news server handles the Distribution: header.
+
+Each line of this file consists in a distribution area followed by
+its description after at least a whitespace.  For instance:
+
+    all     Everywhere:  it is a worldwide distribution.
+    fr      Local to France.
+    local   Local to this news server.
+    nj      Local to New Jersey.
+    usa     Local to the United States of America.
+    world   Everywhere:  it is a worldwide distribution.
+
+Blank lines and lines beginning with a number sign (C<#>) are ignored.
+
+Any client that issues the LIST DISTRIBUTIONS command obtain these
+recommended values, if available.  However, be aware that use of the
+LIST DISTRIBUTIONS command is not widespread and most news clients will
+never ask for this file.
+
+If this file is missing, it is not an error.  The server will just send
+the client an empty response.
+
+The Distribution: header can also be automatically set by B<nnrpd>
+if distrib.pats(5) is correctly configured.
+
+=head1 HISTORY
+
+Written by Julien Elie <julien@trigofacile.com> for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+distrib.pats(5), newsfeeds(5), nnrpd(8).
+
+=cut
+

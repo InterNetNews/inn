@@ -161,6 +161,7 @@ doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
 doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
+doc/man/distributions.5               Manpage for distributions config file
 doc/man/docheckgroups.8               Manpage for docheckgroups
 doc/man/domain.8                      Manpage for domain resolver
 doc/man/expire.8                      Manpage for expire
@@ -266,6 +267,7 @@ doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/ctlinnd.pod                   Master file for ctlinnd.8
 doc/pod/cycbuff.conf.pod              Master file for cycbuff.conf.5
 doc/pod/distrib.pats.pod              Master file for distrib.pats.5
+doc/pod/distributions.pod             Master file for distributions.5
 doc/pod/docheckgroups.pod             Master file for docheckgroups.8
 doc/pod/domain.pod                    Master file for domain.8
 doc/pod/expire.ctl.pod                Master file for expire.ctl.5
@@ -484,7 +486,7 @@ lib/confparse.c                       Generic configuration file parser
 lib/daemonize.c                       Code necessary to become a daemon
 lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
-lib/defdist.c                         Determine default Distribution header
+lib/defdist.c                         Determine default Distribution: header
 lib/dispatch.c                        Dispatch a command to a function
 lib/fdflags.c                         Set or clear file descriptor flags
 lib/fdlimit.c                         File descriptor limits
@@ -617,7 +619,8 @@ samples/actsync.ign                   Ignore file for actsync
 samples/buffindexed.conf.in           Buffindexed overview config file
 samples/control.ctl                   Access control for control messages
 samples/cycbuff.conf                  Sample cycbuff.conf file
-samples/distrib.pats                  Default values for Distribution header
+samples/distrib.pats                  Default values for Distribution: header
+samples/distributions                 Recommended values for Distribution: header
 samples/expire.ctl                    Expiration config file
 samples/filter_innd.pl                Sample Perl filter for innd
 samples/filter_innd.py                Sample Python filter for innd

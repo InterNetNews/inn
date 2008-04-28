@@ -28,6 +28,7 @@ PATH_EXPIRECTL		= ${PATHETC}/expire.ctl
 PATH_INNDHOSTS		= ${PATHETC}/incoming.conf
 PATH_MODERATORS		= ${PATHETC}/moderators
 PATH_DISTPATS		= ${PATHETC}/distrib.pats
+PATH_DISTRIBUTIONS	= ${PATHETC}/distributions
 PATH_NEWSFEEDS		= ${PATHETC}/newsfeeds
 PATH_READERSCONF	= ${PATHETC}/readers.conf
 PATH_NNRPDTRACK		= ${PATHETC}/nnrpd.track
@@ -56,7 +57,7 @@ REST		= \
 	newsfeeds incoming.conf nnrpd.track passwd.nntp \
 	inn.conf moderators innreport.conf localgroups \
 	control.ctl expire.ctl nntpsend.ctl overview.fmt \
-	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
+	innwatch.ctl distrib.pats distributions actsync.cfg actsync.ign \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
@@ -179,6 +180,7 @@ $D$(PATH_EXPIRECTL):	expire.ctl	; $(COPY_RPUB) $? $@
 $D$(PATH_CONFIG):	inn.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_MODERATORS):	moderators	; $(COPY_RPUB) $? $@
 $D$(PATH_DISTPATS):	distrib.pats	; $(COPY_RPUB) $? $@
+$D$(PATH_DISTRIBUTIONS): distributions  ; $(COPY_RPUB) $? $@
 $D$(PATH_NNTPPASS):	passwd.nntp	; $(COPY_RPRI) $? $@
 $D$(PATHETC)/nntpsend.ctl: nntpsend.ctl	; $(COPY_RPUB) $? $@
 $D$(PATHETC)/news2mail.cf: news2mail.cf	; $(COPY_RPUB) $? $@
@@ -240,6 +242,7 @@ innwatch.ctl:	../samples/innwatch.ctl		; $(COPY) $? $@
 innfeed.conf:	../samples/innfeed.conf		; $(COPY) $? $@
 moderators:	../samples/moderators		; $(COPY) $? $@
 distrib.pats:	../samples/distrib.pats		; $(COPY) $? $@
+distributions:	../samples/distributions	; $(COPY) $? $@
 motd.news:	../samples/motd.news		; $(COPY) $? $@
 news2mail.cf:	../samples/news2mail.cf		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@

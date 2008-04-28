@@ -212,8 +212,6 @@ Documentation Projects
 * Audit readers.conf.5 against perm.c for missing options ("include" at
   least is missing from the documentation).
 
-* The distributions file is undocumented.
-
 * More comprehensive documentation in texinfo would be interesting; it
   would allow for better organization, separation of specialized topics
   into cleaner chapters, and a significantly better printed manual.  This

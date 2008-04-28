@@ -12,7 +12,7 @@ SEC3	= clientlib.3 dbz.3 inndcomm.3 libauth.3 libinn.3 libinnhist.3 \
 	libstorage.3 list.3 qio.3 tst.3 uwildmat.3
 
 SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
-	cycbuff.conf.5 distrib.pats.5 expire.ctl.5 history.5 incoming.conf.5 \
+	cycbuff.conf.5 distrib.pats.5 distributions.5 expire.ctl.5 history.5 incoming.conf.5 \
 	inn.conf.5 innfeed.conf.5 innwatch.ctl.5 moderators.5 motd.news.5 \
 	newsfeeds.5 newsgroups.5 newslog.5 nnrpd.track.5 nntpsend.ctl.5 ovdb.5 \
 	overview.fmt.5 passwd.nntp.5 radius.conf.5 readers.conf.5 \
