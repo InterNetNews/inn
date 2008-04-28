@@ -16,7 +16,7 @@
 #include "inn/paths.h"
 
 static const char usage[] = "\
-Usage: getlist [-A] [-h host] [-p port] [list [pattern [types]]]\n\
+Usage: getlist [-AR] [-h host] [-p port] [list [pattern [types]]]\n\
 \n\
 getlist obtains a list from an NNTP server and prints it out.  By default,\n\
 the active file is retrieved, but any list that the NNTP server supports\n\
@@ -218,6 +218,7 @@ main(int argc, char *argv[])
     char *line;
     unsigned short port = NNTP_PORT;
     bool authinfo = false;
+    bool reader = false;
     int option;
 
     message_program_name = "getlist";
@@ -226,7 +227,7 @@ main(int argc, char *argv[])
     host = innconf->server;
 
     /* Parse options. */
-    while ((option = getopt(argc, argv, "Ah:p:")) != EOF) {
+    while ((option = getopt(argc, argv, "Ah:p:R")) != EOF) {
         switch (option) {
         case 'A':
             authinfo = true;
@@ -238,6 +239,9 @@ main(int argc, char *argv[])
             port = atoi(optarg);
             if (port <= 0)
                 die("%s is not a valid port number", optarg);
+            break;
+        case 'R':
+            reader = true;
             break;
         default:
             die("%s", usage);
@@ -269,6 +273,15 @@ main(int argc, char *argv[])
         die_nntp_status(status);
     if (response < 200 || response > 201)
         die_nntp_code(response, line);
+
+    /* Switch to nnrpd if desired. */
+    if (reader) {
+        if (!nntp_send_line(nntp, "MODE READER"))
+            sysdie("cannot send MODE READER command to server %s", host);
+        status = nntp_read_response(nntp, &response, &line);
+        if (status != NNTP_READ_OK)
+            die_nntp_status(status);
+    }
 
     /* Authenticate if desired. */
     if (authinfo) {

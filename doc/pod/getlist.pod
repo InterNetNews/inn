@@ -4,7 +4,7 @@ getlist - Get a list from an NNTP server
 
 =head1 SYNOPSIS
 
-B<getlist> [B<-A>] [B<-h> I<host>] [B<-p> I<port>]
+B<getlist> [B<-AR>] [B<-h> I<host>] [B<-p> I<port>]
 [I<list> [I<pattern> [I<types>]]]
 
 =head1 DESCRIPTION
@@ -61,6 +61,13 @@ F<inn.conf> or the value of the NNTPSERVER environment variable.
 =item B<-p> I<port>
 
 Connect to the port I<port>, which is by default C<119>.
+
+=item B<-R>
+
+Try to switch to B<nnrpd> with a MODE READER command before issuing the
+LIST request.  It can be useful in case a feeding access exists for
+the news server:  more information can be retrieved from B<nnrpd>,
+compared with B<innd>.
 
 =back
 
