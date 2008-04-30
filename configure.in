@@ -818,19 +818,23 @@ INN_LIB_SASL
 
 dnl Check for Kerberos libraries for auth_krb5, and if found define KRB5_AUTH
 dnl to the relevant object file, which will enable compilation of it.
-INN_SEARCH_AUX_LIBS(krb5_parse_name, krb5, KRB5_LIB,
-    [KRB5_AUTH="auth_krb5"
-     KRB5_LIB="$KRB5_LDFLAGS $KRB5_LIB -lk5crypto -lcom_err"
-     AC_SUBST(KRB5_AUTH)
-     AC_SUBST(KRB5_INC)
-     AC_CHECK_HEADERS([et/com_err.h])], , [$LIBS -lk5crypto -lcom_err])
+if test x"$KRB5_INC" != x ; then
+    INN_SEARCH_AUX_LIBS(krb5_parse_name, krb5, KRB5_LIB,
+        [KRB5_AUTH="auth_krb5"
+         KRB5_LIB="$KRB5_LDFLAGS $KRB5_LIB -lk5crypto -lcom_err"
+         AC_SUBST(KRB5_AUTH)
+         AC_SUBST(KRB5_INC)
+         AC_CHECK_HEADERS([et/com_err.h])], , [$LIBS -lk5crypto -lcom_err])
+fi
 
 dnl Check for necessity of krb5_init_ets
 dnl OSX does not require this function
-inn_save_LIBS=$LIBS
-LIBS=$KRB5_LIB
-AC_CHECK_FUNCS(krb5_init_ets)
-LIBS=$inn_save_LIBS
+if test x"$KRB5_INC" != x ; then
+    inn_save_LIBS=$LIBS
+    LIBS=$KRB5_LIB
+    AC_CHECK_FUNCS(krb5_init_ets)
+    LIBS=$inn_save_LIBS
+fi
 
 dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
 dnl Perl linked with gdbm but don't normally have gdbm installed, so on that

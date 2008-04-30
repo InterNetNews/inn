@@ -8054,7 +8054,7 @@ EOF
 fi
 
 
-
+if test x"${KRB5_INC}" != x; then
 inn_save_LIBS=$LIBS
 LIBS=${KRB5_LIB}
 
@@ -8222,6 +8222,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 done
+fi # test x"${KRB5_INC}" != x;
 
 LIBS=$inn_save_LIBS
 
