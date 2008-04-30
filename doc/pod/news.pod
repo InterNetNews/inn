@@ -147,8 +147,7 @@ to insert Xref: headers in articles which lack one.
 
 If compiling with S<Berkeley DB>, use its ndbm compatibility layer for
 B<ckpasswd> in preference to searching for a traditional dbm library.
-INN also supports S<Berkeley DB 4.4> and S<Berkeley DB 4.6> thanks
-to Marco d'Itri.
+INN also supports S<Berkeley DB 4.4>, 4.5 and 4.6 thanks to Marco d'Itri.
 
 =item *
 
