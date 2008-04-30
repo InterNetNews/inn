@@ -33,8 +33,7 @@ Changes in 2.4.4
 
     * If compiling with Berkeley DB, use its ndbm compatibility layer for
       ckpasswd in preference to searching for a traditional dbm library. 
-      INN also supports Berkeley DB 4.4 and Berkeley DB 4.6 thanks to Marco
-      d'Itri.
+      INN also supports Berkeley DB 4.4, 4.5 and 4.6 thanks to Marco d'Itri.
 
     * ovdb_init now properly closes stdin/out/err when it becomes a daemon. 
       The issue was reported by Viktor Pilpenok and fixed by Marco d'Itri.
