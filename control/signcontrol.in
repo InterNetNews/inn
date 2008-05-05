@@ -45,12 +45,12 @@
 # $pgp can be set to the path to GnuPG to use GnuPG instead.  The program
 # name needs to end in gpg so that signcontrol knows GnuPG is being used.
 #
-# STORING YOUR PASS PHRASE IN A FILE IS A POTENTIAL SECURITY HOLE.
-# make sure you know what you're doing if you do it.
-# if you don't use pgppassfile, you can only use this script interactively.
-# if you DO use pgppassfile, it is possible that someone could steal
-#  your passphrase either by gaining access to the file or by seeing
-#  the environment of a running pgpverify program.
+# STORING YOUR PASSPHRASE IN A FILE IS A POTENTIAL SECURITY HOLE.
+# Make sure you know what you're doing if you do it.
+# If you don't use $pgppassfile, you can only use this script interactively.
+# If you DO use $pgppassfile, it is possible that someone could steal
+# your passphrase either by gaining access to the file or by seeing
+# the environment of a running pgpverify program.
 #
 # $pgplock is used because pgp does not guard itself against concurrent
 # read/write access to its randseed.bin file.  A writable file is needed;
@@ -173,7 +173,7 @@ die "Usage: $0 < message\n" if @ARGV > 0;
 
 umask(0022);                    # flock needs a writable file, if we create it
 if ($pgp !~ /gpg$/) {
-  open(LOCK, ">>$pgplock") || die "$0: open $lock: $!, exiting\n";
+  open(LOCK, ">>$pgplock") || die "$0: open $pgplock: $!, exiting\n";
   flock(LOCK, 2);               # block until locked
 }
 
@@ -199,7 +199,7 @@ if ($die) {
 &signit;
 
 if ($pgp !~ /gpg$/) {
-  close(LOCK) || warn "$0: close $lock: $!\n";
+  close(LOCK) || warn "$0: close $pgplock: $!\n";
 }
 exit 0;
 

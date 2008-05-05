@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 # fixscript will replace this line with code to load INN::Config
 
 #  $Id$
