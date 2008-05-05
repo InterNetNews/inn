@@ -171,14 +171,12 @@ High Priority Projects
   with cnfsstat).  pullart.c may also stand to be merged into the same
   utility (cnfs-util might not be a bad name).
 
-* The BerkeleyDB integration of INN needs some improvements in robustness.
+* The Berkeley DB integration of INN needs some improvements in robustness.
   Currently, BerkeleyDB functions can be called by nnrpd out of signal
   handlers and in other unfortunate situations, and coordination between
-  nnrpd and innd isn't entirely robust.  BerkeleyDB 4.4 offers a new
-  DB_REGISTER flag to open to allow for multi-process use of BerkeleyDB
-  databases and use of that flag should be investigated.  It may also be a
-  worthwhile simplification to pick a suitably powerful version of
-  BerkeleyDB and drop support for anything older than that.
+  nnrpd and innd isn't entirely robust.  Berkeley DB 4.4 offers a new
+  DB_REGISTER flag to open to allow for multi-process use of Berkeley DB
+  databases and use of that flag should be investigated.
 
 
 Documentation Projects

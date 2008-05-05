@@ -5,7 +5,7 @@ dnl This file provides INN_LIB_ZLIB, which defines the --with-zlib
 dnl command-line option and probes for the location of zlib if that
 dnl option is used without an optional path.  It looks by default in $prefix,
 dnl /usr/local, and /usr.  It exports ZLIB_LDFLAGS, ZLIB_CPPFLAGS, and ZLIB_LIBS.
-dnl The default for --with-zlib is no unless BerkeleyDB is enabled, in which
+dnl The default for --with-zlib is no unless Berkeley DB is enabled, in which
 dnl case the default is yes.
 
 AC_DEFUN([INN_LIB_ZLIB],

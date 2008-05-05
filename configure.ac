@@ -347,14 +347,14 @@ INN_LIB_OPENSSL
 INN_LIB_SASL
 INN_LIB_KERBEROS
 
-dnl The dbm libraries are a special case.  If we're building with BerkeleyDB,
+dnl The dbm libraries are a special case.  If we're building with Berkeley DB,
 dnl just use the ndbm support provided by it.
 if test x"$DB_LIBS" != x ; then
     DBM_CPPFLAGS="$DB_CPPFLAGS"
     DBM_LIBS="$DB_LDFLAGS $DB_LIBS"
     AC_SUBST([DBM_LIBS])
     AC_DEFINE([HAVE_BDB_DBM], 1,
-        [Define if the BerkeleyDB dbm compatibility layer is available.])
+        [Define if the Berkeley DB dbm compatibility layer is available.])
 else
     INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm], [DBM_LIBS],
         [AC_DEFINE([HAVE_DBM], 1, [Define if you have a dbm library.])])

@@ -37,7 +37,7 @@
 int
 main(int argc UNUSED, char **argv UNUSED)
 {
-    die("BerkeleyDB support not compiled");
+    die("Berkeley DB support not compiled");
 }
 
 #else /* USE_BERKELEY_DB */
