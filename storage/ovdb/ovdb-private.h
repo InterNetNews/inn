@@ -2,14 +2,8 @@
 
 #include <db.h>
 
-#if DB_VERSION_MAJOR == 2
-#if DB_VERSION_MINOR < 6
-#error "Need BerkeleyDB 2.6.x, 2.7.x, 3.x or 4.x"
-#endif
-#else
-#if DB_VERSION_MAJOR < 3 || DB_VERSION_MAJOR > 4
-#error "Need BerkeleyDB 2.6.x, 2.7.x, 3.x or 4.x"
-#endif
+#if DB_VERSION_MAJOR < 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR < 3)
+#error "Need Berkeley DB 4.4 or higher"
 #endif
 
 /*
@@ -27,7 +21,7 @@
  * 'struct datakey' as their keys, which consists of the group ID (in
  * native byteorder) followed by the article number in network byteorder.
  * The reason for storing the article number in net byte order (big-endian)
- * is that the keys will sort correctly using BerkeleyDB's default sort
+ * is that the keys will sort correctly using Berkeley DB's default sort
  * function (basically, a memcmp).
  *
  * The overview records consist of a 'struct ovdata' followed by the actual
@@ -174,57 +168,6 @@ struct rs_artinfo {
 };
 
 
-#if DB_VERSION_MAJOR == 2
-char *db_strerror(int err);
-
-/* Used when TXN_RETRY will never be called, to avoid a warning about an
-   unused label. */
-#define TXN_START_NORETRY(label, tid) \
-{ \
-  int txn_ret; \
-  txn_ret = txn_begin(OVDBenv->tx_info, NULL, &tid); \
-  if (txn_ret != 0) { \
-    warn("OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
-    tid = NULL; \
-  } \
-}
-
-#define TXN_START(label, tid) label: TXN_START_NORETRY(label, tid)
-
-#define TXN_RETRY(label, tid) \
-{ txn_abort(tid); goto label; }
-
-#define TXN_ABORT(label, tid) txn_abort(tid)
-#define TXN_COMMIT(label, tid) txn_commit(tid)
-
-#define TRYAGAIN EAGAIN
-
-#elif DB_VERSION_MAJOR == 3
-
-/* Used when TXN_RETRY will never be called, to avoid a warning about an
-   unused label. */
-#define TXN_START_NORETRY(label, tid) \
-{ \
-  int txn_ret; \
-  txn_ret = txn_begin(OVDBenv, NULL, &tid, 0); \
-  if (txn_ret != 0) { \
-    warn("OVDB: " #label " txn_begin: %s", db_strerror(ret)); \
-    tid = NULL; \
-  } \
-}
-
-#define TXN_START(label, tid) label: TXN_START_NORETRY(label, tid)
-
-#define TXN_RETRY(label, tid) \
-{ txn_abort(tid); goto label; }
-
-#define TXN_ABORT(label, tid) txn_abort(tid)
-#define TXN_COMMIT(label, tid) txn_commit(tid, 0)
-
-#define TRYAGAIN DB_LOCK_DEADLOCK
-
-#else /* DB_VERSION_MAJOR == 4 */
-
 /* Used when TXN_RETRY will never be called, to avoid a warning about an
    unused label. */
 #define TXN_START_NORETRY(label, tid) \
@@ -246,7 +189,5 @@ char *db_strerror(int err);
 #define TXN_COMMIT(label, tid) (tid)->commit(tid, 0)
 
 #define TRYAGAIN DB_LOCK_DEADLOCK
-
-#endif /* DB_VERSION_MAJOR == 2 */
 
 #endif /* USE_BERKELEY_DB */

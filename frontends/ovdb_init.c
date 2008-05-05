@@ -21,7 +21,7 @@
 
 int main(int argc UNUSED, char **argv UNUSED)
 {
-    die("BerkeleyDB support not compiled");
+    die("Berkeley DB support not compiled");
 }
 
 #else /* USE_BERKELEY_DB */
@@ -29,41 +29,23 @@ int main(int argc UNUSED, char **argv UNUSED)
 static int open_db(DB **db, const char *name, int type)
 {
     int ret;
-#if DB_VERSION_MAJOR == 2
-    DB_INFO dbinfo;
-    memset(&dbinfo, 0, sizeof dbinfo);
-
-    ret = db_open(name, type, DB_CREATE, 0666, OVDBenv, &dbinfo, db);
-    if (ret != 0) {
-	warn("db_open failed: %s", db_strerror(ret));
-	return ret;
-    }
-#else
     ret = db_create(db, OVDBenv, 0);
     if (ret != 0) {
 	warn("db_create failed: %s\n", db_strerror(ret));
 	return ret;
     }
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     ret = (*db)->open(*db, NULL, name, NULL, type, DB_CREATE, 0666);
-#else
-    ret = (*db)->open(*db, name, NULL, type, DB_CREATE, 0666);
-#endif
     if (ret != 0) {
 	(*db)->close(*db, 0);
         warn("%s->open failed: %s", name, db_strerror(ret));
 	return ret;
     }
-#endif
     return 0;
 }
 
-/* Upgrade BerkeleyDB version */
+/* Upgrade Berkeley DB version */
 static int upgrade_database(const char *name UNUSED)
 {
-#if DB_VERSION_MAJOR == 2
-    return 0;
-#else
     int ret;
     DB *db;
 
@@ -78,7 +60,6 @@ static int upgrade_database(const char *name UNUSED)
 
     db->close(db, 0);
     return ret;
-#endif
 }
 
 
@@ -113,9 +94,6 @@ static int upgrade_v1_to_v2(void)
     char group[MAXHEADERSIZE];
     u_int32_t v2 = 2;
     int ret;
-#if DB_VERSION_MAJOR < 3
-    char *p;
-#endif
 
     notice("upgrading data to version 2");
     ret = open_db(&groupstats, "groupstats", DB_BTREE);
@@ -222,7 +200,6 @@ static int upgrade_v1_to_v2(void)
     groupinfo->close(groupinfo, 0);
     vdb->close(vdb, 0);
     
-#if DB_VERSION_MAJOR >= 3
     ret = db_create(&groupstats, OVDBenv, 0);
     if (ret != 0)
 	return ret;
@@ -231,15 +208,6 @@ static int upgrade_v1_to_v2(void)
     if (ret != 0)
 	return ret;
     groupsbyname->remove(groupsbyname, "groupsbyname", NULL, 0);
-#else
-    /* This won't work if someone changed DB_DATA_DIR in DB_CONFIG */
-    p = concatpath(ovdb_conf.home, "groupstats");
-    unlink(p);
-    free(p);
-    p = concatpath(ovdb_conf.home, "groupsbyname");
-    unlink(p);
-    free(p);
-#endif
 
     return 0;
 }
@@ -339,17 +307,11 @@ upgrade_environment(void)
     ret = ovdb_open_berkeleydb(OV_WRITE, OVDB_UPGRADE);
     if (ret != 0)
 	return ret;
-#if DB_VERSION_MAJOR >= 3
-#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
-    ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, NULL, 0);
-#else
     ret = OVDBenv->remove(OVDBenv, ovdb_conf.home, 0);
-#endif
     if (ret != 0)
 	return ret;
     OVDBenv = NULL;
     ret = ovdb_open_berkeleydb(OV_WRITE, 0);
-#endif
     return ret;
 }
 
@@ -429,7 +391,7 @@ int main(int argc, char **argv)
         }
     }
     if(ret != 0)
-        die("cannot open BerkeleyDB: %s", db_strerror(ret));
+        die("cannot open Berkeley DB: %s", db_strerror(ret));
 
     if(recover_only)
 	exit(0);
@@ -437,7 +399,7 @@ int main(int argc, char **argv)
     if(do_upgrade) {
 	ret = upgrade_environment();
 	if(ret != 0)
-	    die("cannot upgrade BerkeleyDB environment: %s", db_strerror(ret));
+	    die("cannot upgrade Berkeley DB environment: %s", db_strerror(ret));
     }
 
     if(check_upgrade(do_upgrade)) {

@@ -71,13 +71,7 @@ static void deadlock(void)
     setproctitle("deadlock");
 
     while(!signalled) {
-#if DB_VERSION_MAJOR == 2
-	ret = lock_detect(OVDBenv->lk_info, 0, atype);
-#elif DB_VERSION_MAJOR == 3
-	ret = lock_detect(OVDBenv, 0, atype, NULL);
-#else
 	ret = OVDBenv->lock_detect(OVDBenv, 0, atype, NULL);
-#endif
 	if(ret != 0) {
             warn("OVDB: lock_detect: %s", db_strerror(ret));
 	    status = 1;
@@ -94,9 +88,6 @@ static void checkpoint(void)
 {
     int ret, status = 0;
     DB *db;
-#if DB_VERSION_MAJOR == 2
-    DB_INFO dbinfo;
-#endif
 
     if(ovdb_open_berkeleydb(OV_WRITE, 0))
 	_exit(1);
@@ -106,58 +97,23 @@ static void checkpoint(void)
     /* Open a database and close it.  This is so a necessary initialization
        gets performed (by the db->open function).  */
 
-#if DB_VERSION_MAJOR == 2
-    memset(&dbinfo, 0, sizeof dbinfo);
-    ret = db_open("version", DB_BTREE, DB_CREATE, 0666, OVDBenv, &dbinfo, &db);
-    if (ret != 0) {
-        warn("OVDB: checkpoint: db_open failed: %s", db_strerror(ret));
-        _exit(1);
-    }
-#else
     ret = db_create(&db, OVDBenv, 0);
     if (ret != 0) {
         warn("OVDB: checkpoint: db_create: %s", db_strerror(ret));
         _exit(1);
     }
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     ret = db->open(db, NULL, "version", NULL, DB_BTREE, DB_CREATE, 0666);
-#else
-    ret = db->open(db, "version", NULL, DB_BTREE, DB_CREATE, 0666);
-#endif
     if (ret != 0) {
         db->close(db, 0);
         warn("OVDB: checkpoint: version open: %s", db_strerror(ret));
         _exit(1);
     }
-#endif
     db->close(db, 0);
 
 
     while(!signalled) {
-#if DB_VERSION_MAJOR == 2
-	ret = txn_checkpoint(OVDBenv->tx_info, 2048, 1);
-#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
-	ret = txn_checkpoint(OVDBenv, 2048, 1);
-#elif DB_VERSION_MAJOR == 3
-	ret = txn_checkpoint(OVDBenv, 2048, 1, 0);
-#elif DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR < 1
-	ret = OVDBenv->txn_checkpoint(OVDBenv, 2048, 1, 0);
-#else
 	OVDBenv->txn_checkpoint(OVDBenv, 2048, 1, 0);
-#endif
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
 	sleep(30);
-#else
-	if(ret != 0 && ret != DB_INCOMPLETE) {
-            warn("OVDB: txn_checkpoint: %s", db_strerror(ret));
-	    status = 1;
-	    break;
-	}
-	if(ret == DB_INCOMPLETE)
-	    sleep(2);
-	else
-	    sleep(30);
-#endif
     }
 
     ovdb_close_berkeleydb();
@@ -175,15 +131,7 @@ static void logremover(void)
     setproctitle("logremover");
 
     while(!signalled) {
-#if DB_VERSION_MAJOR == 2
-	ret = log_archive(OVDBenv->lg_info, &listp, DB_ARCH_ABS, malloc);
-#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
-	ret = log_archive(OVDBenv, &listp, DB_ARCH_ABS, malloc);
-#elif DB_VERSION_MAJOR == 3
-	ret = log_archive(OVDBenv, &listp, DB_ARCH_ABS);
-#else
 	ret = OVDBenv->log_archive(OVDBenv, &listp, DB_ARCH_ABS);
-#endif
 	if(ret != 0) {
             warn("OVDB: log_archive: %s", db_strerror(ret));
 	    status = 1;

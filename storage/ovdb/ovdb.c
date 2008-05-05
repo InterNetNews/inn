@@ -1,7 +1,7 @@
 /*
  * ovdb.c
  * ovdb 2.00
- * Overview storage using BerkeleyDB 2.x/3.x/4.x
+ * Overview storage using Berkeley DB 4.4 or higher
  *
  * 2004-02-17 : Need to track search cursors, since it's possible that
  *              ovdb_closesearch does not get called.  We now close
@@ -11,7 +11,7 @@
  * 2002-08-11 : Cleaned up use of sprintf and fixed a bunch of warnings.
  * 2002-02-28 : Update getartinfo for the overview API change in 2.4.  This
  *              breaks compatibility with INN 2.3.x....
- * 2000-12-12 : Add support for BerkeleyDB DB_SYSTEM_MEM option, controlled
+ * 2000-12-12 : Add support for Berkeley DB DB_SYSTEM_MEM option, controlled
  *            : by ovdb.conf 'useshm' and 'shmkey'
  * 2000-11-27 : Update for DB 3.2.x compatibility
  * 2000-11-13 : New 'readserver' feature
@@ -32,7 +32,7 @@
  * 2000-09-19 : *lo wasn't being set in ovdb_expiregroup
  * 2000-09-15 : added ovdb_check_user(); tweaked some error msgs; fixed an
  *              improper use of RENEW
- * 2000-08-28:  New major release: version 2.00 (beta)
+ * 2000-08-28 : New major release: version 2.00 (beta)
  *    + "groupsbyname" and "groupstats" databases replaced with "groupinfo".
  *    + ovdb_recover, ovdb_upgrade, and dbprocs are now deprecated; their
  *         functionality is now in ovdb_init and ovdb_monitor.
@@ -43,7 +43,7 @@
  *         in inefficient disk-space use).
  *    + Add "nocompact" to ovdb.conf, which controls whether ovdb_expiregroup()
  *         rewrites OV data.
- *    + No longer needs the BerkeleyDB tools db_archive, db_checkpoint, and
+ *    + No longer needs the Berkeley DB tools db_archive, db_checkpoint, and
  *         db_deadlock.  That functionality is now in ovdb_monitor.
  *    + ovdb_open() won't succeed if ovdb_monitor is not running.  This will
  *         prevent the problems that happen if the database is not regularly
@@ -51,7 +51,7 @@
  *    + Internal group IDs (32-bit ints) are now reused.
  *    + Add "maxlocks" to ovdb.conf, which will set the DB lk_max parameter.
  *    + Pull "test" code out into ovdb_stat.  ovdb_stat will also provide
- *         functionality similar to the BerkeleyDB "db_stat" command.
+ *         functionality similar to the Berkeley DB "db_stat" command.
  *    + Update docs: write man pages for the new ovdb_* commands; update
  *         ovdb.pod
  *         
@@ -59,14 +59,14 @@
  * 2000-07-07 : bugfix: timestamp handling
  * 2000-06-10 : Modified groupnum() interface; fix ovdb_add() to return false
  *              for certain groupnum() errors
- * 2000-06-08 : Added BerkeleyDB 3.1.x compatibility
+ * 2000-06-08 : Added Berkeley DB 3.1.x compatibility
  * 2000-04-09 : Tweak some default parameters; store aliased group info
  * 2000-03-29 : Add DB_RMW flag to the 'get' of get-modify-put sequences
  * 2000-02-17 : Update expire behavior to be consistent with current
  *              ov3 and buffindexed
  * 2000-01-13 : Fix to make compatible with unmodified nnrpd/article.c
  * 2000-01-04 : Added data versioning
- * 1999-12-20 : Added BerkeleyDB 3.x compatibility
+ * 1999-12-20 : Added Berkeley DB 3.x compatibility
  * 1999-12-06 : First Release -- H. Kehoe <hakehoe@avalon.net>
  */
 
@@ -350,19 +350,6 @@ client_disconnect(void)
 
 /*********** internal functions ***********/
 
-#if DB_VERSION_MAJOR == 2
-char *db_strerror(int err)
-{
-    switch(err) {
-    case DB_RUNRECOVERY:
-	return "Recovery Needed";
-    default:
-	return strerror(err);
-    }
-}
-#endif /* DB_VERSION_MAJOR == 2 */
-
-
 static bool conf_bool_val(char *str, bool *value)
 {
     if(strcasecmp(str, "on") == 0
@@ -592,41 +579,24 @@ void read_ovdb_conf(void)
 }
 
 /* Function that db will use to report errors */
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
 static void OVDBerror(const DB_ENV *dbenv UNUSED, const char *db_errpfx UNUSED, const char *buffer)
-#else
-static void OVDBerror(const char *db_errpfx UNUSED, char *buffer)
-#endif
 {
     warn("OVDB: %s", buffer);
 }
 
 static u_int32_t _db_flags = 0;
-#if DB_VERSION_MAJOR == 2
-static DB_INFO   _dbinfo;
-#endif
 
 static int open_db_file(int which)
 {
     int ret;
     char name[10];
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     DB_TXN *tid;
-#endif
 
     if(dbs[which] != NULL)
 	return 0;
 
     snprintf(name, sizeof(name), "ov%05d", which);
 
-#if DB_VERSION_MAJOR == 2
-    ret = db_open(name, DB_BTREE, _db_flags, 0666, OVDBenv, &_dbinfo,
-                  &(dbs[which]));
-    if (ret != 0) {
-	dbs[which] = NULL;
-	return ret;
-    }
-#else
     ret = db_create(&(dbs[which]), OVDBenv, 0);
     if (ret != 0)
 	return ret;
@@ -636,22 +606,16 @@ static int open_db_file(int which)
     if(ovdb_conf.pagesize > 0)
 	(dbs[which])->set_pagesize(dbs[which], ovdb_conf.pagesize);
 
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     TXN_START_NORETRY(t_open_db_file, tid);
     ret = (dbs[which])->open(dbs[which], tid, name, NULL, DB_BTREE, _db_flags,
                              0666);
     if (ret == 0)
 	TXN_COMMIT(t_open_db_file, tid);
-#else
-    ret = (dbs[which])->open(dbs[which], name, NULL, DB_BTREE, _db_flags,
-                             0666);
-#endif
     if (ret != 0) {
 	(dbs[which])->close(dbs[which], 0);
 	dbs[which] = NULL;
 	return ret;
     }
-#endif
     return 0;
 }
 
@@ -1397,34 +1361,18 @@ static int check_version(void)
     DBT key, val;
     u_int32_t dv;
 
-#if DB_VERSION_MAJOR == 2
-    DB_INFO dbinfo;
-    memset(&dbinfo, 0, sizeof dbinfo);
-
-    ret = db_open("version", DB_BTREE, _db_flags, 0666, OVDBenv, &dbinfo,
-                  &vdb);
-    if (ret != 0) {
-        warn("OVDB: db_open failed: %s", db_strerror(ret));
-	return ret;
-    }
-#else
     /* open version db */
     ret = db_create(&vdb, OVDBenv, 0);
     if (ret != 0) {
         warn("OVDB: open: db_create: %s", db_strerror(ret));
 	return ret;
     }
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     ret = vdb->open(vdb, NULL, "version", NULL, DB_BTREE, _db_flags, 0666);
-#else
-    ret = vdb->open(vdb, "version", NULL, DB_BTREE, _db_flags, 0666);
-#endif
     if (ret != 0) {
 	vdb->close(vdb, 0);
         warn("OVDB: open: version->open: %s", db_strerror(ret));
 	return ret;
     }
-#endif
     memset(&key, 0, sizeof key);
     memset(&val, 0, sizeof val);
     key.data = (char *) "dataversion";
@@ -1543,28 +1491,6 @@ int ovdb_open_berkeleydb(int mode, int flags)
     if(flags & OVDB_RECOVER)
 	ai_flags |= DB_RECOVER;
 
-#if DB_VERSION_MAJOR == 2 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR < 2)
-    if(ovdb_conf.txn_nosync)
-	ai_flags |= DB_TXN_NOSYNC;
-#endif
-
-#if DB_VERSION_MAJOR == 2
-
-    OVDBenv = xcalloc(1, sizeof(DB_ENV));
-
-    OVDBenv->db_errcall = OVDBerror;
-    OVDBenv->mp_size = ovdb_conf.cachesize;
-    OVDBenv->lk_max = ovdb_conf.maxlocks;
-
-    /* initialize environment */
-    ret = db_appinit(ovdb_conf.home, NULL, OVDBenv, ai_flags);
-    if (ret != 0) {
-	free(OVDBenv);
-	OVDBenv = NULL;
-        warn("OVDB: db_appinit failed: %s", db_strerror(ret));
-	return ret;
-    }
-#else
     ret = db_env_create(&OVDBenv, 0);
     if (ret != 0) {
         warn("OVDB: db_env_create: %s", db_strerror(ret));
@@ -1576,32 +1502,20 @@ int ovdb_open_berkeleydb(int mode, int flags)
     if(!(ai_flags & DB_PRIVATE)) {
 	if(ovdb_conf.useshm)
 	    ai_flags |= DB_SYSTEM_MEM;
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR > 0)
 	OVDBenv->set_shm_key(OVDBenv, ovdb_conf.shmkey);
-#endif
     }
 
     OVDBenv->set_errcall(OVDBenv, OVDBerror);
     OVDBenv->set_cachesize(OVDBenv, 0, ovdb_conf.cachesize, ovdb_conf.ncache);
-#if DB_VERSION_MAJOR >= 4
     OVDBenv->set_lk_max_locks(OVDBenv, ovdb_conf.maxlocks);
     OVDBenv->set_lk_max_lockers(OVDBenv, ovdb_conf.maxlocks);
     OVDBenv->set_lk_max_objects(OVDBenv, ovdb_conf.maxlocks);
-#else
-    OVDBenv->set_lk_max(OVDBenv, ovdb_conf.maxlocks);
-#endif
 
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
     if(ovdb_conf.txn_nosync)
 	OVDBenv->set_flags(OVDBenv, DB_TXN_NOSYNC, 1);
-#endif
 
     if((flags & (OVDB_UPGRADE | OVDB_RECOVER)) != OVDB_UPGRADE) {
-#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
-	ret = OVDBenv->open(OVDBenv, ovdb_conf.home, NULL, ai_flags, 0666);
-#else
 	ret = OVDBenv->open(OVDBenv, ovdb_conf.home, ai_flags, 0666);
-#endif
 	if (ret != 0) {
 	    OVDBenv->close(OVDBenv, 0);
 	    OVDBenv = NULL;
@@ -1609,7 +1523,6 @@ int ovdb_open_berkeleydb(int mode, int flags)
 	    return ret;
 	}
     }
-#endif /* DB_VERSION_MAJOR == 2 */
 
     return 0;
 }
@@ -1617,11 +1530,7 @@ int ovdb_open_berkeleydb(int mode, int flags)
 bool ovdb_open(int mode)
 {
     int i, ret;
-#if DB_VERSION_MAJOR == 2
-    DB_INFO dbinfo;
-#else
     DB_TXN *tid;
-#endif
 
     if(OVDBenv != NULL || clientmode) {
         warn("OVDB: ovdb_open called more than once");
@@ -1661,12 +1570,6 @@ bool ovdb_open(int mode)
 	oneatatime = 1;
     }
 
-#if DB_VERSION_MAJOR == 2
-    memset(&_dbinfo, 0, sizeof _dbinfo);
-    _dbinfo.db_pagesize = ovdb_conf.pagesize;
-    _dbinfo.bt_minkey = ovdb_conf.minkey;
-#endif
-
     dbs = xcalloc(ovdb_conf.numdbfiles, sizeof(DB *));
     
     if(!oneatatime) {
@@ -1679,38 +1582,16 @@ bool ovdb_open(int mode)
 	}
     }
 
-#if DB_VERSION_MAJOR == 2
-    memset(&dbinfo, 0, sizeof dbinfo);
-
-    ret = db_open("groupinfo", DB_BTREE, _db_flags, 0666, OVDBenv,
-                  &dbinfo, &groupinfo);
-    if (ret != 0) {
-        warn("OVDB: db_open failed: %s", db_strerror(ret));
-	return false;
-    }
-
-    ret = db_open("groupaliases", DB_HASH, _db_flags, 0666, OVDBenv,
-                  &dbinfo, &groupaliases);
-    if (ret != 0) {
-        warn("OVDB: db_open failed: %s", db_strerror(ret));
-	return false;
-    }
-#else
     ret = db_create(&groupinfo, OVDBenv, 0);
     if (ret != 0) {
         warn("OVDB: open: db_create: %s", db_strerror(ret));
 	return false;
     }
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     TXN_START_NORETRY(t_open_groupinfo, tid);
     ret = groupinfo->open(groupinfo, tid, "groupinfo", NULL, DB_BTREE,
                           _db_flags, 0666);
     if (ret == 0)
 	TXN_COMMIT(t_open_groupinfo, tid);
-#else
-    ret = groupinfo->open(groupinfo, "groupinfo", NULL, DB_BTREE,
-                          _db_flags, 0666);
-#endif
     if (ret != 0) {
 	groupinfo->close(groupinfo, 0);
         warn("OVDB: open: groupinfo->open: %s", db_strerror(ret));
@@ -1721,22 +1602,16 @@ bool ovdb_open(int mode)
         warn("OVDB: open: db_create: %s", db_strerror(ret));
 	return false;
     }
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     TXN_START_NORETRY(t_open_groupaliases, tid);
     ret = groupaliases->open(groupaliases, tid, "groupaliases", NULL, DB_HASH,
                              _db_flags, 0666);
     if (ret == 0)
 	TXN_COMMIT(t_open_groupaliases, tid);
-#else
-    ret = groupaliases->open(groupaliases, "groupaliases", NULL, DB_HASH,
-                             _db_flags, 0666);
-#endif
     if (ret != 0) {
 	groupaliases->close(groupaliases, 0);
         warn("OVDB: open: groupaliases->open: %s", db_strerror(ret));
 	return false;
     }
-#endif
 
     Cutofflow = false;
     return true;
@@ -2061,8 +1936,8 @@ ovdb_add(const char *group, ARTNUM artnum, TOKEN token, char *data, int len,
         databuf = xrealloc(databuf, databuflen);
     }
 
-    /* hmm... BerkeleyDB needs something like a 'struct iovec' so that we don't
-       have to make a new buffer and copy everything in to it */
+    /* Hmm...  Berkeley DB needs something like a 'struct iovec' so that we don't
+       have to make a new buffer and copy everything in to it. */
 
     ((struct ovdata *)databuf)->token = token;
     ((struct ovdata *)databuf)->arrived = arrived;
@@ -3135,12 +3010,7 @@ void ovdb_close_berkeleydb(void)
 {
     if(OVDBenv) {
 	/* close db environment */
-#if DB_VERSION_MAJOR == 2
-	db_appexit(OVDBenv);
-	free(OVDBenv);
-#else
 	OVDBenv->close(OVDBenv, 0);
-#endif
 	OVDBenv = NULL;
     }
 }

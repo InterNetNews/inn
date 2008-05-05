@@ -25,7 +25,7 @@
 
 int main(int argc UNUSED, char **argv UNUSED)
 {
-    die("BerkeleyDB support not compiled");
+    die("Berkeley DB support not compiled");
 }
 
 #else /* USE_BERKELEY_DB */
@@ -241,53 +241,27 @@ static void end_table(void)
 #define F(f) OFFSETOF(DB_LOCK_STAT, f)
 
 static struct datatab LOCK_tab[] = {
-#if DB_VERSION_MAJOR >= 3
  { INT32,
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
    F(st_id),
-#else
-   F(st_lastid),
-#endif
    -1, -1,           "Last allocated locker ID" },
-#endif
  { INT32, F(st_maxlocks),      -1, -1,           "Maximum number of locks possible" },
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
  { INT32, F(st_maxlockers),    -1, -1,           "Maximum number of lockers possible" },
  { INT32, F(st_maxobjects),    -1, -1,           "Maximum number of objects possible" },
-#endif
  { INT32, F(st_nmodes),        -1, -1,           "Lock modes" },
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
  { INT32, F(st_nlocks),        -1, -1,           "Current locks" },
  { INT32, F(st_maxnlocks),     -1, -1,           "Maximum locks" },
-#endif
  { INT32, F(st_nlockers),      -1, -1,           "Current lockers" },
-#if DB_VERSION_MAJOR >= 3
  { INT32, F(st_maxnlockers),   -1, -1,           "Maximum lockers" },
-#else
- { INT32, F(st_numobjs),       -1, -1,           "Lock objects" },
-#endif
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
  { INT32, F(st_nobjects),      -1, -1,           "Current objects" },
  { INT32, F(st_maxnobjects),   -1, -1,           "Maximum objects" },
-#endif
-#if DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 4
  { INT32, F(st_lock_wait),     -1, -1,           "Lock conflicts" },
-#else
- { INT32, F(st_nconflicts),    -1, -1,           "Lock conflicts" },
-#endif
  { INT32, F(st_nrequests),     -1, -1,           "Lock requests" },
  { INT32, F(st_nreleases),     -1, -1,           "Lock releases" },
  { DIFF32, F(st_nrequests), F(st_nreleases), F(st_ndeadlocks), "Outstanding locks" },
-#if DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 4
  { INT32, F(st_lock_nowait),   -1, -1,           "Lock conflicts w/o subsequent wait" },
-#elif DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR > 0)
- { INT32, F(st_nnowaits),      -1, -1,           "Lock conflicts w/o subsequent wait" },
-#endif
  { INT32, F(st_ndeadlocks),    -1, -1,           "Deadlocks" },
-#if DB_VERSION_MAJOR >= 4
  { INT32, F(st_nlocktimeouts), -1, -1,           "Lock timeouts" },
  { INT32, F(st_ntxntimeouts),  -1, -1,           "Transaction timeouts" },
-#endif
  { INT32, F(st_region_nowait), -1, -1,           "Region locks granted without waiting" },
  { INT32, F(st_region_wait),   -1, -1,           "Region locks granted after waiting" },
  { BYTES, F(st_regsize),       -1, -1,           "Lock region size" },
@@ -298,15 +272,7 @@ static int display_lock(void)
 {
     DB_LOCK_STAT *sp;
 
-#if DB_VERSION_MAJOR == 2
-    if(lock_stat(OVDBenv->lk_info, &sp, NULL) != 0)
-#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
-    if(lock_stat(OVDBenv, &sp, NULL) != 0)
-#elif DB_VERSION_MAJOR == 3
-    if(lock_stat(OVDBenv, &sp) != 0)
-#else
     if(OVDBenv->lock_stat(OVDBenv, &sp, 0) != 0)
-#endif
 	return 1;
 
     display_heading("Lock Region Statistics");
@@ -324,37 +290,22 @@ static struct datatab LOG_tab[] = {
  { HEX32, F(st_magic),             -1, -1, "Log magic number" },
  { INT32, F(st_version),           -1, -1, "Log version number" },
  { MODE,  F(st_mode),              -1, -1, "Log file mode" },
-#if DB_VERSION_MAJOR >= 3
  { BYTES, F(st_lg_bsize),          -1, -1, "Log record cache size" },
-#endif
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
  { BYTES, F(st_lg_size),           -1, -1, "The current log file size" },
-#else
- { BYTES, F(st_lg_max),            -1, -1, "Max log file size" },
-#endif
  { BYTES, F(st_w_bytes), F(st_w_mbytes), -1, "Log bytes written" },
  { BYTES, F(st_wc_bytes), F(st_wc_mbytes), -1, "Log bytes written since last checkpoint" },
  { INT32, F(st_wcount),            -1, -1, "Total log writes" },
-#if DB_VERSION_MAJOR >= 3
  { INT32, F(st_wcount_fill),       -1, -1, "Total log writes due to overflow" },
-#endif
  { INT32, F(st_scount),            -1, -1, "Total log flushes" },
  { INT32, F(st_region_nowait),     -1, -1, "Region locks granted without waiting" },
  { INT32, F(st_region_wait),       -1, -1, "Region locks granted after waiting" },
  { INT32, F(st_cur_file),          -1, -1, "Current log file number" },
  { INT32, F(st_cur_offset),        -1, -1, "Current log file offset" },
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 3)
  { INT32, F(st_disk_file),         -1, -1, "Known on disk log file number" },
  { INT32, F(st_disk_offset),       -1, -1, "Known on disk log file offset" },
-#endif
  { BYTES, F(st_regsize),           -1, -1, "Log region size" },
-#if DB_VERSION_MAJOR >= 4
-#if DB_VERSION_MINOR < 1
- { INT32, F(st_flushcommit),       -1, -1, "Flushes containing a commit"},
-#endif
  { INT32, F(st_maxcommitperflush), -1, -1, "Max number of commits in a flush"},
  { INT32, F(st_mincommitperflush), -1, -1, "Min number of commits in a flush"},
-#endif
  { END, -1, -1, -1, NULL }
 };
 
@@ -362,15 +313,7 @@ static int display_log(void)
 {
     DB_LOG_STAT *sp;
 
-#if DB_VERSION_MAJOR == 2
-    if(log_stat(OVDBenv->lg_info, &sp, NULL) != 0)
-#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
-    if(log_stat(OVDBenv, &sp, NULL) != 0)
-#elif DB_VERSION_MAJOR == 3
-    if(log_stat(OVDBenv, &sp) != 0)
-#else
     if(OVDBenv->log_stat(OVDBenv, &sp, 0) != 0)
-#endif
 	return 1;
 
     display_heading("Log Region Statistics");
@@ -388,18 +331,9 @@ static struct datatab MEM_tab[] = {
  { INT32, F(st_cache_hit),  -1, -1,       "Cache hits"},
  { INT32, F(st_cache_miss), -1, -1,       "Cache misses"},
  { PCT32, F(st_cache_hit), F(st_cache_miss), -1, "Cache hit percentage"},
-#if DB_VERSION_MAJOR == 2
- { INT32, F(st_cachesize),  -1, -1,       "Total cache size"},
- { INT32, F(st_regsize),    -1, -1,       "Pool region size"},
-#else
  { BYTES, F(st_bytes), -1, F(st_gbytes), "Total cache size"},
-#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
- { INT32, F(st_regsize),    -1, -1,       "Pool region size"},
-#else
  { INT32, F(st_ncache),     -1, -1,       "Number of caches"},
  { INT32, F(st_regsize),    -1, -1,       "Pool individual cache size"},
-#endif
-#endif
  { INT32, F(st_map),           -1, -1, "Memory mapped pages"},
  { INT32, F(st_page_create),   -1, -1, "Pages created in the cache"},
  { INT32, F(st_page_in),       -1, -1, "Pages read into the cache"},
@@ -439,15 +373,7 @@ static int display_mem(int all)
     DB_MPOOL_FSTAT **fsp;
     DB_MPOOL_STAT *gsp;
 
-#if DB_VERSION_MAJOR == 2
-    if(memp_stat(OVDBenv->mp_info, &gsp, &fsp, NULL) != 0)
-#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
-    if(memp_stat(OVDBenv, &gsp, &fsp, NULL) != 0)
-#elif DB_VERSION_MAJOR == 3
-    if(memp_stat(OVDBenv, &gsp, &fsp) != 0)
-#else
     if(OVDBenv->memp_stat(OVDBenv, &gsp, &fsp, 0) != 0)
-#endif
 	return 1;
 
     display_heading("Memory Pool Statistics");
@@ -482,19 +408,12 @@ static int txn_compare(const void *a, const void *b)
 
 static struct datatab TXN_tab[] = {
  { LSN, F(st_last_ckp),     -1, -1, "File/offset for last checkpoint LSN" },
-#if DB_VERSION_MAJOR < 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR < 1)
- { LSN, F(st_pending_ckp),  -1, -1, "File/offset for last pending checkpoint LSN" },
-#endif
  { TIME, F(st_time_ckp),    -1, -1, "Checkpoint timestamp" },
  { HEX32, F(st_last_txnid), -1, -1, "Last transaction ID allocated" },
  { INT32, F(st_maxtxns),    -1, -1, "Maximum active transactions possible" },
  { INT32, F(st_nactive),    -1, -1, "Active transactions" },
-#if DB_VERSION_MAJOR >= 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 3)
  { INT32, F(st_nrestores),  -1, -1, "Restored transactions after recovery" },
-#endif
-#if DB_VERSION_MAJOR >= 3
  { INT32, F(st_maxnactive), -1, -1, "Maximum active transactions" },
-#endif
  { INT32, F(st_nbegins),    -1, -1, "Transactions started" },
  { INT32, F(st_ncommits),   -1, -1, "Transactions committed" },
  { INT32, F(st_naborts),    -1, -1, "Transactions aborted" },
@@ -509,9 +428,7 @@ static struct datatab TXN_tab[] = {
 
 static struct datatab TXNA_tab[] = {
  { INT32, F(txnid),    -1, -1, "Transaction ID" },
-#if DB_VERSION_MAJOR >= 3
  { INT32, F(parentid), -1, -1, "Parent Transaction ID" },
-#endif
  { LSN,   F(lsn),      -1, -1, "Initial LSN file/offset" },
  { END, -1, -1, -1, NULL }
 };
@@ -521,15 +438,7 @@ static int display_txn(void)
     DB_TXN_STAT *sp;
     u_int32_t i;
 
-#if DB_VERSION_MAJOR == 2
-    if(txn_stat(OVDBenv->tx_info, &sp, NULL) != 0)
-#elif DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
-    if(txn_stat(OVDBenv, &sp, NULL) != 0)
-#elif DB_VERSION_MAJOR == 3
-    if(txn_stat(OVDBenv, &sp) != 0)
-#else
     if(OVDBenv->txn_stat(OVDBenv, &sp, 0) != 0)
-#endif
         return 1;
 
     display_heading("Transaction Region Statistics");
@@ -551,7 +460,7 @@ static int display_ver(void)
     if(html) puts("<p>");
     printf("ovdb data version: %d\n", ovdb_data_ver);
     if(html) puts("<br>");
-    printf("BerkeleyDB version: %s\n", db_version(NULL,NULL,NULL));
+    printf("Berkeley DB version: %s\n", db_version(NULL,NULL,NULL));
     if(html) puts("<p>");
     return 0;
 }
@@ -565,12 +474,8 @@ static struct datatab BTREE_tab[] = {
  { INT32, F(bt_minkey), -1, -1, "Minimum keys per page (minkey)" },
  { INT32, F(bt_pagesize), -1, -1, "Database page size" },
  { INT32, F(bt_levels), -1, -1, "Levels in the tree" },
-#if DB_VERSION_MAJOR == 2 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0)
- { INT32, F(bt_nrecs), -1, -1, "Keys in the tree" },
-#else
  { INT32, F(bt_nkeys), -1, -1, "Unique keys in the tree" },
  { INT32, F(bt_ndata), -1, -1, "Data items in the tree" },
-#endif
  { INT32, F(bt_int_pg), -1, -1, "Tree internal pages" },
  { BYTES, F(bt_int_pgfree), -1, -1, "Bytes free in internal pages" },
  { FF,    F(bt_int_pgfree), F(bt_int_pg), F(bt_pagesize), "Internal page fill factor" },
@@ -587,9 +492,7 @@ static struct datatab BTREE_tab[] = {
  { BYTES, F(bt_over_pgfree), -1, -1, "Bytes free overflow pages" },
  { FF,    F(bt_over_pgfree), F(bt_over_pg), F(bt_pagesize), "Overflow page fill factor" },
 
-#if DB_VERSION_MAJOR >= 3
  { INT32, F(bt_free), -1, -1, "Pages on the free list" },
-#endif
  { END, -1, -1, -1, NULL }
 };
 
@@ -597,15 +500,7 @@ static int display_btree(DB *db)
 {
     DB_BTREE_STAT *sp;
 
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
     if(db->stat(db, NULL, &sp, 0))
-#else
-#if DB_VERSION_MAJOR == 4 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 3)
-    if(db->stat(db, &sp, 0))
-#else
-    if(db->stat(db, &sp, NULL, 0))
-#endif
-#endif
 	return 1;
 
     display_heading("Btree Statistics");
@@ -616,8 +511,6 @@ static int display_btree(DB *db)
 }
 
 
-#if DB_VERSION_MAJOR >= 3
-
 #undef F
 #define F(f) OFFSETOF(DB_HASH_STAT, f)
 
@@ -625,12 +518,8 @@ static struct datatab HASH_tab[] = {
  { HEX32, F(hash_magic), -1, -1, "Hash magic number" },
  { INT32, F(hash_version), -1, -1, "Hash version number" },
  { INT32, F(hash_pagesize), -1, -1, "Database page size" },
-#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR == 0
- { INT32, F(hash_nrecs), -1, -1, "Keys in the database" },
-#else
  { INT32, F(hash_nkeys), -1, -1, "Keys in the database" },
  { INT32, F(hash_ndata), -1, -1, "Data items in the database" },
-#endif
  { INT32, F(hash_buckets), -1, -1, "Hash buckets" },
  { BYTES, F(hash_bfree), -1, -1, "Bytes free on bucket pages" },
  { FF,    F(hash_buckets), F(hash_bfree), F(hash_pagesize), "Bucket page fill factor" },
@@ -650,32 +539,18 @@ static struct datatab HASH_tab[] = {
  { INT32, F(hash_free), -1, -1, "Pages on the free list"},
  { END, -1, -1, -1, NULL }
 };
-#endif
 
 static int display_hash(DB *db UNUSED)
 {
-#if DB_VERSION_MAJOR == 2
-    printf("Hash statistics not available.\n");
-    return 0;
-#else
     DB_HASH_STAT *sp;
 
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
     if(db->stat(db, NULL, &sp, 0))
-#else
-#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR <= 2
-    if(db->stat(db, &sp, NULL, 0))
-#else
-    if(db->stat(db, &sp, 0))
-#endif
-#endif
 	return 1;
 
     display_heading("Hash Information");
     display_data(sp, HASH_tab);
 
     return 0;
-#endif
 }
 
 static int display_db(char *dbfile)
@@ -683,19 +558,10 @@ static int display_db(char *dbfile)
     int ret;
     DB *db;
 
-#if DB_VERSION_MAJOR == 2
-    if(db_open(dbfile, DB_UNKNOWN, DB_RDONLY, 0, OVDBenv, NULL, &db))
-	return 1;
-#else
     if(db_create(&db, OVDBenv, 0))
 	return 1;
-#if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 1)
     if(db->open(db, NULL, dbfile, NULL, DB_UNKNOWN, DB_RDONLY, 0))
-#else
-    if(db->open(db, dbfile, NULL, DB_UNKNOWN, DB_RDONLY, 0))
-#endif
 	return 1;
-#endif
 
     switch(db->type) {
     case DB_BTREE:
