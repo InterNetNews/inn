@@ -64,6 +64,7 @@ HandleHeaders(char *article)
    HE            *scan;
    SV            *modswitch;
    int            OtherSize;
+   char *argv[] = { NULL };
 
    if(!PerlLoaded) {
        loadPerl();
@@ -113,7 +114,7 @@ HandleHeaders(char *article)
    sv_setpv(body, article);
 
    /* Call the filtering function */
-   rc = perl_call_argv("filter_post", G_EVAL|G_SCALAR, NULL);
+   rc = perl_call_argv("filter_post", G_EVAL|G_SCALAR, argv);
 
    SPAGAIN;
 

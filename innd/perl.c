@@ -255,6 +255,7 @@ char *
 PLstats(void)
 {
     dSP;
+    char *argv[] = { NULL };
     
     if (perl_get_cv("filter_stats", false) == NULL)
         return NULL;
@@ -264,7 +265,7 @@ PLstats(void)
 
 	ENTER;
 	SAVETMPS;
-	perl_call_argv("filter_stats", G_EVAL | G_NOARGS, NULL);
+	perl_call_argv("filter_stats", G_EVAL | G_NOARGS, argv);
 	SPAGAIN;
         result = POPp;
         if (result != NULL && *result)

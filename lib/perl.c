@@ -65,6 +65,7 @@ bool
 PerlFilter(bool value)
 {
     dSP;
+    char *argv[] = { NULL };
 
     if (value == PerlFilterActive)
         return true;
@@ -74,7 +75,7 @@ PerlFilter(bool value)
         if (perl_get_cv("filter_end", false) != NULL) {
             ENTER;
             SAVETMPS;
-            perl_call_argv("filter_end", G_EVAL | G_DISCARD | G_NOARGS, NULL);
+            perl_call_argv("filter_end", G_EVAL | G_DISCARD | G_NOARGS, argv);
             if (SvTRUE(ERRSV)) {
                 syslog (L_ERROR, "SERVER perl function filter_end died: %s",
                         SvPV(ERRSV, PL_na));
@@ -175,11 +176,10 @@ int PERLreadfilter(char *filterfile, const char *function)
     ENTER ;
     SAVETMPS ;
     
-    argv[0] = filterfile ;
-    argv[1] = NULL ;
-    
+    argv[0] = NULL;
+
     if (perl_get_cv("filter_before_reload", false) != NULL)    {
-        perl_call_argv("filter_before_reload",G_EVAL|G_DISCARD|G_NOARGS,NULL);
+        perl_call_argv("filter_before_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
         if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog (L_ERROR,"SERVER perl function filter_before_reload died: %s",
                     SvPV(ERRSV, PL_na)) ;
@@ -188,6 +188,9 @@ int PERLreadfilter(char *filterfile, const char *function)
         }
     }
 
+    argv[0] = filterfile ;
+    argv[1] = NULL ;
+    
     PerlSilence();
     perl_call_argv ("_load_", 0, argv) ;
     PerlUnSilence();
@@ -212,8 +215,9 @@ int PERLreadfilter(char *filterfile, const char *function)
         PerlFilter (false) ;
     }
     
+    argv[0] = NULL;
     if (perl_get_cv("filter_after_reload", false) != NULL) {
-        perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, NULL);
+        perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
         if (SvTRUE(ERRSV))     /* check $@ */ {
             syslog (L_ERROR,"SERVER perl function filter_after_reload died: %s",
                     SvPV(ERRSV, PL_na)) ;
