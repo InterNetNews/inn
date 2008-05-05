@@ -29,6 +29,10 @@ from silently dying when its log file reaches S<2 GB>.
 
 =item *
 
+S<Perl 5.10> support has been added to INN thanks to Jakub Bogusz.
+
+=item *
+
 Some news clients hang when posting an article through a SSL connection:
 it seems that B<nnrpd>'s SSL routines make it wrongly wait for data
 completion.  In order to fix the problem, the select() wait is now
