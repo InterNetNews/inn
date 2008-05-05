@@ -5,8 +5,8 @@ ovdb - Overview storage method for INN
 =head1 DESCRIPTION
 
 Ovdb is a storage method that uses the S<Berkeley DB> library to store
-overview data.  It requires version 2.6.x or later of the S<Berkeley DB>
-library, but has mostly been tested with version 3 and 4.
+overview data.  It requires version 4.4 or later of the S<Berkeley DB>
+library.
 
 Ovdb makes use of the full transaction/logging/locking functionality of
 the S<Berkeley DB> environment.  S<Berkeley DB> may be downloaded from
@@ -24,12 +24,12 @@ ovdb_init(8) for upgrade instructions.
 To build ovdb support into INN, specify the option B<--with-berkeleydb>
 when running the configure script.  By default, configure will search for
 a S<Berkeley DB> tree in several likely locations, and choose the highest
-version (based on the name of the directory, e.g., F<BerkeleyDB.3.0>) that
+version (based on the name of the directory, e.g., F<BerkeleyDB.4.4>) that
 it finds.  There will be a message in the configure output indicating the
 chosen pathname.
 
 You can override this pathname by adding a path to the option, e.g.,
-B<--with-berkeleydb=/usr/BerkeleyDB.3.1>.  This directory is expected to
+B<--with-berkeleydb=/usr/BerkeleyDB.4.4>.  This directory is expected to
 have subdirectories F<include> and F<lib>, containing F<db.h>, and the
 library itself, respectively.
 
@@ -39,12 +39,10 @@ in your spool (not counting crossposts).  So, if you have 5 million
 articles, you'll need at least S<5.5 GB> of disk space for ovdb. With compression
 enabled, this estimate changes to S<0.7 KB> per article.  See the L<COMPRESSION>
 section below.
-With S<Berkeley DB 2.x>, the db files are 'grow only'; the library will not shrink
-them, even if data is removed.  So, reserving extra space above the
-estimate is a good idea.  Plus, you'll need additional space for
-transaction logs: at least S<100 MB>.  By default the transaction logs go in
-the same directory as the database.  To improve performance, they can be
-placed on a different disk S<-- see> the L<DB_CONFIG> section.
+Plus, you'll need additional space for transaction logs: at least S<100 MB>.
+By default the transaction logs go in the same directory as the database.
+To improve performance, they can be placed on a different disk S<-- see>
+the L<DB_CONFIG> section.
 
 =head1 CONFIGURATION
 
@@ -97,8 +95,7 @@ performance.  Default is true.
 
 If useshm is set to true, S<Berkeley DB> will use shared memory instead of
 mmap for its environment regions (cache, lock, etc).  With some platforms,
-this may improve performance.  Default is false.  This parameter is
-ignored if you have S<Berkeley DB 2.x>.
+this may improve performance.  Default is false.
 
 =item shmkey
 
@@ -106,8 +103,7 @@ Sets the shared memory key used by S<Berkeley DB> when 'useshm' is true.
 S<Berkeley DB> will create several (usually 5) shared memory segments, using
 sequentially numbered keys starting with 'shmkey'.  Choose a key that does
 not conflict with any existing shared memory segments on your system.
-Default is 6400.  This parameter is only used with S<Berkeley DB 3.1> or
-newer.
+Default is 6400.
 
 =item pagesize
 
@@ -131,7 +127,7 @@ database.
 
 =item maxlocks
 
-Sets the S<Berkeley DB> "lk_max" parameter, which is the maxmium number of
+Sets the S<Berkeley DB> "lk_max" parameter, which is the maximum number of
 locks that can exist in the database at the same time.  Default is 4000.
 
 =item nocompact
@@ -179,9 +175,9 @@ times.  Default is 5.
 This parameter is only used when I<readserver> is true.  It sets a maximum
 number of readers that a given ovdb_server process will serve at one time.
 This means the maximum number of readers for all of the ovdb_server
-processes is (numrsprocs * maxrsconn). This does B<not> limit the actual
+processes is (numrsprocs * maxrsconn).  This does B<not> limit the actual
 number of readers, since nnrpd will fall back to opening the database
-directly if it can't connect to a readserver. Default is 0, which means an
+directly if it can't connect to a readserver.  Default is 0, which means an
 umlimited number of connections is allowed.
 
 =back
@@ -189,11 +185,11 @@ umlimited number of connections is allowed.
 =head1 COMPRESSION
 
 New in this version of OVDB is the ability to compress overview data
-before it is stored into the database. In addition to consuming less disk
+before it is stored into the database.  In addition to consuming less disk
 space, compression keeps the average size of the database keys smaller.
 This in turn increases the average number of keys per page, which can
 significantly improve performance and also helps keep the database more
-compact. This feature requires that INN be built with zlib. Only records
+compact.  This feature requires that INN be built with zlib. Only records
 larger than 600 bytes get compressed, because that is the point at which
 compression starts to become significant.
 
@@ -246,8 +242,6 @@ the following lines:
     set_data_dir /mnt/ov2
     set_data_dir /mnt/ov3
     set_data_dir /mnt/ov4
-
-(For S<Berkeley DB 2.x>, replace C<set_data_dir> with C<DB_DATA_DIR>.)
 
 Distribute your ovNNNNN files into the four filesystems.  (say, 8 each).
 When called upon to open a database file, the db library will look for it
@@ -362,3 +356,4 @@ source distribution, or on the Sleepycat web page:
 L<http://www.sleepycat.com/>.
 
 =cut
+

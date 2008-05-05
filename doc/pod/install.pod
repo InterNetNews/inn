@@ -149,7 +149,7 @@ versions you'll need:
 
     --with-perl         Perl 5.004_03 or higher, 5.6.1+ recommended
     --with-python       Python 1.5.2 or higher
-    --with-berkeleydb   Berkeley DB 2.0 or higher, 4.2+ recommended
+    --with-berkeleydb   Berkeley DB 4.4 or higher
     --with-zlib         zlib 1.x or higher
     --with-openssl      OpenSSL 0.9.6 or higher
     --with-sasl         SASL 2.x or higher
@@ -406,7 +406,7 @@ do).  Installing B<inews> setgid was the default prior to S<INN 2.3>.
 
 =item B<--with-berkeleydb>=PATH
 
-Enables support for S<Berkeley DB> (2.x through 4.2.x), which means that it will
+Enables support for S<Berkeley DB> (4.4 or higher), which means that it will
 then be possible to use the ovdb overview method if you wish.  Enabling
 this configure option doesn't mean you'll be required to use ovdb, but it
 does require that S<Berkeley DB> be installed on your system (including the
