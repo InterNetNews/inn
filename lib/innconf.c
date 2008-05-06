@@ -190,7 +190,7 @@ const struct config config_table[] = {
     { K(backoffpostslow),       NUMBER  (1) },
     { K(backofftrigger),        NUMBER  (10000) },
     { K(checkincludedtext),     BOOL    (false) },
-    { K(clienttimeout),         NUMBER  (600) },
+    { K(clienttimeout),         NUMBER  (1800) },
     { K(complaints),            STRING  (NULL) },
     { K(initialtimeout),        NUMBER  (10) },
     { K(keyartlimit),           NUMBER  (100000) },
@@ -248,14 +248,14 @@ const struct config config_table[] = {
 
     /* The following settings are specific to innwatch. */
     { K(doinnwatch),            BOOL    (true) },
-    { K(innwatchbatchspace),    NUMBER  (800) },
+    { K(innwatchbatchspace),    NUMBER  (4000) },
     { K(innwatchlibspace),      NUMBER  (25000) },
     { K(innwatchloload),        NUMBER  (1000) },
     { K(innwatchhiload),        NUMBER  (2000) },
     { K(innwatchpauseload),     NUMBER  (1500) },
     { K(innwatchsleeptime),     NUMBER  (600) },
     { K(innwatchspoolnodes),    NUMBER  (200) },
-    { K(innwatchspoolspace),    NUMBER  (8000) },
+    { K(innwatchspoolspace),    NUMBER  (25000) },
 
     /* The following settings are specific to scanlogs. */
     { K(logcycles),             NUMBER  (3) },

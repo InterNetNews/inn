@@ -939,7 +939,7 @@ the default is true.
 
 Free space in I<pathoutgoing>, in inndf(8) output units (normally
 kilobytes), at which innd(8) will be throttled by innwatch(8), assuming a
-default F<innwatch.ctl>.  The default value is C<800>.
+default F<innwatch.ctl>.  The default value is C<4000>.
 
 =item I<innwatchlibspace>
 
@@ -982,7 +982,7 @@ C<200>.
 Free space in I<patharticles> and I<pathoverview>, in inndf(8) output
 units (normally kilobytes), at which innd(8) will be throttled by
 innwatch(8), assuming a default F<innwatch.ctl>.  The default value is
-C<8000>.
+C<25000>.
 
 =back
 

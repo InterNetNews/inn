@@ -1,18 +1,18 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
+##  $Id$
 ##  Watch the state of the system relative to the news subsystem.
 ##  As controlled by the control file, when space or inodes are almost
-##  exhausted innd is throttled, or paused, similarly if the load is
-##  too high - when conditions revert to normal, innd is restarted.
+##  exhausted, innd is throttled or paused, similarly if the load is
+##  too high; when conditions revert to normal, innd is restarted.
 ##  No logging is done here, watch for syslog reports from innd.
 ##  Written by Mike Cooper <mcooper@usc.edu>.
 ##  Extensively modified by <kre@munnari.oz.au>.
 ##  Watch a log file and send mail when it gets new output by
-##	Steve Groom <stevo@elroy.Jpl.Nasa.Gov>
+##	Steve Groom <stevo@elroy.Jpl.Nasa.Gov>.
 ##  Steve's extensions merged in innwatch by
-##	<Christophe.Wolfhugel@grasp.insa-lyon.fr>
+##	<Christophe.Wolfhugel@grasp.insa-lyon.fr>.
 
 PROGNAME=innwatch
 LOCK=${LOCKS}/LOCK.${PROGNAME}
@@ -20,15 +20,15 @@ DAILY=${LOCKS}/LOCK.news.daily
 ##  Where to put the timestamp file (directory and filename).
 TIMESTAMP=${LOCKS}/${PROGNAME}.time
 
-##  Logfile to watch. Comment out if no logwatch.
+##  Logfile to watch.  Comment out if no logwatch.
 LOGFILE=${MOST_LOGS}/news.crit
 
-## Default value in case there is no definition in inn.conf
+##  Default value in case there is no definition in inn.conf.
 : ${INNWATCHPAUSELOAD:=1500}
 : ${INNWATCHHILOAD:=2000}
 : ${INNWATCHLOLOAD:=1000}
-: ${INNWATCHSPOOLSPACE:=8000}
-: ${INNWATCHBATCHSPACE:=800}
+: ${INNWATCHSPOOLSPACE:=25000}
+: ${INNWATCHBATCHSPACE:=4000}
 : ${INNWATCHLIBSPACE:=25000}
 : ${INNWATCHSPOOLNODES:=200}
 : ${INNWATCHSLEEPTIME:=600}
@@ -89,7 +89,7 @@ shlock -p $$ -f ${LOCK} || {
 trap 'rm -f ${LOCK} ${WATCHPID} ; exit 1' 1 3 15
 echo "$$" > ${WATCHPID}
 
-##  The reason why we turned INND off, and its, and our current state.
+##  The reason why we turned innd off, and its, and our current state.
 REASON=''
 INND=''
 STATE=''
@@ -99,8 +99,8 @@ trap '(
 	date
     ) >${INNWSTATUS}' 2
 
-##  We need to remember the process ID of innd, in case one exits
-##  But we need to wait for innd to start before we can do that
+##  We need to remember the process ID of innd, in case one exits.
+##  But we need to wait for innd to start before we can do that.
 while PID=`cat ${SERVERPID} 2>/dev/null`; test -z "${PID}"; do
     sleep ${INNWATCHSLEEPTIME}
 done
@@ -134,8 +134,8 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
     ##  have done.
     test -f "${DAILY}" && continue
 
-    ## Check to see if INND is running.
-    ## Notify NEWSMASTER if it has stopped or just restarted.
+    ##  Check to see if innd is running.
+    ##  Notify the newsmaster if it has stopped or just restarted.
     if ctlinnd -s -t 120 mode 2>/dev/null ; then
 	${HASEXITED} && {
 	    HASEXITED=false
@@ -150,8 +150,7 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
     fi
 
     ##  If innd has exited & restarted, put the new one into the
-    ##  same state the old one was in
-
+    ##  same state the old one was in.
     nPID=`cat ${SERVERPID} 2>/dev/null`
     test -n "${nPID}" -a "${PID}" -ne "${nPID}" && {
 	test -n "${INND}" -a "${INND}" != go && ctlinnd -s "${INND}" "${REASON}"
@@ -170,7 +169,7 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
 	test -z "$line" && continue
 
 	##  The first character on the line is the field delimiter,
-	##  except '#' which marks the line as a comment
+	##  except '#' which marks the line as a comment.
 	delim=`expr "${line}" : '\(.\).*'`
 	test "X${delim}" = 'X#' && continue
 
@@ -193,7 +192,7 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
 
 	##  Should we act on this line?  We will if one (or more) of the
 	##  specified conditions is satisfied.
-	for X in a b; do	# meaningless trash because we have no goto
+	for X in a b; do	# Meaningless trash because we have no goto.
 	    if [ -z "${CND}" ]; then
 		X=-
 	    else
@@ -218,7 +217,7 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
 		    test "X${STATE}" != "X${cnd}" && continue;
 		    ;;
 		esac
-		break 2;	# OK, continue with this line
+		break 2;	# OK, continue with this line.
 	    done
 	    continue 2;		# No, skip it.
 	done
@@ -281,7 +280,7 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
 		ctlinnd -s "${CMD}" "${ARG}" && STATE="${O}" && INND="${CMD}"
 		break
 
-	    ##  Otherwise, if innd is not running, and reverse test succeeds
+	    ##  Otherwise, if innd is not running, and reverse test succeeds,
 	    ##  restart it.
 	    elif [ "${STATE}" = "${LAB}" -a \
 		    \( "${CMD}" = "throttle" -o "${CMD}" = pause \) -a \
@@ -307,8 +306,8 @@ while { sleep ${NEXTSLEEP} & wait; } ; : ; do
 	if [ ! -f ${TIMESTAMP} ]; then
 	    DOIT=${LOGFILE}
 	else
-	    # use ls to print most recently modified file first.
-	    # If that's ${LOGFILE}, it's changed since the last pass.
+	    # Use ls to print most recently modified file first.
+	    # If that's ${LOGFILE}, it has changed since the last pass.
 	    DOIT="`ls -t ${TIMESTAMP} ${LOGFILE} | ${SED} -e 1q | grep ${LOGFILE}`"
 	fi
 

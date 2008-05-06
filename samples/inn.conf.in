@@ -77,7 +77,7 @@ xrefslave:              false
 
 allownewnews:           true
 articlemmap:            false
-clienttimeout:          600
+clienttimeout:          1800
 initialtimeout:         10
 msgidcachesize:         10000
 nfsreader:              false
@@ -135,14 +135,14 @@ backofftrigger:         10000
 # Monitoring
 
 doinnwatch:             true
-innwatchbatchspace:     800
+innwatchbatchspace:     4000
 innwatchlibspace:       25000
 innwatchloload:         1000
 innwatchhiload:         2000
 innwatchpauseload:      1500
 innwatchsleeptime:      600
 innwatchspoolnodes:     200
-innwatchspoolspace:     8000
+innwatchspoolspace:     25000
 
 # Logging
 
