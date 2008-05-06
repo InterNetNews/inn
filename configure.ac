@@ -393,7 +393,7 @@ AC_HEADER_SYS_WAIT
 dnl Generic checks for header files.
 AC_CHECK_HEADERS([crypt.h inttypes.h limits.h pam/pam_appl.h stddef.h \
                   stdint.h string.h sys/bitypes.h sys/filio.h sys/loadavg.h \
-                  sys/time.h unistd.h])
+                  sys/select.h sys/time.h unistd.h])
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.  Others have
 dnl gdbm-ndbm.h.
