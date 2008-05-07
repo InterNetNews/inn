@@ -36,9 +36,9 @@ already running. (Unless the C<-r> option is specified).
 
 =item 5
 
-Starts the ovdb readserver (ovdb_server) processes if C<readserver>
-in F<ovdb.conf> is C<true>, and if they're not
-already running. (Unless the C<-r> option is specified).
+Starts the ovdb readserver (ovdb_server) processes if I<readserver>
+in F<ovdb.conf> is true, and if they are not already running.  (Unless
+the C<-r> option is specified).
 
 =back
 

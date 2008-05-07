@@ -506,16 +506,16 @@ versions.  B<innupgrade> should take care of this for you.
 
 ovdb is known to have some locking and timing issues related to how B<nnrpd>
 shuts down (or fails to shut down) the overview databases.  If you have
-stability problems with ovdb, try setting I<readserver> to C<true> in
+stability problems with ovdb, try setting I<readserver> to true in
 F<ovdb.conf>.  This will funnel all ovdb reads through a single process
 with a cleaner interface to the underlying S<Berkeley DB> database.
 
 If you use Perl authentication for B<nnrpd> (if I<nnrpdperlauth> in
-F<inn.conf> is C<true>), there have been major changes.  See "Changes to
+F<inn.conf> is true), there have been major changes.  See "Changes to
 Perl Authentication Support for nnrpd" in F<doc/hook-perl> for details.
 
 Similarly, if you use Python authentication for B<nnrpd> (if
-I<nnrpdpythonauth> in F<inn.conf> is C<true>), there have been major changes.
+I<nnrpdpythonauth> in F<inn.conf> is true), there have been major changes.
 See "Changes to Python Authentication and Access Control Support for
 nnrpd" in F<doc/hook-python> for details.
 
@@ -594,7 +594,7 @@ starts to rely on it.
 =item *
 
 B<innfeed> supports a new peer parameter, I<backlog-feed-first>, that if set
-to C<true> feeds any backlog to a peer before new articles, see
+to true feeds any backlog to a peer before new articles, see
 innfeed.conf(5).  When used in combination with I<max-connections> set to C<1>,
 this can be used to enforce in-order delivery of messages to a peer that
 is doing Xref slaving, avoiding cases where a higher-numbered message is
@@ -663,8 +663,8 @@ See "CANCEL FEEDS" in innd(8) for details.
 
 Two new options, I<nfsreader> and I<nfswriter>, have been added to
 F<inn.conf> to aid in building NFS based shared reader/writer platforms.
-On the writer server configure I<nfswriter> to C<true> and on all of the readers
-configure I<nfsreader> to C<true>; these options add calls to force data out to
+On the writer server configure I<nfswriter> to true and on all of the readers
+configure I<nfsreader> to true; these options add calls to force data out to
 the NFS server and force it to be read directly from the NFS server at the
 appropriate moments.  Note that it has only been tested on S<Solaris 8>,
 using CNFS as the storage mechanism and tradindexed as the overview
@@ -673,7 +673,7 @@ method.
 =item *
 
 A new option, I<tradindexedmmap>, has been added to F<inn.conf>.  If set
-to C<true> (the default), then the tradindexed overview method will use
+to true (the default), then the tradindexed overview method will use
 mmap() to access its overview data (in 2.3 you couldn't control this; it
 always used mmap).
 
@@ -1001,7 +1001,7 @@ results in somewhat slower performance, but is more reliable and has a
 better failure mode under high loads.  Writing overview data directly is
 the default, so in a normal upgrade from 2.2 to 2.3 you'll want to comment
 out or remove your B<overchan> entry in F<newsfeeds> and set I<useoverchan> to
-C<false> in F<inn.conf>.
+false in F<inn.conf>.
 
 B<crosspost> is no longer installed, and no longer works (even with
 traditional spool).  If you have an entry for B<crosspost> in F<newsfeeds>,

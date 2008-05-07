@@ -156,7 +156,7 @@ The process of attaching to the database (and detaching when finished) is
 fairly expensive, and can result in high loads in situations when there
 are lots of reader connections of relatively short duration.
 
-When the readserver parameter is "true", the nnrpds will access overview
+When the I<readserver> parameter is true, the nnrpds will access overview
 via a helper server (B<ovdb_server> S<-- which> is started by B<ovdb_init>).
 This can also result in cleaner shutdowns for the database, improving
 stability and avoiding deadlocks and corrupted databases.  If you are
@@ -200,7 +200,7 @@ the database is marked with a newer version that will prevent older versions
 of OVDB from opening the database.
 
 You can upgrade an existing database to use compression simply by setting
-C<compress> to C<true> if F<ovdb.conf>.  Note that existing records in the
+I<compress> to true in F<ovdb.conf>.  Note that existing records in the
 database will remain uncompressed; only new records added after enabling
 compression will be compressed.
 
