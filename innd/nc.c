@@ -213,7 +213,7 @@ NCpostit(CHANNEL *cp)
       response = cp->Error;
   }
   cp->Reported++;
-  if (cp->Reported >= innconf->nntpactsync) {
+  if (cp->Reported >= innconf->incominglogfrequency) {
     snprintf(buff, sizeof(buff),
       "accepted size %.0f duplicate size %.0f rejected size %.0f",
        cp->Size, cp->DuplicateSize, cp->RejectSize);

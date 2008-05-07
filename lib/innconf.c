@@ -148,9 +148,10 @@ const struct config config_table[] = {
     { K(chanretrytime),         NUMBER  (300) },
     { K(datamovethreshold),     NUMBER  (8192) },
     { K(dontrejectfiltered),    BOOL    (false) },
-    { K(hiscachesize),          NUMBER  (0) },
+    { K(hiscachesize),          NUMBER  (256) },
     { K(icdsynccount),          NUMBER  (10) },
     { K(ignorenewsgroups),      BOOL    (false) },
+    { K(incominglogfrequency),  NUMBER  (200) },
     { K(linecountfuzz),         NUMBER  (0) },
     { K(logartsize),            BOOL    (true) },
     { K(logcancelcomm),         BOOL    (false) },
@@ -160,7 +161,6 @@ const struct config config_table[] = {
     { K(maxartsize),            NUMBER  (1000000) },
     { K(maxconnections),        NUMBER  (50) },
     { K(mergetogroups),         BOOL    (false) },
-    { K(nntpactsync),           NUMBER  (200) },
     { K(nntplinklog),           BOOL    (false) },
     { K(noreader),              BOOL    (false) },
     { K(pathalias),             STRING  (NULL) },
@@ -225,7 +225,7 @@ const struct config config_table[] = {
     { K(nnrpdpostport),         NUMBER  (119) },
 
     /* The following settings are specific to the storage subsystem. */
-    { K(articlemmap),           BOOL    (false) },
+    { K(articlemmap),           BOOL    (true) },
     { K(cnfscheckfudgesize),    NUMBER  (0) },
     { K(immediatecancel),       BOOL    (false) },
     { K(keepmmappedthreshold),  NUMBER  (1024) },

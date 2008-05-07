@@ -16,6 +16,7 @@
 ##
 ##   * Clean up inn.conf for the new parser in INN 2.4.
 ##   * Add the hismethod parameter to inn.conf if not found.
+##   * Rename nntpactsync to incominglogfrequency in inn.conf.
 ##   * Move parameters from sasl.conf to inn.conf if needed.
 ##   * Change startinnfeed to innfeed or imapfeed in newsfeeds.
 
@@ -61,13 +62,20 @@ sub fix_inn_conf {
             push (@$output, "#$_\n");
             next;
         }
+
         $hismethod = 1 if $key eq 'hismethod';
+
+        if ($key eq 'nntpactsync') {
+            $key = 'incominglogfrequency';
+        }
+
         $tls = 1 if $key =~ /^tls(capath|cafile|certfile|keyfile)$/;
         $value =~ s/\s+$//;
         if ($value =~ /[\s;\"<>\[\]\\{}]/ && $value !~ /^\".*\"\s*$/) {
             $value =~ s/([\"\\])/\\$1/g;
             $value = '"' . $value . '"';
         }
+
         push (@$output, "$indent$key:$space$value\n");
     }
 

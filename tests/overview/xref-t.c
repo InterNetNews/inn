@@ -25,7 +25,7 @@ static void
 fake_innconf(void)
 {
     innconf = xmalloc(sizeof(*innconf));
-    innconf->articlemmap = false;
+    innconf->articlemmap = true;
     innconf->enableoverview = true;
     innconf->groupbaseexpiry = true;
     innconf->keepmmappedthreshold = 1024;

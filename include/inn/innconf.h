@@ -136,6 +136,7 @@ struct innconf {
 
     /* Logging */
     bool docnfsstat;            /* Run cnfsstat in the background? */
+    long incominglogfrequency;  /* Checkpoint log after this many articles */
     bool logartsize;            /* Log article sizes? */
     bool logcancelcomm;         /* Log ctlinnd cancel commands to syslog? */
     long logcycles;             /* How many old logs scanlogs should keep */
@@ -143,7 +144,6 @@ struct innconf {
     bool logsitename;           /* Log outgoing site names? */
     bool logstatus;             /* Send a status report to syslog? */
     bool nnrpdoverstats;        /* Log overview statistics? */
-    long nntpactsync;           /* Checkpoint log after this many articles */
     bool nntplinklog;           /* Put storage token into the log? */
     long status;                /* Status file update interval */
     char *stathist;             /* Filename for history profiler outputs */

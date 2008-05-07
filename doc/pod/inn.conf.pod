@@ -174,14 +174,16 @@ I<not> be fed to any peers specified in F<newsfeeds> with the C<Af> flag.
 
 =item I<hiscachesize>
 
-If set to a value other than C<0>, a hash of recently received message IDs
+If set to a value other than C<0>, a hash of recently received Message-IDs
 is kept in memory to speed history lookups.  The value is the amount of
 memory to devote to the cache in kilobytes.  The cache is only used for
-incoming feeds and a small cache can hold quite a few message IDs, so
+incoming feeds and a small cache can hold quite a few Message-IDs, so
 large values aren't necessarily useful unless you have incoming feeds that
-are badly delayed.  A good value for a system with more than one incoming
-feed is C<256>; systems with only one incoming feed should probably leave
-this at C<0>.  The default value is C<0>.
+are badly delayed.  B<innreport> can provide useful statistics regarding
+the use of the history cache, especially when it misses.  A good value
+for a system with more than one incoming feed is C<256>; systems with
+only one incoming feed should probably set this to C<0>.  The default
+value is C<256>.
 
 =item I<ignorenewsgroups>
 
@@ -540,7 +542,7 @@ overrides I<allownewnews>.
 Whether to attempt to mmap() articles.  Setting this to true will give
 better performance on most systems, but some systems have problems with
 mmap().  If this is set to false, articles will be read into memory before
-being sent to readers.  This is a boolean value and the default is false.
+being sent to readers.  This is a boolean value and the default is true.
 
 =item I<clienttimeout>
 
@@ -999,6 +1001,11 @@ the status of all CNFS cycbuffs to syslog on a periodic basis (frequency
 is the default for C<cnfsstat -l>, currently 600 seconds).  This is a
 boolean value and the default is false.
 
+=item I<incominglogfrequency>
+
+How many articles to process on an incoming channel before logging the
+activity.  The default value is C<200>.
+
 =item I<logartsize>
 
 Whether the size of accepted articles (in bytes) should be written to the
@@ -1042,13 +1049,6 @@ on how to enable status reporting.
 Whether nnrpd overview statistics should be logged via syslog.  This can
 be useful for measuring overview performance.  This is a boolean value and
 the default is false.
-
-=item I<nntpactsync>
-
-How many articles to process on an incoming channel before logging the
-activity.  The default value is C<200>.
-
-FIXME: This is a rather unintuitive name for this parameter.
 
 =item I<nntplinklog>
 
