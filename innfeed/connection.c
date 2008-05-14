@@ -2467,7 +2467,7 @@ static void responseTimeoutCbk (TimeoutId id, void *data)
   peerName = hostPeerName (cxn->myHost) ;
 
   warn ("%s:%d cxnsleep non-responsive connection", peerName, cxn->ident) ;
-  d_printf (1,"%s:%d shutting down non-repsonsive connection\n",
+  d_printf (1,"%s:%d shutting down non-responsive connection\n",
            hostPeerName (cxn->myHost), cxn->ident) ;
 
   cxnLogStats (cxn,true) ;
