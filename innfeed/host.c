@@ -1334,11 +1334,13 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
   
   fprintf (fp,"%s    peer-name : %s\n",indent,host->params->peerName) ;
   fprintf (fp,"%s    ip-name : %s\n",indent,host->params->ipName) ;
+#ifdef HAVE_INET6
   if (host->params->family == AF_INET6)
     {
       fprintf (fp,"%s    bindaddress : none\n",indent);
     }
   else
+#endif
     {
       fprintf (fp,"%s    bindaddress : %s\n",indent,
       host->params->bindAddr == NULL ||
